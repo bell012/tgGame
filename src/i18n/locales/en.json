@@ -1,0 +1,21 @@
+{
+  "home": {
+    "title": "Welcome to TG Game",
+    "welcome": "This is a Vue3 + TypeScript + Pinia + Tailwind CSS project template.",
+    "counter": "Counter",
+    "increment": "Increment"
+  },
+  "about": {
+    "title": "About",
+    "description": "This project uses Vue 3, Vite, TypeScript, Pinia, Tailwind CSS, Vue Router, Axios, Vue I18n, and Husky.",
+    "backHome": "Back to Home"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  }
+}
+

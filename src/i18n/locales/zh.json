@@ -1,0 +1,21 @@
+{
+  "home": {
+    "title": "欢迎来到 TG 游戏",
+    "welcome": "这是一个 Vue3 + TypeScript + Pinia + Tailwind CSS 项目模板。",
+    "counter": "计数器",
+    "increment": "增加"
+  },
+  "about": {
+    "title": "关于",
+    "description": "本项目使用了 Vue 3、Vite、TypeScript、Pinia、Tailwind CSS、Vue Router、Axios、Vue I18n 和 Husky。",
+    "backHome": "返回首页"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "confirm": "确认",
+    "cancel": "取消"
+  }
+}
+
