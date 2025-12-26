@@ -16,6 +16,18 @@
     "success": "成功",
     "confirm": "确认",
     "cancel": "取消"
+  },
+  "pwa": {
+    "offlineReady": "应用已就绪，可离线使用",
+    "offlineMessage": "应用已缓存，现在可以离线使用了",
+    "newContent": "发现新内容",
+    "updateMessage": "有新版本可用，点击重新加载以更新",
+    "reload": "重新加载",
+    "close": "关闭",
+    "installTitle": "安装应用",
+    "installMessage": "将应用添加到主屏幕，获得更好的体验",
+    "install": "立即安装",
+    "later": "稍后再说"
   }
 }
 

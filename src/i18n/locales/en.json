@@ -16,6 +16,18 @@
     "success": "Success",
     "confirm": "Confirm",
     "cancel": "Cancel"
+  },
+  "pwa": {
+    "offlineReady": "App ready to work offline",
+    "offlineMessage": "App cached and ready to work offline",
+    "newContent": "New content available",
+    "updateMessage": "New version available, click to reload and update",
+    "reload": "Reload",
+    "close": "Close",
+    "installTitle": "Install App",
+    "installMessage": "Add app to home screen for a better experience",
+    "install": "Install Now",
+    "later": "Maybe Later"
   }
 }
 
