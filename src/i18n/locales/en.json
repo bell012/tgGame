@@ -1,9 +1,10 @@
 {
   "home": {
     "title": "Welcome to TG Game",
-    "welcome": "This is a Vue3 + TypeScript + Pinia + Tailwind CSS project template.",
     "counter": "Counter",
-    "increment": "Increment"
+    "increment": "Increment",
+    "languageSwitch": "Language Switch",
+    "counterDemo": "Counter Demo"
   },
   "about": {
     "title": "About",
@@ -28,6 +29,12 @@
     "installMessage": "Add app to home screen for a better experience",
     "install": "Install Now",
     "later": "Maybe Later"
+  },
+  "theme": {
+    "toggle": "Toggle Theme",
+    "light": "Light Mode",
+    "dark": "Dark Mode",
+    "system": "System"
   }
 }
 

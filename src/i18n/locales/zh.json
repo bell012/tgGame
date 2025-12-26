@@ -1,9 +1,10 @@
 {
   "home": {
     "title": "欢迎来到 TG 游戏",
-    "welcome": "这是一个 Vue3 + TypeScript + Pinia + Tailwind CSS 项目模板。",
     "counter": "计数器",
-    "increment": "增加"
+    "increment": "增加",
+    "languageSwitch": "语言切换",
+    "counterDemo": "计数器演示"
   },
   "about": {
     "title": "关于",
@@ -28,6 +29,12 @@
     "installMessage": "将应用添加到主屏幕，获得更好的体验",
     "install": "立即安装",
     "later": "稍后再说"
+  },
+  "theme": {
+    "toggle": "切换主题",
+    "light": "浅色模式",
+    "dark": "暗黑模式",
+    "system": "跟随系统"
   }
 }
 
