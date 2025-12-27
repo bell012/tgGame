@@ -1,15 +1,7 @@
 {
   "home": {
     "title": "欢迎来到 TG 游戏",
-    "counter": "计数器",
-    "increment": "增加",
-    "languageSwitch": "语言切换",
-    "counterDemo": "计数器演示"
-  },
-  "about": {
-    "title": "关于",
-    "description": "本项目使用了 Vue 3、Vite、TypeScript、Pinia、Tailwind CSS、Vue Router、Axios、Vue I18n 和 Husky。",
-    "backHome": "返回首页"
+    "home": "首页"
   },
   "common": {
     "loading": "加载中...",

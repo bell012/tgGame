@@ -1,0 +1,123 @@
+/**
+ * 颜色变量 - 暗黑模式（默认）
+ */
+
+:root {
+  /* ========== 背景色 (Background) - 暗黑模式 ========== */
+  --color-background-level-1: #242626;
+  --color-background-level-2: #323738;
+  --color-background-level-3: #384142;
+  --color-background-level-4: #2D3131;
+  --color-background-level-5: #25202E;
+  --color-background-level-6: #1D1E1E;
+
+  /* ========== 主色 (Theme) ========== */
+  --color-theme-level-1: #2AE58A;
+
+  /* ========== 文字色 (Text) ========== */
+  --color-text-level-1: #FFFFFF;
+  --color-text-level-2: #D3BEC1;
+  --color-text-level-3: #78707D;
+  --color-text-level-4: #000000;
+
+  /* ========== 图标色 (Icon) ========== */
+  --color-icon-level-1: #FFFFFF;
+  --color-icon-level-2: #D3BEC1;
+  --color-icon-level-3: #78707D;
+  --color-icon-level-4: #000000;
+
+  /* ========== 不透明度 (Opacity) ========== */
+  --color-opacity-8: rgba(255, 255, 255, 0.08);
+  --color-opacity-10: rgba(255, 255, 255, 0.10);
+  --color-opacity-15: rgba(255, 255, 255, 0.15);
+
+  /* ========== 遮罩色 (Mask) ========== */
+  --color-mask-20: rgba(0, 0, 0, 0.20);
+  --color-mask-40: rgba(0, 0, 0, 0.40);
+  --color-mask-60: rgba(0, 0, 0, 0.60);
+
+  /* ========== 次要色 (Secondary) ========== */
+  --color-secondary-level-1: rgba(252, 60, 60, 0.15);
+  --color-secondary-level-2: #FC3C3C;
+  --color-secondary-level-3: rgba(42, 238, 138, 0.15);
+  --color-secondary-level-4: #2AE58A;
+  --color-secondary-level-5: rgba(247, 255, 73, 0.15);
+  --color-secondary-level-6: #F7FF48;
+
+  /* ========== 通用色 (Common) ========== */
+  --color-common-100: #FFFFFF;
+  --color-common-60: rgba(255, 255, 255, 0.60);
+
+  /* ========== 输入框色 (Input) ========== */
+  --color-input-level-1: rgba(255, 255, 255, 0.08);
+  --color-input-level-2: rgba(0, 0, 0, 0.20);
+
+  /* ========== 滚动条色 (Scrollbar) ========== */
+  --color-scrollbar-thumb: #4b5354;
+  --color-scrollbar-thumb-hover: #5c6465;
+  --color-scrollbar-track: transparent;
+
+  /* ========== 按钮色 (Button) ========== */
+  --color-button-primary: var(--color-theme-level-1);
+  --color-button-primary-hover: #25c777;
+  --color-button-secondary: var(--color-background-level-3);
+  --color-button-secondary-hover: var(--color-background-level-2);
+
+  /* ========== 边框色 (Border) ========== */
+  --color-border-level-1: rgba(255, 255, 255, 0.1);
+  --color-border-level-2: rgba(255, 255, 255, 0.05);
+
+  /* ========== 阴影色 (Shadow) ========== */
+  --color-shadow-level-1: rgba(0, 0, 0, 0.1);
+  --color-shadow-level-2: rgba(0, 0, 0, 0.2);
+  --color-shadow-level-3: rgba(0, 0, 0, 0.3);
+}
+
+/**
+ * 浅色模式颜色变量
+ */
+:root.light {
+  /* ========== 背景色 (Background) - 浅色模式 ========== */
+  --color-background-level-1: #FFFFFF;
+  --color-background-level-2: #F5F5F5;
+  --color-background-level-3: #E8E8E8;
+  --color-background-level-4: #EEEEEE;
+  --color-background-level-5: #FAFAFA;
+  --color-background-level-6: #FCFCFC;
+
+  /* ========== 文字色 (Text) - 浅色模式 ========== */
+  --color-text-level-1: #000000;
+  --color-text-level-2: #666666;
+  --color-text-level-3: #999999;
+  --color-text-level-4: #FFFFFF;
+
+  /* ========== 图标色 (Icon) - 浅色模式 ========== */
+  --color-icon-level-1: #000000;
+  --color-icon-level-2: #666666;
+  --color-icon-level-3: #999999;
+  --color-icon-level-4: #FFFFFF;
+
+  /* ========== 不透明度 (Opacity) - 浅色模式 ========== */
+  --color-opacity-8: rgba(0, 0, 0, 0.08);
+  --color-opacity-10: rgba(0, 0, 0, 0.10);
+  --color-opacity-15: rgba(0, 0, 0, 0.15);
+
+  /* ========== 遮罩色 (Mask) - 浅色模式 ========== */
+  --color-mask-20: rgba(0, 0, 0, 0.20);
+  --color-mask-40: rgba(0, 0, 0, 0.40);
+  --color-mask-60: rgba(0, 0, 0, 0.60);
+
+  /* ========== 输入框色 (Input) - 浅色模式 ========== */
+  --color-input-level-1: rgba(0, 0, 0, 0.05);
+  --color-input-level-2: rgba(0, 0, 0, 0.10);
+
+  /* ========== 边框色 (Border) - 浅色模式 ========== */
+  --color-border-level-1: rgba(0, 0, 0, 0.1);
+  --color-border-level-2: rgba(0, 0, 0, 0.05);
+
+  /* ========== 按钮色 (Button) - 浅色模式 ========== */
+  --color-button-secondary: #E8E8E8;
+  --color-button-secondary-hover: #D0D0D0;
+}
+
+

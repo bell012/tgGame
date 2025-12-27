@@ -1,14 +1,14 @@
 <template>
   <div
     v-if="offlineReady || needRefresh"
-    class="fixed bottom-4 right-4 z-50 max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-gray-900/50 p-4 border border-gray-200 dark:border-gray-700 transition-colors duration-300"
+    class="reload-prompt"
     role="alert"
   >
-    <div class="flex items-start gap-3">
-      <div class="flex-shrink-0">
+    <div class="prompt-content">
+      <div class="icon-wrapper">
         <svg
           v-if="offlineReady"
-          class="w-6 h-6 text-green-500"
+          class="icon icon-success"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -22,7 +22,7 @@
         </svg>
         <svg
           v-else
-          class="w-6 h-6 text-blue-500"
+          class="icon icon-update"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -35,25 +35,25 @@
           />
         </svg>
       </div>
-      <div class="flex-1">
-        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+      <div class="text-content">
+        <h3 class="title">
           {{ offlineReady ? t('pwa.offlineReady') : t('pwa.newContent') }}
         </h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <p class="message">
           {{ offlineReady ? t('pwa.offlineMessage') : t('pwa.updateMessage') }}
         </p>
       </div>
     </div>
-    <div class="mt-4 flex gap-2">
+    <div class="button-group">
       <button
         v-if="needRefresh"
-        class="flex-1 px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
+        class="btn-reload"
         @click="updateServiceWorker()"
       >
         {{ t('pwa.reload') }}
       </button>
       <button
-        class="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+        class="btn-close"
         @click="close"
       >
         {{ t('pwa.close') }}
@@ -79,4 +79,95 @@ const close = () => {
   needRefresh.value = false
 }
 </script>
+
+<style scoped>
+.reload-prompt {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 50;
+  max-width: 28rem;
+  background-color: var(--color-background-level-2);
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px var(--color-shadow-level-3);
+  padding: 1rem;
+  border: 1px solid var(--color-border-level-1);
+  transition: all 0.3s;
+}
+
+.prompt-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.icon-wrapper {
+  flex-shrink: 0;
+}
+
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon-success {
+  color: var(--color-secondary-level-4);
+}
+
+.icon-update {
+  color: var(--color-theme-level-1);
+}
+
+.text-content {
+  flex: 1;
+}
+
+.title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-level-1);
+  margin-bottom: 0.25rem;
+}
+
+.message {
+  font-size: 0.875rem;
+  color: var(--color-text-level-2);
+}
+
+.button-group {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-reload {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-button-primary);
+  color: var(--color-text-level-4);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+}
+
+.btn-reload:hover {
+  background-color: var(--color-button-primary-hover);
+}
+
+.btn-close {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-button-secondary);
+  color: var(--color-text-level-1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+}
+
+.btn-close:hover {
+  background-color: var(--color-button-secondary-hover);
+}
+</style>
 

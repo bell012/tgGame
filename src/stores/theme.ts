@@ -31,16 +31,20 @@ export const useThemeStore = defineStore('theme', () => {
 
   const applyTheme = (newTheme: Theme) => {
     const html = document.documentElement
-    
+
     if (newTheme === 'dark') {
+      html.classList.remove('light')
       html.classList.add('dark')
     } else {
       html.classList.remove('dark')
+      html.classList.add('light')
     }
-    
     const metaThemeColor = document.querySelector('meta[name="theme-color"]')
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', newTheme === 'dark' ? '#1a1a1a' : '#42b883')
+      setTimeout(() => {
+        const themeColor = getComputedStyle(html).getPropertyValue('--color-background-level-1').trim()
+        metaThemeColor.setAttribute('content', themeColor || (newTheme === 'dark' ? '#242626' : '#FFFFFF'))
+      }, 0)
     }
   }
 

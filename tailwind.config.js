@@ -8,22 +8,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: {
-          light: '#42b883',
-          dark: '#35495e'
-        }
-      },
-      backgroundColor: {
-        'light-bg': '#f5f5f5',
-        'dark-bg': '#1a1a1a',
-        'light-card': '#ffffff',
-        'dark-card': '#2d2d2d'
-      },
-      textColor: {
-        'light-primary': '#2c3e50',
-        'light-secondary': '#6b7280',
-        'dark-primary': '#e5e7eb',
-        'dark-secondary': '#9ca3af'
+        'theme-primary': 'var(--color-theme-level-1)',
+        'bg-1': 'var(--color-background-level-1)',
+        'bg-2': 'var(--color-background-level-2)',
+        'bg-3': 'var(--color-background-level-3)',
+        'bg-4': 'var(--color-background-level-4)',
+        'bg-5': 'var(--color-background-level-5)',
+        'bg-6': 'var(--color-background-level-6)',
+        'text-1': 'var(--color-text-level-1)',
+        'text-2': 'var(--color-text-level-2)',
+        'text-3': 'var(--color-text-level-3)',
+        'text-4': 'var(--color-text-level-4)',
+        'border-1': 'var(--color-border-level-1)',
+        'border-2': 'var(--color-border-level-2)',
       }
     },
   },

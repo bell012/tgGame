@@ -1,6 +1,6 @@
 <template>
   <button
-    class="relative inline-flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-light dark:focus:ring-primary-dark bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+    class="theme-toggle-btn"
     :aria-label="t('theme.toggle')"
     @click="toggleTheme"
   >
@@ -8,7 +8,7 @@
       <svg
         v-if="theme === 'light'"
         key="sun"
-        class="w-6 h-6 text-yellow-500"
+        class="icon sun-icon"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -23,7 +23,7 @@
       <svg
         v-else
         key="moon"
-        class="w-6 h-6 text-blue-400"
+        class="icon moon-icon"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -51,6 +51,42 @@ const { toggleTheme } = themeStore
 </script>
 
 <style scoped>
+.theme-toggle-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background-color: var(--color-opacity-8);
+  transition: all 0.3s;
+  border: 1px solid var(--color-opacity-15);
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.1);
+  background-color: var(--color-opacity-10);
+}
+
+.theme-toggle-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-theme-level-1);
+}
+
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.sun-icon {
+  color: var(--color-secondary-level-6);
+}
+
+.moon-icon {
+  color: var(--color-theme-level-1);
+}
+
 .theme-icon-enter-active,
 .theme-icon-leave-active {
   transition: all 0.3s ease;

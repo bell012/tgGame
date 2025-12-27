@@ -1,15 +1,7 @@
 {
   "home": {
     "title": "Welcome to TG Game",
-    "counter": "Counter",
-    "increment": "Increment",
-    "languageSwitch": "Language Switch",
-    "counterDemo": "Counter Demo"
-  },
-  "about": {
-    "title": "About",
-    "description": "This project uses Vue 3, Vite, TypeScript, Pinia, Tailwind CSS, Vue Router, Axios, Vue I18n, and Husky.",
-    "backHome": "Back to Home"
+    "home": "home"
   },
   "common": {
     "loading": "Loading...",

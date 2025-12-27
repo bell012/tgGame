@@ -1,11 +1,11 @@
 <template>
   <div
     v-if="showInstallPrompt"
-    class="fixed bottom-4 left-4 z-50 max-w-sm bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-2xl p-4 text-white"
+    class="install-prompt"
   >
-    <div class="flex items-start gap-3">
-      <div class="flex-shrink-0">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="prompt-content">
+      <div class="icon-wrapper">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -14,12 +14,12 @@
           />
         </svg>
       </div>
-      <div class="flex-1">
-        <h3 class="text-sm font-bold mb-1">{{ t('pwa.installTitle') }}</h3>
-        <p class="text-sm opacity-90">{{ t('pwa.installMessage') }}</p>
+      <div class="text-content">
+        <h3 class="title">{{ t('pwa.installTitle') }}</h3>
+        <p class="message">{{ t('pwa.installMessage') }}</p>
       </div>
-      <button class="flex-shrink-0 text-white hover:text-gray-200" @click="dismissPrompt">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button class="close-btn" @click="dismissPrompt">
+        <svg class="close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -29,15 +29,15 @@
         </svg>
       </button>
     </div>
-    <div class="mt-4 flex gap-2">
+    <div class="button-group">
       <button
-        class="flex-1 px-4 py-2 bg-white text-blue-600 text-sm font-semibold rounded-md hover:bg-gray-100 transition-colors"
+        class="btn-install"
         @click="install"
       >
         {{ t('pwa.install') }}
       </button>
       <button
-        class="flex-1 px-4 py-2 bg-blue-600 bg-opacity-50 text-white text-sm font-medium rounded-md hover:bg-opacity-70 transition-colors"
+        class="btn-later"
         @click="dismissPrompt"
       >
         {{ t('pwa.later') }}
@@ -86,4 +86,102 @@ const dismissPrompt = () => {
   deferredPrompt = null
 }
 </script>
+
+<style scoped>
+.install-prompt {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 50;
+  max-width: 24rem;
+  background: linear-gradient(135deg, var(--color-background-level-3), var(--color-background-level-5));
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px var(--color-shadow-level-3);
+  padding: 1rem;
+  border: 1px solid var(--color-border-level-1);
+}
+
+.prompt-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.icon-wrapper {
+  flex-shrink: 0;
+}
+
+.icon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--color-theme-level-1);
+}
+
+.text-content {
+  flex: 1;
+}
+
+.title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: var(--color-text-level-1);
+}
+
+.message {
+  font-size: 0.875rem;
+  color: var(--color-text-level-2);
+}
+
+.close-btn {
+  flex-shrink: 0;
+  color: var(--color-text-level-1);
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: var(--color-text-level-2);
+}
+
+.close-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.button-group {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-install {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-button-primary);
+  color: var(--color-text-level-4);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+}
+
+.btn-install:hover {
+  background-color: var(--color-button-primary-hover);
+}
+
+.btn-later {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-button-secondary);
+  color: var(--color-text-level-1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+}
+
+.btn-later:hover {
+  background-color: var(--color-button-secondary-hover);
+}
+</style>
 

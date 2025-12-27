@@ -72,27 +72,6 @@
   transition: $properties $duration $timing;
 }
 
-// 卡片样式
-@mixin card($padding: $spacing-lg) {
-  background-color: $light-bg-card;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-md;
-  padding: $padding;
-  @include transition(box-shadow);
-
-  &:hover {
-    box-shadow: $shadow-lg;
-  }
-
-  :global(.dark) & {
-    background-color: $dark-bg-card;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-
-    &:hover {
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
-    }
-  }
-}
 
 // 按钮基础样式
 @mixin button-base {
@@ -110,7 +89,7 @@
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba($primary-light, 0.3);
+    box-shadow: 0 0 0 3px var(--color-opacity-15);
   }
 
   &:disabled {
@@ -122,18 +101,18 @@
 // 主要按钮
 @mixin button-primary {
   @include button-base;
-  background-color: $primary-light;
-  color: white;
+  background-color: var(--color-button-primary);
+  color: var(--color-text-level-4);
 
   &:hover:not(:disabled) {
-    background-color: color-mix(in srgb, $primary-light 80%, black);
+    background-color: var(--color-button-primary-hover);
   }
 
   :global(.dark) & {
-    background-color: $primary-dark;
+    background-color: var(--color-button-primary);
 
     &:hover:not(:disabled) {
-      background-color: color-mix(in srgb, $primary-dark 90%, white);
+      background-color: var(--color-button-primary-hover);
     }
   }
 }
@@ -141,19 +120,19 @@
 // 次要按钮
 @mixin button-secondary {
   @include button-base;
-  background-color: #e5e7eb;
+  background-color: var(--color-button-secondary);
   color: $light-text-primary;
 
   &:hover:not(:disabled) {
-    background-color: color-mix(in srgb, #e5e7eb 90%, black);
+    background-color: var(--color-button-secondary-hover);
   }
 
   :global(.dark) & {
-    background-color: #374151;
+    background-color: var(--color-button-secondary);
     color: $dark-text-primary;
 
     &:hover:not(:disabled) {
-      background-color: color-mix(in srgb, #374151 90%, white);
+      background-color: var(--color-button-secondary-hover);
     }
   }
 }
