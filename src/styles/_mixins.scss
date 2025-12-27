@@ -1,0 +1,160 @@
+@use 'variables' as *;
+
+// 响应式断点 Mixin
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'sm' {
+    @media (min-width: $breakpoint-sm) {
+      @content;
+    }
+  } @else if $breakpoint == 'md' {
+    @media (min-width: $breakpoint-md) {
+      @content;
+    }
+  } @else if $breakpoint == 'lg' {
+    @media (min-width: $breakpoint-lg) {
+      @content;
+    }
+  } @else if $breakpoint == 'xl' {
+    @media (min-width: $breakpoint-xl) {
+      @content;
+    }
+  } @else if $breakpoint == 'xxl' {
+    @media (min-width: $breakpoint-2xl) {
+      @content;
+    }
+  }
+}
+
+// Flexbox 居中
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Flexbox 垂直居中
+@mixin flex-center-vertical {
+  display: flex;
+  align-items: center;
+}
+
+// Flexbox 水平居中
+@mixin flex-center-horizontal {
+  display: flex;
+  justify-content: center;
+}
+
+// 文本省略
+@mixin text-ellipsis($lines: 1) {
+  @if $lines == 1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// 清除浮动
+@mixin clearfix {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+// 过渡动画
+@mixin transition($properties: all, $duration: $transition-base, $timing: $transition-ease) {
+  transition: $properties $duration $timing;
+}
+
+// 卡片样式
+@mixin card($padding: $spacing-lg) {
+  background-color: $light-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md;
+  padding: $padding;
+  @include transition(box-shadow);
+
+  &:hover {
+    box-shadow: $shadow-lg;
+  }
+
+  :global(.dark) & {
+    background-color: $dark-bg-card;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+
+    &:hover {
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
+// 按钮基础样式
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm $spacing-md;
+  border: none;
+  border-radius: $radius-md;
+  font-size: $font-size-base;
+  font-weight: 500;
+  cursor: pointer;
+  @include transition(all);
+  user-select: none;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($primary-light, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// 主要按钮
+@mixin button-primary {
+  @include button-base;
+  background-color: $primary-light;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: color-mix(in srgb, $primary-light 80%, black);
+  }
+
+  :global(.dark) & {
+    background-color: $primary-dark;
+
+    &:hover:not(:disabled) {
+      background-color: color-mix(in srgb, $primary-dark 90%, white);
+    }
+  }
+}
+
+// 次要按钮
+@mixin button-secondary {
+  @include button-base;
+  background-color: #e5e7eb;
+  color: $light-text-primary;
+
+  &:hover:not(:disabled) {
+    background-color: color-mix(in srgb, #e5e7eb 90%, black);
+  }
+
+  :global(.dark) & {
+    background-color: #374151;
+    color: $dark-text-primary;
+
+    &:hover:not(:disabled) {
+      background-color: color-mix(in srgb, #374151 90%, white);
+    }
+  }
+}
+

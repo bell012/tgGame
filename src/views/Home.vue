@@ -65,3 +65,6 @@ const changeLanguage = (lang: string) => {
 }
 </script>
 
+<style scoped lang="scss"> 
+</style>
+
