@@ -35,12 +35,14 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
     "postcss": "^8.5.6",
+    "postcss-pxtorem": "^6.1.0",
     "prettier": "^3.7.4",
     "sass": "^1.97.1",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.9.3",
     "vite": "^6.4.1",
     "vite-plugin-pwa": "^1.2.0",
+    "vite-svg-loader": "^5.1.0",
     "vue-tsc": "^3.2.1",
     "workbox-window": "^7.4.0"
   }

@@ -4,7 +4,7 @@ import zh from './locales/zh.json'
 
 const i18n = createI18n({
   legacy: false,
-  locale: localStorage.getItem('language') || 'zh',
+  locale: localStorage.getItem('language') === 'zh-CN' ? 'zh' : 'en',
   fallbackLocale: 'en',
   messages: {
     en,

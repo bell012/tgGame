@@ -2,11 +2,36 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { resolve } from 'path'
+import svgLoader from 'vite-svg-loader'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
+    svgLoader({
+      svgoConfig: {
+        plugins: [
+          {
+            name: 'preset-default',
+            params: {
+              overrides: {
+                removeViewBox: false,
+                cleanupIds: false, // 保留 ID，避免冲突
+              },
+            },
+          },
+          {
+            name: 'removeAttrs',
+            params: {
+              attrs: '(fill|stroke):(?!url\\()'
+            }
+          },
+          {
+            name: 'prefixIds', // 为每个 SVG 的 ID 添加唯一前缀
+          }
+        ],
+      },
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],

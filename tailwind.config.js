@@ -21,6 +21,20 @@ export default {
         'text-4': 'var(--color-text-level-4)',
         'border-1': 'var(--color-border-level-1)',
         'border-2': 'var(--color-border-level-2)',
+      },
+      stroke: {
+        'text-1': 'var(--color-text-level-1)',
+        'text-2': 'var(--color-text-level-2)',
+        'text-3': 'var(--color-text-level-3)',
+        'text-4': 'var(--color-text-level-4)',
+        'primary': 'var(--color-theme-level-1)',
+      },
+      fill: {
+        'text-1': 'var(--color-text-level-1)',
+        'text-2': 'var(--color-text-level-2)',
+        'text-3': 'var(--color-text-level-3)',
+        'text-4': 'var(--color-text-level-4)',
+        'primary': 'var(--color-theme-level-1)',
       }
     },
   },
