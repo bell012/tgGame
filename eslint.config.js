@@ -6,6 +6,7 @@ import tseslint from 'typescript-eslint'
 import fs from 'node:fs'
 import prettierPlugin from 'eslint-plugin-prettier'
 import prettierConfig from 'eslint-config-prettier'
+import globals from 'globals'
 
 const gitignore = fs.existsSync('.gitignore')
   ? fs.readFileSync('.gitignore', 'utf-8').split('\n').filter(Boolean)
@@ -24,6 +25,10 @@ export default [
         parser: tsParser,
         ecmaVersion: 'latest',
         sourceType: 'module'
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.node
       }
     },
     plugins: {
@@ -39,10 +44,8 @@ export default [
     },
     languageOptions: {
       globals: {
-        window: 'readonly',
-        document: 'readonly',
-        console: 'readonly',
-        URL: 'readonly'
+        ...globals.browser,
+        ...globals.node
       }
     },
     rules: {
