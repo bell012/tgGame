@@ -6,9 +6,9 @@
   /* ========== 背景色 (Background) - 暗黑模式 ========== */
   --color-background-level-1: #242626;
   --color-background-level-2: #323738;
-  --color-background-level-3: #384142;
+  --color-background-level-3: #3B4142;
   --color-background-level-4: #2D3131;
-  --color-background-level-5: #25202E;
+  --color-background-level-5: #292D2E;
   --color-background-level-6: #1D1E1E;
 
   /* ========== 主色 (Theme) ========== */
@@ -16,18 +16,18 @@
 
   /* ========== 文字色 (Text) ========== */
   --color-text-level-1: #FFFFFF;
-  --color-text-level-2: #D3BEC1;
-  --color-text-level-3: #78707D;
+  --color-text-level-2: #B3BEC1;
+  --color-text-level-3: #7B7D7D;
   --color-text-level-4: #000000;
 
   /* ========== 图标色 (Icon) ========== */
   --color-icon-level-1: #FFFFFF;
-  --color-icon-level-2: #D3BEC1;
-  --color-icon-level-3: #78707D;
+  --color-icon-level-2: #B3BEC1;
+  --color-icon-level-3: #7B707D;
   --color-icon-level-4: #000000;
 
   /* ========== 不透明度 (Opacity) ========== */
-  --color-opacity-8: rgba(255, 255, 255, 0.08);
+  --color-opacity-6: rgba(255, 255, 255, 0.06);
   --color-opacity-10: rgba(255, 255, 255, 0.10);
   --color-opacity-15: rgba(255, 255, 255, 0.15);
 
@@ -40,16 +40,16 @@
   --color-secondary-level-1: rgba(252, 60, 60, 0.15);
   --color-secondary-level-2: #FC3C3C;
   --color-secondary-level-3: rgba(42, 238, 138, 0.15);
-  --color-secondary-level-4: #2AE58A;
+  --color-secondary-level-4: #2AEE88;
   --color-secondary-level-5: rgba(247, 255, 73, 0.15);
-  --color-secondary-level-6: #F7FF48;
+  --color-secondary-level-6: #F7FF4B;
 
   /* ========== 通用色 (Common) ========== */
   --color-common-100: #FFFFFF;
   --color-common-60: rgba(255, 255, 255, 0.60);
 
   /* ========== 输入框色 (Input) ========== */
-  --color-input-level-1: rgba(255, 255, 255, 0.08);
+  --color-input-level-1: rgba(255, 255, 255, 0.06);
   --color-input-level-2: rgba(0, 0, 0, 0.20);
 
   /* ========== 滚动条色 (Scrollbar) ========== */
@@ -98,7 +98,7 @@
   --color-icon-level-4: #FFFFFF;
 
   /* ========== 不透明度 (Opacity) - 浅色模式 ========== */
-  --color-opacity-8: rgba(0, 0, 0, 0.08);
+  --color-opacity-6: rgba(0, 0, 0, 0.06);
   --color-opacity-10: rgba(0, 0, 0, 0.10);
   --color-opacity-15: rgba(0, 0, 0, 0.15);
 

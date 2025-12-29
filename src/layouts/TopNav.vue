@@ -1,57 +1,40 @@
 <template>
   <header class="top-nav">
-    <div class="h-full px-4 flex items-center justify-between">
-      <!-- Logo/标题 -->
-      <router-link to="/" class="nav-logo">
-        顶部导航
-      </router-link>
+    <div class="h-full flex items-center justify-between">
+      <!-- 左侧 -->
+      <div class="flex items-center px-4">
+        <img src="@/static/svg/fold.svg" alt="fold" class="w-[40px] h-[40px] cursor-pointer" />
+        <router-link to="/" class="w-[140px] h-[60px] ml-5 flex items-center">
+          <img src="@/static/svg/logo.svg" alt="fold" />
+        </router-link>
+      </div>
 
-      <!-- 右侧操作区 -->
-      <div class="flex items-center gap-4">
-        <!-- 语言切换 -->
-        <div class="flex gap-2">
-          <button
-            @click="switchLanguage('en')"
-            class="lang-btn"
-            :class="{ 'active': currentLocale === 'en' }"
-          >
-            EN
-          </button>
-          <button
-            @click="switchLanguage('zh')"
-            class="lang-btn"
-            :class="{ 'active': currentLocale === 'zh' }"
-          >
-            中文
-          </button>
+      <!-- 右侧 -->
+      <div class="flex-1 flex items-center justify-end px-3">
+        <div class="cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3">
+          <img src="@/static/svg/search.svg" alt="search" class="w-[24px] h-[24px]" />
         </div>
-
-        <ThemeToggle />
+        <div class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center bg-transparent border-2 border-[#e4eaf019] mr-1">登入</div>
+        <div class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center btn-primary mr-3">注册</div>
+        <div class="cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3">
+          <img src="@/static/svg/chat.svg" alt="message" class="w-[24px] h-[24px]" />
+        </div>
+        <div class="flex items-center justify-center w-auto h-[40px] rounded-lg overflow-hidden relative">
+          <div class="cursor-pointer search w-[40px] h-[40px]">
+            <img src="@/static/svg/language.svg" alt="search" class="w-[24px] h-[24px]" />
+          </div>
+          <div class="absolute left-10 top-2 h-6 w-[1px] line"></div>
+          <div class="cursor-pointer search w-auto h-[40px] px-2">
+            <span class="text">CNY</span>
+          </div>
+        </div>
       </div>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import ThemeToggle from '@/components/ThemeToggle.vue'
 
-const route = useRoute()
-const router = useRouter()
-
-const currentLocale = computed(() => {
-  return (route.params.locale as string) || 'en'
-})
-
-const switchLanguage = (lang: string) => {
-  const currentPath = route.path.replace(/^\/(zh|en)/, '') || '/'
-  if (lang === 'en') {
-    router.push(currentPath === '/' ? '/' : currentPath)
-  } else {
-    router.push(`/${lang}${currentPath === '/' ? '' : currentPath}`)
-  }
-}
 </script>
 
 <style scoped>
@@ -60,41 +43,23 @@ const switchLanguage = (lang: string) => {
   top: 0;
   left: 0;
   right: 0;
-  height: 4rem;
-  background-color: var(--color-background-level-1);
-  box-shadow: 0 2px 4px var(--color-mask-20);
+  height: 60px;
+  background-color: var(--color-background-level-5);
+  box-shadow:0px 4px 8px 0px rgba(0, 0, 0, 0.05);
   z-index: 50;
 }
-
-.nav-logo {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: var(--color-text-level-1);
-  transition: color 0.2s;
+.search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-background-level-3);
 }
-
-.nav-logo:hover {
-  color: var(--color-theme-level-1);
+.text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-level-2);
 }
-
-.lang-btn {
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  color: var(--color-text-level-3);
-  background-color: transparent;
-  transition: all 0.2s;
-  border: 1px solid var(--color-opacity-15);
-}
-
-.lang-btn:hover {
-  background-color: var(--color-opacity-8);
-}
-
-.lang-btn.active {
-  background-color: var(--color-theme-level-1);
-  color: var(--color-text-level-4);
-  border-color: var(--color-theme-level-1);
+.line {
+  background-color: #e4eaf019;
 }
 </style>
-
