@@ -1,7 +1,15 @@
 {
   "home": {
     "title": "Welcome to TG Game",
-    "home": "home"
+    "home": "home",
+    "sign_In": "Sign In",
+    "sign_Up": "Sign Up",
+    "language": "Language",
+    "view_currency": "View in currency",
+    "search": "Search",
+    "select_currency": "Select the desired currency to display. The Currencies will be shown in approximated values.",
+    "none": "None",
+    "none_select_currency": "When none is selected, some amounts are still displayed in the last selected fiat currency."
   },
   "common": {
     "loading": "Loading...",

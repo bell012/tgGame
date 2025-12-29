@@ -1,7 +1,15 @@
 {
   "home": {
     "title": "欢迎来到 TG 游戏",
-    "home": "首页"
+    "home": "首页",
+    "sign_In": "登入",
+    "sign_Up": "注册",
+    "language": "语言",
+    "view_currency": "以货币显示",
+    "search": "搜寻",
+    "select_currency": "选择要显示的货币。货币将以近似值显示。",
+    "none": "无",
+    "none_select_currency": "当未选择任何货币时，某些金额仍会以最后选择的法币显示"
   },
   "common": {
     "loading": "加载中...",

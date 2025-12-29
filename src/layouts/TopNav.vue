@@ -16,8 +16,12 @@
         <div class="cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3">
           <SearchIcon class="w-6 h-6 fill-text-2 fill-none" />
         </div>
-        <div class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center bg-transparent border-2 border-[#e4eaf019] mr-1">登入</div>
-        <div class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center btn-primary mr-3">注册</div>
+        <!-- 登入 -->
+        <div class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center bg-transparent border-2 border-[#e4eaf019] mr-1">
+          {{ t('home.sign_In') }}
+        </div>
+        <!-- 注册 -->
+        <div class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center btn-primary mr-3">{{ t('home.sign_Up') }}</div>
         <div class="cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3">
           <ChatIcon class="w-6 h-6 fill-text-2 fill-none" />
         </div>
@@ -55,13 +59,13 @@ import ChatIcon from '@/static/svg/chat.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
 
 const { locale } = useI18n()
-
+const { t } = useI18n()
 const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
 const currentLanguage = ref(localStorage.getItem('language') || 'en')
 const currentCurrency = ref(localStorage.getItem('currency') || 'none')
 
-// 计算实际使用的货币（用于计价）
+// 计算实际使用的货币
 const actualCurrency = computed(() => {
   return currentCurrency.value === 'none' ? 'USD' : currentCurrency.value
 })
@@ -78,17 +82,14 @@ const openCurrencyModal = () => {
 
 const handleLanguageChange = (code: string) => {
   currentLanguage.value = code
-  // 切换 i18n 语言
   const i18nLocale = code === 'zh-CN' ? 'zh' : 'en'
   locale.value = i18nLocale
   localStorage.setItem('language', code)
-  console.log('语言切换为:', code, '实际 i18n locale:', i18nLocale)
 }
 
 const handleCurrencyChange = (code: string) => {
   currentCurrency.value = code
   localStorage.setItem('currency', code)
-  console.log('货币切换为:', code, '实际计价货币:', actualCurrency.value)
 }
 </script>
 

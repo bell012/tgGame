@@ -12,17 +12,19 @@
 
           <!-- 标签页 -->
           <div class="flex">
+            <!-- 语言 -->
             <button
               :class="['tab', { active: activeTab === 'language' }]"
               @click="activeTab = 'language'"
             >
-              语言
+            {{ t('home.language') }}
             </button>
+            <!-- 以货币显示 -->
             <button
               :class="['tab', { active: activeTab === 'currency' }]"
               @click="activeTab = 'currency'"
             >
-              以货币显示
+            {{ t('home.view_currency') }}
             </button>
           </div>
 
@@ -34,7 +36,7 @@
               <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="搜寻"
+                :placeholder="t('home.search')"
                 class="search-input"
               />
             </div>
@@ -56,8 +58,9 @@
 
           <!-- 货币选择 -->
           <div v-if="activeTab === 'currency'" class="content">
+            <!-- 选择要显示的货币。货币将以近似值显示。 -->
             <p class="currency-tip">
-              选择要显示的货币。货币将以近似值显示。
+              {{ t('home.select_currency') }}
             </p>
 
             <!-- 搜索框 -->
@@ -66,7 +69,7 @@
               <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="搜寻"
+                :placeholder="t('home.search')"
                 class="search-input"
               />
             </div>
@@ -78,7 +81,8 @@
             >
               <div class="flex items-center">
                 <RadioCheckedIcon class="w-6 h-6 flex-shrink-0 stroke-text-1 fill-text-1 mr-3" />
-                <span class="option-text">无</span>
+                <!-- 无 -->
+                <span class="option-text">{{ t('home.none') }}</span>
               </div>
               <RadioCheckedIcon v-if="selectedCurrency === 'none'" class="w-6 h-6 flex-shrink-0 stroke-text-1 fill-text-1" />
               <RadioUncheckedIcon v-else class="w-6 h-6 flex-shrink-0 stroke-text-1" />
@@ -87,7 +91,8 @@
             <!-- 提示信息 -->
             <div v-if="selectedCurrency === 'none'" class="warning-tip">
               <SearchIcon class="w-5 h-5 flex-shrink-0 mr-1.5 stroke-[#3cef86]" />
-              <span>当未选择任何货币时，某些金额仍会以最后选择的法币显示(USD)</span>
+              <!-- 当未选择任何货币时，某些金额仍会以最后选择的法币显示(USD) -->
+              <span>{{ t('home.none_select_currency') }}(USD)</span>
             </div>
 
             <!-- 货币列表 -->
@@ -119,7 +124,9 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import RadioCheckedIcon from '@/static/svg/radio-checked.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 interface Language {
   code: string
   name: string
