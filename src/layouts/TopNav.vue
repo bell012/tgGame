@@ -29,10 +29,10 @@
           <div class="cursor-pointer search w-[40px] h-[40px]" @click="openLanguageModal">
             <LanguageIcon class="w-6 h-6 fill-text-2 fill-none" />
           </div>
-          <template v-if="currentCurrency !== 'none'">
+          <template v-if="localeStore.currentCurrency !== 'none'">
             <div class="absolute left-10 top-2 h-6 w-[1px] line"></div>
             <div class="cursor-pointer search w-auto h-[40px] px-2" @click="openCurrencyModal">
-              <span class="text">{{ currentCurrency }}</span>
+              <span class="text">{{ localeStore.currentCurrency }}</span>
             </div>
           </template>
         </div>
@@ -50,25 +50,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useLocaleStore } from '@/stores/locale'
 import SelectModal from '@/components/SelectModal.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
 import ChatIcon from '@/static/svg/chat.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
 
-const { locale } = useI18n()
 const { t } = useI18n()
+const localeStore = useLocaleStore()
+
 const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
-const currentLanguage = ref(localStorage.getItem('language') || 'en')
-const currentCurrency = ref(localStorage.getItem('currency') || 'none')
-
-// 计算实际使用的货币
-const actualCurrency = computed(() => {
-  return currentCurrency.value === 'none' ? 'USD' : currentCurrency.value
-})
 
 const openLanguageModal = () => {
   modalType.value = 'language'
@@ -81,15 +76,11 @@ const openCurrencyModal = () => {
 }
 
 const handleLanguageChange = (code: string) => {
-  currentLanguage.value = code
-  const i18nLocale = code === 'zh-CN' ? 'zh' : 'en'
-  locale.value = i18nLocale
-  localStorage.setItem('language', code)
+  localeStore.setLanguage(code)
 }
 
 const handleCurrencyChange = (code: string) => {
-  currentCurrency.value = code
-  localStorage.setItem('currency', code)
+  localeStore.setCurrency(code)
 }
 </script>
 

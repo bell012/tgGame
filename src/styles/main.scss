@@ -1,9 +1,7 @@
 @use 'sass:color';
 @use 'variables' as *;
 @use 'mixins' as *;
-
-// 导入基础样式（包含滚动条样式）
-@import 'base';
+@use 'base' as *;
 
 // Tailwind CSS
 @tailwind base;

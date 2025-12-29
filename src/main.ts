@@ -17,6 +17,14 @@ app.use(i18n)
 app.mount('#app')
 
 import { useThemeStore } from './stores/theme'
+import { useLocaleStore } from './stores/locale'
+
 const themeStore = useThemeStore()
 themeStore.initTheme()
+
+// 初始化语言
+router.isReady().then(() => {
+  const localeStore = useLocaleStore()
+  localeStore.initLanguage()
+})
 

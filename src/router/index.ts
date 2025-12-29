@@ -62,9 +62,11 @@ router.beforeEach((to, _from, next) => {
   if (locale) {
     if (supportedLocales.includes(locale)) {
       const i18nLocale = locale === 'zh' ? 'zh' : 'en'
+      const languageCode = locale === 'zh' ? 'zh-CN' : 'en'
+
       if (i18n.global.locale.value !== i18nLocale) {
         i18n.global.locale.value = i18nLocale as 'zh' | 'en'
-        localStorage.setItem('locale', locale)
+        localStorage.setItem('language', languageCode)
       }
     } else {
       next('/')
@@ -73,6 +75,7 @@ router.beforeEach((to, _from, next) => {
   } else {
     if (i18n.global.locale.value !== 'en') {
       i18n.global.locale.value = 'en'
+      localStorage.setItem('language', 'en')
     }
   }
 

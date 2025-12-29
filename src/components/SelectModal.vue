@@ -119,18 +119,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useLocaleStore } from '@/stores/locale'
 import CloseIcon from '@/static/svg/close.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import RadioCheckedIcon from '@/static/svg/radio-checked.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
-import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const localeStore = useLocaleStore()
+
 interface Language {
   code: string
   name: string
-  pinyin?: string 
+  pinyin?: string
 }
 
 interface Currency {
@@ -151,8 +154,27 @@ const emit = defineEmits<{
 
 const activeTab = ref<'language' | 'currency'>(props.type || 'language')
 const searchQuery = ref('')
-const selectedLanguage = ref(localStorage.getItem('language') || 'en')
-const selectedCurrency = ref(localStorage.getItem('currency') || 'none')
+
+// 更新 activeTab
+watch(
+  () => props.type,
+  (newType) => {
+    if (newType) {
+      activeTab.value = newType
+    }
+  },
+  { immediate: true }
+)
+
+// 使用 store 中的数据
+const selectedLanguage = computed(() => {
+  console.log('[SelectModal] selectedLanguage:', localeStore.currentLanguage)
+  return localeStore.currentLanguage
+})
+const selectedCurrency = computed(() => {
+  console.log('[SelectModal] selectedCurrency:', localeStore.currentCurrency)
+  return localeStore.currentCurrency
+})
 
 // 语言列表
 const languages: Language[] = [
@@ -205,13 +227,11 @@ const handleClose = () => {
 }
 
 const selectLanguage = (code: string) => {
-  selectedLanguage.value = code
   emit('select-language', code)
   handleClose()
 }
 
 const selectCurrency = (code: string) => {
-  selectedCurrency.value = code
   emit('select-currency', code)
   handleClose()
 }
