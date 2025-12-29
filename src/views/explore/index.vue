@@ -1,5 +1,5 @@
 <template>
-  <div class="sports-page">体育</div>
+  <div class="explore-page">搜索</div>
 </template>
 
 <script setup lang="ts"></script>

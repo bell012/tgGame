@@ -11,4 +11,3 @@ const { t } = useI18n()
 </script>
 
 <style scoped lang="scss"></style>
-

@@ -1,9 +1,5 @@
 <template>
-  <button
-    class="theme-toggle-btn"
-    :aria-label="t('theme.toggle')"
-    @click="toggleTheme"
-  >
+  <button class="theme-toggle-btn" :aria-label="t('theme.toggle')" @click="toggleTheme">
     <transition name="theme-icon" mode="out-in">
       <svg
         v-if="theme === 'light'"
@@ -102,4 +98,3 @@ const { toggleTheme } = themeStore
   transform: rotate(180deg) scale(0);
 }
 </style>
-

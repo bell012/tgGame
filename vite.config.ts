@@ -16,9 +16,9 @@ export default defineConfig({
             params: {
               overrides: {
                 removeViewBox: false,
-                cleanupIds: false, // 保留 ID，避免冲突
-              },
-            },
+                cleanupIds: false // 保留 ID，避免冲突
+              }
+            }
           },
           {
             name: 'removeAttrs',
@@ -27,10 +27,10 @@ export default defineConfig({
             }
           },
           {
-            name: 'prefixIds', // 为每个 SVG 的 ID 添加唯一前缀
+            name: 'prefixIds' // 为每个 SVG 的 ID 添加唯一前缀
           }
-        ],
-      },
+        ]
+      }
     }),
     VitePWA({
       registerType: 'autoUpdate',
@@ -92,7 +92,7 @@ export default defineConfig({
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 
+                maxAgeSeconds: 60 * 60 * 24 * 365
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -106,7 +106,7 @@ export default defineConfig({
               cacheName: 'gstatic-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 
+                maxAgeSeconds: 60 * 60 * 24 * 365
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -146,4 +146,3 @@ export default defineConfig({
     cors: true
   }
 })
-

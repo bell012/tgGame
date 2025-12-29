@@ -16,7 +16,7 @@ export const useLocaleStore = defineStore('locale', () => {
   // 同步语言
   watch(
     () => router.currentRoute.value.params.locale,
-    (newLocale) => {
+    newLocale => {
       if (newLocale) {
         const languageCode = newLocale === 'zh' ? 'zh-CN' : 'en'
         if (currentLanguage.value !== languageCode) {
@@ -91,4 +91,3 @@ export const useLocaleStore = defineStore('locale', () => {
     setCurrency
   }
 })
-

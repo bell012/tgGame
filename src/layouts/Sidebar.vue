@@ -6,7 +6,7 @@
           <router-link
             :to="getLocalePath('/casino')"
             class="nav-item"
-            :class="{ 'active': isActive('/casino') }"
+            :class="{ active: isActive('/casino') }"
           >
             <div class="flex items-center gap-3">
               <span class="text-lg">🎰</span>
@@ -18,7 +18,7 @@
           <router-link
             :to="getLocalePath('/sports')"
             class="nav-item"
-            :class="{ 'active': isActive('/sports') }"
+            :class="{ active: isActive('/sports') }"
           >
             <div class="flex items-center gap-3">
               <span class="text-lg">⚽</span>
@@ -81,4 +81,3 @@ const getLocalePath = (path: string) => {
   color: var(--color-text-level-4);
 }
 </style>
-

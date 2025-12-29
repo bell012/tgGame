@@ -28,4 +28,3 @@ export const useUserStore = defineStore('user', () => {
     logout
   }
 })
-

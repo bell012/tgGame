@@ -1,10 +1,5 @@
 <template>
-  <div class="casino-page">
-    娱乐城
-  </div>
+  <div class="casino-page">娱乐城</div>
 </template>
 
-<script setup lang="ts">
-
-</script>
-
+<script setup lang="ts"></script>

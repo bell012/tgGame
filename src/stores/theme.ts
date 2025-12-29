@@ -10,18 +10,18 @@ export const useThemeStore = defineStore('theme', () => {
   const initTheme = () => {
     const savedTheme = localStorage.getItem('theme') as Theme | null
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    
+
     systemPreference.value = prefersDark ? 'dark' : 'light'
-    
+
     if (savedTheme) {
       theme.value = savedTheme
     } else {
       theme.value = systemPreference.value
     }
-    
+
     applyTheme(theme.value)
-    
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
       systemPreference.value = e.matches ? 'dark' : 'light'
       if (!localStorage.getItem('theme')) {
         setTheme(systemPreference.value)
@@ -42,8 +42,13 @@ export const useThemeStore = defineStore('theme', () => {
     const metaThemeColor = document.querySelector('meta[name="theme-color"]')
     if (metaThemeColor) {
       setTimeout(() => {
-        const themeColor = getComputedStyle(html).getPropertyValue('--color-background-level-1').trim()
-        metaThemeColor.setAttribute('content', themeColor || (newTheme === 'dark' ? '#242626' : '#FFFFFF'))
+        const themeColor = getComputedStyle(html)
+          .getPropertyValue('--color-background-level-1')
+          .trim()
+        metaThemeColor.setAttribute(
+          'content',
+          themeColor || (newTheme === 'dark' ? '#242626' : '#FFFFFF')
+        )
       }, 0)
     }
   }
@@ -64,7 +69,7 @@ export const useThemeStore = defineStore('theme', () => {
     setTheme(systemPreference.value)
   }
 
-  watch(theme, (newTheme) => {
+  watch(theme, newTheme => {
     applyTheme(newTheme)
   })
 
@@ -77,4 +82,3 @@ export const useThemeStore = defineStore('theme', () => {
     useSystemTheme
   }
 })
-

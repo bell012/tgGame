@@ -10,4 +10,3 @@
 import ReloadPrompt from '@/components/ReloadPrompt.vue'
 import InstallPrompt from '@/components/InstallPrompt.vue'
 </script>
-

@@ -1,9 +1,5 @@
 <template>
-  <div
-    v-if="offlineReady || needRefresh"
-    class="reload-prompt"
-    role="alert"
-  >
+  <div v-if="offlineReady || needRefresh" class="reload-prompt" role="alert">
     <div class="prompt-content">
       <div class="icon-wrapper">
         <svg
@@ -20,13 +16,7 @@
             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <svg
-          v-else
-          class="icon icon-update"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg v-else class="icon icon-update" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -45,17 +35,10 @@
       </div>
     </div>
     <div class="button-group">
-      <button
-        v-if="needRefresh"
-        class="btn-reload"
-        @click="updateServiceWorker()"
-      >
+      <button v-if="needRefresh" class="btn-reload" @click="updateServiceWorker()">
         {{ t('pwa.reload') }}
       </button>
-      <button
-        class="btn-close"
-        @click="close"
-      >
+      <button class="btn-close" @click="close">
         {{ t('pwa.close') }}
       </button>
     </div>
@@ -68,11 +51,7 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
-const {
-  offlineReady,
-  needRefresh,
-  updateServiceWorker
-} = useRegisterSW()
+const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW()
 
 const close = () => {
   offlineReady.value = false
@@ -170,4 +149,3 @@ const close = () => {
   background-color: var(--color-button-secondary-hover);
 }
 </style>
-

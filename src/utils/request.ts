@@ -31,12 +31,12 @@ service.interceptors.response.use(
       console.error('Response error:', res.message || 'Error')
       return Promise.reject(new Error(res.message || 'Error'))
     }
-    
+
     return res
   },
   (error: AxiosError) => {
     console.error('Response error:', error)
-    
+
     if (error.response) {
       switch (error.response.status) {
         case 401:
@@ -55,10 +55,9 @@ service.interceptors.response.use(
           console.error('Unknown Error')
       }
     }
-    
+
     return Promise.reject(error)
   }
 )
 
 export default service
-

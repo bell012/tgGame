@@ -58,4 +58,3 @@ import BottomTabBar from './BottomTabBar.vue'
   margin-bottom: 4rem;
 }
 </style>
-

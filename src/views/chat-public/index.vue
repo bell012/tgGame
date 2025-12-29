@@ -1,5 +1,5 @@
 <template>
-  <div class="sports-page">体育</div>
+  <div class="chat-public-page">公共频道聊天</div>
 </template>
 
 <script setup lang="ts"></script>

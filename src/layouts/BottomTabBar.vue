@@ -3,16 +3,15 @@
     <div class="h-full flex items-center justify-around px-4">
       <!-- 选单 -->
       <router-link
-        :to="getLocalePath('/casino')"
+        :to="getLocalePath('/menu')"
         class="tab-item"
-        :class="{ 'active': isActive('/casino') }"
+        :class="{ active: isActive('/menu') }"
       >
         <div class="w-6 h-6 mb-1">
-          <img
-            src="https://api.iconify.design/mdi:cards-playing.svg?color=%23666"
+          <FoldIcon
             alt="选单"
             class="w-full h-full"
-            :class="isActive('/casino') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
+            :class="isActive('/menu') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
           />
         </div>
         <span class="text-xs font-medium">选单</span>
@@ -20,19 +19,66 @@
 
       <!-- 搜索 -->
       <router-link
-        :to="getLocalePath('/sports')"
+        :to="getLocalePath('/explore')"
         class="tab-item"
-        :class="{ 'active': isActive('/sports') }"
+        :class="{ active: isActive('/explore') }"
       >
         <div class="w-6 h-6 mb-1">
-          <img
-            src="https://api.iconify.design/mdi:magnify.svg?color=%23666"
+          <SearchIcon
+            alt="搜索"
+            class="w-full h-full"
+            :class="isActive('/explore') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
+          />
+        </div>
+        <span class="text-xs font-medium">搜索</span>
+      </router-link>
+
+      <!-- 娱乐城 -->
+      <router-link
+        :to="getLocalePath('/casino')"
+        class="tab-item"
+        :class="{ active: isActive('/casino') }"
+      >
+        <div class="w-6 h-6 mb-1">
+          <CasionIcon
+            alt="搜索"
+            class="w-full h-full"
+            :class="isActive('/casino') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
+          />
+        </div>
+        <span class="text-xs font-medium">娱乐城</span>
+      </router-link>
+
+      <!-- 体育 -->
+      <router-link
+        :to="getLocalePath('/sports')"
+        class="tab-item"
+        :class="{ active: isActive('/sports') }"
+      >
+        <div class="w-6 h-6 mb-1">
+          <SportsIcon
             alt="搜索"
             class="w-full h-full"
             :class="isActive('/sports') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
           />
         </div>
-        <span class="text-xs font-medium">搜索</span>
+        <span class="text-xs font-medium">体育</span>
+      </router-link>
+
+      <!-- 聊天 -->
+      <router-link
+        :to="getLocalePath('/chat-public')"
+        class="tab-item"
+        :class="{ active: isActive('/chat-public') }"
+      >
+        <div class="w-6 h-6 mb-1">
+          <ChatIcon
+            alt="搜索"
+            class="w-full h-full"
+            :class="isActive('/chat-public') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
+          />
+        </div>
+        <span class="text-xs font-medium">聊天</span>
       </router-link>
     </div>
   </div>
@@ -41,6 +87,11 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
+import FoldIcon from '@/static/svg/fold.svg?component'
+import SearchIcon from '@/static/svg/search.svg?component'
+import ChatIcon from '@/static/svg/chat.svg?component'
+import CasionIcon from '@/static/svg/casino.svg?component'
+import SportsIcon from '@/static/svg/sports-basketball.svg?component'
 
 const route = useRoute()
 
@@ -86,4 +137,3 @@ const getLocalePath = (path: string) => {
   color: var(--color-theme-level-1);
 }
 </style>
-

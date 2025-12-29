@@ -24,6 +24,21 @@ const routes: RouteRecordRaw[] = [
         path: 'sports',
         name: 'Sports',
         component: () => import('@/views/sports/index.vue')
+      },
+      {
+        path: 'menu',
+        name: 'Menu',
+        component: () => import('@/views/menu/index.vue')
+      },
+      {
+        path: 'explore',
+        name: 'Explore',
+        component: () => import('@/views/explore/index.vue')
+      },
+      {
+        path: 'chat-public',
+        name: 'Chat-public',
+        component: () => import('@/views/chat-public/index.vue')
       }
     ]
   },
@@ -45,6 +60,21 @@ const routes: RouteRecordRaw[] = [
         path: 'sports',
         name: 'LocaleSports',
         component: () => import('@/views/sports/index.vue')
+      },
+      {
+        path: 'menu',
+        name: 'LocaleMenu',
+        component: () => import('@/views/menu/index.vue')
+      },
+      {
+        path: 'explore',
+        name: 'LocaleExplore',
+        component: () => import('@/views/explore/index.vue')
+      },
+      {
+        path: 'chat-public',
+        name: 'LocaleChat-public',
+        component: () => import('@/views/chat-public/index.vue')
       }
     ]
   }
@@ -83,4 +113,3 @@ router.beforeEach((to, _from, next) => {
 })
 
 export default router
-

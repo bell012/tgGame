@@ -1,8 +1,5 @@
 <template>
-  <div
-    v-if="showInstallPrompt"
-    class="install-prompt"
-  >
+  <div v-if="showInstallPrompt" class="install-prompt">
     <div class="prompt-content">
       <div class="icon-wrapper">
         <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,16 +27,10 @@
       </button>
     </div>
     <div class="button-group">
-      <button
-        class="btn-install"
-        @click="install"
-      >
+      <button class="btn-install" @click="install">
         {{ t('pwa.install') }}
       </button>
-      <button
-        class="btn-later"
-        @click="dismissPrompt"
-      >
+      <button class="btn-later" @click="dismissPrompt">
         {{ t('pwa.later') }}
       </button>
     </div>
@@ -56,7 +47,7 @@ const showInstallPrompt = ref(false)
 let deferredPrompt: any = null
 
 onMounted(() => {
-  window.addEventListener('beforeinstallprompt', (e) => {
+  window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault()
     deferredPrompt = e
     showInstallPrompt.value = true
@@ -94,7 +85,11 @@ const dismissPrompt = () => {
   left: 1rem;
   z-index: 50;
   max-width: 24rem;
-  background: linear-gradient(135deg, var(--color-background-level-3), var(--color-background-level-5));
+  background: linear-gradient(
+    135deg,
+    var(--color-background-level-3),
+    var(--color-background-level-5)
+  );
   border-radius: 0.5rem;
   box-shadow: 0 20px 25px var(--color-shadow-level-3);
   padding: 1rem;
@@ -184,4 +179,3 @@ const dismissPrompt = () => {
   background-color: var(--color-button-secondary-hover);
 }
 </style>
-

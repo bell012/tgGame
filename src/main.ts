@@ -27,4 +27,3 @@ router.isReady().then(() => {
   const localeStore = useLocaleStore()
   localeStore.initLanguage()
 })
-

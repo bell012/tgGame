@@ -21,4 +21,3 @@ export const logout = () => {
     method: 'post'
   })
 }
-

@@ -4,7 +4,10 @@
       <div v-if="modelValue" class="modal-overlay" @click="handleClose">
         <div class="modal-container rounded-xl max-w-[416px] min-h-[600px] w-full" @click.stop>
           <!-- 关闭按钮 -->
-          <button class="w-full h-12 rounded-lg px-4 flex items-center justify-end" @click="handleClose">
+          <button
+            class="w-full h-12 rounded-lg px-4 flex items-center justify-end"
+            @click="handleClose"
+          >
             <div class="w-8 h-8 bg-[#464f50] rounded-md flex items-center justify-center">
               <CloseIcon class="w-4 h-4 stroke-text-1" />
             </div>
@@ -17,14 +20,14 @@
               :class="['tab', { active: activeTab === 'language' }]"
               @click="activeTab = 'language'"
             >
-            {{ t('home.language') }}
+              {{ t('home.language') }}
             </button>
             <!-- 以货币显示 -->
             <button
               :class="['tab', { active: activeTab === 'currency' }]"
               @click="activeTab = 'currency'"
             >
-            {{ t('home.view_currency') }}
+              {{ t('home.view_currency') }}
             </button>
           </div>
 
@@ -50,7 +53,10 @@
                 @click="selectLanguage(lang.code)"
               >
                 <span class="option-text">{{ lang.name }}</span>
-                <RadioCheckedIcon v-if="selectedLanguage === lang.code" class="w-6 h-6 flex-shrink-0 stroke-text-1 fill-text-1" />
+                <RadioCheckedIcon
+                  v-if="selectedLanguage === lang.code"
+                  class="w-6 h-6 flex-shrink-0 stroke-text-1 fill-text-1"
+                />
                 <RadioUncheckedIcon v-else class="w-6 h-6 flex-shrink-0 stroke-text-1" />
               </div>
             </div>
@@ -84,7 +90,10 @@
                 <!-- 无 -->
                 <span class="option-text">{{ t('home.none') }}</span>
               </div>
-              <RadioCheckedIcon v-if="selectedCurrency === 'none'" class="w-6 h-6 flex-shrink-0 stroke-text-1 fill-text-1" />
+              <RadioCheckedIcon
+                v-if="selectedCurrency === 'none'"
+                class="w-6 h-6 flex-shrink-0 stroke-text-1 fill-text-1"
+              />
               <RadioUncheckedIcon v-else class="w-6 h-6 flex-shrink-0 stroke-text-1" />
             </div>
 
@@ -107,7 +116,10 @@
                   <img :src="currency.flag" alt="flag" class="w-6 h-6 mr-3 rounded" />
                   <span class="option-text">{{ currency.code }}</span>
                 </div>
-                <RadioCheckedIcon v-if="selectedCurrency === currency.code" class="w-6 h-6 flex-shrink-0 stroke-text-1 fill-text-1" />
+                <RadioCheckedIcon
+                  v-if="selectedCurrency === currency.code"
+                  class="w-6 h-6 flex-shrink-0 stroke-text-1 fill-text-1"
+                />
                 <RadioUncheckedIcon v-else class="w-6 h-6 flex-shrink-0 stroke-text-1" />
               </div>
             </div>
@@ -158,7 +170,7 @@ const searchQuery = ref('')
 // 更新 activeTab
 watch(
   () => props.type,
-  (newType) => {
+  newType => {
     if (newType) {
       activeTab.value = newType
     }
@@ -202,7 +214,10 @@ const filteredLanguages = computed(() => {
       return true
     }
     if (pinyin) {
-      const firstLetters = pinyin.split('').filter((_, i) => i === 0 || pinyin[i - 1] === ' ').join('')
+      const firstLetters = pinyin
+        .split('')
+        .filter((_, i) => i === 0 || pinyin[i - 1] === ' ')
+        .join('')
       if (firstLetters.includes(query)) {
         return true
       }
@@ -235,8 +250,6 @@ const selectCurrency = (code: string) => {
   emit('select-currency', code)
   handleClose()
 }
-
-
 </script>
 
 <style scoped>
@@ -246,7 +259,8 @@ const selectCurrency = (code: string) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(16, 18, 18, 0.8); visibility: visible;
+  background-color: rgba(16, 18, 18, 0.8);
+  visibility: visible;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -299,7 +313,6 @@ const selectCurrency = (code: string) => {
   color: var(--color-text-level-1);
   margin-bottom: 12px;
 }
-
 
 .search-input {
   width: 100%;
@@ -386,4 +399,3 @@ const selectCurrency = (code: string) => {
   transform: scale(0.9);
 }
 </style>
-
