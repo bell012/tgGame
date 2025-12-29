@@ -65,8 +65,26 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
+        // 不缓存 index.html，确保每次都能获取最新版本
+        globPatterns: ['**/*.{js,css,ico,png,svg,json,woff2}'],
+        // 排除 index.html
+        globIgnores: ['**/index.html'],
+        // 导航请求使用网络优先策略
+        navigateFallback: null,
         runtimeCaching: [
+          {
+            // index.html 使用网络优先策略，确保总是获取最新版本
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'pages-cache',
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 5,
+                maxAgeSeconds: 60 * 60 * 24 // 24 小时
+              }
+            }
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
