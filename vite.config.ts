@@ -34,7 +34,7 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['mask-icon.svg'],
       manifest: {
         name: 'TG Game',
         short_name: 'TGGame',
@@ -45,24 +45,25 @@ export default defineConfig({
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
-        ]
+        icons: []
+        // icons: [
+        //   {
+        //     src: 'pwa-192x192.png',
+        //     sizes: '192x192',
+        //     type: 'image/png'
+        //   },
+        //   {
+        //     src: 'pwa-512x512.png',
+        //     sizes: '512x512',
+        //     type: 'image/png'
+        //   },
+        //   {
+        //     src: 'pwa-512x512.png',
+        //     sizes: '512x512',
+        //     type: 'image/png',
+        //     purpose: 'any maskable'
+        //   }
+        // ]
       },
       workbox: {
         // 不缓存 index.html，确保每次都能获取最新版本

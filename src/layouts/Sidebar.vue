@@ -1,84 +1,561 @@
 <template>
-  <aside class="sidebar">
-    <nav class="p-4">
-      <ul class="space-y-2">
-        <li>
-          <router-link
-            :to="getLocalePath('/casino')"
-            class="nav-item"
-            :class="{ 'active': isActive('/casino') }"
-          >
-            <div class="flex items-center gap-3">
-              <span class="text-lg">🎰</span>
-              <span class="font-medium">娱乐城</span>
+  <aside
+    class="sidebar"
+    :style="{
+      width: isCollapsed
+        ? `${layoutStore.SIDEBAR_WIDTH_COLLAPSED}px`
+        : `${layoutStore.SIDEBAR_WIDTH_EXPANDED}px`
+    }"
+  >
+    <nav class="flex flex-col gap-2 px-3 py-2">
+      <!-- 应用程式 -->
+      <div v-if="!isCollapsed" class="mt-3 mb-2">
+        <router-link :to="appDownloadLink" class="block app-download-card rounded-lg">
+          <div class="flex justify-between items-center">
+            <div class="flex-1 p-2.5 pr-0">
+              <h3 class="text-sm font-semibold text-text-1 mb-1">应用程式</h3>
+              <p class="text-xs text-text-2 leading-tight">专属功能全面解锁 玩乐无限升级</p>
             </div>
-          </router-link>
-        </li>
-        <li>
-          <router-link
-            :to="getLocalePath('/sports')"
-            class="nav-item"
-            :class="{ 'active': isActive('/sports') }"
-          >
-            <div class="flex items-center gap-3">
-              <span class="text-lg">⚽</span>
-              <span class="font-medium">体育</span>
+            <div class="w-[80px] h-auto flex-shrink-0 pt-1 pr-1">
+              <div class="w-full h-full rounded flex items-center justify-center text-[10px]">
+                <img
+                  src="@/static/img/home/pwa.png.png"
+                  alt=""
+                  class="w-full h-full object-cover rounded"
+                />
+              </div>
             </div>
-          </router-link>
-        </li>
-      </ul>
+          </div>
+        </router-link>
+      </div>
+
+      <!-- BC代币 -->
+      <div v-if="!isCollapsed" class="mb-2">
+        <div
+          class="flex items-center justify-between bc-card p-2 bg-bg-3 rounded-lg cursor-pointer"
+          @click="() => console.log('点击 BC代币')"
+        >
+          <div class="flex items-center flex-1">
+            <div class="w-9 h-9 mr-1 flex items-center justify-center">
+              <component :is="sideIcons.icon_1" class="w-6 h-6 fill-text-2 fill-none" />
+            </div>
+            <div v-if="!isCollapsed" class="flex-1 min-w-0">
+              <div class="flex items-center">
+                <span class="text-sm font-[800] text-text-1 mr-1">BC 代币</span>
+                <span class="text-xs font-[600] text-theme-primary">↑ 0.45%</span>
+              </div>
+              <div class="text-sm text-text-1">$0.00771</div>
+            </div>
+          </div>
+          <div v-if="!isCollapsed" class="text-text-3 text-xl">
+            <div class="w-6 h-6 bg-bg-2 rounded-md flex items-center justify-center">
+              <Arrow_right class="w-4 h-4 fill-text-2 fill-none" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 可展开菜单组 -->
+      <div class="flex flex-col">
+        <div v-for="menu in expandableMenus" :key="menu.id" class="flex flex-col">
+          <div
+            :class="[
+              'flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer'
+            ]"
+            @click="menu.handler"
+          >
+            <div class="flex items-center">
+              <div class="w-10 h-10 flex items-center justify-center">
+                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+              </div>
+              <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">{{
+                menu.name
+              }}</span>
+            </div>
+            <div
+              v-if="!isCollapsed"
+              class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5"
+              :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
+            >
+              <Arrow_down class="w-4 h-4 fill-text-2 fill-none" />
+            </div>
+          </div>
+
+          <!-- 子菜单 -->
+          <transition name="expand">
+            <div v-if="!isCollapsed && expandedMenus.includes(menu.id)" class="flex flex-col">
+              <div
+                v-for="item in menu.children"
+                :key="item.id"
+                class="flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer"
+                @click="item.handler"
+              >
+                <div class="flex items-center">
+                  <div class="w-10 h-10 flex items-center justify-center">
+                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                  </div>
+                  <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
+                </div>
+              </div>
+            </div>
+          </transition>
+        </div>
+      </div>
+
+      <!-- 普通链接组 -->
+      <div class="flex flex-col my-2 py-1 rounded-lg bg-bg-2">
+        <div
+          v-for="(link, index) in normalLinks"
+          :key="index"
+          class="flex items-center launch-card h-10 bg-bg-2 rounded-lg cursor-pointer"
+          @click="link.handler"
+        >
+          <div class="flex items-center">
+            <div class="w-10 h-10 flex items-center justify-center">
+              <component :is="sideIcons[link.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+            </div>
+            <span v-if="link.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
+              link.name2
+            }}</span>
+            <span class="text-sm font-[600] text-text-1">{{ link.name }}</span>
+          </div>
+          <div
+            v-if="!isCollapsed && link.external"
+            class="w-4 h-4 flex items-center justify-center"
+          >
+            <External class="w-full h-full fill-text-2 fill-none ml-1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部功能组 -->
+      <div class="flex flex-col mt-1">
+        <!-- 赞助  -->
+        <div v-for="menu in sponsor" :key="menu.id" class="flex flex-col">
+          <div
+            :class="[
+              'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer'
+            ]"
+            @click="menu.handler"
+          >
+            <div class="flex items-center">
+              <div class="w-10 h-10 flex items-center justify-center">
+                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+              </div>
+              <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">{{
+                menu.name
+              }}</span>
+            </div>
+            <div
+              v-if="!isCollapsed"
+              class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5"
+              :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
+            >
+              <Arrow_down class="w-4 h-4 fill-text-2 fill-none" />
+            </div>
+          </div>
+
+          <!-- 子菜单 -->
+          <transition name="expand">
+            <div v-if="!isCollapsed && expandedMenus.includes(menu.id)" class="flex flex-col">
+              <div
+                v-for="item in menu.children"
+                :key="item.id"
+                class="flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer"
+                @click="item.handler"
+              >
+                <div class="flex items-center">
+                  <div class="w-10 h-10 flex items-center justify-center">
+                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                  </div>
+                  <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
+                </div>
+              </div>
+            </div>
+          </transition>
+        </div>
+
+        <!-- 线上客服 -->
+        <div
+          class="flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-1"
+          @click="() => console.log('打开线上客服')"
+        >
+          <div class="flex items-center">
+            <div class="w-10 h-10 flex items-center justify-center">
+              <component :is="sideIcons.icon_17" class="w-6 h-6 fill-text-2 fill-none" />
+            </div>
+            <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">线上客服</span>
+          </div>
+        </div>
+
+        <!-- 语言切换 -->
+        <div
+          class="flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-2"
+          @click="() => emit('open-language-modal')"
+        >
+          <div class="flex items-center">
+            <div class="w-10 h-10 flex items-center justify-center">
+              <LanguageIcon class="w-6 h-6 fill-text-2 fill-none" />
+            </div>
+            <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">{{
+              currentLanguageName
+            }}</span>
+          </div>
+          <div
+            v-if="!isCollapsed"
+            class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5"
+          >
+            <Arrow_right class="w-4 h-4 fill-text-2 fill-none" />
+          </div>
+        </div>
+
+        <!-- 主题切换 -->
+        <div
+          v-if="!isCollapsed"
+          class="flex items-center justify-between h-10 bg-bg-2 rounded-lg cursor-pointer mt-2 p-0.5"
+        >
+          <button
+            :class="[
+              'flex-1 w-[50%] h-9 rounded-lg border-none cursor-pointer transition-all',
+              themeStore.theme === 'dark'
+                ? 'bg-[#4B5354]'
+                : 'bg-[f9f9f9]'
+            ]"
+            @click="themeStore.setTheme('dark')"
+          >
+            <div class="flex items-center justify-center">
+              <div class="w-4 h-4 flex items-center justify-center">
+                <component :is="sideIcons.icon_18" class="w-4 h-4 fill-text-2 fill-none" />
+              </div>
+              <span
+                v-if="!isCollapsed"
+                :class="[
+                  'text-sm font-[600] ml-1',
+                  themeStore.theme === 'dark'
+                    ? 'text-[#fff]'
+                    : 'text-[#B0B9B9]'
+                ]"
+                >深色模式</span
+              >
+            </div>
+          </button>
+          <button
+            :class="[
+              'flex-1 w-[50%] h-9 rounded-lg border-none cursor-pointer transition-all',
+              themeStore.theme === 'light'
+                ? 'bg-[#fff]'
+                : 'bg-transparent'
+            ]"
+            @click="themeStore.setTheme('light')"
+          >
+            <div class="flex items-center justify-center">
+              <div class="w-4 h-4 flex items-center justify-center">
+                <component :is="sideIcons.icon_19" class="w-4 h-4 fill-text-2 fill-none" />
+              </div>
+              <span
+                v-if="!isCollapsed"
+                :class="[
+                  'text-sm font-[600] ml-1',
+                  themeStore.theme === 'light'
+                    ? 'text-[#171A1A]'
+                    : 'text-[#A1AFB2]'
+                ]"
+                >浅色模式</span
+              >
+            </div>
+          </button>
+        </div>
+      </div>
     </nav>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
+import { useThemeStore } from '@/stores/theme'
+import { useLocaleStore } from '@/stores/locale'
+import { useLayoutStore } from '@/stores/layout'
+import Arrow_right from '@/static/svg/arrow_right.svg?component'
+import Arrow_down from '@/static/svg/arrow_down.svg?component'
+import External from '@/static/svg/external.svg?component'
+import LanguageIcon from '@/static/svg/language.svg?component'
+import { sideIcons } from '@/static/svg/side'
+import { navigateTo } from '@/utils/router'
 
-const route = useRoute()
+const themeStore = useThemeStore()
+const localeStore = useLocaleStore()
+const layoutStore = useLayoutStore()
 
-const isActive = (path: string) => {
-  const currentPath = route.path.replace(/^\/(zh|en)/, '')
-  return computed(() => currentPath === path).value
-}
+// 侧边栏折叠状态
+const isCollapsed = ref(false)
 
-const getLocalePath = (path: string) => {
-  const locale = route.params.locale as string
-  if (!locale || locale === 'en') {
-    return path
+// 展开的菜单 ID 列表
+const expandedMenus = ref<string[]>([])
+
+// 当前语言名称
+const currentLanguageName = computed(() => {
+  return localeStore.currentLanguage === 'zh-CN' ? '简体中文' : 'English'
+})
+
+// 应用程式下载链接
+const appDownloadLink = computed(() => {
+  const locale = localeStore.currentLanguage === 'zh-CN' ? 'zh' : 'en'
+  return locale === 'en' ? '/app-download' : `/${locale}/app-download`
+})
+
+const emit = defineEmits<{
+  'open-language-modal': []
+}>()
+
+// 切换菜单展开/折叠的通用方法
+const toggleMenu = (menuId: string) => {
+  const index = expandedMenus.value.indexOf(menuId)
+  if (index > -1) {
+    expandedMenus.value.splice(index, 1)
+  } else {
+    expandedMenus.value.push(menuId)
   }
-  return `/${locale}${path}`
 }
+
+// 可展开菜单组数据
+const expandableMenus = computed(() => [
+  {
+    id: 'casino',
+    name: '娱乐城',
+    icon: 'icon_2',
+    handler: () => toggleMenu('casino'),
+    children: [
+      {
+        id: 'casino_1',
+        name: 'BC原创',
+        icon: 'icon_2',
+        handler: () => {
+          navigateTo('/originate')
+        }
+      },
+      {
+        id: 'casino_2',
+        name: 'BC独家',
+        icon: 'icon_2',
+        handler: () => {
+          navigateTo('/exclusive')
+        }
+      }
+    ]
+  },
+  {
+    id: 'sports',
+    name: '体育',
+    icon: 'icon_3',
+    handler: () => toggleMenu('sports'),
+    children: [
+      { id: 'sports_1', name: '体育 1', icon: 'icon_3', handler: () => console.log('点击 体育 1') },
+      { id: 'sports_2', name: '体育 2', icon: 'icon_3', handler: () => console.log('点击 体育 2') }
+    ]
+  },
+  {
+    id: 'lottery',
+    name: '彩票',
+    icon: 'icon_5',
+    handler: () => toggleMenu('lottery'),
+    children: [
+      {
+        id: 'lottery_1',
+        name: '彩票 1',
+        icon: 'icon_5',
+        handler: () => console.log('点击 彩票 1')
+      },
+      { id: 'lottery_2', name: '彩票 2', icon: 'icon_5', handler: () => console.log('点击 彩票 2') }
+    ]
+  },
+  {
+    id: 'crypto',
+    name: '加密货币期货',
+    icon: 'icon_6',
+    handler: () => toggleMenu('crypto'),
+    children: [
+      {
+        id: 'crypto_1',
+        name: '加密货币 1',
+        icon: 'icon_6',
+        handler: () => console.log('点击 加密货币 1')
+      },
+      {
+        id: 'crypto_2',
+        name: '加密货币 2',
+        icon: 'icon_6',
+        handler: () => console.log('点击 加密货币 2')
+      }
+    ]
+  },
+  {
+    id: 'promotion',
+    name: '促销',
+    icon: 'icon_7',
+    handler: () => toggleMenu('promotion'),
+    children: [
+      {
+        id: 'promotion_1',
+        name: '促销 1',
+        icon: 'icon_7',
+        handler: () => console.log('点击 促销 1')
+      },
+      {
+        id: 'promotion_2',
+        name: '促销 2',
+        icon: 'icon_7',
+        handler: () => console.log('点击 促销 2')
+      }
+    ]
+  }
+])
+
+// 普通链接数据
+const normalLinks = computed(() => [
+  {
+    id: 'vip',
+    name: '俱乐部',
+    name2: 'VIP',
+    icon: 'icon_8',
+    external: false,
+    handler: () => console.log('点击 VIP 俱乐部')
+  },
+  {
+    id: 'prize',
+    name: '奖金',
+    icon: 'icon_9',
+    external: false,
+    handler: () => console.log('点击 奖金')
+  },
+  {
+    id: 'recommend',
+    name: '推荐',
+    icon: 'icon_10',
+    external: false,
+    handler: () => console.log('点击 推荐')
+  },
+  {
+    id: 'forum',
+    name: '论坛',
+    icon: 'icon_11',
+    external: true,
+    handler: () => console.log('点击 论坛')
+  },
+  {
+    id: 'verified',
+    name: '可验证公平',
+    icon: 'icon_12',
+    external: false,
+    handler: () => console.log('点击 可验证公平')
+  },
+  {
+    id: 'responsible',
+    name: '负责任博彩',
+    icon: 'icon_13',
+    external: false,
+    handler: () => console.log('点击 负责任博彩')
+  },
+  {
+    id: 'blog',
+    name: '部落格',
+    icon: 'icon_14',
+    external: true,
+    handler: () => console.log('点击 部落格')
+  },
+  {
+    id: 'sports_injection',
+    name: '体育投注注入赔付',
+    icon: 'icon_15',
+    external: true,
+    handler: () => console.log('点击 体育投注注入赔付')
+  }
+])
+
+// 赞助数据
+const sponsor = computed(() => [
+  {
+    id: 'sponsor',
+    name: '赞助',
+    icon: 'icon_16',
+    handler: () => toggleMenu('sponsor'),
+    children: [
+      {
+        id: 'sponsor_1',
+        name: '赞助 1',
+        icon: 'icon_16',
+        handler: () => console.log('点击 赞助 1')
+      },
+      {
+        id: 'sponsor_2',
+        name: '赞助 2',
+        icon: 'icon_16',
+        handler: () => console.log('点击 赞助 2')
+      }
+    ]
+  }
+])
+
+defineExpose({
+  toggleCollapse: () => {
+    isCollapsed.value = !isCollapsed.value
+  }
+})
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .sidebar {
   position: fixed;
   left: 0;
-  top: 4rem;
+  top: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
   bottom: 0;
-  width: 16rem;
-  background-color: var(--color-background-level-1);
-  box-shadow: 2px 0 4px var(--color-mask-20);
+  background-color: var(--color-background-level-5);
   overflow-y: auto;
+  transition: width 0.3s ease;
+  z-index: 100;
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  // H5 隐藏侧边栏
+  @media (max-width: v-bind('layoutStore.mobileBreakpointMedia')) {
+    display: none;
+  }
 }
 
-.nav-item {
-  display: block;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  color: var(--color-text-level-2);
-  transition: all 0.2s;
+.app-download-card {
+  background: #323738;
+  background-image: radial-gradient(circle at 400% 400%, rgb(36 238 137), transparent 92%);
+}
+.bc-card {
+  background-image: radial-gradient(
+    85.75% 170.25% at 0% 100%,
+    rgba(35, 238, 136, 0.15) 0%,
+    rgba(35, 238, 136, 0) 100%
+  );
+}
+.launch-card:hover {
+  background: linear-gradient(90deg, rgba(36 238 137 / 0.2), #23ee8800), rgba(255, 255, 255, 0.05);
 }
 
-.nav-item:hover {
-  background-color: var(--color-opacity-8);
-  color: var(--color-text-level-1);
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
-.nav-item.active {
-  background-color: var(--color-theme-level-1);
-  color: var(--color-text-level-4);
+.expand-enter-from,
+.expand-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.expand-enter-to,
+.expand-leave-from {
+  max-height: 500px;
+  opacity: 1;
 }
 </style>
-
