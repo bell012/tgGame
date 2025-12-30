@@ -97,8 +97,10 @@ import SearchIcon from '@/static/svg/search.svg?url'
 import ChatIcon from '@/static/svg/chat.svg?url'
 import CasionIcon from '@/static/svg/casino.svg?url'
 import SportsIcon from '@/static/svg/sports-basketball.svg?url'
+import { useLayoutStore } from '@/stores/layout'
 
 const route = useRoute()
+const layoutStore = useLayoutStore()
 
 const isActive = (path: string) => {
   const currentPath = route.path.replace(/^\/(zh|en)/, '')
@@ -120,7 +122,7 @@ const getLocalePath = (path: string) => {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 4rem;
+  height: v-bind('layoutStore.BOTTOM_TAB_HEIGHT + "px"');
   background-color: var(--color-background-level-1);
   box-shadow: 0 -2px 4px var(--color-mask-20);
   border-top: 1px solid var(--color-opacity-15);

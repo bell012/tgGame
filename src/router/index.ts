@@ -3,80 +3,81 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import i18n from '@/i18n'
 
 // 支持的语言列表
-const supportedLocales = ['zh', 'en'] // en 默认语言
+const supportedLocales = ['zh', 'en']
+
+const baseRoutes: RouteRecordRaw[] = [
+  {
+    path: '',
+    name: 'Home',
+    component: () => import('@/views/home/index.vue'),
+    meta: {
+      title: '首页',
+      description: '主页'
+    }
+  },
+  {
+    path: 'originate',
+    name: 'originate',
+    component: () => import('@/views/fun/originate/index.vue'),
+    meta: {
+      title: 'BC原创',
+    }
+  },
+  {
+    path: 'exclusive',
+    name: 'exclusive',
+    component: () => import('@/views/fun/exclusive/index.vue'),
+    meta: {
+      title: 'BC独家',
+    }
+  }
+]
+
+// 生成带语言前缀的路由
+const createLocaleRoute = (route: RouteRecordRaw, locale?: string): RouteRecordRaw => {
+  const newRoute = {
+    ...route,
+    meta: { ...route.meta }
+  }
+
+  if (locale) {
+    newRoute.name = `Locale${String(route.name)}`
+  }
+
+  return newRoute
+}
+
+const defaultChildren = baseRoutes.map(route => createLocaleRoute(route))
+const localeChildren = baseRoutes.map(route => createLocaleRoute(route, 'locale'))
 
 const routes: RouteRecordRaw[] = [
   {
+    path: '/app-download',
+    name: 'AppDownload',
+    component: () => import('@/views/app-download/index.vue'),
+    meta: {
+      title: '应用程式下载',
+      description: '下载应用程式'
+    }
+  },
+  {
+    path: '/:locale/app-download',
+    name: 'LocaleAppDownload',
+    component: () => import('@/views/app-download/index.vue'),
+    meta: {
+      title: '应用程式下载',
+      description: '下载应用程式'
+    }
+  },
+  {
     path: '/',
     component: MainLayout,
-    children: [
-      {
-        path: '',
-        name: 'Home',
-        component: () => import('@/views/home/index.vue')
-      },
-      {
-        path: 'casino',
-        name: 'Casino',
-        component: () => import('@/views/casino/index.vue')
-      },
-      {
-        path: 'sports',
-        name: 'Sports',
-        component: () => import('@/views/sports/index.vue')
-      },
-      {
-        path: 'menu',
-        name: 'Menu',
-        component: () => import('@/views/menu/index.vue')
-      },
-      {
-        path: 'explore',
-        name: 'Explore',
-        component: () => import('@/views/explore/index.vue')
-      },
-      {
-        path: 'chat-public',
-        name: 'Chat-public',
-        component: () => import('@/views/chat-public/index.vue')
-      }
-    ]
+    children: defaultChildren
   },
   {
     path: '/:locale',
     component: MainLayout,
-    children: [
-      {
-        path: '',
-        name: 'LocaleHome',
-        component: () => import('@/views/home/index.vue')
-      },
-      {
-        path: 'casino',
-        name: 'LocaleCasino',
-        component: () => import('@/views/casino/index.vue')
-      },
-      {
-        path: 'sports',
-        name: 'LocaleSports',
-        component: () => import('@/views/sports/index.vue')
-      },
-      {
-        path: 'menu',
-        name: 'LocaleMenu',
-        component: () => import('@/views/menu/index.vue')
-      },
-      {
-        path: 'explore',
-        name: 'LocaleExplore',
-        component: () => import('@/views/explore/index.vue')
-      },
-      {
-        path: 'chat-public',
-        name: 'LocaleChat-public',
-        component: () => import('@/views/chat-public/index.vue')
-      }
-    ]
+    children: localeChildren
   }
 ]
 

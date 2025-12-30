@@ -2,10 +2,8 @@
   <header class="top-nav">
     <div class="h-full flex items-center justify-between px-4">
       <!-- 左侧 -->
-      <div class="flex items-center">
-        <div
-          class="hidden md:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg"
-        >
+      <div class="flex items-center px-4">
+        <div class="cursor-pointer search w-[40px] h-[40px] rounded-lg" @click="handleToggleSidebar">
           <FoldIcon class="w-6 h-6 fill-text-2 fill-none" />
         </div>
         <router-link to="/" class="w-[150px] h-[48px] ml-0 md:ml-5 flex items-center">
@@ -73,6 +71,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
+import { useLayoutStore } from '@/stores/layout'
 import SelectModal from '@/components/SelectModal.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
@@ -81,9 +80,18 @@ import LanguageIcon from '@/static/svg/language.svg?component'
 
 const { t } = useI18n()
 const localeStore = useLocaleStore()
+const layoutStore = useLayoutStore()
+
+const emit = defineEmits<{
+  'toggle-sidebar': []
+}>()
 
 const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
+
+const handleToggleSidebar = () => {
+  emit('toggle-sidebar')
+}
 
 const openLanguageModal = () => {
   modalType.value = 'language'
@@ -102,6 +110,10 @@ const handleLanguageChange = (code: string) => {
 const handleCurrencyChange = (code: string) => {
   localeStore.setCurrency(code)
 }
+
+defineExpose({
+  openLanguageModal
+})
 </script>
 
 <style scoped>
@@ -110,7 +122,7 @@ const handleCurrencyChange = (code: string) => {
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
   background-color: var(--color-background-level-5);
   box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.05);
   z-index: 50;
