@@ -2,8 +2,8 @@
   <header class="top-nav">
     <div class="h-full flex items-center justify-between px-4">
       <!-- 左侧 -->
-      <div class="flex items-center px-4">
-        <div class="cursor-pointer search w-[40px] h-[40px] rounded-lg" @click="handleToggleSidebar">
+      <div class="flex items-center">
+        <div class="hidden md:flex cursor-pointer search w-[40px] h-[40px] rounded-lg" @click="handleToggleSidebar">
           <FoldIcon class="w-6 h-6 fill-text-2 fill-none" />
         </div>
         <router-link to="/" class="w-[150px] h-[48px] ml-0 md:ml-5 flex items-center">
