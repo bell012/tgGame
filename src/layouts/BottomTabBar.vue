@@ -8,7 +8,8 @@
         :class="{ active: isActive('/menu') }"
       >
         <div class="w-6 h-6 mb-1">
-          <FoldIcon
+          <img
+            :src="FoldIcon"
             alt="选单"
             class="w-full h-full"
             :class="isActive('/menu') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
@@ -24,7 +25,8 @@
         :class="{ active: isActive('/explore') }"
       >
         <div class="w-6 h-6 mb-1">
-          <SearchIcon
+          <img 
+            :src="SearchIcon"
             alt="搜索"
             class="w-full h-full"
             :class="isActive('/explore') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
@@ -40,7 +42,8 @@
         :class="{ active: isActive('/casino') }"
       >
         <div class="w-6 h-6 mb-1">
-          <CasionIcon
+          <img 
+            :src="CasionIcon"
             alt="搜索"
             class="w-full h-full"
             :class="isActive('/casino') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
@@ -56,7 +59,8 @@
         :class="{ active: isActive('/sports') }"
       >
         <div class="w-6 h-6 mb-1">
-          <SportsIcon
+          <img
+            :src="SportsIcon"
             alt="搜索"
             class="w-full h-full"
             :class="isActive('/sports') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
@@ -72,7 +76,8 @@
         :class="{ active: isActive('/chat-public') }"
       >
         <div class="w-6 h-6 mb-1">
-          <ChatIcon
+          <img
+            :src="ChatIcon"
             alt="搜索"
             class="w-full h-full"
             :class="isActive('/chat-public') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
@@ -87,11 +92,11 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
-import FoldIcon from '@/static/svg/fold.svg?component'
-import SearchIcon from '@/static/svg/search.svg?component'
-import ChatIcon from '@/static/svg/chat.svg?component'
-import CasionIcon from '@/static/svg/casino.svg?component'
-import SportsIcon from '@/static/svg/sports-basketball.svg?component'
+import FoldIcon from '@/static/svg/fold.svg?url'
+import SearchIcon from '@/static/svg/search.svg?url'
+import ChatIcon from '@/static/svg/chat.svg?url'
+import CasionIcon from '@/static/svg/casino.svg?url'
+import SportsIcon from '@/static/svg/sports-basketball.svg?url'
 
 const route = useRoute()
 
