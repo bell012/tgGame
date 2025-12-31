@@ -1,18 +1,15 @@
 <template>
   <div class="bottom-tab-bar">
     <div class="h-full flex items-center justify-around px-4">
-      <div v-for="menu in menus" :key="menu.id" class="tab-item"
+      <button v-for="menu in menus" :key="menu.id" class="tab-item"
         @click="menu.handler" :class="{ active: menu.active}"
       >
-        <div class="w-6 h-6 mb-1">
-          <component 
-            :is="sideIcons[menu.icon]" 
-            class="w-full h-full fill-text-2 fill-none" 
+        <component :is="sideIcons[menu.icon]" 
+            class="w-6 h-6 mb-1 fill-none" 
             :class="menu.active ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
-            />
-        </div>
-        <span class="text-xs font-medium">{{ menu.name }}</span>
-      </div>
+          />
+        <p class="text-xs font-medium">{{ menu.name }}</p>
+      </button>
     </div>
   </div>
 </template>
