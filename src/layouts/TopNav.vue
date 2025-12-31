@@ -3,7 +3,10 @@
     <div class="h-full flex items-center justify-between px-4">
       <!-- 左侧 -->
       <div class="flex items-center">
-        <div class="hidden md:flex cursor-pointer search w-[40px] h-[40px] rounded-lg" @click="handleToggleSidebar">
+        <div
+          class="hidden md:flex cursor-pointer search w-[40px] h-[40px] rounded-lg"
+          @click="handleToggleSidebar"
+        >
           <FoldIcon class="w-6 h-6 fill-text-2 fill-none" />
         </div>
         <router-link to="/" class="w-[150px] h-[48px] ml-0 md:ml-5 flex items-center">
@@ -22,13 +25,13 @@
         <div
           class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center bg-transparent border-2 border-[#e4eaf019] mr-1"
         >
-          {{ t('home.sign_In') }}
+          {{ t('locales.home.sign_In') }}
         </div>
         <!-- 注册 -->
         <div
           class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center btn-primary mr-3"
         >
-          {{ t('home.sign_Up') }}
+          {{ t('locales.home.sign_Up') }}
         </div>
         <div
           class="hidden md:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"

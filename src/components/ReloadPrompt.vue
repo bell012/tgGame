@@ -36,10 +36,10 @@
     </div>
     <div class="button-group">
       <button v-if="needRefresh" class="btn-reload" @click="updateServiceWorker()">
-        {{ t('pwa.reload') }}
+        {{ t('locales.pwa.reload') }}
       </button>
       <button class="btn-close" @click="close">
-        {{ t('pwa.close') }}
+        {{ t('locales.pwa.close') }}
       </button>
     </div>
   </div>

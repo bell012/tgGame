@@ -20,14 +20,14 @@
               :class="['tab', { active: activeTab === 'language' }]"
               @click="activeTab = 'language'"
             >
-              {{ t('home.language') }}
+              {{ t('locales.home.language') }}
             </button>
             <!-- 以货币显示 -->
             <button
               :class="['tab', { active: activeTab === 'currency' }]"
               @click="activeTab = 'currency'"
             >
-              {{ t('home.view_currency') }}
+              {{ t('locales.home.view_currency') }}
             </button>
           </div>
 
@@ -88,7 +88,7 @@
               <div class="flex items-center">
                 <RadioCheckedIcon class="w-6 h-6 flex-shrink-0 stroke-text-1 fill-text-1 mr-3" />
                 <!-- 无 -->
-                <span class="option-text">{{ t('home.none') }}</span>
+                <span class="option-text">{{ t('locales.home.none') }}</span>
               </div>
               <RadioCheckedIcon
                 v-if="selectedCurrency === 'none'"
@@ -101,7 +101,7 @@
             <div v-if="selectedCurrency === 'none'" class="warning-tip">
               <SearchIcon class="w-5 h-5 flex-shrink-0 mr-1.5 stroke-[#3cef86]" />
               <!-- 当未选择任何货币时，某些金额仍会以最后选择的法币显示(USD) -->
-              <span>{{ t('home.none_select_currency') }}(USD)</span>
+              <span>{{ t('locales.home.none_select_currency') }}(USD)</span>
             </div>
 
             <!-- 货币列表 -->

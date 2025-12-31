@@ -18,7 +18,7 @@
             : `${layoutStore.SIDEBAR_WIDTH_EXPANDED}px`
         }"
       >
-        <div class="p-2">
+        <div class="p-5">
           <router-view />
         </div>
       </main>
@@ -64,5 +64,3 @@ const openLanguageModal = () => {
   }
 }
 </script>
-
-
