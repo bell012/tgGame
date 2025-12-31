@@ -167,7 +167,7 @@
       </div>
 
       <!-- 普通链接组 -->
-      <div class="flex flex-col my-2 py-1 rounded-lg bg-bg-2">
+      <div class="flex flex-col my-2 py-1 rounded-lg bg-bg-2 normalLink">
         <div
           v-for="(link, index) in normalLinks"
           :key="index"
@@ -180,7 +180,7 @@
           @mouseenter="e => isCollapsed && updateTooltipPosition(e)"
           @click="handleNormalLinkClick(link)"
         >
-          <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
+          <div class="flex items-center" :class="{ 'justify-center': isCollapsed }">
             <div class="w-10 h-10 flex items-center justify-center">
               <component :is="sideIcons[link.icon]" class="w-6 h-6 fill-text-2 fill-none" />
             </div>
@@ -193,7 +193,7 @@
           </div>
           <div
             v-if="!isCollapsed && link.external"
-            class="w-4 h-4 flex items-center justify-center mr-2"
+            class="w-4 h-4 flex items-center justify-center ml-1"
           >
             <External class="w-full h-full fill-text-2 fill-none" />
           </div>
@@ -759,6 +759,22 @@ defineExpose({
 .expand-leave-from {
   max-height: 500px;
   opacity: 1;
+}
+
+.normalLink {
+  position: relative;
+  &::after {
+   content: '';
+   width: 32px;
+   height: auto;
+   min-height: 18px;
+   position: absolute;
+   top: -8px;
+   right: 0px;
+   z-index: 99;
+   background: url('@/static/img/home/cloud.webp') no-repeat center center;
+   background-size: contain;
+  }
 }
 
 // 折叠时的菜单项
