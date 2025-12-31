@@ -62,7 +62,7 @@
             :class="[
               'flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer'
             ]"
-            @click="menu.handler"
+            @click="handleMenuExpand(menu)"
           >
             <div class="flex items-center">
               <div class="w-10 h-10 flex items-center justify-center">
@@ -74,8 +74,9 @@
             </div>
             <div
               v-if="!isCollapsed"
-              class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5"
+              class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
               :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
+              @click.stop="handleMenuCollapse(menu)"
             >
               <Arrow_down class="w-4 h-4 fill-text-2 fill-none" />
             </div>
@@ -136,7 +137,7 @@
             :class="[
               'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer'
             ]"
-            @click="menu.handler"
+            @click="handleMenuExpand(menu)"
           >
             <div class="flex items-center">
               <div class="w-10 h-10 flex items-center justify-center">
@@ -148,8 +149,9 @@
             </div>
             <div
               v-if="!isCollapsed"
-              class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5"
+              class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
               :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
+              @click.stop="handleMenuCollapse(menu)"
             >
               <Arrow_down class="w-4 h-4 fill-text-2 fill-none" />
             </div>
@@ -317,13 +319,30 @@ const toggleMenu = (menuId: string) => {
   }
 }
 
+// 菜单展开
+const handleMenuExpand = (menu: any) => {
+  if (menu.handler) {
+    menu.handler()
+  }
+  if (!expandedMenus.value.includes(menu.id)) {
+    expandedMenus.value.push(menu.id)
+  }
+}
+
+// 箭头点击（可以展开/折叠）
+const handleMenuCollapse = (menu: any) => {
+  toggleMenu(menu.id)
+}
+
 // 可展开菜单组数据
 const expandableMenus = computed(() => [
   {
     id: 'casino',
     name: '娱乐城',
     icon: 'icon_2',
-    handler: () => toggleMenu('casino'),
+    handler: () => {
+      console.log('点击娱乐城');
+    },
     children: [
       {
         id: 'casino_1',
@@ -347,7 +366,9 @@ const expandableMenus = computed(() => [
     id: 'sports',
     name: '体育',
     icon: 'icon_3',
-    handler: () => toggleMenu('sports'),
+    handler: () => {
+      console.log('点击体育');
+    },
     children: [
       { id: 'sports_1', name: '体育 1', icon: 'icon_3', handler: () => console.log('点击 体育 1') },
       { id: 'sports_2', name: '体育 2', icon: 'icon_3', handler: () => console.log('点击 体育 2') }
@@ -357,7 +378,9 @@ const expandableMenus = computed(() => [
     id: 'lottery',
     name: '彩票',
     icon: 'icon_5',
-    handler: () => toggleMenu('lottery'),
+    handler: () => {
+      console.log('点击彩票');
+    },
     children: [
       {
         id: 'lottery_1',
@@ -372,7 +395,9 @@ const expandableMenus = computed(() => [
     id: 'crypto',
     name: '加密货币期货',
     icon: 'icon_6',
-    handler: () => toggleMenu('crypto'),
+    handler: () => {
+      console.log('点击加密货币期货');
+    },
     children: [
       {
         id: 'crypto_1',
@@ -392,7 +417,9 @@ const expandableMenus = computed(() => [
     id: 'promotion',
     name: '促销',
     icon: 'icon_7',
-    handler: () => toggleMenu('promotion'),
+    handler: () => {
+      console.log('点击促销');
+    },
     children: [
       {
         id: 'promotion_1',
@@ -477,7 +504,9 @@ const sponsor = computed(() => [
     id: 'sponsor',
     name: '赞助',
     icon: 'icon_16',
-    handler: () => toggleMenu('sponsor'),
+    handler: () => {
+      console.log('点击赞助')
+    },
     children: [
       {
         id: 'sponsor_1',
