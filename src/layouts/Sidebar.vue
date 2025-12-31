@@ -57,49 +57,112 @@
 
       <!-- 可展开菜单组 -->
       <div class="flex flex-col">
-        <div v-for="menu in expandableMenus" :key="menu.id" class="flex flex-col">
+        <div v-for="menu in expandableMenus" :key="menu.id" class="flex flex-col mt-1">
           <div
-            :class="[
-              'flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer'
-            ]"
-            @click="handleMenuExpand(menu)"
+            v-if="isCollapsed && expandedMenus.includes(menu.id)"
+            class="bg-bg-2 rounded-lg overflow-visible"
           >
-            <div class="flex items-center">
-              <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
-              </div>
-              <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">{{
-                menu.name
-              }}</span>
-            </div>
+            <!-- 父菜单 -->
             <div
-              v-if="!isCollapsed"
-              class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
-              :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
-              @click.stop="handleMenuCollapse(menu)"
+              :class="[
+                'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed',
+                { 'launch-card-active': activeMenuId === menu.id }
+              ]"
+              :data-tooltip="menu.name"
+              @mouseenter="updateTooltipPosition"
+              @click="handleMenuExpand(menu)"
             >
-              <Arrow_down class="w-4 h-4 fill-text-2 fill-none" />
-            </div>
-          </div>
-
-          <!-- 子菜单 -->
-          <transition name="expand">
-            <div v-if="!isCollapsed && expandedMenus.includes(menu.id)" class="flex flex-col">
-              <div
-                v-for="item in menu.children"
-                :key="item.id"
-                class="flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer"
-                @click="item.handler"
-              >
-                <div class="flex items-center">
-                  <div class="w-10 h-10 flex items-center justify-center">
-                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
-                  </div>
-                  <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
+              <div class="flex items-center w-full justify-center relative">
+                <div class="w-10 h-10 flex items-center justify-center">
+                  <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
                 </div>
               </div>
             </div>
-          </transition>
+            <!-- 子菜单 -->
+            <div class="flex flex-col">
+              <div
+                v-for="item in menu.children"
+                :key="item.id"
+                :class="[
+                  'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed mt-1',
+                  { 'launch-card-active': activeMenuId === item.id }
+                ]"
+                :data-tooltip="item.name"
+                @mouseenter="updateTooltipPosition"
+                @click="handleMenuItemClick(item)"
+              >
+                <div class="flex items-center w-full justify-center">
+                  <div class="w-10 h-10 flex items-center justify-center">
+                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 折叠时，未展开的菜单 -->
+          <div
+            v-else-if="isCollapsed"
+            :class="[
+              'relative flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer menu-item-collapsed',
+              { 'launch-card-active': activeMenuId === menu.id }
+            ]"
+            :data-tooltip="menu.name"
+            @mouseenter="updateTooltipPosition"
+            @click="handleMenuExpand(menu)"
+          >
+            <div class="flex items-center w-full justify-center relative">
+              <div class="w-10 h-10 flex items-center justify-center">
+                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 展开时的菜单 -->
+          <template v-else>
+            <div
+              :class="[
+                'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
+                { 'launch-card-active': activeMenuId === menu.id }
+              ]"
+              @click="handleMenuExpand(menu)"
+            >
+              <div class="flex items-center">
+                <div class="w-10 h-10 flex items-center justify-center">
+                  <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                </div>
+                <span class="text-sm font-[600] text-text-1">{{ menu.name }}</span>
+              </div>
+              <div
+                class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
+                :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
+                @click.stop="handleMenuCollapse(menu)"
+              >
+                <Arrow_down class="w-4 h-4 fill-text-2 fill-none" />
+              </div>
+            </div>
+
+            <!-- 子菜单 -->
+            <transition name="expand">
+              <div v-if="expandedMenus.includes(menu.id)" class="flex flex-col">
+                <div
+                  v-for="item in menu.children"
+                  :key="item.id"
+                  :class="[
+                    'flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer',
+                    { 'launch-card-active': activeMenuId === item.id }
+                  ]"
+                  @click="handleMenuItemClick(item)"
+                >
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 flex items-center justify-center">
+                      <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                    </div>
+                    <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </template>
         </div>
       </div>
 
@@ -108,23 +171,31 @@
         <div
           v-for="(link, index) in normalLinks"
           :key="index"
-          class="flex items-center launch-card h-10 bg-bg-2 rounded-lg cursor-pointer"
-          @click="link.handler"
+          :class="[
+            'flex items-center launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
+            { 'relative menu-item-collapsed justify-center': isCollapsed },
+            { 'launch-card-active': activeMenuId === link.id }
+          ]"
+          :data-tooltip="isCollapsed ? (link.name2 ? `${link.name2} ${link.name}` : link.name) : ''"
+          @mouseenter="e => isCollapsed && updateTooltipPosition(e)"
+          @click="handleNormalLinkClick(link)"
         >
-          <div class="flex items-center">
+          <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
             <div class="w-10 h-10 flex items-center justify-center">
               <component :is="sideIcons[link.icon]" class="w-6 h-6 fill-text-2 fill-none" />
             </div>
-            <span v-if="link.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
-              link.name2
-            }}</span>
-            <span class="text-sm font-[600] text-text-1">{{ link.name }}</span>
+            <template v-if="!isCollapsed">
+              <span v-if="link.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
+                link.name2
+              }}</span>
+              <span class="text-sm font-[600] text-text-1">{{ link.name }}</span>
+            </template>
           </div>
           <div
             v-if="!isCollapsed && link.external"
-            class="w-4 h-4 flex items-center justify-center"
+            class="w-4 h-4 flex items-center justify-center mr-2"
           >
-            <External class="w-full h-full fill-text-2 fill-none ml-1" />
+            <External class="w-full h-full fill-text-2 fill-none" />
           </div>
         </div>
       </div>
@@ -132,57 +203,127 @@
       <!-- 底部功能组 -->
       <div class="flex flex-col mt-1">
         <!-- 赞助  -->
-        <div v-for="menu in sponsor" :key="menu.id" class="flex flex-col">
+        <div v-for="menu in sponsor" :key="menu.id" class="flex flex-col mt-1">
           <div
-            :class="[
-              'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer'
-            ]"
-            @click="handleMenuExpand(menu)"
+            v-if="isCollapsed && expandedMenus.includes(menu.id)"
+            class="bg-bg-2 rounded-lg overflow-visible"
           >
-            <div class="flex items-center">
-              <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
-              </div>
-              <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">{{
-                menu.name
-              }}</span>
-            </div>
+            <!-- 父菜单 -->
             <div
-              v-if="!isCollapsed"
-              class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
-              :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
-              @click.stop="handleMenuCollapse(menu)"
+              :class="[
+                'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed',
+                { 'launch-card-active': activeMenuId === menu.id }
+              ]"
+              :data-tooltip="menu.name"
+              @mouseenter="updateTooltipPosition"
+              @click="handleMenuExpand(menu)"
             >
-              <Arrow_down class="w-4 h-4 fill-text-2 fill-none" />
-            </div>
-          </div>
-
-          <!-- 子菜单 -->
-          <transition name="expand">
-            <div v-if="!isCollapsed && expandedMenus.includes(menu.id)" class="flex flex-col">
-              <div
-                v-for="item in menu.children"
-                :key="item.id"
-                class="flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer"
-                @click="item.handler"
-              >
-                <div class="flex items-center">
-                  <div class="w-10 h-10 flex items-center justify-center">
-                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
-                  </div>
-                  <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
+              <div class="flex items-center w-full justify-center">
+                <div class="w-10 h-10 flex items-center justify-center">
+                  <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
                 </div>
               </div>
             </div>
-          </transition>
+            <!-- 子菜单 -->
+            <div class="flex flex-col">
+              <div
+                v-for="item in menu.children"
+                :key="item.id"
+                :class="[
+                  'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed mt-1',
+                  { 'launch-card-active': activeMenuId === item.id }
+                ]"
+                :data-tooltip="item.name"
+                @mouseenter="updateTooltipPosition"
+                @click="handleMenuItemClick(item)"
+              >
+                <div class="flex items-center w-full justify-center">
+                  <div class="w-10 h-10 flex items-center justify-center">
+                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 折叠时，未展开的菜单 -->
+          <div
+            v-else-if="isCollapsed"
+            :class="[
+              'relative flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer menu-item-collapsed',
+              { 'launch-card-active': activeMenuId === menu.id }
+            ]"
+            :data-tooltip="menu.name"
+            @mouseenter="updateTooltipPosition"
+            @click="handleMenuExpand(menu)"
+          >
+            <div class="flex items-center w-full justify-center">
+              <div class="w-10 h-10 flex items-center justify-center">
+                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 展开时的菜单 -->
+          <template v-else>
+            <div
+              :class="[
+                'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
+                { 'launch-card-active': activeMenuId === menu.id }
+              ]"
+              @click="handleMenuExpand(menu)"
+            >
+              <div class="flex items-center">
+                <div class="w-10 h-10 flex items-center justify-center">
+                  <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                </div>
+                <span class="text-sm font-[600] text-text-1">{{ menu.name }}</span>
+              </div>
+              <div
+                class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
+                :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
+                @click.stop="handleMenuCollapse(menu)"
+              >
+                <Arrow_down class="w-4 h-4 fill-text-2 fill-none" />
+              </div>
+            </div>
+
+            <!-- 子菜单 -->
+            <transition name="expand">
+              <div v-if="expandedMenus.includes(menu.id)" class="flex flex-col">
+                <div
+                  v-for="item in menu.children"
+                  :key="item.id"
+                  :class="[
+                    'flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer',
+                    { 'launch-card-active': activeMenuId === item.id }
+                  ]"
+                  @click="handleMenuItemClick(item)"
+                >
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 flex items-center justify-center">
+                      <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                    </div>
+                    <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </template>
         </div>
 
         <!-- 线上客服 -->
         <div
-          class="flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-1"
-          @click="() => console.log('打开线上客服')"
+          :class="[
+            'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-1',
+            { 'relative menu-item-collapsed justify-center': isCollapsed },
+            { 'launch-card-active': activeMenuId === 'customer-service' }
+          ]"
+          :data-tooltip="isCollapsed ? '线上客服' : ''"
+          @mouseenter="e => isCollapsed && updateTooltipPosition(e)"
+          @click="handleCustomerServiceClick"
         >
-          <div class="flex items-center">
+          <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
             <div class="w-10 h-10 flex items-center justify-center">
               <component :is="sideIcons.icon_17" class="w-6 h-6 fill-text-2 fill-none" />
             </div>
@@ -192,10 +333,12 @@
 
         <!-- 语言切换 -->
         <div
-          class="flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-2"
+          :class="[
+            'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-2'
+          ]"
           @click="() => emit('open-language-modal')"
         >
-          <div class="flex items-center">
+          <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
             <div class="w-10 h-10 flex items-center justify-center">
               <LanguageIcon class="w-6 h-6 fill-text-2 fill-none" />
             </div>
@@ -219,9 +362,7 @@
           <button
             :class="[
               'flex-1 w-[50%] h-9 rounded-lg border-none cursor-pointer transition-all',
-              themeStore.theme === 'dark'
-                ? 'bg-[#4B5354]'
-                : 'bg-[f9f9f9]'
+              themeStore.theme === 'dark' ? 'bg-[#4B5354]' : 'bg-[f9f9f9]'
             ]"
             @click="themeStore.setTheme('dark')"
           >
@@ -233,9 +374,7 @@
                 v-if="!isCollapsed"
                 :class="[
                   'text-sm font-[600] ml-1',
-                  themeStore.theme === 'dark'
-                    ? 'text-[#fff]'
-                    : 'text-[#B0B9B9]'
+                  themeStore.theme === 'dark' ? 'text-[#fff]' : 'text-[#B0B9B9]'
                 ]"
                 >深色模式</span
               >
@@ -244,9 +383,7 @@
           <button
             :class="[
               'flex-1 w-[50%] h-9 rounded-lg border-none cursor-pointer transition-all',
-              themeStore.theme === 'light'
-                ? 'bg-[#fff]'
-                : 'bg-transparent'
+              themeStore.theme === 'light' ? 'bg-[#fff]' : 'bg-transparent'
             ]"
             @click="themeStore.setTheme('light')"
           >
@@ -258,9 +395,7 @@
                 v-if="!isCollapsed"
                 :class="[
                   'text-sm font-[600] ml-1',
-                  themeStore.theme === 'light'
-                    ? 'text-[#171A1A]'
-                    : 'text-[#A1AFB2]'
+                  themeStore.theme === 'light' ? 'text-[#171A1A]' : 'text-[#A1AFB2]'
                 ]"
                 >浅色模式</span
               >
@@ -294,6 +429,9 @@ const isCollapsed = ref(false)
 // 展开的菜单 ID 列表
 const expandedMenus = ref<string[]>([])
 
+// 当前选中的菜单
+const activeMenuId = ref<string>('')
+
 // 当前语言名称
 const currentLanguageName = computed(() => {
   return localeStore.currentLanguage === 'zh-CN' ? '简体中文' : 'English'
@@ -321,6 +459,7 @@ const toggleMenu = (menuId: string) => {
 
 // 菜单展开
 const handleMenuExpand = (menu: any) => {
+  activeMenuId.value = menu.id
   if (menu.handler) {
     menu.handler()
   }
@@ -334,6 +473,36 @@ const handleMenuCollapse = (menu: any) => {
   toggleMenu(menu.id)
 }
 
+// 菜单项点击
+const handleMenuItemClick = (item: any) => {
+  activeMenuId.value = item.id
+  if (item.handler) {
+    item.handler()
+  }
+}
+
+// 提示框位置
+const updateTooltipPosition = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  const rect = target.getBoundingClientRect()
+  const top = rect.top + rect.height / 2
+  target.style.setProperty('--tooltip-top', `${top}px`)
+}
+
+// 处理普通链接点击
+const handleNormalLinkClick = (link: any) => {
+  activeMenuId.value = link.id
+  if (link.handler) {
+    link.handler()
+  }
+}
+
+// 处理客服点击
+const handleCustomerServiceClick = () => {
+  activeMenuId.value = 'customer-service'
+  console.log('打开线上客服')
+}
+
 // 可展开菜单组数据
 const expandableMenus = computed(() => [
   {
@@ -341,7 +510,7 @@ const expandableMenus = computed(() => [
     name: '娱乐城',
     icon: 'icon_2',
     handler: () => {
-      console.log('点击娱乐城');
+      console.log('点击娱乐城')
     },
     children: [
       {
@@ -367,7 +536,7 @@ const expandableMenus = computed(() => [
     name: '体育',
     icon: 'icon_3',
     handler: () => {
-      console.log('点击体育');
+      console.log('点击体育')
     },
     children: [
       { id: 'sports_1', name: '体育 1', icon: 'icon_3', handler: () => console.log('点击 体育 1') },
@@ -379,7 +548,7 @@ const expandableMenus = computed(() => [
     name: '彩票',
     icon: 'icon_5',
     handler: () => {
-      console.log('点击彩票');
+      console.log('点击彩票')
     },
     children: [
       {
@@ -396,7 +565,7 @@ const expandableMenus = computed(() => [
     name: '加密货币期货',
     icon: 'icon_6',
     handler: () => {
-      console.log('点击加密货币期货');
+      console.log('点击加密货币期货')
     },
     children: [
       {
@@ -418,7 +587,7 @@ const expandableMenus = computed(() => [
     name: '促销',
     icon: 'icon_7',
     handler: () => {
-      console.log('点击促销');
+      console.log('点击促销')
     },
     children: [
       {
@@ -539,6 +708,7 @@ defineExpose({
   bottom: 0;
   background-color: var(--color-background-level-5);
   overflow-y: auto;
+  overflow-x: visible;
   transition: width 0.3s ease;
   z-index: 100;
   box-sizing: border-box;
@@ -569,6 +739,9 @@ defineExpose({
 .launch-card:hover {
   background: linear-gradient(90deg, rgba(36 238 137 / 0.2), #23ee8800), rgba(255, 255, 255, 0.05);
 }
+.launch-card-active {
+  background: linear-gradient(90deg, rgba(36 238 137 / 0.2), #23ee8800);
+}
 
 .expand-enter-active,
 .expand-leave-active {
@@ -586,5 +759,60 @@ defineExpose({
 .expand-leave-from {
   max-height: 500px;
   opacity: 1;
+}
+
+// 折叠时的菜单项
+.menu-item-collapsed {
+  position: relative;
+
+  // 悬浮提示
+  &::after {
+    content: attr(data-tooltip);
+    position: fixed;
+    left: calc(v-bind('layoutStore.SIDEBAR_WIDTH_COLLAPSED + "px"') + -5px);
+    top: var(--tooltip-top, 50%);
+    transform: translateY(-50%);
+    padding: 6px 8px;
+    background-color: var(--color-background-level-3);
+    color: var(--color-text-level-1);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.2s ease,
+      visibility 0.2s ease;
+    pointer-events: none;
+    z-index: 99999;
+  }
+
+  // 小三角形
+  &::before {
+    content: '';
+    position: fixed;
+    left: calc(v-bind('layoutStore.SIDEBAR_WIDTH_COLLAPSED + "px"') + -11px);
+    top: var(--tooltip-top, 50%);
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-right: 6px solid var(--color-background-level-3);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.2s ease,
+      visibility 0.2s ease;
+    pointer-events: none;
+    z-index: 99999;
+  }
+
+  &:hover::after,
+  &:hover::before {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 </style>
