@@ -148,16 +148,22 @@
                   v-for="item in menu.children"
                   :key="item.id"
                   :class="[
-                    'flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer',
+                    'relative flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer',
                     { 'launch-card-active': activeMenuId === item.id }
                   ]"
                   @click="handleMenuItemClick(item)"
+                  @mouseenter="(e: MouseEvent) => item.children && handleSubmenuHover(e, menu.id, item.id)"
+                  @mouseleave="item.children && startClearSubmenuHover()"
                 >
                   <div class="flex items-center">
                     <div class="w-10 h-10 flex items-center justify-center">
                       <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
                     </div>
                     <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
+                  </div>
+                  <!-- 有子菜单时显示右箭头 -->
+                  <div v-if="item.children && item.children.length > 0" class="mr-2">
+                    <Arrow_right class="w-4 h-4 fill-text-2 fill-none" />
                   </div>
                 </div>
               </div>
@@ -404,6 +410,43 @@
         </div>
       </div>
     </nav>
+
+    <!-- 三级菜单悬浮面板 -->
+    <teleport to="body">
+      <div
+        v-if="hoveredSubmenu"
+        class="submenu-popup"
+        :style="{
+          top: `${submenuPosition.top}px`,
+          left: `${submenuPosition.left}px`
+        }"
+        @mouseenter="cancelClearSubmenuHover"
+        @mouseleave="clearSubmenuHover"
+      >
+        <template v-for="menu in expandableMenus" :key="menu.id">
+          <template v-if="menu.id === hoveredSubmenu.parentId">
+            <template v-for="item in menu.children" :key="item.id">
+              <template v-if="item.id === hoveredSubmenu.itemId && item.children">
+                <div
+                  v-for="subItem in item.children"
+                  :key="subItem.id"
+                  :class="[
+                    'submenu-popup-item',
+                    { 'submenu-popup-item-active': activeThirdLevelMenuId === subItem.id }
+                  ]"
+                  @click="handleThirdLevelClick(subItem)"
+                >
+                  <div class="w-6 h-6 flex items-center justify-center mr-2">
+                    <component :is="sideIcons[subItem.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                  </div>
+                  <span class="text-sm font-[600] text-text-1">{{ subItem.name }}</span>
+                </div>
+              </template>
+            </template>
+          </template>
+        </template>
+      </div>
+    </teleport>
   </aside>
 </template>
 
@@ -431,6 +474,14 @@ const expandedMenus = ref<string[]>([])
 
 // 当前选中的菜单
 const activeMenuId = ref<string>('')
+
+// 当前选中的三级菜单
+const activeThirdLevelMenuId = ref<string>('')
+
+// 当前悬浮的子菜单
+const hoveredSubmenu = ref<{ parentId: string; itemId: string } | null>(null)
+const submenuPosition = ref({ top: 0, left: 0 })
+let submenuHideTimer: ReturnType<typeof setTimeout> | null = null
 
 // 当前语言名称
 const currentLanguageName = computed(() => {
@@ -503,6 +554,59 @@ const handleCustomerServiceClick = () => {
   console.log('打开线上客服')
 }
 
+// 子菜单悬浮
+const handleSubmenuHover = (event: MouseEvent, parentId: string, itemId: string) => {
+  if (submenuHideTimer) {
+    clearTimeout(submenuHideTimer)
+    submenuHideTimer = null
+  }
+
+  const target = event.currentTarget as HTMLElement
+  const rect = target.getBoundingClientRect()
+  hoveredSubmenu.value = { parentId, itemId }
+  submenuPosition.value = {
+    top: rect.top,
+    left: rect.right + 4
+  }
+}
+
+// 延迟清除子菜单悬浮
+const startClearSubmenuHover = () => {
+  if (submenuHideTimer) {
+    clearTimeout(submenuHideTimer)
+  }
+  submenuHideTimer = setTimeout(() => {
+    hoveredSubmenu.value = null
+    submenuHideTimer = null
+  }, 300)
+}
+
+// 取消清除子菜单悬浮
+const cancelClearSubmenuHover = () => {
+  if (submenuHideTimer) {
+    clearTimeout(submenuHideTimer)
+    submenuHideTimer = null
+  }
+}
+
+// 立即清除子菜单悬浮
+const clearSubmenuHover = () => {
+  if (submenuHideTimer) {
+    clearTimeout(submenuHideTimer)
+    submenuHideTimer = null
+  }
+  hoveredSubmenu.value = null
+}
+
+// 三级菜单项点击
+const handleThirdLevelClick = (item: any) => {
+  activeThirdLevelMenuId.value = item.id
+  if (item.handler) {
+    item.handler()
+  }
+  hoveredSubmenu.value = null
+}
+
 // 可展开菜单组数据
 const expandableMenus = computed(() => [
   {
@@ -519,7 +623,33 @@ const expandableMenus = computed(() => [
         icon: 'icon_2',
         handler: () => {
           navigateTo('/originate')
-        }
+        },
+        children: [
+          {
+            id: 'casino_1_1',
+            name: 'Crash',
+            icon: 'icon_2',
+            handler: () => {
+              console.log('点击 Crash')
+            }
+          },
+          {
+            id: 'casino_1_2',
+            name: 'Deadliest Sea',
+            icon: 'icon_2',
+            handler: () => {
+              console.log('点击 Deadliest Sea')
+            }
+          },
+          {
+            id: 'casino_1_3',
+            name: 'Bear Smash: 15000X Boost',
+            icon: 'icon_2',
+            handler: () => {
+              console.log('点击 Bear Smash: 15000X Boost')
+            }
+          }
+        ]
       },
       {
         id: 'casino_2',
@@ -830,5 +960,34 @@ defineExpose({
     opacity: 1;
     visibility: visible;
   }
+}
+
+// 三级菜单悬浮面板
+.submenu-popup {
+  position: fixed;
+  background-color: var(--color-background-level-2);
+  border-radius: 8px;
+  padding: 12px 8px;
+  z-index: 100000;
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.submenu-popup-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-bottom: 4px;
+
+  &:hover {
+    background: linear-gradient(90deg, rgba(36 238 137 / 0.2), #23ee8800), rgba(255, 255, 255, 0.05);
+  }
+}
+
+.submenu-popup-item-active {
+  background: linear-gradient(90deg, rgba(36 238 137 / 0.2), #23ee8800);
 }
 </style>
