@@ -2,7 +2,7 @@
   <div class="sidebar-menu">
     <!-- 应用程式 -->
     <div v-if="!isCollapsed" class="mt-3 mb-2">
-      <router-link :to="appDownloadLink" class="block app-download-card rounded-lg">
+      <div class="block app-download-card rounded-lg cursor-pointer" @click="handleAppDownloadClick">
         <div class="flex justify-between items-center">
           <div class="flex-1 p-2.5 pr-0">
             <h3 class="text-sm font-semibold text-text-1 mb-1">应用程式</h3>
@@ -18,7 +18,7 @@
             </div>
           </div>
         </div>
-      </router-link>
+      </div>
     </div>
 
     <!-- BC代币 -->
@@ -488,11 +488,10 @@ const currentLanguageName = computed(() => {
   return localeStore.currentLanguage === 'zh-CN' ? '简体中文' : 'English'
 })
 
-// 应用程式下载链接
-const appDownloadLink = computed(() => {
-  const locale = localeStore.currentLanguage === 'zh-CN' ? 'zh' : 'en'
-  return locale === 'en' ? '/app-download' : `/${locale}/app-download`
-})
+// 应用程式下载点击
+const handleAppDownloadClick = () => {
+  navigateTo('/app-download')
+}
 
 // 切换菜单展开/折叠的通用方法
 const toggleMenu = (menuId: string) => {

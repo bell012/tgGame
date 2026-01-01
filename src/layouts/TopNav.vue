@@ -9,9 +9,12 @@
         >
           <FoldIcon class="w-6 h-6 fill-text-2 fill-none" />
         </div>
-        <router-link to="/" class="w-[150px] h-[48px] ml-0 md:ml-5 flex items-center">
+        <div
+          class="w-[150px] h-[48px] ml-0 md:ml-5 flex items-center cursor-pointer"
+          @click="navigateTo('/')"
+        >
           <img src="/src/static/img/home/logo.png" alt="" class="w-full h-full" />
-        </router-link>
+        </div>
       </div>
 
       <!-- 右侧 -->
@@ -75,6 +78,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
 import { useLayoutStore } from '@/stores/layout'
+import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
