@@ -16,6 +16,14 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'casino',
+    name: 'casino',
+    component: () => import('@/views/casino/index.vue'),
+    meta: {
+      title: '娱乐城',
+    }
+  },
+  {
     path: 'originate',
     name: 'originate',
     component: () => import('@/views/fun/originate/index.vue'),
@@ -30,7 +38,39 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: 'BC独家',
     }
-  }
+  },
+  {
+    path: 'sports',
+    name: 'sports',
+    component: () => import('@/views/sports/index.vue'),
+    meta: {
+      title: '体育',
+    }
+  },
+  {
+    path: 'menu',
+    name: 'menu',
+    component: () => import('@/views/menu/index.vue'),
+    meta: {
+      title: '选单',
+    }
+  },
+  {
+    path: 'explore',
+    name: 'explore',
+    component: () => import('@/views/explore/index.vue'),
+    meta: {
+      title: '搜索',
+    }
+  },
+  {
+    path: 'chat-public',
+    name: 'chat-public',
+    component: () => import('@/views/chat-public/index.vue'),
+    meta: {
+      title: '聊天',
+    }
+  },
 ]
 
 // 生成带语言前缀的路由

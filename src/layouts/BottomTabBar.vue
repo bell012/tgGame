@@ -1,90 +1,18 @@
 <template>
   <div class="bottom-tab-bar">
     <div class="h-full flex items-center justify-around px-4">
-      <!-- 选单 -->
-      <router-link
-        :to="getLocalePath('/menu')"
-        class="tab-item"
-        :class="{ active: isActive('/menu') }"
+      <div v-for="menu in menus" :key="menu.id" class="tab-item"
+        @click="menu.handler" :class="{ active: menu.active}"
       >
         <div class="w-6 h-6 mb-1">
-          <img
-            :src="FoldIcon"
-            alt="选单"
-            class="w-full h-full"
-            :class="isActive('/menu') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
-          />
+          <component 
+            :is="sideIcons[menu.icon]" 
+            class="w-full h-full fill-text-2 fill-none" 
+            :class="menu.active ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
+            />
         </div>
-        <span class="text-xs font-medium">选单</span>
-      </router-link>
-
-      <!-- 搜索 -->
-      <router-link
-        :to="getLocalePath('/explore')"
-        class="tab-item"
-        :class="{ active: isActive('/explore') }"
-      >
-        <div class="w-6 h-6 mb-1">
-          <img 
-            :src="SearchIcon"
-            alt="搜索"
-            class="w-full h-full"
-            :class="isActive('/explore') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
-          />
-        </div>
-        <span class="text-xs font-medium">搜索</span>
-      </router-link>
-
-      <!-- 娱乐城 -->
-      <router-link
-        :to="getLocalePath('/casino')"
-        class="tab-item"
-        :class="{ active: isActive('/casino') }"
-      >
-        <div class="w-6 h-6 mb-1">
-          <img 
-            :src="CasionIcon"
-            alt="搜索"
-            class="w-full h-full"
-            :class="isActive('/casino') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
-          />
-        </div>
-        <span class="text-xs font-medium">娱乐城</span>
-      </router-link>
-
-      <!-- 体育 -->
-      <router-link
-        :to="getLocalePath('/sports')"
-        class="tab-item"
-        :class="{ active: isActive('/sports') }"
-      >
-        <div class="w-6 h-6 mb-1">
-          <img
-            :src="SportsIcon"
-            alt="搜索"
-            class="w-full h-full"
-            :class="isActive('/sports') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
-          />
-        </div>
-        <span class="text-xs font-medium">体育</span>
-      </router-link>
-
-      <!-- 聊天 -->
-      <router-link
-        :to="getLocalePath('/chat-public')"
-        class="tab-item"
-        :class="{ active: isActive('/chat-public') }"
-      >
-        <div class="w-6 h-6 mb-1">
-          <img
-            :src="ChatIcon"
-            alt="搜索"
-            class="w-full h-full"
-            :class="isActive('/chat-public') ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
-          />
-        </div>
-        <span class="text-xs font-medium">聊天</span>
-      </router-link>
+        <span class="text-xs font-medium">{{ menu.name }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -92,27 +20,63 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
+import { sideIcons } from '@/static/svg/side'
+import { useLayoutStore } from '@/stores/layout'
+import { navigateTo } from '@/utils/router'
 import FoldIcon from '@/static/svg/fold.svg?url'
 import SearchIcon from '@/static/svg/search.svg?url'
 import ChatIcon from '@/static/svg/chat.svg?url'
 import CasionIcon from '@/static/svg/casino.svg?url'
-import SportsIcon from '@/static/svg/sports-basketball.svg?url'
-import { useLayoutStore } from '@/stores/layout'
 
 const route = useRoute()
 const layoutStore = useLayoutStore()
 
+const menus = computed(() => [
+  {
+    id: 'menu',
+    name: '选单',
+    icon: 'icon_2',
+    route: '/menu',
+    handler: () => navigateTo('/menu'),
+    active: isActive('/menu')
+  },
+  {
+    id: 'explore',
+    name: '搜索',
+    icon: 'icon_2',
+    route: '/explore',
+    handler: () => navigateTo('/explore'),
+    active: isActive('/explore')
+  },
+  {
+    id: 'casino',
+    name: '娱乐城',
+    icon: 'icon_2',
+    route: '/casino',
+    handler: () => navigateTo('/casino'),
+    active: isActive('/casino')
+  },
+  {
+    id: 'sports',
+    name: '体育',
+    icon: 'icon_3',
+    route: '/sports',
+    handler: () => navigateTo('/sports'),
+    active: isActive('/sports')
+  },
+  {
+    id: 'chat-public',
+    name: '聊天',
+    icon: 'icon_2',
+    route: '/chat-public',
+    handler: () => navigateTo('/chat-public'),
+    active: isActive('/chat-public')
+  },
+])
+
 const isActive = (path: string) => {
   const currentPath = route.path.replace(/^\/(zh|en)/, '')
   return computed(() => currentPath === path).value
-}
-
-const getLocalePath = (path: string) => {
-  const locale = route.params.locale as string
-  if (!locale || locale === 'en') {
-    return path
-  }
-  return `/${locale}${path}`
 }
 </script>
 

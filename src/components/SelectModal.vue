@@ -166,13 +166,16 @@ const emit = defineEmits<{
 
 const activeTab = ref<'language' | 'currency'>(props.type || 'language')
 const searchQuery = ref('')
-
-// 更新 activeTab
+// 监听 props 变化
 watch(
-  () => props.type,
-  newType => {
+  [() => props.type, () => props.modelValue],
+  ([newType, isOpen]) => {
     if (newType) {
       activeTab.value = newType
+    }
+    if (isOpen && props.type) {
+      activeTab.value = props.type
+      searchQuery.value = ''
     }
   },
   { immediate: true }
