@@ -27,12 +27,14 @@
         <!-- 登入 -->
         <div
           class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center bg-transparent border-2 border-[#e4eaf019] mr-1"
+          @click="openLoginModal"
         >
           {{ t('locales.home.sign_In') }}
         </div>
         <!-- 注册 -->
         <div
           class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center btn-primary mr-3"
+          @click="openRegisterModal"
         >
           {{ t('locales.home.sign_Up') }}
         </div>
@@ -70,6 +72,12 @@
       @select-language="handleLanguageChange"
       @select-currency="handleCurrencyChange"
     />
+
+    <!-- 登录/注册弹窗 -->
+    <LoginModal
+      v-model="showLoginModal"
+      :default-tab="loginModalTab"
+    />
   </header>
 </template>
 
@@ -80,6 +88,7 @@ import { useLocaleStore } from '@/stores/locale'
 import { useLayoutStore } from '@/stores/layout'
 import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
+import LoginModal from '@/components/login_register/LoginModal.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
 import ChatIcon from '@/static/svg/chat.svg?component'
@@ -96,6 +105,9 @@ const emit = defineEmits<{
 const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
 
+const showLoginModal = ref(false)
+const loginModalTab = ref<'login' | 'register'>('login')
+
 const handleToggleSidebar = () => {
   emit('toggle-sidebar')
 }
@@ -108,6 +120,16 @@ const openLanguageModal = () => {
 const openCurrencyModal = () => {
   modalType.value = 'currency'
   showModal.value = true
+}
+
+const openLoginModal = () => {
+  loginModalTab.value = 'login'
+  showLoginModal.value = true
+}
+
+const openRegisterModal = () => {
+  loginModalTab.value = 'register'
+  showLoginModal.value = true
 }
 
 const handleLanguageChange = (code: string) => {
