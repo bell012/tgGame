@@ -16,7 +16,7 @@
       <div
         v-for="icon in socialIcons"
         :key="icon.name"
-        class="w-[40px] h-[40px] border border-[#e4eaf019] rounded-lg flex items-center justify-center cursor-pointer"
+        class="social-icon-btn w-[40px] h-[40px] border border-[#e4eaf019] rounded-lg flex items-center justify-center cursor-pointer"
         @click="handleSocialLogin(icon.name)"
       >
         <component :is="icon.component" class="w-5 h-5 fill-none" />
@@ -55,3 +55,25 @@ const handleSocialLogin = (iconName: string) => {
   console.log('点击第三方登录:', iconName)
 }
 </script>
+
+<style scoped lang="scss">
+.social-icon-btn {
+  transition: all 0.15s;
+
+  &:active {
+    animation: nod 0.2s ease-out;
+  }
+}
+
+@keyframes nod {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+</style>

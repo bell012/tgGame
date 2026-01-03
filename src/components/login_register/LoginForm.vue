@@ -4,20 +4,20 @@
 
     <div class="flex bg-bg-2 rounded-lg mb-2">
       <button
-        class="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm transition-all duration-300"
+        class="relative flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm transition-all duration-150 overflow-hidden tab-button"
         :class="activeTab === 'password' ? 'bg-bg-3 border border-primary text-text-1' : 'text-text-2'"
         @click="activeTab = 'password'"
       >
-        <LockIcon class="w-4 h-4 fill-none" />
-        密码
+        <LockIcon class="w-4 h-4 fill-none relative z-10" />
+        <span class="relative z-10">密码</span>
       </button>
       <button
-        class="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm transition-all duration-300"
+        class="relative flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm transition-all duration-150 overflow-hidden tab-button"
         :class="activeTab === 'otp' ? 'bg-bg-3 border border-primary text-text-1' : 'text-text-2'"
         @click="activeTab = 'otp'"
       >
-        <KeyIcon class="w-4 h-4 fill-none" />
-        一次性验证码
+        <KeyIcon class="w-4 h-4 fill-none relative z-10" />
+        <span class="relative z-10">一次性验证码</span>
       </button>
     </div>
 
@@ -129,5 +129,25 @@ const formData = ref({
 </script>
 
 <style scoped lang="scss">
+.tab-button {
+  position: relative;
+  overflow: hidden;
+
+  &:active {
+    animation: nod 0.2s ease-out;
+  }
+}
+
+@keyframes nod {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
 </style>
 
