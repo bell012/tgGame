@@ -4,7 +4,7 @@
       <!-- 左侧 -->
       <div class="flex items-center">
         <div
-          class="hidden md:flex cursor-pointer search w-[40px] h-[40px] rounded-lg"
+          class="hidden md:flex cursor-pointer search w-[40px] h-[40px] rounded-lg flex items-center justify-center"
           @click="handleToggleSidebar"
         >
           <FoldIcon class="w-6 h-6 fill-text-2 fill-none" />
