@@ -20,10 +20,6 @@ import { computed } from 'vue'
 import { sideIcons } from '@/static/svg/side'
 import { useLayoutStore } from '@/stores/layout'
 import { navigateTo } from '@/utils/router'
-import FoldIcon from '@/static/svg/fold.svg?url'
-import SearchIcon from '@/static/svg/search.svg?url'
-import ChatIcon from '@/static/svg/chat.svg?url'
-import CasionIcon from '@/static/svg/casino.svg?url'
 
 const route = useRoute()
 const layoutStore = useLayoutStore()
