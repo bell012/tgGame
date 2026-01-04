@@ -3,12 +3,18 @@
     <div class="h-full flex items-center justify-between px-4">
       <!-- 左侧 -->
       <div class="flex items-center">
-        <div class="hidden md:flex cursor-pointer search w-[40px] h-[40px] rounded-lg" @click="handleToggleSidebar">
+        <div
+          class="hidden md:flex cursor-pointer search w-[40px] h-[40px] rounded-lg flex items-center justify-center"
+          @click="handleToggleSidebar"
+        >
           <FoldIcon class="w-6 h-6 fill-text-2 fill-none" />
         </div>
-        <router-link to="/" class="w-[150px] h-[48px] ml-0 md:ml-5 flex items-center">
+        <div
+          class="w-[150px] h-[48px] ml-0 md:ml-5 flex items-center cursor-pointer"
+          @click="navigateTo('/')"
+        >
           <img src="/src/static/img/home/logo.png" alt="" class="w-full h-full" />
-        </router-link>
+        </div>
       </div>
 
       <!-- 右侧 -->
@@ -21,14 +27,16 @@
         <!-- 登入 -->
         <div
           class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center bg-transparent border-2 border-[#e4eaf019] mr-1"
+          @click="openLoginModal"
         >
-          {{ t('home.sign_In') }}
+          {{ t('locales.home.sign_In') }}
         </div>
         <!-- 注册 -->
         <div
           class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center btn-primary mr-3"
+          @click="openRegisterModal"
         >
-          {{ t('home.sign_Up') }}
+          {{ t('locales.home.sign_Up') }}
         </div>
         <div
           class="hidden md:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
@@ -64,6 +72,12 @@
       @select-language="handleLanguageChange"
       @select-currency="handleCurrencyChange"
     />
+
+    <!-- 登录/注册弹窗 -->
+    <LoginModal
+      v-model="showLoginModal"
+      :default-tab="loginModalTab"
+    />
   </header>
 </template>
 
@@ -72,7 +86,9 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
 import { useLayoutStore } from '@/stores/layout'
+import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
+import LoginModal from '@/components/login_register/LoginModal.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
 import ChatIcon from '@/static/svg/chat.svg?component'
@@ -89,6 +105,9 @@ const emit = defineEmits<{
 const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
 
+const showLoginModal = ref(false)
+const loginModalTab = ref<'login' | 'register'>('login')
+
 const handleToggleSidebar = () => {
   emit('toggle-sidebar')
 }
@@ -101,6 +120,16 @@ const openLanguageModal = () => {
 const openCurrencyModal = () => {
   modalType.value = 'currency'
   showModal.value = true
+}
+
+const openLoginModal = () => {
+  loginModalTab.value = 'login'
+  showLoginModal.value = true
+}
+
+const openRegisterModal = () => {
+  loginModalTab.value = 'register'
+  showLoginModal.value = true
 }
 
 const handleLanguageChange = (code: string) => {

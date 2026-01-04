@@ -12,8 +12,8 @@
         </svg>
       </div>
       <div class="text-content">
-        <h3 class="title">{{ t('pwa.installTitle') }}</h3>
-        <p class="message">{{ t('pwa.installMessage') }}</p>
+        <h3 class="title">{{ t('locales.pwa.installTitle') }}</h3>
+        <p class="message">{{ t('locales.pwa.installMessage') }}</p>
       </div>
       <button class="close-btn" @click="dismissPrompt">
         <svg class="close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -28,10 +28,10 @@
     </div>
     <div class="button-group">
       <button class="btn-install" @click="install">
-        {{ t('pwa.install') }}
+        {{ t('locales.pwa.install') }}
       </button>
       <button class="btn-later" @click="dismissPrompt">
-        {{ t('pwa.later') }}
+        {{ t('locales.pwa.later') }}
       </button>
     </div>
   </div>
