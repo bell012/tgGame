@@ -16,7 +16,7 @@
       <div class="w-full px-4 py-4 border-y border-[#e4eaf019]">
         <div class="flex w-full flex-wrap gap-x-10 divide-x divide-[#e4eaf019]">
           <!-- 左边5个图标 -->
-          <div class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6">
+          <div class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 cursor-pointer">
             <img
               v-for="cert in leftCertifications"
               :key="cert.id"
@@ -28,7 +28,7 @@
           </div>
 
           <!-- 右边5个图标 -->
-          <div class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 pl-6">
+          <div class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 cursor-pointer pl-6">
             <img
               v-for="cert in rightCertifications"
               :key="cert.id"
@@ -192,7 +192,7 @@
           </div>
 
           <!-- 右边：认证图标 -->
-          <div class="flex-1">
+          <div class="flex-1 cursor-pointer">
             <img
               :src="footer4_2Image"
               alt="Certification"
