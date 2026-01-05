@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home max-w-[1248px] mx-auto px-4 py-4">
     <img src="./headBack.png" />
     <!-- {{ $t('locales.home.home') }} -->
     <div class="flex items-center sm:mt-6 h-8">
@@ -150,11 +150,14 @@
       </div>
     </div>
   </div>
+
+  <CommonFooter />
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import icon from './img/icon.svg?url'
+import CommonFooter from '@/components/commonFooter.vue'
 
 // const listImg = [
 //   {
@@ -163,6 +166,7 @@ import icon from './img/icon.svg?url'
 //     icon: icon
 //   }
 // ]
+
 const carouselVal = ref(0)
 const carousel = (val: any) => {
   carouselVal.value = val
