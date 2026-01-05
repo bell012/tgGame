@@ -2,22 +2,16 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="modelValue" class="modal-overlay" @click="handleClose">
-        <div class="modal-container rounded-xl max-w-[416px] min-h-[600px] w-full" @click.stop>
+        <div class="modal-container rounded-xl max-w-[416px] h-3/4 w-full" @click.stop>
           <!-- 关闭按钮 -->
           <button
-            class="hidden md:flex w-full h-12 rounded-lg px-4 items-center justify-end"
+            class="flex w-full h-12 rounded-lg px-4 items-center justify-end"
             @click="handleClose"
           >
             <div class="w-8 h-8 bg-[#464f50] rounded-md flex items-center justify-center">
               <CloseIcon class="w-4 h-4 stroke-text-1" />
             </div>
           </button>
-          <div class="modal-title hidden sm:flex">
-            <div class="flex flex-col w-full">
-              <div class="w-11 h-1 rounded-sm bg-layer6 mx-auto mb-2.5"></div>
-              <div class="text-center"></div>
-            </div>
-          </div>
 
           <!-- 标签页 -->
           <div class="flex">
@@ -282,19 +276,6 @@ const selectCurrency = (code: string) => {
   position: relative;
   display: flex;
   flex-direction: column;
-}
-
-.modal-title {
-    position: absolute;
-    top: 0;
-    width: 100%;
-    justify-content: center;
-    align-items: center;
-    font-weight: 800;
-    height: 3.5rem;
-    font-size: 1rem;
-    flex: none;
-    color: var(--color-text-level-1);
 }
 
 .tab {

@@ -6,7 +6,7 @@
         class="fixed inset-0 bg-[#000a] flex items-center justify-center z-[10000] overflow-hidden"
       >
         <div
-          class="relative w-full max-w-[800px] h-full max-h-[640px] overflow-hidden rounded-2xl modal-container"
+          class="relative w-full max-w-[800px] h-full sm:max-h-[640px] overflow-hidden rounded-2xl modal-container"
         >
           <div
             class="absolute inset-0 flex rounded-2xl overflow-hidden transition-all duration-500 ease-in-out"
