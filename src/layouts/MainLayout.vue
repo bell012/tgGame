@@ -18,7 +18,7 @@
             : `${layoutStore.SIDEBAR_WIDTH_EXPANDED}px`
         }"
       >
-        <div class="p-5">
+        <div>
           <router-view />
         </div>
       </main>
