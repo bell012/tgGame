@@ -179,7 +179,7 @@
                 </template>
 
                 <!-- 注册提示 -->
-                <div class="text-center mt-6 mb-6">
+                <div class="text-left mt-6 mb-6">
                   <span class="text-[14px] text-text-1">您是 BC.GAME的新用户？</span>
                   <button
                     class="text-theme-primary text-[14px] ml-2 font-[800]"
