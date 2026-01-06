@@ -1,5 +1,14 @@
 <template>
-  <teleport to="body">
+  <!-- H5 端登录 -->
+  <LoginFormMobile
+    v-if="isMobile"
+    :visible="modelValue && activeTab === 'login'"
+    @update:visible="handleClose"
+    @switch-to-register="switchToRegister"
+  />
+
+  <!-- PC 端登录 -->
+  <teleport v-if="!isMobile" to="body">
     <transition name="modal-fade">
       <div
         v-if="modelValue"
@@ -74,7 +83,7 @@
 
             <!-- 右侧表单区域 -->
             <div class="w-1/2 bg-bg-1 py-5 px-6">
-              <LoginForm @switch-to-register="switchToRegister" />
+              <LoginFormDesktop @switch-to-register="switchToRegister" />
             </div>
           </div>
 
@@ -160,8 +169,13 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import GiftIcon from '@/static/svg/login/gift.svg?component'
 import TurntableIcon from '@/static/svg/login/turntable.svg?component'
 import FreePerksIcon from '@/static/svg/login/free_perks.svg?component'
-import LoginForm from './LoginForm.vue'
+import LoginFormDesktop from './LoginFormDesktop.vue'
 import RegisterForm from './RegisterForm.vue'
+import LoginFormMobile from './LoginFormMobile.vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
+
+// 检测是否为移动端
+const isMobile = useIsMobile()
 
 interface Props {
   modelValue: boolean
