@@ -19,6 +19,9 @@ export const useLayoutStore = defineStore('layout', () => {
   /** H5/移动端 (px) */
   const MOBILE_BREAKPOINT = 640
 
+  /** 侧边栏自动折叠断点 (px) */
+  const SIDEBAR_COLLAPSE_BREAKPOINT = 1284
+
   /** 侧边栏展开宽度  */
   const sidebarWidthExpandedClass = `w-[${SIDEBAR_WIDTH_EXPANDED}px]`
 
@@ -52,6 +55,7 @@ export const useLayoutStore = defineStore('layout', () => {
     TOPNAV_HEIGHT,
     BOTTOM_TAB_HEIGHT,
     MOBILE_BREAKPOINT,
+    SIDEBAR_COLLAPSE_BREAKPOINT,
 
     sidebarWidthExpandedClass,
     sidebarWidthCollapsedClass,

@@ -6,7 +6,11 @@
     <!-- PC布局 (>640px) -->
     <div class="hidden sm:flex">
       <!-- 侧边栏 -->
-      <Sidebar ref="sidebarRef" @open-language-modal="openLanguageModal" />
+      <Sidebar
+        ref="sidebarRef"
+        @open-language-modal="openLanguageModal"
+        @collapse-change="handleCollapseChange"
+      />
 
       <!-- 主内容区 -->
       <main
@@ -59,8 +63,11 @@ const isSidebarCollapsed = ref(false)
 const toggleSidebar = () => {
   if (sidebarRef.value) {
     sidebarRef.value.toggleCollapse()
-    isSidebarCollapsed.value = !isSidebarCollapsed.value
   }
+}
+
+const handleCollapseChange = (collapsed: boolean) => {
+  isSidebarCollapsed.value = collapsed
 }
 
 const openLanguageModal = () => {
