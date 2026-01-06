@@ -35,6 +35,13 @@
     "light": "Light Mode",
     "dark": "Dark Mode",
     "system": "System"
+  },
+  "search": {
+    "placeholder": "Search games",
+    "history": "History",
+    "clear": "Clear search",
+    "suggested": "Suggested",
+    "sort": "Sort By:",
+    "providers": "Providers:"
   }
 }
-

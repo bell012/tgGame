@@ -27,13 +27,14 @@
     <!-- H5布局 (<=640px) -->
     <div class="sm:hidden">
       <!-- 主内容区 -->
-      <main class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out"
+      <main
+        class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out"
         :style="{
           marginTop: `${layoutStore.TOPNAV_HEIGHT}px`,
           marginBottom: `${layoutStore.BOTTOM_TAB_HEIGHT}px`
         }"
       >
-        <div class="p-4">
+        <div class="p-4 px-[14px] bg-[var(--color-background-level-1)]">
           <router-view />
         </div>
       </main>

@@ -35,6 +35,13 @@
     "light": "浅色模式",
     "dark": "暗黑模式",
     "system": "跟随系统"
+  },
+  "search": {
+    "placeholder": "搜寻游戏",
+    "history": "历史",
+    "clear": "清除搜寻",
+    "suggested": "建议",
+    "sort": "排序方式:",
+    "providers": "供应商:"
   }
 }
-
