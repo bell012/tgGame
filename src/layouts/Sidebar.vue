@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import Menu from '@/components/Menu.vue'
 import { useLayoutStore } from '@/stores/layout'
 
@@ -23,11 +23,38 @@ const isCollapsed = ref(false)
 
 const emit = defineEmits<{
   'open-language-modal': []
+  'collapse-change': [collapsed: boolean]
 }>()
+
+let mediaQuery: MediaQueryList | null = null
+
+const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
+  if (e.matches) {
+    isCollapsed.value = true
+  } else {
+    isCollapsed.value = false
+  }
+  emit('collapse-change', isCollapsed.value)
+}
+
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    mediaQuery = window.matchMedia(`(max-width: ${layoutStore.SIDEBAR_COLLAPSE_BREAKPOINT}px)`)
+    handleMediaChange(mediaQuery)
+    mediaQuery.addEventListener('change', handleMediaChange)
+  }
+})
+
+onUnmounted(() => {
+  if (mediaQuery) {
+    mediaQuery.removeEventListener('change', handleMediaChange)
+  }
+})
 
 defineExpose({
   toggleCollapse: () => {
     isCollapsed.value = !isCollapsed.value
+    emit('collapse-change', isCollapsed.value)
   }
 })
 </script>

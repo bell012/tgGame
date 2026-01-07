@@ -7,7 +7,7 @@
           class="hidden md:flex cursor-pointer search w-[40px] h-[40px] rounded-lg flex items-center justify-center"
           @click="handleToggleSidebar"
         >
-          <FoldIcon class="w-6 h-6 fill-text-2 fill-none" />
+          <FoldIcon class="w-6 h-6 fill-none" />
         </div>
         <div
           class="w-[150px] h-[48px] ml-0 md:ml-5 flex items-center cursor-pointer"
@@ -23,18 +23,18 @@
           class="hidden md:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
           @click="openExploreModal"
         >
-          <SearchIcon class="w-6 h-6 fill-text-2 fill-none" />
+          <SearchIcon class="w-6 h-6 fill-none" />
         </div>
         <!-- 登入 -->
         <div
-          class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center bg-transparent border-2 border-[#e4eaf019] mr-1"
+          class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center bg-transparent border-0 md:border-2 border-[#e4eaf019] mr-1"
           @click="openLoginModal"
         >
           {{ t('locales.home.sign_In') }}
         </div>
         <!-- 注册 -->
         <div
-          class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center btn-primary mr-3"
+          class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center btn-primary mr-0 md:mr-3"
           @click="openRegisterModal"
         >
           {{ t('locales.home.sign_Up') }}
@@ -42,7 +42,7 @@
         <div
           class="hidden md:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
         >
-          <ChatIcon class="w-6 h-6 fill-text-2 fill-none" />
+          <ChatIcon class="w-6 h-6 fill-none" />
         </div>
         <div
           class="flex items-center justify-center w-auto h-[40px] rounded-lg overflow-hidden relative"
@@ -51,7 +51,7 @@
             class="hidden md:flex items-center justify-center cursor-pointer search w-[40px] h-[40px]"
             @click="openLanguageModal"
           >
-            <LanguageIcon class="w-6 h-6 fill-text-2 fill-none" />
+            <LanguageIcon class="w-6 h-6 fill-none" />
           </div>
           <template v-if="localeStore.currentCurrency !== 'none'">
             <div class="absolute left-10 top-2 h-6 w-[1px] line"></div>
