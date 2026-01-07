@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-bg-3">
+  <div class="min-h-screen">
     <!-- 顶部导航 -->
     <TopNav ref="topNavRef" @toggle-sidebar="toggleSidebar" />
 
