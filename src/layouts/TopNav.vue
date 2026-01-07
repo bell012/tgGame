@@ -21,6 +21,7 @@
       <div class="flex-1 flex items-center justify-end">
         <div
           class="hidden md:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
+          @click="openExploreModal"
         >
           <SearchIcon class="w-6 h-6 fill-text-2 fill-none" />
         </div>
@@ -74,10 +75,10 @@
     />
 
     <!-- 登录/注册弹窗 -->
-    <LoginModal
-      v-model="showLoginModal"
-      :default-tab="loginModalTab"
-    />
+    <LoginModal v-model="showLoginModal" :default-tab="loginModalTab" />
+
+    <!-- PC 搜索弹窗 -->
+    <ExploreDesktop v-model="showExplorehModal" />
   </header>
 </template>
 
@@ -89,6 +90,7 @@ import { useLayoutStore } from '@/stores/layout'
 import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
 import LoginModal from '@/components/login_register/LoginModal.vue'
+import ExploreDesktop from '@/components/explore/ExploreDesktop.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
 import ChatIcon from '@/static/svg/chat.svg?component'
@@ -107,6 +109,8 @@ const modalType = ref<'language' | 'currency'>('language')
 
 const showLoginModal = ref(false)
 const loginModalTab = ref<'login' | 'register'>('login')
+
+const showExplorehModal = ref(false)
 
 const handleToggleSidebar = () => {
   emit('toggle-sidebar')
@@ -130,6 +134,10 @@ const openLoginModal = () => {
 const openRegisterModal = () => {
   loginModalTab.value = 'register'
   showLoginModal.value = true
+}
+
+const openExploreModal = () => {
+  showExplorehModal.value = true
 }
 
 const handleLanguageChange = (code: string) => {
