@@ -182,6 +182,9 @@ import LoginFormMobile from './LoginFormMobile.vue'
 import RegisterFormDesktop from './RegisterFormDesktop.vue'
 import RegisterFormMobile from './RegisterFormMobile.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 // 检测是否为移动端
 const isMobile = useIsMobile()
@@ -221,6 +224,7 @@ watch(
 
 const handleClose = () => {
   emit('update:modelValue', false)
+  router.back()
 }
 
 const isAnimating = ref(false)
@@ -250,28 +254,30 @@ const getRegisterClass = () => {
 
 const switchToRegister = () => {
   if (isAnimating.value) return
-  isAnimating.value = true
-  isSliding.value = true
+  router.push('/login/regist')
+  // isAnimating.value = true
+  // isSliding.value = true
 
-  activeTab.value = 'register'
+  // activeTab.value = 'register'
 
-  setTimeout(() => {
-    isAnimating.value = false
-    isSliding.value = false
-  }, 500)
+  // setTimeout(() => {
+  //   isAnimating.value = false
+  //   isSliding.value = false
+  // }, 500)
 }
 
 const switchToLogin = () => {
   if (isAnimating.value) return
-  isAnimating.value = true
-  isSliding.value = true
+  router.push('/login/signin')
+  // isAnimating.value = true
+  // isSliding.value = true
 
-  activeTab.value = 'login'
+  // activeTab.value = 'login'
 
-  setTimeout(() => {
-    isAnimating.value = false
-    isSliding.value = false
-  }, 500)
+  // setTimeout(() => {
+  //   isAnimating.value = false
+  //   isSliding.value = false
+  // }, 500)
 }
 </script>
 
