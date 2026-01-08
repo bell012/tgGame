@@ -159,11 +159,15 @@
         </div>
       </div>
     </div>
+    <div>
+      <GameList />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import GameList from './components/gameList.vue'
 import icon from './img/Image4.svg?url'
 import icon1 from './img/Image.svg?url'
 import icon2 from './img/Image1.svg?url'
