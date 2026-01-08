@@ -14,7 +14,7 @@
               rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)]
               shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset]
               font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)]" 
-              type="button" @click.stop="navigateTo('/login/regist')" >{{ t('locales.home.join_now') }}</button>
+              type="button">{{ t('locales.home.join_now') }}</button>
           </div>
       </div>
       <div class="flex items-center self-stretch py-[10px] px-[10px] rounded-lg border mt-[10px]
@@ -28,12 +28,12 @@
         <img class="w-[18px] h-[18px]" src="/src/static/img/casino/search.webp" alt="search"/>
         <input class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0" placeholder="Search games">
       </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
-  import { navigateTo } from '@/utils/router'
 
   const { t } = useI18n()
 </script>

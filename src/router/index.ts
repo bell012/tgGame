@@ -71,30 +71,6 @@ const baseRoutes: RouteRecordRaw[] = [
       title: '聊天',
     }
   },
-  {
-    path: 'login',
-    name: 'login',
-    component: () => import('@/views/login/signin.vue'),
-    meta: {
-      title: '登录',
-    }
-  },
-  {
-    path: 'login/signin',
-    name: 'signin',
-    component: () => import('@/views/login/signin.vue'),
-    meta: {
-      title: '登录',
-    }
-  },
-  {
-    path: 'login/regist',
-    name: 'regist',
-    component: () => import('@/views/login/regist.vue'),
-    meta: {
-      title: '注册',
-    }
-  },
 ]
 
 // 生成带语言前缀的路由
