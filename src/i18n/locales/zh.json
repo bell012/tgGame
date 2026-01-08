@@ -42,6 +42,8 @@
     "clear": "清除搜寻",
     "suggested": "建议",
     "sort": "排序方式:",
-    "providers": "供应商:"
+    "providers": "供应商:",
+    "botClear": "全部清除",
+    "all": "全部"
   }
 }

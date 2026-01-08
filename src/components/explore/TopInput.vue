@@ -8,14 +8,14 @@
       <div class="text-[12px] font-[700] mr-[6px]">{{ currentType.name }}</div>
       <pull_down class="w-2 h-2" />
       <div class="w-[1px] h-[26px] mx-2.5 bg-[var(--color-border-level-1)]"></div>
-      <SearchIcon class="w-[18px] h-[18px] fill-none stroke-text-2" />
+      <SearchIcon class="w-[18px] h-[18px] fill-none stroke-text-2 opacity-50" />
     </div>
 
     <input
       v-model="keyword"
       type="text"
       :placeholder="t('locales.search.placeholder')"
-      class="w-full h-10 pl-[110px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-[var(--color-border-level-1)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+      class="w-full h-[42px] pl-[110px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-[var(--color-border-level-1)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
       @keydown.enter.prevent="onSearch"
       @focus="isOpen = true"
       @blur="onBlur"
@@ -106,12 +106,11 @@
 
 <script setup lang="ts">
 import { ref, watch, onBeforeUnmount } from 'vue'
-import TypePopup from '@/components/explore/TypePopup.vue'
+import TypePopup from '@/components/explore/mobile/TypePopup.vue'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import pull_down from '@/static/svg/explore/pull-down.svg?component'
 import { useI18n } from 'vue-i18n'
-
 const { t } = useI18n()
 
 /* ===================== 搜索输入 & 历史数据 ===================== */

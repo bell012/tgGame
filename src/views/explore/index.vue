@@ -2,73 +2,60 @@
   <div class="explore-page min-h-screen">
     <TopInput />
     <!-- 顶部横行滚动tab选择 -->
-    <div class="w-full my-3.5">111</div>
-
-    <!-- 排序和供应商筛选 -->
-    <div class="w-full flex items-center justify-between gap-[11px]">
-      <!-- 排序 -->
+    <div class="w-full my-3.5 overflow-x-auto scrollbar-none flex flex-nowrap gap-2.5">
       <div
-        class="px-2.5 py-[11px] w-full flex justify-between items-center border border-[var(--color-border-level-1)] bg-[var(--color-opacity-6)] rounded-lg"
-        @click="sortVisible = true"
+        v-for="(item, inx) in tabList"
+        :key="inx"
+        :class="{ 'bg-[var(--color-opacity-10)]': item.id === currentTabId }"
+        class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center"
+        @click="currentTabId = item.id"
       >
-        <div class="flex items-center font-medium text-xs">
-          <div class="mr-2.5">{{ t('locales.search.sort') }}</div>
-          <div>{{ currentSort.name }}</div>
-        </div>
-        <div>
-          <pull_down class="w-2 h-2" />
-        </div>
-      </div>
-
-      <!-- 供应商 -->
-      <div
-        class="px-2.5 py-[11px] w-full flex justify-between items-center border border-[var(--color-border-level-1)] bg-[var(--color-opacity-6)] rounded-lg"
-      >
-        <div class="flex items-center font-medium text-xs">
-          <div class="mr-2.5">{{ t('locales.search.providers') }}</div>
-          <div>All</div>
-        </div>
-        <div>
-          <pull_down class="w-2 h-2" />
+        <img
+          :src="item.id === currentTabId ? item.iconActive : item.icon"
+          alt=""
+          class="w-5 h-5 mr-[7px]"
+        />
+        <div class="font-[700]">
+          {{ item.name }}
         </div>
       </div>
     </div>
 
-    <!-- 排序弹窗 -->
-    <SortPopup
-      v-model:visible="sortVisible"
-      :sortList="sortList"
-      :selectedId="currentSort.id"
-      @confirm="handleSortConfirm"
-    />
+    <!-- 排序和供应商筛选 -->
+    <div class="w-full flex items-center justify-between gap-[11px]">
+      <!-- 排序 -->
+      <SortSelect />
+
+      <!-- 供应商 -->
+      <ProviderSelect />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import TopInput from '@/components/explore/TopInput.vue'
-import SortPopup from '@/components/explore/SortPopup.vue'
-import pull_down from '@/static/svg/explore/pull-down.svg?component'
-const { t } = useI18n()
+import SortSelect from '@/components/explore/SortSelect.vue'
+import ProviderSelect from '@/components/explore/ProviderSelect.vue'
+import g1Img from '@/static/img/explore/g1.png'
+import g1aImg from '@/static/img/explore/g1a.png'
+import g2Img from '@/static/img/explore/g2.png'
+import g2aImg from '@/static/img/explore/g2a.png'
+import g3Img from '@/static/img/explore/g3.png'
+import g3aImg from '@/static/img/explore/g3a.png'
+import g4Img from '@/static/img/explore/g4.png'
+import g4aImg from '@/static/img/explore/g4a.png'
+import g5Img from '@/static/img/explore/g5.png'
+import g5aImg from '@/static/img/explore/g5a.png'
 
-/* ===================== 排序筛选 ===================== */
-const sortList = ref([
-  { id: 1, name: '热门' },
-  { id: 2, name: '最新' },
-  { id: 3, name: 'A-Z' },
-  { id: 4, name: 'Z-A' }
-]) // 排序列表
-const currentSort = ref(sortList.value[0]) // 当前选中的排序
-const sortVisible = ref(false) // 排序弹窗显示隐藏
-
-// 排序选择确认
-const handleSortConfirm = (_val: object) => {
-  currentSort.value = _val
-  console.log('-------', _val)
-  sortVisible.value = false
-}
-/* ===================== end===================== */
+const currentTabId = ref(1)
+const tabList = ref([
+  { id: 1, name: '所有游戏', icon: g1Img, iconActive: g1aImg },
+  { id: 2, name: '热门游戏', icon: g2Img, iconActive: g2aImg },
+  { id: 3, name: '老虎机', icon: g3Img, iconActive: g3aImg },
+  { id: 4, name: '娱乐城', icon: g4Img, iconActive: g4aImg },
+  { id: 5, name: '棋牌游戏', icon: g5Img, iconActive: g5aImg }
+])
 </script>
 
 <style scoped lang="scss"></style>

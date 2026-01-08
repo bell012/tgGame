@@ -42,6 +42,8 @@
     "clear": "Clear search",
     "suggested": "Suggested",
     "sort": "Sort By:",
-    "providers": "Providers:"
+    "providers": "Providers:",
+    "botClear": "Clear All",
+    "all": "All"
   }
 }

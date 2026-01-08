@@ -1,5 +1,4 @@
 <template>
-  <!-- H5 端：排序弹窗 UI（逻辑来自 Core 的 slot props） -->
   <Teleport to="body">
     <!-- 遮罩淡入淡出 -->
     <transition name="popup-fade">
@@ -28,7 +27,7 @@
           <!-- 选择的内容 -->
           <div class="flex flex-col">
             <div
-              v-for="(item, inx) in list"
+              v-for="(item, inx) in sortList"
               :key="inx"
               class="tp-item mb-2.5 px-2.5 flex items-center justify-between h-[42px] rounded-lg"
               :class="isSelected(item) ? 'bg-[var(--color-opacity-10)]' : ''"
@@ -52,14 +51,23 @@ import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
 
 type OptionItem = { id: number | string; name: string }
 
-defineProps<{
+const props = defineProps<{
   visible: boolean
-  list: OptionItem[]
+  sortList: OptionItem[]
   selectedId?: number | string
-  close: () => void
-  confirm: (item: OptionItem) => void
-  isSelected: (item: OptionItem) => boolean
 }>()
+
+const emit = defineEmits<{
+  'update:visible': [val: boolean]
+  confirm: [val: OptionItem]
+}>()
+
+const close = () => emit('update:visible', false)
+const isSelected = (item: OptionItem) => item.id === props.selectedId
+const confirm = (item: OptionItem) => {
+  emit('confirm', item)
+  close()
+}
 </script>
 
 <style scoped lang="scss">

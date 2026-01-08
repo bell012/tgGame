@@ -84,7 +84,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TopInput from '@/components/explore/TopInput.vue'
-import SortPopup from '@/components/explore/SortPopup.vue'
+import SortPopup from '@/components/explore/mobile/SortPopup.vue'
 import pull_down from '@/static/svg/explore/pull-down.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 
