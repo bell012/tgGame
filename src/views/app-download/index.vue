@@ -373,8 +373,228 @@
       </main>
     </div>
 
-    <!-- H5端 -->
-    <div class="block sm:hidden">H5端</div>
+    <!-- H5端 - 统一布局 -->
+    <div
+      v-if="deviceType === 'ios' || deviceType === 'android' || deviceType === 'other'"
+      class="block sm:hidden"
+    >
+      <div class="h5-page">
+        <header class="fixed top-2 left-0 right-0 z-50 h-14 px-2 headBg">
+          <div class="h-14 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <img src="/src/static/img/app-download/app_download_1.webp" alt="" class="w-9 h-9" />
+              <div class="flex flex-col items-start">
+                <span class="text-xs text-text-1 font-[800]">BC.GAME</span>
+                <span class="text-xs text-theme-level-1 font-[800]">App</span>
+              </div>
+            </div>
+            <button
+              class="h-9 px-3 btn-primary rounded-lg text-sm text-text-4 font-[600]"
+              @click="deviceType === 'ios' ? handleIOSDownload() : handleAndroidDownload()"
+            >
+              下载 App
+            </button>
+          </div>
+        </header>
+
+        <main class="pt-10">
+          <section class="flex flex-col items-center">
+            <span class="text-xl text-center text-text-1">下载应用并</span>
+            <h2 class="text-3xl font-[800] text_color text-center pt-3">领取高达 $50</h2>
+            <h2 class="text-3xl font-[800] text-text-1 text-center">的奖金奖励</h2>
+
+            <div class="w-full flex gap-4 pt-[360px] px-8">
+              <button
+                class="h-9 px-4 btn-primary rounded-md text-sm text-text-4 font-[600]"
+                @click="handleH5DownloadClick"
+              >
+                下载 App
+              </button>
+              <button
+                class="flex-1 h-10 px-4 rounded-md text-sm text-theme-primary font-[600] bg-transparent border-[1.5px] border-solid border-[#3c4142]"
+                @click="goHome"
+              >
+                返回主页
+              </button>
+            </div>
+
+            <div class="mt-5 px-8">
+              <div class="flex gap-2 p-2 rounded-lg text_bg">
+                <LoginIcon2 class="w-6 h-6 fill-text-1" />
+                <p class="text-xs text-text-2 leading-relaxed">
+                  您的奖励将发放至您的
+                  <span class="text-text-1 underline">返水账户</span>
+                  。奖励金额将随您的 VIP 等级提升。此优惠每位用户仅限领取一次。
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section id="h5-install-steps" class="pt-10">
+            <div class="flex flex-col gap-5">
+              <div class="mx-5">
+                <h3 class="text-2xl font-[800] text-theme-primary text-center">
+                  {{ deviceType === 'ios' ? 'iOS' : 'Android' }}
+                </h3>
+                <p class="text-lg font-[600] text-text-1 text-center">用户安装步骤</p>
+              </div>
+
+              <div class="w-11/12 mx-auto rounded-xl h5_step_bg">
+                <div class="mx-5 px-5 pt-5 pb-2 gap-2">
+                  <div class="mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-20 h-20">
+                        <img
+                          :src="`/src/static/img/app-download/${deviceType === 'ios' ? 'ios' : 'android'}_h5_1.webp`"
+                          alt=""
+                          class="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div class="flex-1">
+                        <h4 class="text-base font-[800] text-text-1">Step 01</h4>
+                        <p class="text-sm font-[600] text-text-2">
+                          {{
+                            deviceType === 'ios'
+                              ? 'Download from the App Store, then return to this page without opening the app'
+                              : 'Download the APK File on your mobile device'
+                          }}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      class="w-full h-12 btn-primary rounded-md flex items-center justify-center gap-1 mt-4"
+                      @click="deviceType === 'ios' ? handleIOSDownload() : handleAndroidDownload()"
+                    >
+                      <img
+                        src="/src/static/img/app-download/app_download_7.png"
+                        alt=""
+                        class="w-6 h-6"
+                      />
+                      <span class="text-base text-text-4 font-[800]">
+                        {{ deviceType === 'ios' ? 'Download on App Store' : 'Download App' }}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div class="flex justify-center mb-4">
+                    <img :src="currentArrowImage" alt="" class="w-6 h-6 rotate-360" />
+                  </div>
+
+                  <div class="mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-20 h-20">
+                        <img
+                          :src="`/src/static/img/app-download/${deviceType === 'ios' ? 'ios' : 'android'}_h5_2.webp`"
+                          alt=""
+                          class="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div class="flex-1">
+                        <h4 class="text-base font-[800] text-text-1">Step 02</h4>
+                        <p class="text-sm font-[600] text-text-2">
+                          {{
+                            deviceType === 'ios'
+                              ? 'Tap the link below to unlock the app'
+                              : 'Install the APK on your device'
+                          }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      v-if="deviceType === 'ios'"
+                      class="w-full h-12 btn-primary rounded-md flex items-center justify-center gap-1 mt-4"
+                      @click="handleIOSUnlock"
+                    >
+                      <span class="text-base text-text-4 font-[800]">Click to Unlock App</span>
+                    </button>
+                  </div>
+
+                  <div v-if="deviceType === 'ios'" class="flex justify-center mb-4">
+                    <img :src="currentArrowImage" alt="" class="w-6 h-6 rotate-360" />
+                  </div>
+
+                  <div class="mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-20 h-20">
+                        <img
+                          :src="`/src/static/img/app-download/${deviceType === 'ios' ? 'ios' : 'android'}_h5_3.webp`"
+                          alt=""
+                          class="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div class="flex-1">
+                        <h4 class="text-base font-[800] text-text-1">Step 03</h4>
+                        <p class="text-sm font-[600] text-text-2">
+                          Open the app and sign in to claim your rewards
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="py-10">
+            <div class="mx-auto w-2/3 text-center flex flex-col items-center justify-center gap-3">
+              <img
+                src="/src/static/img/app-download/app_download_BG_2_H5.webp"
+                alt=""
+                class="w-full h-auto object-contain"
+              />
+              <button
+                class="w-full h-12 mt-4 btn-primary rounded-md text-base text-text-4 font-[800]"
+                @click="deviceType === 'ios' ? handleIOSDownload() : handleAndroidDownload()"
+              >
+                下载
+              </button>
+            </div>
+          </section>
+
+          <footer class="mt-5 p-8 footer">
+            <div class="w-full mx-auto">
+              <div class="flex items-start justify-between mb-8">
+                <img src="/src/static/img/home/logo.png" alt="" class="w-36 h-auto" />
+              </div>
+
+              <div class="mb-6 space-y-3">
+                <p class="text-xs text-text-2 leading-relaxed">
+                  BC.GAME is a community-based crypto casino that offers their players the best
+                  online casino experience possible-
+                </p>
+                <p class="text-xs text-text-2 leading-relaxed">
+                  At BC.GAME, we are convinced that blockchain will change the online crypto
+                  gambling industry forever. Jump in and check it out for yourself!
+                </p>
+                <p class="text-xs text-text-2">Have fun and earn crypto!</p>
+              </div>
+
+              <div class="mb-6">
+                <h3 class="text-xs font-[600] text-text-2 mb-3">Accepted Networks</h3>
+                <img
+                  src="/src/static/img/app-download/app_download_bot.webp"
+                  alt=""
+                  class="w-full h-auto"
+                />
+              </div>
+
+              <div class="mb-4">
+                <p class="text-xs text-text-2 leading-relaxed">
+                  BC.GAME is operated by BlockDance B.V. (Commercial register of Curaçao no.158182,
+                  Emancipatie Boulevard Dominico F. "Don" Martina 31, Curaçao) under a sublicense
+                  CIL pursuant to Master gaming License #5536/JAZ.
+                </p>
+              </div>
+
+              <div class="text-center pt-4 border-[1px] border-solid border-[#1d1e1e]">
+                <p class="text-xs text-text-2">©2025 BC.Game All Rights Reserved</p>
+              </div>
+            </div>
+          </footer>
+        </main>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -389,6 +609,23 @@ import { navigateTo } from '@/utils/router'
 //   ios: '',
 //   android: ''
 // })
+
+// 设备类型检测
+type DeviceType = 'ios' | 'android' | 'other'
+const deviceType = ref<DeviceType>('other')
+
+// 检测设备类型
+const detectDevice = (): DeviceType => {
+  const userAgent = navigator.userAgent.toLowerCase()
+
+  if (/iphone|ipad|ipod/.test(userAgent)) {
+    return 'ios'
+  } else if (/android/.test(userAgent)) {
+    return 'android'
+  } else {
+    return 'other'
+  }
+}
 
 // 二维码 canvas
 const qrCode1 = ref<HTMLCanvasElement>()
@@ -413,7 +650,7 @@ const goHome = () => {
   navigateTo('/')
 }
 
-// 锚点
+// 锚点 (PC端使用)
 const handleDownload = (platform: 'ios' | 'android') => {
   const sectionId = platform === 'ios' ? 'ios-section' : 'android-section'
   const section = document.getElementById(sectionId)
@@ -426,6 +663,35 @@ const handleDownload = (platform: 'ios' | 'android') => {
     top,
     behavior: 'smooth'
   })
+}
+
+// 锚点 (H5端使用)
+const handleH5DownloadClick = () => {
+  const section = document.getElementById('h5-install-steps')
+  if (!section) return
+
+  const offset = 40
+  const top = section.getBoundingClientRect().top + window.scrollY - offset
+
+  window.scrollTo({
+    top,
+    behavior: 'smooth'
+  })
+}
+
+// iOS 下载处理
+const handleIOSDownload = () => {
+  console.log('iOS 下载:')
+}
+
+// Android 下载处理
+const handleAndroidDownload = () => {
+  console.log('Android 下载:')
+}
+
+// iOS 解锁处理
+const handleIOSUnlock = () => {
+  console.log('iOS 解锁逻辑')
 }
 
 // 生成二维码
@@ -447,6 +713,8 @@ const generateQRCode = async (canvas: HTMLCanvasElement | undefined, url: string
 }
 
 onMounted(() => {
+  deviceType.value = detectDevice()
+
   const url = 'https://www.google.com'
   // 小二维码
   generateQRCode(qrCode1.value, url, 56)
@@ -552,5 +820,38 @@ onUnmounted(() => {
 .footer {
   background-color: #141515;
   border: 1px solid #262829;
+}
+
+/* H5 端样式 */
+.h5-page {
+  background-color: #000;
+  min-height: 100vh;
+  background-image: url('/src/static/img/app-download/app_download_BG_1_H5.webp');
+  background-size: 100% auto;
+  background-position: top center;
+  background-repeat: no-repeat;
+}
+.headBg {
+  background: #0d090699;
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  width: 96%;
+  left: 2%;
+  position: sticky;
+}
+
+.h5_step_bg {
+  background-color: rgba(255, 255, 255, 0.1);
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 90%;
+    height: 2px;
+    transform: translateX(-50%);
+    background: linear-gradient(270deg, #2fee8700, #2fee8780 54.5%, #2fee8700);
+  }
 }
 </style>
