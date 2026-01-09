@@ -1,6 +1,5 @@
 <template>
-  <AppDownloadCore v-slot="{ downloadLinks, handleDownload }">
-    <div class="min-h-screen bg-[#000]">
+  <div class="min-h-screen bg-[#000]">
       <!-- PC端 - 大于640px显示 -->
       <div class="hidden sm:block md:min-w-[1280px] pcBG">
         <header class="fixed top-0 left-0 right-0 z-50 h-14 bg-[#0d090699]">
@@ -80,7 +79,7 @@
             </div>
           </section>
 
-          <section class="w-[1280px] mx-auto">
+          <section id="ios-section" class="w-[1280px] mx-auto">
             <div class="px-4">
               <h2 class="text-4xl font-[800] text-theme-level-1 text-center pb-2">iOS</h2>
               <p class="text-lg font-[600] text-text-1 text-center mb-3">用户安装步骤</p>
@@ -104,9 +103,7 @@
                   </p>
                   <div class="flex items-end gap-3 relative">
                     <button
-                      class="flex-1 flex items-center justify-center w-full h-11 mt-4 mx-5 btn-primary rounded-lg"
-                      @click="handleDownload('ios')"
-                    >
+                      class="flex-1 flex items-center justify-center w-full h-11 mt-4 mx-5 btn-primary rounded-lg">
                       <span class="text-base text-text-4">扫码下载</span>
                       <img
                         src="/src/static/img/app-download/app_download_7.png"
@@ -153,9 +150,7 @@
                   </p>
                   <div class="flex items-center gap-3 relative">
                     <button
-                      class="flex-1 flex items-center justify-center w-full h-11 mt-4 mx-5 btn-primary rounded-lg"
-                      @click="handleUnlock"
-                    >
+                      class="flex-1 flex items-center justify-center w-full h-11 mt-4 mx-5 btn-primary rounded-lg">
                       <span class="text-base text-text-4">扫码解锁</span>
                       <img
                         src="/src/static/img/app-download/app_download_7.png"
@@ -201,7 +196,7 @@
             </div>
           </section>
 
-          <section class="w-[1280px] mx-auto mt-8">
+          <section id="android-section" class="w-[1280px] mx-auto mt-8">
             <div class="px-4">
               <h2 class="text-4xl font-[800] text-theme-level-1 text-center pb-2">Android</h2>
               <p class="text-lg font-[600] text-text-1 text-center mb-3">用户安装步骤</p>
@@ -225,9 +220,7 @@
                   </p>
                   <div class="flex items-end gap-3 relative">
                     <button
-                      class="flex-1 flex items-center justify-center w-full h-11 mt-4 mx-5 btn-primary rounded-lg"
-                      @click="handleDownload('android')"
-                    >
+                      class="flex-1 flex items-center justify-center w-full h-11 mt-4 mx-5 btn-primary rounded-lg">
                       <span class="text-base text-text-4">Scan to Download</span>
                       <img
                         src="/src/static/img/app-download/app_download_7.png"
@@ -371,8 +364,7 @@
                     sublicense CIL pursuant to Master gaming License #5536/JAZ.
                   </p>
                 </div>
-
-                <!-- 底部：版权信息 -->
+                
                 <div class="text-center pt-4">
                   <p class="text-base text-text-2">©2025 BC.Game All Rights Reserved</p>
                 </div>
@@ -384,18 +376,20 @@
 
       <!-- H5端 -->
       <div class="block sm:hidden">H5端</div>
-    </div>
-  </AppDownloadCore>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import QRCode from 'qrcode'
-import AppDownloadCore from './AppDownloadCore.vue'
 import LoginIcon2 from '@/static/svg/login/login_icon_2.svg?component'
+import { navigateTo } from '@/utils/router'
 
-const router = useRouter()
+// 下载链接配置
+const downloadLinks = ref({
+  ios: '',
+  android: ''
+})
 
 // 二维码 canvas
 const qrCode1 = ref<HTMLCanvasElement>()
@@ -417,12 +411,22 @@ const currentArrowImage = computed(() => {
 
 // 返回主页
 const goHome = () => {
-  router.push('/')
+  navigateTo('/')
 }
 
-// 处理解锁
-const handleUnlock = () => {
-  window.open('https://www.google.com', '_blank')
+// 锚点
+const handleDownload = (platform: 'ios' | 'android') => {
+  const sectionId = platform === 'ios' ? 'ios-section' : 'android-section'
+  const section = document.getElementById(sectionId)
+  if (!section) return
+
+  const offset = 60
+  const top = section.getBoundingClientRect().top + window.scrollY - offset
+
+  window.scrollTo({
+    top,
+    behavior: 'smooth'
+  })
 }
 
 // 生成二维码
