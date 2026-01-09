@@ -18,7 +18,7 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'casino',
     name: 'casino',
-    component: () => import('@/views/casino/index.vue'),
+    component: () => import('@/views/fun/casino/index.vue'),
     meta: {
       title: '娱乐城',
     }
@@ -66,7 +66,7 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'chat-public',
     name: 'chat-public',
-    component: () => import('@/views/chat-public/index.vue'),
+    component: () => import('@/views/chat/chat-public/index.vue'),
     meta: {
       title: '聊天',
     }

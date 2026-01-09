@@ -2,10 +2,10 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="modelValue" class="modal-overlay" @click="handleClose">
-        <div class="modal-container rounded-xl max-w-[416px] min-h-[600px] w-full" @click.stop>
+        <div class="modal-container rounded-xl max-w-[416px] h-3/4 w-full" @click.stop>
           <!-- 关闭按钮 -->
           <button
-            class="w-full h-12 rounded-lg px-4 flex items-center justify-end"
+            class="flex w-full h-12 rounded-lg px-4 items-center justify-end"
             @click="handleClose"
           >
             <div class="w-8 h-8 bg-[#464f50] rounded-md flex items-center justify-center">
@@ -265,7 +265,7 @@ const selectCurrency = (code: string) => {
   background-color: rgba(16, 18, 18, 0.8);
   visibility: visible;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   z-index: 9999;
 }
