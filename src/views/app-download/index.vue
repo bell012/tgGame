@@ -6,11 +6,7 @@
         <header class="fixed top-0 left-0 right-0 z-50 h-14 bg-[#0d090699]">
           <div class="w-[1280px] h-14 mx-auto px-2 flex items-center justify-between">
             <div class="flex items-center">
-              <img
-                src="/src/static/img/home/logo.png"
-                alt=""
-                class="w-44 h-auto cursor-pointer"
-              />
+              <img src="/src/static/img/home/logo.png" alt="" class="w-44 h-auto cursor-pointer" />
             </div>
 
             <div class="flex items-center gap-3">
@@ -91,7 +87,7 @@
 
               <div class="grid grid-cols-[1fr_1fr_auto] items-start gap-5 py-4">
                 <div
-                  class="grid grid-rows-[auto_192px_60px_auto] rounded-xl px-24 py-10 h-full gap-3 step_bg"
+                  class="grid grid-rows-[auto_192px_60px_auto] rounded-xl px-24 py-10 h-full gap-3 step_bg cursor-pointer step_hover_container"
                 >
                   <p
                     class="text-base font-[800] text-text-1 text-center m-0 p-0 flex items-center justify-center"
@@ -122,10 +118,25 @@
                       <canvas ref="qrCode1" class="w-full h-full p-1 bg-white rounded-md"></canvas>
                     </div>
                   </div>
+
+                  <!-- 悬停覆盖层 -->
+                  <div class="step_hover_overlay">
+                    <div class="flex flex-col items-center justify-center h-full gap-6">
+                      <canvas ref="qrCodeHover1" class="w-48 h-48 p-2 bg-white rounded-lg"></canvas>
+                      <div class="flex items-center gap-3">
+                        <img
+                          src="/src/static/img/app-download/ios-app-icon.webp"
+                          alt="App Icon"
+                          class="w-10 h-10 rounded-lg"
+                        />
+                        <span class="text-lg font-[800] text-text-1">RaceWin</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div
-                  class="grid grid-rows-[auto_192px_60px_auto] rounded-xl px-24 py-10 h-full gap-3 step_bg"
+                  class="grid grid-rows-[auto_192px_60px_auto] rounded-xl px-24 py-10 h-full gap-3 step_bg cursor-pointer step_hover_container"
                 >
                   <p
                     class="text-base font-[800] text-text-1 text-center m-0 p-0 flex items-center justify-center"
@@ -154,6 +165,16 @@
                     </button>
                     <div class="w-14 h-14 qrcode_absolute">
                       <canvas ref="qrCode2" class="w-full h-full p-1 bg-white rounded-md"></canvas>
+                    </div>
+                  </div>
+
+                  <!-- 悬停覆盖层 -->
+                  <div class="step_hover_overlay">
+                    <div class="flex flex-col items-center justify-center h-full gap-6">
+                      <canvas ref="qrCodeHover2" class="w-48 h-48 p-2 bg-white rounded-lg"></canvas>
+                      <div class="flex items-center gap-3">
+                        <span class="text-lg font-[800] text-text-1">Unlock your app</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -187,7 +208,7 @@
 
               <div class="grid grid-cols-[1fr_1fr_auto] items-start gap-5 py-4">
                 <div
-                  class="grid grid-rows-[auto_192px_60px_auto] rounded-xl px-24 py-10 h-full gap-3 step_bg"
+                  class="grid grid-rows-[auto_192px_60px_auto] rounded-xl px-24 py-10 h-full gap-3 cursor-pointer step_bg step_hover_container"
                 >
                   <h3
                     class="text-base font-[800] text-text-1 text-center m-0 p-0 flex items-center justify-center"
@@ -216,6 +237,16 @@
                     </button>
                     <div class="w-14 h-14 qrcode_absolute">
                       <canvas ref="qrCode3" class="w-full h-full p-1 bg-white rounded-md"></canvas>
+                    </div>
+                  </div>
+
+                  <!-- 悬停覆盖层 -->
+                  <div class="step_hover_overlay">
+                    <div class="flex flex-col items-center justify-center h-full gap-6">
+                      <canvas ref="qrCodeHover3" class="w-48 h-48 p-2 bg-white rounded-lg"></canvas>
+                      <div class="flex items-center gap-3">
+                        <span class="text-lg font-[800] text-text-1">Unlock your app</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -371,6 +402,11 @@ const qrCode1 = ref<HTMLCanvasElement>()
 const qrCode2 = ref<HTMLCanvasElement>()
 const qrCode3 = ref<HTMLCanvasElement>()
 
+// 悬停二维码 canvas
+const qrCodeHover1 = ref<HTMLCanvasElement>()
+const qrCodeHover2 = ref<HTMLCanvasElement>()
+const qrCodeHover3 = ref<HTMLCanvasElement>()
+
 // 箭头动画
 const currentArrowIndex = ref(1)
 const arrowAnimationInterval = ref<number | null>(null)
@@ -390,12 +426,12 @@ const handleUnlock = () => {
 }
 
 // 生成二维码
-const generateQRCode = async (canvas: HTMLCanvasElement | undefined, url: string) => {
+const generateQRCode = async (canvas: HTMLCanvasElement | undefined, url: string, size = 56) => {
   if (!canvas) return
 
   try {
     await QRCode.toCanvas(canvas, url, {
-      width: 56,
+      width: size,
       margin: 0,
       color: {
         dark: '#000000',
@@ -409,9 +445,16 @@ const generateQRCode = async (canvas: HTMLCanvasElement | undefined, url: string
 
 onMounted(() => {
   const url = 'https://www.google.com'
-  generateQRCode(qrCode1.value, url)
-  generateQRCode(qrCode2.value, url)
-  generateQRCode(qrCode3.value, url)
+  // 小二维码
+  generateQRCode(qrCode1.value, url, 56)
+  generateQRCode(qrCode2.value, url, 56)
+  generateQRCode(qrCode3.value, url, 56)
+
+  // 悬停大二维码 (192x192)
+  generateQRCode(qrCodeHover1.value, url, 192)
+  generateQRCode(qrCodeHover2.value, url, 192)
+  generateQRCode(qrCodeHover3.value, url, 192)
+
   // 箭头动画
   arrowAnimationInterval.value = window.setInterval(() => {
     currentArrowIndex.value = currentArrowIndex.value === 3 ? 1 : currentArrowIndex.value + 1
@@ -466,6 +509,36 @@ onUnmounted(() => {
     background: linear-gradient(270deg, #2fee8700, #2fee8780 54.5%, #2fee8700);
   }
 }
+
+.step_hover_container {
+  overflow: hidden;
+
+  .step_hover_overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.15s ease;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+
+  &:hover {
+    .step_hover_overlay {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    > *:not(.step_hover_overlay) {
+      filter: blur(5px);
+    }
+  }
+}
+
 .qrcode_absolute {
   position: absolute;
   top: 13%;
