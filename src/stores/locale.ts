@@ -1,11 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import i18n from '@/i18n'
 
 export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
-  const { locale } = useI18n()
 
   // 当前语言（zh-CN 或 en）
   const currentLanguage = ref<string>(localStorage.getItem('language') || 'en')
@@ -21,7 +20,7 @@ export const useLocaleStore = defineStore('locale', () => {
         const languageCode = newLocale === 'zh' ? 'zh-CN' : 'en'
         if (currentLanguage.value !== languageCode) {
           currentLanguage.value = languageCode
-          locale.value = newLocale === 'zh' ? 'zh' : 'en'
+          i18n.global.locale.value = newLocale === 'zh' ? 'zh' : 'en'
           localStorage.setItem('language', languageCode)
           console.log('[LocaleStore] Route changed, language updated to:', languageCode)
         }
@@ -45,15 +44,15 @@ export const useLocaleStore = defineStore('locale', () => {
     if (routeLocale) {
       if (routeLocale === 'zh') {
         currentLanguage.value = 'zh-CN'
-        locale.value = 'zh'
+        i18n.global.locale.value = 'zh'
       } else {
         currentLanguage.value = 'en'
-        locale.value = 'en'
+        i18n.global.locale.value = 'en'
       }
     } else {
       const savedLanguage = localStorage.getItem('language') || 'en'
       currentLanguage.value = savedLanguage
-      locale.value = savedLanguage === 'zh-CN' ? 'zh' : 'en'
+      i18n.global.locale.value = savedLanguage === 'zh-CN' ? 'zh' : 'en'
     }
 
     localStorage.setItem('language', currentLanguage.value)
@@ -65,7 +64,7 @@ export const useLocaleStore = defineStore('locale', () => {
   const setLanguage = (code: string) => {
     currentLanguage.value = code
     const i18nLocale = code === 'zh-CN' ? 'zh' : 'en'
-    locale.value = i18nLocale
+    i18n.global.locale.value = i18nLocale
     localStorage.setItem('language', code)
     const route = router.currentRoute.value
     const currentPath = route.path.replace(/^\/(zh|en)/, '')
