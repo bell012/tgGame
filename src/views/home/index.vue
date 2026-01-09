@@ -226,6 +226,9 @@ const duplicatedList = computed(() => [...list.value, ...list.value])
 </script>
 
 <style scoped lang="scss">
+.home {
+  background-color: var(--color-background-level-1);
+}
 .bg-success {
   background-color: #24ee89;
 }

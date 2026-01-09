@@ -10,7 +10,7 @@
 
       <!-- 主内容区 -->
       <main
-        class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out"
+        class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out bg-[var(--color-background-level-1)]"
         :style="{
           marginTop: `${layoutStore.TOPNAV_HEIGHT}px`,
           marginLeft: isSidebarCollapsed
@@ -27,7 +27,8 @@
     <!-- H5布局 (<=640px) -->
     <div class="sm:hidden">
       <!-- 主内容区 -->
-      <main class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out"
+      <main
+        class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out bg-[var(--color-background-level-1)]"
         :style="{
           marginTop: `${layoutStore.TOPNAV_HEIGHT}px`,
           marginBottom: `${layoutStore.BOTTOM_TAB_HEIGHT}px`

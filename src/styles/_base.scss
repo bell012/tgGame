@@ -40,6 +40,9 @@ body {
     background-color: var(--color-scrollbar-thumb-hover);
   }
 }
+::-webkit-scrollbar {
+  display: none;
+}
 
 // 链接样式
 a {
@@ -70,10 +73,10 @@ button {
 
 // 主按钮色
 .btn-primary {
-  color:var(--color-text-level-4);
+  color: var(--color-text-level-4);
   font-weight: 800;
   background-image: linear-gradient(90deg, #24ee89, #9fe871);
-  box-shadow: 0 0 12px #23ee884d, 0 -2px #1dca6a inset;
+  box-shadow:
+    0 0 12px #23ee884d,
+    0 -2px #1dca6a inset;
 }
-
-
