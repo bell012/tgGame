@@ -11,7 +11,7 @@
           ></div>
         </div>
         <div>近期大胜</div>
-        <div class="ml-2 hidden gap-2 lg:!flex">
+        <div class="ml-2 gap-2 lg:!flex pcState">
           <div
             @click="carousel(0)"
             class="button button-m center h-auto flex-1 whitespace-nowrap rounded-none border-b-2 p-1 text-xs"
@@ -93,13 +93,16 @@
               type="button"
               style="background-image: linear-gradient(to left, rgb(44, 80, 64), transparent 75%)"
             >
-              <img class="absolute right-5 top-0 h-[120%]" src="./img/casino.png" />
+              <img class="absolute right-5 top-0 h-[100%]" src="./img/casino.png" />
               <div class="relative z-10 flex h-full flex-auto flex-col">
                 <div class="flex items-center">
                   <div class="color_icon_img casino" style="transform: scale(1)"></div>
+                  <img :src="icon5" alt="" />
                   <h2 class="ml-0.5 text-sm sm:text-[22px]">娱乐城</h2>
                 </div>
-                <div class="mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block">
+                <div
+                  class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
+                >
                   尽情体验BC原创游戏、真人娱乐城和老虎机游戏。
                 </div>
               </div>
@@ -109,13 +112,16 @@
               type="button"
               style="background-image: linear-gradient(to left, rgb(88, 46, 89), transparent 75%)"
             >
-              <img class="absolute right-5 top-0 h-[120%]" src="./img/sports.png" />
+              <img class="absolute right-5 top-0 h-[100%]" src="./img/sports.png" />
               <div class="relative z-10 flex h-full flex-auto flex-col">
                 <div class="flex items-center">
                   <div class="color_icon_img sports" style="transform: scale(1)"></div>
+                  <img :src="icon6" alt="" />
                   <span class="ml-0.5 text-sm sm:text-[22px]">体育</span>
                 </div>
-                <div class="mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block">
+                <div
+                  class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
+                >
                   快来下注！足球、板球、NFL、电竞等 80 多种体育项目等你挑战！
                 </div>
               </div>
@@ -124,6 +130,7 @@
 
           <div class="flex flex-4 flex-wrap gap-2 lg:!gap-3">
             <button
+              v-for="value in listImg"
               class="button button-m center relative h-24 flex-1 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px]"
               type="button"
               style="
@@ -135,19 +142,25 @@
               "
             >
               <img
-                class="absolute left-[50%] top-0 h-full -translate-x-[10%]"
-                src="./img/poker.png"
+                class="absolute left-[50%] top-0 h-full -translate-x-[10%] gameTypeImg"
+                :src="value.img"
               />
-              <div class="absolute left-2 top-2 items-center flex">
+              <div class="pcState absolute left-2 top-2 items-center flex">
                 <div class="color_icon_img bcpoker" style="transform: scale(0.8)">
-                  <img src="./img/image.png" alt="" />
+                  <img :src="value.icon" alt="" />
                 </div>
-                <h2 class="ml-1 text-lg font-extrabold">扑克</h2>
+                <h2 class="ml-1 text-lg font-extrabold">{{ value.name }}</h2>
+              </div>
+              <div class="absolute bottom-2 left-0 block w-full text-center h5State">
+                <span class="text-sm font-extrabold">{{ value.name }}</span>
               </div>
             </button>
           </div>
         </div>
       </div>
+    </div>
+    <div>
+      <GameList />
     </div>
   </div>
 
@@ -155,18 +168,55 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import icon from './img/icon.svg?url'
-import CommonFooter from '@/components/commonFooter.vue'
+import { ref, computed, onMounted } from 'vue'
+import GameList from './components/gameList.vue'
+import icon from './img/Image4.svg?url'
+import icon1 from './img/Image.svg?url'
+import icon2 from './img/Image1.svg?url'
+import icon3 from './img/Image2.svg?url'
+import icon4 from './img/Image3.svg?url'
+import icon5 from './img/Image5.svg?url'
+import icon6 from './img/Image6.svg?url'
 
-// const listImg = [
-//   {
-//     name: 'BETPORTALL',
-//     img: icon,
-//     icon: icon
-//   }
-// ]
+import poker from './img/poker.png?url'
+import racing from './img/racing.png?url'
+import lottery from './img/lottery.png?url'
+import updown from './img/updown.png?url'
+import bingo from './img/bingo.png?url'
 
+const isMobile = ref(false)
+
+onMounted(() => {
+  isMobile.value = window.matchMedia('(max-width: 640px)').matches
+})
+console.log(isMobile.value, 'isMobile')
+const listImg = [
+  {
+    name: '扑克',
+    img: poker,
+    icon: icon
+  },
+  {
+    name: '赛马',
+    img: racing,
+    icon: icon1
+  },
+  {
+    name: '彩票',
+    img: lottery,
+    icon: icon2
+  },
+  {
+    name: '期权',
+    img: updown,
+    icon: icon3
+  },
+  {
+    name: '宾果',
+    img: bingo,
+    icon: icon4
+  }
+]
 const carouselVal = ref(0)
 const carousel = (val: any) => {
   carouselVal.value = val
@@ -178,6 +228,9 @@ const duplicatedList = computed(() => [...list.value, ...list.value])
 </script>
 
 <style scoped lang="scss">
+.home {
+  background-color: var(--color-background-level-1);
+}
 .bg-success {
   background-color: #24ee89;
 }
@@ -229,6 +282,24 @@ const duplicatedList = computed(() => [...list.value, ...list.value])
   }
   to {
     transform: translateX(-50%);
+  }
+}
+
+@media (min-width: 640px) {
+  .sm\:h-\[120px\] {
+    height: 120px;
+  }
+  .h5State {
+    display: none;
+  }
+}
+@media (max-width: 639px) {
+  .pcState {
+    display: none;
+  }
+  .gameTypeImg {
+    left: 11% !important;
+    height: 70% !important;
   }
 }
 </style>

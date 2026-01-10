@@ -6,6 +6,7 @@ export default {
     extend: {
       colors: {
         'theme-primary': 'var(--color-theme-level-1)',
+        'theme-level-1': 'var(--color-theme-level-1)',
         'bg-1': 'var(--color-background-level-1)',
         'bg-2': 'var(--color-background-level-2)',
         'bg-3': 'var(--color-background-level-3)',
