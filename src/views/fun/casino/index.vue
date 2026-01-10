@@ -14,7 +14,7 @@
               rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)]
               shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset]
               font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)]" 
-              type="button">{{ t('locales.home.join_now') }}</button>
+              type="button" @click.stop="showLoginModal=true">{{ t('locales.home.join_now') }}</button>
           </div>
       </div>
       <div class="flex items-center self-stretch py-[10px] px-[10px] rounded-lg border mt-[10px]
@@ -30,10 +30,20 @@
       </div>
 
   </div>
+  
+  <!-- 注册弹窗 -->
+  <LoginModal
+    v-model="showLoginModal"
+    default-tab="register"
+  />
 </template>
 
 <script setup lang="ts">
+  import { ref } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import LoginModal from '@/components/login_register/LoginModal.vue'
 
   const { t } = useI18n()
+
+  const showLoginModal = ref(false)
 </script>
