@@ -2,9 +2,7 @@
   <div class="explore-page min-h-screen">
     <TopInput />
     <!-- 顶部横行滚动tab选择 -->
-    <div
-      class="grid w-full justify-between grid-cols-[repeat(3,max-content)] sm:grid-cols-[repeat(8,max-content)]"
-    >
+    <div class="flex w-full justify-between overflow-x-auto scrollbar-none my-3.5">
       <div
         v-for="(item, inx) in tabList"
         :key="inx"
