@@ -13,7 +13,7 @@
     <transition name="up-down">
       <div v-show="visible" class="fixed z-[9999] left-0 bottom-0 w-full">
         <div
-          class="tp-panel bg-[var(--color-background-level-1)] rounded-t-xl pt-2.5 px-3.5 pb-[58px]"
+          class="tp-panel bg-[var(--color-background-level-1)] rounded-t-xl pt-2.5 px-3.5 max-h-[602px] flex flex-col"
         >
           <div class="tp-header flex items-center justify-between mb-2.5">
             <div></div>
@@ -37,22 +37,28 @@
             />
           </div>
           <!-- 选择的内容 -->
-          <div class="flex flex-col">
-            <div
-              v-for="(item, inx) in supplierList"
-              :key="inx"
-              class="tp-item mb-2.5 px-2.5 flex items-center h-[42px] rounded-lg"
-              :class="isSelected(item.id) ? 'bg-[var(--color-opacity-10)]' : ''"
-              @click="toggle(item.id)"
-            >
-              <ChecedIcon v-if="isSelected(item.id)" class="w-5 h-5" />
-              <UnchecedIcon v-else class="w-5 h-5" />
-              <div class="ml-2.5 flex items-center w-[100px] h-[22px]">
-                <img class="w-full h-full object-contain" :src="item?.url" />
+          <div class="flex-1 overflow-y-auto pb-[58px]">
+            <div class="flex flex-col">
+              <div
+                v-for="(item, inx) in supplierList"
+                :key="inx"
+                class="tp-item px-2.5 flex items-center h-[42px] rounded-lg"
+                :class="[
+                  isSelected(item.id) ? 'bg-[var(--color-opacity-10)]' : '',
+                  inx === supplierList.length - 1 ? 'mb-0' : 'mb-2.5'
+                ]"
+                @click="toggle(item.id)"
+              >
+                <ChecedIcon v-if="isSelected(item.id)" class="w-5 h-5" />
+                <UnchecedIcon v-else class="w-5 h-5" />
+                <div class="ml-2.5 flex items-center w-[100px] h-[22px]">
+                  <img class="w-full h-full object-contain" :src="item?.url" />
+                </div>
               </div>
             </div>
           </div>
-          <!-- footer：确认/清空 -->
+
+          <!-- 底部按钮 -->
           <div
             class="flex items-center py-[15px] border-t border-[var(--color-opacity-10)] bg-[var(--color-background-level-2)] fixed left-0 bottom-0 w-full"
           >
@@ -73,6 +79,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
 import CloseIcon from '@/static/svg/close.svg?component'
 import ChecedIcon from '@/static/svg/explore/cube-checked.svg?component'
 import UnchecedIcon from '@/static/svg/explore/cube-unchecked.svg?component'
@@ -91,12 +98,12 @@ type OptionItem = { id: Id; url: string }
 const props = defineProps<{
   visible: boolean
   supplierList: OptionItem[]
-  selectedIds: Id[] // ✅ 多选
+  selectedIds: Id[] //  多选
 }>()
 
 const emit = defineEmits<{
   'update:visible': [val: boolean]
-  confirm: [val: Id[]] // ✅ 返回选中的 id 列表（最轻量）
+  confirm: [val: Id[]] // 返回选中的 id 列表
 }>()
 
 const localSelectedIds = ref<Id[]>([])
@@ -104,7 +111,6 @@ const localSelectedIds = ref<Id[]>([])
 watch(
   () => [props.visible, props.selectedIds] as const,
   ([v]) => {
-    // 打开时同步一份本地选中，避免直接改 props
     if (v) localSelectedIds.value = [...props.selectedIds]
   },
   { immediate: true }
@@ -128,6 +134,8 @@ const confirm = () => {
   emit('confirm', [...localSelectedIds.value])
   close()
 }
+
+useLockBodyScroll(() => props.visible)
 </script>
 
 <style scoped lang="scss">

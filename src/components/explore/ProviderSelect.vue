@@ -36,7 +36,17 @@ const supplierList = ref([
   { id: 1, url: wlImg },
   { id: 2, url: pgImg },
   { id: 3, url: fgImg },
-  { id: 4, url: jlImg }
+  { id: 4, url: jlImg },
+  { id: 5, url: wlImg },
+  { id: 6, url: pgImg },
+  { id: 7, url: fgImg },
+  { id: 8, url: jlImg },
+  { id: 3, url: fgImg },
+  { id: 4, url: jlImg },
+  { id: 5, url: wlImg },
+  { id: 6, url: pgImg },
+  { id: 7, url: fgImg },
+  { id: 8, url: jlImg }
 ]) // 供应商列表
 type Id = number | string
 
