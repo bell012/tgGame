@@ -134,15 +134,15 @@
         >
           <component
             :is="casinoIcons[item.icon]"
-            class="w-5 h-5 mr-[7px] fill-[var(--color-text-level-2)]"
-            :class="{ 'fill-[var(--color-theme-level-1)]': item.id === currentTabId }"
+            :class="item.id === currentTabId ? 'fill-primary' : 'fill-text-2'"
+            class="w-5 h-5 mr-[7px]"
           />
-          <div class="font-[700] text-text-2" :class="{ 'text-text-1': item.id === currentTabId }">
+          <div :class="item.id === currentTabId ? 'text-text-1' : 'text-text-2'" class="font-[700]">
             {{ item.name }}
           </div>
         </div>
       </div>
-      <!-- 7种样式 -->
+      <!-- 6种样式 -->
     </div>
   </div>
 
@@ -228,12 +228,4 @@ const deleteAll = () => {
 }
 </script>
 
-<style scoped lang="scss">
-.tab-item {
-  color: var(--color-text-level-2);
-
-  &.active {
-    color: var(--color-text-level-1);
-  }
-}
-</style>
+<style scoped lang="scss"></style>

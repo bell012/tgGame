@@ -1,13 +1,18 @@
 <template>
   <div class="bottom-tab-bar">
     <div class="h-full flex items-center justify-around px-4">
-      <button v-for="menu in menus" :key="menu.id" class="tab-item"
-        @click="menu.handler" :class="{ active: menu.active}"
+      <button
+        v-for="menu in menus"
+        :key="menu.id"
+        class="tab-item"
+        @click="menu.handler"
+        :class="{ active: menu.active }"
       >
-        <component :is="sideIcons[menu.icon]" 
-            class="w-6 h-6 mb-1 fill-none" 
-            :class="menu.active ? 'brightness-0 saturate-100 hue-rotate-180' : ''"
-          />
+        <component
+          :is="bottomTabBarIcons[menu.icon]"
+          class="w-6 h-6 mb-1"
+          :class="menu.active ? 'fill-primary' : 'fill-text-2'"
+        />
         <p class="text-xs font-medium">{{ menu.name }}</p>
       </button>
     </div>
@@ -17,7 +22,7 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
-import { sideIcons } from '@/static/svg/side'
+import { bottomTabBarIcons } from '@/static/svg/bottom_tab_bar'
 import { useLayoutStore } from '@/stores/layout'
 import { navigateTo } from '@/utils/router'
 
@@ -28,7 +33,7 @@ const menus = computed(() => [
   {
     id: 'menu',
     name: '选单',
-    icon: 'icon_2',
+    icon: 'menu',
     route: '/menu',
     handler: () => navigateTo('/menu'),
     active: isActive('/menu')
@@ -36,7 +41,7 @@ const menus = computed(() => [
   {
     id: 'explore',
     name: '搜索',
-    icon: 'icon_2',
+    icon: 'explore',
     route: '/explore',
     handler: () => navigateTo('/explore'),
     active: isActive('/explore')
@@ -44,7 +49,7 @@ const menus = computed(() => [
   {
     id: 'casino',
     name: '娱乐城',
-    icon: 'icon_2',
+    icon: 'casino',
     route: '/casino',
     handler: () => navigateTo('/casino'),
     active: isActive('/casino')
@@ -52,7 +57,7 @@ const menus = computed(() => [
   {
     id: 'sports',
     name: '体育',
-    icon: 'icon_3',
+    icon: 'sports',
     route: '/sports',
     handler: () => navigateTo('/sports'),
     active: isActive('/sports')
@@ -60,11 +65,11 @@ const menus = computed(() => [
   {
     id: 'chat-public',
     name: '聊天',
-    icon: 'icon_2',
+    icon: 'chat',
     route: '/chat-public',
     handler: () => navigateTo('/chat-public'),
     active: isActive('/chat-public')
-  },
+  }
 ])
 
 const isActive = (path: string) => {
