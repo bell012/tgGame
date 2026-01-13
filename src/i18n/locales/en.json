@@ -9,8 +9,7 @@
     "search": "Search",
     "select_currency": "Select the desired currency to display. The Currencies will be shown in approximated values.",
     "none": "None",
-    "none_select_currency": "When none is selected, some amounts are still displayed in the last selected fiat currency.",
-    "join_now": "Join Now"
+    "none_select_currency": "When none is selected, some amounts are still displayed in the last selected fiat currency."
   },
   "common": {
     "loading": "Loading...",
@@ -45,6 +44,22 @@
     "sort": "Sort By:",
     "providers": "Providers:",
     "botClear": "Clear All",
+    "all": "All"
+  },
+  "casino": {
+    "banner_title": "Stay Untamed",
+    "banner_sign_up": "Sign Up & Get Up To",
+    "banner_subtitle": "in Casino or Sports",
+    "join_now": "Join Now",
+    "placeholder": "Search games",
+    "search_tips": "Search requires at least 2 characters.",
+    "history": "History",
+    "clear": "Clear search",
+    "suggested": "Suggested",
+    "sort": "Sort By",
+    "providers": "Providers",
+    "bot_clear": "Clear All",
+    "show_blocked": "Show Blocked",
     "all": "All"
   }
 }

@@ -1,8 +1,8 @@
 <template>
-  <div class="casino-page p-0 sm:p-4 h-full h-screen">
+  <div class="casino-page p-0 sm:p-4 w-full">
     <div class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl">
       <img
-        class="absolute right-0 bottom-0 h-full"
+        class="absolute right-0 bottom-0 w-full"
         src="/src/static/img/casino/banner_bg.webp"
         alt="casino"
       />
@@ -12,13 +12,13 @@
         <h1
           class="font-inter text-[20px] font-bold leading-normal text-[var(--color-text-level-1,#FFF)]"
         >
-          Stay Untamed
+          {{ t('locales.casino.banner_title') }}
         </h1>
         <div>
           <h2
             class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
           >
-            Sign Up & Get Up To
+            {{ t('locales.casino.banner_sign_up') }}
           </h2>
           <h2
             class="font-inter text-[14px] font-bold leading-normal text-[var(--color-theme-level-1,#2AEE88)]"
@@ -28,7 +28,7 @@
           <h2
             class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
           >
-            in Casino or Sports
+            {{ t('locales.casino.banner_subtitle') }}
           </h2>
         </div>
         <button
@@ -36,7 +36,7 @@
           type="button"
           @click.stop="showLoginModal = true"
         >
-          {{ t('locales.home.join_now') }}
+          {{ t('locales.casino.join_now') }}
         </button>
       </div>
     </div>
@@ -46,10 +46,12 @@
       <img class="w-[18px] h-[18px]" src="/src/static/img/casino/search.webp" alt="search" />
       <input
         v-model="searchText"
+        @keydown.enter.prevent="onSearch"
         @focus="showHistoryPanel = true"
         @blur="showHistoryPanel = false"
         class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0"
-        placeholder="Search games"
+        type="text"
+        :placeholder="t('locales.casino.placeholder')"
       />
       <button
         v-show="searchText"
@@ -60,7 +62,7 @@
       </button>
       <div
         v-show="showHistoryPanel && !searchText"
-        class="absolute left-0 right-0 p-4 top-full w-full z-20 mt-4 shadow-lg rounded-lg border border-input"
+        class="absolute left-0 right-0 p-4 top-full w-full z-20 mt-3 flex flex-col items-center rounded-lg bg-[var(--color-background-level-2)] border border-[var(--color-border-level-1)]"
       >
         <button
           class="absolute -right-2 -top-2 w-5 h-5 bg-bg-4 flex items-center justify-center z-10 rounded-full"
@@ -68,13 +70,79 @@
         >
           <CloseIcon class="w-[12px] h-[12px] fill-text-1" />
         </button>
-        <div class="history">
-          <div>历史</div>
+        <div class="text-xs text-[var(--color-text-level-2)]">
+          {{ t('locales.casino.search_tips') }}
         </div>
-        <div class="suggested">
-          <div>建议</div>
+        <!-- 历史记录 -->
+        <div class="flex justify-between w-full text-xs my-2.5">
+          <div class="font-bold">{{ t('locales.casino.history') }}</div>
+          <div class="text-[var(--color-text-level-2)]" @click.stop="deleteAll()">
+            {{ t('locales.casino.clear') }}（{{ searchHistory?.length }}）
+          </div>
+        </div>
+        <div class="w-full">
+          <div v-if="searchHistory?.length > 0" class="flex flex-wrap gap-2">
+            <div
+              v-for="(item, inx) in searchHistory.slice(0, 5)"
+              :key="inx"
+              class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] inline-flex items-center"
+            >
+              <div
+                class="text-xs text-[var(--color-text-level-2)] mr-0.5 break-words max-w-full"
+                @click.stop="goSearch(item)"
+              >
+                {{ item }}
+              </div>
+              <CloseIcon class="w-4 h-4 stroke-text-2 shrink-0" @click.stop="deleteItme(item)" />
+            </div>
+          </div>
+        </div>
+        <!-- 接口返回搜索建议 -->
+        <div class="text-xs my-2.5 w-full">
+          <div class="font-bold">{{ t('locales.casino.suggested') }}</div>
+        </div>
+        <div class="w-full">
+          <div v-if="suggestedArr?.length > 0" class="flex flex-wrap gap-2">
+            <div
+              v-for="(item, inx) in suggestedArr"
+              :key="inx"
+              class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] flex items-center"
+            >
+              <div
+                class="text-xs text-[var(--color-text-level-2)] break-words max-w-full"
+                @click.stop="goSearch(item)"
+              >
+                {{ item }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+    <div class="min-h-screen w-full">
+      <!-- 顶部横行滚动tab选择 -->
+      <div class="flex w-full justify-between overflow-x-auto scrollbar-none my-3.5">
+        <div
+          v-for="(item, inx) in tabList"
+          :key="inx"
+          :class="{
+            'bg-[var(--color-opacity-10)]': item.id === currentTabId,
+            active: item.id === currentTabId
+          }"
+          class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center"
+          @click="currentTabId = item.id"
+        >
+          <component
+            :is="casinoIcons[item.icon]"
+            class="w-5 h-5 mr-[7px] fill-[var(--color-text-level-2)]"
+            :class="{ 'fill-[var(--color-theme-level-1)]': item.id === currentTabId }"
+          />
+          <div class="font-[700] text-text-2" :class="{ 'text-text-1': item.id === currentTabId }">
+            {{ item.name }}
+          </div>
+        </div>
+      </div>
+      <!-- 7种样式 -->
     </div>
   </div>
 
@@ -87,10 +155,85 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
+import { casinoIcons } from '@/static/svg/casino'
 
 const { t } = useI18n()
 
 const showLoginModal = ref(false)
 const showHistoryPanel = ref(false)
 const searchText = ref('')
+const searchHistory = ref<string[]>(['Sweet', 'Gates', 'Lucky', ' Llama', 'Olympus', 'Duck'])
+const suggestedArr = ref<string[]>([
+  'Sweet Rush Bonanza',
+  'Duck Hunters',
+  'Gates of Olympus Super Scatter',
+  'Sugar Rush 1000',
+  'Lucky Coming',
+  'The Llama Adventure'
+])
+const currentTabId = ref(1)
+const tabList = ref([
+  {
+    id: 1,
+    style: 1,
+    name: '大厅',
+    icon: 'home'
+  },
+  {
+    id: 2,
+    style: 2,
+    name: 'BC 原创',
+    icon: 'bc'
+  },
+  {
+    id: 3,
+    style: 3,
+    name: '老虎机',
+    icon: 'slots'
+  },
+  {
+    id: 4,
+    style: 4,
+    name: '扑克',
+    icon: 'poker'
+  },
+  {
+    id: 5,
+    style: 5,
+    name: '供应商',
+    icon: 'favorites_full'
+  },
+  {
+    id: 6,
+    style: 6,
+    name: '游戏主题',
+    icon: 'themes'
+  }
+])
+
+const onSearch = () => {
+  console.log('触发搜索:', searchText.value)
+}
+
+const goSearch = (item: string) => {
+  console.log('点击搜索历史和建议:', item)
+}
+
+const deleteItme = (item: string) => {
+  console.log('删除搜索历史记录', item)
+}
+
+const deleteAll = () => {
+  console.log('删除全部搜索历史记录')
+}
 </script>
+
+<style scoped lang="scss">
+.tab-item {
+  color: var(--color-text-level-2);
+
+  &.active {
+    color: var(--color-text-level-1);
+  }
+}
+</style>
