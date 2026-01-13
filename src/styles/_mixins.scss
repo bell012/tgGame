@@ -72,7 +72,6 @@
   transition: $properties $duration $timing;
 }
 
-
 // 按钮基础样式
 @mixin button-base {
   display: inline-flex;
@@ -137,3 +136,32 @@
   }
 }
 
+// 底部弹窗动画
+@mixin popup-transition {
+  .popup-fade-enter-active,
+  .popup-fade-leave-active {
+    transition: opacity 0.25s ease;
+  }
+  .popup-fade-enter-from,
+  .popup-fade-leave-to {
+    opacity: 0;
+  }
+  .popup-fade-enter-to,
+  .popup-fade-leave-from {
+    opacity: 1;
+  }
+
+  .up-down-enter-active,
+  .up-down-leave-active {
+    transition: transform 0.3s ease;
+    will-change: transform;
+  }
+  .up-down-enter-from,
+  .up-down-leave-to {
+    transform: translate3d(0, 100%, 0);
+  }
+  .up-down-enter-to,
+  .up-down-leave-from {
+    transform: translate3d(0, 0, 0);
+  }
+}

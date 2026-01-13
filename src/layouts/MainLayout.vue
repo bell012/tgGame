@@ -38,7 +38,7 @@
           marginBottom: `${layoutStore.BOTTOM_TAB_HEIGHT}px`
         }"
       >
-        <div class="p-4">
+        <div class="p-4 px-[14px] bg-[var(--color-background-level-1)]">
           <router-view />
         </div>
       </main>
