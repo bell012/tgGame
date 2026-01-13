@@ -226,6 +226,7 @@
       </div>
     </div>
   </div>
+  <NewEvent />
 
   <CommonFooter />
 </template>
@@ -234,6 +235,7 @@
 import { ref, computed, onMounted } from 'vue'
 import GameList from './components/gameList.vue'
 import EventList from './components/eventList.vue'
+import NewEvent from './components/newEvent.vue'
 import icon from './img/Image4.svg?url'
 import icon1 from './img/Image.svg?url'
 import icon2 from './img/Image1.svg?url'
