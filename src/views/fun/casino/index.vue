@@ -121,15 +121,15 @@
     </div>
     <div class="min-h-screen w-full">
       <!-- 顶部横行滚动tab选择 -->
-      <div class="flex w-full justify-between overflow-x-auto scrollbar-none my-3.5">
-        <div
+      <div class="flex w-full flex-row overflow-x-auto scrollbar-none my-3.5 gap-0.5">
+        <button
           v-for="(item, inx) in tabList"
           :key="inx"
           :class="{
             'bg-[var(--color-opacity-10)]': item.id === currentTabId,
             active: item.id === currentTabId
           }"
-          class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center"
+          class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center hover:bg-[var(--color-opacity-10)]"
           @click="currentTabId = item.id"
         >
           <component
@@ -140,7 +140,7 @@
           <div :class="item.id === currentTabId ? 'text-text-1' : 'text-text-2'" class="font-[700]">
             {{ item.name }}
           </div>
-        </div>
+        </button>
       </div>
       <!-- 6种样式 -->
     </div>
