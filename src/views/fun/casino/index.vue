@@ -130,7 +130,7 @@
             active: item.id === currentTabId
           }"
           class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center hover:bg-[var(--color-opacity-10)]"
-          @click="currentTabId = item.id"
+          @click.stop="onTabButton(item)"
         >
           <component
             :is="casinoIcons[item.icon]"
@@ -143,6 +143,9 @@
         </button>
       </div>
       <!-- 6种样式 -->
+      <div class="tabs-content min-h-48">
+        <pageStyle1 v-if="currentTabStyle === 1" />
+      </div>
     </div>
   </div>
 
@@ -156,6 +159,7 @@ import { useI18n } from 'vue-i18n'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
+import pageStyle1 from './components/pageStyle1.vue'
 
 const { t } = useI18n()
 
@@ -172,6 +176,7 @@ const suggestedArr = ref<string[]>([
   'The Llama Adventure'
 ])
 const currentTabId = ref(1)
+const currentTabStyle = ref(1)
 const tabList = ref([
   {
     id: 1,
@@ -210,6 +215,11 @@ const tabList = ref([
     icon: 'themes'
   }
 ])
+
+const onTabButton = (tab: any) => {
+  currentTabId.value = tab.id
+  currentTabStyle.value = tab.style
+}
 
 const onSearch = () => {
   console.log('触发搜索:', searchText.value)
