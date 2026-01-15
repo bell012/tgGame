@@ -62,7 +62,7 @@ const games = [
   { name: 'Slots', icon: pokerIcon }
 ]
 
-function randomRow(): LiveRow {
+const randomRow = (): LiveRow => {
   const game = games[Math.floor(Math.random() * games.length)]
   const profit = Math.floor(Math.random() * 5000) - 2500
 
@@ -76,7 +76,7 @@ function randomRow(): LiveRow {
   }
 }
 
-function pushRow() {
+const pushRow = () => {
   rows.value.unshift(randomRow())
   if (rows.value.length > 10) {
     rows.value.pop()
