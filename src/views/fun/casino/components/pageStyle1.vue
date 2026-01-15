@@ -10,13 +10,16 @@
       </button>
     </div>
     <div class="w-full mt-[10px] overflow-x-auto">
-      <div class="grid grid-flow-col auto-cols-[30.25%] gap-2">
-        <div v-for="(item, index) in [1, 2, 3, 4, 5, 6]" :key="index">
+      <div
+        class="grid grid-flow-col auto-cols-[30.25%] gap-2 pt-3 md:grid-flow-row md:grid-cols-8 md:overflow-x-hidden"
+      >
+        <div v-for="(item, index) in [1, 2, 3, 4, 5, 6, 7, 8]" :key="index">
           <a
             href="javascript:void(0);"
             class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2 inactive"
             link=""
-            ><img class="w-full" alt="Crash" :src="getGameImg(item)" />
+          >
+            <img class="w-full" alt="Crash" :src="getGameImg(item)" />
             <div
               class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-[var(--color-mask-20)] px-1.5"
             >
@@ -28,6 +31,26 @@
                 </svg>
               </div>
               <span class="text-xs font-semibold text-text-1">2191</span>
+            </div>
+            <div
+              class="flex items-center justify-center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 group-hover:opacity-100"
+            >
+              <div
+                class="flex items-center justify-center absolute left-0 top-0 h-[40%] w-full px-2 text-center font-extrabold leading-4 text-text-1"
+              >
+                {{ item }}
+              </div>
+              <div
+                class="flex items-center justify-center h-9 w-9 rounded-full bg-[#fff3] transition-all duration-300 group-hover:scale-150"
+              >
+                <div class="icon size-full fill-white">
+                  <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M24.9106 13.9439L13.964 6.44441C13.5849 6.18474 13.1412 6.03268 12.681 6.0047C12.2209 5.97673 11.7617 6.07391 11.3534 6.28572C10.945 6.49753 10.603 6.81589 10.3645 7.2063C10.1259 7.59671 9.99987 8.04429 10 8.50052V23.4995C9.99987 23.9557 10.1259 24.4033 10.3645 24.7937C10.603 25.1841 10.945 25.5025 11.3534 25.7143C11.7617 25.9261 12.2209 26.0233 12.681 25.9953C13.1412 25.9673 13.5849 25.8153 13.964 25.5556L24.9106 18.0561C25.2467 17.8261 25.5214 17.5189 25.7111 17.1608C25.9009 16.8027 26 16.4044 26 16C26 15.5956 25.9009 15.1973 25.7111 14.8392C25.5214 14.4811 25.2467 14.1739 24.9106 13.9439Z"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
             </div>
           </a>
         </div>
@@ -56,20 +79,8 @@
       {{ t('locales.casino.high_roller') }}
     </button>
   </div>
-  <div class="my-3 min-h-96 rounded-xl">
-    <div class="relative overflow-hidden text-text-2">
-      <table>
-        <thead>
-          <tr>
-            <td>游戏</td>
-            <td>玩家</td>
-            <td>倍数</td>
-            <td>盈余</td>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+  <div class="my-3 h-[430px]">
+    <liveBet />
   </div>
 </template>
 <script setup lang="ts">
@@ -81,6 +92,7 @@ import game3 from '@/static/img/test/game3.png'
 import game4 from '@/static/img/test/game4.png'
 import game5 from '@/static/img/test/game5.png'
 import game6 from '@/static/img/test/game6.png'
+import liveBet from './liveBet.vue'
 
 interface OptionItem {
   id: number | string
