@@ -1,11 +1,13 @@
 <template>
   <div class="eventList">
     <div class="mt-2 flex items-center sm:mt-6 h-8">
-      <h2 class="flex items-center text-base font-extrabold text-primary">时体育赛事</h2>
+      <h2 class="flex items-center text-base font-extrabold text-primary">
+        {{ $t('home.LiveSports') }}
+      </h2>
       <a
         href="/gamelist/brand"
         class="button ml-auto flex items-center gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-[var(--color-background-level-3)]"
-        >全部</a
+        >{{ $t('home.All') }}</a
       >
       <div v-if="!isMobile" class="ml-2 flex gap-x-1">
         <button
@@ -76,7 +78,7 @@
                 fill="#2AEE88"
               />
             </svg>
-            <span class="ml-0.5">现场</span>
+            <span class="ml-0.5">{{ $t('home.Live') }}</span>
           </div>
           <div class="flex flex-grow flex-col justify-between">
             <div class="center flex flex-1 items-center">

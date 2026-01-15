@@ -1,11 +1,13 @@
 <template>
   <div class="gameList">
     <div class="mt-2 flex items-center sm:mt-6 h-8">
-      <h2 class="flex items-center text-base font-extrabold text-primary">BC 原创</h2>
+      <h2 class="flex items-center text-base font-extrabold text-primary">
+        {{ $t('home.BCOriginals') }}
+      </h2>
       <a
         href="/gamelist/brand"
         class="button ml-auto flex items-center gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-layer5"
-        >全部</a
+        >{{ $t('home.All') }}</a
       >
       <div v-if="!isMobile" class="ml-2 flex gap-x-1">
         <button

@@ -2,7 +2,7 @@
   <div class="latest-wrap">
     <!-- Header -->
     <div class="header">
-      <h2>最新回合及赛事</h2>
+      <h2>{{ $t('home.LatestRound&Race') }}</h2>
 
       <div class="tabs">
         <button
@@ -25,11 +25,11 @@
       >
         <thead class="table-head pc-only" role="rowgroup">
           <tr role="row">
-            <th role="columnheader">游戏</th>
-            <th class="sm:w-auto" role="columnheader">玩家</th>
-            <th class="h5-hide" role="columnheader">投注金额</th>
-            <th role="columnheader">倍率</th>
-            <th role="columnheader" class="right">盈余</th>
+            <th role="columnheader">{{ $t('home.Game') }}</th>
+            <th class="sm:w-auto" role="columnheader">{{ $t('home.Player') }}</th>
+            <th class="h5-hide" role="columnheader">{{ $t('home.BetAmount') }}</th>
+            <th role="columnheader">{{ $t('home.Multiplier') }}</th>
+            <th role="columnheader" class="right">{{ $t('home.Profit') }}</th>
           </tr>
         </thead>
 
@@ -72,11 +72,12 @@
 
 <script setup>
 import { ref } from 'vue'
-
+import { useI18n } from 'vue-i18n'
 import BlackJack from './img/BlackJack.svg?url'
 import USDT from '@/static/svg/coin/USDT.black.svg?url'
-const tabs = ['最新投注', '龙虎榜', '下注比赛']
-const activeTab = ref('最新投注')
+const { t } = useI18n()
+const tabs = [t('home.LatestBet'), t('home.HighRoller'), t('home.WagerContest')]
+const activeTab = ref(t('home.LatestBet'))
 
 const list = ref(
   Array.from({ length: 6 }).map(() => ({

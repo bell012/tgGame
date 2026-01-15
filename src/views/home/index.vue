@@ -10,7 +10,7 @@
             class="absolute left-0 top-0 h-full w-full rounded-full bg-success animate-ping"
           ></div>
         </div>
-        <div>近期大胜</div>
+        <div>{{ $t('home.RecentBigWins') }}</div>
         <div class="ml-2 gap-2 lg:!flex pcState">
           <div
             @click="carousel(0)"
@@ -21,7 +21,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            全部
+            {{ $t('home.All') }}
           </div>
           <div
             @click="carousel(1)"
@@ -32,7 +32,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            BC 原创
+            {{ $t('home.BCOriginals') }}
           </div>
           <div
             @click="carousel(2)"
@@ -43,7 +43,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            老虎机
+            {{ $t('home.Slots') }}
           </div>
           <div
             @click="carousel(3)"
@@ -54,7 +54,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            真人娱乐城
+            {{ $t('home.LiveCasino') }}
           </div>
         </div>
       </h2>
@@ -98,12 +98,12 @@
                 <div class="flex items-center">
                   <div class="color_icon_img casino" style="transform: scale(1)"></div>
                   <img :src="icon5" alt="" />
-                  <h2 class="ml-0.5 text-sm sm:text-[22px]">娱乐城</h2>
+                  <h2 class="ml-0.5 text-sm sm:text-[22px]">{{ $t('home.Casino') }}</h2>
                 </div>
                 <div
                   class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
                 >
-                  尽情体验BC原创游戏、真人娱乐城和老虎机游戏。
+                  {{ $t('home.labelLabel') }}
                 </div>
               </div>
             </button>
@@ -119,12 +119,12 @@
                 <div class="flex items-center">
                   <div class="color_icon_img sports" style="transform: scale(1)"></div>
                   <img :src="icon6" alt="" />
-                  <span class="ml-0.5 text-sm sm:text-[22px]">体育</span>
+                  <span class="ml-0.5 text-sm sm:text-[22px]">{{ $t('home.Sports') }}</span>
                 </div>
                 <div
                   class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
                 >
-                  快来下注！足球、板球、NFL、电竞等 80 多种体育项目等你挑战！
+                  {{ $t('home.SportsLabel') }}
                 </div>
               </div>
             </button>
@@ -219,7 +219,7 @@
           </div>
           <div class="flex items-center justify-center mt-4 gap-11 lg:!mt-0">
             <div class="text-lg font-extrabold sm:text-2xl">
-              <span class="text-brand">300%</span> 充值奖金
+              <span class="text-brand">300%</span> {{ $t('home.DepositBonus') }}
             </div>
           </div>
         </div>
@@ -233,6 +233,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import EventList from './components/eventList.vue'
 import NewEvent from './components/newEvent.vue'
@@ -268,39 +269,41 @@ import lottery from './img/lottery.png?url'
 import updown from './img/updown.png?url'
 import bingo from './img/bingo.png?url'
 
+const { t } = useI18n()
+
 const isMobile = ref(false)
 
 onMounted(() => {
   isMobile.value = window.matchMedia('(max-width: 640px)').matches
 })
 console.log(isMobile.value, 'isMobile')
-const listImg = [
+const listImg = computed(() => [
   {
-    name: '扑克',
+    name: t('home.Poker'),
     img: poker,
     icon: icon
   },
   {
-    name: '赛马',
+    name: t('home.Racing'),
     img: racing,
     icon: icon1
   },
   {
-    name: '彩票',
+    name: t('home.Lottery'),
     img: lottery,
     icon: icon2
   },
   {
-    name: '期权',
+    name: t('home.Options'),
     img: updown,
     icon: icon3
   },
   {
-    name: '宾果',
+    name: t('home.Bingo'),
     img: bingo,
     icon: icon4
   }
-]
+])
 const carouselVal = ref(0)
 const carousel = (val: any) => {
   carouselVal.value = val
