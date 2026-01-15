@@ -60,6 +60,8 @@
     "providers": "Providers",
     "bot_clear": "Clear All",
     "show_blocked": "Show Blocked",
-    "all": "All"
+    "all": "All",
+    "latest_bet": "Latest Bet",
+    "high_roller": "High Roller"
   }
 }

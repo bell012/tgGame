@@ -60,6 +60,8 @@
     "providers": "供应商",
     "bot_clear": "全部清除",
     "show_blocked": "显示屏蔽游戏",
-    "all": "全部"
+    "all": "全部",
+    "latest_bet": "最新投注",
+    "high_roller": "龙虎榜"
   }
 }

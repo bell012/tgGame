@@ -144,7 +144,7 @@
       </div>
       <!-- 6种样式 -->
       <div class="tabs-content min-h-48">
-        <pageStyle1 v-if="currentTabStyle === 1" />
+        <pageStyle1 v-if="currentTabStyle === 1" :modules="tabList" />
       </div>
     </div>
   </div>
