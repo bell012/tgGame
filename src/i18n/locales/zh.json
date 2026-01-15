@@ -36,6 +36,13 @@
     "dark": "暗黑模式",
     "system": "跟随系统"
   },
+  "bottom_tab_bar": {
+    "menu": "选单",
+    "explore": "搜索",
+    "casino": "娱乐城",
+    "sports": "体育",
+    "chat": "聊天"
+  },
   "search": {
     "placeholder": "搜寻游戏",
     "history": "历史",

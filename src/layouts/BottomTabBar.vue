@@ -22,17 +22,19 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { bottomTabBarIcons } from '@/static/svg/bottom_tab_bar'
 import { useLayoutStore } from '@/stores/layout'
 import { navigateTo } from '@/utils/router'
 
+const { t } = useI18n()
 const route = useRoute()
 const layoutStore = useLayoutStore()
 
 const menus = computed(() => [
   {
     id: 'menu',
-    name: '选单',
+    name: t('locales.bottom_tab_bar.menu'),
     icon: 'menu',
     route: '/menu',
     handler: () => navigateTo('/menu'),
@@ -40,7 +42,7 @@ const menus = computed(() => [
   },
   {
     id: 'explore',
-    name: '搜索',
+    name: t('locales.bottom_tab_bar.explore'),
     icon: 'explore',
     route: '/explore',
     handler: () => navigateTo('/explore'),
@@ -48,7 +50,7 @@ const menus = computed(() => [
   },
   {
     id: 'casino',
-    name: '娱乐城',
+    name: t('locales.bottom_tab_bar.casino'),
     icon: 'casino',
     route: '/casino',
     handler: () => navigateTo('/casino'),
@@ -56,7 +58,7 @@ const menus = computed(() => [
   },
   {
     id: 'sports',
-    name: '体育',
+    name: t('locales.bottom_tab_bar.sports'),
     icon: 'sports',
     route: '/sports',
     handler: () => navigateTo('/sports'),
@@ -64,7 +66,7 @@ const menus = computed(() => [
   },
   {
     id: 'chat-public',
-    name: '聊天',
+    name: t('locales.bottom_tab_bar.chat'),
     icon: 'chat',
     route: '/chat-public',
     handler: () => navigateTo('/chat-public'),

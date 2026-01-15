@@ -9,7 +9,7 @@
         {{ t('locales.casino.all') }}
       </button>
     </div>
-    <div class="w-full mt-[10px] overflow-x-auto">
+    <div class="w-full overflow-x-auto">
       <div
         class="grid grid-flow-col auto-cols-[30.25%] gap-2 pt-3 md:grid-flow-row md:grid-cols-8 md:overflow-x-hidden"
       >

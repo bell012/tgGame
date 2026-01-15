@@ -36,6 +36,13 @@
     "dark": "Dark Mode",
     "system": "System"
   },
+  "bottom_tab_bar": {
+    "menu": "Menu",
+    "explore": "Explore",
+    "casino": "Casino",
+    "sports": "Sports",
+    "chat": "Chat"
+  },
   "search": {
     "placeholder": "Search games",
     "history": "History",
