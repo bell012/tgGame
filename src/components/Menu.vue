@@ -2,7 +2,10 @@
   <div class="sidebar-menu">
     <!-- 应用程式 -->
     <div v-if="!isCollapsed" class="mt-3 mb-2">
-      <div class="block app-download-card rounded-lg cursor-pointer" @click="handleAppDownloadClick">
+      <div
+        class="block app-download-card rounded-lg cursor-pointer"
+        @click="handleAppDownloadClick"
+      >
         <div class="flex justify-between items-center">
           <div class="flex-1 p-2.5 pr-0">
             <h3 class="text-sm font-semibold text-text-1 mb-1">应用程式</h3>
@@ -144,7 +147,9 @@
                   { 'launch-card-active': activeMenuId === item.id }
                 ]"
                 @click="handleMenuItemClick(item)"
-                @mouseenter="(e: MouseEvent) => item.children && handleSubmenuHover(e, menu.id, item.id)"
+                @mouseenter="
+                  (e: MouseEvent) => item.children && handleSubmenuHover(e, menu.id, item.id)
+                "
                 @mouseleave="item.children && startClearSubmenuHover()"
               >
                 <div class="flex items-center">
@@ -428,7 +433,10 @@
                   @click="handleThirdLevelClick(subItem)"
                 >
                   <div class="w-6 h-6 flex items-center justify-center mr-2">
-                    <component :is="sideIcons[subItem.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                    <component
+                      :is="sideIcons[subItem.icon]"
+                      class="w-6 h-6 fill-text-2 fill-none"
+                    />
                   </div>
                   <span class="text-sm font-[600] text-text-1">{{ subItem.name }}</span>
                 </div>
@@ -957,7 +965,8 @@ const sponsor = computed(() => [
   margin-bottom: 4px;
 
   &:hover {
-    background: linear-gradient(90deg, rgba(36 238 137 / 0.2), #23ee8800), rgba(255, 255, 255, 0.05);
+    background:
+      linear-gradient(90deg, rgba(36 238 137 / 0.2), #23ee8800), rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -965,4 +974,3 @@ const sponsor = computed(() => [
   background: linear-gradient(90deg, rgba(36 238 137 / 0.2), #23ee8800);
 }
 </style>
-

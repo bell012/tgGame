@@ -1,6 +1,6 @@
 <template>
   <div class="explore-page min-h-screen">
-    <TopInput />
+    <TopInput @change-type="id => (currentTypeId = id)" />
     <!-- 顶部横行滚动tab选择 -->
     <div class="flex w-full justify-between overflow-x-auto scrollbar-none my-3.5">
       <div
@@ -22,7 +22,10 @@
     </div>
 
     <!-- 排序和供应商筛选 -->
-    <div class="w-full flex items-center justify-between gap-[11px] mb-[13px]">
+    <div
+      v-show="currentTypeId == 1"
+      class="w-full flex items-center justify-between gap-[11px] mb-[13px]"
+    >
       <!-- 排序 -->
       <SortSelect />
 
@@ -30,13 +33,19 @@
       <ProviderSelect />
     </div>
 
-    <!-- 列表区域 -->
+    <!-- 暂定为单独的供应商盒子占位 (彩票模式显示) -->
+    <div v-show="currentTypeId == 3" class="mb-[13px]">
+      <!-- :list="lotterySupplierList" -->
+      <ProviderSelect />
+    </div>
 
+    <!-- 游戏列表区域 -->
     <ResponsiveGridPager
       :items="list"
       v-model:page="page"
       :total-pages="totalPages"
       @change="fetchPage"
+      v-show="currentTypeId != 2"
     >
       <template #item="{ item }">
         <div class="w-full relative">
@@ -54,6 +63,9 @@
         </div>
       </template>
     </ResponsiveGridPager>
+
+    <!-- 比赛列表 -->
+    <LiveList v-show="currentTypeId == 2" />
   </div>
 </template>
 
@@ -63,6 +75,7 @@ import TopInput from '@/components/explore/TopInput.vue'
 import SortSelect from '@/components/explore/SortSelect.vue'
 import ProviderSelect from '@/components/explore/ProviderSelect.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
+import LiveList from '@/components/explore/LiveList.vue'
 import g1Img from '@/static/img/explore/g1.png'
 import g1aImg from '@/static/img/explore/g1a.png'
 import g2Img from '@/static/img/explore/g2.png'
@@ -77,6 +90,7 @@ import gameImg from '@/static/img/explore/game.png'
 import numImg from '@/static/img/explore/num.png'
 
 const currentTabId = ref(1)
+const currentTypeId = ref(1) //类型选择
 const tabList = ref([
   { id: 1, name: '所有游戏', icon: g1Img, iconActive: g1aImg },
   { id: 2, name: '热门游戏', icon: g2Img, iconActive: g2aImg },
@@ -101,6 +115,9 @@ const list = ref([
 
 const page = ref(1)
 const totalPages = ref(10)
+
+// 模拟彩票供应商数据
+// const lotterySupplierList = ref([])
 
 const fetchPage = (val: number) => {
   console.log('vvvv--->', val)

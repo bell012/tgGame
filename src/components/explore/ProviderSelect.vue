@@ -32,7 +32,11 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 
 /* ===================== 供应商选择 ===================== */
-const supplierList = ref([
+const props = defineProps<{
+  list?: { id: number | string; url: string }[]
+}>()
+
+const defaultList = [
   { id: 1, url: wlImg },
   { id: 2, url: pgImg },
   { id: 3, url: fgImg },
@@ -47,7 +51,9 @@ const supplierList = ref([
   { id: 6, url: pgImg },
   { id: 7, url: fgImg },
   { id: 8, url: jlImg }
-]) // 供应商列表
+]
+
+const supplierList = computed(() => props.list || defaultList) // 优先使用外部传入的列表
 type Id = number | string
 
 const currentSupplierIds = ref<Id[]>([]) // 多选结果
