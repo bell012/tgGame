@@ -55,6 +55,14 @@ a {
   }
 }
 
+/* 隐藏滚动条 */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
 // 输入框样式
 input,
 textarea,
