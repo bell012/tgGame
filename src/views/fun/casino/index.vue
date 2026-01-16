@@ -144,7 +144,7 @@
       </div>
       <!-- 6种样式 -->
       <div class="tabs-content min-h-48">
-        <pageStyle1 v-if="currentTabStyle === 1" :modules="tabList" />
+        <component :is="getPageStyle" :modules="tabList" />
       </div>
     </div>
   </div>
@@ -154,12 +154,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import pageStyle1 from './components/pageStyle1.vue'
+import pageStyle2 from './components/pageStyle2.vue'
 
 const { t } = useI18n()
 
@@ -215,6 +216,17 @@ const tabList = ref([
     icon: 'themes'
   }
 ])
+
+const getPageStyle = computed(() => {
+  switch (currentTabStyle.value) {
+    case 1:
+      return pageStyle1
+    case 2:
+      return pageStyle2
+    default:
+      return pageStyle2
+  }
+})
 
 const onTabButton = (tab: any) => {
   currentTabId.value = tab.id

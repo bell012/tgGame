@@ -1,6 +1,8 @@
 <template>
-  <div class="w-full overflow-hidden rounded-xl bg-[var(--color-background-level-2)]">
-    <table class="w-full text-sm text-text-2 text-[14px]">
+  <div
+    class="relative w-full h-[430px] overflow-hidden rounded-xl bg-[var(--color-background-level-2)]"
+  >
+    <table class="w-full h-full text-sm text-text-2 text-[14px]">
       <thead class="bg-[var(--color-opacity-6)] text-[12px]">
         <tr>
           <td class="py-[10px] px-3">游戏</td>
