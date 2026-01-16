@@ -1,5 +1,5 @@
 <template>
-  <div class="home max-w-[1248px] mx-auto px-4 py-4">
+  <div :class="['home max-w-[1248px] mx-auto py-4', { 'px-4': !isMobile }]">
     <img src="./headBack.png" />
     <!-- {{ $t('locales.home.home') }} -->
     <div class="flex items-center sm:mt-6 h-8">
@@ -10,7 +10,7 @@
             class="absolute left-0 top-0 h-full w-full rounded-full bg-success animate-ping"
           ></div>
         </div>
-        <div>近期大胜</div>
+        <div>{{ $t('home.RecentBigWins') }}</div>
         <div class="ml-2 gap-2 lg:!flex pcState">
           <div
             @click="carousel(0)"
@@ -21,7 +21,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            全部
+            {{ $t('home.All') }}
           </div>
           <div
             @click="carousel(1)"
@@ -32,7 +32,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            BC 原创
+            {{ $t('home.BCOriginals') }}
           </div>
           <div
             @click="carousel(2)"
@@ -43,7 +43,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            老虎机
+            {{ $t('home.Slots') }}
           </div>
           <div
             @click="carousel(3)"
@@ -54,7 +54,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            真人娱乐城
+            {{ $t('home.LiveCasino') }}
           </div>
         </div>
       </h2>
@@ -98,31 +98,33 @@
                 <div class="flex items-center">
                   <div class="color_icon_img casino" style="transform: scale(1)"></div>
                   <img :src="icon5" alt="" />
-                  <h2 class="ml-0.5 text-sm sm:text-[22px]">娱乐城</h2>
+                  <h2 class="ml-0.5 text-sm sm:text-[22px]">{{ $t('home.Casino') }}</h2>
                 </div>
                 <div
                   class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
                 >
-                  尽情体验BC原创游戏、真人娱乐城和老虎机游戏。
+                  {{ $t('home.labelLabel') }}
                 </div>
               </div>
             </button>
             <button
               class="button button-m center relative h-32 flex-1 overflow-hidden rounded-xl bg-layer4 p-1.5 font-extrabold sm:h-[176px] sm:p-5 col-span-2 col-start-1"
               type="button"
-              style="background-image: linear-gradient(to left, rgb(88, 46, 89), transparent 75%)"
+              style="
+                background: linear-gradient(270deg, #582e59 0%, rgba(88, 46, 89, 0) 75%), #323738;
+              "
             >
               <img class="absolute right-5 top-0 h-[100%]" src="./img/sports.png" />
               <div class="relative z-10 flex h-full flex-auto flex-col">
                 <div class="flex items-center">
                   <div class="color_icon_img sports" style="transform: scale(1)"></div>
                   <img :src="icon6" alt="" />
-                  <span class="ml-0.5 text-sm sm:text-[22px]">体育</span>
+                  <span class="ml-0.5 text-sm sm:text-[22px]">{{ $t('home.Sports') }}</span>
                 </div>
                 <div
                   class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
                 >
-                  快来下注！足球、板球、NFL、电竞等 80 多种体育项目等你挑战！
+                  {{ $t('home.SportsLabel') }}
                 </div>
               </div>
             </button>
@@ -161,15 +163,80 @@
     </div>
     <div>
       <GameList />
+      <EventList />
+      <GameList />
+    </div>
+    <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
+      <div class="flex items-center justify-center gap-2 pb-4 pt-3 lg:!hidden">
+        <img class="w-6" :src="BTC" /><img class="w-6" :src="ETH" /><img
+          class="w-6"
+          :src="BNB"
+        /><img class="w-6" :src="XRP" /><img class="w-6" :src="USDT" /><img
+          class="w-6"
+          :src="USDC"
+        /><img class="w-6" :src="SOL" /><img class="w-6" :src="ADA" /><img
+          class="w-6"
+          :src="DOGE"
+        /><img class="w-6" :src="MATIC" /><img class="w-6" :src="TRX" />
+      </div>
+
+      <div class="relative h-24 rounded-xl bg-[#171a1ab3] lg:px-8">
+        <div class="pointer-events-none absolute left-0 size-full overflow-hidden blur">
+          <img class="absolute -top-3 left-4 scale-[2]" :src="dotC8z5Aoh" /><img
+            class="absolute left-24 top-14 scale-150"
+            :src="dotC8z5Aoh"
+          /><img class="absolute -top-2 left-40 scale-[2]" :src="dotC8z5Aoh" /><img
+            class="absolute -top-3 left-72 scale-[3]"
+            :src="dotC8z5Aoh"
+          /><img class="absolute left-80 top-15 scale-150" :src="dotC8z5Aoh" /><img
+            class="absolute -bottom-3 right-4 scale-[2]"
+            :src="dotC8z5Aoh"
+          /><img class="absolute bottom-14 right-24 scale-150" :src="dotC8z5Aoh" /><img
+            class="absolute -bottom-2 right-40 scale-[2]"
+            :src="dotC8z5Aoh"
+          /><img class="absolute -bottom-3 right-72 scale-[3]" :src="dotC8z5Aoh" /><img
+            class="absolute bottom-15 right-80 scale-150"
+            :src="dotC8z5Aoh"
+          />
+        </div>
+        <div
+          class="relative z-10 flex h-full flex-col items-center justify-center lg:!flex-row-reverse"
+        >
+          <div class="flex items-center justify-center hidden lg:!flex">
+            <img class="-ml-1 w-6" :src="BTC" /><img class="-ml-1 w-6" :src="ETH" />
+            <img class="-ml-1 w-6" :src="BNB" /><img class="-ml-1 w-6" :src="XRP" />
+            <img class="-ml-1 w-6" :src="USDT" /><img class="-ml-1 w-6" :src="USDC" />
+            <img class="-ml-1 w-6" :src="SOL" /><img class="-ml-1 w-6" :src="ADA" />
+            <img class="-ml-1 w-6" :src="DOGE" /><img class="-ml-1 w-6" :src="MATIC" />
+            <img class="-ml-1 w-6" :src="TRX" />
+          </div>
+          <div class="flex items-center justify-center mx-auto gap-6">
+            <img class="w-14" :src="MAYA" />
+            <img class="w-20" :src="GCASH" />
+            <img class="w-14" :src="VISA" />
+            <img class="w-13" :src="GROU" />
+            <img class="w-23" :src="SHOPEE" />
+          </div>
+          <div class="flex items-center justify-center mt-4 gap-11 lg:!mt-0">
+            <div class="text-lg font-extrabold sm:text-2xl">
+              <span class="text-brand">300%</span> {{ $t('home.DepositBonus') }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+  <NewEvent />
 
   <CommonFooter />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
+import EventList from './components/eventList.vue'
+import NewEvent from './components/newEvent.vue'
 import icon from './img/Image4.svg?url'
 import icon1 from './img/Image.svg?url'
 import icon2 from './img/Image1.svg?url'
@@ -178,11 +245,31 @@ import icon4 from './img/Image3.svg?url'
 import icon5 from './img/Image5.svg?url'
 import icon6 from './img/Image6.svg?url'
 
+import BTC from '@/static/svg/coin/BTC.black.svg?url'
+import ETH from '@/static/svg/coin/ETH.black.svg?url'
+import BNB from '@/static/svg/coin/BNB.black.svg?url'
+import XRP from '@/static/svg/coin/XRP.black.svg?url'
+import USDT from '@/static/svg/coin/USDT.black.svg?url'
+import USDC from '@/static/svg/coin/USDC.black.svg?url'
+import SOL from '@/static/svg/coin/SOL.black.svg?url'
+import ADA from '@/static/svg/coin/ADA.black.svg?url'
+import DOGE from '@/static/svg/coin/DOGE.black.svg?url'
+import MATIC from '@/static/svg/coin/MATIC.black.svg?url'
+import TRX from '@/static/svg/coin/TRX.black.svg?url'
+import MAYA from '@/static/svg/coin/maya.svg?url'
+import GCASH from '@/static/svg/coin/gcash.svg?url'
+import VISA from '@/static/svg/coin/visa.svg?url'
+import GROU from '@/static/svg/coin/GrouPay.svg?url'
+import SHOPEE from '@/static/svg/coin/shopeePay.svg?url'
+import dotC8z5Aoh from '@/static/svg/coin/dot-C8z5Aoh_.svg?url'
+
 import poker from './img/poker.png?url'
 import racing from './img/racing.png?url'
 import lottery from './img/lottery.png?url'
 import updown from './img/updown.png?url'
 import bingo from './img/bingo.png?url'
+
+const { t } = useI18n()
 
 const isMobile = ref(false)
 
@@ -190,33 +277,33 @@ onMounted(() => {
   isMobile.value = window.matchMedia('(max-width: 640px)').matches
 })
 console.log(isMobile.value, 'isMobile')
-const listImg = [
+const listImg = computed(() => [
   {
-    name: '扑克',
+    name: t('home.Poker'),
     img: poker,
     icon: icon
   },
   {
-    name: '赛马',
+    name: t('home.Racing'),
     img: racing,
     icon: icon1
   },
   {
-    name: '彩票',
+    name: t('home.Lottery'),
     img: lottery,
     icon: icon2
   },
   {
-    name: '期权',
+    name: t('home.Options'),
     img: updown,
     icon: icon3
   },
   {
-    name: '宾果',
+    name: t('home.Bingo'),
     img: bingo,
     icon: icon4
   }
-]
+])
 const carouselVal = ref(0)
 const carousel = (val: any) => {
   carouselVal.value = val
@@ -274,7 +361,7 @@ const duplicatedList = computed(() => [...list.value, ...list.value])
   flex: none;
 }
 .bg-layer4 {
-  background-color: #323738;
+  background-color: var(--color-background-level-2);
 }
 @keyframes marquee {
   from {
