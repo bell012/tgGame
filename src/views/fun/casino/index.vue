@@ -183,37 +183,133 @@ const tabList = ref([
     id: 1,
     style: 1,
     name: '大厅',
-    icon: 'home'
+    icon: 'home',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12',
+      'game13',
+      'game14',
+      'game15',
+      'game16'
+    ]
   },
   {
     id: 2,
     style: 2,
     name: 'BC 原创',
-    icon: 'bc'
+    icon: 'bc',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12',
+      'game13',
+      'game14',
+      'game15',
+      'game16'
+    ]
   },
   {
     id: 3,
     style: 3,
     name: '老虎机',
-    icon: 'slots'
+    icon: 'slots',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10'
+    ]
   },
   {
     id: 4,
     style: 4,
     name: '扑克',
-    icon: 'poker'
+    icon: 'poker',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12',
+      'game13',
+      'game14',
+      'game15',
+      'game16'
+    ]
   },
   {
     id: 5,
     style: 5,
     name: '供应商',
-    icon: 'favorites_full'
+    icon: 'favorites_full',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12',
+      'game13',
+      'game14'
+    ]
   },
   {
     id: 6,
     style: 6,
     name: '游戏主题',
-    icon: 'themes'
+    icon: 'themes',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12'
+    ]
   }
 ])
 

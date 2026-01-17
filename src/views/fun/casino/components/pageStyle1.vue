@@ -8,18 +8,55 @@
       >
         {{ t('locales.casino.all') }}
       </button>
+      <div class="hidden sm:flex ml-2 gap-x-1">
+        <button
+          type="button"
+          class="button ml-auto flex items-center gap-1 rounded-lg font-extrabold h-8 bg-[var(--color-opacity-10)] px-2 inactive"
+          :disabled="!canScrollLeft[index]"
+          @click="scrollLeft(index)"
+        >
+          <div
+            class="icon size-4"
+            :class="canScrollLeft[index] ? 'fill-text-1' : 'fill-[var(--color-icon-level-3)]'"
+          >
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
+              ></path>
+            </svg>
+          </div>
+        </button>
+        <button
+          type="button"
+          class="button ml-auto flex items-center gap-1 rounded-lg font-extrabold h-8 bg-[var(--color-opacity-10)] px-2 inactive"
+          :disabled="!canScrollRight[index]"
+          @click="scrollRight(index)"
+        >
+          <div
+            class="icon size-4 rotate-180"
+            :class="canScrollRight[index] ? 'fill-text-1' : 'fill-[var(--color-icon-level-3)]'"
+          >
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
+              ></path>
+            </svg>
+          </div>
+        </button>
+      </div>
     </div>
     <div class="w-full overflow-x-auto">
       <div
-        class="grid grid-flow-col auto-cols-[30.25%] gap-2 pt-3 md:grid-flow-row md:grid-cols-8 md:overflow-x-hidden"
+        :ref="el => setScrollRef(el as HTMLElement | null, index)"
+        class="grid grid-flow-col gap-2 overflow-x-auto overflow-y-hidden scroll-smooth pt-3 auto-cols-[30.25%] sm:auto-cols-[11.82%]"
       >
-        <div v-for="(item, index) in [1, 2, 3, 4, 5, 6, 7, 8]" :key="index">
+        <div v-for="(game, i) in getDisplayList(item.items)" :key="i">
           <a
             href="javascript:void(0);"
             class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2 inactive"
             link=""
           >
-            <img class="w-full" alt="Crash" :src="getGameImg(item)" />
+            <img class="w-full" alt="Crash" :src="getGameImg(game)" />
             <div
               class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-[var(--color-mask-20)] px-1.5"
             >
@@ -38,7 +75,7 @@
               <div
                 class="flex items-center justify-center absolute left-0 top-0 h-[40%] w-full px-2 text-center font-extrabold leading-4 text-text-1"
               >
-                {{ item }}
+                {{ game }}
               </div>
               <div
                 class="flex items-center justify-center h-9 w-9 rounded-full bg-[#fff3] transition-all duration-300 group-hover:scale-150"
@@ -54,6 +91,20 @@
             </div>
           </a>
         </div>
+        <div>
+          <a
+            href="javascript:void(0);"
+            class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2 inactive"
+            link=""
+          >
+            <img class="w-full" alt="all" src="@/static/img/test/game_all.webp" />
+            <span
+              class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center font-extrabold text-text-1 text-[12px] sm:text-[14px]"
+            >
+              View All
+            </span>
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -63,7 +114,9 @@
     </h2>
     <span class="ml-auto"></span>
   </div>
-  <div class="flex mt-2 w-full rounded bg-[var(--color-opacity-6)] text-text-2">
+  <div
+    class="flex w-full sm:max-w-[347px] sm:ml-auto rounded bg-[var(--color-opacity-6)] text-text-2 mt-2 sm:!-mt-9"
+  >
     <button
       :class="{ 'bg-[var(--color-opacity-10)] text-text-1': latestBetIndex === 0 }"
       class="flex-1 h-10 shrink-0 rounded-lg font-bold text-sm flex items-center justify-center"
@@ -84,8 +137,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import game1 from '@/static/img/test/game1.png'
 import game2 from '@/static/img/test/game2.png'
 import game3 from '@/static/img/test/game3.png'
@@ -99,25 +153,79 @@ interface OptionItem {
   style: number | string
   name: string
   icon: string
+  items: Array<string>
 }
 
 const { t } = useI18n()
+const isMobile = useIsMobile()
 const modules = defineModel<OptionItem[]>('modules')
 const latestBetIndex = ref(0)
+const scrollRefs = ref<HTMLElement[]>([])
+const canScrollLeft = ref<boolean[]>([])
+const canScrollRight = ref<boolean[]>([])
 
-const getGameImg = (item: number | string) => {
+const setScrollRef = (el: HTMLElement | null, index: number) => {
+  if (!el) return
+  scrollRefs.value[index] = el
+
+  nextTick(() => {
+    updateScrollState(index)
+    el.addEventListener('scroll', () => updateScrollState(index))
+  })
+}
+
+const updateScrollState = (index: number) => {
+  const el = scrollRefs.value[index]
+  if (!el) return
+
+  const max = el.scrollWidth - el.clientWidth
+
+  canScrollLeft.value[index] = el.scrollLeft > 1
+  canScrollRight.value[index] = el.scrollLeft < max - 1
+}
+
+const scrollLeft = (index: number) => {
+  const el = scrollRefs.value[index]
+  if (!el) return
+
+  const target = el.scrollLeft - el.clientWidth
+
+  el.scrollTo({
+    left: Math.max(target, 0),
+    behavior: 'smooth'
+  })
+}
+
+const scrollRight = (index: number) => {
+  const el = scrollRefs.value[index]
+  if (!el) return
+
+  const maxScrollLeft = el.scrollWidth - el.clientWidth
+  const target = el.scrollLeft + el.clientWidth
+
+  el.scrollTo({
+    left: Math.min(target, maxScrollLeft),
+    behavior: 'smooth'
+  })
+}
+
+const getDisplayList = (list: string[]) => {
+  return isMobile.value ? list.slice(0, 11) : list.slice(0, 15)
+}
+
+const getGameImg = (item: string) => {
   switch (item) {
-    case 1:
+    case 'game1':
       return game1
-    case 2:
+    case 'game2':
       return game2
-    case 3:
+    case 'game3':
       return game3
-    case 4:
+    case 'game4':
       return game4
-    case 5:
+    case 'game5':
       return game5
-    case 6:
+    case 'game6':
       return game6
     default:
       return game6
