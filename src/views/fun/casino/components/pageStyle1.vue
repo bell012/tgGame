@@ -60,20 +60,20 @@
             <div
               class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-[var(--color-mask-20)] px-1.5"
             >
-              <div class="icon size-4 fill-text-1">
+              <div class="icon size-4 fill-text-4 dark:fill-text-1">
                 <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M26.1137 20.6693C26.6674 23.8341 24.4618 26.132 21.3885 26.6484C18.4196 27.1469 13.5818 27.1469 10.6138 26.6484C7.5397 26.132 5.3341 23.8349 5.88853 20.6702C6.35798 17.9846 8.63481 16.3107 11.4143 16.4548C13.4451 16.56 14.6923 16.8239 16.1371 16.8239C17.5981 16.8239 18.5718 16.5592 20.588 16.4548C23.3674 16.3091 25.6443 17.9838 26.1137 20.6693ZM16.1007 4.66211C19.021 4.66211 21.3885 7.02959 21.3885 9.9499C21.3885 12.8702 19.021 15.2377 16.1007 15.2377C13.1804 15.2377 10.8121 12.8694 10.8121 9.9499C10.8121 7.0304 13.1796 4.66211 16.1007 4.66211Z"
                   ></path>
                 </svg>
               </div>
-              <span class="text-xs font-semibold text-text-1">2191</span>
+              <span class="text-xs font-semibold text-text-4 dark:text-text-1">2191</span>
             </div>
             <div
               class="flex items-center justify-center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 group-hover:opacity-100"
             >
               <div
-                class="flex items-center justify-center absolute left-0 top-0 h-[40%] w-full px-2 text-center font-extrabold leading-4 text-text-1"
+                class="flex items-center justify-center absolute left-0 top-0 h-[40%] w-full px-2 text-center font-extrabold leading-4 text-text-4 dark:text-text-1"
               >
                 {{ game }}
               </div>
@@ -99,7 +99,7 @@
           >
             <img class="w-full" alt="all" src="@/static/img/test/game_all.webp" />
             <span
-              class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center font-extrabold text-text-1 text-[12px] sm:text-[14px]"
+              class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center font-extrabold text-text-4 dark:text-text-1 text-[12px] sm:text-[14px]"
             >
               View All
             </span>
@@ -118,14 +118,18 @@
     class="flex w-full sm:max-w-[347px] sm:ml-auto rounded bg-[var(--color-opacity-6)] text-text-2 mt-2 sm:!-mt-9"
   >
     <button
-      :class="{ 'bg-[var(--color-opacity-10)] text-text-1': latestBetIndex === 0 }"
+      :class="{
+        'bg-[var(--color-opacity-10)] text-text-4 dark:text-text-1 ': latestBetIndex === 0
+      }"
       class="flex-1 h-10 shrink-0 rounded-lg font-bold text-sm flex items-center justify-center"
       @click.stop="latestBetIndex = 0"
     >
       {{ t('locales.casino.latest_bet') }}
     </button>
     <button
-      :class="{ 'bg-[var(--color-opacity-10)] text-text-1': latestBetIndex === 1 }"
+      :class="{
+        'bg-[var(--color-opacity-10)] text-text-4 dark:text-text-1 ': latestBetIndex === 1
+      }"
       class="flex-1 h-10 shrink-0 rounded-lg font-bold text-sm flex items-center justify-center"
       @click.stop="latestBetIndex = 1"
     >
