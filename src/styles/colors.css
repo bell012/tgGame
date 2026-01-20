@@ -10,9 +10,11 @@
   --color-background-level-4: #2D3131;
   --color-background-level-5: #292D2E;
   --color-background-level-6: #1D1E1E;
+  --color-background-level-7: #3B4142;
+  --color-background-level-8: #323738;
 
   /* ========== 主色 (Theme) ========== */
-  --color-theme-level-1: #2AE58A;
+  --color-theme-level-1: #2AEE88;
 
   /* ========== 文字色 (Text) ========== */
   --color-text-level-1: #FFFFFF;
@@ -23,25 +25,27 @@
   /* ========== 图标色 (Icon) ========== */
   --color-icon-level-1: #FFFFFF;
   --color-icon-level-2: #B3BEC1;
-  --color-icon-level-3: #7B707D;
+  --color-icon-level-3: #7B7D7D;
   --color-icon-level-4: #000000;
 
   /* ========== 不透明度 (Opacity) ========== */
-  --color-opacity-6: rgba(255, 255, 255, 0.06);
+  --color-opacity-5: rgba(255, 255, 255, 0.06);
   --color-opacity-10: rgba(255, 255, 255, 0.10);
   --color-opacity-15: rgba(255, 255, 255, 0.15);
+  --color-opacity-30: rgba(255, 255, 255, 0.3);
 
   /* ========== 遮罩色 (Mask) ========== */
   --color-mask-20: rgba(0, 0, 0, 0.20);
   --color-mask-40: rgba(0, 0, 0, 0.40);
-  --color-mask-60: rgba(0, 0, 0, 0.60);
+  --color-mask-60-1: rgba(0, 0, 0, 0.60);
+  --color-mask-80-2: rgba(0, 0, 0, 0.80);
 
   /* ========== 次要色 (Secondary) ========== */
   --color-secondary-level-1: rgba(252, 60, 60, 0.15);
   --color-secondary-level-2: #FC3C3C;
   --color-secondary-level-3: rgba(42, 238, 138, 0.15);
   --color-secondary-level-4: #2AEE88;
-  --color-secondary-level-5: rgba(247, 255, 73, 0.15);
+  --color-secondary-level-5: rgba(247, 255, 75, 0.15);
   --color-secondary-level-6: #F7FF4B;
 
   /* ========== 通用色 (Common) ========== */
@@ -50,27 +54,18 @@
 
   /* ========== 输入框色 (Input) ========== */
   --color-input-level-1: rgba(255, 255, 255, 0.06);
-  --color-input-level-2: rgba(0, 0, 0, 0.20);
+  --color-input-level-2: rgba(255, 255, 255, 0.10);
+  --color-input-level-3: rgba(0, 0, 0, 0.20);
 
-  /* ========== 滚动条色 (Scrollbar) ========== */
-  --color-scrollbar-thumb: #4b5354;
-  --color-scrollbar-thumb-hover: #5c6465;
-  --color-scrollbar-track: transparent;
-
-  /* ========== 按钮色 (Button) ========== */
-  --color-button-primary: var(--color-theme-level-1);
-  --color-button-primary-hover: #25c777;
-  --color-button-secondary: var(--color-background-level-3);
-  --color-button-secondary-hover: var(--color-background-level-2);
-
-  /* ========== 边框色 (Border) ========== */
-  --color-border-level-1: rgba(255, 255, 255, 0.1);
-  --color-border-level-2: rgba(255, 255, 255, 0.05);
-
-  /* ========== 阴影色 (Shadow) ========== */
-  --color-shadow-level-1: rgba(0, 0, 0, 0.1);
-  --color-shadow-level-2: rgba(0, 0, 0, 0.2);
-  --color-shadow-level-3: rgba(0, 0, 0, 0.3);
+  /* ========== 首页分类卡片背景色 (Game Category) - 渐变色 ========== */
+  --color-game-casino: linear-gradient(to right, #323738, #265741);
+  --color-game-sports: linear-gradient(to right, #323738, #6A306B);
+  --color-game-contract: linear-gradient(to right, #323738, #5A4B37);
+  --color-game-slots: linear-gradient(to right, #323738, #5A3737);
+  --color-game-fishing: linear-gradient(to right, #323738, #374D5D);
+  --color-game-live: linear-gradient(to right, #323738, #335B38);
+  --color-game-lottery: linear-gradient(to right, #323738, #3B686E);
+  --color-game-table: linear-gradient(to right, #323738, #473660);
 }
 
 /**
@@ -78,46 +73,66 @@
  */
 :root.light {
   /* ========== 背景色 (Background) - 浅色模式 ========== */
-  --color-background-level-1: #FFFFFF;
-  --color-background-level-2: #F5F5F5;
-  --color-background-level-3: #E8E8E8;
-  --color-background-level-4: #EEEEEE;
-  --color-background-level-5: #FAFAFA;
-  --color-background-level-6: #FCFCFC;
+  --color-background-level-1: #F4F4F4;
+  --color-background-level-2: #FFFFFF;
+  --color-background-level-3: #E4E6E6;
+  --color-background-level-4: #ECEDEE;
+  --color-background-level-5: #FFFFFF;
+  --color-background-level-6: #FFFFFF;
+  --color-background-level-7: #FFFFFF;
+  --color-background-level-8: #E4E6E6;
+
+  /* ========== 主色 (Theme) ========== */
+  --color-theme-level-1: #2AEE88;
 
   /* ========== 文字色 (Text) - 浅色模式 ========== */
   --color-text-level-1: #000000;
-  --color-text-level-2: #666666;
-  --color-text-level-3: #999999;
-  --color-text-level-4: #FFFFFF;
+  --color-text-level-2: #5F6D6D;
+  --color-text-level-3: #9A9C9C;
+  --color-text-level-4: #000000;
 
   /* ========== 图标色 (Icon) - 浅色模式 ========== */
   --color-icon-level-1: #000000;
-  --color-icon-level-2: #666666;
-  --color-icon-level-3: #999999;
-  --color-icon-level-4: #FFFFFF;
+  --color-icon-level-2: #5F6D6D;
+  --color-icon-level-3: #9A9C9C;
+  --color-icon-level-4: #000000;
 
   /* ========== 不透明度 (Opacity) - 浅色模式 ========== */
-  --color-opacity-6: rgba(0, 0, 0, 0.06);
+  --color-opacity-5: rgba(0, 0, 0, 0.06);
   --color-opacity-10: rgba(0, 0, 0, 0.10);
   --color-opacity-15: rgba(0, 0, 0, 0.15);
+  --color-opacity-30: rgba(255, 255, 255, 0.3);
 
   /* ========== 遮罩色 (Mask) - 浅色模式 ========== */
   --color-mask-20: rgba(0, 0, 0, 0.20);
   --color-mask-40: rgba(0, 0, 0, 0.40);
-  --color-mask-60: rgba(0, 0, 0, 0.60);
+  --color-mask-60-1: rgba(0, 0, 0, 0.60);
+  --color-mask-80-2: rgba(255, 255, 255, 0.80);
+
+  /* ========== 次要色 (Secondary) - 浅色模式 ========== */
+  --color-secondary-level-1: rgba(252, 60, 60, 0.15);
+  --color-secondary-level-2: #FC3C3C;
+  --color-secondary-level-3: rgba(42, 238, 138, 0.15);
+  --color-secondary-level-4: #2AEE88;
+  --color-secondary-level-5: rgba(247, 255, 73, 0.15);
+  --color-secondary-level-6: #F7FF4B;
+
+  /* ========== 通用色 (Common) - 浅色模式 ========== */
+  --color-common-100: #FFFFFF;
+  --color-common-60: rgba(255, 255, 255, 0.60);
 
   /* ========== 输入框色 (Input) - 浅色模式 ========== */
-  --color-input-level-1: rgba(0, 0, 0, 0.05);
-  --color-input-level-2: rgba(0, 0, 0, 0.10);
+  --color-input-level-1: rgba(0, 0, 0, 0.06);
+  --color-input-level-2: #FFFFFF;
+  --color-input-level-3: #FFFFFF;
 
-  /* ========== 边框色 (Border) - 浅色模式 ========== */
-  --color-border-level-1: rgba(0, 0, 0, 0.1);
-  --color-border-level-2: rgba(0, 0, 0, 0.05);
-
-  /* ========== 按钮色 (Button) - 浅色模式 ========== */
-  --color-button-secondary: #E8E8E8;
-  --color-button-secondary-hover: #D0D0D0;
+  /* ========== 首页分类卡片背景色 (Game Category) - 浅色模式 - 渐变色 ========== */
+  --color-game-casino: linear-gradient(to right, #FFFFFF, #BFF9DC);
+  --color-game-sports: linear-gradient(to right, #FFFFFF, #F9AFF6);
+  --color-game-contract: linear-gradient(to right, #FFFFFF, #FFE9BE);
+  --color-game-slots: linear-gradient(to right, #FFFFFF, #FFBEBE);
+  --color-game-fishing: linear-gradient(to right, #FFFFFF, #BEE4FF);
+  --color-game-live: linear-gradient(to right, #FFFFFF, #BEFFCB);
+  --color-game-lottery: linear-gradient(to right, #FFFFFF, #BEDDFF);
+  --color-game-table: linear-gradient(to right, #FFFFFF, #DEBEFF);
 }
-
-
