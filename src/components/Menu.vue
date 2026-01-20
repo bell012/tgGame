@@ -1,38 +1,14 @@
 <template>
   <div class="sidebar-menu">
-    <!-- 应用程式 -->
-    <div v-if="!isCollapsed" class="mt-3 mb-2">
-      <div
-        class="block app-download-card rounded-lg cursor-pointer"
-        @click="handleAppDownloadClick"
-      >
-        <div class="flex justify-between items-center">
-          <div class="flex-1 p-2.5 pr-0">
-            <h3 class="text-sm font-semibold text-text-1 mb-1">应用程式</h3>
-            <p class="text-xs text-text-2 leading-tight">专属功能全面解锁 玩乐无限升级</p>
-          </div>
-          <div class="w-[80px] h-auto flex-shrink-0 pt-1 pr-1">
-            <div class="w-full h-full rounded flex items-center justify-center text-[10px]">
-              <img
-                src="@/static/img/home/pwa.png.png"
-                alt=""
-                class="w-full h-full object-cover rounded"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- BC代币 -->
     <div v-if="!isCollapsed" class="mb-2">
       <div
-        class="flex items-center justify-between bc-card p-2 bg-bg-3 rounded-lg cursor-pointer"
+        class="flex items-center justify-between bc-card p-2 rounded-lg cursor-pointer"
         @click="() => console.log('点击 BC代币')"
       >
         <div class="flex items-center flex-1">
           <div class="w-9 h-9 mr-1 flex items-center justify-center">
-            <component :is="sideIcons.icon_1" class="w-6 h-6 fill-text-2 fill-none" />
+            <component :is="sideIcons.icon_1" class="w-6 h-6 fill-none" />
           </div>
           <div v-if="!isCollapsed" class="flex-1 min-w-0">
             <div class="flex items-center">
@@ -43,8 +19,8 @@
           </div>
         </div>
         <div v-if="!isCollapsed" class="text-text-3 text-xl">
-          <div class="w-6 h-6 bg-bg-2 rounded-md flex items-center justify-center">
-            <Arrow_right class="w-4 h-4 fill-text-2 fill-none" />
+          <div class="w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center">
+            <Arrow_right class="w-4 h-4 fill-none" />
           </div>
         </div>
       </div>
@@ -69,7 +45,7 @@
           >
             <div class="flex items-center w-full justify-center relative">
               <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
               </div>
             </div>
           </div>
@@ -88,7 +64,7 @@
             >
               <div class="flex items-center w-full justify-center">
                 <div class="w-10 h-10 flex items-center justify-center">
-                  <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                  <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-none" />
                 </div>
               </div>
             </div>
@@ -107,7 +83,7 @@
         >
           <div class="flex items-center w-full justify-center relative">
             <div class="w-10 h-10 flex items-center justify-center">
-              <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+              <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
             </div>
           </div>
         </div>
@@ -123,16 +99,16 @@
           >
             <div class="flex items-center">
               <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
               </div>
               <span class="text-sm font-[600] text-text-1">{{ menu.name }}</span>
             </div>
             <div
-              class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
+              class="w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
               :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
               @click.stop="handleMenuCollapse(menu)"
             >
-              <Arrow_down class="w-4 h-4 fill-text-2 fill-none" />
+              <Arrow_down class="w-4 h-4 fill-none" />
             </div>
           </div>
 
@@ -154,13 +130,13 @@
               >
                 <div class="flex items-center">
                   <div class="w-10 h-10 flex items-center justify-center">
-                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-none" />
                   </div>
                   <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
                 </div>
                 <!-- 有子菜单时显示右箭头 -->
                 <div v-if="item.children && item.children.length > 0" class="mr-2">
-                  <Arrow_right class="w-4 h-4 fill-text-2 fill-none" />
+                  <Arrow_right class="w-4 h-4 fill-none" />
                 </div>
               </div>
             </div>
@@ -185,7 +161,7 @@
       >
         <div class="flex items-center" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
-            <component :is="sideIcons[link.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+            <component :is="sideIcons[link.icon]" class="w-6 h-6 fill-none" />
           </div>
           <template v-if="!isCollapsed">
             <span v-if="link.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
@@ -198,7 +174,7 @@
           v-if="!isCollapsed && link.external"
           class="w-4 h-4 flex items-center justify-center ml-1"
         >
-          <External class="w-full h-full fill-text-2 fill-none" />
+          <External class="w-full h-full fill-none" />
         </div>
       </div>
     </div>
@@ -223,7 +199,7 @@
           >
             <div class="flex items-center w-full justify-center">
               <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
               </div>
             </div>
           </div>
@@ -242,7 +218,7 @@
             >
               <div class="flex items-center w-full justify-center">
                 <div class="w-10 h-10 flex items-center justify-center">
-                  <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                  <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-none" />
                 </div>
               </div>
             </div>
@@ -262,7 +238,7 @@
         >
           <div class="flex items-center w-full justify-center">
             <div class="w-10 h-10 flex items-center justify-center">
-              <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+              <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
             </div>
           </div>
         </div>
@@ -278,16 +254,16 @@
           >
             <div class="flex items-center">
               <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
               </div>
               <span class="text-sm font-[600] text-text-1">{{ menu.name }}</span>
             </div>
             <div
-              class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
+              class="w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
               :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
               @click.stop="handleMenuCollapse(menu)"
             >
-              <Arrow_down class="w-4 h-4 fill-text-2 fill-none" />
+              <Arrow_down class="w-4 h-4 fill-none" />
             </div>
           </div>
 
@@ -305,7 +281,7 @@
               >
                 <div class="flex items-center">
                   <div class="w-10 h-10 flex items-center justify-center">
-                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-text-2 fill-none" />
+                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-none" />
                   </div>
                   <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
                 </div>
@@ -328,9 +304,33 @@
       >
         <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
-            <component :is="sideIcons.icon_17" class="w-6 h-6 fill-text-2 fill-none" />
+            <component :is="sideIcons.icon_17" class="w-6 h-6 fill-none" />
           </div>
           <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">线上客服</span>
+        </div>
+      </div>
+
+      <!-- 应用程式 -->
+      <div v-if="!isCollapsed" class="mt-3 mb-2">
+        <div
+          class="block app-download-card rounded-lg cursor-pointer"
+          @click="handleAppDownloadClick"
+        >
+          <div class="flex justify-between items-center">
+            <div class="flex-1 p-2.5 pr-0">
+              <h3 class="text-sm font-semibold text-text-1 mb-1">应用程式</h3>
+              <p class="text-xs text-text-2 leading-tight">专属功能全面解锁 玩乐无限升级</p>
+            </div>
+            <div class="w-[80px] h-auto flex-shrink-0 pt-1 pr-1">
+              <div class="w-full h-full rounded flex items-center justify-center text-[10px]">
+                <img
+                  src="@/static/img/home/pwa.png.png"
+                  alt=""
+                  class="w-full h-full object-cover rounded"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -343,7 +343,7 @@
       >
         <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
-            <LanguageIcon class="w-6 h-6 fill-text-2 fill-none" />
+            <LanguageIcon class="w-6 h-6 fill-none" />
           </div>
           <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">{{
             currentLanguageName
@@ -353,7 +353,7 @@
           v-if="!isCollapsed"
           class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5"
         >
-          <Arrow_right class="w-4 h-4 fill-text-2 fill-none" />
+          <Arrow_right class="w-4 h-4 fill-none" />
         </div>
       </div>
 
@@ -371,7 +371,7 @@
         >
           <div class="flex items-center justify-center">
             <div class="w-4 h-4 flex items-center justify-center">
-              <component :is="sideIcons.icon_18" class="w-4 h-4 fill-text-2 fill-none" />
+              <component :is="sideIcons.icon_18" class="w-4 h-4 fill-none" />
             </div>
             <span
               v-if="!isCollapsed"
@@ -392,7 +392,7 @@
         >
           <div class="flex items-center justify-center">
             <div class="w-4 h-4 flex items-center justify-center">
-              <component :is="sideIcons.icon_19" class="w-4 h-4 fill-text-2 fill-none" />
+              <component :is="sideIcons.icon_19" class="w-4 h-4 fill-none" />
             </div>
             <span
               v-if="!isCollapsed"
@@ -433,10 +433,7 @@
                   @click="handleThirdLevelClick(subItem)"
                 >
                   <div class="w-6 h-6 flex items-center justify-center mr-2">
-                    <component
-                      :is="sideIcons[subItem.icon]"
-                      class="w-6 h-6 fill-text-2 fill-none"
-                    />
+                    <component :is="sideIcons[subItem.icon]" class="w-6 h-6 fill-none" />
                   </div>
                   <span class="text-sm font-[600] text-text-1">{{ subItem.name }}</span>
                 </div>
@@ -848,11 +845,11 @@ const sponsor = computed(() => [
 }
 
 .launch-card:hover {
-  background: linear-gradient(90deg, rgba(36 238 137 / 0.2), #23ee8800), rgba(255, 255, 255, 0.05);
+  background: var(--color-opacity-10);
 }
 
 .launch-card-active {
-  background: linear-gradient(90deg, rgba(36 238 137 / 0.2), #23ee8800);
+  background: var(--color-opacity-10);
 }
 
 .expand-enter-active,
