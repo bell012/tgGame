@@ -39,7 +39,6 @@ export const sideIcons: Record<string, Component> = {
   icon_16,
   icon_17,
   icon_18,
-  icon_19,
+  icon_19
 }
 export default sideIcons
-

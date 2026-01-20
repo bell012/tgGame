@@ -18,7 +18,9 @@
       <div class="flex bg-bg-2 rounded-lg mb-2">
         <button
           class="relative flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm transition-all duration-150 overflow-hidden tab-button"
-          :class="activeTab === 'password' ? 'bg-bg-3 border border-primary text-text-1' : 'text-text-2'"
+          :class="
+            activeTab === 'password' ? 'bg-bg-3 border border-primary text-text-1' : 'text-text-2'
+          "
           @click="setActiveTab('password')"
         >
           <LockIcon class="w-4 h-4 fill-none relative z-10" />
@@ -34,7 +36,9 @@
         </button>
       </div>
 
-      <div class="flex items-center justify-end gap-2 text-[14px] mt-1 font-[800] text-text-2  cursor-pointer">
+      <div
+        class="flex items-center justify-end gap-2 text-[14px] mt-1 font-[800] text-text-2 cursor-pointer"
+      >
         <span>下载App，开启更多精彩</span>
         <ExternalIcon class="w-5 h-5 fill-none" />
       </div>
@@ -73,7 +77,11 @@
 
           <!-- 忘记密码 -->
           <div class="text-right mt-4">
-            <a href="#" class="text-text-2 text-[14px] font-[800] hover:text-text-2 transition-colors">忘记密码?</a>
+            <a
+              href="#"
+              class="text-text-2 text-[14px] font-[800] hover:text-text-2 transition-colors"
+              >忘记密码?</a
+            >
           </div>
 
           <!-- 登入按钮 -->
@@ -110,16 +118,13 @@
 
         <div class="text-left mt-6">
           <span class="text-[14px] text-text-1">您是 BC.GAME的新用户？</span>
-          <button
-            class="text-theme-primary text-[14px] ml-2 font-[800]"
-            @click="switchToRegister"
-          >
+          <button class="text-theme-primary text-[14px] ml-2 font-[800]" @click="switchToRegister">
             建立账号
           </button>
         </div>
 
         <!-- 第三方登录图标 -->
-        <SocialLogin class="absolute bottom-0 right-0 w-full"/>
+        <SocialLogin class="absolute bottom-0 right-0 w-full" />
       </div>
     </div>
   </LoginFormCore>
@@ -161,4 +166,3 @@ const emit = defineEmits<{
   }
 }
 </style>
-

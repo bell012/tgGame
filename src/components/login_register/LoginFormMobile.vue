@@ -154,7 +154,7 @@
                     登入
                   </button>
                 </template>
-                
+
                 <template v-else-if="activeTab === 'otp'">
                   <!-- 电子邮件/电话号码 -->
                   <div class="mb-4">
@@ -226,16 +226,20 @@ const emit = defineEmits<{
 }>()
 const showDrawer = ref(false)
 
-watch(() => props.visible, async (newVal) => {
-  if (newVal) {
-    await nextTick()
-    setTimeout(() => {
-      showDrawer.value = true
-    }, 50)
-  } else {
-    showDrawer.value = false
-  }
-}, { immediate: true })
+watch(
+  () => props.visible,
+  async newVal => {
+    if (newVal) {
+      await nextTick()
+      setTimeout(() => {
+        showDrawer.value = true
+      }, 50)
+    } else {
+      showDrawer.value = false
+    }
+  },
+  { immediate: true }
+)
 
 const handleClose = () => {
   showDrawer.value = false

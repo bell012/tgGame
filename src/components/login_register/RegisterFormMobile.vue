@@ -71,149 +71,146 @@
               <div class="px-4 pb-8">
                 <h2 class="text-lg font-bold text-text-1 mb-4">注册</h2>
 
-              <!-- 电子邮件/电话号码 -->
-              <div class="mb-4">
-                <input
-                  v-model="formData.username"
-                  type="text"
-                  placeholder="电子邮件 / 电话号码"
-                  class="w-full h-[44px] px-3 bg-bg-6 border border-border-1 rounded-lg text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
-                  />
-              </div>
-
-              <!-- 使用名称 -->
-              <div class="mb-4">
-                <div class="relative">
+                <!-- 电子邮件/电话号码 -->
+                <div class="mb-4">
                   <input
-                    v-model="formData.displayName"
+                    v-model="formData.username"
                     type="text"
-                    placeholder="使用名称"
-                    class="w-full h-[44px] px-3 pr-12 bg-bg-6 border border-border-1 rounded-lg text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
-                  />
-                  <button
-                    class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                  >
-                    <RenovateIcon class="w-6 h-6 fill-none" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- 密码 -->
-              <div class="mb-4">
-                <div class="relative">
-                  <input
-                    v-model="formData.password"
-                    :type="showPassword ? 'text' : 'password'"
-                    placeholder="密码"
-                    class="w-full h-[44px] px-3 pr-12 bg-bg-6 border border-border-1 rounded-lg text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
-                  />
-                  <button
-                    type="button"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                    @click="togglePassword"
-                  >
-                    <EyeIcon v-if="!showPassword" class="w-6 h-6 fill-none" />
-                    <EyeOffIcon v-else class="w-6 h-6 fill-none" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- 输入推荐/促销代码 -->
-              <div class="mb-3">
-                <div
-                  class="flex items-center cursor-pointer"
-                  @click="togglePromoCode"
-                >
-                  <span class="text-sm text-text-2">输入推荐/促销代码</span>
-                  <div class="ml-1 transition-transform duration-300" :class="{ 'rotate-180': showPromoCode }">
-                    <ChevronIcon class="w-4 h-4 fill-none" />
-                  </div>
-                </div>
-              </div>
-
-              <transition name="expand">
-                <div v-if="showPromoCode" class="mb-4">
-                  <input
-                    v-model="formData.promoCode"
-                    type="text"
-                    placeholder="输入推荐/促销代码"
+                    placeholder="电子邮件 / 电话号码"
                     class="w-full h-[44px] px-3 bg-bg-6 border border-border-1 rounded-lg text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                   />
                 </div>
-              </transition>
 
-              <!-- 同意条款 -->
-              <div class="mb-3">
-                <label
-                  class="flex items-start cursor-pointer"
-                  @click="handleCheckboxClick('agreeTerms')"
-                >
-                  <span
-                    class="flex-shrink-0 w-[18px] h-[18px] rounded flex items-center justify-center mr-3 mt-0.5"
-                    :class="formData.agreeTerms ? '' : 'border-2 border-text-3'"
-                  >
-                    <CheckIcon
-                      v-if="formData.agreeTerms"
-                      class="w-[18px] h-[18px]"
-                      :class="checkboxAnimating.agreeTerms ? 'animate-bounce-forward' : ''"
+                <!-- 使用名称 -->
+                <div class="mb-4">
+                  <div class="relative">
+                    <input
+                      v-model="formData.displayName"
+                      type="text"
+                      placeholder="使用名称"
+                      class="w-full h-[44px] px-3 pr-12 bg-bg-6 border border-border-1 rounded-lg text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                     />
-                  </span>
-                  <p class="text-sm text-text-2 flex flex-wrap">
-                    我同意
-                    <span class="text-sm text-text-1 cursor-pointer mx-1" @click.stop>「使用者协议」</span>
-                    并确认我已年满 18 岁
-                  </p>
-                </label>
-              </div>
+                    <button
+                      class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                    >
+                      <RenovateIcon class="w-6 h-6 fill-none" />
+                    </button>
+                  </div>
+                </div>
 
-              <!-- 接收营销信息 -->
-              <div class="mb-6">
-                <label
-                  class="flex items-start cursor-pointer"
-                  @click="handleCheckboxClick('receiveMarketing')"
-                >
-                  <span
-                    class="flex-shrink-0 w-[18px] h-[18px] rounded flex items-center justify-center mr-3 mt-0.5"
-                    :class="formData.receiveMarketing ? '' : 'border-2 border-text-3'"
-                  >
-                    <CheckIcon
-                      v-if="formData.receiveMarketing"
-                      class="w-[18px] h-[18px]"
-                      :class="checkboxAnimating.receiveMarketing ? 'animate-bounce-forward' : ''"
+                <!-- 密码 -->
+                <div class="mb-4">
+                  <div class="relative">
+                    <input
+                      v-model="formData.password"
+                      :type="showPassword ? 'text' : 'password'"
+                      placeholder="密码"
+                      class="w-full h-[44px] px-3 pr-12 bg-bg-6 border border-border-1 rounded-lg text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                     />
-                  </span>
-                  <span class="text-sm text-text-2">
-                    我同意接收 BC.GAME的行销促销活动。
-                  </span>
-                </label>
-              </div>
+                    <button
+                      type="button"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                      @click="togglePassword"
+                    >
+                      <EyeIcon v-if="!showPassword" class="w-6 h-6 fill-none" />
+                      <EyeOffIcon v-else class="w-6 h-6 fill-none" />
+                    </button>
+                  </div>
+                </div>
 
-              <!-- 注册按钮 -->
-              <button
-                class="btn-primary w-full h-[44px] rounded-lg text-sm text-text-4 font-bold"
-                @click="handleRegister"
-              >
-                注册
-              </button>
+                <!-- 输入推荐/促销代码 -->
+                <div class="mb-3">
+                  <div class="flex items-center cursor-pointer" @click="togglePromoCode">
+                    <span class="text-sm text-text-2">输入推荐/促销代码</span>
+                    <div
+                      class="ml-1 transition-transform duration-300"
+                      :class="{ 'rotate-180': showPromoCode }"
+                    >
+                      <ChevronIcon class="w-4 h-4 fill-none" />
+                    </div>
+                  </div>
+                </div>
 
-              <!-- 已有账号 -->
-              <div class="mt-6 mb-7 flex items-center justify-stretch">
-                <span class="text-sm text-text-1">已经有一个帐户?</span>
+                <transition name="expand">
+                  <div v-if="showPromoCode" class="mb-4">
+                    <input
+                      v-model="formData.promoCode"
+                      type="text"
+                      placeholder="输入推荐/促销代码"
+                      class="w-full h-[44px] px-3 bg-bg-6 border border-border-1 rounded-lg text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                    />
+                  </div>
+                </transition>
+
+                <!-- 同意条款 -->
+                <div class="mb-3">
+                  <label
+                    class="flex items-start cursor-pointer"
+                    @click="handleCheckboxClick('agreeTerms')"
+                  >
+                    <span
+                      class="flex-shrink-0 w-[18px] h-[18px] rounded flex items-center justify-center mr-3 mt-0.5"
+                      :class="formData.agreeTerms ? '' : 'border-2 border-text-3'"
+                    >
+                      <CheckIcon
+                        v-if="formData.agreeTerms"
+                        class="w-[18px] h-[18px]"
+                        :class="checkboxAnimating.agreeTerms ? 'animate-bounce-forward' : ''"
+                      />
+                    </span>
+                    <p class="text-sm text-text-2 flex flex-wrap">
+                      我同意
+                      <span class="text-sm text-text-1 cursor-pointer mx-1" @click.stop
+                        >「使用者协议」</span
+                      >
+                      并确认我已年满 18 岁
+                    </p>
+                  </label>
+                </div>
+
+                <!-- 接收营销信息 -->
+                <div class="mb-6">
+                  <label
+                    class="flex items-start cursor-pointer"
+                    @click="handleCheckboxClick('receiveMarketing')"
+                  >
+                    <span
+                      class="flex-shrink-0 w-[18px] h-[18px] rounded flex items-center justify-center mr-3 mt-0.5"
+                      :class="formData.receiveMarketing ? '' : 'border-2 border-text-3'"
+                    >
+                      <CheckIcon
+                        v-if="formData.receiveMarketing"
+                        class="w-[18px] h-[18px]"
+                        :class="checkboxAnimating.receiveMarketing ? 'animate-bounce-forward' : ''"
+                      />
+                    </span>
+                    <span class="text-sm text-text-2"> 我同意接收 BC.GAME的行销促销活动。 </span>
+                  </label>
+                </div>
+
+                <!-- 注册按钮 -->
                 <button
-                  class="text-sm text-theme-primary font-bold ml-2"
-                  @click="switchToLogin"
+                  class="btn-primary w-full h-[44px] rounded-lg text-sm text-text-4 font-bold"
+                  @click="handleRegister"
                 >
-                  登入
+                  注册
                 </button>
-              </div>
 
-              <!-- 第三方登录 -->
-              <SocialLogin :show-key-login="false" />
+                <!-- 已有账号 -->
+                <div class="mt-6 mb-7 flex items-center justify-stretch">
+                  <span class="text-sm text-text-1">已经有一个帐户?</span>
+                  <button class="text-sm text-theme-primary font-bold ml-2" @click="switchToLogin">
+                    登入
+                  </button>
+                </div>
+
+                <!-- 第三方登录 -->
+                <SocialLogin :show-key-login="false" />
+              </div>
             </div>
-          </div>
-        </transition>
-      </div>
-    </transition>
+          </transition>
+        </div>
+      </transition>
     </teleport>
   </RegisterFormCore>
 </template>
@@ -245,16 +242,20 @@ const emit = defineEmits<{
 
 const showDrawer = ref(false)
 
-watch(() => props.visible, async (newVal) => {
-  if (newVal) {
-    await nextTick()
-    setTimeout(() => {
-      showDrawer.value = true
-    }, 50)
-  } else {
-    showDrawer.value = false
-  }
-}, { immediate: true })
+watch(
+  () => props.visible,
+  async newVal => {
+    if (newVal) {
+      await nextTick()
+      setTimeout(() => {
+        showDrawer.value = true
+      }, 50)
+    } else {
+      showDrawer.value = false
+    }
+  },
+  { immediate: true }
+)
 
 const handleClose = () => {
   showDrawer.value = false
@@ -334,5 +335,3 @@ const handleClose = () => {
   transform: translateX(0);
 }
 </style>
-
-

@@ -128,9 +128,7 @@
                 :class="checkboxAnimating.receiveMarketing ? 'animate-bounce-forward' : ''"
               />
             </span>
-            <span class="text-[14px] text-text-2">
-              我同意接收 TG.GAME的行销促销活动。
-            </span>
+            <span class="text-[14px] text-text-2"> 我同意接收 TG.GAME的行销促销活动。 </span>
           </label>
         </div>
 
