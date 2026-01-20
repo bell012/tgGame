@@ -200,5 +200,11 @@ const list = ref(
   .h5-hide {
     display: none;
   }
+  .tabs .tab {
+    width: 520px;
+  }
+  .tabs .tab:last-child {
+    display: none;
+  }
 }
 </style>

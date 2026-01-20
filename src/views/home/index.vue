@@ -1,7 +1,45 @@
 <template>
-  <div :class="['home max-w-[1248px] mx-auto py-4', { 'px-4': !isMobile }]">
-    <img src="./headBack.png" />
-    <!-- {{ $t('locales.home.home') }} -->
+  <div :class="['home max-w-[1248px] mx-auto', { 'px-4': !isMobile }]">
+    <div class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl">
+      <img
+        class="absolute right-0 bottom-0 w-full"
+        src="/src/static/img/casino/banner_bg.webp"
+        alt="casino"
+      />
+      <div
+        class="absolute left-2 top-0 flex h-full origin-top flex-col py-4 sm:left-[14%] sm:top-[6%] sm:h-auto sm:items-center sm:py-0 sm:text-center"
+      >
+        <h1
+          class="font-inter text-[20px] font-bold leading-normal text-[var(--color-text-level-1,#FFF)]"
+        >
+          {{ t('locales.casino.banner_title') }}
+        </h1>
+        <div>
+          <h2
+            class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
+          >
+            {{ t('locales.casino.banner_sign_up') }}
+          </h2>
+          <h2
+            class="font-inter text-[14px] font-bold leading-normal text-[var(--color-theme-level-1,#2AEE88)]"
+          >
+            ₱1,176,029.77
+          </h2>
+          <h2
+            class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
+          >
+            {{ t('locales.casino.banner_subtitle') }}
+          </h2>
+        </div>
+        <button
+          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)]"
+          type="button"
+          @click.stop="showLoginModal = true"
+        >
+          {{ t('locales.casino.join_now') }}
+        </button>
+      </div>
+    </div>
     <div class="flex items-center sm:mt-6 h-8">
       <h2 class="flex items-center text-base font-extrabold text-primary">
         <div class="relative mx-4 mr-2 h-2 w-2">
@@ -59,7 +97,7 @@
         </div>
       </h2>
     </div>
-    <div class="marquee overflow-hidden px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
+    <div class="marquee px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
       <div class="marquee-track recent-big-win inline-flex items-center gap-3 sm:gap-3.5">
         <a
           class="sm:w-13 flex h-28 w-14 flex-none flex-col items-center text-xs hover:opacity-80 sm:h-[106px] inactive"
@@ -167,7 +205,7 @@
       <GameList />
     </div>
     <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
-      <div class="flex items-center justify-center gap-2 pb-4 pt-3 lg:!hidden">
+      <div class="w-full flex items-center justify-between px-[22px] pb-4 pt-3 lg:!hidden">
         <img class="w-6" :src="BTC" /><img class="w-6" :src="ETH" /><img
           class="w-6"
           :src="BNB"
@@ -210,12 +248,12 @@
             <img class="-ml-1 w-6" :src="DOGE" /><img class="-ml-1 w-6" :src="MATIC" />
             <img class="-ml-1 w-6" :src="TRX" />
           </div>
-          <div class="flex items-center justify-center mx-auto gap-6">
-            <img class="w-14" :src="MAYA" />
-            <img class="w-20" :src="GCASH" />
-            <img class="w-14" :src="VISA" />
-            <img class="w-13" :src="GROU" />
-            <img class="w-23" :src="SHOPEE" />
+          <div class="w-full flex items-center justify-between px-[10px]">
+            <img class="h-[13px]" :src="MAYA" />
+            <img class="h-[13px]" :src="GCASH" />
+            <img class="h-[13px]" :src="VISA" />
+            <img class="h-[13px]" :src="GROU" />
+            <img class="h-[13px]" :src="SHOPEE" />
           </div>
           <div class="flex items-center justify-center mt-4 gap-11 lg:!mt-0">
             <div class="text-lg font-extrabold sm:text-2xl">
@@ -227,7 +265,8 @@
     </div>
   </div>
   <NewEvent />
-
+  <!-- 注册弹窗 -->
+  <LoginModal v-model="showLoginModal" default-tab="register" />
   <CommonFooter class="hidden sm:block" />
 </template>
 
@@ -269,10 +308,12 @@ import lottery from './img/lottery.png?url'
 import updown from './img/updown.png?url'
 import bingo from './img/bingo.png?url'
 import CommonFooter from '@/components/commonFooter.vue'
+import LoginModal from '@/components/login_register/LoginModal.vue'
 
 const { t } = useI18n()
 
 const isMobile = ref(false)
+const showLoginModal = ref(false)
 
 onMounted(() => {
   isMobile.value = window.matchMedia('(max-width: 640px)').matches
@@ -319,6 +360,9 @@ const duplicatedList = computed(() => [...list.value, ...list.value])
 .home {
   background-color: var(--color-background-level-1);
 }
+.bannerBack {
+  background: url(./img/banner.png) lightgray 0px 0px / 102.517% 100% no-repeat;
+}
 .bg-success {
   background-color: #24ee89;
 }
@@ -339,31 +383,35 @@ const duplicatedList = computed(() => [...list.value, ...list.value])
   transform: scale(0.833);
 }
 .marquee {
-  overflow: hidden;
   width: 100%;
-  background-color: #292d2e;
+  overflow: hidden;
+  padding: 0;
+  margin: 0 -1rem;
+  width: calc(100% + 2rem);
 }
-.text-brand {
-  color: #24ee89;
-}
+
 .marquee-track {
   margin: 10px 0;
-  background-color: #292d2e;
   display: inline-flex;
   gap: 0.875rem;
+  padding: 0 1rem;
   /* 控制速度 */
   animation: marquee 20s linear infinite;
   will-change: transform;
 }
+
 .marquee-track:hover {
   animation-play-state: paused;
 }
+
 .marquee-track a {
   flex: none;
 }
+
 .bg-layer4 {
   background-color: var(--color-background-level-2);
 }
+
 @keyframes marquee {
   from {
     transform: translateX(0);
