@@ -8,11 +8,13 @@
       >
         <div class="flex items-center flex-1">
           <div class="w-9 h-9 mr-1 flex items-center justify-center">
-            <component :is="sideIcons.icon_1" class="w-6 h-6 fill-none" />
+            <component :is="side.icon_1" class="w-6 h-6 fill-none" />
           </div>
           <div v-if="!isCollapsed" class="flex-1 min-w-0">
             <div class="flex items-center">
-              <span class="text-sm font-[800] text-text-1 mr-1">BC 代币</span>
+              <span class="text-sm font-[800] text-text-1 mr-1">
+                {{ t('locales.sidebar_menu.bc_token.title') }}
+              </span>
               <span class="text-xs font-[600] text-theme-primary">↑ 0.45%</span>
             </div>
             <div class="text-sm text-text-1">$0.00771</div>
@@ -45,7 +47,7 @@
           >
             <div class="flex items-center w-full justify-center relative">
               <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
+                <component :is="menu.icon" class="w-6 h-6 fill-none" />
               </div>
             </div>
           </div>
@@ -64,7 +66,7 @@
             >
               <div class="flex items-center w-full justify-center">
                 <div class="w-10 h-10 flex items-center justify-center">
-                  <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-none" />
+                  <component :is="item.icon" class="w-6 h-6 fill-none" />
                 </div>
               </div>
             </div>
@@ -83,7 +85,7 @@
         >
           <div class="flex items-center w-full justify-center relative">
             <div class="w-10 h-10 flex items-center justify-center">
-              <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
+              <component :is="menu.icon" class="w-6 h-6 fill-none" />
             </div>
           </div>
         </div>
@@ -99,7 +101,7 @@
           >
             <div class="flex items-center">
               <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
+                <component :is="menu.icon" class="w-6 h-6 fill-none" />
               </div>
               <span class="text-sm font-[600] text-text-1">{{ menu.name }}</span>
             </div>
@@ -130,7 +132,7 @@
               >
                 <div class="flex items-center">
                   <div class="w-10 h-10 flex items-center justify-center">
-                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-none" />
+                    <component :is="item.icon" class="w-6 h-6 fill-none" />
                   </div>
                   <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
                 </div>
@@ -161,7 +163,7 @@
       >
         <div class="flex items-center" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
-            <component :is="sideIcons[link.icon]" class="w-6 h-6 fill-none" />
+            <component :is="link.icon" class="w-6 h-6 fill-none" />
           </div>
           <template v-if="!isCollapsed">
             <span v-if="link.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
@@ -182,7 +184,7 @@
     <!-- 底部功能组 -->
     <div class="flex flex-col mt-1">
       <!-- 赞助  -->
-      <div v-for="menu in sponsor" :key="menu.id" class="flex flex-col mt-1">
+      <div v-for="menu in bottomMenus" :key="menu.id" class="flex flex-col mt-1">
         <div
           v-if="isCollapsed && expandedMenus.includes(menu.id)"
           class="bg-bg-2 rounded-lg overflow-visible"
@@ -199,7 +201,7 @@
           >
             <div class="flex items-center w-full justify-center">
               <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
+                <component :is="menu.icon" class="w-6 h-6 fill-none" />
               </div>
             </div>
           </div>
@@ -218,7 +220,7 @@
             >
               <div class="flex items-center w-full justify-center">
                 <div class="w-10 h-10 flex items-center justify-center">
-                  <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-none" />
+                  <component :is="item.icon" class="w-6 h-6 fill-none" />
                 </div>
               </div>
             </div>
@@ -238,7 +240,7 @@
         >
           <div class="flex items-center w-full justify-center">
             <div class="w-10 h-10 flex items-center justify-center">
-              <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
+              <component :is="menu.icon" class="w-6 h-6 fill-none" />
             </div>
           </div>
         </div>
@@ -254,7 +256,7 @@
           >
             <div class="flex items-center">
               <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="sideIcons[menu.icon]" class="w-6 h-6 fill-none" />
+                <component :is="menu.icon" class="w-6 h-6 fill-none" />
               </div>
               <span class="text-sm font-[600] text-text-1">{{ menu.name }}</span>
             </div>
@@ -281,7 +283,7 @@
               >
                 <div class="flex items-center">
                   <div class="w-10 h-10 flex items-center justify-center">
-                    <component :is="sideIcons[item.icon]" class="w-6 h-6 fill-none" />
+                    <component :is="item.icon" class="w-6 h-6 fill-none" />
                   </div>
                   <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
                 </div>
@@ -298,18 +300,19 @@
           { 'relative menu-item-collapsed justify-center': isCollapsed },
           { 'launch-card-active': activeMenuId === 'customer-service' }
         ]"
-        :data-tooltip="isCollapsed ? '线上客服' : ''"
+        :data-tooltip="isCollapsed ? t('locales.sidebar_menu.customer_service') : ''"
         @mouseenter="e => isCollapsed && updateTooltipPosition(e)"
         @click="handleCustomerServiceClick"
       >
         <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
-            <component :is="sideIcons.icon_17" class="w-6 h-6 fill-none" />
+            <component :is="side.helpIcon" class="w-6 h-6 fill-none" />
           </div>
-          <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">线上客服</span>
+          <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">
+            {{ t('locales.sidebar_menu.customer_service') }}
+          </span>
         </div>
       </div>
-
       <!-- 应用程式 -->
       <div v-if="!isCollapsed" class="mt-3 mb-2">
         <div
@@ -371,7 +374,7 @@
         >
           <div class="flex items-center justify-center">
             <div class="w-4 h-4 flex items-center justify-center">
-              <component :is="sideIcons.icon_18" class="w-4 h-4 fill-none" />
+              <component :is="side.icon_18" class="w-4 h-4 fill-none" />
             </div>
             <span
               v-if="!isCollapsed"
@@ -379,7 +382,7 @@
                 'text-sm font-[600] ml-1',
                 themeStore.theme === 'dark' ? 'text-[#fff]' : 'text-[#B0B9B9]'
               ]"
-              >深色模式</span
+              >{{ t('locales.sidebar_menu.theme.dark') }}</span
             >
           </div>
         </button>
@@ -392,7 +395,7 @@
         >
           <div class="flex items-center justify-center">
             <div class="w-4 h-4 flex items-center justify-center">
-              <component :is="sideIcons.icon_19" class="w-4 h-4 fill-none" />
+              <component :is="side.icon_19" class="w-4 h-4 fill-text-2 fill-none" />
             </div>
             <span
               v-if="!isCollapsed"
@@ -400,7 +403,7 @@
                 'text-sm font-[600] ml-1',
                 themeStore.theme === 'light' ? 'text-[#171A1A]' : 'text-[#A1AFB2]'
               ]"
-              >浅色模式</span
+              >{{ t('locales.sidebar_menu.theme.light') }}</span
             >
           </div>
         </button>
@@ -433,7 +436,7 @@
                   @click="handleThirdLevelClick(subItem)"
                 >
                   <div class="w-6 h-6 flex items-center justify-center mr-2">
-                    <component :is="sideIcons[subItem.icon]" class="w-6 h-6 fill-none" />
+                    <component :is="subItem.icon" class="w-6 h-6 fill-none" />
                   </div>
                   <span class="text-sm font-[600] text-text-1">{{ subItem.name }}</span>
                 </div>
@@ -447,17 +450,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useThemeStore } from '@/stores/theme'
-import { useLocaleStore } from '@/stores/locale'
-import { useLayoutStore } from '@/stores/layout'
-import Arrow_right from '@/static/svg/arrow_right.svg?component'
 import Arrow_down from '@/static/svg/arrow_down.svg?component'
+import Arrow_right from '@/static/svg/arrow_right.svg?component'
 import External from '@/static/svg/external.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
 import { sideIcons } from '@/static/svg/side'
+import { useLayoutStore } from '@/stores/layout'
+import { useLocaleStore } from '@/stores/locale'
+import { useThemeStore } from '@/stores/theme'
 import { navigateTo } from '@/utils/router'
-
+import type { Component } from 'vue'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 interface Props {
   isCollapsed?: boolean
 }
@@ -473,6 +477,24 @@ const emit = defineEmits<{
 const themeStore = useThemeStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
+const { t } = useI18n()
+const { side, casino, sports, lottery, support, sponsorships, aboutUs, legal } = sideIcons
+
+type SidebarSubmenuItem = {
+  id: string
+  name: string
+  icon: Component
+  handler: () => void
+  children?: SidebarSubmenuItem[]
+}
+
+type SidebarMenuGroup = {
+  id: string
+  name: string
+  icon: Component
+  handler: () => void
+  children: SidebarSubmenuItem[]
+}
 
 // 展开的菜单 ID 列表
 const expandedMenus = ref<string[]>([])
@@ -490,7 +512,9 @@ let submenuHideTimer: ReturnType<typeof setTimeout> | null = null
 
 // 当前语言名称
 const currentLanguageName = computed(() => {
-  return localeStore.currentLanguage === 'zh-CN' ? '简体中文' : 'English'
+  return localeStore.currentLanguage === 'zh-CN'
+    ? t('locales.sidebar_menu.language.zh_cn')
+    : t('locales.sidebar_menu.language.en')
 })
 
 // 应用程式下载点击
@@ -606,131 +630,224 @@ const handleThirdLevelClick = (item: any) => {
   }
   hoveredSubmenu.value = null
 }
-
 // 可展开菜单组数据
-const expandableMenus = computed(() => [
+const expandableMenus = computed<SidebarMenuGroup[]>(() => [
   {
     id: 'casino',
-    name: '娱乐城',
-    icon: 'icon_2',
+    name: t('locales.sidebar_menu.casino.title'),
+    icon: side.casinoIcon,
     handler: () => {
-      navigateTo('/casino')
+      console.log('点击娱乐城')
     },
     children: [
       {
-        id: 'casino_1',
-        name: 'BC原创',
-        icon: 'icon_2',
-        handler: () => {
-          navigateTo('/originate')
-        },
-        children: [
-          {
-            id: 'casino_1_1',
-            name: 'Crash',
-            icon: 'icon_2',
-            handler: () => {
-              console.log('点击 Crash')
-            }
-          },
-          {
-            id: 'casino_1_2',
-            name: 'Deadliest Sea',
-            icon: 'icon_2',
-            handler: () => {
-              console.log('点击 Deadliest Sea')
-            }
-          },
-          {
-            id: 'casino_1_3',
-            name: 'Bear Smash: 15000X Boost',
-            icon: 'icon_2',
-            handler: () => {
-              console.log('点击 Bear Smash: 15000X Boost')
-            }
-          }
-        ]
+        id: 'casino_favorites',
+        name: t('locales.sidebar_menu.casino.children.favorites'),
+        icon: casino.favorites_full,
+        handler: () => console.log('点击 我的最爱')
       },
       {
-        id: 'casino_2',
-        name: 'BC独家',
-        icon: 'icon_2',
+        id: 'casino_recent',
+        name: t('locales.sidebar_menu.casino.children.recent'),
+        icon: casino.recent,
+        handler: () => console.log('点击 最近常玩')
+      },
+      {
+        id: 'casino_tg_originals',
+        name: t('locales.sidebar_menu.casino.children.tg_originals'),
+        icon: casino.logo,
+        handler: () => {
+          navigateTo('/originate')
+        }
+      },
+      {
+        id: 'casino_hot_games',
+        name: t('locales.sidebar_menu.casino.children.hot_games'),
+        icon: casino.hot_games,
+        handler: () => console.log('点击 热门游戏')
+      },
+      {
+        id: 'casino_slots',
+        name: t('locales.sidebar_menu.casino.children.slots'),
+        icon: casino.slots,
+        handler: () => console.log('点击 电子游戏')
+      },
+      {
+        id: 'casino_live_casino',
+        name: t('locales.sidebar_menu.casino.children.live_casino'),
+        icon: casino.live_casino,
         handler: () => {
           navigateTo('/exclusive')
         }
+      },
+      {
+        id: 'casino_table_games',
+        name: t('locales.sidebar_menu.casino.children.table_games'),
+        icon: casino.poker,
+        handler: () => console.log('点击 棋牌游戏')
+      },
+      {
+        id: 'casino_fishing',
+        name: t('locales.sidebar_menu.casino.children.fishing'),
+        icon: casino.fishing,
+        handler: () => console.log('点击 捕鱼游戏')
+      },
+      {
+        id: 'casino_game_providers',
+        name: t('locales.sidebar_menu.casino.children.game_providers'),
+        icon: casino.game_providers,
+        handler: () => console.log('点击 游戏厂商')
       }
     ]
   },
   {
     id: 'sports',
-    name: '体育',
-    icon: 'icon_3',
+    name: t('locales.sidebar_menu.sports.label'),
+    icon: side.sportsIcon,
     handler: () => {
       console.log('点击体育')
     },
     children: [
-      { id: 'sports_1', name: '体育 1', icon: 'icon_3', handler: () => console.log('点击 体育 1') },
-      { id: 'sports_2', name: '体育 2', icon: 'icon_3', handler: () => console.log('点击 体育 2') }
+      {
+        id: 'sports_fifa',
+        name: t('locales.sidebar_menu.sports.children.fifa'),
+        icon: sports.fifa,
+        handler: () => console.log('点击 FIFA')
+      },
+      {
+        id: 'sports_soccer',
+        name: t('locales.sidebar_menu.sports.children.soccer'),
+        icon: sports.soccer,
+        handler: () => console.log('点击 足球')
+      },
+      {
+        id: 'sports_basketball',
+        name: t('locales.sidebar_menu.sports.children.basketball'),
+        icon: sports.basketball,
+        handler: () => console.log('点击 篮球')
+      },
+      {
+        id: 'sports_tennis',
+        name: t('locales.sidebar_menu.sports.children.tennis'),
+        icon: sports.tennis,
+        handler: () => console.log('点击 网球')
+      },
+      {
+        id: 'sports_badminton',
+        name: t('locales.sidebar_menu.sports.children.badminton'),
+        icon: sports.badminton,
+        handler: () => console.log('点击 羽毛球')
+      },
+      {
+        id: 'sports_boxing',
+        name: t('locales.sidebar_menu.sports.children.boxing'),
+        icon: sports.boxing,
+        handler: () => console.log('点击 拳击')
+      },
+      {
+        id: 'sports_darts',
+        name: t('locales.sidebar_menu.sports.children.darts'),
+        icon: sports.darts,
+        handler: () => console.log('点击 飞镖')
+      },
+      {
+        id: 'sports_american_football',
+        name: t('locales.sidebar_menu.sports.children.american_football'),
+        icon: sports.american_football,
+        handler: () => console.log('点击 美式足球')
+      },
+      {
+        id: 'sports_table_tennis',
+        name: t('locales.sidebar_menu.sports.children.table_tennis'),
+        icon: sports.table_tennis,
+        handler: () => console.log('点击 乒乓球')
+      },
+      {
+        id: 'sports_volleyball',
+        name: t('locales.sidebar_menu.sports.children.volleyball'),
+        icon: sports.volleyball,
+        handler: () => console.log('点击 排球')
+      }
     ]
   },
   {
+    id: 'Anniversary',
+    name: t('locales.sidebar_menu.anniversary.label'),
+    icon: side.anniversaryIcon,
+    handler: () => {
+      console.log('周年庆')
+    },
+    children: []
+  },
+  {
     id: 'lottery',
-    name: '彩票',
-    icon: 'icon_5',
+    name: t('locales.sidebar_menu.lottery.label'),
+    icon: side.lotteryIcon,
     handler: () => {
       console.log('点击彩票')
     },
     children: [
       {
-        id: 'lottery_1',
-        name: '彩票 1',
-        icon: 'icon_5',
-        handler: () => console.log('点击 彩票 1')
+        id: 'lottery_my_bets',
+        name: t('locales.sidebar_menu.lottery.children.my_bets'),
+        icon: lottery.my_bets,
+        handler: () => console.log('点击 我的投注')
       },
-      { id: 'lottery_2', name: '彩票 2', icon: 'icon_5', handler: () => console.log('点击 彩票 2') }
+      {
+        id: 'lottery_all_lotteries',
+        name: t('locales.sidebar_menu.lottery.children.all_lotteries'),
+        icon: lottery.all_lotteries,
+        handler: () => console.log('点击 所有彩票')
+      },
+      {
+        id: 'lottery_favorites',
+        name: t('locales.sidebar_menu.lottery.children.favorites'),
+        icon: lottery.favorites,
+        handler: () => console.log('点击 我的最爱')
+      },
+      {
+        id: 'lottery_popular',
+        name: t('locales.sidebar_menu.lottery.children.popular'),
+        icon: lottery.popular,
+        handler: () => console.log('点击 热门彩票')
+      }
     ]
   },
   {
     id: 'crypto',
-    name: '加密货币期货',
-    icon: 'icon_6',
+    name: t('locales.sidebar_menu.crypto.label'),
+    icon: side.tradingIcon,
     handler: () => {
       console.log('点击加密货币期货')
     },
     children: [
       {
         id: 'crypto_1',
-        name: '加密货币 1',
-        icon: 'icon_6',
+        name: t('locales.sidebar_menu.crypto.children.crypto_1'),
+        icon: side.tradingIcon,
         handler: () => console.log('点击 加密货币 1')
       },
       {
         id: 'crypto_2',
-        name: '加密货币 2',
-        icon: 'icon_6',
+        name: t('locales.sidebar_menu.crypto.children.crypto_2'),
+        icon: side.tradingIcon,
         handler: () => console.log('点击 加密货币 2')
       }
     ]
   },
   {
-    id: 'promotion',
-    name: '促销',
-    icon: 'icon_7',
+    id: 'promotions',
+    name: t('locales.sidebar_menu.promotions.label'),
+    icon: side.promotionIcon,
     handler: () => {
       console.log('点击促销')
     },
     children: [
       {
-        id: 'promotion_1',
-        name: '促销 1',
-        icon: 'icon_7',
-        handler: () => console.log('点击 促销 1')
-      },
-      {
-        id: 'promotion_2',
-        name: '促销 2',
-        icon: 'icon_7',
-        handler: () => console.log('点击 促销 2')
+        id: 'promotions_invite_rewards',
+        name: t('locales.sidebar_menu.promotions.children.invite_rewards'),
+        icon: lottery.invite_rewards,
+        handler: () => console.log('点击 优惠活动')
       }
     ]
   }
@@ -740,84 +857,288 @@ const expandableMenus = computed(() => [
 const normalLinks = computed(() => [
   {
     id: 'vip',
-    name: '俱乐部',
-    name2: 'VIP',
-    icon: 'icon_8',
+    name: t('locales.sidebar_menu.links.vip.name'),
+    name2: t('locales.sidebar_menu.links.vip.prefix'),
+    icon: side.vipClubIcon,
     external: false,
     handler: () => console.log('点击 VIP 俱乐部')
   },
   {
     id: 'prize',
-    name: '奖金',
-    icon: 'icon_9',
+    name: t('locales.sidebar_menu.links.bonus'),
+    icon: side.bonusIcon,
     external: false,
     handler: () => console.log('点击 奖金')
   },
   {
     id: 'recommend',
-    name: '推荐',
-    icon: 'icon_10',
+    name: t('locales.sidebar_menu.links.recommend'),
+    icon: side.affiliateIcon,
     external: false,
     handler: () => console.log('点击 推荐')
   },
   {
     id: 'forum',
-    name: '论坛',
-    icon: 'icon_11',
+    name: t('locales.sidebar_menu.links.forum'),
+    icon: side.forumIcon,
     external: true,
     handler: () => console.log('点击 论坛')
   },
   {
     id: 'verified',
-    name: '可验证公平',
-    icon: 'icon_12',
+    name: t('locales.sidebar_menu.links.verified'),
+    icon: side.fairIcon,
     external: false,
     handler: () => console.log('点击 可验证公平')
   },
   {
     id: 'responsible',
-    name: '负责任博彩',
-    icon: 'icon_13',
+    name: t('locales.sidebar_menu.links.responsible'),
+    icon: side.accountIcon,
     external: false,
     handler: () => console.log('点击 负责任博彩')
   },
   {
     id: 'blog',
-    name: '部落格',
-    icon: 'icon_14',
+    name: t('locales.sidebar_menu.links.blog'),
+    icon: side.blogIcon,
     external: true,
     handler: () => console.log('点击 部落格')
   },
   {
     id: 'sports_injection',
-    name: '体育投注注入赔付',
-    icon: 'icon_15',
+    name: t('locales.sidebar_menu.links.betting_insights'),
+    icon: side.bettingInsightsIcon,
     external: true,
-    handler: () => console.log('点击 体育投注注入赔付')
+    handler: () => console.log('点击 体育投注深入解剖')
   }
 ])
 
-// 赞助数据
-const sponsor = computed(() => [
+// 底部菜单组
+const bottomMenus = computed<SidebarMenuGroup[]>(() => [
   {
-    id: 'sponsor',
-    name: '赞助',
-    icon: 'icon_16',
+    id: 'sponsorships',
+    name: t('locales.sidebar_menu.sponsorships.label'),
+    icon: side.sponsorshipsIcon,
     handler: () => {
       console.log('点击赞助')
     },
     children: [
       {
-        id: 'sponsor_1',
-        name: '赞助 1',
-        icon: 'icon_16',
-        handler: () => console.log('点击 赞助 1')
+        id: 'sponsorships_sponsorship_journey',
+        name: t('locales.sidebar_menu.sponsorships.items.sponsorship_journey'),
+        icon: sponsorships.sponsorship_journey,
+        handler: () => console.log('点击 赞助之旅')
       },
       {
-        id: 'sponsor_2',
-        name: '赞助 2',
-        icon: 'icon_16',
-        handler: () => console.log('点击 赞助 2')
+        id: 'sponsorships_o_higgins',
+        name: t('locales.sidebar_menu.sponsorships.items.o_higgins'),
+        icon: sponsorships.o_higgins,
+        handler: () => console.log("点击 O'HIGGINS")
+      },
+      {
+        id: 'sponsorships_jason_derulo',
+        name: t('locales.sidebar_menu.sponsorships.items.jason_derulo'),
+        icon: sponsorships.jason_derulo,
+        handler: () => console.log('点击 Jason Derulo')
+      },
+      {
+        id: 'sponsorships_lil_pump',
+        name: t('locales.sidebar_menu.sponsorships.items.lil_pump'),
+        icon: sponsorships.lil_pump,
+        handler: () => console.log('点击 Lil Pump')
+      },
+      {
+        id: 'sponsorships_colby_covington',
+        name: t('locales.sidebar_menu.sponsorships.items.colby_covington'),
+        icon: sponsorships.colby_covington,
+        handler: () => console.log('点击 Colby Covington')
+      },
+      {
+        id: 'sponsorships_miami_club',
+        name: t('locales.sidebar_menu.sponsorships.items.miami_club'),
+        icon: sponsorships.miami_club,
+        handler: () => console.log('点击 Miami Club')
+      },
+      {
+        id: 'sponsorships_tg_game_esports',
+        name: t('locales.sidebar_menu.sponsorships.items.tg_game_esports'),
+        icon: sponsorships.tg_game_esports,
+        handler: () => console.log('点击 TG Game Esports')
+      },
+      {
+        id: 'sponsorships_st_kitts_nevis_patriots',
+        name: t('locales.sidebar_menu.sponsorships.items.st_kitts_nevis_patriots'),
+        icon: sponsorships.st_kitts_nevis_patriots,
+        handler: () => console.log('点击 St. Kitts & Nevis Patriots')
+      },
+      {
+        id: 'sponsorships_kwara_united',
+        name: t('locales.sidebar_menu.sponsorships.items.kwara_united'),
+        icon: sponsorships.kwara_united,
+        handler: () => console.log('点击 Kwara United')
+      },
+      {
+        id: 'sponsorships_sashimi_poker',
+        name: t('locales.sidebar_menu.sponsorships.items.sashimi_poker'),
+        icon: sponsorships.sashimi_poker,
+        handler: () => console.log('点击 Sashimi Poker')
+      },
+      {
+        id: 'sponsorships_leicester_city',
+        name: t('locales.sidebar_menu.sponsorships.items.leicester_city'),
+        icon: sponsorships.leicester_city,
+        handler: () => console.log('点击 Leicester City')
+      },
+      {
+        id: 'sponsorships_krasava',
+        name: t('locales.sidebar_menu.sponsorships.items.krasava'),
+        icon: sponsorships.krasava,
+        handler: () => console.log('点击 KRASAVA')
+      },
+      {
+        id: 'sponsorships_deccan_gladiators',
+        name: t('locales.sidebar_menu.sponsorships.items.deccan_gladiators'),
+        icon: sponsorships.deccan_gladiators,
+        handler: () => console.log('点击 Deccan Gladiators')
+      },
+      {
+        id: 'sponsorships_jean_silva',
+        name: t('locales.sidebar_menu.sponsorships.items.jean_silva'),
+        icon: sponsorships.jean_silva,
+        handler: () => console.log('点击 Jean Silva')
+      }
+    ]
+  },
+  {
+    id: 'support',
+    name: t('locales.sidebar_menu.support.label'),
+    icon: side.helpIcon,
+    handler: () => {
+      console.log('点击支援')
+    },
+    children: [
+      {
+        id: 'support_help_center',
+        name: t('locales.sidebar_menu.support.items.help_center'),
+        icon: support.help_center,
+        handler: () => console.log('点击 帮助中心')
+      },
+      {
+        id: 'support_faq',
+        name: t('locales.sidebar_menu.support.items.faq'),
+        icon: support.faq,
+        handler: () => console.log('点击 常见问题')
+      },
+      {
+        id: 'support_ceo_inbox',
+        name: t('locales.sidebar_menu.support.items.ceo_inbox'),
+        icon: support.ceo_inbox,
+        handler: () => console.log('点击 CEO 信箱')
+      }
+    ]
+  },
+  {
+    id: 'legal',
+    name: t('locales.sidebar_menu.legal.label'),
+    icon: side.legalIcon,
+    handler: () => {
+      console.log('点击法律条款')
+    },
+    children: [
+      {
+        id: 'legal_tg_licenses',
+        name: t('locales.sidebar_menu.legal.items.tg_licenses'),
+        icon: legal.tg_licenses,
+        handler: () => console.log('点击 BC 牌照')
+      },
+      {
+        id: 'legal_gamble_aware',
+        name: t('locales.sidebar_menu.legal.items.gamble_aware'),
+        icon: legal.gamble_aware,
+        handler: () => console.log('点击 理性博彩')
+      },
+      {
+        id: 'legal_fairness',
+        name: t('locales.sidebar_menu.legal.items.fairness'),
+        icon: legal.fairness,
+        handler: () => console.log('点击 公平性')
+      },
+      {
+        id: 'legal_privacy_policy',
+        name: t('locales.sidebar_menu.legal.items.privacy_policy'),
+        icon: legal.privacy_policy,
+        handler: () => console.log('点击 隐私权政策')
+      },
+      {
+        id: 'legal_terms_of_service',
+        name: t('locales.sidebar_menu.legal.items.terms_of_service'),
+        icon: legal.terms_of_service,
+        handler: () => console.log('点击 服务条款')
+      },
+      {
+        id: 'legal_aml',
+        name: t('locales.sidebar_menu.legal.items.aml'),
+        icon: legal.aml,
+        handler: () => console.log('点击 AML')
+      }
+    ]
+  },
+  {
+    id: 'about_us',
+    name: t('locales.sidebar_menu.about_us.label'),
+    icon: side.tipsHelpIcon,
+    handler: () => {
+      console.log('点击关于我们')
+    },
+    children: [
+      {
+        id: 'about_us_achievement',
+        name: t('locales.sidebar_menu.about_us.items.achievement'),
+        icon: aboutUs.achievement,
+        handler: () => console.log('点击 成就')
+      },
+      {
+        id: 'about_us_news',
+        name: t('locales.sidebar_menu.about_us.items.news'),
+        icon: aboutUs.news,
+        handler: () => console.log('点击 新闻')
+      },
+      {
+        id: 'about_us_work_with_us',
+        name: t('locales.sidebar_menu.about_us.items.work_with_us'),
+        icon: aboutUs.work_with_us,
+        handler: () => console.log('点击 与我们合作')
+      },
+      {
+        id: 'about_us_business_contacts',
+        name: t('locales.sidebar_menu.about_us.items.business_contacts'),
+        icon: aboutUs.business_contacts,
+        handler: () => console.log('点击 商务联络人')
+      },
+      {
+        id: 'about_us_license',
+        name: t('locales.sidebar_menu.about_us.items.license'),
+        icon: aboutUs.license,
+        handler: () => console.log('点击 许可证')
+      },
+      {
+        id: 'about_us_help_desk',
+        name: t('locales.sidebar_menu.about_us.items.help_desk'),
+        icon: aboutUs.help_desk,
+        handler: () => console.log('点击 服务台')
+      },
+      {
+        id: 'about_us_verify_representative',
+        name: t('locales.sidebar_menu.about_us.items.verify_representative'),
+        icon: aboutUs.verify_representative,
+        handler: () => console.log('点击 验证代表')
+      },
+      {
+        id: 'about_us_design_resources',
+        name: t('locales.sidebar_menu.about_us.items.design_resources'),
+        icon: aboutUs.design_resources,
+        handler: () => console.log('点击 设计资源')
       }
     ]
   }
