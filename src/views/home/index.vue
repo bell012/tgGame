@@ -228,7 +228,7 @@
   </div>
   <NewEvent />
 
-  <CommonFooter />
+  <CommonFooter class="hidden sm:block" />
 </template>
 
 <script setup lang="ts">
