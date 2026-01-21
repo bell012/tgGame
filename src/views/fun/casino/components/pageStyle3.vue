@@ -1,5 +1,14 @@
 <template>
   <div class="w-full">
+    <div class="w-full my-[10px]">
+      <filterSheet
+        :sortOptions="sortOptions"
+        :providerOptions="providerOptions"
+        @update:sort="handleSort"
+        @update:provider="handleProvider"
+      />
+    </div>
+
     <div
       class="grid w-full [gap:var(--grid-gap)] grid-cols-3 sm:grid-cols-8"
       style="--grid-gap: 11px"
@@ -95,12 +104,25 @@
 import { ref, computed } from 'vue'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
+import filterSheet from './filterSheet.vue'
 import game1 from '@/static/img/test/game1.png'
 import game2 from '@/static/img/test/game2.png'
 import game3 from '@/static/img/test/game3.png'
 import game4 from '@/static/img/test/game4.png'
 import game5 from '@/static/img/test/game5.png'
 import game6 from '@/static/img/test/game6.png'
+
+const sortOptions = [
+  { label: 'A-Z', value: 'az' },
+  { label: 'Z-A', value: 'za' },
+  { label: 'Newest', value: 'newest' }
+]
+
+const providerOptions = [
+  { label: 'All', value: 'all' },
+  { label: 'Provider A', value: 'a' },
+  { label: 'Provider B', value: 'b' }
+]
 
 const page = ref(1)
 const totalPages = ref(3)
@@ -124,6 +146,14 @@ const getGameImg = (item: number | string) => {
     default:
       return getGameImg(Math.floor(Math.random() * 6))
   }
+}
+
+const handleSort = (value: string) => {
+  console.log('Sort:', value)
+}
+
+const handleProvider = (value: string) => {
+  console.log('Provider:', value)
 }
 
 const goPrev = () => {
