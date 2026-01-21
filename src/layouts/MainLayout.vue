@@ -1,65 +1,58 @@
 <template>
-  <div class="min-h-screen bg-bg-3">
+  <div class="flex min-h-screen">
     <!-- 顶部导航 -->
     <TopNav ref="topNavRef" @toggle-sidebar="toggleSidebar" />
 
-    <!-- PC布局 (>640px) -->
-    <div class="hidden sm:flex">
-      <!-- 侧边栏 -->
-      <Sidebar
-        ref="sidebarRef"
-        @open-language-modal="openLanguageModal"
-        @collapse-change="handleCollapseChange"
-      />
+    <!-- 侧边栏 -->
+    <Sidebar
+      v-if="!isMobile"
+      class="hidden sm:flex"
+      ref="sidebarRef"
+      @open-language-modal="openLanguageModal"
+      @collapse-change="handleCollapseChange"
+    />
 
-      <!-- 主内容区 -->
-      <main
-        class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out"
-        :style="{
-          marginTop: `${layoutStore.TOPNAV_HEIGHT}px`,
-          marginLeft: isSidebarCollapsed
-            ? `${layoutStore.SIDEBAR_WIDTH_COLLAPSED}px`
-            : `${layoutStore.SIDEBAR_WIDTH_EXPANDED}px`
-        }"
-      >
-        <div>
-          <router-view />
-        </div>
-      </main>
-    </div>
+    <!-- 主内容区 -->
+    <main class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out" :style="mainStyle">
+      <div class="sm:p-0 p-4 px-[14px]">
+        <router-view />
+      </div>
+    </main>
 
-    <!-- H5布局 (<=640px) -->
-    <div class="sm:hidden">
-      <!-- 主内容区 -->
-      <main
-        class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out"
-        :style="{
-          marginTop: `${layoutStore.TOPNAV_HEIGHT}px`,
-          marginBottom: `${layoutStore.BOTTOM_TAB_HEIGHT}px`
-        }"
-      >
-        <div class="p-4 px-[14px] bg-[var(--color-background-level-1)]">
-          <router-view />
-        </div>
-      </main>
-
-      <!-- 底部Tab栏 -->
-      <BottomTabBar />
-    </div>
+    <!-- 底部Tab栏 -->
+    <BottomTabBar class="sm:hidden" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import TopNav from './TopNav.vue'
-import Sidebar from './Sidebar.vue'
-import BottomTabBar from './BottomTabBar.vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
+import { computed, ref } from 'vue'
+import BottomTabBar from './BottomTabBar.vue'
+import Sidebar from './Sidebar.vue'
+import TopNav from './TopNav.vue'
 
 const layoutStore = useLayoutStore()
 const topNavRef = ref<InstanceType<typeof TopNav> | null>(null)
 const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
 const isSidebarCollapsed = ref(false)
+
+const isMobile = useIsMobile()
+const mainStyle = computed(() => {
+  if (isMobile.value) {
+    return {
+      marginTop: `${layoutStore.TOPNAV_HEIGHT}px`,
+      marginBottom: `${layoutStore.BOTTOM_TAB_HEIGHT}px`
+    }
+  }
+
+  return {
+    marginTop: `${layoutStore.TOPNAV_HEIGHT}px`,
+    marginLeft: isSidebarCollapsed.value
+      ? `${layoutStore.SIDEBAR_WIDTH_COLLAPSED}px`
+      : `${layoutStore.SIDEBAR_WIDTH_EXPANDED}px`
+  }
+})
 
 const toggleSidebar = () => {
   if (sidebarRef.value) {
