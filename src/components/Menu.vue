@@ -1,32 +1,5 @@
 <template>
   <div class="sidebar-menu">
-<<<<<<< HEAD
-    <!-- 应用程式 -->
-    <div v-if="!isCollapsed" class="mt-3 mb-2">
-      <div
-        class="block app-download-card rounded-lg cursor-pointer"
-        @click="handleAppDownloadClick"
-      >
-        <div class="flex justify-between items-center">
-          <div class="flex-1 p-2.5 pr-0">
-            <h3 class="text-sm font-semibold text-text-1 mb-1">应用程式</h3>
-            <p class="text-xs text-text-2 leading-tight">专属功能全面解锁 玩乐无限升级</p>
-          </div>
-          <div class="w-[80px] h-auto flex-shrink-0 pt-1 pr-1">
-            <div class="w-full h-full rounded flex items-center justify-center text-[10px]">
-              <img
-                src="@/static/img/home/pwa.png.png"
-                alt=""
-                class="w-full h-full object-cover rounded"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-=======
->>>>>>> origin/main
     <!-- BC代币 -->
     <div v-if="!isCollapsed" class="mb-2">
       <div
@@ -460,16 +433,7 @@
                   ]"
                   @click="handleThirdLevelClick(subItem)"
                 >
-                  <div class="w-6 h-6 flex items-center justify-center mr-2">
-<<<<<<< HEAD
-                    <component
-                      :is="sideIcons[subItem.icon]"
-                      class="w-6 h-6 fill-text-2 fill-none"
-                    />
-=======
-                    <component :is="subItem.icon" class="w-6 h-6 fill-none" />
->>>>>>> origin/main
-                  </div>
+                  <div class="w-6 h-6 flex items-center justify-center mr-2"></div>
                   <span class="text-sm font-[600] text-text-1">{{ subItem.name }}</span>
                 </div>
               </template>

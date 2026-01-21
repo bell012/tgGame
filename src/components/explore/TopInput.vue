@@ -141,7 +141,7 @@ let timer: ReturnType<typeof setTimeout> | null = null
 let mute = false
 watch(keyword, () => {
   if (mute) return (mute = false)
-  clearTimeout(timer)
+  if (timer !== null) clearTimeout(timer)
   timer = setTimeout(onSearch, 1500)
 })
 /* ===================== end===================== */
@@ -156,9 +156,10 @@ const currentType = ref(typeList.value[0]) // 当前选中的类型
 const typeVisible = ref(false) // 类型弹窗显示隐藏
 
 const emit = defineEmits<{
-  'change-type': [id: number | string]
+  'change-type': [id: number]
 }>()
-type TypeItem = { id: number | string; name: string }
+
+type TypeItem = { id: number; name: string }
 
 // 类型选择确认
 const handleTypeConfirm = (_val: TypeItem) => {
@@ -178,7 +179,7 @@ const deleteItme = () => {
 // 点击搜索历史和建议
 const goSearch = (item: string) => {
   mute = true
-  clearTimeout(timer)
+  if (timer !== null) clearTimeout(timer)
   keyword.value = item
   isOpen.value = false
   onSearch()
