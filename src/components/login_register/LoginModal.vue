@@ -1,18 +1,18 @@
 <template>
-  <!-- H5 端登录 -->
+  <!-- H5 端登录/注册 -->
   <LoginFormMobile
     v-if="isMobile"
-    :visible="modelValue && activeTab === 'login'"
+    :visible="modelValue && !showResetPassword"
+    :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
     @update:visible="handleClose"
-    @switch-to-register="switchToRegister"
+    @open-reset-password="openResetPassword"
   />
 
-  <!-- H5 端注册 -->
-  <RegisterFormMobile
+  <!-- H5 端忘记密码 -->
+  <ResetPasswordMobile
     v-if="isMobile"
-    :visible="modelValue && activeTab === 'register'"
-    @update:visible="handleClose"
-    @switch-to-login="switchToLogin"
+    :visible="showResetPassword"
+    @update:visible="handleResetPasswordClose"
   />
 
   <!-- PC 端登录 -->
@@ -180,7 +180,7 @@ import FreePerksIcon from '@/static/svg/login/free_perks.svg?component'
 import LoginFormDesktop from './LoginFormDesktop.vue'
 import LoginFormMobile from './LoginFormMobile.vue'
 import RegisterFormDesktop from './RegisterFormDesktop.vue'
-import RegisterFormMobile from './RegisterFormMobile.vue'
+import ResetPasswordMobile from './ResetPasswordMobile.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 
 // 检测是否为移动端
@@ -200,12 +200,14 @@ const emit = defineEmits<{
 }>()
 
 const activeTab = ref<'login' | 'register'>(props.defaultTab)
+const showResetPassword = ref(false)
 
 watch(
   () => props.modelValue,
   newVal => {
     if (newVal) {
       activeTab.value = props.defaultTab
+      showResetPassword.value = false
     }
   }
 )
@@ -220,6 +222,16 @@ watch(
 )
 
 const handleClose = () => {
+  showResetPassword.value = false
+  emit('update:modelValue', false)
+}
+
+const openResetPassword = () => {
+  showResetPassword.value = true
+}
+
+const handleResetPasswordClose = () => {
+  showResetPassword.value = false
   emit('update:modelValue', false)
 }
 
