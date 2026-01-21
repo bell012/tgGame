@@ -34,11 +34,13 @@ const sortList = ref([
   { id: 3, name: 'A-Z' },
   { id: 4, name: 'Z-A' }
 ]) // 排序列表
-const currentSort = ref(sortList.value[0]) // 当前选中的排序
+type Id = string | number
+type SortItem = { id: Id; name: string }
+const currentSort = ref<SortItem>(sortList.value[0]) // 当前选中的排序
 const sortVisible = ref(false) // 排序弹窗显示隐藏
 
 // 排序选择确认
-const handleSortConfirm = (_val: object) => {
+const handleSortConfirm = (_val: SortItem) => {
   currentSort.value = _val
   console.log('-------', _val)
   sortVisible.value = false

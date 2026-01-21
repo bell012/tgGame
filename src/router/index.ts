@@ -110,6 +110,24 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/game-details',
+    name: 'GameDetails',
+    component: () => import('@/views/game-details/index.vue'),
+    meta: {
+      title: '游戏详情',
+      description: '游戏详情'
+    }
+  },
+  {
+    path: '/:locale/game-details',
+    name: 'LocaleGameDetails',
+    component: () => import('@/views/game-details/index.vue'),
+    meta: {
+      title: '游戏详情',
+      description: '游戏详情'
+    }
+  },
+  {
     path: '/',
     component: MainLayout,
     children: defaultChildren

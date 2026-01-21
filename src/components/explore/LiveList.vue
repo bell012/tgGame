@@ -18,7 +18,7 @@
       <!-- w-[calc(100vw-28px)]:显示一屏 -->
       <!-- snap-center: 停止滚动时自动居中对齐 -->
       <div
-        v-for="(item, inx) in 6"
+        v-for="inx in 6"
         :key="inx"
         class="shrink-0 w-[calc(100vw-28px)] snap-center px-2.5 py-2.5 flex flex-col bg-[var(--color-background-level-2)] rounded-lg"
       >
