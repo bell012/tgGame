@@ -52,9 +52,8 @@
       >
         <div v-for="(game, i) in getDisplayList(item.items)" :key="i">
           <a
-            href="javascript:void(0);"
-            class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2 inactive"
-            link=""
+            href="/casino"
+            class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
           >
             <img class="w-full" alt="Crash" :src="getGameImg(game)" />
             <div
@@ -70,7 +69,7 @@
               <span class="text-xs font-semibold text-text-4 dark:text-text-1">2191</span>
             </div>
             <div
-              class="flex items-center justify-center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 group-hover:opacity-100"
+              class="flex items-center justify-center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 sm:group-hover:opacity-100"
             >
               <div
                 class="flex items-center justify-center absolute left-0 top-0 h-[40%] w-full px-2 text-center font-extrabold leading-4 text-text-4 dark:text-text-1"
@@ -78,7 +77,7 @@
                 {{ game }}
               </div>
               <div
-                class="flex items-center justify-center h-9 w-9 rounded-full bg-[#fff3] transition-all duration-300 group-hover:scale-150"
+                class="flex items-center justify-center h-9 w-9 rounded-full bg-[#fff3] transition-all duration-300 sm:group-hover:scale-150"
               >
                 <div class="icon size-full fill-white">
                   <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">

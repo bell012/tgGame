@@ -161,6 +161,7 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import pageStyle1 from './components/pageStyle1.vue'
 import pageStyle2 from './components/pageStyle2.vue'
+import pageStyle3 from './components/pageStyle3.vue'
 
 const { t } = useI18n()
 
@@ -319,6 +320,8 @@ const getPageStyle = computed(() => {
       return pageStyle1
     case 2:
       return pageStyle2
+    case 3:
+      return pageStyle3
     default:
       return pageStyle2
   }
