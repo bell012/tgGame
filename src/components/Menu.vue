@@ -94,8 +94,7 @@
         <template v-else>
           <div
             :class="[
-              'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
-              { 'launch-card-active': activeMenuId === menu.id }
+              'flex items-center justify-between launch-card-active h-10 bg-bg-2 rounded-lg cursor-pointer'
             ]"
             @click="handleMenuExpand(menu)"
           >
@@ -116,7 +115,7 @@
 
           <!-- 子菜单 -->
           <transition name="expand">
-            <div v-if="expandedMenus.includes(menu.id)" class="flex flex-col">
+            <div v-if="expandedMenus.includes(menu.id)" class="flex flex-col bg-bg-2 rounded-b-lg">
               <div
                 v-for="item in menu.children"
                 :key="item.id"
@@ -249,8 +248,7 @@
         <template v-else>
           <div
             :class="[
-              'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
-              { 'launch-card-active': activeMenuId === menu.id }
+              'flex items-center justify-between launch-card-active h-10 bg-bg-2 rounded-lg cursor-pointer'
             ]"
             @click="handleMenuExpand(menu)"
           >
@@ -271,7 +269,7 @@
 
           <!-- 子菜单 -->
           <transition name="expand">
-            <div v-if="expandedMenus.includes(menu.id)" class="flex flex-col">
+            <div v-if="expandedMenus.includes(menu.id)" class="flex flex-col bg-bg-2 rounded-b-lg">
               <div
                 v-for="item in menu.children"
                 :key="item.id"
