@@ -2,10 +2,10 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="modelValue" class="modal-overlay" @click="handleClose">
-        <div class="modal-container rounded-xl max-w-[416px] min-h-[600px] w-full" @click.stop>
+        <div class="modal-container rounded-xl max-w-[416px] w-full sm:min-h-32 h-3/4" @click.stop>
           <!-- 关闭按钮 -->
           <button
-            class="w-full h-12 rounded-lg px-4 flex items-center justify-end"
+            class="flex w-full h-12 rounded-lg px-4 items-center justify-end"
             @click="handleClose"
           >
             <div class="w-8 h-8 bg-[#464f50] rounded-md flex items-center justify-center">
@@ -265,9 +265,14 @@ const selectCurrency = (code: string) => {
   background-color: rgba(16, 18, 18, 0.8);
   visibility: visible;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   z-index: 9999;
+}
+@media (min-width: 640px) {
+  .modal-overlay {
+    align-items: center;
+  }
 }
 
 .modal-container {
@@ -392,6 +397,7 @@ const selectCurrency = (code: string) => {
   opacity: 0;
 }
 
+/* H5 端：从底部滑入动画 */
 .modal-enter-active .modal-container,
 .modal-leave-active .modal-container {
   transition: transform 0.3s ease;
@@ -399,6 +405,14 @@ const selectCurrency = (code: string) => {
 
 .modal-enter-from .modal-container,
 .modal-leave-to .modal-container {
-  transform: scale(0.9);
+  transform: translateY(100%);
+}
+
+/* PC 端：缩放动画 */
+@media (min-width: 640px) {
+  .modal-enter-from .modal-container,
+  .modal-leave-to .modal-container {
+    transform: scale(0.9);
+  }
 }
 </style>

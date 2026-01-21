@@ -20,7 +20,10 @@ export const getCurrentLocale = (): string => {
  * @param options - 可选的路由选项
  * @example
  */
-export const navigateTo = (path: string, options?: { replace?: boolean; query?: Record<string, any> }) => {
+export const navigateTo = (
+  path: string,
+  options?: { replace?: boolean; query?: Record<string, any> }
+) => {
   const locale = getCurrentLocale()
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
   const fullPath = locale ? `/${locale}${normalizedPath}` : normalizedPath
@@ -48,7 +51,7 @@ export const navigateToName = (
     params: options?.params,
     query: options?.query
   }
-  
+
   if (options?.replace) {
     router.replace(routeOptions)
   } else {
@@ -70,4 +73,3 @@ export const switchLanguage = (locale: 'zh' | 'en') => {
   localStorage.setItem('language', locale === 'zh' ? 'zh-CN' : 'en')
   router.push(newPath)
 }
-

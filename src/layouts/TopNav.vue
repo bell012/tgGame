@@ -27,14 +27,14 @@
         </div>
         <!-- 登入 -->
         <div
-          class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center bg-transparent border-0 md:border-2 border-[#e4eaf019] mr-1"
+          class="cursor-pointer w-[84px] h-[35px] sm:w-[96px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-transparent border-0 md:border-2 border-[#e4eaf019] mr-1"
           @click="openLoginModal"
         >
           {{ t('locales.home.sign_In') }}
         </div>
         <!-- 注册 -->
         <div
-          class="cursor-pointer min-w-[96px] h-[40px] px-4 rounded-lg flex items-center justify-center btn-primary mr-0 md:mr-3"
+          class="cursor-pointer w-[84px] h-[35px] sm:w-[96px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 md:mr-3"
           @click="openRegisterModal"
         >
           {{ t('locales.home.sign_Up') }}

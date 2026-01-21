@@ -18,9 +18,9 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'casino',
     name: 'casino',
-    component: () => import('@/views/casino/index.vue'),
+    component: () => import('@/views/fun/casino/index.vue'),
     meta: {
-      title: '娱乐城',
+      title: '娱乐城'
     }
   },
   {
@@ -28,7 +28,7 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'originate',
     component: () => import('@/views/fun/originate/index.vue'),
     meta: {
-      title: 'BC原创',
+      title: 'BC原创'
     }
   },
   {
@@ -36,7 +36,7 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'exclusive',
     component: () => import('@/views/fun/exclusive/index.vue'),
     meta: {
-      title: 'BC独家',
+      title: 'BC独家'
     }
   },
   {
@@ -44,7 +44,7 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'sports',
     component: () => import('@/views/sports/index.vue'),
     meta: {
-      title: '体育',
+      title: '体育'
     }
   },
   {
@@ -52,7 +52,7 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'menu',
     component: () => import('@/views/menu/index.vue'),
     meta: {
-      title: '选单',
+      title: '选单'
     }
   },
   {
@@ -60,17 +60,17 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'explore',
     component: () => import('@/views/explore/index.vue'),
     meta: {
-      title: '搜索',
+      title: '搜索'
     }
   },
   {
     path: 'chat-public',
     name: 'chat-public',
-    component: () => import('@/views/chat-public/index.vue'),
+    component: () => import('@/views/chat/chat-public/index.vue'),
     meta: {
-      title: '聊天',
+      title: '聊天'
     }
-  },
+  }
 ]
 
 // 生成带语言前缀的路由

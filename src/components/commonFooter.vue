@@ -16,7 +16,9 @@
       <div class="w-full px-4 py-4 border-y border-[#e4eaf019]">
         <div class="flex w-full flex-wrap gap-x-10 divide-x divide-[#e4eaf019]">
           <!-- 左边5个图标 -->
-          <div class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 cursor-pointer">
+          <div
+            class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 cursor-pointer"
+          >
             <img
               v-for="cert in leftCertifications"
               :key="cert.id"
@@ -28,7 +30,9 @@
           </div>
 
           <!-- 右边5个图标 -->
-          <div class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 cursor-pointer pl-6">
+          <div
+            class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 cursor-pointer pl-6"
+          >
             <img
               v-for="cert in rightCertifications"
               :key="cert.id"
@@ -233,7 +237,9 @@
         </div>
 
         <!-- 版权信息 -->
-        <div class="text-center mt-8 pt-8 pb-2 px-4 border-t border-[#e4eaf019] text-text-2 text-[12px]">
+        <div
+          class="text-center mt-8 pt-8 pb-2 px-4 border-t border-[#e4eaf019] text-text-2 text-[12px]"
+        >
           版权 ©2024 Twocent Technology Limited 版权所有。IBTC-U15899,442,15
         </div>
       </div>
@@ -245,7 +251,6 @@
 import { computed } from 'vue'
 import LoginIcon1 from '@/static/svg/login/login_icon_1.svg?component'
 import ExternalIcon from '@/static/svg/external.svg?component'
-import { navigateTo } from '@/utils/router'
 
 const footer1Image = new URL('@/static/img/commonFooter/footer_1.webp', import.meta.url).href
 const footer2Image = new URL('@/static/img/commonFooter/footer_2_1.webp', import.meta.url).href
