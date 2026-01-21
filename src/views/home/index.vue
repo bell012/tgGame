@@ -228,7 +228,7 @@
   </div>
   <NewEvent />
 
-  <CommonFooter />
+  <CommonFooter class="hidden sm:block" />
 </template>
 
 <script setup lang="ts">
@@ -268,6 +268,7 @@ import racing from './img/racing.png?url'
 import lottery from './img/lottery.png?url'
 import updown from './img/updown.png?url'
 import bingo from './img/bingo.png?url'
+import CommonFooter from '@/components/commonFooter.vue'
 
 const { t } = useI18n()
 

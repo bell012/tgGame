@@ -101,8 +101,8 @@
             :class="getRegisterClass()"
             style="box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5)"
           >
-             <!-- 关闭按钮 -->
-             <button
+            <!-- 关闭按钮 -->
+            <button
               class="absolute top-5 right-5 w-8 h-8 bg-bg-4 rounded-lg flex items-center justify-center z-10"
               @click="handleClose"
             >

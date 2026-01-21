@@ -70,5 +70,138 @@
     "all": "全部",
     "latest_bet": "最新投注",
     "high_roller": "龙虎榜"
+  },
+  "sidebar_menu": {
+    "app_download": {
+      "title": "应用程式",
+      "subtitle": "专属功能全面解锁 玩乐无限升级"
+    },
+    "bc_token": {
+      "title": "BC 代币"
+    },
+    "casino": {
+      "title": "娱乐城",
+      "children": {
+        "favorites": "我的最爱",
+        "recent": "最近常玩",
+        "tg_originals": "TG原创游戏",
+        "hot_games": "热门游戏",
+        "slots": "电子游戏",
+        "live_casino": "真人游戏",
+        "table_games": "棋牌游戏",
+        "fishing": "捕鱼游戏",
+        "game_providers": "游戏厂商"
+      }
+    },
+    "sports": {
+      "label": "体育",
+      "children": {
+        "fifa": "FIFA",
+        "soccer": "足球",
+        "basketball": "篮球",
+        "tennis": "网球",
+        "badminton": "羽毛球",
+        "boxing": "拳击",
+        "darts": "飞镖",
+        "american_football": "美式足球",
+        "table_tennis": "乒乓球",
+        "volleyball": "排球"
+      }
+    },
+    "anniversary": {
+      "label": "周年庆"
+    },
+    "lottery": {
+      "label": "彩票",
+      "children": {
+        "my_bets": "我的投注",
+        "all_lotteries": "所有彩票",
+        "favorites": "我的最爱",
+        "popular": "热门彩票"
+      }
+    },
+    "crypto": {
+      "label": "加密货币期货",
+      "children": {
+        "crypto_1": "加密货币 1",
+        "crypto_2": "加密货币 2"
+      }
+    },
+    "promotions": {
+      "label": "优惠活动",
+      "children": {
+        "invite_rewards": "邀请有礼"
+      }
+    },
+    "links": {
+      "vip": { "prefix": "VIP", "name": "俱乐部" },
+      "bonus": "奖金",
+      "recommend": "推荐",
+      "forum": "论坛",
+      "verified": "可验证公平",
+      "responsible": "负责任博彩",
+      "blog": "博客",
+      "betting_insights": "体育投注深入解剖"
+    },
+    "sponsorships": {
+      "label": "赞助",
+      "items": {
+        "sponsorship_journey": "赞助之旅",
+        "o_higgins": "O'HIGGINS",
+        "jason_derulo": "杰森·德鲁罗",
+        "lil_pump": "Lil Pump",
+        "colby_covington": "科尔比·卡温顿",
+        "miami_club": "迈阿密俱乐部",
+        "tg_game_esports": "TG Game Esports",
+        "st_kitts_nevis_patriots": "圣克里斯托弗及尼维斯爱国者",
+        "kwara_united": "夸拉联队",
+        "sashimi_poker": "Sashimi Poker",
+        "leicester_city": "莱斯特城",
+        "krasava": "克拉萨瓦",
+        "deccan_gladiators": "迪肯角斗士队",
+        "jean_silva": "Jean Silva"
+      }
+    },
+    "support": {
+      "label": "支援",
+      "items": {
+        "help_center": "帮助中心",
+        "faq": "常见问题",
+        "ceo_inbox": "CEO 信箱"
+      }
+    },
+    "legal": {
+      "label": "法律条款",
+      "items": {
+        "tg_licenses": "BC 牌照",
+        "gamble_aware": "理性博彩",
+        "fairness": "公平性",
+        "privacy_policy": "隐私权政策",
+        "terms_of_service": "服务条款",
+        "aml": "AML"
+      }
+    },
+    "about_us": {
+      "label": "关于我们",
+      "items": {
+        "achievement": "成就",
+        "news": "新闻",
+        "work_with_us": "与我们合作",
+        "business_contacts": "商务联络人",
+        "license": "许可证",
+        "help_desk": "服务台",
+        "verify_representative": "验证代表",
+        "design_resources": "设计资源"
+      }
+    },
+    "customer_service": "线上客服",
+    "language": {
+      "zh_cn": "简体中文",
+      "en": "English"
+    },
+    "theme": {
+      "dark": "深色模式",
+      "light": "浅色模式"
+    }
   }
 }
