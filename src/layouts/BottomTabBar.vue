@@ -10,7 +10,7 @@
       >
         <component
           :is="bottomTabBarIcons[menu.icon]"
-          class="w-6 h-6 mb-1"
+          class="w-[18px] h-[18px] mb-1"
           :class="menu.active ? 'fill-primary' : 'fill-text-2'"
         />
         <p class="text-xs font-medium">{{ menu.name }}</p>

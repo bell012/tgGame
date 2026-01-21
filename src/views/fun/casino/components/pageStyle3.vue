@@ -5,7 +5,7 @@
         :sortOptions="sortOptions"
         :providerOptions="providerOptions"
         @update:sort="handleSort"
-        @update:provider="handleProvider"
+        @update:providers="handleProvider"
       />
     </div>
 
@@ -111,17 +111,36 @@ import game3 from '@/static/img/test/game3.png'
 import game4 from '@/static/img/test/game4.png'
 import game5 from '@/static/img/test/game5.png'
 import game6 from '@/static/img/test/game6.png'
+import wlImg from '@/static/img/supplier/wl.png'
+import pgImg from '@/static/img/supplier/pg.png'
+import fgImg from '@/static/img/supplier/fg.png'
+import jlImg from '@/static/img/supplier/jl.png'
 
 const sortOptions = [
-  { label: 'A-Z', value: 'az' },
-  { label: 'Z-A', value: 'za' },
-  { label: 'Newest', value: 'newest' }
+  { label: '热门', value: '热门' },
+  { label: '最新', value: '最新' },
+  { label: 'A-Z', value: 'A-Z' },
+  { label: 'Z-A', value: 'Z-A' }
 ]
 
 const providerOptions = [
-  { label: 'All', value: 'all' },
-  { label: 'Provider A', value: 'a' },
-  { label: 'Provider B', value: 'b' }
+  { label: 'P1', value: 'p1', icon: wlImg },
+  { label: 'P2', value: 'p2', icon: pgImg },
+  { label: 'P3', value: 'p3', icon: fgImg },
+  { label: 'P4', value: 'p4', icon: jlImg },
+  { label: 'A1', value: 'a1', icon: wlImg },
+  { label: 'A2', value: 'a2', icon: pgImg },
+  { label: 'A3', value: 'a3', icon: fgImg },
+  { label: 'A4', value: 'a4', icon: jlImg },
+  { label: 'C1', value: 'c1', icon: wlImg },
+  { label: 'C2', value: 'c2', icon: pgImg },
+  { label: 'C3', value: 'c3', icon: fgImg },
+  { label: 'C4', value: 'c4', icon: jlImg },
+  { label: 'D1', value: 'd1', icon: wlImg },
+  { label: 'D2', value: 'd2', icon: pgImg },
+  { label: 'D3', value: 'd3', icon: fgImg },
+  { label: 'D4', value: 'd4', icon: jlImg },
+  { label: 'EE', value: 'ee', icon: pgImg }
 ]
 
 const page = ref(1)
@@ -152,7 +171,7 @@ const handleSort = (value: string) => {
   console.log('Sort:', value)
 }
 
-const handleProvider = (value: string) => {
+const handleProvider = (value: string[]) => {
   console.log('Provider:', value)
 }
 
