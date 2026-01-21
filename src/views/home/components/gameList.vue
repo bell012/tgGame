@@ -5,7 +5,6 @@
         {{ $t('home.BCOriginals') }}
       </h2>
       <a
-        href="/gamelist/brand"
         class="button ml-auto flex items-center gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-layer5"
         >{{ $t('home.All') }}</a
       >
@@ -198,9 +197,9 @@ const scrollPrev = () => {
     --grid-column: 5;
   }
 }
-@media (min-width: 640px) and (max-width: 767px) {
+@media (max-width: 767px) {
   .grid-col-3 {
-    --grid-column: 4;
+    --grid-column: 3.15;
   }
 }
 
