@@ -45,7 +45,7 @@
               </div>
 
               <div class="w-full h-[245px] mt-6">
-                <img :src="h5BackgroundImage" alt="" class="w-full h-full" />
+                <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
               </div>
 
               <div class="mt-6">
@@ -120,7 +120,7 @@
               </div>
 
               <div class="w-full h-[245px] mt-6">
-                <img :src="h5BackgroundImage" alt="" class="w-full h-full" />
+                <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
               </div>
 
               <div class="mt-6">
@@ -194,10 +194,10 @@ const isMobile = useIsMobile()
 const themeStore = useThemeStore()
 
 // 主题动态背景图
-const h5BackgroundImage = computed(() => {
+const pcBackgroundImage = computed(() => {
   return themeStore.theme === 'dark'
-    ? '/src/static/img/home/login_h5_h.png'
-    : '/src/static/img/home/login_h5_b.png'
+    ? '/src/static/img/home/login_pc_h.png'
+    : '/src/static/img/home/login_pc_b.png'
 })
 
 interface Props {
