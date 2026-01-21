@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 interface Props {
   defaultTab?: 'signin' | 'signup'
@@ -34,6 +34,13 @@ const emit = defineEmits<{
 
 // 当前激活的标签页
 const activeTab = ref<'signin' | 'signup'>(props.defaultTab)
+
+watch(
+  () => props.defaultTab,
+  newTab => {
+    activeTab.value = newTab
+  }
+)
 
 // 密码显示状态
 const showPassword = ref({
