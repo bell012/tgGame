@@ -32,26 +32,27 @@
           >
             <!-- 关闭按钮 -->
             <button
-              class="absolute top-5 right-5 w-8 h-8 bg-bg-4 rounded-lg flex items-center justify-center z-10"
+              class="absolute top-5 right-5 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
               @click="handleClose"
             >
-              <CloseIcon class="w-[18px] h-[18px] fill-text-1 fill-none" />
+              <CloseIcon class="w-4 h-4 fill-none" />
             </button>
 
             <!-- 左侧图片区域 -->
-            <div
-              class="w-1/2 pl-6 pt-4 flex flex-col items-center justify-between relative bg-cover bg-center bg-no-repeat"
-              style="background-image: url('/src/static/img/home/login.png')"
-            >
-              <div class="relative z-10 w-full flex justify-start">
-                <img src="/src/static/img/home/logo.png" alt="Logo" class="w-auto h-8" />
+            <div class="w-1/2 p-6 flex flex-col bg-bg-2">
+              <div class="z-10 w-full flex justify-center">
+                <img src="/src/static/img/home/logo.png" alt="Logo" class="w-auto h-12" />
               </div>
 
-              <div class="absolute top-[400px] left-0 w-full">
+              <div class="w-full h-[245px] mt-6">
+                <img :src="h5BackgroundImage" alt="" class="w-full h-full" />
+              </div>
+
+              <div class="mt-6">
                 <div class="mb-3 mt-6 flex items-stretch justify-between">
                   <div class="flex-1 flex flex-col items-center justify-center px-2">
                     <div class="flex items-center justify-center">
-                      <GiftIcon class="w-5 h-5 fill-none stroke-theme-1" />
+                      <GiftIcon class="w-5 h-5 fill-none" />
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">470%</span>
                     </div>
                     <div class="text-[10px] text-text-2 mt-2 text-center">首存奖金</div>
@@ -61,7 +62,7 @@
 
                   <div class="flex-1 flex flex-col items-center justify-center px-2">
                     <div class="flex items-center justify-center">
-                      <TurntableIcon class="w-5 h-5 fill-none stroke-theme-1" />
+                      <TurntableIcon class="w-5 h-5 fill-none" />
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">5 BTC</span>
                     </div>
                     <div class="text-[10px] text-text-2 mt-2 text-center">每日免费幸运旋转</div>
@@ -71,14 +72,14 @@
 
                   <div class="flex-1 flex flex-col items-center justify-center px-2">
                     <div class="flex items-center justify-center">
-                      <FreePerksIcon class="w-5 h-5 fill-none stroke-theme-1" />
+                      <FreePerksIcon class="w-5 h-5 fill-none" />
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">免费福利</span>
                     </div>
                     <div class="text-[10px] text-text-2 mt-2 text-center">每日免费参与奖金</div>
                   </div>
                 </div>
 
-                <div class="flex items-center justify-center flex-col">
+                <div class="flex items-center justify-center flex-col mt-6">
                   <h2 class="w-full text-center text-[36px] font-[800] text-text-1 mb-1">
                     保持桀骜不训
                   </h2>
@@ -91,38 +92,42 @@
 
             <!-- 右侧表单区域 -->
             <div class="w-1/2 bg-bg-1 py-5 px-6">
-              <LoginFormDesktop @switch-to-register="switchToRegister" />
+              <LoginFormDesktop
+                :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
+                @open-reset-password="openResetPassword"
+              />
             </div>
           </div>
 
-          <!-- 注册弹窗 -->
+          <!-- 忘记密码弹窗 -->
           <div
             class="absolute inset-0 flex rounded-2xl overflow-hidden transition-all duration-500 ease-in-out"
-            :class="getRegisterClass()"
+            :class="getResetPasswordClass()"
             style="box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5)"
           >
             <!-- 关闭按钮 -->
             <button
-              class="absolute top-5 right-5 w-8 h-8 bg-bg-4 rounded-lg flex items-center justify-center z-10"
+              class="absolute top-5 right-5 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
               @click="handleClose"
             >
-              <CloseIcon class="w-[18px] h-[18px] fill-text-1 fill-none" />
+              <CloseIcon class="w-4 h-4 fill-none" />
             </button>
 
             <!-- 左侧图片区域 -->
-            <div
-              class="w-1/2 pl-6 pt-4 flex flex-col items-center justify-between relative bg-cover bg-center bg-no-repeat"
-              style="background-image: url('/src/static/img/home/login.png')"
-            >
-              <div class="relative z-10 w-full flex justify-start">
-                <img src="/src/static/img/home/logo.png" alt="Logo" class="w-auto h-8" />
+            <div class="w-1/2 p-6 flex flex-col bg-bg-2">
+              <div class="z-10 w-full flex justify-center">
+                <img src="/src/static/img/home/logo.png" alt="Logo" class="w-auto h-12" />
               </div>
 
-              <div class="absolute top-[400px] left-0 w-full">
+              <div class="w-full h-[245px] mt-6">
+                <img :src="h5BackgroundImage" alt="" class="w-full h-full" />
+              </div>
+
+              <div class="mt-6">
                 <div class="mb-3 mt-6 flex items-stretch justify-between">
                   <div class="flex-1 flex flex-col items-center justify-center px-2">
                     <div class="flex items-center justify-center">
-                      <GiftIcon class="w-5 h-5 fill-none stroke-theme-1" />
+                      <GiftIcon class="w-5 h-5 fill-none" />
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">470%</span>
                     </div>
                     <div class="text-[10px] text-text-2 mt-2 text-center">首存奖金</div>
@@ -132,7 +137,7 @@
 
                   <div class="flex-1 flex flex-col items-center justify-center px-2">
                     <div class="flex items-center justify-center">
-                      <TurntableIcon class="w-5 h-5 fill-none stroke-theme-1" />
+                      <TurntableIcon class="w-5 h-5 fill-none" />
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">5 BTC</span>
                     </div>
                     <div class="text-[10px] text-text-2 mt-2 text-center">每日免费幸运旋转</div>
@@ -142,14 +147,14 @@
 
                   <div class="flex-1 flex flex-col items-center justify-center px-2">
                     <div class="flex items-center justify-center">
-                      <FreePerksIcon class="w-5 h-5 fill-none stroke-theme-1" />
+                      <FreePerksIcon class="w-5 h-5 fill-none" />
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">免费福利</span>
                     </div>
                     <div class="text-[10px] text-text-2 mt-2 text-center">每日免费参与奖金</div>
                   </div>
                 </div>
 
-                <div class="flex items-center justify-center flex-col">
+                <div class="flex items-center justify-center flex-col mt-6">
                   <h2 class="w-full text-center text-[36px] font-[800] text-text-1 mb-1">
                     保持桀骜不训
                   </h2>
@@ -162,7 +167,7 @@
 
             <!-- 右侧表单区域 -->
             <div class="w-1/2 bg-bg-1 py-5 px-6">
-              <RegisterFormDesktop @switch-to-login="switchToLogin" />
+              <ResetPasswordDesktop />
             </div>
           </div>
         </div>
@@ -172,19 +177,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import GiftIcon from '@/static/svg/login/gift.svg?component'
 import TurntableIcon from '@/static/svg/login/turntable.svg?component'
 import FreePerksIcon from '@/static/svg/login/free_perks.svg?component'
 import LoginFormDesktop from './LoginFormDesktop.vue'
 import LoginFormMobile from './LoginFormMobile.vue'
-import RegisterFormDesktop from './RegisterFormDesktop.vue'
 import ResetPasswordMobile from './ResetPasswordMobile.vue'
+import ResetPasswordDesktop from './ResetPasswordDesktop.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useThemeStore } from '@/stores/theme'
 
-// 检测是否为移动端
+// 是否为移动端
 const isMobile = useIsMobile()
+const themeStore = useThemeStore()
+
+// 主题动态背景图
+const h5BackgroundImage = computed(() => {
+  return themeStore.theme === 'dark'
+    ? '/src/static/img/home/login_h5_h.png'
+    : '/src/static/img/home/login_h5_b.png'
+})
 
 interface Props {
   modelValue: boolean
@@ -199,7 +213,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
-const activeTab = ref<'login' | 'register'>(props.defaultTab)
+const activeTab = ref<'login' | 'register' | 'resetPassword'>(props.defaultTab)
 const showResetPassword = ref(false)
 
 watch(
@@ -223,11 +237,23 @@ watch(
 
 const handleClose = () => {
   showResetPassword.value = false
+  activeTab.value = 'login'
   emit('update:modelValue', false)
 }
 
 const openResetPassword = () => {
-  showResetPassword.value = true
+  if (isMobile.value) {
+    showResetPassword.value = true
+  } else {
+    if (isAnimating.value) return
+    isAnimating.value = true
+    isSliding.value = true
+    activeTab.value = 'resetPassword'
+    setTimeout(() => {
+      isAnimating.value = false
+      isSliding.value = false
+    }, 500)
+  }
 }
 
 const handleResetPasswordClose = () => {
@@ -238,9 +264,9 @@ const handleResetPasswordClose = () => {
 const isAnimating = ref(false)
 const isSliding = ref(false)
 
-// 登入弹窗
+// 登入/注册弹窗
 const getLoginClass = () => {
-  if (activeTab.value === 'login') {
+  if (activeTab.value === 'login' || activeTab.value === 'register') {
     return 'translate-x-0 z-20 opacity-100'
   } else if (isSliding.value) {
     return '-translate-x-full z-10 opacity-0'
@@ -249,41 +275,15 @@ const getLoginClass = () => {
   }
 }
 
-// 注册弹窗
-const getRegisterClass = () => {
-  if (activeTab.value === 'register') {
+// 忘记密码弹窗
+const getResetPasswordClass = () => {
+  if (activeTab.value === 'resetPassword') {
     return 'translate-x-0 z-20 opacity-100'
   } else if (isSliding.value) {
     return '-translate-x-full z-10 opacity-0'
   } else {
     return 'translate-x-full z-10 opacity-0'
   }
-}
-
-const switchToRegister = () => {
-  if (isAnimating.value) return
-  isAnimating.value = true
-  isSliding.value = true
-
-  activeTab.value = 'register'
-
-  setTimeout(() => {
-    isAnimating.value = false
-    isSliding.value = false
-  }, 500)
-}
-
-const switchToLogin = () => {
-  if (isAnimating.value) return
-  isAnimating.value = true
-  isSliding.value = true
-
-  activeTab.value = 'login'
-
-  setTimeout(() => {
-    isAnimating.value = false
-    isSliding.value = false
-  }, 500)
 }
 </script>
 
