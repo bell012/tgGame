@@ -433,9 +433,7 @@
                   ]"
                   @click="handleThirdLevelClick(subItem)"
                 >
-                  <div class="w-6 h-6 flex items-center justify-center mr-2">
-                    <component :is="subItem.icon" class="w-6 h-6 fill-none" />
-                  </div>
+                  <div class="w-6 h-6 flex items-center justify-center mr-2"></div>
                   <span class="text-sm font-[600] text-text-1">{{ subItem.name }}</span>
                 </div>
               </template>

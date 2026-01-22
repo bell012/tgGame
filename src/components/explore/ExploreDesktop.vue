@@ -100,16 +100,18 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 /* ===================== 排序筛选 ===================== */
-const sortList = ref([
+const sortList = ref<SortItem[]>([
   { id: 1, name: '热门' },
   { id: 2, name: '最新' },
   { id: 3, name: 'A-Z' },
   { id: 4, name: 'Z-A' }
 ])
-const currentSort = ref(sortList.value[0])
+type Id = string | number
+type SortItem = { id: Id; name: string }
+const currentSort = ref<SortItem>(sortList.value[0])
 const sortVisible = ref(false)
 
-const handleSortConfirm = (_val: object) => {
+const handleSortConfirm = (_val: SortItem) => {
   currentSort.value = _val
   console.log('-------', _val)
   sortVisible.value = false
