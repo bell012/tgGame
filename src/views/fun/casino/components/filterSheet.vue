@@ -86,7 +86,7 @@
         </div>
         <div
           v-show="providerShow"
-          class="bg-[var(--color-background-level-1)] rounded-t-xl pt-2.5 px-3.5 max-h-[620px] flex flex-col"
+          class="bg-[var(--color-background-level-1)] rounded-t-xl pt-2.5 px-3.5 max-h-[75vh] flex flex-col"
         >
           <div class="flex items-center justify-between mb-2.5">
             <div></div>
@@ -154,7 +154,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import wlImg from '@/static/img/supplier/wl.png'
 import pgImg from '@/static/img/supplier/pg.png'
@@ -216,7 +216,7 @@ const providerShow = ref(false)
 const keyword = ref('')
 const isPopupVisible = computed(() => sortByShow.value || providerShow.value)
 const providerText = computed(() => {
-  return providers.value.length > 1 ? '+' + providers.value.length : 'All'
+  return providers.value.length > 0 ? '+' + providers.value.length : 'All'
 })
 const filteredProviders = computed(() => {
   if (!keyword.value) return props.providerOptions
@@ -253,6 +253,16 @@ const clearProviderAll = () => {
 
 watch(sortBy, newVal => emit('update:sort', newVal))
 watch(providers, newVal => emit('update:providers', newVal))
+watch(isPopupVisible, newVal => {
+  if (newVal) {
+    document.body.classList.add('overflow-hidden')
+  } else {
+    document.body.classList.remove('overflow-hidden')
+  }
+})
+onBeforeUnmount(() => {
+  document.body.classList.remove('overflow-hidden')
+})
 </script>
 <style scoped lang="scss">
 @use '../../../../styles/mixins' as *;
