@@ -51,21 +51,31 @@
                           <GiftIcon class="w-3.5 h-3.5 fill-none" />
                           <div class="ml-1.5 text-text-1">470%</div>
                         </h2>
-                        <p class="text-text-2 mt-0.5 text-[9px]">首存奖金</p>
+                        <!-- 首存奖金 -->
+                        <p class="text-text-2 mt-0.5 text-[9px]">
+                          {{ t('locales.common.welcome_deposit_bonus') }}
+                        </p>
                       </div>
                       <div class="flex-col">
                         <h2 class="flex items-center text-xs">
                           <TurntableIcon class="w-3.5 h-3.5 fill-none" />
                           <div class="ml-1.5 text-text-1">5 BTC%</div>
                         </h2>
-                        <p class="text-text-2 mt-0.5 text-[9px]">每日免费幸运旋转</p>
+                        <!-- 每日免费幸运旋转 -->
+                        <p class="text-text-2 mt-0.5 text-[9px]">
+                          {{ t('locales.common.free_daily_lucky_spin') }}
+                        </p>
                       </div>
                       <div class="flex-col">
                         <h2 class="flex items-center text-xs">
                           <FreePerksIcon class="w-3.5 h-3.5 fill-none" />
-                          <div class="ml-1.5 text-text-1">免费福利</div>
+                          <!-- 免费福利 -->
+                          <div class="ml-1.5 text-text-1">{{ t('locales.common.free_perks') }}</div>
                         </h2>
-                        <p class="text-text-2 mt-0.5 text-[9px]">每日免费奖励与奖金</p>
+                        <!-- 每日免费奖励与奖金 -->
+                        <p class="text-text-2 mt-0.5 text-[9px]">
+                          {{ t('locales.common.daily_free_rewards_bonuses') }}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -78,7 +88,8 @@
                       :class="activeTab === 'signin' ? 'text-text-1' : 'text-text-2'"
                       @click="setActiveTab('signin')"
                     >
-                      <span>登录</span>
+                      <!-- 登录 -->
+                      <span>{{ t('locales.home.sign_In') }}</span>
                       <div
                         v-if="activeTab === 'signin'"
                         class="absolute bottom-0 left-0 right-0 h-[2px] bg-theme-primary rounded-t-full"
@@ -89,7 +100,8 @@
                       :class="activeTab === 'signup' ? 'text-text-1' : 'text-text-2'"
                       @click="setActiveTab('signup')"
                     >
-                      <span>注册</span>
+                      <!-- 注册 -->
+                      <span>{{ t('locales.home.sign_Up') }}</span>
                       <div
                         v-if="activeTab === 'signup'"
                         class="absolute bottom-0 left-0 right-0 h-[2px] bg-theme-primary rounded-t-full"
@@ -105,26 +117,34 @@
               </div> -->
 
                   <template v-if="activeTab === 'signin'">
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">账号</div>
+                    <!-- 账号 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.account') }}
+                    </div>
                     <div class="mb-3">
+                      <!-- 请输入账号 -->
                       <input
                         v-model="formData.signin.account"
                         type="text"
-                        placeholder="Account"
+                        :placeholder="t('locales.common.enter_account')"
                         class="w-full h-[47px] pl-2 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                       />
                     </div>
 
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">密码</div>
+                    <!-- 密码 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.password') }}
+                    </div>
                     <div class="mb-3">
                       <div class="relative">
                         <PasswordIcon
                           class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none"
                         />
+                        <!-- 请输入密码 -->
                         <input
                           v-model="formData.signin.password"
                           :type="showPassword.signin ? 'text' : 'password'"
-                          placeholder="Password"
+                          :placeholder="t('locales.common.enter_password')"
                           class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                         />
                         <button
@@ -158,71 +178,90 @@
                             :class="checkboxAnimating.rememberMe ? 'animate-bounce-forward' : ''"
                           />
                         </div>
-                        <span class="ml-1.5 text-xs text-text-2 font-[500]">记住我</span>
+                        <!-- 记住我 -->
+                        <span class="ml-1.5 text-xs text-text-2 font-[500]">{{
+                          t('locales.common.remember_me')
+                        }}</span>
                       </label>
+                      <!-- 忘记密码 -->
                       <a
                         href="#"
                         class="text-xs text-text-2 font-[500]"
                         @click.prevent="openResetPassword"
-                        >忘记密码?</a
+                        >{{ t('locales.common.forget_password') }}?</a
                       >
                     </div>
 
+                    <!-- 登录 -->
                     <button
                       class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4"
                       @click="handleLogin"
                     >
-                      登入
+                      {{ t('locales.home.sign_In') }}
                     </button>
 
+                    <!-- 以访客身份 -->
                     <div class="text-center text-sm font-[500] text-theme-primary mt-5">
-                      以访客身份
+                      {{ t('locales.common.continue') }}
                     </div>
                   </template>
 
                   <template v-else-if="activeTab === 'signup'">
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">账号</div>
+                    <!-- 账号 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.account') }}
+                    </div>
                     <div class="mb-3">
+                      <!-- 请输入账号 -->
                       <input
                         v-model="formData.signup.account"
                         type="text"
-                        placeholder="Account"
+                        :placeholder="t('locales.common.enter_account')"
                         class="w-full h-[47px] pl-2 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                       />
                     </div>
 
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">验证码</div>
+                    <!-- 验证码 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.verification') }}
+                    </div>
                     <div class="mb-3">
                       <div class="relative">
                         <SafeIcon
                           class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none"
                         />
+                        <!-- 请输入验证码 -->
                         <input
                           v-model="formData.signup.code"
                           type="text"
-                          placeholder="Code"
+                          :placeholder="t('locales.common.enter_verification')"
                           class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                         />
+                        <!-- 获取验证码 -->
                         <button
                           type="button"
                           class="absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-xs font-[500] rounded-lg"
                           @click="handleSendCode"
                         >
-                          Get Code
+                          {{ t('locales.common.get_code') }}
                         </button>
                       </div>
                     </div>
 
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">密码</div>
+                    <!-- 密码 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.password') }}
+                    </div>
                     <div class="mb-3">
                       <div class="relative">
                         <PasswordIcon
                           class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none"
                         />
+                        <!-- 请输入密码 -->
                         <input
                           v-model="formData.signup.password"
                           :type="showPassword.signup ? 'text' : 'password'"
-                          placeholder="Password"
+                          :placeholder="t('locales.common.enter_password')"
                           class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                         />
                         <button
@@ -236,16 +275,20 @@
                       </div>
                     </div>
 
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">确认密码</div>
+                    <!-- 确认密码 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.confirm_password') }}
+                    </div>
                     <div class="mb-10">
                       <div class="relative">
                         <PasswordIcon
                           class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none"
                         />
+                        <!-- 请输入确认密码 -->
                         <input
                           v-model="formData.signup.confirmPassword"
                           :type="showConfirmPassword ? 'text' : 'password'"
-                          placeholder="Confirm Password"
+                          :placeholder="t('locales.common.enter_confirm_password')"
                           class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                         />
                         <button
@@ -264,11 +307,13 @@
                       class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4"
                       @click="handleRegister"
                     >
-                      注册
+                      <!-- 注册 -->
+                      {{ t('locales.home.sign_Up') }}
                     </button>
 
+                    <!-- 以访客身份 -->
                     <div class="text-center text-sm font-[500] text-theme-primary mt-5">
-                      以访客身份
+                      {{ t('locales.common.continue') }}
                     </div>
                   </template>
 
@@ -299,7 +344,9 @@ import SafeIcon from '@/static/svg/login/safe.svg?component'
 import PasswordIcon from '@/static/svg/login/password.svg?component'
 import CheckIcon from '@/static/svg/login/check.svg?component'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 interface Props {
   visible: boolean
   defaultTab?: 'signin' | 'signup'
