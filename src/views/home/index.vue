@@ -200,9 +200,9 @@
       </div>
     </div>
     <div>
-      <GameList />
+      <GameList :title="$t('home.BCOriginals')" />
       <EventList />
-      <GameList />
+      <GameList :title="$t('home.BCOriginals')" />
     </div>
     <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
       <div class="w-full flex items-center justify-between px-[22px] pb-4 pt-3 lg:!hidden">
