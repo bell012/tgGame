@@ -50,41 +50,55 @@
 
               <div class="mt-6">
                 <div class="mb-3 mt-6 flex items-stretch justify-between">
-                  <div class="flex-1 flex flex-col items-center justify-center px-2">
+                  <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
                       <GiftIcon class="w-5 h-5 fill-none" />
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">470%</span>
                     </div>
-                    <div class="text-[10px] text-text-2 mt-2 text-center">首存奖金</div>
+                    <!-- 首存奖金 -->
+                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                      {{ t('locales.common.welcome_deposit_bonus') }}
+                    </div>
                   </div>
 
                   <div class="w-px bg-[#e4eaf019]"></div>
 
-                  <div class="flex-1 flex flex-col items-center justify-center px-2">
+                  <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
                       <TurntableIcon class="w-5 h-5 fill-none" />
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">5 BTC</span>
                     </div>
-                    <div class="text-[10px] text-text-2 mt-2 text-center">每日免费幸运旋转</div>
+                    <!-- 每日免费幸运旋转 -->
+                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                      {{ t('locales.common.free_daily_lucky_spin') }}
+                    </div>
                   </div>
 
                   <div class="w-px bg-[#e4eaf019]"></div>
 
-                  <div class="flex-1 flex flex-col items-center justify-center px-2">
+                  <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
                       <FreePerksIcon class="w-5 h-5 fill-none" />
-                      <span class="text-[14px] font-[800] text-text-1 ml-1.5">免费福利</span>
+                      <!-- 免费福利 -->
+                      <span class="text-[14px] font-[800] text-text-1 ml-1.5">
+                        {{ t('locales.common.free_perks') }}
+                      </span>
                     </div>
-                    <div class="text-[10px] text-text-2 mt-2 text-center">每日免费参与奖金</div>
+                    <!-- 每日免费参与奖金 -->
+                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                      {{ t('locales.common.daily_free_rewards_bonuses') }}
+                    </div>
                   </div>
                 </div>
 
                 <div class="flex items-center justify-center flex-col mt-6">
+                  <!-- 保持桀骜不训 -->
                   <h2 class="w-full text-center text-[36px] font-[800] text-text-1 mb-1">
-                    保持桀骜不训
+                    {{ t('locales.common.stay_untamed') }}
                   </h2>
+                  <!-- 注册并获得欢迎奖金 -->
                   <p class="w-full text-center text-[16px] font-[600] text-text-1">
-                    注册并获得欢迎奖金
+                    {{ t('locales.common.sign_up_get_welcome_bonus') }}
                   </p>
                 </div>
               </div>
@@ -125,41 +139,55 @@
 
               <div class="mt-6">
                 <div class="mb-3 mt-6 flex items-stretch justify-between">
-                  <div class="flex-1 flex flex-col items-center justify-center px-2">
+                  <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
                       <GiftIcon class="w-5 h-5 fill-none" />
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">470%</span>
                     </div>
-                    <div class="text-[10px] text-text-2 mt-2 text-center">首存奖金</div>
+                    <!-- 首存奖金 -->
+                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                      {{ t('locales.common.welcome_deposit_bonus') }}
+                    </div>
                   </div>
 
                   <div class="w-px bg-[#e4eaf019]"></div>
 
-                  <div class="flex-1 flex flex-col items-center justify-center px-2">
+                  <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
                       <TurntableIcon class="w-5 h-5 fill-none" />
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">5 BTC</span>
                     </div>
-                    <div class="text-[10px] text-text-2 mt-2 text-center">每日免费幸运旋转</div>
+                    <!-- 每日免费幸运旋转 -->
+                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                      {{ t('locales.common.free_daily_lucky_spin') }}
+                    </div>
                   </div>
 
                   <div class="w-px bg-[#e4eaf019]"></div>
 
-                  <div class="flex-1 flex flex-col items-center justify-center px-2">
+                  <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
                       <FreePerksIcon class="w-5 h-5 fill-none" />
-                      <span class="text-[14px] font-[800] text-text-1 ml-1.5">免费福利</span>
+                      <!-- 免费福利 -->
+                      <span class="text-[14px] font-[800] text-text-1 ml-1.5">{{
+                        t('locales.common.free_perks')
+                      }}</span>
                     </div>
-                    <div class="text-[10px] text-text-2 mt-2 text-center">每日免费参与奖金</div>
+                    <!-- 每日免费参与奖金 -->
+                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                      {{ t('locales.common.daily_free_rewards_bonuses') }}
+                    </div>
                   </div>
                 </div>
 
                 <div class="flex items-center justify-center flex-col mt-6">
+                  <!-- 保持桀骜不训 -->
                   <h2 class="w-full text-center text-[36px] font-[800] text-text-1 mb-1">
-                    保持桀骜不训
+                    {{ t('locales.common.stay_untamed') }}
                   </h2>
+                  <!-- 注册并获得欢迎奖金 -->
                   <p class="w-full text-center text-[16px] font-[600] text-text-1">
-                    注册并获得欢迎奖金
+                    {{ t('locales.common.sign_up_get_welcome_bonus') }}
                   </p>
                 </div>
               </div>
@@ -188,10 +216,12 @@ import ResetPasswordMobile from './ResetPasswordMobile.vue'
 import ResetPasswordDesktop from './ResetPasswordDesktop.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useThemeStore } from '@/stores/theme'
+import { useI18n } from 'vue-i18n'
 
 // 是否为移动端
 const isMobile = useIsMobile()
 const themeStore = useThemeStore()
+const { t } = useI18n()
 
 // 主题动态背景图
 const pcBackgroundImage = computed(() => {
