@@ -162,6 +162,7 @@ import { casinoIcons } from '@/static/svg/casino'
 import pageStyle1 from './components/pageStyle1.vue'
 import pageStyle2 from './components/pageStyle2.vue'
 import pageStyle3 from './components/pageStyle3.vue'
+import pageStyle4 from './components/pageStyle4.vue'
 
 const { t } = useI18n()
 
@@ -183,8 +184,8 @@ const tabList = ref([
   {
     id: 1,
     style: 1,
-    name: '大厅',
-    icon: 'home',
+    name: 'Lobby',
+    icon: 'lobby',
     items: [
       'game1',
       'game2',
@@ -207,8 +208,8 @@ const tabList = ref([
   {
     id: 2,
     style: 2,
-    name: 'BC 原创',
-    icon: 'bc',
+    name: 'TG Originals',
+    icon: 'tg_originals',
     items: [
       'game1',
       'game2',
@@ -230,27 +231,9 @@ const tabList = ref([
   },
   {
     id: 3,
-    style: 3,
-    name: '老虎机',
-    icon: 'slots',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10'
-    ]
-  },
-  {
-    id: 4,
-    style: 4,
-    name: '扑克',
-    icon: 'poker',
+    style: 2,
+    name: 'Hot Games',
+    icon: 'hot_games',
     items: [
       'game1',
       'game2',
@@ -271,10 +254,88 @@ const tabList = ref([
     ]
   },
   {
+    id: 4,
+    style: 3,
+    name: 'Slots',
+    icon: 'slots',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10'
+    ]
+  },
+  {
     id: 5,
-    style: 5,
-    name: '供应商',
-    icon: 'favorites_full',
+    style: 3,
+    name: 'Live Casino',
+    icon: 'themes',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12'
+    ]
+  },
+  {
+    id: 6,
+    style: 3,
+    name: 'Table Games',
+    icon: 'table_games',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12'
+    ]
+  },
+  {
+    id: 7,
+    style: 3,
+    name: 'Fishing',
+    icon: 'fishing',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12'
+    ]
+  },
+  {
+    id: 8,
+    style: 4,
+    name: 'Game Provider',
+    icon: 'game_provider',
     items: [
       'game1',
       'game2',
@@ -291,26 +352,6 @@ const tabList = ref([
       'game13',
       'game14'
     ]
-  },
-  {
-    id: 6,
-    style: 6,
-    name: '游戏主题',
-    icon: 'themes',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10',
-      'game11',
-      'game12'
-    ]
   }
 ])
 
@@ -322,6 +363,8 @@ const getPageStyle = computed(() => {
       return pageStyle2
     case 3:
       return pageStyle3
+    case 4:
+      return pageStyle4
     default:
       return pageStyle2
   }
