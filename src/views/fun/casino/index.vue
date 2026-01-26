@@ -157,12 +157,20 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import LoginModal from '@/components/login_register/LoginModal.vue'
+import { navigateTo } from '@/utils/router'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import pageStyle1 from './components/pageStyle1.vue'
 import pageStyle2 from './components/pageStyle2.vue'
 import pageStyle3 from './components/pageStyle3.vue'
 import pageStyle4 from './components/pageStyle4.vue'
+interface Props {
+  tabKey?: string | undefined
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  tabKey: undefined
+})
 
 const { t } = useI18n()
 
@@ -178,13 +186,12 @@ const suggestedArr = ref<string[]>([
   'Lucky Coming',
   'The Llama Adventure'
 ])
-const currentTabId = ref(1)
-const currentTabStyle = ref(1)
 const tabList = ref([
   {
     id: 1,
     style: 1,
     name: 'Lobby',
+    key: '',
     icon: 'lobby',
     items: [
       'game1',
@@ -209,6 +216,7 @@ const tabList = ref([
     id: 2,
     style: 2,
     name: 'TG Originals',
+    key: 'originate',
     icon: 'tg_originals',
     items: [
       'game1',
@@ -233,6 +241,7 @@ const tabList = ref([
     id: 3,
     style: 2,
     name: 'Hot Games',
+    key: 'hot_games',
     icon: 'hot_games',
     items: [
       'game1',
@@ -257,6 +266,7 @@ const tabList = ref([
     id: 4,
     style: 3,
     name: 'Slots',
+    key: 'slots',
     icon: 'slots',
     items: [
       'game1',
@@ -275,7 +285,8 @@ const tabList = ref([
     id: 5,
     style: 3,
     name: 'Live Casino',
-    icon: 'themes',
+    key: 'live_casino',
+    icon: 'live_casino',
     items: [
       'game1',
       'game2',
@@ -295,6 +306,7 @@ const tabList = ref([
     id: 6,
     style: 3,
     name: 'Table Games',
+    key: 'table_games',
     icon: 'table_games',
     items: [
       'game1',
@@ -315,6 +327,7 @@ const tabList = ref([
     id: 7,
     style: 3,
     name: 'Fishing',
+    key: 'fishing',
     icon: 'fishing',
     items: [
       'game1',
@@ -335,6 +348,7 @@ const tabList = ref([
     id: 8,
     style: 4,
     name: 'Game Provider',
+    key: 'game_provider',
     icon: 'game_provider',
     items: [
       'game1',
@@ -355,6 +369,12 @@ const tabList = ref([
   }
 ])
 
+const getCurrentTab = computed(() => {
+  const key = props.tabKey ?? ''
+  return tabList.value.find(tab => tab.key === key)
+})
+const currentTabId = computed(() => getCurrentTab.value?.id ?? 1)
+const currentTabStyle = computed(() => getCurrentTab.value?.style ?? 1)
 const getPageStyle = computed(() => {
   switch (currentTabStyle.value) {
     case 1:
@@ -371,8 +391,8 @@ const getPageStyle = computed(() => {
 })
 
 const onTabButton = (tab: any) => {
-  currentTabId.value = tab.id
-  currentTabStyle.value = tab.style
+  if (tab.key === '') return navigateTo('/casino')
+  navigateTo(`/casino/${tab.key}`)
 }
 
 const onSearch = () => {
