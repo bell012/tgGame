@@ -105,18 +105,18 @@
           :key="idx"
         >
           <div class="relative mb-1 w-full rounded-lg pt-[133%]">
-            <img src="./img/gameImg.png" class="absolute left-0 top-0 w-full rounded-lg" />
+            <img :src="item.src" class="absolute left-0 top-0 w-full rounded-lg" />
           </div>
           <div class="w-[118%]">
             <div class="flex items-center justify-center font-extrabold text-secondary">
-              <img class="size-[0.875rem]" :src="icon" /><span class="ellipsis -ml-0.5 text-xxs"
-                >BETPORTALL</span
-              >
+              <img class="size-[0.875rem]" :src="icon" /><span class="ellipsis -ml-0.5 text-xxs">{{
+                item.name
+              }}</span>
             </div>
             <div
               class="whitespace-nowrap text-nowrap text-center font-extrabold text-brand text-xxs"
             >
-              {{ item }}
+              {{ item.number }}
             </div>
           </div>
         </a>
@@ -127,16 +127,15 @@
         <div class="flex w-full flex-col items-stretch gap-2 sm:mt-6 lg:!gap-3">
           <div class="flex flex-3 gap-2 lg:!gap-3">
             <button
-              class="button button-m center relative h-32 flex-1 overflow-hidden rounded-xl bg-layer4 p-1.5 font-extrabold sm:h-[176px] sm:p-5 col-span-2 col-start-1"
+              class="button button-m center relative h-32 flex-1 overflow-hidden rounded-xl p-[10px] font-extrabold sm:h-[176px] sm:p-5 col-span-2 col-start-1"
               type="button"
-              style="background-image: linear-gradient(to left, rgb(44, 80, 64), transparent 75%)"
             >
-              <img class="absolute right-5 top-0 h-[100%]" src="./img/casino.png" />
+              <img class="absolute right-[1px] top-0 h-[100%]" src="./img/casino.png" />
               <div class="relative z-10 flex h-full flex-auto flex-col">
                 <div class="flex items-center">
                   <div class="color_icon_img casino" style="transform: scale(1)"></div>
-                  <img :src="icon5" alt="" />
-                  <h2 class="ml-0.5 text-sm sm:text-[22px]">{{ $t('home.Casino') }}</h2>
+                  <img :src="icon5" alt="" class="w-[19px]" />
+                  <h2 class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Casino') }}</h2>
                 </div>
                 <div
                   class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
@@ -146,18 +145,15 @@
               </div>
             </button>
             <button
-              class="button button-m center relative h-32 flex-1 overflow-hidden rounded-xl bg-layer4 p-1.5 font-extrabold sm:h-[176px] sm:p-5 col-span-2 col-start-1"
+              class="button button-m center relative h-32 flex-1 overflow-hidden p-[10px] rounded-xl font-extrabold sm:h-[176px] sm:p-5 col-start-1"
               type="button"
-              style="
-                background: linear-gradient(270deg, #582e59 0%, rgba(88, 46, 89, 0) 75%), #323738;
-              "
             >
-              <img class="absolute right-5 top-0 h-[100%]" src="./img/sports.png" />
+              <img class="absolute right-[1px] top-0 h-[100%]" src="./img/sports.png" />
               <div class="relative z-10 flex h-full flex-auto flex-col">
                 <div class="flex items-center">
                   <div class="color_icon_img sports" style="transform: scale(1)"></div>
-                  <img :src="icon6" alt="" />
-                  <span class="ml-0.5 text-sm sm:text-[22px]">{{ $t('home.Sports') }}</span>
+                  <img :src="icon6" alt="" class="w-[19px]" />
+                  <span class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Sports') }}</span>
                 </div>
                 <div
                   class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
@@ -171,7 +167,7 @@
           <div class="flex flex-4 flex-wrap gap-2 lg:!gap-3">
             <button
               v-for="value in listImg"
-              class="button button-m center relative h-24 flex-1 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px]"
+              class="button button-m center relative h-20 flex-1 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px]"
               type="button"
               style="
                 background-image: linear-gradient(
@@ -182,7 +178,7 @@
               "
             >
               <img
-                class="absolute left-[50%] top-0 h-full -translate-x-[10%] gameTypeImg"
+                class="absolute top-[10%] left-1/2 -translate-x-1/2 gameTypeImg"
                 :src="value.img"
               />
               <div class="pcState absolute left-2 top-2 items-center flex">
@@ -191,8 +187,8 @@
                 </div>
                 <h2 class="ml-1 text-lg font-extrabold">{{ value.name }}</h2>
               </div>
-              <div class="absolute bottom-2 left-0 block w-full text-center h5State">
-                <span class="text-sm font-extrabold">{{ value.name }}</span>
+              <div class="absolute bottom-1 left-0 block w-full text-center h5State">
+                <span class="text-xs font-extrabold">{{ value.name }}</span>
               </div>
             </button>
           </div>
@@ -302,13 +298,21 @@ import GROU from '@/static/svg/coin/GrouPay.svg?url'
 import SHOPEE from '@/static/svg/coin/shopeePay.svg?url'
 import dotC8z5Aoh from '@/static/svg/coin/dot-C8z5Aoh_.svg?url'
 
-import poker from './img/poker.png?url'
-import racing from './img/racing.png?url'
-import lottery from './img/lottery.png?url'
-import updown from './img/updown.png?url'
-import bingo from './img/bingo.png?url'
+import contract from '@/static/img/home/contract.png'
+import slots from '@/static/img/home/slots.png'
+import fishing from '@/static/img/home/fishing.png'
+import live from '@/static/img/home/live.png'
+import combination from '@/static/img/home/combination.png'
 import CommonFooter from '@/components/commonFooter.vue'
 import LoginModal from '@/components/login_register/LoginModal.vue'
+
+import img_1 from '@/static/img/recent/img_1.png'
+import img_2 from '@/static/img/recent/img_2.png'
+import img_3 from '@/static/img/recent/img_3.png'
+import img_4 from '@/static/img/recent/img_4.png'
+import img_5 from '@/static/img/recent/img_5.png'
+import img_6 from '@/static/img/recent/img_6.png'
+import img_7 from '@/static/img/recent/img_7.png'
 
 const { t } = useI18n()
 
@@ -321,28 +325,28 @@ onMounted(() => {
 console.log(isMobile.value, 'isMobile')
 const listImg = computed(() => [
   {
-    name: t('home.Poker'),
-    img: poker,
+    name: t('home.contract'),
+    img: contract,
     icon: icon
   },
   {
-    name: t('home.Racing'),
-    img: racing,
+    name: t('home.slots'),
+    img: slots,
     icon: icon1
   },
   {
-    name: t('home.Lottery'),
-    img: lottery,
+    name: t('home.fishing'),
+    img: fishing,
     icon: icon2
   },
   {
-    name: t('home.Options'),
-    img: updown,
+    name: t('home.live'),
+    img: live,
     icon: icon3
   },
   {
-    name: t('home.Bingo'),
-    img: bingo,
+    name: t('home.lottery'),
+    img: combination,
     icon: icon4
   }
 ])
@@ -352,8 +356,16 @@ const carousel = (val: any) => {
   console.log(carouselVal.value)
 }
 
-const list = ref([1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6])
-const duplicatedList = computed(() => [...list.value, ...list.value])
+const list = ref([img_1, img_2, img_3, img_4, img_5, img_6, img_7])
+const objectSource = ref(
+  list.value.map(num => ({
+    src: num,
+    name: `Hidden`,
+    number: `188.88K USD`
+  }))
+)
+console.log(objectSource.value, 'objectSource')
+const duplicatedList = computed(() => [...objectSource.value, ...objectSource.value])
 </script>
 
 <style scoped lang="scss">
@@ -434,8 +446,7 @@ const duplicatedList = computed(() => [...list.value, ...list.value])
     display: none;
   }
   .gameTypeImg {
-    left: 11% !important;
-    height: 70% !important;
+    width: 69%;
   }
 }
 </style>
