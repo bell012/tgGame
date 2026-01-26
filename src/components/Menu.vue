@@ -131,7 +131,7 @@
               >
                 <div class="flex items-center">
                   <div class="w-10 h-10 flex items-center justify-center">
-                    <component :is="item.icon" class="w-6 h-6 fill-none" />
+                    <component :is="item.icon" class="w-6 h-6 fill-text-2" />
                   </div>
                   <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
                 </div>
@@ -633,7 +633,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
     name: t('locales.sidebar_menu.casino.title'),
     icon: side.casinoIcon,
     handler: () => {
-      console.log('点击娱乐城')
+      navigateTo('/casino')
     },
     children: [
       {
@@ -653,46 +653,56 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
         name: t('locales.sidebar_menu.casino.children.tg_originals'),
         icon: casino.logo,
         handler: () => {
-          navigateTo('/originate')
+          navigateTo('/casino/originate')
         }
       },
       {
         id: 'casino_hot_games',
         name: t('locales.sidebar_menu.casino.children.hot_games'),
         icon: casino.hot_games,
-        handler: () => console.log('点击 热门游戏')
+        handler: () => {
+          navigateTo('/casino/hot_games')
+        }
       },
       {
         id: 'casino_slots',
         name: t('locales.sidebar_menu.casino.children.slots'),
         icon: casino.slots,
-        handler: () => console.log('点击 电子游戏')
+        handler: () => {
+          navigateTo('/casino/slots')
+        }
       },
       {
         id: 'casino_live_casino',
         name: t('locales.sidebar_menu.casino.children.live_casino'),
         icon: casino.live_casino,
         handler: () => {
-          navigateTo('/exclusive')
+          navigateTo('/casino/live_casino')
         }
       },
       {
         id: 'casino_table_games',
         name: t('locales.sidebar_menu.casino.children.table_games'),
         icon: casino.poker,
-        handler: () => console.log('点击 棋牌游戏')
+        handler: () => {
+          navigateTo('/casino/table_games')
+        }
       },
       {
         id: 'casino_fishing',
         name: t('locales.sidebar_menu.casino.children.fishing'),
         icon: casino.fishing,
-        handler: () => console.log('点击 捕鱼游戏')
+        handler: () => {
+          navigateTo('/casino/fishing')
+        }
       },
       {
         id: 'casino_game_providers',
         name: t('locales.sidebar_menu.casino.children.game_providers'),
         icon: casino.game_providers,
-        handler: () => console.log('点击 游戏厂商')
+        handler: () => {
+          navigateTo('/casino/game_provider')
+        }
       }
     ]
   },

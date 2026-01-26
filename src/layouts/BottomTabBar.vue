@@ -38,7 +38,7 @@ const menus = computed(() => [
     icon: 'menu',
     route: '/menu',
     handler: () => navigateTo('/menu'),
-    active: isActive('/menu')
+    active: isActive('/menu', true)
   },
   {
     id: 'explore',
@@ -46,7 +46,7 @@ const menus = computed(() => [
     icon: 'explore',
     route: '/explore',
     handler: () => navigateTo('/explore'),
-    active: isActive('/explore')
+    active: isActive('/explore', true)
   },
   {
     id: 'casino',
@@ -70,13 +70,21 @@ const menus = computed(() => [
     icon: 'chat',
     route: '/chat-public',
     handler: () => navigateTo('/chat-public'),
-    active: isActive('/chat-public')
+    active: isActive('/chat-public', true)
   }
 ])
 
-const isActive = (path: string) => {
+/**
+ * 判断某个 path 是否激活
+ * @param path 父路径，例如 '/a'
+ * @param exact 是否精确匹配（默认 false）
+ */
+const isActive = (path: string, exact = false) => {
   const currentPath = route.path.replace(/^\/(zh|en)/, '')
-  return computed(() => currentPath === path).value
+  return computed(() => {
+    if (exact) return currentPath === path
+    return currentPath === path || currentPath.startsWith(path + '/')
+  }).value
 }
 </script>
 
