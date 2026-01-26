@@ -71,11 +71,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import TopInput from '@/components/explore/TopInput.vue'
-import SortSelect from '@/components/explore/SortSelect.vue'
-import ProviderSelect from '@/components/explore/ProviderSelect.vue'
+import TopInput from '@/components/explore/mobile/TopInput.vue'
+import SortSelect from '@/components/explore/mobile/SortSelect.vue'
+import ProviderSelect from '@/components/explore/mobile/ProviderSelect.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
-import LiveList from '@/components/explore/LiveList.vue'
+import LiveList from '@/components/explore/mobile/LiveList.vue'
 import g1Img from '@/static/img/explore/g1.png'
 import g1aImg from '@/static/img/explore/g1a.png'
 import g2Img from '@/static/img/explore/g2.png'

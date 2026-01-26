@@ -1,10 +1,10 @@
 <template>
-  <Teleport to="body">
+  <Teleport :to="isMobile ? 'body' : 'body'">
     <!-- 遮罩淡入淡出 -->
     <transition name="popup-fade">
       <div
         v-show="visible"
-        class="tp-mask fixed z-[9998] inset-0 bg-[var(--color-mask-60)]"
+        class="tp-mask fixed z-[9999] inset-0 bg-[var(--color-mask-60)]"
         @click.self="close"
       />
     </transition>
@@ -48,6 +48,7 @@
 import CloseIcon from '@/static/svg/close.svg?component'
 import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
+import { useIsMobile } from '@/composables/useMediaQuery'
 
 type OptionItem = { id: number; name: string }
 
@@ -61,6 +62,8 @@ const emit = defineEmits<{
   'update:visible': [val: boolean]
   confirm: [val: OptionItem]
 }>()
+
+const isMobile = useIsMobile()
 
 const close = () => emit('update:visible', false)
 const isSelected = (item: OptionItem) => item.id === props.selectedId
