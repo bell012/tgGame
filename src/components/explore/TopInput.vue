@@ -5,7 +5,7 @@
       class="h-[26px] flex items-center absolute left-2.5 top-1/2 -translate-y-1/2"
       @click="typeVisible = true"
     >
-      <div class="text-[12px] font-[700] mr-[6px]">{{ currentType.name }}</div>
+      <div class="text-[12px] font-[700] mr-[6px] cursor-pointer">{{ currentType.name }}</div>
       <pull_down class="w-2 h-2" />
       <div class="w-[1px] h-[26px] mx-2.5 bg-[var(--color-border-level-1)]"></div>
       <SearchIcon class="w-[18px] h-[18px] fill-none stroke-text-2 opacity-50" />
@@ -93,25 +93,38 @@
         </div>
       </div>
     </div>
+    <!-- 搜索类型弹窗 -->
+    <Teleport to="body" v-if="isMobile">
+      <TypePopup
+        v-model:visible="typeVisible"
+        :typeList="typeList"
+        :selectedId="currentType.id"
+        @confirm="handleTypeConfirm"
+      />
+    </Teleport>
+    <TypePopup
+      v-else
+      class="desktop-type-popup"
+      v-model:visible="typeVisible"
+      :typeList="typeList"
+      :selectedId="currentType.id"
+      @confirm="handleTypeConfirm"
+      desktop
+    />
   </div>
-
-  <!-- 搜索类型弹窗 -->
-  <TypePopup
-    v-model:visible="typeVisible"
-    :typeList="typeList"
-    :selectedId="currentType.id"
-    @confirm="handleTypeConfirm"
-  />
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onBeforeUnmount } from 'vue'
-import TypePopup from '@/components/explore/mobile/TypePopup.vue'
+import TypePopup from '@/components/explore/TypePopup.vue'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import pull_down from '@/static/svg/explore/pull-down.svg?component'
 import { useI18n } from 'vue-i18n'
+import { useIsMobile } from '@/composables/useMediaQuery'
 const { t } = useI18n()
+
+const isMobile = useIsMobile()
 
 /* ===================== 搜索输入 & 历史数据 ===================== */
 const keyword = ref('') // 搜索框输入值
@@ -196,4 +209,11 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.desktop-type-popup {
+  top: calc(100% + 10px);
+  position: absolute;
+  left: 0;
+  width: 288px;
+}
+</style>
