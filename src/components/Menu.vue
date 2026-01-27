@@ -361,7 +361,7 @@
       <!-- 主题切换 -->
       <div
         v-if="!isCollapsed"
-        class="flex items-center justify-between h-10 bg-bg-2 rounded-lg cursor-pointer mt-2 p-0.5"
+        class="flex items-center justify-between h-10 bg-bg-2 rounded-lg cursor-pointer mt-2 p-0.5 sm:mb-4"
       >
         <button
           :class="[
