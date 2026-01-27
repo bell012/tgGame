@@ -1,6 +1,7 @@
 <template>
-  <div :class="['home max-w-[1248px] mx-auto py-4', { 'px-4': !isMobile }]">
-    <img src="./headBack.png" />
+  <div class="home max-w-[1248px] mx-auto px-0 py-0 sm:px-4 sm:py-4">
+    <img src="./headBack_h5.png" class="sm:hidden" />
+    <img src="./headBack.png" class="hidden sm:block" />
     <!-- {{ $t('locales.home.home') }} -->
     <div class="flex items-center sm:mt-6 h-8">
       <h2 class="flex items-center text-base font-extrabold text-primary">
@@ -215,7 +216,7 @@
             <img class="w-20" :src="GCASH" />
             <img class="w-14" :src="VISA" />
             <img class="w-13" :src="GROU" />
-            <img class="w-23" :src="SHOPEE" />
+            <img class="w-23 hidden sm:block" :src="SHOPEE" />
           </div>
           <div class="flex items-center justify-center mt-4 gap-11 lg:!mt-0">
             <div class="text-lg font-extrabold sm:text-2xl">
@@ -232,7 +233,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import EventList from './components/eventList.vue'
@@ -271,13 +272,6 @@ import bingo from './img/bingo.png?url'
 import CommonFooter from '@/components/commonFooter.vue'
 
 const { t } = useI18n()
-
-const isMobile = ref(false)
-
-onMounted(() => {
-  isMobile.value = window.matchMedia('(max-width: 640px)').matches
-})
-console.log(isMobile.value, 'isMobile')
 const listImg = computed(() => [
   {
     name: t('home.Poker'),
