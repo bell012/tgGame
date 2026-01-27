@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col w-full overflow-hidden">
     <!-- 1. 标题栏 -->
-    <div class="flex items-center justify-between mb-2.5">
+    <div class="flex items-center justify-between mb-2.5 mt-2.5">
       <div class="font-bold text-text-1 text-sm">足球</div>
       <div
         class="px-2 py-1 bg-[var(--color-background-level-3)] flex items-center rounded-md cursor-pointer"
@@ -10,17 +10,16 @@
         <RightArrow class="w-2 h-2 fill-none stroke-text-1" />
       </div>
     </div>
-
     <!-- 2. 横向滚动容器 -->
     <!-- snap-x snap-mandatory: 开启滚动捕捉 -->
-    <div class="flex overflow-x-auto snap-x snap-mandatory gap-3 px-4">
+    <div class="flex overflow-x-auto snap-x snap-mandatory gap-3 px-0 scroll-container">
       <!-- 3. 单个卡片模块 -->
       <!-- w-[calc(100vw-28px)]:显示一屏 -->
-      <!-- snap-center: 停止滚动时自动居中对齐 -->
+      <!-- snap-start: 停止滚动时自动居左对齐 -->
       <div
         v-for="inx in 6"
         :key="inx"
-        class="shrink-0 w-[calc(100vw-28px)] snap-center px-2.5 py-2.5 flex flex-col bg-[var(--color-background-level-2)] rounded-lg"
+        class="w-full flex-none lg:w-1/2 xl:w-1/3 shrink-0 snap-start px-2.5 py-2.5 flex flex-col bg-[var(--color-background-level-2)] rounded-lg"
       >
         <!-- 卡片顶部：联赛信息 -->
         <div class="flex items-center justify-between mb-2.5">
@@ -104,4 +103,11 @@ import PlayIcon from '@/static/svg/explore/play.svg?component'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 </script>
-<style scoped lang="scss"></style>
+<style lang="scss" scoped>
+/* 适用于特定元素的滚动条 */
+.scroll-container {
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-background-level-2) var(--color-background-level-1);
+}
+</style>
