@@ -34,7 +34,7 @@
     <!-- 搜索记录框 -->
     <div
       v-if="isOpen"
-      class="absolute panel left-0 top-[50px] bg-[var(--color-background-level-2)] border border-[var(--color-border-level-1)] w-full rounded-lg px-3.5 pt-5 pb-3 flex flex-col items-center"
+      class="absolute panel left-0 top-[50px] bg-[var(--color-background-level-2)] z-[99] border border-[var(--color-border-level-1)] w-full rounded-lg px-3.5 pt-5 pb-3 flex flex-col items-center"
     >
       <div
         class="absolute -right-1.5 -top-1.5 w-5 h-5 bg-[var(--color-background-level-3)] flex items-center justify-center rounded-3xl"
@@ -141,7 +141,7 @@ let timer: ReturnType<typeof setTimeout> | null = null
 let mute = false
 watch(keyword, () => {
   if (mute) return (mute = false)
-  clearTimeout(timer)
+  if (timer !== null) clearTimeout(timer)
   timer = setTimeout(onSearch, 1500)
 })
 /* ===================== end===================== */
@@ -155,11 +155,18 @@ const typeList = ref([
 const currentType = ref(typeList.value[0]) // 当前选中的类型
 const typeVisible = ref(false) // 类型弹窗显示隐藏
 
+const emit = defineEmits<{
+  'change-type': [id: number]
+}>()
+
+type TypeItem = { id: number; name: string }
+
 // 类型选择确认
-const handleTypeConfirm = (_val: object) => {
+const handleTypeConfirm = (_val: TypeItem) => {
   currentType.value = _val
   console.log('-------', _val)
   typeVisible.value = false
+  emit('change-type', _val.id)
 }
 /* ===================== end===================== */
 
@@ -172,7 +179,7 @@ const deleteItme = () => {
 // 点击搜索历史和建议
 const goSearch = (item: string) => {
   mute = true
-  clearTimeout(timer)
+  if (timer !== null) clearTimeout(timer)
   keyword.value = item
   isOpen.value = false
   onSearch()

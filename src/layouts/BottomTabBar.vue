@@ -83,7 +83,7 @@ const isActive = (path: string) => {
 <style scoped>
 .bottom-tab-bar {
   position: fixed;
-  bottom: 0;
+  bottom: -2px;
   left: 0;
   right: 0;
   height: v-bind('layoutStore.BOTTOM_TAB_HEIGHT + "px"');
