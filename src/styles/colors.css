@@ -127,12 +127,12 @@
   --color-input-level-3: #ffffff;
 
   /* ========== 首页分类卡片背景色 (Game Category) - 浅色模式 - 渐变色 ========== */
-  --color-game-casino: linear-gradient(to right, #ECFFF5, #BFF9DC);
-  --color-game-sports: linear-gradient(to right, #FFEEFE, #F9AFF6);
-  --color-game-contract: linear-gradient(to right, #FFF8EB, #FFE9BE);
-  --color-game-slots: linear-gradient(to right, #FFE9E9, #FFBEBE);
-  --color-game-fishing: linear-gradient(to right, #E6F5FF, #BEE4FF);
-  --color-game-live: linear-gradient(to right, #E4FFEA, #BEFFCB);
-  --color-game-lottery: linear-gradient(to right, #E6F2FF, #BEDDFF);
-  --color-game-table: linear-gradient(to right, #F3E7FF, #DEBEFF);
+  --color-game-casino: linear-gradient(to right, #ecfff5, #bff9dc);
+  --color-game-sports: linear-gradient(to right, #ffeefe, #f9aff6);
+  --color-game-contract: linear-gradient(to right, #fff8eb, #ffe9be);
+  --color-game-slots: linear-gradient(to right, #ffe9e9, #ffbebe);
+  --color-game-fishing: linear-gradient(to right, #e6f5ff, #bee4ff);
+  --color-game-live: linear-gradient(to right, #e4ffea, #beffcb);
+  --color-game-lottery: linear-gradient(to right, #e6f2ff, #beddff);
+  --color-game-table: linear-gradient(to right, #f3e7ff, #debeff);
 }
