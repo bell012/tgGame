@@ -72,7 +72,7 @@ const confirm = (item: OptionItem) => {
 </script>
 
 <style scoped lang="scss">
-@use '../../styles/mixins' as *;
+@use '../../../styles/mixins' as *;
 /* 面板 */
 .tp-panel {
   padding-bottom: env(safe-area-inset-bottom);
