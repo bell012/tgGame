@@ -10,7 +10,6 @@
       <div class="w-[1px] h-[26px] mx-2.5 bg-[var(--color-border-level-1)]"></div>
       <SearchIcon class="w-[18px] h-[18px] fill-none stroke-text-2 opacity-50" />
     </div>
-
     <input
       v-model="keyword"
       type="text"
@@ -20,7 +19,6 @@
       @focus="isOpen = true"
       @blur="onBlur"
     />
-
     <button
       v-if="keyword"
       type="button"
@@ -30,7 +28,6 @@
     >
       <CloseIcon class="w-5 h-5 stroke-text-2" />
     </button>
-
     <!-- 搜索记录框 -->
     <div
       v-if="isOpen"
@@ -42,11 +39,9 @@
       >
         <CloseIcon class="w-4 h-4 stroke-text-2" />
       </div>
-
       <div class="text-xs text-[var(--color-text-level-2)]">
         Search requires at least 2 characters.
       </div>
-
       <!-- 历史记录 -->
       <div class="flex justify-between w-full text-xs my-2.5">
         <div class="font-bold">{{ t('locales.search.history') }}</div>
@@ -116,12 +111,13 @@
 
 <script setup lang="ts">
 import { ref, watch, onBeforeUnmount } from 'vue'
-import TypePopup from '@/components/explore/TypePopup.vue'
+import { useI18n } from 'vue-i18n'
+import TypePopup from './popup.vue'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import pull_down from '@/static/svg/explore/pull-down.svg?component'
-import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
+
 const { t } = useI18n()
 
 const isMobile = useIsMobile()
