@@ -71,7 +71,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import TopInput from '@/components/explore/mobile/TopInput.vue'
+import TopInput from '@/components/explore/TopInput.vue'
 import SortSelect from '@/components/explore/mobile/SortSelect.vue'
 import ProviderSelect from '@/components/explore/mobile/ProviderSelect.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
