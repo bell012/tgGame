@@ -47,12 +47,12 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
 
-type OptionItem = { id: number; name: string }
+type OptionItem = { id: string; name: string }
 
 const props = defineProps<{
   visible: boolean
   typeList: OptionItem[]
-  selectedId?: number
+  selectedId?: string
   desktop?: boolean
 }>()
 

@@ -5,7 +5,7 @@
       class="h-[26px] flex items-center absolute left-2.5 top-1/2 -translate-y-1/2"
       @click="typeVisible = true"
     >
-      <div class="text-[12px] font-[700] mr-[6px] cursor-pointer">{{ currentType.name }}</div>
+      <div class="text-[12px] font-[700] mr-[6px] cursor-pointer">{{ currentTypeName }}</div>
       <pull_down class="w-2 h-2" />
       <div class="w-[1px] h-[26px] mx-2.5 bg-[var(--color-border-level-1)]"></div>
       <SearchIcon class="w-[18px] h-[18px] fill-none stroke-text-2 opacity-50" />
@@ -92,8 +92,8 @@
     <Teleport to="body" v-if="isMobile">
       <TypePopup
         v-model:visible="typeVisible"
-        :typeList="typeList"
-        :selectedId="currentType.id"
+        :typeList="dataList"
+        :selectedId="currentType"
         @confirm="handleTypeConfirm"
       />
     </Teleport>
@@ -101,8 +101,8 @@
       v-else
       class="desktop-type-popup"
       v-model:visible="typeVisible"
-      :typeList="typeList"
-      :selectedId="currentType.id"
+      :typeList="dataList"
+      :selectedId="currentType"
       @confirm="handleTypeConfirm"
       desktop
     />
@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount } from 'vue'
+import { ref, watch, onBeforeUnmount, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TypePopup from './popup.vue'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
@@ -118,18 +118,31 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import pull_down from '@/static/svg/explore/pull-down.svg?component'
 import { useIsMobile } from '@/composables/useMediaQuery'
 
-const { t } = useI18n()
+type TypeItem = { id: string; name: string }
 
+const props = defineProps<{
+  dataList: TypeItem[]
+  defaultType: string
+}>()
+
+const emit = defineEmits<{
+  'change-type': [id: any]
+  search: [keyword: string]
+}>()
+
+const { t } = useI18n()
 const isMobile = useIsMobile()
 
-/* ===================== 搜索输入 & 历史数据 ===================== */
+const currentType = ref(props.defaultType)
+const typeVisible = ref(false)
 const keyword = ref('') // 搜索框输入值
 const history = ref(['1111', '2222', '3333', ' 4444', '555555', '6666']) // 本地搜索历史
-const isOpen = ref(false) // 搜索记录框显示隐藏
-/* ===================== end===================== */
-
-/* ===================== 搜索记录框控制 ===================== */
+const isOpen = ref(false)
 let downInPanel = false
+// 搜索防抖
+let timer: ReturnType<typeof setTimeout> | null = null
+let mute = false
+
 const onWrapDown = (e: MouseEvent) => {
   downInPanel = (e.target as HTMLElement).closest('.panel') != null
 }
@@ -138,48 +151,29 @@ const onBlur = () => {
   if (!downInPanel) isOpen.value = false
   downInPanel = false
 }
-/* ===================== end===================== */
 
-/* ===================== 搜索逻辑 ===================== */
 const onSearch = () => {
-  console.log('触发搜索', keyword.value)
+  emit('search', keyword.value)
 }
 
-// 搜索防抖
-let timer: ReturnType<typeof setTimeout> | null = null
-let mute = false
 watch(keyword, () => {
   if (mute) return (mute = false)
   if (timer !== null) clearTimeout(timer)
   timer = setTimeout(onSearch, 1500)
 })
-/* ===================== end===================== */
 
-/* ===================== 类型筛选 ===================== */
-const typeList = ref([
-  { id: 1, name: 'Casino' },
-  { id: 2, name: 'Sports' },
-  { id: 3, name: 'Lottery' }
-]) // 类型列表
-const currentType = ref(typeList.value[0]) // 当前选中的类型
-const typeVisible = ref(false) // 类型弹窗显示隐藏
-
-const emit = defineEmits<{
-  'change-type': [id: number]
-}>()
-
-type TypeItem = { id: number; name: string }
+const currentTypeName = computed(() => {
+  const item = props.dataList.find(i => i.id === currentType.value)
+  return item ? item.name : ''
+})
 
 // 类型选择确认
 const handleTypeConfirm = (_val: TypeItem) => {
-  currentType.value = _val
-  console.log('-------', _val)
+  currentType.value = _val.id
   typeVisible.value = false
   emit('change-type', _val.id)
 }
-/* ===================== end===================== */
 
-/* ===================== 搜索历史 ===================== */
 // 删除单条本地搜索记录
 const deleteItme = () => {
   console.log('删除单条')
@@ -193,9 +187,7 @@ const goSearch = (item: string) => {
   isOpen.value = false
   onSearch()
 }
-/* ===================== end===================== */
 
-// 清空输入框
 const clear = () => {
   keyword.value = ''
 }

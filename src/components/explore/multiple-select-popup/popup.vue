@@ -82,7 +82,7 @@ import { computed, ref } from 'vue'
 interface OptionItem {
   value: string
   label: string
-  [string: string]: string | number
+  [key: string]: string | number
 }
 
 const props = defineProps<{
