@@ -1,229 +1,365 @@
 <template>
-  <teleport to="body">
-    <transition name="drawer-mask">
-      <div
-        v-if="visible"
-        class="fixed inset-0 bg-black/60 z-[10000] overflow-hidden"
-        @click="handleClose"
-      >
-        <transition name="drawer-slide">
+  <LoginRegisterFormCore :default-tab="defaultTab">
+    <template
+      #default="{
+        activeTab,
+        showPassword,
+        showConfirmPassword,
+        formData,
+        checkboxAnimating,
+        setActiveTab,
+        togglePassword,
+        toggleConfirmPassword,
+        handleCheckboxClick,
+        handleLogin,
+        handleRegister,
+        handleSendCode,
+        openResetPassword
+      }"
+    >
+      <teleport to="body">
+        <transition name="drawer-mask">
           <div
-            v-if="showDrawer"
-            class="absolute right-0 top-0 h-full w-full bg-bg-1 overflow-y-auto shadow-2xl"
-            @click.stop
+            v-if="visible"
+            class="fixed inset-0 bg-black/60 z-[10000] overflow-hidden"
+            @click="handleClose"
           >
-            <LoginFormCore
-              v-slot="{
-                activeTab,
-                showPassword,
-                formData,
-                setActiveTab,
-                togglePassword,
-                handleLogin,
-                handleSendOtp,
-                switchToRegister
-              }"
-              @switch-to-register="emit('switch-to-register')"
-            >
-              <div class="w-full relative h-60 box-content headBg">
-                <div class="w-full z-10 p-4">
-                  <div class="flex items-center justify-between">
-                    <img
-                      src="/src/static/img/home/logo.png"
-                      alt="BC.GAME Logo"
-                      class="w-auto h-8"
-                    />
-                    <button
-                      class="w-[30px] h-[30px] bg-bg-3 rounded-lg flex items-center justify-center"
-                      @click="handleClose"
-                    >
-                      <CloseIcon class="w-3.5 h-3.5 fill-none" />
-                    </button>
-                  </div>
-                  <div class="flex flex-col justify-start space-y-4 p-1 mt-4">
-                    <div class="flex-col">
-                      <h2 class="flex items-center text-xs">
-                        <GiftIcon class="w-3.5 h-3.5 fill-none" />
-                        <div class="ml-1.5 text-text-1">470%</div>
-                      </h2>
-                      <p class="text-text-2 mt-0.5 text-[9px]">首存奖金</p>
-                    </div>
-                    <div class="flex-col">
-                      <h2 class="flex items-center text-xs">
-                        <TurntableIcon class="w-3.5 h-3.5 fill-none" />
-                        <div class="ml-1.5 text-text-1">5 BTC%</div>
-                      </h2>
-                      <p class="text-text-2 mt-0.5 text-[9px]">每日免费幸运旋转</p>
-                    </div>
-                    <div class="flex-col">
-                      <h2 class="flex items-center text-xs">
-                        <FreePerksIcon class="w-3.5 h-3.5 fill-none" />
-                        <div class="ml-1.5 text-text-1">免费福利</div>
-                      </h2>
-                      <p class="text-text-2 mt-0.5 text-[9px]">每日免费奖励与奖金</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 内容区域 -->
-              <div class="px-4 pb-6">
-                <h2 class="text-[20px] font-[800] text-text-1 mb-4">登入</h2>
-
-                <!-- 标签切换 -->
-                <div class="flex bg-bg-2 rounded-lg mb-3">
-                  <button
-                    class="relative flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm transition-all duration-150 overflow-hidden tab-button"
-                    :class="
-                      activeTab === 'password'
-                        ? 'bg-bg-3 border border-primary text-text-1'
-                        : 'text-text-2'
-                    "
-                    @click="setActiveTab('password')"
-                  >
-                    <LockIcon class="w-4 h-4 fill-none relative z-10" />
-                    <span class="relative z-10">密码</span>
-                  </button>
-                  <button
-                    class="relative flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm transition-all duration-150 overflow-hidden tab-button"
-                    :class="
-                      activeTab === 'otp'
-                        ? 'bg-bg-3 border border-primary text-text-1'
-                        : 'text-text-2'
-                    "
-                    @click="setActiveTab('otp')"
-                  >
-                    <KeyIcon class="w-4 h-4 fill-none relative z-10" />
-                    <span class="relative z-10">一次性验证码</span>
-                  </button>
-                </div>
-
-                <div
-                  class="flex items-center justify-end gap-2 text-[14px] mb-4 font-[800] text-text-2 cursor-pointer"
-                >
-                  <span>下载App，开启更多精彩</span>
-                  <ExternalIcon class="w-5 h-5 fill-none" />
-                </div>
-
-                <!-- 密码登录表单 -->
-                <template v-if="activeTab === 'password'">
-                  <!-- 用户名/邮箱/电话 -->
-                  <div class="mb-4">
-                    <input
-                      v-model="formData.username"
-                      type="text"
-                      placeholder="电子邮件 / 电话号码 / 用户名"
-                      class="w-full h-[44px] pl-2 pr-[3px] bg-bg-6 border border-border-1 rounded-lg text-text-1 text-[14px] focus:outline-none focus:border-[#2AE58A] placeholder:text-text-3"
-                    />
-                  </div>
-
-                  <!-- 密码 -->
-                  <div class="mb-4">
-                    <div class="relative">
-                      <input
-                        v-model="formData.password"
-                        :type="showPassword ? 'text' : 'password'"
-                        placeholder="密码"
-                        class="w-full h-[44px] pl-2 pr-[3px] bg-bg-6 border border-border-1 rounded-lg text-text-1 text-[14px] focus:outline-none focus:border-[#2AE58A] placeholder:text-text-3"
+            <transition name="drawer-slide">
+              <div
+                v-if="showDrawer"
+                class="absolute right-0 top-0 h-full w-full bg-bg-1 overflow-y-auto shadow-2xl"
+                @click.stop
+              >
+                <div class="w-full relative h-50 box-content">
+                  <div class="w-full z-10 p-4">
+                    <div class="flex items-center justify-between">
+                      <img
+                        src="/src/static/img/home/logo.png"
+                        alt="BC.GAME Logo"
+                        class="w-auto h-12"
                       />
                       <button
-                        type="button"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                        @click="togglePassword"
+                        class="w-7 h-7 bg-opacity-10 rounded-md flex items-center justify-center"
+                        @click="handleClose"
                       >
-                        <EyeIcon v-if="!showPassword" class="w-6 h-6 fill-none" />
-                        <EyeOffIcon v-else class="w-6 h-6 fill-none" />
+                        <CloseIcon class="w-3 h-3 fill-none" />
                       </button>
                     </div>
+                    <div class="flex flex-col justify-start space-y-4 h-[140px] mt-4 headBg">
+                      <div class="flex-col">
+                        <h2 class="flex items-center text-xs">
+                          <GiftIcon class="w-3.5 h-3.5 fill-none" />
+                          <div class="ml-1.5 text-text-1">470%</div>
+                        </h2>
+                        <!-- 首存奖金 -->
+                        <p class="text-text-2 mt-0.5 text-[9px]">
+                          {{ t('locales.common.welcome_deposit_bonus') }}
+                        </p>
+                      </div>
+                      <div class="flex-col">
+                        <h2 class="flex items-center text-xs">
+                          <TurntableIcon class="w-3.5 h-3.5 fill-none" />
+                          <div class="ml-1.5 text-text-1">5 BTC%</div>
+                        </h2>
+                        <!-- 每日免费幸运旋转 -->
+                        <p class="text-text-2 mt-0.5 text-[9px]">
+                          {{ t('locales.common.free_daily_lucky_spin') }}
+                        </p>
+                      </div>
+                      <div class="flex-col">
+                        <h2 class="flex items-center text-xs">
+                          <FreePerksIcon class="w-3.5 h-3.5 fill-none" />
+                          <!-- 免费福利 -->
+                          <div class="ml-1.5 text-text-1">{{ t('locales.common.free_perks') }}</div>
+                        </h2>
+                        <!-- 每日免费奖励与奖金 -->
+                        <p class="text-text-2 mt-0.5 text-[9px]">
+                          {{ t('locales.common.daily_free_rewards_bonuses') }}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-
-                  <!-- 忘记密码 -->
-                  <div class="text-right mb-6">
-                    <a
-                      href="#"
-                      class="text-text-2 text-[14px] font-[800] hover:text-text-2 transition-colors"
-                      >忘记密码?</a
-                    >
-                  </div>
-
-                  <!-- 登入按钮 -->
-                  <button
-                    class="btn-primary w-full h-[44px] rounded-lg text-[14px] text-text-4"
-                    @click="handleLogin"
-                  >
-                    登入
-                  </button>
-                </template>
-
-                <template v-else-if="activeTab === 'otp'">
-                  <!-- 电子邮件/电话号码 -->
-                  <div class="mb-4">
-                    <input
-                      v-model="formData.otpContact"
-                      type="text"
-                      placeholder="电子邮件 / 电话号码"
-                      class="w-full h-[44px] pl-2 pr-[3px] bg-bg-6 border border-border-1 rounded-lg text-text-1 text-[14px] focus:outline-none focus:border-[#2AE58A] placeholder:text-text-3"
-                    />
-                  </div>
-
-                  <div class="mb-6 text-center text-[14px] font-[800] text-text-2">
-                    我们将向您的邮箱发送一个一次性验证码
-                  </div>
-
-                  <button
-                    class="btn-primary w-full h-[44px] rounded-lg text-[14px] text-text-4"
-                    @click="handleSendOtp"
-                  >
-                    传送一次性验证码
-                  </button>
-                </template>
-
-                <!-- 注册提示 -->
-                <div class="text-left mt-6 mb-6">
-                  <span class="text-[14px] text-text-1">您是 BC.GAME的新用户？</span>
-                  <button
-                    class="text-theme-primary text-[14px] ml-2 font-[800]"
-                    @click="switchToRegister"
-                  >
-                    建立账号
-                  </button>
                 </div>
 
-                <!-- 第三方登录 -->
+                <div class="px-4 pb-6">
+                  <div class="flex gap-6 mb-3.5 h-[32px]">
+                    <button
+                      class="relative w-20 pb-1.5 text-lg font-[800] transition-all duration-200 tab-button-new mr-20"
+                      :class="activeTab === 'signin' ? 'text-text-1' : 'text-text-2'"
+                      @click="setActiveTab('signin')"
+                    >
+                      <!-- 登录 -->
+                      <span>{{ t('locales.home.sign_In') }}</span>
+                      <div
+                        v-if="activeTab === 'signin'"
+                        class="absolute bottom-0 left-0 right-0 h-[2px] bg-theme-primary rounded-t-full"
+                      ></div>
+                    </button>
+                    <button
+                      class="relative w-20 pb-1.5 text-lg font-[800] transition-all duration-200 tab-button-new"
+                      :class="activeTab === 'signup' ? 'text-text-1' : 'text-text-2'"
+                      @click="setActiveTab('signup')"
+                    >
+                      <!-- 注册 -->
+                      <span>{{ t('locales.home.sign_Up') }}</span>
+                      <div
+                        v-if="activeTab === 'signup'"
+                        class="absolute bottom-0 left-0 right-0 h-[2px] bg-theme-primary rounded-t-full"
+                      ></div>
+                    </button>
+                  </div>
+
+                  <!-- <div
+                class="flex items-center justify-end gap-2 text-[14px] mb-4 font-[800] text-text-2 cursor-pointer"
+              >
+                <span>下载App，开启更多精彩</span>
+                <ExternalIcon class="w-5 h-5 fill-none" />
+              </div> -->
+
+                  <template v-if="activeTab === 'signin'">
+                    <!-- 账号 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.account') }}
+                    </div>
+                    <div class="mb-3">
+                      <!-- 请输入账号 -->
+                      <input
+                        v-model="formData.signin.account"
+                        type="text"
+                        :placeholder="t('locales.common.enter_account')"
+                        class="w-full h-[47px] pl-2 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                      />
+                    </div>
+
+                    <!-- 密码 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.password') }}
+                    </div>
+                    <div class="mb-3">
+                      <div class="relative">
+                        <PasswordIcon
+                          class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none"
+                        />
+                        <!-- 请输入密码 -->
+                        <input
+                          v-model="formData.signin.password"
+                          :type="showPassword.signin ? 'text' : 'password'"
+                          :placeholder="t('locales.common.enter_password')"
+                          class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        />
+                        <button
+                          type="button"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                          @click="togglePassword('signin')"
+                        >
+                          <EyeIcon v-if="!showPassword.signin" class="w-4 h-4 fill-none" />
+                          <EyeOffIcon v-else class="w-4 h-4 fill-none" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 记住我 & 忘记密码 -->
+                    <div class="flex items-center justify-between mb-10">
+                      <label
+                        class="flex items-center cursor-pointer"
+                        @click="handleCheckboxClick('rememberMe')"
+                      >
+                        <div
+                          class="w-[14px] h-[14px] rounded border transition-all duration-200 flex items-center justify-center"
+                          :class="
+                            formData.signin.rememberMe
+                              ? 'bg-theme-primary border-theme-primary'
+                              : 'bg-transparent border-text-3'
+                          "
+                        >
+                          <CheckIcon
+                            v-if="formData.signin.rememberMe"
+                            class="w-[14px] h-[14px]"
+                            :class="checkboxAnimating.rememberMe ? 'animate-bounce-forward' : ''"
+                          />
+                        </div>
+                        <!-- 记住我 -->
+                        <span class="ml-1.5 text-xs text-text-2 font-[500]">{{
+                          t('locales.common.remember_me')
+                        }}</span>
+                      </label>
+                      <!-- 忘记密码 -->
+                      <a
+                        href="#"
+                        class="text-xs text-text-2 font-[500]"
+                        @click.prevent="openResetPassword"
+                        >{{ t('locales.common.forget_password') }}?</a
+                      >
+                    </div>
+
+                    <!-- 登录 -->
+                    <button
+                      class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4"
+                      @click="handleLogin"
+                    >
+                      {{ t('locales.home.sign_In') }}
+                    </button>
+
+                    <!-- 以访客身份 -->
+                    <div class="text-center text-sm font-[500] text-theme-primary mt-5">
+                      {{ t('locales.common.continue') }}
+                    </div>
+                  </template>
+
+                  <template v-else-if="activeTab === 'signup'">
+                    <!-- 账号 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.account') }}
+                    </div>
+                    <div class="mb-3">
+                      <!-- 请输入账号 -->
+                      <input
+                        v-model="formData.signup.account"
+                        type="text"
+                        :placeholder="t('locales.common.enter_account')"
+                        class="w-full h-[47px] pl-2 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                      />
+                    </div>
+
+                    <!-- 验证码 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.verification') }}
+                    </div>
+                    <div class="mb-3">
+                      <div class="relative">
+                        <SafeIcon
+                          class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none"
+                        />
+                        <!-- 请输入验证码 -->
+                        <input
+                          v-model="formData.signup.code"
+                          type="text"
+                          :placeholder="t('locales.common.enter_verification')"
+                          class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        />
+                        <!-- 获取验证码 -->
+                        <button
+                          type="button"
+                          class="absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-xs font-[500] rounded-lg"
+                          @click="handleSendCode"
+                        >
+                          {{ t('locales.common.get_code') }}
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 密码 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.password') }}
+                    </div>
+                    <div class="mb-3">
+                      <div class="relative">
+                        <PasswordIcon
+                          class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none"
+                        />
+                        <!-- 请输入密码 -->
+                        <input
+                          v-model="formData.signup.password"
+                          :type="showPassword.signup ? 'text' : 'password'"
+                          :placeholder="t('locales.common.enter_password')"
+                          class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        />
+                        <button
+                          type="button"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                          @click="togglePassword('signup')"
+                        >
+                          <EyeIcon v-if="!showPassword.signup" class="w-4 h-4 fill-none" />
+                          <EyeOffIcon v-else class="w-4 h-4 fill-none" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 确认密码 -->
+                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                      {{ t('locales.common.confirm_password') }}
+                    </div>
+                    <div class="mb-10">
+                      <div class="relative">
+                        <PasswordIcon
+                          class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none"
+                        />
+                        <!-- 请输入确认密码 -->
+                        <input
+                          v-model="formData.signup.confirmPassword"
+                          :type="showConfirmPassword ? 'text' : 'password'"
+                          :placeholder="t('locales.common.enter_confirm_password')"
+                          class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        />
+                        <button
+                          type="button"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                          @click="toggleConfirmPassword"
+                        >
+                          <EyeIcon v-if="!showConfirmPassword" class="w-4 h-4 fill-none" />
+                          <EyeOffIcon v-else class="w-4 h-4 fill-none" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 注册按钮 -->
+                    <button
+                      class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4"
+                      @click="handleRegister"
+                    >
+                      <!-- 注册 -->
+                      {{ t('locales.home.sign_Up') }}
+                    </button>
+
+                    <!-- 以访客身份 -->
+                    <div class="text-center text-sm font-[500] text-theme-primary mt-5">
+                      {{ t('locales.common.continue') }}
+                    </div>
+                  </template>
+
+                  <!-- 第三方登录 -->
+                  <!-- <div class="mt-6">
                 <SocialLogin :show-key-login="true" />
+              </div> -->
+                </div>
               </div>
-            </LoginFormCore>
+            </transition>
           </div>
         </transition>
-      </div>
-    </transition>
-  </teleport>
+      </teleport>
+    </template>
+  </LoginRegisterFormCore>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-import LockIcon from '@/static/svg/login/lock.svg?component'
-import KeyIcon from '@/static/svg/login/key.svg?component'
-import ExternalIcon from '@/static/svg/login/external.svg?component'
+// import ExternalIcon from '@/static/svg/login/external.svg?component'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
 import GiftIcon from '@/static/svg/login/gift.svg?component'
 import TurntableIcon from '@/static/svg/login/turntable.svg?component'
 import FreePerksIcon from '@/static/svg/login/free_perks.svg?component'
-import SocialLogin from './SocialLogin.vue'
-import LoginFormCore from './LoginFormCore.vue'
+import SafeIcon from '@/static/svg/login/safe.svg?component'
+import PasswordIcon from '@/static/svg/login/password.svg?component'
+import CheckIcon from '@/static/svg/login/check.svg?component'
+import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 interface Props {
   visible: boolean
+  defaultTab?: 'signin' | 'signup'
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  defaultTab: 'signin'
+})
 
 const emit = defineEmits<{
   'update:visible': [value: boolean]
-  'switch-to-register': []
 }>()
+
 const showDrawer = ref(false)
 
 watch(
@@ -251,28 +387,36 @@ const handleClose = () => {
 
 <style scoped lang="scss">
 .headBg {
-  background: url('/src/static/img/home/login_h5.webp') no-repeat center;
-  background-size: cover;
+  background: url('/src/static/img/home/login_h5_h.png') no-repeat;
+  background-size: 100% 100%;
 }
-.tab-button {
+
+:root.light .headBg {
+  background: url('/src/static/img/home/login_h5_b.png') no-repeat;
+  background-size: 100% 100%;
+}
+.tab-button-new {
   position: relative;
-  overflow: hidden;
 
   &:active {
-    animation: nod 0.2s ease-out;
+    transform: scale(0.98);
   }
 }
 
-@keyframes nod {
+@keyframes bounceForward {
   0% {
-    transform: translateY(0);
+    transform: scale(0);
   }
   50% {
-    transform: translateY(3px);
+    transform: scale(1.3);
   }
   100% {
-    transform: translateY(0);
+    transform: scale(1);
   }
+}
+
+.animate-bounce-forward {
+  animation: bounceForward 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 // 遮罩层淡入淡出动画

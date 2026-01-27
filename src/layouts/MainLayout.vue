@@ -5,6 +5,7 @@
 
     <!-- 侧边栏 -->
     <Sidebar
+      v-if="!isMobile"
       class="hidden sm:flex"
       ref="sidebarRef"
       @open-language-modal="openLanguageModal"
@@ -24,12 +25,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import TopNav from './TopNav.vue'
-import Sidebar from './Sidebar.vue'
-import BottomTabBar from './BottomTabBar.vue'
-import { useLayoutStore } from '@/stores/layout'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useLayoutStore } from '@/stores/layout'
+import { computed, ref } from 'vue'
+import BottomTabBar from './BottomTabBar.vue'
+import Sidebar from './Sidebar.vue'
+import TopNav from './TopNav.vue'
 
 const layoutStore = useLayoutStore()
 const topNavRef = ref<InstanceType<typeof TopNav> | null>(null)

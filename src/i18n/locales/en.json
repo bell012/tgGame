@@ -16,7 +16,28 @@
     "error": "Error",
     "success": "Success",
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "account": "account",
+    "enter_account": "Please enter account",
+    "password": "password",
+    "enter_password": "Please enter password",
+    "confirm_password": "Confirm Password",
+    "enter_confirm_password": "Please enter the confirmation password",
+    "remember_me": "remember me",
+    "forget_password": "Forget Password",
+    "reset_password": "Reset Password",
+    "continue": "Continue as Guest",
+    "verification": "Verification code",
+    "enter_verification": "Please enter the verification code",
+    "get_code": "get code",
+    "welcome_deposit_bonus": "Welcome deposit bonus",
+    "free_daily_lucky_spin": "Free daily lucky spin",
+    "free_perks": "Free Perks",
+    "daily_free_rewards_bonuses": "Daily free rewards & bonuses",
+    "stay_untamed": "Stay Untamed",
+    "sign_up_get_welcome_bonus": "Sign Up & Get Welcome Bonus",
+    "log_in_directly": "Log in directly",
+    "log_in_using_secret_key": "Log in using secret key"
   },
   "pwa": {
     "offlineReady": "App ready to work offline",
@@ -51,7 +72,8 @@
     "sort": "Sort By:",
     "providers": "Providers:",
     "botClear": "Clear All",
-    "all": "All"
+    "all": "All",
+    "stay": "Stay tuned—something's coming!"
   },
   "casino": {
     "banner_title": "Stay Untamed",
@@ -70,5 +92,138 @@
     "all": "All",
     "latest_bet": "Latest Bet",
     "high_roller": "High Roller"
+  },
+  "sidebar_menu": {
+    "app_download": {
+      "title": "App",
+      "subtitle": "Unlock exclusive features and level up your play"
+    },
+    "bc_token": {
+      "title": "BC Token"
+    },
+    "casino": {
+      "title": "Casino",
+      "children": {
+        "favorites": "Favorites",
+        "recent": "Recent",
+        "tg_originals": "TG Originals",
+        "hot_games": "Hot Games",
+        "slots": "Slots",
+        "live_casino": "Live Casino",
+        "table_games": "Table Games",
+        "fishing": "Fishing",
+        "game_providers": "Game Providers"
+      }
+    },
+    "sports": {
+      "label": "Sports",
+      "children": {
+        "fifa": "FIFA",
+        "soccer": "Soccer",
+        "basketball": "Basketball",
+        "tennis": "Tennis",
+        "badminton": "Badminton",
+        "boxing": "Boxing",
+        "darts": "Darts",
+        "american_football": "American Football",
+        "table_tennis": "Table Tennis",
+        "volleyball": "Volleyball"
+      }
+    },
+    "anniversary": {
+      "label": "Anniversary"
+    },
+    "lottery": {
+      "label": "Lottery",
+      "children": {
+        "my_bets": "My Bets",
+        "all_lotteries": "All Lotteries",
+        "favorites": "Favorites",
+        "popular": "Popular"
+      }
+    },
+    "crypto": {
+      "label": "Crypto Futures",
+      "children": {
+        "crypto_1": "Crypto 1",
+        "crypto_2": "Crypto 2"
+      }
+    },
+    "promotions": {
+      "label": "Promotions",
+      "children": {
+        "invite_rewards": "Invite Rewards"
+      }
+    },
+    "links": {
+      "vip": { "prefix": "VIP", "name": "Club" },
+      "bonus": "Bonus",
+      "recommend": "Referral",
+      "forum": "Forum",
+      "verified": "Provably Fair",
+      "responsible": "Responsible Gambling",
+      "blog": "Blog",
+      "betting_insights": "Sports Betting Insights"
+    },
+    "sponsorships": {
+      "label": "Sponsorships",
+      "items": {
+        "sponsorship_journey": "Sponsorship Journey",
+        "o_higgins": "O'HIGGINS",
+        "jason_derulo": "Jason Derulo",
+        "lil_pump": "Lil Pump",
+        "colby_covington": "Colby Covington",
+        "miami_club": "Miami Club",
+        "tg_game_esports": "TG Game Esports",
+        "st_kitts_nevis_patriots": "St. Kitts & Nevis Patriots",
+        "kwara_united": "Kwara United",
+        "sashimi_poker": "Sashimi Poker",
+        "leicester_city": "Leicester City",
+        "krasava": "KRASAVA",
+        "deccan_gladiators": "Deccan Gladiators",
+        "jean_silva": "Jean Silva"
+      }
+    },
+    "support": {
+      "label": "Support",
+      "items": {
+        "help_center": "Help Center",
+        "faq": "FAQ",
+        "ceo_inbox": "CEO Inbox"
+      }
+    },
+    "legal": {
+      "label": "Legal",
+      "items": {
+        "tg_licenses": "TG Licenses",
+        "gamble_aware": "Gamble Aware",
+        "fairness": "Fairness",
+        "privacy_policy": "Privacy Policy",
+        "terms_of_service": "Terms Of Service",
+        "aml": "AML"
+      }
+    },
+    "about_us": {
+      "label": "About Us",
+      "items": {
+        "achievement": "Achievement",
+        "news": "News",
+        "work_with_us": "Work with us",
+        "business_contacts": "Business Contacts",
+        "license": "License",
+        "help_desk": "Help Desk",
+        "verify_representative": "Verify Representative",
+        "design_resources": "Design Resources"
+      }
+    },
+    "customer_service": "Live Support",
+    "language": {
+      "zh_cn": "简体中文",
+      "en": "English"
+    },
+    "theme": {
+      "dark": "Dark Mode",
+      "light": "Light Mode"
+    }
   }
 }

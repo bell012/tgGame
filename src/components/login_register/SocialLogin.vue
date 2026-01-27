@@ -2,7 +2,10 @@
   <div class="flex flex-col">
     <div class="w-full h-4 flex items-center">
       <div class="bg-[#e4eaf019] flex-1 h-[1px]"></div>
-      <span class="mx-3 flex-none text-[14px] text-text-2">直接登入</span>
+      <!-- 直接登入 -->
+      <span class="mx-3 flex-none text-[14px] text-text-2">{{
+        t('locales.common.log_in_directly')
+      }}</span>
       <div class="bg-[#e4eaf019] flex-1 h-[1px]"></div>
     </div>
     <div
@@ -10,7 +13,8 @@
       class="w-full h-[40px] border border-[#e4eaf019] flex items-center justify-center mt-3 rounded-lg text-[14px] text-text-1 font-[800] cursor-pointer"
     >
       <KeyIcon class="w-5 h-5 fill-none mr-2" />
-      使用秘钥登入
+      <!-- 使用秘钥登入 -->
+      {{ t('locales.common.log_in_using_secret_key') }}
     </div>
     <div class="flex items-center justify-center gap-3 flex-wrap mt-6">
       <div
@@ -33,7 +37,9 @@ import LoginIcon5 from '@/static/svg/login/login_icon_5.svg?component'
 import LoginIcon6 from '@/static/svg/login/login_icon_6.svg?component'
 import LoginIcon7 from '@/static/svg/login/login_icon_7.svg?component'
 import KeyIcon from '@/static/svg/login/key.svg?component'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 interface Props {
   showKeyLogin?: boolean
 }
