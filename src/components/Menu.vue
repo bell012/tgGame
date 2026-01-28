@@ -640,13 +640,19 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
         id: 'casino_favorites',
         name: t('locales.sidebar_menu.casino.children.favorites'),
         icon: casino.favorites_full,
-        handler: () => console.log('点击 我的最爱')
+        handler: () => {
+          console.log('点击 我的最爱')
+          navigateTo('/casino/favorites')
+        }
       },
       {
         id: 'casino_recent',
         name: t('locales.sidebar_menu.casino.children.recent'),
         icon: casino.recent,
-        handler: () => console.log('点击 最近常玩')
+        handler: () => {
+          console.log('点击 最近常玩')
+          navigateTo('/casino/recent')
+        }
       },
       {
         id: 'casino_tg_originals',
