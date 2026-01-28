@@ -27,7 +27,7 @@
             <div
               v-for="(item, inx) in typeList"
               :key="inx"
-              class="tp-item mb-2.5 px-2.5 flex items-center justify-between h-[42px] rounded-lg"
+              class="tp-item mb-2.5 px-2.5 flex items-center justify-between h-[42px] rounded-lg cursor-pointer"
               :class="isSelected(item) ? 'bg-[var(--color-opacity-10)]' : ''"
               @click="confirm(item)"
             >

@@ -8,9 +8,9 @@
       @search="topInputSearch"
     />
     <!-- 顶部tab切换 -->
-    <top-tab />
+    <top-tab v-if="currentType === 'casino' || currentType === 'sports'" />
     <!-- 筛选条件 -->
-    <div class="grid lg:grid-cols-4 grid-cols-2 gap-4">
+    <div class="grid lg:grid-cols-4 grid-cols-2 gap-4" v-if="currentType === 'casino'">
       <select-popup
         label="排序方式:"
         v-model="currentSort"
@@ -22,6 +22,16 @@
         v-model="currentProvider"
         :dataList="providerOptions"
         @change="providerChange"
+      />
+    </div>
+    <!-- 国家 -->
+    <div class="w-full mt-[12px]">
+      <select-popup
+        v-if="currentType === 'lottery'"
+        v-model="currentCountry"
+        :dataList="countryOptions"
+        @change="countryChange"
+        country-image
       />
     </div>
     <!-- 列表采用动态组件渲染 -->
@@ -39,8 +49,8 @@ import { useThemeStore } from '@/stores/theme'
 import Casino from '@/components/explore/list/casino.vue'
 import Sports from '@/components/explore/list/sports.vue'
 import Lottery from '@/components/explore/list/lottery.vue'
-
-import { providerList } from '@/components/explore/mock/index.ts'
+// mock数据
+import { countryList, providerList } from '@/components/explore/mock/index.ts'
 
 const themeStore = useThemeStore()
 
@@ -88,6 +98,18 @@ const providerOptions = computed(() => {
   })
 })
 const providerChange = (val: string[]) => {
+  console.log(val)
+}
+
+// 国家
+const currentCountry = ref('')
+const countryOptions = countryList.map(item => {
+  return {
+    label: item || '全部国家',
+    value: item
+  }
+})
+const countryChange = (val: string) => {
   console.log(val)
 }
 </script>
