@@ -125,6 +125,7 @@
         <button
           v-for="(item, inx) in tabList"
           :key="inx"
+          :ref="el => (tabRefs[inx] = el as HTMLButtonElement)"
           :class="{
             'bg-[var(--color-opacity-10)]': item.id === currentTabId,
             active: item.id === currentTabId
@@ -154,7 +155,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import { navigateTo } from '@/utils/router'
@@ -174,6 +175,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { t } = useI18n()
 
+const tabRefs = ref<HTMLButtonElement[]>([])
 const showLoginModal = ref(false)
 const showHistoryPanel = ref(false)
 const searchText = ref('')
@@ -346,10 +348,79 @@ const tabList = ref([
   },
   {
     id: 8,
+    style: 2,
+    name: 'Table Tennis',
+    key: 'table_tennis',
+    icon: 'table_tennis',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12',
+      'game13',
+      'game14'
+    ]
+  },
+  {
+    id: 9,
     style: 4,
     name: 'Game Provider',
     key: 'game_provider',
     icon: 'game_provider',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12',
+      'game13',
+      'game14'
+    ]
+  },
+  {
+    id: 10,
+    style: 2,
+    name: 'Favorites',
+    key: 'favorites',
+    icon: 'favorites',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12',
+      'game13',
+      'game14'
+    ]
+  },
+  {
+    id: 11,
+    style: 2,
+    name: 'Recent',
+    key: 'recent',
+    icon: 'recent',
     items: [
       'game1',
       'game2',
@@ -410,6 +481,23 @@ const deleteItme = (item: string) => {
 const deleteAll = () => {
   console.log('删除全部搜索历史记录')
 }
+watch(
+  () => getCurrentTab.value,
+  async tab => {
+    if (!tab) return
+
+    await nextTick()
+    const index = tabList.value.findIndex(item => item.key === tab.key)
+    if (index !== -1) {
+      tabRefs.value[index]?.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest'
+      })
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped lang="scss"></style>
