@@ -23,17 +23,32 @@
             </div>
           </div>
           <!-- 选择的内容 -->
-          <div class="flex flex-col">
-            <div
-              v-for="(item, inx) in dataList"
-              :key="inx"
-              class="tp-item mb-2.5 px-2.5 flex items-center justify-between h-[42px] rounded-lg"
-              :class="isSelected(item) ? 'bg-[var(--color-opacity-10)]' : ''"
-              @click="confirm(item)"
-            >
-              <div>{{ item.label }}</div>
-              <ChecedIcon v-if="isSelected(item)" class="w-5 h-5 cursor-pointer" />
-              <UnchecedIcon v-else class="w-5 h-5 cursor-pointer" />
+          <div class="max-h-[368px] overflow-y-auto">
+            <div class="flex flex-col">
+              <div
+                v-for="(item, inx) in dataList"
+                :key="inx"
+                class="tp-item mb-2.5 px-2.5 flex items-center justify-between h-[42px] rounded-lg cursor-pointer"
+                :class="isSelected(item) ? 'bg-[var(--color-opacity-10)]' : ''"
+                @click="confirm(item)"
+              >
+                <div class="flex items-center gap-[10px]">
+                  <section
+                    v-if="item.value && countryImage"
+                    class="relative min-w-[16px] min-h-[16px] w-[16px] h-[16px] overflow-hidden"
+                  >
+                    <img
+                      class="w-[16px] min-w-[16px] absolute"
+                      alt="countries"
+                      src="@/static/img/explore/countries.png"
+                      :style="`top: -${getImageTop(item)}px`"
+                    />
+                  </section>
+                  <div>{{ item.label }}</div>
+                </div>
+                <ChecedIcon v-if="isSelected(item)" class="w-5 h-5 cursor-pointer" />
+                <UnchecedIcon v-else class="w-5 h-5 cursor-pointer" />
+              </div>
             </div>
           </div>
         </div>
@@ -46,6 +61,7 @@
 import CloseIcon from '@/static/svg/close.svg?component'
 import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
+import { COUNTRIES } from '../consts'
 
 type OptionItem = { value: string; label: string }
 
@@ -54,6 +70,7 @@ const props = defineProps<{
   dataList: OptionItem[]
   selectedId?: string
   desktop?: boolean
+  countryImage?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -68,6 +85,11 @@ const isSelected = (item: OptionItem) => item.value === props.selectedId
 const confirm = (item: OptionItem) => {
   emit('confirm', item)
   close()
+}
+
+const getImageTop = (item: OptionItem) => {
+  const index = COUNTRIES.indexOf(item.value)
+  return index * 16
 }
 </script>
 <style scoped lang="scss">
