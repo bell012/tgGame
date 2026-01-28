@@ -196,9 +196,14 @@
       </div>
     </div>
     <div>
-      <GameList :title="$t('home.BCOriginals')" />
+      <GameList
+        :title="value.title"
+        :list="value.list"
+        v-for="value in gamelistData"
+        :key="value.title"
+      />
       <EventList />
-      <GameList :title="$t('home.BCOriginals')" />
+      <GameList :title="gamelist1.title" :list="gamelist1.list" />
     </div>
     <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
       <div class="w-full flex items-center justify-between px-[22px] pb-4 pt-3 lg:!hidden">
@@ -272,6 +277,7 @@ import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import EventList from './components/eventList.vue'
 import NewEvent from './components/newEvent.vue'
+import { gamelist, gamelist1 } from './gamelist'
 import icon from './img/Image4.svg?url'
 import icon1 from './img/Image.svg?url'
 import icon2 from './img/Image1.svg?url'
@@ -315,6 +321,11 @@ import img_6 from '@/static/img/recent/img_6.png'
 import img_7 from '@/static/img/recent/img_7.png'
 
 const { t } = useI18n()
+const gamelistData = gamelist.map(item => ({
+  ...item,
+  title: t(item.title)
+}))
+console.log(gamelist, 'gamelist')
 
 const showLoginModal = ref(false)
 
@@ -346,7 +357,7 @@ const listImg = computed(() => [
   }
 ])
 const carouselVal = ref(0)
-const carousel = (val: any) => {
+const carousel = (val: number) => {
   carouselVal.value = val
   console.log(carouselVal.value)
 }

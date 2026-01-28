@@ -10,7 +10,7 @@
       @error="handleError"
     />
     <div
-      v-if="maintain"
+      v-if="props.img.maintain"
       class="z-10 absolute inset-0 bg-[var(--color-mask-60-1)] backdrop-blur-1 flex justify-center items-center"
     >
       <img class="w-[31px]" :src="maintainImg" alt="" />
@@ -22,13 +22,16 @@
 import { ref } from 'vue'
 import errorImg from '@/static/img/home/errImg.png'
 import maintainImg from '@/static/img/home/maintain.png'
+// src: string
+// maintain?: boolean
 interface Props {
-  src: string
-  maintain?: boolean
+  img: {
+    maintain: boolean
+    src: string
+  }
 }
-
 const props = defineProps<Props>()
-const currentSrc = ref(props.src)
+const currentSrc = ref(props.img.src)
 const hasError = ref(false)
 
 const handleError = () => {
