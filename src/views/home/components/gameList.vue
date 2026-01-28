@@ -5,6 +5,7 @@
         {{ props.title }}
       </h2>
       <a
+        href="javascript:void(0);"
         class="button ml-auto flex items-center bg-bg-3 gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-layer5"
         >{{ $t('home.All') }}</a
       >
@@ -54,14 +55,14 @@
       ref="listWrap"
       style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
-      <div v-for="value in source" :key="value">
+      <div v-for="value in props.list" :key="value">
         <a
-          href=""
+          href="javascript:void(0);"
           class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2"
           link=""
         >
           <div class="w-full h-full">
-            <gameErrImg :src="coverImg" />
+            <gameErrImg :img="value.img" />
           </div>
           <div
             class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-black_alpha20 px-1.5"
@@ -103,13 +104,21 @@
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './img/peopleNumber.svg?component'
-import coverImg from './img/coverImg.png?url'
+interface GameItem {
+  img: {
+    maintain: boolean
+    src: string
+  }
+  number: number
+}
 
 interface Props {
   title: string
+  list: GameItem[]
 }
+
 const props = defineProps<Props>()
-const source = ref<Array<number>>([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+console.log('Props', props)
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
 
