@@ -25,65 +25,96 @@
       >
         <thead class="table-head pc-only" role="rowgroup">
           <tr role="row">
-            <th role="columnheader">{{ $t('home.Game') }}</th>
+            <th>{{ $t('home.Game') }}</th>
             <th class="sm:w-auto" role="columnheader">{{ $t('home.Player') }}</th>
             <th class="h5-hide" role="columnheader">{{ $t('home.BetAmount') }}</th>
-            <th role="columnheader">{{ $t('home.Multiplier') }}</th>
-            <th role="columnheader" class="right">{{ $t('home.Profit') }}</th>
+            <th>{{ $t('home.Multiplier') }}</th>
+            <th class="right">{{ $t('home.Profit') }}</th>
           </tr>
         </thead>
 
-        <tbody role="rowgroup">
-          <tr v-for="(item, index) in list" :key="index" class="table-row" role="row">
-            <td class="w-[30%] sm:w-auto" role="cell">
-              <div class="flex items-center justify-start">
-                <img class="icon" alt="game" :src="BlackJack" />
-                <span class="ellipsis">Lucky Jaguar</span>
-              </div>
+        <TransitionGroup tag="tbody" name="live">
+          <tr
+            v-for="(item, index) in rows"
+            :key="item.id"
+            :class="[
+              index % 2 === 0 ? 'bg-[var(--color-opacity-10)]' : 'bg-[var(--color-opacity-6)]'
+            ]"
+          >
+            <td class="py-2 px-3 flex items-center gap-1">
+              <img :src="item.gameIcon" class="w-3.5 h-3.5" :alt="item.game" />
+              <span class="text-text-1 truncate max-w-[58px]">
+                {{ item.game }}
+              </span>
             </td>
-
-            <td class="w-24 sm:w-auto" role="cell">
-              <div class="ellipsis">Player Name</div>
+            <td class="py-2 px-3 text-text-1 truncate max-w-[60px]">
+              {{ item.player }}
             </td>
-
-            <td class="cell h5-hide" role="cell">
-              <div class="flex items-center justify-center">
-                <span>{{ item.bet }}</span>
-                <img :src="USDT" class="icon" alt="" />
-              </div>
-            </td>
-
-            <td class="cell sm:w-auto" role="cell">
-              <div>0.00x</div>
-            </td>
-
-            <td class="w-30 text-secondary" role="cell">
-              <div class="flex items-center justify-end">
-                <span class="text-nowrap">- {{ item.bet }}</span>
-                <img :src="USDT" class="icon" alt="" />
-              </div>
+            <td class="py-2 px-3 text-center text-[12px]">x{{ item.multiplier }}</td>
+            <td class="py-2 px-3 flex items-center justify-end gap-1 text-[12px]">
+              <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
+                {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
+              </span>
+              <img src="@/static/img/flag/USD.webp" class="w-3 h-3" :alt="item.game" />
             </td>
           </tr>
-        </tbody>
+        </TransitionGroup>
       </table>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BlackJack from './img/BlackJack.svg?url'
-import USDT from '@/static/svg/coin/USDT.black.svg?url'
 const { t } = useI18n()
 const tabs = [t('home.LatestBet'), t('home.HighRoller'), t('home.WagerContest')]
 const activeTab = ref(t('home.LatestBet'))
 
-const list = ref(
-  Array.from({ length: 6 }).map(() => ({
-    bet: '399.99'
-  }))
-)
+interface LiveRow {
+  id: number
+  game: string
+  gameIcon: string
+  player: string
+  multiplier: number
+  profit: number
+}
+
+const rows = ref<LiveRow[]>([])
+let timer: number | null = null
+let uid = 0
+
+const randomRow = (): LiveRow => {
+  const profit = Math.floor(Math.random() * 5000) - 2500
+  return {
+    id: uid++,
+    game: 'Wild Strory',
+    gameIcon: BlackJack,
+    player: 'Tujaodrayy',
+    multiplier: Number((Math.random() * 20 + 1).toFixed(2)),
+    profit: profit
+  }
+}
+
+const pushRow = () => {
+  rows.value.unshift(randomRow())
+  if (rows.value.length > 10) {
+    rows.value.pop()
+  }
+}
+
+onMounted(() => {
+  for (let i = 0; i < 6; i++) {
+    pushRow()
+  }
+
+  timer = window.setInterval(pushRow, 1000)
+})
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
 </script>
 
 <style scoped>
@@ -145,10 +176,6 @@ const list = ref(
 .table th:nth-child(1) {
   text-align: left;
 }
-.table td:last-child,
-.table th:last-child {
-  text-align: right;
-}
 .table-head th {
   padding: 10px 14px;
   background: #353a3a;
@@ -181,16 +208,29 @@ const list = ref(
 }
 
 .icon {
-  width: 20px;
   height: 20px;
   flex: 0 0 20px;
   display: inline;
   margin: 0 4px;
 }
-.ellipsis {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* 进入 / 离开动画 */
+.latestList-enter-active,
+.latestList-leave-active {
+  transition: all 0.3s ease;
+}
+.live-enter-from {
+  opacity: 0;
+  transform: translateY(-1px);
+}
+
+.live-leave-to {
+  opacity: 0;
+  transform: translateY(1px);
+}
+
+/* 排序移动动画（关键） */
+.latestList-move {
+  transition: transform 0.3s ease;
 }
 
 @media (max-width: 767px) {
@@ -198,6 +238,12 @@ const list = ref(
     padding: 0;
   }
   .h5-hide {
+    display: none;
+  }
+  .tabs .tab {
+    width: 520px;
+  }
+  .tabs .tab:last-child {
     display: none;
   }
 }
