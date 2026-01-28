@@ -35,11 +35,12 @@ import TopInput from './top-input/index.vue'
 import TopTab from './top-tab/index.vue'
 import SelectPopup from './select-popup/index.vue'
 import MultipleSelectPopup from './multiple-select-popup/index.vue'
-import { providerList } from '@/components/explore/mock/index.ts'
 import { useThemeStore } from '@/stores/theme'
 import Casino from '@/components/explore/list/casino.vue'
 import Sports from '@/components/explore/list/sports.vue'
 import Lottery from '@/components/explore/list/lottery.vue'
+
+import { providerList } from '@/components/explore/mock/index.ts'
 
 const themeStore = useThemeStore()
 

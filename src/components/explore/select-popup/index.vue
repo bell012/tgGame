@@ -82,7 +82,7 @@ const handleConfirm = (data: OptionItem) => {
   top: calc(100% + 10px);
   position: absolute;
   left: 0;
-  width: 288px;
+  width: 100%;
 }
 .icon {
   width: 24px;
