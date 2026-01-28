@@ -2,10 +2,9 @@
   <div class="gameList">
     <div class="mt-2 flex items-center sm:mt-6 h-8">
       <h2 class="flex items-center text-base font-extrabold text-primary">
-        {{ $t('home.BCOriginals') }}
+        {{ props.title }}
       </h2>
       <a
-        href="/gamelist/brand"
         class="button ml-auto flex items-center gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-layer5"
         >{{ $t('home.All') }}</a
       >
@@ -60,7 +59,10 @@
           href=""
           class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2"
           link=""
-          ><img class="w-full" alt="Crash" style="width: 200px" src="./img/coverImg.png" />
+        >
+          <div class="w-full h-full">
+            <gameErrImg :src="coverImg" />
+          </div>
           <div
             class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-black_alpha20 px-1.5"
           >
@@ -99,7 +101,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './img/peopleNumber.svg?component'
+import coverImg from './img/coverImg.png?url'
+
+interface Props {
+  title: string
+}
+const props = defineProps<Props>()
 const source = ref<Array<number>>([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
@@ -198,9 +207,9 @@ const scrollPrev = () => {
     --grid-column: 5;
   }
 }
-@media (min-width: 640px) and (max-width: 767px) {
+@media (max-width: 767px) {
   .grid-col-3 {
-    --grid-column: 4;
+    --grid-column: 3.15;
   }
 }
 

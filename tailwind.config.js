@@ -96,6 +96,10 @@ export default {
         'icon-3': 'var(--color-icon-level-3)',
         'icon-4': 'var(--color-icon-level-4)',
         primary: 'var(--color-theme-level-1)'
+      },
+      // ========== 背景模糊 (Backdrop Blur) ==========
+      backdropBlur: {
+        1: '1px'
       }
     }
   },

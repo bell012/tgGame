@@ -336,8 +336,8 @@ const scrollPrev = () => {
 }
 @media (max-width: 639px) {
   .grid-col-1 {
-    --grid-column: 1;
-    --grid-gap: 0.5rem;
+    --grid-column: 1.05;
+    --grid-gap: 0.5rem !important;
     grid-auto-columns: calc(
       (100% - (var(--grid-column) - 1) * var(--grid-gap)) / var(--grid-column)
     );

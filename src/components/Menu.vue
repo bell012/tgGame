@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar-menu">
     <!-- BC代币 -->
-    <div v-if="!isCollapsed" class="mb-2">
+    <div v-if="!isCollapsed">
       <div
         class="flex items-center justify-between bc-card p-2 rounded-lg cursor-pointer"
         @click="() => console.log('点击 BC代币')"
@@ -361,7 +361,7 @@
       <!-- 主题切换 -->
       <div
         v-if="!isCollapsed"
-        class="flex items-center justify-between h-10 bg-bg-2 rounded-lg cursor-pointer mt-2 p-0.5"
+        class="flex items-center justify-between h-10 bg-bg-2 rounded-lg cursor-pointer mt-2 p-0.5 sm:mb-4"
       >
         <button
           :class="[
