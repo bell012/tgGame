@@ -11,8 +11,10 @@
   "contract": "合约",
   "slots": "电子",
   "fishing": "捕鱼",
+  "Fishing": "捕鱼",
   "live": "真人",
-  "lottery": "组合",
+  "lottery": "彩票",
+  "Lottery": "彩票",
   "LiveSports": "即时体育赛事",
   "DepositBonus": "充值奖金",
   "Live": "现场",
@@ -24,5 +26,8 @@
   "Profit": "盈余",
   "LatestBet": "最新投注",
   "HighRoller": "龙虎榜",
-  "WagerContest": "下注比赛"
+  "WagerContest": "下注比赛",
+  "TGOriginals": "TG 原创",
+  "TableGames": "桌面游戏",
+  "HotGames": "热门游戏"
 }
