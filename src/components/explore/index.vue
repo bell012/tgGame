@@ -1,12 +1,7 @@
 <template>
   <div class="search-container">
     <!-- 搜索框-->
-    <top-input
-      :data-list="typeList"
-      :default-type="currentType"
-      @change-type="changeTypeHandler"
-      @search="topInputSearch"
-    />
+    <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
     <!-- 顶部tab切换 -->
     <top-tab v-if="currentType === 'casino' || currentType === 'sports'" />
     <!-- 筛选条件 -->
@@ -40,7 +35,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, provide, ref } from 'vue'
 import TopInput from './top-input/index.vue'
 import TopTab from './top-tab/index.vue'
 import SelectPopup from './select-popup/index.vue'
@@ -60,13 +55,21 @@ const listCompMap = {
   lottery: Lottery
 }
 
+// 搜索的关键字
+const keywords = ref('')
+provide('explore-keywords', keywords)
+
 // top-input
 const typeList = [
   { id: 'casino', name: 'Casino' },
   { id: 'sports', name: 'Sports' },
   { id: 'lottery', name: 'Lottery' }
 ]
+
+// 游戏类型
 const currentType = ref<keyof typeof listCompMap>('casino')
+provide('explore-current-type', currentType)
+
 const changeTypeHandler = (val: keyof typeof listCompMap) => {
   currentType.value = val
 }

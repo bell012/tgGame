@@ -16,7 +16,7 @@
       :placeholder="t('locales.search.placeholder')"
       class="w-full h-[42px] pl-[110px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-[var(--color-border-level-1)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
       @keydown.enter.prevent="onSearch"
-      @focus="isOpen = true"
+      @focus="focusClick"
       @blur="onBlur"
     />
     <button
@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount, computed } from 'vue'
+import { ref, watch, onBeforeUnmount, computed, inject, Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TypePopup from './popup.vue'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
@@ -122,7 +122,6 @@ type TypeItem = { id: string; name: string }
 
 const props = defineProps<{
   dataList: TypeItem[]
-  defaultType: string
 }>()
 
 const emit = defineEmits<{
@@ -133,9 +132,11 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const isMobile = useIsMobile()
 
-const currentType = ref(props.defaultType)
+const keyword = inject('explore-keywords') as Ref<string>
+const currentType = inject('explore-current-type') as Ref<string>
+
 const typeVisible = ref(false)
-const keyword = ref('') // 搜索框输入值
+
 const history = ref(['1111', '2222', '3333', ' 4444', '555555', '6666']) // 本地搜索历史
 const isOpen = ref(false)
 let downInPanel = false
@@ -177,6 +178,12 @@ const handleTypeConfirm = (_val: TypeItem) => {
 // 删除单条本地搜索记录
 const deleteItme = () => {
   console.log('删除单条')
+}
+
+const focusClick = () => {
+  if (currentType.value === 'casino') {
+    isOpen.value = true
+  }
 }
 
 // 点击搜索历史和建议
