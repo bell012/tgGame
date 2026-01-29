@@ -1,5 +1,5 @@
 <template>
-  <div :class="['home max-w-[1248px] mx-auto', { 'px-4': !isMobile }]">
+  <div class="home max-w-[1248px] mx-auto px-0 py-0 sm:px-4 sm:py-4">
     <div class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl">
       <img
         class="absolute right-0 bottom-0 w-full"
@@ -40,9 +40,9 @@
         </button>
       </div>
     </div>
-    <div class="flex items-center sm:mt-6 h-8">
+    <div class="flex items-center mt-2 sm:mt-6 h-8">
       <h2 class="flex items-center text-base font-extrabold text-primary">
-        <div class="relative mx-4 mr-2 h-2 w-2">
+        <div class="relative mr-2 h-2 w-2">
           <div class="absolute left-0 top-0 h-full w-full rounded-full bg-success z-10"></div>
           <div
             class="absolute left-0 top-0 h-full w-full rounded-full bg-success animate-ping"
@@ -196,9 +196,14 @@
       </div>
     </div>
     <div>
-      <GameList :title="$t('home.BCOriginals')" />
+      <GameList
+        :title="value.title"
+        :list="value.list"
+        v-for="value in gamelistData"
+        :key="value.title"
+      />
       <EventList />
-      <GameList :title="$t('home.BCOriginals')" />
+      <GameList :title="gamelist1.title" :list="gamelist1.list" />
     </div>
     <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
       <div class="w-full flex items-center justify-between px-[22px] pb-4 pt-3 lg:!hidden">
@@ -214,7 +219,7 @@
         /><img class="w-6" :src="MATIC" /><img class="w-6" :src="TRX" />
       </div>
 
-      <div class="relative h-24 rounded-xl bg-[#171a1ab3] lg:px-8">
+      <div class="relative h-20 rounded-xl bg-[#171a1ab3] lg:px-8">
         <div class="pointer-events-none absolute left-0 size-full overflow-hidden blur">
           <img class="absolute -top-3 left-4 scale-[2]" :src="dotC8z5Aoh" /><img
             class="absolute left-24 top-14 scale-150"
@@ -244,7 +249,7 @@
             <img class="-ml-1 w-6" :src="DOGE" /><img class="-ml-1 w-6" :src="MATIC" />
             <img class="-ml-1 w-6" :src="TRX" />
           </div>
-          <div class="w-full flex items-center justify-between px-[10px]">
+          <div class="w-full flex items-center justify-between px-[10px] mt-2">
             <img class="h-[13px]" :src="MAYA" />
             <img class="h-[13px]" :src="GCASH" />
             <img class="h-[13px]" :src="VISA" />
@@ -253,25 +258,26 @@
           </div>
           <div class="flex items-center justify-center mt-4 gap-11 lg:!mt-0">
             <div class="text-lg font-extrabold sm:text-2xl">
-              <span class="text-brand">300%</span> {{ $t('home.DepositBonus') }}
+              <span class="text-secondary-4">300%</span> {{ $t('home.DepositBonus') }}
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <NewEvent />
+  <NewEvent class="mt-2" />
   <!-- 注册弹窗 -->
   <LoginModal v-model="showLoginModal" default-tab="register" />
   <CommonFooter class="hidden sm:block" />
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import EventList from './components/eventList.vue'
 import NewEvent from './components/newEvent.vue'
+import { gamelist, gamelist1 } from './gamelist'
 import icon from './img/Image4.svg?url'
 import icon1 from './img/Image.svg?url'
 import icon2 from './img/Image1.svg?url'
@@ -315,14 +321,14 @@ import img_6 from '@/static/img/recent/img_6.png'
 import img_7 from '@/static/img/recent/img_7.png'
 
 const { t } = useI18n()
+const gamelistData = gamelist.map(item => ({
+  ...item,
+  title: t(item.title)
+}))
+console.log(gamelist, 'gamelist')
 
-const isMobile = ref(false)
 const showLoginModal = ref(false)
 
-onMounted(() => {
-  isMobile.value = window.matchMedia('(max-width: 640px)').matches
-})
-console.log(isMobile.value, 'isMobile')
 const listImg = computed(() => [
   {
     name: t('home.contract'),
@@ -351,7 +357,7 @@ const listImg = computed(() => [
   }
 ])
 const carouselVal = ref(0)
-const carousel = (val: any) => {
+const carousel = (val: number) => {
   carouselVal.value = val
   console.log(carouselVal.value)
 }

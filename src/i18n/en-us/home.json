@@ -11,8 +11,10 @@
   "contract": "CONTRACT",
   "slots": "SLOTS",
   "fishing": "FISHING",
+  "Fishing": "Fishing",
   "live": "LIVE",
   "lottery": "LOTTERY",
+  "Lottery": "Lottery",
   "LiveSports": "Live Sports",
   "DepositBonus": "Deposit Bonus",
   "Live": "LIVE",
@@ -25,5 +27,7 @@
   "LatestBet": "Latest Bets",
   "HighRoller": "Leaderboard",
   "WagerContest": "Wager Contest",
-  "Options": ""
+  "TGOriginals": "TG Originals",
+  "TableGames": "Table Games",
+  "HotGames": "Hot Games"
 }
