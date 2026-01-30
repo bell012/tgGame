@@ -14,7 +14,7 @@
 
     <!-- 主内容区 -->
     <main class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out" :style="mainStyle">
-      <div class="sm:p-0 p-4 px-[14px]">
+      <div class="p-0 sm:p-0 lg:p-4 px-[14px]">
         <router-view />
       </div>
     </main>
