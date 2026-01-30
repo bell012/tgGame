@@ -1,5 +1,5 @@
 <template>
-  <div class="latest-wrap">
+  <div class="latest-wrap max-w-[1248px] mx-auto sm:px-4 sm:py-4">
     <!-- Header -->
     <div class="header">
       <h2>{{ $t('home.LatestRound&Race') }}</h2>
@@ -24,12 +24,12 @@
         style="overflow-anchor: none"
       >
         <thead class="table-head pc-only" role="rowgroup">
-          <tr role="row">
+          <tr role="row" class="bg-bg-2 text-text-2">
             <th>{{ $t('home.Game') }}</th>
             <th class="sm:w-auto" role="columnheader">{{ $t('home.Player') }}</th>
             <th class="h5-hide" role="columnheader">{{ $t('home.BetAmount') }}</th>
             <th>{{ $t('home.Multiplier') }}</th>
-            <th class="right">{{ $t('home.Profit') }}</th>
+            <th class="text-right">{{ $t('home.Profit') }}</th>
           </tr>
         </thead>
 
@@ -37,9 +37,7 @@
           <tr
             v-for="(item, index) in rows"
             :key="item.id"
-            :class="[
-              index % 2 === 0 ? 'bg-[var(--color-opacity-10)]' : 'bg-[var(--color-opacity-6)]'
-            ]"
+            :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
           >
             <td class="py-2 px-3 flex items-center gap-1">
               <img :src="item.gameIcon" class="w-3.5 h-3.5" :alt="item.game" />
@@ -49,6 +47,12 @@
             </td>
             <td class="py-2 px-3 text-text-1 truncate max-w-[60px]">
               {{ item.player }}
+            </td>
+            <td class="cell h5-hide" role="cell">
+              <div class="flex items-center justify-center">
+                <span>{{ item.BetAmount }}</span>
+                <img src="@/static/img/flag/USD.webp" class="icon" alt="" />
+              </div>
             </td>
             <td class="py-2 px-3 text-center text-[12px]">x{{ item.multiplier }}</td>
             <td class="py-2 px-3 flex items-center justify-end gap-1 text-[12px]">
@@ -71,12 +75,12 @@ import BlackJack from './img/BlackJack.svg?url'
 const { t } = useI18n()
 const tabs = [t('home.LatestBet'), t('home.HighRoller'), t('home.WagerContest')]
 const activeTab = ref(t('home.LatestBet'))
-
 interface LiveRow {
   id: number
   game: string
   gameIcon: string
   player: string
+  BetAmount: number
   multiplier: number
   profit: number
 }
@@ -92,6 +96,7 @@ const randomRow = (): LiveRow => {
     game: 'Wild Strory',
     gameIcon: BlackJack,
     player: 'Tujaodrayy',
+    BetAmount: 399.99,
     multiplier: Number((Math.random() * 20 + 1).toFixed(2)),
     profit: profit
   }
@@ -121,7 +126,6 @@ onUnmounted(() => {
 .latest-wrap {
   padding: 12px;
   border-radius: 12px;
-  color: #e5e7eb;
   font-size: 14px;
 }
 
@@ -140,7 +144,7 @@ onUnmounted(() => {
 
 .tabs {
   display: flex;
-  background: #2a2f2f;
+  background: var(--color-background-level-8);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -154,8 +158,8 @@ onUnmounted(() => {
 }
 
 .tab.active {
-  background: #3a3f3f;
-  color: #fff;
+  background: var(--color-background-level-7);
+  color: var(--color-text-level-1);
 }
 
 .table-wrap {
@@ -178,8 +182,8 @@ onUnmounted(() => {
 }
 .table-head th {
   padding: 10px 14px;
-  background: #353a3a;
-  color: #cbd5e1;
+  /* background: var(--color-background-level-8); */
+  /* color: var(--color-text-level-2); */
   font-weight: 600;
   white-space: nowrap;
 }
@@ -193,14 +197,14 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
-.table tbody tr:nth-child(odd) {
+/* .table tbody tr:nth-child(odd) {
   background: var(--color-background-level-3);
   color: var(--color-text-level-1);
 }
 .table tbody tr:nth-child(even) {
   background: var(--color-background-level-2);
   color: var(--color-text-level-1);
-}
+} */
 .cell {
   gap: 8px;
   overflow: hidden;

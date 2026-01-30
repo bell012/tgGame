@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full min-h-[140px] flex items-center justify-center overflow-hidden rounded-[8px] bg-[var(--color-background-level-2)]"
+    class="w-full min-h-[140px] flex items-center justify-center overflow-hidden rounded-[8px] bg-[var(--color-background-level-2)] sm:h-full"
   >
     <img
       :src="currentSrc"
@@ -19,9 +19,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useThemeStore } from '@/stores/theme'
 import errorImg from '@/static/img/home/errImg.png'
+import errorImg1 from '@/static/img/home/errImg1.png'
 import maintainImg from '@/static/img/home/maintain.png'
+
+const themeStore = useThemeStore()
+const { theme } = storeToRefs(themeStore)
 // src: string
 // maintain?: boolean
 interface Props {
@@ -37,9 +43,15 @@ const hasError = ref(false)
 const handleError = () => {
   if (!hasError.value) {
     hasError.value = true
-    currentSrc.value = errorImg
+    currentSrc.value = theme.value === 'dark' ? errorImg : errorImg1
   }
 }
+
+watch(theme, () => {
+  if (hasError.value) {
+    currentSrc.value = theme.value === 'dark' ? errorImg : errorImg1
+  }
+})
 </script>
 
 <style scoped lang="scss">
