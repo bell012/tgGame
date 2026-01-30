@@ -2,19 +2,21 @@
   <div class="casino-page p-0 sm:p-4 w-full">
     <div class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl">
       <img
-        class="absolute right-0 bottom-0 w-full"
+        class="absolute right-0 bottom-0 w-full md:w-auto md:h-full"
         src="/src/static/img/casino/banner_bg.webp"
         alt="casino"
       />
       <div
-        class="absolute left-2 top-0 flex h-full origin-top flex-col py-4 sm:left-[14%] sm:top-[6%] sm:h-auto sm:items-center sm:py-0 sm:text-center"
+        class="absolute left-2 top-0 flex h-full origin-top flex-col py-4 sm:left-[14%] sm:top-1/2 sm:-translate-y-1/2 sm:h-auto sm:items-center sm:py-0 sm:text-center"
       >
         <h1
           class="font-inter text-[20px] font-bold leading-normal text-[var(--color-text-level-1,#FFF)]"
         >
           {{ t('locales.casino.banner_title') }}
         </h1>
-        <div>
+        <div
+          class="rounded-xl p-0 text-lg font-semibold sm:mt-4 sm:px-[60px] sm:py-[12px] sm:backdrop-blur-md sm:bg-[rgba(169,169,169,0.2)]"
+        >
           <h2
             class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
           >
@@ -32,7 +34,7 @@
           </h2>
         </div>
         <button
-          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)]"
+          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)] sm:mt-5 sm:w-[200px]"
           type="button"
           @click.stop="showLoginModal = true"
         >
