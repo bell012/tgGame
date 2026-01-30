@@ -39,6 +39,8 @@
   --color-mask-40: rgba(0, 0, 0, 0.4);
   --color-mask-60-1: rgba(0, 0, 0, 0.6);
   --color-mask-80-2: rgba(0, 0, 0, 0.8);
+  --color-mask-96-3: rgba(35, 38, 38, 0.96);
+  --color-mask-100-4: rgba(35, 38, 38, 1);
 
   /* ========== 次要色 (Secondary) ========== */
   --color-secondary-level-1: rgba(252, 60, 60, 0.15);
@@ -108,6 +110,8 @@
   --color-mask-40: rgba(0, 0, 0, 0.4);
   --color-mask-60-1: rgba(0, 0, 0, 0.6);
   --color-mask-80-2: rgba(255, 255, 255, 0.8);
+  --color-mask-96-3: rgba(244, 244, 244, 0.96);
+  --color-mask-100-4: rgba(244, 244, 244, 1);
 
   /* ========== 次要色 (Secondary) - 浅色模式 ========== */
   --color-secondary-level-1: rgba(252, 60, 60, 0.15);
