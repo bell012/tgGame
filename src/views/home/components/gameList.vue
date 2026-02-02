@@ -55,7 +55,7 @@
       ref="listWrap"
       style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
-      <div v-for="value in props.list" :key="value">
+      <div v-for="(value, index) in props.list" :key="value.img.src + '-' + index">
         <a
           href="javascript:void(0);"
           class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2"

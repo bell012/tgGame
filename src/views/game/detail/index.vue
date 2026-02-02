@@ -1,9 +1,7 @@
 <template>
-  <explore />
+  <game-detail></game-detail>
 </template>
-
 <script setup lang="ts">
-import Explore from '@/components/explore/index.vue'
+import GameDetail from '@/components/game/detail/index.vue'
 </script>
-
 <style scoped lang="scss"></style>
