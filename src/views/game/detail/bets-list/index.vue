@@ -2,7 +2,7 @@
   <div class="mt-[12px]">
     <!-- Header -->
     <div class="grid lg:grid-cols-2 grid-cols-1 gap-4">
-      <h2>Latest Bet</h2>
+      <h2 class="flex items-center">Latest Bet</h2>
       <div class="flex lg:justify-end items-center sm:justify-start justify-start">
         <div class="bet-tabs flex items-center">
           <button
