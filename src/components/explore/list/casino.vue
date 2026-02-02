@@ -8,7 +8,7 @@
     class="mt-[20px]"
   >
     <template #item="{ item }">
-      <div class="w-full relative" @click="itemClick(item)">
+      <div class="w-full relative cursor-pointer" @click="itemClick(item)">
         <!-- 卡片-->
         <div class="w-full aspect-[0.75] overflow-hidden rounded-lg">
           <img :src="gameImg" alt="" class="w-full h-full object-contain" />
