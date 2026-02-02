@@ -276,6 +276,8 @@
     </div>
   </div>
   <NewEvent class="mt-2" />
+  <!-- 提示弹窗 -->
+  <H5HomePop />
   <!-- 注册弹窗 -->
   <LoginModal v-model="showLoginModal" default-tab="register" />
   <CommonFooter class="hidden sm:block" />
@@ -287,6 +289,7 @@ import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import EventList from './components/eventList.vue'
 import NewEvent from './components/newEvent.vue'
+import H5HomePop from '@/components/H5HomePop.vue'
 import { gamelist, gamelist1 } from './gamelist'
 import icon from './img/Image4.svg?url'
 import icon1 from './img/Image.svg?url'

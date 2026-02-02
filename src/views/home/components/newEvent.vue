@@ -73,7 +73,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BlackJack from './img/BlackJack.svg?url'
 const { t } = useI18n()
-const tabs = [t('home.LatestBet'), t('home.HighRoller'), t('home.WagerContest')]
+const tabs = [t('home.LatestBet'), t('home.HighRoller')]
 const activeTab = ref(t('home.LatestBet'))
 interface LiveRow {
   id: number
@@ -246,9 +246,6 @@ onUnmounted(() => {
   }
   .tabs .tab {
     width: 520px;
-  }
-  .tabs .tab:last-child {
-    display: none;
   }
 }
 </style>
