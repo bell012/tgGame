@@ -36,6 +36,7 @@
 import { useI18n } from 'vue-i18n'
 import CloseIcon from '@/static/svg/close.svg?component'
 import Explore from '@/components/explore/index.vue'
+import { provide, ref, watch } from 'vue'
 
 interface Props {
   modelValue: boolean
@@ -46,8 +47,19 @@ const emit = defineEmits<{
   'update:modelValue': [val: boolean]
 }>()
 
-const { t } = useI18n()
+const isCloseDesktopModal = ref(false)
+provide('search-close-desktop-modal', isCloseDesktopModal)
+watch(
+  () => isCloseDesktopModal.value,
+  val => {
+    if (val) {
+      isCloseDesktopModal.value = false
+      emit('update:modelValue', false)
+    }
+  }
+)
 
+const { t } = useI18n()
 console.log(t('explore'))
 
 const close = () => {
