@@ -121,30 +121,82 @@
         </div>
       </div>
     </div>
-    <div class="min-h-screen w-full">
-      <!-- 顶部横行滚动tab选择 -->
-      <div class="flex w-full flex-row overflow-x-auto scrollbar-none my-3.5 gap-0.5">
+    <div class="min-h-screen w-full relative">
+      <!-- 左箭头 -->
+      <div
+        v-if="canScrollLeft"
+        class="absolute left-0 top-0 pr-2 h-[38px] z-10 hidden sm:flex items-center justify-center bg-[var(--color-background-level-1)]"
+      >
         <button
-          v-for="(item, inx) in tabList"
-          :key="inx"
-          :ref="el => (tabRefs[inx] = el as HTMLButtonElement)"
-          :class="{
-            'bg-[var(--color-opacity-10)]': item.id === currentTabId,
-            active: item.id === currentTabId
-          }"
-          class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center hover:bg-[var(--color-opacity-10)]"
-          @click.stop="onTabButton(item)"
+          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-[var(--color-opacity-10)]"
+          @click="scrollLeft"
         >
-          <component
-            :is="casinoIcons[item.icon]"
-            :class="item.id === currentTabId ? 'fill-primary' : 'fill-text-2'"
-            class="w-5 h-5 mr-[7px]"
-          />
-          <div :class="item.id === currentTabId ? 'text-text-1' : 'text-text-2'" class="font-[700]">
-            {{ item.name }}
+          <div class="icon size-4 fill-text-1">
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
+              ></path>
+            </svg>
           </div>
         </button>
       </div>
+      <!-- 顶部横行滚动tab选择 -->
+      <div
+        :class="{
+          'sm:ml-8': canScrollLeft,
+          'sm:mr-8': canScrollRight
+        }"
+      >
+        <div
+          ref="tabScrollRef"
+          class="flex w-full flex-row overflow-x-auto scrollbar-none my-3.5 gap-0.5"
+          @scroll="updateScrollState"
+        >
+          <button
+            v-for="(item, inx) in tabList"
+            :key="inx"
+            :ref="el => (tabRefs[inx] = el as HTMLButtonElement)"
+            :class="{
+              'bg-[var(--color-opacity-10)]': item.id === currentTabId,
+              active: item.id === currentTabId
+            }"
+            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center hover:bg-[var(--color-opacity-10)]"
+            @click.stop="onTabButton(item)"
+          >
+            <component
+              :is="casinoIcons[item.icon]"
+              :class="item.id === currentTabId ? 'fill-primary' : 'fill-text-2'"
+              class="w-5 h-5 mr-[7px]"
+            />
+            <div
+              :class="item.id === currentTabId ? 'text-text-1' : 'text-text-2'"
+              class="font-[700]"
+            >
+              {{ item.name }}
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 右箭头 -->
+      <div
+        v-if="canScrollRight"
+        class="absolute right-0 top-0 pl-2 h-[38px] z-10 hidden sm:flex items-center justify-center bg-[var(--color-background-level-1)]"
+      >
+        <button
+          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-[var(--color-opacity-10)]"
+          @click="scrollRight"
+        >
+          <div class="icon size-4 rotate-180 fill-text-1">
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
+              ></path>
+            </svg>
+          </div>
+        </button>
+      </div>
+
       <!-- 6种样式 -->
       <div class="tabs-content min-h-48">
         <component :is="getPageStyle" :modules="tabList" />
@@ -154,12 +206,14 @@
 
   <!-- 注册弹窗 -->
   <LoginModal v-model="showLoginModal" default-tab="register" />
+  <CommonFooter class="hidden sm:block" />
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import LoginModal from '@/components/login_register/LoginModal.vue'
+import CommonFooter from '@/components/commonFooter.vue'
 import { navigateTo } from '@/utils/router'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
@@ -462,6 +516,37 @@ const getPageStyle = computed(() => {
       return pageStyle2
   }
 })
+const tabScrollRef = ref<HTMLDivElement | null>(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+
+const updateScrollState = () => {
+  const el = tabScrollRef.value
+  if (!el) return
+
+  canScrollLeft.value = el.scrollLeft > 0
+  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1
+}
+
+const scrollLeft = () => {
+  const el = tabScrollRef.value
+  if (!el) return
+
+  el.scrollBy({
+    left: -el.clientWidth,
+    behavior: 'smooth'
+  })
+}
+
+const scrollRight = () => {
+  const el = tabScrollRef.value
+  if (!el) return
+
+  el.scrollBy({
+    left: el.clientWidth,
+    behavior: 'smooth'
+  })
+}
 
 const onTabButton = (tab: any) => {
   if (tab.key === '') return navigateTo('/casino')
@@ -500,6 +585,23 @@ watch(
   },
   { immediate: true }
 )
+
+let resizeObserver: ResizeObserver | null = null
+onMounted(() => {
+  updateScrollState()
+
+  if (tabScrollRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      updateScrollState()
+    })
+
+    resizeObserver.observe(tabScrollRef.value)
+  }
+})
+
+onUnmounted(() => {
+  resizeObserver?.disconnect()
+})
 </script>
 
 <style scoped lang="scss"></style>
