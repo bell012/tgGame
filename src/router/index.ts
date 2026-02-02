@@ -84,6 +84,15 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '聊天'
     }
+  },
+  {
+    path: 'game/:id',
+    name: 'game-detail',
+    component: () => import('@/views/game/detail/index.vue'),
+    meta: {
+      title: '游戏详情',
+      description: '游戏详情'
+    }
   }
 ]
 
@@ -121,24 +130,6 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: '应用程式下载',
       description: '下载应用程式'
-    }
-  },
-  {
-    path: '/game-details',
-    name: 'GameDetails',
-    component: () => import('@/views/game-details/index.vue'),
-    meta: {
-      title: '游戏详情',
-      description: '游戏详情'
-    }
-  },
-  {
-    path: '/:locale/game-details',
-    name: 'LocaleGameDetails',
-    component: () => import('@/views/game-details/index.vue'),
-    meta: {
-      title: '游戏详情',
-      description: '游戏详情'
     }
   },
   {

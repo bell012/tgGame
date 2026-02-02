@@ -1,13 +1,10 @@
 <template>
   <div class="home max-w-[1248px] mx-auto px-0 py-0 sm:px-4 sm:py-4">
     <div class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl">
-      <img
-        class="absolute right-0 bottom-0 w-full"
-        src="/src/static/img/casino/banner_bg.webp"
-        alt="casino"
-      />
+      <img src="./headBack_h5.png" class="sm:hidden" />
+      <img src="./headBack.png" class="hidden sm:block" />
       <div
-        class="absolute left-2 top-0 flex h-full origin-top flex-col py-4 sm:left-[14%] sm:top-[6%] sm:h-auto sm:items-center sm:py-0 sm:text-center"
+        class="sm:hidden absolute left-2 top-0 flex h-full origin-top flex-col py-4 sm:left-[14%] sm:top-[6%] sm:h-auto sm:items-center sm:py-0 sm:text-center"
       >
         <h1
           class="font-inter text-[20px] font-bold leading-normal text-[var(--color-text-level-1,#FFF)]"
@@ -127,39 +124,45 @@
         <div class="flex w-full flex-col items-stretch gap-2 sm:mt-6 lg:!gap-3">
           <div class="flex flex-3 gap-2 lg:!gap-3">
             <button
-              class="button button-m center relative h-32 flex-1 overflow-hidden rounded-xl p-[10px] font-extrabold sm:h-[176px] sm:p-5 col-span-2 col-start-1"
+              class="button button-m center relative bg-game-casino h-32 flex-1 overflow-hidden rounded-xl p-[10px] font-extrabold sm:h-[176px] sm:p-5 col-span-2 col-start-1"
               type="button"
             >
-              <img class="absolute right-[1px] top-0 h-[100%]" src="./img/casino.png" />
+              <img
+                class="absolute right-[1px] top-0 h-[100%] left-[31%] sm:left-auto"
+                src="./img/casino.png"
+              />
               <div class="relative z-10 flex h-full flex-auto flex-col">
                 <div class="flex items-center">
                   <div class="color_icon_img casino" style="transform: scale(1)"></div>
                   <img :src="icon5" alt="" class="w-[19px]" />
                   <h2 class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Casino') }}</h2>
                 </div>
-                <div
+                <!-- <div
                   class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
                 >
                   {{ $t('home.labelLabel') }}
-                </div>
+                </div> -->
               </div>
             </button>
             <button
-              class="button button-m center relative h-32 flex-1 overflow-hidden p-[10px] rounded-xl font-extrabold sm:h-[176px] sm:p-5 col-start-1"
+              class="button button-m center relative bg-game-sports h-32 flex-1 overflow-hidden p-[10px] rounded-xl font-extrabold sm:h-[176px] sm:p-5 col-start-1"
               type="button"
             >
-              <img class="absolute right-[1px] top-0 h-[100%]" src="./img/sports.png" />
+              <img
+                class="absolute right-[1px] top-0 h-[100%] left-[34%] sm:left-auto"
+                src="./img/sports.png"
+              />
               <div class="relative z-10 flex h-full flex-auto flex-col">
                 <div class="flex items-center">
                   <div class="color_icon_img sports" style="transform: scale(1)"></div>
                   <img :src="icon6" alt="" class="w-[19px]" />
                   <span class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Sports') }}</span>
                 </div>
-                <div
+                <!-- <div
                   class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
                 >
                   {{ $t('home.SportsLabel') }}
-                </div>
+                </div> -->
               </div>
             </button>
           </div>
@@ -178,7 +181,7 @@
               "
             >
               <img
-                class="absolute top-[10%] left-1/2 -translate-x-1/2 gameTypeImg"
+                class="absolute top-[10%] left-1/2 -translate-x-1/2 gameTypeImg sm:left-[50%] sm:top-[16%] sm:h-[66%] sm:-translate-x-[10%]"
                 :src="value.img"
               />
               <div class="pcState absolute left-2 top-2 items-center flex">
@@ -219,7 +222,7 @@
         /><img class="w-6" :src="MATIC" /><img class="w-6" :src="TRX" />
       </div>
 
-      <div class="relative h-20 rounded-xl bg-[#171a1ab3] lg:px-8">
+      <div class="relative h-20 rounded-xl bg-bg-2 lg:px-8">
         <div class="pointer-events-none absolute left-0 size-full overflow-hidden blur">
           <img class="absolute -top-3 left-4 scale-[2]" :src="dotC8z5Aoh" /><img
             class="absolute left-24 top-14 scale-150"
@@ -249,7 +252,14 @@
             <img class="-ml-1 w-6" :src="DOGE" /><img class="-ml-1 w-6" :src="MATIC" />
             <img class="-ml-1 w-6" :src="TRX" />
           </div>
-          <div class="w-full flex items-center justify-between px-[10px] mt-2">
+          <div class="flex items-center justify-center mx-auto gap-6 hidden sm:!flex">
+            <img class="w-14" :src="MAYA" />
+            <img class="w-20" :src="GCASH" />
+            <img class="w-14" :src="VISA" />
+            <img class="w-13" :src="GROU" />
+            <img class="w-23" :src="SHOPEE" />
+          </div>
+          <div class="w-full flex items-center justify-between px-[10px] mt-2 sm:hidden">
             <img class="h-[13px]" :src="MAYA" />
             <img class="h-[13px]" :src="GCASH" />
             <img class="h-[13px]" :src="VISA" />
@@ -325,7 +335,6 @@ const gamelistData = gamelist.map(item => ({
   ...item,
   title: t(item.title)
 }))
-console.log(gamelist, 'gamelist')
 
 const showLoginModal = ref(false)
 
@@ -354,12 +363,16 @@ const listImg = computed(() => [
     name: t('home.lottery'),
     img: combination,
     icon: icon4
+  },
+  {
+    name: t('home.lottery'),
+    img: combination,
+    icon: icon4
   }
 ])
 const carouselVal = ref(0)
 const carousel = (val: number) => {
   carouselVal.value = val
-  console.log(carouselVal.value)
 }
 
 const list = ref([img_1, img_2, img_3, img_4, img_5, img_6, img_7])
@@ -370,16 +383,12 @@ const objectSource = ref(
     number: `188.88K USD`
   }))
 )
-console.log(objectSource.value, 'objectSource')
 const duplicatedList = computed(() => [...objectSource.value, ...objectSource.value])
 </script>
 
 <style scoped lang="scss">
 .home {
   background-color: var(--color-background-level-1);
-}
-.bannerBack {
-  background: url(./img/banner.png) lightgray 0px 0px / 102.517% 100% no-repeat;
 }
 .bg-success {
   background-color: #24ee89;
