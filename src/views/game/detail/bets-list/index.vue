@@ -42,14 +42,14 @@
                 {{ item.game }}
               </span>
             </td>
-            <td class="py-2 px-3 text-text-1 truncate">
-              {{ item.player }}
-            </td>
             <td class="cell" role="cell">
               <div class="flex items-center justify-center">
                 <span>{{ item.BetAmount }}</span>
                 <img src="@/static/img/flag/USD.webp" class="icon" alt="" />
               </div>
+            </td>
+            <td class="py-2 px-3 text-text-1 truncate">
+              {{ item.player }}
             </td>
             <td class="py-2 px-3 flex items-center justify-end gap-1 text-[12px]">
               <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
