@@ -64,20 +64,24 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'game/:id',
+    name: 'gameDetail',
+    component: () => import('@/views/game/detail/index.vue'),
+    meta: {
+      title: '游戏详情',
+      description: '游戏详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'chat-public',
     name: 'chat-public',
     component: () => import('@/views/chat/chat-public/index.vue'),
     meta: {
       title: '聊天'
-    }
-  },
-  {
-    path: 'game/:id',
-    name: 'game-detail',
-    component: () => import('@/views/game/detail/index.vue'),
-    meta: {
-      title: '游戏详情',
-      description: '游戏详情'
     }
   }
 ]
