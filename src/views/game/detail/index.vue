@@ -1,10 +1,8 @@
 <template>
   <div class="w-full h-full max-w-[1248px] mx-auto p-[0px]">
     <h5-header class="block sm:block md:hidden lg:hidden">Queen of Bounty</h5-header>
-    <div class="mt-[12px] rounded-md">
-      <currency-info></currency-info>
-      <currency-bar></currency-bar>
-    </div>
+    <currency-info></currency-info>
+    <currency-bar></currency-bar>
     <recent-games></recent-games>
     <game-list :title="gamelist1.title" :list="gamelist1.list"></game-list>
     <bets-list></bets-list>
