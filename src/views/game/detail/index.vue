@@ -5,6 +5,7 @@
       <currency-info></currency-info>
       <currency-bar></currency-bar>
     </div>
+    <recent-games></recent-games>
     <game-list :title="gamelist1.title" :list="gamelist1.list"></game-list>
     <bets-list></bets-list>
   </div>
@@ -14,6 +15,7 @@ import H5Header from './h5/header.vue'
 import CurrencyInfo from './h5/currency-info/index.vue'
 import CurrencyBar from './currency-bar/index.vue'
 import BetsList from './bets-list/index.vue'
+import RecentGames from './recent-games/index.vue'
 // 游戏列表 ------------ start
 import GameList from './game-list/index.vue'
 import game1 from '@/static/img/test/game1.png'

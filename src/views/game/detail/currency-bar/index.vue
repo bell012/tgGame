@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-[var(--color-background-level-6)] p-[12px]">
+  <div class="bg-[var(--color-background-level-6)] p-[12px] rounded-b-[10px]">
     <div class="flex justify-between items-center">
       <img alt="" class="size-[16px]" :src="LineIcon" />
 
