@@ -74,10 +74,10 @@ const openLanguageModal = () => {
 }
 
 const hideBottomBar = computed(() => {
-  return (route.meta.mobile as any).hideBottomBar && isMobile.value
+  return (route.meta?.mobile as any)?.hideBottomBar && isMobile.value
 })
 
 const hideTopNav = computed(() => {
-  return (route.meta.mobile as any).hideTopNav && isMobile.value
+  return (route.meta?.mobile as any)?.hideTopNav && isMobile.value
 })
 </script>
