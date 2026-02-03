@@ -31,10 +31,9 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import gameImg from '@/static/img/explore/game.png'
 import numImg from '@/static/img/explore/num.png'
 import { inject, Ref, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { navigateTo } from '@/utils/router'
 
 const isMobile = useIsMobile()
-const router = useRouter()
 const isCloseDesktopModal = inject('search-close-desktop-modal') as Ref<boolean>
 
 const list = ref([
@@ -58,7 +57,7 @@ const itemClick = (item: any) => {
   if (!isMobile.value) {
     isCloseDesktopModal.value = true
   }
-  router.push('/game/' + item.id)
+  navigateTo('/game/' + item.id)
 }
 
 // 模拟彩票供应商数据
