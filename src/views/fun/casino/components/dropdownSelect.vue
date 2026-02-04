@@ -207,6 +207,9 @@ const popupClass = computed(() =>
 </script>
 
 <style scoped lang="scss">
+@use '../../../../styles/mixins' as *;
+@include popup-transition;
+
 .desktop-up-down-enter-active,
 .desktop-up-down-leave-active {
   transition: all 0.2s ease;
