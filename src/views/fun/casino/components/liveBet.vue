@@ -98,7 +98,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .live-enter-active,
 .live-leave-active {
   transition: all 0.15s ease;

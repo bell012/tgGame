@@ -2,19 +2,21 @@
   <div class="casino-page p-0 sm:p-4 w-full">
     <div class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl">
       <img
-        class="absolute right-0 bottom-0 w-full"
+        class="absolute right-0 bottom-0 w-full md:w-auto md:h-full"
         src="/src/static/img/casino/banner_bg.webp"
         alt="casino"
       />
       <div
-        class="absolute left-2 top-0 flex h-full origin-top flex-col py-4 sm:left-[14%] sm:top-[6%] sm:h-auto sm:items-center sm:py-0 sm:text-center"
+        class="absolute left-2 top-0 flex h-full origin-top flex-col py-4 sm:left-[14%] sm:top-1/2 sm:-translate-y-1/2 sm:h-auto sm:items-center sm:py-0 sm:text-center"
       >
         <h1
           class="font-inter text-[20px] font-bold leading-normal text-[var(--color-text-level-1,#FFF)]"
         >
           {{ t('locales.casino.banner_title') }}
         </h1>
-        <div>
+        <div
+          class="rounded-xl p-0 text-lg font-semibold sm:mt-4 sm:px-[60px] sm:py-[12px] sm:backdrop-blur-md sm:bg-[rgba(169,169,169,0.2)]"
+        >
           <h2
             class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
           >
@@ -32,7 +34,7 @@
           </h2>
         </div>
         <button
-          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)]"
+          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)] sm:mt-5 sm:w-[200px]"
           type="button"
           @click.stop="showLoginModal = true"
         >
@@ -119,29 +121,82 @@
         </div>
       </div>
     </div>
-    <div class="min-h-screen w-full">
-      <!-- 顶部横行滚动tab选择 -->
-      <div class="flex w-full flex-row overflow-x-auto scrollbar-none my-3.5 gap-0.5">
+    <div class="min-h-screen w-full relative">
+      <!-- 左箭头 -->
+      <div
+        v-if="canScrollLeft"
+        class="absolute left-0 top-0 pr-2 h-[38px] z-10 hidden sm:flex items-center justify-center bg-[var(--color-background-level-1)]"
+      >
         <button
-          v-for="(item, inx) in tabList"
-          :key="inx"
-          :class="{
-            'bg-[var(--color-opacity-10)]': item.id === currentTabId,
-            active: item.id === currentTabId
-          }"
-          class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center hover:bg-[var(--color-opacity-10)]"
-          @click.stop="onTabButton(item)"
+          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-[var(--color-opacity-10)]"
+          @click="scrollLeft"
         >
-          <component
-            :is="casinoIcons[item.icon]"
-            :class="item.id === currentTabId ? 'fill-primary' : 'fill-text-2'"
-            class="w-5 h-5 mr-[7px]"
-          />
-          <div :class="item.id === currentTabId ? 'text-text-1' : 'text-text-2'" class="font-[700]">
-            {{ item.name }}
+          <div class="icon size-4 fill-text-1">
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
+              ></path>
+            </svg>
           </div>
         </button>
       </div>
+      <!-- 顶部横行滚动tab选择 -->
+      <div
+        :class="{
+          'sm:ml-8': canScrollLeft,
+          'sm:mr-8': canScrollRight
+        }"
+      >
+        <div
+          ref="tabScrollRef"
+          class="flex w-full flex-row overflow-x-auto scrollbar-none my-3.5 gap-0.5"
+          @scroll="updateScrollState"
+        >
+          <button
+            v-for="(item, inx) in tabList"
+            :key="inx"
+            :ref="el => (tabRefs[inx] = el as HTMLButtonElement)"
+            :class="{
+              'bg-[var(--color-opacity-10)]': item.id === currentTabId,
+              active: item.id === currentTabId
+            }"
+            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center hover:bg-[var(--color-opacity-10)]"
+            @click.stop="onTabButton(item)"
+          >
+            <component
+              :is="casinoIcons[item.icon]"
+              :class="item.id === currentTabId ? 'fill-primary' : 'fill-text-2'"
+              class="w-5 h-5 mr-[7px]"
+            />
+            <div
+              :class="item.id === currentTabId ? 'text-text-1' : 'text-text-2'"
+              class="font-[700]"
+            >
+              {{ item.name }}
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 右箭头 -->
+      <div
+        v-if="canScrollRight"
+        class="absolute right-0 top-0 pl-2 h-[38px] z-10 hidden sm:flex items-center justify-center bg-[var(--color-background-level-1)]"
+      >
+        <button
+          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-[var(--color-opacity-10)]"
+          @click="scrollRight"
+        >
+          <div class="icon size-4 rotate-180 fill-text-1">
+            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
+              ></path>
+            </svg>
+          </div>
+        </button>
+      </div>
+
       <!-- 6种样式 -->
       <div class="tabs-content min-h-48">
         <component :is="getPageStyle" :modules="tabList" />
@@ -151,19 +206,32 @@
 
   <!-- 注册弹窗 -->
   <LoginModal v-model="showLoginModal" default-tab="register" />
+  <CommonFooter class="hidden sm:block" />
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import LoginModal from '@/components/login_register/LoginModal.vue'
+import CommonFooter from '@/components/commonFooter.vue'
+import { navigateTo } from '@/utils/router'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import pageStyle1 from './components/pageStyle1.vue'
 import pageStyle2 from './components/pageStyle2.vue'
+import pageStyle3 from './components/pageStyle3.vue'
+import pageStyle4 from './components/pageStyle4.vue'
+interface Props {
+  tabKey?: string | undefined
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  tabKey: undefined
+})
 
 const { t } = useI18n()
 
+const tabRefs = ref<HTMLButtonElement[]>([])
 const showLoginModal = ref(false)
 const showHistoryPanel = ref(false)
 const searchText = ref('')
@@ -176,14 +244,13 @@ const suggestedArr = ref<string[]>([
   'Lucky Coming',
   'The Llama Adventure'
 ])
-const currentTabId = ref(1)
-const currentTabStyle = ref(1)
 const tabList = ref([
   {
     id: 1,
     style: 1,
-    name: '大厅',
-    icon: 'home',
+    name: 'Lobby',
+    key: '',
+    icon: 'lobby',
     items: [
       'game1',
       'game2',
@@ -206,8 +273,9 @@ const tabList = ref([
   {
     id: 2,
     style: 2,
-    name: 'BC 原创',
-    icon: 'bc',
+    name: 'TG Originals',
+    key: 'originate',
+    icon: 'tg_originals',
     items: [
       'game1',
       'game2',
@@ -229,27 +297,10 @@ const tabList = ref([
   },
   {
     id: 3,
-    style: 3,
-    name: '老虎机',
-    icon: 'slots',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10'
-    ]
-  },
-  {
-    id: 4,
-    style: 4,
-    name: '扑克',
-    icon: 'poker',
+    style: 2,
+    name: 'Hot Games',
+    key: 'hot_games',
+    icon: 'hot_games',
     items: [
       'game1',
       'game2',
@@ -270,10 +321,93 @@ const tabList = ref([
     ]
   },
   {
+    id: 4,
+    style: 3,
+    name: 'Slots',
+    key: 'slots',
+    icon: 'slots',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10'
+    ]
+  },
+  {
     id: 5,
-    style: 5,
-    name: '供应商',
-    icon: 'favorites_full',
+    style: 3,
+    name: 'Live Casino',
+    key: 'live_casino',
+    icon: 'live_casino',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12'
+    ]
+  },
+  {
+    id: 6,
+    style: 3,
+    name: 'Table Games',
+    key: 'table_games',
+    icon: 'table_games',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12'
+    ]
+  },
+  {
+    id: 7,
+    style: 3,
+    name: 'Fishing',
+    key: 'fishing',
+    icon: 'fishing',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12'
+    ]
+  },
+  {
+    id: 8,
+    style: 2,
+    name: 'Table Tennis',
+    key: 'table_tennis',
+    icon: 'table_tennis',
     items: [
       'game1',
       'game2',
@@ -292,10 +426,11 @@ const tabList = ref([
     ]
   },
   {
-    id: 6,
-    style: 6,
-    name: '游戏主题',
-    icon: 'themes',
+    id: 9,
+    style: 4,
+    name: 'Game Provider',
+    key: 'game_provider',
+    icon: 'game_provider',
     items: [
       'game1',
       'game2',
@@ -308,25 +443,114 @@ const tabList = ref([
       'game9',
       'game10',
       'game11',
-      'game12'
+      'game12',
+      'game13',
+      'game14'
+    ]
+  },
+  {
+    id: 10,
+    style: 2,
+    name: 'Favorites',
+    key: 'favorites',
+    icon: 'favorites',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12',
+      'game13',
+      'game14'
+    ]
+  },
+  {
+    id: 11,
+    style: 2,
+    name: 'Recent',
+    key: 'recent',
+    icon: 'recent',
+    items: [
+      'game1',
+      'game2',
+      'game3',
+      'game4',
+      'game5',
+      'game6',
+      'game7',
+      'game8',
+      'game9',
+      'game10',
+      'game11',
+      'game12',
+      'game13',
+      'game14'
     ]
   }
 ])
 
+const getCurrentTab = computed(() => {
+  const key = props.tabKey ?? ''
+  return tabList.value.find(tab => tab.key === key)
+})
+const currentTabId = computed(() => getCurrentTab.value?.id ?? 1)
+const currentTabStyle = computed(() => getCurrentTab.value?.style ?? 1)
 const getPageStyle = computed(() => {
   switch (currentTabStyle.value) {
     case 1:
       return pageStyle1
     case 2:
       return pageStyle2
+    case 3:
+      return pageStyle3
+    case 4:
+      return pageStyle4
     default:
       return pageStyle2
   }
 })
+const tabScrollRef = ref<HTMLDivElement | null>(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+
+const updateScrollState = () => {
+  const el = tabScrollRef.value
+  if (!el) return
+
+  canScrollLeft.value = el.scrollLeft > 0
+  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1
+}
+
+const scrollLeft = () => {
+  const el = tabScrollRef.value
+  if (!el) return
+
+  el.scrollBy({
+    left: -el.clientWidth,
+    behavior: 'smooth'
+  })
+}
+
+const scrollRight = () => {
+  const el = tabScrollRef.value
+  if (!el) return
+
+  el.scrollBy({
+    left: el.clientWidth,
+    behavior: 'smooth'
+  })
+}
 
 const onTabButton = (tab: any) => {
-  currentTabId.value = tab.id
-  currentTabStyle.value = tab.style
+  if (tab.key === '') return navigateTo('/casino')
+  navigateTo(`/casino/${tab.key}`)
 }
 
 const onSearch = () => {
@@ -344,6 +568,40 @@ const deleteItme = (item: string) => {
 const deleteAll = () => {
   console.log('删除全部搜索历史记录')
 }
+watch(
+  () => getCurrentTab.value,
+  async tab => {
+    if (!tab) return
+
+    await nextTick()
+    const index = tabList.value.findIndex(item => item.key === tab.key)
+    if (index !== -1) {
+      tabRefs.value[index]?.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest'
+      })
+    }
+  },
+  { immediate: true }
+)
+
+let resizeObserver: ResizeObserver | null = null
+onMounted(() => {
+  updateScrollState()
+
+  if (tabScrollRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      updateScrollState()
+    })
+
+    resizeObserver.observe(tabScrollRef.value)
+  }
+})
+
+onUnmounted(() => {
+  resizeObserver?.disconnect()
+})
 </script>
 
 <style scoped lang="scss"></style>

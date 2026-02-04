@@ -21,7 +21,21 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/fun/casino/index.vue'),
     meta: {
       title: '娱乐城'
-    }
+    },
+    props: route => ({
+      tabKey: route.params.tabKey as string | undefined
+    })
+  },
+  {
+    path: 'casino/:tabKey',
+    name: 'casinoTabKey',
+    component: () => import('@/views/fun/casino/index.vue'),
+    meta: {
+      title: '娱乐城'
+    },
+    props: route => ({
+      tabKey: route.params.tabKey as string
+    })
   },
   {
     path: 'originate',
