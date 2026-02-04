@@ -8,7 +8,7 @@
           class="absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center justify-center p-2 rounded-[6px] bg-black/10"
           aria-label="close"
         >
-          <CloseIcon class="w-2.5 h-2.5 text-icon-1" />
+          <CloseIcon class="w-2.5 h-2.5 text-icon-1" @click="close" />
         </button>
       </div>
 
@@ -30,9 +30,17 @@
           />
         </div>
       </div>
+      <button
+        class="flex justify-center items-center w-[92%] h-[40px] buttonStyle m-auto mb-2.5 text-text-4 font-bold"
+      >
+        Join Now
+      </button>
 
-      <!-- 左右按钮 + 滑动条（整体占宽度 50%） -->
-      <div class="flex flex-shrink-0 items-center justify-center px-4 pb-2.5">
+      <!-- 左右按钮 + 滑动条 -->
+      <div
+        v-if="list.length > 1"
+        class="flex flex-shrink-0 items-center justify-center px-4 pb-2.5"
+      >
         <div class="flex w-[25%] min-w-0 items-center justify-between gap-2">
           <button
             type="button"
@@ -99,10 +107,16 @@ import ScrollBar from '@/static/svg/scroll-bar.svg?component'
 
 import Image1 from '@/static/img/test/Image1.png'
 
+const emit = defineEmits<{ close: [] }>()
+
 const list = [Image1, Image1, Image1]
 const carouselRef = ref<HTMLElement | null>(null)
 const currentIndex = ref(0)
 const checked = ref(false)
+
+const close = () => {
+  emit('close')
+}
 
 const onCarouselScroll = () => {
   const el = carouselRef.value
@@ -131,6 +145,13 @@ const next = () => {
 }
 </script>
 <style lang="scss" scoped>
+.buttonStyle {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
+  box-shadow:
+    0 0 12px 0 rgba(35, 238, 136, 0.3),
+    0 -2px 0 0 #1dca6a inset;
+}
 .checkbox-box {
   position: relative;
   flex-shrink: 0;
