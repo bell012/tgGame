@@ -2,7 +2,7 @@
   <div class="fixed inset-0 z-[9999] flex items-end justify-center bg-mask-60-1">
     <div class="w-full max-h-[90vh] flex flex-col bg-bg-1 rounded-t-xl overflow-hidden">
       <div class="bg-bg-2 relative flex flex-1 items-center justify-center pt-2.5 pb-2.5">
-        <span class="text-text-1 font-semibold">Exclusive Promotions</span>
+        <span class="text-text-1 font-semibold">{{ $t('home.ExclusivePromotions') }} </span>
         <button
           type="button"
           class="absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center justify-center p-2 rounded-[6px] bg-black/10"
@@ -33,7 +33,7 @@
       <button
         class="flex justify-center items-center w-[92%] h-[40px] buttonStyle m-auto mb-2.5 text-text-4 font-bold"
       >
-        Join Now
+        {{ $t('home.JoinNow') }}
       </button>
 
       <!-- 左右按钮 + 滑动条 -->
@@ -92,7 +92,7 @@
         >
           <span class="checkbox-box" />
           <input v-model="checked" type="checkbox" class="sr-only" aria-label="多选" />
-          <span class="text-text-1 text-xs">Don’t display this for next 7 day</span>
+          <span class="text-text-1 text-xs">{{ $t('home.DontDisplayThisForNext7Day') }}</span>
         </label>
       </div>
     </div>
