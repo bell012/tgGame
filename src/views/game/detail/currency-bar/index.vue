@@ -1,8 +1,13 @@
 <template>
   <div class="bg-[var(--color-background-level-6)] p-[12px] rounded-b-[10px] relative">
     <div class="flex justify-between items-center">
-      <img alt="" class="size-[16px]" :src="LineIcon" @click="liveStateVisibleClick" />
-      <div class="flex justify-end items-center gap-[10px]">
+      <img
+        alt=""
+        class="size-[16px] cursor-pointer"
+        :src="LineIcon"
+        @click="liveStateVisibleClick"
+      />
+      <div class="flex justify-end items-center gap-[10px] cursor-pointer">
         <img
           alt=""
           class="size-[16px]"
