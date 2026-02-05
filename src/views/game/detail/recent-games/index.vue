@@ -32,7 +32,7 @@ import { provide, ref } from 'vue'
 import TopToggle from './top-toggle.vue'
 import Winlist from './winlist.vue'
 import Rginfo from './rginfo.vue'
-import Review from './review.vue'
+import Review from './review/index.vue'
 
 const tabValue = ref(1)
 const isOpen = ref(false)
