@@ -59,7 +59,7 @@ import sIcon from '@/static/svg/game/detail/share/s.svg?component'
 import telegramIcon from '@/static/svg/game/detail/share/telegram.svg?component'
 import whatsappIcon from '@/static/svg/game/detail/share/whatsapp.svg?component'
 import xIcon from '@/static/svg/game/detail/share/x.svg?component'
-import { ref } from 'vue'
+import { shallowRef } from 'vue'
 
 defineProps<{
   visible: boolean
@@ -70,7 +70,7 @@ const emit = defineEmits<{
   'update:visible': [val: boolean]
 }>()
 
-const shareList = ref([
+const shareList = shallowRef([
   {
     icon: linkIcon,
     label: 'Mais'

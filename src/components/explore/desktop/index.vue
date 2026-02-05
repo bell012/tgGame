@@ -33,7 +33,6 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import CloseIcon from '@/static/svg/close.svg?component'
 import Explore from '@/components/explore/index.vue'
 import { provide, ref, watch } from 'vue'
@@ -58,9 +57,6 @@ watch(
     }
   }
 )
-
-const { t } = useI18n()
-console.log(t('explore'))
 
 const close = () => {
   emit('update:modelValue', false)
