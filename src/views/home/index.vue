@@ -167,7 +167,7 @@
             </button>
           </div>
 
-          <div class="flex flex-4 flex-wrap gap-2 lg:!gap-3">
+          <div class="flex flex-3 flex-wrap gap-2 lg:!gap-3">
             <button
               v-for="value in listImg"
               class="button button-m center relative h-20 flex-1 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px]"
@@ -276,6 +276,8 @@
     </div>
   </div>
   <NewEvent class="mt-2" />
+  <!-- 提示弹窗 -->
+  <H5HomePop v-if="showH5HomePop" @close="closeH5HomePop" class="sm:hidden" />
   <!-- 注册弹窗 -->
   <LoginModal v-model="showLoginModal" default-tab="register" />
   <CommonFooter class="hidden sm:block" />
@@ -287,6 +289,7 @@ import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import EventList from './components/eventList.vue'
 import NewEvent from './components/newEvent.vue'
+import H5HomePop from '@/components/H5HomePop.vue'
 import { gamelist, gamelist1 } from './gamelist'
 import icon from './img/Image4.svg?url'
 import icon1 from './img/Image.svg?url'
@@ -337,6 +340,10 @@ const gamelistData = gamelist.map(item => ({
 }))
 
 const showLoginModal = ref(false)
+const showH5HomePop = ref(true)
+const closeH5HomePop = () => {
+  showH5HomePop.value = false
+}
 
 const listImg = computed(() => [
   {
@@ -358,11 +365,6 @@ const listImg = computed(() => [
     name: t('home.live'),
     img: live,
     icon: icon3
-  },
-  {
-    name: t('home.lottery'),
-    img: combination,
-    icon: icon4
   },
   {
     name: t('home.lottery'),
