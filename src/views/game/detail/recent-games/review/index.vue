@@ -31,13 +31,17 @@
       </div>
     </div>
     <div class="flex gap-[20px]">
-      <div class="flex-1 bg-[var(--color-background-level-1)] rounded-[10px] p-[12px]">
+      <div
+        class="flex-1 flex flex-col justify-center items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[12px]"
+      >
         <div class="text-[var(--color-text-level-2)] text-[12px] text-center">Rate this Game</div>
         <star :count="5" class="flex justify-center mt-[4px]"></star>
       </div>
-      <div class="flex-1 bg-[var(--color-background-level-1)] rounded-[10px] p-[12px]">
+      <div
+        class="flex-1 flex flex-col justify-center items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[12px]"
+      >
         <div class="text-[var(--color-text-level-2)] text-[12px] text-center">11 Ratings</div>
-        <div class="flex justify-center items-center mt-[8px]">
+        <div class="flex justify-center items-center mt-[4px]">
           <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
           <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
           <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
