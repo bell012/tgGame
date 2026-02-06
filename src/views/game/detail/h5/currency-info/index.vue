@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full p-[12px] bg-[var(--color-background-level-3)]">
+  <div class="w-full h-full p-[12px] bg-[var(--color-background-level-3)] rounded-t-[10px]">
     <div class="flex gap-[10px]">
       <div class="w-[110px] h-[146px]">
         <img :src="gameImg" alt="" class="w-full h-full object-contain rounded-md" />
