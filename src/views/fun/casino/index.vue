@@ -50,7 +50,6 @@
         v-model="searchText"
         @keydown.enter.prevent="onSearch"
         @focus="showHistoryPanel = true"
-        @blur="showHistoryPanel = false"
         class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0"
         type="text"
         :placeholder="t('locales.casino.placeholder')"
@@ -64,11 +63,12 @@
       </button>
       <div
         v-show="showHistoryPanel && !searchText"
+        @click.stop="showHistoryPanel = false"
         class="absolute left-0 right-0 p-4 top-full w-full z-20 mt-3 flex flex-col items-center rounded-lg bg-[var(--color-background-level-2)] border border-[var(--color-border-level-1)]"
       >
         <button
           class="absolute -right-2 -top-2 w-5 h-5 bg-bg-4 flex items-center justify-center z-10 rounded-full"
-          @click="showHistoryPanel = false"
+          @click.stop="showHistoryPanel = false"
         >
           <CloseIcon class="w-[12px] h-[12px] fill-text-1" />
         </button>
@@ -558,6 +558,7 @@ const onSearch = () => {
 }
 
 const goSearch = (item: string) => {
+  searchText.value = item
   console.log('点击搜索历史和建议:', item)
 }
 
