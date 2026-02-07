@@ -1,22 +1,41 @@
 <template>
-  <div class="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-mask-60-1">
+  <div
+    class="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-mask-60-1 cursor-pointer"
+    role="button"
+    tabindex="0"
+    aria-label="close"
+    @click="close"
+  >
     <div
-      class="activity-bg flex flex-col items-center justify-end gap-0.5 pb-3.5 w-[80%] max-w-full aspect-[750/1206] max-h-[101vw]"
+      class="activity-bg relative w-[80%] max-w-full cursor-default overflow-hidden rounded-xl"
+      role="presentation"
+      @click.stop
     >
-      <div class="title">NEW USER ONLY</div>
-      <div class="text-text-1">1st Deposit Bonus</div>
-      <div class="activityPop-num">+120%</div>
-      <div class="text-text-1 text-center">
-        <div class="text-base font-bold">Up to ₱58,584.36</div>
-        <div class="text-sm">in Casino or Sports</div>
+      <img :src="activityImg" alt="" class="block w-full h-auto" />
+      <div class="absolute inset-0 flex flex-col items-center justify-end gap-0.5 pb-3.5">
+        <div class="title">NEW USER ONLY</div>
+        <div class="text-text-1">1st Deposit Bonus</div>
+        <div class="activityPop-num">+120%</div>
+        <div class="text-text-1 text-center">
+          <div class="text-base font-bold">Up to ₱58,584.36</div>
+          <div class="text-sm">in Casino or Sports</div>
+        </div>
+        <button
+          type="button"
+          class="mt-5 w-[72%] h-10 flex items-center justify-center activity-but"
+        >
+          <span class="text-text-4 text-base font-bold">Deposit Now</span>
+        </button>
       </div>
-      <button type="button" class="mt-5 w-[72%] h-10 flex items-center justify-center activity-but">
-        <span class="text-text-4 text-base font-bold"> Deposit Now </span>
-      </button>
     </div>
   </div>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import activityImg from '@/static/img/home/activityImg.png'
+
+const emit = defineEmits<{ close: [] }>()
+const close = () => emit('close')
+</script>
 <style scoped lang="scss">
 .title {
   color: var(--color-text-level-1);
@@ -35,13 +54,9 @@
   font-size: 68px;
   font-style: italic;
   font-weight: 900;
-  line-height: normal;
+  line-height: 68px;
 }
 .activity-bg {
-  background-image: url('@/static/img/home/activityImg.png');
-  background-size: contain;
-  background-position: top center;
-  background-repeat: no-repeat;
   background-color: #252626;
 }
 .activity-but {

@@ -276,7 +276,7 @@
     </div>
   </div>
   <NewEvent class="mt-2" />
-  <ActivityPop />
+  <ActivityPop v-if="showActivityPop" class="sm:hidden" @close="closeActivityPop" />
   <!-- 提示弹窗 -->
   <H5HomePop v-if="showH5HomePop" @close="closeH5HomePop" class="sm:hidden" />
   <!-- 注册弹窗 -->
@@ -345,6 +345,10 @@ const showLoginModal = ref(false)
 const showH5HomePop = ref(true)
 const closeH5HomePop = () => {
   showH5HomePop.value = false
+}
+const showActivityPop = ref(true)
+const closeActivityPop = () => {
+  showActivityPop.value = false
 }
 
 const listImg = computed(() => [
