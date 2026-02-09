@@ -1,8 +1,7 @@
 <template>
   <div>
-    <div class="h-[48px] w-full"></div>
     <div
-      class="flex items-center fixed left-0 top-[60px] px-[10px] h-[48px] w-full bg-[var(--color-background-level-5)] z-[99]"
+      class="flex items-center fixed left-0 top-0 px-[10px] h-[48px] w-full bg-[var(--color-background-level-5)] z-[99]"
     >
       <div
         class="size-[28px] bg-[var(--color-background-level-2)] fill-[var(--color-icon-level-2)] rounded-md"
