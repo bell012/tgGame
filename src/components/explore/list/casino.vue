@@ -8,7 +8,7 @@
     class="mt-[20px]"
   >
     <template #item="{ item }">
-      <div class="w-full relative">
+      <div class="w-full relative cursor-pointer" @click="itemClick(item)">
         <!-- 卡片-->
         <div class="w-full aspect-[0.75] overflow-hidden rounded-lg">
           <img :src="gameImg" alt="" class="w-full h-full object-contain" />
@@ -27,9 +27,14 @@
 
 <script setup lang="ts">
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import gameImg from '@/static/img/explore/game.png'
 import numImg from '@/static/img/explore/num.png'
-import { ref } from 'vue'
+import { inject, Ref, ref } from 'vue'
+import { navigateTo } from '@/utils/router'
+
+const isMobile = useIsMobile()
+const isCloseDesktopModal = inject('search-close-desktop-modal') as Ref<boolean>
 
 const list = ref([
   { id: 1, num: 60 },
@@ -47,6 +52,13 @@ const list = ref([
 
 const page = ref(1)
 const totalPages = ref(10)
+
+const itemClick = (item: any) => {
+  if (!isMobile.value) {
+    isCloseDesktopModal.value = true
+  }
+  navigateTo('/game/' + item.id)
+}
 
 // 模拟彩票供应商数据
 // const lotterySupplierList = ref([])
