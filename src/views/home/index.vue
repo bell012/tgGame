@@ -278,7 +278,12 @@
   <NewEvent class="mt-2" />
   <ActivityPop v-if="showActivityPop" class="sm:hidden" @close="closeActivityPop" />
   <!-- 提示弹窗 -->
-  <H5HomePop v-if="showH5HomePop" @close="closeH5HomePop" class="sm:hidden" />
+  <H5HomePop
+    v-if="showH5HomePop"
+    class="sm:hidden"
+    @close="closeH5HomePop"
+    @open-login="openLoginModal"
+  />
   <!-- 注册弹窗 -->
   <LoginModal v-model="showLoginModal" default-tab="register" />
   <CommonFooter class="hidden sm:block" />
@@ -345,6 +350,9 @@ const showLoginModal = ref(false)
 const showH5HomePop = ref(true)
 const closeH5HomePop = () => {
   showH5HomePop.value = false
+}
+const openLoginModal = () => {
+  showLoginModal.value = true
 }
 const showActivityPop = ref(true)
 const closeActivityPop = () => {
