@@ -1,7 +1,7 @@
 <template>
   <div class="flex min-h-screen">
     <!-- 顶部导航 -->
-    <TopNav ref="topNavRef" @toggle-sidebar="toggleSidebar" />
+    <TopNav ref="topNavRef" @toggle-sidebar="toggleSidebar" v-if="!hideTopNav" />
 
     <!-- 侧边栏 -->
     <Sidebar
@@ -20,7 +20,7 @@
     </main>
 
     <!-- 底部Tab栏 -->
-    <BottomTabBar class="sm:hidden" />
+    <BottomTabBar class="sm:hidden" v-if="!hideBottomBar" />
   </div>
 </template>
 
@@ -31,11 +31,14 @@ import { computed, ref } from 'vue'
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
 import TopNav from './TopNav.vue'
+import { useRoute } from 'vue-router'
 
 const layoutStore = useLayoutStore()
 const topNavRef = ref<InstanceType<typeof TopNav> | null>(null)
 const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
 const isSidebarCollapsed = ref(false)
+
+const route = useRoute()
 
 const isMobile = useIsMobile()
 const mainStyle = computed(() => {
@@ -69,4 +72,12 @@ const openLanguageModal = () => {
     topNavRef.value.openLanguageModal()
   }
 }
+
+const hideBottomBar = computed(() => {
+  return (route.meta?.mobile as any)?.hideBottomBar && isMobile.value
+})
+
+const hideTopNav = computed(() => {
+  return (route.meta?.mobile as any)?.hideTopNav && isMobile.value
+})
 </script>
