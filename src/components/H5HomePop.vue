@@ -32,6 +32,7 @@
       </div>
       <button
         class="flex justify-center items-center w-[92%] h-[40px] buttonStyle m-auto mb-2.5 text-text-4 font-bold"
+        @click.stop="openLogin"
       >
         {{ $t('home.JoinNow') }}
       </button>
@@ -107,7 +108,10 @@ import ScrollBar from '@/static/svg/scroll-bar.svg?component'
 
 import Image1 from '@/static/img/test/Image1.png'
 
-const emit = defineEmits<{ close: [] }>()
+const emit = defineEmits<{
+  close: []
+  'open-login': []
+}>()
 
 const list = [Image1, Image1, Image1]
 const carouselRef = ref<HTMLElement | null>(null)
@@ -116,6 +120,10 @@ const checked = ref(false)
 
 const close = () => {
   emit('close')
+}
+
+const openLogin = () => {
+  emit('open-login')
 }
 
 const onCarouselScroll = () => {
