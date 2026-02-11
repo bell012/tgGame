@@ -276,8 +276,14 @@
     </div>
   </div>
   <NewEvent class="mt-2" />
+  <ActivityPop v-if="showActivityPop" class="sm:hidden" @close="closeActivityPop" />
   <!-- 提示弹窗 -->
-  <H5HomePop v-if="showH5HomePop" @close="closeH5HomePop" class="sm:hidden" />
+  <H5HomePop
+    v-if="showH5HomePop"
+    class="sm:hidden"
+    @close="closeH5HomePop"
+    @open-login="openLoginModal"
+  />
   <!-- 注册弹窗 -->
   <LoginModal v-model="showLoginModal" default-tab="register" />
   <CommonFooter class="hidden sm:block" />
@@ -290,6 +296,7 @@ import GameList from './components/gameList.vue'
 import EventList from './components/eventList.vue'
 import NewEvent from './components/newEvent.vue'
 import H5HomePop from '@/components/H5HomePop.vue'
+import ActivityPop from '@/components/activityPop.vue'
 import { gamelist, gamelist1 } from './gamelist'
 import icon from './img/Image4.svg?url'
 import icon1 from './img/Image.svg?url'
@@ -343,6 +350,13 @@ const showLoginModal = ref(false)
 const showH5HomePop = ref(true)
 const closeH5HomePop = () => {
   showH5HomePop.value = false
+}
+const openLoginModal = () => {
+  showLoginModal.value = true
+}
+const showActivityPop = ref(true)
+const closeActivityPop = () => {
+  showActivityPop.value = false
 }
 
 const listImg = computed(() => [
