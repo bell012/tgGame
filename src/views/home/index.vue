@@ -206,7 +206,7 @@
         :key="value.title"
       />
       <EventList />
-      <GameList :title="gamelist1.title" :list="gamelist1.list" />
+      <GameList :title="$t(gamelist1.title)" :list="gamelist1.list" />
     </div>
     <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
       <div class="w-full flex items-center justify-between px-[22px] pb-4 pt-3 lg:!hidden">
@@ -345,7 +345,6 @@ const gamelistData = gamelist.map(item => ({
   ...item,
   title: t(item.title)
 }))
-
 const showLoginModal = ref(false)
 const showH5HomePop = ref(true)
 const closeH5HomePop = () => {
