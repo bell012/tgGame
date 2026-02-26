@@ -1,5 +1,7 @@
 <template>
-  <div class="w-full h-[60px] px-4 flex justify-between items-center fixed left-0 top-0">
+  <div
+    class="w-full h-[60px] px-4 flex justify-between items-center fixed left-0 top-0 bg-[var(--color-background-level-5)] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.05)]"
+  >
     <div>
       <button class="bg-bg-1 rounded-lg flex items-center justify-center">
         <span class="text-text-1">Global</span>
@@ -36,4 +38,9 @@ import { ref } from 'vue'
 
 const popupShow = ref(false)
 </script>
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.top-nav {
+  background-color: var(--color-background-level-5);
+  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.05);
+}
+</style>
