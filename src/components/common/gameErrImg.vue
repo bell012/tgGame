@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full min-h-[140px] flex items-center justify-center overflow-hidden rounded-[8px] bg-[var(--color-background-level-2)] sm:h-full"
+    class="w-full h-full flex items-center justify-center overflow-hidden rounded-[8px] bg-[var(--color-background-level-2)] sm:h-full"
   >
     <img
       :src="currentSrc"

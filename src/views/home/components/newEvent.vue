@@ -41,7 +41,7 @@
           >
             <td class="py-2 px-3 flex items-center gap-1">
               <img :src="item.gameIcon" class="w-3.5 h-3.5" :alt="item.game" />
-              <span class="text-text-1 truncate max-w-[58px]">
+              <span class="text-text-1 truncate max-w-[58px] sm:max-w-[100%]">
                 {{ item.game }}
               </span>
             </td>

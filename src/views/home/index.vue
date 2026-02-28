@@ -46,7 +46,7 @@
           ></div>
         </div>
         <div>{{ $t('home.RecentBigWins') }}</div>
-        <div class="ml-2 gap-2 lg:!flex pcState">
+        <div class="ml-2 gap-2 lg:!flex lg:!flex-col pcState">
           <div
             @click="carousel(0)"
             class="button button-m center h-auto flex-1 whitespace-nowrap rounded-none border-b-2 p-1 text-xs"
@@ -184,14 +184,14 @@
                 class="absolute top-[10%] left-1/2 -translate-x-1/2 gameTypeImg sm:left-[50%] sm:top-[16%] sm:h-[66%] sm:-translate-x-[10%]"
                 :src="value.img"
               />
-              <div class="pcState absolute left-2 top-2 items-center flex">
+              <div class="pcState absolute left-2 top-2 flex flex-col">
                 <div class="color_icon_img bcpoker" style="transform: scale(0.8)">
                   <img :src="value.icon" alt="" />
                 </div>
-                <h2 class="ml-1 text-lg font-extrabold">{{ value.name }}</h2>
+                <h2 class="ml-1 text-sm font-extrabold">{{ value.name }}</h2>
               </div>
               <div class="absolute bottom-1 left-0 block w-full text-center h5State">
-                <span class="text-xs font-extrabold">{{ value.name }}</span>
+                <span class="text-[0.625rem] sm:text-sm font-extrabold">{{ value.name }}</span>
               </div>
             </button>
           </div>
@@ -206,7 +206,7 @@
         :key="value.title"
       />
       <EventList />
-      <GameList :title="gamelist1.title" :list="gamelist1.list" />
+      <GameList :title="$t(gamelist1.title)" :list="gamelist1.list" />
     </div>
     <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
       <div class="w-full flex items-center justify-between px-[22px] pb-4 pt-3 lg:!hidden">
@@ -345,7 +345,6 @@ const gamelistData = gamelist.map(item => ({
   ...item,
   title: t(item.title)
 }))
-
 const showLoginModal = ref(false)
 const showH5HomePop = ref(true)
 const closeH5HomePop = () => {
@@ -361,7 +360,7 @@ const closeActivityPop = () => {
 
 const listImg = computed(() => [
   {
-    name: t('home.contract'),
+    name: t('home.Poker'),
     img: contract,
     icon: icon
   },
