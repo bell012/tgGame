@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import gameImg from '@/static/img/explore/game.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
-import CurrencySelect from '../../common/currency-select/index.vue'
+import CurrencySelect from '../currency-select/index.vue'
 import CurrencyBar from '../currency-bar/index.vue'
 </script>
 <style scoped lang="scss">
