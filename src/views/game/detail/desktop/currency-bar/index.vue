@@ -1,7 +1,12 @@
 <template>
   <div class="bg-[var(--color-background-level-6)] px-[20px] py-[12px] rounded-b-[20px] relative">
     <div class="flex justify-start items-center gap-[10px]">
-      <img alt="" class="size-[16px] cursor-pointer" :src="LineIcon" @click="settingVisibleClick" />
+      <img
+        alt=""
+        class="size-[24px] cursor-pointer"
+        :src="SettingIcon"
+        @click="settingVisibleClick"
+      />
       <div class="flex items-center gap-[10px] cursor-pointer">
         <div class="flex gap-[4px]" @click="toggleStar">
           <img alt="" class="size-[16px]" :src="starActived ? StarActiveIcon : StarIcon" />
@@ -52,6 +57,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import SettingIcon from '@/static/svg/game/detail/setting.svg?url'
 import LineIcon from '@/static/svg/game/detail/lines.svg?url'
 import StarIcon from '@/static/svg/game/detail/star.svg?url'
 import StarActiveIcon from '@/static/svg/game/detail/star_active.svg?url'
