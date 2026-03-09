@@ -74,12 +74,7 @@
         </div>
         <div class="flex items-center gap-[10px]">
           <div>
-            <img
-              alt=""
-              :src="CommentIcon"
-              class="size-[16px] cursor-pointer"
-              @click="openCommentPopup"
-            />
+            <img alt="" :src="CommentIcon" class="size-[16px] cursor-pointer" />
           </div>
           <div class="relative">
             <img alt="" :src="ZanIcon" class="size-[16px]" />
@@ -109,12 +104,7 @@
         </div>
         <div class="flex items-center gap-[10px]">
           <div>
-            <img
-              alt=""
-              :src="CommentIcon"
-              class="size-[16px] cursor-pointer"
-              @click="openCommentPopup"
-            />
+            <img alt="" :src="CommentIcon" class="size-[16px] cursor-pointer" />
           </div>
           <div class="relative">
             <img alt="" :src="ZanIcon" class="size-[16px]" />
@@ -144,12 +134,7 @@
         </div>
         <div class="flex items-center gap-[10px]">
           <div>
-            <img
-              alt=""
-              :src="CommentIcon"
-              class="size-[16px] cursor-pointer"
-              @click="openCommentPopup"
-            />
+            <img alt="" :src="CommentIcon" class="size-[16px] cursor-pointer" />
           </div>
           <div class="relative">
             <img alt="" :src="ZanIcon" class="size-[16px]" />
@@ -168,24 +153,15 @@
         Well, I played it and actually won. Lucky me.
       </div>
     </div>
-    <comment-popup v-model:visible="commentPopupVisible" />
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
 import Star from './star.vue'
 import ProgressBar from './progress.vue'
-import CommentPopup from './comment-popup.vue'
 import PersonIcon from '@/static/svg/game/detail/comment/person.svg?url'
 import SanIcon from '@/static/svg/game/detail/comment/san.svg?url'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
 import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
 import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?url'
 import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?url'
-
-const commentPopupVisible = ref(false)
-
-const openCommentPopup = () => {
-  commentPopupVisible.value = true
-}
 </script>
