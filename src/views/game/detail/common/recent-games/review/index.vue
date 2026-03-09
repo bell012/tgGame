@@ -175,7 +175,6 @@
 import { ref } from 'vue'
 import Star from './star.vue'
 import ProgressBar from './progress.vue'
-import CommentPopup from './comment-popup.vue'
 import PersonIcon from '@/static/svg/game/detail/comment/person.svg?url'
 import SanIcon from '@/static/svg/game/detail/comment/san.svg?url'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
