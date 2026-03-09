@@ -7,7 +7,7 @@
       <div v-if="isOpen">
         <!-- 面板信息 -->
         <rginfo />
-        <!-- tab -->
+        <!-- tab111 -->
         <div
           class="flex h-[50px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[20px] p-[4px] max-w-[500px]"
         >
