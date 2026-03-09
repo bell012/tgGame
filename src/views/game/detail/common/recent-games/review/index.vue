@@ -1,13 +1,16 @@
 <template>
   <div class="mt-[12px]">
     <div
-      class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] p-[12px]"
+      class="flex flex-col lg:flex-row bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] p-[12px]"
     >
-      <div class="flex justify-start items-center gap-[20px]">
+      <div class="lg:flex-1 flex justify-start items-center gap-[20px]">
         <div class="text-[26px] font-bold w-[100px] text-right">3.0</div>
-        <star :count="5" :active-count="3" />
+        <div>
+          <star :count="5" :active-count="3" />
+          <div class="text-[13px] text-[var(--color-text-level-2)] hidden lg:block">Out of 5</div>
+        </div>
       </div>
-      <div class="flex flex-col mt-[12px] gap-[10px]">
+      <div class="lg:flex-1 flex flex-col mt-[12px] gap-[10px]">
         <div class="flex justify-between items-center gap-[10px]">
           <star :count="5" class="w-[100px]" />
           <progress-bar :percent="50" />
@@ -71,7 +74,12 @@
         </div>
         <div class="flex items-center gap-[10px]">
           <div>
-            <img alt="" :src="CommentIcon" class="size-[16px]" />
+            <img
+              alt=""
+              :src="CommentIcon"
+              class="size-[16px] cursor-pointer"
+              @click="openCommentPopup"
+            />
           </div>
           <div class="relative">
             <img alt="" :src="ZanIcon" class="size-[16px]" />
@@ -101,7 +109,12 @@
         </div>
         <div class="flex items-center gap-[10px]">
           <div>
-            <img alt="" :src="CommentIcon" class="size-[16px]" />
+            <img
+              alt=""
+              :src="CommentIcon"
+              class="size-[16px] cursor-pointer"
+              @click="openCommentPopup"
+            />
           </div>
           <div class="relative">
             <img alt="" :src="ZanIcon" class="size-[16px]" />
@@ -131,7 +144,12 @@
         </div>
         <div class="flex items-center gap-[10px]">
           <div>
-            <img alt="" :src="CommentIcon" class="size-[16px]" />
+            <img
+              alt=""
+              :src="CommentIcon"
+              class="size-[16px] cursor-pointer"
+              @click="openCommentPopup"
+            />
           </div>
           <div class="relative">
             <img alt="" :src="ZanIcon" class="size-[16px]" />
@@ -150,15 +168,24 @@
         Well, I played it and actually won. Lucky me.
       </div>
     </div>
+    <comment-popup v-model:visible="commentPopupVisible" />
   </div>
 </template>
 <script setup lang="ts">
+import { ref } from 'vue'
 import Star from './star.vue'
 import ProgressBar from './progress.vue'
+import CommentPopup from './comment-popup.vue'
 import PersonIcon from '@/static/svg/game/detail/comment/person.svg?url'
 import SanIcon from '@/static/svg/game/detail/comment/san.svg?url'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
 import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
 import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?url'
 import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?url'
+
+const commentPopupVisible = ref(false)
+
+const openCommentPopup = () => {
+  commentPopupVisible.value = true
+}
 </script>
