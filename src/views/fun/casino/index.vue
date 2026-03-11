@@ -43,6 +43,7 @@
       </div>
     </div>
     <div
+      ref="searchRef"
       class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border mt-[10px] border-[var(--color-opacity-10,rgba(255,255,255,0.1))] bg-[var(--color-opacity-6,rgba(255,255,255,0.06))] focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-400/40 transition"
     >
       <img class="w-[18px] h-[18px]" src="/src/static/img/casino/search.webp" alt="search" />
@@ -516,6 +517,7 @@ const getPageStyle = computed(() => {
       return pageStyle2
   }
 })
+const searchRef = ref<HTMLDivElement | null>(null)
 const tabScrollRef = ref<HTMLDivElement | null>(null)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
@@ -569,6 +571,16 @@ const deleteItme = (item: string) => {
 const deleteAll = () => {
   console.log('删除全部搜索历史记录')
 }
+
+const handleClickOutside = (e: MouseEvent) => {
+  if (!searchRef.value) return
+
+  const target = e.target as Node
+  if (!searchRef.value.contains(target)) {
+    showHistoryPanel.value = false
+  }
+}
+
 watch(
   () => getCurrentTab.value,
   async tab => {
@@ -591,6 +603,7 @@ let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
   updateScrollState()
 
+  document.addEventListener('click', handleClickOutside)
   if (tabScrollRef.value) {
     resizeObserver = new ResizeObserver(() => {
       updateScrollState()
@@ -602,6 +615,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   resizeObserver?.disconnect()
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
