@@ -95,7 +95,10 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'chat-public',
     component: () => import('@/views/chat/chat-public/index.vue'),
     meta: {
-      title: '聊天'
+      title: '聊天',
+      mobile: {
+        hideTopNav: true
+      }
     }
   }
 ]
