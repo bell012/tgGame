@@ -80,7 +80,8 @@
     <div class="flex items-center gap-[10px] mt-[10px]">
       <img alt="" :src="PersonIcon" class="size-[44px] rounded-[44px]" />
       <div
-        class="flex-1 flex h-[50px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[4px] px-[12px]"
+        class="flex-1 flex h-[50px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[4px] px-[12px] cursor-pointer"
+        @click="openCommentPopup"
       >
         <div class="text-[12px] text-[var(--color-text-level-2)]">Leave your Comment</div>
         <img alt="" :src="EmoIcon" class="size-[18px]" />
@@ -177,12 +178,14 @@
         Well, I played it and actually won. Lucky me.
       </div>
     </div>
+    <CommentPopup v-model="isCommentPopupOpen" @submit="submitComment" />
   </div>
 </template>
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import Star from './star.vue'
 import ProgressBar from './progress.vue'
+import CommentPopup from './comment-popup.vue'
 import PersonIcon from '@/static/svg/game/detail/comment/person.svg?url'
 import SanIcon from '@/static/svg/game/detail/comment/san.svg?url'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
@@ -193,6 +196,7 @@ import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?url'
 const sortMenuRef = ref<HTMLElement | null>(null)
 const isSortPopupOpen = ref(false)
 const activeSort = ref('newest')
+const isCommentPopupOpen = ref(false)
 const sortOptions = [
   { value: 'newest', label: 'Newest First' },
   { value: 'comments', label: 'Top Comments' },
@@ -206,6 +210,14 @@ const toggleSortPopup = () => {
 const selectSort = (value: string) => {
   activeSort.value = value
   isSortPopupOpen.value = false
+}
+
+const openCommentPopup = () => {
+  isCommentPopupOpen.value = true
+}
+
+const submitComment = (content: string) => {
+  console.log(content)
 }
 
 const handleClickOutside = (event: MouseEvent) => {
