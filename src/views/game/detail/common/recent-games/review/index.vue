@@ -226,6 +226,7 @@ onBeforeUnmount(() => {
     opacity 0.2s ease,
     transform 0.2s ease;
 }
+
 .sort-popup-enter-from,
 .sort-popup-leave-to {
   opacity: 0;
