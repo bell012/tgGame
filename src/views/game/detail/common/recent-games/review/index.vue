@@ -77,12 +77,16 @@
         </div>
       </transition>
     </div>
-    <div
-      class="flex h-[50px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[20px] p-[4px] px-[12px]"
-    >
-      <div class="text-[12px] text-[var(--color-text-level-2)]">Leave your Comment</div>
-      <img alt="" :src="EmoIcon" class="size-[18px]" />
+    <div class="flex items-center gap-[10px] mt-[10px]">
+      <img alt="" :src="PersonIcon" class="size-[44px] rounded-[44px]" />
+      <div
+        class="flex-1 flex h-[50px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[4px] px-[12px]"
+      >
+        <div class="text-[12px] text-[var(--color-text-level-2)]">Leave your Comment</div>
+        <img alt="" :src="EmoIcon" class="size-[18px]" />
+      </div>
     </div>
+
     <div
       class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[12px] px-[12px]"
     >
