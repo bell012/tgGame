@@ -2,6 +2,7 @@
   <div class="relative">
     <!-- 触发按钮 -->
     <button
+      ref="triggerRef"
       @click.stop="togglePopup"
       class="w-full flex items-center justify-between px-2.5 py-[11px] bg-[var(--color-opacity-5)] rounded-lg border border-solid border-[var(--color-opacity-10)]"
     >
@@ -36,12 +37,18 @@
 
     <!-- 弹窗 -->
     <transition :name="isMobile ? 'up-down' : 'desktop-up-down'">
-      <div v-show="popupShow" class="fixed left-0 bottom-0 z-[9999] w-full" :class="popupClass">
+      <div
+        v-show="popupShow"
+        class="fixed left-0 bottom-0 z-[9999] w-full"
+        :class="popupClass"
+        :style="isMobile ? {} : { top: desktopTop }"
+      >
         <div
+          ref="popupRef"
           class="bg-[var(--color-background-level-1)] rounded-t-xl pt-2.5 px-3.5 flex flex-col"
           :class="{
             'max-h-[75vh]': isMobile,
-            'max-h-[18rem] overflow-y-auto rounded-xl desktop-popup': !isMobile
+            'max-h-[16rem] overflow-y-auto rounded-xl desktop-popup-inner': !isMobile
           }"
         >
           <!-- 顶部栏 -->
@@ -70,7 +77,7 @@
           </div>
 
           <!-- 选项列表 -->
-          <div class="flex-1 overflow-y-auto pb-[58px]">
+          <div class="flex-1 overflow-y-auto" :class="{ 'pb-[58px]': Multi }">
             <div class="flex flex-col">
               <div
                 v-for="(item, idx) in filteredOptions"
@@ -157,8 +164,22 @@ const isMobile = useIsMobile()
 const popupShow = ref(false)
 const keyword = ref('')
 
-const togglePopup = () => (popupShow.value = !popupShow.value)
-const closePopup = () => (popupShow.value = false)
+const selectedLabel = computed(() => {
+  if (props.Multi) return props.selectedList.length > 0 ? `+${props.selectedList.length}` : 'All'
+  else {
+    const sel = props.options.find(o => o.value === props.selected)
+    return sel ? sel.label : ''
+  }
+})
+
+const popupClass = computed(() => {
+  if (isMobile.value) return 'fixed left-0 bottom-0 w-full'
+
+  return [
+    'desktop-popup',
+    popupPlacement.value === 'top' ? 'desktop-popup-top' : 'desktop-popup-bottom'
+  ]
+})
 
 const filteredOptions = computed(() => {
   if (!keyword.value) return props.options
@@ -167,6 +188,14 @@ const filteredOptions = computed(() => {
     item => item.label.toLowerCase().includes(k) || item.value.toLowerCase().includes(k)
   )
 })
+
+const triggerRef = ref<HTMLElement | null>(null)
+const popupRef = ref<HTMLElement | null>(null)
+const popupPlacement = ref<'bottom' | 'top'>('bottom')
+const desktopTop = ref('calc(100% + 5px)')
+
+const togglePopup = () => (popupShow.value = !popupShow.value)
+const closePopup = () => (popupShow.value = false)
 
 const isSelected = (item: { value: string }) =>
   props.Multi ? props.selectedList.includes(item.value) : props.selected === item.value
@@ -186,27 +215,51 @@ const selectItem = (item: { value: string }) => {
 
 const clearAll = () => emit('update:selected-list', [])
 
+const GAP = 5
+const updatePopupPlacement = () => {
+  if (!triggerRef.value || !popupRef.value) return
+
+  const triggerRect = triggerRef.value.getBoundingClientRect()
+  const popupHeight = popupRef.value.offsetHeight
+  const viewportHeight = window.innerHeight
+
+  const spaceBelow = viewportHeight - triggerRect.bottom
+  const spaceAbove = triggerRect.top
+
+  const canBottom = spaceBelow >= popupHeight
+  const canTop = spaceAbove >= popupHeight
+
+  if (canBottom && canTop) {
+    popupPlacement.value = spaceBelow >= spaceAbove ? 'bottom' : 'top'
+  } else if (canBottom) {
+    popupPlacement.value = 'bottom'
+  } else if (canTop) {
+    popupPlacement.value = 'top'
+  } else {
+    popupPlacement.value = spaceBelow >= spaceAbove ? 'bottom' : 'top'
+  }
+
+  desktopTop.value =
+    popupPlacement.value === 'bottom' ? `calc(100% + ${GAP}px)` : `-${popupHeight + GAP}px`
+}
+
 watch(popupShow, val => {
-  if (val && isMobile.value) document.body.classList.add('overflow-hidden')
-  else document.body.classList.remove('overflow-hidden')
-})
-
-onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
-
-const selectedLabel = computed(() => {
-  if (props.Multi) return props.selectedList.length > 0 ? `+${props.selectedList.length}` : 'All'
-  else {
-    const sel = props.options.find(o => o.value === props.selected)
-    return sel ? sel.label : ''
+  if (val && isMobile.value) {
+    document.body.classList.add('overflow-hidden')
+  } else if (val && !isMobile.value) {
+    requestAnimationFrame(() => updatePopupPlacement())
+  } else {
+    document.body.classList.remove('overflow-hidden')
   }
 })
 
-const popupClass = computed(() =>
-  isMobile.value ? 'fixed left-0 bottom-0 w-full' : 'desktop-popup'
-)
+onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
 </script>
 
 <style scoped lang="scss">
+@use '../../../../styles/mixins' as *;
+@include popup-transition;
+
 .desktop-up-down-enter-active,
 .desktop-up-down-leave-active {
   transition: all 0.2s ease;
@@ -218,10 +271,26 @@ const popupClass = computed(() =>
   transform: translateY(-20px);
 }
 
+.desktop-up-down-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.desktop-popup[style*='-'] .desktop-up-down-enter-from {
+  transform: translateY(-10px);
+}
+
 .desktop-popup {
-  top: calc(100% + 5px);
   position: absolute;
   left: 0;
   width: 100%;
+  pointer-events: none;
+}
+
+.desktop-popup-inner {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  pointer-events: auto;
 }
 </style>
