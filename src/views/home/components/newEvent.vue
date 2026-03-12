@@ -18,11 +18,7 @@
 
     <!-- Table -->
     <div class="table-wrap">
-      <table
-        class="table [&_td]:px-3 [&_td]:py-3 sm:[&_td]:px-4"
-        role="table"
-        style="overflow-anchor: none"
-      >
+      <table class="table [&_td]:px-3 [&_td]:py-3 sm:[&_td]:px-4" role="table">
         <thead class="table-head pc-only" role="rowgroup">
           <tr role="row" class="bg-bg-2 text-text-2">
             <th>{{ $t('home.Game') }}</th>
@@ -33,36 +29,44 @@
           </tr>
         </thead>
 
-        <TransitionGroup tag="tbody" name="live">
+        <tbody>
           <tr
             v-for="(item, index) in rows"
             :key="item.id"
-            :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
+            :class="['table-row-fixed', index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
           >
-            <td class="py-2 px-3 flex items-center gap-1">
-              <img :src="item.gameIcon" class="w-3.5 h-3.5" :alt="item.game" />
-              <span class="text-text-1 truncate max-w-[58px] sm:max-w-[100%]">
-                {{ item.game }}
-              </span>
+            <td class="table-cell-fixed">
+              <div class="flex items-center gap-1">
+                <img :src="item.gameIcon" class="w-3.5 h-3.5 flex-shrink-0" :alt="item.game" />
+                <span class="text-text-1 truncate max-w-[58px] sm:max-w-[100%]">
+                  {{ item.game }}
+                </span>
+              </div>
             </td>
-            <td class="py-2 px-3 text-text-1 truncate max-w-[60px]">
+            <td class="table-cell-fixed text-text-1 truncate max-w-[60px]">
               {{ item.player }}
             </td>
-            <td class="cell h5-hide" role="cell">
+            <td class="table-cell-fixed h5-hide" role="cell">
               <div class="flex items-center justify-center">
                 <span>{{ item.BetAmount }}</span>
                 <img src="@/static/img/flag/USD.webp" class="icon" alt="" />
               </div>
             </td>
-            <td class="py-2 px-3 text-center text-[12px]">x{{ item.multiplier }}</td>
-            <td class="py-2 px-3 flex items-center justify-end gap-1 text-[12px]">
-              <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
-                {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
-              </span>
-              <img src="@/static/img/flag/USD.webp" class="w-3 h-3" :alt="item.game" />
+            <td class="table-cell-fixed text-center text-[12px]">x{{ item.multiplier }}</td>
+            <td class="table-cell-fixed">
+              <div class="flex items-center justify-end gap-1 text-[12px]">
+                <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
+                  {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
+                </span>
+                <img
+                  src="@/static/img/flag/USD.webp"
+                  class="w-3 h-3 flex-shrink-0"
+                  :alt="item.game"
+                />
+              </div>
             </td>
           </tr>
-        </TransitionGroup>
+        </tbody>
       </table>
     </div>
   </div>
@@ -168,6 +172,7 @@ onUnmounted(() => {
   box-sizing: border-box;
   overflow: hidden;
   border-radius: 10px;
+  contain: layout paint;
 }
 
 .table {
@@ -175,6 +180,8 @@ onUnmounted(() => {
   border-collapse: collapse;
   table-layout: fixed;
   text-align: center;
+  will-change: transform;
+  transform: translateZ(0);
 }
 .table td:nth-child(1),
 .table th:nth-child(1) {
@@ -188,8 +195,17 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-.table-row {
+.table-row-fixed {
+  height: 48px;
   padding: 0;
+  overflow: hidden;
+}
+
+.table-cell-fixed {
+  height: 48px;
+  vertical-align: middle;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .table tbody tr td {
@@ -216,25 +232,6 @@ onUnmounted(() => {
   flex: 0 0 20px;
   display: inline;
   margin: 0 4px;
-}
-/* 进入 / 离开动画 */
-.latestList-enter-active,
-.latestList-leave-active {
-  transition: all 0.3s ease;
-}
-.live-enter-from {
-  opacity: 0;
-  transform: translateY(-1px);
-}
-
-.live-leave-to {
-  opacity: 0;
-  transform: translateY(1px);
-}
-
-/* 排序移动动画（关键） */
-.latestList-move {
-  transition: transform 0.3s ease;
 }
 
 @media (max-width: 767px) {
