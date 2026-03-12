@@ -43,6 +43,7 @@
       </div>
     </div>
     <div
+      ref="searchRef"
       class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border mt-[10px] border-[var(--color-opacity-10,rgba(255,255,255,0.1))] bg-[var(--color-opacity-6,rgba(255,255,255,0.06))] focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-400/40 transition"
     >
       <img class="w-[18px] h-[18px]" src="/src/static/img/casino/search.webp" alt="search" />
@@ -50,7 +51,6 @@
         v-model="searchText"
         @keydown.enter.prevent="onSearch"
         @focus="showHistoryPanel = true"
-        @blur="showHistoryPanel = false"
         class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0"
         type="text"
         :placeholder="t('locales.casino.placeholder')"
@@ -64,11 +64,12 @@
       </button>
       <div
         v-show="showHistoryPanel && !searchText"
+        @click.stop="showHistoryPanel = false"
         class="absolute left-0 right-0 p-4 top-full w-full z-20 mt-3 flex flex-col items-center rounded-lg bg-[var(--color-background-level-2)] border border-[var(--color-border-level-1)]"
       >
         <button
           class="absolute -right-2 -top-2 w-5 h-5 bg-bg-4 flex items-center justify-center z-10 rounded-full"
-          @click="showHistoryPanel = false"
+          @click.stop="showHistoryPanel = false"
         >
           <CloseIcon class="w-[12px] h-[12px] fill-text-1" />
         </button>
@@ -516,6 +517,7 @@ const getPageStyle = computed(() => {
       return pageStyle2
   }
 })
+const searchRef = ref<HTMLDivElement | null>(null)
 const tabScrollRef = ref<HTMLDivElement | null>(null)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
@@ -558,6 +560,7 @@ const onSearch = () => {
 }
 
 const goSearch = (item: string) => {
+  searchText.value = item
   console.log('点击搜索历史和建议:', item)
 }
 
@@ -568,6 +571,16 @@ const deleteItme = (item: string) => {
 const deleteAll = () => {
   console.log('删除全部搜索历史记录')
 }
+
+const handleClickOutside = (e: MouseEvent) => {
+  if (!searchRef.value) return
+
+  const target = e.target as Node
+  if (!searchRef.value.contains(target)) {
+    showHistoryPanel.value = false
+  }
+}
+
 watch(
   () => getCurrentTab.value,
   async tab => {
@@ -590,6 +603,7 @@ let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
   updateScrollState()
 
+  document.addEventListener('click', handleClickOutside)
   if (tabScrollRef.value) {
     resizeObserver = new ResizeObserver(() => {
       updateScrollState()
@@ -601,6 +615,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   resizeObserver?.disconnect()
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
