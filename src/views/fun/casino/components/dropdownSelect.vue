@@ -80,7 +80,7 @@
           <div class="flex-1 overflow-y-auto" :class="{ 'pb-[58px]': Multi }">
             <div class="flex flex-col">
               <div
-                v-for="(item, idx) in filteredOptions"
+                v-for="item in filteredOptions"
                 :key="item.value"
                 class="mb-2.5 flex h-[42px] items-center rounded-lg px-2.5 cursor-pointer"
                 :class="{
