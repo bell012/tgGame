@@ -161,7 +161,7 @@
               'bg-[var(--color-opacity-10)]': item.id === currentTabId,
               active: item.id === currentTabId
             }"
-            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center hover:bg-[var(--color-opacity-10)]"
+            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-[var(--color-opacity-10)]"
             @click.stop="onTabButton(item)"
           >
             <component
