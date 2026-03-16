@@ -10,7 +10,7 @@ import type {
   RegisterResponse,
   SmsForm,
   SmsResponse
-} from '@/interface/login_register'
+} from '@/api/interface/login_register'
 
 /**
  * 会员登录
