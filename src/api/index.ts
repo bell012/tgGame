@@ -1,23 +1,14 @@
-import request from '@/utils/request'
+/**
+ * API 统一入口
+ * 使用方式：import Api from '@/api'
+ * 调用示例：
+ *   - Api.auth.login(data)
+ */
 
-export const getUserInfo = () => {
-  return request({
-    url: '/user/info',
-    method: 'get'
-  })
+import * as auth from './modules/auth'
+
+const Api = {
+  auth // 登录、注册、短信验证码
 }
 
-export const login = (data: { username: string; password: string }) => {
-  return request({
-    url: '/auth/login',
-    method: 'post',
-    data
-  })
-}
-
-export const logout = () => {
-  return request({
-    url: '/auth/logout',
-    method: 'post'
-  })
-}
+export default Api
