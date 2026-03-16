@@ -217,6 +217,8 @@ import ResetPasswordDesktop from './ResetPasswordDesktop.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useThemeStore } from '@/stores/theme'
 import { useI18n } from 'vue-i18n'
+import loginPcDark from '@/static/img/home/login_pc_h.png'
+import loginPcLight from '@/static/img/home/login_pc_b.png'
 
 // 是否为移动端
 const isMobile = useIsMobile()
@@ -225,9 +227,7 @@ const { t } = useI18n()
 
 // 主题动态背景图
 const pcBackgroundImage = computed(() => {
-  return themeStore.theme === 'dark'
-    ? '/src/static/img/home/login_pc_h.png'
-    : '/src/static/img/home/login_pc_b.png'
+  return themeStore.theme === 'dark' ? loginPcDark : loginPcLight
 })
 
 interface Props {
