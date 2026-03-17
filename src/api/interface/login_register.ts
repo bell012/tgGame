@@ -50,6 +50,7 @@ export interface SmsForm {
 
 // 发送短信响应
 export interface SmsResponse {
-  success: boolean
+  code: string
   message: string
+  success: boolean
 }

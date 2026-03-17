@@ -19,6 +19,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import Api from '@/api'
 
 interface Props {
   defaultTab?: 'signin' | 'signup'
@@ -120,7 +121,21 @@ const handleRegister = async () => {
 
 // 发送验证码
 const handleSendCode = async () => {
-  console.log('发送验证码到:')
+  try {
+    const telephone = formData.value.signup.account
+    if (!telephone) {
+      console.log('请输入手机号')
+      return
+    }
+    // 调用发送短信接口
+    const response = await Api.auth.sendSms({
+      telephone: telephone,
+      areaCode: '63'
+    })
+    console.log('短信接口返回数据:', response)
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 // 第三方登录
