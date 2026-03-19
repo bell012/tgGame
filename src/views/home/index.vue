@@ -290,8 +290,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Api from '@/api'
 import GameList from './components/gameList.vue'
 import EventList from './components/eventList.vue'
 import NewEvent from './components/newEvent.vue'
@@ -399,6 +400,18 @@ const objectSource = ref(
   }))
 )
 const duplicatedList = computed(() => [...objectSource.value, ...objectSource.value])
+
+const gameData = ref<any>(null)
+
+onMounted(async () => {
+  try {
+    const res = await Api.home.getGameType()
+    gameData.value = res
+    console.log('getGameData success', res)
+  } catch (error) {
+    console.error('getGameData failed', error)
+  }
+})
 </script>
 
 <style scoped lang="scss">
