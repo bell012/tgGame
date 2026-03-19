@@ -405,7 +405,7 @@ const gameData = ref<any>(null)
 
 onMounted(async () => {
   try {
-    const res = await Api.home.getGameType()
+    const res = await Api.home.getGameData()
     gameData.value = res
     console.log('getGameData success', res)
   } catch (error) {
