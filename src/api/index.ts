@@ -6,9 +6,11 @@
  */
 
 import * as auth from './modules/auth'
+import * as home from './modules/home'
 
 const Api = {
-  auth // 登录、注册、短信验证码
+  auth, // 登录、注册、短信验证码
+  home // 首页数据
 }
 
 export default Api
