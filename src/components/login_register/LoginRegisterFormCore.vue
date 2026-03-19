@@ -5,6 +5,8 @@
     :show-confirm-password="showConfirmPassword"
     :form-data="formData"
     :checkbox-animating="checkboxAnimating"
+    :is-signin-valid="isSigninValid"
+    :is-signup-valid="isSignupValid"
     :set-active-tab="setActiveTab"
     :toggle-password="togglePassword"
     :toggle-confirm-password="toggleConfirmPassword"
@@ -16,13 +18,16 @@
     :open-reset-password="openResetPassword"
     :handle-signin-account-input="handleSigninAccountInput"
     :handle-signup-account-input="handleSignupAccountInput"
+    :handle-signin-password-input="handleSigninPasswordInput"
+    :handle-signup-password-input="handleSignupPasswordInput"
+    :handle-signup-confirm-password-input="handleSignupConfirmPasswordInput"
   />
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import Api from '@/api'
-import { handlePhoneInput } from '@/utils/phone-input'
+import { handlePhoneInput, handlePasswordInput, isValidPassword } from '@/utils/phone-input'
 
 interface Props {
   defaultTab?: 'signin' | 'signup'
@@ -72,28 +77,40 @@ const formData = ref({
   }
 })
 
-// 处理登录账号输入
-const handleSigninAccountInput = (event: Event) => {
-  handlePhoneInput(event, value => {
-    formData.value.signin.account = value
-  })
-}
-
-// 处理注册账号输入
-const handleSignupAccountInput = (event: Event) => {
-  handlePhoneInput(event, value => {
-    formData.value.signup.account = value
-  })
-}
-
 // 复选框动画状态
 const checkboxAnimating = ref({
   rememberMe: false
 })
 
+// 登录表单验证
+const isSigninValid = computed(() => {
+  return (
+    formData.value.signin.account.length === 10 && isValidPassword(formData.value.signin.password)
+  )
+})
+
+// 注册表单验证
+const isSignupValid = computed(() => {
+  return (
+    formData.value.signup.account.length === 10 &&
+    formData.value.signup.code.length > 0 &&
+    isValidPassword(formData.value.signup.password) &&
+    formData.value.signup.password === formData.value.signup.confirmPassword
+  )
+})
+
 // 设置激活的标签页
 const setActiveTab = (tab: 'signin' | 'signup') => {
   activeTab.value = tab
+  if (tab === 'signin') {
+    formData.value.signin.account = ''
+    formData.value.signin.password = ''
+  } else {
+    formData.value.signup.account = ''
+    formData.value.signup.code = ''
+    formData.value.signup.password = ''
+    formData.value.signup.confirmPassword = ''
+  }
 }
 
 // 切换密码显示/隐藏
@@ -165,12 +182,49 @@ const openResetPassword = () => {
   emit('open-reset-password')
 }
 
+// 处理登录账号输入
+const handleSigninAccountInput = (event: Event) => {
+  handlePhoneInput(event, value => {
+    formData.value.signin.account = value
+  })
+}
+
+// 处理注册账号输入
+const handleSignupAccountInput = (event: Event) => {
+  handlePhoneInput(event, value => {
+    formData.value.signup.account = value
+  })
+}
+
+// 处理登录密码输入
+const handleSigninPasswordInput = (event: Event) => {
+  handlePasswordInput(event, value => {
+    formData.value.signin.password = value
+  })
+}
+
+// 处理注册密码输入
+const handleSignupPasswordInput = (event: Event) => {
+  handlePasswordInput(event, value => {
+    formData.value.signup.password = value
+  })
+}
+
+// 处理注册确认密码输入
+const handleSignupConfirmPasswordInput = (event: Event) => {
+  handlePasswordInput(event, value => {
+    formData.value.signup.confirmPassword = value
+  })
+}
+
 defineExpose({
   formData,
   activeTab,
   showPassword,
   showConfirmPassword,
   checkboxAnimating,
+  isSigninValid,
+  isSignupValid,
   setActiveTab,
   togglePassword,
   toggleConfirmPassword,
@@ -181,6 +235,9 @@ defineExpose({
   handleSocialLogin,
   openResetPassword,
   handleSigninAccountInput,
-  handleSignupAccountInput
+  handleSignupAccountInput,
+  handleSigninPasswordInput,
+  handleSignupPasswordInput,
+  handleSignupConfirmPasswordInput
 })
 </script>
