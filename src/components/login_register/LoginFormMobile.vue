@@ -7,6 +7,8 @@
         showConfirmPassword,
         formData,
         checkboxAnimating,
+        isSigninValid,
+        isSignupValid,
         setActiveTab,
         togglePassword,
         toggleConfirmPassword,
@@ -16,7 +18,10 @@
         handleSendCode,
         openResetPassword,
         handleSigninAccountInput,
-        handleSignupAccountInput
+        handleSignupAccountInput,
+        handleSigninPasswordInput,
+        handleSignupPasswordInput,
+        handleSignupConfirmPasswordInput
       }"
     >
       <teleport to="body">
@@ -153,10 +158,11 @@
                         />
                         <!-- 请输入密码 -->
                         <input
-                          v-model="formData.signin.password"
+                          :value="formData.signin.password"
                           :type="showPassword.signin ? 'text' : 'password'"
                           :placeholder="t('locales.common.enter_password')"
                           class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          @input="handleSigninPasswordInput"
                         />
                         <button
                           type="button"
@@ -205,7 +211,9 @@
 
                     <!-- 登录 -->
                     <button
-                      class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4"
+                      class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4 transition-all"
+                      :class="{ 'opacity-40 cursor-not-allowed': !isSigninValid }"
+                      :disabled="!isSigninValid"
                       @click="handleLogin"
                     >
                       {{ t('locales.home.sign_In') }}
@@ -279,10 +287,11 @@
                         />
                         <!-- 请输入密码 -->
                         <input
-                          v-model="formData.signup.password"
+                          :value="formData.signup.password"
                           :type="showPassword.signup ? 'text' : 'password'"
                           :placeholder="t('locales.common.enter_password')"
                           class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          @input="handleSignupPasswordInput"
                         />
                         <button
                           type="button"
@@ -306,10 +315,11 @@
                         />
                         <!-- 请输入确认密码 -->
                         <input
-                          v-model="formData.signup.confirmPassword"
+                          :value="formData.signup.confirmPassword"
                           :type="showConfirmPassword ? 'text' : 'password'"
                           :placeholder="t('locales.common.enter_confirm_password')"
                           class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          @input="handleSignupConfirmPasswordInput"
                         />
                         <button
                           type="button"
@@ -324,7 +334,9 @@
 
                     <!-- 注册按钮 -->
                     <button
-                      class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4"
+                      class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4 transition-all"
+                      :class="{ 'opacity-40 cursor-not-allowed': !isSignupValid }"
+                      :disabled="!isSignupValid"
                       @click="handleRegister"
                     >
                       <!-- 注册 -->

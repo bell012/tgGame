@@ -5,11 +5,14 @@
         showPassword,
         showConfirmPassword,
         formData,
+        isResetValid,
         togglePassword,
         toggleConfirmPassword,
         handleSendCode,
         handleResetPassword,
-        handleAccountInput
+        handleAccountInput,
+        handlePasswordInput,
+        handleConfirmPasswordInput
       }"
     >
       <teleport to="body">
@@ -150,10 +153,11 @@
                       />
                       <!-- 请输入密码 -->
                       <input
-                        v-model="formData.password"
+                        :value="formData.password"
                         :type="showPassword ? 'text' : 'password'"
                         :placeholder="t('locales.common.enter_password')"
                         class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        @input="handlePasswordInput"
                       />
                       <button
                         type="button"
@@ -177,10 +181,11 @@
                       />
                       <!-- 请输入确认密码 -->
                       <input
-                        v-model="formData.confirmPassword"
+                        :value="formData.confirmPassword"
                         :type="showConfirmPassword ? 'text' : 'password'"
                         :placeholder="t('locales.common.enter_confirm_password')"
                         class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        @input="handleConfirmPasswordInput"
                       />
                       <button
                         type="button"
@@ -195,7 +200,9 @@
 
                   <!-- 确认 -->
                   <button
-                    class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4"
+                    class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4 transition-all"
+                    :class="{ 'opacity-40 cursor-not-allowed': !isResetValid }"
+                    :disabled="!isResetValid"
                     @click="handleResetPassword"
                   >
                     {{ t('locales.common.confirm') }}
