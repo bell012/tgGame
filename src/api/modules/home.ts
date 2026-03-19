@@ -7,7 +7,7 @@ import request from '@/utils/request'
 export function getGameData(): Promise<any> {
   return request({
     url: '/gc/queryGameListForApp',
-    method: 'get'
+    method: 'post'
   })
 }
 
