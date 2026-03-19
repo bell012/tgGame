@@ -144,6 +144,13 @@ export default defineConfig({
   server: {
     port: 4000,
     open: true,
-    cors: true
+    cors: true,
+    proxy: {
+      '/api': {
+        target: 'https://web.txtvv9.top/v1',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, '')
+      }
+    }
   }
 })
