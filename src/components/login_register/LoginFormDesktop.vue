@@ -12,7 +12,9 @@
         handleLogin,
         handleRegister,
         handleSendCode,
-        openResetPassword
+        openResetPassword,
+        handleSigninAccountInput,
+        handleSignupAccountInput
       }"
     >
       <div class="w-full h-full flex flex-col">
@@ -49,12 +51,21 @@
             <div class="text-sm font-[700] text-text-1 mb-2">{{ t('locales.common.account') }}</div>
             <div class="mb-6">
               <!-- 请输入账号 -->
-              <input
-                v-model="formData.signin.account"
-                type="text"
-                :placeholder="t('locales.common.enter_account')"
-                class="w-full h-[50px] pl-2 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
-              />
+              <div class="relative">
+                <span
+                  class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-theme-level-1)] text-xs font-[500]"
+                >
+                  +63
+                </span>
+                <input
+                  :value="formData.signin.account"
+                  type="text"
+                  inputmode="numeric"
+                  :placeholder="t('locales.common.enter_account')"
+                  class="w-full h-[50px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  @input="handleSigninAccountInput"
+                />
+              </div>
             </div>
 
             <!-- 密码 -->
@@ -132,12 +143,21 @@
             <div class="text-sm font-[700] text-text-1 mb-2">{{ t('locales.common.account') }}</div>
             <div class="mb-6">
               <!-- 请输入账号 -->
-              <input
-                v-model="formData.signup.account"
-                type="text"
-                :placeholder="t('locales.common.enter_account')"
-                class="w-full h-[50px] pl-2 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
-              />
+              <div class="relative">
+                <span
+                  class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-theme-level-1)] text-xs font-[500]"
+                >
+                  +63
+                </span>
+                <input
+                  :value="formData.signup.account"
+                  type="text"
+                  inputmode="numeric"
+                  :placeholder="t('locales.common.enter_account')"
+                  class="w-full h-[50px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  @input="handleSignupAccountInput"
+                />
+              </div>
             </div>
 
             <!-- 验证码 -->

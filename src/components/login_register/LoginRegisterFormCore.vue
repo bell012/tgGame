@@ -14,12 +14,15 @@
     :handle-send-code="handleSendCode"
     :handle-social-login="handleSocialLogin"
     :open-reset-password="openResetPassword"
+    :handle-signin-account-input="handleSigninAccountInput"
+    :handle-signup-account-input="handleSignupAccountInput"
   />
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import Api from '@/api'
+import { handlePhoneInput } from '@/utils/phone-input'
 
 interface Props {
   defaultTab?: 'signin' | 'signup'
@@ -68,6 +71,20 @@ const formData = ref({
     confirmPassword: ''
   }
 })
+
+// 处理登录账号输入
+const handleSigninAccountInput = (event: Event) => {
+  handlePhoneInput(event, value => {
+    formData.value.signin.account = value
+  })
+}
+
+// 处理注册账号输入
+const handleSignupAccountInput = (event: Event) => {
+  handlePhoneInput(event, value => {
+    formData.value.signup.account = value
+  })
+}
 
 // 复选框动画状态
 const checkboxAnimating = ref({
@@ -162,6 +179,8 @@ defineExpose({
   handleRegister,
   handleSendCode,
   handleSocialLogin,
-  openResetPassword
+  openResetPassword,
+  handleSigninAccountInput,
+  handleSignupAccountInput
 })
 </script>

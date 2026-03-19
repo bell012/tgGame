@@ -7,11 +7,13 @@
     :toggle-confirm-password="toggleConfirmPassword"
     :handle-send-code="handleSendCode"
     :handle-reset-password="handleResetPassword"
+    :handle-account-input="handleAccountInput"
   />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { handlePhoneInput } from '@/utils/phone-input'
 
 // 密码显示状态
 const showPassword = ref(false)
@@ -24,6 +26,13 @@ const formData = ref({
   password: '',
   confirmPassword: ''
 })
+
+// 处理账号输入
+const handleAccountInput = (event: Event) => {
+  handlePhoneInput(event, (value: string) => {
+    formData.value.account = value
+  })
+}
 
 // 切换密码显示/隐藏
 const togglePassword = () => {
@@ -52,6 +61,7 @@ defineExpose({
   togglePassword,
   toggleConfirmPassword,
   handleSendCode,
-  handleResetPassword
+  handleResetPassword,
+  handleAccountInput
 })
 </script>
