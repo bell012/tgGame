@@ -6,6 +6,7 @@
         showPassword,
         formData,
         checkboxAnimating,
+        countdown,
         isSigninValid,
         isSignupValid,
         setActiveTab,
@@ -17,6 +18,7 @@
         openResetPassword,
         handleSigninAccountInput,
         handleSignupAccountInput,
+        handleSignupCodeInput,
         handleSigninPasswordInput,
         handleSignupPasswordInput,
         handleSignupConfirmPasswordInput
@@ -177,18 +179,22 @@
                 <SafeIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
                 <!-- 请输入验证码 -->
                 <input
-                  v-model="formData.signup.code"
+                  :value="formData.signup.code"
                   type="text"
+                  inputmode="numeric"
                   :placeholder="t('locales.common.enter_verification')"
                   class="w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  @input="handleSignupCodeInput"
                 />
                 <!-- 获取验证码 -->
                 <button
                   type="button"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-xs font-[500] rounded-lg"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-xs font-[500] rounded-lg transition-opacity"
+                  :class="{ 'opacity-50 cursor-not-allowed': countdown > 0 }"
+                  :disabled="countdown > 0"
                   @click="handleSendCode"
                 >
-                  {{ t('locales.common.get_code') }}
+                  {{ countdown > 0 ? `${countdown}s` : t('locales.common.get_code') }}
                 </button>
               </div>
             </div>

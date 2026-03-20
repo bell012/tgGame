@@ -2,6 +2,39 @@
  * 登录注册相关接口类型定义
  */
 
+// 登陆注册设置响应 /ad/getLoginAndRegisterSetting
+export interface LoginSetResult {
+  registerEnable: number // 是否容许注册  0:关闭 1:开启
+  memberName: {
+    // 会员真实姓名
+    enable: boolean
+    required: boolean
+  }
+  phone: {
+    // 手机号码
+    enable: boolean
+    required: boolean
+  }
+  invitationCode: {
+    // 邀请码
+    enable: boolean
+    required: boolean
+  }
+  registerAuthType: [number] // 注册验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信
+  loginAuthType: [number] // 登录验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信
+  registerMethod: [number] // 注册方式1账号密码 2手机号码
+  loginMethod: [number] // 登陆方式1账号密码 2手机号码
+  sysAuthType: number // 系统验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信
+}
+
+// 登陆注册设置响应
+export interface LoginSetResponse {
+  code: string
+  message: string
+  result: LoginSetResult
+  success: boolean
+}
+
 // 会员登录 /mc/loginMember
 export interface LoginForm {
   memberId: string // 会员账号(账号还是手机都要传。手机是区号+号码)
@@ -28,8 +61,9 @@ export interface RegisterForm {
   requestMethod: number // 0:账号密码 1:手机号码
   currency: string // 币种
   smsCode: string // 短信验证码
-  password?: string // 密码（账号密码注册时需要）
-  areaCode?: string // 区号（手机号注册时需要）
+  memberPwd?: string // 会员密码,手机注册时可以不传
+  areaCode: string // 区号（手机号注册时需要）
+  telephone: string // 手机号码 手机注册时也要传值
 }
 
 // 注册响应

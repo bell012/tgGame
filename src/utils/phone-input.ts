@@ -55,6 +55,26 @@ export const isValidPassword = (value: string): boolean => {
 }
 
 /**
+ * 格式化验证码：只保留数字，最多6位
+ * @param value 输入的字符串
+ * @returns 格式化后的字符串（只包含数字，最多6位）
+ */
+export const formatVerificationCode = (value: string): string => {
+  const digitsOnly = value.replace(/\D/g, '')
+  return digitsOnly.slice(0, 6)
+}
+
+/**
+ * 处理验证码输入事件
+ */
+export const handleVerificationCodeInput = (event: Event, callback: (value: string) => void) => {
+  const input = event.target as HTMLInputElement
+  const formatted = formatVerificationCode(input.value)
+  callback(formatted)
+  input.value = formatted
+}
+
+/**
  * 处理密码输入事件
  * @param event 输入事件
  * @param callback 回调函数，用于更新表单数据
