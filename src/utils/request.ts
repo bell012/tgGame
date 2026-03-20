@@ -2,6 +2,7 @@ import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
 import { v4 as uuidv4 } from 'uuid'
 import { getDeviceTraceId } from './deviceId'
 import { AESUtils } from './encrypt'
+import CryptoJS from 'crypto-js'
 
 const service: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
@@ -19,13 +20,33 @@ function getLanguageCode(): string {
   return language === 'zh-CN' ? 'zh' : 'en'
 }
 
+/**
+ * 处理 x-auth-token 生成 Authorization
+ * 1. 取 content-lengths 的最后一位数字
+ * 2. 从 x-auth-token 中去除所有包含该数字的字符
+ * 3. 进行 MD5 加密
+ */
+function generateAuthorization(): string {
+  try {
+    const contentLength = localStorage.getItem('contentLength')
+    const xAuthToken = localStorage.getItem('xAuthToken')
+
+    if (!contentLength || !xAuthToken) {
+      return ''
+    }
+    const lastDigit = contentLength.slice(-1)
+    const processedToken = xAuthToken.replace(new RegExp(lastDigit, 'g'), '')
+    const md5Token = CryptoJS.MD5(processedToken).toString()
+    return md5Token
+  } catch (error) {
+    console.error(error)
+    return ''
+  }
+}
+
 // 请求拦截器
 service.interceptors.request.use(
   (config: any) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
     const requestUuid = uuidv4()
 
     // 13 位时间戳
@@ -39,6 +60,16 @@ service.interceptors.request.use(
     config.headers.bundleId = '1.0.0'
     config.headers.languageCode = getLanguageCode()
     config.headers.channelId = '1'
+    if (!config.url?.includes('/ad/getLoginAndRegisterSetting')) {
+      const xAuthToken = localStorage.getItem('xAuthToken')
+      if (xAuthToken) {
+        config.headers['X-Auth-Token'] = xAuthToken
+      }
+      const authorization = generateAuthorization()
+      if (authorization) {
+        config.headers.Authorization = authorization
+      }
+    }
 
     // 加密请求数据
     if (config.data && config.method === 'post') {
@@ -70,6 +101,18 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   (response: AxiosResponse) => {
+    if (response.config.url?.includes('/ad/getLoginAndRegisterSetting')) {
+      const xhr = response.request
+      if (xhr && xhr.getResponseHeader) {
+        const contentLengths = xhr.getResponseHeader('content-lengths')
+        const xAuthToken = xhr.getResponseHeader('x-auth-token')
+        if (contentLengths && xAuthToken) {
+          localStorage.setItem('contentLength', contentLengths)
+          localStorage.setItem('xAuthToken', xAuthToken)
+        }
+      }
+    }
+
     const res = response.data
     if (response.status !== 200) {
       return Promise.reject(new Error(res.message || 'Error'))

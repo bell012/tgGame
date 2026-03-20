@@ -4,6 +4,7 @@
 
 import request from '@/utils/request'
 import type {
+  LoginSetResponse,
   LoginForm,
   LoginResponse,
   RegisterForm,
@@ -12,6 +13,18 @@ import type {
   SmsResponse
 } from '@/api/interface/login_register'
 
+/**
+ * 登陆注册设置
+ * @param data 登陆注册设置数据
+ * @returns Promise<LoginSetResponse>
+ */
+export function getLoginAndRegisterSetting(data: {}): Promise<LoginSetResponse> {
+  return request({
+    url: '/ad/getLoginAndRegisterSetting',
+    method: 'post',
+    data
+  })
+}
 /**
  * 会员登录
  * @param data 登录表单数据

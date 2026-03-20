@@ -219,6 +219,7 @@ import { useThemeStore } from '@/stores/theme'
 import { useI18n } from 'vue-i18n'
 import loginPcDark from '@/static/img/home/login_pc_h.png'
 import loginPcLight from '@/static/img/home/login_pc_b.png'
+import Api from '@/api'
 
 // 是否为移动端
 const isMobile = useIsMobile()
@@ -248,13 +249,25 @@ const showResetPassword = ref(false)
 
 watch(
   () => props.modelValue,
-  newVal => {
+  async newVal => {
     if (newVal) {
       activeTab.value = props.defaultTab
       showResetPassword.value = false
+      // 弹窗打开时请求登录注册配置
+      await fetchLoginAndRegisterSetting()
     }
   }
 )
+
+// 请求登录注册配置
+const fetchLoginAndRegisterSetting = async () => {
+  try {
+    const response = await Api.auth.getLoginAndRegisterSetting({})
+    console.log('登录注册配置:', response)
+  } catch (error) {
+    console.error(error)
+  }
+}
 
 watch(
   () => props.defaultTab,

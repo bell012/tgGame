@@ -5,6 +5,7 @@
     :show-confirm-password="showConfirmPassword"
     :form-data="formData"
     :checkbox-animating="checkboxAnimating"
+    :countdown="countdown"
     :is-signin-valid="isSigninValid"
     :is-signup-valid="isSignupValid"
     :set-active-tab="setActiveTab"
@@ -18,6 +19,7 @@
     :open-reset-password="openResetPassword"
     :handle-signin-account-input="handleSigninAccountInput"
     :handle-signup-account-input="handleSignupAccountInput"
+    :handle-signup-code-input="handleSignupCodeInput"
     :handle-signin-password-input="handleSigninPasswordInput"
     :handle-signup-password-input="handleSignupPasswordInput"
     :handle-signup-confirm-password-input="handleSignupConfirmPasswordInput"
@@ -27,7 +29,12 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import Api from '@/api'
-import { handlePhoneInput, handlePasswordInput, isValidPassword } from '@/utils/phone-input'
+import {
+  handlePhoneInput,
+  handlePasswordInput,
+  handleVerificationCodeInput,
+  isValidPassword
+} from '@/utils/phone-input'
 
 interface Props {
   defaultTab?: 'signin' | 'signup'
@@ -82,6 +89,10 @@ const checkboxAnimating = ref({
   rememberMe: false
 })
 
+// 验证码倒计时
+const countdown = ref(0)
+let countdownTimer: ReturnType<typeof setInterval> | null = null
+
 // 登录表单验证
 const isSigninValid = computed(() => {
   return (
@@ -93,7 +104,7 @@ const isSigninValid = computed(() => {
 const isSignupValid = computed(() => {
   return (
     formData.value.signup.account.length === 10 &&
-    formData.value.signup.code.length > 0 &&
+    formData.value.signup.code.length === 6 &&
     isValidPassword(formData.value.signup.password) &&
     formData.value.signup.password === formData.value.signup.confirmPassword
   )
@@ -150,23 +161,66 @@ const handleLogin = async () => {
 
 // 注册
 const handleRegister = async () => {
-  console.log('注册:')
+  try {
+    // 获取当前语言
+    const language = localStorage.getItem('language') || 'en'
+    const languageCode = language === 'zh-CN' ? 'zh' : 'en'
+
+    // 构建注册参数
+    const registerData = {
+      memberId: `63${formData.value.signup.account}`,
+      channelId: '1',
+      languageCode: languageCode,
+      requestMethod: 1,
+      currency: 'usd',
+      smsCode: formData.value.signup.code, // 验证码
+      memberPwd: formData.value.signup.password,
+      areaCode: '63',
+      telephone: formData.value.signup.account
+    }
+    // 注册接口
+    const response = await Api.auth.register(registerData)
+    console.log('注册成功:', response)
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 // 发送验证码
 const handleSendCode = async () => {
+  if (countdown.value > 0) {
+    return
+  }
+
   try {
     const telephone = formData.value.signup.account
     if (!telephone) {
-      console.log('请输入手机号')
       return
     }
-    // 调用发送短信接口
+
+    if (telephone.length !== 10) {
+      return
+    }
+    // 发送短信接口
     const response = await Api.auth.sendSms({
       telephone: telephone,
       areaCode: '63'
     })
     console.log('短信接口返回数据:', response)
+    // 开始60秒倒计时
+    countdown.value = 60
+    if (countdownTimer) {
+      clearInterval(countdownTimer)
+    }
+    countdownTimer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        if (countdownTimer) {
+          clearInterval(countdownTimer)
+          countdownTimer = null
+        }
+      }
+    }, 1000)
   } catch (error) {
     console.error(error)
   }
@@ -193,6 +247,13 @@ const handleSigninAccountInput = (event: Event) => {
 const handleSignupAccountInput = (event: Event) => {
   handlePhoneInput(event, value => {
     formData.value.signup.account = value
+  })
+}
+
+// 处理注册验证码输入
+const handleSignupCodeInput = (event: Event) => {
+  handleVerificationCodeInput(event, value => {
+    formData.value.signup.code = value
   })
 }
 
@@ -223,6 +284,7 @@ defineExpose({
   showPassword,
   showConfirmPassword,
   checkboxAnimating,
+  countdown,
   isSigninValid,
   isSignupValid,
   setActiveTab,
@@ -236,6 +298,7 @@ defineExpose({
   openResetPassword,
   handleSigninAccountInput,
   handleSignupAccountInput,
+  handleSignupCodeInput,
   handleSigninPasswordInput,
   handleSignupPasswordInput,
   handleSignupConfirmPasswordInput
