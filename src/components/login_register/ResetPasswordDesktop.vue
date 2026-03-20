@@ -6,11 +6,13 @@
         showConfirmPassword,
         formData,
         isResetValid,
+        countdown,
         togglePassword,
         toggleConfirmPassword,
         handleSendCode,
         handleResetPassword,
         handleAccountInput,
+        handleCodeInput,
         handlePasswordInput,
         handleConfirmPasswordInput
       }"
@@ -32,20 +34,18 @@
           <!-- 账号 -->
           <div class="text-sm font-[700] text-text-1 mb-2">{{ t('locales.common.account') }}</div>
           <div class="mb-6">
+            <!-- 请输入账号 -->
             <div class="relative">
-              <!-- +63 前缀 -->
               <span
-                class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium pointer-events-none"
-                style="color: var(--color-theme-level-1)"
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-theme-level-1)] text-xs font-[500]"
               >
                 +63
               </span>
-              <!-- 请输入账号 -->
               <input
                 :value="formData.account"
                 type="text"
                 inputmode="numeric"
-                :placeholder="t('locales.common.enter_account')"
+                :placeholder="t('locales.common.enter_phone_number')"
                 class="w-full h-[50px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                 @input="handleAccountInput"
               />
@@ -61,18 +61,22 @@
               <SafeIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
               <!-- 请输入验证码 -->
               <input
-                v-model="formData.code"
+                :value="formData.code"
                 type="text"
+                inputmode="numeric"
                 :placeholder="t('locales.common.enter_verification')"
                 class="w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                @input="handleCodeInput"
               />
               <!-- 获取验证码 -->
               <button
                 type="button"
-                class="absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-xs font-[500] rounded-lg"
+                class="absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-xs font-[500] rounded-lg transition-opacity"
+                :class="{ 'opacity-50 cursor-not-allowed': countdown > 0 }"
+                :disabled="countdown > 0"
                 @click="handleSendCode"
               >
-                {{ t('locales.common.get_code') }}
+                {{ countdown > 0 ? `${countdown}s` : t('locales.common.get_code') }}
               </button>
             </div>
           </div>

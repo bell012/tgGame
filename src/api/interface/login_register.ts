@@ -45,12 +45,9 @@ export interface LoginForm {
 
 // 登录响应
 export interface LoginResponse {
-  token: string
-  userInfo: {
-    memberId: string
-    nickname?: string
-    avatar?: string
-  }
+  code: string
+  message: string
+  success: boolean
 }
 
 // 会员注册 /mc/newMember
@@ -68,12 +65,9 @@ export interface RegisterForm {
 
 // 注册响应
 export interface RegisterResponse {
-  token: string
-  userInfo: {
-    memberId: string
-    nickname?: string
-    avatar?: string
-  }
+  code: string
+  message: string
+  success: boolean
 }
 
 // 发送短信验证码 /sy/sms
@@ -84,6 +78,22 @@ export interface SmsForm {
 
 // 发送短信响应
 export interface SmsResponse {
+  code: string
+  message: string
+  success: boolean
+}
+
+// 发送短信验证码 /sy/sms
+export interface ResetPasswordForm {
+  memberPwd: string //新密码
+  smsCode: string //短信验证码
+  telephone: string //手机号
+  areaCode: string //区号
+  memberId: string // 会员账号(账号还是手机都要传。手机是区号+号码)
+}
+
+// 发送短信响应
+export interface ResetPasswordResponse {
   code: string
   message: string
   success: boolean

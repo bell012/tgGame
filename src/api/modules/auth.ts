@@ -10,7 +10,9 @@ import type {
   RegisterForm,
   RegisterResponse,
   SmsForm,
-  SmsResponse
+  SmsResponse,
+  ResetPasswordForm,
+  ResetPasswordResponse
 } from '@/api/interface/login_register'
 
 /**
@@ -25,6 +27,7 @@ export function getLoginAndRegisterSetting(data: {}): Promise<LoginSetResponse> 
     data
   })
 }
+
 /**
  * 会员登录
  * @param data 登录表单数据
@@ -59,6 +62,19 @@ export function register(data: RegisterForm): Promise<RegisterResponse> {
 export function sendSms(data: SmsForm): Promise<SmsResponse> {
   return request({
     url: '/sy/sms',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 重置密码
+ * @param data 重置密码表单数据
+ * @returns Promise<ResetPasswordResponse>
+ */
+export function resetPassword(data: ResetPasswordForm): Promise<ResetPasswordResponse> {
+  return request({
+    url: '/mc/resetPassword',
     method: 'post',
     data
   })
