@@ -55,95 +55,14 @@
       class="grid snap-x relative snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth hide-scroll mx-0 mt-3 gap-2 grid-col-1"
       style="--grid-gap: 0.75rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
-      <div v-for="(event, index) in events" :key="index" class="col-item rounded-[12px]">
-        <div
-          class="relative flex h-full w-full cursor-pointer flex-col rounded-xl bg-layer4 px-3 py-2.5"
-        >
-          <p class="flex max-w-full items-center text-ellipsis whitespace-nowrap font-semibold">
-            <span>{{ event.sport }}</span
-            ><span class="sports-dont ml-1.5"></span><span class="ml-1.5">{{ event.type }}</span>
-          </p>
-          <div
-            class="text-[var(--color-secondary-level-4)] rounded-[6px] bg-[var(--color-secondary-level-3)] absolute right-2 top-2.5 flex h-6 items-center rounded-md px-1.5 bg-brand/10 text-brand"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="7"
-              height="8"
-              viewBox="0 0 7 8"
-              fill="none"
-            >
-              <path
-                d="M6.00976 3.14497L1.51853 0.421399C0.852092 0.0172616 0 0.497062 0 1.27646V6.7236C0 7.50299 0.852091 7.9828 1.51852 7.57866L6.00976 4.85509C6.65173 4.46579 6.65173 3.53427 6.00976 3.14497Z"
-                fill="#2AEE88"
-              />
-            </svg>
-            <span class="ml-0.5">{{ $t('home.Live') }}</span>
-          </div>
-          <div class="flex flex-grow flex-col justify-between">
-            <div class="center flex flex-1 items-center">
-              <div class="mt-4 flex w-full items-center justify-between">
-                <div class="flex w-1/3 flex-none flex-col items-center justify-center">
-                  <div class="sports-banner-match-icon h-12">
-                    <div>
-                      <img alt="icon" :src="event.team1.icon" />
-                    </div>
-                  </div>
-                  <p class="mt-1.5 text-center font-semibold">{{ event.team1.name }}</p>
-                </div>
-                <div class="flex w-1/3 flex-none flex-col items-center justify-center">
-                  <p class="text-2xl">
-                    <span class="font-semibold">{{ event.score.team1 }}</span
-                    ><span class="mx-1">:</span
-                    ><span class="font-semibold">{{ event.score.team2 }}</span>
-                  </p>
-                  <p class="mt-2 text-[var(--color-text-level-2)]">{{ event.half }}</p>
-                </div>
-                <div class="flex w-1/3 flex-none flex-col items-center justify-center">
-                  <div class="sports-banner-match-icon h-12">
-                    <div>
-                      <img alt="icon" :src="event.team2.icon" />
-                    </div>
-                  </div>
-                  <p class="mt-1.5 text-center font-semibold">{{ event.team2.name }}</p>
-                </div>
-              </div>
-            </div>
-            <div class="mt-4 flex w-full items-center justify-between gap-2">
-              <div
-                class="flex h-10 flex-1 items-center justify-center rounded-lg font-semibold"
-                style="background: rgba(252, 60, 60, 0.15)"
-              >
-                <span>{{ event.odds[0].label }}</span
-                ><span class="ml-2 text-[var(--color-secondary-level-2)]">{{
-                  event.odds[0].value
-                }}</span>
-              </div>
-              <div
-                class="flex h-10 flex-1 items-center justify-center rounded-lg font-semibold"
-                style="background: rgba(252, 60, 60, 0.15)"
-              >
-                <span>{{ event.odds[1].label }}</span
-                ><span class="ml-2 text-[var(--color-secondary-level-2)]">{{
-                  event.odds[1].value
-                }}</span>
-              </div>
-              <div
-                class="flex h-10 flex-1 items-center justify-center rounded-lg font-semibold"
-                style="background: rgba(252, 60, 60, 0.15)"
-              >
-                <span>{{ event.odds[2].label }}</span
-                ><span class="ml-2 text-[var(--color-secondary-level-2)]">{{
-                  event.odds[2].value
-                }}</span>
-              </div>
-              <div
-                class="flex h-10 flex-1 items-center justify-center rounded-lg bg-[var(--color-background-level-3)] font-semibold"
-              >
-                <span>+</span>
-                <span>{{ event.extra }}</span>
-              </div>
-            </div>
+      <div
+        v-for="(event, index) in props.list"
+        :key="event.image + '-' + index"
+        class="col-item rounded-[12px]"
+      >
+        <div class="h-full w-full cursor-pointer" @click="handleClick(event.rowId)">
+          <div class="relative aspect-[2.12] overflow-hidden rounded-xl bg-layer4">
+            <gameErrImg :img="{ src: event.image, maintain: false }" />
           </div>
         </div>
       </div>
@@ -152,66 +71,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import peopleNumber from './img/football.svg?url'
-const events = ref([
-  {
-    sport: '足球',
-    type: '俱乐部友谊赛',
-    team1: { name: 'CFR克卢日', icon: peopleNumber },
-    team2: { name: '根特', icon: peopleNumber },
-    score: { team1: 0, team2: 0 },
-    half: '上半场',
-    odds: [
-      { label: '1', value: '2.85' },
-      { label: '平局', value: '3.9' },
-      { label: '2', value: '2.08' }
-    ],
-    extra: 4
-  },
-  {
-    sport: '足球',
-    type: '俱乐部友谊赛',
-    team1: { name: 'CFR克卢日', icon: peopleNumber },
-    team2: { name: '根特', icon: peopleNumber },
-    score: { team1: 0, team2: 0 },
-    half: '上半场',
-    odds: [
-      { label: '1', value: '2.85' },
-      { label: '平局', value: '3.9' },
-      { label: '2', value: '2.08' }
-    ],
-    extra: 4
-  },
-  {
-    sport: '足球',
-    type: '俱乐部友谊赛',
-    team1: { name: 'CFR克卢日', icon: peopleNumber },
-    team2: { name: '根特', icon: peopleNumber },
-    score: { team1: 0, team2: 0 },
-    half: '上半场',
-    odds: [
-      { label: '1', value: '2.85' },
-      { label: '平局', value: '3.9' },
-      { label: '2', value: '2.08' }
-    ],
-    extra: 4
-  },
-  {
-    sport: '足球',
-    type: '俱乐部友谊赛',
-    team1: { name: 'CFR克卢日', icon: peopleNumber },
-    team2: { name: '根特', icon: peopleNumber },
-    score: { team1: 0, team2: 0 },
-    half: '上半场',
-    odds: [
-      { label: '1', value: '2.85' },
-      { label: '平局', value: '3.9' },
-      { label: '2', value: '2.08' }
-    ],
-    extra: 4
-  }
-])
+import gameErrImg from '@/components/common/gameErrImg.vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+
+interface EventItem {
+  image: string
+  rowId: number
+}
+
+interface Props {
+  list?: EventItem[]
+}
+const router = useRouter()
+// TODO：点击进入游戏详情页
+const handleClick = (rowId: number) => router.push({ name: 'gameDetail', params: { id: rowId } })
+
+const props = withDefaults(defineProps<Props>(), {
+  list: () => []
+})
 
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
@@ -244,6 +122,14 @@ onBeforeUnmount(() => {
   if (el) el.removeEventListener('scroll', updateButtons)
   window.removeEventListener('resize', updateButtons)
 })
+
+watch(
+  () => props.list.length,
+  async () => {
+    await nextTick()
+    updateButtons()
+  }
+)
 
 const getScrollUnit = (el: HTMLElement) => {
   return Math.round(el.clientWidth)
