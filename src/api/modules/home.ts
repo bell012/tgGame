@@ -11,6 +11,14 @@ export function getGameData(): Promise<any> {
   })
 }
 
+// 查询活动栏目
+export function getActivityType(): Promise<any> {
+  return request({
+    url: '/ac/queryGameListForApp',
+    method: 'post'
+  })
+}
+
 export function getGameType(): Promise<any> {
   return request({
     url: '/gc/getGameType',

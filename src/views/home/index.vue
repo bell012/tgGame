@@ -205,7 +205,7 @@
         v-for="value in gamelistData"
         :key="value.title"
       />
-      <EventList />
+      <EventList v-if="sportsEventList.length" :list="sportsEventList" />
       <GameList :title="$t(gamelist1.title)" :list="gamelist1.list" />
     </div>
     <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
@@ -290,49 +290,51 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 import Api from '@/api'
-import GameList from './components/gameList.vue'
-import EventList from './components/eventList.vue'
-import NewEvent from './components/newEvent.vue'
 import H5HomePop from '@/components/H5HomePop.vue'
 import ActivityPop from '@/components/activityPop.vue'
+
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import EventList from './components/eventList.vue'
+import GameList from './components/gameList.vue'
+import NewEvent from './components/newEvent.vue'
 import { gamelist, gamelist1 } from './gamelist'
-import icon from './img/Image4.svg?url'
 import icon1 from './img/Image.svg?url'
 import icon2 from './img/Image1.svg?url'
 import icon3 from './img/Image2.svg?url'
 import icon4 from './img/Image3.svg?url'
+import icon from './img/Image4.svg?url'
 import icon5 from './img/Image5.svg?url'
 import icon6 from './img/Image6.svg?url'
 
-import BTC from '@/static/svg/coin/BTC.black.svg?url'
-import ETH from '@/static/svg/coin/ETH.black.svg?url'
-import BNB from '@/static/svg/coin/BNB.black.svg?url'
-import XRP from '@/static/svg/coin/XRP.black.svg?url'
-import USDT from '@/static/svg/coin/USDT.black.svg?url'
-import USDC from '@/static/svg/coin/USDC.black.svg?url'
-import SOL from '@/static/svg/coin/SOL.black.svg?url'
 import ADA from '@/static/svg/coin/ADA.black.svg?url'
+import BNB from '@/static/svg/coin/BNB.black.svg?url'
+import BTC from '@/static/svg/coin/BTC.black.svg?url'
 import DOGE from '@/static/svg/coin/DOGE.black.svg?url'
-import MATIC from '@/static/svg/coin/MATIC.black.svg?url'
-import TRX from '@/static/svg/coin/TRX.black.svg?url'
-import MAYA from '@/static/svg/coin/maya.svg?url'
-import GCASH from '@/static/svg/coin/gcash.svg?url'
-import VISA from '@/static/svg/coin/VISA.svg?url'
+import ETH from '@/static/svg/coin/ETH.black.svg?url'
 import GROU from '@/static/svg/coin/GrouPay.svg?url'
-import SHOPEE from '@/static/svg/coin/shopeePay.svg?url'
+import MATIC from '@/static/svg/coin/MATIC.black.svg?url'
+import SOL from '@/static/svg/coin/SOL.black.svg?url'
+import TRX from '@/static/svg/coin/TRX.black.svg?url'
+import USDC from '@/static/svg/coin/USDC.black.svg?url'
+import USDT from '@/static/svg/coin/USDT.black.svg?url'
+import VISA from '@/static/svg/coin/VISA.svg?url'
+import XRP from '@/static/svg/coin/XRP.black.svg?url'
 import dotC8z5Aoh from '@/static/svg/coin/dot-C8z5Aoh_.svg?url'
+import GCASH from '@/static/svg/coin/gcash.svg?url'
+import MAYA from '@/static/svg/coin/maya.svg?url'
+import SHOPEE from '@/static/svg/coin/shopeePay.svg?url'
 
-import contract from '@/static/img/home/contract.png'
-import slots from '@/static/img/home/slots.png'
-import fishing from '@/static/img/home/fishing.png'
-import live from '@/static/img/home/live.png'
-import combination from '@/static/img/home/combination.png'
 import CommonFooter from '@/components/commonFooter.vue'
 import LoginModal from '@/components/login_register/LoginModal.vue'
+import combination from '@/static/img/home/combination.png'
+import contract from '@/static/img/home/contract.png'
+import fishing from '@/static/img/home/fishing.png'
+import live from '@/static/img/home/live.png'
+import slots from '@/static/img/home/slots.png'
 
+import placeholderImg from '@/static/img/home/errImg1.png'
 import img_1 from '@/static/img/recent/img_1.png'
 import img_2 from '@/static/img/recent/img_2.png'
 import img_3 from '@/static/img/recent/img_3.png'
@@ -340,6 +342,15 @@ import img_4 from '@/static/img/recent/img_4.png'
 import img_5 from '@/static/img/recent/img_5.png'
 import img_6 from '@/static/img/recent/img_6.png'
 import img_7 from '@/static/img/recent/img_7.png'
+
+interface EventListItem {
+  image: string
+  rowId: number
+}
+
+interface RawGameDataItem {
+  [key: string]: any
+}
 
 const { t } = useI18n()
 const gamelistData = gamelist.map(item => ({
@@ -402,6 +413,27 @@ const objectSource = ref(
 const duplicatedList = computed(() => [...objectSource.value, ...objectSource.value])
 
 const gameData = ref<any>(null)
+
+const toGameImageUrl = (value: string) => {
+  if (!value) {
+    return placeholderImg
+  }
+  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+}
+
+const sportsProviders = computed<RawGameDataItem[]>(() => {
+  const sectionList = gameData.value?.result ?? []
+  const sportsSection = sectionList.find((item: RawGameDataItem) => item?.sysGameTypeCode === 'TY')
+
+  return sportsSection?.subGame ?? []
+})
+
+const sportsEventList = computed<EventListItem[]>(() => {
+  return sportsProviders.value.map(item => ({
+    rowId: item.rowId,
+    image: toGameImageUrl(item?.subGame?.[0]?.gameItemHotVo?.defaultImage ?? '')
+  }))
+})
 
 onMounted(async () => {
   try {
