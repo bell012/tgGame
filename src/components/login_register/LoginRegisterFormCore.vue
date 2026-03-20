@@ -18,9 +18,9 @@
     :handle-social-login="handleSocialLogin"
     :open-reset-password="openResetPassword"
     :handle-signin-account-input="handleSigninAccountInput"
+    :handle-signin-password-input="handleSigninPasswordInput"
     :handle-signup-account-input="handleSignupAccountInput"
     :handle-signup-code-input="handleSignupCodeInput"
-    :handle-signin-password-input="handleSigninPasswordInput"
     :handle-signup-password-input="handleSignupPasswordInput"
     :handle-signup-confirm-password-input="handleSignupConfirmPasswordInput"
   />
@@ -46,6 +46,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'open-reset-password': []
+  'register-success': []
 }>()
 
 // 当前激活的标签页
@@ -84,30 +85,28 @@ const formData = ref({
   }
 })
 
-// 复选框动画状态
-const checkboxAnimating = ref({
-  rememberMe: false
-})
-
-// 验证码倒计时
+// 倒计时
 const countdown = ref(0)
 let countdownTimer: ReturnType<typeof setInterval> | null = null
 
 // 登录表单验证
 const isSigninValid = computed(() => {
-  return (
-    formData.value.signin.account.length === 10 && isValidPassword(formData.value.signin.password)
-  )
+  return formData.value.signin.account.length === 10 && formData.value.signin.password.length > 0
 })
 
 // 注册表单验证
 const isSignupValid = computed(() => {
   return (
     formData.value.signup.account.length === 10 &&
-    formData.value.signup.code.length === 6 &&
+    formData.value.signup.code.length > 0 &&
     isValidPassword(formData.value.signup.password) &&
     formData.value.signup.password === formData.value.signup.confirmPassword
   )
+})
+
+// 复选框动画状态
+const checkboxAnimating = ref({
+  rememberMe: false
 })
 
 // 设置激活的标签页
@@ -154,9 +153,67 @@ const handleCheckboxClick = (field: 'rememberMe') => {
   }
 }
 
+// 处理登录账号输入
+const handleSigninAccountInput = (event: Event) => {
+  handlePhoneInput(event, (value: string) => {
+    formData.value.signin.account = value
+  })
+}
+
+// 处理登录密码输入
+const handleSigninPasswordInput = (event: Event) => {
+  handlePasswordInput(event, value => {
+    formData.value.signin.password = value
+  })
+}
+
+// 处理注册账号输入
+const handleSignupAccountInput = (event: Event) => {
+  handlePhoneInput(event, (value: string) => {
+    formData.value.signup.account = value
+  })
+}
+
+// 处理注册验证码输入
+const handleSignupCodeInput = (event: Event) => {
+  handleVerificationCodeInput(event, (value: string) => {
+    formData.value.signup.code = value
+  })
+}
+
+// 处理注册密码输入
+const handleSignupPasswordInput = (event: Event) => {
+  handlePasswordInput(event, value => {
+    formData.value.signup.password = value
+  })
+}
+
+// 处理注册确认密码输入
+const handleSignupConfirmPasswordInput = (event: Event) => {
+  handlePasswordInput(event, value => {
+    formData.value.signup.confirmPassword = value
+  })
+}
+
 // 登录
 const handleLogin = async () => {
-  console.log('登录:')
+  try {
+    const loginData = {
+      memberId: `63${formData.value.signin.account}`,
+      telephone: formData.value.signin.account,
+      memberPwd: formData.value.signin.password,
+      areaCode: '63',
+      channelId: '1',
+      requestMethod: '0',
+      validateCode: ''
+    }
+
+    // 登录接口
+    const response = await Api.auth.login(loginData)
+    console.log('登录成功:', response)
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 // 注册
@@ -166,21 +223,26 @@ const handleRegister = async () => {
     const language = localStorage.getItem('language') || 'en'
     const languageCode = language === 'zh-CN' ? 'zh' : 'en'
 
-    // 构建注册参数
+    // 获取当前币种
+    const currency = localStorage.getItem('currency') || 'USD'
     const registerData = {
       memberId: `63${formData.value.signup.account}`,
       channelId: '1',
       languageCode: languageCode,
       requestMethod: 1,
-      currency: 'usd',
-      smsCode: formData.value.signup.code, // 验证码
+      currency: currency.toLowerCase(),
+      smsCode: formData.value.signup.code,
       memberPwd: formData.value.signup.password,
       areaCode: '63',
       telephone: formData.value.signup.account
     }
+
     // 注册接口
     const response = await Api.auth.register(registerData)
-    console.log('注册成功:', response)
+    if (response.success && response.result) {
+      localStorage.setItem('userInfo', JSON.stringify(response.result))
+      emit('register-success')
+    }
   } catch (error) {
     console.error(error)
   }
@@ -236,48 +298,6 @@ const openResetPassword = () => {
   emit('open-reset-password')
 }
 
-// 处理登录账号输入
-const handleSigninAccountInput = (event: Event) => {
-  handlePhoneInput(event, value => {
-    formData.value.signin.account = value
-  })
-}
-
-// 处理注册账号输入
-const handleSignupAccountInput = (event: Event) => {
-  handlePhoneInput(event, value => {
-    formData.value.signup.account = value
-  })
-}
-
-// 处理注册验证码输入
-const handleSignupCodeInput = (event: Event) => {
-  handleVerificationCodeInput(event, value => {
-    formData.value.signup.code = value
-  })
-}
-
-// 处理登录密码输入
-const handleSigninPasswordInput = (event: Event) => {
-  handlePasswordInput(event, value => {
-    formData.value.signin.password = value
-  })
-}
-
-// 处理注册密码输入
-const handleSignupPasswordInput = (event: Event) => {
-  handlePasswordInput(event, value => {
-    formData.value.signup.password = value
-  })
-}
-
-// 处理注册确认密码输入
-const handleSignupConfirmPasswordInput = (event: Event) => {
-  handlePasswordInput(event, value => {
-    formData.value.signup.confirmPassword = value
-  })
-}
-
 defineExpose({
   formData,
   activeTab,
@@ -297,9 +317,9 @@ defineExpose({
   handleSocialLogin,
   openResetPassword,
   handleSigninAccountInput,
+  handleSigninPasswordInput,
   handleSignupAccountInput,
   handleSignupCodeInput,
-  handleSigninPasswordInput,
   handleSignupPasswordInput,
   handleSignupConfirmPasswordInput
 })

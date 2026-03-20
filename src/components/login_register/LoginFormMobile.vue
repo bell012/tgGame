@@ -1,5 +1,5 @@
 <template>
-  <LoginRegisterFormCore :default-tab="defaultTab">
+  <LoginRegisterFormCore :default-tab="defaultTab" @register-success="handleRegisterSuccess">
     <template
       #default="{
         activeTab,
@@ -396,6 +396,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'update:visible': [value: boolean]
+  'open-reset-password': []
 }>()
 
 const showDrawer = ref(false)
@@ -420,6 +421,11 @@ const handleClose = () => {
   setTimeout(() => {
     emit('update:visible', false)
   }, 350)
+}
+
+// 处理注册成功
+const handleRegisterSuccess = () => {
+  handleClose()
 }
 </script>
 

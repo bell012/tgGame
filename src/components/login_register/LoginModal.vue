@@ -109,6 +109,7 @@
               <LoginFormDesktop
                 :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
                 @open-reset-password="openResetPassword"
+                @close="handleClose"
               />
             </div>
           </div>
