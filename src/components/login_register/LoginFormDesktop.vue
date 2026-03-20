@@ -1,5 +1,5 @@
 <template>
-  <LoginRegisterFormCore :default-tab="defaultTab">
+  <LoginRegisterFormCore :default-tab="defaultTab" @register-success="handleRegisterSuccess">
     <template
       #default="{
         activeTab,
@@ -293,6 +293,15 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   defaultTab: 'signin'
 })
+
+const emit = defineEmits<{
+  close: []
+}>()
+
+// 处理注册成功
+const handleRegisterSuccess = () => {
+  emit('close')
+}
 </script>
 
 <style scoped lang="scss">
