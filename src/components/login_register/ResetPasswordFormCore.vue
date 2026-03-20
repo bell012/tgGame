@@ -4,11 +4,13 @@
     :show-confirm-password="showConfirmPassword"
     :form-data="formData"
     :is-reset-valid="isResetValid"
+    :countdown="countdown"
     :toggle-password="togglePassword"
     :toggle-confirm-password="toggleConfirmPassword"
     :handle-send-code="handleSendCode"
     :handle-reset-password="handleResetPassword"
     :handle-account-input="handleAccountInput"
+    :handle-code-input="handleCodeInput"
     :handle-password-input="handlePasswordInputHandler"
     :handle-confirm-password-input="handleConfirmPasswordInput"
   />
@@ -16,7 +18,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { handlePhoneInput, handlePasswordInput, isValidPassword } from '@/utils/phone-input'
+import {
+  handlePhoneInput,
+  handlePasswordInput,
+  handleVerificationCodeInput,
+  isValidPassword
+} from '@/utils/phone-input'
+import Api from '@/api'
 
 // 密码显示状态
 const showPassword = ref(false)
@@ -29,6 +37,10 @@ const formData = ref({
   password: '',
   confirmPassword: ''
 })
+
+// 倒计时
+const countdown = ref(0)
+let countdownTimer: ReturnType<typeof setInterval> | null = null
 
 // 重置密码表单验证
 const isResetValid = computed(() => {
@@ -44,6 +56,13 @@ const isResetValid = computed(() => {
 const handleAccountInput = (event: Event) => {
   handlePhoneInput(event, (value: string) => {
     formData.value.account = value
+  })
+}
+
+// 处理验证码输入
+const handleCodeInput = (event: Event) => {
+  handleVerificationCodeInput(event, (value: string) => {
+    formData.value.code = value
   })
 }
 
@@ -73,12 +92,64 @@ const toggleConfirmPassword = () => {
 
 // 发送验证码
 const handleSendCode = async () => {
-  console.log('发送验证码到:')
+  if (countdown.value > 0) {
+    return
+  }
+
+  try {
+    const telephone = formData.value.account
+    if (!telephone) {
+      return
+    }
+
+    if (telephone.length !== 10) {
+      return
+    }
+
+    // 发送短信接口
+    const response = await Api.auth.sendSms({
+      telephone: telephone,
+      areaCode: '63'
+    })
+    console.log('短信接口返回数据:', response)
+
+    // 开始60秒倒计时
+    countdown.value = 60
+    if (countdownTimer) {
+      clearInterval(countdownTimer)
+    }
+    countdownTimer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        if (countdownTimer) {
+          clearInterval(countdownTimer)
+          countdownTimer = null
+        }
+      }
+    }, 1000)
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 // 重置密码
 const handleResetPassword = async () => {
-  console.log('重置密码:')
+  try {
+    // 构建重置密码参数
+    const resetPasswordData = {
+      memberPwd: formData.value.password, // 新密码
+      smsCode: formData.value.code, // 短信验证码
+      telephone: formData.value.account, // 手机号
+      areaCode: '63', // 区号
+      memberId: `63${formData.value.account}` // 会员账号(区号+手机号)
+    }
+
+    // 重置密码接口
+    const response = await Api.auth.resetPassword(resetPasswordData)
+    console.log('重置密码成功:', response)
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 defineExpose({
@@ -86,11 +157,13 @@ defineExpose({
   showPassword,
   showConfirmPassword,
   isResetValid,
+  countdown,
   togglePassword,
   toggleConfirmPassword,
   handleSendCode,
   handleResetPassword,
   handleAccountInput,
+  handleCodeInput,
   handlePasswordInputHandler,
   handleConfirmPasswordInput
 })
