@@ -200,13 +200,13 @@
     </div>
     <div>
       <GameList
-        :title="value.title"
+        :title="value.sysGameTypeName"
         :list="value.list"
-        v-for="value in gamelistData"
+        v-for="value in gameData"
         :key="value.title"
       />
       <EventList />
-      <GameList :title="$t(gamelist1.title)" :list="gamelist1.list" />
+      <!-- <GameList :title="$t(gamelist1.title)" :list="gamelist1.list" /> -->
     </div>
     <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
       <div class="w-full flex items-center justify-between px-[22px] pb-4 pt-3 lg:!hidden">
@@ -298,7 +298,7 @@ import EventList from './components/eventList.vue'
 import NewEvent from './components/newEvent.vue'
 import H5HomePop from '@/components/H5HomePop.vue'
 import ActivityPop from '@/components/activityPop.vue'
-import { gamelist, gamelist1 } from './gamelist'
+
 import icon from './img/Image4.svg?url'
 import icon1 from './img/Image.svg?url'
 import icon2 from './img/Image1.svg?url'
@@ -342,10 +342,6 @@ import img_6 from '@/static/img/recent/img_6.png'
 import img_7 from '@/static/img/recent/img_7.png'
 
 const { t } = useI18n()
-const gamelistData = gamelist.map(item => ({
-  ...item,
-  title: t(item.title)
-}))
 const showLoginModal = ref(false)
 const showH5HomePop = ref(true)
 const closeH5HomePop = () => {
@@ -406,8 +402,12 @@ const gameData = ref<any>(null)
 onMounted(async () => {
   try {
     const res = await Api.home.getGameData()
-    gameData.value = res
-    console.log('getGameData success', res)
+    console.log('getGameData success', res.result)
+    gameData.value = res.result.map((item: any) => ({
+      list: item?.subGame?.[0]?.subGame?.slice(0, 10) || [],
+      sysGameTypeName: item?.sysGameTypeName || ''
+    }))
+    console.log('getGameData success', gameData.value)
   } catch (error) {
     console.error('getGameData failed', error)
   }

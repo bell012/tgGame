@@ -55,7 +55,7 @@
       ref="listWrap"
       style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
-      <div v-for="(value, index) in props.list" :key="value.img.src + '-' + index">
+      <div v-for="(value, index) in normalizedList" :key="value.img.conUrl + '-' + index">
         <a
           href="javascript:void(0);"
           class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2"
@@ -101,26 +101,55 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './img/peopleNumber.svg?component'
 interface GameItem {
   img: {
     maintain: boolean
-    src: string
+    // 以 conUrl 为主，兼容 src
+    conUrl: string
+    src?: string
   }
   number: number
 }
 
 interface Props {
   title: string
-  list: GameItem[]
+  // 接口返回结构不一定完全一致，这里放宽类型，运行时做一次归一化
+  list: any[]
 }
 
 const props = defineProps<Props>()
-console.log('Props', props)
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
+
+const normalizeGameItem = (item: any): GameItem => {
+  const conUrl =
+    item?.img?.conUrl ??
+    item?.conUrl ??
+    item?.imgUrl ??
+    item?.image ??
+    item?.icon ??
+    item?.src ??
+    ''
+
+  const maintain = item?.img?.maintain ?? item?.maintain ?? item?.isMaintain ?? false
+
+  const number = Number(item?.number ?? item?.betCount ?? 0) || 0
+
+  return {
+    img: {
+      maintain: !!maintain,
+      conUrl: String(conUrl)
+    },
+    number
+  }
+}
+
+const normalizedList = computed(() => {
+  return (props.list ?? []).map((item: any) => normalizeGameItem(item))
+})
 
 const prevDisabled = ref(true)
 const nextDisabled = ref(false)
