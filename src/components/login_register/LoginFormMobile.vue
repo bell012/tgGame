@@ -1,8 +1,10 @@
 <template>
   <LoginRegisterFormCore
+    ref="loginFormRef"
     :default-tab="defaultTab"
     @register-success="handleRegisterSuccess"
     @login-success="handleLoginSuccess"
+    @open-reset-password="emit('open-reset-password')"
   >
     <template
       #default="{
@@ -404,11 +406,13 @@ const emit = defineEmits<{
 }>()
 
 const showDrawer = ref(false)
+const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
 
 watch(
   () => props.visible,
   async newVal => {
     if (newVal) {
+      loginFormRef.value?.resetForm()
       await nextTick()
       setTimeout(() => {
         showDrawer.value = true
@@ -423,6 +427,7 @@ watch(
 const handleClose = () => {
   showDrawer.value = false
   setTimeout(() => {
+    loginFormRef.value?.resetForm()
     emit('update:visible', false)
   }, 350)
 }

@@ -1,5 +1,5 @@
 <template>
-  <ResetPasswordFormCore>
+  <ResetPasswordFormCore ref="resetPasswordFormRef">
     <template
       #default="{
         showPassword,
@@ -248,6 +248,7 @@ const emit = defineEmits<{
 }>()
 
 const showDrawer = ref(false)
+const resetPasswordFormRef = ref<InstanceType<typeof ResetPasswordFormCore> | null>(null)
 
 watch(
   () => props.visible,
@@ -267,6 +268,7 @@ watch(
 const handleClose = () => {
   showDrawer.value = false
   setTimeout(() => {
+    resetPasswordFormRef.value?.resetForm()
     emit('update:visible', false)
   }, 350)
 }

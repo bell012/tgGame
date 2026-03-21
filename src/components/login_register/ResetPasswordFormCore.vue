@@ -167,6 +167,26 @@ const handleResetPassword = async () => {
   }
 }
 
+// 重置表单数据
+const resetForm = () => {
+  // 重置表单字段
+  formData.value.account = ''
+  formData.value.code = ''
+  formData.value.password = ''
+  formData.value.confirmPassword = ''
+
+  // 重置密码显示状态
+  showPassword.value = false
+  showConfirmPassword.value = false
+
+  // 清除倒计时
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+  countdown.value = 0
+}
+
 defineExpose({
   formData,
   showPassword,
@@ -180,6 +200,7 @@ defineExpose({
   handleAccountInput,
   handleCodeInput,
   handlePasswordInputHandler,
-  handleConfirmPasswordInput
+  handleConfirmPasswordInput,
+  resetForm
 })
 </script>
