@@ -1,14 +1,20 @@
 <template>
-  <ResetPasswordFormCore>
+  <ResetPasswordFormCore ref="resetPasswordFormRef">
     <template
       #default="{
         showPassword,
         showConfirmPassword,
         formData,
+        isResetValid,
+        countdown,
         togglePassword,
         toggleConfirmPassword,
         handleSendCode,
-        handleResetPassword
+        handleResetPassword,
+        handleAccountInput,
+        handleCodeInput,
+        handlePasswordInput,
+        handleConfirmPasswordInput
       }"
     >
       <teleport to="body">
@@ -94,12 +100,21 @@
                   </div>
                   <div class="mb-3">
                     <!-- 请输入账号 -->
-                    <input
-                      v-model="formData.account"
-                      type="text"
-                      :placeholder="t('locales.common.enter_account')"
-                      class="w-full h-[47px] pl-2 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
-                    />
+                    <div class="relative">
+                      <span
+                        class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-theme-level-1)] text-xs font-[500]"
+                      >
+                        +63
+                      </span>
+                      <input
+                        :value="formData.account"
+                        type="text"
+                        inputmode="numeric"
+                        :placeholder="t('locales.common.enter_account')"
+                        class="w-full h-[47px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        @input="handleAccountInput"
+                      />
+                    </div>
                   </div>
 
                   <!-- 验证码 -->
@@ -113,18 +128,22 @@
                       />
                       <!-- 请输入验证码 -->
                       <input
-                        v-model="formData.code"
+                        :value="formData.code"
                         type="text"
+                        inputmode="numeric"
                         :placeholder="t('locales.common.enter_verification')"
                         class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        @input="handleCodeInput"
                       />
                       <!-- 获取验证码 -->
                       <button
                         type="button"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-xs font-[500] rounded-lg"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-xs font-[500] rounded-lg transition-opacity"
+                        :class="{ 'opacity-50 cursor-not-allowed': countdown > 0 }"
+                        :disabled="countdown > 0"
                         @click="handleSendCode"
                       >
-                        {{ t('locales.common.get_code') }}
+                        {{ countdown > 0 ? `${countdown}s` : t('locales.common.get_code') }}
                       </button>
                     </div>
                   </div>
@@ -140,10 +159,11 @@
                       />
                       <!-- 请输入密码 -->
                       <input
-                        v-model="formData.password"
+                        :value="formData.password"
                         :type="showPassword ? 'text' : 'password'"
                         :placeholder="t('locales.common.enter_password')"
                         class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        @input="handlePasswordInput"
                       />
                       <button
                         type="button"
@@ -167,10 +187,11 @@
                       />
                       <!-- 请输入确认密码 -->
                       <input
-                        v-model="formData.confirmPassword"
+                        :value="formData.confirmPassword"
                         :type="showConfirmPassword ? 'text' : 'password'"
                         :placeholder="t('locales.common.enter_confirm_password')"
                         class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        @input="handleConfirmPasswordInput"
                       />
                       <button
                         type="button"
@@ -185,7 +206,9 @@
 
                   <!-- 确认 -->
                   <button
-                    class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4"
+                    class="btn-primary w-full h-[47px] rounded-lg text-base text-text-4 transition-all"
+                    :class="{ 'opacity-40 cursor-not-allowed': !isResetValid }"
+                    :disabled="!isResetValid"
                     @click="handleResetPassword"
                   >
                     {{ t('locales.common.confirm') }}
@@ -225,6 +248,7 @@ const emit = defineEmits<{
 }>()
 
 const showDrawer = ref(false)
+const resetPasswordFormRef = ref<InstanceType<typeof ResetPasswordFormCore> | null>(null)
 
 watch(
   () => props.visible,
@@ -244,6 +268,7 @@ watch(
 const handleClose = () => {
   showDrawer.value = false
   setTimeout(() => {
+    resetPasswordFormRef.value?.resetForm()
     emit('update:visible', false)
   }, 350)
 }

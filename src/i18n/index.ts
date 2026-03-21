@@ -3,9 +3,11 @@ import en from './locales/en.json'
 import zh from './locales/zh.json'
 import homeEn from './en-us/home.json'
 import homeZn from './zh-cn/home.json'
+import { getLanguageCode } from '@/utils/locale'
+
 const i18n = createI18n({
   legacy: false,
-  locale: localStorage.getItem('language') === 'zh-CN' ? 'zh' : 'en',
+  locale: getLanguageCode(),
   fallbackLocale: 'en',
   messages: {
     en: {

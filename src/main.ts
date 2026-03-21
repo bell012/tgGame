@@ -6,6 +6,7 @@ import App from './App.vue'
 import './styles/colors.css'
 import './styles/main.scss'
 import './style.css'
+import 'vant/lib/index.css'
 
 const app = createApp(App)
 const pinia = createPinia()
