@@ -1,5 +1,6 @@
 <template>
   <LoginRegisterFormCore
+    ref="loginFormRef"
     :default-tab="defaultTab"
     @register-success="handleRegisterSuccess"
     @login-success="handleLoginSuccess"
@@ -280,6 +281,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
 import SafeIcon from '@/static/svg/login/safe.svg?component'
@@ -294,13 +296,23 @@ interface Props {
   defaultTab?: 'signin' | 'signup'
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   defaultTab: 'signin'
 })
 
 const emit = defineEmits<{
   close: []
 }>()
+
+const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
+
+// 监听 defaultTab 变化，清空表单
+watch(
+  () => props.defaultTab,
+  () => {
+    loginFormRef.value?.resetForm()
+  }
+)
 
 // 处理注册成功
 const handleRegisterSuccess = () => {
@@ -311,6 +323,14 @@ const handleRegisterSuccess = () => {
 const handleLoginSuccess = () => {
   emit('close')
 }
+
+const resetForm = () => {
+  loginFormRef.value?.resetForm()
+}
+
+defineExpose({
+  resetForm
+})
 </script>
 
 <style scoped lang="scss">

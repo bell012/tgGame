@@ -328,6 +328,36 @@ const openResetPassword = () => {
   emit('open-reset-password')
 }
 
+// 重置表单数据
+const resetForm = () => {
+  // 重置登录表单
+  formData.value.signin.account = ''
+  formData.value.signin.password = ''
+  formData.value.signin.rememberMe = false
+
+  // 重置注册表单
+  formData.value.signup.account = ''
+  formData.value.signup.code = ''
+  formData.value.signup.password = ''
+  formData.value.signup.confirmPassword = ''
+
+  // 重置密码显示状态
+  showPassword.value.signin = false
+  showPassword.value.signup = false
+  showPassword.value.confirmPassword = false
+  showConfirmPassword.value = false
+
+  // 清除倒计时
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+  countdown.value = 0
+
+  // 重置到默认标签页
+  activeTab.value = props.defaultTab
+}
+
 defineExpose({
   formData,
   activeTab,
@@ -346,6 +376,7 @@ defineExpose({
   handleSendCode,
   handleSocialLogin,
   openResetPassword,
+  resetForm,
   handleSigninAccountInput,
   handleSigninPasswordInput,
   handleSignupAccountInput,

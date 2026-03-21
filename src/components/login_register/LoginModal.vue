@@ -107,9 +107,9 @@
             <!-- 右侧表单区域 -->
             <div class="w-1/2 bg-bg-1 py-5 px-6">
               <LoginFormDesktop
+                ref="loginFormDesktopRef"
                 :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
                 @open-reset-password="openResetPassword"
-                @close="handleClose"
               />
             </div>
           </div>
@@ -247,15 +247,19 @@ const emit = defineEmits<{
 
 const activeTab = ref<'login' | 'register' | 'resetPassword'>(props.defaultTab)
 const showResetPassword = ref(false)
+const loginFormDesktopRef = ref<InstanceType<typeof LoginFormDesktop> | null>(null)
 
 watch(
   () => props.modelValue,
-  async newVal => {
+  newVal => {
     if (newVal) {
       activeTab.value = props.defaultTab
       showResetPassword.value = false
       // 弹窗打开时请求登录注册配置
       await fetchLoginAndRegisterSetting()
+      if (!isMobile.value) {
+        loginFormDesktopRef.value?.resetForm()
+      }
     }
   }
 )
