@@ -29,7 +29,11 @@ export const getStorageLanguageCode = (i18nLocale: string): string => {
  * @example
  */
 export const getCurrentCurrency = (): string => {
-  return 'PHP'
+  const currency = localStorage.getItem('currency')
+  if (!currency || currency === 'none') {
+    return 'PHP'
+  }
+  return currency
 }
 
 /**
