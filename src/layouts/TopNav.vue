@@ -77,8 +77,7 @@
               </div>
               <!-- 金额 -->
               <span class="text-[14px] font-[600] text-text-1">
-                {{ getCurrencySymbol(userInfo?.currency)
-                }}{{ formatBalance(userInfo?.currentScore) }}
+                {{ getCurrencySymbol(userInfo?.currency) }}{{ formatBalance(acctInfo?.balancePhp) }}
               </span>
             </div>
 
@@ -106,8 +105,7 @@
               </div>
               <!-- 金额 -->
               <span class="text-[14px] font-[600] text-text-1">
-                {{ getCurrencySymbol(userInfo?.currency)
-                }}{{ formatBalance(userInfo?.currentScore) }}
+                {{ getCurrencySymbol(userInfo?.currency) }}{{ formatBalance(acctInfo?.balancePhp) }}
               </span>
             </div>
 
@@ -266,6 +264,8 @@ const showExplorehModal = ref(false)
 
 // 用户信息
 const userInfo = ref<any>(null)
+// 账户信息
+const acctInfo = ref<any>(null)
 
 // 是否已登录
 const isLoggedIn = computed(() => {
@@ -281,6 +281,17 @@ const loadUserInfo = () => {
     } catch (error) {
       console.error(error)
       userInfo.value = null
+    }
+  }
+
+  // 加载账户信息
+  const storedAcctInfo = localStorage.getItem('acctInfo')
+  if (storedAcctInfo) {
+    try {
+      acctInfo.value = JSON.parse(storedAcctInfo)
+    } catch (error) {
+      console.error(error)
+      acctInfo.value = null
     }
   }
 }
