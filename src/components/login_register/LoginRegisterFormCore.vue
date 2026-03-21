@@ -29,6 +29,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import Api from '@/api'
+import { showToast } from 'vant'
 import {
   handlePhoneInput,
   handlePasswordInput,
@@ -210,7 +211,15 @@ const handleLogin = async () => {
 
     // 登录接口
     const response = await Api.auth.login(loginData)
-    console.log('登录成功:', response)
+    if (response && response.message) {
+      showToast({
+        message: response.message,
+        duration: 2000,
+        wordBreak: 'break-word',
+        zIndex: 10001
+      })
+    }
+
     if (response.success && response.result && response.result.tradeToken) {
       localStorage.setItem('userInfo', JSON.stringify(response.result))
       emit('login-success')
@@ -228,7 +237,7 @@ const handleRegister = async () => {
     const languageCode = language === 'zh-CN' ? 'zh' : 'en'
 
     // 获取当前币种
-    const currency = localStorage.getItem('currency') || 'USD'
+    const currency = localStorage.getItem('currency') || 'PHP'
     const registerData = {
       memberId: `63${formData.value.signup.account}`,
       channelId: '1',
@@ -243,6 +252,15 @@ const handleRegister = async () => {
 
     // 注册接口
     const response = await Api.auth.register(registerData)
+    if (response && response.message) {
+      showToast({
+        message: response.message,
+        duration: 2000,
+        wordBreak: 'break-word',
+        zIndex: 10001
+      })
+    }
+
     if (response.success && response.result) {
       localStorage.setItem('userInfo', JSON.stringify(response.result))
       emit('register-success')
@@ -272,7 +290,15 @@ const handleSendCode = async () => {
       telephone: telephone,
       areaCode: '63'
     })
-    console.log('短信接口返回数据:', response)
+    if (response && response.message) {
+      showToast({
+        message: response.message,
+        duration: 2000,
+        wordBreak: 'break-word',
+        zIndex: 10001
+      })
+    }
+
     // 开始60秒倒计时
     countdown.value = 60
     if (countdownTimer) {

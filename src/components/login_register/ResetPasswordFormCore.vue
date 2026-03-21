@@ -25,6 +25,7 @@ import {
   isValidPassword
 } from '@/utils/phone-input'
 import Api from '@/api'
+import { showToast } from 'vant'
 
 // 密码显示状态
 const showPassword = ref(false)
@@ -111,7 +112,14 @@ const handleSendCode = async () => {
       telephone: telephone,
       areaCode: '63'
     })
-    console.log('短信接口返回数据:', response)
+    if (response && response.message) {
+      showToast({
+        message: response.message,
+        duration: 2000,
+        wordBreak: 'break-word',
+        zIndex: 10001
+      })
+    }
 
     // 开始60秒倒计时
     countdown.value = 60
@@ -146,7 +154,14 @@ const handleResetPassword = async () => {
 
     // 重置密码接口
     const response = await Api.auth.resetPassword(resetPasswordData)
-    console.log('重置密码成功:', response)
+    if (response && response.message) {
+      showToast({
+        message: response.message,
+        duration: 2000,
+        wordBreak: 'break-word',
+        zIndex: 10001
+      })
+    }
   } catch (error) {
     console.error(error)
   }
