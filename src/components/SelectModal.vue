@@ -23,12 +23,12 @@
               {{ t('locales.home.language') }}
             </button>
             <!-- 以货币显示 -->
-            <button
+            <!-- <button
               :class="['tab', { active: activeTab === 'currency' }]"
               @click="activeTab = 'currency'"
             >
               {{ t('locales.home.view_currency') }}
-            </button>
+            </button> -->
           </div>
 
           <!-- 语言选择 -->
