@@ -75,7 +75,10 @@
           <div
             class="center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 group-hover:opacity-100"
           >
-            <div class="flex flex-col items-center justify-center gap-2 h-full w-full">
+            <div
+              class="flex flex-col items-center justify-center gap-2 h-full w-full"
+              @click="handleClick(value.orderId)"
+            >
               <div
                 class="flex justify-center items-center center absolute left-0 top-0 flex h-[40%] w-full px-2 text-center font-extrabold leading-4 text-[white]"
               >
@@ -97,6 +100,8 @@
         </a>
       </div>
     </div>
+    <!-- 注册弹窗 -->
+    <LoginModal v-model="showLoginModal" default-tab="register" />
   </div>
 </template>
 
@@ -105,12 +110,16 @@ import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './img/peopleNumber.svg?component'
 import { StringExtension } from '@/utils/string-extension'
+import LoginModal from '@/components/login_register/LoginModal.vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 interface GameItem {
   img: {
     maintain: boolean
     src?: string
   }
   number: number
+  orderId: number
 }
 
 interface Props {
@@ -130,14 +139,23 @@ const normalizeGameItem = (item: any): GameItem => {
       maintain: false,
       src: String(conUrl)
     },
-    number
+    number,
+    orderId: item.orderId
   }
 }
 
 const normalizedList = computed(() => {
   return (props.list ?? []).map((item: any) => normalizeGameItem(item))
 })
-
+const showLoginModal = ref(false)
+const handleClick = (rowId: number) => {
+  let userInfo = localStorage.getItem('userInfo')
+  if (userInfo) {
+    router.push({ name: 'gameDetail', params: { id: rowId } })
+  } else {
+    showLoginModal.value = true
+  }
+}
 const prevDisabled = ref(true)
 const nextDisabled = ref(false)
 
