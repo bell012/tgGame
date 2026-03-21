@@ -342,13 +342,6 @@ import live from '@/static/img/home/live.png'
 import slots from '@/static/img/home/slots.png'
 
 import placeholderImg from '@/static/img/home/errImg1.png'
-import img_1 from '@/static/img/recent/img_1.png'
-import img_2 from '@/static/img/recent/img_2.png'
-import img_3 from '@/static/img/recent/img_3.png'
-import img_4 from '@/static/img/recent/img_4.png'
-import img_5 from '@/static/img/recent/img_5.png'
-import img_6 from '@/static/img/recent/img_6.png'
-import img_7 from '@/static/img/recent/img_7.png'
 
 interface EventListItem {
   image: string
@@ -406,23 +399,26 @@ const carousel = (val: number) => {
   carouselVal.value = val
 }
 
-const list = ref([img_1, img_2, img_3, img_4, img_5, img_6, img_7])
-const objectSource = ref(
-  list.value.map(num => ({
-    src: num,
-    name: `Hidden`,
-    number: `188.88K USD`
-  }))
-)
+interface RecentBigWin {
+  src: string
+  name: string
+  number: string
+}
+
+const list = ref<RecentBigWin[]>([])
 const getRecentBigWinsData = async () => {
   try {
     const res = await Api.home.getRecentBigWins({ currency: 'PHP', type: 1 })
-    console.log('getRecentBigWins success', res.result)
+    list.value = res.result.map((item: any) => ({
+      src: toGameImageUrl(item.coverImg),
+      name: item.nickName,
+      number: item.winAmount
+    }))
   } catch (error) {
     console.error('getRecentBigWins failed', error)
   }
 }
-const duplicatedList = computed(() => [...objectSource.value, ...objectSource.value])
+const duplicatedList = computed(() => [...list.value, ...list.value])
 
 const gameData = ref<any>(null)
 
@@ -466,14 +462,12 @@ onMounted(async () => {
   try {
     userInfo.value = localStorage.getItem('userInfo')
     const res = await Api.home.getGameData()
-    console.log('getGameData success', res.result)
     gameData.value = res.result.map((item: any) => ({
       list: item?.subGame?.[0]?.subGame?.slice(0, 10) || [],
       sysGameTypeName: item?.sysGameTypeName || ''
     }))
     getRecentBigWinsData()
     getQuerySlideshow()
-    console.log('getGameData success', gameData.value)
   } catch (error) {
     console.error('getGameData failed', error)
   }
