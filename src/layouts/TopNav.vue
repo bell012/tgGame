@@ -246,6 +246,7 @@ import GiftIcon from '@/static/svg/login/gift.svg?component'
 import BellIcon from '@/static/svg/bell.svg?component'
 import Jia from '@/static/svg/login/jia.svg?component'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
+import { getCurrencySymbol, formatBalance } from '@/utils/locale'
 
 const { t } = useI18n()
 const localeStore = useLocaleStore()
@@ -301,27 +302,6 @@ watch(showLoginModal, newVal => {
     loadUserInfo()
   }
 })
-
-// 获取币种符号
-const getCurrencySymbol = (currency?: string) => {
-  if (!currency) return '₱'
-  const currencyMap: Record<string, string> = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    JPY: '¥',
-    CNY: '¥',
-    PHP: '₱',
-    BTC: '₿'
-  }
-  return currencyMap[currency.toUpperCase()] || currency.toUpperCase() + ' '
-}
-
-// 格式化余额
-const formatBalance = (balance?: number) => {
-  if (balance === undefined || balance === null) return '0.00'
-  return balance.toFixed(2)
-}
 
 const handleToggleSidebar = () => {
   emit('toggle-sidebar')
