@@ -70,13 +70,27 @@ const showPassword = ref({
 
 const showConfirmPassword = ref(false)
 
+// 从 localStorage 读取保存的账号
+const getSavedAccount = () => {
+  try {
+    const saved = localStorage.getItem('rememberedAccount')
+    if (saved) {
+      return saved
+    }
+  } catch (error) {
+    console.error(error)
+  }
+  return null
+}
+
 // 表单数据
+const savedAccount = getSavedAccount()
 const formData = ref({
   // 登录表单
   signin: {
-    account: '',
+    account: savedAccount || '',
     password: '',
-    rememberMe: false
+    rememberMe: savedAccount ? true : false
   },
   // 注册表单
   signup: {
@@ -222,6 +236,14 @@ const handleLogin = async () => {
 
     if (response.success && response.result && response.result.tradeToken) {
       localStorage.setItem('userInfo', JSON.stringify(response.result))
+
+      // 根据"记住我"状态保存或清除账号
+      if (formData.value.signin.rememberMe) {
+        localStorage.setItem('rememberedAccount', formData.value.signin.account)
+      } else {
+        localStorage.removeItem('rememberedAccount')
+      }
+
       emit('login-success')
     }
   } catch (error) {
@@ -330,10 +352,12 @@ const openResetPassword = () => {
 
 // 重置表单数据
 const resetForm = () => {
+  const savedAccount = getSavedAccount()
+
   // 重置登录表单
-  formData.value.signin.account = ''
+  formData.value.signin.account = savedAccount || ''
   formData.value.signin.password = ''
-  formData.value.signin.rememberMe = false
+  formData.value.signin.rememberMe = savedAccount ? true : false
 
   // 重置注册表单
   formData.value.signup.account = ''
