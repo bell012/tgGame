@@ -36,6 +36,7 @@ import {
   handleVerificationCodeInput,
   isValidPassword
 } from '@/utils/phone-input'
+import { getLanguageCode, getCurrentCurrency } from '@/utils/locale'
 
 interface Props {
   defaultTab?: 'signin' | 'signup'
@@ -235,15 +236,29 @@ const handleLogin = async () => {
     }
 
     if (response.success && response.result && response.result.tradeToken) {
-      localStorage.setItem('userInfo', JSON.stringify(response.result))
-
       // 根据"记住我"状态保存或清除账号
       if (formData.value.signin.rememberMe) {
         localStorage.setItem('rememberedAccount', formData.value.signin.account)
       } else {
         localStorage.removeItem('rememberedAccount')
       }
+      try {
+        // 查询账户信息
+        const acctInfoResponse = await Api.user.queryAcctInfo({})
+        if (acctInfoResponse.success && acctInfoResponse.result) {
+          localStorage.setItem('acctInfo', JSON.stringify(acctInfoResponse.result))
+        }
 
+        // 查询会员信息
+        const memberInfoResponse = await Api.user.selectMember({
+          memberId: formData.value.signin.account
+        })
+        if (memberInfoResponse.success && memberInfoResponse.result) {
+          localStorage.setItem('userInfo', JSON.stringify(memberInfoResponse.result))
+        }
+      } catch (error) {
+        console.error(error)
+      }
       emit('login-success')
     }
   } catch (error) {
@@ -255,11 +270,10 @@ const handleLogin = async () => {
 const handleRegister = async () => {
   try {
     // 获取当前语言
-    const language = localStorage.getItem('language') || 'en'
-    const languageCode = language === 'zh-CN' ? 'zh' : 'en'
-
+    const languageCode = getLanguageCode()
     // 获取当前币种
-    const currency = localStorage.getItem('currency') || 'PHP'
+    const currency = getCurrentCurrency()
+
     const registerData = {
       memberId: `63${formData.value.signup.account}`,
       channelId: '1',
@@ -284,7 +298,23 @@ const handleRegister = async () => {
     }
 
     if (response.success && response.result) {
-      localStorage.setItem('userInfo', JSON.stringify(response.result))
+      try {
+        // 查询账户信息
+        const acctInfoResponse = await Api.user.queryAcctInfo({})
+        if (acctInfoResponse.success && acctInfoResponse.result) {
+          localStorage.setItem('acctInfo', JSON.stringify(acctInfoResponse.result))
+        }
+
+        // 查询会员信息
+        const memberInfoResponse = await Api.user.selectMember({
+          memberId: formData.value.signup.account
+        })
+        if (memberInfoResponse.success && memberInfoResponse.result) {
+          localStorage.setItem('userInfo', JSON.stringify(memberInfoResponse.result))
+        }
+      } catch (error) {
+        console.error(error)
+      }
       emit('register-success')
     }
   } catch (error) {
