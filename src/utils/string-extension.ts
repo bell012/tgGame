@@ -119,4 +119,11 @@ export class StringExtension {
       return false
     }
   }
+
+  /**
+   * 数字区间取随机整数
+   */
+  static getRandomInt(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min
+  }
 }

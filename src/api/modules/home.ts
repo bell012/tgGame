@@ -18,10 +18,20 @@ export function getActivityType(): Promise<any> {
     method: 'post'
   })
 }
-
-export function getGameType(): Promise<any> {
+// 近期大奖
+export function getRecentBigWins(data: any): Promise<any> {
   return request({
-    url: '/gc/getGameType',
-    method: 'post'
+    url: '/special/getRecentBigWins',
+    method: 'post',
+    data
+  })
+}
+
+// 近期大奖
+export function getQuerySlideshow(data: any): Promise<any> {
+  return request({
+    url: '/ac/querySlideshow',
+    method: 'post',
+    data
   })
 }
