@@ -1,5 +1,9 @@
 <template>
-  <LoginRegisterFormCore :default-tab="defaultTab" @register-success="handleRegisterSuccess">
+  <LoginRegisterFormCore
+    :default-tab="defaultTab"
+    @register-success="handleRegisterSuccess"
+    @login-success="handleLoginSuccess"
+  >
     <template
       #default="{
         activeTab,
@@ -300,6 +304,11 @@ const emit = defineEmits<{
 
 // 处理注册成功
 const handleRegisterSuccess = () => {
+  emit('close')
+}
+
+// 处理登录成功
+const handleLoginSuccess = () => {
   emit('close')
 }
 </script>

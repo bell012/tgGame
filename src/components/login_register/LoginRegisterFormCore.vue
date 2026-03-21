@@ -47,6 +47,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'open-reset-password': []
   'register-success': []
+  'login-success': []
 }>()
 
 // 当前激活的标签页
@@ -204,13 +205,16 @@ const handleLogin = async () => {
       memberPwd: formData.value.signin.password,
       areaCode: '63',
       channelId: '1',
-      requestMethod: '0',
-      validateCode: ''
+      requestMethod: '0'
     }
 
     // 登录接口
     const response = await Api.auth.login(loginData)
     console.log('登录成功:', response)
+    if (response.success && response.result && response.result.tradeToken) {
+      localStorage.setItem('userInfo', JSON.stringify(response.result))
+      emit('login-success')
+    }
   } catch (error) {
     console.error(error)
   }
