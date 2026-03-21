@@ -251,7 +251,7 @@ const loginFormDesktopRef = ref<InstanceType<typeof LoginFormDesktop> | null>(nu
 
 watch(
   () => props.modelValue,
-  newVal => {
+  async newVal => {
     if (newVal) {
       activeTab.value = props.defaultTab
       showResetPassword.value = false

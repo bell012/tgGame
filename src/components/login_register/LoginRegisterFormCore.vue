@@ -201,7 +201,7 @@ const handleSignupConfirmPasswordInput = (event: Event) => {
 const handleLogin = async () => {
   try {
     const loginData = {
-      memberId: `63${formData.value.signin.account}`,
+      memberId: formData.value.signin.account,
       telephone: formData.value.signin.account,
       memberPwd: formData.value.signin.password,
       areaCode: '63',

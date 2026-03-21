@@ -149,7 +149,7 @@ const handleResetPassword = async () => {
       smsCode: formData.value.code, // 短信验证码
       telephone: formData.value.account, // 手机号
       areaCode: '63', // 区号
-      memberId: `63${formData.value.account}` // 会员账号(区号+手机号)
+      memberId: formData.value.account // 会员账号
     }
 
     // 重置密码接口
@@ -161,6 +161,11 @@ const handleResetPassword = async () => {
         wordBreak: 'break-word',
         zIndex: 10001
       })
+    }
+
+    // 重置密码成功，清空表单
+    if (response && response.success) {
+      resetForm()
     }
   } catch (error) {
     console.error(error)
