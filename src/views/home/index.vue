@@ -45,6 +45,7 @@
             class="absolute left-0 top-0 h-full w-full rounded-full bg-success animate-ping"
           ></div>
         </div>
+        <!-- 近期大奖 -->
         <div>{{ $t('home.RecentBigWins') }}</div>
         <div class="ml-2 gap-2 lg:!flex lg:!flex-col pcState">
           <div
@@ -406,6 +407,14 @@ const objectSource = ref(
     number: `188.88K USD`
   }))
 )
+const getRecentBigWinsData = async () => {
+  try {
+    const res = await Api.home.getRecentBigWins({ currency: 'PHP', type: 1 })
+    console.log('getRecentBigWins success', res.result)
+  } catch (error) {
+    console.error('getRecentBigWins failed', error)
+  }
+}
 const duplicatedList = computed(() => [...objectSource.value, ...objectSource.value])
 
 const gameData = ref<any>(null)
@@ -430,6 +439,18 @@ const sportsEventList = computed<EventListItem[]>(() => {
     image: toGameImageUrl(item?.subGame?.[0]?.gameItemHotVo?.defaultImage ?? '')
   }))
 })
+const getQuerySlideshow = async () => {
+  try {
+    const res = await Api.home.getQuerySlideshow({
+      channelld: '4',
+      page: { current: 1, size: 10 },
+      type: 1
+    })
+    console.log('getQuerySlideshow success', res.result)
+  } catch (error) {
+    console.error('getQuerySlideshow failed', error)
+  }
+}
 
 onMounted(async () => {
   try {
@@ -439,6 +460,8 @@ onMounted(async () => {
       list: item?.subGame?.[0]?.subGame?.slice(0, 10) || [],
       sysGameTypeName: item?.sysGameTypeName || ''
     }))
+    getRecentBigWinsData()
+    getQuerySlideshow()
     console.log('getGameData success', gameData.value)
   } catch (error) {
     console.error('getGameData failed', error)

@@ -55,10 +55,10 @@
       ref="listWrap"
       style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
-      <div v-for="(value, index) in normalizedList" :key="value.img.conUrl + '-' + index">
+      <div v-for="(value, index) in normalizedList" :key="value.img.src + '-' + index">
         <a
           href="javascript:void(0);"
-          class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2"
+          class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2 aspect-[3/4]"
           link=""
         >
           <div class="w-full h-full">
@@ -70,7 +70,7 @@
             <div class="icon size-4">
               <peopleNumber />
             </div>
-            <span class="text-xs font-semibold text-alw_white">2126</span>
+            <span class="text-xs font-semibold text-alw_white">{{ value.number }}</span>
           </div>
           <div
             class="center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 group-hover:opacity-100"
@@ -104,11 +104,10 @@
 import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './img/peopleNumber.svg?component'
+import { StringExtension } from '@/utils/string-extension'
 interface GameItem {
   img: {
     maintain: boolean
-    // 以 conUrl 为主，兼容 src
-    conUrl: string
     src?: string
   }
   number: number
@@ -116,7 +115,6 @@ interface GameItem {
 
 interface Props {
   title: string
-  // 接口返回结构不一定完全一致，这里放宽类型，运行时做一次归一化
   list: any[]
 }
 
@@ -125,23 +123,12 @@ const listWrap = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
 
 const normalizeGameItem = (item: any): GameItem => {
-  const conUrl =
-    item?.img?.conUrl ??
-    item?.conUrl ??
-    item?.imgUrl ??
-    item?.image ??
-    item?.icon ??
-    item?.src ??
-    ''
-
-  const maintain = item?.img?.maintain ?? item?.maintain ?? item?.isMaintain ?? false
-
-  const number = Number(item?.number ?? item?.betCount ?? 0) || 0
-
+  const conUrl = item?.conUrl ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.conUrl}` : ''
+  const number = StringExtension.getRandomInt(item.initScoreNum, item.initScoreStar)
   return {
     img: {
-      maintain: !!maintain,
-      conUrl: String(conUrl)
+      maintain: false,
+      src: String(conUrl)
     },
     number
   }
