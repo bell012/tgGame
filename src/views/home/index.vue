@@ -1,6 +1,9 @@
 <template>
   <div class="home max-w-[1248px] mx-auto px-0 py-0 sm:px-4 sm:py-4">
-    <div class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl">
+    <div v-if="userInfo">
+      <HomeCarouselImg v-if="querySlideshowList.length" :list="querySlideshowList" />
+    </div>
+    <div v-else class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl">
       <img src="./headBack_h5.png" class="sm:hidden" />
       <img src="./headBack.png" class="hidden sm:block" />
       <div
@@ -37,6 +40,7 @@
         </button>
       </div>
     </div>
+
     <div class="flex items-center mt-2 sm:mt-6 h-8">
       <h2 class="flex items-center text-base font-extrabold text-primary">
         <div class="relative mr-2 h-2 w-2">
@@ -293,6 +297,8 @@
 <script setup lang="ts">
 import Api from '@/api'
 import H5HomePop from '@/components/H5HomePop.vue'
+import HomeCarouselImg from '@/components/homeCarouselImg.vue'
+
 import ActivityPop from '@/components/activityPop.vue'
 
 import { computed, onMounted, ref } from 'vue'
@@ -356,6 +362,7 @@ interface RawGameDataItem {
 const { t } = useI18n()
 const showLoginModal = ref(false)
 const showH5HomePop = ref(true)
+const userInfo = ref<any>(null)
 const closeH5HomePop = () => {
   showH5HomePop.value = false
 }
@@ -439,14 +446,17 @@ const sportsEventList = computed<EventListItem[]>(() => {
     image: toGameImageUrl(item?.subGame?.[0]?.gameItemHotVo?.defaultImage ?? '')
   }))
 })
+
+const querySlideshowList = ref<any>([])
 const getQuerySlideshow = async () => {
   try {
     const res = await Api.home.getQuerySlideshow({
       channelld: '4',
       page: { current: 1, size: 10 },
-      type: 1
+      type: 1,
+      deploymentPath: 1
     })
-    console.log('getQuerySlideshow success', res.result)
+    querySlideshowList.value = res.result
   } catch (error) {
     console.error('getQuerySlideshow failed', error)
   }
@@ -454,6 +464,7 @@ const getQuerySlideshow = async () => {
 
 onMounted(async () => {
   try {
+    userInfo.value = localStorage.getItem('userInfo')
     const res = await Api.home.getGameData()
     console.log('getGameData success', res.result)
     gameData.value = res.result.map((item: any) => ({
