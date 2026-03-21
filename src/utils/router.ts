@@ -1,5 +1,6 @@
 import router from '@/router'
 import i18n from '@/i18n'
+import { getStorageLanguageCode } from './locale'
 
 /**
  * 获取当前语言前缀
@@ -70,6 +71,6 @@ export const switchLanguage = (locale: 'zh' | 'en') => {
   const pathWithoutLocale = currentPath.replace(/^\/(zh|en)/, '') || '/'
   const newPath = locale === 'zh' ? `/zh${pathWithoutLocale}` : pathWithoutLocale
   i18n.global.locale.value = locale
-  localStorage.setItem('language', locale === 'zh' ? 'zh-CN' : 'en')
+  localStorage.setItem('language', getStorageLanguageCode(locale))
   router.push(newPath)
 }
