@@ -1,5 +1,8 @@
 <template>
-  <div class="fixed inset-0 z-[9999] flex items-end justify-center bg-mask-60-1">
+  <div
+    class="fixed inset-0 z-[9999] flex items-end justify-center bg-mask-60-1"
+    @click.self="close"
+  >
     <div class="w-full max-h-[90vh] flex flex-col bg-bg-1 rounded-t-xl overflow-hidden">
       <div class="bg-bg-2 relative flex flex-1 items-center justify-center pt-2.5 pb-2.5">
         <span class="text-text-1 font-semibold">{{ $t('home.ExclusivePromotions') }} </span>
