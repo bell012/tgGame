@@ -17,18 +17,20 @@
           <div class="flex">
             <!-- 语言 -->
             <button
-              :class="['tab', { active: activeTab === 'language' }]"
+              :class="['tab w-1/2', { active: activeTab === 'language' }]"
               @click="activeTab = 'language'"
             >
               {{ t('locales.home.language') }}
             </button>
             <!-- 以货币显示 -->
             <!-- <button
-              :class="['tab', { active: activeTab === 'currency' }]"
+              :class="['tab w-1/2', { active: activeTab === 'currency' }]"
               @click="activeTab = 'currency'"
             >
               {{ t('locales.home.view_currency') }}
             </button> -->
+            <!-- 占位空白区域 -->
+            <div class="w-1/2"></div>
           </div>
 
           <!-- 语言选择 -->

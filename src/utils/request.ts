@@ -2,6 +2,7 @@ import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
 import { v4 as uuidv4 } from 'uuid'
 import { getDeviceTraceId } from './deviceId'
 import { AESUtils } from './encrypt'
+import { getLanguageCode as getLocaleLanguageCode } from './locale'
 import CryptoJS from 'crypto-js'
 
 const service: AxiosInstance = axios.create({
@@ -16,8 +17,7 @@ const service: AxiosInstance = axios.create({
  * 获取当前语言代码
  */
 function getLanguageCode(): string {
-  const language = localStorage.getItem('language') || 'en'
-  return language === 'zh-CN' ? 'zh' : 'en'
+  return getLocaleLanguageCode()
 }
 
 /**
@@ -112,7 +112,6 @@ service.interceptors.response.use(
         }
       }
     }
-
     const res = response.data
     if (response.status !== 200) {
       return Promise.reject(new Error(res.message || 'Error'))
