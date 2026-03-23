@@ -59,6 +59,13 @@
           >
             {{ t('locales.home.sign_Up') }}
           </div>
+          <!-- 充值 -->
+          <div
+            class="cursor-pointer w-[84px] h-[35px] sm:w-[96px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 md:mr-3"
+            @click="openDeposit"
+          >
+            {{ t('locales.home.deposit') }}
+          </div>
         </template>
 
         <!-- 已登录状态 -->
@@ -241,6 +248,7 @@ import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
+import DepositPop from '@/components/deposit/depositPop.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
 import ChatIcon from '@/static/svg/chat.svg?component'
