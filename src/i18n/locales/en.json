@@ -10,7 +10,7 @@
     "select_currency": "Select the desired currency to display. The Currencies will be shown in approximated values.",
     "none": "None",
     "none_select_currency": "When none is selected, some amounts are still displayed in the last selected fiat currency.",
-    "deposit": "deposit"
+    "deposit": "Deposit"
   },
   "common": {
     "loading": "Loading...",

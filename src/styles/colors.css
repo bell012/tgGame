@@ -15,6 +15,7 @@
 
   /* ========== 主色 (Theme) ========== */
   --color-theme-level-1: #2aee88;
+  --color-theme-level-3: rgba(42, 238, 136, 0.15);
 
   /* ========== 文字色 (Text) ========== */
   --color-text-level-1: #ffffff;
