@@ -233,5 +233,13 @@
     "betAmount": "投注金额",
     "win": "赢",
     "loss": "输"
+  },
+  "betDetails": {
+    "title": "投注详情",
+    "currency": "币种",
+    "winLoss": "输赢",
+    "orderNo": "订单号",
+    "createdAt": "创建时间",
+    "copy": "复制成功"
   }
 }
