@@ -57,7 +57,7 @@
           type="button"
           :class="[
             'flex-1 flex justify-center items-center h-12 rounded-lg lg:hover:bg-[var(--color-theme-level-3)] border text-text-1',
-            selectedChannel === ch ? 'bg-bg-3' : ''
+            selectedChannel === ch ? 'bg-[var(--color-theme-level-3)]' : ''
           ]"
           :style="{
             border: `1px solid ${selectedChannel === ch ? 'var(--color-theme-level-1)' : 'var(--color-opacity-10)'}`
