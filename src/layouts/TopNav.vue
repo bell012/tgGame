@@ -81,6 +81,14 @@
               </span>
             </div>
 
+            <!-- 充值 -->
+            <div
+              class="cursor-pointer w-[84px] h-[35px] sm:w-[96px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 md:mr-3"
+              @click="openDeposit"
+            >
+              {{ t('locales.home.deposit') }}
+            </div>
+
             <div class="flex items-center">
               <ArrowDownIcon class="w-5 h-5 mr-1 cursor-pointer" />
               <div
@@ -255,6 +263,7 @@ const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
 
 const showLoginModal = ref(false)
+const showDepositPop = ref(false)
 const loginModalTab = ref<'login' | 'register'>('login')
 
 const showExplorehModal = ref(false)
