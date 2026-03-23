@@ -33,11 +33,14 @@ const { theme } = storeToRefs(themeStore)
 interface Props {
   img: {
     maintain: boolean
-    src: string
+    // 接口可能返回 conUrl 或 src，这里兼容两者
+    conUrl?: string
+    src?: string
   }
 }
 const props = defineProps<Props>()
-const currentSrc = ref(props.img.src)
+console.log('props====', props.img.conUrl)
+const currentSrc = ref(props.img.conUrl ?? props.img.src ?? '')
 const hasError = ref(false)
 
 const handleError = () => {

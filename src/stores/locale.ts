@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import i18n from '@/i18n'
+import { getLanguageCode, getStorageLanguageCode } from '@/utils/locale'
 
 export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
@@ -17,10 +18,10 @@ export const useLocaleStore = defineStore('locale', () => {
     () => router.currentRoute.value.params.locale,
     newLocale => {
       if (newLocale) {
-        const languageCode = newLocale === 'zh' ? 'zh-CN' : 'en'
+        const languageCode = getStorageLanguageCode(newLocale as string)
         if (currentLanguage.value !== languageCode) {
           currentLanguage.value = languageCode
-          i18n.global.locale.value = newLocale === 'zh' ? 'zh' : 'en'
+          i18n.global.locale.value = getLanguageCode(languageCode) as 'en' | 'zh'
           localStorage.setItem('language', languageCode)
           console.log('[LocaleStore] Route changed, language updated to:', languageCode)
         }
@@ -42,17 +43,13 @@ export const useLocaleStore = defineStore('locale', () => {
     console.log('[LocaleStore] initLanguage - routeLocale:', routeLocale)
 
     if (routeLocale) {
-      if (routeLocale === 'zh') {
-        currentLanguage.value = 'zh-CN'
-        i18n.global.locale.value = 'zh'
-      } else {
-        currentLanguage.value = 'en'
-        i18n.global.locale.value = 'en'
-      }
+      const languageCode = getStorageLanguageCode(routeLocale)
+      currentLanguage.value = languageCode
+      i18n.global.locale.value = getLanguageCode(languageCode) as 'en' | 'zh'
     } else {
       const savedLanguage = localStorage.getItem('language') || 'en'
       currentLanguage.value = savedLanguage
-      i18n.global.locale.value = savedLanguage === 'zh-CN' ? 'zh' : 'en'
+      i18n.global.locale.value = getLanguageCode(savedLanguage) as 'en' | 'zh'
     }
 
     localStorage.setItem('language', currentLanguage.value)
@@ -63,8 +60,8 @@ export const useLocaleStore = defineStore('locale', () => {
   // 切换语言
   const setLanguage = (code: string) => {
     currentLanguage.value = code
-    const i18nLocale = code === 'zh-CN' ? 'zh' : 'en'
-    i18n.global.locale.value = i18nLocale
+    const i18nLocale = getLanguageCode(code)
+    i18n.global.locale.value = i18nLocale as 'en' | 'zh'
     localStorage.setItem('language', code)
     const route = router.currentRoute.value
     const currentPath = route.path.replace(/^\/(zh|en)/, '')
