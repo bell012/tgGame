@@ -37,7 +37,9 @@
     "stay_untamed": "保持桀骜不训",
     "sign_up_get_welcome_bonus": "注册并获得欢迎奖金",
     "log_in_directly": "直接登入",
-    "log_in_using_secret_key": "使用秘钥登入"
+    "log_in_using_secret_key": "使用秘钥登入",
+    "filter": "筛选",
+    "apply": "应用"
   },
   "pwa": {
     "offlineReady": "应用已就绪，可离线使用",

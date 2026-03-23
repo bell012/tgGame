@@ -37,7 +37,9 @@
     "stay_untamed": "Stay Untamed",
     "sign_up_get_welcome_bonus": "Sign Up & Get Welcome Bonus",
     "log_in_directly": "Log in directly",
-    "log_in_using_secret_key": "Log in using secret key"
+    "log_in_using_secret_key": "Log in using secret key",
+    "filter": "Filter",
+    "apply": "Apply"
   },
   "pwa": {
     "offlineReady": "App ready to work offline",
