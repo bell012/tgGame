@@ -64,6 +64,14 @@
     "sports": "Sports",
     "chat": "Chat"
   },
+  "betHistory": {
+    "title": "Bet History",
+    "noBetHistoryYet": "No bet history yet",
+    "startPlaying": "Start Playing",
+    "betAmount": "Bet Amount",
+    "win": "Win",
+    "loss": "Loss"
+  },
   "search": {
     "placeholder": "Search games",
     "history": "History",
