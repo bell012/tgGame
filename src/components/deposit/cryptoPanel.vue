@@ -29,7 +29,7 @@
           <img class="w-5 aspect-square mr-1 absolute left-2 z-20" :src="TRXIcon" />
           <img class="w-5 aspect-square mr-1 absolute left-4 z-10" :src="BNBIcon" />
         </div>
-        <h2 class="mr-1">More</h2>
+        <h2 class="mr-1">{{ t('locales.home.deposit_more') }}</h2>
         <div class="w-1 h-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -47,35 +47,72 @@
       </button>
     </div>
 
-    <!-- Channel -->
-    <div class="px-6 mt-5">
-      <p class="text-sm mb-2">Deposit Channel</p>
-      <div class="flex gap-3">
+    <div class="mt-5">
+      <p class="text-sm text-text-1">{{ t('locales.home.deposit_channel') }}</p>
+      <div class="flex gap-2 mt-4">
         <button
           v-for="ch in channels"
           :key="ch"
           @click="selectedChannel = ch"
+          type="button"
           :class="[
-            'flex-1 py-2 rounded-lg border',
-            selectedChannel === ch
-              ? 'border-green-400 bg-green-400/10 text-green-400'
-              : 'border-gray-600 text-gray-300'
+            'flex-1 flex justify-center items-center h-12 rounded-lg lg:hover:bg-[var(--color-theme-level-3)] border text-text-1',
+            selectedChannel === ch ? 'bg-bg-3' : ''
           ]"
+          :style="{
+            border: `1px solid ${selectedChannel === ch ? 'var(--color-theme-level-1)' : 'var(--color-opacity-10)'}`
+          }"
         >
           {{ ch }}
         </button>
       </div>
     </div>
 
-    <!-- Amount -->
-    <div class="px-6 mt-5">
-      <p class="text-sm mb-2">Deposit Amount</p>
-      <input
-        type="number"
-        v-model="amount"
-        placeholder="Please select a deposit amount"
-        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-green-400"
-      />
+    <div class="mt-5">
+      <div class="flex items-center justify-between">
+        <p class="text-sm text-text-1">{{ t('locales.home.deposit_amount') }}</p>
+        <div class="flex items-center">
+          <div class="w-4 h-4 mr-1">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+            >
+              <path
+                d="M13.5369 3.06056C13.4445 2.98486 13.3365 2.93227 13.2212 2.90692C13.1059 2.88157 12.9864 2.88415 12.8722 2.91445L9.27437 3.86974C8.88482 3.97317 8.61357 4.32579 8.61357 4.72886V11.9551C8.61357 12.5385 9.16612 12.9637 9.73007 12.8143L13.2661 11.8777C13.4325 11.8337 13.5799 11.7336 13.6847 11.5931C13.7895 11.4526 13.8458 11.28 13.8446 11.1027V3.6831C13.8427 3.56198 13.814 3.44291 13.7606 3.335C13.7073 3.2271 13.6308 3.13322 13.5369 3.06056ZM7.38277 4.72936C7.38277 4.32606 7.11128 3.9733 6.72137 3.87008L3.11185 2.91445C2.99941 2.88758 2.8826 2.88674 2.76981 2.912C2.65702 2.93726 2.55105 2.988 2.45952 3.06056C2.36624 3.13583 2.29105 3.23232 2.23982 3.3425C2.18858 3.45269 2.16268 3.57359 2.16412 3.6958V11.1027C2.16425 11.2789 2.22116 11.4501 2.32589 11.5893C2.43062 11.7284 2.57722 11.8277 2.7426 11.8714L6.26463 12.8116C6.82898 12.9622 7.38277 12.5369 7.38277 11.9528V4.72936Z"
+                fill="#B3BEC1"
+              />
+            </svg>
+          </div>
+          <p class="text-sm text-text-2">{{ t('locales.home.deposit_amount') }}</p>
+        </div>
+      </div>
+      <div
+        class="flex items-center w-full mt-3 p-3 rounded-lg bg-input-3 border border-[color:var(--color-opacity-10)] focus-within:border-[color:var(--color-theme-level-1)] focus-within:ring-0"
+      >
+        <div class="w-6 mr-3">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path
+              d="M22.1096 11.7598C22.1096 10.1569 17.7422 9.53054 14.2261 9.32788V7.11707H20.0924V2.99023H3.91844V7.11707H9.78476V9.32788C6.26867 9.51211 1.88281 10.1569 1.88281 11.7598C1.88281 13.3626 6.25016 13.989 9.76625 14.1917V22.1137H14.2261V14.1917C17.7422 13.989 22.1096 13.3626 22.1096 11.7598ZM11.9869 13.51C5.91706 13.51 2.60454 12.3493 2.60454 11.7598C2.60454 11.2439 5.12131 10.3043 9.76625 10.0648V13.0678H14.2261V10.0648C18.8711 10.3043 21.3878 11.2439 21.3878 11.7598C21.3693 12.3493 18.0568 13.51 11.9869 13.51Z"
+              fill="#2AEE88"
+            />
+          </svg>
+        </div>
+        <input
+          type="number"
+          v-model="amount"
+          placeholder="Please select a deposit amount"
+          class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0"
+        />
+      </div>
     </div>
 
     <!-- Wager Tabs -->
@@ -110,6 +147,7 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import USDCIcon from '@/static/img/crypto/USDC.png'
 import USDTIcon from '@/static/img/crypto/USDT.png'
 import ETHIcon from '@/static/img/crypto/ETH.png'
@@ -118,6 +156,7 @@ import DOGEIcon from '@/static/img/crypto/DOGE.png'
 import TRXIcon from '@/static/img/crypto/TRX.png'
 import BNBIcon from '@/static/img/crypto/BNB.png'
 
+const { t } = useI18n()
 const coins = [
   {
     name: 'USDT',
@@ -163,4 +202,13 @@ const openCoinMorePanel = () => {
   }
 }
 </script>
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+</style>
