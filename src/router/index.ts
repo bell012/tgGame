@@ -113,6 +113,19 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'bet-details/:id',
+    name: 'bet-details',
+    component: () => import('@/views/personalCenter/betDetails/index.vue'),
+    meta: {
+      title: '投注详情',
+      description: '投注详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 

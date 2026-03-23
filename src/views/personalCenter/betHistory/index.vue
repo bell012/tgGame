@@ -69,6 +69,7 @@
             </p>
             <div
               class="size-[20px] bg-opacity-10 rounded-md flex items-center justify-center cursor-pointer"
+              @click.stop="handleBetClick(bet)"
             >
               <ArrowRightIcon class="w-3.5 h-3.5" />
             </div>
@@ -106,18 +107,18 @@ const betList = ref<BetItem[]>([
     id: 1,
     gameName: 'Dragon Hatch',
     gameIcon: bet,
-    betAmount: '1000',
+    betAmount: '1001',
     result: 'loss',
-    resultAmount: '1000',
+    resultAmount: '1001',
     time: '12/18/2026 11:14:15 AM'
   },
   {
     id: 2,
     gameName: 'Dragon Hatch',
     gameIcon: bet,
-    betAmount: '1000',
+    betAmount: '1002',
     result: 'win',
-    resultAmount: '1000',
+    resultAmount: '1002',
     time: '12/18/2026 11:14:15 AM'
   },
   {
@@ -217,7 +218,10 @@ const handleStartPlaying = () => {
 }
 
 const handleBetClick = (bet: BetItem) => {
-  console.log('Bet clicked:', bet)
+  router.push({
+    path: `/bet-details/${bet.id}`,
+    state: { betData: JSON.stringify(bet) }
+  })
 }
 
 const handleSort = () => {

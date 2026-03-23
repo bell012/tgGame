@@ -72,6 +72,17 @@
     "win": "Win",
     "loss": "Loss"
   },
+  "betDetails": {
+    "title": "Bet Details",
+    "win": "Win",
+    "loss": "Loss",
+    "currency": "Currency",
+    "betAmount": "Bet Amount",
+    "winLoss": "Win/Loss",
+    "orderNo": "Order No.",
+    "createdAt": "Created At",
+    "copy": "Copy succeeded."
+  },
   "search": {
     "placeholder": "Search games",
     "history": "History",
