@@ -1,18 +1,32 @@
 <template>
-  <LoginRegisterFormCore :default-tab="defaultTab">
+  <LoginRegisterFormCore
+    ref="loginFormRef"
+    :default-tab="defaultTab"
+    @register-success="handleRegisterSuccess"
+    @login-success="handleLoginSuccess"
+  >
     <template
       #default="{
         activeTab,
         showPassword,
         formData,
         checkboxAnimating,
+        countdown,
+        isSigninValid,
+        isSignupValid,
         setActiveTab,
         togglePassword,
         handleCheckboxClick,
         handleLogin,
         handleRegister,
         handleSendCode,
-        openResetPassword
+        openResetPassword,
+        handleSigninAccountInput,
+        handleSignupAccountInput,
+        handleSignupCodeInput,
+        handleSigninPasswordInput,
+        handleSignupPasswordInput,
+        handleSignupConfirmPasswordInput
       }"
     >
       <div class="w-full h-full flex flex-col">
@@ -49,12 +63,21 @@
             <div class="text-sm font-[700] text-text-1 mb-2">{{ t('locales.common.account') }}</div>
             <div class="mb-6">
               <!-- 请输入账号 -->
-              <input
-                v-model="formData.signin.account"
-                type="text"
-                :placeholder="t('locales.common.enter_account')"
-                class="w-full h-[50px] pl-2 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
-              />
+              <div class="relative">
+                <span
+                  class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-theme-level-1)] text-xs font-[500]"
+                >
+                  +63
+                </span>
+                <input
+                  :value="formData.signin.account"
+                  type="text"
+                  inputmode="numeric"
+                  :placeholder="t('locales.common.enter_account')"
+                  class="w-full h-[50px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  @input="handleSigninAccountInput"
+                />
+              </div>
             </div>
 
             <!-- 密码 -->
@@ -66,10 +89,11 @@
                 <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
                 <!-- 请输入密码 -->
                 <input
-                  v-model="formData.signin.password"
+                  :value="formData.signin.password"
                   :type="showPassword.signin ? 'text' : 'password'"
                   :placeholder="t('locales.common.enter_password')"
                   class="w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  @input="handleSigninPasswordInput"
                 />
                 <button
                   type="button"
@@ -115,7 +139,9 @@
 
             <!-- 登录 -->
             <button
-              class="btn-primary w-full h-[40px] mt-10 rounded-lg text-sm text-text-4"
+              class="btn-primary w-full h-[40px] mt-10 rounded-lg text-sm text-text-4 transition-all"
+              :class="{ 'opacity-40 cursor-not-allowed': !isSigninValid }"
+              :disabled="!isSigninValid"
               @click="handleLogin"
             >
               {{ t('locales.home.sign_In') }}
@@ -132,12 +158,21 @@
             <div class="text-sm font-[700] text-text-1 mb-2">{{ t('locales.common.account') }}</div>
             <div class="mb-6">
               <!-- 请输入账号 -->
-              <input
-                v-model="formData.signup.account"
-                type="text"
-                :placeholder="t('locales.common.enter_account')"
-                class="w-full h-[50px] pl-2 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
-              />
+              <div class="relative">
+                <span
+                  class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-theme-level-1)] text-xs font-[500]"
+                >
+                  +63
+                </span>
+                <input
+                  :value="formData.signup.account"
+                  type="text"
+                  inputmode="numeric"
+                  :placeholder="t('locales.common.enter_account')"
+                  class="w-full h-[50px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  @input="handleSignupAccountInput"
+                />
+              </div>
             </div>
 
             <!-- 验证码 -->
@@ -149,18 +184,22 @@
                 <SafeIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
                 <!-- 请输入验证码 -->
                 <input
-                  v-model="formData.signup.code"
+                  :value="formData.signup.code"
                   type="text"
+                  inputmode="numeric"
                   :placeholder="t('locales.common.enter_verification')"
                   class="w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  @input="handleSignupCodeInput"
                 />
                 <!-- 获取验证码 -->
                 <button
                   type="button"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-xs font-[500] rounded-lg"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-xs font-[500] rounded-lg transition-opacity"
+                  :class="{ 'opacity-50 cursor-not-allowed': countdown > 0 }"
+                  :disabled="countdown > 0"
                   @click="handleSendCode"
                 >
-                  {{ t('locales.common.get_code') }}
+                  {{ countdown > 0 ? `${countdown}s` : t('locales.common.get_code') }}
                 </button>
               </div>
             </div>
@@ -174,10 +213,11 @@
                 <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
                 <!-- 请输入密码 -->
                 <input
-                  v-model="formData.signup.password"
+                  :value="formData.signup.password"
                   :type="showPassword.signup ? 'text' : 'password'"
                   :placeholder="t('locales.common.enter_password')"
                   class="w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  @input="handleSignupPasswordInput"
                 />
                 <button
                   type="button"
@@ -199,10 +239,11 @@
                 <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
                 <!-- 请输入确认密码 -->
                 <input
-                  v-model="formData.signup.confirmPassword"
+                  :value="formData.signup.confirmPassword"
                   :type="showPassword.confirmPassword ? 'text' : 'password'"
                   :placeholder="t('locales.common.enter_confirm_password')"
                   class="w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  @input="handleSignupConfirmPasswordInput"
                 />
                 <button
                   type="button"
@@ -217,7 +258,9 @@
 
             <!-- 注册 -->
             <button
-              class="btn-primary w-full h-[40px] rounded-lg text-sm text-text-4"
+              class="btn-primary w-full h-[40px] rounded-lg text-sm text-text-4 transition-all"
+              :class="{ 'opacity-40 cursor-not-allowed': !isSignupValid }"
+              :disabled="!isSignupValid"
               @click="handleRegister"
             >
               {{ t('locales.home.sign_Up') }}
@@ -238,6 +281,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
 import SafeIcon from '@/static/svg/login/safe.svg?component'
@@ -252,8 +296,40 @@ interface Props {
   defaultTab?: 'signin' | 'signup'
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   defaultTab: 'signin'
+})
+
+const emit = defineEmits<{
+  close: []
+}>()
+
+const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
+
+// 监听 defaultTab 变化，清空表单
+watch(
+  () => props.defaultTab,
+  () => {
+    loginFormRef.value?.resetForm()
+  }
+)
+
+// 处理注册成功
+const handleRegisterSuccess = () => {
+  emit('close')
+}
+
+// 处理登录成功
+const handleLoginSuccess = () => {
+  emit('close')
+}
+
+const resetForm = () => {
+  loginFormRef.value?.resetForm()
+}
+
+defineExpose({
+  resetForm
 })
 </script>
 

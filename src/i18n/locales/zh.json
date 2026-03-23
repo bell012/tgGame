@@ -23,17 +23,17 @@
     "confirm": "确认",
     "cancel": "取消",
     "account": "账号",
-    "enter_account": "请输入账号",
+    "enter_account": "输入您的电话号码",
     "password": "密码",
-    "enter_password": "请输入密码",
+    "enter_password": "6–16个字符(字母和数字)",
     "confirm_password": "确认密码",
-    "enter_confirm_password": "请输入确认密码",
+    "enter_confirm_password": "请重新输入您的密码",
     "remember_me": "记住我",
     "forget_password": "忘记密码",
     "reset_password": "重置密码",
     "continue": "以访客身份",
     "verification": "验证码",
-    "enter_verification": "请输入验证码",
+    "enter_verification": "输入验证码",
     "get_code": "获取验证码",
     "welcome_deposit_bonus": "首存奖金",
     "free_daily_lucky_spin": "每日免费幸运旋转",
@@ -42,7 +42,9 @@
     "stay_untamed": "保持桀骜不训",
     "sign_up_get_welcome_bonus": "注册并获得欢迎奖金",
     "log_in_directly": "直接登入",
-    "log_in_using_secret_key": "使用秘钥登入"
+    "log_in_using_secret_key": "使用秘钥登入",
+    "filter": "筛选",
+    "apply": "应用"
   },
   "pwa": {
     "offlineReady": "应用已就绪，可离线使用",
@@ -230,5 +232,21 @@
       "dark": "深色模式",
       "light": "浅色模式"
     }
+  },
+  "betHistory": {
+    "title": "投注历史",
+    "noBetHistoryYet": "暂无投注历史",
+    "startPlaying": "开始游戏",
+    "betAmount": "投注金额",
+    "win": "赢",
+    "loss": "输"
+  },
+  "betDetails": {
+    "title": "投注详情",
+    "currency": "币种",
+    "winLoss": "输赢",
+    "orderNo": "订单号",
+    "createdAt": "创建时间",
+    "copy": "复制成功"
   }
 }

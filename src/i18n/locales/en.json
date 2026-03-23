@@ -23,18 +23,18 @@
     "confirm": "Confirm",
     "cancel": "Cancel",
     "account": "account",
-    "enter_account": "Please enter account",
+    "enter_account": "Enter your phone number",
     "password": "password",
-    "enter_password": "Please enter password",
+    "enter_password": "6–16 characters (letters and numbers)",
     "confirm_password": "Confirm Password",
-    "enter_confirm_password": "Please enter the confirmation password",
+    "enter_confirm_password": "Please re-enter your password",
     "remember_me": "remember me",
     "forget_password": "Forget Password",
     "reset_password": "Reset Password",
     "continue": "Continue as Guest",
     "verification": "Verification code",
-    "enter_verification": "Please enter the verification code",
-    "get_code": "get code",
+    "enter_verification": "Enter the verification code",
+    "get_code": "Get Code",
     "welcome_deposit_bonus": "Welcome deposit bonus",
     "free_daily_lucky_spin": "Free daily lucky spin",
     "free_perks": "Free Perks",
@@ -42,7 +42,9 @@
     "stay_untamed": "Stay Untamed",
     "sign_up_get_welcome_bonus": "Sign Up & Get Welcome Bonus",
     "log_in_directly": "Log in directly",
-    "log_in_using_secret_key": "Log in using secret key"
+    "log_in_using_secret_key": "Log in using secret key",
+    "filter": "Filter",
+    "apply": "Apply"
   },
   "pwa": {
     "offlineReady": "App ready to work offline",
@@ -68,6 +70,25 @@
     "casino": "Casino",
     "sports": "Sports",
     "chat": "Chat"
+  },
+  "betHistory": {
+    "title": "Bet History",
+    "noBetHistoryYet": "No bet history yet",
+    "startPlaying": "Start Playing",
+    "betAmount": "Bet Amount",
+    "win": "Win",
+    "loss": "Loss"
+  },
+  "betDetails": {
+    "title": "Bet Details",
+    "win": "Win",
+    "loss": "Loss",
+    "currency": "Currency",
+    "betAmount": "Bet Amount",
+    "winLoss": "Win/Loss",
+    "orderNo": "Order No.",
+    "createdAt": "Created At",
+    "copy": "Copy succeeded."
   },
   "search": {
     "placeholder": "Search games",

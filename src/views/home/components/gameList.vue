@@ -55,10 +55,10 @@
       ref="listWrap"
       style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
-      <div v-for="(value, index) in props.list" :key="value.img.src + '-' + index">
+      <div v-for="(value, index) in normalizedList" :key="value.img.src + '-' + index">
         <a
           href="javascript:void(0);"
-          class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2"
+          class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2 aspect-[3/4]"
           link=""
         >
           <div class="w-full h-full">
@@ -70,12 +70,15 @@
             <div class="icon size-4">
               <peopleNumber />
             </div>
-            <span class="text-xs font-semibold text-alw_white">2126</span>
+            <span class="text-xs font-semibold text-alw_white">{{ value.number }}</span>
           </div>
           <div
             class="center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 group-hover:opacity-100"
           >
-            <div class="flex flex-col items-center justify-center gap-2 h-full w-full">
+            <div
+              class="flex flex-col items-center justify-center gap-2 h-full w-full"
+              @click="handleClick(value.orderId)"
+            >
               <div
                 class="flex justify-center items-center center absolute left-0 top-0 flex h-[40%] w-full px-2 text-center font-extrabold leading-4 text-[white]"
               >
@@ -97,31 +100,62 @@
         </a>
       </div>
     </div>
+    <!-- 注册弹窗 -->
+    <LoginModal v-model="showLoginModal" default-tab="register" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './img/peopleNumber.svg?component'
+import { StringExtension } from '@/utils/string-extension'
+import LoginModal from '@/components/login_register/LoginModal.vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 interface GameItem {
   img: {
     maintain: boolean
-    src: string
+    src?: string
   }
   number: number
+  orderId: number
 }
 
 interface Props {
   title: string
-  list: GameItem[]
+  list: any[]
 }
 
 const props = defineProps<Props>()
-console.log('Props', props)
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
 
+const normalizeGameItem = (item: any): GameItem => {
+  const conUrl = item?.conUrl ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.conUrl}` : ''
+  const number = StringExtension.getRandomInt(item.initScoreNum, item.initScoreStar)
+  return {
+    img: {
+      maintain: false,
+      src: String(conUrl)
+    },
+    number,
+    orderId: item.orderId
+  }
+}
+
+const normalizedList = computed(() => {
+  return (props.list ?? []).map((item: any) => normalizeGameItem(item))
+})
+const showLoginModal = ref(false)
+const handleClick = (rowId: number) => {
+  let userInfo = localStorage.getItem('userInfo')
+  if (userInfo) {
+    router.push({ name: 'gameDetail', params: { id: rowId } })
+  } else {
+    showLoginModal.value = true
+  }
+}
 const prevDisabled = ref(true)
 const nextDisabled = ref(false)
 
