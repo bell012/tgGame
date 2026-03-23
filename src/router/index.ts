@@ -100,6 +100,19 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'bet-history',
+    name: 'bet-history',
+    component: () => import('@/views/personalCenter/betHistory/index.vue'),
+    meta: {
+      title: '投注历史',
+      description: '投注历史',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 

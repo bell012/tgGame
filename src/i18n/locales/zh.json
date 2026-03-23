@@ -225,5 +225,13 @@
       "dark": "深色模式",
       "light": "浅色模式"
     }
+  },
+  "betHistory": {
+    "title": "投注历史",
+    "noBetHistoryYet": "暂无投注历史",
+    "startPlaying": "开始游戏",
+    "betAmount": "投注金额",
+    "win": "赢",
+    "loss": "输"
   }
 }
