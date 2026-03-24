@@ -38,20 +38,20 @@
 
     <!-- H5 端布局 -->
     <div class="block md:hidden bg-bg-1">
-      <H5Header :title="$t('locales.betHistory.title')" :show-sort="true" @sort="handleSort" />
+      <H5Header :title="$t('betHistory.title')" :show-sort="true" @sort="handleSort" />
 
       <div class="py-3.5">
         <!-- 无数据状态 -->
         <div v-if="!hasBets" class="flex flex-col items-center justify-center mt-[100px]">
           <img :src="noDataImg" alt="No data" class="h-[200px] w-auto mb-2.5" />
           <p class="text-text-1 text-xs font-[500] mb-5">
-            {{ $t('locales.betHistory.noBetHistoryYet') }}
+            {{ $t('betHistory.noBetHistoryYet') }}
           </p>
           <button
             class="w-[200px] h-[40px] rounded-lg bg-theme-primary text-text-4 font-[700] text-sm flex items-center justify-center"
             @click="handleStartPlaying"
           >
-            {{ $t('locales.betHistory.startPlaying') }}
+            {{ $t('betHistory.startPlaying') }}
           </button>
         </div>
 
@@ -74,7 +74,7 @@
                 </h3>
                 <div class="flex items-center justify-between text-sm">
                   <span class="text-text-1">
-                    {{ $t('locales.betHistory.betAmount') }} : {{ bet.betAmount }}
+                    {{ $t('betHistory.betAmount') }} : {{ bet.betAmount }}
                   </span>
                   <span
                     :class="[
@@ -86,11 +86,7 @@
                           : 'text-text-1'
                     ]"
                   >
-                    {{
-                      bet.result === 'win'
-                        ? $t('locales.betHistory.win')
-                        : $t('locales.betHistory.loss')
-                    }}
+                    {{ bet.result === 'win' ? $t('betHistory.win') : $t('betHistory.loss') }}
                     :
                     {{ bet.resultAmount }}
                   </span>
@@ -131,6 +127,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { navigateTo } from '@/utils/router'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import PcLayout from './pc-layout.vue'
@@ -286,8 +283,7 @@ const handleStartPlaying = () => {
 }
 
 const handleBetClick = (bet: BetItem) => {
-  router.push({
-    path: `/bet-details/${bet.id}`,
+  navigateTo(`/bet-details/${bet.id}`, {
     state: { betData: JSON.stringify(bet) }
   })
 }
