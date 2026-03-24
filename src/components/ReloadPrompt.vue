@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div v-if="offlineReady || needRefresh" class="reload-prompt" role="alert">
     <div class="prompt-content">
       <div class="icon-wrapper">
@@ -36,10 +36,10 @@
     </div>
     <div class="button-group">
       <button v-if="needRefresh" class="btn-reload" @click="updateServiceWorker()">
-        {{ t('locales.pwa.reload') }}
+        {{ t('pwa.reload') }}
       </button>
       <button class="btn-close" @click="close">
-        {{ t('locales.pwa.close') }}
+        {{ t('pwa.close') }}
       </button>
     </div>
   </div>

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 顶部搜索 -->
   <div class="relative top-search" @mousedown="onWrapDown">
     <div
@@ -13,7 +13,7 @@
     <input
       v-model="keyword"
       type="text"
-      :placeholder="t('locales.search.placeholder')"
+      :placeholder="t('search.placeholder')"
       class="w-full h-[42px] pl-[110px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-[var(--color-border-level-1)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
       @keydown.enter.prevent="onSearch"
       @focus="focusClick"
@@ -44,9 +44,9 @@
       </div>
       <!-- 历史记录 -->
       <div class="flex justify-between w-full text-xs my-2.5">
-        <div class="font-bold">{{ t('locales.search.history') }}</div>
+        <div class="font-bold">{{ t('search.history') }}</div>
         <div class="text-[var(--color-text-level-2)]">
-          {{ t('locales.search.clear') }}（{{ history?.length }}）
+          {{ t('search.clear') }}（{{ history?.length }}）
         </div>
       </div>
       <!-- 搜索历史记录 -->
@@ -69,7 +69,7 @@
       </div>
       <!-- 接口返回搜索选项 -->
       <div class="text-xs my-2.5 w-full">
-        <div class="font-bold">{{ t('locales.search.suggested') }}</div>
+        <div class="font-bold">{{ t('search.suggested') }}</div>
       </div>
       <div class="w-full">
         <div v-if="history?.length > 0" class="flex flex-wrap gap-2">

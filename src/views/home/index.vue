@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="home max-w-[1248px] mx-auto px-0 py-0 sm:px-4 sm:py-4">
     <div v-if="userInfo">
       <HomeCarouselImg v-if="querySlideshowList.length" :list="querySlideshowList" />
@@ -12,13 +12,13 @@
         <h1
           class="font-inter text-[20px] font-bold leading-normal text-[var(--color-text-level-1,#FFF)]"
         >
-          {{ t('locales.casino.banner_title') }}
+          {{ t('casino.banner_title') }}
         </h1>
         <div>
           <h2
             class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
           >
-            {{ t('locales.casino.banner_sign_up') }}
+            {{ t('casino.banner_sign_up') }}
           </h2>
           <h2
             class="font-inter text-[14px] font-bold leading-normal text-[var(--color-theme-level-1,#2AEE88)]"
@@ -28,7 +28,7 @@
           <h2
             class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
           >
-            {{ t('locales.casino.banner_subtitle') }}
+            {{ t('casino.banner_subtitle') }}
           </h2>
         </div>
         <button
@@ -36,7 +36,7 @@
           type="button"
           @click.stop="showLoginModal = true"
         >
-          {{ t('locales.casino.join_now') }}
+          {{ t('casino.join_now') }}
         </button>
       </div>
     </div>
