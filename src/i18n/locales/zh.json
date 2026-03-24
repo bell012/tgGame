@@ -228,13 +228,36 @@
       "light": "浅色模式"
     }
   },
+  "wallet": {
+    "title": "钱包",
+    "betHistory": "投注历史"
+  },
   "betHistory": {
     "title": "投注历史",
     "noBetHistoryYet": "暂无投注历史",
     "startPlaying": "开始游戏",
     "betAmount": "投注金额",
     "win": "赢",
-    "loss": "输"
+    "loss": "输",
+    "type": "类型",
+    "time": "时间",
+    "payout": "支付",
+    "profit": "赔付",
+    "noMore": "没有更多了",
+    "filters": {
+      "all": "全部",
+      "slot": "老虎机",
+      "chess": "棋牌",
+      "fishing": "捕鱼",
+      "live": "真人",
+      "allAssets": "所有资产",
+      "past24Hours": "过去 24 小时",
+      "past7Days": "过去 7 天",
+      "past30Days": "过去 30 天"
+    }
+  },
+  "customSelect": {
+    "placeholder": "请选择"
   },
   "betDetails": {
     "title": "投注详情",

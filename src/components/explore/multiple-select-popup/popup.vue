@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <!-- 遮罩淡入淡出 -->
     <transition name="popup-fade">
@@ -60,7 +60,7 @@
               >
                 <ClearIcon class="w-3.5 h-3.5" />
                 <div class="ml-1.5 text-theme-primary text-xs font-[500]">
-                  {{ t('locales.search.botClear') }}
+                  {{ t('search.botClear') }}
                 </div>
               </button>
             </div>

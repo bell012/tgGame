@@ -1,10 +1,10 @@
-<template>
+﻿<template>
   <div class="grid lg:grid-cols-4 grid-cols-2 gap-4">
     <!-- 排序选择 -->
     <DropdownSelect
       :options="sortOptions"
       :selected="sortBy"
-      :label="t('locales.casino.sort')"
+      :label="t('casino.sort')"
       @update:selected="onSortChange"
     />
 
@@ -12,10 +12,10 @@
     <DropdownSelect
       :options="filteredProviders"
       :selected-list="providers"
-      :label="t('locales.casino.providers')"
+      :label="t('casino.providers')"
       Multi
       search
-      :clear-label="t('locales.search.botClear')"
+      :clear-label="t('search.botClear')"
       @update:selected-list="onProvidersChange"
     />
   </div>
