@@ -1,5 +1,7 @@
 <template>
-  <div class="relative w-full max-w-[480px] sm:max-h-[704px] rounded-2xl modal-container bg-bg-2">
+  <div
+    class="relative w-full max-w-[480px] h-full sm:max-h-[684px] rounded-xl modal-container bg-bg-2"
+  >
     <div class="flex items-center justify-between h-14">
       <h2 class="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-text-1">
         {{ t('locales.home.deposit') }}
@@ -13,7 +15,7 @@
       </button>
     </div>
 
-    <div class="w-full h-full flex flex-col">
+    <div class="w-full flex flex-col">
       <div class="flex">
         <button
           class="relative flex-1 pb-1.5 text-base font-[800] transition-all duration-200 tab-button-new"
@@ -39,7 +41,9 @@
         </button>
       </div>
     </div>
-    <div class="flex-1 flex flex-col relative bg-bg-1 p-4">
+    <div
+      class="flex-1 flex flex-col relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[598px]"
+    >
       <cryptoPanel v-if="modelValue === 'Crypto'" />
       <fiatPanel v-else-if="modelValue === 'Fiat'" />
     </div>

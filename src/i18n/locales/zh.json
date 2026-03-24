@@ -14,7 +14,8 @@
     "deposit_more": "更多",
     "deposit_channel": "充值渠道",
     "deposit_amount": "充值金额",
-    "deposit_amount_input_placeholder": "请选择充值金额"
+    "deposit_amount_input_placeholder": "请选择充值金额",
+    "deposit_now": "立即充值"
   },
   "common": {
     "loading": "加载中...",

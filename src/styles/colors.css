@@ -15,6 +15,7 @@
 
   /* ========== 主色 (Theme) ========== */
   --color-theme-level-1: #2aee88;
+  --color-theme-level-2: rgba(42, 238, 136, 0.4);
   --color-theme-level-3: rgba(42, 238, 136, 0.15);
 
   /* ========== 文字色 (Text) ========== */
@@ -50,6 +51,7 @@
   --color-secondary-level-4: #2aee88;
   --color-secondary-level-5: rgba(247, 255, 75, 0.15);
   --color-secondary-level-6: #f7ff4b;
+  --color-secondary-level-7: #ff9822;
 
   /* ========== 通用色 (Common) ========== */
   --color-common-100: #ffffff;
@@ -87,6 +89,8 @@
 
   /* ========== 主色 (Theme) ========== */
   --color-theme-level-1: #2aee88;
+  --color-theme-level-2: rgba(42, 238, 136, 0.4);
+  --color-theme-level-3: rgba(42, 238, 136, 0.15);
 
   /* ========== 文字色 (Text) - 浅色模式 ========== */
   --color-text-level-1: #000000;
@@ -121,6 +125,7 @@
   --color-secondary-level-4: #2aee88;
   --color-secondary-level-5: rgba(247, 255, 73, 0.15);
   --color-secondary-level-6: #f7ff4b;
+  --color-secondary-level-7: #ff9822;
 
   /* ========== 通用色 (Common) - 浅色模式 ========== */
   --color-common-100: #ffffff;
