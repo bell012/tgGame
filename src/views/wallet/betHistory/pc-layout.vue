@@ -72,6 +72,9 @@
         <p class="text-text-1 text-sm font-[700]">{{ $t('betHistory.noMore') }}</p>
       </div>
     </div>
+
+    <!-- 详情弹窗 -->
+    <BetDetailsModal v-model="showDetailModal" :bet="selectedBet" />
   </div>
 </template>
 
@@ -79,7 +82,9 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CustomSelect from '@/components/common/CustomSelect.vue'
+import BetDetailsModal from '../betDetails/BetDetailsModal.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import bet from '@/static/img/personalCenter/bet.png'
 
 const { t } = useI18n()
 
@@ -114,26 +119,66 @@ const timeRangeOptions = computed(() => [
 
 const hasMore = ref(false)
 
+interface BetItem {
+  id: number
+  gameName: string
+  gameIcon: string
+  gameType: string
+  time: string
+  betAmount: string
+  profit: number
+  result: 'win' | 'loss'
+  currency: string
+  orderNo: string
+}
+
 // 投注列表
-const betList = ref([
+const betList = ref<BetItem[]>([
   {
     id: 1,
-    gameName: 'Sweet Bonanza',
-    time: '2024-03-24 14:30:25',
-    betAmount: '10.00 USDT',
-    profit: 25.5
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    gameType: 'Slot',
+    time: '12/18/2026 11:14:15 AM',
+    betAmount: '1000',
+    profit: 1000.0,
+    result: 'win',
+    currency: 'PHP',
+    orderNo: 'ts0768456746746746746'
   },
   {
     id: 2,
-    gameName: 'Gates of Olympus',
-    time: '2024-03-24 14:25:10',
-    betAmount: '5.00 USDT',
-    profit: -5.0
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    gameType: 'Slot',
+    time: '12/18/2026 11:14:15 AM',
+    betAmount: '1000',
+    profit: 1000.0,
+    result: 'win',
+    currency: 'PHP',
+    orderNo: 'ts0768456746746746747'
+  },
+  {
+    id: 3,
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    gameType: 'Slot',
+    time: '12/18/2026 11:14:15 AM',
+    betAmount: '1000',
+    profit: -1000.0,
+    result: 'loss',
+    currency: 'PHP',
+    orderNo: 'ts0768456746746746748'
   }
 ])
 
-const handleRowClick = (bet: any) => {
-  console.log('Row clicked:', bet)
+// 弹窗
+const showDetailModal = ref(false)
+const selectedBet = ref<BetItem | null>(null)
+
+const handleRowClick = (bet: BetItem) => {
+  selectedBet.value = bet
+  showDetailModal.value = true
 }
 </script>
 
