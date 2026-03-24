@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full bg-bg-2 p-3 rounded-2xl">
+  <div class="w-full h-full bg-bg-2 p-3 rounded-lg relative">
     <div class="w-full h-full flex">
       <div class="flex gap-1 flex-1">
         <button
@@ -115,33 +115,112 @@
       </div>
     </div>
 
-    <!-- Wager Tabs -->
-    <div class="px-6 mt-4 flex gap-4 text-sm">
-      <button class="text-green-400 border-b-2 border-green-400 pb-1">No Wagering</button>
-      <button class="text-gray-400">1x Wagering</button>
-      <button class="text-gray-400">5x Wagering</button>
-      <button class="text-gray-400">10x Wagering</button>
+    <div
+      class="mt-4 text-sm border-b border-opacity-10 pb-2.5 relative overflow-x-auto scrollbar-hide touch-pan-x"
+    >
+      <div class="flex items-center w-max relative">
+        <template v-for="(item, index) in wageringList" :key="index">
+          <button
+            @click="wageringActiveCode = item"
+            class="relative text-sm transition-colors whitespace-nowrap"
+            :class="
+              wageringActiveCode === item ? 'text-text-1' : 'text-text-2 lg:hover:text-text-1'
+            "
+          >
+            {{ item }}
+            <span
+              v-if="wageringActiveCode === item"
+              class="absolute left-0 -bottom-2.5 h-[2px] w-full bg-theme-primary"
+            ></span>
+          </button>
+          <div v-if="index !== wageringList.length - 1" class="h-4 w-px bg-opacity-10 mx-5"></div>
+        </template>
+      </div>
     </div>
 
-    <p class="px-6 text-xs text-yellow-400 mt-2">No wagering required for withdrawal</p>
-
-    <!-- Presets -->
-    <div class="grid grid-cols-3 gap-3 px-6 mt-4">
-      <button
-        v-for="preset in presets"
-        :key="preset"
-        @click="amount = preset"
-        class="py-3 rounded-lg bg-gray-700 hover:bg-gray-600"
+    <div class="w-full relative">
+      <p class="text-xs text-secondary-7 py-3">No wagering required for withdrawal</p>
+      <div
+        class="grid grid-cols-3 gap-3 p-5 bg-bg-4 transition-all duration-300 rounded-tl-lg rounded-tr-lg"
+        :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[128px] overflow-hidden'"
       >
-        {{ preset }}
-      </button>
+        <button
+          v-for="preset in presets"
+          :key="preset"
+          @click="amount = preset"
+          class="py-3 rounded-lg lg:hover:bg-theme-primary"
+          :class="[preset === amount ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-1']"
+        >
+          {{ preset }}
+        </button>
+      </div>
+      <div class="w-full bg-bg-4 rounded-bl-lg rounded-br-lg pb-3">
+        <button
+          class="mx-auto flex items-center gap-1 text-xs text-text-3 lg:hover:text-text-1 transition"
+          @click="expanded = !expanded"
+        >
+          {{ expanded ? 'Collapse' : 'Expand' }}
+          <div v-if="expanded">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="9"
+              height="8"
+              viewBox="0 0 9 8"
+              fill="none"
+            >
+              <path
+                d="M0.227124 3.79809C0.342523 3.89698 0.529925 3.89698 0.645324 3.79809L4.19418 0.757177L7.74304 3.79696C7.85843 3.89584 8.04584 3.89583 8.16124 3.79696C8.27661 3.69809 8.27678 3.53761 8.16049 3.43871L4.46268 0.270345C4.44944 0.249411 4.4339 0.228837 4.41328 0.211141C4.35202 0.158648 4.27033 0.134749 4.19003 0.137984C4.11283 0.136975 4.03508 0.161083 3.97622 0.211518C3.95616 0.228721 3.94066 0.248552 3.92758 0.268837L0.227124 3.43984C0.111786 3.53872 0.111798 3.6992 0.227124 3.79809Z"
+                fill="#7B7D7D"
+              />
+              <path
+                d="M0.227164 7.61179C0.342563 7.71069 0.529965 7.71069 0.645364 7.61179L4.19422 4.57089L7.74308 7.61066C7.85847 7.70955 8.04588 7.70954 8.16128 7.61066C8.27665 7.5118 8.27682 7.35132 8.16053 7.25242L4.46272 4.08405C4.44948 4.06312 4.43394 4.04255 4.41332 4.02485C4.35206 3.97236 4.27037 3.94846 4.19007 3.95169C4.11287 3.95068 4.03512 3.97479 3.97626 4.02523C3.9562 4.04243 3.9407 4.06226 3.92762 4.08255L0.227164 7.25355C0.111826 7.35243 0.111838 7.51291 0.227164 7.61179Z"
+                fill="#7B7D7D"
+              />
+            </svg>
+          </div>
+          <div v-else>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="9"
+              height="8"
+              viewBox="0 0 9 8"
+              fill="none"
+            >
+              <path
+                d="M0.227175 4.02622C0.342586 3.92745 0.530023 3.92737 0.645375 4.02622L4.19423 7.0675L7.74309 4.02735C7.8585 3.92854 8.04593 3.92849 8.16129 4.02735C8.27669 4.12624 8.27655 4.28708 8.16016 4.38597L4.46197 7.55434C4.44874 7.57517 4.43351 7.59592 4.41295 7.61354C4.35223 7.66554 4.27156 7.68905 4.19197 7.68632C4.11408 7.68781 4.03566 7.66368 3.97627 7.61279C3.95656 7.59589 3.94136 7.57648 3.92838 7.5566L0.227175 4.38484C0.111775 4.28595 0.111775 4.12511 0.227175 4.02622Z"
+                fill="#7B7D7D"
+              />
+              <path
+                d="M0.227175 0.212779C0.342586 0.11401 0.530023 0.113929 0.645375 0.212779L4.19423 3.25406L7.74309 0.21391C7.8585 0.115104 8.04593 0.115048 8.16129 0.21391C8.27669 0.312801 8.27655 0.47364 8.16016 0.572529L4.46197 3.7409C4.44874 3.76173 4.43351 3.78249 4.41295 3.8001C4.35223 3.85211 4.27156 3.87561 4.19197 3.87288C4.11408 3.87437 4.03566 3.85024 3.97627 3.79935C3.95656 3.78245 3.94136 3.76304 3.92838 3.74316L0.227175 0.571398C0.111775 0.472508 0.111775 0.311669 0.227175 0.212779Z"
+                fill="#7B7D7D"
+              />
+            </svg>
+          </div>
+        </button>
+      </div>
     </div>
 
-    <!-- Action -->
-    <div class="px-6 py-5">
-      <button class="w-full bg-green-500 hover:bg-green-600 py-3 rounded-xl font-semibold">
-        Deposit Now
+    <div class="w-full mt-4">
+      <button
+        class="w-full py-4 lg:hover:btn-primary rounded-xl font-semibold"
+        :class="[
+          amount && Number(amount) > 0 ? 'btn-primary' : 'bg-theme-2 opacity-40 cursor-not-allowed'
+        ]"
+        :disabled="!amount || Number(amount) <= 0"
+      >
+        {{ t('locales.home.deposit_now') }}
       </button>
+    </div>
+  </div>
+
+  <div
+    class="mt-3 w-full bg-bg-2 p-4 rounded-lg flex items-center justify-between"
+    @click="loadWallet"
+  >
+    <div class="text-sm text-text-1">Load from your wallet</div>
+    <div class="flex items-center">
+      <img class="h-6 mr-1" :src="groupIcon" />
+      <div class="text-sm text-text-1">+300</div>
     </div>
   </div>
 </template>
@@ -155,6 +234,8 @@ import BTCIcon from '@/static/img/crypto/BTC.png'
 import DOGEIcon from '@/static/img/crypto/DOGE.png'
 import TRXIcon from '@/static/img/crypto/TRX.png'
 import BNBIcon from '@/static/img/crypto/BNB.png'
+import groupIcon from '@/static/img/crypto/groupIcons.png'
+import { showToast } from 'vant'
 
 const { t } = useI18n()
 const coins = [
@@ -180,26 +261,50 @@ const coins = [
   }
 ]
 const channels = ['Channel 1', 'Channel 2', 'Channel 3']
-const presets = [200, 500, 1000, 1500, 2000, 3000]
+const presets = [200, 500, 1000, 1500, 2000, 3000, 5000, 10000, 20000, 30000, 50000, 100000]
+const wageringList = ['No Wagering', '1x Wagering', '5x Wagering', '10x Wagering']
+const wageringActiveCode = ref('No Wagering')
 
 const selectedChannel = ref('Channel 1')
-const amount = ref<number | ''>('')
+const amount = ref<number | null>(null)
 const coinCode = ref<string | ''>('USDT')
 const coinBaseCode = ref<string | ''>('USDT')
 const coinMoreShow = ref<boolean>(false)
+const expanded = ref<boolean>(false)
 
 const selectCoinCode = (code: string) => {
+  if (code !== 'USDT') {
+    showToast({
+      message: 'Unavailable',
+      type: 'fail'
+    })
+
+    return
+  }
   coinCode.value = code
   coinBaseCode.value = code
   coinMoreShow.value = false
 }
 
 const openCoinMorePanel = () => {
-  coinCode.value = ''
-  coinMoreShow.value = !coinMoreShow.value
-  if (!coinMoreShow.value) {
-    coinCode.value = coinBaseCode.value
-  }
+  showToast({
+    message: 'Unavailable',
+    type: 'fail'
+  })
+  return
+  // coinCode.value = ''
+  // coinMoreShow.value = !coinMoreShow.value
+  // if (!coinMoreShow.value) {
+  //   coinCode.value = coinBaseCode.value
+  // }
+}
+
+const loadWallet = () => {
+  showToast({
+    message: 'Unavailable',
+    type: 'fail'
+  })
+  return
 }
 </script>
 <style scoped lang="scss">

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen">
+  <div v-if="modelValue" class="min-h-screen">
     <!-- H5端 -->
     <div v-if="isMobile" class="sm:hidden">
       <depositPanel v-model="activeTab" @close="handleClose" />
@@ -9,8 +9,7 @@
     <teleport v-if="!isMobile" to="body">
       <transition name="modal-fade">
         <div
-          v-if="modelValue"
-          class="fixed inset-0 bg-[#000a] flex items-center justify-center z-[10000] overflow-hidden"
+          class="fixed inset-0 bg-[#000a] flex items-center justify-center z-[999] overflow-hidden"
           @click.self="handleClose"
         >
           <depositPanel v-model="activeTab" @close="handleClose" />
