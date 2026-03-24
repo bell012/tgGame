@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="relative">
     <!-- 触发按钮 -->
     <button
@@ -71,7 +71,7 @@
             <input
               v-model="keyword"
               type="text"
-              :placeholder="t('locales.home.search')"
+              :placeholder="t('home.search')"
               class="w-full h-[42px] pl-[38px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-[var(--color-border-level-1)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
             />
           </div>
