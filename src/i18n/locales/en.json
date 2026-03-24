@@ -66,13 +66,36 @@
     "sports": "Sports",
     "chat": "Chat"
   },
+  "wallet": {
+    "title": "Wallet",
+    "betHistory": "Bet History"
+  },
   "betHistory": {
     "title": "Bet History",
     "noBetHistoryYet": "No bet history yet",
     "startPlaying": "Start Playing",
     "betAmount": "Bet Amount",
     "win": "Win",
-    "loss": "Loss"
+    "loss": "Loss",
+    "type": "Type",
+    "time": "Time",
+    "payout": "Payout",
+    "profit": "Profit",
+    "noMore": "No More",
+    "filters": {
+      "all": "All",
+      "slot": "Slot",
+      "chess": "Chess",
+      "fishing": "Fishing",
+      "live": "Live",
+      "allAssets": "All Assets",
+      "past24Hours": "Past 24 Hours",
+      "past7Days": "Past 7 Days",
+      "past30Days": "Past 30 Days"
+    }
+  },
+  "customSelect": {
+    "placeholder": "Please select"
   },
   "betDetails": {
     "title": "Bet Details",
