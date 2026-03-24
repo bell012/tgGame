@@ -11,11 +11,11 @@ const i18n = createI18n({
   fallbackLocale: 'en',
   messages: {
     en: {
-      locales: en,
+      ...en,
       home: homeEn
     },
     zh: {
-      locales: zh,
+      ...zh,
       home: homeZn
     }
   }

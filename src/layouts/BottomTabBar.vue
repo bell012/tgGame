@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="bottom-tab-bar">
     <div class="h-full flex items-center justify-around px-4">
       <button
@@ -34,7 +34,7 @@ const layoutStore = useLayoutStore()
 const menus = computed(() => [
   {
     id: 'menu',
-    name: t('locales.bottom_tab_bar.menu'),
+    name: t('bottom_tab_bar.menu'),
     icon: 'menu',
     route: '/menu',
     handler: () => navigateTo('/menu'),
@@ -42,7 +42,7 @@ const menus = computed(() => [
   },
   {
     id: 'explore',
-    name: t('locales.bottom_tab_bar.explore'),
+    name: t('bottom_tab_bar.explore'),
     icon: 'explore',
     route: '/explore',
     handler: () => navigateTo('/explore'),
@@ -50,7 +50,7 @@ const menus = computed(() => [
   },
   {
     id: 'casino',
-    name: t('locales.bottom_tab_bar.casino'),
+    name: t('bottom_tab_bar.casino'),
     icon: 'casino',
     route: '/casino',
     handler: () => navigateTo('/casino'),
@@ -58,7 +58,7 @@ const menus = computed(() => [
   },
   {
     id: 'sports',
-    name: t('locales.bottom_tab_bar.sports'),
+    name: t('bottom_tab_bar.sports'),
     icon: 'sports',
     route: '/sports',
     handler: () => navigateTo('/sports'),
@@ -66,7 +66,7 @@ const menus = computed(() => [
   },
   {
     id: 'chat-public',
-    name: t('locales.bottom_tab_bar.chat'),
+    name: t('bottom_tab_bar.chat'),
     icon: 'chat',
     route: '/chat-public',
     handler: () => navigateTo('/chat-public'),
