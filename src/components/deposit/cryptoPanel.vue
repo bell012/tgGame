@@ -207,6 +207,7 @@
           amount && Number(amount) > 0 ? 'btn-primary' : 'bg-theme-2 opacity-40 cursor-not-allowed'
         ]"
         :disabled="!amount || Number(amount) <= 0"
+        @click="doDeposit"
       >
         {{ t('locales.home.deposit_now') }}
       </button>
@@ -223,6 +224,7 @@
       <div class="text-sm text-text-1">+300</div>
     </div>
   </div>
+  <depositOrderPop v-model:model-value="orderPopShow" v-model:orderInfo="orderInfo" />
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -236,6 +238,7 @@ import TRXIcon from '@/static/img/crypto/TRX.png'
 import BNBIcon from '@/static/img/crypto/BNB.png'
 import groupIcon from '@/static/img/crypto/groupIcons.png'
 import { showToast } from 'vant'
+import depositOrderPop from './depositOrderPop.vue'
 
 const { t } = useI18n()
 const coins = [
@@ -271,6 +274,26 @@ const coinCode = ref<string | ''>('USDT')
 const coinBaseCode = ref<string | ''>('USDT')
 const coinMoreShow = ref<boolean>(false)
 const expanded = ref<boolean>(false)
+const orderPopShow = ref<boolean>(false)
+const orderInfo = ref<{
+  order_no: string
+  created_at: string
+  amount: number
+  method: string
+  method_icon: string
+  rate: string
+  network: string
+  address_token: string
+}>({
+  order_no: '',
+  created_at: '',
+  amount: 0,
+  method: '',
+  method_icon: '',
+  rate: '',
+  network: '',
+  address_token: ''
+})
 
 const selectCoinCode = (code: string) => {
   if (code !== 'USDT') {
@@ -305,6 +328,20 @@ const loadWallet = () => {
     type: 'fail'
   })
   return
+}
+
+const doDeposit = () => {
+  orderInfo.value = {
+    order_no: 'ts0768456746746746746',
+    created_at: '12/18/2026 11:14:15 AM',
+    amount: amount.value ?? 0,
+    method: coinCode.value,
+    method_icon: USDTIcon,
+    rate: 'Rate：1USDT≈7.15PHP（You Get≈3750PHP）',
+    network: 'TRC20',
+    address_token: 'tu899iugh889k9ijehddndk987he73178uh1ko671usuth55278'
+  }
+  orderPopShow.value = true
 }
 </script>
 <style scoped lang="scss">
