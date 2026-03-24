@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="sidebar-menu">
     <!-- BC代币 -->
     <div v-if="!isCollapsed">
@@ -13,7 +13,7 @@
           <div v-if="!isCollapsed" class="flex-1 min-w-0">
             <div class="flex items-center">
               <span class="text-sm font-[800] text-text-1 mr-1">
-                {{ t('locales.sidebar_menu.bc_token.title') }}
+                {{ t('sidebar_menu.bc_token.title') }}
               </span>
               <span class="text-xs font-[600] text-theme-primary">↑ 0.45%</span>
             </div>
@@ -298,7 +298,7 @@
           { 'relative menu-item-collapsed justify-center': isCollapsed },
           { 'launch-card-active': activeMenuId === 'customer-service' }
         ]"
-        :data-tooltip="isCollapsed ? t('locales.sidebar_menu.customer_service') : ''"
+        :data-tooltip="isCollapsed ? t('sidebar_menu.customer_service') : ''"
         @mouseenter="e => isCollapsed && updateTooltipPosition(e)"
         @click="handleCustomerServiceClick"
       >
@@ -307,7 +307,7 @@
             <component :is="side.helpIcon" class="w-6 h-6 fill-none" />
           </div>
           <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">
-            {{ t('locales.sidebar_menu.customer_service') }}
+            {{ t('sidebar_menu.customer_service') }}
           </span>
         </div>
       </div>
@@ -380,7 +380,7 @@
                 'text-sm font-[600] ml-1',
                 themeStore.theme === 'dark' ? 'text-[#fff]' : 'text-[#B0B9B9]'
               ]"
-              >{{ t('locales.sidebar_menu.theme.dark') }}</span
+              >{{ t('sidebar_menu.theme.dark') }}</span
             >
           </div>
         </button>
@@ -401,7 +401,7 @@
                 'text-sm font-[600] ml-1',
                 themeStore.theme === 'light' ? 'text-[#171A1A]' : 'text-[#A1AFB2]'
               ]"
-              >{{ t('locales.sidebar_menu.theme.light') }}</span
+              >{{ t('sidebar_menu.theme.light') }}</span
             >
           </div>
         </button>
@@ -509,8 +509,8 @@ let submenuHideTimer: ReturnType<typeof setTimeout> | null = null
 // 当前语言名称
 const currentLanguageName = computed(() => {
   return localeStore.currentLanguage === 'zh-CN'
-    ? t('locales.sidebar_menu.language.zh_cn')
-    : t('locales.sidebar_menu.language.en')
+    ? t('sidebar_menu.language.zh_cn')
+    : t('sidebar_menu.language.en')
 })
 
 // 应用程式下载点击
@@ -630,7 +630,7 @@ const handleThirdLevelClick = (item: any) => {
 const expandableMenus = computed<SidebarMenuGroup[]>(() => [
   {
     id: 'casino',
-    name: t('locales.sidebar_menu.casino.title'),
+    name: t('sidebar_menu.casino.title'),
     icon: side.casinoIcon,
     handler: () => {
       navigateTo('/casino')
@@ -638,7 +638,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
     children: [
       {
         id: 'casino_favorites',
-        name: t('locales.sidebar_menu.casino.children.favorites'),
+        name: t('sidebar_menu.casino.children.favorites'),
         icon: casino.favorites_full,
         handler: () => {
           console.log('点击 我的最爱')
@@ -647,7 +647,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
       },
       {
         id: 'casino_recent',
-        name: t('locales.sidebar_menu.casino.children.recent'),
+        name: t('sidebar_menu.casino.children.recent'),
         icon: casino.recent,
         handler: () => {
           console.log('点击 最近常玩')
@@ -656,7 +656,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
       },
       {
         id: 'casino_tg_originals',
-        name: t('locales.sidebar_menu.casino.children.tg_originals'),
+        name: t('sidebar_menu.casino.children.tg_originals'),
         icon: casino.logo,
         handler: () => {
           navigateTo('/casino/originate')
@@ -664,7 +664,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
       },
       {
         id: 'casino_hot_games',
-        name: t('locales.sidebar_menu.casino.children.hot_games'),
+        name: t('sidebar_menu.casino.children.hot_games'),
         icon: casino.hot_games,
         handler: () => {
           navigateTo('/casino/hot_games')
@@ -672,7 +672,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
       },
       {
         id: 'casino_slots',
-        name: t('locales.sidebar_menu.casino.children.slots'),
+        name: t('sidebar_menu.casino.children.slots'),
         icon: casino.slots,
         handler: () => {
           navigateTo('/casino/slots')
@@ -680,7 +680,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
       },
       {
         id: 'casino_live_casino',
-        name: t('locales.sidebar_menu.casino.children.live_casino'),
+        name: t('sidebar_menu.casino.children.live_casino'),
         icon: casino.live_casino,
         handler: () => {
           navigateTo('/casino/live_casino')
@@ -688,7 +688,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
       },
       {
         id: 'casino_table_games',
-        name: t('locales.sidebar_menu.casino.children.table_games'),
+        name: t('sidebar_menu.casino.children.table_games'),
         icon: casino.poker,
         handler: () => {
           navigateTo('/casino/table_games')
@@ -696,7 +696,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
       },
       {
         id: 'casino_fishing',
-        name: t('locales.sidebar_menu.casino.children.fishing'),
+        name: t('sidebar_menu.casino.children.fishing'),
         icon: casino.fishing,
         handler: () => {
           navigateTo('/casino/fishing')
@@ -704,7 +704,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
       },
       {
         id: 'casino_game_providers',
-        name: t('locales.sidebar_menu.casino.children.game_providers'),
+        name: t('sidebar_menu.casino.children.game_providers'),
         icon: casino.game_providers,
         handler: () => {
           navigateTo('/casino/game_provider')
@@ -714,7 +714,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
   },
   {
     id: 'sports',
-    name: t('locales.sidebar_menu.sports.label'),
+    name: t('sidebar_menu.sports.label'),
     icon: side.sportsIcon,
     handler: () => {
       console.log('点击体育')
@@ -722,61 +722,61 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
     children: [
       {
         id: 'sports_fifa',
-        name: t('locales.sidebar_menu.sports.children.fifa'),
+        name: t('sidebar_menu.sports.children.fifa'),
         icon: sports.fifa,
         handler: () => console.log('点击 FIFA')
       },
       {
         id: 'sports_soccer',
-        name: t('locales.sidebar_menu.sports.children.soccer'),
+        name: t('sidebar_menu.sports.children.soccer'),
         icon: sports.soccer,
         handler: () => console.log('点击 足球')
       },
       {
         id: 'sports_basketball',
-        name: t('locales.sidebar_menu.sports.children.basketball'),
+        name: t('sidebar_menu.sports.children.basketball'),
         icon: sports.basketball,
         handler: () => console.log('点击 篮球')
       },
       {
         id: 'sports_tennis',
-        name: t('locales.sidebar_menu.sports.children.tennis'),
+        name: t('sidebar_menu.sports.children.tennis'),
         icon: sports.tennis,
         handler: () => console.log('点击 网球')
       },
       {
         id: 'sports_badminton',
-        name: t('locales.sidebar_menu.sports.children.badminton'),
+        name: t('sidebar_menu.sports.children.badminton'),
         icon: sports.badminton,
         handler: () => console.log('点击 羽毛球')
       },
       {
         id: 'sports_boxing',
-        name: t('locales.sidebar_menu.sports.children.boxing'),
+        name: t('sidebar_menu.sports.children.boxing'),
         icon: sports.boxing,
         handler: () => console.log('点击 拳击')
       },
       {
         id: 'sports_darts',
-        name: t('locales.sidebar_menu.sports.children.darts'),
+        name: t('sidebar_menu.sports.children.darts'),
         icon: sports.darts,
         handler: () => console.log('点击 飞镖')
       },
       {
         id: 'sports_american_football',
-        name: t('locales.sidebar_menu.sports.children.american_football'),
+        name: t('sidebar_menu.sports.children.american_football'),
         icon: sports.american_football,
         handler: () => console.log('点击 美式足球')
       },
       {
         id: 'sports_table_tennis',
-        name: t('locales.sidebar_menu.sports.children.table_tennis'),
+        name: t('sidebar_menu.sports.children.table_tennis'),
         icon: sports.table_tennis,
         handler: () => console.log('点击 乒乓球')
       },
       {
         id: 'sports_volleyball',
-        name: t('locales.sidebar_menu.sports.children.volleyball'),
+        name: t('sidebar_menu.sports.children.volleyball'),
         icon: sports.volleyball,
         handler: () => console.log('点击 排球')
       }
@@ -784,7 +784,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
   },
   {
     id: 'Anniversary',
-    name: t('locales.sidebar_menu.anniversary.label'),
+    name: t('sidebar_menu.anniversary.label'),
     icon: side.anniversaryIcon,
     handler: () => {
       console.log('周年庆')
@@ -793,7 +793,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
   },
   {
     id: 'lottery',
-    name: t('locales.sidebar_menu.lottery.label'),
+    name: t('sidebar_menu.lottery.label'),
     icon: side.lotteryIcon,
     handler: () => {
       console.log('点击彩票')
@@ -801,25 +801,25 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
     children: [
       {
         id: 'lottery_my_bets',
-        name: t('locales.sidebar_menu.lottery.children.my_bets'),
+        name: t('sidebar_menu.lottery.children.my_bets'),
         icon: lottery.my_bets,
         handler: () => console.log('点击 我的投注')
       },
       {
         id: 'lottery_all_lotteries',
-        name: t('locales.sidebar_menu.lottery.children.all_lotteries'),
+        name: t('sidebar_menu.lottery.children.all_lotteries'),
         icon: lottery.all_lotteries,
         handler: () => console.log('点击 所有彩票')
       },
       {
         id: 'lottery_favorites',
-        name: t('locales.sidebar_menu.lottery.children.favorites'),
+        name: t('sidebar_menu.lottery.children.favorites'),
         icon: lottery.favorites,
         handler: () => console.log('点击 我的最爱')
       },
       {
         id: 'lottery_popular',
-        name: t('locales.sidebar_menu.lottery.children.popular'),
+        name: t('sidebar_menu.lottery.children.popular'),
         icon: lottery.popular,
         handler: () => console.log('点击 热门彩票')
       }
@@ -827,7 +827,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
   },
   {
     id: 'crypto',
-    name: t('locales.sidebar_menu.crypto.label'),
+    name: t('sidebar_menu.crypto.label'),
     icon: side.tradingIcon,
     handler: () => {
       console.log('点击加密货币期货')
@@ -835,13 +835,13 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
     children: [
       {
         id: 'crypto_1',
-        name: t('locales.sidebar_menu.crypto.children.crypto_1'),
+        name: t('sidebar_menu.crypto.children.crypto_1'),
         icon: side.tradingIcon,
         handler: () => console.log('点击 加密货币 1')
       },
       {
         id: 'crypto_2',
-        name: t('locales.sidebar_menu.crypto.children.crypto_2'),
+        name: t('sidebar_menu.crypto.children.crypto_2'),
         icon: side.tradingIcon,
         handler: () => console.log('点击 加密货币 2')
       }
@@ -849,7 +849,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
   },
   {
     id: 'promotions',
-    name: t('locales.sidebar_menu.promotions.label'),
+    name: t('sidebar_menu.promotions.label'),
     icon: side.promotionIcon,
     handler: () => {
       console.log('点击促销')
@@ -857,7 +857,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
     children: [
       {
         id: 'promotions_invite_rewards',
-        name: t('locales.sidebar_menu.promotions.children.invite_rewards'),
+        name: t('sidebar_menu.promotions.children.invite_rewards'),
         icon: lottery.invite_rewards,
         handler: () => console.log('点击 优惠活动')
       }
@@ -869,57 +869,57 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
 const normalLinks = computed(() => [
   {
     id: 'vip',
-    name: t('locales.sidebar_menu.links.vip.name'),
-    name2: t('locales.sidebar_menu.links.vip.prefix'),
+    name: t('sidebar_menu.links.vip.name'),
+    name2: t('sidebar_menu.links.vip.prefix'),
     icon: side.vipClubIcon,
     external: false,
     handler: () => console.log('点击 VIP 俱乐部')
   },
   {
     id: 'prize',
-    name: t('locales.sidebar_menu.links.bonus'),
+    name: t('sidebar_menu.links.bonus'),
     icon: side.bonusIcon,
     external: false,
     handler: () => console.log('点击 奖金')
   },
   {
     id: 'recommend',
-    name: t('locales.sidebar_menu.links.recommend'),
+    name: t('sidebar_menu.links.recommend'),
     icon: side.affiliateIcon,
     external: false,
     handler: () => console.log('点击 推荐')
   },
   {
     id: 'forum',
-    name: t('locales.sidebar_menu.links.forum'),
+    name: t('sidebar_menu.links.forum'),
     icon: side.forumIcon,
     external: true,
     handler: () => console.log('点击 论坛')
   },
   {
     id: 'verified',
-    name: t('locales.sidebar_menu.links.verified'),
+    name: t('sidebar_menu.links.verified'),
     icon: side.fairIcon,
     external: false,
     handler: () => console.log('点击 可验证公平')
   },
   {
     id: 'responsible',
-    name: t('locales.sidebar_menu.links.responsible'),
+    name: t('sidebar_menu.links.responsible'),
     icon: side.accountIcon,
     external: false,
     handler: () => console.log('点击 负责任博彩')
   },
   {
     id: 'blog',
-    name: t('locales.sidebar_menu.links.blog'),
+    name: t('sidebar_menu.links.blog'),
     icon: side.blogIcon,
     external: true,
     handler: () => console.log('点击 部落格')
   },
   {
     id: 'sports_injection',
-    name: t('locales.sidebar_menu.links.betting_insights'),
+    name: t('sidebar_menu.links.betting_insights'),
     icon: side.bettingInsightsIcon,
     external: true,
     handler: () => console.log('点击 体育投注深入解剖')
@@ -930,7 +930,7 @@ const normalLinks = computed(() => [
 const bottomMenus = computed<SidebarMenuGroup[]>(() => [
   {
     id: 'sponsorships',
-    name: t('locales.sidebar_menu.sponsorships.label'),
+    name: t('sidebar_menu.sponsorships.label'),
     icon: side.sponsorshipsIcon,
     handler: () => {
       console.log('点击赞助')
@@ -938,85 +938,85 @@ const bottomMenus = computed<SidebarMenuGroup[]>(() => [
     children: [
       {
         id: 'sponsorships_sponsorship_journey',
-        name: t('locales.sidebar_menu.sponsorships.items.sponsorship_journey'),
+        name: t('sidebar_menu.sponsorships.items.sponsorship_journey'),
         icon: sponsorships.sponsorship_journey,
         handler: () => console.log('点击 赞助之旅')
       },
       {
         id: 'sponsorships_o_higgins',
-        name: t('locales.sidebar_menu.sponsorships.items.o_higgins'),
+        name: t('sidebar_menu.sponsorships.items.o_higgins'),
         icon: sponsorships.o_higgins,
         handler: () => console.log("点击 O'HIGGINS")
       },
       {
         id: 'sponsorships_jason_derulo',
-        name: t('locales.sidebar_menu.sponsorships.items.jason_derulo'),
+        name: t('sidebar_menu.sponsorships.items.jason_derulo'),
         icon: sponsorships.jason_derulo,
         handler: () => console.log('点击 Jason Derulo')
       },
       {
         id: 'sponsorships_lil_pump',
-        name: t('locales.sidebar_menu.sponsorships.items.lil_pump'),
+        name: t('sidebar_menu.sponsorships.items.lil_pump'),
         icon: sponsorships.lil_pump,
         handler: () => console.log('点击 Lil Pump')
       },
       {
         id: 'sponsorships_colby_covington',
-        name: t('locales.sidebar_menu.sponsorships.items.colby_covington'),
+        name: t('sidebar_menu.sponsorships.items.colby_covington'),
         icon: sponsorships.colby_covington,
         handler: () => console.log('点击 Colby Covington')
       },
       {
         id: 'sponsorships_miami_club',
-        name: t('locales.sidebar_menu.sponsorships.items.miami_club'),
+        name: t('sidebar_menu.sponsorships.items.miami_club'),
         icon: sponsorships.miami_club,
         handler: () => console.log('点击 Miami Club')
       },
       {
         id: 'sponsorships_tg_game_esports',
-        name: t('locales.sidebar_menu.sponsorships.items.tg_game_esports'),
+        name: t('sidebar_menu.sponsorships.items.tg_game_esports'),
         icon: sponsorships.tg_game_esports,
         handler: () => console.log('点击 TG Game Esports')
       },
       {
         id: 'sponsorships_st_kitts_nevis_patriots',
-        name: t('locales.sidebar_menu.sponsorships.items.st_kitts_nevis_patriots'),
+        name: t('sidebar_menu.sponsorships.items.st_kitts_nevis_patriots'),
         icon: sponsorships.st_kitts_nevis_patriots,
         handler: () => console.log('点击 St. Kitts & Nevis Patriots')
       },
       {
         id: 'sponsorships_kwara_united',
-        name: t('locales.sidebar_menu.sponsorships.items.kwara_united'),
+        name: t('sidebar_menu.sponsorships.items.kwara_united'),
         icon: sponsorships.kwara_united,
         handler: () => console.log('点击 Kwara United')
       },
       {
         id: 'sponsorships_sashimi_poker',
-        name: t('locales.sidebar_menu.sponsorships.items.sashimi_poker'),
+        name: t('sidebar_menu.sponsorships.items.sashimi_poker'),
         icon: sponsorships.sashimi_poker,
         handler: () => console.log('点击 Sashimi Poker')
       },
       {
         id: 'sponsorships_leicester_city',
-        name: t('locales.sidebar_menu.sponsorships.items.leicester_city'),
+        name: t('sidebar_menu.sponsorships.items.leicester_city'),
         icon: sponsorships.leicester_city,
         handler: () => console.log('点击 Leicester City')
       },
       {
         id: 'sponsorships_krasava',
-        name: t('locales.sidebar_menu.sponsorships.items.krasava'),
+        name: t('sidebar_menu.sponsorships.items.krasava'),
         icon: sponsorships.krasava,
         handler: () => console.log('点击 KRASAVA')
       },
       {
         id: 'sponsorships_deccan_gladiators',
-        name: t('locales.sidebar_menu.sponsorships.items.deccan_gladiators'),
+        name: t('sidebar_menu.sponsorships.items.deccan_gladiators'),
         icon: sponsorships.deccan_gladiators,
         handler: () => console.log('点击 Deccan Gladiators')
       },
       {
         id: 'sponsorships_jean_silva',
-        name: t('locales.sidebar_menu.sponsorships.items.jean_silva'),
+        name: t('sidebar_menu.sponsorships.items.jean_silva'),
         icon: sponsorships.jean_silva,
         handler: () => console.log('点击 Jean Silva')
       }
@@ -1024,7 +1024,7 @@ const bottomMenus = computed<SidebarMenuGroup[]>(() => [
   },
   {
     id: 'support',
-    name: t('locales.sidebar_menu.support.label'),
+    name: t('sidebar_menu.support.label'),
     icon: side.helpIcon,
     handler: () => {
       console.log('点击支援')
@@ -1032,19 +1032,19 @@ const bottomMenus = computed<SidebarMenuGroup[]>(() => [
     children: [
       {
         id: 'support_help_center',
-        name: t('locales.sidebar_menu.support.items.help_center'),
+        name: t('sidebar_menu.support.items.help_center'),
         icon: support.help_center,
         handler: () => console.log('点击 帮助中心')
       },
       {
         id: 'support_faq',
-        name: t('locales.sidebar_menu.support.items.faq'),
+        name: t('sidebar_menu.support.items.faq'),
         icon: support.faq,
         handler: () => console.log('点击 常见问题')
       },
       {
         id: 'support_ceo_inbox',
-        name: t('locales.sidebar_menu.support.items.ceo_inbox'),
+        name: t('sidebar_menu.support.items.ceo_inbox'),
         icon: support.ceo_inbox,
         handler: () => console.log('点击 CEO 信箱')
       }
@@ -1052,7 +1052,7 @@ const bottomMenus = computed<SidebarMenuGroup[]>(() => [
   },
   {
     id: 'legal',
-    name: t('locales.sidebar_menu.legal.label'),
+    name: t('sidebar_menu.legal.label'),
     icon: side.legalIcon,
     handler: () => {
       console.log('点击法律条款')
@@ -1060,37 +1060,37 @@ const bottomMenus = computed<SidebarMenuGroup[]>(() => [
     children: [
       {
         id: 'legal_tg_licenses',
-        name: t('locales.sidebar_menu.legal.items.tg_licenses'),
+        name: t('sidebar_menu.legal.items.tg_licenses'),
         icon: legal.tg_licenses,
         handler: () => console.log('点击 BC 牌照')
       },
       {
         id: 'legal_gamble_aware',
-        name: t('locales.sidebar_menu.legal.items.gamble_aware'),
+        name: t('sidebar_menu.legal.items.gamble_aware'),
         icon: legal.gamble_aware,
         handler: () => console.log('点击 理性博彩')
       },
       {
         id: 'legal_fairness',
-        name: t('locales.sidebar_menu.legal.items.fairness'),
+        name: t('sidebar_menu.legal.items.fairness'),
         icon: legal.fairness,
         handler: () => console.log('点击 公平性')
       },
       {
         id: 'legal_privacy_policy',
-        name: t('locales.sidebar_menu.legal.items.privacy_policy'),
+        name: t('sidebar_menu.legal.items.privacy_policy'),
         icon: legal.privacy_policy,
         handler: () => console.log('点击 隐私权政策')
       },
       {
         id: 'legal_terms_of_service',
-        name: t('locales.sidebar_menu.legal.items.terms_of_service'),
+        name: t('sidebar_menu.legal.items.terms_of_service'),
         icon: legal.terms_of_service,
         handler: () => console.log('点击 服务条款')
       },
       {
         id: 'legal_aml',
-        name: t('locales.sidebar_menu.legal.items.aml'),
+        name: t('sidebar_menu.legal.items.aml'),
         icon: legal.aml,
         handler: () => console.log('点击 AML')
       }
@@ -1098,7 +1098,7 @@ const bottomMenus = computed<SidebarMenuGroup[]>(() => [
   },
   {
     id: 'about_us',
-    name: t('locales.sidebar_menu.about_us.label'),
+    name: t('sidebar_menu.about_us.label'),
     icon: side.tipsHelpIcon,
     handler: () => {
       console.log('点击关于我们')
@@ -1106,49 +1106,49 @@ const bottomMenus = computed<SidebarMenuGroup[]>(() => [
     children: [
       {
         id: 'about_us_achievement',
-        name: t('locales.sidebar_menu.about_us.items.achievement'),
+        name: t('sidebar_menu.about_us.items.achievement'),
         icon: aboutUs.achievement,
         handler: () => console.log('点击 成就')
       },
       {
         id: 'about_us_news',
-        name: t('locales.sidebar_menu.about_us.items.news'),
+        name: t('sidebar_menu.about_us.items.news'),
         icon: aboutUs.news,
         handler: () => console.log('点击 新闻')
       },
       {
         id: 'about_us_work_with_us',
-        name: t('locales.sidebar_menu.about_us.items.work_with_us'),
+        name: t('sidebar_menu.about_us.items.work_with_us'),
         icon: aboutUs.work_with_us,
         handler: () => console.log('点击 与我们合作')
       },
       {
         id: 'about_us_business_contacts',
-        name: t('locales.sidebar_menu.about_us.items.business_contacts'),
+        name: t('sidebar_menu.about_us.items.business_contacts'),
         icon: aboutUs.business_contacts,
         handler: () => console.log('点击 商务联络人')
       },
       {
         id: 'about_us_license',
-        name: t('locales.sidebar_menu.about_us.items.license'),
+        name: t('sidebar_menu.about_us.items.license'),
         icon: aboutUs.license,
         handler: () => console.log('点击 许可证')
       },
       {
         id: 'about_us_help_desk',
-        name: t('locales.sidebar_menu.about_us.items.help_desk'),
+        name: t('sidebar_menu.about_us.items.help_desk'),
         icon: aboutUs.help_desk,
         handler: () => console.log('点击 服务台')
       },
       {
         id: 'about_us_verify_representative',
-        name: t('locales.sidebar_menu.about_us.items.verify_representative'),
+        name: t('sidebar_menu.about_us.items.verify_representative'),
         icon: aboutUs.verify_representative,
         handler: () => console.log('点击 验证代表')
       },
       {
         id: 'about_us_design_resources',
-        name: t('locales.sidebar_menu.about_us.items.design_resources'),
+        name: t('sidebar_menu.about_us.items.design_resources'),
         icon: aboutUs.design_resources,
         handler: () => console.log('点击 设计资源')
       }

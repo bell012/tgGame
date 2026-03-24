@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <header class="top-nav">
     <div class="h-full flex items-center justify-between px-4">
       <!-- 左侧 -->
@@ -50,14 +50,14 @@
             class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-transparent border-0 md:border-2 border-[#e4eaf019] mr-1"
             @click="openLoginModal"
           >
-            {{ t('locales.home.sign_In') }}
+            {{ t('home.sign_In') }}
           </div>
           <!-- 注册 -->
           <div
             class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 md:mr-3"
             @click="openRegisterModal"
           >
-            {{ t('locales.home.sign_Up') }}
+            {{ t('home.sign_Up') }}
           </div>
           <!-- 充值 -->
           <div

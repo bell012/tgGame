@@ -1,6 +1,6 @@
 <template>
   <div class="bg-bg-1">
-    <H5Header :title="$t('locales.betDetails.title')" />
+    <H5Header :title="$t('betDetails.title')" />
 
     <div class="py-3.5">
       <div class="bg-bg-2 rounded-lg px-3.5 pb-3.5 pt-[30px] flex flex-col items-center">
@@ -20,11 +20,7 @@
               betDetail.result === 'win' ? 'text-secondary-2' : 'text-secondary-4'
             ]"
           >
-            {{
-              betDetail.result === 'win'
-                ? $t('locales.betHistory.win')
-                : $t('locales.betHistory.loss')
-            }}
+            {{ betDetail.result === 'win' ? $t('betHistory.win') : $t('betHistory.loss') }}
           </span>
           <span
             :class="[
@@ -39,24 +35,24 @@
         <!-- 详细信息列表 -->
         <div class="w-full space-y-5 bg-bg-4 rounded-lg p-3.5">
           <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('locales.betDetails.currency') }}</span>
+            <span class="text-text-3 text-sm">{{ $t('betDetails.currency') }}</span>
             <span class="text-text-1 text-sm">{{ betDetail.currency }}</span>
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('locales.betHistory.betAmount') }}</span>
+            <span class="text-text-3 text-sm">{{ $t('betHistory.betAmount') }}</span>
             <span class="text-text-1 text-sm">{{ betDetail.betAmount }}</span>
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('locales.betDetails.winLoss') }}</span>
+            <span class="text-text-3 text-sm">{{ $t('betDetails.winLoss') }}</span>
             <span class="text-text-1 text-sm">
               {{ betDetail.result === 'win' ? '+' : '-' }}{{ betDetail.resultAmount }}
             </span>
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('locales.betDetails.orderNo') }}</span>
+            <span class="text-text-3 text-sm">{{ $t('betDetails.orderNo') }}</span>
             <div class="flex items-center gap-1">
               <span class="text-text-1 text-sm">{{ betDetail.orderNo }}</span>
               <button class="p-1 hover:bg-opacity-5 rounded transition-colors" @click="copyOrderNo">
@@ -66,7 +62,7 @@
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('locales.betDetails.createdAt') }}</span>
+            <span class="text-text-3 text-sm">{{ $t('betDetails.createdAt') }}</span>
             <span class="text-text-1 text-sm">{{ betDetail.createdAt }}</span>
           </div>
         </div>
@@ -152,7 +148,7 @@ onMounted(() => {
 const copyOrderNo = () => {
   navigator.clipboard.writeText(betDetail.value.orderNo)
   showToast({
-    message: t('locales.betDetails.copy'),
+    message: t('betDetails.copy'),
     type: 'success'
   })
 }
