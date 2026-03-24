@@ -15,7 +15,8 @@
     "deposit_channel": "Deposit Channel",
     "deposit_amount": "Deposit Amount",
     "deposit_amount_input_placeholder": "Please select a deposit amount",
-    "deposit_now": "Deposit Now"
+    "deposit_now": "Deposit Now",
+    "deposit_order": "Deposit Order"
   },
   "common": {
     "loading": "Loading...",
