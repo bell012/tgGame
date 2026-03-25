@@ -36,12 +36,12 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { navigateTo } from '@/utils/router'
 import BetHistoryPage from './betHistory/index.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 
-const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
 
@@ -67,7 +67,7 @@ const menuItems = computed(() => [
 
 // 菜单点击
 const handleMenuClick = (path: string) => {
-  router.push(path)
+  navigateTo(path)
 }
 </script>
 

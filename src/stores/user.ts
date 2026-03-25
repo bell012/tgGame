@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import router from '@/router'
+import { navigateTo } from '@/utils/router'
 
 export const useUserStore = defineStore('user', () => {
   /**
@@ -27,7 +27,7 @@ export const useUserStore = defineStore('user', () => {
   function logout() {
     // 清除所有数据，但保留语言、货币和主题设置
     clearStorageExcept(['language', 'currency', 'theme'])
-    router.push('/')
+    navigateTo('/')
     window.location.reload()
   }
 
