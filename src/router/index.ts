@@ -1,3 +1,5 @@
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import MainLayout from '@/layouts/MainLayout.vue'
 import i18n from '@/i18n'
 import {
   getStorageLanguageCode,
