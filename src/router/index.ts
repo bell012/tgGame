@@ -212,11 +212,11 @@ router.beforeEach((to, _from, next) => {
 
   if (locale) {
     if (supportedLocales.includes(locale)) {
-      const i18nLocale = locale === 'zh' ? 'zh' : 'en'
+      const i18nLocale = locale === 'zh' ? 'zh' : 'eng'
       const languageCode = locale === 'zh' ? 'zh-CN' : 'en'
 
       if (i18n.global.locale.value !== i18nLocale) {
-        i18n.global.locale.value = i18nLocale as 'zh' | 'en'
+        i18n.global.locale.value = i18nLocale as 'zh' | 'eng'
         localStorage.setItem('language', languageCode)
       }
     } else {
@@ -224,8 +224,8 @@ router.beforeEach((to, _from, next) => {
       return
     }
   } else {
-    if (i18n.global.locale.value !== 'en') {
-      i18n.global.locale.value = 'en'
+    if (i18n.global.locale.value !== 'eng') {
+      i18n.global.locale.value = 'eng'
       localStorage.setItem('language', 'en')
     }
   }
