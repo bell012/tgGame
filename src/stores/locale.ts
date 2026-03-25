@@ -21,7 +21,7 @@ export const useLocaleStore = defineStore('locale', () => {
         const languageCode = getStorageLanguageCode(newLocale as string)
         if (currentLanguage.value !== languageCode) {
           currentLanguage.value = languageCode
-          i18n.global.locale.value = getLanguageCode(languageCode) as 'en' | 'zh'
+          i18n.global.locale.value = getLanguageCode(languageCode) as 'eng' | 'zh'
           localStorage.setItem('language', languageCode)
           console.log('[LocaleStore] Route changed, language updated to:', languageCode)
         }
@@ -45,11 +45,11 @@ export const useLocaleStore = defineStore('locale', () => {
     if (routeLocale) {
       const languageCode = getStorageLanguageCode(routeLocale)
       currentLanguage.value = languageCode
-      i18n.global.locale.value = getLanguageCode(languageCode) as 'en' | 'zh'
+      i18n.global.locale.value = getLanguageCode(languageCode) as 'eng' | 'zh'
     } else {
       const savedLanguage = localStorage.getItem('language') || 'en'
       currentLanguage.value = savedLanguage
-      i18n.global.locale.value = getLanguageCode(savedLanguage) as 'en' | 'zh'
+      i18n.global.locale.value = getLanguageCode(savedLanguage) as 'eng' | 'zh'
     }
 
     localStorage.setItem('language', currentLanguage.value)
@@ -61,7 +61,7 @@ export const useLocaleStore = defineStore('locale', () => {
   const setLanguage = (code: string) => {
     currentLanguage.value = code
     const i18nLocale = getLanguageCode(code)
-    i18n.global.locale.value = i18nLocale as 'en' | 'zh'
+    i18n.global.locale.value = i18nLocale as 'eng' | 'zh'
     localStorage.setItem('language', code)
     const route = router.currentRoute.value
     const currentPath = route.path.replace(/^\/(zh|en)/, '')

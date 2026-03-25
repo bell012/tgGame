@@ -6,48 +6,23 @@
       class="notification-detail-shell min-h-screen bg-bg-1"
       style="font-family: Inter, sans-serif"
     >
-      <header
-        class="detail-nav fixed left-0 right-0 top-[0px] z-20 grid h-[49px] grid-cols-[33px_1fr_33px] items-center bg-bg-2 px-[14px]"
-      >
-        <button
-          type="button"
-          class="inline-flex h-[33px] w-[33px] items-center justify-center rounded-[8px] bg-opacity-10"
-          @click="goBack"
-          aria-label="Back"
-        >
-          <svg
-            viewBox="0 0 32 32"
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-[14px] w-[14px] fill-text-1"
-          >
-            <path
-              d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-            ></path>
-          </svg>
-        </button>
+      <H5Header :title="$t('notifications.detail')" :show-sort="false" @sort="false" />
 
-        <h1 class="text-center text-[16px] font-[700] leading-[19px] text-text-1">Notifications</h1>
-        <div class="h-[33px] w-[33px]"></div>
-      </header>
-
-      <main class="px-[14px] pb-[24px] pt-[6px]">
+      <main class="px-[14px] pb-[24px] pt-[14px]">
         <article v-if="detailItem" class="flex flex-col gap-[14px]">
           <h2 class="break-words text-[16px] font-[700] leading-[19px] text-text-1">
             {{ detailTitle }}
           </h2>
           <time class="text-[12px] font-[400] leading-[15px] text-text-2">{{ detailTime }}</time>
 
-          <div
-            v-if="hasDetailImage"
-            class="h-[163px] w-full overflow-hidden rounded-[8px] bg-common-100"
-          >
+          <div v-if="hasDetailImage" class="h-[163px] w-full overflow-hidden rounded-[8px]">
             <img :src="detailImageUrl" :alt="detailTitle" class="h-full w-full object-cover" />
           </div>
 
           <div
             v-if="isRichTextContent"
             class="detail-rich-text text-[14px] font-[400] leading-[17px] text-text-1"
-            v-html="detailItem.noticeText || ''"
+            v-html="normalizedNoticeText"
           ></div>
           <template v-else-if="!hasDetailImage">
             <p
@@ -65,12 +40,13 @@
 </template>
 
 <script setup lang="ts">
+import H5Header from '@/components/common/H5Header.vue'
 import { formatNotificationTime } from '@/utils/notification'
 import { markNotificationAsRead } from '@/utils/notification-cache'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 const NOTIFICATION_DETAIL_STORAGE_KEY = 'menuNotificationDetail'
 
 type NotificationCategory = 'promotions' | 'transactions' | 'system'
@@ -86,7 +62,7 @@ interface NotificationDetailItem {
 }
 
 const route = useRoute()
-const router = useRouter()
+const { t } = useI18n()
 const detailItem = ref<NotificationDetailItem | null>(null)
 
 // 归一化 isImage 值，非法值统一按普通文本处理。
@@ -96,6 +72,33 @@ const normalizeIsImage = (value: number) => {
   }
 
   return 0
+}
+
+const normalizeNoticeContent = (value: string) => {
+  return value.replace(/\\n/g, '\n').trim()
+}
+
+const decodeHtmlEntities = (value: string) => {
+  if (typeof document === 'undefined') {
+    return value
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = value
+  return textarea.value
+}
+
+const cleanupEncodedRichText = (value: string) => {
+  return value
+    .replace(/<p>\s*(<(?:h[1-6]|p|blockquote|ul|ol)[^>]*>)/gi, '$1')
+    .replace(/(<\/(?:h[1-6]|p|blockquote|ul|ol)>)\s*<\/p>/gi, '$1')
+    .replace(/<br\s*\/?>\s*(<\/?(?:h[1-6]|p|blockquote|ul|ol|li)\b)/gi, '$1')
+    .replace(/(<\/(?:h[1-6]|p|blockquote|ul|ol|li)>)\s*<br\s*\/?>/gi, '$1')
+    .trim()
+}
+
+const hasHtmlContent = (value: string) => {
+  return /<\/?[a-z][\s\S]*>/i.test(value)
 }
 
 // 将通知图片路径转换为完整资源地址。
@@ -134,46 +137,51 @@ const parseStoredDetail = (): NotificationDetailItem | null => {
 }
 
 // 获取通知详情标题，缺失时使用默认标题。
-const detailTitle = computed(() => detailItem.value?.noticeTitle || 'Notification')
+const detailTitle = computed(() => detailItem.value?.noticeTitle || t('notifications.item'))
 
 // 格式化通知详情的展示时间。
 const detailTime = computed(() => formatNotificationTime(detailItem.value?.createTime))
+const normalizedNoticeText = computed(() => {
+  const rawContent = normalizeNoticeContent(detailItem.value?.noticeText || '')
+  const decodedContent = decodeHtmlEntities(rawContent)
+
+  if (decodedContent === rawContent) {
+    return rawContent
+  }
+
+  return cleanupEncodedRichText(decodedContent)
+})
 
 // 判断当前详情是否展示单张图片。
 const hasDetailImage = computed(() => {
   return (
-    normalizeIsImage(Number(detailItem.value?.isImage)) === 1 &&
-    Boolean(detailItem.value?.noticeText)
+    normalizeIsImage(Number(detailItem.value?.isImage)) === 1 && Boolean(normalizedNoticeText.value)
   )
 })
 
 // 判断当前详情内容是否为富文本。
-const isRichTextContent = computed(() => normalizeIsImage(Number(detailItem.value?.isImage)) === 2)
+const isRichTextContent = computed(() => {
+  const normalizedIsImage = normalizeIsImage(Number(detailItem.value?.isImage))
+
+  return normalizedIsImage === 2 || hasHtmlContent(normalizedNoticeText.value)
+})
 
 // 生成详情图的完整访问地址。
-const detailImageUrl = computed(() => toGameImageUrl(detailItem.value?.noticeText || ''))
+const detailImageUrl = computed(() => toGameImageUrl(normalizedNoticeText.value))
 
 // 将纯文本内容拆分为段落，供普通文本详情渲染。
 const contentParagraphs = computed(() => {
-  const plainContent = detailItem.value?.noticeText || detailItem.value?.linkUrl || ''
+  const plainContent = normalizedNoticeText.value || detailItem.value?.linkUrl || ''
   return plainContent
     .split(/\r?\n+/)
     .map(text => text.trim())
     .filter(Boolean)
 })
 
-// 返回通知列表页；无历史记录时使用兜底跳转。
-const goBack = () => {
-  if (window.history.length > 1) {
-    router.back()
-    return
-  }
-
-  navigateTo('/menu/notifications')
-}
-
 // 页面挂载后恢复详情数据，并同步当前通知的已读状态。
 onMounted(() => {
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+
   detailItem.value = parseStoredDetail()
   if (!detailItem.value) {
     navigateTo('/menu/notifications', { replace: true })

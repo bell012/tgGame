@@ -6,37 +6,12 @@
       class="notifications-shell min-h-screen bg-bg-1"
       style="font-family: Inter, avertastd, sans-serif"
     >
-      <header
-        class="page-nav fixed left-0 right-0 top-0 z-20 grid h-[49px] grid-cols-[33px_1fr_33px] items-center bg-bg-2 px-[14px]"
-      >
-        <button
-          class="back-button inline-flex h-[33px] w-[33px] items-center justify-center rounded-[8px] bg-opacity-5"
-          type="button"
-          @click="goBack"
-          aria-label="Back"
-        >
-          <svg
-            viewBox="0 0 32 32"
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-[14px] w-[14px] fill-text-1"
-          >
-            <path
-              d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-            ></path>
-          </svg>
-        </button>
+      <H5Header :title="$t('notifications.title')" :show-sort="false" @sort="false" />
 
-        <h1 class="page-title text-center text-[16px] font-[700] leading-[1.2] text-text-1">
-          Notifications
-        </h1>
-
-        <div class="nav-placeholder h-[33px] w-[33px]"></div>
-      </header>
-
-      <main class="page-body px-[14px] pb-[calc(env(safe-area-inset-bottom)+74px)]">
+      <main class="page-body px-[14px] pb-[calc(env(safe-area-inset-bottom)+74px)] mt-[14px]">
         <nav
           class="tab-bar flex min-h-[37px] w-full items-stretch rounded-[12px] bg-bg-2"
-          aria-label="Notification tabs"
+          :aria-label="$t('notifications.tabsAria')"
         >
           <button
             v-for="tab in tabs"
@@ -106,17 +81,9 @@
                   type="button"
                   class="delete-button inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[6px] bg-opacity-10"
                   @click.stop="removeNotification(item.rowId, item.category)"
-                  aria-label="Delete notification"
+                  :aria-label="$t('notifications.deleteAria')"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-[14px] w-[14px] fill-text-2"
-                  >
-                    <path
-                      d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM7 9h2v8H7V9Zm-1 11h12a2 2 0 0 0 2-2V7H4v11a2 2 0 0 0 2 2Z"
-                    />
-                  </svg>
+                  <component :is="delIcon" class="h-[13px] w-[13px]" />
                 </button>
               </div>
             </template>
@@ -137,7 +104,7 @@
 
                 <div
                   v-if="hasPreviewImage(item)"
-                  class="notice-preview mt-[10px] h-[150px] w-full overflow-hidden rounded-[8px] bg-common-100"
+                  class="notice-preview mt-[10px] h-[150px] w-full overflow-hidden rounded-[8px]"
                 >
                   <img
                     :src="toGameImageUrl(item.noticeText)"
@@ -175,31 +142,48 @@
                   type="button"
                   class="delete-button inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[6px] bg-opacity-10"
                   @click.stop="removeNotification(item.rowId, item.category)"
-                  aria-label="Delete notification"
+                  :aria-label="$t('notifications.deleteAria')"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-[14px] w-[14px] fill-text-2"
-                  >
-                    <path
-                      d="M9 3h6l1 2h4v2H4V5h4l1-2Zm1 6h2v8h-2V9Zm4 0h2v8h-2V9ZM7 9h2v8H7V9Zm-1 11h12a2 2 0 0 0 2-2V7H4v11a2 2 0 0 0 2 2Z"
-                    />
-                  </svg>
+                  <component :is="delIcon" class="h-[13px] w-[13px]" />
                 </button>
               </div>
             </template>
           </article>
         </section>
 
+        <div
+          v-else-if="activeCategoryLoading && !activeCategoryLoaded"
+          class="mt-[14px] flex items-center justify-center py-[36px] text-[12px] text-text-2"
+        >
+          {{ $t('notifications.loading') }}
+        </div>
+
         <ThemedEmptyState
           v-else
           :dark-image="defaultImgDark"
           :light-image="defaultImgLight"
-          image-alt="No notifications"
-          message="Stay tuned—something's coming!"
+          :image-alt="$t('notifications.title')"
+          :message="$t('notifications.emptyMessage')"
           text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
         />
+
+        <div ref="loadMoreSentinel" class="h-px w-full"></div>
+
+        <p
+          v-if="activeCategoryLoading && activeCategoryLoaded"
+          class="pb-[16px] pt-[14px] text-center text-[12px] text-text-2"
+        >
+          {{ $t('notifications.loadingMore') }}
+        </p>
+
+        <p
+          v-else-if="
+            activeCategoryLoaded && activeCategoryFinished && filteredNotifications.length > 0
+          "
+          class="pb-[16px] pt-[14px] text-center text-[12px] text-text-2"
+        >
+          {{ $t('notifications.noMore') }}
+        </p>
       </main>
 
       <footer
@@ -210,9 +194,9 @@
           class="unread-control inline-flex min-w-0 items-center gap-[7px]"
           @click="showUnreadOnly = !showUnreadOnly"
         >
-          <span class="control-label text-[12px] font-[400] leading-[1.2] text-text-1"
-            >Show Unread</span
-          >
+          <span class="control-label text-[12px] font-[400] leading-[1.2] text-text-1">{{
+            $t('notifications.showUnread')
+          }}</span>
           <span
             class="toggle-track relative h-[21px] w-[40px] rounded-full transition-colors duration-200"
             :class="showUnreadOnly ? 'toggle-track-active bg-secondary-3' : 'bg-opacity-5'"
@@ -238,15 +222,9 @@
           <span
             class="mark-read-icon inline-flex h-[15px] w-[15px] shrink-0 items-center justify-center"
           >
-            <svg
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-[15px] w-[15px] fill-current"
-            >
-              <path d="m9.2 16.6-4-4 1.7-1.7 2.3 2.3 7-7 1.7 1.7-8.7 8.7Z"></path>
-            </svg>
+            <component :is="markReadIcon" class="h-[24px] w-[24px]" />
           </span>
-          <span>Mark all as read</span>
+          <span>{{ $t('notifications.markAllAsRead') }}</span>
         </button>
       </footer>
 
@@ -267,21 +245,9 @@
             class="inline-flex h-[28px] w-[28px] items-center justify-center rounded-[6px] bg-opacity-10"
             style="position: absolute; right: 14px; top: 14px"
             @click="closeDeleteConfirm"
-            aria-label="Close delete confirmation"
+            :aria-label="$t('notifications.closeDeleteDialogAria')"
           >
-            <svg
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-[10px] w-[10px] stroke-text-1"
-              fill="none"
-            >
-              <path
-                d="M5 5L19 19M19 5L5 19"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-              />
-            </svg>
+            <component :is="CloseIcon" class="h-2.5 w-2.5 text-icon-1" />
           </button>
 
           <div class="flex flex-col gap-[30px]">
@@ -290,13 +256,13 @@
                 id="delete-notification-title"
                 class="text-[16px] font-[700] leading-[19px] text-text-1"
               >
-                Delete Notification
+                {{ $t('notifications.deleteDialog.title') }}
               </h2>
               <p
                 id="delete-notification-description"
                 class="text-[14px] font-[400] leading-[17px] text-text-2"
               >
-                Are you sure you want to delete this notification?
+                {{ $t('notifications.deleteDialog.description') }}
               </p>
             </div>
 
@@ -307,7 +273,11 @@
                 :disabled="isDeletingNotification"
                 @click="confirmRemoveNotification"
               >
-                {{ isDeletingNotification ? 'Deleting...' : 'Delete' }}
+                {{
+                  isDeletingNotification
+                    ? $t('notifications.deleteDialog.confirmLoading')
+                    : $t('notifications.deleteDialog.confirm')
+                }}
               </button>
               <button
                 type="button"
@@ -315,7 +285,7 @@
                 :disabled="isDeletingNotification"
                 @click="closeDeleteConfirm"
               >
-                Cancel
+                {{ $t('common.cancel') }}
               </button>
             </div>
           </div>
@@ -332,11 +302,17 @@ import type {
   QueryNoticeMsgResponse,
   QueryNoticeMsgResult
 } from '@/api/interface/notification.interface'
+import H5Header from '@/components/common/H5Header.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import {
   default as defaultImgDark,
   default as defaultImgLight
 } from '@/static/img/explore/default.png'
+import CloseIcon from '@/static/svg/close.svg?component'
+import delIcon from '@/static/svg/del.svg?component'
+import markReadIcon from '@/static/svg/mark-read-icon.svg?component'
+
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { getLanguageCode } from '@/utils/locale'
 import { formatNotificationTime } from '@/utils/notification'
 import {
@@ -348,9 +324,9 @@ import {
 } from '@/utils/notification-cache'
 import { navigateTo } from '@/utils/router'
 import { computed, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-
+import { useI18n } from 'vue-i18n'
 type NotificationCategory = 'promotions' | 'transactions' | 'system'
+const PAGE_SIZE = 10
 const NOTIFICATION_DETAIL_STORAGE_KEY = 'menuNotificationDetail'
 const NOTIFICATION_LIST_STATE_STORAGE_KEY = 'menuNotificationListState'
 const NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY = 'menuNotificationListRestoreFlag'
@@ -360,29 +336,41 @@ interface NotificationItem extends NoticeRecord {
   read: boolean
 }
 
+interface NotificationCategoryState {
+  items: NotificationItem[]
+  nextPage: number
+  finished: boolean
+  total: number | null
+  loaded: boolean
+}
+
 interface NotificationListState {
+  activeTab: NotificationCategory
+  showUnreadOnly: boolean
+  categories: Record<NotificationCategory, NotificationCategoryState>
+}
+
+interface LegacyNotificationListState {
   activeTab: NotificationCategory
   showUnreadOnly: boolean
   notifications: NotificationItem[]
   loadedCategories: NotificationCategory[]
 }
 
-const router = useRouter()
+const { t } = useI18n()
 
-const tabs: Array<{ key: NotificationCategory; label: string }> = [
-  { key: 'promotions', label: 'Promotions' },
-  { key: 'transactions', label: 'Transactions' },
-  { key: 'system', label: 'System' }
-]
+const tabs = computed<Array<{ key: NotificationCategory; label: string }>>(() => [
+  { key: 'promotions', label: t('notifications.tabs.promotions') },
+  { key: 'transactions', label: t('notifications.tabs.transactions') },
+  { key: 'system', label: t('notifications.tabs.system') }
+])
 
-const tabLabelMap: Record<NotificationCategory, string> = {
-  promotions: 'Promotions',
-  transactions: 'Transactions',
-  system: 'System'
-}
+const tabLabelMap = computed<Record<NotificationCategory, string>>(() => ({
+  promotions: t('notifications.tabs.promotions'),
+  transactions: t('notifications.tabs.transactions'),
+  system: t('notifications.tabs.system')
+}))
 
-const activeTab = ref<NotificationCategory>('promotions')
-const showUnreadOnly = ref(true)
 const showDeleteConfirm = ref(false)
 const pendingDelete = ref<{ rowId: number; category: NotificationCategory } | null>(null)
 const isDeletingNotification = ref(false)
@@ -393,10 +381,200 @@ const msgTypeMap: Record<NotificationCategory, number> = {
   system: 1
 }
 
-// 当前页的统一展示数据源；切换 tab 后只替换对应分类的数据。
-const notifications = ref<NotificationItem[]>([])
-const loadedCategories = ref<NotificationCategory[]>([])
-const fetchingCategories = new Set<NotificationCategory>()
+const createEmptyCategoryState = (): NotificationCategoryState => ({
+  items: [],
+  nextPage: 1,
+  finished: false,
+  total: null,
+  loaded: false
+})
+
+const createDefaultCategoryStates = (): Record<
+  NotificationCategory,
+  NotificationCategoryState
+> => ({
+  promotions: createEmptyCategoryState(),
+  transactions: createEmptyCategoryState(),
+  system: createEmptyCategoryState()
+})
+
+const cloneCategoryStates = (
+  categories: Record<NotificationCategory, NotificationCategoryState>
+): Record<NotificationCategory, NotificationCategoryState> => ({
+  promotions: { ...categories.promotions, items: [...categories.promotions.items] },
+  transactions: { ...categories.transactions, items: [...categories.transactions.items] },
+  system: { ...categories.system, items: [...categories.system.items] }
+})
+
+const isNotificationCategory = (value: unknown): value is NotificationCategory => {
+  return value === 'promotions' || value === 'transactions' || value === 'system'
+}
+
+const isNotificationCategoryState = (value: unknown): value is NotificationCategoryState => {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const state = value as Partial<NotificationCategoryState>
+  return (
+    Array.isArray(state.items) &&
+    typeof state.nextPage === 'number' &&
+    typeof state.finished === 'boolean' &&
+    typeof state.loaded === 'boolean' &&
+    (typeof state.total === 'number' || state.total === null)
+  )
+}
+
+const isNotificationListState = (value: unknown): value is NotificationListState => {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const state = value as Partial<NotificationListState>
+  if (!isNotificationCategory(state.activeTab) || typeof state.showUnreadOnly !== 'boolean') {
+    return false
+  }
+
+  if (!state.categories || typeof state.categories !== 'object') {
+    return false
+  }
+
+  return (
+    isNotificationCategoryState(state.categories.promotions) &&
+    isNotificationCategoryState(state.categories.transactions) &&
+    isNotificationCategoryState(state.categories.system)
+  )
+}
+
+const isLegacyNotificationListState = (value: unknown): value is LegacyNotificationListState => {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const state = value as Partial<LegacyNotificationListState>
+  return (
+    isNotificationCategory(state.activeTab) &&
+    typeof state.showUnreadOnly === 'boolean' &&
+    Array.isArray(state.notifications) &&
+    Array.isArray(state.loadedCategories) &&
+    state.loadedCategories.every(category => isNotificationCategory(category))
+  )
+}
+
+const inferLegacyCategoryState = (
+  items: NotificationItem[],
+  loaded: boolean
+): NotificationCategoryState => {
+  const itemCount = items.length
+  const finished = loaded && itemCount < PAGE_SIZE
+
+  return {
+    items,
+    nextPage: loaded ? Math.floor(itemCount / PAGE_SIZE) + 1 : 1,
+    finished,
+    total: loaded ? itemCount : null,
+    loaded
+  }
+}
+
+const convertLegacyState = (
+  state: LegacyNotificationListState
+): Record<NotificationCategory, NotificationCategoryState> => {
+  const nextCategories = createDefaultCategoryStates()
+
+  ;(['promotions', 'transactions', 'system'] as NotificationCategory[]).forEach(category => {
+    const categoryItems = state.notifications.filter(item => item.category === category)
+    nextCategories[category] = inferLegacyCategoryState(
+      categoryItems,
+      state.loadedCategories.includes(category)
+    )
+  })
+
+  return nextCategories
+}
+
+const restoreNotificationListState = (): NotificationListState | null => {
+  const rawValue = sessionStorage.getItem(NOTIFICATION_LIST_STATE_STORAGE_KEY)
+  if (!rawValue) {
+    return null
+  }
+
+  try {
+    const parsedValue = JSON.parse(rawValue) as unknown
+
+    if (isNotificationListState(parsedValue)) {
+      return {
+        activeTab: parsedValue.activeTab,
+        showUnreadOnly: parsedValue.showUnreadOnly,
+        categories: cloneCategoryStates(parsedValue.categories)
+      }
+    }
+
+    if (isLegacyNotificationListState(parsedValue)) {
+      return {
+        activeTab: parsedValue.activeTab,
+        showUnreadOnly: parsedValue.showUnreadOnly,
+        categories: convertLegacyState(parsedValue)
+      }
+    }
+
+    return null
+  } catch (error) {
+    console.error('restoreNotificationListState failed', error)
+    return null
+  }
+}
+
+const shouldRestoreNotificationListState =
+  sessionStorage.getItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY) === '1'
+const restoredNotificationListState = shouldRestoreNotificationListState
+  ? restoreNotificationListState()
+  : null
+
+if (!shouldRestoreNotificationListState) {
+  sessionStorage.removeItem(NOTIFICATION_LIST_STATE_STORAGE_KEY)
+}
+
+const activeTab = ref<NotificationCategory>(
+  restoredNotificationListState?.activeTab ?? 'promotions'
+)
+const showUnreadOnly = ref(restoredNotificationListState?.showUnreadOnly ?? true)
+const categoryStates = ref<Record<NotificationCategory, NotificationCategoryState>>(
+  restoredNotificationListState?.categories ?? createDefaultCategoryStates()
+)
+const loadMoreSentinel = ref<HTMLElement | null>(null)
+
+const updateCategoryState = (
+  category: NotificationCategory,
+  updater: (state: NotificationCategoryState) => NotificationCategoryState
+) => {
+  categoryStates.value = {
+    ...categoryStates.value,
+    [category]: updater(categoryStates.value[category])
+  }
+}
+
+const mergeCategoryItems = (current: NotificationItem[], incoming: NotificationItem[]) => {
+  const seenRowIds = new Set(current.map(item => item.rowId))
+  const merged = [...current]
+
+  for (const item of incoming) {
+    if (seenRowIds.has(item.rowId)) {
+      continue
+    }
+
+    seenRowIds.add(item.rowId)
+    merged.push(item)
+  }
+
+  return merged
+}
+
+const notifications = computed(() =>
+  (['promotions', 'transactions', 'system'] as NotificationCategory[]).flatMap(
+    category => categoryStates.value[category].items
+  )
+)
 
 // 按分类统计未读数量，用于顶部 tab 徽标显示。
 const unreadCountByCategory = computed<Record<NotificationCategory, number>>(() => {
@@ -418,15 +596,13 @@ const unreadCountByCategory = computed<Record<NotificationCategory, number>>(() 
 
 // 当前激活分类的未读数量。
 const currentTabUnreadCount = computed(() => unreadCountByCategory.value[activeTab.value])
+const activeCategoryState = computed(() => categoryStates.value[activeTab.value])
+const activeCategoryLoaded = computed(() => activeCategoryState.value.loaded)
+const activeCategoryFinished = computed(() => activeCategoryState.value.finished)
 
 // 按当前 tab + 未读开关过滤出页面实际展示的数据。
 const filteredNotifications = computed(() => {
-  return notifications.value.filter(item => {
-    const inCurrentTab = item.category === activeTab.value
-    const matchesUnreadState = showUnreadOnly.value ? !item.read : true
-
-    return inCurrentTab && matchesUnreadState
-  })
+  return activeCategoryState.value.items.filter(item => (showUnreadOnly.value ? !item.read : true))
 })
 
 // 判断是否为交易通知，用于切换交易卡片样式。
@@ -443,7 +619,7 @@ const toGameImageUrl = (value: string) => {
 }
 // 获取通知标题，接口为空时回退到分类标题。
 const getNoticeTitle = (item: NotificationItem) => {
-  return item.noticeTitle || tabLabelMap[item.category]
+  return item.noticeTitle || tabLabelMap.value[item.category]
 }
 
 // 获取交易卡片正文内容，优先使用 noticeText。
@@ -464,15 +640,16 @@ const hasPreviewImage = (item: NotificationItem) => {
 // 生成普通通知卡片摘要内容（兼容图片/H5/富文本）。
 const getNoticeSummary = (item: NotificationItem) => {
   const normalizedIsImage = normalizeIsImage(item.isImage)
+  const normalizedNoticeText = getNormalizedNoticeText(item)
   const textContent =
-    normalizedIsImage === 2 ? stripHtml(item.noticeText || '') : item.noticeText || ''
+    normalizedIsImage === 2 ? stripHtml(normalizedNoticeText) : normalizedNoticeText
 
   if (textContent) {
     return textContent
   }
 
   if (normalizedIsImage === 0) {
-    return item.linkUrl || 'Tap to view details'
+    return item.linkUrl || t('notifications.tapToViewDetails')
   }
 
   return getNoticeTitle(item)
@@ -485,6 +662,40 @@ const normalizeIsImage = (value: number) => {
   }
 
   return 0
+}
+
+const normalizeNoticeContent = (value: string) => {
+  return value.replace(/\\n/g, '\n').trim()
+}
+
+const decodeHtmlEntities = (value: string) => {
+  if (typeof document === 'undefined') {
+    return value
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = value
+  return textarea.value
+}
+
+const cleanupEncodedRichText = (value: string) => {
+  return value
+    .replace(/<p>\s*(<(?:h[1-6]|p|blockquote|ul|ol)[^>]*>)/gi, '$1')
+    .replace(/(<\/(?:h[1-6]|p|blockquote|ul|ol)>)\s*<\/p>/gi, '$1')
+    .replace(/<br\s*\/?>\s*(<\/?(?:h[1-6]|p|blockquote|ul|ol|li)\b)/gi, '$1')
+    .replace(/(<\/(?:h[1-6]|p|blockquote|ul|ol|li)>)\s*<br\s*\/?>/gi, '$1')
+    .trim()
+}
+
+const getNormalizedNoticeText = (item: NotificationItem) => {
+  const rawContent = normalizeNoticeContent(item.noticeText || '')
+  const decodedContent = decodeHtmlEntities(rawContent)
+
+  if (decodedContent === rawContent) {
+    return rawContent
+  }
+
+  return cleanupEncodedRichText(decodedContent)
 }
 
 // 去除富文本中的标签和冗余空白，保留可读文本。
@@ -530,16 +741,6 @@ const getQueryResult = (response: QueryNoticeMsgResponse): QueryNoticeMsgResult 
   }
 }
 
-// 仅替换某个分类的数据，保留其它分类缓存。
-const replaceCategoryNotifications = (
-  category: NotificationCategory,
-  nextItems: NotificationItem[]
-) => {
-  // 仅替换当前分类，保留其它 tab 已加载的数据作为本地缓存。
-  const remainingItems = notifications.value.filter(item => item.category !== category)
-  notifications.value = [...remainingItems, ...nextItems]
-}
-
 // 应用本地缓存：删除过的直接剔除，已读的打上 read 标识。
 const applyNotificationCache = (items: NotificationItem[]) => {
   const deletedIds = getDeletedNotificationIds()
@@ -553,56 +754,12 @@ const applyNotificationCache = (items: NotificationItem[]) => {
     }))
 }
 
-// 判断通知列表状态缓存是否有效。
-const isValidNotificationListState = (value: unknown): value is NotificationListState => {
-  if (!value || typeof value !== 'object') {
-    return false
-  }
-
-  const state = value as Partial<NotificationListState>
-  const validCategories: NotificationCategory[] = ['promotions', 'transactions', 'system']
-
-  return (
-    typeof state.showUnreadOnly === 'boolean' &&
-    typeof state.activeTab === 'string' &&
-    validCategories.includes(state.activeTab as NotificationCategory) &&
-    Array.isArray(state.notifications) &&
-    Array.isArray(state.loadedCategories) &&
-    state.loadedCategories.every(category => validCategories.includes(category))
-  )
-}
-
-// 从 sessionStorage 恢复通知列表页状态。
-const restoreNotificationListState = () => {
-  const rawValue = sessionStorage.getItem(NOTIFICATION_LIST_STATE_STORAGE_KEY)
-  if (!rawValue) {
-    return false
-  }
-
-  try {
-    const parsedValue = JSON.parse(rawValue) as unknown
-    if (!isValidNotificationListState(parsedValue)) {
-      return false
-    }
-
-    activeTab.value = parsedValue.activeTab
-    showUnreadOnly.value = parsedValue.showUnreadOnly
-    notifications.value = parsedValue.notifications
-    loadedCategories.value = [...new Set(parsedValue.loadedCategories)]
-    return true
-  } catch (error) {
-    console.error('restoreNotificationListState failed', error)
-    return false
-  }
-}
-
 // 持久化通知列表页状态，用于详情返回时直接恢复。
 const persistNotificationListState = () => {
   const nextState: NotificationListState = {
     activeTab: activeTab.value,
     showUnreadOnly: showUnreadOnly.value,
-    notifications: notifications.value,
-    loadedCategories: loadedCategories.value
+    categories: cloneCategoryStates(categoryStates.value)
   }
 
   sessionStorage.setItem(NOTIFICATION_LIST_STATE_STORAGE_KEY, JSON.stringify(nextState))
@@ -614,39 +771,97 @@ const clearNotificationListState = () => {
   sessionStorage.removeItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY)
 }
 
-// 按分类请求通知列表并写入当前页面数据源。
-const fetchNotificationsByCategory = async (category: NotificationCategory) => {
-  if (loadedCategories.value.includes(category) || fetchingCategories.has(category)) {
+const fetchNotificationPage = async (
+  category: NotificationCategory,
+  page: number,
+  pageSize: number
+) => {
+  const languageCode = getLanguageCode()
+
+  const res = await Api.notifications.queryNoticeMsg({
+    languageCode,
+    msgType: msgTypeMap[category],
+    channelId: 4,
+    sysLevelId: '1',
+    page: { current: page, size: pageSize }
+  })
+
+  return getQueryResult(res)
+}
+
+const syncCategoryPage = (
+  category: NotificationCategory,
+  appendedItems: NotificationItem[],
+  currentPage: number,
+  total: number
+) => {
+  updateCategoryState(category, state => {
+    const mergedItems = mergeCategoryItems(state.items, appendedItems)
+    const nextPage = currentPage + 1
+    const finished = currentPage * PAGE_SIZE >= total
+
+    return {
+      ...state,
+      items: mergedItems,
+      nextPage,
+      finished,
+      total,
+      loaded: true
+    }
+  })
+}
+
+const createCategoryLoader = (category: NotificationCategory) =>
+  useInfiniteScroll<NotificationItem, QueryNoticeMsgResult>({
+    sentinel: loadMoreSentinel,
+    enabled: () => activeTab.value === category && !categoryStates.value[category].finished,
+    initialPage: categoryStates.value[category].nextPage,
+    pageSize: PAGE_SIZE,
+    threshold: 0,
+    rootMargin: '0px 0px 200px 0px',
+    load: async ({ page, pageSize }) => fetchNotificationPage(category, page, pageSize),
+    getItems: response =>
+      applyNotificationCache(
+        response.records.map(record => mapRecordToNotification(record, category))
+      ),
+    getTotal: response => response.total,
+    getHasMore: (response, { page, pageSize }) => page * pageSize < response.total,
+    dedupeBy: item => item.rowId,
+    onSuccess: (response, { appended, page }) => {
+      syncCategoryPage(category, appended, page, response.total)
+    },
+    onError: error => {
+      console.error(`fetchNotificationsByCategory failed: ${category}`, error)
+    }
+  })
+
+const categoryLoaders = {
+  promotions: createCategoryLoader('promotions'),
+  transactions: createCategoryLoader('transactions'),
+  system: createCategoryLoader('system')
+}
+
+const activeCategoryLoading = computed(() => categoryLoaders[activeTab.value].loading.value)
+
+const prefetchCategoryBadge = async (category: NotificationCategory) => {
+  if (activeTab.value === category || categoryStates.value[category].loaded) {
     return
   }
 
-  fetchingCategories.add(category)
-  const languageCode = getLanguageCode()
-
   try {
-    const res = await Api.notifications.queryNoticeMsg({
-      languageCode,
-      msgType: msgTypeMap[category],
-      channelId: 4,
-      sysLevelId: '1',
-      page: { current: 1, size: 20 }
-    })
-
-    const result = getQueryResult(res)
-    const mappedItems = result.records.map(record => mapRecordToNotification(record, category))
-    replaceCategoryNotifications(category, applyNotificationCache(mappedItems))
-    loadedCategories.value = [...new Set([...loadedCategories.value, category])]
+    const result = await fetchNotificationPage(category, 1, PAGE_SIZE)
+    const mappedItems = applyNotificationCache(
+      result.records.map(record => mapRecordToNotification(record, category))
+    )
+    syncCategoryPage(category, mappedItems, 1, result.total)
   } catch (error) {
-    console.error(`fetchNotificationsByCategory failed: ${category}`, error)
-  } finally {
-    fetchingCategories.delete(category)
+    console.error(`prefetchCategoryBadge failed: ${category}`, error)
   }
 }
 
-// 首次进入页面时，预先拉取 promotions 和 system，用于 tab 未读徽标统计。
-const fetchInitialNotificationCategories = () => {
-  fetchNotificationsByCategory('promotions')
-  fetchNotificationsByCategory('system')
+const initializeNotificationCategories = () => {
+  void prefetchCategoryBadge('promotions')
+  void prefetchCategoryBadge('system')
 }
 
 // 删除单条通知（通过 rowId + category 定位）。
@@ -656,11 +871,48 @@ const removeNotification = (rowId: number, category: NotificationCategory) => {
 }
 
 // 打开通知详情页，并同步更新当前列表中的已读状态。
+// TODO：后续可能细分跳转逻辑
+// if (jumpType == 1) {
+//   // URL跳转
+//   if (linkType == 0) {
+//     // 不跳转
+//   } else if (linkType == 1) {
+//     // 内部URL跳转
+//     // H5/PC：嵌套打开
+//     // APP：应用内打开
+//     // 目标地址看 linkUrl
+//   } else if (linkType == 2) {
+//     // 外部URL跳转
+//     // H5/PC：新窗口
+//     // APP：浏览器打开
+//     // 目标地址看 linkUrl
+//   }
+// } else if (jumpType == 2) {
+//   // 内部页面跳转
+//   if (linkType == 1) {
+//     // 活动
+//   } else if (linkType == 2) {
+//     // 充值栏目
+//   } else if (linkType == 3) {
+//     // 分享转盘
+//   } else if (linkType == 4) {
+//     // 充值页面
+//   } else if (linkType == 5) {
+//     // 积分转盘
+//   }
+//   // 具体参数可能也看 linkUrl
+// } else if (jumpType == 3) {
+//   // 跳转游戏
+//   // 具体目标可能看 linkUrl
+// }
 const openNotificationDetail = (item: NotificationItem) => {
   markNotificationAsRead(item.rowId)
-  notifications.value = notifications.value.map(notification =>
-    notification.rowId === item.rowId ? { ...notification, read: true } : notification
-  )
+  updateCategoryState(item.category, state => ({
+    ...state,
+    items: state.items.map(notification =>
+      notification.rowId === item.rowId ? { ...notification, read: true } : notification
+    )
+  }))
   persistNotificationListState()
   sessionStorage.setItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY, '1')
   sessionStorage.setItem(NOTIFICATION_DETAIL_STORAGE_KEY, JSON.stringify(item))
@@ -694,9 +946,10 @@ const confirmRemoveNotification = () => {
   try {
     markNotificationAsDeleted(rowId)
 
-    notifications.value = notifications.value.filter(
-      item => !(item.rowId === rowId && item.category === category)
-    )
+    updateCategoryState(category, state => ({
+      ...state,
+      items: state.items.filter(item => item.rowId !== rowId)
+    }))
     showDeleteConfirm.value = false
     pendingDelete.value = null
   } catch (error) {
@@ -708,53 +961,24 @@ const confirmRemoveNotification = () => {
 
 // 将当前 tab 下所有通知标记为已读。
 const markCurrentTabAsRead = () => {
-  const currentTabIds = notifications.value
-    .filter(item => item.category === activeTab.value)
-    .map(item => item.rowId)
+  const currentTabIds = activeCategoryState.value.items.map(item => item.rowId)
   markNotificationsAsRead(currentTabIds)
-  notifications.value = notifications.value.map(item =>
-    item.category === activeTab.value ? { ...item, read: true } : item
-  )
+  updateCategoryState(activeTab.value, state => ({
+    ...state,
+    items: state.items.map(item => ({ ...item, read: true }))
+  }))
 }
-
-// 返回上一页；无历史时兜底跳转到 menu 页。
-const goBack = () => {
-  if (window.history.length > 1) {
-    router.back()
-    return
-  }
-
-  navigateTo('/menu')
-}
-
-const shouldRestoreNotificationListState =
-  sessionStorage.getItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY) === '1'
-const hasRestoredNotificationListState =
-  shouldRestoreNotificationListState && restoreNotificationListState()
 
 sessionStorage.removeItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY)
 
-if (!hasRestoredNotificationListState) {
+if (!restoredNotificationListState) {
   clearNotificationListState()
-  fetchInitialNotificationCategories()
+  initializeNotificationCategories()
 }
-
-// 首次进入和每次切换 tab 时刷新对应分类通知。
-watch(
-  activeTab,
-  category => {
-    if (loadedCategories.value.includes(category)) {
-      return
-    }
-
-    fetchNotificationsByCategory(category)
-  },
-  { immediate: true }
-)
 
 // 监听页面状态变化，持续写入列表页缓存。
 watch(
-  [activeTab, showUnreadOnly, notifications, loadedCategories],
+  [activeTab, showUnreadOnly, categoryStates],
   () => {
     persistNotificationListState()
   },
