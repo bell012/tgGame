@@ -315,6 +315,7 @@
     "upload_view_btn_text": "查看样本收据",
     "upload_btn_text": "添加凭证",
     "upload_proof_confirm_btn_text": "立即上传凭证",
-    "payment_receipt_sample_title": "支付凭证样本"
+    "payment_receipt_sample_title": "支付凭证样本",
+    "upload_proof_again_btn_text": "重新上传凭证"
   }
 }
