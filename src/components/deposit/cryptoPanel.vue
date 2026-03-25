@@ -351,6 +351,8 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 input[type='number'] {
-  -moz-appearance: textfield;
+  appearance: textfield; /* 禁用默认浏览器样式 */
+  -webkit-appearance: textfield; /* 针对 Safari 和 Webkit 浏览器 */
+  -moz-appearance: textfield; /* 针对 Firefox */
 }
 </style>
