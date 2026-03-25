@@ -280,6 +280,16 @@
     "deposit_order": "Deposit Order",
     "cancel_order_title": "Cancel Order",
     "cancel_order_tips": "Please select a reason for cancellation",
-    "cancel_order_confirm_cancel": "Confirm Cancel"
+    "cancel_order_confirm_cancel": "Confirm Cancel",
+    "deposit_order_bottom_tips": "Please cancel the order if you do not plan to pay. Repeated unpaid orders may result in account restrictions.",
+    "upload_proof": "Upload Proof",
+    "upload_proof_title": "Upload Payment Proof",
+    "upload_proof_tips_1_1": "Upload a screenshot of the full transaction details showing the ",
+    "upload_proof_tips_1_2": "amount, address, status, timestamp, and transaction ID.",
+    "upload_proof_tips_2": "You are solely responsible for any financial losses caused by uploading the wrong screenshot.",
+    "upload_view_btn_text": "View Sample Receipt",
+    "upload_btn_text": "Add Proof",
+    "upload_proof_confirm_btn_text": "Upload Proof Now",
+    "payment_receipt_sample_title": "Payment Receipt Sample"
   }
 }

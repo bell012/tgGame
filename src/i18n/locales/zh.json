@@ -277,6 +277,16 @@
     "deposit_order": "充值订单",
     "cancel_order_title": "取消订单",
     "cancel_order_tips": "请选择取消的原因",
-    "cancel_order_confirm_cancel": "确认取消"
+    "cancel_order_confirm_cancel": "确认取消",
+    "deposit_order_bottom_tips": "如果您不打算付款，请取消订单。重复未付款的订单可能会导致账户限制。",
+    "upload_proof": "上传凭证",
+    "upload_proof_title": "上传支付凭证",
+    "upload_proof_tips_1_1": "上传显示完整交易详情的截图，包含 ",
+    "upload_proof_tips_1_2": "金额、地址、状态、时间戳和交易 ID。",
+    "upload_proof_tips_2": "您对因上传错误截图导致的任何经济损失负全责。",
+    "upload_view_btn_text": "查看样本收据",
+    "upload_btn_text": "添加凭证",
+    "upload_proof_confirm_btn_text": "立即上传凭证",
+    "payment_receipt_sample_title": "支付凭证样本"
   }
 }

@@ -1,0 +1,24 @@
+<template>
+  <depositPopShell :modelValue="modelValue" :withMask="false" @overlay-close="handleClose">
+    <paymentReceiptSamplePanel @close="handleClose" />
+  </depositPopShell>
+</template>
+<script setup lang="ts">
+import paymentReceiptSamplePanel from './paymentReceiptSamplePanel.vue'
+import depositPopShell from './depositPopShell.vue'
+interface Props {
+  modelValue: boolean
+}
+
+defineProps<Props>()
+
+const emit = defineEmits<{
+  'update:modelValue': [val: boolean]
+  close: []
+}>()
+
+const handleClose = () => {
+  emit('update:modelValue', false)
+  emit('close')
+}
+</script>

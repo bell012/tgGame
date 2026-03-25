@@ -1,41 +1,19 @@
 <template>
-  <div v-if="modelValue" class="min-h-screen">
-    <!-- H5端 -->
-    <div v-if="isMobile" class="sm:hidden">
-      <depositPanel
-        v-show="!hiddenPop"
-        v-model="activeTab"
-        @close="handleClose"
-        @hidden="handleHidden"
-      />
-    </div>
-
-    <!-- PC端 -->
-    <teleport v-if="!isMobile" to="body">
-      <transition name="modal-fade">
-        <div
-          class="fixed inset-0 flex items-center justify-center z-[999] overflow-hidden"
-          @click.self="handleClose"
-          :class="{ 'bg-mask-60-1': !hiddenPop }"
-        >
-          <depositPanel
-            v-show="!hiddenPop"
-            v-model="activeTab"
-            @close="handleClose"
-            @hidden="handleHidden"
-          />
-        </div>
-      </transition>
-    </teleport>
-  </div>
+  <depositPopShell
+    :modelValue="modelValue"
+    :isHidden="hiddenPop"
+    :withMask="true"
+    :zoom="true"
+    @overlay-close="handleClose"
+  >
+    <depositPanel v-model="activeTab" @close="handleClose" @hidden="handleHidden" />
+  </depositPopShell>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useIsMobile } from '@/composables/useMediaQuery'
 import depositPanel from './depositPanel.vue'
-
-const isMobile = useIsMobile()
+import depositPopShell from './depositPopShell.vue'
 
 interface Props {
   modelValue: boolean
@@ -53,24 +31,7 @@ const handleClose = () => {
   emit('update:modelValue', false)
 }
 
-const handleHidden = () => {
-  hiddenPop.value = !hiddenPop.value
+const handleHidden = (status: boolean) => {
+  hiddenPop.value = status
 }
 </script>
-
-<style scoped lang="scss">
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-.modal-fade-enter-to,
-.modal-fade-leave-from {
-  opacity: 1;
-}
-</style>

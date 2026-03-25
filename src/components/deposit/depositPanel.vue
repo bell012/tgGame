@@ -65,7 +65,7 @@ defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [val: TabType]
   close: []
-  hidden: []
+  hidden: [val: boolean]
 }>()
 
 const setActiveTab = (tab: TabType) => {
@@ -76,8 +76,8 @@ const handleClose = () => {
   emit('close')
 }
 
-const handleHidden = () => {
-  emit('hidden')
+const handleHidden = (val: boolean) => {
+  emit('hidden', val)
 }
 </script>
 <style scoped lang="scss">
