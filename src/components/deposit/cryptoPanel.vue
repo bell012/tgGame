@@ -224,7 +224,11 @@
       <div class="text-sm text-text-1">+300</div>
     </div>
   </div>
-  <depositOrderPop v-model:model-value="orderPopShow" v-model:orderInfo="orderInfo" />
+  <depositOrderPop
+    v-model:model-value="orderPopShow"
+    v-model:orderInfo="orderInfo"
+    @close="handleClose"
+  />
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -241,6 +245,7 @@ import { showToast } from 'vant'
 import depositOrderPop from './depositOrderPop.vue'
 
 const { t } = useI18n()
+const emit = defineEmits(['hidden'])
 const coins = [
   {
     name: 'USDT',
@@ -341,7 +346,12 @@ const doDeposit = () => {
     network: 'TRC20',
     address_token: 'tu899iugh889k9ijehddndk987he73178uh1ko671usuth55278'
   }
+  emit('hidden')
   orderPopShow.value = true
+}
+
+const handleClose = () => {
+  emit('hidden')
 }
 </script>
 <style scoped lang="scss">
