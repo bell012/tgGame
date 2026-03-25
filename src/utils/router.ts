@@ -80,7 +80,7 @@ export const switchLanguage = (locale: 'zh' | 'en') => {
   const currentPath = currentRoute.path
   const pathWithoutLocale = currentPath.replace(/^\/(zh|en)/, '') || '/'
   const newPath = locale === 'zh' ? `/zh${pathWithoutLocale}` : pathWithoutLocale
-  i18n.global.locale.value = locale
+  i18n.global.locale.value = locale === 'zh' ? 'zh' : 'eng'
   localStorage.setItem('language', getStorageLanguageCode(locale))
   router.push(newPath)
 }

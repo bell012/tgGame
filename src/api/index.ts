@@ -8,10 +8,12 @@
  */
 
 import * as auth from './modules/auth'
-import * as user from './modules/user'
 import * as home from './modules/home'
+import * as notifications from './modules/notifications'
+import * as user from './modules/user'
 
 const Api = {
+  notifications, // 模块
   auth, // 登录、注册、短信验证码
   user, // 用户信息查询
   home // 首页数据

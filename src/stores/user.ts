@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { clearNotificationStateCache } from '@/utils/notification-cache'
 import { ref } from 'vue'
 
 interface User {
@@ -19,6 +20,7 @@ export const useUserStore = defineStore('user', () => {
   function logout() {
     user.value = null
     isLoggedIn.value = false
+    clearNotificationStateCache()
   }
 
   return {
