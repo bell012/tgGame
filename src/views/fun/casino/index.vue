@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="casino-page p-0 sm:p-4 w-full">
     <div class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl">
       <img
@@ -12,7 +12,7 @@
         <h1
           class="font-inter text-[20px] font-bold leading-normal text-[var(--color-text-level-1,#FFF)]"
         >
-          {{ t('locales.casino.banner_title') }}
+          {{ t('casino.banner_title') }}
         </h1>
         <div
           class="rounded-xl p-0 text-lg font-semibold sm:mt-4 sm:px-[60px] sm:py-[12px] sm:backdrop-blur-md sm:bg-[rgba(169,169,169,0.2)]"
@@ -20,7 +20,7 @@
           <h2
             class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
           >
-            {{ t('locales.casino.banner_sign_up') }}
+            {{ t('casino.banner_sign_up') }}
           </h2>
           <h2
             class="font-inter text-[14px] font-bold leading-normal text-[var(--color-theme-level-1,#2AEE88)]"
@@ -30,7 +30,7 @@
           <h2
             class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
           >
-            {{ t('locales.casino.banner_subtitle') }}
+            {{ t('casino.banner_subtitle') }}
           </h2>
         </div>
         <button
@@ -38,7 +38,7 @@
           type="button"
           @click.stop="showLoginModal = true"
         >
-          {{ t('locales.casino.join_now') }}
+          {{ t('casino.join_now') }}
         </button>
       </div>
     </div>
@@ -53,7 +53,7 @@
         @focus="showHistoryPanel = true"
         class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0"
         type="text"
-        :placeholder="t('locales.casino.placeholder')"
+        :placeholder="t('casino.placeholder')"
       />
       <button
         v-show="searchText"
@@ -74,13 +74,13 @@
           <CloseIcon class="w-[12px] h-[12px] fill-text-1" />
         </button>
         <div class="text-xs text-[var(--color-text-level-2)]">
-          {{ t('locales.casino.search_tips') }}
+          {{ t('casino.search_tips') }}
         </div>
         <!-- 历史记录 -->
         <div class="flex justify-between w-full text-xs my-2.5">
-          <div class="font-bold">{{ t('locales.casino.history') }}</div>
+          <div class="font-bold">{{ t('casino.history') }}</div>
           <div class="text-[var(--color-text-level-2)]" @click.stop="deleteAll()">
-            {{ t('locales.casino.clear') }}（{{ searchHistory?.length }}）
+            {{ t('casino.clear') }}（{{ searchHistory?.length }}）
           </div>
         </div>
         <div class="w-full">
@@ -102,7 +102,7 @@
         </div>
         <!-- 接口返回搜索建议 -->
         <div class="text-xs my-2.5 w-full">
-          <div class="font-bold">{{ t('locales.casino.suggested') }}</div>
+          <div class="font-bold">{{ t('casino.suggested') }}</div>
         </div>
         <div class="w-full">
           <div v-if="suggestedArr?.length > 0" class="flex flex-wrap gap-2">

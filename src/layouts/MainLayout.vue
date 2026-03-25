@@ -44,7 +44,6 @@ const isMobile = useIsMobile()
 const mainStyle = computed(() => {
   if (isMobile.value) {
     return {
-      marginTop: `${layoutStore.TOPNAV_HEIGHT}px`,
       marginBottom: `${layoutStore.BOTTOM_TAB_HEIGHT}px`
     }
   }
