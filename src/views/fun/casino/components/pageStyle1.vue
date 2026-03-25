@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="modules mb-4" v-for="(item, index) in modules" :key="index">
     <div class="mt-2 flex items-center sm:mt-6 h-8">
       <h2 class="flex items-center text-base font-extrabold text-primary">{{ item.name }}</h2>
@@ -6,7 +6,7 @@
         class="button ml-auto flex items-center gap-1 rounded-lg font-extrabold h-8 bg-[var(--color-opacity-10)] px-2 inactive"
         link=""
       >
-        {{ t('locales.casino.all') }}
+        {{ t('casino.all') }}
       </button>
       <div class="hidden sm:flex ml-2 gap-x-1">
         <button
@@ -109,7 +109,7 @@
   </div>
   <div class="mt-2 flex items-center sm:mt-6 h-8">
     <h2 class="flex items-center text-base font-extrabold text-primary">
-      {{ t('locales.casino.latest_bet') }}
+      {{ t('casino.latest_bet') }}
     </h2>
     <span class="ml-auto"></span>
   </div>
@@ -123,7 +123,7 @@
       class="flex-1 h-10 shrink-0 rounded-lg font-bold text-sm flex items-center justify-center"
       @click.stop="latestBetIndex = 0"
     >
-      {{ t('locales.casino.latest_bet') }}
+      {{ t('casino.latest_bet') }}
     </button>
     <button
       :class="{
@@ -132,7 +132,7 @@
       class="flex-1 h-10 shrink-0 rounded-lg font-bold text-sm flex items-center justify-center"
       @click.stop="latestBetIndex = 1"
     >
-      {{ t('locales.casino.high_roller') }}
+      {{ t('casino.high_roller') }}
     </button>
   </div>
   <div class="my-3 h-[430px]">

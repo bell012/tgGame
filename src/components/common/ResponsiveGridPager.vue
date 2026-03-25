@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="w-full">
     <!-- grid：H5 3列 / PC 8列；-->
     <div v-if="items?.length" class="grid w-full gap-[11px] grid-cols-3 sm:grid-cols-8">
@@ -14,7 +14,7 @@
     <!-- 列表无数据时显示 -->
     <div v-else class="w-full flex justify-center items-center flex-col mt-[17px]">
       <img :src="defaultImg" alt="empty" class="w-[220px] h-[200px] object-contain mb-2.5" />
-      <div class="text-xs text-center">{{ t('locales.search.stay') }}</div>
+      <div class="text-xs text-center">{{ t('search.stay') }}</div>
     </div>
 
     <!-- 上一页 / 当前页码/总页码 / 下一页 -->

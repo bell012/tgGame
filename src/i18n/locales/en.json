@@ -13,6 +13,8 @@
   },
   "common": {
     "loading": "Loading...",
+    "loadingMore": "Loading more...",
+    "noMoreData": "No more data",
     "error": "Error",
     "success": "Success",
     "confirm": "Confirm",
@@ -66,13 +68,36 @@
     "sports": "Sports",
     "chat": "Chat"
   },
+  "wallet": {
+    "title": "Wallet",
+    "betHistory": "Bet History"
+  },
   "betHistory": {
     "title": "Bet History",
     "noBetHistoryYet": "No bet history yet",
     "startPlaying": "Start Playing",
     "betAmount": "Bet Amount",
     "win": "Win",
-    "loss": "Loss"
+    "loss": "Loss",
+    "type": "Type",
+    "time": "Time",
+    "payout": "Payout",
+    "profit": "Profit",
+    "noMore": "No More",
+    "filters": {
+      "all": "All",
+      "slot": "Slot",
+      "chess": "Chess",
+      "fishing": "Fishing",
+      "live": "Live",
+      "allAssets": "All Assets",
+      "past24Hours": "Past 24 Hours",
+      "past7Days": "Past 7 Days",
+      "past30Days": "Past 30 Days"
+    }
+  },
+  "customSelect": {
+    "placeholder": "Please select"
   },
   "betDetails": {
     "title": "Bet Details",
@@ -84,6 +109,32 @@
     "orderNo": "Order No.",
     "createdAt": "Created At",
     "copy": "Copy succeeded."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "detail": "Notification Detail",
+    "item": "Notification",
+    "tabsAria": "Notification tabs",
+    "deleteAria": "Delete notification",
+    "closeDeleteDialogAria": "Close delete confirmation",
+    "tabs": {
+      "promotions": "Promotions",
+      "transactions": "Transactions",
+      "system": "System"
+    },
+    "showUnread": "Show Unread",
+    "markAllAsRead": "Mark all as read",
+    "emptyMessage": "Stay tuned, something is coming soon.",
+    "tapToViewDetails": "Tap to view details",
+    "loading": "Loading notifications...",
+    "loadingMore": "Loading more notifications...",
+    "noMore": "No more notifications",
+    "deleteDialog": {
+      "title": "Delete Notification",
+      "description": "Are you sure you want to delete this notification?",
+      "confirm": "Delete",
+      "confirmLoading": "Deleting..."
+    }
   },
   "search": {
     "placeholder": "Search games",

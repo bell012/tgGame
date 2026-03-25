@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- H5 端登录/注册 -->
   <LoginFormMobile
     v-if="isMobile"
@@ -57,7 +57,7 @@
                     </div>
                     <!-- 首存奖金 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.welcome_deposit_bonus') }}
+                      {{ t('common.welcome_deposit_bonus') }}
                     </div>
                   </div>
 
@@ -70,7 +70,7 @@
                     </div>
                     <!-- 每日免费幸运旋转 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.free_daily_lucky_spin') }}
+                      {{ t('common.free_daily_lucky_spin') }}
                     </div>
                   </div>
 
@@ -81,12 +81,12 @@
                       <FreePerksIcon class="w-5 h-5 fill-none" />
                       <!-- 免费福利 -->
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">
-                        {{ t('locales.common.free_perks') }}
+                        {{ t('common.free_perks') }}
                       </span>
                     </div>
                     <!-- 每日免费参与奖金 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.daily_free_rewards_bonuses') }}
+                      {{ t('common.daily_free_rewards_bonuses') }}
                     </div>
                   </div>
                 </div>
@@ -94,11 +94,11 @@
                 <div class="flex items-center justify-center flex-col mt-6">
                   <!-- 保持桀骜不训 -->
                   <h2 class="w-full text-center text-[36px] font-[800] text-text-1 mb-1">
-                    {{ t('locales.common.stay_untamed') }}
+                    {{ t('common.stay_untamed') }}
                   </h2>
                   <!-- 注册并获得欢迎奖金 -->
                   <p class="w-full text-center text-[16px] font-[600] text-text-1">
-                    {{ t('locales.common.sign_up_get_welcome_bonus') }}
+                    {{ t('common.sign_up_get_welcome_bonus') }}
                   </p>
                 </div>
               </div>
@@ -148,7 +148,7 @@
                     </div>
                     <!-- 首存奖金 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.welcome_deposit_bonus') }}
+                      {{ t('common.welcome_deposit_bonus') }}
                     </div>
                   </div>
 
@@ -161,7 +161,7 @@
                     </div>
                     <!-- 每日免费幸运旋转 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.free_daily_lucky_spin') }}
+                      {{ t('common.free_daily_lucky_spin') }}
                     </div>
                   </div>
 
@@ -172,12 +172,12 @@
                       <FreePerksIcon class="w-5 h-5 fill-none" />
                       <!-- 免费福利 -->
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">{{
-                        t('locales.common.free_perks')
+                        t('common.free_perks')
                       }}</span>
                     </div>
                     <!-- 每日免费参与奖金 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.daily_free_rewards_bonuses') }}
+                      {{ t('common.daily_free_rewards_bonuses') }}
                     </div>
                   </div>
                 </div>
@@ -185,11 +185,11 @@
                 <div class="flex items-center justify-center flex-col mt-6">
                   <!-- 保持桀骜不训 -->
                   <h2 class="w-full text-center text-[36px] font-[800] text-text-1 mb-1">
-                    {{ t('locales.common.stay_untamed') }}
+                    {{ t('common.stay_untamed') }}
                   </h2>
                   <!-- 注册并获得欢迎奖金 -->
                   <p class="w-full text-center text-[16px] font-[600] text-text-1">
-                    {{ t('locales.common.sign_up_get_welcome_bonus') }}
+                    {{ t('common.sign_up_get_welcome_bonus') }}
                   </p>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="flex flex-col w-full overflow-hidden">
     <!-- 1. 标题栏 -->
     <div class="flex items-center justify-between mb-2.5 mt-2.5">
@@ -6,7 +6,7 @@
       <div
         class="px-2 py-1 bg-[var(--color-background-level-3)] flex items-center rounded-md cursor-pointer"
       >
-        <div class="text-xs text-text-1 font-[700] mr-1">{{ t('locales.search.all') }}</div>
+        <div class="text-xs text-text-1 font-[700] mr-1">{{ t('search.all') }}</div>
         <RightArrow class="w-2 h-2 fill-none stroke-text-1" />
       </div>
     </div>
