@@ -111,6 +111,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '投注历史',
       description: '投注历史',
+      slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -124,6 +125,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '投注详情',
       description: '投注详情',
+      slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -137,6 +139,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '个人中心',
       description: '个人中心',
+      slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
         hideTopNav: true

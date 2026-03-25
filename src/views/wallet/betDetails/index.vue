@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-bg-1">
+  <div class="fixed inset-0 bg-bg-1 overflow-y-auto">
     <H5Header :title="$t('betDetails.title')" />
 
     <div class="py-3.5">

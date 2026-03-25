@@ -8,6 +8,7 @@ import {
   DEFAULT_LOCALE,
   type Locale
 } from '@/utils/locale'
+import { switchLanguage } from '@/utils/router'
 
 export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
@@ -70,13 +71,7 @@ export const useLocaleStore = defineStore('locale', () => {
     const i18nLocale = getLanguageCode(code) as Locale
     i18n.global.locale.value = i18nLocale
     localStorage.setItem('language', code)
-    const route = router.currentRoute.value
-    const currentPath = route.path.replace(/^\/(zh|eng)/, '')
-    if (i18nLocale === 'zh') {
-      router.push(`/zh${currentPath || '/'}`)
-    } else {
-      router.push(currentPath || '/')
-    }
+    switchLanguage(code)
   }
 
   // 切换货币
