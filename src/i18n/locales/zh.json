@@ -1,5 +1,5 @@
 {
-  "home": {
+  "home1": {
     "title": "欢迎来到 TG 游戏",
     "home": "首页",
     "sign_In": "登录",
@@ -266,5 +266,48 @@
     "orderNo": "订单号",
     "createdAt": "创建时间",
     "copy": "复制成功"
+  },
+  "personalCenter": {
+    "totalBalance": "总余额",
+    "referralGet": "推荐并获得",
+    "commission": "佣金",
+    "copy": "复制",
+    "copySuccess": "复制成功",
+    "upgrade": "升级",
+    "deposit": "存款",
+    "validBet": "有效投注",
+    "buy": "购买",
+    "swap": "兑换",
+    "vaultPro": "金库专业版",
+    "transaction": "交易",
+    "rollover": "流水",
+    "betHistory": "投注历史",
+    "notification": "通知",
+    "referEarn": "推荐并赚取",
+    "affiliate": "联盟",
+    "globalSetting": "全局设置",
+    "language": "语言",
+    "currency": "货币",
+    "theme": "主题",
+    "chinese": "中文",
+    "english": "英文",
+    "liveSupport": "在线客服",
+    "leaveFeedback": "留下反馈",
+    "joinCommunity": "加入我们的社区",
+    "signOut": "退出登录"
+  },
+  "userMenu": {
+    "wallet": "钱包",
+    "withdraw": "提现",
+    "buyCrypto": "购买加密货币",
+    "transactions": "交易记录",
+    "betHistory": "投注历史",
+    "rolloverOverview": "流水概览",
+    "vipClub": "VIP 俱乐部",
+    "vaultPro": "金库专业版",
+    "referral": "推荐",
+    "myProfile": "我的资料",
+    "globalSettings": "全局设置",
+    "logOut": "退出登录"
   }
 }

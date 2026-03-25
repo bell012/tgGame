@@ -1,5 +1,5 @@
 {
-  "home": {
+  "home1": {
     "title": "Welcome to TG Game",
     "home": "home",
     "sign_In": "Sign In",
@@ -269,5 +269,48 @@
       "dark": "Dark Mode",
       "light": "Light Mode"
     }
+  },
+  "personalCenter": {
+    "totalBalance": "Total Balance",
+    "referralGet": "Referral & get",
+    "commission": "commission",
+    "copy": "Copy",
+    "copySuccess": "Copied successfully",
+    "upgrade": "Upgrade",
+    "deposit": "Deposit",
+    "validBet": "Valid Bet",
+    "buy": "Buy",
+    "swap": "Swap",
+    "vaultPro": "Vault Pro",
+    "transaction": "Transaction",
+    "rollover": "Rollover",
+    "betHistory": "Bet History",
+    "notification": "Notification",
+    "referEarn": "Refer and Earn",
+    "affiliate": "Affiliate",
+    "globalSetting": "Global Setting",
+    "language": "Language",
+    "currency": "Currency",
+    "theme": "Theme",
+    "chinese": "Chinese",
+    "english": "English",
+    "liveSupport": "Live Support",
+    "leaveFeedback": "Leave Feedback",
+    "joinCommunity": "Join Our Community",
+    "signOut": "Sign Out"
+  },
+  "userMenu": {
+    "wallet": "Wallet",
+    "withdraw": "Withdraw",
+    "buyCrypto": "Buy Crypto",
+    "transactions": "Transactions",
+    "betHistory": "Bet History",
+    "rolloverOverview": "Rollover Overview",
+    "vipClub": "VIP Club",
+    "vaultPro": "Vault Pro",
+    "referral": "Referral",
+    "myProfile": "My Profile",
+    "globalSettings": "Global Settings",
+    "logOut": "Log Out"
   }
 }
