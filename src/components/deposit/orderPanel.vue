@@ -1,6 +1,11 @@
 <template>
   <div
     class="relative w-full max-w-[480px] h-full sm:max-h-[684px] rounded-xl modal-container bg-bg-2"
+    :class="{
+      'sm:max-h-[684px]': confirmUploadStatus === 'not_started',
+      'sm:max-h-[679px]': confirmUploadStatus === 'in_progress',
+      'sm:max-h-[562px]': confirmUploadStatus === 'completed'
+    }"
   >
     <div class="flex items-center justify-between h-14">
       <h2 class="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-text-1">
@@ -8,13 +13,14 @@
       </h2>
       <!-- 关闭按钮 -->
       <button
-        class="absolute top-4 right-4 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
+        class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center z-10"
         @click="handleClose"
       >
         <CloseIcon class="w-4 h-4 fill-none" />
       </button>
     </div>
     <div
+      v-show="confirmUploadStatus === 'not_started'"
       class="w-full h-full flex-1 flex flex-col relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[628px]"
     >
       <div ref="targetRef" class="w-full bg-bg-2 rounded-lg relative">
@@ -61,7 +67,7 @@
             {{ orderInfo.method }}
           </p>
         </div>
-        <div class="pt-1 px-3 text-base font-normal leading-none w-full text-center">
+        <div class="pt-1 px-3 text-base font-normal leading-none w-full text-center text-text-2">
           {{ orderInfo.rate }}
         </div>
         <div class="w-full mt-6 flex justify-center">
@@ -130,13 +136,13 @@
         </div>
       </div>
       <button
-        class="mt-6 py-4 w-full rounded-lg btn-primary text-text-4 text-[14px] font-bold"
+        class="mt-6 w-full py-3 rounded-lg btn-primary text-text-4 text-[14px] font-bold"
         @click.stop="openUploadPop"
       >
         {{ t('deposit.upload_proof') }}
       </button>
       <button
-        class="mt-3 py-4 w-full rounded-lg bg-opacity-10 text-text-2 text-[14px] font-bold"
+        class="mt-3 w-full p-3 rounded-lg bg-opacity-10 text-text-2 text-[14px] font-bold"
         @click.stop="doCancelOrder"
       >
         {{ t('deposit.cancel_order_title') }}
@@ -145,10 +151,241 @@
         {{ t('deposit.deposit_order_bottom_tips') }}
       </div>
     </div>
+    <div
+      v-show="confirmUploadStatus === 'in_progress'"
+      class="w-full h-full flex-1 flex flex-col relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[623px]"
+    >
+      <div class="w-full bg-bg-2 rounded-tl-lg rounded-tr-lg">
+        <div class="flex items-center p-3 border-b border-input-1">
+          <div class="w-5 mr-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+            >
+              <path d="M4.17969 8.35742H9.25735" stroke="white" stroke-width="1.37174" />
+              <path d="M4.03125 11.0449H12.0958" stroke="white" stroke-width="1.37174" />
+              <path
+                d="M12.6875 0.888672V4.48949C12.6875 5.05769 13.1481 5.5183 13.7163 5.5183H18.6612"
+                stroke="white"
+                stroke-width="1.37174"
+              />
+              <path
+                d="M18.8034 11.941L18.6633 5.66855L12.839 0.740234H1.77099C1.2028 0.740234 0.742188 1.20085 0.742188 1.76904V18.2299C0.742188 18.7981 1.2028 19.2588 1.77099 19.2588H10.6048M12.6956 13.5837H18.52L16.5785 16.2719L18.52 18.8107H12.3969L14.0397 16.2719L12.6956 13.5837Z"
+                stroke="white"
+                stroke-width="1.37174"
+              />
+            </svg>
+          </div>
+          <div class="w-full overflow-hidden whitespace-nowrap">
+            <p class="marquee">
+              Payment received. Your order is being verified. Thank you for your patience.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-bg-2 p-4 rounded-bl-lg rounded-br-lg">
+        <div class="pt-2 flex items-end justify-center">
+          <p class="text-text-1 text-[40px] font-bold leading-none capitalize">
+            {{ orderInfo.amount }}
+          </p>
+          <p class="text-text-1 text-lg font-bold leading-none capitalize">
+            {{ orderInfo.method }}
+          </p>
+        </div>
+        <div class="pt-1 px-3 text-base font-normal leading-none w-full text-center text-text-2">
+          {{ orderInfo.rate }}
+        </div>
+        <div class="mt-4 px-5 py-3 w-full bg-bg-4 rounded-lg relative grid grid-rows-4 gap-2">
+          <div class="flex items-center justify-between">
+            <p class="text-text-3 text-base">Network</p>
+            <div class="text-text-1 text-base">{{ orderInfo.network }}</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-text-3 text-base">Order No.</p>
+            <div class="text-text-1 text-base flex items-center">
+              {{ orderInfo.order_no }}
+              <div class="ml-3 w-[18px]" @click.stop="copyWord(orderInfo.order_no)">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <path
+                    d="M17 3C18.933 3 20.5 4.567 20.5 6.5V14L20.4951 14.1797C20.4046 15.9697 18.9697 17.4046 17.1797 17.4951L17 17.5H16.5L16.4951 17.6797C16.4016 19.5292 14.8727 21 13 21H7.5C5.567 21 4 19.433 4 17.5V10C4 8.067 5.567 6.5 7.5 6.5H8C8 4.567 9.567 3 11.5 3H17ZM11.5 4.5C10.3954 4.5 9.5 5.39543 9.5 6.5H13C14.933 6.5 16.5 8.067 16.5 10V16H17C18.1046 16 19 15.1046 19 14V6.5C19 5.39543 18.1046 4.5 17 4.5H11.5Z"
+                    fill="#B3BEC1"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-text-3 text-base">Created At</p>
+            <div class="text-text-1 text-base">{{ orderInfo.created_at }}</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-text-3 text-base">Deposit Method</p>
+            <div class="text-text-1 text-base flex items-center">
+              <img class="w-5 aspect-square mr-1" :src="orderInfo.method_icon" />
+              {{ orderInfo.method }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <button
+        class="mt-6 w-full h-12 rounded-lg btn-primary text-text-4 text-[14px] font-bold flex items-center justify-center"
+        @click.stop="openUploadPop"
+      >
+        {{ t('deposit.upload_proof_again_btn_text') }}
+      </button>
+      <div class="bg-bg-2 mt-6 p-5 rounded-lg text-base font-normal leading-normal">
+        <p class="text-[color:#F44854]">Reminder</p>
+        <p class="text-text-3 mt-4">
+          · To ensure funds are credited successfully, please upload the correct payment receipt.
+        </p>
+        <p class="text-text-3 mt-4">
+          · If you have already uploaded the proof, please wait patiently. Verification usually
+          takes 1–5 minutes.
+        </p>
+      </div>
+    </div>
+    <div
+      v-show="confirmUploadStatus === 'completed'"
+      class="w-full h-full flex-1 flex flex-col relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[506px]"
+    >
+      <div class="w-full bg-bg-2 rounded-lg pt-10 px-4 pb-8">
+        <div class="flex flex-col items-center">
+          <div class="w-[76px] h-[76px]">
+            <svg
+              v-if="orderStatus === 'Completed'"
+              xmlns="http://www.w3.org/2000/svg"
+              width="76"
+              height="76"
+              viewBox="0 0 76 76"
+              fill="none"
+            >
+              <g clip-path="url(#clip0_4067_156898)">
+                <path
+                  d="M0 38C0 48.0782 4.00356 57.7437 11.1299 64.8701C18.2563 71.9964 27.9218 76 38 76C48.0782 76 57.7437 71.9964 64.8701 64.8701C71.9964 57.7437 76 48.0782 76 38C76 27.9218 71.9964 18.2563 64.8701 11.1299C57.7437 4.00356 48.0782 0 38 0C27.9218 0 18.2563 4.00356 11.1299 11.1299C4.00356 18.2563 0 27.9218 0 38Z"
+                  fill="url(#paint0_linear_4067_156898)"
+                />
+                <path
+                  d="M31.9461 53.1996C31.0555 53.1996 30.2242 52.8434 29.5117 52.1902L18.2898 40.909C16.9242 39.5434 16.9242 37.4652 18.2898 36.0996C19.6555 34.734 21.7336 34.734 23.0992 36.0996L31.8867 44.8871L52.8461 23.9871C54.2117 22.6215 56.2898 22.6215 57.6555 23.9871C59.0211 25.3527 59.0211 27.4309 57.6555 28.7965L34.3805 52.1902C33.668 52.8434 32.8367 53.1996 31.9461 53.1996Z"
+                  fill="white"
+                />
+              </g>
+              <defs>
+                <linearGradient
+                  id="paint0_linear_4067_156898"
+                  x1="0"
+                  y1="38"
+                  x2="76"
+                  y2="38"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stop-color="#24EE89" />
+                  <stop offset="1" stop-color="#9FE871" />
+                </linearGradient>
+                <clipPath id="clip0_4067_156898">
+                  <rect width="76" height="76" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
+            <svg
+              v-else-if="orderStatus === 'Cancelled'"
+              xmlns="http://www.w3.org/2000/svg"
+              width="76"
+              height="76"
+              viewBox="0 0 76 76"
+              fill="none"
+            >
+              <g clip-path="url(#clip0_4067_156938)">
+                <path
+                  d="M0 38C0 48.0782 4.00356 57.7437 11.1299 64.8701C18.2563 71.9964 27.9218 76 38 76C48.0782 76 57.7437 71.9964 64.8701 64.8701C71.9964 57.7437 76 48.0782 76 38C76 27.9218 71.9964 18.2563 64.8701 11.1299C57.7437 4.00356 48.0782 0 38 0C27.9218 0 18.2563 4.00356 11.1299 11.1299C4.00356 18.2563 0 27.9218 0 38Z"
+                  fill="#7B7D7D"
+                />
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M46.8357 25.1305C48.0073 23.9592 49.9064 23.959 51.0779 25.1305C52.2491 26.3021 52.2491 28.2012 51.0779 29.3727L42.4519 37.9987L51.0798 46.6266C52.251 47.7982 52.2511 49.6973 51.0798 50.8688C49.9084 52.0403 48.0092 52.0401 46.8376 50.8688L38.2097 42.2409L29.5818 50.8688C28.4103 52.0403 26.5112 52.0401 25.3396 50.8688C24.168 49.6973 24.1681 47.7982 25.3396 46.6266L33.9675 37.9987L25.3416 29.3727C24.17 28.2012 24.17 26.3021 25.3416 25.1305C26.5131 23.9591 28.4122 23.959 29.5837 25.1305L38.2097 33.7565L46.8357 25.1305Z"
+                  fill="white"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_4067_156938">
+                  <rect width="76" height="76" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
+          </div>
+          <p class="mt-4 text-base font-bold leading-normal text-text-1">
+            {{ orderStatus === 'Completed' ? 'Order Completed' : 'Order Cancelled' }}
+          </p>
+        </div>
+        <div class="mt-6 px-5 py-3 w-full bg-bg-4 rounded-lg relative grid grid-rows-4 gap-3">
+          <div class="flex items-center justify-between">
+            <p class="text-text-3 text-base">Total Payment</p>
+            <div class="text-text-1 text-base">{{ orderInfo.amount }}{{ orderInfo.method }}</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-text-3 text-base">Final Amount</p>
+            <div class="text-text-1 text-base">{{ orderInfo.amount * 7.15 }}PHP</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-text-3 text-base">Exchange Rate</p>
+            <div class="text-text-1 text-base">1USDT≈7.15PHP</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-text-3 text-base">Network</p>
+            <div class="text-text-1 text-base">{{ orderInfo.network }}</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-text-3 text-base">Order No.</p>
+            <div class="text-text-1 text-base flex items-center">
+              {{ orderInfo.order_no }}
+              <div class="ml-3 w-[18px]" @click.stop="copyWord(orderInfo.order_no)">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <path
+                    d="M17 3C18.933 3 20.5 4.567 20.5 6.5V14L20.4951 14.1797C20.4046 15.9697 18.9697 17.4046 17.1797 17.4951L17 17.5H16.5L16.4951 17.6797C16.4016 19.5292 14.8727 21 13 21H7.5C5.567 21 4 19.433 4 17.5V10C4 8.067 5.567 6.5 7.5 6.5H8C8 4.567 9.567 3 11.5 3H17ZM11.5 4.5C10.3954 4.5 9.5 5.39543 9.5 6.5H13C14.933 6.5 16.5 8.067 16.5 10V16H17C18.1046 16 19 15.1046 19 14V6.5C19 5.39543 18.1046 4.5 17 4.5H11.5Z"
+                    fill="#B3BEC1"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-text-3 text-base">Created At</p>
+            <div class="text-text-1 text-base">{{ orderInfo.created_at }}</div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-text-3 text-base">Deposit Method</p>
+            <div class="text-text-1 text-base flex items-center">
+              <img class="w-5 aspect-square mr-1" :src="orderInfo.method_icon" />
+              {{ orderInfo.method }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <cancelOrderPop v-if="cancelOrderPopShow" v-model="cancelOrderPopShow" />
-  <uploadProofPop v-if="uploadPopShow" v-model="uploadPopShow" @close="handleUploadRroofClose" />
+  <uploadProofPop
+    v-if="uploadPopShow"
+    v-model="uploadPopShow"
+    @close="handleUploadRroofClose"
+    @confirmUpload="handleConfirmUpload"
+  />
 </template>
 <script setup lang="ts">
 import { CountDown, showToast } from 'vant'
@@ -182,6 +419,8 @@ const targetRef = ref<HTMLElement | null>(null)
 const countdownTime = ref(15 * 60 * 1000)
 const cancelOrderPopShow = ref<boolean>(false)
 const uploadPopShow = ref<boolean>(false)
+const confirmUploadStatus = ref<string>('not_started')
+const orderStatus = ref<'Completed' | 'Cancelled'>('Completed')
 
 const handleClose = () => {
   emit('close')
@@ -189,6 +428,10 @@ const handleClose = () => {
 
 const handleUploadRroofClose = () => {
   emit('hidden')
+}
+
+const handleConfirmUpload = () => {
+  confirmUploadStatus.value = 'in_progress'
 }
 
 const openUploadPop = () => {
@@ -213,7 +456,7 @@ const doCapture = async () => {
     if (!blob) return
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
     showToast({
-      message: t('locales.betDetails.copy'),
+      message: t('betDetails.copy'),
       type: 'success'
     })
   })
@@ -226,7 +469,7 @@ const doCancelOrder = () => {
 const copyWord = (word: string) => {
   navigator.clipboard.writeText(word)
   showToast({
-    message: t('locales.betDetails.copy'),
+    message: t('betDetails.copy'),
     type: 'success'
   })
 }
@@ -250,5 +493,18 @@ onMounted(() => {
 
 .led-font {
   font-family: 'FX-LED', monospace;
+}
+
+.marquee {
+  animation: marquee 10s linear infinite;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
 </style>

@@ -97,6 +97,7 @@
           :class="[
             !(uploadUrls && uploadUrls.length > 0) ? 'bg-theme-2 cursor-not-allowed' : 'btn-primary'
           ]"
+          @click.stop="handleConfirmUpload"
         >
           {{ t('deposit.upload_proof_confirm_btn_text') }}
         </button>
@@ -114,7 +115,7 @@ import paymentReceiptSamplePop from './paymentReceiptSamplePop.vue'
 import { ref } from 'vue'
 
 const { t } = useI18n()
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'confirmUpload'])
 
 const handleClose = () => {
   emit('close')
@@ -142,6 +143,10 @@ const imageAfterRead: UploaderAfterRead = async (items, detail) => {
 
 const imageDelete = () => {
   uploadUrls.value = []
+}
+
+const handleConfirmUpload = () => {
+  emit('confirmUpload')
 }
 </script>
 <style scoped lang="scss"></style>

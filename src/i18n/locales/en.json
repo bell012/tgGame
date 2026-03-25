@@ -318,6 +318,7 @@
     "upload_view_btn_text": "View Sample Receipt",
     "upload_btn_text": "Add Proof",
     "upload_proof_confirm_btn_text": "Upload Proof Now",
-    "payment_receipt_sample_title": "Payment Receipt Sample"
+    "payment_receipt_sample_title": "Payment Receipt Sample",
+    "upload_proof_again_btn_text": "Upload Proof Again"
   }
 }
