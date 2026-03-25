@@ -16,6 +16,7 @@ import { ref } from 'vue'
 import { useLocaleStore } from '@/stores/locale'
 import Menu from '@/components/Menu.vue'
 import SelectModal from '@/components/SelectModal.vue'
+import { type Locale } from '@/utils/locale'
 
 const localeStore = useLocaleStore()
 const showModal = ref(false)
@@ -27,7 +28,7 @@ const openLanguageModal = () => {
 }
 
 const handleLanguageChange = (code: string) => {
-  localeStore.setLanguage(code)
+  localeStore.setLanguage(code as Locale)
 }
 
 const handleCurrencyChange = (code: string) => {
