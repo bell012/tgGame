@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <header class="top-nav">
     <div class="h-full flex items-center justify-between px-4">
       <!-- 左侧 -->
@@ -50,14 +50,14 @@
             class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-transparent border-0 md:border-2 border-[#e4eaf019] mr-1"
             @click="openLoginModal"
           >
-            {{ t('locales.home.sign_In') }}
+            {{ t('home.sign_In') }}
           </div>
           <!-- 注册 -->
           <div
             class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 md:mr-3"
             @click="openRegisterModal"
           >
-            {{ t('locales.home.sign_Up') }}
+            {{ t('home.sign_Up') }}
           </div>
         </template>
 
@@ -135,12 +135,10 @@
               <BellIcon class="w-4 h-4 fill-none" />
             </div>
             <!-- 用户头像 -->
-            <div class="cursor-pointer w-[33px] h-[33px] rounded-full overflow-hidden">
-              <img
-                src="/src/static/img/home/avatar.png"
-                alt="Avatar"
-                class="w-full h-full object-cover"
-              />
+            <div
+              class="cursor-pointer w-[33px] h-[33px] border border-opacity-15 flex items-center justify-center bg-opacity-5 rounded-full overflow-hidden"
+            >
+              <img :src="avatarUrl" alt="Avatar" class="w-[28px] h-[28px] object-cover" />
             </div>
           </div>
 
@@ -169,13 +167,9 @@
 
           <!-- 用户头像 (PC端) -->
           <div
-            class="hidden md:flex cursor-pointer w-[38px] h-[38px] rounded-full overflow-hidden mr-2"
+            class="hidden md:flex cursor-pointer w-[44px] h-[44px] border border-opacity-15 items-center justify-center bg-opacity-5 rounded-full overflow-hidden mr-2"
           >
-            <img
-              src="/src/static/img/home/avatar.png"
-              alt="Avatar"
-              class="w-full h-full object-cover"
-            />
+            <img :src="avatarUrl" alt="Avatar" class="w-[38px] h-[38px] object-cover" />
           </div>
         </template>
 
@@ -270,6 +264,17 @@ const acctInfo = ref<any>(null)
 // 是否已登录
 const isLoggedIn = computed(() => {
   return userInfo.value && userInfo.value.tradeToken
+})
+
+// 用户头像 URL
+const avatarUrl = computed(() => {
+  const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
+  const headPortrait = userInfo.value?.headPortrait
+
+  if (headPortrait && baseUrl) {
+    return `${baseUrl}${headPortrait}`
+  }
+  return '/src/static/img/home/avatar.png'
 })
 
 // localStorage 用户信息

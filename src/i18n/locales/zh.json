@@ -37,7 +37,9 @@
     "stay_untamed": "保持桀骜不训",
     "sign_up_get_welcome_bonus": "注册并获得欢迎奖金",
     "log_in_directly": "直接登入",
-    "log_in_using_secret_key": "使用秘钥登入"
+    "log_in_using_secret_key": "使用秘钥登入",
+    "filter": "筛选",
+    "apply": "应用"
   },
   "pwa": {
     "offlineReady": "应用已就绪，可离线使用",
@@ -225,5 +227,44 @@
       "dark": "深色模式",
       "light": "浅色模式"
     }
+  },
+  "wallet": {
+    "title": "钱包",
+    "betHistory": "投注历史"
+  },
+  "betHistory": {
+    "title": "投注历史",
+    "noBetHistoryYet": "暂无投注历史",
+    "startPlaying": "开始游戏",
+    "betAmount": "投注金额",
+    "win": "赢",
+    "loss": "输",
+    "type": "类型",
+    "time": "时间",
+    "payout": "支付",
+    "profit": "赔付",
+    "noMore": "没有更多了",
+    "filters": {
+      "all": "全部",
+      "slot": "老虎机",
+      "chess": "棋牌",
+      "fishing": "捕鱼",
+      "live": "真人",
+      "allAssets": "所有资产",
+      "past24Hours": "过去 24 小时",
+      "past7Days": "过去 7 天",
+      "past30Days": "过去 30 天"
+    }
+  },
+  "customSelect": {
+    "placeholder": "请选择"
+  },
+  "betDetails": {
+    "title": "投注详情",
+    "currency": "币种",
+    "winLoss": "输赢",
+    "orderNo": "订单号",
+    "createdAt": "创建时间",
+    "copy": "复制成功"
   }
 }

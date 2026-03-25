@@ -37,7 +37,9 @@
     "stay_untamed": "Stay Untamed",
     "sign_up_get_welcome_bonus": "Sign Up & Get Welcome Bonus",
     "log_in_directly": "Log in directly",
-    "log_in_using_secret_key": "Log in using secret key"
+    "log_in_using_secret_key": "Log in using secret key",
+    "filter": "Filter",
+    "apply": "Apply"
   },
   "pwa": {
     "offlineReady": "App ready to work offline",
@@ -63,6 +65,48 @@
     "casino": "Casino",
     "sports": "Sports",
     "chat": "Chat"
+  },
+  "wallet": {
+    "title": "Wallet",
+    "betHistory": "Bet History"
+  },
+  "betHistory": {
+    "title": "Bet History",
+    "noBetHistoryYet": "No bet history yet",
+    "startPlaying": "Start Playing",
+    "betAmount": "Bet Amount",
+    "win": "Win",
+    "loss": "Loss",
+    "type": "Type",
+    "time": "Time",
+    "payout": "Payout",
+    "profit": "Profit",
+    "noMore": "No More",
+    "filters": {
+      "all": "All",
+      "slot": "Slot",
+      "chess": "Chess",
+      "fishing": "Fishing",
+      "live": "Live",
+      "allAssets": "All Assets",
+      "past24Hours": "Past 24 Hours",
+      "past7Days": "Past 7 Days",
+      "past30Days": "Past 30 Days"
+    }
+  },
+  "customSelect": {
+    "placeholder": "Please select"
+  },
+  "betDetails": {
+    "title": "Bet Details",
+    "win": "Win",
+    "loss": "Loss",
+    "currency": "Currency",
+    "betAmount": "Bet Amount",
+    "winLoss": "Win/Loss",
+    "orderNo": "Order No.",
+    "createdAt": "Created At",
+    "copy": "Copy succeeded."
   },
   "search": {
     "placeholder": "Search games",

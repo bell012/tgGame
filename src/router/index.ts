@@ -124,6 +124,32 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'bet-history',
+    name: 'bet-history',
+    component: () => import('@/views/wallet/betHistory/index.vue'),
+    meta: {
+      title: '投注历史',
+      description: '投注历史',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'bet-details/:id',
+    name: 'bet-details',
+    component: () => import('@/views/wallet/betDetails/index.vue'),
+    meta: {
+      title: '投注详情',
+      description: '投注详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 
