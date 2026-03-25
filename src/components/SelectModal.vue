@@ -136,6 +136,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
+import { SUPPORTED_LOCALES, type Locale } from '@/utils/locale'
 import CloseIcon from '@/static/svg/close.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import RadioCheckedIcon from '@/static/svg/radio-checked.svg?component'
@@ -145,7 +146,7 @@ const { t } = useI18n()
 const localeStore = useLocaleStore()
 
 interface Language {
-  code: string
+  code: Locale
   name: string
   pinyin?: string
 }
@@ -162,7 +163,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  'select-language': [code: string]
+  'select-language': [code: Locale]
   'select-currency': [code: string]
 }>()
 
@@ -194,10 +195,13 @@ const selectedCurrency = computed(() => {
 })
 
 // 语言列表
-const languages: Language[] = [
-  { code: 'en', name: 'English', pinyin: 'yingyu' },
-  { code: 'zh-CN', name: '简体中文', pinyin: 'jiantizhongwen' }
-]
+const languages: Language[] = SUPPORTED_LOCALES.map(code => {
+  if (code === 'zh') {
+    return { code, name: '简体中文', pinyin: 'jiantizhongwen' }
+  } else {
+    return { code, name: 'English', pinyin: 'yingyu' }
+  }
+})
 
 // 货币列表
 const currencies: Currency[] = [
@@ -246,7 +250,7 @@ const handleClose = () => {
   emit('update:modelValue', false)
 }
 
-const selectLanguage = (code: string) => {
+const selectLanguage = (code: Locale) => {
   emit('select-language', code)
   handleClose()
 }
