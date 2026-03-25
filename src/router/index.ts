@@ -1,9 +1,12 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import i18n from '@/i18n'
-
-// 支持的语言列表
-const supportedLocales = ['zh', 'en']
+import {
+  getStorageLanguageCode,
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+  type Locale
+} from '@/utils/locale'
 
 const baseRoutes: RouteRecordRaw[] = [
   {
@@ -200,12 +203,12 @@ router.beforeEach((to, _from, next) => {
   const locale = to.params.locale as string
 
   if (locale) {
-    if (supportedLocales.includes(locale)) {
-      const i18nLocale = locale === 'zh' ? 'zh' : 'en'
-      const languageCode = locale === 'zh' ? 'zh-CN' : 'en'
+    if (SUPPORTED_LOCALES.includes(locale as Locale)) {
+      const i18nLocale = locale as Locale
+      const languageCode = getStorageLanguageCode(locale)
 
       if (i18n.global.locale.value !== i18nLocale) {
-        i18n.global.locale.value = i18nLocale as 'zh' | 'en'
+        i18n.global.locale.value = i18nLocale
         localStorage.setItem('language', languageCode)
       }
     } else {
@@ -213,9 +216,9 @@ router.beforeEach((to, _from, next) => {
       return
     }
   } else {
-    if (i18n.global.locale.value !== 'en') {
-      i18n.global.locale.value = 'en'
-      localStorage.setItem('language', 'en')
+    if (i18n.global.locale.value !== DEFAULT_LOCALE) {
+      i18n.global.locale.value = DEFAULT_LOCALE
+      localStorage.setItem('language', DEFAULT_LOCALE)
     }
   }
 
