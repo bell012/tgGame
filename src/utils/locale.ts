@@ -9,8 +9,8 @@
  * @example
  */
 export const getLanguageCode = (language?: string): string => {
-  const lang = language || localStorage.getItem('language') || 'en'
-  return lang === 'zh-CN' ? 'zh' : 'en'
+  const lang = language || localStorage.getItem('language') || 'eng'
+  return lang === 'zh-CN' ? 'zh' : 'eng'
 }
 
 /**
