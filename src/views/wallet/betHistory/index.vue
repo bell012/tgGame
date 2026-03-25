@@ -37,7 +37,7 @@
     </div>
 
     <!-- H5 端布局 -->
-    <div class="block md:hidden bg-bg-1">
+    <div class="block md:hidden fixed inset-0 bg-bg-1 overflow-y-auto">
       <H5Header :title="$t('betHistory.title')" :show-sort="true" @sort="handleSort" />
 
       <div class="py-3.5">
@@ -125,7 +125,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { navigateTo } from '@/utils/router'
 import H5Header from '@/components/common/H5Header.vue'
@@ -137,7 +136,6 @@ import BetSvg from '@/static/svg/bet.svg?component'
 import noDataImg from '@/static/img/personalCenter/noData.png'
 import bet from '@/static/img/personalCenter/bet.png'
 
-const router = useRouter()
 const { t } = useI18n()
 
 // PC 端菜单相关
@@ -152,7 +150,7 @@ const menuItems = computed(() => [
 ])
 
 const handleMenuClick = (path: string) => {
-  router.push(path)
+  navigateTo(path)
 }
 
 interface BetItem {
@@ -279,7 +277,7 @@ const betList = ref<BetItem[]>([
 ])
 
 const handleStartPlaying = () => {
-  router.push('/')
+  navigateTo('/')
 }
 
 const handleBetClick = (bet: BetItem) => {
