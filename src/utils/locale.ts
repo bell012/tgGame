@@ -5,17 +5,17 @@
 /**
  * 语言代码转换：将存储的语言代码转换为 i18n 使用的语言代码
  * @param language - 存储的语言代码 (zh-CN 或 en)
- * @returns i18n 使用的语言代码 (zh 或 en)
+ * @returns i18n 使用的语言代码 (zh 或 eng)
  * @example
  */
 export const getLanguageCode = (language?: string): string => {
-  const lang = language || localStorage.getItem('language') || 'en'
-  return lang === 'zh-CN' ? 'zh' : 'en'
+  const lang = language || localStorage.getItem('language') || 'eng'
+  return lang === 'zh-CN' ? 'zh' : 'eng'
 }
 
 /**
  * i18n 语言代码转换为存储的语言代码
- * @param i18nLocale - i18n 使用的语言代码 (zh 或 en)
+ * @param i18nLocale - i18n 使用的语言代码 (zh 或 eng)
  * @returns 存储的语言代码 (zh-CN 或 en)
  * @example
  */

@@ -13,6 +13,8 @@
   },
   "common": {
     "loading": "加载中...",
+    "loadingMore": "加载更多...",
+    "noMoreData": "没有更多了",
     "error": "错误",
     "success": "成功",
     "confirm": "确认",
@@ -266,6 +268,32 @@
     "orderNo": "订单号",
     "createdAt": "创建时间",
     "copy": "复制成功"
+  },
+  "notifications": {
+    "title": "通知",
+    "detail": "通知详情",
+    "item": "通知",
+    "tabsAria": "通知标签",
+    "deleteAria": "删除通知",
+    "closeDeleteDialogAria": "关闭删除确认弹窗",
+    "tabs": {
+      "promotions": "优惠",
+      "transactions": "交易",
+      "system": "系统"
+    },
+    "showUnread": "仅看未读",
+    "markAllAsRead": "全部标为已读",
+    "emptyMessage": "敬请期待，精彩内容即将上线！",
+    "tapToViewDetails": "点击查看详情",
+    "loading": "通知加载中...",
+    "loadingMore": "加载更多通知...",
+    "noMore": "没有更多通知了",
+    "deleteDialog": {
+      "title": "删除通知",
+      "description": "确认删除这条通知吗？",
+      "confirm": "删除",
+      "confirmLoading": "删除中..."
+    }
   },
   "deposit": {
     "title": "充值",
