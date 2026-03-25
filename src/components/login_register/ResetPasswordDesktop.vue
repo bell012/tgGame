@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <ResetPasswordFormCore>
     <template
       #default="{
@@ -23,7 +23,7 @@
             class="relative pb-1.5 text-lg font-[800] transition-all duration-200 tab-button-new mr-20"
           >
             <!-- 重置密码 -->
-            <span>{{ t('locales.common.reset_password') }}</span>
+            <span>{{ t('common.reset_password') }}</span>
             <div
               class="absolute bottom-0 left-0 right-0 h-[2px] bg-theme-primary rounded-t-full"
             ></div>
@@ -32,7 +32,7 @@
 
         <div class="flex-1 flex flex-col relative">
           <!-- 账号 -->
-          <div class="text-sm font-[700] text-text-1 mb-2">{{ t('locales.common.account') }}</div>
+          <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
           <div class="mb-6">
             <!-- 请输入账号 -->
             <div class="relative">
@@ -45,7 +45,7 @@
                 :value="formData.account"
                 type="text"
                 inputmode="numeric"
-                :placeholder="t('locales.common.enter_phone_number')"
+                :placeholder="t('common.enter_phone_number')"
                 class="w-full h-[50px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                 @input="handleAccountInput"
               />
@@ -54,7 +54,7 @@
 
           <!-- 验证码 -->
           <div class="text-sm font-[700] text-text-1 mb-2">
-            {{ t('locales.common.verification') }}
+            {{ t('common.verification') }}
           </div>
           <div class="mb-6">
             <div class="relative">
@@ -64,7 +64,7 @@
                 :value="formData.code"
                 type="text"
                 inputmode="numeric"
-                :placeholder="t('locales.common.enter_verification')"
+                :placeholder="t('common.enter_verification')"
                 class="w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                 @input="handleCodeInput"
               />
@@ -76,13 +76,13 @@
                 :disabled="countdown > 0"
                 @click="handleSendCode"
               >
-                {{ countdown > 0 ? `${countdown}s` : t('locales.common.get_code') }}
+                {{ countdown > 0 ? `${countdown}s` : t('common.get_code') }}
               </button>
             </div>
           </div>
 
           <!-- 密码 -->
-          <div class="text-sm font-[700] text-text-1 mb-2">{{ t('locales.common.password') }}</div>
+          <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.password') }}</div>
           <div class="mb-6">
             <div class="relative">
               <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
@@ -90,7 +90,7 @@
               <input
                 :value="formData.password"
                 :type="showPassword ? 'text' : 'password'"
-                :placeholder="t('locales.common.enter_password')"
+                :placeholder="t('common.enter_password')"
                 class="w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                 @input="handlePasswordInput"
               />
@@ -107,7 +107,7 @@
 
           <!-- 确认密码 -->
           <div class="text-sm font-[700] text-text-1 mb-2">
-            {{ t('locales.common.confirm_password') }}
+            {{ t('common.confirm_password') }}
           </div>
           <div class="mb-10">
             <div class="relative">
@@ -116,7 +116,7 @@
               <input
                 :value="formData.confirmPassword"
                 :type="showConfirmPassword ? 'text' : 'password'"
-                :placeholder="t('locales.common.enter_confirm_password')"
+                :placeholder="t('common.enter_confirm_password')"
                 class="w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                 @input="handleConfirmPasswordInput"
               />
@@ -138,7 +138,7 @@
             :disabled="!isResetValid"
             @click="handleResetPassword"
           >
-            {{ t('locales.common.confirm') }}
+            {{ t('common.confirm') }}
           </button>
 
           <!-- 第三方登录图标 -->

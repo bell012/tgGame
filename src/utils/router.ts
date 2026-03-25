@@ -23,15 +23,25 @@ export const getCurrentLocale = (): string => {
  */
 export const navigateTo = (
   path: string,
-  options?: { replace?: boolean; query?: Record<string, any> }
+  options?: { replace?: boolean; query?: Record<string, any>; state?: any }
 ) => {
   const locale = getCurrentLocale()
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
   const fullPath = locale ? `/${locale}${normalizedPath}` : normalizedPath
+
+  const routeOptions: any = {
+    path: fullPath,
+    query: options?.query
+  }
+
+  if (options?.state) {
+    routeOptions.state = options.state
+  }
+
   if (options?.replace) {
-    router.replace({ path: fullPath, query: options?.query })
+    router.replace(routeOptions)
   } else {
-    router.push({ path: fullPath, query: options?.query })
+    router.push(routeOptions)
   }
 }
 
@@ -70,7 +80,7 @@ export const switchLanguage = (locale: 'zh' | 'en') => {
   const currentPath = currentRoute.path
   const pathWithoutLocale = currentPath.replace(/^\/(zh|en)/, '') || '/'
   const newPath = locale === 'zh' ? `/zh${pathWithoutLocale}` : pathWithoutLocale
-  i18n.global.locale.value = locale
+  i18n.global.locale.value = locale === 'zh' ? 'zh' : 'eng'
   localStorage.setItem('language', getStorageLanguageCode(locale))
   router.push(newPath)
 }
