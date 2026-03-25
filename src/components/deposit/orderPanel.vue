@@ -133,22 +133,22 @@
         class="mt-6 py-4 w-full rounded-lg btn-primary text-text-4 text-[14px] font-bold"
         @click.stop="openUploadPop"
       >
-        Upload Proof
+        {{ t('deposit.upload_proof') }}
       </button>
       <button
         class="mt-3 py-4 w-full rounded-lg bg-opacity-10 text-text-2 text-[14px] font-bold"
         @click.stop="doCancelOrder"
       >
-        Cancel Order
+        {{ t('deposit.cancel_order_title') }}
       </button>
       <div class="mt-3 w-full text-center text-secondary-7 text-[14px] leading-normal">
-        Please cancel the order if you do not plan to pay. Repeated unpaid orders may result in
-        account restrictions.
+        {{ t('deposit.deposit_order_bottom_tips') }}
       </div>
     </div>
   </div>
 
   <cancelOrderPop v-if="cancelOrderPopShow" v-model="cancelOrderPopShow" />
+  <uploadProofPop v-if="uploadPopShow" v-model="uploadPopShow" @close="handleUploadRroofClose" />
 </template>
 <script setup lang="ts">
 import { CountDown, showToast } from 'vant'
@@ -158,6 +158,7 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CloseIcon from '@/static/svg/close.svg?component'
 import cancelOrderPop from './cancelOrderPop.vue'
+import uploadProofPop from './uploadProofPop.vue'
 
 const { t } = useI18n()
 
@@ -184,6 +185,10 @@ const uploadPopShow = ref<boolean>(false)
 
 const handleClose = () => {
   emit('close')
+}
+
+const handleUploadRroofClose = () => {
+  emit('hidden')
 }
 
 const openUploadPop = () => {

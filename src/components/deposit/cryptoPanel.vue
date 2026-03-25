@@ -228,6 +228,7 @@
     v-model:model-value="orderPopShow"
     v-model:orderInfo="orderInfo"
     @close="handleClose"
+    @hidden="handleHidden"
   />
 </template>
 <script setup lang="ts">
@@ -346,12 +347,16 @@ const doDeposit = () => {
     network: 'TRC20',
     address_token: 'tu899iugh889k9ijehddndk987he73178uh1ko671usuth55278'
   }
-  emit('hidden')
+  emit('hidden', true)
   orderPopShow.value = true
 }
 
 const handleClose = () => {
-  emit('hidden')
+  emit('hidden', false)
+}
+
+const handleHidden = () => {
+  emit('hidden', true)
 }
 </script>
 <style scoped lang="scss">
