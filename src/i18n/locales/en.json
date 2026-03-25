@@ -9,14 +9,7 @@
     "search": "Search",
     "select_currency": "Select the desired currency to display. The Currencies will be shown in approximated values.",
     "none": "None",
-    "none_select_currency": "When none is selected, some amounts are still displayed in the last selected fiat currency.",
-    "deposit": "Deposit",
-    "deposit_more": "More",
-    "deposit_channel": "Deposit Channel",
-    "deposit_amount": "Deposit Amount",
-    "deposit_amount_input_placeholder": "Please select a deposit amount",
-    "deposit_now": "Deposit Now",
-    "deposit_order": "Deposit Order"
+    "none_select_currency": "When none is selected, some amounts are still displayed in the last selected fiat currency."
   },
   "common": {
     "loading": "Loading...",
@@ -276,5 +269,17 @@
       "dark": "Dark Mode",
       "light": "Light Mode"
     }
+  },
+  "deposit": {
+    "title": "Deposit",
+    "deposit_more": "More",
+    "deposit_channel": "Deposit Channel",
+    "deposit_amount": "Deposit Amount",
+    "deposit_amount_input_placeholder": "Please select a deposit amount",
+    "deposit_now": "Deposit Now",
+    "deposit_order": "Deposit Order",
+    "cancel_order_title": "Cancel Order",
+    "cancel_order_tips": "Please select a reason for cancellation",
+    "cancel_order_confirm_cancel": "Confirm Cancel"
   }
 }

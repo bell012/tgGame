@@ -4,7 +4,7 @@
   >
     <div class="flex items-center justify-between h-14">
       <h2 class="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-text-1">
-        {{ t('locales.home.deposit_order') }}
+        {{ t('deposit.deposit_order') }}
       </h2>
       <!-- 关闭按钮 -->
       <button
@@ -132,7 +132,10 @@
       <button class="mt-6 py-4 w-full rounded-lg btn-primary text-text-4 text-[14px] font-bold">
         Upload Proof
       </button>
-      <button class="mt-3 py-4 w-full rounded-lg bg-opacity-10 text-text-2 text-[14px] font-bold">
+      <button
+        class="mt-3 py-4 w-full rounded-lg bg-opacity-10 text-text-2 text-[14px] font-bold"
+        @click.stop="doCancelOrder"
+      >
         Cancel Order
       </button>
       <div class="mt-3 w-full text-center text-secondary-7 text-[14px] leading-normal">
@@ -141,6 +144,8 @@
       </div>
     </div>
   </div>
+
+  <cancelOrderPop v-if="cancelOrderPopShow" v-model="cancelOrderPopShow" />
 </template>
 <script setup lang="ts">
 import { CountDown, showToast } from 'vant'
@@ -149,6 +154,7 @@ import html2canvas from 'html2canvas'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CloseIcon from '@/static/svg/close.svg?component'
+import cancelOrderPop from './cancelOrderPop.vue'
 
 const { t } = useI18n()
 
@@ -170,6 +176,7 @@ const emit = defineEmits(['close'])
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const targetRef = ref<HTMLElement | null>(null)
 const countdownTime = ref(15 * 60 * 1000)
+const cancelOrderPopShow = ref<boolean>(false)
 
 const handleClose = () => {
   emit('close')
@@ -196,6 +203,10 @@ const doCapture = async () => {
       type: 'success'
     })
   })
+}
+
+const doCancelOrder = () => {
+  cancelOrderPopShow.value = true
 }
 
 const copyWord = (word: string) => {

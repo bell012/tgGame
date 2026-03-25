@@ -4,7 +4,7 @@
   >
     <div class="flex items-center justify-between h-14">
       <h2 class="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-text-1">
-        {{ t('locales.home.deposit') }}
+        {{ t('deposit.title') }}
       </h2>
       <!-- 关闭按钮 -->
       <button

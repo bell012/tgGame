@@ -29,7 +29,7 @@
           <img class="w-5 aspect-square mr-1 absolute left-2 z-20" :src="TRXIcon" />
           <img class="w-5 aspect-square mr-1 absolute left-4 z-10" :src="BNBIcon" />
         </div>
-        <h2 class="mr-1">{{ t('locales.home.deposit_more') }}</h2>
+        <h2 class="mr-1">{{ t('deposit.deposit_more') }}</h2>
         <div class="w-1 h-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +48,7 @@
     </div>
 
     <div class="mt-5">
-      <p class="text-sm text-text-1">{{ t('locales.home.deposit_channel') }}</p>
+      <p class="text-sm text-text-1">{{ t('deposit.deposit_channel') }}</p>
       <div class="flex gap-2 mt-4">
         <button
           v-for="ch in channels"
@@ -70,7 +70,7 @@
 
     <div class="mt-5">
       <div class="flex items-center justify-between">
-        <p class="text-sm text-text-1">{{ t('locales.home.deposit_amount') }}</p>
+        <p class="text-sm text-text-1">{{ t('deposit.deposit_amount') }}</p>
         <div class="flex items-center">
           <div class="w-4 h-4 mr-1">
             <svg
@@ -86,7 +86,7 @@
               />
             </svg>
           </div>
-          <p class="text-sm text-text-2">{{ t('locales.home.deposit_amount') }}</p>
+          <p class="text-sm text-text-2">{{ t('deposit.deposit_amount') }}</p>
         </div>
       </div>
       <div
@@ -209,7 +209,7 @@
         :disabled="!amount || Number(amount) <= 0"
         @click="doDeposit"
       >
-        {{ t('locales.home.deposit_now') }}
+        {{ t('deposit.deposit_now') }}
       </button>
     </div>
   </div>
