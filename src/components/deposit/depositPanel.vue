@@ -44,8 +44,8 @@
     <div
       class="flex-1 flex flex-col relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[598px]"
     >
-      <cryptoPanel v-if="modelValue === 'Crypto'" />
-      <fiatPanel v-else-if="modelValue === 'Fiat'" />
+      <cryptoPanel v-if="modelValue === 'Crypto'" @hidden="handleHidden" />
+      <fiatPanel v-else-if="modelValue === 'Fiat'" @hidden="handleHidden" />
     </div>
   </div>
 </template>
@@ -65,6 +65,7 @@ defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [val: TabType]
   close: []
+  hidden: []
 }>()
 
 const setActiveTab = (tab: TabType) => {
@@ -73,6 +74,10 @@ const setActiveTab = (tab: TabType) => {
 
 const handleClose = () => {
   emit('close')
+}
+
+const handleHidden = () => {
+  emit('hidden')
 }
 </script>
 <style scoped lang="scss">

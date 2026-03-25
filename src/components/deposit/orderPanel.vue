@@ -129,7 +129,10 @@
           </div>
         </div>
       </div>
-      <button class="mt-6 py-4 w-full rounded-lg btn-primary text-text-4 text-[14px] font-bold">
+      <button
+        class="mt-6 py-4 w-full rounded-lg btn-primary text-text-4 text-[14px] font-bold"
+        @click.stop="openUploadPop"
+      >
         Upload Proof
       </button>
       <button
@@ -171,15 +174,21 @@ interface Props {
   }
 }
 const props = defineProps<Props>()
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'hidden'])
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const targetRef = ref<HTMLElement | null>(null)
 const countdownTime = ref(15 * 60 * 1000)
 const cancelOrderPopShow = ref<boolean>(false)
+const uploadPopShow = ref<boolean>(false)
 
 const handleClose = () => {
   emit('close')
+}
+
+const openUploadPop = () => {
+  emit('hidden')
+  uploadPopShow.value = true
 }
 
 const doCapture = async () => {
