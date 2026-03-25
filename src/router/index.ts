@@ -73,6 +73,18 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'menu/referral',
+    name: 'menuReferral',
+    component: () => import('@/views/menu/referral/index.vue'),
+    meta: {
+      title: '代理',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'menu/notifications',
     name: 'menuNotifications',
     component: () => import('@/views/menu/notifications/index.vue'),

@@ -859,7 +859,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
         id: 'promotions_invite_rewards',
         name: t('sidebar_menu.promotions.children.invite_rewards'),
         icon: lottery.invite_rewards,
-        handler: () => console.log('点击 优惠活动')
+        handler: () => navigateTo('/menu/referral')
       }
     ]
   }
@@ -887,7 +887,7 @@ const normalLinks = computed(() => [
     name: t('sidebar_menu.links.recommend'),
     icon: side.affiliateIcon,
     external: false,
-    handler: () => console.log('点击 推荐')
+    handler: () => navigateTo('/menu/referral')
   },
   {
     id: 'forum',
