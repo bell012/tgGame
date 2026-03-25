@@ -64,7 +64,7 @@
             class="cursor-pointer w-[84px] h-[35px] sm:w-[96px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 md:mr-3"
             @click="openDeposit"
           >
-            {{ t('locales.home.deposit') }}
+            {{ t('deposit.title') }}
           </div>
         </template>
 
@@ -93,7 +93,7 @@
               class="cursor-pointer w-[84px] h-[35px] sm:w-[96px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 md:mr-3"
               @click="openDeposit"
             >
-              {{ t('locales.home.deposit') }}
+              {{ t('deposit.title') }}
             </div>
 
             <div class="flex items-center">

@@ -9,14 +9,7 @@
     "search": "搜寻",
     "select_currency": "选择要显示的货币。货币将以近似值显示。",
     "none": "无",
-    "none_select_currency": "当未选择任何货币时，某些金额仍会以最后选择的法币显示",
-    "deposit": "充值",
-    "deposit_more": "更多",
-    "deposit_channel": "充值渠道",
-    "deposit_amount": "充值金额",
-    "deposit_amount_input_placeholder": "请选择充值金额",
-    "deposit_now": "立即充值",
-    "deposit_order": "充值订单"
+    "none_select_currency": "当未选择任何货币时，某些金额仍会以最后选择的法币显示"
   },
   "common": {
     "loading": "加载中...",
@@ -273,5 +266,17 @@
     "orderNo": "订单号",
     "createdAt": "创建时间",
     "copy": "复制成功"
+  },
+  "deposit": {
+    "title": "充值",
+    "deposit_more": "更多",
+    "deposit_channel": "充值渠道",
+    "deposit_amount": "充值金额",
+    "deposit_amount_input_placeholder": "请选择充值金额",
+    "deposit_now": "立即充值",
+    "deposit_order": "充值订单",
+    "cancel_order_title": "取消订单",
+    "cancel_order_tips": "请选择取消的原因",
+    "cancel_order_confirm_cancel": "确认取消"
   }
 }

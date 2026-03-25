@@ -12,11 +12,11 @@ const i18n = createI18n({
   messages: {
     en: {
       ...en,
-      home: homeEn
+      homeEn
     },
     zh: {
       ...zh,
-      home: homeZn
+      homeZn
     }
   }
 })

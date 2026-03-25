@@ -9,7 +9,7 @@
     <teleport v-if="!isMobile" to="body">
       <transition name="modal-fade">
         <div
-          class="fixed inset-0 bg-[#000a] flex items-center justify-center z-[999] overflow-hidden"
+          class="fixed inset-0 bg-mask-60-1 flex items-center justify-center z-[999] overflow-hidden"
           @click.self="handleClose"
         >
           <depositPanel v-model="activeTab" @close="handleClose" />
