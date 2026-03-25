@@ -1,6 +1,6 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import MainLayout from '@/layouts/MainLayout.vue'
 import i18n from '@/i18n'
+import MainLayout from '@/layouts/MainLayout.vue'
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
 // 支持的语言列表
 const supportedLocales = ['zh', 'en']
@@ -67,6 +67,30 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/menu/index.vue'),
     meta: {
       title: '选单'
+    }
+  },
+  {
+    path: 'menu/notifications',
+    name: 'menuNotifications',
+    component: () => import('@/views/menu/notifications/index.vue'),
+    meta: {
+      title: '通知',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'menu/notifications/detail',
+    name: 'menuNotificationDetail',
+    component: () => import('@/views/menu/notifications/detail/index.vue'),
+    meta: {
+      title: '通知详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
     }
   },
   {
