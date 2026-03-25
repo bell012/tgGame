@@ -126,6 +126,19 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'personal-center',
+    name: 'personal-center',
+    component: () => import('@/views/personalCenter/mobile.vue'),
+    meta: {
+      title: '个人中心',
+      description: '个人中心',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 
