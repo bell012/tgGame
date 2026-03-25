@@ -110,9 +110,8 @@ import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './img/peopleNumber.svg?component'
 import { StringExtension } from '@/utils/string-extension'
+import { navigateToName } from '@/utils/router'
 import LoginModal from '@/components/login_register/LoginModal.vue'
-import { useRouter } from 'vue-router'
-const router = useRouter()
 interface GameItem {
   img: {
     maintain: boolean
@@ -151,7 +150,7 @@ const showLoginModal = ref(false)
 const handleClick = (rowId: number) => {
   let userInfo = localStorage.getItem('userInfo')
   if (userInfo) {
-    router.push({ name: 'gameDetail', params: { id: rowId } })
+    navigateToName('gameDetail', { params: { id: rowId } })
   } else {
     showLoginModal.value = true
   }

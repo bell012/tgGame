@@ -50,14 +50,14 @@
             class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-transparent border-0 md:border-2 border-[#e4eaf019] mr-1"
             @click="openLoginModal"
           >
-            {{ t('home.sign_In') }}
+            {{ t('home1.sign_In') }}
           </div>
           <!-- 注册 -->
           <div
             class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 md:mr-3"
             @click="openRegisterModal"
           >
-            {{ t('home.sign_Up') }}
+            {{ t('home1.sign_Up') }}
           </div>
           <!-- 充值 -->
           <div
@@ -149,9 +149,10 @@
             >
               <BellIcon class="w-4 h-4 fill-none" />
             </div>
-            <!-- 用户头像 -->
+            <!-- 用户头像 (H5端) -->
             <div
               class="cursor-pointer w-[33px] h-[33px] border border-opacity-15 flex items-center justify-center bg-opacity-5 rounded-full overflow-hidden"
+              @click="handleAvatarClick"
             >
               <img :src="avatarUrl" alt="Avatar" class="w-[28px] h-[28px] object-cover" />
             </div>
@@ -181,10 +182,16 @@
           </div>
 
           <!-- 用户头像 (PC端) -->
-          <div
-            class="hidden md:flex cursor-pointer w-[44px] h-[44px] border border-opacity-15 items-center justify-center bg-opacity-5 rounded-full overflow-hidden mr-2"
-          >
-            <img :src="avatarUrl" alt="Avatar" class="w-[38px] h-[38px] object-cover" />
+          <div class="hidden md:block relative">
+            <div
+              class="cursor-pointer w-[44px] h-[44px] border border-opacity-15 flex items-center justify-center bg-opacity-5 rounded-full overflow-hidden mr-2"
+              @click="toggleUserMenu"
+            >
+              <img :src="avatarUrl" alt="Avatar" class="w-[38px] h-[38px] object-cover" />
+            </div>
+
+            <!-- PC 端下拉菜单 -->
+            <UserMenuDropdown v-model="showUserMenu" />
           </div>
         </template>
 
@@ -249,6 +256,7 @@ import SelectModal from '@/components/SelectModal.vue'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
 import DepositPop from '@/components/deposit/depositPop.vue'
+import UserMenuDropdown from '@/views/personalCenter/UserMenuDropdown.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
 import ChatIcon from '@/static/svg/chat.svg?component'
@@ -257,7 +265,7 @@ import GiftIcon from '@/static/svg/login/gift.svg?component'
 import BellIcon from '@/static/svg/bell.svg?component'
 import Jia from '@/static/svg/login/jia.svg?component'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
-import { getCurrencySymbol, formatBalance } from '@/utils/locale'
+import { getCurrencySymbol, formatBalance, type Locale } from '@/utils/locale'
 
 const { t } = useI18n()
 const localeStore = useLocaleStore()
@@ -275,6 +283,9 @@ const showDepositPop = ref(false)
 const loginModalTab = ref<'login' | 'register'>('login')
 
 const showExplorehModal = ref(false)
+
+// 用户菜单下拉框
+const showUserMenu = ref(false)
 
 // 用户信息
 const userInfo = ref<any>(null)
@@ -367,7 +378,7 @@ const openExploreModal = () => {
   showExplorehModal.value = true
 }
 
-const handleLanguageChange = (code: string) => {
+const handleLanguageChange = (code: Locale) => {
   localeStore.setLanguage(code)
 }
 
@@ -377,6 +388,16 @@ const handleCurrencyChange = (code: string) => {
 
 const openDeposit = () => {
   showDepositPop.value = true
+}
+
+// 切换用户菜单
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value
+}
+
+// H5 点击头像
+const handleAvatarClick = () => {
+  navigateTo('/personal-center')
 }
 
 defineExpose({

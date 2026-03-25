@@ -1,6 +1,6 @@
 import router from '@/router'
 import i18n from '@/i18n'
-import { getStorageLanguageCode } from './locale'
+import { getStorageLanguageCode, SUPPORTED_LOCALES, type Locale } from './locale'
 
 /**
  * 获取当前语言前缀
@@ -8,7 +8,7 @@ import { getStorageLanguageCode } from './locale'
 export const getCurrentLocale = (): string => {
   const currentRoute = router.currentRoute.value
   const locale = currentRoute.params.locale as string
-  if (locale && ['zh', 'en'].includes(locale)) {
+  if (locale && SUPPORTED_LOCALES.includes(locale as Locale)) {
     return locale
   }
   const currentLang = i18n.global.locale.value
@@ -75,10 +75,10 @@ export const navigateToName = (
  * @param locale - 目标语言
  * @example
  */
-export const switchLanguage = (locale: 'zh' | 'en') => {
+export const switchLanguage = (locale: Locale) => {
   const currentRoute = router.currentRoute.value
   const currentPath = currentRoute.path
-  const pathWithoutLocale = currentPath.replace(/^\/(zh|en)/, '') || '/'
+  const pathWithoutLocale = currentPath.replace(/^\/(zh|eng)/, '') || '/'
   const newPath = locale === 'zh' ? `/zh${pathWithoutLocale}` : pathWithoutLocale
   i18n.global.locale.value = locale === 'zh' ? 'zh' : 'eng'
   localStorage.setItem('language', getStorageLanguageCode(locale))
