@@ -194,6 +194,23 @@
         "week": "This Week",
         "month": "This Month"
       }
+    },
+    "inviteRecords": {
+      "title": "Invite Records",
+      "searchPlaceholder": "Search for a member account",
+      "empty": "No invite records found",
+      "filterTitles": {
+        "status": "Status Selection",
+        "time": "Date Selection"
+      },
+      "filters": {
+        "all": "All",
+        "valid": "Valid",
+        "invalid": "Invalid",
+        "today": "Today",
+        "week": "This Week",
+        "month": "This Month"
+      }
     }
   },
   "search": {

@@ -97,6 +97,30 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'menu/referral/commission-rules',
+    name: 'menuReferralCommissionRules',
+    component: () => import('@/views/menu/referral/commission-rules/index.vue'),
+    meta: {
+      title: 'Commission Rules',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'menu/referral/invite-records',
+    name: 'menuReferralInviteRecords',
+    component: () => import('@/views/menu/referral/invite-records/index.vue'),
+    meta: {
+      title: '我的代理-邀请记录列表',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'menu/notifications',
     name: 'menuNotifications',
     component: () => import('@/views/menu/notifications/index.vue'),
