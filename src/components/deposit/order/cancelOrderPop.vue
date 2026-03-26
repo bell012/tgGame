@@ -6,7 +6,7 @@
           class="mx-auto w-full sm:max-w-[480px] h-full sm:max-h-[684px] bg-mask-60-1 fixed inset-0 flex items-center justify-center"
         >
           <div
-            class="px-4 py-6 w-[300px] sm:w-[368px] h-[327px] sm:h-[352px] rounded-xl modal-container bg-bg-2"
+            class="p-5 sm:px-4 sm:py-6 w-[300px] sm:w-[368px] h-[327px] sm:h-[352px] rounded-xl modal-container bg-bg-1 dark:bg-bg-2"
           >
             <div class="flex items-center justify-between">
               <h2 class="text-text-1 text-xl font-bold leading-normal capitalize">
@@ -22,7 +22,7 @@
             <p class="mt-2.5 text-sm font-normal leading-normal text-text-2">
               {{ t('deposit.cancel_order_tips') }}
             </p>
-            <div class="mt-4 h-[156px] w-full p-3 rounded-lg bg-bg-6 overflow-y-auto">
+            <div class="mt-4 h-[156px] w-full p-2.5 sm:p-3 rounded-lg bg-bg-6 overflow-y-auto">
               <div
                 class="flex items-center justify-between p-3 text-text-1 text-[14px] rounded-lg"
                 v-for="(item, index) in cancellations"
@@ -37,7 +37,7 @@
             </div>
             <button
               :disabled="disabledConfirm"
-              class="mt-6 h-12 w-full rounded-lg text-text-4 text-[14px] font-bold flex items-center justify-center"
+              class="mt-5 sm:mt-6 h-10 sm:h-12 w-full rounded-lg text-text-4 text-[14px] font-bold flex items-center justify-center"
               :class="[disabledConfirm ? 'btn-primary' : 'bg-theme-2 cursor-not-allowed']"
             >
               <CountDown v-if="!disabledConfirm" :time="countdownTime" @finish="onCountDownFinish">
