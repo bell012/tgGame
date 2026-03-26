@@ -324,6 +324,35 @@
     "copyFailed": "复制失败",
     "claimPending": "领取申请已提交",
     "comingSoon": "功能开发中",
-    "cta": "立即邀请"
+    "cta": "立即邀请",
+    "commissionMethods": {
+      "title": "佣金获取方式列表",
+      "searchPlaceholder": "搜索会员账号",
+      "summaryTitle": "筛选与汇总",
+      "totalAmount": "总计：{amount}",
+      "subAccount": "子账号：{account}",
+      "empty": "暂无佣金记录",
+      "filterTitles": {
+        "game": "游戏筛选",
+        "outcome": "盈亏筛选",
+        "status": "状态筛选",
+        "time": "时间筛选",
+        "platform": "平台筛选"
+      },
+      "filters": {
+        "all_games": "全部游戏",
+        "slots": "老虎机",
+        "sports": "体育",
+        "casino": "娱乐城",
+        "all": "全部",
+        "win": "盈亏",
+        "loss": "仅亏损",
+        "completed": "已完成",
+        "pending": "处理中",
+        "today": "今天",
+        "week": "本周",
+        "month": "本月"
+      }
+    }
   }
 }
