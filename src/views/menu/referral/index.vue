@@ -210,6 +210,7 @@ import QRCode from 'qrcode'
 import { showToast } from 'vant'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import ReferralQrDialog from './components/ReferralQrDialog.vue'
 import ReferralShareSheet from './components/ReferralShareSheet.vue'
 
@@ -220,6 +221,7 @@ interface ReferralMetric {
 }
 
 const { t } = useI18n()
+const router = useRouter()
 
 const qrCodeCanvas = ref<HTMLCanvasElement>()
 const showQrDialog = ref(false)
@@ -314,10 +316,7 @@ const handleClaimCommission = () => {
 
 // 处理佣金规则入口点击。
 const handleCommissionRule = () => {
-  showToast({
-    message: t('referral.comingSoon'),
-    type: 'success'
-  })
+  router.push('/menu/referral/commission-methods')
 }
 
 // 处理统计说明入口点击。

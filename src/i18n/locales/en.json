@@ -165,7 +165,36 @@
     "copyFailed": "Copy failed",
     "claimPending": "Claim request submitted",
     "comingSoon": "Feature coming soon",
-    "cta": "Invite Now"
+    "cta": "Invite Now",
+    "commissionMethods": {
+      "title": "Commission Methods",
+      "searchPlaceholder": "Search for a member account",
+      "summaryTitle": "Filters & Summary",
+      "totalAmount": "Total: {amount}",
+      "subAccount": "Sub-account: {account}",
+      "empty": "No commission records found",
+      "filterTitles": {
+        "game": "Game Type Selection",
+        "outcome": "Win/Loss Selection",
+        "status": "Statuses Selection",
+        "time": "Date Selection",
+        "platform": "Platform Selection"
+      },
+      "filters": {
+        "all_games": "All Games",
+        "slots": "Slots",
+        "sports": "Sports",
+        "casino": "Casino",
+        "all": "All",
+        "win": "Win/Loss",
+        "loss": "Loss Only",
+        "completed": "Completed",
+        "pending": "Pending",
+        "today": "Today",
+        "week": "This Week",
+        "month": "This Month"
+      }
+    }
   },
   "search": {
     "placeholder": "Search games",
