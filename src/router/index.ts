@@ -164,6 +164,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '个人中心',
       description: '个人中心',
+      mobileOnly: true,
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
