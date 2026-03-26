@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
-import { stripLocalePrefix } from '@/utils/locale'
+import { getLocaleFromRouteParam, stripLocalePrefix, withLocalePrefix } from '@/utils/locale'
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
@@ -73,6 +73,15 @@ const isMobile = useIsMobile()
 const route = useRoute()
 const router = useRouter()
 const DRAWER_TRANSITION_MS = 350
+
+const redirectMobileOnlyRouteToHome = (localeParam?: string) => {
+  const targetLocale = getLocaleFromRouteParam(localeParam)
+  const targetHomePath = withLocalePrefix('/', targetLocale)
+
+  if (route.fullPath !== targetHomePath) {
+    void router.replace(targetHomePath)
+  }
+}
 
 // 滑动路由栈项的类型定义
 interface SlideRouteItem {
@@ -134,6 +143,21 @@ const isLocaleOnlyRouteChange = (
     JSON.stringify(previousRoute.query || {}) === JSON.stringify(nextRoute.query || {})
   )
 }
+
+watch(
+  () => ({
+    fullPath: route.fullPath,
+    isMobileDevice: isMobile.value,
+    localeParam: route.params.locale as string | undefined,
+    mobileOnly: route.meta?.mobileOnly === true
+  }),
+  ({ isMobileDevice, localeParam, mobileOnly }) => {
+    if (!isMobileDevice && mobileOnly) {
+      redirectMobileOnlyRouteToHome(localeParam)
+    }
+  },
+  { immediate: true }
+)
 
 // 控制滑动动画
 watch(
