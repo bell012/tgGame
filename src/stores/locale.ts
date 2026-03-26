@@ -3,7 +3,9 @@ import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import i18n from '@/i18n'
 import {
+  getLocaleFromRouteParam,
   getLanguageCode,
+  getStoredLocale,
   getStorageLanguageCode,
   DEFAULT_LOCALE,
   type Locale
@@ -14,9 +16,7 @@ export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
 
   // 当前语言（zh 或 eng）
-  const currentLanguage = ref<Locale>(
-    (localStorage.getItem('language') as Locale) || DEFAULT_LOCALE
-  )
+  const currentLanguage = ref<Locale>(getStoredLocale())
 
   // 当前货币（none、USD、CNY）
   const currentCurrency = ref<string>(localStorage.getItem('currency') || 'none')
@@ -25,19 +25,17 @@ export const useLocaleStore = defineStore('locale', () => {
   watch(
     () => router.currentRoute.value.params.locale,
     newLocale => {
-      if (newLocale) {
-        const languageCode = getStorageLanguageCode(newLocale as string) as Locale
-        if (currentLanguage.value !== languageCode) {
-          currentLanguage.value = languageCode
-          i18n.global.locale.value = getLanguageCode(languageCode) as Locale
-          localStorage.setItem('language', languageCode)
-          console.log('[LocaleStore] Route changed, language updated to:', languageCode)
-        }
+      const routeLocale = getLocaleFromRouteParam(newLocale as string | undefined) ?? DEFAULT_LOCALE
+      const languageCode = getStorageLanguageCode(routeLocale) as Locale
+
+      if (currentLanguage.value !== languageCode) {
+        currentLanguage.value = languageCode
+        i18n.global.locale.value = getLanguageCode(languageCode) as Locale
+        localStorage.setItem('language', languageCode)
       }
     },
     { immediate: true }
   )
-
   // 计算实际使用的货币
   const actualCurrency = computed(() => {
     return currentCurrency.value === 'none' ? 'USD' : currentCurrency.value
@@ -46,7 +44,7 @@ export const useLocaleStore = defineStore('locale', () => {
   // 初始化语言
   const initLanguage = () => {
     const route = router.currentRoute.value
-    const routeLocale = route.params.locale as string
+    const routeLocale = getLocaleFromRouteParam(route.params.locale as string | undefined)
 
     console.log('[LocaleStore] initLanguage - routeLocale:', routeLocale)
 
@@ -55,7 +53,7 @@ export const useLocaleStore = defineStore('locale', () => {
       currentLanguage.value = languageCode
       i18n.global.locale.value = getLanguageCode(languageCode) as Locale
     } else {
-      const savedLanguage = (localStorage.getItem('language') as Locale) || DEFAULT_LOCALE
+      const savedLanguage = getStoredLocale()
       currentLanguage.value = savedLanguage
       i18n.global.locale.value = getLanguageCode(savedLanguage) as Locale
     }
