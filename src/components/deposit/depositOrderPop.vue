@@ -13,19 +13,11 @@
 import orderPanel from './orderPanel.vue'
 import { ref } from 'vue'
 import depositPopShell from './depositPopShell.vue'
+import { OrderType } from './orderType'
 
 interface Props {
   modelValue: boolean
-  orderInfo: {
-    order_no: string
-    created_at: string
-    amount: number
-    method: string
-    method_icon: string
-    rate: string
-    network: string
-    address_token: string
-  }
+  orderInfo: OrderType
 }
 
 defineProps<Props>()
