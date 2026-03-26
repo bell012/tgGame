@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative w-full max-w-[480px] h-full flex flex-col rounded-xl modal-container bg-bg-1"
+    class="relative w-full max-w-[480px] max-h-[calc(100dvh-16px)] flex flex-col overflow-hidden sm:rounded-xl modal-container bg-bg-1"
     :class="{
       'sm:max-h-[684px]': modelValue === 'Crypto',
       'sm:max-h-[595px]': modelValue === 'Fiat'
@@ -81,32 +81,6 @@ const handleHidden = (val: boolean) => {
 }
 </script>
 <style scoped lang="scss">
-.modal-fade-enter-active .modal-container {
-  animation: modalZoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.modal-fade-leave-active .modal-container {
-  animation: modalZoomOut 0.3s cubic-bezier(0.7, 0, 0.84, 0);
-}
-
-@keyframes modalZoomIn {
-  from {
-    transform: scale(0.8);
-  }
-  to {
-    transform: scale(1);
-  }
-}
-
-@keyframes modalZoomOut {
-  from {
-    transform: scale(1);
-  }
-  to {
-    transform: scale(0.8);
-  }
-}
-
 .tab-button-new {
   position: relative;
 

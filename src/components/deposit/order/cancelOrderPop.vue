@@ -1,6 +1,6 @@
 <template>
   <teleport v-if="modelValue" to="body">
-    <transition name="modal-fade">
+    <transition name="modal">
       <div class="fixed inset-0 flex items-center justify-center z-[999] overflow-hidden">
         <div
           class="mx-auto w-full sm:max-w-[480px] h-full sm:max-h-[684px] bg-mask-60-1 fixed inset-0 flex items-center justify-center"
@@ -103,44 +103,30 @@ const selectlation = (lation: cancellationType) => {
 }
 </script>
 <style scoped lang="scss">
-.modal-fade-enter-active,
-.modal-fade-leave-active {
+.modal-enter-active,
+.modal-leave-active {
   transition: opacity 0.3s ease;
 }
 
-.modal-fade-enter-from,
-.modal-fade-leave-to {
+.modal-enter-from,
+.modal-leave-to {
   opacity: 0;
 }
 
-.modal-fade-enter-to,
-.modal-fade-leave-from {
-  opacity: 1;
+.modal-enter-active .modal-container,
+.modal-leave-active .modal-container {
+  transition: transform 0.3s ease;
 }
 
-.modal-fade-enter-active .modal-container {
-  animation: modalZoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+.modal-enter-from .modal-container,
+.modal-leave-to .modal-container {
+  transform: translateY(100%);
 }
 
-.modal-fade-leave-active .modal-container {
-  animation: modalZoomOut 0.3s cubic-bezier(0.7, 0, 0.84, 0);
-}
-
-@keyframes modalZoomIn {
-  from {
-    transform: scale(0.8);
-  }
-  to {
-    transform: scale(1);
-  }
-}
-
-@keyframes modalZoomOut {
-  from {
-    transform: scale(1);
-  }
-  to {
-    transform: scale(0.8);
+@media (min-width: 640px) {
+  .modal-enter-from .modal-container,
+  .modal-leave-to .modal-container {
+    transform: scale(0.9);
   }
 }
 </style>
