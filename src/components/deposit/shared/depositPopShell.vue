@@ -1,9 +1,19 @@
 <template>
   <div v-if="modelValue" class="min-h-screen">
     <!-- H5 -->
-    <div v-if="isMobile" v-show="!isHidden" class="sm:hidden">
-      <slot />
-    </div>
+    <teleport v-if="isMobile" to="body">
+      <transition name="drawer-mask">
+        <div
+          v-show="!isHidden"
+          class="fixed inset-0 z-[999]"
+          :class="[withMask ? 'bg-mask-60-1' : '', { 'with-zoom': zoom }]"
+          @click.self="handleOverlayClick"
+        >
+          <slot />
+          <transition name="drawer-slide"></transition>
+        </div>
+      </transition>
+    </teleport>
 
     <!-- PC -->
     <teleport v-if="!isMobile" to="body">
@@ -91,5 +101,37 @@ const handleOverlayClick = () => {
   to {
     transform: scale(0.8);
   }
+}
+
+// 遮罩层淡入淡出动画
+.drawer-mask-enter-active,
+.drawer-mask-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.drawer-mask-enter-from,
+.drawer-mask-leave-to {
+  opacity: 0;
+}
+
+.drawer-mask-enter-to,
+.drawer-mask-leave-from {
+  opacity: 1;
+}
+
+// 抽屉滑动动画 - 从右往左滑入，从左往右滑出
+.drawer-slide-enter-active,
+.drawer-slide-leave-active {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawer-slide-enter-from,
+.drawer-slide-leave-to {
+  transform: translateX(100%);
+}
+
+.drawer-slide-enter-to,
+.drawer-slide-leave-from {
+  transform: translateX(0);
 }
 </style>

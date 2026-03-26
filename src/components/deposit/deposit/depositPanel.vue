@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative w-full max-w-[480px] h-full rounded-xl modal-container bg-bg-1"
+    class="relative w-full max-w-[480px] h-full flex flex-col rounded-xl modal-container bg-bg-1"
     :class="{
       'sm:max-h-[684px]': modelValue === 'Crypto',
       'sm:max-h-[595px]': modelValue === 'Fiat'
@@ -19,34 +19,25 @@
       </button>
     </div>
 
-    <div class="w-full flex flex-col bg-bg-2">
+    <div class="w-full shrink-0 flex flex-col bg-bg-2">
       <div class="flex">
         <button
+          v-for="tab in depositTabs"
+          :key="tab"
           class="relative flex-1 pb-1.5 text-base font-[800] transition-all duration-200 tab-button-new"
-          :class="modelValue === 'Crypto' ? 'text-text-1' : 'text-text-2'"
-          @click.stop="setActiveTab('Crypto')"
+          :class="modelValue === tab ? 'text-text-1' : 'text-text-2'"
+          @click.stop="setActiveTab(tab)"
         >
-          <span>Crypto</span>
+          <span>{{ tab }}</span>
           <div
-            v-if="modelValue === 'Crypto'"
-            class="absolute bottom-0 left-0 right-0 h-[2px] bg-theme-primary rounded-t-full"
-          ></div>
-        </button>
-        <button
-          class="relative flex-1 pb-1.5 text-base font-[800] transition-all duration-200 tab-button-new"
-          :class="modelValue === 'Fiat' ? 'text-text-1' : 'text-text-2'"
-          @click.stop="setActiveTab('Fiat')"
-        >
-          <span>Fiat</span>
-          <div
-            v-if="modelValue === 'Fiat'"
+            v-if="modelValue === tab"
             class="absolute bottom-0 left-0 right-0 h-[2px] bg-theme-primary rounded-t-full"
           ></div>
         </button>
       </div>
     </div>
     <div
-      class="flex-1 flex flex-col relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto"
+      class="w-full flex-1 min-h-0 relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto overscroll-contain"
       :class="{
         'sm:max-h-[598px]': modelValue === 'Crypto',
         'sm:max-h-[499px]': modelValue === 'Fiat'
@@ -65,6 +56,7 @@ import fiatPanel from './fiatPanel.vue'
 
 const { t } = useI18n()
 type TabType = 'Crypto' | 'Fiat'
+const depositTabs: TabType[] = ['Crypto', 'Fiat']
 interface Props {
   modelValue: TabType
 }

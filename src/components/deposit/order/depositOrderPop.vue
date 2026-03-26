@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import orderPanel from './orderPanel.vue'
 import { ref } from 'vue'
-import depositPopShell from './depositPopShell.vue'
+import depositPopShell from '../shared/depositPopShell.vue'
 import { OrderType } from './orderType'
 
 interface Props {

@@ -1,17 +1,17 @@
 <template>
-  <div class="w-full h-full bg-bg-2 p-4 rounded-lg">
+  <div class="w-full min-h-full bg-bg-2 p-4 rounded-lg">
     <p class="text-sm font-bold leading-normal text-text-1">Deposit Methods</p>
     <div class="mt-2.5 overflow-hidden">
       <div class="flex flex-nowrap gap-1 overflow-x-auto scrollbar-hide touch-pan-x">
         <div
           class="shrink-0 flex items-center justify-center p-4 rounded-xl lg:hover:bg-theme-3 lg:hover:border-theme-primary"
           :class="{
-            'border border-theme-primary bg-theme-3': selectMethod.name === item.name,
-            'border border-transparent bg-bg-4': selectMethod.name !== item.name
+            'border border-theme-primary bg-theme-3': selectedMethod.name === item.name,
+            'border border-transparent bg-bg-4': selectedMethod.name !== item.name
           }"
           v-for="(item, index) in payMethods"
           :key="index"
-          @click.stop="selectMethod = item"
+          @click.stop="selectedMethod = item"
         >
           <img class="mr-4 h-6" :src="item.icon" />
           <p class="text-base font-bold leading-normal text-text-1">{{ item.name }}</p>
@@ -52,7 +52,7 @@
         :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[140px] overflow-hidden'"
       >
         <button
-          v-for="preset in presets"
+          v-for="preset in presetAmounts"
           :key="preset"
           @click="amount = preset"
           class="py-3 rounded-lg lg:hover:bg-theme-primary"
@@ -109,10 +109,8 @@
     <div class="w-full mt-4">
       <button
         class="w-full py-4 lg:hover:btn-primary rounded-xl font-semibold text-text-4"
-        :class="[
-          amount && Number(amount) > 0 ? 'btn-primary' : 'bg-theme-2 opacity-40 cursor-not-allowed'
-        ]"
-        :disabled="!amount || Number(amount) <= 0"
+        :class="[!isDepositDisabled ? 'btn-primary' : 'bg-theme-2 opacity-40 cursor-not-allowed']"
+        :disabled="isDepositDisabled"
         @click="doDeposit"
       >
         {{ t('deposit.deposit_now') }}
@@ -127,24 +125,29 @@
   />
 </template>
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import gCashIcon from '@/static/img/payment/gCash.png'
 import grabPayIcon from '@/static/img/payment/grabPay.png'
 import mayaIcon from '@/static/img/payment/maya.png'
 import payPalIcon from '@/static/img/payment/payPal.png'
-import depositOrderPop from './depositOrderPop.vue'
-import { defaultFiatOrder, FiatOrderType } from './orderType'
+import depositOrderPop from '../order/depositOrderPop.vue'
+import { defaultFiatOrder, FiatOrderType } from '../order/orderType'
+import { usePresetGrid } from '../shared/usePresetGrid'
 
 const { t } = useI18n()
-interface MethodsType {
+interface MethodOption {
   name: string
   icon: string
 }
 
-const emit = defineEmits(['hidden'])
+const emit = defineEmits<{
+  hidden: [value: boolean]
+}>()
 
-const payMethods = ref<MethodsType[]>([
+const presetAmounts = [200, 500, 1000, 1500, 2000, 3000, 5000, 10000, 20000, 30000, 50000, 100000]
+
+const payMethods = [
   {
     name: 'GCash',
     icon: gCashIcon
@@ -161,14 +164,14 @@ const payMethods = ref<MethodsType[]>([
     name: 'PayPal',
     icon: payPalIcon
   }
-])
-const selectMethod = ref<MethodsType>(payMethods.value[0])
+]
+const selectedMethod = ref<MethodOption>(payMethods[0])
 const amount = ref<number>()
-const presets = [200, 500, 1000, 1500, 2000, 3000, 5000, 10000, 20000, 30000, 50000, 100000]
-const expanded = ref<boolean>(false)
 const presetsRef = ref<HTMLDivElement | null>(null)
+const { expanded } = usePresetGrid(presetsRef)
 const orderInfo = ref<FiatOrderType>(defaultFiatOrder)
-const orderPopShow = ref<boolean>(false)
+const orderPopShow = ref(false)
+const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
 
 const handleClose = () => {
   emit('hidden', false)
@@ -183,8 +186,8 @@ const doDeposit = () => {
     order_no: 'ts0768456746746746746',
     created_at: '12/18/2026 11:14:15 AM',
     amount: amount.value ?? 0,
-    method: selectMethod.value.name,
-    method_icon: selectMethod.value.icon,
+    method: selectedMethod.value.name,
+    method_icon: selectedMethod.value.icon,
     currency: 'PHP',
     bonus: '50',
     type: 'Fiat',
@@ -193,17 +196,6 @@ const doDeposit = () => {
   emit('hidden', true)
   orderPopShow.value = true
 }
-
-watch(expanded, async (val: boolean) => {
-  if (!val) {
-    await nextTick()
-
-    presetsRef.value?.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    })
-  }
-})
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,

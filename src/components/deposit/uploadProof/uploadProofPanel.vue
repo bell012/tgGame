@@ -111,7 +111,7 @@ import { useI18n } from 'vue-i18n'
 import { Uploader, UploaderAfterRead, UploaderFileListItem } from 'vant'
 import CloseIcon from '@/static/svg/close.svg?component'
 import deleteIcon from '@/static/img/payment/upload_delete.png'
-import paymentReceiptSamplePop from './paymentReceiptSamplePop.vue'
+import paymentReceiptSamplePop from '../paymentReceiptSample/paymentReceiptSamplePop.vue'
 import { ref } from 'vue'
 
 const { t } = useI18n()

@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import depositPanel from './depositPanel.vue'
-import depositPopShell from './depositPopShell.vue'
+import depositPopShell from '../shared/depositPopShell.vue'
 
 interface Props {
   modelValue: boolean
