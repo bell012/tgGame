@@ -57,6 +57,7 @@
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
+import { stripLocalePrefix } from '@/utils/locale'
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
@@ -115,12 +116,34 @@ const resolveRouteSnapshot = (fullPath: string) => {
   return router.resolve(fullPath) as RouteLocationNormalizedLoaded
 }
 
+const isLocaleOnlyRouteChange = (
+  previousRoute: RouteLocationNormalizedLoaded | null,
+  nextRoute: RouteLocationNormalizedLoaded
+) => {
+  if (!previousRoute) {
+    return false
+  }
+
+  const previousName = String(previousRoute.name || '').replace(/^Locale/, '')
+  const nextName = String(nextRoute.name || '').replace(/^Locale/, '')
+
+  return (
+    previousName === nextName &&
+    stripLocalePrefix(previousRoute.path) === stripLocalePrefix(nextRoute.path) &&
+    previousRoute.hash === nextRoute.hash &&
+    JSON.stringify(previousRoute.query || {}) === JSON.stringify(nextRoute.query || {})
+  )
+}
+
 // 控制滑动动画
 watch(
   () => ({ fullPath: route.fullPath, isMobileDevice: isMobile.value }),
-  async ({ fullPath, isMobileDevice }) => {
+  async ({ fullPath, isMobileDevice }, previousValue) => {
     const newPath = String(fullPath)
     const currentRouteSnapshot = resolveRouteSnapshot(newPath)
+    const previousRouteSnapshot = previousValue?.fullPath
+      ? resolveRouteSnapshot(String(previousValue.fullPath))
+      : null
     const shouldSlide = shouldUseSlideTransition(currentRouteSnapshot)
 
     if (!shouldSlide || !isMobileDevice) {
@@ -139,6 +162,26 @@ watch(
           slideRouteStack.value = []
         }
       }, DRAWER_TRANSITION_MS)
+
+      return
+    }
+
+    if (isLocaleOnlyRouteChange(previousRouteSnapshot, currentRouteSnapshot)) {
+      const previousFullPath = previousRouteSnapshot?.fullPath
+      const currentSlideIndex = previousFullPath
+        ? slideRouteStack.value.findIndex(item => item.path === previousFullPath)
+        : -1
+
+      if (currentSlideIndex !== -1) {
+        slideRouteStack.value[currentSlideIndex] = {
+          ...slideRouteStack.value[currentSlideIndex],
+          path: newPath,
+          route: currentRouteSnapshot,
+          showDrawer: true
+        }
+      } else {
+        backgroundRouteSnapshot.value = currentRouteSnapshot
+      }
 
       return
     }
