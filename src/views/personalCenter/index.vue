@@ -26,7 +26,7 @@
               <span class="text-text-2 text-xs font-[500]"
                 >ID: {{ userInfo?.memberId || '-' }}</span
               >
-              <button class="p-1">
+              <button class="p-1" @click.stop="copyMemberId">
                 <CopyIcon class="w-4 h-4" />
               </button>
             </div>
@@ -84,7 +84,7 @@
           <img :src="balanceIcon" alt="Balance" class="w-5 h-5" />
           <span class="text-text-2 text-sm">{{ t('personalCenter.totalBalance') }}</span>
         </div>
-        <span class="text-text-1 text-lg font-bold">₱ {{ totalBalance }}</span>
+        <span class="text-text-1 text-lg font-bold">{{ totalBalance }}</span>
       </div>
     </div>
 
@@ -167,7 +167,7 @@
             <span class="text-text-1 text-sm font-[700]">{{ item.name }}</span>
           </div>
           <div class="flex items-center gap-2.5">
-            <component v-if="item.rightIcon" :is="item.rightIcon" class="w-5 h-5" />
+            <component v-if="item.rightIcon" :is="item.rightIcon" class="w-3.5 h-3.5" />
             <span v-if="item.value" class="text-text-2 text-xs">{{ item.value }}</span>
             <div v-if="item.isTheme" class="flex items-center bg-bg-1 rounded-md p-0.5">
               <button
@@ -198,24 +198,26 @@
     </div>
 
     <!-- Referral & get -->
-    <div class="bg-bg-2 rounded-lg mx-3.5 mb-2.5 px-3 py-2.5">
+    <div class="bg-bg-2 rounded-lg mx-3.5 mb-2.5 px-3 py-2.5" @click="openReferralPopup">
       <div class="flex items-center gap-2.5">
         <img :src="referralIcon" alt="Referral" class="w-[56px] h-[53px]" />
         <div class="flex-1">
-          <div class="mb-[5px]">
+          <div class="mb-[5px] flex items-center">
             <span class="text-text-2 text-[12px]">{{ t('personalCenter.referralGet') }}</span>
-            <span class="text-text-1 text-xs font-[700] mx-[1px]">US$1,000.00 + 25%</span>
+            <div class="text-text-1 text-xs font-[700] mx-[1px]">
+              <span class="inline-block">{{ referralRewardText }}</span>
+              <span class="mx-[5px] inline-block">+</span>
+              <span class="inline-block">{{ referralRewardText2 }}</span>
+            </div>
             <span class="text-text-2 text-[12px]">{{ t('personalCenter.commission') }}</span>
           </div>
           <div
             class="flex items-center bg-input-3 border border-input-2 rounded-lg h-[40px] px-2.5"
           >
-            <span class="text-theme-primary text-xs truncate flex-1"
-              >https://www.baidu.com/jh/ocja...</span
-            >
+            <span class="text-theme-primary text-xs truncate flex-1">{{ referralLink }}</span>
             <button
               class="bg-bg-3 text-text-1 text-xs rounded-md px-1.5 py-[7px]"
-              @click="copyReferralLink"
+              @click.stop="copyReferralLink"
             >
               {{ t('personalCenter.copy') }}
             </button>
@@ -268,6 +270,34 @@
         <span class="text-sm font-[700] text-text-1">{{ t('personalCenter.signOut') }}</span>
       </button>
     </div>
+
+    <Teleport to="body">
+      <ReferralPopup
+        v-model:visible="showReferralPopup"
+        :reward-text="referralRewardText"
+        :reward-text2="referralRewardText2"
+        :link="referralLink"
+        @copy="copyReferralLink"
+      />
+    </Teleport>
+
+    <Teleport to="body">
+      <LanguagePopup
+        v-model:visible="showLanguagePopup"
+        :selected-language="localeStore.currentLanguage"
+        :options="languageOptions"
+        @select="handleLanguageSelect"
+      />
+    </Teleport>
+
+    <Teleport to="body">
+      <CurrencyPopup
+        v-model:visible="showCurrencyPopup"
+        :selected-currency="currentCurrency"
+        :options="currencyOptions"
+        @select="handleCurrencySelect"
+      />
+    </Teleport>
   </div>
 </template>
 
@@ -275,10 +305,23 @@
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import Api from '@/api'
+import type { QueryAcctInfoResult, SelectMemberResult } from '@/api/interface/user'
+import CurrencyPopup from '@/views/personalCenter/CurrencyPopup.vue'
+import LanguagePopup from '@/views/personalCenter/LanguagePopup.vue'
+import ReferralPopup from '@/views/personalCenter/ReferralPopup.vue'
+import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { navigateTo } from '@/utils/router'
-import { formatBalance, getCurrentCurrency, getLanguageCode } from '@/utils/locale'
+import {
+  getCurrentCurrency,
+  getFormattedBalance,
+  getLocaleLabel,
+  getLocaleOptions,
+  type Locale,
+  type LocaleOption
+} from '@/utils/locale'
 import { showToast } from 'vant'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
@@ -297,8 +340,32 @@ import referralIcon from '@/static/img/personalCenter/yaoqing.png'
 
 const router = useRouter()
 const { t } = useI18n()
+const localeStore = useLocaleStore()
 const themeStore = useThemeStore()
 const userStore = useUserStore()
+
+type PersonalCenterUserInfo = Partial<SelectMemberResult> & {
+  headPortrait?: string
+}
+
+const balanceFieldMap = {
+  BRL: 'balanceBrl',
+  CNY: 'balanceCny',
+  IDR: 'balanceIdr',
+  INR: 'balanceInr',
+  JPY: 'balanceJpy',
+  KRW: 'balanceKrw',
+  MXN: 'balanceMxn',
+  MYR: 'balanceMyr',
+  PHP: 'balancePhp',
+  SGD: 'balanceSgd',
+  USD: 'balanceUsd',
+  USDT: 'balanceUsdt',
+  VND: 'balanceVnd'
+} as const
+
+type BalanceFieldKey = (typeof balanceFieldMap)[keyof typeof balanceFieldMap]
+type BalanceCarrier = Partial<Record<BalanceFieldKey, number>> & { balance?: number }
 
 // 动态导入图标
 const getIcon = (iconNumber: number) => {
@@ -308,8 +375,16 @@ const getIcon = (iconNumber: number) => {
 }
 
 // 用户信息
-const userInfo = ref<any>(null)
-const acctInfo = ref<any>(null)
+const userInfo = ref<PersonalCenterUserInfo | null>(null)
+const acctInfo = ref<QueryAcctInfoResult | null>(null)
+
+const showReferralPopup = ref(false)
+const showLanguagePopup = ref(false)
+const showCurrencyPopup = ref(false)
+
+const referralRewardText = ref('US$1,000.00')
+const referralRewardText2 = ref('15%')
+const referralLink = ref('https://www.baidu.com/jh/ocja...')
 
 // 头像 URL
 const avatarUrl = computed(() => {
@@ -331,21 +406,44 @@ const vipProgress = computed(() => {
 })
 
 // 总余额
+const currentBalance = computed(() => {
+  return (
+    getBalanceByCurrency(acctInfo.value, currentCurrency.value) ??
+    getBalanceByCurrency(userInfo.value, currentCurrency.value) ??
+    acctInfo.value?.balancePhp ??
+    userInfo.value?.balancePhp ??
+    0
+  )
+})
+
 const totalBalance = computed(() => {
-  const balance = userInfo.value?.balancePhp || 0
-  return formatBalance(balance, 2)
+  return getFormattedBalance(currentBalance.value, currentCurrency.value, 2)
 })
 
 // 当前语言
 const currentLanguage = computed(() => {
-  const lang = getLanguageCode()
-  return lang === 'zh' ? t('personalCenter.chinese') : t('personalCenter.english')
+  return getLocaleLabel(localeStore.currentLanguage)
 })
 
 // 当前货币
 const currentCurrency = computed(() => {
-  return getCurrentCurrency()
+  const selectedCurrency = localeStore.currentCurrency
+
+  if (selectedCurrency && selectedCurrency !== 'none') {
+    return selectedCurrency
+  }
+
+  return acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
 })
+
+const languageOptions = computed<LocaleOption[]>(() => getLocaleOptions())
+
+const currencyOptions = computed(() => [
+  {
+    code: currentCurrency.value,
+    balanceText: getFormattedBalance(currentBalance.value, currentCurrency.value, 2)
+  }
+])
 
 // 返回
 const handleBack = () => {
@@ -416,17 +514,66 @@ const settingsMenus = computed(() => [
 ])
 
 // 复制推荐链接
-const copyReferralLink = async () => {
-  const link = 'https://www.baidu.com/jh/ocja...'
+const getBalanceByCurrency = (data: BalanceCarrier | null | undefined, currency: string) => {
+  if (!data) return undefined
+
+  const balanceKey = balanceFieldMap[currency.toUpperCase() as keyof typeof balanceFieldMap]
+
+  if (balanceKey && typeof data[balanceKey] === 'number') {
+    return data[balanceKey]
+  }
+
+  return typeof data.balance === 'number' ? data.balance : undefined
+}
+
+const fallbackCopyText = (value: string) => {
+  const textarea = document.createElement('textarea')
+  textarea.value = value
+  textarea.setAttribute('readonly', 'true')
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  const copied = document.execCommand('copy')
+  document.body.removeChild(textarea)
+  return copied
+}
+
+const copyText = async (value?: string) => {
+  if (!value) return
+
   try {
-    await navigator.clipboard.writeText(link)
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value)
+    } else if (!fallbackCopyText(value)) {
+      throw new Error('Copy failed')
+    }
+
     showToast({
       message: t('personalCenter.copySuccess'),
-      position: 'top'
+      position: 'middle',
+      type: 'success'
     })
   } catch (err) {
+    if (fallbackCopyText(value)) {
+      showToast({
+        message: t('personalCenter.copySuccess'),
+        position: 'middle',
+        type: 'success'
+      })
+      return
+    }
+
     console.error(err)
   }
+}
+
+const copyReferralLink = async () => {
+  await copyText(referralLink.value)
+}
+
+const copyMemberId = async () => {
+  await copyText(userInfo.value?.memberId)
 }
 
 // 全局设置
@@ -443,14 +590,14 @@ const globalSettings = computed(() => [
     name: t('personalCenter.language'),
     icon: getIcon(13),
     value: currentLanguage.value,
-    handler: () => console.log('Language clicked')
+    handler: () => openLanguagePopup()
   },
   {
     id: 'currency',
     name: t('personalCenter.currency'),
     icon: getIcon(14),
     value: currentCurrency.value,
-    handler: () => console.log('Currency clicked')
+    handler: () => openCurrencyPopup()
   },
   {
     id: 'theme',
@@ -526,31 +673,97 @@ const handleSignOut = () => {
   userStore.logout()
 }
 
-// 加载用户信息
-const loadUserInfo = () => {
-  const storedUserInfo = localStorage.getItem('userInfo')
-  if (storedUserInfo) {
-    try {
-      userInfo.value = JSON.parse(storedUserInfo)
-    } catch (error) {
-      console.error(error)
-      userInfo.value = null
-    }
+const openReferralPopup = () => {
+  showReferralPopup.value = true
+}
+
+const openLanguagePopup = () => {
+  showLanguagePopup.value = true
+}
+
+const openCurrencyPopup = () => {
+  showCurrencyPopup.value = true
+}
+
+const handleLanguageSelect = (code: Locale) => {
+  localeStore.setLanguage(code)
+}
+
+const handleCurrencySelect = (code: string) => {
+  localeStore.setCurrency(code)
+}
+
+const parseStoredItem = <T,>(key: string): T | null => {
+  const storedValue = localStorage.getItem(key)
+
+  if (!storedValue) {
+    return null
   }
 
-  const storedAcctInfo = localStorage.getItem('acctInfo')
-  if (storedAcctInfo) {
-    try {
-      acctInfo.value = JSON.parse(storedAcctInfo)
-    } catch (error) {
-      console.error(error)
-      acctInfo.value = null
+  try {
+    return JSON.parse(storedValue) as T
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
+// 加载用户信息
+const loadUserInfo = () => {
+  userInfo.value = parseStoredItem<PersonalCenterUserInfo>('userInfo')
+  acctInfo.value = parseStoredItem<QueryAcctInfoResult>('acctInfo')
+}
+
+const refreshAcctInfo = async () => {
+  try {
+    const response = await Api.user.queryAcctInfo({})
+    if (response?.result) {
+      acctInfo.value = response.result
+      localStorage.setItem('acctInfo', JSON.stringify(response.result))
     }
+    return response?.result
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
+const refreshUserInfo = async (memberId: string) => {
+  try {
+    const response = await Api.user.selectMember({ memberId })
+    if (response?.result) {
+      const mergedUserInfo = {
+        ...(userInfo.value ?? {}),
+        ...response.result
+      }
+      userInfo.value = mergedUserInfo
+      localStorage.setItem('userInfo', JSON.stringify(mergedUserInfo))
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const initializePersonalCenter = async () => {
+  loadUserInfo()
+
+  const storedMemberId = userInfo.value?.memberId || acctInfo.value?.memberId
+
+  if (storedMemberId) {
+    await Promise.all([refreshAcctInfo(), refreshUserInfo(storedMemberId)])
+    return
+  }
+
+  const latestAcctInfo = await refreshAcctInfo()
+  const memberId = latestAcctInfo?.memberId || acctInfo.value?.memberId
+
+  if (memberId) {
+    await refreshUserInfo(memberId)
   }
 }
 
 onMounted(() => {
-  loadUserInfo()
+  void initializePersonalCenter()
 })
 </script>
 
