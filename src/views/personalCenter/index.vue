@@ -265,11 +265,13 @@
 
     <!-- Sign Out -->
     <div class="mx-3.5 mb-[30px] flex items-center justify-center">
-      <button class="flex items-center justify-center gap-1" @click="handleSignOut">
+      <button class="flex items-center justify-center gap-1" @click="openSignOutPopup">
         <SignOut class="w-5 h-5 text-text-1" />
         <span class="text-sm font-[700] text-text-1">{{ t('personalCenter.signOut') }}</span>
       </button>
     </div>
+
+    <SignOutPopup v-model:visible="showSignOutPopup" @confirm="confirmSignOut" />
 
     <Teleport to="body">
       <ReferralPopup
@@ -306,6 +308,7 @@ import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
+import SignOutPopup from '@/components/common/SignOutPopup.vue'
 import type { QueryAcctInfoResult, SelectMemberResult } from '@/api/interface/user'
 import CurrencyPopup from '@/views/personalCenter/CurrencyPopup.vue'
 import LanguagePopup from '@/views/personalCenter/LanguagePopup.vue'
@@ -389,6 +392,7 @@ const acctInfo = ref<QueryAcctInfoResult | null>(null)
 const showReferralPopup = ref(false)
 const showLanguagePopup = ref(false)
 const showCurrencyPopup = ref(false)
+const showSignOutPopup = ref(false)
 
 const referralRewardText = ref('US$1,000.00')
 const referralRewardText2 = ref('15%')
@@ -677,8 +681,12 @@ const socialLinks = computed(() => [
 ])
 
 // 退出登录
-const handleSignOut = () => {
+const confirmSignOut = () => {
   userStore.logout()
+}
+
+const openSignOutPopup = () => {
+  showSignOutPopup.value = true
 }
 
 const openReferralPopup = () => {

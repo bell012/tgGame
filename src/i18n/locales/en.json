@@ -330,7 +330,9 @@
     "liveSupport": "Live Support",
     "leaveFeedback": "Leave Feedback",
     "joinCommunity": "Join Our Community",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "signOutTitle": "Signing Out",
+    "signOutDescription": "Are you sure you want to log out?"
   },
   "userMenu": {
     "wallet": "Wallet",
