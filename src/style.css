@@ -19,4 +19,8 @@
     width: 100%;
     min-height: 100vh;
   }
+
+  .svg-icon {
+    color: var(--color-text-level-1);
+  }
 }

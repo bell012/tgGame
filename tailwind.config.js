@@ -49,6 +49,7 @@ export default {
         'secondary-4': 'var(--color-secondary-level-4)',
         'secondary-5': 'var(--color-secondary-level-5)',
         'secondary-6': 'var(--color-secondary-level-6)',
+        'secondary-7': 'var(--color-secondary-level-7)',
 
         // ========== 通用色 (Common) ==========
         'common-100': 'var(--color-common-100)',

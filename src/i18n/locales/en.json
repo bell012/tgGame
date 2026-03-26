@@ -364,6 +364,11 @@
     "commission": "commission",
     "copy": "Copy",
     "copySuccess": "Copied successfully",
+    "inviteFriends": "Invite Friends",
+    "inviteFriendsAndGet": "Invite friends and get",
+    "inviteFriendsEarnBonus": "Invite friends, earn bonus",
+    "shareViaWebLink": "Share via web link",
+    "copyLink": "Copy link",
     "upgrade": "Upgrade",
     "deposit": "Deposit",
     "validBet": "Valid Bet",
@@ -385,7 +390,9 @@
     "liveSupport": "Live Support",
     "leaveFeedback": "Leave Feedback",
     "joinCommunity": "Join Our Community",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "signOutTitle": "Signing Out",
+    "signOutDescription": "Are you sure you want to log out?"
   },
   "userMenu": {
     "wallet": "Wallet",
