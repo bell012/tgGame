@@ -327,7 +327,9 @@
     "liveSupport": "在线客服",
     "leaveFeedback": "留下反馈",
     "joinCommunity": "加入我们的社区",
-    "signOut": "退出登录"
+    "signOut": "退出登录",
+    "signOutTitle": "退出登录",
+    "signOutDescription": "您确定要退出吗？"
   },
   "userMenu": {
     "wallet": "钱包",
