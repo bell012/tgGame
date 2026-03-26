@@ -85,6 +85,18 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'menu/referral/commission-methods',
+    name: 'menuReferralCommissionMethods',
+    component: () => import('@/views/menu/referral/commission-methods/index.vue'),
+    meta: {
+      title: '佣金获取方式列表',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'menu/notifications',
     name: 'menuNotifications',
     component: () => import('@/views/menu/notifications/index.vue'),
