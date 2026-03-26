@@ -49,22 +49,24 @@
 
     <div class="mt-5">
       <p class="text-sm text-text-1">{{ t('deposit.deposit_channel') }}</p>
-      <div class="flex gap-2 mt-4">
-        <button
-          v-for="ch in channels"
-          :key="ch"
-          @click="selectedChannel = ch"
-          type="button"
-          :class="[
-            'flex-1 flex justify-center items-center h-12 rounded-lg lg:hover:bg-[var(--color-theme-level-3)] border text-text-1',
-            selectedChannel === ch ? 'bg-[var(--color-theme-level-3)]' : ''
-          ]"
-          :style="{
-            border: `1px solid ${selectedChannel === ch ? 'var(--color-theme-level-1)' : 'var(--color-opacity-10)'}`
-          }"
-        >
-          {{ ch }}
-        </button>
+      <div class="mt-4 overflow-hidden">
+        <div class="flex flex-nowrap gap-2 overflow-x-auto scrollbar-hide touch-pan-x">
+          <button
+            v-for="ch in channels"
+            :key="ch"
+            @click="selectedChannel = ch"
+            type="button"
+            :class="[
+              'shrink-0 h-12 px-8 flex justify-center items-center rounded-lg lg:hover:bg-theme-3 border text-text-1',
+              selectedChannel === ch ? 'bg-[var(--color-theme-level-3)]' : ''
+            ]"
+            :style="{
+              border: `1px solid ${selectedChannel === ch ? 'var(--color-theme-level-1)' : 'var(--color-opacity-10)'}`
+            }"
+          >
+            {{ ch }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -141,8 +143,9 @@
     <div class="w-full relative">
       <p class="text-xs text-secondary-7 py-3">No wagering required for withdrawal</p>
       <div
+        ref="presetsRef"
         class="grid grid-cols-3 gap-3 p-5 bg-bg-4 transition-all duration-300 rounded-tl-lg rounded-tr-lg"
-        :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[128px] overflow-hidden'"
+        :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[140px] overflow-hidden'"
       >
         <button
           v-for="preset in presets"
@@ -232,7 +235,7 @@
   />
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import USDCIcon from '@/static/img/crypto/USDC.png'
 import USDTIcon from '@/static/img/crypto/USDT.png'
@@ -244,6 +247,7 @@ import BNBIcon from '@/static/img/crypto/BNB.png'
 import groupIcon from '@/static/img/crypto/groupIcons.png'
 import { showToast } from 'vant'
 import depositOrderPop from './depositOrderPop.vue'
+import { CryptOrderType, defaultCryptOrder } from './orderType'
 
 const { t } = useI18n()
 const emit = defineEmits(['hidden'])
@@ -281,25 +285,8 @@ const coinBaseCode = ref<string | ''>('USDT')
 const coinMoreShow = ref<boolean>(false)
 const expanded = ref<boolean>(false)
 const orderPopShow = ref<boolean>(false)
-const orderInfo = ref<{
-  order_no: string
-  created_at: string
-  amount: number
-  method: string
-  method_icon: string
-  rate: string
-  network: string
-  address_token: string
-}>({
-  order_no: '',
-  created_at: '',
-  amount: 0,
-  method: '',
-  method_icon: '',
-  rate: '',
-  network: '',
-  address_token: ''
-})
+const presetsRef = ref<HTMLDivElement | null>(null)
+const orderInfo = ref<CryptOrderType>(defaultCryptOrder)
 
 const selectCoinCode = (code: string) => {
   if (code !== 'USDT') {
@@ -345,7 +332,9 @@ const doDeposit = () => {
     method_icon: USDTIcon,
     rate: 'Rate：1USDT≈7.15PHP（You Get≈3750PHP）',
     network: 'TRC20',
-    address_token: 'tu899iugh889k9ijehddndk987he73178uh1ko671usuth55278'
+    address_token: 'tu899iugh889k9ijehddndk987he73178uh1ko671usuth55278',
+    type: 'Crypto',
+    status: 'loading'
   }
   emit('hidden', true)
   orderPopShow.value = true
@@ -358,6 +347,17 @@ const handleClose = () => {
 const handleHidden = () => {
   emit('hidden', true)
 }
+
+watch(expanded, async (val: boolean) => {
+  if (!val) {
+    await nextTick()
+
+    presetsRef.value?.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+})
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,
