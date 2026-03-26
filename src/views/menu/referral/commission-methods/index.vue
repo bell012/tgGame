@@ -46,7 +46,7 @@
         </section>
 
         <!-- 列表区域 -->
-        <section class="mt-[10px] flex flex-col gap-[7px]">
+        <section v-if="filteredRecords.length > 0" class="mt-[10px] flex flex-col gap-[7px]">
           <!-- 记录卡片 -->
           <article
             v-for="item in filteredRecords"
@@ -91,15 +91,16 @@
               </p>
             </div>
           </article>
-
-          <!-- 空状态 -->
-          <div
-            v-if="filteredRecords.length === 0"
-            class="rounded-[10px] bg-bg-2 px-[14px] py-[30px] text-center text-[12px] text-text-2"
-          >
-            {{ $t('referral.commissionMethods.empty') }}
-          </div>
         </section>
+
+        <ThemedEmptyState
+          v-else
+          :dark-image="defaultImgDark"
+          :light-image="defaultImgLight"
+          image-alt="$t('referral.commissionMethods.title')"
+          message="No data available at the moment."
+          text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
+        />
 
         <FilterPopup
           v-model:visible="showFilterPopup"
@@ -113,11 +114,16 @@
 </template>
 
 <script setup lang="ts">
+import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
+import H5Header from '@/components/common/H5Header.vue'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import {
+  default as defaultImgDark,
+  default as defaultImgLight
+} from '@/static/img/explore/default.png'
+import SearchIcon from '@/static/svg/search-icon.svg?component'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import H5Header from '@/components/common/H5Header.vue'
-import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
-import SearchIcon from '@/static/svg/search-icon.svg?component'
 
 type RecordOutcome = 'win' | 'loss'
 type RecordStatus = 'completed' | 'pending'

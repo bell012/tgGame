@@ -316,15 +316,12 @@ const handleClaimCommission = () => {
 
 // 处理佣金规则入口点击。
 const handleCommissionRule = () => {
-  router.push('/menu/referral/commission-methods')
+  router.push('/menu/referral/commission-rules')
 }
 
 // 处理统计说明入口点击。
 const handleStatisticsRule = () => {
-  showToast({
-    message: t('referral.comingSoon'),
-    type: 'success'
-  })
+  router.push('/menu/referral/invite-records')
 }
 
 // 打开二维码弹窗。

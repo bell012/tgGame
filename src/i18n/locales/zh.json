@@ -353,7 +353,23 @@
         "week": "本周",
         "month": "本月"
       }
+    },
+    "inviteRecords": {
+      "title": "邀请记录列表",
+      "searchPlaceholder": "搜索会员账号",
+      "empty": "暂无邀请记录",
+      "filterTitles": {
+        "status": "状态筛选",
+        "time": "时间筛选"
+      },
+      "filters": {
+        "all": "全部",
+        "valid": "有效",
+        "invalid": "无效",
+        "today": "今天",
+        "week": "本周",
+        "month": "本月"
+      }
     }
   }
-   
 }
