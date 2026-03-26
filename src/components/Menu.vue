@@ -508,9 +508,9 @@ let submenuHideTimer: ReturnType<typeof setTimeout> | null = null
 
 // 当前语言名称
 const currentLanguageName = computed(() => {
-  return localeStore.currentLanguage === 'zh-CN'
+  return localeStore.currentLanguage === 'zh'
     ? t('sidebar_menu.language.zh_cn')
-    : t('sidebar_menu.language.en')
+    : t('sidebar_menu.language.eng')
 })
 
 // 应用程式下载点击
