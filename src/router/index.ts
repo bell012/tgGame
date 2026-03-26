@@ -2,10 +2,11 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import i18n from '@/i18n'
 import {
+  getLocaleFromRouteParam,
+  getPersistedLocale,
   getStorageLanguageCode,
-  SUPPORTED_LOCALES,
-  DEFAULT_LOCALE,
-  type Locale
+  withLocalePrefix,
+  DEFAULT_LOCALE
 } from '@/utils/locale'
 
 const baseRoutes: RouteRecordRaw[] = [
@@ -187,6 +188,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '个人中心',
       description: '个人中心',
+      mobileOnly: true,
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
@@ -277,26 +279,36 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, _from, next) => {
-  const locale = to.params.locale as string
+  const routeLocaleParam = to.params.locale as string | undefined
+  const routeLocale = getLocaleFromRouteParam(routeLocaleParam)
+  const persistedLocale = getPersistedLocale()
 
-  if (locale) {
-    if (SUPPORTED_LOCALES.includes(locale as Locale)) {
-      const i18nLocale = locale as Locale
-      const languageCode = getStorageLanguageCode(locale)
+  if (routeLocaleParam && !routeLocale) {
+    next(withLocalePrefix('/', persistedLocale ?? DEFAULT_LOCALE))
+    return
+  }
 
-      if (i18n.global.locale.value !== i18nLocale) {
-        i18n.global.locale.value = i18nLocale
-        localStorage.setItem('language', languageCode)
-      }
-    } else {
-      next('/')
-      return
-    }
-  } else {
-    if (i18n.global.locale.value !== DEFAULT_LOCALE) {
-      i18n.global.locale.value = DEFAULT_LOCALE
-      localStorage.setItem('language', DEFAULT_LOCALE)
-    }
+  const targetLocale = persistedLocale ?? routeLocale ?? DEFAULT_LOCALE
+  const canonicalPath = withLocalePrefix(to.path, targetLocale)
+
+  if (canonicalPath !== to.path) {
+    next({
+      path: canonicalPath,
+      query: to.query,
+      hash: to.hash,
+      replace: true
+    })
+    return
+  }
+
+  const languageCode = getStorageLanguageCode(targetLocale)
+
+  if (i18n.global.locale.value !== targetLocale) {
+    i18n.global.locale.value = targetLocale
+  }
+
+  if (localStorage.getItem('language') !== languageCode) {
+    localStorage.setItem('language', languageCode)
   }
 
   next()

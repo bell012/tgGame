@@ -49,6 +49,7 @@
   --color-secondary-level-4: #2aee88;
   --color-secondary-level-5: rgba(247, 255, 75, 0.15);
   --color-secondary-level-6: #f7ff4b;
+  --color-secondary-level-7: #ff9822;
 
   /* ========== 通用色 (Common) ========== */
   --color-common-100: #ffffff;
@@ -120,6 +121,7 @@
   --color-secondary-level-4: #2aee88;
   --color-secondary-level-5: rgba(247, 255, 73, 0.15);
   --color-secondary-level-6: #f7ff4b;
+  --color-secondary-level-7: #ff9822;
 
   /* ========== 通用色 (Common) - 浅色模式 ========== */
   --color-common-100: #ffffff;
