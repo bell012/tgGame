@@ -136,7 +136,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
-import { SUPPORTED_LOCALES, type Locale } from '@/utils/locale'
+import { getLocaleOptions, getLocaleSearchKeywords, type Locale } from '@/utils/locale'
 import CloseIcon from '@/static/svg/close.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import RadioCheckedIcon from '@/static/svg/radio-checked.svg?component'
@@ -148,7 +148,7 @@ const localeStore = useLocaleStore()
 interface Language {
   code: Locale
   name: string
-  pinyin?: string
+  searchKeywords: string[]
 }
 
 interface Currency {
@@ -195,12 +195,12 @@ const selectedCurrency = computed(() => {
 })
 
 // 语言列表
-const languages: Language[] = SUPPORTED_LOCALES.map(code => {
-  if (code === 'zh') {
-    return { code, name: '简体中文', pinyin: 'jiantizhongwen' }
-  } else {
-    return { code, name: 'English', pinyin: 'yingyu' }
-  }
+const languages = computed<Language[]>(() => {
+  return getLocaleOptions().map(({ code, label }) => ({
+    code,
+    name: label,
+    searchKeywords: getLocaleSearchKeywords(code)
+  }))
 })
 
 // 货币列表
@@ -211,28 +211,14 @@ const currencies: Currency[] = [
 
 // 搜索支持拼音首字母和中文
 const filteredLanguages = computed(() => {
-  if (!searchQuery.value) return languages
+  if (!searchQuery.value) return languages.value
 
   const query = searchQuery.value.toLowerCase().trim()
 
-  return languages.filter(lang => {
-    const name = lang.name.toLowerCase()
-    const code = lang.code.toLowerCase()
-    const pinyin = lang.pinyin?.toLowerCase() || ''
-    if (name.includes(query) || code.includes(query) || pinyin.includes(query)) {
-      return true
-    }
-    if (pinyin) {
-      const firstLetters = pinyin
-        .split('')
-        .filter((_, i) => i === 0 || pinyin[i - 1] === ' ')
-        .join('')
-      if (firstLetters.includes(query)) {
-        return true
-      }
-    }
-
-    return false
+  return languages.value.filter(lang => {
+    return [lang.name, lang.code, ...lang.searchKeywords].some(keyword =>
+      keyword.toLowerCase().includes(query)
+    )
   })
 })
 

@@ -454,6 +454,7 @@ import { sideIcons } from '@/static/svg/side'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
+import { getLocaleLabel } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import type { Component } from 'vue'
 import { computed, ref } from 'vue'
@@ -508,9 +509,7 @@ let submenuHideTimer: ReturnType<typeof setTimeout> | null = null
 
 // 当前语言名称
 const currentLanguageName = computed(() => {
-  return localeStore.currentLanguage === 'zh'
-    ? t('sidebar_menu.language.zh_cn')
-    : t('sidebar_menu.language.eng')
+  return getLocaleLabel(localeStore.currentLanguage)
 })
 
 // 应用程式下载点击
@@ -859,7 +858,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
         id: 'promotions_invite_rewards',
         name: t('sidebar_menu.promotions.children.invite_rewards'),
         icon: lottery.invite_rewards,
-        handler: () => console.log('点击 优惠活动')
+        handler: () => navigateTo('/menu/referral')
       }
     ]
   }
@@ -887,7 +886,7 @@ const normalLinks = computed(() => [
     name: t('sidebar_menu.links.recommend'),
     icon: side.affiliateIcon,
     external: false,
-    handler: () => console.log('点击 推荐')
+    handler: () => navigateTo('/menu/referral')
   },
   {
     id: 'forum',

@@ -56,7 +56,7 @@
             <div class="flex items-center gap-1">
               <span class="text-text-1 text-sm">{{ betDetail.orderNo }}</span>
               <button class="p-1 hover:bg-opacity-5 rounded transition-colors" @click="copyOrderNo">
-                <CopyIcon class="w-4 h-4" />
+                <CopyIcon class="w-4 h-4 text-text-2" />
               </button>
             </div>
           </div>

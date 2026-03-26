@@ -182,7 +182,7 @@
           </div>
 
           <!-- 用户头像 (PC端) -->
-          <div class="hidden md:block relative">
+          <div ref="userMenuRef" class="hidden md:block relative">
             <div
               class="cursor-pointer w-[44px] h-[44px] border border-opacity-15 flex items-center justify-center bg-opacity-5 rounded-full overflow-hidden mr-2"
               @click="toggleUserMenu"
@@ -247,7 +247,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
 import { useLayoutStore } from '@/stores/layout'
@@ -286,6 +286,7 @@ const showExplorehModal = ref(false)
 
 // 用户菜单下拉框
 const showUserMenu = ref(false)
+const userMenuRef = ref<HTMLElement | null>(null)
 
 // 用户信息
 const userInfo = ref<any>(null)
@@ -337,10 +338,28 @@ const handleStorageChange = () => {
   loadUserInfo()
 }
 
+const handleUserMenuClickOutside = (event: MouseEvent) => {
+  if (!showUserMenu.value || !userMenuRef.value) {
+    return
+  }
+
+  const target = event.target as Node | null
+
+  if (target && !userMenuRef.value.contains(target)) {
+    showUserMenu.value = false
+  }
+}
+
 // 组件挂载时加载用户信息
 onMounted(() => {
   loadUserInfo()
   window.addEventListener('storage', handleStorageChange)
+  document.addEventListener('click', handleUserMenuClickOutside)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('storage', handleStorageChange)
+  document.removeEventListener('click', handleUserMenuClickOutside)
 })
 
 // 监听登录弹窗关闭，重新加载用户信息
