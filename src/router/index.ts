@@ -1,9 +1,12 @@
-import i18n from '@/i18n'
-import MainLayout from '@/layouts/MainLayout.vue'
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-
-// 支持的语言列表
-const supportedLocales = ['zh', 'en']
+import MainLayout from '@/layouts/MainLayout.vue'
+import i18n from '@/i18n'
+import {
+  getStorageLanguageCode,
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+  type Locale
+} from '@/utils/locale'
 
 const baseRoutes: RouteRecordRaw[] = [
   {
@@ -156,6 +159,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '投注历史',
       description: '投注历史',
+      slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -169,6 +173,47 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '投注详情',
       description: '投注详情',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'personal-center',
+    name: 'personal-center',
+    component: () => import('@/views/personalCenter/mobile.vue'),
+    meta: {
+      title: '个人中心',
+      description: '个人中心',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'transaction-bet-details/:id',
+    name: 'transaction-bet-details',
+    component: () => import('@/views/transaction/betDetails/index.vue'),
+    meta: {
+      title: '资金详情',
+      description: '资金详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'transaction',
+    name: 'transaction',
+    component: () => import('@/views/transaction/index.vue'),
+    meta: {
+      title: '资金明细',
+      description: '资金明细',
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -235,12 +280,12 @@ router.beforeEach((to, _from, next) => {
   const locale = to.params.locale as string
 
   if (locale) {
-    if (supportedLocales.includes(locale)) {
-      const i18nLocale = locale === 'zh' ? 'zh' : 'eng'
-      const languageCode = locale === 'zh' ? 'zh-CN' : 'en'
+    if (SUPPORTED_LOCALES.includes(locale as Locale)) {
+      const i18nLocale = locale as Locale
+      const languageCode = getStorageLanguageCode(locale)
 
       if (i18n.global.locale.value !== i18nLocale) {
-        i18n.global.locale.value = i18nLocale as 'zh' | 'eng'
+        i18n.global.locale.value = i18nLocale
         localStorage.setItem('language', languageCode)
       }
     } else {
@@ -248,9 +293,9 @@ router.beforeEach((to, _from, next) => {
       return
     }
   } else {
-    if (i18n.global.locale.value !== 'eng') {
-      i18n.global.locale.value = 'eng'
-      localStorage.setItem('language', 'en')
+    if (i18n.global.locale.value !== DEFAULT_LOCALE) {
+      i18n.global.locale.value = DEFAULT_LOCALE
+      localStorage.setItem('language', DEFAULT_LOCALE)
     }
   }
 

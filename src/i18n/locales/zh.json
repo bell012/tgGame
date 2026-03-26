@@ -1,5 +1,5 @@
 {
-  "home": {
+  "home1": {
     "title": "欢迎来到 TG 游戏",
     "home": "首页",
     "sign_In": "登录",
@@ -223,7 +223,7 @@
     "customer_service": "线上客服",
     "language": {
       "zh_cn": "简体中文",
-      "en": "English"
+      "eng": "English"
     },
     "theme": {
       "dark": "深色模式",
@@ -355,4 +355,5 @@
       }
     }
   }
+   
 }

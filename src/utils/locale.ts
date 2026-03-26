@@ -3,24 +3,39 @@
  */
 
 /**
+ * 支持的语言列表
+ */
+export const SUPPORTED_LOCALES = ['zh', 'eng'] as const
+
+/**
+ * 语言类型
+ */
+export type Locale = (typeof SUPPORTED_LOCALES)[number]
+
+/**
+ * 默认语言
+ */
+export const DEFAULT_LOCALE: Locale = 'eng'
+
+/**
  * 语言代码转换：将存储的语言代码转换为 i18n 使用的语言代码
- * @param language - 存储的语言代码 (zh-CN 或 en)
+ * @param language - 存储的语言代码 (zh 或 eng)
  * @returns i18n 使用的语言代码 (zh 或 eng)
  * @example
  */
 export const getLanguageCode = (language?: string): string => {
-  const lang = language || localStorage.getItem('language') || 'eng'
-  return lang === 'zh-CN' ? 'zh' : 'eng'
+  const lang = language || localStorage.getItem('language') || DEFAULT_LOCALE
+  return lang
 }
 
 /**
  * i18n 语言代码转换为存储的语言代码
  * @param i18nLocale - i18n 使用的语言代码 (zh 或 eng)
- * @returns 存储的语言代码 (zh-CN 或 en)
+ * @returns 存储的语言代码 (zh 或 eng)
  * @example
  */
 export const getStorageLanguageCode = (i18nLocale: string): string => {
-  return i18nLocale === 'zh' ? 'zh-CN' : 'en'
+  return i18nLocale
 }
 
 /**

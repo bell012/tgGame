@@ -72,8 +72,8 @@
 
 <script setup lang="ts">
 import gameErrImg from '@/components/common/gameErrImg.vue'
+import { navigateToName } from '@/utils/router'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
 
 interface EventItem {
   image: string
@@ -83,9 +83,8 @@ interface EventItem {
 interface Props {
   list?: EventItem[]
 }
-const router = useRouter()
 // TODO：点击进入游戏详情页
-const handleClick = (rowId: number) => router.push({ name: 'gameDetail', params: { id: rowId } })
+const handleClick = (rowId: number) => navigateToName('gameDetail', { params: { id: rowId } })
 
 const props = withDefaults(defineProps<Props>(), {
   list: () => []

@@ -1,22 +1,22 @@
-import { getLanguageCode } from '@/utils/locale'
 import { createI18n } from 'vue-i18n'
-import homeEn from './en-us/home.json'
-import en from './locales/en.json'
+import eng from './locales/en.json'
 import zh from './locales/zh.json'
-import homeZn from './zh-cn/home.json'
+import homeEng from './en-us/home.json'
+import homeZh from './zh-cn/home.json'
+import { getLanguageCode, DEFAULT_LOCALE } from '@/utils/locale'
 
 const i18n = createI18n({
   legacy: false,
   locale: getLanguageCode(),
-  fallbackLocale: 'eng',
+  fallbackLocale: DEFAULT_LOCALE,
   messages: {
     eng: {
-      ...en,
-      home: homeEn
+      ...eng,
+      home: homeEng
     },
     zh: {
       ...zh,
-      home: homeZn
+      home: homeZh
     }
   }
 })
