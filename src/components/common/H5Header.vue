@@ -7,7 +7,7 @@
         class="size-[33px] bg-opacity-5 rounded-md flex items-center justify-center cursor-pointer"
         @click="handleBack"
       >
-        <ArrowLeftIcon class="w-3.5 h-3.5" />
+        <ArrowLeftIcon class="w-3.5 h-3.5 text-text-1" />
       </div>
 
       <!-- 中间标题 -->
@@ -22,7 +22,7 @@
           class="size-[33px] bg-opacity-5 rounded-md flex items-center justify-center cursor-pointer"
           @click="handleSort"
         >
-          <SiftIcon class="w-3.5 h-3.5" />
+          <SiftIcon class="w-3.5 h-3.5 text-text-1" />
         </div>
       </div>
     </div>

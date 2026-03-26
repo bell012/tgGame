@@ -59,7 +59,7 @@
               >
                 {{ bet.profit >= 0 ? '+' : '' }}{{ bet.profit }}
               </span>
-              <ArrowRightIcon class="w-4 h-4" />
+              <ArrowRightIcon class="w-4 h-4 text-text-1" />
             </div>
           </div>
         </template>

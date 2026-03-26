@@ -5,7 +5,7 @@
         @click="handleBack"
         class="w-[33px] h-[33px] bg-opacity-5 rounded-lg flex items-center justify-center"
       >
-        <ArrowLeftIcon class="w-4 h-4" />
+        <ArrowLeftIcon class="w-4 h-4 text-text-1" />
       </button>
     </div>
 
@@ -27,12 +27,12 @@
                 >ID: {{ userInfo?.memberId || '-' }}</span
               >
               <button class="p-1" @click.stop="copyMemberId">
-                <CopyIcon class="w-4 h-4" />
+                <CopyIcon class="w-4 h-4 text-text-2" />
               </button>
             </div>
           </div>
           <div class="bg-opacity-5 rounded-md w-5 h-5 flex items-center justify-center">
-            <ArrowRightIcon class="w-3 h-3" />
+            <ArrowRightIcon class="w-3 h-3 text-text-3" />
           </div>
         </div>
       </div>
@@ -95,7 +95,7 @@
           <button
             class="bg-bg-3 h-[34px] rounded-lg text-xs font-bold text-text-1 flex items-center justify-center"
           >
-            <DepositIocn class="w-5 h-5" />
+            <DepositIocn class="w-5 h-5 text-text-1" />
             <div class="ml-[5px]">
               {{ t('personalCenter.deposit') }}
             </div>
@@ -103,7 +103,7 @@
           <button
             class="bg-bg-3 h-[34px] rounded-lg text-xs font-bold text-text-1 flex items-center justify-center"
           >
-            <WithdrawIcon class="w-5 h-5" />
+            <WithdrawIcon class="w-5 h-5 text-text-1" />
             <div class="ml-[5px]">
               {{ t('userMenu.withdraw') }}
             </div>
@@ -117,7 +117,7 @@
             @click="item.handler"
           >
             <div class="flex items-center justify-center">
-              <component :is="item.icon" class="w-5 h-5" />
+              <component :is="item.icon" class="w-5 h-5 text-text-2" />
             </div>
             <span class="text-text-1 text-xs font-[700] text-center">{{ item.name }}</span>
           </div>
@@ -135,7 +135,7 @@
           @click="item.handler"
         >
           <div class="flex items-center gap-3">
-            <component :is="item.icon" class="w-5 h-5" />
+            <component :is="item.icon" class="w-5 h-5 text-text-2" />
             <span class="text-text-1 text-sm font-[700]">{{ item.name }}</span>
           </div>
           <div class="flex items-center gap-2.5">
@@ -146,7 +146,7 @@
               {{ item.badge }}
             </span>
             <div class="w-5 h-5 bg-opacity-10 rounded-md flex items-center justify-center">
-              <ArrowRightIcon class="w-3 h-3" />
+              <ArrowRightIcon class="w-3 h-3 text-text-2" />
             </div>
           </div>
         </div>
@@ -163,11 +163,11 @@
           @click="item.handler"
         >
           <div class="flex items-center gap-3">
-            <component :is="item.icon" class="w-5 h-5" />
+            <component :is="item.icon" class="w-5 h-5 text-text-2" />
             <span class="text-text-1 text-sm font-[700]">{{ item.name }}</span>
           </div>
           <div class="flex items-center gap-2.5">
-            <component v-if="item.rightIcon" :is="item.rightIcon" class="w-3.5 h-3.5" />
+            <component v-if="item.rightIcon" :is="item.rightIcon" class="w-3.5 h-3.5 text-text-2" />
             <span v-if="item.value" class="text-text-2 text-xs">{{ item.value }}</span>
             <div v-if="item.isTheme" class="flex items-center bg-bg-1 rounded-md p-0.5">
               <button
@@ -177,7 +177,7 @@
                 ]"
                 @click.stop="themeStore.setTheme('dark')"
               >
-                <MoonIcon class="w-[15px] h-[15px]" />
+                <MoonIcon class="w-[15px] h-[15px] text-text-2" />
               </button>
               <button
                 :class="[
@@ -186,11 +186,11 @@
                 ]"
                 @click.stop="themeStore.setTheme('light')"
               >
-                <SunIcon class="w-[15px] h-[15px]" />
+                <SunIcon class="w-[15px] h-[15px] text-text-2" />
               </button>
             </div>
             <div v-else class="w-5 h-5 bg-opacity-10 rounded-md flex items-center justify-center">
-              <ArrowRightIcon class="w-3 h-3" />
+              <ArrowRightIcon class="w-3 h-3 text-text-2" />
             </div>
           </div>
         </div>
@@ -236,11 +236,11 @@
           @click="item.handler"
         >
           <div class="flex items-center gap-3">
-            <component :is="item.icon" class="w-5 h-5" />
+            <component :is="item.icon" class="w-5 h-5 text-text-2" />
             <span class="text-text-1 text-sm font-[700]">{{ item.name }}</span>
           </div>
           <div class="w-5 h-5 bg-opacity-10 rounded-md flex items-center justify-center">
-            <ArrowRightIcon class="w-3 h-3" />
+            <ArrowRightIcon class="w-3 h-3 text-text-2" />
           </div>
         </div>
       </div>
@@ -258,7 +258,7 @@
           class="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-md bg-bg-5"
           @click="social.handler"
         >
-          <component :is="social.icon" class="w-5 h-5" />
+          <component :is="social.icon" class="w-5 h-5 text-text-1" />
         </button>
       </div>
     </div>
@@ -266,7 +266,7 @@
     <!-- Sign Out -->
     <div class="mx-3.5 mb-[30px] flex items-center justify-center">
       <button class="flex items-center justify-center gap-1" @click="handleSignOut">
-        <SignOut class="w-5 h-5" />
+        <SignOut class="w-5 h-5 text-text-1" />
         <span class="text-sm font-[700] text-text-1">{{ t('personalCenter.signOut') }}</span>
       </button>
     </div>
@@ -367,8 +367,16 @@ const balanceFieldMap = {
 type BalanceFieldKey = (typeof balanceFieldMap)[keyof typeof balanceFieldMap]
 type BalanceCarrier = Partial<Record<BalanceFieldKey, number>> & { balance?: number }
 
+const originalColorIconNumbers = new Set([16, 31])
+
 // 动态导入图标
 const getIcon = (iconNumber: number) => {
+  if (originalColorIconNumbers.has(iconNumber)) {
+    return defineAsyncComponent(
+      () => import(`@/static/svg/personalCenter/icon${iconNumber}.svg?skipsvgo`)
+    )
+  }
+
   return defineAsyncComponent(
     () => import(`@/static/svg/personalCenter/icon${iconNumber}.svg?component`)
   )

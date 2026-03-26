@@ -105,7 +105,7 @@
                 class="size-[20px] bg-opacity-10 rounded-md flex items-center justify-center cursor-pointer"
                 @click.stop="handleBetClick(bet)"
               >
-                <ArrowRightIcon class="w-3.5 h-3.5" />
+                <ArrowRightIcon class="w-3.5 h-3.5 text-text-2" />
               </div>
             </div>
           </div>
