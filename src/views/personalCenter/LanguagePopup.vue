@@ -1,10 +1,10 @@
 <template>
   <div>
     <transition name="popup-fade">
-      <div v-show="visible" class="fixed inset-0 z-[99] bg-mask-60-1" @click.self="close" />
+      <div v-show="visible" class="fixed inset-0 z-[999] bg-mask-60-1" @click.self="close" />
     </transition>
     <transition name="up-down">
-      <div v-show="visible" class="fixed left-0 bottom-0 z-[99] w-full">
+      <div v-show="visible" class="fixed left-0 bottom-0 z-[999] w-full">
         <div class="rounded-t-xl bg-bg-1 px-3 pb-10 pt-2.5">
           <div class="mb-3.5 flex items-center justify-between">
             <div></div>

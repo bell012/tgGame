@@ -41,7 +41,7 @@
           <div
             v-if="item.showDrawer"
             class="fixed inset-0 overflow-hidden bg-bg-1"
-            :style="{ zIndex: 9999 + index }"
+            :style="{ zIndex: 99 + index }"
           >
             <router-view :route="item.route" :key="item.path" />
           </div>
