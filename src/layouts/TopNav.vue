@@ -59,13 +59,6 @@
           >
             {{ t('home1.sign_Up') }}
           </div>
-          <!-- 充值 -->
-          <div
-            class="cursor-pointer w-[84px] h-[35px] sm:w-[96px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 md:mr-3"
-            @click="openDeposit"
-          >
-            {{ t('deposit.title') }}
-          </div>
         </template>
 
         <!-- 已登录状态 -->
@@ -87,21 +80,14 @@
                 {{ getCurrencySymbol(userInfo?.currency) }}{{ formatBalance(acctInfo?.balancePhp) }}
               </span>
             </div>
-
             <!-- 充值 -->
-            <div
-              class="cursor-pointer w-[84px] h-[35px] sm:w-[96px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 md:mr-3"
-              @click="openDeposit"
-            >
-              {{ t('deposit.title') }}
-            </div>
-
             <div class="flex items-center">
               <ArrowDownIcon class="w-5 h-5 mr-1 cursor-pointer" />
               <div
                 class="cursor-pointer h-8 text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
+                @click="openDeposit"
               >
-                Deposit
+                {{ t('deposit.title') }}
               </div>
             </div>
           </div>
@@ -129,6 +115,7 @@
               <!-- 充值按钮 -->
               <div
                 class="cursor-pointer w-[26px] h-[26px] text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
+                @click="openDeposit"
               >
                 <Jia class="w-3 h-3" />
               </div>
