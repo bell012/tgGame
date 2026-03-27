@@ -1,7 +1,7 @@
 <template>
   <div class="font-['Inter']">
     <div class="flex items-end justify-center" :class="wrapperClass">
-      <p class="text-text-1 text-[20px] sm:text-[40px] font-bold leading-none capitalize">
+      <p class="text-text-1 text-xl sm:text-[40px] font-bold leading-none capitalize">
         {{ amount }}
       </p>
       <p class="text-text-1 text-base sm:text-lg font-bold leading-none capitalize">

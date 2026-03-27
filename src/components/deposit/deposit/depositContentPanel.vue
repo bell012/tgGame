@@ -5,7 +5,7 @@
         <button
           v-for="tab in depositTabs"
           :key="tab"
-          class="relative flex-1 text-base font-[800] transition-all duration-200 tab-button-new"
+          class="relative flex-1 text-sm sm:text-base font-[800] transition-all duration-200 tab-button-new"
           :class="getTabClass(tab)"
           @click.stop="setActiveTab(tab)"
         >

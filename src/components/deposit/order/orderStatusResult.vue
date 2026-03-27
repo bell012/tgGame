@@ -4,7 +4,7 @@
       <OrderStatusCompletedIcon v-if="status === 'Completed'" class="w-[76px] h-[76px]" />
       <OrderStatusCancelledIcon v-else class="w-[76px] h-[76px]" />
     </div>
-    <p class="mt-4 text-base font-bold leading-normal text-text-1">
+    <p class="mt-4 text-sm sm:text-base font-bold leading-normal text-text-1">
       {{ title }}
     </p>
   </div>

@@ -7,7 +7,7 @@
             v-for="coin in visibleCoins"
             :key="coin.code"
             type="button"
-            class="appearance-none p-1.5 sm:p-2 rounded-full bg-bg-3 lg:hover:bg-[var(--color-theme-level-3)] text-xs flex items-center border"
+            class="appearance-none p-1.5 sm:p-2 rounded-full bg-bg-3 lg:hover:bg-theme-3 text-xs flex items-center border"
             :style="{
               border: `1px solid ${coin.code === coinCode ? 'var(--color-theme-level-1)' : 'transparent'}`
             }"
@@ -19,7 +19,7 @@
         </div>
         <button
           type="button"
-          class="appearance-none p-1.5 sm:p-2 rounded-full bg-bg-3 lg:hover:bg-[var(--color-theme-level-3)] text-xs flex items-center border"
+          class="appearance-none p-1.5 sm:p-2 rounded-full bg-bg-3 lg:hover:bg-theme-3 text-xs flex items-center border"
           :style="{
             border: `1px solid ${coinMoreShow ? 'var(--color-theme-level-1)' : 'transparent'}`
           }"
@@ -36,7 +36,7 @@
       </div>
 
       <div class="mt-5">
-        <p class="text-sm text-text-1">{{ t('deposit.deposit_channel') }}</p>
+        <p class="text-xs sm:text-sm text-text-1">{{ t('deposit.deposit_channel') }}</p>
         <div class="mt-4 overflow-hidden">
           <div
             ref="channelListRef"
@@ -51,7 +51,7 @@
               type="button"
               :class="[
                 'shrink-0 h-12 px-8 flex justify-center items-center rounded-lg lg:hover:bg-theme-3 border text-text-1',
-                selectedChannel === ch ? 'bg-[var(--color-theme-level-3)]' : ''
+                selectedChannel === ch ? 'bg-theme-3' : ''
               ]"
               :style="{
                 border: `1px solid ${selectedChannel === ch ? 'var(--color-theme-level-1)' : 'var(--color-opacity-10)'}`
@@ -65,14 +65,14 @@
 
       <div class="mt-5">
         <div class="flex items-center justify-between">
-          <p class="text-sm text-text-1">{{ t('deposit.deposit_amount') }}</p>
+          <p class="text-xs sm:text-sm text-text-1">{{ t('deposit.deposit_amount') }}</p>
           <div class="flex items-center">
-            <AmountInfoIcon class="w-4 h-4 mr-1" />
-            <p class="text-sm text-text-2">{{ t('deposit.deposit_amount') }}</p>
+            <AmountInfoIcon class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+            <p class="text-xs sm:text-sm text-text-2">{{ t('deposit.deposit_amount') }}</p>
           </div>
         </div>
         <div
-          class="flex items-center w-full mt-3 p-3 rounded-lg bg-input-3 border border-[color:var(--color-opacity-10)] focus-within:border-[color:var(--color-theme-level-1)] focus-within:ring-0"
+          class="flex items-center w-full mt-3 p-3 rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
         >
           <DepositTokenIcon class="w-6 h-6 mr-3" />
           <input
@@ -94,7 +94,7 @@
             <button
               :ref="el => setWageringItemRef(el, item)"
               @click="selectWagering(item)"
-              class="relative text-sm transition-colors whitespace-nowrap"
+              class="relative text-xs sm:text-sm transition-colors whitespace-nowrap"
               :class="
                 wageringActiveCode === item ? 'text-text-1' : 'text-text-2 lg:hover:text-text-1'
               "
@@ -124,7 +124,7 @@
             v-for="preset in presetAmounts"
             :key="preset"
             @click="amount = preset"
-            class="relative py-3 rounded-lg lg:hover:bg-theme-primary"
+            class="relative text-base sm:text-lg py-3 rounded-lg lg:hover:bg-theme-primary"
             :class="[preset === amount ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-1']"
           >
             {{ preset }}
@@ -164,10 +164,10 @@
       class="mt-3 w-full shrink-0 bg-bg-2 p-4 rounded-lg flex items-center justify-between"
       @click="loadWallet"
     >
-      <div class="text-sm text-text-1">Load from your wallet</div>
+      <div class="text-xs sm:text-sm text-text-1">Load from your wallet</div>
       <div class="flex items-center">
         <img class="h-6 mr-1" :src="groupIcon" />
-        <div class="text-sm text-text-1">+300</div>
+        <div class="text-xs sm:text-sm text-text-1">+300</div>
       </div>
     </div>
   </div>

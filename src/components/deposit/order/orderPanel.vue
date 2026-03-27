@@ -5,7 +5,7 @@
     :class="[panelHeightClass, panelBgClass, panelContainerClass]"
   >
     <div class="relative shrink-0 flex items-center justify-between h-14">
-      <h2 class="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-text-1">
+      <h2 class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg font-semibold text-text-1">
         {{ t('deposit.deposit_order') }}
       </h2>
       <template v-if="isMobile">
@@ -72,13 +72,13 @@
           </div>
           <div
             v-if="cryptoNetwork"
-            class="w-full mt-4 px-3 text-theme-primary text-2xl font-bold leading-none capitalize text-center"
+            class="w-full mt-4 px-3 text-theme-primary text-sm sm:text-2xl font-bold leading-none capitalize text-center"
           >
             {{ cryptoNetwork }}
           </div>
           <div v-if="cryptoAddress" class="w-full p-3 mt-1.5">
             <div
-              class="w-full p-4 rounded-lg bg-bg-4 text-text-1 text-base break-all leading-normal"
+              class="w-full p-4 rounded-lg bg-bg-4 text-text-1 text-sm sm:text-base break-all leading-normal"
             >
               {{ cryptoAddress }}
             </div>
@@ -86,13 +86,13 @@
           <div v-if="cryptoAddress" class="p-3 grid grid-cols-2 gap-2">
             <button
               @click.stop="doCapture"
-              class="py-3 bg-theme-3 rounded-lg text-theme-primary text-base font-bold leading-normal flex items-center justify-center"
+              class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
             >
               Save QR Code
             </button>
             <button
               @click.stop="copyWord(cryptoAddress)"
-              class="py-3 bg-theme-3 rounded-lg text-theme-primary text-base font-bold leading-normal flex items-center justify-center"
+              class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
             >
               Copy Address
             </button>
@@ -102,18 +102,18 @@
           <orderDetailRows :rows="cryptoSummaryRows" @copy="copyWord" />
         </div>
         <button
-          class="mt-6 w-full h-10 sm:h-12 rounded-lg text-text-4 text-[14px] font-bold flex items-center justify-center btn-primary"
+          class="mt-6 w-full h-10 sm:h-12 rounded-lg text-text-4 text-sm font-bold flex items-center justify-center btn-primary"
           @click.stop="openUploadPop"
         >
           {{ t('deposit.upload_proof') }}
         </button>
         <button
-          class="mt-3 w-full h-10 sm:h-12 rounded-lg bg-opacity-10 text-text-2 text-[14px] font-bold flex items-center justify-center"
+          class="mt-3 w-full h-10 sm:h-12 rounded-lg bg-opacity-10 text-text-2 text-sm font-bold flex items-center justify-center"
           @click.stop="doCancelOrder"
         >
           {{ t('deposit.cancel_order_title') }}
         </button>
-        <div class="mt-3 w-full text-center text-secondary-7 text-[14px] leading-normal">
+        <div class="mt-3 w-full text-center text-secondary-7 text-xs sm:text-sm leading-normal">
           {{ t('deposit.deposit_order_bottom_tips') }}
         </div>
       </div>
@@ -145,12 +145,12 @@
           </div>
         </div>
         <button
-          class="mt-6 w-full h-10 sm:h-12 rounded-lg text-text-4 text-[14px] font-bold flex items-center justify-center btn-primary"
+          class="mt-6 w-full h-10 sm:h-12 rounded-lg text-text-4 text-sm font-bold flex items-center justify-center btn-primary"
           @click.stop="openUploadPop"
         >
           {{ t('deposit.upload_proof_again_btn_text') }}
         </button>
-        <div class="bg-bg-2 mt-6 p-5 rounded-lg text-base font-normal leading-normal">
+        <div class="bg-bg-2 mt-6 p-5 rounded-lg text-sm sm:text-base font-normal sm:leading-normal">
           <p class="text-[color:#F44854]">Reminder</p>
           <p class="text-text-3 mt-4">
             · To ensure funds are credited successfully, please upload the correct payment receipt.
@@ -186,7 +186,9 @@
               {{ orderInfo.amount }}
             </p>
           </div>
-          <p class="mt-2 text-text-1 text-base leading-normal text-center">Deposit Amount</p>
+          <p class="mt-2 text-text-1 text-sm sm:text-base leading-normal text-center">
+            Deposit Amount
+          </p>
           <div class="mt-8 px-5 py-3 w-full bg-bg-4 rounded-lg relative grid gap-4">
             <orderDetailRows
               :rows="fiatSummaryRows"

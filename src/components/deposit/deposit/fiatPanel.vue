@@ -1,6 +1,6 @@
 <template>
   <div class="w-full min-h-full bg-bg-2 p-4 rounded-lg font-['Inter']">
-    <p class="text-sm font-bold leading-normal text-text-1">Deposit Methods</p>
+    <p class="text-xs sm:text-sm font-bold leading-normal text-text-1">Deposit Methods</p>
     <div class="mt-2.5 overflow-hidden">
       <div
         ref="methodListRef"
@@ -8,22 +8,23 @@
         @wheel.prevent="handleMethodListWheel"
       >
         <div
-          class="shrink-0 flex items-center justify-center p-4 rounded-xl lg:hover:bg-theme-3 lg:hover:border-theme-primary"
+          class="shrink-0 flex flex-col sm:flex-row items-center justify-center p-2 sm:p-4 rounded-xl lg:hover:bg-theme-3 lg:hover:border-theme-primary"
           :class="{
             'border border-theme-primary bg-theme-3': selectedMethod.name === item.name,
-            'border border-transparent bg-bg-4': selectedMethod.name !== item.name
+            'border border-transparent bg-bg-4': selectedMethod.name !== item.name,
+            'basis-[31.25%]': isMobile
           }"
           v-for="(item, index) in payMethods"
           :key="index"
           :ref="el => setMethodItemRef(el, index)"
           @click.stop="selectMethod(item, index)"
         >
-          <img class="mr-4 h-6" :src="item.icon" />
-          <p class="text-base font-bold leading-normal text-text-1">{{ item.name }}</p>
+          <img class="sm:mr-4 h-6" :src="item.icon" />
+          <p class="text-sm sm:text-base font-bold leading-normal text-text-1">{{ item.name }}</p>
         </div>
       </div>
     </div>
-    <p class="mt-4 text-sm font-bold leading-normal text-text-1">Deposit Amount</p>
+    <p class="mt-4 text-xs sm:text-sm font-bold leading-normal text-text-1">Deposit Amount</p>
     <div
       class="flex items-center w-full mt-2 p-3 rounded-lg bg-input-3 border border-[color:var(--color-opacity-10)] focus-within:border-[color:var(--color-theme-level-1)] focus-within:ring-0"
     >
@@ -45,7 +46,7 @@
           v-for="preset in presetAmounts"
           :key="preset"
           @click="amount = preset"
-          class="py-3 rounded-lg lg:hover:bg-theme-primary"
+          class="py-3 text-base sm:text-lg rounded-lg lg:hover:bg-theme-primary"
           :class="[preset === amount ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-1']"
         >
           {{ preset }}
@@ -83,6 +84,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import DepositTokenIcon from '@/static/svg/deposit/deposit-token.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
@@ -95,6 +97,7 @@ import { defaultFiatOrder, FiatOrderType } from '../order/orderType'
 import { usePresetGrid } from '../shared/usePresetGrid'
 
 const { t } = useI18n()
+const isMobile = useIsMobile()
 interface MethodOption {
   name: string
   icon: string
