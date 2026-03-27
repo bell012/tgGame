@@ -70,7 +70,7 @@
           </Uploader>
         </div>
         <button
-          class="mt-6 h-10 sm:h-12 w-full rounded-lg text-text-4 text-[14px] font-bold"
+          class="mt-6 h-10 sm:h-12 w-full rounded-lg text-text-4 text-sm font-bold"
           :disabled="!(uploadUrls && uploadUrls.length > 0)"
           :class="[
             !(uploadUrls && uploadUrls.length > 0) ? 'bg-theme-2 cursor-not-allowed' : 'btn-primary'

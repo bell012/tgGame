@@ -24,7 +24,7 @@
             </p>
             <div class="mt-4 h-[156px] w-full p-2.5 sm:p-3 rounded-lg bg-bg-6 overflow-y-auto">
               <div
-                class="flex items-center justify-between p-3 text-text-1 text-[14px] rounded-lg"
+                class="flex items-center justify-between p-2.5 sm:p-3 text-text-1 text-[14px] rounded-lg"
                 v-for="(item, index) in cancellations"
                 :key="index"
                 @click.stop="selectlation(item)"
@@ -37,7 +37,7 @@
             </div>
             <button
               :disabled="disabledConfirm"
-              class="mt-5 sm:mt-6 h-10 sm:h-12 w-full rounded-lg text-text-4 text-[14px] font-bold flex items-center justify-center"
+              class="mt-5 sm:mt-6 h-10 sm:h-12 w-full rounded-lg text-text-4 text-sm font-bold flex items-center justify-center"
               :class="[disabledConfirm ? 'btn-primary' : 'bg-theme-2 cursor-not-allowed']"
             >
               <CountDown v-if="!disabledConfirm" :time="countdownTime" @finish="onCountDownFinish">

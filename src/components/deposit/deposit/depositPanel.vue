@@ -9,7 +9,7 @@
     <div
       class="relative flex items-center justify-between h-12 sm:h-14 rounded-tl-xl rounded-tr-xl bg-bg-2"
     >
-      <h2 class="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-text-1">
+      <h2 class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg font-semibold text-text-1">
         {{ t('deposit.title') }}
       </h2>
 
