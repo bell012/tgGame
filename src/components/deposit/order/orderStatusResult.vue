@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center">
+  <div class="flex flex-col items-center font-['Inter']">
     <div class="w-[76px] h-[76px]">
       <OrderStatusCompletedIcon v-if="status === 'Completed'" class="w-[76px] h-[76px]" />
       <OrderStatusCancelledIcon v-else class="w-[76px] h-[76px]" />

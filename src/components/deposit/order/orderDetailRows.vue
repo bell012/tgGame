@@ -1,7 +1,7 @@
 <template>
-  <div v-for="item in rows" :key="item.label" :class="rowClass">
-    <p class="text-text-3 text-base">{{ item.label }}</p>
-    <div :class="[valueClass, item.valueClass]">
+  <div v-for="item in rows" :key="item.label" :class="[rowClass, `font-['Inter']`]">
+    <p class="text-text-3 text-base font-['Inter']">{{ item.label }}</p>
+    <div :class="[valueClass, item.valueClass, `font-['Inter']`]">
       <img v-if="item.icon" :class="iconClass" :src="item.icon" />
       {{ item.value }}
       <div v-if="item.copyValue" class="ml-3 w-[18px]" @click.stop="emit('copy', item.copyValue)">

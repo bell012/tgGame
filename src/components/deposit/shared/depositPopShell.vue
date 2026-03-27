@@ -3,7 +3,7 @@
     <transition name="modal">
       <div
         v-if="modelValue"
-        v-show="!isHidden"
+        v-show="isMobile || !isHidden"
         class="modal-overlay"
         :class="[withMask ? 'bg-mask-60-1' : 'bg-transparent']"
         @click.self="handleOverlayClick"
@@ -15,6 +15,8 @@
 </template>
 
 <script setup lang="ts">
+import { useIsMobile } from '@/composables/useMediaQuery'
+
 interface Props {
   modelValue: boolean
   isHidden?: boolean
@@ -33,6 +35,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'overlay-close': []
 }>()
+
+const isMobile = useIsMobile()
 
 const handleOverlayClick = () => {
   if (!props.closeOnOverlayClick) return
