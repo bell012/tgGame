@@ -1,8 +1,12 @@
 <template>
-  <div class="w-full min-h-full bg-bg-2 p-4 rounded-lg">
+  <div class="w-full min-h-full bg-bg-2 p-4 rounded-lg font-['Inter']">
     <p class="text-sm font-bold leading-normal text-text-1">Deposit Methods</p>
     <div class="mt-2.5 overflow-hidden">
-      <div class="flex flex-nowrap gap-1 overflow-x-auto scrollbar-hide touch-pan-x">
+      <div
+        ref="methodListRef"
+        class="flex flex-nowrap gap-1 overflow-x-auto scrollbar-hide touch-pan-x scroll-smooth"
+        @wheel.prevent="handleMethodListWheel"
+      >
         <div
           class="shrink-0 flex items-center justify-center p-4 rounded-xl lg:hover:bg-theme-3 lg:hover:border-theme-primary"
           :class="{
@@ -11,7 +15,8 @@
           }"
           v-for="(item, index) in payMethods"
           :key="index"
-          @click.stop="selectedMethod = item"
+          :ref="el => setMethodItemRef(el, index)"
+          @click.stop="selectMethod(item, index)"
         >
           <img class="mr-4 h-6" :src="item.icon" />
           <p class="text-base font-bold leading-normal text-text-1">{{ item.name }}</p>
@@ -46,7 +51,7 @@
           {{ preset }}
         </button>
       </div>
-      <div class="w-full bg-bg-4 rounded-bl-lg rounded-br-lg pb-3">
+      <div class="w-full bg-bg-4 rounded-bl-lg rounded-br-lg p-3 relative -mt-3 z-10">
         <button
           class="mx-auto flex items-center gap-1 text-xs text-text-3 lg:hover:text-text-1 transition"
           @click="expanded = !expanded"
@@ -76,7 +81,7 @@
   />
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DepositTokenIcon from '@/static/svg/deposit/deposit-token.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
@@ -121,6 +126,8 @@ const payMethods = [
 ]
 const selectedMethod = ref<MethodOption>(payMethods[0])
 const amount = ref<number>()
+const methodListRef = ref<HTMLDivElement | null>(null)
+const methodItemRefs = ref<Array<HTMLElement | null>>([])
 const presetsRef = ref<HTMLDivElement | null>(null)
 const { expanded } = usePresetGrid(presetsRef)
 const orderInfo = ref<FiatOrderType>(defaultFiatOrder)
@@ -133,6 +140,44 @@ const handleClose = () => {
 
 const handleHidden = () => {
   emit('hidden', true)
+}
+
+const setMethodItemRef = (el: Element | ComponentPublicInstance | null, index: number) => {
+  const target =
+    el instanceof HTMLElement
+      ? el
+      : el && '$el' in el && el.$el instanceof HTMLElement
+        ? el.$el
+        : null
+
+  methodItemRefs.value[index] = target
+}
+
+const scrollMethodIntoView = async (index: number) => {
+  await nextTick()
+
+  const target = methodItemRefs.value[index]
+  if (!target || !methodListRef.value) return
+
+  target.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center'
+  })
+}
+
+const handleMethodListWheel = (event: WheelEvent) => {
+  if (!methodListRef.value) return
+
+  methodListRef.value.scrollBy({
+    left: event.deltaY !== 0 ? event.deltaY : event.deltaX,
+    behavior: 'auto'
+  })
+}
+
+const selectMethod = (method: MethodOption, index: number) => {
+  selectedMethod.value = method
+  scrollMethodIntoView(index)
 }
 
 const doDeposit = () => {

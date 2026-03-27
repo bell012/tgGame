@@ -6,20 +6,20 @@
           class="mx-auto w-full sm:max-w-[480px] h-full sm:max-h-[684px] bg-mask-60-1 fixed inset-0 flex items-center justify-center"
         >
           <div
-            class="p-5 sm:px-4 sm:py-6 w-[300px] sm:w-[368px] h-[327px] sm:h-[352px] rounded-xl modal-container bg-bg-1 dark:bg-bg-2"
+            class="relative p-5 sm:px-4 sm:py-6 w-[300px] sm:w-[368px] h-[327px] sm:h-[352px] rounded-xl modal-container bg-bg-1 dark:bg-bg-2 font-['Inter']"
           >
             <div class="flex items-center justify-between">
-              <h2 class="text-text-1 text-xl font-bold leading-normal capitalize">
+              <h2 class="text-text-1 text-xl font-bold leading-normal capitalize font-['Inter']">
                 {{ t('deposit.cancel_order_title') }}
               </h2>
-              <button
-                class="w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center"
-                @click="handleClose"
-              >
-                <CloseIcon class="w-4 h-4 fill-none" />
-              </button>
             </div>
-            <p class="mt-2.5 text-sm font-normal leading-normal text-text-2">
+            <button
+              class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center"
+              @click="handleClose"
+            >
+              <CloseIcon class="w-4 h-4 fill-none" />
+            </button>
+            <p class="mt-2.5 text-sm font-normal leading-normal text-text-2 font-['Inter']">
               {{ t('deposit.cancel_order_tips') }}
             </p>
             <div class="mt-4 h-[156px] w-full p-2.5 sm:p-3 rounded-lg bg-bg-6 overflow-y-auto">
@@ -30,7 +30,7 @@
                 @click.stop="selectlation(item)"
                 :class="[cancellationId === item.id ? 'bg-theme-3' : '']"
               >
-                <p>{{ item.text }}</p>
+                <p class="font-['Inter']">{{ item.text }}</p>
                 <RadioCheckedIcon class="w-4 h-4" v-show="cancellationId === item.id" />
                 <RadioUncheckedIcon class="w-4 h-4" v-show="cancellationId !== item.id" />
               </div>
@@ -47,7 +47,9 @@
                   </span>
                 </template>
               </CountDown>
-              <span v-else>{{ t('deposit.cancel_order_confirm_cancel') }}</span>
+              <span v-else class="font-['Inter']">{{
+                t('deposit.cancel_order_confirm_cancel')
+              }}</span>
             </button>
           </div>
         </div>
