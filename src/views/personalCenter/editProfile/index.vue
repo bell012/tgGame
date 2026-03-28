@@ -107,20 +107,17 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
-import Api from '@/api'
-import type { QueryAcctInfoResult, SelectMemberResult } from '@/api/interface/user'
 import H5Header from '@/components/common/H5Header.vue'
+import { useUserStore } from '@/stores/user'
 import {
   DEFAULT_AVATAR_FRAME_ID,
   profileCustomizationState,
-  profileUserInfoState,
   saveProfileCustomization,
   setProfileCustomizationState,
   setProfileUserInfoState,
-  syncProfileCustomizationState,
-  syncProfileUserInfoState,
   type AvatarFrameId
 } from '@/utils/profile-customization'
 import {
@@ -136,13 +133,11 @@ import border4Image from '@/static/img/personalCenter/border_4.png'
 import border5Image from '@/static/img/personalCenter/border_5.png'
 import borderNoneImage from '@/static/img/personalCenter/border_none.png'
 
-type EditProfileUserInfo = Partial<SelectMemberResult> & { headPortrait?: string }
-
 const DEFAULT_EDIT_AVATAR_FRAME_ID: AvatarFrameId = 'border_2'
 
 const { t } = useI18n()
-const userInfo = profileUserInfoState
-const acctInfo = ref<QueryAcctInfoResult | null>(null)
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
 const nickName = ref('')
 const selectedAvatarFrameId = ref<AvatarFrameId>(DEFAULT_EDIT_AVATAR_FRAME_ID)
 const originalForm = ref({
@@ -201,18 +196,6 @@ const avatarFrameOptions = computed(() => {
   }))
 })
 
-const parseStoredItem = <T,>(key: string) => {
-  const storedValue = localStorage.getItem(key)
-  if (!storedValue) return null
-
-  try {
-    return JSON.parse(storedValue) as T
-  } catch (error) {
-    console.error(error)
-    return null
-  }
-}
-
 const syncFormState = () => {
   const customization = profileCustomizationState.value
   const nextNickName = userInfo.value?.nickName || ''
@@ -223,40 +206,6 @@ const syncFormState = () => {
   originalForm.value = {
     nickName: nextNickName,
     avatarFrameId: nextAvatarFrameId
-  }
-}
-
-const loadStoredInfo = () => {
-  syncProfileCustomizationState()
-  syncProfileUserInfoState()
-  acctInfo.value = parseStoredItem<QueryAcctInfoResult>('acctInfo')
-}
-
-const refreshAcctInfo = async () => {
-  try {
-    const response = await Api.user.queryAcctInfo({})
-    if (response?.result) {
-      acctInfo.value = response.result
-      localStorage.setItem('acctInfo', JSON.stringify(response.result))
-    }
-    return response?.result
-  } catch (error) {
-    console.error(error)
-    return null
-  }
-}
-
-const refreshUserInfo = async (memberId: string) => {
-  try {
-    const response = await Api.user.selectMember({ memberId })
-    if (response?.result) {
-      setProfileUserInfoState({
-        ...(userInfo.value ?? {}),
-        ...response.result
-      })
-    }
-  } catch (error) {
-    console.error(error)
   }
 }
 
@@ -287,14 +236,10 @@ const handleSave = () => {
     avatarFrameId: selectedAvatarFrameId.value
   })
 
-  const mergedUserInfo = setProfileUserInfoState({
+  setProfileUserInfoState({
     ...(userInfo.value ?? {}),
     nickName: nickName.value
   })
-
-  if (mergedUserInfo) {
-    userInfo.value = mergedUserInfo as EditProfileUserInfo
-  }
 
   originalForm.value = {
     nickName: nickName.value,
@@ -311,22 +256,10 @@ const handleSave = () => {
 }
 
 const initializeEditProfile = async () => {
-  loadStoredInfo()
+  userStore.syncStoredUserData()
   syncFormState()
-
-  const storedMemberId = userInfo.value?.memberId || acctInfo.value?.memberId
-  if (storedMemberId) {
-    await refreshUserInfo(storedMemberId)
-    syncFormState()
-    return
-  }
-
-  const latestAcctInfo = await refreshAcctInfo()
-  const memberId = latestAcctInfo?.memberId || acctInfo.value?.memberId
-  if (memberId) {
-    await refreshUserInfo(memberId)
-    syncFormState()
-  }
+  await userStore.refreshCurrentUserData()
+  syncFormState()
 }
 
 onMounted(() => {
@@ -334,8 +267,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  syncProfileCustomizationState()
-  syncProfileUserInfoState()
+  userStore.syncStoredUserData()
 })
 </script>
 
