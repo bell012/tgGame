@@ -143,6 +143,7 @@ import { getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
 import {
   DEFAULT_AVATAR_FRAME_ID,
   profileCustomizationState,
+  resolveProfileAvatarUrl,
   type AvatarFrameId
 } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
@@ -195,10 +196,7 @@ const favoriteGames = ref<FavoriteGame[]>([
 ])
 
 const avatarUrl = computed(() => {
-  const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
-  return userInfo.value?.headPortrait && baseUrl
-    ? `${baseUrl}${userInfo.value.headPortrait}`
-    : '/src/static/img/home/avatar.png'
+  return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
 })
 
 const selectedAvatarFrameImage = computed(() => {

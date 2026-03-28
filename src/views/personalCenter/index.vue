@@ -315,6 +315,7 @@ import ReferralPopup from '@/views/personalCenter/components/ReferralPopup.vue'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
+import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import {
   getCurrentCurrency,
@@ -392,13 +393,7 @@ const referralLink = ref('https://www.baidu.com/jh/ocja...')
 
 // 头像 URL
 const avatarUrl = computed(() => {
-  const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
-  const headPortrait = userInfo.value?.headPortrait
-
-  if (headPortrait && baseUrl) {
-    return `${baseUrl}${headPortrait}`
-  }
-  return '/src/static/img/home/avatar.png'
+  return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
 })
 
 // VIP 等级
