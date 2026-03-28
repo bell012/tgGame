@@ -11,7 +11,7 @@
 
     <!-- 用户信息区域 -->
     <div class="p-3.5">
-      <div class="flex items-center mb-3.5">
+      <div class="mb-3.5 flex items-center cursor-pointer" @click="goToMyProfile">
         <div
           class="w-[55px] h-[55px] rounded-full overflow-hidden bg-opacity-15 flex items-center justify-center mr-3.5"
         >
@@ -586,6 +586,10 @@ const copyReferralLink = async () => {
 
 const copyMemberId = async () => {
   await copyText(userInfo.value?.memberId)
+}
+
+const goToMyProfile = () => {
+  navigateTo('/personal-center/my-profile')
 }
 
 // 全局设置
