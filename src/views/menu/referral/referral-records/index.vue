@@ -1,10 +1,14 @@
 <template>
-  <!-- 邀请记录页面 -->
+  <!-- 推荐记录页面 -->
   <section class="min-h-screen bg-bg-1 -mx-[14px] sm:mx-auto sm:max-w-[420px]">
     <!-- 页面容器 -->
     <div class="min-h-screen bg-bg-1" style="font-family: Inter, avertastd, sans-serif">
       <!-- 顶部导航栏 -->
-      <H5Header :title="$t('referral.inviteRecords.title')" :show-sort="true" @sort="handleSort" />
+      <H5Header
+        :title="$t('referral.referralRecords.title')"
+        :show-sort="true"
+        @sort="handleSort"
+      />
 
       <!-- 页面主体 -->
       <main class="px-[14px] pb-[calc(env(safe-area-inset-bottom)+24px)] pt-[14px]">
@@ -18,7 +22,7 @@
             <input
               v-model="searchKeyword"
               type="text"
-              :placeholder="$t('referral.inviteRecords.searchPlaceholder')"
+              :placeholder="$t('referral.referralRecords.searchPlaceholder')"
               class="min-w-0 flex-1 bg-transparent text-[14px] font-[500] leading-[17px] text-text-1 outline-none placeholder:text-text-3"
             />
           </label>
@@ -62,7 +66,7 @@
           v-else
           :dark-image="defaultImgDark"
           :light-image="defaultImgLight"
-          image-alt="${eferral.inviteRecords.title}"
+          image-alt="$t('referral.referralRecords.title')"
           message="No data available at the moment."
           text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
         />
@@ -91,15 +95,15 @@ import SearchIcon from '@/static/svg/search-icon.svg?component'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-type InviteStatus = 'valid' | 'invalid'
-type InvitePeriod = 'today' | 'week' | 'month'
+type ReferralStatus = 'valid' | 'invalid'
+type ReferralPeriod = 'today' | 'week' | 'month'
 
-interface InviteRecord {
+interface ReferralRecord {
   id: number
   account: string
   time: string
-  status: InviteStatus
-  period: InvitePeriod
+  status: ReferralStatus
+  period: ReferralPeriod
 }
 
 const { t } = useI18n()
@@ -107,30 +111,30 @@ const { t } = useI18n()
 const showFilterPopup = ref(false)
 const filterValues = ref<Record<string, string | string[]>>({})
 const searchKeyword = ref('')
-const selectedStatusFilter = ref<'all' | InviteStatus>('all')
-const selectedTimeFilter = ref<'all' | InvitePeriod>('all')
+const selectedStatusFilter = ref<'all' | ReferralStatus>('all')
+const selectedTimeFilter = ref<'all' | ReferralPeriod>('all')
 
 const filterGroups = computed<FilterGroup[]>(() => [
   {
-    title: t('referral.inviteRecords.filterTitles.status'),
+    title: t('referral.referralRecords.filterTitles.status'),
     options: [
-      { label: t('referral.inviteRecords.filters.all'), value: 'all' },
-      { label: t('referral.inviteRecords.filters.valid'), value: 'valid' },
-      { label: t('referral.inviteRecords.filters.invalid'), value: 'invalid' }
+      { label: t('referral.referralRecords.filters.all'), value: 'all' },
+      { label: t('referral.referralRecords.filters.valid'), value: 'valid' },
+      { label: t('referral.referralRecords.filters.invalid'), value: 'invalid' }
     ]
   },
   {
-    title: t('referral.inviteRecords.filterTitles.time'),
+    title: t('referral.referralRecords.filterTitles.time'),
     options: [
-      { label: t('referral.inviteRecords.filters.all'), value: 'all' },
-      { label: t('referral.inviteRecords.filters.today'), value: 'today' },
-      { label: t('referral.inviteRecords.filters.week'), value: 'week' },
-      { label: t('referral.inviteRecords.filters.month'), value: 'month' }
+      { label: t('referral.referralRecords.filters.all'), value: 'all' },
+      { label: t('referral.referralRecords.filters.today'), value: 'today' },
+      { label: t('referral.referralRecords.filters.week'), value: 'week' },
+      { label: t('referral.referralRecords.filters.month'), value: 'month' }
     ]
   }
 ])
 
-const records = ref<InviteRecord[]>([
+const records = ref<ReferralRecord[]>([
   {
     id: 1,
     account: '927123456',
@@ -196,17 +200,17 @@ const handleSort = () => {
 
 // 应用筛选弹窗中的筛选条件。
 const handleFilterApply = (values: Record<string, string | string[]>) => {
-  const status = getSingleValue(values['0']) as 'all' | InviteStatus
-  const time = getSingleValue(values['1']) as 'all' | InvitePeriod
+  const status = getSingleValue(values['0']) as 'all' | ReferralStatus
+  const time = getSingleValue(values['1']) as 'all' | ReferralPeriod
 
   if (status) selectedStatusFilter.value = status
   if (time) selectedTimeFilter.value = time
 }
 
 // 返回状态文案。
-const getStatusLabel = (status: InviteStatus) => t(`referral.inviteRecords.filters.${status}`)
+const getStatusLabel = (status: ReferralStatus) => t(`referral.referralRecords.filters.${status}`)
 
 // 返回状态颜色类名。
-const getStatusClass = (status: InviteStatus) =>
+const getStatusClass = (status: ReferralStatus) =>
   status === 'valid' ? 'text-[#4ADE80]' : 'text-[#FF8A8A]'
 </script>

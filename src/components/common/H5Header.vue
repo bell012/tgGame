@@ -22,7 +22,7 @@
           class="size-[33px] bg-opacity-5 rounded-md flex items-center justify-center cursor-pointer"
           @click="handleSort"
         >
-          <SiftIcon class="w-3.5 h-3.5" />
+          <component :is="rightIcon || SiftIcon" class="w-3.5 h-3.5 text-text-1" />
         </div>
       </div>
     </div>
@@ -30,13 +30,15 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import type { Component } from 'vue'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import SiftIcon from '@/static/svg/sift.svg?component'
+import { useRouter } from 'vue-router'
 
 interface Props {
   title?: string
   showSort?: boolean
+  rightIcon?: Component
 }
 
 withDefaults(defineProps<Props>(), {
