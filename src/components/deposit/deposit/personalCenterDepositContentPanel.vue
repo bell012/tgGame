@@ -14,39 +14,34 @@
     <div
       class="w-full flex-1 min-h-0 relative overflow-y-auto overscroll-contain mt-4 bg-bg-1 rounded-lg"
     >
-      <personalCenterCryptoPanel v-if="props.modelValue === 'Crypto'" @hidden="handleHidden" />
-      <personalCenterFiatPanel v-else-if="props.modelValue === 'Fiat'" @hidden="handleHidden" />
+      <personalCenterCryptoPanel v-if="selectTab === 'Crypto'" @hidden="handleHidden" />
+      <personalCenterFiatPanel v-else-if="selectTab === 'Fiat'" @hidden="handleHidden" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import personalCenterCryptoPanel from './personalCenterCryptoPanel.vue'
 import personalCenterFiatPanel from './personalCenterFiatPanel.vue'
 
 export type DepositTabType = 'Crypto' | 'Fiat'
 
-interface Props {
-  modelValue: DepositTabType
-}
-
-const props = defineProps<Props>()
-
 const emit = defineEmits<{
-  'update:modelValue': [val: DepositTabType]
   hidden: [val: boolean]
 }>()
 
 const depositTabs: DepositTabType[] = ['Crypto', 'Fiat']
+const selectTab = ref<DepositTabType>('Crypto')
 
 const getTabClass = (tab: DepositTabType) => {
-  const isActive = props.modelValue === tab
+  const isActive = selectTab.value === tab
 
   return [isActive ? 'text-text-1 bg-bg-7' : 'text-text-2 bg-bg-8']
 }
 
 const setActiveTab = (tab: DepositTabType) => {
-  emit('update:modelValue', tab)
+  selectTab.value = tab
 }
 
 const handleHidden = (val: boolean) => {

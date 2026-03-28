@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full min-h-full bg-bg-2 p-4 rounded-lg font-['Inter']">
+  <div class="w-full bg-bg-2 p-4 rounded-lg font-['Inter']">
     <p class="text-xs sm:text-sm font-bold leading-normal text-text-1">Deposit Methods</p>
     <div class="mt-2.5 overflow-hidden">
       <div
