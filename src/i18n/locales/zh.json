@@ -389,7 +389,20 @@
     "joinCommunity": "加入我们的社区",
     "signOut": "退出登录",
     "signOutTitle": "退出登录",
-    "signOutDescription": "您确定要退出吗？"
+    "signOutDescription": "您确定要退出吗？",
+    "myProfile": {
+      "title": "我的资料",
+      "profileId": "ID",
+      "edit": "编辑",
+      "statistics": "统计",
+      "totalWins": "总赢额",
+      "totalBets": "总投注笔数",
+      "totalWagered": "总投注额",
+      "topFavoriteGames": "Top 3 最爱游戏",
+      "noFavorites": "敬请期待—重磅惊喜即将登场！",
+      "betAmount": "投注金额",
+      "joinedOn": "加入于 {date}"
+    }
   },
   "userMenu": {
     "wallet": "钱包",

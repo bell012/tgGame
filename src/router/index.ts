@@ -197,6 +197,21 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'personal-center/my-profile',
+    name: 'personal-center-my-profile',
+    component: () => import('@/views/personalCenter/myProfile/index.vue'),
+    meta: {
+      title: '我的资料',
+      description: '我的资料',
+      mobileOnly: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'transaction-bet-details/:id',
     name: 'transaction-bet-details',
     component: () => import('@/views/transaction/betDetails/index.vue'),

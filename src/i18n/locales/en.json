@@ -392,7 +392,20 @@
     "joinCommunity": "Join Our Community",
     "signOut": "Sign Out",
     "signOutTitle": "Signing Out",
-    "signOutDescription": "Are you sure you want to log out?"
+    "signOutDescription": "Are you sure you want to log out?",
+    "myProfile": {
+      "title": "My Profile",
+      "profileId": "ID",
+      "edit": "Edit",
+      "statistics": "Statistics",
+      "totalWins": "Total Wins",
+      "totalBets": "Total Bets",
+      "totalWagered": "Total Wagered",
+      "topFavoriteGames": "Top 3 Favorite Games",
+      "noFavorites": "Stay tuned—something's coming!",
+      "betAmount": "Bet Amount",
+      "joinedOn": "Joined on {date}"
+    }
   },
   "userMenu": {
     "wallet": "Wallet",
