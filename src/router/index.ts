@@ -212,6 +212,21 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'personal-center/edit-profile',
+    name: 'personal-center-edit-profile',
+    component: () => import('@/views/personalCenter/editProfile/index.vue'),
+    meta: {
+      title: '编辑资料',
+      description: '编辑资料',
+      mobileOnly: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'transaction-bet-details/:id',
     name: 'transaction-bet-details',
     component: () => import('@/views/transaction/betDetails/index.vue'),

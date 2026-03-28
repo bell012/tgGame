@@ -402,6 +402,18 @@
       "noFavorites": "敬请期待—重磅惊喜即将登场！",
       "betAmount": "投注金额",
       "joinedOn": "加入于 {date}"
+    },
+    "editProfile": {
+      "title": "编辑资料",
+      "username": "用户名",
+      "usernameHint": "请不要使用特殊字符，否则可能无法正常支持。",
+      "avatarFrame": "头像边框",
+      "unlockHint": "达到 VIP 2 即可解锁",
+      "unused": "未使用",
+      "inUse": "使用中",
+      "editAvatar": "编辑头像",
+      "save": "保存",
+      "saveSuccess": "保存成功"
     }
   },
   "userMenu": {
