@@ -188,7 +188,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '个人中心',
       description: '个人中心',
-      mobileOnly: true,
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
