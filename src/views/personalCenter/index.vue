@@ -94,6 +94,7 @@
         <div class="grid grid-cols-2 gap-2.5">
           <button
             class="bg-bg-3 h-[34px] rounded-lg text-xs font-bold text-text-1 flex items-center justify-center"
+            @click.stop="navigateTo('/deposit')"
           >
             <DepositIocn class="w-5 h-5 text-text-1" />
             <div class="ml-[5px]">

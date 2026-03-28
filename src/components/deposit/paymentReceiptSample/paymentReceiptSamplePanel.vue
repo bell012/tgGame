@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full max-w-[480px] max-h-[66%] overflow-hidden rounded-xl modal-container bg-bg-1 sm:h-[612px] font-['Inter'] flex flex-col"
+    class="w-full max-w-[480px] max-h-[66%] sm:max-h-[612px] overflow-hidden rounded-xl modal-container bg-bg-1 sm:h-[612px] font-['Inter'] flex flex-col"
   >
     <div
       class="relative shrink-0 flex items-center justify-between h-14 bg-bg-2 rounded-tl-xl rounded-tr-xl"

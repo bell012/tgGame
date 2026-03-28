@@ -251,6 +251,20 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'deposit',
+    name: 'deposit',
+    component: () => import('@/views/wallet/deposit/index.vue'),
+    meta: {
+      title: '充值',
+      description: '充值',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 
