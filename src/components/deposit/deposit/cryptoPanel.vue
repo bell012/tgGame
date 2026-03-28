@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full min-h-full flex flex-col font-['Inter']">
+  <div class="w-full min-h-full font-['Inter']">
     <div class="w-full shrink-0 bg-bg-2 p-3 rounded-lg relative">
       <div class="w-full flex">
         <div class="flex gap-1 flex-1">
@@ -152,7 +152,7 @@
 
       <div class="w-full mt-4">
         <button
-          class="w-full py-4 lg:hover:btn-primary rounded-xl font-semibold text-text-4"
+          class="w-full h-10 sm:h-12 flex items-center justify-center lg:hover:btn-primary rounded-lg font-semibold text-text-4"
           :class="[!isDepositDisabled ? 'btn-primary' : 'bg-theme-2 opacity-40 cursor-not-allowed']"
           :disabled="isDepositDisabled"
           @click="doDeposit"
