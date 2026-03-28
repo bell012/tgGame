@@ -405,6 +405,18 @@
       "noFavorites": "Stay tuned—something's coming!",
       "betAmount": "Bet Amount",
       "joinedOn": "Joined on {date}"
+    },
+    "editProfile": {
+      "title": "Edit Profile",
+      "username": "Username",
+      "usernameHint": "Please do not use special characters, as they may not be supported.",
+      "avatarFrame": "Avatar Frame",
+      "unlockHint": "Reach VIP 2 to unlock",
+      "unused": "Unused",
+      "inUse": "In Use",
+      "editAvatar": "Edit Avatar",
+      "save": "Save",
+      "saveSuccess": "Saved successfully"
     }
   },
   "userMenu": {

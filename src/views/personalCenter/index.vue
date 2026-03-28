@@ -316,6 +316,7 @@ import ReferralPopup from '@/views/personalCenter/components/ReferralPopup.vue'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
+import { applyProfileCustomization } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import {
   getCurrentCurrency,
@@ -730,7 +731,7 @@ const parseStoredItem = <T,>(key: string): T | null => {
 
 // 加载用户信息
 const loadUserInfo = () => {
-  userInfo.value = parseStoredItem<PersonalCenterUserInfo>('userInfo')
+  userInfo.value = applyProfileCustomization(parseStoredItem<PersonalCenterUserInfo>('userInfo'))
   acctInfo.value = parseStoredItem<QueryAcctInfoResult>('acctInfo')
 }
 
@@ -752,10 +753,10 @@ const refreshUserInfo = async (memberId: string) => {
   try {
     const response = await Api.user.selectMember({ memberId })
     if (response?.result) {
-      const mergedUserInfo = {
+      const mergedUserInfo = applyProfileCustomization({
         ...(userInfo.value ?? {}),
         ...response.result
-      }
+      })
       userInfo.value = mergedUserInfo
       localStorage.setItem('userInfo', JSON.stringify(mergedUserInfo))
     }

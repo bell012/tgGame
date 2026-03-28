@@ -11,13 +11,26 @@
           </div>
 
           <div class="flex flex-col items-center text-center">
-            <div
-              class="relative h-[60px] w-[60px] rounded-full border-2 border-icon-2 overflow-visible"
-            >
-              <img :src="avatarUrl" alt="Avatar" class="h-full w-full rounded-full object-cover" />
+            <div class="relative h-[60px] w-[60px] overflow-visible">
+              <div
+                :class="[
+                  'absolute overflow-hidden rounded-full',
+                  selectedAvatarFrameImage ? 'inset-[6px]' : 'inset-0 border-2 border-icon-2'
+                ]"
+              >
+                <img :src="avatarUrl" alt="Avatar" class="h-full w-full object-cover" />
+              </div>
+
+              <img
+                v-if="selectedAvatarFrameImage"
+                :src="selectedAvatarFrameImage"
+                alt="Avatar Frame"
+                class="pointer-events-none absolute inset-0 h-full w-full object-contain"
+              />
+
               <span
                 class="absolute left-1/2 bottom-[-6px] z-10 flex h-[16px] min-w-[40px] -translate-x-1/2 items-center justify-center rounded border border-icon-1 bg-text-2 px-0.5 text-[10px] font-[700] text-text-1"
-                >VIP0</span
+                >VIP{{ userInfo?.vipId || 0 }}</span
               >
             </div>
             <h2 class="mt-2 text-base font-bold text-text-1">{{ displayName }}</h2>
@@ -33,6 +46,7 @@
             type="button"
             class="flex h-7 w-7 items-center justify-center rounded-lg bg-bg-4"
             :aria-label="t('personalCenter.myProfile.edit')"
+            @click="goToEditProfile"
           >
             <EditIcon class="h-[18px] w-[18px] text-text-1" />
           </button>
@@ -119,13 +133,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onActivated, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
 import Api from '@/api'
-import type { QueryAcctInfoResult, SelectMemberResult } from '@/api/interface/user'
+import type { QueryAcctInfoResult } from '@/api/interface/user'
 import H5Header from '@/components/common/H5Header.vue'
 import { getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
+import {
+  DEFAULT_AVATAR_FRAME_ID,
+  profileCustomizationState,
+  profileUserInfoState,
+  setProfileUserInfoState,
+  syncProfileCustomizationState,
+  syncProfileUserInfoState,
+  type AvatarFrameId
+} from '@/utils/profile-customization'
+import { navigateTo } from '@/utils/router'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import EditIcon from '@/static/svg/edit.svg?component'
 import LikeIcon from '@/static/svg/Like.svg?skipsvgo'
@@ -133,18 +157,31 @@ import StatisticsIcon from '@/static/svg/personalCenter/icon80.svg?component'
 import TotalWinsIcon from '@/static/svg/personalCenter/icon81.svg?component'
 import TotalBetsIcon from '@/static/svg/personalCenter/icon82.svg?component'
 import TotalWageredIcon from '@/static/svg/personalCenter/icon83.svg?component'
+import border1Image from '@/static/img/personalCenter/border_1.png'
+import border2Image from '@/static/img/personalCenter/border_2.png'
+import border3Image from '@/static/img/personalCenter/border_3.png'
+import border4Image from '@/static/img/personalCenter/border_4.png'
+import border5Image from '@/static/img/personalCenter/border_5.png'
 import noDataImage from '@/static/img/personalCenter/noData.png'
 import profileGameImage from '@/static/img/personalCenter/myProfile.png'
 
-type MyProfileUserInfo = Partial<SelectMemberResult> & { headPortrait?: string }
 interface FavoriteGame {
   name: string
   betAmount: string
 }
 
 const { t, locale } = useI18n()
-const userInfo = ref<MyProfileUserInfo | null>(null)
+const userInfo = profileUserInfoState
 const acctInfo = ref<QueryAcctInfoResult | null>(null)
+const profileCustomization = profileCustomizationState
+
+const avatarFrameImageMap: Record<Exclude<AvatarFrameId, 'none'>, string> = {
+  border_1: border1Image,
+  border_2: border2Image,
+  border_3: border3Image,
+  border_4: border4Image,
+  border_5: border5Image
+}
 
 const favoriteGames = ref<FavoriteGame[]>([
   {
@@ -168,7 +205,13 @@ const avatarUrl = computed(() => {
     : '/src/static/img/home/avatar.png'
 })
 
-const displayName = computed(() => userInfo.value?.nickName || 'Guest')
+const selectedAvatarFrameImage = computed(() => {
+  const avatarFrameId = profileCustomization.value.avatarFrameId ?? DEFAULT_AVATAR_FRAME_ID
+  if (avatarFrameId === DEFAULT_AVATAR_FRAME_ID) return ''
+  return avatarFrameImageMap[avatarFrameId as Exclude<AvatarFrameId, 'none'>]
+})
+
+const displayName = computed(() => userInfo.value?.nickName || '')
 const profileId = computed(() => userInfo.value?.memberId || acctInfo.value?.memberId || '--')
 const currentCurrency = computed(
   () => acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
@@ -255,7 +298,8 @@ const copyMemberId = async () => {
 }
 
 const loadStoredInfo = () => {
-  userInfo.value = parseStoredItem<MyProfileUserInfo>('userInfo')
+  syncProfileCustomizationState()
+  syncProfileUserInfoState()
   acctInfo.value = parseStoredItem<QueryAcctInfoResult>('acctInfo')
 }
 
@@ -277,13 +321,18 @@ const refreshUserInfo = async (memberId: string) => {
   try {
     const response = await Api.user.selectMember({ memberId })
     if (response?.result) {
-      const mergedUserInfo = { ...(userInfo.value ?? {}), ...response.result }
-      userInfo.value = mergedUserInfo
-      localStorage.setItem('userInfo', JSON.stringify(mergedUserInfo))
+      setProfileUserInfoState({
+        ...(userInfo.value ?? {}),
+        ...response.result
+      })
     }
   } catch (error) {
     console.error(error)
   }
+}
+
+const goToEditProfile = () => {
+  navigateTo('/personal-center/edit-profile')
 }
 
 const initializeMyProfile = async () => {
@@ -304,6 +353,10 @@ const initializeMyProfile = async () => {
 
 onMounted(() => {
   void initializeMyProfile()
+})
+
+onActivated(() => {
+  loadStoredInfo()
 })
 </script>
 
