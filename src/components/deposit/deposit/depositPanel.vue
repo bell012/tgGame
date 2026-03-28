@@ -7,7 +7,7 @@
     }"
   >
     <div
-      class="relative flex items-center justify-between h-12 sm:h-14 rounded-tl-xl rounded-tr-xl bg-bg-2"
+      class="relative flex items-center justify-between h-12 sm:h-14 sm:rounded-tl-xl sm:rounded-tr-xl bg-bg-2"
     >
       <h2 class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg font-semibold text-text-1">
         {{ t('deposit.title') }}
@@ -19,13 +19,13 @@
           class="absolute left-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
           @click="handleClose"
         >
-          <LeftArrowIcon class="w-4 h-4" />
+          <LeftArrowIcon class="w-4 h-4 text-icon-1" />
         </button>
         <button
           class="absolute right-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
           @click="handleClose"
         >
-          <DetailsIcon class="w-4 h-4" />
+          <DetailsIcon class="w-4 h-4 text-icon-1" />
         </button>
       </template>
       <template v-else>

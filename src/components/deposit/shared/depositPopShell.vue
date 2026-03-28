@@ -1,6 +1,6 @@
 <template>
   <teleport to="body">
-    <transition name="modal">
+    <transition :name="props.transitionType">
       <div
         v-if="modelValue"
         v-show="isMobile || !isHidden"
@@ -23,13 +23,15 @@ interface Props {
   withMask?: boolean
   zoom?: boolean
   closeOnOverlayClick?: boolean
+  transitionType?: 'modal' | 'drawer-slide'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isHidden: false,
   withMask: true,
   zoom: false,
-  closeOnOverlayClick: true
+  closeOnOverlayClick: true,
+  transitionType: 'modal'
 })
 
 const emit = defineEmits<{
@@ -86,5 +88,21 @@ const handleOverlayClick = () => {
   .modal-leave-to :deep(.modal-container) {
     transform: scale(0.9);
   }
+}
+
+// 抽屉滑动动画 - 从右往左滑入，从左往右滑出
+.drawer-slide-enter-active,
+.drawer-slide-leave-active {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawer-slide-enter-from,
+.drawer-slide-leave-to {
+  transform: translateX(100%);
+}
+
+.drawer-slide-enter-to,
+.drawer-slide-leave-from {
+  transform: translateX(0);
 }
 </style>
