@@ -134,19 +134,15 @@
 
 <script setup lang="ts">
 import { computed, onActivated, onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
-import Api from '@/api'
-import type { QueryAcctInfoResult } from '@/api/interface/user'
 import H5Header from '@/components/common/H5Header.vue'
+import { useUserStore } from '@/stores/user'
 import { getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
 import {
   DEFAULT_AVATAR_FRAME_ID,
   profileCustomizationState,
-  profileUserInfoState,
-  setProfileUserInfoState,
-  syncProfileCustomizationState,
-  syncProfileUserInfoState,
   type AvatarFrameId
 } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
@@ -171,8 +167,8 @@ interface FavoriteGame {
 }
 
 const { t, locale } = useI18n()
-const userInfo = profileUserInfoState
-const acctInfo = ref<QueryAcctInfoResult | null>(null)
+const userStore = useUserStore()
+const { userInfo, acctInfo } = storeToRefs(userStore)
 const profileCustomization = profileCustomizationState
 
 const avatarFrameImageMap: Record<Exclude<AvatarFrameId, 'none'>, string> = {
@@ -254,17 +250,6 @@ const joinedOnText = computed(() => {
   return t('personalCenter.myProfile.joinedOn', { date: formattedDate })
 })
 
-const parseStoredItem = <T,>(key: string) => {
-  const storedValue = localStorage.getItem(key)
-  if (!storedValue) return null
-  try {
-    return JSON.parse(storedValue) as T
-  } catch (error) {
-    console.error(error)
-    return null
-  }
-}
-
 const fallbackCopyText = (value: string) => {
   const textarea = document.createElement('textarea')
   textarea.value = value
@@ -297,58 +282,13 @@ const copyMemberId = async () => {
   }
 }
 
-const loadStoredInfo = () => {
-  syncProfileCustomizationState()
-  syncProfileUserInfoState()
-  acctInfo.value = parseStoredItem<QueryAcctInfoResult>('acctInfo')
-}
-
-const refreshAcctInfo = async () => {
-  try {
-    const response = await Api.user.queryAcctInfo({})
-    if (response?.result) {
-      acctInfo.value = response.result
-      localStorage.setItem('acctInfo', JSON.stringify(response.result))
-    }
-    return response?.result
-  } catch (error) {
-    console.error(error)
-    return null
-  }
-}
-
-const refreshUserInfo = async (memberId: string) => {
-  try {
-    const response = await Api.user.selectMember({ memberId })
-    if (response?.result) {
-      setProfileUserInfoState({
-        ...(userInfo.value ?? {}),
-        ...response.result
-      })
-    }
-  } catch (error) {
-    console.error(error)
-  }
-}
-
 const goToEditProfile = () => {
   navigateTo('/personal-center/edit-profile')
 }
 
 const initializeMyProfile = async () => {
-  loadStoredInfo()
-  const storedMemberId = userInfo.value?.memberId || acctInfo.value?.memberId
-
-  if (storedMemberId) {
-    await Promise.all([refreshAcctInfo(), refreshUserInfo(storedMemberId)])
-    return
-  }
-
-  const latestAcctInfo = await refreshAcctInfo()
-  const memberId = latestAcctInfo?.memberId || acctInfo.value?.memberId
-  if (memberId) {
-    await refreshUserInfo(memberId)
-  }
+  userStore.syncStoredUserData()
+  await userStore.refreshCurrentUserData()
 }
 
 onMounted(() => {
@@ -356,7 +296,7 @@ onMounted(() => {
 })
 
 onActivated(() => {
-  loadStoredInfo()
+  userStore.syncStoredUserData()
 })
 </script>
 

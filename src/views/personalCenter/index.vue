@@ -305,18 +305,16 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import Api from '@/api'
 import SignOutPopup from '@/components/common/SignOutPopup.vue'
-import type { QueryAcctInfoResult, SelectMemberResult } from '@/api/interface/user'
 import CurrencyPopup from '@/views/personalCenter/components/CurrencyPopup.vue'
 import LanguagePopup from '@/views/personalCenter/components/LanguagePopup.vue'
 import ReferralPopup from '@/views/personalCenter/components/ReferralPopup.vue'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
-import { applyProfileCustomization } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import {
   getCurrentCurrency,
@@ -347,10 +345,7 @@ const { t } = useI18n()
 const localeStore = useLocaleStore()
 const themeStore = useThemeStore()
 const userStore = useUserStore()
-
-type PersonalCenterUserInfo = Partial<SelectMemberResult> & {
-  headPortrait?: string
-}
+const { userInfo, acctInfo } = storeToRefs(userStore)
 
 const balanceFieldMap = {
   BRL: 'balanceBrl',
@@ -385,10 +380,6 @@ const getIcon = (iconNumber: number) => {
     () => import(`@/static/svg/personalCenter/icon${iconNumber}.svg?component`)
   )
 }
-
-// 用户信息
-const userInfo = ref<PersonalCenterUserInfo | null>(null)
-const acctInfo = ref<QueryAcctInfoResult | null>(null)
 
 const showReferralPopup = ref(false)
 const showLanguagePopup = ref(false)
@@ -714,73 +705,9 @@ const handleCurrencySelect = (code: string) => {
   localeStore.setCurrency(code)
 }
 
-const parseStoredItem = <T,>(key: string): T | null => {
-  const storedValue = localStorage.getItem(key)
-
-  if (!storedValue) {
-    return null
-  }
-
-  try {
-    return JSON.parse(storedValue) as T
-  } catch (error) {
-    console.error(error)
-    return null
-  }
-}
-
-// 加载用户信息
-const loadUserInfo = () => {
-  userInfo.value = applyProfileCustomization(parseStoredItem<PersonalCenterUserInfo>('userInfo'))
-  acctInfo.value = parseStoredItem<QueryAcctInfoResult>('acctInfo')
-}
-
-const refreshAcctInfo = async () => {
-  try {
-    const response = await Api.user.queryAcctInfo({})
-    if (response?.result) {
-      acctInfo.value = response.result
-      localStorage.setItem('acctInfo', JSON.stringify(response.result))
-    }
-    return response?.result
-  } catch (error) {
-    console.error(error)
-    return null
-  }
-}
-
-const refreshUserInfo = async (memberId: string) => {
-  try {
-    const response = await Api.user.selectMember({ memberId })
-    if (response?.result) {
-      const mergedUserInfo = applyProfileCustomization({
-        ...(userInfo.value ?? {}),
-        ...response.result
-      })
-      userInfo.value = mergedUserInfo
-      localStorage.setItem('userInfo', JSON.stringify(mergedUserInfo))
-    }
-  } catch (error) {
-    console.error(error)
-  }
-}
-
 const initializePersonalCenter = async () => {
-  loadUserInfo()
-
-  const storedMemberId = userInfo.value?.memberId || acctInfo.value?.memberId
-
-  if (storedMemberId) {
-    await Promise.all([refreshAcctInfo(), refreshUserInfo(storedMemberId)])
-    return
-  }
-
-  const latestAcctInfo = await refreshAcctInfo()
-  const memberId = latestAcctInfo?.memberId || acctInfo.value?.memberId
-
-  if (memberId) {
-    await refreshUserInfo(memberId)
-  }
+  userStore.syncStoredUserData()
+  await userStore.refreshCurrentUserData()
 }
 
 onMounted(() => {
