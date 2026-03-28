@@ -85,11 +85,11 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'menu/referral/commission-methods',
-    name: 'menuReferralCommissionMethods',
-    component: () => import('@/views/menu/referral/commission-methods/index.vue'),
+    path: 'menu/referral/commission-records',
+    name: 'menuReferralCommissionRecords',
+    component: () => import('@/views/menu/referral/commission-records/index.vue'),
     meta: {
-      title: '佣金获取方式列表',
+      title: '佣金记录列表',
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -109,11 +109,11 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'menu/referral/invite-records',
-    name: 'menuReferralInviteRecords',
-    component: () => import('@/views/menu/referral/invite-records/index.vue'),
+    path: 'menu/referral/referral-records',
+    name: 'menuReferralReferralRecords',
+    component: () => import('@/views/menu/referral/referral-records/index.vue'),
     meta: {
-      title: '我的代理-邀请记录列表',
+      title: '我的代理-推荐记录列表',
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
