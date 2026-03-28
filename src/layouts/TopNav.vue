@@ -70,7 +70,7 @@
             <div class="flex items-center justify-center cursor-pointer ml-1">
               <div class="w-10 h-10 mr-1">
                 <img
-                  src="/src/static/img/home/php.png"
+                  src="/src/static/img/flag/php.png"
                   alt="php"
                   class="w-full h-full object-cover"
                 />
@@ -99,7 +99,7 @@
             <div class="flex items-center justify-center cursor-pointer ml-1">
               <div class="w-5 h-5 mr-1">
                 <img
-                  src="/src/static/img/home/php.png"
+                  src="/src/static/img/flag/php.png"
                   alt="php"
                   class="w-full h-full object-cover"
                 />
