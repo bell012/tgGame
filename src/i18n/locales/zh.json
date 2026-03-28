@@ -412,6 +412,12 @@
       "unused": "未使用",
       "inUse": "使用中",
       "editAvatar": "编辑头像",
+      "takePhoto": "拍照",
+      "chooseFromAlbum": "从手机相册选择",
+      "cancel": "取消",
+      "select": "选择",
+      "cropHint": "拖动并缩放图片以调整头像",
+      "zoom": "缩放",
       "save": "保存",
       "saveSuccess": "保存成功"
     }

@@ -3,6 +3,8 @@ import type { SelectMemberResult } from '@/api/interface/user'
 
 export const PROFILE_CUSTOMIZATION_STORAGE_KEY = 'profileCustomization'
 export const USER_INFO_STORAGE_KEY = 'userInfo'
+const DEFAULT_AVATAR_IMAGE = '/src/static/img/home/avatar.png'
+const ABSOLUTE_AVATAR_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
 
 export const AVATAR_FRAME_IDS = [
   'none',
@@ -81,6 +83,34 @@ export const profileCustomizationState = ref<ProfileCustomization>(getStoredProf
 export const profileUserInfoState = ref<StoredProfileUserInfo | null>(
   applyProfileCustomization(getStoredUserInfo())
 )
+export const profileAvatarPreviewState = ref('')
+
+export const setProfileAvatarPreviewState = (avatarUrl: string | null | undefined) => {
+  profileAvatarPreviewState.value = avatarUrl?.trim() ?? ''
+  return profileAvatarPreviewState.value
+}
+
+export const clearProfileAvatarPreviewState = () => {
+  profileAvatarPreviewState.value = ''
+  return profileAvatarPreviewState.value
+}
+
+export const resolveProfileAvatarUrl = (headPortrait?: string) => {
+  if (profileAvatarPreviewState.value) {
+    return profileAvatarPreviewState.value
+  }
+
+  if (!headPortrait) {
+    return DEFAULT_AVATAR_IMAGE
+  }
+
+  if (ABSOLUTE_AVATAR_URL_PATTERN.test(headPortrait)) {
+    return headPortrait
+  }
+
+  const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
+  return baseUrl ? `${baseUrl}${headPortrait}` : DEFAULT_AVATAR_IMAGE
+}
 
 export const syncProfileCustomizationState = () => {
   profileCustomizationState.value = getStoredProfileCustomization()
