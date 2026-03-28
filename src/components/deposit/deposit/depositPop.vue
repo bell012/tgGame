@@ -4,6 +4,7 @@
     :isHidden="hiddenPop"
     :withMask="true"
     :zoom="true"
+    :transitionType="isMobile ? 'drawer-slide' : 'modal'"
     @overlay-close="handleClose"
   >
     <depositPanel v-model="activeTab" @close="handleClose" @hidden="handleHidden" />
@@ -12,9 +13,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import depositPanel from './depositPanel.vue'
 import depositPopShell from '../shared/depositPopShell.vue'
 
+const isMobile = useIsMobile()
 interface Props {
   modelValue: boolean
 }
