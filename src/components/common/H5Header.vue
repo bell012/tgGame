@@ -7,7 +7,7 @@
         class="size-[33px] bg-opacity-5 rounded-md flex items-center justify-center cursor-pointer"
         @click="handleBack"
       >
-        <ArrowLeftIcon class="w-3.5 h-3.5" />
+        <ArrowLeftIcon class="w-3.5 h-3.5 text-text-1" />
       </div>
 
       <!-- 中间标题 -->
@@ -23,6 +23,7 @@
           @click="handleSort"
         >
           <component :is="rightIcon || SiftIcon" class="w-3.5 h-3.5 text-text-1" />
+          <SiftIcon class="w-3.5 h-3.5 text-text-1" />
         </div>
       </div>
     </div>
@@ -30,9 +31,9 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from 'vue'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import SiftIcon from '@/static/svg/sift.svg?component'
+import type { Component } from 'vue'
 import { useRouter } from 'vue-router'
 
 interface Props {

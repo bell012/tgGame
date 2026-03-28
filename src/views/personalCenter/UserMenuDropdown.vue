@@ -1,28 +1,33 @@
 <template>
-  <!-- PC端 点击头像下拉菜单 -->
-  <transition name="dropdown-fade">
-    <div
-      v-if="modelValue"
-      class="absolute top-[52px] right-0 w-[240px] bg-bg-5 rounded-lg overflow-hidden z-50"
-    >
-      <div class="p-2">
-        <div
-          v-for="item in mainMenus"
-          :key="item.id"
-          class="flex items-center gap-2 p-2 cursor-pointer hover:bg-bg-3 hover:rounded-lg transition-colors"
-          @click="item.handler"
-        >
-          <component :is="item.icon" class="w-6 h-6" />
-          <span class="text-text-2 text-sm font-[700]">{{ item.name }}</span>
+  <div>
+    <!-- PC端 点击头像下拉菜单 -->
+    <transition name="dropdown-fade">
+      <div
+        v-if="modelValue"
+        class="absolute top-[52px] right-0 w-[240px] bg-bg-5 rounded-lg overflow-hidden z-50"
+      >
+        <div class="p-2">
+          <div
+            v-for="item in mainMenus"
+            :key="item.id"
+            class="flex items-center gap-2 p-2 cursor-pointer hover:bg-bg-3 hover:rounded-lg transition-colors"
+            @click="item.handler"
+          >
+            <component :is="item.icon" class="w-6 h-6" />
+            <span class="text-text-2 text-sm font-[700]">{{ item.name }}</span>
+          </div>
         </div>
       </div>
-    </div>
-  </transition>
+    </transition>
+
+    <SignOutPopup v-model:visible="showSignOutPopup" @confirm="confirmSignOut" />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SignOutPopup from '@/components/common/SignOutPopup.vue'
 import { navigateTo } from '@/utils/router'
 import { useUserStore } from '@/stores/user'
 
@@ -45,6 +50,12 @@ defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
+
+const showSignOutPopup = ref(false)
+
+const confirmSignOut = () => {
+  userStore.logout()
+}
 
 const mainMenus = computed(() => [
   {
@@ -151,8 +162,8 @@ const mainMenus = computed(() => [
     name: t('userMenu.logOut'),
     icon: getIcon(71),
     handler: () => {
-      userStore.logout()
-      window.location.reload()
+      emit('update:modelValue', false)
+      showSignOutPopup.value = true
     }
   }
 ])

@@ -389,6 +389,11 @@
     "commission": "commission",
     "copy": "Copy",
     "copySuccess": "Copied successfully",
+    "inviteFriends": "Invite Friends",
+    "inviteFriendsAndGet": "Invite friends and get",
+    "inviteFriendsEarnBonus": "Invite friends, earn bonus",
+    "shareViaWebLink": "Share via web link",
+    "copyLink": "Copy link",
     "upgrade": "Upgrade",
     "deposit": "Deposit",
     "validBet": "Valid Bet",
@@ -410,7 +415,9 @@
     "liveSupport": "Live Support",
     "leaveFeedback": "Leave Feedback",
     "joinCommunity": "Join Our Community",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "signOutTitle": "Signing Out",
+    "signOutDescription": "Are you sure you want to log out?"
   },
   "userMenu": {
     "wallet": "Wallet",
@@ -425,5 +432,28 @@
     "myProfile": "My Profile",
     "globalSettings": "Global Settings",
     "logOut": "Log Out"
+  },
+  "deposit": {
+    "title": "Deposit",
+    "deposit_more": "More",
+    "deposit_channel": "Deposit Channel",
+    "deposit_amount": "Deposit Amount",
+    "deposit_amount_input_placeholder": "Please select a deposit amount",
+    "deposit_now": "Deposit Now",
+    "deposit_order": "Deposit Order",
+    "cancel_order_title": "Cancel Order",
+    "cancel_order_tips": "Please select a reason for cancellation",
+    "cancel_order_confirm_cancel": "Confirm Cancel",
+    "deposit_order_bottom_tips": "Please cancel the order if you do not plan to pay. Repeated unpaid orders may result in account restrictions.",
+    "upload_proof": "Upload Proof",
+    "upload_proof_title": "Upload Payment Proof",
+    "upload_proof_tips_1_1": "Upload a screenshot of the full transaction details showing the ",
+    "upload_proof_tips_1_2": "amount, address, status, timestamp, and transaction ID.",
+    "upload_proof_tips_2": "You are solely responsible for any financial losses caused by uploading the wrong screenshot.",
+    "upload_view_btn_text": "View Sample Receipt",
+    "upload_btn_text": "Add Proof",
+    "upload_proof_confirm_btn_text": "Upload Proof Now",
+    "payment_receipt_sample_title": "Payment Receipt Sample",
+    "upload_proof_again_btn_text": "Upload Proof Again"
   }
 }
