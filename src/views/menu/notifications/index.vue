@@ -1,14 +1,42 @@
 <template>
+  <!-- 通知列表页面 -->
   <section
-    class="notification-detail-page min-h-screen bg-bg-1 -mx-[14px] sm:mx-auto sm:max-w-[420px]"
+    :class="
+      props.panelMode
+        ? 'notification-list-page h-full bg-bg-1'
+        : 'notification-list-page min-h-screen bg-bg-1 -mx-[14px] sm:mx-auto sm:max-w-[420px]'
+    "
   >
+    <!-- 通知列表容器 -->
     <div
-      class="notifications-shell min-h-screen bg-bg-1"
+      :class="
+        props.panelMode
+          ? 'notifications-shell flex h-full min-h-0 flex-col bg-bg-1'
+          : 'notifications-shell min-h-screen bg-bg-1'
+      "
       style="font-family: Inter, avertastd, sans-serif"
     >
-      <H5Header :title="$t('notifications.title')" :show-sort="false" @sort="false" />
+      <!-- 页面头部 -->
+      <H5Header
+        :title="$t('notifications.title')"
+        :show-sort="props.panelMode"
+        :show-back="!props.panelMode"
+        :right-icon="props.panelMode ? CloseIcon : undefined"
+        :fixed-top="!props.panelMode"
+        :disable-default-back="props.panelMode"
+        @back="handleHeaderBack"
+        @sort="handlePanelClose"
+      />
 
-      <main class="page-body px-[14px] pb-[calc(env(safe-area-inset-bottom)+74px)] mt-[14px]">
+      <!-- 页面主体 -->
+      <main
+        :class="
+          props.panelMode
+            ? 'page-body min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-3'
+            : 'page-body mt-[14px] px-[14px] pb-[calc(env(safe-area-inset-bottom)+74px)]'
+        "
+      >
+        <!-- 通知分类导航 -->
         <nav
           class="tab-bar flex min-h-[37px] w-full items-stretch rounded-[12px] bg-bg-2"
           :aria-label="$t('notifications.tabsAria')"
@@ -36,10 +64,12 @@
           </button>
         </nav>
 
+        <!-- 通知列表区域 -->
         <section
           v-if="filteredNotifications.length > 0"
           class="notice-stack mt-[14px] flex flex-col gap-[10px]"
         >
+          <!-- 通知卡片 -->
           <article
             v-for="item in filteredNotifications"
             :key="`${item.category}-${item.rowId}`"
@@ -52,6 +82,7 @@
             ]"
           >
             <template v-if="isTransactionNotification(item)">
+              <!-- 交易通知内容 -->
               <div class="notice-title-row flex items-center gap-[7px]">
                 <h2
                   class="notice-title min-w-0 break-words text-[14px] font-[700] leading-[17px] text-text-1"
@@ -64,12 +95,14 @@
                 ></span>
               </div>
 
+              <!-- 交易通知正文 -->
               <p
                 class="notice-message break-words text-[12px] font-[400] leading-[15px] text-text-1"
               >
                 {{ getTransactionMessage(item) }}
               </p>
 
+              <!-- 交易通知底部信息 -->
               <div
                 class="notice-footer flex items-center justify-between gap-[12px] border-t border-opacity-5 py-[10px]"
               >
@@ -89,6 +122,7 @@
             </template>
 
             <template v-else>
+              <!-- 普通通知点击区域 -->
               <div class="cursor-pointer" @click="openNotificationDetail(item)">
                 <div class="notice-title-row flex items-center gap-[7px]">
                   <h2
@@ -102,6 +136,7 @@
                   ></span>
                 </div>
 
+                <!-- 通知预览图片区 -->
                 <div
                   v-if="hasPreviewImage(item)"
                   class="notice-preview mt-[10px] h-[150px] w-full overflow-hidden rounded-[8px]"
@@ -113,6 +148,7 @@
                   />
                 </div>
 
+                <!-- 通知预览文本区 -->
                 <div
                   v-else
                   class="notice-content-preview mt-[10px] flex min-h-[32px] flex-col justify-between gap-[10px] rounded-[8px] px-[12px] py-[12px]"
@@ -130,7 +166,15 @@
                 </div>
               </div>
 
-              <div class="notice-footer flex items-center justify-between gap-[12px]">
+              <!-- 普通通知底部信息 -->
+              <div
+                class="notice-footer flex items-center justify-between gap-[12px]"
+                :class="
+                  !hasPreviewImage(item)
+                    ? 'border-t border-t-[var(--color-opacity-6,#FFFFFF0F)] pt-[10px]'
+                    : ''
+                "
+              >
                 <time
                   class="notice-time cursor-pointer text-[12px] font-[400] leading-[1.2] text-text-2"
                   @click="openNotificationDetail(item)"
@@ -151,6 +195,7 @@
           </article>
         </section>
 
+        <!-- 首次加载提示 -->
         <div
           v-else-if="activeCategoryLoading && !activeCategoryLoaded"
           class="mt-[14px] flex items-center justify-center py-[36px] text-[12px] text-text-2"
@@ -158,6 +203,7 @@
           {{ $t('notifications.loading') }}
         </div>
 
+        <!-- 空状态 -->
         <ThemedEmptyState
           v-else
           :dark-image="defaultImgDark"
@@ -167,8 +213,10 @@
           text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
         />
 
+        <!-- 加载更多监听锚点 -->
         <div ref="loadMoreSentinel" class="h-px w-full"></div>
 
+        <!-- 加载更多提示 -->
         <p
           v-if="activeCategoryLoading && activeCategoryLoaded"
           class="pb-[16px] pt-[14px] text-center text-[12px] text-text-2"
@@ -186,9 +234,15 @@
         </p>
       </main>
 
+      <!-- 页面底部操作栏 -->
       <footer
-        class="bottom-bar fixed bottom-0 left-0 right-0 z-20 flex h-[calc(env(safe-area-inset-bottom)+49px)] items-center justify-between gap-[14px] bg-bg-2 px-[14px] pb-[calc(env(safe-area-inset-bottom)+10px)] pt-[10px]"
+        :class="
+          props.panelMode
+            ? 'bottom-bar shrink-0 flex h-[49px] items-center justify-between gap-[14px] bg-bg-2 px-[14px]'
+            : 'bottom-bar fixed bottom-0 left-0 right-0 z-20 flex h-[calc(env(safe-area-inset-bottom)+49px)] items-center justify-between gap-[14px] bg-bg-2 px-[14px] pb-[calc(env(safe-area-inset-bottom)+10px)] pt-[10px]'
+        "
       >
+        <!-- 未读筛选按钮 -->
         <button
           type="button"
           class="unread-control inline-flex min-w-0 items-center gap-[7px]"
@@ -202,7 +256,7 @@
             :class="showUnreadOnly ? 'toggle-track-active bg-secondary-3' : 'bg-opacity-5'"
           >
             <span
-              class="toggle-thumb absolute left-[3px] top-[3px] h-[15px] w-[15px] rounded-full bg-common-60 shadow-[0_2px_4px_rgba(0,0,0,0.18)] transition-[transform,background-color] duration-200"
+              class="toggle-thumb absolute left-[3px] top-[3px] h-[15px] w-[15px] rounded-full bg-common-60 shadow-sm transition-[transform,background-color] duration-200"
               :class="
                 showUnreadOnly
                   ? 'toggle-thumb-active translate-x-[18px] bg-theme-primary'
@@ -212,6 +266,7 @@
           </span>
         </button>
 
+        <!-- 全部标已读按钮 -->
         <button
           type="button"
           class="mark-read-button inline-flex items-center justify-end gap-[6px] text-right text-[12px] font-[400] leading-[1.2]"
@@ -228,67 +283,138 @@
         </button>
       </footer>
 
+      <!-- 删除确认弹窗遮罩 -->
       <div
         v-if="showDeleteConfirm"
         class="fixed inset-0 z-30 flex items-center justify-center bg-mask-60-1 px-[14px]"
         @click.self="closeDeleteConfirm"
       >
+        <!-- 删除确认弹窗 -->
         <section
-          class="relative w-full max-w-[300px] rounded-[14px] bg-bg-1 p-[20px]"
+          :class="
+            props.panelMode
+              ? 'w-full max-w-[492px] rounded-3xl bg-bg-5 p-8'
+              : 'relative w-full max-w-[300px] rounded-[14px] bg-bg-1 p-[20px]'
+          "
           role="dialog"
           aria-modal="true"
           aria-labelledby="delete-notification-title"
           aria-describedby="delete-notification-description"
         >
-          <button
-            type="button"
-            class="inline-flex h-[28px] w-[28px] items-center justify-center rounded-[6px] bg-opacity-10"
-            style="position: absolute; right: 14px; top: 14px"
-            @click="closeDeleteConfirm"
-            :aria-label="$t('notifications.closeDeleteDialogAria')"
-          >
-            <component :is="CloseIcon" class="h-2.5 w-2.5 text-icon-1" />
-          </button>
+          <template v-if="props.panelMode">
+            <!-- PC 弹窗内容区 -->
+            <div class="flex flex-col gap-6">
+              <!-- PC 弹窗文案区 -->
+              <div class="flex flex-col gap-4">
+                <!-- PC 弹窗标题行 -->
+                <div class="flex items-start justify-between gap-6">
+                  <h2
+                    id="delete-notification-title"
+                    class="text-[20px] font-[700] leading-6 text-text-1 capitalize"
+                  >
+                    {{ $t('notifications.deleteDialog.title') }}
+                  </h2>
 
-          <div class="flex flex-col gap-[30px]">
-            <div class="flex flex-col gap-[14px]">
-              <h2
-                id="delete-notification-title"
-                class="text-[16px] font-[700] leading-[19px] text-text-1"
-              >
-                {{ $t('notifications.deleteDialog.title') }}
-              </h2>
-              <p
-                id="delete-notification-description"
-                class="text-[14px] font-[400] leading-[17px] text-text-2"
-              >
-                {{ $t('notifications.deleteDialog.description') }}
-              </p>
-            </div>
+                  <!-- PC 弹窗关闭按钮 -->
+                  <button
+                    type="button"
+                    class="inline-flex h-6 w-6 items-center justify-center rounded bg-opacity-10"
+                    @click="closeDeleteConfirm"
+                    :aria-label="$t('notifications.closeDeleteDialogAria')"
+                  >
+                    <component :is="CloseIcon" class="h-3 w-3 text-text-1" />
+                  </button>
+                </div>
 
-            <div class="flex flex-col gap-[13px]">
-              <button
-                type="button"
-                class="inline-flex h-[40px] items-center justify-center rounded-[8px] bg-theme-primary text-[14px] font-[700] leading-[17px] text-text-4"
-                :disabled="isDeletingNotification"
-                @click="confirmRemoveNotification"
-              >
-                {{
-                  isDeletingNotification
-                    ? $t('notifications.deleteDialog.confirmLoading')
-                    : $t('notifications.deleteDialog.confirm')
-                }}
-              </button>
-              <button
-                type="button"
-                class="inline-flex h-[40px] items-center justify-center rounded-[8px] bg-opacity-10 text-[14px] font-[400] leading-[17px] text-text-2"
-                :disabled="isDeletingNotification"
-                @click="closeDeleteConfirm"
-              >
-                {{ $t('common.cancel') }}
-              </button>
+                <p
+                  id="delete-notification-description"
+                  class="text-sm font-[400] leading-5 text-text-2"
+                >
+                  {{ $t('notifications.deleteDialog.description') }}
+                </p>
+              </div>
+
+              <!-- PC 弹窗操作区 -->
+              <div class="flex gap-6">
+                <button
+                  type="button"
+                  class="inline-flex h-12 flex-1 items-center justify-center rounded-lg bg-opacity-10 text-sm font-[700] leading-[17px] text-text-2"
+                  :disabled="isDeletingNotification"
+                  @click="closeDeleteConfirm"
+                >
+                  {{ $t('common.cancel') }}
+                </button>
+
+                <button
+                  type="button"
+                  class="inline-flex h-12 flex-1 items-center justify-center rounded-lg bg-theme-primary text-sm font-[700] leading-[17px] text-text-4"
+                  :disabled="isDeletingNotification"
+                  @click="confirmRemoveNotification"
+                >
+                  {{
+                    isDeletingNotification
+                      ? $t('notifications.deleteDialog.confirmLoading')
+                      : $t('notifications.deleteDialog.confirm')
+                  }}
+                </button>
+              </div>
             </div>
-          </div>
+          </template>
+
+          <template v-else>
+            <!-- H5 弹窗关闭按钮 -->
+            <button
+              type="button"
+              class="absolute right-[14px] top-[14px] inline-flex h-[28px] w-[28px] items-center justify-center rounded-[6px] bg-opacity-10"
+              @click="closeDeleteConfirm"
+              :aria-label="$t('notifications.closeDeleteDialogAria')"
+            >
+              <component :is="CloseIcon" class="h-2.5 w-2.5 text-icon-1" />
+            </button>
+
+            <!-- H5 弹窗内容区 -->
+            <div class="flex flex-col gap-[30px]">
+              <!-- H5 弹窗文案区 -->
+              <div class="flex flex-col gap-[14px]">
+                <h2
+                  id="delete-notification-title"
+                  class="text-[16px] font-[700] leading-[19px] text-text-1"
+                >
+                  {{ $t('notifications.deleteDialog.title') }}
+                </h2>
+                <p
+                  id="delete-notification-description"
+                  class="text-[14px] font-[400] leading-[17px] text-text-2"
+                >
+                  {{ $t('notifications.deleteDialog.description') }}
+                </p>
+              </div>
+
+              <!-- H5 弹窗操作区 -->
+              <div class="flex flex-col gap-[13px]">
+                <button
+                  type="button"
+                  class="inline-flex h-[40px] items-center justify-center rounded-[8px] bg-theme-primary text-[14px] font-[700] leading-[17px] text-text-4"
+                  :disabled="isDeletingNotification"
+                  @click="confirmRemoveNotification"
+                >
+                  {{
+                    isDeletingNotification
+                      ? $t('notifications.deleteDialog.confirmLoading')
+                      : $t('notifications.deleteDialog.confirm')
+                  }}
+                </button>
+                <button
+                  type="button"
+                  class="inline-flex h-[40px] items-center justify-center rounded-[8px] bg-opacity-10 text-[14px] font-[400] leading-[17px] text-text-2"
+                  :disabled="isDeletingNotification"
+                  @click="closeDeleteConfirm"
+                >
+                  {{ $t('common.cancel') }}
+                </button>
+              </div>
+            </div>
+          </template>
         </section>
       </div>
     </div>
@@ -325,6 +451,7 @@ import {
 import { navigateTo } from '@/utils/router'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+
 type NotificationCategory = 'promotions' | 'transactions' | 'system'
 const PAGE_SIZE = 10
 const NOTIFICATION_DETAIL_STORAGE_KEY = 'menuNotificationDetail'
@@ -357,14 +484,30 @@ interface LegacyNotificationListState {
   loadedCategories: NotificationCategory[]
 }
 
+const props = withDefaults(
+  defineProps<{
+    panelMode?: boolean
+  }>(),
+  {
+    panelMode: false
+  }
+)
+
+const emit = defineEmits<{
+  'open-detail': [item: NotificationItem]
+  close: []
+}>()
+
 const { t } = useI18n()
 
+// 生成顶部分类 tabs 数据。
 const tabs = computed<Array<{ key: NotificationCategory; label: string }>>(() => [
   { key: 'promotions', label: t('notifications.tabs.promotions') },
   { key: 'transactions', label: t('notifications.tabs.transactions') },
   { key: 'system', label: t('notifications.tabs.system') }
 ])
 
+// 生成分类标题映射表，供回退标题使用。
 const tabLabelMap = computed<Record<NotificationCategory, string>>(() => ({
   promotions: t('notifications.tabs.promotions'),
   transactions: t('notifications.tabs.transactions'),
@@ -381,6 +524,7 @@ const msgTypeMap: Record<NotificationCategory, number> = {
   system: 1
 }
 
+// 创建单个分类的初始状态。
 const createEmptyCategoryState = (): NotificationCategoryState => ({
   items: [],
   nextPage: 1,
@@ -389,6 +533,7 @@ const createEmptyCategoryState = (): NotificationCategoryState => ({
   loaded: false
 })
 
+// 创建全部分类的默认状态集合。
 const createDefaultCategoryStates = (): Record<
   NotificationCategory,
   NotificationCategoryState
@@ -398,6 +543,7 @@ const createDefaultCategoryStates = (): Record<
   system: createEmptyCategoryState()
 })
 
+// 深拷贝分类状态，避免直接复用响应式对象引用。
 const cloneCategoryStates = (
   categories: Record<NotificationCategory, NotificationCategoryState>
 ): Record<NotificationCategory, NotificationCategoryState> => ({
@@ -406,10 +552,12 @@ const cloneCategoryStates = (
   system: { ...categories.system, items: [...categories.system.items] }
 })
 
+// 判断值是否为合法的通知分类。
 const isNotificationCategory = (value: unknown): value is NotificationCategory => {
   return value === 'promotions' || value === 'transactions' || value === 'system'
 }
 
+// 判断值是否为合法的分类状态对象。
 const isNotificationCategoryState = (value: unknown): value is NotificationCategoryState => {
   if (!value || typeof value !== 'object') {
     return false
@@ -425,6 +573,7 @@ const isNotificationCategoryState = (value: unknown): value is NotificationCateg
   )
 }
 
+// 判断值是否为新版通知列表缓存结构。
 const isNotificationListState = (value: unknown): value is NotificationListState => {
   if (!value || typeof value !== 'object') {
     return false
@@ -446,6 +595,7 @@ const isNotificationListState = (value: unknown): value is NotificationListState
   )
 }
 
+// 判断值是否为旧版通知列表缓存结构。
 const isLegacyNotificationListState = (value: unknown): value is LegacyNotificationListState => {
   if (!value || typeof value !== 'object') {
     return false
@@ -461,6 +611,7 @@ const isLegacyNotificationListState = (value: unknown): value is LegacyNotificat
   )
 }
 
+// 将旧版分类缓存推断为当前使用的分类状态。
 const inferLegacyCategoryState = (
   items: NotificationItem[],
   loaded: boolean
@@ -477,6 +628,7 @@ const inferLegacyCategoryState = (
   }
 }
 
+// 将旧版通知列表缓存转换为新版分类结构。
 const convertLegacyState = (
   state: LegacyNotificationListState
 ): Record<NotificationCategory, NotificationCategoryState> => {
@@ -493,6 +645,7 @@ const convertLegacyState = (
   return nextCategories
 }
 
+// 从 sessionStorage 恢复通知列表缓存状态。
 const restoreNotificationListState = (): NotificationListState | null => {
   const rawValue = sessionStorage.getItem(NOTIFICATION_LIST_STATE_STORAGE_KEY)
   if (!rawValue) {
@@ -544,6 +697,7 @@ const categoryStates = ref<Record<NotificationCategory, NotificationCategoryStat
 )
 const loadMoreSentinel = ref<HTMLElement | null>(null)
 
+// 以不可变方式更新指定分类的状态。
 const updateCategoryState = (
   category: NotificationCategory,
   updater: (state: NotificationCategoryState) => NotificationCategoryState
@@ -554,6 +708,7 @@ const updateCategoryState = (
   }
 }
 
+// 合并分类数据并按 rowId 去重。
 const mergeCategoryItems = (current: NotificationItem[], incoming: NotificationItem[]) => {
   const seenRowIds = new Set(current.map(item => item.rowId))
   const merged = [...current]
@@ -570,6 +725,7 @@ const mergeCategoryItems = (current: NotificationItem[], incoming: NotificationI
   return merged
 }
 
+// 聚合所有分类通知，供未读数量统计使用。
 const notifications = computed(() =>
   (['promotions', 'transactions', 'system'] as NotificationCategory[]).flatMap(
     category => categoryStates.value[category].items
@@ -664,10 +820,12 @@ const normalizeIsImage = (value: number) => {
   return 0
 }
 
+// 规整通知正文中的换行与首尾空白。
 const normalizeNoticeContent = (value: string) => {
   return value.replace(/\\n/g, '\n').trim()
 }
 
+// 解码正文中的 HTML 实体字符。
 const decodeHtmlEntities = (value: string) => {
   if (typeof document === 'undefined') {
     return value
@@ -678,6 +836,7 @@ const decodeHtmlEntities = (value: string) => {
   return textarea.value
 }
 
+// 清理被错误包裹的富文本标签结构。
 const cleanupEncodedRichText = (value: string) => {
   return value
     .replace(/<p>\s*(<(?:h[1-6]|p|blockquote|ul|ol)[^>]*>)/gi, '$1')
@@ -687,6 +846,7 @@ const cleanupEncodedRichText = (value: string) => {
     .trim()
 }
 
+// 获取通知正文的规范化内容。
 const getNormalizedNoticeText = (item: NotificationItem) => {
   const rawContent = normalizeNoticeContent(item.noticeText || '')
   const decodedContent = decodeHtmlEntities(rawContent)
@@ -771,6 +931,7 @@ const clearNotificationListState = () => {
   sessionStorage.removeItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY)
 }
 
+// 请求指定分类的通知分页数据。
 const fetchNotificationPage = async (
   category: NotificationCategory,
   page: number,
@@ -789,6 +950,7 @@ const fetchNotificationPage = async (
   return getQueryResult(res)
 }
 
+// 将新分页数据同步到指定分类状态中。
 const syncCategoryPage = (
   category: NotificationCategory,
   appendedItems: NotificationItem[],
@@ -811,6 +973,7 @@ const syncCategoryPage = (
   })
 }
 
+// 为指定分类创建独立的无限滚动加载器。
 const createCategoryLoader = (category: NotificationCategory) =>
   useInfiniteScroll<NotificationItem, QueryNoticeMsgResult>({
     sentinel: loadMoreSentinel,
@@ -843,6 +1006,7 @@ const categoryLoaders = {
 
 const activeCategoryLoading = computed(() => categoryLoaders[activeTab.value].loading.value)
 
+// 预取非当前分类的第一页数据，用于提前展示未读徽标。
 const prefetchCategoryBadge = async (category: NotificationCategory) => {
   if (activeTab.value === category || categoryStates.value[category].loaded) {
     return
@@ -859,6 +1023,7 @@ const prefetchCategoryBadge = async (category: NotificationCategory) => {
   }
 }
 
+// 初始化通知分类数据。
 const initializeNotificationCategories = () => {
   void prefetchCategoryBadge('promotions')
   void prefetchCategoryBadge('system')
@@ -868,6 +1033,24 @@ const initializeNotificationCategories = () => {
 const removeNotification = (rowId: number, category: NotificationCategory) => {
   pendingDelete.value = { rowId, category }
   showDeleteConfirm.value = true
+}
+
+// 处理页面头部返回按钮：PC 面板模式返回改为关闭面板。
+const handleHeaderBack = () => {
+  if (!props.panelMode) {
+    return
+  }
+
+  emit('close')
+}
+
+// 处理页面头部右侧关闭按钮。
+const handlePanelClose = () => {
+  if (!props.panelMode) {
+    return
+  }
+
+  emit('close')
 }
 
 // 打开通知详情页，并同步更新当前列表中的已读状态。
@@ -913,6 +1096,12 @@ const openNotificationDetail = (item: NotificationItem) => {
       notification.rowId === item.rowId ? { ...notification, read: true } : notification
     )
   }))
+
+  if (props.panelMode) {
+    emit('open-detail', item)
+    return
+  }
+
   persistNotificationListState()
   sessionStorage.setItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY, '1')
   sessionStorage.setItem(NOTIFICATION_DETAIL_STORAGE_KEY, JSON.stringify(item))
