@@ -79,7 +79,7 @@
             type="number"
             v-model="amount"
             placeholder="Please select a deposit amount"
-            class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0"
+            class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs sm:placeholder:text-sm"
           />
         </div>
       </div>
@@ -117,26 +117,28 @@
         <p class="text-xs text-secondary-7 py-3">No wagering required for withdrawal</p>
         <div
           ref="presetsRef"
-          class="grid grid-cols-3 gap-3 p-5 bg-bg-4 transition-all duration-300 rounded-tl-lg rounded-tr-lg"
-          :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[140px] overflow-hidden'"
+          class="grid grid-cols-3 gap-2 sm:gap-3 p-2.5 sm:p-5 bg-bg-4 transition-all duration-300 rounded-tl-lg rounded-tr-lg"
+          :class="
+            expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[106px] sm:max-h-[148px] overflow-hidden'
+          "
         >
           <button
             v-for="preset in presetAmounts"
             :key="preset"
             @click="amount = preset"
-            class="relative text-base sm:text-lg py-3 rounded-lg lg:hover:bg-theme-primary"
+            class="relative text-base sm:text-lg py-[7px] sm:py-3 rounded-lg lg:hover:bg-theme-primary"
             :class="[preset === amount ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-1']"
           >
             {{ preset }}
             <div
-              class="absolute -top-1 -right-2 text-[10px] text-text-1 px-2 pb-0.5 bg-contain bg-no-repeat bg-center"
+              class="absolute -top-2 -right-1 text-[10px] text-text-1 px-2 pb-0.5 bg-contain bg-no-repeat bg-center"
               :style="{ backgroundImage: `url(${bonusBgIcon})` }"
             >
               1% Bonus
             </div>
           </button>
         </div>
-        <div class="w-full bg-bg-4 rounded-bl-lg rounded-br-lg p-3 relative -mt-3 z-10">
+        <div class="w-full bg-bg-4 rounded-bl-lg rounded-br-lg p-1.5 sm:p-3 relative -mt-3 z-10">
           <button
             class="mx-auto flex items-center gap-1 text-xs text-text-3 lg:hover:text-text-1 transition"
             @click="expanded = !expanded"
