@@ -4,6 +4,8 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import svgLoader from 'vite-svg-loader'
 
+const themedSvgColorPattern = /^(?:white|#fff(?:fff)?|#b3bec1)$/i
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -21,9 +23,15 @@ export default defineConfig({
             }
           },
           {
-            name: 'removeAttrs',
+            name: 'convertColors',
             params: {
-              attrs: '(fill|stroke):(?!url\\()'
+              currentColor: themedSvgColorPattern
+            }
+          },
+          {
+            name: 'addClassesToSVGElement',
+            params: {
+              className: 'svg-icon'
             }
           },
           {

@@ -7,6 +7,8 @@ export default {
       colors: {
         // ========== 主题色 (Theme) ==========
         'theme-primary': 'var(--color-theme-level-1)',
+        'theme-2': 'var(--color-theme-level-2)',
+        'theme-3': 'var(--color-theme-level-3)',
 
         // ========== 背景色 (Background) ==========
         'bg-1': 'var(--color-background-level-1)',
@@ -49,6 +51,7 @@ export default {
         'secondary-4': 'var(--color-secondary-level-4)',
         'secondary-5': 'var(--color-secondary-level-5)',
         'secondary-6': 'var(--color-secondary-level-6)',
+        'secondary-7': 'var(--color-secondary-level-7)',
 
         // ========== 通用色 (Common) ==========
         'common-100': 'var(--color-common-100)',

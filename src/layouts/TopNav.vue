@@ -80,13 +80,14 @@
                 {{ getCurrencySymbol(userInfo?.currency) }}{{ formatBalance(acctInfo?.balancePhp) }}
               </span>
             </div>
-
+            <!-- 充值 -->
             <div class="flex items-center">
               <ArrowDownIcon class="w-5 h-5 mr-1 cursor-pointer" />
               <div
                 class="cursor-pointer h-8 text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
+                @click="openDeposit"
               >
-                Deposit
+                {{ t('deposit.title') }}
               </div>
             </div>
           </div>
@@ -114,6 +115,7 @@
               <!-- 充值按钮 -->
               <div
                 class="cursor-pointer w-[26px] h-[26px] text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
+                @click="openDeposit"
               >
                 <Jia class="w-3 h-3" />
               </div>
@@ -167,7 +169,7 @@
           </div>
 
           <!-- 用户头像 (PC端) -->
-          <div class="hidden md:block relative">
+          <div ref="userMenuRef" class="hidden md:block relative">
             <div
               class="cursor-pointer w-[44px] h-[44px] border border-opacity-15 flex items-center justify-center bg-opacity-5 rounded-full overflow-hidden mr-2"
               @click="toggleUserMenu"
@@ -225,11 +227,14 @@
 
     <!-- PC 搜索弹窗 -->
     <ExploreDesktop v-model="showExplorehModal" />
+
+    <!-- 充值 -->
+    <DepositPop v-model="showDepositPop" />
   </header>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
 import { useLayoutStore } from '@/stores/layout'
@@ -237,6 +242,7 @@ import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
+import DepositPop from '@/components/deposit/deposit/depositPop.vue'
 import UserMenuDropdown from '@/views/personalCenter/UserMenuDropdown.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
@@ -260,12 +266,14 @@ const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
 
 const showLoginModal = ref(false)
+const showDepositPop = ref(false)
 const loginModalTab = ref<'login' | 'register'>('login')
 
 const showExplorehModal = ref(false)
 
 // 用户菜单下拉框
 const showUserMenu = ref(false)
+const userMenuRef = ref<HTMLElement | null>(null)
 
 // 用户信息
 const userInfo = ref<any>(null)
@@ -317,10 +325,28 @@ const handleStorageChange = () => {
   loadUserInfo()
 }
 
+const handleUserMenuClickOutside = (event: MouseEvent) => {
+  if (!showUserMenu.value || !userMenuRef.value) {
+    return
+  }
+
+  const target = event.target as Node | null
+
+  if (target && !userMenuRef.value.contains(target)) {
+    showUserMenu.value = false
+  }
+}
+
 // 组件挂载时加载用户信息
 onMounted(() => {
   loadUserInfo()
   window.addEventListener('storage', handleStorageChange)
+  document.addEventListener('click', handleUserMenuClickOutside)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('storage', handleStorageChange)
+  document.removeEventListener('click', handleUserMenuClickOutside)
 })
 
 // 监听登录弹窗关闭，重新加载用户信息
@@ -364,6 +390,10 @@ const handleLanguageChange = (code: Locale) => {
 
 const handleCurrencyChange = (code: string) => {
   localeStore.setCurrency(code)
+}
+
+const openDeposit = () => {
+  showDepositPop.value = true
 }
 
 // 切换用户菜单
