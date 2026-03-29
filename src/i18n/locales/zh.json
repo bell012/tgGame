@@ -232,7 +232,9 @@
   },
   "wallet": {
     "title": "钱包",
-    "betHistory": "投注历史"
+    "betHistory": "投注历史",
+    "deposit": "充值",
+    "withdraw": "提现"
   },
   "betHistory": {
     "title": "投注历史",
@@ -458,5 +460,8 @@
     "upload_proof_confirm_btn_text": "立即上传凭证",
     "payment_receipt_sample_title": "支付凭证样本",
     "upload_proof_again_btn_text": "重新上传凭证"
+  },
+  "withdraw": {
+    "title": "提现"
   }
 }

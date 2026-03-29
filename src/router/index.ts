@@ -265,6 +265,20 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'withdraw',
+    name: 'withdraw',
+    component: () => import('@/views/wallet/withdraw/index.vue'),
+    meta: {
+      title: '提现',
+      description: '提现',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 

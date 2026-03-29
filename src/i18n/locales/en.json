@@ -70,7 +70,9 @@
   },
   "wallet": {
     "title": "Wallet",
-    "betHistory": "Bet History"
+    "betHistory": "Bet History",
+    "deposit": "Deposit",
+    "withdraw": "Withdraw"
   },
   "betHistory": {
     "title": "Bet History",
@@ -461,5 +463,8 @@
     "upload_proof_confirm_btn_text": "Upload Proof Now",
     "payment_receipt_sample_title": "Payment Receipt Sample",
     "upload_proof_again_btn_text": "Upload Proof Again"
+  },
+  "withdraw": {
+    "title": "Withdraw"
   }
 }
