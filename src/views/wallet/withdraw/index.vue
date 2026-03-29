@@ -1,14 +1,12 @@
 <template>
   <div>
-    <div v-if="isMobile" class="fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1">
-      <H5Header :title="t('deposit.title')" showSort>
+    <div v-if="isMobile">
+      <H5Header :title="t('withdraw.title')" showSort>
         <template #right>
           <DetailsIcon class="w-4 h-4 text-icon-1" />
         </template>
       </H5Header>
-      <div class="flex-1 min-h-0">
-        <depositContentPanel v-model="tabType" class="h-full" />
-      </div>
+      <withdrawMobile />
     </div>
     <div v-else class="max-w-[1336px] mx-auto">
       <h2 class="text-xl font-[700] text-text-1 mb-4">{{ $t('wallet.title') }}</h2>
@@ -36,28 +34,24 @@
         <!-- 右侧内容区 -->
         <main class="flex-1 min-w-0">
           <div class="overflow-hidden">
-            <personalCenterDepositContentPanel />
+            <withdrawDesktop />
           </div>
         </main>
       </div>
-
       <!-- 公共底部 -->
       <CommonFooter class="mt-[40px]" />
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateTo } from '@/utils/router'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import H5Header from '@/components/common/H5Header.vue'
-import depositContentPanel, {
-  type DepositTabType
-} from '@/components/deposit/deposit/depositContentPanel.vue'
-import personalCenterDepositContentPanel from '@/components/deposit/deposit/personalCenterDepositContentPanel.vue'
 import CommonFooter from '@/components/commonFooter.vue'
+import withdrawMobile from '@/components/withdraw/withdrawMobile.vue'
+import withdrawDesktop from '@/components/withdraw/withdrawDesktop.vue'
 import BetSvg from '@/static/svg/bet.svg?component'
 import DepositIocn from '@/static/svg/personalCenter/icon1.svg?component'
 import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
@@ -66,8 +60,7 @@ import DetailsIcon from '@/static/svg/deposit/order-details.svg?component'
 const { t } = useI18n()
 
 const isMobile = useIsMobile()
-const tabType = ref<DepositTabType>('Crypto')
-const currentTab = ref('deposit')
+const currentTab = ref('withdraw')
 const menuItems = computed(() => [
   {
     path: '/bet-history',
@@ -93,5 +86,4 @@ const handleMenuClick = (path: string) => {
   navigateTo(path)
 }
 </script>
-
 <style scoped lang="scss"></style>

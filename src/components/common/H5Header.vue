@@ -22,7 +22,10 @@
           class="size-[33px] bg-opacity-5 rounded-md flex items-center justify-center cursor-pointer"
           @click="handleSort"
         >
-          <SiftIcon class="w-3.5 h-3.5 text-text-1" />
+          <slot name="right">
+            <!-- 默认图标 -->
+            <SiftIcon class="w-3.5 h-3.5 text-text-1" />
+          </slot>
         </div>
       </div>
     </div>
