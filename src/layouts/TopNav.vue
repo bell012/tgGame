@@ -70,7 +70,7 @@
             <div class="flex items-center justify-center cursor-pointer ml-1">
               <div class="w-10 h-10 mr-1">
                 <img
-                  src="/src/static/img/home/php.png"
+                  src="/src/static/img/flag/php.png"
                   alt="php"
                   class="w-full h-full object-cover"
                 />
@@ -99,7 +99,7 @@
             <div class="flex items-center justify-center cursor-pointer ml-1">
               <div class="w-5 h-5 mr-1">
                 <img
-                  src="/src/static/img/home/php.png"
+                  src="/src/static/img/flag/php.png"
                   alt="php"
                   class="w-full h-full object-cover"
                 />
@@ -242,12 +242,13 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
 import { useLayoutStore } from '@/stores/layout'
+import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
 import DepositPop from '@/components/deposit/deposit/depositPop.vue'
-import UserMenuDropdown from '@/views/personalCenter/UserMenuDropdown.vue'
+import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
 import ChatIcon from '@/static/svg/chat.svg?component'
@@ -292,13 +293,7 @@ const isLoggedIn = computed(() => {
 
 // 用户头像 URL
 const avatarUrl = computed(() => {
-  const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
-  const headPortrait = userInfo.value?.headPortrait
-
-  if (headPortrait && baseUrl) {
-    return `${baseUrl}${headPortrait}`
-  }
-  return '/src/static/img/home/avatar.png'
+  return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
 })
 
 // localStorage 用户信息

@@ -1,25 +1,42 @@
 <template>
   <div
-    class="relative w-full max-w-[480px] flex flex-col sm:rounded-xl modal-container bg-bg-2"
+    class="relative w-full max-w-[480px] flex flex-col sm:rounded-xl modal-container bg-bg-2 font-['Inter']"
     :style="panelInlineStyle"
-    :class="panelHeightClass"
+    :class="[panelHeightClass, panelBgClass, panelContainerClass]"
   >
-    <div class="shrink-0 flex items-center justify-between h-14">
-      <h2 class="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-text-1">
+    <div class="relative shrink-0 flex items-center justify-between h-14">
+      <h2 class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg font-semibold text-text-1">
         {{ t('deposit.deposit_order') }}
       </h2>
-      <!-- 关闭按钮 -->
-      <button
-        class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center z-10"
-        @click="handleClose"
-      >
-        <CloseIcon class="w-4 h-4 fill-none" />
-      </button>
+      <template v-if="isMobile">
+        <!-- 关闭按钮 -->
+        <button
+          class="absolute left-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
+          @click="handleClose"
+        >
+          <LeftArrowIcon class="w-4 h-4" />
+        </button>
+        <button
+          class="absolute right-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
+          @click="handleClose"
+        >
+          <DetailsIcon class="w-4 h-4" />
+        </button>
+      </template>
+      <template v-else>
+        <!-- 关闭按钮 -->
+        <button
+          class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded-md sm:flex items-center justify-center z-10"
+          @click="handleClose"
+        >
+          <CloseIcon class="w-4 h-4 fill-none" />
+        </button>
+      </template>
     </div>
     <template v-if="isCryptoOrder">
       <div
         v-show="isUploadNotStarted"
-        class="w-full flex-1 min-h-0 flex flex-col relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[628px]"
+        class="w-full flex-1 min-h-0 relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[628px]"
       >
         <div ref="targetRef" class="w-full bg-bg-2 rounded-lg relative">
           <div class="relative flex items-center p-3 border-b border-input-1">
@@ -55,13 +72,13 @@
           </div>
           <div
             v-if="cryptoNetwork"
-            class="w-full mt-4 px-3 text-theme-primary text-2xl font-bold leading-none capitalize text-center"
+            class="w-full mt-4 px-3 text-theme-primary text-sm sm:text-2xl font-bold leading-none capitalize text-center"
           >
             {{ cryptoNetwork }}
           </div>
           <div v-if="cryptoAddress" class="w-full p-3 mt-1.5">
             <div
-              class="w-full p-4 rounded-lg bg-bg-4 text-text-1 text-base break-all leading-normal"
+              class="w-full p-4 rounded-lg bg-bg-4 text-text-1 text-sm sm:text-base break-all leading-normal"
             >
               {{ cryptoAddress }}
             </div>
@@ -69,13 +86,13 @@
           <div v-if="cryptoAddress" class="p-3 grid grid-cols-2 gap-2">
             <button
               @click.stop="doCapture"
-              class="py-4 bg-theme-3 rounded-lg text-theme-primary text-base font-bold leading-normal"
+              class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
             >
               Save QR Code
             </button>
             <button
               @click.stop="copyWord(cryptoAddress)"
-              class="py-4 bg-theme-3 rounded-lg text-theme-primary text-base font-bold leading-normal"
+              class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
             >
               Copy Address
             </button>
@@ -85,24 +102,24 @@
           <orderDetailRows :rows="cryptoSummaryRows" @copy="copyWord" />
         </div>
         <button
-          class="mt-6 w-full py-3 rounded-lg btn-primary text-text-4 text-[14px] font-bold"
+          class="mt-6 w-full h-10 sm:h-12 rounded-lg text-text-4 text-sm font-bold flex items-center justify-center btn-primary"
           @click.stop="openUploadPop"
         >
           {{ t('deposit.upload_proof') }}
         </button>
         <button
-          class="mt-3 w-full p-3 rounded-lg bg-opacity-10 text-text-2 text-[14px] font-bold"
+          class="mt-3 w-full h-10 sm:h-12 rounded-lg bg-opacity-10 text-text-2 text-sm font-bold flex items-center justify-center"
           @click.stop="doCancelOrder"
         >
           {{ t('deposit.cancel_order_title') }}
         </button>
-        <div class="mt-3 w-full text-center text-secondary-7 text-[14px] leading-normal">
+        <div class="mt-3 w-full text-center text-secondary-7 text-xs sm:text-sm leading-normal">
           {{ t('deposit.deposit_order_bottom_tips') }}
         </div>
       </div>
       <div
         v-show="isUploadInProgress"
-        class="w-full flex-1 min-h-0 flex flex-col relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[623px]"
+        class="w-full flex-1 min-h-0 relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[623px]"
       >
         <div class="w-full bg-bg-2 rounded-tl-lg rounded-tr-lg">
           <div class="flex items-center p-3 border-b border-input-1">
@@ -128,12 +145,12 @@
           </div>
         </div>
         <button
-          class="mt-6 w-full h-12 rounded-lg btn-primary text-text-4 text-[14px] font-bold flex items-center justify-center"
+          class="mt-6 w-full h-10 sm:h-12 rounded-lg text-text-4 text-sm font-bold flex items-center justify-center btn-primary"
           @click.stop="openUploadPop"
         >
           {{ t('deposit.upload_proof_again_btn_text') }}
         </button>
-        <div class="bg-bg-2 mt-6 p-5 rounded-lg text-base font-normal leading-normal">
+        <div class="bg-bg-2 mt-6 p-5 rounded-lg text-sm sm:text-base font-normal sm:leading-normal">
           <p class="text-[color:#F44854]">Reminder</p>
           <p class="text-text-3 mt-4">
             · To ensure funds are credited successfully, please upload the correct payment receipt.
@@ -146,7 +163,7 @@
       </div>
       <div
         v-show="isUploadCompleted"
-        class="w-full flex-1 min-h-0 flex flex-col relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[506px]"
+        class="w-full flex-1 min-h-0 relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[506px]"
       >
         <div class="w-full bg-bg-2 rounded-lg pt-10 px-4 pb-8">
           <orderStatusResult :status="orderStatus" :title="completedStatusTitle" />
@@ -157,7 +174,9 @@
       </div>
     </template>
     <template v-else-if="isFiatOrder">
-      <div class="w-full p-3 rounded-bl-xl rounded-br-xl bg-bg-1 sm:max-h-[435px]">
+      <div
+        class="w-full flex-1 min-h-0 p-3 rounded-bl-xl rounded-br-xl bg-bg-1 overflow-y-auto sm:max-h-[435px]"
+      >
         <div class="w-full px-4 pt-8 pb-4 rounded-xl bg-bg-2">
           <div class="w-full flex items-center justify-center">
             <div class="w-4 mr-1">
@@ -167,7 +186,9 @@
               {{ orderInfo.amount }}
             </p>
           </div>
-          <p class="mt-2 text-text-1 text-base leading-normal text-center">Deposit Amount</p>
+          <p class="mt-2 text-text-1 text-sm sm:text-base leading-normal text-center">
+            Deposit Amount
+          </p>
           <div class="mt-8 px-5 py-3 w-full bg-bg-4 rounded-lg relative grid gap-4">
             <orderDetailRows
               :rows="fiatSummaryRows"
@@ -184,7 +205,6 @@
 
   <cancelOrderPop v-if="cancelOrderPopShow" v-model="cancelOrderPopShow" />
   <uploadProofPop
-    v-if="uploadPopShow"
     v-model="uploadPopShow"
     @close="handleUploadProofClose"
     @confirmUpload="handleConfirmUpload"
@@ -196,10 +216,13 @@ import QRCode from 'qrcode'
 import html2canvas from 'html2canvas'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import CloseIcon from '@/static/svg/close.svg?component'
 import CryptoOrderCountdownIcon from '@/static/svg/deposit/crypto-order-countdown.svg?component'
 import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifying.svg?component'
 import FiatOrderAmountIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
+import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
+import DetailsIcon from '@/static/svg/deposit/order-details.svg?component'
 import cancelOrderPop from './cancelOrderPop.vue'
 import orderAmountHeader from './orderAmountHeader.vue'
 import orderDetailRows from './orderDetailRows.vue'
@@ -209,6 +232,7 @@ import uploadProofPop from '../uploadProof/uploadProofPop.vue'
 import { CryptOrderType, FiatOrderType, OrderType } from './orderType'
 
 const { t } = useI18n()
+const isMobile = useIsMobile()
 
 interface Props {
   orderInfo: OrderType
@@ -252,8 +276,15 @@ const panelHeightClass = computed(() => {
   return 'sm:max-h-[684px]'
 })
 
+const panelBgClass = computed(() => (isFiatOrder.value ? 'bg-bg-1' : 'bg-bg-2'))
+
+const panelContainerClass = computed(() => (isFiatOrder.value ? 'h-full sm:h-auto' : ''))
+
 const panelInlineStyle = computed(() => ({
-  height: props.orderInfo.type === 'Crypto' ? '100%' : 'auto'
+  height:
+    isMobile.value || (props.orderInfo.type === 'Crypto' && !isUploadCompleted.value)
+      ? '100%'
+      : 'auto'
 }))
 
 const cryptoSummaryRows = computed<DetailRowItem[]>(() => {

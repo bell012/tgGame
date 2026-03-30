@@ -28,7 +28,7 @@
             >
               <div class="w-full flex items-center justify-between">
                 <div class="flex items-center">
-                  <img src="/src/static/img/home/php.png" alt="php" class="w-5 h-5 object-cover" />
+                  <img src="/src/static/img/flag/php.png" alt="php" class="w-5 h-5 object-cover" />
                   <span class="ml-2.5 text-sm font-[700] text-text-1">{{ item.code }}</span>
                 </div>
                 <div class="text-xs font-[500] text-text-1">{{ item.balanceText }}</div>

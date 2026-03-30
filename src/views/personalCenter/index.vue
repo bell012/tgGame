@@ -11,7 +11,7 @@
 
     <!-- 用户信息区域 -->
     <div class="p-3.5">
-      <div class="flex items-center mb-3.5">
+      <div class="mb-3.5 flex items-center cursor-pointer" @click="goToMyProfile">
         <div
           class="w-[55px] h-[55px] rounded-full overflow-hidden bg-opacity-15 flex items-center justify-center mr-3.5"
         >
@@ -94,6 +94,7 @@
         <div class="grid grid-cols-2 gap-2.5">
           <button
             class="bg-bg-3 h-[34px] rounded-lg text-xs font-bold text-text-1 flex items-center justify-center"
+            @click.stop="navigateTo('/deposit')"
           >
             <DepositIocn class="w-5 h-5 text-text-1" />
             <div class="ml-[5px]">
@@ -102,6 +103,7 @@
           </button>
           <button
             class="bg-bg-3 h-[34px] rounded-lg text-xs font-bold text-text-1 flex items-center justify-center"
+            @click.stop="navigateTo('/withdraw')"
           >
             <WithdrawIcon class="w-5 h-5 text-text-1" />
             <div class="ml-[5px]">
@@ -305,17 +307,17 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import Api from '@/api'
 import SignOutPopup from '@/components/common/SignOutPopup.vue'
-import type { QueryAcctInfoResult, SelectMemberResult } from '@/api/interface/user'
-import CurrencyPopup from '@/views/personalCenter/CurrencyPopup.vue'
-import LanguagePopup from '@/views/personalCenter/LanguagePopup.vue'
-import ReferralPopup from '@/views/personalCenter/ReferralPopup.vue'
+import CurrencyPopup from '@/views/personalCenter/components/CurrencyPopup.vue'
+import LanguagePopup from '@/views/personalCenter/components/LanguagePopup.vue'
+import ReferralPopup from '@/views/personalCenter/components/ReferralPopup.vue'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
+import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import {
   getCurrentCurrency,
@@ -346,10 +348,7 @@ const { t } = useI18n()
 const localeStore = useLocaleStore()
 const themeStore = useThemeStore()
 const userStore = useUserStore()
-
-type PersonalCenterUserInfo = Partial<SelectMemberResult> & {
-  headPortrait?: string
-}
+const { userInfo, acctInfo } = storeToRefs(userStore)
 
 const balanceFieldMap = {
   BRL: 'balanceBrl',
@@ -385,10 +384,6 @@ const getIcon = (iconNumber: number) => {
   )
 }
 
-// 用户信息
-const userInfo = ref<PersonalCenterUserInfo | null>(null)
-const acctInfo = ref<QueryAcctInfoResult | null>(null)
-
 const showReferralPopup = ref(false)
 const showLanguagePopup = ref(false)
 const showCurrencyPopup = ref(false)
@@ -400,13 +395,7 @@ const referralLink = ref('https://www.baidu.com/jh/ocja...')
 
 // 头像 URL
 const avatarUrl = computed(() => {
-  const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
-  const headPortrait = userInfo.value?.headPortrait
-
-  if (headPortrait && baseUrl) {
-    return `${baseUrl}${headPortrait}`
-  }
-  return '/src/static/img/home/avatar.png'
+  return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
 })
 
 // VIP 等级
@@ -588,6 +577,10 @@ const copyMemberId = async () => {
   await copyText(userInfo.value?.memberId)
 }
 
+const goToMyProfile = () => {
+  navigateTo('/personal-center/my-profile')
+}
+
 // 全局设置
 const globalSettings = computed(() => [
   {
@@ -709,73 +702,9 @@ const handleCurrencySelect = (code: string) => {
   localeStore.setCurrency(code)
 }
 
-const parseStoredItem = <T,>(key: string): T | null => {
-  const storedValue = localStorage.getItem(key)
-
-  if (!storedValue) {
-    return null
-  }
-
-  try {
-    return JSON.parse(storedValue) as T
-  } catch (error) {
-    console.error(error)
-    return null
-  }
-}
-
-// 加载用户信息
-const loadUserInfo = () => {
-  userInfo.value = parseStoredItem<PersonalCenterUserInfo>('userInfo')
-  acctInfo.value = parseStoredItem<QueryAcctInfoResult>('acctInfo')
-}
-
-const refreshAcctInfo = async () => {
-  try {
-    const response = await Api.user.queryAcctInfo({})
-    if (response?.result) {
-      acctInfo.value = response.result
-      localStorage.setItem('acctInfo', JSON.stringify(response.result))
-    }
-    return response?.result
-  } catch (error) {
-    console.error(error)
-    return null
-  }
-}
-
-const refreshUserInfo = async (memberId: string) => {
-  try {
-    const response = await Api.user.selectMember({ memberId })
-    if (response?.result) {
-      const mergedUserInfo = {
-        ...(userInfo.value ?? {}),
-        ...response.result
-      }
-      userInfo.value = mergedUserInfo
-      localStorage.setItem('userInfo', JSON.stringify(mergedUserInfo))
-    }
-  } catch (error) {
-    console.error(error)
-  }
-}
-
 const initializePersonalCenter = async () => {
-  loadUserInfo()
-
-  const storedMemberId = userInfo.value?.memberId || acctInfo.value?.memberId
-
-  if (storedMemberId) {
-    await Promise.all([refreshAcctInfo(), refreshUserInfo(storedMemberId)])
-    return
-  }
-
-  const latestAcctInfo = await refreshAcctInfo()
-  const memberId = latestAcctInfo?.memberId || acctInfo.value?.memberId
-
-  if (memberId) {
-    await refreshUserInfo(memberId)
-  }
+  userStore.syncStoredUserData()
+  await userStore.refreshCurrentUserData()
 }
 
 onMounted(() => {

@@ -208,12 +208,42 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'personal-center',
     name: 'personal-center',
-    component: () => import('@/views/personalCenter/mobile.vue'),
+    component: () => import('@/views/personalCenter/components/mobile.vue'),
     meta: {
       title: '个人中心',
       description: '个人中心',
-      mobileOnly: true,
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'personal-center/my-profile',
+    name: 'personal-center-my-profile',
+    component: () => import('@/views/personalCenter/myProfile/index.vue'),
+    meta: {
+      title: '我的资料',
+      description: '我的资料',
+      mobileOnly: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'personal-center/edit-profile',
+    name: 'personal-center-edit-profile',
+    component: () => import('@/views/personalCenter/editProfile/index.vue'),
+    meta: {
+      title: '编辑资料',
+      description: '编辑资料',
+      mobileOnly: true,
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -240,6 +270,34 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '资金明细',
       description: '资金明细',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'deposit',
+    name: 'deposit',
+    component: () => import('@/views/wallet/deposit/index.vue'),
+    meta: {
+      title: '充值',
+      description: '充值',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'withdraw',
+    name: 'withdraw',
+    component: () => import('@/views/wallet/withdraw/index.vue'),
+    meta: {
+      title: '提现',
+      description: '提现',
+      slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
         hideTopNav: true

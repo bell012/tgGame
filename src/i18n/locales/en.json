@@ -70,7 +70,9 @@
   },
   "wallet": {
     "title": "Wallet",
-    "betHistory": "Bet History"
+    "betHistory": "Bet History",
+    "deposit": "Deposit",
+    "withdraw": "Withdraw"
   },
   "betHistory": {
     "title": "Bet History",
@@ -417,7 +419,38 @@
     "joinCommunity": "Join Our Community",
     "signOut": "Sign Out",
     "signOutTitle": "Signing Out",
-    "signOutDescription": "Are you sure you want to log out?"
+    "signOutDescription": "Are you sure you want to log out?",
+    "myProfile": {
+      "title": "My Profile",
+      "profileId": "ID",
+      "edit": "Edit",
+      "statistics": "Statistics",
+      "totalWins": "Total Wins",
+      "totalBets": "Total Bets",
+      "totalWagered": "Total Wagered",
+      "topFavoriteGames": "Top 3 Favorite Games",
+      "noFavorites": "Stay tuned—something's coming!",
+      "betAmount": "Bet Amount",
+      "joinedOn": "Joined on {date}"
+    },
+    "editProfile": {
+      "title": "Edit Profile",
+      "username": "Username",
+      "usernameHint": "Please do not use special characters, as they may not be supported.",
+      "avatarFrame": "Avatar Frame",
+      "unlockHint": "Reach VIP 2 to unlock",
+      "unused": "Unused",
+      "inUse": "In Use",
+      "editAvatar": "Edit Avatar",
+      "takePhoto": "Take Photo",
+      "chooseFromAlbum": "Choose from Photo Library",
+      "cancel": "Cancel",
+      "select": "Select",
+      "cropHint": "Drag and zoom to adjust your avatar",
+      "zoom": "Zoom",
+      "save": "Save",
+      "saveSuccess": "Saved successfully"
+    }
   },
   "userMenu": {
     "wallet": "Wallet",
@@ -455,5 +488,8 @@
     "upload_proof_confirm_btn_text": "Upload Proof Now",
     "payment_receipt_sample_title": "Payment Receipt Sample",
     "upload_proof_again_btn_text": "Upload Proof Again"
+  },
+  "withdraw": {
+    "title": "Withdraw"
   }
 }

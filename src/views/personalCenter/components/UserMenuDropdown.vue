@@ -72,7 +72,7 @@ const mainMenus = computed(() => [
     name: t('userMenu.withdraw'),
     icon: getIcon(61),
     handler: () => {
-      console.log('Withdraw clicked')
+      navigateTo('/withdraw')
       emit('update:modelValue', false)
     }
   },
@@ -82,6 +82,7 @@ const mainMenus = computed(() => [
     icon: getIcon(62),
     handler: () => {
       console.log('Buy Crypto clicked')
+      navigateTo('/deposit')
       emit('update:modelValue', false)
     }
   },
