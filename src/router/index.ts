@@ -1,9 +1,13 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import i18n from '@/i18n'
-
-// 支持的语言列表
-const supportedLocales = ['zh', 'en']
+import {
+  getLocaleFromRouteParam,
+  getPersistedLocale,
+  getStorageLanguageCode,
+  withLocalePrefix,
+  DEFAULT_LOCALE
+} from '@/utils/locale'
 
 const baseRoutes: RouteRecordRaw[] = [
   {
@@ -70,6 +74,78 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'menu/referral',
+    name: 'menuReferral',
+    component: () => import('@/views/menu/referral/index.vue'),
+    meta: {
+      title: '代理',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'menu/referral/commission-records',
+    name: 'menuReferralCommissionRecords',
+    component: () => import('@/views/menu/referral/commission-records/index.vue'),
+    meta: {
+      title: '佣金记录列表',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'menu/referral/commission-rules',
+    name: 'menuReferralCommissionRules',
+    component: () => import('@/views/menu/referral/commission-rules/index.vue'),
+    meta: {
+      title: 'Commission Rules',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'menu/referral/referral-records',
+    name: 'menuReferralReferralRecords',
+    component: () => import('@/views/menu/referral/referral-records/index.vue'),
+    meta: {
+      title: '我的代理-推荐记录列表',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'menu/notifications',
+    name: 'menuNotifications',
+    component: () => import('@/views/menu/notifications/index.vue'),
+    meta: {
+      title: '通知',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'menu/notifications/detail',
+    name: 'menuNotificationDetail',
+    component: () => import('@/views/menu/notifications/detail/index.vue'),
+    meta: {
+      title: '通知详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'explore',
     name: 'explore',
     component: () => import('@/views/explore/index.vue'),
@@ -95,7 +171,163 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'chat-public',
     component: () => import('@/views/chat/chat-public/index.vue'),
     meta: {
-      title: '聊天'
+      title: '聊天',
+      mobile: {
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'bet-history',
+    name: 'bet-history',
+    component: () => import('@/views/wallet/betHistory/index.vue'),
+    meta: {
+      title: '投注历史',
+      description: '投注历史',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'bet-details/:id',
+    name: 'bet-details',
+    component: () => import('@/views/wallet/betDetails/index.vue'),
+    meta: {
+      title: '投注详情',
+      description: '投注详情',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'personal-center',
+    name: 'personal-center',
+    component: () => import('@/views/personalCenter/components/mobile.vue'),
+    meta: {
+      title: '个人中心',
+      description: '个人中心',
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'personal-center/my-profile',
+    name: 'personal-center-my-profile',
+    component: () => import('@/views/personalCenter/myProfile/index.vue'),
+    meta: {
+      title: '我的资料',
+      description: '我的资料',
+      mobileOnly: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'personal-center/edit-profile',
+    name: 'personal-center-edit-profile',
+    component: () => import('@/views/personalCenter/editProfile/index.vue'),
+    meta: {
+      title: '编辑资料',
+      description: '编辑资料',
+      mobileOnly: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'transaction-details/:id',
+    name: 'transaction-details',
+    component: () => import('@/views/transaction/betDetails/index.vue'),
+    meta: {
+      title: '资金详情',
+      description: '资金详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'transaction',
+    name: 'transaction',
+    component: () => import('@/views/transaction/index.vue'),
+    meta: {
+      title: '资金明细',
+      description: '资金明细',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'rollover-details/:id',
+    name: 'rollover-details/:id',
+    component: () => import('@/views/rollover/rolloverDetails/index.vue'),
+    meta: {
+      title: '流水稽查',
+      description: '流水稽查',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'rollover',
+    name: 'rollover',
+    component: () => import('@/views/rollover/index.vue'),
+    meta: {
+      title: '流水稽查详情',
+      description: '流水稽查详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'deposit',
+    name: 'deposit',
+    component: () => import('@/views/wallet/deposit/index.vue'),
+    meta: {
+      title: '充值',
+      description: '充值',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'withdraw',
+    name: 'withdraw',
+    component: () => import('@/views/wallet/withdraw/index.vue'),
+    meta: {
+      title: '提现',
+      description: '提现',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
     }
   }
 ]
@@ -155,26 +387,36 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, _from, next) => {
-  const locale = to.params.locale as string
+  const routeLocaleParam = to.params.locale as string | undefined
+  const routeLocale = getLocaleFromRouteParam(routeLocaleParam)
+  const persistedLocale = getPersistedLocale()
 
-  if (locale) {
-    if (supportedLocales.includes(locale)) {
-      const i18nLocale = locale === 'zh' ? 'zh' : 'en'
-      const languageCode = locale === 'zh' ? 'zh-CN' : 'en'
+  if (routeLocaleParam && !routeLocale) {
+    next(withLocalePrefix('/', persistedLocale ?? DEFAULT_LOCALE))
+    return
+  }
 
-      if (i18n.global.locale.value !== i18nLocale) {
-        i18n.global.locale.value = i18nLocale as 'zh' | 'en'
-        localStorage.setItem('language', languageCode)
-      }
-    } else {
-      next('/')
-      return
-    }
-  } else {
-    if (i18n.global.locale.value !== 'en') {
-      i18n.global.locale.value = 'en'
-      localStorage.setItem('language', 'en')
-    }
+  const targetLocale = persistedLocale ?? routeLocale ?? DEFAULT_LOCALE
+  const canonicalPath = withLocalePrefix(to.path, targetLocale)
+
+  if (canonicalPath !== to.path) {
+    next({
+      path: canonicalPath,
+      query: to.query,
+      hash: to.hash,
+      replace: true
+    })
+    return
+  }
+
+  const languageCode = getStorageLanguageCode(targetLocale)
+
+  if (i18n.global.locale.value !== targetLocale) {
+    i18n.global.locale.value = targetLocale
+  }
+
+  if (localStorage.getItem('language') !== languageCode) {
+    localStorage.setItem('language', languageCode)
   }
 
   next()

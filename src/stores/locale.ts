@@ -2,12 +2,21 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import i18n from '@/i18n'
+import {
+  getLocaleFromRouteParam,
+  getLanguageCode,
+  getStoredLocale,
+  getStorageLanguageCode,
+  DEFAULT_LOCALE,
+  type Locale
+} from '@/utils/locale'
+import { switchLanguage } from '@/utils/router'
 
 export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
 
-  // 当前语言（zh-CN 或 en）
-  const currentLanguage = ref<string>(localStorage.getItem('language') || 'en')
+  // 当前语言（zh 或 eng）
+  const currentLanguage = ref<Locale>(getStoredLocale())
 
   // 当前货币（none、USD、CNY）
   const currentCurrency = ref<string>(localStorage.getItem('currency') || 'none')
@@ -16,19 +25,17 @@ export const useLocaleStore = defineStore('locale', () => {
   watch(
     () => router.currentRoute.value.params.locale,
     newLocale => {
-      if (newLocale) {
-        const languageCode = newLocale === 'zh' ? 'zh-CN' : 'en'
-        if (currentLanguage.value !== languageCode) {
-          currentLanguage.value = languageCode
-          i18n.global.locale.value = newLocale === 'zh' ? 'zh' : 'en'
-          localStorage.setItem('language', languageCode)
-          console.log('[LocaleStore] Route changed, language updated to:', languageCode)
-        }
+      const routeLocale = getLocaleFromRouteParam(newLocale as string | undefined) ?? DEFAULT_LOCALE
+      const languageCode = getStorageLanguageCode(routeLocale) as Locale
+
+      if (currentLanguage.value !== languageCode) {
+        currentLanguage.value = languageCode
+        i18n.global.locale.value = getLanguageCode(languageCode) as Locale
+        localStorage.setItem('language', languageCode)
       }
     },
     { immediate: true }
   )
-
   // 计算实际使用的货币
   const actualCurrency = computed(() => {
     return currentCurrency.value === 'none' ? 'USD' : currentCurrency.value
@@ -37,22 +44,18 @@ export const useLocaleStore = defineStore('locale', () => {
   // 初始化语言
   const initLanguage = () => {
     const route = router.currentRoute.value
-    const routeLocale = route.params.locale as string
+    const routeLocale = getLocaleFromRouteParam(route.params.locale as string | undefined)
 
     console.log('[LocaleStore] initLanguage - routeLocale:', routeLocale)
 
     if (routeLocale) {
-      if (routeLocale === 'zh') {
-        currentLanguage.value = 'zh-CN'
-        i18n.global.locale.value = 'zh'
-      } else {
-        currentLanguage.value = 'en'
-        i18n.global.locale.value = 'en'
-      }
+      const languageCode = getStorageLanguageCode(routeLocale) as Locale
+      currentLanguage.value = languageCode
+      i18n.global.locale.value = getLanguageCode(languageCode) as Locale
     } else {
-      const savedLanguage = localStorage.getItem('language') || 'en'
+      const savedLanguage = getStoredLocale()
       currentLanguage.value = savedLanguage
-      i18n.global.locale.value = savedLanguage === 'zh-CN' ? 'zh' : 'en'
+      i18n.global.locale.value = getLanguageCode(savedLanguage) as Locale
     }
 
     localStorage.setItem('language', currentLanguage.value)
@@ -61,18 +64,12 @@ export const useLocaleStore = defineStore('locale', () => {
   }
 
   // 切换语言
-  const setLanguage = (code: string) => {
+  const setLanguage = (code: Locale) => {
     currentLanguage.value = code
-    const i18nLocale = code === 'zh-CN' ? 'zh' : 'en'
+    const i18nLocale = getLanguageCode(code) as Locale
     i18n.global.locale.value = i18nLocale
     localStorage.setItem('language', code)
-    const route = router.currentRoute.value
-    const currentPath = route.path.replace(/^\/(zh|en)/, '')
-    if (i18nLocale === 'zh') {
-      router.push(`/zh${currentPath || '/'}`)
-    } else {
-      router.push(currentPath || '/')
-    }
+    switchLanguage(code)
   }
 
   // 切换货币

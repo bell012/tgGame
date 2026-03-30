@@ -1,8 +1,10 @@
-import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { VitePWA } from 'vite-plugin-pwa'
 import { resolve } from 'path'
+import { defineConfig } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 import svgLoader from 'vite-svg-loader'
+
+const themedSvgColorPattern = /^(?:white|#fff(?:fff)?|#b3bec1)$/i
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -21,9 +23,15 @@ export default defineConfig({
             }
           },
           {
-            name: 'removeAttrs',
+            name: 'convertColors',
             params: {
-              attrs: '(fill|stroke):(?!url\\()'
+              currentColor: themedSvgColorPattern
+            }
+          },
+          {
+            name: 'addClassesToSVGElement',
+            params: {
+              className: 'svg-icon'
             }
           },
           {
@@ -144,6 +152,13 @@ export default defineConfig({
   server: {
     port: 4000,
     open: true,
-    cors: true
+    cors: true,
+    proxy: {
+      '/api': {
+        target: 'https://web.txtvv9.top/v1',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, '')
+      }
+    }
   }
 })
