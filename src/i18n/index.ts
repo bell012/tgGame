@@ -1,20 +1,18 @@
 import { createI18n } from 'vue-i18n'
-import en from './locales/en.json'
+import eng from './locales/en.json'
 import zh from './locales/zh.json'
-import homeEn from './en-us/home.json'
-import homeZn from './zh-cn/home.json'
+import { getLanguageCode, DEFAULT_LOCALE } from '@/utils/locale'
+
 const i18n = createI18n({
   legacy: false,
-  locale: localStorage.getItem('language') === 'zh-CN' ? 'zh' : 'en',
-  fallbackLocale: 'en',
+  locale: getLanguageCode(),
+  fallbackLocale: DEFAULT_LOCALE,
   messages: {
-    en: {
-      locales: en,
-      home: homeEn
+    eng: {
+      ...eng
     },
     zh: {
-      locales: zh,
-      home: homeZn
+      ...zh
     }
   }
 })

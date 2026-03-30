@@ -1,17 +1,26 @@
 import router from '@/router'
 import i18n from '@/i18n'
+import {
+  getLocaleFromRouteParam,
+  getLocalePrefix,
+  getStorageLanguageCode,
+  isDefaultLocale,
+  type Locale,
+  withLocalePrefix
+} from './locale'
 
 /**
  * 获取当前语言前缀
  */
 export const getCurrentLocale = (): string => {
   const currentRoute = router.currentRoute.value
-  const locale = currentRoute.params.locale as string
-  if (locale && ['zh', 'en'].includes(locale)) {
-    return locale
+  const routeLocale = getLocaleFromRouteParam(currentRoute.params.locale as string | undefined)
+
+  if (routeLocale) {
+    return routeLocale
   }
-  const currentLang = i18n.global.locale.value
-  return currentLang === 'zh' ? 'zh' : ''
+
+  return getStorageLanguageCode(String(i18n.global.locale.value))
 }
 
 /**
@@ -22,15 +31,25 @@ export const getCurrentLocale = (): string => {
  */
 export const navigateTo = (
   path: string,
-  options?: { replace?: boolean; query?: Record<string, any> }
+  options?: { replace?: boolean; query?: Record<string, any>; state?: any }
 ) => {
   const locale = getCurrentLocale()
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
-  const fullPath = locale ? `/${locale}${normalizedPath}` : normalizedPath
+  const fullPath = withLocalePrefix(normalizedPath, locale)
+
+  const routeOptions: any = {
+    path: fullPath,
+    query: options?.query
+  }
+
+  if (options?.state) {
+    routeOptions.state = options.state
+  }
+
   if (options?.replace) {
-    router.replace({ path: fullPath, query: options?.query })
+    router.replace(routeOptions)
   } else {
-    router.push({ path: fullPath, query: options?.query })
+    router.push(routeOptions)
   }
 }
 
@@ -45,10 +64,15 @@ export const navigateToName = (
   options?: { replace?: boolean; params?: Record<string, any>; query?: Record<string, any> }
 ) => {
   const locale = getCurrentLocale()
-  const routeName = locale ? `Locale${name}` : name
+  const routeName = isDefaultLocale(locale) ? name : `Locale${name}`
   const routeOptions: any = {
     name: routeName,
-    params: options?.params,
+    params: isDefaultLocale(locale)
+      ? options?.params
+      : {
+          ...options?.params,
+          locale: getLocalePrefix(locale)
+        },
     query: options?.query
   }
 
@@ -64,12 +88,16 @@ export const navigateToName = (
  * @param locale - 目标语言
  * @example
  */
-export const switchLanguage = (locale: 'zh' | 'en') => {
+export const switchLanguage = (locale: Locale) => {
   const currentRoute = router.currentRoute.value
-  const currentPath = currentRoute.path
-  const pathWithoutLocale = currentPath.replace(/^\/(zh|en)/, '') || '/'
-  const newPath = locale === 'zh' ? `/zh${pathWithoutLocale}` : pathWithoutLocale
+  const currentFullPath = currentRoute.fullPath
+  const newPath = withLocalePrefix(currentFullPath, locale)
   i18n.global.locale.value = locale
-  localStorage.setItem('language', locale === 'zh' ? 'zh-CN' : 'en')
-  router.push(newPath)
+  localStorage.setItem('language', getStorageLanguageCode(locale))
+
+  if (newPath === currentFullPath) {
+    return
+  }
+
+  router.replace(newPath)
 }

@@ -1,0 +1,185 @@
+<template>
+  <div class="w-full font-['Inter']">
+    <div class="w-full p-3.5 bg-bg-2 rounded-lg">
+      <p class="text-xs font-normal leading-normal text-text-1">Withdraw Methods</p>
+      <div class="mt-2.5 overflow-hidden">
+        <div
+          ref="methodListRef"
+          class="flex flex-nowrap gap-1 overflow-x-auto scrollbar-hide touch-pan-x scroll-smooth"
+          @wheel.prevent="handleMethodListWheel"
+        >
+          <div
+            class="shrink-0 flex flex-col items-center justify-center p-2 rounded-lg basis-[31.25%]"
+            :class="{
+              'border border-theme-primary bg-theme-3': selectedMethod.name === item.name,
+              'border border-transparent bg-bg-4': selectedMethod.name !== item.name
+            }"
+            v-for="(item, index) in payMethods"
+            :key="index"
+            :ref="el => setMethodItemRef(el, index)"
+            @click.stop="selectMethod(item, index)"
+          >
+            <img class="h-5" :src="item.icon" />
+            <p class="text-sm font-bold leading-normal text-text-1">{{ item.name }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-2.5 p-3.5 bg-bg-2 rounded-lg">
+      <div>
+        <div class="text-xs font-normal leading-normal">Phone Number</div>
+        <div
+          class="mt-2.5 p-3.5 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
+        >
+          <div class="shrink-0 text-base font-bold leading-normal mr-2 text-theme-primary">+63</div>
+          <input
+            type="text"
+            v-model="phoneNumber"
+            placeholder="Please enter your phone number"
+            class="flex-1 text-base font-bold leading-normal text-text-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
+          />
+        </div>
+      </div>
+      <div class="mt-5">
+        <div class="text-xs font-normal leading-normal">Name</div>
+        <div
+          class="mt-2.5 p-3.5 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
+        >
+          <userIcon class="w-5 h-5 mr-2 shrink-0 text-theme-primary" />
+          <input
+            type="text"
+            v-model="accountName"
+            placeholder="Please enter your name"
+            class="flex-1 text-base font-bold leading-normal text-text-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="mt-2.5 p-3.5 bg-bg-2 rounded-lg">
+      <div class="flex items-center justify-between">
+        <div class="text-xs font-normal leading-normal">Withdraw Amount</div>
+        <div class="flex items-center text-xs text-text-2">
+          Balance：
+          <DepositTokenIcon class="w-3 h-3 mr-1 text-text-1" />
+          <span class="text-text-1 font-bold">0.00</span>
+          <ChevronRightSmallIcon class="ml-1 w-1 h-2 text-text-1" />
+        </div>
+      </div>
+      <div
+        class="mt-2.5 p-3.5 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
+      >
+        <DepositTokenIcon class="w-5 h-5 mr-2 text-theme-primary" />
+        <input
+          type="number"
+          v-model="amount"
+          placeholder="Please enter the withdrawal amount"
+          class="flex-1 text-base font-bold leading-normal text-text-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
+        />
+      </div>
+      <button
+        class="mt-6 w-full h-10 flex items-center justify-center rounded-lg font-semibold text-text-4"
+        :class="[!isWithdrawDisabled ? 'btn-primary' : 'bg-theme-2 opacity-40 cursor-not-allowed']"
+        :disabled="isWithdrawDisabled"
+        @click="doWithdrawDeposit"
+      >
+        Withdraw Now
+      </button>
+    </div>
+  </div>
+</template>
+<script setup lang="ts">
+import userIcon from '@/static/svg/withdraw/user.svg?component'
+import gCashIcon from '@/static/img/payment/gCash.png'
+import grabPayIcon from '@/static/img/payment/grabPay.png'
+import mayaIcon from '@/static/img/payment/maya.png'
+import payPalIcon from '@/static/img/payment/payPal.png'
+import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
+import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
+import { type ComponentPublicInstance, computed, nextTick, ref } from 'vue'
+
+interface MethodOption {
+  name: string
+  icon: string
+}
+
+const payMethods = computed<MethodOption[]>(() => [
+  {
+    name: 'GCash',
+    icon: gCashIcon
+  },
+  {
+    name: 'Maya',
+    icon: mayaIcon
+  },
+  {
+    name: 'GrabPay',
+    icon: grabPayIcon
+  },
+  {
+    name: 'PayPal',
+    icon: payPalIcon
+  }
+])
+
+const selectedMethod = ref(payMethods.value[0])
+const methodListRef = ref<HTMLDivElement | null>(null)
+const methodItemRefs = ref<Array<HTMLElement | null>>([])
+const accountName = ref('')
+const phoneNumber = ref('')
+const amount = ref<number>()
+const isAmountDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
+const isWithdrawDisabled = computed(
+  () => isAmountDisabled.value || !accountName.value || !phoneNumber.value
+)
+
+const setMethodItemRef = (el: Element | ComponentPublicInstance | null, index: number) => {
+  const target =
+    el instanceof HTMLElement
+      ? el
+      : el && '$el' in el && el.$el instanceof HTMLElement
+        ? el.$el
+        : null
+
+  methodItemRefs.value[index] = target
+}
+
+const handleMethodListWheel = (event: WheelEvent) => {
+  if (!methodListRef.value) return
+
+  methodListRef.value.scrollBy({
+    left: event.deltaY !== 0 ? event.deltaY : event.deltaX,
+    behavior: 'auto'
+  })
+}
+
+const selectMethod = (method: MethodOption, index: number) => {
+  selectedMethod.value = method
+  scrollMethodIntoView(index)
+}
+
+const scrollMethodIntoView = async (index: number) => {
+  await nextTick()
+
+  const target = methodItemRefs.value[index]
+  if (!target || !methodListRef.value) return
+
+  target.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center'
+  })
+}
+const doWithdrawDeposit = () => {}
+</script>
+<style scoped lang="scss">
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  appearance: textfield; /* 禁用默认浏览器样式 */
+  -webkit-appearance: textfield; /* 针对 Safari 和 Webkit 浏览器 */
+  -moz-appearance: textfield; /* 针对 Firefox */
+}
+</style>

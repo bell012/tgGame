@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- H5 端登录/注册 -->
   <LoginFormMobile
     v-if="isMobile"
@@ -57,7 +57,7 @@
                     </div>
                     <!-- 首存奖金 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.welcome_deposit_bonus') }}
+                      {{ t('common.welcome_deposit_bonus') }}
                     </div>
                   </div>
 
@@ -70,7 +70,7 @@
                     </div>
                     <!-- 每日免费幸运旋转 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.free_daily_lucky_spin') }}
+                      {{ t('common.free_daily_lucky_spin') }}
                     </div>
                   </div>
 
@@ -81,12 +81,12 @@
                       <FreePerksIcon class="w-5 h-5 fill-none" />
                       <!-- 免费福利 -->
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">
-                        {{ t('locales.common.free_perks') }}
+                        {{ t('common.free_perks') }}
                       </span>
                     </div>
                     <!-- 每日免费参与奖金 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.daily_free_rewards_bonuses') }}
+                      {{ t('common.daily_free_rewards_bonuses') }}
                     </div>
                   </div>
                 </div>
@@ -94,11 +94,11 @@
                 <div class="flex items-center justify-center flex-col mt-6">
                   <!-- 保持桀骜不训 -->
                   <h2 class="w-full text-center text-[36px] font-[800] text-text-1 mb-1">
-                    {{ t('locales.common.stay_untamed') }}
+                    {{ t('common.stay_untamed') }}
                   </h2>
                   <!-- 注册并获得欢迎奖金 -->
                   <p class="w-full text-center text-[16px] font-[600] text-text-1">
-                    {{ t('locales.common.sign_up_get_welcome_bonus') }}
+                    {{ t('common.sign_up_get_welcome_bonus') }}
                   </p>
                 </div>
               </div>
@@ -107,8 +107,10 @@
             <!-- 右侧表单区域 -->
             <div class="w-1/2 bg-bg-1 py-5 px-6">
               <LoginFormDesktop
+                ref="loginFormDesktopRef"
                 :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
                 @open-reset-password="openResetPassword"
+                @close="handleClose"
               />
             </div>
           </div>
@@ -146,7 +148,7 @@
                     </div>
                     <!-- 首存奖金 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.welcome_deposit_bonus') }}
+                      {{ t('common.welcome_deposit_bonus') }}
                     </div>
                   </div>
 
@@ -159,7 +161,7 @@
                     </div>
                     <!-- 每日免费幸运旋转 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.free_daily_lucky_spin') }}
+                      {{ t('common.free_daily_lucky_spin') }}
                     </div>
                   </div>
 
@@ -170,12 +172,12 @@
                       <FreePerksIcon class="w-5 h-5 fill-none" />
                       <!-- 免费福利 -->
                       <span class="text-[14px] font-[800] text-text-1 ml-1.5">{{
-                        t('locales.common.free_perks')
+                        t('common.free_perks')
                       }}</span>
                     </div>
                     <!-- 每日免费参与奖金 -->
                     <div class="text-[10px] text-text-2 mt-2 text-center">
-                      {{ t('locales.common.daily_free_rewards_bonuses') }}
+                      {{ t('common.daily_free_rewards_bonuses') }}
                     </div>
                   </div>
                 </div>
@@ -183,11 +185,11 @@
                 <div class="flex items-center justify-center flex-col mt-6">
                   <!-- 保持桀骜不训 -->
                   <h2 class="w-full text-center text-[36px] font-[800] text-text-1 mb-1">
-                    {{ t('locales.common.stay_untamed') }}
+                    {{ t('common.stay_untamed') }}
                   </h2>
                   <!-- 注册并获得欢迎奖金 -->
                   <p class="w-full text-center text-[16px] font-[600] text-text-1">
-                    {{ t('locales.common.sign_up_get_welcome_bonus') }}
+                    {{ t('common.sign_up_get_welcome_bonus') }}
                   </p>
                 </div>
               </div>
@@ -217,6 +219,9 @@ import ResetPasswordDesktop from './ResetPasswordDesktop.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useThemeStore } from '@/stores/theme'
 import { useI18n } from 'vue-i18n'
+import loginPcDark from '@/static/img/home/login_pc_h.png'
+import loginPcLight from '@/static/img/home/login_pc_b.png'
+import Api from '@/api'
 
 // 是否为移动端
 const isMobile = useIsMobile()
@@ -225,9 +230,7 @@ const { t } = useI18n()
 
 // 主题动态背景图
 const pcBackgroundImage = computed(() => {
-  return themeStore.theme === 'dark'
-    ? '/src/static/img/home/login_pc_h.png'
-    : '/src/static/img/home/login_pc_b.png'
+  return themeStore.theme === 'dark' ? loginPcDark : loginPcLight
 })
 
 interface Props {
@@ -245,16 +248,32 @@ const emit = defineEmits<{
 
 const activeTab = ref<'login' | 'register' | 'resetPassword'>(props.defaultTab)
 const showResetPassword = ref(false)
+const loginFormDesktopRef = ref<InstanceType<typeof LoginFormDesktop> | null>(null)
 
 watch(
   () => props.modelValue,
-  newVal => {
+  async newVal => {
     if (newVal) {
       activeTab.value = props.defaultTab
       showResetPassword.value = false
+      // 弹窗打开时请求登录注册配置
+      await fetchLoginAndRegisterSetting()
+      if (!isMobile.value) {
+        loginFormDesktopRef.value?.resetForm()
+      }
     }
   }
 )
+
+// 请求登录注册配置
+const fetchLoginAndRegisterSetting = async () => {
+  try {
+    const response = await Api.auth.getLoginAndRegisterSetting({})
+    console.log('登录注册配置:', response)
+  } catch (error) {
+    console.error(error)
+  }
+}
 
 watch(
   () => props.defaultTab,

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="casino-page p-0 sm:p-4 w-full">
     <div class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl">
       <img
@@ -12,7 +12,7 @@
         <h1
           class="font-inter text-[20px] font-bold leading-normal text-[var(--color-text-level-1,#FFF)]"
         >
-          {{ t('locales.casino.banner_title') }}
+          {{ t('casino.banner_title') }}
         </h1>
         <div
           class="rounded-xl p-0 text-lg font-semibold sm:mt-4 sm:px-[60px] sm:py-[12px] sm:backdrop-blur-md sm:bg-[rgba(169,169,169,0.2)]"
@@ -20,7 +20,7 @@
           <h2
             class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
           >
-            {{ t('locales.casino.banner_sign_up') }}
+            {{ t('casino.banner_sign_up') }}
           </h2>
           <h2
             class="font-inter text-[14px] font-bold leading-normal text-[var(--color-theme-level-1,#2AEE88)]"
@@ -30,7 +30,7 @@
           <h2
             class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
           >
-            {{ t('locales.casino.banner_subtitle') }}
+            {{ t('casino.banner_subtitle') }}
           </h2>
         </div>
         <button
@@ -38,11 +38,12 @@
           type="button"
           @click.stop="showLoginModal = true"
         >
-          {{ t('locales.casino.join_now') }}
+          {{ t('casino.join_now') }}
         </button>
       </div>
     </div>
     <div
+      ref="searchRef"
       class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border mt-[10px] border-[var(--color-opacity-10,rgba(255,255,255,0.1))] bg-[var(--color-opacity-6,rgba(255,255,255,0.06))] focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-400/40 transition"
     >
       <img class="w-[18px] h-[18px]" src="/src/static/img/casino/search.webp" alt="search" />
@@ -50,10 +51,9 @@
         v-model="searchText"
         @keydown.enter.prevent="onSearch"
         @focus="showHistoryPanel = true"
-        @blur="showHistoryPanel = false"
         class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0"
         type="text"
-        :placeholder="t('locales.casino.placeholder')"
+        :placeholder="t('casino.placeholder')"
       />
       <button
         v-show="searchText"
@@ -64,22 +64,23 @@
       </button>
       <div
         v-show="showHistoryPanel && !searchText"
+        @click.stop="showHistoryPanel = false"
         class="absolute left-0 right-0 p-4 top-full w-full z-20 mt-3 flex flex-col items-center rounded-lg bg-[var(--color-background-level-2)] border border-[var(--color-border-level-1)]"
       >
         <button
           class="absolute -right-2 -top-2 w-5 h-5 bg-bg-4 flex items-center justify-center z-10 rounded-full"
-          @click="showHistoryPanel = false"
+          @click.stop="showHistoryPanel = false"
         >
           <CloseIcon class="w-[12px] h-[12px] fill-text-1" />
         </button>
         <div class="text-xs text-[var(--color-text-level-2)]">
-          {{ t('locales.casino.search_tips') }}
+          {{ t('casino.search_tips') }}
         </div>
         <!-- 历史记录 -->
         <div class="flex justify-between w-full text-xs my-2.5">
-          <div class="font-bold">{{ t('locales.casino.history') }}</div>
+          <div class="font-bold">{{ t('casino.history') }}</div>
           <div class="text-[var(--color-text-level-2)]" @click.stop="deleteAll()">
-            {{ t('locales.casino.clear') }}（{{ searchHistory?.length }}）
+            {{ t('casino.clear') }}（{{ searchHistory?.length }}）
           </div>
         </div>
         <div class="w-full">
@@ -101,7 +102,7 @@
         </div>
         <!-- 接口返回搜索建议 -->
         <div class="text-xs my-2.5 w-full">
-          <div class="font-bold">{{ t('locales.casino.suggested') }}</div>
+          <div class="font-bold">{{ t('casino.suggested') }}</div>
         </div>
         <div class="w-full">
           <div v-if="suggestedArr?.length > 0" class="flex flex-wrap gap-2">
@@ -160,7 +161,7 @@
               'bg-[var(--color-opacity-10)]': item.id === currentTabId,
               active: item.id === currentTabId
             }"
-            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center hover:bg-[var(--color-opacity-10)]"
+            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-[var(--color-opacity-10)]"
             @click.stop="onTabButton(item)"
           >
             <component
@@ -516,6 +517,7 @@ const getPageStyle = computed(() => {
       return pageStyle2
   }
 })
+const searchRef = ref<HTMLDivElement | null>(null)
 const tabScrollRef = ref<HTMLDivElement | null>(null)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
@@ -558,6 +560,7 @@ const onSearch = () => {
 }
 
 const goSearch = (item: string) => {
+  searchText.value = item
   console.log('点击搜索历史和建议:', item)
 }
 
@@ -568,6 +571,16 @@ const deleteItme = (item: string) => {
 const deleteAll = () => {
   console.log('删除全部搜索历史记录')
 }
+
+const handleClickOutside = (e: MouseEvent) => {
+  if (!searchRef.value) return
+
+  const target = e.target as Node
+  if (!searchRef.value.contains(target)) {
+    showHistoryPanel.value = false
+  }
+}
+
 watch(
   () => getCurrentTab.value,
   async tab => {
@@ -590,6 +603,7 @@ let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
   updateScrollState()
 
+  document.addEventListener('click', handleClickOutside)
   if (tabScrollRef.value) {
     resizeObserver = new ResizeObserver(() => {
       updateScrollState()
@@ -601,6 +615,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   resizeObserver?.disconnect()
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 

@@ -1,0 +1,37 @@
+import request from '@/utils/request'
+
+/**
+ * 获取首页数据
+ * @returns Promise<any>
+ */
+export function getGameData(): Promise<any> {
+  return request({
+    url: '/gc/queryGameListForApp',
+    method: 'post'
+  })
+}
+
+// 查询活动栏目
+export function getActivityType(): Promise<any> {
+  return request({
+    url: '/ac/queryGameListForApp',
+    method: 'post'
+  })
+}
+// 近期大奖
+export function getRecentBigWins(data: any): Promise<any> {
+  return request({
+    url: '/special/getRecentBigWins',
+    method: 'post',
+    data
+  })
+}
+
+// 近期大奖
+export function getQuerySlideshow(data: any): Promise<any> {
+  return request({
+    url: '/ac/querySlideshow',
+    method: 'post',
+    data
+  })
+}

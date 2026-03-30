@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="modelValue" class="modal-overlay" @click="handleClose">
@@ -17,18 +17,20 @@
           <div class="flex">
             <!-- 语言 -->
             <button
-              :class="['tab', { active: activeTab === 'language' }]"
+              :class="['tab w-1/2', { active: activeTab === 'language' }]"
               @click="activeTab = 'language'"
             >
-              {{ t('locales.home.language') }}
+              {{ t('home.language') }}
             </button>
             <!-- 以货币显示 -->
-            <button
-              :class="['tab', { active: activeTab === 'currency' }]"
+            <!-- <button
+              :class="['tab w-1/2', { active: activeTab === 'currency' }]"
               @click="activeTab = 'currency'"
             >
-              {{ t('locales.home.view_currency') }}
-            </button>
+              {{ t('home.view_currency') }}
+            </button> -->
+            <!-- 占位空白区域 -->
+            <div class="w-1/2"></div>
           </div>
 
           <!-- 语言选择 -->
@@ -88,7 +90,7 @@
               <div class="flex items-center">
                 <RadioCheckedIcon class="w-6 h-6 flex-shrink-0 stroke-text-1 fill-text-1 mr-3" />
                 <!-- 无 -->
-                <span class="option-text">{{ t('locales.home.none') }}</span>
+                <span class="option-text">{{ t('home.none') }}</span>
               </div>
               <RadioCheckedIcon
                 v-if="selectedCurrency === 'none'"
@@ -101,7 +103,7 @@
             <div v-if="selectedCurrency === 'none'" class="warning-tip">
               <SearchIcon class="w-5 h-5 flex-shrink-0 mr-1.5 stroke-[#3cef86]" />
               <!-- 当未选择任何货币时，某些金额仍会以最后选择的法币显示(USD) -->
-              <span>{{ t('locales.home.none_select_currency') }}(USD)</span>
+              <span>{{ t('home.none_select_currency') }}(USD)</span>
             </div>
 
             <!-- 货币列表 -->
@@ -134,6 +136,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
+import { getLocaleOptions, getLocaleSearchKeywords, type Locale } from '@/utils/locale'
 import CloseIcon from '@/static/svg/close.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import RadioCheckedIcon from '@/static/svg/radio-checked.svg?component'
@@ -143,9 +146,9 @@ const { t } = useI18n()
 const localeStore = useLocaleStore()
 
 interface Language {
-  code: string
+  code: Locale
   name: string
-  pinyin?: string
+  searchKeywords: string[]
 }
 
 interface Currency {
@@ -160,7 +163,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  'select-language': [code: string]
+  'select-language': [code: Locale]
   'select-currency': [code: string]
 }>()
 
@@ -192,10 +195,13 @@ const selectedCurrency = computed(() => {
 })
 
 // 语言列表
-const languages: Language[] = [
-  { code: 'en', name: 'English', pinyin: 'yingyu' },
-  { code: 'zh-CN', name: '简体中文', pinyin: 'jiantizhongwen' }
-]
+const languages = computed<Language[]>(() => {
+  return getLocaleOptions().map(({ code, label }) => ({
+    code,
+    name: label,
+    searchKeywords: getLocaleSearchKeywords(code)
+  }))
+})
 
 // 货币列表
 const currencies: Currency[] = [
@@ -205,28 +211,14 @@ const currencies: Currency[] = [
 
 // 搜索支持拼音首字母和中文
 const filteredLanguages = computed(() => {
-  if (!searchQuery.value) return languages
+  if (!searchQuery.value) return languages.value
 
   const query = searchQuery.value.toLowerCase().trim()
 
-  return languages.filter(lang => {
-    const name = lang.name.toLowerCase()
-    const code = lang.code.toLowerCase()
-    const pinyin = lang.pinyin?.toLowerCase() || ''
-    if (name.includes(query) || code.includes(query) || pinyin.includes(query)) {
-      return true
-    }
-    if (pinyin) {
-      const firstLetters = pinyin
-        .split('')
-        .filter((_, i) => i === 0 || pinyin[i - 1] === ' ')
-        .join('')
-      if (firstLetters.includes(query)) {
-        return true
-      }
-    }
-
-    return false
+  return languages.value.filter(lang => {
+    return [lang.name, lang.code, ...lang.searchKeywords].some(keyword =>
+      keyword.toLowerCase().includes(query)
+    )
   })
 })
 
@@ -244,7 +236,7 @@ const handleClose = () => {
   emit('update:modelValue', false)
 }
 
-const selectLanguage = (code: string) => {
+const selectLanguage = (code: Locale) => {
   emit('select-language', code)
   handleClose()
 }
