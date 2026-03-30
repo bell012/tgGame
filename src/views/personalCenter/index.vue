@@ -47,7 +47,7 @@
             <div class="flex items-center">
               <img :src="vipLeft" alt="VIP" class="w-[25px] h-[16px] mx-[5px]" />
               <img :src="vipIcon" alt="VIP" class="w-[32px] h-[14px]" />
-              <span class="text-text-1 text-lg font-bold">{{ vipLevel }}</span>
+              <span class="text-white text-lg font-bold">{{ vipLevel }}</span>
             </div>
           </div>
 
@@ -55,11 +55,12 @@
             <div class="w-full min-w-0">
               <div class="flex w-full min-w-0 items-center justify-between mb-1">
                 <span class="min-w-0 flex-1 text-theme-primary text-xs"
-                  >{{ t('personalCenter.upgrade') }}: {{ t('personalCenter.deposit') }} 600
-                  {{ t('personalCenter.validBet') }} 800</span
+                  >{{ t('personalCenter.upgrade') }}: {{ t('personalCenter.deposit') }}
+                  {{ remainingBetAmount }} {{ t('personalCenter.validBet') }}
+                  {{ remainingRechargeAmount }}</span
                 >
                 <span class="shrink-0 text-theme-primary text-xs font-bold"
-                  >VIP {{ vipLevel + 1 }}</span
+                  >VIP {{ nextVipLevel }}</span
                 >
               </div>
               <div class="w-full h-[6px] bg-mask-20 rounded-full overflow-hidden">
@@ -317,6 +318,7 @@ import ReferralPopup from '@/views/personalCenter/components/ReferralPopup.vue'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
+import { useVipStore } from '@/stores/vip'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import {
@@ -348,7 +350,9 @@ const { t } = useI18n()
 const localeStore = useLocaleStore()
 const themeStore = useThemeStore()
 const userStore = useUserStore()
+const vipStore = useVipStore()
 const { userInfo, acctInfo } = storeToRefs(userStore)
+const { myVipInfo } = storeToRefs(vipStore)
 
 const balanceFieldMap = {
   BRL: 'balanceBrl',
@@ -399,11 +403,51 @@ const avatarUrl = computed(() => {
 })
 
 // VIP 等级
-const vipLevel = computed(() => userInfo.value?.vipId || 0)
+const vipLevel = computed(() => myVipInfo.value?.vipId || userInfo.value?.vipId || 0)
+
+const vipTargetConfig = computed(() => vipStore.getVipTargetConfig(vipLevel.value))
+
+const getClampedRatio = (currentValue: number, targetValue: number) => {
+  if (!targetValue || targetValue <= 0) {
+    return 0
+  }
+
+  return Math.min(Math.max(currentValue / targetValue, 0), 1)
+}
+
+// Deposit
+const remainingBetAmount = computed(() => {
+  return Math.max(
+    (vipTargetConfig.value?.betAmountLine ?? 0) - (myVipInfo.value?.betAmount ?? 0),
+    0
+  )
+})
+
+// Valid Bet
+const remainingRechargeAmount = computed(() => {
+  return Math.max(
+    (vipTargetConfig.value?.rechargeAmount ?? 0) - (myVipInfo.value?.rechargeAmount ?? 0),
+    0
+  )
+})
 
 // VIP 进度
 const vipProgress = computed(() => {
-  return 65
+  const betProgress = getClampedRatio(
+    myVipInfo.value?.betAmount ?? 0,
+    vipTargetConfig.value?.betAmountLine ?? 0
+  )
+  const rechargeProgress = getClampedRatio(
+    myVipInfo.value?.rechargeAmount ?? 0,
+    vipTargetConfig.value?.rechargeAmount ?? 0
+  )
+
+  return Math.min(betProgress * 50 + rechargeProgress * 50, 100)
+})
+
+// 下一个等级
+const nextVipLevel = computed(() => {
+  return vipLevel.value + 1
 })
 
 // 总余额
@@ -704,7 +748,7 @@ const handleCurrencySelect = (code: string) => {
 
 const initializePersonalCenter = async () => {
   userStore.syncStoredUserData()
-  await userStore.refreshCurrentUserData()
+  await Promise.all([userStore.refreshCurrentUserData(), vipStore.refreshVipData()])
 }
 
 onMounted(() => {
