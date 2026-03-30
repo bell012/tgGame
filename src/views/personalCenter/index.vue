@@ -12,10 +12,22 @@
     <!-- 用户信息区域 -->
     <div class="p-3.5">
       <div class="mb-3.5 flex items-center cursor-pointer" @click="goToMyProfile">
-        <div
-          class="w-[55px] h-[55px] rounded-full overflow-hidden bg-opacity-15 flex items-center justify-center mr-3.5"
-        >
-          <img :src="avatarUrl" alt="Avatar" class="w-[47px] h-[47px] object-cover" />
+        <div class="relative mr-3.5 h-[55px] w-[55px] overflow-visible">
+          <div
+            :class="[
+              'absolute overflow-hidden rounded-full',
+              selectedAvatarFrameImage ? 'inset-[4px]' : 'inset-[4px] border-2 border-icon-2'
+            ]"
+          >
+            <img :src="avatarUrl" alt="Avatar" class="h-full w-full object-cover" />
+          </div>
+
+          <img
+            v-if="selectedAvatarFrameImage"
+            :src="selectedAvatarFrameImage"
+            alt="Avatar Frame"
+            class="pointer-events-none absolute inset-0 h-full w-full object-contain"
+          />
         </div>
         <div class="flex flex-1 items-center justify-between">
           <div class="flex flex-col">
@@ -319,7 +331,12 @@ import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { useVipStore } from '@/stores/vip'
-import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
+import {
+  DEFAULT_AVATAR_FRAME_ID,
+  profileCustomizationState,
+  resolveProfileAvatarUrl,
+  type AvatarFrameId
+} from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import {
   getCurrentCurrency,
@@ -338,6 +355,11 @@ import SunIcon from '@/static/svg/personalCenter/icon33.svg?component'
 import DepositIocn from '@/static/svg/personalCenter/icon1.svg?component'
 import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
 import SignOut from '@/static/svg/personalCenter/icon18.svg?component'
+import border1Image from '@/static/img/personalCenter/border_1.png'
+import border2Image from '@/static/img/personalCenter/border_2.png'
+import border3Image from '@/static/img/personalCenter/border_3.png'
+import border4Image from '@/static/img/personalCenter/border_4.png'
+import border5Image from '@/static/img/personalCenter/border_5.png'
 import vipBG from '@/static/img/personalCenter/vigBG.png'
 import vipLeft from '@/static/img/personalCenter/vip_left.png'
 import vipIcon from '@/static/img/personalCenter/vip.png'
@@ -353,6 +375,14 @@ const userStore = useUserStore()
 const vipStore = useVipStore()
 const { userInfo, acctInfo } = storeToRefs(userStore)
 const { myVipInfo } = storeToRefs(vipStore)
+
+const avatarFrameImageMap: Record<Exclude<AvatarFrameId, 'none'>, string> = {
+  border_1: border1Image,
+  border_2: border2Image,
+  border_3: border3Image,
+  border_4: border4Image,
+  border_5: border5Image
+}
 
 const balanceFieldMap = {
   BRL: 'balanceBrl',
@@ -400,6 +430,12 @@ const referralLink = ref('https://www.baidu.com/jh/ocja...')
 // 头像 URL
 const avatarUrl = computed(() => {
   return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
+})
+
+const selectedAvatarFrameImage = computed(() => {
+  const avatarFrameId = profileCustomizationState.value.avatarFrameId ?? DEFAULT_AVATAR_FRAME_ID
+  if (avatarFrameId === DEFAULT_AVATAR_FRAME_ID) return ''
+  return avatarFrameImageMap[avatarFrameId as Exclude<AvatarFrameId, 'none'>]
 })
 
 // VIP 等级
