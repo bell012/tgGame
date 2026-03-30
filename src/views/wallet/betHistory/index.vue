@@ -1,40 +1,11 @@
 <template>
   <div>
     <!-- PC 端布局 -->
-    <div class="hidden md:block max-w-[1336px] mx-auto">
-      <h2 class="text-xl font-[700] text-text-1 mb-4">{{ $t('wallet.title') }}</h2>
-      <div class="flex justify-center gap-6">
-        <!-- 左侧菜单 -->
-        <aside class="w-[280px] flex-shrink-0">
-          <div class="bg-bg-2 rounded-xl p-4">
-            <nav class="space-y-2.5">
-              <div
-                v-for="item in menuItems"
-                :key="item.tab"
-                :class="[
-                  'flex items-center gap-4 px-4 py-2 rounded-lg cursor-pointer transition-all text-base',
-                  currentTab === item.tab ? 'bg-theme-primary text-text-4 font-bold' : 'text-text-2'
-                ]"
-                @click="handleMenuClick(item.path)"
-              >
-                <component :is="item.icon" class="w-6 h-6" />
-                {{ item.label }}
-              </div>
-            </nav>
-          </div>
-        </aside>
-
-        <!-- 右侧内容区 -->
-        <main class="flex-1 min-w-0">
-          <div class="bg-bg-2 rounded-xl overflow-hidden">
-            <PcLayout />
-          </div>
-        </main>
+    <WalletLayout current-tab="bet-history" class="hidden md:block">
+      <div class="bg-bg-2 rounded-xl overflow-hidden">
+        <PcLayout />
       </div>
-
-      <!-- 公共底部 -->
-      <CommonFooter class="mt-[40px]" />
-    </div>
+    </WalletLayout>
 
     <!-- H5 端布局 -->
     <div class="block md:hidden fixed inset-0 bg-bg-1 overflow-y-auto">
@@ -124,34 +95,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { ref } from 'vue'
 import { navigateTo } from '@/utils/router'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
+import WalletLayout from '../index.vue'
 import PcLayout from './pc-layout.vue'
-import CommonFooter from '@/components/commonFooter.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
-import BetSvg from '@/static/svg/bet.svg?component'
 import noDataImg from '@/static/img/personalCenter/noData.png'
 import bet from '@/static/img/personalCenter/bet.png'
-
-const { t } = useI18n()
-
-// PC 端菜单相关
-const currentTab = ref('bet-history')
-const menuItems = computed(() => [
-  {
-    path: '/bet-history',
-    tab: 'bet-history',
-    label: t('wallet.betHistory'),
-    icon: BetSvg
-  }
-])
-
-const handleMenuClick = (path: string) => {
-  navigateTo(path)
-}
 
 interface BetItem {
   id: number
