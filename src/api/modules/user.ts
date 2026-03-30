@@ -4,6 +4,8 @@
 
 import request from '@/utils/request'
 import type {
+  ModifyMemberInfoForm,
+  ModifyMemberInfoResponse,
   QueryAcctInfoForm,
   QueryAcctInfoResponse,
   SelectMemberForm,
@@ -31,6 +33,19 @@ export function queryAcctInfo(data: QueryAcctInfoForm): Promise<QueryAcctInfoRes
 export function selectMember(data: SelectMemberForm): Promise<SelectMemberResponse> {
   return request({
     url: '/mc/selectMember',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 修改会员信息
+ * @param data 会员信息
+ * @returns Promise<ModifyMemberInfoResponse>
+ */
+export function modifyMemberInfo(data: ModifyMemberInfoForm): Promise<ModifyMemberInfoResponse> {
+  return request({
+    url: '/mc/modifyMemberInfo',
     method: 'post',
     data
   })
