@@ -1,7 +1,12 @@
 <template>
   <div class="flex min-h-screen">
     <!-- 顶部导航 -->
-    <TopNav ref="topNavRef" @toggle-sidebar="toggleSidebar" v-if="!hideTopNav" />
+    <TopNav
+      v-if="!hideTopNav"
+      ref="topNavRef"
+      @toggle-sidebar="toggleSidebar"
+      @notification-click="handleNotificationClick"
+    />
 
     <!-- 侧边栏 -->
     <Sidebar
@@ -14,22 +19,46 @@
 
     <!-- 主内容区 -->
     <main class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out" :style="mainStyle">
-      <div class="p-0 sm:p-0 lg:p-4 px-[14px]">
-        <router-view v-slot="{ Component, route: currentViewRoute }">
-          <component
-            v-if="shouldRenderCurrentRouteInMain(currentViewRoute)"
-            :is="Component"
-            :key="currentViewRoute.fullPath"
-          />
-
+      <!-- 主内容容器 -->
+      <div class="flex min-h-full items-start gap-4 p-0 px-[14px] sm:p-0 lg:p-4">
+        <!-- 路由内容区域 -->
+        <section class="min-w-0 flex-1">
+          <!-- 主内容背景页 -->
           <router-view
-            v-else-if="
-              shouldRenderBackgroundRouteInMain(currentViewRoute) && backgroundRouteSnapshot
-            "
+            v-if="shouldRenderBackgroundRouteInMain(route) && backgroundRouteSnapshot"
             :route="backgroundRouteSnapshot"
             :key="backgroundRouteSnapshot.fullPath"
           />
-        </router-view>
+
+          <!-- 主内容当前页 -->
+          <router-view v-if="shouldRenderCurrentRouteInMain(route)" :key="route.fullPath" />
+        </section>
+
+        <!-- PC 端通知面板占位列 -->
+        <div v-if="showNotificationPanel && !isMobile" class="w-[312px] shrink-0"></div>
+
+        <!-- PC 端通知侧边面板 -->
+        <transition name="notification-panel">
+          <aside
+            v-if="showNotificationPanel && !isMobile"
+            class="fixed z-40 w-[312px] overflow-hidden bg-bg-1"
+            :style="notificationPanelStyle"
+          >
+            <NotificationDetailPage
+              v-if="activeNotificationDetail"
+              panel-mode
+              :detail-data="activeNotificationDetail"
+              @back="handleNotificationDetailBack"
+              @close="handleNotificationPanelClose"
+            />
+            <NotificationListPage
+              v-else
+              panel-mode
+              @open-detail="handleNotificationDetailOpen"
+              @close="handleNotificationPanelClose"
+            />
+          </aside>
+        </transition>
       </div>
     </main>
 
@@ -58,16 +87,21 @@
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
 import { getLocaleFromRouteParam, stripLocalePrefix, withLocalePrefix } from '@/utils/locale'
+import { navigateTo } from '@/utils/router'
+import NotificationDetailPage from '@/views/menu/notifications/detail/index.vue'
+import NotificationListPage from '@/views/menu/notifications/index.vue'
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
+import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router'
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
 import TopNav from './TopNav.vue'
-import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router'
 
 const layoutStore = useLayoutStore()
 const topNavRef = ref<InstanceType<typeof TopNav> | null>(null)
 const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
 const isSidebarCollapsed = ref(false)
+const showNotificationPanel = ref(false)
+const activeNotificationDetail = ref<NotificationPanelDetail | null>(null)
 const isMobile = useIsMobile()
 
 const route = useRoute()
@@ -88,6 +122,16 @@ interface SlideRouteItem {
   path: string
   route: RouteLocationNormalizedLoaded
   showDrawer: boolean
+}
+
+interface NotificationPanelDetail {
+  category: 'promotions' | 'transactions' | 'system'
+  createTime: number
+  isImage: number
+  linkUrl: string
+  noticeText: string
+  noticeTitle: string
+  rowId: number
 }
 
 // 滑动路由栈
@@ -284,10 +328,46 @@ const mainStyle = computed(() => {
   }
 })
 
+const notificationPanelStyle = computed(() => ({
+  top: `${layoutStore.TOPNAV_HEIGHT}px`,
+  right: '16px',
+  height: `calc(100vh - ${layoutStore.TOPNAV_HEIGHT}px)`
+}))
+
 const toggleSidebar = () => {
   if (sidebarRef.value) {
     sidebarRef.value.toggleCollapse()
   }
+}
+
+// 处理顶部导航通知按钮点击。
+const handleNotificationClick = () => {
+  if (isMobile.value) {
+    navigateTo('/menu/notifications')
+    return
+  }
+
+  if (showNotificationPanel.value) {
+    activeNotificationDetail.value = null
+  }
+
+  showNotificationPanel.value = !showNotificationPanel.value
+}
+
+// 打开通知面板详情视图。
+const handleNotificationDetailOpen = (detail: NotificationPanelDetail) => {
+  activeNotificationDetail.value = detail
+}
+
+// 返回通知面板列表视图。
+const handleNotificationDetailBack = () => {
+  activeNotificationDetail.value = null
+}
+
+// 关闭通知侧边面板并重置详情状态。
+const handleNotificationPanelClose = () => {
+  showNotificationPanel.value = false
+  activeNotificationDetail.value = null
 }
 
 const handleCollapseChange = (collapsed: boolean) => {
@@ -312,4 +392,29 @@ const hideBottomBar = computed(() => {
 const hideTopNav = computed(() => {
   return (route.meta?.mobile as MobileRouteMeta | undefined)?.hideTopNav && isMobile.value
 })
+
+watch(
+  () => isMobile.value,
+  mobile => {
+    if (mobile) {
+      showNotificationPanel.value = false
+      activeNotificationDetail.value = null
+    }
+  }
+)
 </script>
+
+<style scoped>
+.notification-panel-enter-active,
+.notification-panel-leave-active {
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.notification-panel-enter-from,
+.notification-panel-leave-to {
+  opacity: 0;
+  transform: translateX(24px);
+}
+</style>
