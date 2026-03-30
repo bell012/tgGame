@@ -7,7 +7,7 @@
       <a
         href="javascript:void(0);"
         class="button ml-auto flex items-center bg-bg-3 gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-layer5"
-        >{{ $t('home1.All') }}</a
+        >{{ $t('home.All') }}</a
       >
       <div v-if="!isMobile" class="ml-2 flex gap-x-1">
         <button

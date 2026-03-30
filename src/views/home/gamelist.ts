@@ -9,7 +9,7 @@ import game6 from '@/static/img/test/game6.png'
 
 export const gamelist = [
   {
-    title: 'home1.TGOriginals',
+    title: 'home.TGOriginals',
     list: [
       {
         img: {
@@ -56,7 +56,7 @@ export const gamelist = [
     ]
   },
   {
-    title: 'home1.LiveCasino',
+    title: 'home.LiveCasino',
     list: [
       {
         img: {
@@ -96,7 +96,7 @@ export const gamelist = [
     ]
   },
   {
-    title: 'home1.Fishing',
+    title: 'home.Fishing',
     list: [
       {
         img: {
@@ -143,7 +143,7 @@ export const gamelist = [
     ]
   },
   {
-    title: 'home1.Slots',
+    title: 'home.Slots',
     list: [
       {
         img: {
@@ -190,7 +190,7 @@ export const gamelist = [
     ]
   },
   {
-    title: 'home1.Lottery',
+    title: 'home.Lottery',
     list: [
       {
         img: {
@@ -237,7 +237,7 @@ export const gamelist = [
     ]
   },
   {
-    title: 'home1.TableGames',
+    title: 'home.TableGames',
     list: [
       {
         img: {
@@ -285,7 +285,7 @@ export const gamelist = [
   }
 ]
 export const gamelist1 = {
-  title: 'home1.HotGames',
+  title: 'home.HotGames',
   list: [
     {
       img: {
