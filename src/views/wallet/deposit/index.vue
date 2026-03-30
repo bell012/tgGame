@@ -1,11 +1,7 @@
 <template>
   <div>
     <div v-if="isMobile" class="fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1">
-      <H5Header :title="t('deposit.title')" showSort>
-        <template #right>
-          <DetailsIcon class="w-4 h-4 text-icon-1" />
-        </template>
-      </H5Header>
+      <H5Header :title="t('deposit.title')" showSort :rightIcon="DetailsIcon" />
       <div class="flex-1 min-h-0">
         <depositContentPanel v-model="tabType" class="h-full" />
       </div>
