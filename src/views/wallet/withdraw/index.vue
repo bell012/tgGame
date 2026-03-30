@@ -1,12 +1,10 @@
 <template>
   <div>
-    <div v-if="isMobile">
-      <H5Header :title="t('withdraw.title')" showSort>
-        <template #right>
-          <DetailsIcon class="w-4 h-4 text-icon-1" />
-        </template>
-      </H5Header>
-      <withdrawMobile />
+    <div v-if="isMobile" class="fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1">
+      <H5Header :title="t('withdraw.title')" showSort :rightIcon="DetailsIcon" />
+      <div class="flex-1 min-h-0">
+        <withdrawMobile class="h-full" />
+      </div>
     </div>
     <div v-else class="max-w-[1336px] mx-auto">
       <h2 class="text-xl font-[700] text-text-1 mb-4">{{ $t('wallet.title') }}</h2>
