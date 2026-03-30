@@ -2,12 +2,12 @@
   <div class="eventList">
     <div class="mt-2 flex items-center sm:mt-6 h-8">
       <h2 class="flex items-center text-base font-extrabold text-primary">
-        {{ $t('home1.LiveSports') }}
+        {{ $t('home.LiveSports') }}
       </h2>
       <a
         href="/gamelist/brand"
         class="button ml-auto flex items-center gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-[var(--color-background-level-3)]"
-        >{{ $t('home1.All') }}</a
+        >{{ $t('home.All') }}</a
       >
       <div v-if="!isMobile" class="ml-2 flex gap-x-1">
         <button

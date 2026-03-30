@@ -51,7 +51,7 @@
           ></div>
         </div>
         <!-- 近期大奖 -->
-        <div>{{ $t('home1.RecentBigWins') }}</div>
+        <div>{{ $t('home.RecentBigWins') }}</div>
         <div class="ml-2 gap-2 lg:!flex lg:!flex-col pcState">
           <div
             @click="carousel(0)"
@@ -62,7 +62,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            {{ $t('home1.All') }}
+            {{ $t('home.All') }}
           </div>
           <div
             @click="carousel(1)"
@@ -73,7 +73,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            {{ $t('home1.BCOriginals') }}
+            {{ $t('home.BCOriginals') }}
           </div>
           <div
             @click="carousel(2)"
@@ -84,7 +84,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            {{ $t('home1.Slots') }}
+            {{ $t('home.Slots') }}
           </div>
           <div
             @click="carousel(3)"
@@ -95,7 +95,7 @@
                 : 'border-b-transparent font-normal text-secondary'
             "
           >
-            {{ $t('home1.LiveCasino') }}
+            {{ $t('home.LiveCasino') }}
           </div>
         </div>
       </h2>
@@ -141,12 +141,12 @@
                 <div class="flex items-center">
                   <div class="color_icon_img casino" style="transform: scale(1)"></div>
                   <img :src="icon5" alt="" class="w-[19px]" />
-                  <h2 class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home1.Casino') }}</h2>
+                  <h2 class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Casino') }}</h2>
                 </div>
                 <!-- <div
                   class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
                 >
-                  {{ $t('home1.labelLabel') }}
+                  {{ $t('home.labelLabel') }}
                 </div> -->
               </div>
             </button>
@@ -162,12 +162,12 @@
                 <div class="flex items-center">
                   <div class="color_icon_img sports" style="transform: scale(1)"></div>
                   <img :src="icon6" alt="" class="w-[19px]" />
-                  <span class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home1.Sports') }}</span>
+                  <span class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Sports') }}</span>
                 </div>
                 <!-- <div
                   class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
                 >
-                  {{ $t('home1.SportsLabel') }}
+                  {{ $t('home.SportsLabel') }}
                 </div> -->
               </div>
             </button>
@@ -274,7 +274,7 @@
           </div>
           <div class="flex items-center justify-center mt-4 gap-11 lg:!mt-0">
             <div class="text-lg font-extrabold sm:text-2xl">
-              <span class="text-secondary-4">300%</span> {{ $t('home1.DepositBonus') }}
+              <span class="text-secondary-4">300%</span> {{ $t('home.DepositBonus') }}
             </div>
           </div>
         </div>
@@ -370,27 +370,27 @@ const closeActivityPop = () => {
 
 const listImg = computed(() => [
   {
-    name: t('home1.Poker'),
+    name: t('home.Poker'),
     img: contract,
     icon: icon
   },
   {
-    name: t('home1.slots'),
+    name: t('home.slots'),
     img: slots,
     icon: icon1
   },
   {
-    name: t('home1.fishing'),
+    name: t('home.fishing'),
     img: fishing,
     icon: icon2
   },
   {
-    name: t('home1.live'),
+    name: t('home.live'),
     img: live,
     icon: icon3
   },
   {
-    name: t('home1.lottery'),
+    name: t('home.lottery'),
     img: combination,
     icon: icon4
   }

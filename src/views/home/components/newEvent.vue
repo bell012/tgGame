@@ -2,7 +2,7 @@
   <div class="latest-wrap max-w-[1248px] mx-auto sm:px-4 sm:py-4">
     <!-- Header -->
     <div class="header">
-      <h2>{{ $t('home1.LatestRound&Race') }}</h2>
+      <h2>{{ $t('home.LatestRound&Race') }}</h2>
 
       <div class="tabs">
         <button
@@ -21,11 +21,11 @@
       <table class="table [&_td]:px-3 [&_td]:py-3 sm:[&_td]:px-4" role="table">
         <thead class="table-head pc-only" role="rowgroup">
           <tr role="row" class="bg-bg-2 text-text-2">
-            <th>{{ $t('home1.Game') }}</th>
-            <th class="sm:w-auto" role="columnheader">{{ $t('home1.Player') }}</th>
-            <th class="h5-hide" role="columnheader">{{ $t('home1.BetAmount') }}</th>
-            <th>{{ $t('home1.Multiplier') }}</th>
-            <th class="text-right">{{ $t('home1.Profit') }}</th>
+            <th>{{ $t('home.Game') }}</th>
+            <th class="sm:w-auto" role="columnheader">{{ $t('home.Player') }}</th>
+            <th class="h5-hide" role="columnheader">{{ $t('home.BetAmount') }}</th>
+            <th>{{ $t('home.Multiplier') }}</th>
+            <th class="text-right">{{ $t('home.Profit') }}</th>
           </tr>
         </thead>
 
@@ -77,8 +77,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BlackJack from './img/BlackJack.svg?url'
 const { t } = useI18n()
-const tabs = [t('home1.LatestBet'), t('home1.HighRoller')]
-const activeTab = ref(t('home1.LatestBet'))
+const tabs = [t('home.LatestBet'), t('home.HighRoller')]
+const activeTab = ref(t('home.LatestBet'))
 interface LiveRow {
   id: number
   game: string

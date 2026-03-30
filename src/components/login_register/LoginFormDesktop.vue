@@ -37,7 +37,7 @@
             @click="setActiveTab('signin')"
           >
             <!-- 登录 -->
-            <span>{{ t('home1.sign_In') }}</span>
+            <span>{{ t('home.sign_In') }}</span>
             <div
               v-if="activeTab === 'signin'"
               class="absolute bottom-0 left-0 right-0 h-[2px] bg-theme-primary rounded-t-full"
@@ -49,7 +49,7 @@
             @click="setActiveTab('signup')"
           >
             <!-- 注册 -->
-            <span>{{ t('home1.sign_Up') }}</span>
+            <span>{{ t('home.sign_Up') }}</span>
             <div
               v-if="activeTab === 'signup'"
               class="absolute bottom-0 left-0 right-0 h-[2px] bg-theme-primary rounded-t-full"
@@ -144,7 +144,7 @@
               :disabled="!isSigninValid"
               @click="handleLogin"
             >
-              {{ t('home1.sign_In') }}
+              {{ t('home.sign_In') }}
             </button>
 
             <!-- 以访客身份 -->
@@ -263,7 +263,7 @@
               :disabled="!isSignupValid"
               @click="handleRegister"
             >
-              {{ t('home1.sign_Up') }}
+              {{ t('home.sign_Up') }}
             </button>
 
             <!-- 以访客身份 -->
