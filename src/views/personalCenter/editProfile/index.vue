@@ -95,11 +95,14 @@
       <button
         type="button"
         class="relative mt-5 flex h-[40px] w-full items-center justify-center overflow-hidden rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
-        :class="canSave ? '' : 'cursor-not-allowed'"
-        :disabled="!canSave"
+        :class="canSave && !isSavingProfile ? '' : 'cursor-not-allowed'"
+        :disabled="!canSave || isSavingProfile"
         @click="handleSave"
       >
-        <span v-if="!canSave" class="absolute inset-0 z-10 rounded-lg bg-black/35"></span>
+        <span
+          v-if="!canSave || isSavingProfile"
+          class="absolute inset-0 z-10 rounded-lg bg-black/35"
+        ></span>
         <span class="relative z-20">{{ t('personalCenter.editProfile.save') }}</span>
       </button>
 
@@ -217,7 +220,8 @@
             </button>
             <button
               type="button"
-              class="text-sm font-bold text-text-1"
+              class="text-sm font-bold text-text-1 disabled:opacity-60"
+              :disabled="isUploadingAvatar"
               @click="confirmCroppedAvatar"
             >
               {{ t('personalCenter.editProfile.select') }}
@@ -234,9 +238,11 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch, type CSSPropert
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
+import Api from '@/api'
 import H5Header from '@/components/common/H5Header.vue'
 import { useUserStore } from '@/stores/user'
 import {
+  clearProfileAvatarPreviewState,
   DEFAULT_AVATAR_FRAME_ID,
   profileCustomizationState,
   resolveProfileAvatarUrl,
@@ -272,17 +278,22 @@ const cameraInputRef = ref<HTMLInputElement | null>(null)
 const galleryInputRef = ref<HTMLInputElement | null>(null)
 const cropViewportRef = ref<HTMLElement | null>(null)
 const cropImageRef = ref<HTMLImageElement | null>(null)
+const selectedAvatarFile = ref<File | null>(null)
 const cropSourceUrl = ref('')
 const cropViewportSize = ref(0)
 const cropScale = ref(1)
 const cropOffset = ref({ x: 0, y: 0 })
 const cropBaseSize = ref({ width: 0, height: 0 })
 const isDraggingCropImage = ref(false)
+const isUploadingAvatar = ref(false)
+const isSavingProfile = ref(false)
+const pendingHeadPortrait = ref('')
 const dragStartPoint = ref({ x: 0, y: 0 })
 const dragStartOffset = ref({ x: 0, y: 0 })
 const originalForm = ref({
   nickName: '',
-  avatarFrameId: DEFAULT_EDIT_AVATAR_FRAME_ID as AvatarFrameId
+  avatarFrameId: DEFAULT_EDIT_AVATAR_FRAME_ID as AvatarFrameId,
+  headPortrait: ''
 })
 
 const avatarFrameImageMap: Record<Exclude<AvatarFrameId, 'none'>, string> = {
@@ -303,7 +314,8 @@ const canSave = computed(() => {
   return (
     isNicknameValid.value &&
     (nickName.value !== originalForm.value.nickName ||
-      selectedAvatarFrameId.value !== originalForm.value.avatarFrameId)
+      selectedAvatarFrameId.value !== originalForm.value.avatarFrameId ||
+      pendingHeadPortrait.value !== originalForm.value.headPortrait)
   )
 })
 
@@ -351,12 +363,16 @@ const syncFormState = () => {
   const customization = profileCustomizationState.value
   const nextNickName = userInfo.value?.nickName || ''
   const nextAvatarFrameId = customization.avatarFrameId ?? DEFAULT_EDIT_AVATAR_FRAME_ID
+  const nextHeadPortrait = userInfo.value?.headPortrait?.trim() ?? ''
 
   nickName.value = nextNickName
   selectedAvatarFrameId.value = nextAvatarFrameId
+  pendingHeadPortrait.value = nextHeadPortrait
+  clearProfileAvatarPreviewState()
   originalForm.value = {
     nickName: nextNickName,
-    avatarFrameId: nextAvatarFrameId
+    avatarFrameId: nextAvatarFrameId,
+    headPortrait: nextHeadPortrait
   }
 }
 
@@ -459,6 +475,7 @@ const triggerAvatarInput = (source: 'camera' | 'gallery') => {
 const closeAvatarCropper = () => {
   showAvatarCropper.value = false
   isDraggingCropImage.value = false
+  selectedAvatarFile.value = null
   revokeCropSourceUrl()
 }
 
@@ -469,9 +486,11 @@ const handleFileInputChange = (event: Event) => {
   inputElement.value = ''
 
   if (!file) {
+    selectedAvatarFile.value = null
     return
   }
 
+  selectedAvatarFile.value = file
   revokeCropSourceUrl()
   cropSourceUrl.value = URL.createObjectURL(file)
   showAvatarCropper.value = true
@@ -508,7 +527,38 @@ const stopDraggingCropImage = () => {
   isDraggingCropImage.value = false
 }
 
-const buildCroppedAvatarDataUrl = () => {
+const getUploadedHeadPortrait = (result: unknown) => {
+  if (typeof result === 'string') {
+    return result.trim()
+  }
+
+  if (!result || typeof result !== 'object') {
+    return ''
+  }
+
+  const resultRecord = result as Record<string, unknown>
+  const candidates = [
+    resultRecord.headPortrait,
+    resultRecord.url,
+    resultRecord.path,
+    resultRecord.fileName
+  ]
+
+  const target = candidates.find(value => typeof value === 'string' && value.trim())
+  return typeof target === 'string' ? target.trim() : ''
+}
+
+const getAvatarUploadFileName = () => {
+  const originalFileName = selectedAvatarFile.value?.name?.trim() || 'avatar'
+  const sanitizedFileName = originalFileName.replace(/[\\/:*?"<>|\r\n]+/g, '_')
+  const extensionIndex = sanitizedFileName.lastIndexOf('.')
+  const baseName =
+    extensionIndex > 0 ? sanitizedFileName.slice(0, extensionIndex) : sanitizedFileName
+
+  return `${baseName || 'avatar'}.jpg`
+}
+
+const createCroppedAvatarCanvas = () => {
   const imageElement = cropImageRef.value
 
   if (
@@ -540,7 +590,7 @@ const buildCroppedAvatarDataUrl = () => {
   const context = canvas.getContext('2d')
 
   if (!context) {
-    return ''
+    return null
   }
 
   canvas.width = 512
@@ -559,44 +609,131 @@ const buildCroppedAvatarDataUrl = () => {
     canvas.height
   )
 
-  return canvas.toDataURL('image/png')
+  return canvas
 }
 
-const confirmCroppedAvatar = () => {
-  const avatarPreview = buildCroppedAvatarDataUrl()
+const canvasToBlob = (canvas: HTMLCanvasElement) => {
+  return new Promise<Blob | null>(resolve => {
+    canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.92)
+  })
+}
 
-  if (!avatarPreview) {
+const confirmCroppedAvatar = async () => {
+  if (isUploadingAvatar.value) {
     return
   }
 
-  setProfileAvatarPreviewState(avatarPreview)
-  closeAvatarCropper()
-}
+  const croppedCanvas = createCroppedAvatarCanvas()
 
-const handleSave = () => {
-  if (!canSave.value) return
-
-  saveProfileCustomization({
-    avatarFrameId: selectedAvatarFrameId.value
-  })
-
-  setProfileUserInfoState({
-    ...(userInfo.value ?? {}),
-    nickName: nickName.value
-  })
-
-  originalForm.value = {
-    nickName: nickName.value,
-    avatarFrameId: selectedAvatarFrameId.value
+  if (!croppedCanvas) {
+    return
   }
 
-  showToast({
-    message: t('personalCenter.editProfile.saveSuccess'),
-    position: 'middle',
-    type: 'success'
-  })
+  const avatarPreview = croppedCanvas.toDataURL('image/jpeg', 0.92)
+  const avatarBlob = await canvasToBlob(croppedCanvas)
 
-  navigateTo('/personal-center/my-profile', { replace: true })
+  if (!avatarBlob) {
+    showToast({
+      message: t('common.error'),
+      position: 'middle',
+      type: 'fail'
+    })
+    return
+  }
+
+  isUploadingAvatar.value = true
+
+  try {
+    const response = await Api.picture.upload({
+      file: avatarBlob,
+      fileName: getAvatarUploadFileName()
+    })
+
+    if (!response?.success) {
+      throw new Error(response?.message || t('common.error'))
+    }
+
+    const uploadedHeadPortrait = getUploadedHeadPortrait(response.result)
+
+    if (!uploadedHeadPortrait) {
+      throw new Error(response?.message || t('common.error'))
+    }
+
+    pendingHeadPortrait.value = uploadedHeadPortrait
+    setProfileAvatarPreviewState(avatarPreview)
+    closeAvatarCropper()
+  } catch (error) {
+    console.error(error)
+    showToast({
+      message: error instanceof Error ? error.message : t('common.error'),
+      position: 'middle',
+      type: 'fail'
+    })
+  } finally {
+    isUploadingAvatar.value = false
+  }
+}
+
+const handleSave = async () => {
+  if (!canSave.value || isSavingProfile.value) return
+
+  const payload: {
+    nickName?: string
+    headPortrait?: string
+  } = {
+    nickName: nickName.value
+  }
+
+  if (pendingHeadPortrait.value) {
+    payload.headPortrait = pendingHeadPortrait.value
+  }
+
+  isSavingProfile.value = true
+
+  try {
+    const response = await Api.user.modifyMemberInfo(payload)
+
+    if (!response?.success) {
+      throw new Error(response?.message || t('common.error'))
+    }
+
+    saveProfileCustomization({
+      avatarFrameId: selectedAvatarFrameId.value
+    })
+
+    const nextHeadPortrait = pendingHeadPortrait.value || userInfo.value?.headPortrait || ''
+
+    setProfileUserInfoState({
+      ...(userInfo.value ?? {}),
+      nickName: nickName.value,
+      headPortrait: nextHeadPortrait || undefined
+    })
+    clearProfileAvatarPreviewState()
+    pendingHeadPortrait.value = nextHeadPortrait
+
+    originalForm.value = {
+      nickName: nickName.value,
+      avatarFrameId: selectedAvatarFrameId.value,
+      headPortrait: nextHeadPortrait
+    }
+
+    showToast({
+      message: t('personalCenter.editProfile.saveSuccess'),
+      position: 'middle',
+      type: 'success'
+    })
+
+    navigateTo('/personal-center/my-profile', { replace: true })
+  } catch (error) {
+    console.error(error)
+    showToast({
+      message: error instanceof Error ? error.message : t('common.error'),
+      position: 'middle',
+      type: 'fail'
+    })
+  } finally {
+    isSavingProfile.value = false
+  }
 }
 
 const initializeEditProfile = async () => {
@@ -630,6 +767,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   userStore.syncStoredUserData()
+  clearProfileAvatarPreviewState()
   revokeCropSourceUrl()
   window.removeEventListener('pointermove', handleGlobalPointerMove)
   window.removeEventListener('pointerup', stopDraggingCropImage)

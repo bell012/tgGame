@@ -5,8 +5,10 @@ import { AESUtils } from './encrypt'
 import { getLanguageCode as getLocaleLanguageCode } from './locale'
 import CryptoJS from 'crypto-js'
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+
 const service: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: API_BASE_URL,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
@@ -16,7 +18,7 @@ const service: AxiosInstance = axios.create({
 /**
  * 获取当前语言代码
  */
-function getLanguageCode(): string {
+export function getLanguageCode(): string {
   return getLocaleLanguageCode()
 }
 
@@ -26,7 +28,7 @@ function getLanguageCode(): string {
  * 2. 从 x-auth-token 中去除所有包含该数字的字符
  * 3. 进行 MD5 加密
  */
-function generateAuthorization(): string {
+export function generateAuthorization(): string {
   try {
     const contentLength = localStorage.getItem('contentLength')
     const xAuthToken = localStorage.getItem('xAuthToken')
@@ -44,47 +46,71 @@ function generateAuthorization(): string {
   }
 }
 
+export function buildCommonRequestHeaders(url = ''): Record<string, string> {
+  const headers: Record<string, string> = {
+    TraceId: getDeviceTraceId(),
+    uuid: uuidv4(),
+    site: 'gifphcb9',
+    sitetime: Date.now().toString(),
+    bundleId: '1.0.0',
+    languageCode: getLanguageCode(),
+    channelId: '1'
+  }
+
+  if (!url.includes('/ad/getLoginAndRegisterSetting')) {
+    const xAuthToken = localStorage.getItem('xAuthToken')
+    if (xAuthToken) {
+      headers['X-Auth-Token'] = xAuthToken
+    }
+
+    const authorization = generateAuthorization()
+    if (authorization) {
+      headers.Authorization = authorization
+    }
+  }
+
+  return headers
+}
+
+export function resolveRequestUrl(url: string): string {
+  if (/^https?:\/\//i.test(url)) {
+    return url
+  }
+
+  const normalizedBaseUrl = API_BASE_URL.replace(/\/+$/, '')
+  const normalizedUrl = url.startsWith('/') ? url : `/${url}`
+  return `${normalizedBaseUrl}${normalizedUrl}`
+}
+
 // 请求拦截器
 service.interceptors.request.use(
   (config: any) => {
-    const requestUuid = uuidv4()
+    config.headers = config.headers || {}
+    Object.assign(config.headers, buildCommonRequestHeaders(config.url))
 
     // 13 位时间戳
-    const sitetime = Date.now().toString()
-
-    // 公共请求头
-    config.headers.TraceId = getDeviceTraceId()
-    config.headers.uuid = requestUuid
-    config.headers.site = 'gifphcb9'
-    config.headers.sitetime = sitetime
-    config.headers.bundleId = '1.0.0'
-    config.headers.languageCode = getLanguageCode()
-    config.headers.channelId = '1'
-    if (!config.url?.includes('/ad/getLoginAndRegisterSetting')) {
-      const xAuthToken = localStorage.getItem('xAuthToken')
-      if (xAuthToken) {
-        config.headers['X-Auth-Token'] = xAuthToken
-      }
-      const authorization = generateAuthorization()
-      if (authorization) {
-        config.headers.Authorization = authorization
-      }
-    }
+    const sitetime = config.headers.sitetime as string
 
     // 加密请求数据
-    if (config.data && config.method === 'post') {
+    if (config.data && config.method === 'post' && !config.skipRequestEncryption) {
       try {
         // 加密 key: site + sitetime 后 8 位
         const site = config.headers.site
         const last8Digits = sitetime.slice(-8)
         const encryptKey = site + last8Digits
 
-        const jsonData = JSON.stringify(config.data)
-        const encryptedData = AESUtils.encryptAES(jsonData, encryptKey)
-        config.data = {
-          data: encryptedData,
-          data1: jsonData,
-          keyStr: encryptKey
+        const payloadText =
+          typeof config.data === 'string' ? config.data : JSON.stringify(config.data)
+        const encryptedData = AESUtils.encryptAES(payloadText, encryptKey)
+
+        if (config.directEncryptedPayload) {
+          config.data = encryptedData
+        } else {
+          config.data = {
+            data: encryptedData,
+            data1: payloadText,
+            keyStr: encryptKey
+          }
         }
       } catch (error) {
         console.error(error)
