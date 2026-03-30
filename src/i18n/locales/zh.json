@@ -334,9 +334,17 @@
   },
   "referral": {
     "title": "代理",
+    "pcTabs": {
+      "referral": "代理",
+      "commissionRules": "佣金规则",
+      "commissionRecords": "佣金记录",
+      "referralRecords": "推荐记录"
+    },
     "estimatedCommission": "预估佣金",
+    "myCommission": "我的佣金",
     "claim": "领取",
     "claimHint": "佣金支持每日领取。",
+    "dataOverview": "数据概览",
     "totalReferrals": "总邀请人数",
     "newReferralsToday": "今日新增邀请",
     "newReferralsYesterday": "昨日新增邀请",
@@ -362,8 +370,8 @@
     "claimPending": "领取申请已提交",
     "comingSoon": "功能开发中",
     "cta": "立即邀请",
-    "commissionMethods": {
-      "title": "佣金获取方式列表",
+    "commissionRecords": {
+      "title": "佣金记录列表",
       "searchPlaceholder": "搜索会员账号",
       "summaryTitle": "筛选与汇总",
       "totalAmount": "总计：{amount}",
@@ -386,6 +394,23 @@
         "loss": "仅亏损",
         "completed": "已完成",
         "pending": "处理中",
+        "today": "今天",
+        "week": "本周",
+        "month": "本月"
+      }
+    },
+    "referralRecords": {
+      "title": "推荐记录列表",
+      "searchPlaceholder": "搜索会员账号",
+      "empty": "暂无推荐记录",
+      "filterTitles": {
+        "status": "状态筛选",
+        "time": "时间筛选"
+      },
+      "filters": {
+        "all": "全部",
+        "valid": "有效",
+        "invalid": "无效",
         "today": "今天",
         "week": "本周",
         "month": "本月"

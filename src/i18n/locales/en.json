@@ -175,9 +175,17 @@
   },
   "referral": {
     "title": "Referral",
+    "pcTabs": {
+      "referral": "Referral",
+      "commissionRules": "Commission Rules",
+      "commissionRecords": "Commission Records",
+      "referralRecords": "Referral Records"
+    },
     "estimatedCommission": "Estimated Commission",
+    "myCommission": "My Commission",
     "claim": "Claim",
     "claimHint": "Commission can be claimed daily.",
+    "dataOverview": "Data Overview",
     "totalReferrals": "Total Referrals",
     "newReferralsToday": "New Referrals Today",
     "newReferralsYesterday": "New Referrals Yesterday",
@@ -203,8 +211,8 @@
     "claimPending": "Claim request submitted",
     "comingSoon": "Feature coming soon",
     "cta": "Invite Now",
-    "commissionMethods": {
-      "title": "Commission Methods",
+    "commissionRecords": {
+      "title": "Commission Records",
       "searchPlaceholder": "Search for a member account",
       "summaryTitle": "Filters & Summary",
       "totalAmount": "Total: {amount}",
@@ -227,6 +235,23 @@
         "loss": "Loss Only",
         "completed": "Completed",
         "pending": "Pending",
+        "today": "Today",
+        "week": "This Week",
+        "month": "This Month"
+      }
+    },
+    "referralRecords": {
+      "title": "Referral Records",
+      "searchPlaceholder": "Search for a member account",
+      "empty": "No referral records found",
+      "filterTitles": {
+        "status": "Status Selection",
+        "time": "Date Selection"
+      },
+      "filters": {
+        "all": "All",
+        "valid": "Valid",
+        "invalid": "Invalid",
         "today": "Today",
         "week": "This Week",
         "month": "This Month"

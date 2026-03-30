@@ -133,6 +133,7 @@
             <!-- 通知图标 -->
             <div
               class="cursor-pointer search w-[33px] h-[33px] flex items-center justify-center rounded-lg mr-2"
+              @click="handleNotificationClick"
             >
               <BellIcon class="w-4 h-4 fill-none" />
             </div>
@@ -163,7 +164,10 @@
             <div class="h-6 w-[1px] bg-[#e4eaf019]"></div>
 
             <!-- 通知图标 -->
-            <div class="flex items-center justify-center cursor-pointer w-[40px] h-[40px]">
+            <div
+              class="flex items-center justify-center cursor-pointer w-[40px] h-[40px]"
+              @click="handleNotificationClick"
+            >
               <BellIcon class="w-6 h-6 fill-none" />
             </div>
           </div>
@@ -261,6 +265,7 @@ const layoutStore = useLayoutStore()
 
 const emit = defineEmits<{
   'toggle-sidebar': []
+  'notification-click': []
 }>()
 
 const showModal = ref(false)
@@ -389,6 +394,11 @@ const handleCurrencyChange = (code: string) => {
 
 const openDeposit = () => {
   showDepositPop.value = true
+}
+
+// 处理通知图标点击。
+const handleNotificationClick = () => {
+  emit('notification-click')
 }
 
 // 切换用户菜单

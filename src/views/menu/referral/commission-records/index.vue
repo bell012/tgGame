@@ -1,10 +1,10 @@
 <template>
-  <!-- 佣金获取方式页面 -->
+  <!-- 佣金记录页面 -->
   <section class="min-h-screen bg-bg-1 -mx-[14px] sm:mx-auto sm:max-w-[420px]">
     <!-- 页面容器 -->
     <div class="min-h-screen bg-bg-1" style="font-family: Inter, avertastd, sans-serif">
       <H5Header
-        :title="$t('referral.commissionMethods.title')"
+        :title="$t('referral.commissionRecords.title')"
         :show-sort="true"
         @sort="handleSort"
       />
@@ -24,7 +24,7 @@
             <input
               v-model="searchKeyword"
               type="text"
-              :placeholder="$t('referral.commissionMethods.searchPlaceholder')"
+              :placeholder="$t('referral.commissionRecords.searchPlaceholder')"
               class="min-w-0 flex-1 bg-transparent text-[14px] font-[500] leading-[17px] text-text-1 outline-none placeholder:text-text-3"
             />
           </label>
@@ -34,19 +34,19 @@
         <section class="mt-[10px] flex items-center justify-between gap-[10px]">
           <!-- 左侧标题 -->
           <p class="text-[14px] font-[400] leading-[17px] text-text-1">
-            {{ $t('referral.commissionMethods.summaryTitle') }}
+            {{ $t('referral.commissionRecords.summaryTitle') }}
           </p>
 
           <!-- 汇总金额 -->
           <p class="text-right text-[14px] font-[400] leading-[17px] text-text-1">
             {{
-              $t('referral.commissionMethods.totalAmount', { amount: formatAmount(totalAmount) })
+              $t('referral.commissionRecords.totalAmount', { amount: formatAmount(totalAmount) })
             }}
           </p>
         </section>
 
         <!-- 列表区域 -->
-        <section class="mt-[10px] flex flex-col gap-[7px]">
+        <section v-if="filteredRecords.length > 0" class="mt-[10px] flex flex-col gap-[7px]">
           <!-- 记录卡片 -->
           <article
             v-for="item in filteredRecords"
@@ -82,7 +82,7 @@
             <div class="flex items-center justify-between gap-[12px] px-[14px] py-[10px]">
               <!-- 子账号 -->
               <p class="min-w-0 truncate text-[12px] font-[400] leading-[15px] text-text-2">
-                {{ $t('referral.commissionMethods.subAccount', { account: item.subAccount }) }}
+                {{ $t('referral.commissionRecords.subAccount', { account: item.subAccount }) }}
               </p>
 
               <!-- 时间 -->
@@ -91,15 +91,16 @@
               </p>
             </div>
           </article>
-
-          <!-- 空状态 -->
-          <div
-            v-if="filteredRecords.length === 0"
-            class="rounded-[10px] bg-bg-2 px-[14px] py-[30px] text-center text-[12px] text-text-2"
-          >
-            {{ $t('referral.commissionMethods.empty') }}
-          </div>
         </section>
+
+        <ThemedEmptyState
+          v-else
+          :dark-image="defaultImgDark"
+          :light-image="defaultImgLight"
+          image-alt="$t('referral.commissionRecords.title')"
+          message="No data available at the moment."
+          text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
+        />
 
         <FilterPopup
           v-model:visible="showFilterPopup"
@@ -113,11 +114,16 @@
 </template>
 
 <script setup lang="ts">
+import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
+import H5Header from '@/components/common/H5Header.vue'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import {
+  default as defaultImgDark,
+  default as defaultImgLight
+} from '@/static/img/explore/default.png'
+import SearchIcon from '@/static/svg/search-icon.svg?component'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import H5Header from '@/components/common/H5Header.vue'
-import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
-import SearchIcon from '@/static/svg/search-icon.svg?component'
 
 type RecordOutcome = 'win' | 'loss'
 type RecordStatus = 'completed' | 'pending'
@@ -152,46 +158,46 @@ const selectedPlatformFilter = ref<'all' | RecordPlatform>('all')
 
 const filterGroups = computed<FilterGroup[]>(() => [
   {
-    title: t('referral.commissionMethods.filterTitles.game'),
+    title: t('referral.commissionRecords.filterTitles.game'),
     options: [
-      { label: t('referral.commissionMethods.filters.all_games'), value: 'all_games' },
-      { label: t('referral.commissionMethods.filters.slots'), value: 'slots' },
-      { label: t('referral.commissionMethods.filters.sports'), value: 'sports' },
-      { label: t('referral.commissionMethods.filters.casino'), value: 'casino' }
+      { label: t('referral.commissionRecords.filters.all_games'), value: 'all_games' },
+      { label: t('referral.commissionRecords.filters.slots'), value: 'slots' },
+      { label: t('referral.commissionRecords.filters.sports'), value: 'sports' },
+      { label: t('referral.commissionRecords.filters.casino'), value: 'casino' }
     ]
   },
   {
-    title: t('referral.commissionMethods.filterTitles.outcome'),
+    title: t('referral.commissionRecords.filterTitles.outcome'),
     options: [
-      { label: t('referral.commissionMethods.filters.all'), value: 'all' },
-      { label: t('referral.commissionMethods.filters.win'), value: 'win' },
-      { label: t('referral.commissionMethods.filters.loss'), value: 'loss' }
+      { label: t('referral.commissionRecords.filters.all'), value: 'all' },
+      { label: t('referral.commissionRecords.filters.win'), value: 'win' },
+      { label: t('referral.commissionRecords.filters.loss'), value: 'loss' }
     ]
   },
   {
-    title: t('referral.commissionMethods.filterTitles.status'),
+    title: t('referral.commissionRecords.filterTitles.status'),
     options: [
-      { label: t('referral.commissionMethods.filters.all'), value: 'all' },
-      { label: t('referral.commissionMethods.filters.completed'), value: 'completed' },
-      { label: t('referral.commissionMethods.filters.pending'), value: 'pending' }
+      { label: t('referral.commissionRecords.filters.all'), value: 'all' },
+      { label: t('referral.commissionRecords.filters.completed'), value: 'completed' },
+      { label: t('referral.commissionRecords.filters.pending'), value: 'pending' }
     ]
   },
   {
-    title: t('referral.commissionMethods.filterTitles.time'),
+    title: t('referral.commissionRecords.filterTitles.time'),
     options: [
-      { label: t('referral.commissionMethods.filters.all'), value: 'all' },
-      { label: t('referral.commissionMethods.filters.today'), value: 'today' },
-      { label: t('referral.commissionMethods.filters.week'), value: 'week' },
-      { label: t('referral.commissionMethods.filters.month'), value: 'month' }
+      { label: t('referral.commissionRecords.filters.all'), value: 'all' },
+      { label: t('referral.commissionRecords.filters.today'), value: 'today' },
+      { label: t('referral.commissionRecords.filters.week'), value: 'week' },
+      { label: t('referral.commissionRecords.filters.month'), value: 'month' }
     ]
   },
   {
-    title: t('referral.commissionMethods.filterTitles.platform'),
+    title: t('referral.commissionRecords.filterTitles.platform'),
     options: [
-      { label: t('referral.commissionMethods.filters.all'), value: 'all' },
-      { label: t('referral.commissionMethods.filters.casino'), value: 'casino' },
-      { label: t('referral.commissionMethods.filters.sports'), value: 'sports' },
-      { label: t('referral.commissionMethods.filters.slots'), value: 'slots' }
+      { label: t('referral.commissionRecords.filters.all'), value: 'all' },
+      { label: t('referral.commissionRecords.filters.casino'), value: 'casino' },
+      { label: t('referral.commissionRecords.filters.sports'), value: 'sports' },
+      { label: t('referral.commissionRecords.filters.slots'), value: 'slots' }
     ]
   }
 ])
