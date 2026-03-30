@@ -3,6 +3,7 @@
     :modelValue="modelValue"
     :isHidden="hiddenPop"
     :withMask="true"
+    :transitionType="isMobile ? 'drawer-slide' : 'modal'"
     @overlay-close="handleClose"
   >
     <orderPanel :orderInfo="orderInfo" @close="handleClose" @hidden="handleHidden" />
@@ -12,9 +13,11 @@
 <script setup lang="ts">
 import orderPanel from './orderPanel.vue'
 import { ref } from 'vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import depositPopShell from '../shared/depositPopShell.vue'
 import { OrderType } from './orderType'
 
+const isMobile = useIsMobile()
 interface Props {
   modelValue: boolean
   orderInfo: OrderType

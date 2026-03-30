@@ -29,6 +29,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import Api from '@/api'
+import { useUserStore } from '@/stores/user'
 import { showToast } from 'vant'
 import {
   handlePhoneInput,
@@ -51,6 +52,8 @@ const emit = defineEmits<{
   'register-success': []
   'login-success': []
 }>()
+
+const userStore = useUserStore()
 
 // 当前激活的标签页
 const activeTab = ref<'signin' | 'signup'>(props.defaultTab)
@@ -243,19 +246,7 @@ const handleLogin = async () => {
         localStorage.removeItem('rememberedAccount')
       }
       try {
-        // 查询账户信息
-        const acctInfoResponse = await Api.user.queryAcctInfo({})
-        if (acctInfoResponse.success && acctInfoResponse.result) {
-          localStorage.setItem('acctInfo', JSON.stringify(acctInfoResponse.result))
-        }
-
-        // 查询会员信息
-        const memberInfoResponse = await Api.user.selectMember({
-          memberId: formData.value.signin.account
-        })
-        if (memberInfoResponse.success && memberInfoResponse.result) {
-          localStorage.setItem('userInfo', JSON.stringify(memberInfoResponse.result))
-        }
+        await userStore.refreshCurrentUserData(formData.value.signin.account)
       } catch (error) {
         console.error(error)
       }
@@ -299,19 +290,7 @@ const handleRegister = async () => {
 
     if (response.success && response.result) {
       try {
-        // 查询账户信息
-        const acctInfoResponse = await Api.user.queryAcctInfo({})
-        if (acctInfoResponse.success && acctInfoResponse.result) {
-          localStorage.setItem('acctInfo', JSON.stringify(acctInfoResponse.result))
-        }
-
-        // 查询会员信息
-        const memberInfoResponse = await Api.user.selectMember({
-          memberId: formData.value.signup.account
-        })
-        if (memberInfoResponse.success && memberInfoResponse.result) {
-          localStorage.setItem('userInfo', JSON.stringify(memberInfoResponse.result))
-        }
+        await userStore.refreshCurrentUserData(formData.value.signup.account)
       } catch (error) {
         console.error(error)
       }

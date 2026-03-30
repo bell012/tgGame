@@ -232,7 +232,9 @@
   },
   "wallet": {
     "title": "钱包",
-    "betHistory": "投注历史"
+    "betHistory": "投注历史",
+    "deposit": "充值",
+    "withdraw": "提现"
   },
   "betHistory": {
     "title": "投注历史",
@@ -414,7 +416,38 @@
     "joinCommunity": "加入我们的社区",
     "signOut": "退出登录",
     "signOutTitle": "退出登录",
-    "signOutDescription": "您确定要退出吗？"
+    "signOutDescription": "您确定要退出吗？",
+    "myProfile": {
+      "title": "我的资料",
+      "profileId": "ID",
+      "edit": "编辑",
+      "statistics": "统计",
+      "totalWins": "总赢额",
+      "totalBets": "总投注笔数",
+      "totalWagered": "总投注额",
+      "topFavoriteGames": "Top 3 最爱游戏",
+      "noFavorites": "敬请期待—重磅惊喜即将登场！",
+      "betAmount": "投注金额",
+      "joinedOn": "加入于 {date}"
+    },
+    "editProfile": {
+      "title": "编辑资料",
+      "username": "用户名",
+      "usernameHint": "请不要使用特殊字符，否则可能无法正常支持。",
+      "avatarFrame": "头像边框",
+      "unlockHint": "达到 VIP 2 即可解锁",
+      "unused": "未使用",
+      "inUse": "使用中",
+      "editAvatar": "编辑头像",
+      "takePhoto": "拍照",
+      "chooseFromAlbum": "从手机相册选择",
+      "cancel": "取消",
+      "select": "选择",
+      "cropHint": "拖动并缩放图片以调整头像",
+      "zoom": "缩放",
+      "save": "保存",
+      "saveSuccess": "保存成功"
+    }
   },
   "userMenu": {
     "wallet": "钱包",
@@ -452,5 +485,8 @@
     "upload_proof_confirm_btn_text": "立即上传凭证",
     "payment_receipt_sample_title": "支付凭证样本",
     "upload_proof_again_btn_text": "重新上传凭证"
+  },
+  "withdraw": {
+    "title": "提现"
   }
 }

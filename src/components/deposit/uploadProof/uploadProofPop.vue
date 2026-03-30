@@ -1,6 +1,6 @@
 <template>
   <depositPopShell :modelValue="modelValue" :withMask="true" @overlay-close="handleClose">
-    <uploadProofPanel @close="handleClose" @confirmUpload="handleConfirmUpload" />
+    <uploadProofPanel v-if="modelValue" @close="handleClose" @confirmUpload="handleConfirmUpload" />
   </depositPopShell>
 </template>
 <script setup lang="ts">

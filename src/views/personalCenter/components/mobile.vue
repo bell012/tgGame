@@ -5,5 +5,5 @@
 </template>
 
 <script setup lang="ts">
-import PersonalCenterContent from './index.vue'
+import PersonalCenterContent from '../index.vue'
 </script>

@@ -85,3 +85,34 @@ export const handlePasswordInput = (event: Event, callback: (value: string) => v
   callback(formatted)
   input.value = formatted
 }
+
+/**
+ * 格式化昵称：只保留字母和数字，最多20位
+ * @param value 输入的字符串
+ * @returns 格式化后的昵称
+ */
+export const formatNickname = (value: string): string => {
+  const alphanumericOnly = value.replace(/[^a-zA-Z0-9]/g, '')
+  return alphanumericOnly.slice(0, 20)
+}
+
+/**
+ * 验证昵称是否符合要求：3-20位，只能包含字母和数字
+ * @param value 昵称字符串
+ * @returns 是否符合要求
+ */
+export const isValidNickname = (value: string): boolean => {
+  return /^[a-zA-Z0-9]{3,20}$/.test(value)
+}
+
+/**
+ * 处理昵称输入事件
+ * @param event 输入事件
+ * @param callback 回调函数，用于更新昵称
+ */
+export const handleNicknameInput = (event: Event, callback: (value: string) => void) => {
+  const input = event.target as HTMLInputElement
+  const formatted = formatNickname(input.value)
+  callback(formatted)
+  input.value = formatted
+}
