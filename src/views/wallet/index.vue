@@ -43,8 +43,9 @@ import CommonFooter from '@/components/commonFooter.vue'
 import BetSvg from '@/static/svg/bet.svg?component'
 import DepositIocn from '@/static/svg/personalCenter/icon1.svg?component'
 import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
+import OrderIcon from '@/static/svg/deposit/order-details.svg?component'
 
-type WalletTab = 'bet-history' | 'deposit' | 'withdraw'
+type WalletTab = 'bet-history' | 'deposit' | 'withdraw' | 'my-orders'
 
 defineProps<{
   currentTab: WalletTab
@@ -70,6 +71,12 @@ const menuItems = computed(() => [
     tab: 'withdraw' as WalletTab,
     label: t('wallet.withdraw'),
     icon: WithdrawIcon
+  },
+  {
+    path: '/my-orders',
+    tab: 'my-orders' as WalletTab,
+    label: t('wallet.myOrders'),
+    icon: OrderIcon
   }
 ])
 

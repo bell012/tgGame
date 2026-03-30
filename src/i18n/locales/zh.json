@@ -269,7 +269,8 @@
     "title": "钱包",
     "betHistory": "投注历史",
     "deposit": "充值",
-    "withdraw": "提现"
+    "withdraw": "提现",
+    "myOrders": "我的订单"
   },
   "betHistory": {
     "title": "投注历史",
