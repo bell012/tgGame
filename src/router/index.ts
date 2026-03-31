@@ -257,6 +257,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '资金详情',
       description: '资金详情',
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -270,6 +271,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '资金明细',
       description: '资金明细',
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -281,8 +283,9 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'rollover-details/:id',
     component: () => import('@/views/rollover/rolloverDetails/index.vue'),
     meta: {
-      title: '流水稽查',
-      description: '流水稽查',
+      title: '流水稽查详情',
+      description: '流水稽查详情',
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -294,8 +297,9 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'rollover',
     component: () => import('@/views/rollover/index.vue'),
     meta: {
-      title: '流水稽查详情',
-      description: '流水稽查详情',
+      title: '流水稽查',
+      description: '流水稽查',
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true

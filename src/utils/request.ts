@@ -3,9 +3,69 @@ import { v4 as uuidv4 } from 'uuid'
 import { getDeviceTraceId } from './deviceId'
 import { AESUtils } from './encrypt'
 import { getLanguageCode as getLocaleLanguageCode } from './locale'
+import i18n from '@/i18n'
 import CryptoJS from 'crypto-js'
+import { showToast } from 'vant'
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+
+const AUTH_EXPIRED_RESPONSE_CODES = new Set(['C6', 'C10', 'C37'])
+const MANUAL_LOGOUT_SUPPRESSION_STORAGE_KEY = 'manualLogoutSuppressedUntil'
+const MANUAL_LOGOUT_SUPPRESSION_MS = 5000
+
+let isHandlingAuthExpired = false
+
+const getStoredManualLogoutSuppressedUntil = () => {
+  if (typeof window === 'undefined') {
+    return 0
+  }
+
+  const storedValue = window.sessionStorage.getItem(MANUAL_LOGOUT_SUPPRESSION_STORAGE_KEY)
+  const parsedValue = storedValue ? Number(storedValue) : 0
+
+  return Number.isFinite(parsedValue) ? parsedValue : 0
+}
+
+let manualLogoutSuppressedUntil = getStoredManualLogoutSuppressedUntil()
+
+const clearManualLogoutSuppression = () => {
+  manualLogoutSuppressedUntil = 0
+
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.removeItem(MANUAL_LOGOUT_SUPPRESSION_STORAGE_KEY)
+  }
+}
+
+const isManualLogoutInProgress = () => {
+  const now = Date.now()
+
+  if (manualLogoutSuppressedUntil <= now) {
+    manualLogoutSuppressedUntil = getStoredManualLogoutSuppressedUntil()
+  }
+
+  if (manualLogoutSuppressedUntil <= now) {
+    clearManualLogoutSuppression()
+    return false
+  }
+
+  return true
+}
+
+export function setManualLogoutInProgress(value: boolean) {
+  if (!value) {
+    clearManualLogoutSuppression()
+    return
+  }
+
+  manualLogoutSuppressedUntil = Date.now() + MANUAL_LOGOUT_SUPPRESSION_MS
+
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.setItem(
+      MANUAL_LOGOUT_SUPPRESSION_STORAGE_KEY,
+      String(manualLogoutSuppressedUntil)
+    )
+  }
+}
 
 const service: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -82,6 +142,60 @@ export function resolveRequestUrl(url: string): string {
   return `${normalizedBaseUrl}${normalizedUrl}`
 }
 
+export function shouldHandleAuthExpiredCode(code: unknown): code is string {
+  return typeof code === 'string' && AUTH_EXPIRED_RESPONSE_CODES.has(code)
+}
+
+export function triggerAuthExpiredLogout() {
+  if (isHandlingAuthExpired || isManualLogoutInProgress() || typeof window === 'undefined') {
+    return
+  }
+
+  isHandlingAuthExpired = true
+
+  void import('@/stores/user')
+    .then(async ({ useUserStore }) => {
+      await useUserStore().handleAuthExpired()
+    })
+    .catch(error => {
+      console.error(error)
+    })
+    .finally(() => {
+      isHandlingAuthExpired = false
+    })
+}
+
+function getResponseErrorMessage(data: unknown, fallback: string) {
+  if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
+    return data.message
+  }
+
+  return fallback
+}
+
+function translateToastMessage(key: string) {
+  return i18n.global.t(key)
+}
+
+function rejectAuthExpiredResponse(payload: unknown) {
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    'code' in payload &&
+    shouldHandleAuthExpiredCode(payload.code)
+  ) {
+    const message =
+      'message' in payload && typeof payload.message === 'string' && payload.message
+        ? payload.message
+        : translateToastMessage('common.sessionExpired')
+
+    triggerAuthExpiredLogout()
+    return Promise.reject(new Error(message))
+  }
+
+  return null
+}
+
 // 请求拦截器
 service.interceptors.request.use(
   (config: any) => {
@@ -140,7 +254,7 @@ service.interceptors.response.use(
     }
     const res = response.data
     if (response.status !== 200) {
-      return Promise.reject(new Error(res.message || 'Error'))
+      return Promise.reject(new Error(res.message || translateToastMessage('common.requestError')))
     }
     let encryptedString = ''
     if (typeof res === 'string' && res.length > 0) {
@@ -157,14 +271,36 @@ service.interceptors.response.use(
           const last8Digits = sitetime.slice(-8)
           const decryptKey = site + last8Digits
           const decryptedData = AESUtils.decryptAES(encryptedString, decryptKey)
+
+          const authExpiredError = rejectAuthExpiredResponse(decryptedData)
+          if (authExpiredError) {
+            return authExpiredError
+          }
+
           return decryptedData
         } else {
+          const authExpiredError = rejectAuthExpiredResponse(res)
+          if (authExpiredError) {
+            return authExpiredError
+          }
+
           return res
         }
       } catch (error) {
         console.error(error)
+
+        const authExpiredError = rejectAuthExpiredResponse(res)
+        if (authExpiredError) {
+          return authExpiredError
+        }
+
         return res
       }
+    }
+
+    const authExpiredError = rejectAuthExpiredResponse(res)
+    if (authExpiredError) {
+      return authExpiredError
     }
 
     return res
@@ -173,19 +309,25 @@ service.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          console.error('Unauthorized')
-          break
-        case 403:
-          console.error('Forbidden')
-          break
-        case 404:
-          console.error('Not Found')
+          triggerAuthExpiredLogout()
           break
         case 500:
-          console.error('Internal Server Error')
+          showToast({
+            message: getResponseErrorMessage(
+              error.response?.data,
+              translateToastMessage('common.internalServerError')
+            ),
+            type: 'fail'
+          })
           break
         default:
-          console.error('Unknown Error')
+          showToast({
+            message: getResponseErrorMessage(
+              error.response?.data,
+              translateToastMessage('common.unknownError')
+            ),
+            type: 'fail'
+          })
       }
     }
 

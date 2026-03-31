@@ -35,7 +35,7 @@
         <button
           class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)]"
           type="button"
-          @click.stop="showLoginModal = true"
+          @click.stop="openRegisterModal"
         >
           {{ t('casino.join_now') }}
         </button>
@@ -282,23 +282,24 @@
     </div>
   </div>
   <NewEvent class="mt-2" />
-  <ActivityPop v-if="showActivityPop" class="sm:hidden" @close="closeActivityPop" />
+  <ActivityPop v-if="shouldShowActivityPop" class="sm:hidden" @close="closeActivityPop" />
   <!-- 提示弹窗 -->
   <H5HomePop
-    v-if="showH5HomePop"
+    v-if="shouldShowH5HomePop"
     class="sm:hidden"
     @close="closeH5HomePop"
-    @open-login="openLoginModal"
+    @open-login="openRegisterModal"
   />
-  <!-- 注册弹窗 -->
-  <LoginModal v-model="showLoginModal" default-tab="register" />
   <CommonFooter class="hidden sm:block" />
 </template>
 
 <script setup lang="ts">
 import Api from '@/api'
+import router from '@/router'
 import H5HomePop from '@/components/H5HomePop.vue'
 import HomeCarouselImg from '@/components/homeCarouselImg.vue'
+import { useAuthModalStore } from '@/stores/authModal'
+import { stripLocalePrefix } from '@/utils/locale'
 
 import ActivityPop from '@/components/activityPop.vue'
 
@@ -335,7 +336,6 @@ import MAYA from '@/static/svg/coin/maya.svg?url'
 import SHOPEE from '@/static/svg/coin/shopeePay.svg?url'
 
 import CommonFooter from '@/components/commonFooter.vue'
-import LoginModal from '@/components/login_register/LoginModal.vue'
 import combination from '@/static/img/home/combination.png'
 import contract from '@/static/img/home/contract.png'
 import fishing from '@/static/img/home/fishing.png'
@@ -354,16 +354,19 @@ interface RawGameDataItem {
 }
 
 const { t } = useI18n()
-const showLoginModal = ref(false)
+const authModalStore = useAuthModalStore()
 const showH5HomePop = ref(true)
 const userInfo = ref<any>(null)
+const isActiveHomeRoute = computed(() => stripLocalePrefix(router.currentRoute.value.path) === '/')
+const shouldShowH5HomePop = computed(() => isActiveHomeRoute.value && showH5HomePop.value)
 const closeH5HomePop = () => {
   showH5HomePop.value = false
 }
-const openLoginModal = () => {
-  showLoginModal.value = true
+const openRegisterModal = () => {
+  authModalStore.openRegisterModal()
 }
 const showActivityPop = ref(true)
+const shouldShowActivityPop = computed(() => isActiveHomeRoute.value && showActivityPop.value)
 const closeActivityPop = () => {
   showActivityPop.value = false
 }
