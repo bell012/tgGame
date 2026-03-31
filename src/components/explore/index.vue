@@ -50,7 +50,7 @@ import Casino from '@/components/explore/list/casino.vue'
 import Sports from '@/components/explore/list/sports.vue'
 import Lottery from '@/components/explore/list/lottery.vue'
 // mock数据
-import { countryList, providerList } from '@/components/explore/mock/index.ts'
+import { countryList } from '@/components/explore/mock/index.ts'
 
 const themeStore = useThemeStore()
 
@@ -82,6 +82,18 @@ type ExploreHotGameItem = {
   gameItemHotVo?: {
     hot?: number
   }
+}
+
+type GameBrandItem = {
+  providerId?: number | string
+  providerName?: string
+  logo?: string
+  logoWhite?: string
+  retrieveId?: string
+  brandId?: number | string
+  brandName?: string
+  brandLogo?: string
+  brandLogoWhite?: string
 }
 
 type ExploreCacheGlobal = {
@@ -184,12 +196,33 @@ const sortChange = (val: string) => {
 
 // 供应商
 const currentProvider = ref([])
+const queryProviderList = ref<GameBrandItem[]>([])
+
+const getGameBrandList = async () => {
+  try {
+    const res = await Api.home.getGameBrandList()
+    queryProviderList.value = Array.isArray(res?.result) ? (res.result as GameBrandItem[]) : []
+  } catch (error) {
+    console.error('getGameBrandList failed', error)
+    queryProviderList.value = []
+  }
+}
+
 const providerOptions = computed(() => {
-  return providerList.map(item => {
+  return queryProviderList.value.map(item => {
+    const providerId = item.providerId ?? item.brandId
+    const providerName = item.providerName ?? item.brandName ?? ''
+    const logo = item.logo ?? item.brandLogo ?? ''
+    const logoWhite = item.logoWhite ?? item.brandLogoWhite ?? logo
+
     return {
       ...item,
-      label: themeStore.theme === 'light' ? item.logoWhite : item.logo,
-      value: item.providerId + ''
+      providerId: providerId ?? '',
+      providerName,
+      logo,
+      logoWhite,
+      label: themeStore.theme === 'light' ? logoWhite : logo,
+      value: String(providerId ?? '')
     }
   })
 })
@@ -212,6 +245,7 @@ const countryChange = (val: string) => {
 
 onMounted(() => {
   getQueryGameListForApp()
+  getGameBrandList()
 })
 </script>
 
