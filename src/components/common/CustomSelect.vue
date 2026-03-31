@@ -1,6 +1,6 @@
 <template>
   <!-- pc端公共下拉框组件 -->
-  <div class="relative" v-click-outside="closeDropdown">
+  <div class="relative w-[240px]" v-click-outside="closeDropdown">
     <div
       class="select-box bg-input-3 text-text-1 rounded-lg border border-opacity-5 h-[48px] text-sm px-3 cursor-pointer flex items-center justify-between"
       @click="toggleDropdown"
@@ -64,12 +64,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { Component } from 'vue'
-import { useI18n } from 'vue-i18n'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import DropDownDefaultIcon from '@/static/svg/drop_down _default.svg?component'
 import DropDownSelectionIcon from '@/static/svg/drop_down _selection.svg?component'
+import type { Component } from 'vue'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 

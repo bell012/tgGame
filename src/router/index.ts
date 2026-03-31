@@ -317,6 +317,20 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'my-orders',
+    name: 'my-orders',
+    component: () => import('@/views/wallet/myOrders/index.vue'),
+    meta: {
+      title: '我的订单',
+      description: '我的订单',
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'withdraw',
     name: 'withdraw',
     component: () => import('@/views/wallet/withdraw/index.vue'),

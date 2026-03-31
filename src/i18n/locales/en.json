@@ -107,7 +107,8 @@
     "title": "Wallet",
     "betHistory": "Bet History",
     "deposit": "Deposit",
-    "withdraw": "Withdraw"
+    "withdraw": "Withdraw",
+    "myOrders": "My Orders"
   },
   "betHistory": {
     "title": "Bet History",
