@@ -9,7 +9,9 @@ import type {
   QueryAcctInfoForm,
   QueryAcctInfoResponse,
   SelectMemberForm,
-  SelectMemberResponse
+  SelectMemberResponse,
+  GameBetTotalForm,
+  GameBetTotalResponse
 } from '@/api/interface/user'
 
 /**
@@ -46,6 +48,18 @@ export function selectMember(data: SelectMemberForm): Promise<SelectMemberRespon
 export function modifyMemberInfo(data: ModifyMemberInfoForm): Promise<ModifyMemberInfoResponse> {
   return request({
     url: '/mc/modifyMemberInfo',
+    method: 'post',
+    data
+  })
+}
+/**
+ * 游戏下注信息统计
+ * @param data 游戏下注信息
+ * @returns Promise<GameBetTotalResponse>
+ */
+export function getGameBetTotal(data: GameBetTotalForm): Promise<GameBetTotalResponse> {
+  return request({
+    url: '/special/getGameBetTotal',
     method: 'post',
     data
   })
