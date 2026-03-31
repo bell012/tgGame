@@ -54,6 +54,7 @@ type CasinoGameItem = {
   id?: string | number
   rowId?: string | number
   icon2?: string
+  platformName?: string
   initScoreNum?: number
   num?: number
   gameItemHotVo?: {
@@ -64,6 +65,7 @@ type CasinoGameItem = {
 const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
 
 const injectedGameList = inject<Ref<unknown[]>>('explore-game-list', ref([]))
+const keyword = inject('explore-keywords') as Ref<string>
 
 const gameList = computed<CasinoGameItem[]>(() =>
   Array.isArray(injectedGameList.value) ? (injectedGameList.value as CasinoGameItem[]) : []
@@ -71,14 +73,28 @@ const gameList = computed<CasinoGameItem[]>(() =>
 
 const page = ref(1)
 const PAGE_SIZE = 40
-const totalPages = computed(() => Math.max(1, Math.ceil(gameList.value.length / PAGE_SIZE)))
+const normalizedKeyword = computed(() => keyword.value.trim().toLowerCase())
+
+const filteredGameList = computed(() => {
+  if (normalizedKeyword.value.length < 2) {
+    return gameList.value
+  }
+
+  return gameList.value.filter(item =>
+    String(item.platformName ?? '')
+      .toLowerCase()
+      .includes(normalizedKeyword.value)
+  )
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredGameList.value.length / PAGE_SIZE)))
 const pagedGameList = computed(() => {
   const start = (page.value - 1) * PAGE_SIZE
   const end = start + PAGE_SIZE
-  return gameList.value.slice(start, end)
+  return filteredGameList.value.slice(start, end)
 })
 
-watch(gameList, () => {
+watch(filteredGameList, () => {
   page.value = 1
 })
 
