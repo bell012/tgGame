@@ -231,7 +231,6 @@ const scrollPrev = () => {
   gap: var(--grid-gap);
   padding-left: var(--grid-padding);
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
 }
 
 @media (min-width: 1280px) {

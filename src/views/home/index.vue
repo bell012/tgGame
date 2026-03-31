@@ -52,7 +52,7 @@
         </div>
         <!-- 近期大奖 -->
         <div>{{ $t('home.RecentBigWins') }}</div>
-        <div class="ml-2 gap-2 lg:!flex lg:!flex-col pcState">
+        <!-- <div class="ml-2 gap-2 lg:!flex lg:!flex-col pcState">
           <div
             @click="carousel(0)"
             class="button button-m center h-auto flex-1 whitespace-nowrap rounded-none border-b-2 p-1 text-xs"
@@ -97,7 +97,7 @@
           >
             {{ $t('home.LiveCasino') }}
           </div>
-        </div>
+        </div> -->
       </h2>
     </div>
     <div class="marquee px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
@@ -395,10 +395,10 @@ const listImg = computed(() => [
     icon: icon4
   }
 ])
-const carouselVal = ref(0)
-const carousel = (val: number) => {
-  carouselVal.value = val
-}
+// const carouselVal = ref(0)
+// const carousel = (val: number) => {
+//   carouselVal.value = val
+// }
 
 interface RecentBigWin {
   src: string
