@@ -151,8 +151,8 @@ const changeTypeHandler = (val: keyof typeof listCompMap) => {
   currentType.value = val
   currentSubGameTypeCode.value = ''
 }
-const topInputSearch = (value: string) => {
-  console.log(value)
+const topInputSearch = (_value: string) => {
+  console.log(_value)
 }
 
 // 排序
@@ -201,4 +201,10 @@ onMounted(() => {
 })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+@media (max-width: 767px) {
+  .search-container {
+    padding-top: 60px;
+  }
+}
+</style>
