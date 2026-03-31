@@ -274,7 +274,9 @@
     "betHistory": "投注历史",
     "deposit": "充值",
     "withdraw": "提现",
-    "myOrders": "我的订单"
+    "myOrders": "我的订单",
+    "transaction": "资金明细",
+    "rollover": "流水稽查"
   },
   "betHistory": {
     "title": "投注历史",
@@ -529,5 +531,16 @@
   },
   "withdraw": {
     "title": "提现"
+  },
+  "transaction": {
+    "win": "赢",
+    "loss": "输",
+    "type": "类型",
+    "time": "时间",
+    "amount": "金额",
+    "balance": "余额",
+    "status": "状态筛选",
+    "completed": "已完成",
+    "notCompleted": "未完成"
   }
 }

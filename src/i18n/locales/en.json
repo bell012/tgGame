@@ -112,7 +112,9 @@
     "betHistory": "Bet History",
     "deposit": "Deposit",
     "withdraw": "Withdraw",
-    "myOrders": "My Orders"
+    "myOrders": "My Orders",
+    "transaction": "Transaction",
+    "rollover": "Rollover"
   },
   "betHistory": {
     "title": "Bet History",
@@ -532,5 +534,16 @@
   },
   "withdraw": {
     "title": "Withdraw"
+  },
+  "transaction": {
+    "win": "Win",
+    "loss": "Loss",
+    "type": "Type",
+    "time": "Time",
+    "amount": "Amount",
+    "balance": "Balance",
+    "status": "Status",
+    "completed": "Completed",
+    "notCompleted": "Not Completed"
   }
 }
