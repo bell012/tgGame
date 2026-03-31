@@ -1,28 +1,37 @@
 <template>
-  <div class="bg-bg-1">
-    <H5Header title="Transaction" showSort @sort="handleSort" />
+  <div>
+    <!-- PC 端布局 -->
+    <WalletLayout current-tab="rollover" class="hidden md:block">
+      <div class="bg-bg-2 rounded-xl overflow-hidden">
+        <PcLayout />
+      </div>
+    </WalletLayout>
+    <div class="bg-bg-1 block md:hidden">
+      <H5Header title="rollover" showSort @sort="handleSort" />
+      <div>
+        <div v-if="!hasBets">
+          <NoData />
+        </div>
 
-    <div>
-      <div v-if="!hasBets">
-        <NoData />
+        <div v-else>
+          <RecordList :bets="betList" @select="handleBetClick" />
+        </div>
       </div>
 
-      <div v-else>
-        <RecordList :bets="betList" @select="handleBetClick" />
-      </div>
+      <FilterPopup
+        v-model:visible="showFilterPopup"
+        v-model="filterValues"
+        :filter-groups="filterGroups"
+        @apply="handleFilterApply"
+      />
     </div>
-
-    <FilterPopup
-      v-model:visible="showFilterPopup"
-      v-model="filterValues"
-      :filter-groups="filterGroups"
-      @apply="handleFilterApply"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import WalletLayout from '../index.vue'
+import PcLayout from './pc-layout.vue'
 import NoData from './components/noData.vue'
 import RecordList, { type BetItem } from './components/recordList.vue'
 import H5Header from '@/components/common/H5Header.vue'
@@ -119,6 +128,6 @@ const handleFilterApply = (values: Record<string, string | string[]>) => {
 }
 
 const handleBetClick = (bet: BetItem) => {
-  navigateTo(`/transaction-details/${bet.id}`)
+  navigateTo(`/rollover-details/${bet.id}`)
 }
 </script>

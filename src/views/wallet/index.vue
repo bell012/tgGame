@@ -44,8 +44,9 @@ import BetSvg from '@/static/svg/bet.svg?component'
 import DepositIocn from '@/static/svg/personalCenter/icon1.svg?component'
 import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
 import OrderIcon from '@/static/svg/deposit/order-details.svg?component'
-
-type WalletTab = 'bet-history' | 'deposit' | 'withdraw' | 'my-orders'
+import Transaction from '@/static/svg/personalCenter/icon6.svg?component'
+import Rollover from '@/static/svg/personalCenter/icon7.svg?component'
+type WalletTab = 'bet-history' | 'deposit' | 'withdraw' | 'my-orders' | 'transaction' | 'rollover'
 
 defineProps<{
   currentTab: WalletTab
@@ -77,6 +78,18 @@ const menuItems = computed(() => [
     tab: 'my-orders' as WalletTab,
     label: t('wallet.myOrders'),
     icon: OrderIcon
+  },
+  {
+    path: '/transaction',
+    tab: 'transaction' as WalletTab,
+    label: t('wallet.transaction'),
+    icon: Transaction
+  },
+  {
+    path: '/rollover',
+    tab: 'rollover' as WalletTab,
+    label: t('wallet.rollover'),
+    icon: Rollover
   }
 ])
 
