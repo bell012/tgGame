@@ -80,9 +80,9 @@
         <div class="font-bold">{{ t('search.suggested') }}</div>
       </div>
       <div class="w-full">
-        <div v-if="history?.length > 0" class="flex flex-wrap gap-2">
+        <div v-if="suggestedList.length > 0" class="flex flex-wrap gap-2">
           <div
-            v-for="(item, inx) in history.slice(0, 5)"
+            v-for="(item, inx) in suggestedList"
             :key="inx"
             class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] flex items-center"
           >
@@ -127,6 +127,9 @@ import pull_down from '@/static/svg/explore/pull-down.svg?component'
 import { useIsMobile } from '@/composables/useMediaQuery'
 
 type TypeItem = { id: string; name: string }
+type HotGameItem = {
+  platformName?: string
+}
 const SEARCH_HISTORY_STORAGE_KEY = 'explore_search_history'
 const MAX_HISTORY_COUNT = 20
 
@@ -144,6 +147,7 @@ const isMobile = useIsMobile()
 
 const keyword = inject('explore-keywords') as Ref<string>
 const currentType = inject('explore-current-type') as Ref<string>
+const hotGameList = inject<Ref<HotGameItem[]>>('explore-hot-game-list', ref([]))
 
 const typeVisible = ref(false)
 
@@ -179,6 +183,18 @@ const onSearch = () => {
 const currentTypeName = computed(() => {
   const item = props.dataList.find(i => i.id === currentType.value)
   return item ? item.name : ''
+})
+const suggestedList = computed(() => {
+  const seen = new Set<string>()
+  return hotGameList.value
+    .map(item => String(item.platformName ?? '').trim())
+    .filter(platformName => {
+      if (!platformName) return false
+      const normalizedName = platformName.toLowerCase()
+      if (seen.has(normalizedName)) return false
+      seen.add(normalizedName)
+      return true
+    })
 })
 
 // 类型选择确认
