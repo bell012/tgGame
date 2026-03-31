@@ -5,9 +5,10 @@
     <div class="px-3.5 pb-10 pt-[25px]">
       <section>
         <div class="flex items-start justify-between">
-          <div class="inline-flex min-w-[48px] h-[28px] items-center gap-1 bg-bg-4 rounded-lg px-2">
-            <LikeIcon class="h-[18px] w-[18px]" />
-            <span class="text-base font-bold text-text-1">0</span>
+          <!-- gap-1 bg-bg-4 rounded-lg px-2 -->
+          <div class="inline-flex min-w-[48px] h-[28px] items-center">
+            <!-- <LikeIcon class="h-[18px] w-[18px]" />
+            <span class="text-base font-bold text-text-1">0</span> -->
           </div>
 
           <div class="flex flex-col items-center text-center">
@@ -95,11 +96,7 @@
             :key="`${item.name}-${index}`"
             class="flex items-center gap-2.5 pt-2.5"
           >
-            <img
-              :src="profileGameImage"
-              alt="Game"
-              class="h-[96px] w-[73px] shrink-0 object-contain"
-            />
+            <img :src="item.image" alt="Game" class="h-[96px] w-[73px] shrink-0 object-contain" />
 
             <div class="min-w-0 flex-1">
               <p class="break-words text-xs font-bold text-text-1">
@@ -137,6 +134,8 @@ import { computed, onActivated, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
+import type { SubGameItem2 } from '@/api/interface/home.interface'
+import type { GameBetTotalResult } from '@/api/interface/user'
 import H5Header from '@/components/common/H5Header.vue'
 import { useUserStore } from '@/stores/user'
 import { getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
@@ -149,7 +148,7 @@ import {
 import { navigateTo } from '@/utils/router'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import EditIcon from '@/static/svg/edit.svg?component'
-import LikeIcon from '@/static/svg/Like.svg?skipsvgo'
+// import LikeIcon from '@/static/svg/Like.svg?skipsvgo'
 import StatisticsIcon from '@/static/svg/personalCenter/icon80.svg?component'
 import TotalWinsIcon from '@/static/svg/personalCenter/icon81.svg?component'
 import TotalBetsIcon from '@/static/svg/personalCenter/icon82.svg?component'
@@ -160,11 +159,27 @@ import border3Image from '@/static/img/personalCenter/border_3.png'
 import border4Image from '@/static/img/personalCenter/border_4.png'
 import border5Image from '@/static/img/personalCenter/border_5.png'
 import noDataImage from '@/static/img/personalCenter/noData.png'
-import profileGameImage from '@/static/img/personalCenter/myProfile.png'
+import favoriteGameFallbackImage from '@/static/img/personalCenter/myProfile.png'
+import Api from '@/api'
+
+type FavoriteGameSourceItem = GameBetTotalResult['list'][number]
 
 interface FavoriteGame {
+  image: string
   name: string
   betAmount: string
+}
+
+interface GameBetSummary {
+  betAmount: number
+  total: number
+  win: string
+}
+
+const EMPTY_GAME_BET_SUMMARY: GameBetSummary = {
+  betAmount: 0,
+  total: 0,
+  win: '0'
 }
 
 const { t, locale } = useI18n()
@@ -180,20 +195,8 @@ const avatarFrameImageMap: Record<Exclude<AvatarFrameId, 'none'>, string> = {
   border_5: border5Image
 }
 
-const favoriteGames = ref<FavoriteGame[]>([
-  {
-    name: 'I am the name of the gameI am the name of the gameI am the name of the game',
-    betAmount: getFormattedBalance(4604434.88, 'PHP', 2)
-  },
-  {
-    name: 'I am the name of the game',
-    betAmount: getFormattedBalance(4604434.88, 'PHP', 2)
-  },
-  {
-    name: 'I am the name of the game',
-    betAmount: getFormattedBalance(4604434.88, 'PHP', 2)
-  }
-])
+const gameBetSummary = ref<GameBetSummary>(EMPTY_GAME_BET_SUMMARY)
+const favoriteGameList = ref<FavoriteGameSourceItem[]>([])
 
 const avatarUrl = computed(() => {
   return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
@@ -211,29 +214,99 @@ const currentCurrency = computed(
   () => acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
 )
 
+const getStoredGameCatalog = (): SubGameItem2[] => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  try {
+    const storedValue = localStorage.getItem('gameData')
+    if (!storedValue) {
+      return []
+    }
+
+    const parsedValue = JSON.parse(storedValue)
+    if (!Array.isArray(parsedValue)) {
+      return []
+    }
+
+    const gameCatalog: SubGameItem2[] = []
+
+    parsedValue.forEach(section => {
+      if (!Array.isArray(section?.subGame)) {
+        return
+      }
+
+      section.subGame.forEach((provider: any) => {
+        if (Array.isArray(provider?.subGame)) {
+          gameCatalog.push(...provider.subGame)
+        }
+      })
+    })
+
+    return gameCatalog
+  } catch (error) {
+    console.error(error)
+    return []
+  }
+}
+
+const toFavoriteGameImage = (value?: string) => {
+  if (!value) {
+    return favoriteGameFallbackImage
+  }
+
+  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+}
+
+const getFavoriteGameName = (gameItem?: SubGameItem2, fallbackItemCode?: string) => {
+  return gameItem?.itemName || fallbackItemCode || '--'
+}
+
 const profileStats = computed(() => [
   {
     label: t('personalCenter.myProfile.totalWins'),
-    value: '1',
+    value: gameBetSummary.value.win || '0',
     icon: TotalWinsIcon
   },
-  { label: t('personalCenter.myProfile.totalBets'), value: '2', icon: TotalBetsIcon },
+  {
+    label: t('personalCenter.myProfile.totalBets'),
+    value: String(gameBetSummary.value.total ?? 0),
+    icon: TotalBetsIcon
+  },
   {
     label: t('personalCenter.myProfile.totalWagered'),
-    value: getFormattedBalance(0, currentCurrency.value, 2),
+    value: getFormattedBalance(
+      Number(gameBetSummary.value.betAmount ?? 0),
+      currentCurrency.value,
+      2
+    ),
     icon: TotalWageredIcon
   }
 ])
 
 const topStats = computed(() => profileStats.value.slice(0, 2))
 const bottomStat = computed(() => profileStats.value[2])
-const favoriteGameCards = computed(() => favoriteGames.value.slice(0, 3))
+const favoriteGameCards = computed<FavoriteGame[]>(() => {
+  const gameCatalog = getStoredGameCatalog()
+
+  return favoriteGameList.value.slice(0, 3).map(item => {
+    const matchedGame = gameCatalog.find(
+      game => game?.platformCode === item.platformCode && game?.itemCode === item.itemCode
+    )
+
+    return {
+      image: toFavoriteGameImage(matchedGame?.icon2),
+      name: getFavoriteGameName(matchedGame, item.itemCode),
+      betAmount: getFormattedBalance(Number(item.betAmount ?? 0), currentCurrency.value, 2)
+    }
+  })
+})
+
+const profileRequestDate = ref(new Date())
 
 const joinedDateText = computed(() => {
-  const rawTime = userInfo.value?.createTime
-  if (!rawTime) return '2025-12-08'
-  const normalizedTime = rawTime > 1_000_000_000_000 ? rawTime : rawTime * 1000
-  return new Date(normalizedTime).toISOString().slice(0, 10)
+  return profileRequestDate.value.toISOString().slice(0, 10)
 })
 
 const joinedOnText = computed(() => {
@@ -289,7 +362,21 @@ const initializeMyProfile = async () => {
   await userStore.refreshCurrentUserData()
 }
 
+const init = async () => {
+  profileRequestDate.value = new Date()
+  const res = await Api.user.getGameBetTotal({})
+  const result = res.result
+
+  gameBetSummary.value = {
+    betAmount: Number(result?.betAmount ?? 0),
+    total: Number(result?.total ?? 0),
+    win: String(result?.win ?? '0')
+  }
+  favoriteGameList.value = Array.isArray(result?.list) ? result.list : []
+}
+
 onMounted(() => {
+  init()
   void initializeMyProfile()
 })
 
