@@ -75,6 +75,12 @@ type TopTabItem = {
   sysGameTypeName: string
 }
 
+type ExploreCacheGlobal = {
+  __exploreGameListCache__?: GameSection[]
+}
+
+const exploreCacheGlobal = globalThis as typeof globalThis & ExploreCacheGlobal
+
 // 搜索的关键字
 const keywords = ref('')
 provide('explore-keywords', keywords)
@@ -124,9 +130,17 @@ const topTabChange = (code: string) => {
 }
 
 const getQueryGameListForApp = async () => {
+  const cachedList = exploreCacheGlobal.__exploreGameListCache__
+  if (Array.isArray(cachedList) && cachedList.length) {
+    queryGameList.value = cachedList
+    return
+  }
+
   try {
     const res = await Api.home.getGameData()
-    queryGameList.value = Array.isArray(res?.result) ? res.result : []
+    const nextList = Array.isArray(res?.result) ? (res.result as GameSection[]) : []
+    queryGameList.value = nextList
+    exploreCacheGlobal.__exploreGameListCache__ = nextList
   } catch (error) {
     console.error('queryGameListForApp failed', error)
     queryGameList.value = []
