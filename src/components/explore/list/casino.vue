@@ -44,7 +44,7 @@ import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import gameImg from '@/static/img/explore/game.png'
 import numImg from '@/static/img/explore/num.png'
-import { computed, inject, Ref, ref, watch } from 'vue'
+import { computed, inject, onBeforeUnmount, Ref, ref, watch } from 'vue'
 import { navigateTo } from '@/utils/router'
 
 const isMobile = useIsMobile()
@@ -55,10 +55,11 @@ type CasinoGameItem = {
   rowId?: string | number
   icon2?: string
   platformName?: string
+  hot?: number | string
   initScoreNum?: number
   num?: number
   gameItemHotVo?: {
-    hot?: number
+    hot?: number | string
   }
 }
 
@@ -66,6 +67,7 @@ const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
 
 const injectedGameList = inject<Ref<unknown[]>>('explore-game-list', ref([]))
 const keyword = inject('explore-keywords') as Ref<string>
+const injectedHotGameList = inject<Ref<CasinoGameItem[]>>('explore-hot-game-list', ref([]))
 
 const gameList = computed<CasinoGameItem[]>(() =>
   Array.isArray(injectedGameList.value) ? (injectedGameList.value as CasinoGameItem[]) : []
@@ -86,6 +88,12 @@ const filteredGameList = computed(() => {
       .includes(normalizedKeyword.value)
   )
 })
+const hotGameList = computed(() =>
+  filteredGameList.value.filter(item => {
+    const hotValue = item.gameItemHotVo?.hot ?? item.hot
+    return Number(hotValue) === 1
+  })
+)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredGameList.value.length / PAGE_SIZE)))
 const pagedGameList = computed(() => {
@@ -97,6 +105,13 @@ const pagedGameList = computed(() => {
 watch(filteredGameList, () => {
   page.value = 1
 })
+watch(
+  hotGameList,
+  value => {
+    injectedHotGameList.value = value
+  },
+  { immediate: true }
+)
 
 watch(totalPages, () => {
   if (page.value > totalPages.value) {
@@ -105,6 +120,10 @@ watch(totalPages, () => {
   if (page.value < 1) {
     page.value = 1
   }
+})
+
+onBeforeUnmount(() => {
+  injectedHotGameList.value = []
 })
 
 const itemClick = (item: CasinoGameItem) => {

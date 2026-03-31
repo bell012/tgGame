@@ -75,6 +75,15 @@ type TopTabItem = {
   sysGameTypeName: string
 }
 
+type ExploreHotGameItem = {
+  id?: string | number
+  rowId?: string | number
+  platformName?: string
+  gameItemHotVo?: {
+    hot?: number
+  }
+}
+
 type ExploreCacheGlobal = {
   __exploreGameListCache__?: GameSection[]
 }
@@ -84,6 +93,8 @@ const exploreCacheGlobal = globalThis as typeof globalThis & ExploreCacheGlobal
 // 搜索的关键字
 const keywords = ref('')
 provide('explore-keywords', keywords)
+const exploreHotGameList = ref<ExploreHotGameItem[]>([])
+provide('explore-hot-game-list', exploreHotGameList)
 
 // top-input
 const typeList = [
@@ -150,9 +161,12 @@ const getQueryGameListForApp = async () => {
 const changeTypeHandler = (val: keyof typeof listCompMap) => {
   currentType.value = val
   currentSubGameTypeCode.value = ''
+  if (val !== 'casino') {
+    exploreHotGameList.value = []
+  }
 }
 const topInputSearch = (_value: string) => {
-  console.log(_value)
+  void _value
 }
 
 // 排序
