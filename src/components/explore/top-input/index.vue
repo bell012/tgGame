@@ -167,17 +167,20 @@ const onBlur = () => {
 
 const emitSearch = () => {
   emit('search', keyword.value.trim())
-  addHistory(keyword.value)
 }
 
 const onInput = () => {
   if (timer !== null) clearTimeout(timer)
-  timer = setTimeout(emitSearch, 150)
+  timer = setTimeout(emitSearch, 300)
+  timer = setTimeout(() => {
+    addHistory(keyword.value)
+  }, 1000)
 }
 
 const onSearch = () => {
   if (timer !== null) clearTimeout(timer)
   emitSearch()
+  addHistory(keyword.value)
 }
 
 const currentTypeName = computed(() => {
