@@ -66,6 +66,10 @@ type GameSection = {
   subGame?: unknown[]
 }
 
+type GameSubNode = {
+  subGame?: unknown[]
+}
+
 type TopTabItem = {
   sysGameTypeCode: string
   sysGameTypeName: string
@@ -94,7 +98,13 @@ const currentTypeGameList = computed(() => {
   const section = queryGameList.value.find(
     item => item?.sysGameTypeCode === currentSubGameTypeCode.value
   )
-  return section?.subGame ?? []
+  const list = Array.isArray(section?.subGame) ? (section.subGame as GameSubNode[]) : []
+  return list.reduce<unknown[]>((acc, item) => {
+    if (Array.isArray(item?.subGame)) {
+      acc.push(...item.subGame)
+    }
+    return acc
+  }, [])
 })
 
 provide('explore-game-list', currentTypeGameList)
