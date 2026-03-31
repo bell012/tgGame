@@ -1,76 +1,88 @@
 <template>
-  <div class="wallet-container flex gap-4">
-    <!-- 左侧菜单 -->
-    <aside class="w-[220px] flex-shrink-0">
-      <div class="bg-bg-2 rounded-lg p-4">
-        <!-- 钱包标题 -->
-        <h2 class="text-xl font-bold text-text-1 mb-4 px-4">{{ $t('wallet.title') }}</h2>
-        <nav class="space-y-1">
-          <div
-            v-for="item in menuItems"
-            :key="item.tab"
-            :class="[
-              'flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all text-sm',
-              currentTab === item.tab
-                ? 'bg-bg-3 text-text-1 font-bold'
-                : 'text-text-2 hover:bg-bg-3 hover:text-text-1'
-            ]"
-            @click="handleMenuClick(item.path)"
-          >
-            {{ item.label }}
-          </div>
-        </nav>
-      </div>
-    </aside>
+  <div class="max-w-[1336px] mx-auto">
+    <h2 class="text-xl font-[700] text-text-1 mb-4">{{ $t('wallet.title') }}</h2>
+    <div class="flex justify-center gap-6">
+      <!-- 左侧菜单 -->
+      <aside class="w-[280px] flex-shrink-0">
+        <div class="bg-bg-2 rounded-xl p-4">
+          <nav class="space-y-2.5">
+            <div
+              v-for="item in menuItems"
+              :key="item.tab"
+              :class="[
+                'flex items-center gap-4 px-4 py-2 rounded-lg cursor-pointer transition-all text-base',
+                currentTab === item.tab ? 'bg-theme-primary text-text-4 font-bold' : 'text-text-2'
+              ]"
+              @click="handleMenuClick(item.path)"
+            >
+              <component
+                :is="item.icon"
+                :class="['w-6 h-6', currentTab === item.tab ? 'text-text-4' : 'text-text-2']"
+              />
+              {{ item.label }}
+            </div>
+          </nav>
+        </div>
+      </aside>
+      <!-- 右侧内容区 -->
 
-    <!-- 右侧内容区 -->
-    <main class="flex-1 min-w-0">
-      <div class="bg-bg-2 rounded-lg overflow-hidden">
-        <BetHistoryPage v-if="currentTab === 'bet-history'" :is-pc-layout="true" />
-      </div>
-    </main>
+      <main class="flex-1 min-w-0">
+        <slot />
+      </main>
+    </div>
+
+    <CommonFooter class="mt-[40px]" />
   </div>
-
-  <CommonFooter class="hidden sm:block" />
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateTo } from '@/utils/router'
-import BetHistoryPage from './betHistory/index.vue'
 import CommonFooter from '@/components/commonFooter.vue'
+import BetSvg from '@/static/svg/bet.svg?component'
+import DepositIocn from '@/static/svg/personalCenter/icon1.svg?component'
+import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
+import OrderIcon from '@/static/svg/deposit/order-details.svg?component'
 
-const route = useRoute()
+type WalletTab = 'bet-history' | 'deposit' | 'withdraw' | 'my-orders'
+
+defineProps<{
+  currentTab: WalletTab
+}>()
+
 const { t } = useI18n()
 
-// 调试：组件挂载时打印信息
-onMounted(() => {
-  console.log('PersonalCenter mounted, current route:', route.path)
-  console.log('Current tab:', currentTab.value)
-})
-
-// 当前选中的 tab（从 route.meta 中获取）
-const currentTab = computed(() => {
-  return (route.meta.walletTab as string) || 'bet-history'
-})
-
-// 菜单项
 const menuItems = computed(() => [
   {
-    path: '/wallet/bet-history',
-    tab: 'bet-history',
-    label: t('wallet.betHistory')
+    path: '/bet-history',
+    tab: 'bet-history' as WalletTab,
+    label: t('wallet.betHistory'),
+    icon: BetSvg
+  },
+  {
+    path: '/deposit',
+    tab: 'deposit' as WalletTab,
+    label: t('wallet.deposit'),
+    icon: DepositIocn
+  },
+  {
+    path: '/withdraw',
+    tab: 'withdraw' as WalletTab,
+    label: t('wallet.withdraw'),
+    icon: WithdrawIcon
+  },
+  {
+    path: '/my-orders',
+    tab: 'my-orders' as WalletTab,
+    label: t('wallet.myOrders'),
+    icon: OrderIcon
   }
 ])
 
-// 菜单点击
 const handleMenuClick = (path: string) => {
   navigateTo(path)
 }
 </script>
 
-<style scoped>
-/* 自定义样式 */
-</style>
+<style scoped lang="scss"></style>

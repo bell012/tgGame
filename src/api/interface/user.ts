@@ -86,6 +86,7 @@ export interface SelectMemberResult {
   loginDate: number
   loginTimes: number
   loginTraceid: string
+  headPortrait?: string
   memberId: string
   memberPwd: string
   nickName: string
@@ -114,4 +115,29 @@ export interface SelectMemberResponse {
   message: string
   success: boolean
   result?: SelectMemberResult
+}
+
+/**
+ * 修改会员信息请求参数
+ */
+export interface ModifyMemberInfoForm {
+  nickName?: string
+  headPortrait?: string
+}
+
+/**
+ * 修改会员信息响应结果
+ */
+export interface ModifyMemberInfoResult {
+  [key: string]: unknown
+}
+
+/**
+ * 修改会员信息响应
+ */
+export interface ModifyMemberInfoResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: ModifyMemberInfoResult | string | boolean
 }

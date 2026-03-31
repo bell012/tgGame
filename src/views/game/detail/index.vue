@@ -15,7 +15,7 @@ import H5CurrencyInfo from './h5/currency-info/index.vue'
 import DesktopCurrencyInfo from './desktop/currency-info/index.vue'
 import BetsList from './common/bets-list/index.vue'
 import RecentGames from './common/recent-games/index.vue'
-// 游戏列表 ------------ start
+// 游戏列表 ------------ start----
 import GameList from './common/game-list/index.vue'
 import game1 from '@/static/img/test/game1.png'
 import game2 from '@/static/img/test/game2.png'

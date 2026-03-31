@@ -21,16 +21,63 @@ declare module '*.svg?skipsvgo' {
   export default component
 }
 
+declare module '*.svg?url' {
+  const content: string
+  export default content
+}
+
 // SVG 作为 URL 导入（默认）
 declare module '*.svg' {
   const content: string
   export default content
 }
 
-interface ImportMetaEnv {
-  readonly VITE_API_BASE_URL: string
+declare module '*.png' {
+  const content: string
+  export default content
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv
+declare module '*.jpg' {
+  const content: string
+  export default content
 }
+
+declare module '*.jpeg' {
+  const content: string
+  export default content
+}
+
+declare module '*.gif' {
+  const content: string
+  export default content
+}
+
+declare module '*.webp' {
+  const content: string
+  export default content
+}
+
+declare module '*.avif' {
+  const content: string
+  export default content
+}
+
+declare global {
+  interface ImportMetaEnv {
+    readonly VITE_API_BASE_URL: string
+    readonly VITE_GAME_IMAGE_BASE_URL: string
+  }
+
+  interface ImportMeta {
+    readonly env: ImportMetaEnv
+  }
+}
+
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    directEncryptedPayload?: boolean
+    skipRequestEncryption?: boolean
+  }
+}
+
+export {}

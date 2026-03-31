@@ -74,6 +74,7 @@ export default defineConfig({
         // ]
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // 不缓存 index.html，确保每次都能获取最新版本
         globPatterns: ['**/*.{js,css,ico,png,svg,json,woff2}'],
         // 排除 index.html

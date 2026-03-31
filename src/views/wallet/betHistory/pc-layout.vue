@@ -4,6 +4,7 @@
       <div class="flex items-center gap-2 flex-wrap">
         <!-- 游戏类型筛选 -->
         <CustomSelect
+          class="w-[240px]"
           v-model="filters.gameType"
           :options="gameTypeOptions"
           :placeholder="$t('betHistory.filters.all')"
@@ -11,13 +12,14 @@
 
         <!-- 资产类型筛选 -->
         <CustomSelect
+          class="w-[240px]"
           v-model="filters.assetType"
           :options="assetTypeOptions"
           :placeholder="$t('betHistory.filters.allAssets')"
         />
 
         <!-- 时间范围 -->
-        <CustomSelect v-model="filters.timeRange" :options="timeRangeOptions" />
+        <CustomSelect class="w-[240px]" v-model="filters.timeRange" :options="timeRangeOptions" />
       </div>
     </div>
 

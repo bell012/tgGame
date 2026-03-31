@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-1 min-h-0 flex-col">
+  <div class="flex-1 min-h-0">
     <div class="w-full shrink-0 flex bg-bg-2 dark:bg-bg-8 rounded-lg">
       <button
         v-for="tab in depositTabs"
