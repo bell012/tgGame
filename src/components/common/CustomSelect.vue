@@ -2,10 +2,24 @@
   <!-- pc端公共下拉框组件 -->
   <div class="relative w-[240px]" v-click-outside="closeDropdown">
     <div
-      class="select-box bg-input-3 text-text-1 rounded-lg border border-opacity-5 w-full h-[48px] text-sm px-3 cursor-pointer flex items-center justify-between"
+      class="select-box bg-input-3 text-text-1 rounded-lg border border-opacity-5 h-[48px] text-sm px-3 cursor-pointer flex items-center justify-between"
       @click="toggleDropdown"
     >
-      <span>{{ selectedLabel }}</span>
+      <div class="flex items-center gap-2">
+        <!-- string -->
+        <img
+          v-if="typeof selectedOption?.icon === 'string'"
+          :src="selectedOption.icon"
+          class="w-6 h-6 object-contain"
+        />
+
+        <!-- component -->
+        <component v-else-if="selectedOption?.icon" :is="selectedOption.icon" class="w-6 h-6" />
+
+        <span>
+          {{ selectedLabel }}
+        </span>
+      </div>
       <div
         class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center bg-opacity-10 w-6 h-6 rounded"
       >
@@ -25,7 +39,20 @@
           :class="{ 'bg-bg-3 font-[700]': option.value === modelValue }"
           @click="selectOption(option)"
         >
-          <span class="text-text-1 text-sm">{{ option.label }}</span>
+          <div class="flex items-center gap-2">
+            <!-- icon: string (图片) -->
+            <img
+              v-if="typeof option.icon === 'string'"
+              :src="option.icon"
+              class="w-6 h-6 object-contain"
+            />
+
+            <!-- icon: 组件 -->
+            <component v-else-if="option.icon" :is="option.icon" class="w-6 h-6" />
+            <span class="text-text-1 text-sm">
+              {{ option.label }}
+            </span>
+          </div>
           <component
             :is="option.value === modelValue ? DropDownSelectionIcon : DropDownDefaultIcon"
             class="w-4 h-4"
@@ -37,17 +64,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import DropDownDefaultIcon from '@/static/svg/drop_down _default.svg?component'
 import DropDownSelectionIcon from '@/static/svg/drop_down _selection.svg?component'
+import type { Component } from 'vue'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
 interface Option {
   label: string
   value: string
+  icon?: string | Component
 }
 
 interface Props {
@@ -67,8 +96,11 @@ const emit = defineEmits<{
 const isOpen = ref(false)
 
 const selectedLabel = computed(() => {
-  const selected = props.options.find(opt => opt.value === props.modelValue)
-  return selected ? selected.label : props.placeholder || t('customSelect.placeholder')
+  return selectedOption.value?.label || props.placeholder || t('customSelect.placeholder')
+})
+
+const selectedOption = computed(() => {
+  return props.options.find(opt => opt.value === props.modelValue)
 })
 
 const toggleDropdown = () => {

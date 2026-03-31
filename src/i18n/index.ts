@@ -1,8 +1,6 @@
 import { createI18n } from 'vue-i18n'
 import eng from './locales/en.json'
 import zh from './locales/zh.json'
-import homeEng from './en-us/home.json'
-import homeZh from './zh-cn/home.json'
 import { getLanguageCode, DEFAULT_LOCALE } from '@/utils/locale'
 
 const i18n = createI18n({
@@ -11,12 +9,10 @@ const i18n = createI18n({
   fallbackLocale: DEFAULT_LOCALE,
   messages: {
     eng: {
-      ...eng,
-      home: homeEng
+      ...eng
     },
     zh: {
-      ...zh,
-      home: homeZh
+      ...zh
     }
   }
 })

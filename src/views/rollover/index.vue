@@ -119,6 +119,6 @@ const handleFilterApply = (values: Record<string, string | string[]>) => {
 }
 
 const handleBetClick = (bet: BetItem) => {
-  navigateTo(`/transaction-details/${bet.id}`)
+  navigateTo(`/rollover-details/${bet.id}`)
 }
 </script>

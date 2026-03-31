@@ -251,8 +251,8 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'transaction-bet-details/:id',
-    name: 'transaction-bet-details',
+    path: 'transaction-details/:id',
+    name: 'transaction-details',
     component: () => import('@/views/transaction/betDetails/index.vue'),
     meta: {
       title: '资金详情',
@@ -277,6 +277,32 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'rollover-details/:id',
+    name: 'rollover-details/:id',
+    component: () => import('@/views/rollover/rolloverDetails/index.vue'),
+    meta: {
+      title: '流水稽查',
+      description: '流水稽查',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'rollover',
+    name: 'rollover',
+    component: () => import('@/views/rollover/index.vue'),
+    meta: {
+      title: '流水稽查详情',
+      description: '流水稽查详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'deposit',
     name: 'deposit',
     component: () => import('@/views/wallet/deposit/index.vue'),
@@ -284,6 +310,20 @@ const baseRoutes: RouteRecordRaw[] = [
       title: '充值',
       description: '充值',
       slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'my-orders',
+    name: 'my-orders',
+    component: () => import('@/views/wallet/myOrders/index.vue'),
+    meta: {
+      title: '我的订单',
+      description: '我的订单',
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
