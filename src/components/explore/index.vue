@@ -170,13 +170,13 @@ const topInputSearch = (_value: string) => {
 }
 
 // 排序
-const currentSort = ref('1')
+const currentSort = ref('0')
+provide('explore-current-sort', currentSort)
 
 const sortList = [
-  { value: '1', label: '热门' },
-  { value: '2', label: '最新' },
-  { value: '3', label: 'A-Z' },
-  { value: '4', label: 'Z-A' }
+  { value: '0', label: 'Default' },
+  { value: '1', label: 'A-Z' },
+  { value: '2', label: 'Z-A' }
 ]
 const sortChange = (val: string) => {
   console.log(val)
