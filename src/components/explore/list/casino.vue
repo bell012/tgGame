@@ -69,6 +69,9 @@ const injectedGameList = inject<Ref<unknown[]>>('explore-game-list', ref([]))
 const keyword = inject('explore-keywords') as Ref<string>
 const injectedHotGameList = inject<Ref<CasinoGameItem[]>>('explore-hot-game-list', ref([]))
 
+const injectCurrentSort = inject<Ref<string>>('explore-current-sort')
+void injectCurrentSort
+
 const gameList = computed<CasinoGameItem[]>(() =>
   Array.isArray(injectedGameList.value) ? (injectedGameList.value as CasinoGameItem[]) : []
 )
