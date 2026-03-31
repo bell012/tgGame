@@ -1,8 +1,8 @@
 <template>
   <!-- pc端公共下拉框组件 -->
-  <div class="relative" v-click-outside="closeDropdown">
+  <div class="relative w-[240px]" v-click-outside="closeDropdown">
     <div
-      class="select-box bg-input-3 text-text-1 rounded-lg border border-opacity-5 w-[240px] h-[48px] text-sm px-3 cursor-pointer flex items-center justify-between"
+      class="select-box bg-input-3 text-text-1 rounded-lg border border-opacity-5 w-full h-[48px] text-sm px-3 cursor-pointer flex items-center justify-between"
       @click="toggleDropdown"
     >
       <span>{{ selectedLabel }}</span>

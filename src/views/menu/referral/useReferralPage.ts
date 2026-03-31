@@ -20,6 +20,7 @@ export interface ReferralTab {
 export const useReferralPage = () => {
   const { t } = useI18n()
   const router = useRouter()
+  const activePcTab = ref('referral')
 
   const qrCodeCanvas = ref<HTMLCanvasElement>()
   const showQrDialog = ref(false)
@@ -76,23 +77,23 @@ export const useReferralPage = () => {
     {
       key: 'referral',
       label: t('referral.pcTabs.referral'),
-      active: true
+      active: activePcTab.value === 'referral'
     },
 
     {
       key: 'commission-records',
       label: t('referral.pcTabs.commissionRecords'),
-      active: false
+      active: activePcTab.value === 'commission-records'
     },
     {
       key: 'referral-records',
       label: t('referral.pcTabs.referralRecords'),
-      active: false
+      active: activePcTab.value === 'referral-records'
     },
     {
       key: 'commission-rules',
       label: t('referral.pcTabs.commissionRules'),
-      active: false
+      active: activePcTab.value === 'commission-rules'
     }
   ])
 
@@ -156,7 +157,10 @@ export const useReferralPage = () => {
 
   // 处理 PC 端 tab 点击。
   const handlePcTabClick = (tabKey: string) => {
-    if (tabKey === 'referral') return
+    if (tabKey === 'referral' || tabKey === 'commission-records') {
+      activePcTab.value = tabKey
+      return
+    }
 
     showToast({
       message: t('referral.comingSoon'),
