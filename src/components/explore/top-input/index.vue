@@ -60,10 +60,10 @@
           <div
             v-for="(item, inx) in history.slice(0, 5)"
             :key="inx"
-            class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] inline-flex items-center"
+            class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] inline-flex items-center cursor-pointer"
           >
             <div
-              class="text-xs text-[var(--color-text-level-2)] mr-0.5 break-words max-w-full"
+              class="text-xs text-[var(--color-text-level-2)] mr-0.5 break-words max-w-full cursor-pointer"
               @click="goSearch(item)"
             >
               {{ item }}
@@ -84,10 +84,10 @@
           <div
             v-for="(item, inx) in suggestedList"
             :key="inx"
-            class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] flex items-center"
+            class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] flex items-center cursor-pointer"
           >
             <div
-              class="text-xs text-[var(--color-text-level-2)] break-words max-w-full"
+              class="text-xs text-[var(--color-text-level-2)] break-words max-w-full cursor-pointer"
               @click="goSearch(item)"
             >
               {{ item }}

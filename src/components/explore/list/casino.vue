@@ -88,6 +88,7 @@ const filteredGameList = computed(() => {
       .includes(normalizedKeyword.value)
   )
 })
+
 const hotGameList = computed(() =>
   filteredGameList.value.filter(item => {
     const hotValue = item.gameItemHotVo?.hot ?? item.hot
