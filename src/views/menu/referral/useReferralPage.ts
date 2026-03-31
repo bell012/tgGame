@@ -157,7 +157,7 @@ export const useReferralPage = () => {
 
   // 处理 PC 端 tab 点击。
   const handlePcTabClick = (tabKey: string) => {
-    if (tabKey === 'referral' || tabKey === 'commission-records') {
+    if (tabKey === 'referral' || tabKey === 'commission-records' || tabKey === 'referral-records') {
       activePcTab.value = tabKey
       return
     }

@@ -384,6 +384,151 @@
         </section>
       </template>
 
+      <!-- Referral Records 页面 -->
+      <template v-else-if="activeTabKey === 'referral-records'">
+        <!-- 推荐记录主容器 -->
+        <section class="rounded-[12px] bg-bg-2 p-6">
+          <!-- 顶部筛选区域 -->
+          <div class="flex items-center justify-between gap-2">
+            <!-- 搜索框 -->
+            <label
+              class="flex h-12 w-[330px] items-center gap-3 rounded-lg border border-opacity-10 bg-mask-20 px-3"
+            >
+              <!-- 搜索图标 -->
+              <SearchIcon class="h-4 w-4 text-text-2" />
+
+              <!-- 搜索输入框 -->
+              <input
+                v-model="referralSearchKeyword"
+                type="text"
+                :placeholder="$t('referral.referralRecords.searchPlaceholder')"
+                class="min-w-0 flex-1 bg-transparent text-sm font-[700] leading-[17px] text-text-1 outline-none placeholder:text-text-3"
+              />
+            </label>
+
+            <!-- 下拉筛选组 -->
+            <div class="flex items-center gap-2">
+              <!-- 状态筛选 -->
+              <CustomSelect
+                class="w-[330px]"
+                v-model="referralFilters.status"
+                :options="referralStatusOptions"
+                :placeholder="$t('referral.referralRecords.filterTitles.status')"
+              />
+
+              <!-- 时间筛选 -->
+              <CustomSelect
+                class="w-[330px]"
+                v-model="referralFilters.time"
+                :options="referralTimeOptions"
+                :placeholder="$t('referral.referralRecords.filterTitles.time')"
+              />
+            </div>
+          </div>
+
+          <!-- 记录列表区域 -->
+          <div class="mt-4 rounded-lg border border-opacity-5 bg-bg-2">
+            <!-- 列表表头 -->
+            <div class="grid h-12 grid-cols-3 items-center rounded-t-lg bg-bg-3 px-4">
+              <!-- 表头: 账号 -->
+              <p class="text-center text-sm font-[700] leading-[17px] text-text-1">Account</p>
+
+              <!-- 表头: 状态 -->
+              <p class="text-center text-sm font-[700] leading-[17px] text-text-1">Status</p>
+
+              <!-- 表头: 时间 -->
+              <p class="text-center text-sm font-[700] leading-[17px] text-text-1">Date & Time</p>
+            </div>
+
+            <!-- 列表内容 -->
+            <div v-if="currentReferralPageRecords.length > 0">
+              <!-- 列表行 -->
+              <div
+                v-for="item in currentReferralPageRecords"
+                :key="item.id"
+                class="grid h-14 grid-cols-3 items-center border-b border-opacity-5 px-4 last:border-b-0"
+              >
+                <!-- 列: 账号 -->
+                <p class="truncate text-center text-sm font-[700] leading-[17px] text-text-1">
+                  {{ item.account }}
+                </p>
+
+                <!-- 列: 状态 -->
+                <p
+                  class="text-center text-sm font-[700] leading-[17px]"
+                  :class="getReferralStatusClass(item.status)"
+                >
+                  {{ getReferralStatusLabel(item.status) }}
+                </p>
+
+                <!-- 列: 时间 -->
+                <p class="truncate text-center text-sm font-[700] leading-[17px] text-text-2">
+                  {{ item.time }}
+                </p>
+              </div>
+            </div>
+
+            <!-- 空状态 -->
+            <div
+              v-else
+              class="flex h-[240px] items-center justify-center text-sm font-[700] text-text-2"
+            >
+              {{ $t('referral.referralRecords.empty') }}
+            </div>
+          </div>
+
+          <!-- 底部分页区域 -->
+          <div class="mt-4 flex items-center justify-center">
+            <!-- 分页条（参照 ResponsiveGridPager） -->
+            <div class="flex items-center justify-center">
+              <!-- 上一页按钮 -->
+              <button
+                type="button"
+                class="px-[9px] h-[35px] rounded-tl-lg rounded-bl-lg text-xs flex items-center justify-center bg-[var(--color-background-level-2)]"
+                :class="referralCanPrev ? 'text-text-1' : 'text-text-2 opacity-50'"
+                :disabled="!referralCanPrev"
+                @click="goReferralPrev"
+              >
+                <LeftArrow class="w-2 h-2" />
+              </button>
+
+              <!-- 页码状态 -->
+              <div
+                class="mx-[2px] px-2.5 py-1 flex items-center bg-[var(--color-background-level-2)]"
+              >
+                <!-- 当前页码 -->
+                <div
+                  class="rounded-md flex items-center justify-center bg-[var(--color-background-level-3)] font-bold text-xs text-text-1 leading-[12px] px-[7px] py-[7px]"
+                >
+                  {{ referralPage < 10 ? `0${referralPage}` : referralPage }}
+                </div>
+
+                <!-- of 文案 -->
+                <span class="mx-[2px] text-xs text-text-2 lowercase">of</span>
+
+                <!-- 总页码 -->
+                <span
+                  class="rounded-md flex items-center justify-center font-bold text-xs text-text-1 leading-[12px] px-[7px] py-[7px]"
+                >
+                  {{ referralTotalPages }}
+                </span>
+              </div>
+
+              <!-- 下一页按钮 -->
+              <button
+                type="button"
+                class="px-[9px] h-[35px] rounded-tr-lg rounded-br-lg text-xs bg-[var(--color-background-level-2)] flex items-center justify-center"
+                :class="referralCanNext ? 'text-text-1' : 'text-text-2 opacity-50'"
+                :disabled="!referralCanNext"
+                @click="goReferralNext"
+              >
+                <RightArrow class="w-2 h-2" />
+              </button>
+            </div>
+          </div>
+        </section>
+      </template>
+
       <!-- 其他 tab 占位内容 -->
       <template v-else>
         <!-- 占位容器 -->
@@ -413,6 +558,10 @@ import type { ReferralMetric, ReferralTab } from './useReferralPage'
 type ActiveTabKey = 'referral' | 'commission-records' | 'referral-records' | 'commission-rules'
 type RecordGameType = 'slots' | 'sports' | 'casino'
 type RecordStatus = 'completed' | 'pending'
+type ReferralRecordStatus = 'valid' | 'invalid'
+type ReferralRecordPeriod = 'today' | 'week' | 'month'
+type ReferralFilterStatus = 'all' | ReferralRecordStatus
+type ReferralFilterTime = 'all' | ReferralRecordPeriod
 
 interface CommissionRecordItem {
   id: number
@@ -422,6 +571,14 @@ interface CommissionRecordItem {
   commission: number
   time: string
   status: RecordStatus
+}
+
+interface ReferralRecordItem {
+  id: number
+  account: string
+  status: ReferralRecordStatus
+  period: ReferralRecordPeriod
+  time: string
 }
 
 interface Props {
@@ -447,10 +604,17 @@ const pcQrCodeCanvas = ref<HTMLCanvasElement>()
 const searchKeyword = ref('')
 const page = ref(1)
 const pageSize = 10
+const referralSearchKeyword = ref('')
+const referralPage = ref(1)
+const referralPageSize = 10
 
 const filters = ref({
   gameType: 'all_games',
   status: 'all'
+})
+const referralFilters = ref<{ status: ReferralFilterStatus; time: ReferralFilterTime }>({
+  status: 'all',
+  time: 'all'
 })
 
 const commissionRecords = ref<CommissionRecordItem[]>([
@@ -564,6 +728,51 @@ const commissionRecords = ref<CommissionRecordItem[]>([
   }
 ])
 
+const referralRecords = ref<ReferralRecordItem[]>([
+  { id: 1, account: '972345678', status: 'valid', period: 'today', time: '12/18/2026 11:14:15 AM' },
+  {
+    id: 2,
+    account: '972345679',
+    status: 'invalid',
+    period: 'today',
+    time: '12/18/2026 10:11:23 AM'
+  },
+  { id: 3, account: '972345680', status: 'valid', period: 'week', time: '12/17/2026 09:45:51 AM' },
+  { id: 4, account: '972345681', status: 'valid', period: 'week', time: '12/16/2026 08:20:12 AM' },
+  {
+    id: 5,
+    account: '972345682',
+    status: 'invalid',
+    period: 'week',
+    time: '12/15/2026 04:31:04 PM'
+  },
+  { id: 6, account: '972345683', status: 'valid', period: 'month', time: '12/12/2026 01:14:15 PM' },
+  { id: 7, account: '972345684', status: 'valid', period: 'month', time: '12/10/2026 07:14:15 PM' },
+  {
+    id: 8,
+    account: '972345685',
+    status: 'invalid',
+    period: 'month',
+    time: '12/08/2026 06:14:15 PM'
+  },
+  { id: 9, account: '972345686', status: 'valid', period: 'month', time: '12/06/2026 03:14:15 PM' },
+  {
+    id: 10,
+    account: '972345687',
+    status: 'valid',
+    period: 'month',
+    time: '12/05/2026 12:14:15 PM'
+  },
+  {
+    id: 11,
+    account: '972345688',
+    status: 'invalid',
+    period: 'month',
+    time: '12/04/2026 11:14:15 AM'
+  },
+  { id: 12, account: '972345689', status: 'valid', period: 'month', time: '12/03/2026 09:14:15 AM' }
+])
+
 const gameTypeOptions = computed(() => [
   { label: t('referral.commissionRecords.filters.all_games'), value: 'all_games' },
   { label: t('referral.commissionRecords.filters.slots'), value: 'slots' },
@@ -575,6 +784,19 @@ const statusOptions = computed(() => [
   { label: t('referral.commissionRecords.filters.all'), value: 'all' },
   { label: t('referral.commissionRecords.filters.completed'), value: 'completed' },
   { label: t('referral.commissionRecords.filters.pending'), value: 'pending' }
+])
+
+const referralStatusOptions = computed(() => [
+  { label: t('referral.referralRecords.filters.all'), value: 'all' },
+  { label: t('referral.referralRecords.filters.valid'), value: 'valid' },
+  { label: t('referral.referralRecords.filters.invalid'), value: 'invalid' }
+])
+
+const referralTimeOptions = computed(() => [
+  { label: t('referral.referralRecords.filters.all'), value: 'all' },
+  { label: t('referral.referralRecords.filters.today'), value: 'today' },
+  { label: t('referral.referralRecords.filters.week'), value: 'week' },
+  { label: t('referral.referralRecords.filters.month'), value: 'month' }
 ])
 
 const activeTabKey = computed<ActiveTabKey>(() => {
@@ -600,6 +822,20 @@ const filteredCommissionRecords = computed(() => {
   })
 })
 
+const filteredReferralRecords = computed(() => {
+  const keyword = referralSearchKeyword.value.trim().toLowerCase()
+
+  return referralRecords.value.filter(item => {
+    const matchesKeyword = keyword.length === 0 || item.account.toLowerCase().includes(keyword)
+    const matchesStatus =
+      referralFilters.value.status === 'all' || item.status === referralFilters.value.status
+    const matchesTime =
+      referralFilters.value.time === 'all' || item.period === referralFilters.value.time
+
+    return matchesKeyword && matchesStatus && matchesTime
+  })
+})
+
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(filteredCommissionRecords.value.length / pageSize))
 )
@@ -609,12 +845,23 @@ const currentPageRecords = computed(() => {
   return filteredCommissionRecords.value.slice(start, start + pageSize)
 })
 
+const referralTotalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredReferralRecords.value.length / referralPageSize))
+)
+
+const currentReferralPageRecords = computed(() => {
+  const start = (referralPage.value - 1) * referralPageSize
+  return filteredReferralRecords.value.slice(start, start + referralPageSize)
+})
+
 const totalAmount = computed(() =>
   filteredCommissionRecords.value.reduce((sum, item) => sum + item.commission, 0)
 )
 
 const canPrev = computed(() => page.value > 1)
 const canNext = computed(() => page.value < totalPages.value)
+const referralCanPrev = computed(() => referralPage.value > 1)
+const referralCanNext = computed(() => referralPage.value < referralTotalPages.value)
 
 // 生成 PC 端代理邀请二维码。
 const generatePcQRCode = async () => {
@@ -649,6 +896,16 @@ const getCommissionClass = (amount: number) => {
   return amount >= 0 ? 'text-theme-primary' : 'text-secondary-2'
 }
 
+// 获取推荐状态文案。
+const getReferralStatusLabel = (status: ReferralRecordStatus) => {
+  return t(`referral.referralRecords.filters.${status}`)
+}
+
+// 获取推荐状态颜色类名。
+const getReferralStatusClass = (status: ReferralRecordStatus) => {
+  return status === 'valid' ? 'text-theme-primary' : 'text-secondary-2'
+}
+
 // 设置分页页码。
 const setPage = (targetPage: number) => {
   const nextPage = Math.min(Math.max(1, targetPage), Math.max(1, totalPages.value))
@@ -664,6 +921,23 @@ const goPrev = () => {
 // 切换到下一页。
 const goNext = () => {
   setPage(page.value + 1)
+}
+
+// 设置推荐记录分页页码。
+const setReferralPage = (targetPage: number) => {
+  const nextPage = Math.min(Math.max(1, targetPage), Math.max(1, referralTotalPages.value))
+  if (nextPage === referralPage.value) return
+  referralPage.value = nextPage
+}
+
+// 切换推荐记录到上一页。
+const goReferralPrev = () => {
+  setReferralPage(referralPage.value - 1)
+}
+
+// 切换推荐记录到下一页。
+const goReferralNext = () => {
+  setReferralPage(referralPage.value + 1)
 }
 
 // 处理标签点击。
@@ -696,10 +970,25 @@ watch([searchKeyword, () => filters.value.gameType, () => filters.value.status],
   page.value = 1
 })
 
+// 监听推荐记录筛选条件变化后重置页码。
+watch(
+  [referralSearchKeyword, () => referralFilters.value.status, () => referralFilters.value.time],
+  () => {
+    referralPage.value = 1
+  }
+)
+
 // 监听总页数变化后校正当前页码。
 watch(totalPages, nextTotalPages => {
   if (page.value > nextTotalPages) {
     page.value = nextTotalPages
+  }
+})
+
+// 监听推荐记录总页数变化后校正当前页码。
+watch(referralTotalPages, nextTotalPages => {
+  if (referralPage.value > nextTotalPages) {
+    referralPage.value = nextTotalPages
   }
 })
 
