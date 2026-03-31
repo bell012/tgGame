@@ -68,9 +68,7 @@ const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
 const injectedGameList = inject<Ref<unknown[]>>('explore-game-list', ref([]))
 const keyword = inject('explore-keywords') as Ref<string>
 const injectedHotGameList = inject<Ref<CasinoGameItem[]>>('explore-hot-game-list', ref([]))
-
-const injectCurrentSort = inject<Ref<string>>('explore-current-sort')
-void injectCurrentSort
+const injectCurrentSort = inject<Ref<string>>('explore-current-sort', ref('0'))
 
 const gameList = computed<CasinoGameItem[]>(() =>
   Array.isArray(injectedGameList.value) ? (injectedGameList.value as CasinoGameItem[]) : []
@@ -80,6 +78,7 @@ const page = ref(1)
 const PAGE_SIZE = 40
 const normalizedKeyword = computed(() => keyword.value.trim().toLowerCase())
 
+// 过滤
 const filteredGameList = computed(() => {
   if (normalizedKeyword.value.length < 2) {
     return gameList.value
@@ -92,21 +91,50 @@ const filteredGameList = computed(() => {
   )
 })
 
+// 排序
+const sortedFilteredGameList = computed(() => {
+  const sortType = injectCurrentSort.value
+
+  if (sortType === '0') {
+    return filteredGameList.value
+  }
+
+  const sortedList = [...filteredGameList.value]
+
+  sortedList.sort((a, b) => {
+    const firstLetterA = String(a.platformName ?? '')
+      .trim()
+      .charAt(0)
+      .toLowerCase()
+    const firstLetterB = String(b.platformName ?? '')
+      .trim()
+      .charAt(0)
+      .toLowerCase()
+
+    const compareResult = firstLetterA.localeCompare(firstLetterB, 'en', { sensitivity: 'base' })
+    return sortType === '2' ? -compareResult : compareResult
+  })
+
+  return sortedList
+})
+
 const hotGameList = computed(() =>
-  filteredGameList.value.filter(item => {
+  sortedFilteredGameList.value.filter(item => {
     const hotValue = item.gameItemHotVo?.hot ?? item.hot
     return Number(hotValue) === 1
   })
 )
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredGameList.value.length / PAGE_SIZE)))
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(sortedFilteredGameList.value.length / PAGE_SIZE))
+)
 const pagedGameList = computed(() => {
   const start = (page.value - 1) * PAGE_SIZE
   const end = start + PAGE_SIZE
-  return filteredGameList.value.slice(start, end)
+  return sortedFilteredGameList.value.slice(start, end)
 })
 
-watch(filteredGameList, () => {
+watch(sortedFilteredGameList, () => {
   page.value = 1
 })
 watch(
