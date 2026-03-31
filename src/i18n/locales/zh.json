@@ -51,6 +51,7 @@
     "loadingMore": "加载更多...",
     "noMoreData": "没有更多了",
     "error": "错误",
+    "requestError": "请求错误",
     "success": "成功",
     "confirm": "确认",
     "cancel": "取消",
@@ -76,7 +77,10 @@
     "log_in_directly": "直接登入",
     "log_in_using_secret_key": "使用秘钥登入",
     "filter": "筛选",
-    "apply": "应用"
+    "apply": "应用",
+    "internalServerError": "服务器内部错误",
+    "unknownError": "未知错误",
+    "sessionExpired": "登录已失效，请重新登录"
   },
   "pwa": {
     "offlineReady": "应用已就绪，可离线使用",
