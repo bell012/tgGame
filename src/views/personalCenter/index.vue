@@ -555,13 +555,13 @@ const quickActions = computed(() => [
     id: 'transaction',
     name: t('personalCenter.transaction'),
     icon: getIcon(6),
-    handler: () => console.log('Transaction clicked')
+    handler: () => navigateTo('/transaction')
   },
   {
     id: 'rollover',
     name: t('personalCenter.rollover'),
     icon: getIcon(7),
-    handler: () => console.log('Rollover clicked')
+    handler: () => navigateTo('/rollover')
   },
   {
     id: 'bet-history',

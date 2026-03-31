@@ -2,8 +2,12 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import Api from '@/api'
 import type { QueryAcctInfoResult } from '@/api/interface/user'
-import { navigateTo } from '@/utils/router'
+import { useAuthModalStore } from '@/stores/authModal'
+import { withLocalePrefix } from '@/utils/locale'
+import { setManualLogoutInProgress } from '@/utils/request'
+import { getCurrentLocale, navigateTo } from '@/utils/router'
 import {
+  clearProfileAvatarPreviewState,
   profileUserInfoState,
   setProfileUserInfoState,
   syncProfileCustomizationState,
@@ -136,14 +140,43 @@ export const useUserStore = defineStore('user', () => {
   }
 
   /**
-   * 统一的退出登录方法
-   * 清除所有用户相关的本地存储数据并跳转到首页
+   * 清除所有用户相关的本地状态，但保留语言、货币和主题设置
+   */
+  const clearUserSessionData = () => {
+    clearStorageExcept(['language', 'currency', 'theme'])
+    clearProfileAvatarPreviewState()
+    syncProfileCustomizationState()
+    syncProfileUserInfoState()
+    setAcctInfoState(null, false)
+  }
+
+  /**
+   * 手动退出登录：返回首页并刷新页面
    */
   function logout() {
-    // 清除所有数据，但保留语言、货币和主题设置
-    clearStorageExcept(['language', 'currency', 'theme'])
-    navigateTo('/')
-    window.location.reload()
+    const authModalStore = useAuthModalStore()
+
+    authModalStore.closeModal()
+    setManualLogoutInProgress(true)
+    clearUserSessionData()
+
+    if (typeof window !== 'undefined') {
+      window.location.replace(withLocalePrefix('/', getCurrentLocale()))
+      return
+    }
+
+    void navigateTo('/', { replace: true })
+  }
+
+  /**
+   * 登录失效处理：回到首页后打开登录弹窗
+   */
+  async function handleAuthExpired() {
+    clearUserSessionData()
+    await navigateTo('/', { replace: true })
+
+    const authModalStore = useAuthModalStore()
+    authModalStore.openLoginModal()
   }
 
   return {
@@ -153,6 +186,7 @@ export const useUserStore = defineStore('user', () => {
     refreshAcctInfo,
     refreshUserInfo,
     refreshCurrentUserData,
-    logout
+    logout,
+    handleAuthExpired
   }
 })

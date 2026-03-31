@@ -226,9 +226,6 @@
       @select-currency="handleCurrencyChange"
     />
 
-    <!-- 登录/注册弹窗 -->
-    <LoginModal v-model="showLoginModal" :default-tab="loginModalTab" />
-
     <!-- PC 搜索弹窗 -->
     <ExploreDesktop v-model="showExplorehModal" />
 
@@ -238,14 +235,16 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useAuthModalStore } from '@/stores/authModal'
 import { useLocaleStore } from '@/stores/locale'
 import { useLayoutStore } from '@/stores/layout'
+import { useUserStore } from '@/stores/user'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
-import LoginModal from '@/components/login_register/LoginModal.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
 import DepositPop from '@/components/deposit/deposit/depositPop.vue'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
@@ -260,8 +259,12 @@ import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import { getCurrencySymbol, formatBalance, type Locale } from '@/utils/locale'
 
 const { t } = useI18n()
+const authModalStore = useAuthModalStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
+const userStore = useUserStore()
+const { acctInfo, userInfo } = storeToRefs(userStore)
+const { visible: showLoginModal } = storeToRefs(authModalStore)
 
 const emit = defineEmits<{
   'toggle-sidebar': []
@@ -271,9 +274,7 @@ const emit = defineEmits<{
 const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
 
-const showLoginModal = ref(false)
 const showDepositPop = ref(false)
-const loginModalTab = ref<'login' | 'register'>('login')
 
 const showExplorehModal = ref(false)
 
@@ -281,14 +282,9 @@ const showExplorehModal = ref(false)
 const showUserMenu = ref(false)
 const userMenuRef = ref<HTMLElement | null>(null)
 
-// 用户信息
-const userInfo = ref<any>(null)
-// 账户信息
-const acctInfo = ref<any>(null)
-
 // 是否已登录
 const isLoggedIn = computed(() => {
-  return userInfo.value && userInfo.value.tradeToken
+  return Boolean(userInfo.value?.tradeToken)
 })
 
 // 用户头像 URL
@@ -296,33 +292,8 @@ const avatarUrl = computed(() => {
   return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
 })
 
-// localStorage 用户信息
-const loadUserInfo = () => {
-  const storedUserInfo = localStorage.getItem('userInfo')
-  if (storedUserInfo) {
-    try {
-      userInfo.value = JSON.parse(storedUserInfo)
-    } catch (error) {
-      console.error(error)
-      userInfo.value = null
-    }
-  }
-
-  // 加载账户信息
-  const storedAcctInfo = localStorage.getItem('acctInfo')
-  if (storedAcctInfo) {
-    try {
-      acctInfo.value = JSON.parse(storedAcctInfo)
-    } catch (error) {
-      console.error(error)
-      acctInfo.value = null
-    }
-  }
-}
-
-// 监听 localStorage 变化
 const handleStorageChange = () => {
-  loadUserInfo()
+  userStore.syncStoredUserData()
 }
 
 const handleUserMenuClickOutside = (event: MouseEvent) => {
@@ -339,7 +310,7 @@ const handleUserMenuClickOutside = (event: MouseEvent) => {
 
 // 组件挂载时加载用户信息
 onMounted(() => {
-  loadUserInfo()
+  userStore.syncStoredUserData()
   window.addEventListener('storage', handleStorageChange)
   document.addEventListener('click', handleUserMenuClickOutside)
 })
@@ -352,7 +323,7 @@ onBeforeUnmount(() => {
 // 监听登录弹窗关闭，重新加载用户信息
 watch(showLoginModal, newVal => {
   if (!newVal) {
-    loadUserInfo()
+    userStore.syncStoredUserData()
   }
 })
 
@@ -371,13 +342,11 @@ const openCurrencyModal = () => {
 }
 
 const openLoginModal = () => {
-  loginModalTab.value = 'login'
-  showLoginModal.value = true
+  authModalStore.openLoginModal()
 }
 
 const openRegisterModal = () => {
-  loginModalTab.value = 'register'
-  showLoginModal.value = true
+  authModalStore.openRegisterModal()
 }
 
 const openExploreModal = () => {

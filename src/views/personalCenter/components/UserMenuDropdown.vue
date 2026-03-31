@@ -81,7 +81,6 @@ const mainMenus = computed(() => [
     name: t('userMenu.buyCrypto'),
     icon: getIcon(62),
     handler: () => {
-      console.log('Buy Crypto clicked')
       navigateTo('/deposit')
       emit('update:modelValue', false)
     }
@@ -91,7 +90,7 @@ const mainMenus = computed(() => [
     name: t('userMenu.transactions'),
     icon: getIcon(63),
     handler: () => {
-      console.log('Transactions clicked')
+      navigateTo('/transaction')
       emit('update:modelValue', false)
     }
   },
@@ -109,7 +108,7 @@ const mainMenus = computed(() => [
     name: t('userMenu.rolloverOverview'),
     icon: getIcon(65),
     handler: () => {
-      console.log('Rollover Overview clicked')
+      navigateTo('/rollover')
       emit('update:modelValue', false)
     }
   },
