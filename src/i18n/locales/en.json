@@ -51,6 +51,7 @@
     "loadingMore": "Loading more...",
     "noMoreData": "No more data",
     "error": "Error",
+    "requestError": "Request error",
     "success": "Success",
     "confirm": "Confirm",
     "cancel": "Cancel",
@@ -76,7 +77,10 @@
     "log_in_directly": "Log in directly",
     "log_in_using_secret_key": "Log in using secret key",
     "filter": "Filter",
-    "apply": "Apply"
+    "apply": "Apply",
+    "internalServerError": "Internal Server Error",
+    "unknownError": "Unknown Error",
+    "sessionExpired": "Session expired, please log in again"
   },
   "pwa": {
     "offlineReady": "App ready to work offline",

@@ -47,9 +47,9 @@ export const navigateTo = (
   }
 
   if (options?.replace) {
-    router.replace(routeOptions)
+    return router.replace(routeOptions)
   } else {
-    router.push(routeOptions)
+    return router.push(routeOptions)
   }
 }
 
