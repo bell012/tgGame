@@ -141,3 +141,26 @@ export interface ModifyMemberInfoResponse {
   success: boolean
   result?: ModifyMemberInfoResult | string | boolean
 }
+
+//  游戏下注信息统计 请求参数
+export interface GameBetTotalForm {}
+
+//  游戏下注信息统计 响应结果
+export interface GameBetTotalResult {
+  betAmount: number
+  total: number
+  win: string
+  list: Array<{
+    betAmount: number
+    platformCode: string
+    itemCode: string
+  }>
+}
+
+// 游戏下注信息统计 响应
+export interface GameBetTotalResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: GameBetTotalResult
+}
