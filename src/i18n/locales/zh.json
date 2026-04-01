@@ -50,6 +50,7 @@
     "loading": "加载中...",
     "loadingMore": "加载更多...",
     "noMoreData": "没有更多了",
+    "noData": "目前没有可用数据",
     "error": "错误",
     "requestError": "请求错误",
     "success": "成功",

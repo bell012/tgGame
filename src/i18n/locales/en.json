@@ -50,6 +50,7 @@
     "loading": "Loading...",
     "loadingMore": "Loading more...",
     "noMoreData": "No more data",
+    "noData": "No data available at the moment.",
     "error": "Error",
     "requestError": "Request error",
     "success": "Success",

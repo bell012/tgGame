@@ -33,18 +33,18 @@
             <span
               :class="[
                 'text-base',
-                betDetail.result === 'win' ? 'text-secondary-4' : 'text-secondary-2'
+                betDetail.result === 'win' ? 'text-secondary-2' : 'text-secondary-4'
               ]"
             >
-              {{ betDetail.result === 'win' ? 'Win' : 'Loss' }}
+              {{ betDetail.result === 'win' ? $t('betHistory.win') : $t('betHistory.loss') }}
             </span>
             <span
               :class="[
                 'text-base font-bold',
-                betDetail.result === 'win' ? 'text-secondary-4' : 'text-secondary-2'
+                betDetail.result === 'win' ? 'text-secondary-2' : 'text-secondary-4'
               ]"
             >
-              {{ betDetail.result === 'win' ? '+' : '-' }}{{ Math.abs(betDetail.profit) }}
+              {{ betDetail.result === 'win' ? '+' : '-' }}{{ betDetail.resultAmount }}
             </span>
           </div>
 
@@ -64,7 +64,7 @@
                 >{{ $t('betHistory.win') }}/{{ $t('betHistory.loss') }}</span
               >
               <span class="text-text-1">
-                {{ betDetail.result === 'win' ? '+' : '-' }}{{ Math.abs(betDetail.profit) }}
+                {{ betDetail.result === 'win' ? '+' : '-' }}{{ betDetail.resultAmount }}
               </span>
             </div>
 
@@ -80,7 +80,7 @@
 
             <div class="flex items-center justify-between">
               <span class="text-text-3">{{ $t('betDetails.createdAt') }}</span>
-              <span class="text-text-1">{{ betDetail.time }}</span>
+              <span class="text-text-1">{{ betDetail.createdAt }}</span>
             </div>
           </div>
         </div>
@@ -95,25 +95,13 @@ import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import Close from '@/static/svg/close.svg?component'
+import type { Item } from '../betHistory/shared'
 
 const { t } = useI18n()
 
-interface BetItem {
-  id: number
-  gameName: string
-  gameIcon: string
-  gameType: string
-  time: string
-  betAmount: string
-  profit: number
-  result: 'win' | 'loss'
-  currency: string
-  orderNo: string
-}
-
 interface Props {
   modelValue: boolean
-  bet: BetItem | null
+  bet: Item | null
 }
 
 const props = defineProps<Props>()
