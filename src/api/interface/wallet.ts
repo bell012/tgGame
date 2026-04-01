@@ -55,6 +55,69 @@ export interface SubmitPayOrderQuickPageForm {
   channelId: number
 }
 
+export interface SubmitPayOrderQuickResult {
+  createTime: number
+  orderId: number
+  payId: number
+  action: string
+  payUrl: string
+}
+
+export interface SubmitPayOrderQuickResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: SubmitPayOrderQuickResult
+}
+
+export interface QueryPayOrderByOrderIdForm {
+  orderId: string | number
+}
+
+export interface QueryPayOrderByOrderIdResult {
+  accountAmount: number
+  accountCurrency: string
+  busiAmount: number
+  channelId: string
+  columnCode: number
+  createTime: number
+  currency: string
+  discountStatus: number
+  downloadSite: string
+  ip: string
+  isFirst: number
+  memberId: string
+  memberRowId: number
+  modifyBy: string
+  modifyTime: number
+  msgVersion: number
+  online: number
+  orderId: string
+  orderType: string
+  otherAmount: number
+  payChannelCode: string
+  payOrderId: string
+  platformCode: string
+  platformName: string
+  readStatus: number
+  readTime: number
+  returnAmount: number
+  score: number
+  site: string
+  status: number
+  subColumnCode: number
+  subColumnName: string
+  sysLevelId: number
+  [key: string]: unknown
+}
+
+export interface QueryPayOrderByOrderIdResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryPayOrderByOrderIdResult
+}
+
 export interface QueryPaySubColumnItem {
   columnCode: number
   currency: string

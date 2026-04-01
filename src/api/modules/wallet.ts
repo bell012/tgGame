@@ -1,11 +1,14 @@
 import type {
+  QueryPayOrderByOrderIdForm,
+  QueryPayOrderByOrderIdResponse,
   QueryDlicghForm,
   QueryDlicghResponse,
   QueryPayColumnPageForm,
   QueryPayColumnPageResponse,
   QueryPaySubColumnPageForm,
   QueryPaySubColumnPageResponse,
-  SubmitPayOrderQuickPageForm
+  SubmitPayOrderQuickPageForm,
+  SubmitPayOrderQuickResponse
 } from '@/api/interface/wallet'
 import request from '@/utils/request'
 
@@ -43,9 +46,30 @@ export function queryPaySubColumnPage(
 ///  提交入款申请
 export function submitPayOrderQuick(
   data: SubmitPayOrderQuickPageForm
-): Promise<QueryPaySubColumnPageResponse> {
+): Promise<SubmitPayOrderQuickResponse> {
   return request({
     url: '/pc/submitPayOrderQuick',
+    method: 'post',
+    data
+  })
+}
+
+// 根据订单号查询支付订单
+export function queryPayOrderByOrderId(
+  data: QueryPayOrderByOrderIdForm
+): Promise<QueryPayOrderByOrderIdResponse> {
+  return request({
+    url: '/pc/queryPayOrderByOrderId',
+    method: 'post',
+    data
+  })
+}
+///  提交入款
+export function submitPayOrder(
+  data: SubmitPayOrderQuickPageForm
+): Promise<QueryPaySubColumnPageResponse> {
+  return request({
+    url: '/pc/submitPayOrder',
     method: 'post',
     data
   })
