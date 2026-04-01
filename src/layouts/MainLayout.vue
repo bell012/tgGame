@@ -176,6 +176,7 @@ const shouldRenderBackgroundRouteInMain = (currentRoute: RouteLocationNormalized
 const getMainRouteViewKey = (currentRoute: RouteLocationNormalizedLoaded) => {
   const routeName = String(currentRoute.name || '')
   const localeKey = String(currentRoute.params.locale || DEFAULT_LOCALE)
+  const tabKey = String(currentRoute.params.tabKey || '')
 
   if (routeName === 'casino' || routeName === 'casinoTabKey') {
     return `casino-${localeKey}`
@@ -183,6 +184,14 @@ const getMainRouteViewKey = (currentRoute: RouteLocationNormalizedLoaded) => {
 
   if (routeName === 'Localecasino' || routeName === 'LocalecasinoTabKey') {
     return `casino-${localeKey}`
+  }
+
+  if (routeName === 'gameList') {
+    return `gamelist-${localeKey}-${tabKey}`
+  }
+
+  if (routeName === 'LocalegameList') {
+    return `gamelist-${localeKey}-${tabKey}`
   }
 
   return currentRoute.fullPath

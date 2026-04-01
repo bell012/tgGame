@@ -44,18 +44,18 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
     }
   ]
 
-  const buildEndTabButtons = (): CasinoTabButtonItem[] => [
-    {
-      sysGameTypeCode: 'favorites',
-      sysGameTypeName: t('casino.favorites'),
-      icon: casinoIcons.favorites
-    },
-    {
-      sysGameTypeCode: 'recent',
-      sysGameTypeName: t('casino.recent'),
-      icon: casinoIcons.recent
-    }
-  ]
+  // const buildEndTabButtons = (): CasinoTabButtonItem[] => [
+  //   {
+  //     sysGameTypeCode: 'favorites',
+  //     sysGameTypeName: t('casino.favorites'),
+  //     icon: casinoIcons.favorites
+  //   },
+  //   {
+  //     sysGameTypeCode: 'recent',
+  //     sysGameTypeName: t('casino.recent'),
+  //     icon: casinoIcons.recent
+  //   }
+  // ]
 
   const lobbyButtons = computed<CasinoLobbyButtonItem[]>(() => {
     const buttons: CasinoTabButtonItem[] = buildBaseTabButtons()
@@ -70,10 +70,14 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
       }
 
       seenSysGameTypeCodes.add(sysGameTypeCode)
+      const imagePath = item.conUrl || item.icon1 || item.icon2 || item.icon3
+
       buttons.push({
         sysGameTypeCode,
         sysGameTypeName,
-        icon: casinoIcons.game_provider
+        icon: imagePath
+          ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}`
+          : casinoIcons.game_provider
       })
     })
 
@@ -92,9 +96,9 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
   const tabButtons = computed<CasinoTabButtonItem[]>(() => {
     const buttons = [...lobbyButtons.value]
 
-    if (options.isLoggedIn?.value) {
-      buttons.push(...buildEndTabButtons())
-    }
+    // if (options.isLoggedIn?.value) {
+    //   buttons.push(...buildEndTabButtons())
+    // }
 
     return buttons
   })
@@ -105,7 +109,26 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
       forceRefresh
     })
 
-    const nextLobbyGameMap: Record<string, GameDataItem[]> = {}
+    const nextLobbyGameMap: Record<string, GameDataItem[]> = {
+      originals: [],
+      hot_games: []
+    }
+
+    const [originalsResult, hotGamesResult] = await Promise.all([
+      gameStore.queryGameDataPage({
+        platformCode: 'JILI_DZ',
+        rowType: 3,
+        page: 1
+      }),
+      gameStore.queryGameDataPage({
+        hot: 1,
+        rowType: 3,
+        page: 1
+      })
+    ])
+
+    nextLobbyGameMap.originals = originalsResult.list
+    nextLobbyGameMap.hot_games = hotGamesResult.list
 
     await Promise.all(
       gameTypeList.value.map(async item => {

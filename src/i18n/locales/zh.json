@@ -139,7 +139,9 @@
     "tg_originals": "TG 原创",
     "hot_games": "热门游戏",
     "favorites": "收藏游戏",
-    "recent": "最近游戏"
+    "recent": "最近游戏",
+    "filter_hot": "热门",
+    "filter_new": "最新"
   },
   "sidebar_menu": {
     "app_download": {

@@ -6,7 +6,11 @@
       :src="currentSrc"
       alt=""
       class="game-err-img"
-      :class="{ error: hasError }"
+      :class="{
+        error: hasError,
+        'object-contain': !hasError && props.img.fit === 'contain',
+        'object-cover': !hasError && props.img.fit !== 'contain'
+      }"
       @error="handleError"
     />
     <div
@@ -36,10 +40,10 @@ interface Props {
     // 接口可能返回 conUrl 或 src，这里兼容两者
     conUrl?: string
     src?: string
+    fit?: 'cover' | 'contain'
   }
 }
 const props = defineProps<Props>()
-console.log('props====', props.img.conUrl)
 const currentSrc = ref(props.img.conUrl ?? props.img.src ?? '')
 const hasError = ref(false)
 
@@ -60,7 +64,6 @@ watch(theme, () => {
 <style scoped lang="scss">
 .game-err-img {
   width: 100%;
-  object-fit: cover;
 }
 
 .game-err-img.error {

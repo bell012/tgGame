@@ -42,6 +42,21 @@ const baseRoutes: RouteRecordRaw[] = [
     })
   },
   {
+    path: 'gamelist/:tabKey',
+    name: 'gameList',
+    component: () => import('@/views/fun/casino/gameList/index.vue'),
+    meta: {
+      title: '游戏列表',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    },
+    props: route => ({
+      tabKey: route.params.tabKey as string
+    })
+  },
+  {
     path: 'originate',
     name: 'originate',
     component: () => import('@/views/fun/originate/index.vue'),
