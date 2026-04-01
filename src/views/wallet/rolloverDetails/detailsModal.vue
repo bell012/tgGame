@@ -36,22 +36,20 @@
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">{{ $t('betHistory.amount') }}</span>
-              <span class="text-text-1">{{ detail.betAmount }}</span>
+              <span class="text-text-3">{{ $t('wallet.actualTurnover') }}</span>
+              <span class="text-text-1">{{ detail.actualTurnover }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-text-3">{{ $t('wallet.requiredTurnover') }}</span>
+              <span class="text-text-1">{{ detail.requiredTurnover }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-text-3">{{ $t('wallet.applicableGames') }}</span>
+              <span class="text-text-1">{{ detail.applicableGames }}</span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">{{ $t('betDetails.orderNo') }}</span>
-              <div class="flex items-center">
-                <span class="text-text-1">{{ detail.orderNo }}</span>
-                <button class="p-1" @click="copyOrderNo">
-                  <CopyIcon class="w-6 h-6 text-text-2" />
-                </button>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between">
-              <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
+              <span class="text-text-3 text-sm">{{ $t('wallet.orderStatus') }}</span>
               <span
                 class="text-sm"
                 :class="detail.status ? 'text-secondary-4' : 'text-secondary-2'"
@@ -74,12 +72,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { showToast } from 'vant'
-import CopyIcon from '@/static/svg/copy.svg?component'
 import Close from '@/static/svg/close.svg?component'
-
-const { t } = useI18n()
 
 interface Item {
   id: number
@@ -93,6 +86,9 @@ interface Item {
   currency: string
   orderNo: string
   status: boolean
+  actualTurnover: string
+  requiredTurnover: string
+  applicableGames: string
 }
 
 interface Props {
@@ -109,16 +105,6 @@ const detail = computed(() => props.data)
 
 const closeModal = () => {
   emit('update:modelValue', false)
-}
-
-const copyOrderNo = () => {
-  if (detail.value?.orderNo) {
-    navigator.clipboard.writeText(detail.value.orderNo)
-    showToast({
-      message: t('betDetails.copy'),
-      type: 'success'
-    })
-  }
 }
 </script>
 

@@ -141,6 +141,9 @@ interface Item {
   currency: string
   orderNo: string
   status: boolean
+  actualTurnover: string
+  requiredTurnover: string
+  applicableGames: string
 }
 
 // 投注列表
@@ -155,6 +158,9 @@ const dataList = ref<Item[]>([
     profit: 1000.0,
     result: 'win',
     currency: 'PHP',
+    actualTurnover: '1004',
+    requiredTurnover: '1004',
+    applicableGames: 'All Games',
     orderNo: 'ts0768456746746746746',
     status: true
   },
@@ -168,6 +174,9 @@ const dataList = ref<Item[]>([
     profit: 1000.0,
     result: 'win',
     currency: 'PHP',
+    actualTurnover: '1004',
+    requiredTurnover: '1004',
+    applicableGames: 'All Games',
     orderNo: 'ts0768456746746746747',
     status: true
   },
@@ -181,6 +190,9 @@ const dataList = ref<Item[]>([
     profit: -1000.0,
     result: 'loss',
     currency: 'PHP',
+    actualTurnover: '1004',
+    requiredTurnover: '1004',
+    applicableGames: 'All Games',
     orderNo: 'ts0768456746746746748',
     status: false
   }

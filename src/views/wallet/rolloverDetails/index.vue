@@ -1,6 +1,6 @@
 <template>
   <div class="fixed inset-0 bg-bg-1 overflow-y-auto">
-    <H5Header :title="$t('personalCenter.transactionDetails')" />
+    <H5Header :title="$t('wallet.rolloverDetails')" />
 
     <div class="py-3.5 px-3.5">
       <div class="bg-bg-2 rounded-lg px-3.5 pb-3.5 pt-[30px] flex flex-col items-center">
@@ -18,28 +18,34 @@
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('betHistory.betAmount') }}</span>
-            <span class="text-text-1 text-sm">{{ detail.betAmount }}</span>
+            <span class="text-text-3 text-sm">{{ $t('wallet.actualTurnover') }}</span>
+            <span class="text-text-1 text-sm">{{ detail.actualTurnover }}</span>
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('betDetails.orderNo') }}</span>
-            <div class="flex items-center gap-1">
-              <span class="text-text-1 text-sm">{{ detail.orderNo }}</span>
-              <button class="p-1 hover:bg-opacity-5 rounded transition-colors" @click="copyOrderNo">
-                <CopyIcon class="w-4 h-4 text-text-2" />
-              </button>
-            </div>
+            <span class="text-text-3 text-sm">{{ $t('wallet.requiredTurnover') }}</span>
+            <span class="text-text-1 text-sm">{{ detail.requiredTurnover }}</span>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-text-3 text-sm">{{ $t('wallet.applicableGames') }}</span>
+            <span class="text-text-1 text-sm">{{ detail.applicableGames }}</span>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
+            <span
+              class="text-sm"
+              :class="detail.status ? 'text-secondary-4' : 'text-secondary-2'"
+              >{{
+                detail.status ? $t('transaction.completed') : $t('transaction.notCompleted')
+              }}</span
+            >
           </div>
 
           <div class="flex items-center justify-between">
             <span class="text-text-3 text-sm">{{ $t('betDetails.createdAt') }}</span>
             <span class="text-text-1 text-sm">{{ detail.createdAt }}</span>
-          </div>
-
-          <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
-            <span class="text-text-1 text-sm">--</span>
           </div>
         </div>
       </div>
@@ -51,12 +57,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import H5Header from '@/components/common/H5Header.vue'
-import CopyIcon from '@/static/svg/copy.svg?component'
 import bet from '@/static/img/personalCenter/bet.png'
-import { showToast } from 'vant'
-import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
 const router = useRouter()
 
 interface Item {
@@ -67,6 +69,10 @@ interface Item {
   result: 'win' | 'loss'
   resultAmount: string
   time: string
+  actualTurnover: string
+  requiredTurnover: string
+  applicableGames: string
+  status: boolean
 }
 
 interface Detail {
@@ -80,6 +86,10 @@ interface Detail {
   betAmount: string
   orderNo: string
   createdAt: string
+  actualTurnover: string
+  requiredTurnover: string
+  applicableGames: string
+  status: boolean
 }
 
 const detail = ref<Detail>({
@@ -92,25 +102,33 @@ const detail = ref<Detail>({
   currency: 'PHP',
   betAmount: '0',
   orderNo: '',
-  createdAt: ''
+  createdAt: '',
+  actualTurnover: '',
+  requiredTurnover: '',
+  status: true,
+  applicableGames: ''
 })
 
 onMounted(() => {
-  const state = history.state as { betData?: string }
-  if (state?.betData) {
+  const state = history.state as { data?: string }
+  if (state?.data) {
     try {
-      const betItem: Item = JSON.parse(state.betData)
+      const item: Item = JSON.parse(state.data)
       detail.value = {
-        id: betItem.id,
+        id: item.id,
         gameType: 'Slot',
-        gameName: betItem.gameName,
-        gameIcon: betItem.gameIcon,
-        result: betItem.result,
-        resultAmount: betItem.resultAmount,
+        gameName: item.gameName,
+        gameIcon: item.gameIcon,
+        result: item.result,
+        resultAmount: item.resultAmount,
+        actualTurnover: item.actualTurnover,
+        requiredTurnover: item.requiredTurnover,
+        applicableGames: item.applicableGames,
+        status: item.status,
         currency: 'PHP',
-        betAmount: betItem.betAmount,
-        orderNo: `ts${betItem.id}${Date.now()}`,
-        createdAt: betItem.time
+        betAmount: item.betAmount,
+        orderNo: `ts${item.id}${Date.now()}`,
+        createdAt: item.time
       }
     } catch (error) {
       console.error(error)
@@ -120,14 +138,6 @@ onMounted(() => {
     router.back()
   }
 })
-
-const copyOrderNo = () => {
-  navigator.clipboard.writeText(detail.value.orderNo)
-  showToast({
-    message: t('betDetails.copy'),
-    type: 'success'
-  })
-}
 </script>
 
 <style scoped lang="scss"></style>

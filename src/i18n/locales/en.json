@@ -114,7 +114,11 @@
     "withdraw": "Withdraw",
     "myOrders": "My Orders",
     "rollover": "Rollover",
-    "rolloverDetails": "Rollover Details"
+    "rolloverDetails": "Rollover Details",
+    "actualTurnover": "Actual Turnover",
+    "requiredTurnover": "Required Turnover",
+    "applicableGames": "Applicable Games",
+    "orderStatus": "Order Status"
   },
   "betHistory": {
     "title": "Bet History",
