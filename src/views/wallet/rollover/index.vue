@@ -9,7 +9,7 @@
 
     <!-- H5 端布局 -->
     <div class="block md:hidden fixed inset-0 bg-bg-1 overflow-y-auto">
-      <H5Header :title="$t('personalCenter.transaction')" :show-sort="true" @sort="handleSort" />
+      <H5Header :title="$t('wallet.rollover')" :show-sort="true" @sort="handleSort" />
 
       <div class="py-3.5 px-3.5">
         <!-- 无数据状态 -->
@@ -34,7 +34,7 @@
             class="bg-bg-2 rounded-lg py-2.5 px-3.5 cursor-pointer"
             @click="handleBetClick(item)"
           >
-            <div class="flex items-center mb-5">
+            <div class="flex items-center">
               <div
                 class="w-10 h-10 rounded-full bg-opacity-5 mr-1.5 flex items-center justify-center"
               >
@@ -56,15 +56,38 @@
               </div>
             </div>
 
+            <div class="bg-bg-4 rounded-[10px] px-3 py-2.5 mb-2.5 mt-2.5">
+              <div class="flex items-center justify-between mb-2.5">
+                <p class="text-text-3 font-[400] text-xs">{{ $t('wallet.actualTurnover') }}</p>
+                <p class="text-text-1 font-[700] text-xs">
+                  {{ item.result === 'win' ? '+' : '-' }}{{ item.actualTurnover }}
+                </p>
+              </div>
+              <div class="flex items-center justify-between">
+                <p class="text-text-3 font-[400] text-xs">{{ $t('wallet.requiredTurnover') }}</p>
+                <p class="text-text-1 font-[700] text-xs">
+                  {{ item.result === 'win' ? '+' : '-' }}{{ item.requiredTurnover }}
+                </p>
+              </div>
+            </div>
+
             <div class="flex items-center justify-between">
               <p class="text-text-2 text-xs">
                 {{ item.time }}
               </p>
-              <div
-                class="size-[20px] bg-opacity-10 rounded-md flex items-center justify-center cursor-pointer"
-                @click.stop="handleBetClick(item)"
-              >
-                <ArrowRightIcon class="w-3.5 h-3.5 text-text-2" />
+              <div class="flex items-center">
+                <div
+                  class="text-xs font-[700] mr-2.5"
+                  :class="item.status ? 'text-secondary-4' : 'text-secondary-2'"
+                >
+                  {{ item.status ? $t('transaction.completed') : $t('transaction.notCompleted') }}
+                </div>
+                <div
+                  class="size-[20px] bg-opacity-10 rounded-md flex items-center justify-center cursor-pointer"
+                  @click.stop="handleBetClick(item)"
+                >
+                  <ArrowRightIcon class="w-3.5 h-3.5 text-text-2" />
+                </div>
               </div>
             </div>
           </div>
@@ -103,6 +126,11 @@ interface Item {
   result: 'win' | 'loss'
   resultAmount: string
   time: string
+  status: boolean
+  currency: string
+  actualTurnover: string
+  requiredTurnover: string
+  applicableGames: string
 }
 
 const hasBets = ref(true)
@@ -115,7 +143,12 @@ const dataList = ref<Item[]>([
     betAmount: '1001',
     result: 'loss',
     resultAmount: '1001',
-    time: '12/18/2026 11:14:15 AM'
+    currency: 'PHP',
+    actualTurnover: '1001',
+    requiredTurnover: '1001',
+    applicableGames: 'All Games',
+    time: '12/18/2026 11:14:15 AM',
+    status: true
   },
   {
     id: 2,
@@ -124,7 +157,12 @@ const dataList = ref<Item[]>([
     betAmount: '1002',
     result: 'win',
     resultAmount: '1002',
-    time: '12/18/2026 11:14:15 AM'
+    currency: 'PHP',
+    actualTurnover: '1002',
+    requiredTurnover: '1002',
+    applicableGames: 'All Games',
+    time: '12/18/2026 11:14:15 AM',
+    status: true
   },
   {
     id: 3,
@@ -133,7 +171,12 @@ const dataList = ref<Item[]>([
     betAmount: '1000',
     result: 'loss',
     resultAmount: '1000',
-    time: '12/18/2026 11:14:15 AM'
+    currency: 'PHP',
+    actualTurnover: '1003',
+    requiredTurnover: '1003',
+    applicableGames: 'All Games',
+    time: '12/18/2026 11:14:15 AM',
+    status: false
   },
   {
     id: 4,
@@ -142,79 +185,12 @@ const dataList = ref<Item[]>([
     betAmount: '1000',
     result: 'win',
     resultAmount: '1000',
-    time: '12/18/2026 11:14:15 AM'
-  },
-  {
-    id: 5,
-    gameName: 'Dragon Hatch',
-    gameIcon: bet,
-    betAmount: '1000',
-    result: 'win',
-    resultAmount: '1000',
-    time: '12/18/2026 11:14:15 AM'
-  },
-  {
-    id: 6,
-    gameName: 'Dragon Hatch',
-    gameIcon: bet,
-    betAmount: '1000',
-    result: 'win',
-    resultAmount: '1000',
-    time: '12/18/2026 11:14:15 AM'
-  },
-  {
-    id: 7,
-    gameName: 'Dragon Hatch',
-    gameIcon: bet,
-    betAmount: '1000',
-    result: 'win',
-    resultAmount: '1000',
-    time: '12/18/2026 11:14:15 AM'
-  },
-  {
-    id: 8,
-    gameName: 'Dragon Hatch',
-    gameIcon: bet,
-    betAmount: '1000',
-    result: 'win',
-    resultAmount: '1000',
-    time: '12/18/2026 11:14:15 AM'
-  },
-  {
-    id: 9,
-    gameName: 'Dragon Hatch',
-    gameIcon: bet,
-    betAmount: '1000',
-    result: 'win',
-    resultAmount: '1000',
-    time: '12/18/2026 11:14:15 AM'
-  },
-  {
-    id: 10,
-    gameName: 'Dragon Hatch',
-    gameIcon: bet,
-    betAmount: '1000',
-    result: 'win',
-    resultAmount: '1000',
-    time: '12/18/2026 11:14:15 AM'
-  },
-  {
-    id: 11,
-    gameName: 'Dragon Hatch',
-    gameIcon: bet,
-    betAmount: '1000',
-    result: 'win',
-    resultAmount: '1000',
-    time: '12/18/2026 11:14:15 AM'
-  },
-  {
-    id: 12,
-    gameName: 'Dragon Hatch',
-    gameIcon: bet,
-    betAmount: '1000',
-    result: 'win',
-    resultAmount: '1000',
-    time: '12/18/2026 11:14:15 AM'
+    currency: 'PHP',
+    actualTurnover: '1004',
+    requiredTurnover: '1004',
+    applicableGames: 'All Games',
+    time: '12/18/2026 11:14:15 AM',
+    status: false
   }
 ])
 
