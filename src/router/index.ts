@@ -253,7 +253,7 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'transaction-details/:id',
     name: 'transaction-details',
-    component: () => import('@/views/wallet/transaction/betDetails/index.vue'),
+    component: () => import('@/views/wallet/transactionDetails/index.vue'),
     meta: {
       title: '资金详情',
       description: '资金详情',

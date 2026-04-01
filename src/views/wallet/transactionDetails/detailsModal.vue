@@ -15,31 +15,33 @@
         </button>
 
         <div class="flex items-center justify-center w-full h-full">
-          <h3 class="text-text-1 text-lg font-bold">Transaction Details</h3>
+          <h3 class="text-text-1 text-lg font-bold">
+            {{ $t('personalCenter.transactionDetails') }}
+          </h3>
         </div>
       </div>
 
       <div class="p-4 flex flex-col items-center bg-bg-1">
         <div class="w-full h-full flex flex-col items-center bg-bg-2 rounded-lg p-4 pt-8">
-          <p class="text-text-1 text-2xl font-bold mb-2">{{ betDetail.amount }}</p>
+          <p class="text-text-1 text-[24px] font-[700] mb-2">
+            {{ betDetail.result === 'win' ? '+' : '-' }}{{ betDetail.betAmount }}
+          </p>
 
-          <h2 class="text-text-1 text-base mb-8">{{ betDetail.gameName }}</h2>
+          <h2 class="text-text-1 text-base font-[400] mb-[32px]">{{ betDetail.gameName }}</h2>
 
           <div class="w-full space-y-4 text-base bg-bg-4 rounded-lg px-5 py-4">
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Currency</span>
+              <span class="text-text-3">{{ $t('betDetails.currency') }}</span>
               <span class="text-text-1">{{ betDetail.currency }}</span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Bet Amount</span>
-              <span class="text-text-1">
-                {{ betDetail.amount }}
-              </span>
+              <span class="text-text-3">{{ $t('betHistory.amount') }}</span>
+              <span class="text-text-1">{{ betDetail.betAmount }}</span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Order No.</span>
+              <span class="text-text-3">{{ $t('betDetails.orderNo') }}</span>
               <div class="flex items-center">
                 <span class="text-text-1">{{ betDetail.orderNo }}</span>
                 <button class="p-1" @click="copyOrderNo">
@@ -49,13 +51,13 @@
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Created At</span>
+              <span class="text-text-3">{{ $t('betDetails.createdAt') }}</span>
               <span class="text-text-1">{{ betDetail.time }}</span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Remarks</span>
-              <span class="text-text-1">{{ betDetail.remarks }}</span>
+              <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
+              <span class="text-text-1 text-sm">--</span>
             </div>
           </div>
         </div>
@@ -79,12 +81,11 @@ interface BetItem {
   gameIcon: string
   gameType: string
   time: string
-  amount: number
-  balance: string
+  betAmount: string
+  profit: number
   result: 'win' | 'loss'
   currency: string
   orderNo: string
-  remarks: string
 }
 
 interface Props {

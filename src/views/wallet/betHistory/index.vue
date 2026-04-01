@@ -11,7 +11,7 @@
     <div class="block md:hidden fixed inset-0 bg-bg-1 overflow-y-auto">
       <H5Header :title="$t('betHistory.title')" :show-sort="true" @sort="handleSort" />
 
-      <div class="py-3.5">
+      <div class="py-3.5 px-3.5">
         <!-- 无数据状态 -->
         <div v-if="!hasBets" class="flex flex-col items-center justify-center mt-[100px]">
           <img :src="noDataImg" alt="No data" class="h-[200px] w-auto mb-2.5" />

@@ -15,7 +15,7 @@
         </button>
 
         <div class="flex items-center justify-center w-full h-full">
-          <h3 class="text-text-1 text-lg font-bold">Transaction Details</h3>
+          <h3 class="text-text-1 text-lg font-bold">{{ $t('betDetails.title') }}</h3>
         </div>
       </div>
 
@@ -50,24 +50,26 @@
 
           <div class="w-full space-y-4 text-base bg-bg-4 rounded-lg px-5 py-4">
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Currency</span>
+              <span class="text-text-3">{{ $t('betDetails.currency') }}</span>
               <span class="text-text-1">{{ betDetail.currency }}</span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Bet Amount</span>
+              <span class="text-text-3">{{ $t('betHistory.betAmount') }}</span>
               <span class="text-text-1">{{ betDetail.betAmount }}</span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Win/Loss</span>
+              <span class="text-text-3"
+                >{{ $t('betHistory.win') }}/{{ $t('betHistory.loss') }}</span
+              >
               <span class="text-text-1">
                 {{ betDetail.result === 'win' ? '+' : '-' }}{{ Math.abs(betDetail.profit) }}
               </span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Order No.</span>
+              <span class="text-text-3">{{ $t('betDetails.orderNo') }}</span>
               <div class="flex items-center">
                 <span class="text-text-1">{{ betDetail.orderNo }}</span>
                 <button class="p-1" @click="copyOrderNo">
@@ -77,7 +79,7 @@
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Created At</span>
+              <span class="text-text-3">{{ $t('betDetails.createdAt') }}</span>
               <span class="text-text-1">{{ betDetail.time }}</span>
             </div>
           </div>

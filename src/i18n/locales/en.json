@@ -113,7 +113,6 @@
     "deposit": "Deposit",
     "withdraw": "Withdraw",
     "myOrders": "My Orders",
-    "transaction": "Transaction",
     "rollover": "Rollover"
   },
   "betHistory": {
@@ -445,6 +444,8 @@
     "swap": "Swap",
     "vaultPro": "Vault Pro",
     "transaction": "Transaction",
+    "transactionDetails": "Transaction Details",
+    "remarks": "remarks",
     "rollover": "Rollover",
     "betHistory": "Bet History",
     "notification": "Notification",

@@ -1,36 +1,14 @@
 <template>
   <div class="fixed inset-0 bg-bg-1 overflow-y-auto">
-    <H5Header :title="$t('betDetails.title')" />
+    <H5Header :title="$t('personalCenter.transactionDetails')" />
 
     <div class="py-3.5 px-3.5">
       <div class="bg-bg-2 rounded-lg px-3.5 pb-3.5 pt-[30px] flex flex-col items-center">
-        <div class="w-[49px] h-[65px] rounded-lg overflow-hidden mb-2">
-          <img :src="betDetail.gameIcon" alt="" class="w-full h-full object-cover" />
-        </div>
-
-        <p class="text-text-1 text-lg font-[700] mb-2">{{ betDetail.gameType }}</p>
+        <p class="text-text-1 text-[25px] font-[700] mb-2.5">
+          {{ betDetail.result === 'win' ? '+' : '-' }}{{ betDetail.betAmount }}
+        </p>
 
         <h2 class="text-text-1 text-sm font-[700] mb-[30px]">{{ betDetail.gameName }}</h2>
-
-        <!-- Win/Loss 状态 -->
-        <div class="w-full flex items-center justify-between mb-2.5 bg-bg-4 rounded-lg p-3.5">
-          <span
-            :class="[
-              'text-sm',
-              betDetail.result === 'win' ? 'text-secondary-2' : 'text-secondary-4'
-            ]"
-          >
-            {{ betDetail.result === 'win' ? $t('betHistory.win') : $t('betHistory.loss') }}
-          </span>
-          <span
-            :class="[
-              'text-base font-[700]',
-              betDetail.result === 'win' ? 'text-secondary-2' : 'text-secondary-4'
-            ]"
-          >
-            {{ betDetail.result === 'win' ? '+' : '-' }}{{ betDetail.resultAmount }}
-          </span>
-        </div>
 
         <!-- 详细信息列表 -->
         <div class="w-full space-y-5 bg-bg-4 rounded-lg p-3.5">
@@ -42,13 +20,6 @@
           <div class="flex items-center justify-between">
             <span class="text-text-3 text-sm">{{ $t('betHistory.betAmount') }}</span>
             <span class="text-text-1 text-sm">{{ betDetail.betAmount }}</span>
-          </div>
-
-          <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('betDetails.winLoss') }}</span>
-            <span class="text-text-1 text-sm">
-              {{ betDetail.result === 'win' ? '+' : '-' }}{{ betDetail.resultAmount }}
-            </span>
           </div>
 
           <div class="flex items-center justify-between">
@@ -64,6 +35,11 @@
           <div class="flex items-center justify-between">
             <span class="text-text-3 text-sm">{{ $t('betDetails.createdAt') }}</span>
             <span class="text-text-1 text-sm">{{ betDetail.createdAt }}</span>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
+            <span class="text-text-1 text-sm">--</span>
           </div>
         </div>
       </div>
