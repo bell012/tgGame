@@ -96,21 +96,21 @@ const detail = ref<Detail>({
 })
 
 onMounted(() => {
-  const state = history.state as { data?: string }
-  if (state?.data) {
+  const state = history.state as { betData?: string }
+  if (state?.betData) {
     try {
-      const item: Item = JSON.parse(state.data)
+      const betItem: Item = JSON.parse(state.betData)
       detail.value = {
-        id: item.id,
+        id: betItem.id,
         gameType: 'Slot',
-        gameName: item.gameName,
-        gameIcon: item.gameIcon,
-        result: item.result,
-        resultAmount: item.resultAmount,
+        gameName: betItem.gameName,
+        gameIcon: betItem.gameIcon,
+        result: betItem.result,
+        resultAmount: betItem.resultAmount,
         currency: 'PHP',
-        betAmount: item.betAmount,
-        orderNo: `ts${item.id}${Date.now()}`,
-        createdAt: item.time
+        betAmount: betItem.betAmount,
+        orderNo: `ts${betItem.id}${Date.now()}`,
+        createdAt: betItem.time
       }
     } catch (error) {
       console.error(error)

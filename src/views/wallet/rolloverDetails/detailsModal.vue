@@ -16,7 +16,7 @@
 
         <div class="flex items-center justify-center w-full h-full">
           <h3 class="text-text-1 text-lg font-bold">
-            {{ $t('personalCenter.transactionDetails') }}
+            {{ $t('wallet.rolloverDetails') }}
           </h3>
         </div>
       </div>
@@ -51,13 +51,19 @@
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">{{ $t('betDetails.createdAt') }}</span>
-              <span class="text-text-1">{{ detail.time }}</span>
+              <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
+              <span
+                class="text-sm"
+                :class="detail.status ? 'text-secondary-4' : 'text-secondary-2'"
+                >{{
+                  detail.status ? $t('transaction.completed') : $t('transaction.notCompleted')
+                }}</span
+              >
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
-              <span class="text-text-1 text-sm">--</span>
+              <span class="text-text-3">{{ $t('betDetails.createdAt') }}</span>
+              <span class="text-text-1">{{ detail.time }}</span>
             </div>
           </div>
         </div>
@@ -86,6 +92,7 @@ interface Item {
   result: 'win' | 'loss'
   currency: string
   orderNo: string
+  status: boolean
 }
 
 interface Props {

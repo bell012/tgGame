@@ -113,7 +113,8 @@
     "deposit": "Deposit",
     "withdraw": "Withdraw",
     "myOrders": "My Orders",
-    "rollover": "Rollover"
+    "rollover": "Rollover",
+    "rolloverDetails": "Rollover Details"
   },
   "betHistory": {
     "title": "Bet History",
@@ -127,6 +128,7 @@
     "payout": "Payout",
     "profit": "Profit",
     "noMore": "No More",
+    "status": "Status",
     "filters": {
       "all": "All",
       "slot": "Slot",
