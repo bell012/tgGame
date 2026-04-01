@@ -42,8 +42,8 @@
                 :class="isSelected(item) ? 'tp-item-active' : ''"
                 @click="confirm(item)"
               >
-                <ChecedIcon v-if="isSelected(item)" class="w-5 h-5 cursor-pointer" />
-                <UnchecedIcon v-else class="w-5 h-5 cursor-pointer" />
+                <ChecedIcon v-if="isSelected(item)" class="tp-check-icon w-5 h-5 cursor-pointer" />
+                <UnchecedIcon v-else class="tp-check-icon w-5 h-5 cursor-pointer" />
                 <div class="provider-logo-box">
                   <img
                     v-if="shouldShowLogo(item)"
@@ -62,7 +62,7 @@
             </div>
             <!-- 底部按钮 -->
             <div
-              class="tp-footer flex items-center py-[15px] border-t border-[var(--color-opacity-10)] bg-[var(--color-background-level-2)] w-full"
+              class="tp-footer flex items-center border-t border-[var(--color-opacity-10)] bg-[var(--color-background-level-2)] w-full"
             >
               <button
                 type="button"
@@ -306,6 +306,7 @@ const clearAll = () => {
   min-height: 46px;
   margin-bottom: 8px;
   padding-inline: 10px;
+  gap: 10px;
   border: 1px solid transparent;
   background: var(--color-background-level-4);
   transition:
@@ -327,10 +328,16 @@ const clearAll = () => {
   background: linear-gradient(90deg, var(--color-theme-level-3) 0%, var(--color-opacity-5) 75%);
 }
 
+.tp-check-icon {
+  flex: 0 0 20px;
+  min-width: 20px;
+}
+
 .provider-logo-box {
-  margin-left: 12px;
+  margin-left: 0;
   width: 100%;
-  flex: 1;
+  max-width: 100%;
+  flex: 1 1 auto;
   min-width: 0;
   height: 30px;
   padding: 4px 10px;
@@ -375,12 +382,12 @@ const clearAll = () => {
 }
 
 .tp-footer {
-  margin-top: 10px;
-  padding-top: 14px;
+  margin-top: 4px;
+  padding: 6px 0 2px;
 }
 
 .tp-clear-btn {
-  height: 38px;
+  height: 30px;
   border-radius: 10px;
   border: 1px solid transparent;
   transition:
@@ -405,8 +412,9 @@ const clearAll = () => {
   }
 
   .provider-logo-box {
-    width: 252px;
-    flex: 0 0 252px;
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 auto;
   }
 }
 </style>
