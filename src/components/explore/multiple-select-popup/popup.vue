@@ -329,7 +329,9 @@ const clearAll = () => {
 
 .provider-logo-box {
   margin-left: 12px;
-  width: 188px;
+  width: 100%;
+  flex: 1;
+  min-width: 0;
   height: 30px;
   padding: 4px 10px;
   border-radius: 8px;
@@ -400,6 +402,11 @@ const clearAll = () => {
 
   .tp-list {
     max-height: 268px;
+  }
+
+  .provider-logo-box {
+    width: 252px;
+    flex: 0 0 252px;
   }
 }
 </style>
