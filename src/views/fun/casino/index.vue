@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="casino-page pt-2.5 sm:p-4 w-full font-['Inter']" :style="mobileStyle">
     <div
-      v-if="!isLoggedIn"
+      v-if="!isLoggedIn && currentTabCode === ''"
       class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl mb-2.5"
     >
       <img
@@ -53,7 +53,7 @@
       <button
         v-show="searchText"
         class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-bg-1 rounded-lg flex items-center justify-center z-10"
-        @click="searchText = ''"
+        @click="clearSearch"
       >
         <CloseIcon class="w-[18px] h-[18px] fill-text-1" />
       </button>
@@ -86,7 +86,7 @@
               class="px-1.5 py-1 rounded bg-opacity-10 inline-flex items-center"
             >
               <div
-                class="text-xs text-text-2 mr-0.5 break-words max-w-full"
+                class="text-xs text-text-2 mr-1 break-words max-w-full"
                 @click.stop="goSearch(item)"
               >
                 {{ item }}
@@ -181,7 +181,7 @@
 
       <!-- 6种样式 -->
       <div class="tabs-content min-h-48">
-        <component :is="getPageStyle" :modules="lobbyButtons" />
+        <component :is="getPageStyle" v-bind="currentPageProps" />
       </div>
     </div>
   </div>
@@ -193,8 +193,10 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
+import { useGameStore } from '@/stores/game'
 import { useLayoutStore } from '@/stores/layout'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import LoginModal from '@/components/login_register/LoginModal.vue'
@@ -202,6 +204,7 @@ import CommonFooter from '@/components/commonFooter.vue'
 import { navigateTo } from '@/utils/router'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
+import { getCasinoPageMode, getCasinoQueryOptions } from './casinoPageConfig'
 import pageStyle1 from './components/pageStyle1.vue'
 import pageStyle2 from './components/pageStyle2.vue'
 import pageStyle3 from './components/pageStyle3.vue'
@@ -230,33 +233,80 @@ const tabRefs = ref<HTMLButtonElement[]>([])
 const showLoginModal = ref(false)
 const showHistoryPanel = ref(false)
 const searchText = ref('')
-const searchHistory = ref<string[]>(['Sweet', 'Gates', 'Lucky', ' Llama', 'Olympus', 'Duck'])
-const suggestedArr = ref<string[]>([
-  'Sweet Rush Bonanza',
-  'Duck Hunters',
-  'Gates of Olympus Super Scatter',
-  'Sugar Rush 1000',
-  'Lucky Coming',
-  'The Llama Adventure'
-])
+const activeSearchKeyword = ref('')
+const suggestedArr = ref<string[]>([])
+const gameStore = useGameStore()
+const { searchHistory } = storeToRefs(gameStore)
 
 const getCurrentTab = computed(() => {
   const key = props.tabKey ?? ''
   return tabButtons.value.find(tab => tab.sysGameTypeCode === key)
 })
 const currentTabCode = computed(() => getCurrentTab.value?.sysGameTypeCode)
-const getPageStyle = computed(() => {
-  switch (getCurrentTab.value?.sysGameTypeCode) {
-    case '':
+const trimmedSearchKeyword = computed(() => activeSearchKeyword.value.trim())
+const basePageStyle = computed(() => {
+  const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
+  const pageMode = getCasinoPageMode(currentCode)
+
+  switch (pageMode) {
+    case 'lobby':
       return pageStyle1
-    case '1':
+    case 'pageStyle2':
       return pageStyle2
-    case '2':
-      return pageStyle3
-    case '4':
+    case 'pageStyle4':
       return pageStyle4
     default:
-      return pageStyle2
+      return pageStyle3
+  }
+})
+const getPageStyle = computed(() => {
+  if (trimmedSearchKeyword.value && basePageStyle.value === pageStyle1) {
+    return pageStyle2
+  }
+
+  return basePageStyle.value
+})
+const currentQueryOptions = computed(() => {
+  if (trimmedSearchKeyword.value) {
+    if (basePageStyle.value === pageStyle1) {
+      return {
+        rowType: 3,
+        pageSize: isMobile.value ? 27 : 32,
+        keyword: trimmedSearchKeyword.value
+      }
+    }
+
+    const baseQueryOptions = getCasinoQueryOptions(currentTabCode.value ?? '', {
+      isMobile: isMobile.value
+    })
+
+    return {
+      ...(baseQueryOptions ?? {
+        pageSize: isMobile.value ? 27 : 32
+      }),
+      keyword: trimmedSearchKeyword.value
+    }
+  }
+
+  return getCasinoQueryOptions(currentTabCode.value ?? '', { isMobile: isMobile.value })
+})
+const currentPageProps = computed(() => {
+  switch (getPageStyle.value) {
+    case pageStyle1:
+      return {
+        modules: lobbyButtons.value
+      }
+    case pageStyle2:
+    case pageStyle3:
+      return {
+        queryOptions: currentQueryOptions.value
+      }
+    case pageStyle4:
+      return {
+        queryOptions: currentQueryOptions.value
+      }
+    default:
+      return {}
   }
 })
 const searchRef = ref<HTMLDivElement | null>(null)
@@ -264,6 +314,7 @@ const tabScrollRef = ref<HTMLDivElement | null>(null)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
 const hasSyncedActiveTab = ref(false)
+let searchDebounceTimer: number | undefined
 
 const updateScrollState = () => {
   const el = tabScrollRef.value
@@ -314,25 +365,56 @@ const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth'
 }
 
 const onTabButton = (tab: any) => {
+  clearSearch()
   if (tab.sysGameTypeCode === '') return navigateTo('/casino')
   navigateTo(`/casino/${tab.sysGameTypeCode}`)
 }
 
+const loadSuggestedGames = async () => {
+  const hotGameResult = await gameStore.queryGameDataPage({
+    rowType: 3,
+    hot: 1,
+    page: 1,
+    pageSize: 12,
+    sortByOrderId: true
+  })
+
+  suggestedArr.value = [...new Set(hotGameResult.list.map(item => item.itemName?.trim() ?? ''))]
+    .filter(Boolean)
+    .slice(0, 6)
+}
+
+const syncSearchHistory = (keyword: string) => {
+  gameStore.addSearchHistory(keyword)
+}
+
 const onSearch = () => {
-  console.log('触发搜索:', searchText.value)
+  const normalizedKeyword = searchText.value.trim()
+
+  activeSearchKeyword.value = normalizedKeyword
+  showHistoryPanel.value = false
+  syncSearchHistory(normalizedKeyword)
 }
 
 const goSearch = (item: string) => {
   searchText.value = item
-  console.log('点击搜索历史和建议:', item)
+  activeSearchKeyword.value = item.trim()
+  showHistoryPanel.value = false
+  syncSearchHistory(item)
 }
 
 const deleteItme = (item: string) => {
-  console.log('删除搜索历史记录', item)
+  gameStore.removeSearchHistory(item)
 }
 
 const deleteAll = () => {
-  console.log('删除全部搜索历史记录')
+  gameStore.clearSearchHistory()
+}
+
+const clearSearch = () => {
+  searchText.value = ''
+  activeSearchKeyword.value = ''
+  showHistoryPanel.value = false
 }
 
 const handleClickOutside = (e: MouseEvent) => {
@@ -391,7 +473,9 @@ watch(
 let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
   loadUserInfo()
+  gameStore.loadSearchHistory()
   getGameData()
+  void loadSuggestedGames()
   updateScrollState()
 
   document.addEventListener('click', handleClickOutside)
@@ -405,9 +489,43 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (searchDebounceTimer) {
+    window.clearTimeout(searchDebounceTimer)
+  }
+
   resizeObserver?.disconnect()
   document.removeEventListener('click', handleClickOutside)
 })
+
+watch(searchText, value => {
+  if (value.trim()) {
+    if (searchDebounceTimer) {
+      window.clearTimeout(searchDebounceTimer)
+    }
+
+    searchDebounceTimer = window.setTimeout(() => {
+      onSearch()
+    }, 300)
+    return
+  }
+
+  if (searchDebounceTimer) {
+    window.clearTimeout(searchDebounceTimer)
+  }
+
+  activeSearchKeyword.value = ''
+})
+
+watch(
+  () => props.tabKey,
+  (value, previousValue) => {
+    if (value === previousValue) {
+      return
+    }
+
+    clearSearch()
+  }
+)
 </script>
 
 <style scoped lang="scss"></style>

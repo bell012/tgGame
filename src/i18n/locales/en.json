@@ -297,7 +297,9 @@
     "tg_originals": "TG Originals",
     "hot_games": "Hot Games",
     "favorites": "Favorites",
-    "recent": "Recent"
+    "recent": "Recent",
+    "filter_hot": "Hot",
+    "filter_new": "New"
   },
   "sidebar_menu": {
     "app_download": {

@@ -5,6 +5,8 @@ import Api from '@/api'
 import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
 import { getStorageLanguageCode } from '@/utils/locale'
 
+const SEARCH_HISTORY_STORAGE_KEY = 'casino_search_history'
+
 interface FlattenedGameRecord {
   /** 当前节点原始数据 */
   node: GameDataItem
@@ -16,11 +18,15 @@ interface FlattenedGameRecord {
   depth: number
 }
 
-interface GameQueryOptions {
+export interface GameQueryOptions {
+  /** 按关键字模糊匹配 */
+  keyword?: string
   /** 按 sysGameTypeCode 查询 */
   sysGameTypeCode?: string
   /** 按 brandCode 查询 */
   brandCode?: string
+  /** 按多个 brandCode 查询 */
+  brandCodes?: string[]
   /** 按 platformCode 查询 */
   platformCode?: string
   /** 按 hot 查询 */
@@ -59,6 +65,8 @@ interface GameQueryPageResult<T> {
 }
 
 interface GameBrandQueryOptions {
+  /** 按关键字模糊匹配 */
+  keyword?: string
   /** 按 brandCode 查询 */
   brandCode?: string
   /** 按 enable 查询 */
@@ -86,6 +94,8 @@ export const useGameStore = defineStore('game', () => {
   const isLoading = ref(false)
   /** 当前品牌列表是否处于请求中 */
   const isBrandLoading = ref(false)
+  /** 搜索历史 */
+  const searchHistory = ref<string[]>([])
 
   /** 并发请求复用，避免同一时间重复请求同一个接口 */
   let pendingRequest: Promise<GameDataItem[]> | null = null
@@ -100,6 +110,73 @@ export const useGameStore = defineStore('game', () => {
   const currentLanguageCode = computed(() =>
     getStorageLanguageCode(String(i18n.global.locale.value))
   )
+
+  /** 持久化搜索历史 */
+  const persistSearchHistory = () => {
+    localStorage.setItem(SEARCH_HISTORY_STORAGE_KEY, JSON.stringify(searchHistory.value))
+  }
+
+  /** 从本地恢复搜索历史 */
+  const loadSearchHistory = () => {
+    const storedSearchHistory = localStorage.getItem(SEARCH_HISTORY_STORAGE_KEY)
+
+    if (!storedSearchHistory) {
+      searchHistory.value = []
+      return searchHistory.value
+    }
+
+    try {
+      const parsedHistory = JSON.parse(storedSearchHistory)
+
+      if (!Array.isArray(parsedHistory)) {
+        searchHistory.value = []
+        return searchHistory.value
+      }
+
+      searchHistory.value = parsedHistory
+        .map(item => String(item ?? '').trim())
+        .filter(Boolean)
+        .slice(0, 10)
+    } catch (error) {
+      console.error('loadSearchHistory failed', error)
+      searchHistory.value = []
+    }
+
+    return searchHistory.value
+  }
+
+  /** 新增一条搜索历史，自动去重并按最近时间排序 */
+  const addSearchHistory = (keyword: string) => {
+    const normalizedKeyword = keyword.trim()
+
+    if (!normalizedKeyword) {
+      return searchHistory.value
+    }
+
+    searchHistory.value = [
+      normalizedKeyword,
+      ...searchHistory.value.filter(
+        item => item.trim().toLowerCase() !== normalizedKeyword.toLowerCase()
+      )
+    ].slice(0, 10)
+
+    persistSearchHistory()
+    return searchHistory.value
+  }
+
+  /** 删除单条搜索历史 */
+  const removeSearchHistory = (keyword: string) => {
+    searchHistory.value = searchHistory.value.filter(item => item !== keyword)
+    persistSearchHistory()
+    return searchHistory.value
+  }
+
+  /** 清空搜索历史 */
+  const clearSearchHistory = () => {
+    searchHistory.value = []
+    persistSearchHistory()
+    return searchHistory.value
+  }
 
   /** 将整棵游戏树拍平成带父子关系和层级信息的记录，便于像查表一样查询 */
   const flattenGameRecords = (
@@ -243,6 +320,29 @@ export const useGameStore = defineStore('game', () => {
   const queryGameRecords = (options: GameQueryOptions = {}) => {
     const filteredRecords = allGameRecords.value.filter(record => {
       const { node } = record
+      const normalizedKeyword = options.keyword?.trim().toLowerCase()
+
+      if (normalizedKeyword) {
+        const searchableFields = [
+          node.itemName,
+          node.itemCode,
+          node.platformName,
+          node.brandCode,
+          node.sysGameTypeName
+        ]
+          .map(field =>
+            String(field ?? '')
+              .trim()
+              .toLowerCase()
+          )
+          .filter(Boolean)
+
+        const isKeywordMatched = searchableFields.some(field => field.includes(normalizedKeyword))
+
+        if (!isKeywordMatched) {
+          return false
+        }
+      }
 
       if (
         options.sysGameTypeCode &&
@@ -253,6 +353,15 @@ export const useGameStore = defineStore('game', () => {
 
       if (options.brandCode && node.brandCode?.trim() !== options.brandCode.trim()) {
         return false
+      }
+
+      if (options.brandCodes?.length) {
+        const brandCode = node.brandCode?.trim() ?? ''
+        const allowedBrandCodes = options.brandCodes.map(code => code.trim()).filter(Boolean)
+
+        if (allowedBrandCodes.length > 0 && !allowedBrandCodes.includes(brandCode)) {
+          return false
+        }
       }
 
       if (options.platformCode && node.platformCode?.trim() !== options.platformCode.trim()) {
@@ -372,6 +481,24 @@ export const useGameStore = defineStore('game', () => {
     }
 
     return brandData.value.filter(item => {
+      const normalizedKeyword = options.keyword?.trim().toLowerCase()
+
+      if (normalizedKeyword) {
+        const searchableFields = [item.brandName, item.brandCode]
+          .map(field =>
+            String(field ?? '')
+              .trim()
+              .toLowerCase()
+          )
+          .filter(Boolean)
+
+        const isKeywordMatched = searchableFields.some(field => field.includes(normalizedKeyword))
+
+        if (!isKeywordMatched) {
+          return false
+        }
+      }
+
       if (options.brandCode && item.brandCode?.trim() !== options.brandCode.trim()) {
         return false
       }
@@ -409,6 +536,11 @@ export const useGameStore = defineStore('game', () => {
   }
 
   return {
+    searchHistory,
+    loadSearchHistory,
+    addSearchHistory,
+    removeSearchHistory,
+    clearSearchHistory,
     queryGameData,
     queryGameRecordsPage,
     queryGameDataPage,
