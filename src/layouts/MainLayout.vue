@@ -31,7 +31,10 @@
           />
 
           <!-- 主内容当前页 -->
-          <router-view v-if="shouldRenderCurrentRouteInMain(route)" :key="route.fullPath" />
+          <router-view
+            v-if="shouldRenderCurrentRouteInMain(route)"
+            :key="getMainRouteViewKey(route)"
+          />
         </section>
 
         <!-- PC 端通知面板占位列 -->
@@ -86,7 +89,12 @@
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
-import { getLocaleFromRouteParam, stripLocalePrefix, withLocalePrefix } from '@/utils/locale'
+import {
+  DEFAULT_LOCALE,
+  getLocaleFromRouteParam,
+  stripLocalePrefix,
+  withLocalePrefix
+} from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import NotificationDetailPage from '@/views/menu/notifications/detail/index.vue'
 import NotificationListPage from '@/views/menu/notifications/index.vue'
@@ -163,6 +171,30 @@ const shouldRenderCurrentRouteInMain = (currentRoute: RouteLocationNormalizedLoa
 
 const shouldRenderBackgroundRouteInMain = (currentRoute: RouteLocationNormalizedLoaded) => {
   return isMobile.value && shouldUseSlideTransition(currentRoute) && !!backgroundRouteSnapshot.value
+}
+
+const getMainRouteViewKey = (currentRoute: RouteLocationNormalizedLoaded) => {
+  const routeName = String(currentRoute.name || '')
+  const localeKey = String(currentRoute.params.locale || DEFAULT_LOCALE)
+  const tabKey = String(currentRoute.params.tabKey || '')
+
+  if (routeName === 'casino' || routeName === 'casinoTabKey') {
+    return `casino-${localeKey}`
+  }
+
+  if (routeName === 'Localecasino' || routeName === 'LocalecasinoTabKey') {
+    return `casino-${localeKey}`
+  }
+
+  if (routeName === 'gameList') {
+    return `gamelist-${localeKey}-${tabKey}`
+  }
+
+  if (routeName === 'LocalegameList') {
+    return `gamelist-${localeKey}-${tabKey}`
+  }
+
+  return currentRoute.fullPath
 }
 
 const resolveRouteSnapshot = (fullPath: string) => {
