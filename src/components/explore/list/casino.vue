@@ -55,6 +55,7 @@ type CasinoGameItem = {
   rowId?: string | number
   icon2?: string
   platformName?: string
+  brandCode?: string | number
   hot?: number | string
   initScoreNum?: number
   num?: number
@@ -69,6 +70,7 @@ const injectedGameList = inject<Ref<unknown[]>>('explore-game-list', ref([]))
 const keyword = inject('explore-keywords') as Ref<string>
 const injectedHotGameList = inject<Ref<CasinoGameItem[]>>('explore-hot-game-list', ref([]))
 const injectCurrentSort = inject<Ref<string>>('explore-current-sort', ref('0'))
+const injectCurrentProvider = inject<Ref<string[]>>('explore-current-provider', ref([]))
 
 const gameList = computed<CasinoGameItem[]>(() =>
   Array.isArray(injectedGameList.value) ? (injectedGameList.value as CasinoGameItem[]) : []
@@ -77,6 +79,15 @@ const gameList = computed<CasinoGameItem[]>(() =>
 const page = ref(1)
 const PAGE_SIZE = 40
 const normalizedKeyword = computed(() => keyword.value.trim().toLowerCase())
+
+const selectedProviderCodes = computed(
+  () =>
+    new Set(
+      (Array.isArray(injectCurrentProvider.value) ? injectCurrentProvider.value : [])
+        .map(item => String(item ?? '').trim())
+        .filter(Boolean)
+    )
+)
 
 // 过滤
 const filteredGameList = computed(() => {
@@ -91,15 +102,25 @@ const filteredGameList = computed(() => {
   )
 })
 
+const providerFilteredGameList = computed(() => {
+  if (selectedProviderCodes.value.size === 0) {
+    return filteredGameList.value
+  }
+
+  return filteredGameList.value.filter(item =>
+    selectedProviderCodes.value.has(String(item.brandCode ?? '').trim())
+  )
+})
+
 // 排序
 const sortedFilteredGameList = computed(() => {
   const sortType = injectCurrentSort.value
 
   if (sortType === '0') {
-    return filteredGameList.value
+    return providerFilteredGameList.value
   }
 
-  const sortedList = [...filteredGameList.value]
+  const sortedList = [...providerFilteredGameList.value]
 
   sortedList.sort((a, b) => {
     const firstLetterA = String(a.platformName ?? '')
@@ -118,6 +139,7 @@ const sortedFilteredGameList = computed(() => {
   return sortedList
 })
 
+// 热门
 const hotGameList = computed(() =>
   sortedFilteredGameList.value.filter(item => {
     const hotValue = item.gameItemHotVo?.hot ?? item.hot
@@ -137,6 +159,7 @@ const pagedGameList = computed(() => {
 watch(sortedFilteredGameList, () => {
   page.value = 1
 })
+
 watch(
   hotGameList,
   value => {

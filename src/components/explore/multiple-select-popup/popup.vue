@@ -44,8 +44,19 @@
               >
                 <ChecedIcon v-if="isSelected(item)" class="w-5 h-5 cursor-pointer" />
                 <UnchecedIcon v-else class="w-5 h-5 cursor-pointer" />
-                <div class="ml-2.5 flex items-center w-[100px]">
-                  <img class="w-full h-full object-contain" :src="item?.label" />
+                <div class="provider-logo-box">
+                  <img
+                    v-if="shouldShowLogo(item)"
+                    class="provider-logo-image"
+                    :src="resolveLogoSrc(item)"
+                    :alt="getBrandName(item) || 'brand'"
+                    loading="lazy"
+                    decoding="async"
+                    @error="handleLogoError(item)"
+                  />
+                  <div v-else class="provider-logo-fallback">
+                    {{ getBrandName(item) || '--' }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -77,12 +88,17 @@ import UnchecedIcon from '@/static/svg/explore/cube-unchecked.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import { useI18n } from 'vue-i18n'
 import ClearIcon from '@/static/svg/explore/clear.svg?component'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 interface OptionItem {
   value: string
   label: string
-  [key: string]: string | number
+  icon?: string
+  logo?: string
+  brandName?: string
+  providerName?: string
+  brandId?: string | number
+  [key: string]: string | number | undefined
 }
 
 const props = defineProps<{
@@ -97,8 +113,20 @@ const emit = defineEmits<{
   confirm: [val: string[]]
 }>()
 
+const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
+
 const { t } = useI18n()
 const keyword = ref('')
+const brokenLogoMap = ref<Record<string, boolean>>({})
+
+watch(
+  () => props.visible,
+  visible => {
+    if (visible) {
+      brokenLogoMap.value = {}
+    }
+  }
+)
 
 const close = () => {
   emit('update:visible', false)
@@ -108,20 +136,53 @@ const optionItems = computed(() => {
   if (!keyword.value) {
     return props.dataList
   }
-  return props.dataList.filter(i => (i.providerName as string).indexOf(keyword.value) !== -1)
+  const normalizedKeyword = keyword.value.trim().toLowerCase()
+  return props.dataList.filter(item => getBrandName(item).toLowerCase().includes(normalizedKeyword))
 })
 
-const isSelected = (item: OptionItem) => {
-  const index = props.selectedIds?.indexOf(item.value)
+const getOptionKey = (item: OptionItem) => {
+  return String(item.value ?? item.brandId ?? item.brandName ?? item.providerName ?? '')
+}
+
+const getBrandName = (item: OptionItem) => {
+  return String(item.brandName ?? item.providerName ?? '')
+}
+
+const resolveLogoSrc = (item: OptionItem) => {
+  const icon = [item.icon, item.logo, item.label]
+    .map(value => String(value ?? '').trim())
+    .find(Boolean)
+  if (!icon) return ''
+  if (/^(https?:\/\/|\/\/|data:|blob:)/i.test(icon)) {
+    return icon
+  }
+  return `${baseUrl}${icon}`
+}
+
+const getLogoKey = (item: OptionItem) => {
+  return `${getOptionKey(item)}::${resolveLogoSrc(item)}`
+}
+
+const shouldShowLogo = (item: OptionItem) => {
+  const key = getLogoKey(item)
+  return Boolean(resolveLogoSrc(item)) && !brokenLogoMap.value[key]
+}
+
+const handleLogoError = (item: OptionItem) => {
+  brokenLogoMap.value[getLogoKey(item)] = true
+}
+
+const isSelected = (item: any) => {
+  const index = props.selectedIds?.indexOf(item.brandCode)
   return index !== -1
 }
 
-const confirm = (item: OptionItem) => {
+const confirm = (item: any) => {
   const arr = [...props.selectedIds]
   if (isSelected(item)) {
-    arr.splice(arr.indexOf(item.value), 1)
+    arr.splice(arr.indexOf(item.brandCode), 1)
   } else {
-    arr.push(item.value)
+    arr.push(item.brandCode)
   }
   emit('confirm', arr)
 }
@@ -148,5 +209,37 @@ const clearAll = () => {
 .desktop-up-down-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+.provider-logo-box {
+  margin-left: 10px;
+  width: 120px;
+  height: 28px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-level-1);
+  background: var(--color-background-level-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.provider-logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.provider-logo-fallback {
+  width: 100%;
+  text-align: center;
+  color: var(--color-text-level-1);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

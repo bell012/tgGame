@@ -190,12 +190,10 @@ const sortList = [
   { value: '1', label: 'A-Z' },
   { value: '2', label: 'Z-A' }
 ]
-const sortChange = (val: string) => {
-  console.log(val)
-}
 
 // 供应商
-const currentProvider = ref([])
+const currentProvider = ref<string[]>([])
+provide('explore-current-provider', currentProvider)
 const queryProviderList = ref<GameBrandItem[]>([])
 
 const getGameBrandList = async () => {
@@ -227,10 +225,6 @@ const providerOptions = computed(() => {
   })
 })
 
-const providerChange = (val: string[]) => {
-  console.log(val)
-}
-
 // 国家
 const currentCountry = ref('')
 const countryOptions = countryList.map(item => {
@@ -239,6 +233,15 @@ const countryOptions = countryList.map(item => {
     value: item
   }
 })
+
+const providerChange = (val: string[]) => {
+  console.log(val)
+}
+
+const sortChange = (val: string) => {
+  console.log(val)
+}
+
 const countryChange = (val: string) => {
   console.log(val)
 }
