@@ -297,6 +297,12 @@
     "balance": "余额",
     "noMore": "没有更多了",
     "status": "状态",
+    "filterGroups": {
+      "time": "时间选择",
+      "winLoss": "赢/输选择",
+      "status": "状态选择",
+      "gameType": "游戏类型选择"
+    },
     "filters": {
       "all": "全部",
       "slot": "老虎机",
@@ -307,6 +313,23 @@
       "past24Hours": "过去 24 小时",
       "past7Days": "过去 7 天",
       "past30Days": "过去 30 天"
+    },
+    "filterOptions": {
+      "all": "全部",
+      "today": "今日",
+      "yesterday": "昨日",
+      "last3Days": "近3日",
+      "last15Days": "近15日",
+      "last30Days": "近30日",
+      "settled": "已结算",
+      "unsettled": "未结算",
+      "lottery": "彩票",
+      "sports": "体育",
+      "live": "真人",
+      "electronic": "电子",
+      "chess": "棋牌",
+      "fishing": "捕鱼",
+      "esports": "电竞"
     }
   },
   "customSelect": {

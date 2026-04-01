@@ -54,6 +54,7 @@ export interface FilterOption {
 }
 
 export interface FilterGroup {
+  key?: string
   title: string
   options: FilterOption[]
   multiple?: boolean
@@ -77,34 +78,42 @@ const emit = defineEmits<{
 
 const selectedValues = ref<Record<string, string | string[]>>({})
 
+const getGroupKey = (group: FilterGroup, index: number) => group.key ?? String(index)
+
 // 初始化默认选中第一个选项
 const initDefaultValues = () => {
   const defaultValues: Record<string, string | string[]> = {}
   props.filterGroups.forEach((group, index) => {
+    const key = getGroupKey(group, index)
     if (group.options.length > 0) {
       if (group.multiple) {
-        defaultValues[String(index)] = [group.options[0].value]
+        defaultValues[key] = [group.options[0].value]
       } else {
-        defaultValues[String(index)] = group.options[0].value
+        defaultValues[key] = group.options[0].value
       }
     }
   })
   return defaultValues
 }
 
+const getInitialValues = () => ({
+  ...initDefaultValues(),
+  ...props.modelValue
+})
+
 watch(
-  () => props.visible,
-  newVal => {
-    if (newVal) {
-      selectedValues.value = initDefaultValues()
+  [() => props.visible, () => props.modelValue, () => props.filterGroups],
+  ([visible]) => {
+    if (visible) {
+      selectedValues.value = getInitialValues()
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 )
 
 // 判断是否选中
 const isSelected = (groupIndex: number, value: string): boolean => {
-  const key = String(groupIndex)
+  const key = getGroupKey(props.filterGroups[groupIndex], groupIndex)
   const selected = selectedValues.value[key]
 
   if (Array.isArray(selected)) {
@@ -115,8 +124,8 @@ const isSelected = (groupIndex: number, value: string): boolean => {
 
 // 处理选择
 const handleSelect = (groupIndex: number, value: string) => {
-  const key = String(groupIndex)
   const group = props.filterGroups[groupIndex]
+  const key = getGroupKey(group, groupIndex)
 
   if (group.multiple) {
     // 多选模式
