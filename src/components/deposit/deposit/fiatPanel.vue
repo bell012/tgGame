@@ -10,17 +10,20 @@
         <div
           class="shrink-0 flex flex-col sm:flex-row items-center justify-center p-2 sm:p-4 rounded-xl lg:hover:bg-theme-3 lg:hover:border-theme-primary"
           :class="{
-            'border border-theme-primary bg-theme-3': selectedMethod.name === item.name,
-            'border border-transparent bg-bg-4': selectedMethod.name !== item.name,
+            'border border-theme-primary bg-theme-3':
+              selectedMethod?.columnCode === item.columnCode,
+            'border border-transparent bg-bg-4': selectedMethod?.columnCode !== item.columnCode,
             'basis-[31.25%]': isMobile
           }"
           v-for="(item, index) in payMethods"
-          :key="index"
+          :key="item.columnCode"
           :ref="el => setMethodItemRef(el, index)"
           @click.stop="selectMethod(item, index)"
         >
-          <img class="sm:mr-4 h-6" :src="item.icon" />
-          <p class="text-sm sm:text-base font-bold leading-normal text-text-1">{{ item.name }}</p>
+          <img class="sm:mr-4 h-6" :src="resolveMethodIcon(item)" />
+          <p class="text-sm sm:text-base font-bold leading-normal text-text-1">
+            {{ item.columnName }}
+          </p>
         </div>
       </div>
     </div>
@@ -84,7 +87,15 @@
   />
 </template>
 <script setup lang="ts">
-import { computed, nextTick, ref, type ComponentPublicInstance } from 'vue'
+import Api from '@/api'
+import type {
+  QueryPayColumnItem,
+  QueryPaySubColumnItem,
+  QueryPaySubColumnPageForm,
+  SubmitPayOrderQuickPageForm
+} from '@/api/interface/wallet'
+import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
+import { computed, nextTick, onMounted, ref, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
@@ -100,36 +111,27 @@ import { usePresetGrid } from '../shared/usePresetGrid'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
-interface MethodOption {
-  name: string
-  icon: string
-}
 
 const emit = defineEmits<{
   hidden: [value: boolean]
 }>()
 
-const presetAmounts = [200, 500, 1000, 1500, 2000, 3000, 5000, 10000, 20000, 30000, 50000, 100000]
-
-const payMethods = [
-  {
-    name: 'GCash',
-    icon: gCashIcon
-  },
-  {
-    name: 'Maya',
-    icon: mayaIcon
-  },
-  {
-    name: 'GrabPay',
-    icon: grabPayIcon
-  },
-  {
-    name: 'PayPal',
-    icon: payPalIcon
-  }
+const defaultPresetAmounts = [
+  200, 500, 1000, 1500, 2000, 3000, 5000, 10000, 20000, 30000, 50000, 100000
 ]
-const selectedMethod = ref<MethodOption>(payMethods[0])
+const presetAmounts = ref<number[]>([...defaultPresetAmounts])
+
+const fallbackMethodIcons: Record<string, string> = {
+  GCash: gCashIcon,
+  MAYA: mayaIcon,
+  Maya: mayaIcon,
+  GrabPay: grabPayIcon,
+  PayPal: payPalIcon
+}
+
+const payMethods = ref<QueryPayColumnItem[]>([])
+const selectedMethod = ref<QueryPayColumnItem | null>(null)
+const selectedSubColumn = ref<QueryPaySubColumnItem | null>(null)
 const amount = ref<number>()
 const methodListRef = ref<HTMLDivElement | null>(null)
 const methodItemRefs = ref<Array<HTMLElement | null>>([])
@@ -145,6 +147,28 @@ const handleClose = () => {
 
 const handleHidden = () => {
   emit('hidden', true)
+}
+
+const toPayImageUrl = (value: string) => {
+  if (!value) return ''
+  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+}
+
+const resolveMethodIcon = (item: QueryPayColumnItem) => {
+  return (
+    toPayImageUrl(item.columnIco) ||
+    toPayImageUrl(item.gradientLogo) ||
+    fallbackMethodIcons[item.columnName] ||
+    payPalIcon
+  )
+}
+
+const normalizePresetAmounts = (values: Array<number | string> = []) => {
+  const parsed = values
+    .map(value => Number(value))
+    .filter(value => Number.isFinite(value) && value > 0)
+
+  return parsed.length > 0 ? parsed : [...defaultPresetAmounts]
 }
 
 const setMethodItemRef = (el: Element | ComponentPublicInstance | null, index: number) => {
@@ -180,19 +204,107 @@ const handleMethodListWheel = (event: WheelEvent) => {
   })
 }
 
-const selectMethod = (method: MethodOption, index: number) => {
-  selectedMethod.value = method
-  scrollMethodIntoView(index)
+const loadPaySubColumnPage = async (columnCode: number) => {
+  try {
+    const param: QueryPaySubColumnPageForm = {
+      page: {
+        current: 1,
+        size: 9999
+      },
+      param: {
+        columnCode
+      }
+    }
+    const response = await Api.wallet.queryPaySubColumnPage(param)
+    const result: QueryPaySubColumnItem[] =
+      response?.success && Array.isArray(response.result) ? response.result : []
+    selectedSubColumn.value = result[0] ?? null
+    presetAmounts.value = normalizePresetAmounts(
+      selectedSubColumn.value?.defaultRechargeAmount ?? []
+    )
+  } catch (error) {
+    console.error('queryPaySubColumnPage failed', error)
+    selectedSubColumn.value = null
+    presetAmounts.value = [...defaultPresetAmounts]
+  }
 }
 
-const doDeposit = () => {
+const loadPayColumnPage = async () => {
+  try {
+    const languageCode = getLanguageCode()
+    const currency = getCurrentCurrency()
+
+    const response = await Api.wallet.queryPayColumnPage({
+      page: {
+        current: 1,
+        size: 9999
+      },
+      languageCode,
+      currency
+    })
+    const result: QueryPayColumnItem[] =
+      response?.success && Array.isArray(response.result) ? response.result : []
+
+    payMethods.value = result
+    methodItemRefs.value = new Array(payMethods.value.length).fill(null)
+
+    const defaultMethod = payMethods.value[0]
+    if (!defaultMethod) {
+      selectedMethod.value = null
+      selectedSubColumn.value = null
+      presetAmounts.value = [...defaultPresetAmounts]
+      return
+    }
+
+    selectedMethod.value = defaultMethod
+    void scrollMethodIntoView(0)
+    await loadPaySubColumnPage(defaultMethod.columnCode)
+  } catch (error) {
+    console.error('queryPayColumnPage failed', error)
+    payMethods.value = []
+    selectedMethod.value = null
+    selectedSubColumn.value = null
+    presetAmounts.value = [...defaultPresetAmounts]
+  }
+}
+
+const selectMethod = async (method: QueryPayColumnItem, index: number) => {
+  if (selectedMethod.value?.columnCode === method.columnCode) {
+    void scrollMethodIntoView(index)
+    return
+  }
+
+  selectedMethod.value = method
+  amount.value = undefined
+  void scrollMethodIntoView(index)
+  await loadPaySubColumnPage(method.columnCode)
+}
+
+const doDeposit = async () => {
+  if (isDepositDisabled.value) return
+  if (!selectedMethod.value) return
+
+  const param: SubmitPayOrderQuickPageForm = {
+    columnCode: String(selectedMethod.value.columnCode),
+    busiAmount: String(amount.value ?? 0),
+    payChannelCode: selectedSubColumn.value?.payChannelCode ?? '',
+    channelId: 13
+  }
+
+  try {
+    await Api.wallet.submitPayOrderQuick(param)
+  } catch (error) {
+    console.error('submitPayOrderQuick failed', error)
+    return
+  }
+
   orderInfo.value = {
     order_no: 'ts0768456746746746746',
     created_at: '12/18/2026 11:14:15 AM',
     amount: amount.value ?? 0,
-    method: selectedMethod.value.name,
-    method_icon: selectedMethod.value.icon,
-    currency: 'PHP',
+    method: selectedMethod.value.columnName,
+    method_icon: resolveMethodIcon(selectedMethod.value),
+    currency: getCurrentCurrency(),
     bonus: '50',
     type: 'Fiat',
     status: 'Success'
@@ -200,6 +312,10 @@ const doDeposit = () => {
   emit('hidden', true)
   orderPopShow.value = true
 }
+
+onMounted(() => {
+  void loadPayColumnPage()
+})
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,
