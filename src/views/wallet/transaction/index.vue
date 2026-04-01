@@ -7,19 +7,71 @@
       </div>
     </WalletLayout>
 
-    <div class="bg-bg-1 block md:hidden">
-      <H5Header title="Transaction" showSort @sort="handleSort" />
+    <!-- H5 端布局 -->
+    <div class="block md:hidden fixed inset-0 bg-bg-1 overflow-y-auto">
+      <H5Header :title="$t('personalCenter.transaction')" :show-sort="true" @sort="handleSort" />
 
-      <div>
-        <div v-if="!hasBets">
-          <NoData />
+      <div class="py-3.5 px-3.5">
+        <!-- 无数据状态 -->
+        <div v-if="!hasBets" class="flex flex-col items-center justify-center mt-[100px]">
+          <img :src="noDataImg" alt="No data" class="h-[200px] w-auto mb-2.5" />
+          <p class="text-text-1 text-xs font-[500] mb-5">
+            {{ $t('betHistory.noBetHistoryYet') }}
+          </p>
+          <button
+            class="w-[200px] h-[40px] rounded-lg bg-theme-primary text-text-4 font-[700] text-sm flex items-center justify-center"
+            @click="handleStartPlaying"
+          >
+            {{ $t('betHistory.startPlaying') }}
+          </button>
         </div>
 
-        <div v-else>
-          <RecordList :bets="betList" @select="handleBetClick" />
+        <!-- 有数据状态 -->
+        <div v-else class="flex flex-col gap-2">
+          <div
+            v-for="item in dataList"
+            :key="item.id"
+            class="bg-bg-2 rounded-lg py-2.5 px-3.5 cursor-pointer"
+            @click="handleBetClick(item)"
+          >
+            <div class="flex items-center mb-5">
+              <div
+                class="w-10 h-10 rounded-full bg-opacity-5 mr-1.5 flex items-center justify-center"
+              >
+                <Transaction_add
+                  v-if="item.result === 'win'"
+                  class="w-[22px] h-[22px] text-text-1"
+                />
+                <Transaction_dec
+                  v-if="item.result === 'loss'"
+                  class="w-[22px] h-[22px] text-text-1"
+                />
+              </div>
+
+              <div class="flex items-center justify-between w-full">
+                <h3 class="text-text-1 font-[700] text-sm">
+                  {{ item.gameName }}
+                </h3>
+                <p>{{ item.result === 'win' ? '+' : '-' }}{{ item.betAmount }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <p class="text-text-2 text-xs">
+                {{ item.time }}
+              </p>
+              <div
+                class="size-[20px] bg-opacity-10 rounded-md flex items-center justify-center cursor-pointer"
+                @click.stop="handleBetClick(item)"
+              >
+                <ArrowRightIcon class="w-3.5 h-3.5 text-text-2" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
+      <!-- 筛选弹窗 -->
       <FilterPopup
         v-model:visible="showFilterPopup"
         v-model="filterValues"
@@ -31,38 +83,150 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import WalletLayout from '../index.vue'
-import PcLayout from './pc-layout.vue'
-import NoData from './components/noData.vue'
-import RecordList, { type BetItem } from './components/recordList.vue'
+import { ref } from 'vue'
+import { navigateTo } from '@/utils/router'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
-import goldIcon from '@/static/svg/gold.svg?url'
-import { navigateTo } from '@/utils/router'
+import WalletLayout from '../index.vue'
+import PcLayout from './pc-layout.vue'
+import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import noDataImg from '@/static/img/personalCenter/noData.png'
+import bet from '@/static/img/personalCenter/bet.png'
+import Transaction_add from '@/static/svg/transaction_add.svg?component'
+import Transaction_dec from '@/static/svg/transaction_dec.svg?component'
 
-const betList = ref<BetItem[]>([
+interface Item {
+  id: number
+  gameName: string
+  gameIcon: string
+  betAmount: string
+  result: 'win' | 'loss'
+  resultAmount: string
+  time: string
+}
+
+const hasBets = ref(true)
+
+const dataList = ref<Item[]>([
   {
     id: 1,
     gameName: 'Dragon Hatch',
-    gameIcon: goldIcon,
+    gameIcon: bet,
+    betAmount: '1001',
+    result: 'loss',
+    resultAmount: '1001',
+    time: '12/18/2026 11:14:15 AM'
+  },
+  {
+    id: 2,
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    betAmount: '1002',
+    result: 'win',
+    resultAmount: '1002',
+    time: '12/18/2026 11:14:15 AM'
+  },
+  {
+    id: 3,
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    betAmount: '1000',
+    result: 'loss',
+    resultAmount: '1000',
+    time: '12/18/2026 11:14:15 AM'
+  },
+  {
+    id: 4,
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
     betAmount: '1000',
     result: 'win',
     resultAmount: '1000',
     time: '12/18/2026 11:14:15 AM'
   },
   {
-    id: 2,
+    id: 5,
     gameName: 'Dragon Hatch',
-    gameIcon: goldIcon,
+    gameIcon: bet,
     betAmount: '1000',
-    result: 'loss',
+    result: 'win',
+    resultAmount: '1000',
+    time: '12/18/2026 11:14:15 AM'
+  },
+  {
+    id: 6,
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    betAmount: '1000',
+    result: 'win',
+    resultAmount: '1000',
+    time: '12/18/2026 11:14:15 AM'
+  },
+  {
+    id: 7,
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    betAmount: '1000',
+    result: 'win',
+    resultAmount: '1000',
+    time: '12/18/2026 11:14:15 AM'
+  },
+  {
+    id: 8,
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    betAmount: '1000',
+    result: 'win',
+    resultAmount: '1000',
+    time: '12/18/2026 11:14:15 AM'
+  },
+  {
+    id: 9,
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    betAmount: '1000',
+    result: 'win',
+    resultAmount: '1000',
+    time: '12/18/2026 11:14:15 AM'
+  },
+  {
+    id: 10,
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    betAmount: '1000',
+    result: 'win',
+    resultAmount: '1000',
+    time: '12/18/2026 11:14:15 AM'
+  },
+  {
+    id: 11,
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    betAmount: '1000',
+    result: 'win',
+    resultAmount: '1000',
+    time: '12/18/2026 11:14:15 AM'
+  },
+  {
+    id: 12,
+    gameName: 'Dragon Hatch',
+    gameIcon: bet,
+    betAmount: '1000',
+    result: 'win',
     resultAmount: '1000',
     time: '12/18/2026 11:14:15 AM'
   }
 ])
 
-const hasBets = computed(() => betList.value.length > 0)
+const handleStartPlaying = () => {
+  navigateTo('/')
+}
+
+const handleBetClick = (item: Item) => {
+  navigateTo(`/transaction-details/${item.id}`, {
+    state: { data: JSON.stringify(item) }
+  })
+}
 
 // 筛选弹窗
 const showFilterPopup = ref(false)
@@ -128,8 +292,6 @@ const handleSort = () => {
 const handleFilterApply = (values: Record<string, string | string[]>) => {
   console.log('Filter applied with values:', values)
 }
-
-const handleBetClick = (bet: BetItem) => {
-  navigateTo(`/transaction-details/${bet.id}`)
-}
 </script>
+
+<style scoped lang="scss"></style>

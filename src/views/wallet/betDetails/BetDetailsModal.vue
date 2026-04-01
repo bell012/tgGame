@@ -15,7 +15,7 @@
         </button>
 
         <div class="flex items-center justify-center w-full h-full">
-          <h3 class="text-text-1 text-lg font-bold">Transaction Details</h3>
+          <h3 class="text-text-1 text-lg font-bold">{{ $t('betDetails.title') }}</h3>
         </div>
       </div>
 
@@ -33,41 +33,43 @@
             <span
               :class="[
                 'text-base',
-                betDetail.result === 'win' ? 'text-secondary-4' : 'text-secondary-2'
+                betDetail.result === 'win' ? 'text-secondary-2' : 'text-secondary-4'
               ]"
             >
-              {{ betDetail.result === 'win' ? 'Win' : 'Loss' }}
+              {{ betDetail.result === 'win' ? $t('betHistory.win') : $t('betHistory.loss') }}
             </span>
             <span
               :class="[
                 'text-base font-bold',
-                betDetail.result === 'win' ? 'text-secondary-4' : 'text-secondary-2'
+                betDetail.result === 'win' ? 'text-secondary-2' : 'text-secondary-4'
               ]"
             >
-              {{ betDetail.result === 'win' ? '+' : '-' }}{{ Math.abs(betDetail.profit) }}
+              {{ betDetail.result === 'win' ? '+' : '-' }}{{ betDetail.resultAmount }}
             </span>
           </div>
 
           <div class="w-full space-y-4 text-base bg-bg-4 rounded-lg px-5 py-4">
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Currency</span>
+              <span class="text-text-3">{{ $t('betDetails.currency') }}</span>
               <span class="text-text-1">{{ betDetail.currency }}</span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Bet Amount</span>
+              <span class="text-text-3">{{ $t('betHistory.betAmount') }}</span>
               <span class="text-text-1">{{ betDetail.betAmount }}</span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Win/Loss</span>
+              <span class="text-text-3"
+                >{{ $t('betHistory.win') }}/{{ $t('betHistory.loss') }}</span
+              >
               <span class="text-text-1">
-                {{ betDetail.result === 'win' ? '+' : '-' }}{{ Math.abs(betDetail.profit) }}
+                {{ betDetail.result === 'win' ? '+' : '-' }}{{ betDetail.resultAmount }}
               </span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Order No.</span>
+              <span class="text-text-3">{{ $t('betDetails.orderNo') }}</span>
               <div class="flex items-center">
                 <span class="text-text-1">{{ betDetail.orderNo }}</span>
                 <button class="p-1" @click="copyOrderNo">
@@ -77,8 +79,8 @@
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3">Created At</span>
-              <span class="text-text-1">{{ betDetail.time }}</span>
+              <span class="text-text-3">{{ $t('betDetails.createdAt') }}</span>
+              <span class="text-text-1">{{ betDetail.createdAt }}</span>
             </div>
           </div>
         </div>
@@ -93,25 +95,13 @@ import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import Close from '@/static/svg/close.svg?component'
+import type { Item } from '../betHistory/shared'
 
 const { t } = useI18n()
 
-interface BetItem {
-  id: number
-  gameName: string
-  gameIcon: string
-  gameType: string
-  time: string
-  betAmount: string
-  profit: number
-  result: 'win' | 'loss'
-  currency: string
-  orderNo: string
-}
-
 interface Props {
   modelValue: boolean
-  bet: BetItem | null
+  bet: Item | null
 }
 
 const props = defineProps<Props>()
