@@ -83,13 +83,17 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 const router = useRouter()
 
-interface BetItem {
+interface Item {
   id: number
+  gameType?: string
   gameName: string
   gameIcon: string
   betAmount: string
   result: 'win' | 'loss'
   resultAmount: string
+  currency?: string
+  orderNo?: string
+  createdAt?: string
   time: string
 }
 
@@ -120,21 +124,23 @@ const betDetail = ref<BetDetail>({
 })
 
 onMounted(() => {
-  const state = history.state as { betData?: string }
-  if (state?.betData) {
+  const state = history.state as { betData?: string; data?: string }
+  const currentData = state?.data ?? state?.betData
+
+  if (currentData) {
     try {
-      const betItem: BetItem = JSON.parse(state.betData)
+      const betItem: Item = JSON.parse(currentData)
       betDetail.value = {
         id: betItem.id,
-        gameType: 'Slot',
+        gameType: betItem.gameType || '',
         gameName: betItem.gameName,
         gameIcon: betItem.gameIcon,
         result: betItem.result,
         resultAmount: betItem.resultAmount,
-        currency: 'PHP',
+        currency: betItem.currency || '',
         betAmount: betItem.betAmount,
-        orderNo: `ts${betItem.id}${Date.now()}`,
-        createdAt: betItem.time
+        orderNo: betItem.orderNo || `ts${betItem.id}${Date.now()}`,
+        createdAt: betItem.createdAt || betItem.time
       }
     } catch (error) {
       console.error(error)
