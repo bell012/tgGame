@@ -34,6 +34,7 @@ export default {
 
         // ========== 不透明度 (Opacity) ==========
         'opacity-5': 'var(--color-opacity-5)',
+        'opacity-6': 'var(--color-opacity-6)',
         'opacity-10': 'var(--color-opacity-10)',
         'opacity-15': 'var(--color-opacity-15)',
         'opacity-30': 'var(--color-opacity-30)',

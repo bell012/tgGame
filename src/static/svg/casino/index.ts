@@ -1,5 +1,6 @@
 import type { Component } from 'vue'
 import bc from './bc.svg?component'
+import chevron_left from './chevron_left.svg?component'
 import favorites_full from './favorites_full.svg?component'
 import fishing from './fishing.svg?component'
 import game_providers from './game_providers.svg?component'
@@ -38,6 +39,7 @@ import volleyball from './volleyball.svg?component'
 // 导出图标
 export const casinoIcons: Record<string, Component> = {
   bc,
+  chevron_left,
   favorites_full,
   fishing,
   game_providers,
