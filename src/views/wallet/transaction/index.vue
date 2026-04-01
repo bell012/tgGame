@@ -29,40 +29,40 @@
         <!-- 有数据状态 -->
         <div v-else class="flex flex-col gap-2">
           <div
-            v-for="bet in betList"
-            :key="bet.id"
+            v-for="item in dataList"
+            :key="item.id"
             class="bg-bg-2 rounded-lg py-2.5 px-3.5 cursor-pointer"
-            @click="handleBetClick(bet)"
+            @click="handleBetClick(item)"
           >
             <div class="flex items-center mb-5">
               <div
                 class="w-10 h-10 rounded-full bg-opacity-5 mr-1.5 flex items-center justify-center"
               >
                 <Transaction_add
-                  v-if="bet.result === 'win'"
+                  v-if="item.result === 'win'"
                   class="w-[22px] h-[22px] text-text-1"
                 />
                 <Transaction_dec
-                  v-if="bet.result === 'loss'"
+                  v-if="item.result === 'loss'"
                   class="w-[22px] h-[22px] text-text-1"
                 />
               </div>
 
               <div class="flex items-center justify-between w-full">
                 <h3 class="text-text-1 font-[700] text-sm">
-                  {{ bet.gameName }}
+                  {{ item.gameName }}
                 </h3>
-                <p>{{ bet.result === 'win' ? '+' : '-' }}{{ bet.betAmount }}</p>
+                <p>{{ item.result === 'win' ? '+' : '-' }}{{ item.betAmount }}</p>
               </div>
             </div>
 
             <div class="flex items-center justify-between">
               <p class="text-text-2 text-xs">
-                {{ bet.time }}
+                {{ item.time }}
               </p>
               <div
                 class="size-[20px] bg-opacity-10 rounded-md flex items-center justify-center cursor-pointer"
-                @click.stop="handleBetClick(bet)"
+                @click.stop="handleBetClick(item)"
               >
                 <ArrowRightIcon class="w-3.5 h-3.5 text-text-2" />
               </div>
@@ -95,7 +95,7 @@ import bet from '@/static/img/personalCenter/bet.png'
 import Transaction_add from '@/static/svg/transaction_add.svg?component'
 import Transaction_dec from '@/static/svg/transaction_dec.svg?component'
 
-interface BetItem {
+interface Item {
   id: number
   gameName: string
   gameIcon: string
@@ -107,7 +107,7 @@ interface BetItem {
 
 const hasBets = ref(true)
 
-const betList = ref<BetItem[]>([
+const dataList = ref<Item[]>([
   {
     id: 1,
     gameName: 'Dragon Hatch',
@@ -222,9 +222,9 @@ const handleStartPlaying = () => {
   navigateTo('/')
 }
 
-const handleBetClick = (bet: BetItem) => {
-  navigateTo(`/transaction-details/${bet.id}`, {
-    state: { betData: JSON.stringify(bet) }
+const handleBetClick = (item: Item) => {
+  navigateTo(`/transaction-details/${item.id}`, {
+    state: { data: JSON.stringify(item) }
   })
 }
 

@@ -42,24 +42,24 @@
       </div>
 
       <div class="table-body">
-        <template v-if="betList.length > 0">
+        <template v-if="dataList.length > 0">
           <div
-            v-for="bet in betList"
-            :key="bet.id"
+            v-for="item in dataList"
+            :key="item.id"
             class="table-row-item grid grid-cols-4 gap-3 py-3 cursor-pointer border-b border-opacity-5"
-            @click="handleRowClick(bet)"
+            @click="handleRowClick(item)"
           >
             <div class="flex items-center justify-center gap-3">
-              <span class="text-text-1 text-sm font-[700] text-center">{{ bet.gameName }}</span>
+              <span class="text-text-1 text-sm font-[700] text-center">{{ item.gameName }}</span>
             </div>
-            <div class="text-text-2 text-sm font-[700] text-center">{{ bet.time }}</div>
-            <div class="text-text-1 text-sm font-[700] text-center">{{ bet.betAmount }}</div>
+            <div class="text-text-2 text-sm font-[700] text-center">{{ item.time }}</div>
+            <div class="text-text-1 text-sm font-[700] text-center">{{ item.betAmount }}</div>
             <div class="flex items-center justify-center gap-1">
               <span
-                :class="bet.profit >= 0 ? 'text-secondary-4' : 'text-secondary-2'"
+                :class="item.profit >= 0 ? 'text-secondary-4' : 'text-secondary-2'"
                 class="font-[700] text-sm"
               >
-                {{ bet.profit >= 0 ? '+' : '' }}{{ bet.profit }}
+                {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
               </span>
               <ArrowRightIcon class="w-4 h-4 text-text-1" />
             </div>
@@ -69,14 +69,14 @@
     </div>
 
     <!-- No More -->
-    <div v-if="betList.length > 0" class="pagination-section mt-4 pb-4">
+    <div v-if="dataList.length > 0" class="pagination-section mt-4 pb-4">
       <div v-if="!hasMore" class="text-center">
         <p class="text-text-1 text-sm font-[700]">{{ $t('betHistory.noMore') }}</p>
       </div>
     </div>
 
     <!-- 详情弹窗 -->
-    <DetailsModal v-model="showDetailModal" :bet="selectedBet" />
+    <DetailsModal v-model="showDetailModal" :data="selectedData" />
   </div>
 </template>
 
@@ -121,7 +121,7 @@ const timeRangeOptions = computed(() => [
 
 const hasMore = ref(false)
 
-interface BetItem {
+interface Item {
   id: number
   gameName: string
   gameIcon: string
@@ -135,7 +135,7 @@ interface BetItem {
 }
 
 // 投注列表
-const betList = ref<BetItem[]>([
+const dataList = ref<Item[]>([
   {
     id: 1,
     gameName: 'Dragon Hatch',
@@ -176,10 +176,10 @@ const betList = ref<BetItem[]>([
 
 // 弹窗
 const showDetailModal = ref(false)
-const selectedBet = ref<BetItem | null>(null)
+const selectedData = ref<Item | null>(null)
 
-const handleRowClick = (bet: BetItem) => {
-  selectedBet.value = bet
+const handleRowClick = (item: Item) => {
+  selectedData.value = item
   showDetailModal.value = true
 }
 </script>

@@ -30,44 +30,44 @@
             {{ $t('betHistory.type') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
-            {{ $t('transaction.time') }}
+            {{ $t('betHistory.time') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
-            {{ $t('transaction.amount') }}
+            {{ $t('betHistory.amount') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
-            {{ $t('transaction.status') }}
+            {{ $t('betHistory.status') }}
           </div>
         </div>
       </div>
 
       <div class="table-body">
-        <template v-if="betList.length > 0">
+        <template v-if="dataList.length > 0">
           <div
-            v-for="bet in betList"
-            :key="bet.id"
+            v-for="item in dataList"
+            :key="item.id"
             class="table-row-item grid grid-cols-4 gap-3 py-3 cursor-pointer border-b border-opacity-5"
-            @click="handleRowClick(bet)"
+            @click="handleRowClick(item)"
           >
             <div class="flex items-center justify-center gap-3">
-              <span class="text-text-1 text-sm font-[700] text-center">{{ bet.gameName }}</span>
+              <span class="text-text-1 text-sm font-[700] text-center">{{ item.gameName }}</span>
             </div>
-            <div class="text-text-2 text-sm font-[700] text-center">{{ bet.time }}</div>
-            <div class="text-text-1 text-sm font-[700] text-center">
+            <div class="text-text-2 text-sm font-[700] text-center">{{ item.time }}</div>
+            <div class="flex items-center justify-center gap-1">
               <span
-                :class="bet.amount >= 0 ? 'text-secondary-4' : 'text-secondary-2'"
+                :class="item.profit >= 0 ? 'text-secondary-4' : 'text-secondary-2'"
                 class="font-[700] text-sm"
               >
-                {{ bet.amount >= 0 ? '+' : '' }}{{ bet.amount }}
+                {{ item.profit >= 0 ? '+' : '-' }}{{ item.betAmount }}
               </span>
             </div>
             <div class="flex items-center justify-center gap-1">
-              <div
-                :class="bet.status == 1 ? 'bg-theme-primary' : 'bg-secondary-2'"
+              <span
                 class="w-1.5 h-1.5 rounded-full"
-              ></div>
+                :class="item.status ? 'bg-secondary-4' : 'bg-secondary-2'"
+              ></span>
               <span class="font-[700] text-sm">
-                {{ bet.status == 1 ? $t('transaction.completed') : $t('transaction.notCompleted') }}
+                {{ item.status ? $t('transaction.completed') : $t('transaction.notCompleted') }}
               </span>
               <ArrowRightIcon class="w-4 h-4 text-text-1" />
             </div>
@@ -77,14 +77,14 @@
     </div>
 
     <!-- No More -->
-    <div v-if="betList.length > 0" class="pagination-section mt-4 pb-4">
+    <div v-if="dataList.length > 0" class="pagination-section mt-4 pb-4">
       <div v-if="!hasMore" class="text-center">
         <p class="text-text-1 text-sm font-[700]">{{ $t('betHistory.noMore') }}</p>
       </div>
     </div>
-    <NoData v-if="betList.length == 0" />
+
     <!-- 详情弹窗 -->
-    <BetDetailsModal v-model="showDetailModal" :bet="selectedBet" />
+    <DetailsModal v-model="showDetailModal" :data="selectedData" />
   </div>
 </template>
 
@@ -92,10 +92,9 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CustomSelect from '@/components/common/CustomSelect.vue'
-import BetDetailsModal from './rolloverDetails/BetDetailsModal.vue'
+import DetailsModal from '../rolloverDetails/detailsModal.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import bet from '@/static/img/personalCenter/bet.png'
-import NoData from './components/noData.vue'
 
 const { t } = useI18n()
 
@@ -130,32 +129,34 @@ const timeRangeOptions = computed(() => [
 
 const hasMore = ref(false)
 
-interface BetItem {
+interface Item {
   id: number
   gameName: string
   gameIcon: string
   gameType: string
   time: string
-  amount: number
-  status: number
+  betAmount: string
+  profit: number
   result: 'win' | 'loss'
   currency: string
   orderNo: string
+  status: boolean
 }
 
 // 投注列表
-const betList = ref<BetItem[]>([
+const dataList = ref<Item[]>([
   {
     id: 1,
     gameName: 'Dragon Hatch',
     gameIcon: bet,
     gameType: 'Slot',
     time: '12/18/2026 11:14:15 AM',
-    amount: 1000.0,
-    status: 1,
+    betAmount: '1000',
+    profit: 1000.0,
     result: 'win',
     currency: 'PHP',
-    orderNo: 'ts0768456746746746746'
+    orderNo: 'ts0768456746746746746',
+    status: true
   },
   {
     id: 2,
@@ -163,11 +164,12 @@ const betList = ref<BetItem[]>([
     gameIcon: bet,
     gameType: 'Slot',
     time: '12/18/2026 11:14:15 AM',
-    amount: 1000.0,
-    status: 1,
+    betAmount: '1000',
+    profit: 1000.0,
     result: 'win',
     currency: 'PHP',
-    orderNo: 'ts0768456746746746747'
+    orderNo: 'ts0768456746746746747',
+    status: true
   },
   {
     id: 3,
@@ -175,20 +177,21 @@ const betList = ref<BetItem[]>([
     gameIcon: bet,
     gameType: 'Slot',
     time: '12/18/2026 11:14:15 AM',
-    amount: -1000.0,
-    status: 2,
+    betAmount: '1000',
+    profit: -1000.0,
     result: 'loss',
     currency: 'PHP',
-    orderNo: 'ts0768456746746746748'
+    orderNo: 'ts0768456746746746748',
+    status: false
   }
 ])
 
 // 弹窗
 const showDetailModal = ref(false)
-const selectedBet = ref<BetItem | null>(null)
+const selectedData = ref<Item | null>(null)
 
-const handleRowClick = (bet: BetItem) => {
-  selectedBet.value = bet
+const handleRowClick = (item: Item) => {
+  selectedData.value = item
   showDetailModal.value = true
 }
 </script>

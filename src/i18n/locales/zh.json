@@ -275,7 +275,8 @@
     "deposit": "充值",
     "withdraw": "提现",
     "myOrders": "我的订单",
-    "rollover": "流水稽查"
+    "rollover": "流水稽查",
+    "rolloverDetails": "流水稽查详情"
   },
   "betHistory": {
     "title": "投注历史",
@@ -291,6 +292,7 @@
     "amount": "金额",
     "balance": "余额",
     "noMore": "没有更多了",
+    "status": "状态",
     "filters": {
       "all": "全部",
       "slot": "老虎机",
