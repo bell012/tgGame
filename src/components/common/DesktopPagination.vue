@@ -1,47 +1,47 @@
 <template>
   <!-- pc中公共分页组件 -->
   <div v-if="safeTotalPages > 1" class="flex items-center justify-center gap-2">
-    <button
+    <div
       type="button"
-      class="flex h-10 w-10 items-center justify-center rounded-[10px] border border-opacity-5 bg-bg-4"
-      :class="isFirstPage ? 'cursor-not-allowed text-text-3' : 'text-text-2'"
+      class="flex h-10 w-10 items-center justify-center rounded-lg border border-opacity-15 bg-opacity-5 cursor-pointer"
+      :class="isFirstPage ? 'cursor-not-allowed text-text-3' : 'text-text-1'"
       :disabled="isFirstPage"
       @click="setPage(currentPage - 1)"
     >
       <ArrowLeftIcon class="h-4 w-4" />
-    </button>
+    </div>
 
-    <button
+    <div
       v-for="page in visiblePages"
       :key="page"
       type="button"
-      class="flex h-10 w-10 items-center justify-center rounded-[10px] border text-sm"
+      class="flex h-10 w-10 items-center justify-center rounded-lg border border-opacity-15 bg-opacity-5 text-base cursor-pointer"
       :class="
         page === currentPage
           ? 'border-theme-primary bg-theme-primary text-text-4 font-[700]'
-          : 'border-opacity-5 bg-bg-4 text-text-2'
+          : 'border-opacity-15 bg-opacity-5 text-text-1'
       "
       @click="setPage(page)"
     >
       {{ page }}
-    </button>
+    </div>
 
-    <button
+    <div
       type="button"
-      class="flex h-10 w-10 items-center justify-center rounded-[10px] border border-opacity-5 bg-bg-4"
-      :class="isLastPage ? 'cursor-not-allowed text-text-3' : 'text-text-2'"
+      class="flex h-10 w-10 items-center justify-center rounded-lg border border-opacity-15 bg-opacity-5 cursor-pointer"
+      :class="isLastPage ? 'cursor-not-allowed text-text-3' : 'text-text-1'"
       :disabled="isLastPage"
       @click="setPage(currentPage + 1)"
     >
       <ArrowRightIcon class="h-4 w-4" />
-    </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
-import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import ArrowRightIcon from '@/static/svg/arrow_right2.svg?component'
 
 const props = withDefaults(
   defineProps<{ currentPage: number; totalPages: number; maxVisible?: number }>(),
