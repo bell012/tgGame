@@ -2,7 +2,7 @@
   <div class="fixed inset-0 bg-bg-1 overflow-y-auto">
     <H5Header :title="$t('betDetails.title')" />
 
-    <div class="py-3.5">
+    <div class="py-3.5 px-3.5">
       <div class="bg-bg-2 rounded-lg px-3.5 pb-3.5 pt-[30px] flex flex-col items-center">
         <div class="w-[49px] h-[65px] rounded-lg overflow-hidden mb-2">
           <img :src="betDetail.gameIcon" alt="" class="w-full h-full object-cover" />
@@ -83,13 +83,17 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 const router = useRouter()
 
-interface BetItem {
+interface Item {
   id: number
+  gameType?: string
   gameName: string
   gameIcon: string
   betAmount: string
   result: 'win' | 'loss'
   resultAmount: string
+  currency?: string
+  orderNo?: string
+  createdAt?: string
   time: string
 }
 
@@ -120,21 +124,23 @@ const betDetail = ref<BetDetail>({
 })
 
 onMounted(() => {
-  const state = history.state as { betData?: string }
-  if (state?.betData) {
+  const state = history.state as { betData?: string; data?: string }
+  const currentData = state?.data ?? state?.betData
+
+  if (currentData) {
     try {
-      const betItem: BetItem = JSON.parse(state.betData)
+      const betItem: Item = JSON.parse(currentData)
       betDetail.value = {
         id: betItem.id,
-        gameType: 'Slot',
+        gameType: betItem.gameType || '',
         gameName: betItem.gameName,
         gameIcon: betItem.gameIcon,
         result: betItem.result,
         resultAmount: betItem.resultAmount,
-        currency: 'PHP',
+        currency: betItem.currency || '',
         betAmount: betItem.betAmount,
-        orderNo: `ts${betItem.id}${Date.now()}`,
-        createdAt: betItem.time
+        orderNo: betItem.orderNo || `ts${betItem.id}${Date.now()}`,
+        createdAt: betItem.createdAt || betItem.time
       }
     } catch (error) {
       console.error(error)

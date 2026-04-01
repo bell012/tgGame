@@ -17,49 +17,50 @@
           :options="assetTypeOptions"
           :placeholder="$t('betHistory.filters.allAssets')"
         />
+
+        <!-- 时间范围 -->
+        <CustomSelect class="w-[240px]" v-model="filters.timeRange" :options="timeRangeOptions" />
       </div>
     </div>
 
     <div class="table-wrapper">
       <div class="table-header-bar bg-bg-3 rounded-lg py-3">
         <div class="grid grid-cols-4 gap-3">
-          <div class="text-text-1 text-sm font-bold text-left ml-6">
-            {{ $t('transaction.type') }}
+          <div class="text-text-1 text-sm font-bold text-center">
+            {{ $t('betHistory.type') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
-            {{ $t('transaction.time') }}
+            {{ $t('betHistory.time') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
-            {{ $t('transaction.amount') }}
+            {{ $t('betHistory.amount') }}
           </div>
-          <div class="text-text-1 text-sm font-bold text-right mr-6">
-            {{ $t('transaction.balance') }}
+          <div class="text-text-1 text-sm font-bold text-center">
+            {{ $t('betHistory.balance') }}
           </div>
         </div>
       </div>
 
       <div class="table-body">
-        <template v-if="betList.length > 0">
+        <template v-if="dataList.length > 0">
           <div
-            v-for="bet in betList"
-            :key="bet.id"
+            v-for="item in dataList"
+            :key="item.id"
             class="table-row-item grid grid-cols-4 gap-3 py-3 cursor-pointer border-b border-opacity-5"
-            @click="handleRowClick(bet)"
+            @click="handleRowClick(item)"
           >
-            <div class="flex items-center justify-start gap-3">
-              <span class="text-text-1 text-sm font-[700] text-left ml-6">{{ bet.gameName }}</span>
+            <div class="flex items-center justify-center gap-3">
+              <span class="text-text-1 text-sm font-[700] text-center">{{ item.gameName }}</span>
             </div>
-            <div class="text-text-2 text-sm font-[700] text-center">{{ bet.time }}</div>
-            <div class="text-text-1 text-sm font-[700] text-center">
+            <div class="text-text-2 text-sm font-[700] text-center">{{ item.time }}</div>
+            <div class="text-text-1 text-sm font-[700] text-center">{{ item.betAmount }}</div>
+            <div class="flex items-center justify-center gap-1">
               <span
-                :class="bet.amount >= 0 ? 'text-secondary-4' : 'text-secondary-2'"
+                :class="item.profit >= 0 ? 'text-secondary-4' : 'text-secondary-2'"
                 class="font-[700] text-sm"
               >
-                {{ bet.amount >= 0 ? '+' : '' }}{{ bet.amount }}
+                {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
               </span>
-            </div>
-            <div class="flex items-center justify-end mr-6 gap-1">
-              {{ bet.balance }}
               <ArrowRightIcon class="w-4 h-4 text-text-1" />
             </div>
           </div>
@@ -68,24 +69,26 @@
     </div>
 
     <!-- No More -->
-    <div v-if="betList.length > 0" class="pagination-section mt-4 pb-4">
+    <div v-if="dataList.length > 0" class="pagination-section mt-4 pb-4">
       <div v-if="!hasMore" class="text-center">
         <p class="text-text-1 text-sm font-[700]">{{ $t('betHistory.noMore') }}</p>
       </div>
     </div>
-    <NoData v-if="betList.length == 0" />
+
     <!-- 详情弹窗 -->
-    <BetDetailsModal v-model="showDetailModal" :bet="selectedBet" />
+    <DetailsModal v-model="showDetailModal" :data="selectedData" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import CustomSelect from '@/components/common/CustomSelect.vue'
-import BetDetailsModal from './betDetails/BetDetailsModal.vue'
+import DetailsModal from '../transactionDetails/detailsModal.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import bet from '@/static/img/personalCenter/bet.png'
-import NoData from './components/noData.vue'
+
+const { t } = useI18n()
 
 // 筛选条件
 const filters = ref({
@@ -96,52 +99,54 @@ const filters = ref({
 
 // 筛选选项
 const gameTypeOptions = computed(() => [
-  { label: 'All', value: 'all' },
-  { label: 'Today', value: 'today' },
-  { label: 'Yesterday', value: 'yesterday' },
-  { label: 'Last 3 Days', value: 'last_3_days' },
-  { label: 'Last 15 Days', value: 'last_15_days' },
-  { label: 'Last 30 Days', value: 'last_30_days' }
+  { label: t('betHistory.filters.all'), value: '' },
+  { label: t('betHistory.filters.slot'), value: 'slot' },
+  { label: t('betHistory.filters.chess'), value: 'chess' },
+  { label: t('betHistory.filters.fishing'), value: 'fishing' },
+  { label: t('betHistory.filters.live'), value: 'live' }
 ])
 
 const assetTypeOptions = computed(() => [
-  { label: 'All', value: 'all' },
-  { label: 'Deposit', value: 'Deposit1' },
-  { label: 'Deposit', value: 'Deposit2' },
-  { label: 'Deposit', value: 'Deposit3' },
-  { label: 'Deposit', value: 'Deposit4' }
+  { label: t('betHistory.filters.allAssets'), value: '' },
+  { label: 'USDT', value: 'usdt' },
+  { label: 'BTC', value: 'btc' },
+  { label: 'ETH', value: 'eth' }
+])
+
+const timeRangeOptions = computed(() => [
+  { label: t('betHistory.filters.past24Hours'), value: '24h' },
+  { label: t('betHistory.filters.past7Days'), value: '7d' },
+  { label: t('betHistory.filters.past30Days'), value: '30d' }
 ])
 
 const hasMore = ref(false)
 
-interface BetItem {
+interface Item {
   id: number
   gameName: string
   gameIcon: string
   gameType: string
   time: string
-  amount: number
-  balance: string
+  betAmount: string
+  profit: number
   result: 'win' | 'loss'
   currency: string
   orderNo: string
-  remarks: string
 }
 
 // 投注列表
-const betList = ref<BetItem[]>([
+const dataList = ref<Item[]>([
   {
     id: 1,
     gameName: 'Dragon Hatch',
     gameIcon: bet,
     gameType: 'Slot',
     time: '12/18/2026 11:14:15 AM',
-    amount: 1000,
-    balance: '₱ 1000',
+    betAmount: '1000',
+    profit: 1000.0,
     result: 'win',
     currency: 'PHP',
-    orderNo: 'ts0768456746746746746',
-    remarks: '--'
+    orderNo: 'ts0768456746746746746'
   },
   {
     id: 2,
@@ -149,12 +154,11 @@ const betList = ref<BetItem[]>([
     gameIcon: bet,
     gameType: 'Slot',
     time: '12/18/2026 11:14:15 AM',
-    amount: -1000,
-    balance: '₱ 1000',
+    betAmount: '1000',
+    profit: 1000.0,
     result: 'win',
     currency: 'PHP',
-    orderNo: 'ts0768456746746746747',
-    remarks: '--'
+    orderNo: 'ts0768456746746746747'
   },
   {
     id: 3,
@@ -162,21 +166,20 @@ const betList = ref<BetItem[]>([
     gameIcon: bet,
     gameType: 'Slot',
     time: '12/18/2026 11:14:15 AM',
-    amount: -1000,
-    balance: '₱ 1000',
+    betAmount: '1000',
+    profit: -1000.0,
     result: 'loss',
     currency: 'PHP',
-    orderNo: 'ts0768456746746746748',
-    remarks: '--'
+    orderNo: 'ts0768456746746746748'
   }
 ])
 
 // 弹窗
 const showDetailModal = ref(false)
-const selectedBet = ref<BetItem | null>(null)
+const selectedData = ref<Item | null>(null)
 
-const handleRowClick = (bet: BetItem) => {
-  selectedBet.value = bet
+const handleRowClick = (item: Item) => {
+  selectedData.value = item
   showDetailModal.value = true
 }
 </script>
