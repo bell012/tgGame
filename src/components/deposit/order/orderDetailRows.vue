@@ -1,7 +1,10 @@
 <template>
   <div v-for="item in rows" :key="item.label" :class="[rowClass, `font-['Inter']`]">
     <p class="text-text-3 text-sm sm:text-base font-['Inter']">{{ item.label }}</p>
-    <div :class="[valueClass, item.valueClass, `font-['Inter']`]">
+    <div
+      :class="[valueClass, item.valueClass, `font-['Inter']`]"
+      :style="[valueStyle, item.valueStyle]"
+    >
       <img v-if="item.icon" :class="iconClass" :src="item.icon" />
       {{ item.value }}
       <div v-if="item.copyValue" class="ml-3 w-[18px]" @click.stop="emit('copy', item.copyValue)">
@@ -13,6 +16,7 @@
 
 <script setup lang="ts">
 import CopyIcon from '@/static/svg/copy.svg?component'
+import type { CSSProperties } from 'vue'
 
 export interface DetailRowItem {
   label: string
@@ -20,6 +24,7 @@ export interface DetailRowItem {
   copyValue?: string
   icon?: string
   valueClass?: string
+  valueStyle?: CSSProperties
 }
 
 withDefaults(
@@ -27,6 +32,7 @@ withDefaults(
     rows: DetailRowItem[]
     rowClass?: string
     valueClass?: string
+    valueStyle?: CSSProperties
     iconClass?: string
   }>(),
   {

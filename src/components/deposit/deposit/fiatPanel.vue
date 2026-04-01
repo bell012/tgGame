@@ -29,14 +29,22 @@
     </div>
     <p class="mt-4 text-xs sm:text-sm font-bold leading-normal text-text-1">Deposit Amount</p>
     <div
-      class="flex items-center w-full mt-2 p-3 rounded-lg bg-input-3 border border-[color:var(--color-opacity-10)] focus-within:border-[color:var(--color-theme-level-1)] focus-within:ring-0"
+      class="flex items-center w-full mt-2 p-3 rounded-lg bg-input-3 border focus-within:border-[color:var(--color-theme-level-1)] focus-within:ring-0"
+      :class="
+        isAmountInputHighlighted
+          ? 'border-[color:var(--color-theme-level-1)]'
+          : 'border-[color:var(--color-opacity-10)]'
+      "
     >
       <DepositTokenIcon class="w-6 h-6 mr-3 text-theme-primary" />
       <input
         type="number"
         v-model="amount"
-        placeholder="Please select or enter deposit amount."
+        :readonly="!isManualAmountAllowed"
+        :inputmode="isManualAmountAllowed ? 'decimal' : 'none'"
+        :placeholder="amountPlaceholder"
         class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs sm:placeholder:text-sm"
+        :class="{ 'cursor-not-allowed': !isManualAmountAllowed }"
       />
     </div>
     <div class="mt-4 w-full relative">
@@ -50,7 +58,7 @@
         <button
           v-for="preset in presetAmounts"
           :key="preset"
-          @click="amount = preset"
+          @click="selectPresetAmount(preset)"
           class="py-[7px] sm:py-3 text-base sm:text-lg rounded-lg lg:hover:bg-theme-primary"
           :class="[preset === amount ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-1']"
         >
@@ -90,21 +98,29 @@
 import Api from '@/api'
 import type {
   QueryPayColumnItem,
+  QueryPayOrderByOrderIdResult,
   QueryPaySubColumnItem,
   QueryPaySubColumnPageForm,
   SubmitPayOrderQuickPageForm
 } from '@/api/interface/wallet'
-import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
-import { computed, nextTick, onMounted, ref, type ComponentPublicInstance } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
-import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
-import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
 import gCashIcon from '@/static/img/payment/gCash.png'
 import grabPayIcon from '@/static/img/payment/grabPay.png'
 import mayaIcon from '@/static/img/payment/maya.png'
 import payPalIcon from '@/static/img/payment/payPal.png'
+import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
+import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
+import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
+import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  type ComponentPublicInstance
+} from 'vue'
+import { useI18n } from 'vue-i18n'
 import depositOrderPop from '../order/depositOrderPop.vue'
 import { defaultFiatOrder, FiatOrderType } from '../order/orderType'
 import { usePresetGrid } from '../shared/usePresetGrid'
@@ -116,9 +132,7 @@ const emit = defineEmits<{
   hidden: [value: boolean]
 }>()
 
-const defaultPresetAmounts = [
-  200, 500, 1000, 1500, 2000, 3000, 5000, 10000, 20000, 30000, 50000, 100000
-]
+const defaultPresetAmounts: number[] = []
 const presetAmounts = ref<number[]>([...defaultPresetAmounts])
 
 const fallbackMethodIcons: Record<string, string> = {
@@ -140,13 +154,34 @@ const { expanded } = usePresetGrid(presetsRef)
 const orderInfo = ref<FiatOrderType>(defaultFiatOrder)
 const orderPopShow = ref(false)
 const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
+const isManualAmountAllowed = computed(() => selectedSubColumn.value?.manualAmountIn !== 0)
+const amountPlaceholder = computed(() =>
+  isManualAmountAllowed.value
+    ? 'Please select or enter deposit amount.'
+    : 'Please select a preset deposit amount.'
+)
+const isAmountInputHighlighted = ref(false)
+const currentOrderId = ref('')
+const pollTimer = ref<number | null>(null)
 
 const handleClose = () => {
+  stopOrderPolling()
+  currentOrderId.value = ''
   emit('hidden', false)
 }
 
 const handleHidden = () => {
   emit('hidden', true)
+}
+
+const clearAmount = () => {
+  amount.value = undefined
+  isAmountInputHighlighted.value = false
+}
+
+const selectPresetAmount = (preset: number) => {
+  amount.value = preset
+  isAmountInputHighlighted.value = true
 }
 
 const toPayImageUrl = (value: string) => {
@@ -169,6 +204,82 @@ const normalizePresetAmounts = (values: Array<number | string> = []) => {
     .filter(value => Number.isFinite(value) && value > 0)
 
   return parsed.length > 0 ? parsed : [...defaultPresetAmounts]
+}
+
+const mapOrderStatusText = (status?: number | string) => {
+  const normalized = Number(status)
+  if (normalized === 1) return 'Success'
+  if (normalized === 2) return 'Failed'
+  if (normalized === 3) return 'Processing'
+  return 'Processing'
+}
+
+const isTerminalOrderStatus = (status?: number | string) => {
+  const normalized = Number(status)
+  return normalized === 1 || normalized === 2
+}
+
+const formatTimestamp = (timestamp?: number) => {
+  if (!timestamp) return ''
+  return new Date(timestamp).toLocaleString()
+}
+
+const applyOrderDetail = (detail: QueryPayOrderByOrderIdResult) => {
+  orderInfo.value = {
+    order_no: String(detail.orderId ?? currentOrderId.value),
+    created_at: formatTimestamp(detail.createTime),
+    amount: Number(detail.busiAmount ?? amount.value ?? 0),
+    method: selectedMethod.value?.columnName ?? '',
+    method_icon: selectedMethod.value ? resolveMethodIcon(selectedMethod.value) : '',
+    currency: detail.currency || getCurrentCurrency(),
+    bonus: String(detail.returnAmount ?? 0),
+    type: 'Fiat',
+    status: mapOrderStatusText(detail.status)
+  }
+  orderPopShow.value = true
+}
+
+const stopOrderPolling = () => {
+  if (pollTimer.value !== null) {
+    window.clearInterval(pollTimer.value)
+    pollTimer.value = null
+  }
+}
+
+const queryOrderDetail = async () => {
+  if (!currentOrderId.value) return
+
+  try {
+    const response = await Api.wallet.queryPayOrderByOrderId({ orderId: currentOrderId.value })
+    const detail = response?.success ? response.result : undefined
+    if (!detail) return
+
+    applyOrderDetail(detail)
+    if (isTerminalOrderStatus(detail.status)) {
+      stopOrderPolling()
+    }
+  } catch (error) {
+    console.error('queryPayOrderByOrderId failed', error)
+  }
+}
+
+const startOrderPolling = () => {
+  if (!currentOrderId.value || pollTimer.value !== null) return
+
+  void queryOrderDetail()
+  pollTimer.value = window.setInterval(() => {
+    void queryOrderDetail()
+  }, 3000)
+}
+
+const handleVisibilityChange = () => {
+  if (!currentOrderId.value) return
+
+  if (document.visibilityState === 'visible') {
+    startOrderPolling()
+  } else {
+    stopOrderPolling()
+  }
 }
 
 const setMethodItemRef = (el: Element | ComponentPublicInstance | null, index: number) => {
@@ -275,7 +386,7 @@ const selectMethod = async (method: QueryPayColumnItem, index: number) => {
   }
 
   selectedMethod.value = method
-  amount.value = undefined
+  clearAmount()
   void scrollMethodIntoView(index)
   await loadPaySubColumnPage(method.columnCode)
 }
@@ -288,33 +399,52 @@ const doDeposit = async () => {
     columnCode: String(selectedMethod.value.columnCode),
     busiAmount: String(amount.value ?? 0),
     payChannelCode: selectedSubColumn.value?.payChannelCode ?? '',
-    channelId: 13
+    channelId: isMobile.value ? 4 : 3
   }
 
   try {
-    await Api.wallet.submitPayOrderQuick(param)
+    const response = await Api.wallet.submitPayOrderQuick(param)
+    const submitResult = response.result
+    currentOrderId.value = submitResult?.orderId !== undefined ? String(submitResult.orderId) : ''
+
+    orderInfo.value = {
+      order_no: currentOrderId.value,
+      created_at: formatTimestamp(submitResult?.createTime),
+      amount: amount.value ?? 0,
+      method: selectedMethod.value.columnName,
+      method_icon: resolveMethodIcon(selectedMethod.value),
+      currency: getCurrentCurrency(),
+      bonus: '0',
+      type: 'Fiat',
+      status: mapOrderStatusText(3)
+    }
+    orderPopShow.value = true
+    emit('hidden', true)
+
+    const payUrl = submitResult?.payUrl
+    const openedWindow = payUrl ? window.open(payUrl, '_blank') : null
+
+    if (currentOrderId.value) {
+      if (openedWindow) {
+        stopOrderPolling()
+      } else {
+        startOrderPolling()
+      }
+    }
   } catch (error) {
     console.error('submitPayOrderQuick failed', error)
     return
   }
-
-  orderInfo.value = {
-    order_no: 'ts0768456746746746746',
-    created_at: '12/18/2026 11:14:15 AM',
-    amount: amount.value ?? 0,
-    method: selectedMethod.value.columnName,
-    method_icon: resolveMethodIcon(selectedMethod.value),
-    currency: getCurrentCurrency(),
-    bonus: '50',
-    type: 'Fiat',
-    status: 'Success'
-  }
-  emit('hidden', true)
-  orderPopShow.value = true
 }
 
 onMounted(() => {
   void loadPayColumnPage()
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  stopOrderPolling()
 })
 </script>
 <style scoped lang="scss">

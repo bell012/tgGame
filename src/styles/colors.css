@@ -53,6 +53,11 @@
   --color-secondary-level-6: #f7ff4b;
   --color-secondary-level-7: #ff9822;
 
+  /* ========== 辅助色 (Assist) ========== */
+  --color-assist-red: #ff3636;
+  --color-assist-green: #34e070;
+  --color-assist-blue: #21b9ff;
+
   /* ========== 通用色 (Common) ========== */
   --color-common-100: #ffffff;
   --color-common-60: rgba(255, 255, 255, 0.6);
@@ -126,6 +131,11 @@
   --color-secondary-level-5: rgba(247, 255, 73, 0.15);
   --color-secondary-level-6: #f7ff4b;
   --color-secondary-level-7: #ff9822;
+
+  /* ========== 辅助色 (Assist) - 浅色模式 ========== */
+  --color-assist-red: #ff3636;
+  --color-assist-green: #34e070;
+  --color-assist-blue: #21b9ff;
 
   /* ========== 通用色 (Common) - 浅色模式 ========== */
   --color-common-100: #ffffff;

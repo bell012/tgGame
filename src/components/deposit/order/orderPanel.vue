@@ -211,24 +211,25 @@
   />
 </template>
 <script setup lang="ts">
-import { CountDown, showToast } from 'vant'
-import QRCode from 'qrcode'
-import html2canvas from 'html2canvas'
-import { computed, nextTick, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import CloseIcon from '@/static/svg/close.svg?component'
 import CryptoOrderCountdownIcon from '@/static/svg/deposit/crypto-order-countdown.svg?component'
 import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifying.svg?component'
 import FiatOrderAmountIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
-import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import DetailsIcon from '@/static/svg/deposit/order-details.svg?component'
+import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
+import html2canvas from 'html2canvas'
+import QRCode from 'qrcode'
+import { CountDown, showToast } from 'vant'
+import { computed, nextTick, ref, watch } from 'vue'
+import type { CSSProperties } from 'vue'
+import { useI18n } from 'vue-i18n'
+import uploadProofPop from '../uploadProof/uploadProofPop.vue'
 import cancelOrderPop from './cancelOrderPop.vue'
 import orderAmountHeader from './orderAmountHeader.vue'
-import orderDetailRows from './orderDetailRows.vue'
 import type { DetailRowItem } from './orderDetailRows.vue'
+import orderDetailRows from './orderDetailRows.vue'
 import orderStatusResult from './orderStatusResult.vue'
-import uploadProofPop from '../uploadProof/uploadProofPop.vue'
 import { CryptOrderType, FiatOrderType, OrderType } from './orderType'
 
 const { t } = useI18n()
@@ -268,6 +269,14 @@ const fiatOrderInfo = computed<FiatOrderType | null>(() =>
 const cryptoRate = computed(() => cryptoOrderInfo.value?.rate ?? '')
 const cryptoNetwork = computed(() => cryptoOrderInfo.value?.network ?? '')
 const cryptoAddress = computed(() => cryptoOrderInfo.value?.address_token ?? '')
+const fiatStatusStyleMap: Record<string, CSSProperties> = {
+  Success: { color: 'var(--color-assist-green)' },
+  Failed: { color: 'var(--color-assist-red)' },
+  Processing: { color: 'var(--color-assist-blue)' }
+}
+
+const getFiatStatusStyle = (status: string) =>
+  fiatStatusStyleMap[status] || { color: 'var(--color-theme-level-1)' }
 
 const panelHeightClass = computed(() => {
   if (props.orderInfo.type === 'Fiat') return 'sm:max-h-[491px]'
@@ -362,7 +371,7 @@ const fiatSummaryRows = computed<DetailRowItem[]>(() => {
     {
       label: 'Order Status',
       value: fiatOrderInfo.value.status,
-      valueClass: 'text-theme-primary'
+      valueStyle: getFiatStatusStyle(fiatOrderInfo.value.status)
     },
     {
       label: 'Order No.',
