@@ -4,7 +4,7 @@
     <transition name="popup-fade">
       <div
         v-show="visible"
-        class="tp-mask fixed z-[9999] inset-0 bg-[var(--color-mask-60)]"
+        class="tp-mask fixed z-[9999] inset-0 bg-[var(--color-mask-60-1)]"
         @click.self="close"
       />
     </transition>
