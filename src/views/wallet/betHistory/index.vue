@@ -1,14 +1,9 @@
 <template>
   <div>
-    <!-- PC 端布局 -->
-    <WalletLayout current-tab="bet-history" class="hidden md:block">
-      <div class="bg-bg-2 rounded-xl overflow-hidden">
-        <PcLayout />
-      </div>
-    </WalletLayout>
-
-    <!-- H5 端布局 -->
-    <div class="fixed inset-0 block bg-bg-1 md:hidden flex flex-col overflow-hidden">
+    <div
+      v-if="isReady && isMobile"
+      class="fixed inset-0 block bg-bg-1 md:hidden flex flex-col overflow-hidden"
+    >
       <H5Header :title="$t('betHistory.title')" :show-sort="true" @sort="handleSort" />
 
       <div ref="scrollRoot" class="flex-1 overflow-y-auto">
@@ -29,7 +24,7 @@
           >
             <img :src="noDataImg" alt="No data" class="h-[200px] w-auto mb-2.5" />
             <p class="text-text-1 text-xs font-[500] mb-5">
-              {{ $t('betHistory.noBetHistoryYet') }}
+              {{ $t('common.noData') }}
             </p>
             <button
               class="w-[200px] h-[40px] rounded-lg bg-theme-primary text-text-4 font-[700] text-sm flex items-center justify-center"
@@ -124,16 +119,21 @@
         @apply="handleFilterApply"
       />
     </div>
+
+    <WalletLayout v-else-if="isReady" current-tab="bet-history">
+      <div class="bg-bg-2 rounded-xl overflow-hidden">
+        <PcLayout />
+      </div>
+    </WalletLayout>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import Api from '@/api'
-import type { QueryOrderInfoPageForm, QueryOrderInfoResult } from '@/api/interface/record.interface'
 import { navigateTo } from '@/utils/router'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
-import { getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
@@ -141,224 +141,61 @@ import WalletLayout from '../index.vue'
 import PcLayout from './pc-layout.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import noDataImg from '@/static/img/personalCenter/noData.png'
-import bet from '@/static/img/personalCenter/bet.png'
+import {
+  BET_HISTORY_PAGE_SIZE,
+  buildBetHistoryQueryForm,
+  createBetHistoryGameTypeOptions,
+  createBetHistoryStatusOptions,
+  createBetHistoryTimeOptions,
+  createBetHistoryWinlostOptions,
+  createDefaultBetHistoryFilterValues,
+  hasMoreByTotal,
+  mapRecordToItem,
+  type Item
+} from './shared'
 
-type QueryRecord = QueryOrderInfoResult['records'][number]
-type FilterValue = string | string[] | undefined
-
-interface Item {
-  id: number
-  gameType: string
-  gameName: string
-  gameIcon: string
-  betAmount: string
-  result: 'win' | 'loss'
-  resultAmount: string
-  currency: string
-  orderNo: string
-  createdAt: string
-  time: string
-  rawData: QueryRecord
-}
-
-const PAGE_SIZE = 10
 const { t } = useI18n()
-const currentCurrency = getCurrentCurrency()
+const isMobile = useIsMobile()
+const isReady = ref(false)
 
 const scrollRoot = ref<HTMLElement | null>(null)
 const loadMoreSentinel = ref<HTMLElement | null>(null)
 
-const createDefaultFilterValues = () => ({
-  time: 'all',
-  winlost: 'all',
-  status: 'all',
-  gameType: 'all'
+const filterValues = ref<Record<string, string | string[]>>({
+  ...createDefaultBetHistoryFilterValues()
 })
-
-const filterValues = ref<Record<string, string | string[]>>(createDefaultFilterValues())
 
 const filterGroups = computed<FilterGroup[]>(() => [
   {
     key: 'time',
     title: t('betHistory.filterGroups.time'),
-    options: [
-      { label: t('betHistory.filterOptions.all'), value: 'all' },
-      { label: t('betHistory.filterOptions.today'), value: 'today' },
-      { label: t('betHistory.filterOptions.yesterday'), value: 'yesterday' },
-      { label: t('betHistory.filterOptions.last3Days'), value: 'last3days' },
-      { label: t('betHistory.filterOptions.last15Days'), value: 'last15days' },
-      { label: t('betHistory.filterOptions.last30Days'), value: 'last30days' }
-    ]
+    options: createBetHistoryTimeOptions(t)
   },
   {
     key: 'winlost',
     title: t('betHistory.filterGroups.winLoss'),
-    options: [
-      { label: t('betHistory.filterOptions.all'), value: 'all' },
-      { label: t('betHistory.win'), value: '1' },
-      { label: t('betHistory.loss'), value: '0' }
-    ]
+    options: createBetHistoryWinlostOptions(t)
   },
   {
     key: 'status',
     title: t('betHistory.filterGroups.status'),
-    options: [
-      { label: t('betHistory.filterOptions.all'), value: 'all' },
-      { label: t('betHistory.filterOptions.settled'), value: '1' },
-      { label: t('betHistory.filterOptions.unsettled'), value: '0' }
-    ]
+    options: createBetHistoryStatusOptions(t)
   },
   {
     key: 'gameType',
     title: t('betHistory.filterGroups.gameType'),
-    options: [
-      { label: t('betHistory.filterOptions.all'), value: 'all' },
-      { label: t('betHistory.filterOptions.lottery'), value: 'CP' },
-      { label: t('betHistory.filterOptions.sports'), value: 'TY' },
-      { label: t('betHistory.filterOptions.live'), value: 'ZR' },
-      { label: t('betHistory.filterOptions.electronic'), value: 'DZ' },
-      { label: t('betHistory.filterOptions.chess'), value: 'QP' },
-      { label: t('betHistory.filterOptions.fishing'), value: 'BY' },
-      { label: t('betHistory.filterOptions.esports'), value: 'DJ' }
-    ]
+    options: createBetHistoryGameTypeOptions(t)
   }
 ])
 
-const getSingleValue = (value: FilterValue) => {
-  if (Array.isArray(value)) {
-    return value[0] ?? 'all'
-  }
-
-  return value ?? 'all'
-}
-
-const getTimeRange = (value: string) => {
-  const now = new Date()
-  const endOfDay = (date: Date) => {
-    const next = new Date(date)
-    next.setHours(23, 59, 59, 999)
-    return next.getTime()
-  }
-  const startOfDay = (date: Date) => {
-    const next = new Date(date)
-    next.setHours(0, 0, 0, 0)
-    return next.getTime()
-  }
-
-  if (value === 'all') {
-    return { secondStartTime: null, secondEndTime: null }
-  }
-
-  if (value === 'today') {
-    return {
-      secondStartTime: startOfDay(now),
-      secondEndTime: now.getTime()
-    }
-  }
-
-  if (value === 'yesterday') {
-    const yesterday = new Date(now)
-    yesterday.setDate(yesterday.getDate() - 1)
-
-    return {
-      secondStartTime: startOfDay(yesterday),
-      secondEndTime: endOfDay(yesterday)
-    }
-  }
-
-  const dayMap: Record<string, number> = {
-    last3days: 3,
-    last15days: 15,
-    last30days: 30
-  }
-  const days = dayMap[value]
-
-  if (!days) {
-    return { secondStartTime: null, secondEndTime: null }
-  }
-
-  const startDate = new Date(now)
-  startDate.setDate(startDate.getDate() - (days - 1))
-
-  return {
-    secondStartTime: startOfDay(startDate),
-    secondEndTime: now.getTime()
-  }
-}
-
-const getGameTypeLabel = (code: string) => {
-  const labelMap: Record<string, string> = {
-    CP: t('betHistory.filterOptions.lottery'),
-    TY: t('betHistory.filterOptions.sports'),
-    ZR: t('betHistory.filterOptions.live'),
-    DZ: t('betHistory.filterOptions.electronic'),
-    QP: t('betHistory.filterOptions.chess'),
-    BY: t('betHistory.filterOptions.fishing'),
-    DJ: t('betHistory.filterOptions.esports')
-  }
-
-  return (labelMap[code] ?? code) || '--'
-}
-
-const formatAmount = (amount: number, currency?: string) =>
-  getFormattedBalance(amount, currency || currentCurrency, 2)
-
-const formatTime = (time: number) => new Date(time).toLocaleString()
-
-const mapRecordToItem = (record: QueryRecord): Item => {
-  const gameType = getGameTypeLabel(record.sysGameTypeCode)
-  const gameName =
-    record.remark ||
-    record.betContent1 ||
-    record.betContent2 ||
-    [gameType, record.platformCode].filter(Boolean).join(' / ') ||
-    record.gameCode ||
-    record.betId ||
-    '--'
-
-  return {
-    id: record.rowId,
-    gameType,
-    gameName,
-    gameIcon: bet,
-    betAmount: formatAmount(record.betAmount, record.currency),
-    result: record.gameAmount >= 0 ? 'win' : 'loss',
-    resultAmount: formatAmount(Math.abs(record.gameAmount), record.currency),
-    currency: record.currency,
-    orderNo: record.betId || record.issueId || String(record.rowId),
-    createdAt: formatTime(record.createTime || record.betTime),
-    time: formatTime(record.betTime),
-    rawData: record
-  }
-}
-
-const buildQueryForm = (page: number, pageSize: number): QueryOrderInfoPageForm => {
-  const timeValue = getSingleValue(filterValues.value.time)
-  const winlostValue = getSingleValue(filterValues.value.winlost)
-  const statusValue = getSingleValue(filterValues.value.status)
-  const gameTypeValue = getSingleValue(filterValues.value.gameType)
-  const { secondStartTime, secondEndTime } = getTimeRange(timeValue)
-
-  return {
-    secondStartTime,
-    secondEndTime,
-    winlost: winlostValue === 'all' ? null : Number(winlostValue),
-    page: {
-      current: page,
-      size: pageSize
-    },
-    param: {
-      currency: currentCurrency,
-      sysGameTypeCode: gameTypeValue === 'all' ? null : gameTypeValue,
-      platformCode: null,
-      gameCode: null,
-      status: statusValue === 'all' ? null : Number(statusValue)
-    }
-  }
-}
-
 const fetchBetHistory = async (page: number, pageSize: number) => {
-  const response = await Api.record.queryOrderInfoPage(buildQueryForm(page, pageSize))
+  const response = await Api.record.queryOrderInfoPage(
+    buildBetHistoryQueryForm({
+      page,
+      pageSize,
+      filterValues: filterValues.value
+    })
+  )
 
   if (!response.success) {
     throw new Error(response.message || t('common.requestError'))
@@ -376,18 +213,13 @@ const {
 } = useInfiniteScroll<Item, Awaited<ReturnType<typeof Api.record.queryOrderInfoPage>>>({
   sentinel: loadMoreSentinel,
   root: scrollRoot,
-  pageSize: PAGE_SIZE,
+  enabled: () => isReady.value && isMobile.value,
+  pageSize: BET_HISTORY_PAGE_SIZE,
   load: async ({ page, pageSize }) => fetchBetHistory(page, pageSize),
-  getItems: response => response.result?.records?.map(mapRecordToItem) ?? [],
+  getItems: response => response.result?.records?.map(record => mapRecordToItem(record, t)) ?? [],
   getTotal: response => response.result?.total,
-  getHasMore: (response, { page, pageSize, items }) => {
-    const total = response.result?.total
-    if (typeof total === 'number') {
-      return page * pageSize < total
-    }
-
-    return items.length >= pageSize
-  },
+  getHasMore: (response, { page, pageSize, items }) =>
+    hasMoreByTotal(response.result?.total, page, pageSize, items.length),
   dedupeBy: item => item.id,
   onError: requestError => {
     console.error(requestError)
@@ -413,7 +245,7 @@ const handleSort = () => {
 
 const handleFilterApply = async (values: Record<string, string | string[]>) => {
   filterValues.value = {
-    ...createDefaultFilterValues(),
+    ...createDefaultBetHistoryFilterValues(),
     ...values
   }
   await refresh()
@@ -422,6 +254,10 @@ const handleFilterApply = async (values: Record<string, string | string[]>) => {
 const handleRetry = async () => {
   await refresh()
 }
+
+onMounted(() => {
+  isReady.value = true
+})
 </script>
 
 <style scoped lang="scss"></style>
