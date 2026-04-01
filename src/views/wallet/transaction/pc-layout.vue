@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 pb-0 w-[1032px]">
+  <div class="p-6 pb-0">
     <div class="mb-4">
       <div class="flex items-center gap-2 flex-wrap">
         <!-- 游戏类型筛选 -->

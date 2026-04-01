@@ -1,6 +1,6 @@
 ﻿<template>
   <div class="home max-w-[1248px] mx-auto px-0 py-0 sm:px-4 sm:py-4">
-    <div v-if="userInfo" style="height: 60px"></div>
+    <div style="height: 65px"></div>
     <div v-if="userInfo">
       <HomeCarouselImg v-if="querySlideshowList.length" :list="querySlideshowList" />
     </div>
@@ -33,7 +33,7 @@
           </h2>
         </div>
         <button
-          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)]"
+          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] text-[13px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)]"
           type="button"
           @click.stop="openRegisterModal"
         >
