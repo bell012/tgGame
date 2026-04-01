@@ -100,8 +100,6 @@
         </a>
       </div>
     </div>
-    <!-- 注册弹窗 -->
-    <LoginModal v-model="showLoginModal" default-tab="register" />
   </div>
 </template>
 
@@ -109,9 +107,9 @@
 import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './img/peopleNumber.svg?component'
+import { useAuthModalStore } from '@/stores/authModal'
 import { StringExtension } from '@/utils/string-extension'
 import { navigateToName } from '@/utils/router'
-import LoginModal from '@/components/login_register/LoginModal.vue'
 interface GameItem {
   img: {
     maintain: boolean
@@ -127,6 +125,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const authModalStore = useAuthModalStore()
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
 
@@ -146,13 +145,12 @@ const normalizeGameItem = (item: any): GameItem => {
 const normalizedList = computed(() => {
   return (props.list ?? []).map((item: any) => normalizeGameItem(item))
 })
-const showLoginModal = ref(false)
 const handleClick = (rowId: number) => {
   let userInfo = localStorage.getItem('userInfo')
   if (userInfo) {
     navigateToName('gameDetail', { params: { id: rowId } })
   } else {
-    showLoginModal.value = true
+    authModalStore.openRegisterModal()
   }
 }
 const prevDisabled = ref(true)
@@ -231,7 +229,6 @@ const scrollPrev = () => {
   gap: var(--grid-gap);
   padding-left: var(--grid-padding);
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
 }
 
 @media (min-width: 1280px) {

@@ -35,7 +35,7 @@
         <button
           class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)]"
           type="button"
-          @click.stop="showLoginModal = true"
+          @click.stop="openRegisterModal"
         >
           {{ t('casino.join_now') }}
         </button>
@@ -52,7 +52,7 @@
         </div>
         <!-- 近期大奖 -->
         <div>{{ $t('home.RecentBigWins') }}</div>
-        <div class="ml-2 gap-2 lg:!flex lg:!flex-col pcState">
+        <!-- <div class="ml-2 gap-2 lg:!flex lg:!flex-col pcState">
           <div
             @click="carousel(0)"
             class="button button-m center h-auto flex-1 whitespace-nowrap rounded-none border-b-2 p-1 text-xs"
@@ -97,7 +97,7 @@
           >
             {{ $t('home.LiveCasino') }}
           </div>
-        </div>
+        </div> -->
       </h2>
     </div>
     <div class="marquee px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
@@ -209,7 +209,7 @@
         :title="value.sysGameTypeName"
         :list="value.list"
         v-for="value in gameData"
-        :key="value.title"
+        :key="value.sysGameTypeName"
       />
       <EventList v-if="sportsEventList.length" :list="sportsEventList" />
       <!-- <GameList :title="$t(gamelist1.title)" :list="gamelist1.list" /> -->
@@ -282,23 +282,24 @@
     </div>
   </div>
   <NewEvent class="mt-2" />
-  <ActivityPop v-if="showActivityPop" class="sm:hidden" @close="closeActivityPop" />
+  <ActivityPop v-if="shouldShowActivityPop" class="sm:hidden" @close="closeActivityPop" />
   <!-- 提示弹窗 -->
   <H5HomePop
-    v-if="showH5HomePop"
+    v-if="shouldShowH5HomePop"
     class="sm:hidden"
     @close="closeH5HomePop"
-    @open-login="openLoginModal"
+    @open-login="openRegisterModal"
   />
-  <!-- 注册弹窗 -->
-  <LoginModal v-model="showLoginModal" default-tab="register" />
   <CommonFooter class="hidden sm:block" />
 </template>
 
 <script setup lang="ts">
 import Api from '@/api'
+import router from '@/router'
 import H5HomePop from '@/components/H5HomePop.vue'
 import HomeCarouselImg from '@/components/homeCarouselImg.vue'
+import { useAuthModalStore } from '@/stores/authModal'
+import { stripLocalePrefix } from '@/utils/locale'
 
 import ActivityPop from '@/components/activityPop.vue'
 
@@ -335,7 +336,6 @@ import MAYA from '@/static/svg/coin/maya.svg?url'
 import SHOPEE from '@/static/svg/coin/shopeePay.svg?url'
 
 import CommonFooter from '@/components/commonFooter.vue'
-import LoginModal from '@/components/login_register/LoginModal.vue'
 import combination from '@/static/img/home/combination.png'
 import contract from '@/static/img/home/contract.png'
 import fishing from '@/static/img/home/fishing.png'
@@ -353,17 +353,25 @@ interface RawGameDataItem {
   [key: string]: any
 }
 
+interface HomeGameSection {
+  list: RawGameDataItem[]
+  sysGameTypeName: string
+}
+
 const { t } = useI18n()
-const showLoginModal = ref(false)
+const authModalStore = useAuthModalStore()
 const showH5HomePop = ref(true)
 const userInfo = ref<any>(null)
+const isActiveHomeRoute = computed(() => stripLocalePrefix(router.currentRoute.value.path) === '/')
+const shouldShowH5HomePop = computed(() => isActiveHomeRoute.value && showH5HomePop.value)
 const closeH5HomePop = () => {
   showH5HomePop.value = false
 }
-const openLoginModal = () => {
-  showLoginModal.value = true
+const openRegisterModal = () => {
+  authModalStore.openRegisterModal()
 }
 const showActivityPop = ref(true)
+const shouldShowActivityPop = computed(() => isActiveHomeRoute.value && showActivityPop.value)
 const closeActivityPop = () => {
   showActivityPop.value = false
 }
@@ -395,10 +403,10 @@ const listImg = computed(() => [
     icon: icon4
   }
 ])
-const carouselVal = ref(0)
-const carousel = (val: number) => {
-  carouselVal.value = val
-}
+// const carouselVal = ref(0)
+// const carousel = (val: number) => {
+//   carouselVal.value = val
+// }
 
 interface RecentBigWin {
   src: string
@@ -421,7 +429,8 @@ const getRecentBigWinsData = async () => {
 }
 const duplicatedList = computed(() => [...list.value, ...list.value])
 
-const gameData = ref<any>(null)
+const gameData = ref<HomeGameSection[]>([])
+const rawGameData = ref<RawGameDataItem[]>([])
 
 const toGameImageUrl = (value: string) => {
   if (!value) {
@@ -430,9 +439,17 @@ const toGameImageUrl = (value: string) => {
   return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
 }
 
+const mapHomeGameSections = (source: RawGameDataItem[]): HomeGameSection[] => {
+  return source.map(item => ({
+    list: item?.subGame?.[0]?.subGame?.slice(0, 10) || [],
+    sysGameTypeName: item?.sysGameTypeName || ''
+  }))
+}
+
 const sportsProviders = computed<RawGameDataItem[]>(() => {
-  const sectionList = gameData.value?.result ?? []
-  const sportsSection = sectionList.find((item: RawGameDataItem) => item?.sysGameTypeCode === 'TY')
+  const sportsSection = rawGameData.value.find(
+    (item: RawGameDataItem) => item?.sysGameTypeCode === 'TY'
+  )
 
   return sportsSection?.subGame ?? []
 })
@@ -463,10 +480,12 @@ onMounted(async () => {
   try {
     userInfo.value = localStorage.getItem('userInfo')
     const res = await Api.home.getGameData()
-    gameData.value = res.result.map((item: any) => ({
-      list: item?.subGame?.[0]?.subGame?.slice(0, 10) || [],
-      sysGameTypeName: item?.sysGameTypeName || ''
-    }))
+    const rawResult = Array.isArray(res.result) ? res.result : []
+
+    rawGameData.value = rawResult
+    gameData.value = mapHomeGameSections(rawResult)
+    localStorage.setItem('gameData', JSON.stringify(rawResult))
+
     getRecentBigWinsData()
     getQuerySlideshow()
   } catch (error) {

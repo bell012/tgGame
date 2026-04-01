@@ -3,7 +3,11 @@
     <!-- 搜索框-->
     <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
     <!-- 顶部tab切换 -->
-    <top-tab v-if="currentType === 'casino' || currentType === 'sports'" />
+    <top-tab
+      v-if="currentType === 'casino' || currentType === 'sports'"
+      :tab-list="topTabList"
+      @change="topTabChange"
+    />
     <!-- 筛选条件 -->
     <div class="grid lg:grid-cols-4 grid-cols-2 gap-4" v-if="currentType === 'casino'">
       <select-popup
@@ -35,12 +39,13 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, provide, ref } from 'vue'
+import { computed, onMounted, provide, ref } from 'vue'
 import TopInput from './top-input/index.vue'
 import TopTab from './top-tab/index.vue'
 import SelectPopup from './select-popup/index.vue'
 import MultipleSelectPopup from './multiple-select-popup/index.vue'
 import { useThemeStore } from '@/stores/theme'
+import Api from '@/api'
 import Casino from '@/components/explore/list/casino.vue'
 import Sports from '@/components/explore/list/sports.vue'
 import Lottery from '@/components/explore/list/lottery.vue'
@@ -55,6 +60,17 @@ const listCompMap = {
   lottery: Lottery
 }
 
+type GameSection = {
+  sysGameTypeCode?: string
+  sysGameTypeName?: string
+  subGame?: unknown[]
+}
+
+type TopTabItem = {
+  sysGameTypeCode: string
+  sysGameTypeName: string
+}
+
 // 搜索的关键字
 const keywords = ref('')
 provide('explore-keywords', keywords)
@@ -62,16 +78,54 @@ provide('explore-keywords', keywords)
 // top-input
 const typeList = [
   { id: 'casino', name: 'Casino' },
-  { id: 'sports', name: 'Sports' },
-  { id: 'lottery', name: 'Lottery' }
+  { id: 'sports', name: 'Sports' }
+  // { id: 'lottery', name: 'Lottery' }
 ]
 
 // 游戏类型
 const currentType = ref<keyof typeof listCompMap>('casino')
 provide('explore-current-type', currentType)
 
+const currentSubGameTypeCode = ref('')
+
+const queryGameList = ref<GameSection[]>([])
+
+const currentTypeGameList = computed(() => {
+  const section = queryGameList.value.find(
+    item => item?.sysGameTypeCode === currentSubGameTypeCode.value
+  )
+  return section?.subGame ?? []
+})
+
+provide('explore-game-list', currentTypeGameList)
+
+const topTabList = computed<TopTabItem[]>(() => {
+  const list = Array.isArray(queryGameList.value) ? (queryGameList.value as GameSection[]) : []
+  return list
+    .map(item => ({
+      sysGameTypeCode: item?.sysGameTypeCode ?? '',
+      sysGameTypeName: item?.sysGameTypeName ?? ''
+    }))
+    .filter(item => item.sysGameTypeCode && item.sysGameTypeName)
+})
+
+const topTabChange = (code: string) => {
+  currentSubGameTypeCode.value = code
+}
+
+const getQueryGameListForApp = async () => {
+  try {
+    const res = await Api.home.getGameData()
+    queryGameList.value = Array.isArray(res?.result) ? res.result : []
+  } catch (error) {
+    console.error('queryGameListForApp failed', error)
+    queryGameList.value = []
+  }
+}
+
 const changeTypeHandler = (val: keyof typeof listCompMap) => {
   currentType.value = val
+  currentSubGameTypeCode.value = ''
 }
 const topInputSearch = (value: string) => {
   console.log(value)
@@ -79,6 +133,7 @@ const topInputSearch = (value: string) => {
 
 // 排序
 const currentSort = ref('1')
+
 const sortList = [
   { value: '1', label: '热门' },
   { value: '2', label: '最新' },
@@ -100,6 +155,7 @@ const providerOptions = computed(() => {
     }
   })
 })
+
 const providerChange = (val: string[]) => {
   console.log(val)
 }
@@ -115,6 +171,10 @@ const countryOptions = countryList.map(item => {
 const countryChange = (val: string) => {
   console.log(val)
 }
+
+onMounted(() => {
+  getQueryGameListForApp()
+})
 </script>
 
 <style lang="scss" scoped></style>
