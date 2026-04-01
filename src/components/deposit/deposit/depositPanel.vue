@@ -50,7 +50,7 @@
 import { useI18n } from 'vue-i18n'
 import CloseIcon from '@/static/svg/close.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
-import DetailsIcon from '@/static/svg/deposit/order-details.svg?component'
+import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import depositContentPanel, { type DepositTabType } from './depositContentPanel.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 

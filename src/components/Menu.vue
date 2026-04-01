@@ -66,7 +66,12 @@
             >
               <div class="flex items-center w-full justify-center">
                 <div class="w-10 h-10 flex items-center justify-center">
-                  <component :is="item.icon" class="w-6 h-6 fill-none" />
+                  <img
+                    v-if="typeof item.icon === 'string'"
+                    :src="item.icon"
+                    class="w-6 h-6 object-contain"
+                  />
+                  <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
                 </div>
               </div>
             </div>
@@ -131,7 +136,12 @@
               >
                 <div class="flex items-center">
                   <div class="w-10 h-10 flex items-center justify-center">
-                    <component :is="item.icon" class="w-6 h-6 fill-text-2" />
+                    <img
+                      v-if="typeof item.icon === 'string'"
+                      :src="item.icon"
+                      class="w-6 h-6 object-contain"
+                    />
+                    <component v-else :is="item.icon" class="w-6 h-6 fill-text-2" />
                   </div>
                   <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
                 </div>
@@ -219,7 +229,12 @@
             >
               <div class="flex items-center w-full justify-center">
                 <div class="w-10 h-10 flex items-center justify-center">
-                  <component :is="item.icon" class="w-6 h-6 fill-none" />
+                  <img
+                    v-if="typeof item.icon === 'string'"
+                    :src="item.icon"
+                    class="w-6 h-6 object-contain"
+                  />
+                  <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
                 </div>
               </div>
             </div>
@@ -281,7 +296,12 @@
               >
                 <div class="flex items-center">
                   <div class="w-10 h-10 flex items-center justify-center">
-                    <component :is="item.icon" class="w-6 h-6 fill-none" />
+                    <img
+                      v-if="typeof item.icon === 'string'"
+                      :src="item.icon"
+                      class="w-6 h-6 object-contain"
+                    />
+                    <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
                   </div>
                   <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
                 </div>
@@ -454,10 +474,11 @@ import { sideIcons } from '@/static/svg/side'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
+import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
 import { getLocaleLabel } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import type { Component } from 'vue'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 interface Props {
   isCollapsed?: boolean
@@ -475,12 +496,14 @@ const themeStore = useThemeStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
 const { t } = useI18n()
-const { side, casino, sports, lottery, support, sponsorships, aboutUs, legal } = sideIcons
+const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
+const { tabButtons: casinoTabButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
+const { side, sports, lottery, support, sponsorships, aboutUs, legal } = sideIcons
 
 type SidebarSubmenuItem = {
   id: string
   name: string
-  icon: Component
+  icon: string | Component
   handler: () => void
   children?: SidebarSubmenuItem[]
 }
@@ -625,6 +648,19 @@ const handleThirdLevelClick = (item: any) => {
   }
   hoveredSubmenu.value = null
 }
+
+const buildCasinoMenuChildren = (): SidebarSubmenuItem[] => {
+  return casinoTabButtons.value
+    .filter(item => item.sysGameTypeCode !== '')
+    .map(item => ({
+      id: `casino_${item.sysGameTypeCode}`,
+      name: item.sysGameTypeName,
+      icon: item.icon,
+      handler: () => {
+        navigateTo(`/casino/${item.sysGameTypeCode}`)
+      }
+    }))
+}
 // 可展开菜单组数据
 const expandableMenus = computed<SidebarMenuGroup[]>(() => [
   {
@@ -634,82 +670,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
     handler: () => {
       navigateTo('/casino')
     },
-    children: [
-      {
-        id: 'casino_favorites',
-        name: t('sidebar_menu.casino.children.favorites'),
-        icon: casino.favorites_full,
-        handler: () => {
-          console.log('点击 我的最爱')
-          navigateTo('/casino/favorites')
-        }
-      },
-      {
-        id: 'casino_recent',
-        name: t('sidebar_menu.casino.children.recent'),
-        icon: casino.recent,
-        handler: () => {
-          console.log('点击 最近常玩')
-          navigateTo('/casino/recent')
-        }
-      },
-      {
-        id: 'casino_tg_originals',
-        name: t('sidebar_menu.casino.children.tg_originals'),
-        icon: casino.logo,
-        handler: () => {
-          navigateTo('/casino/originate')
-        }
-      },
-      {
-        id: 'casino_hot_games',
-        name: t('sidebar_menu.casino.children.hot_games'),
-        icon: casino.hot_games,
-        handler: () => {
-          navigateTo('/casino/hot_games')
-        }
-      },
-      {
-        id: 'casino_slots',
-        name: t('sidebar_menu.casino.children.slots'),
-        icon: casino.slots,
-        handler: () => {
-          navigateTo('/casino/slots')
-        }
-      },
-      {
-        id: 'casino_live_casino',
-        name: t('sidebar_menu.casino.children.live_casino'),
-        icon: casino.live_casino,
-        handler: () => {
-          navigateTo('/casino/live_casino')
-        }
-      },
-      {
-        id: 'casino_table_games',
-        name: t('sidebar_menu.casino.children.table_games'),
-        icon: casino.poker,
-        handler: () => {
-          navigateTo('/casino/table_games')
-        }
-      },
-      {
-        id: 'casino_fishing',
-        name: t('sidebar_menu.casino.children.fishing'),
-        icon: casino.fishing,
-        handler: () => {
-          navigateTo('/casino/fishing')
-        }
-      },
-      {
-        id: 'casino_game_providers',
-        name: t('sidebar_menu.casino.children.game_providers'),
-        icon: casino.game_providers,
-        handler: () => {
-          navigateTo('/casino/game_provider')
-        }
-      }
-    ]
+    children: buildCasinoMenuChildren()
   },
   {
     id: 'sports',
@@ -1154,6 +1115,10 @@ const bottomMenus = computed<SidebarMenuGroup[]>(() => [
     ]
   }
 ])
+
+onMounted(() => {
+  void loadCasinoTabButtons()
+})
 </script>
 
 <style scoped lang="scss">

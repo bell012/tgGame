@@ -135,7 +135,14 @@
     "show_blocked": "显示屏蔽游戏",
     "all": "全部",
     "latest_bet": "最新投注",
-    "high_roller": "龙虎榜"
+    "high_roller": "龙虎榜",
+    "lobby": "大厅",
+    "tg_originals": "TG 原创",
+    "hot_games": "热门游戏",
+    "favorites": "收藏游戏",
+    "recent": "最近游戏",
+    "filter_hot": "热门",
+    "filter_new": "最新"
   },
   "sidebar_menu": {
     "app_download": {
