@@ -82,7 +82,7 @@ const menuItems = computed(() => [
   {
     path: '/transaction',
     tab: 'transaction' as WalletTab,
-    label: t('wallet.transaction'),
+    label: t('personalCenter.transaction'),
     icon: Transaction
   },
   {

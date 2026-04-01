@@ -33,7 +33,7 @@
             {{ $t('betHistory.time') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
-            {{ $t('betHistory.payout') }}
+            {{ $t('betHistory.betAmount') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
             {{ $t('betHistory.profit') }}

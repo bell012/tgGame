@@ -275,7 +275,6 @@
     "deposit": "充值",
     "withdraw": "提现",
     "myOrders": "我的订单",
-    "transaction": "资金明细",
     "rollover": "流水稽查"
   },
   "betHistory": {
@@ -288,7 +287,9 @@
     "type": "类型",
     "time": "时间",
     "payout": "支付",
-    "profit": "赔付",
+    "profit": "利润",
+    "amount": "金额",
+    "balance": "余额",
     "noMore": "没有更多了",
     "filters": {
       "all": "全部",
@@ -442,6 +443,8 @@
     "swap": "兑换",
     "vaultPro": "金库专业版",
     "transaction": "交易",
+    "transactionDetails": "交易详情",
+    "remarks": "备注",
     "rollover": "流水",
     "betHistory": "投注历史",
     "notification": "通知",
