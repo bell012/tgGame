@@ -23,7 +23,7 @@
     <div class="table-wrapper">
       <div class="table-header-bar bg-bg-3 rounded-lg py-3">
         <div class="grid grid-cols-4 gap-3">
-          <div class="text-text-1 text-sm font-bold text-center">
+          <div class="text-text-1 text-sm font-bold text-left ml-6">
             {{ $t('transaction.type') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
@@ -32,7 +32,7 @@
           <div class="text-text-1 text-sm font-bold text-center">
             {{ $t('transaction.amount') }}
           </div>
-          <div class="text-text-1 text-sm font-bold text-center">
+          <div class="text-text-1 text-sm font-bold text-right mr-6">
             {{ $t('transaction.balance') }}
           </div>
         </div>
@@ -46,8 +46,8 @@
             class="table-row-item grid grid-cols-4 gap-3 py-3 cursor-pointer border-b border-opacity-5"
             @click="handleRowClick(bet)"
           >
-            <div class="flex items-center justify-center gap-3">
-              <span class="text-text-1 text-sm font-[700] text-center">{{ bet.gameName }}</span>
+            <div class="flex items-center justify-start gap-3">
+              <span class="text-text-1 text-sm font-[700] text-left ml-6">{{ bet.gameName }}</span>
             </div>
             <div class="text-text-2 text-sm font-[700] text-center">{{ bet.time }}</div>
             <div class="text-text-1 text-sm font-[700] text-center">
@@ -58,7 +58,7 @@
                 {{ bet.amount >= 0 ? '+' : '' }}{{ bet.amount }}
               </span>
             </div>
-            <div class="flex items-center justify-center gap-1">
+            <div class="flex items-center justify-end mr-6 gap-1">
               {{ bet.balance }}
               <ArrowRightIcon class="w-4 h-4 text-text-1" />
             </div>
