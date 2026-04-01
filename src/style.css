@@ -9,6 +9,13 @@
     box-sizing: border-box;
   }
 
+  /* h5中禁止双击放大 */
+  html,
+  body,
+  #app {
+    touch-action: manipulation;
+  }
+
   body {
     font-family: avertastd;
     background-color: var(--color-background-level-1);

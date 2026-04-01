@@ -253,10 +253,11 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'transaction-details/:id',
     name: 'transaction-details',
-    component: () => import('@/views/transaction/betDetails/index.vue'),
+    component: () => import('@/views/wallet/transaction/betDetails/index.vue'),
     meta: {
       title: '资金详情',
       description: '资金详情',
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -266,10 +267,11 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'transaction',
     name: 'transaction',
-    component: () => import('@/views/transaction/index.vue'),
+    component: () => import('@/views/wallet/transaction/index.vue'),
     meta: {
       title: '资金明细',
       description: '资金明细',
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -279,10 +281,11 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'rollover-details/:id',
     name: 'rollover-details/:id',
-    component: () => import('@/views/rollover/rolloverDetails/index.vue'),
+    component: () => import('@/views/wallet/rollover/rolloverDetails/index.vue'),
     meta: {
-      title: '流水稽查',
-      description: '流水稽查',
+      title: '流水稽查详情',
+      description: '流水稽查详情',
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -292,10 +295,11 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'rollover',
     name: 'rollover',
-    component: () => import('@/views/rollover/index.vue'),
+    component: () => import('@/views/wallet/rollover/index.vue'),
     meta: {
-      title: '流水稽查详情',
-      description: '流水稽查详情',
+      title: '流水稽查',
+      description: '流水稽查',
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -310,6 +314,20 @@ const baseRoutes: RouteRecordRaw[] = [
       title: '充值',
       description: '充值',
       slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'my-orders',
+    name: 'my-orders',
+    component: () => import('@/views/wallet/myOrders/index.vue'),
+    meta: {
+      title: '我的订单',
+      description: '我的订单',
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true

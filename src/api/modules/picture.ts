@@ -1,4 +1,9 @@
-import { buildCommonRequestHeaders, resolveRequestUrl } from '@/utils/request'
+import {
+  buildCommonRequestHeaders,
+  resolveRequestUrl,
+  shouldHandleAuthExpiredCode,
+  triggerAuthExpiredLogout
+} from '@/utils/request'
 import type { UploadPictureForm, UploadPictureResponse } from '@/api/interface/picture'
 
 /**
@@ -46,6 +51,11 @@ export async function upload({
   })
 
   const result = await parseUploadResponse(response)
+
+  if (response.status === 401 || shouldHandleAuthExpiredCode(result.code)) {
+    triggerAuthExpiredLogout()
+    throw new Error(result.message || response.statusText || '登录已失效，请重新登录')
+  }
 
   if (!response.ok) {
     throw new Error(result.message || response.statusText || 'Upload failed')
