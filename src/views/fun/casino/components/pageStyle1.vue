@@ -1,7 +1,9 @@
 ﻿<template>
-  <div class="modules mb-4" v-for="(item, index) in modules" :key="index">
+  <div class="modules mb-4" v-for="(item, index) in lobbyButtons" :key="index">
     <div class="mt-2 flex items-center sm:mt-6 h-8">
-      <h2 class="flex items-center text-base font-extrabold text-primary">{{ item.name }}</h2>
+      <h2 class="flex items-center text-base font-extrabold text-primary">
+        {{ item.sysGameTypeName }}
+      </h2>
       <button
         class="button ml-auto flex items-center gap-1 rounded-lg font-extrabold h-8 bg-[var(--color-opacity-10)] px-2 inactive"
         link=""
@@ -50,7 +52,7 @@
         :ref="el => setScrollRef(el as HTMLElement | null, index)"
         class="grid grid-flow-col gap-2 overflow-x-auto overflow-y-hidden scroll-smooth pt-3 auto-cols-[30.25%] sm:auto-cols-[11.82%]"
       >
-        <div v-for="(game, i) in getDisplayList(item.items)" :key="i">
+        <div v-for="(game, i) in getDisplayList(item.items ?? [])" :key="game.rowId ?? i">
           <a
             href="/casino"
             class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
@@ -74,7 +76,7 @@
               <div
                 class="flex items-center justify-center absolute left-0 top-0 h-[40%] w-full px-2 text-center font-extrabold leading-4 text-text-4 dark:text-text-1"
               >
-                {{ game }}
+                {{ game.itemName }}
               </div>
               <div
                 class="flex items-center justify-center h-9 w-9 rounded-full bg-[#fff3] transition-all duration-300 sm:group-hover:scale-150"
@@ -140,28 +142,25 @@
   </div>
 </template>
 <script setup lang="ts">
-import { nextTick, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import game1 from '@/static/img/test/game1.png'
-import game2 from '@/static/img/test/game2.png'
-import game3 from '@/static/img/test/game3.png'
-import game4 from '@/static/img/test/game4.png'
-import game5 from '@/static/img/test/game5.png'
-import game6 from '@/static/img/test/game6.png'
-import liveBet from './liveBet.vue'
 
-interface OptionItem {
-  id: number | string
-  style: number | string
-  name: string
-  icon: string
-  items: Array<string>
-}
+import liveBet from './liveBet.vue'
+import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
+import type { GameDataItem } from '@/api/interface/game'
+
+const props = defineProps<{
+  modules?: CasinoLobbyButtonItem[]
+}>()
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
-const modules = defineModel<OptionItem[]>('modules')
+
+const lobbyButtons = computed<CasinoLobbyButtonItem[]>(() => {
+  return (props.modules ?? []).filter(item => item.sysGameTypeCode)
+})
+
 const latestBetIndex = ref(0)
 const scrollRefs = ref<HTMLElement[]>([])
 const canScrollLeft = ref<boolean[]>([])
@@ -212,27 +211,13 @@ const scrollRight = (index: number) => {
   })
 }
 
-const getDisplayList = (list: string[]) => {
+const getDisplayList = (list: GameDataItem[]) => {
   return isMobile.value ? list.slice(0, 11) : list.slice(0, 15)
 }
 
-const getGameImg = (item: string) => {
-  switch (item) {
-    case 'game1':
-      return game1
-    case 'game2':
-      return game2
-    case 'game3':
-      return game3
-    case 'game4':
-      return game4
-    case 'game5':
-      return game5
-    case 'game6':
-      return game6
-    default:
-      return game6
-  }
+const getGameImg = (item: GameDataItem) => {
+  const imagePath = item.gameItemHotVo?.defaultImage || item.icon3 || item.conUrl
+  return imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
 }
 </script>
 <style scoped lang="scss"></style>

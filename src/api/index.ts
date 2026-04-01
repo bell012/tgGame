@@ -8,6 +8,7 @@
  */
 
 import * as auth from './modules/auth'
+import * as game from './modules/game'
 import * as home from './modules/home'
 import * as notifications from './modules/notifications'
 import * as picture from './modules/picture'
@@ -17,6 +18,7 @@ import * as vip from './modules/vip'
 const Api = {
   notifications, // 模块
   auth, // 登录、注册、短信验证码
+  game, // 游戏数据
   picture, // 图片上传
   user, // 用户信息查询
   vip, // VIP 信息查询

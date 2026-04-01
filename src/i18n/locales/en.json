@@ -285,7 +285,12 @@
     "show_blocked": "Show Blocked",
     "all": "All",
     "latest_bet": "Latest Bet",
-    "high_roller": "High Roller"
+    "high_roller": "High Roller",
+    "lobby": "Lobby",
+    "tg_originals": "TG Originals",
+    "hot_games": "Hot Games",
+    "favorites": "Favorites",
+    "recent": "Recent"
   },
   "sidebar_menu": {
     "app_download": {
