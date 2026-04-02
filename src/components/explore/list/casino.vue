@@ -45,7 +45,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import gameImg from '@/static/img/explore/game.png'
 import numImg from '@/static/img/explore/num.png'
 import { computed, inject, onBeforeUnmount, Ref, ref, watch } from 'vue'
-import { navigateTo } from '@/utils/router'
+import { navigateToName } from '@/utils/router'
 
 const isMobile = useIsMobile()
 const isCloseDesktopModal = inject('search-close-desktop-modal') as Ref<boolean>
@@ -187,16 +187,17 @@ const itemClick = (item: CasinoGameItem) => {
   if (!isMobile.value) {
     isCloseDesktopModal.value = true
   }
-  const itemCode = String(item.itemCode ?? '').trim()
-  const platformCode = String(item.platformCode ?? '').trim()
+  // const itemCode = String(item.itemCode ?? '').trim()
+  // const platformCode = String(item.platformCode ?? '').trim()
   const rowId = String(item.rowId ?? '').trim()
-  navigateTo('/game/detail', {
-    query: {
-      ...(itemCode ? { itemCode } : {}),
-      ...(platformCode ? { platformCode } : {}),
-      ...(rowId ? { rowId } : {})
-    }
-  })
+  // navigateTo('/game/detail', {
+  //   query: {
+  //     ...(itemCode ? { itemCode } : {}),
+  //     ...(platformCode ? { platformCode } : {}),
+  //     ...(rowId ? { rowId } : {})
+  //   }
+  // })
+  navigateToName('gameDetail', { params: { rowId } })
 }
 
 const handleImageError = (event: Event) => {
