@@ -85,6 +85,30 @@ export interface GameDetailResponse {
   [key: string]: unknown
 }
 
+export interface GetGameRanListParams {
+  itemCode: string
+  platformCode: string
+  type: 1 | 2
+  currency: string
+}
+
+export interface GameRanListItem {
+  payOut?: string | number
+  wager?: string | number
+  mult?: string | number
+  memberId?: string
+  memberName?: string
+  userName?: string
+  [key: string]: unknown
+}
+
+export interface GameRanListResponse {
+  code: string | number
+  message: string
+  result?: GameRanListItem[]
+  [key: string]: unknown
+}
+
 /**
  * 游戏品牌节点数据
  * 对应 /gc/gameBrandList 接口返回项
