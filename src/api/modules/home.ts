@@ -1,10 +1,11 @@
 import request from '@/utils/request'
+import type { GameDataResponse } from '@/api/interface/home.interface'
 
 /**
  * 获取首页数据
  * @returns Promise<any>
  */
-export function getGameData(): Promise<any> {
+export function getGameData(): Promise<GameDataResponse> {
   return request({
     url: '/gc/queryGameListForApp',
     method: 'post'

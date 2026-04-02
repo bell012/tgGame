@@ -42,6 +42,21 @@ const baseRoutes: RouteRecordRaw[] = [
     })
   },
   {
+    path: 'gamelist/:tabKey',
+    name: 'gameList',
+    component: () => import('@/views/fun/casino/gameList/index.vue'),
+    meta: {
+      title: '游戏列表',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    },
+    props: route => ({
+      tabKey: route.params.tabKey as string
+    })
+  },
+  {
     path: 'originate',
     name: 'originate',
     component: () => import('@/views/fun/originate/index.vue'),
@@ -253,7 +268,7 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'transaction-details/:id',
     name: 'transaction-details',
-    component: () => import('@/views/transaction/betDetails/index.vue'),
+    component: () => import('@/views/wallet/transactionDetails/index.vue'),
     meta: {
       title: '资金详情',
       description: '资金详情',
@@ -267,7 +282,7 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'transaction',
     name: 'transaction',
-    component: () => import('@/views/transaction/index.vue'),
+    component: () => import('@/views/wallet/transaction/index.vue'),
     meta: {
       title: '资金明细',
       description: '资金明细',
@@ -281,7 +296,7 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'rollover-details/:id',
     name: 'rollover-details/:id',
-    component: () => import('@/views/rollover/rolloverDetails/index.vue'),
+    component: () => import('@/views/wallet/rolloverDetails/index.vue'),
     meta: {
       title: '流水稽查详情',
       description: '流水稽查详情',
@@ -295,7 +310,7 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'rollover',
     name: 'rollover',
-    component: () => import('@/views/rollover/index.vue'),
+    component: () => import('@/views/wallet/rollover/index.vue'),
     meta: {
       title: '流水稽查',
       description: '流水稽查',
