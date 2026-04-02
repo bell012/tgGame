@@ -179,6 +179,7 @@ const getCurrentGameDetailByApi = async () => {
 
   try {
     const res = await Api.game.queryGameDetails({ rowId: targetRowId })
+    console.log(res, 'res....')
     const result = res?.result
     if (result && typeof result === 'object') {
       currentGameDetailState.value = result as CurrentGameDetail
