@@ -14,8 +14,8 @@
         >
           <div class="flex flex-col gap-[16px]">
             <div class="flex items-center gap-[8px] cursor-pointer" @click="toggleLove">
-              <img alt="" class="size-[16px]" :src="loveActived ? LoveActiveIcon : LoveIcon" />
-              <div>Like</div>
+              <img alt="" class="size-[16px]" :src="loveActived ? LikeActiveIcon : LikeIcon" />
+              <div :class="{ 'text-[#FF9822]': loveActived }">Like</div>
             </div>
             <div class="flex items-center gap-[8px] cursor-pointer" @click="shareClick">
               <img alt="" class="size-[16px]" :src="TgIcon" />
@@ -39,8 +39,8 @@
 <script setup lang="ts">
 import { useGameLike } from '@/composables/useGameLike'
 import TgIcon from '@/static/svg/game/detail/tg.svg?url'
-import LoveIcon from '@/static/svg/game/detail/love.svg?url'
-import LoveActiveIcon from '@/static/svg/game/detail/love_active.svg?url'
+import LikeIcon from '@/static/svg/game/detail/like_hand.svg?url'
+import LikeActiveIcon from '@/static/svg/game/detail/like_hand_active.svg?url'
 import FloatIcon from '@/static/svg/game/detail/float.svg?url'
 import MovieIcon from '@/static/svg/game/detail/movie.svg?url'
 
