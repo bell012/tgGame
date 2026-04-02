@@ -3,7 +3,7 @@
     <transition name="popup-fade">
       <div
         v-show="visible"
-        class="tp-mask fixed z-[9999] inset-0 bg-[var(--color-mask-60)]"
+        class="tp-mask fixed z-[9999] inset-0 bg-mask-60-1"
         @click.self="close"
       />
     </transition>
@@ -120,7 +120,7 @@ const close = () => {
 .tp-panel {
   padding-bottom: env(safe-area-inset-bottom);
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 10px 10px 0 0;
 }
 @include popup-transition;
 // 设置的弹窗打开关闭的过渡动画
