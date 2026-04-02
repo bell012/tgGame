@@ -21,14 +21,13 @@
 import Api from '@/api'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateTo } from '@/utils/router'
-import { computed, onMounted, provide, ref } from 'vue'
+import { computed, onMounted, provide, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import H5Header from './h5/header.vue'
 import H5CurrencyInfo from './h5/currency-info/index.vue'
 import DesktopCurrencyInfo from './desktop/currency-info/index.vue'
 import BetsList from './common/bets-list/index.vue'
 import RecentGames from './common/recent-games/index.vue'
-// 游戏列表 ------------ start----
 import GameList from './common/game-list/index.vue'
 
 type GameDataItem = {
@@ -80,11 +79,14 @@ const getQueryValue = (value: unknown) => {
 
 const itemCode = computed(() => getQueryValue(route.query.itemCode))
 const platformCode = computed(() => getQueryValue(route.query.platformCode))
+const rowId = computed(() => getQueryValue(route.query.rowId))
 
 type CurrentGameDetail =
   | ({
+      rowId?: string | number
       itemName?: string
       platformName?: string
+      sysGameTypeName?: string
       sysGameTypeCode?: string
     } & Record<string, unknown>)
   | null
@@ -132,9 +134,9 @@ const findGameDetailByCodes = (
   return dfs(data)
 }
 
-const currentGameDetail = computed<CurrentGameDetail>(() =>
-  findGameDetailByCodes(gameData.value, itemCode.value, platformCode.value)
-)
+const currentGameDetailState = ref<CurrentGameDetail>(null)
+
+const currentGameDetail = computed<CurrentGameDetail>(() => currentGameDetailState.value)
 
 provide('game-detail-current-game', currentGameDetail)
 
@@ -164,6 +166,31 @@ const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
   })
 })
 
+const getCurrentGameDetailByLocalData = () => {
+  return findGameDetailByCodes(gameData.value, itemCode.value, platformCode.value)
+}
+
+const getCurrentGameDetailByApi = async () => {
+  const targetRowId = rowId.value
+  if (!targetRowId) {
+    currentGameDetailState.value = getCurrentGameDetailByLocalData()
+    return
+  }
+
+  try {
+    const res = await Api.game.queryGameDetails({ rowId: targetRowId })
+    const result = res?.result
+    if (result && typeof result === 'object') {
+      currentGameDetailState.value = result as CurrentGameDetail
+      return
+    }
+    currentGameDetailState.value = getCurrentGameDetailByLocalData()
+  } catch (error) {
+    console.error('getCurrentGameDetailByApi failed', error)
+    currentGameDetailState.value = getCurrentGameDetailByLocalData()
+  }
+}
+
 const openCurrentCategoryAllGamesPage = () => {
   const nextList = Array.isArray(currentCategoryHotGameList.value)
     ? [...currentCategoryHotGameList.value]
@@ -177,6 +204,9 @@ const openCurrentCategoryAllGamesPage = () => {
 
   navigateTo('/game/detail/recommended', {
     query: {
+      ...(getQueryValue(currentGameDetail.value?.rowId)
+        ? { rowId: getQueryValue(currentGameDetail.value?.rowId) }
+        : {}),
       ...(itemCode.value ? { itemCode: itemCode.value } : {}),
       ...(platformCode.value ? { platformCode: platformCode.value } : {}),
       ...(currentGameTypeCode.value ? { sysGameTypeCode: currentGameTypeCode.value } : {}),
@@ -206,8 +236,17 @@ const getGameDataForApp = async () => {
   }
 }
 
-onMounted(() => {
-  getGameDataForApp()
+watch(
+  [rowId, itemCode, platformCode],
+  () => {
+    void getCurrentGameDetailByApi()
+  },
+  { flush: 'post' }
+)
+
+onMounted(async () => {
+  await getGameDataForApp()
+  await getCurrentGameDetailByApi()
 })
 // 游戏列表 ------------ end
 </script>

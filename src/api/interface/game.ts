@@ -74,6 +74,17 @@ export interface GameDataResponse {
   [key: string]: unknown
 }
 
+export interface QueryGameDetailsParams {
+  rowId: string | number
+}
+
+export interface GameDetailResponse {
+  code: string | number
+  message: string
+  result: GameDataItem | null
+  [key: string]: unknown
+}
+
 /**
  * 游戏品牌节点数据
  * 对应 /gc/gameBrandList 接口返回项
