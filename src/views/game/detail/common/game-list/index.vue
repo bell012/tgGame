@@ -4,11 +4,13 @@
       <h2 class="flex items-center text-base font-extrabold text-primary">
         {{ props.title }}
       </h2>
-      <a
-        href="javascript:void(0);"
+      <button
+        type="button"
         class="button ml-auto flex items-center bg-bg-3 gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-layer5"
-        >{{ $t('home.All') }}</a
+        @click="emit('all-click')"
       >
+        {{ $t('home.All') }}
+      </button>
       <div v-if="!isMobile" class="ml-2 flex gap-x-1">
         <button
           @click="scrollPrev"
@@ -140,6 +142,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  'all-click': []
+}>()
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = useIsMobile()
 const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
