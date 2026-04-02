@@ -19,7 +19,7 @@
         <div class="text-[12px] text-center pb-[8px] text-[var(--color-text-level-2)]">
           Welcome to dragon-phoenix, please sign in to proceed .
         </div>
-        <div class="play-btn w-[408px] h-[40px] cursor-pointer">
+        <div class="play-btn w-[408px] h-[40px] cursor-pointer" @click="handleSignIn">
           <div class="w-[16px] h-[16px]">
             <play-icon class="w-full h-full" />
           </div>
@@ -33,12 +33,26 @@
 <script setup lang="ts">
 import defaultGameImg from '@/static/img/explore/game.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
+import { useAuthModalStore } from '@/stores/authModal'
 import CurrencyBar from '../currency-bar/index.vue'
 import PlayForm from './play-form.vue'
+import { useUserStore } from '@/stores/user'
+import { storeToRefs } from 'pinia'
 
-import { computed, ComputedRef, inject, ref } from 'vue'
+import { computed, ComputedRef, inject, onMounted } from 'vue'
 
-const isLogin = ref(true)
+const userStore = useUserStore()
+const authModalStore = useAuthModalStore()
+const { userInfo } = storeToRefs(userStore)
+const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
+
+const handleSignIn = () => {
+  authModalStore.openLoginModal()
+}
+
+onMounted(() => {
+  userStore.syncStoredUserData()
+})
 
 type CurrentGameDetail = {
   itemName?: string
