@@ -55,7 +55,7 @@
       ref="listWrap"
       style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
-      <div v-for="(value, index) in props.list" :key="value.img.src + '-' + index">
+      <div v-for="(value, index) in normalizedList" :key="(value.img.src ?? '') + '-' + index">
         <a
           href="javascript:void(0);"
           class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2"
@@ -70,7 +70,7 @@
             <div class="icon size-4">
               <peopleNumber />
             </div>
-            <span class="text-xs font-semibold text-alw_white">2126</span>
+            <span class="text-xs font-semibold text-alw_white">{{ value.number }}</span>
           </div>
           <div
             class="center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 group-hover:opacity-100"
@@ -79,7 +79,7 @@
               <div
                 class="flex justify-center items-center center absolute left-0 top-0 flex h-[40%] w-full px-2 text-center font-extrabold leading-4 text-[white]"
               >
-                Crash
+                {{ value.itemName || 'Crash' }}
               </div>
               <div
                 class="flex h-9 w-9 rounded-full bg-[#fff3] transition-all duration-300 group-hover:scale-150"
@@ -101,30 +101,83 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './peopleNumber.svg?component'
-interface GameItem {
+interface GameItemImage {
   img: {
     maintain: boolean
-    src: string
+    src?: string
+    conUrl?: string
+  }
+}
+
+interface RawGameItem extends Partial<GameItemImage> {
+  itemName?: string
+  number?: number | string
+  initScoreNum?: number | string
+  icon2?: string
+  conUrl?: string
+  gameItemHotVo?: {
+    defaultImage?: string
+  }
+}
+
+interface NormalizedGameItem {
+  img: {
+    maintain: boolean
+    src?: string
+    conUrl?: string
   }
   number: number
+  itemName: string
 }
 
 interface Props {
   title: string
-  list: GameItem[]
+  list: RawGameItem[]
 }
 
 const props = defineProps<Props>()
-console.log('Props', props)
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = useIsMobile()
+const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
 
 const prevDisabled = ref(true)
 const nextDisabled = ref(false)
+
+const toNumber = (value: unknown) => {
+  const numberValue = Number(value)
+  return Number.isFinite(numberValue) ? numberValue : 0
+}
+
+const toImageUrl = (value: unknown) => {
+  const imagePath = String(value ?? '').trim()
+  if (!imagePath) {
+    return ''
+  }
+  if (/^https?:\/\//i.test(imagePath)) {
+    return imagePath
+  }
+  return `${gameImageBaseUrl}${imagePath}`
+}
+
+const normalizedList = computed<NormalizedGameItem[]>(() => {
+  return (Array.isArray(props.list) ? props.list : []).map(item => {
+    const fallbackImage = item.conUrl ?? item.icon2 ?? item.gameItemHotVo?.defaultImage
+    const sourceImage = item.img?.src ?? item.img?.conUrl ?? toImageUrl(fallbackImage)
+
+    return {
+      img: {
+        maintain: Boolean(item.img?.maintain ?? false),
+        src: sourceImage
+      },
+      number: toNumber(item.number ?? item.initScoreNum),
+      itemName: String(item.itemName ?? '').trim()
+    }
+  })
+})
 
 const updateButtons = () => {
   const el = listWrap.value
@@ -144,6 +197,14 @@ onMounted(async () => {
     window.addEventListener('resize', updateButtons)
   }
 })
+
+watch(
+  () => normalizedList.value.length,
+  async () => {
+    await nextTick()
+    updateButtons()
+  }
+)
 
 onBeforeUnmount(() => {
   const el = listWrap.value

@@ -2,7 +2,7 @@
   <div class="w-full h-full p-[12px] bg-[var(--color-background-level-3)] rounded-t-[10px]">
     <div class="flex gap-[10px]">
       <div class="w-[110px] h-[146px]">
-        <img :src="gameImg" alt="" class="w-full h-full object-contain rounded-md" />
+        <img :src="displayGameImg" alt="" class="w-full h-full object-contain rounded-md" />
       </div>
       <div class="flex-1 flex flex-col justify-between">
         <div class="flex-1 flex flex-col justify-around">
@@ -21,14 +21,48 @@
         </div>
       </div>
     </div>
-    <currency-bar></currency-bar>
   </div>
+  <currency-bar></currency-bar>
 </template>
 <script setup lang="ts">
-import gameImg from '@/static/img/explore/game.png'
+import defaultGameImg from '@/static/img/explore/game.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import CurrencySelect from '../currency-select/index.vue'
 import CurrencyBar from '../currency-bar/index.vue'
+import { computed, inject, type ComputedRef } from 'vue'
+
+type CurrentGameDetail = {
+  itemName?: string
+  platformName?: string
+  icon2?: string
+  conUrl?: string
+  gameItemHotVo?: {
+    defaultImage?: string
+  }
+} | null
+
+const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
+  'game-detail-current-game',
+  computed(() => null)
+)
+
+const toImageUrl = (value: string) => {
+  const imagePath = value.trim()
+  if (!imagePath) return ''
+  if (/^https?:\/\//i.test(imagePath)) {
+    return imagePath
+  }
+  return `${String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')}${imagePath}`
+}
+
+const displayGameImg = computed(() => {
+  const rawImage =
+    currentGameDetail.value?.icon2 ??
+    currentGameDetail.value?.conUrl ??
+    currentGameDetail.value?.gameItemHotVo?.defaultImage ??
+    ''
+  return toImageUrl(String(rawImage)) || defaultGameImg
+})
 </script>
 <style scoped lang="scss">
 .play-btn {

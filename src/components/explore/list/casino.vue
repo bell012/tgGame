@@ -55,6 +55,8 @@ type CasinoGameItem = {
   rowId?: string | number
   icon2?: string
   platformName?: string
+  itemCode?: string | number
+  platformCode?: string | number
   brandCode?: string | number
   hot?: number | string
   initScoreNum?: number
@@ -185,9 +187,15 @@ const itemClick = (item: CasinoGameItem) => {
   if (!isMobile.value) {
     isCloseDesktopModal.value = true
   }
-  const gameId = item.id ?? item.rowId
-  if (!gameId) return
-  navigateTo('/game/' + gameId)
+  const itemCode = String(item.itemCode ?? '').trim()
+  const platformCode = String(item.platformCode ?? '').trim()
+
+  navigateTo('/game/detail', {
+    query: {
+      ...(itemCode ? { itemCode } : {}),
+      ...(platformCode ? { platformCode } : {})
+    }
+  })
 }
 
 const handleImageError = (event: Event) => {

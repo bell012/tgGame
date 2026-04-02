@@ -15,7 +15,7 @@
         <div class="form-label"></div>
         <div class="text-[var(--color-text-level-2)] text-[12px]">≈0BCD</div>
       </div>
-      <div class="form-row">
+      <!-- <div class="form-row">
         <div class="form-label">Transfer amount</div>
         <div class="form-control amount-control">
           <div class="amount-value">
@@ -45,7 +45,7 @@
             <span class="slider-limit">Max</span>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
     <button type="button" class="play-btn w-full mt-[14px] cursor-pointer">
       <div class="w-[16px] h-[16px]">
@@ -56,12 +56,12 @@
   </div>
 </template>
 <script setup lang="ts">
-import ArrowDownIcon from '@/static/svg/arrow_down.svg?url'
+// import ArrowDownIcon from '@/static/svg/arrow_down.svg?url'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import CurrencySelect from '../currency-select/index.vue'
-import { ref } from 'vue'
+// import { ref } from 'vue'
 
-const sliderValue = ref(35)
+// const sliderValue = ref(35)
 </script>
 <style scoped lang="scss">
 .currency-info-container {
