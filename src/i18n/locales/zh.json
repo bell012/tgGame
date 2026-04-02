@@ -581,6 +581,22 @@
     "balance": "余额",
     "status": "状态筛选",
     "completed": "已完成",
-    "notCompleted": "未完成"
+    "notCompleted": "未完成",
+    "filterGroups": {
+      "type": "交易类型选择"
+    },
+    "typeOptions": {
+      "gameSwitch": "游戏切换",
+      "memberDeposit": "会员充值",
+      "memberWithdraw": "会员取款",
+      "memberWithdrawReturn": "会员取款退回",
+      "manualDeposit": "人工存入",
+      "manualDeduction": "人工扣款",
+      "bonusGift": "赠送彩金",
+      "commissionClaim": "领取佣金",
+      "currencyExchange": "货币互换",
+      "vipIncome": "VIP收益",
+      "bonusExchange": "红利兑换"
+    }
   }
 }
