@@ -117,7 +117,7 @@ const mainMenus = computed(() => [
     name: t('userMenu.vipClub'),
     icon: getIcon(66),
     handler: () => {
-      console.log('VIP Club clicked')
+      navigateTo('/vip')
       emit('update:modelValue', false)
     }
   },
