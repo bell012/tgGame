@@ -3,6 +3,8 @@ import type {
   QueryDiscountListResponse,
   QueryDlicghForm,
   QueryDlicghResponse,
+  QueryPayColumnWithSubListForm,
+  QueryPayColumnWithSubListResponse,
   QueryPayColumnPageForm,
   QueryPayColumnPageResponse,
   QueryPayOrderByOrderIdForm,
@@ -29,6 +31,17 @@ export function queryPayColumnPage(
 ): Promise<QueryPayColumnPageResponse> {
   return request({
     url: '/pc/queryPayColumnPage',
+    method: 'post',
+    data
+  })
+}
+
+// 查询支付栏目及其子栏目
+export function queryPayColumnWithSubList(
+  data: QueryPayColumnWithSubListForm
+): Promise<QueryPayColumnWithSubListResponse> {
+  return request({
+    url: '/pc/queryPayColumnWithSubList',
     method: 'post',
     data
   })
