@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <LoginRegisterFormCore
     ref="loginFormRef"
     :default-tab="defaultTab"
@@ -322,6 +322,7 @@ const handleRegisterSuccess = () => {
 // 处理登录成功
 const handleLoginSuccess = () => {
   emit('close')
+  window.location.reload()
 }
 
 const resetForm = () => {
