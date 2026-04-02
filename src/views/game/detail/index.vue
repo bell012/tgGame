@@ -9,13 +9,18 @@
     <h5-currency-info v-if="isMobile"></h5-currency-info>
     <desktop-currency-info v-else></desktop-currency-info>
     <recent-games></recent-games>
-    <game-list title="Recommended Games" :list="currentCategoryHotGameList"></game-list>
+    <game-list
+      title="Recommended Games"
+      :list="currentCategoryHotGameList"
+      @all-click="openCurrentCategoryAllGamesPage"
+    ></game-list>
     <bets-list></bets-list>
   </div>
 </template>
 <script setup lang="ts">
 import Api from '@/api'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { navigateTo } from '@/utils/router'
 import { computed, onMounted, provide, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import H5Header from './h5/header.vue'
@@ -30,6 +35,7 @@ type GameDataItem = {
   itemCode?: string | number
   platformCode?: string
   sysGameTypeCode?: string
+  platformName?: string
   hot?: number | string
   icon2?: string
   conUrl?: string
@@ -52,6 +58,8 @@ type GameDataSection = {
 
 type GameDetailCacheGlobal = {
   __gameDetailGameDataCache__?: GameDataSection[]
+  __gameDetailAllListCache__?: GameDataItem[]
+  __gameDetailAllPageTitleCache__?: string
 }
 
 const gameDetailCacheGlobal = globalThis as typeof globalThis & GameDetailCacheGlobal
@@ -76,6 +84,7 @@ const platformCode = computed(() => getQueryValue(route.query.platformCode))
 type CurrentGameDetail =
   | ({
       itemName?: string
+      platformName?: string
       sysGameTypeCode?: string
     } & Record<string, unknown>)
   | null
@@ -154,6 +163,27 @@ const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
     return Number(hotValue) === 0
   })
 })
+
+const openCurrentCategoryAllGamesPage = () => {
+  const nextList = Array.isArray(currentCategoryHotGameList.value)
+    ? [...currentCategoryHotGameList.value]
+    : []
+  const pageTitle = getQueryValue(
+    currentGameDetail.value?.platformName ?? currentGameDetail.value?.itemName
+  )
+
+  gameDetailCacheGlobal.__gameDetailAllListCache__ = nextList
+  gameDetailCacheGlobal.__gameDetailAllPageTitleCache__ = pageTitle
+
+  navigateTo('/game/detail/recommended', {
+    query: {
+      ...(itemCode.value ? { itemCode: itemCode.value } : {}),
+      ...(platformCode.value ? { platformCode: platformCode.value } : {}),
+      ...(currentGameTypeCode.value ? { sysGameTypeCode: currentGameTypeCode.value } : {}),
+      ...(pageTitle ? { title: pageTitle } : {})
+    }
+  })
+}
 
 const getGameDataForApp = async () => {
   const cachedList = gameDetailCacheGlobal.__gameDetailGameDataCache__

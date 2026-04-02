@@ -182,6 +182,19 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'game/detail/recommended',
+    name: 'gameDetailRecommended',
+    component: () => import('@/views/game/detail/recommended/index.vue'),
+    meta: {
+      title: '推荐游戏',
+      description: '推荐游戏',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'chat-public',
     name: 'chat-public',
     component: () => import('@/views/chat/chat-public/index.vue'),
