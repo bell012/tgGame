@@ -89,6 +89,7 @@
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
+import { useUserStore } from '@/stores/user'
 import {
   DEFAULT_LOCALE,
   getLocaleFromRouteParam,
@@ -98,19 +99,22 @@ import {
 import { navigateTo } from '@/utils/router'
 import NotificationDetailPage from '@/views/menu/notifications/detail/index.vue'
 import NotificationListPage from '@/views/menu/notifications/index.vue'
-import { computed, nextTick, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router'
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
 import TopNav from './TopNav.vue'
 
 const layoutStore = useLayoutStore()
+const userStore = useUserStore()
 const topNavRef = ref<InstanceType<typeof TopNav> | null>(null)
 const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
 const isSidebarCollapsed = ref(false)
 const showNotificationPanel = ref(false)
 const activeNotificationDetail = ref<NotificationPanelDetail | null>(null)
 const isMobile = useIsMobile()
+const lastResolvedDeviceMode = ref<boolean | null>(null)
+const hasViewportModeInitialized = ref(false)
 
 const route = useRoute()
 const router = useRouter()
@@ -417,6 +421,11 @@ interface MobileRouteMeta {
   hideTopNav?: boolean
 }
 
+onMounted(() => {
+  lastResolvedDeviceMode.value = isMobile.value
+  hasViewportModeInitialized.value = true
+})
+
 const hideBottomBar = computed(() => {
   return (route.meta?.mobile as MobileRouteMeta | undefined)?.hideBottomBar && isMobile.value
 })
@@ -432,6 +441,22 @@ watch(
       showNotificationPanel.value = false
       activeNotificationDetail.value = null
     }
+
+    if (!hasViewportModeInitialized.value) {
+      return
+    }
+
+    if (lastResolvedDeviceMode.value === null) {
+      lastResolvedDeviceMode.value = mobile
+      return
+    }
+
+    if (mobile === lastResolvedDeviceMode.value) {
+      return
+    }
+
+    lastResolvedDeviceMode.value = mobile
+    userStore.logout()
   }
 )
 </script>
