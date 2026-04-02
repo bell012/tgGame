@@ -154,7 +154,7 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'game/:id',
+    path: 'game/detail',
     name: 'gameDetail',
     component: () => import('@/views/game/detail/index.vue'),
     meta: {
