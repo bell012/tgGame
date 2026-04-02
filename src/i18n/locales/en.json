@@ -582,6 +582,22 @@
     "balance": "Balance",
     "status": "Status",
     "completed": "Completed",
-    "notCompleted": "Not Completed"
+    "notCompleted": "Not Completed",
+    "filterGroups": {
+      "type": "Transaction Type Selection"
+    },
+    "typeOptions": {
+      "gameSwitch": "Game Switch",
+      "memberDeposit": "Member Deposit",
+      "memberWithdraw": "Member Withdraw",
+      "memberWithdrawReturn": "Withdraw Return",
+      "manualDeposit": "Manual Deposit",
+      "manualDeduction": "Manual Deduction",
+      "bonusGift": "Bonus Gift",
+      "commissionClaim": "Claim Commission",
+      "currencyExchange": "Currency Exchange",
+      "vipIncome": "VIP Income",
+      "bonusExchange": "Bonus Exchange"
+    }
   }
 }
