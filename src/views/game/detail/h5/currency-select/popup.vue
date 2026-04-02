@@ -54,7 +54,7 @@
           <div v-if="tabIndex === 0" class="max-h-[368px] overflow-y-auto">
             <div class="flex flex-col">
               <div
-                v-for="(item, inx) in selectOptions"
+                v-for="(item, inx) in filteredOptions"
                 :key="inx"
                 class="tp-item mb-2.5 px-2.5 flex items-center justify-between h-[42px] rounded-lg cursor-pointer"
                 :class="isSelected(item) ? 'bg-[var(--color-opacity-10)]' : ''"
@@ -82,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { inject, ref, Ref } from 'vue'
+import { computed, inject, ref, Ref } from 'vue'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
@@ -109,6 +109,19 @@ const selectOptions = inject('currency-select-options') as Ref<OptionItem[]>
 // 选中那一条数据
 const selectedId = inject('currency-select-selected-id') as Ref<string>
 const onSelect = inject<(item: OptionItem) => void>('currency-select-on-select')
+
+const filteredOptions = computed(() => {
+  const searchKeyword = keyword.value.trim().toUpperCase()
+  if (!searchKeyword) {
+    return selectOptions.value
+  }
+
+  return selectOptions.value.filter(item => {
+    const label = item.label.toUpperCase()
+    const value = item.value.toUpperCase()
+    return label.includes(searchKeyword) || value.includes(searchKeyword)
+  })
+})
 
 // 关闭popup
 const close = () => {
