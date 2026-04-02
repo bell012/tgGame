@@ -27,6 +27,7 @@ export interface QueryPayColumnItem {
   isHorizontal: string
   isPortrait: string
   pc: string
+  payChannelCode?: string | number
   recommended: number
   sortNo: number
 }
@@ -48,14 +49,16 @@ export interface QueryPaySubColumnPageForm {
   }
 }
 
-export interface SubmitPayOrderQuickPageForm {
+export interface SubmitPayOrderPageForm {
   columnCode: string
   busiAmount: string
   payChannelCode: string
   channelId: number
+  subColumnCode: number
+  flows: number
 }
 
-export interface SubmitPayOrderQuickResult {
+export interface SubmitPayOrderResult {
   createTime: number
   orderId: number
   payId: number
@@ -63,11 +66,11 @@ export interface SubmitPayOrderQuickResult {
   payUrl: string
 }
 
-export interface SubmitPayOrderQuickResponse {
+export interface SubmitPayOrderResponse {
   code: string
   message: string
   success: boolean
-  result?: SubmitPayOrderQuickResult
+  result?: SubmitPayOrderResult
 }
 
 export interface QueryPayOrderByOrderIdForm {
@@ -144,6 +147,32 @@ export interface QueryPaySubColumnPageResponse {
   message: string
   success: boolean
   result?: QueryPaySubColumnItem[]
+}
+
+export interface QueryDiscountListForm {
+  payChannelCode: string
+}
+
+export interface QueryDiscountAmountItem {
+  amount: number
+  ratio: number
+}
+
+export interface QueryDiscountListItem {
+  createTime: number
+  discounts?: QueryDiscountAmountItem[]
+  multiple: number
+  payChannelCode: string
+  rowId: number
+  site: string
+  updateTime: number
+}
+
+export interface QueryDiscountListResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryDiscountListItem[]
 }
 
 export interface QueryDlicghForm {
