@@ -20,24 +20,24 @@
               <CloseIcon class="stroke-text-1 w-4 h-4" />
             </div>
           </div>
-          <div
-            class="flex h-[50px] justify-between items-center bg-[var(--color-background-level-3)] rounded-[10px] mb-[10px] mt-[20px] p-[4px]"
-          >
-            <div
-              class="flex-1 flex items-center justify-center"
-              :class="{ active: tabIndex === 0 }"
-              @click="tabIndexClick(0)"
+          <!-- <div
+              class="flex h-[50px] justify-between items-center bg-[var(--color-background-level-3)] rounded-[10px] mb-[10px] mt-[20px] p-[4px]"
             >
-              Deposit Balance
-            </div>
-            <div
-              class="flex-1 flex items-center justify-center"
-              :class="{ active: tabIndex === 1 }"
-              @click="tabIndexClick(1)"
-            >
-              Bonus Balance
-            </div>
-          </div>
+              <div
+                class="flex-1 flex items-center justify-center"
+                :class="{ active: tabIndex === 0 }"
+                @click="tabIndexClick(0)"
+              >
+                Deposit Balance
+              </div>
+              <div
+                class="flex-1 flex items-center justify-center"
+                :class="{ active: tabIndex === 1 }"
+                @click="tabIndexClick(1)"
+              >
+                Bonus Balance
+              </div>
+            </div> -->
 
           <div class="relative mb-[10px]">
             <SearchIcon
@@ -128,9 +128,9 @@ const close = () => {
   emit('update:visible', false)
 }
 
-const tabIndexClick = (index: number) => {
-  tabIndex.value = index
-}
+// const tabIndexClick = (index: number) => {
+//   tabIndex.value = index
+// }
 
 const isSelected = (item: OptionItem) => {
   return item.value === selectedId.value
