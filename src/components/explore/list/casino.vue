@@ -1,7 +1,7 @@
 <template>
   <!-- 游戏列表区域 -->
   <responsive-grid-pager
-    :items="list"
+    :items="gameList"
     v-model:page="page"
     :total-pages="totalPages"
     @change="fetchPage"
@@ -18,7 +18,7 @@
           class="flex px-1 py-1 bg-[var(--color-mask-20)] rounded-md absolute items-center bottom-1 right-1"
         >
           <img :src="numImg" alt="" class="w-2.5 h-2.5 mr-0.5" />
-          <div class="text-[10px] text-text-1">{{ item.num }}</div>
+          <div class="text-[10px] text-text-1">{{ item.num ?? item.gameItemHotVo?.hot ?? 0 }}</div>
         </div>
       </div>
     </template>
@@ -30,34 +30,37 @@ import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import gameImg from '@/static/img/explore/game.png'
 import numImg from '@/static/img/explore/num.png'
-import { inject, Ref, ref } from 'vue'
+import { computed, inject, Ref, ref } from 'vue'
 import { navigateTo } from '@/utils/router'
 
 const isMobile = useIsMobile()
 const isCloseDesktopModal = inject('search-close-desktop-modal') as Ref<boolean>
 
-const list = ref([
-  { id: 1, num: 60 },
-  { id: 2, num: 61 },
-  { id: 3, num: 64 },
-  { id: 4, num: 67 },
-  { id: 5, num: 68 },
-  { id: 6, num: 65 },
-  { id: 7, num: 63 },
-  { id: 8, num: 62 },
-  { id: 9, num: 61 },
-  { id: 10, num: 68 },
-  { id: 11, num: 67 }
-])
+type CasinoGameItem = {
+  id?: string | number
+  rowId?: string | number
+  num?: number
+  gameItemHotVo?: {
+    hot?: number
+  }
+}
+
+const injectedGameList = inject<Ref<unknown[]>>('explore-game-list', ref([]))
+const gameList = computed<CasinoGameItem[]>(() =>
+  Array.isArray(injectedGameList.value) ? (injectedGameList.value as CasinoGameItem[]) : []
+)
 
 const page = ref(1)
-const totalPages = ref(10)
+const PAGE_SIZE = 10
+const totalPages = computed(() => Math.max(1, Math.ceil(gameList.value.length / PAGE_SIZE)))
 
-const itemClick = (item: any) => {
+const itemClick = (item: CasinoGameItem) => {
   if (!isMobile.value) {
     isCloseDesktopModal.value = true
   }
-  navigateTo('/game/' + item.id)
+  const gameId = item.id ?? item.rowId
+  if (!gameId) return
+  navigateTo('/game/' + gameId)
 }
 
 // 模拟彩票供应商数据

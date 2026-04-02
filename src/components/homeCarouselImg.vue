@@ -22,16 +22,6 @@
       <!-- 左右按钮 + 滑动条 -->
       <div v-if="list.length > 1" class="flex flex-shrink-0 items-center justify-center px-4">
         <div class="flex w-[25%] min-w-0 items-center justify-between gap-2">
-          <!-- <button
-              type="button"
-              class="flex size-2 shrink-0 items-center justify-center rounded-full bg-transparent text-text-1 transition-opacity hover:opacity-80 disabled:opacity-40 [&_svg]:size-full [&_path]:fill-current"
-              :disabled="currentIndex <= 0"
-              aria-label="上一张"
-              @click="prev"
-            >
-              <LeftIcon />
-            </button> -->
-
           <div class="flex min-w-0 flex-1 items-center justify-center gap-1.5">
             <button
               v-for="(_, index) in list"
@@ -52,16 +42,6 @@
               />
             </button>
           </div>
-
-          <!-- <button
-              type="button"
-              class="flex size-2 shrink-0 items-center justify-center rounded-full bg-transparent text-text-1 transition-opacity hover:opacity-80 disabled:opacity-40 [&_svg]:size-full [&_path]:fill-current"
-              :disabled="currentIndex >= list.length - 1"
-              aria-label="下一张"
-              @click="next"
-            >
-              <RightIcon />
-            </button> -->
         </div>
       </div>
     </div>

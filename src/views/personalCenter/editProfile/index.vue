@@ -55,7 +55,7 @@
           <h3 class="text-sm font-[400] text-text-1">
             {{ t('personalCenter.editProfile.avatarFrame') }}
           </h3>
-          <p class="text-xs text-text-2">{{ t('personalCenter.editProfile.unlockHint') }}</p>
+          <p v-if="unlockHintText" class="text-xs text-text-2">{{ unlockHintText }}</p>
         </div>
 
         <div class="mt-5 grid grid-cols-4 gap-x-1.5 gap-y-4">
@@ -241,6 +241,7 @@ import { showToast } from 'vant'
 import Api from '@/api'
 import H5Header from '@/components/common/H5Header.vue'
 import { useUserStore } from '@/stores/user'
+import { useVipStore } from '@/stores/vip'
 import {
   clearProfileAvatarPreviewState,
   DEFAULT_AVATAR_FRAME_ID,
@@ -265,13 +266,15 @@ import border4Image from '@/static/img/personalCenter/border_4.png'
 import border5Image from '@/static/img/personalCenter/border_5.png'
 import borderNoneImage from '@/static/img/personalCenter/border_none.png'
 
-const DEFAULT_EDIT_AVATAR_FRAME_ID: AvatarFrameId = 'border_2'
+const MAX_VIP_AVATAR_FRAME_LEVEL = 5
 
 const { t } = useI18n()
 const userStore = useUserStore()
+const vipStore = useVipStore()
 const { userInfo } = storeToRefs(userStore)
+const { myVipInfo } = storeToRefs(vipStore)
 const nickName = ref('')
-const selectedAvatarFrameId = ref<AvatarFrameId>(DEFAULT_EDIT_AVATAR_FRAME_ID)
+const selectedAvatarFrameId = ref<AvatarFrameId>(DEFAULT_AVATAR_FRAME_ID)
 const showAvatarActionSheet = ref(false)
 const showAvatarCropper = ref(false)
 const cameraInputRef = ref<HTMLInputElement | null>(null)
@@ -292,7 +295,7 @@ const dragStartPoint = ref({ x: 0, y: 0 })
 const dragStartOffset = ref({ x: 0, y: 0 })
 const originalForm = ref({
   nickName: '',
-  avatarFrameId: DEFAULT_EDIT_AVATAR_FRAME_ID as AvatarFrameId,
+  avatarFrameId: DEFAULT_AVATAR_FRAME_ID as AvatarFrameId,
   headPortrait: ''
 })
 
@@ -308,7 +311,58 @@ const avatarUrl = computed(() => {
   return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
 })
 
-const vipLevel = computed(() => userInfo.value?.vipId ?? 0)
+const normalizeVipLevel = (vipId: unknown) => {
+  const numericVipId = Number(vipId)
+
+  if (!Number.isFinite(numericVipId)) {
+    return 0
+  }
+
+  return Math.min(MAX_VIP_AVATAR_FRAME_LEVEL, Math.max(0, Math.trunc(numericVipId)))
+}
+
+const getDefaultAvatarFrameIdByVipLevel = (vipLevel: number): AvatarFrameId => {
+  if (vipLevel <= 0) {
+    return DEFAULT_AVATAR_FRAME_ID
+  }
+
+  return `border_${Math.min(vipLevel, MAX_VIP_AVATAR_FRAME_LEVEL)}` as AvatarFrameId
+}
+
+const getRequiredVipLevelForFrame = (frameId: AvatarFrameId) => {
+  if (frameId === DEFAULT_AVATAR_FRAME_ID) {
+    return 0
+  }
+
+  return normalizeVipLevel(frameId.replace('border_', ''))
+}
+
+const avatarFrameDefinitions: Array<{
+  id: AvatarFrameId
+  image: string
+  requiredVipLevel: number
+}> = [
+  { id: 'none', image: borderNoneImage, requiredVipLevel: 0 },
+  { id: 'border_1', image: border1Image, requiredVipLevel: 1 },
+  { id: 'border_2', image: border2Image, requiredVipLevel: 2 },
+  { id: 'border_3', image: border3Image, requiredVipLevel: 3 },
+  { id: 'border_4', image: border4Image, requiredVipLevel: 4 },
+  { id: 'border_5', image: border5Image, requiredVipLevel: 5 }
+]
+
+const vipLevel = computed(() =>
+  normalizeVipLevel(myVipInfo.value?.vipId ?? userInfo.value?.vipId ?? 0)
+)
+const defaultAvatarFrameId = computed(() => getDefaultAvatarFrameIdByVipLevel(vipLevel.value))
+const unlockHintText = computed(() => {
+  if (vipLevel.value >= MAX_VIP_AVATAR_FRAME_LEVEL) {
+    return t('personalCenter.editProfile.allUnlockedHint')
+  }
+
+  return t('personalCenter.editProfile.unlockHint', {
+    level: vipLevel.value + 1
+  })
+})
 const isNicknameValid = computed(() => isValidNickname(nickName.value))
 const canSave = computed(() => {
   return (
@@ -340,29 +394,15 @@ const cropImageStyle = computed<CSSProperties>(() => {
 })
 
 const avatarFrameOptions = computed(() => {
-  const unlockedFrameIds = new Set<AvatarFrameId>(
-    vipLevel.value >= 2
-      ? ['none', 'border_1', 'border_2', 'border_3', 'border_4', 'border_5']
-      : ['none', DEFAULT_EDIT_AVATAR_FRAME_ID, selectedAvatarFrameId.value]
-  )
-
-  return [
-    { id: 'none' as AvatarFrameId, image: borderNoneImage },
-    { id: 'border_1' as AvatarFrameId, image: border1Image },
-    { id: 'border_2' as AvatarFrameId, image: border2Image },
-    { id: 'border_3' as AvatarFrameId, image: border3Image },
-    { id: 'border_4' as AvatarFrameId, image: border4Image },
-    { id: 'border_5' as AvatarFrameId, image: border5Image }
-  ].map(item => ({
+  return avatarFrameDefinitions.map(item => ({
     ...item,
-    locked: !unlockedFrameIds.has(item.id)
+    locked: vipLevel.value < item.requiredVipLevel
   }))
 })
 
 const syncFormState = () => {
-  const customization = profileCustomizationState.value
   const nextNickName = userInfo.value?.nickName || ''
-  const nextAvatarFrameId = customization.avatarFrameId ?? DEFAULT_EDIT_AVATAR_FRAME_ID
+  const nextAvatarFrameId = defaultAvatarFrameId.value
   const nextHeadPortrait = userInfo.value?.headPortrait?.trim() ?? ''
 
   nickName.value = nextNickName
@@ -384,7 +424,8 @@ const handleNickNameChange = (event: Event) => {
 
 const selectAvatarFrame = (frameId: AvatarFrameId) => {
   const targetFrame = avatarFrameOptions.value.find(item => item.id === frameId)
-  if (!targetFrame || targetFrame.locked) return
+  if (!targetFrame || targetFrame.locked || vipLevel.value < getRequiredVipLevelForFrame(frameId))
+    return
 
   selectedAvatarFrameId.value = frameId
   setProfileCustomizationState(
@@ -739,7 +780,7 @@ const handleSave = async () => {
 const initializeEditProfile = async () => {
   userStore.syncStoredUserData()
   syncFormState()
-  await userStore.refreshCurrentUserData()
+  await Promise.all([userStore.refreshCurrentUserData(), vipStore.refreshMyVipInfo()])
   syncFormState()
 }
 
