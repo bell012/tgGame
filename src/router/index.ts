@@ -213,6 +213,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '投注详情',
       description: '投注详情',
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
@@ -272,6 +273,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '资金详情',
       description: '资金详情',
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true,
       mobile: {
         hideBottomBar: true,
@@ -300,6 +302,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '流水稽查详情',
       description: '流水稽查详情',
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true,
       mobile: {
         hideBottomBar: true,
