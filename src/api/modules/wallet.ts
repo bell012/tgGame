@@ -1,14 +1,16 @@
 import type {
-  QueryPayOrderByOrderIdForm,
-  QueryPayOrderByOrderIdResponse,
+  QueryDiscountListForm,
+  QueryDiscountListResponse,
   QueryDlicghForm,
   QueryDlicghResponse,
   QueryPayColumnPageForm,
   QueryPayColumnPageResponse,
+  QueryPayOrderByOrderIdForm,
+  QueryPayOrderByOrderIdResponse,
   QueryPaySubColumnPageForm,
   QueryPaySubColumnPageResponse,
-  SubmitPayOrderQuickPageForm,
-  SubmitPayOrderQuickResponse
+  SubmitPayOrderPageForm,
+  SubmitPayOrderResponse
 } from '@/api/interface/wallet'
 import request from '@/utils/request'
 
@@ -43,12 +45,10 @@ export function queryPaySubColumnPage(
   })
 }
 
-///  提交入款申请
-export function submitPayOrderQuick(
-  data: SubmitPayOrderQuickPageForm
-): Promise<SubmitPayOrderQuickResponse> {
+// 查询优惠列表
+export function queryDiscountList(data: QueryDiscountListForm): Promise<QueryDiscountListResponse> {
   return request({
-    url: '/pc/submitPayOrderQuick',
+    url: '/rd/queryDiscountList',
     method: 'post',
     data
   })
@@ -65,9 +65,7 @@ export function queryPayOrderByOrderId(
   })
 }
 ///  提交入款
-export function submitPayOrder(
-  data: SubmitPayOrderQuickPageForm
-): Promise<QueryPaySubColumnPageResponse> {
+export function submitPayOrder(data: SubmitPayOrderPageForm): Promise<SubmitPayOrderResponse> {
   return request({
     url: '/pc/submitPayOrder',
     method: 'post',

@@ -97,13 +97,15 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type {
+  QueryDiscountListItem,
   QueryPayColumnItem,
   QueryPayOrderByOrderIdResult,
   QueryPaySubColumnItem,
   QueryPaySubColumnPageForm,
-  SubmitPayOrderQuickPageForm
+  SubmitPayOrderPageForm
 } from '@/api/interface/wallet'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { resolvePayChannelTabKey } from '@/constants/payChannelTabs'
 import gCashIcon from '@/static/img/payment/gCash.png'
 import grabPayIcon from '@/static/img/payment/grabPay.png'
 import mayaIcon from '@/static/img/payment/maya.png'
@@ -118,6 +120,7 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  watch,
   type ComponentPublicInstance
 } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -146,6 +149,7 @@ const fallbackMethodIcons: Record<string, string> = {
 const payMethods = ref<QueryPayColumnItem[]>([])
 const selectedMethod = ref<QueryPayColumnItem | null>(null)
 const selectedSubColumn = ref<QueryPaySubColumnItem | null>(null)
+const selectedDiscountItem = ref<QueryDiscountListItem | null>(null)
 const amount = ref<number>()
 const methodListRef = ref<HTMLDivElement | null>(null)
 const methodItemRefs = ref<Array<HTMLElement | null>>([])
@@ -155,6 +159,9 @@ const orderInfo = ref<FiatOrderType>(defaultFiatOrder)
 const orderPopShow = ref(false)
 const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
 const isManualAmountAllowed = computed(() => selectedSubColumn.value?.manualAmountIn !== 0)
+const selectedDiscountPayChannelCode = computed(() =>
+  resolvePayChannelTabKey(selectedMethod.value?.columnName)
+)
 const amountPlaceholder = computed(() =>
   isManualAmountAllowed.value
     ? 'Please select or enter deposit amount.'
@@ -340,6 +347,18 @@ const loadPaySubColumnPage = async (columnCode: number) => {
   }
 }
 
+const loadDiscountList = async (payChannelCode: string) => {
+  try {
+    const response = await Api.wallet.queryDiscountList({ payChannelCode })
+    const result: QueryDiscountListItem[] =
+      response?.success && Array.isArray(response.result) ? response.result : []
+    selectedDiscountItem.value = result[0] ?? null
+  } catch (error) {
+    console.error('queryDiscountList failed', error)
+    selectedDiscountItem.value = null
+  }
+}
+
 const loadPayColumnPage = async () => {
   try {
     const languageCode = getLanguageCode()
@@ -363,6 +382,7 @@ const loadPayColumnPage = async () => {
     if (!defaultMethod) {
       selectedMethod.value = null
       selectedSubColumn.value = null
+      selectedDiscountItem.value = null
       presetAmounts.value = [...defaultPresetAmounts]
       return
     }
@@ -375,6 +395,7 @@ const loadPayColumnPage = async () => {
     payMethods.value = []
     selectedMethod.value = null
     selectedSubColumn.value = null
+    selectedDiscountItem.value = null
     presetAmounts.value = [...defaultPresetAmounts]
   }
 }
@@ -395,15 +416,17 @@ const doDeposit = async () => {
   if (isDepositDisabled.value) return
   if (!selectedMethod.value) return
 
-  const param: SubmitPayOrderQuickPageForm = {
+  const param: SubmitPayOrderPageForm = {
     columnCode: String(selectedMethod.value.columnCode),
     busiAmount: String(amount.value ?? 0),
-    payChannelCode: selectedSubColumn.value?.payChannelCode ?? '',
-    channelId: isMobile.value ? 4 : 3
+    payChannelCode: String(selectedMethod.value.columnCode),
+    channelId: isMobile.value ? 4 : 3,
+    subColumnCode: selectedDiscountItem.value?.rowId ?? selectedSubColumn.value?.rowId ?? 0,
+    flows: selectedDiscountItem.value?.multiple ?? 0
   }
 
   try {
-    const response = await Api.wallet.submitPayOrderQuick(param)
+    const response = await Api.wallet.submitPayOrder(param)
     const submitResult = response.result
     currentOrderId.value = submitResult?.orderId !== undefined ? String(submitResult.orderId) : ''
 
@@ -432,7 +455,7 @@ const doDeposit = async () => {
       }
     }
   } catch (error) {
-    console.error('submitPayOrderQuick failed', error)
+    console.error('submitPayOrder failed', error)
     return
   }
 }
@@ -441,6 +464,18 @@ onMounted(() => {
   void loadPayColumnPage()
   document.addEventListener('visibilitychange', handleVisibilityChange)
 })
+
+watch(
+  () => [selectedSubColumn.value?.rowId, selectedDiscountPayChannelCode.value],
+  () => {
+    if (!selectedDiscountPayChannelCode.value) {
+      selectedDiscountItem.value = null
+      return
+    }
+
+    void loadDiscountList(selectedDiscountPayChannelCode.value)
+  }
+)
 
 onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', handleVisibilityChange)
