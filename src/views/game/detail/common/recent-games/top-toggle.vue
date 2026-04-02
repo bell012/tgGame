@@ -1,12 +1,12 @@
 <template>
   <div class="flex justify-between items-center" @click="toggleIsOpen">
     <div class="flex flex-col">
-      <h3 class="text-[14px]">Queen of Bounty</h3>
+      <h3 class="text-[14px]">{{ gameName }}</h3>
       <div class="flex gap-[4px] text-[12px]">
         <div class="text-[var(--color-text-level-2)]">by</div>
-        <div class="text-[var(--color-theme-level-1)]">PG Soft</div>
+        <div class="text-[var(--color-theme-level-1)]">{{ providerName }}</div>
       </div>
-      <div class="text-[var(--color-theme-level-1)] text-[12px]"># Slots</div>
+      <div class="text-[var(--color-theme-level-1)] text-[12px]"># {{ gameTypeName }}</div>
     </div>
     <div class="bg-[var(--color-text-level-3)] rounded-md">
       <div class="icon" :class="{ 'is-open': isOpen }">
@@ -20,9 +20,32 @@
   </div>
 </template>
 <script setup lang="ts">
-import { inject, Ref } from 'vue'
+import { computed, inject, Ref, type ComputedRef } from 'vue'
 
 const isOpen = inject('isRgOpen') as Ref<boolean>
+
+type CurrentGameDetail = {
+  itemName?: string
+  platformName?: string
+  sysGameTypeName?: string
+} | null
+
+const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
+  'game-detail-current-game',
+  computed(() => null)
+)
+
+const gameName = computed(() => {
+  return String(currentGameDetail.value?.itemName ?? '').trim() || 'Queen of Bounty'
+})
+
+const providerName = computed(() => {
+  return String(currentGameDetail.value?.platformName ?? '').trim() || 'PG Soft'
+})
+
+const gameTypeName = computed(() => {
+  return String(currentGameDetail.value?.sysGameTypeName ?? '').trim() || 'Slots'
+})
 
 const toggleIsOpen = () => {
   isOpen.value = !isOpen.value
