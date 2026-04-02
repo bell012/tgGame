@@ -161,6 +161,7 @@ const getQueryGameListForApp = async () => {
 
   try {
     const res = await Api.home.getGameData()
+    console.log(res, 'getGameData===')
     const nextList = Array.isArray(res?.result) ? (res.result as GameSection[]) : []
     queryGameList.value = nextList
     exploreCacheGlobal.__exploreGameListCache__ = nextList

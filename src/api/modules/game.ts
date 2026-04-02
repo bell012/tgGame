@@ -72,3 +72,11 @@ export function getGameBetRecordList(
     data
   })
 }
+
+export function getloginPlatform(data: any): Promise<any> {
+  return request({
+    url: '/gc/loginPlatform',
+    method: 'post',
+    data
+  })
+}

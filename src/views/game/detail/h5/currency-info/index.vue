@@ -7,7 +7,7 @@
       <div class="flex-1 flex flex-col justify-between">
         <div class="flex-1 flex flex-col justify-around">
           <div class="text-[15px] font-bold">Play with selected currency</div>
-          <currency-select></currency-select>
+          <currency-select @change="handleCurrencyChange"></currency-select>
           <div class="text-[13px] text-[var(--color-text-level-2)] text-center">
             Tap "Play Now" to enter. Good luck and have fun!
           </div>
@@ -17,7 +17,7 @@
           <div class="w-[16px] h-[16px]">
             <play-icon class="w-full h-full" />
           </div>
-          <div class="text-[15px] font-bold text-[#000]">Play Now</div>
+          <div class="text-[15px] font-bold text-[#000]" @click="gamePlay">Play Now</div>
         </div>
       </div>
     </div>
@@ -29,9 +29,13 @@ import defaultGameImg from '@/static/img/explore/game.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import CurrencySelect from '../currency-select/index.vue'
 import CurrencyBar from '../currency-bar/index.vue'
-import { computed, inject, type ComputedRef } from 'vue'
+import { computed, inject, ref, type ComputedRef } from 'vue'
+import Api from '@/api'
 
 type CurrentGameDetail = {
+  itemCode?: string | number
+  platformCode?: string
+  pgType?: string
   itemName?: string
   platformName?: string
   icon2?: string
@@ -45,6 +49,28 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   'game-detail-current-game',
   computed(() => null)
 )
+
+const selectedData = ref<{ value: string; label: string; icon: string } | undefined>(undefined)
+const handleCurrencyChange = (
+  value: { value: string; label: string; icon: string } | undefined
+) => {
+  console.log(value, 'value-====')
+  selectedData.value = value
+}
+
+const gamePlay = async () => {
+  try {
+    console.log('selectedData', selectedData.value)
+    const res = await Api.game.getloginPlatform({
+      pgType: currentGameDetail.value?.pgType,
+      gameCode: currentGameDetail.value?.itemCode,
+      platformCode: currentGameDetail.value?.platformCode
+    })
+    console.log(res, 'getloginPlatform')
+  } catch (error) {
+    console.error('getQuerySlideshow failed', error)
+  }
+}
 
 const toImageUrl = (value: string) => {
   const imagePath = value.trim()
