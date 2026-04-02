@@ -4,11 +4,13 @@
       <h2 class="flex items-center text-base font-extrabold text-primary">
         {{ props.title }}
       </h2>
-      <a
-        href="javascript:void(0);"
+      <button
+        type="button"
         class="button ml-auto flex items-center bg-bg-3 gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-layer5"
-        >{{ $t('home.All') }}</a
+        @click="emit('all-click')"
       >
+        {{ $t('home.All') }}
+      </button>
       <div v-if="!isMobile" class="ml-2 flex gap-x-1">
         <button
           @click="scrollPrev"
@@ -55,42 +57,40 @@
       ref="listWrap"
       style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
-      <div v-for="(value, index) in props.list" :key="value.img.src + '-' + index">
+      <div v-for="(value, index) in normalizedList" :key="(value.img.src ?? '') + '-' + index">
         <a
           href="javascript:void(0);"
           class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2"
-          link=""
         >
           <div class="w-full h-full">
             <gameErrImg :img="value.img" />
           </div>
-          <div
-            class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-black_alpha20 px-1.5"
-          >
-            <div class="icon size-4">
-              <peopleNumber />
+          <div class="game-item-hover absolute inset-0 z-[1]">
+            <div class="game-item-hover-mask absolute inset-0" />
+            <div class="game-item-play">
+              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M24.9106 13.9439L13.964 6.44441C13.5849 6.18474 13.1412 6.03268 12.681 6.0047C12.2209 5.97673 11.7617 6.07391 11.3534 6.28572C10.945 6.49753 10.603 6.81589 10.3645 7.2063C10.1259 7.59671 9.99987 8.04429 10 8.50052V23.4995C9.99987 23.9557 10.1259 24.4033 10.3645 24.7937C10.603 25.1841 10.945 25.5025 11.3534 25.7143C11.7617 25.9261 12.2209 26.0233 12.681 25.9953C13.1412 25.9673 13.5849 25.8153 13.964 25.5556L24.9106 18.0561C25.2467 17.8261 25.5214 17.5189 25.7111 17.1608C25.9009 16.8027 26 16.4044 26 16C26 15.5956 25.9009 15.1973 25.7111 14.8392C25.5214 14.4811 25.2467 14.1739 24.9106 13.9439Z"
+                ></path>
+              </svg>
             </div>
-            <span class="text-xs font-semibold text-alw_white">2126</span>
           </div>
-          <div
-            class="center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 group-hover:opacity-100"
-          >
-            <div class="flex flex-col items-center justify-center gap-2 h-full w-full">
+          <div class="game-item-gradient absolute inset-x-0 bottom-0 z-[1] h-[50%]" />
+          <div class="absolute left-2 right-2 bottom-1.5 z-[2]">
+            <div class="truncate text-xs font-extrabold leading-4 text-alw_white">
+              {{ value.itemName || '--' }}
+            </div>
+            <div class="mt-0.5 flex items-center justify-between gap-1">
               <div
-                class="flex justify-center items-center center absolute left-0 top-0 flex h-[40%] w-full px-2 text-center font-extrabold leading-4 text-[white]"
+                class="max-w-[70%] truncate text-[12px] font-bold leading-4 text-[var(--color-theme-level-1)]"
               >
-                Crash
+                {{ value.platformName || '--' }}
               </div>
-              <div
-                class="flex h-9 w-9 rounded-full bg-[#fff3] transition-all duration-300 group-hover:scale-150"
-              >
-                <div class="icon size-full fill-alw_white">
-                  <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M24.9106 13.9439L13.964 6.44441C13.5849 6.18474 13.1412 6.03268 12.681 6.0047C12.2209 5.97673 11.7617 6.07391 11.3534 6.28572C10.945 6.49753 10.603 6.81589 10.3645 7.2063C10.1259 7.59671 9.99987 8.04429 10 8.50052V23.4995C9.99987 23.9557 10.1259 24.4033 10.3645 24.7937C10.603 25.1841 10.945 25.5025 11.3534 25.7143C11.7617 25.9261 12.2209 26.0233 12.681 25.9953C13.1412 25.9673 13.5849 25.8153 13.964 25.5556L24.9106 18.0561C25.2467 17.8261 25.5214 17.5189 25.7111 17.1608C25.9009 16.8027 26 16.4044 26 16C26 15.5956 25.9009 15.1973 25.7111 14.8392C25.5214 14.4811 25.2467 14.1739 24.9106 13.9439Z"
-                    ></path>
-                  </svg>
+              <div class="flex h-5 items-center rounded-md bg-black_alpha20 px-1.5">
+                <div class="icon size-4">
+                  <peopleNumber />
                 </div>
+                <span class="text-xs font-semibold text-alw_white">{{ value.number }}</span>
               </div>
             </div>
           </div>
@@ -101,30 +101,89 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './peopleNumber.svg?component'
-interface GameItem {
+interface GameItemImage {
   img: {
     maintain: boolean
-    src: string
+    src?: string
+    conUrl?: string
+  }
+}
+
+interface RawGameItem extends Partial<GameItemImage> {
+  itemName?: string
+  platformName?: string
+  number?: number | string
+  initScoreNum?: number | string
+  icon2?: string
+  conUrl?: string
+  gameItemHotVo?: {
+    defaultImage?: string
+  }
+}
+
+interface NormalizedGameItem {
+  img: {
+    maintain: boolean
+    src?: string
+    conUrl?: string
   }
   number: number
+  itemName: string
+  platformName: string
 }
 
 interface Props {
   title: string
-  list: GameItem[]
+  list: RawGameItem[]
 }
 
 const props = defineProps<Props>()
-console.log('Props', props)
+const emit = defineEmits<{
+  'all-click': []
+}>()
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = useIsMobile()
+const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
 
 const prevDisabled = ref(true)
 const nextDisabled = ref(false)
+
+const toNumber = (value: unknown) => {
+  const numberValue = Number(value)
+  return Number.isFinite(numberValue) ? numberValue : 0
+}
+
+const toImageUrl = (value: unknown) => {
+  const imagePath = String(value ?? '').trim()
+  if (!imagePath) {
+    return ''
+  }
+  if (/^https?:\/\//i.test(imagePath)) {
+    return imagePath
+  }
+  return `${gameImageBaseUrl}${imagePath}`
+}
+
+const normalizedList = computed<NormalizedGameItem[]>(() => {
+  return (Array.isArray(props.list) ? props.list : []).map(item => {
+    const fallbackImage = item.conUrl ?? item.icon2 ?? item.gameItemHotVo?.defaultImage
+    const sourceImage = item.img?.src ?? item.img?.conUrl ?? toImageUrl(fallbackImage)
+
+    return {
+      img: {
+        maintain: Boolean(item.img?.maintain ?? false),
+        src: sourceImage
+      },
+      number: toNumber(item.number ?? item.initScoreNum),
+      itemName: String(item.itemName ?? '').trim(),
+      platformName: String(item.platformName ?? '').trim()
+    }
+  })
+})
 
 const updateButtons = () => {
   const el = listWrap.value
@@ -144,6 +203,14 @@ onMounted(async () => {
     window.addEventListener('resize', updateButtons)
   }
 })
+
+watch(
+  () => normalizedList.value.length,
+  async () => {
+    await nextTick()
+    updateButtons()
+  }
+)
 
 onBeforeUnmount(() => {
   const el = listWrap.value
@@ -178,8 +245,50 @@ const scrollPrev = () => {
   .icon {
     fill: currentColor;
   }
+  .game-item-gradient {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.28) 45%,
+      rgba(0, 0, 0, 0.74) 100%
+    );
+  }
+  .game-item-hover {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .game-item-hover-mask {
+    background: rgba(0, 0, 0, 0.42);
+  }
+  .game-item-play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+    transform: translate(-50%, -50%) scale(0.85);
+    transition: transform 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .game-item-play svg {
+    width: 22px;
+    height: 22px;
+    fill: #fff;
+    transform: translateX(1px);
+  }
   a:hover {
     color: inherit;
+  }
+  .game-item:hover .game-item-hover {
+    opacity: 1;
+  }
+  .game-item:hover .game-item-play {
+    transform: translate(-50%, -50%) scale(1);
   }
   .button-icon {
     display: flex;
@@ -235,11 +344,13 @@ const scrollPrev = () => {
   .gameList .game-item:hover {
     transform: none !important;
   }
-  .gameList .game-item:hover .center {
+  .gameList .game-item:hover .center,
+  .gameList .game-item:hover .game-item-hover {
     opacity: 0 !important;
     transform: none !important;
   }
-  .gameList .game-item .center {
+  .gameList .game-item .center,
+  .gameList .game-item .game-item-hover {
     transition: none !important;
     opacity: 0 !important;
   }

@@ -36,3 +36,11 @@ export function getQuerySlideshow(data: any): Promise<any> {
     data
   })
 }
+
+// 供应商 /gc/gameBrandList
+export function getGameBrandList(): Promise<any> {
+  return request({
+    url: '/gc/gameBrandList',
+    method: 'post'
+  })
+}

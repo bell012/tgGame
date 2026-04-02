@@ -31,7 +31,7 @@
             <th class="text-right">Profit</th>
           </tr>
         </thead>
-        <TransitionGroup tag="tbody" name="live">
+        <tbody v-if="rows.length">
           <tr
             v-for="(item, index) in rows"
             :key="item.id"
@@ -39,74 +39,150 @@
           >
             <td class="py-2 px-3 flex items-center gap-1">
               <span class="text-text-1 truncate">
-                {{ item.game }}
+                {{ item.betId }}
               </span>
             </td>
             <td class="cell" role="cell">
               <div class="flex items-center justify-center">
-                <span>{{ item.BetAmount }}</span>
+                <span>{{ item.bet }}</span>
                 <img src="@/static/img/flag/USD.webp" class="icon" alt="" />
               </div>
             </td>
             <td class="py-2 px-3 text-text-1 truncate">
-              {{ item.player }}
+              {{ item.payout }}
             </td>
             <td class="py-2 px-3 flex items-center justify-end gap-1 text-[12px]">
-              <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
-                {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
+              <span :class="item.profitNumber >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
+                {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
               </span>
-              <img src="@/static/img/flag/USD.webp" class="w-3 h-3" :alt="item.game" />
+              <img src="@/static/img/flag/USD.webp" class="w-3 h-3" :alt="item.betId" />
             </td>
           </tr>
-        </TransitionGroup>
+        </tbody>
+        <tbody v-else>
+          <tr class="bg-bg-2">
+            <td colspan="4" class="py-6 text-center text-[12px] text-[var(--color-text-level-2)]">
+              {{ isLoading ? 'Loading...' : 'No data' }}
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import Api from '@/api'
+import type { GameBetRecordItem } from '@/api/interface/game'
+import { useLocaleStore } from '@/stores/locale'
+import { storeToRefs } from 'pinia'
+import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 // import { useI18n } from 'vue-i18n'
 // const { t } = useI18n()
 
-const tabs = ['All Bets', 'My Bets', 'High Roller']
+const tabs = ['All Bets', 'My Bets', 'High Roller'] as const
 const activeTab = ref('All Bets')
+
+type CurrentGameDetail = {
+  itemCode?: string | number
+  platformCode?: string
+} | null
+
 interface IRow {
-  id: number
-  game: string
-  player: string
-  BetAmount: number
-  multiplier: number
-  profit: number
+  id: string
+  betId: string
+  bet: string
+  payout: string
+  profit: string
+  profitNumber: number
 }
 
 const rows = ref<IRow[]>([])
-let uid = 0
+const isLoading = ref(false)
 
-const randomRow = (): IRow => {
-  const profit = Math.floor(Math.random() * 5000) - 2500
+const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
+  'game-detail-current-game',
+  computed(() => null)
+)
+
+const localeStore = useLocaleStore()
+const { actualCurrency } = storeToRefs(localeStore)
+
+const normalizeValue = (value: unknown) => String(value ?? '').trim()
+
+const currentGameCode = computed(() => normalizeValue(currentGameDetail.value?.itemCode))
+const currentPlatformCode = computed(() => normalizeValue(currentGameDetail.value?.platformCode))
+
+const currentBetType = computed<1 | 2>(() => (activeTab.value === 'My Bets' ? 2 : 1))
+
+const parseAmount = (value: unknown) => {
+  const parsed = Number(normalizeValue(value))
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+const formatAmount = (value: unknown) => {
+  const parsed = Number(normalizeValue(value))
+  return Number.isFinite(parsed) ? parsed.toFixed(2) : '0.00'
+}
+
+const mapRecordToRow = (item: GameBetRecordItem, index: number): IRow => {
+  const betId = normalizeValue(item.betId) || '-'
+  const profitNumber = parseAmount(item.profit)
   return {
-    id: uid++,
-    game: 'Wild Strory',
-    player: 'Tujaodrayy',
-    BetAmount: 399.99,
-    multiplier: Number((Math.random() * 20 + 1).toFixed(2)),
-    profit: profit
+    id: `${betId}-${index}`,
+    betId,
+    bet: formatAmount(item.bet),
+    payout: formatAmount(item.payout),
+    profit: formatAmount(item.profit),
+    profitNumber
   }
 }
 
-const pushRow = () => {
-  rows.value.unshift(randomRow())
-  if (rows.value.length > 10) {
-    rows.value.pop()
+const fetchBetRecords = async () => {
+  const platformCode = currentPlatformCode.value
+  const gameCode = currentGameCode.value
+  if (!platformCode || !gameCode) {
+    rows.value = []
+    return
+  }
+
+  isLoading.value = true
+  try {
+    const res = await Api.game.getGameBetRecordList({
+      page: {
+        current: 1,
+        size: 100
+      },
+      platformCode,
+      gameCode,
+      currency: 'PHP',
+      betType: currentBetType.value
+    })
+    console.log(res, 'hahha')
+    const rawResult = res?.result
+    const records = (rawResult as { records?: unknown } | undefined)?.records
+    const recordList = Array.isArray(rawResult)
+      ? (rawResult as GameBetRecordItem[])
+      : Array.isArray(records)
+        ? (records as GameBetRecordItem[])
+        : []
+
+    rows.value = recordList.map((item, index) => mapRecordToRow(item, index))
+  } catch (error) {
+    console.error('fetchBetRecords failed', error)
+    rows.value = []
+  } finally {
+    isLoading.value = false
   }
 }
 
-onMounted(() => {
-  for (let i = 0; i < 10; i++) {
-    pushRow()
-  }
-})
+watch(
+  [activeTab, currentPlatformCode, currentGameCode, actualCurrency],
+  () => {
+    void fetchBetRecords()
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>
