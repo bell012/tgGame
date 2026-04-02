@@ -77,9 +77,9 @@ const getQueryValue = (value: unknown) => {
   return String(value ?? '').trim()
 }
 
-const itemCode = computed(() => getQueryValue(route.query.itemCode))
-const platformCode = computed(() => getQueryValue(route.query.platformCode))
-const rowId = computed(() => getQueryValue(route.params.id))
+// const itemCode = computed(() => getQueryValue(route.query.itemCode))
+// const platformCode = computed(() => getQueryValue(route.query.platformCode))
+const rowId = computed(() => getQueryValue(route.params.rowId))
 
 type CurrentGameDetail =
   | ({
@@ -90,49 +90,6 @@ type CurrentGameDetail =
       sysGameTypeCode?: string
     } & Record<string, unknown>)
   | null
-
-const findGameDetailByCodes = (
-  data: unknown,
-  targetItemCode: string,
-  targetPlatformCode: string
-): CurrentGameDetail => {
-  if (!targetItemCode || !targetPlatformCode) {
-    return null
-  }
-  const visited = new WeakSet<object>()
-  const dfs = (node: unknown): CurrentGameDetail => {
-    if (!node || typeof node !== 'object') {
-      return null
-    }
-    if (Array.isArray(node)) {
-      for (const child of node) {
-        const found = dfs(child)
-        if (found) {
-          return found
-        }
-      }
-      return null
-    }
-    if (visited.has(node)) {
-      return null
-    }
-    visited.add(node)
-    const currentNode = node as Record<string, unknown>
-    const currentItemCode = getQueryValue(currentNode.itemCode)
-    const currentPlatformCode = getQueryValue(currentNode.platformCode)
-    if (currentItemCode === targetItemCode && currentPlatformCode === targetPlatformCode) {
-      return currentNode
-    }
-    for (const value of Object.values(currentNode)) {
-      const found = dfs(value)
-      if (found) {
-        return found
-      }
-    }
-    return null
-  }
-  return dfs(data)
-}
 
 const currentGameDetailState = ref<CurrentGameDetail>(null)
 
@@ -166,16 +123,8 @@ const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
   })
 })
 
-const getCurrentGameDetailByLocalData = () => {
-  return findGameDetailByCodes(gameData.value, itemCode.value, platformCode.value)
-}
-
 const getCurrentGameDetailByApi = async () => {
   const targetRowId = rowId.value
-  if (!targetRowId) {
-    currentGameDetailState.value = getCurrentGameDetailByLocalData()
-    return
-  }
 
   try {
     const res = await Api.game.queryGameDetails({ rowId: targetRowId })
@@ -183,12 +132,9 @@ const getCurrentGameDetailByApi = async () => {
     const result = res?.result
     if (result && typeof result === 'object') {
       currentGameDetailState.value = result as CurrentGameDetail
-      return
     }
-    currentGameDetailState.value = getCurrentGameDetailByLocalData()
   } catch (error) {
     console.error('getCurrentGameDetailByApi failed', error)
-    currentGameDetailState.value = getCurrentGameDetailByLocalData()
   }
 }
 
@@ -208,8 +154,6 @@ const openCurrentCategoryAllGamesPage = () => {
       ...(getQueryValue(currentGameDetail.value?.rowId)
         ? { rowId: getQueryValue(currentGameDetail.value?.rowId) }
         : {}),
-      ...(itemCode.value ? { itemCode: itemCode.value } : {}),
-      ...(platformCode.value ? { platformCode: platformCode.value } : {}),
       ...(currentGameTypeCode.value ? { sysGameTypeCode: currentGameTypeCode.value } : {}),
       ...(pageTitle ? { title: pageTitle } : {})
     }
@@ -238,7 +182,7 @@ const getGameDataForApp = async () => {
 }
 
 watch(
-  [rowId, itemCode, platformCode],
+  [rowId],
   () => {
     void getCurrentGameDetailByApi()
   },
