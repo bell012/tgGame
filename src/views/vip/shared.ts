@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, type Component } from 'vue'
 import { storeToRefs } from 'pinia'
 import type { VipListItem } from '@/api/interface/vip'
 import { useUserStore } from '@/stores/user'
@@ -19,6 +19,8 @@ import item1Image from '@/static/img/personalCenter/item_1.png'
 import item2Image from '@/static/img/personalCenter/item_2.png'
 import item3Image from '@/static/img/personalCenter/item_3.png'
 import item4Image from '@/static/img/personalCenter/item_4.png'
+import rule1Icon from '@/static/svg/rule_1.svg?skipsvgo'
+import rule2Icon from '@/static/svg/rule_2.svg?skipsvgo'
 
 type Translate = (key: string) => string
 
@@ -42,6 +44,13 @@ export interface VipBenefitCard {
   buttonText: string
   background: string
   image: string
+}
+
+export interface VipRetentionCard {
+  key: string
+  label: string
+  amount: string
+  icon: Component
 }
 
 const benefitCardBackgroundMap: Record<string, string> = {
@@ -214,6 +223,23 @@ export const useVipPageData = (t: Translate) => {
     ]
   })
 
+  const retentionCards = computed<VipRetentionCard[]>(() => {
+    return [
+      {
+        key: 'minimumDeposit',
+        label: t('vipPage.retention.minimumDeposit'),
+        amount: '10000.00',
+        icon: rule1Icon
+      },
+      {
+        key: 'minimumValidBet',
+        label: t('vipPage.retention.minimumValidBet'),
+        amount: '10000.00',
+        icon: rule2Icon
+      }
+    ]
+  })
+
   const rules = computed(() => {
     return Array.from({ length: 10 }, (_, index) => {
       const key = `rule${index + 1}`
@@ -241,6 +267,7 @@ export const useVipPageData = (t: Translate) => {
     progressItems,
     overallProgress,
     benefitCards,
+    retentionCards,
     rules,
     initializeVipPage
   }

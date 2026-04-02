@@ -134,6 +134,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import H5Header from '@/components/common/H5Header.vue'
 import RuleIcon from '@/static/svg/rule.svg?component'
 import VipBadgeIcon from '@/static/svg/vip_1.svg?component'
@@ -146,7 +147,7 @@ import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import { type VipBenefitCard, useVipPageData } from './shared'
 
 const { t } = useI18n()
-const showRulesPopup = ref(false)
+const router = useRouter()
 const showClaimSuccessPopup = ref(false)
 const pendingClaimCard = ref<VipBenefitCard | null>(null)
 const claimedCardKeys = ref<string[]>([])
@@ -182,9 +183,9 @@ const claimSuccessAmount = computed(() => {
   return `${getCurrencySymbol()}${amount}`
 })
 
-// 打开 H5 规则弹层。
+// 规则页面
 const openRulesPopup = () => {
-  showRulesPopup.value = true
+  void router.push({ name: 'rule' })
 }
 
 // 领取可用奖励并展示成功弹窗。
