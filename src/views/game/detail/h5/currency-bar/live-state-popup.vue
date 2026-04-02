@@ -28,7 +28,7 @@
               <RefreshIcon
                 class="size-[20px] cursor-pointer"
                 :class="{ 'animate-spin': isLoading }"
-                @click="refreshGameStatistics"
+                @click="handleRefreshGameStatistics"
               />
             </div>
             <div
@@ -184,8 +184,42 @@ const fetchGameStatistics = async () => {
   }
 }
 
-const refreshGameStatistics = () => {
-  void fetchGameStatistics()
+const refreshGameStatistics = async () => {
+  const itemCode = currentItemCode.value
+  const platformCode = currentPlatformCode.value
+  if (!itemCode || !platformCode) {
+    statistics.value = emptyStatistics()
+    return
+  }
+
+  isLoading.value = true
+  try {
+    const res = await Api.game.refreshGameStatistics({
+      itemCode,
+      platformCode
+    })
+
+    const result = res?.result
+    if (result && typeof result === 'object') {
+      statistics.value = {
+        profit: result.profit ?? 0,
+        wagered: result.wagered ?? 0,
+        win: result.win ?? 0,
+        lose: result.lose ?? 0
+      }
+      return
+    }
+    statistics.value = emptyStatistics()
+  } catch (error) {
+    console.error('refreshGameStatistics failed', error)
+    statistics.value = emptyStatistics()
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleRefreshGameStatistics = () => {
+  void refreshGameStatistics()
 }
 
 watch(

@@ -17,11 +17,11 @@
     >
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
         <div class="text-[var(--color-text-level-2)]">Max Win</div>
-        <div class="text-[var(--color-theme-level-1)]">50,000x</div>
+        <div class="text-[var(--color-theme-level-1)]">-</div>
       </div>
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
         <div class="text-[var(--color-text-level-2)]">Stakes Range</div>
-        <div class="text-[var(--color-text-level-1)]">$0.2 to $100</div>
+        <div class="text-[var(--color-text-level-1)]">-</div>
       </div>
     </div>
   </div>
