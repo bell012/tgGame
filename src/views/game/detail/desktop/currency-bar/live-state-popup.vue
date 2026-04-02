@@ -25,7 +25,11 @@
           >
             <div class="flex justify-between border-b border-[var(--color-opacity-30)] pb-[12px]">
               <div>Bet</div>
-              <RefreshIcon class="size-[20px]" />
+              <RefreshIcon
+                class="size-[20px] cursor-pointer"
+                :class="{ 'animate-spin': isLoading }"
+                @click="refreshGameStatistics"
+              />
             </div>
             <div
               class="flex bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[12px]"
@@ -41,7 +45,7 @@
                       :style="`top: -20px`"
                     />
                   </section>
-                  <div class="text-[var(--color-theme-level-1)] text-[15px]">₱0.00</div>
+                  <div class="text-[var(--color-theme-level-1)] text-[15px]">{{ profitText }}</div>
                 </div>
 
                 <div class="text-[14px] text-[var(--color-text-level-2)] mt-[20px]">Wagered</div>
@@ -54,17 +58,17 @@
                       :style="`top: -20px`"
                     />
                   </section>
-                  <div class="text-[var(--color-theme-level-1)] text-[15px]">₱0.00</div>
+                  <div class="text-[var(--color-theme-level-1)] text-[15px]">{{ wageredText }}</div>
                 </div>
               </div>
               <div class="flex-1 pl-[12px]">
                 <div class="text-[14px] text-[var(--color-text-level-2)]">WIN</div>
                 <div class="flex items-center gap-[8px]">
-                  <div class="text-[15px]">0</div>
+                  <div class="text-[15px]">{{ winCount }}</div>
                 </div>
                 <div class="text-[14px] text-[var(--color-text-level-2)] mt-[20px]">LOSE</div>
                 <div class="flex items-center gap-[8px]">
-                  <div class="text-[15px]">0</div>
+                  <div class="text-[15px]">{{ loseCount }}</div>
                 </div>
               </div>
             </div>
@@ -76,10 +80,16 @@
 </template>
 
 <script setup lang="ts">
+import Api from '@/api'
+import type { GameStatisticsResult } from '@/api/interface/game'
+import { useLocaleStore } from '@/stores/locale'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RefreshIcon from '@/static/svg/game/detail/refresh.svg?component'
+import { getCurrencySymbol } from '@/utils/locale'
+import { storeToRefs } from 'pinia'
+import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 
-defineProps<{
+const props = defineProps<{
   visible: boolean
   desktop?: boolean
 }>()
@@ -87,6 +97,107 @@ defineProps<{
 const emit = defineEmits<{
   'update:visible': [val: boolean]
 }>()
+
+type CurrentGameDetail = {
+  itemCode?: string | number
+  platformCode?: string
+} | null
+
+const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
+  'game-detail-current-game',
+  computed(() => null)
+)
+
+const localeStore = useLocaleStore()
+const { actualCurrency } = storeToRefs(localeStore)
+
+const normalizeValue = (value: unknown) => String(value ?? '').trim()
+
+const currentItemCode = computed(() => normalizeValue(currentGameDetail.value?.itemCode))
+const currentPlatformCode = computed(() => normalizeValue(currentGameDetail.value?.platformCode))
+
+const emptyStatistics = (): GameStatisticsResult => ({
+  profit: 0,
+  wagered: 0,
+  win: 0,
+  lose: 0
+})
+
+const statistics = ref<GameStatisticsResult>(emptyStatistics())
+const isLoading = ref(false)
+
+const formatAmount = (value: unknown) => {
+  const parsed = Number(normalizeValue(value))
+  return Number.isFinite(parsed) ? parsed.toFixed(2) : '0.00'
+}
+
+const formatCount = (value: unknown) => {
+  const parsed = Number(normalizeValue(value))
+  if (!Number.isFinite(parsed)) {
+    return 0
+  }
+  return Math.max(0, Math.trunc(parsed))
+}
+
+const profitText = computed(() => {
+  return `${getCurrencySymbol(actualCurrency.value)}${formatAmount(statistics.value.profit)}`
+})
+
+const wageredText = computed(() => {
+  return `${getCurrencySymbol(actualCurrency.value)}${formatAmount(statistics.value.wagered)}`
+})
+
+const winCount = computed(() => formatCount(statistics.value.win))
+const loseCount = computed(() => formatCount(statistics.value.lose))
+
+const fetchGameStatistics = async () => {
+  const itemCode = currentItemCode.value
+  const platformCode = currentPlatformCode.value
+  if (!itemCode || !platformCode) {
+    statistics.value = emptyStatistics()
+    return
+  }
+
+  isLoading.value = true
+  try {
+    const res = await Api.game.getGameStatistics({
+      itemCode,
+      platformCode
+    })
+
+    const result = res?.result
+    if (result && typeof result === 'object') {
+      statistics.value = {
+        profit: result.profit ?? 0,
+        wagered: result.wagered ?? 0,
+        win: result.win ?? 0,
+        lose: result.lose ?? 0
+      }
+      return
+    }
+    statistics.value = emptyStatistics()
+  } catch (error) {
+    console.error('fetchGameStatistics failed', error)
+    statistics.value = emptyStatistics()
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const refreshGameStatistics = () => {
+  void fetchGameStatistics()
+}
+
+watch(
+  [() => props.visible, currentItemCode, currentPlatformCode, actualCurrency],
+  () => {
+    if (!props.visible) {
+      return
+    }
+    void fetchGameStatistics()
+  },
+  { immediate: true }
+)
 
 // 关闭popup
 const close = () => {
