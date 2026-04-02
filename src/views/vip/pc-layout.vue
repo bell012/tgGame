@@ -173,8 +173,6 @@ import CommonFooter from '@/components/commonFooter.vue'
 import VipBadgeIcon from '@/static/svg/vip_1.svg?component'
 import VipWordmarkIcon from '@/static/svg/vip_2.svg?component'
 import cardVipImage from '@/static/img/personalCenter/card_vip.png'
-import rule1Icon from '@/static/svg/rule_1.svg?skipsvgo'
-import rule2Icon from '@/static/svg/rule_2.svg?skipsvgo'
 import { getCurrencySymbol } from '@/utils/locale'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import { type VipBenefitCard, useVipPageData } from './shared'
@@ -193,6 +191,7 @@ const {
   progressItems,
   overallProgress,
   benefitCards,
+  retentionCards,
   rules,
   initializeVipPage
 } = useVipPageData(t)
@@ -216,23 +215,6 @@ const displayBenefitCards = computed(() => {
 const claimSuccessAmount = computed(() => {
   const amount = pendingClaimCard.value?.amount ?? '0.00'
   return `${getCurrencySymbol()}${amount}`
-})
-
-const retentionCards = computed(() => {
-  return [
-    {
-      key: 'minimumDeposit',
-      label: t('vipPage.retention.minimumDeposit'),
-      amount: '10000.00',
-      icon: rule1Icon
-    },
-    {
-      key: 'minimumValidBet',
-      label: t('vipPage.retention.minimumValidBet'),
-      amount: '10000.00',
-      icon: rule2Icon
-    }
-  ]
 })
 
 const handleClaim = (card: VipBenefitCard) => {

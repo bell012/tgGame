@@ -620,6 +620,7 @@
       "minimumValidBet": "最低有效投注"
     },
     "rulesTitle": "规则说明",
+    "rule": "规则",
     "rules": {
       "rule1": {
         "title": "1. 晋升条件",

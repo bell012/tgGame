@@ -237,6 +237,21 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'rule',
+    name: 'rule',
+    component: () => import('@/views/rule/index.vue'),
+    meta: {
+      title: '规则',
+      description: '规则',
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'vip',
     name: 'vip',
     component: () => import('@/views/vip/index.vue'),

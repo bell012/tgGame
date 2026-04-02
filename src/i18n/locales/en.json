@@ -621,6 +621,7 @@
       "minimumValidBet": "Minimum Valid Bet"
     },
     "rulesTitle": "Rule description",
+    "rule": "Rules",
     "rules": {
       "rule1": {
         "title": "1. Promotion Criteria",
