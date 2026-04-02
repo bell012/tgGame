@@ -8,28 +8,18 @@
         @click="settingVisibleClick"
       />
       <div class="flex items-center gap-[10px] cursor-pointer">
-        <div class="flex gap-[4px]" @click="toggleStar">
-          <img alt="" class="size-[16px]" :src="starActived ? StarActiveIcon : StarIcon" />
-          <div class="text-[var(--color-text-level-2)] text-[12px]">1177</div>
-        </div>
+        <img
+          alt=""
+          class="size-[16px] cursor-pointer"
+          :src="starActived ? StarActiveIcon : StarIcon"
+          @click="toggleStar"
+        />
         <img
           alt=""
           class="size-[16px] cursor-pointer"
           :src="LineIcon"
           @click="liveStateVisibleClick"
         />
-        <div
-          class="flex h-[36px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] w-[160px] p-[4px]"
-        >
-          <div
-            v-for="tab in tabList"
-            class="flex-1 flex items-center justify-center cursor-pointer text-[12px]"
-            :class="{ active: tabValue === tab.value }"
-            @click="tabIndexClick(tab.value)"
-          >
-            {{ tab.label }}
-          </div>
-        </div>
       </div>
     </div>
     <!--Setting Popup-->
@@ -61,6 +51,7 @@ import SettingIcon from '@/static/svg/game/detail/setting.svg?url'
 import LineIcon from '@/static/svg/game/detail/lines.svg?url'
 import StarIcon from '@/static/svg/game/detail/star.svg?url'
 import StarActiveIcon from '@/static/svg/game/detail/star_active.svg?url'
+import { useGameFavorite } from '@/composables/useGameFavorite'
 import { ref } from 'vue'
 import LiveStatePopup from './live-state-popup.vue'
 import SharePopup from './share-popup.vue'
@@ -69,25 +60,11 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 
 const isMobile = useIsMobile()
 
-const starActived = ref(false)
+const { isFavorite: starActived, toggleFavorite: toggleStar } = useGameFavorite()
 
 const settingVisible = ref(false)
 const liveStateVisible = ref(false)
 const shareVisible = ref(false)
-
-const tabValue = ref(1)
-const tabList = ref([
-  { value: 1, label: 'Free Play' },
-  { value: 2, label: 'Real Play' }
-])
-
-const tabIndexClick = (index: number) => {
-  tabValue.value = index
-}
-
-const toggleStar = () => {
-  starActived.value = !starActived.value
-}
 
 const settingVisibleClick = () => {
   settingVisible.value = true
@@ -106,10 +83,5 @@ const shareClick = () => {
   bottom: 100%;
   position: absolute;
   left: 20px;
-}
-.active {
-  background-color: var(--color-input-level-2);
-  height: 100%;
-  border-radius: 10px;
 }
 </style>
