@@ -79,7 +79,7 @@ const getQueryValue = (value: unknown) => {
 
 const itemCode = computed(() => getQueryValue(route.query.itemCode))
 const platformCode = computed(() => getQueryValue(route.query.platformCode))
-const rowId = computed(() => getQueryValue(route.query.rowId))
+const rowId = computed(() => getQueryValue(route.params.id))
 
 type CurrentGameDetail =
   | ({

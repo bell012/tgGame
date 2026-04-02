@@ -108,6 +108,7 @@ const tabIndex = ref(0)
 const selectOptions = inject('currency-select-options') as Ref<OptionItem[]>
 // 选中那一条数据
 const selectedId = inject('currency-select-selected-id') as Ref<string>
+const onSelect = inject<(item: OptionItem) => void>('currency-select-on-select')
 
 // 关闭popup
 const close = () => {
@@ -123,7 +124,11 @@ const isSelected = (item: OptionItem) => {
 }
 
 const confirm = (item: OptionItem) => {
-  selectedId.value = item.value
+  if (onSelect) {
+    onSelect(item)
+  } else {
+    selectedId.value = item.value
+  }
   close()
 }
 </script>

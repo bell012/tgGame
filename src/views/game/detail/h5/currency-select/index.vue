@@ -52,6 +52,18 @@ provide('currency-select-selected-id', selectedId)
 const selectedData = computed(() => {
   return selectOptions.value.find(i => i.value === selectedId.value)
 })
+
+const emit = defineEmits<{
+  change: [value: { value: string; label: string; icon: string } | undefined]
+}>()
+
+const handleSelect = (item: { value: string; label: string; icon: string }) => {
+  selectedId.value = item.value
+  emit('change', item)
+}
+
+provide('currency-select-on-select', handleSelect)
+emit('change', selectedData.value)
 </script>
 
 <style scoped lang="scss">
