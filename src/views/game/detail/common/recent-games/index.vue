@@ -97,7 +97,6 @@ const fetchGameRanList = async () => {
       type,
       currency: 'PHP'
     })
-    console.log(res, 'res...')
     const rawResult = res?.result
     const records = (rawResult as { records?: unknown } | undefined)?.records
     rankList.value = Array.isArray(rawResult)

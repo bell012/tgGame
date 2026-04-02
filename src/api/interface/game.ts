@@ -109,6 +109,32 @@ export interface GameRanListResponse {
   [key: string]: unknown
 }
 
+export interface GetGameBetRecordListParams {
+  page: {
+    current: number
+    size: number
+  }
+  platformCode: string
+  gameCode: string
+  currency: string
+  betType: 1 | 2
+}
+
+export interface GameBetRecordItem {
+  betId?: string
+  profit?: string | number
+  bet?: string | number
+  payout?: string | number
+  [key: string]: unknown
+}
+
+export interface GameBetRecordListResponse {
+  code: string | number
+  message: string
+  result?: GameBetRecordItem[] | { records?: GameBetRecordItem[]; [key: string]: unknown } | null
+  [key: string]: unknown
+}
+
 /**
  * 游戏品牌节点数据
  * 对应 /gc/gameBrandList 接口返回项

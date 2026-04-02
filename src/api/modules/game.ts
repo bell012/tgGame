@@ -1,5 +1,7 @@
 import request from '@/utils/request'
 import type {
+  GameBetRecordListResponse,
+  GetGameBetRecordListParams,
   GameRanListResponse,
   GameBrandResponse,
   GameDataResponse,
@@ -51,6 +53,21 @@ export function queryGameDetails(params: QueryGameDetailsParams): Promise<GameDe
 export function getGameRanList(data: GetGameRanListParams): Promise<GameRanListResponse> {
   return request({
     url: '/gr/getGameRanList',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 获取游戏全部投注/我的投注
+ * @param data page, platformCode, gameCode, currency, betType
+ * @returns Promise<GameBetRecordListResponse>
+ */
+export function getGameBetRecordList(
+  data: GetGameBetRecordListParams
+): Promise<GameBetRecordListResponse> {
+  return request({
+    url: '/special/getGameBetRecordList',
     method: 'post',
     data
   })
