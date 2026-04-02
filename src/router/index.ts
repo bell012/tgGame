@@ -169,12 +169,25 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'game/:id',
+    path: 'game/detail',
     name: 'gameDetail',
     component: () => import('@/views/game/detail/index.vue'),
     meta: {
       title: '游戏详情',
       description: '游戏详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'game/detail/recommended',
+    name: 'gameDetailRecommended',
+    component: () => import('@/views/game/detail/recommended/index.vue'),
+    meta: {
+      title: '推荐游戏',
+      description: '推荐游戏',
       mobile: {
         hideBottomBar: true,
         hideTopNav: true

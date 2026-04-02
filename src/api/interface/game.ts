@@ -74,6 +74,67 @@ export interface GameDataResponse {
   [key: string]: unknown
 }
 
+export interface QueryGameDetailsParams {
+  rowId: string | number
+}
+
+export interface GameDetailResponse {
+  code: string | number
+  message: string
+  result: GameDataItem | null
+  [key: string]: unknown
+}
+
+export interface GetGameRanListParams {
+  itemCode: string
+  platformCode: string
+  type: 1 | 2
+  currency: string
+}
+
+export interface GameRanListItem {
+  payOut?: string | number
+  wager?: string | number
+  mult?: string | number
+  memberId?: string
+  memberName?: string
+  userName?: string
+  [key: string]: unknown
+}
+
+export interface GameRanListResponse {
+  code: string | number
+  message: string
+  result?: GameRanListItem[]
+  [key: string]: unknown
+}
+
+export interface GetGameBetRecordListParams {
+  page: {
+    current: number
+    size: number
+  }
+  platformCode: string
+  gameCode: string
+  currency: string
+  betType: 1 | 2
+}
+
+export interface GameBetRecordItem {
+  betId?: string
+  profit?: string | number
+  bet?: string | number
+  payout?: string | number
+  [key: string]: unknown
+}
+
+export interface GameBetRecordListResponse {
+  code: string | number
+  message: string
+  result?: GameBetRecordItem[] | { records?: GameBetRecordItem[]; [key: string]: unknown } | null
+  [key: string]: unknown
+}
+
 /**
  * 游戏品牌节点数据
  * 对应 /gc/gameBrandList 接口返回项

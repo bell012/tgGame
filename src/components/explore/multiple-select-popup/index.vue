@@ -2,7 +2,7 @@
   <!-- 顶部搜索 -->
   <div class="relative bg-[var(--color-background-level-1)]">
     <div
-      class="border border-solid text-[14px] border-[#3a4142] rounded-md h-[40px] flex items-center justify-between p-[8px]"
+      class="border border-solid text-[14px] border-[#3a4142] rounded-md h-[40px] flex items-center justify-between p-[8px] cursor-pointer"
       @click="visible = true"
     >
       <div class="flex gap-[10px]">
