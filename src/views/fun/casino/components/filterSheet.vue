@@ -2,7 +2,7 @@
   <div class="grid lg:grid-cols-4 grid-cols-2 gap-4">
     <!-- 排序选择 -->
     <DropdownSelect
-      :options="sortOptions"
+      :options="resolvedSortOptions"
       :selected="sortBy"
       :label="t('casino.sort')"
       @update:selected="onSortChange"
@@ -22,52 +22,54 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DropdownSelect from './dropdownSelect.vue'
-import wlImg from '@/static/img/supplier/wl.png'
-import pgImg from '@/static/img/supplier/pg.png'
-import fgImg from '@/static/img/supplier/fg.png'
-import jlImg from '@/static/img/supplier/jl.png'
+
+interface FilterOption {
+  label: string
+  value: string
+}
+
+interface ProviderOption {
+  label: string
+  value: string
+  icon: string
+}
 
 const { t } = useI18n()
 
-const props = defineProps({
-  sortOptions: {
-    type: Array as () => { label: string; value: string }[],
-    default: () => [
-      { label: '热门', value: '热门' },
-      { label: '最新', value: '最新' },
-      { label: 'A-Z', value: 'A-Z' },
-      { label: 'Z-A', value: 'Z-A' }
-    ]
-  },
-  providerOptions: {
-    type: Array as () => { label: string; value: string; icon: string }[],
-    default: () => [
-      { label: 'P1', value: 'p1', icon: wlImg },
-      { label: 'P2', value: 'p2', icon: pgImg },
-      { label: 'P3', value: 'p3', icon: fgImg },
-      { label: 'P4', value: 'p4', icon: jlImg },
-      { label: 'A1', value: 'a1', icon: wlImg },
-      { label: 'A2', value: 'a2', icon: pgImg },
-      { label: 'A3', value: 'a3', icon: fgImg },
-      { label: 'A4', value: 'a4', icon: jlImg },
-      { label: 'C1', value: 'c1', icon: wlImg },
-      { label: 'C2', value: 'c2', icon: pgImg },
-      { label: 'C3', value: 'c3', icon: fgImg },
-      { label: 'C4', value: 'c4', icon: jlImg },
-      { label: 'D1', value: 'd1', icon: wlImg },
-      { label: 'D2', value: 'd2', icon: pgImg },
-      { label: 'D3', value: 'd3', icon: fgImg },
-      { label: 'D4', value: 'd4', icon: jlImg },
-      { label: 'EE', value: 'ee', icon: pgImg }
-    ]
+const props = withDefaults(
+  defineProps<{
+    sortOptions?: FilterOption[]
+    providerOptions?: ProviderOption[]
+    selectedSort?: string
+    selectedProviders?: string[]
+  }>(),
+  {
+    sortOptions: undefined,
+    providerOptions: () => [],
+    selectedSort: '',
+    selectedProviders: () => []
   }
+)
+
+const resolvedSortOptions = computed<FilterOption[]>(() => {
+  if (props.sortOptions && props.sortOptions.length > 0) {
+    return props.sortOptions
+  }
+
+  return [
+    { label: t('casino.filter_hot'), value: 'hot' },
+    { label: t('casino.filter_new'), value: 'latest' },
+    { label: 'A-Z', value: 'A-Z' },
+    { label: 'Z-A', value: 'Z-A' }
+  ]
 })
+
 // 状态
-const sortBy = ref(props.sortOptions[0].value)
-const providers = ref<string[]>([])
+const sortBy = ref(props.selectedSort || resolvedSortOptions.value[0]?.value || '')
+const providers = ref<string[]>([...props.selectedProviders])
 const keyword = ref('')
 
 // 计算筛选后的提供商（搜索功能）
@@ -93,5 +95,20 @@ const onProvidersChange = (val: string[]) => {
   providers.value = val
   emit('update:providers', val)
 }
+
+watch(
+  () => props.selectedSort,
+  value => {
+    sortBy.value = value || resolvedSortOptions.value[0]?.value || ''
+  }
+)
+
+watch(
+  () => props.selectedProviders,
+  value => {
+    providers.value = [...value]
+  },
+  { deep: true }
+)
 </script>
 <style scoped lang="scss"></style>

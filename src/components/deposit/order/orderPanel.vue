@@ -222,7 +222,7 @@ import CryptoOrderCountdownIcon from '@/static/svg/deposit/crypto-order-countdow
 import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifying.svg?component'
 import FiatOrderAmountIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
-import DetailsIcon from '@/static/svg/deposit/order-details.svg?component'
+import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import cancelOrderPop from './cancelOrderPop.vue'
 import orderAmountHeader from './orderAmountHeader.vue'
 import orderDetailRows from './orderDetailRows.vue'

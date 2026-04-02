@@ -20,7 +20,7 @@ import H5Header from '@/components/common/H5Header.vue'
 import withdrawMobile from '@/components/withdraw/withdrawMobile.vue'
 import withdrawDesktop from '@/components/withdraw/withdrawDesktop.vue'
 import WalletLayout from '../index.vue'
-import DetailsIcon from '@/static/svg/deposit/order-details.svg?component'
+import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 
 const { t } = useI18n()
 
