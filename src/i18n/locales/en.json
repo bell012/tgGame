@@ -599,5 +599,69 @@
       "vipIncome": "VIP Income",
       "bonusExchange": "Bonus Exchange"
     }
+  },
+  "vipPage": {
+    "cards": {
+      "levelUp": "Level-up Bonus",
+      "daily": "Daily Bonus",
+      "weekly": "Weekly Bonus",
+      "monthly": "Monthly Bonus"
+    },
+    "claimed": "Claimed",
+    "locked": "Locked",
+    "goalHint": "You've completed this VIP level goal",
+    "claimPopup": {
+      "title": "Claim Successful",
+      "description": "The bonus has been credited to your wallet.",
+      "ok": "OK"
+    },
+    "retention": {
+      "title": "VIP Level Retention Requirements",
+      "minimumDeposit": "Minimum Deposit",
+      "minimumValidBet": "Minimum Valid Bet"
+    },
+    "rulesTitle": "Rule description",
+    "rules": {
+      "rule1": {
+        "title": "1. Promotion Criteria",
+        "description": "Members will be upgraded upon meeting the required deposit or valid turnover for VIP advancement and will receive the corresponding level bonus. If multiple VIP level requirements are met at the same time, bonuses for all achieved levels will be granted. Bonuses can be claimed immediately upon upgrade and remain valid permanently."
+      },
+      "rule2": {
+        "title": "2. Daily Bonus",
+        "description": "Meet the daily deposit and valid turnover requirements to receive your Daily Bonus. Only the current level bonus is granted for multiple upgrades. Claim after 00:00:00 — unclaimed rewards expire the same day."
+      },
+      "rule3": {
+        "title": "3. Weekly Bonus",
+        "description": "Meet the weekly deposit and valid turnover requirements to receive your Weekly Bonus. Only the current level bonus is granted for multiple upgrades. Claim after 00:00:00 every Monday — unclaimed rewards expire at week’s end."
+      },
+      "rule4": {
+        "title": "4. Monthly Bonus",
+        "description": "Meet the monthly deposit and valid turnover requirements to receive your Monthly Bonus. Only the current level bonus is granted for multiple upgrades. Claim after 00:00:00 on the 1st — unclaimed rewards expire at month’s end."
+      },
+      "rule5": {
+        "title": "5. Retention Requirements",
+        "description": "After a VIP level change, complete the required turnover within 30 days to maintain your level. If upgraded during this time, requirements reset according to the new level."
+      },
+      "rule6": {
+        "title": "6. Demotion Criteria",
+        "description": "If the required retention criteria are not met by the 30th of each month, the VIP level will be downgraded automatically, and benefits will adjust to the new level."
+      },
+      "rule7": {
+        "title": "7. Reward Expiration Policy",
+        "description": "Rewards expire and become invalid after the deadline. Please claim them in time."
+      },
+      "rule8": {
+        "title": "8. Audit Policy",
+        "description": "VIP bonuses require 1x turnover before withdrawal, and wagering applies to all game platforms."
+      },
+      "rule9": {
+        "title": "9. Promotion Disclaimer",
+        "description": "This feature is for normal use by the account holder only. Any use of bots, scripts, exploits, or risk-free betting will result in account suspension and forfeiture of bonuses without notice."
+      },
+      "rule10": {
+        "title": "10. Right of Interpretation",
+        "description": "By claiming VIP rewards, you agree to the related terms. The platform reserves the final right of interpretation."
+      }
+    }
   }
 }

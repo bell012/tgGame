@@ -237,6 +237,20 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'vip',
+    name: 'vip',
+    component: () => import('@/views/vip/index.vue'),
+    meta: {
+      title: 'VIP俱乐部',
+      description: 'VIP俱乐部',
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'personal-center/my-profile',
     name: 'personal-center-my-profile',
     component: () => import('@/views/personalCenter/myProfile/index.vue'),
