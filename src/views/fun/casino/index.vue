@@ -1,6 +1,9 @@
 ﻿<template>
-  <div class="casino-page p-0 sm:p-4 w-full">
-    <div class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl">
+  <div class="casino-page pt-2.5 sm:p-4 w-full font-['Inter']" :style="mobileStyle">
+    <div
+      v-if="!isLoggedIn && currentTabCode === ''"
+      class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl mb-2.5"
+    >
       <img
         class="absolute right-0 bottom-0 w-full md:w-auto md:h-full"
         src="/src/static/img/casino/banner_bg.webp"
@@ -9,32 +12,24 @@
       <div
         class="absolute left-2 top-0 flex h-full origin-top flex-col py-4 sm:left-[14%] sm:top-1/2 sm:-translate-y-1/2 sm:h-auto sm:items-center sm:py-0 sm:text-center"
       >
-        <h1
-          class="font-inter text-[20px] font-bold leading-normal text-[var(--color-text-level-1,#FFF)]"
-        >
+        <h1 class="font-inter text-xl font-bold leading-normal text-text-1">
           {{ t('casino.banner_title') }}
         </h1>
         <div
-          class="rounded-xl p-0 text-lg font-semibold sm:mt-4 sm:px-[60px] sm:py-[12px] sm:backdrop-blur-md sm:bg-[rgba(169,169,169,0.2)]"
+          class="rounded-xl p-0 text-lg font-semibold sm:mt-4 sm:px-[60px] sm:py-3 sm:backdrop-blur-md sm:bg-[rgba(169,169,169,0.2)]"
         >
-          <h2
-            class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
-          >
+          <h2 class="font-inter text-xs font-medium leading-[18px] text-text-1">
             {{ t('casino.banner_sign_up') }}
           </h2>
-          <h2
-            class="font-inter text-[14px] font-bold leading-normal text-[var(--color-theme-level-1,#2AEE88)]"
-          >
+          <h2 class="font-inter text-xs sm:text-sm font-bold leading-normal text-theme-primary">
             ₱1,176,029.77
           </h2>
-          <h2
-            class="font-inter text-[12px] font-medium leading-[18px] text-[var(--color-text-level-1,#FFF)]"
-          >
+          <h2 class="font-inter text-xs font-medium leading-[18px] text-text-1">
             {{ t('casino.banner_subtitle') }}
           </h2>
         </div>
         <button
-          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)] sm:mt-5 sm:w-[200px]"
+          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg btn-primary text-xs sm:text-sm font-bold leading-normal text-center text-text-4 sm:mt-5 sm:w-[200px]"
           type="button"
           @click.stop="showLoginModal = true"
         >
@@ -44,7 +39,7 @@
     </div>
     <div
       ref="searchRef"
-      class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border mt-[10px] border-[var(--color-opacity-10,rgba(255,255,255,0.1))] bg-[var(--color-opacity-6,rgba(255,255,255,0.06))] focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-400/40 transition"
+      class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border border-opacity-10 bg-opacity-6 focus-within:border-theme-primary focus-within:ring-2 transition"
     >
       <img class="w-[18px] h-[18px]" src="/src/static/img/casino/search.webp" alt="search" />
       <input
@@ -58,14 +53,14 @@
       <button
         v-show="searchText"
         class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-bg-1 rounded-lg flex items-center justify-center z-10"
-        @click="searchText = ''"
+        @click="clearSearch"
       >
         <CloseIcon class="w-[18px] h-[18px] fill-text-1" />
       </button>
       <div
         v-show="showHistoryPanel && !searchText"
         @click.stop="showHistoryPanel = false"
-        class="absolute left-0 right-0 p-4 top-full w-full z-20 mt-3 flex flex-col items-center rounded-lg bg-[var(--color-background-level-2)] border border-[var(--color-border-level-1)]"
+        class="absolute left-0 right-0 p-4 top-full w-full z-20 mt-3 flex flex-col items-center rounded-lg bg-bg-2 border border-[var(--color-border-level-1)]"
       >
         <button
           class="absolute -right-2 -top-2 w-5 h-5 bg-bg-4 flex items-center justify-center z-10 rounded-full"
@@ -73,13 +68,13 @@
         >
           <CloseIcon class="w-[12px] h-[12px] fill-text-1" />
         </button>
-        <div class="text-xs text-[var(--color-text-level-2)]">
+        <div class="text-xs text-text-2">
           {{ t('casino.search_tips') }}
         </div>
         <!-- 历史记录 -->
         <div class="flex justify-between w-full text-xs my-2.5">
           <div class="font-bold">{{ t('casino.history') }}</div>
-          <div class="text-[var(--color-text-level-2)]" @click.stop="deleteAll()">
+          <div class="text-text-2" @click.stop="deleteAll()">
             {{ t('casino.clear') }}（{{ searchHistory?.length }}）
           </div>
         </div>
@@ -88,10 +83,10 @@
             <div
               v-for="(item, inx) in searchHistory.slice(0, 5)"
               :key="inx"
-              class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] inline-flex items-center"
+              class="px-1.5 py-1 rounded bg-opacity-10 inline-flex items-center"
             >
               <div
-                class="text-xs text-[var(--color-text-level-2)] mr-0.5 break-words max-w-full"
+                class="text-xs text-text-2 mr-1 break-words max-w-full"
                 @click.stop="goSearch(item)"
               >
                 {{ item }}
@@ -109,12 +104,9 @@
             <div
               v-for="(item, inx) in suggestedArr"
               :key="inx"
-              class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] flex items-center"
+              class="px-1.5 py-1 rounded bg-opacity-10 flex items-center"
             >
-              <div
-                class="text-xs text-[var(--color-text-level-2)] break-words max-w-full"
-                @click.stop="goSearch(item)"
-              >
+              <div class="text-xs text-text-2 break-words max-w-full" @click.stop="goSearch(item)">
                 {{ item }}
               </div>
             </div>
@@ -125,55 +117,50 @@
     <div class="min-h-screen w-full relative">
       <!-- 左箭头 -->
       <div
-        v-if="canScrollLeft"
-        class="absolute left-0 top-0 pr-2 h-[38px] z-10 hidden sm:flex items-center justify-center bg-[var(--color-background-level-1)]"
+        class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
+        :class="canScrollLeft ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
       >
         <button
-          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-[var(--color-opacity-10)]"
+          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
           @click="scrollLeft"
         >
-          <div class="icon size-4 fill-text-1">
-            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-              ></path>
-            </svg>
-          </div>
+          <component :is="casinoIcons.chevron_left" class="icon size-4 fill-text-1" />
         </button>
       </div>
       <!-- 顶部横行滚动tab选择 -->
-      <div
-        :class="{
-          'sm:ml-8': canScrollLeft,
-          'sm:mr-8': canScrollRight
-        }"
-      >
+      <div>
         <div
           ref="tabScrollRef"
-          class="flex w-full flex-row overflow-x-auto scrollbar-none my-3.5 gap-0.5"
+          class="my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
           @scroll="updateScrollState"
         >
           <button
-            v-for="(item, inx) in tabList"
+            v-for="(item, inx) in tabButtons"
             :key="inx"
             :ref="el => (tabRefs[inx] = el as HTMLButtonElement)"
             :class="{
-              'bg-[var(--color-opacity-10)]': item.id === currentTabId,
-              active: item.id === currentTabId
+              'bg-opacity-10': item.sysGameTypeCode === currentTabCode,
+              active: item.sysGameTypeCode === currentTabCode
             }"
-            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-[var(--color-opacity-10)]"
+            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-opacity-10"
             @click.stop="onTabButton(item)"
           >
+            <img
+              v-if="typeof item?.icon === 'string'"
+              :src="item.icon"
+              class="w-5 h-5 mr-[7px] object-contain"
+            />
             <component
-              :is="casinoIcons[item.icon]"
-              :class="item.id === currentTabId ? 'fill-primary' : 'fill-text-2'"
+              v-else-if="item?.icon"
+              :is="item.icon"
+              :class="item.sysGameTypeCode === currentTabCode ? 'fill-primary' : 'fill-text-2'"
               class="w-5 h-5 mr-[7px]"
             />
             <div
-              :class="item.id === currentTabId ? 'text-text-1' : 'text-text-2'"
+              :class="item.sysGameTypeCode === currentTabCode ? 'text-text-1' : 'text-text-2'"
               class="font-[700]"
             >
-              {{ item.name }}
+              {{ item.sysGameTypeName }}
             </div>
           </button>
         </div>
@@ -181,26 +168,20 @@
 
       <!-- 右箭头 -->
       <div
-        v-if="canScrollRight"
-        class="absolute right-0 top-0 pl-2 h-[38px] z-10 hidden sm:flex items-center justify-center bg-[var(--color-background-level-1)]"
+        class="absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pl-2 sm:flex"
+        :class="canScrollRight ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
       >
         <button
-          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-[var(--color-opacity-10)]"
+          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
           @click="scrollRight"
         >
-          <div class="icon size-4 rotate-180 fill-text-1">
-            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-              ></path>
-            </svg>
-          </div>
+          <component :is="casinoIcons.chevron_left" class="icon size-4 rotate-180 fill-text-1" />
         </button>
       </div>
 
       <!-- 6种样式 -->
       <div class="tabs-content min-h-48">
-        <component :is="getPageStyle" :modules="tabList" />
+        <component :is="getPageStyle" v-bind="currentPageProps" />
       </div>
     </div>
   </div>
@@ -212,16 +193,23 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
+import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
+import { useGameStore } from '@/stores/game'
+import { useLayoutStore } from '@/stores/layout'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import { navigateTo } from '@/utils/router'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
+import { getCasinoPageMode, getCasinoQueryOptions } from './casinoPageConfig'
 import pageStyle1 from './components/pageStyle1.vue'
 import pageStyle2 from './components/pageStyle2.vue'
 import pageStyle3 from './components/pageStyle3.vue'
 import pageStyle4 from './components/pageStyle4.vue'
+
 interface Props {
   tabKey?: string | undefined
 }
@@ -231,296 +219,102 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useI18n()
+const layoutStore = useLayoutStore()
+const isMobile = useIsMobile()
+const mobileStyle = computed(() => {
+  if (isMobile.value) {
+    return {
+      marginTop: `${layoutStore.TOPNAV_HEIGHT}px`
+    }
+  }
+})
 
 const tabRefs = ref<HTMLButtonElement[]>([])
 const showLoginModal = ref(false)
 const showHistoryPanel = ref(false)
 const searchText = ref('')
-const searchHistory = ref<string[]>(['Sweet', 'Gates', 'Lucky', ' Llama', 'Olympus', 'Duck'])
-const suggestedArr = ref<string[]>([
-  'Sweet Rush Bonanza',
-  'Duck Hunters',
-  'Gates of Olympus Super Scatter',
-  'Sugar Rush 1000',
-  'Lucky Coming',
-  'The Llama Adventure'
-])
-const tabList = ref([
-  {
-    id: 1,
-    style: 1,
-    name: 'Lobby',
-    key: '',
-    icon: 'lobby',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10',
-      'game11',
-      'game12',
-      'game13',
-      'game14',
-      'game15',
-      'game16'
-    ]
-  },
-  {
-    id: 2,
-    style: 2,
-    name: 'TG Originals',
-    key: 'originate',
-    icon: 'tg_originals',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10',
-      'game11',
-      'game12',
-      'game13',
-      'game14',
-      'game15',
-      'game16'
-    ]
-  },
-  {
-    id: 3,
-    style: 2,
-    name: 'Hot Games',
-    key: 'hot_games',
-    icon: 'hot_games',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10',
-      'game11',
-      'game12',
-      'game13',
-      'game14',
-      'game15',
-      'game16'
-    ]
-  },
-  {
-    id: 4,
-    style: 3,
-    name: 'Slots',
-    key: 'slots',
-    icon: 'slots',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10'
-    ]
-  },
-  {
-    id: 5,
-    style: 3,
-    name: 'Live Casino',
-    key: 'live_casino',
-    icon: 'live_casino',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10',
-      'game11',
-      'game12'
-    ]
-  },
-  {
-    id: 6,
-    style: 3,
-    name: 'Table Games',
-    key: 'table_games',
-    icon: 'table_games',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10',
-      'game11',
-      'game12'
-    ]
-  },
-  {
-    id: 7,
-    style: 3,
-    name: 'Fishing',
-    key: 'fishing',
-    icon: 'fishing',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10',
-      'game11',
-      'game12'
-    ]
-  },
-  {
-    id: 8,
-    style: 2,
-    name: 'Table Tennis',
-    key: 'table_tennis',
-    icon: 'table_tennis',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10',
-      'game11',
-      'game12',
-      'game13',
-      'game14'
-    ]
-  },
-  {
-    id: 9,
-    style: 4,
-    name: 'Game Provider',
-    key: 'game_provider',
-    icon: 'game_provider',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10',
-      'game11',
-      'game12',
-      'game13',
-      'game14'
-    ]
-  },
-  {
-    id: 10,
-    style: 2,
-    name: 'Favorites',
-    key: 'favorites',
-    icon: 'favorites',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10',
-      'game11',
-      'game12',
-      'game13',
-      'game14'
-    ]
-  },
-  {
-    id: 11,
-    style: 2,
-    name: 'Recent',
-    key: 'recent',
-    icon: 'recent',
-    items: [
-      'game1',
-      'game2',
-      'game3',
-      'game4',
-      'game5',
-      'game6',
-      'game7',
-      'game8',
-      'game9',
-      'game10',
-      'game11',
-      'game12',
-      'game13',
-      'game14'
-    ]
-  }
-])
+const activeSearchKeyword = ref('')
+const suggestedArr = ref<string[]>([])
+const gameStore = useGameStore()
+const { searchHistory } = storeToRefs(gameStore)
 
 const getCurrentTab = computed(() => {
   const key = props.tabKey ?? ''
-  return tabList.value.find(tab => tab.key === key)
+  return tabButtons.value.find(tab => tab.sysGameTypeCode === key)
 })
-const currentTabId = computed(() => getCurrentTab.value?.id ?? 1)
-const currentTabStyle = computed(() => getCurrentTab.value?.style ?? 1)
-const getPageStyle = computed(() => {
-  switch (currentTabStyle.value) {
-    case 1:
+const currentTabCode = computed(() => getCurrentTab.value?.sysGameTypeCode)
+const trimmedSearchKeyword = computed(() => activeSearchKeyword.value.trim())
+const basePageStyle = computed(() => {
+  const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
+  const pageMode = getCasinoPageMode(currentCode)
+
+  switch (pageMode) {
+    case 'lobby':
       return pageStyle1
-    case 2:
+    case 'pageStyle2':
       return pageStyle2
-    case 3:
-      return pageStyle3
-    case 4:
+    case 'pageStyle4':
       return pageStyle4
     default:
-      return pageStyle2
+      return pageStyle3
+  }
+})
+const getPageStyle = computed(() => {
+  if (trimmedSearchKeyword.value && basePageStyle.value === pageStyle1) {
+    return pageStyle2
+  }
+
+  return basePageStyle.value
+})
+const currentQueryOptions = computed(() => {
+  if (trimmedSearchKeyword.value) {
+    if (basePageStyle.value === pageStyle1) {
+      return {
+        rowType: 3,
+        pageSize: isMobile.value ? 27 : 32,
+        keyword: trimmedSearchKeyword.value
+      }
+    }
+
+    const baseQueryOptions = getCasinoQueryOptions(currentTabCode.value ?? '', {
+      isMobile: isMobile.value
+    })
+
+    return {
+      ...(baseQueryOptions ?? {
+        pageSize: isMobile.value ? 27 : 32
+      }),
+      keyword: trimmedSearchKeyword.value
+    }
+  }
+
+  return getCasinoQueryOptions(currentTabCode.value ?? '', { isMobile: isMobile.value })
+})
+const currentPageProps = computed(() => {
+  switch (getPageStyle.value) {
+    case pageStyle1:
+      return {
+        modules: lobbyButtons.value
+      }
+    case pageStyle2:
+    case pageStyle3:
+      return {
+        queryOptions: currentQueryOptions.value
+      }
+    case pageStyle4:
+      return {
+        queryOptions: currentQueryOptions.value
+      }
+    default:
+      return {}
   }
 })
 const searchRef = ref<HTMLDivElement | null>(null)
 const tabScrollRef = ref<HTMLDivElement | null>(null)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
+const hasSyncedActiveTab = ref(false)
+let searchDebounceTimer: number | undefined
 
 const updateScrollState = () => {
   const el = tabScrollRef.value
@@ -538,6 +332,8 @@ const scrollLeft = () => {
     left: -el.clientWidth,
     behavior: 'smooth'
   })
+
+  requestAnimationFrame(updateScrollState)
 }
 
 const scrollRight = () => {
@@ -548,28 +344,77 @@ const scrollRight = () => {
     left: el.clientWidth,
     behavior: 'smooth'
   })
+
+  requestAnimationFrame(updateScrollState)
+}
+
+const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth') => {
+  const container = tabScrollRef.value
+  const target = tabRefs.value[index]
+  if (!container || !target) return
+
+  const targetLeft = target.offsetLeft
+  const targetCenter = targetLeft + target.offsetWidth / 2
+  const nextScrollLeft = Math.max(0, targetCenter - container.clientWidth / 2)
+  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth)
+
+  container.scrollTo({
+    left: Math.min(nextScrollLeft, maxScrollLeft),
+    behavior
+  })
 }
 
 const onTabButton = (tab: any) => {
-  if (tab.key === '') return navigateTo('/casino')
-  navigateTo(`/casino/${tab.key}`)
+  clearSearch()
+  if (tab.sysGameTypeCode === '') return navigateTo('/casino')
+  navigateTo(`/casino/${tab.sysGameTypeCode}`)
+}
+
+const loadSuggestedGames = async () => {
+  const hotGameResult = await gameStore.queryGameDataPage({
+    rowType: 3,
+    hot: 1,
+    page: 1,
+    pageSize: 12,
+    sortByOrderId: true
+  })
+
+  suggestedArr.value = [...new Set(hotGameResult.list.map(item => item.itemName?.trim() ?? ''))]
+    .filter(Boolean)
+    .slice(0, 6)
+}
+
+const syncSearchHistory = (keyword: string) => {
+  gameStore.addSearchHistory(keyword)
 }
 
 const onSearch = () => {
-  console.log('触发搜索:', searchText.value)
+  const normalizedKeyword = searchText.value.trim()
+
+  activeSearchKeyword.value = normalizedKeyword
+  showHistoryPanel.value = false
+  syncSearchHistory(normalizedKeyword)
 }
 
 const goSearch = (item: string) => {
   searchText.value = item
-  console.log('点击搜索历史和建议:', item)
+  activeSearchKeyword.value = item.trim()
+  showHistoryPanel.value = false
+  syncSearchHistory(item)
 }
 
 const deleteItme = (item: string) => {
-  console.log('删除搜索历史记录', item)
+  gameStore.removeSearchHistory(item)
 }
 
 const deleteAll = () => {
-  console.log('删除全部搜索历史记录')
+  gameStore.clearSearchHistory()
+}
+
+const clearSearch = () => {
+  searchText.value = ''
+  activeSearchKeyword.value = ''
+  showHistoryPanel.value = false
 }
 
 const handleClickOutside = (e: MouseEvent) => {
@@ -581,19 +426,45 @@ const handleClickOutside = (e: MouseEvent) => {
   }
 }
 
+// 用户信息
+const userInfo = ref<any>(null)
+
+// 是否已登录
+const isLoggedIn = computed(() => {
+  return userInfo.value && userInfo.value.tradeToken
+})
+const { tabButtons, lobbyButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
+// localStorage 用户信息
+const loadUserInfo = () => {
+  const storedUserInfo = localStorage.getItem('userInfo')
+  if (storedUserInfo) {
+    try {
+      userInfo.value = JSON.parse(storedUserInfo)
+    } catch (error) {
+      console.error(error)
+      userInfo.value = null
+    }
+  }
+}
+
+const getGameData = async (forceRefresh = false) => {
+  try {
+    await loadCasinoTabButtons(forceRefresh)
+  } catch (error) {
+    console.error('getGameData failed', error)
+  }
+}
+
 watch(
   () => getCurrentTab.value,
   async tab => {
     if (!tab) return
 
     await nextTick()
-    const index = tabList.value.findIndex(item => item.key === tab.key)
+    const index = tabButtons.value.findIndex(item => item.sysGameTypeCode === tab.sysGameTypeCode)
     if (index !== -1) {
-      tabRefs.value[index]?.scrollIntoView({
-        behavior: 'smooth',
-        inline: 'center',
-        block: 'nearest'
-      })
+      scrollTabIntoView(index, hasSyncedActiveTab.value ? 'smooth' : 'auto')
+      hasSyncedActiveTab.value = true
     }
   },
   { immediate: true }
@@ -601,6 +472,10 @@ watch(
 
 let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
+  loadUserInfo()
+  gameStore.loadSearchHistory()
+  getGameData()
+  void loadSuggestedGames()
   updateScrollState()
 
   document.addEventListener('click', handleClickOutside)
@@ -614,9 +489,43 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (searchDebounceTimer) {
+    window.clearTimeout(searchDebounceTimer)
+  }
+
   resizeObserver?.disconnect()
   document.removeEventListener('click', handleClickOutside)
 })
+
+watch(searchText, value => {
+  if (value.trim()) {
+    if (searchDebounceTimer) {
+      window.clearTimeout(searchDebounceTimer)
+    }
+
+    searchDebounceTimer = window.setTimeout(() => {
+      onSearch()
+    }, 300)
+    return
+  }
+
+  if (searchDebounceTimer) {
+    window.clearTimeout(searchDebounceTimer)
+  }
+
+  activeSearchKeyword.value = ''
+})
+
+watch(
+  () => props.tabKey,
+  (value, previousValue) => {
+    if (value === previousValue) {
+      return
+    }
+
+    clearSearch()
+  }
+)
 </script>
 
 <style scoped lang="scss"></style>

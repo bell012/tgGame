@@ -15,13 +15,7 @@
       <span
         class="fill-text-1 w-5 h-5 rounded-[6px] bg-[var(--color-opacity-10)] flex items-center justify-center"
       >
-        <svg class="w-2 h-2" viewBox="0 0 20 20" fill="currentColor">
-          <path
-            fill-rule="evenodd"
-            d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
-            clip-rule="evenodd"
-          />
-        </svg>
+        <component :is="casinoIcons.dropdown_chevron" class="w-2 h-2 fill-current" />
       </span>
     </button>
 
@@ -139,6 +133,7 @@ import CubeChecedIcon from '@/static/svg/cube-checked.svg?component'
 import CubeUnchecedIcon from '@/static/svg/cube-unchecked.svg?component'
 import ClearIcon from '@/static/svg/clear.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
+import { casinoIcons } from '@/static/svg/casino'
 
 const { t } = useI18n()
 

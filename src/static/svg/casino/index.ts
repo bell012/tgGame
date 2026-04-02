@@ -1,5 +1,7 @@
 import type { Component } from 'vue'
 import bc from './bc.svg?component'
+import chevron_left from './chevron_left.svg?component'
+import dropdown_chevron from './dropdown_chevron.svg?component'
 import favorites_full from './favorites_full.svg?component'
 import fishing from './fishing.svg?component'
 import game_providers from './game_providers.svg?component'
@@ -7,7 +9,9 @@ import home from './home.svg?component'
 import hot_games from './hot_games.svg?component'
 import live_casino from './live_casino.svg?component'
 import logo from './logo.svg?component'
+import play_fill from './play_fill.svg?component'
 import poker from './poker.svg?component'
+import player_count from './player_count.svg?component'
 import recent from './recent.svg?component'
 import slots from './slots.svg?component'
 import themes from './themes.svg?component'
@@ -38,6 +42,8 @@ import volleyball from './volleyball.svg?component'
 // 导出图标
 export const casinoIcons: Record<string, Component> = {
   bc,
+  chevron_left,
+  dropdown_chevron,
   favorites_full,
   fishing,
   game_providers,
@@ -49,6 +55,8 @@ export const casinoIcons: Record<string, Component> = {
   slots,
   live_casino,
   themes,
+  play_fill,
+  player_count,
   american_football,
   baccarat,
   badminton,

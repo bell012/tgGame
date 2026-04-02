@@ -50,6 +50,7 @@
     "loading": "Loading...",
     "loadingMore": "Loading more...",
     "noMoreData": "No more data",
+    "noData": "No data available at the moment.",
     "error": "Error",
     "requestError": "Request error",
     "success": "Success",
@@ -112,7 +113,13 @@
     "betHistory": "Bet History",
     "deposit": "Deposit",
     "withdraw": "Withdraw",
-    "myOrders": "My Orders"
+    "myOrders": "My Orders",
+    "rollover": "Rollover",
+    "rolloverDetails": "Rollover Details",
+    "actualTurnover": "Actual Turnover",
+    "requiredTurnover": "Required Turnover",
+    "applicableGames": "Applicable Games",
+    "orderStatus": "Order Status"
   },
   "betHistory": {
     "title": "Bet History",
@@ -126,6 +133,13 @@
     "payout": "Payout",
     "profit": "Profit",
     "noMore": "No More",
+    "status": "Status",
+    "filterGroups": {
+      "time": "Time Selection",
+      "winLoss": "Win/Loss Selection",
+      "status": "Status Selection",
+      "gameType": "Game Type Selection"
+    },
     "filters": {
       "all": "All",
       "slot": "Slot",
@@ -136,6 +150,23 @@
       "past24Hours": "Past 24 Hours",
       "past7Days": "Past 7 Days",
       "past30Days": "Past 30 Days"
+    },
+    "filterOptions": {
+      "all": "All",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last3Days": "Last 3 Days",
+      "last15Days": "Last 15 Days",
+      "last30Days": "Last 30 Days",
+      "settled": "Settled",
+      "unsettled": "Unsettled",
+      "lottery": "Lottery",
+      "sports": "Sports",
+      "live": "Live",
+      "electronic": "Electronic",
+      "chess": "Chess",
+      "fishing": "Fishing",
+      "esports": "eSports"
     }
   },
   "customSelect": {
@@ -290,7 +321,14 @@
     "show_blocked": "Show Blocked",
     "all": "All",
     "latest_bet": "Latest Bet",
-    "high_roller": "High Roller"
+    "high_roller": "High Roller",
+    "lobby": "Lobby",
+    "tg_originals": "TG Originals",
+    "hot_games": "Hot Games",
+    "favorites": "Favorites",
+    "recent": "Recent",
+    "filter_hot": "Hot",
+    "filter_new": "New"
   },
   "sidebar_menu": {
     "app_download": {
@@ -443,6 +481,8 @@
     "swap": "Swap",
     "vaultPro": "Vault Pro",
     "transaction": "Transaction",
+    "transactionDetails": "Transaction Details",
+    "remarks": "remarks",
     "rollover": "Rollover",
     "betHistory": "Bet History",
     "notification": "Notification",
@@ -532,5 +572,16 @@
   },
   "withdraw": {
     "title": "Withdraw"
+  },
+  "transaction": {
+    "win": "Win",
+    "loss": "Loss",
+    "type": "Type",
+    "time": "Time",
+    "amount": "Amount",
+    "balance": "Balance",
+    "status": "Status",
+    "completed": "Completed",
+    "notCompleted": "Not Completed"
   }
 }

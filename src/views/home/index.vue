@@ -209,7 +209,7 @@
         :title="value.sysGameTypeName"
         :list="value.list"
         v-for="value in gameData"
-        :key="value.title"
+        :key="value.sysGameTypeName"
       />
       <EventList v-if="sportsEventList.length" :list="sportsEventList" />
       <!-- <GameList :title="$t(gamelist1.title)" :list="gamelist1.list" /> -->
@@ -353,6 +353,11 @@ interface RawGameDataItem {
   [key: string]: any
 }
 
+interface HomeGameSection {
+  list: RawGameDataItem[]
+  sysGameTypeName: string
+}
+
 const { t } = useI18n()
 const authModalStore = useAuthModalStore()
 const showH5HomePop = ref(true)
@@ -424,7 +429,8 @@ const getRecentBigWinsData = async () => {
 }
 const duplicatedList = computed(() => [...list.value, ...list.value])
 
-const gameData = ref<any>(null)
+const gameData = ref<HomeGameSection[]>([])
+const rawGameData = ref<RawGameDataItem[]>([])
 
 const toGameImageUrl = (value: string) => {
   if (!value) {
@@ -433,9 +439,17 @@ const toGameImageUrl = (value: string) => {
   return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
 }
 
+const mapHomeGameSections = (source: RawGameDataItem[]): HomeGameSection[] => {
+  return source.map(item => ({
+    list: item?.subGame?.[0]?.subGame?.slice(0, 10) || [],
+    sysGameTypeName: item?.sysGameTypeName || ''
+  }))
+}
+
 const sportsProviders = computed<RawGameDataItem[]>(() => {
-  const sectionList = gameData.value?.result ?? []
-  const sportsSection = sectionList.find((item: RawGameDataItem) => item?.sysGameTypeCode === 'TY')
+  const sportsSection = rawGameData.value.find(
+    (item: RawGameDataItem) => item?.sysGameTypeCode === 'TY'
+  )
 
   return sportsSection?.subGame ?? []
 })
@@ -466,10 +480,12 @@ onMounted(async () => {
   try {
     userInfo.value = localStorage.getItem('userInfo')
     const res = await Api.home.getGameData()
-    gameData.value = res.result.map((item: any) => ({
-      list: item?.subGame?.[0]?.subGame?.slice(0, 10) || [],
-      sysGameTypeName: item?.sysGameTypeName || ''
-    }))
+    const rawResult = Array.isArray(res.result) ? res.result : []
+
+    rawGameData.value = rawResult
+    gameData.value = mapHomeGameSections(rawResult)
+    localStorage.setItem('gameData', JSON.stringify(rawResult))
+
     getRecentBigWinsData()
     getQuerySlideshow()
   } catch (error) {

@@ -50,6 +50,7 @@
     "loading": "加载中...",
     "loadingMore": "加载更多...",
     "noMoreData": "没有更多了",
+    "noData": "目前没有可用数据",
     "error": "错误",
     "requestError": "请求错误",
     "success": "成功",
@@ -134,7 +135,14 @@
     "show_blocked": "显示屏蔽游戏",
     "all": "全部",
     "latest_bet": "最新投注",
-    "high_roller": "龙虎榜"
+    "high_roller": "龙虎榜",
+    "lobby": "大厅",
+    "tg_originals": "TG 原创",
+    "hot_games": "热门游戏",
+    "favorites": "收藏游戏",
+    "recent": "最近游戏",
+    "filter_hot": "热门",
+    "filter_new": "最新"
   },
   "sidebar_menu": {
     "app_download": {
@@ -274,7 +282,13 @@
     "betHistory": "投注历史",
     "deposit": "充值",
     "withdraw": "提现",
-    "myOrders": "我的订单"
+    "myOrders": "我的订单",
+    "rollover": "流水稽查",
+    "rolloverDetails": "流水稽查详情",
+    "actualTurnover": "实际成交额",
+    "requiredTurnover": "所需营业额",
+    "applicableGames": "适用游戏",
+    "orderStatus": "订单状态"
   },
   "betHistory": {
     "title": "投注历史",
@@ -286,8 +300,17 @@
     "type": "类型",
     "time": "时间",
     "payout": "支付",
-    "profit": "赔付",
+    "profit": "利润",
+    "amount": "金额",
+    "balance": "余额",
     "noMore": "没有更多了",
+    "status": "状态",
+    "filterGroups": {
+      "time": "时间选择",
+      "winLoss": "赢/输选择",
+      "status": "状态选择",
+      "gameType": "游戏类型选择"
+    },
     "filters": {
       "all": "全部",
       "slot": "老虎机",
@@ -298,6 +321,23 @@
       "past24Hours": "过去 24 小时",
       "past7Days": "过去 7 天",
       "past30Days": "过去 30 天"
+    },
+    "filterOptions": {
+      "all": "全部",
+      "today": "今日",
+      "yesterday": "昨日",
+      "last3Days": "近3日",
+      "last15Days": "近15日",
+      "last30Days": "近30日",
+      "settled": "已结算",
+      "unsettled": "未结算",
+      "lottery": "彩票",
+      "sports": "体育",
+      "live": "真人",
+      "electronic": "电子",
+      "chess": "棋牌",
+      "fishing": "捕鱼",
+      "esports": "电竞"
     }
   },
   "customSelect": {
@@ -440,6 +480,8 @@
     "swap": "兑换",
     "vaultPro": "金库专业版",
     "transaction": "交易",
+    "transactionDetails": "交易详情",
+    "remarks": "备注",
     "rollover": "流水",
     "betHistory": "投注历史",
     "notification": "通知",
@@ -529,5 +571,16 @@
   },
   "withdraw": {
     "title": "提现"
+  },
+  "transaction": {
+    "win": "赢",
+    "loss": "输",
+    "type": "类型",
+    "time": "时间",
+    "amount": "金额",
+    "balance": "余额",
+    "status": "状态筛选",
+    "completed": "已完成",
+    "notCompleted": "未完成"
   }
 }
