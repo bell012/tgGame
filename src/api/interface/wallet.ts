@@ -39,6 +39,73 @@ export interface QueryPayColumnPageResponse {
   result?: QueryPayColumnItem[]
 }
 
+export interface QueryPayColumnWithSubListForm {
+  page: {
+    current: number
+    size: number
+  }
+  languageCode: string
+  param: {
+    columnCode: string
+  }
+}
+
+export interface QueryPayColumnWithSubListPayColumnItem extends QueryPayColumnItem {
+  enable: number
+  moneyType: number
+  rowId: number
+  site: string
+}
+
+export interface QueryPayOfflineAccountItem {
+  accountName: string
+  accountNo: string
+  accountSubNo: string
+  branchAddr: string
+  cardType: number
+  currency: string
+  enable: number
+  rowId: number
+  site: string
+  type: number
+}
+
+export interface QueryPayColumnWithSubListSubColumnItem {
+  columnCode: number
+  currency: string
+  defaultRechargeAmount: Array<number | string>
+  enable: number
+  highset: number
+  lowset: number
+  manualAmountIn: number
+  online: number
+  rowId: number
+  showChannel?: string[]
+  site: string
+  sortNum: number
+  subColumnName: string
+  sysLevelId?: Array<number | string>
+  vipId: Array<number | string>
+  offlineAccount?: QueryPayOfflineAccountItem
+  payChannelCode?: string
+  platformCode?: string
+  platformLogo?: string
+  platformName?: string
+  deviceChannel?: string[]
+}
+
+export interface QueryPayColumnWithSubListItem {
+  payColumn: QueryPayColumnWithSubListPayColumnItem
+  subColumnList: QueryPayColumnWithSubListSubColumnItem[]
+}
+
+export interface QueryPayColumnWithSubListResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryPayColumnWithSubListItem[]
+}
+
 export interface QueryPaySubColumnPageForm {
   page: {
     current: number
