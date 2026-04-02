@@ -833,7 +833,7 @@ const normalLinks = computed(() => [
     name2: t('sidebar_menu.links.vip.prefix'),
     icon: side.vipClubIcon,
     external: false,
-    handler: () => console.log('点击 VIP 俱乐部')
+    handler: () => navigateTo('/vip')
   },
   {
     id: 'prize',
