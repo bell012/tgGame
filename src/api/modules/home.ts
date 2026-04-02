@@ -36,3 +36,12 @@ export function getQuerySlideshow(data: any): Promise<any> {
     data
   })
 }
+
+// 站点配置
+export function dlicgh(data: any): Promise<any> {
+  return request({
+    url: '/sy/dlicgh',
+    method: 'post',
+    data
+  })
+}
