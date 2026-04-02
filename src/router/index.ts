@@ -169,7 +169,7 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'game/detail',
+    path: 'game/:rowId',
     name: 'gameDetail',
     component: () => import('@/views/game/detail/index.vue'),
     meta: {
