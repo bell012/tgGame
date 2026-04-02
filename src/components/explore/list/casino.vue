@@ -189,11 +189,12 @@ const itemClick = (item: CasinoGameItem) => {
   }
   const itemCode = String(item.itemCode ?? '').trim()
   const platformCode = String(item.platformCode ?? '').trim()
-
+  const rowId = String(item.rowId ?? '').trim()
   navigateTo('/game/detail', {
     query: {
       ...(itemCode ? { itemCode } : {}),
-      ...(platformCode ? { platformCode } : {})
+      ...(platformCode ? { platformCode } : {}),
+      ...(rowId ? { rowId } : {})
     }
   })
 }
