@@ -24,7 +24,7 @@ import depositContentPanel, {
 } from '@/components/deposit/deposit/depositContentPanel.vue'
 import personalCenterDepositContentPanel from '@/components/deposit/deposit/personalCenterDepositContentPanel.vue'
 import WalletLayout from '../index.vue'
-import DetailsIcon from '@/static/svg/deposit/order-details.svg?component'
+import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 
 const { t } = useI18n()
 

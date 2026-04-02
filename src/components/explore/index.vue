@@ -86,24 +86,18 @@ const typeList = [
 const currentType = ref<keyof typeof listCompMap>('casino')
 provide('explore-current-type', currentType)
 
-const gameTypeCodeMap: Record<keyof typeof listCompMap, string> = {
-  casino: 'DZ',
-  sports: 'TY',
-  lottery: 'CP'
-}
+const currentSubGameTypeCode = ref('')
 
 const queryGameList = ref<GameSection[]>([])
 
 const currentTypeGameList = computed(() => {
-  const code = gameTypeCodeMap[currentType.value]
-  const section = queryGameList.value.find(item => item?.sysGameTypeCode === code)
+  const section = queryGameList.value.find(
+    item => item?.sysGameTypeCode === currentSubGameTypeCode.value
+  )
   return section?.subGame ?? []
 })
 
 provide('explore-game-list', currentTypeGameList)
-
-const currentSubGameTypeCode = ref('')
-provide('explore-current-sub-game-type-code', currentSubGameTypeCode)
 
 const topTabList = computed<TopTabItem[]>(() => {
   const list = Array.isArray(queryGameList.value) ? (queryGameList.value as GameSection[]) : []
