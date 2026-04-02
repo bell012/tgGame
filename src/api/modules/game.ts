@@ -88,6 +88,21 @@ export function getGameStatistics(data: GetGameStatisticsParams): Promise<GameSt
   })
 }
 
+/**
+ * 刷新游戏统计数据（盈亏、投注、胜负场次）
+ * @param data itemCode, platformCode
+ * @returns Promise<GameStatisticsResponse>
+ */
+export function refreshGameStatistics(
+  data: GetGameStatisticsParams
+): Promise<GameStatisticsResponse> {
+  return request({
+    url: '/special/refreshCameStatistics',
+    method: 'post',
+    data
+  })
+}
+
 export function getloginPlatform(data: any): Promise<any> {
   return request({
     url: '/gc/loginPlatform',
