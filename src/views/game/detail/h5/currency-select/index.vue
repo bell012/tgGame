@@ -6,9 +6,9 @@
       @click="visible = true"
     >
       <div class="flex gap-[10px]">
-        <div class="flex gap-[8px] items-center">
-          <img alt="" :src="selectedData!.icon" class="size-[24px]" />
-          <div class="text-[14px]">{{ selectedData!.label }}</div>
+        <div v-if="selectedData" class="flex gap-[8px] items-center">
+          <img alt="" :src="selectedData.icon" class="size-[24px] object-contain" />
+          <div class="text-[14px]">{{ selectedData.label }}</div>
         </div>
       </div>
       <div class="bg-[var(--color-text-level-3)] rounded-md">
@@ -30,40 +30,85 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, ref } from 'vue'
+import { computed, provide, ref, watch } from 'vue'
 import Popup from './popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import USDT from '@/static/svg/coin/USDT.black.svg?url'
+import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useLocaleStore } from '@/stores/locale'
+import { storeToRefs } from 'pinia'
+import {
+  getCurrencySelectOptionsFromCache,
+  type CurrencyOptionItem
+} from '../../common/currency-select-options'
 
 const isMobile = useIsMobile()
 const visible = ref(false)
 
-const selectOptions = ref([
-  { value: '1', label: 'PHP', icon: USDT },
-  { value: '2', label: 'USDT', icon: USDT },
-  { value: '3', label: 'XPR', icon: USDT },
-  { value: '4', label: 'DOGE', icon: USDT }
-])
+const localeStore = useLocaleStore()
+const siteConfigStore = useSiteConfigStore()
+const { config } = storeToRefs(siteConfigStore)
+const { currentCurrency } = storeToRefs(localeStore)
+
+const selectOptions = computed(() => getCurrencySelectOptionsFromCache(config.value))
 provide('currency-select-options', selectOptions)
 
-const selectedId = ref('1')
+const selectedId = ref('')
 provide('currency-select-selected-id', selectedId)
 
 const selectedData = computed(() => {
-  return selectOptions.value.find(i => i.value === selectedId.value)
+  return selectOptions.value.find(i => i.value === selectedId.value) ?? selectOptions.value[0]
 })
 
 const emit = defineEmits<{
-  change: [value: { value: string; label: string; icon: string } | undefined]
+  change: [value: CurrencyOptionItem | undefined]
 }>()
 
-const handleSelect = (item: { value: string; label: string; icon: string }) => {
+const normalizeCurrencyCode = (value: string | null | undefined) => {
+  return String(value ?? '')
+    .trim()
+    .toUpperCase()
+}
+
+const findValidCurrency = (code: string) => {
+  if (!code || code === 'NONE') {
+    return ''
+  }
+  return selectOptions.value.some(option => option.value === code) ? code : ''
+}
+
+const syncSelectedCurrency = () => {
+  const selectedCode = findValidCurrency(normalizeCurrencyCode(selectedId.value))
+  if (selectedCode) {
+    selectedId.value = selectedCode
+    return
+  }
+
+  const storedCode = findValidCurrency(normalizeCurrencyCode(currentCurrency.value))
+  if (storedCode) {
+    selectedId.value = storedCode
+    return
+  }
+
+  selectedId.value = selectOptions.value[0]?.value ?? ''
+}
+
+const handleSelect = (item: CurrencyOptionItem) => {
   selectedId.value = item.value
+  localeStore.setCurrency(item.value)
   emit('change', item)
 }
 
 provide('currency-select-on-select', handleSelect)
-emit('change', selectedData.value)
+
+watch(selectOptions, syncSelectedCurrency, { immediate: true })
+watch(currentCurrency, syncSelectedCurrency)
+watch(
+  selectedData,
+  value => {
+    emit('change', value)
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped lang="scss">
