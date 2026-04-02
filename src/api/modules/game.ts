@@ -1,7 +1,9 @@
 import request from '@/utils/request'
 import type {
   GameBetRecordListResponse,
+  GameStatisticsResponse,
   GetGameBetRecordListParams,
+  GetGameStatisticsParams,
   GameRanListResponse,
   GameBrandResponse,
   GameDataResponse,
@@ -68,6 +70,19 @@ export function getGameBetRecordList(
 ): Promise<GameBetRecordListResponse> {
   return request({
     url: '/special/getGameBetRecordList',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 获取游戏统计数据（盈亏、投注、胜负场次）
+ * @param data itemCode, platformCode
+ * @returns Promise<GameStatisticsResponse>
+ */
+export function getGameStatistics(data: GetGameStatisticsParams): Promise<GameStatisticsResponse> {
+  return request({
+    url: '/special/getGameStatistics',
     method: 'post',
     data
   })

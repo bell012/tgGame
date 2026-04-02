@@ -135,6 +135,26 @@ export interface GameBetRecordListResponse {
   [key: string]: unknown
 }
 
+export interface GetGameStatisticsParams {
+  itemCode: string
+  platformCode: string
+}
+
+export interface GameStatisticsResult {
+  profit?: string | number
+  wagered?: string | number
+  win?: string | number
+  lose?: string | number
+  [key: string]: unknown
+}
+
+export interface GameStatisticsResponse {
+  code: string | number
+  message: string
+  result?: GameStatisticsResult | null
+  [key: string]: unknown
+}
+
 /**
  * 游戏品牌节点数据
  * 对应 /gc/gameBrandList 接口返回项
