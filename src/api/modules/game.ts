@@ -1,8 +1,10 @@
 import request from '@/utils/request'
 import type {
+  GameRanListResponse,
   GameBrandResponse,
   GameDataResponse,
   GameDetailResponse,
+  GetGameRanListParams,
   QueryGameDetailsParams
 } from '@/api/interface/game'
 
@@ -38,5 +40,18 @@ export function queryGameDetails(params: QueryGameDetailsParams): Promise<GameDe
     url: '/gc/queryGameDetails',
     method: 'get',
     params
+  })
+}
+
+/**
+ * 获取高赢榜/幸运中奖列表
+ * @param data itemCode, platformCode, type, currency
+ * @returns Promise<GameRanListResponse>
+ */
+export function getGameRanList(data: GetGameRanListParams): Promise<GameRanListResponse> {
+  return request({
+    url: '/gr/getGameRanList',
+    method: 'post',
+    data
   })
 }
