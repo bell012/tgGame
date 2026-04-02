@@ -26,10 +26,6 @@
               <div>Movie Mode</div>
             </div>
             <div class="flex items-center gap-[8px] cursor-pointer">
-              <img alt="" class="size-[16px]" :src="FullIcon" />
-              <div>Full Screen</div>
-            </div>
-            <div class="flex items-center gap-[8px] cursor-pointer">
               <img alt="" class="size-[16px]" :src="FloatIcon" />
               <div>Float Mode</div>
             </div>
@@ -41,29 +37,24 @@
 </template>
 
 <script setup lang="ts">
+import { useGameLike } from '@/composables/useGameLike'
 import TgIcon from '@/static/svg/game/detail/tg.svg?url'
 import LoveIcon from '@/static/svg/game/detail/love.svg?url'
 import LoveActiveIcon from '@/static/svg/game/detail/love_active.svg?url'
-import FullIcon from '@/static/svg/game/detail/full.svg?url'
 import FloatIcon from '@/static/svg/game/detail/float.svg?url'
 import MovieIcon from '@/static/svg/game/detail/movie.svg?url'
-import { ref } from 'vue'
 
 defineProps<{
   visible: boolean
   desktop?: boolean
 }>()
 
-const loveActived = ref(false)
+const { isLiked: loveActived, toggleLike: toggleLove } = useGameLike()
 
 const emit = defineEmits<{
   'update:visible': [val: boolean]
   share: []
 }>()
-
-const toggleLove = () => {
-  loveActived.value = !loveActived.value
-}
 
 // 关闭popup
 const close = () => {
