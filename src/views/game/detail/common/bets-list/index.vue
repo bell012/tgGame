@@ -6,10 +6,10 @@
       <div class="flex lg:justify-end items-center sm:justify-start justify-start">
         <div class="bet-tabs flex items-center">
           <button
-            v-for="tab in tabs"
+            v-for="(tab, index) in tabs"
             :key="tab"
-            :class="['bet-tab', { active: activeTab === tab }]"
-            @click="activeTab = tab"
+            :class="['bet-tab', { active: activeTab === index }]"
+            @click="activeTab = index"
           >
             {{ tab }}
           </button>
@@ -19,6 +19,7 @@
     <!-- Table -->
     <div class="table-wrap">
       <table
+        v-if="activeTab === 0 || activeTab == 1"
         class="table [&_td]:px-3 [&_td]:py-3 sm:[&_td]:px-4"
         role="table"
         style="overflow-anchor: none"
@@ -75,6 +76,7 @@
           </tr>
         </tbody>
       </table>
+      <div v-else>111111</div>
     </div>
   </div>
 </template>
@@ -86,11 +88,9 @@ import { useLocaleStore } from '@/stores/locale'
 import { getCurrencyIconByCode } from '../currency-select-options'
 import { storeToRefs } from 'pinia'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
-// import { useI18n } from 'vue-i18n'
-// const { t } = useI18n()
 
 const tabs = ['All Bets', 'My Bets', 'High Roller'] as const
-const activeTab = ref('All Bets')
+const activeTab = ref(0)
 
 type CurrentGameDetail = {
   itemCode?: string | number
@@ -126,7 +126,7 @@ const currentRequestCurrency = computed(
 )
 const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestCurrency.value))
 
-const currentBetType = computed<1 | 2>(() => (activeTab.value === 'My Bets' ? 2 : 1))
+const currentBetType = computed<1 | 2>(() => (activeTab.value === 1 ? 2 : 1))
 
 const parseAmount = (value: unknown) => {
   const parsed = Number(normalizeValue(value))
