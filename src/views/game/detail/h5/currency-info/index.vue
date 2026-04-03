@@ -29,26 +29,10 @@ import defaultGameImg from '@/static/img/explore/game.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import CurrencySelect from '../currency-select/index.vue'
 import CurrencyBar from '../currency-bar/index.vue'
-import { computed, inject, ref, type ComputedRef } from 'vue'
-import Api from '@/api'
+import { computed, ref } from 'vue'
+import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
 
-type CurrentGameDetail = {
-  itemCode?: string | number
-  platformCode?: string
-  pgType?: string
-  itemName?: string
-  platformName?: string
-  icon2?: string
-  conUrl?: string
-  gameItemHotVo?: {
-    defaultImage?: string
-  }
-} | null
-
-const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
-  'game-detail-current-game',
-  computed(() => null)
-)
+const { gamePlay, currentGameDetail } = useGamePlatformPlay()
 
 const selectedData = ref<{ value: string; label: string; icon: string } | undefined>(undefined)
 const handleCurrencyChange = (
@@ -56,20 +40,6 @@ const handleCurrencyChange = (
 ) => {
   console.log(value, 'value-====')
   selectedData.value = value
-}
-
-const gamePlay = async () => {
-  try {
-    console.log('selectedData', selectedData.value)
-    const res = await Api.game.getloginPlatform({
-      pgType: currentGameDetail.value?.pgType,
-      gameCode: currentGameDetail.value?.itemCode,
-      platformCode: currentGameDetail.value?.platformCode
-    })
-    console.log(res, 'getloginPlatform')
-  } catch (error) {
-    console.error('getQuerySlideshow failed', error)
-  }
 }
 
 const toImageUrl = (value: string) => {

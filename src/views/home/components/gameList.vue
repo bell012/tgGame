@@ -148,7 +148,7 @@ const normalizedList = computed(() => {
 const handleClick = (rowId: number) => {
   let userInfo = localStorage.getItem('userInfo')
   if (userInfo) {
-    navigateToName('gameDetail', { params: { id: rowId } })
+    navigateToName('gameDetail', { params: { rowId } })
   } else {
     authModalStore.openRegisterModal()
   }
