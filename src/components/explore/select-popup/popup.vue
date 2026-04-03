@@ -14,7 +14,9 @@
         <div class="tp-panel bg-[var(--color-background-level-2)] rounded-t-xl pt-2.5 px-3.5">
           <div class="tp-header flex items-center justify-between mb-2.5" v-if="!desktop">
             <div></div>
-            <div class="text-base font-bold text-[var(--color-text-level-1)]">Select</div>
+            <div class="text-base font-bold text-[var(--color-text-level-1)]">
+              {{ t('search.select') }}
+            </div>
             <div
               @click="close"
               class="w-7 h-7 rounded bg-[var(--color-opacity-10)] flex items-center justify-center"
@@ -61,6 +63,7 @@
 import CloseIcon from '@/static/svg/close.svg?component'
 import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
+import { useI18n } from 'vue-i18n'
 import { COUNTRIES } from '../consts'
 
 type OptionItem = { value: string; label: string }
@@ -77,6 +80,7 @@ const emit = defineEmits<{
   'update:visible': [val: boolean]
   confirm: [val: OptionItem]
 }>()
+const { t } = useI18n()
 
 const close = () => emit('update:visible', false)
 

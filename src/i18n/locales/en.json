@@ -296,9 +296,11 @@
   },
   "search": {
     "placeholder": "Search games",
+    "select": "Select",
     "history": "History",
     "clear": "Clear search",
     "suggested": "Suggested",
+    "sortDefault": "Default",
     "sort": "Sort By:",
     "providers": "Providers:",
     "botClear": "Clear All",

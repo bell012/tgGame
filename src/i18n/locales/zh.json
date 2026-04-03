@@ -110,9 +110,11 @@
   },
   "search": {
     "placeholder": "搜寻游戏",
+    "select": "选择",
     "history": "历史",
     "clear": "清除搜寻",
     "suggested": "建议",
+    "sortDefault": "默认",
     "sort": "排序方式:",
     "providers": "供应商:",
     "botClear": "全部清除",
