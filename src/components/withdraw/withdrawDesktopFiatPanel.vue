@@ -1,7 +1,7 @@
 <template>
   <div class="w-full bg-bg-2 p-6 rounded-lg font-['Inter']">
     <div>
-      <p class="text-sm font-bold leading-normal text-text-1">Withdraw Methods</p>
+      <p class="text-sm font-bold leading-normal text-text-1">{{ t('withdraw.methods') }}</p>
       <div class="mt-2.5 overflow-hidden">
         <div
           ref="methodListRef"
@@ -27,14 +27,14 @@
     </div>
     <div class="mt-6 grid grid-cols-2 gap-5">
       <div>
-        <div class="text-sm font-bold leading-normal">Phone Number</div>
+        <div class="text-sm font-bold leading-normal">{{ t('withdraw.phone_number') }}</div>
         <div
           class="mt-2 p-3 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
         >
           <input
             type="text"
             v-model="phoneNumber"
-            placeholder="Please enter your phone number"
+            :placeholder="t('withdraw.phone_placeholder')"
             class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs sm:placeholder:text-sm"
           />
           <button
@@ -47,14 +47,14 @@
         </div>
       </div>
       <div>
-        <div class="text-sm font-bold leading-normal">Name</div>
+        <div class="text-sm font-bold leading-normal">{{ t('withdraw.name') }}</div>
         <div
           class="mt-2 p-3 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
         >
           <input
             type="text"
             v-model="accountName"
-            placeholder="Please enter your name"
+            :placeholder="t('withdraw.name_placeholder')"
             class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs sm:placeholder:text-sm"
           />
           <button
@@ -70,22 +70,23 @@
     <div class="mt-6 grid grid-cols-2 gap-5">
       <div>
         <div class="flex items-center justify-between">
-          <div class="text-sm font-bold leading-normal">Withdraw Amount</div>
+          <div class="text-sm font-bold leading-normal">{{ t('withdraw.amount') }}</div>
           <div class="flex items-center text-sm text-text-2">
-            Balance：
-            <DepositTokenIcon class="w-3 h-3 mr-1 text-text-1" />
-            <span class="text-text-1">0.00</span>
+            {{ t('withdraw.balance') }}：
+            <span class="mr-1 text-text-1">{{ formattedBalance }}</span>
             <ChevronRightSmallIcon class="ml-1 w-1 h-2 text-text-1" />
           </div>
         </div>
         <div
           class="mt-2 p-3 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
         >
-          <DepositTokenIcon class="w-6 h-6 mr-3 text-theme-primary" />
+          <span class="mr-3 text-xl font-bold leading-none text-theme-primary">{{
+            currencySymbol
+          }}</span>
           <input
             type="number"
             v-model="amount"
-            placeholder="Please enter the withdrawal amount"
+            :placeholder="t('withdraw.amount_placeholder')"
             class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs sm:placeholder:text-sm"
           />
           <button
@@ -104,24 +105,31 @@
       :disabled="isWithdrawDisabled"
       @click="doWithdrawDeposit"
     >
-      Withdraw Now
+      {{ t('withdraw.withdraw_now') }}
     </button>
   </div>
 </template>
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import CloseIcon from '@/static/svg/close.svg?component'
 import gCashIcon from '@/static/img/payment/gCash.png'
 import grabPayIcon from '@/static/img/payment/grabPay.png'
 import mayaIcon from '@/static/img/payment/maya.png'
 import payPalIcon from '@/static/img/payment/payPal.png'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
-import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
 import { type ComponentPublicInstance, computed, nextTick, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useLocaleStore } from '@/stores/locale'
+import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 
 interface MethodOption {
   name: string
   icon: string
 }
+
+const { t } = useI18n()
+const localeStore = useLocaleStore()
+const { currentCurrency } = storeToRefs(localeStore)
 
 const payMethods = computed<MethodOption[]>(() => [
   {
@@ -148,6 +156,8 @@ const methodItemRefs = ref<Array<HTMLElement | null>>([])
 const accountName = ref('')
 const phoneNumber = ref('')
 const amount = ref<number>()
+const currencySymbol = computed(() => getCurrencySymbol(currentCurrency.value))
+const formattedBalance = computed(() => getFormattedBalance(0, currentCurrency.value, 2))
 const isAmountDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
 const isWithdrawDisabled = computed(
   () => isAmountDisabled.value || !accountName.value || !phoneNumber.value
