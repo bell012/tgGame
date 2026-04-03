@@ -3,10 +3,14 @@ import type {
   GameBetRecordListResponse,
   GameStatisticsResponse,
   GetGameBetRecordListParams,
+  GetCommentsListParams,
+  GetCommentSubjectParams,
   GetGameStatisticsParams,
   GameRanListResponse,
   GameBrandResponse,
   GameDataResponse,
+  GameCommentListResponse,
+  GameCommentSubjectResponse,
   GameDetailResponse,
   GetGameRanListParams,
   QueryGameDetailsParams
@@ -106,6 +110,34 @@ export function refreshGameStatistics(
 export function getloginPlatform(data: any): Promise<any> {
   return request({
     url: '/gc/loginPlatform',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 查询游戏社交主体信息
+ * @param data gameId, memberRowId
+ * @returns Promise<GameCommentSubjectResponse>
+ */
+export function getCommentSubject(
+  data: GetCommentSubjectParams
+): Promise<GameCommentSubjectResponse> {
+  return request({
+    url: '/comment/sub/getCommentSubject',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 查询游戏评论列表
+ * @param data subjectId, current, pageSize, memberRowId, root, parent
+ * @returns Promise<GameCommentListResponse>
+ */
+export function getCommentsList(data: GetCommentsListParams): Promise<GameCommentListResponse> {
+  return request({
+    url: '/comment/sub/getCommentsList',
     method: 'post',
     data
   })
