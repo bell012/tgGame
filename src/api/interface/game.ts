@@ -155,6 +155,56 @@ export interface GameStatisticsResponse {
   [key: string]: unknown
 }
 
+export interface GetCommentSubjectParams {
+  gameId: string | number
+  memberRowId?: string | number
+}
+
+export interface GameCommentSubjectResult {
+  subjectId?: string | number
+  rowId?: string | number
+  gameId?: string | number
+  [key: string]: unknown
+}
+
+export interface GameCommentSubjectResponse {
+  code: string | number
+  message: string
+  result?: GameCommentSubjectResult | null
+  [key: string]: unknown
+}
+
+export interface GetCommentsListParams {
+  subjectId?: string | number
+  current?: number
+  size?: number
+  memberRowId?: number
+  root?: string | number | null
+  parent?: string | number | null
+}
+
+export interface GameCommentListItem {
+  rowId?: string | number
+  content?: string
+  memberName?: string
+  createTime?: string | number
+  likeNum?: string | number
+  [key: string]: unknown
+}
+
+export interface GameCommentListResponse {
+  code: string | number
+  message: string
+  result?:
+    | GameCommentListItem[]
+    | {
+        records?: GameCommentListItem[]
+        [key: string]: unknown
+      }
+    | null
+  [key: string]: unknown
+}
+
 /**
  * 游戏品牌节点数据
  * 对应 /gc/gameBrandList 接口返回项
