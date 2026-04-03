@@ -4,9 +4,9 @@
       class="flex flex-col lg:flex-row bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] p-[12px]"
     >
       <div class="lg:flex-1 flex justify-start items-center gap-[20px]">
-        <div class="text-[26px] font-bold w-[100px] text-right">3.0</div>
+        <div class="text-[26px] font-bold w-[100px] text-right">{{ scoreText }}</div>
         <div>
-          <star :count="5" :active-count="3" />
+          <star :count="5" :active-count="activeStarCount" />
           <div class="text-[13px] text-[var(--color-text-level-2)] hidden lg:block">Out of 5</div>
         </div>
       </div>
@@ -43,7 +43,9 @@
       <div
         class="flex-1 flex flex-col justify-center items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[12px]"
       >
-        <div class="text-[var(--color-text-level-2)] text-[12px] text-center">11 Ratings</div>
+        <div class="text-[var(--color-text-level-2)] text-[12px] text-center">
+          {{ ratingCount }} Ratings
+        </div>
         <div class="flex justify-center items-center mt-[4px]">
           <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
           <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
@@ -182,7 +184,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, ref, type ComputedRef } from 'vue'
 import Star from './star.vue'
 import ProgressBar from './progress.vue'
 import CommentPopup from './comment-popup.vue'
@@ -193,6 +195,72 @@ import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
 import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?url'
 import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?url'
 
+type CurrentGameDetail = {
+  initScoreNum?: number | string
+  initScoreStar?: number | string
+  onlineNumMax?: number | string
+  onlineNumMin?: number | string
+} | null
+
+const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
+  'game-detail-current-game',
+  computed(() => null)
+)
+
+const ratingCount = computed(() => {
+  const parsed = Number(currentGameDetail.value?.initScoreNum)
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 11
+  }
+  return Math.trunc(parsed)
+})
+
+const scoreValue = computed(() => {
+  const parsed = Number(currentGameDetail.value?.initScoreStar)
+  if (parsed === 1) return 4.0
+  if (parsed === 2) return 4.5
+  if (parsed === 3) return 5.0
+  return 3.0
+})
+
+const scoreText = computed(() => scoreValue.value.toFixed(1))
+const activeStarCount = computed(() => Math.max(0, Math.min(5, Math.round(scoreValue.value))))
+/**
+ * 
+ /gc/queryGameDetails?rowId={rowId}  游戏详情 Get请求
+  初始评分数量
+  final int? initScoreNum;
+  /// 初始评分星级 1:4星 2:4.5星 3:5星
+  final int? initScoreStar;
+  /// 在线人数最大值
+  final int? onlineNumMax;
+  /// 在线人数最小值
+  final int? onlineNumMin;
+  -------
+  /// 获取评论的主题
+  @POST('/comment/sub/getCommentSubject') // gameId 和 memberRowId
+  /// 游戏ID
+  final int gameId;
+  /// 会员ID
+  final String? memberRowId;
+  ---------
+  /// 获取评论列表
+  @POST('/comment/sub/getCommentsList')
+/// 评论主表 ID
+  final String? subjectId;
+  /// 页码
+  final int? current;
+  /// 每页数量
+  final int? pageSize;
+  /// 会员 ID
+  final int? memberRowId;
+  -----
+  /// 评论根节点 0.根评论. 楼层
+  // final String? root;
+  //展开评论的时候 root传null parent 传父元素的id
+  /// 父级别 ID，
+  // final String? parent;
+ */
 const sortMenuRef = ref<HTMLElement | null>(null)
 const isSortPopupOpen = ref(false)
 const activeSort = ref('newest')
