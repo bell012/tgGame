@@ -37,6 +37,12 @@
         </button>
       </div>
     </div>
+
+    <casinoSlideshow
+      v-if="currentTabCode !== '' && querySlideshowList.length > 0"
+      :list="querySlideshowList"
+    />
+
     <div
       ref="searchRef"
       class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border border-opacity-10 bg-opacity-6 focus-within:border-theme-primary focus-within:ring-2 transition"
@@ -114,6 +120,7 @@
         </div>
       </div>
     </div>
+
     <div class="min-h-screen w-full relative">
       <!-- 左箭头 -->
       <div
@@ -195,6 +202,8 @@
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
+import Api from '@/api'
+import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
 import { useGameStore } from '@/stores/game'
 import { useLayoutStore } from '@/stores/layout'
@@ -202,9 +211,11 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import { navigateTo } from '@/utils/router'
+import { getStorageLanguageCode } from '@/utils/locale'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import { getCasinoPageMode, getCasinoQueryOptions } from './casinoPageConfig'
+import casinoSlideshow from './components/casinoSlideshow.vue'
 import pageStyle1 from './components/pageStyle1.vue'
 import pageStyle2 from './components/pageStyle2.vue'
 import pageStyle3 from './components/pageStyle3.vue'
@@ -218,7 +229,7 @@ const props = withDefaults(defineProps<Props>(), {
   tabKey: undefined
 })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const layoutStore = useLayoutStore()
 const isMobile = useIsMobile()
 const mobileStyle = computed(() => {
@@ -235,6 +246,7 @@ const showHistoryPanel = ref(false)
 const searchText = ref('')
 const activeSearchKeyword = ref('')
 const suggestedArr = ref<string[]>([])
+const querySlideshowList = ref<QuerySlideshowItem[]>([])
 const gameStore = useGameStore()
 const { searchHistory } = storeToRefs(gameStore)
 
@@ -370,6 +382,41 @@ const onTabButton = (tab: any) => {
   navigateTo(`/casino/${tab.sysGameTypeCode}`)
 }
 
+const currentSlideshowColumnCode = computed(() => {
+  if (basePageStyle.value === pageStyle3) {
+    const normalizedTabCode = String(currentTabCode.value ?? '').trim()
+
+    if (normalizedTabCode) {
+      return normalizedTabCode
+    }
+  }
+
+  return undefined
+})
+
+const getQuerySlideshow = async () => {
+  try {
+    const response = await Api.home.getQuerySlideshow({
+      languageCode: getStorageLanguageCode(String(locale.value)),
+      param: {
+        ColumnCode: currentSlideshowColumnCode.value
+      },
+      channelId: isMobile.value ? '4' : '3',
+      page: {
+        current: 1,
+        size: 10
+      }
+    })
+
+    querySlideshowList.value = Array.isArray(response?.result?.records)
+      ? response.result.records
+      : []
+  } catch (error) {
+    console.error('getQuerySlideshow failed', error)
+    querySlideshowList.value = []
+  }
+}
+
 const loadSuggestedGames = async () => {
   const hotGameResult = await gameStore.queryGameDataPage({
     rowType: 3,
@@ -475,6 +522,7 @@ onMounted(() => {
   loadUserInfo()
   gameStore.loadSearchHistory()
   getGameData()
+  void getQuerySlideshow()
   void loadSuggestedGames()
   updateScrollState()
 
@@ -524,6 +572,13 @@ watch(
     }
 
     clearSearch()
+  }
+)
+
+watch(
+  () => [currentTabCode.value, locale.value, isMobile.value],
+  () => {
+    void getQuerySlideshow()
   }
 )
 </script>
