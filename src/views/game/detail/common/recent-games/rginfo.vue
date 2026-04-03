@@ -1,8 +1,6 @@
 <template>
   <div class="lg:flex">
-    <div
-      class="flex-1 flex border-b border-[var(--color-opacity-30)] mt-[12px] pb-[6px] text-[13px]"
-    >
+    <div class="stats-divider flex-1 flex mt-[12px] pb-[6px] text-[13px]">
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
         <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.houseEdge') }}</div>
         <div class="text-[var(--color-theme-level-1)]">{{ houseEdgeText }}</div>
@@ -12,9 +10,7 @@
         <div class="text-[var(--color-theme-level-1)]">{{ rtpText }}</div>
       </div>
     </div>
-    <div
-      class="flex-1 flex border-b border-[var(--color-opacity-30)] mt-[12px] pb-[6px] text-[13px]"
-    >
+    <div class="stats-divider flex-1 flex mt-[12px] pb-[6px] text-[13px]">
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
         <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.maxWin') }}</div>
         <div class="text-[var(--color-theme-level-1)]">-</div>
@@ -87,4 +83,18 @@ const houseEdgeText = computed(() => {
   return formatPercent(100 - randomRtpValue.value)
 })
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.stats-divider {
+  border-bottom: 1px solid #d8e0ec;
+}
+
+:global(:root.light) .stats-divider,
+:global(html.light) .stats-divider {
+  border-bottom-color: #d8e0ec !important;
+}
+
+:global(:root.dark) .stats-divider,
+:global(html.dark) .stats-divider {
+  border-bottom-color: rgba(255, 255, 255, 0.3) !important;
+}
+</style>

@@ -12,7 +12,7 @@
         :key="`${index}-${getPlayerName(item)}-${toPlainText(item.payOut)}`"
         class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[12px]"
       >
-        <h3 class="flex gap-[8px] border-b border-[var(--color-opacity-30)] pb-[12px]">
+        <h3 class="win-item-divider flex gap-[8px] pb-[12px]">
           <img class="size-[20px]" alt="" :src="RackIcon" />
           <div class="text-[12px] font-bold">{{ getPlayerName(item) }}</div>
         </h3>
@@ -125,4 +125,18 @@ const getPlayerName = (item: GameRanListItem) => {
   )
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.win-item-divider {
+  border-bottom: 1px solid #d8e0ec;
+}
+
+:global(:root.light) .win-item-divider,
+:global(html.light) .win-item-divider {
+  border-bottom-color: #d8e0ec !important;
+}
+
+:global(:root.dark) .win-item-divider,
+:global(html.dark) .win-item-divider {
+  border-bottom-color: rgba(255, 255, 255, 0.3) !important;
+}
+</style>
