@@ -27,7 +27,7 @@
               v-model="commentText"
               class="h-[150px] w-full resize-none rounded-[12px] border border-[var(--color-theme-level-1)] bg-[#353A3F] p-[12px] text-[14px] font-semibold text-white outline-none placeholder:text-[#DCE4EA]"
               maxlength="500"
-              placeholder="This game is great, very exciting!"
+              :placeholder="inputPlaceholder"
             ></textarea>
 
             <div class="mt-[10px] flex items-center justify-between gap-[12px]">
@@ -115,7 +115,7 @@
               v-model="commentText"
               class="mt-[10px] h-[190px] w-full resize-none rounded-[10px] border border-[var(--color-theme-level-1)] bg-[#353A3F] p-[12px] text-[14px] text-white outline-none placeholder:text-[#DCE4EA]"
               maxlength="500"
-              placeholder="This game is great, very exciting!"
+              :placeholder="inputPlaceholder"
             ></textarea>
 
             <div class="mt-[8px] flex justify-end">
@@ -177,6 +177,7 @@ import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
 
 interface Props {
   modelValue: boolean
+  placeholder?: string
 }
 
 const props = defineProps<Props>()
@@ -321,6 +322,11 @@ const currentEmojiList = computed(() => {
   return emojiGroups[activeEmojiCategory.value]
 })
 
+const inputPlaceholder = computed(() => {
+  const placeholder = props.placeholder?.trim()
+  return placeholder || 'This game is great, very exciting!'
+})
+
 const closePopup = () => {
   isEmojiPickerOpen.value = false
   emit('update:modelValue', false)
@@ -392,6 +398,7 @@ watch(
   () => props.modelValue,
   isOpen => {
     if (isOpen) {
+      commentText.value = ''
       bodyOverflowCache.value = document.body.style.overflow
       document.body.style.overflow = 'hidden'
       return
