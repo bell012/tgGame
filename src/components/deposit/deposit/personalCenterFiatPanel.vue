@@ -24,12 +24,37 @@
           :ref="el => setMethodItemRef(el, index)"
           @click.stop="selectMethod(item, index)"
         >
+          <!-- 支付方式图标 -->
           <img class="mr-4 h-6" :src="resolveMethodIcon(item)" />
           <!-- 支付方式名称 -->
           <p class="text-base font-bold leading-normal text-text-1">{{ item.columnName }}</p>
         </div>
       </div>
     </div>
+    <!-- 充值渠道区域 -->
+    <div v-if="showChannelSection" class="mt-4 flex flex-col gap-2">
+      <!-- 充值渠道标题 -->
+      <p class="text-sm font-bold leading-normal text-text-1">Deposit Channel</p>
+      <!-- 充值渠道按钮列表 -->
+      <div class="grid grid-cols-6 gap-4">
+        <!-- 单个充值渠道按钮 -->
+        <button
+          v-for="channel in channelOptions"
+          :key="channel.rowId"
+          type="button"
+          class="flex h-9 items-center justify-center rounded-lg border px-3 text-center text-sm leading-5 transition-colors"
+          :class="
+            selectedSubColumn?.rowId === channel.rowId
+              ? 'border-theme-primary bg-theme-3 font-bold text-text-1'
+              : 'border-opacity-10 text-text-1 lg:hover:bg-theme-3'
+          "
+          @click="selectChannel(channel.rowId)"
+        >
+          {{ channel.label }}
+        </button>
+      </div>
+    </div>
+
     <!-- 充值金额标题 -->
     <p class="mt-4 text-sm font-bold leading-normal text-text-1">Deposit Amount</p>
     <!-- 充值金额输入容器 -->
@@ -42,6 +67,7 @@
       "
     >
       <DepositTokenIcon class="w-6 h-6 mr-3 text-theme-primary" />
+      <!-- 充值金额输入框 -->
       <input
         type="number"
         v-model="amount"
@@ -73,10 +99,19 @@
           v-for="preset in presetAmounts"
           :key="preset"
           @click="selectPresetAmount(preset)"
-          class="py-2.5 rounded-lg lg:hover:bg-theme-primary"
-          :class="[preset === amount ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-1']"
+          class="relative flex h-10 items-center justify-center rounded-lg text-base font-bold leading-[19px] transition-colors lg:hover:bg-theme-primary"
+          :class="[preset === amount ? 'bg-[#2AEE88] text-black' : 'bg-bg-2 text-text-1']"
         >
-          {{ preset }}
+          <!-- 预设金额文本 -->
+          <span>{{ preset }}</span>
+          <!-- 预设金额优惠角标 -->
+          <span
+            v-if="presetDiscountRatioMap[preset] !== undefined"
+            class="pointer-events-none absolute -right-1 -top-1 min-w-8 rounded-lg bg-center bg-contain bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4"
+            :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
+          >
+            {{ presetDiscountRatioMap[preset] + '% Bonus' }}
+          </span>
         </button>
       </div>
       <!-- 展开收起操作区 -->
@@ -125,6 +160,7 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type {
+  PayRechargeQuickAmtsResult,
   QueryDiscountListItem,
   QueryPayColumnItem,
   QueryPayOrderByOrderIdResult,
@@ -135,6 +171,7 @@ import type {
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { resolvePayChannelTabKey } from '@/constants/payChannelTabs'
+import addBonusBadgeBg from '@/static/img/deposit/add-bonus-badge.png'
 import {
   default as defaultImgDark,
   default as defaultImgLight
@@ -179,9 +216,12 @@ const fallbackMethodIcons: Record<string, string> = {
   PayPal: payPalIcon
 }
 
+const paySubColumns = ref<QueryPaySubColumnItem[]>([])
+
 const payMethods = ref<QueryPayColumnItem[]>([])
 const selectedMethod = ref<QueryPayColumnItem | null>(null)
 const selectedSubColumn = ref<QueryPaySubColumnItem | null>(null)
+const discountList = ref<QueryDiscountListItem[]>([])
 const selectedDiscountItem = ref<QueryDiscountListItem | null>(null)
 const amount = ref<number>()
 const methodListRef = ref<HTMLDivElement | null>(null)
@@ -191,11 +231,51 @@ const { expanded } = usePresetGrid(presetsRef)
 const orderInfo = ref<FiatOrderType>(defaultFiatOrder)
 const orderPopShow = ref(false)
 const payColumnLoaded = ref(false)
+const quickAmountConfig = ref<PayRechargeQuickAmtsResult | null>(null)
+// 校验充值按钮是否可点击
 const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
-const isManualAmountAllowed = computed(() => selectedSubColumn.value?.manualAmountIn !== 0)
+// 控制充值渠道区域显示（直充不显示）
+const showChannelSection = computed(() => {
+  const method = selectedMethod.value
+  // 直充不需要渠道
+  return method ? method.directRecharge !== 1 : false
+})
+// 控制金额输入框是否允许手动输入
+const isManualAmountAllowed = computed(
+  // 充值金额是否允许手动输入
+  () =>
+    (quickAmountConfig.value?.manualAmountIn ?? selectedSubColumn.value?.manualAmountIn ?? 1) !== 0
+)
+// 解析当前支付方式对应的优惠渠道编码
 const selectedDiscountPayChannelCode = computed(() =>
   resolvePayChannelTabKey(selectedMethod.value?.columnName)
 )
+// 构建预设金额与优惠比例的映射
+const presetDiscountRatioMap = computed<Record<number, string>>(() => {
+  const ratioMap: Record<number, string> = {}
+
+  discountList.value.forEach(item => {
+    if (item.multiple !== 1) return
+
+    item.discounts?.forEach(discount => {
+      const discountAmount = Number(discount.amount)
+      if (!Number.isFinite(discountAmount)) return
+      if (ratioMap[discountAmount] !== undefined) return
+
+      ratioMap[discountAmount] = String(discount.ratio)
+    })
+  })
+
+  return ratioMap
+})
+// 构建充值渠道按钮展示数据
+const channelOptions = computed(() =>
+  paySubColumns.value.map(item => ({
+    rowId: item.rowId,
+    label: parseSubColumnName(item)
+  }))
+)
+// 计算充值金额输入框占位文案
 const amountPlaceholder = computed(() =>
   isManualAmountAllowed.value
     ? 'Please select or enter deposit amount.'
@@ -217,11 +297,22 @@ const handleHidden = () => {
   // emit('hidden', true)
 }
 
+// 清空充值金额输入及高亮状态
 const clearAmount = () => {
   amount.value = undefined
   isAmountInputHighlighted.value = false
 }
+// 解析充值渠道名称
+const parseSubColumnName = (item: QueryPaySubColumnItem) => {
+  try {
+    const parsedName = JSON.parse(item.subColumnName)
+    return parsedName?.zh || item.platformName || item.subColumnName
+  } catch {
+    return item.platformName || item.subColumnName
+  }
+}
 
+// 选择预设金额并高亮输入框
 const selectPresetAmount = (preset: number) => {
   amount.value = preset
   isAmountInputHighlighted.value = true
@@ -235,12 +326,7 @@ const toPayImageUrl = (value: string) => {
 
 // 解析支付方式图标，优先接口图标，失败回退本地图标
 const resolveMethodIcon = (item: QueryPayColumnItem) => {
-  return (
-    toPayImageUrl(item.columnIco) ||
-    toPayImageUrl(item.gradientLogo) ||
-    fallbackMethodIcons[item.columnName] ||
-    payPalIcon
-  )
+  return toPayImageUrl(item.gradientLogo) || fallbackMethodIcons[item.columnName]
 }
 
 // 规范化预设金额，过滤无效值并提供默认值
@@ -252,6 +338,32 @@ const normalizePresetAmounts = (values: Array<number | string> = []) => {
   return parsed.length > 0 ? parsed : [...defaultPresetAmounts]
 }
 
+// 根据充值金额匹配对应的优惠配置
+const findDiscountItemByAmount = (targetAmount?: number | string) => {
+  const normalizedAmount = Number(targetAmount)
+  if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) return null
+
+  for (const item of discountList.value) {
+    if (item.multiple !== 1) continue
+
+    const matchedDiscount = item.discounts?.find(
+      discount => Number(discount.amount) === normalizedAmount
+    )
+
+    if (matchedDiscount) {
+      return item
+    }
+  }
+
+  return null
+}
+
+// 同步当前已选金额对应的优惠项
+const syncSelectedDiscountItem = () => {
+  selectedDiscountItem.value = findDiscountItemByAmount(amount.value)
+}
+
+// 映射订单状态文案
 const mapOrderStatusText = (status?: number | string) => {
   const normalized = Number(status)
   if (normalized === 1) return 'Success'
@@ -260,16 +372,19 @@ const mapOrderStatusText = (status?: number | string) => {
   return 'Processing'
 }
 
+// 判断订单是否为终态（成功或失败）
 const isTerminalOrderStatus = (status?: number | string) => {
   const normalized = Number(status)
   return normalized === 1 || normalized === 2
 }
 
+// 格式化订单时间
 const formatTimestamp = (timestamp?: number) => {
   if (!timestamp) return ''
   return new Date(timestamp).toLocaleString()
 }
 
+// 应用订单详情到弹窗数据
 const applyOrderDetail = (detail: QueryPayOrderByOrderIdResult) => {
   orderInfo.value = {
     order_no: String(detail.orderId ?? currentOrderId.value),
@@ -285,6 +400,7 @@ const applyOrderDetail = (detail: QueryPayOrderByOrderIdResult) => {
   orderPopShow.value = true
 }
 
+// 停止订单轮询
 const stopOrderPolling = () => {
   if (pollTimer.value !== null) {
     window.clearInterval(pollTimer.value)
@@ -292,6 +408,7 @@ const stopOrderPolling = () => {
   }
 }
 
+// 查询当前订单详情
 const queryOrderDetail = async () => {
   if (!currentOrderId.value) return
 
@@ -309,6 +426,7 @@ const queryOrderDetail = async () => {
   }
 }
 
+// 开始订单轮询
 const startOrderPolling = () => {
   if (!currentOrderId.value || pollTimer.value !== null) return
 
@@ -318,6 +436,7 @@ const startOrderPolling = () => {
   }, 3000)
 }
 
+// 处理页面可见性变化，控制轮询启停
 const handleVisibilityChange = () => {
   if (!currentOrderId.value) return
 
@@ -379,28 +498,56 @@ const loadPaySubColumnPage = async (columnCode: number) => {
     const response = await Api.wallet.queryPaySubColumnPage(param)
     const result: QueryPaySubColumnItem[] =
       response?.success && Array.isArray(response.result) ? response.result : []
+    paySubColumns.value = result
     selectedSubColumn.value = result[0] ?? null
-    presetAmounts.value = normalizePresetAmounts(
-      selectedSubColumn.value?.defaultRechargeAmount ?? []
-    )
   } catch (error) {
     console.error('queryPaySubColumnPage failed', error)
     selectedSubColumn.value = null
+    paySubColumns.value = []
+  }
+}
+
+// 根据支付方式获取快捷金额
+const loadPayRechargeQuickAmts = async (columnCode: number) => {
+  quickAmountConfig.value = null
+  presetAmounts.value = [...defaultPresetAmounts]
+
+  try {
+    const response = await Api.wallet.payRechargeQuickAmts({ columnCode })
+    const result = response?.success ? response.result : undefined
+
+    quickAmountConfig.value = result ?? null
+    presetAmounts.value = normalizePresetAmounts(result?.amounts ?? [])
+  } catch (error) {
+    console.error('payRechargeQuickAmts failed', error)
+    quickAmountConfig.value = null
     presetAmounts.value = [...defaultPresetAmounts]
   }
 }
+
+// 加载支付渠道优惠列表
 const loadDiscountList = async (payChannelCode: string) => {
   try {
     const response = await Api.wallet.queryDiscountList({ payChannelCode })
     const result: QueryDiscountListItem[] =
       response?.success && Array.isArray(response.result) ? response.result : []
-    selectedDiscountItem.value = result[0] ?? null
+    discountList.value = result
+    syncSelectedDiscountItem()
   } catch (error) {
     console.error('queryDiscountList failed', error)
+    discountList.value = []
     selectedDiscountItem.value = null
   }
 }
 
+// 选择充值渠道并切换对应金额数据
+const selectChannel = (rowId: number) => {
+  const target = paySubColumns.value.find(item => item.rowId === rowId)
+  if (!target) return
+
+  selectedSubColumn.value = target
+  clearAmount()
+}
 // 加载支付栏目并默认请求第一个子栏目
 const loadPayColumnPage = async () => {
   try {
@@ -424,15 +571,22 @@ const loadPayColumnPage = async () => {
     })
     const result: QueryPayColumnItem[] =
       response?.success && Array.isArray(response.result) ? response.result : []
-
-    payMethods.value = result
+    //  如果result中的的item 中的 columnName 不包含在   PAY_CHANNEL_TAB_LIST 中，那么就不显示（剔除该item）
+    // 在result 中剔除   "columnName": "USDT泰达币"
+    payMethods.value = result.filter(
+      item => item.columnName !== 'USDT泰达币' && Boolean(resolvePayChannelTabKey(item.columnName))
+    )
     methodItemRefs.value = new Array(payMethods.value.length).fill(null)
 
     const defaultMethod = payMethods.value[0]
     if (!defaultMethod) {
       selectedMethod.value = null
       selectedSubColumn.value = null
+      paySubColumns.value = []
+      selectedSubColumn.value = null
+      discountList.value = []
       selectedDiscountItem.value = null
+      quickAmountConfig.value = null
       presetAmounts.value = [...defaultPresetAmounts]
       return
     }
@@ -440,12 +594,17 @@ const loadPayColumnPage = async () => {
     selectedMethod.value = defaultMethod
     void scrollMethodIntoView(0)
     await loadPaySubColumnPage(defaultMethod.columnCode)
+    await loadPayRechargeQuickAmts(defaultMethod.columnCode)
   } catch (error) {
     console.error('queryPayColumnPage failed', error)
     payMethods.value = []
+
     selectedMethod.value = null
+    paySubColumns.value = []
     selectedSubColumn.value = null
+    discountList.value = []
     selectedDiscountItem.value = null
+    quickAmountConfig.value = null
     presetAmounts.value = [...defaultPresetAmounts]
   } finally {
     payColumnLoaded.value = true
@@ -463,6 +622,7 @@ const selectMethod = async (method: QueryPayColumnItem, index: number) => {
   clearAmount()
   void scrollMethodIntoView(index)
   await loadPaySubColumnPage(method.columnCode)
+  await loadPayRechargeQuickAmts(method.columnCode)
 }
 
 // 提交充值并打开订单弹窗
@@ -519,10 +679,12 @@ onMounted(() => {
   document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
+// 监听渠道变化并刷新优惠配置
 watch(
   () => [selectedSubColumn.value?.rowId, selectedDiscountPayChannelCode.value],
   () => {
     if (!selectedDiscountPayChannelCode.value) {
+      discountList.value = []
       selectedDiscountItem.value = null
       return
     }
@@ -531,6 +693,15 @@ watch(
   }
 )
 
+// 监听充值金额变化并匹配优惠项
+watch(
+  () => amount.value,
+  () => {
+    syncSelectedDiscountItem()
+  }
+)
+
+// 页面卸载前清理事件与轮询
 onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   stopOrderPolling()
