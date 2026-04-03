@@ -1,7 +1,7 @@
 <template>
   <div class="w-full font-['Inter']">
     <div class="w-full p-3.5 bg-bg-2 rounded-lg">
-      <p class="text-xs font-normal leading-normal text-text-1">Withdraw Methods</p>
+      <p class="text-xs font-normal leading-normal text-text-1">{{ t('withdraw.methods') }}</p>
       <div class="mt-2.5 overflow-hidden">
         <div
           ref="methodListRef"
@@ -27,7 +27,7 @@
     </div>
     <div class="mt-2.5 p-3.5 bg-bg-2 rounded-lg">
       <div>
-        <div class="text-xs font-normal leading-normal">Phone Number</div>
+        <div class="text-xs font-normal leading-normal">{{ t('withdraw.phone_number') }}</div>
         <div
           class="mt-2.5 p-3.5 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
         >
@@ -35,13 +35,13 @@
           <input
             type="text"
             v-model="phoneNumber"
-            placeholder="Please enter your phone number"
+            :placeholder="t('withdraw.phone_placeholder')"
             class="flex-1 text-base font-bold leading-normal text-text-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
           />
         </div>
       </div>
       <div class="mt-5">
-        <div class="text-xs font-normal leading-normal">Name</div>
+        <div class="text-xs font-normal leading-normal">{{ t('withdraw.name') }}</div>
         <div
           class="mt-2.5 p-3.5 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
         >
@@ -49,7 +49,7 @@
           <input
             type="text"
             v-model="accountName"
-            placeholder="Please enter your name"
+            :placeholder="t('withdraw.name_placeholder')"
             class="flex-1 text-base font-bold leading-normal text-text-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
           />
         </div>
@@ -57,22 +57,23 @@
     </div>
     <div class="mt-2.5 p-3.5 bg-bg-2 rounded-lg">
       <div class="flex items-center justify-between">
-        <div class="text-xs font-normal leading-normal">Withdraw Amount</div>
+        <div class="text-xs font-normal leading-normal">{{ t('withdraw.amount') }}</div>
         <div class="flex items-center text-xs text-text-2">
-          Balance：
-          <DepositTokenIcon class="w-3 h-3 mr-1 text-text-1" />
-          <span class="text-text-1 font-bold">0.00</span>
+          {{ t('withdraw.balance') }}：
+          <span class="text-text-1 font-bold">{{ formattedBalance }}</span>
           <ChevronRightSmallIcon class="ml-1 w-1 h-2 text-text-1" />
         </div>
       </div>
       <div
         class="mt-2.5 p-3.5 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
       >
-        <DepositTokenIcon class="w-5 h-5 mr-2 text-theme-primary" />
+        <span class="mr-2 text-lg font-bold leading-none text-theme-primary">{{
+          currencySymbol
+        }}</span>
         <input
           type="number"
           v-model="amount"
-          placeholder="Please enter the withdrawal amount"
+          :placeholder="t('withdraw.amount_placeholder')"
           class="flex-1 text-base font-bold leading-normal text-text-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
         />
       </div>
@@ -82,25 +83,32 @@
         :disabled="isWithdrawDisabled"
         @click="doWithdrawDeposit"
       >
-        Withdraw Now
+        {{ t('withdraw.withdraw_now') }}
       </button>
     </div>
   </div>
 </template>
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import userIcon from '@/static/svg/withdraw/user.svg?component'
 import gCashIcon from '@/static/img/payment/gCash.png'
 import grabPayIcon from '@/static/img/payment/grabPay.png'
 import mayaIcon from '@/static/img/payment/maya.png'
 import payPalIcon from '@/static/img/payment/payPal.png'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
-import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
 import { type ComponentPublicInstance, computed, nextTick, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useLocaleStore } from '@/stores/locale'
+import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 
 interface MethodOption {
   name: string
   icon: string
 }
+
+const { t } = useI18n()
+const localeStore = useLocaleStore()
+const { currentCurrency } = storeToRefs(localeStore)
 
 const payMethods = computed<MethodOption[]>(() => [
   {
@@ -127,6 +135,8 @@ const methodItemRefs = ref<Array<HTMLElement | null>>([])
 const accountName = ref('')
 const phoneNumber = ref('')
 const amount = ref<number>()
+const currencySymbol = computed(() => getCurrencySymbol(currentCurrency.value))
+const formattedBalance = computed(() => getFormattedBalance(0, currentCurrency.value, 2))
 const isAmountDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
 const isWithdrawDisabled = computed(
   () => isAmountDisabled.value || !accountName.value || !phoneNumber.value
