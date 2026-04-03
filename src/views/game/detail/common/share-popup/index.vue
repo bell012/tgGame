@@ -1,11 +1,7 @@
 <template>
   <div>
     <transition name="popup-fade">
-      <div
-        v-show="props.visible"
-        class="fixed inset-0 z-[9999] bg-[var(--color-mask-60)]"
-        @click.self="close"
-      />
+      <div v-show="props.visible" class="fixed inset-0 z-[9999] bg-mask-60-1" @click.self="close" />
     </transition>
     <transition :name="props.desktop ? 'desktop-up-down' : 'up-down'">
       <div
@@ -13,11 +9,15 @@
         :class="
           props.desktop
             ? 'z-[10000] w-full pointer-events-none relative'
-            : 'fixed inset-0 z-[10000] flex items-center justify-center px-4 pointer-events-none'
+            : 'fixed inset-x-0 bottom-0 z-[10000] w-full pointer-events-none'
         "
       >
         <div
-          class="tp-panel pointer-events-auto w-full max-w-[520px] rounded-[12px] bg-[var(--color-background-level-2)]"
+          :class="
+            props.desktop
+              ? 'tp-panel pointer-events-auto w-full max-w-[520px] rounded-[12px] bg-[var(--color-background-level-2)]'
+              : 'tp-panel pointer-events-auto w-full max-w-none rounded-t-[12px] rounded-b-0 bg-[var(--color-background-level-2)]'
+          "
           @click.stop
         >
           <div class="tp-header h-[64px] px-5 flex items-center justify-between">
