@@ -572,7 +572,25 @@
     "upload_proof_again_btn_text": "重新上传凭证"
   },
   "withdraw": {
-    "title": "提现"
+    "title": "提现",
+    "crypto": "数字货币",
+    "fiat": "法币",
+    "methods": "提现方式",
+    "phone_number": "手机号码",
+    "phone_placeholder": "请输入您的手机号",
+    "name": "姓名",
+    "name_placeholder": "请输入您的姓名",
+    "withdraw_currency": "提现币种",
+    "select_network": "选择网络",
+    "receive_address": "收款地址",
+    "receive_address_placeholder": "请输入收款地址",
+    "amount": "提现金额",
+    "amount_placeholder": "请输入提现金额",
+    "balance": "余额",
+    "crypto_help": "如何提现加密货币？",
+    "crypto_address_notice": "请确保收款地址正确无误。若资金发送到错误地址，将无法找回。",
+    "withdraw_now": "立即提现",
+    "you_get": "预计到账"
   },
   "transaction": {
     "win": "赢",
