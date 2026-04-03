@@ -42,6 +42,7 @@ import TgIcon from '@/static/svg/game/detail/tg.svg?url'
 import StarActiveIcon from '@/static/svg/game/detail/star_active.svg?url'
 import LoveActiveIcon from '@/static/svg/game/detail/love_active.svg?url'
 import { useGameFavorite } from '@/composables/useGameFavorite'
+import { useGameLike } from '@/composables/useGameLike'
 import { ref } from 'vue'
 import LiveStatePopup from './live-state-popup.vue'
 import SharePopup from './share-popup.vue'
@@ -50,14 +51,10 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 const isMobile = useIsMobile()
 
 const { isFavorite: starActived, toggleFavorite: toggleStar } = useGameFavorite()
-const loveActived = ref(false)
+const { isLiked: loveActived, toggleLike: toggleLove } = useGameLike()
 
 const liveStateVisible = ref(false)
 const shareVisible = ref(false)
-
-const toggleLove = () => {
-  loveActived.value = !loveActived.value
-}
 
 const liveStateVisibleClick = () => {
   liveStateVisible.value = true
