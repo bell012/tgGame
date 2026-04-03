@@ -53,11 +53,13 @@
           {{ ratingCount }} Ratings
         </div>
         <div class="flex justify-center items-center mt-[4px]">
-          <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
-          <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
-          <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
-          <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
-          <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
+          <img
+            v-for="avatarIndex in avatarCount"
+            :key="avatarIndex"
+            alt=""
+            :src="PersonIcon"
+            class="size-[26px] rounded-[26px]"
+          />
         </div>
       </div>
     </div>
@@ -214,13 +216,20 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   computed(() => null)
 )
 
-const ratingCount = computed(() => {
+const { rating: userRating, setRating } = useGameRating()
+
+const baseRatingCount = computed(() => {
   const parsed = Number(currentGameDetail.value?.initScoreNum)
   if (!Number.isFinite(parsed) || parsed <= 0) {
-    return 11
+    return 0
   }
   return Math.trunc(parsed)
 })
+
+const ratingCount = computed(() => {
+  return baseRatingCount.value + (userRating.value > 0 ? 1 : 0)
+})
+const avatarCount = computed(() => Math.min(8, Math.max(0, ratingCount.value)))
 
 const scoreValue = computed(() => {
   const parsed = Number(currentGameDetail.value?.initScoreStar)
@@ -232,7 +241,6 @@ const scoreValue = computed(() => {
 
 const scoreText = computed(() => scoreValue.value.toFixed(1))
 const activeStarCount = computed(() => Math.max(0, Math.min(5, Math.round(scoreValue.value))))
-const { rating: userRating, setRating } = useGameRating()
 
 const handleRateChange = (value: number) => {
   setRating(value)
