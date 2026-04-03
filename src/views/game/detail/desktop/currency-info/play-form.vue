@@ -1,9 +1,5 @@
 <template>
   <div class="currency-info-container">
-    <div class="desc-text text-[12px] text-center pb-[8px] text-[var(--color-text-level-2)]">
-      The selected currency will be converted to
-      <span class="text-[var(--color-theme-level-1)]">USD</span> for display.
-    </div>
     <div class="play-form">
       <div class="form-row">
         <div class="form-label">Play with balance in</div>
@@ -11,41 +7,9 @@
           <currency-select class="w-full"></currency-select>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-label"></div>
-        <div class="text-[var(--color-text-level-2)] text-[12px]">≈0BCD</div>
-      </div>
-      <!-- <div class="form-row">
-        <div class="form-label">Transfer amount</div>
-        <div class="form-control amount-control">
-          <div class="amount-value">
-            <span class="amount-icon">$</span>
-            <span>0</span>
-          </div>
-          <div class="amount-actions">
-            <button type="button" class="amount-action">1/2</button>
-            <button type="button" class="amount-action">2x</button>
-            <img :src="ArrowDownIcon" alt="" class="arrow-icon" />
-          </div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-label"></div>
-        <div class="slider-panel">
-          <div class="slider-head">
-            <span class="slider-limit">Min</span>
-            <input
-              v-model="sliderValue"
-              type="range"
-              min="0"
-              max="100"
-              class="amount-slider"
-              :style="{ '--slider-percent': `${sliderValue}%` }"
-            />
-            <span class="slider-limit">Max</span>
-          </div>
-        </div>
-      </div> -->
+    </div>
+    <div class="text-center text-[12px] mt-[16px]">
+      Tap "Play Now" to enter. Good luck and have fun!
     </div>
     <button type="button" class="play-btn w-full mt-[14px] cursor-pointer" @click="gamePlay">
       <div class="w-[16px] h-[16px]">
@@ -56,15 +20,11 @@
   </div>
 </template>
 <script setup lang="ts">
-// import ArrowDownIcon from '@/static/svg/arrow_down.svg?url'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import CurrencySelect from '../currency-select/index.vue'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
 
 const { gamePlay } = useGamePlatformPlay()
-// import { ref } from 'vue'
-
-// const sliderValue = ref(35)
 </script>
 <style scoped lang="scss">
 .currency-info-container {

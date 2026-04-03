@@ -54,21 +54,23 @@
                 <span>{{ item.bet }}</span>
               </div>
             </td>
-            <td class="py-2 px-3 flex items-center justify-end gap-1 text-[12px]">
-              <img
-                :src="currentCurrencyIcon"
-                class="w-3 h-3 object-contain"
-                :alt="currentRequestCurrency"
-              />
-              <span
-                :class="
-                  item.multiplierNumber >= 0
-                    ? 'text-[var(--color-secondary-level-4)]'
-                    : 'text-[#ff4d4f]'
-                "
-              >
-                {{ item.multiplierNumber >= 0 ? '+' : '' }}{{ item.multiplier }}
-              </span>
+            <td class="py-2 px-3 text-[12px]">
+              <div class="flex items-center justify-end gap-1">
+                <img
+                  :src="currentCurrencyIcon"
+                  class="w-3 h-3 object-contain"
+                  :alt="currentRequestCurrency"
+                />
+                <span
+                  :class="
+                    item.multiplierNumber >= 0
+                      ? 'text-[var(--color-secondary-level-4)]'
+                      : 'text-[#ff4d4f]'
+                  "
+                >
+                  {{ item.multiplierNumber >= 0 ? '+' : '' }}{{ item.multiplier }}
+                </span>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -111,15 +113,19 @@
               {{ item.player }}
             </td>
             <td class="py-2 px-3 text-text-1 truncate">{{ item.multiplier }}x</td>
-            <td class="py-2 px-3 flex items-center justify-end gap-1 text-[12px]">
-              <span :class="item.profitNumber >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
-                {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
-              </span>
-              <img
-                :src="currentCurrencyIcon"
-                class="w-3 h-3 object-contain"
-                :alt="currentRequestCurrency"
-              />
+            <td class="py-2 px-3 text-[12px]">
+              <div class="flex items-center justify-end gap-1">
+                <span
+                  :class="item.profitNumber >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''"
+                >
+                  {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
+                </span>
+                <img
+                  :src="currentCurrencyIcon"
+                  class="w-3 h-3 object-contain"
+                  :alt="currentRequestCurrency"
+                />
+              </div>
             </td>
           </tr>
         </tbody>
@@ -341,6 +347,8 @@ watch(
   background: transparent;
   color: #9ca3af;
   border: none;
+  white-space: nowrap;
+  word-break: keep-all;
 }
 
 .bet-tab.active {
@@ -415,5 +423,91 @@ watch(
 /* 排序移动动画（关键） */
 .latestList-move {
   transition: transform 0.3s ease;
+}
+
+@media (max-width: 375px) {
+  .bet-tabs {
+    width: 100%;
+  }
+
+  .bet-tab {
+    flex: 1;
+    padding: 6px 8px;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .table-head th {
+    padding: 8px 8px;
+    font-size: 12px;
+  }
+
+  .table tbody tr td {
+    padding: 10px 8px !important;
+    font-size: 12px;
+  }
+
+  .table:not(.high-roller-table) td:nth-child(1),
+  .table:not(.high-roller-table) th:nth-child(1) {
+    width: 27%;
+  }
+
+  .table:not(.high-roller-table) td:nth-child(2),
+  .table:not(.high-roller-table) th:nth-child(2) {
+    width: 20%;
+  }
+
+  .table:not(.high-roller-table) td:nth-child(3),
+  .table:not(.high-roller-table) th:nth-child(3) {
+    width: 24%;
+  }
+
+  .table:not(.high-roller-table) td:nth-child(4),
+  .table:not(.high-roller-table) th:nth-child(4) {
+    width: 29%;
+  }
+
+  .table:not(.high-roller-table) td:nth-child(1) span,
+  .table:not(.high-roller-table) td:nth-child(2),
+  .table:not(.high-roller-table) td:nth-child(3) span,
+  .table:not(.high-roller-table) td:nth-child(4) span {
+    white-space: nowrap;
+  }
+
+  .high-roller-table td:nth-child(1),
+  .high-roller-table th:nth-child(1) {
+    width: 30%;
+  }
+
+  .high-roller-table td:nth-child(2),
+  .high-roller-table th:nth-child(2) {
+    width: 24%;
+  }
+
+  .high-roller-table td:nth-child(3),
+  .high-roller-table th:nth-child(3) {
+    width: 18%;
+  }
+
+  .high-roller-table td:nth-child(4),
+  .high-roller-table th:nth-child(4) {
+    width: 28%;
+  }
+
+  .high-roller-table td:nth-child(3),
+  .high-roller-table td:nth-child(4),
+  .high-roller-table td:nth-child(4) span {
+    white-space: nowrap;
+  }
+
+  .icon {
+    height: 14px;
+    flex: 0 0 14px;
+    margin: 0 2px;
+  }
+
+  .cell {
+    height: 40px;
+  }
 }
 </style>
