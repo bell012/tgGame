@@ -1,4 +1,4 @@
-import { computed, type Component } from 'vue'
+import { computed, type Component, type Ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import Api from '@/api'
 import type { CommonResponse } from '@/api/interface/vip'
@@ -24,6 +24,10 @@ import rule1Icon from '@/static/svg/rule_1.svg?skipsvgo'
 import rule2Icon from '@/static/svg/rule_2.svg?skipsvgo'
 
 type Translate = (key: string) => string
+
+interface UseVipPageDataOptions {
+  viewedVipId?: Readonly<Ref<number | null | undefined>>
+}
 
 export type VipBenefitCardKey = 'levelUp' | 'daily' | 'weekly' | 'monthly'
 export type VipBenefitCardStatus = 'claimed' | 'claim' | 'locked'
@@ -131,11 +135,11 @@ const createProgressItem = (
   progress: getClampedProgress(currentValue, targetValue)
 })
 
-export const useVipPageData = (t: Translate) => {
+export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) => {
   const userStore = useUserStore()
   const vipStore = useVipStore()
   const { userInfo } = storeToRefs(userStore)
-  const { myVipInfo, vipInfo } = storeToRefs(vipStore)
+  const { myVipInfo, vipInfo, vipList } = storeToRefs(vipStore)
 
   const avatarUrl = computed(() => resolveProfileAvatarUrl(userInfo.value?.headPortrait))
 
@@ -145,11 +149,30 @@ export const useVipPageData = (t: Translate) => {
     return avatarFrameImageMap[avatarFrameId as Exclude<AvatarFrameId, 'none'>]
   })
 
-  const vipLevel = computed(() => myVipInfo.value?.vipId || userInfo.value?.vipId || 0)
-  const vipTargetConfig = computed(() => vipStore.getVipTargetConfig(vipLevel.value))
+  const vipLevels = computed(() => {
+    return [...vipList.value].sort((left, right) => (left.vipId ?? 0) - (right.vipId ?? 0))
+  })
 
-  const progressItems = computed<VipProgressItem[]>(() => {
-    const targetConfig = vipTargetConfig.value
+  const currentVipLevel = computed(() => myVipInfo.value?.vipId ?? userInfo.value?.vipId ?? 0)
+
+  const getVipTargetConfigById = (vipId?: number | null) => {
+    return (
+      vipStore.getVipTargetConfig(vipId ?? currentVipLevel.value) ??
+      vipStore.getVipTargetConfig(currentVipLevel.value) ??
+      vipLevels.value[0] ??
+      null
+    )
+  }
+
+  const resolvedViewedVipId = computed(() => options?.viewedVipId?.value ?? currentVipLevel.value)
+  const viewedVipLevel = computed(() => {
+    return (
+      getVipTargetConfigById(resolvedViewedVipId.value)?.vipId ?? resolvedViewedVipId.value ?? 0
+    )
+  })
+
+  const getProgressItemsByVipId = (vipId?: number | null): VipProgressItem[] => {
+    const targetConfig = getVipTargetConfigById(vipId)
 
     return [
       createProgressItem(
@@ -165,15 +188,42 @@ export const useVipPageData = (t: Translate) => {
         targetConfig?.rechargeAmount ?? 0
       )
     ]
-  })
+  }
 
-  const overallProgress = computed(() => {
-    const [betProgress, rechargeProgress] = progressItems.value
+  const getOverallProgressByVipId = (vipId?: number | null) => {
+    const [betProgress, rechargeProgress] = getProgressItemsByVipId(vipId)
 
     return Math.min(
       (betProgress?.progress ?? 0) * 0.5 + (rechargeProgress?.progress ?? 0) * 0.5,
       100
     )
+  }
+
+  const getRetentionCardsByVipId = (vipId?: number | null): VipRetentionCard[] => {
+    const targetConfig = getVipTargetConfigById(vipId)
+
+    return [
+      {
+        key: 'minimumDeposit',
+        label: t('vipPage.retention.minimumDeposit'),
+        amount: formatBalance(targetConfig?.keepAmount ?? 0),
+        icon: rule1Icon
+      },
+      {
+        key: 'minimumValidBet',
+        label: t('vipPage.retention.minimumValidBet'),
+        amount: formatBalance(targetConfig?.betAmountLine ?? 0),
+        icon: rule2Icon
+      }
+    ]
+  }
+
+  const progressItems = computed<VipProgressItem[]>(() => {
+    return getProgressItemsByVipId(resolvedViewedVipId.value)
+  })
+
+  const overallProgress = computed(() => {
+    return getOverallProgressByVipId(resolvedViewedVipId.value)
   })
 
   const benefitCards = computed<VipBenefitCard[]>(() => {
@@ -216,20 +266,7 @@ export const useVipPageData = (t: Translate) => {
   })
 
   const retentionCards = computed<VipRetentionCard[]>(() => {
-    return [
-      {
-        key: 'minimumDeposit',
-        label: t('vipPage.retention.minimumDeposit'),
-        amount: formatBalance(vipTargetConfig.value?.keepAmount ?? 0),
-        icon: rule1Icon
-      },
-      {
-        key: 'minimumValidBet',
-        label: t('vipPage.retention.minimumValidBet'),
-        amount: formatBalance(vipTargetConfig.value?.betAmountLine ?? 0),
-        icon: rule2Icon
-      }
-    ]
+    return getRetentionCardsByVipId(resolvedViewedVipId.value)
   })
 
   const rules = computed(() => {
@@ -255,11 +292,17 @@ export const useVipPageData = (t: Translate) => {
     userInfo,
     avatarUrl,
     selectedAvatarFrameImage,
-    vipLevel,
+    vipLevels,
+    vipLevel: currentVipLevel,
+    currentVipLevel,
+    viewedVipLevel,
     progressItems,
     overallProgress,
+    getProgressItemsByVipId,
+    getOverallProgressByVipId,
     benefitCards,
     retentionCards,
+    getRetentionCardsByVipId,
     rules,
     initializeVipPage
   }
