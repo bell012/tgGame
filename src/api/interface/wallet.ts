@@ -216,6 +216,22 @@ export interface QueryPaySubColumnPageResponse {
   result?: QueryPaySubColumnItem[]
 }
 
+export interface PayRechargeQuickAmtsForm {
+  columnCode: number
+}
+
+export interface PayRechargeQuickAmtsResult {
+  manualAmountIn: number
+  amounts: Array<number | string>
+}
+
+export interface PayRechargeQuickAmtsResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: PayRechargeQuickAmtsResult
+}
+
 export interface QueryDiscountListForm {
   payChannelCode: string
 }
