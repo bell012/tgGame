@@ -1,6 +1,7 @@
 import { computed, type Component } from 'vue'
 import { storeToRefs } from 'pinia'
-import type { VipListItem } from '@/api/interface/vip'
+import Api from '@/api'
+import type { CommonResponse } from '@/api/interface/vip'
 import { useUserStore } from '@/stores/user'
 import { useVipStore } from '@/stores/vip'
 import {
@@ -24,6 +25,7 @@ import rule2Icon from '@/static/svg/rule_2.svg?skipsvgo'
 
 type Translate = (key: string) => string
 
+export type VipBenefitCardKey = 'levelUp' | 'daily' | 'weekly' | 'monthly'
 export type VipBenefitCardStatus = 'claimed' | 'claim' | 'locked'
 
 export interface VipProgressItem {
@@ -35,7 +37,7 @@ export interface VipProgressItem {
 }
 
 export interface VipBenefitCard {
-  key: string
+  key: VipBenefitCardKey
   title: string
   amount: string
   status: VipBenefitCardStatus
@@ -53,7 +55,7 @@ export interface VipRetentionCard {
   icon: Component
 }
 
-const benefitCardBackgroundMap: Record<string, string> = {
+const benefitCardBackgroundMap: Record<VipBenefitCardKey, string> = {
   levelUp: 'linear-gradient(90deg, #1C3D57 0%, #313333 100%)',
   daily: 'linear-gradient(90deg, #59461D 0%, #313333 87.05%)',
   weekly: 'linear-gradient(90deg, #5F3A25 0%, #313333 88.71%)',
@@ -78,7 +80,7 @@ const getClampedProgress = (currentValue: number, targetValue: number) => {
 
 const createBenefitCard = (
   t: Translate,
-  key: string,
+  key: VipBenefitCardKey,
   titleKey: string,
   amount: number | undefined,
   status: VipBenefitCardStatus,
@@ -104,24 +106,16 @@ const createBenefitCard = (
   }
 }
 
-const getLevelUpCardStatus = (
-  currentVipLevel: number,
-  lastObtainedVipId: number,
-  amount: number | undefined
-): VipBenefitCardStatus => {
-  if (currentVipLevel <= 0 || (amount ?? 0) <= 0) {
-    return 'locked'
+const getBenefitCardStatus = (state: number | undefined): VipBenefitCardStatus => {
+  if (Number(state) === 2) {
+    return 'claim'
   }
 
-  if (lastObtainedVipId >= currentVipLevel) {
+  if (Number(state) === 3) {
     return 'claimed'
   }
 
-  return 'claim'
-}
-
-const getPeriodicCardStatus = (activeFlag: number | undefined): VipBenefitCardStatus => {
-  return Number(activeFlag ?? 0) === 1 ? 'claim' : 'locked'
+  return 'locked'
 }
 
 const createProgressItem = (
@@ -141,7 +135,7 @@ export const useVipPageData = (t: Translate) => {
   const userStore = useUserStore()
   const vipStore = useVipStore()
   const { userInfo } = storeToRefs(userStore)
-  const { myVipInfo } = storeToRefs(vipStore)
+  const { myVipInfo, vipInfo } = storeToRefs(vipStore)
 
   const avatarUrl = computed(() => resolveProfileAvatarUrl(userInfo.value?.headPortrait))
 
@@ -183,41 +177,39 @@ export const useVipPageData = (t: Translate) => {
   })
 
   const benefitCards = computed<VipBenefitCard[]>(() => {
-    const targetConfig: VipListItem | null = vipTargetConfig.value
-    const currentVipLevel = vipLevel.value
-    const lastObtainedVipId = myVipInfo.value?.lastObtainedVipId ?? 0
+    const benefitInfo = vipInfo.value
 
     return [
       createBenefitCard(
         t,
         'levelUp',
         'vipPage.cards.levelUp',
-        targetConfig?.upgradedAmount,
-        getLevelUpCardStatus(currentVipLevel, lastObtainedVipId, targetConfig?.upgradedAmount),
+        benefitInfo?.upgradedMoney,
+        getBenefitCardStatus(benefitInfo?.upgradedState),
         item1Image
       ),
       createBenefitCard(
         t,
         'daily',
         'vipPage.cards.daily',
-        targetConfig?.dayAmount,
-        getPeriodicCardStatus(targetConfig?.dayFlag),
+        benefitInfo?.dayMoney,
+        getBenefitCardStatus(benefitInfo?.dayState),
         item2Image
       ),
       createBenefitCard(
         t,
         'weekly',
         'vipPage.cards.weekly',
-        targetConfig?.weekAmount,
-        getPeriodicCardStatus(targetConfig?.weekFlag),
+        benefitInfo?.weekMoney,
+        getBenefitCardStatus(benefitInfo?.weekState),
         item3Image
       ),
       createBenefitCard(
         t,
         'monthly',
         'vipPage.cards.monthly',
-        targetConfig?.monthAmount,
-        getPeriodicCardStatus(targetConfig?.monthFlag),
+        benefitInfo?.monthMoney,
+        getBenefitCardStatus(benefitInfo?.monthState),
         item4Image
       )
     ]
@@ -228,13 +220,13 @@ export const useVipPageData = (t: Translate) => {
       {
         key: 'minimumDeposit',
         label: t('vipPage.retention.minimumDeposit'),
-        amount: '10000.00',
+        amount: formatBalance(vipTargetConfig.value?.keepAmount ?? 0),
         icon: rule1Icon
       },
       {
         key: 'minimumValidBet',
         label: t('vipPage.retention.minimumValidBet'),
-        amount: '10000.00',
+        amount: formatBalance(vipTargetConfig.value?.betAmountLine ?? 0),
         icon: rule2Icon
       }
     ]
@@ -271,4 +263,19 @@ export const useVipPageData = (t: Translate) => {
     rules,
     initializeVipPage
   }
+}
+
+export const claimVipBenefit = (key: VipBenefitCardKey): Promise<CommonResponse> => {
+  switch (key) {
+    case 'levelUp':
+      return Api.vip.upgradedPoints({})
+    case 'daily':
+      return Api.vip.dayPoints({})
+    case 'weekly':
+      return Api.vip.weekPoints({})
+    case 'monthly':
+      return Api.vip.monthPoints({})
+  }
+
+  return Promise.reject(new Error('Unsupported VIP benefit key'))
 }

@@ -85,7 +85,7 @@
 
       <section class="mt-4 grid grid-cols-4 gap-3.5">
         <article
-          v-for="card in displayBenefitCards"
+          v-for="card in benefitCards"
           :key="card.key"
           :style="{ background: card.background }"
           class="flex h-[365px] flex-col items-center overflow-hidden rounded-[32px] px-[52px] py-[36px]"
@@ -105,7 +105,7 @@
 
           <button
             type="button"
-            :disabled="!card.claimable"
+            :disabled="!card.claimable || claimingCardKey === card.key"
             @click="handleClaim(card)"
             :class="
               card.status === 'claimed'
@@ -167,22 +167,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { showToast } from 'vant'
 import CommonFooter from '@/components/commonFooter.vue'
+import { useVipStore } from '@/stores/vip'
 import VipBadgeIcon from '@/static/svg/vip_1.svg?component'
 import VipWordmarkIcon from '@/static/svg/vip_2.svg?component'
 import cardVipImage from '@/static/img/personalCenter/card_vip.png'
 import { getCurrencySymbol } from '@/utils/locale'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
-import { type VipBenefitCard, useVipPageData } from './shared'
+import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
 import cardH5BgImage from '@/static/img/personalCenter/card_H5_BG.png'
 import cardVipRightImage from '@/static/img/personalCenter/card_vip_right2.png'
 
 const { t } = useI18n()
+const vipStore = useVipStore()
 const showClaimSuccessPopup = ref(false)
-const pendingClaimCard = ref<VipBenefitCard | null>(null)
-const claimedCardKeys = ref<string[]>([])
+const claimSuccessAmount = ref(`${getCurrencySymbol()}0.00`)
+const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
 const {
   userInfo,
   avatarUrl,
@@ -196,43 +199,35 @@ const {
   initializeVipPage
 } = useVipPageData(t)
 
-const displayBenefitCards = computed(() => {
-  return benefitCards.value.map(card => {
-    if (!claimedCardKeys.value.includes(card.key)) {
-      return card
-    }
-
-    return {
-      ...card,
-      status: 'claimed' as const,
-      claimed: true,
-      claimable: false,
-      buttonText: t('vipPage.claimed')
-    }
-  })
-})
-
-const claimSuccessAmount = computed(() => {
-  const amount = pendingClaimCard.value?.amount ?? '0.00'
-  return `${getCurrencySymbol()}${amount}`
-})
-
-const handleClaim = (card: VipBenefitCard) => {
-  if (!card.claimable) {
+const handleClaim = async (card: VipBenefitCard) => {
+  if (!card.claimable || claimingCardKey.value === card.key) {
     return
   }
 
-  pendingClaimCard.value = card
-  showClaimSuccessPopup.value = true
+  claimingCardKey.value = card.key
+
+  try {
+    const response = await claimVipBenefit(card.key)
+
+    if (!response?.success) {
+      showToast({
+        message: response?.message || t('common.unknownError'),
+        type: 'fail'
+      })
+      return
+    }
+
+    await vipStore.refreshVipInfo()
+    claimSuccessAmount.value = `${getCurrencySymbol()}${card.amount}`
+    showClaimSuccessPopup.value = true
+  } catch (error) {
+    console.error(error)
+  } finally {
+    claimingCardKey.value = null
+  }
 }
 
 const confirmClaimSuccess = () => {
-  const claimedKey = pendingClaimCard.value?.key
-
-  if (claimedKey && !claimedCardKeys.value.includes(claimedKey)) {
-    claimedCardKeys.value = [...claimedCardKeys.value, claimedKey]
-  }
-
   showClaimSuccessPopup.value = false
 }
 
