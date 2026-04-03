@@ -275,7 +275,6 @@ import { showToast } from 'vant'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import depositOrderPop from '../order/depositOrderPop.vue'
-import { CryptOrderType, defaultCryptOrder } from '../order/orderType'
 import { usePresetGrid } from '../shared/usePresetGrid'
 
 const { t } = useI18n()
@@ -320,7 +319,7 @@ const amount = ref<number>()
 const coinCode = ref('USDT')
 const coinMoreShow = ref(false)
 const orderPopShow = ref(false)
-const orderInfo = ref<CryptOrderType>(defaultCryptOrder)
+const orderInfo = ref<Partial<QueryPayOrderByOrderIdResult>>({})
 const currentOrderId = ref('')
 const currentCreateTime = ref<number | null>(null)
 const pollTimer = ref<number | null>(null)
@@ -402,25 +401,10 @@ const syncPresetAmounts = () => {
 const formatWageringLabel = (multiple: number) =>
   multiple === 0 ? 'No Wagering' : `${multiple}x Wagering`
 
-// 映射订单状态文案
-const mapOrderStatusText = (status?: number | string) => {
-  const normalized = Number(status)
-  if (normalized === 1) return 'Success'
-  if (normalized === 2) return 'Failed'
-  if (normalized === 3) return 'Processing'
-  return 'Processing'
-}
-
 // 判断订单是否为终态（成功或失败）
 const isTerminalOrderStatus = (status?: number | string) => {
   const normalized = Number(status)
   return normalized === 1 || normalized === 2
-}
-
-// 格式化订单创建时间
-const formatTimestamp = (timestamp?: number | null) => {
-  if (!timestamp) return ''
-  return new Date(timestamp).toLocaleString()
 }
 
 // 显示当前功能不可用的提示信息
@@ -611,22 +595,21 @@ const loadDiscountList = async (payChannelCode: string) => {
 
 // 根据订单详情刷新弹窗中的订单信息
 const applyOrderDetail = (detail?: QueryPayOrderByOrderIdResult) => {
+  if (detail) {
+    orderInfo.value = detail
+    return
+  }
+
   orderInfo.value = {
-    order_no: detail ? String(detail.orderId) : currentOrderId.value,
-    created_at: detail
-      ? formatTimestamp(detail.createTime)
-      : formatTimestamp(currentCreateTime.value),
-    amount: detail ? Number(detail.busiAmount ?? amount.value ?? 0) : Number(amount.value ?? 0),
-    method: selectedMethod.value?.columnName ?? visibleCoins[0].code,
-    method_icon: visibleCoins[0].icon,
-    rate: '',
-    network:
-      selectedSubColumn.value?.offlineAccount?.accountName ||
-      selectedSubColumn.value?.platformName ||
-      (selectedSubColumn.value ? parseChannelName(selectedSubColumn.value.subColumnName) : ''),
-    address_token: selectedSubColumn.value?.offlineAccount?.accountNo ?? '',
-    type: 'Crypto',
-    status: detail ? mapOrderStatusText(detail.status) : mapOrderStatusText(3)
+    orderId: currentOrderId.value,
+    createTime: currentCreateTime.value ?? Date.now(),
+    accountAmount: Number(amount.value ?? 0),
+    accountCurrency: selectedSubColumn.value?.currency ?? coinCode.value,
+    accountName: selectedSubColumn.value?.offlineAccount?.accountName ?? '',
+    accountNo: selectedSubColumn.value?.offlineAccount?.accountNo ?? '',
+    busiAmount: Number(amount.value ?? 0),
+    currency: getCurrentCurrency(),
+    status: 0
   }
 }
 

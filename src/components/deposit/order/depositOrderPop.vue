@@ -11,16 +11,19 @@
 </template>
 
 <script setup lang="ts">
+import type { QueryPayOrderByOrderIdResult } from '@/api/interface/wallet'
 import orderPanel from './orderPanel.vue'
 import { ref } from 'vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import depositPopShell from '../shared/depositPopShell.vue'
-import { OrderType } from './orderType'
+import type { OrderType } from './orderType'
+
+type PopupOrderInfo = OrderType | Partial<QueryPayOrderByOrderIdResult>
 
 const isMobile = useIsMobile()
 interface Props {
   modelValue: boolean
-  orderInfo: OrderType
+  orderInfo: PopupOrderInfo
 }
 
 defineProps<Props>()

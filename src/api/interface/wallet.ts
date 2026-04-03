@@ -147,6 +147,10 @@ export interface QueryPayOrderByOrderIdForm {
 export interface QueryPayOrderByOrderIdResult {
   accountAmount: number
   accountCurrency: string
+  accountName?: string
+  accountNo?: string
+  accountSubNo?: string
+  cardType?: number
   busiAmount: number
   channelId: string
   columnCode: number
@@ -154,6 +158,7 @@ export interface QueryPayOrderByOrderIdResult {
   currency: string
   discountStatus: number
   downloadSite: string
+  flows?: number
   ip: string
   isFirst: number
   memberId: string
@@ -178,6 +183,7 @@ export interface QueryPayOrderByOrderIdResult {
   subColumnCode: number
   subColumnName: string
   sysLevelId: number
+  type?: number | string
   [key: string]: unknown
 }
 
