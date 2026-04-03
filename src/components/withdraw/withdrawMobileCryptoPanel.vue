@@ -139,6 +139,7 @@ import RefreshIcon from '@/static/svg/refresh.svg?component'
 import InfoIcon from '@/static/svg/info.svg?component'
 import { useLocaleStore } from '@/stores/locale'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
+import type { WithdrawSubmitPayload } from './types'
 
 const { t } = useI18n()
 const localeStore = useLocaleStore()
@@ -194,6 +195,10 @@ const networkOptions = computed(() => [
 const isAmountDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
 const isWithdrawDisabled = computed(() => isAmountDisabled.value || !address.value)
 
+const emit = defineEmits<{
+  submit: [payload: WithdrawSubmitPayload]
+}>()
+
 const showUnavailableToast = () => {
   showToast({
     message: unavailableMessage,
@@ -216,7 +221,21 @@ const openCoinMorePanel = () => {
   return
 }
 
-const doWithdrawDeposit = () => {}
+const doWithdrawDeposit = () => {
+  if (isWithdrawDisabled.value) {
+    return
+  }
+
+  emit('submit', {
+    tabType: 'Crypto',
+    amount: Number(amount.value),
+    currencyCode: currentCurrency.value,
+    methodLabel: currency.value,
+    address: address.value,
+    network: selectNetwork.value,
+    phoneNumber: '+63-999****9999'
+  })
+}
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,
