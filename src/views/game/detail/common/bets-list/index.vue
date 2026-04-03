@@ -19,7 +19,7 @@
     <!-- Table -->
     <div class="table-wrap">
       <table
-        v-if="activeTab === 0 || activeTab == 1"
+        v-if="activeTab === 0 || activeTab === 1"
         class="table [&_td]:px-3 [&_td]:py-3 sm:[&_td]:px-4"
         role="table"
         style="overflow-anchor: none"
@@ -76,7 +76,57 @@
           </tr>
         </tbody>
       </table>
-      <div v-else>111111</div>
+
+      <table
+        v-else
+        class="table high-roller-table [&_td]:px-3 [&_td]:py-3 sm:[&_td]:px-4"
+        role="table"
+        style="overflow-anchor: none"
+      >
+        <thead class="table-head pc-only" role="rowgroup">
+          <tr role="row" class="bg-bg-2 text-text-2">
+            <th>Game</th>
+            <th>Player</th>
+            <th>Multiplier</th>
+            <th class="text-right">Profit</th>
+          </tr>
+        </thead>
+        <tbody v-if="highRollerRows.length">
+          <tr
+            v-for="(item, index) in highRollerRows"
+            :key="item.id"
+            :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
+          >
+            <td class="py-2 px-3">
+              <div class="flex items-center gap-1 min-w-0">
+                <img :src="item.gameIcon" class="w-3.5 h-3.5 object-contain" :alt="item.game" />
+                <span class="text-text-1 truncate">{{ item.game }}</span>
+              </div>
+            </td>
+            <td class="py-2 px-3 text-text-1 truncate">
+              {{ item.player }}
+            </td>
+            <td class="py-2 px-3 text-text-1 truncate">{{ item.multiplier }}x</td>
+            <td class="py-2 px-3 flex items-center justify-end gap-1 text-[12px]">
+              <span :class="item.profitNumber >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
+                {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
+              </span>
+              <img
+                :src="currentCurrencyIcon"
+                class="w-3 h-3 object-contain"
+                :alt="currentRequestCurrency"
+              />
+            </td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr class="bg-bg-2">
+            <td colspan="4" class="py-6 text-center text-[12px] text-[var(--color-text-level-2)]">
+              {{ isLoading ? 'Loading...' : 'No data' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
@@ -85,6 +135,7 @@
 import Api from '@/api'
 import type { GameBetRecordItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
+import placeholderImg from '@/static/img/home/errImg.png'
 import { getCurrencyIconByCode } from '../currency-select-options'
 import { storeToRefs } from 'pinia'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
@@ -106,7 +157,18 @@ interface IRow {
   profitNumber: number
 }
 
+interface IHighRollerRow {
+  id: string
+  game: string
+  gameIcon: string
+  player: string
+  multiplier: string
+  profit: string
+  profitNumber: number
+}
+
 const rows = ref<IRow[]>([])
+const highRollerRows = ref<IHighRollerRow[]>([])
 const isLoading = ref(false)
 
 const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
@@ -127,6 +189,7 @@ const currentRequestCurrency = computed(
 const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestCurrency.value))
 
 const currentBetType = computed<1 | 2>(() => (activeTab.value === 1 ? 2 : 1))
+const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
 
 const parseAmount = (value: unknown) => {
   const parsed = Number(normalizeValue(value))
@@ -151,6 +214,31 @@ const mapRecordToRow = (item: GameBetRecordItem, index: number): IRow => {
   }
 }
 
+const toGameImageUrl = (value: unknown) => {
+  const path = normalizeValue(value)
+  if (!path) {
+    return placeholderImg
+  }
+  if (/^(data:|blob:|https?:\/\/|\/)/i.test(path)) {
+    return path
+  }
+  return gameImageBaseUrl ? `${gameImageBaseUrl}${path}` : path
+}
+
+const mapHighRollerToRow = (item: Record<string, unknown>, index: number): IHighRollerRow => {
+  const game = normalizeValue(item.gameName) || '--'
+  const profitNumber = parseAmount(item.winAmount)
+  return {
+    id: normalizeValue(item.rowId) || `${game}-${index}`,
+    game,
+    gameIcon: toGameImageUrl(item.coverImg),
+    player: normalizeValue(item.nickName) || '--',
+    multiplier: formatAmount(item.multiple),
+    profit: formatAmount(item.winAmount),
+    profitNumber
+  }
+}
+
 const fetchBetRecords = async () => {
   const platformCode = currentPlatformCode.value
   const gameCode = currentGameCode.value
@@ -159,7 +247,6 @@ const fetchBetRecords = async () => {
     return
   }
 
-  isLoading.value = true
   try {
     const res = await Api.game.getGameBetRecordList({
       page: {
@@ -183,6 +270,39 @@ const fetchBetRecords = async () => {
   } catch (error) {
     console.error('fetchBetRecords failed', error)
     rows.value = []
+  }
+}
+
+const fetchHighRollerRecords = async () => {
+  try {
+    const currency = currentRequestCurrency.value
+    const res = await Api.home.getRecentBigWins({
+      currency,
+      curency: currency,
+      type: 2
+    })
+    const rawResult = res?.result
+    const recordList = Array.isArray(rawResult) ? rawResult : []
+    highRollerRows.value = recordList.map((item, index) =>
+      mapHighRollerToRow((item as Record<string, unknown>) ?? {}, index)
+    )
+  } catch (error) {
+    console.error('fetchHighRollerRecords failed', error)
+    highRollerRows.value = []
+  }
+}
+
+const fetchTableData = async () => {
+  isLoading.value = true
+  try {
+    if (activeTab.value === 2) {
+      rows.value = []
+      await fetchHighRollerRecords()
+      return
+    }
+
+    highRollerRows.value = []
+    await fetchBetRecords()
   } finally {
     isLoading.value = false
   }
@@ -191,7 +311,7 @@ const fetchBetRecords = async () => {
 watch(
   [activeTab, currentPlatformCode, currentGameCode, currentRequestCurrency],
   () => {
-    void fetchBetRecords()
+    void fetchTableData()
   },
   { immediate: true }
 )
@@ -239,6 +359,10 @@ watch(
 .table td:nth-child(1),
 .table th:nth-child(1) {
   text-align: left;
+}
+.high-roller-table td:nth-child(3),
+.high-roller-table th:nth-child(3) {
+  text-align: center;
 }
 .table-head th {
   padding: 10px 14px;
