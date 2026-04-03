@@ -104,7 +104,8 @@ import gameErrImg from '@/components/common/gameErrImg.vue'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import { navigateTo } from '@/utils/router'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
 type GameDataItem = {
@@ -144,16 +145,19 @@ type GameDetailCacheGlobal = {
   __gameDetailAllPageTitleCache__?: string
 }
 
-const PAGE_SIZE = 27
+const PAGE_SIZE = 40
 const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
 const isMobile = useIsMobile()
 const route = useRoute()
 const router = useRouter()
 const cacheGlobal = globalThis as typeof globalThis & GameDetailCacheGlobal
+const { t } = useI18n()
 
 const page = ref(1)
 const gameList = ref<GameDataItem[]>([])
-const pageTitle = ref('Recommended Games')
+const defaultPageTitle = computed(() => t('home.RecommendedGames'))
+const pageTitle = ref(defaultPageTitle.value)
+const isCustomPageTitle = ref(false)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(gameList.value.length / PAGE_SIZE)))
 
@@ -296,6 +300,7 @@ const initPageData = async () => {
 
   if (cacheTitle) {
     pageTitle.value = cacheTitle
+    isCustomPageTitle.value = true
   }
 
   if (Array.isArray(cachedList) && cachedList.length > 0) {
@@ -313,7 +318,11 @@ const initPageData = async () => {
       const currentGame = findGameDetailByCodes(sectionList, currentItemCode, currentPlatformCode)
       targetTypeCode = getQueryValue(currentGame?.sysGameTypeCode)
       if (!cacheTitle) {
-        pageTitle.value = getQueryValue(currentGame?.platformName) || pageTitle.value
+        const platformName = getQueryValue(currentGame?.platformName)
+        if (platformName) {
+          pageTitle.value = platformName
+          isCustomPageTitle.value = true
+        }
       }
     }
 
@@ -346,6 +355,12 @@ const handleBack = () => {
 
 onMounted(() => {
   void initPageData()
+})
+
+watch(defaultPageTitle, value => {
+  if (!isCustomPageTitle.value) {
+    pageTitle.value = value
+  }
 })
 </script>
 

@@ -135,6 +135,106 @@ export interface GameBetRecordListResponse {
   [key: string]: unknown
 }
 
+export interface GetGameStatisticsParams {
+  itemCode: string
+  platformCode: string
+}
+
+export interface GameStatisticsResult {
+  profit?: string | number
+  wagered?: string | number
+  win?: string | number
+  lose?: string | number
+  [key: string]: unknown
+}
+
+export interface GameStatisticsResponse {
+  code: string | number
+  message: string
+  result?: GameStatisticsResult | null
+  [key: string]: unknown
+}
+
+export interface GetCommentSubjectParams {
+  gameId: string | number
+  memberRowId?: string | number
+}
+
+export interface GameCommentSubjectResult {
+  subjectId?: string | number
+  rowId?: string | number
+  gameId?: string | number
+  [key: string]: unknown
+}
+
+export interface GameCommentSubjectResponse {
+  code: string | number
+  message: string
+  result?: GameCommentSubjectResult | null
+  [key: string]: unknown
+}
+
+export interface GetCommentsListParams {
+  subjectId?: string | number
+  current?: number
+  size?: number
+  memberRowId?: number
+  root?: string | number | null
+  parent?: string | number | null
+}
+
+export interface PublishCommentParams {
+  subjectId: string | number
+  memberId: string
+  memberRowId: number
+  content: string
+  root: string | number
+  parent: string | number
+  replyIndex?: string | number
+}
+
+export interface PublishCommentResponse {
+  code: string | number
+  message: string
+  result?: unknown
+  [key: string]: unknown
+}
+
+export interface GameCommentListItem {
+  id?: string | number
+  rowId?: string | number
+  subjectId?: string | number
+  parent?: string | number
+  root?: string | number
+  replyIndex?: string | number
+  content?: string
+  address?: string
+  memberAvatar?: string
+  memberId?: string | number
+  memberRowId?: string | number
+  memberName?: string
+  isOfficial?: boolean
+  status?: number
+  replyCount?: string | number
+  dislikeCount?: string | number
+  likeCount?: string | number
+  createTime?: string | number
+  [key: string]: unknown
+}
+
+export interface GameCommentListResponse {
+  code: string | number
+  message: string
+  result?:
+    | GameCommentListItem[]
+    | {
+        records?: GameCommentListItem[]
+        [key: string]: unknown
+      }
+    | null
+  [key: string]: unknown
+}
+
 /**
  * 游戏品牌节点数据
  * 对应 /gc/gameBrandList 接口返回项

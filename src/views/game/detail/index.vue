@@ -10,7 +10,7 @@
     <desktop-currency-info v-else></desktop-currency-info>
     <recent-games></recent-games>
     <game-list
-      title="Recommended Games"
+      :title="t('home.RecommendedGames')"
       :list="currentCategoryHotGameList"
       @all-click="openCurrentCategoryAllGamesPage"
     ></game-list>
@@ -22,6 +22,7 @@ import Api from '@/api'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, provide, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import H5Header from './h5/header.vue'
 import H5CurrencyInfo from './h5/currency-info/index.vue'
@@ -61,26 +62,6 @@ type GameDetailCacheGlobal = {
   __gameDetailAllPageTitleCache__?: string
 }
 
-const gameDetailCacheGlobal = globalThis as typeof globalThis & GameDetailCacheGlobal
-
-const isMobile = useIsMobile()
-const route = useRoute()
-const isGameDataLoading = ref(false)
-
-const gameData = ref<GameDataSection[]>([])
-provide('game-detail-game-data', gameData)
-
-const getQueryValue = (value: unknown) => {
-  if (Array.isArray(value)) {
-    return String(value[0] ?? '').trim()
-  }
-  return String(value ?? '').trim()
-}
-
-// const itemCode = computed(() => getQueryValue(route.query.itemCode))
-// const platformCode = computed(() => getQueryValue(route.query.platformCode))
-const rowId = computed(() => getQueryValue(route.params.rowId))
-
 type CurrentGameDetail =
   | ({
       rowId?: string | number
@@ -91,6 +72,25 @@ type CurrentGameDetail =
     } & Record<string, unknown>)
   | null
 
+const gameDetailCacheGlobal = globalThis as typeof globalThis & GameDetailCacheGlobal
+
+const gameData = ref<GameDataSection[]>([])
+provide('game-detail-game-data', gameData)
+
+const { t } = useI18n()
+
+const isMobile = useIsMobile()
+const route = useRoute()
+const isGameDataLoading = ref(false)
+
+const getQueryValue = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return String(value[0] ?? '').trim()
+  }
+  return String(value ?? '').trim()
+}
+
+const rowId = computed(() => getQueryValue(route.params.rowId))
 const currentGameDetailState = ref<CurrentGameDetail>(null)
 
 const currentGameDetail = computed<CurrentGameDetail>(() => currentGameDetailState.value)
@@ -128,7 +128,6 @@ const getCurrentGameDetailByApi = async () => {
 
   try {
     const res = await Api.game.queryGameDetails({ rowId: targetRowId })
-    console.log(res, 'res....')
     const result = res?.result
     if (result && typeof result === 'object') {
       currentGameDetailState.value = result as CurrentGameDetail
@@ -193,7 +192,6 @@ onMounted(async () => {
   await getGameDataForApp()
   await getCurrentGameDetailByApi()
 })
-// 游戏列表 ------------ end
 </script>
 <style scoped lang="scss">
 .detail-page {

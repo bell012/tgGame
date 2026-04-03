@@ -10,30 +10,41 @@
         <div
           class="shrink-0 flex flex-col sm:flex-row items-center justify-center p-2 sm:p-4 rounded-xl lg:hover:bg-theme-3 lg:hover:border-theme-primary"
           :class="{
-            'border border-theme-primary bg-theme-3': selectedMethod.name === item.name,
-            'border border-transparent bg-bg-4': selectedMethod.name !== item.name,
+            'border border-theme-primary bg-theme-3':
+              selectedMethod?.columnCode === item.columnCode,
+            'border border-transparent bg-bg-4': selectedMethod?.columnCode !== item.columnCode,
             'basis-[31.25%]': isMobile
           }"
           v-for="(item, index) in payMethods"
-          :key="index"
+          :key="item.columnCode"
           :ref="el => setMethodItemRef(el, index)"
           @click.stop="selectMethod(item, index)"
         >
-          <img class="sm:mr-4 h-6" :src="item.icon" />
-          <p class="text-sm sm:text-base font-bold leading-normal text-text-1">{{ item.name }}</p>
+          <img class="sm:mr-4 h-6" :src="resolveMethodIcon(item)" />
+          <p class="text-sm sm:text-base font-bold leading-normal text-text-1">
+            {{ item.columnName }}
+          </p>
         </div>
       </div>
     </div>
     <p class="mt-4 text-xs sm:text-sm font-bold leading-normal text-text-1">Deposit Amount</p>
     <div
-      class="flex items-center w-full mt-2 p-3 rounded-lg bg-input-3 border border-[color:var(--color-opacity-10)] focus-within:border-[color:var(--color-theme-level-1)] focus-within:ring-0"
+      class="flex items-center w-full mt-2 p-3 rounded-lg bg-input-3 border focus-within:border-[color:var(--color-theme-level-1)] focus-within:ring-0"
+      :class="
+        isAmountInputHighlighted
+          ? 'border-[color:var(--color-theme-level-1)]'
+          : 'border-[color:var(--color-opacity-10)]'
+      "
     >
       <DepositTokenIcon class="w-6 h-6 mr-3 text-theme-primary" />
       <input
         type="number"
         v-model="amount"
-        placeholder="Please select or enter deposit amount."
+        :readonly="!isManualAmountAllowed"
+        :inputmode="isManualAmountAllowed ? 'decimal' : 'none'"
+        :placeholder="amountPlaceholder"
         class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs sm:placeholder:text-sm"
+        :class="{ 'cursor-not-allowed': !isManualAmountAllowed }"
       />
     </div>
     <div class="mt-4 w-full relative">
@@ -47,7 +58,7 @@
         <button
           v-for="preset in presetAmounts"
           :key="preset"
-          @click="amount = preset"
+          @click="selectPresetAmount(preset)"
           class="py-[7px] sm:py-3 text-base sm:text-lg rounded-lg lg:hover:bg-theme-primary"
           :class="[preset === amount ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-1']"
         >
@@ -84,52 +95,61 @@
   />
 </template>
 <script setup lang="ts">
-import { computed, nextTick, ref, type ComponentPublicInstance } from 'vue'
-import { useI18n } from 'vue-i18n'
+import Api from '@/api'
+import type {
+  QueryDiscountListItem,
+  QueryPayColumnItem,
+  QueryPayOrderByOrderIdResult,
+  QueryPaySubColumnItem,
+  QueryPaySubColumnPageForm,
+  SubmitPayOrderPageForm
+} from '@/api/interface/wallet'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
-import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
-import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
+import { resolvePayChannelTabKey } from '@/constants/payChannelTabs'
 import gCashIcon from '@/static/img/payment/gCash.png'
 import grabPayIcon from '@/static/img/payment/grabPay.png'
 import mayaIcon from '@/static/img/payment/maya.png'
 import payPalIcon from '@/static/img/payment/payPal.png'
+import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
+import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
+import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
+import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+  type ComponentPublicInstance
+} from 'vue'
+import { useI18n } from 'vue-i18n'
 import depositOrderPop from '../order/depositOrderPop.vue'
 import { defaultFiatOrder, FiatOrderType } from '../order/orderType'
 import { usePresetGrid } from '../shared/usePresetGrid'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
-interface MethodOption {
-  name: string
-  icon: string
-}
 
 const emit = defineEmits<{
   hidden: [value: boolean]
 }>()
 
-const presetAmounts = [200, 500, 1000, 1500, 2000, 3000, 5000, 10000, 20000, 30000, 50000, 100000]
+const defaultPresetAmounts: number[] = []
+const presetAmounts = ref<number[]>([...defaultPresetAmounts])
 
-const payMethods = [
-  {
-    name: 'GCash',
-    icon: gCashIcon
-  },
-  {
-    name: 'Maya',
-    icon: mayaIcon
-  },
-  {
-    name: 'GrabPay',
-    icon: grabPayIcon
-  },
-  {
-    name: 'PayPal',
-    icon: payPalIcon
-  }
-]
-const selectedMethod = ref<MethodOption>(payMethods[0])
+const fallbackMethodIcons: Record<string, string> = {
+  GCash: gCashIcon,
+  MAYA: mayaIcon,
+  Maya: mayaIcon,
+  GrabPay: grabPayIcon,
+  PayPal: payPalIcon
+}
+
+const payMethods = ref<QueryPayColumnItem[]>([])
+const selectedMethod = ref<QueryPayColumnItem | null>(null)
+const selectedSubColumn = ref<QueryPaySubColumnItem | null>(null)
+const selectedDiscountItem = ref<QueryDiscountListItem | null>(null)
 const amount = ref<number>()
 const methodListRef = ref<HTMLDivElement | null>(null)
 const methodItemRefs = ref<Array<HTMLElement | null>>([])
@@ -138,13 +158,135 @@ const { expanded } = usePresetGrid(presetsRef)
 const orderInfo = ref<FiatOrderType>(defaultFiatOrder)
 const orderPopShow = ref(false)
 const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
+const isManualAmountAllowed = computed(() => selectedSubColumn.value?.manualAmountIn !== 0)
+const selectedDiscountPayChannelCode = computed(() =>
+  resolvePayChannelTabKey(selectedMethod.value?.columnName)
+)
+const amountPlaceholder = computed(() =>
+  isManualAmountAllowed.value
+    ? 'Please select or enter deposit amount.'
+    : 'Please select a preset deposit amount.'
+)
+const isAmountInputHighlighted = ref(false)
+const currentOrderId = ref('')
+const pollTimer = ref<number | null>(null)
 
 const handleClose = () => {
+  stopOrderPolling()
+  currentOrderId.value = ''
   emit('hidden', false)
 }
 
 const handleHidden = () => {
   emit('hidden', true)
+}
+
+const clearAmount = () => {
+  amount.value = undefined
+  isAmountInputHighlighted.value = false
+}
+
+const selectPresetAmount = (preset: number) => {
+  amount.value = preset
+  isAmountInputHighlighted.value = true
+}
+
+const toPayImageUrl = (value: string) => {
+  if (!value) return ''
+  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+}
+
+const resolveMethodIcon = (item: QueryPayColumnItem) => {
+  return (
+    toPayImageUrl(item.columnIco) ||
+    toPayImageUrl(item.gradientLogo) ||
+    fallbackMethodIcons[item.columnName] ||
+    payPalIcon
+  )
+}
+
+const normalizePresetAmounts = (values: Array<number | string> = []) => {
+  const parsed = values
+    .map(value => Number(value))
+    .filter(value => Number.isFinite(value) && value > 0)
+
+  return parsed.length > 0 ? parsed : [...defaultPresetAmounts]
+}
+
+const mapOrderStatusText = (status?: number | string) => {
+  const normalized = Number(status)
+  if (normalized === 1) return 'Success'
+  if (normalized === 2) return 'Failed'
+  if (normalized === 3) return 'Processing'
+  return 'Processing'
+}
+
+const isTerminalOrderStatus = (status?: number | string) => {
+  const normalized = Number(status)
+  return normalized === 1 || normalized === 2
+}
+
+const formatTimestamp = (timestamp?: number) => {
+  if (!timestamp) return ''
+  return new Date(timestamp).toLocaleString()
+}
+
+const applyOrderDetail = (detail: QueryPayOrderByOrderIdResult) => {
+  orderInfo.value = {
+    order_no: String(detail.orderId ?? currentOrderId.value),
+    created_at: formatTimestamp(detail.createTime),
+    amount: Number(detail.busiAmount ?? amount.value ?? 0),
+    method: selectedMethod.value?.columnName ?? '',
+    method_icon: selectedMethod.value ? resolveMethodIcon(selectedMethod.value) : '',
+    currency: detail.currency || getCurrentCurrency(),
+    bonus: String(detail.returnAmount ?? 0),
+    type: 'Fiat',
+    status: mapOrderStatusText(detail.status)
+  }
+  orderPopShow.value = true
+}
+
+const stopOrderPolling = () => {
+  if (pollTimer.value !== null) {
+    window.clearInterval(pollTimer.value)
+    pollTimer.value = null
+  }
+}
+
+const queryOrderDetail = async () => {
+  if (!currentOrderId.value) return
+
+  try {
+    const response = await Api.wallet.queryPayOrderByOrderId({ orderId: currentOrderId.value })
+    const detail = response?.success ? response.result : undefined
+    if (!detail) return
+
+    applyOrderDetail(detail)
+    if (isTerminalOrderStatus(detail.status)) {
+      stopOrderPolling()
+    }
+  } catch (error) {
+    console.error('queryPayOrderByOrderId failed', error)
+  }
+}
+
+const startOrderPolling = () => {
+  if (!currentOrderId.value || pollTimer.value !== null) return
+
+  void queryOrderDetail()
+  pollTimer.value = window.setInterval(() => {
+    void queryOrderDetail()
+  }, 3000)
+}
+
+const handleVisibilityChange = () => {
+  if (!currentOrderId.value) return
+
+  if (document.visibilityState === 'visible') {
+    startOrderPolling()
+  } else {
+    stopOrderPolling()
+  }
 }
 
 const setMethodItemRef = (el: Element | ComponentPublicInstance | null, index: number) => {
@@ -180,26 +322,165 @@ const handleMethodListWheel = (event: WheelEvent) => {
   })
 }
 
-const selectMethod = (method: MethodOption, index: number) => {
-  selectedMethod.value = method
-  scrollMethodIntoView(index)
+const loadPaySubColumnPage = async (columnCode: number) => {
+  try {
+    const param: QueryPaySubColumnPageForm = {
+      page: {
+        current: 1,
+        size: 9999
+      },
+      param: {
+        columnCode
+      }
+    }
+    const response = await Api.wallet.queryPaySubColumnPage(param)
+    const result: QueryPaySubColumnItem[] =
+      response?.success && Array.isArray(response.result) ? response.result : []
+    selectedSubColumn.value = result[0] ?? null
+    presetAmounts.value = normalizePresetAmounts(
+      selectedSubColumn.value?.defaultRechargeAmount ?? []
+    )
+  } catch (error) {
+    console.error('queryPaySubColumnPage failed', error)
+    selectedSubColumn.value = null
+    presetAmounts.value = [...defaultPresetAmounts]
+  }
 }
 
-const doDeposit = () => {
-  orderInfo.value = {
-    order_no: 'ts0768456746746746746',
-    created_at: '12/18/2026 11:14:15 AM',
-    amount: amount.value ?? 0,
-    method: selectedMethod.value.name,
-    method_icon: selectedMethod.value.icon,
-    currency: 'PHP',
-    bonus: '50',
-    type: 'Fiat',
-    status: 'Success'
+const loadDiscountList = async (payChannelCode: string) => {
+  try {
+    const response = await Api.wallet.queryDiscountList({ payChannelCode })
+    const result: QueryDiscountListItem[] =
+      response?.success && Array.isArray(response.result) ? response.result : []
+    selectedDiscountItem.value = result[0] ?? null
+  } catch (error) {
+    console.error('queryDiscountList failed', error)
+    selectedDiscountItem.value = null
   }
-  emit('hidden', true)
-  orderPopShow.value = true
 }
+
+const loadPayColumnPage = async () => {
+  try {
+    const languageCode = getLanguageCode()
+    const currency = getCurrentCurrency()
+
+    const response = await Api.wallet.queryPayColumnPage({
+      page: {
+        current: 1,
+        size: 9999
+      },
+      languageCode,
+      currency
+    })
+    const result: QueryPayColumnItem[] =
+      response?.success && Array.isArray(response.result) ? response.result : []
+
+    payMethods.value = result
+    methodItemRefs.value = new Array(payMethods.value.length).fill(null)
+
+    const defaultMethod = payMethods.value[0]
+    if (!defaultMethod) {
+      selectedMethod.value = null
+      selectedSubColumn.value = null
+      selectedDiscountItem.value = null
+      presetAmounts.value = [...defaultPresetAmounts]
+      return
+    }
+
+    selectedMethod.value = defaultMethod
+    void scrollMethodIntoView(0)
+    await loadPaySubColumnPage(defaultMethod.columnCode)
+  } catch (error) {
+    console.error('queryPayColumnPage failed', error)
+    payMethods.value = []
+    selectedMethod.value = null
+    selectedSubColumn.value = null
+    selectedDiscountItem.value = null
+    presetAmounts.value = [...defaultPresetAmounts]
+  }
+}
+
+const selectMethod = async (method: QueryPayColumnItem, index: number) => {
+  if (selectedMethod.value?.columnCode === method.columnCode) {
+    void scrollMethodIntoView(index)
+    return
+  }
+
+  selectedMethod.value = method
+  clearAmount()
+  void scrollMethodIntoView(index)
+  await loadPaySubColumnPage(method.columnCode)
+}
+
+const doDeposit = async () => {
+  if (isDepositDisabled.value) return
+  if (!selectedMethod.value) return
+
+  const param: SubmitPayOrderPageForm = {
+    columnCode: String(selectedMethod.value.columnCode),
+    busiAmount: String(amount.value ?? 0),
+    payChannelCode: String(selectedMethod.value.columnCode),
+    channelId: isMobile.value ? 4 : 3,
+    subColumnCode: selectedDiscountItem.value?.rowId ?? selectedSubColumn.value?.rowId ?? 0,
+    flows: selectedDiscountItem.value?.multiple ?? 0
+  }
+
+  try {
+    const response = await Api.wallet.submitPayOrder(param)
+    const submitResult = response.result
+    currentOrderId.value = submitResult?.orderId !== undefined ? String(submitResult.orderId) : ''
+
+    orderInfo.value = {
+      order_no: currentOrderId.value,
+      created_at: formatTimestamp(submitResult?.createTime),
+      amount: amount.value ?? 0,
+      method: selectedMethod.value.columnName,
+      method_icon: resolveMethodIcon(selectedMethod.value),
+      currency: getCurrentCurrency(),
+      bonus: '0',
+      type: 'Fiat',
+      status: mapOrderStatusText(3)
+    }
+    orderPopShow.value = true
+    emit('hidden', true)
+
+    const payUrl = submitResult?.payUrl
+    const openedWindow = payUrl ? window.open(payUrl, '_blank') : null
+
+    if (currentOrderId.value) {
+      if (openedWindow) {
+        stopOrderPolling()
+      } else {
+        startOrderPolling()
+      }
+    }
+  } catch (error) {
+    console.error('submitPayOrder failed', error)
+    return
+  }
+}
+
+onMounted(() => {
+  void loadPayColumnPage()
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+})
+
+watch(
+  () => [selectedSubColumn.value?.rowId, selectedDiscountPayChannelCode.value],
+  () => {
+    if (!selectedDiscountPayChannelCode.value) {
+      selectedDiscountItem.value = null
+      return
+    }
+
+    void loadDiscountList(selectedDiscountPayChannelCode.value)
+  }
+)
+
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  stopOrderPolling()
+})
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,

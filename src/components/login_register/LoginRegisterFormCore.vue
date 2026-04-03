@@ -27,17 +27,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
 import Api from '@/api'
 import { useUserStore } from '@/stores/user'
-import { showToast } from 'vant'
+import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
 import {
-  handlePhoneInput,
   handlePasswordInput,
+  handlePhoneInput,
   handleVerificationCodeInput,
   isValidPassword
 } from '@/utils/phone-input'
-import { getLanguageCode, getCurrentCurrency } from '@/utils/locale'
+import { showToast } from 'vant'
+import { computed, ref, watch } from 'vue'
 
 interface Props {
   defaultTab?: 'signin' | 'signup'
@@ -270,7 +270,7 @@ const handleRegister = async () => {
       channelId: '1',
       languageCode: languageCode,
       requestMethod: 1,
-      currency: currency.toLowerCase(),
+      currency: currency.toUpperCase(),
       smsCode: formData.value.signup.code,
       memberPwd: formData.value.signup.password,
       areaCode: '63',

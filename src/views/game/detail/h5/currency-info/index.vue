@@ -6,10 +6,10 @@
       </div>
       <div class="flex-1 flex flex-col justify-between">
         <div class="flex-1 flex flex-col justify-around">
-          <div class="text-[15px] font-bold">Play with selected currency</div>
-          <currency-select></currency-select>
+          <div class="text-[15px] font-bold">{{ t('gameDetail.playWithSelectedCurrency') }}</div>
+          <currency-select @change="handleCurrencyChange"></currency-select>
           <div class="text-[13px] text-[var(--color-text-level-2)] text-center">
-            Tap "Play Now" to enter. Good luck and have fun!
+            {{ t('gameDetail.playNowHint') }}
           </div>
         </div>
 
@@ -17,7 +17,9 @@
           <div class="w-[16px] h-[16px]">
             <play-icon class="w-full h-full" />
           </div>
-          <div class="text-[15px] font-bold text-[#000]">Play Now</div>
+          <div class="text-[15px] font-bold text-[#000]" @click="gamePlay">
+            {{ t('gameDetail.playNow') }}
+          </div>
         </div>
       </div>
     </div>
@@ -29,22 +31,19 @@ import defaultGameImg from '@/static/img/explore/game.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import CurrencySelect from '../currency-select/index.vue'
 import CurrencyBar from '../currency-bar/index.vue'
-import { computed, inject, type ComputedRef } from 'vue'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
 
-type CurrentGameDetail = {
-  itemName?: string
-  platformName?: string
-  icon2?: string
-  conUrl?: string
-  gameItemHotVo?: {
-    defaultImage?: string
-  }
-} | null
+const { gamePlay, currentGameDetail } = useGamePlatformPlay()
+const { t } = useI18n()
 
-const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
-  'game-detail-current-game',
-  computed(() => null)
-)
+const selectedData = ref<{ value: string; label: string; icon: string } | undefined>(undefined)
+const handleCurrencyChange = (
+  value: { value: string; label: string; icon: string } | undefined
+) => {
+  selectedData.value = value
+}
 
 const toImageUrl = (value: string) => {
   const imagePath = value.trim()
