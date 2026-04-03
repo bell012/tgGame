@@ -42,6 +42,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Popup from './popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 
@@ -63,11 +64,12 @@ const emit = defineEmits<{
 }>()
 
 const isMobile = useIsMobile()
+const { t } = useI18n()
 const visible = ref(false)
 
 const inputText = computed(() => {
   if (props.modelValue.length === 0) {
-    return '全部'
+    return t('search.all')
   }
   return '+' + props.modelValue.length
 })

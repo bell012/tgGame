@@ -187,16 +187,7 @@ const itemClick = (item: CasinoGameItem) => {
   if (!isMobile.value) {
     isCloseDesktopModal.value = true
   }
-  // const itemCode = String(item.itemCode ?? '').trim()
-  // const platformCode = String(item.platformCode ?? '').trim()
   const rowId = String(item.rowId ?? '').trim()
-  // navigateTo('/game/detail', {
-  //   query: {
-  //     ...(itemCode ? { itemCode } : {}),
-  //     ...(platformCode ? { platformCode } : {}),
-  //     ...(rowId ? { rowId } : {})
-  //   }
-  // })
   navigateToName('gameDetail', { params: { rowId } })
 }
 
