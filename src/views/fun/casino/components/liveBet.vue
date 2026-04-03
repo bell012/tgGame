@@ -2,13 +2,13 @@
   <div
     class="relative w-full h-[430px] overflow-hidden rounded-xl bg-[var(--color-background-level-2)]"
   >
-    <table class="w-full h-full text-sm text-text-2 text-[14px]">
+    <table class="h-full w-full table-fixed text-sm text-[14px] text-text-2">
       <thead class="bg-[var(--color-opacity-6)] text-[12px]">
         <tr>
-          <td class="py-[10px] px-3">{{ $t('home.Game') }}</td>
-          <td class="py-[10px] px-3">{{ $t('home.Player') }}</td>
-          <td class="py-[10px] px-3 text-center">{{ $t('home.Multiplier') }}</td>
-          <td class="py-[10px] px-3 text-right">{{ $t('home.Profit') }}</td>
+          <td class="w-[36%] px-3 py-[10px]">{{ $t('home.Game') }}</td>
+          <td class="w-[26%] px-3 py-[10px]">{{ $t('home.Player') }}</td>
+          <td class="w-[16%] px-3 py-[10px] text-center">{{ $t('home.Multiplier') }}</td>
+          <td class="w-[22%] px-3 py-[10px] text-right">{{ $t('home.Profit') }}</td>
         </tr>
       </thead>
       <tbody v-if="loading">
@@ -30,23 +30,27 @@
             index % 2 === 0 ? 'bg-[var(--color-opacity-10)]' : 'bg-[var(--color-opacity-6)]'
           ]"
         >
-          <td class="py-2 px-3 flex items-center gap-1">
-            <div :key="item.id" class="flex items-center gap-1">
+          <td class="px-3 py-2">
+            <div :key="item.id" class="flex min-w-0 items-center gap-1">
               <img :src="item.gameIcon" class="w-3.5 h-3.5" :alt="item.game" />
-              <span class="text-text-1 truncate max-w-[58px]">
+              <span class="min-w-0 truncate text-text-1">
                 {{ item.game }}
               </span>
             </div>
           </td>
-          <td class="py-2 px-3 text-text-1 truncate max-w-[60px]">
-            {{ item.player }}
+          <td class="px-3 py-2">
+            <span class="block truncate text-text-1">
+              {{ item.player }}
+            </span>
           </td>
           <td class="py-2 px-3 text-center text-[12px]">x{{ item.multiplier }}</td>
-          <td class="py-2 px-3 flex items-center justify-end gap-1 text-[12px]">
-            <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
-              {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
-            </span>
-            <img :src="currencyIcon" class="w-3 h-3" :alt="item.game" />
+          <td class="px-3 py-2 text-[12px]">
+            <div class="flex items-center justify-end gap-1">
+              <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
+                {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
+              </span>
+              <img :src="currencyIcon" class="w-3 h-3" :alt="item.game" />
+            </div>
           </td>
         </tr>
       </tbody>

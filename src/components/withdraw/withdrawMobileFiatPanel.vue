@@ -100,6 +100,7 @@ import { type ComponentPublicInstance, computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
+import type { WithdrawSubmitPayload } from './types'
 
 interface MethodOption {
   name: string
@@ -142,6 +143,10 @@ const isWithdrawDisabled = computed(
   () => isAmountDisabled.value || !accountName.value || !phoneNumber.value
 )
 
+const emit = defineEmits<{
+  submit: [payload: WithdrawSubmitPayload]
+}>()
+
 const setMethodItemRef = (el: Element | ComponentPublicInstance | null, index: number) => {
   const target =
     el instanceof HTMLElement
@@ -179,7 +184,20 @@ const scrollMethodIntoView = async (index: number) => {
     inline: 'center'
   })
 }
-const doWithdrawDeposit = () => {}
+const doWithdrawDeposit = () => {
+  if (isWithdrawDisabled.value) {
+    return
+  }
+
+  emit('submit', {
+    tabType: 'Fiat',
+    amount: Number(amount.value),
+    currencyCode: currentCurrency.value,
+    methodLabel: selectedMethod.value.name,
+    phoneNumber: phoneNumber.value,
+    accountName: accountName.value
+  })
+}
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,
