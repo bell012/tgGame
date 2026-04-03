@@ -12,7 +12,9 @@
             class="rounded-[14px] bg-[linear-gradient(180deg,#2A2F35_0%,#23282E_100%)] p-[14px] shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
           >
             <div class="relative mb-[12px] flex items-center justify-center">
-              <div class="text-[16px] font-semibold text-white">Leave Comments</div>
+              <div class="text-[16px] font-semibold text-white">
+                {{ t('gameDetail.leaveCommentsTitle') }}
+              </div>
               <button
                 class="absolute right-0 top-[50%] flex size-[24px] -translate-y-[50%] items-center justify-center rounded-[6px] bg-[#42474D] text-[18px] font-bold leading-none text-[#D4D8DD]"
                 type="button"
@@ -81,7 +83,7 @@
                 :disabled="!commentText.trim()"
                 @click="submitComment"
               >
-                Post
+                {{ t('gameDetail.post') }}
               </button>
             </div>
           </div>
@@ -97,16 +99,18 @@
                 type="button"
                 @click="closePopup"
               >
-                Cancel
+                {{ t('common.cancel') }}
               </button>
-              <div class="text-[16px] font-semibold text-white">Leave Comments</div>
+              <div class="text-[16px] font-semibold text-white">
+                {{ t('gameDetail.leaveCommentsTitle') }}
+              </div>
               <button
                 class="h-[40px] justify-self-end rounded-[12px] bg-[var(--color-theme-level-1)] px-[14px] text-[14px] font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50"
                 type="button"
                 :disabled="!commentText.trim()"
                 @click="submitComment"
               >
-                Post
+                {{ t('gameDetail.post') }}
               </button>
             </div>
 
@@ -173,6 +177,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
 
 interface Props {
@@ -185,6 +190,7 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
   (e: 'submit', content: string): void
 }>()
+const { t } = useI18n()
 
 type EmojiCategory = 'recent' | 'smileys' | 'animals' | 'food' | 'objects' | 'flags'
 
@@ -324,7 +330,7 @@ const currentEmojiList = computed(() => {
 
 const inputPlaceholder = computed(() => {
   const placeholder = props.placeholder?.trim()
-  return placeholder || 'This game is great, very exciting!'
+  return placeholder || t('gameDetail.commentDefaultPlaceholder')
 })
 
 const closePopup = () => {

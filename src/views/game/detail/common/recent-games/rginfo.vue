@@ -4,11 +4,11 @@
       class="flex-1 flex border-b border-[var(--color-opacity-30)] mt-[12px] pb-[6px] text-[13px]"
     >
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
-        <div class="text-[var(--color-text-level-2)]">House Edge</div>
+        <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.houseEdge') }}</div>
         <div class="text-[var(--color-theme-level-1)]">{{ houseEdgeText }}</div>
       </div>
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
-        <div class="text-[var(--color-text-level-2)]">RTP (Return to Player)</div>
+        <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.rtpReturnToPlayer') }}</div>
         <div class="text-[var(--color-theme-level-1)]">{{ rtpText }}</div>
       </div>
     </div>
@@ -16,11 +16,11 @@
       class="flex-1 flex border-b border-[var(--color-opacity-30)] mt-[12px] pb-[6px] text-[13px]"
     >
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
-        <div class="text-[var(--color-text-level-2)]">Max Win</div>
+        <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.maxWin') }}</div>
         <div class="text-[var(--color-theme-level-1)]">-</div>
       </div>
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
-        <div class="text-[var(--color-text-level-2)]">Stakes Range</div>
+        <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.stakesRange') }}</div>
         <div class="text-[var(--color-text-level-1)]">-</div>
       </div>
     </div>
@@ -28,6 +28,7 @@
 </template>
 <script setup lang="ts">
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 type CurrentGameDetail =
   | ({
@@ -40,6 +41,7 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   'game-detail-current-game',
   computed(() => null)
 )
+const { t } = useI18n()
 
 const randomRtpValue = ref<number | null>(null)
 

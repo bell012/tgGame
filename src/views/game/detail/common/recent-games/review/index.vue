@@ -7,7 +7,9 @@
         <div class="text-[26px] font-bold w-[100px] text-right">{{ scoreText }}</div>
         <div>
           <star :count="5" :active-count="activeStarCount" />
-          <div class="text-[13px] text-[var(--color-text-level-2)] hidden lg:block">Out of 5</div>
+          <div class="text-[13px] text-[var(--color-text-level-2)] hidden lg:block">
+            {{ t('gameDetail.outOfFive') }}
+          </div>
         </div>
       </div>
       <div class="lg:flex-1 flex flex-col mt-[12px] gap-[10px]">
@@ -37,7 +39,9 @@
       <div
         class="flex-1 flex flex-col justify-center items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[12px]"
       >
-        <div class="text-[var(--color-text-level-2)] text-[12px] text-center">Rate this Game</div>
+        <div class="text-[var(--color-text-level-2)] text-[12px] text-center">
+          {{ t('gameDetail.rateThisGame') }}
+        </div>
         <star
           :count="5"
           :active-count="userRating"
@@ -50,7 +54,7 @@
         class="flex-1 flex flex-col justify-center items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[12px]"
       >
         <div class="text-[var(--color-text-level-2)] text-[12px] text-center">
-          {{ ratingCount }} Ratings
+          {{ t('gameDetail.ratings', { count: ratingCount }) }}
         </div>
         <div class="flex justify-center items-center mt-[4px]">
           <img
@@ -64,7 +68,7 @@
       </div>
     </div>
     <div ref="sortMenuRef" class="relative flex justify-between items-center mt-[20px]">
-      <div class="text-[12px] text-[var(--color-text-level-2)]">Comments</div>
+      <div class="text-[12px] text-[var(--color-text-level-2)]">{{ t('gameDetail.comments') }}</div>
       <img alt="" :src="SanIcon" class="size-[18px] cursor-pointer" @click.stop="toggleSortPopup" />
       <transition name="sort-popup">
         <div
@@ -93,7 +97,9 @@
         class="flex-1 flex h-[50px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[4px] px-[12px] cursor-pointer"
         @click="openCommentPopup"
       >
-        <div class="text-[12px] text-[var(--color-text-level-2)]">Leave your Comment</div>
+        <div class="text-[12px] text-[var(--color-text-level-2)]">
+          {{ t('gameDetail.leaveYourComment') }}
+        </div>
         <img alt="" :src="EmoIcon" class="size-[18px]" />
       </div>
     </div>
@@ -105,7 +111,9 @@
       <div
         class="size-[16px] rounded-full border-[2px] border-[var(--color-text-level-3)] border-t-transparent animate-spin"
       ></div>
-      <div class="text-[12px] text-[var(--color-text-level-3)]">Loading comments...</div>
+      <div class="text-[12px] text-[var(--color-text-level-3)]">
+        {{ t('gameDetail.loadingComments') }}
+      </div>
     </div>
     <div
       v-else-if="isCommentLoading"
@@ -114,7 +122,9 @@
       <div
         class="size-[14px] rounded-full border-[2px] border-[var(--color-text-level-3)] border-t-transparent animate-spin"
       ></div>
-      <div class="text-[12px] text-[var(--color-text-level-3)]">Refreshing comments...</div>
+      <div class="text-[12px] text-[var(--color-text-level-3)]">
+        {{ t('gameDetail.refreshingComments') }}
+      </div>
     </div>
 
     <template v-if="sortedCommentList.length">
@@ -234,7 +244,7 @@
             class="inline-flex items-center gap-[8px] text-[var(--color-theme-level-1)] text-[13px] leading-[20px] font-semibold transition-opacity duration-200 hover:opacity-80"
             @click="toggleChildrenVisible(comment)"
           >
-            {{ comment.isChildrenExpanded ? 'Collapse' : 'Expand' }}
+            {{ comment.isChildrenExpanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}
             <img
               alt=""
               :src="comment.isChildrenExpanded ? ExpandUpDoubleIcon : ExpandDownDoubleIcon"
@@ -248,7 +258,7 @@
       v-else-if="!isCommentLoading"
       class="flex items-center justify-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[18px] px-[12px] text-[12px] text-[var(--color-text-level-3)]"
     >
-      No comments yet.
+      {{ t('gameDetail.noCommentsYet') }}
     </div>
     <CommentPopup
       v-model="isCommentPopupOpen"
@@ -261,6 +271,7 @@
 import Api from '@/api'
 import type { GameCommentListItem } from '@/api/interface/game'
 import { computed, inject, onBeforeUnmount, onMounted, ref, watch, type ComputedRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useGameRating } from '@/composables/useGameRating'
 import Star from './star.vue'
@@ -293,6 +304,7 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
 
 const route = useRoute()
 const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
+const { t } = useI18n()
 
 const { rating: userRating, setRating } = useGameRating()
 
@@ -543,7 +555,8 @@ const mapCommentItem = (
   likeCacheMap: CommentLikeCacheMap = {}
 ): ReviewCommentViewItem => {
   const createTime = toSafeNumber(item?.createTime)
-  const memberName = normalizeQueryValue(item?.memberName ?? item?.memberId) || 'Anonymous'
+  const memberName =
+    normalizeQueryValue(item?.memberName ?? item?.memberId) || t('gameDetail.anonymous')
   const id = normalizeQueryValue(item?.id ?? item?.rowId) || `${fallbackPrefix}-${index}`
   const likeStorageKey = createCommentLikeCacheKey(subjectId, id)
   const fallbackLikeCount = Math.max(0, Math.trunc(toSafeNumber(item?.likeCount)))
@@ -688,18 +701,18 @@ const isSortPopupOpen = ref(false)
 const activeSort = ref('newest')
 const isCommentPopupOpen = ref(false)
 const replyTargetComment = ref<ReviewCommentViewItem | null>(null)
-const sortOptions = [
-  { value: 'newest', label: 'Newest First' },
-  { value: 'comments', label: 'Top Comments' },
-  { value: 'likes', label: 'Top Likes' }
-]
+const sortOptions = computed(() => [
+  { value: 'newest', label: t('gameDetail.sortNewestFirst') },
+  { value: 'comments', label: t('gameDetail.sortTopComments') },
+  { value: 'likes', label: t('gameDetail.sortTopLikes') }
+])
 
 const commentInputPlaceholder = computed(() => {
   const memberName = normalizeQueryValue(replyTargetComment.value?.memberName)
   if (!memberName) {
-    return 'Leave your Comment'
+    return t('gameDetail.leaveYourComment')
   }
-  return `Reply to ${memberName}`
+  return t('gameDetail.replyToUser', { name: memberName })
 })
 
 const toggleSortPopup = () => {

@@ -15,19 +15,21 @@
           <div class="flex flex-col gap-[16px]">
             <div class="flex items-center gap-[8px] cursor-pointer" @click="toggleLove">
               <img alt="" class="size-[16px]" :src="loveActived ? LikeActiveIcon : LikeIcon" />
-              <div :class="{ 'text-[#FF9822]': loveActived }">Like</div>
+              <div :class="{ 'text-[#FF9822]': loveActived }">
+                {{ t('gameDetail.settingLike') }}
+              </div>
             </div>
             <div class="flex items-center gap-[8px] cursor-pointer" @click="shareClick">
               <img alt="" class="size-[16px]" :src="TgIcon" />
-              <div>Share</div>
+              <div>{{ t('gameDetail.settingShare') }}</div>
             </div>
             <div class="flex items-center gap-[8px] cursor-pointer">
               <img alt="" class="size-[16px]" :src="MovieIcon" />
-              <div>Movie Mode</div>
+              <div>{{ t('gameDetail.settingMovieMode') }}</div>
             </div>
             <div class="flex items-center gap-[8px] cursor-pointer">
               <img alt="" class="size-[16px]" :src="FloatIcon" />
-              <div>Float Mode</div>
+              <div>{{ t('gameDetail.settingFloatMode') }}</div>
             </div>
           </div>
         </div>
@@ -43,6 +45,7 @@ import LikeIcon from '@/static/svg/game/detail/like_hand.svg?url'
 import LikeActiveIcon from '@/static/svg/game/detail/like_hand_active.svg?url'
 import FloatIcon from '@/static/svg/game/detail/float.svg?url'
 import MovieIcon from '@/static/svg/game/detail/movie.svg?url'
+import { useI18n } from 'vue-i18n'
 
 defineProps<{
   visible: boolean
@@ -50,6 +53,7 @@ defineProps<{
 }>()
 
 const { isLiked: loveActived, toggleLike: toggleLove } = useGameLike()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'update:visible': [val: boolean]
