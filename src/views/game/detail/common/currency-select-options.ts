@@ -111,6 +111,11 @@ const normalizeCurrencyCode = (value: unknown) => {
     .toUpperCase()
 }
 
+export const getCurrencyIconByCode = (currencyCode: unknown) => {
+  const normalizedCode = normalizeCurrencyCode(currencyCode)
+  return getCurrencyIcon(normalizedCode)
+}
+
 const dedupeCurrencyCodes = (codes: string[]) => {
   return Array.from(new Set(codes))
 }
@@ -168,6 +173,6 @@ export const getCurrencySelectOptionsFromCache = (
   return normalizedCodes.map(code => ({
     value: code,
     label: code,
-    icon: getCurrencyIcon(code)
+    icon: getCurrencyIconByCode(code)
   }))
 }

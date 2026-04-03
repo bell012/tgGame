@@ -19,28 +19,22 @@
         <div class="flex justify-between mt-[12px] text-[12px]">
           <div class="text-[var(--color-text-level-2)]">Payout</div>
           <div class="flex items-center gap-[8px]">
-            <section class="relative w-[20px] h-[20px] overflow-hidden">
-              <img
-                class="w-[20px] min-w-[20px] absolute"
-                alt="countries"
-                src="@/static/img/explore/countries.png"
-                :style="`top: -20px`"
-              />
-            </section>
+            <img
+              class="w-[20px] h-[20px] min-w-[20px] object-contain"
+              :alt="currentRequestCurrency"
+              :src="currentCurrencyIcon"
+            />
             <div class="text-[var(--color-theme-level-1)]">{{ formatPayOut(item.payOut) }}</div>
           </div>
         </div>
         <div class="flex justify-between mt-[12px] text-[12px]">
           <div class="text-[var(--color-text-level-2)]">Wager</div>
           <div class="flex items-center gap-[8px]">
-            <section class="relative w-[20px] h-[20px] overflow-hidden">
-              <img
-                class="w-[20px] min-w-[20px] absolute"
-                alt="countries"
-                src="@/static/img/explore/countries.png"
-                :style="`top: -20px`"
-              />
-            </section>
+            <img
+              class="w-[20px] h-[20px] min-w-[20px] object-contain"
+              :alt="currentRequestCurrency"
+              :src="currentCurrencyIcon"
+            />
             <div>{{ formatDecimal(item.wager) }}</div>
           </div>
         </div>
@@ -63,6 +57,10 @@
 <script setup lang="ts">
 import RackIcon from '@/static/svg/game/detail/rank1.svg?url'
 import type { GameRanListItem } from '@/api/interface/game'
+import { useLocaleStore } from '@/stores/locale'
+import { getCurrencyIconByCode } from '../currency-select-options'
+import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
 
 const props = withDefaults(
   defineProps<{
@@ -76,6 +74,12 @@ const props = withDefaults(
 )
 
 const toPlainText = (value: unknown) => String(value ?? '').trim()
+const localeStore = useLocaleStore()
+const { actualCurrency } = storeToRefs(localeStore)
+const currentRequestCurrency = computed(
+  () => toPlainText(actualCurrency.value).toUpperCase() || 'USD'
+)
+const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestCurrency.value))
 
 const formatDecimal = (value: unknown) => {
   const valueText = toPlainText(value)

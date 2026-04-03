@@ -45,7 +45,11 @@
             <td class="cell" role="cell">
               <div class="flex items-center justify-center">
                 <span>{{ item.bet }}</span>
-                <img src="@/static/img/flag/USD.webp" class="icon" alt="" />
+                <img
+                  :src="currentCurrencyIcon"
+                  class="icon object-contain"
+                  :alt="currentRequestCurrency"
+                />
               </div>
             </td>
             <td class="py-2 px-3 text-text-1 truncate">
@@ -55,7 +59,11 @@
               <span :class="item.profitNumber >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
                 {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
               </span>
-              <img src="@/static/img/flag/USD.webp" class="w-3 h-3" :alt="item.betId" />
+              <img
+                :src="currentCurrencyIcon"
+                class="w-3 h-3 object-contain"
+                :alt="currentRequestCurrency"
+              />
             </td>
           </tr>
         </tbody>
@@ -75,6 +83,7 @@
 import Api from '@/api'
 import type { GameBetRecordItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
+import { getCurrencyIconByCode } from '../currency-select-options'
 import { storeToRefs } from 'pinia'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 // import { useI18n } from 'vue-i18n'
@@ -115,6 +124,7 @@ const currentPlatformCode = computed(() => normalizeValue(currentGameDetail.valu
 const currentRequestCurrency = computed(
   () => normalizeValue(actualCurrency.value).toUpperCase() || 'USD'
 )
+const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestCurrency.value))
 
 const currentBetType = computed<1 | 2>(() => (activeTab.value === 'My Bets' ? 2 : 1))
 

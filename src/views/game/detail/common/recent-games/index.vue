@@ -73,6 +73,9 @@ const normalizeValue = (value: unknown) => String(value ?? '').trim()
 
 const currentItemCode = computed(() => normalizeValue(currentGameDetail.value?.itemCode))
 const currentPlatformCode = computed(() => normalizeValue(currentGameDetail.value?.platformCode))
+const currentRequestCurrency = computed(
+  () => normalizeValue(actualCurrency.value).toUpperCase() || 'USD'
+)
 
 const currentType = computed<1 | 2 | 0>(() => {
   if (tabValue.value === 1) return 1
@@ -95,7 +98,7 @@ const fetchGameRanList = async () => {
       itemCode,
       platformCode,
       type,
-      currency: 'PHP'
+      currency: currentRequestCurrency.value
     })
     const rawResult = res?.result
     const records = (rawResult as { records?: unknown } | undefined)?.records
@@ -113,7 +116,7 @@ const fetchGameRanList = async () => {
 }
 
 watch(
-  [tabValue, isOpen, currentItemCode, currentPlatformCode, actualCurrency],
+  [tabValue, isOpen, currentItemCode, currentPlatformCode, currentRequestCurrency],
   () => {
     if (!isOpen.value) {
       return
