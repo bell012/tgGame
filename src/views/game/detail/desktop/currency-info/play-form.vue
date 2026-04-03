@@ -47,7 +47,7 @@
         </div>
       </div> -->
     </div>
-    <button type="button" class="play-btn w-full mt-[14px] cursor-pointer">
+    <button type="button" class="play-btn w-full mt-[14px] cursor-pointer" @click="gamePlay">
       <div class="w-[16px] h-[16px]">
         <play-icon class="w-full h-full" />
       </div>
@@ -59,6 +59,9 @@
 // import ArrowDownIcon from '@/static/svg/arrow_down.svg?url'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import CurrencySelect from '../currency-select/index.vue'
+import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
+
+const { gamePlay } = useGamePlatformPlay()
 // import { ref } from 'vue'
 
 // const sliderValue = ref(35)
