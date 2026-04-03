@@ -145,7 +145,13 @@
               </div>
             </div>
             <div class="relative">
-              <img alt="" :src="ZanIcon" class="size-[16px]" />
+              <img
+                alt=""
+                :src="ZanIcon"
+                class="size-[16px] cursor-pointer transition duration-200"
+                :class="{ 'comment-like-icon-active': comment.isLiked }"
+                @click="toggleLike(comment)"
+              />
               <div
                 v-if="comment.likeCount > 0"
                 class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
@@ -154,7 +160,13 @@
               </div>
             </div>
             <div class="relative">
-              <img alt="" :src="UnzanIcon" class="size-[16px]" />
+              <img
+                alt=""
+                :src="UnzanIcon"
+                class="size-[16px] cursor-pointer transition duration-200"
+                :class="{ 'comment-like-icon-active': comment.isDisliked }"
+                @click="toggleDislike(comment)"
+              />
               <div
                 v-if="comment.dislikeCount > 0"
                 class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
@@ -181,7 +193,13 @@
               </div>
               <div class="flex items-center gap-[10px]">
                 <div class="relative">
-                  <img alt="" :src="ZanIcon" class="size-[16px]" />
+                  <img
+                    alt=""
+                    :src="ZanIcon"
+                    class="size-[16px] cursor-pointer transition duration-200"
+                    :class="{ 'comment-like-icon-active': child.isLiked }"
+                    @click="toggleLike(child)"
+                  />
                   <div
                     v-if="child.likeCount > 0"
                     class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
@@ -190,7 +208,13 @@
                   </div>
                 </div>
                 <div class="relative">
-                  <img alt="" :src="UnzanIcon" class="size-[16px]" />
+                  <img
+                    alt=""
+                    :src="UnzanIcon"
+                    class="size-[16px] cursor-pointer transition duration-200"
+                    :class="{ 'comment-like-icon-active': child.isDisliked }"
+                    @click="toggleDislike(child)"
+                  />
                   <div
                     v-if="child.dislikeCount > 0"
                     class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
@@ -326,6 +350,113 @@ const getAcctInfoFromStorage = () => {
 const currentGameId = computed(() => normalizeQueryValue(route.params.rowId))
 const commentSubjectId = ref('')
 const isCommentLoading = ref(false)
+const COMMENT_LIKE_STORAGE_KEY = 'gameCommentLikeMap'
+
+type CommentLikeCacheItem = {
+  isLiked: boolean
+  isDisliked: boolean
+  likeCount: number
+}
+
+type CommentLikeCacheMap = Record<string, CommentLikeCacheItem>
+
+const normalizeLikeCount = (value: unknown) => {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0
+  }
+  return Math.trunc(parsed)
+}
+
+const normalizeIsLiked = (value: unknown) =>
+  value === true || value === 1 || value === '1' || value === 'true'
+
+const parseCommentLikeCacheItem = (value: unknown): CommentLikeCacheItem | null => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null
+  }
+
+  const parsedValue = value as Record<string, unknown>
+  return {
+    isLiked: normalizeIsLiked(parsedValue.isLiked ?? parsedValue.liked),
+    isDisliked: normalizeIsLiked(parsedValue.isDisliked ?? parsedValue.disliked),
+    likeCount: normalizeLikeCount(parsedValue.likeCount)
+  }
+}
+
+const parseCommentLikeCacheMap = (rawValue: string | null): CommentLikeCacheMap => {
+  const result: CommentLikeCacheMap = {}
+  if (!rawValue) {
+    return result
+  }
+
+  try {
+    const parsedValue = JSON.parse(rawValue) as unknown
+    if (!parsedValue || typeof parsedValue !== 'object' || Array.isArray(parsedValue)) {
+      return result
+    }
+
+    Object.entries(parsedValue as Record<string, unknown>).forEach(([key, value]) => {
+      const normalizedKey = normalizeQueryValue(key)
+      const normalizedValue = parseCommentLikeCacheItem(value)
+      if (!normalizedKey || !normalizedValue) {
+        return
+      }
+      result[normalizedKey] = normalizedValue
+    })
+  } catch (error) {
+    console.error('parse comment like cache failed', error)
+  }
+
+  return result
+}
+
+const getCommentLikeCacheMap = () => {
+  if (typeof window === 'undefined') {
+    return {}
+  }
+  return parseCommentLikeCacheMap(window.localStorage.getItem(COMMENT_LIKE_STORAGE_KEY))
+}
+
+const saveCommentLikeCacheMap = (cacheMap: CommentLikeCacheMap) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  window.localStorage.setItem(COMMENT_LIKE_STORAGE_KEY, JSON.stringify(cacheMap))
+}
+
+const createCommentLikeCacheKey = (subjectId: string, commentId: string) => {
+  const normalizedCommentId = normalizeQueryValue(commentId)
+  if (!normalizedCommentId) {
+    return ''
+  }
+
+  const normalizedSubjectId = normalizeQueryValue(subjectId)
+  return normalizedSubjectId ? `${normalizedSubjectId}_${normalizedCommentId}` : normalizedCommentId
+}
+
+const getCommentLikeCacheByKey = (cacheMap: CommentLikeCacheMap, key: string) => {
+  const normalizedKey = normalizeQueryValue(key)
+  if (!normalizedKey) {
+    return null
+  }
+  return cacheMap[normalizedKey] ?? null
+}
+
+const setCommentLikeCacheByKey = (key: string, value: CommentLikeCacheItem) => {
+  const normalizedKey = normalizeQueryValue(key)
+  if (!normalizedKey) {
+    return
+  }
+
+  const cacheMap = getCommentLikeCacheMap()
+  cacheMap[normalizedKey] = {
+    isLiked: Boolean(value.isLiked),
+    isDisliked: Boolean(value.isDisliked),
+    likeCount: normalizeLikeCount(value.likeCount)
+  }
+  saveCommentLikeCacheMap(cacheMap)
+}
 
 type ReviewCommentViewItem = {
   id: string
@@ -333,6 +464,9 @@ type ReviewCommentViewItem = {
   content: string
   timeText: string
   avatarUrl: string
+  isLiked: boolean
+  isDisliked: boolean
+  likeStorageKey: string
   likeCount: number
   dislikeCount: number
   replyCount: number
@@ -388,18 +522,27 @@ const resolveCommentAvatar = (avatar: unknown) => {
 const mapCommentItem = (
   item: GameCommentListItem,
   index: number,
-  fallbackPrefix = 'comment'
+  fallbackPrefix = 'comment',
+  subjectId = '',
+  likeCacheMap: CommentLikeCacheMap = {}
 ): ReviewCommentViewItem => {
   const createTime = toSafeNumber(item?.createTime)
   const memberName = normalizeQueryValue(item?.memberName ?? item?.memberId) || 'Anonymous'
+  const id = normalizeQueryValue(item?.id ?? item?.rowId) || `${fallbackPrefix}-${index}`
+  const likeStorageKey = createCommentLikeCacheKey(subjectId, id)
+  const fallbackLikeCount = Math.max(0, Math.trunc(toSafeNumber(item?.likeCount)))
+  const cachedLike = getCommentLikeCacheByKey(likeCacheMap, likeStorageKey)
 
   return {
-    id: normalizeQueryValue(item?.id ?? item?.rowId) || `${fallbackPrefix}-${index}`,
+    id,
     memberName,
     content: normalizeQueryValue(item?.content),
     timeText: formatElapsedTime(createTime),
     avatarUrl: resolveCommentAvatar(item?.memberAvatar),
-    likeCount: Math.max(0, Math.trunc(toSafeNumber(item?.likeCount))),
+    isLiked: Boolean(cachedLike?.isLiked),
+    isDisliked: Boolean(cachedLike?.isDisliked),
+    likeStorageKey,
+    likeCount: cachedLike ? normalizeLikeCount(cachedLike.likeCount) : fallbackLikeCount,
     dislikeCount: Math.max(0, Math.trunc(toSafeNumber(item?.dislikeCount))),
     replyCount: Math.max(0, Math.trunc(toSafeNumber(item?.replyCount))),
     createTime,
@@ -444,6 +587,7 @@ const requestCommentsList = async (subjectId: string) => {
 
   isCommentLoading.value = true
   try {
+    const commentLikeCacheMap = getCommentLikeCacheMap()
     const res = await Api.game.getCommentsList({
       subjectId,
       current: 1,
@@ -453,7 +597,7 @@ const requestCommentsList = async (subjectId: string) => {
       memberRowId: validMemberRowId
     })
     const rootComments = parseCommentRecords(res?.result).map((item, index) =>
-      mapCommentItem(item, index, 'root-comment')
+      mapCommentItem(item, index, 'root-comment', subjectId, commentLikeCacheMap)
     )
     commentList.value = rootComments
 
@@ -475,7 +619,13 @@ const requestCommentsList = async (subjectId: string) => {
             memberRowId: validMemberRowId
           })
           item.children = parseCommentRecords(childrenRes?.result).map((childItem, childIndex) =>
-            mapCommentItem(childItem, childIndex, `${parentId}-child`)
+            mapCommentItem(
+              childItem,
+              childIndex,
+              `${parentId}-child`,
+              subjectId,
+              commentLikeCacheMap
+            )
           )
         } catch (error) {
           console.error('get child comments failed', error)
@@ -552,6 +702,54 @@ const openCommentPopup = () => {
 const openReplyCommentPopup = (comment: ReviewCommentViewItem) => {
   replyTargetComment.value = comment
   isCommentPopupOpen.value = true
+}
+
+const toggleLike = (comment: ReviewCommentViewItem) => {
+  const likeStorageKey = normalizeQueryValue(comment.likeStorageKey)
+  if (!likeStorageKey) {
+    return
+  }
+
+  const nextIsLiked = !comment.isLiked
+  const nextLikeCount = nextIsLiked
+    ? normalizeLikeCount(comment.likeCount + 1)
+    : normalizeLikeCount(comment.likeCount - 1)
+
+  comment.isLiked = nextIsLiked
+  if (nextIsLiked) {
+    comment.isDisliked = false
+  }
+  comment.likeCount = nextLikeCount
+  setCommentLikeCacheByKey(likeStorageKey, {
+    isLiked: nextIsLiked,
+    isDisliked: comment.isDisliked,
+    likeCount: nextLikeCount
+  })
+}
+
+const toggleDislike = (comment: ReviewCommentViewItem) => {
+  const likeStorageKey = normalizeQueryValue(comment.likeStorageKey)
+  if (!likeStorageKey) {
+    return
+  }
+
+  const nextIsDisliked = !comment.isDisliked
+  const shouldDeductLike = nextIsDisliked && comment.isLiked
+  const nextLikeCount = shouldDeductLike
+    ? normalizeLikeCount(comment.likeCount - 1)
+    : comment.likeCount
+
+  if (shouldDeductLike) {
+    comment.isLiked = false
+    comment.likeCount = nextLikeCount
+  }
+  comment.isDisliked = nextIsDisliked
+
+  setCommentLikeCacheByKey(likeStorageKey, {
+    isLiked: comment.isLiked,
+    isDisliked: nextIsDisliked,
+    likeCount: normalizeLikeCount(comment.likeCount)
+  })
 }
 
 const submitComment = async (content: string) => {
@@ -637,5 +835,10 @@ onBeforeUnmount(() => {
 .sort-popup-leave-to {
   opacity: 0;
   transform: translateY(8px) scale(0.96);
+}
+
+.comment-like-icon-active {
+  filter: brightness(0) saturate(100%) invert(67%) sepia(95%) saturate(512%) hue-rotate(98deg)
+    brightness(95%) contrast(95%);
 }
 </style>
