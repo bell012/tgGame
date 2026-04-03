@@ -588,11 +588,11 @@ const sortedCommentList = computed(() => {
   const source = [...commentList.value]
 
   if (activeSort.value === 'comments') {
-    return source.sort((a, b) => b.replyCount - a.replyCount || b.createTime - a.createTime)
+    return source.sort((a, b) => b.children.length - a.children.length)
   }
 
   if (activeSort.value === 'likes') {
-    return source.sort((a, b) => b.likeCount - a.likeCount || b.createTime - a.createTime)
+    return source.sort((a, b) => b.likeCount - a.likeCount)
   }
 
   return source.sort((a, b) => b.createTime - a.createTime)
