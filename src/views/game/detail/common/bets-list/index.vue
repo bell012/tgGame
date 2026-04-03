@@ -26,10 +26,10 @@
       >
         <thead class="table-head pc-only" role="rowgroup">
           <tr role="row" class="bg-bg-2 text-text-2">
-            <th>Bet ID</th>
+            <th>Player</th>
+            <th>Profit</th>
             <th class="sm:w-auto">Bet</th>
-            <th>Payout</th>
-            <th class="text-right">Profit</th>
+            <th class="text-right">Multiplier</th>
           </tr>
         </thead>
         <tbody v-if="rows.length">
@@ -38,33 +38,37 @@
             :key="item.id"
             :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
           >
-            <td class="py-2 px-3 flex items-center gap-1">
+            <td class="py-2 px-3 text-text-1 truncate">
               <span class="text-text-1 truncate">
-                {{ item.betId }}
+                {{ item.player }}
               </span>
             </td>
+            <td class="py-2 px-3 text-text-1 truncate">{{ item.profit }}x</td>
             <td class="cell" role="cell">
               <div class="flex items-center justify-center">
-                <span>{{ item.bet }}</span>
                 <img
                   :src="currentCurrencyIcon"
                   class="icon object-contain"
                   :alt="currentRequestCurrency"
                 />
+                <span>{{ item.bet }}</span>
               </div>
             </td>
-            <td class="py-2 px-3 text-text-1 truncate">
-              {{ item.payout }}
-            </td>
             <td class="py-2 px-3 flex items-center justify-end gap-1 text-[12px]">
-              <span :class="item.profitNumber >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
-                {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
-              </span>
               <img
                 :src="currentCurrencyIcon"
                 class="w-3 h-3 object-contain"
                 :alt="currentRequestCurrency"
               />
+              <span
+                :class="
+                  item.multiplierNumber >= 0
+                    ? 'text-[var(--color-secondary-level-4)]'
+                    : 'text-[#ff4d4f]'
+                "
+              >
+                {{ item.multiplierNumber >= 0 ? '+' : '' }}{{ item.multiplier }}
+              </span>
             </td>
           </tr>
         </tbody>
@@ -150,11 +154,11 @@ type CurrentGameDetail = {
 
 interface IRow {
   id: string
-  betId: string
-  bet: string
-  payout: string
+  player: string
   profit: string
-  profitNumber: number
+  bet: string
+  multiplier: string
+  multiplierNumber: number
 }
 
 interface IHighRollerRow {
@@ -202,15 +206,17 @@ const formatAmount = (value: unknown) => {
 }
 
 const mapRecordToRow = (item: GameBetRecordItem, index: number): IRow => {
-  const betId = normalizeValue(item.betId) || '-'
-  const profitNumber = parseAmount(item.profit)
+  const player =
+    normalizeValue(item.memberName ?? item.memberId ?? item.userName ?? item.betId) || '-'
+  const profitRate = parseAmount(item.multiple ?? item.mult ?? item.multiplier)
+  const multiplierNumber = parseAmount(item.profit ?? item.winAmount)
   return {
-    id: `${betId}-${index}`,
-    betId,
-    bet: formatAmount(item.bet),
-    payout: formatAmount(item.payout),
-    profit: formatAmount(item.profit),
-    profitNumber
+    id: normalizeValue(item.betId) || `${player}-${index}`,
+    player,
+    profit: formatAmount(profitRate),
+    bet: formatAmount(item.bet ?? item.wager),
+    multiplier: formatAmount(item.profit ?? item.winAmount),
+    multiplierNumber
   }
 }
 
