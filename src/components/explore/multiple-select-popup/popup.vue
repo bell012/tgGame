@@ -14,7 +14,9 @@
         <div class="tp-panel bg-[var(--color-background-level-2)] rounded-t-xl pt-2.5 px-3.5">
           <div class="tp-header flex items-center justify-between mb-2.5" v-if="!desktop">
             <div></div>
-            <div class="tp-title text-base font-bold text-[var(--color-text-level-1)]">Select</div>
+            <div class="tp-title text-base font-bold text-[var(--color-text-level-1)]">
+              {{ t('search.select') }}
+            </div>
             <div
               @click="close"
               class="tp-close w-7 h-7 rounded bg-[var(--color-opacity-10)] flex items-center justify-center"
@@ -29,7 +31,7 @@
                 class="tp-search-icon absolute left-2.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] fill-none stroke-text-2 opacity-50"
               />
               <input
-                placeholder="搜寻"
+                :placeholder="t('search.placeholder')"
                 v-model="keyword"
                 class="tp-search-input w-full h-[42px] pl-[40px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-[var(--color-border-level-1)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
               />
