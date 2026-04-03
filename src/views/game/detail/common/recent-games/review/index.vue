@@ -98,101 +98,112 @@
       </div>
     </div>
 
-    <div
-      class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[12px] px-[12px]"
-    >
-      <div class="flex justify-between">
-        <div class="flex text-[12px] items-center gap-[8px]">
-          <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
-          <div class="text-[var(--color-text-level-2)]">Bcangcut</div>
-          <div class="text-[var(--color-text-level-3)]">245d</div>
-        </div>
-        <div class="flex items-center gap-[10px]">
-          <div>
-            <img alt="" :src="CommentIcon" class="size-[16px] cursor-pointer" />
+    <template v-if="sortedCommentList.length">
+      <div
+        v-for="comment in sortedCommentList"
+        :key="comment.id"
+        class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[12px] px-[12px]"
+      >
+        <div class="flex justify-between">
+          <div class="flex text-[12px] items-center gap-[8px]">
+            <img alt="" :src="comment.avatarUrl" class="size-[26px] rounded-[26px]" />
+            <div class="text-[var(--color-text-level-2)]">{{ comment.memberName }}</div>
+            <div class="text-[var(--color-text-level-3)]">{{ comment.timeText }}</div>
           </div>
-          <div class="relative">
-            <img alt="" :src="ZanIcon" class="size-[16px]" />
-            <div
-              class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
-            >
-              8
+          <div class="flex items-center gap-[10px]">
+            <div class="relative">
+              <img
+                alt=""
+                :src="CommentIcon"
+                class="size-[16px] cursor-pointer"
+                @click="openReplyCommentPopup(comment)"
+              />
+              <div
+                v-if="comment.replyCount > 0"
+                class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
+              >
+                {{ comment.replyCount }}
+              </div>
+            </div>
+            <div class="relative">
+              <img alt="" :src="ZanIcon" class="size-[16px]" />
+              <div
+                v-if="comment.likeCount > 0"
+                class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
+              >
+                {{ comment.likeCount }}
+              </div>
+            </div>
+            <div class="relative">
+              <img alt="" :src="UnzanIcon" class="size-[16px]" />
+              <div
+                v-if="comment.dislikeCount > 0"
+                class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
+              >
+                {{ comment.dislikeCount }}
+              </div>
             </div>
           </div>
-          <div>
-            <img alt="" :src="UnzanIcon" class="size-[16px]" />
-          </div>
         </div>
-      </div>
-      <div class="text-[var(--color-text-level-2)] text-[12px] mt-[10px]">
-        Well, I played it and actually won. Lucky me.
-      </div>
-    </div>
-    <div
-      class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[12px] px-[12px]"
-    >
-      <div class="flex justify-between">
-        <div class="flex text-[12px] items-center gap-[8px]">
-          <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
-          <div class="text-[var(--color-text-level-2)]">Bcangcut</div>
-          <div class="text-[var(--color-text-level-3)]">245d</div>
+        <div class="text-[var(--color-text-level-2)] text-[12px] mt-[10px]">
+          {{ comment.content }}
         </div>
-        <div class="flex items-center gap-[10px]">
-          <div>
-            <img alt="" :src="CommentIcon" class="size-[16px] cursor-pointer" />
-          </div>
-          <div class="relative">
-            <img alt="" :src="ZanIcon" class="size-[16px]" />
-            <div
-              class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
-            >
-              8
+        <div v-if="comment.children.length > 0" class="mt-[10px] ml-[20px]">
+          <div
+            v-for="child in comment.children"
+            :key="child.id"
+            class="border-t border-[var(--color-opacity-10)] pt-[12px] pb-[8px]"
+          >
+            <div class="flex justify-between">
+              <div class="flex text-[12px] items-center gap-[8px]">
+                <img alt="" :src="child.avatarUrl" class="size-[26px] rounded-[26px]" />
+                <div class="text-[var(--color-text-level-2)]">{{ child.memberName }}</div>
+                <div class="text-[var(--color-text-level-3)]">{{ child.timeText }}</div>
+              </div>
+              <div class="flex items-center gap-[10px]">
+                <div class="relative">
+                  <img alt="" :src="ZanIcon" class="size-[16px]" />
+                  <div
+                    v-if="child.likeCount > 0"
+                    class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
+                  >
+                    {{ child.likeCount }}
+                  </div>
+                </div>
+                <div class="relative">
+                  <img alt="" :src="UnzanIcon" class="size-[16px]" />
+                  <div
+                    v-if="child.dislikeCount > 0"
+                    class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
+                  >
+                    {{ child.dislikeCount }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="text-[var(--color-text-level-2)] text-[12px] mt-[10px]">
+              {{ child.content }}
             </div>
           </div>
-          <div>
-            <img alt="" :src="UnzanIcon" class="size-[16px]" />
-          </div>
         </div>
       </div>
-      <div class="text-[var(--color-text-level-2)] text-[12px] mt-[10px]">
-        Well, I played it and actually won. Lucky me.
-      </div>
-    </div>
+    </template>
     <div
-      class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[12px] px-[12px]"
+      v-else-if="!isCommentLoading"
+      class="flex items-center justify-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[18px] px-[12px] text-[12px] text-[var(--color-text-level-3)]"
     >
-      <div class="flex justify-between">
-        <div class="flex text-[12px] items-center gap-[8px]">
-          <img alt="" :src="PersonIcon" class="size-[26px] rounded-[26px]" />
-          <div class="text-[var(--color-text-level-2)]">Bcangcut</div>
-          <div class="text-[var(--color-text-level-3)]">245d</div>
-        </div>
-        <div class="flex items-center gap-[10px]">
-          <div>
-            <img alt="" :src="CommentIcon" class="size-[16px] cursor-pointer" />
-          </div>
-          <div class="relative">
-            <img alt="" :src="ZanIcon" class="size-[16px]" />
-            <div
-              class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
-            >
-              8
-            </div>
-          </div>
-          <div>
-            <img alt="" :src="UnzanIcon" class="size-[16px]" />
-          </div>
-        </div>
-      </div>
-      <div class="text-[var(--color-text-level-2)] text-[12px] mt-[10px]">
-        Well, I played it and actually won. Lucky me.
-      </div>
+      No comments yet.
     </div>
-    <CommentPopup v-model="isCommentPopupOpen" @submit="submitComment" />
+    <CommentPopup
+      v-model="isCommentPopupOpen"
+      :placeholder="commentInputPlaceholder"
+      @submit="submitComment"
+    />
   </div>
 </template>
 <script setup lang="ts">
 import Api from '@/api'
+import type { GameCommentListItem } from '@/api/interface/game'
 import { computed, inject, onBeforeUnmount, onMounted, ref, watch, type ComputedRef } from 'vue'
 import { useRoute } from 'vue-router'
 import { useGameRating } from '@/composables/useGameRating'
@@ -213,6 +224,7 @@ type CurrentGameDetail = {
   onlineNumMin?: number | string
 } | null
 type LocalAcctInfo = {
+  memberId?: string | number
   memberRowId?: string | number
 } | null
 
@@ -222,6 +234,7 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
 )
 
 const route = useRoute()
+const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
 
 const { rating: userRating, setRating } = useGameRating()
 
@@ -261,36 +274,156 @@ const normalizeQueryValue = (value: unknown) => {
   return String(value ?? '').trim()
 }
 
-const getMemberRowIdFromStorage = () => {
+const getAcctInfoFromStorage = () => {
   if (typeof window === 'undefined') {
-    return ''
+    return {
+      memberId: '',
+      memberRowId: ''
+    }
   }
   const rawAcctInfo = window.localStorage.getItem('acctInfo')
   if (!rawAcctInfo) {
-    return ''
+    return {
+      memberId: '',
+      memberRowId: ''
+    }
   }
 
   try {
     const parsed = JSON.parse(rawAcctInfo) as LocalAcctInfo
-    return normalizeQueryValue(parsed?.memberRowId)
+    return {
+      memberId: normalizeQueryValue(parsed?.memberId),
+      memberRowId: normalizeQueryValue(parsed?.memberRowId)
+    }
   } catch (error) {
-    console.error('getMemberRowIdFromStorage parse failed', error)
-    return ''
+    console.error('getAcctInfoFromStorage parse failed', error)
+    return {
+      memberId: '',
+      memberRowId: ''
+    }
   }
 }
 
 const currentGameId = computed(() => normalizeQueryValue(route.params.rowId))
 const commentSubjectId = ref('')
+const isCommentLoading = ref(false)
+
+type ReviewCommentViewItem = {
+  id: string
+  memberName: string
+  content: string
+  timeText: string
+  avatarUrl: string
+  likeCount: number
+  dislikeCount: number
+  replyCount: number
+  createTime: number
+  children: ReviewCommentViewItem[]
+}
+
+const commentList = ref<ReviewCommentViewItem[]>([])
+
+const toSafeNumber = (value: unknown) => {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed)) {
+    return 0
+  }
+  return parsed
+}
+
+const formatElapsedTime = (timestamp: number) => {
+  if (!Number.isFinite(timestamp) || timestamp <= 0) {
+    return '--'
+  }
+
+  const diffMs = Date.now() - timestamp
+  if (diffMs <= 0) {
+    return '0m'
+  }
+
+  const diffMinutes = Math.floor(diffMs / (60 * 1000))
+  if (diffMinutes < 60) {
+    return `${Math.max(diffMinutes, 1)}m`
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60)
+  if (diffHours < 24) {
+    return `${diffHours}h`
+  }
+
+  const diffDays = Math.floor(diffHours / 24)
+  return `${diffDays}d`
+}
+
+const resolveCommentAvatar = (avatar: unknown) => {
+  const avatarPath = normalizeQueryValue(avatar)
+  if (!avatarPath) {
+    return PersonIcon
+  }
+  if (/^(data:|blob:|https?:\/\/|\/)/i.test(avatarPath)) {
+    return avatarPath
+  }
+  return gameImageBaseUrl ? `${gameImageBaseUrl}${avatarPath}` : avatarPath
+}
+
+const mapCommentItem = (
+  item: GameCommentListItem,
+  index: number,
+  fallbackPrefix = 'comment'
+): ReviewCommentViewItem => {
+  const createTime = toSafeNumber(item?.createTime)
+  const memberName = normalizeQueryValue(item?.memberName ?? item?.memberId) || 'Anonymous'
+
+  return {
+    id: normalizeQueryValue(item?.id ?? item?.rowId) || `${fallbackPrefix}-${index}`,
+    memberName,
+    content: normalizeQueryValue(item?.content),
+    timeText: formatElapsedTime(createTime),
+    avatarUrl: resolveCommentAvatar(item?.memberAvatar),
+    likeCount: Math.max(0, Math.trunc(toSafeNumber(item?.likeCount))),
+    dislikeCount: Math.max(0, Math.trunc(toSafeNumber(item?.dislikeCount))),
+    replyCount: Math.max(0, Math.trunc(toSafeNumber(item?.replyCount))),
+    createTime,
+    children: []
+  }
+}
+
+const parseCommentRecords = (result: unknown): GameCommentListItem[] => {
+  const records = (result as { records?: unknown } | undefined)?.records
+  if (Array.isArray(result)) {
+    return result as GameCommentListItem[]
+  }
+  if (Array.isArray(records)) {
+    return records as GameCommentListItem[]
+  }
+  return []
+}
+
+const sortedCommentList = computed(() => {
+  const source = [...commentList.value]
+
+  if (activeSort.value === 'comments') {
+    return source.sort((a, b) => b.replyCount - a.replyCount || b.createTime - a.createTime)
+  }
+
+  if (activeSort.value === 'likes') {
+    return source.sort((a, b) => b.likeCount - a.likeCount || b.createTime - a.createTime)
+  }
+
+  return source.sort((a, b) => b.createTime - a.createTime)
+})
 
 const requestCommentsList = async (subjectId: string) => {
   if (!subjectId) {
+    commentList.value = []
     return
   }
 
-  const currentMemberRowId = getMemberRowIdFromStorage()
-  const memberRowIdNumber = Number(currentMemberRowId)
+  const { memberRowId } = getAcctInfoFromStorage()
+  const memberRowIdNumber = Number(memberRowId)
   const validMemberRowId = Number.isFinite(memberRowIdNumber) ? memberRowIdNumber : undefined
 
+  isCommentLoading.value = true
   try {
     const res = await Api.game.getCommentsList({
       subjectId,
@@ -300,9 +433,43 @@ const requestCommentsList = async (subjectId: string) => {
       parent: '0',
       memberRowId: validMemberRowId
     })
-    console.log(res)
+    const rootComments = parseCommentRecords(res?.result).map((item, index) =>
+      mapCommentItem(item, index, 'root-comment')
+    )
+    commentList.value = rootComments
+
+    await Promise.all(
+      commentList.value.map(async item => {
+        const parentId = normalizeQueryValue(item.id)
+        if (!parentId) {
+          item.children = []
+          return
+        }
+
+        try {
+          const childrenRes = await Api.game.getCommentsList({
+            subjectId,
+            current: 1,
+            size: 100,
+            parent: parentId,
+            root: null,
+            memberRowId: validMemberRowId
+          })
+          item.children = parseCommentRecords(childrenRes?.result).map((childItem, childIndex) =>
+            mapCommentItem(childItem, childIndex, `${parentId}-child`)
+          )
+        } catch (error) {
+          console.error('get child comments failed', error)
+          item.children = []
+        }
+      })
+    )
+    console.log(commentList, 'commentList....')
   } catch (error) {
     console.error('getCommentsList failed', error)
+    commentList.value = []
+  } finally {
+    isCommentLoading.value = false
   }
 }
 
@@ -310,14 +477,15 @@ const requestCommentSubject = async () => {
   const gameId = currentGameId.value
   if (!gameId) {
     commentSubjectId.value = ''
+    commentList.value = []
     return
   }
 
   try {
-    const currentMemberRowId = getMemberRowIdFromStorage()
+    const { memberRowId } = getAcctInfoFromStorage()
     const res = await Api.game.getCommentSubject({
       gameId,
-      memberRowId: currentMemberRowId || undefined
+      memberRowId: memberRowId || undefined
     })
     const result = res?.result
     commentSubjectId.value = normalizeQueryValue(result?.subjectId ?? result?.id ?? result?.rowId)
@@ -325,6 +493,7 @@ const requestCommentSubject = async () => {
   } catch (error) {
     console.error('getCommentSubject failed', error)
     commentSubjectId.value = ''
+    commentList.value = []
   }
 }
 
@@ -332,11 +501,20 @@ const sortMenuRef = ref<HTMLElement | null>(null)
 const isSortPopupOpen = ref(false)
 const activeSort = ref('newest')
 const isCommentPopupOpen = ref(false)
+const replyTargetComment = ref<ReviewCommentViewItem | null>(null)
 const sortOptions = [
   { value: 'newest', label: 'Newest First' },
   { value: 'comments', label: 'Top Comments' },
   { value: 'likes', label: 'Top Likes' }
 ]
+
+const commentInputPlaceholder = computed(() => {
+  const memberName = normalizeQueryValue(replyTargetComment.value?.memberName)
+  if (!memberName) {
+    return 'Leave your Comment'
+  }
+  return `Reply to ${memberName}`
+})
 
 const toggleSortPopup = () => {
   isSortPopupOpen.value = !isSortPopupOpen.value
@@ -348,11 +526,55 @@ const selectSort = (value: string) => {
 }
 
 const openCommentPopup = () => {
+  replyTargetComment.value = null
   isCommentPopupOpen.value = true
 }
 
-const submitComment = (content: string) => {
-  console.log(content)
+const openReplyCommentPopup = (comment: ReviewCommentViewItem) => {
+  replyTargetComment.value = comment
+  isCommentPopupOpen.value = true
+}
+
+const submitComment = async (content: string) => {
+  const commentContent = String(content ?? '').trim()
+  if (!commentContent) {
+    return
+  }
+
+  let subjectId = commentSubjectId.value
+  if (!subjectId) {
+    await requestCommentSubject()
+    subjectId = commentSubjectId.value
+  }
+  if (!subjectId) {
+    console.error('publishComment skipped: subjectId is empty')
+    return
+  }
+
+  const { memberId, memberRowId } = getAcctInfoFromStorage()
+  const memberRowIdNumber = Number(memberRowId)
+  if (!memberId || !Number.isFinite(memberRowIdNumber)) {
+    console.error('publishComment skipped: memberId/memberRowId is invalid')
+    return
+  }
+
+  try {
+    const replyParentId = normalizeQueryValue(replyTargetComment.value?.id)
+    const isReplyComment = Boolean(replyParentId)
+    await Api.game.publishComment({
+      subjectId,
+      memberId,
+      memberRowId: Math.trunc(memberRowIdNumber),
+      content: commentContent,
+      root: isReplyComment ? '1' : '0',
+      parent: isReplyComment ? replyParentId : '0',
+      replyIndex: ''
+    })
+    await requestCommentsList(subjectId)
+    replyTargetComment.value = null
+  } catch (error) {
+    console.error('publishComment failed', error)
+  }
 }
 
 const handleClickOutside = (event: MouseEvent) => {
@@ -373,6 +595,12 @@ watch(
   },
   { immediate: true }
 )
+
+watch(isCommentPopupOpen, isOpen => {
+  if (!isOpen) {
+    replyTargetComment.value = null
+  }
+})
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
