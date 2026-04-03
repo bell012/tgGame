@@ -38,7 +38,13 @@
         class="flex-1 flex flex-col justify-center items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[12px]"
       >
         <div class="text-[var(--color-text-level-2)] text-[12px] text-center">Rate this Game</div>
-        <star :count="5" class="flex justify-center mt-[4px]"></star>
+        <star
+          :count="5"
+          :active-count="userRating"
+          :clickable="true"
+          class="flex justify-center mt-[4px]"
+          @change="handleRateChange"
+        />
       </div>
       <div
         class="flex-1 flex flex-col justify-center items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[12px]"
@@ -185,6 +191,7 @@
 </template>
 <script setup lang="ts">
 import { computed, inject, onBeforeUnmount, onMounted, ref, type ComputedRef } from 'vue'
+import { useGameRating } from '@/composables/useGameRating'
 import Star from './star.vue'
 import ProgressBar from './progress.vue'
 import CommentPopup from './comment-popup.vue'
@@ -225,6 +232,11 @@ const scoreValue = computed(() => {
 
 const scoreText = computed(() => scoreValue.value.toFixed(1))
 const activeStarCount = computed(() => Math.max(0, Math.min(5, Math.round(scoreValue.value))))
+const { rating: userRating, setRating } = useGameRating()
+
+const handleRateChange = (value: number) => {
+  setRating(value)
+}
 /**
  * 
  /gc/queryGameDetails?rowId={rowId}  游戏详情 Get请求
