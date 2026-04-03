@@ -1,7 +1,7 @@
 import type { Component, Ref } from 'vue'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { GameDataItem } from '@/api/interface/game'
+import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
 import { useGameStore } from '@/stores/game'
 import { casinoIcons } from '@/static/svg/casino'
 
@@ -13,6 +13,7 @@ export interface CasinoTabButtonItem {
 
 export interface CasinoLobbyButtonItem extends CasinoTabButtonItem {
   items?: GameDataItem[]
+  brandItems?: GameBrandItem[]
 }
 
 interface UseCasinoTabButtonsOptions {
@@ -24,6 +25,7 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
   const gameStore = useGameStore()
   const gameTypeList = ref<GameDataItem[]>([])
   const lobbyGameMap = ref<Record<string, GameDataItem[]>>({})
+  const lobbyBrandMap = ref<Record<string, GameBrandItem[]>>({})
   const hasLoaded = ref(false)
 
   const buildBaseTabButtons = (): CasinoTabButtonItem[] => [
@@ -89,7 +91,8 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
 
     return buttons.map(button => ({
       ...button,
-      items: lobbyGameMap.value[button.sysGameTypeCode] ?? []
+      items: lobbyGameMap.value[button.sysGameTypeCode] ?? [],
+      brandItems: lobbyBrandMap.value[button.sysGameTypeCode] ?? []
     }))
   })
 
@@ -114,7 +117,7 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
       hot_games: []
     }
 
-    const [originalsResult, hotGamesResult] = await Promise.all([
+    const [originalsResult, hotGamesResult, providersResult] = await Promise.all([
       gameStore.queryGameDataPage({
         platformCode: 'JILI_DZ',
         rowType: 3,
@@ -124,7 +127,8 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
         hot: 1,
         rowType: 3,
         page: 1
-      })
+      }),
+      gameStore.queryGameBrandDataPage()
     ])
 
     nextLobbyGameMap.originals = originalsResult.list
@@ -149,6 +153,9 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
     )
 
     lobbyGameMap.value = nextLobbyGameMap
+    lobbyBrandMap.value = {
+      providers: providersResult.list
+    }
     hasLoaded.value = true
 
     return tabButtons.value

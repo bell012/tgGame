@@ -5,6 +5,7 @@
     <img
       :src="currentSrc"
       alt=""
+      draggable="false"
       class="game-err-img"
       :class="{
         error: hasError,
@@ -12,6 +13,7 @@
         'object-cover': !hasError && props.img.fit !== 'contain'
       }"
       @error="handleError"
+      @dragstart.prevent
     />
     <div
       v-if="props.img.maintain"
