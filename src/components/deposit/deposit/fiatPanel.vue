@@ -208,6 +208,7 @@ const orderInfo = ref<FiatOrderType>(defaultFiatOrder)
 const orderPopShow = ref(false)
 const quickAmountConfig = ref<PayRechargeQuickAmtsResult | null>(null)
 const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
+const isDirectRecharge = computed(() => selectedMethod.value?.directRecharge === 1)
 const showChannelSection = computed(() => {
   const method = selectedMethod.value
   return method ? method.directRecharge !== 1 : false
@@ -305,6 +306,15 @@ const normalizePresetAmounts = (values: Array<number | string> = []) => {
     .filter(value => Number.isFinite(value) && value > 0)
 
   return parsed.length > 0 ? parsed : [...defaultPresetAmounts]
+}
+
+const syncPresetAmounts = () => {
+  if (isDirectRecharge.value) {
+    presetAmounts.value = normalizePresetAmounts(quickAmountConfig.value?.amounts ?? [])
+    return
+  }
+
+  presetAmounts.value = normalizePresetAmounts(selectedSubColumn.value?.defaultRechargeAmount ?? [])
 }
 
 const findDiscountItemByAmount = (targetAmount?: number | string) => {
@@ -456,28 +466,30 @@ const loadPaySubColumnPage = async (columnCode: number) => {
       response?.success && Array.isArray(response.result) ? response.result : []
     paySubColumns.value = result
     selectedSubColumn.value = result[0] ?? null
+    syncPresetAmounts()
   } catch (error) {
     console.error('queryPaySubColumnPage failed', error)
     paySubColumns.value = []
     selectedSubColumn.value = null
+    presetAmounts.value = [...defaultPresetAmounts]
   }
 }
 
 // 根据支付方式获取快捷金额
 const loadPayRechargeQuickAmts = async (columnCode: number) => {
   quickAmountConfig.value = null
-  presetAmounts.value = [...defaultPresetAmounts]
+  syncPresetAmounts()
 
   try {
     const response = await Api.wallet.payRechargeQuickAmts({ columnCode })
     const result = response?.success ? response.result : undefined
 
     quickAmountConfig.value = result ?? null
-    presetAmounts.value = normalizePresetAmounts(result?.amounts ?? [])
+    syncPresetAmounts()
   } catch (error) {
     console.error('payRechargeQuickAmts failed', error)
     quickAmountConfig.value = null
-    presetAmounts.value = [...defaultPresetAmounts]
+    syncPresetAmounts()
   }
 }
 
@@ -533,7 +545,12 @@ const loadPayColumnPage = async () => {
     selectedMethod.value = defaultMethod
     void scrollMethodIntoView(0)
     await loadPaySubColumnPage(defaultMethod.columnCode)
-    await loadPayRechargeQuickAmts(defaultMethod.columnCode)
+    if (defaultMethod.directRecharge === 1) {
+      await loadPayRechargeQuickAmts(defaultMethod.columnCode)
+    } else {
+      quickAmountConfig.value = null
+      syncPresetAmounts()
+    }
   } catch (error) {
     console.error('queryPayColumnPage failed', error)
     payMethods.value = []
@@ -553,6 +570,7 @@ const selectChannel = (rowId: number) => {
   if (!target) return
 
   selectedSubColumn.value = target
+  syncPresetAmounts()
   clearAmount()
 }
 
@@ -567,7 +585,12 @@ const selectMethod = async (method: QueryPayColumnItem, index: number) => {
   clearAmount()
   void scrollMethodIntoView(index)
   await loadPaySubColumnPage(method.columnCode)
-  await loadPayRechargeQuickAmts(method.columnCode)
+  if (method.directRecharge === 1) {
+    await loadPayRechargeQuickAmts(method.columnCode)
+  } else {
+    quickAmountConfig.value = null
+    syncPresetAmounts()
+  }
 }
 
 // 提交充值并打开订单弹窗

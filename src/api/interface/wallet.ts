@@ -206,6 +206,7 @@ export interface QueryPaySubColumnItem {
   sortNum: number
   subColumnName: string
   vipId: Array<number | string>
+  offlineAccount?: QueryPayOfflineAccountItem
 }
 
 export interface QueryPaySubColumnPageResponse {
