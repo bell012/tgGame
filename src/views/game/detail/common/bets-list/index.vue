@@ -112,6 +112,9 @@ const normalizeValue = (value: unknown) => String(value ?? '').trim()
 
 const currentGameCode = computed(() => normalizeValue(currentGameDetail.value?.itemCode))
 const currentPlatformCode = computed(() => normalizeValue(currentGameDetail.value?.platformCode))
+const currentRequestCurrency = computed(
+  () => normalizeValue(actualCurrency.value).toUpperCase() || 'USD'
+)
 
 const currentBetType = computed<1 | 2>(() => (activeTab.value === 'My Bets' ? 2 : 1))
 
@@ -155,10 +158,9 @@ const fetchBetRecords = async () => {
       },
       platformCode,
       gameCode,
-      currency: 'PHP',
+      currency: currentRequestCurrency.value,
       betType: currentBetType.value
     })
-    console.log(res, 'hahha')
     const rawResult = res?.result
     const records = (rawResult as { records?: unknown } | undefined)?.records
     const recordList = Array.isArray(rawResult)
@@ -177,7 +179,7 @@ const fetchBetRecords = async () => {
 }
 
 watch(
-  [activeTab, currentPlatformCode, currentGameCode, actualCurrency],
+  [activeTab, currentPlatformCode, currentGameCode, currentRequestCurrency],
   () => {
     void fetchBetRecords()
   },
