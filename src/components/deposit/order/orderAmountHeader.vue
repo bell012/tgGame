@@ -1,24 +1,31 @@
 <template>
-  <div class="font-['Inter']">
-    <div class="flex items-end justify-center" :class="wrapperClass">
-      <p class="text-text-1 text-xl sm:text-[40px] font-bold leading-none capitalize">
+  <div
+    class="mx-auto flex w-full max-w-[352px] flex-col items-center gap-1 font-['Inter']"
+    :class="wrapperClass"
+  >
+    <div class="relative flex h-12 w-full items-end justify-center gap-1 isolate">
+      <p class="text-center text-text-1 text-xl sm:text-[40px] font-bold leading-[48px] capitalize">
         {{ amount }}
       </p>
-      <p class="text-text-1 text-base sm:text-lg font-bold leading-none capitalize">
+      <p
+        class="text-center text-text-1 text-base sm:text-[18px] font-bold leading-[22px] capitalize"
+      >
         {{ method }}
       </p>
     </div>
     <div
-      v-if="rate"
-      class="pt-1 px-3 text-xs sm:text-base font-normal leading-none w-full text-center text-text-2"
+      v-if="displayRate"
+      class="order-1 h-[19px] w-[352px] grow-0 shrink-0 text-center font-['Inter'] text-[16px] font-normal leading-[19px] text-[#B3BEC1]"
     >
-      {{ rate }}
+      {{ displayRate }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-withDefaults(
+import { computed } from 'vue'
+
+const props = withDefaults(
   defineProps<{
     amount: string | number
     method: string
@@ -30,4 +37,30 @@ withDefaults(
     wrapperClass: 'pt-3'
   }
 )
+
+const formatDisplayAmount = (value: number) => {
+  if (!Number.isFinite(value)) return ''
+  const fixed = value.toFixed(2)
+  return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed
+}
+
+const displayRate = computed(() => {
+  const rawRate = props.rate?.trim()
+  if (!rawRate) return ''
+  if (/^Rate[:：]/i.test(rawRate)) return rawRate
+
+  const rateMatch = rawRate.match(/^1\s*([A-Za-z]+)\s*[≈~]\s*([0-9]+(?:\.[0-9]+)?)\s*([A-Za-z]+)$/)
+  if (!rateMatch) return `Rate：${rawRate}`
+
+  const [, , rateNumberText, toCurrency] = rateMatch
+  const rateNumber = Number(rateNumberText)
+  const amountNumber = Number(props.amount)
+  if (!Number.isFinite(rateNumber) || !Number.isFinite(amountNumber)) {
+    return `Rate：${rawRate}`
+  }
+
+  const youGetValue = formatDisplayAmount(amountNumber * rateNumber)
+  if (!youGetValue) return `Rate：${rawRate}`
+  return `Rate：${rawRate}（You Get≈${youGetValue}${toCurrency}）`
+})
 </script>
