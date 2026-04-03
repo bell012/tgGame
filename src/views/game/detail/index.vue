@@ -61,26 +61,6 @@ type GameDetailCacheGlobal = {
   __gameDetailAllPageTitleCache__?: string
 }
 
-const gameDetailCacheGlobal = globalThis as typeof globalThis & GameDetailCacheGlobal
-
-const isMobile = useIsMobile()
-const route = useRoute()
-const isGameDataLoading = ref(false)
-
-const gameData = ref<GameDataSection[]>([])
-provide('game-detail-game-data', gameData)
-
-const getQueryValue = (value: unknown) => {
-  if (Array.isArray(value)) {
-    return String(value[0] ?? '').trim()
-  }
-  return String(value ?? '').trim()
-}
-
-// const itemCode = computed(() => getQueryValue(route.query.itemCode))
-// const platformCode = computed(() => getQueryValue(route.query.platformCode))
-const rowId = computed(() => getQueryValue(route.params.rowId))
-
 type CurrentGameDetail =
   | ({
       rowId?: string | number
@@ -90,6 +70,24 @@ type CurrentGameDetail =
       sysGameTypeCode?: string
     } & Record<string, unknown>)
   | null
+
+const gameDetailCacheGlobal = globalThis as typeof globalThis & GameDetailCacheGlobal
+
+const gameData = ref<GameDataSection[]>([])
+provide('game-detail-game-data', gameData)
+
+const isMobile = useIsMobile()
+const route = useRoute()
+const isGameDataLoading = ref(false)
+
+const getQueryValue = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return String(value[0] ?? '').trim()
+  }
+  return String(value ?? '').trim()
+}
+
+const rowId = computed(() => getQueryValue(route.params.rowId))
 
 const currentGameDetailState = ref<CurrentGameDetail>(null)
 
@@ -128,7 +126,6 @@ const getCurrentGameDetailByApi = async () => {
 
   try {
     const res = await Api.game.queryGameDetails({ rowId: targetRowId })
-    console.log(res, 'res....')
     const result = res?.result
     if (result && typeof result === 'object') {
       currentGameDetailState.value = result as CurrentGameDetail
@@ -193,7 +190,6 @@ onMounted(async () => {
   await getGameDataForApp()
   await getCurrentGameDetailByApi()
 })
-// 游戏列表 ------------ end
 </script>
 <style scoped lang="scss">
 .detail-page {
