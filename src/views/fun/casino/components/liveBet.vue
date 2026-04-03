@@ -22,19 +22,21 @@
           </td>
         </tr>
       </tbody>
-      <TransitionGroup v-else tag="tbody" name="live">
+      <tbody v-else>
         <tr
-          v-for="(item, index) in rows"
-          :key="item.id"
+          v-for="(item, index) in displayRows"
+          :key="`row-${index}`"
           :class="[
             index % 2 === 0 ? 'bg-[var(--color-opacity-10)]' : 'bg-[var(--color-opacity-6)]'
           ]"
         >
           <td class="py-2 px-3 flex items-center gap-1">
-            <img :src="item.gameIcon" class="w-3.5 h-3.5" :alt="item.game" />
-            <span class="text-text-1 truncate max-w-[58px]">
-              {{ item.game }}
-            </span>
+            <div :key="item.id" class="flex items-center gap-1">
+              <img :src="item.gameIcon" class="w-3.5 h-3.5" :alt="item.game" />
+              <span class="text-text-1 truncate max-w-[58px]">
+                {{ item.game }}
+              </span>
+            </div>
           </td>
           <td class="py-2 px-3 text-text-1 truncate max-w-[60px]">
             {{ item.player }}
@@ -47,18 +49,17 @@
             <img :src="currencyIcon" class="w-3 h-3" :alt="item.game" />
           </td>
         </tr>
-      </TransitionGroup>
+      </tbody>
     </table>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { storeToRefs } from 'pinia'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import Api from '@/api'
-import { useLocaleStore } from '@/stores/locale'
 import placeholderImg from '@/static/img/home/errImg.png'
 import { getCurrencyIconByCode } from '@/views/game/detail/common/currency-select-options'
+import { getCurrentCurrency } from '@/utils/locale'
 
 interface LiveBetRow {
   id: number
@@ -69,6 +70,8 @@ interface LiveBetRow {
   profit: number
 }
 
+const MAX_VISIBLE_ROWS = 10
+
 const props = withDefaults(
   defineProps<{
     type?: 1 | 2
@@ -78,11 +81,17 @@ const props = withDefaults(
   }
 )
 
-const localeStore = useLocaleStore()
-const { currentCurrency } = storeToRefs(localeStore)
 const sourceRows = ref<LiveBetRow[]>([])
+const displayRows = ref<LiveBetRow[]>([])
 const loading = ref(false)
+const currentCurrency = computed(() => getCurrentCurrency())
 const currencyIcon = computed(() => getCurrencyIconByCode(currentCurrency.value))
+let autoScrollTimer: number | null = null
+let nextScrollIndex = 0
+
+const getRandomScrollInterval = () => {
+  return Math.floor(Math.random() * 701) + 300
+}
 
 const toGameImageUrl = (value?: string) => {
   if (!value) {
@@ -124,6 +133,40 @@ const rows = computed<LiveBetRow[]>(() => {
   }))
 })
 
+const stopAutoScroll = () => {
+  if (autoScrollTimer) {
+    window.clearTimeout(autoScrollTimer)
+    autoScrollTimer = null
+  }
+}
+
+const scheduleNextScroll = () => {
+  autoScrollTimer = window.setTimeout(() => {
+    const nextRow = rows.value[nextScrollIndex]
+
+    if (!nextRow) {
+      return
+    }
+
+    displayRows.value = [nextRow, ...displayRows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
+    nextScrollIndex = (nextScrollIndex + 1) % rows.value.length
+    scheduleNextScroll()
+  }, getRandomScrollInterval())
+}
+
+const startAutoScroll = () => {
+  stopAutoScroll()
+
+  if (rows.value.length <= MAX_VISIBLE_ROWS) {
+    displayRows.value = [...rows.value]
+    return
+  }
+
+  displayRows.value = rows.value.slice(0, MAX_VISIBLE_ROWS)
+  nextScrollIndex = MAX_VISIBLE_ROWS % rows.value.length
+  scheduleNextScroll()
+}
+
 watch(
   [() => props.type, () => currentCurrency.value],
   () => {
@@ -131,21 +174,18 @@ watch(
   },
   { immediate: true }
 )
+
+watch(
+  rows,
+  () => {
+    startAutoScroll()
+  },
+  { immediate: true }
+)
+
+onUnmounted(() => {
+  stopAutoScroll()
+})
 </script>
 
-<style scoped lang="scss">
-.live-enter-active,
-.live-leave-active {
-  transition: all 0.15s ease;
-}
-
-.live-enter-from {
-  opacity: 0;
-  transform: translateY(-1px);
-}
-
-.live-leave-to {
-  opacity: 0;
-  transform: translateY(1px);
-}
-</style>
+<style scoped lang="scss"></style>

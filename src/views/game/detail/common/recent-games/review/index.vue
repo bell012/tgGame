@@ -192,7 +192,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, inject, onBeforeUnmount, onMounted, ref, type ComputedRef } from 'vue'
+import Api from '@/api'
+import { computed, inject, onBeforeUnmount, onMounted, ref, watch, type ComputedRef } from 'vue'
+import { useRoute } from 'vue-router'
 import { useGameRating } from '@/composables/useGameRating'
 import Star from './star.vue'
 import ProgressBar from './progress.vue'
@@ -210,11 +212,16 @@ type CurrentGameDetail = {
   onlineNumMax?: number | string
   onlineNumMin?: number | string
 } | null
+type LocalAcctInfo = {
+  memberRowId?: string | number
+} | null
 
 const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   'game-detail-current-game',
   computed(() => null)
 )
+
+const route = useRoute()
 
 const { rating: userRating, setRating } = useGameRating()
 
@@ -229,6 +236,7 @@ const baseRatingCount = computed(() => {
 const ratingCount = computed(() => {
   return baseRatingCount.value + (userRating.value > 0 ? 1 : 0)
 })
+
 const avatarCount = computed(() => Math.min(8, Math.max(0, ratingCount.value)))
 
 const scoreValue = computed(() => {
@@ -245,42 +253,81 @@ const activeStarCount = computed(() => Math.max(0, Math.min(5, Math.round(scoreV
 const handleRateChange = (value: number) => {
   setRating(value)
 }
-/**
- * 
- /gc/queryGameDetails?rowId={rowId}  游戏详情 Get请求
-  初始评分数量
-  final int? initScoreNum;
-  /// 初始评分星级 1:4星 2:4.5星 3:5星
-  final int? initScoreStar;
-  /// 在线人数最大值
-  final int? onlineNumMax;
-  /// 在线人数最小值
-  final int? onlineNumMin;
-  -------
-  /// 获取评论的主题
-  @POST('/comment/sub/getCommentSubject') // gameId 和 memberRowId
-  /// 游戏ID
-  final int gameId;
-  /// 会员ID
-  final String? memberRowId;
-  ---------
-  /// 获取评论列表
-  @POST('/comment/sub/getCommentsList')
-/// 评论主表 ID
-  final String? subjectId;
-  /// 页码
-  final int? current;
-  /// 每页数量
-  final int? pageSize;
-  /// 会员 ID
-  final int? memberRowId;
-  -----
-  /// 评论根节点 0.根评论. 楼层
-  // final String? root;
-  //展开评论的时候 root传null parent 传父元素的id
-  /// 父级别 ID，
-  // final String? parent;
- */
+
+const normalizeQueryValue = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return String(value[0] ?? '').trim()
+  }
+  return String(value ?? '').trim()
+}
+
+const getMemberRowIdFromStorage = () => {
+  if (typeof window === 'undefined') {
+    return ''
+  }
+  const rawAcctInfo = window.localStorage.getItem('acctInfo')
+  if (!rawAcctInfo) {
+    return ''
+  }
+
+  try {
+    const parsed = JSON.parse(rawAcctInfo) as LocalAcctInfo
+    return normalizeQueryValue(parsed?.memberRowId)
+  } catch (error) {
+    console.error('getMemberRowIdFromStorage parse failed', error)
+    return ''
+  }
+}
+
+const currentGameId = computed(() => normalizeQueryValue(route.params.rowId))
+const commentSubjectId = ref('')
+
+const requestCommentsList = async (subjectId: string) => {
+  if (!subjectId) {
+    return
+  }
+
+  const currentMemberRowId = getMemberRowIdFromStorage()
+  const memberRowIdNumber = Number(currentMemberRowId)
+  const validMemberRowId = Number.isFinite(memberRowIdNumber) ? memberRowIdNumber : undefined
+
+  try {
+    const res = await Api.game.getCommentsList({
+      subjectId,
+      current: 1,
+      size: 100,
+      root: '0',
+      parent: '0',
+      memberRowId: validMemberRowId
+    })
+    console.log(res)
+  } catch (error) {
+    console.error('getCommentsList failed', error)
+  }
+}
+
+const requestCommentSubject = async () => {
+  const gameId = currentGameId.value
+  if (!gameId) {
+    commentSubjectId.value = ''
+    return
+  }
+
+  try {
+    const currentMemberRowId = getMemberRowIdFromStorage()
+    const res = await Api.game.getCommentSubject({
+      gameId,
+      memberRowId: currentMemberRowId || undefined
+    })
+    const result = res?.result
+    commentSubjectId.value = normalizeQueryValue(result?.subjectId ?? result?.id ?? result?.rowId)
+    await requestCommentsList(commentSubjectId.value)
+  } catch (error) {
+    console.error('getCommentSubject failed', error)
+    commentSubjectId.value = ''
+  }
+}
+
 const sortMenuRef = ref<HTMLElement | null>(null)
 const isSortPopupOpen = ref(false)
 const activeSort = ref('newest')
@@ -318,6 +365,14 @@ const handleClickOutside = (event: MouseEvent) => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
+
+watch(
+  currentGameId,
+  () => {
+    void requestCommentSubject()
+  },
+  { immediate: true }
+)
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)

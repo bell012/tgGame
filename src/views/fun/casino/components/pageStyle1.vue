@@ -49,17 +49,6 @@
         >
           <gameErrImg class="h-6 w-4/5 sm:h-11" :img="getBrandImg(brand)" />
         </div>
-        <div>
-          <a
-            href="javascript:void(0);"
-            class="game-item group relative flex size-full min-h-16 flex-col items-center justify-center overflow-hidden rounded-lg bg-bg-2 transition-all sm:hover:-translate-y-2 inactive"
-            @click="handleViewAll(item)"
-          >
-            <span class="text-center text-xs font-extrabold text-text-1 sm:text-sm">
-              View All
-            </span>
-          </a>
-        </div>
       </div>
       <div
         v-else-if="item.items && item.items.length > 0"
