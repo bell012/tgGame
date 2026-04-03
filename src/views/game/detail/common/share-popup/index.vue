@@ -39,16 +39,18 @@
                 Invite friends using the options below
               </div>
               <div class="grid grid-cols-5 gap-x-5 mt-3.5">
-                <div
+                <button
                   v-for="item in shareList"
                   :key="item.label"
+                  type="button"
                   class="flex flex-col items-center min-w-0"
+                  @click="handleChannelShare(item.key)"
                 >
                   <component :is="item.icon" class="size-[54px]" />
                   <div class="text-[11px]/[14px] mt-2 text-[var(--color-text-level-1)] text-center">
                     {{ item.label }}
                   </div>
-                </div>
+                </button>
               </div>
               <div class="text-[14px]/[20px] mt-4 text-[var(--color-text-level-1)] font-medium">
                 Share via web link
@@ -82,7 +84,21 @@ import facebookIcon from '@/static/svg/game/detail/share/f.svg?component'
 import linkIcon from '@/static/svg/game/detail/share/l.svg?component'
 import telegramIcon from '@/static/svg/game/detail/share/t.svg?component'
 import whatsappIcon from '@/static/svg/game/detail/share/w.svg?component'
+import { showToast } from 'vant'
 import { shallowRef } from 'vue'
+
+type ShareChannelKey = 'more' | 'facebook' | 'whatsapp' | 'telegram' | 'tiktok'
+type ShareChannel = {
+  key: ShareChannelKey
+  label: string
+  icon: object
+}
+type ChannelOpenConfig = {
+  appUrl: string
+  webUrl: string
+  androidStoreUrl: string
+  iosStoreUrl: string
+}
 
 const props = defineProps<{
   visible: boolean
@@ -93,24 +109,29 @@ const emit = defineEmits<{
   'update:visible': [val: boolean]
 }>()
 
-const shareList = shallowRef([
+const shareList = shallowRef<ShareChannel[]>([
   {
+    key: 'more',
     icon: linkIcon,
     label: 'Mais'
   },
   {
+    key: 'facebook',
     icon: facebookIcon,
     label: 'Facebook'
   },
   {
+    key: 'whatsapp',
     icon: whatsappIcon,
     label: 'Whatsapp'
   },
   {
+    key: 'telegram',
     icon: telegramIcon,
     label: 'Telegram'
   },
   {
+    key: 'tiktok',
     icon: tiktokIcon,
     label: 'Tiktok'
   }
@@ -123,14 +144,159 @@ const close = () => {
   emit('update:visible', false)
 }
 
+const isAndroid = () =>
+  typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent ?? '')
+const isIOS = () =>
+  typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent ?? '')
+const isMobile = () => isAndroid() || isIOS()
+
+const openInNewTab = (url: string) => {
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+const openAppWithStoreFallback = (config: ChannelOpenConfig) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  if (!isMobile()) {
+    openInNewTab(config.webUrl)
+    return
+  }
+
+  let appOpened = false
+  let timer: number | null = null
+
+  const clear = () => {
+    document.removeEventListener('visibilitychange', onVisibilityChange)
+    if (timer) {
+      window.clearTimeout(timer)
+      timer = null
+    }
+  }
+
+  const onVisibilityChange = () => {
+    if (document.hidden) {
+      appOpened = true
+      clear()
+    }
+  }
+
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  window.location.href = config.appUrl
+
+  timer = window.setTimeout(() => {
+    if (!appOpened) {
+      if (isIOS()) {
+        window.location.href = config.iosStoreUrl
+      } else if (isAndroid()) {
+        window.location.href = config.androidStoreUrl
+      } else {
+        openInNewTab(config.webUrl)
+      }
+    }
+    clear()
+  }, 1300)
+}
+
+const copyText = async (value: string) => {
+  if (typeof navigator === 'undefined' || !navigator?.clipboard?.writeText) {
+    return
+  }
+  await navigator.clipboard.writeText(value)
+}
+
+const handleMoreShare = async () => {
+  if (typeof navigator !== 'undefined' && navigator.share) {
+    try {
+      await navigator.share({
+        title: typeof document !== 'undefined' ? document.title : 'Share',
+        text: shareUrl,
+        url: shareUrl
+      })
+      return
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  try {
+    await copyText(shareUrl)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const handleChannelShare = async (channel: ShareChannelKey) => {
+  const encodedUrl = encodeURIComponent(shareUrl)
+  const encodedText = encodeURIComponent(`${shareUrl}`)
+
+  if (channel === 'more') {
+    await handleMoreShare()
+    return
+  }
+
+  if (channel === 'facebook') {
+    const webUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
+    openAppWithStoreFallback({
+      appUrl: `fb://facewebmodal/f?href=${encodeURIComponent(webUrl)}`,
+      webUrl,
+      androidStoreUrl: 'https://play.google.com/store/apps/details?id=com.facebook.katana',
+      iosStoreUrl: 'https://apps.apple.com/app/facebook/id284882215'
+    })
+    return
+  }
+
+  if (channel === 'whatsapp') {
+    const webUrl = `https://wa.me/?text=${encodedText}`
+    openAppWithStoreFallback({
+      appUrl: `whatsapp://send?text=${encodedText}`,
+      webUrl,
+      androidStoreUrl: 'https://play.google.com/store/apps/details?id=com.whatsapp',
+      iosStoreUrl: 'https://apps.apple.com/app/whatsapp-messenger/id310633997'
+    })
+    return
+  }
+
+  if (channel === 'telegram') {
+    const webUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`
+    openAppWithStoreFallback({
+      appUrl: `tg://msg_url?url=${encodedUrl}&text=${encodedText}`,
+      webUrl,
+      androidStoreUrl: 'https://play.google.com/store/apps/details?id=org.telegram.messenger',
+      iosStoreUrl: 'https://apps.apple.com/app/telegram-messenger/id686449807'
+    })
+    return
+  }
+
+  try {
+    await copyText(shareUrl)
+  } catch (error) {
+    console.error(error)
+  }
+
+  openAppWithStoreFallback({
+    appUrl: 'snssdk1233://',
+    webUrl: 'https://www.tiktok.com/',
+    androidStoreUrl: 'https://play.google.com/store/apps/details?id=com.zhiliaoapp.musically',
+    iosStoreUrl: 'https://apps.apple.com/app/tiktok/id835599320'
+  })
+}
+
 const handleCopy = async () => {
-  if (typeof window === 'undefined' || !navigator?.clipboard?.writeText) {
+  if (typeof window === 'undefined') {
     return
   }
   try {
-    await navigator.clipboard.writeText(shareUrl)
+    await copyText(shareUrl)
+    showToast({
+      message: '分享链接复制成功',
+      type: 'success'
+    })
   } catch (error) {
     console.error(error)
+    showToast({
+      message: '复制失败，请重试',
+      type: 'fail'
+    })
   }
 }
 </script>
