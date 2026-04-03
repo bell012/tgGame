@@ -18,8 +18,8 @@
       </div>
     </div>
     <div class="w-full flex-1 min-h-0 overflow-y-auto overscroll-contain bg-bg-1 p-3.5">
-      <withdrawMobileCryptoPanel v-if="selectTab === 'Crypto'" />
-      <withdrawMobileFiatPanel v-else-if="selectTab === 'Fiat'" />
+      <withdrawMobileCryptoPanel v-if="selectTab === 'Crypto'" @submit="handleSubmit" />
+      <withdrawMobileFiatPanel v-else-if="selectTab === 'Fiat'" @submit="handleSubmit" />
     </div>
   </div>
 </template>
@@ -28,6 +28,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import withdrawMobileCryptoPanel from './withdrawMobileCryptoPanel.vue'
 import withdrawMobileFiatPanel from './withdrawMobileFiatPanel.vue'
+import type { WithdrawSubmitPayload } from './types'
 
 export type DepositTabType = 'Crypto' | 'Fiat'
 const { t } = useI18n()
@@ -47,6 +48,14 @@ const showUnderline = (tab: DepositTabType) => selectTab.value === tab
 
 const setActiveTab = (tab: DepositTabType) => {
   selectTab.value = tab
+}
+
+const emit = defineEmits<{
+  submit: [payload: WithdrawSubmitPayload]
+}>()
+
+const handleSubmit = (payload: WithdrawSubmitPayload) => {
+  emit('submit', payload)
 }
 </script>
 <style scoped lang="scss"></style>
