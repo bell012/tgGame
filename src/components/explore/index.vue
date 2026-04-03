@@ -11,13 +11,13 @@
     <!-- 筛选条件 -->
     <div class="grid lg:grid-cols-4 grid-cols-2 gap-4" v-if="currentType === 'casino'">
       <select-popup
-        label="排序方式:"
+        :label="t('search.sort')"
         v-model="currentSort"
         :dataList="sortList"
         @change="sortChange"
       />
       <multiple-select-popup
-        label="供应商:"
+        :label="t('search.providers')"
         v-model="currentProvider"
         :dataList="providerOptions"
         @change="providerChange"
@@ -40,6 +40,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, provide, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import TopInput from './top-input/index.vue'
 import TopTab from './top-tab/index.vue'
 import SelectPopup from './select-popup/index.vue'
@@ -53,6 +54,7 @@ import Lottery from '@/components/explore/list/lottery.vue'
 import { countryList } from '@/components/explore/mock/index.ts'
 
 const themeStore = useThemeStore()
+const { t } = useI18n()
 
 const listCompMap = {
   casino: Casino,
@@ -109,11 +111,11 @@ const exploreHotGameList = ref<ExploreHotGameItem[]>([])
 provide('explore-hot-game-list', exploreHotGameList)
 
 // top-input
-const typeList = [
-  { id: 'casino', name: 'Casino' },
-  { id: 'sports', name: 'Sports' }
+const typeList = computed(() => [
+  { id: 'casino', name: t('bottom_tab_bar.casino') },
+  { id: 'sports', name: t('bottom_tab_bar.sports') }
   // { id: 'lottery', name: 'Lottery' }
-]
+])
 
 // 游戏类型
 const currentType = ref<keyof typeof listCompMap>('casino')
@@ -186,11 +188,11 @@ const topInputSearch = (_value: string) => {
 const currentSort = ref('0')
 provide('explore-current-sort', currentSort)
 
-const sortList = [
-  { value: '0', label: 'Default' },
+const sortList = computed(() => [
+  { value: '0', label: t('search.sortDefault') },
   { value: '1', label: 'A-Z' },
   { value: '2', label: 'Z-A' }
-]
+])
 
 // 供应商
 const currentProvider = ref<string[]>([])
@@ -228,12 +230,14 @@ const providerOptions = computed(() => {
 
 // 国家
 const currentCountry = ref('')
-const countryOptions = countryList.map(item => {
-  return {
-    label: item || '全部国家',
-    value: item
-  }
-})
+const countryOptions = computed(() =>
+  countryList.map(item => {
+    return {
+      label: item || t('search.all'),
+      value: item
+    }
+  })
+)
 
 const providerChange = (val: string[]) => {
   console.log(val)
