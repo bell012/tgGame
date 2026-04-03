@@ -98,6 +98,25 @@
       </div>
     </div>
 
+    <div
+      v-if="isCommentLoading && !sortedCommentList.length"
+      class="flex items-center justify-center gap-[8px] bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[18px] px-[12px]"
+    >
+      <div
+        class="size-[16px] rounded-full border-[2px] border-[var(--color-text-level-3)] border-t-transparent animate-spin"
+      ></div>
+      <div class="text-[12px] text-[var(--color-text-level-3)]">Loading comments...</div>
+    </div>
+    <div
+      v-else-if="isCommentLoading"
+      class="flex items-center justify-center gap-[8px] bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[10px] px-[12px]"
+    >
+      <div
+        class="size-[14px] rounded-full border-[2px] border-[var(--color-text-level-3)] border-t-transparent animate-spin"
+      ></div>
+      <div class="text-[12px] text-[var(--color-text-level-3)]">Refreshing comments...</div>
+    </div>
+
     <template v-if="sortedCommentList.length">
       <div
         v-for="comment in sortedCommentList"
