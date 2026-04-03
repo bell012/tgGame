@@ -4,7 +4,7 @@
       v-if="props.loading"
       class="flex items-center justify-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[16px] text-[12px] text-[var(--color-text-level-2)]"
     >
-      Loading...
+      {{ t('common.loading') }}
     </div>
     <template v-else-if="props.list.length">
       <div
@@ -17,7 +17,7 @@
           <div class="text-[12px] font-bold">{{ getPlayerName(item) }}</div>
         </h3>
         <div class="flex justify-between mt-[12px] text-[12px]">
-          <div class="text-[var(--color-text-level-2)]">Payout</div>
+          <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.payout') }}</div>
           <div class="flex items-center gap-[8px]">
             <img
               class="w-[20px] h-[20px] min-w-[20px] object-contain"
@@ -28,7 +28,7 @@
           </div>
         </div>
         <div class="flex justify-between mt-[12px] text-[12px]">
-          <div class="text-[var(--color-text-level-2)]">Wager</div>
+          <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.wager') }}</div>
           <div class="flex items-center gap-[8px]">
             <img
               class="w-[20px] h-[20px] min-w-[20px] object-contain"
@@ -39,7 +39,7 @@
           </div>
         </div>
         <div class="flex justify-between mt-[12px] text-[12px]">
-          <div class="text-[var(--color-text-level-2)]">Mult</div>
+          <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.mult') }}</div>
           <div class="flex items-center gap-[8px]">
             <div>{{ formatMult(item.mult) }}</div>
           </div>
@@ -50,7 +50,7 @@
       v-else
       class="flex items-center justify-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[16px] text-[12px] text-[var(--color-text-level-2)]"
     >
-      No data
+      {{ t('gameDetail.noData') }}
     </div>
   </div>
 </template>
@@ -61,6 +61,7 @@ import { useLocaleStore } from '@/stores/locale'
 import { getCurrencyIconByCode } from '../currency-select-options'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = withDefaults(
   defineProps<{
@@ -74,6 +75,7 @@ const props = withDefaults(
 )
 
 const toPlainText = (value: unknown) => String(value ?? '').trim()
+const { t } = useI18n()
 const localeStore = useLocaleStore()
 const { actualCurrency } = storeToRefs(localeStore)
 const currentRequestCurrency = computed(
@@ -119,7 +121,7 @@ const getPlayerName = (item: GameRanListItem) => {
     toPlainText(item.memberName) ||
     toPlainText(item.userName) ||
     toPlainText(item.memberId) ||
-    'Anonymous'
+    t('gameDetail.anonymous')
   )
 }
 </script>

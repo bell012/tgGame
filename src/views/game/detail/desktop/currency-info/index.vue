@@ -17,13 +17,13 @@
         class="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-[var(--color-background-level-1)] p-[28px] rounded-lg"
       >
         <div class="text-[12px] text-center pb-[8px] text-[var(--color-text-level-2)]">
-          Welcome to dragon-phoenix, please sign in to proceed .
+          {{ t('gameDetail.signInPrompt') }}
         </div>
         <div class="play-btn w-[408px] h-[40px] cursor-pointer" @click="handleSignIn">
           <div class="w-[16px] h-[16px]">
             <play-icon class="w-full h-full" />
           </div>
-          <div class="text-[15px] font-bold text-[#000]">Sign in</div>
+          <div class="text-[15px] font-bold text-[#000]">{{ t('home.sign_In') }}</div>
         </div>
       </div>
     </div>
@@ -38,11 +38,13 @@ import CurrencyBar from '../currency-bar/index.vue'
 import PlayForm from './play-form.vue'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 
 import { computed, ComputedRef, inject, onMounted } from 'vue'
 
 const userStore = useUserStore()
 const authModalStore = useAuthModalStore()
+const { t } = useI18n()
 const { userInfo } = storeToRefs(userStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
 

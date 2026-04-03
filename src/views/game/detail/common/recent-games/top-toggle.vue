@@ -3,7 +3,7 @@
     <div class="flex flex-col">
       <h3 class="text-[14px]">{{ gameName }}</h3>
       <div class="flex gap-[4px] text-[12px]">
-        <div class="text-[var(--color-text-level-2)]">by</div>
+        <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.by') }}</div>
         <div class="text-[var(--color-theme-level-1)]">{{ providerName }}</div>
       </div>
       <div class="text-[var(--color-theme-level-1)] text-[12px]"># {{ gameTypeName }}</div>
@@ -21,8 +21,10 @@
 </template>
 <script setup lang="ts">
 import { computed, inject, Ref, type ComputedRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const isOpen = inject('isRgOpen') as Ref<boolean>
+const { t } = useI18n()
 
 type CurrentGameDetail = {
   itemName?: string
@@ -36,7 +38,7 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
 )
 
 const gameName = computed(() => {
-  return String(currentGameDetail.value?.itemName ?? '').trim() || 'Queen of Bounty'
+  return String(currentGameDetail.value?.itemName ?? '').trim() || '-'
 })
 
 const providerName = computed(() => {
@@ -44,7 +46,7 @@ const providerName = computed(() => {
 })
 
 const gameTypeName = computed(() => {
-  return String(currentGameDetail.value?.sysGameTypeName ?? '').trim() || 'Slots'
+  return String(currentGameDetail.value?.sysGameTypeName ?? '').trim() || t('home.Slots')
 })
 
 const toggleIsOpen = () => {

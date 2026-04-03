@@ -23,7 +23,7 @@
           <div class="tp-header h-[64px] px-5 flex items-center justify-between">
             <div class="w-7 h-7" />
             <div class="text-[16px]/[24px] text-[var(--color-text-level-1)] font-bold">
-              Share This Game
+              {{ t('gameDetail.shareThisGame') }}
             </div>
             <button
               type="button"
@@ -36,12 +36,12 @@
           <div class="px-4 pb-4">
             <div class="tp-content rounded-[10px] px-4 py-[18px]">
               <div class="text-[14px]/[20px] text-[var(--color-text-level-1)]">
-                Invite friends using the options below
+                {{ t('gameDetail.shareInviteHint') }}
               </div>
               <div class="grid grid-cols-5 gap-x-5 mt-3.5">
                 <button
                   v-for="item in shareList"
-                  :key="item.label"
+                  :key="item.key"
                   type="button"
                   class="flex flex-col items-center min-w-0"
                   @click="handleChannelShare(item.key)"
@@ -53,7 +53,7 @@
                 </button>
               </div>
               <div class="text-[14px]/[20px] mt-4 text-[var(--color-text-level-1)] font-medium">
-                Share via web link
+                {{ t('gameDetail.shareViaWebLink') }}
               </div>
               <div
                 class="mt-2.5 h-[56px] rounded-[10px] border border-[var(--color-opacity-20)] bg-[var(--color-background-level-4)] px-3 flex items-center justify-between gap-3"
@@ -66,7 +66,7 @@
                   class="h-[40px] min-w-[86px] rounded-[10px] bg-[var(--color-opacity-10)] text-[14px]/[20px] text-[var(--color-primary)] font-bold"
                   @click="handleCopy"
                 >
-                  Copy
+                  {{ t('gameDetail.copy') }}
                 </button>
               </div>
             </div>
@@ -85,7 +85,8 @@ import linkIcon from '@/static/svg/game/detail/share/l.svg?component'
 import telegramIcon from '@/static/svg/game/detail/share/t.svg?component'
 import whatsappIcon from '@/static/svg/game/detail/share/w.svg?component'
 import { showToast } from 'vant'
-import { shallowRef } from 'vue'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 type ShareChannelKey = 'more' | 'facebook' | 'whatsapp' | 'telegram' | 'tiktok'
 type ShareChannel = {
@@ -109,36 +110,39 @@ const emit = defineEmits<{
   'update:visible': [val: boolean]
 }>()
 
-const shareList = shallowRef<ShareChannel[]>([
+const { t } = useI18n()
+
+const shareList = computed<ShareChannel[]>(() => [
   {
     key: 'more',
     icon: linkIcon,
-    label: 'Mais'
+    label: t('gameDetail.shareChannelMore')
   },
   {
     key: 'facebook',
     icon: facebookIcon,
-    label: 'Facebook'
+    label: t('gameDetail.shareChannelFacebook')
   },
   {
     key: 'whatsapp',
     icon: whatsappIcon,
-    label: 'Whatsapp'
+    label: t('gameDetail.shareChannelWhatsapp')
   },
   {
     key: 'telegram',
     icon: telegramIcon,
-    label: 'Telegram'
+    label: t('gameDetail.shareChannelTelegram')
   },
   {
     key: 'tiktok',
     icon: tiktokIcon,
-    label: 'Tiktok'
+    label: t('gameDetail.shareChannelTiktok')
   }
 ])
 
 const shareUrl =
   typeof window !== 'undefined' ? window.location.href : 'https://translate.google.com'
+const SHARE_TOAST_Z_INDEX = 11001
 
 const close = () => {
   emit('update:visible', false)
@@ -209,7 +213,7 @@ const handleMoreShare = async () => {
   if (typeof navigator !== 'undefined' && navigator.share) {
     try {
       await navigator.share({
-        title: typeof document !== 'undefined' ? document.title : 'Share',
+        title: typeof document !== 'undefined' ? document.title : t('gameDetail.shareDefaultTitle'),
         text: shareUrl,
         url: shareUrl
       })
@@ -288,14 +292,16 @@ const handleCopy = async () => {
   try {
     await copyText(shareUrl)
     showToast({
-      message: '分享链接复制成功',
-      type: 'success'
+      message: t('gameDetail.shareLinkCopySuccess'),
+      type: 'success',
+      zIndex: SHARE_TOAST_Z_INDEX
     })
   } catch (error) {
     console.error(error)
     showToast({
-      message: '复制失败，请重试',
-      type: 'fail'
+      message: t('gameDetail.copyFailedRetry'),
+      type: 'fail',
+      zIndex: SHARE_TOAST_Z_INDEX
     })
   }
 }

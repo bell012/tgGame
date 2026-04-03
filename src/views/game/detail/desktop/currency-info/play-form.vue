@@ -2,20 +2,20 @@
   <div class="currency-info-container">
     <div class="play-form">
       <div class="form-row">
-        <div class="form-label">Play with balance in</div>
+        <div class="form-label">{{ t('gameDetail.playWithBalanceIn') }}</div>
         <div class="form-control">
           <currency-select class="w-full"></currency-select>
         </div>
       </div>
     </div>
     <div class="text-center text-[12px] mt-[16px]">
-      Tap "Play Now" to enter. Good luck and have fun!
+      {{ t('gameDetail.playNowHint') }}
     </div>
     <button type="button" class="play-btn w-full mt-[14px] cursor-pointer" @click="gamePlay">
       <div class="w-[16px] h-[16px]">
         <play-icon class="w-full h-full" />
       </div>
-      <div class="text-[15px] font-bold text-[#000]">Confirm and Play</div>
+      <div class="text-[15px] font-bold text-[#000]">{{ t('gameDetail.confirmAndPlay') }}</div>
     </button>
   </div>
 </template>
@@ -23,8 +23,10 @@
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import CurrencySelect from '../currency-select/index.vue'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
+import { useI18n } from 'vue-i18n'
 
 const { gamePlay } = useGamePlatformPlay()
+const { t } = useI18n()
 </script>
 <style scoped lang="scss">
 .currency-info-container {

@@ -10,7 +10,7 @@
     <desktop-currency-info v-else></desktop-currency-info>
     <recent-games></recent-games>
     <game-list
-      title="Recommended Games"
+      :title="t('home.RecommendedGames')"
       :list="currentCategoryHotGameList"
       @all-click="openCurrentCategoryAllGamesPage"
     ></game-list>
@@ -22,6 +22,7 @@ import Api from '@/api'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, provide, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import H5Header from './h5/header.vue'
 import H5CurrencyInfo from './h5/currency-info/index.vue'
@@ -75,6 +76,8 @@ const gameDetailCacheGlobal = globalThis as typeof globalThis & GameDetailCacheG
 
 const gameData = ref<GameDataSection[]>([])
 provide('game-detail-game-data', gameData)
+
+const { t } = useI18n()
 
 const isMobile = useIsMobile()
 const route = useRoute()

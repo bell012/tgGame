@@ -12,7 +12,9 @@
         <div class="tp-panel bg-[var(--color-background-level-2)] rounded-t-xl pt-2.5 px-3.5">
           <div class="tp-header flex items-center justify-between mb-2.5" v-if="!desktop">
             <div></div>
-            <div class="text-base font-bold text-[var(--color-text-level-1)]">Live Stats</div>
+            <div class="text-base font-bold text-[var(--color-text-level-1)]">
+              {{ t('gameDetail.liveStatsTitle') }}
+            </div>
             <div
               @click="close"
               class="w-7 h-7 rounded bg-[var(--color-opacity-10)] flex items-center justify-center"
@@ -24,7 +26,7 @@
             class="bg-[var(--color-background-level-3)] rounded-[10px] py-[12px] px-[8px] mb-[12px]"
           >
             <div class="flex justify-between border-b border-[var(--color-opacity-30)] pb-[12px]">
-              <div>Bet</div>
+              <div>{{ t('gameDetail.bet') }}</div>
               <RefreshIcon
                 class="size-[20px] cursor-pointer"
                 :class="{ 'animate-spin': isLoading }"
@@ -35,38 +37,40 @@
               class="flex bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[12px]"
             >
               <div class="flex-1 border-r border-[var(--color-opacity-30)]">
-                <div class="text-[14px] text-[var(--color-text-level-2)]">Profit</div>
+                <div class="text-[14px] text-[var(--color-text-level-2)]">
+                  {{ t('gameDetail.profit') }}
+                </div>
                 <div class="flex items-center gap-[8px]">
-                  <section class="relative w-[20px] h-[20px] overflow-hidden">
-                    <img
-                      class="w-[20px] min-w-[20px] absolute"
-                      alt="countries"
-                      src="@/static/img/explore/countries.png"
-                      :style="`top: -20px`"
-                    />
-                  </section>
+                  <img
+                    class="w-[20px] h-[20px] min-w-[20px] object-contain"
+                    :alt="currentRequestCurrency"
+                    :src="currentCurrencyIcon"
+                  />
                   <div class="text-[var(--color-theme-level-1)] text-[15px]">{{ profitText }}</div>
                 </div>
 
-                <div class="text-[14px] text-[var(--color-text-level-2)] mt-[20px]">Wagered</div>
+                <div class="text-[14px] text-[var(--color-text-level-2)] mt-[20px]">
+                  {{ t('gameDetail.wagered') }}
+                </div>
                 <div class="flex items-center gap-[8px]">
-                  <section class="relative w-[20px] h-[20px] overflow-hidden">
-                    <img
-                      class="w-[20px] min-w-[20px] absolute"
-                      alt="countries"
-                      src="@/static/img/explore/countries.png"
-                      :style="`top: -20px`"
-                    />
-                  </section>
+                  <img
+                    class="w-[20px] h-[20px] min-w-[20px] object-contain"
+                    :alt="currentRequestCurrency"
+                    :src="currentCurrencyIcon"
+                  />
                   <div class="text-[var(--color-theme-level-1)] text-[15px]">{{ wageredText }}</div>
                 </div>
               </div>
               <div class="flex-1 pl-[12px]">
-                <div class="text-[14px] text-[var(--color-text-level-2)]">WIN</div>
+                <div class="text-[14px] text-[var(--color-text-level-2)]">
+                  {{ t('gameDetail.win') }}
+                </div>
                 <div class="flex items-center gap-[8px]">
                   <div class="text-[15px]">{{ winCount }}</div>
                 </div>
-                <div class="text-[14px] text-[var(--color-text-level-2)] mt-[20px]">LOSE</div>
+                <div class="text-[14px] text-[var(--color-text-level-2)] mt-[20px]">
+                  {{ t('gameDetail.lose') }}
+                </div>
                 <div class="flex items-center gap-[8px]">
                   <div class="text-[15px]">{{ loseCount }}</div>
                 </div>
@@ -86,8 +90,10 @@ import { useLocaleStore } from '@/stores/locale'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RefreshIcon from '@/static/svg/game/detail/refresh.svg?component'
 import { getCurrencySymbol } from '@/utils/locale'
+import { getCurrencyIconByCode } from '../../common/currency-select-options'
 import { storeToRefs } from 'pinia'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   visible: boolean
@@ -110,11 +116,16 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
 
 const localeStore = useLocaleStore()
 const { actualCurrency } = storeToRefs(localeStore)
+const { t } = useI18n()
 
 const normalizeValue = (value: unknown) => String(value ?? '').trim()
 
 const currentItemCode = computed(() => normalizeValue(currentGameDetail.value?.itemCode))
 const currentPlatformCode = computed(() => normalizeValue(currentGameDetail.value?.platformCode))
+const currentRequestCurrency = computed(
+  () => normalizeValue(actualCurrency.value).toUpperCase() || 'USD'
+)
+const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestCurrency.value))
 
 const emptyStatistics = (): GameStatisticsResult => ({
   profit: 0,

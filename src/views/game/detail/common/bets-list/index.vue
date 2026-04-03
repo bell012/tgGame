@@ -2,16 +2,16 @@
   <div class="mt-[12px]">
     <!-- Header -->
     <div class="grid lg:grid-cols-2 grid-cols-1 gap-4">
-      <h2 class="flex items-center">Latest Bet</h2>
+      <h2 class="flex items-center">{{ t('home.LatestBet') }}</h2>
       <div class="flex lg:justify-end items-center sm:justify-start justify-start">
         <div class="bet-tabs flex items-center">
           <button
             v-for="(tab, index) in tabs"
-            :key="tab"
+            :key="tab.value"
             :class="['bet-tab', { active: activeTab === index }]"
             @click="activeTab = index"
           >
-            {{ tab }}
+            {{ tab.label }}
           </button>
         </div>
       </div>
@@ -26,10 +26,10 @@
       >
         <thead class="table-head pc-only" role="rowgroup">
           <tr role="row" class="bg-bg-2 text-text-2">
-            <th>Player</th>
-            <th>Profit</th>
-            <th class="sm:w-auto">Bet</th>
-            <th class="text-right">Multiplier</th>
+            <th>{{ t('home.Player') }}</th>
+            <th>{{ t('home.Profit') }}</th>
+            <th class="sm:w-auto">{{ t('gameDetail.bet') }}</th>
+            <th class="text-right">{{ t('home.Multiplier') }}</th>
           </tr>
         </thead>
         <tbody v-if="rows.length">
@@ -77,7 +77,7 @@
         <tbody v-else>
           <tr class="bg-bg-2">
             <td colspan="4" class="py-6 text-center text-[12px] text-[var(--color-text-level-2)]">
-              {{ isLoading ? 'Loading...' : 'No data' }}
+              {{ isLoading ? t('common.loading') : t('gameDetail.noData') }}
             </td>
           </tr>
         </tbody>
@@ -91,10 +91,10 @@
       >
         <thead class="table-head pc-only" role="rowgroup">
           <tr role="row" class="bg-bg-2 text-text-2">
-            <th>Game</th>
-            <th>Player</th>
-            <th>Multiplier</th>
-            <th class="text-right">Profit</th>
+            <th>{{ t('home.Game') }}</th>
+            <th>{{ t('home.Player') }}</th>
+            <th>{{ t('home.Multiplier') }}</th>
+            <th class="text-right">{{ t('home.Profit') }}</th>
           </tr>
         </thead>
         <tbody v-if="highRollerRows.length">
@@ -132,7 +132,7 @@
         <tbody v-else>
           <tr class="bg-bg-2">
             <td colspan="4" class="py-6 text-center text-[12px] text-[var(--color-text-level-2)]">
-              {{ isLoading ? 'Loading...' : 'No data' }}
+              {{ isLoading ? t('common.loading') : t('gameDetail.noData') }}
             </td>
           </tr>
         </tbody>
@@ -149,9 +149,16 @@ import placeholderImg from '@/static/img/home/errImg.png'
 import { getCurrencyIconByCode } from '../currency-select-options'
 import { storeToRefs } from 'pinia'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 
-const tabs = ['All Bets', 'My Bets', 'High Roller'] as const
 const activeTab = ref(0)
+const { t } = useI18n()
+
+const tabs = computed(() => [
+  { value: 0, label: t('gameDetail.allBets') },
+  { value: 1, label: t('gameDetail.myBets') },
+  { value: 2, label: t('home.HighRoller') }
+])
 
 type CurrentGameDetail = {
   itemCode?: string | number
