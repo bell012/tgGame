@@ -1,6 +1,6 @@
 <template>
   <!-- 顶部搜索 -->
-  <div class="relative bg-[var(--color-input-level-2)] rounded-[10px]">
+  <div class="currency-select-trigger relative bg-[var(--color-input-level-2)] rounded-[10px]">
     <div
       class="text-[14px] h-[36px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px]"
       @click="visible = true"
@@ -13,14 +13,8 @@
         </div>
       </div>
       <div class="flex items-center gap-[8px] min-w-0">
-        <div class="bg-[var(--color-text-level-3)] rounded-md">
-          <div class="icon transition-all -rotate-90">
-            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-              ></path>
-            </svg>
-          </div>
+        <div class="trigger-arrow-bg">
+          <ArrowDownIcon class="trigger-arrow-icon" />
         </div>
       </div>
     </div>
@@ -35,6 +29,7 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type { QueryAcctInfoResult } from '@/api/interface/user'
+import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import { computed, onMounted, provide, ref, watch } from 'vue'
 import Popup from './popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -200,10 +195,33 @@ onMounted(() => {
   left: 0;
   width: 100%;
 }
-.icon {
-  width: 20px;
-  height: 20px;
-  padding: 2px;
-  fill: currentColor;
+
+.currency-select-trigger {
+  border: none;
+  background: var(--color-background-level-3) !important;
+  box-shadow: inset 0 1px 0 var(--color-opacity-5);
+}
+
+.trigger-arrow-bg {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-opacity-10);
+}
+
+.trigger-arrow-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+}
+
+:global(:root.light) .currency-select-trigger {
+  background: #e8eef7 !important;
+  box-shadow:
+    0 2px 6px rgba(24, 38, 64, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 </style>

@@ -199,6 +199,43 @@ onMounted(async () => {
   position: relative;
 }
 
+:global(:root.light) .detail-page {
+  /* 页面级浅色主题覆盖：仅作用于 game/detail */
+  --color-background-level-1: #ffffff;
+  --color-background-level-2: #f3f8ff;
+  --color-background-level-3: #e8eff8;
+  --color-background-level-4: #eef4fb;
+  --color-background-level-5: #f8fbff;
+  --color-background-level-6: #ffffff;
+  --color-background-level-7: #f9fbff;
+  --color-background-level-8: #dfe8f4;
+
+  --color-text-level-1: #182230;
+  --color-text-level-2: #57657a;
+  --color-text-level-3: #8897ad;
+  --color-icon-level-1: #182230;
+  --color-icon-level-2: #57657a;
+  --color-icon-level-3: #8897ad;
+
+  --color-theme-level-1: #23cf74;
+  --color-theme-level-2: rgba(35, 207, 116, 0.26);
+  --color-theme-level-3: rgba(35, 207, 116, 0.14);
+  --color-secondary-level-4: #18b563;
+
+  --color-opacity-5: rgba(15, 23, 42, 0.05);
+  --color-opacity-10: rgba(15, 23, 42, 0.1);
+  --color-opacity-15: rgba(15, 23, 42, 0.14);
+  --color-opacity-30: rgba(15, 23, 42, 0.22);
+  --color-border-level-1: rgba(95, 116, 145, 0.28);
+
+  --color-input-level-1: rgba(15, 23, 42, 0.06);
+  --color-input-level-2: #ffffff;
+  --color-input-level-3: #e8eff8;
+
+  background: linear-gradient(180deg, #f9fcff 0%, #eef4fb 100%);
+  border-radius: 16px;
+}
+
 .detail-loading-mask {
   position: absolute;
   inset: 0;
@@ -210,6 +247,11 @@ onMounted(async () => {
   backdrop-filter: blur(1px);
 }
 
+:global(:root.light) .detail-page .detail-loading-mask {
+  background: rgba(248, 251, 255, 0.72);
+  backdrop-filter: blur(2px);
+}
+
 .detail-loading-spinner {
   width: 36px;
   height: 36px;
@@ -217,6 +259,11 @@ onMounted(async () => {
   border: 3px solid rgba(255, 255, 255, 0.34);
   border-top-color: #fff;
   animation: detail-loading-spin 0.8s linear infinite;
+}
+
+:global(:root.light) .detail-page .detail-loading-spinner {
+  border-color: rgba(27, 36, 49, 0.24);
+  border-top-color: #1b2431;
 }
 
 @keyframes detail-loading-spin {
