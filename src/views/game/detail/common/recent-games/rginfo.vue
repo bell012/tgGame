@@ -5,11 +5,11 @@
     >
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
         <div class="text-[var(--color-text-level-2)]">House Edge</div>
-        <div class="text-[var(--color-theme-level-1)]">1.00%</div>
+        <div class="text-[var(--color-theme-level-1)]">{{ houseEdgeText }}</div>
       </div>
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
         <div class="text-[var(--color-text-level-2)]">RTP (Return to Player)</div>
-        <div class="text-[var(--color-theme-level-1)]">99.00%</div>
+        <div class="text-[var(--color-theme-level-1)]">{{ rtpText }}</div>
       </div>
     </div>
     <div
@@ -26,5 +26,63 @@
     </div>
   </div>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { computed, inject, ref, watch, type ComputedRef } from 'vue'
+
+type CurrentGameDetail =
+  | ({
+      rtpMax?: string | number | null
+      rtpMin?: string | number | null
+    } & Record<string, unknown>)
+  | null
+
+const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
+  'game-detail-current-game',
+  computed(() => null)
+)
+
+const randomRtpValue = ref<number | null>(null)
+
+const parseRtpValue = (value: unknown) => {
+  if (value === null || value === undefined || value === '') {
+    return null
+  }
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+watch(
+  () => [currentGameDetail.value?.rtpMin, currentGameDetail.value?.rtpMax] as const,
+  ([rtpMinRaw, rtpMaxRaw]) => {
+    const rtpMin = parseRtpValue(rtpMinRaw)
+    const rtpMax = parseRtpValue(rtpMaxRaw)
+
+    if (rtpMin === null || rtpMax === null) {
+      randomRtpValue.value = null
+      return
+    }
+
+    const min = Math.min(rtpMin, rtpMax)
+    const max = Math.max(rtpMin, rtpMax)
+    randomRtpValue.value = Math.random() * (max - min) + min
+  },
+  { immediate: true }
+)
+
+const formatPercent = (value: number) => `${value.toFixed(2)}%`
+
+const rtpText = computed(() => {
+  if (randomRtpValue.value === null) {
+    return '-'
+  }
+  return formatPercent(randomRtpValue.value)
+})
+
+const houseEdgeText = computed(() => {
+  if (randomRtpValue.value === null) {
+    return '-'
+  }
+  return formatPercent(100 - randomRtpValue.value)
+})
+</script>
 <style lang="scss" scoped></style>

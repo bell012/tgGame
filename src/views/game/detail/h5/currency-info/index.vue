@@ -38,7 +38,6 @@ const selectedData = ref<{ value: string; label: string; icon: string } | undefi
 const handleCurrencyChange = (
   value: { value: string; label: string; icon: string } | undefined
 ) => {
-  console.log(value, 'value-====')
   selectedData.value = value
 }
 
