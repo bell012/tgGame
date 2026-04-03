@@ -44,7 +44,7 @@
             <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
               {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
             </span>
-            <img src="@/static/img/flag/USD.webp" class="w-3 h-3" :alt="item.game" />
+            <img :src="currencyIcon" class="w-3 h-3" :alt="item.game" />
           </td>
         </tr>
       </TransitionGroup>
@@ -54,8 +54,11 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import Api from '@/api'
+import { useLocaleStore } from '@/stores/locale'
 import placeholderImg from '@/static/img/home/errImg.png'
+import { getCurrencyIconByCode } from '@/views/game/detail/common/currency-select-options'
 
 interface LiveBetRow {
   id: number
@@ -75,8 +78,11 @@ const props = withDefaults(
   }
 )
 
+const localeStore = useLocaleStore()
+const { currentCurrency } = storeToRefs(localeStore)
 const sourceRows = ref<LiveBetRow[]>([])
 const loading = ref(false)
+const currencyIcon = computed(() => getCurrencyIconByCode(currentCurrency.value))
 
 const toGameImageUrl = (value?: string) => {
   if (!value) {
@@ -91,17 +97,17 @@ const getRecentBigWinsData = async () => {
 
   try {
     const res = await Api.home.getRecentBigWins({
-      currency: 'PHP',
+      currency: currentCurrency.value,
       type: props.type
     })
 
     sourceRows.value = (res?.result ?? []).map((item: any, index: number) => ({
       id: Number(item.rowId ?? index),
-      game: String(item.gameName ?? item.itemName ?? item.gameTypeName ?? '--'),
-      gameIcon: toGameImageUrl(item.coverImg ?? item.icon1 ?? item.icon2 ?? item.icon3 ?? ''),
-      player: String(item.nickName ?? item.player ?? '--'),
-      multiplier: Number(item.multiplier ?? item.multiple ?? item.odds ?? 0),
-      profit: Number(item.winAmount ?? item.profit ?? 0)
+      game: String(item.gameName ?? '--'),
+      gameIcon: toGameImageUrl(item.coverImg ?? ''),
+      player: String(item.nickName ?? '--'),
+      multiplier: Number(item.multiple ?? 0),
+      profit: Number(item.winAmount ?? 0)
     }))
   } catch (error) {
     sourceRows.value = []
@@ -119,7 +125,7 @@ const rows = computed<LiveBetRow[]>(() => {
 })
 
 watch(
-  () => props.type,
+  [() => props.type, () => currentCurrency.value],
   () => {
     void getRecentBigWinsData()
   },
