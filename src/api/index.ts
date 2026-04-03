@@ -12,9 +12,10 @@ import * as game from './modules/game'
 import * as home from './modules/home'
 import * as notifications from './modules/notifications'
 import * as picture from './modules/picture'
+import * as record from './modules/record'
 import * as user from './modules/user'
 import * as vip from './modules/vip'
-import * as record from './modules/record'
+import * as wallet from './modules/wallet'
 
 const Api = {
   notifications, // 模块
@@ -24,6 +25,7 @@ const Api = {
   user, // 用户信息查询
   vip, // VIP 信息查询
   home, // 首页数据
+  wallet, // 钱包
   record // 记录页数据 如：投注记录 资金明显 流水稽查
 }
 

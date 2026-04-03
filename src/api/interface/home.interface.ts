@@ -51,6 +51,54 @@ export interface GameDataResponse {
   result?: GameDataItem[]
 }
 
+export interface QuerySlideshowPageRequest {
+  current: number
+  size: number
+}
+
+export interface QuerySlideshowRequest {
+  languageCode?: string
+  param?: {
+    ColumnCode?: string
+  }
+  channelId: string
+  page: QuerySlideshowPageRequest
+}
+
+export interface QuerySlideshowItem {
+  channelId: string[]
+  deploymentPath: number
+  enable: number
+  jumpType: number
+  languageCode: string
+  linkId: string
+  linkType: number
+  linkUrl: string
+  platformType?: number
+  rowId: number
+  site: string
+  slideshowName: string
+  sortNum: number
+  type: number
+  url: string
+  [key: string]: unknown
+}
+
+export interface QuerySlideshowPageResult {
+  current: number
+  pages: number
+  records: QuerySlideshowItem[]
+  size: number
+  total: number
+}
+
+export interface QuerySlideshowResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QuerySlideshowPageResult
+}
+
 export interface SubGameItem {
   brandCode: string
   conUrl: string

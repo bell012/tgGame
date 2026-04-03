@@ -38,6 +38,7 @@ import type { GameRanListItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
 import { storeToRefs } from 'pinia'
 import { computed, inject, provide, ref, watch, type ComputedRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 import TopToggle from './top-toggle.vue'
 import Winlist from './winlist.vue'
 import Rginfo from './rginfo.vue'
@@ -54,11 +55,12 @@ provide('isRgOpen', isOpen)
 
 const rankList = ref<GameRanListItem[]>([])
 const isRankLoading = ref(false)
+const { t } = useI18n()
 
-const tabList = ref([
-  { value: 1, label: 'High win' },
-  { value: 2, label: 'Lucky win' },
-  { value: 3, label: 'Review' }
+const tabList = computed(() => [
+  { value: 1, label: t('gameDetail.highWin') },
+  { value: 2, label: t('gameDetail.luckyWin') },
+  { value: 3, label: t('gameDetail.review') }
 ])
 
 const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
@@ -73,6 +75,9 @@ const normalizeValue = (value: unknown) => String(value ?? '').trim()
 
 const currentItemCode = computed(() => normalizeValue(currentGameDetail.value?.itemCode))
 const currentPlatformCode = computed(() => normalizeValue(currentGameDetail.value?.platformCode))
+const currentRequestCurrency = computed(
+  () => normalizeValue(actualCurrency.value).toUpperCase() || 'USD'
+)
 
 const currentType = computed<1 | 2 | 0>(() => {
   if (tabValue.value === 1) return 1
@@ -95,7 +100,7 @@ const fetchGameRanList = async () => {
       itemCode,
       platformCode,
       type,
-      currency: 'PHP'
+      currency: currentRequestCurrency.value
     })
     const rawResult = res?.result
     const records = (rawResult as { records?: unknown } | undefined)?.records
@@ -113,7 +118,7 @@ const fetchGameRanList = async () => {
 }
 
 watch(
-  [tabValue, isOpen, currentItemCode, currentPlatformCode, actualCurrency],
+  [tabValue, isOpen, currentItemCode, currentPlatformCode, currentRequestCurrency],
   () => {
     if (!isOpen.value) {
       return

@@ -32,7 +32,7 @@
         <div class="flex flex-1 items-center justify-between">
           <div class="flex flex-col">
             <h2 class="text-text-1 text-base font-bold mb-1">
-              {{ userInfo?.nickName || 'Guest' }}
+              {{ userInfo?.nickName || '-' }}
             </h2>
             <div class="flex items-center">
               <span class="text-text-2 text-xs font-[500]"
@@ -53,6 +53,7 @@
       <div
         class="relative rounded-lg overflow-hidden w-full h-[78px] flex justify-between items-start"
         :style="{ backgroundImage: `url(${vipBG})`, backgroundSize: 'cover' }"
+        @click="handleVip"
       >
         <div class="flex min-w-0 flex-1 flex-col">
           <div class="mb-[5px] mt-1 flex w-full min-w-0 items-center justify-between">
@@ -480,6 +481,11 @@ const vipProgress = computed(() => {
 
   return Math.min(betProgress * 50 + rechargeProgress * 50, 100)
 })
+
+// 跳转到vip路由
+const handleVip = () => {
+  navigateTo('/vip')
+}
 
 // 下一个等级
 const nextVipLevel = computed(() => {

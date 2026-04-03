@@ -1,6 +1,6 @@
 ﻿<template>
   <div class="home max-w-[1248px] mx-auto px-0 py-0 sm:px-4 sm:py-4">
-    <div v-if="userInfo" style="height: 60px"></div>
+    <div style="height: 65px"></div>
     <div v-if="userInfo">
       <HomeCarouselImg v-if="querySlideshowList.length" :list="querySlideshowList" />
     </div>
@@ -33,7 +33,7 @@
           </h2>
         </div>
         <button
-          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] font-inter text-[14px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)]"
+          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg bg-[linear-gradient(90deg,#24EE89_0%,#9FE871_100%)] shadow-[0_0_12px_rgba(35,238,136,0.3),0_-2px_0_#1DCA6A_inset] text-[13px] font-bold leading-normal text-center text-[var(--color-text-level-4,#000)]"
           type="button"
           @click.stop="openRegisterModal"
         >
@@ -52,52 +52,6 @@
         </div>
         <!-- 近期大奖 -->
         <div>{{ $t('home.RecentBigWins') }}</div>
-        <!-- <div class="ml-2 gap-2 lg:!flex lg:!flex-col pcState">
-          <div
-            @click="carousel(0)"
-            class="button button-m center h-auto flex-1 whitespace-nowrap rounded-none border-b-2 p-1 text-xs"
-            :class="
-              carouselVal == 0
-                ? 'border-b-brand font-semibold text-primary'
-                : 'border-b-transparent font-normal text-secondary'
-            "
-          >
-            {{ $t('home.All') }}
-          </div>
-          <div
-            @click="carousel(1)"
-            class="button button-m center h-auto flex-1 whitespace-nowrap rounded-none border-b-2 p-1 text-xs"
-            :class="
-              carouselVal == 1
-                ? 'border-b-brand font-semibold text-primary'
-                : 'border-b-transparent font-normal text-secondary'
-            "
-          >
-            {{ $t('home.BCOriginals') }}
-          </div>
-          <div
-            @click="carousel(2)"
-            class="button button-m center h-auto flex-1 whitespace-nowrap rounded-none border-b-2 p-1 text-xs"
-            :class="
-              carouselVal == 2
-                ? 'border-b-brand font-semibold text-primary'
-                : 'border-b-transparent font-normal text-secondary'
-            "
-          >
-            {{ $t('home.Slots') }}
-          </div>
-          <div
-            @click="carousel(3)"
-            class="button button-m center h-auto flex-1 whitespace-nowrap rounded-none border-b-2 p-1 text-xs"
-            :class="
-              carouselVal == 3
-                ? 'border-b-brand font-semibold text-primary'
-                : 'border-b-transparent font-normal text-secondary'
-            "
-          >
-            {{ $t('home.LiveCasino') }}
-          </div>
-        </div> -->
       </h2>
     </div>
     <div class="marquee px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
@@ -143,11 +97,6 @@
                   <img :src="icon5" alt="" class="w-[19px]" />
                   <h2 class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Casino') }}</h2>
                 </div>
-                <!-- <div
-                  class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
-                >
-                  {{ $t('home.labelLabel') }}
-                </div> -->
               </div>
             </button>
             <button
@@ -164,11 +113,6 @@
                   <img :src="icon6" alt="" class="w-[19px]" />
                   <span class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Sports') }}</span>
                 </div>
-                <!-- <div
-                  class="pcState mb-1.5 mt-auto max-w-60 text-left font-semibold text-primary block"
-                >
-                  {{ $t('home.SportsLabel') }}
-                </div> -->
               </div>
             </button>
           </div>
@@ -403,10 +347,6 @@ const listImg = computed(() => [
     icon: icon4
   }
 ])
-// const carouselVal = ref(0)
-// const carousel = (val: number) => {
-//   carouselVal.value = val
-// }
 
 interface RecentBigWin {
   src: string
@@ -470,7 +410,7 @@ const getQuerySlideshow = async () => {
       type: 1,
       deploymentPath: 1
     })
-    querySlideshowList.value = res.result
+    querySlideshowList.value = res.result || []
   } catch (error) {
     console.error('getQuerySlideshow failed', error)
   }

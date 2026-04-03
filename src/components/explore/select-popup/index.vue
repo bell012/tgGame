@@ -57,6 +57,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Popup from './popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { COUNTRIES } from '../consts'
@@ -80,11 +81,15 @@ const emit = defineEmits<{
 }>()
 
 const isMobile = useIsMobile()
+const { t } = useI18n()
 const visible = ref(false)
+const fallbackLabel = computed(() =>
+  props.countryImage ? t('search.all') : t('customSelect.placeholder')
+)
 
 const inputText = computed(() => {
   const item = props.dataList.find(i => i.value === props.modelValue)
-  return item?.label
+  return item?.label || fallbackLabel.value
 })
 const getImageTop = () => {
   const index = COUNTRIES.indexOf(props.modelValue)
