@@ -73,17 +73,17 @@
       <transition name="sort-popup">
         <div
           v-if="isSortPopupOpen"
-          class="absolute right-0 bottom-[calc(100%+10px)] z-20 w-[140px] rounded-[10px] bg-[#1F2730] p-[8px] shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+          class="sort-menu-popup absolute right-0 bottom-[calc(100%+10px)] z-20 w-[140px] rounded-[10px] p-[8px]"
+          :class="{ 'sort-menu-popup-light': isLightTheme }"
         >
           <div
             v-for="item in sortOptions"
             :key="item.value"
-            class="mb-[6px] flex h-[38px] cursor-pointer items-center justify-center rounded-[8px] text-[12px] font-semibold text-white transition-colors duration-200 last:mb-0"
-            :class="
-              activeSort === item.value
-                ? 'bg-[linear-gradient(90deg,#2C9A67_0%,#1D7B52_100%)]'
-                : 'bg-[#353D45]'
-            "
+            class="sort-menu-popup-item mb-[6px] flex h-[38px] cursor-pointer items-center justify-center rounded-[8px] text-[12px] font-semibold transition-colors duration-200 last:mb-0"
+            :class="{
+              'sort-menu-popup-item-active': activeSort === item.value,
+              'sort-menu-popup-item-light': isLightTheme && activeSort !== item.value
+            }"
             @click.stop="selectSort(item.value)"
           >
             {{ item.label }}
@@ -270,6 +270,7 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type { GameCommentListItem } from '@/api/interface/game'
+import { useThemeStore } from '@/stores/theme'
 import { computed, inject, onBeforeUnmount, onMounted, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
@@ -305,6 +306,8 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
 const route = useRoute()
 const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
 const { t } = useI18n()
+const themeStore = useThemeStore()
+const isLightTheme = computed(() => themeStore.theme === 'light')
 
 const { rating: userRating, setRating } = useGameRating()
 
@@ -861,6 +864,32 @@ onBeforeUnmount(() => {
 })
 </script>
 <style scoped>
+.sort-menu-popup {
+  background: #1f2730;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.sort-menu-popup-light {
+  background: #edf3fb;
+  border: 1px solid #c7d4e6;
+  box-shadow: 0 10px 24px rgba(108, 132, 160, 0.22);
+}
+
+.sort-menu-popup-item {
+  color: #ffffff;
+  background: #353d45;
+}
+
+.sort-menu-popup-item-light {
+  color: #2a3543;
+  background: #dbe5f2;
+}
+
+.sort-menu-popup-item-active {
+  color: #ffffff;
+  background: linear-gradient(90deg, #2c9a67 0%, #1d7b52 100%);
+}
+
 .sort-popup-enter-active,
 .sort-popup-leave-active {
   transition:

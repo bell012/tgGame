@@ -85,16 +85,6 @@ const houseEdgeText = computed(() => {
 </script>
 <style lang="scss" scoped>
 .stats-divider {
-  border-bottom: 1px solid #d8e0ec;
-}
-
-:global(:root.light) .stats-divider,
-:global(html.light) .stats-divider {
-  border-bottom-color: #d8e0ec !important;
-}
-
-:global(:root.dark) .stats-divider,
-:global(html.dark) .stats-divider {
-  border-bottom-color: rgba(255, 255, 255, 0.3) !important;
+  border-bottom: 1px solid var(--color-opacity-10);
 }
 </style>
