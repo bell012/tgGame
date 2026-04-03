@@ -1,4 +1,6 @@
 import type {
+  PayRechargeQuickAmtsForm,
+  PayRechargeQuickAmtsResponse,
   QueryDiscountListForm,
   QueryDiscountListResponse,
   QueryDlicghForm,
@@ -53,6 +55,17 @@ export function queryPaySubColumnPage(
 ): Promise<QueryPaySubColumnPageResponse> {
   return request({
     url: '/pc/queryPaySubColumnPage',
+    method: 'post',
+    data
+  })
+}
+
+// 查询充值快捷金额
+export function payRechargeQuickAmts(
+  data: PayRechargeQuickAmtsForm
+): Promise<PayRechargeQuickAmtsResponse> {
+  return request({
+    url: '/pc/payRechargeQuickAmts',
     method: 'post',
     data
   })
