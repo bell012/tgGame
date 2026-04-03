@@ -36,10 +36,15 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
 import { useVipPageData } from '@/views/vip/shared'
 
 const { t } = useI18n()
-const { retentionCards, rules } = useVipPageData(t)
+const { retentionCards, rules, initializeVipPage } = useVipPageData(t)
+
+onMounted(() => {
+  void initializeVipPage()
+})
 </script>
