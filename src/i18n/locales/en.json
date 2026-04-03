@@ -573,7 +573,25 @@
     "upload_proof_again_btn_text": "Upload Proof Again"
   },
   "withdraw": {
-    "title": "Withdraw"
+    "title": "Withdraw",
+    "crypto": "Crypto",
+    "fiat": "Fiat",
+    "methods": "Withdraw Methods",
+    "phone_number": "Phone Number",
+    "phone_placeholder": "Please enter your phone number",
+    "name": "Name",
+    "name_placeholder": "Please enter your name",
+    "withdraw_currency": "Withdraw Currency",
+    "select_network": "Select Network",
+    "receive_address": "Receive Address",
+    "receive_address_placeholder": "Please enter the receiving address",
+    "amount": "Withdraw Amount",
+    "amount_placeholder": "Please enter the withdrawal amount",
+    "balance": "Balance",
+    "crypto_help": "How to withdraw crypto?",
+    "crypto_address_notice": "Please make sure the recipient address is correct. Funds cannot be recovered if sent to the wrong address.",
+    "withdraw_now": "Withdraw Now",
+    "you_get": "You Get"
   },
   "transaction": {
     "win": "Win",
