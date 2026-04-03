@@ -38,42 +38,44 @@
     </div>
     <div class="mt-6 grid grid-cols-2 gap-5">
       <div>
-        <div class="text-sm font-bold leading-normal">Withdraw Currency</div>
+        <div class="text-sm font-bold leading-normal">{{ t('withdraw.withdraw_currency') }}</div>
         <CustomSelect class="mt-2 w-full" v-model="currency" :options="currencyOptions" />
       </div>
       <div>
-        <div class="text-sm font-bold leading-normal">Select Network</div>
+        <div class="text-sm font-bold leading-normal">{{ t('withdraw.select_network') }}</div>
         <CustomSelect class="mt-2 w-full" v-model="selectNetwork" :options="networkOptions" />
       </div>
     </div>
     <div class="mt-6 grid grid-cols-2 gap-5">
       <div>
-        <div class="text-sm font-bold leading-normal">Receive Address</div>
+        <div class="text-sm font-bold leading-normal">{{ t('withdraw.receive_address') }}</div>
         <div
           class="mt-2 p-3 rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
         >
           <input
             type="text"
             v-model="address"
-            placeholder="Please enter the receiving address"
+            :placeholder="t('withdraw.receive_address_placeholder')"
             class="w-full text-sm bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs sm:placeholder:text-sm"
           />
         </div>
         <div class="mt-2 flex items-center">
           <AmountInfoIcon class="w-4 h-4 mr-1" />
-          <div class="text-sm text-text-2">How to withdraw crypto?</div>
+          <div class="text-sm text-text-2">{{ t('withdraw.crypto_help') }}</div>
         </div>
       </div>
       <div>
-        <div class="text-sm font-bold leading-normal">Withdraw Amount</div>
+        <div class="text-sm font-bold leading-normal">{{ t('withdraw.amount') }}</div>
         <div
           class="mt-2 p-3 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
         >
-          <DepositTokenIcon class="w-6 h-6 mr-3 text-theme-primary" />
+          <span class="mr-3 text-xl font-bold leading-none text-theme-primary">{{
+            currencySymbol
+          }}</span>
           <input
             type="number"
             v-model="amount"
-            placeholder="Please enter the withdrawal amount"
+            :placeholder="t('withdraw.amount_placeholder')"
             class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs sm:placeholder:text-sm"
           />
           <button
@@ -86,7 +88,9 @@
         </div>
         <div class="mt-2 flex items-center">
           <div class="text-sm font-bold leading-normal">
-            Balance：<span class="text-theme-primary">5000PHP</span>
+            {{ t('withdraw.balance') }}：<span class="text-theme-primary">{{
+              formattedBalance
+            }}</span>
           </div>
           <RefreshIcon class="w-5 text-icon-2 ml-1" />
         </div>
@@ -95,8 +99,7 @@
     <div class="mt-6 p-3 rounded-lg bg-theme-3 flex items-start">
       <InfoIcon class="w-4 h-4 mr-1 shrink-0 text-theme-primary" />
       <div class="text-xs text-text-2 font-normal leading-normal">
-        Please make sure the recipient address is correct. Funds cannot be recovered if sent to the
-        wrong address.
+        {{ t('withdraw.crypto_address_notice') }}
       </div>
     </div>
     <button
@@ -105,11 +108,12 @@
       :disabled="isWithdrawDisabled"
       @click="doWithdrawDeposit"
     >
-      Withdraw Now
+      {{ t('withdraw.withdraw_now') }}
     </button>
   </div>
 </template>
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import { showToast } from 'vant'
 import { useI18n } from 'vue-i18n'
@@ -121,14 +125,17 @@ import DOGEIcon from '@/static/img/crypto/DOGE.png'
 import TRXIcon from '@/static/img/crypto/TRX.png'
 import BNBIcon from '@/static/img/crypto/BNB.png'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
-import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RefreshIcon from '@/static/svg/refresh.svg?component'
 import InfoIcon from '@/static/svg/info.svg?component'
+import { useLocaleStore } from '@/stores/locale'
+import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 
 const { t } = useI18n()
+const localeStore = useLocaleStore()
+const { currentCurrency } = storeToRefs(localeStore)
 const unavailableMessage = 'Unavailable'
 const amount = ref<number>()
 const address = ref('')
@@ -165,6 +172,8 @@ const currencyOptions = computed(() => [
   { label: 'USDC', value: 'USDC', icon: USDCIcon }
 ])
 const selectNetwork = ref('TRC20')
+const formattedBalance = computed(() => getFormattedBalance(5000, currentCurrency.value, 2))
+const currencySymbol = computed(() => getCurrencySymbol(currentCurrency.value))
 const networkOptions = computed(() => [
   { label: 'Tron（TRC20）', value: 'TRC20' },
   { label: 'Ethereum（ERC20）', value: 'ERC20' },

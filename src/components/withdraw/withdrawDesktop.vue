@@ -3,12 +3,12 @@
     <div class="w-full shrink-0 flex bg-bg-2 dark:bg-bg-8 rounded-lg">
       <button
         v-for="tab in depositTabs"
-        :key="tab"
+        :key="tab.value"
         class="relative flex-1 text-sm py-3 font-bold transition-all duration-200 tab-button-new rounded-lg"
-        :class="getTabClass(tab)"
-        @click.stop="setActiveTab(tab)"
+        :class="getTabClass(tab.value)"
+        @click.stop="setActiveTab(tab.value)"
       >
-        <span>{{ tab }}</span>
+        <span>{{ tab.label }}</span>
       </button>
     </div>
     <div class="mt-4 w-full bg-bg-1 rounded-lg">
@@ -18,12 +18,17 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import withdrawDesktopCryptoPanel from './withdrawDesktopCryptoPanel.vue'
 import withdrawDesktopFiatPanel from './withdrawDesktopFiatPanel.vue'
 
 export type DepositTabType = 'Crypto' | 'Fiat'
-const depositTabs: DepositTabType[] = ['Crypto', 'Fiat']
+const { t } = useI18n()
+const depositTabs = computed<{ value: DepositTabType; label: string }[]>(() => [
+  { value: 'Crypto', label: t('withdraw.crypto') },
+  { value: 'Fiat', label: t('withdraw.fiat') }
+])
 const selectTab = ref<DepositTabType>('Crypto')
 
 const getTabClass = (tab: DepositTabType) => {
