@@ -130,19 +130,13 @@
             <div class="text-[var(--color-text-level-3)]">{{ comment.timeText }}</div>
           </div>
           <div class="flex items-center gap-[10px]">
-            <div class="relative">
+            <div>
               <img
                 alt=""
                 :src="CommentIcon"
                 class="size-[16px] cursor-pointer"
                 @click="openReplyCommentPopup(comment)"
               />
-              <div
-                v-if="comment.replyCount > 0"
-                class="absolute text-[12px] text-[var(--color-text-level-4)] bg-[var(--color-theme-level-1)] top-[-120%] left-[50%] py-[0px] px-[10px] rounded-md"
-              >
-                {{ comment.replyCount }}
-              </div>
             </div>
             <div class="relative">
               <img
