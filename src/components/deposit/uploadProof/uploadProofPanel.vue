@@ -15,31 +15,37 @@
         <CloseIcon class="w-4 h-4 fill-none" />
       </button>
     </div>
+
     <div class="p-4">
       <div class="sm:p-7 sm:rounded-lg sm:bg-bg-2">
         <div class="flex items-start">
           <div class="w-1.5 h-1.5 mr-1 mt-1">
             <BulletDotIcon class="w-1.5 h-1.5" />
           </div>
+
           <div class="text-text-2 text-sm sm:font-bold sm:leading-normal">
             <span>{{ t('deposit.upload_proof_tips_1_1') }}</span>
             <span class="text-theme-primary">{{ t('deposit.upload_proof_tips_1_2') }}</span>
           </div>
         </div>
+
         <div class="mt-3 flex items-start">
           <div class="w-1.5 h-1.5 mr-1 mt-1">
             <BulletDotIcon class="w-1.5 h-1.5" />
           </div>
+
           <div class="text-text-2 text-sm sm:font-bold sm:leading-normal">
             <span>{{ t('deposit.upload_proof_tips_2') }}</span>
           </div>
         </div>
+
         <div
           class="mt-3 sm:mt-4 pl-3 sm:pl-4 text-sm font-normal leading-normal text-secondary-7"
           @click.stop="paymentReceiptSampleShow = true"
         >
           {{ t('deposit.upload_view_btn_text') }}
         </div>
+
         <div class="mt-5 sm:mt-6 pl-4 relative">
           <Uploader
             v-model="fileList"
@@ -50,6 +56,7 @@
             :before-delete="imageDelete"
             :preview-options="{ closeable: true }"
           >
+            <!-- 区块：template -->
             <template #preview-delete>
               <div class="h-4 w-4 sm:h-6 sm:w-6 absolute -top-1.5 -right-1.5 sm:-top-3 sm:-right-3">
                 <img :src="deleteIcon" alt="delete" />
@@ -85,20 +92,21 @@
   <paymentReceiptSamplePop v-model="paymentReceiptSampleShow" />
 </template>
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { Uploader, UploaderAfterRead, UploaderFileListItem } from 'vant'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import deleteIcon from '@/static/img/payment/upload_delete.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import BulletDotIcon from '@/static/svg/deposit/bullet-dot.svg?component'
 import PlusIcon from '@/static/svg/deposit/plus.svg?component'
-import deleteIcon from '@/static/img/payment/upload_delete.png'
-import paymentReceiptSamplePop from '../paymentReceiptSample/paymentReceiptSamplePop.vue'
+import { Uploader, UploaderAfterRead, UploaderFileListItem } from 'vant'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import paymentReceiptSamplePop from '../paymentReceiptSample/paymentReceiptSamplePop.vue'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
 const emit = defineEmits(['close', 'confirmUpload'])
 
+// 处理关闭事件
 const handleClose = () => {
   emit('close')
 }
@@ -123,10 +131,12 @@ const imageAfterRead: UploaderAfterRead = async (items, detail) => {
   console.log(detail.name)
 }
 
+// 删除图片
 const imageDelete = () => {
   uploadUrls.value = []
 }
 
+// 处理确认上传事件
 const handleConfirmUpload = () => {
   emit('confirmUpload')
 }

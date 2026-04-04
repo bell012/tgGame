@@ -1,8 +1,10 @@
 <template>
+  <!-- 金额头部主容器 -->
   <div
     class="mx-auto flex w-full max-w-[352px] flex-col items-center gap-1 font-['Inter']"
     :class="wrapperClass"
   >
+    <!-- 金额与币种区域 -->
     <div class="relative flex h-12 w-full items-end justify-center gap-1 isolate">
       <p class="text-center text-text-1 text-xl sm:text-[40px] font-bold leading-[48px] capitalize">
         {{ amount }}
@@ -13,6 +15,7 @@
         {{ method }}
       </p>
     </div>
+    <!-- 汇率展示区域 -->
     <div
       v-if="displayRate"
       class="order-1 h-[19px] w-[352px] grow-0 shrink-0 text-center font-['Inter'] text-[16px] font-normal leading-[19px] text-[#B3BEC1]"
@@ -38,12 +41,14 @@ const props = withDefaults(
   }
 )
 
+// 格式化展示金额
 const formatDisplayAmount = (value: number) => {
   if (!Number.isFinite(value)) return ''
   const fixed = value.toFixed(2)
   return fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed
 }
 
+// 计算汇率文案
 const displayRate = computed(() => {
   const rawRate = props.rate?.trim()
   if (!rawRate) return ''

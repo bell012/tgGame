@@ -11,6 +11,7 @@
         <span>{{ tab }}</span>
       </button>
     </div>
+
     <div
       class="w-full flex-1 min-h-0 relative overflow-y-auto overscroll-contain mt-4 bg-bg-1 rounded-lg"
     >
@@ -34,16 +35,19 @@ const emit = defineEmits<{
 const depositTabs: DepositTabType[] = ['Crypto', 'Fiat']
 const selectTab = ref<DepositTabType>('Crypto')
 
+// 获取标签页样式
 const getTabClass = (tab: DepositTabType) => {
   const isActive = selectTab.value === tab
 
   return [isActive ? 'text-text-1 bg-bg-7' : 'text-text-2 bg-bg-8']
 }
 
+// 设置激活状态标签页
 const setActiveTab = (tab: DepositTabType) => {
   selectTab.value = tab
 }
 
+// 处理隐藏状态事件
 const handleHidden = (val: boolean) => {
   emit('hidden', val)
 }
