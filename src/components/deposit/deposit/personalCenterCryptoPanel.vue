@@ -131,6 +131,7 @@
           <div class="border-b border-opacity-10 pb-2">
             <!-- 流水选项列表 -->
             <div class="flex items-center gap-6">
+              <!-- 区块：template -->
               <template v-for="(item, index) in wageringOptions" :key="item.rowId">
                 <!-- 单个流水选项按钮 -->
                 <button
@@ -235,7 +236,7 @@
   </div>
 
   <!-- 充值订单弹窗组件 -->
-  <depositOrderPop
+  <depositCryptoOrderPop
     v-model:model-value="orderPopShow"
     v-model:orderInfo="orderInfo"
     @close="handleClose"
@@ -275,7 +276,7 @@ import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
 import { showToast } from 'vant'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import depositOrderPop from '../order/depositOrderPop.vue'
+import depositCryptoOrderPop from '../order/crypto/depositCryptoOrderPop.vue'
 import { usePresetGrid } from '../shared/usePresetGrid'
 
 const { t } = useI18n()

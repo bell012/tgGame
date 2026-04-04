@@ -150,7 +150,7 @@
     text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
   />
   <!-- 充值订单弹窗 -->
-  <depositOrderPop
+  <depositFiatOrderPop
     v-model:model-value="orderPopShow"
     v-model:orderInfo="orderInfo"
     @close="handleClose"
@@ -196,7 +196,7 @@ import {
   type ComponentPublicInstance
 } from 'vue'
 import { useI18n } from 'vue-i18n'
-import depositOrderPop from '../order/depositOrderPop.vue'
+import depositFiatOrderPop from '../order/fiat/depositFiatOrderPop.vue'
 import { defaultFiatOrder, FiatOrderType } from '../order/orderType'
 import { usePresetGrid } from '../shared/usePresetGrid'
 
