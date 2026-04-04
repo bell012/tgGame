@@ -40,7 +40,10 @@
                 v-for="(item, inx) in filteredOptions"
                 :key="inx"
                 class="tp-item mb-2.5 px-2.5 flex items-center justify-between h-[42px] rounded-lg cursor-pointer"
-                :class="isSelected(item) ? 'bg-[var(--color-opacity-10)]' : ''"
+                :class="[
+                  isSelected(item) ? 'bg-[var(--color-opacity-10)]' : '',
+                  { 'tp-item-selected': isSelected(item) }
+                ]"
                 @click="confirm(item)"
               >
                 <div class="flex items-center gap-[10px]">
@@ -130,6 +133,7 @@ const confirm = (item: OptionItem) => {
   padding-bottom: env(safe-area-inset-bottom);
   overflow: hidden;
   border-radius: 10px;
+  border: 1px solid transparent;
 }
 @include popup-transition;
 // 设置的弹窗打开关闭的过渡动画
@@ -146,5 +150,39 @@ const confirm = (item: OptionItem) => {
   background-color: var(--color-input-level-2);
   height: 100%;
   border-radius: 10px;
+}
+
+:global(:root.light) .tp-panel {
+  background: #f8fbff;
+  border-color: rgba(95, 116, 145, 0.26);
+  box-shadow:
+    0 18px 44px rgba(27, 41, 66, 0.2),
+    0 4px 14px rgba(27, 41, 66, 0.12);
+}
+
+:global(:root.light) .tp-panel input {
+  background: #fff;
+  border-color: rgba(95, 116, 145, 0.34);
+}
+
+:global(:root.light) .tp-panel input:focus {
+  border-color: #23cf74;
+  box-shadow: 0 0 0 3px rgba(35, 207, 116, 0.18);
+}
+
+:global(:root.light) .tp-panel .tp-item {
+  border: 1px solid transparent;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+:global(:root.light) .tp-panel .tp-item:hover {
+  background: rgba(88, 114, 152, 0.08);
+}
+
+:global(:root.light) .tp-panel .tp-item.tp-item-selected {
+  background: rgba(35, 207, 116, 0.16);
+  border-color: rgba(35, 207, 116, 0.36);
 }
 </style>

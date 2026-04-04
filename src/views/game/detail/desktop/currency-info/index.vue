@@ -8,13 +8,13 @@
       />
       <div
         v-if="isLogin"
-        class="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-[var(--color-background-level-1)] p-[28px] rounded-lg"
+        class="play-card absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-[var(--color-background-level-1)] p-[28px] rounded-lg"
       >
         <play-form></play-form>
       </div>
       <div
         v-else
-        class="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-[var(--color-background-level-1)] p-[28px] rounded-lg"
+        class="play-card absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-[var(--color-background-level-1)] p-[28px] rounded-lg"
       >
         <div class="text-[12px] text-center pb-[8px] text-[var(--color-text-level-2)]">
           {{ t('gameDetail.signInPrompt') }}
@@ -101,5 +101,14 @@ const displayGameImg = computed(() => {
   justify-content: center;
   align-items: center;
   gap: 4px;
+}
+
+:global(:root.light) .currency-info-container .play-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(96, 116, 144, 0.28);
+  box-shadow:
+    0 14px 36px rgba(28, 45, 74, 0.18),
+    0 4px 12px rgba(28, 45, 74, 0.1);
+  backdrop-filter: blur(6px);
 }
 </style>

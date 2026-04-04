@@ -8,18 +8,13 @@
       </div>
       <div class="text-[var(--color-theme-level-1)] text-[12px]"># {{ gameTypeName }}</div>
     </div>
-    <div class="bg-[var(--color-text-level-3)] rounded-md">
-      <div class="icon" :class="{ 'is-open': isOpen }">
-        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-          ></path>
-        </svg>
-      </div>
+    <div class="toggle-arrow-wrap">
+      <ArrowDownIcon class="icon" :class="{ 'is-open': isOpen }" />
     </div>
   </div>
 </template>
 <script setup lang="ts">
+import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import { computed, inject, Ref, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -55,15 +50,30 @@ const toggleIsOpen = () => {
 </script>
 
 <style scoped lang="scss">
+.toggle-arrow-wrap {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-opacity-10);
+}
+
 .icon {
-  width: 20px;
-  height: 20px;
-  padding: 2px;
-  fill: currentColor;
+  width: 14px;
+  height: 14px;
+  fill: none;
   transition: transform 0.3s ease-in-out;
-  transform: rotate(-270deg);
+  transform: rotate(0deg);
 }
 .icon.is-open {
-  transform: rotate(-90deg);
+  transform: rotate(180deg);
+}
+
+:global(:root.light) .toggle-arrow-wrap {
+  background: rgba(95, 116, 145, 0.16);
+  border: 1px solid rgba(95, 116, 145, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 </style>
