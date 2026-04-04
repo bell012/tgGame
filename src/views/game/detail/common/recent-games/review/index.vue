@@ -69,7 +69,8 @@
     </div>
     <div ref="sortMenuRef" class="relative flex justify-between items-center mt-[20px]">
       <div class="text-[12px] text-[var(--color-text-level-2)]">{{ t('gameDetail.comments') }}</div>
-      <img alt="" :src="SanIcon" class="size-[18px] cursor-pointer" @click.stop="toggleSortPopup" />
+      <!-- 暂时没有评论排序，先注释 -->
+      <!-- <img alt="" :src="SanIcon" class="size-[18px] cursor-pointer" @click.stop="toggleSortPopup" /> -->
       <transition name="sort-popup">
         <div
           v-if="isSortPopupOpen"
@@ -279,7 +280,6 @@ import Star from './star.vue'
 import ProgressBar from './progress.vue'
 import CommentPopup from './comment-popup.vue'
 import PersonIcon from '@/static/svg/game/detail/comment/person.svg?url'
-import SanIcon from '@/static/svg/game/detail/comment/san.svg?url'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
 import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
 import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?url'
@@ -717,10 +717,6 @@ const commentInputPlaceholder = computed(() => {
   }
   return t('gameDetail.replyToUser', { name: memberName })
 })
-
-const toggleSortPopup = () => {
-  isSortPopupOpen.value = !isSortPopupOpen.value
-}
 
 const selectSort = (value: string) => {
   activeSort.value = value
