@@ -12,7 +12,9 @@
             <div
               class="w-full flex justify-end p-4 sticky left-0 top-0 z-10 bg-[var(--color-mask-100-4)]"
             >
-              <div class="flex-1 flex justify-center text-base font-bold items-center">搜索</div>
+              <div class="flex-1 flex justify-center text-base font-bold items-center">
+                {{ t('bottom_tab_bar.explore') }}
+              </div>
               <button
                 class="w-8 h-8 rounded-lg bg-[var(--color-background-level-3)] flex items-center justify-center"
                 @click="close"
@@ -36,6 +38,7 @@
 import CloseIcon from '@/static/svg/close.svg?component'
 import Explore from '@/components/explore/index.vue'
 import { provide, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   modelValue: boolean
@@ -45,6 +48,7 @@ defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [val: boolean]
 }>()
+const { t } = useI18n()
 
 const isCloseDesktopModal = ref(false)
 provide('search-close-desktop-modal', isCloseDesktopModal)

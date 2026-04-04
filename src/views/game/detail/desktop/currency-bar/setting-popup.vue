@@ -14,24 +14,22 @@
         >
           <div class="flex flex-col gap-[16px]">
             <div class="flex items-center gap-[8px] cursor-pointer" @click="toggleLove">
-              <img alt="" class="size-[16px]" :src="loveActived ? LoveActiveIcon : LoveIcon" />
-              <div>Like</div>
+              <img alt="" class="size-[16px]" :src="loveActived ? LikeActiveIcon : LikeIcon" />
+              <div :class="{ 'text-[#FF9822]': loveActived }">
+                {{ t('gameDetail.settingLike') }}
+              </div>
             </div>
             <div class="flex items-center gap-[8px] cursor-pointer" @click="shareClick">
               <img alt="" class="size-[16px]" :src="TgIcon" />
-              <div>Share</div>
+              <div>{{ t('gameDetail.settingShare') }}</div>
             </div>
             <div class="flex items-center gap-[8px] cursor-pointer">
               <img alt="" class="size-[16px]" :src="MovieIcon" />
-              <div>Movie Mode</div>
-            </div>
-            <div class="flex items-center gap-[8px] cursor-pointer">
-              <img alt="" class="size-[16px]" :src="FullIcon" />
-              <div>Full Screen</div>
+              <div>{{ t('gameDetail.settingMovieMode') }}</div>
             </div>
             <div class="flex items-center gap-[8px] cursor-pointer">
               <img alt="" class="size-[16px]" :src="FloatIcon" />
-              <div>Float Mode</div>
+              <div>{{ t('gameDetail.settingFloatMode') }}</div>
             </div>
           </div>
         </div>
@@ -41,29 +39,26 @@
 </template>
 
 <script setup lang="ts">
+import { useGameLike } from '@/composables/useGameLike'
 import TgIcon from '@/static/svg/game/detail/tg.svg?url'
-import LoveIcon from '@/static/svg/game/detail/love.svg?url'
-import LoveActiveIcon from '@/static/svg/game/detail/love_active.svg?url'
-import FullIcon from '@/static/svg/game/detail/full.svg?url'
+import LikeIcon from '@/static/svg/game/detail/like_hand.svg?url'
+import LikeActiveIcon from '@/static/svg/game/detail/like_hand_active.svg?url'
 import FloatIcon from '@/static/svg/game/detail/float.svg?url'
 import MovieIcon from '@/static/svg/game/detail/movie.svg?url'
-import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 defineProps<{
   visible: boolean
   desktop?: boolean
 }>()
 
-const loveActived = ref(false)
+const { isLiked: loveActived, toggleLike: toggleLove } = useGameLike()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'update:visible': [val: boolean]
   share: []
 }>()
-
-const toggleLove = () => {
-  loveActived.value = !loveActived.value
-}
 
 // 关闭popup
 const close = () => {

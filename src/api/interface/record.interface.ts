@@ -60,3 +60,49 @@ export interface QueryOrderInfoResult {
   size: number
   total: number
 }
+
+// 资金明细 携带参数
+export interface QueryAcctHisPageForm {
+  startTime: number | null
+  endTime: number | null
+  page: {
+    current: number
+    size: number
+  }
+  param: {
+    currency: string | null
+  }
+  changeTypes: string | null // 变更类型 1.游戏切换   2.会员充值 3.会员取款 4.会员取款退回 5.人工存入 6.人工扣款 7.赠送彩金 8.领取佣金 9货币互换 13.VIP收益 14.红利兑换
+}
+
+// 资金明细 响应
+export interface QueryAcctHisPageResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryAcctHisPageResult
+}
+
+// 资金明细 响应结果
+export interface QueryAcctHisPageResult {
+  current: number
+  pages: number
+  records: Array<{
+    accountChangeId: number // 记录id
+    backNote: string
+    busiAmount: number // 交易金额
+    changeNote: string // 备注说明
+    changeType: number // 变更类型 1.游戏切换   2.会员充值 3.会员取款 4.会员取款退回 5.人工存入 6.人工扣款 7.赠送彩金 8.领取佣金 9货币互换 13.VIP收益 14.红利兑换
+    createBy: string
+    createDate: number
+    createTime: number // 更新时间
+    currency: string
+    memberId: string // 会员名称
+    memberRowId: number // 会员id
+    newBalance: number // 新余额
+    oldBalance: number // 旧余额
+    site: string
+  }>
+  size: number
+  total: number
+}

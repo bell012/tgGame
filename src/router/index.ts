@@ -57,6 +57,22 @@ const baseRoutes: RouteRecordRaw[] = [
     })
   },
   {
+    path: 'brand-games/:brandCode',
+    name: 'brandGameList',
+    component: () => import('@/views/fun/casino/brandGameList/index.vue'),
+    meta: {
+      title: '厂商游戏列表',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    },
+    props: route => ({
+      brandCode: route.params.brandCode as string,
+      brandName: typeof route.query.brandName === 'string' ? route.query.brandName : undefined
+    })
+  },
+  {
     path: 'originate',
     name: 'originate',
     component: () => import('@/views/fun/originate/index.vue'),
@@ -169,12 +185,25 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'game/:id',
+    path: 'game/:rowId',
     name: 'gameDetail',
     component: () => import('@/views/game/detail/index.vue'),
     meta: {
       title: '游戏详情',
       description: '游戏详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'game/detail/recommended',
+    name: 'gameDetailRecommended',
+    component: () => import('@/views/game/detail/recommended/index.vue'),
+    meta: {
+      title: '推荐游戏',
+      description: '推荐游戏',
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -213,6 +242,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '投注详情',
       description: '投注详情',
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
@@ -229,6 +259,35 @@ const baseRoutes: RouteRecordRaw[] = [
       description: '个人中心',
       mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'rule',
+    name: 'rule',
+    component: () => import('@/views/rule/index.vue'),
+    meta: {
+      title: '规则',
+      description: '规则',
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'vip',
+    name: 'vip',
+    component: () => import('@/views/vip/index.vue'),
+    meta: {
+      title: 'VIP俱乐部',
+      description: 'VIP俱乐部',
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -272,6 +331,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '资金详情',
       description: '资金详情',
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true,
       mobile: {
         hideBottomBar: true,
@@ -300,6 +360,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '流水稽查详情',
       description: '流水稽查详情',
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true,
       mobile: {
         hideBottomBar: true,

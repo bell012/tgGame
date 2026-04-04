@@ -39,41 +39,47 @@
     <div class="mt-3.5 p-3.5 bg-bg-2 rounded-lg">
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <div class="text-xs font-normal leading-normal">Withdraw Currency</div>
+          <div class="text-xs font-normal leading-normal">
+            {{ t('withdraw.withdraw_currency') }}
+          </div>
           <CustomSelect class="mt-2 w-full" v-model="currency" :options="currencyOptions" />
         </div>
         <div>
-          <div class="text-xs font-normal leading-normal">Select Network</div>
+          <div class="text-xs font-normal leading-normal">{{ t('withdraw.select_network') }}</div>
           <CustomSelect class="mt-2 w-full" v-model="selectNetwork" :options="networkOptions" />
         </div>
       </div>
       <div class="mt-5">
-        <div class="text-xs font-normal leading-normal">Receive Address</div>
+        <div class="text-xs font-normal leading-normal">{{ t('withdraw.receive_address') }}</div>
         <div
           class="mt-2 p-3 w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
         >
           <input
             type="text"
             v-model="address"
-            placeholder="Please enter the receiving address"
+            :placeholder="t('withdraw.receive_address_placeholder')"
             class="w-full text-xs bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs"
           />
         </div>
       </div>
       <div class="mt-5">
-        <div class="text-xs font-normal leading-normal">Withdraw Amount</div>
+        <div class="text-xs font-normal leading-normal">{{ t('withdraw.amount') }}</div>
         <div
           class="mt-2 p-3 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
         >
-          <DepositTokenIcon class="w-5 h-5 mr-2 shrink-0 text-theme-primary" />
+          <span class="mr-2 shrink-0 text-lg font-bold leading-none text-theme-primary">{{
+            currencySymbol
+          }}</span>
           <input
             type="number"
             v-model="amount"
-            placeholder="Please enter the withdrawal amount"
+            :placeholder="t('withdraw.amount_placeholder')"
             class="flex-1 min-w-0 text-base font-bold bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
           />
           <div v-if="!isAmountDisabled" class="flex items-center shrink-0 ml-2">
-            <p class="text-text-1 text-xs mr-1 whitespace-nowrap">You Get ≈ 100</p>
+            <p class="text-text-1 text-xs mr-1 whitespace-nowrap">
+              {{ t('withdraw.you_get') }} ≈ 100
+            </p>
             <!-- string -->
             <img
               v-if="typeof currencyOption?.icon === 'string'"
@@ -86,7 +92,9 @@
         </div>
         <div class="mt-3.5 flex items-center">
           <div class="text-xs font-normal leading-normal">
-            Balance：<span class="text-theme-primary">5000PHP</span>
+            {{ t('withdraw.balance') }}：<span class="text-theme-primary">{{
+              formattedBalance
+            }}</span>
           </div>
           <RefreshIcon class="w-3.5 text-icon-2 ml-1" />
         </div>
@@ -94,13 +102,12 @@
       <div class="mt-5 p-2.5 rounded-lg bg-theme-3 flex items-start">
         <InfoIcon class="w-5 h-5 mr-1 shrink-0 text-theme-primary" />
         <div class="text-xs text-text-2 font-normal leading-normal">
-          Please make sure the recipient address is correct. Funds cannot be recovered if sent to
-          the wrong address.
+          {{ t('withdraw.crypto_address_notice') }}
         </div>
       </div>
       <div class="mt-5 flex items-center">
         <AmountInfoIcon class="w-3.5 h-3.5 mr-1 text-icon-2" />
-        <div class="text-xs text-text-2">How to withdraw crypto?</div>
+        <div class="text-xs text-text-2">{{ t('withdraw.crypto_help') }}</div>
       </div>
       <button
         class="mt-5 w-full h-10 flex items-center justify-center rounded-lg font-semibold text-text-4"
@@ -108,12 +115,13 @@
         :disabled="isWithdrawDisabled"
         @click="doWithdrawDeposit"
       >
-        Withdraw Now
+        {{ t('withdraw.withdraw_now') }}
       </button>
     </div>
   </div>
 </template>
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import { showToast } from 'vant'
 import { useI18n } from 'vue-i18n'
@@ -125,13 +133,17 @@ import DOGEIcon from '@/static/img/crypto/DOGE.png'
 import TRXIcon from '@/static/img/crypto/TRX.png'
 import BNBIcon from '@/static/img/crypto/BNB.png'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
-import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
 import RefreshIcon from '@/static/svg/refresh.svg?component'
 import InfoIcon from '@/static/svg/info.svg?component'
+import { useLocaleStore } from '@/stores/locale'
+import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
+import type { WithdrawSubmitPayload } from './types'
 
 const { t } = useI18n()
+const localeStore = useLocaleStore()
+const { currentCurrency } = storeToRefs(localeStore)
 const unavailableMessage = 'Unavailable'
 const amount = ref<number>()
 const address = ref('')
@@ -171,6 +183,8 @@ const currencyOption = computed(() => {
   return currencyOptions.value.find(opt => opt.value === currency.value)
 })
 const selectNetwork = ref('TRC20')
+const formattedBalance = computed(() => getFormattedBalance(5000, currentCurrency.value, 2))
+const currencySymbol = computed(() => getCurrencySymbol(currentCurrency.value))
 const networkOptions = computed(() => [
   { label: 'Tron（TRC20）', value: 'TRC20' },
   { label: 'Ethereum（ERC20）', value: 'ERC20' },
@@ -180,6 +194,10 @@ const networkOptions = computed(() => [
 ])
 const isAmountDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
 const isWithdrawDisabled = computed(() => isAmountDisabled.value || !address.value)
+
+const emit = defineEmits<{
+  submit: [payload: WithdrawSubmitPayload]
+}>()
 
 const showUnavailableToast = () => {
   showToast({
@@ -203,7 +221,21 @@ const openCoinMorePanel = () => {
   return
 }
 
-const doWithdrawDeposit = () => {}
+const doWithdrawDeposit = () => {
+  if (isWithdrawDisabled.value) {
+    return
+  }
+
+  emit('submit', {
+    tabType: 'Crypto',
+    amount: Number(amount.value),
+    currencyCode: currentCurrency.value,
+    methodLabel: currency.value,
+    address: address.value,
+    network: selectNetwork.value,
+    phoneNumber: '+63-999****9999'
+  })
+}
 </script>
 <style scoped lang="scss">
 input::-webkit-outer-spin-button,

@@ -11,13 +11,13 @@
     <!-- 筛选条件 -->
     <div class="grid lg:grid-cols-4 grid-cols-2 gap-4" v-if="currentType === 'casino'">
       <select-popup
-        label="排序方式:"
+        :label="t('search.sort')"
         v-model="currentSort"
         :dataList="sortList"
         @change="sortChange"
       />
       <multiple-select-popup
-        label="供应商:"
+        :label="t('search.providers')"
         v-model="currentProvider"
         :dataList="providerOptions"
         @change="providerChange"
@@ -40,6 +40,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, provide, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import TopInput from './top-input/index.vue'
 import TopTab from './top-tab/index.vue'
 import SelectPopup from './select-popup/index.vue'
@@ -50,9 +51,10 @@ import Casino from '@/components/explore/list/casino.vue'
 import Sports from '@/components/explore/list/sports.vue'
 import Lottery from '@/components/explore/list/lottery.vue'
 // mock数据
-import { countryList, providerList } from '@/components/explore/mock/index.ts'
+import { countryList } from '@/components/explore/mock/index.ts'
 
 const themeStore = useThemeStore()
+const { t } = useI18n()
 
 const listCompMap = {
   casino: Casino,
@@ -66,21 +68,48 @@ type GameSection = {
   subGame?: unknown[]
 }
 
+type GameSubNode = {
+  subGame?: unknown[]
+}
+
 type TopTabItem = {
   sysGameTypeCode: string
   sysGameTypeName: string
 }
 
+type ExploreHotGameItem = {
+  id?: string | number
+  rowId?: string | number
+  platformName?: string
+  gameItemHotVo?: {
+    hot?: number
+  }
+}
+
+type GameBrandItem = {
+  providerId?: number | string
+  providerName?: string
+  logo?: string
+  logoWhite?: string
+  retrieveId?: string
+  brandId?: number | string
+  brandName?: string
+  brandLogo?: string
+  brandLogoWhite?: string
+}
+
 // 搜索的关键字
 const keywords = ref('')
 provide('explore-keywords', keywords)
+const exploreHotGameList = ref<ExploreHotGameItem[]>([])
+provide('explore-hot-game-list', exploreHotGameList)
 
 // top-input
-const typeList = [
-  { id: 'casino', name: 'Casino' },
-  { id: 'sports', name: 'Sports' }
+const typeList = computed(() => [
+  { id: 'casino', name: t('bottom_tab_bar.casino') }
+  // { id: 'sports', name: t('bottom_tab_bar.sports') }
   // { id: 'lottery', name: 'Lottery' }
-]
+])
 
 // 游戏类型
 const currentType = ref<keyof typeof listCompMap>('casino')
@@ -94,7 +123,13 @@ const currentTypeGameList = computed(() => {
   const section = queryGameList.value.find(
     item => item?.sysGameTypeCode === currentSubGameTypeCode.value
   )
-  return section?.subGame ?? []
+  const list = Array.isArray(section?.subGame) ? (section.subGame as GameSubNode[]) : []
+  return list.reduce<unknown[]>((acc, item) => {
+    if (Array.isArray(item?.subGame)) {
+      acc.push(...item.subGame)
+    }
+    return acc
+  }, [])
 })
 
 provide('explore-game-list', currentTypeGameList)
@@ -116,7 +151,8 @@ const topTabChange = (code: string) => {
 const getQueryGameListForApp = async () => {
   try {
     const res = await Api.home.getGameData()
-    queryGameList.value = Array.isArray(res?.result) ? res.result : []
+    const nextList = Array.isArray(res?.result) ? (res.result as GameSection[]) : []
+    queryGameList.value = nextList
   } catch (error) {
     console.error('queryGameListForApp failed', error)
     queryGameList.value = []
@@ -126,55 +162,91 @@ const getQueryGameListForApp = async () => {
 const changeTypeHandler = (val: keyof typeof listCompMap) => {
   currentType.value = val
   currentSubGameTypeCode.value = ''
+  if (val !== 'casino') {
+    exploreHotGameList.value = []
+  }
 }
-const topInputSearch = (value: string) => {
-  console.log(value)
+const topInputSearch = (_value: string) => {
+  void _value
 }
 
 // 排序
-const currentSort = ref('1')
+const currentSort = ref('0')
+provide('explore-current-sort', currentSort)
 
-const sortList = [
-  { value: '1', label: '热门' },
-  { value: '2', label: '最新' },
-  { value: '3', label: 'A-Z' },
-  { value: '4', label: 'Z-A' }
-]
-const sortChange = (val: string) => {
-  console.log(val)
-}
+const sortList = computed(() => [
+  { value: '0', label: t('search.sortDefault') },
+  { value: '1', label: 'A-Z' },
+  { value: '2', label: 'Z-A' }
+])
 
 // 供应商
-const currentProvider = ref([])
+const currentProvider = ref<string[]>([])
+provide('explore-current-provider', currentProvider)
+const queryProviderList = ref<GameBrandItem[]>([])
+
+const getGameBrandList = async () => {
+  try {
+    const res = await Api.home.getGameBrandList()
+    queryProviderList.value = Array.isArray(res?.result) ? (res.result as GameBrandItem[]) : []
+  } catch (error) {
+    console.error('getGameBrandList failed', error)
+    queryProviderList.value = []
+  }
+}
+
 const providerOptions = computed(() => {
-  return providerList.map(item => {
+  return queryProviderList.value.map(item => {
+    const providerId = item.providerId ?? item.brandId
+    const providerName = item.providerName ?? item.brandName ?? ''
+    const logo = item.logo ?? item.brandLogo ?? ''
+    const logoWhite = item.logoWhite ?? item.brandLogoWhite ?? logo
+
     return {
       ...item,
-      label: themeStore.theme === 'light' ? item.logoWhite : item.logo,
-      value: item.providerId + ''
+      providerId: providerId ?? '',
+      providerName,
+      logo,
+      logoWhite,
+      label: themeStore.theme === 'light' ? logoWhite : logo,
+      value: String(providerId ?? '')
     }
   })
 })
+
+// 国家
+const currentCountry = ref('')
+const countryOptions = computed(() =>
+  countryList.map(item => {
+    return {
+      label: item || t('search.all'),
+      value: item
+    }
+  })
+)
 
 const providerChange = (val: string[]) => {
   console.log(val)
 }
 
-// 国家
-const currentCountry = ref('')
-const countryOptions = countryList.map(item => {
-  return {
-    label: item || '全部国家',
-    value: item
-  }
-})
+const sortChange = (val: string) => {
+  console.log(val)
+}
+
 const countryChange = (val: string) => {
   console.log(val)
 }
 
 onMounted(() => {
   getQueryGameListForApp()
+  getGameBrandList()
 })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+@media (max-width: 767px) {
+  .search-container {
+    padding-top: 60px;
+  }
+}
+</style>

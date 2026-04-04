@@ -2,24 +2,19 @@
   <div class="p-6 pb-0">
     <div class="mb-4">
       <div class="flex items-center gap-2 flex-wrap">
-        <!-- 游戏类型筛选 -->
         <CustomSelect
           class="w-[240px]"
-          v-model="filters.gameType"
-          :options="gameTypeOptions"
-          :placeholder="$t('betHistory.filters.all')"
+          v-model="filterValues.time"
+          :options="timeOptions"
+          :placeholder="$t('customSelect.placeholder')"
         />
 
-        <!-- 资产类型筛选 -->
         <CustomSelect
           class="w-[240px]"
-          v-model="filters.assetType"
-          :options="assetTypeOptions"
-          :placeholder="$t('betHistory.filters.allAssets')"
+          v-model="filterValues.type"
+          :options="typeOptions"
+          :placeholder="$t('customSelect.placeholder')"
         />
-
-        <!-- 时间范围 -->
-        <CustomSelect class="w-[240px]" v-model="filters.timeRange" :options="timeRangeOptions" />
       </div>
     </div>
 
@@ -27,22 +22,38 @@
       <div class="table-header-bar bg-bg-3 rounded-lg py-3">
         <div class="grid grid-cols-4 gap-3">
           <div class="text-text-1 text-sm font-bold text-center">
-            {{ $t('betHistory.type') }}
+            {{ $t('transaction.type') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
-            {{ $t('betHistory.time') }}
+            {{ $t('transaction.time') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
-            {{ $t('betHistory.amount') }}
+            {{ $t('transaction.amount') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
-            {{ $t('betHistory.balance') }}
+            {{ $t('transaction.balance') }}
           </div>
         </div>
       </div>
 
-      <div class="table-body">
-        <template v-if="dataList.length > 0">
+      <div class="table-body min-h-[520px]">
+        <div
+          v-if="error && dataList.length === 0"
+          class="flex h-[520px] items-center justify-center text-sm font-[700] text-secondary-4 cursor-pointer"
+          @click="handleRetry"
+        >
+          {{ $t('common.requestError') }}
+        </div>
+
+        <div
+          v-else-if="!loading && dataList.length === 0"
+          class="flex h-[520px] flex-col items-center justify-center"
+        >
+          <img :src="noDataImg" alt="No data" class="mb-2.5 h-[200px] w-auto" />
+          <p class="text-text-1 text-sm font-[700]">{{ $t('common.noData') }}</p>
+        </div>
+
+        <template v-else>
           <div
             v-for="item in dataList"
             :key="item.id"
@@ -53,128 +64,96 @@
               <span class="text-text-1 text-sm font-[700] text-center">{{ item.gameName }}</span>
             </div>
             <div class="text-text-2 text-sm font-[700] text-center">{{ item.time }}</div>
-            <div class="text-text-1 text-sm font-[700] text-center">{{ item.betAmount }}</div>
-            <div class="flex items-center justify-center gap-1">
+            <div class="flex items-center justify-center">
               <span
-                :class="item.profit >= 0 ? 'text-secondary-4' : 'text-secondary-2'"
+                :class="item.direction === 'add' ? 'text-secondary-2' : 'text-secondary-4'"
                 class="font-[700] text-sm"
               >
-                {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
+                {{ item.betAmount }}
               </span>
+            </div>
+            <div class="flex items-center justify-center gap-1">
+              <span class="text-text-1 text-sm font-[700] text-center">{{ item.profit }}</span>
               <ArrowRightIcon class="w-4 h-4 text-text-1" />
             </div>
           </div>
+
+          <p v-if="loading" class="py-6 text-center text-sm text-text-2">
+            {{ $t('common.loading') }}
+          </p>
         </template>
       </div>
     </div>
 
-    <!-- No More -->
-    <div v-if="dataList.length > 0" class="pagination-section mt-4 pb-4">
-      <div v-if="!hasMore" class="text-center">
-        <p class="text-text-1 text-sm font-[700]">{{ $t('betHistory.noMore') }}</p>
-      </div>
+    <div v-if="totalPages > 1 && dataList.length > 0" class="mt-5 flex justify-center pb-6">
+      <DesktopPagination
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        @change="handlePageChange"
+      />
     </div>
 
-    <!-- 详情弹窗 -->
     <DetailsModal v-model="showDetailModal" :data="selectedData" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import Api from '@/api'
 import { useI18n } from 'vue-i18n'
 import CustomSelect from '@/components/common/CustomSelect.vue'
+import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import DetailsModal from '../transactionDetails/detailsModal.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
-import bet from '@/static/img/personalCenter/bet.png'
+import noDataImg from '@/static/img/personalCenter/noData.png'
+import {
+  TRANSACTION_PAGE_SIZE,
+  buildTransactionQueryForm,
+  createDefaultTransactionFilterValues,
+  createTransactionTimeOptions,
+  createTransactionTypeOptions,
+  mapRecordToItem,
+  type Item
+} from './shared'
 
 const { t } = useI18n()
+const filterValues = ref(createDefaultTransactionFilterValues())
+const dataList = ref<Item[]>([])
+const loading = ref(false)
+const error = ref<unknown | null>(null)
+const currentPage = ref(1)
+const totalPages = ref(1)
 
-// 筛选条件
-const filters = ref({
-  gameType: '',
-  assetType: '',
-  timeRange: '24h'
-})
+const timeOptions = computed(() => createTransactionTimeOptions(t))
+const typeOptions = computed(() => createTransactionTypeOptions(t))
 
-// 筛选选项
-const gameTypeOptions = computed(() => [
-  { label: t('betHistory.filters.all'), value: '' },
-  { label: t('betHistory.filters.slot'), value: 'slot' },
-  { label: t('betHistory.filters.chess'), value: 'chess' },
-  { label: t('betHistory.filters.fishing'), value: 'fishing' },
-  { label: t('betHistory.filters.live'), value: 'live' }
-])
+const fetchTransaction = async (page = 1) => {
+  loading.value = true
+  error.value = null
 
-const assetTypeOptions = computed(() => [
-  { label: t('betHistory.filters.allAssets'), value: '' },
-  { label: 'USDT', value: 'usdt' },
-  { label: 'BTC', value: 'btc' },
-  { label: 'ETH', value: 'eth' }
-])
+  try {
+    const response = await Api.record.queryAcctHisPage(
+      buildTransactionQueryForm({
+        page,
+        pageSize: TRANSACTION_PAGE_SIZE,
+        filterValues: filterValues.value
+      })
+    )
 
-const timeRangeOptions = computed(() => [
-  { label: t('betHistory.filters.past24Hours'), value: '24h' },
-  { label: t('betHistory.filters.past7Days'), value: '7d' },
-  { label: t('betHistory.filters.past30Days'), value: '30d' }
-])
+    if (!response.success) {
+      throw new Error(response.message || t('common.requestError'))
+    }
 
-const hasMore = ref(false)
-
-interface Item {
-  id: number
-  gameName: string
-  gameIcon: string
-  gameType: string
-  time: string
-  betAmount: string
-  profit: number
-  result: 'win' | 'loss'
-  currency: string
-  orderNo: string
+    dataList.value = response.result?.records?.map(record => mapRecordToItem(record, t)) ?? []
+    currentPage.value = response.result?.current || page
+    totalPages.value = Math.max(1, response.result?.pages || 1)
+  } catch (requestError) {
+    error.value = requestError
+  } finally {
+    loading.value = false
+  }
 }
 
-// 投注列表
-const dataList = ref<Item[]>([
-  {
-    id: 1,
-    gameName: 'Dragon Hatch',
-    gameIcon: bet,
-    gameType: 'Slot',
-    time: '12/18/2026 11:14:15 AM',
-    betAmount: '1000',
-    profit: 1000.0,
-    result: 'win',
-    currency: 'PHP',
-    orderNo: 'ts0768456746746746746'
-  },
-  {
-    id: 2,
-    gameName: 'Dragon Hatch',
-    gameIcon: bet,
-    gameType: 'Slot',
-    time: '12/18/2026 11:14:15 AM',
-    betAmount: '1000',
-    profit: 1000.0,
-    result: 'win',
-    currency: 'PHP',
-    orderNo: 'ts0768456746746746747'
-  },
-  {
-    id: 3,
-    gameName: 'Dragon Hatch',
-    gameIcon: bet,
-    gameType: 'Slot',
-    time: '12/18/2026 11:14:15 AM',
-    betAmount: '1000',
-    profit: -1000.0,
-    result: 'loss',
-    currency: 'PHP',
-    orderNo: 'ts0768456746746746748'
-  }
-])
-
-// 弹窗
 const showDetailModal = ref(false)
 const selectedData = ref<Item | null>(null)
 
@@ -182,6 +161,28 @@ const handleRowClick = (item: Item) => {
   selectedData.value = item
   showDetailModal.value = true
 }
+
+const handlePageChange = async (page: number) => {
+  if (page === currentPage.value || loading.value) return
+  await fetchTransaction(page)
+}
+
+const handleRetry = async () => {
+  await fetchTransaction(currentPage.value)
+}
+
+watch(
+  filterValues,
+  async () => {
+    currentPage.value = 1
+    await fetchTransaction(1)
+  },
+  { deep: true }
+)
+
+onMounted(() => {
+  void fetchTransaction(1)
+})
 </script>
 
 <style scoped></style>

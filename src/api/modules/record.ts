@@ -1,7 +1,9 @@
 import request from '@/utils/request'
 import type {
   QueryOrderInfoPageForm,
-  QueryOrderInfoPageResponse
+  QueryOrderInfoPageResponse,
+  QueryAcctHisPageForm,
+  QueryAcctHisPageResponse
 } from '@/api/interface/record.interface'
 
 // 投注记录
@@ -10,6 +12,15 @@ export function queryOrderInfoPage(
 ): Promise<QueryOrderInfoPageResponse> {
   return request({
     url: '/gc/queryOrderInfoPage',
+    method: 'post',
+    data
+  })
+}
+
+// 资金明细记录
+export function queryAcctHisPage(data: QueryAcctHisPageForm): Promise<QueryAcctHisPageResponse> {
+  return request({
+    url: '/acct/queryAcctHisPage',
     method: 'post',
     data
   })
