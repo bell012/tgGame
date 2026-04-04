@@ -28,7 +28,7 @@
                 <div class="flex shrink-0 items-center gap-0.5">
                   <VipBadgeIcon class="h-6 w-6 text-text-1" />
                   <VipWordmarkIcon class="h-5 w-[47.5px] text-text-1" />
-                  <span class="text-2xl font-[700] text-text-1">{{ vipLevel }}</span>
+                  <span class="text-2xl font-[700] text-text-1">{{ currentVipLevel }}</span>
                 </div>
                 <div class="text-lg font-[700] text-text-1 mt-2">
                   {{ userInfo?.nickName || '-' }}
@@ -38,54 +38,83 @@
           </div>
         </section>
 
-        <section
-          class="relative h-[256px] overflow-hidden rounded-[30px] bg-cover bg-center bg-no-repeat px-[64px] pb-[39px] pt-[56px]"
-          :style="{ backgroundImage: `url(${cardH5BgImage})` }"
-        >
-          <div class="relative z-[1] flex h-full flex-col">
-            <div class="flex items-center gap-[25px]">
-              <div class="flex shrink-0 items-center">
-                <img :src="cardVipImage" alt="VIP Card" class="h-[59px] w-[66px] shrink-0" />
-                <p class="text-[80px] font-[700] leading-[60px] text-theme-primary">
-                  {{ vipLevel }}
-                </p>
-              </div>
+        <div class="relative h-[256px]">
+          <button
+            type="button"
+            :disabled="!canGoPrev"
+            @click="goToPrevVip"
+            :class="canGoPrev ? 'cursor-pointer' : 'cursor-not-allowed'"
+            class="absolute left-[-40px] top-1/2 flex h-[40px] w-[28px] -translate-y-1/2 items-center justify-center rounded-lg bg-opacity-5 transition-opacity"
+          >
+            <Arrow_left :class="canGoPrev ? 'h-6 w-6 text-text-1' : 'h-6 w-6 text-text-3'" />
+          </button>
 
-              <div class="min-w-0 flex-1 space-y-[12px]">
-                <div v-for="item in progressItems" :key="item.key" class="flex items-center">
-                  <span class="text-[20px] leading-none text-[#198E48]">{{ item.label }}：</span>
-                  <span class="text-[20px] font-[700] leading-none text-[#198E48]"
-                    >{{ item.current }}/{{ item.target }}</span
-                  >
+          <div class="vip-card-stage">
+            <Transition :name="vipCardTransitionName">
+              <section
+                :key="viewedVipLevel"
+                class="vip-card-panel rounded-[30px] bg-cover bg-center bg-no-repeat px-[64px] pb-[39px] pt-[56px]"
+                :style="{ backgroundImage: `url(${cardH5BgImage})` }"
+              >
+                <div class="relative z-[1] flex h-full flex-col">
+                  <div class="flex items-center gap-[25px]">
+                    <div class="flex shrink-0 items-center">
+                      <img :src="cardVipImage" alt="VIP Card" class="h-[59px] w-[66px] shrink-0" />
+                      <p class="text-[80px] font-[700] leading-[60px] text-theme-primary">
+                        {{ viewedVipLevel }}
+                      </p>
+                    </div>
+
+                    <div class="min-w-0 flex-1 space-y-[12px]">
+                      <div v-for="item in progressItems" :key="item.key" class="flex items-center">
+                        <span class="text-[20px] leading-none text-[#198E48]"
+                          >{{ item.label }}：</span
+                        >
+                        <span class="text-[20px] font-[700] leading-none text-[#198E48]"
+                          >{{ item.current }}/{{ item.target }}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-[48px]">
+                    <div class="h-[18px] w-[847px] overflow-hidden rounded-full bg-theme-3">
+                      <div
+                        class="h-full rounded-full bg-theme-primary transition-all"
+                        :style="{ width: `${overallProgress}%` }"
+                      />
+                    </div>
+
+                    <p class="mt-[16px] text-base text-[#198E48]">
+                      {{ $t('vipPage.goalHint') }}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div class="mt-[48px]">
-              <div class="h-[18px] w-[847px] overflow-hidden rounded-full bg-theme-3">
-                <div
-                  class="h-full rounded-full bg-theme-primary transition-all"
-                  :style="{ width: `${overallProgress}%` }"
+                <img
+                  :src="cardVipRightImage"
+                  alt="VIP Decoration"
+                  class="pointer-events-none absolute right-[32px] top-1/2 h-[252px] w-[282px] -translate-y-1/2"
                 />
-              </div>
-
-              <p class="mt-[16px] text-base text-[#198E48]">
-                {{ $t('vipPage.goalHint') }}
-              </p>
-            </div>
+              </section>
+            </Transition>
           </div>
 
-          <img
-            :src="cardVipRightImage"
-            alt="VIP Decoration"
-            class="pointer-events-none absolute right-[32px] top-1/2 h-[252px] w-[282px] -translate-y-1/2"
-          />
-        </section>
+          <button
+            type="button"
+            :disabled="!canGoNext"
+            @click="goToNextVip"
+            :class="canGoNext ? 'cursor-pointer' : 'cursor-not-allowed'"
+            class="absolute right-[-40px] top-1/2 flex h-[40px] w-[28px] -translate-y-1/2 items-center justify-center rounded-lg bg-opacity-5 transition-opacity"
+          >
+            <Arrow_right :class="canGoNext ? 'h-6 w-6 text-text-1' : 'h-6 w-6 text-text-3'" />
+          </button>
+        </div>
       </div>
 
       <section class="mt-4 grid grid-cols-4 gap-3.5">
         <article
-          v-for="card in displayBenefitCards"
+          v-for="card in benefitCards"
           :key="card.key"
           :style="{ background: card.background }"
           class="flex h-[365px] flex-col items-center overflow-hidden rounded-[32px] px-[52px] py-[36px]"
@@ -105,7 +134,7 @@
 
           <button
             type="button"
-            :disabled="!card.claimable"
+            :disabled="!card.claimable || claimingCardKey === card.key"
             @click="handleClaim(card)"
             :class="
               card.status === 'claimed'
@@ -167,72 +196,133 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { showToast } from 'vant'
 import CommonFooter from '@/components/commonFooter.vue'
+import { useVipStore } from '@/stores/vip'
 import VipBadgeIcon from '@/static/svg/vip_1.svg?component'
 import VipWordmarkIcon from '@/static/svg/vip_2.svg?component'
 import cardVipImage from '@/static/img/personalCenter/card_vip.png'
 import { getCurrencySymbol } from '@/utils/locale'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
-import { type VipBenefitCard, useVipPageData } from './shared'
+import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
 import cardH5BgImage from '@/static/img/personalCenter/card_H5_BG.png'
 import cardVipRightImage from '@/static/img/personalCenter/card_vip_right2.png'
+import Arrow_left from '@/static/svg/arrow_left.svg?component'
+import Arrow_right from '@/static/svg/arrow_right2.svg?component'
 
 const { t } = useI18n()
+const vipStore = useVipStore()
 const showClaimSuccessPopup = ref(false)
-const pendingClaimCard = ref<VipBenefitCard | null>(null)
-const claimedCardKeys = ref<string[]>([])
+const claimSuccessAmount = ref(`${getCurrencySymbol()}0.00`)
+const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
+const selectedVipIndex = ref(0)
+const hasInitializedViewedVip = ref(false)
+const vipCardTransitionName = ref<'vip-card-slide-next' | 'vip-card-slide-prev'>(
+  'vip-card-slide-next'
+)
+
+const selectedVipId = computed(() => {
+  return vipLevels.value[selectedVipIndex.value]?.vipId ?? currentVipLevel.value
+})
+
 const {
   userInfo,
   avatarUrl,
   selectedAvatarFrameImage,
-  vipLevel,
+  vipLevels,
+  currentVipLevel,
+  viewedVipLevel,
   progressItems,
   overallProgress,
   benefitCards,
   retentionCards,
   rules,
   initializeVipPage
-} = useVipPageData(t)
+} = useVipPageData(t, { viewedVipId: selectedVipId })
 
-const displayBenefitCards = computed(() => {
-  return benefitCards.value.map(card => {
-    if (!claimedCardKeys.value.includes(card.key)) {
-      return card
-    }
+const canGoPrev = computed(() => selectedVipIndex.value > 0)
+const canGoNext = computed(() => selectedVipIndex.value < vipLevels.value.length - 1)
 
-    return {
-      ...card,
-      status: 'claimed' as const,
-      claimed: true,
-      claimable: false,
-      buttonText: t('vipPage.claimed')
-    }
-  })
-})
-
-const claimSuccessAmount = computed(() => {
-  const amount = pendingClaimCard.value?.amount ?? '0.00'
-  return `${getCurrencySymbol()}${amount}`
-})
-
-const handleClaim = (card: VipBenefitCard) => {
-  if (!card.claimable) {
+const updateSelectedVipIndex = (nextIndex: number, direction: 'prev' | 'next') => {
+  if (
+    nextIndex === selectedVipIndex.value ||
+    nextIndex < 0 ||
+    nextIndex >= vipLevels.value.length
+  ) {
     return
   }
 
-  pendingClaimCard.value = card
-  showClaimSuccessPopup.value = true
+  vipCardTransitionName.value = direction === 'next' ? 'vip-card-slide-next' : 'vip-card-slide-prev'
+  selectedVipIndex.value = nextIndex
+}
+
+const goToPrevVip = () => {
+  if (!canGoPrev.value) {
+    return
+  }
+
+  updateSelectedVipIndex(selectedVipIndex.value - 1, 'prev')
+}
+
+const goToNextVip = () => {
+  if (!canGoNext.value) {
+    return
+  }
+
+  updateSelectedVipIndex(selectedVipIndex.value + 1, 'next')
+}
+
+watch(
+  [vipLevels, currentVipLevel],
+  ([levels, activeVipLevel]) => {
+    if (!levels.length) {
+      selectedVipIndex.value = 0
+      hasInitializedViewedVip.value = false
+      return
+    }
+
+    const matchedIndex = levels.findIndex(item => item.vipId === activeVipLevel)
+    const fallbackIndex = matchedIndex >= 0 ? matchedIndex : 0
+
+    if (!hasInitializedViewedVip.value || !levels[selectedVipIndex.value]) {
+      selectedVipIndex.value = fallbackIndex
+      hasInitializedViewedVip.value = true
+    }
+  },
+  { immediate: true }
+)
+
+const handleClaim = async (card: VipBenefitCard) => {
+  if (!card.claimable || claimingCardKey.value === card.key) {
+    return
+  }
+
+  claimingCardKey.value = card.key
+
+  try {
+    const response = await claimVipBenefit(card.key)
+
+    if (!response?.success) {
+      showToast({
+        message: response?.message || t('common.unknownError'),
+        type: 'fail'
+      })
+      return
+    }
+
+    await vipStore.refreshVipInfo()
+    claimSuccessAmount.value = `${getCurrencySymbol()}${card.amount}`
+    showClaimSuccessPopup.value = true
+  } catch (error) {
+    console.error(error)
+  } finally {
+    claimingCardKey.value = null
+  }
 }
 
 const confirmClaimSuccess = () => {
-  const claimedKey = pendingClaimCard.value?.key
-
-  if (claimedKey && !claimedCardKeys.value.includes(claimedKey)) {
-    claimedCardKeys.value = [...claimedCardKeys.value, claimedKey]
-  }
-
   showClaimSuccessPopup.value = false
 }
 
@@ -241,3 +331,35 @@ onMounted(() => {
   void initializeVipPage()
 })
 </script>
+
+<style scoped>
+.vip-card-stage {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.vip-card-panel {
+  position: absolute;
+  inset: 0;
+}
+
+.vip-card-slide-next-enter-active,
+.vip-card-slide-next-leave-active,
+.vip-card-slide-prev-enter-active,
+.vip-card-slide-prev-leave-active {
+  transition: all 0.6s ease-in-out;
+}
+
+.vip-card-slide-next-enter-from,
+.vip-card-slide-prev-leave-to {
+  transform: translateX(14%);
+  opacity: 0;
+}
+
+.vip-card-slide-next-leave-to,
+.vip-card-slide-prev-enter-from {
+  transform: translateX(-14%);
+  opacity: 0;
+}
+</style>

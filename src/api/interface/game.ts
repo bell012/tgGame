@@ -183,12 +183,42 @@ export interface GetCommentsListParams {
   parent?: string | number | null
 }
 
+export interface PublishCommentParams {
+  subjectId: string | number
+  memberId: string
+  memberRowId: number
+  content: string
+  root: string | number
+  parent: string | number
+  replyIndex?: string | number
+}
+
+export interface PublishCommentResponse {
+  code: string | number
+  message: string
+  result?: unknown
+  [key: string]: unknown
+}
+
 export interface GameCommentListItem {
+  id?: string | number
   rowId?: string | number
+  subjectId?: string | number
+  parent?: string | number
+  root?: string | number
+  replyIndex?: string | number
   content?: string
+  address?: string
+  memberAvatar?: string
+  memberId?: string | number
+  memberRowId?: string | number
   memberName?: string
+  isOfficial?: boolean
+  status?: number
+  replyCount?: string | number
+  dislikeCount?: string | number
+  likeCount?: string | number
   createTime?: string | number
-  likeNum?: string | number
   [key: string]: unknown
 }
 
