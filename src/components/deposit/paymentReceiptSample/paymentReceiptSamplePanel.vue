@@ -10,6 +10,7 @@
       >
         {{ t('deposit.payment_receipt_sample_title') }}
       </h2>
+
       <button
         class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center z-10"
         @click="handleClose"
@@ -30,13 +31,14 @@
   </div>
 </template>
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import CloseIcon from '@/static/svg/close.svg?component'
 import paymentReceiptSampleImage from '@/static/img/payment/payment_receipt_sample.png'
+import CloseIcon from '@/static/svg/close.svg?component'
+import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const emit = defineEmits(['close'])
 
+// 处理关闭事件
 const handleClose = () => {
   emit('close')
 }

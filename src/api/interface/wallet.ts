@@ -140,6 +140,17 @@ export interface SubmitPayOrderResponse {
   result?: SubmitPayOrderResult
 }
 
+export interface CancelPayOrderStatusForm {
+  orderId: string | number
+  backNote: string
+}
+
+export interface CancelPayOrderStatusResponse {
+  code: string
+  message: string
+  success: boolean
+}
+
 export interface QueryPayOrderByOrderIdForm {
   orderId: string | number
 }
@@ -147,6 +158,10 @@ export interface QueryPayOrderByOrderIdForm {
 export interface QueryPayOrderByOrderIdResult {
   accountAmount: number
   accountCurrency: string
+  accountName?: string
+  accountNo?: string
+  accountSubNo?: string
+  cardType?: number
   busiAmount: number
   channelId: string
   columnCode: number
@@ -154,6 +169,7 @@ export interface QueryPayOrderByOrderIdResult {
   currency: string
   discountStatus: number
   downloadSite: string
+  flows?: number
   ip: string
   isFirst: number
   memberId: string
@@ -178,6 +194,7 @@ export interface QueryPayOrderByOrderIdResult {
   subColumnCode: number
   subColumnName: string
   sysLevelId: number
+  type?: number | string
   [key: string]: unknown
 }
 
@@ -206,6 +223,7 @@ export interface QueryPaySubColumnItem {
   sortNum: number
   subColumnName: string
   vipId: Array<number | string>
+  offlineAccount?: QueryPayOfflineAccountItem
 }
 
 export interface QueryPaySubColumnPageResponse {
@@ -214,6 +232,22 @@ export interface QueryPaySubColumnPageResponse {
   message: string
   success: boolean
   result?: QueryPaySubColumnItem[]
+}
+
+export interface PayRechargeQuickAmtsForm {
+  columnCode: number
+}
+
+export interface PayRechargeQuickAmtsResult {
+  manualAmountIn: number
+  amounts: Array<number | string>
+}
+
+export interface PayRechargeQuickAmtsResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: PayRechargeQuickAmtsResult
 }
 
 export interface QueryDiscountListForm {

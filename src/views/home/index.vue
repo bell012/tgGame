@@ -1,6 +1,6 @@
 ﻿<template>
   <div class="home max-w-[1248px] mx-auto px-0 py-0 sm:px-4 sm:py-4">
-    <div style="height: 65px"></div>
+    <div style="height: 65px" class="sm:hidden"></div>
     <div v-if="userInfo">
       <HomeCarouselImg v-if="querySlideshowList.length" :list="querySlideshowList" />
     </div>
@@ -358,11 +358,12 @@ const list = ref<RecentBigWin[]>([])
 const getRecentBigWinsData = async () => {
   try {
     const res = await Api.home.getRecentBigWins({ currency: 'PHP', type: 1 })
-    list.value = res.result.map((item: any) => ({
-      src: toGameImageUrl(item.coverImg),
-      name: item.nickName,
-      number: item.winAmount
-    }))
+    list.value =
+      res.result?.map((item: any) => ({
+        src: toGameImageUrl(item.coverImg),
+        name: item.nickName,
+        number: item.winAmount
+      })) || []
   } catch (error) {
     console.error('getRecentBigWins failed', error)
   }

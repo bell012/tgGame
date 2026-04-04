@@ -18,10 +18,12 @@ const emit = defineEmits<{
   confirmUpload: []
 }>()
 
+// 处理关闭事件
 const handleClose = () => {
   emit('update:modelValue', false)
   emit('close')
 }
+// 处理确认上传事件
 const handleConfirmUpload = () => {
   handleClose()
   emit('confirmUpload')
