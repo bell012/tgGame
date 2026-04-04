@@ -93,7 +93,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 
 // 过滤空明细项，保证明细列表结构稳定
@@ -112,7 +112,15 @@ const parseNetworkName = (subColumnName?: unknown) => {
 
   try {
     const parsedName = JSON.parse(subColumnName)
-    return parsedName?.zh || parsedName?.eng || parsedName?.en || subColumnName
+    const localeKey = String(locale.value || 'eng')
+
+    return (
+      parsedName?.[localeKey] ||
+      parsedName?.eng ||
+      parsedName?.en ||
+      parsedName?.zh ||
+      subColumnName
+    )
   } catch {
     return subColumnName
   }
