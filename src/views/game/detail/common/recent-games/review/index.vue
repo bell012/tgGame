@@ -15,23 +15,23 @@
       <div class="lg:flex-1 flex flex-col mt-[12px] gap-[10px]">
         <div class="flex justify-between items-center gap-[10px]">
           <star :count="5" class="w-[100px]" />
-          <progress-bar :percent="50" />
+          <progress-bar :percent="ratingProgressPercents[0]" />
         </div>
         <div class="flex justify-between items-center gap-[10px]">
           <star :count="4" class="w-[100px]" />
-          <progress-bar :percent="20" />
+          <progress-bar :percent="ratingProgressPercents[1]" />
         </div>
         <div class="flex justify-between items-center gap-[10px]">
           <star :count="3" class="w-[100px]" />
-          <progress-bar :percent="30" />
+          <progress-bar :percent="ratingProgressPercents[2]" />
         </div>
         <div class="flex justify-between items-center gap-[10px]">
           <star :count="2" class="w-[100px]" />
-          <progress-bar :percent="10" />
+          <progress-bar :percent="ratingProgressPercents[3]" />
         </div>
         <div class="flex justify-between items-center gap-[10px]">
           <star :count="1" class="w-[100px]" />
-          <progress-bar :percent="60" />
+          <progress-bar :percent="ratingProgressPercents[4]" />
         </div>
       </div>
     </div>
@@ -272,7 +272,16 @@
 import Api from '@/api'
 import type { GameCommentListItem } from '@/api/interface/game'
 import { useThemeStore } from '@/stores/theme'
-import { computed, inject, onBeforeUnmount, onMounted, ref, watch, type ComputedRef } from 'vue'
+import {
+  computed,
+  inject,
+  onActivated,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+  type ComputedRef
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useGameRating } from '@/composables/useGameRating'
@@ -326,19 +335,95 @@ const ratingCount = computed(() => {
 const avatarCount = computed(() => Math.min(8, Math.max(0, ratingCount.value)))
 
 const scoreValue = computed(() => {
-  const parsed = Number(currentGameDetail.value?.initScoreStar)
-  if (parsed === 1) return 4.0
-  if (parsed === 2) return 4.5
-  if (parsed === 3) return 5.0
-  return 3.0
+  const rawScore = Number(currentGameDetail.value?.initScoreStar)
+
+  if (!Number.isFinite(rawScore)) {
+    return 4.0
+  }
+
+  // 兼容后端枚举值：1/2/3 -> 4.0/4.5/5.0
+  if (rawScore === 1) return 4.0
+  if (rawScore === 2) return 4.5
+  if (rawScore === 3) return 5.0
+
+  // 兼容后端直接返回评分值：4.0/4.5/5.0
+  if (rawScore >= 4 && rawScore <= 5) {
+    return rawScore
+  }
+
+  return 4.0
 })
 
 const scoreText = computed(() => scoreValue.value.toFixed(1))
+
 const activeStarCount = computed(() => Math.max(0, Math.min(5, Math.round(scoreValue.value))))
 
 const handleRateChange = (value: number) => {
   setRating(value)
 }
+
+type ScoreTemplateKey = 'five' | 'fourHalf' | 'four'
+
+const RATING_DISTRIBUTION_BASE: Record<ScoreTemplateKey, [number, number, number, number, number]> =
+  {
+    // 5.0: P5 > P4 > P3 > 2P2 > 4P1
+    // 对应顺序为 [P5, P4, P3, P2, P1]
+    five: [0.46, 0.25, 0.16, 0.07, 0.03],
+    // 4.5: P5 >= P4 >= P3 > 2P2 > 3P1
+    fourHalf: [0.37, 0.33, 0.19, 0.07, 0.04],
+    // 4.0: P4 > P5 > P3 > 2P2 > 3P1
+    four: [0.27, 0.4, 0.2, 0.08, 0.05]
+  }
+
+const RANDOM_FLOAT_RATIO = 0.1
+
+const normalizeDistribution = (values: number[]) => {
+  const total = values.reduce((sum, current) => sum + Math.max(0, current), 0)
+
+  if (total <= 0) {
+    return [0, 0, 0, 0, 0]
+  }
+
+  return values.map(value => Math.max(0, value) / total)
+}
+
+const getScoreTemplateKey = (score: number): ScoreTemplateKey => {
+  if (score >= 4.75) return 'five'
+  if (score >= 4.25) return 'fourHalf'
+  return 'four'
+}
+
+const buildDistributionWithRandomFactor = (
+  baseDistribution: [number, number, number, number, number]
+) => {
+  const withFactor = baseDistribution.map((value, index) => {
+    void index
+    // 每条进度条在基准上做 ±10% 浮动
+    const randomFactor = (Math.random() * 2 - 1) * RANDOM_FLOAT_RATIO
+    return Math.max(value * (1 + randomFactor), 0.0001)
+  })
+
+  // 归一化后保证 5 条占比和为 1（最终再映射到 200%）
+  return normalizeDistribution(withFactor)
+}
+
+const progressRandomSalt = ref(`${Date.now()}-${Math.random()}`)
+
+const refreshProgressRandomSalt = () => {
+  progressRandomSalt.value = `${Date.now()}-${Math.random()}`
+}
+
+const ratingProgressPercents = computed(() => {
+  // 依赖此值来控制“每次触发刷新都重新随机”
+  void progressRandomSalt.value
+
+  const key = getScoreTemplateKey(scoreValue.value)
+  const baseDistribution = RATING_DISTRIBUTION_BASE[key]
+  const normalizedDistribution = buildDistributionWithRandomFactor(baseDistribution)
+
+  // 5 条进度条总长度 = 2 条完整进度条长度（总和 200%）
+  return normalizedDistribution.map(value => Number((value * 200).toFixed(2)))
+})
 
 const normalizeQueryValue = (value: unknown) => {
   if (Array.isArray(value)) {
@@ -838,16 +923,26 @@ const handleClickOutside = (event: MouseEvent) => {
 }
 
 onMounted(() => {
+  refreshProgressRandomSalt()
   document.addEventListener('click', handleClickOutside)
+})
+
+onActivated(() => {
+  refreshProgressRandomSalt()
 })
 
 watch(
   currentGameId,
   () => {
+    refreshProgressRandomSalt()
     void requestCommentSubject()
   },
   { immediate: true }
 )
+
+watch(scoreValue, () => {
+  refreshProgressRandomSalt()
+})
 
 watch(isCommentPopupOpen, isOpen => {
   if (!isOpen) {
