@@ -358,11 +358,12 @@ const list = ref<RecentBigWin[]>([])
 const getRecentBigWinsData = async () => {
   try {
     const res = await Api.home.getRecentBigWins({ currency: 'PHP', type: 1 })
-    list.value = res.result.map((item: any) => ({
-      src: toGameImageUrl(item.coverImg),
-      name: item.nickName,
-      number: item.winAmount
-    }))
+    list.value =
+      res.result?.map((item: any) => ({
+        src: toGameImageUrl(item.coverImg),
+        name: item.nickName,
+        number: item.winAmount
+      })) || []
   } catch (error) {
     console.error('getRecentBigWins failed', error)
   }
