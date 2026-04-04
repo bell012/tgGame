@@ -15,7 +15,7 @@
               'border border-transparent bg-bg-4': selectedMethod.name !== item.name
             }"
             v-for="(item, index) in payMethods"
-            :key="index"
+            :key="item.paymentCode ?? index"
             :ref="el => setMethodItemRef(el, index)"
             @click.stop="selectMethod(item, index)"
           >
@@ -67,7 +67,7 @@
         </div>
       </div>
     </div>
-    <div class="mt-6 grid grid-cols-2 gap-5">
+    <div class="mt-6">
       <div>
         <div class="flex items-center justify-between">
           <div class="text-sm font-bold leading-normal">{{ t('withdraw.amount') }}</div>
@@ -97,6 +97,39 @@
             <CloseIcon class="w-4 h-4" />
           </button>
         </div>
+        <div v-if="quickAmounts.length" class="mt-4 w-full relative">
+          <div
+            ref="presetsRef"
+            class="grid grid-cols-6 gap-2 rounded-tl-lg rounded-tr-lg bg-bg-4 p-2 transition-all duration-300"
+            :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[104px] overflow-hidden'"
+          >
+            <button
+              v-for="(item, index) in quickAmounts"
+              :key="`${item.amount ?? index}`"
+              type="button"
+              class="rounded-lg py-2.5 text-sm font-semibold lg:hover:bg-theme-primary"
+              :class="[
+                Number(item.amount ?? 0) === Number(amount ?? 0)
+                  ? 'bg-theme-primary text-text-4'
+                  : 'bg-bg-2 text-text-1'
+              ]"
+              @click="applyQuickAmount(item)"
+            >
+              {{ formatQuickAmount(item.amount) }}
+            </button>
+          </div>
+          <div v-if="showExpandButton" class="w-full rounded-bl-lg rounded-br-lg bg-bg-4 py-2">
+            <button
+              type="button"
+              class="mx-auto flex items-center gap-1 text-xs text-text-3 transition lg:hover:text-text-1"
+              @click="expanded = !expanded"
+            >
+              {{ expanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}
+              <ExpandUpDoubleIcon v-if="expanded" class="h-2 w-[9px]" />
+              <ExpandDownDoubleIcon v-else class="h-2 w-[9px]" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     <button
@@ -110,59 +143,40 @@
   </div>
 </template>
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
 import CloseIcon from '@/static/svg/close.svg?component'
-import gCashIcon from '@/static/img/payment/gCash.png'
-import grabPayIcon from '@/static/img/payment/grabPay.png'
-import mayaIcon from '@/static/img/payment/maya.png'
-import payPalIcon from '@/static/img/payment/payPal.png'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
-import { type ComponentPublicInstance, computed, nextTick, ref } from 'vue'
+import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
+import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
+import { computed, type ComponentPublicInstance, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useLocaleStore } from '@/stores/locale'
-import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
+import type { FastAmountItem } from '@/api/interface/withdraw'
+import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
 import type { WithdrawSubmitPayload } from './types'
-
-interface MethodOption {
-  name: string
-  icon: string
-}
+import { useWithdrawFiat } from './useWithdrawFiat'
 
 const { t } = useI18n()
-const localeStore = useLocaleStore()
-const { currentCurrency } = storeToRefs(localeStore)
+const {
+  accountName,
+  amount,
+  applyQuickAmount,
+  currentCurrency,
+  currencySymbol,
+  formattedBalance,
+  isAmountDisabled,
+  isWithdrawDisabled,
+  payMethods,
+  phoneNumber,
+  quickAmounts,
+  selectedAccount,
+  selectedMethod,
+  selectMethod: selectMethodOption
+} = useWithdrawFiat()
 
-const payMethods = computed<MethodOption[]>(() => [
-  {
-    name: 'GCash',
-    icon: gCashIcon
-  },
-  {
-    name: 'Maya',
-    icon: mayaIcon
-  },
-  {
-    name: 'GrabPay',
-    icon: grabPayIcon
-  },
-  {
-    name: 'PayPal',
-    icon: payPalIcon
-  }
-])
-
-const selectedMethod = ref(payMethods.value[0])
 const methodListRef = ref<HTMLDivElement | null>(null)
 const methodItemRefs = ref<Array<HTMLElement | null>>([])
-const accountName = ref('')
-const phoneNumber = ref('')
-const amount = ref<number>()
-const currencySymbol = computed(() => getCurrencySymbol(currentCurrency.value))
-const formattedBalance = computed(() => getFormattedBalance(0, currentCurrency.value, 2))
-const isAmountDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
-const isWithdrawDisabled = computed(
-  () => isAmountDisabled.value || !accountName.value || !phoneNumber.value
-)
+const presetsRef = ref<HTMLDivElement | null>(null)
+const { expanded } = usePresetGrid(presetsRef)
+const showExpandButton = computed(() => quickAmounts.value.length > 6)
 
 const emit = defineEmits<{
   submit: [payload: WithdrawSubmitPayload]
@@ -188,8 +202,8 @@ const handleMethodListWheel = (event: WheelEvent) => {
   })
 }
 
-const selectMethod = (method: MethodOption, index: number) => {
-  selectedMethod.value = method
+const selectMethod = async (method: (typeof payMethods.value)[number], index: number) => {
+  await selectMethodOption(method)
   scrollMethodIntoView(index)
 }
 
@@ -205,6 +219,15 @@ const scrollMethodIntoView = async (index: number) => {
     inline: 'center'
   })
 }
+
+const formatQuickAmount = (value: FastAmountItem['amount']) => {
+  const nextAmount = Number(value ?? 0)
+
+  return Number.isFinite(nextAmount) && nextAmount > 0
+    ? nextAmount.toLocaleString()
+    : String(value ?? '')
+}
+
 const doWithdrawDeposit = () => {
   if (isWithdrawDisabled.value) {
     return
@@ -215,6 +238,8 @@ const doWithdrawDeposit = () => {
     amount: Number(amount.value),
     currencyCode: currentCurrency.value,
     methodLabel: selectedMethod.value.name,
+    paymentCode: selectedMethod.value.paymentCode,
+    accountRowId: selectedAccount.value?.rowId,
     phoneNumber: phoneNumber.value,
     accountName: accountName.value
   })

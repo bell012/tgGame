@@ -1,12 +1,12 @@
 <template>
   <div class="w-full font-['Inter']">
-    <div class="w-full flex">
-      <div class="flex gap-2 flex-1">
+    <div class="flex w-full gap-2">
+      <div class="flex flex-1 gap-2 overflow-x-auto scrollbar-hide touch-pan-x">
         <button
           v-for="coin in visibleCoins"
           :key="coin.code"
           type="button"
-          class="appearance-none p-2 rounded-full bg-bg-2 text-xs text-text-2 flex items-center border"
+          class="shrink-0 appearance-none py-2 px-2.5 rounded-full bg-bg-2 text-xs text-text-2 flex items-center justify-center border"
           :style="{
             border: `1px solid ${coin.code === coinCode ? 'var(--color-theme-level-1)' : 'transparent'}`
           }"
@@ -21,7 +21,7 @@
       </div>
       <button
         type="button"
-        class="appearance-none p-1.5 rounded-full bg-bg-2 text-xs flex items-center border"
+        class="shrink-0 appearance-none p-2 rounded-full bg-bg-2 text-xs flex items-center border"
         :style="{
           border: `1px solid ${coinMoreShow ? 'var(--color-theme-level-1)' : 'transparent'}`
         }"
@@ -108,7 +108,13 @@
               formattedBalance
             }}</span>
           </div>
-          <RefreshIcon class="w-3.5 text-icon-2 ml-1" />
+          <button
+            type="button"
+            class="ml-1 inline-flex items-center justify-center text-icon-2"
+            @click="refreshBalance"
+          >
+            <RefreshIcon class="w-3.5" :class="{ 'animate-spin': isRefreshingBalance }" />
+          </button>
         </div>
       </div>
       <div class="mt-5 p-2.5 rounded-lg bg-theme-3 flex items-start">
@@ -133,14 +139,8 @@
   </div>
 </template>
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { computed, ref } from 'vue'
 import { showToast } from 'vant'
 import { useI18n } from 'vue-i18n'
-import USDCIcon from '@/static/img/crypto/USDC.png'
-import USDTIcon from '@/static/img/crypto/USDT.png'
-import ETHIcon from '@/static/img/crypto/ETH.png'
-import BTCIcon from '@/static/img/crypto/BTC.png'
 import DOGEIcon from '@/static/img/crypto/DOGE.png'
 import TRXIcon from '@/static/img/crypto/TRX.png'
 import BNBIcon from '@/static/img/crypto/BNB.png'
@@ -149,63 +149,31 @@ import CustomSelect from '@/components/common/CustomSelect.vue'
 import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
 import RefreshIcon from '@/static/svg/refresh.svg?component'
 import InfoIcon from '@/static/svg/info.svg?component'
-import { useLocaleStore } from '@/stores/locale'
-import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import type { WithdrawSubmitPayload } from './types'
+import { useWithdrawCrypto } from './useWithdrawCrypto'
 
 const { t } = useI18n()
-const localeStore = useLocaleStore()
-const { currentCurrency } = storeToRefs(localeStore)
 const unavailableMessage = 'Unavailable'
-const amount = ref<number>()
-const address = ref('')
-const currency = ref('USDT')
-const coinCode = ref('USDT')
-const coinMoreShow = ref(false)
-const visibleCoins = computed(() => coins.value.slice(0, 3))
-const coins = computed(() => [
-  {
-    name: 'USDT',
-    code: 'USDT',
-    icon: USDTIcon
-  },
-  {
-    name: 'ETH',
-    code: 'ETH',
-    icon: ETHIcon
-  },
-  {
-    name: 'BTC',
-    code: 'BTC',
-    icon: BTCIcon
-  },
-  {
-    name: 'USDC',
-    code: 'USDC',
-    icon: USDCIcon
-  }
-])
-const currencyOptions = computed(() => [
-  { label: 'USDT', value: 'USDT', icon: USDTIcon },
-  { label: 'ETH', value: 'ETH', icon: ETHIcon },
-  { label: 'BTC', value: 'BTC', icon: BTCIcon },
-  { label: 'USDC', value: 'USDC', icon: USDCIcon }
-])
-const currencyOption = computed(() => {
-  return currencyOptions.value.find(opt => opt.value === currency.value)
-})
-const selectNetwork = ref('TRC20')
-const formattedBalance = computed(() => getFormattedBalance(5000, currentCurrency.value, 2))
-const currencySymbol = computed(() => getCurrencySymbol(currentCurrency.value))
-const networkOptions = computed(() => [
-  { label: 'Tron（TRC20）', value: 'TRC20' },
-  { label: 'Ethereum（ERC20）', value: 'ERC20' },
-  { label: 'Tron（TRC21）', value: 'TRC21' },
-  { label: 'Tron（TRC22）', value: 'TRC22' },
-  { label: 'Tron（TRC23）', value: 'TRC23' }
-])
-const isAmountDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
-const isWithdrawDisabled = computed(() => isAmountDisabled.value || !address.value)
+const {
+  address,
+  amount,
+  coinCode,
+  coinMoreShow,
+  currency,
+  currencyOption,
+  currencyOptions,
+  currencySymbol,
+  currentCurrency,
+  formattedBalance,
+  isAmountDisabled,
+  isRefreshingBalance,
+  isWithdrawDisabled,
+  networkOptions,
+  refreshBalance,
+  selectCoinCode: applySelectCoinCode,
+  selectNetwork,
+  visibleCoins
+} = useWithdrawCrypto()
 
 const emit = defineEmits<{
   submit: [payload: WithdrawSubmitPayload]
@@ -219,13 +187,9 @@ const showUnavailableToast = () => {
 }
 
 const selectCoinCode = (code: string) => {
-  if (code !== 'USDT') {
+  if (!applySelectCoinCode(code)) {
     showUnavailableToast()
-    return
   }
-
-  coinCode.value = code
-  coinMoreShow.value = false
 }
 
 const openCoinMorePanel = () => {
