@@ -38,7 +38,21 @@
     </div>
     <div class="w-full overflow-x-auto">
       <div
-        v-if="item.items && item.items.length > 0"
+        v-if="item.sysGameTypeCode === 'providers' && item.brandItems && item.brandItems.length > 0"
+        :ref="el => setScrollRef(el as HTMLElement | null, index)"
+        class="grid grid-flow-col auto-cols-[30.25%] gap-2 overflow-x-auto overflow-y-hidden scroll-smooth pt-3 sm:auto-cols-[11.82%]"
+      >
+        <div
+          v-for="(brand, i) in getDisplayBrandList(item.brandItems)"
+          :key="brand.rowId ?? i"
+          class="flex h-16 shrink-0 items-center justify-center rounded-lg bg-bg-2"
+          @click="handleBrandClick(brand)"
+        >
+          <gameErrImg class="h-6 w-4/5 sm:h-11" :img="getBrandImg(brand)" />
+        </div>
+      </div>
+      <div
+        v-else-if="item.items && item.items.length > 0"
         :ref="el => setScrollRef(el as HTMLElement | null, index)"
         class="grid grid-flow-col gap-2 overflow-x-auto overflow-y-hidden scroll-smooth pt-3 auto-cols-[30.25%] sm:auto-cols-[11.82%]"
       >
@@ -47,7 +61,7 @@
           :key="game.rowId ?? i"
           class="aspect-[330/438] min-h-[146px]"
         >
-          <casinoGameCard :game="game" @click="handleClick(`/casino`)" />
+          <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
         </div>
         <div>
           <a
@@ -95,20 +109,21 @@
     </button>
   </div>
   <div class="my-3 h-[430px]">
-    <liveBet />
+    <liveBet :type="latestBetIndex === 0 ? 1 : 2" />
   </div>
 </template>
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { navigateTo } from '@/utils/router'
+import { navigateTo, navigateToName } from '@/utils/router'
 import { casinoIcons } from '@/static/svg/casino'
 import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
-import type { GameDataItem } from '@/api/interface/game'
+import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
 import { getGameListTabSlug } from '../casinoPageConfig'
 import liveBet from './liveBet.vue'
 import casinoGameCard from './casinoGameCard.vue'
+import gameErrImg from '@/components/common/gameErrImg.vue'
 
 const props = defineProps<{
   modules?: CasinoLobbyButtonItem[]
@@ -175,8 +190,42 @@ const getDisplayList = (list: GameDataItem[]) => {
   return isMobile.value ? list.slice(0, 11) : list.slice(0, 15)
 }
 
-const handleClick = (path: string) => {
-  navigateTo(path)
+const getDisplayBrandList = (list: GameBrandItem[]) => {
+  return isMobile.value ? list.slice(0, 11) : list.slice(0, 15)
+}
+
+const getBrandImg = (item: GameBrandItem) => {
+  const imagePath = item.banner || item.icon
+  const src = imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
+
+  return {
+    maintain: false,
+    src,
+    fit: 'contain' as const
+  }
+}
+
+const handleClick = (rowId?: string | number) => {
+  if (!rowId) {
+    return
+  }
+
+  navigateToName('gameDetail', { params: { rowId } })
+}
+
+const handleBrandClick = (brand: GameBrandItem) => {
+  const brandCode = String(brand.brandCode || '').trim()
+
+  if (!brandCode) {
+    return
+  }
+
+  navigateToName('brandGameList', {
+    params: { brandCode },
+    query: {
+      brandName: brand.brandName?.trim() || undefined
+    }
+  })
 }
 
 const handleViewAll = (item: CasinoLobbyButtonItem) => {

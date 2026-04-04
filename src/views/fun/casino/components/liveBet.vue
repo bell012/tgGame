@@ -2,50 +2,70 @@
   <div
     class="relative w-full h-[430px] overflow-hidden rounded-xl bg-[var(--color-background-level-2)]"
   >
-    <table class="w-full h-full text-sm text-text-2 text-[14px]">
+    <table class="h-full w-full table-fixed text-sm text-[14px] text-text-2">
       <thead class="bg-[var(--color-opacity-6)] text-[12px]">
         <tr>
-          <td class="py-[10px] px-3">游戏</td>
-          <td class="py-[10px] px-3">玩家</td>
-          <td class="py-[10px] px-3 text-center">倍数</td>
-          <td class="py-[10px] px-3 text-right">盈余</td>
+          <td class="w-[36%] px-3 py-[10px]">{{ $t('home.Game') }}</td>
+          <td class="w-[26%] px-3 py-[10px]">{{ $t('home.Player') }}</td>
+          <td class="w-[16%] px-3 py-[10px] text-center">{{ $t('home.Multiplier') }}</td>
+          <td class="w-[22%] px-3 py-[10px] text-right">{{ $t('home.Profit') }}</td>
         </tr>
       </thead>
-      <TransitionGroup tag="tbody" name="live">
+      <tbody v-if="loading">
         <tr
-          v-for="(item, index) in rows"
-          :key="item.id"
+          v-for="index in 10"
+          :key="index"
+          :class="index % 2 === 0 ? 'bg-[var(--color-opacity-10)]' : 'bg-[var(--color-opacity-6)]'"
+        >
+          <td colspan="4" class="px-3 py-2">
+            <div class="h-8 animate-pulse rounded bg-bg-3" />
+          </td>
+        </tr>
+      </tbody>
+      <tbody v-else>
+        <tr
+          v-for="(item, index) in displayRows"
+          :key="`row-${index}`"
           :class="[
             index % 2 === 0 ? 'bg-[var(--color-opacity-10)]' : 'bg-[var(--color-opacity-6)]'
           ]"
         >
-          <td class="py-2 px-3 flex items-center gap-1">
-            <img :src="item.gameIcon" class="w-3.5 h-3.5" :alt="item.game" />
-            <span class="text-text-1 truncate max-w-[58px]">
-              {{ item.game }}
-            </span>
+          <td class="px-3 py-2">
+            <div :key="item.id" class="flex min-w-0 items-center gap-1">
+              <img :src="item.gameIcon" class="w-3.5 h-3.5" :alt="item.game" />
+              <span class="min-w-0 truncate text-text-1">
+                {{ item.game }}
+              </span>
+            </div>
           </td>
-          <td class="py-2 px-3 text-text-1 truncate max-w-[60px]">
-            {{ item.player }}
+          <td class="px-3 py-2">
+            <span class="block truncate text-text-1">
+              {{ item.player }}
+            </span>
           </td>
           <td class="py-2 px-3 text-center text-[12px]">x{{ item.multiplier }}</td>
-          <td class="py-2 px-3 flex items-center justify-end gap-1 text-[12px]">
-            <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
-              {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
-            </span>
-            <img src="@/static/img/flag/USD.webp" class="w-3 h-3" :alt="item.game" />
+          <td class="px-3 py-2 text-[12px]">
+            <div class="flex items-center justify-end gap-1">
+              <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
+                {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
+              </span>
+              <img :src="currencyIcon" class="w-3 h-3" :alt="item.game" />
+            </div>
           </td>
         </tr>
-      </TransitionGroup>
+      </tbody>
     </table>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import pokerIcon from '@/static/img/test/poker_icon.png'
+import { computed, onUnmounted, ref, watch } from 'vue'
+import Api from '@/api'
+import placeholderImg from '@/static/img/home/errImg.png'
+import { getCurrencyIconByCode } from '@/views/game/detail/common/currency-select-options'
+import { getCurrentCurrency } from '@/utils/locale'
 
-interface LiveRow {
+interface LiveBetRow {
   id: number
   game: string
   gameIcon: string
@@ -54,63 +74,122 @@ interface LiveRow {
   profit: number
 }
 
-const rows = ref<LiveRow[]>([])
-let timer: number | null = null
-let uid = 0
+const MAX_VISIBLE_ROWS = 10
 
-const games = [
-  { name: 'Crash', icon: pokerIcon },
-  { name: 'Mines', icon: pokerIcon },
-  { name: 'Slots', icon: pokerIcon }
-]
+const props = withDefaults(
+  defineProps<{
+    type?: 1 | 2
+  }>(),
+  {
+    type: 1
+  }
+)
 
-const randomRow = (): LiveRow => {
-  const game = games[Math.floor(Math.random() * games.length)]
-  const profit = Math.floor(Math.random() * 5000) - 2500
+const sourceRows = ref<LiveBetRow[]>([])
+const displayRows = ref<LiveBetRow[]>([])
+const loading = ref(false)
+const currentCurrency = computed(() => getCurrentCurrency())
+const currencyIcon = computed(() => getCurrencyIconByCode(currentCurrency.value))
+let autoScrollTimer: number | null = null
+let nextScrollIndex = 0
 
-  return {
-    id: uid++,
-    game: game.name,
-    gameIcon: game.icon,
-    player: `Player_${Math.floor(Math.random() * 1000)}`,
-    multiplier: Number((Math.random() * 20 + 1).toFixed(2)),
-    profit: profit
+const getRandomScrollInterval = () => {
+  return Math.floor(Math.random() * 701) + 300
+}
+
+const toGameImageUrl = (value?: string) => {
+  if (!value) {
+    return ''
+  }
+
+  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+}
+
+const getRecentBigWinsData = async () => {
+  loading.value = true
+
+  try {
+    const res = await Api.home.getRecentBigWins({
+      currency: currentCurrency.value,
+      type: props.type
+    })
+
+    sourceRows.value = (res?.result ?? []).map((item: any, index: number) => ({
+      id: Number(item.rowId ?? index),
+      game: String(item.gameName ?? '--'),
+      gameIcon: toGameImageUrl(item.coverImg ?? ''),
+      player: String(item.nickName ?? '--'),
+      multiplier: Number(item.multiple ?? 0),
+      profit: Number(item.winAmount ?? 0)
+    }))
+  } catch (error) {
+    sourceRows.value = []
+    console.error('getRecentBigWins failed', error)
+  } finally {
+    loading.value = false
   }
 }
 
-const pushRow = () => {
-  rows.value.unshift(randomRow())
-  if (rows.value.length > 10) {
-    rows.value.pop()
-  }
-}
-
-onMounted(() => {
-  for (let i = 0; i < 6; i++) {
-    pushRow()
-  }
-
-  timer = window.setInterval(pushRow, 1000)
+const rows = computed<LiveBetRow[]>(() => {
+  return sourceRows.value.map(item => ({
+    ...item,
+    gameIcon: item.gameIcon || placeholderImg
+  }))
 })
 
+const stopAutoScroll = () => {
+  if (autoScrollTimer) {
+    window.clearTimeout(autoScrollTimer)
+    autoScrollTimer = null
+  }
+}
+
+const scheduleNextScroll = () => {
+  autoScrollTimer = window.setTimeout(() => {
+    const nextRow = rows.value[nextScrollIndex]
+
+    if (!nextRow) {
+      return
+    }
+
+    displayRows.value = [nextRow, ...displayRows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
+    nextScrollIndex = (nextScrollIndex + 1) % rows.value.length
+    scheduleNextScroll()
+  }, getRandomScrollInterval())
+}
+
+const startAutoScroll = () => {
+  stopAutoScroll()
+
+  if (rows.value.length <= MAX_VISIBLE_ROWS) {
+    displayRows.value = [...rows.value]
+    return
+  }
+
+  displayRows.value = rows.value.slice(0, MAX_VISIBLE_ROWS)
+  nextScrollIndex = MAX_VISIBLE_ROWS % rows.value.length
+  scheduleNextScroll()
+}
+
+watch(
+  [() => props.type, () => currentCurrency.value],
+  () => {
+    void getRecentBigWinsData()
+  },
+  { immediate: true }
+)
+
+watch(
+  rows,
+  () => {
+    startAutoScroll()
+  },
+  { immediate: true }
+)
+
 onUnmounted(() => {
-  if (timer) clearInterval(timer)
+  stopAutoScroll()
 })
 </script>
 
-<style scoped lang="scss">
-.live-enter-active,
-.live-leave-active {
-  transition: all 0.15s ease;
-}
-
-.live-enter-from {
-  opacity: 0;
-  transform: translateY(-1px);
-}
-
-.live-leave-to {
-  opacity: 0;
-  transform: translateY(1px);
-}
-</style>
+<style scoped lang="scss"></style>

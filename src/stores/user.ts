@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import Api from '@/api'
+import { SITE_CONFIG_STORAGE_KEY } from '@/stores/siteConfig'
 import type { QueryAcctInfoResult } from '@/api/interface/user'
 import { useAuthModalStore } from '@/stores/authModal'
 import { withLocalePrefix } from '@/utils/locale'
@@ -143,7 +144,7 @@ export const useUserStore = defineStore('user', () => {
    * 清除所有用户相关的本地状态，但保留语言、货币和主题设置
    */
   const clearUserSessionData = () => {
-    clearStorageExcept(['language', 'currency', 'theme'])
+    clearStorageExcept(['language', 'currency', 'theme', SITE_CONFIG_STORAGE_KEY])
     clearProfileAvatarPreviewState()
     syncProfileCustomizationState()
     syncProfileUserInfoState()

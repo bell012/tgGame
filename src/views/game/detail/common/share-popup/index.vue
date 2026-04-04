@@ -1,0 +1,337 @@
+<template>
+  <div>
+    <transition name="popup-fade">
+      <div v-show="props.visible" class="fixed inset-0 z-[9999] bg-mask-60-1" @click.self="close" />
+    </transition>
+    <transition :name="props.desktop ? 'desktop-up-down' : 'up-down'">
+      <div
+        v-show="props.visible"
+        :class="
+          props.desktop
+            ? 'z-[10000] w-full pointer-events-none relative'
+            : 'fixed inset-x-0 bottom-0 z-[10000] w-full pointer-events-none'
+        "
+      >
+        <div
+          :class="
+            props.desktop
+              ? 'tp-panel pointer-events-auto w-full max-w-[520px] rounded-[12px] bg-[var(--color-background-level-2)]'
+              : 'tp-panel pointer-events-auto w-full max-w-none rounded-t-[12px] rounded-b-0 bg-[var(--color-background-level-2)]'
+          "
+          @click.stop
+        >
+          <div class="tp-header h-[64px] px-5 flex items-center justify-between">
+            <div class="w-7 h-7" />
+            <div class="text-[16px]/[24px] text-[var(--color-text-level-1)] font-bold">
+              {{ t('gameDetail.shareThisGame') }}
+            </div>
+            <button
+              type="button"
+              class="w-7 h-7 rounded bg-[var(--color-opacity-10)] flex items-center justify-center"
+              @click="close"
+            >
+              <CloseIcon class="stroke-text-1 w-4 h-4" />
+            </button>
+          </div>
+          <div class="px-4 pb-4">
+            <div class="tp-content rounded-[10px] px-4 py-[18px]">
+              <div class="text-[14px]/[20px] text-[var(--color-text-level-1)]">
+                {{ t('gameDetail.shareInviteHint') }}
+              </div>
+              <div class="grid grid-cols-5 gap-x-5 mt-3.5">
+                <button
+                  v-for="item in shareList"
+                  :key="item.key"
+                  type="button"
+                  class="flex flex-col items-center min-w-0"
+                  @click="handleChannelShare(item.key)"
+                >
+                  <component :is="item.icon" class="size-[54px]" />
+                  <div class="text-[11px]/[14px] mt-2 text-[var(--color-text-level-1)] text-center">
+                    {{ item.label }}
+                  </div>
+                </button>
+              </div>
+              <div class="text-[14px]/[20px] mt-4 text-[var(--color-text-level-1)] font-medium">
+                {{ t('gameDetail.shareViaWebLink') }}
+              </div>
+              <div
+                class="mt-2.5 h-[56px] rounded-[10px] border border-[var(--color-opacity-20)] bg-[var(--color-background-level-4)] px-3 flex items-center justify-between gap-3"
+              >
+                <div class="text-[11px]/[14px] text-[var(--color-text-level-2)] truncate">
+                  {{ shareUrl }}
+                </div>
+                <button
+                  type="button"
+                  class="h-[40px] min-w-[86px] rounded-[10px] bg-[var(--color-opacity-10)] text-[14px]/[20px] text-[var(--color-primary)] font-bold"
+                  @click="handleCopy"
+                >
+                  {{ t('gameDetail.copy') }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </div>
+</template>
+
+<script setup lang="ts">
+import CloseIcon from '@/static/svg/close.svg?component'
+import tiktokIcon from '@/static/svg/game/detail/share/d.svg?component'
+import facebookIcon from '@/static/svg/game/detail/share/f.svg?component'
+import linkIcon from '@/static/svg/game/detail/share/l.svg?component'
+import telegramIcon from '@/static/svg/game/detail/share/t.svg?component'
+import whatsappIcon from '@/static/svg/game/detail/share/w.svg?component'
+import { showToast } from 'vant'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+type ShareChannelKey = 'more' | 'facebook' | 'whatsapp' | 'telegram' | 'tiktok'
+type ShareChannel = {
+  key: ShareChannelKey
+  label: string
+  icon: object
+}
+type ChannelOpenConfig = {
+  appUrl: string
+  webUrl: string
+  androidStoreUrl: string
+  iosStoreUrl: string
+}
+
+const props = defineProps<{
+  visible: boolean
+  desktop?: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:visible': [val: boolean]
+}>()
+
+const { t } = useI18n()
+
+const shareList = computed<ShareChannel[]>(() => [
+  {
+    key: 'more',
+    icon: linkIcon,
+    label: t('gameDetail.shareChannelMore')
+  },
+  {
+    key: 'facebook',
+    icon: facebookIcon,
+    label: t('gameDetail.shareChannelFacebook')
+  },
+  {
+    key: 'whatsapp',
+    icon: whatsappIcon,
+    label: t('gameDetail.shareChannelWhatsapp')
+  },
+  {
+    key: 'telegram',
+    icon: telegramIcon,
+    label: t('gameDetail.shareChannelTelegram')
+  },
+  {
+    key: 'tiktok',
+    icon: tiktokIcon,
+    label: t('gameDetail.shareChannelTiktok')
+  }
+])
+
+const shareUrl =
+  typeof window !== 'undefined' ? window.location.href : 'https://translate.google.com'
+const SHARE_TOAST_Z_INDEX = 11001
+
+const close = () => {
+  emit('update:visible', false)
+}
+
+const isAndroid = () =>
+  typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent ?? '')
+const isIOS = () =>
+  typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent ?? '')
+const isMobile = () => isAndroid() || isIOS()
+
+const openInNewTab = (url: string) => {
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+const openAppWithStoreFallback = (config: ChannelOpenConfig) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  if (!isMobile()) {
+    openInNewTab(config.webUrl)
+    return
+  }
+
+  let appOpened = false
+  let timer: number | null = null
+
+  const clear = () => {
+    document.removeEventListener('visibilitychange', onVisibilityChange)
+    if (timer) {
+      window.clearTimeout(timer)
+      timer = null
+    }
+  }
+
+  const onVisibilityChange = () => {
+    if (document.hidden) {
+      appOpened = true
+      clear()
+    }
+  }
+
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  window.location.href = config.appUrl
+
+  timer = window.setTimeout(() => {
+    if (!appOpened) {
+      if (isIOS()) {
+        window.location.href = config.iosStoreUrl
+      } else if (isAndroid()) {
+        window.location.href = config.androidStoreUrl
+      } else {
+        openInNewTab(config.webUrl)
+      }
+    }
+    clear()
+  }, 1300)
+}
+
+const copyText = async (value: string) => {
+  if (typeof navigator === 'undefined' || !navigator?.clipboard?.writeText) {
+    return
+  }
+  await navigator.clipboard.writeText(value)
+}
+
+const handleMoreShare = async () => {
+  if (typeof navigator !== 'undefined' && navigator.share) {
+    try {
+      await navigator.share({
+        title: typeof document !== 'undefined' ? document.title : t('gameDetail.shareDefaultTitle'),
+        text: shareUrl,
+        url: shareUrl
+      })
+      return
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  try {
+    await copyText(shareUrl)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const handleChannelShare = async (channel: ShareChannelKey) => {
+  const encodedUrl = encodeURIComponent(shareUrl)
+  const encodedText = encodeURIComponent(`${shareUrl}`)
+
+  if (channel === 'more') {
+    await handleMoreShare()
+    return
+  }
+
+  if (channel === 'facebook') {
+    const webUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
+    openAppWithStoreFallback({
+      appUrl: `fb://facewebmodal/f?href=${encodeURIComponent(webUrl)}`,
+      webUrl,
+      androidStoreUrl: 'https://play.google.com/store/apps/details?id=com.facebook.katana',
+      iosStoreUrl: 'https://apps.apple.com/app/facebook/id284882215'
+    })
+    return
+  }
+
+  if (channel === 'whatsapp') {
+    const webUrl = `https://wa.me/?text=${encodedText}`
+    openAppWithStoreFallback({
+      appUrl: `whatsapp://send?text=${encodedText}`,
+      webUrl,
+      androidStoreUrl: 'https://play.google.com/store/apps/details?id=com.whatsapp',
+      iosStoreUrl: 'https://apps.apple.com/app/whatsapp-messenger/id310633997'
+    })
+    return
+  }
+
+  if (channel === 'telegram') {
+    const webUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`
+    openAppWithStoreFallback({
+      appUrl: `tg://msg_url?url=${encodedUrl}&text=${encodedText}`,
+      webUrl,
+      androidStoreUrl: 'https://play.google.com/store/apps/details?id=org.telegram.messenger',
+      iosStoreUrl: 'https://apps.apple.com/app/telegram-messenger/id686449807'
+    })
+    return
+  }
+
+  try {
+    await copyText(shareUrl)
+  } catch (error) {
+    console.error(error)
+  }
+
+  openAppWithStoreFallback({
+    appUrl: 'snssdk1233://',
+    webUrl: 'https://www.tiktok.com/',
+    androidStoreUrl: 'https://play.google.com/store/apps/details?id=com.zhiliaoapp.musically',
+    iosStoreUrl: 'https://apps.apple.com/app/tiktok/id835599320'
+  })
+}
+
+const handleCopy = async () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  try {
+    await copyText(shareUrl)
+    showToast({
+      message: t('gameDetail.shareLinkCopySuccess'),
+      type: 'success',
+      zIndex: SHARE_TOAST_Z_INDEX
+    })
+  } catch (error) {
+    console.error(error)
+    showToast({
+      message: t('gameDetail.copyFailedRetry'),
+      type: 'fail',
+      zIndex: SHARE_TOAST_Z_INDEX
+    })
+  }
+}
+</script>
+
+<style scoped lang="scss">
+@use '@/styles/mixins' as *;
+
+.tp-panel {
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+}
+
+.tp-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.tp-content {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+@include popup-transition;
+
+.desktop-up-down-enter-active,
+.desktop-up-down-leave-active {
+  transition: all 0.2s ease;
+}
+
+.desktop-up-down-enter-from,
+.desktop-up-down-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+</style>

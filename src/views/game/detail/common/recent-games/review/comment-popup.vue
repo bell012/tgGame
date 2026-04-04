@@ -5,16 +5,24 @@
         v-if="modelValue"
         class="fixed inset-0 z-[1200] flex items-end justify-center lg:items-center"
       >
-        <div class="absolute inset-0 bg-[rgba(0,0,0,0.72)]" @click="closePopup"></div>
+        <div
+          class="comment-popup-mask absolute inset-0"
+          :class="{ 'comment-popup-mask-light': isLightTheme }"
+          @click="closePopup"
+        ></div>
 
-        <div class="comment-popup-panel relative hidden w-full max-w-[440px] lg:block" @click.stop>
-          <div
-            class="rounded-[14px] bg-[linear-gradient(180deg,#2A2F35_0%,#23282E_100%)] p-[14px] shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
-          >
+        <div
+          class="comment-popup-panel relative hidden w-full max-w-[440px] lg:block"
+          :class="{ 'is-light': isLightTheme }"
+          @click.stop
+        >
+          <div class="comment-popup-shell comment-popup-shell-desktop rounded-[14px] p-[14px]">
             <div class="relative mb-[12px] flex items-center justify-center">
-              <div class="text-[16px] font-semibold text-white">Leave Comments</div>
+              <div class="comment-popup-title text-[16px] font-semibold">
+                {{ t('gameDetail.leaveCommentsTitle') }}
+              </div>
               <button
-                class="absolute right-0 top-[50%] flex size-[24px] -translate-y-[50%] items-center justify-center rounded-[6px] bg-[#42474D] text-[18px] font-bold leading-none text-[#D4D8DD]"
+                class="comment-popup-close absolute right-0 top-[50%] flex size-[24px] -translate-y-[50%] items-center justify-center rounded-[6px] text-[18px] font-bold leading-none"
                 type="button"
                 @click="closePopup"
               >
@@ -25,9 +33,9 @@
             <textarea
               ref="desktopTextareaRef"
               v-model="commentText"
-              class="h-[150px] w-full resize-none rounded-[12px] border border-[var(--color-theme-level-1)] bg-[#353A3F] p-[12px] text-[14px] font-semibold text-white outline-none placeholder:text-[#DCE4EA]"
+              class="comment-popup-textarea h-[150px] w-full resize-none rounded-[12px] p-[12px] text-[14px] font-semibold outline-none"
               maxlength="500"
-              placeholder="This game is great, very exciting!"
+              :placeholder="inputPlaceholder"
             ></textarea>
 
             <div class="mt-[10px] flex items-center justify-between gap-[12px]">
@@ -42,14 +50,14 @@
 
                 <div
                   v-if="isEmojiPickerOpen"
-                  class="absolute bottom-[calc(100%+10px)] left-0 z-20 w-[256px] rounded-[10px] border border-[#3F4750] bg-[#252D35] p-[8px] shadow-[0_10px_24px_rgba(0,0,0,0.45)]"
+                  class="comment-emoji-panel absolute bottom-[calc(100%+10px)] left-0 z-20 w-[256px] rounded-[10px] p-[8px]"
                   @click.stop
                 >
-                  <div class="grid grid-cols-8 gap-[6px] border-b border-[#3F4750] pb-[8px]">
+                  <div class="comment-emoji-divider grid grid-cols-8 gap-[6px] border-b pb-[8px]">
                     <button
                       v-for="emoji in currentEmojiList"
                       :key="emoji"
-                      class="flex size-[24px] items-center justify-center rounded-[6px] text-[17px] transition-colors duration-150 hover:bg-[#39424B]"
+                      class="comment-emoji-item flex size-[24px] items-center justify-center rounded-[6px] text-[17px] transition-colors duration-150"
                       type="button"
                       @click="selectEmoji(emoji)"
                     >
@@ -64,8 +72,8 @@
                       class="flex h-[20px] items-center justify-center rounded-[6px] text-[13px] transition-colors duration-150"
                       :class="
                         activeEmojiCategory === item.value
-                          ? 'bg-[#39424B] text-white'
-                          : 'text-[#B7C0CA] hover:bg-[#39424B] hover:text-white'
+                          ? 'comment-emoji-category-active'
+                          : 'comment-emoji-category'
                       "
                       type="button"
                       @click="activeEmojiCategory = item.value"
@@ -81,15 +89,19 @@
                 :disabled="!commentText.trim()"
                 @click="submitComment"
               >
-                Post
+                {{ t('gameDetail.post') }}
               </button>
             </div>
           </div>
         </div>
 
-        <div class="comment-popup-panel relative w-full lg:hidden" @click.stop>
+        <div
+          class="comment-popup-panel relative w-full lg:hidden"
+          :class="{ 'is-light': isLightTheme }"
+          @click.stop
+        >
           <div
-            class="rounded-t-[16px] bg-[linear-gradient(180deg,#2A2F35_0%,#23282E_100%)] px-[12px] pb-[14px] pt-[10px] shadow-[0_-12px_28px_rgba(0,0,0,0.45)]"
+            class="comment-popup-shell comment-popup-shell-mobile rounded-t-[16px] px-[12px] pb-[14px] pt-[10px]"
           >
             <div class="grid grid-cols-[1fr_auto_1fr] items-center">
               <button
@@ -97,25 +109,27 @@
                 type="button"
                 @click="closePopup"
               >
-                Cancel
+                {{ t('common.cancel') }}
               </button>
-              <div class="text-[16px] font-semibold text-white">Leave Comments</div>
+              <div class="comment-popup-title text-[16px] font-semibold">
+                {{ t('gameDetail.leaveCommentsTitle') }}
+              </div>
               <button
                 class="h-[40px] justify-self-end rounded-[12px] bg-[var(--color-theme-level-1)] px-[14px] text-[14px] font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50"
                 type="button"
                 :disabled="!commentText.trim()"
                 @click="submitComment"
               >
-                Post
+                {{ t('gameDetail.post') }}
               </button>
             </div>
 
             <textarea
               ref="mobileTextareaRef"
               v-model="commentText"
-              class="mt-[10px] h-[190px] w-full resize-none rounded-[10px] border border-[var(--color-theme-level-1)] bg-[#353A3F] p-[12px] text-[14px] text-white outline-none placeholder:text-[#DCE4EA]"
+              class="comment-popup-textarea mt-[10px] h-[190px] w-full resize-none rounded-[10px] p-[12px] text-[14px] outline-none"
               maxlength="500"
-              placeholder="This game is great, very exciting!"
+              :placeholder="inputPlaceholder"
             ></textarea>
 
             <div class="mt-[8px] flex justify-end">
@@ -130,14 +144,14 @@
 
                 <div
                   v-if="isEmojiPickerOpen"
-                  class="absolute bottom-[calc(100%+10px)] right-0 z-20 w-[256px] rounded-[10px] border border-[#3F4750] bg-[#252D35] p-[8px] shadow-[0_10px_24px_rgba(0,0,0,0.45)]"
+                  class="comment-emoji-panel absolute bottom-[calc(100%+10px)] right-0 z-20 w-[256px] rounded-[10px] p-[8px]"
                   @click.stop
                 >
-                  <div class="grid grid-cols-8 gap-[6px] border-b border-[#3F4750] pb-[8px]">
+                  <div class="comment-emoji-divider grid grid-cols-8 gap-[6px] border-b pb-[8px]">
                     <button
                       v-for="emoji in currentEmojiList"
                       :key="emoji"
-                      class="flex size-[24px] items-center justify-center rounded-[6px] text-[17px] transition-colors duration-150 hover:bg-[#39424B]"
+                      class="comment-emoji-item flex size-[24px] items-center justify-center rounded-[6px] text-[17px] transition-colors duration-150"
                       type="button"
                       @click="selectEmoji(emoji)"
                     >
@@ -152,8 +166,8 @@
                       class="flex h-[20px] items-center justify-center rounded-[6px] text-[13px] transition-colors duration-150"
                       :class="
                         activeEmojiCategory === item.value
-                          ? 'bg-[#39424B] text-white'
-                          : 'text-[#B7C0CA] hover:bg-[#39424B] hover:text-white'
+                          ? 'comment-emoji-category-active'
+                          : 'comment-emoji-category'
                       "
                       type="button"
                       @click="activeEmojiCategory = item.value"
@@ -172,11 +186,14 @@
 </template>
 
 <script setup lang="ts">
+import { useThemeStore } from '@/stores/theme'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
 
 interface Props {
   modelValue: boolean
+  placeholder?: string
 }
 
 const props = defineProps<Props>()
@@ -184,6 +201,9 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
   (e: 'submit', content: string): void
 }>()
+const { t } = useI18n()
+const themeStore = useThemeStore()
+const isLightTheme = computed(() => themeStore.theme === 'light')
 
 type EmojiCategory = 'recent' | 'smileys' | 'animals' | 'food' | 'objects' | 'flags'
 
@@ -321,6 +341,11 @@ const currentEmojiList = computed(() => {
   return emojiGroups[activeEmojiCategory.value]
 })
 
+const inputPlaceholder = computed(() => {
+  const placeholder = props.placeholder?.trim()
+  return placeholder || t('gameDetail.commentDefaultPlaceholder')
+})
+
 const closePopup = () => {
   isEmojiPickerOpen.value = false
   emit('update:modelValue', false)
@@ -392,6 +417,7 @@ watch(
   () => props.modelValue,
   isOpen => {
     if (isOpen) {
+      commentText.value = ''
       bodyOverflowCache.value = document.body.style.overflow
       document.body.style.overflow = 'hidden'
       return
@@ -414,6 +440,132 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.comment-popup-mask {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.comment-popup-mask-light {
+  background: rgba(16, 24, 40, 0.48);
+}
+
+.comment-popup-shell {
+  background: linear-gradient(180deg, #2a2f35 0%, #23282e 100%);
+}
+
+.comment-popup-shell-desktop {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
+.comment-popup-shell-mobile {
+  box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.comment-popup-title {
+  color: #fff;
+}
+
+.comment-popup-close {
+  background: #42474d;
+  color: #d4d8dd;
+}
+
+.comment-popup-textarea {
+  border: 1px solid var(--color-theme-level-1);
+  background: #353a3f;
+  color: #fff;
+}
+
+.comment-popup-textarea::placeholder {
+  color: #dce4ea;
+}
+
+.comment-emoji-panel {
+  border: 1px solid #3f4750;
+  background: #252d35;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.comment-emoji-divider {
+  border-bottom-color: #3f4750;
+}
+
+.comment-emoji-item:hover {
+  background: #39424b;
+}
+
+.comment-emoji-category {
+  color: #b7c0ca;
+}
+
+.comment-emoji-category:hover {
+  background: #39424b;
+  color: #fff;
+}
+
+.comment-emoji-category-active {
+  background: #39424b;
+  color: #fff;
+}
+
+.comment-popup-panel.is-light .comment-popup-shell {
+  background: linear-gradient(180deg, #f9fcff 0%, #ecf2fa 100%);
+}
+
+.comment-popup-panel.is-light .comment-popup-shell-desktop {
+  box-shadow: 0 16px 36px rgba(24, 38, 64, 0.24);
+}
+
+.comment-popup-panel.is-light .comment-popup-shell-mobile {
+  box-shadow: 0 -12px 28px rgba(24, 38, 64, 0.2);
+}
+
+.comment-popup-panel.is-light .comment-popup-title {
+  color: #1d2a3d;
+}
+
+.comment-popup-panel.is-light .comment-popup-close {
+  background: #dfe7f2;
+  color: #52647f;
+}
+
+.comment-popup-panel.is-light .comment-popup-textarea {
+  border-color: #c7d4e6;
+  background: #fff;
+  color: #1d2a3d;
+}
+
+.comment-popup-panel.is-light .comment-popup-textarea::placeholder {
+  color: #8a9ab1;
+}
+
+.comment-popup-panel.is-light .comment-emoji-panel {
+  border-color: #ced9e8;
+  background: #f8fbff;
+  box-shadow: 0 10px 24px rgba(24, 38, 64, 0.2);
+}
+
+.comment-popup-panel.is-light .comment-emoji-divider {
+  border-bottom-color: #d4dfed;
+}
+
+.comment-popup-panel.is-light .comment-emoji-item:hover {
+  background: #e8f0fa;
+}
+
+.comment-popup-panel.is-light .comment-emoji-category {
+  color: #6a7d99;
+}
+
+.comment-popup-panel.is-light .comment-emoji-category:hover {
+  background: #e8f0fa;
+  color: #20314b;
+}
+
+.comment-popup-panel.is-light .comment-emoji-category-active {
+  background: #dce8f7;
+  color: #20314b;
+}
+
 .comment-popup-fade-enter-active,
 .comment-popup-fade-leave-active {
   transition: opacity 0.22s ease;

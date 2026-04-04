@@ -15,6 +15,7 @@
       type="text"
       :placeholder="t('search.placeholder')"
       class="w-full h-[42px] pl-[110px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-[var(--color-border-level-1)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+      @input="onInput"
       @keydown.enter.prevent="onSearch"
       @focus="focusClick"
       @blur="onBlur"
@@ -45,7 +46,11 @@
       <!-- 历史记录 -->
       <div class="flex justify-between w-full text-xs my-2.5">
         <div class="font-bold">{{ t('search.history') }}</div>
-        <div class="text-[var(--color-text-level-2)]">
+        <div
+          class="text-[var(--color-text-level-2)] cursor-pointer"
+          v-if="history.length > 0"
+          @click="clearHistory"
+        >
           {{ t('search.clear') }}（{{ history?.length }}）
         </div>
       </div>
@@ -55,15 +60,18 @@
           <div
             v-for="(item, inx) in history.slice(0, 5)"
             :key="inx"
-            class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] inline-flex items-center"
+            class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] inline-flex items-center cursor-pointer"
           >
             <div
-              class="text-xs text-[var(--color-text-level-2)] mr-0.5 break-words max-w-full"
+              class="text-xs text-[var(--color-text-level-2)] mr-0.5 break-words max-w-full cursor-pointer"
               @click="goSearch(item)"
             >
               {{ item }}
             </div>
-            <CloseIcon class="w-4 h-4 stroke-text-2 shrink-0" @click="deleteItme()" />
+            <CloseIcon
+              class="w-4 h-4 stroke-text-2 shrink-0 cursor-pointer"
+              @click.stop="deleteItem(item)"
+            />
           </div>
         </div>
       </div>
@@ -72,14 +80,14 @@
         <div class="font-bold">{{ t('search.suggested') }}</div>
       </div>
       <div class="w-full">
-        <div v-if="history?.length > 0" class="flex flex-wrap gap-2">
+        <div v-if="suggestedList.length > 0" class="flex flex-wrap gap-2">
           <div
-            v-for="(item, inx) in history.slice(0, 5)"
+            v-for="(item, inx) in suggestedList"
             :key="inx"
-            class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] flex items-center"
+            class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] flex items-center cursor-pointer"
           >
             <div
-              class="text-xs text-[var(--color-text-level-2)] break-words max-w-full"
+              class="text-xs text-[var(--color-text-level-2)] break-words max-w-full cursor-pointer"
               @click="goSearch(item)"
             >
               {{ item }}
@@ -110,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount, computed, inject, Ref } from 'vue'
+import { ref, onBeforeUnmount, computed, inject, Ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TypePopup from './popup.vue'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
@@ -119,6 +127,11 @@ import pull_down from '@/static/svg/explore/pull-down.svg?component'
 import { useIsMobile } from '@/composables/useMediaQuery'
 
 type TypeItem = { id: string; name: string }
+type HotGameItem = {
+  platformName?: string
+}
+const SEARCH_HISTORY_STORAGE_KEY = 'explore_search_history'
+const MAX_HISTORY_COUNT = 20
 
 const props = defineProps<{
   dataList: TypeItem[]
@@ -134,15 +147,14 @@ const isMobile = useIsMobile()
 
 const keyword = inject('explore-keywords') as Ref<string>
 const currentType = inject('explore-current-type') as Ref<string>
+const hotGameList = inject<Ref<HotGameItem[]>>('explore-hot-game-list', ref([]))
 
 const typeVisible = ref(false)
 
-const history = ref(['1111', '2222', '3333', ' 4444', '555555', '6666']) // 本地搜索历史
+const history = ref<string[]>([]) // 本地搜索历史
 const isOpen = ref(false)
 let downInPanel = false
-// 搜索防抖
 let timer: ReturnType<typeof setTimeout> | null = null
-let mute = false
 
 const onWrapDown = (e: MouseEvent) => {
   downInPanel = (e.target as HTMLElement).closest('.panel') != null
@@ -153,19 +165,39 @@ const onBlur = () => {
   downInPanel = false
 }
 
-const onSearch = () => {
-  emit('search', keyword.value)
+const emitSearch = () => {
+  emit('search', keyword.value.trim())
 }
 
-watch(keyword, () => {
-  if (mute) return (mute = false)
+const onInput = () => {
   if (timer !== null) clearTimeout(timer)
-  timer = setTimeout(onSearch, 1500)
-})
+  timer = setTimeout(emitSearch, 300)
+  timer = setTimeout(() => {
+    addHistory(keyword.value)
+  }, 1000)
+}
+
+const onSearch = () => {
+  if (timer !== null) clearTimeout(timer)
+  emitSearch()
+  addHistory(keyword.value)
+}
 
 const currentTypeName = computed(() => {
   const item = props.dataList.find(i => i.id === currentType.value)
   return item ? item.name : ''
+})
+const suggestedList = computed(() => {
+  const seen = new Set<string>()
+  return hotGameList.value
+    .map(item => String(item.platformName ?? '').trim())
+    .filter(platformName => {
+      if (!platformName) return false
+      const normalizedName = platformName.toLowerCase()
+      if (seen.has(normalizedName)) return false
+      seen.add(normalizedName)
+      return true
+    })
 })
 
 // 类型选择确认
@@ -175,9 +207,48 @@ const handleTypeConfirm = (_val: TypeItem) => {
   emit('change-type', _val.id)
 }
 
+const persistHistory = () => {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(SEARCH_HISTORY_STORAGE_KEY, JSON.stringify(history.value))
+}
+
+const loadHistory = () => {
+  if (typeof window === 'undefined') return
+
+  const rawHistory = localStorage.getItem(SEARCH_HISTORY_STORAGE_KEY)
+  if (!rawHistory) return
+
+  try {
+    const parsedHistory = JSON.parse(rawHistory)
+    if (!Array.isArray(parsedHistory)) return
+
+    history.value = parsedHistory.filter((item): item is string => typeof item === 'string')
+  } catch (error) {
+    console.error('load explore search history failed', error)
+  }
+}
+
+const addHistory = (value: string) => {
+  const trimmedValue = value.trim()
+  if (trimmedValue.length < 2) return
+
+  const dedupedHistory = history.value.filter(
+    item => item.toLowerCase() !== trimmedValue.toLowerCase()
+  )
+
+  history.value = [trimmedValue, ...dedupedHistory].slice(0, MAX_HISTORY_COUNT)
+  persistHistory()
+}
+
 // 删除单条本地搜索记录
-const deleteItme = () => {
-  console.log('删除单条')
+const deleteItem = (value: string) => {
+  history.value = history.value.filter(item => item !== value)
+  persistHistory()
+}
+
+const clearHistory = () => {
+  history.value = []
+  persistHistory()
 }
 
 const focusClick = () => {
@@ -188,8 +259,6 @@ const focusClick = () => {
 
 // 点击搜索历史和建议
 const goSearch = (item: string) => {
-  mute = true
-  if (timer !== null) clearTimeout(timer)
   keyword.value = item
   isOpen.value = false
   onSearch()
@@ -197,7 +266,12 @@ const goSearch = (item: string) => {
 
 const clear = () => {
   keyword.value = ''
+  emitSearch()
 }
+
+onMounted(() => {
+  loadHistory()
+})
 
 onBeforeUnmount(() => {
   if (timer) clearTimeout(timer)

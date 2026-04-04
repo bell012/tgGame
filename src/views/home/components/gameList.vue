@@ -77,7 +77,7 @@
           >
             <div
               class="flex flex-col items-center justify-center gap-2 h-full w-full"
-              @click="handleClick(value.orderId)"
+              @click="handleClick(value.rowId)"
             >
               <div
                 class="flex justify-center items-center center absolute left-0 top-0 flex h-[40%] w-full px-2 text-center font-extrabold leading-4 text-[white]"
@@ -116,7 +116,7 @@ interface GameItem {
     src?: string
   }
   number: number
-  orderId: number
+  rowId: number
 }
 
 interface Props {
@@ -138,7 +138,7 @@ const normalizeGameItem = (item: any): GameItem => {
       src: String(conUrl)
     },
     number,
-    orderId: item.orderId
+    rowId: item.rowId
   }
 }
 
@@ -148,7 +148,7 @@ const normalizedList = computed(() => {
 const handleClick = (rowId: number) => {
   let userInfo = localStorage.getItem('userInfo')
   if (userInfo) {
-    navigateToName('gameDetail', { params: { id: rowId } })
+    navigateToName('gameDetail', { params: { rowId } })
   } else {
     authModalStore.openRegisterModal()
   }

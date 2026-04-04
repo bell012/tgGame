@@ -41,6 +41,7 @@
     "TGOriginals": "TG 原创",
     "TableGames": "桌面游戏",
     "HotGames": "热门游戏",
+    "RecommendedGames": "推荐游戏",
     "JoinNow": "立即加入",
     "ExclusivePromotions": "专属优惠",
     "DontDisplayThisForNext7Day": "下次7天内不再显示",
@@ -110,9 +111,11 @@
   },
   "search": {
     "placeholder": "搜寻游戏",
+    "select": "选择",
     "history": "历史",
     "clear": "清除搜寻",
     "suggested": "建议",
+    "sortDefault": "默认",
     "sort": "排序方式:",
     "providers": "供应商:",
     "botClear": "全部清除",
@@ -143,6 +146,71 @@
     "recent": "最近游戏",
     "filter_hot": "热门",
     "filter_new": "最新"
+  },
+  "gameDetail": {
+    "playWithSelectedCurrency": "使用所选币种游玩",
+    "playNowHint": "点击“立即开始”进入。祝你好运，玩得开心！",
+    "playNow": "立即开始",
+    "playWithBalanceIn": "使用余额币种游玩",
+    "confirmAndPlay": "确认并开始",
+    "signInPrompt": "欢迎来到 Dragon-Phoenix，请先登录后继续。",
+    "liveStatsTitle": "实时数据",
+    "bet": "投注",
+    "profit": "盈利",
+    "wagered": "投注额",
+    "win": "赢",
+    "lose": "输",
+    "highWin": "高额盈利",
+    "luckyWin": "幸运赢",
+    "review": "评论",
+    "houseEdge": "庄家优势",
+    "rtpReturnToPlayer": "RTP（返奖率）",
+    "maxWin": "最高奖金",
+    "stakesRange": "投注范围",
+    "by": "由",
+    "payout": "派彩",
+    "wager": "投注",
+    "mult": "倍数",
+    "allBets": "全部投注",
+    "myBets": "我的投注",
+    "noData": "暂无数据",
+    "anonymous": "匿名用户",
+    "outOfFive": "满分 5 分",
+    "rateThisGame": "为该游戏评分",
+    "ratings": "{count} 条评分",
+    "comments": "评论",
+    "leaveYourComment": "留下你的评论",
+    "loadingComments": "评论加载中...",
+    "refreshingComments": "评论刷新中...",
+    "collapse": "收起",
+    "expand": "展开",
+    "noCommentsYet": "暂无评论。",
+    "sortNewestFirst": "最新优先",
+    "sortTopComments": "热门评论",
+    "sortTopLikes": "最多点赞",
+    "replyToUser": "回复 {name}",
+    "leaveCommentsTitle": "发表评论",
+    "post": "发布",
+    "commentDefaultPlaceholder": "这个游戏很棒，非常刺激！",
+    "starActiveAlt": "已点亮星星",
+    "starInactiveAlt": "未点亮星星",
+    "settingLike": "点赞",
+    "settingShare": "分享",
+    "settingMovieMode": "电影模式",
+    "settingFloatMode": "悬浮模式",
+    "stayTunedComingSoon": "敬请期待，更多内容即将到来！",
+    "shareThisGame": "分享游戏",
+    "shareInviteHint": "通过以下方式邀请好友",
+    "shareViaWebLink": "通过网页链接分享",
+    "copy": "复制",
+    "shareChannelMore": "更多",
+    "shareChannelFacebook": "Facebook",
+    "shareChannelWhatsapp": "WhatsApp",
+    "shareChannelTelegram": "Telegram",
+    "shareChannelTiktok": "TikTok",
+    "shareDefaultTitle": "分享",
+    "shareLinkCopySuccess": "分享链接复制成功",
+    "copyFailedRetry": "复制失败，请重试"
   },
   "sidebar_menu": {
     "app_download": {
@@ -581,6 +649,44 @@
   },
   "withdraw": {
     "title": "提现",
+    "crypto": "数字货币",
+    "fiat": "法币",
+    "methods": "提现方式",
+    "phone_number": "手机号码",
+    "phone_placeholder": "请输入您的手机号",
+    "name": "姓名",
+    "name_placeholder": "请输入您的姓名",
+    "withdraw_currency": "提现币种",
+    "select_network": "选择网络",
+    "receive_address": "收款地址",
+    "receive_address_placeholder": "请输入收款地址",
+    "amount": "提现金额",
+    "amount_placeholder": "请输入提现金额",
+    "balance": "余额",
+    "crypto_help": "如何提现加密货币？",
+    "crypto_address_notice": "请确保收款地址正确无误。若资金发送到错误地址，将无法找回。",
+    "withdraw_now": "立即提现",
+    "you_get": "预计到账",
+    "kind_reminder_title": "温馨提示",
+    "kind_reminder_desc": "请先设置交易密码后再继续操作！",
+    "go_to_settings": "前往设置",
+    "do_not_set_yet": "暂不设置",
+    "payment_password": "支付密码",
+    "sms_verification": "短信验证",
+    "sms_sent_to": "验证码已发送至",
+    "resend_code": "重新发送",
+    "resend_in_seconds": "{seconds} 秒后重新发送",
+    "withdraw_order": "提现订单",
+    "order_processing_title": "您的提现申请正在处理中。",
+    "order_completed_title": "提现订单已完成",
+    "order_completed": "订单已完成",
+    "order_no": "订单编号",
+    "created_at": "创建时间",
+    "withdraw_method": "提现方式",
+    "reminder": "温馨提示",
+    "order_help_text": "如需订单帮助，请",
+    "chat_with_us": "联系我们。",
+    "confirm_withdrawal": "确认提现",
     "status": {
       "pending": "待处理",
       "locked": "锁定",
@@ -599,6 +705,87 @@
     "balance": "余额",
     "status": "状态筛选",
     "completed": "已完成",
-    "notCompleted": "未完成"
+    "notCompleted": "未完成",
+    "filterGroups": {
+      "type": "交易类型选择"
+    },
+    "typeOptions": {
+      "gameSwitch": "游戏切换",
+      "memberDeposit": "会员充值",
+      "memberWithdraw": "会员取款",
+      "memberWithdrawReturn": "会员取款退回",
+      "manualDeposit": "人工存入",
+      "manualDeduction": "人工扣款",
+      "bonusGift": "赠送彩金",
+      "commissionClaim": "领取佣金",
+      "currencyExchange": "货币互换",
+      "vipIncome": "VIP收益",
+      "bonusExchange": "红利兑换"
+    }
+  },
+  "vipPage": {
+    "cards": {
+      "levelUp": "升级奖励",
+      "daily": "每日奖励",
+      "weekly": "每周奖励",
+      "monthly": "每月奖励"
+    },
+    "claimed": "已领取",
+    "locked": "已锁定",
+    "goalHint": "您已完成当前 VIP 等级目标",
+    "claimPopup": {
+      "title": "领取成功",
+      "description": "奖金已发放至您的钱包。",
+      "ok": "确定"
+    },
+    "retention": {
+      "title": "VIP 等级保级要求",
+      "minimumDeposit": "最低存款",
+      "minimumValidBet": "最低有效投注"
+    },
+    "rulesTitle": "规则说明",
+    "rule": "规则",
+    "rules": {
+      "rule1": {
+        "title": "1. 晋升条件",
+        "description": "会员满足 VIP 晋升所需的存款或有效流水条件后，将自动升级并获得对应等级奖励。若同时满足多个 VIP 等级条件，将发放所有已达成等级的奖励。升级奖励可在升级后立即领取，且长期有效。"
+      },
+      "rule2": {
+        "title": "2. 每日奖励",
+        "description": "满足每日存款与有效流水要求后，可领取每日奖励。若跨级升级，仅可领取当前等级奖励。每日 00:00:00 后可领取，未领取奖励当日失效。"
+      },
+      "rule3": {
+        "title": "3. 每周奖励",
+        "description": "满足每周存款与有效流水要求后，可领取每周奖励。若跨级升级，仅可领取当前等级奖励。每周一 00:00:00 后可领取，未领取奖励将在周结束时失效。"
+      },
+      "rule4": {
+        "title": "4. 每月奖励",
+        "description": "满足每月存款与有效流水要求后，可领取每月奖励。若跨级升级，仅可领取当前等级奖励。每月 1 日 00:00:00 后可领取，未领取奖励将在月末失效。"
+      },
+      "rule5": {
+        "title": "5. 保级要求",
+        "description": "VIP 等级发生变化后，需在 30 天内完成对应有效流水要求以维持当前等级。若期间再次升级，将按新等级重新计算保级要求。"
+      },
+      "rule6": {
+        "title": "6. 降级条件",
+        "description": "若在每月 30 日前未满足相应保级要求，系统将自动下调 VIP 等级，相关权益也将按新等级调整。"
+      },
+      "rule7": {
+        "title": "7. 奖励失效规则",
+        "description": "奖励在截止时间后将失效作废，请及时领取。"
+      },
+      "rule8": {
+        "title": "8. 稽核规则",
+        "description": "VIP 奖励领取后需完成 1 倍流水方可提款，且所有游戏平台投注均计入流水。"
+      },
+      "rule9": {
+        "title": "9. 晋升免责声明",
+        "description": "本功能仅限账户本人正常使用。若发现使用机器人、脚本、漏洞、无风险投注等异常行为，平台有权在不另行通知的情况下暂停账户并取消奖励。"
+      },
+      "rule10": {
+        "title": "10. 最终解释权",
+        "description": "领取 VIP 奖励即表示您同意相关条款，平台保留本活动的最终解释权。"
+      }
+    }
   }
 }
