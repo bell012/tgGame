@@ -46,6 +46,7 @@
           v-for="(brand, i) in getDisplayBrandList(item.brandItems)"
           :key="brand.rowId ?? i"
           class="flex h-16 shrink-0 items-center justify-center rounded-lg bg-bg-2"
+          @click="handleBrandClick(brand)"
         >
           <gameErrImg class="h-6 w-4/5 sm:h-11" :img="getBrandImg(brand)" />
         </div>
@@ -60,7 +61,7 @@
           :key="game.rowId ?? i"
           class="aspect-[330/438] min-h-[146px]"
         >
-          <casinoGameCard :game="game" @click="handleClick(`/casino`)" />
+          <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
         </div>
         <div>
           <a
@@ -115,7 +116,7 @@
 import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { navigateTo } from '@/utils/router'
+import { navigateTo, navigateToName } from '@/utils/router'
 import { casinoIcons } from '@/static/svg/casino'
 import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
 import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
@@ -204,8 +205,27 @@ const getBrandImg = (item: GameBrandItem) => {
   }
 }
 
-const handleClick = (path: string) => {
-  navigateTo(path)
+const handleClick = (rowId?: string | number) => {
+  if (!rowId) {
+    return
+  }
+
+  navigateToName('gameDetail', { params: { rowId } })
+}
+
+const handleBrandClick = (brand: GameBrandItem) => {
+  const brandCode = String(brand.brandCode || '').trim()
+
+  if (!brandCode) {
+    return
+  }
+
+  navigateToName('brandGameList', {
+    params: { brandCode },
+    query: {
+      brandName: brand.brandName?.trim() || undefined
+    }
+  })
 }
 
 const handleViewAll = (item: CasinoLobbyButtonItem) => {

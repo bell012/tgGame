@@ -106,8 +106,8 @@ provide('explore-hot-game-list', exploreHotGameList)
 
 // top-input
 const typeList = computed(() => [
-  { id: 'casino', name: t('bottom_tab_bar.casino') },
-  { id: 'sports', name: t('bottom_tab_bar.sports') }
+  { id: 'casino', name: t('bottom_tab_bar.casino') }
+  // { id: 'sports', name: t('bottom_tab_bar.sports') }
   // { id: 'lottery', name: 'Lottery' }
 ])
 

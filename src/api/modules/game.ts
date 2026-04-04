@@ -6,11 +6,13 @@ import type {
   GetCommentsListParams,
   GetCommentSubjectParams,
   GetGameStatisticsParams,
+  PublishCommentParams,
   GameRanListResponse,
   GameBrandResponse,
   GameDataResponse,
   GameCommentListResponse,
   GameCommentSubjectResponse,
+  PublishCommentResponse,
   GameDetailResponse,
   GetGameRanListParams,
   QueryGameDetailsParams
@@ -138,6 +140,19 @@ export function getCommentSubject(
 export function getCommentsList(data: GetCommentsListParams): Promise<GameCommentListResponse> {
   return request({
     url: '/comment/sub/getCommentsList',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 发布评论
+ * @param data subjectId, memberId, memberRowId, content, root, parent, replyIndex
+ * @returns Promise<PublishCommentResponse>
+ */
+export function publishComment(data: PublishCommentParams): Promise<PublishCommentResponse> {
+  return request({
+    url: '/comment/sub/publishComment',
     method: 'post',
     data
   })

@@ -9,12 +9,13 @@
         <rginfo />
         <!-- tab111 -->
         <div
-          class="flex h-[50px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[20px] p-[4px] max-w-[500px]"
+          class="recent-games-tabs flex h-[50px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[20px] p-[4px] max-w-[500px]"
+          :class="{ 'recent-games-tabs-light': isLightTheme }"
         >
           <div
             v-for="tab in tabList"
             :key="tab.value"
-            class="flex-1 flex items-center justify-center cursor-pointer"
+            class="recent-games-tab flex-1 flex items-center justify-center cursor-pointer"
             :class="{ active: tabValue === tab.value }"
             @click="tabIndexClick(tab.value)"
           >
@@ -36,8 +37,10 @@
 import Api from '@/api'
 import type { GameRanListItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
+import { useThemeStore } from '@/stores/theme'
 import { storeToRefs } from 'pinia'
 import { computed, inject, provide, ref, watch, type ComputedRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 import TopToggle from './top-toggle.vue'
 import Winlist from './winlist.vue'
 import Rginfo from './rginfo.vue'
@@ -54,11 +57,12 @@ provide('isRgOpen', isOpen)
 
 const rankList = ref<GameRanListItem[]>([])
 const isRankLoading = ref(false)
+const { t } = useI18n()
 
-const tabList = ref([
-  { value: 1, label: 'High win' },
-  { value: 2, label: 'Lucky win' },
-  { value: 3, label: 'Review' }
+const tabList = computed(() => [
+  { value: 1, label: t('gameDetail.highWin') },
+  { value: 2, label: t('gameDetail.luckyWin') },
+  { value: 3, label: t('gameDetail.review') }
 ])
 
 const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
@@ -67,7 +71,9 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
 )
 
 const localeStore = useLocaleStore()
+const themeStore = useThemeStore()
 const { actualCurrency } = storeToRefs(localeStore)
+const isLightTheme = computed(() => themeStore.theme === 'light')
 
 const normalizeValue = (value: unknown) => String(value ?? '').trim()
 
@@ -137,6 +143,31 @@ const tabIndexClick = (index: number) => {
   height: 100%;
   border-radius: 10px;
 }
+
+.recent-games-tab {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.recent-games-tabs-light {
+  background: #f2f6fc !important;
+  border: 1px solid rgba(102, 121, 146, 0.24);
+}
+
+.recent-games-tabs-light .recent-games-tab.active {
+  background: linear-gradient(180deg, #edf3fb 0%, #e1eaf6 100%);
+  border: 1px solid rgba(102, 121, 146, 0.32);
+  box-shadow: 0 2px 8px rgba(30, 46, 72, 0.1);
+  color: #182230;
+}
+
+.recent-games-tabs-light .recent-games-tab:not(.active) {
+  color: #4f5f75;
+}
+
 .open-fade-enter-active,
 .open-fade-leave-active {
   transition: all 0.2s ease;
