@@ -2,7 +2,8 @@
   <!-- pc端公共下拉框组件 -->
   <div class="relative w-[240px]" v-click-outside="closeDropdown">
     <div
-      class="select-box bg-input-3 text-text-1 rounded-lg border border-opacity-5 h-[48px] text-sm px-3 cursor-pointer flex items-center justify-between"
+      class="select-box bg-input-3 text-text-1 rounded-lg border border-opacity-5 h-[48px] text-sm px-3 flex items-center justify-between"
+      :class="props.disabled ? 'cursor-default opacity-70' : 'cursor-pointer'"
       @click="toggleDropdown"
     >
       <div class="flex items-center gap-2">
@@ -83,14 +84,17 @@ interface Props {
   modelValue: string
   options: Option[]
   placeholder?: string
+  disabled?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  placeholder: ''
+  placeholder: '',
+  disabled: false
 })
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
+  'disabled-click': []
 }>()
 
 const isOpen = ref(false)
@@ -104,6 +108,11 @@ const selectedOption = computed(() => {
 })
 
 const toggleDropdown = () => {
+  if (props.disabled) {
+    emit('disabled-click')
+    return
+  }
+
   isOpen.value = !isOpen.value
 }
 
@@ -112,6 +121,10 @@ const closeDropdown = () => {
 }
 
 const selectOption = (option: Option) => {
+  if (props.disabled) {
+    return
+  }
+
   emit('update:modelValue', option.value)
   closeDropdown()
 }
