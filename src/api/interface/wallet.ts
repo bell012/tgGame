@@ -140,6 +140,17 @@ export interface SubmitPayOrderResponse {
   result?: SubmitPayOrderResult
 }
 
+export interface CancelPayOrderStatusForm {
+  orderId: string | number
+  backNote: string
+}
+
+export interface CancelPayOrderStatusResponse {
+  code: string
+  message: string
+  success: boolean
+}
+
 export interface QueryPayOrderByOrderIdForm {
   orderId: string | number
 }

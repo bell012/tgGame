@@ -14,10 +14,10 @@
 
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import depositPopShell from '../../shared/depositPopShell.vue'
-import orderFiatPanel from './orderFiatPanel.vue'
 import type { FiatOrderType } from '../orderType'
+import orderFiatPanel from './orderFiatPanel.vue'
 
 interface Props {
   modelValue: boolean
@@ -25,7 +25,7 @@ interface Props {
 }
 
 const isMobile = useIsMobile()
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:modelValue': [val: boolean]
@@ -35,8 +35,18 @@ const emit = defineEmits<{
 
 const hiddenPop = ref<boolean>(false)
 
+watch(
+  () => props.modelValue,
+  isVisible => {
+    if (isVisible) {
+      hiddenPop.value = false
+    }
+  }
+)
+
 // 关闭弹窗并同步关闭事件
 const handleClose = () => {
+  hiddenPop.value = false
   emit('update:modelValue', false)
   emit('close')
 }
