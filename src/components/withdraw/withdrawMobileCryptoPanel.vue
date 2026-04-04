@@ -42,11 +42,23 @@
           <div class="text-xs font-normal leading-normal">
             {{ t('withdraw.withdraw_currency') }}
           </div>
-          <CustomSelect class="mt-2 w-full" v-model="currency" :options="currencyOptions" />
+          <CustomSelect
+            class="mt-2 w-full"
+            v-model="currency"
+            :options="currencyOptions"
+            disabled
+            @disabled-click="showUnavailableToast"
+          />
         </div>
         <div>
           <div class="text-xs font-normal leading-normal">{{ t('withdraw.select_network') }}</div>
-          <CustomSelect class="mt-2 w-full" v-model="selectNetwork" :options="networkOptions" />
+          <CustomSelect
+            class="mt-2 w-full"
+            v-model="selectNetwork"
+            :options="networkOptions"
+            disabled
+            @disabled-click="showUnavailableToast"
+          />
         </div>
       </div>
       <div class="mt-5">
