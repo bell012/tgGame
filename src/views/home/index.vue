@@ -1,6 +1,6 @@
 ﻿<template>
   <div class="home max-w-[1248px] mx-auto px-0 py-0 sm:px-4 sm:py-4">
-    <div style="height: 65px"></div>
+    <div style="height: 65px" class="sm:hidden"></div>
     <div v-if="userInfo">
       <HomeCarouselImg v-if="querySlideshowList.length" :list="querySlideshowList" />
     </div>
