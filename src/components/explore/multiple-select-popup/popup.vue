@@ -238,7 +238,7 @@ const clearAll = () => {
   width: 48px;
   height: 4px;
   border-radius: 999px;
-  background: var(--color-opacity-15);
+  // background: var(--color-opacity-15);
 }
 
 .tp-title {
