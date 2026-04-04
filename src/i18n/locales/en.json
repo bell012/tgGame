@@ -636,7 +636,13 @@
     "upload_btn_text": "Add Proof",
     "upload_proof_confirm_btn_text": "Upload Proof Now",
     "payment_receipt_sample_title": "Payment Receipt Sample",
-    "upload_proof_again_btn_text": "Upload Proof Again"
+    "upload_proof_again_btn_text": "Upload Proof Again",
+    "status": {
+      "pending": "Pending",
+      "success": "Success",
+      "failed": "Failed",
+      "processing": "Processing"
+    }
   },
   "withdraw": {
     "title": "Withdraw",
@@ -677,7 +683,15 @@
     "reminder": "Reminder",
     "order_help_text": "Need help with your order?",
     "chat_with_us": "Chat with us.",
-    "confirm_withdrawal": "Confirm Withdrawal"
+    "confirm_withdrawal": "Confirm Withdrawal",
+    "status": {
+      "pending": "Pending",
+      "locked": "Locked",
+      "failed": "Failed",
+      "success": "Success",
+      "processing": "Processing",
+      "pay_failed": "Pay Failed"
+    }
   },
   "transaction": {
     "win": "Win",

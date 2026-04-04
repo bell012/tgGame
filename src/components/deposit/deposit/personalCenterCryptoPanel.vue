@@ -254,6 +254,7 @@ import type {
   QueryPaySubColumnPageForm,
   SubmitPayOrderPageForm
 } from '@/api/interface/wallet'
+import { isOrderTerminalStatus } from '@/constants/orderStatus'
 import { resolvePayChannelTabKey } from '@/constants/payChannelTabs'
 import BNBIcon from '@/static/img/crypto/BNB.png'
 import BTCIcon from '@/static/img/crypto/BTC.png'
@@ -400,12 +401,6 @@ const syncPresetAmounts = () => {
 // 格式化流水倍数展示文案
 const formatWageringLabel = (multiple: number) =>
   multiple === 0 ? 'No Wagering' : `${multiple}x Wagering`
-
-// 判断订单是否为终态（成功或失败）
-const isTerminalOrderStatus = (status?: number | string) => {
-  const normalized = Number(status)
-  return normalized === 1 || normalized === 2
-}
 
 // 显示当前功能不可用的提示信息
 const showUnavailableToast = () => {
@@ -623,7 +618,7 @@ const queryOrderDetail = async () => {
     if (!detail) return
 
     applyOrderDetail(detail)
-    if (isTerminalOrderStatus(detail.status)) {
+    if (isOrderTerminalStatus('deposit', detail.status)) {
       stopOrderPolling()
     }
   } catch (error) {
