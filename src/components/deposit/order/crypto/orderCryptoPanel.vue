@@ -253,7 +253,7 @@ import orderStatusResult from '../orderStatusResult.vue'
 import type { CryptOrderType } from '../orderType'
 import depositCryptoResultPop from './depositCryptoResultPop.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 
 interface Props {
@@ -289,7 +289,10 @@ const parseNetworkName = (subColumnName?: unknown) => {
   if (typeof subColumnName !== 'string' || !subColumnName) return ''
 
   try {
-    return JSON.parse(subColumnName)?.zh || subColumnName
+    const parsedName = JSON.parse(subColumnName)
+    const localeKey = String(locale.value || 'eng')
+
+    return parsedName?.[localeKey] || parsedName?.eng || subColumnName
   } catch {
     return subColumnName
   }

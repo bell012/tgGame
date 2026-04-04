@@ -9,7 +9,7 @@
           :class="getTabClass(tab)"
           @click.stop="setActiveTab(tab)"
         >
-          <span>{{ tab }}</span>
+          <span>{{ getTabLabel(tab) }}</span>
 
           <div
             v-if="showUnderline(tab)"
@@ -31,6 +31,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import cryptoPanel from './cryptoPanel.vue'
 import fiatPanel from './fiatPanel.vue'
 
@@ -47,6 +48,7 @@ const emit = defineEmits<{
   hidden: [val: boolean]
 }>()
 
+const { t } = useI18n()
 const depositTabs: DepositTabType[] = ['Crypto', 'Fiat']
 
 const panelMaxHeightClass = computed(() =>
@@ -67,6 +69,10 @@ const showUnderline = (tab: DepositTabType) => props.modelValue === tab
 const setActiveTab = (tab: DepositTabType) => {
   emit('update:modelValue', tab)
 }
+
+// 获取标签页国际化文案
+const getTabLabel = (tab: DepositTabType) =>
+  t(tab === 'Crypto' ? 'deposit.tabs.crypto' : 'deposit.tabs.fiat')
 
 // 处理子面板隐藏状态变更
 const handleHidden = (val: boolean) => {
