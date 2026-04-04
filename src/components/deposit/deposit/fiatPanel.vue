@@ -132,7 +132,7 @@
     </div>
   </div>
   <!-- 充值订单弹窗 -->
-  <depositOrderPop
+  <depositFiatOrderPop
     v-model:model-value="orderPopShow"
     v-model:orderInfo="orderInfo"
     @close="handleClose"
@@ -172,7 +172,7 @@ import {
   type ComponentPublicInstance
 } from 'vue'
 import { useI18n } from 'vue-i18n'
-import depositOrderPop from '../order/depositOrderPop.vue'
+import depositFiatOrderPop from '../order/fiat/depositFiatOrderPop.vue'
 import { defaultFiatOrder, FiatOrderType } from '../order/orderType'
 import { usePresetGrid } from '../shared/usePresetGrid'
 
@@ -253,16 +253,19 @@ const isAmountInputHighlighted = ref(false)
 const currentOrderId = ref('')
 const pollTimer = ref<number | null>(null)
 
+// 处理关闭事件
 const handleClose = () => {
   stopOrderPolling()
   currentOrderId.value = ''
   emit('hidden', false)
 }
 
+// 处理隐藏状态事件
 const handleHidden = () => {
   emit('hidden', true)
 }
 
+// 清空金额
 const clearAmount = () => {
   amount.value = undefined
   isAmountInputHighlighted.value = false
@@ -309,6 +312,7 @@ const normalizePresetAmounts = (values: Array<number | string> = []) => {
   return parsed.length > 0 ? parsed : [...defaultPresetAmounts]
 }
 
+// 同步预设金额列表
 const syncPresetAmounts = () => {
   if (isDirectRecharge.value) {
     presetAmounts.value = normalizePresetAmounts(quickAmountConfig.value?.amounts ?? [])
@@ -318,6 +322,7 @@ const syncPresetAmounts = () => {
   presetAmounts.value = normalizePresetAmounts(selectedSubColumn.value?.defaultRechargeAmount ?? [])
 }
 
+// 根据金额查找优惠项
 const findDiscountItemByAmount = (targetAmount?: number | string) => {
   const normalizedAmount = Number(targetAmount)
   if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) return null
@@ -337,15 +342,18 @@ const findDiscountItemByAmount = (targetAmount?: number | string) => {
   return null
 }
 
+// 同步已选优惠项
 const syncSelectedDiscountItem = () => {
   selectedDiscountItem.value = findDiscountItemByAmount(amount.value)
 }
 
+// 格式化时间戳
 const formatTimestamp = (timestamp?: number) => {
   if (!timestamp) return ''
   return new Date(timestamp).toLocaleString()
 }
 
+// 应用订单详情
 const applyOrderDetail = (detail: QueryPayOrderByOrderIdResult) => {
   orderInfo.value = {
     order_no: String(detail.orderId ?? currentOrderId.value),
@@ -361,6 +369,7 @@ const applyOrderDetail = (detail: QueryPayOrderByOrderIdResult) => {
   orderPopShow.value = true
 }
 
+// 停止订单轮询
 const stopOrderPolling = () => {
   if (pollTimer.value !== null) {
     window.clearInterval(pollTimer.value)
@@ -368,6 +377,7 @@ const stopOrderPolling = () => {
   }
 }
 
+// 查询订单详情
 const queryOrderDetail = async () => {
   if (!currentOrderId.value) return
 
@@ -385,6 +395,7 @@ const queryOrderDetail = async () => {
   }
 }
 
+// 开始订单轮询
 const startOrderPolling = () => {
   if (!currentOrderId.value || pollTimer.value !== null) return
 
@@ -394,6 +405,7 @@ const startOrderPolling = () => {
   }, 3000)
 }
 
+// 处理页面可见性变化事件
 const handleVisibilityChange = () => {
   if (!currentOrderId.value) return
 
@@ -404,6 +416,7 @@ const handleVisibilityChange = () => {
   }
 }
 
+// 记录支付方式项的 DOM 引用
 const setMethodItemRef = (el: Element | ComponentPublicInstance | null, index: number) => {
   const target =
     el instanceof HTMLElement
@@ -415,6 +428,7 @@ const setMethodItemRef = (el: Element | ComponentPublicInstance | null, index: n
   methodItemRefs.value[index] = target
 }
 
+// 将支付方式滚动到可视区域
 const scrollMethodIntoView = async (index: number) => {
   await nextTick()
 
@@ -428,6 +442,7 @@ const scrollMethodIntoView = async (index: number) => {
   })
 }
 
+// 处理支付方式列表滚轮事件
 const handleMethodListWheel = (event: WheelEvent) => {
   if (!methodListRef.value) return
 

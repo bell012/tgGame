@@ -304,11 +304,13 @@ const orderStatus = ref<'Completed' | 'Cancelled'>('Completed')
 const compactRows = (rows: Array<DetailRowItem | null>) =>
   rows.filter((row): row is DetailRowItem => row !== null)
 
+// 格式化时间戳
 const formatTimestamp = (timestamp?: number) => {
   if (!timestamp) return ''
   return new Date(timestamp).toLocaleString()
 }
 
+// 解析网络名称
 const parseNetworkName = (subColumnName?: unknown) => {
   if (typeof subColumnName !== 'string' || !subColumnName) return ''
 
@@ -387,6 +389,7 @@ const cryptoRate = computed(() => {
     return ''
   }
 
+  // 处理汇率值
   const rateValue = (busiAmount / accountAmount).toFixed(2)
   const accountCurrency = rawOrderInfo.value.accountCurrency ?? ''
   const currency = rawOrderInfo.value.currency ?? ''
@@ -545,7 +548,7 @@ const openUploadPop = () => {
   uploadPopShow.value = true
 }
 
-// 渲染充值地址二维码到 canvas
+// 渲染充值地址二维码到画布
 const renderQrCode = async () => {
   if (!canvasRef.value || !cryptoAddress.value) return
 

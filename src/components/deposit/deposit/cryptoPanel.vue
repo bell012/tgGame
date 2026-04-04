@@ -17,6 +17,7 @@
             {{ coin.name }}
           </button>
         </div>
+
         <button
           type="button"
           class="appearance-none p-1.5 sm:p-2 rounded-full bg-bg-3 lg:hover:bg-theme-3 text-xs flex items-center border"
@@ -37,6 +38,7 @@
 
       <div class="mt-5">
         <p class="text-xs sm:text-sm text-text-1">{{ t('deposit.deposit_channel') }}</p>
+
         <div class="mt-4 overflow-hidden">
           <div
             ref="channelListRef"
@@ -66,11 +68,13 @@
       <div class="mt-5">
         <div class="flex items-center justify-between">
           <p class="text-xs sm:text-sm text-text-1">{{ t('deposit.deposit_amount') }}</p>
+
           <div class="flex items-center">
             <AmountInfoIcon class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
             <p class="text-xs sm:text-sm text-text-2">{{ t('deposit.deposit_amount') }}</p>
           </div>
         </div>
+
         <div
           class="flex items-center w-full mt-3 p-3 rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
         >
@@ -90,6 +94,7 @@
         @wheel.prevent="event => handleHorizontalWheel(event, wageringListRef)"
       >
         <div class="flex items-center w-max relative">
+          <!-- 区块：template -->
           <template v-for="(item, index) in wageringOptions" :key="index">
             <button
               :ref="el => setWageringItemRef(el, item)"
@@ -105,6 +110,7 @@
                 class="absolute left-0 -bottom-2.5 h-[2px] w-full bg-theme-primary"
               ></span>
             </button>
+
             <div
               v-if="index !== wageringOptions.length - 1"
               class="h-4 w-px bg-opacity-10 mx-5"
@@ -174,7 +180,7 @@
     </div>
   </div>
 
-  <depositOrderPop
+  <depositCryptoOrderPop
     v-model:model-value="orderPopShow"
     v-model:orderInfo="orderInfo"
     @close="handleClose"
@@ -182,25 +188,25 @@
   />
 </template>
 <script setup lang="ts">
-import { computed, nextTick, ref, type ComponentPublicInstance, type Ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import BNBIcon from '@/static/img/crypto/BNB.png'
+import BTCIcon from '@/static/img/crypto/BTC.png'
+import DOGEIcon from '@/static/img/crypto/DOGE.png'
+import ETHIcon from '@/static/img/crypto/ETH.png'
+import groupIcon from '@/static/img/crypto/groupIcons.png'
+import TRXIcon from '@/static/img/crypto/TRX.png'
+import USDCIcon from '@/static/img/crypto/USDC.png'
+import USDTIcon from '@/static/img/crypto/USDT.png'
+import bonusBgIcon from '@/static/img/payment/amount_bonus_bg.png'
 import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
 import DepositTokenIcon from '@/static/svg/deposit/deposit-token.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
-import USDCIcon from '@/static/img/crypto/USDC.png'
-import USDTIcon from '@/static/img/crypto/USDT.png'
-import ETHIcon from '@/static/img/crypto/ETH.png'
-import BTCIcon from '@/static/img/crypto/BTC.png'
-import DOGEIcon from '@/static/img/crypto/DOGE.png'
-import TRXIcon from '@/static/img/crypto/TRX.png'
-import BNBIcon from '@/static/img/crypto/BNB.png'
-import groupIcon from '@/static/img/crypto/groupIcons.png'
-import bonusBgIcon from '@/static/img/payment/amount_bonus_bg.png'
 import { showToast } from 'vant'
-import depositOrderPop from '../order/depositOrderPop.vue'
+import { computed, nextTick, ref, type ComponentPublicInstance, type Ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import depositCryptoOrderPop from '../order/crypto/depositCryptoOrderPop.vue'
 import { CryptOrderType, defaultCryptOrder } from '../order/orderType'
 import { usePresetGrid } from '../shared/usePresetGrid'
 
@@ -254,6 +260,7 @@ const presetsRef = ref<HTMLDivElement | null>(null)
 const { expanded } = usePresetGrid(presetsRef)
 const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
 
+// 显示不可用提示
 const showUnavailableToast = () => {
   showToast({
     message: unavailableMessage,
@@ -261,20 +268,24 @@ const showUnavailableToast = () => {
   })
 }
 
+// 解析并返回 HTMLElement 节点
 const resolveHTMLElement = (el: Element | ComponentPublicInstance | null) => {
   if (el instanceof HTMLElement) return el
   if (el && '$el' in el && el.$el instanceof HTMLElement) return el.$el
   return null
 }
 
+// 记录渠道项的 DOM 引用
 const setChannelItemRef = (el: Element | ComponentPublicInstance | null, channel: string) => {
   channelItemRefs.value[channel] = resolveHTMLElement(el)
 }
 
+// 记录流水选项项的 DOM 引用
 const setWageringItemRef = (el: Element | ComponentPublicInstance | null, wagering: string) => {
   wageringItemRefs.value[wagering] = resolveHTMLElement(el)
 }
 
+// 将目标项滚动到可视区域
 const scrollItemIntoView = async (
   containerRef: Ref<HTMLDivElement | null>,
   target: HTMLElement | null
@@ -290,6 +301,7 @@ const scrollItemIntoView = async (
   })
 }
 
+// 处理横向滚轮事件
 const handleHorizontalWheel = (event: WheelEvent, container: HTMLDivElement | null) => {
   if (!container) return
 
@@ -299,16 +311,19 @@ const handleHorizontalWheel = (event: WheelEvent, container: HTMLDivElement | nu
   })
 }
 
+// 选择渠道
 const selectChannel = (channel: (typeof channels)[number]) => {
   selectedChannel.value = channel
   scrollItemIntoView(channelListRef, channelItemRefs.value[channel])
 }
 
+// 选择流水选项
 const selectWagering = (wagering: (typeof wageringOptions)[number]) => {
   wageringActiveCode.value = wagering
   scrollItemIntoView(wageringListRef, wageringItemRefs.value[wagering])
 }
 
+// 选择币种编码
 const selectCoinCode = (code: string) => {
   if (code !== 'USDT') {
     showUnavailableToast()
@@ -319,15 +334,18 @@ const selectCoinCode = (code: string) => {
   coinMoreShow.value = false
 }
 
+// 打开更多币种面板
 const openCoinMorePanel = () => {
   showUnavailableToast()
   return
 }
 
+// 加载钱包
 const loadWallet = () => {
   showUnavailableToast()
 }
 
+// 提交充值并打开订单弹窗
 const doDeposit = () => {
   orderInfo.value = {
     order_no: 'ts0768456746746746746',
@@ -345,10 +363,12 @@ const doDeposit = () => {
   orderPopShow.value = true
 }
 
+// 处理关闭事件
 const handleClose = () => {
   emit('hidden', false)
 }
 
+// 处理隐藏状态事件
 const handleHidden = () => {
   emit('hidden', true)
 }
