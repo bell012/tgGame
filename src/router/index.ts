@@ -57,6 +57,22 @@ const baseRoutes: RouteRecordRaw[] = [
     })
   },
   {
+    path: 'brand-games/:brandCode',
+    name: 'brandGameList',
+    component: () => import('@/views/fun/casino/brandGameList/index.vue'),
+    meta: {
+      title: '厂商游戏列表',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    },
+    props: route => ({
+      brandCode: route.params.brandCode as string,
+      brandName: typeof route.query.brandName === 'string' ? route.query.brandName : undefined
+    })
+  },
+  {
     path: 'originate',
     name: 'originate',
     component: () => import('@/views/fun/originate/index.vue'),
