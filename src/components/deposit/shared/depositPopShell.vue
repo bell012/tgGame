@@ -40,6 +40,7 @@ const emit = defineEmits<{
 
 const isMobile = useIsMobile()
 
+// 处理遮罩层点击事件
 const handleOverlayClick = () => {
   if (!props.closeOnOverlayClick) return
   emit('overlay-close')

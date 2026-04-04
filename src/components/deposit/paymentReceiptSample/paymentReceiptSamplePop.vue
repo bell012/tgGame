@@ -17,6 +17,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
+// 处理关闭事件
 const handleClose = () => {
   emit('update:modelValue', false)
   emit('close')

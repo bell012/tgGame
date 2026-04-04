@@ -13,6 +13,7 @@
         {{ t('deposit.title') }}
       </h2>
 
+      <!-- 区块：template -->
       <template v-if="isMobile">
         <!-- 关闭按钮 -->
         <button
@@ -21,6 +22,7 @@
         >
           <LeftArrowIcon class="w-4 h-4 text-icon-1" />
         </button>
+
         <button
           class="absolute right-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
           @click="handleClose"
@@ -47,12 +49,12 @@
   </div>
 </template>
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import CloseIcon from '@/static/svg/close.svg?component'
-import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
-import DetailsIcon from '@/static/svg/deposit/record.svg?component'
-import depositContentPanel, { type DepositTabType } from './depositContentPanel.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import CloseIcon from '@/static/svg/close.svg?component'
+import DetailsIcon from '@/static/svg/deposit/record.svg?component'
+import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
+import { useI18n } from 'vue-i18n'
+import depositContentPanel, { type DepositTabType } from './depositContentPanel.vue'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
@@ -67,14 +69,17 @@ const emit = defineEmits<{
   hidden: [val: boolean]
 }>()
 
+// 设置激活状态标签页
 const setActiveTab = (tab: DepositTabType) => {
   emit('update:modelValue', tab)
 }
 
+// 处理关闭事件
 const handleClose = () => {
   emit('close')
 }
 
+// 处理隐藏状态事件
 const handleHidden = (val: boolean) => {
   emit('hidden', val)
 }
