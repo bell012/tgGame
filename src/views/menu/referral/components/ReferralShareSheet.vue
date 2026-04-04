@@ -167,13 +167,13 @@ import { useI18n } from 'vue-i18n'
 import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
 import CloseIcon from '@/static/svg/close.svg?component'
 import CopyIcon from '@/static/svg/copy.svg?component'
-import emailIcon from '@/static/svg/game/detail/share/email.svg?component'
+import maisIcon from '@/static/svg/game/detail/share/mais.svg?component'
 import facebookIcon from '@/static/svg/game/detail/share/facebook.svg?component'
-import lineIcon from '@/static/svg/game/detail/share/line.svg?component'
-import telegramIcon from '@/static/svg/game/detail/share/telegram.svg?component'
 import whatsappIcon from '@/static/svg/game/detail/share/whatsapp.svg?component'
+import telegramIcon from '@/static/svg/game/detail/share/telegram.svg?component'
+import tiktokIcon from '@/static/svg/game/detail/share/tiktok.svg?component'
 
-type ShareChannelKey = 'line' | 'facebook' | 'whatsapp' | 'telegram' | 'email'
+type ShareChannelKey = 'mais' | 'facebook' | 'whatsapp' | 'telegram' | 'tiktok'
 
 interface ShareChannel {
   key: ShareChannelKey
@@ -199,9 +199,9 @@ useLockBodyScroll(visibleRef)
 
 const shareChannels = shallowRef<ShareChannel[]>([
   {
-    key: 'line',
-    label: 'Line',
-    icon: lineIcon
+    key: 'mais',
+    label: 'Mais',
+    icon: maisIcon
   },
   {
     key: 'facebook',
@@ -219,9 +219,9 @@ const shareChannels = shallowRef<ShareChannel[]>([
     icon: telegramIcon
   },
   {
-    key: 'email',
-    label: 'Email',
-    icon: emailIcon
+    key: 'tiktok',
+    label: 'Tiktok',
+    icon: tiktokIcon
   }
 ])
 
@@ -253,11 +253,11 @@ const handleOpenChannel = (channel: ShareChannelKey) => {
   const encodedText = encodeURIComponent(`${t('referral.shareDefaultText')} ${props.referralLink}`)
 
   const shareUrlMap: Record<ShareChannelKey, string> = {
-    line: `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`,
+    mais: `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
     whatsapp: `https://wa.me/?text=${encodedText}`,
     telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`,
-    email: `mailto:?subject=${encodeURIComponent(t('referral.title'))}&body=${encodedText}`
+    tiktok: `mailto:?subject=${encodeURIComponent(t('referral.title'))}&body=${encodedText}`
   }
 
   window.open(shareUrlMap[channel], '_blank', 'noopener,noreferrer')
