@@ -14,7 +14,7 @@
       v-model="keyword"
       type="text"
       :placeholder="t('search.placeholder')"
-      class="w-full h-[42px] pl-[110px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-[var(--color-border-level-1)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+      class="w-full h-[42px] pl-[110px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-opacity-10 text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
       @input="onInput"
       @keydown.enter.prevent="onSearch"
       @focus="focusClick"
