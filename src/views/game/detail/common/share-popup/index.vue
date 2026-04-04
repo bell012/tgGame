@@ -79,16 +79,16 @@
 
 <script setup lang="ts">
 import CloseIcon from '@/static/svg/close.svg?component'
-import tiktokIcon from '@/static/svg/game/detail/share/d.svg?component'
-import facebookIcon from '@/static/svg/game/detail/share/f.svg?component'
-import linkIcon from '@/static/svg/game/detail/share/l.svg?component'
-import telegramIcon from '@/static/svg/game/detail/share/t.svg?component'
-import whatsappIcon from '@/static/svg/game/detail/share/w.svg?component'
+import maisIcon from '@/static/svg/game/detail/share/mais.svg?component'
+import facebookIcon from '@/static/svg/game/detail/share/facebook.svg?component'
+import whatsappIcon from '@/static/svg/game/detail/share/whatsapp.svg?component'
+import telegramIcon from '@/static/svg/game/detail/share/telegram.svg?component'
+import tiktokIcon from '@/static/svg/game/detail/share/tiktok.svg?component'
 import { showToast } from 'vant'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-type ShareChannelKey = 'more' | 'facebook' | 'whatsapp' | 'telegram' | 'tiktok'
+type ShareChannelKey = 'mais' | 'facebook' | 'whatsapp' | 'telegram' | 'tiktok'
 type ShareChannel = {
   key: ShareChannelKey
   label: string
@@ -114,9 +114,9 @@ const { t } = useI18n()
 
 const shareList = computed<ShareChannel[]>(() => [
   {
-    key: 'more',
-    icon: linkIcon,
-    label: t('gameDetail.shareChannelMore')
+    key: 'mais',
+    label: 'Mais',
+    icon: maisIcon
   },
   {
     key: 'facebook',
@@ -233,7 +233,7 @@ const handleChannelShare = async (channel: ShareChannelKey) => {
   const encodedUrl = encodeURIComponent(shareUrl)
   const encodedText = encodeURIComponent(`${shareUrl}`)
 
-  if (channel === 'more') {
+  if (channel === 'mais') {
     await handleMoreShare()
     return
   }
