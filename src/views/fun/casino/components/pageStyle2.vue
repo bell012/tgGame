@@ -14,7 +14,7 @@
         :key="game.rowId ?? i"
         class="aspect-[330/438] min-h-[146px]"
       >
-        <casinoGameCard :game="game" @click="handleClick(`/casino`)" />
+        <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>
 
@@ -63,7 +63,7 @@
 </template>
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { navigateTo } from '@/utils/router'
+import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
 import type { GameDataItem } from '@/api/interface/game'
 import type { GameQueryOptions } from '@/stores/game'
@@ -105,8 +105,12 @@ const goNext = () => {
   page.value = Math.min(Math.max(1, page.value + 1), Math.max(1, totalPages.value))
 }
 
-const handleClick = (path: string) => {
-  navigateTo(path)
+const handleClick = (rowId?: string | number) => {
+  if (!rowId) {
+    return
+  }
+
+  navigateToName('gameDetail', { params: { rowId } })
 }
 
 const getGameData = async () => {
