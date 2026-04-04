@@ -8,9 +8,10 @@
         :class="getTabClass(tab)"
         @click.stop="setActiveTab(tab)"
       >
-        <span>{{ tab }}</span>
+        <span>{{ getTabLabel(tab) }}</span>
       </button>
     </div>
+
     <div
       class="w-full flex-1 min-h-0 relative overflow-y-auto overscroll-contain mt-4 bg-bg-1 rounded-lg"
     >
@@ -22,6 +23,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import personalCenterCryptoPanel from './personalCenterCryptoPanel.vue'
 import personalCenterFiatPanel from './personalCenterFiatPanel.vue'
 
@@ -31,19 +33,27 @@ const emit = defineEmits<{
   hidden: [val: boolean]
 }>()
 
+const { t } = useI18n()
 const depositTabs: DepositTabType[] = ['Crypto', 'Fiat']
 const selectTab = ref<DepositTabType>('Crypto')
 
+// 获取标签页样式
 const getTabClass = (tab: DepositTabType) => {
   const isActive = selectTab.value === tab
 
   return [isActive ? 'text-text-1 bg-bg-7' : 'text-text-2 bg-bg-8']
 }
 
+// 设置激活状态标签页
 const setActiveTab = (tab: DepositTabType) => {
   selectTab.value = tab
 }
 
+// 获取标签页国际化文案
+const getTabLabel = (tab: DepositTabType) =>
+  t(tab === 'Crypto' ? 'deposit.tabs.crypto' : 'deposit.tabs.fiat')
+
+// 处理隐藏状态事件
 const handleHidden = (val: boolean) => {
   emit('hidden', val)
 }

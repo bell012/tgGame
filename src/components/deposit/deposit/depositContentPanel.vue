@@ -9,7 +9,8 @@
           :class="getTabClass(tab)"
           @click.stop="setActiveTab(tab)"
         >
-          <span>{{ tab }}</span>
+          <span>{{ getTabLabel(tab) }}</span>
+
           <div
             v-if="showUnderline(tab)"
             class="absolute bottom-0 left-0 right-0 h-[2px] bg-theme-primary rounded-t-full"
@@ -17,6 +18,7 @@
         </button>
       </div>
     </div>
+
     <div
       class="w-full flex-1 min-h-0 relative overflow-y-auto overscroll-contain"
       :class="[panelMaxHeightClass, 'p-4 bg-bg-1 rounded-bl-lg rounded-br-lg']"
@@ -29,6 +31,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import cryptoPanel from './cryptoPanel.vue'
 import fiatPanel from './fiatPanel.vue'
 
@@ -45,24 +48,33 @@ const emit = defineEmits<{
   hidden: [val: boolean]
 }>()
 
+const { t } = useI18n()
 const depositTabs: DepositTabType[] = ['Crypto', 'Fiat']
 
 const panelMaxHeightClass = computed(() =>
   props.modelValue === 'Crypto' ? 'sm:max-h-[598px]' : 'sm:max-h-[499px]'
 )
 
+// 获取标签页样式
 const getTabClass = (tab: DepositTabType) => {
   const isActive = props.modelValue === tab
 
   return [isActive ? 'text-text-1 pb-1.5' : 'text-text-2 pb-1.5']
 }
 
+// 显示下划线
 const showUnderline = (tab: DepositTabType) => props.modelValue === tab
 
+// 切换当前激活标签页
 const setActiveTab = (tab: DepositTabType) => {
   emit('update:modelValue', tab)
 }
 
+// 获取标签页国际化文案
+const getTabLabel = (tab: DepositTabType) =>
+  t(tab === 'Crypto' ? 'deposit.tabs.crypto' : 'deposit.tabs.fiat')
+
+// 处理子面板隐藏状态变更
 const handleHidden = (val: boolean) => {
   emit('hidden', val)
 }

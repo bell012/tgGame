@@ -30,10 +30,12 @@ const emit = defineEmits<{
 const activeTab = ref<'Crypto' | 'Fiat'>('Crypto')
 const hiddenPop = ref<boolean>(false)
 
+// 处理关闭事件
 const handleClose = () => {
   emit('update:modelValue', false)
 }
 
+// 处理隐藏状态事件
 const handleHidden = (status: boolean) => {
   hiddenPop.value = status
 }

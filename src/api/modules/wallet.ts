@@ -1,4 +1,8 @@
 import type {
+  CancelPayOrderStatusForm,
+  CancelPayOrderStatusResponse,
+  PayRechargeQuickAmtsForm,
+  PayRechargeQuickAmtsResponse,
   QueryDiscountListForm,
   QueryDiscountListResponse,
   QueryDlicghForm,
@@ -58,6 +62,17 @@ export function queryPaySubColumnPage(
   })
 }
 
+// 查询充值快捷金额
+export function payRechargeQuickAmts(
+  data: PayRechargeQuickAmtsForm
+): Promise<PayRechargeQuickAmtsResponse> {
+  return request({
+    url: '/pc/payRechargeQuickAmts',
+    method: 'post',
+    data
+  })
+}
+
 // 查询优惠列表
 export function queryDiscountList(data: QueryDiscountListForm): Promise<QueryDiscountListResponse> {
   return request({
@@ -81,6 +96,17 @@ export function queryPayOrderByOrderId(
 export function submitPayOrder(data: SubmitPayOrderPageForm): Promise<SubmitPayOrderResponse> {
   return request({
     url: '/pc/submitPayOrder',
+    method: 'post',
+    data
+  })
+}
+
+// 取消支付订单状态
+export function cancelPayOrderStatus(
+  data: CancelPayOrderStatusForm
+): Promise<CancelPayOrderStatusResponse> {
+  return request({
+    url: '/pc/cancelPayOrderStatus',
     method: 'post',
     data
   })

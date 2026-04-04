@@ -7,28 +7,26 @@
     :transitionType="isMobile ? 'drawer-slide' : 'modal'"
     @overlay-close="handleClose"
   >
-    <!-- 混合订单面板 -->
-    <orderPanel :orderInfo="orderInfo" @close="handleClose" @hidden="handleHidden" />
+    <!-- 数字币订单面板 -->
+    <orderCryptoPanel :orderInfo="orderInfo" @close="handleClose" @hidden="handleHidden" />
   </depositPopShell>
 </template>
 
 <script setup lang="ts">
 import type { QueryPayOrderByOrderIdResult } from '@/api/interface/wallet'
-import orderPanel from './orderPanel.vue'
-import { ref } from 'vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import depositPopShell from '../shared/depositPopShell.vue'
-import type { OrderType } from './orderType'
+import { ref, watch } from 'vue'
+import depositPopShell from '../../shared/depositPopShell.vue'
+import type { CryptOrderType } from '../orderType'
+import orderCryptoPanel from './orderCryptoPanel.vue'
 
-type PopupOrderInfo = OrderType | Partial<QueryPayOrderByOrderIdResult>
-
-const isMobile = useIsMobile()
 interface Props {
   modelValue: boolean
-  orderInfo: PopupOrderInfo
+  orderInfo: Partial<CryptOrderType> | Partial<QueryPayOrderByOrderIdResult>
 }
 
-defineProps<Props>()
+const isMobile = useIsMobile()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:modelValue': [val: boolean]
@@ -38,8 +36,18 @@ const emit = defineEmits<{
 
 const hiddenPop = ref<boolean>(false)
 
+watch(
+  () => props.modelValue,
+  isVisible => {
+    if (isVisible) {
+      hiddenPop.value = false
+    }
+  }
+)
+
 // 关闭弹窗并同步关闭事件
 const handleClose = () => {
+  hiddenPop.value = false
   emit('update:modelValue', false)
   emit('close')
 }
@@ -47,6 +55,6 @@ const handleClose = () => {
 // 切换隐藏状态并通知父组件
 const handleHidden = () => {
   emit('hidden')
-  hiddenPop.value = !hiddenPop.value
+  hiddenPop.value = true
 }
 </script>

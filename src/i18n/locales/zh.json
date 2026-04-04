@@ -616,6 +616,10 @@
   },
   "deposit": {
     "title": "充值",
+    "tabs": {
+      "crypto": "数字币",
+      "fiat": "法币"
+    },
     "deposit_more": "更多",
     "deposit_channel": "充值渠道",
     "deposit_amount": "充值金额",
@@ -635,7 +639,13 @@
     "upload_btn_text": "添加凭证",
     "upload_proof_confirm_btn_text": "立即上传凭证",
     "payment_receipt_sample_title": "支付凭证样本",
-    "upload_proof_again_btn_text": "重新上传凭证"
+    "upload_proof_again_btn_text": "重新上传凭证",
+    "status": {
+      "pending": "待处理",
+      "success": "成功",
+      "failed": "失败",
+      "processing": "处理中"
+    }
   },
   "withdraw": {
     "title": "提现",
@@ -676,7 +686,15 @@
     "reminder": "温馨提示",
     "order_help_text": "如需订单帮助，请",
     "chat_with_us": "联系我们。",
-    "confirm_withdrawal": "确认提现"
+    "confirm_withdrawal": "确认提现",
+    "status": {
+      "pending": "待处理",
+      "locked": "锁定",
+      "failed": "失败",
+      "success": "成功",
+      "processing": "处理中",
+      "pay_failed": "代付失败"
+    }
   },
   "transaction": {
     "win": "赢",
