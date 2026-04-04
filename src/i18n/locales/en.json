@@ -617,6 +617,10 @@
   },
   "deposit": {
     "title": "Deposit",
+    "tabs": {
+      "crypto": "Crypto",
+      "fiat": "Fiat"
+    },
     "deposit_more": "More",
     "deposit_channel": "Deposit Channel",
     "deposit_amount": "Deposit Amount",

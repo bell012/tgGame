@@ -8,7 +8,7 @@
         :class="getTabClass(tab)"
         @click.stop="setActiveTab(tab)"
       >
-        <span>{{ tab }}</span>
+        <span>{{ getTabLabel(tab) }}</span>
       </button>
     </div>
 
@@ -23,6 +23,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import personalCenterCryptoPanel from './personalCenterCryptoPanel.vue'
 import personalCenterFiatPanel from './personalCenterFiatPanel.vue'
 
@@ -32,6 +33,7 @@ const emit = defineEmits<{
   hidden: [val: boolean]
 }>()
 
+const { t } = useI18n()
 const depositTabs: DepositTabType[] = ['Crypto', 'Fiat']
 const selectTab = ref<DepositTabType>('Crypto')
 
@@ -46,6 +48,10 @@ const getTabClass = (tab: DepositTabType) => {
 const setActiveTab = (tab: DepositTabType) => {
   selectTab.value = tab
 }
+
+// 获取标签页国际化文案
+const getTabLabel = (tab: DepositTabType) =>
+  t(tab === 'Crypto' ? 'deposit.tabs.crypto' : 'deposit.tabs.fiat')
 
 // 处理隐藏状态事件
 const handleHidden = (val: boolean) => {
