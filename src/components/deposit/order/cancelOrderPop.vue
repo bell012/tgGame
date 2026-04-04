@@ -47,9 +47,10 @@
             </div>
             <!-- 确认取消按钮 -->
             <button
-              :disabled="disabledConfirm"
+              :disabled="!canSubmitCancel"
               class="mt-5 sm:mt-6 h-10 sm:h-12 w-full rounded-lg text-text-4 text-sm font-bold flex items-center justify-center"
-              :class="[disabledConfirm ? 'btn-primary' : 'bg-theme-2 cursor-not-allowed']"
+              :class="[canSubmitCancel ? 'btn-primary' : 'bg-theme-2 cursor-not-allowed']"
+              @click="handleConfirmCancel"
             >
               <!-- 倒计时插槽 -->
               <CountDown v-if="!disabledConfirm" :time="countdownTime" @finish="onCountDownFinish">
@@ -71,18 +72,21 @@
   </teleport>
 </template>
 <script setup lang="ts">
-import { CountDown } from 'vant'
-import { useI18n } from 'vue-i18n'
+import Api from '@/api'
+import type { QueryPayOrderByOrderIdResult } from '@/api/interface/wallet'
 import CloseIcon from '@/static/svg/close.svg?component'
-import { ref } from 'vue'
 import RadioCheckedIcon from '@/static/svg/radio-checked-hollow.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
+import { CountDown, showToast } from 'vant'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 interface Props {
   modelValue: boolean
+  orderId?: string | number
 }
-defineProps<Props>()
+const props = defineProps<Props>()
 interface cancellationType {
   id: string
   text: string
@@ -90,19 +94,28 @@ interface cancellationType {
 
 const emit = defineEmits<{
   'update:modelValue': [val: boolean]
+  'cancel-success': [detail: QueryPayOrderByOrderIdResult]
 }>()
 
-const countdownTime = ref<number>(60 * 1000)
+const countdownTime = ref<number>(4 * 1000)
 const disabledConfirm = ref<boolean>(false)
-const cancellationId = ref<string>('')
-const cancellations = ref<cancellationType[]>([
+const isSubmitting = ref<boolean>(false)
+const cancellations: cancellationType[] = [
   { id: '1', text: 'I changed my mind' },
   { id: '2', text: 'Payment QR code expired' },
-  { id: '3', text: 'I want to place a new order' },
-  { id: '11', text: 'Copy I changed my mind' },
-  { id: '22', text: 'Copy Payment QR code expired' },
-  { id: '33', text: 'Copy I want to place a new order' }
-])
+  { id: '3', text: 'I want to place a new order' }
+]
+const cancellationId = ref<string>(cancellations[0]?.id ?? '')
+const selectedCancellationText = computed(
+  () => cancellations.find(item => item.id === cancellationId.value)?.text ?? ''
+)
+const canSubmitCancel = computed(
+  () =>
+    disabledConfirm.value &&
+    !!selectedCancellationText.value &&
+    !!props.orderId &&
+    !isSubmitting.value
+)
 
 // 关闭取消订单弹窗
 const handleClose = () => {
@@ -118,6 +131,47 @@ const onCountDownFinish = () => {
 const selectlation = (lation: cancellationType) => {
   if (!lation || !lation.id) return
   cancellationId.value = lation.id
+}
+
+// 确认取消订单并查询最新订单结果
+const handleConfirmCancel = async () => {
+  if (!canSubmitCancel.value) return
+
+  const orderId = props.orderId
+  if (!orderId) return
+
+  isSubmitting.value = true
+  try {
+    const cancelResponse = await Api.wallet.cancelPayOrderStatus({
+      orderId,
+      backNote: selectedCancellationText.value
+    })
+
+    if (!cancelResponse?.success) {
+      showToast({
+        message: cancelResponse?.message || 'Cancel failed',
+        type: 'fail'
+      })
+      return
+    }
+
+    const queryResponse = await Api.wallet.queryPayOrderByOrderId({ orderId })
+    const detail = queryResponse?.success ? queryResponse.result : undefined
+    if (!detail) {
+      showToast({
+        message: queryResponse?.message || 'Query order failed',
+        type: 'fail'
+      })
+      return
+    }
+
+    emit('cancel-success', detail)
+    emit('update:modelValue', false)
+  } catch (error) {
+    console.error('cancelPayOrderStatus failed', error)
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 <style scoped lang="scss">

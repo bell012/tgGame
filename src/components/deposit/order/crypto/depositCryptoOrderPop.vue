@@ -15,10 +15,10 @@
 <script setup lang="ts">
 import type { QueryPayOrderByOrderIdResult } from '@/api/interface/wallet'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import depositPopShell from '../../shared/depositPopShell.vue'
-import orderCryptoPanel from './orderCryptoPanel.vue'
 import type { CryptOrderType } from '../orderType'
+import orderCryptoPanel from './orderCryptoPanel.vue'
 
 interface Props {
   modelValue: boolean
@@ -26,7 +26,7 @@ interface Props {
 }
 
 const isMobile = useIsMobile()
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:modelValue': [val: boolean]
@@ -36,8 +36,18 @@ const emit = defineEmits<{
 
 const hiddenPop = ref<boolean>(false)
 
+watch(
+  () => props.modelValue,
+  isVisible => {
+    if (isVisible) {
+      hiddenPop.value = false
+    }
+  }
+)
+
 // 关闭弹窗并同步关闭事件
 const handleClose = () => {
+  hiddenPop.value = false
   emit('update:modelValue', false)
   emit('close')
 }
@@ -45,6 +55,6 @@ const handleClose = () => {
 // 切换隐藏状态并通知父组件
 const handleHidden = () => {
   emit('hidden')
-  hiddenPop.value = !hiddenPop.value
+  hiddenPop.value = true
 }
 </script>
