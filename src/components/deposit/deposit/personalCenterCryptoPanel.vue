@@ -279,7 +279,7 @@ import { useI18n } from 'vue-i18n'
 import depositCryptoOrderPop from '../order/crypto/depositCryptoOrderPop.vue'
 import { usePresetGrid } from '../shared/usePresetGrid'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const emit = defineEmits<{
   hidden: [value: boolean]
@@ -379,7 +379,16 @@ const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <
 // 解析渠道名称中的中文文案
 const parseChannelName = (subColumnName: string) => {
   try {
-    return JSON.parse(subColumnName)?.zh || subColumnName
+    const parsedName = JSON.parse(subColumnName)
+    const localeKey = String(locale.value || 'eng')
+
+    return (
+      parsedName?.[localeKey] ||
+      parsedName?.eng ||
+      parsedName?.en ||
+      parsedName?.zh ||
+      subColumnName
+    )
   } catch {
     return subColumnName
   }

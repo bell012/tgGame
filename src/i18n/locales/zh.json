@@ -548,6 +548,10 @@
   },
   "deposit": {
     "title": "充值",
+    "tabs": {
+      "crypto": "数字币",
+      "fiat": "法币"
+    },
     "deposit_more": "更多",
     "deposit_channel": "充值渠道",
     "deposit_amount": "充值金额",
