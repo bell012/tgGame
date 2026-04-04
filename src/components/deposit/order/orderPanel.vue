@@ -259,6 +259,7 @@
 <script setup lang="ts">
 import type { QueryPayOrderByOrderIdResult } from '@/api/interface/wallet'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { getOrderStatusText, normalizeOrderStatusCode } from '@/constants/orderStatus'
 import CloseIcon from '@/static/svg/close.svg?component'
 import CryptoOrderCountdownIcon from '@/static/svg/deposit/crypto-order-countdown.svg?component'
 import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifying.svg?component'
@@ -316,21 +317,6 @@ const parseNetworkName = (subColumnName?: unknown) => {
   } catch {
     return subColumnName
   }
-}
-
-const mapOrderStatusText = (status?: number | string) => {
-  const normalized = Number(status)
-  if (Number.isFinite(normalized)) {
-    if (normalized === 1) return 'Success'
-    if (normalized === 2) return 'Failed'
-    return 'Processing'
-  }
-
-  if (status === 'Success' || status === 'Failed' || status === 'Processing') {
-    return status
-  }
-
-  return 'Processing'
 }
 
 const rawOrderInfo = computed(() => props.orderInfo as Partial<QueryPayOrderByOrderIdResult>)
@@ -408,15 +394,19 @@ const cryptoRate = computed(() => {
   if (!accountCurrency || !currency) return rateValue
   return `1${accountCurrency}≈${rateValue}${currency}`
 })
-const fiatStatusStyleMap: Record<string, CSSProperties> = {
-  Success: { color: 'var(--color-assist-green)' },
-  Failed: { color: 'var(--color-assist-red)' },
-  Processing: { color: 'var(--color-assist-blue)' }
+const fiatStatusStyleMap: Record<number, CSSProperties> = {
+  1: { color: 'var(--color-assist-green)' },
+  2: { color: 'var(--color-assist-red)' }
 }
 
 // 根据法币订单状态返回对应的文字样式
-const getFiatStatusStyle = (status: string) =>
-  fiatStatusStyleMap[status] || { color: 'var(--color-theme-level-1)' }
+const getFiatStatusStyle = (status: number | string | undefined) => {
+  const normalizedStatus = normalizeOrderStatusCode('deposit', status)
+  if (normalizedStatus !== undefined && fiatStatusStyleMap[normalizedStatus]) {
+    return fiatStatusStyleMap[normalizedStatus]
+  }
+  return { color: 'var(--color-assist-blue)' }
+}
 
 const panelHeightClass = computed(() => {
   if (isFiatOrder.value) return 'sm:max-h-[491px]'
@@ -497,7 +487,7 @@ const cryptoCompletedRows = computed<DetailRowItem[]>(() => {
 const fiatSummaryRows = computed<DetailRowItem[]>(() => {
   if (!fiatOrderInfo.value) return []
 
-  const fiatStatus = mapOrderStatusText(fiatOrderInfo.value.status)
+  const fiatStatus = getOrderStatusText('deposit', fiatOrderInfo.value.status, t)
 
   return compactRows([
     fiatOrderInfo.value.currency
@@ -511,7 +501,7 @@ const fiatSummaryRows = computed<DetailRowItem[]>(() => {
     {
       label: 'Order Status',
       value: fiatStatus,
-      valueStyle: getFiatStatusStyle(fiatStatus)
+      valueStyle: getFiatStatusStyle(fiatOrderInfo.value.status)
     },
     {
       label: 'Order No.',
