@@ -170,6 +170,7 @@ import type {
 } from '@/api/interface/wallet'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { isOrderTerminalStatus } from '@/constants/orderStatus'
 import { resolvePayChannelTabKey } from '@/constants/payChannelTabs'
 import addBonusBadgeBg from '@/static/img/deposit/add-bonus-badge.png'
 import {
@@ -375,21 +376,6 @@ const syncSelectedDiscountItem = () => {
   selectedDiscountItem.value = findDiscountItemByAmount(amount.value)
 }
 
-// 映射订单状态文案
-const mapOrderStatusText = (status?: number | string) => {
-  const normalized = Number(status)
-  if (normalized === 1) return 'Success'
-  if (normalized === 2) return 'Failed'
-  if (normalized === 3) return 'Processing'
-  return 'Processing'
-}
-
-// 判断订单是否为终态（成功或失败）
-const isTerminalOrderStatus = (status?: number | string) => {
-  const normalized = Number(status)
-  return normalized === 1 || normalized === 2
-}
-
 // 格式化订单时间
 const formatTimestamp = (timestamp?: number) => {
   if (!timestamp) return ''
@@ -407,7 +393,7 @@ const applyOrderDetail = (detail: QueryPayOrderByOrderIdResult) => {
     currency: detail.currency || getCurrentCurrency(),
     bonus: String(detail.returnAmount ?? 0),
     type: 'Fiat',
-    status: mapOrderStatusText(detail.status)
+    status: String(detail.status ?? 0)
   }
   orderPopShow.value = true
 }
@@ -430,7 +416,7 @@ const queryOrderDetail = async () => {
     if (!detail) return
 
     applyOrderDetail(detail)
-    if (isTerminalOrderStatus(detail.status)) {
+    if (isOrderTerminalStatus('deposit', detail.status)) {
       stopOrderPolling()
     }
   } catch (error) {
@@ -679,7 +665,7 @@ const doDeposit = async () => {
       currency: getCurrentCurrency(),
       bonus: '0',
       type: 'Fiat',
-      status: mapOrderStatusText(3)
+      status: '3'
     }
     orderPopShow.value = true
 

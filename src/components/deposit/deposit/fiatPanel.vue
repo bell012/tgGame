@@ -151,6 +151,7 @@ import type {
   SubmitPayOrderPageForm
 } from '@/api/interface/wallet'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { isOrderTerminalStatus } from '@/constants/orderStatus'
 import { resolvePayChannelTabKey } from '@/constants/payChannelTabs'
 import addBonusBadgeBg from '@/static/img/deposit/add-bonus-badge.png'
 import gCashIcon from '@/static/img/payment/gCash.png'
@@ -340,19 +341,6 @@ const syncSelectedDiscountItem = () => {
   selectedDiscountItem.value = findDiscountItemByAmount(amount.value)
 }
 
-const mapOrderStatusText = (status?: number | string) => {
-  const normalized = Number(status)
-  if (normalized === 1) return 'Success'
-  if (normalized === 2) return 'Failed'
-  if (normalized === 3) return 'Processing'
-  return 'Processing'
-}
-
-const isTerminalOrderStatus = (status?: number | string) => {
-  const normalized = Number(status)
-  return normalized === 1 || normalized === 2
-}
-
 const formatTimestamp = (timestamp?: number) => {
   if (!timestamp) return ''
   return new Date(timestamp).toLocaleString()
@@ -368,7 +356,7 @@ const applyOrderDetail = (detail: QueryPayOrderByOrderIdResult) => {
     currency: detail.currency || getCurrentCurrency(),
     bonus: String(detail.returnAmount ?? 0),
     type: 'Fiat',
-    status: mapOrderStatusText(detail.status)
+    status: String(detail.status ?? 0)
   }
   orderPopShow.value = true
 }
@@ -389,7 +377,7 @@ const queryOrderDetail = async () => {
     if (!detail) return
 
     applyOrderDetail(detail)
-    if (isTerminalOrderStatus(detail.status)) {
+    if (isOrderTerminalStatus('deposit', detail.status)) {
       stopOrderPolling()
     }
   } catch (error) {
@@ -622,7 +610,7 @@ const doDeposit = async () => {
       currency: getCurrentCurrency(),
       bonus: '0',
       type: 'Fiat',
-      status: mapOrderStatusText(3)
+      status: '3'
     }
     orderPopShow.value = true
     emit('hidden', true)
