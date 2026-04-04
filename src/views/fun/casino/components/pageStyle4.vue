@@ -14,6 +14,7 @@
         :key="item.rowId"
         href="javascript:void(0);"
         class="flex h-16 shrink-0 items-center justify-center rounded-lg bg-bg-2"
+        @click="handleClick(item)"
       >
         <gameErrImg class="h-6 w-4/5 sm:h-11" :img="getBrandImg(item)" />
       </a>
@@ -62,6 +63,7 @@
 </template>
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
 import type { GameBrandItem } from '@/api/interface/game'
 import type { GameQueryOptions } from '@/stores/game'
@@ -104,6 +106,21 @@ const goPrev = () => {
 
 const goNext = () => {
   page.value = Math.min(Math.max(1, page.value + 1), Math.max(1, totalPages.value))
+}
+
+const handleClick = (item: GameBrandItem) => {
+  const brandCode = String(item.brandCode || '').trim()
+
+  if (!brandCode) {
+    return
+  }
+
+  navigateToName('brandGameList', {
+    params: { brandCode },
+    query: {
+      brandName: item.brandName?.trim() || undefined
+    }
+  })
 }
 
 const getBrandData = async () => {

@@ -8,7 +8,7 @@
         </div>
       </div>
     </div>
-    <div class="text-center text-[12px] mt-[16px]">
+    <div class="play-now-hint text-center text-[12px] mt-[14px]">
       {{ t('gameDetail.playNowHint') }}
     </div>
     <button type="button" class="play-btn w-full mt-[14px] cursor-pointer" @click="gamePlay">
@@ -50,7 +50,9 @@ const { t } = useI18n()
 }
 
 .form-label {
+  flex: 0 0 auto;
   width: 132px;
+  white-space: nowrap;
   color: var(--color-text-level-1);
   font-size: 13px;
   font-weight: 600;
@@ -59,6 +61,7 @@ const { t } = useI18n()
 
 .form-control {
   flex: 1;
+  min-width: 0;
   height: 36px;
   border-radius: 8px;
   background: var(--color-background-level-2);
@@ -237,5 +240,26 @@ const { t } = useI18n()
   align-items: center;
   gap: 4px;
   border: none;
+}
+
+.play-now-hint {
+  color: var(--color-text-level-2);
+  line-height: 16px;
+}
+
+:global(:root.light) .currency-info-container .form-label {
+  color: #1c2838;
+}
+
+:global(:root.light) .currency-info-container .form-control {
+  background: #fff;
+  border: none;
+  box-shadow:
+    0 3px 10px rgba(26, 40, 64, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+:global(:root.light) .currency-info-container .play-now-hint {
+  color: #4f5f76;
 }
 </style>
