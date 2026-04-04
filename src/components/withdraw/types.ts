@@ -7,6 +7,8 @@ export interface WithdrawSubmitPayload {
   amount: number
   currencyCode?: string
   methodLabel: string
+  paymentCode?: string | number
+  accountRowId?: string | number
   phoneNumber?: string
   accountName?: string
   address?: string
