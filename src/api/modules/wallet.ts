@@ -1,4 +1,6 @@
 import type {
+  CancelPayOrderStatusForm,
+  CancelPayOrderStatusResponse,
   PayRechargeQuickAmtsForm,
   PayRechargeQuickAmtsResponse,
   QueryDiscountListForm,
@@ -94,6 +96,17 @@ export function queryPayOrderByOrderId(
 export function submitPayOrder(data: SubmitPayOrderPageForm): Promise<SubmitPayOrderResponse> {
   return request({
     url: '/pc/submitPayOrder',
+    method: 'post',
+    data
+  })
+}
+
+// 取消支付订单状态
+export function cancelPayOrderStatus(
+  data: CancelPayOrderStatusForm
+): Promise<CancelPayOrderStatusResponse> {
+  return request({
+    url: '/pc/cancelPayOrderStatus',
     method: 'post',
     data
   })

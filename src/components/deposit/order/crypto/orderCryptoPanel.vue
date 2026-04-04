@@ -209,7 +209,20 @@
   </div>
 
   <!-- 取消订单弹窗 -->
-  <cancelOrderPop v-if="cancelOrderPopShow" v-model="cancelOrderPopShow" />
+  <cancelOrderPop
+    v-if="cancelOrderPopShow"
+    v-model="cancelOrderPopShow"
+    :order-id="cryptoOrderNo"
+    @cancel-success="handleCancelSuccess"
+  />
+  <!-- 取消后订单结果弹窗 -->
+  <depositCryptoResultPop
+    v-model:model-value="cancelResultPopShow"
+    :order-info="cancelResultOrderInfo"
+    :method-icon="cryptoMethodIcon"
+    :order-status="cancelResultStatus"
+    @close="handleCancelResultClose"
+  />
   <!-- 上传凭证弹窗 -->
   <uploadProofPop
     v-model="uploadPopShow"
@@ -238,6 +251,7 @@ import type { DetailRowItem } from '../orderDetailRows.vue'
 import orderDetailRows from '../orderDetailRows.vue'
 import orderStatusResult from '../orderStatusResult.vue'
 import type { CryptOrderType } from '../orderType'
+import depositCryptoResultPop from './depositCryptoResultPop.vue'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
@@ -253,6 +267,9 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 const targetRef = ref<HTMLElement | null>(null)
 const countdownTime = ref(15 * 60 * 1000)
 const cancelOrderPopShow = ref<boolean>(false)
+const cancelResultPopShow = ref<boolean>(false)
+const cancelResultOrderInfo = ref<Partial<QueryPayOrderByOrderIdResult>>({})
+const cancelResultStatus = ref<'Completed' | 'Cancelled'>('Cancelled')
 const uploadPopShow = ref<boolean>(false)
 const confirmUploadStatus = ref<'not_started' | 'in_progress' | 'completed'>('not_started')
 const orderStatus = ref<'Completed' | 'Cancelled'>('Completed')
@@ -477,6 +494,20 @@ const doCapture = async () => {
 // 打开取消订单确认弹窗
 const doCancelOrder = () => {
   cancelOrderPopShow.value = true
+}
+
+// 处理取消订单成功并展示订单结果弹窗
+const handleCancelSuccess = (detail: QueryPayOrderByOrderIdResult) => {
+  emit('hidden')
+  cancelResultStatus.value = 'Cancelled'
+  cancelResultOrderInfo.value = detail
+  cancelResultPopShow.value = true
+}
+
+// 关闭取消结果弹窗并同步关闭当前订单弹窗
+const handleCancelResultClose = () => {
+  cancelResultPopShow.value = false
+  emit('close')
 }
 
 // 复制文本到剪贴板并提示成功
