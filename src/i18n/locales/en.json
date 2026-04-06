@@ -82,7 +82,9 @@
     "apply": "Apply",
     "internalServerError": "Internal Server Error",
     "unknownError": "Unknown Error",
-    "sessionExpired": "Session expired, please log in again"
+    "sessionExpired": "Session expired, please log in again",
+    "globalSetting": "Global Setting",
+    "security": "Security"
   },
   "pwa": {
     "offlineReady": "App ready to work offline",

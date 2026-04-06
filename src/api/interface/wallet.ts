@@ -123,6 +123,7 @@ export interface SubmitPayOrderPageForm {
   channelId: number
   subColumnCode: number
   flows: number
+  discount?: number
 }
 
 export interface SubmitPayOrderResult {
