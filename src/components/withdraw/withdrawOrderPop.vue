@@ -59,7 +59,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import type { WithdrawOrderStatus } from './types'
+import type { WithdrawOrderStatus } from './shared/types'
 import withdrawPopShell from './withdrawPopShell.vue'
 import withdrawOrderContent from './withdrawOrderContent.vue'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'

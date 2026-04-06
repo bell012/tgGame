@@ -108,7 +108,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
-import type { WithdrawOrderStatus } from './types'
+import type { WithdrawOrderStatus } from './shared/types'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import ProcessingIcon from '@/static/svg/deposit/record.svg?component'
 import CheckIcon from '@/static/svg/login/check.svg?component'
