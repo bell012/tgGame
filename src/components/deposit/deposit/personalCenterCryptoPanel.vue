@@ -376,6 +376,19 @@ const amountPlaceholder = computed(() =>
 )
 const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
 
+// 获取当前选中充值金额对应的优惠比例
+const resolveSelectedDiscountRatio = () => {
+  const normalizedAmount = Number(amount.value)
+  if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) return undefined
+
+  const matchedDiscount = selectedDiscountItem.value?.discounts?.find(
+    discount => Number(discount.amount) === normalizedAmount
+  )
+  const ratio = Number(matchedDiscount?.ratio)
+
+  return Number.isFinite(ratio) && ratio > 0 ? ratio : undefined
+}
+
 // 解析渠道名称中的中文文案
 const parseChannelName = (subColumnName: string) => {
   try {
@@ -655,6 +668,11 @@ const doDeposit = async () => {
     // 取
     subColumnCode: selectedSubColumn.value?.rowId ?? selectedSubColumn?.value.rowId,
     flows: selectedDiscountItem.value?.multiple ?? 0
+  }
+
+  const discount = resolveSelectedDiscountRatio()
+  if (discount !== undefined) {
+    param.discount = discount
   }
 
   try {
