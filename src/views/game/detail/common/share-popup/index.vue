@@ -34,7 +34,7 @@
             </button>
           </div>
           <div class="px-4 pb-4">
-            <div class="tp-content rounded-[10px] px-4 py-[18px]">
+            <div class="rounded-[10px] px-4 py-[18px]">
               <div class="text-[14px]/[20px] text-[var(--color-text-level-1)]">
                 {{ t('gameDetail.shareInviteHint') }}
               </div>
@@ -314,13 +314,9 @@ const handleCopy = async () => {
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
 }
 
-.tp-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.tp-content {
-  background: rgba(255, 255, 255, 0.06);
-}
+// .tp-header {
+//   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+// }
 
 @include popup-transition;
 
