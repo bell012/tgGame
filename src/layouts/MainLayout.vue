@@ -20,7 +20,7 @@
     <!-- 主内容区 -->
     <main class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out" :style="mainStyle">
       <!-- 主内容容器 -->
-      <div class="flex min-h-full items-start gap-4 p-0 px-[14px] sm:p-0 lg:p-4">
+      <div class="flex min-h-full items-start gap-4">
         <!-- 路由内容区域 -->
         <section class="min-w-0 flex-1">
           <!-- 主内容背景页 -->
