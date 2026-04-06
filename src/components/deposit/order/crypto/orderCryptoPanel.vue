@@ -261,7 +261,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['close', 'hidden'])
+const emit = defineEmits<{
+  close: []
+  hidden: [value: boolean]
+}>()
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const targetRef = ref<HTMLElement | null>(null)
@@ -441,9 +444,11 @@ const handleClose = () => {
   emit('close')
 }
 
-// 关闭上传凭证弹窗时同步通知父组件隐藏外层弹窗
+// 桌面端关闭上传凭证弹窗时恢复外层订单弹窗
 const handleUploadProofClose = () => {
-  emit('hidden')
+  if (!isMobile.value) {
+    emit('hidden', false)
+  }
 }
 
 // 上传凭证确认后切换到“上传中”状态
@@ -451,9 +456,11 @@ const handleConfirmUpload = () => {
   confirmUploadStatus.value = 'in_progress'
 }
 
-// 打开上传凭证弹窗并先隐藏当前弹窗
+// H5 直接叠加子弹窗，桌面端先隐藏当前订单弹窗
 const openUploadPop = () => {
-  emit('hidden')
+  if (!isMobile.value) {
+    emit('hidden', true)
+  }
   uploadPopShow.value = true
 }
 
@@ -501,7 +508,7 @@ const doCancelOrder = () => {
 
 // 处理取消订单成功并展示订单结果弹窗
 const handleCancelSuccess = (detail: QueryPayOrderByOrderIdResult) => {
-  emit('hidden')
+  emit('hidden', false)
   cancelResultStatus.value = 'Cancelled'
   cancelResultOrderInfo.value = detail
   cancelResultPopShow.value = true
