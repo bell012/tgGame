@@ -26,48 +26,60 @@
       </div>
     </div>
     <div class="mt-6 grid grid-cols-2 gap-5">
-      <div>
-        <div class="text-sm font-bold leading-normal">{{ t('withdraw.phone_number') }}</div>
-        <div
-          class="mt-2 p-3 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
-        >
-          <input
-            type="text"
-            v-model="phoneNumber"
-            :placeholder="t('withdraw.phone_placeholder')"
-            class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs sm:placeholder:text-sm"
-          />
+      <div class="relative">
+        <div class="flex items-center justify-between text-sm font-bold leading-normal">
+          <span>{{ t('withdraw.e_wallet_address') }}</span>
           <button
-            v-show="phoneNumber !== ''"
-            class="w-6 h-6 bg-opacity-10 rounded-md sm:flex items-center justify-center z-10"
-            @click="phoneNumber = ''"
+            v-if="selectedAccount"
+            type="button"
+            class="flex items-center text-sm font-normal text-text-1"
+            @click="openAccountList"
           >
-            <CloseIcon class="w-4 h-4" />
+            {{ t('withdraw.change') }}
+            <ChevronRightSmallIcon class="ml-1 h-2 w-1" />
           </button>
         </div>
-      </div>
-      <div>
-        <div class="text-sm font-bold leading-normal">{{ t('withdraw.name') }}</div>
-        <div
-          class="mt-2 p-3 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
-        >
-          <input
-            type="text"
-            v-model="accountName"
-            :placeholder="t('withdraw.name_placeholder')"
-            class="flex-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs sm:placeholder:text-sm"
-          />
+        <div class="relative mt-2">
           <button
-            v-show="accountName !== ''"
-            class="w-6 h-6 bg-opacity-10 rounded-md sm:flex items-center justify-center z-10"
-            @click="accountName = ''"
+            v-if="!selectedAccount"
+            type="button"
+            class="flex h-12 w-full items-center justify-center rounded-lg border border-dashed border-theme-primary text-base font-bold text-theme-primary"
+            @click="openAccountList"
           >
-            <CloseIcon class="w-4 h-4" />
+            <AddPlusIcon class="mr-2 h-4 w-4 text-current" />
+            {{ t('withdraw.add_e_wallet') }}
           </button>
+          <button
+            v-else
+            type="button"
+            class="flex w-full items-center rounded-lg bg-opacity-6 p-3 text-left"
+            @click="openAccountList"
+          >
+            <div class="mr-2 h-6 w-6 shrink-0 overflow-hidden rounded-full">
+              <gameErrImg
+                :img="{ src: selectedMethod.icon, maintain: false, fit: 'contain' }"
+                class="h-full w-full"
+              />
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-base font-semibold leading-normal text-text-1">
+                {{ selectedAccount.accountNo }}
+              </p>
+            </div>
+          </button>
+
+          <withdrawFiatAccountListPop
+            v-model="accountListVisible"
+            :items="availableAccounts"
+            :selected-id="selectedAccount?.localId"
+            :icon="selectedMethod.icon"
+            @select="handleSelectAccount"
+            @add="openAddAccount"
+          />
         </div>
       </div>
     </div>
-    <div class="mt-6">
+    <div class="mt-6 grid grid-cols-2 gap-5">
       <div>
         <div class="flex items-center justify-between">
           <div class="text-sm font-bold leading-normal">{{ t('withdraw.amount') }}</div>
@@ -97,38 +109,40 @@
             <CloseIcon class="w-4 h-4" />
           </button>
         </div>
-        <div v-if="quickAmounts.length" class="mt-4 w-full relative">
-          <div
-            ref="presetsRef"
-            class="grid grid-cols-6 gap-2 rounded-tl-lg rounded-tr-lg bg-bg-4 p-2 transition-all duration-300"
-            :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[104px] overflow-hidden'"
+      </div>
+    </div>
+    <div class="mt-4">
+      <div v-if="quickAmounts.length" class="w-full relative">
+        <div
+          ref="presetsRef"
+          class="grid grid-cols-6 gap-2 rounded-tl-lg rounded-tr-lg bg-bg-4 p-2 transition-all duration-300"
+          :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[104px] overflow-hidden'"
+        >
+          <button
+            v-for="(item, index) in quickAmounts"
+            :key="`${item.amount ?? index}`"
+            type="button"
+            class="rounded-lg py-2.5 text-sm font-semibold lg:hover:bg-theme-primary"
+            :class="[
+              Number(item.amount ?? 0) === Number(amount ?? 0)
+                ? 'bg-theme-primary text-text-4'
+                : 'bg-bg-2 text-text-1'
+            ]"
+            @click="applyQuickAmount(item)"
           >
-            <button
-              v-for="(item, index) in quickAmounts"
-              :key="`${item.amount ?? index}`"
-              type="button"
-              class="rounded-lg py-2.5 text-sm font-semibold lg:hover:bg-theme-primary"
-              :class="[
-                Number(item.amount ?? 0) === Number(amount ?? 0)
-                  ? 'bg-theme-primary text-text-4'
-                  : 'bg-bg-2 text-text-1'
-              ]"
-              @click="applyQuickAmount(item)"
-            >
-              {{ formatQuickAmount(item.amount) }}
-            </button>
-          </div>
-          <div v-if="showExpandButton" class="w-full rounded-bl-lg rounded-br-lg bg-bg-4 py-2">
-            <button
-              type="button"
-              class="mx-auto flex items-center gap-1 text-xs text-text-3 transition lg:hover:text-text-1"
-              @click="expanded = !expanded"
-            >
-              {{ expanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}
-              <ExpandUpDoubleIcon v-if="expanded" class="h-2 w-[9px]" />
-              <ExpandDownDoubleIcon v-else class="h-2 w-[9px]" />
-            </button>
-          </div>
+            {{ formatQuickAmount(item.amount) }}
+          </button>
+        </div>
+        <div v-if="showExpandButton" class="w-full rounded-bl-lg rounded-br-lg bg-bg-4 py-2">
+          <button
+            type="button"
+            class="mx-auto flex items-center gap-1 text-xs text-text-3 transition lg:hover:text-text-1"
+            @click="expanded = !expanded"
+          >
+            {{ expanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}
+            <ExpandUpDoubleIcon v-if="expanded" class="h-2 w-[9px]" />
+            <ExpandDownDoubleIcon v-else class="h-2 w-[9px]" />
+          </button>
         </div>
       </div>
     </div>
@@ -140,33 +154,52 @@
     >
       {{ t('withdraw.withdraw_now') }}
     </button>
+    <withdrawFiatAddAccountPop
+      v-model="addAccountVisible"
+      v-model:account-no="pendingAccountNo"
+      v-model:account-name="pendingAccountName"
+      @close="closeAddAccount"
+      @confirm="confirmAddAccount"
+    />
   </div>
 </template>
 <script setup lang="ts">
-import CloseIcon from '@/static/svg/close.svg?component'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
+import gameErrImg from '@/components/common/gameErrImg.vue'
+import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
+import CloseIcon from '@/static/svg/close.svg?component'
 import { computed, type ComponentPublicInstance, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FastAmountItem } from '@/api/interface/withdraw'
 import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
-import type { WithdrawSubmitPayload } from './types'
-import { useWithdrawFiat } from './useWithdrawFiat'
+import withdrawFiatAccountListPop from './withdrawFiatAccountListPop.vue'
+import withdrawFiatAddAccountPop from './withdrawFiatAddAccountPop.vue'
+import type { WithdrawSubmitPayload } from './shared/types'
+import { useWithdrawFiat } from './shared/useWithdrawFiat'
 
 const { t } = useI18n()
 const {
-  accountName,
+  accountListVisible,
   amount,
   applyQuickAmount,
+  availableAccounts,
+  addAccountVisible,
+  closeAddAccount,
+  confirmAddAccount,
   currentCurrency,
   currencySymbol,
   formattedBalance,
   isAmountDisabled,
   isWithdrawDisabled,
+  openAccountList,
+  openAddAccount,
   payMethods,
-  phoneNumber,
+  pendingAccountName,
+  pendingAccountNo,
   quickAmounts,
+  handleSelectAccount,
   selectedAccount,
   selectedMethod,
   selectMethod: selectMethodOption
@@ -240,8 +273,8 @@ const doWithdrawDeposit = () => {
     methodLabel: selectedMethod.value.name,
     paymentCode: selectedMethod.value.paymentCode,
     accountRowId: selectedAccount.value?.rowId,
-    phoneNumber: phoneNumber.value,
-    accountName: accountName.value
+    phoneNumber: selectedAccount.value?.accountNo,
+    accountName: selectedAccount.value?.accountName
   })
 }
 </script>

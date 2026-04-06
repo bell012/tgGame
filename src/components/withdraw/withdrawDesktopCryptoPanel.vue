@@ -37,7 +37,7 @@
       </button>
     </div>
     <div class="mt-6 grid grid-cols-2 gap-5">
-      <div>
+      <div class="relative">
         <div class="text-sm font-bold leading-normal">{{ t('withdraw.withdraw_currency') }}</div>
         <CustomSelect
           class="mt-2 w-full"
@@ -47,7 +47,7 @@
           @disabled-click="showUnavailableToast"
         />
       </div>
-      <div>
+      <div class="relative">
         <div class="text-sm font-bold leading-normal">{{ t('withdraw.select_network') }}</div>
         <CustomSelect
           class="mt-2 w-full"
@@ -59,16 +59,53 @@
       </div>
     </div>
     <div class="mt-6 grid grid-cols-2 gap-5">
-      <div>
-        <div class="text-sm font-bold leading-normal">{{ t('withdraw.receive_address') }}</div>
-        <div
-          class="mt-2 p-3 rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
-        >
-          <input
-            type="text"
-            v-model="address"
-            :placeholder="t('withdraw.receive_address_placeholder')"
-            class="w-full text-sm bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs sm:placeholder:text-sm"
+      <div class="relative">
+        <div class="flex items-center justify-between text-sm font-bold leading-normal">
+          <span>{{ t('withdraw.receive_crypto') }}</span>
+          <button
+            v-if="hasSelectedReceiveAddress"
+            type="button"
+            class="flex items-center text-sm font-normal text-text-1"
+            @click="handleChangeReceiveAddress"
+          >
+            {{ t('withdraw.change') }}
+            <ChevronRightSmallIcon class="ml-1 h-2 w-1" />
+          </button>
+        </div>
+        <div class="relative mt-2">
+          <button
+            v-if="!hasSelectedReceiveAddress"
+            type="button"
+            class="flex h-12 w-full items-center justify-center rounded-lg border border-dashed border-theme-primary text-base font-bold text-theme-primary"
+            @click="openAddressList"
+          >
+            <AddPlusIcon class="mr-2 h-4 w-4 text-current" />
+            {{ t('withdraw.add_address', { currency: currency }) }}
+          </button>
+          <button
+            v-else
+            type="button"
+            class="flex h-12 w-full items-center rounded-lg bg-opacity-6 p-3 text-left"
+            @click="handleChangeReceiveAddress"
+          >
+            <img
+              v-if="typeof currencyOption?.icon === 'string'"
+              :src="currencyOption.icon"
+              class="mr-2 h-6 w-6 shrink-0 object-contain"
+            />
+            <div class="min-w-0 flex-1 text-sm font-semibold text-text-1">
+              <p class="truncate">{{ selectedReceiveAddress?.address }}</p>
+            </div>
+          </button>
+
+          <withdrawCryptoAddressListPop
+            v-model="addressListVisible"
+            :items="availableReceiveAddresses"
+            :selected-id="selectedReceiveAddress?.id"
+            :currency-code="currency"
+            :icon="typeof currencyOption?.icon === 'string' ? currencyOption.icon : ''"
+            @select="handleSelectReceiveAddress"
+            @add="openAddAddress"
           />
         </div>
         <div class="mt-2 flex items-center">
@@ -128,6 +165,14 @@
     >
       {{ t('withdraw.withdraw_now') }}
     </button>
+    <withdrawCryptoAddAddressPop
+      v-model="addAddressVisible"
+      v-model:input-value="pendingAddress"
+      :currency-code="currency"
+      :icon="typeof currencyOption?.icon === 'string' ? currencyOption.icon : ''"
+      @close="closeAddAddress"
+      @confirm="confirmAddAddress"
+    />
   </div>
 </template>
 <script setup lang="ts">
@@ -142,29 +187,45 @@ import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RefreshIcon from '@/static/svg/refresh.svg?component'
 import InfoIcon from '@/static/svg/info.svg?component'
-import type { WithdrawSubmitPayload } from './types'
-import { useWithdrawCrypto } from './useWithdrawCrypto'
+import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
+import withdrawCryptoAddressListPop from './withdrawCryptoAddressListPop.vue'
+import withdrawCryptoAddAddressPop from './withdrawCryptoAddAddressPop.vue'
+import type { WithdrawSubmitPayload } from './shared/types'
+import { useWithdrawCrypto } from './shared/useWithdrawCrypto'
 
 const { t } = useI18n()
 const unavailableMessage = 'Unavailable'
 const {
   address,
+  addressListVisible,
   amount,
+  availableReceiveAddresses,
+  addAddressVisible,
   coinCode,
   coinMoreShow,
   currency,
+  currencyOption,
   currencyOptions,
   currencySymbol,
+  closeAddAddress,
   currentCurrency,
+  handleChangeReceiveAddress,
+  handleSelectReceiveAddress,
+  hasSelectedReceiveAddress,
   formattedBalance,
   isAmountDisabled,
   isRefreshingBalance,
   isWithdrawDisabled,
   networkOptions,
+  openAddressList,
+  openAddAddress,
+  pendingAddress,
   refreshBalance,
+  selectedReceiveAddress,
   selectCoinCode: applySelectCoinCode,
   selectNetwork,
-  visibleCoins
+  visibleCoins,
+  confirmAddAddress
 } = useWithdrawCrypto()
 
 const emit = defineEmits<{

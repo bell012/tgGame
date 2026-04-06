@@ -22,7 +22,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import withdrawDesktopCryptoPanel from './withdrawDesktopCryptoPanel.vue'
 import withdrawDesktopFiatPanel from './withdrawDesktopFiatPanel.vue'
-import type { WithdrawSubmitPayload } from './types'
+import type { WithdrawSubmitPayload } from './shared/types'
 
 export type DepositTabType = 'Crypto' | 'Fiat'
 const { t } = useI18n()
