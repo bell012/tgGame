@@ -4,7 +4,10 @@
       <div v-if="modelValue" class="withdraw-overlay" @click="handleOverlayClose">
         <div
           class="withdraw-shell"
-          :class="{ 'withdraw-shell-full': props.fullHeight }"
+          :class="{
+            'withdraw-shell-full': props.fullHeight,
+            'withdraw-shell-bottom': props.transitionType === 'bottom-sheet'
+          }"
           @click.stop
         >
           <slot />
@@ -17,7 +20,7 @@
 <script setup lang="ts">
 interface Props {
   modelValue: boolean
-  transitionType?: 'modal' | 'drawer-slide'
+  transitionType?: 'modal' | 'drawer-slide' | 'bottom-sheet'
   fullHeight?: boolean
 }
 
@@ -56,6 +59,10 @@ const handleOverlayClose = () => {
   height: 100%;
 }
 
+.withdraw-shell-bottom {
+  align-self: flex-end;
+}
+
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 0.3s ease;
@@ -77,6 +84,11 @@ const handleOverlayClose = () => {
 }
 
 @media (min-width: 640px) {
+  .withdraw-shell {
+    width: auto;
+    max-width: 100%;
+  }
+
   .modal-enter-from .withdraw-shell,
   .modal-leave-to .withdraw-shell {
     transform: scale(0.9);
@@ -96,5 +108,30 @@ const handleOverlayClose = () => {
 .drawer-slide-enter-to,
 .drawer-slide-leave-from {
   transform: translateX(0);
+}
+
+.bottom-sheet-enter-active,
+.bottom-sheet-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.bottom-sheet-enter-from,
+.bottom-sheet-leave-to {
+  opacity: 0;
+}
+
+.bottom-sheet-enter-active .withdraw-shell,
+.bottom-sheet-leave-active .withdraw-shell {
+  transition: transform 0.3s ease;
+}
+
+.bottom-sheet-enter-from .withdraw-shell,
+.bottom-sheet-leave-to .withdraw-shell {
+  transform: translateY(100%);
+}
+
+.bottom-sheet-enter-to .withdraw-shell,
+.bottom-sheet-leave-from .withdraw-shell {
+  transform: translateY(0);
 }
 </style>

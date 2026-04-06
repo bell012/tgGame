@@ -26,6 +26,7 @@
       v-model="paymentPasswordVisible"
       :amount="amount"
       :currency-code="currencyCode"
+      :loading="isSubmitting"
       @confirm="handlePaymentPasswordConfirm"
     />
     <withdrawSmsVerificationPop
@@ -33,15 +34,16 @@
       :amount="amount"
       :currency-code="currencyCode"
       :phone-number="maskedPhoneNumber"
+      :loading="isSubmitting"
       @confirm="handleSmsVerificationConfirm"
     />
     <withdrawOrderPop
       v-model="withdrawOrderVisible"
       :status="orderStatus"
-      :amount-text="orderAmountText"
+      :amount-text="resolvedOrderAmountText"
       :order-no="orderNo"
       :created-at="createdAt"
-      :method-label="orderMethodLabel"
+      :method-label="resolvedOrderMethodLabel"
       @close="closeWithdrawOrder"
     />
   </div>
@@ -57,7 +59,7 @@ import withdrawKindReminderPop from '@/components/withdraw/withdrawKindReminderP
 import withdrawPaymentPasswordPop from '@/components/withdraw/withdrawPaymentPasswordPop.vue'
 import withdrawSmsVerificationPop from '@/components/withdraw/withdrawSmsVerificationPop.vue'
 import withdrawOrderPop from '@/components/withdraw/withdrawOrderPop.vue'
-import { useWithdrawFlow } from '@/components/withdraw/useWithdrawFlow'
+import { useWithdrawFlow } from '@/components/withdraw/shared/useWithdrawFlow'
 import WalletLayout from '../index.vue'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 
@@ -68,6 +70,7 @@ const {
   paymentPasswordVisible,
   smsVerificationVisible,
   withdrawOrderVisible,
+  isSubmitting,
   amount,
   currencyCode,
   maskedPhoneNumber,
@@ -75,6 +78,8 @@ const {
   orderStatus,
   orderNo,
   createdAt,
+  orderAmountText,
+  orderMethodLabel,
   beginWithdrawFlow,
   handleKindReminderSkip,
   handleKindReminderSettings,
@@ -83,10 +88,16 @@ const {
   closeWithdrawOrder
 } = useWithdrawFlow()
 
-const orderAmountText = computed(
+const fallbackOrderAmountText = computed(
   () => `${Number(amount.value || 0).toFixed(0)}${currencyCode.value}`
 )
-const orderMethodLabel = computed(() => activePayload.value?.methodLabel || 'USDT')
+const fallbackOrderMethodLabel = computed(() => activePayload.value?.methodLabel || 'USDT')
+const resolvedOrderAmountText = computed(
+  () => orderAmountText.value || fallbackOrderAmountText.value
+)
+const resolvedOrderMethodLabel = computed(
+  () => orderMethodLabel.value || fallbackOrderMethodLabel.value
+)
 
 const openWithdrawOrder = () => {
   if (!activePayload.value || !orderNo.value) {
