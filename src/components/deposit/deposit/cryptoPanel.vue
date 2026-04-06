@@ -348,6 +348,19 @@ const showUnavailableToast = () => {
   })
 }
 
+// 获取当前选中充值金额对应的优惠比例
+const resolveSelectedDiscountRatio = () => {
+  const normalizedAmount = Number(amount.value)
+  if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) return undefined
+
+  const matchedDiscount = selectedDiscountItem.value?.discounts?.find(
+    discount => Number(discount.amount) === normalizedAmount
+  )
+  const ratio = Number(matchedDiscount?.ratio)
+
+  return Number.isFinite(ratio) && ratio > 0 ? ratio : undefined
+}
+
 // 解析并返回 HTMLElement 节点
 const resolveHTMLElement = (el: Element | ComponentPublicInstance | null) => {
   if (el instanceof HTMLElement) return el
@@ -663,6 +676,11 @@ const doDeposit = async () => {
     channelId: isMobile.value ? 4 : 3,
     subColumnCode: selectedSubColumn.value.rowId,
     flows: selectedDiscountItem.value?.multiple ?? 0
+  }
+
+  const discount = resolveSelectedDiscountRatio()
+  if (discount !== undefined) {
+    param.discount = discount
   }
 
   try {
