@@ -153,7 +153,7 @@ const mainMenus = computed(() => [
     name: t('userMenu.globalSettings'),
     icon: getIcon(70),
     handler: () => {
-      console.log('Global Settings clicked')
+      navigateTo('/security')
       emit('update:modelValue', false)
     }
   },
