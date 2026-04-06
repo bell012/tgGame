@@ -91,7 +91,6 @@ const getQueryValue = (value: unknown) => {
 }
 
 const rowId = computed(() => getQueryValue(route.params.rowId))
-
 const currentGameDetailState = ref<CurrentGameDetail>(null)
 
 const currentGameDetail = computed<CurrentGameDetail>(() => currentGameDetailState.value)

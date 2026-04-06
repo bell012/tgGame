@@ -2,7 +2,7 @@
   <!-- 顶部搜索 -->
   <div class="currency-select-trigger relative bg-[var(--color-input-level-2)] rounded-[10px]">
     <div
-      class="text-[14px] h-[36px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px]"
+      class="text-[14px] h-[36px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px] rounded-[10px] bg-opacity-10"
       @click="visible = true"
     >
       <div class="flex gap-[10px] min-w-0">
