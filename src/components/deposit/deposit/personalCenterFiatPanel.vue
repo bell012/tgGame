@@ -376,6 +376,19 @@ const syncSelectedDiscountItem = () => {
   selectedDiscountItem.value = findDiscountItemByAmount(amount.value)
 }
 
+// 获取当前选中充值金额对应的优惠比例
+const resolveSelectedDiscountRatio = () => {
+  const normalizedAmount = Number(amount.value)
+  if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) return undefined
+
+  const matchedDiscount = selectedDiscountItem.value?.discounts?.find(
+    discount => Number(discount.amount) === normalizedAmount
+  )
+  const ratio = Number(matchedDiscount?.ratio)
+
+  return Number.isFinite(ratio) && ratio > 0 ? ratio : undefined
+}
+
 // 格式化订单时间
 const formatTimestamp = (timestamp?: number) => {
   if (!timestamp) return ''
@@ -650,6 +663,11 @@ const doDeposit = async () => {
     channelId: isMobile.value ? 4 : 3,
     subColumnCode: selectedDiscountItem.value?.rowId ?? selectedSubColumn.value.rowId,
     flows: selectedDiscountItem.value?.multiple ?? 0
+  }
+
+  const discount = resolveSelectedDiscountRatio()
+  if (discount !== undefined) {
+    param.discount = discount
   }
   try {
     const response = await Api.wallet.submitPayOrder(param)
