@@ -47,7 +47,8 @@
 
       <button
         type="button"
-        class="mt-8 hidden h-12 w-full items-center justify-center rounded-lg btn-primary text-base font-bold text-common-900 sm:flex"
+        class="mt-8 hidden h-12 w-full items-center justify-center rounded-lg btn-primary text-base font-bold text-common-900 disabled:cursor-not-allowed disabled:opacity-60 sm:flex"
+        :disabled="loading || passwordValue.length !== 6"
         @click="handleConfirmClick"
       >
         {{ t('withdraw.confirm_withdrawal') }}
@@ -77,6 +78,7 @@ interface Props {
   modelValue: boolean
   amount: number
   currencyCode: string
+  loading?: boolean
 }
 
 const props = defineProps<Props>()
@@ -120,6 +122,10 @@ const handleConfirmClick = () => {
     return
   }
 
+  if (props.loading) {
+    return
+  }
+
   emit('confirm', passwordValue.value)
   resetState()
 }
@@ -146,6 +152,10 @@ watch(passwordValue, value => {
 
   if (normalized.length === 6) {
     if (window.matchMedia('(min-width: 640px)').matches) {
+      return
+    }
+
+    if (props.loading) {
       return
     }
 
