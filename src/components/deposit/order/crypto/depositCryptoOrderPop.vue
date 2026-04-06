@@ -31,7 +31,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [val: boolean]
   close: []
-  hidden: []
+  hidden: [value: boolean]
 }>()
 
 const hiddenPop = ref<boolean>(false)
@@ -52,9 +52,9 @@ const handleClose = () => {
   emit('close')
 }
 
-// 切换隐藏状态并通知父组件
-const handleHidden = () => {
-  emit('hidden')
-  hiddenPop.value = true
+// 同步隐藏状态并通知父组件
+const handleHidden = (value: boolean) => {
+  emit('hidden', value)
+  hiddenPop.value = value
 }
 </script>
