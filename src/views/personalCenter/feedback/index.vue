@@ -140,7 +140,7 @@
         <section class="rounded-[12px] bg-bg-2 p-3.5">
           <div class="flex items-center justify-between gap-2.5">
             <div class="flex items-center">
-              <div class="feedback-coin-icon">$</div>
+              <img :src="feedbackRewardIcon" alt="feedback reward" class="h-[48px] w-[48px]" />
               <div class="ml-2.5">
                 <div class="text-sm text-text-1">反馈金额</div>
                 <div class="text-[18px] font-[700] leading-[20px] text-text-1">9999.99</div>
@@ -187,6 +187,7 @@
 <script setup lang="ts">
 import Api from '@/api'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import feedbackRewardIcon from '@/static/svg/feedback/dl.svg?url'
 import deleteIcon from '@/static/img/payment/upload_delete.png'
 import { computed, ref } from 'vue'
 import { showToast, Uploader, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
@@ -381,23 +382,5 @@ const myFeedbackList = computed<
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
-}
-
-.feedback-coin-icon {
-  display: flex;
-  height: 48px;
-  width: 48px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  border: 2px solid #ffde7d;
-  background: radial-gradient(circle at 30% 30%, #fff2b8 0%, #ffc247 42%, #f49d1a 100%);
-  color: #ff7b00;
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1;
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.6),
-    0 4px 12px rgba(244, 157, 26, 0.25);
 }
 </style>
