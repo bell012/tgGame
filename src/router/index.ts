@@ -451,6 +451,21 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'changeLoginPassword',
+    name: 'changeLoginPassword',
+    component: () => import('@/views/settings/changeLoginPassword/index.vue'),
+    meta: {
+      title: '修改登录密码',
+      description: '修改登录密码',
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 

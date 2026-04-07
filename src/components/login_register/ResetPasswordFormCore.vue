@@ -26,8 +26,11 @@ import {
 } from '@/utils/phone-input'
 import Api from '@/api'
 import { getDefaultAreaCode } from '@/utils/locale'
+import { StringExtension } from '@/utils/string-extension'
 import { showToast } from 'vant'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const defaultAreaCode = getDefaultAreaCode()
 
 // 密码显示状态
@@ -103,6 +106,11 @@ const handleSendCode = async () => {
   try {
     const telephone = formData.value.account
     if (!telephone) {
+      showToast({
+        message: t('common.pleaseEnterThePhoneNumber'),
+        type: 'fail',
+        zIndex: 10001
+      })
       return
     }
 
@@ -148,7 +156,7 @@ const handleResetPassword = async () => {
   try {
     // 构建重置密码参数
     const resetPasswordData = {
-      memberPwd: formData.value.password, // 新密码
+      memberPwd: StringExtension.md5(formData.value.password), // 新密码
       smsCode: formData.value.code, // 短信验证码
       telephone: formData.value.account, // 手机号
       areaCode: defaultAreaCode, // 区号
