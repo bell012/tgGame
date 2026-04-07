@@ -451,6 +451,34 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'security-situation',
+    name: 'security-situation',
+    component: () => import('@/views/wallet/security/index.vue'),
+    meta: {
+      title: '安全性',
+      description: '安全性',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'security-details',
+    name: 'security-details',
+    component: () => import('@/views/wallet/security/security-details.vue'),
+    meta: {
+      title: '安全详情',
+      description: '安全详情',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 
