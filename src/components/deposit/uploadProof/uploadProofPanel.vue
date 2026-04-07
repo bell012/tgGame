@@ -78,10 +78,8 @@
         </div>
         <button
           class="mt-6 h-10 sm:h-12 w-full rounded-lg text-text-4 text-sm font-bold"
-          :disabled="!(uploadUrls && uploadUrls.length > 0)"
-          :class="[
-            !(uploadUrls && uploadUrls.length > 0) ? 'bg-theme-2 cursor-not-allowed' : 'btn-primary'
-          ]"
+          :disabled="!canConfirmUpload"
+          :class="[!canConfirmUpload ? 'bg-theme-2 cursor-not-allowed' : 'btn-primary']"
           @click.stop="handleConfirmUpload"
         >
           {{ t('deposit.upload_proof_confirm_btn_text') }}
@@ -92,53 +90,166 @@
   <paymentReceiptSamplePop v-model="paymentReceiptSampleShow" />
 </template>
 <script setup lang="ts">
+import Api from '@/api'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import deleteIcon from '@/static/img/payment/upload_delete.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import BulletDotIcon from '@/static/svg/deposit/bullet-dot.svg?component'
 import PlusIcon from '@/static/svg/deposit/plus.svg?component'
-import { Uploader, UploaderAfterRead, UploaderFileListItem } from 'vant'
-import { ref } from 'vue'
+import { showToast, Uploader, UploaderAfterRead, UploaderFileListItem } from 'vant'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import paymentReceiptSamplePop from '../paymentReceiptSample/paymentReceiptSamplePop.vue'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
-const emit = defineEmits(['close', 'confirmUpload'])
+interface Props {
+  orderId?: string | number
+}
+
+const props = defineProps<Props>()
+const emit = defineEmits<{
+  close: []
+  confirmUpload: [uploadedFilePath: string]
+}>()
 
 // 处理关闭事件
 const handleClose = () => {
   emit('close')
 }
 
-const fileList = ref<UploaderFileListItem[]>()
-const uploadUrls = ref<string[]>([])
+const fileList = ref<UploaderFileListItem[]>([])
 const paymentReceiptSampleShow = ref<boolean>(false)
+const uploadedFilePath = ref('')
+const isUploadingImage = ref(false)
+const isBindingRemark = ref(false)
+const canConfirmUpload = computed(
+  () => !!uploadedFilePath.value && !isUploadingImage.value && !isBindingRemark.value
+)
 
-const imageAfterRead: UploaderAfterRead = async (items, detail) => {
+const imageAfterRead: UploaderAfterRead = async items => {
   // 如果传入的 items 是单个文件对象，转换为数组处理
   const files = Array.isArray(items) ? items : [items]
+  uploadedFilePath.value = ''
 
   for (const file of files) {
-    file.status = 'uploading'
-    file.message = '上传中...'
-    file.status = 'done'
-    file.message = '上传成功'
-    if (file.objectUrl) uploadUrls.value.push(file.objectUrl)
-  }
+    const rawFile = file.file
 
-  console.log(detail.index)
-  console.log(detail.name)
+    if (!rawFile) {
+      file.status = 'failed'
+      file.message = 'Upload failed'
+      continue
+    }
+
+    file.status = 'uploading'
+    file.message = 'Uploading...'
+    isUploadingImage.value = true
+
+    try {
+      const response = await Api.picture.upload({
+        file: rawFile,
+        fileName: sanitizeUploadFileName(rawFile.name)
+      })
+
+      if (!response?.success) {
+        throw new Error(response?.message || t('common.error'))
+      }
+
+      const uploadedPath = getUploadedFilePath(response.result)
+
+      if (!uploadedPath) {
+        throw new Error(response?.message || t('common.error'))
+      }
+
+      uploadedFilePath.value = uploadedPath
+      file.status = 'done'
+      file.message = 'Upload success'
+    } catch (error) {
+      file.status = 'failed'
+      file.message = 'Upload failed'
+      showToast({
+        message: error instanceof Error ? error.message : t('common.error'),
+        type: 'fail'
+      })
+    } finally {
+      isUploadingImage.value = false
+    }
+  }
 }
 
 // 删除图片
 const imageDelete = () => {
-  uploadUrls.value = []
+  uploadedFilePath.value = ''
+}
+
+const getUploadedFilePath = (result: unknown) => {
+  if (typeof result === 'string') {
+    return result.trim()
+  }
+
+  if (!result || typeof result !== 'object') {
+    return ''
+  }
+
+  const resultRecord = result as Record<string, unknown>
+  const candidates = [
+    resultRecord.headPortrait,
+    resultRecord.url,
+    resultRecord.path,
+    resultRecord.fileName
+  ]
+  const target = candidates.find(value => typeof value === 'string' && value.trim())
+
+  return typeof target === 'string' ? target.trim() : ''
+}
+
+const sanitizeUploadFileName = (fileName: string) => {
+  const trimmedName = fileName.trim() || 'proof'
+  return trimmedName.replace(/[\\/:*?"<>|\r\n]+/g, '_')
 }
 
 // 处理确认上传事件
-const handleConfirmUpload = () => {
-  emit('confirmUpload')
+const handleConfirmUpload = async () => {
+  if (!canConfirmUpload.value) return
+
+  const orderId = String(props.orderId ?? '').trim()
+  if (!orderId) {
+    showToast({
+      message: t('common.error'),
+      type: 'fail'
+    })
+    return
+  }
+
+  if (!uploadedFilePath.value) {
+    showToast({
+      message: t('common.error'),
+      type: 'fail'
+    })
+    return
+  }
+
+  isBindingRemark.value = true
+
+  try {
+    const response = await Api.wallet.updatePayOrderRemark({
+      orderId,
+      orderRemark: uploadedFilePath.value
+    })
+
+    if (!response?.success) {
+      throw new Error(response?.message || t('common.error'))
+    }
+
+    emit('confirmUpload', uploadedFilePath.value)
+  } catch (error) {
+    showToast({
+      message: error instanceof Error ? error.message : t('common.error'),
+      type: 'fail'
+    })
+  } finally {
+    isBindingRemark.value = false
+  }
 }
 </script>
 <style scoped lang="scss"></style>

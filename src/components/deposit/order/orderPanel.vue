@@ -155,7 +155,7 @@
             <!-- 上传中跑马灯文案 -->
             <div class="w-full overflow-hidden whitespace-nowrap">
               <p class="marquee">
-                Payment received. Your order is being verified. Thank you for your patience.
+                {{ t('deposit.upload_proof_verifying_marquee') }}
               </p>
             </div>
           </div>
@@ -183,15 +183,14 @@
         <!-- 上传中提醒文案区域 -->
         <div class="bg-bg-2 mt-6 p-5 rounded-lg text-sm sm:text-base font-normal sm:leading-normal">
           <!-- 提醒标题 -->
-          <p class="text-[color:#F44854]">Reminder</p>
+          <p class="text-[color:#F44854]">{{ t('deposit.upload_proof_reminder_title') }}</p>
           <!-- 提醒内容第一条 -->
           <p class="text-text-3 mt-4">
-            · To ensure funds are credited successfully, please upload the correct payment receipt.
+            {{ t('deposit.upload_proof_reminder_line_1') }}
           </p>
           <!-- 提醒内容第二条 -->
           <p class="text-text-3 mt-4">
-            · If you have already uploaded the proof, please wait patiently. Verification usually
-            takes 1–5 minutes.
+            {{ t('deposit.upload_proof_reminder_line_2') }}
           </p>
         </div>
       </div>
@@ -252,6 +251,7 @@
   <!-- 上传凭证弹窗 -->
   <uploadProofPop
     v-model="uploadPopShow"
+    :order-id="uploadProofOrderId"
     @close="handleUploadProofClose"
     @confirmUpload="handleConfirmUpload"
   />
@@ -355,6 +355,19 @@ const cryptoDisplayAmount = computed(() => {
   return Number.isFinite(amount) ? amount : 0
 })
 const fiatDisplayAmount = computed(() => Number(fiatOrderInfo.value?.amount ?? 0))
+const uploadProofOrderId = computed(() => {
+  const rawOrderId = rawOrderInfo.value.orderId
+  if (rawOrderId !== undefined && rawOrderId !== null && String(rawOrderId).trim()) {
+    return String(rawOrderId)
+  }
+
+  const fiatOrderNo = fiatOrderInfo.value?.order_no
+  if (fiatOrderNo !== undefined && fiatOrderNo !== null && String(fiatOrderNo).trim()) {
+    return String(fiatOrderNo)
+  }
+
+  return String(legacyCryptoOrderInfo.value.order_no ?? '').trim()
+})
 const cryptoDisplayMethod = computed(
   () => rawOrderInfo.value.accountCurrency ?? legacyCryptoOrderInfo.value.method ?? ''
 )

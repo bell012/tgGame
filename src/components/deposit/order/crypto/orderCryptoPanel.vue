@@ -154,7 +154,7 @@
           <!-- 上传中提示文案 -->
           <div class="w-full overflow-hidden whitespace-nowrap">
             <p class="marquee">
-              Payment received. Your order is being verified. Thank you for your patience.
+              {{ t('deposit.upload_proof_verifying_marquee') }}
             </p>
           </div>
         </div>
@@ -181,13 +181,12 @@
       </button>
       <!-- 上传中提醒区域 -->
       <div class="bg-bg-2 mt-6 p-5 rounded-lg text-sm sm:text-base font-normal sm:leading-normal">
-        <p class="text-[color:#F44854]">Reminder</p>
+        <p class="text-[color:#F44854]">{{ t('deposit.upload_proof_reminder_title') }}</p>
         <p class="text-text-3 mt-4">
-          · To ensure funds are credited successfully, please upload the correct payment receipt.
+          {{ t('deposit.upload_proof_reminder_line_1') }}
         </p>
         <p class="text-text-3 mt-4">
-          · If you have already uploaded the proof, please wait patiently. Verification usually
-          takes 1–5 minutes.
+          {{ t('deposit.upload_proof_reminder_line_2') }}
         </p>
       </div>
     </div>
@@ -226,6 +225,7 @@
   <!-- 上传凭证弹窗 -->
   <uploadProofPop
     v-model="uploadPopShow"
+    :order-id="cryptoOrderNo"
     @close="handleUploadProofClose"
     @confirmUpload="handleConfirmUpload"
   />
@@ -234,6 +234,7 @@
 <script setup lang="ts">
 import type { QueryPayOrderByOrderIdResult } from '@/api/interface/wallet'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { isOrderTerminalStatus, normalizeOrderStatusCode } from '@/constants/orderStatus'
 import CloseIcon from '@/static/svg/close.svg?component'
 import CryptoOrderCountdownIcon from '@/static/svg/deposit/crypto-order-countdown.svg?component'
 import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifying.svg?component'
@@ -520,6 +521,21 @@ const handleCancelResultClose = () => {
   emit('close')
 }
 
+const openTerminalResultPopByOrderDetail = (detail: Partial<QueryPayOrderByOrderIdResult>) => {
+  if (cancelResultPopShow.value) return
+
+  const statusCode = normalizeOrderStatusCode('deposit', detail.status)
+  if (statusCode === undefined || !isOrderTerminalStatus('deposit', statusCode)) {
+    return
+  }
+
+  cancelResultStatus.value = statusCode === 1 ? 'Completed' : 'Cancelled'
+  cancelResultOrderInfo.value = { ...detail }
+  cancelResultPopShow.value = true
+  confirmUploadStatus.value = 'completed'
+  emit('hidden', false)
+}
+
 // 复制文本到剪贴板并提示成功
 const copyWord = (word: string) => {
   navigator.clipboard.writeText(word)
@@ -536,6 +552,18 @@ watch(
     renderQrCode()
   },
   { immediate: true, flush: 'post' }
+)
+
+watch(
+  [() => confirmUploadStatus.value, () => rawOrderInfo.value.status],
+  ([uploadStatus]) => {
+    if (uploadStatus !== 'in_progress') {
+      return
+    }
+
+    openTerminalResultPopByOrderDetail(rawOrderInfo.value)
+  },
+  { immediate: true }
 )
 </script>
 
