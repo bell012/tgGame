@@ -7,16 +7,18 @@ import type {
   QueryDiscountListResponse,
   QueryDlicghForm,
   QueryDlicghResponse,
-  QueryPayColumnWithSubListForm,
-  QueryPayColumnWithSubListResponse,
   QueryPayColumnPageForm,
   QueryPayColumnPageResponse,
+  QueryPayColumnWithSubListForm,
+  QueryPayColumnWithSubListResponse,
   QueryPayOrderByOrderIdForm,
   QueryPayOrderByOrderIdResponse,
   QueryPaySubColumnPageForm,
   QueryPaySubColumnPageResponse,
   SubmitPayOrderPageForm,
-  SubmitPayOrderResponse
+  SubmitPayOrderResponse,
+  UpdatePayOrderRemarkForm,
+  UpdatePayOrderRemarkResponse
 } from '@/api/interface/wallet'
 import request from '@/utils/request'
 
@@ -109,5 +111,19 @@ export function cancelPayOrderStatus(
     url: '/pc/cancelPayOrderStatus',
     method: 'post',
     data
+  })
+}
+
+// 绑定上传凭证到支付订单
+export function updatePayOrderRemark(
+  data: UpdatePayOrderRemarkForm
+): Promise<UpdatePayOrderRemarkResponse> {
+  return request({
+    url: '/pc/updatePayOrderRemark',
+    method: 'post',
+    data: {
+      orderId: String(data.orderId),
+      orderRemark: data.orderRemark
+    }
   })
 }

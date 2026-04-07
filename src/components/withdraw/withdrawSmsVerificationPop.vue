@@ -129,16 +129,7 @@ const visible = computed({
 const canResend = computed(() => countdown.value <= 0)
 const formattedAmount = computed(() => Number(props.amount || 0).toFixed(0))
 const currencyCode = computed(() => props.currencyCode || 'PHP')
-
-const maskedPhone = computed(() => {
-  const value = String(props.phoneNumber || '+63-999****9999').trim()
-
-  if (value.length <= 4) {
-    return value
-  }
-
-  return `${value.slice(0, 7)}****${value.slice(-4)}`
-})
+const maskedPhone = computed(() => String(props.phoneNumber || '').trim())
 
 const stopCountdown = () => {
   if (countdownTimer) {
