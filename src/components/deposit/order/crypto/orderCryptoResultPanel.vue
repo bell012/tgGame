@@ -135,7 +135,7 @@ const formatAmountText = (amount?: number, currency?: string) => {
 const displayStatus = computed(() => props.orderStatus)
 
 const displayTitle = computed(() =>
-  displayStatus.value === 'Cancelled' ? 'Order Cancelled' : 'Order Completed'
+  displayStatus.value === 'Cancelled' ? t('deposit.order_cancelled') : t('deposit.order_completed')
 )
 
 const totalPaymentText = computed(() =>
@@ -183,34 +183,34 @@ const depositMethod = computed(
 const detailRows = computed<DetailRowItem[]>(() =>
   compactRows([
     {
-      label: 'Total Payment',
+      label: t('deposit.order_total_payment'),
       value: totalPaymentText.value
     },
     {
-      label: 'Final Amount',
+      label: t('deposit.order_final_amount'),
       value: finalAmountText.value
     },
     {
-      label: 'Exchange Rate',
+      label: t('deposit.order_exchange_rate'),
       value: exchangeRateText.value
     },
     networkName.value
       ? {
-          label: 'Network',
+          label: t('deposit.order_network'),
           value: networkName.value
         }
       : null,
     {
-      label: 'Order No.',
+      label: t('deposit.order_no'),
       value: orderNo.value,
       copyValue: orderNo.value
     },
     {
-      label: 'Created At',
+      label: t('deposit.order_created_at'),
       value: createdAt.value
     },
     {
-      label: 'Deposit Method',
+      label: t('deposit.order_deposit_method'),
       value: depositMethod.value,
       icon: props.methodIcon
     }

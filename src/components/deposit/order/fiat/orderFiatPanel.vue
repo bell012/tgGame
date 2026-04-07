@@ -54,7 +54,7 @@
           </p>
         </div>
         <p class="mt-2 text-text-1 text-sm sm:text-base leading-normal text-center">
-          Deposit Amount
+          {{ t('deposit.deposit_amount') }}
         </p>
         <!-- 订单明细区域 -->
         <div class="mt-8 px-5 py-3 w-full bg-bg-4 rounded-lg relative grid gap-4">
@@ -127,29 +127,31 @@ const fiatSummaryRows = computed<DetailRowItem[]>(() => {
 
   return compactRows([
     fiatOrderInfo.value.currency
-      ? { label: 'Currency', value: fiatOrderInfo.value.currency }
+      ? { label: t('deposit.order_currency'), value: fiatOrderInfo.value.currency }
       : null,
     {
-      label: 'Payment Amount',
+      label: t('deposit.order_payment_amount'),
       value: fiatOrderInfo.value.amount ?? 0
     },
-    fiatOrderInfo.value.bonus ? { label: 'Deposit Bonus', value: fiatOrderInfo.value.bonus } : null,
+    fiatOrderInfo.value.bonus
+      ? { label: t('deposit.order_deposit_bonus'), value: fiatOrderInfo.value.bonus }
+      : null,
     {
-      label: 'Order Status',
+      label: t('deposit.order_status'),
       value: fiatStatus,
       valueStyle: getFiatStatusStyle(fiatOrderInfo.value.status)
     },
     {
-      label: 'Order No.',
+      label: t('deposit.order_no'),
       value: fiatOrderInfo.value.order_no ?? '',
       copyValue: fiatOrderInfo.value.order_no ?? ''
     },
     {
-      label: 'Created At',
+      label: t('deposit.order_created_at'),
       value: fiatOrderInfo.value.created_at ?? ''
     },
     {
-      label: 'Deposit Method',
+      label: t('deposit.order_deposit_method'),
       value: fiatOrderInfo.value.method ?? '',
       icon: fiatOrderInfo.value.method_icon
     }

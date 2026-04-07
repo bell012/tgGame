@@ -42,11 +42,71 @@ export type Locale = keyof typeof LOCALE_CONFIG
 export type LocaleOption = { code: Locale; label: string }
 
 /**
+ * 手机区号选项类型
+ */
+export type AreaCodeOption = {
+  code: string
+  display: string
+  label: string
+}
+
+/**
  * 系统默认语言。
  *
  * 默认语言通常不带 URL 前缀。
  */
 export const DEFAULT_LOCALE: Locale = 'eng'
+
+/**
+ * 系统支持的手机号区号配置。
+ *
+ */
+export const AREA_CODE_CONFIG = {
+  PH: {
+    code: '63',
+    display: '+63',
+    label: 'Philippines'
+  }
+} as const
+
+/**
+ * 系统支持的手机号区号 key。
+ *
+ */
+export type AreaCodeKey = keyof typeof AREA_CODE_CONFIG
+
+/**
+ * 系统默认手机号区号 key。
+ *
+ */
+export const DEFAULT_AREA_CODE_KEY: AreaCodeKey = 'PH'
+
+/**
+ * 获取默认手机号区号。
+ * @returns 默认区号字符串，例如 `63`
+ * @example
+ */
+export const getDefaultAreaCode = (): string => {
+  return AREA_CODE_CONFIG[DEFAULT_AREA_CODE_KEY].code
+}
+
+/**
+ * 获取默认手机号区号展示文案。
+ * @returns 默认区号展示字符串，例如 `+63`
+ * @example
+ */
+export const getDefaultAreaCodeDisplay = (): string => {
+  return AREA_CODE_CONFIG[DEFAULT_AREA_CODE_KEY].display
+}
+
+/**
+ * 获取系统支持的手机号区号选项。
+ * @returns 区号选项数组，可直接用于下拉或弹窗列表
+ * @example
+ */
+export const getAreaCodeOptions = (): AreaCodeOption[] => {
+  return Object.values(AREA_CODE_CONFIG).map(item => ({ ...item }))
+}
 
 const normalizePathname = (path: string): string => {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`

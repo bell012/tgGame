@@ -156,7 +156,7 @@ export interface SmsResponse {
   success: boolean
 }
 
-// 发送短信验证码 /sy/sms
+// 重置密码 请求参数
 export interface ResetPasswordForm {
   memberPwd: string //新密码
   smsCode: string //短信验证码
@@ -165,8 +165,22 @@ export interface ResetPasswordForm {
   memberId: string // 会员账号(账号还是手机都要传。手机是区号+号码)
 }
 
-// 发送短信响应
+// 重置密码 响应
 export interface ResetPasswordResponse {
+  code: string
+  message: string
+  success: boolean
+}
+
+//  短信验证码 验证 请求参数
+export interface CheckSmsForm {
+  telephone: string // 手机号码
+  areaCode: string // 区号
+  smsCode: string // 短信验证码
+}
+
+//  短信验证码 验证 响应
+export interface CheckSmsResponse {
   code: string
   message: string
   success: boolean

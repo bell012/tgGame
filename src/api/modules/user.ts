@@ -11,7 +11,9 @@ import type {
   SelectMemberForm,
   SelectMemberResponse,
   GameBetTotalForm,
-  GameBetTotalResponse
+  GameBetTotalResponse,
+  ModifyMemberTelePhoneForm,
+  ModifyMemberTelePhoneResponse
 } from '@/api/interface/user'
 
 /**
@@ -52,6 +54,7 @@ export function modifyMemberInfo(data: ModifyMemberInfoForm): Promise<ModifyMemb
     data
   })
 }
+
 /**
  * 游戏下注信息统计
  * @param data 游戏下注信息
@@ -60,6 +63,21 @@ export function modifyMemberInfo(data: ModifyMemberInfoForm): Promise<ModifyMemb
 export function getGameBetTotal(data: GameBetTotalForm): Promise<GameBetTotalResponse> {
   return request({
     url: '/special/getGameBetTotal',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 修改会员手机号码
+ * @param data 修改会员手机号码
+ * @returns Promise<ModifyMemberTelePhoneResponse>
+ */
+export function modifyMemberTelePhone(
+  data: ModifyMemberTelePhoneForm
+): Promise<ModifyMemberTelePhoneResponse> {
+  return request({
+    url: '/mc/modifyMemberTelePhone',
     method: 'post',
     data
   })

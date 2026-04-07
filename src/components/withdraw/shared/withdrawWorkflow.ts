@@ -24,8 +24,6 @@ export interface WithdrawOrderViewData {
   status: WithdrawOrderStatus
 }
 
-const WITHDRAW_CHANNEL_ID = 4
-
 const getAccountNo = (payload: WithdrawSubmitPayload) => {
   return payload.accountRowId ?? payload.address ?? ''
 }
@@ -99,7 +97,7 @@ const buildSubmitTransferOrderForm = ({
     busiAmount: String(payload.amount),
     accountNo,
     withdrawNumber,
-    channelId: WITHDRAW_CHANNEL_ID,
+    channelId: payload.channelId,
     columnCode,
     currencyCode: getCurrencyCode(payload),
     ...(verifyCode ? { verifyCode } : {}),

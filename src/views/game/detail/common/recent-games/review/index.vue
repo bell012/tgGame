@@ -271,6 +271,14 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type { GameCommentListItem } from '@/api/interface/game'
+import { useGameRating } from '@/composables/useGameRating'
+import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?url'
+import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?url'
+import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
+import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
+import PersonIcon from '@/static/svg/game/detail/comment/person.svg?url'
+import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?url'
+import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?url'
 import { useThemeStore } from '@/stores/theme'
 import {
   computed,
@@ -284,17 +292,9 @@ import {
 } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import { useGameRating } from '@/composables/useGameRating'
-import Star from './star.vue'
-import ProgressBar from './progress.vue'
 import CommentPopup from './comment-popup.vue'
-import PersonIcon from '@/static/svg/game/detail/comment/person.svg?url'
-import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
-import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
-import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?url'
-import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?url'
-import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?url'
-import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?url'
+import ProgressBar from './progress.vue'
+import Star from './star.vue'
 
 type CurrentGameDetail = {
   initScoreNum?: number | string

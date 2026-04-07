@@ -15,7 +15,7 @@
             class="flex h-9 items-center rounded-full border bg-bg-3 px-6 text-sm leading-[17px] transition-colors"
             :class="
               coin.code === coinCode
-                ? 'border-theme-primary text-theme-primary'
+                ? 'border-[3px] border-theme-primary bg-theme-3 text-common-100'
                 : 'border-transparent text-text-2 lg:hover:bg-theme-3'
             "
             @click.stop="selectCoinCode(coin.code)"
@@ -92,7 +92,7 @@
               @click="showUnavailableToast"
             >
               <AmountInfoIcon class="h-4 w-4 shrink-0" />
-              <span>How to Deposit</span>
+              <span>{{ t('deposit.how_to_deposit') }}</span>
             </button>
           </div>
 
@@ -161,7 +161,9 @@
           </div>
 
           <!-- 提款流水提示文案 -->
-          <p class="text-xs leading-[15px] text-secondary-7">No wagering required for withdrawal</p>
+          <p class="text-xs leading-[15px] text-secondary-7">
+            {{ t('deposit.withdrawal_no_wagering_tip') }}
+          </p>
         </div>
 
         <!-- 预设金额区域 -->
@@ -178,7 +180,7 @@
               :key="preset"
               type="button"
               class="relative flex h-10 items-center justify-center rounded-lg text-base font-bold leading-[19px] transition-colors lg:hover:bg-theme-primary"
-              :class="[preset === amount ? 'bg-[#2AEE88] text-black' : 'bg-bg-2 text-text-1']"
+              :class="[preset === amount ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-1']"
               @click="selectPresetAmount(preset)"
             >
               <!-- 预设金额文本 -->
@@ -226,7 +228,7 @@
         class="flex items-center justify-center gap-2 text-sm leading-5 text-text-1"
         @click="loadWallet"
       >
-        <span>Load from your wallet</span>
+        <span>{{ t('deposit.load_from_wallet') }}</span>
         <span class="flex items-center gap-1">
           <img class="h-6" :src="groupIcon" alt="wallet bonus" />
           <span class="text-[13px] leading-4">+300</span>
@@ -376,19 +378,6 @@ const amountPlaceholder = computed(() =>
 )
 const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
 
-// 获取当前选中充值金额对应的优惠比例
-const resolveSelectedDiscountRatio = () => {
-  const normalizedAmount = Number(amount.value)
-  if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) return undefined
-
-  const matchedDiscount = selectedDiscountItem.value?.discounts?.find(
-    discount => Number(discount.amount) === normalizedAmount
-  )
-  const ratio = Number(matchedDiscount?.ratio)
-
-  return Number.isFinite(ratio) && ratio > 0 ? ratio : undefined
-}
-
 // 解析渠道名称中的中文文案
 const parseChannelName = (subColumnName: string) => {
   try {
@@ -423,7 +412,7 @@ const syncPresetAmounts = () => {
 
 // 格式化流水倍数展示文案
 const formatWageringLabel = (multiple: number) =>
-  multiple === 0 ? 'No Wagering' : `${multiple}x Wagering`
+  multiple === 0 ? t('deposit.wagering_no') : t('deposit.wagering_multiple', { multiple })
 
 // 显示当前功能不可用的提示信息
 const showUnavailableToast = () => {
@@ -627,6 +616,7 @@ const applyOrderDetail = (detail?: QueryPayOrderByOrderIdResult) => {
     accountNo: selectedSubColumn.value?.offlineAccount?.accountNo ?? '',
     busiAmount: Number(amount.value ?? 0),
     currency: getCurrentCurrency(),
+    method_icon: selectedMethod.value?.columnIco ?? selectedMethod.value?.defaultOrderIcon ?? '',
     status: 0
   }
 }
@@ -667,13 +657,15 @@ const doDeposit = async () => {
     channelId: 3,
     // 取
     subColumnCode: selectedSubColumn.value?.rowId ?? selectedSubColumn?.value.rowId,
-    flows: selectedDiscountItem.value?.multiple ?? 0
+    // flows: selectedDiscountItem.value?.multiple ?? 0
+    // flows就是加密货币固定类型 0 数字币 后台 计算
+    flows: 0
   }
-
-  const discount = resolveSelectedDiscountRatio()
-  if (discount !== undefined) {
-    param.discount = discount
-  }
+  // 数字币  奖励是后台 计算
+  // const discount = resolveSelectedDiscountRatio()
+  // if (discount !== undefined) {
+  //   param.discount = discount
+  // }
 
   try {
     const response = await Api.wallet.submitPayOrder(param)
