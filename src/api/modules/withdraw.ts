@@ -1,4 +1,6 @@
 import type {
+  AddMemberCardForm,
+  AddMemberCardResponse,
   QueryFastAmountForm,
   QueryFastAmountResponse,
   QueryNeedBetAmountForAppResponse,
@@ -40,6 +42,19 @@ export function queryWithdrawManager(
 export function selectMemberCard(data?: SelectMemberCardForm): Promise<SelectMemberCardResponse> {
   return request({
     url: '/mc/selectMemberCard',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 新增会员收款账号
+ * @param data 新增账号参数
+ * @returns Promise<AddMemberCardResponse>
+ */
+export function addMemberCard(data: AddMemberCardForm): Promise<AddMemberCardResponse> {
+  return request({
+    url: '/mc/addMemberCard',
     method: 'post',
     data
   })
