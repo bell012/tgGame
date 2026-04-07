@@ -54,7 +54,7 @@
           </div>
           <!-- 跑马灯提示 -->
           <div class="flex items-center justify-between w-full overflow-hidden whitespace-nowrap">
-            <p class="marquee">Please pay within and upload proof</p>
+            <p class="marquee">{{ t('deposit.order_pay_and_upload_tips') }}</p>
           </div>
           <!-- 倒计时展示 -->
           <div class="mx-1 bg-bg-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -103,14 +103,14 @@
             @click.stop="doCapture"
             class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
           >
-            Save QR Code
+            {{ t('deposit.order_save_qr_code') }}
           </button>
           <!-- 复制地址按钮 -->
           <button
             @click.stop="copyWord(cryptoAddress)"
             class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
           >
-            Copy Address
+            {{ t('deposit.order_copy_address') }}
           </button>
         </div>
       </div>
@@ -380,18 +380,18 @@ const panelInlineStyle = computed(() => ({
 // 组装数字币订单摘要行
 const cryptoSummaryRows = computed<DetailRowItem[]>(() =>
   compactRows([
-    cryptoNetwork.value ? { label: 'Network', value: cryptoNetwork.value } : null,
+    cryptoNetwork.value ? { label: t('deposit.order_network'), value: cryptoNetwork.value } : null,
     {
-      label: 'Order No.',
+      label: t('deposit.order_no'),
       value: cryptoOrderNo.value,
       copyValue: cryptoOrderNo.value
     },
     {
-      label: 'Created At',
+      label: t('deposit.order_created_at'),
       value: cryptoCreatedAt.value
     },
     {
-      label: 'Deposit Method',
+      label: t('deposit.order_deposit_method'),
       value: cryptoDisplayMethod.value,
       icon: cryptoMethodIcon.value
     }
@@ -407,29 +407,29 @@ const cryptoCompletedRows = computed<DetailRowItem[]>(() => {
 
   return compactRows([
     {
-      label: 'Total Payment',
+      label: t('deposit.order_total_payment'),
       value: `${cryptoDisplayAmount.value}${cryptoDisplayMethod.value}`
     },
     {
-      label: 'Final Amount',
+      label: t('deposit.order_final_amount'),
       value: finalAmount
     },
     {
-      label: 'Exchange Rate',
+      label: t('deposit.order_exchange_rate'),
       value: cryptoRate.value || '1USDT≈7.15PHP'
     },
-    cryptoNetwork.value ? { label: 'Network', value: cryptoNetwork.value } : null,
+    cryptoNetwork.value ? { label: t('deposit.order_network'), value: cryptoNetwork.value } : null,
     {
-      label: 'Order No.',
+      label: t('deposit.order_no'),
       value: cryptoOrderNo.value,
       copyValue: cryptoOrderNo.value
     },
     {
-      label: 'Created At',
+      label: t('deposit.order_created_at'),
       value: cryptoCreatedAt.value
     },
     {
-      label: 'Deposit Method',
+      label: t('deposit.order_deposit_method'),
       value: cryptoDisplayMethod.value,
       icon: cryptoMethodIcon.value
     }
@@ -437,7 +437,7 @@ const cryptoCompletedRows = computed<DetailRowItem[]>(() => {
 })
 
 const completedStatusTitle = computed(() =>
-  isOrderCompleted.value ? 'Order Completed' : 'Order Cancelled'
+  isOrderCompleted.value ? t('deposit.order_completed') : t('deposit.order_cancelled')
 )
 
 // 关闭订单弹窗
