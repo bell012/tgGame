@@ -69,7 +69,8 @@
 
       <button
         type="button"
-        class="hidden sm:flex mt-8 h-12 w-full items-center justify-center rounded-lg btn-primary text-base font-bold text-common-900"
+        class="mt-8 hidden h-12 w-full items-center justify-center rounded-lg btn-primary text-base font-bold text-common-900 disabled:cursor-not-allowed disabled:opacity-60 sm:flex"
+        :disabled="loading || codeValue.length !== 6"
         @click="handleConfirmClick"
       >
         {{ t('withdraw.confirm_withdrawal') }}
@@ -100,6 +101,7 @@ interface Props {
   amount: number
   currencyCode: string
   phoneNumber?: string
+  loading?: boolean
 }
 
 const RESEND_SECONDS = 60
@@ -191,6 +193,10 @@ const handleConfirmClick = () => {
     return
   }
 
+  if (props.loading) {
+    return
+  }
+
   emit('confirm', codeValue.value)
   codeValue.value = ''
 }
@@ -218,6 +224,10 @@ watch(codeValue, value => {
 
   if (normalized.length === 6) {
     if (window.matchMedia('(min-width: 640px)').matches) {
+      return
+    }
+
+    if (props.loading) {
       return
     }
 

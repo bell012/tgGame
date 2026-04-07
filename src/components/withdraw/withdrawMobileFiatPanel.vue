@@ -27,32 +27,47 @@
     </div>
     <div class="mt-2.5 p-3.5 bg-bg-2 rounded-lg">
       <div>
-        <div class="text-xs font-normal leading-normal">{{ t('withdraw.phone_number') }}</div>
         <div
-          class="mt-2.5 p-3.5 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
+          class="flex items-center justify-between text-xs sm:text-sm font-normal leading-normal"
         >
-          <div class="shrink-0 text-base font-bold leading-normal mr-2 text-theme-primary">+63</div>
-          <input
-            type="text"
-            v-model="phoneNumber"
-            :placeholder="t('withdraw.phone_placeholder')"
-            class="flex-1 text-base font-bold leading-normal text-text-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
-          />
+          <span>{{ t('withdraw.e_wallet_address') }}</span>
+          <button
+            v-if="selectedAccount"
+            type="button"
+            class="flex items-center text-xs sm:text-sm text-text-2"
+            @click="openAccountList"
+          >
+            {{ t('withdraw.change') }}
+            <ChevronRightSmallIcon class="ml-1 h-2 w-1" />
+          </button>
         </div>
-      </div>
-      <div class="mt-5">
-        <div class="text-xs font-normal leading-normal">{{ t('withdraw.name') }}</div>
-        <div
-          class="mt-2.5 p-3.5 flex items-center w-full rounded-lg bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0"
+        <button
+          v-if="!selectedAccount"
+          type="button"
+          class="mt-2 flex h-[45px] w-full items-center justify-center rounded-lg border border-dashed border-theme-primary text-sm font-bold text-theme-primary"
+          @click="openAccountList"
         >
-          <userIcon class="w-5 h-5 mr-2 shrink-0 text-theme-primary" />
-          <input
-            type="text"
-            v-model="accountName"
-            :placeholder="t('withdraw.name_placeholder')"
-            class="flex-1 text-base font-bold leading-normal text-text-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
-          />
-        </div>
+          <AddPlusIcon class="mr-2 h-4 w-4 text-current" />
+          {{ t('withdraw.add_e_wallet') }}
+        </button>
+        <button
+          v-else
+          type="button"
+          class="mt-2 flex w-full items-center rounded-lg bg-opacity-6 p-[14px] text-left"
+          @click="openAccountList"
+        >
+          <div class="mr-3 h-[25px] w-[25px] shrink-0 overflow-hidden rounded-full">
+            <gameErrImg
+              :img="{ src: selectedMethod.icon, maintain: false, fit: 'contain' }"
+              class="h-full w-full"
+            />
+          </div>
+          <div class="min-w-0 flex-1 text-sm font-semibold text-text-1">
+            <p class="truncate">
+              {{ selectedAccount.accountNo }}
+            </p>
+          </div>
+        </button>
       </div>
     </div>
     <div class="mt-2.5 p-3.5 bg-bg-2 rounded-lg">
@@ -121,33 +136,59 @@
       >
         {{ t('withdraw.withdraw_now') }}
       </button>
+      <withdrawFiatAccountListPop
+        v-model="accountListVisible"
+        :items="availableAccounts"
+        :selected-id="selectedAccount?.localId"
+        :icon="selectedMethod.icon"
+        @select="handleSelectAccount"
+        @add="openAddAccount"
+      />
+      <withdrawFiatAddAccountPop
+        v-model="addAccountVisible"
+        v-model:account-no="pendingAccountNo"
+        v-model:account-name="pendingAccountName"
+        @close="closeAddAccount"
+        @confirm="confirmAddAccount"
+      />
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import userIcon from '@/static/svg/withdraw/user.svg?component'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
+import gameErrImg from '@/components/common/gameErrImg.vue'
+import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
 import { computed, type ComponentPublicInstance, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FastAmountItem } from '@/api/interface/withdraw'
 import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
-import type { WithdrawSubmitPayload } from './types'
-import { useWithdrawFiat } from './useWithdrawFiat'
+import withdrawFiatAccountListPop from './withdrawFiatAccountListPop.vue'
+import withdrawFiatAddAccountPop from './withdrawFiatAddAccountPop.vue'
+import type { WithdrawSubmitPayload } from './shared/types'
+import { useWithdrawFiat } from './shared/useWithdrawFiat'
 
 const { t } = useI18n()
 const {
-  accountName,
+  accountListVisible,
   amount,
   applyQuickAmount,
+  availableAccounts,
+  addAccountVisible,
+  closeAddAccount,
+  confirmAddAccount,
   currentCurrency,
   currencySymbol,
   formattedBalance,
   isWithdrawDisabled,
+  openAccountList,
+  openAddAccount,
   payMethods,
-  phoneNumber,
+  pendingAccountName,
+  pendingAccountNo,
   quickAmounts,
+  handleSelectAccount,
   selectedAccount,
   selectedMethod,
   selectMethod: selectMethodOption
@@ -221,8 +262,8 @@ const doWithdrawDeposit = () => {
     methodLabel: selectedMethod.value.name,
     paymentCode: selectedMethod.value.paymentCode,
     accountRowId: selectedAccount.value?.rowId,
-    phoneNumber: phoneNumber.value,
-    accountName: accountName.value
+    phoneNumber: selectedAccount.value?.accountNo,
+    accountName: selectedAccount.value?.accountName
   })
 }
 </script>

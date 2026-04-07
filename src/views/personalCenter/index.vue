@@ -674,7 +674,7 @@ const globalSettings = computed(() => [
     name: t('personalCenter.globalSetting'),
     icon: getIcon(12),
     rightIcon: getIcon(31),
-    handler: () => console.log('Global Setting clicked')
+    handler: () => navigateTo('/settings')
   },
   {
     id: 'language',

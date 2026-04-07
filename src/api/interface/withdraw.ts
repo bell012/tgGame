@@ -32,10 +32,14 @@ export interface WithdrawManagerItem {
   paymentName?: string
   cardType?: string | number
   subType?: string | number
+  channelType?: number
   type?: number
   showStatus?: number
   status?: number
   icon?: string
+  logo?: string
+  logoSelect?: string
+  quickAmts?: string
   [key: string]: unknown
 }
 

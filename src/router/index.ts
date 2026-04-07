@@ -423,6 +423,34 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'settings',
+    name: 'settings',
+    component: () => import('@/views/settings/index.vue'),
+    meta: {
+      title: '全局设定',
+      description: '全局设定',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'security',
+    name: 'security',
+    component: () => import('@/views/settings/security/index.vue'),
+    meta: {
+      title: '安全性',
+      description: '安全性',
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 
