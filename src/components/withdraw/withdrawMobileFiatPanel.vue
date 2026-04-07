@@ -258,6 +258,7 @@ const doWithdrawDeposit = () => {
   emit('submit', {
     tabType: 'Fiat',
     amount: Number(amount.value),
+    channelId: 4,
     currencyCode: currentCurrency.value,
     methodLabel: selectedMethod.value.name,
     paymentCode: selectedMethod.value.paymentCode,
