@@ -25,7 +25,10 @@ import {
   isValidPassword
 } from '@/utils/phone-input'
 import Api from '@/api'
+import { getDefaultAreaCode } from '@/utils/locale'
 import { showToast } from 'vant'
+
+const defaultAreaCode = getDefaultAreaCode()
 
 // 密码显示状态
 const showPassword = ref(false)
@@ -110,7 +113,7 @@ const handleSendCode = async () => {
     // 发送短信接口
     const response = await Api.auth.sendSms({
       telephone: telephone,
-      areaCode: '63'
+      areaCode: defaultAreaCode
     })
     if (response && response.message) {
       showToast({
@@ -148,7 +151,7 @@ const handleResetPassword = async () => {
       memberPwd: formData.value.password, // 新密码
       smsCode: formData.value.code, // 短信验证码
       telephone: formData.value.account, // 手机号
-      areaCode: '63', // 区号
+      areaCode: defaultAreaCode, // 区号
       memberId: formData.value.account // 会员账号
     }
 

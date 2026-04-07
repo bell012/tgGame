@@ -104,7 +104,7 @@
                       <span
                         class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-theme-level-1)] text-xs font-[500]"
                       >
-                        +63
+                        {{ defaultAreaCodeDisplay }}
                       </span>
                       <input
                         :value="formData.account"
@@ -233,10 +233,12 @@ import TurntableIcon from '@/static/svg/login/turntable.svg?component'
 import FreePerksIcon from '@/static/svg/login/free_perks.svg?component'
 import SafeIcon from '@/static/svg/login/safe.svg?component'
 import PasswordIcon from '@/static/svg/login/password.svg?component'
+import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import ResetPasswordFormCore from './ResetPasswordFormCore.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 interface Props {
   visible: boolean
 }
