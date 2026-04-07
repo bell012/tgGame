@@ -129,7 +129,7 @@
         </section>
 
         <section class="mt-3.5 rounded-[12px] bg-bg-2 p-3.5">
-          <div class="text-[30rpx] font-[700] text-text-1">奖励规则</div>
+          <div class="text-[15px] font-[700] text-text-1">奖励规则</div>
           <div class="mt-2 text-sm leading-[22px] text-text-3">
             我们设立了丰厚的奖励来收集反馈，以优化系统和功能，为您提供更好的体验！一旦被接受，将根据有用性给予奖励（不包括那些未被接受的）。
           </div>
@@ -149,6 +149,7 @@
             <button
               type="button"
               class="h-[36px] min-w-[114px] rounded-[12px] bg-theme-primary px-4 text-[16px] font-[700] text-text-4"
+              @click="openClaimSuccessPopup"
             >
               领取
             </button>
@@ -181,6 +182,34 @@
         </section>
       </div>
     </div>
+
+    <transition name="feedback-claim-popup">
+      <div
+        v-if="showClaimSuccessPopup"
+        class="feedback-claim-popup-mask"
+        @click.self="closeClaimSuccessPopup"
+      >
+        <div class="feedback-claim-popup-card">
+          <img :src="feedbackStarIcon" alt="" class="feedback-claim-popup-star" />
+          <img :src="feedbackEllipseIcon" alt="" class="feedback-claim-popup-ellipse" />
+          <img :src="feedbackBowIcon" alt="bow" class="feedback-claim-popup-bow" />
+
+          <p class="feedback-claim-popup-amount">{{ claimSuccessAmount }}</p>
+          <p class="feedback-claim-popup-title">Claim Successful</p>
+          <p class="feedback-claim-popup-description">
+            The bonus has been credited to your wallet.
+          </p>
+
+          <button
+            type="button"
+            class="feedback-claim-popup-confirm"
+            @click="closeClaimSuccessPopup"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -188,10 +217,14 @@
 import Api from '@/api'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import feedbackRewardIcon from '@/static/svg/feedback/dl.svg?url'
+import feedbackBowIcon from '@/static/svg/feedback/hdj.svg?url'
+import feedbackStarIcon from '@/static/svg/feedback/star.svg?url'
+import feedbackEllipseIcon from '@/static/svg/feedback/ellipse.svg?url'
 import deleteIcon from '@/static/img/payment/upload_delete.png'
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { showToast, Uploader, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
 import H5Header from '@/components/common/H5Header.vue'
+import { getCurrencySymbol } from '@/utils/locale'
 
 type FeedbackTab = 'create' | 'mine'
 type FeedbackStatus = 'accepted' | 'pending' | 'rejected'
@@ -201,6 +234,12 @@ const selectedType = ref('type-1')
 const feedbackContent = ref('')
 const feedbackFileList = ref<UploaderFileListItem[]>([])
 const uploadedFeedbackUrls = ref<string[]>([])
+const showClaimSuccessPopup = ref(false)
+const claimAmountCurrencySymbol = getCurrencySymbol()
+const claimSuccessTargetAmount = 100
+const claimAmountAnimationDuration = 680
+const claimSuccessAmount = ref(`${claimAmountCurrencySymbol}0.00`)
+let claimAmountAnimationFrame: number | null = null
 const feedbackUploadMaxCount = 4
 const feedbackUploadCount = computed(() => uploadedFeedbackUrls.value.filter(Boolean).length)
 
@@ -294,6 +333,53 @@ const feedbackImageDelete = (_file: UploaderFileListItem, detail: { index: numbe
   return true
 }
 
+const formatClaimAmount = (amount: number) => {
+  return `${claimAmountCurrencySymbol}${amount.toFixed(2)}`
+}
+
+const stopClaimAmountAnimation = () => {
+  if (claimAmountAnimationFrame !== null) {
+    cancelAnimationFrame(claimAmountAnimationFrame)
+    claimAmountAnimationFrame = null
+  }
+}
+
+const startClaimAmountAnimation = () => {
+  stopClaimAmountAnimation()
+  claimSuccessAmount.value = formatClaimAmount(0)
+  const animationStartTime = performance.now()
+
+  const animate = (currentTime: number) => {
+    const progress = Math.min((currentTime - animationStartTime) / claimAmountAnimationDuration, 1)
+    const easedProgress = 1 - Math.pow(1 - progress, 3)
+    claimSuccessAmount.value = formatClaimAmount(claimSuccessTargetAmount * easedProgress)
+
+    if (progress >= 1) {
+      claimAmountAnimationFrame = null
+      claimSuccessAmount.value = formatClaimAmount(claimSuccessTargetAmount)
+      return
+    }
+
+    claimAmountAnimationFrame = requestAnimationFrame(animate)
+  }
+
+  claimAmountAnimationFrame = requestAnimationFrame(animate)
+}
+
+const openClaimSuccessPopup = () => {
+  showClaimSuccessPopup.value = true
+  startClaimAmountAnimation()
+}
+
+const closeClaimSuccessPopup = () => {
+  showClaimSuccessPopup.value = false
+  stopClaimAmountAnimation()
+}
+
+onBeforeUnmount(() => {
+  stopClaimAmountAnimation()
+})
+
 const statusTextMap: Record<FeedbackStatus, string> = {
   accepted: '已采纳',
   pending: '待处理',
@@ -382,5 +468,126 @@ const myFeedbackList = computed<
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
+}
+
+.feedback-claim-popup-enter-active,
+.feedback-claim-popup-leave-active {
+  transition: opacity 0.24s ease;
+}
+
+.feedback-claim-popup-enter-from,
+.feedback-claim-popup-leave-to {
+  opacity: 0;
+}
+
+.feedback-claim-popup-enter-active .feedback-claim-popup-card,
+.feedback-claim-popup-leave-active .feedback-claim-popup-card {
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.2s ease;
+}
+
+.feedback-claim-popup-enter-from .feedback-claim-popup-card,
+.feedback-claim-popup-leave-to .feedback-claim-popup-card {
+  transform: translateY(16px) scale(0.92);
+  opacity: 0;
+}
+
+.feedback-claim-popup-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  background: rgba(2, 8, 14, 0.7);
+  backdrop-filter: blur(2px);
+}
+
+.feedback-claim-popup-card {
+  position: relative;
+  overflow: visible;
+  width: min(100%, 340px);
+  border-radius: 30px;
+  padding: 74px 22px 26px;
+  background: linear-gradient(180deg, #24a35a 0%, #17753f 56%, #0d3e2a 100%);
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.42),
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 -34px 42px rgba(4, 22, 14, 0.45) inset;
+}
+
+.feedback-claim-popup-star {
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+  left: calc(50% - 66px);
+  top: -20px;
+  width: 18px;
+  height: 18px;
+}
+
+.feedback-claim-popup-ellipse {
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+  left: calc(50% + 54px);
+  top: -14px;
+  width: 14px;
+  height: 14px;
+}
+
+.feedback-claim-popup-bow {
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: -20px;
+  width: 166px;
+  transform: translateX(-50%);
+}
+
+.feedback-claim-popup-amount {
+  margin: 0;
+  text-align: center;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  color: #fff;
+}
+
+.feedback-claim-popup-title {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #fff;
+}
+
+.feedback-claim-popup-description {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.feedback-claim-popup-confirm {
+  margin-top: 24px;
+  display: flex;
+  height: 46px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #2ef58f 0%, #68ee7d 100%);
+  color: #00140b;
+  font-size: 18px;
+  font-weight: 700;
 }
 </style>
