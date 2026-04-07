@@ -29,7 +29,25 @@ export const useWithdrawFlow = () => {
 
   const amount = computed(() => activePayload.value?.amount ?? 0)
   const currencyCode = computed(() => activePayload.value?.currencyCode || 'PHP')
-  const maskedPhoneNumber = computed(() => activePayload.value?.phoneNumber || '+63-999****9999')
+  const maskedPhoneNumber = computed(() => {
+    const areaCode = String(userInfo.value?.areaCode ?? '').trim()
+    const telephone = String(userInfo.value?.telephone ?? '')
+      .trim()
+      .replace(/\D/g, '')
+
+    if (!telephone) {
+      return ''
+    }
+
+    if (telephone.length <= 4) {
+      return `+${areaCode}-${telephone}`
+    }
+
+    const prefix = telephone.slice(0, 3)
+    const suffix = telephone.slice(-4)
+
+    return `+${areaCode}-${prefix}****${suffix}`
+  })
 
   const beginWithdrawFlow = (payload: WithdrawSubmitPayload) => {
     activePayload.value = payload

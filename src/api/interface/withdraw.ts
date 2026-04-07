@@ -72,6 +72,50 @@ export interface MemberCardItem {
 export type SelectMemberCardResponse = WithdrawBaseResponse<MemberCardItem[]>
 
 /**
+ * 新增会员收款账号
+ */
+export interface AddMemberCardForm {
+  verifyType: string
+  verifyCode: string
+  /**
+   * 收款类型 4 银行卡 5 虚拟账号 6 电子钱包 7 快捷提现
+   */
+  type: number
+  /**
+   * 收款账号卡类型
+   */
+  cardType: number
+  /**
+   * 收款号
+   */
+  accountNo: string
+  /**
+   * 收款人名称
+   */
+  accountName: string
+  /**
+   * 账号子编码(银行编码)
+   */
+  accountSubNo?: string
+  /**
+   * 是否默认 0 非默认 1 默认
+   */
+  defaultCard?: number
+  /**
+   * 有效日期
+   */
+  validDate?: number
+  /**
+   * 备注。开户行地址|收款码地址
+   */
+  remark?: string
+}
+
+export interface AddMemberCardResponse extends WithdrawBaseResponse<never> {
+  success?: boolean
+}
+
+/**
  * 查询快捷提现金额
  */
 export interface QueryFastAmountForm {

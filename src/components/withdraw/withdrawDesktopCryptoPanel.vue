@@ -169,6 +169,7 @@
       v-model="addAddressVisible"
       v-model:input-value="pendingAddress"
       :currency-code="currency"
+      :network="selectNetwork"
       :icon="typeof currencyOption?.icon === 'string' ? currencyOption.icon : ''"
       @close="closeAddAddress"
       @confirm="confirmAddAddress"
@@ -258,6 +259,7 @@ const doWithdrawDeposit = () => {
   emit('submit', {
     tabType: 'Crypto',
     amount: Number(amount.value),
+    channelId: 3,
     currencyCode: currentCurrency.value,
     methodLabel: currency.value,
     address: address.value,
