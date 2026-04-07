@@ -28,20 +28,24 @@
 
 <script setup lang="ts">
 import Api from '@/api'
+import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
-import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
+import { getCurrentCurrency, getDefaultAreaCode, getLanguageCode } from '@/utils/locale'
 import {
   handlePasswordInput,
   handlePhoneInput,
   handleVerificationCodeInput,
   isValidPassword
 } from '@/utils/phone-input'
+import { StringExtension } from '@/utils/string-extension'
 import { showToast } from 'vant'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   defaultTab?: 'signin' | 'signup'
 }
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<Props>(), {
   defaultTab: 'signin'
@@ -54,6 +58,17 @@ const emit = defineEmits<{
 }>()
 
 const userStore = useUserStore()
+const defaultAreaCode = getDefaultAreaCode()
+const REGISTER_SMS_COUNTDOWN_STORAGE_KEY = 'register-sms-countdown'
+
+const {
+  remainingSeconds: countdown,
+  startCountdown,
+  syncCountdown
+} = usePersistentCountdown({
+  storageKey: REGISTER_SMS_COUNTDOWN_STORAGE_KEY,
+  durationSeconds: 60
+})
 
 // 当前激活的标签页
 const activeTab = ref<'signin' | 'signup'>(props.defaultTab)
@@ -104,10 +119,6 @@ const formData = ref({
     confirmPassword: ''
   }
 })
-
-// 倒计时
-const countdown = ref(0)
-let countdownTimer: ReturnType<typeof setInterval> | null = null
 
 // 登录表单验证
 const isSigninValid = computed(() => {
@@ -221,8 +232,8 @@ const handleLogin = async () => {
     const loginData = {
       memberId: formData.value.signin.account,
       telephone: formData.value.signin.account,
-      memberPwd: formData.value.signin.password,
-      areaCode: '63',
+      memberPwd: StringExtension.md5(formData.value.signin.password),
+      areaCode: defaultAreaCode,
       channelId: '1',
       requestMethod: '0'
     }
@@ -266,14 +277,14 @@ const handleRegister = async () => {
     const currency = getCurrentCurrency()
 
     const registerData = {
-      memberId: `63${formData.value.signup.account}`,
+      memberId: `${defaultAreaCode}${formData.value.signup.account}`,
       channelId: '1',
       languageCode: languageCode,
       requestMethod: 1,
       currency: currency.toUpperCase(),
       smsCode: formData.value.signup.code,
-      memberPwd: formData.value.signup.password,
-      areaCode: '63',
+      memberPwd: StringExtension.md5(formData.value.signup.password),
+      areaCode: defaultAreaCode,
       telephone: formData.value.signup.account
     }
 
@@ -310,6 +321,11 @@ const handleSendCode = async () => {
   try {
     const telephone = formData.value.signup.account
     if (!telephone) {
+      showToast({
+        message: t('common.pleaseEnterThePhoneNumber'),
+        type: 'fail',
+        zIndex: 10001
+      })
       return
     }
 
@@ -319,7 +335,7 @@ const handleSendCode = async () => {
     // 发送短信接口
     const response = await Api.auth.sendSms({
       telephone: telephone,
-      areaCode: '63'
+      areaCode: defaultAreaCode
     })
     if (response && response.message) {
       showToast({
@@ -331,19 +347,7 @@ const handleSendCode = async () => {
     }
 
     // 开始60秒倒计时
-    countdown.value = 60
-    if (countdownTimer) {
-      clearInterval(countdownTimer)
-    }
-    countdownTimer = setInterval(() => {
-      countdown.value--
-      if (countdown.value <= 0) {
-        if (countdownTimer) {
-          clearInterval(countdownTimer)
-          countdownTimer = null
-        }
-      }
-    }, 1000)
+    startCountdown()
   } catch (error) {
     console.error(error)
   }
@@ -380,12 +384,8 @@ const resetForm = () => {
   showPassword.value.confirmPassword = false
   showConfirmPassword.value = false
 
-  // 清除倒计时
-  if (countdownTimer) {
-    clearInterval(countdownTimer)
-    countdownTimer = null
-  }
-  countdown.value = 0
+  // 同步当前倒计时状态
+  syncCountdown()
 
   // 重置到默认标签页
   activeTab.value = props.defaultTab
