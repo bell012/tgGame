@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import i18n from '@/i18n'
+import { useAuthModalStore } from '@/stores/authModal'
+import { useUserStore } from '@/stores/user'
 import {
   getLocaleFromRouteParam,
   getPersistedLocale,
@@ -47,9 +49,10 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/fun/casino/gameList/index.vue'),
     meta: {
       title: '游戏列表',
+      requiresAuth: true, // 需要登录后才能进入路由
       mobile: {
-        hideBottomBar: true,
-        hideTopNav: true
+        hideBottomBar: true, // H5路由进入后是否隐藏全局底部 TabBar
+        hideTopNav: true // H5 路由进入后是否隐藏全局顶部 TopNav
       }
     },
     props: route => ({
@@ -62,6 +65,7 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/fun/casino/brandGameList/index.vue'),
     meta: {
       title: '厂商游戏列表',
+      requiresAuth: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -77,7 +81,8 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'originate',
     component: () => import('@/views/fun/originate/index.vue'),
     meta: {
-      title: 'BC原创'
+      title: 'BC原创',
+      requiresAuth: true
     }
   },
   {
@@ -85,7 +90,8 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'exclusive',
     component: () => import('@/views/fun/exclusive/index.vue'),
     meta: {
-      title: 'BC独家'
+      title: 'BC独家',
+      requiresAuth: true
     }
   },
   {
@@ -110,6 +116,7 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/menu/referral/index.vue'),
     meta: {
       title: '代理',
+      requiresAuth: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -122,6 +129,7 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/menu/referral/commission-records/index.vue'),
     meta: {
       title: '佣金记录列表',
+      requiresAuth: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -134,6 +142,7 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/menu/referral/commission-rules/index.vue'),
     meta: {
       title: 'Commission Rules',
+      requiresAuth: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -146,6 +155,7 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/menu/referral/referral-records/index.vue'),
     meta: {
       title: '我的代理-推荐记录列表',
+      requiresAuth: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -158,6 +168,7 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/menu/notifications/index.vue'),
     meta: {
       title: '通知',
+      requiresAuth: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -170,6 +181,7 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/menu/notifications/detail/index.vue'),
     meta: {
       title: '通知详情',
+      requiresAuth: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -191,6 +203,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '游戏详情',
       description: '游戏详情',
+      requiresAuth: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -204,6 +217,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '推荐游戏',
       description: '推荐游戏',
+      requiresAuth: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -228,6 +242,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '投注历史',
       description: '投注历史',
+      requiresAuth: true,
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
@@ -242,6 +257,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '投注详情',
       description: '投注详情',
+      requiresAuth: true,
       mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画
       mobile: {
@@ -257,6 +273,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '个人中心',
       description: '个人中心',
+      requiresAuth: true,
       mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画
       mobile: {
@@ -272,6 +289,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '规则',
       description: '规则',
+      requiresAuth: true,
       mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画
       mobile: {
@@ -287,6 +305,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: 'VIP俱乐部',
       description: 'VIP俱乐部',
+      requiresAuth: true,
       slideTransition: true,
       mobile: {
         hideBottomBar: true,
@@ -301,6 +320,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '我的资料',
       description: '我的资料',
+      requiresAuth: true,
       mobileOnly: true,
       slideTransition: true,
       mobile: {
@@ -316,6 +336,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '编辑资料',
       description: '编辑资料',
+      requiresAuth: true,
       mobileOnly: true,
       slideTransition: true,
       mobile: {
@@ -331,6 +352,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '资金详情',
       description: '资金详情',
+      requiresAuth: true,
       mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true,
       mobile: {
@@ -346,6 +368,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '资金明细',
       description: '资金明细',
+      requiresAuth: true,
       slideTransition: true,
       mobile: {
         hideBottomBar: true,
@@ -360,6 +383,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '流水稽查详情',
       description: '流水稽查详情',
+      requiresAuth: true,
       mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true,
       mobile: {
@@ -375,6 +399,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '流水稽查',
       description: '流水稽查',
+      requiresAuth: true,
       slideTransition: true,
       mobile: {
         hideBottomBar: true,
@@ -389,6 +414,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '充值',
       description: '充值',
+      requiresAuth: true,
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
@@ -403,6 +429,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '我的订单',
       description: '我的订单',
+      requiresAuth: true,
       slideTransition: true,
       mobile: {
         hideBottomBar: true,
@@ -417,6 +444,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '提现',
       description: '提现',
+      requiresAuth: true,
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
@@ -431,6 +459,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '全局设定',
       description: '全局设定',
+      requiresAuth: true,
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
@@ -445,6 +474,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '安全性',
       description: '安全性',
+      requiresAuth: true,
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
@@ -459,6 +489,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '修改登录密码',
       description: '修改登录密码',
+      requiresAuth: true,
       mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画
       mobile: {
@@ -554,6 +585,33 @@ router.beforeEach((to, _from, next) => {
 
   if (localStorage.getItem('language') !== languageCode) {
     localStorage.setItem('language', languageCode)
+  }
+
+  const requiresAuth = to.matched.some(record => record.meta?.requiresAuth === true)
+
+  if (requiresAuth) {
+    const userStore = useUserStore()
+    const authModalStore = useAuthModalStore()
+    const { userInfo, acctInfo } = userStore.syncStoredUserData()
+    const isLoggedIn = Boolean(userInfo?.tradeToken || acctInfo?.memberId)
+
+    if (!isLoggedIn) {
+      if (_from.matched.length > 0) {
+        authModalStore.openLoginModal()
+        next(false)
+        return
+      }
+
+      next({
+        path: withLocalePrefix('/', targetLocale),
+        replace: true
+      })
+
+      setTimeout(() => {
+        authModalStore.openLoginModal()
+      }, 0)
+      return
+    }
   }
 
   next()
