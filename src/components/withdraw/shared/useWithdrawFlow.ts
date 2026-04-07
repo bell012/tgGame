@@ -1,23 +1,31 @@
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { showToast } from 'vant'
+import { storeToRefs } from 'pinia'
 import type { WithdrawOrderStatus, WithdrawSubmitPayload } from './types'
-
-const createOrderNo = () => `ts${Date.now()}`
-
-const createCreatedAt = () => {
-  return new Date().toLocaleString('en-US')
-}
+import { submitWithdrawWorkflow } from './withdrawWorkflow'
+import { useUserStore } from '@/stores/user'
 
 export const useWithdrawFlow = () => {
+  const { t } = useI18n()
+  const userStore = useUserStore()
+  const { userInfo } = storeToRefs(userStore)
   const activePayload = ref<WithdrawSubmitPayload | null>(null)
   const kindReminderVisible = ref(false)
   const paymentPasswordVisible = ref(false)
   const smsVerificationVisible = ref(false)
   const withdrawOrderVisible = ref(false)
+  const isSubmitting = ref(false)
   const orderStatus = ref<WithdrawOrderStatus>('processing')
   const orderNo = ref('')
   const createdAt = ref('')
+  const orderAmountText = ref('')
+  const orderMethodLabel = ref('')
+  const pendingPaymentPassword = ref('')
 
-  const shouldRequireKindReminder = ref(true)
+  const shouldRequireKindReminder = computed(
+    () => Number(userInfo.value?.checkTransactionPwd ?? 0) !== 1
+  )
 
   const amount = computed(() => activePayload.value?.amount ?? 0)
   const currencyCode = computed(() => activePayload.value?.currencyCode || 'PHP')
@@ -42,23 +50,45 @@ export const useWithdrawFlow = () => {
     window.dispatchEvent(new CustomEvent('withdraw-open-settings'))
   }
 
-  const handlePaymentPasswordConfirm = () => {
+  const handlePaymentPasswordConfirm = (password: string) => {
+    pendingPaymentPassword.value = password
     paymentPasswordVisible.value = false
     smsVerificationVisible.value = true
   }
 
-  const handleSmsVerificationConfirm = () => {
-    smsVerificationVisible.value = false
-
+  const handleSmsVerificationConfirm = async (code: string) => {
     const payload = activePayload.value
-    if (!payload) {
+    if (!payload || isSubmitting.value) {
       return
     }
 
-    orderNo.value = createOrderNo()
-    createdAt.value = createCreatedAt()
-    orderStatus.value = 'processing'
-    withdrawOrderVisible.value = true
+    isSubmitting.value = true
+
+    try {
+      const orderDetail = await submitWithdrawWorkflow({
+        payload,
+        verifyCode: code,
+        modifyBy: pendingPaymentPassword.value
+      })
+
+      smsVerificationVisible.value = false
+      orderNo.value = orderDetail.orderNo
+      createdAt.value = orderDetail.createdAt
+      orderStatus.value = orderDetail.status
+      orderAmountText.value = orderDetail.amountText
+      orderMethodLabel.value = orderDetail.methodLabel
+      withdrawOrderVisible.value = true
+      pendingPaymentPassword.value = ''
+    } catch (error) {
+      const messageKey = error instanceof Error ? error.message : 'withdraw.submit_failed'
+
+      showToast({
+        message: messageKey.startsWith('withdraw.') ? t(messageKey) : messageKey,
+        type: 'fail'
+      })
+    } finally {
+      isSubmitting.value = false
+    }
   }
 
   const resetWithdrawFlow = () => {
@@ -66,6 +96,7 @@ export const useWithdrawFlow = () => {
     paymentPasswordVisible.value = false
     smsVerificationVisible.value = false
     withdrawOrderVisible.value = false
+    pendingPaymentPassword.value = ''
   }
 
   const closeWithdrawOrder = () => {
@@ -77,6 +108,7 @@ export const useWithdrawFlow = () => {
     paymentPasswordVisible,
     smsVerificationVisible,
     withdrawOrderVisible,
+    isSubmitting,
     amount,
     currencyCode,
     maskedPhoneNumber,
@@ -84,6 +116,8 @@ export const useWithdrawFlow = () => {
     orderStatus,
     orderNo,
     createdAt,
+    orderAmountText,
+    orderMethodLabel,
     beginWithdrawFlow,
     handleKindReminderSkip,
     handleKindReminderSettings,
