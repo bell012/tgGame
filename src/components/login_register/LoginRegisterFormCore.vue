@@ -36,12 +36,15 @@ import {
   handleVerificationCodeInput,
   isValidPassword
 } from '@/utils/phone-input'
+import { StringExtension } from '@/utils/string-extension'
 import { showToast } from 'vant'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   defaultTab?: 'signin' | 'signup'
 }
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<Props>(), {
   defaultTab: 'signin'
@@ -222,7 +225,7 @@ const handleLogin = async () => {
     const loginData = {
       memberId: formData.value.signin.account,
       telephone: formData.value.signin.account,
-      memberPwd: formData.value.signin.password,
+      memberPwd: StringExtension.md5(formData.value.signin.password),
       areaCode: defaultAreaCode,
       channelId: '1',
       requestMethod: '0'
@@ -273,7 +276,7 @@ const handleRegister = async () => {
       requestMethod: 1,
       currency: currency.toUpperCase(),
       smsCode: formData.value.signup.code,
-      memberPwd: formData.value.signup.password,
+      memberPwd: StringExtension.md5(formData.value.signup.password),
       areaCode: defaultAreaCode,
       telephone: formData.value.signup.account
     }
@@ -311,6 +314,11 @@ const handleSendCode = async () => {
   try {
     const telephone = formData.value.signup.account
     if (!telephone) {
+      showToast({
+        message: t('common.pleaseEnterThePhoneNumber'),
+        type: 'fail',
+        zIndex: 10001
+      })
       return
     }
 
