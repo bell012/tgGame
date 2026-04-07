@@ -36,7 +36,7 @@
             v-for="(image, index) in feedbackDetail.screenshotImages"
             :key="`${feedbackDetail.recordId}-screenshot-${index}`"
             type="button"
-            class="h-[52px] overflow-hidden rounded-[8px] bg-bg-3"
+            class="feedback-screenshot-item overflow-hidden rounded-[8px] bg-bg-3"
             @click="openScreenshotPreview(index)"
           >
             <img :src="image" :alt="`截图${index + 1}`" class="h-full w-full object-cover" />
@@ -114,5 +114,10 @@ const openScreenshotPreview = (startPosition: number) => {
   gap: 12px;
   font-size: 15px;
   color: var(--color-text-level-3);
+}
+
+.feedback-screenshot-item {
+  width: 100%;
+  aspect-ratio: 1 / 1;
 }
 </style>
