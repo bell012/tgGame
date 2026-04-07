@@ -158,15 +158,16 @@
 
         <section
           v-for="item in myFeedbackList"
-          :key="item.id"
-          class="relative mt-3.5 rounded-[12px] bg-bg-2 p-3.5"
+          :key="item.recordId"
+          class="relative mt-3.5 cursor-pointer rounded-[12px] bg-bg-2 p-3.5"
+          @click="goToFeedbackDetail(item.recordId)"
         >
           <span
             v-if="item.showDot"
             class="absolute right-4 top-4 block h-[10px] w-[10px] rounded-full bg-theme-primary"
           ></span>
 
-          <div class="text-[18px] font-[400] text-text-1">反馈单号：{{ item.id }}</div>
+          <div class="text-[18px] font-[400] text-text-1">反馈单号：{{ item.ticketNo }}</div>
           <div class="mt-2 line-clamp-2 text-[15px] leading-[22px] text-text-2">
             {{ item.content }}
           </div>
@@ -222,14 +223,16 @@ import feedbackStarIcon from '@/static/svg/feedback/star.svg?url'
 import feedbackEllipseIcon from '@/static/svg/feedback/ellipse.svg?url'
 import deleteIcon from '@/static/img/payment/upload_delete.png'
 import { computed, onBeforeUnmount, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { showToast, Uploader, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
 import H5Header from '@/components/common/H5Header.vue'
 import { getCurrencySymbol } from '@/utils/locale'
+import { feedbackMockRecords, feedbackStatusClassMap, feedbackStatusTextMap } from './mock'
 
 type FeedbackTab = 'create' | 'mine'
-type FeedbackStatus = 'accepted' | 'pending' | 'rejected'
 
 const activeTab = ref<FeedbackTab>('create')
+const router = useRouter()
 const selectedType = ref('type-1')
 const feedbackContent = ref('')
 const feedbackFileList = ref<UploaderFileListItem[]>([])
@@ -376,50 +379,20 @@ const closeClaimSuccessPopup = () => {
   stopClaimAmountAnimation()
 }
 
+const goToFeedbackDetail = (recordId: string) => {
+  router.push({
+    name: 'personal-center-feedback-detail',
+    params: { recordId }
+  })
+}
+
 onBeforeUnmount(() => {
   stopClaimAmountAnimation()
 })
 
-const statusTextMap: Record<FeedbackStatus, string> = {
-  accepted: '已采纳',
-  pending: '待处理',
-  rejected: '未采纳'
-}
-
-const statusClassMap: Record<FeedbackStatus, string> = {
-  accepted: 'text-theme-primary',
-  pending: 'text-[#F6AE2D]',
-  rejected: 'text-[#FF4D4F]'
-}
-
-const myFeedbackList = computed<
-  {
-    id: string
-    content: string
-    status: FeedbackStatus
-    showDot?: boolean
-  }[]
->(() => [
-  {
-    id: '94880',
-    content:
-      '进一步加强反作弊措施，列如监控多开账号或者异常投注行为。进一步加强反作弊措施，列如监控多开账号或者异常投注行为。',
-    status: 'accepted'
-  },
-  {
-    id: '94880',
-    content:
-      '进一步加强反作弊措施，列如监控多开账号或者异常投注行为。进一步加强反作弊措施，列如监控多开账号或者异常投注行为。',
-    status: 'pending'
-  },
-  {
-    id: '94880',
-    content:
-      '进一步加强反作弊措施，列如监控多开账号或者异常投注行为。进一步加强反作弊措施，列如监控多开账号或者异常投注行为。',
-    status: 'rejected',
-    showDot: true
-  }
-])
+const statusTextMap = feedbackStatusTextMap
+const statusClassMap = feedbackStatusClassMap
+const myFeedbackList = computed(() => feedbackMockRecords)
 </script>
 
 <style scoped>
@@ -551,9 +524,9 @@ const myFeedbackList = computed<
 .feedback-claim-popup-amount {
   margin: 0;
   text-align: center;
-  font-size: 34px;
+  font-size: 30px;
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.2;
   white-space: nowrap;
   color: #fff;
 }
@@ -561,9 +534,9 @@ const myFeedbackList = computed<
 .feedback-claim-popup-title {
   margin: 18px 0 0;
   text-align: center;
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
   white-space: nowrap;
   color: #fff;
 }
