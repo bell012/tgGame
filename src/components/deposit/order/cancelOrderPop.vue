@@ -36,7 +36,7 @@
               <div
                 class="flex items-center justify-between p-2.5 sm:p-3 text-text-1 text-[14px] rounded-lg"
                 v-for="(item, index) in cancellations"
-                :key="index"
+                :key="item.id"
                 @click.stop="selectlation(item)"
                 :class="[cancellationId === item.id ? 'bg-theme-3' : '']"
               >
@@ -100,14 +100,14 @@ const emit = defineEmits<{
 const countdownTime = ref<number>(4 * 1000)
 const disabledConfirm = ref<boolean>(false)
 const isSubmitting = ref<boolean>(false)
-const cancellations: cancellationType[] = [
-  { id: '1', text: 'I changed my mind' },
-  { id: '2', text: 'Payment QR code expired' },
-  { id: '3', text: 'I want to place a new order' }
-]
-const cancellationId = ref<string>(cancellations[0]?.id ?? '')
+const cancellations = computed<cancellationType[]>(() => [
+  { id: '1', text: t('deposit.cancel_order_reason_1') },
+  { id: '2', text: t('deposit.cancel_order_reason_2') },
+  { id: '3', text: t('deposit.cancel_order_reason_3') }
+])
+const cancellationId = ref<string>('1')
 const selectedCancellationText = computed(
-  () => cancellations.find(item => item.id === cancellationId.value)?.text ?? ''
+  () => cancellations.value.find(item => item.id === cancellationId.value)?.text ?? ''
 )
 const canSubmitCancel = computed(
   () =>
