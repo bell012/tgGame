@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import Api from '@/api'
 import { useUserStore } from '@/stores/user'
-import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
+import { getCurrentCurrency, getDefaultAreaCode, getLanguageCode } from '@/utils/locale'
 import {
   handlePasswordInput,
   handlePhoneInput,
@@ -54,6 +54,7 @@ const emit = defineEmits<{
 }>()
 
 const userStore = useUserStore()
+const defaultAreaCode = getDefaultAreaCode()
 
 // 当前激活的标签页
 const activeTab = ref<'signin' | 'signup'>(props.defaultTab)
@@ -222,7 +223,7 @@ const handleLogin = async () => {
       memberId: formData.value.signin.account,
       telephone: formData.value.signin.account,
       memberPwd: formData.value.signin.password,
-      areaCode: '63',
+      areaCode: defaultAreaCode,
       channelId: '1',
       requestMethod: '0'
     }
@@ -266,14 +267,14 @@ const handleRegister = async () => {
     const currency = getCurrentCurrency()
 
     const registerData = {
-      memberId: `63${formData.value.signup.account}`,
+      memberId: `${defaultAreaCode}${formData.value.signup.account}`,
       channelId: '1',
       languageCode: languageCode,
       requestMethod: 1,
       currency: currency.toUpperCase(),
       smsCode: formData.value.signup.code,
       memberPwd: formData.value.signup.password,
-      areaCode: '63',
+      areaCode: defaultAreaCode,
       telephone: formData.value.signup.account
     }
 
@@ -319,7 +320,7 @@ const handleSendCode = async () => {
     // 发送短信接口
     const response = await Api.auth.sendSms({
       telephone: telephone,
-      areaCode: '63'
+      areaCode: defaultAreaCode
     })
     if (response && response.message) {
       showToast({

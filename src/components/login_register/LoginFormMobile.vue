@@ -142,7 +142,7 @@
                         <span
                           class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-theme-level-1)] text-xs font-[500]"
                         >
-                          +63
+                          {{ defaultAreaCodeDisplay }}
                         </span>
                         <input
                           :value="formData.signin.account"
@@ -244,7 +244,7 @@
                         <span
                           class="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-theme-level-1)] text-xs font-[500]"
                         >
-                          +63
+                          {{ defaultAreaCodeDisplay }}
                         </span>
                         <input
                           :value="formData.signup.account"
@@ -387,10 +387,12 @@ import FreePerksIcon from '@/static/svg/login/free_perks.svg?component'
 import SafeIcon from '@/static/svg/login/safe.svg?component'
 import PasswordIcon from '@/static/svg/login/password.svg?component'
 import CheckIcon from '@/static/svg/login/check.svg?component'
+import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 interface Props {
   visible: boolean
   defaultTab?: 'signin' | 'signup'
