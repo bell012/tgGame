@@ -28,6 +28,7 @@
 
 <script setup lang="ts">
 import Api from '@/api'
+import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
 import { getCurrentCurrency, getDefaultAreaCode, getLanguageCode } from '@/utils/locale'
 import {
@@ -58,6 +59,16 @@ const emit = defineEmits<{
 
 const userStore = useUserStore()
 const defaultAreaCode = getDefaultAreaCode()
+const REGISTER_SMS_COUNTDOWN_STORAGE_KEY = 'register-sms-countdown'
+
+const {
+  remainingSeconds: countdown,
+  startCountdown,
+  syncCountdown
+} = usePersistentCountdown({
+  storageKey: REGISTER_SMS_COUNTDOWN_STORAGE_KEY,
+  durationSeconds: 60
+})
 
 // 当前激活的标签页
 const activeTab = ref<'signin' | 'signup'>(props.defaultTab)
@@ -108,10 +119,6 @@ const formData = ref({
     confirmPassword: ''
   }
 })
-
-// 倒计时
-const countdown = ref(0)
-let countdownTimer: ReturnType<typeof setInterval> | null = null
 
 // 登录表单验证
 const isSigninValid = computed(() => {
@@ -340,19 +347,7 @@ const handleSendCode = async () => {
     }
 
     // 开始60秒倒计时
-    countdown.value = 60
-    if (countdownTimer) {
-      clearInterval(countdownTimer)
-    }
-    countdownTimer = setInterval(() => {
-      countdown.value--
-      if (countdown.value <= 0) {
-        if (countdownTimer) {
-          clearInterval(countdownTimer)
-          countdownTimer = null
-        }
-      }
-    }, 1000)
+    startCountdown()
   } catch (error) {
     console.error(error)
   }
@@ -389,12 +384,8 @@ const resetForm = () => {
   showPassword.value.confirmPassword = false
   showConfirmPassword.value = false
 
-  // 清除倒计时
-  if (countdownTimer) {
-    clearInterval(countdownTimer)
-    countdownTimer = null
-  }
-  countdown.value = 0
+  // 同步当前倒计时状态
+  syncCountdown()
 
   // 重置到默认标签页
   activeTab.value = props.defaultTab
