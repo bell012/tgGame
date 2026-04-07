@@ -18,6 +18,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import {
   handlePhoneInput,
   handlePasswordInput,
@@ -32,6 +33,16 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const defaultAreaCode = getDefaultAreaCode()
+const RESET_PASSWORD_SMS_COUNTDOWN_STORAGE_KEY = 'reset-password-sms-countdown'
+
+const {
+  remainingSeconds: countdown,
+  startCountdown,
+  syncCountdown
+} = usePersistentCountdown({
+  storageKey: RESET_PASSWORD_SMS_COUNTDOWN_STORAGE_KEY,
+  durationSeconds: 60
+})
 
 // 密码显示状态
 const showPassword = ref(false)
@@ -44,10 +55,6 @@ const formData = ref({
   password: '',
   confirmPassword: ''
 })
-
-// 倒计时
-const countdown = ref(0)
-let countdownTimer: ReturnType<typeof setInterval> | null = null
 
 // 重置密码表单验证
 const isResetValid = computed(() => {
@@ -133,19 +140,7 @@ const handleSendCode = async () => {
     }
 
     // 开始60秒倒计时
-    countdown.value = 60
-    if (countdownTimer) {
-      clearInterval(countdownTimer)
-    }
-    countdownTimer = setInterval(() => {
-      countdown.value--
-      if (countdown.value <= 0) {
-        if (countdownTimer) {
-          clearInterval(countdownTimer)
-          countdownTimer = null
-        }
-      }
-    }, 1000)
+    startCountdown()
   } catch (error) {
     console.error(error)
   }
@@ -195,12 +190,8 @@ const resetForm = () => {
   showPassword.value = false
   showConfirmPassword.value = false
 
-  // 清除倒计时
-  if (countdownTimer) {
-    clearInterval(countdownTimer)
-    countdownTimer = null
-  }
-  countdown.value = 0
+  // 同步当前倒计时状态
+  syncCountdown()
 }
 
 defineExpose({
