@@ -143,12 +143,12 @@
               <div class="feedback-coin-icon">$</div>
               <div class="ml-2.5">
                 <div class="text-sm text-text-1">反馈金额</div>
-                <div class="text-[38rpx] font-[700] leading-[40rpx] text-text-1">9999.99</div>
+                <div class="text-[18px] font-[700] leading-[20px] text-text-1">9999.99</div>
               </div>
             </div>
             <button
               type="button"
-              class="h-[42px] min-w-[114px] rounded-[12px] bg-theme-primary px-4 text-[34rpx] font-[700] text-text-4"
+              class="h-[36px] min-w-[114px] rounded-[12px] bg-theme-primary px-4 text-[16px] font-[700] text-text-4"
             >
               领取
             </button>
@@ -165,13 +165,13 @@
             class="absolute right-4 top-4 block h-[10px] w-[10px] rounded-full bg-theme-primary"
           ></span>
 
-          <div class="text-[18px] font-[700] text-text-1">反馈单号：{{ item.id }}</div>
+          <div class="text-[18px] font-[400] text-text-1">反馈单号：{{ item.id }}</div>
           <div class="mt-2 line-clamp-2 text-[15px] leading-[22px] text-text-2">
             {{ item.content }}
           </div>
 
           <div class="mt-3 flex items-center justify-between">
-            <span class="text-[36rpx] font-[700]" :class="statusClassMap[item.status]">
+            <span class="text-[36rpx] font-[400]" :class="statusClassMap[item.status]">
               {{ statusTextMap[item.status] }}
             </span>
             <div class="flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-bg-3">
