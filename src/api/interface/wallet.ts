@@ -206,6 +206,17 @@ export interface QueryPayOrderByOrderIdResponse {
   result?: QueryPayOrderByOrderIdResult
 }
 
+export interface UpdatePayOrderRemarkForm {
+  orderId: string | number
+  orderRemark: string
+}
+
+export interface UpdatePayOrderRemarkResponse {
+  code: string
+  message: string
+  success: boolean
+}
+
 export interface QueryPaySubColumnItem {
   columnCode: number
   currency: string
@@ -228,7 +239,7 @@ export interface QueryPaySubColumnItem {
 }
 
 export interface QueryPaySubColumnPageResponse {
-  data: any
+  data: unknown
   code: string
   message: string
   success: boolean

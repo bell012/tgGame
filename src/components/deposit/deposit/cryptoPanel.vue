@@ -125,7 +125,9 @@
       </div>
 
       <div class="w-full relative">
-        <p class="text-xs text-secondary-7 py-3">No wagering required for withdrawal</p>
+        <p class="py-3 text-xs text-secondary-7">
+          {{ t('deposit.withdrawal_no_wagering_tip') }}
+        </p>
         <div
           ref="presetsRef"
           class="grid grid-cols-3 gap-2 sm:gap-3 p-2.5 sm:p-5 bg-bg-4 transition-all duration-300 rounded-tl-lg rounded-tr-lg"
@@ -178,7 +180,7 @@
       class="mt-3 w-full shrink-0 bg-bg-2 p-4 rounded-lg flex items-center justify-between"
       @click="loadWallet"
     >
-      <div class="text-xs sm:text-sm text-text-1">Load from your wallet</div>
+      <div class="text-xs sm:text-sm text-text-1">{{ t('deposit.load_from_wallet') }}</div>
       <div class="flex items-center">
         <img class="h-6 mr-1" :src="groupIcon" />
         <div class="text-xs sm:text-sm text-text-1">+300</div>
@@ -348,19 +350,6 @@ const showUnavailableToast = () => {
   })
 }
 
-// 获取当前选中充值金额对应的优惠比例
-const resolveSelectedDiscountRatio = () => {
-  const normalizedAmount = Number(amount.value)
-  if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) return undefined
-
-  const matchedDiscount = selectedDiscountItem.value?.discounts?.find(
-    discount => Number(discount.amount) === normalizedAmount
-  )
-  const ratio = Number(matchedDiscount?.ratio)
-
-  return Number.isFinite(ratio) && ratio > 0 ? ratio : undefined
-}
-
 // 解析并返回 HTMLElement 节点
 const resolveHTMLElement = (el: Element | ComponentPublicInstance | null) => {
   if (el instanceof HTMLElement) return el
@@ -402,7 +391,7 @@ const syncPresetAmounts = () => {
 
 // 格式化流水倍数展示文案
 const formatWageringLabel = (multiple: number) =>
-  multiple === 0 ? 'No Wagering' : `${multiple}x Wagering`
+  multiple === 0 ? t('deposit.wagering_no') : t('deposit.wagering_multiple', { multiple })
 
 // 记录渠道项的 DOM 引用
 const setChannelItemRef = (el: Element | ComponentPublicInstance | null, rowId: number) => {
@@ -636,6 +625,7 @@ const applyOrderDetail = (detail?: QueryPayOrderByOrderIdResult) => {
     accountNo: selectedSubColumn.value?.offlineAccount?.accountNo ?? '',
     busiAmount: Number(amount.value ?? 0),
     currency: getCurrentCurrency(),
+    method_icon: selectedMethod.value?.columnIco ?? selectedMethod.value?.defaultOrderIcon ?? '',
     status: 0
   }
 }
@@ -675,13 +665,13 @@ const doDeposit = async () => {
     payChannelCode: selectedDiscountPayChannelCode.value || CRYPTO_PAY_CHANNEL_CODE,
     channelId: isMobile.value ? 4 : 3,
     subColumnCode: selectedSubColumn.value.rowId,
-    flows: selectedDiscountItem.value?.multiple ?? 0
+    flows: 0
   }
 
-  const discount = resolveSelectedDiscountRatio()
-  if (discount !== undefined) {
-    param.discount = discount
-  }
+  // const discount = resolveSelectedDiscountRatio()
+  // if (discount !== undefined) {
+  //   param.discount = discount
+  // }
 
   try {
     const response = await Api.wallet.submitPayOrder(param)
