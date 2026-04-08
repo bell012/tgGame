@@ -515,6 +515,22 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'transactionPassword',
+    name: 'transactionPassword',
+    component: () => import('@/views/settings/transactionPassword/index.vue'),
+    meta: {
+      title: '交易密码',
+      description: '交易密码',
+      requiresAuth: true,
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'security-situation',
     name: 'security-situation',
     component: () => import('@/views/wallet/security/index.vue'),
