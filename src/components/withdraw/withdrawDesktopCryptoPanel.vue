@@ -74,7 +74,7 @@
         </div>
         <div class="relative mt-2">
           <button
-            v-if="!hasSelectedReceiveAddress"
+            v-if="!hasSelectedReceiveAddress && canAddAddress"
             type="button"
             class="flex h-12 w-full items-center justify-center rounded-lg border border-dashed border-theme-primary text-base font-bold text-theme-primary"
             @click="openAddressList"
@@ -104,6 +104,7 @@
             :selected-id="selectedReceiveAddress?.id"
             :currency-code="currency"
             :icon="typeof currencyOption?.icon === 'string' ? currencyOption.icon : ''"
+            :show-add-button="canAddAddress"
             @select="handleSelectReceiveAddress"
             @add="openAddAddress"
           />
@@ -168,8 +169,9 @@
     <withdrawCryptoAddAddressPop
       v-model="addAddressVisible"
       v-model:input-value="pendingAddress"
+      v-model:network="selectNetwork"
       :currency-code="currency"
-      :network="selectNetwork"
+      :network-options="networkOptions"
       :icon="typeof currencyOption?.icon === 'string' ? currencyOption.icon : ''"
       @close="closeAddAddress"
       @confirm="confirmAddAddress"
@@ -200,8 +202,10 @@ const {
   address,
   addressListVisible,
   amount,
+  balanceAmount,
   availableReceiveAddresses,
   addAddressVisible,
+  canAddAddress,
   coinCode,
   coinMoreShow,
   currency,
@@ -217,6 +221,7 @@ const {
   isAmountDisabled,
   isRefreshingBalance,
   isWithdrawDisabled,
+  matchedWithdrawMethod,
   networkOptions,
   openAddressList,
   openAddAddress,
@@ -259,9 +264,12 @@ const doWithdrawDeposit = () => {
   emit('submit', {
     tabType: 'Crypto',
     amount: Number(amount.value),
+    balanceAmount: balanceAmount.value,
     channelId: 3,
     currencyCode: currentCurrency.value,
     methodLabel: currency.value,
+    paymentCode: matchedWithdrawMethod.value?.paymentCode,
+    accountRowId: selectedReceiveAddress.value?.id,
     address: address.value,
     network: selectNetwork.value
   })

@@ -101,7 +101,9 @@ interface Props {
   amount: number
   currencyCode: string
   phoneNumber?: string
+  sending?: boolean
   loading?: boolean
+  countdownTrigger?: number
 }
 
 const RESEND_SECONDS = 60
@@ -170,12 +172,11 @@ const handleClose = () => {
 }
 
 const handleResend = () => {
-  if (!canResend.value) {
+  if (!canResend.value || props.sending) {
     return
   }
 
   emit('resend')
-  startCountdown()
   void focusInput()
 }
 
@@ -200,8 +201,18 @@ watch(
       return
     }
 
-    startCountdown()
     void focusInput()
+  }
+)
+
+watch(
+  () => props.countdownTrigger,
+  value => {
+    if (!props.modelValue || !value) {
+      return
+    }
+
+    startCountdown()
   }
 )
 

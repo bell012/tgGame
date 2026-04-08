@@ -284,6 +284,7 @@ export function useWithdrawFiat() {
     applyQuickAmount,
     availableAccounts,
     addAccountVisible,
+    balanceAmount,
     closeAccountList,
     closeAddAccount,
     confirmAddAccount,

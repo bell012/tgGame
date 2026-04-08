@@ -75,8 +75,8 @@ export type SelectMemberCardResponse = WithdrawBaseResponse<MemberCardItem[]>
  * 新增会员收款账号
  */
 export interface AddMemberCardForm {
-  verifyType: string
-  verifyCode: string
+  verifyType?: string
+  verifyCode?: string
   /**
    * 收款类型 4 银行卡 5 虚拟账号 6 电子钱包 7 快捷提现
    */

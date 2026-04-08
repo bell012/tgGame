@@ -5,6 +5,7 @@ export type WithdrawOrderStatus = 'processing' | 'completed'
 export interface WithdrawSubmitPayload {
   tabType: WithdrawTabType
   amount: number
+  balanceAmount?: number
   channelId: string | number
   currencyCode?: string
   methodLabel: string
