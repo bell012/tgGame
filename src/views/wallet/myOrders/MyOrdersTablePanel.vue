@@ -31,7 +31,7 @@
         <div class="flex items-center font-[700] text-text-1">{{ item.amount }}</div>
         <!-- 状态单元格 -->
         <div class="flex items-center justify-end font-[700]">
-          <span :class="statusClassMap[item.status]">{{ item.status }}</span>
+          <span :class="item.statusClass">{{ item.status }}</span>
           <span class="ml-2 text-[14px] text-text-3">›</span>
         </div>
       </button>
@@ -54,20 +54,18 @@
 <script setup lang="ts">
 type ViewState = 'table' | 'empty'
 
-type OrderRowStatus = 'Success' | 'Failed' | 'Processing'
-
 type OrderRow = {
   id: string
   type: string
   time: string
   amount: string
-  status: OrderRowStatus
+  status: string
+  statusClass: string
 }
 
 defineProps<{
   viewState: ViewState
   rows: readonly OrderRow[]
-  statusClassMap: Record<OrderRowStatus, string>
   emptyImg: string
 }>()
 
