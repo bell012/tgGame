@@ -483,6 +483,21 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'preferences',
+    name: 'preferences',
+    component: () => import('@/views/settings/preferences/index.vue'),
+    meta: {
+      title: '偏好设置',
+      description: '偏好设置',
+      requiresAuth: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'changeLoginPassword',
     name: 'changeLoginPassword',
     component: () => import('@/views/settings/changeLoginPassword/index.vue'),

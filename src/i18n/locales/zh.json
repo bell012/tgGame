@@ -85,6 +85,7 @@
     "sessionExpired": "登录已失效，请重新登录",
     "globalSetting": "全局设定",
     "security": "安全性",
+    "preferences": "偏好设置",
     "changeLoginPassword": "修改登录密码",
     "mobileVerification": "手机验证",
     "verificationCodeSentTo": "验证码已发送至",
