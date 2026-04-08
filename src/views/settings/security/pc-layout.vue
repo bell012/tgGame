@@ -61,29 +61,26 @@ import ChangeMobileNumberPcLayout from '../changeMobileNumber/pc-layout.vue'
 import TransactionPassword from '../transactionPassword/pc-layout.vue'
 import PasswordIcon from '@/static/svg/security/password.svg?component'
 import MobileIcon from '@/static/svg/security/mobile.svg?component'
-import TwoFAIcon from '@/static/svg/security/2FA.svg?component'
-import PasskeyIcon from '@/static/svg/security/passkey.svg?component'
-import AntiPhishingIcon from '@/static/svg/security/anti-phishing.svg?component'
+// import TwoFAIcon from '@/static/svg/security/2FA.svg?component'
+// import PasskeyIcon from '@/static/svg/security/passkey.svg?component'
+// import AntiPhishingIcon from '@/static/svg/security/anti-phishing.svg?component'
 import SuccessIcon from '@/static/svg/security/success.svg?component'
 import WarningIcon from '@/static/svg/security/warning.svg?component'
 
 const { t } = useI18n()
 
-type CardKey =
-  | 'loginPassword'
-  | 'transactionPassword'
-  | 'mobile'
-  | 'twoFactor'
-  | 'passkey'
-  | 'antiPhishing'
+type CardKey = 'loginPassword' | 'transactionPassword' | 'mobile'
+// | 'twoFactor'
+// | 'passkey'
+// | 'antiPhishing'
 
 const cards: { cardKey: CardKey; icon: Component; active: boolean }[] = [
   { cardKey: 'loginPassword', icon: PasswordIcon, active: true },
   { cardKey: 'transactionPassword', icon: PasswordIcon, active: false },
-  { cardKey: 'mobile', icon: MobileIcon, active: true },
-  { cardKey: 'twoFactor', icon: TwoFAIcon, active: false },
-  { cardKey: 'passkey', icon: PasskeyIcon, active: false },
-  { cardKey: 'antiPhishing', icon: AntiPhishingIcon, active: false }
+  { cardKey: 'mobile', icon: MobileIcon, active: true }
+  // { cardKey: 'twoFactor', icon: TwoFAIcon, active: false },
+  // { cardKey: 'passkey', icon: PasskeyIcon, active: false },
+  // { cardKey: 'antiPhishing', icon: AntiPhishingIcon, active: false }
 ]
 
 // 修改登录密码弹窗
