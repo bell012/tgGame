@@ -73,31 +73,29 @@ import { useUserStore } from '@/stores/user'
 import H5Header from '@/components/common/H5Header.vue'
 import PasswordIcon from '@/static/svg/security/password.svg?component'
 import MobileIcon from '@/static/svg/security/mobile.svg?component'
-import TwoFAIcon from '@/static/svg/security/2FA.svg?component'
-import PasskeyIcon from '@/static/svg/security/passkey.svg?component'
-import AntiPhishingIcon from '@/static/svg/security/anti-phishing.svg?component'
+// import TwoFAIcon from '@/static/svg/security/2FA.svg?component'
+// import PasskeyIcon from '@/static/svg/security/passkey.svg?component'
+// import AntiPhishingIcon from '@/static/svg/security/anti-phishing.svg?component'
 import SuccessIcon from '@/static/svg/security/success.svg?component'
 import WarningIcon from '@/static/svg/security/warning.svg?component'
+import { navigateToName } from '@/utils/router'
 
 const { t } = useI18n()
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
 console.log(userInfo.value)
-type CardKey =
-  | 'loginPassword'
-  | 'transactionPassword'
-  | 'mobile'
-  | 'twoFactor'
-  | 'passkey'
-  | 'antiPhishing'
+type CardKey = 'loginPassword' | 'transactionPassword' | 'mobile'
+// | 'twoFactor'
+// | 'passkey'
+// | 'antiPhishing'
 
 const cards: { cardKey: CardKey; icon: Component; active: boolean }[] = [
   { cardKey: 'loginPassword', icon: PasswordIcon, active: true },
   { cardKey: 'transactionPassword', icon: PasswordIcon, active: false },
-  { cardKey: 'mobile', icon: MobileIcon, active: true },
-  { cardKey: 'twoFactor', icon: TwoFAIcon, active: false },
-  { cardKey: 'passkey', icon: PasskeyIcon, active: false },
-  { cardKey: 'antiPhishing', icon: AntiPhishingIcon, active: false }
+  { cardKey: 'mobile', icon: MobileIcon, active: true }
+  // { cardKey: 'twoFactor', icon: TwoFAIcon, active: false },
+  // { cardKey: 'passkey', icon: PasskeyIcon, active: false },
+  // { cardKey: 'antiPhishing', icon: AntiPhishingIcon, active: false }
 ]
 
 const displayMobile = computed(() => {
@@ -114,7 +112,17 @@ onMounted(() => {
 })
 
 const handleCardAction = (_key: CardKey) => {
-  console.log(`跳转 ${_key}`)
+  switch (_key) {
+    case 'loginPassword':
+      navigateToName('changeLoginPassword')
+      break
+    case 'mobile':
+      navigateToName('changeMobileNumber')
+      break
+    default:
+      navigateToName('transactionPassword')
+      break
+  }
 }
 </script>
 
