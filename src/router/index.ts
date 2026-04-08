@@ -544,12 +544,14 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'security-situation',
-    name: 'security-situation',
-    component: () => import('@/views/wallet/security/index.vue'),
+    path: 'changeMobileNumber',
+    name: 'changeMobileNumber',
+    component: () => import('@/views/settings/changeMobileNumber/index.vue'),
     meta: {
-      title: '安全性',
-      description: '安全性',
+      title: '修改手机号码',
+      description: '修改手机号码',
+      requiresAuth: true,
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
@@ -558,12 +560,14 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'security-details',
-    name: 'security-details',
-    component: () => import('@/views/wallet/security/security-details.vue'),
+    path: 'transactionPassword',
+    name: 'transactionPassword',
+    component: () => import('@/views/settings/transactionPassword/index.vue'),
     meta: {
-      title: '安全详情',
-      description: '安全详情',
+      title: '交易密码',
+      description: '交易密码',
+      requiresAuth: true,
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
