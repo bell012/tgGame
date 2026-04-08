@@ -85,6 +85,7 @@
     "sessionExpired": "Session expired, please log in again",
     "globalSetting": "Global Setting",
     "security": "Security",
+    "preferences": "Preferences",
     "changeLoginPassword": "Change Login Password",
     "mobileVerification": "Mobile Verification",
     "verificationCodeSentTo": "Verification code has been sent to",
