@@ -182,6 +182,7 @@ const {
   isConfirmingCode,
   isUpdatingPassword,
   showSmsCodeHelpPopup,
+  verificationInputRef,
   isResendCountdownRunning,
   phoneNumberDisplay,
   resendActionText,
