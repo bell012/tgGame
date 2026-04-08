@@ -346,6 +346,36 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'personal-center/feedback',
+    name: 'personal-center-feedback',
+    component: () => import('@/views/personalCenter/feedback/index.vue'),
+    meta: {
+      title: '意见反馈',
+      description: '意见反馈',
+      mobileOnly: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'personal-center/feedback/detail/:recordId',
+    name: 'personal-center-feedback-detail',
+    component: () => import('@/views/personalCenter/feedback/detail/index.vue'),
+    meta: {
+      title: '记录详情',
+      description: '记录详情',
+      mobileOnly: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'transaction-details/:id',
     name: 'transaction-details',
     component: () => import('@/views/wallet/transactionDetails/index.vue'),
