@@ -2,20 +2,18 @@ import Api from '@/api'
 import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
 import { getDefaultAreaCode, getDefaultAreaCodeDisplay } from '@/utils/locale'
-import {
-  handlePasswordInput,
-  handleVerificationCodeInput,
-  isValidPassword
-} from '@/utils/phone-input'
+import { handleVerificationCodeInput } from '@/utils/phone-input'
 import { StringExtension } from '@/utils/string-extension'
 import { storeToRefs } from 'pinia'
 import { showToast } from 'vant'
 import { computed, nextTick, onMounted, ref, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const SMS_COUNTDOWN_STORAGE_KEY = 'change-login-password-sms-countdown'
+const SMS_COUNTDOWN_STORAGE_KEY = 'transaction-password-sms-countdown'
 
-export const useChangeLoginPassword = () => {
+type TransactionPasswordMode = 'set' | 'change'
+
+export const useTransactionPassword = () => {
   const { t } = useI18n()
   const userStore = useUserStore()
   const { userInfo, acctInfo } = storeToRefs(userStore)
@@ -23,26 +21,40 @@ export const useChangeLoginPassword = () => {
   const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 
   const currentStep = ref<'verification' | 'password'>('verification')
+  const transactionPasswordMode = ref<TransactionPasswordMode>('set')
   const verificationCode = ref('')
-  const newPassword = ref('')
-  const confirmPassword = ref('')
-  const showNewPassword = ref(false)
-  const showConfirmPassword = ref(false)
+  const transactionPassword = ref('')
+  const confirmTransactionPassword = ref('')
   const isSendingCode = ref(false)
   const isConfirmingCode = ref(false)
   const isUpdatingPassword = ref(false)
   const hasRequestedSmsCode = ref(false)
   const showSmsCodeHelpPopup = ref(false)
   const verificationInputRef = ref<HTMLInputElement | null>(null)
+  const transactionPasswordInputRef = ref<HTMLInputElement | null>(null)
+  const confirmTransactionPasswordInputRef = ref<HTMLInputElement | null>(null)
 
   const countdownState = usePersistentCountdown({
     storageKey: SMS_COUNTDOWN_STORAGE_KEY,
     durationSeconds: 60
   })
 
-  const { remainingSeconds, startCountdown, syncCountdown } = countdownState
+  const { remainingSeconds, startCountdown, clearCountdown, syncCountdown } = countdownState
 
   const isResendCountdownRunning: ComputedRef<boolean> = countdownState.isRunning
+
+  /**
+   * 同步交易密码模式。
+   */
+  const syncTransactionPasswordMode = () => {
+    transactionPasswordMode.value = userInfo.value?.busiPwd ? 'change' : 'set'
+  }
+
+  const pageTitle = computed(() =>
+    transactionPasswordMode.value === 'change'
+      ? t('common.changeTransactionPassword')
+      : t('common.setTransactionPassword')
+  )
 
   const resolvedTelephone = computed(() => String(userInfo.value?.telephone ?? '').trim())
   const phoneNumberDisplay = computed(() =>
@@ -69,11 +81,27 @@ export const useChangeLoginPassword = () => {
 
   const isUpdatePasswordButtonDisabled: ComputedRef<boolean> = computed(
     () =>
-      !isValidPassword(newPassword.value) ||
-      !confirmPassword.value ||
-      newPassword.value !== confirmPassword.value ||
+      transactionPassword.value.length !== 6 ||
+      confirmTransactionPassword.value.length !== 6 ||
+      transactionPassword.value !== confirmTransactionPassword.value ||
       isUpdatingPassword.value
   )
+
+  /**
+   * 统一弹出轻提示消息。
+   */
+  const showMessageToast = (message: string, zIndex: number = 10030) => {
+    if (!message) {
+      return
+    }
+
+    showToast({
+      message,
+      duration: 2000,
+      wordBreak: 'break-word',
+      zIndex
+    })
+  }
 
   /**
    * 聚焦验证码输入框。
@@ -81,6 +109,22 @@ export const useChangeLoginPassword = () => {
   const focusVerificationInput = async () => {
     await nextTick()
     verificationInputRef.value?.focus()
+  }
+
+  /**
+   * 聚焦交易密码输入框。
+   */
+  const focusTransactionPasswordInput = async () => {
+    await nextTick()
+    transactionPasswordInputRef.value?.focus()
+  }
+
+  /**
+   * 聚焦确认交易密码输入框。
+   */
+  const focusConfirmTransactionPasswordInput = async () => {
+    await nextTick()
+    confirmTransactionPasswordInputRef.value?.focus()
   }
 
   /**
@@ -97,6 +141,7 @@ export const useChangeLoginPassword = () => {
       await userStore.refreshCurrentUserData()
     }
 
+    syncTransactionPasswordMode()
     syncCountdown()
     hasRequestedSmsCode.value = remainingSeconds.value > 0
   }
@@ -118,48 +163,41 @@ export const useChangeLoginPassword = () => {
   }
 
   /**
-   * 处理新密码输入。
+   * 处理交易密码输入。
    */
-  const handleNewPasswordChange = (event: Event) => {
-    handlePasswordInput(event, value => {
-      newPassword.value = value
+  const handleTransactionPasswordChange = (event: Event) => {
+    handleVerificationCodeInput(event, value => {
+      transactionPassword.value = value
     })
   }
 
   /**
-   * 处理确认密码输入。
+   * 处理确认交易密码输入。
    */
-  const handleConfirmPasswordChange = (event: Event) => {
-    handlePasswordInput(event, value => {
-      confirmPassword.value = value
+  const handleConfirmTransactionPasswordChange = (event: Event) => {
+    handleVerificationCodeInput(event, value => {
+      confirmTransactionPassword.value = value
     })
   }
 
   /**
-   * 切换新密码显隐状态。
+   * 重置交易密码页面本地状态。
    */
-  const toggleNewPassword = () => {
-    showNewPassword.value = !showNewPassword.value
-  }
-
-  /**
-   * 切换确认密码显隐状态。
-   */
-  const toggleConfirmPassword = () => {
-    showConfirmPassword.value = !showConfirmPassword.value
-  }
-
-  /**
-   * 重置修改登录密码页面本地表单状态。
-   */
-  const resetChangeLoginPasswordState = () => {
+  const resetTransactionPasswordState = (options?: { clearCountdown?: boolean }) => {
     currentStep.value = 'verification'
     verificationCode.value = ''
-    newPassword.value = ''
-    confirmPassword.value = ''
-    showNewPassword.value = false
-    showConfirmPassword.value = false
+    transactionPassword.value = ''
+    confirmTransactionPassword.value = ''
     showSmsCodeHelpPopup.value = false
+
+    if (options?.clearCountdown) {
+      clearCountdown()
+      hasRequestedSmsCode.value = false
+      return
+    }
+
+    syncCountdown()
+    hasRequestedSmsCode.value = remainingSeconds.value > 0
   }
 
   /**
@@ -171,12 +209,7 @@ export const useChangeLoginPassword = () => {
     }
 
     if (!resolvedTelephone.value) {
-      showToast({
-        message: t('common.phoneNumberUnavailable'),
-        duration: 2000,
-        wordBreak: 'break-word',
-        zIndex: 10001
-      })
+      showMessageToast(t('common.phoneNumberUnavailable'), 10001)
       return
     }
 
@@ -193,14 +226,7 @@ export const useChangeLoginPassword = () => {
         await focusVerificationInput()
       }
 
-      if (response?.message) {
-        showToast({
-          message: response.message,
-          duration: 2000,
-          wordBreak: 'break-word',
-          zIndex: 10030
-        })
-      }
+      showMessageToast(response?.message ?? '')
     } catch (error) {
       console.error(error)
     } finally {
@@ -209,7 +235,7 @@ export const useChangeLoginPassword = () => {
   }
 
   /**
-   * 校验短信验证码并进入下一步。
+   * 校验短信验证码并进入交易密码设置步骤。
    */
   const handleConfirmStep = async () => {
     if (isConfirmButtonDisabled.value) {
@@ -225,19 +251,13 @@ export const useChangeLoginPassword = () => {
       })
 
       if (response?.code === 'C2') {
+        verificationCode.value = ''
         currentStep.value = 'password'
+        await focusTransactionPasswordInput()
         return
       }
 
-      if (response?.message) {
-        showToast({
-          message: response.message,
-          duration: 2000,
-          wordBreak: 'break-word',
-          zIndex: 10030
-        })
-      }
-
+      showMessageToast(response?.message ?? '')
       verificationCode.value = ''
       await focusVerificationInput()
     } finally {
@@ -246,7 +266,7 @@ export const useChangeLoginPassword = () => {
   }
 
   /**
-   * 提交新的登录密码。
+   * 提交交易密码。
    */
   const handleUpdatePassword = async () => {
     if (isUpdatePasswordButtonDisabled.value) {
@@ -255,24 +275,20 @@ export const useChangeLoginPassword = () => {
 
     try {
       isUpdatingPassword.value = true
+
       const response = await Api.user.modifyMemberInfo({
-        memberPwd: StringExtension.md5(newPassword.value)
+        busiPwd: StringExtension.md5(transactionPassword.value)
       })
 
       if (response?.code === 'C2') {
-        resetChangeLoginPasswordState()
-        await userStore.handleAuthExpired()
+        resetTransactionPasswordState({ clearCountdown: true })
+        await userStore.refreshCurrentUserData()
+        syncTransactionPasswordMode()
+        showMessageToast(response?.message ?? '')
         return
       }
 
-      if (response?.message) {
-        showToast({
-          message: response.message,
-          duration: 2000,
-          wordBreak: 'break-word',
-          zIndex: 10030
-        })
-      }
+      showMessageToast(response?.message ?? '')
     } catch (error) {
       console.error(error)
     } finally {
@@ -285,18 +301,19 @@ export const useChangeLoginPassword = () => {
   })
 
   return {
+    pageTitle,
     t,
     currentStep,
     verificationCode,
-    newPassword,
-    confirmPassword,
-    showNewPassword,
-    showConfirmPassword,
+    transactionPassword,
+    confirmTransactionPassword,
     isSendingCode,
     isConfirmingCode,
     isUpdatingPassword,
     showSmsCodeHelpPopup,
     verificationInputRef,
+    transactionPasswordInputRef,
+    confirmTransactionPasswordInputRef,
     isResendCountdownRunning,
     phoneNumberDisplay,
     resendActionText,
@@ -304,13 +321,13 @@ export const useChangeLoginPassword = () => {
     isConfirmButtonDisabled,
     isUpdatePasswordButtonDisabled,
     focusVerificationInput,
+    focusTransactionPasswordInput,
+    focusConfirmTransactionPasswordInput,
     openSmsCodeHelpPopup,
-    resetChangeLoginPasswordState,
+    resetTransactionPasswordState,
     handleVerificationCodeChange,
-    handleNewPasswordChange,
-    handleConfirmPasswordChange,
-    toggleNewPassword,
-    toggleConfirmPassword,
+    handleTransactionPasswordChange,
+    handleConfirmTransactionPasswordChange,
     handleSendOrResendCode,
     handleConfirmStep,
     handleUpdatePassword

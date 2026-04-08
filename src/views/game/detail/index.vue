@@ -1,5 +1,5 @@
 <template>
-  <div class="detail-page w-full h-full max-w-[1248px] mx-auto pt-[60px]">
+  <div class="detail-page w-full h-full max-w-[1248px] mx-auto pt-[60px] px-[12px]">
     <div v-if="isGameDataLoading" class="detail-loading-mask" aria-live="polite" aria-busy="true">
       <div class="detail-loading-spinner"></div>
     </div>
@@ -119,7 +119,7 @@ const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
 
   return allGames.filter(game => {
     const hotValue = game.gameItemHotVo?.hot ?? game.hot
-    return Number(hotValue) === 0
+    return Number(hotValue) === 1
   })
 })
 
