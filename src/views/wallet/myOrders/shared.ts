@@ -2,7 +2,7 @@ import type {
   QueryMemberPayOrderPageForm,
   QueryMemberPayOrderPageRecord
 } from '@/api/interface/wallet'
-import { getOrderStatusText, normalizeOrderStatusCode } from '@/constants/orderStatus'
+import { getOrderStatusColorClass, getOrderStatusText } from '@/constants/orderStatus'
 import usdtIcon from '@/static/img/crypto/USDT.png'
 import gCashIcon from '@/static/img/payment/gCash.png'
 import grabPayIcon from '@/static/img/payment/grabPay.png'
@@ -195,23 +195,8 @@ export const getMyOrderStatusText = (
 /**
  * 返回订单状态文本颜色类。
  */
-export const getMyOrderStatusClass = (
-  tab: OrderTab,
-  status: number | string | null | undefined
-) => {
-  const bizType = tab === 'deposits' ? 'deposit' : 'withdraw'
-  const code = normalizeOrderStatusCode(bizType, status)
-
-  if (tab === 'deposits') {
-    if (code === 1) return 'text-secondary-2'
-    if (code === 2) return 'text-secondary-4'
-    return 'text-secondary-7'
-  }
-
-  if (code === 3) return 'text-secondary-2'
-  if (code === 2 || code === 5) return 'text-secondary-4'
-  return 'text-secondary-7'
-}
+export const getMyOrderStatusClass = (tab: OrderTab, status: number | string | null | undefined) =>
+  getOrderStatusColorClass(tab === 'deposits' ? 'deposit' : 'withdraw', status)
 
 const getStartOfDay = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0).getTime()
