@@ -86,7 +86,7 @@
     "globalSetting": "全局设定",
     "security": "安全性",
     "preferences": "偏好设置",
-    "changeLoginPassword": "修改登录密码",
+    "changeLoginPassword": "更改登录密码",
     "mobileVerification": "手机验证",
     "verificationCodeSentTo": "验证码已发送至",
     "sendCode": "发送验证码",
@@ -103,7 +103,18 @@
     "updatePassword": "更新密码",
     "phoneNumberUnavailable": "暂时无法获取您的手机号",
     "gotIt": "知道了",
-    "pleaseEnterThePhoneNumber": "请输入手机号码"
+    "ok": "确定",
+    "pleaseEnterThePhoneNumber": "请输入手机号码",
+    "changeMobileNumber": "更改手机号码",
+    "newMobileNumber": "新手机号码",
+    "enterNewMobileNumber": "请输入您的新手机号码",
+    "successfully": "您的手机号码已成功更新。",
+    "setTransactionPassword": "设置交易密码",
+    "changeTransactionPassword": "修改交易密码",
+    "transactionPassword": "交易密码",
+    "confirmTransactionPassword": "确认交易密码",
+    "transactionPasswordSetSuccessfully": "您的交易密码已设置成功。",
+    "transactionPasswordChangedSuccessfully": "您的交易密码已修改成功。"
   },
   "pwa": {
     "offlineReady": "应用已就绪，可离线使用",

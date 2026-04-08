@@ -7,9 +7,7 @@
 
     <section class="w-full max-w-[465px] rounded-[24px] bg-bg-1 p-8" @click.stop>
       <div class="flex items-center justify-between">
-        <h2 class="text-xl font-[700] text-text-1">
-          {{ t('common.changeLoginPassword') }}
-        </h2>
+        <h2 class="text-xl font-[700] text-text-1">{{ pageTitle }}</h2>
 
         <button
           type="button"
@@ -20,6 +18,7 @@
         </button>
       </div>
 
+      <!-- 第一步 -->
       <template v-if="currentStep === 'verification'">
         <div class="mt-12 flex flex-col items-center">
           <SetIcon class="h-[30px] w-[30px] text-text-2" />
@@ -29,9 +28,7 @@
           <p class="mt-[24px] text-center text-xl font-[400] text-text-2">
             {{ t('common.verificationCodeSentTo') }}
           </p>
-          <p class="text-center text-xl font-[700] text-text-1">
-            {{ phoneNumberDisplay }}
-          </p>
+          <p class="text-center text-xl font-[700] text-text-1">{{ phoneNumberDisplay }}</p>
         </div>
 
         <div class="mt-8">
@@ -103,55 +100,81 @@
         </p>
       </template>
 
-      <!-- 新密码和确认密码 -->
+      <!-- 第二步 -->
       <template v-else>
-        <div class="mt-8 space-y-6">
+        <div class="mt-12 space-y-8">
           <div>
-            <p class="mb-2 text-base font-[400] text-text-1">{{ t('common.newPassword') }}</p>
-            <div class="relative">
-              <input
-                :value="newPassword"
-                :type="showNewPassword ? 'text' : 'password'"
-                :placeholder="t('common.enterNewPassword')"
-                class="h-[48px] w-full rounded-[10px] border border-input-2 bg-input-1 px-3.5 text-base font-[700] text-text-1 focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:font-[400]"
-                @input="handleNewPasswordChange"
-              />
-              <button
-                type="button"
-                class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                @click="toggleNewPassword"
-              >
-                <EyeIcon v-if="!showNewPassword" class="h-6 w-6 text-text-2" />
-                <EyeOffIcon v-else class="h-6 w-6 text-text-2" />
-              </button>
-            </div>
+            <p class="mb-2 text-sm font-[400] text-text-1">
+              {{ t('common.transactionPassword') }}
+            </p>
+
+            <button type="button" class="w-full" @click="focusTransactionPasswordInput">
+              <div class="grid grid-cols-6 gap-2">
+                <div
+                  v-for="index in 6"
+                  :key="`transaction-${index}`"
+                  class="flex h-[60px] w-[60px] items-center justify-center rounded-[12px] border border-opacity-15 bg-opacity-5 text-2xl font-[700] text-text-1"
+                  :class="
+                    transactionPassword.length === index - 1
+                      ? 'border-theme-primary bg-opacity-5'
+                      : 'border-transparent bg-opacity-5'
+                  "
+                >
+                  <span>{{ transactionPassword[index - 1] || '' }}</span>
+                </div>
+              </div>
+            </button>
+
+            <input
+              ref="transactionPasswordInputRef"
+              :value="transactionPassword"
+              type="tel"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="6"
+              class="sr-only"
+              @input="handleTransactionPasswordChange"
+            />
           </div>
 
           <div>
-            <p class="mb-2 text-sm font-[400] text-text-1">{{ t('common.confirm_password') }}</p>
-            <div class="relative">
-              <input
-                :value="confirmPassword"
-                :type="showConfirmPassword ? 'text' : 'password'"
-                :placeholder="t('common.reEnterNewPassword')"
-                class="h-[48px] w-full rounded-[10px] border border-input-2 bg-input-1 px-3.5 text-base font-[700] text-text-1 focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:font-[400]"
-                @input="handleConfirmPasswordChange"
-              />
-              <button
-                type="button"
-                class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                @click="toggleConfirmPassword"
-              >
-                <EyeIcon v-if="!showConfirmPassword" class="h-6 w-6 text-text-2" />
-                <EyeOffIcon v-else class="h-6 w-6 text-text-2" />
-              </button>
-            </div>
+            <p class="mb-2 text-sm font-[400] text-text-1">
+              {{ t('common.confirmTransactionPassword') }}
+            </p>
+
+            <button type="button" class="w-full" @click="focusConfirmTransactionPasswordInput">
+              <div class="grid grid-cols-6 gap-2">
+                <div
+                  v-for="index in 6"
+                  :key="`confirm-transaction-${index}`"
+                  class="flex h-[60px] w-[60px] items-center justify-center rounded-[12px] border border-opacity-15 bg-opacity-5 text-2xl font-[700] text-text-1"
+                  :class="
+                    confirmTransactionPassword.length === index - 1
+                      ? 'border-theme-primary bg-opacity-5'
+                      : 'border-transparent bg-opacity-5'
+                  "
+                >
+                  <span>{{ confirmTransactionPassword[index - 1] || '' }}</span>
+                </div>
+              </div>
+            </button>
+
+            <input
+              ref="confirmTransactionPasswordInputRef"
+              :value="confirmTransactionPassword"
+              type="tel"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="6"
+              class="sr-only"
+              @input="handleConfirmTransactionPasswordChange"
+            />
           </div>
         </div>
 
         <button
           type="button"
-          class="relative mt-[24px] flex h-[48px] w-full items-center justify-center overflow-hidden rounded-lg text-sm font-[700] text-text-4 disabled:cursor-not-allowed"
+          class="relative mt-[32px] flex h-[48px] w-full items-center justify-center overflow-hidden rounded-lg text-sm font-[700] text-text-4 disabled:cursor-not-allowed"
           :class="isUpdatePasswordButtonDisabled ? 'bg-theme-2' : 'bg-theme-primary'"
           :disabled="isUpdatePasswordButtonDisabled"
           @click="handleUpdatePassword"
@@ -176,11 +199,9 @@ import { computed } from 'vue'
 import ButtonLoadingSpinner from '@/components/common/ButtonLoadingSpinner.vue'
 import SmsCodeHelpPopup from '@/components/common/SmsCodeHelpPopup.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-import EyeIcon from '@/static/svg/login/eye.svg?component'
-import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
 import SetIcon from '@/static/svg/set.svg?component'
 import { navigateToName } from '@/utils/router'
-import { useChangeLoginPassword } from './shared'
+import { useTransactionPassword } from './shared'
 
 interface Props {
   modelValue?: boolean
@@ -192,23 +213,22 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
-const isVisible = computed(() => {
-  return props.modelValue ?? true
-})
+const isVisible = computed(() => props.modelValue ?? true)
 
 const {
   t,
+  pageTitle,
   currentStep,
   verificationCode,
-  newPassword,
-  confirmPassword,
-  showNewPassword,
-  showConfirmPassword,
+  transactionPassword,
+  confirmTransactionPassword,
   isSendingCode,
   isConfirmingCode,
   isUpdatingPassword,
   showSmsCodeHelpPopup,
   verificationInputRef,
+  transactionPasswordInputRef,
+  confirmTransactionPasswordInputRef,
   isResendCountdownRunning,
   phoneNumberDisplay,
   resendActionText,
@@ -216,23 +236,23 @@ const {
   isConfirmButtonDisabled,
   isUpdatePasswordButtonDisabled,
   focusVerificationInput,
+  focusTransactionPasswordInput,
+  focusConfirmTransactionPasswordInput,
   openSmsCodeHelpPopup,
-  resetChangeLoginPasswordState,
+  resetTransactionPasswordState,
   handleVerificationCodeChange,
-  handleNewPasswordChange,
-  handleConfirmPasswordChange,
-  toggleNewPassword,
-  toggleConfirmPassword,
+  handleTransactionPasswordChange,
+  handleConfirmTransactionPasswordChange,
   handleSendOrResendCode,
   handleConfirmStep,
   handleUpdatePassword
-} = useChangeLoginPassword()
+} = useTransactionPassword()
 
 /**
- * 关闭 PC 修改登录密码弹窗。
+ * 关闭 PC 交易密码弹窗。
  */
 const handleClose = () => {
-  resetChangeLoginPasswordState()
+  resetTransactionPasswordState()
 
   if (props.modelValue !== undefined) {
     emit('update:modelValue', false)
