@@ -59,8 +59,8 @@
       <MyOrdersTablePanel
         :view-state="desktopViewState"
         :rows="desktopRows"
-        :status-class-map="statusClassMap"
         :empty-img="EmptyImg"
+        @row-click="handleDesktopRowClick"
       />
 
       <!-- PC 分页组件 -->
@@ -73,51 +73,92 @@
       />
     </section>
   </div>
+
+  <!-- PC 订单详情弹窗 -->
+  <depositPopShell :model-value="!!selectedDesktopOrder" @overlay-close="handleCloseDetail">
+    <div
+      v-if="selectedDesktopOrder"
+      class="relative h-[500px] w-[480px] flex flex-col items-center gap-4 rounded-lg modal-container bg-bg-1 font-['Inter']"
+    >
+      <!-- 订单弹窗头部 -->
+      <div class="relative h-14 w-full shrink-0 rounded-t-lg bg-bg-2">
+        <!-- 订单标题 -->
+        <h2
+          class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[18px] font-bold leading-[22px] text-text-1"
+        >
+          {{
+            activeTopTab === 'deposits' ? t('deposit.deposit_order') : t('withdraw.withdraw_order')
+          }}
+        </h2>
+
+        <!-- 桌面端头部操作区 -->
+        <button
+          type="button"
+          class="absolute right-4 top-1/2 z-10 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md bg-opacity-10"
+          @click="handleCloseDetail"
+        >
+          <CloseIcon class="h-3 w-3 fill-none" />
+        </button>
+      </div>
+
+      <OrderDetailScrollPanel
+        :order="selectedDesktopOrder"
+        :tab="activeTopTab"
+        mode="pc"
+        @copy-order-no="handleCopyOrderNo"
+      />
+    </div>
+  </depositPopShell>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import Api from '@/api'
+import type {
+  QueryMemberPayOrderPageRecord,
+  QueryMemberPayOrderPageResult
+} from '@/api/interface/wallet'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
+import depositPopShell from '@/components/deposit/shared/depositPopShell.vue'
 import EmptyImg from '@/static/img/personalCenter/noData.png'
+import CloseIcon from '@/static/svg/close.svg?component'
+import { computed, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { showToast } from 'vant'
 import MyOrdersTablePanel from './MyOrdersTablePanel.vue'
+import OrderDetailScrollPanel from './OrderDetailScrollPanel.vue'
 import {
-  MOCK_DEPOSIT_ORDERS,
-  MOCK_WITHDRAWAL_ORDERS,
+  MY_ORDERS_PAGE_SIZE,
+  buildMyOrdersQueryParams,
+  copyTextWithFallback,
   createDefaultMyOrdersFilterValues,
   createMyOrdersStatusOptions,
   createMyOrdersTimeOptions,
   createMyOrdersTypeOptions,
-  filterMyOrders,
+  formatMyOrderTime,
   formatOrderAmount,
+  getMyOrderStatusClass,
+  getMyOrderStatusText,
+  getMyOrderTypeLabel,
+  matchMyOrdersTypeFilter,
   type MyOrdersFilterValues,
-  type OrderStatus,
-  type OrderStatusFilter,
   type OrderTab,
   type OrderTimeFilter,
   type OrderTypeFilter
 } from './shared'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const activeTopTab = ref<OrderTab>('deposits')
 const desktopFilterValues = ref<Record<keyof MyOrdersFilterValues, string>>({
   ...createDefaultMyOrdersFilterValues()
 })
 const desktopPagination = reactive({
   page: 1,
-  pageSize: 10
+  pageSize: MY_ORDERS_PAGE_SIZE
 })
-
-const statusClassMap: Record<OrderStatus, string> = {
-  Success: 'text-secondary-2',
-  Failed: 'text-secondary-4',
-  Processing: 'text-secondary-7'
-}
-
-const currentOrderSource = computed(() =>
-  activeTopTab.value === 'deposits' ? MOCK_DEPOSIT_ORDERS : MOCK_WITHDRAWAL_ORDERS
-)
+const selectedDesktopOrder = ref<QueryMemberPayOrderPageRecord | null>(null)
+const desktopRecords = ref<QueryMemberPayOrderPageRecord[]>([])
+const desktopTotalPages = ref(1)
 
 /**
  * 归一化筛选值。
@@ -130,7 +171,7 @@ const normalizeFilterValues = (values: Record<string, string | string[]>): MyOrd
   return {
     time: (timeValue ?? 'all') as OrderTimeFilter,
     type: (typeValue ?? 'all') as OrderTypeFilter,
-    status: (statusValue ?? 'all') as OrderStatusFilter
+    status: (statusValue ?? 'all') as MyOrdersFilterValues['status']
   }
 }
 
@@ -140,35 +181,19 @@ const timeOptions = computed(() => createMyOrdersTimeOptions(t))
 const typeOptions = computed(() => createMyOrdersTypeOptions())
 const statusOptions = computed(() => createMyOrdersStatusOptions())
 
-const filteredDesktopOrders = computed(() =>
-  filterMyOrders(currentOrderSource.value, normalizedDesktopFilters.value)
-)
-
-const desktopTotalPages = computed(() =>
-  Math.max(
-    1,
-    Math.ceil(filteredDesktopOrders.value.length / Math.max(1, desktopPagination.pageSize))
-  )
-)
-
-const desktopPaginatedOrders = computed(() => {
-  const start = (desktopPagination.page - 1) * desktopPagination.pageSize
-  const end = start + desktopPagination.pageSize
-  return filteredDesktopOrders.value.slice(start, end)
-})
-
 const desktopRows = computed(() =>
-  desktopPaginatedOrders.value.map(item => ({
-    id: item.id,
-    type: item.typeLabel,
-    time: item.timeLabel,
-    amount: formatDisplayAmount(item.amount, item.currency),
-    status: item.status
+  desktopRecords.value.map(item => ({
+    id: item.orderId,
+    type: getMyOrderTypeLabel(item, String(locale.value || 'eng')),
+    time: formatMyOrderTime(item.createTime),
+    amount: formatDisplayAmount(Number(item.busiAmount ?? 0), item.currency),
+    status: getMyOrderStatusText(activeTopTab.value, item.status, t),
+    statusClass: getMyOrderStatusClass(activeTopTab.value, item.status)
   }))
 )
 
 const desktopViewState = computed<'table' | 'empty'>(() =>
-  filteredDesktopOrders.value.length > 0 ? 'table' : 'empty'
+  desktopRows.value.length > 0 ? 'table' : 'empty'
 )
 
 /**
@@ -179,19 +204,111 @@ const formatDisplayAmount = (amount: number, currency: string) => {
   return currency === 'PHP' ? formatted.replace('₱', '₱ ') : formatted
 }
 
+const fetchDesktopOrders = async () => {
+  const response = await Api.wallet.queryMemberPayOrderPage(
+    buildMyOrdersQueryParams(
+      activeTopTab.value,
+      normalizedDesktopFilters.value,
+      desktopPagination.page,
+      desktopPagination.pageSize
+    )
+  )
+
+  if (!response.success) {
+    throw new Error(response.message || t('common.requestError'))
+  }
+
+  const result: QueryMemberPayOrderPageResult = response.result ?? {
+    current: desktopPagination.page,
+    pages: 1,
+    records: [],
+    size: desktopPagination.pageSize,
+    total: 0
+  }
+
+  desktopRecords.value = result.records.filter(record =>
+    matchMyOrdersTypeFilter(
+      record,
+      normalizedDesktopFilters.value.type,
+      String(locale.value || 'eng')
+    )
+  )
+  desktopTotalPages.value = Math.max(1, result.pages || 1)
+}
+
 /**
  * 处理顶部切换栏点击。
  */
-const handleTopTabChange = (tab: OrderTab) => {
+const handleTopTabChange = async (tab: OrderTab) => {
   if (activeTopTab.value === tab) return
+
   activeTopTab.value = tab
-  desktopPagination.page = 1
+  selectedDesktopOrder.value = null
+
+  if (desktopPagination.page !== 1) {
+    desktopPagination.page = 1
+    return
+  }
+
+  await fetchDesktopOrders()
 }
 
 /**
  * 处理 PC 分页切换。
  */
-const handleDesktopPageChange = (page: number) => {
+const handleDesktopPageChange = async (page: number) => {
+  if (desktopPagination.page === page) return
+
   desktopPagination.page = page
+  selectedDesktopOrder.value = null
 }
+
+/**
+ * 处理 PC 表格行点击，打开详情弹窗。
+ */
+const handleDesktopRowClick = (row: { id: string }) => {
+  selectedDesktopOrder.value = desktopRecords.value.find(item => item.orderId === row.id) ?? null
+}
+
+/**
+ * 关闭 PC 详情弹窗。
+ */
+const handleCloseDetail = () => {
+  selectedDesktopOrder.value = null
+}
+
+/**
+ * 复制订单号。
+ */
+const handleCopyOrderNo = async (orderNo: string) => {
+  const copied = await copyTextWithFallback(orderNo)
+  showToast({
+    message: copied ? t('betDetails.copy') : t('common.error'),
+    type: copied ? 'success' : 'fail'
+  })
+}
+
+watch(
+  normalizedDesktopFilters,
+  async () => {
+    selectedDesktopOrder.value = null
+
+    if (desktopPagination.page !== 1) {
+      desktopPagination.page = 1
+      return
+    }
+
+    await fetchDesktopOrders()
+  },
+  { deep: true }
+)
+
+watch(
+  () => desktopPagination.page,
+  async () => {
+    selectedDesktopOrder.value = null
+    await fetchDesktopOrders()
+  },
+  { immediate: true }
+)
 </script>
