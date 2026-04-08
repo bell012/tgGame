@@ -709,7 +709,7 @@ const supportMenus = computed(() => [
   },
   {
     id: 'leave-feedback',
-    name: t('personalCenter.leaveFeedfack'),
+    name: t('personalCenter.leaveFeedback'),
     icon: getIcon(17),
     handler: () => navigateTo('/personal-center/feedback')
   }
