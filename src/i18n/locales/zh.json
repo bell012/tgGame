@@ -747,6 +747,8 @@
     "order_help_text": "如需订单帮助，请",
     "chat_with_us": "联系我们。",
     "confirm_withdrawal": "确认提现",
+    "sms_code_invalid": "短信验证码无效。",
+    "balance_insufficient": "余额不足。",
     "pending_order_exists": "您的提现申请正在处理中。",
     "bet_requirement_unfinished": "请先完成提款所需流水。",
     "missing_account": "请先选择提现账户。",

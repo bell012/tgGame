@@ -186,6 +186,7 @@ const {
   applyQuickAmount,
   availableAccounts,
   addAccountVisible,
+  balanceAmount,
   closeAddAccount,
   confirmAddAccount,
   currentCurrency,
@@ -269,6 +270,7 @@ const doWithdrawDeposit = () => {
   emit('submit', {
     tabType: 'Fiat',
     amount: Number(amount.value),
+    balanceAmount: balanceAmount.value,
     channelId: 3,
     currencyCode: currentCurrency.value,
     methodLabel: selectedMethod.value.name,

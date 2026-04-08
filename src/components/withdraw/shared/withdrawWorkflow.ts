@@ -24,13 +24,9 @@ export interface WithdrawOrderViewData {
   status: WithdrawOrderStatus
 }
 
-const getAccountNo = (payload: WithdrawSubmitPayload) => {
-  return payload.accountRowId ?? payload.address ?? ''
-}
+const getAccountNo = (payload: WithdrawSubmitPayload) => payload.accountRowId ?? ''
 
-const getColumnCode = (payload: WithdrawSubmitPayload) => {
-  return payload.paymentCode ?? payload.methodLabel
-}
+const getColumnCode = (payload: WithdrawSubmitPayload) => payload.paymentCode ?? ''
 
 const getCurrencyCode = (payload: WithdrawSubmitPayload) => payload.currencyCode || 'PHP'
 
@@ -139,7 +135,17 @@ export const queryWithdrawSubmissionConfig = async (
 export const submitWithdrawWorkflow = async (
   params: SubmitWithdrawWorkflowParams
 ): Promise<WithdrawOrderViewData> => {
+  const nextAmount = Number(params.payload.amount ?? 0)
+  const nextBalanceAmount = Number(params.payload.balanceAmount ?? 0)
   const accountNo = getAccountNo(params.payload)
+
+  if (
+    Number.isFinite(nextAmount) &&
+    Number.isFinite(nextBalanceAmount) &&
+    nextAmount > nextBalanceAmount
+  ) {
+    throw new Error('withdraw.balance_insufficient')
+  }
 
   if (!accountNo) {
     throw new Error('withdraw.missing_account')
@@ -147,10 +153,14 @@ export const submitWithdrawWorkflow = async (
 
   await ensureNoPendingWithdrawOrder()
   await ensureWithdrawTurnoverRequirement()
-  await queryWithdrawSubmissionConfig(params.payload)
+  const submissionConfig = await queryWithdrawSubmissionConfig(params.payload)
+  const nextWithdrawNumber = Number(submissionConfig?.mandatoryPayment ?? 0) === 1 ? 1 : 0
 
   const submitResponse = await Api.withdraw.submitTransferOrder(
-    buildSubmitTransferOrderForm(params)
+    buildSubmitTransferOrderForm({
+      ...params,
+      withdrawNumber: nextWithdrawNumber
+    })
   )
   const submitResult = submitResponse?.result
   const orderId = submitResult?.orderId

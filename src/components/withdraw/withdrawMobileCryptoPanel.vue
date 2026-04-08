@@ -115,18 +115,15 @@
             :placeholder="t('withdraw.amount_placeholder')"
             class="flex-1 min-w-0 text-base font-bold bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
           />
-          <div v-if="!isAmountDisabled" class="flex items-center shrink-0 ml-2">
-            <p class="text-text-1 text-xs mr-1 whitespace-nowrap">
-              {{ t('withdraw.you_get') }} ≈ 100
+          <div v-if="!isAmountDisabled && youGetAmount" class="ml-2 flex shrink-0 items-center">
+            <p class="mr-1 whitespace-nowrap text-xs text-text-1">
+              {{ t('withdraw.you_get') }} ≈ {{ youGetAmount }}
             </p>
-            <!-- string -->
             <img
               v-if="typeof currencyOption?.icon === 'string'"
               :src="currencyOption.icon"
-              class="w-4 h-4 object-contain"
+              class="h-4 w-4 object-contain"
             />
-            <!-- component -->
-            <component v-else-if="currencyOption?.icon" :is="currencyOption.icon" class="w-4 h-4" />
           </div>
         </div>
         <div class="mt-3.5 flex items-center">
@@ -169,14 +166,16 @@
         :selected-id="selectedReceiveAddress?.id"
         :currency-code="currency"
         :icon="typeof currencyOption?.icon === 'string' ? currencyOption.icon : ''"
+        :show-add-button="canAddAddress"
         @select="handleSelectReceiveAddress"
         @add="openAddAddress"
       />
       <withdrawCryptoAddAddressPop
         v-model="addAddressVisible"
         v-model:input-value="pendingAddress"
+        v-model:network="selectNetwork"
         :currency-code="currency"
-        :network="selectNetwork"
+        :network-options="networkOptions"
         :icon="typeof currencyOption?.icon === 'string' ? currencyOption.icon : ''"
         @close="closeAddAddress"
         @confirm="confirmAddAddress"
@@ -207,8 +206,10 @@ const {
   address,
   addressListVisible,
   amount,
+  balanceAmount,
   availableReceiveAddresses,
   addAddressVisible,
+  canAddAddress,
   coinCode,
   coinMoreShow,
   currency,
@@ -224,6 +225,7 @@ const {
   isAmountDisabled,
   isRefreshingBalance,
   isWithdrawDisabled,
+  matchedWithdrawMethod,
   networkOptions,
   openAddressList,
   openAddAddress,
@@ -232,6 +234,7 @@ const {
   selectedReceiveAddress,
   selectCoinCode: applySelectCoinCode,
   selectNetwork,
+  youGetAmount,
   visibleCoins,
   confirmAddAddress
 } = useWithdrawCrypto()
@@ -266,9 +269,12 @@ const doWithdrawDeposit = () => {
   emit('submit', {
     tabType: 'Crypto',
     amount: Number(amount.value),
+    balanceAmount: balanceAmount.value,
     channelId: 4,
     currencyCode: currentCurrency.value,
     methodLabel: currency.value,
+    paymentCode: matchedWithdrawMethod.value?.paymentCode,
+    accountRowId: selectedReceiveAddress.value?.id,
     address: address.value,
     network: selectNetwork.value
   })

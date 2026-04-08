@@ -10,8 +10,12 @@
     @confirm="emit('confirm')"
   >
     <template #extra-content>
-      <div class="mt-2.5 rounded-lg bg-bg-2 p-4">
-        <div class="flex items-center justify-between">
+      <button
+        type="button"
+        class="mt-2.5 flex w-full items-center justify-between rounded-lg bg-bg-2 p-4 text-left"
+        @click="networkListVisible = true"
+      >
+        <div class="flex w-full items-center justify-between">
           <p class="text-sm sm:text-base leading-normal text-text-1">
             {{ t('withdraw.select_network') }}
           </p>
@@ -26,16 +30,26 @@
             </div>
           </div>
         </div>
-      </div>
+      </button>
     </template>
   </withdrawFormPop>
+
+  <withdrawCryptoNetworkListPop
+    v-model="networkListVisible"
+    :title="t('withdraw.select_network')"
+    :items="networkOptions"
+    :selected-value="network"
+    @select="handleSelectNetwork"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import withdrawFormPop from './withdrawFormPop.vue'
+import withdrawCryptoNetworkListPop from './withdrawCryptoNetworkListPop.vue'
+import type { WithdrawCryptoNetworkOption } from './withdrawCryptoNetworkListPop.vue'
 
 interface Props {
   modelValue: boolean
@@ -43,17 +57,20 @@ interface Props {
   network: string
   icon: string
   inputValue: string
+  networkOptions: WithdrawCryptoNetworkOption[]
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'update:inputValue': [value: string]
+  'update:network': [value: string]
   close: []
   confirm: []
 }>()
 
 const { t } = useI18n()
+const networkListVisible = ref(false)
 
 const visible = computed({
   get: () => props.modelValue,
@@ -80,5 +97,9 @@ const topInfo = computed(() => ({
 
 const handleFormValueUpdate = (value: Record<string, string>) => {
   emit('update:inputValue', value.inputValue ?? '')
+}
+
+const handleSelectNetwork = (value: string) => {
+  emit('update:network', value)
 }
 </script>

@@ -748,6 +748,8 @@
     "order_help_text": "Need help with your order?",
     "chat_with_us": "Chat with us.",
     "confirm_withdrawal": "Confirm Withdrawal",
+    "sms_code_invalid": "Invalid SMS verification code.",
+    "balance_insufficient": "Insufficient balance.",
     "pending_order_exists": "Your withdrawal request is being processed.",
     "bet_requirement_unfinished": "Please complete the turnover requirement before withdrawing.",
     "missing_account": "Please select a withdrawal account first.",

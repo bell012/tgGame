@@ -34,7 +34,10 @@
       :amount="amount"
       :currency-code="currencyCode"
       :phone-number="maskedPhoneNumber"
-      :loading="isSubmitting"
+      :sending="isSendingSmsCode"
+      :loading="isCheckingSmsCode || isSubmitting"
+      :countdown-trigger="smsCountdownTrigger"
+      @resend="handleSmsVerificationResend"
       @confirm="handleSmsVerificationConfirm"
     />
     <withdrawOrderPop
@@ -70,7 +73,10 @@ const {
   paymentPasswordVisible,
   smsVerificationVisible,
   withdrawOrderVisible,
+  isSendingSmsCode,
+  isCheckingSmsCode,
   isSubmitting,
+  smsCountdownTrigger,
   amount,
   currencyCode,
   maskedPhoneNumber,
@@ -84,6 +90,7 @@ const {
   handleKindReminderSkip,
   handleKindReminderSettings,
   handlePaymentPasswordConfirm,
+  handleSmsVerificationResend,
   handleSmsVerificationConfirm,
   closeWithdrawOrder
 } = useWithdrawFlow()
