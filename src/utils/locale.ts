@@ -1,3 +1,7 @@
+import CNYFlagIcon from '@/static/img/flag/CNY.webp'
+import PHPFlagIcon from '@/static/img/flag/PHP.png'
+import USDFlagIcon from '@/static/img/flag/USD.webp'
+
 /**
  * 语言与币种的统一配置和工具集合。
  *
@@ -327,6 +331,36 @@ export const getCurrentCurrency = (): string => {
     return 'PHP'
   }
   return currency
+}
+
+const CURRENCY_FLAG_IMAGE_MAP: Record<string, string> = {
+  CNY: CNYFlagIcon,
+  PHP: PHPFlagIcon,
+  USD: USDFlagIcon
+}
+
+/**
+ * 标准化币种代码。
+ * @param value - 任意来源的币种值
+ * @returns 标准化后的大写币种代码
+ * @example
+ */
+const normalizeCurrencyCode = (value?: unknown): string => {
+  const normalizedCode = String(value ?? '')
+    .trim()
+    .toUpperCase()
+  return normalizedCode || getCurrentCurrency().toUpperCase()
+}
+
+/**
+ * 获取币种对应图片。
+ * @param currency - 币种代码（可选，默认使用当前币种）
+ * @returns 匹配到的币种图片地址
+ * @example
+ */
+export const getCurrencyImageByCode = (currency?: unknown): string => {
+  const currencyCode = normalizeCurrencyCode(currency)
+  return CURRENCY_FLAG_IMAGE_MAP[currencyCode]
 }
 
 /**
