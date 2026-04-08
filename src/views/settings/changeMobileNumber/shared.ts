@@ -365,7 +365,8 @@ export const useChangeMobileNumber = () => {
       const response = await Api.user.modifyMemberTelePhone({
         telephone: newTelephone.value,
         areaCode: defaultAreaCode,
-        smsCode: newVerificationCode.value
+        smsCode: newVerificationCode.value,
+        phoneBindStatus: 0
       })
 
       if (response?.code === 'C2') {
