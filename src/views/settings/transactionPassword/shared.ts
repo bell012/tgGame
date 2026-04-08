@@ -6,7 +6,7 @@ import { handleVerificationCodeInput } from '@/utils/phone-input'
 import { StringExtension } from '@/utils/string-extension'
 import { storeToRefs } from 'pinia'
 import { showToast } from 'vant'
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const SMS_COUNTDOWN_STORAGE_KEY = 'transaction-password-sms-countdown'
@@ -34,16 +34,14 @@ export const useTransactionPassword = () => {
   const transactionPasswordInputRef = ref<HTMLInputElement | null>(null)
   const confirmTransactionPasswordInputRef = ref<HTMLInputElement | null>(null)
 
-  const {
-    remainingSeconds,
-    isRunning: isResendCountdownRunning,
-    startCountdown,
-    clearCountdown,
-    syncCountdown
-  } = usePersistentCountdown({
+  const countdownState = usePersistentCountdown({
     storageKey: SMS_COUNTDOWN_STORAGE_KEY,
     durationSeconds: 60
   })
+
+  const { remainingSeconds, startCountdown, clearCountdown, syncCountdown } = countdownState
+
+  const isResendCountdownRunning: ComputedRef<boolean> = countdownState.isRunning
 
   /**
    * 同步交易密码模式。
@@ -77,11 +75,11 @@ export const useTransactionPassword = () => {
     isSendingCode.value || isResendCountdownRunning.value ? 'text-text-2' : 'text-theme-primary'
   )
 
-  const isConfirmButtonDisabled = computed(
+  const isConfirmButtonDisabled: ComputedRef<boolean> = computed(
     () => verificationCode.value.length !== 6 || isConfirmingCode.value
   )
 
-  const isUpdatePasswordButtonDisabled = computed(
+  const isUpdatePasswordButtonDisabled: ComputedRef<boolean> = computed(
     () =>
       transactionPassword.value.length !== 6 ||
       confirmTransactionPassword.value.length !== 6 ||

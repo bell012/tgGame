@@ -5,7 +5,7 @@ import { getDefaultAreaCode, getDefaultAreaCodeDisplay } from '@/utils/locale'
 import { handlePhoneInput, handleVerificationCodeInput } from '@/utils/phone-input'
 import { storeToRefs } from 'pinia'
 import { showToast } from 'vant'
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const CURRENT_SMS_COUNTDOWN_STORAGE_KEY = 'change-mobile-number-current-sms-countdown'
@@ -34,27 +34,33 @@ export const useChangeMobileNumber = () => {
   const currentVerificationInputRef = ref<HTMLInputElement | null>(null)
   const newVerificationInputRef = ref<HTMLInputElement | null>(null)
 
-  const {
-    remainingSeconds: currentRemainingSeconds,
-    isRunning: isCurrentResendCountdownRunning,
-    startCountdown: startCurrentCountdown,
-    clearCountdown: clearCurrentCountdown,
-    syncCountdown: syncCurrentCountdown
-  } = usePersistentCountdown({
+  const currentCountdownState = usePersistentCountdown({
     storageKey: CURRENT_SMS_COUNTDOWN_STORAGE_KEY,
     durationSeconds: 60
   })
 
   const {
-    remainingSeconds: newRemainingSeconds,
-    isRunning: isNewResendCountdownRunning,
-    startCountdown: startNewCountdown,
-    clearCountdown: clearNewCountdown,
-    syncCountdown: syncNewCountdown
-  } = usePersistentCountdown({
+    remainingSeconds: currentRemainingSeconds,
+    startCountdown: startCurrentCountdown,
+    clearCountdown: clearCurrentCountdown,
+    syncCountdown: syncCurrentCountdown
+  } = currentCountdownState
+
+  const isCurrentResendCountdownRunning: ComputedRef<boolean> = currentCountdownState.isRunning
+
+  const newCountdownState = usePersistentCountdown({
     storageKey: NEW_SMS_COUNTDOWN_STORAGE_KEY,
     durationSeconds: 60
   })
+
+  const {
+    remainingSeconds: newRemainingSeconds,
+    startCountdown: startNewCountdown,
+    clearCountdown: clearNewCountdown,
+    syncCountdown: syncNewCountdown
+  } = newCountdownState
+
+  const isNewResendCountdownRunning: ComputedRef<boolean> = newCountdownState.isRunning
 
   const resolvedTelephone = computed(() => String(userInfo.value?.telephone ?? '').trim())
 
@@ -104,15 +110,15 @@ export const useChangeMobileNumber = () => {
       : 'text-theme-primary'
   )
 
-  const isCurrentConfirmButtonDisabled = computed(
+  const isCurrentConfirmButtonDisabled: ComputedRef<boolean> = computed(
     () => currentVerificationCode.value.length !== 6 || isConfirmingCurrentCode.value
   )
 
-  const isSendNewCodeButtonActive = computed(
+  const isSendNewCodeButtonActive: ComputedRef<boolean> = computed(
     () => Boolean(newTelephone.value) && !isSendingNewCode.value
   )
 
-  const isNewConfirmButtonDisabled = computed(
+  const isNewConfirmButtonDisabled: ComputedRef<boolean> = computed(
     () => !newTelephone.value || newVerificationCode.value.length !== 6 || isConfirmingNewCode.value
   )
 
