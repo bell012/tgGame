@@ -176,6 +176,30 @@
       @close="closeAddAddress"
       @confirm="confirmAddAddress"
     />
+    <withdrawPaymentPasswordPop
+      v-model="addAddressPaymentPasswordVisible"
+      :amount="0"
+      :currency-code="currency"
+      :loading="isSubmittingAddAddress"
+      :show-amount-section="false"
+      :confirm-text="t('common.confirm')"
+      @close="closeAddAddressPaymentPassword"
+      @confirm="handleAddAddressPaymentPasswordConfirm"
+    />
+    <withdrawSmsVerificationPop
+      v-model="addAddressSmsVerificationVisible"
+      :amount="0"
+      :currency-code="currency"
+      :phone-number="maskedPhoneNumber"
+      :sending="isSendingAddAddressSmsCode"
+      :loading="isCheckingAddAddressSmsCode || isSubmittingAddAddress"
+      :countdown-trigger="addAddressSmsCountdownTrigger"
+      :show-amount-section="false"
+      :confirm-text="t('common.confirm')"
+      @close="closeAddAddressSmsVerification"
+      @resend="handleAddAddressSmsVerificationResend"
+      @confirm="handleAddAddressSmsVerificationConfirm"
+    />
   </div>
 </template>
 <script setup lang="ts">
@@ -193,6 +217,8 @@ import InfoIcon from '@/static/svg/info.svg?component'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
 import withdrawCryptoAddressListPop from './withdrawCryptoAddressListPop.vue'
 import withdrawCryptoAddAddressPop from './withdrawCryptoAddAddressPop.vue'
+import withdrawPaymentPasswordPop from './withdrawPaymentPasswordPop.vue'
+import withdrawSmsVerificationPop from './withdrawSmsVerificationPop.vue'
 import type { WithdrawSubmitPayload } from './shared/types'
 import { useWithdrawCrypto } from './shared/useWithdrawCrypto'
 
@@ -202,6 +228,9 @@ const {
   address,
   addressListVisible,
   amount,
+  addAddressPaymentPasswordVisible,
+  addAddressSmsVerificationVisible,
+  addAddressSmsCountdownTrigger,
   balanceAmount,
   availableReceiveAddresses,
   addAddressVisible,
@@ -213,14 +242,23 @@ const {
   currencyOptions,
   currencySymbol,
   closeAddAddress,
+  closeAddAddressPaymentPassword,
+  closeAddAddressSmsVerification,
   currentCurrency,
   handleChangeReceiveAddress,
+  handleAddAddressPaymentPasswordConfirm,
+  handleAddAddressSmsVerificationConfirm,
+  handleAddAddressSmsVerificationResend,
   handleSelectReceiveAddress,
   hasSelectedReceiveAddress,
   formattedBalance,
+  isCheckingAddAddressSmsCode,
   isAmountDisabled,
   isRefreshingBalance,
+  isSendingAddAddressSmsCode,
+  isSubmittingAddAddress,
   isWithdrawDisabled,
+  maskedPhoneNumber,
   matchedWithdrawMethod,
   networkOptions,
   openAddressList,

@@ -10,8 +10,8 @@ import type { WithdrawOrderStatus, WithdrawSubmitPayload } from './types'
 
 export interface SubmitWithdrawWorkflowParams {
   payload: WithdrawSubmitPayload
-  verifyCode?: string
   modifyBy?: string
+  hashModifyBy?: boolean
   withdrawNumber?: number
 }
 
@@ -82,8 +82,8 @@ const buildOrderViewData = ({
 
 const buildSubmitTransferOrderForm = ({
   payload,
-  verifyCode,
   modifyBy,
+  hashModifyBy = true,
   withdrawNumber = 0
 }: SubmitWithdrawWorkflowParams): SubmitTransferOrderForm => {
   const accountNo = getAccountNo(payload)
@@ -96,8 +96,7 @@ const buildSubmitTransferOrderForm = ({
     channelId: payload.channelId,
     columnCode,
     currencyCode: getCurrencyCode(payload),
-    ...(verifyCode ? { verifyCode } : {}),
-    ...(modifyBy ? { modifyBy: StringExtension.md5(modifyBy) } : {})
+    ...(modifyBy ? { modifyBy: hashModifyBy ? StringExtension.md5(modifyBy) : modifyBy } : {})
   }
 }
 

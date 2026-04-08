@@ -15,8 +15,10 @@ import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
 import { getBalanceByCurrency } from '@/utils/balance'
 import { getCurrentCurrency, getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
+import { StringExtension } from '@/utils/string-extension'
 import { showToast } from 'vant'
 import { splitWithdrawManagerMethods } from './withdrawManager'
+import { requestOpenWithdrawKindReminder } from './useWithdrawFlow'
 
 export interface CryptoOption {
   code: string
@@ -262,9 +264,18 @@ export function useWithdrawCrypto() {
   const selectNetwork = ref('TRC20')
   const matchedWithdrawMethod = ref<WithdrawManagerItem | null>(null)
   const isRefreshingBalance = ref(false)
+  const isLoadingReceiveAddresses = ref(false)
+  const hasLoadedReceiveAddresses = ref(false)
+  const hasReceiveAddressesLoadError = ref(false)
   const addressListVisible = ref(false)
   const addAddressVisible = ref(false)
+  const addAddressPaymentPasswordVisible = ref(false)
+  const addAddressSmsVerificationVisible = ref(false)
   const reopenAddressListAfterAdd = ref(false)
+  const isSendingAddAddressSmsCode = ref(false)
+  const isCheckingAddAddressSmsCode = ref(false)
+  const isSubmittingAddAddress = ref(false)
+  const addAddressSmsCountdownTrigger = ref(0)
   const receiveAddresses = ref<CryptoReceiveAddressItem[]>([])
   const selectedAddressId = ref<string | null>(null)
   const pendingAddress = ref('')
@@ -279,6 +290,58 @@ export function useWithdrawCrypto() {
   )
   const currencyOption = computed(() => {
     return currencyOptions.value.find(option => option.value === currency.value)
+  })
+  const hasTransactionPassword = computed(() =>
+    Boolean(String(userStore.userInfo?.busiPwd ?? '').trim())
+  )
+  const addMemberCardVerifyWay = computed(() =>
+    String(
+      (
+        siteConfigStore.config as
+          | {
+              baseSiteConfig?: {
+                add_member_card_security_verify_way?: string | number
+                addMemberCardSecurityVerifyWay?: string | number
+              }
+            }
+          | null
+          | undefined
+      )?.baseSiteConfig?.add_member_card_security_verify_way ??
+        (
+          siteConfigStore.config as
+            | {
+                baseSiteConfig?: {
+                  add_member_card_security_verify_way?: string | number
+                  addMemberCardSecurityVerifyWay?: string | number
+                }
+              }
+            | null
+            | undefined
+        )?.baseSiteConfig?.addMemberCardSecurityVerifyWay ??
+        ''
+    ).trim()
+  )
+  const needAddMemberCardBusiPwd = computed(() => addMemberCardVerifyWay.value === '2')
+  const needAddMemberCardTelephoneSms = computed(() => addMemberCardVerifyWay.value === '1')
+  const resolvedAreaCode = computed(() => String(userStore.userInfo?.areaCode ?? '').trim())
+  const resolvedTelephone = computed(() =>
+    String(userStore.userInfo?.telephone ?? '')
+      .trim()
+      .replace(/\D/g, '')
+  )
+  const maskedPhoneNumber = computed(() => {
+    const areaCode = resolvedAreaCode.value
+    const telephone = resolvedTelephone.value
+
+    if (!telephone) {
+      return ''
+    }
+
+    if (telephone.length <= 4) {
+      return `+${areaCode}-${telephone}`
+    }
+
+    return `+${areaCode}-${telephone.slice(0, 3)}****${telephone.slice(-4)}`
   })
   const availableReceiveAddresses = computed(() =>
     receiveAddresses.value.filter(item => item.coinCode === currency.value)
@@ -350,6 +413,17 @@ export function useWithdrawCrypto() {
     () => isAmountDisabled.value || !selectedReceiveAddress.value?.address.trim()
   )
 
+  const ensureCanManageReceiveAddress = () => {
+    if (hasTransactionPassword.value) {
+      return true
+    }
+
+    addressListVisible.value = false
+    addAddressVisible.value = false
+    requestOpenWithdrawKindReminder()
+    return false
+  }
+
   const syncSelectedAddress = ({ preserveCurrent = true }: { preserveCurrent?: boolean } = {}) => {
     if (!preserveCurrent) {
       selectedAddressId.value = null
@@ -364,6 +438,8 @@ export function useWithdrawCrypto() {
 
   const loadReceiveAddresses = async () => {
     const nextCardType = matchedWithdrawMethod.value?.cardType
+    isLoadingReceiveAddresses.value = true
+    hasReceiveAddressesLoadError.value = false
 
     try {
       const response = await Api.withdraw.selectMemberCard(
@@ -380,12 +456,17 @@ export function useWithdrawCrypto() {
           address: String(account.accountNo ?? '')
         }))
         .filter(item => item.address)
+      hasLoadedReceiveAddresses.value = true
+      return true
     } catch (error) {
       console.error(error)
       receiveAddresses.value = []
+      hasReceiveAddressesLoadError.value = true
+      hasLoadedReceiveAddresses.value = true
+      return false
+    } finally {
+      isLoadingReceiveAddresses.value = false
     }
-
-    syncSelectedAddress()
   }
 
   const loadWithdrawManager = async () => {
@@ -402,6 +483,7 @@ export function useWithdrawCrypto() {
         coinCode.value = matchedOption.code
         currency.value = matchedOption.code
         await loadReceiveAddresses()
+        syncSelectedAddress()
       } else {
         matchedWithdrawMethod.value = null
         receiveAddresses.value = []
@@ -435,6 +517,19 @@ export function useWithdrawCrypto() {
   }
 
   const openAddressList = () => {
+    if (!ensureCanManageReceiveAddress()) {
+      return
+    }
+
+    if (
+      isLoadingReceiveAddresses.value ||
+      !hasLoadedReceiveAddresses.value ||
+      hasReceiveAddressesLoadError.value
+    ) {
+      return
+    }
+
+    syncSelectedAddress()
     addressListVisible.value = true
   }
 
@@ -443,6 +538,10 @@ export function useWithdrawCrypto() {
   }
 
   const openAddAddress = () => {
+    if (!ensureCanManageReceiveAddress()) {
+      return
+    }
+
     if (!canAddAddress.value) {
       return
     }
@@ -463,6 +562,10 @@ export function useWithdrawCrypto() {
     }
   }
 
+  const reopenAddAddressForm = () => {
+    addAddressVisible.value = true
+  }
+
   const handleSelectReceiveAddress = (id: string) => {
     const nextSelectedAddress = availableReceiveAddresses.value.find(item => item.id === id) ?? null
 
@@ -476,10 +579,17 @@ export function useWithdrawCrypto() {
   }
 
   const handleChangeReceiveAddress = () => {
+    if (!ensureCanManageReceiveAddress()) {
+      return
+    }
+
     openAddressList()
   }
 
-  const buildAddMemberCardForm = (nextAddress: string): AddMemberCardForm | null => {
+  const buildAddMemberCardForm = (
+    nextAddress: string,
+    verifiedValue?: string
+  ): AddMemberCardForm | null => {
     const nextCardType = Number(matchedWithdrawMethod.value?.cardType ?? 0)
 
     if (!nextCardType) {
@@ -489,6 +599,8 @@ export function useWithdrawCrypto() {
     return {
       type: 5,
       cardType: nextCardType,
+      ...(addMemberCardVerifyWay.value ? { verifyType: addMemberCardVerifyWay.value } : {}),
+      ...(verifiedValue ? { verifyCode: StringExtension.md5(verifiedValue) } : {}),
       accountNo: nextAddress,
       accountName: selectNetwork.value,
       accountSubNo: '',
@@ -498,14 +610,14 @@ export function useWithdrawCrypto() {
     }
   }
 
-  const confirmAddAddress = async () => {
+  const submitAddAddress = async (verifiedValue?: string) => {
     const nextAddress = pendingAddress.value.trim()
 
     if (!nextAddress) {
       return
     }
 
-    const requestData = buildAddMemberCardForm(nextAddress)
+    const requestData = buildAddMemberCardForm(nextAddress, verifiedValue)
 
     if (!requestData) {
       showToast({
@@ -517,6 +629,7 @@ export function useWithdrawCrypto() {
     }
 
     try {
+      isSubmittingAddAddress.value = true
       const response = await Api.withdraw.addMemberCard(requestData)
 
       if (response?.code !== 'C2') {
@@ -525,6 +638,7 @@ export function useWithdrawCrypto() {
           type: 'fail',
           duration: FAIL_TOAST_DURATION
         })
+        reopenAddAddressForm()
         return
       }
     } catch (error) {
@@ -534,13 +648,127 @@ export function useWithdrawCrypto() {
         type: 'fail',
         duration: FAIL_TOAST_DURATION
       })
+      reopenAddAddressForm()
       return
+    } finally {
+      isSubmittingAddAddress.value = false
     }
 
     await loadReceiveAddresses()
+    syncSelectedAddress()
     selectedAddressId.value =
       receiveAddresses.value.find(item => item.address === nextAddress)?.id ?? null
     closeAddAddress()
+  }
+
+  const sendAddAddressSmsCode = async () => {
+    if (isSendingAddAddressSmsCode.value) {
+      return false
+    }
+
+    if (!resolvedTelephone.value) {
+      showToast({
+        message: 'Phone number unavailable',
+        type: 'fail',
+        duration: FAIL_TOAST_DURATION
+      })
+      return false
+    }
+
+    try {
+      isSendingAddAddressSmsCode.value = true
+      const response = await Api.auth.sendSms({
+        telephone: resolvedTelephone.value,
+        areaCode: resolvedAreaCode.value
+      })
+
+      if (response?.message) {
+        showToast({
+          message: response.message,
+          type: response?.code === 'C2' ? 'success' : 'fail'
+        })
+      }
+
+      if (response?.code === 'C2') {
+        addAddressSmsCountdownTrigger.value += 1
+        return true
+      }
+
+      return false
+    } finally {
+      isSendingAddAddressSmsCode.value = false
+    }
+  }
+
+  const closeAddAddressPaymentPassword = () => {
+    addAddressPaymentPasswordVisible.value = false
+    reopenAddAddressForm()
+  }
+
+  const closeAddAddressSmsVerification = () => {
+    addAddressSmsVerificationVisible.value = false
+    reopenAddAddressForm()
+  }
+
+  const handleAddAddressPaymentPasswordConfirm = async (password: string) => {
+    addAddressPaymentPasswordVisible.value = false
+    await submitAddAddress(password)
+  }
+
+  const handleAddAddressSmsVerificationResend = async () => {
+    await sendAddAddressSmsCode()
+  }
+
+  const handleAddAddressSmsVerificationConfirm = async (code: string) => {
+    if (isCheckingAddAddressSmsCode.value || isSubmittingAddAddress.value) {
+      return
+    }
+
+    try {
+      isCheckingAddAddressSmsCode.value = true
+      const response = await Api.auth.checkSms({
+        telephone: resolvedTelephone.value,
+        areaCode: resolvedAreaCode.value,
+        smsCode: code
+      })
+
+      if (response?.code !== 'C2') {
+        showToast({
+          message: String(response?.message || 'Invalid sms code'),
+          type: 'fail',
+          duration: FAIL_TOAST_DURATION
+        })
+        return
+      }
+
+      addAddressSmsVerificationVisible.value = false
+      await submitAddAddress(code)
+    } finally {
+      isCheckingAddAddressSmsCode.value = false
+    }
+  }
+
+  const confirmAddAddress = async () => {
+    const nextAddress = pendingAddress.value.trim()
+
+    if (!nextAddress) {
+      return
+    }
+
+    if (needAddMemberCardBusiPwd.value) {
+      addAddressVisible.value = false
+      addAddressPaymentPasswordVisible.value = true
+      return
+    }
+
+    if (needAddMemberCardTelephoneSms.value) {
+      addAddressVisible.value = false
+      addAddressSmsVerificationVisible.value = true
+      await sendAddAddressSmsCode()
+      return
+    }
+
+    await submitAddAddress()
   }
 
   const refreshBalance = async () => {
@@ -576,6 +804,9 @@ export function useWithdrawCrypto() {
     balanceAmount,
     availableReceiveAddresses,
     addAddressVisible,
+    addAddressPaymentPasswordVisible,
+    addAddressSmsVerificationVisible,
+    addAddressSmsCountdownTrigger,
     coinCode,
     coinMoreShow,
     currency,
@@ -584,16 +815,26 @@ export function useWithdrawCrypto() {
     currencySymbol,
     canAddAddress,
     currentCurrency,
+    handleAddAddressPaymentPasswordConfirm,
+    handleAddAddressSmsVerificationConfirm,
+    handleAddAddressSmsVerificationResend,
     formattedBalance,
     hasSelectedReceiveAddress,
     isAmountDisabled,
+    isCheckingAddAddressSmsCode,
+    isLoadingReceiveAddresses,
     isRefreshingBalance,
+    isSendingAddAddressSmsCode,
+    isSubmittingAddAddress,
     isWithdrawDisabled,
+    maskedPhoneNumber,
     matchedWithdrawMethod,
     networkOptions,
     openAddAddress,
     openAddressList,
     closeAddAddress,
+    closeAddAddressPaymentPassword,
+    closeAddAddressSmsVerification,
     closeAddressList,
     confirmAddAddress,
     handleChangeReceiveAddress,

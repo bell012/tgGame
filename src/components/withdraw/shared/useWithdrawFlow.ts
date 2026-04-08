@@ -1,4 +1,4 @@
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
 import { showToast } from 'vant'
@@ -7,6 +7,13 @@ import type { WithdrawOrderStatus, WithdrawSubmitPayload } from './types'
 import { submitWithdrawWorkflow } from './withdrawWorkflow'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
+import { navigateToName } from '@/utils/router'
+
+let openKindReminderHandler: null | (() => void) = null
+
+export const requestOpenWithdrawKindReminder = () => {
+  openKindReminderHandler?.()
+}
 
 export const useWithdrawFlow = () => {
   const FAIL_TOAST_DURATION = 3000
@@ -30,9 +37,6 @@ export const useWithdrawFlow = () => {
   const orderMethodLabel = ref('')
   const pendingPaymentPassword = ref('')
 
-  const shouldRequireKindReminder = computed(
-    () => Number(userInfo.value?.checkTransactionPwd ?? 0) !== 1
-  )
   const withdrawVerifyWay = computed(() =>
     String(
       (
@@ -49,6 +53,9 @@ export const useWithdrawFlow = () => {
   )
   const needWithdrawBusiPwd = computed(() => withdrawVerifyWay.value === '1')
   const needWithdrawTelephoneSms = computed(() => withdrawVerifyWay.value === '2')
+  const hasTransactionPassword = computed(() =>
+    Boolean(String(userInfo.value?.busiPwd ?? '').trim())
+  )
 
   const amount = computed(() => activePayload.value?.amount ?? 0)
   const currencyCode = computed(() => activePayload.value?.currencyCode || 'PHP')
@@ -76,7 +83,7 @@ export const useWithdrawFlow = () => {
     return `+${areaCode}-${prefix}****${suffix}`
   })
 
-  const finalizeWithdrawSubmit = async (verifyCode?: string) => {
+  const finalizeWithdrawSubmit = async (modifyBy?: string, hashModifyBy = true) => {
     const payload = activePayload.value
 
     if (!payload || isSubmitting.value || isCheckingSmsCode.value) {
@@ -87,8 +94,8 @@ export const useWithdrawFlow = () => {
       isSubmitting.value = true
       const orderDetail = await submitWithdrawWorkflow({
         payload,
-        verifyCode,
-        modifyBy: pendingPaymentPassword.value
+        modifyBy: modifyBy ?? pendingPaymentPassword.value,
+        hashModifyBy
       })
 
       smsVerificationVisible.value = false
@@ -114,15 +121,9 @@ export const useWithdrawFlow = () => {
 
   const beginWithdrawFlow = async (payload: WithdrawSubmitPayload) => {
     activePayload.value = payload
-
-    if (payload.tabType === 'Crypto') {
-      await finalizeWithdrawSubmit()
-      return
-    }
-
     await siteConfigStore.initSiteConfig()
 
-    if (needWithdrawBusiPwd.value && shouldRequireKindReminder.value) {
+    if (!hasTransactionPassword.value) {
       kindReminderVisible.value = true
       return
     }
@@ -141,26 +142,17 @@ export const useWithdrawFlow = () => {
   }
 
   const handleKindReminderSkip = () => {
-    if (!needWithdrawBusiPwd.value) {
-      return
-    }
-
-    paymentPasswordVisible.value = true
+    kindReminderVisible.value = false
   }
 
   const handleKindReminderSettings = () => {
-    window.dispatchEvent(new CustomEvent('withdraw-open-settings'))
+    kindReminderVisible.value = false
+    void navigateToName('security')
   }
 
   const handlePaymentPasswordConfirm = (password: string) => {
     pendingPaymentPassword.value = password
     paymentPasswordVisible.value = false
-
-    if (needWithdrawTelephoneSms.value) {
-      smsVerificationVisible.value = true
-      return
-    }
-
     void finalizeWithdrawSubmit()
   }
 
@@ -229,6 +221,7 @@ export const useWithdrawFlow = () => {
         return
       }
 
+      smsVerificationVisible.value = false
       await finalizeWithdrawSubmit(code)
     } finally {
       isCheckingSmsCode.value = false
@@ -253,6 +246,26 @@ export const useWithdrawFlow = () => {
     }
 
     void sendSmsCode()
+  })
+
+  const handleOpenKindReminder = () => {
+    if (kindReminderVisible.value) {
+      return
+    }
+
+    paymentPasswordVisible.value = false
+    smsVerificationVisible.value = false
+    kindReminderVisible.value = true
+  }
+
+  onMounted(() => {
+    openKindReminderHandler = handleOpenKindReminder
+  })
+
+  onBeforeUnmount(() => {
+    if (openKindReminderHandler === handleOpenKindReminder) {
+      openKindReminderHandler = null
+    }
   })
 
   return {
