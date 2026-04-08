@@ -193,14 +193,14 @@
 
       <!-- 第三个 -->
       <template v-else>
-        <div class="mt-[32px] flex flex-col justify-center items-center">
-          <Mobile_success class="h-[60px] w-[60px]" />
+        <div class="mt-[40px] flex flex-col justify-center items-center">
+          <Mobile_success class="h-[81px] w-[81px]" />
           <p class="my-[20px] text-base font-[700] text-text-1">{{ t('common.successfully') }}</p>
           <div
-            class="flex h-[44px] w-full items-center justify-center rounded-[10px] border border-input-2 bg-input-1 px-3.5"
+            class="flex h-[48px] w-full items-center justify-center rounded-[8px] border border-input-2 bg-input-3 px-3.5"
           >
-            <span class="mr-2 text-lg font-[700] text-text-1">{{ defaultAreaCodeDisplay }}</span>
-            <span class="text-lg font-[700] text-text-1">{{ updatedTelephone || '--' }}</span>
+            <span class="mr-2 text-base font-[700] text-text-1">{{ defaultAreaCodeDisplay }}</span>
+            <span class="text-base font-[700] text-text-1">{{ updatedTelephone || '--' }}</span>
           </div>
         </div>
 
