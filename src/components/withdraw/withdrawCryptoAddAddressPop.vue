@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import withdrawFormPop from './withdrawFormPop.vue'
@@ -76,6 +76,15 @@ const visible = computed({
   get: () => props.modelValue,
   set: value => emit('update:modelValue', value)
 })
+
+watch(
+  () => props.modelValue,
+  value => {
+    if (!value) {
+      networkListVisible.value = false
+    }
+  }
+)
 
 const formValue = computed(() => ({
   inputValue: props.inputValue

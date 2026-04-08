@@ -18,7 +18,7 @@
         </button>
       </div>
 
-      <div class="mt-8 text-center sm:mt-12">
+      <div v-if="showAmountSection" class="mt-8 text-center sm:mt-12">
         <div
           class="text-[26px] font-extrabold leading-none text-center text-text-1 sm:text-[40px] sm:font-bold"
         >
@@ -33,14 +33,20 @@
       </div>
 
       <p
-        class="mt-5 text-center text-sm leading-normal text-text-2 sm:mt-8 sm:text-lg sm:leading-7"
+        class="text-center text-sm leading-normal text-text-2 sm:text-lg sm:leading-7"
+        :class="showAmountSection ? 'mt-5 sm:mt-8' : 'mt-8 sm:mt-10'"
       >
         {{ t('withdraw.sms_sent_to') }}
         <br />
         <span class="font-bold text-text-1">{{ maskedPhone }}</span>
       </p>
 
-      <button type="button" class="mt-5 w-full sm:mt-8" @click="focusInput">
+      <button
+        type="button"
+        class="w-full sm:mt-8"
+        :class="showAmountSection ? 'mt-5' : 'mt-8 sm:mt-10'"
+        @click="focusInput"
+      >
         <div class="grid grid-cols-6 gap-2">
           <div
             v-for="index in 6"
@@ -73,7 +79,7 @@
         :disabled="loading || codeValue.length !== 6"
         @click="handleConfirmClick"
       >
-        {{ t('withdraw.confirm_withdrawal') }}
+        {{ resolvedConfirmText }}
       </button>
 
       <input
@@ -104,6 +110,8 @@ interface Props {
   sending?: boolean
   loading?: boolean
   countdownTrigger?: number
+  showAmountSection?: boolean
+  confirmText?: string
 }
 
 const RESEND_SECONDS = 60
@@ -132,6 +140,8 @@ const canResend = computed(() => countdown.value <= 0)
 const formattedAmount = computed(() => Number(props.amount || 0).toFixed(0))
 const currencyCode = computed(() => props.currencyCode || 'PHP')
 const maskedPhone = computed(() => String(props.phoneNumber || '').trim())
+const showAmountSection = computed(() => props.showAmountSection !== false)
+const resolvedConfirmText = computed(() => props.confirmText || t('withdraw.confirm_withdrawal'))
 
 const stopCountdown = () => {
   if (countdownTimer) {

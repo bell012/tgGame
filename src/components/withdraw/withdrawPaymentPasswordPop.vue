@@ -18,7 +18,7 @@
         </button>
       </div>
 
-      <div class="mt-8 text-center sm:mt-12">
+      <div v-if="showAmountSection" class="mt-8 text-center sm:mt-12">
         <div
           class="text-[26px] font-extrabold leading-none text-center text-text-1 sm:text-[40px] sm:font-bold"
         >
@@ -32,7 +32,12 @@
         </p>
       </div>
 
-      <button type="button" class="mt-5 w-full sm:mt-8" @click="focusInput">
+      <button
+        type="button"
+        class="w-full sm:mt-8"
+        :class="showAmountSection ? 'mt-5' : 'mt-8 sm:mt-10'"
+        @click="focusInput"
+      >
         <div class="grid grid-cols-6 gap-2">
           <div
             v-for="index in 6"
@@ -51,7 +56,7 @@
         :disabled="loading || passwordValue.length !== 6"
         @click="handleConfirmClick"
       >
-        {{ t('withdraw.confirm_withdrawal') }}
+        {{ resolvedConfirmText }}
       </button>
 
       <input
@@ -79,6 +84,8 @@ interface Props {
   amount: number
   currencyCode: string
   loading?: boolean
+  showAmountSection?: boolean
+  confirmText?: string
 }
 
 const props = defineProps<Props>()
@@ -101,6 +108,8 @@ const visible = computed({
 const formattedAmount = computed(() => {
   return Number(props.amount || 0).toFixed(0)
 })
+const showAmountSection = computed(() => props.showAmountSection !== false)
+const resolvedConfirmText = computed(() => props.confirmText || t('withdraw.confirm_withdrawal'))
 
 const focusInput = async () => {
   await nextTick()
