@@ -84,7 +84,8 @@
     "unknownError": "Unknown Error",
     "sessionExpired": "Session expired, please log in again",
     "globalSetting": "Global Setting",
-    "security": "Security"
+    "security": "Security",
+    "preferences": "Preferences"
   },
   "pwa": {
     "offlineReady": "App ready to work offline",

@@ -481,6 +481,20 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'preferences',
+    name: 'preferences',
+    component: () => import('@/views/settings/preferences/index.vue'),
+    meta: {
+      title: '偏好设置',
+      description: '偏好设置',
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 

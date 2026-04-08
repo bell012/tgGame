@@ -119,7 +119,7 @@ const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
 
   return allGames.filter(game => {
     const hotValue = game.gameItemHotVo?.hot ?? game.hot
-    return Number(hotValue) === 0
+    return Number(hotValue) === 1
   })
 })
 
