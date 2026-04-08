@@ -46,7 +46,15 @@ import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
 import OrderIcon from '@/static/svg/deposit/record.svg?component'
 import Transaction from '@/static/svg/personalCenter/icon6.svg?component'
 import Rollover from '@/static/svg/personalCenter/icon7.svg?component'
-type WalletTab = 'bet-history' | 'deposit' | 'withdraw' | 'my-orders' | 'transaction' | 'rollover'
+import Security from '@/static/svg/security/password.svg?component'
+type WalletTab =
+  | 'bet-history'
+  | 'deposit'
+  | 'withdraw'
+  | 'my-orders'
+  | 'transaction'
+  | 'rollover'
+  | 'security-situation'
 
 defineProps<{
   currentTab: WalletTab
@@ -90,6 +98,12 @@ const menuItems = computed(() => [
     tab: 'rollover' as WalletTab,
     label: t('wallet.rollover'),
     icon: markRaw(Rollover)
+  },
+  {
+    path: '/security-situation',
+    tab: 'security-situation' as WalletTab,
+    label: t('wallet.security'),
+    icon: markRaw(Security)
   }
 ])
 

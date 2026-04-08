@@ -22,25 +22,6 @@
               <CloseIcon class="stroke-text-1 w-4 h-4" />
             </div>
           </div>
-          <!-- <div
-              class="flex h-[50px] justify-between items-center bg-[var(--color-background-level-3)] rounded-[10px] mb-[10px] mt-[20px] p-[4px]"
-            >
-              <div
-                class="flex-1 flex items-center justify-center"
-                :class="{ active: tabIndex === 0 }"
-                @click="tabIndexClick(0)"
-              >
-                Deposit Balance
-              </div>
-              <div
-                class="flex-1 flex items-center justify-center"
-                :class="{ active: tabIndex === 1 }"
-                @click="tabIndexClick(1)"
-              >
-                Bonus Balance
-              </div>
-            </div> -->
-
           <div class="relative mb-[10px]">
             <SearchIcon
               class="absolute left-2.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] fill-none stroke-text-2 opacity-50"

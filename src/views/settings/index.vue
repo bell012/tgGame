@@ -91,6 +91,7 @@ import { navigateTo } from '@/utils/router'
 import H5Header from '@/components/common/H5Header.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import SecuritySvg from '@/static/svg/settings/security.svg?component'
+import GolbalSvg from '@/static/svg/settings/golbal.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import SetStateIcon from '@/static/svg/setState.svg?skipsvgo'
 type SettingsTab = string
@@ -130,6 +131,12 @@ const PcMenuItems = computed<SettingsMenuItem[]>(() => [
     label: t('common.security'),
     icon: SecuritySvg,
     rightIcon: SetStateIcon
+  },
+  {
+    path: '/preferences',
+    tab: 'preferences' as SettingsTab,
+    label: t('common.preferences'),
+    icon: GolbalSvg
   }
 ])
 
@@ -142,6 +149,13 @@ const H5MenuItems = computed<SettingsMenuItem[]>(() => [
     icon: SecuritySvg,
     rightIcon: ArrowRightIcon,
     isRedDot: true
+  },
+  {
+    path: '/preferences',
+    tab: 'preferences' as SettingsTab,
+    label: t('common.preferences'),
+    icon: GolbalSvg,
+    rightIcon: ArrowRightIcon
   }
 ])
 
