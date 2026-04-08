@@ -85,7 +85,25 @@
     "sessionExpired": "Session expired, please log in again",
     "globalSetting": "Global Setting",
     "security": "Security",
-    "preferences": "Preferences"
+    "preferences": "Preferences",
+    "changeLoginPassword": "Change Login Password",
+    "mobileVerification": "Mobile Verification",
+    "verificationCodeSentTo": "Verification code has been sent to",
+    "sendCode": "Send Code",
+    "resendCode": "Resend Code",
+    "resendInSeconds": "Resend in {seconds} seconds",
+    "didntReceiveCode": "Didn't receive the code?",
+    "didntReceiveCodeIntro": "Try the steps below:",
+    "didntReceiveCodeTip1": "Make sure your mobile number is correct.",
+    "didntReceiveCodeTip2": "Check whether SMS blocking or spam filtering is enabled on your phone.",
+    "didntReceiveCodeTip3": "Please wait a few minutes. The verification code may be delayed.",
+    "newPassword": "New Password",
+    "enterNewPassword": "Enter your new password",
+    "reEnterNewPassword": "Re-enter your new password",
+    "updatePassword": "Update Password",
+    "phoneNumberUnavailable": "Unable to get your phone number right now",
+    "gotIt": "Got it",
+    "pleaseEnterThePhoneNumber": "Please enter the phone number"
   },
   "pwa": {
     "offlineReady": "App ready to work offline",
@@ -123,7 +141,8 @@
     "actualTurnover": "Actual Turnover",
     "requiredTurnover": "Required Turnover",
     "applicableGames": "Applicable Games",
-    "orderStatus": "Order Status"
+    "orderStatus": "Order Status",
+    "security": "Security"
   },
   "betHistory": {
     "title": "Bet History",
@@ -566,8 +585,7 @@
     "chinese": "Chinese",
     "english": "English",
     "liveSupport": "Live Support",
-    "leaveFeedfack": "Leave Feedfack",
-    "feedbackComingSoon": "Feedback page is ready. Feature details are coming soon.",
+    "leaveFeedback": "Leave Feedback",
     "joinCommunity": "Join Our Community",
     "signOut": "Sign Out",
     "signOutTitle": "Signing Out",
@@ -628,12 +646,36 @@
     "deposit_more": "More",
     "deposit_channel": "Deposit Channel",
     "deposit_amount": "Deposit Amount",
+    "how_to_deposit": "How to Deposit",
     "deposit_amount_input_placeholder": "Please select a deposit amount",
     "deposit_now": "Deposit Now",
+    "load_from_wallet": "Load from your wallet",
+    "wagering_no": "No Wagering",
+    "wagering_multiple": "{multiple}x Wagering",
+    "withdrawal_no_wagering_tip": "No wagering required for withdrawal",
     "deposit_order": "Deposit Order",
+    "order_currency": "Currency",
+    "order_payment_amount": "Payment Amount",
+    "order_deposit_bonus": "Deposit Bonus",
+    "order_status": "Order Status",
+    "order_no": "Order No.",
+    "order_created_at": "Created At",
+    "order_deposit_method": "Deposit Method",
+    "order_network": "Network",
+    "order_total_payment": "Total Payment",
+    "order_final_amount": "Final Amount",
+    "order_exchange_rate": "Exchange Rate",
+    "order_completed": "Order Completed",
+    "order_cancelled": "Order Cancelled",
+    "order_pay_and_upload_tips": "Please pay within and upload proof",
+    "order_save_qr_code": "Save QR Code",
+    "order_copy_address": "Copy Address",
     "cancel_order_title": "Cancel Order",
     "cancel_order_tips": "Please select a reason for cancellation",
     "cancel_order_confirm_cancel": "Confirm Cancel",
+    "cancel_order_reason_1": "I changed my mind",
+    "cancel_order_reason_2": "Payment QR code expired",
+    "cancel_order_reason_3": "I want to place a new order",
     "deposit_order_bottom_tips": "Please cancel the order if you do not plan to pay. Repeated unpaid orders may result in account restrictions.",
     "upload_proof": "Upload Proof",
     "upload_proof_title": "Upload Payment Proof",
@@ -645,6 +687,10 @@
     "upload_proof_confirm_btn_text": "Upload Proof Now",
     "payment_receipt_sample_title": "Payment Receipt Sample",
     "upload_proof_again_btn_text": "Upload Proof Again",
+    "upload_proof_verifying_marquee": "Payment received. Your order is being verified. Thank you for your patience.",
+    "upload_proof_reminder_title": "Reminder",
+    "upload_proof_reminder_line_1": "· To ensure funds are credited successfully, please upload the correct payment receipt.",
+    "upload_proof_reminder_line_2": "· If you have already uploaded the proof, please wait patiently. Verification usually takes 1–5 minutes.",
     "status": {
       "pending": "Pending",
       "success": "Success",
@@ -808,5 +854,48 @@
         "description": "By claiming VIP rewards, you agree to the related terms. The platform reserves the final right of interpretation."
       }
     }
+  },
+  "securitySettings": {
+    "pageTitle": "Security Settings",
+    "cards": {
+      "loginPassword": {
+        "title": "Login Password",
+        "desc": "Change your password regularly to keep your account secure.",
+        "action": "Change Login Password"
+      },
+      "transactionPassword": {
+        "title": "Transaction Password",
+        "desc": "Used to verify withdrawals and other sensitive transactions for better fund security.",
+        "action": "Set Transaction Password"
+      },
+      "mobile": {
+        "title": "Mobile Number",
+        "desc": "Verify your mobile number to improve account security and receive important alerts.",
+        "action": "Change Mobile Number"
+      },
+      "twoFactor": {
+        "title": "Two-Factor Authentication",
+        "desc": "Enable 2FA for stronger account protection against unauthorized access.",
+        "action": "Enable 2FA"
+      },
+      "passkey": {
+        "title": "Passkey",
+        "desc": "Use a passkey for a faster and more secure way to verify your identity.",
+        "action": "Enable Passkey"
+      },
+      "antiPhishing": {
+        "title": "Anti-Phishing Code",
+        "desc": "Set a personal anti-phishing code to help identify official messages and avoid scams.",
+        "action": "Set Anti-Phishing Code"
+      }
+    },
+    "menu": {
+      "security": "Security",
+      "preferences": "Preferences",
+      "personalVerification": "Personal Verification",
+      "paymentMethods": "Payment Methods",
+      "whitelistManagement": "Whitelist Management"
+    },
+    "hintNotAvailable": "Not available yet."
   }
 }

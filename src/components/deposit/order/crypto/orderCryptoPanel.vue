@@ -54,7 +54,7 @@
           </div>
           <!-- 跑马灯提示 -->
           <div class="flex items-center justify-between w-full overflow-hidden whitespace-nowrap">
-            <p class="marquee">Please pay within and upload proof</p>
+            <p class="marquee">{{ t('deposit.order_pay_and_upload_tips') }}</p>
           </div>
           <!-- 倒计时展示 -->
           <div class="mx-1 bg-bg-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -103,14 +103,14 @@
             @click.stop="doCapture"
             class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
           >
-            Save QR Code
+            {{ t('deposit.order_save_qr_code') }}
           </button>
           <!-- 复制地址按钮 -->
           <button
             @click.stop="copyWord(cryptoAddress)"
             class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
           >
-            Copy Address
+            {{ t('deposit.order_copy_address') }}
           </button>
         </div>
       </div>
@@ -154,7 +154,7 @@
           <!-- 上传中提示文案 -->
           <div class="w-full overflow-hidden whitespace-nowrap">
             <p class="marquee">
-              Payment received. Your order is being verified. Thank you for your patience.
+              {{ t('deposit.upload_proof_verifying_marquee') }}
             </p>
           </div>
         </div>
@@ -181,13 +181,12 @@
       </button>
       <!-- 上传中提醒区域 -->
       <div class="bg-bg-2 mt-6 p-5 rounded-lg text-sm sm:text-base font-normal sm:leading-normal">
-        <p class="text-[color:#F44854]">Reminder</p>
+        <p class="text-[color:#F44854]">{{ t('deposit.upload_proof_reminder_title') }}</p>
         <p class="text-text-3 mt-4">
-          · To ensure funds are credited successfully, please upload the correct payment receipt.
+          {{ t('deposit.upload_proof_reminder_line_1') }}
         </p>
         <p class="text-text-3 mt-4">
-          · If you have already uploaded the proof, please wait patiently. Verification usually
-          takes 1–5 minutes.
+          {{ t('deposit.upload_proof_reminder_line_2') }}
         </p>
       </div>
     </div>
@@ -226,6 +225,7 @@
   <!-- 上传凭证弹窗 -->
   <uploadProofPop
     v-model="uploadPopShow"
+    :order-id="cryptoOrderNo"
     @close="handleUploadProofClose"
     @confirmUpload="handleConfirmUpload"
   />
@@ -234,6 +234,7 @@
 <script setup lang="ts">
 import type { QueryPayOrderByOrderIdResult } from '@/api/interface/wallet'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { isOrderTerminalStatus, normalizeOrderStatusCode } from '@/constants/orderStatus'
 import CloseIcon from '@/static/svg/close.svg?component'
 import CryptoOrderCountdownIcon from '@/static/svg/deposit/crypto-order-countdown.svg?component'
 import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifying.svg?component'
@@ -379,18 +380,18 @@ const panelInlineStyle = computed(() => ({
 // 组装数字币订单摘要行
 const cryptoSummaryRows = computed<DetailRowItem[]>(() =>
   compactRows([
-    cryptoNetwork.value ? { label: 'Network', value: cryptoNetwork.value } : null,
+    cryptoNetwork.value ? { label: t('deposit.order_network'), value: cryptoNetwork.value } : null,
     {
-      label: 'Order No.',
+      label: t('deposit.order_no'),
       value: cryptoOrderNo.value,
       copyValue: cryptoOrderNo.value
     },
     {
-      label: 'Created At',
+      label: t('deposit.order_created_at'),
       value: cryptoCreatedAt.value
     },
     {
-      label: 'Deposit Method',
+      label: t('deposit.order_deposit_method'),
       value: cryptoDisplayMethod.value,
       icon: cryptoMethodIcon.value
     }
@@ -406,29 +407,29 @@ const cryptoCompletedRows = computed<DetailRowItem[]>(() => {
 
   return compactRows([
     {
-      label: 'Total Payment',
+      label: t('deposit.order_total_payment'),
       value: `${cryptoDisplayAmount.value}${cryptoDisplayMethod.value}`
     },
     {
-      label: 'Final Amount',
+      label: t('deposit.order_final_amount'),
       value: finalAmount
     },
     {
-      label: 'Exchange Rate',
+      label: t('deposit.order_exchange_rate'),
       value: cryptoRate.value || '1USDT≈7.15PHP'
     },
-    cryptoNetwork.value ? { label: 'Network', value: cryptoNetwork.value } : null,
+    cryptoNetwork.value ? { label: t('deposit.order_network'), value: cryptoNetwork.value } : null,
     {
-      label: 'Order No.',
+      label: t('deposit.order_no'),
       value: cryptoOrderNo.value,
       copyValue: cryptoOrderNo.value
     },
     {
-      label: 'Created At',
+      label: t('deposit.order_created_at'),
       value: cryptoCreatedAt.value
     },
     {
-      label: 'Deposit Method',
+      label: t('deposit.order_deposit_method'),
       value: cryptoDisplayMethod.value,
       icon: cryptoMethodIcon.value
     }
@@ -436,7 +437,7 @@ const cryptoCompletedRows = computed<DetailRowItem[]>(() => {
 })
 
 const completedStatusTitle = computed(() =>
-  isOrderCompleted.value ? 'Order Completed' : 'Order Cancelled'
+  isOrderCompleted.value ? t('deposit.order_completed') : t('deposit.order_cancelled')
 )
 
 // 关闭订单弹窗
@@ -520,6 +521,21 @@ const handleCancelResultClose = () => {
   emit('close')
 }
 
+const openTerminalResultPopByOrderDetail = (detail: Partial<QueryPayOrderByOrderIdResult>) => {
+  if (cancelResultPopShow.value) return
+
+  const statusCode = normalizeOrderStatusCode('deposit', detail.status)
+  if (statusCode === undefined || !isOrderTerminalStatus('deposit', statusCode)) {
+    return
+  }
+
+  cancelResultStatus.value = statusCode === 1 ? 'Completed' : 'Cancelled'
+  cancelResultOrderInfo.value = { ...detail }
+  cancelResultPopShow.value = true
+  confirmUploadStatus.value = 'completed'
+  emit('hidden', false)
+}
+
 // 复制文本到剪贴板并提示成功
 const copyWord = (word: string) => {
   navigator.clipboard.writeText(word)
@@ -536,6 +552,18 @@ watch(
     renderQrCode()
   },
   { immediate: true, flush: 'post' }
+)
+
+watch(
+  [() => confirmUploadStatus.value, () => rawOrderInfo.value.status],
+  ([uploadStatus]) => {
+    if (uploadStatus !== 'in_progress') {
+      return
+    }
+
+    openTerminalResultPopByOrderDetail(rawOrderInfo.value)
+  },
+  { immediate: true }
 )
 </script>
 
