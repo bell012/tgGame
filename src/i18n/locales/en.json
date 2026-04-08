@@ -107,7 +107,13 @@
     "changeMobileNumber": "Change Mobile Number",
     "newMobileNumber": "New Mobile Number",
     "enterNewMobileNumber": "Enter your new mobile number",
-    "successfully": "Your mobile number has been updated successfully."
+    "successfully": "Your mobile number has been updated successfully.",
+    "setTransactionPassword": "Set Transaction Password",
+    "changeTransactionPassword": "Change Transaction Password",
+    "transactionPassword": "Transaction Password",
+    "confirmTransactionPassword": "Confirm Transaction Password",
+    "transactionPasswordSetSuccessfully": "Your transaction password has been set successfully.",
+    "transactionPasswordChangedSuccessfully": "Your transaction password has been changed successfully."
   },
   "pwa": {
     "offlineReady": "App ready to work offline",

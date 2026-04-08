@@ -107,7 +107,13 @@
     "changeMobileNumber": "更改手机号码",
     "newMobileNumber": "新手机号码",
     "enterNewMobileNumber": "请输入您的新手机号码",
-    "successfully": "您的手机号码已成功更新。"
+    "successfully": "您的手机号码已成功更新。",
+    "setTransactionPassword": "设置交易密码",
+    "changeTransactionPassword": "修改交易密码",
+    "transactionPassword": "交易密码",
+    "confirmTransactionPassword": "确认交易密码",
+    "transactionPasswordSetSuccessfully": "您的交易密码已设置成功。",
+    "transactionPasswordChangedSuccessfully": "您的交易密码已修改成功。"
   },
   "pwa": {
     "offlineReady": "应用已就绪，可离线使用",
