@@ -102,7 +102,12 @@
     "updatePassword": "Update Password",
     "phoneNumberUnavailable": "Unable to get your phone number right now",
     "gotIt": "Got it",
-    "pleaseEnterThePhoneNumber": "Please enter the phone number"
+    "ok": "OK",
+    "pleaseEnterThePhoneNumber": "Please enter the phone number",
+    "changeMobileNumber": "Change Mobile Number",
+    "newMobileNumber": "New Mobile Number",
+    "enterNewMobileNumber": "Enter your new mobile number",
+    "successfully": "Your mobile number has been updated successfully."
   },
   "pwa": {
     "offlineReady": "App ready to work offline",
