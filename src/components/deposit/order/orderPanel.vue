@@ -56,7 +56,7 @@
             </div>
             <!-- 跑马灯提示文案区域 -->
             <div class="flex items-center justify-between w-full overflow-hidden whitespace-nowrap">
-              <p class="marquee">Please pay within and upload proof</p>
+              <p class="marquee">{{ t('deposit.order_pay_and_upload_tips') }}</p>
             </div>
             <!-- 倒计时展示区域 -->
             <div class="mx-1 bg-bg-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -106,13 +106,13 @@
               @click.stop="doCapture"
               class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
             >
-              Save QR Code
+              {{ t('deposit.order_save_qr_code') }}
             </button>
             <button
               @click.stop="copyWord(cryptoAddress)"
               class="py-3 bg-theme-3 rounded-lg text-theme-primary text-sm sm:text-base font-bold leading-normal flex items-center justify-center"
             >
-              Copy Address
+              {{ t('deposit.order_copy_address') }}
             </button>
           </div>
         </div>
@@ -155,7 +155,7 @@
             <!-- 上传中跑马灯文案 -->
             <div class="w-full overflow-hidden whitespace-nowrap">
               <p class="marquee">
-                Payment received. Your order is being verified. Thank you for your patience.
+                {{ t('deposit.upload_proof_verifying_marquee') }}
               </p>
             </div>
           </div>
@@ -183,15 +183,14 @@
         <!-- 上传中提醒文案区域 -->
         <div class="bg-bg-2 mt-6 p-5 rounded-lg text-sm sm:text-base font-normal sm:leading-normal">
           <!-- 提醒标题 -->
-          <p class="text-[color:#F44854]">Reminder</p>
+          <p class="text-[color:#F44854]">{{ t('deposit.upload_proof_reminder_title') }}</p>
           <!-- 提醒内容第一条 -->
           <p class="text-text-3 mt-4">
-            · To ensure funds are credited successfully, please upload the correct payment receipt.
+            {{ t('deposit.upload_proof_reminder_line_1') }}
           </p>
           <!-- 提醒内容第二条 -->
           <p class="text-text-3 mt-4">
-            · If you have already uploaded the proof, please wait patiently. Verification usually
-            takes 1–5 minutes.
+            {{ t('deposit.upload_proof_reminder_line_2') }}
           </p>
         </div>
       </div>
@@ -230,7 +229,7 @@
           </div>
           <!-- 法币金额说明文案 -->
           <p class="mt-2 text-text-1 text-sm sm:text-base leading-normal text-center">
-            Deposit Amount
+            {{ t('deposit.deposit_amount') }}
           </p>
           <!-- 法币订单详情区域 -->
           <div class="mt-8 px-5 py-3 w-full bg-bg-4 rounded-lg relative grid gap-4">
@@ -252,6 +251,7 @@
   <!-- 上传凭证弹窗 -->
   <uploadProofPop
     v-model="uploadPopShow"
+    :order-id="uploadProofOrderId"
     @close="handleUploadProofClose"
     @confirmUpload="handleConfirmUpload"
   />
@@ -355,6 +355,19 @@ const cryptoDisplayAmount = computed(() => {
   return Number.isFinite(amount) ? amount : 0
 })
 const fiatDisplayAmount = computed(() => Number(fiatOrderInfo.value?.amount ?? 0))
+const uploadProofOrderId = computed(() => {
+  const rawOrderId = rawOrderInfo.value.orderId
+  if (rawOrderId !== undefined && rawOrderId !== null && String(rawOrderId).trim()) {
+    return String(rawOrderId)
+  }
+
+  const fiatOrderNo = fiatOrderInfo.value?.order_no
+  if (fiatOrderNo !== undefined && fiatOrderNo !== null && String(fiatOrderNo).trim()) {
+    return String(fiatOrderNo)
+  }
+
+  return String(legacyCryptoOrderInfo.value.order_no ?? '').trim()
+})
 const cryptoDisplayMethod = computed(
   () => rawOrderInfo.value.accountCurrency ?? legacyCryptoOrderInfo.value.method ?? ''
 )
@@ -430,18 +443,18 @@ const cryptoSummaryRows = computed<DetailRowItem[]>(() => {
   if (!isCryptoOrder.value) return []
 
   return compactRows([
-    cryptoNetwork.value ? { label: 'Network', value: cryptoNetwork.value } : null,
+    cryptoNetwork.value ? { label: t('deposit.order_network'), value: cryptoNetwork.value } : null,
     {
-      label: 'Order No.',
+      label: t('deposit.order_no'),
       value: cryptoOrderNo.value,
       copyValue: cryptoOrderNo.value
     },
     {
-      label: 'Created At',
+      label: t('deposit.order_created_at'),
       value: cryptoCreatedAt.value
     },
     {
-      label: 'Deposit Method',
+      label: t('deposit.order_deposit_method'),
       value: cryptoDisplayMethod.value,
       icon: cryptoMethodIcon.value
     }
@@ -458,29 +471,29 @@ const cryptoCompletedRows = computed<DetailRowItem[]>(() => {
 
   return compactRows([
     {
-      label: 'Total Payment',
+      label: t('deposit.order_total_payment'),
       value: `${cryptoDisplayAmount.value}${cryptoDisplayMethod.value}`
     },
     {
-      label: 'Final Amount',
+      label: t('deposit.order_final_amount'),
       value: finalAmount
     },
     {
-      label: 'Exchange Rate',
+      label: t('deposit.order_exchange_rate'),
       value: cryptoRate.value || '1USDT≈7.15PHP'
     },
-    cryptoNetwork.value ? { label: 'Network', value: cryptoNetwork.value } : null,
+    cryptoNetwork.value ? { label: t('deposit.order_network'), value: cryptoNetwork.value } : null,
     {
-      label: 'Order No.',
+      label: t('deposit.order_no'),
       value: cryptoOrderNo.value,
       copyValue: cryptoOrderNo.value
     },
     {
-      label: 'Created At',
+      label: t('deposit.order_created_at'),
       value: cryptoCreatedAt.value
     },
     {
-      label: 'Deposit Method',
+      label: t('deposit.order_deposit_method'),
       value: cryptoDisplayMethod.value,
       icon: cryptoMethodIcon.value
     }
@@ -494,29 +507,31 @@ const fiatSummaryRows = computed<DetailRowItem[]>(() => {
 
   return compactRows([
     fiatOrderInfo.value.currency
-      ? { label: 'Currency', value: fiatOrderInfo.value.currency }
+      ? { label: t('deposit.order_currency'), value: fiatOrderInfo.value.currency }
       : null,
     {
-      label: 'Payment Amount',
+      label: t('deposit.order_payment_amount'),
       value: fiatOrderInfo.value.amount ?? 0
     },
-    fiatOrderInfo.value.bonus ? { label: 'Deposit Bonus', value: fiatOrderInfo.value.bonus } : null,
+    fiatOrderInfo.value.bonus
+      ? { label: t('deposit.order_deposit_bonus'), value: fiatOrderInfo.value.bonus }
+      : null,
     {
-      label: 'Order Status',
+      label: t('deposit.order_status'),
       value: fiatStatus,
       valueStyle: getFiatStatusStyle(fiatOrderInfo.value.status)
     },
     {
-      label: 'Order No.',
+      label: t('deposit.order_no'),
       value: fiatOrderInfo.value.order_no ?? '',
       copyValue: fiatOrderInfo.value.order_no ?? ''
     },
     {
-      label: 'Created At',
+      label: t('deposit.order_created_at'),
       value: fiatOrderInfo.value.created_at ?? ''
     },
     {
-      label: 'Deposit Method',
+      label: t('deposit.order_deposit_method'),
       value: fiatOrderInfo.value.method ?? '',
       icon: fiatOrderInfo.value.method_icon
     }
@@ -524,7 +539,7 @@ const fiatSummaryRows = computed<DetailRowItem[]>(() => {
 })
 
 const completedStatusTitle = computed(() =>
-  isOrderCompleted.value ? 'Order Completed' : 'Order Cancelled'
+  isOrderCompleted.value ? t('deposit.order_completed') : t('deposit.order_cancelled')
 )
 
 // 关闭订单弹窗

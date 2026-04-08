@@ -18,6 +18,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import {
   handlePhoneInput,
   handlePasswordInput,
@@ -25,7 +26,23 @@ import {
   isValidPassword
 } from '@/utils/phone-input'
 import Api from '@/api'
+import { getDefaultAreaCode } from '@/utils/locale'
+import { StringExtension } from '@/utils/string-extension'
 import { showToast } from 'vant'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+const defaultAreaCode = getDefaultAreaCode()
+const RESET_PASSWORD_SMS_COUNTDOWN_STORAGE_KEY = 'reset-password-sms-countdown'
+
+const {
+  remainingSeconds: countdown,
+  startCountdown,
+  syncCountdown
+} = usePersistentCountdown({
+  storageKey: RESET_PASSWORD_SMS_COUNTDOWN_STORAGE_KEY,
+  durationSeconds: 60
+})
 
 // 密码显示状态
 const showPassword = ref(false)
@@ -38,10 +55,6 @@ const formData = ref({
   password: '',
   confirmPassword: ''
 })
-
-// 倒计时
-const countdown = ref(0)
-let countdownTimer: ReturnType<typeof setInterval> | null = null
 
 // 重置密码表单验证
 const isResetValid = computed(() => {
@@ -100,6 +113,11 @@ const handleSendCode = async () => {
   try {
     const telephone = formData.value.account
     if (!telephone) {
+      showToast({
+        message: t('common.pleaseEnterThePhoneNumber'),
+        type: 'fail',
+        zIndex: 10001
+      })
       return
     }
 
@@ -110,7 +128,7 @@ const handleSendCode = async () => {
     // 发送短信接口
     const response = await Api.auth.sendSms({
       telephone: telephone,
-      areaCode: '63'
+      areaCode: defaultAreaCode
     })
     if (response && response.message) {
       showToast({
@@ -122,19 +140,7 @@ const handleSendCode = async () => {
     }
 
     // 开始60秒倒计时
-    countdown.value = 60
-    if (countdownTimer) {
-      clearInterval(countdownTimer)
-    }
-    countdownTimer = setInterval(() => {
-      countdown.value--
-      if (countdown.value <= 0) {
-        if (countdownTimer) {
-          clearInterval(countdownTimer)
-          countdownTimer = null
-        }
-      }
-    }, 1000)
+    startCountdown()
   } catch (error) {
     console.error(error)
   }
@@ -145,10 +151,10 @@ const handleResetPassword = async () => {
   try {
     // 构建重置密码参数
     const resetPasswordData = {
-      memberPwd: formData.value.password, // 新密码
+      memberPwd: StringExtension.md5(formData.value.password), // 新密码
       smsCode: formData.value.code, // 短信验证码
       telephone: formData.value.account, // 手机号
-      areaCode: '63', // 区号
+      areaCode: defaultAreaCode, // 区号
       memberId: formData.value.account // 会员账号
     }
 
@@ -184,12 +190,8 @@ const resetForm = () => {
   showPassword.value = false
   showConfirmPassword.value = false
 
-  // 清除倒计时
-  if (countdownTimer) {
-    clearInterval(countdownTimer)
-    countdownTimer = null
-  }
-  countdown.value = 0
+  // 同步当前倒计时状态
+  syncCountdown()
 }
 
 defineExpose({
