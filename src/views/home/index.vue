@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="home max-w-[1248px] mx-auto px-0 py-0 sm:px-4 sm:py-4">
+  <div class="home max-w-[1248px] mx-auto px-3.5 py-2 sm:px-4 sm:py-4">
     <div style="height: 65px" class="sm:hidden"></div>
     <div v-if="userInfo">
       <HomeCarouselImg v-if="querySlideshowList.length" :list="querySlideshowList" />
@@ -224,9 +224,10 @@
         </div>
       </div>
     </div>
+    <NewEvent class="mt-2" />
+    <ActivityPop v-if="shouldShowActivityPop" class="sm:hidden" @close="closeActivityPop" />
   </div>
-  <NewEvent class="mt-2" />
-  <ActivityPop v-if="shouldShowActivityPop" class="sm:hidden" @close="closeActivityPop" />
+
   <!-- 提示弹窗 -->
   <H5HomePop
     v-if="shouldShowH5HomePop"
