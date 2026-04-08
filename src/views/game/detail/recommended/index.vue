@@ -1,6 +1,6 @@
 <template>
   <div v-if="isMobile" class="fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1">
-    <H5Header :title="pageTitle" />
+    <H5Header :title="pageTitle" disable-default-back @back="handleBack" />
     <div class="flex-1 min-h-0 overflow-y-auto px-2.5 pt-2.5 pb-4 sm:px-4">
       <ResponsiveGridPager
         :items="pagedGameList"
@@ -104,6 +104,7 @@ import gameErrImg from '@/components/common/gameErrImg.vue'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import { navigateTo } from '@/utils/router'
+import { navigateToName } from '@/utils/router'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -160,6 +161,7 @@ const pageTitle = ref(defaultPageTitle.value)
 const isCustomPageTitle = ref(false)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(gameList.value.length / PAGE_SIZE)))
+const sourceRowId = computed(() => getQueryValue(route.query.rowId))
 
 const pagedGameList = computed(() => {
   const start = (page.value - 1) * PAGE_SIZE
@@ -277,7 +279,7 @@ const resolveCurrentCategoryHotGameList = (sections: GameDataSection[], typeCode
 
   return allGames.filter(game => {
     const hotValue = game.gameItemHotVo?.hot ?? game.hot
-    return Number(hotValue) === 0
+    return Number(hotValue) === 1
   })
 }
 
@@ -334,23 +336,25 @@ const initPageData = async () => {
 }
 
 const handleGameClick = (item: GameDataItem) => {
-  const itemCode = getQueryValue(item.itemCode)
-  const platformCode = getQueryValue(item.platformCode)
-
-  if (!itemCode || !platformCode) {
-    return
-  }
-
-  navigateTo('/game/detail', {
-    query: {
-      itemCode,
-      platformCode
-    }
-  })
+  navigateToName('gameDetail', { params: { rowId: item.rowId } })
 }
 
 const handleBack = () => {
-  router.back()
+  if (sourceRowId.value) {
+    navigateToName('gameDetail', {
+      params: {
+        rowId: sourceRowId.value
+      }
+    })
+    return
+  }
+
+  if (typeof window !== 'undefined' && window.history.length > 1) {
+    router.back()
+    return
+  }
+
+  navigateTo('/')
 }
 
 onMounted(() => {
