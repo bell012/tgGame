@@ -169,9 +169,10 @@ export interface GameBetTotalResponse {
 }
 //  修改会员手机号码 请求参数
 export interface ModifyMemberTelePhoneForm {
-  telephone: string
-  areaCode: string
-  smsCode: string
+  telephone: string // 手机号码
+  areaCode: string // 区号
+  smsCode: string // 短信验证参数
+  phoneBindStatus: number // 是否初次绑定(绑定)手机号 0:不是，1:是
 }
 
 // 修改会员手机号码 响应

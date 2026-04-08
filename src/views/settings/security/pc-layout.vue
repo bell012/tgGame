@@ -45,6 +45,10 @@
       </div>
     </div>
     <ChangeLoginPasswordPcLayout v-model="showChangeLoginPasswordPopup" />
+    <!-- 修改手机号码弹窗 -->
+    <ChangeMobileNumberPcLayout v-model="showChangeMobileNumberPopup" />
+    <!-- 交易密码弹窗 -->
+    <TransactionPassword v-model="showTransactionPasswordPopup" />
   </div>
 </template>
 
@@ -53,6 +57,8 @@ import { ref } from 'vue'
 import type { Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ChangeLoginPasswordPcLayout from '../changeLoginPassword/pc-layout.vue'
+import ChangeMobileNumberPcLayout from '../changeMobileNumber/pc-layout.vue'
+import TransactionPassword from '../transactionPassword/pc-layout.vue'
 import PasswordIcon from '@/static/svg/security/password.svg?component'
 import MobileIcon from '@/static/svg/security/mobile.svg?component'
 import TwoFAIcon from '@/static/svg/security/2FA.svg?component'
@@ -80,14 +86,27 @@ const cards: { cardKey: CardKey; icon: Component; active: boolean }[] = [
   { cardKey: 'antiPhishing', icon: AntiPhishingIcon, active: false }
 ]
 
+// 修改登录密码弹窗
 const showChangeLoginPasswordPopup = ref(false)
-
+// 修改手机号码弹窗
+const showChangeMobileNumberPopup = ref(false)
+// 交易密码弹窗
+const showTransactionPasswordPopup = ref(false)
 /**
  * 打开 PC 修改登录密码弹窗。
  */
 const handleOpenChangeLoginPassword = (_key: CardKey) => {
-  console.log(`跳转 ${_key}`)
-  showChangeLoginPasswordPopup.value = true
+  switch (_key) {
+    case 'loginPassword':
+      showChangeLoginPasswordPopup.value = true
+      break
+    case 'mobile':
+      showChangeMobileNumberPopup.value = true
+      break
+    default:
+      showTransactionPasswordPopup.value = true
+      break
+  }
 }
 </script>
 
