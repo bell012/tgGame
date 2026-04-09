@@ -52,7 +52,7 @@
             type="button"
             :class="[
               'w-full h-10 rounded-lg text-sm font-bold shrink-0',
-              card.active ? 'security-btn-secondary' : 'btn-primary'
+              card.active ? 'security-btn-secondary' : 'bg-theme-primary text-text-4'
             ]"
             @click="handleCardAction(card.cardKey)"
           >
@@ -65,53 +65,26 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from 'vue'
-import { computed, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import H5Header from '@/components/common/H5Header.vue'
-import PasswordIcon from '@/static/svg/security/password.svg?component'
-import MobileIcon from '@/static/svg/security/mobile.svg?component'
-// import TwoFAIcon from '@/static/svg/security/2FA.svg?component'
-// import PasskeyIcon from '@/static/svg/security/passkey.svg?component'
-// import AntiPhishingIcon from '@/static/svg/security/anti-phishing.svg?component'
 import SuccessIcon from '@/static/svg/security/success.svg?component'
 import WarningIcon from '@/static/svg/security/warning.svg?component'
 import { navigateToName } from '@/utils/router'
+import { useSecurityCards, type SecurityCardKey } from '@/composables/useSecurityCards'
 
 const { t } = useI18n()
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
-console.log(userInfo.value)
-type CardKey = 'loginPassword' | 'transactionPassword' | 'mobile'
-// | 'twoFactor'
-// | 'passkey'
-// | 'antiPhishing'
-
-const cards: { cardKey: CardKey; icon: Component; active: boolean }[] = [
-  { cardKey: 'loginPassword', icon: PasswordIcon, active: true },
-  { cardKey: 'transactionPassword', icon: PasswordIcon, active: false },
-  { cardKey: 'mobile', icon: MobileIcon, active: true }
-  // { cardKey: 'twoFactor', icon: TwoFAIcon, active: false },
-  // { cardKey: 'passkey', icon: PasskeyIcon, active: false },
-  // { cardKey: 'antiPhishing', icon: AntiPhishingIcon, active: false }
-]
-
-const displayMobile = computed(() => {
-  const tel = userInfo.value?.telephone
-  const areaCode = userInfo.value?.areaCode
-  if (tel && String(tel).trim()) {
-    return `+${areaCode} ${tel}`
-  }
-  return '—'
-})
+const { cards, displayMobile } = useSecurityCards(userInfo)
 
 onMounted(() => {
   userStore.syncStoredUserData()
 })
 
-const handleCardAction = (_key: CardKey) => {
+const handleCardAction = (_key: SecurityCardKey) => {
   switch (_key) {
     case 'loginPassword':
       navigateToName('changeLoginPassword')
