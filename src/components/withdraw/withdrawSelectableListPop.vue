@@ -14,7 +14,7 @@
         </h2>
         <button
           type="button"
-          class="hidden absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-md text-text-1"
+          class="absolute right-4 top-4 hidden h-6 w-6 items-center justify-center rounded-md text-text-1 sm:flex"
           @click="handleClose"
         >
           <CloseIcon class="size-4" />
@@ -57,6 +57,7 @@
       </div>
 
       <button
+        v-if="showAddButton"
         type="button"
         class="mt-6 flex h-10 min-h-10 w-full shrink-0 items-center justify-center rounded-lg btn-primary text-sm font-bold text-common-900"
         @click="emit('add')"
@@ -117,7 +118,7 @@
         </button>
       </div>
 
-      <div class="shrink-0 bg-bg-5 pt-1">
+      <div v-if="showAddButton" class="shrink-0 bg-bg-5 pt-1">
         <button
           type="button"
           class="flex h-12 min-h-12 w-full items-center justify-center rounded-lg btn-primary text-base font-bold text-common-900"
@@ -154,10 +155,12 @@ interface Props {
   items: WithdrawSelectableListItem[]
   selectedId?: string | null
   icon?: string
+  showAddButton?: boolean
   desktopDropdownHeight?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  showAddButton: true,
   desktopDropdownHeight: 228
 })
 const emit = defineEmits<{
@@ -180,6 +183,8 @@ const visible = computed({
   get: () => props.modelValue,
   set: value => emit('update:modelValue', value)
 })
+
+const showAddButton = computed(() => props.showAddButton)
 
 const handleSelect = (id: string) => {
   emit('select', id)
