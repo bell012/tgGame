@@ -1,17 +1,28 @@
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref, watch } from 'vue'
 import Api from '@/api'
-import type { FastAmountItem, MemberCardItem, WithdrawManagerItem } from '@/api/interface/withdraw'
+import type {
+  AddMemberCardForm,
+  FastAmountItem,
+  MemberCardItem,
+  WithdrawManagerItem
+} from '@/api/interface/withdraw'
+import { showToast } from 'vant'
 import { useLocaleStore } from '@/stores/locale'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
 import { getBalanceByCurrency } from '@/utils/balance'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
+import { StringExtension } from '@/utils/string-extension'
 import { splitWithdrawManagerMethods } from './withdrawManager'
+import { requestOpenWithdrawKindReminder } from './useWithdrawFlow'
 
 export interface FiatMethodOption {
   name: string
   icon: string
+  selectedIcon: string
   paymentCode?: string | number
+  cardType?: string | number
   raw?: WithdrawManagerItem
 }
 
@@ -25,7 +36,12 @@ const normalizeText = (value: unknown) =>
     .toLowerCase()
 
 const resolveMethodIcon = (method: WithdrawManagerItem) => {
-  const imagePath = method.logo || method.icon
+  const imagePath = method.logo || method.logoSelect
+  return imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
+}
+
+const resolveSelectedMethodIcon = (method: WithdrawManagerItem) => {
+  const imagePath = method.defaultOrderIcon || method.logo
   return imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
 }
 
@@ -41,36 +57,22 @@ const parseQuickAmounts = (value?: string) => {
     .map<FastAmountItem>(item => ({ amount: item }))
 }
 
-const buildMockFiatAccounts = (paymentCode?: string | number) =>
-  Array.from({ length: 12 }, (_, index) => ({
-    localId: `${paymentCode ?? 'wallet'}-mock-${index + 1}`,
-    rowId: `mock-${index + 1}`,
-    accountNo: `1391234${String(1000 + index).slice(-4)}`,
-    accountName: `Martin ${index + 1}`,
-    paymentCode,
-    cardType: paymentCode,
-    isDefault: index === 0 ? 1 : 0
-  })) satisfies FiatAccountItem[]
-
 const matchMethodAccount = (method: FiatMethodOption, account: MemberCardItem) => {
   const paymentCode = normalizeText(method.paymentCode)
-  const methodName = normalizeText(method.name)
+  const methodCardType = normalizeText(method.cardType)
   const accountCardType = normalizeText(account.cardType)
-  const accountPaymentCode = normalizeText(account.paymentCode)
-  const accountName = normalizeText(account.accountName)
-  const bankName = normalizeText(account.bankName)
+  const accountType = normalizeText(account.type)
 
-  if (!paymentCode && !methodName) {
+  if (!paymentCode || !methodCardType) {
     return false
   }
 
-  return [accountCardType, accountPaymentCode, accountName, bankName].some(
-    value => value && (value === paymentCode || value.includes(methodName))
-  )
+  return accountCardType === paymentCode && accountType === methodCardType
 }
 
 export function useWithdrawFiat() {
   const localeStore = useLocaleStore()
+  const siteConfigStore = useSiteConfigStore()
   const userStore = useUserStore()
   const { currentCurrency } = storeToRefs(localeStore)
   const { acctInfo } = storeToRefs(userStore)
@@ -79,6 +81,7 @@ export function useWithdrawFiat() {
   const selectedMethod = ref<FiatMethodOption>({
     name: '',
     icon: '',
+    selectedIcon: '',
     paymentCode: ''
   })
   const memberCards = ref<FiatAccountItem[]>([])
@@ -87,7 +90,17 @@ export function useWithdrawFiat() {
   const amount = ref<number>()
   const accountListVisible = ref(false)
   const addAccountVisible = ref(false)
+  const addAccountPaymentPasswordVisible = ref(false)
+  const addAccountSmsVerificationVisible = ref(false)
   const reopenAccountListAfterAdd = ref(false)
+  const isLoadingMemberCards = ref(false)
+  const hasLoadedMemberCards = ref(false)
+  const hasMemberCardsLoadError = ref(false)
+  const isRefreshingBalance = ref(false)
+  const isSendingAddAccountSmsCode = ref(false)
+  const isCheckingAddAccountSmsCode = ref(false)
+  const isSubmittingAddAccount = ref(false)
+  const addAccountSmsCountdownTrigger = ref(0)
   const pendingAccountNo = ref('')
   const pendingAccountName = ref('')
 
@@ -101,6 +114,75 @@ export function useWithdrawFiat() {
     memberCards.value.filter(account => matchMethodAccount(selectedMethod.value, account))
   )
   const isWithdrawDisabled = computed(() => isAmountDisabled.value || !selectedAccount.value)
+  const hasTransactionPassword = computed(() =>
+    Boolean(String(userStore.userInfo?.busiPwd ?? '').trim())
+  )
+  const withdrawCardTypeLimit = computed(() => {
+    const value = Number(
+      (
+        siteConfigStore.config as
+          | {
+              baseSiteConfig?: {
+                withdraw_card_type_num?: string | number
+              }
+            }
+          | null
+          | undefined
+      )?.baseSiteConfig?.withdraw_card_type_num ?? 0
+    )
+
+    return Number.isFinite(value) && value > 0 ? value : 0
+  })
+  const canAddAccount = computed(() => {
+    const limit = withdrawCardTypeLimit.value
+
+    if (!limit) {
+      return true
+    }
+
+    return availableAccounts.value.length < limit
+  })
+  const addMemberCardVerifyWay = computed(() => {
+    const baseSiteConfig = (
+      siteConfigStore.config as
+        | {
+            baseSiteConfig?: {
+              add_member_card_security_verify_way?: string | number
+              addMemberCardSecurityVerifyWay?: string | number
+            }
+          }
+        | null
+        | undefined
+    )?.baseSiteConfig
+
+    return String(
+      baseSiteConfig?.add_member_card_security_verify_way ??
+        baseSiteConfig?.addMemberCardSecurityVerifyWay ??
+        ''
+    ).trim()
+  })
+  const needAddMemberCardBusiPwd = computed(() => addMemberCardVerifyWay.value === '2')
+  const needAddMemberCardTelephoneSms = computed(() => addMemberCardVerifyWay.value === '1')
+  const resolvedAreaCode = computed(() => String(userStore.userInfo?.areaCode ?? '').trim())
+  const resolvedTelephone = computed(() =>
+    String(userStore.userInfo?.telephone ?? '')
+      .trim()
+      .replace(/\D/g, '')
+  )
+  const maskedPhoneNumber = computed(() => {
+    const areaCode = resolvedAreaCode.value
+    const telephone = resolvedTelephone.value
+
+    if (!telephone) {
+      return ''
+    }
+
+    if (telephone.length <= 4) {
+      return `+${areaCode}-${telephone}`
+    }
+
+    return `+${areaCode}-${telephone.slice(0, 3)}****${telephone.slice(-4)}`
+  })
 
   const syncSelectedAccount = ({ preserveCurrent = true }: { preserveCurrent?: boolean } = {}) => {
     if (!preserveCurrent) {
@@ -124,7 +206,9 @@ export function useWithdrawFiat() {
         .map<FiatMethodOption>(item => ({
           name: item.paymentName || String(item.paymentCode || ''),
           icon: resolveMethodIcon(item),
+          selectedIcon: resolveSelectedMethodIcon(item),
           paymentCode: item.paymentCode,
+          cardType: item.cardType,
           raw: item
         }))
         .filter(item => item.name)
@@ -137,6 +221,7 @@ export function useWithdrawFiat() {
         selectedMethod.value = {
           name: '',
           icon: '',
+          selectedIcon: '',
           paymentCode: ''
         }
       }
@@ -146,27 +231,37 @@ export function useWithdrawFiat() {
       selectedMethod.value = {
         name: '',
         icon: '',
+        selectedIcon: '',
         paymentCode: ''
       }
     }
   }
 
   const loadMemberCards = async () => {
+    const requestData = {
+      currency: currentCurrency.value,
+      cardType: selectedMethod.value.paymentCode
+    }
+
+    isLoadingMemberCards.value = true
+    hasMemberCardsLoadError.value = false
+
     try {
-      const response = await Api.withdraw.selectMemberCard({
-        currency: currentCurrency.value
-      })
+      const response = await Api.withdraw.selectMemberCard(requestData)
       const result = Array.isArray(response.result) ? response.result : []
 
-      memberCards.value = result.length
-        ? result.map((item, index) => ({
-            ...item,
-            localId: String(item.rowId ?? `${item.paymentCode ?? 'wallet'}-${index}`)
-          }))
-        : buildMockFiatAccounts(selectedMethod.value.paymentCode)
+      memberCards.value = result.map((item, index) => ({
+        ...item,
+        localId: String(item.rowId ?? `${item.paymentCode ?? 'wallet'}-${index}`)
+      }))
+      hasLoadedMemberCards.value = true
     } catch (error) {
       console.error(error)
-      memberCards.value = buildMockFiatAccounts(selectedMethod.value.paymentCode)
+      memberCards.value = []
+      hasMemberCardsLoadError.value = true
+      hasLoadedMemberCards.value = true
+    } finally {
+      isLoadingMemberCards.value = false
     }
 
     syncSelectedAccount({ preserveCurrent: false })
@@ -178,10 +273,12 @@ export function useWithdrawFiat() {
       return
     }
 
+    const requestParams = {
+      paymentCode: selectedMethod.value.paymentCode
+    }
+
     try {
-      const response = await Api.withdraw.queryFastAmount({
-        paymentCode: selectedMethod.value.paymentCode
-      })
+      const response = await Api.withdraw.queryFastAmount(requestParams)
       const result = Array.isArray(response.result) ? response.result : []
 
       if (result.length) {
@@ -199,10 +296,34 @@ export function useWithdrawFiat() {
   const selectMethod = async (method: FiatMethodOption) => {
     selectedMethod.value = method
     syncSelectedAccount({ preserveCurrent: false })
+    await loadMemberCards()
     await loadQuickAmounts()
   }
 
+  const ensureCanManageAccount = () => {
+    if (hasTransactionPassword.value) {
+      return true
+    }
+
+    accountListVisible.value = false
+    addAccountVisible.value = false
+    requestOpenWithdrawKindReminder()
+    return false
+  }
+
   const openAccountList = () => {
+    if (!ensureCanManageAccount()) {
+      return
+    }
+
+    if (
+      isLoadingMemberCards.value ||
+      !hasLoadedMemberCards.value ||
+      hasMemberCardsLoadError.value
+    ) {
+      return
+    }
+
     accountListVisible.value = true
   }
 
@@ -211,6 +332,14 @@ export function useWithdrawFiat() {
   }
 
   const openAddAccount = () => {
+    if (!ensureCanManageAccount()) {
+      return
+    }
+
+    if (!canAddAccount.value) {
+      return
+    }
+
     reopenAccountListAfterAdd.value = true
     closeAccountList()
     pendingAccountNo.value = ''
@@ -229,12 +358,42 @@ export function useWithdrawFiat() {
     }
   }
 
+  const reopenAddAccountForm = () => {
+    addAccountVisible.value = true
+  }
+
   const handleSelectAccount = (localId: string) => {
     selectedAccount.value = availableAccounts.value.find(item => item.localId === localId) ?? null
     closeAccountList()
   }
 
-  const confirmAddAccount = () => {
+  const buildAddMemberCardForm = (
+    nextAccountNo: string,
+    nextAccountName: string,
+    verifiedValue?: string
+  ): AddMemberCardForm | null => {
+    const nextType = Number(selectedMethod.value.cardType ?? 0)
+    const nextCardType = Number(selectedMethod.value.paymentCode ?? 0)
+
+    if (!nextType || !nextCardType) {
+      return null
+    }
+
+    return {
+      ...(addMemberCardVerifyWay.value ? { verifyType: addMemberCardVerifyWay.value } : {}),
+      ...(verifiedValue ? { verifyCode: StringExtension.md5(verifiedValue) } : {}),
+      type: nextType,
+      cardType: nextCardType,
+      accountNo: nextAccountNo,
+      accountName: nextAccountName,
+      accountSubNo: '',
+      defaultCard: 1,
+      validDate: 0,
+      remark: ''
+    }
+  }
+
+  const submitAddAccount = async (verifiedValue?: string) => {
     const nextAccountNo = pendingAccountNo.value.trim()
     const nextAccountName = pendingAccountName.value.trim()
 
@@ -242,18 +401,159 @@ export function useWithdrawFiat() {
       return
     }
 
-    const nextAccount: FiatAccountItem = {
-      localId: `${selectedMethod.value.paymentCode ?? 'wallet'}-${Date.now()}`,
-      rowId: `${Date.now()}`,
-      accountNo: nextAccountNo,
-      accountName: nextAccountName,
-      paymentCode: selectedMethod.value.paymentCode,
-      cardType: selectedMethod.value.paymentCode
+    const requestData = buildAddMemberCardForm(nextAccountNo, nextAccountName, verifiedValue)
+
+    if (!requestData) {
+      showToast({
+        message: 'Unavailable',
+        type: 'fail',
+        duration: 3000
+      })
+      return
     }
 
-    memberCards.value = [nextAccount, ...memberCards.value]
-    selectedAccount.value = nextAccount
+    try {
+      isSubmittingAddAccount.value = true
+      const response = await Api.withdraw.addMemberCard(requestData)
+
+      if (response?.code !== 'C2') {
+        showToast({
+          message: String(response?.message || 'Add account failed'),
+          type: 'fail',
+          duration: 3000
+        })
+        reopenAddAccountForm()
+        return
+      }
+    } catch (error) {
+      console.error(error)
+      showToast({
+        message: 'Add account failed',
+        type: 'fail',
+        duration: 3000
+      })
+      reopenAddAccountForm()
+      return
+    } finally {
+      isSubmittingAddAccount.value = false
+    }
+
+    await loadMemberCards()
+    syncSelectedAccount()
+    selectedAccount.value =
+      availableAccounts.value.find(item => item.accountNo === nextAccountNo) ?? null
     closeAddAccount()
+  }
+
+  const sendAddAccountSmsCode = async () => {
+    if (isSendingAddAccountSmsCode.value) {
+      return false
+    }
+
+    if (!resolvedTelephone.value) {
+      showToast({
+        message: 'Phone number unavailable',
+        type: 'fail',
+        duration: 3000
+      })
+      return false
+    }
+
+    try {
+      isSendingAddAccountSmsCode.value = true
+      const response = await Api.auth.sendSms({
+        telephone: resolvedTelephone.value,
+        areaCode: resolvedAreaCode.value
+      })
+
+      if (response?.message) {
+        showToast({
+          message: response.message,
+          type: response?.code === 'C2' ? 'success' : 'fail'
+        })
+      }
+
+      if (response?.code === 'C2') {
+        addAccountSmsCountdownTrigger.value += 1
+        return true
+      }
+
+      return false
+    } finally {
+      isSendingAddAccountSmsCode.value = false
+    }
+  }
+
+  const closeAddAccountPaymentPassword = () => {
+    addAccountPaymentPasswordVisible.value = false
+    reopenAddAccountForm()
+  }
+
+  const closeAddAccountSmsVerification = () => {
+    addAccountSmsVerificationVisible.value = false
+    reopenAddAccountForm()
+  }
+
+  const handleAddAccountPaymentPasswordConfirm = async (password: string) => {
+    addAccountPaymentPasswordVisible.value = false
+    await submitAddAccount(password)
+  }
+
+  const handleAddAccountSmsVerificationResend = async () => {
+    await sendAddAccountSmsCode()
+  }
+
+  const handleAddAccountSmsVerificationConfirm = async (code: string) => {
+    if (isCheckingAddAccountSmsCode.value || isSubmittingAddAccount.value) {
+      return
+    }
+
+    try {
+      isCheckingAddAccountSmsCode.value = true
+      const response = await Api.auth.checkSms({
+        telephone: resolvedTelephone.value,
+        areaCode: resolvedAreaCode.value,
+        smsCode: code
+      })
+
+      if (response?.code !== 'C2') {
+        showToast({
+          message: String(response?.message || 'Invalid sms code'),
+          type: 'fail',
+          duration: 3000
+        })
+        return
+      }
+
+      addAccountSmsVerificationVisible.value = false
+      await submitAddAccount(code)
+    } finally {
+      isCheckingAddAccountSmsCode.value = false
+    }
+  }
+
+  const confirmAddAccount = async () => {
+    const nextAccountNo = pendingAccountNo.value.trim()
+    const nextAccountName = pendingAccountName.value.trim()
+
+    if (!nextAccountNo || !nextAccountName) {
+      return
+    }
+
+    if (needAddMemberCardBusiPwd.value) {
+      addAccountVisible.value = false
+      addAccountPaymentPasswordVisible.value = true
+      return
+    }
+
+    if (needAddMemberCardTelephoneSms.value) {
+      addAccountVisible.value = false
+      addAccountSmsVerificationVisible.value = true
+      await sendAddAccountSmsCode()
+      return
+    }
+
+    await submitAddAccount()
   }
 
   const applyQuickAmount = (quickAmount: FastAmountItem) => {
@@ -261,6 +561,19 @@ export function useWithdrawFiat() {
 
     if (Number.isFinite(nextAmount) && nextAmount > 0) {
       amount.value = nextAmount
+    }
+  }
+
+  const refreshBalance = async () => {
+    if (isRefreshingBalance.value) {
+      return
+    }
+
+    try {
+      isRefreshingBalance.value = true
+      await userStore.refreshAcctInfo()
+    } finally {
+      isRefreshingBalance.value = false
     }
   }
 
@@ -284,21 +597,36 @@ export function useWithdrawFiat() {
     applyQuickAmount,
     availableAccounts,
     addAccountVisible,
+    addAccountPaymentPasswordVisible,
+    addAccountSmsCountdownTrigger,
+    addAccountSmsVerificationVisible,
     balanceAmount,
+    canAddAccount,
     closeAccountList,
     closeAddAccount,
+    closeAddAccountPaymentPassword,
+    closeAddAccountSmsVerification,
     confirmAddAccount,
     currentCurrency,
     currencySymbol,
     formattedBalance,
+    handleAddAccountPaymentPasswordConfirm,
+    handleAddAccountSmsVerificationConfirm,
+    handleAddAccountSmsVerificationResend,
     isAmountDisabled,
+    isCheckingAddAccountSmsCode,
+    isRefreshingBalance,
+    isSendingAddAccountSmsCode,
+    isSubmittingAddAccount,
     isWithdrawDisabled,
+    maskedPhoneNumber,
     openAccountList,
     openAddAccount,
     payMethods,
     pendingAccountName,
     pendingAccountNo,
     quickAmounts,
+    refreshBalance,
     handleSelectAccount,
     selectMethod,
     selectedAccount,

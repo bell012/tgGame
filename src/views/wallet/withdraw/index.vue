@@ -27,6 +27,7 @@
       :amount="amount"
       :currency-code="currencyCode"
       :loading="isSubmitting"
+      :show-amount-section="true"
       @confirm="handlePaymentPasswordConfirm"
     />
     <withdrawSmsVerificationPop
@@ -37,6 +38,7 @@
       :sending="isSendingSmsCode"
       :loading="isCheckingSmsCode || isSubmitting"
       :countdown-trigger="smsCountdownTrigger"
+      :show-amount-section="true"
       @resend="handleSmsVerificationResend"
       @confirm="handleSmsVerificationConfirm"
     />

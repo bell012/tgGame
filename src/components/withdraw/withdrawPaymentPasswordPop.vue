@@ -7,7 +7,7 @@
         <h2
           class="text-base sm:text-xl font-bold leading-normal capitalize text-text-1 font-['Inter']"
         >
-          {{ t('withdraw.payment_password') }}
+          {{ resolvedTitleText }}
         </h2>
         <button
           type="button"
@@ -32,10 +32,19 @@
         </p>
       </div>
 
+      <p
+        v-else-if="resolvedDescriptionText"
+        class="mt-8 text-center text-sm text-text-1 font-['Inter'] sm:mt-10 sm:text-xl sm:font-normal sm:leading-normal"
+      >
+        {{ resolvedDescriptionText }}
+      </p>
+
       <button
         type="button"
         class="w-full sm:mt-8"
-        :class="showAmountSection ? 'mt-5' : 'mt-8 sm:mt-10'"
+        :class="
+          showAmountSection ? 'mt-5' : resolvedDescriptionText ? 'mt-5 sm:mt-8' : 'mt-8 sm:mt-10'
+        "
         @click="focusInput"
       >
         <div class="grid grid-cols-6 gap-2">
@@ -86,6 +95,8 @@ interface Props {
   loading?: boolean
   showAmountSection?: boolean
   confirmText?: string
+  titleText?: string
+  descriptionText?: string
 }
 
 const props = defineProps<Props>()
@@ -110,6 +121,8 @@ const formattedAmount = computed(() => {
 })
 const showAmountSection = computed(() => props.showAmountSection !== false)
 const resolvedConfirmText = computed(() => props.confirmText || t('withdraw.confirm_withdrawal'))
+const resolvedTitleText = computed(() => props.titleText || t('withdraw.payment_password'))
+const resolvedDescriptionText = computed(() => props.descriptionText || '')
 
 const focusInput = async () => {
   await nextTick()
