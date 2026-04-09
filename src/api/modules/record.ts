@@ -3,7 +3,9 @@ import type {
   QueryOrderInfoPageForm,
   QueryOrderInfoPageResponse,
   QueryAcctHisPageForm,
-  QueryAcctHisPageResponse
+  QueryAcctHisPageResponse,
+  QueryInspectPageForm,
+  QueryInspectPageResponse
 } from '@/api/interface/record.interface'
 
 // 投注记录
@@ -21,6 +23,15 @@ export function queryOrderInfoPage(
 export function queryAcctHisPage(data: QueryAcctHisPageForm): Promise<QueryAcctHisPageResponse> {
   return request({
     url: '/acct/queryAcctHisPage',
+    method: 'post',
+    data
+  })
+}
+
+// 流水记录
+export function queryInspectPage(data: QueryInspectPageForm): Promise<QueryInspectPageResponse> {
+  return request({
+    url: '/inspect/queryInspectPage',
     method: 'post',
     data
   })
