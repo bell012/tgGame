@@ -25,68 +25,115 @@
         </div>
       </div>
     </div>
-    <div class="mt-6 grid grid-cols-2 gap-5">
-      <div class="relative">
-        <div class="flex items-center justify-between text-sm font-bold leading-normal">
-          <span>{{ t('withdraw.e_wallet_address') }}</span>
-          <button
-            v-if="selectedAccount"
-            type="button"
-            class="flex items-center text-sm font-normal text-text-1"
-            @click="openAccountList"
-          >
-            {{ t('withdraw.change') }}
-            <ChevronRightSmallIcon class="ml-1 h-2 w-1" />
-          </button>
-        </div>
-        <div class="relative mt-2">
-          <button
-            v-if="!selectedAccount"
-            type="button"
-            class="flex h-12 w-full items-center justify-center rounded-lg border border-dashed border-theme-primary text-base font-bold text-theme-primary"
-            @click="openAccountList"
-          >
-            <AddPlusIcon class="mr-2 h-4 w-4 text-current" />
-            {{ t('withdraw.add_e_wallet') }}
-          </button>
-          <button
-            v-else
-            type="button"
-            class="flex w-full items-center rounded-lg bg-opacity-6 p-3 text-left"
-            @click="openAccountList"
-          >
-            <div class="mr-2 h-6 w-6 shrink-0 overflow-hidden rounded-full">
-              <gameErrImg
-                :img="{ src: selectedMethod.icon, maintain: false, fit: 'contain' }"
-                class="h-full w-full"
-              />
-            </div>
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-base font-semibold leading-normal text-text-1">
-                {{ selectedAccount.accountNo }}
-              </p>
-            </div>
-          </button>
-
-          <withdrawFiatAccountListPop
-            v-model="accountListVisible"
-            :items="availableAccounts"
-            :selected-id="selectedAccount?.localId"
-            :icon="selectedMethod.icon"
-            @select="handleSelectAccount"
-            @add="openAddAccount"
+    <div class="mt-6">
+      <div class="text-sm font-bold leading-normal">
+        {{ t('withdraw.e_wallet_address') }}
+      </div>
+      <div
+        ref="accountCardsRef"
+        class="mt-2 flex flex-nowrap gap-2 overflow-x-auto overflow-y-hidden scrollbar-hide touch-pan-x scroll-smooth"
+        @wheel.prevent="handleAccountCardsWheel"
+      >
+        <button
+          v-for="item in availableAccounts"
+          :key="item.localId"
+          type="button"
+          :data-account-card-id="item.localId"
+          class="relative flex h-[154px] w-[280px] shrink-0 flex-col justify-center rounded-xl border bg-transparent text-base font-bold text-common-100 transition-colors"
+          :style="{
+            border:
+              selectedAccount?.localId === item.localId
+                ? '1px solid var(--color-theme-level-1)'
+                : '1px solid transparent'
+          }"
+          @click="handleAccountCardClick(item.localId)"
+        >
+          <component
+            :is="resolveFiatCardBackground(selectedMethod.paymentCode)"
+            v-if="resolveFiatCardBackground(selectedMethod.paymentCode)"
+            class="absolute left-0 top-0 h-full w-full"
           />
-        </div>
+          <div v-else class="absolute left-0 top-0 h-full w-full rounded-xl bg-bg-4" />
+          <div class="relative z-10 h-full w-full px-3 py-2">
+            <div class="flex items-center">
+              <div
+                class="mr-2 h-[34px] w-[34px] shrink-0 overflow-hidden rounded-full border border-common-100"
+              >
+                <gameErrImg
+                  :img="{ src: selectedMethod.selectedIcon, maintain: false, fit: 'contain' }"
+                  class="h-full w-full"
+                />
+              </div>
+              <span class="truncate">{{ selectedMethod.name }}</span>
+            </div>
+            <div class="mt-4 flex items-center justify-between text-xs">
+              <div>{{ t('withdraw.account') }}：</div>
+              <div class="text-right font-bold">{{ item.accountNo }}</div>
+            </div>
+            <div class="mt-2 flex items-center justify-between text-xs">
+              <div>{{ t('withdraw.name') }}：</div>
+              <div class="truncate text-right font-bold">{{ item.accountName }}</div>
+            </div>
+            <div
+              class="absolute bottom-0 left-0 flex w-full items-center justify-between rounded-b-xl bg-mask-20 px-3 py-2 text-xs"
+            >
+              <div>{{ t('withdraw.default_wallet') }}</div>
+              <button
+                type="button"
+                class="flex h-4 w-[30px] items-center rounded-full p-px transition-colors duration-200"
+                :class="
+                  Number(item.defaultCard ?? item.isDefault ?? 0) === 1
+                    ? 'bg-theme-primary'
+                    : 'bg-white/60'
+                "
+                @click.stop="handleToggleAccountDefault(item.localId)"
+              >
+                <div
+                  class="h-[14px] w-[14px] rounded-full bg-common-100 transition-transform duration-200"
+                  :class="
+                    Number(item.defaultCard ?? item.isDefault ?? 0) === 1
+                      ? 'translate-x-[14px]'
+                      : 'translate-x-0'
+                  "
+                />
+              </button>
+            </div>
+          </div>
+        </button>
+        <button
+          v-if="canAddAccount"
+          type="button"
+          class="flex h-[154px] w-[280px] shrink-0 flex-col items-center justify-center rounded-xl border border-dashed border-theme-primary text-base font-bold text-theme-primary"
+          @click="openAddAccount"
+        >
+          <AddPlusIcon class="mb-3 h-4 w-4 text-current" />
+          {{ t('withdraw.add_e_wallet') }}
+        </button>
+        <withdrawFiatAccountListPop
+          v-model="accountListVisible"
+          :items="availableAccounts"
+          :selected-id="selectedAccount?.localId"
+          :icon="selectedMethod.selectedIcon"
+          :show-add-button="canAddAccount"
+          @select="handleSelectAccount"
+          @add="openAddAccount"
+        />
       </div>
     </div>
-    <div class="mt-6 grid grid-cols-2 gap-5">
+    <div class="mt-6">
       <div>
         <div class="flex items-center justify-between">
           <div class="text-sm font-bold leading-normal">{{ t('withdraw.amount') }}</div>
           <div class="flex items-center text-sm text-text-2">
             {{ t('withdraw.balance') }}：
-            <span class="mr-1 text-text-1">{{ formattedBalance }}</span>
-            <ChevronRightSmallIcon class="ml-1 w-1 h-2 text-text-1" />
+            <span class="text-theme-primary">{{ formattedBalance }}</span>
+            <button
+              type="button"
+              class="ml-1 inline-flex items-center justify-center text-icon-2"
+              @click="refreshBalance"
+            >
+              <RefreshIcon class="w-5" :class="{ 'animate-spin': isRefreshingBalance }" />
+            </button>
           </div>
         </div>
         <div
@@ -161,21 +208,52 @@
       @close="closeAddAccount"
       @confirm="confirmAddAccount"
     />
+    <withdrawPaymentPasswordPop
+      v-model="addAccountPaymentPasswordVisible"
+      :amount="0"
+      :currency-code="currentCurrency"
+      :loading="isSubmittingAddAccount"
+      :show-amount-section="false"
+      :confirm-text="t('common.confirm')"
+      :description-text="t('withdraw.verification_transaction_password')"
+      @close="closeAddAccountPaymentPassword"
+      @confirm="handleAddAccountPaymentPasswordConfirm"
+    />
+    <withdrawSmsVerificationPop
+      v-model="addAccountSmsVerificationVisible"
+      :amount="0"
+      :currency-code="currentCurrency"
+      :phone-number="maskedPhoneNumber"
+      :sending="isSendingAddAccountSmsCode"
+      :loading="isCheckingAddAccountSmsCode || isSubmittingAddAccount"
+      :countdown-trigger="addAccountSmsCountdownTrigger"
+      :show-amount-section="false"
+      :confirm-text="t('common.confirm')"
+      @close="closeAddAccountSmsVerification"
+      @resend="handleAddAccountSmsVerificationResend"
+      @confirm="handleAddAccountSmsVerificationConfirm"
+    />
   </div>
 </template>
 <script setup lang="ts">
-import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
+import GCashCardIcon from '@/static/svg/withdraw/GCash_card.svg?component'
+import GrabPayCardIcon from '@/static/svg/withdraw/GrabPay_card.svg?component'
+import MAYACardIcon from '@/static/svg/withdraw/MAYA_card.svg?component'
+import ShopeePayCardIcon from '@/static/svg/withdraw/ShopeePay_card.svg?component'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
+import RefreshIcon from '@/static/svg/refresh.svg?component'
 import { computed, type ComponentPublicInstance, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FastAmountItem } from '@/api/interface/withdraw'
 import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
 import withdrawFiatAccountListPop from './withdrawFiatAccountListPop.vue'
 import withdrawFiatAddAccountPop from './withdrawFiatAddAccountPop.vue'
+import withdrawPaymentPasswordPop from './withdrawPaymentPasswordPop.vue'
+import withdrawSmsVerificationPop from './withdrawSmsVerificationPop.vue'
 import type { WithdrawSubmitPayload } from './shared/types'
 import { useWithdrawFiat } from './shared/useWithdrawFiat'
 
@@ -186,20 +264,36 @@ const {
   applyQuickAmount,
   availableAccounts,
   addAccountVisible,
+  addAccountPaymentPasswordVisible,
+  addAccountSmsCountdownTrigger,
+  addAccountSmsVerificationVisible,
+  balanceAmount,
+  canAddAccount,
   closeAddAccount,
+  closeAddAccountPaymentPassword,
+  closeAddAccountSmsVerification,
   confirmAddAccount,
   currentCurrency,
   currencySymbol,
   formattedBalance,
+  handleAddAccountPaymentPasswordConfirm,
+  handleAddAccountSmsVerificationConfirm,
+  handleAddAccountSmsVerificationResend,
+  isCheckingAddAccountSmsCode,
   isAmountDisabled,
+  isRefreshingBalance,
+  isSendingAddAccountSmsCode,
+  isSubmittingAddAccount,
   isWithdrawDisabled,
-  openAccountList,
+  maskedPhoneNumber,
   openAddAccount,
   payMethods,
   pendingAccountName,
   pendingAccountNo,
   quickAmounts,
+  refreshBalance,
   handleSelectAccount,
+  handleToggleAccountDefault,
   selectedAccount,
   selectedMethod,
   selectMethod: selectMethodOption
@@ -207,6 +301,7 @@ const {
 
 const methodListRef = ref<HTMLDivElement | null>(null)
 const methodItemRefs = ref<Array<HTMLElement | null>>([])
+const accountCardsRef = ref<HTMLDivElement | null>(null)
 const presetsRef = ref<HTMLDivElement | null>(null)
 const { expanded } = usePresetGrid(presetsRef)
 const showExpandButton = computed(() => quickAmounts.value.length > 6)
@@ -240,6 +335,40 @@ const selectMethod = async (method: (typeof payMethods.value)[number], index: nu
   scrollMethodIntoView(index)
 }
 
+const handleAccountCardsWheel = (event: WheelEvent) => {
+  if (!accountCardsRef.value) return
+
+  accountCardsRef.value.scrollBy({
+    left: event.deltaY !== 0 ? event.deltaY : event.deltaX,
+    behavior: 'auto'
+  })
+}
+
+const handleAccountCardClick = async (localId: string) => {
+  handleSelectAccount(localId)
+  await nextTick()
+
+  const container = accountCardsRef.value
+  const target = container?.querySelector<HTMLElement>(`[data-account-card-id="${localId}"]`)
+
+  target?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'nearest'
+  })
+}
+
+const resolveFiatCardBackground = (paymentCode?: string | number) => {
+  const normalized = String(paymentCode ?? '').trim()
+
+  if (normalized === '13') return GCashCardIcon
+  if (normalized === '17') return MAYACardIcon
+  if (normalized === '59') return GrabPayCardIcon
+  if (normalized === '60') return ShopeePayCardIcon
+
+  return null
+}
+
 const scrollMethodIntoView = async (index: number) => {
   await nextTick()
 
@@ -269,6 +398,7 @@ const doWithdrawDeposit = () => {
   emit('submit', {
     tabType: 'Fiat',
     amount: Number(amount.value),
+    balanceAmount: balanceAmount.value,
     channelId: 3,
     currencyCode: currentCurrency.value,
     methodLabel: selectedMethod.value.name,
