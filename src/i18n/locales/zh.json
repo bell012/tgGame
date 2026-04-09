@@ -742,6 +742,7 @@
     "crypto_help": "如何提现加密货币？",
     "crypto_address_notice": "请确保收款地址正确无误。若资金发送到错误地址，将无法找回。",
     "default_address_cannot_be_changed": "默认地址不允许修改",
+    "default_account_cannot_be_changed": "默认账号不允许修改",
     "withdraw_now": "立即提现",
     "you_get": "预计到账",
     "kind_reminder_title": "温馨提示",

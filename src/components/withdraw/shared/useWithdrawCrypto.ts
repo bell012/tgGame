@@ -14,6 +14,7 @@ import type { WithdrawManagerItem } from '@/api/interface/withdraw'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { getBalanceByCurrency } from '@/utils/balance'
 import { getCurrentCurrency, getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import { StringExtension } from '@/utils/string-extension'
@@ -267,6 +268,7 @@ const matchCryptoMemberCard = (account: MemberCardItem, method: WithdrawManagerI
 export function useWithdrawCrypto() {
   const FAIL_TOAST_DURATION = 3000
   const { t } = useI18n()
+  const isMobile = useIsMobile()
   const localeStore = useLocaleStore()
   const siteConfigStore = useSiteConfigStore()
   const userStore = useUserStore()
@@ -439,12 +441,19 @@ export function useWithdrawCrypto() {
       return
     }
 
-    const matchedAddress =
-      availableReceiveAddresses.value.find(item => item.id === selectedAddressId.value) ??
-      availableReceiveAddresses.value.find(item => item.defaultCard === 1) ??
-      null
+    const matchedAddress = availableReceiveAddresses.value.find(
+      item => item.id === selectedAddressId.value
+    )
 
-    selectedAddressId.value = matchedAddress?.id ?? null
+    if (!matchedAddress && isMobile.value) {
+      selectedAddressId.value = null
+      return
+    }
+
+    const nextAddress =
+      matchedAddress ?? availableReceiveAddresses.value.find(item => item.defaultCard === 1) ?? null
+
+    selectedAddressId.value = nextAddress?.id ?? null
   }
 
   const loadReceiveAddresses = async () => {
@@ -592,7 +601,7 @@ export function useWithdrawCrypto() {
       return
     }
 
-    reopenAddressListAfterAdd.value = true
+    reopenAddressListAfterAdd.value = addressListVisible.value
     closeAddressList()
     pendingAddress.value = ''
     addAddressVisible.value = true

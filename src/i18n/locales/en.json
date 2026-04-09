@@ -743,6 +743,7 @@
     "crypto_help": "How to withdraw crypto?",
     "crypto_address_notice": "Please make sure the recipient address is correct. Funds cannot be recovered if sent to the wrong address.",
     "default_address_cannot_be_changed": "Default address cannot be changed",
+    "default_account_cannot_be_changed": "Default account cannot be changed",
     "withdraw_now": "Withdraw Now",
     "you_get": "You Get",
     "kind_reminder_title": "Kind Reminder",
