@@ -12,7 +12,7 @@
               ? 'bg-bg-3 text-text-1'
               : 'bg-transparent text-text-2 hover:text-text-1'
           "
-          @click="activeTab = 'create'"
+          @click="handleTabChange('create')"
         >
           创建反馈
         </button>
@@ -24,7 +24,7 @@
               ? 'bg-bg-3 text-text-1'
               : 'bg-transparent text-text-2 hover:text-text-1'
           "
-          @click="activeTab = 'mine'"
+          @click="handleTabChange('mine')"
         >
           我的反馈
         </button>
@@ -61,7 +61,7 @@
           <textarea
             v-model.trim="feedbackContent"
             maxlength="500"
-            placeholder="请输入反馈内容"
+            :placeholder="placeholderText"
             class="mt-3 h-[112px] w-full resize-none rounded-[10px] bg-bg-3 px-3 py-2.5 text-[16px] leading-[22px] text-text-1 outline-none placeholder:text-text-3"
           ></textarea>
 
@@ -123,6 +123,9 @@
           <button
             type="button"
             class="mt-6 h-[46px] w-full rounded-[10px] bg-theme-primary text-base font-[700] text-text-4"
+            :class="{ 'cursor-not-allowed opacity-70': isSubmittingFeedback }"
+            :disabled="isSubmittingFeedback"
+            @click="handleSubmitFeedback"
           >
             提交反馈
           </button>
@@ -156,31 +159,47 @@
           </div>
         </section>
 
-        <section
-          v-for="item in myFeedbackList"
-          :key="item.recordId"
-          class="relative mt-3.5 cursor-pointer rounded-[12px] bg-bg-2 p-3.5"
-          @click="goToFeedbackDetail(item.recordId)"
+        <div
+          v-if="isLoadingMyFeedbackList"
+          class="mt-3.5 rounded-[12px] bg-bg-2 p-3.5 text-center text-[14px] text-text-3"
         >
-          <span
-            v-if="item.showDot"
-            class="absolute right-4 top-4 block h-[10px] w-[10px] rounded-full bg-theme-primary"
-          ></span>
+          加载中...
+        </div>
 
-          <div class="text-[18px] font-[400] text-text-1">反馈单号：{{ item.ticketNo }}</div>
-          <div class="mt-2 line-clamp-2 text-[15px] leading-[22px] text-text-2">
-            {{ item.content }}
-          </div>
+        <div
+          v-else-if="!myFeedbackList.length"
+          class="mt-3.5 rounded-[12px] bg-bg-2 p-3.5 text-center text-[14px] text-text-3"
+        >
+          暂无反馈记录
+        </div>
 
-          <div class="mt-3 flex items-center justify-between">
-            <span class="text-[36rpx] font-[400]" :class="statusClassMap[item.status]">
-              {{ statusTextMap[item.status] }}
-            </span>
-            <div class="flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-bg-3">
-              <ArrowRightIcon class="h-3 w-3 text-text-2" />
+        <template v-else>
+          <section
+            v-for="item in myFeedbackList"
+            :key="item.recordId"
+            class="relative mt-3.5 cursor-pointer rounded-[12px] bg-bg-2 p-3.5"
+            @click="goToFeedbackDetail(item.recordId)"
+          >
+            <span
+              v-if="item.showDot"
+              class="absolute right-4 top-4 block h-[10px] w-[10px] rounded-full bg-theme-primary"
+            ></span>
+
+            <div class="text-[18px] font-[400] text-text-1">反馈单号：{{ item.ticketNo }}</div>
+            <div class="mt-2 line-clamp-2 text-[15px] leading-[22px] text-text-2">
+              {{ item.content }}
             </div>
-          </div>
-        </section>
+
+            <div class="mt-3 flex items-center justify-between">
+              <span class="text-[36rpx] font-[400]" :class="statusClassMap[item.status]">
+                {{ statusTextMap[item.status] }}
+              </span>
+              <div class="flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-bg-3">
+                <ArrowRightIcon class="h-3 w-3 text-text-2" />
+              </div>
+            </div>
+          </section>
+        </template>
       </div>
     </div>
 
@@ -227,16 +246,18 @@ import { useRouter } from 'vue-router'
 import { showToast, Uploader, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
 import H5Header from '@/components/common/H5Header.vue'
 import { getCurrencySymbol } from '@/utils/locale'
-import { feedbackMockRecords, feedbackStatusClassMap, feedbackStatusTextMap } from './mock'
+import { feedbackStatusClassMap, feedbackStatusTextMap, type FeedbackStatus } from './mock'
 
 type FeedbackTab = 'create' | 'mine'
 
 const activeTab = ref<FeedbackTab>('create')
 const router = useRouter()
-const selectedType = ref('type-1')
+const selectedType = ref('1')
 const feedbackContent = ref('')
 const feedbackFileList = ref<UploaderFileListItem[]>([])
 const uploadedFeedbackUrls = ref<string[]>([])
+const isSubmittingFeedback = ref(false)
+const isLoadingMyFeedbackList = ref(false)
 const showClaimSuccessPopup = ref(false)
 const claimAmountCurrencySymbol = getCurrencySymbol()
 const claimSuccessTargetAmount = 100
@@ -245,12 +266,31 @@ const claimSuccessAmount = ref(`${claimAmountCurrencySymbol}0.00`)
 let claimAmountAnimationFrame: number | null = null
 const feedbackUploadMaxCount = 4
 const feedbackUploadCount = computed(() => uploadedFeedbackUrls.value.filter(Boolean).length)
+const myFeedbackList = ref<
+  Array<{
+    recordId: string
+    ticketNo: string
+    content: string
+    status: FeedbackStatus
+    showDot?: boolean
+  }>
+>([])
 
 const feedbackTypeOptions = [
-  { label: '建议文案1', value: 'type-1' },
-  { label: '建议文案2', value: 'type-2' },
-  { label: '建议文案3', value: 'type-3' }
+  { label: '建议', value: '1' },
+  { label: '游戏异常', value: '2' },
+  { label: '充值问题', value: '3' },
+  { label: '其他', value: '4' }
 ]
+
+const placeholderText = computed(() => {
+  return [
+    '亲爱的玩家，请详细描述您在游戏中遇到的你认为需要改进的问题或者建议，方便我们能给您提供更好的服务',
+    '请尽量提供问题发生的时间、操作、功能模块、截图等信息，我们会尽快为您处理。',
+    '请详细描述您遇到的问题，如有支付单号请一并提供，我们会尽快为您处理。',
+    '请详细描述您遇到的其他问题或需要咨询的事项。'
+  ][+selectedType.value - 1]
+})
 
 const getUploadedFeedbackPath = (result: unknown) => {
   if (typeof result === 'string') {
@@ -336,6 +376,135 @@ const feedbackImageDelete = (_file: UploaderFileListItem, detail: { index: numbe
   return true
 }
 
+const getSubmitFeedbackImages = () => {
+  return uploadedFeedbackUrls.value.map(item => String(item ?? '').trim()).filter(Boolean)
+}
+
+const resetCreateFeedbackForm = () => {
+  selectedType.value = '1'
+  feedbackContent.value = ''
+  feedbackFileList.value = []
+  uploadedFeedbackUrls.value = []
+}
+
+const handleSubmitFeedback = async () => {
+  if (isSubmittingFeedback.value) {
+    return
+  }
+
+  const feedbackType = String(selectedType.value ?? '').trim()
+  if (!feedbackType) {
+    showToast({ message: '请选择反馈类型', position: 'middle', type: 'fail' })
+    return
+  }
+
+  const content = String(feedbackContent.value ?? '').trim()
+  if (!content) {
+    showToast({ message: '请输入反馈内容', position: 'middle', type: 'fail' })
+    return
+  }
+
+  const hasUploadingFile = feedbackFileList.value.some(file => file.status === 'uploading')
+  if (hasUploadingFile) {
+    showToast({ message: '图片上传中，请稍后提交', position: 'middle', type: 'fail' })
+    return
+  }
+
+  isSubmittingFeedback.value = true
+  try {
+    const response = await Api.user.sendFeedback({
+      feedbackType,
+      content,
+      imgs: getSubmitFeedbackImages()
+    })
+
+    if (!response?.success) {
+      throw new Error(response?.message || '提交失败')
+    }
+
+    showToast({ message: '提交成功', position: 'middle', type: 'success' })
+    resetCreateFeedbackForm()
+  } catch (error) {
+    showToast({
+      message: error instanceof Error ? error.message : '提交失败',
+      position: 'middle',
+      type: 'fail'
+    })
+  } finally {
+    isSubmittingFeedback.value = false
+  }
+}
+
+const normalizeFeedbackStatus = (value: unknown): FeedbackStatus => {
+  const normalizedText = String(value ?? '')
+    .trim()
+    .toLowerCase()
+  if (normalizedText === 'accepted') {
+    return 'accepted'
+  }
+  if (normalizedText === 'pending') {
+    return 'pending'
+  }
+  if (normalizedText === 'rejected') {
+    return 'rejected'
+  }
+
+  const normalizedNumber = Number(normalizedText)
+  if (normalizedNumber === 1) {
+    return 'accepted'
+  }
+  if (normalizedNumber === 0) {
+    return 'pending'
+  }
+  return 'rejected'
+}
+
+const handleTabChange = (tab: FeedbackTab) => {
+  activeTab.value = tab
+  if (tab === 'mine') {
+    void fetchMyFeedbackList()
+  }
+}
+
+const fetchMyFeedbackList = async () => {
+  if (isLoadingMyFeedbackList.value) {
+    return
+  }
+
+  isLoadingMyFeedbackList.value = true
+  try {
+    const response = await Api.user.queryFeedbacks({})
+
+    if (!response?.success) {
+      throw new Error(response?.message || '获取反馈列表失败')
+    }
+
+    const responseList = Array.isArray(response.result) ? response.result : []
+    myFeedbackList.value = responseList.map((item, index) => {
+      const rowIdText = String(item?.rowId ?? '').trim()
+      const fallbackRowId = `feedback-${Date.now()}-${index}`
+      const recordId = rowIdText || fallbackRowId
+
+      return {
+        recordId,
+        ticketNo: rowIdText || '--',
+        content: String(item?.content ?? '').trim() || '--',
+        status: normalizeFeedbackStatus(item?.status),
+        showDot: false
+      }
+    })
+  } catch (error) {
+    myFeedbackList.value = []
+    showToast({
+      message: error instanceof Error ? error.message : '获取反馈列表失败',
+      position: 'middle',
+      type: 'fail'
+    })
+  } finally {
+    isLoadingMyFeedbackList.value = false
+  }
+}
+
 const formatClaimAmount = (amount: number) => {
   return `${claimAmountCurrencySymbol}${amount.toFixed(2)}`
 }
@@ -392,7 +561,6 @@ onBeforeUnmount(() => {
 
 const statusTextMap = feedbackStatusTextMap
 const statusClassMap = feedbackStatusClassMap
-const myFeedbackList = computed(() => feedbackMockRecords)
 </script>
 
 <style scoped>
