@@ -49,6 +49,7 @@
       :order-no="orderNo"
       :created-at="createdAt"
       :method-label="resolvedOrderMethodLabel"
+      :method-icon="resolvedOrderMethodIcon"
       @close="closeWithdrawOrder"
     />
   </div>
@@ -65,6 +66,7 @@ import withdrawPaymentPasswordPop from '@/components/withdraw/withdrawPaymentPas
 import withdrawSmsVerificationPop from '@/components/withdraw/withdrawSmsVerificationPop.vue'
 import withdrawOrderPop from '@/components/withdraw/withdrawOrderPop.vue'
 import { useWithdrawFlow } from '@/components/withdraw/shared/useWithdrawFlow'
+import { navigateToName } from '@/utils/router'
 import WalletLayout from '../index.vue'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 
@@ -88,6 +90,7 @@ const {
   createdAt,
   orderAmountText,
   orderMethodLabel,
+  orderMethodIcon,
   beginWithdrawFlow,
   handleKindReminderSkip,
   handleKindReminderSettings,
@@ -107,13 +110,12 @@ const resolvedOrderAmountText = computed(
 const resolvedOrderMethodLabel = computed(
   () => orderMethodLabel.value || fallbackOrderMethodLabel.value
 )
+const resolvedOrderMethodIcon = computed(
+  () => orderMethodIcon.value || activePayload.value?.methodIcon || ''
+)
 
 const openWithdrawOrder = () => {
-  if (!activePayload.value || !orderNo.value) {
-    return
-  }
-
-  withdrawOrderVisible.value = true
+  void navigateToName('my-orders')
 }
 </script>
 <style scoped lang="scss"></style>

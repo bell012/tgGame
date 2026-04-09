@@ -35,6 +35,7 @@ export const useWithdrawFlow = () => {
   const createdAt = ref('')
   const orderAmountText = ref('')
   const orderMethodLabel = ref('')
+  const orderMethodIcon = ref('')
   const pendingPaymentPassword = ref('')
 
   const withdrawVerifyWay = computed(() =>
@@ -104,6 +105,7 @@ export const useWithdrawFlow = () => {
       orderStatus.value = orderDetail.status
       orderAmountText.value = orderDetail.amountText
       orderMethodLabel.value = orderDetail.methodLabel
+      orderMethodIcon.value = orderDetail.methodIcon
       withdrawOrderVisible.value = true
       pendingPaymentPassword.value = ''
     } catch (error) {
@@ -286,6 +288,7 @@ export const useWithdrawFlow = () => {
     createdAt,
     orderAmountText,
     orderMethodLabel,
+    orderMethodIcon,
     beginWithdrawFlow,
     handleKindReminderSkip,
     handleKindReminderSettings,
