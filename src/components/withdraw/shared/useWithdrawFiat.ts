@@ -1,5 +1,6 @@
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Api from '@/api'
 import type {
   AddMemberCardForm,
@@ -11,6 +12,7 @@ import { showToast } from 'vant'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { getBalanceByCurrency } from '@/utils/balance'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import { StringExtension } from '@/utils/string-extension'
@@ -71,6 +73,8 @@ const matchMethodAccount = (method: FiatMethodOption, account: MemberCardItem) =
 }
 
 export function useWithdrawFiat() {
+  const { t } = useI18n()
+  const isMobile = useIsMobile()
   const localeStore = useLocaleStore()
   const siteConfigStore = useSiteConfigStore()
   const userStore = useUserStore()
@@ -190,11 +194,23 @@ export function useWithdrawFiat() {
       return
     }
 
-    const matchedAccount =
-      availableAccounts.value.find(account => account.localId === selectedAccount.value?.localId) ??
+    const matchedAccount = availableAccounts.value.find(
+      account => account.localId === selectedAccount.value?.localId
+    )
+
+    if (!matchedAccount && isMobile.value) {
+      selectedAccount.value = null
+      return
+    }
+
+    const nextAccount =
+      matchedAccount ??
+      availableAccounts.value.find(
+        account => Number(account.defaultCard ?? account.isDefault ?? 0) === 1
+      ) ??
       null
 
-    selectedAccount.value = matchedAccount
+    selectedAccount.value = nextAccount
   }
 
   const loadWithdrawMethods = async () => {
@@ -264,7 +280,7 @@ export function useWithdrawFiat() {
       isLoadingMemberCards.value = false
     }
 
-    syncSelectedAccount({ preserveCurrent: false })
+    syncSelectedAccount()
   }
 
   const loadQuickAmounts = async () => {
@@ -340,7 +356,7 @@ export function useWithdrawFiat() {
       return
     }
 
-    reopenAccountListAfterAdd.value = true
+    reopenAccountListAfterAdd.value = accountListVisible.value
     closeAccountList()
     pendingAccountNo.value = ''
     pendingAccountName.value = ''
@@ -365,6 +381,62 @@ export function useWithdrawFiat() {
   const handleSelectAccount = (localId: string) => {
     selectedAccount.value = availableAccounts.value.find(item => item.localId === localId) ?? null
     closeAccountList()
+  }
+
+  const handleToggleAccountDefault = (localId: string) => {
+    const nextSelectedAccount =
+      availableAccounts.value.find(item => item.localId === localId) ?? null
+    const nextCardType = selectedMethod.value.paymentCode
+
+    if (!nextSelectedAccount || nextCardType == null || String(nextCardType).trim() === '') {
+      return
+    }
+
+    if (Number(nextSelectedAccount.defaultCard ?? nextSelectedAccount.isDefault ?? 0) === 1) {
+      showToast({
+        message: t('withdraw.default_account_cannot_be_changed'),
+        type: 'fail',
+        duration: 3000
+      })
+      return
+    }
+
+    void (async () => {
+      try {
+        const response = await Api.withdraw.modifyDefaultCard({
+          rowId: nextSelectedAccount.rowId,
+          cardType: nextCardType,
+          defaultCard: 1,
+          validDate: 0
+        })
+
+        if (response?.code !== 'C2') {
+          showToast({
+            message: String(response?.message || 'Update default account failed'),
+            type: 'fail',
+            duration: 3000
+          })
+          return
+        }
+
+        memberCards.value = memberCards.value.map(item => ({
+          ...item,
+          defaultCard: item.localId === localId ? 1 : 0,
+          isDefault: item.localId === localId ? 1 : 0
+        }))
+
+        selectedAccount.value =
+          availableAccounts.value.find(item => item.localId === localId) ?? selectedAccount.value
+        syncSelectedAccount()
+      } catch (error) {
+        console.error(error)
+        showToast({
+          message: 'Update default account failed',
+          type: 'fail',
+          duration: 3000
+        })
+      }
+    })()
   }
 
   const buildAddMemberCardForm = (
@@ -628,6 +700,7 @@ export function useWithdrawFiat() {
     quickAmounts,
     refreshBalance,
     handleSelectAccount,
+    handleToggleAccountDefault,
     selectMethod,
     selectedAccount,
     selectedMethod
