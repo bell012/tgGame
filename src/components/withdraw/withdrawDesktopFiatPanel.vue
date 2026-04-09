@@ -57,7 +57,7 @@
           >
             <div class="mr-2 h-6 w-6 shrink-0 overflow-hidden rounded-full">
               <gameErrImg
-                :img="{ src: selectedMethod.icon, maintain: false, fit: 'contain' }"
+                :img="{ src: selectedMethod.selectedIcon, maintain: false, fit: 'contain' }"
                 class="h-full w-full"
               />
             </div>
@@ -72,7 +72,8 @@
             v-model="accountListVisible"
             :items="availableAccounts"
             :selected-id="selectedAccount?.localId"
-            :icon="selectedMethod.icon"
+            :icon="selectedMethod.selectedIcon"
+            :show-add-button="canAddAccount"
             @select="handleSelectAccount"
             @add="openAddAccount"
           />
@@ -85,8 +86,14 @@
           <div class="text-sm font-bold leading-normal">{{ t('withdraw.amount') }}</div>
           <div class="flex items-center text-sm text-text-2">
             {{ t('withdraw.balance') }}：
-            <span class="mr-1 text-text-1">{{ formattedBalance }}</span>
-            <ChevronRightSmallIcon class="ml-1 w-1 h-2 text-text-1" />
+            <span class="text-theme-primary">{{ formattedBalance }}</span>
+            <button
+              type="button"
+              class="ml-1 inline-flex items-center justify-center text-icon-2"
+              @click="refreshBalance"
+            >
+              <RefreshIcon class="w-5" :class="{ 'animate-spin': isRefreshingBalance }" />
+            </button>
           </div>
         </div>
         <div
@@ -161,6 +168,31 @@
       @close="closeAddAccount"
       @confirm="confirmAddAccount"
     />
+    <withdrawPaymentPasswordPop
+      v-model="addAccountPaymentPasswordVisible"
+      :amount="0"
+      :currency-code="currentCurrency"
+      :loading="isSubmittingAddAccount"
+      :show-amount-section="false"
+      :confirm-text="t('common.confirm')"
+      :description-text="t('withdraw.verification_transaction_password')"
+      @close="closeAddAccountPaymentPassword"
+      @confirm="handleAddAccountPaymentPasswordConfirm"
+    />
+    <withdrawSmsVerificationPop
+      v-model="addAccountSmsVerificationVisible"
+      :amount="0"
+      :currency-code="currentCurrency"
+      :phone-number="maskedPhoneNumber"
+      :sending="isSendingAddAccountSmsCode"
+      :loading="isCheckingAddAccountSmsCode || isSubmittingAddAccount"
+      :countdown-trigger="addAccountSmsCountdownTrigger"
+      :show-amount-section="false"
+      :confirm-text="t('common.confirm')"
+      @close="closeAddAccountSmsVerification"
+      @resend="handleAddAccountSmsVerificationResend"
+      @confirm="handleAddAccountSmsVerificationConfirm"
+    />
   </div>
 </template>
 <script setup lang="ts">
@@ -170,12 +202,15 @@ import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?compon
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
+import RefreshIcon from '@/static/svg/refresh.svg?component'
 import { computed, type ComponentPublicInstance, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FastAmountItem } from '@/api/interface/withdraw'
 import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
 import withdrawFiatAccountListPop from './withdrawFiatAccountListPop.vue'
 import withdrawFiatAddAccountPop from './withdrawFiatAddAccountPop.vue'
+import withdrawPaymentPasswordPop from './withdrawPaymentPasswordPop.vue'
+import withdrawSmsVerificationPop from './withdrawSmsVerificationPop.vue'
 import type { WithdrawSubmitPayload } from './shared/types'
 import { useWithdrawFiat } from './shared/useWithdrawFiat'
 
@@ -186,20 +221,35 @@ const {
   applyQuickAmount,
   availableAccounts,
   addAccountVisible,
+  addAccountPaymentPasswordVisible,
+  addAccountSmsCountdownTrigger,
+  addAccountSmsVerificationVisible,
   balanceAmount,
+  canAddAccount,
   closeAddAccount,
+  closeAddAccountPaymentPassword,
+  closeAddAccountSmsVerification,
   confirmAddAccount,
   currentCurrency,
   currencySymbol,
   formattedBalance,
+  handleAddAccountPaymentPasswordConfirm,
+  handleAddAccountSmsVerificationConfirm,
+  handleAddAccountSmsVerificationResend,
+  isCheckingAddAccountSmsCode,
   isAmountDisabled,
+  isRefreshingBalance,
+  isSendingAddAccountSmsCode,
+  isSubmittingAddAccount,
   isWithdrawDisabled,
+  maskedPhoneNumber,
   openAccountList,
   openAddAccount,
   payMethods,
   pendingAccountName,
   pendingAccountNo,
   quickAmounts,
+  refreshBalance,
   handleSelectAccount,
   selectedAccount,
   selectedMethod,

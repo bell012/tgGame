@@ -1,7 +1,8 @@
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Api from '@/api'
-import type { AddMemberCardForm, MemberCardItem } from '@/api/interface/withdraw'
+import type { AddMemberCardForm, FastAmountItem, MemberCardItem } from '@/api/interface/withdraw'
 import BNBIcon from '@/static/img/crypto/BNB.png'
 import BTCIcon from '@/static/img/crypto/BTC.png'
 import DOGEIcon from '@/static/img/crypto/DOGE.png'
@@ -41,6 +42,8 @@ export interface ICoinItem {
 export interface CryptoReceiveAddressItem {
   id: string
   coinCode: string
+  icon: string
+  defaultCard: number
   network: string
   address: string
 }
@@ -121,6 +124,18 @@ const buildNetworkOptions = (coinCode: string) => {
     label: item.text,
     value: normalizeNetworkValue(item.text)
   }))
+}
+
+const parseQuickAmounts = (value?: string) => {
+  if (!value) {
+    return []
+  }
+
+  return value
+    .split(',')
+    .map(item => Number(item.trim()))
+    .filter(item => Number.isFinite(item) && item > 0)
+    .map<FastAmountItem>(item => ({ amount: item }))
 }
 
 const normalizeText = (value: unknown) =>
@@ -251,6 +266,7 @@ const matchCryptoMemberCard = (account: MemberCardItem, method: WithdrawManagerI
 
 export function useWithdrawCrypto() {
   const FAIL_TOAST_DURATION = 3000
+  const { t } = useI18n()
   const localeStore = useLocaleStore()
   const siteConfigStore = useSiteConfigStore()
   const userStore = useUserStore()
@@ -279,6 +295,7 @@ export function useWithdrawCrypto() {
   const receiveAddresses = ref<CryptoReceiveAddressItem[]>([])
   const selectedAddressId = ref<string | null>(null)
   const pendingAddress = ref('')
+  const quickAmounts = ref<FastAmountItem[]>([])
 
   const visibleCoins = computed(() => DEFAULT_CRYPTO_OPTIONS)
   const currencyOptions = computed(() =>
@@ -294,33 +311,25 @@ export function useWithdrawCrypto() {
   const hasTransactionPassword = computed(() =>
     Boolean(String(userStore.userInfo?.busiPwd ?? '').trim())
   )
-  const addMemberCardVerifyWay = computed(() =>
-    String(
-      (
-        siteConfigStore.config as
-          | {
-              baseSiteConfig?: {
-                add_member_card_security_verify_way?: string | number
-                addMemberCardSecurityVerifyWay?: string | number
-              }
+  const addMemberCardVerifyWay = computed(() => {
+    const baseSiteConfig = (
+      siteConfigStore.config as
+        | {
+            baseSiteConfig?: {
+              add_member_card_security_verify_way?: string | number
+              addMemberCardSecurityVerifyWay?: string | number
             }
-          | null
-          | undefined
-      )?.baseSiteConfig?.add_member_card_security_verify_way ??
-        (
-          siteConfigStore.config as
-            | {
-                baseSiteConfig?: {
-                  add_member_card_security_verify_way?: string | number
-                  addMemberCardSecurityVerifyWay?: string | number
-                }
-              }
-            | null
-            | undefined
-        )?.baseSiteConfig?.addMemberCardSecurityVerifyWay ??
+          }
+        | null
+        | undefined
+    )?.baseSiteConfig
+
+    return String(
+      baseSiteConfig?.add_member_card_security_verify_way ??
+        baseSiteConfig?.addMemberCardSecurityVerifyWay ??
         ''
     ).trim()
-  )
+  })
   const needAddMemberCardBusiPwd = computed(() => addMemberCardVerifyWay.value === '2')
   const needAddMemberCardTelephoneSms = computed(() => addMemberCardVerifyWay.value === '1')
   const resolvedAreaCode = computed(() => String(userStore.userInfo?.areaCode ?? '').trim())
@@ -431,20 +440,22 @@ export function useWithdrawCrypto() {
     }
 
     const matchedAddress =
-      availableReceiveAddresses.value.find(item => item.id === selectedAddressId.value) ?? null
+      availableReceiveAddresses.value.find(item => item.id === selectedAddressId.value) ??
+      availableReceiveAddresses.value.find(item => item.defaultCard === 1) ??
+      null
 
     selectedAddressId.value = matchedAddress?.id ?? null
   }
 
   const loadReceiveAddresses = async () => {
     const nextCardType = matchedWithdrawMethod.value?.cardType
+    const requestData =
+      nextCardType != null && String(nextCardType).trim() ? { cardType: nextCardType } : undefined
     isLoadingReceiveAddresses.value = true
     hasReceiveAddressesLoadError.value = false
 
     try {
-      const response = await Api.withdraw.selectMemberCard(
-        nextCardType != null && String(nextCardType).trim() ? { cardType: nextCardType } : undefined
-      )
+      const response = await Api.withdraw.selectMemberCard(requestData)
       const result = Array.isArray(response.result) ? response.result : []
 
       receiveAddresses.value = result
@@ -452,10 +463,13 @@ export function useWithdrawCrypto() {
         .map<CryptoReceiveAddressItem>(account => ({
           id: String(account.rowId),
           coinCode: currency.value,
+          icon: String(account.icon ?? currencyOption.value?.icon ?? USDTIcon),
+          defaultCard: Number(account.defaultCard ?? 0),
           network: String(account.accountName ?? selectNetwork.value),
           address: String(account.accountNo ?? '')
         }))
         .filter(item => item.address)
+
       hasLoadedReceiveAddresses.value = true
       return true
     } catch (error) {
@@ -466,6 +480,35 @@ export function useWithdrawCrypto() {
       return false
     } finally {
       isLoadingReceiveAddresses.value = false
+    }
+  }
+
+  const loadQuickAmounts = async () => {
+    if (
+      matchedWithdrawMethod.value?.paymentCode == null ||
+      matchedWithdrawMethod.value?.paymentCode === ''
+    ) {
+      quickAmounts.value = []
+      return
+    }
+
+    const requestParams = {
+      paymentCode: matchedWithdrawMethod.value.paymentCode
+    }
+
+    try {
+      const response = await Api.withdraw.queryFastAmount(requestParams)
+      const result = Array.isArray(response.result) ? response.result : []
+
+      if (result.length) {
+        quickAmounts.value = result
+        return
+      }
+
+      quickAmounts.value = parseQuickAmounts(matchedWithdrawMethod.value?.quickAmts as string)
+    } catch (error) {
+      console.error(error)
+      quickAmounts.value = parseQuickAmounts(matchedWithdrawMethod.value?.quickAmts as string)
     }
   }
 
@@ -483,10 +526,12 @@ export function useWithdrawCrypto() {
         coinCode.value = matchedOption.code
         currency.value = matchedOption.code
         await loadReceiveAddresses()
+        await loadQuickAmounts()
         syncSelectedAddress()
       } else {
         matchedWithdrawMethod.value = null
         receiveAddresses.value = []
+        quickAmounts.value = []
         selectedAddressId.value = null
       }
     } catch (error) {
@@ -495,6 +540,7 @@ export function useWithdrawCrypto() {
       coinCode.value = DEFAULT_CRYPTO_OPTIONS[0].code
       currency.value = DEFAULT_CRYPTO_OPTIONS[0].code
       receiveAddresses.value = []
+      quickAmounts.value = []
       selectedAddressId.value = null
     }
   }
@@ -576,6 +622,74 @@ export function useWithdrawCrypto() {
     }
 
     closeAddressList()
+  }
+
+  const handleToggleReceiveAddressDefault = (id: string) => {
+    const nextSelectedAddress = availableReceiveAddresses.value.find(item => item.id === id) ?? null
+    const nextCardType = matchedWithdrawMethod.value?.cardType
+
+    if (!nextSelectedAddress || nextCardType == null || String(nextCardType).trim() === '') {
+      return
+    }
+
+    if (nextSelectedAddress.defaultCard === 1) {
+      showToast({
+        message: t('withdraw.default_address_cannot_be_changed'),
+        type: 'fail',
+        duration: FAIL_TOAST_DURATION
+      })
+      return
+    }
+
+    const nextDefaultCard = nextSelectedAddress.defaultCard === 1 ? 0 : 1
+
+    void (async () => {
+      try {
+        const response = await Api.withdraw.modifyDefaultCard({
+          rowId: id,
+          cardType: nextCardType,
+          defaultCard: nextDefaultCard,
+          validDate: 0
+        })
+
+        if (response?.code !== 'C2') {
+          showToast({
+            message: String(response?.message || 'Update default address failed'),
+            type: 'fail',
+            duration: FAIL_TOAST_DURATION
+          })
+          return
+        }
+
+        receiveAddresses.value = receiveAddresses.value.map(item => {
+          if (nextDefaultCard === 1) {
+            return {
+              ...item,
+              defaultCard: item.id === id ? 1 : 0
+            }
+          }
+
+          if (item.id !== id) {
+            return item
+          }
+
+          return {
+            ...item,
+            defaultCard: 0
+          }
+        })
+
+        selectedAddressId.value = id
+        syncSelectedAddress()
+      } catch (error) {
+        console.error(error)
+        showToast({
+          message: 'Update default address failed',
+          type: 'fail',
+          duration: FAIL_TOAST_DURATION
+        })
+      }
+    })()
   }
 
   const handleChangeReceiveAddress = () => {
@@ -787,6 +901,14 @@ export function useWithdrawCrypto() {
     }
   }
 
+  const applyQuickAmount = (quickAmount: FastAmountItem) => {
+    const nextAmount = Number(quickAmount.amount ?? 0)
+
+    if (Number.isFinite(nextAmount) && nextAmount > 0) {
+      amount.value = nextAmount
+    }
+  }
+
   onMounted(async () => {
     await siteConfigStore.initSiteConfig()
 
@@ -837,13 +959,16 @@ export function useWithdrawCrypto() {
     closeAddAddressSmsVerification,
     closeAddressList,
     confirmAddAddress,
+    applyQuickAmount,
     handleChangeReceiveAddress,
     handleSelectReceiveAddress,
+    handleToggleReceiveAddressDefault,
     pendingAddress,
     refreshBalance,
     selectCoinCode,
     selectNetwork,
     selectedReceiveAddress,
+    quickAmounts,
     visibleCoins,
     youGetAmount
   }

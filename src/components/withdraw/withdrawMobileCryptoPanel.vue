@@ -141,6 +141,42 @@
           </button>
         </div>
       </div>
+      <div v-if="quickAmounts.length" class="mt-4 w-full relative">
+        <div
+          ref="presetsRef"
+          class="grid grid-cols-3 gap-2 rounded-tl-lg rounded-tr-lg bg-bg-4 p-2.5 transition-all duration-300"
+          :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[106px] overflow-hidden'"
+        >
+          <button
+            v-for="(item, index) in quickAmounts"
+            :key="`${item.amount ?? index}`"
+            type="button"
+            class="rounded-lg py-[7px] text-base lg:hover:bg-theme-primary"
+            :class="[
+              Number(item.amount ?? 0) === Number(amount ?? 0)
+                ? 'bg-theme-primary text-text-4'
+                : 'bg-bg-2 text-text-1'
+            ]"
+            @click="applyQuickAmount(item)"
+          >
+            {{ formatQuickAmount(item.amount) }}
+          </button>
+        </div>
+        <div
+          v-if="showExpandButton"
+          class="relative z-10 -mt-3 w-full rounded-bl-lg rounded-br-lg bg-bg-4 p-1.5"
+        >
+          <button
+            type="button"
+            class="mx-auto flex items-center gap-1 text-xs text-text-3 transition lg:hover:text-text-1"
+            @click="expanded = !expanded"
+          >
+            {{ expanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}
+            <ExpandUpDoubleIcon v-if="expanded" class="h-2 w-[9px]" />
+            <ExpandDownDoubleIcon v-else class="h-2 w-[9px]" />
+          </button>
+        </div>
+      </div>
       <div class="mt-5 p-2.5 rounded-lg bg-theme-3 flex items-start">
         <InfoIcon class="w-5 h-5 mr-1 shrink-0 text-theme-primary" />
         <div class="text-xs text-text-2 font-normal leading-normal">
@@ -187,6 +223,7 @@
         :loading="isSubmittingAddAddress"
         :show-amount-section="false"
         :confirm-text="t('common.confirm')"
+        :description-text="t('withdraw.verification_transaction_password')"
         @close="closeAddAddressPaymentPassword"
         @confirm="handleAddAddressPaymentPasswordConfirm"
       />
@@ -214,11 +251,16 @@ import DOGEIcon from '@/static/img/crypto/DOGE.png'
 import TRXIcon from '@/static/img/crypto/TRX.png'
 import BNBIcon from '@/static/img/crypto/BNB.png'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
+import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
+import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
 import RefreshIcon from '@/static/svg/refresh.svg?component'
 import InfoIcon from '@/static/svg/info.svg?component'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
+import { computed, ref } from 'vue'
+import type { FastAmountItem } from '@/api/interface/withdraw'
+import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
 import withdrawCryptoAddressListPop from './withdrawCryptoAddressListPop.vue'
 import withdrawCryptoAddAddressPop from './withdrawCryptoAddAddressPop.vue'
 import withdrawPaymentPasswordPop from './withdrawPaymentPasswordPop.vue'
@@ -232,6 +274,7 @@ const {
   address,
   addressListVisible,
   amount,
+  applyQuickAmount,
   addAddressPaymentPasswordVisible,
   addAddressSmsVerificationVisible,
   addAddressSmsCountdownTrigger,
@@ -268,6 +311,7 @@ const {
   openAddressList,
   openAddAddress,
   pendingAddress,
+  quickAmounts,
   refreshBalance,
   selectedReceiveAddress,
   selectCoinCode: applySelectCoinCode,
@@ -276,6 +320,10 @@ const {
   visibleCoins,
   confirmAddAddress
 } = useWithdrawCrypto()
+
+const presetsRef = ref<HTMLDivElement | null>(null)
+const { expanded } = usePresetGrid(presetsRef)
+const showExpandButton = computed(() => quickAmounts.value.length > 3)
 
 const emit = defineEmits<{
   submit: [payload: WithdrawSubmitPayload]
@@ -297,6 +345,16 @@ const selectCoinCode = (code: string) => {
 const openCoinMorePanel = () => {
   showUnavailableToast()
   return
+}
+
+const formatQuickAmount = (value: FastAmountItem['amount']) => {
+  const amountValue = Number(value ?? 0)
+
+  if (!Number.isFinite(amountValue)) {
+    return '--'
+  }
+
+  return String(amountValue)
 }
 
 const doWithdrawDeposit = () => {

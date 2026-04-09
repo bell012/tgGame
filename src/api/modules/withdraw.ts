@@ -1,6 +1,10 @@
 import type {
   AddMemberCardForm,
   AddMemberCardResponse,
+  DelMemberCardForm,
+  DelMemberCardResponse,
+  ModifyDefaultCardForm,
+  ModifyDefaultCardResponse,
   QueryFastAmountForm,
   QueryFastAmountResponse,
   QueryNeedBetAmountForAppResponse,
@@ -55,6 +59,32 @@ export function selectMemberCard(data?: SelectMemberCardForm): Promise<SelectMem
 export function addMemberCard(data: AddMemberCardForm): Promise<AddMemberCardResponse> {
   return request({
     url: '/mc/addMemberCard',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 修改默认收款账号状态
+ * @param data 修改参数
+ * @returns Promise<ModifyDefaultCardResponse>
+ */
+export function modifyDefaultCard(data: ModifyDefaultCardForm): Promise<ModifyDefaultCardResponse> {
+  return request({
+    url: '/mc/modifyDefaultCard',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 删除收款账号
+ * @param data 删除参数
+ * @returns Promise<DelMemberCardResponse>
+ */
+export function delMemberCard(data: DelMemberCardForm): Promise<DelMemberCardResponse> {
+  return request({
+    url: '/mc/delMemberCard',
     method: 'post',
     data
   })
