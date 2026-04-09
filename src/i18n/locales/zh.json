@@ -872,17 +872,17 @@
       "loginPassword": {
         "title": "登录密码",
         "desc": "定期修改密码，保障账户安全。",
-        "action": "修改登录密码"
+        "action": "更改登录密码"
       },
       "transactionPassword": {
         "title": "交易密码",
         "desc": "用于验证提现及其他敏感操作，提升资金安全。",
-        "action": "设置交易密码"
+        "action": "更改交易密码"
       },
       "mobile": {
         "title": "手机号码",
         "desc": "验证手机号以提升账户安全并接收重要通知。",
-        "action": "更换手机号"
+        "action": "更改手机号码"
       },
       "twoFactor": {
         "title": "双重验证",
