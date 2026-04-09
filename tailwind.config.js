@@ -44,6 +44,8 @@ export default {
         'mask-40': 'var(--color-mask-40)',
         'mask-60-1': 'var(--color-mask-60-1)',
         'mask-80-2': 'var(--color-mask-80-2)',
+        'mask-96-3': 'var(--color-mask-96-3)',
+        'mask-100-4': 'var(--color-mask-100-4)',
 
         // ========== 次要色 (Secondary) ==========
         'secondary-1': 'var(--color-secondary-level-1)',
@@ -53,9 +55,9 @@ export default {
         'secondary-5': 'var(--color-secondary-level-5)',
         'secondary-6': 'var(--color-secondary-level-6)',
         'secondary-7': 'var(--color-secondary-level-7)',
-        assistGreen: 'var(--color-assist-green)',
-        assistRed: 'var(--color-assist-red)',
-        assistBlue: 'var(--color-assist-blue)',
+        'assist-red': 'var(--color-assist-red)',
+        'assist-green': 'var(--color-assist-green)',
+        'assist-blue': 'var( --color-assist-blue)',
 
         // ========== 通用色 (Common) ==========
         'common-100': 'var(--color-common-100)',
