@@ -9,6 +9,7 @@ export interface WithdrawSubmitPayload {
   channelId: string | number
   currencyCode?: string
   methodLabel: string
+  methodIcon?: string
   paymentCode?: string | number
   accountRowId?: string | number
   phoneNumber?: string

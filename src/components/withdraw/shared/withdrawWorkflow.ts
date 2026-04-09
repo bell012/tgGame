@@ -5,6 +5,7 @@ import type {
   SubmitTransferOrderResult,
   WithdrawOrderDetail
 } from '@/api/interface/withdraw'
+import { formatTimestamp } from '@/utils/date'
 import { StringExtension } from '@/utils/string-extension'
 import type { WithdrawOrderStatus, WithdrawSubmitPayload } from './types'
 
@@ -21,6 +22,7 @@ export interface WithdrawOrderViewData {
   amountText: string
   createdAt: string
   methodLabel: string
+  methodIcon: string
   status: WithdrawOrderStatus
 }
 
@@ -29,6 +31,14 @@ const getAccountNo = (payload: WithdrawSubmitPayload) => payload.accountRowId ??
 const getColumnCode = (payload: WithdrawSubmitPayload) => payload.paymentCode ?? ''
 
 const getCurrencyCode = (payload: WithdrawSubmitPayload) => payload.currencyCode || 'PHP'
+
+const getDisplayCreateTime = (
+  detail?: WithdrawOrderDetail | null,
+  submitResult?: SubmitTransferOrderResult
+) =>
+  formatTimestamp(
+    (detail?.createTime ?? submitResult?.createTime ?? null) as string | number | null | undefined
+  )
 
 const formatAmountText = (amount: string | number | undefined, currencyCode: string) => {
   const nextAmount = Number(amount ?? 0)
@@ -42,12 +52,7 @@ const normalizeOrderStatus = (status: unknown): WithdrawOrderStatus => {
     .trim()
     .toLowerCase()
 
-  if (
-    normalized === 'success' ||
-    normalized === 'completed' ||
-    normalized === 'complete' ||
-    normalized === '2'
-  ) {
+  if (normalized === '3') {
     return 'completed'
   }
 
@@ -67,8 +72,9 @@ const buildOrderViewData = ({
   const amountText = formatAmountText(detail?.busiAmount ?? payload.amount, currencyCode)
   const orderId = String(detail?.orderId ?? submitResult?.orderId ?? '')
   const orderNo = String(detail?.orderNo ?? submitResult?.orderNo ?? orderId)
-  const createdAt = String(detail?.createTime ?? new Date().toLocaleString('en-US'))
+  const createdAt = getDisplayCreateTime(detail, submitResult)
   const methodLabel = String(detail?.paymentName ?? payload.methodLabel ?? '')
+  const methodIcon = String(payload.methodIcon ?? '')
 
   return {
     orderId,
@@ -76,6 +82,7 @@ const buildOrderViewData = ({
     amountText,
     createdAt,
     methodLabel,
+    methodIcon,
     status: normalizeOrderStatus(detail?.status ?? submitResult?.status)
   }
 }

@@ -369,6 +369,9 @@ const doWithdrawDeposit = () => {
     channelId: 4,
     currencyCode: currentCurrency.value,
     methodLabel: currency.value,
+    methodIcon:
+      selectedReceiveAddress.value?.icon ||
+      (typeof currencyOption.value?.icon === 'string' ? currencyOption.value.icon : ''),
     paymentCode: matchedWithdrawMethod.value?.paymentCode,
     accountRowId: selectedReceiveAddress.value?.id,
     address: address.value,

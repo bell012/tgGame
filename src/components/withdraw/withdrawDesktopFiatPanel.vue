@@ -402,6 +402,7 @@ const doWithdrawDeposit = () => {
     channelId: 3,
     currencyCode: currentCurrency.value,
     methodLabel: selectedMethod.value.name,
+    methodIcon: selectedMethod.value.selectedIcon || selectedMethod.value.icon,
     paymentCode: selectedMethod.value.paymentCode,
     accountRowId: selectedAccount.value?.rowId,
     phoneNumber: selectedAccount.value?.accountNo,
