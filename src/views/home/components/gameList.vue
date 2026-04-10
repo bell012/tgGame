@@ -191,7 +191,6 @@ const scrollNext = () => {
   if (!el || nextDisabled.value) return
   const unit = getScrollUnit(el)
   el.scrollBy({ left: unit, behavior: 'smooth' })
-  // 延迟更新以配合平滑滚动
   setTimeout(updateButtons, 350)
 }
 
