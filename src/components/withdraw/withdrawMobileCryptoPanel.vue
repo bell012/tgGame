@@ -115,18 +115,15 @@
             :placeholder="t('withdraw.amount_placeholder')"
             class="flex-1 min-w-0 text-base font-bold bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
           />
-          <div v-if="!isAmountDisabled" class="flex items-center shrink-0 ml-2">
-            <p class="text-text-1 text-xs mr-1 whitespace-nowrap">
-              {{ t('withdraw.you_get') }} ≈ 100
+          <div v-if="!isAmountDisabled && youGetAmount" class="ml-2 flex shrink-0 items-center">
+            <p class="mr-1 whitespace-nowrap text-xs text-text-1">
+              {{ t('withdraw.you_get') }} ≈ {{ youGetAmount }}
             </p>
-            <!-- string -->
             <img
               v-if="typeof currencyOption?.icon === 'string'"
               :src="currencyOption.icon"
-              class="w-4 h-4 object-contain"
+              class="h-4 w-4 object-contain"
             />
-            <!-- component -->
-            <component v-else-if="currencyOption?.icon" :is="currencyOption.icon" class="w-4 h-4" />
           </div>
         </div>
         <div class="mt-3.5 flex items-center">
@@ -141,6 +138,42 @@
             @click="refreshBalance"
           >
             <RefreshIcon class="w-3.5" :class="{ 'animate-spin': isRefreshingBalance }" />
+          </button>
+        </div>
+      </div>
+      <div v-if="quickAmounts.length" class="mt-4 w-full relative">
+        <div
+          ref="presetsRef"
+          class="grid grid-cols-3 gap-2 rounded-tl-lg rounded-tr-lg bg-bg-4 p-2.5 transition-all duration-300"
+          :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[106px] overflow-hidden'"
+        >
+          <button
+            v-for="(item, index) in quickAmounts"
+            :key="`${item.amount ?? index}`"
+            type="button"
+            class="rounded-lg py-[7px] text-base lg:hover:bg-theme-primary"
+            :class="[
+              Number(item.amount ?? 0) === Number(amount ?? 0)
+                ? 'bg-theme-primary text-text-4'
+                : 'bg-bg-2 text-text-1'
+            ]"
+            @click="applyQuickAmount(item)"
+          >
+            {{ formatQuickAmount(item.amount) }}
+          </button>
+        </div>
+        <div
+          v-if="showExpandButton"
+          class="relative z-10 -mt-3 w-full rounded-bl-lg rounded-br-lg bg-bg-4 p-1.5"
+        >
+          <button
+            type="button"
+            class="mx-auto flex items-center gap-1 text-xs text-text-3 transition lg:hover:text-text-1"
+            @click="expanded = !expanded"
+          >
+            {{ expanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}
+            <ExpandUpDoubleIcon v-if="expanded" class="h-2 w-[9px]" />
+            <ExpandDownDoubleIcon v-else class="h-2 w-[9px]" />
           </button>
         </div>
       </div>
@@ -169,17 +202,44 @@
         :selected-id="selectedReceiveAddress?.id"
         :currency-code="currency"
         :icon="typeof currencyOption?.icon === 'string' ? currencyOption.icon : ''"
+        :show-add-button="canAddAddress"
         @select="handleSelectReceiveAddress"
         @add="openAddAddress"
       />
       <withdrawCryptoAddAddressPop
         v-model="addAddressVisible"
         v-model:input-value="pendingAddress"
+        v-model:network="selectNetwork"
         :currency-code="currency"
-        :network="selectNetwork"
+        :network-options="networkOptions"
         :icon="typeof currencyOption?.icon === 'string' ? currencyOption.icon : ''"
         @close="closeAddAddress"
         @confirm="confirmAddAddress"
+      />
+      <withdrawPaymentPasswordPop
+        v-model="addAddressPaymentPasswordVisible"
+        :amount="0"
+        :currency-code="currency"
+        :loading="isSubmittingAddAddress"
+        :show-amount-section="false"
+        :confirm-text="t('common.confirm')"
+        :description-text="t('withdraw.verification_transaction_password')"
+        @close="closeAddAddressPaymentPassword"
+        @confirm="handleAddAddressPaymentPasswordConfirm"
+      />
+      <withdrawSmsVerificationPop
+        v-model="addAddressSmsVerificationVisible"
+        :amount="0"
+        :currency-code="currency"
+        :phone-number="maskedPhoneNumber"
+        :sending="isSendingAddAddressSmsCode"
+        :loading="isCheckingAddAddressSmsCode || isSubmittingAddAddress"
+        :countdown-trigger="addAddressSmsCountdownTrigger"
+        :show-amount-section="false"
+        :confirm-text="t('common.confirm')"
+        @close="closeAddAddressSmsVerification"
+        @resend="handleAddAddressSmsVerificationResend"
+        @confirm="handleAddAddressSmsVerificationConfirm"
       />
     </div>
   </div>
@@ -191,13 +251,20 @@ import DOGEIcon from '@/static/img/crypto/DOGE.png'
 import TRXIcon from '@/static/img/crypto/TRX.png'
 import BNBIcon from '@/static/img/crypto/BNB.png'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
+import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
+import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
 import RefreshIcon from '@/static/svg/refresh.svg?component'
 import InfoIcon from '@/static/svg/info.svg?component'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
+import { computed, ref } from 'vue'
+import type { FastAmountItem } from '@/api/interface/withdraw'
+import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
 import withdrawCryptoAddressListPop from './withdrawCryptoAddressListPop.vue'
 import withdrawCryptoAddAddressPop from './withdrawCryptoAddAddressPop.vue'
+import withdrawPaymentPasswordPop from './withdrawPaymentPasswordPop.vue'
+import withdrawSmsVerificationPop from './withdrawSmsVerificationPop.vue'
 import type { WithdrawSubmitPayload } from './shared/types'
 import { useWithdrawCrypto } from './shared/useWithdrawCrypto'
 
@@ -207,8 +274,14 @@ const {
   address,
   addressListVisible,
   amount,
+  applyQuickAmount,
+  addAddressPaymentPasswordVisible,
+  addAddressSmsVerificationVisible,
+  addAddressSmsCountdownTrigger,
+  balanceAmount,
   availableReceiveAddresses,
   addAddressVisible,
+  canAddAddress,
   coinCode,
   coinMoreShow,
   currency,
@@ -216,25 +289,41 @@ const {
   currencyOptions,
   currencySymbol,
   closeAddAddress,
+  closeAddAddressPaymentPassword,
+  closeAddAddressSmsVerification,
   currentCurrency,
   handleChangeReceiveAddress,
+  handleAddAddressPaymentPasswordConfirm,
+  handleAddAddressSmsVerificationConfirm,
+  handleAddAddressSmsVerificationResend,
   handleSelectReceiveAddress,
   hasSelectedReceiveAddress,
   formattedBalance,
+  isCheckingAddAddressSmsCode,
   isAmountDisabled,
   isRefreshingBalance,
+  isSendingAddAddressSmsCode,
+  isSubmittingAddAddress,
   isWithdrawDisabled,
+  maskedPhoneNumber,
+  matchedWithdrawMethod,
   networkOptions,
   openAddressList,
   openAddAddress,
   pendingAddress,
+  quickAmounts,
   refreshBalance,
   selectedReceiveAddress,
   selectCoinCode: applySelectCoinCode,
   selectNetwork,
+  youGetAmount,
   visibleCoins,
   confirmAddAddress
 } = useWithdrawCrypto()
+
+const presetsRef = ref<HTMLDivElement | null>(null)
+const { expanded } = usePresetGrid(presetsRef)
+const showExpandButton = computed(() => quickAmounts.value.length > 3)
 
 const emit = defineEmits<{
   submit: [payload: WithdrawSubmitPayload]
@@ -258,6 +347,16 @@ const openCoinMorePanel = () => {
   return
 }
 
+const formatQuickAmount = (value: FastAmountItem['amount']) => {
+  const amountValue = Number(value ?? 0)
+
+  if (!Number.isFinite(amountValue)) {
+    return '--'
+  }
+
+  return String(amountValue)
+}
+
 const doWithdrawDeposit = () => {
   if (isWithdrawDisabled.value) {
     return
@@ -266,9 +365,15 @@ const doWithdrawDeposit = () => {
   emit('submit', {
     tabType: 'Crypto',
     amount: Number(amount.value),
+    balanceAmount: balanceAmount.value,
     channelId: 4,
     currencyCode: currentCurrency.value,
     methodLabel: currency.value,
+    methodIcon:
+      selectedReceiveAddress.value?.icon ||
+      (typeof currencyOption.value?.icon === 'string' ? currencyOption.value.icon : ''),
+    paymentCode: matchedWithdrawMethod.value?.paymentCode,
+    accountRowId: selectedReceiveAddress.value?.id,
     address: address.value,
     network: selectNetwork.value
   })

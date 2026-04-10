@@ -36,7 +36,7 @@
           type="button"
           :class="[
             'w-full h-10 rounded-lg text-sm font-bold shrink-0',
-            card.active ? 'security-btn-secondary' : 'btn-primary'
+            card.active ? 'security-btn-secondary' : 'bg-theme-primary text-text-4'
           ]"
           @click="handleOpenChangeLoginPassword(card.cardKey)"
         >
@@ -54,34 +54,20 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Component } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
 import ChangeLoginPasswordPcLayout from '../changeLoginPassword/pc-layout.vue'
 import ChangeMobileNumberPcLayout from '../changeMobileNumber/pc-layout.vue'
 import TransactionPassword from '../transactionPassword/pc-layout.vue'
-import PasswordIcon from '@/static/svg/security/password.svg?component'
-import MobileIcon from '@/static/svg/security/mobile.svg?component'
-// import TwoFAIcon from '@/static/svg/security/2FA.svg?component'
-// import PasskeyIcon from '@/static/svg/security/passkey.svg?component'
-// import AntiPhishingIcon from '@/static/svg/security/anti-phishing.svg?component'
 import SuccessIcon from '@/static/svg/security/success.svg?component'
 import WarningIcon from '@/static/svg/security/warning.svg?component'
+import { useSecurityCards, type SecurityCardKey } from '@/composables/useSecurityCards'
 
 const { t } = useI18n()
-
-type CardKey = 'loginPassword' | 'transactionPassword' | 'mobile'
-// | 'twoFactor'
-// | 'passkey'
-// | 'antiPhishing'
-
-const cards: { cardKey: CardKey; icon: Component; active: boolean }[] = [
-  { cardKey: 'loginPassword', icon: PasswordIcon, active: true },
-  { cardKey: 'transactionPassword', icon: PasswordIcon, active: false },
-  { cardKey: 'mobile', icon: MobileIcon, active: true }
-  // { cardKey: 'twoFactor', icon: TwoFAIcon, active: false },
-  // { cardKey: 'passkey', icon: PasskeyIcon, active: false },
-  // { cardKey: 'antiPhishing', icon: AntiPhishingIcon, active: false }
-]
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
+const { cards } = useSecurityCards(userInfo)
 
 // 修改登录密码弹窗
 const showChangeLoginPasswordPopup = ref(false)
@@ -92,7 +78,7 @@ const showTransactionPasswordPopup = ref(false)
 /**
  * 打开 PC 修改登录密码弹窗。
  */
-const handleOpenChangeLoginPassword = (_key: CardKey) => {
+const handleOpenChangeLoginPassword = (_key: SecurityCardKey) => {
   switch (_key) {
     case 'loginPassword':
       showChangeLoginPasswordPopup.value = true
@@ -109,7 +95,7 @@ const handleOpenChangeLoginPassword = (_key: CardKey) => {
 
 <style scoped lang="scss">
 .security-btn-secondary {
-  color: var(--color-text-level-1);
+  color: var(--color-text-level-2);
   font-weight: 700;
   background-color: var(--color-background-level-2);
   border: 1px solid var(--color-opacity-15);

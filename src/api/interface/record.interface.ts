@@ -72,7 +72,7 @@ export interface QueryAcctHisPageForm {
   param: {
     currency: string | null
   }
-  changeTypes: string | null // 变更类型 1.游戏切换   2.会员充值 3.会员取款 4.会员取款退回 5.人工存入 6.人工扣款 7.赠送彩金 8.领取佣金 9货币互换 13.VIP收益 14.红利兑换
+  changeTypes: string[] | null // 变更类型 1.游戏切换   2.会员充值 3.会员取款 4.会员取款退回 5.人工存入 6.人工扣款 7.赠送彩金 8.领取佣金 9货币互换 13.VIP收益 14.红利兑换
 }
 
 // 资金明细 响应
@@ -102,6 +102,49 @@ export interface QueryAcctHisPageResult {
     newBalance: number // 新余额
     oldBalance: number // 旧余额
     site: string
+  }>
+  size: number
+  total: number
+}
+
+// 流水记录 携带参数
+export interface QueryInspectPageForm {
+  startTime: number | null
+  endTime: number | null
+  page: {
+    current: number
+    size: number
+  }
+  state: number | null // 状态0:已完成 1:未完成
+  changeTypes: string[] | null // 变更类型 1.游戏切换 2.会员充值 3.会员取款 4.会员取款退回 5.人工存入 6.人工扣款 7.赠送彩金 8.领取佣金 9货币互换 13VIP收益 14红利兑换
+}
+
+// 流水记录 响应
+export interface QueryInspectPageResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryInspectPageResult
+}
+
+// 流水记录 响应结果
+export interface QueryInspectPageResult {
+  current: number
+  pages: number
+  records: Array<{
+    rowId: number
+    memberId: string
+    memberRowId: number
+    currency: string // 货币 PHP
+    changeType: number
+    amount: number // 金额
+    betAmount: number // Actual Turnover
+    currentBetAmount: number // Required Turnover
+    status: number // 状态0:已完成 1:未完成
+    createTime: number // 创建时间
+    modifyBy: string
+    modifyTime: number
+    exchange: number
   }>
   size: number
   total: number
