@@ -11,7 +11,7 @@ export const isCryptoWithdrawManagerItem = (item: WithdrawManagerItem) => {
 export const normalizeWithdrawManagerItem = (item: WithdrawManagerItem): WithdrawManagerItem => ({
   ...item,
   columnCode: item.columnCode ?? item.paymentCode,
-  cardType: item.cardType ?? item.paymentCode
+  cardType: item.cardType ?? item.channelType
 })
 
 export const splitWithdrawManagerMethods = (items: WithdrawManagerItem[]) => {

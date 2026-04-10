@@ -36,12 +36,23 @@ export const formatTimestamp = (value?: number | string | null): string => {
   const languageCode = getLanguageCode()
   const locale = DATE_TIME_FORMAT_LOCALE_MAP[languageCode] || DATE_TIME_FORMAT_LOCALE_MAP.eng
 
-  return new Intl.DateTimeFormat(locale, {
+  const formatter = new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit'
-  }).format(date)
+    second: '2-digit',
+    hour12: true
+  })
+
+  const parts = formatter.formatToParts(date)
+  const partMap = parts.reduce<Record<string, string>>((acc, part) => {
+    if (part.type !== 'literal') {
+      acc[part.type] = part.value
+    }
+    return acc
+  }, {})
+
+  return `${partMap.month ?? '00'}/${partMap.day ?? '00'}/${partMap.year ?? '0000'} ${partMap.hour ?? '00'}:${partMap.minute ?? '00'}:${partMap.second ?? '00'} ${partMap.dayPeriod ?? ''}`.trim()
 }

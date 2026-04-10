@@ -388,6 +388,7 @@
     "actualTurnover": "实际成交额",
     "requiredTurnover": "所需营业额",
     "applicableGames": "适用游戏",
+    "allGames": "全部游戏",
     "orderStatus": "订单状态",
     "security": "安全设置"
   },
@@ -733,11 +734,16 @@
     "address_list_title": "{currency}地址",
     "receiving_address_label": "{currency}收款地址",
     "receive_address_input_placeholder": "请输入或粘贴您的{currency}地址",
+    "network_label": "网络",
+    "receiving_address_text": "收款地址",
+    "default_wallet": "默认钱包",
     "amount": "提现金额",
     "amount_placeholder": "请输入提现金额",
     "balance": "余额",
     "crypto_help": "如何提现加密货币？",
     "crypto_address_notice": "请确保收款地址正确无误。若资金发送到错误地址，将无法找回。",
+    "default_address_cannot_be_changed": "默认地址不允许修改",
+    "default_account_cannot_be_changed": "默认账号不允许修改",
     "withdraw_now": "立即提现",
     "you_get": "预计到账",
     "kind_reminder_title": "温馨提示",
@@ -745,6 +751,7 @@
     "go_to_settings": "前往设置",
     "do_not_set_yet": "暂不设置",
     "payment_password": "支付密码",
+    "verification_transaction_password": "验证交易密码",
     "sms_verification": "短信验证",
     "sms_sent_to": "验证码已发送至",
     "resend_code": "重新发送",
@@ -760,6 +767,8 @@
     "order_help_text": "如需订单帮助，请",
     "chat_with_us": "联系我们。",
     "confirm_withdrawal": "确认提现",
+    "sms_code_invalid": "短信验证码无效。",
+    "balance_insufficient": "余额不足。",
     "pending_order_exists": "您的提现申请正在处理中。",
     "bet_requirement_unfinished": "请先完成提款所需流水。",
     "missing_account": "请先选择提现账户。",
@@ -871,17 +880,17 @@
       "loginPassword": {
         "title": "登录密码",
         "desc": "定期修改密码，保障账户安全。",
-        "action": "修改登录密码"
+        "action": "更改登录密码"
       },
       "transactionPassword": {
         "title": "交易密码",
         "desc": "用于验证提现及其他敏感操作，提升资金安全。",
-        "action": "设置交易密码"
+        "action": "更改交易密码"
       },
       "mobile": {
         "title": "手机号码",
         "desc": "验证手机号以提升账户安全并接收重要通知。",
-        "action": "更换手机号"
+        "action": "更改手机号码"
       },
       "twoFactor": {
         "title": "双重验证",

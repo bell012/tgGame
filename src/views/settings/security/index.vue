@@ -19,8 +19,10 @@
 </template>
 
 <script setup lang="ts">
+import { onActivated, onMounted } from 'vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
 import H5Header from '@/components/common/H5Header.vue'
 import MobileLayout from './mobile-layout.vue'
 import PcLayout from './pc-layout.vue'
@@ -28,6 +30,14 @@ import SettingsLayout from '../index.vue'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
+const userStore = useUserStore()
+
+const refreshUserData = () => {
+  void userStore.refreshCurrentUserData()
+}
+
+onMounted(refreshUserData)
+onActivated(refreshUserData)
 </script>
 
 <style scoped lang="scss"></style>
