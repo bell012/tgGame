@@ -5,7 +5,7 @@
     </transition>
     <transition name="up-down">
       <div v-show="visible" class="fixed left-0 bottom-0 z-[999] w-full">
-        <div class="rounded-t-xl bg-bg-1 px-3 pb-10 pt-2.5">
+        <div class="rounded-t-xl bg-bg-1 px-3 pb-2.5 pt-2.5">
           <div class="flex items-center justify-between">
             <div></div>
             <div class="text-base font-bold text-text-1">{{ t('personalCenter.currency') }}</div>

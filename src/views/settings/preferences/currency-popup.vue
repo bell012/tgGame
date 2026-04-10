@@ -34,6 +34,7 @@
 
           <div :class="[props.desktop ? 'min-h-0 flex-1' : 'mt-5 min-h-0 flex-1']">
             <CurrencySelectorList
+              class="h-[100%]"
               :visible="props.visible"
               :options="listOptions"
               :selected-value="props.selectedCurrency"
