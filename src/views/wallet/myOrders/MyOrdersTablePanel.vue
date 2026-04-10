@@ -4,13 +4,13 @@
     <!-- 表格表头 -->
     <div class="grid h-[58px] grid-cols-4 bg-bg-4 px-6 text-[14px] font-[700] text-text-1">
       <!-- 类型表头 -->
-      <div class="flex items-center">Type</div>
+      <div class="flex items-center">{{ t('wallet.myOrdersPage.table.type') }}</div>
       <!-- 时间表头 -->
-      <div class="flex items-center">Time</div>
+      <div class="flex items-center">{{ t('wallet.myOrdersPage.table.time') }}</div>
       <!-- 金额表头 -->
-      <div class="flex items-center">Amount</div>
+      <div class="flex items-center">{{ t('wallet.myOrdersPage.table.amount') }}</div>
       <!-- 状态表头 -->
-      <div class="flex items-center justify-end">Status</div>
+      <div class="flex items-center justify-end">{{ t('wallet.myOrdersPage.table.status') }}</div>
     </div>
 
     <!-- 表格数据区域 -->
@@ -42,16 +42,18 @@
       <!-- 空状态图片 -->
       <img
         :src="emptyImg"
-        alt="no-data"
+        :alt="t('common.noData')"
         class="mb-4 h-[170px] w-[170px] object-contain opacity-90"
       />
       <!-- 空状态文案 -->
-      <p class="text-[24px] font-[700] text-text-1">No data available at the moment.</p>
+      <p class="text-[24px] font-[700] text-text-1">{{ t('common.noData') }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 type ViewState = 'table' | 'empty'
 
 type OrderRow = {
@@ -68,6 +70,8 @@ defineProps<{
   rows: readonly OrderRow[]
   emptyImg: string
 }>()
+
+const { t } = useI18n()
 
 defineEmits<{
   (event: 'row-click', row: OrderRow): void

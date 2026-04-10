@@ -75,7 +75,7 @@
               class="text-text-3"
               :class="props.mode === 'pc' ? 'text-base leading-[19px]' : 'text-sm leading-[17px]'"
             >
-              Currency
+              {{ t('deposit.order_currency') }}
             </span>
             <span
               class="text-text-1"
@@ -140,7 +140,7 @@
               class="text-text-3"
               :class="props.mode === 'pc' ? 'text-base leading-[19px]' : 'text-sm leading-[17px]'"
             >
-              Order Status
+              {{ t('deposit.order_status') }}
             </span>
             <span
               :class="[
@@ -161,7 +161,7 @@
               class="text-text-3"
               :class="props.mode === 'pc' ? 'text-base leading-[19px]' : 'text-sm leading-[17px]'"
             >
-              Order No.
+              {{ t('deposit.order_no') }}
             </span>
 
             <!-- H5 详情订单号操作区 -->
@@ -194,7 +194,7 @@
               class="text-text-3"
               :class="props.mode === 'pc' ? 'text-base leading-[19px]' : 'text-sm leading-[17px]'"
             >
-              Created At
+              {{ t('deposit.order_created_at') }}
             </span>
             <span
               class="text-text-1"
@@ -268,11 +268,17 @@ const emit = defineEmits<{
 const { t, locale } = useI18n()
 
 const amountTitle = computed(() =>
-  props.tab === 'deposits' ? 'Deposit Amount' : 'Withdrawal Amount'
+  props.tab === 'deposits'
+    ? t('wallet.myOrdersPage.depositAmount')
+    : t('wallet.myOrdersPage.withdrawalAmount')
 )
-const bonusTitle = computed(() => (props.tab === 'deposits' ? 'Deposit Bonus' : 'Withdrawal Bonus'))
+const bonusTitle = computed(() =>
+  props.tab === 'deposits'
+    ? t('wallet.myOrdersPage.depositBonus')
+    : t('wallet.myOrdersPage.withdrawalBonus')
+)
 const methodTitle = computed(() =>
-  props.tab === 'deposits' ? 'Deposit Method' : 'Withdrawal Method'
+  props.tab === 'deposits' ? t('deposit.order_deposit_method') : t('withdraw.withdraw_method')
 )
 const showBonus = computed(() => Number(props.order.otherAmount ?? 0) > 0)
 const statusText = computed(() => getMyOrderStatusText(props.tab, props.order.status, t))
