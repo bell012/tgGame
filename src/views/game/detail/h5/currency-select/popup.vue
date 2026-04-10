@@ -22,45 +22,19 @@
               <CloseIcon class="stroke-text-1 w-4 h-4" />
             </div>
           </div>
-          <div class="relative mb-[10px]">
-            <SearchIcon
-              class="absolute left-2.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] fill-none stroke-text-2 opacity-50"
-            />
-            <input
-              :placeholder="t('home.search')"
-              v-model="keyword"
-              class="w-full h-[42px] pl-[40px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-[var(--color-border-level-1)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
-            />
-          </div>
-
-          <!-- 选择的内容 -->
-          <div v-if="tabIndex === 0" class="max-h-[368px] overflow-y-auto">
-            <div class="flex flex-col">
-              <div
-                v-for="(item, inx) in filteredOptions"
-                :key="inx"
-                class="tp-item mb-2.5 px-2.5 flex items-center justify-between h-[42px] rounded-lg cursor-pointer"
-                :class="[
-                  isSelected(item) ? 'bg-[var(--color-opacity-10)]' : '',
-                  { 'tp-item-selected': isSelected(item) }
-                ]"
-                @click="confirm(item)"
-              >
-                <div class="flex items-center gap-[10px]">
-                  <img :src="item.icon" alt="" class="w-5 h-5 object-contain" />
-                  <div>{{ item.label }}</div>
-                </div>
-                <ChecedIcon v-if="isSelected(item)" class="w-5 h-5 cursor-pointer" />
-                <UnchecedIcon v-else class="w-5 h-5 cursor-pointer" />
-              </div>
-            </div>
-          </div>
-          <div v-else class="flex justify-center flex-col items-center">
-            <empty-icon class="w-[220px] h-[200px] mt-[50px]" />
-            <div class="text-center text-[13px] mt-[10px] mb-[100px]">
-              {{ t('gameDetail.stayTunedComingSoon') }}
-            </div>
-          </div>
+          <CurrencySelectorList
+            :visible="props.visible"
+            :options="listOptions"
+            :selected-value="selectedId"
+            mode="radio"
+            show-search
+            :search-placeholder="t('home.search')"
+            list-class="max-h-[368px] overflow-y-auto"
+            item-class="tp-item mb-2.5 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left cursor-pointer"
+            selected-item-class="bg-[var(--color-opacity-10)] tp-item-selected"
+            label-class="text-[14px] text-[var(--color-text-level-1)]"
+            @select="confirmByValue"
+          />
         </div>
       </div>
     </transition>
@@ -68,17 +42,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, Ref } from 'vue'
+import { computed, inject, Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import SearchIcon from '@/static/svg/search-icon.svg?component'
+import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
-import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
-import EmptyIcon from '@/static/svg/game/detail/empty.svg?component'
 
 type OptionItem = { value: string; label: string; icon: string }
 
-defineProps<{
+const props = defineProps<{
   visible: boolean
   desktop?: boolean
 }>()
@@ -88,27 +59,18 @@ const emit = defineEmits<{
 }>()
 const { t } = useI18n()
 
-const keyword = ref('')
-
-const tabIndex = ref(0)
-
 // options数据
 const selectOptions = inject('currency-select-options') as Ref<OptionItem[]>
 // 选中那一条数据
 const selectedId = inject('currency-select-selected-id') as Ref<string>
 const onSelect = inject<(item: OptionItem) => void>('currency-select-on-select')
 
-const filteredOptions = computed(() => {
-  const searchKeyword = keyword.value.trim().toUpperCase()
-  if (!searchKeyword) {
-    return selectOptions.value
-  }
-
-  return selectOptions.value.filter(item => {
-    const label = item.label.toUpperCase()
-    const value = item.value.toUpperCase()
-    return label.includes(searchKeyword) || value.includes(searchKeyword)
-  })
+const listOptions = computed(() => {
+  return selectOptions.value.map(item => ({
+    value: item.value,
+    label: item.label,
+    icon: item.icon
+  }))
 })
 
 // 关闭popup
@@ -116,19 +78,16 @@ const close = () => {
   emit('update:visible', false)
 }
 
-// const tabIndexClick = (index: number) => {
-//   tabIndex.value = index
-// }
+const confirmByValue = (value: string) => {
+  const item = selectOptions.value.find(option => option.value === value)
+  if (!item) {
+    return
+  }
 
-const isSelected = (item: OptionItem) => {
-  return item.value === selectedId.value
-}
-
-const confirm = (item: OptionItem) => {
   if (onSelect) {
     onSelect(item)
   } else {
-    selectedId.value = item.value
+    selectedId.value = value
   }
   close()
 }
