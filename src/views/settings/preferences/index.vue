@@ -109,7 +109,7 @@
     </section>
 
     <SettingsLayout v-else current-tab="preferences">
-      <div class="mx-auto w-full max-w-[760px] space-y-4">
+      <div class="w-full space-y-4">
         <section class="rounded-xl bg-bg-2 px-5 py-4">
           <h3 class="border-b border-opacity-10 pb-3 text-xl font-[700] text-text-1">账户设置</h3>
 
