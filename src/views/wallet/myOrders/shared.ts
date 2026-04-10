@@ -69,8 +69,8 @@ export const createMyOrdersTimeOptions = (t: TranslateFn): SelectOption[] => [
 /**
  * 创建类型筛选项。
  */
-export const createMyOrdersTypeOptions = (): SelectOption[] => [
-  { label: 'All', value: 'all' },
+export const createMyOrdersTypeOptions = (t: TranslateFn): SelectOption[] => [
+  { label: t('betHistory.filterOptions.all'), value: 'all' },
   { label: 'GCash', value: 'gcash' },
   { label: 'Maya', value: 'maya' },
   { label: 'GrabPay', value: 'grabpay' },
@@ -81,11 +81,11 @@ export const createMyOrdersTypeOptions = (): SelectOption[] => [
 /**
  * 创建状态筛选项。
  */
-export const createMyOrdersStatusOptions = (): SelectOption[] => [
-  { label: 'All', value: 'all' },
-  { label: 'Success', value: 'success' },
-  { label: 'Failed', value: 'failed' },
-  { label: 'Processing', value: 'processing' }
+export const createMyOrdersStatusOptions = (t: TranslateFn): SelectOption[] => [
+  { label: t('betHistory.filterOptions.all'), value: 'all' },
+  { label: t('deposit.status.success'), value: 'success' },
+  { label: t('deposit.status.failed'), value: 'failed' },
+  { label: t('deposit.status.processing'), value: 'processing' }
 ]
 
 /**

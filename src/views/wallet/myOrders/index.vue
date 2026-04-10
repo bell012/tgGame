@@ -9,8 +9,15 @@
       <template v-if="selectedMobileOrder">
         <!-- H5 详情头部 -->
         <H5Header
-          :title="activeTopTab === 'deposits' ? 'Deposit Details' : 'Withdrawal Details'"
+          :title="
+            activeTopTab === 'deposits'
+              ? t('wallet.myOrdersPage.depositDetails')
+              : t('wallet.myOrdersPage.withdrawalDetails')
+          "
+          showSort
+          :right-icon="CustomerServiceIcon"
           :disable-default-back="true"
+          @sort="handleCustomerServiceClick"
           @back="handleBackFromDetail"
         />
 
@@ -45,7 +52,7 @@
                   "
                   @click="handleTopTabChange('deposits')"
                 >
-                  Deposits
+                  {{ t('wallet.deposit') }}
                 </button>
 
                 <!-- H5 提现订单切换按钮 -->
@@ -59,7 +66,7 @@
                   "
                   @click="handleTopTabChange('withdrawals')"
                 >
-                  Withdrawals
+                  {{ t('wallet.withdraw') }}
                 </button>
               </div>
             </div>
@@ -81,7 +88,7 @@
               class="mt-[100px] flex flex-col items-center justify-center"
             >
               <!-- H5 空状态图片 -->
-              <img :src="EmptyImg" alt="No data" class="mb-2.5 h-[200px] w-auto" />
+              <img :src="EmptyImg" :alt="t('common.noData')" class="mb-2.5 h-[200px] w-auto" />
 
               <!-- H5 空状态文案 -->
               <p class="mb-5 text-xs font-[500] text-text-1">
@@ -187,7 +194,7 @@
                 v-else-if="mobileFinished && mobileRows.length > 0"
                 class="py-3 text-center text-xs text-text-2"
               >
-                No more orders
+                {{ t('wallet.myOrdersPage.noMoreOrders') }}
               </p>
 
               <!-- H5 无限滚动哨兵 -->
@@ -226,10 +233,11 @@ import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import EmptyImg from '@/static/img/personalCenter/noData.png'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { navigateTo } from '@/utils/router'
+import { showToast } from 'vant'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { showToast } from 'vant'
 import WalletLayout from '../index.vue'
 import OrderDetailScrollPanel from './OrderDetailScrollPanel.vue'
 import PcLayout from './pc-layout.vue'
@@ -288,18 +296,18 @@ const normalizedMobileFilters = computed(() => normalizeFilterValues(mobileFilte
 const mobileFilterGroups = computed<FilterGroup[]>(() => [
   {
     key: 'time',
-    title: 'Date Selection',
+    title: t('wallet.myOrdersPage.filterGroups.date'),
     options: createMyOrdersTimeOptions(t)
   },
   {
     key: 'type',
-    title: 'Types Selection',
-    options: createMyOrdersTypeOptions()
+    title: t('wallet.myOrdersPage.filterGroups.type'),
+    options: createMyOrdersTypeOptions(t)
   },
   {
     key: 'status',
-    title: 'Statuses Selection',
-    options: createMyOrdersStatusOptions()
+    title: t('wallet.myOrdersPage.filterGroups.status'),
+    options: createMyOrdersStatusOptions(t)
   }
 ])
 
@@ -435,6 +443,16 @@ const handleMobileOrderClick = (item: QueryMemberPayOrderPageRecord) => {
  */
 const handleBackFromDetail = () => {
   selectedMobileOrder.value = null
+}
+
+/**
+ * 处理客服按钮点击。
+ */
+const handleCustomerServiceClick = () => {
+  // TODO：处理客服按钮点击。
+  showToast({
+    message: t('sidebar_menu.customer_service')
+  })
 }
 
 /**

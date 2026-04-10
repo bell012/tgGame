@@ -12,7 +12,7 @@
         :class="[activeTopTab === 'deposits' ? 'bg-bg-4 text-text-1' : 'text-text-2']"
         @click="handleTopTabChange('deposits')"
       >
-        Deposits
+        {{ t('wallet.deposit') }}
       </button>
 
       <!-- PC 提现订单切换按钮 -->
@@ -22,7 +22,7 @@
         :class="[activeTopTab === 'withdrawals' ? 'bg-bg-4 text-text-1' : 'text-text-2']"
         @click="handleTopTabChange('withdrawals')"
       >
-        Withdrawals
+        {{ t('wallet.withdraw') }}
       </button>
     </div>
 
@@ -35,7 +35,7 @@
           v-model="desktopFilterValues.time"
           class="w-[240px]"
           :options="timeOptions"
-          :placeholder="'Date Selection'"
+          :placeholder="t('wallet.myOrdersPage.filterGroups.date')"
         />
 
         <!-- PC 类型筛选框 -->
@@ -43,7 +43,7 @@
           v-model="desktopFilterValues.type"
           class="w-[240px]"
           :options="typeOptions"
-          :placeholder="'Types Selection'"
+          :placeholder="t('wallet.myOrdersPage.filterGroups.type')"
         />
 
         <!-- PC 状态筛选框 -->
@@ -51,7 +51,7 @@
           v-model="desktopFilterValues.status"
           class="w-[240px]"
           :options="statusOptions"
-          :placeholder="'Statuses Selection'"
+          :placeholder="t('wallet.myOrdersPage.filterGroups.status')"
         />
       </div>
 
@@ -178,8 +178,8 @@ const normalizeFilterValues = (values: Record<string, string | string[]>): MyOrd
 const normalizedDesktopFilters = computed(() => normalizeFilterValues(desktopFilterValues.value))
 
 const timeOptions = computed(() => createMyOrdersTimeOptions(t))
-const typeOptions = computed(() => createMyOrdersTypeOptions())
-const statusOptions = computed(() => createMyOrdersStatusOptions())
+const typeOptions = computed(() => createMyOrdersTypeOptions(t))
+const statusOptions = computed(() => createMyOrdersStatusOptions(t))
 
 const desktopRows = computed(() =>
   desktopRecords.value.map(item => ({

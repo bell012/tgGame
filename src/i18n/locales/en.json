@@ -117,6 +117,26 @@
     "deposit": "Deposit",
     "withdraw": "Withdraw",
     "myOrders": "My Orders",
+    "myOrdersPage": {
+      "depositDetails": "Deposit Details",
+      "withdrawalDetails": "Withdrawal Details",
+      "depositAmount": "Deposit Amount",
+      "withdrawalAmount": "Withdrawal Amount",
+      "depositBonus": "Deposit Bonus",
+      "withdrawalBonus": "Withdrawal Bonus",
+      "noMoreOrders": "No more orders",
+      "filterGroups": {
+        "date": "Date Selection",
+        "type": "Types Selection",
+        "status": "Statuses Selection"
+      },
+      "table": {
+        "type": "Type",
+        "time": "Time",
+        "amount": "Amount",
+        "status": "Status"
+      }
+    },
     "rollover": "Rollover",
     "rolloverDetails": "Rollover Details",
     "actualTurnover": "Actual Turnover",
