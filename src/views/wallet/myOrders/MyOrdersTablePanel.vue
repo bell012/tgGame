@@ -4,13 +4,13 @@
     <!-- 表格表头 -->
     <div class="grid h-[58px] grid-cols-4 bg-bg-4 px-6 text-[14px] font-[700] text-text-1">
       <!-- 类型表头 -->
-      <div class="flex items-center">Type</div>
+      <div class="flex items-center">{{ t('wallet.myOrdersPage.table.type') }}</div>
       <!-- 时间表头 -->
-      <div class="flex items-center">Time</div>
+      <div class="flex items-center">{{ t('wallet.myOrdersPage.table.time') }}</div>
       <!-- 金额表头 -->
-      <div class="flex items-center">Amount</div>
+      <div class="flex items-center">{{ t('wallet.myOrdersPage.table.amount') }}</div>
       <!-- 状态表头 -->
-      <div class="flex items-center justify-end">Status</div>
+      <div class="flex items-center justify-end">{{ t('wallet.myOrdersPage.table.status') }}</div>
     </div>
 
     <!-- 表格数据区域 -->
@@ -31,7 +31,7 @@
         <div class="flex items-center font-[700] text-text-1">{{ item.amount }}</div>
         <!-- 状态单元格 -->
         <div class="flex items-center justify-end font-[700]">
-          <span :class="statusClassMap[item.status]">{{ item.status }}</span>
+          <span :class="item.statusClass">{{ item.status }}</span>
           <span class="ml-2 text-[14px] text-text-3">›</span>
         </div>
       </button>
@@ -39,37 +39,42 @@
 
     <!-- 空状态区域 -->
     <div v-else class="flex h-[520px] flex-col items-center justify-center text-center">
-      <!-- 空状态图片 -->
-      <img
-        :src="emptyImg"
-        alt="no-data"
-        class="mb-4 h-[170px] w-[170px] object-contain opacity-90"
+      <!-- 空状态 -->
+      <ThemedEmptyState
+        :dark-image="EmptyImg"
+        :image-alt="t('common.noData')"
+        :message="t('common.noData')"
+        container-class="mt-0"
+        image-class="mb-2.5 h-[200px] w-auto"
+        text-class="mb-5 text-text-1 text-sm font-[700]"
       />
-      <!-- 空状态文案 -->
-      <p class="text-[24px] font-[700] text-text-1">No data available at the moment.</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-type ViewState = 'table' | 'empty'
+import { useI18n } from 'vue-i18n'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import EmptyImg from '@/static/img/personalCenter/noData.png'
 
-type OrderRowStatus = 'Success' | 'Failed' | 'Processing'
+type ViewState = 'table' | 'empty'
 
 type OrderRow = {
   id: string
   type: string
   time: string
   amount: string
-  status: OrderRowStatus
+  status: string
+  statusClass: string
 }
 
 defineProps<{
   viewState: ViewState
   rows: readonly OrderRow[]
-  statusClassMap: Record<OrderRowStatus, string>
   emptyImg: string
 }>()
+
+const { t } = useI18n()
 
 defineEmits<{
   (event: 'row-click', row: OrderRow): void

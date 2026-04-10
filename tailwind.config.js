@@ -55,9 +55,9 @@ export default {
         'secondary-5': 'var(--color-secondary-level-5)',
         'secondary-6': 'var(--color-secondary-level-6)',
         'secondary-7': 'var(--color-secondary-level-7)',
-        'assist-red': 'var(--color-assist-red)',
-        'assist-green': 'var(--color-assist-green)',
-        'assist-blue': 'var( --color-assist-blue)',
+        assistGreen: 'var(--color-assist-green)',
+        assistRed: 'var(--color-assist-red)',
+        assistOrange: 'var(--color-assist-orange)',
 
         // ========== 通用色 (Common) ==========
         'common-100': 'var(--color-common-100)',

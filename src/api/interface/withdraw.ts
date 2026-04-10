@@ -39,6 +39,7 @@ export interface WithdrawManagerItem {
   icon?: string
   logo?: string
   logoSelect?: string
+  defaultOrderIcon?: string
   quickAmts?: string
   [key: string]: unknown
 }
@@ -59,12 +60,14 @@ export interface SelectMemberCardForm {
  */
 export interface MemberCardItem {
   rowId: string | number
+  type?: string | number
   cardType?: string | number
   accountName?: string
   accountNo?: string
   bankName?: string
   walletAddress?: string
   paymentCode?: string | number
+  defaultCard?: number | boolean
   isDefault?: number | boolean
   [key: string]: unknown
 }
@@ -75,8 +78,8 @@ export type SelectMemberCardResponse = WithdrawBaseResponse<MemberCardItem[]>
  * 新增会员收款账号
  */
 export interface AddMemberCardForm {
-  verifyType: string
-  verifyCode: string
+  verifyType?: string
+  verifyCode?: string
   /**
    * 收款类型 4 银行卡 5 虚拟账号 6 电子钱包 7 快捷提现
    */
@@ -112,6 +115,32 @@ export interface AddMemberCardForm {
 }
 
 export interface AddMemberCardResponse extends WithdrawBaseResponse<never> {
+  success?: boolean
+}
+
+/**
+ * 修改会员默认收款账号状态
+ */
+export interface ModifyDefaultCardForm {
+  rowId: string | number
+  cardType: string | number
+  defaultCard: number
+  validDate?: number
+}
+
+export interface ModifyDefaultCardResponse extends WithdrawBaseResponse<never> {
+  success?: boolean
+}
+
+/**
+ * 删除会员收款账号
+ */
+export interface DelMemberCardForm {
+  rowId: string | number
+  validDate?: number
+}
+
+export interface DelMemberCardResponse extends WithdrawBaseResponse<never> {
   success?: boolean
 }
 

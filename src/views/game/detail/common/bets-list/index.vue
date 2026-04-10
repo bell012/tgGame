@@ -3,12 +3,12 @@
     <!-- Header -->
     <div class="grid lg:grid-cols-2 grid-cols-1 gap-4">
       <h2 class="flex items-center">{{ t('home.LatestBet') }}</h2>
-      <div class="flex lg:justify-end items-center sm:justify-start justify-start">
-        <div class="bet-tabs flex items-center">
+      <div class="flex w-full lg:w-auto lg:justify-end items-center sm:justify-start justify-start">
+        <div class="bet-tabs flex w-full lg:w-auto items-center">
           <button
             v-for="(tab, index) in tabs"
             :key="tab.value"
-            :class="['bet-tab', { active: activeTab === index }]"
+            :class="['bet-tab', 'flex-1 lg:flex-none', { active: activeTab === index }]"
             @click="activeTab = index"
           >
             {{ tab.label }}
@@ -297,7 +297,6 @@ const fetchHighRollerRecords = async () => {
     const currency = currentRequestCurrency.value
     const res = await Api.home.getRecentBigWins({
       currency,
-      curency: currency,
       type: 2
     })
     const rawResult = res?.result
