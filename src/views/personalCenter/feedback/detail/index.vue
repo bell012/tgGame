@@ -36,7 +36,7 @@
           {{ feedbackDetail.detailContent }}
         </div>
 
-        <div class="mt-2.5 grid grid-cols-4 gap-2">
+        <div v-if="feedbackDetail.screenshotImages.length" class="mt-2.5 grid grid-cols-4 gap-2">
           <button
             v-for="(image, index) in feedbackDetail.screenshotImages"
             :key="`${feedbackDetail.recordId}-screenshot-${index}`"
@@ -72,18 +72,56 @@
       </section>
     </div>
   </div>
+
+  <teleport to="body">
+    <transition name="feedback-desktop-preview">
+      <div
+        v-if="showDesktopPreview && currentPreviewImage"
+        class="feedback-desktop-preview-mask"
+        @click.self="closeDesktopPreview"
+      >
+        <button
+          v-if="hasMultiplePreviewImages"
+          type="button"
+          class="feedback-desktop-preview-nav feedback-desktop-preview-nav-left"
+          @click.stop="showPrevDesktopPreview"
+        >
+          <ArrowLeftIcon class="h-5 w-5 text-text-1" />
+        </button>
+
+        <div class="feedback-desktop-preview-image-wrap">
+          <img :src="currentPreviewImage" alt="预览图片" class="feedback-desktop-preview-image" />
+        </div>
+
+        <button
+          v-if="hasMultiplePreviewImages"
+          type="button"
+          class="feedback-desktop-preview-nav feedback-desktop-preview-nav-right"
+          @click.stop="showNextDesktopPreview"
+        >
+          <ArrowRightIcon class="h-5 w-5 text-text-1" />
+        </button>
+      </div>
+    </transition>
+  </teleport>
 </template>
 
 <script setup lang="ts">
 import H5Header from '@/components/common/H5Header.vue'
+import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
+import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import Api from '@/api'
+import type { QueryFeedbackItem } from '@/api/interface/user'
 import {
-  feedbackMockRecords,
+  type FeedbackRecord,
+  type FeedbackStatus,
+  feedbackDetailTemplates,
   feedbackStatusClassMap,
   feedbackStatusTextMap
 } from '@/views/personalCenter/feedback/consts'
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { showImagePreview } from 'vant'
+import { showImagePreview, showToast } from 'vant'
 
 const props = withDefaults(
   defineProps<{
@@ -108,15 +146,135 @@ const feedbackDetailPageContainerClass = computed(() => {
     : 'fixed inset-0 overflow-y-auto bg-bg-1'
 })
 
-const feedbackDetail = computed(() => {
-  const recordId = isEmbeddedMode.value
+const feedbackApiItem = ref<QueryFeedbackItem | null>(null)
+const isLoadingFeedbackDetail = ref(false)
+const currentRecordId = computed(() => {
+  return isEmbeddedMode.value
     ? String(props.recordId ?? '').trim()
     : String(route.params.recordId ?? '').trim()
-  return feedbackMockRecords.find(item => item.recordId === recordId) ?? feedbackMockRecords[0]
+})
+
+const normalizeFeedbackStatus = (value: unknown): FeedbackStatus => {
+  const normalizedText = String(value ?? '')
+    .trim()
+    .toLowerCase()
+  if (normalizedText === 'accepted') {
+    return 'accepted'
+  }
+  if (normalizedText === 'pending') {
+    return 'pending'
+  }
+  if (normalizedText === 'rejected') {
+    return 'rejected'
+  }
+
+  const normalizedNumber = Number(normalizedText)
+  if (normalizedNumber === 1) {
+    return 'accepted'
+  }
+  if (normalizedNumber === 0) {
+    return 'pending'
+  }
+  return 'rejected'
+}
+
+const formatFeedbackSubmitTime = (value: unknown) => {
+  const timestamp = Number(value)
+  if (!Number.isFinite(timestamp) || timestamp <= 0) {
+    return '--'
+  }
+
+  const date = new Date(timestamp)
+  if (Number.isNaN(date.getTime())) {
+    return '--'
+  }
+
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  const hour = `${date.getHours()}`.padStart(2, '0')
+  const minute = `${date.getMinutes()}`.padStart(2, '0')
+  const second = `${date.getSeconds()}`.padStart(2, '0')
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+}
+
+const getFeedbackTypeLabel = (value: unknown) => {
+  const normalizedValue = String(value ?? '').trim()
+  if (normalizedValue === '1') {
+    return '建议'
+  }
+  if (normalizedValue === '2') {
+    return '游戏异常'
+  }
+  if (normalizedValue === '3') {
+    return '充值问题'
+  }
+  return '其他'
+}
+
+const ABSOLUTE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
+const resolveFeedbackImageUrl = (value: unknown) => {
+  const imagePath = String(value ?? '').trim()
+  if (!imagePath) {
+    return ''
+  }
+
+  if (ABSOLUTE_URL_PATTERN.test(imagePath)) {
+    return imagePath
+  }
+
+  const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
+  if (!baseUrl) {
+    return imagePath
+  }
+
+  const normalizedBaseUrl = String(baseUrl).replace(/\/+$/, '')
+  const normalizedImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`
+  return `${normalizedBaseUrl}${normalizedImagePath}`
+}
+
+const getTemplateRecordByStatus = (status: FeedbackStatus) => {
+  return feedbackDetailTemplates[status] ?? feedbackDetailTemplates.pending
+}
+
+const mapFeedbackApiItemToDetail = (
+  item: QueryFeedbackItem | null,
+  recordId: string
+): FeedbackRecord => {
+  const status = item ? normalizeFeedbackStatus(item.status) : 'pending'
+  const templateRecord = getTemplateRecordByStatus(status)
+  const screenshotImages = Array.isArray(item?.imgs)
+    ? item.imgs.map(resolveFeedbackImageUrl).filter(Boolean)
+    : []
+
+  const rowIdText = String(item?.rowId ?? '').trim()
+  const ticketNo = rowIdText || recordId || templateRecord.ticketNo
+  const detailContent = String(item?.content ?? '').trim() || templateRecord.detailContent
+
+  return {
+    ...templateRecord,
+    recordId: ticketNo,
+    ticketNo,
+    status,
+    submitTime: formatFeedbackSubmitTime(item?.createTime),
+    feedbackType: getFeedbackTypeLabel(item?.feedbackType),
+    detailContent,
+    content: detailContent,
+    screenshotImages
+  }
+}
+
+const feedbackDetail = computed(() => {
+  return mapFeedbackApiItemToDetail(feedbackApiItem.value, currentRecordId.value)
 })
 
 const statusTextMap = feedbackStatusTextMap
 const statusClassMap = feedbackStatusClassMap
+const showDesktopPreview = ref(false)
+const desktopPreviewIndex = ref(0)
+const previewImages = computed(() => feedbackDetail.value.screenshotImages)
+const hasMultiplePreviewImages = computed(() => previewImages.value.length > 1)
+const currentPreviewImage = computed(() => previewImages.value[desktopPreviewIndex.value] || '')
 
 const handleDetailBack = () => {
   if (isEmbeddedMode.value) {
@@ -124,9 +282,85 @@ const handleDetailBack = () => {
   }
 }
 
+const fetchFeedbackDetail = async (recordId: string) => {
+  if (!recordId || isLoadingFeedbackDetail.value) {
+    return
+  }
+
+  isLoadingFeedbackDetail.value = true
+  try {
+    const response = await Api.user.queryFeedbacks({})
+    if (!response?.success) {
+      throw new Error(response?.message || '获取反馈详情失败')
+    }
+
+    const feedbackList = Array.isArray(response.result) ? response.result : []
+    feedbackApiItem.value =
+      feedbackList.find(item => String(item?.rowId ?? '').trim() === recordId) ?? null
+  } catch (error) {
+    feedbackApiItem.value = null
+    showToast({
+      message: error instanceof Error ? error.message : '获取反馈详情失败',
+      position: 'middle',
+      type: 'fail'
+    })
+  } finally {
+    isLoadingFeedbackDetail.value = false
+  }
+}
+
+const closeDesktopPreview = () => {
+  showDesktopPreview.value = false
+}
+
+const showPrevDesktopPreview = () => {
+  const total = previewImages.value.length
+  if (!total) {
+    return
+  }
+
+  desktopPreviewIndex.value = (desktopPreviewIndex.value - 1 + total) % total
+}
+
+const showNextDesktopPreview = () => {
+  const total = previewImages.value.length
+  if (!total) {
+    return
+  }
+
+  desktopPreviewIndex.value = (desktopPreviewIndex.value + 1) % total
+}
+
+const handleDesktopPreviewKeydown = (event: KeyboardEvent) => {
+  if (!showDesktopPreview.value) {
+    return
+  }
+
+  if (event.key === 'Escape') {
+    closeDesktopPreview()
+    return
+  }
+
+  if (event.key === 'ArrowLeft') {
+    showPrevDesktopPreview()
+    return
+  }
+
+  if (event.key === 'ArrowRight') {
+    showNextDesktopPreview()
+  }
+}
+
 const openScreenshotPreview = (startPosition: number) => {
   const screenshotImages = feedbackDetail.value.screenshotImages
   if (!screenshotImages.length) {
+    return
+  }
+
+  if (isEmbeddedMode.value) {
+    const maxIndex = screenshotImages.length - 1
+    desktopPreviewIndex.value = Math.min(Math.max(startPosition, 0), maxIndex)
+    showDesktopPreview.value = true
     return
   }
 
@@ -138,6 +372,32 @@ const openScreenshotPreview = (startPosition: number) => {
     closeOnPopstate: true
   })
 }
+
+watch(showDesktopPreview, visible => {
+  if (visible) {
+    window.addEventListener('keydown', handleDesktopPreviewKeydown)
+    return
+  }
+
+  window.removeEventListener('keydown', handleDesktopPreviewKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleDesktopPreviewKeydown)
+})
+
+watch(
+  currentRecordId,
+  recordId => {
+    if (!recordId) {
+      feedbackApiItem.value = null
+      return
+    }
+
+    void fetchFeedbackDetail(recordId)
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>
@@ -153,5 +413,62 @@ const openScreenshotPreview = (startPosition: number) => {
 .feedback-screenshot-item {
   width: 100%;
   aspect-ratio: 1 / 1;
+}
+
+.feedback-desktop-preview-enter-active,
+.feedback-desktop-preview-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.feedback-desktop-preview-enter-from,
+.feedback-desktop-preview-leave-to {
+  opacity: 0;
+}
+
+.feedback-desktop-preview-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 100010;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 8, 14, 0.75);
+}
+
+.feedback-desktop-preview-image-wrap {
+  display: flex;
+  max-height: min(80vh, 760px);
+  max-width: min(70vw, 980px);
+  align-items: center;
+  justify-content: center;
+}
+
+.feedback-desktop-preview-image {
+  max-height: min(80vh, 760px);
+  max-width: min(70vw, 980px);
+  object-fit: contain;
+}
+
+.feedback-desktop-preview-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: flex;
+  height: 56px;
+  width: 56px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 12px;
+  background: rgba(72, 82, 90, 0.9);
+  transform: translateY(-50%);
+}
+
+.feedback-desktop-preview-nav-left {
+  left: max(20px, calc(50% - min(35vw, 490px) - 76px));
+}
+
+.feedback-desktop-preview-nav-right {
+  right: max(20px, calc(50% - min(35vw, 490px) - 76px));
 }
 </style>
