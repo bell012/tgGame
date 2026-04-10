@@ -9,7 +9,11 @@
     />
 
     <div class="px-3.5 pb-8 pt-[16px]">
-      <FeedbackTabs :active-tab="activeTab" @change="handleTabChange" />
+      <FeedbackTabs
+        :active-tab="activeTab"
+        :is-pc-mode="isEmbeddedMode"
+        @change="handleTabChange"
+      />
 
       <FeedbackCreateTab
         v-if="activeTab === 'create'"
