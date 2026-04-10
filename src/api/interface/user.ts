@@ -105,6 +105,7 @@ export interface SelectMemberResult {
   visitor: number
   withdrawAmount: number
   withdrawNumber: number
+  busiPwd: string // 交易密码
 }
 
 /**
@@ -123,6 +124,8 @@ export interface SelectMemberResponse {
 export interface ModifyMemberInfoForm {
   nickName?: string
   headPortrait?: string
+  memberPwd?: string // 新会员密码
+  busiPwd?: string //新交易密码
 }
 
 /**
@@ -163,4 +166,18 @@ export interface GameBetTotalResponse {
   message: string
   success: boolean
   result?: GameBetTotalResult
+}
+//  修改会员手机号码 请求参数
+export interface ModifyMemberTelePhoneForm {
+  telephone: string // 手机号码
+  areaCode: string // 区号
+  smsCode: string // 短信验证参数
+  phoneBindStatus: number // 是否初次绑定(绑定)手机号 0:不是，1:是
+}
+
+// 修改会员手机号码 响应
+export interface ModifyMemberTelePhoneResponse {
+  code: string
+  message: string
+  success: boolean
 }

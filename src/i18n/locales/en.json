@@ -84,7 +84,37 @@
     "unknownError": "Unknown Error",
     "sessionExpired": "Session expired, please log in again",
     "globalSetting": "Global Setting",
-    "security": "Security"
+    "security": "Security",
+    "preferences": "Preferences",
+    "changeLoginPassword": "Change Login Password",
+    "mobileVerification": "Mobile Verification",
+    "verificationCodeSentTo": "Verification code has been sent to",
+    "sendCode": "Send Code",
+    "resendCode": "Resend Code",
+    "resendInSeconds": "Resend in {seconds} seconds",
+    "didntReceiveCode": "Didn't receive the code?",
+    "didntReceiveCodeIntro": "Try the steps below:",
+    "didntReceiveCodeTip1": "Make sure your mobile number is correct.",
+    "didntReceiveCodeTip2": "Check whether SMS blocking or spam filtering is enabled on your phone.",
+    "didntReceiveCodeTip3": "Please wait a few minutes. The verification code may be delayed.",
+    "newPassword": "New Password",
+    "enterNewPassword": "Enter your new password",
+    "reEnterNewPassword": "Re-enter your new password",
+    "updatePassword": "Update Password",
+    "phoneNumberUnavailable": "Unable to get your phone number right now",
+    "gotIt": "Got it",
+    "ok": "OK",
+    "pleaseEnterThePhoneNumber": "Please enter the phone number",
+    "changeMobileNumber": "Change Mobile Number",
+    "newMobileNumber": "New Mobile Number",
+    "enterNewMobileNumber": "Enter your new mobile number",
+    "successfully": "Your mobile number has been updated successfully.",
+    "setTransactionPassword": "Set Transaction Password",
+    "changeTransactionPassword": "Change Transaction Password",
+    "transactionPassword": "Transaction Password",
+    "confirmTransactionPassword": "Confirm Transaction Password",
+    "transactionPasswordSetSuccessfully": "Your transaction password has been set successfully.",
+    "transactionPasswordChangedSuccessfully": "Your transaction password has been changed successfully."
   },
   "pwa": {
     "offlineReady": "App ready to work offline",
@@ -142,7 +172,9 @@
     "actualTurnover": "Actual Turnover",
     "requiredTurnover": "Required Turnover",
     "applicableGames": "Applicable Games",
-    "orderStatus": "Order Status"
+    "allGames": "All Games",
+    "orderStatus": "Order Status",
+    "security": "Security"
   },
   "betHistory": {
     "title": "Bet History",
@@ -723,11 +755,16 @@
     "address_list_title": "{currency} Address",
     "receiving_address_label": "{currency} Receiving Address",
     "receive_address_input_placeholder": "Enter or paste your {currency} address",
+    "network_label": "Network",
+    "receiving_address_text": "Address",
+    "default_wallet": "Default Wallet",
     "amount": "Withdraw Amount",
     "amount_placeholder": "Please enter the withdrawal amount",
     "balance": "Balance",
     "crypto_help": "How to withdraw crypto?",
     "crypto_address_notice": "Please make sure the recipient address is correct. Funds cannot be recovered if sent to the wrong address.",
+    "default_address_cannot_be_changed": "Default address cannot be changed",
+    "default_account_cannot_be_changed": "Default account cannot be changed",
     "withdraw_now": "Withdraw Now",
     "you_get": "You Get",
     "kind_reminder_title": "Kind Reminder",
@@ -735,6 +772,7 @@
     "go_to_settings": "Go to Settings",
     "do_not_set_yet": "Do not set yet",
     "payment_password": "Payment Password",
+    "verification_transaction_password": "Verification transaction password",
     "sms_verification": "SMS Verification",
     "sms_sent_to": "Verification code has been sent to",
     "resend_code": "Resend Code",
@@ -750,6 +788,8 @@
     "order_help_text": "Need help with your order?",
     "chat_with_us": "Chat with us.",
     "confirm_withdrawal": "Confirm Withdrawal",
+    "sms_code_invalid": "Invalid SMS verification code.",
+    "balance_insufficient": "Insufficient balance.",
     "pending_order_exists": "Your withdrawal request is being processed.",
     "bet_requirement_unfinished": "Please complete the turnover requirement before withdrawing.",
     "missing_account": "Please select a withdrawal account first.",
@@ -854,5 +894,48 @@
         "description": "By claiming VIP rewards, you agree to the related terms. The platform reserves the final right of interpretation."
       }
     }
+  },
+  "securitySettings": {
+    "pageTitle": "Security Settings",
+    "cards": {
+      "loginPassword": {
+        "title": "Login Password",
+        "desc": "Change your password regularly to keep your account secure.",
+        "action": "Change Login Password"
+      },
+      "transactionPassword": {
+        "title": "Transaction Password",
+        "desc": "Used to verify withdrawals and other sensitive transactions for better fund security.",
+        "action": "Set Transaction Password"
+      },
+      "mobile": {
+        "title": "Mobile Number",
+        "desc": "Verify your mobile number to improve account security and receive important alerts.",
+        "action": "Change Mobile Number"
+      },
+      "twoFactor": {
+        "title": "Two-Factor Authentication",
+        "desc": "Enable 2FA for stronger account protection against unauthorized access.",
+        "action": "Enable 2FA"
+      },
+      "passkey": {
+        "title": "Passkey",
+        "desc": "Use a passkey for a faster and more secure way to verify your identity.",
+        "action": "Enable Passkey"
+      },
+      "antiPhishing": {
+        "title": "Anti-Phishing Code",
+        "desc": "Set a personal anti-phishing code to help identify official messages and avoid scams.",
+        "action": "Set Anti-Phishing Code"
+      }
+    },
+    "menu": {
+      "security": "Security",
+      "preferences": "Preferences",
+      "personalVerification": "Personal Verification",
+      "paymentMethods": "Payment Methods",
+      "whitelistManagement": "Whitelist Management"
+    },
+    "hintNotAvailable": "Not available yet."
   }
 }

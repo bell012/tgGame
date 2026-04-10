@@ -61,6 +61,7 @@
         <a
           href="javascript:void(0);"
           class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2"
+          @click.prevent="handleGameClick(value)"
         >
           <div class="w-full h-full">
             <gameErrImg :img="value.img" />
@@ -105,6 +106,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './peopleNumber.svg?component'
+import { navigateToName } from '@/utils/router'
 interface GameItemImage {
   img: {
     maintain: boolean
@@ -114,6 +116,7 @@ interface GameItemImage {
 }
 
 interface RawGameItem extends Partial<GameItemImage> {
+  rowId?: string | number
   itemName?: string
   platformName?: string
   number?: number | string
@@ -126,6 +129,7 @@ interface RawGameItem extends Partial<GameItemImage> {
 }
 
 interface NormalizedGameItem {
+  rowId: string
   img: {
     maintain: boolean
     src?: string
@@ -174,6 +178,7 @@ const normalizedList = computed<NormalizedGameItem[]>(() => {
     const sourceImage = item.img?.src ?? item.img?.conUrl ?? toImageUrl(fallbackImage)
 
     return {
+      rowId: String(item.rowId ?? '').trim(),
       img: {
         maintain: Boolean(item.img?.maintain ?? false),
         src: sourceImage
@@ -237,6 +242,18 @@ const scrollPrev = () => {
   const unit = getScrollUnit(el)
   el.scrollBy({ left: -unit, behavior: 'smooth' })
   setTimeout(updateButtons, 350)
+}
+
+const handleGameClick = (item: NormalizedGameItem) => {
+  if (!item.rowId) {
+    return
+  }
+
+  navigateToName('gameDetail', {
+    params: {
+      rowId: item.rowId
+    }
+  })
 }
 </script>
 

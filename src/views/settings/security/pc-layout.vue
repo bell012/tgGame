@@ -1,7 +1,105 @@
 <template>
-  <div>安全性PC布局</div>
+  <div class="security-settings p-6">
+    <h1 class="text-sm font-bold text-text-1 pb-6 mb-2.5 border-b border-opacity-5 required">
+      {{ t('securitySettings.pageTitle') }}
+    </h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+      <div
+        v-for="card in cards"
+        :key="card.cardKey"
+        class="rounded-xl bg-bg-3 p-5 md:p-6 flex flex-col min-h-[200px] border border-transparent hover:border-opacity-10 hover:border-[var(--color-opacity-15)] transition-colors"
+      >
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <component :is="card.icon" class="w-9 h-9 shrink-0 text-icon-2" />
+          <div
+            v-if="card.active"
+            class="flex h-7 w-7 items-center justify-center rounded-full bg-[#2AEE88]/15"
+            aria-hidden="true"
+          >
+            <SuccessIcon class="w-4 h-4" />
+          </div>
+          <div
+            v-else
+            class="flex h-7 w-7 items-center justify-center rounded-full bg-[#FF9822]/15"
+            aria-hidden="true"
+          >
+            <WarningIcon class="w-4 h-4" />
+          </div>
+        </div>
+        <h2 class="text-base font-bold text-text-1 mb-2">
+          {{ t(`securitySettings.cards.${card.cardKey}.title`) }}
+        </h2>
+        <p class="text-xs md:text-sm text-text-2 leading-relaxed mb-5 flex-1">
+          {{ t(`securitySettings.cards.${card.cardKey}.desc`) }}
+        </p>
+        <button
+          type="button"
+          :class="[
+            'w-full h-10 rounded-lg text-sm font-bold shrink-0',
+            card.active ? 'security-btn-secondary' : 'bg-theme-primary text-text-4'
+          ]"
+          @click="handleOpenChangeLoginPassword(card.cardKey)"
+        >
+          {{ t(`securitySettings.cards.${card.cardKey}.action`) }}
+        </button>
+      </div>
+    </div>
+    <ChangeLoginPasswordPcLayout v-model="showChangeLoginPasswordPopup" />
+    <!-- 修改手机号码弹窗 -->
+    <ChangeMobileNumberPcLayout v-model="showChangeMobileNumberPopup" />
+    <!-- 交易密码弹窗 -->
+    <TransactionPassword v-model="showTransactionPasswordPopup" />
+  </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
+import ChangeLoginPasswordPcLayout from '../changeLoginPassword/pc-layout.vue'
+import ChangeMobileNumberPcLayout from '../changeMobileNumber/pc-layout.vue'
+import TransactionPassword from '../transactionPassword/pc-layout.vue'
+import SuccessIcon from '@/static/svg/security/success.svg?component'
+import WarningIcon from '@/static/svg/security/warning.svg?component'
+import { useSecurityCards, type SecurityCardKey } from '@/composables/useSecurityCards'
 
-<style scoped lang="scss"></style>
+const { t } = useI18n()
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
+const { cards } = useSecurityCards(userInfo)
+
+// 修改登录密码弹窗
+const showChangeLoginPasswordPopup = ref(false)
+// 修改手机号码弹窗
+const showChangeMobileNumberPopup = ref(false)
+// 交易密码弹窗
+const showTransactionPasswordPopup = ref(false)
+/**
+ * 打开 PC 修改登录密码弹窗。
+ */
+const handleOpenChangeLoginPassword = (_key: SecurityCardKey) => {
+  switch (_key) {
+    case 'loginPassword':
+      showChangeLoginPasswordPopup.value = true
+      break
+    case 'mobile':
+      showChangeMobileNumberPopup.value = true
+      break
+    default:
+      showTransactionPasswordPopup.value = true
+      break
+  }
+}
+</script>
+
+<style scoped lang="scss">
+.security-btn-secondary {
+  color: var(--color-text-level-2);
+  font-weight: 700;
+  background-color: var(--color-background-level-2);
+  border: 1px solid var(--color-opacity-15);
+  cursor: pointer;
+  box-shadow: none;
+}
+</style>

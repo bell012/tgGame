@@ -27,6 +27,7 @@
       :amount="amount"
       :currency-code="currencyCode"
       :loading="isSubmitting"
+      :show-amount-section="true"
       @confirm="handlePaymentPasswordConfirm"
     />
     <withdrawSmsVerificationPop
@@ -34,7 +35,11 @@
       :amount="amount"
       :currency-code="currencyCode"
       :phone-number="maskedPhoneNumber"
-      :loading="isSubmitting"
+      :sending="isSendingSmsCode"
+      :loading="isCheckingSmsCode || isSubmitting"
+      :countdown-trigger="smsCountdownTrigger"
+      :show-amount-section="true"
+      @resend="handleSmsVerificationResend"
       @confirm="handleSmsVerificationConfirm"
     />
     <withdrawOrderPop
@@ -44,6 +49,7 @@
       :order-no="orderNo"
       :created-at="createdAt"
       :method-label="resolvedOrderMethodLabel"
+      :method-icon="resolvedOrderMethodIcon"
       @close="closeWithdrawOrder"
     />
   </div>
@@ -60,6 +66,7 @@ import withdrawPaymentPasswordPop from '@/components/withdraw/withdrawPaymentPas
 import withdrawSmsVerificationPop from '@/components/withdraw/withdrawSmsVerificationPop.vue'
 import withdrawOrderPop from '@/components/withdraw/withdrawOrderPop.vue'
 import { useWithdrawFlow } from '@/components/withdraw/shared/useWithdrawFlow'
+import { navigateToName } from '@/utils/router'
 import WalletLayout from '../index.vue'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 
@@ -70,7 +77,10 @@ const {
   paymentPasswordVisible,
   smsVerificationVisible,
   withdrawOrderVisible,
+  isSendingSmsCode,
+  isCheckingSmsCode,
   isSubmitting,
+  smsCountdownTrigger,
   amount,
   currencyCode,
   maskedPhoneNumber,
@@ -80,10 +90,12 @@ const {
   createdAt,
   orderAmountText,
   orderMethodLabel,
+  orderMethodIcon,
   beginWithdrawFlow,
   handleKindReminderSkip,
   handleKindReminderSettings,
   handlePaymentPasswordConfirm,
+  handleSmsVerificationResend,
   handleSmsVerificationConfirm,
   closeWithdrawOrder
 } = useWithdrawFlow()
@@ -98,13 +110,12 @@ const resolvedOrderAmountText = computed(
 const resolvedOrderMethodLabel = computed(
   () => orderMethodLabel.value || fallbackOrderMethodLabel.value
 )
+const resolvedOrderMethodIcon = computed(
+  () => orderMethodIcon.value || activePayload.value?.methodIcon || ''
+)
 
 const openWithdrawOrder = () => {
-  if (!activePayload.value || !orderNo.value) {
-    return
-  }
-
-  withdrawOrderVisible.value = true
+  void navigateToName('my-orders')
 }
 </script>
 <style scoped lang="scss"></style>

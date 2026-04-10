@@ -5,13 +5,14 @@ import type {
   SubmitTransferOrderResult,
   WithdrawOrderDetail
 } from '@/api/interface/withdraw'
+import { formatTimestamp } from '@/utils/date'
 import { StringExtension } from '@/utils/string-extension'
 import type { WithdrawOrderStatus, WithdrawSubmitPayload } from './types'
 
 export interface SubmitWithdrawWorkflowParams {
   payload: WithdrawSubmitPayload
-  verifyCode?: string
   modifyBy?: string
+  hashModifyBy?: boolean
   withdrawNumber?: number
 }
 
@@ -21,20 +22,23 @@ export interface WithdrawOrderViewData {
   amountText: string
   createdAt: string
   methodLabel: string
+  methodIcon: string
   status: WithdrawOrderStatus
 }
 
-const WITHDRAW_CHANNEL_ID = 4
+const getAccountNo = (payload: WithdrawSubmitPayload) => payload.accountRowId ?? ''
 
-const getAccountNo = (payload: WithdrawSubmitPayload) => {
-  return payload.accountRowId ?? payload.address ?? ''
-}
-
-const getColumnCode = (payload: WithdrawSubmitPayload) => {
-  return payload.paymentCode ?? payload.methodLabel
-}
+const getColumnCode = (payload: WithdrawSubmitPayload) => payload.paymentCode ?? ''
 
 const getCurrencyCode = (payload: WithdrawSubmitPayload) => payload.currencyCode || 'PHP'
+
+const getDisplayCreateTime = (
+  detail?: WithdrawOrderDetail | null,
+  submitResult?: SubmitTransferOrderResult
+) =>
+  formatTimestamp(
+    (detail?.createTime ?? submitResult?.createTime ?? null) as string | number | null | undefined
+  )
 
 const formatAmountText = (amount: string | number | undefined, currencyCode: string) => {
   const nextAmount = Number(amount ?? 0)
@@ -48,12 +52,7 @@ const normalizeOrderStatus = (status: unknown): WithdrawOrderStatus => {
     .trim()
     .toLowerCase()
 
-  if (
-    normalized === 'success' ||
-    normalized === 'completed' ||
-    normalized === 'complete' ||
-    normalized === '2'
-  ) {
+  if (normalized === '3') {
     return 'completed'
   }
 
@@ -73,8 +72,9 @@ const buildOrderViewData = ({
   const amountText = formatAmountText(detail?.busiAmount ?? payload.amount, currencyCode)
   const orderId = String(detail?.orderId ?? submitResult?.orderId ?? '')
   const orderNo = String(detail?.orderNo ?? submitResult?.orderNo ?? orderId)
-  const createdAt = String(detail?.createTime ?? new Date().toLocaleString('en-US'))
+  const createdAt = getDisplayCreateTime(detail, submitResult)
   const methodLabel = String(detail?.paymentName ?? payload.methodLabel ?? '')
+  const methodIcon = String(payload.methodIcon ?? '')
 
   return {
     orderId,
@@ -82,14 +82,15 @@ const buildOrderViewData = ({
     amountText,
     createdAt,
     methodLabel,
+    methodIcon,
     status: normalizeOrderStatus(detail?.status ?? submitResult?.status)
   }
 }
 
 const buildSubmitTransferOrderForm = ({
   payload,
-  verifyCode,
   modifyBy,
+  hashModifyBy = true,
   withdrawNumber = 0
 }: SubmitWithdrawWorkflowParams): SubmitTransferOrderForm => {
   const accountNo = getAccountNo(payload)
@@ -99,11 +100,10 @@ const buildSubmitTransferOrderForm = ({
     busiAmount: String(payload.amount),
     accountNo,
     withdrawNumber,
-    channelId: WITHDRAW_CHANNEL_ID,
+    channelId: payload.channelId,
     columnCode,
     currencyCode: getCurrencyCode(payload),
-    ...(verifyCode ? { verifyCode } : {}),
-    ...(modifyBy ? { modifyBy: StringExtension.md5(modifyBy) } : {})
+    ...(modifyBy ? { modifyBy: hashModifyBy ? StringExtension.md5(modifyBy) : modifyBy } : {})
   }
 }
 
@@ -141,7 +141,17 @@ export const queryWithdrawSubmissionConfig = async (
 export const submitWithdrawWorkflow = async (
   params: SubmitWithdrawWorkflowParams
 ): Promise<WithdrawOrderViewData> => {
+  const nextAmount = Number(params.payload.amount ?? 0)
+  const nextBalanceAmount = Number(params.payload.balanceAmount ?? 0)
   const accountNo = getAccountNo(params.payload)
+
+  if (
+    Number.isFinite(nextAmount) &&
+    Number.isFinite(nextBalanceAmount) &&
+    nextAmount > nextBalanceAmount
+  ) {
+    throw new Error('withdraw.balance_insufficient')
+  }
 
   if (!accountNo) {
     throw new Error('withdraw.missing_account')
@@ -149,10 +159,14 @@ export const submitWithdrawWorkflow = async (
 
   await ensureNoPendingWithdrawOrder()
   await ensureWithdrawTurnoverRequirement()
-  await queryWithdrawSubmissionConfig(params.payload)
+  const submissionConfig = await queryWithdrawSubmissionConfig(params.payload)
+  const nextWithdrawNumber = Number(submissionConfig?.mandatoryPayment ?? 0) === 1 ? 1 : 0
 
   const submitResponse = await Api.withdraw.submitTransferOrder(
-    buildSubmitTransferOrderForm(params)
+    buildSubmitTransferOrderForm({
+      ...params,
+      withdrawNumber: nextWithdrawNumber
+    })
   )
   const submitResult = submitResponse?.result
   const orderId = submitResult?.orderId

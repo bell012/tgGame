@@ -44,6 +44,8 @@ export default {
         'mask-40': 'var(--color-mask-40)',
         'mask-60-1': 'var(--color-mask-60-1)',
         'mask-80-2': 'var(--color-mask-80-2)',
+        'mask-96-3': 'var(--color-mask-96-3)',
+        'mask-100-4': 'var(--color-mask-100-4)',
 
         // ========== 次要色 (Secondary) ==========
         'secondary-1': 'var(--color-secondary-level-1)',

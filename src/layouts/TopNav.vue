@@ -70,8 +70,8 @@
             <div class="flex items-center justify-center cursor-pointer ml-1">
               <div class="w-10 h-10 mr-1">
                 <img
-                  src="/src/static/img/flag/php.png"
-                  alt="php"
+                  :src="currentCurrencyIcon"
+                  :alt="currentCurrencyCode"
                   class="w-full h-full object-cover"
                 />
               </div>
@@ -99,8 +99,8 @@
             <div class="flex items-center justify-center cursor-pointer ml-1">
               <div class="w-5 h-5 mr-1">
                 <img
-                  src="/src/static/img/flag/php.png"
-                  alt="php"
+                  :src="currentCurrencyIcon"
+                  :alt="currentCurrencyCode"
                   class="w-full h-full object-cover"
                 />
               </div>
@@ -256,7 +256,12 @@ import GiftIcon from '@/static/svg/login/gift.svg?component'
 import BellIcon from '@/static/svg/bell.svg?component'
 import Jia from '@/static/svg/login/jia.svg?component'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
-import { getCurrencySymbol, formatBalance, type Locale } from '@/utils/locale'
+import {
+  getCurrencyImageByCode,
+  getCurrencySymbol,
+  formatBalance,
+  type Locale
+} from '@/utils/locale'
 
 const { t } = useI18n()
 const authModalStore = useAuthModalStore()
@@ -290,6 +295,16 @@ const isLoggedIn = computed(() => {
 // 用户头像 URL
 const avatarUrl = computed(() => {
   return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
+})
+
+// 当前币种代码
+const currentCurrencyCode = computed(() => {
+  return String(userInfo.value?.currency || 'PHP').toUpperCase()
+})
+
+// 当前币种图片
+const currentCurrencyIcon = computed(() => {
+  return getCurrencyImageByCode(currentCurrencyCode.value)
 })
 
 const handleStorageChange = () => {

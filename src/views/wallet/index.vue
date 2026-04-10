@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, markRaw } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateTo } from '@/utils/router'
 import CommonFooter from '@/components/commonFooter.vue'
@@ -46,7 +46,15 @@ import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
 import OrderIcon from '@/static/svg/deposit/record.svg?component'
 import Transaction from '@/static/svg/personalCenter/icon6.svg?component'
 import Rollover from '@/static/svg/personalCenter/icon7.svg?component'
-type WalletTab = 'bet-history' | 'deposit' | 'withdraw' | 'my-orders' | 'transaction' | 'rollover'
+import Security from '@/static/svg/security/password.svg?component'
+type WalletTab =
+  | 'bet-history'
+  | 'deposit'
+  | 'withdraw'
+  | 'my-orders'
+  | 'transaction'
+  | 'rollover'
+  | 'security-situation'
 
 defineProps<{
   currentTab: WalletTab
@@ -59,37 +67,43 @@ const menuItems = computed(() => [
     path: '/bet-history',
     tab: 'bet-history' as WalletTab,
     label: t('wallet.betHistory'),
-    icon: BetSvg
+    icon: markRaw(BetSvg)
   },
   {
     path: '/deposit',
     tab: 'deposit' as WalletTab,
     label: t('wallet.deposit'),
-    icon: DepositIocn
+    icon: markRaw(DepositIocn)
   },
   {
     path: '/withdraw',
     tab: 'withdraw' as WalletTab,
     label: t('wallet.withdraw'),
-    icon: WithdrawIcon
+    icon: markRaw(WithdrawIcon)
   },
   {
     path: '/my-orders',
     tab: 'my-orders' as WalletTab,
     label: t('wallet.myOrders'),
-    icon: OrderIcon
+    icon: markRaw(OrderIcon)
   },
   {
     path: '/transaction',
     tab: 'transaction' as WalletTab,
     label: t('personalCenter.transaction'),
-    icon: Transaction
+    icon: markRaw(Transaction)
   },
   {
     path: '/rollover',
     tab: 'rollover' as WalletTab,
     label: t('wallet.rollover'),
-    icon: Rollover
+    icon: markRaw(Rollover)
+  },
+  {
+    path: '/security-situation',
+    tab: 'security-situation' as WalletTab,
+    label: t('wallet.security'),
+    icon: markRaw(Security)
   }
 ])
 
