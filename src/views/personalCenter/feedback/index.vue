@@ -1,6 +1,12 @@
 <template>
-  <div class="fixed inset-0 overflow-y-auto bg-bg-1">
-    <H5Header title="意见反馈" />
+  <div :class="feedbackPageContainerClass">
+    <H5Header
+      title="意见反馈"
+      :show-back="!isEmbeddedMode"
+      :disable-default-back="isEmbeddedMode"
+      :fixed-top="!isEmbeddedMode"
+      @back="handleFeedbackPageBack"
+    />
 
     <div class="px-3.5 pb-8 pt-[16px]">
       <div class="mb-3.5 grid grid-cols-2 gap-0.5 rounded-[10px] bg-bg-2 p-0.5">
@@ -250,6 +256,19 @@ import { feedbackStatusClassMap, feedbackStatusTextMap, type FeedbackStatus } fr
 
 type FeedbackTab = 'create' | 'mine'
 
+const props = withDefaults(
+  defineProps<{
+    embedded?: boolean
+  }>(),
+  {
+    embedded: false
+  }
+)
+
+const emit = defineEmits<{
+  close: []
+}>()
+
 const activeTab = ref<FeedbackTab>('create')
 const router = useRouter()
 const selectedType = ref('1')
@@ -266,6 +285,12 @@ const claimSuccessAmount = ref(`${claimAmountCurrencySymbol}0.00`)
 let claimAmountAnimationFrame: number | null = null
 const feedbackUploadMaxCount = 4
 const feedbackUploadCount = computed(() => uploadedFeedbackUrls.value.filter(Boolean).length)
+const isEmbeddedMode = computed(() => Boolean(props.embedded))
+const feedbackPageContainerClass = computed(() => {
+  return isEmbeddedMode.value
+    ? 'relative h-full overflow-y-auto bg-bg-1'
+    : 'fixed inset-0 overflow-y-auto bg-bg-1'
+})
 const myFeedbackList = ref<
   Array<{
     recordId: string
@@ -553,6 +578,14 @@ const goToFeedbackDetail = (recordId: string) => {
     name: 'personal-center-feedback-detail',
     params: { recordId }
   })
+}
+
+const handleFeedbackPageBack = () => {
+  if (!isEmbeddedMode.value) {
+    return
+  }
+
+  emit('close')
 }
 
 onBeforeUnmount(() => {

@@ -94,7 +94,7 @@ export function modifyMemberTelePhone(
  */
 export function sendFeedback(data: SendFeedbackForm): Promise<SendFeedbackResponse> {
   return request({
-    url: '/mc/sendFeedback',
+    url: '/f/sendFeedback',
     method: 'post',
     data
   })
@@ -107,7 +107,7 @@ export function sendFeedback(data: SendFeedbackForm): Promise<SendFeedbackRespon
  */
 export function queryFeedbacks(data: QueryFeedbacksForm): Promise<QueryFeedbacksResponse> {
   return request({
-    url: '/mc/queryFeedbacks',
+    url: '/f/queryFeedbacks',
     method: 'post',
     data
   })
