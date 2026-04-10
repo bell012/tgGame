@@ -311,6 +311,27 @@
         </template>
       </div>
 
+      <!-- Leave Feedback -->
+      <div
+        :class="[
+          'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-1',
+          { 'relative menu-item-collapsed justify-center': isCollapsed },
+          { 'launch-card-active': activeMenuId === 'leave-feedback' }
+        ]"
+        :data-tooltip="isCollapsed ? t('personalCenter.leaveFeedback') : ''"
+        @mouseenter="e => isCollapsed && updateTooltipPosition(e)"
+        @click="handleLeaveFeedbackClick"
+      >
+        <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
+          <div class="w-10 h-10 flex items-center justify-center">
+            <component :is="support.ceo_inbox" class="w-6 h-6 fill-none" />
+          </div>
+          <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">
+            {{ t('personalCenter.leaveFeedback') }}
+          </span>
+        </div>
+      </div>
+
       <!-- 线上客服 -->
       <div
         :class="[
@@ -428,6 +449,28 @@
       </div>
     </div>
 
+    <!-- Leave Feedback 弹窗 -->
+    <teleport to="body">
+      <transition name="leave-feedback-modal">
+        <div
+          v-if="showLeaveFeedbackModal"
+          class="leave-feedback-modal-mask"
+          @click.self="handleCloseLeaveFeedbackModal"
+        >
+          <div class="leave-feedback-modal-card">
+            <button
+              type="button"
+              class="leave-feedback-modal-close"
+              @click="handleCloseLeaveFeedbackModal"
+            >
+              <CloseIcon class="h-3.5 w-3.5 stroke-text-1" />
+            </button>
+            <FeedbackPage embedded @close="handleCloseLeaveFeedbackModal" />
+          </div>
+        </div>
+      </transition>
+    </teleport>
+
     <!-- 三级菜单悬浮面板 -->
     <teleport to="body">
       <div
@@ -470,6 +513,7 @@ import Arrow_down from '@/static/svg/arrow_down.svg?component'
 import Arrow_right from '@/static/svg/arrow_right.svg?component'
 import External from '@/static/svg/external.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
+import CloseIcon from '@/static/svg/close.svg?component'
 import { sideIcons } from '@/static/svg/side'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
@@ -477,6 +521,7 @@ import { useThemeStore } from '@/stores/theme'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
 import { getLocaleLabel } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
 import type { Component } from 'vue'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -524,6 +569,7 @@ const activeMenuId = ref<string>('')
 
 // 当前选中的三级菜单
 const activeThirdLevelMenuId = ref<string>('')
+const showLeaveFeedbackModal = ref(false)
 
 // 当前悬浮的子菜单
 const hoveredSubmenu = ref<{ parentId: string; itemId: string } | null>(null)
@@ -594,6 +640,15 @@ const handleNormalLinkClick = (link: any) => {
 const handleCustomerServiceClick = () => {
   activeMenuId.value = 'customer-service'
   console.log('打开线上客服')
+}
+
+const handleLeaveFeedbackClick = () => {
+  activeMenuId.value = 'leave-feedback'
+  showLeaveFeedbackModal.value = true
+}
+
+const handleCloseLeaveFeedbackModal = () => {
+  showLeaveFeedbackModal.value = false
 }
 
 // 子菜单悬浮
@@ -1266,5 +1321,64 @@ onMounted(() => {
 
 .submenu-popup-item-active {
   background: linear-gradient(90deg, rgba(36 238 137 / 0.2), #23ee8800);
+}
+
+.leave-feedback-modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(3, 10, 18, 0.65);
+}
+
+.leave-feedback-modal-card {
+  position: relative;
+  width: min(100%, 520px);
+  height: min(88vh, 760px);
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);
+}
+
+.leave-feedback-modal-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 2;
+  display: flex;
+  height: 26px;
+  width: 26px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-opacity-10);
+  cursor: pointer;
+}
+
+.leave-feedback-modal-enter-active,
+.leave-feedback-modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.leave-feedback-modal-enter-active .leave-feedback-modal-card,
+.leave-feedback-modal-leave-active .leave-feedback-modal-card {
+  transition:
+    transform 0.22s ease,
+    opacity 0.2s ease;
+}
+
+.leave-feedback-modal-enter-from,
+.leave-feedback-modal-leave-to {
+  opacity: 0;
+}
+
+.leave-feedback-modal-enter-from .leave-feedback-modal-card,
+.leave-feedback-modal-leave-to .leave-feedback-modal-card {
+  transform: translateY(10px) scale(0.96);
+  opacity: 0;
 }
 </style>
