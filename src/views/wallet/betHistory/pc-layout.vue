@@ -58,14 +58,16 @@
         >
           {{ $t('common.requestError') }}
         </div>
-
-        <div
+        <!-- 空状态 -->
+        <ThemedEmptyState
           v-else-if="!loading && dataList.length === 0"
-          class="flex h-[520px] flex-col items-center justify-center"
-        >
-          <img :src="noDataImg" alt="No data" class="mb-2.5 h-[200px] w-auto" />
-          <p class="text-text-1 text-sm font-[700]">{{ $t('common.noData') }}</p>
-        </div>
+          :dark-image="noDataImg"
+          :image-alt="$t('common.noData')"
+          :message="$t('common.noData')"
+          container-class="h-[520px] justify-center"
+          image-class="mb-2.5 h-[200px] w-auto"
+          text-class="text-text-1 text-sm font-[700]"
+        />
 
         <template v-else>
           <div
@@ -115,6 +117,7 @@ import Api from '@/api'
 import { useI18n } from 'vue-i18n'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import BetDetailsModal from '../betDetails/BetDetailsModal.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import noDataImg from '@/static/img/personalCenter/noData.png'

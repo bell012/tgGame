@@ -6,6 +6,7 @@
     :items="selectableItems"
     :selected-id="selectedId"
     :icon="icon"
+    :show-add-button="showAddButton"
     :desktop-dropdown-height="180"
     @select="emit('select', $event)"
     @add="emit('add')"
@@ -25,6 +26,7 @@ interface Props {
   selectedId?: string | null
   currencyCode: string
   icon: string
+  showAddButton?: boolean
 }
 
 const props = defineProps<Props>()

@@ -1,5 +1,6 @@
 export type OrderBizType = 'deposit' | 'withdraw'
 export type OrderStatusRaw = number | string | null | undefined
+export type OrderStatusTone = 'success' | 'failed' | 'processing'
 
 const ORDER_STATUS_I18N_KEY_MAP: Record<OrderBizType, Record<number, string>> = {
   deposit: {
@@ -47,6 +48,30 @@ const ORDER_STATUS_LEGACY_ALIAS: Record<OrderBizType, Record<string, number>> = 
   }
 }
 
+const ORDER_STATUS_TONE_MAP: Record<OrderBizType, Record<number, OrderStatusTone>> = {
+  deposit: {
+    1: 'success',
+    2: 'failed'
+  },
+  withdraw: {
+    3: 'success',
+    2: 'failed',
+    5: 'failed'
+  }
+}
+
+const ORDER_STATUS_TONE_CLASS_MAP: Record<OrderStatusTone, string> = {
+  success: 'text-assistGreen',
+  failed: 'text-assistRed',
+  processing: 'text-assistOrange'
+}
+
+const ORDER_STATUS_TONE_CSS_VAR_MAP: Record<OrderStatusTone, string> = {
+  success: 'var(--color-assist-green)',
+  failed: 'var(--color-assist-red)',
+  processing: 'var(--color-assist-orange)'
+}
+
 export const normalizeOrderStatusCode = (bizType: OrderBizType, status: OrderStatusRaw) => {
   if (typeof status === 'number' && Number.isFinite(status)) {
     return status
@@ -81,6 +106,22 @@ export const getOrderStatusText = (
   status: OrderStatusRaw,
   t: (key: string) => string
 ) => t(getOrderStatusI18nKey(bizType, status))
+
+export const getOrderStatusTone = (
+  bizType: OrderBizType,
+  status: OrderStatusRaw
+): OrderStatusTone => {
+  const code = normalizeOrderStatusCode(bizType, status)
+  if (code === undefined) return 'processing'
+  return ORDER_STATUS_TONE_MAP[bizType][code] ?? 'processing'
+}
+
+export const getOrderStatusColorClass = (bizType: OrderBizType, status: OrderStatusRaw) =>
+  ORDER_STATUS_TONE_CLASS_MAP[getOrderStatusTone(bizType, status)]
+
+export const getOrderStatusColorStyle = (bizType: OrderBizType, status: OrderStatusRaw) => ({
+  color: ORDER_STATUS_TONE_CSS_VAR_MAP[getOrderStatusTone(bizType, status)]
+})
 
 export const isOrderTerminalStatus = (bizType: OrderBizType, status: OrderStatusRaw) => {
   const code = normalizeOrderStatusCode(bizType, status)

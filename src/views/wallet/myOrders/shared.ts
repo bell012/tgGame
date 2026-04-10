@@ -1,14 +1,19 @@
+import type {
+  QueryMemberPayOrderPageForm,
+  QueryMemberPayOrderPageRecord
+} from '@/api/interface/wallet'
+import { getOrderStatusColorClass, getOrderStatusText } from '@/constants/orderStatus'
+import usdtIcon from '@/static/img/crypto/USDT.png'
 import gCashIcon from '@/static/img/payment/gCash.png'
 import grabPayIcon from '@/static/img/payment/grabPay.png'
 import mayaIcon from '@/static/img/payment/maya.png'
-import usdtIcon from '@/static/img/crypto/USDT.png'
 import shopeePayIcon from '@/static/svg/coin/shopeePay.svg?url'
 import { getFormattedBalance } from '@/utils/locale'
 
 type TranslateFn = (key: string) => string
 
 export type OrderTab = 'deposits' | 'withdrawals'
-export type OrderStatus = 'Success' | 'Failed' | 'Processing'
+export type OrderStatus = string
 export type OrderTimeFilter =
   | 'all'
   | 'today'
@@ -30,37 +35,7 @@ export interface MyOrdersFilterValues {
   status: OrderStatusFilter
 }
 
-export interface MyOrderItem {
-  id: string
-  tab: OrderTab
-  typeValue: Exclude<OrderTypeFilter, 'all'>
-  typeLabel: string
-  icon: string
-  currency: string
-  amount: number
-  paymentAmount: number
-  bonusAmount: number
-  orderNo: string
-  status: OrderStatus
-  createdAt: string
-  timeLabel: string
-  timeGroup: Exclude<OrderTimeFilter, 'all'>
-}
-
-export interface MyOrdersPageResult {
-  items: MyOrderItem[]
-  total: number
-}
-
-export const MY_ORDERS_PAGE_SIZE = 10
-
-const TYPE_LABEL_MAP: Record<Exclude<OrderTypeFilter, 'all'>, string> = {
-  gcash: 'GCash',
-  maya: 'Maya',
-  grabpay: 'GrabPay',
-  shopeepay: 'ShopeePay',
-  usdt: 'USDT'
-}
+export const MY_ORDERS_PAGE_SIZE = 20
 
 const TYPE_ICON_MAP: Record<Exclude<OrderTypeFilter, 'all'>, string> = {
   gcash: gCashIcon,
@@ -94,8 +69,8 @@ export const createMyOrdersTimeOptions = (t: TranslateFn): SelectOption[] => [
 /**
  * 创建类型筛选项。
  */
-export const createMyOrdersTypeOptions = (): SelectOption[] => [
-  { label: 'All', value: 'all' },
+export const createMyOrdersTypeOptions = (t: TranslateFn): SelectOption[] => [
+  { label: t('betHistory.filterOptions.all'), value: 'all' },
   { label: 'GCash', value: 'gcash' },
   { label: 'Maya', value: 'maya' },
   { label: 'GrabPay', value: 'grabpay' },
@@ -106,11 +81,11 @@ export const createMyOrdersTypeOptions = (): SelectOption[] => [
 /**
  * 创建状态筛选项。
  */
-export const createMyOrdersStatusOptions = (): SelectOption[] => [
-  { label: 'All', value: 'all' },
-  { label: 'Success', value: 'success' },
-  { label: 'Failed', value: 'failed' },
-  { label: 'Processing', value: 'processing' }
+export const createMyOrdersStatusOptions = (t: TranslateFn): SelectOption[] => [
+  { label: t('betHistory.filterOptions.all'), value: 'all' },
+  { label: t('deposit.status.success'), value: 'success' },
+  { label: t('deposit.status.failed'), value: 'failed' },
+  { label: t('deposit.status.processing'), value: 'processing' }
 ]
 
 /**
@@ -120,363 +95,206 @@ export const formatOrderAmount = (amount: number, currency: string) =>
   getFormattedBalance(amount, currency, 2)
 
 /**
- * 根据订单状态返回筛选值。
+ * 复制文本，优先使用 Clipboard API，失败时降级为 execCommand。
  */
-export const toStatusFilterValue = (status: OrderStatus): OrderStatusFilter => {
-  const normalized = status.toLowerCase()
-  if (normalized === 'success') return 'success'
-  if (normalized === 'failed') return 'failed'
-  return 'processing'
+export const copyTextWithFallback = async (value: string): Promise<boolean> => {
+  if (!value) return false
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value)
+      return true
+    }
+  } catch {
+    // Fall through to the legacy copy path.
+  }
+
+  if (typeof document === 'undefined') return false
+
+  const textarea = document.createElement('textarea')
+  textarea.value = value
+  textarea.setAttribute('readonly', 'true')
+  textarea.style.position = 'absolute'
+  textarea.style.left = '-9999px'
+  document.body.appendChild(textarea)
+  textarea.select()
+  const copied = document.execCommand('copy')
+  document.body.removeChild(textarea)
+  return copied
 }
 
 /**
- * 过滤订单列表。
+ * 解析支付方式名称，兼容 JSON 字符串和纯文本。
  */
-export const filterMyOrders = (
-  items: MyOrderItem[],
-  filters: MyOrdersFilterValues
-): MyOrderItem[] => {
-  return items.filter(item => {
-    const matchTime = filters.time === 'all' || item.timeGroup === filters.time
-    const matchType = filters.type === 'all' || item.typeValue === filters.type
-    const matchStatus =
-      filters.status === 'all' || toStatusFilterValue(item.status) === filters.status
-    return matchTime && matchType && matchStatus
-  })
+export const parseOrderMethodName = (subColumnName?: unknown, localeKey = 'eng') => {
+  if (typeof subColumnName !== 'string' || !subColumnName) return ''
+
+  try {
+    const parsedName = JSON.parse(subColumnName)
+
+    return (
+      parsedName?.[localeKey] ||
+      parsedName?.eng ||
+      parsedName?.en ||
+      parsedName?.zh ||
+      subColumnName
+    )
+  } catch {
+    return subColumnName
+  }
+}
+
+const resolveTypeValueByMethodName = (methodName: string): Exclude<OrderTypeFilter, 'all'> => {
+  const normalized = methodName.trim().toLowerCase()
+
+  if (normalized.includes('gcash')) return 'gcash'
+  if (normalized.includes('maya')) return 'maya'
+  if (normalized.includes('grabpay') || normalized.includes('grab pay')) return 'grabpay'
+  if (normalized.includes('shopeepay') || normalized.includes('shopee pay')) return 'shopeepay'
+  return 'usdt'
 }
 
 /**
- * 截取分页数据。
+ * 返回订单支付方式筛选值。
  */
-export const sliceMyOrdersByPage = (
-  items: MyOrderItem[],
-  page: number,
-  pageSize: number
-): MyOrdersPageResult => {
-  const safePage = Math.max(1, page)
-  const safePageSize = Math.max(1, pageSize)
-  const start = (safePage - 1) * safePageSize
+export const getMyOrderTypeValue = (
+  record: QueryMemberPayOrderPageRecord,
+  localeKey = 'eng'
+): Exclude<OrderTypeFilter, 'all'> =>
+  resolveTypeValueByMethodName(parseOrderMethodName(record.subColumnName, localeKey))
+
+/**
+ * 返回订单支付方式名称。
+ */
+export const getMyOrderTypeLabel = (record: QueryMemberPayOrderPageRecord, localeKey = 'eng') =>
+  parseOrderMethodName(record.subColumnName, localeKey)
+
+/**
+ * 返回订单支付方式图标。
+ */
+export const getMyOrderTypeIcon = (record: QueryMemberPayOrderPageRecord, localeKey = 'eng') =>
+  TYPE_ICON_MAP[getMyOrderTypeValue(record, localeKey)]
+
+/**
+ * 格式化订单时间。
+ */
+export const formatMyOrderTime = (timestamp?: number) => {
+  if (!timestamp) return ''
+  return new Date(timestamp).toLocaleString()
+}
+
+/**
+ * 返回订单状态展示文案。
+ */
+export const getMyOrderStatusText = (
+  tab: OrderTab,
+  status: number | string | null | undefined,
+  t: TranslateFn
+) => getOrderStatusText(tab === 'deposits' ? 'deposit' : 'withdraw', status, t)
+
+/**
+ * 返回订单状态文本颜色类。
+ */
+export const getMyOrderStatusClass = (tab: OrderTab, status: number | string | null | undefined) =>
+  getOrderStatusColorClass(tab === 'deposits' ? 'deposit' : 'withdraw', status)
+
+const getStartOfDay = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0).getTime()
+
+const getEndOfDay = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999).getTime()
+
+/**
+ * 根据日期筛选返回时间范围。
+ */
+export const getMyOrdersTimeRange = (filter: OrderTimeFilter) => {
+  const now = new Date()
+
+  if (filter === 'all') {
+    return {
+      startTime: null,
+      endTime: null
+    }
+  }
+
+  if (filter === 'today') {
+    return {
+      startTime: getStartOfDay(now),
+      endTime: now.getTime()
+    }
+  }
+
+  if (filter === 'yesterday') {
+    const yesterday = new Date(now)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    return {
+      startTime: getStartOfDay(yesterday),
+      endTime: getEndOfDay(yesterday)
+    }
+  }
+
+  const days = filter === 'last3days' ? 3 : filter === 'last15days' ? 15 : 30
+  const startDate = new Date(now)
+  startDate.setDate(startDate.getDate() - (days - 1))
+
   return {
-    items: items.slice(start, start + safePageSize),
-    total: items.length
+    startTime: getStartOfDay(startDate),
+    endTime: now.getTime()
   }
 }
 
 /**
- * 判断是否还有下一页。
+ * 根据状态筛选返回接口状态参数。
  */
-export const hasMoreMyOrders = (total: number, page: number, pageSize: number) =>
-  page * pageSize < total
+export const getMyOrdersStatusParam = (tab: OrderTab, status: OrderStatusFilter) => {
+  if (status === 'all') return ''
+
+  if (tab === 'deposits') {
+    if (status === 'success') return '1'
+    if (status === 'failed') return '2'
+    return '3'
+  }
+
+  if (status === 'success') return '3'
+  if (status === 'failed') return '2'
+  return ['0', '1', '4']
+}
 
 /**
- * 创建模拟订单数据。
+ * 构建订单分页查询参数。
  */
-const createMockOrder = (params: {
-  index: number
-  tab: OrderTab
-  typeValue: Exclude<OrderTypeFilter, 'all'>
-  amount: number
-  paymentAmount: number
-  bonusAmount: number
-  status: OrderStatus
-  createdAt: string
-  timeLabel: string
-  timeGroup: Exclude<OrderTimeFilter, 'all'>
-}) => ({
-  id: `${params.tab}-${params.index}`,
-  tab: params.tab,
-  typeValue: params.typeValue,
-  typeLabel: TYPE_LABEL_MAP[params.typeValue],
-  icon: TYPE_ICON_MAP[params.typeValue],
-  currency: 'PHP',
-  amount: params.amount,
-  paymentAmount: params.paymentAmount,
-  bonusAmount: params.bonusAmount,
-  orderNo: `ts07684567467467467${params.index}`,
-  status: params.status,
-  createdAt: params.createdAt,
-  timeLabel: params.timeLabel,
-  timeGroup: params.timeGroup
-})
+export const buildMyOrdersQueryParams = (
+  tab: OrderTab,
+  filters: MyOrdersFilterValues,
+  current: number,
+  size: number
+): QueryMemberPayOrderPageForm => {
+  const { startTime, endTime } = getMyOrdersTimeRange(filters.time)
 
-export const MOCK_DEPOSIT_ORDERS: MyOrderItem[] = [
-  createMockOrder({
-    index: 1,
-    tab: 'deposits',
-    typeValue: 'gcash',
-    amount: 1000,
-    paymentAmount: 500,
-    bonusAmount: 50,
-    status: 'Success',
-    createdAt: '12/18/2026 11:14:15 AM',
-    timeLabel: 'Just now',
-    timeGroup: 'today'
-  }),
-  createMockOrder({
-    index: 2,
-    tab: 'deposits',
-    typeValue: 'grabpay',
-    amount: 1000,
-    paymentAmount: 500,
-    bonusAmount: 0,
-    status: 'Processing',
-    createdAt: '12/18/2026 11:14:15 AM',
-    timeLabel: 'Today 11:14 AM',
-    timeGroup: 'today'
-  }),
-  createMockOrder({
-    index: 3,
-    tab: 'deposits',
-    typeValue: 'maya',
-    amount: 1000,
-    paymentAmount: 500,
-    bonusAmount: 50,
-    status: 'Success',
-    createdAt: '12/18/2026 11:14:15 AM',
-    timeLabel: 'Yesterday 11:14 AM',
-    timeGroup: 'yesterday'
-  }),
-  createMockOrder({
-    index: 4,
-    tab: 'deposits',
-    typeValue: 'shopeepay',
-    amount: 1000,
-    paymentAmount: 500,
-    bonusAmount: 0,
-    status: 'Success',
-    createdAt: '12/18/2026 11:14:15 AM',
-    timeLabel: '12/18/2026 11:14:15 AM',
-    timeGroup: 'last30days'
-  }),
-  createMockOrder({
-    index: 5,
-    tab: 'deposits',
-    typeValue: 'usdt',
-    amount: 1000,
-    paymentAmount: 500,
-    bonusAmount: 0,
-    status: 'Failed',
-    createdAt: '12/18/2026 11:14:15 AM',
-    timeLabel: '12/18/2026 11:14:15 AM',
-    timeGroup: 'last30days'
-  }),
-  createMockOrder({
-    index: 6,
-    tab: 'deposits',
-    typeValue: 'gcash',
-    amount: 1500,
-    paymentAmount: 1500,
-    bonusAmount: 100,
-    status: 'Success',
-    createdAt: '03/28/2026 09:20:11 AM',
-    timeLabel: '03/28/2026 09:20:11 AM',
-    timeGroup: 'last15days'
-  }),
-  createMockOrder({
-    index: 7,
-    tab: 'deposits',
-    typeValue: 'maya',
-    amount: 2000,
-    paymentAmount: 2000,
-    bonusAmount: 150,
-    status: 'Processing',
-    createdAt: '03/27/2026 03:15:20 PM',
-    timeLabel: '03/27/2026 03:15:20 PM',
-    timeGroup: 'last15days'
-  }),
-  createMockOrder({
-    index: 8,
-    tab: 'deposits',
-    typeValue: 'grabpay',
-    amount: 800,
-    paymentAmount: 800,
-    bonusAmount: 0,
-    status: 'Failed',
-    createdAt: '03/26/2026 08:16:04 PM',
-    timeLabel: '03/26/2026 08:16:04 PM',
-    timeGroup: 'last15days'
-  }),
-  createMockOrder({
-    index: 9,
-    tab: 'deposits',
-    typeValue: 'shopeepay',
-    amount: 1200,
-    paymentAmount: 1200,
-    bonusAmount: 80,
-    status: 'Success',
-    createdAt: '03/25/2026 07:11:09 PM',
-    timeLabel: '03/25/2026 07:11:09 PM',
-    timeGroup: 'last15days'
-  }),
-  createMockOrder({
-    index: 10,
-    tab: 'deposits',
-    typeValue: 'usdt',
-    amount: 3000,
-    paymentAmount: 3000,
-    bonusAmount: 0,
-    status: 'Success',
-    createdAt: '03/24/2026 10:05:18 AM',
-    timeLabel: '03/24/2026 10:05:18 AM',
-    timeGroup: 'last15days'
-  }),
-  createMockOrder({
-    index: 11,
-    tab: 'deposits',
-    typeValue: 'gcash',
-    amount: 500,
-    paymentAmount: 500,
-    bonusAmount: 0,
-    status: 'Processing',
-    createdAt: '03/23/2026 02:22:33 PM',
-    timeLabel: '03/23/2026 02:22:33 PM',
-    timeGroup: 'last30days'
-  }),
-  createMockOrder({
-    index: 12,
-    tab: 'deposits',
-    typeValue: 'grabpay',
-    amount: 2200,
-    paymentAmount: 2200,
-    bonusAmount: 100,
-    status: 'Success',
-    createdAt: '03/22/2026 01:18:46 PM',
-    timeLabel: '03/22/2026 01:18:46 PM',
-    timeGroup: 'last30days'
-  })
-]
+  return {
+    page: {
+      current,
+      size
+    },
+    columnCode: filters.type ?? '',
+    status: getMyOrdersStatusParam(tab, filters.status),
+    startTime,
+    endTime,
+    param: {
+      orderType: tab === 'deposits' ? 0 : 1
+    }
+  }
+}
 
-export const MOCK_WITHDRAWAL_ORDERS: MyOrderItem[] = [
-  createMockOrder({
-    index: 101,
-    tab: 'withdrawals',
-    typeValue: 'gcash',
-    amount: 1200,
-    paymentAmount: 1200,
-    bonusAmount: 0,
-    status: 'Success',
-    createdAt: '12/18/2026 11:14:15 AM',
-    timeLabel: 'Just now',
-    timeGroup: 'today'
-  }),
-  createMockOrder({
-    index: 102,
-    tab: 'withdrawals',
-    typeValue: 'grabpay',
-    amount: 850,
-    paymentAmount: 850,
-    bonusAmount: 0,
-    status: 'Processing',
-    createdAt: '12/18/2026 11:14:15 AM',
-    timeLabel: 'Today 11:14 AM',
-    timeGroup: 'today'
-  }),
-  createMockOrder({
-    index: 103,
-    tab: 'withdrawals',
-    typeValue: 'maya',
-    amount: 400,
-    paymentAmount: 400,
-    bonusAmount: 0,
-    status: 'Success',
-    createdAt: '12/18/2026 11:14:15 AM',
-    timeLabel: 'Yesterday 11:14 AM',
-    timeGroup: 'yesterday'
-  }),
-  createMockOrder({
-    index: 104,
-    tab: 'withdrawals',
-    typeValue: 'shopeepay',
-    amount: 950,
-    paymentAmount: 950,
-    bonusAmount: 0,
-    status: 'Success',
-    createdAt: '12/18/2026 11:14:15 AM',
-    timeLabel: '12/18/2026 11:14:15 AM',
-    timeGroup: 'last30days'
-  }),
-  createMockOrder({
-    index: 105,
-    tab: 'withdrawals',
-    typeValue: 'usdt',
-    amount: 650,
-    paymentAmount: 650,
-    bonusAmount: 0,
-    status: 'Failed',
-    createdAt: '12/18/2026 11:14:15 AM',
-    timeLabel: '12/18/2026 11:14:15 AM',
-    timeGroup: 'last30days'
-  }),
-  createMockOrder({
-    index: 106,
-    tab: 'withdrawals',
-    typeValue: 'gcash',
-    amount: 430,
-    paymentAmount: 430,
-    bonusAmount: 0,
-    status: 'Success',
-    createdAt: '03/28/2026 09:20:11 AM',
-    timeLabel: '03/28/2026 09:20:11 AM',
-    timeGroup: 'last15days'
-  }),
-  createMockOrder({
-    index: 107,
-    tab: 'withdrawals',
-    typeValue: 'maya',
-    amount: 1800,
-    paymentAmount: 1800,
-    bonusAmount: 0,
-    status: 'Processing',
-    createdAt: '03/27/2026 03:15:20 PM',
-    timeLabel: '03/27/2026 03:15:20 PM',
-    timeGroup: 'last15days'
-  }),
-  createMockOrder({
-    index: 108,
-    tab: 'withdrawals',
-    typeValue: 'grabpay',
-    amount: 300,
-    paymentAmount: 300,
-    bonusAmount: 0,
-    status: 'Failed',
-    createdAt: '03/26/2026 08:16:04 PM',
-    timeLabel: '03/26/2026 08:16:04 PM',
-    timeGroup: 'last15days'
-  }),
-  createMockOrder({
-    index: 109,
-    tab: 'withdrawals',
-    typeValue: 'shopeepay',
-    amount: 1400,
-    paymentAmount: 1400,
-    bonusAmount: 0,
-    status: 'Success',
-    createdAt: '03/25/2026 07:11:09 PM',
-    timeLabel: '03/25/2026 07:11:09 PM',
-    timeGroup: 'last15days'
-  }),
-  createMockOrder({
-    index: 110,
-    tab: 'withdrawals',
-    typeValue: 'usdt',
-    amount: 2100,
-    paymentAmount: 2100,
-    bonusAmount: 0,
-    status: 'Success',
-    createdAt: '03/24/2026 10:05:18 AM',
-    timeLabel: '03/24/2026 10:05:18 AM',
-    timeGroup: 'last15days'
-  }),
-  createMockOrder({
-    index: 111,
-    tab: 'withdrawals',
-    typeValue: 'gcash',
-    amount: 780,
-    paymentAmount: 780,
-    bonusAmount: 0,
-    status: 'Processing',
-    createdAt: '03/23/2026 02:22:33 PM',
-    timeLabel: '03/23/2026 02:22:33 PM',
-    timeGroup: 'last30days'
-  })
-]
+/**
+ * 判断订单是否命中类型筛选。
+ */
+export const matchMyOrdersTypeFilter = (
+  record: QueryMemberPayOrderPageRecord,
+  type: OrderTypeFilter,
+  localeKey = 'eng'
+) => {
+  if (type === 'all') return true
+  return getMyOrderTypeValue(record, localeKey) === type
+}

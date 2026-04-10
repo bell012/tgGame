@@ -259,7 +259,7 @@
 <script setup lang="ts">
 import type { QueryPayOrderByOrderIdResult } from '@/api/interface/wallet'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { getOrderStatusText, normalizeOrderStatusCode } from '@/constants/orderStatus'
+import { getOrderStatusColorStyle, getOrderStatusText } from '@/constants/orderStatus'
 import CloseIcon from '@/static/svg/close.svg?component'
 import CryptoOrderCountdownIcon from '@/static/svg/deposit/crypto-order-countdown.svg?component'
 import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifying.svg?component'
@@ -270,7 +270,6 @@ import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import html2canvas from 'html2canvas'
 import QRCode from 'qrcode'
 import { CountDown, showToast } from 'vant'
-import type { CSSProperties } from 'vue'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import uploadProofPop from '../uploadProof/uploadProofPop.vue'
@@ -410,19 +409,9 @@ const cryptoRate = computed(() => {
   if (!accountCurrency || !currency) return rateValue
   return `1${accountCurrency}≈${rateValue}${currency}`
 })
-const fiatStatusStyleMap: Record<number, CSSProperties> = {
-  1: { color: 'var(--color-assist-green)' },
-  2: { color: 'var(--color-assist-red)' }
-}
-
 // 根据法币订单状态返回对应的文字样式
-const getFiatStatusStyle = (status: number | string | undefined) => {
-  const normalizedStatus = normalizeOrderStatusCode('deposit', status)
-  if (normalizedStatus !== undefined && fiatStatusStyleMap[normalizedStatus]) {
-    return fiatStatusStyleMap[normalizedStatus]
-  }
-  return { color: 'var(--color-assist-blue)' }
-}
+const getFiatStatusStyle = (status: number | string | undefined) =>
+  getOrderStatusColorStyle('deposit', status)
 
 const panelHeightClass = computed(() => {
   if (isFiatOrder.value) return 'sm:max-h-[491px]'

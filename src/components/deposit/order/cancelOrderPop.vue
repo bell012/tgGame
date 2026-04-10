@@ -35,7 +35,7 @@
               <!-- 取消原因选项 -->
               <div
                 class="flex items-center justify-between p-2.5 sm:p-3 text-text-1 text-[14px] rounded-lg"
-                v-for="(item, index) in cancellations"
+                v-for="item in cancellations"
                 :key="item.id"
                 @click.stop="selectlation(item)"
                 :class="[cancellationId === item.id ? 'bg-theme-3' : '']"

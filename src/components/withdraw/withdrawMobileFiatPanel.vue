@@ -58,7 +58,7 @@
         >
           <div class="mr-3 h-[25px] w-[25px] shrink-0 overflow-hidden rounded-full">
             <gameErrImg
-              :img="{ src: selectedMethod.icon, maintain: false, fit: 'contain' }"
+              :img="{ src: selectedMethod.selectedIcon, maintain: false, fit: 'contain' }"
               class="h-full w-full"
             />
           </div>
@@ -140,7 +140,8 @@
         v-model="accountListVisible"
         :items="availableAccounts"
         :selected-id="selectedAccount?.localId"
-        :icon="selectedMethod.icon"
+        :icon="selectedMethod.selectedIcon"
+        :show-add-button="canAddAccount"
         @select="handleSelectAccount"
         @add="openAddAccount"
       />
@@ -150,6 +151,31 @@
         v-model:account-name="pendingAccountName"
         @close="closeAddAccount"
         @confirm="confirmAddAccount"
+      />
+      <withdrawPaymentPasswordPop
+        v-model="addAccountPaymentPasswordVisible"
+        :amount="0"
+        :currency-code="currentCurrency"
+        :loading="isSubmittingAddAccount"
+        :show-amount-section="false"
+        :confirm-text="t('common.confirm')"
+        :description-text="t('withdraw.verification_transaction_password')"
+        @close="closeAddAccountPaymentPassword"
+        @confirm="handleAddAccountPaymentPasswordConfirm"
+      />
+      <withdrawSmsVerificationPop
+        v-model="addAccountSmsVerificationVisible"
+        :amount="0"
+        :currency-code="currentCurrency"
+        :phone-number="maskedPhoneNumber"
+        :sending="isSendingAddAccountSmsCode"
+        :loading="isCheckingAddAccountSmsCode || isSubmittingAddAccount"
+        :countdown-trigger="addAccountSmsCountdownTrigger"
+        :show-amount-section="false"
+        :confirm-text="t('common.confirm')"
+        @close="closeAddAccountSmsVerification"
+        @resend="handleAddAccountSmsVerificationResend"
+        @confirm="handleAddAccountSmsVerificationConfirm"
       />
     </div>
   </div>
@@ -166,6 +192,8 @@ import type { FastAmountItem } from '@/api/interface/withdraw'
 import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
 import withdrawFiatAccountListPop from './withdrawFiatAccountListPop.vue'
 import withdrawFiatAddAccountPop from './withdrawFiatAddAccountPop.vue'
+import withdrawPaymentPasswordPop from './withdrawPaymentPasswordPop.vue'
+import withdrawSmsVerificationPop from './withdrawSmsVerificationPop.vue'
 import type { WithdrawSubmitPayload } from './shared/types'
 import { useWithdrawFiat } from './shared/useWithdrawFiat'
 
@@ -176,12 +204,26 @@ const {
   applyQuickAmount,
   availableAccounts,
   addAccountVisible,
+  addAccountPaymentPasswordVisible,
+  addAccountSmsCountdownTrigger,
+  addAccountSmsVerificationVisible,
+  balanceAmount,
+  canAddAccount,
   closeAddAccount,
+  closeAddAccountPaymentPassword,
+  closeAddAccountSmsVerification,
   confirmAddAccount,
   currentCurrency,
   currencySymbol,
   formattedBalance,
+  handleAddAccountPaymentPasswordConfirm,
+  handleAddAccountSmsVerificationConfirm,
+  handleAddAccountSmsVerificationResend,
+  isCheckingAddAccountSmsCode,
+  isSendingAddAccountSmsCode,
+  isSubmittingAddAccount,
   isWithdrawDisabled,
+  maskedPhoneNumber,
   openAccountList,
   openAddAccount,
   payMethods,
@@ -258,9 +300,11 @@ const doWithdrawDeposit = () => {
   emit('submit', {
     tabType: 'Fiat',
     amount: Number(amount.value),
+    balanceAmount: balanceAmount.value,
     channelId: 4,
     currencyCode: currentCurrency.value,
     methodLabel: selectedMethod.value.name,
+    methodIcon: selectedMethod.value.selectedIcon || selectedMethod.value.icon,
     paymentCode: selectedMethod.value.paymentCode,
     accountRowId: selectedAccount.value?.rowId,
     phoneNumber: selectedAccount.value?.accountNo,

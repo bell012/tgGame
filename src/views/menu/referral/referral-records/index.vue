@@ -66,8 +66,8 @@
           v-else
           :dark-image="defaultImgDark"
           :light-image="defaultImgLight"
-          image-alt="$t('referral.referralRecords.title')"
-          message="No data available at the moment."
+          :image-alt="$t('referral.referralRecords.title')"
+          :message="$t('common.noData')"
           text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
         />
 

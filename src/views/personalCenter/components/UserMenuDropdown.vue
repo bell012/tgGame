@@ -21,6 +21,18 @@
     </transition>
 
     <SignOutPopup v-model:visible="showSignOutPopup" @confirm="confirmSignOut" />
+    <!-- 我的资料 -->
+    <MyProfilePcLayout
+      :visible="showMyProfilePopup"
+      @close="handleCloseMyProfile"
+      @edit="handleOpenEditProfile"
+    />
+    <!-- 编辑资料 -->
+    <EditProfilePcLayout
+      :visible="showEditProfilePopup"
+      @close="handleCloseEditProfile"
+      @saved="handleEditProfileSaved"
+    />
   </div>
 </template>
 
@@ -28,6 +40,8 @@
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SignOutPopup from '@/components/common/SignOutPopup.vue'
+import MyProfilePcLayout from '../myProfile/pc-layout.vue'
+import EditProfilePcLayout from '../editProfile/pc-layout.vue'
 import { navigateTo } from '@/utils/router'
 import { useUserStore } from '@/stores/user'
 
@@ -52,9 +66,50 @@ const emit = defineEmits<{
 }>()
 
 const showSignOutPopup = ref(false)
+const showMyProfilePopup = ref(false)
+const showEditProfilePopup = ref(false)
 
 const confirmSignOut = () => {
   userStore.logout()
+}
+
+/**
+ * 打开我的资料弹窗，并关闭当前下拉菜单。
+ */
+const openMyProfilePopup = () => {
+  emit('update:modelValue', false)
+  showMyProfilePopup.value = true
+}
+
+/**
+ * 关闭我的资料弹窗。
+ */
+const handleCloseMyProfile = () => {
+  showMyProfilePopup.value = false
+}
+
+/**
+ * 从我的资料弹窗切换到编辑资料弹窗。
+ */
+const handleOpenEditProfile = () => {
+  showMyProfilePopup.value = false
+  showEditProfilePopup.value = true
+}
+
+/**
+ * 关闭编辑资料弹窗，并返回我的资料弹窗。
+ */
+const handleCloseEditProfile = () => {
+  showEditProfilePopup.value = false
+  showMyProfilePopup.value = true
+}
+
+/**
+ * 编辑资料保存成功后，关闭编辑弹窗并返回我的资料弹窗。
+ */
+const handleEditProfileSaved = () => {
+  showEditProfilePopup.value = false
+  showMyProfilePopup.value = true
 }
 
 const mainMenus = computed(() => [
@@ -144,8 +199,7 @@ const mainMenus = computed(() => [
     name: t('userMenu.myProfile'),
     icon: getIcon(69),
     handler: () => {
-      console.log('My Profile clicked')
-      emit('update:modelValue', false)
+      openMyProfilePopup()
     }
   },
   {
