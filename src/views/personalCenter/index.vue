@@ -711,7 +711,7 @@ const supportMenus = computed(() => [
     id: 'leave-feedback',
     name: t('personalCenter.leaveFeedback'),
     icon: getIcon(17),
-    handler: () => console.log('Leave Feedback clicked')
+    handler: () => navigateTo('/personal-center/feedback')
   }
 ])
 

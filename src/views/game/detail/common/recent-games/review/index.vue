@@ -69,8 +69,6 @@
     </div>
     <div ref="sortMenuRef" class="relative flex justify-between items-center mt-[20px]">
       <div class="text-[12px] text-[var(--color-text-level-2)]">{{ t('gameDetail.comments') }}</div>
-      <!-- 暂时没有评论排序，先注释 -->
-      <!-- <img alt="" :src="SanIcon" class="size-[18px] cursor-pointer" @click.stop="toggleSortPopup" /> -->
       <transition name="sort-popup">
         <div
           v-if="isSortPopupOpen"
@@ -751,7 +749,6 @@ const requestCommentsList = async (subjectId: string) => {
         }
       })
     )
-    console.log(commentList, 'commentList....')
   } catch (error) {
     console.error('getCommentsList failed', error)
     commentList.value = []

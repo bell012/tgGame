@@ -25,6 +25,7 @@
           <button
             type="button"
             class="absolute right-3.5 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md bg-opacity-10"
+            @click="handleOpenTransaction"
           >
             <DetailsIcon class="h-4 w-4" />
           </button>
@@ -49,6 +50,7 @@
           :order-no="orderNo"
           :created-at="createdAt"
           :method-label="methodLabel"
+          :method-icon="methodIcon"
         />
       </div>
     </div>
@@ -65,6 +67,7 @@ import withdrawOrderContent from './withdrawOrderContent.vue'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
+import { navigateToName } from '@/utils/router'
 
 interface Props {
   modelValue: boolean
@@ -73,6 +76,7 @@ interface Props {
   orderNo: string
   createdAt: string
   methodLabel: string
+  methodIcon?: string
 }
 
 const props = defineProps<Props>()
@@ -92,5 +96,10 @@ const visible = computed({
 const handleClose = () => {
   emit('update:modelValue', false)
   emit('close')
+}
+
+const handleOpenTransaction = () => {
+  handleClose()
+  void navigateToName('my-orders')
 }
 </script>

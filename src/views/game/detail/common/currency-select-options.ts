@@ -12,7 +12,7 @@ import USDCIcon from '@/static/svg/coin/USDC.black.svg?url'
 import USDTIcon from '@/static/svg/coin/USDT.black.svg?url'
 import XRPIcon from '@/static/svg/coin/XRP.black.svg?url'
 import CNYFlagIcon from '@/static/img/flag/CNY.webp'
-import PHPFlagIcon from '@/static/img/flag/php.png'
+import PHPFlagIcon from '@/static/img/flag/PHP.png'
 import USDFlagIcon from '@/static/img/flag/USD.webp'
 
 export type CurrencyOptionItem = {

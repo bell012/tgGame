@@ -5,7 +5,7 @@
     @close="handleClose"
   >
     <div
-      class="relative mx-auto flex max-h-[50vh] w-full flex-col rounded-t-3xl bg-bg-1 px-4 pb-5 pt-4 font-['Inter'] sm:max-h-none sm:w-[464px] sm:rounded-[24px] sm:p-8"
+      class="relative mx-auto flex w-full flex-col rounded-t-[12px] bg-bg-1 px-4 pb-5 pt-4 font-['Inter'] sm:w-[464px] sm:rounded-[24px] sm:p-8"
     >
       <div class="flex items-center justify-between">
         <h2 class="mx-auto sm:mx-0 text-xl font-bold leading-normal text-text-1">
@@ -13,7 +13,7 @@
         </h2>
         <button
           type="button"
-          class="hidden sm:flex bg-opacity-10 absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-md text-text-1"
+          class="absolute right-4 top-4 hidden h-6 w-6 items-center justify-center rounded-md bg-opacity-10 text-text-1 sm:flex"
           @click="handleClose"
         >
           <CloseIcon class="size-4" />
@@ -38,7 +38,9 @@
           </div>
         </div>
 
-        <div class="mt-2.5 rounded-2xl bg-bg-2 p-4">
+        <slot name="extra-content" />
+
+        <div class="mt-2.5 rounded-lg bg-bg-2 p-4">
           <template v-for="(field, index) in fields" :key="field.key">
             <p
               class="text-xs sm:text-sm leading-normal text-text-1"

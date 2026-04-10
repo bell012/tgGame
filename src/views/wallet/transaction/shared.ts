@@ -36,6 +36,20 @@ type FilterInput = Partial<Record<string, FilterValue>>
 
 export const TRANSACTION_PAGE_SIZE = 10
 
+export const TRANSACTION_CHANGE_TYPE_VALUES = [
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '13',
+  '14'
+]
+
 const TRANSACTION_TYPE_KEY_MAP: Record<number, string> = {
   1: 'gameSwitch',
   2: 'memberDeposit',
@@ -178,7 +192,7 @@ export const buildTransactionQueryForm = (params: {
     param: {
       currency: getCurrentCurrency()
     },
-    changeTypes: normalized.type === 'all' ? null : normalized.type
+    changeTypes: normalized.type === 'all' ? [...TRANSACTION_CHANGE_TYPE_VALUES] : [normalized.type]
   }
 }
 
