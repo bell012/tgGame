@@ -112,9 +112,13 @@ const router = useRouter()
 const activeTab = ref<FeedbackTab>('create')
 const isEmbeddedMode = computed(() => Boolean(props.embedded))
 const feedbackPageContainerClass = computed(() => {
-  return isEmbeddedMode.value
-    ? 'relative h-full overflow-y-auto bg-bg-1'
-    : 'fixed inset-0 overflow-y-auto bg-bg-1'
+  if (isEmbeddedMode.value) {
+    return showFeedbackDetailPopup.value
+      ? 'relative h-full overflow-hidden bg-bg-1'
+      : 'relative h-full overflow-y-auto bg-bg-1'
+  }
+
+  return 'fixed inset-0 overflow-y-auto bg-bg-1'
 })
 
 // 创建反馈表单状态
