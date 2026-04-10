@@ -56,7 +56,7 @@
   /* ========== 辅助色 (Assist) ========== */
   --color-assist-red: #ff3636;
   --color-assist-green: #34e070;
-  --color-assist-blue: #21b9ff;
+  --color-assist-orange: #ff9822;
 
   /* ========== 通用色 (Common) ========== */
   --color-common-100: #ffffff;
@@ -135,7 +135,7 @@
   /* ========== 辅助色 (Assist) - 浅色模式 ========== */
   --color-assist-red: #ff3636;
   --color-assist-green: #34e070;
-  --color-assist-blue: #21b9ff;
+  --color-assist-orange: #ff9822;
 
   /* ========== 通用色 (Common) - 浅色模式 ========== */
   --color-common-100: #ffffff;

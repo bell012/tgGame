@@ -11,6 +11,8 @@ import type {
   QueryPayColumnPageResponse,
   QueryPayColumnWithSubListForm,
   QueryPayColumnWithSubListResponse,
+  QueryMemberPayOrderPageForm,
+  QueryMemberPayOrderPageResponse,
   QueryPayOrderByOrderIdForm,
   QueryPayOrderByOrderIdResponse,
   QueryPaySubColumnPageForm,
@@ -90,6 +92,17 @@ export function queryPayOrderByOrderId(
 ): Promise<QueryPayOrderByOrderIdResponse> {
   return request({
     url: '/pc/queryPayOrderByOrderId',
+    method: 'post',
+    data
+  })
+}
+
+// 查询会员充值/提现订单分页
+export function queryMemberPayOrderPage(
+  data: QueryMemberPayOrderPageForm
+): Promise<QueryMemberPayOrderPageResponse> {
+  return request({
+    url: '/pc/queryMemberPayOrderPage',
     method: 'post',
     data
   })
