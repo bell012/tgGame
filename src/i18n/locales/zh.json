@@ -644,6 +644,7 @@
       "unused": "未使用",
       "inUse": "使用中",
       "editAvatar": "编辑头像",
+      "uploadFromLocal": "从本地上传",
       "takePhoto": "拍照",
       "chooseFromAlbum": "从手机相册选择",
       "cancel": "取消",
