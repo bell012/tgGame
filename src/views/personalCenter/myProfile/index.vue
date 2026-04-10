@@ -114,12 +114,15 @@
           </div>
         </div>
 
-        <div v-else class="flex flex-col items-center">
-          <img :src="noDataImage" alt="No Data" class="h-[200px] w-[220px] object-contain" />
-          <p class="mt-2.5 text-xs font-[500] text-text-1">
-            {{ t('personalCenter.myProfile.noFavorites') }}
-          </p>
-        </div>
+        <!-- 空状态 -->
+        <ThemedEmptyState
+          v-else
+          :dark-image="noDataImage"
+          :image-alt="t('personalCenter.myProfile.noFavorites')"
+          :message="t('personalCenter.myProfile.noFavorites')"
+          container-class="mt-0"
+          text-class="mt-2.5 text-xs font-[500] text-text-1"
+        />
       </section>
 
       <p class="mt-5 text-center text-xs text-text-2">
@@ -137,6 +140,7 @@ import { showToast } from 'vant'
 import type { SubGameItem2 } from '@/api/interface/home.interface'
 import type { GameBetTotalResult } from '@/api/interface/user'
 import H5Header from '@/components/common/H5Header.vue'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useUserStore } from '@/stores/user'
 import { getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
 import {
