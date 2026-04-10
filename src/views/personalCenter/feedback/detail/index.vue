@@ -1,6 +1,11 @@
 <template>
-  <div class="fixed inset-0 overflow-y-auto bg-bg-1">
-    <H5Header title="记录详情" />
+  <div :class="feedbackDetailPageContainerClass">
+    <H5Header
+      title="记录详情"
+      :disable-default-back="isEmbeddedMode"
+      :fixed-top="!isEmbeddedMode"
+      @back="handleDetailBack"
+    />
 
     <div class="px-3.5 pb-6 pt-3">
       <section class="rounded-[12px] bg-bg-2 p-3.5">
@@ -75,20 +80,49 @@ import {
   feedbackMockRecords,
   feedbackStatusClassMap,
   feedbackStatusTextMap
-} from '@/views/personalCenter/feedback/mock'
+} from '@/views/personalCenter/feedback/consts'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { showImagePreview } from 'vant'
 
+const props = withDefaults(
+  defineProps<{
+    embedded?: boolean
+    recordId?: string
+  }>(),
+  {
+    embedded: false,
+    recordId: ''
+  }
+)
+
+const emit = defineEmits<{
+  back: []
+}>()
+
 const route = useRoute()
+const isEmbeddedMode = computed(() => Boolean(props.embedded))
+const feedbackDetailPageContainerClass = computed(() => {
+  return isEmbeddedMode.value
+    ? 'relative h-full overflow-y-auto bg-bg-1'
+    : 'fixed inset-0 overflow-y-auto bg-bg-1'
+})
 
 const feedbackDetail = computed(() => {
-  const recordId = String(route.params.recordId ?? '')
+  const recordId = isEmbeddedMode.value
+    ? String(props.recordId ?? '').trim()
+    : String(route.params.recordId ?? '').trim()
   return feedbackMockRecords.find(item => item.recordId === recordId) ?? feedbackMockRecords[0]
 })
 
 const statusTextMap = feedbackStatusTextMap
 const statusClassMap = feedbackStatusClassMap
+
+const handleDetailBack = () => {
+  if (isEmbeddedMode.value) {
+    emit('back')
+  }
+}
 
 const openScreenshotPreview = (startPosition: number) => {
   const screenshotImages = feedbackDetail.value.screenshotImages

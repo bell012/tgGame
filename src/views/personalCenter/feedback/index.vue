@@ -236,6 +236,18 @@
         </div>
       </div>
     </transition>
+
+    <transition name="feedback-detail-popup">
+      <div v-if="showFeedbackDetailPopup" class="feedback-detail-popup-mask">
+        <div class="feedback-detail-popup-card">
+          <FeedbackDetailPage
+            embedded
+            :record-id="selectedFeedbackDetailRecordId"
+            @back="closeFeedbackDetailPopup"
+          />
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -252,9 +264,21 @@ import { useRouter } from 'vue-router'
 import { showToast, Uploader, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
 import H5Header from '@/components/common/H5Header.vue'
 import { getCurrencySymbol } from '@/utils/locale'
-import { feedbackStatusClassMap, feedbackStatusTextMap, type FeedbackStatus } from './mock'
+import { feedbackStatusClassMap, feedbackStatusTextMap, type FeedbackStatus } from './consts'
+import FeedbackDetailPage from './detail/index.vue'
 
 type FeedbackTab = 'create' | 'mine'
+type FeedbackListItem = {
+  recordId: string
+  ticketNo: string
+  content: string
+  status: FeedbackStatus
+  showDot?: boolean
+  submitTime?: string
+  feedbackType?: string
+  screenshotImages?: string[]
+  detailContent?: string
+}
 
 const props = withDefaults(
   defineProps<{
@@ -278,6 +302,8 @@ const uploadedFeedbackUrls = ref<string[]>([])
 const isSubmittingFeedback = ref(false)
 const isLoadingMyFeedbackList = ref(false)
 const showClaimSuccessPopup = ref(false)
+const showFeedbackDetailPopup = ref(false)
+const selectedFeedbackDetailRecordId = ref('')
 const claimAmountCurrencySymbol = getCurrencySymbol()
 const claimSuccessTargetAmount = 100
 const claimAmountAnimationDuration = 680
@@ -291,15 +317,7 @@ const feedbackPageContainerClass = computed(() => {
     ? 'relative h-full overflow-y-auto bg-bg-1'
     : 'fixed inset-0 overflow-y-auto bg-bg-1'
 })
-const myFeedbackList = ref<
-  Array<{
-    recordId: string
-    ticketNo: string
-    content: string
-    status: FeedbackStatus
-    showDot?: boolean
-  }>
->([])
+const myFeedbackList = ref<FeedbackListItem[]>([])
 
 const feedbackTypeOptions = [
   { label: '建议', value: '1' },
@@ -484,7 +502,55 @@ const normalizeFeedbackStatus = (value: unknown): FeedbackStatus => {
   return 'rejected'
 }
 
+const formatFeedbackSubmitTime = (value: unknown) => {
+  const timestamp = Number(value)
+  if (!Number.isFinite(timestamp) || timestamp <= 0) {
+    return '--'
+  }
+
+  const date = new Date(timestamp)
+  if (Number.isNaN(date.getTime())) {
+    return '--'
+  }
+
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  const hour = `${date.getHours()}`.padStart(2, '0')
+  const minute = `${date.getMinutes()}`.padStart(2, '0')
+  const second = `${date.getSeconds()}`.padStart(2, '0')
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+}
+
+const getFeedbackTypeLabel = (value: unknown) => {
+  const normalizedValue = String(value ?? '').trim()
+  if (normalizedValue === '1') {
+    return '建议'
+  }
+  if (normalizedValue === '2') {
+    return '游戏异常'
+  }
+  if (normalizedValue === '3') {
+    return '充值问题'
+  }
+  if (normalizedValue === '4') {
+    return '其他'
+  }
+
+  return '其他'
+}
+
+const closeFeedbackDetailPopup = () => {
+  showFeedbackDetailPopup.value = false
+  selectedFeedbackDetailRecordId.value = ''
+}
+
 const handleTabChange = (tab: FeedbackTab) => {
+  if (tab !== 'mine') {
+    closeFeedbackDetailPopup()
+  }
+
   activeTab.value = tab
   if (tab === 'mine') {
     void fetchMyFeedbackList()
@@ -515,10 +581,15 @@ const fetchMyFeedbackList = async () => {
         ticketNo: rowIdText || '--',
         content: String(item?.content ?? '').trim() || '--',
         status: normalizeFeedbackStatus(item?.status),
-        showDot: false
+        showDot: false,
+        submitTime: formatFeedbackSubmitTime(item?.createTime),
+        feedbackType: getFeedbackTypeLabel(item?.feedbackType),
+        screenshotImages: [],
+        detailContent: String(item?.content ?? '').trim() || '--'
       }
     })
   } catch (error) {
+    closeFeedbackDetailPopup()
     myFeedbackList.value = []
     showToast({
       message: error instanceof Error ? error.message : '获取反馈列表失败',
@@ -574,6 +645,12 @@ const closeClaimSuccessPopup = () => {
 }
 
 const goToFeedbackDetail = (recordId: string) => {
+  if (isEmbeddedMode.value) {
+    selectedFeedbackDetailRecordId.value = recordId
+    showFeedbackDetailPopup.value = true
+    return
+  }
+
   router.push({
     name: 'personal-center-feedback-detail',
     params: { recordId }
@@ -581,6 +658,11 @@ const goToFeedbackDetail = (recordId: string) => {
 }
 
 const handleFeedbackPageBack = () => {
+  if (showFeedbackDetailPopup.value) {
+    closeFeedbackDetailPopup()
+    return
+  }
+
   if (!isEmbeddedMode.value) {
     return
   }
@@ -763,5 +845,46 @@ const statusClassMap = feedbackStatusClassMap
   color: #00140b;
   font-size: 18px;
   font-weight: 700;
+}
+
+.feedback-detail-popup-enter-active,
+.feedback-detail-popup-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.feedback-detail-popup-enter-from,
+.feedback-detail-popup-leave-to {
+  opacity: 0;
+}
+
+.feedback-detail-popup-enter-active .feedback-detail-popup-card,
+.feedback-detail-popup-leave-active .feedback-detail-popup-card {
+  transition:
+    transform 0.22s ease,
+    opacity 0.2s ease;
+}
+
+.feedback-detail-popup-enter-from .feedback-detail-popup-card,
+.feedback-detail-popup-leave-to .feedback-detail-popup-card {
+  transform: translateY(10px) scale(0.96);
+  opacity: 0;
+}
+
+.feedback-detail-popup-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 10, 18, 0.72);
+}
+
+.feedback-detail-popup-card {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--color-background-level-1);
 }
 </style>
