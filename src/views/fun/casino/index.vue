@@ -1,5 +1,8 @@
 ﻿<template>
-  <div class="casino-page pt-2.5 sm:p-4 w-full font-['Inter']" :style="mobileStyle">
+  <div
+    class="casino-page max-w-[1248px] mx-auto pt-2.5 sm:p-4 w-full font-['Inter'] px-3.5 sm:px-0"
+    :style="mobileStyle"
+  >
     <div
       v-if="!isLoggedIn && currentTabCode === ''"
       class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl mb-2.5"
