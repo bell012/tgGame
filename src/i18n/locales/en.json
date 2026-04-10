@@ -645,6 +645,7 @@
       "unused": "Unused",
       "inUse": "In Use",
       "editAvatar": "Edit Avatar",
+      "uploadFromLocal": "Upload from Device",
       "takePhoto": "Take Photo",
       "chooseFromAlbum": "Choose from Photo Library",
       "cancel": "Cancel",
