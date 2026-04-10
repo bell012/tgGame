@@ -17,28 +17,18 @@
             </button>
           </div>
 
-          <div class="mt-5">
-            <div class="text-xs font-[700] text-text-2 mb-2.5">Cash</div>
-            <button
-              v-for="item in options"
-              :key="item.code"
-              class="flex w-full h-[42px] items-center justify-between rounded-lg px-2.5 text-left"
-              :class="item.code === selectedCurrency ? 'bg-opacity-10' : ''"
-              @click="handleSelect(item.code)"
-            >
-              <div class="w-full flex items-center justify-between">
-                <div class="flex items-center">
-                  <img
-                    :src="getCurrencyImageByCode(item.code)"
-                    :alt="item.code"
-                    class="w-5 h-5 object-cover"
-                  />
-                  <span class="ml-2.5 text-sm font-[700] text-text-1">{{ item.code }}</span>
-                </div>
-                <div class="text-xs font-[500] text-text-1">{{ item.balanceText }}</div>
-              </div>
-            </button>
-          </div>
+          <CurrencySelectorList
+            :visible="props.visible"
+            :options="listOptions"
+            :selected-value="props.selectedCurrency"
+            mode="balance"
+            section-label="Cash"
+            list-class="mt-5 max-h-[55vh] overflow-y-auto overscroll-contain pr-0.5"
+            item-class="flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left"
+            selected-item-class="bg-opacity-10"
+            icon-class="h-5 w-5 object-contain"
+            @select="handleSelect"
+          />
         </div>
       </div>
     </transition>
@@ -46,14 +36,16 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-import { getCurrencyImageByCode } from '@/utils/locale'
+import { getCurrencyIconByCode } from '@/views/game/detail/common/currency-select-options'
 
-defineProps<{
+const props = defineProps<{
   visible: boolean
   selectedCurrency: string
-  options: Array<{ code: string; balanceText: string }>
+  options: Array<{ code: string; balanceText: string; icon?: string }>
 }>()
 
 const emit = defineEmits<{
@@ -62,6 +54,15 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+const listOptions = computed(() => {
+  return props.options.map(item => ({
+    value: item.code,
+    label: item.code,
+    icon: item.icon || getCurrencyIconByCode(item.code),
+    trailingText: item.balanceText
+  }))
+})
 
 const close = () => emit('update:visible', false)
 
