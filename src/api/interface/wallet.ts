@@ -206,6 +206,55 @@ export interface QueryPayOrderByOrderIdResponse {
   result?: QueryPayOrderByOrderIdResult
 }
 
+export interface QueryMemberPayOrderPageForm {
+  page: {
+    current: number
+    size: number
+  }
+  columnCode: string
+  status: string | string[]
+  startTime: number | null
+  endTime: number | null
+  param: {
+    orderType: 0 | 1
+  }
+}
+
+export interface QueryMemberPayOrderPageRecord {
+  accountAmount: number
+  busiAmount: number
+  cardType?: number
+  columnCode: number
+  createTime: number
+  currency: string
+  memberId: string
+  memberRowId: number
+  online: number
+  orderId: string
+  orderType: string
+  otherAmount: number
+  status: number | string
+  subColumnCode: number
+  subColumnName: string
+  type?: number | string
+  [key: string]: unknown
+}
+
+export interface QueryMemberPayOrderPageResult {
+  current: number
+  pages: number
+  records: QueryMemberPayOrderPageRecord[]
+  size: number
+  total: number
+}
+
+export interface QueryMemberPayOrderPageResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryMemberPayOrderPageResult
+}
+
 export interface UpdatePayOrderRemarkForm {
   orderId: string | number
   orderRemark: string

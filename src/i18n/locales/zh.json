@@ -383,6 +383,26 @@
     "deposit": "充值",
     "withdraw": "提现",
     "myOrders": "我的订单",
+    "myOrdersPage": {
+      "depositDetails": "充值详情",
+      "withdrawalDetails": "提现详情",
+      "depositAmount": "充值金额",
+      "withdrawalAmount": "提现金额",
+      "depositBonus": "充值奖励",
+      "withdrawalBonus": "提现奖励",
+      "noMoreOrders": "没有更多订单了",
+      "filterGroups": {
+        "date": "日期选择",
+        "type": "类型选择",
+        "status": "状态选择"
+      },
+      "table": {
+        "type": "类型",
+        "time": "时间",
+        "amount": "金额",
+        "status": "状态"
+      }
+    },
     "rollover": "流水稽查",
     "rolloverDetails": "流水稽查详情",
     "actualTurnover": "实际成交额",
@@ -624,6 +644,7 @@
       "unused": "未使用",
       "inUse": "使用中",
       "editAvatar": "编辑头像",
+      "uploadFromLocal": "从本地上传",
       "takePhoto": "拍照",
       "chooseFromAlbum": "从手机相册选择",
       "cancel": "取消",

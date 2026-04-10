@@ -73,13 +73,12 @@
 
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { getOrderStatusText, normalizeOrderStatusCode } from '@/constants/orderStatus'
+import { getOrderStatusColorStyle, getOrderStatusText } from '@/constants/orderStatus'
 import CloseIcon from '@/static/svg/close.svg?component'
 import FiatOrderAmountIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import { showToast } from 'vant'
-import type { CSSProperties } from 'vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FiatOrderType } from '../orderType'
@@ -103,19 +102,9 @@ const compactRows = (rows: Array<DetailRowItem | null>) =>
 const fiatOrderInfo = computed(() => props.orderInfo)
 const fiatDisplayAmount = computed(() => Number(fiatOrderInfo.value.amount ?? 0))
 
-const fiatStatusStyleMap: Record<number, CSSProperties> = {
-  1: { color: 'var(--color-assist-green)' },
-  2: { color: 'var(--color-assist-red)' }
-}
-
 // 获取法币订单状态样式
-const getFiatStatusStyle = (status: number | string | undefined) => {
-  const normalizedStatus = normalizeOrderStatusCode('deposit', status)
-  if (normalizedStatus !== undefined && fiatStatusStyleMap[normalizedStatus]) {
-    return fiatStatusStyleMap[normalizedStatus]
-  }
-  return { color: 'var(--color-assist-blue)' }
-}
+const getFiatStatusStyle = (status: number | string | undefined) =>
+  getOrderStatusColorStyle('deposit', status)
 
 const panelInlineStyle = computed(() => ({
   height: isMobile.value ? '100%' : 'auto'
