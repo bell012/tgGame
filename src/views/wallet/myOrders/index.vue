@@ -87,13 +87,15 @@
               v-else-if="!mobileLoading && mobileRows.length === 0"
               class="mt-[100px] flex flex-col items-center justify-center"
             >
-              <!-- H5 空状态图片 -->
-              <img :src="EmptyImg" :alt="t('common.noData')" class="mb-2.5 h-[200px] w-auto" />
-
-              <!-- H5 空状态文案 -->
-              <p class="mb-5 text-xs font-[500] text-text-1">
-                {{ t('common.noData') }}
-              </p>
+              <!-- 空状态 -->
+              <ThemedEmptyState
+                :dark-image="EmptyImg"
+                :image-alt="t('common.noData')"
+                :message="t('common.noData')"
+                container-class="mt-0"
+                image-class="mb-2.5 h-[200px] w-auto"
+                text-class="mb-5 text-xs font-[500] text-text-1"
+              />
 
               <!-- H5 空状态按钮 -->
               <button
@@ -229,6 +231,7 @@ import type {
 } from '@/api/interface/wallet'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import EmptyImg from '@/static/img/personalCenter/noData.png'

@@ -22,16 +22,16 @@
               {{ $t('common.requestError') }}
             </p>
           </div>
-
-          <div
+          <!-- 空状态 -->
+          <ThemedEmptyState
             v-else-if="!loading && dataList.length === 0"
-            class="flex flex-col items-center justify-center mt-[100px]"
-          >
-            <img :src="noDataImg" alt="No data" class="h-[200px] w-auto mb-2.5" />
-            <p class="text-text-1 text-xs font-[500] mb-5">
-              {{ $t('common.noData') }}
-            </p>
-          </div>
+            :dark-image="noDataImg"
+            :image-alt="$t('common.noData')"
+            :message="$t('common.noData')"
+            container-class="mt-[100px] justify-center"
+            image-class="h-[200px] w-auto mb-2.5"
+            text-class="text-text-1 text-xs font-[500] mb-5"
+          />
 
           <!-- 有数据状态 -->
           <div v-else class="flex flex-col gap-2">
@@ -142,6 +142,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import WalletLayout from '../index.vue'
 import PcLayout from './pc-layout.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'

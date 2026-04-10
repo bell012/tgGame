@@ -39,20 +39,23 @@
 
     <!-- 空状态区域 -->
     <div v-else class="flex h-[520px] flex-col items-center justify-center text-center">
-      <!-- 空状态图片 -->
-      <img
-        :src="emptyImg"
-        :alt="t('common.noData')"
-        class="mb-4 h-[170px] w-[170px] object-contain opacity-90"
+      <!-- 空状态 -->
+      <ThemedEmptyState
+        :dark-image="EmptyImg"
+        :image-alt="t('common.noData')"
+        :message="t('common.noData')"
+        container-class="mt-0"
+        image-class="mb-2.5 h-[200px] w-auto"
+        text-class="mb-5 text-text-1 text-sm font-[700]"
       />
-      <!-- 空状态文案 -->
-      <p class="text-[24px] font-[700] text-text-1">{{ t('common.noData') }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import EmptyImg from '@/static/img/personalCenter/noData.png'
 
 type ViewState = 'table' | 'empty'
 
