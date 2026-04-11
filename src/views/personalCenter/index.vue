@@ -329,6 +329,7 @@ import CurrencyPopup from '@/views/personalCenter/components/CurrencyPopup.vue'
 import LanguagePopup from '@/views/personalCenter/components/LanguagePopup.vue'
 import ReferralPopup from '@/views/personalCenter/components/ReferralPopup.vue'
 import { useLocaleStore } from '@/stores/locale'
+import { SITE_CONFIG_STORAGE_KEY } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { useVipStore } from '@/stores/vip'
@@ -347,6 +348,7 @@ import {
   type Locale,
   type LocaleOption
 } from '@/utils/locale'
+import { getCurrencyIconByCode } from '@/views/game/detail/common/currency-select-options'
 import { showToast } from 'vant'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
@@ -403,6 +405,9 @@ const balanceFieldMap = {
 
 type BalanceFieldKey = (typeof balanceFieldMap)[keyof typeof balanceFieldMap]
 type BalanceCarrier = Partial<Record<BalanceFieldKey, number>> & { balance?: number }
+type CachedSiteConfig = {
+  currency?: unknown
+}
 
 const originalColorIconNumbers = new Set([16, 31])
 
@@ -427,6 +432,46 @@ const showSignOutPopup = ref(false)
 const referralRewardText = ref('US$1,000.00')
 const referralRewardText2 = ref('15%')
 const referralLink = ref('https://www.baidu.com/jh/ocja...')
+
+const normalizeCurrencyCode = (value: unknown) => {
+  return String(value ?? '')
+    .trim()
+    .toUpperCase()
+}
+
+const parseCurrencyCodes = (rawCurrency: unknown) => {
+  if (Array.isArray(rawCurrency)) {
+    return Array.from(new Set(rawCurrency.map(normalizeCurrencyCode).filter(Boolean)))
+  }
+
+  if (typeof rawCurrency === 'string') {
+    return Array.from(
+      new Set(
+        rawCurrency
+          .split(',')
+          .map(item => normalizeCurrencyCode(item))
+          .filter(Boolean)
+      )
+    )
+  }
+
+  return []
+}
+
+const readCachedConfigCurrencyCodes = () => {
+  const rawConfig = localStorage.getItem(SITE_CONFIG_STORAGE_KEY)
+  if (!rawConfig) {
+    return []
+  }
+
+  try {
+    const parsed = JSON.parse(rawConfig) as CachedSiteConfig
+    return parseCurrencyCodes(parsed?.currency)
+  } catch (error) {
+    console.error(error)
+    return []
+  }
+}
 
 // 头像 URL
 const avatarUrl = computed(() => {
@@ -514,23 +559,41 @@ const currentLanguage = computed(() => {
 
 // 当前货币
 const currentCurrency = computed(() => {
-  const selectedCurrency = localeStore.currentCurrency
+  const selectedCurrency = normalizeCurrencyCode(localeStore.currentCurrency)
 
-  if (selectedCurrency && selectedCurrency !== 'none') {
+  if (selectedCurrency && selectedCurrency !== 'NONE') {
     return selectedCurrency
   }
 
-  return acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
+  return normalizeCurrencyCode(
+    acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
+  )
 })
 
 const languageOptions = computed<LocaleOption[]>(() => getLocaleOptions())
 
-const currencyOptions = computed(() => [
-  {
-    code: currentCurrency.value,
-    balanceText: getFormattedBalance(currentBalance.value, currentCurrency.value, 2)
+const currencyOptions = computed(() => {
+  const codesFromConfig = readCachedConfigCurrencyCodes()
+  const fallbackCode = currentCurrency.value || normalizeCurrencyCode(getCurrentCurrency()) || 'PHP'
+  const mergedCodes = [...codesFromConfig]
+
+  if (!mergedCodes.includes(currentCurrency.value)) {
+    mergedCodes.unshift(currentCurrency.value)
   }
-])
+
+  const codes = mergedCodes.length ? mergedCodes : [fallbackCode]
+
+  return codes.map(code => {
+    const balance =
+      getBalanceByCurrency(acctInfo.value, code) ?? getBalanceByCurrency(userInfo.value, code) ?? 0
+
+    return {
+      code,
+      icon: getCurrencyIconByCode(code),
+      balanceText: getFormattedBalance(balance, code, 2)
+    }
+  })
+})
 
 // 返回
 const handleBack = () => {
@@ -602,12 +665,21 @@ const settingsMenus = computed(() => [
 
 // 复制推荐链接
 const getBalanceByCurrency = (data: BalanceCarrier | null | undefined, currency: string) => {
-  if (!data) return undefined
+  if (!data || !currency) {
+    return undefined
+  }
 
-  const balanceKey = balanceFieldMap[currency.toUpperCase() as keyof typeof balanceFieldMap]
+  const currencyCode = normalizeCurrencyCode(currency)
+  const balanceKey = balanceFieldMap[currencyCode as keyof typeof balanceFieldMap]
 
   if (balanceKey && typeof data[balanceKey] === 'number') {
     return data[balanceKey]
+  }
+
+  const dynamicBalanceKey = `balance${currencyCode.charAt(0)}${currencyCode.slice(1).toLowerCase()}`
+  const dynamicBalanceValue = (data as Record<string, unknown>)[dynamicBalanceKey]
+  if (typeof dynamicBalanceValue === 'number') {
+    return dynamicBalanceValue
   }
 
   return typeof data.balance === 'number' ? data.balance : undefined
@@ -785,7 +857,12 @@ const handleLanguageSelect = (code: Locale) => {
 }
 
 const handleCurrencySelect = (code: string) => {
-  localeStore.setCurrency(code)
+  const selectedCode = normalizeCurrencyCode(code)
+  if (!selectedCode) {
+    return
+  }
+
+  localeStore.setCurrency(selectedCode)
 }
 
 const initializePersonalCenter = async () => {

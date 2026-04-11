@@ -223,3 +223,14 @@ export interface QueryFeedbacksResponse {
   success: boolean
   result?: QueryFeedbackItem[]
 }
+
+// 一键领取反馈奖励 请求参数
+export interface ReceiveAllFeedbackForm {}
+
+// 一键领取反馈奖励 响应
+export interface ReceiveAllFeedbackResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: unknown
+}

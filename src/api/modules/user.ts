@@ -17,7 +17,9 @@ import type {
   SendFeedbackForm,
   SendFeedbackResponse,
   QueryFeedbacksForm,
-  QueryFeedbacksResponse
+  QueryFeedbacksResponse,
+  ReceiveAllFeedbackForm,
+  ReceiveAllFeedbackResponse
 } from '@/api/interface/user'
 
 /**
@@ -108,6 +110,21 @@ export function sendFeedback(data: SendFeedbackForm): Promise<SendFeedbackRespon
 export function queryFeedbacks(data: QueryFeedbacksForm): Promise<QueryFeedbacksResponse> {
   return request({
     url: '/f/queryFeedbacks',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 一键领取反馈奖励
+ * @param data 空对象
+ * @returns Promise<ReceiveAllFeedbackResponse>
+ */
+export function receiveAllFeedback(
+  data: ReceiveAllFeedbackForm
+): Promise<ReceiveAllFeedbackResponse> {
+  return request({
+    url: '/f/receiveAllFeedback',
     method: 'post',
     data
   })
