@@ -13,7 +13,13 @@ import type {
   GameBetTotalForm,
   GameBetTotalResponse,
   ModifyMemberTelePhoneForm,
-  ModifyMemberTelePhoneResponse
+  ModifyMemberTelePhoneResponse,
+  SendFeedbackForm,
+  SendFeedbackResponse,
+  QueryFeedbacksForm,
+  QueryFeedbacksResponse,
+  ReceiveAllFeedbackForm,
+  ReceiveAllFeedbackResponse
 } from '@/api/interface/user'
 
 /**
@@ -78,6 +84,47 @@ export function modifyMemberTelePhone(
 ): Promise<ModifyMemberTelePhoneResponse> {
   return request({
     url: '/mc/modifyMemberTelePhone',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 提交意见反馈
+ * @param data 反馈类型、内容、图片列表
+ * @returns Promise<SendFeedbackResponse>
+ */
+export function sendFeedback(data: SendFeedbackForm): Promise<SendFeedbackResponse> {
+  return request({
+    url: '/f/sendFeedback',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 查询我的反馈列表
+ * @param data 空对象
+ * @returns Promise<QueryFeedbacksResponse>
+ */
+export function queryFeedbacks(data: QueryFeedbacksForm): Promise<QueryFeedbacksResponse> {
+  return request({
+    url: '/f/queryFeedbacks',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 一键领取反馈奖励
+ * @param data 空对象
+ * @returns Promise<ReceiveAllFeedbackResponse>
+ */
+export function receiveAllFeedback(
+  data: ReceiveAllFeedbackForm
+): Promise<ReceiveAllFeedbackResponse> {
+  return request({
+    url: '/f/receiveAllFeedback',
     method: 'post',
     data
   })

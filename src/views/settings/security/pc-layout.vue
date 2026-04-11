@@ -13,14 +13,14 @@
           <component :is="card.icon" class="w-9 h-9 shrink-0 text-icon-2" />
           <div
             v-if="card.active"
-            class="flex h-7 w-7 items-center justify-center rounded-full bg-[#2AEE88]/15"
+            class="flex h-7 w-7 items-center justify-center rounded-full"
             aria-hidden="true"
           >
             <SuccessIcon class="w-4 h-4" />
           </div>
           <div
             v-else
-            class="flex h-7 w-7 items-center justify-center rounded-full bg-[#FF9822]/15"
+            class="flex h-7 w-7 items-center justify-center rounded-full"
             aria-hidden="true"
           >
             <WarningIcon class="w-4 h-4" />

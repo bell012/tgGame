@@ -22,10 +22,15 @@
             v-else-if="!loading && dataList.length === 0"
             class="flex flex-col items-center justify-center mt-[100px]"
           >
-            <img :src="noDataImg" alt="No data" class="h-[200px] w-auto mb-2.5" />
-            <p class="text-text-1 text-xs font-[500] mb-5">
-              {{ $t('common.noData') }}
-            </p>
+            <!-- 空状态 -->
+            <ThemedEmptyState
+              :dark-image="noDataImg"
+              :image-alt="$t('common.noData')"
+              :message="$t('common.noData')"
+              container-class="mt-0"
+              image-class="h-[200px] w-auto mb-2.5"
+              text-class="text-text-1 text-xs font-[500] mb-5"
+            />
             <button
               class="w-[200px] h-[40px] rounded-lg bg-theme-primary text-text-4 font-[700] text-sm flex items-center justify-center"
               @click="handleStartPlaying"
@@ -137,6 +142,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import WalletLayout from '../index.vue'
 import PcLayout from './pc-layout.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'

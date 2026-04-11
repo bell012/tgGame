@@ -7,6 +7,7 @@
       <a
         href="javascript:void(0);"
         class="button ml-auto flex items-center bg-bg-3 gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-layer5"
+        @click="handleAllClick(props.sysGameTypeCode)"
         >{{ $t('home.All') }}</a
       >
       <div v-if="!isMobile" class="ml-2 flex gap-x-1">
@@ -110,6 +111,7 @@ import peopleNumber from './img/peopleNumber.svg?component'
 import { useAuthModalStore } from '@/stores/authModal'
 import { StringExtension } from '@/utils/string-extension'
 import { navigateToName } from '@/utils/router'
+import { navigateTo } from '@/utils/router'
 interface GameItem {
   img: {
     maintain: boolean
@@ -122,6 +124,7 @@ interface GameItem {
 interface Props {
   title: string
   list: any[]
+  sysGameTypeCode: string
 }
 
 const props = defineProps<Props>()
@@ -164,7 +167,9 @@ const updateButtons = () => {
   prevDisabled.value = left <= 1
   nextDisabled.value = left >= Math.max(0, max - 1)
 }
-
+const handleAllClick = (sysGameTypeCode: string) => {
+  navigateTo(`/gamelist/${sysGameTypeCode}`)
+}
 onMounted(async () => {
   isMobile.value = window.matchMedia('(max-width: 640px)').matches
   await nextTick()
@@ -191,7 +196,6 @@ const scrollNext = () => {
   if (!el || nextDisabled.value) return
   const unit = getScrollUnit(el)
   el.scrollBy({ left: unit, behavior: 'smooth' })
-  // 延迟更新以配合平滑滚动
   setTimeout(updateButtons, 350)
 }
 

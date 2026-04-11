@@ -109,7 +109,7 @@
     </section>
 
     <SettingsLayout v-else current-tab="preferences">
-      <div class="mx-auto w-full max-w-[760px] space-y-4">
+      <div class="w-full space-y-4">
         <section class="rounded-xl bg-bg-2 px-5 py-4">
           <h3 class="border-b border-opacity-10 pb-3 text-xl font-[700] text-text-1">账户设置</h3>
 
@@ -119,7 +119,7 @@
             @click="openCurrencyPopup"
           >
             <span class="text-lg font-[700] text-text-1">显示币种</span>
-            <div class="flex items-center gap-2.5">
+            <div ref="desktopCurrencyAnchorRef" class="flex items-center gap-2.5">
               <span class="text-base text-text-2">{{ currentCurrency }}</span>
               <div class="flex h-6 w-6 items-center justify-center rounded-md bg-bg-1">
                 <ArrowRightIcon class="h-3.5 w-3.5 text-text-2" />
@@ -211,6 +211,8 @@
     <Teleport to="body">
       <CurrencyPopup
         v-model:visible="showCurrencyPopup"
+        :desktop="!isMobile"
+        :desktop-anchor="currencyPopupAnchor"
         :selected-currency="currentCurrency"
         :options="currencyOptions"
         @select="handleCurrencySelect"
@@ -257,6 +259,13 @@ type CurrencyOption = {
   balanceText: string
 }
 
+type PopupAnchorRect = {
+  top: number
+  left: number
+  width: number
+  height: number
+}
+
 type CachedSiteConfig = {
   currency?: unknown
 }
@@ -290,6 +299,8 @@ const hideGameData = ref(false)
 const hideUserName = ref(false)
 const showCurrencyPopup = ref(false)
 const showLanguagePopup = ref(false)
+const currencyPopupAnchor = ref<PopupAnchorRect | null>(null)
+const desktopCurrencyAnchorRef = ref<HTMLElement | null>(null)
 const currentCurrency = ref('PHP')
 const currencyOptions = ref<CurrencyOption[]>([])
 const languageOptions = computed<LocaleOption[]>(() => getLocaleOptions())
@@ -391,6 +402,22 @@ const syncCurrencyDataFromCache = () => {
 
 const openCurrencyPopup = () => {
   syncCurrencyDataFromCache()
+
+  if (!isMobile.value) {
+    const anchorElement = desktopCurrencyAnchorRef.value
+    if (anchorElement) {
+      const rect = anchorElement.getBoundingClientRect()
+      currencyPopupAnchor.value = {
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height
+      }
+    } else {
+      currencyPopupAnchor.value = null
+    }
+  }
+
   showCurrencyPopup.value = true
 }
 
