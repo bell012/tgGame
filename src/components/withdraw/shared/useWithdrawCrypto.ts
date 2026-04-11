@@ -255,13 +255,13 @@ const matchCryptoMemberCard = (account: MemberCardItem, method: WithdrawManagerI
     return false
   }
 
-  const accountCardType = normalizeText(account.cardType)
-  const accountPaymentCode = normalizeText(account.paymentCode)
+  const accountCardType = normalizeText(account.type)
+  const accountPaymentCode = normalizeText(account.cardType)
   const methodCardType = normalizeText(method.cardType)
   const methodPaymentCode = normalizeText(method.paymentCode)
 
   return [accountCardType, accountPaymentCode].some(
-    value => value && (value === methodCardType || value === methodPaymentCode)
+    value => value && value === methodCardType && value === methodPaymentCode
   )
 }
 
