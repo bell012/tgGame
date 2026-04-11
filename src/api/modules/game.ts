@@ -103,7 +103,7 @@ export function refreshGameStatistics(
   data: GetGameStatisticsParams
 ): Promise<GameStatisticsResponse> {
   return request({
-    url: '/special/refreshCameStatistics',
+    url: '/special/refreshGameStatistics',
     method: 'post',
     data
   })
