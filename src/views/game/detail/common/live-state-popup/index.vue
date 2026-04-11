@@ -215,25 +215,13 @@ const refreshGameStatistics = async () => {
     statistics.value = emptyStatistics()
     return
   }
-
   isLoading.value = true
   try {
-    const res = await Api.game.refreshGameStatistics({
+    await Api.game.refreshGameStatistics({
       itemCode,
       platformCode
     })
-
-    const result = res?.result
-    if (result && typeof result === 'object') {
-      statistics.value = {
-        profit: result.profit ?? 0,
-        wagered: result.wagered ?? 0,
-        win: result.win ?? 0,
-        lose: result.lose ?? 0
-      }
-      return
-    }
-    statistics.value = emptyStatistics()
+    fetchGameStatistics()
   } catch (error) {
     console.error('refreshGameStatistics failed', error)
     statistics.value = emptyStatistics()
