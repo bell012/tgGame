@@ -106,13 +106,13 @@
 <script setup lang="ts">
 import { type ComponentPublicInstance, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { usePaymentMethodsFlow } from './components/shared/usePaymentMethodsFlow'
+import { usePaymentMethodsFlow } from '@/components/paymentMethods/shared/usePaymentMethodsFlow'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
-import AccountCardComponent from './components/accountCard.vue'
-import DeleteNotificationPop from './components/deleteNotificationPop.vue'
-import AddAccountPop from './components/addAccountPop.vue'
-import SmsVerificationPop from './components/smsVerificationPop.vue'
-import PaymentPasswordPop from './components/paymentPasswordPop.vue'
+import AccountCardComponent from '@/components/paymentMethods/accountCard.vue'
+import DeleteNotificationPop from '@/components/paymentMethods/deleteNotificationPop.vue'
+import AddAccountPop from '@/components/paymentMethods/addAccountPop.vue'
+import SmsVerificationPop from '@/components/paymentMethods/smsVerificationPop.vue'
+import PaymentPasswordPop from '@/components/paymentMethods/paymentPasswordPop.vue'
 
 const {
   addAccountOptionVisible,

@@ -7,16 +7,10 @@ import GrabPayCardIcon from '@/static/svg/withdraw/GrabPay_card.svg?component'
 import MAYACardIcon from '@/static/svg/withdraw/MAYA_card.svg?component'
 import ShopeePayCardIcon from '@/static/svg/withdraw/ShopeePay_card.svg?component'
 import USDTCardIcon from '@/static/svg/withdraw/USDT_card.svg?component'
-export interface ICoinNetworkItem {
-  text: string
-}
-
-export interface ICoinItem {
-  name: string
-  symbol: string
-  bgColor: string
-  networks: ICoinNetworkItem[]
-}
+import {
+  resolveCoinNetworks,
+  type CoinNetworkItem
+} from '@/components/paymentMethods/shared/cryptoCoins'
 
 export interface AccountOption extends MemberCardItem {
   customCardBackground: Component | null
@@ -27,7 +21,7 @@ export interface PaymentMethodsOption extends WithdrawManagerItem {
   customRoundIcon: string
   label: string
   kind: string
-  networks: ICoinNetworkItem[]
+  networks: CoinNetworkItem[]
 }
 
 export interface AddAccountOption extends AccountOption {
@@ -41,38 +35,6 @@ export interface AccountCardOption extends AccountOption {
   label: string
   kind: string
 }
-
-export const DEFAULT_COINS: ICoinItem[] = [
-  {
-    name: 'USDT',
-    symbol: '₮',
-    bgColor: '#50AF95',
-    networks: [
-      { text: 'Tron (TRC20)' },
-      { text: 'Tron (BEP2)' },
-      { text: 'Tron (ERC20)' },
-      { text: 'Tron (BEPSC)' }
-    ]
-  },
-  {
-    name: 'USDC',
-    symbol: '$',
-    bgColor: '#2775CA',
-    networks: [{ text: 'TRC20' }, { text: 'BEP2' }, { text: 'ERC20' }, { text: 'BEPSC' }]
-  },
-  {
-    name: 'BTC',
-    symbol: '₿',
-    bgColor: '#F7931A',
-    networks: [{ text: 'TRC20' }, { text: 'BEP2' }, { text: 'ERC20' }, { text: 'BEPSC' }]
-  },
-  {
-    name: 'ETH',
-    symbol: 'Ξ',
-    bgColor: '#627EEA',
-    networks: [{ text: 'TRC20' }, { text: 'BEP2' }, { text: 'ERC20' }, { text: 'BEPSC' }]
-  }
-]
 
 export const isVisibleWithdrawManagerItem = (item: WithdrawManagerItem) => {
   return Number(item.status ?? 0) === 1
@@ -95,10 +57,6 @@ export const normalizeAccountOption = (item: MemberCardItem): AccountOption => (
   ...item,
   customCardBackground: resolveCardBackground(item.cardType)
 })
-
-const resolveCoinNetworks = (coinCode: string) => {
-  return DEFAULT_COINS.find(item => item.name === coinCode)?.networks ?? []
-}
 
 const resolveCardBackground = (paymentCode?: string | number) => {
   const normalized = String(paymentCode ?? '').trim()
@@ -197,8 +155,10 @@ export function usePaymentMethodsService() {
           type: 'fail',
           duration: 3000
         })
-        return
+        return false
       }
+
+      return true
     } catch (error) {
       console.log(error)
       showToast({
@@ -206,6 +166,7 @@ export function usePaymentMethodsService() {
         type: 'fail',
         duration: 3000
       })
+      return false
     }
   }
 
@@ -228,13 +189,14 @@ export function usePaymentMethodsService() {
           type: 'fail',
           duration: 3000
         })
-        return
+        return false
       }
 
       accountOptions.value = accountOptions.value?.map(item => ({
         ...item,
         defaultCard: item.rowId === rowId ? 1 : 0
       }))
+      return true
     } catch (error) {
       console.log(error)
       showToast({
@@ -242,6 +204,7 @@ export function usePaymentMethodsService() {
         type: 'fail',
         duration: 3000
       })
+      return false
     }
   }
 
