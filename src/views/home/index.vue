@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="home max-w-[1248px] mx-auto px-3.5 py-2 sm:px-4 sm:py-4">
     <div style="height: 65px" class="sm:hidden"></div>
     <div v-if="userInfo">
@@ -203,6 +203,7 @@
     <div>
       <GameList
         :title="value.sysGameTypeName"
+        :sysGameTypeCode="value.sysGameTypeCode"
         :list="value.list"
         v-for="value in gameData"
         :key="value.sysGameTypeName"
@@ -352,6 +353,7 @@ interface RawGameDataItem {
 }
 
 interface HomeGameSection {
+  sysGameTypeCode: string
   list: RawGameDataItem[]
   sysGameTypeName: string
 }
@@ -437,6 +439,7 @@ const toGameImageUrl = (value: string) => {
 const mapHomeGameSections = (source: RawGameDataItem[]): HomeGameSection[] => {
   return source.map(item => ({
     list: item?.subGame?.[0]?.subGame?.slice(0, 10) || [],
+    sysGameTypeCode: item?.sysGameTypeCode || '',
     sysGameTypeName: item?.sysGameTypeName || ''
   }))
 }
@@ -476,7 +479,6 @@ onMounted(async () => {
     userInfo.value = localStorage.getItem('userInfo')
     const res = await Api.home.getGameData()
     const rawResult = Array.isArray(res.result) ? res.result : []
-
     rawGameData.value = rawResult
     gameData.value = mapHomeGameSections(rawResult)
     localStorage.setItem('gameData', JSON.stringify(rawResult))
