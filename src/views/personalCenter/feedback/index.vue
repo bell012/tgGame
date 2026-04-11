@@ -38,7 +38,7 @@
         :feedback-list="myFeedbackList"
         :status-text-map="statusTextMap"
         :status-class-map="statusClassMap"
-        @claim="openClaimSuccessPopup"
+        @claim="handleReceiveAllFeedback"
         @open-detail="goToFeedbackDetail"
       />
     </div>
@@ -112,9 +112,13 @@ const router = useRouter()
 const activeTab = ref<FeedbackTab>('create')
 const isEmbeddedMode = computed(() => Boolean(props.embedded))
 const feedbackPageContainerClass = computed(() => {
-  return isEmbeddedMode.value
-    ? 'relative h-full overflow-y-auto bg-bg-1'
-    : 'fixed inset-0 overflow-y-auto bg-bg-1'
+  if (isEmbeddedMode.value) {
+    return showFeedbackDetailPopup.value
+      ? 'relative h-full overflow-hidden bg-bg-1'
+      : 'relative h-full overflow-y-auto bg-bg-1'
+  }
+
+  return 'fixed inset-0 overflow-y-auto bg-bg-1'
 })
 
 // 创建反馈表单状态
@@ -131,6 +135,7 @@ const isLoadingMyFeedbackList = ref(false)
 const myFeedbackList = ref<FeedbackListItem[]>([])
 const showFeedbackDetailPopup = ref(false)
 const selectedFeedbackDetailRecordId = ref('')
+const isReceivingAllFeedback = ref(false)
 
 // 领取奖励弹窗状态
 const showClaimSuccessPopup = ref(false)
@@ -354,6 +359,37 @@ const startClaimAmountAnimation = () => {
 const openClaimSuccessPopup = () => {
   showClaimSuccessPopup.value = true
   startClaimAmountAnimation()
+}
+
+const handleReceiveAllFeedback = async () => {
+  if (isReceivingAllFeedback.value) {
+    return
+  }
+
+  isReceivingAllFeedback.value = true
+  try {
+    const response = await Api.user.receiveAllFeedback({})
+    if (!response?.success) {
+      throw new Error(response?.message || '领取失败')
+    }
+
+    openClaimSuccessPopup()
+    showToast({
+      message: '领取成功',
+      position: 'middle',
+      type: 'success',
+      zIndex: 100100
+    })
+    void fetchMyFeedbackList()
+  } catch (error) {
+    showToast({
+      message: error instanceof Error ? error.message : '领取失败',
+      position: 'middle',
+      type: 'fail'
+    })
+  } finally {
+    isReceivingAllFeedback.value = false
+  }
 }
 
 const closeClaimSuccessPopup = () => {
