@@ -92,6 +92,7 @@ import H5Header from '@/components/common/H5Header.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import SecuritySvg from '@/static/svg/settings/security.svg?component'
 import GolbalSvg from '@/static/svg/settings/golbal.svg?component'
+import PaymentMethodsSvg from '@/static/svg/settings/payment_methods.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import SetStateIcon from '@/static/svg/setState.svg?skipsvgo'
 type SettingsTab = string
@@ -137,6 +138,12 @@ const PcMenuItems = computed<SettingsMenuItem[]>(() => [
     tab: 'preferences' as SettingsTab,
     label: t('common.preferences'),
     icon: GolbalSvg
+  },
+  {
+    path: '/payment-methods',
+    tab: 'payment-methods' as SettingsTab,
+    label: t('payment_methods.title'),
+    icon: PaymentMethodsSvg
   }
 ])
 
@@ -155,6 +162,13 @@ const H5MenuItems = computed<SettingsMenuItem[]>(() => [
     tab: 'preferences' as SettingsTab,
     label: t('common.preferences'),
     icon: GolbalSvg,
+    rightIcon: ArrowRightIcon
+  },
+  {
+    path: '/payment-methods',
+    tab: 'payment-methods' as SettingsTab,
+    label: t('payment_methods.title'),
+    icon: PaymentMethodsSvg,
     rightIcon: ArrowRightIcon
   }
 ])
