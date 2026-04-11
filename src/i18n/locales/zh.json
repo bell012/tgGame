@@ -45,7 +45,10 @@
     "JoinNow": "立即加入",
     "ExclusivePromotions": "专属优惠",
     "DontDisplayThisForNext7Day": "下次7天内不再显示",
-    "Poker": "扑克"
+    "Poker": "扑克",
+    "banner_sign_up": "立即注册，获得",
+    "banner_sign_up_amount": "高达 ",
+    "banner_sign_up_amount1": "$20,000,00"
   },
   "common": {
     "loading": "加载中...",
@@ -644,6 +647,7 @@
       "unused": "未使用",
       "inUse": "使用中",
       "editAvatar": "编辑头像",
+      "uploadFromLocal": "从本地上传",
       "takePhoto": "拍照",
       "chooseFromAlbum": "从手机相册选择",
       "cancel": "取消",

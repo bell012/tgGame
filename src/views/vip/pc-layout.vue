@@ -1,6 +1,6 @@
 <template>
   <div class="mx-auto max-w-[1336px] px-4 pb-[40px] xl:px-0">
-    <div class="">
+    <div class="mt-[16px]">
       <h1 class="text-xl font-[700] text-text-1">{{ $t('userMenu.vipClub') }}</h1>
 
       <div class="mt-6 flex flex-col gap-4">
@@ -190,9 +190,8 @@
         @confirm="confirmClaimSuccess"
       />
     </div>
-
-    <CommonFooter class="mt-[40px]" />
   </div>
+  <CommonFooter class="mt-[40px]" />
 </template>
 
 <script setup lang="ts">

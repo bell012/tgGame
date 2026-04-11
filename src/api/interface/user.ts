@@ -181,3 +181,56 @@ export interface ModifyMemberTelePhoneResponse {
   message: string
   success: boolean
 }
+
+// 提交意见反馈 请求参数
+export interface SendFeedbackForm {
+  feedbackType: string // 反馈类型
+  content: string // 反馈内容
+  imgs: string[] // 图片路径列表
+}
+
+// 提交意见反馈 响应
+export interface SendFeedbackResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: unknown
+}
+
+// 查询我的反馈列表 请求参数
+export interface QueryFeedbacksForm {}
+
+// 查询我的反馈列表 响应结果
+export interface QueryFeedbackItem {
+  channelId?: string
+  content?: string
+  createTime?: number
+  downloadSite?: string
+  feedbackType?: number | string
+  imgs?: string[]
+  memberCurrency?: string
+  memberId?: string
+  memberRowId?: number
+  rowId?: number | string
+  site?: string
+  status?: number | string
+}
+
+// 查询我的反馈列表 响应
+export interface QueryFeedbacksResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryFeedbackItem[]
+}
+
+// 一键领取反馈奖励 请求参数
+export interface ReceiveAllFeedbackForm {}
+
+// 一键领取反馈奖励 响应
+export interface ReceiveAllFeedbackResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: unknown
+}

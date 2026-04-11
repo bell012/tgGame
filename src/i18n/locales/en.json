@@ -45,7 +45,10 @@
     "JoinNow": "Join Now",
     "ExclusivePromotions": "Exclusive Promotions",
     "DontDisplayThisForNext7Day": "Don’t display this for next 7 day",
-    "Poker": "POKER"
+    "Poker": "POKER",
+    "banner_sign_up": "Sign Up & Get",
+    "banner_sign_up_amount": "Up To ",
+    "banner_sign_up_amount1": "$20,000,00"
   },
   "common": {
     "loading": "Loading...",
@@ -645,6 +648,7 @@
       "unused": "Unused",
       "inUse": "In Use",
       "editAvatar": "Edit Avatar",
+      "uploadFromLocal": "Upload from Device",
       "takePhoto": "Take Photo",
       "chooseFromAlbum": "Choose from Photo Library",
       "cancel": "Cancel",
