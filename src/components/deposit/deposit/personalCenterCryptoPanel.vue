@@ -191,7 +191,7 @@
                 class="pointer-events-none absolute -right-1 -top-1 min-w-8 rounded-lg bg-center bg-contain bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4"
                 :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
               >
-                {{ presetDiscountRatioMap[preset] + '% Bonus' }}
+                {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}
               </span>
             </button>
           </div>
@@ -204,7 +204,7 @@
               class="flex items-center gap-2 text-[13px] leading-4 text-text-3 transition-colors lg:hover:text-text-1"
               @click="expanded = !expanded"
             >
-              <span>{{ expanded ? 'Collapse' : 'Expand' }}</span>
+              <span>{{ expanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}</span>
               <ExpandUpDoubleIcon v-if="expanded" class="h-2 w-[9px]" />
               <ExpandDownDoubleIcon v-else class="h-2 w-[9px]" />
             </button>
@@ -230,7 +230,7 @@
       >
         <span>{{ t('deposit.load_from_wallet') }}</span>
         <span class="flex items-center gap-1">
-          <img class="h-6" :src="groupIcon" alt="wallet bonus" />
+          <img class="h-6" :src="groupIcon" :alt="t('deposit.wallet_bonus_alt')" />
           <span class="text-[13px] leading-4">+300</span>
         </span>
       </button>
@@ -289,7 +289,6 @@ const emit = defineEmits<{
 
 const CRYPTO_COLUMN_NAME = 'USDT泰达币'
 const CRYPTO_PAY_CHANNEL_CODE = '45'
-const unavailableMessage = 'Unavailable'
 const visibleCoins = [
   {
     name: 'USDT',
@@ -374,7 +373,7 @@ const presetDiscountRatioMap = computed<Record<number, string>>(() => {
 const amountPlaceholder = computed(() =>
   isManualAmountAllowed.value
     ? t('deposit.deposit_amount_input_placeholder')
-    : 'Please select a preset deposit amount.'
+    : t('deposit.deposit_amount_preset_placeholder')
 )
 const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
 
@@ -417,7 +416,7 @@ const formatWageringLabel = (multiple: number) =>
 // 显示当前功能不可用的提示信息
 const showUnavailableToast = () => {
   showToast({
-    message: unavailableMessage,
+    message: t('deposit.unavailable'),
     type: 'fail'
   })
 }

@@ -148,7 +148,7 @@
               class="absolute -top-2 -right-1 text-[10px] text-text-1 px-2 pb-0.5 bg-contain bg-no-repeat bg-center"
               :style="{ backgroundImage: `url(${bonusBgIcon})` }"
             >
-              {{ presetDiscountRatioMap[preset] + '% Bonus' }}
+              {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}
             </div>
           </button>
         </div>
@@ -157,7 +157,7 @@
             class="mx-auto flex items-center gap-1 text-xs text-text-3 lg:hover:text-text-1 transition"
             @click="expanded = !expanded"
           >
-            {{ expanded ? 'Collapse' : 'Expand' }}
+            {{ expanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}
             <ExpandUpDoubleIcon v-if="expanded" class="w-[9px] h-2" />
             <ExpandDownDoubleIcon v-else class="w-[9px] h-2" />
           </button>
@@ -182,7 +182,7 @@
     >
       <div class="text-xs sm:text-sm text-text-1">{{ t('deposit.load_from_wallet') }}</div>
       <div class="flex items-center">
-        <img class="h-6 mr-1" :src="groupIcon" />
+        <img class="h-6 mr-1" :src="groupIcon" :alt="t('deposit.wallet_bonus_alt')" />
         <div class="text-xs sm:text-sm text-text-1">+300</div>
       </div>
     </div>
@@ -248,7 +248,6 @@ const emit = defineEmits<{
 const CRYPTO_COLUMN_NAME = 'USDT泰达币'
 const CRYPTO_PAY_CHANNEL_CODE = '45'
 const defaultPresetAmounts: number[] = []
-const unavailableMessage = 'Unavailable'
 
 const coins = [
   {
@@ -338,14 +337,14 @@ const presetDiscountRatioMap = computed<Record<number, string>>(() => {
 const amountPlaceholder = computed(() =>
   isManualAmountAllowed.value
     ? t('deposit.deposit_amount_input_placeholder')
-    : 'Please select a preset deposit amount.'
+    : t('deposit.deposit_amount_preset_placeholder')
 )
 const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
 
 // 显示不可用提示
 const showUnavailableToast = () => {
   showToast({
-    message: unavailableMessage,
+    message: t('deposit.unavailable'),
     type: 'fail'
   })
 }

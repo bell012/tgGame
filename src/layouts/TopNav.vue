@@ -228,9 +228,6 @@
 
     <!-- PC 搜索弹窗 -->
     <ExploreDesktop v-model="showExplorehModal" />
-
-    <!-- 充值 -->
-    <DepositPop v-model="showDepositPop" />
   </header>
 </template>
 
@@ -246,7 +243,6 @@ import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
-import DepositPop from '@/components/deposit/deposit/depositPop.vue'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
@@ -278,8 +274,6 @@ const emit = defineEmits<{
 
 const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
-
-const showDepositPop = ref(false)
 
 const showExplorehModal = ref(false)
 
@@ -377,7 +371,7 @@ const handleCurrencyChange = (code: string) => {
 }
 
 const openDeposit = () => {
-  showDepositPop.value = true
+  navigateTo('/deposit')
 }
 
 // 处理通知图标点击。
