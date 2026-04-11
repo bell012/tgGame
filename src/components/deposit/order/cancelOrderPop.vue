@@ -149,7 +149,7 @@ const handleConfirmCancel = async () => {
 
     if (!cancelResponse?.success) {
       showToast({
-        message: cancelResponse?.message || 'Cancel failed',
+        message: cancelResponse?.message || t('deposit.cancel_failed'),
         type: 'fail'
       })
       return
@@ -159,7 +159,7 @@ const handleConfirmCancel = async () => {
     const detail = queryResponse?.success ? queryResponse.result : undefined
     if (!detail) {
       showToast({
-        message: queryResponse?.message || 'Query order failed',
+        message: queryResponse?.message || t('deposit.query_order_failed'),
         type: 'fail'
       })
       return

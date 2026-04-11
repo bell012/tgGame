@@ -24,7 +24,7 @@
         <img
           class="w-full sm:w-[386px]"
           :src="paymentReceiptSampleImage"
-          alt="Payment Receipt Sample"
+          :alt="t('deposit.payment_receipt_sample_alt')"
         />
       </div>
     </div>
