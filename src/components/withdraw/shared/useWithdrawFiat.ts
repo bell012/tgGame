@@ -205,9 +205,7 @@ export function useWithdrawFiat() {
 
     const nextAccount =
       matchedAccount ??
-      availableAccounts.value.find(
-        account => Number(account.defaultCard ?? account.isDefault ?? 0) === 1
-      ) ??
+      availableAccounts.value.find(account => Number(account.defaultCard ?? 0) === 1) ??
       null
 
     selectedAccount.value = nextAccount
@@ -268,7 +266,7 @@ export function useWithdrawFiat() {
 
       memberCards.value = result.map((item, index) => ({
         ...item,
-        localId: String(item.rowId ?? `${item.paymentCode ?? 'wallet'}-${index}`)
+        localId: String(item.rowId ?? `wallet-${index}`)
       }))
       hasLoadedMemberCards.value = true
     } catch (error) {
@@ -392,7 +390,7 @@ export function useWithdrawFiat() {
       return
     }
 
-    if (Number(nextSelectedAccount.defaultCard ?? nextSelectedAccount.isDefault ?? 0) === 1) {
+    if (Number(nextSelectedAccount.defaultCard ?? 0) === 1) {
       showToast({
         message: t('withdraw.default_account_cannot_be_changed'),
         type: 'fail',
@@ -421,8 +419,7 @@ export function useWithdrawFiat() {
 
         memberCards.value = memberCards.value.map(item => ({
           ...item,
-          defaultCard: item.localId === localId ? 1 : 0,
-          isDefault: item.localId === localId ? 1 : 0
+          defaultCard: item.localId === localId ? 1 : 0
         }))
 
         selectedAccount.value =
