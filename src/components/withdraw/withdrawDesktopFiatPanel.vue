@@ -81,19 +81,13 @@
               <button
                 type="button"
                 class="flex h-4 w-[30px] items-center rounded-full p-px transition-colors duration-200"
-                :class="
-                  Number(item.defaultCard ?? item.isDefault ?? 0) === 1
-                    ? 'bg-theme-primary'
-                    : 'bg-white/60'
-                "
+                :class="Number(item.defaultCard ?? 0) === 1 ? 'bg-theme-primary' : 'bg-white/60'"
                 @click.stop="handleToggleAccountDefault(item.localId)"
               >
                 <div
                   class="h-[14px] w-[14px] rounded-full bg-common-100 transition-transform duration-200"
                   :class="
-                    Number(item.defaultCard ?? item.isDefault ?? 0) === 1
-                      ? 'translate-x-[14px]'
-                      : 'translate-x-0'
+                    Number(item.defaultCard ?? 0) === 1 ? 'translate-x-[14px]' : 'translate-x-0'
                   "
                 />
               </button>

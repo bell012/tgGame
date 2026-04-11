@@ -574,6 +574,21 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'payment-methods',
+    name: 'payment-methods',
+    component: () => import('@/views/settings/paymentMethods/index.vue'),
+    meta: {
+      title: '收款管理',
+      description: '收款管理',
+      requiresAuth: true,
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 

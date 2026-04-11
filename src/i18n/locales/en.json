@@ -114,7 +114,8 @@
     "transactionPassword": "Transaction Password",
     "confirmTransactionPassword": "Confirm Transaction Password",
     "transactionPasswordSetSuccessfully": "Your transaction password has been set successfully.",
-    "transactionPasswordChangedSuccessfully": "Your transaction password has been changed successfully."
+    "transactionPasswordChangedSuccessfully": "Your transaction password has been changed successfully.",
+    "delete": "Delete"
   },
   "pwa": {
     "offlineReady": "App ready to work offline",
@@ -744,7 +745,12 @@
     "crypto_help": "How to withdraw crypto?",
     "crypto_address_notice": "Please make sure the recipient address is correct. Funds cannot be recovered if sent to the wrong address.",
     "default_address_cannot_be_changed": "Default address cannot be changed",
+    "default_address_cannot_be_deleted": "Default address cannot be deleted",
     "default_account_cannot_be_changed": "Default account cannot be changed",
+    "default_account_cannot_be_deleted": "Default account cannot be deleted",
+    "delete_receive_address_not_supported": "Deleting receiving accounts is not supported",
+    "delete_receive_account_title": "Delete Notification",
+    "delete_receive_account_desc": "Are you sure you want to delete the {name} receiving address?",
     "withdraw_now": "Withdraw Now",
     "you_get": "You Get",
     "kind_reminder_title": "Kind Reminder",
@@ -917,5 +923,10 @@
       "whitelistManagement": "Whitelist Management"
     },
     "hintNotAvailable": "Not available yet."
+  },
+  "payment_methods": {
+    "title": "Payment Methods",
+    "sms_content_text": "Add memberCard SMS verification.",
+    "busiPwd_content_text": "Add memberCard transaction password verification."
   }
 }
