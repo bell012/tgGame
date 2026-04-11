@@ -1,12 +1,10 @@
-import Api from '@/api'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
-import { useUserStore } from '@/stores/user'
-import { StringExtension } from '@/utils/string-extension'
 import { AddMemberCardForm } from '@/api/interface/withdraw'
+import { useMemberCardDefaultFlow } from '@/composables/useMemberCardDefaultFlow'
 import {
   AddAccountOption,
   AccountCardOption,
@@ -15,6 +13,7 @@ import {
 } from './usePaymentMethodsService'
 import { showToast } from 'vant'
 import { storeToRefs } from 'pinia'
+import { useMemberCardVerificationFlow } from '@/composables/useMemberCardVerificationFlow'
 
 const {
   paymentMethodsOptions,
@@ -32,49 +31,15 @@ const {
 
 export function usePaymentMethodsFlow() {
   const { t } = useI18n()
-  const addAccountOption = ref<AddAccountOption>()
   const selectPaymentMethodsOption = ref<PaymentMethodsOption>()
   const accountCardOption = ref<AccountCardOption>()
-  const isSendingSmsCode = ref(false)
-  const isCheckingSmsCode = ref(false)
-  const isCheckingPaymentPassword = ref(false)
-  const isSubmittingAdd = ref(false)
   const addAccountOptionVisible = ref(false)
   const deleteNotificationVisible = ref(false)
   const kindReminderVisible = ref(false)
-  const paymentPasswordVisible = ref(false)
-  const smsVerificationVisible = ref(false)
-  const smsCountdownTrigger = ref(0)
 
   const localeStore = useLocaleStore()
   const siteConfigStore = useSiteConfigStore()
-  const userStore = useUserStore()
   const { currentCurrency } = storeToRefs(localeStore)
-  const { userInfo } = storeToRefs(userStore)
-
-  const resolvedAreaCode = computed(() => String(userStore.userInfo?.areaCode ?? '').trim())
-  const resolvedTelephone = computed(() =>
-    String(userStore.userInfo?.telephone ?? '')
-      .trim()
-      .replace(/\D/g, '')
-  )
-  const maskedPhoneNumber = computed(() => {
-    const areaCode = resolvedAreaCode.value
-    const telephone = resolvedTelephone.value
-
-    if (!telephone) {
-      return ''
-    }
-
-    if (telephone.length <= 4) {
-      return `+${areaCode}-${telephone}`
-    }
-
-    return `+${areaCode}-${telephone.slice(0, 3)}****${telephone.slice(-4)}`
-  })
-  const hasTransactionPassword = computed(() =>
-    Boolean(String(userInfo.value?.busiPwd ?? '').trim())
-  )
   const withdrawCardTypeLimit = computed(() => {
     const value = Number(
       (
@@ -169,28 +134,12 @@ export function usePaymentMethodsFlow() {
     return res ?? []
   })
 
-  const modifyDefaultAccountCard = (option: AccountCardOption) => {
-    if (
-      option == null ||
-      !option.rowId ||
-      String(option.rowId).trim() === '' ||
-      !option.cardType ||
-      String(option.cardType).trim() === ''
-    ) {
-      return
-    }
-
-    if (Number(option.defaultCard ?? 0) === 1) {
-      showToast({
-        message: t('withdraw.default_account_cannot_be_changed'),
-        type: 'fail',
-        duration: 3000
-      })
-      return
-    }
-
-    modifyDefaultCard(option.rowId, String(option.cardType).trim())
-  }
+  const { setDefault: modifyDefaultAccountCard } = useMemberCardDefaultFlow<AccountCardOption>({
+    resolveTarget: option => option,
+    alreadyDefaultMessage: t('withdraw.default_account_cannot_be_changed'),
+    updateFailedMessage: 'Update default account failed',
+    submitDefault: modifyDefaultCard
+  })
 
   const deleteAccountCard = (option: AccountCardOption) => {
     if (option == null || !option.rowId || String(option.rowId).trim() === '') {
@@ -210,135 +159,77 @@ export function usePaymentMethodsFlow() {
     deleteNotificationVisible.value = true
   }
 
-  const buildAddMemberCardForm = (data: AddAccountOption): AddMemberCardForm => {
-    return {
-      ...(addAccountSecurityVerifyWay.value !== 0
-        ? { verifyType: addAccountSecurityVerifyWay.value }
-        : {}),
-      ...(addAccountSecurityVerifyWay.value !== 0 && data.verifyCode
-        ? { verifyCode: StringExtension.md5(data.verifyCode) }
-        : {}),
-      type: data.type,
-      cardType: data.cardType,
-      accountNo: data.accountNo,
-      accountName: data.accountName,
-      accountSubNo: '',
-      defaultCard: 1,
-      validDate: 0,
-      remark: ''
-    } as AddMemberCardForm
-  }
-
   const reopenAddAddressForm = () => {
-    paymentPasswordVisible.value = false
-    smsVerificationVisible.value = false
+    closePaymentPasswordVerificationState()
+    closeSmsVerificationState()
     addAccountOptionVisible.value = true
   }
 
   const closeSmsVerification = () => {
+    closeSmsVerificationState()
     reopenAddAddressForm()
   }
 
   const closeAddAddressForm = () => {
-    paymentPasswordVisible.value = false
-    smsVerificationVisible.value = false
+    closePaymentPasswordVerificationState()
+    closeSmsVerificationState()
     addAccountOptionVisible.value = false
   }
 
-  const handleAddAccountOptionSmsVerificationResend = async () => {
-    await sendAddAccountOptionSmsCode()
-  }
-
-  const sendAddAccountOptionSmsCode = async () => {
-    if (isSendingSmsCode.value) {
-      return false
-    }
-
-    if (!resolvedTelephone.value) {
-      showToast({
-        message: 'Phone number unavailable',
-        type: 'fail',
-        duration: 3000
-      })
-      return false
-    }
-
-    try {
-      isSendingSmsCode.value = true
-      const response = await Api.auth.sendSms({
-        telephone: resolvedTelephone.value,
-        areaCode: resolvedAreaCode.value
-      })
-
-      if (response?.message) {
-        showToast({
-          message: response.message,
-          type: response?.code === 'C2' ? 'success' : 'fail'
-        })
-      }
-
-      if (response?.code === 'C2') {
-        smsCountdownTrigger.value += 1
-        return true
-      }
-
-      return false
-    } finally {
-      isSendingSmsCode.value = false
-    }
-  }
-
-  const handleAddAccountOptionSmsVerificationConfirm = async (code: string) => {
-    if (isCheckingSmsCode.value || isSubmittingAdd.value) {
-      return
-    }
-
-    try {
-      isCheckingSmsCode.value = true
-      const response = await Api.auth.checkSms({
-        telephone: resolvedTelephone.value,
-        areaCode: resolvedAreaCode.value,
-        smsCode: code
-      })
-
-      if (response?.code !== 'C2') {
-        showToast({
-          message: String(response?.message || 'Invalid sms code'),
-          type: 'fail',
-          duration: 3000
-        })
-        return
-      }
-
-      smsVerificationVisible.value = false
-      if (addAccountOption.value) {
-        addAccountOption.value.verifyCode = code
-      }
-      await submitAcountCard()
-    } finally {
-      isCheckingSmsCode.value = false
-    }
-  }
-
   const closePaymentPasswordVerification = () => {
+    closePaymentPasswordVerificationState()
     reopenAddAddressForm()
   }
 
-  const handleAddAccountOptionPaymentPasswordVerificationConfirm = async (code: string) => {
-    if (isCheckingPaymentPassword.value || isSubmittingAdd.value) {
-      return
-    }
-
-    try {
-      isCheckingPaymentPassword.value = true
-      if (addAccountOption.value) {
-        addAccountOption.value.verifyCode = code
+  const {
+    hasTransactionPassword,
+    maskedPhoneNumber,
+    isSendingSmsCode,
+    isCheckingSmsCode,
+    isCheckingPaymentPassword,
+    isSubmitting: isSubmittingAdd,
+    paymentPasswordVisible,
+    smsVerificationVisible,
+    smsCountdownTrigger,
+    beginSubmit,
+    closeSmsVerification: closeSmsVerificationState,
+    closePaymentPasswordVerification: closePaymentPasswordVerificationState,
+    handleSmsVerificationResend: handleAddAccountOptionSmsVerificationResend,
+    handleSmsVerificationConfirm: handleAddAccountOptionSmsVerificationConfirm,
+    handlePaymentPasswordVerificationConfirm:
+      handleAddAccountOptionPaymentPasswordVerificationConfirm
+  } = useMemberCardVerificationFlow<AddAccountOption>({
+    buildRequestData: (data): AddMemberCardForm | null => {
+      if (!data.type || !data.cardType || !data.accountNo || !data.accountName) {
+        return null
       }
-      await submitAcountCard()
-    } finally {
-      isCheckingPaymentPassword.value = false
+
+      return {
+        ...(addAccountSecurityVerifyWay.value !== 0
+          ? { verifyType: String(addAccountSecurityVerifyWay.value) }
+          : {}),
+        type: data.type,
+        cardType: data.cardType,
+        accountNo: data.accountNo,
+        accountName: data.accountName,
+        accountSubNo: '',
+        defaultCard: 1,
+        validDate: 0,
+        remark: ''
+      }
+    },
+    submitRequest: addAcount,
+    onRequireTransactionPassword: () => {
+      kindReminderVisible.value = true
+    },
+    onSubmitted: async () => {
+      await requestMemberCards()
+      closeAddAddressForm()
+    },
+    onSubmitFailed: () => {
+      reopenAddAddressForm()
     }
-  }
+  })
 
   const openAddAcountCard = () => {
     if (!hasTransactionPassword.value) {
@@ -350,37 +241,10 @@ export function usePaymentMethodsFlow() {
   }
 
   const addAcountCard = async (data: AddAccountOption) => {
-    if (!hasTransactionPassword.value) {
-      kindReminderVisible.value = true
-      return
-    }
+    const result = await beginSubmit(data)
 
-    addAccountOption.value = data
-
-    if (addAccountSecurityVerifyWay.value == 1) {
-      smsVerificationVisible.value = true
-      await sendAddAccountOptionSmsCode()
-      return
-    }
-
-    if (addAccountSecurityVerifyWay.value == 2) {
-      paymentPasswordVisible.value = true
-      return
-    }
-
-    submitAcountCard()
-  }
-
-  const submitAcountCard = async () => {
-    try {
-      isSubmittingAdd.value = true
-      if (addAccountOption.value) {
-        const requestData = buildAddMemberCardForm(addAccountOption.value)
-        await addAcount(requestData)
-        closeAddAddressForm()
-      }
-    } finally {
-      isSubmittingAdd.value = false
+    if (result === 'sms' || result === 'password') {
+      addAccountOptionVisible.value = false
     }
   }
 
