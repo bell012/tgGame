@@ -37,31 +37,7 @@
       </button>
     </div>
     <div class="mt-3.5 p-3.5 bg-bg-2 rounded-lg">
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <div class="text-xs font-normal leading-normal">
-            {{ t('withdraw.withdraw_currency') }}
-          </div>
-          <CustomSelect
-            class="mt-2 w-full"
-            v-model="currency"
-            :options="currencyOptions"
-            disabled
-            @disabled-click="showUnavailableToast"
-          />
-        </div>
-        <div>
-          <div class="text-xs font-normal leading-normal">{{ t('withdraw.select_network') }}</div>
-          <CustomSelect
-            class="mt-2 w-full"
-            v-model="selectNetwork"
-            :options="networkOptions"
-            disabled
-            @disabled-click="showUnavailableToast"
-          />
-        </div>
-      </div>
-      <div class="mt-5">
+      <div>
         <div
           class="flex items-center justify-between text-xs sm:text-sm font-normal leading-normal"
         >
@@ -253,7 +229,6 @@ import BNBIcon from '@/static/img/crypto/BNB.png'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
-import CustomSelect from '@/components/common/CustomSelect.vue'
 import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
 import RefreshIcon from '@/static/svg/refresh.svg?component'
 import InfoIcon from '@/static/svg/info.svg?component'
@@ -286,7 +261,6 @@ const {
   coinMoreShow,
   currency,
   currencyOption,
-  currencyOptions,
   currencySymbol,
   closeAddAddress,
   closeAddAddressPaymentPassword,

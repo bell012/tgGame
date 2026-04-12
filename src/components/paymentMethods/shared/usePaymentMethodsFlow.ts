@@ -36,6 +36,8 @@ export function usePaymentMethodsFlow() {
   const addAccountOptionVisible = ref(false)
   const deleteNotificationVisible = ref(false)
   const kindReminderVisible = ref(false)
+  const accountDetailsPopVisible = ref(false)
+  const selectAccountCardOption = ref<AccountCardOption>()
 
   const localeStore = useLocaleStore()
   const siteConfigStore = useSiteConfigStore()
@@ -248,6 +250,15 @@ export function usePaymentMethodsFlow() {
     }
   }
 
+  const closeAccountDetailsPop = () => {
+    accountDetailsPopVisible.value = false
+  }
+
+  const openAccountDetailsPop = (option: AccountCardOption) => {
+    selectAccountCardOption.value = option
+    accountDetailsPopVisible.value = true
+  }
+
   const handleKindReminderSkid = () => {
     kindReminderVisible.value = false
   }
@@ -309,6 +320,8 @@ export function usePaymentMethodsFlow() {
     isCheckingPaymentPassword,
     isSubmittingAdd,
     smsCountdownTrigger,
+    selectAccountCardOption,
+    accountDetailsPopVisible,
     isMethodTabActive,
     requestMemberCards,
     openAddAcountCard,
@@ -326,6 +339,8 @@ export function usePaymentMethodsFlow() {
     handleAddAccountOptionSmsVerificationResend,
     handleAddAccountOptionSmsVerificationConfirm,
     closePaymentPasswordVerification,
-    handleAddAccountOptionPaymentPasswordVerificationConfirm
+    handleAddAccountOptionPaymentPasswordVerificationConfirm,
+    openAccountDetailsPop,
+    closeAccountDetailsPop
   }
 }
