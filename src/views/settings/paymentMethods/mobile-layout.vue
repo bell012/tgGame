@@ -35,6 +35,7 @@
           :enableDelete="hasDeleteAccount"
           @set-default="modifyDefaultAccountCard"
           @delete="deleteAccountCard"
+          @select="openAccountDetailsPop"
         />
       </div>
       <!-- 空状态区域 -->
@@ -92,6 +93,11 @@
       @close="closePaymentPasswordVerification"
       @confirm="handleAddAccountOptionPaymentPasswordVerificationConfirm"
     />
+    <AccountDetailsPop
+      v-model="accountDetailsPopVisible"
+      :option="selectAccountCardOption"
+      @close="closeAccountDetailsPop"
+    />
   </div>
 </template>
 
@@ -110,6 +116,7 @@ import DeleteNotificationPop from '@/components/paymentMethods/deleteNotificatio
 import AddAccountPop from '@/components/paymentMethods/addAccountPop.vue'
 import SmsVerificationPop from '@/components/paymentMethods/smsVerificationPop.vue'
 import PaymentPasswordPop from '@/components/paymentMethods/paymentPasswordPop.vue'
+import AccountDetailsPop from '@/components/paymentMethods/accountDetailsPop.vue'
 
 const {
   addAccountOptionVisible,
@@ -128,6 +135,8 @@ const {
   isCheckingPaymentPassword,
   isSubmittingAdd,
   smsCountdownTrigger,
+  accountDetailsPopVisible,
+  selectAccountCardOption,
   openAddAcountCard,
   closeAddAcountCard,
   addAcountCard,
@@ -141,7 +150,9 @@ const {
   handleAddAccountOptionSmsVerificationResend,
   handleAddAccountOptionSmsVerificationConfirm,
   closePaymentPasswordVerification,
-  handleAddAccountOptionPaymentPasswordVerificationConfirm
+  handleAddAccountOptionPaymentPasswordVerificationConfirm,
+  openAccountDetailsPop,
+  closeAccountDetailsPop
 } = usePaymentMethodsFlow()
 const { t } = useI18n()
 

@@ -965,6 +965,7 @@
   "payment_methods": {
     "title": "Payment Methods",
     "sms_content_text": "Add memberCard SMS verification.",
-    "busiPwd_content_text": "Add memberCard transaction password verification."
+    "busiPwd_content_text": "Add memberCard transaction password verification.",
+    "account_detail_title": "Details"
   }
 }

@@ -964,6 +964,7 @@
   "payment_methods": {
     "title": "收款管理",
     "sms_content_text": "添加收款账号短信验证",
-    "busiPwd_content_text": "添加收款账号交易密码验证"
+    "busiPwd_content_text": "添加收款账号交易密码验证",
+    "account_detail_title": "收款账号详情"
   }
 }
