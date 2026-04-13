@@ -15,7 +15,9 @@ export function queryOrderInfoPage(
   return request({
     url: '/gc/queryOrderInfoPage',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -24,7 +26,9 @@ export function queryAcctHisPage(data: QueryAcctHisPageForm): Promise<QueryAcctH
   return request({
     url: '/acct/queryAcctHisPage',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -33,6 +37,8 @@ export function queryInspectPage(data: QueryInspectPageForm): Promise<QueryInspe
   return request({
     url: '/inspect/queryInspectPage',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }

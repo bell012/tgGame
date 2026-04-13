@@ -59,7 +59,7 @@
             <!-- 区块：template -->
             <template #preview-delete>
               <div class="h-4 w-4 sm:h-6 sm:w-6 absolute -top-1.5 -right-1.5 sm:-top-3 sm:-right-3">
-                <img :src="deleteIcon" alt="delete" />
+                <img :src="deleteIcon" :alt="t('deposit.delete_image_alt')" />
               </div>
             </template>
             <div
@@ -137,12 +137,12 @@ const imageAfterRead: UploaderAfterRead = async items => {
 
     if (!rawFile) {
       file.status = 'failed'
-      file.message = 'Upload failed'
+      file.message = t('deposit.upload_status_failed')
       continue
     }
 
     file.status = 'uploading'
-    file.message = 'Uploading...'
+    file.message = t('deposit.upload_status_uploading')
     isUploadingImage.value = true
 
     try {
@@ -163,10 +163,10 @@ const imageAfterRead: UploaderAfterRead = async items => {
 
       uploadedFilePath.value = uploadedPath
       file.status = 'done'
-      file.message = 'Upload success'
+      file.message = t('deposit.upload_status_success')
     } catch (error) {
       file.status = 'failed'
-      file.message = 'Upload failed'
+      file.message = t('deposit.upload_status_failed')
       showToast({
         message: error instanceof Error ? error.message : t('common.error'),
         type: 'fail'

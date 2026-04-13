@@ -13,18 +13,19 @@
           class="carousel-item flex w-full flex-shrink-0 snap-center snap-always items-center justify-center"
         >
           <img
-            :src="item.url"
+            :src="getSlideImage(item)"
             :alt="`slide-${index + 1}`"
             class="max-h-full w-full max-w-[100vw] object-contain"
+            @click="handleCarouselClick(item)"
           />
         </div>
       </div>
       <!-- 左右按钮 + 滑动条 -->
-      <div v-if="list.length > 1" class="flex flex-shrink-0 items-center justify-center px-4">
+      <div v-if="slides.length > 1" class="flex flex-shrink-0 items-center justify-center px-4">
         <div class="flex w-[25%] min-w-0 items-center justify-between gap-2">
           <div class="flex min-w-0 flex-1 items-center justify-center gap-1.5">
             <button
-              v-for="(_, index) in list"
+              v-for="(_, index) in slides"
               :key="index"
               type="button"
               class="flex shrink-0 items-center justify-center transition-colors"
@@ -48,8 +49,10 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import ScrollBar from '@/static/svg/scroll-bar.svg?component'
+import { navigateTo } from '@/utils/router'
+import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 interface Props {
   list: any[]
 }
@@ -59,7 +62,21 @@ const props = defineProps<Props>()
 const list = props.list
 const carouselRef = ref<HTMLElement | null>(null)
 const currentIndex = ref(0)
-
+const slides = computed(() => {
+  return [...props.list].sort((a, b) => (a.sortNum ?? 0) - (b.sortNum ?? 0))
+})
+const getSlideImage = (slide: any): string => {
+  return slide?.url ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${slide.url}` : ''
+}
+const handleCarouselClick = (slide: QuerySlideshowItem) => {
+  if (slide.jumpType === 1 && slide.linkUrl) {
+    if (slide.linkType === 2) {
+      window.open(slide.linkUrl, '_blank', 'noopener,noreferrer')
+      return
+    }
+    navigateTo(slide.linkUrl)
+  }
+}
 const onCarouselScroll = () => {
   const el = carouselRef.value
   if (!el) return

@@ -380,7 +380,7 @@ const handleReceiveAddressCardClick = async (id: string) => {
   target?.scrollIntoView({
     behavior: 'smooth',
     block: 'nearest',
-    inline: 'nearest'
+    inline: 'center'
   })
 }
 

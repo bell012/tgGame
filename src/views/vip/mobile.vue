@@ -53,11 +53,11 @@
           >
             <section
               class="relative h-[158px] rounded-[15px] bg-cover bg-center bg-no-repeat px-[20px] py-[15px]"
-              :style="{ backgroundImage: `url(${cardH5BgImage})` }"
+              :style="{ backgroundImage: resolveBackgroundImage(cardH5BgImage) }"
             >
               <div class="relative z-[1] flex flex-col items-start gap-3">
                 <div class="flex items-center">
-                  <img
+                  <SmartImage
                     :src="cardVipImage"
                     alt="VIP Card"
                     class="mr-[3px] h-[30px] w-[33px] shrink-0"
@@ -91,7 +91,7 @@
                   </p>
                 </div>
 
-                <img
+                <SmartImage
                   :src="cardVipRightImage"
                   alt="VIP Decoration"
                   class="pointer-events-none absolute right-[-20px] top-[50px] h-[188px] w-[160px] -translate-y-1/2"
@@ -155,7 +155,6 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { showToast } from 'vant'
 import H5Header from '@/components/common/H5Header.vue'
 import { useVipStore } from '@/stores/vip'
 import RuleIcon from '@/static/svg/rule.svg?component'
@@ -164,6 +163,7 @@ import VipWordmarkIcon from '@/static/svg/vip_2.svg?component'
 import cardH5BgImage from '@/static/img/personalCenter/card_H5_BG.webp'
 import cardVipImage from '@/static/img/personalCenter/card_vip.png'
 import cardVipRightImage from '@/static/img/personalCenter/card_vip_right.webp'
+import { resolveBackgroundImage } from '@/utils/image'
 import { getCurrencySymbol } from '@/utils/locale'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
@@ -282,10 +282,6 @@ const handleClaim = async (card: VipBenefitCard) => {
     const response = await claimVipBenefit(card.key)
 
     if (!response?.success) {
-      showToast({
-        message: response?.message || t('common.unknownError'),
-        type: 'fail'
-      })
       return
     }
 

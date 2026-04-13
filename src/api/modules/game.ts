@@ -15,7 +15,8 @@ import type {
   PublishCommentResponse,
   GameDetailResponse,
   GetGameRanListParams,
-  QueryGameDetailsParams
+  QueryGameDetailsParams,
+  GameTypeResponse
 } from '@/api/interface/game'
 
 /**
@@ -25,6 +26,19 @@ import type {
 export function getGameData(): Promise<GameDataResponse> {
   return request({
     url: '/gc/queryGameListForApp',
+    method: 'post',
+    showSuccessToast: true,
+    showErrorToast: true
+  })
+}
+
+/**
+ * 获取自定义游戏类型
+ * @returns Promise<GameTypeResponse>
+ */
+export function getGameType(): Promise<GameTypeResponse> {
+  return request({
+    url: '/gc/getGameType',
     method: 'post'
   })
 }
@@ -36,7 +50,9 @@ export function getGameData(): Promise<GameDataResponse> {
 export function getGameBrandData(): Promise<GameBrandResponse> {
   return request({
     url: '/gc/gameBrandList',
-    method: 'post'
+    method: 'post',
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -49,7 +65,9 @@ export function queryGameDetails(params: QueryGameDetailsParams): Promise<GameDe
   return request({
     url: '/gc/queryGameDetails',
     method: 'get',
-    params
+    params,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -62,7 +80,9 @@ export function getGameRanList(data: GetGameRanListParams): Promise<GameRanListR
   return request({
     url: '/gr/getGameRanList',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -77,7 +97,9 @@ export function getGameBetRecordList(
   return request({
     url: '/special/getGameBetRecordList',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -90,7 +112,9 @@ export function getGameStatistics(data: GetGameStatisticsParams): Promise<GameSt
   return request({
     url: '/special/getGameStatistics',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -105,7 +129,9 @@ export function refreshGameStatistics(
   return request({
     url: '/special/refreshGameStatistics',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -113,7 +139,9 @@ export function getloginPlatform(data: any): Promise<any> {
   return request({
     url: '/gc/loginPlatform',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -128,7 +156,9 @@ export function getCommentSubject(
   return request({
     url: '/comment/sub/getCommentSubject',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -141,7 +171,9 @@ export function getCommentsList(data: GetCommentsListParams): Promise<GameCommen
   return request({
     url: '/comment/sub/getCommentsList',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -154,6 +186,8 @@ export function publishComment(data: PublishCommentParams): Promise<PublishComme
   return request({
     url: '/comment/sub/publishComment',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }

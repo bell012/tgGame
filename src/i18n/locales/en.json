@@ -45,7 +45,10 @@
     "JoinNow": "Join Now",
     "ExclusivePromotions": "Exclusive Promotions",
     "DontDisplayThisForNext7Day": "Don’t display this for next 7 day",
-    "Poker": "POKER"
+    "Poker": "POKER",
+    "banner_sign_up": "Sign Up & Get",
+    "banner_sign_up_amount": "Up To ",
+    "banner_sign_up_amount1": "$20,000,00"
   },
   "common": {
     "loading": "Loading...",
@@ -57,18 +60,18 @@
     "success": "Success",
     "confirm": "Confirm",
     "cancel": "Cancel",
-    "account": "account",
+    "account": "Account",
     "enter_account": "Enter your phone number",
-    "password": "password",
+    "password": "Password",
     "enter_password": "6–16 characters (letters and numbers)",
     "confirm_password": "Confirm Password",
     "enter_confirm_password": "Please re-enter your password",
-    "remember_me": "remember me",
+    "remember_me": "Remember Me",
     "forget_password": "Forget Password",
     "reset_password": "Reset Password",
     "continue": "Continue as Guest",
-    "verification": "Verification code",
-    "enter_verification": "Enter the verification code",
+    "verification": "Verification Code",
+    "enter_verification": "Enter The Verification Code",
     "get_code": "Get Code",
     "welcome_deposit_bonus": "Welcome deposit bonus",
     "free_daily_lucky_spin": "Free daily lucky spin",
@@ -114,7 +117,8 @@
     "transactionPassword": "Transaction Password",
     "confirmTransactionPassword": "Confirm Transaction Password",
     "transactionPasswordSetSuccessfully": "Your transaction password has been set successfully.",
-    "transactionPasswordChangedSuccessfully": "Your transaction password has been changed successfully."
+    "transactionPasswordChangedSuccessfully": "Your transaction password has been changed successfully.",
+    "delete": "Delete"
   },
   "pwa": {
     "offlineReady": "App ready to work offline",
@@ -471,7 +475,7 @@
         "live_casino": "Live Casino",
         "table_games": "Table Games",
         "fishing": "Fishing",
-        "game_providers": "Game Providers"
+        "game_providers": "Game Provider"
       }
     },
     "sports": {
@@ -672,6 +676,7 @@
   },
   "deposit": {
     "title": "Deposit",
+    "methods": "Deposit Methods",
     "tabs": {
       "crypto": "Crypto",
       "fiat": "Fiat"
@@ -681,11 +686,17 @@
     "deposit_amount": "Deposit Amount",
     "how_to_deposit": "How to Deposit",
     "deposit_amount_input_placeholder": "Please select a deposit amount",
+    "deposit_amount_input_or_select_placeholder": "Please select or enter deposit amount.",
+    "deposit_amount_preset_placeholder": "Please select a preset deposit amount.",
     "deposit_now": "Deposit Now",
     "load_from_wallet": "Load from your wallet",
+    "wallet_bonus_alt": "Wallet bonus",
     "wagering_no": "No Wagering",
     "wagering_multiple": "{multiple}x Wagering",
     "withdrawal_no_wagering_tip": "No wagering required for withdrawal",
+    "bonus": "Bonus",
+    "bonus_label": "{ratio}% Bonus",
+    "unavailable": "Unavailable",
     "deposit_order": "Deposit Order",
     "order_currency": "Currency",
     "order_payment_amount": "Payment Amount",
@@ -719,11 +730,18 @@
     "upload_btn_text": "Add Proof",
     "upload_proof_confirm_btn_text": "Upload Proof Now",
     "payment_receipt_sample_title": "Payment Receipt Sample",
+    "payment_receipt_sample_alt": "Payment receipt sample",
+    "delete_image_alt": "Delete image",
+    "upload_status_uploading": "Uploading...",
+    "upload_status_success": "Upload success",
+    "upload_status_failed": "Upload failed",
     "upload_proof_again_btn_text": "Upload Proof Again",
     "upload_proof_verifying_marquee": "Payment received. Your order is being verified. Thank you for your patience.",
     "upload_proof_reminder_title": "Reminder",
     "upload_proof_reminder_line_1": "· To ensure funds are credited successfully, please upload the correct payment receipt.",
     "upload_proof_reminder_line_2": "· If you have already uploaded the proof, please wait patiently. Verification usually takes 1–5 minutes.",
+    "cancel_failed": "Cancel failed",
+    "query_order_failed": "Query order failed",
     "status": {
       "pending": "Pending",
       "success": "Success",
@@ -765,7 +783,12 @@
     "crypto_help": "How to withdraw crypto?",
     "crypto_address_notice": "Please make sure the recipient address is correct. Funds cannot be recovered if sent to the wrong address.",
     "default_address_cannot_be_changed": "Default address cannot be changed",
+    "default_address_cannot_be_deleted": "Default address cannot be deleted",
     "default_account_cannot_be_changed": "Default account cannot be changed",
+    "default_account_cannot_be_deleted": "Default account cannot be deleted",
+    "delete_receive_address_not_supported": "Deleting receiving accounts is not supported",
+    "delete_receive_account_title": "Delete Notification",
+    "delete_receive_account_desc": "Are you sure you want to delete the {name} receiving address?",
     "withdraw_now": "Withdraw Now",
     "you_get": "You Get",
     "kind_reminder_title": "Kind Reminder",
@@ -938,5 +961,11 @@
       "whitelistManagement": "Whitelist Management"
     },
     "hintNotAvailable": "Not available yet."
+  },
+  "payment_methods": {
+    "title": "Payment Methods",
+    "sms_content_text": "Add memberCard SMS verification.",
+    "busiPwd_content_text": "Add memberCard transaction password verification.",
+    "account_detail_title": "Details"
   }
 }

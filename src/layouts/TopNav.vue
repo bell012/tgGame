@@ -14,7 +14,7 @@
           class="hidden md:flex w-[150px] h-[48px] ml-0 md:ml-5 items-center cursor-pointer"
           @click="navigateTo('/')"
         >
-          <img src="/src/static/img/home/logo.png" alt="" class="w-full h-full" />
+          <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
         <!-- H5端 Logo (登录后小logo) -->
         <div
@@ -22,7 +22,8 @@
           class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer"
           @click="navigateTo('/')"
         >
-          <img src="/src/static/img/home/logo_h5.png" alt="" class="w-full h-full" />
+          <SmartImage :src="mobileLogoImage" alt="" class="w-full h-full" />
+          <MainLogoIcon class="w-full h-full" />
         </div>
         <!-- H5端 Logo (未登录大logo) -->
         <div
@@ -30,7 +31,7 @@
           class="flex md:hidden w-[150px] h-[48px] items-center cursor-pointer"
           @click="navigateTo('/')"
         >
-          <img src="/src/static/img/home/logo.png" alt="" class="w-full h-full" />
+          <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
       </div>
 
@@ -228,9 +229,6 @@
 
     <!-- PC 搜索弹窗 -->
     <ExploreDesktop v-model="showExplorehModal" />
-
-    <!-- 充值 -->
-    <DepositPop v-model="showDepositPop" />
   </header>
 </template>
 
@@ -246,7 +244,6 @@ import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
-import DepositPop from '@/components/deposit/deposit/depositPop.vue'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
@@ -256,6 +253,8 @@ import GiftIcon from '@/static/svg/login/gift.svg?component'
 import BellIcon from '@/static/svg/bell.svg?component'
 import Jia from '@/static/svg/login/jia.svg?component'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
+import MainLogoIcon from '@/static/svg/main-logo.svg?component'
+import mobileLogoImage from '@/static/img/home/logo_h5.png'
 import {
   getCurrencyImageByCode,
   getCurrencySymbol,
@@ -278,8 +277,6 @@ const emit = defineEmits<{
 
 const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
-
-const showDepositPop = ref(false)
 
 const showExplorehModal = ref(false)
 
@@ -377,7 +374,7 @@ const handleCurrencyChange = (code: string) => {
 }
 
 const openDeposit = () => {
-  showDepositPop.value = true
+  navigateTo('/deposit')
 }
 
 // 处理通知图标点击。

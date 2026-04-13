@@ -2,7 +2,8 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import i18n from '@/i18n'
 import Api from '@/api'
-import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
+import type { GameBrandItem, GameDataItem, GameTypeItem } from '@/api/interface/game'
+import { useLocaleStore } from '@/stores/locale'
 import { getStorageLanguageCode } from '@/utils/locale'
 
 const SEARCH_HISTORY_STORAGE_KEY = 'casino_search_history'
@@ -21,6 +22,8 @@ interface FlattenedGameRecord {
 export interface GameQueryOptions {
   /** 按关键字模糊匹配 */
   keyword?: string
+  /** 按 gameTypeCode 查询，支持逗号分隔多个值 */
+  gameTypeCode?: string
   /** 按 sysGameTypeCode 查询 */
   sysGameTypeCode?: string
   /** 按 brandCode 查询 */
@@ -43,7 +46,13 @@ export interface GameQueryOptions {
   forceRefresh?: boolean
   /** 是否按 orderId 排序 */
   sortByOrderId?: boolean
-  /** orderId 排序方向 */
+  /** 是否按 platformName 排序 */
+  sortByPlatformName?: boolean
+  /** 是否按 itemName 排序 */
+  sortByItemName?: boolean
+  /** 是否按 hotOrderId 降序排序 */
+  sortByHotOrderId?: boolean
+  /** orderId 排序方向，默认 desc */
   sortDirection?: 'asc' | 'desc'
   /** 页码，从 1 开始 */
   page?: number
@@ -82,18 +91,25 @@ interface GameBrandQueryOptions {
 }
 
 export const useGameStore = defineStore('game', () => {
+  const localeStore = useLocaleStore()
   /** 接口返回的原始游戏树数据 */
   const gameData = ref<GameDataItem[]>([])
   /** 接口返回的游戏品牌列表数据 */
   const brandData = ref<GameBrandItem[]>([])
+  /** 接口返回的自定义游戏类型数据 */
+  const gameTypeData = ref<GameTypeItem[]>([])
   /** 当前游戏数据对应的语言 */
   const gameDataLanguageCode = ref<string | null>(null)
   /** 当前品牌数据对应的语言 */
   const brandDataLanguageCode = ref<string | null>(null)
+  /** 当前游戏类型数据对应的语言 */
+  const gameTypeDataLanguageCode = ref<string | null>(null)
   /** 当前是否处于请求中 */
   const isLoading = ref(false)
   /** 当前品牌列表是否处于请求中 */
   const isBrandLoading = ref(false)
+  /** 当前游戏类型列表是否处于请求中 */
+  const isGameTypeLoading = ref(false)
   /** 搜索历史 */
   const searchHistory = ref<string[]>([])
 
@@ -101,15 +117,23 @@ export const useGameStore = defineStore('game', () => {
   let pendingRequest: Promise<GameDataItem[]> | null = null
   /** 并发请求复用，避免同一时间重复请求品牌列表接口 */
   let pendingBrandRequest: Promise<GameBrandItem[]> | null = null
+  /** 并发请求复用，避免同一时间重复请求游戏类型接口 */
+  let pendingGameTypeRequest: Promise<GameTypeItem[]> | null = null
 
   /** 当前是否已经有游戏数据 */
   const hasGameData = computed(() => gameData.value.length > 0)
   /** 当前是否已经有游戏品牌数据 */
   const hasBrandData = computed(() => brandData.value.length > 0)
+  /** 当前是否已经有游戏类型数据 */
+  const hasGameTypeData = computed(() => gameTypeData.value.length > 0)
   /** 当前界面语言 */
   const currentLanguageCode = computed(() =>
     getStorageLanguageCode(String(i18n.global.locale.value))
   )
+  /** 当前字符串排序使用的 locale */
+  const currentCompareLocale = computed(() => {
+    return localeStore.currentLanguage === 'zh' ? 'zh-Hans-CN' : 'en'
+  })
 
   /** 持久化搜索历史 */
   const persistSearchHistory = () => {
@@ -235,6 +259,26 @@ export const useGameStore = defineStore('game', () => {
     return brandData.value
   }
 
+  /** 更新 store 中的游戏类型数据 */
+  const normalizeGameTypeData = (nextGameTypeData: GameTypeItem[]) => {
+    return [...nextGameTypeData]
+      .filter(item => item.enable === 1)
+      .sort((a, b) => {
+        const sortNumA = typeof a.sortNum === 'number' ? a.sortNum : Number.MAX_SAFE_INTEGER
+        const sortNumB = typeof b.sortNum === 'number' ? b.sortNum : Number.MAX_SAFE_INTEGER
+
+        return sortNumA - sortNumB
+      })
+  }
+
+  /** 更新 store 中的游戏类型数据 */
+  const setGameTypeDataState = (nextGameTypeData: GameTypeItem[]) => {
+    gameTypeData.value = normalizeGameTypeData(nextGameTypeData)
+    gameTypeDataLanguageCode.value = currentLanguageCode.value
+
+    return gameTypeData.value
+  }
+
   /** 拉取最新游戏数据；默认命中有效缓存时不重复请求 */
   const refreshGameData = async (force = false) => {
     if (!force && pendingRequest) {
@@ -291,6 +335,34 @@ export const useGameStore = defineStore('game', () => {
     return pendingBrandRequest
   }
 
+  /** 拉取最新自定义游戏类型数据；默认命中有效缓存时不重复请求 */
+  const refreshGameTypeData = async (force = false) => {
+    if (!force && pendingGameTypeRequest) {
+      return pendingGameTypeRequest
+    }
+
+    if (!force && hasGameTypeData.value) {
+      return gameTypeData.value
+    }
+
+    isGameTypeLoading.value = true
+
+    pendingGameTypeRequest = (async () => {
+      try {
+        const response = await Api.game.getGameType()
+        return setGameTypeDataState(response?.result ?? [])
+      } catch (error) {
+        console.error('refreshGameTypeData failed', error)
+        return gameTypeData.value
+      } finally {
+        isGameTypeLoading.value = false
+        pendingGameTypeRequest = null
+      }
+    })()
+
+    return pendingGameTypeRequest
+  }
+
   /** 优先使用内存数据，没有时再请求接口 */
   const ensureGameData = async () => {
     if (hasGameData.value && gameDataLanguageCode.value === currentLanguageCode.value) {
@@ -309,6 +381,15 @@ export const useGameStore = defineStore('game', () => {
     return refreshGameBrandData(true)
   }
 
+  /** 优先使用内存数据，没有时再请求游戏类型接口 */
+  const ensureGameTypeData = async () => {
+    if (hasGameTypeData.value && gameTypeDataLanguageCode.value === currentLanguageCode.value) {
+      return gameTypeData.value
+    }
+
+    return refreshGameTypeData(true)
+  }
+
   /** 递归获取指定 rowId 节点下的所有后代记录 */
   const getDescendantGameRecordsByRowId = (rowId: number): FlattenedGameRecord[] => {
     const children = childGameRecordsByParentRowId.value[rowId] ?? []
@@ -318,6 +399,78 @@ export const useGameStore = defineStore('game', () => {
 
   /** 根据条件过滤扁平记录，像查询表一样使用 */
   const queryGameRecords = (options: GameQueryOptions = {}) => {
+    const normalizedGameTypeCodes = String(options.gameTypeCode ?? '')
+      .split(',')
+      .map(code => code.trim())
+      .filter(Boolean)
+
+    const sortRecords = (records: FlattenedGameRecord[]) => {
+      if (
+        !options.sortByHotOrderId &&
+        !options.sortByPlatformName &&
+        !options.sortByItemName &&
+        !options.sortByOrderId
+      ) {
+        return records
+      }
+
+      const sortDirection = options.sortDirection ?? 'desc'
+
+      return [...records].sort((a, b) => {
+        if (options.sortByHotOrderId) {
+          const hotOrderA =
+            typeof a.node.hotOrderId === 'number' ? a.node.hotOrderId : Number.MIN_SAFE_INTEGER
+          const hotOrderB =
+            typeof b.node.hotOrderId === 'number' ? b.node.hotOrderId : Number.MIN_SAFE_INTEGER
+          const hotOrderCompare = hotOrderB - hotOrderA
+
+          if (hotOrderCompare !== 0) {
+            return hotOrderCompare
+          }
+        }
+
+        if (options.sortByPlatformName) {
+          const platformNameA = String(a.node.platformName ?? '').trim()
+          const platformNameB = String(b.node.platformName ?? '').trim()
+          const platformNameCompare = platformNameA.localeCompare(
+            platformNameB,
+            currentCompareLocale.value,
+            {
+              sensitivity: 'base'
+            }
+          )
+
+          if (platformNameCompare !== 0) {
+            return sortDirection === 'desc' ? -platformNameCompare : platformNameCompare
+          }
+        }
+
+        if (options.sortByItemName) {
+          const itemNameA = String(a.node.itemName ?? '').trim()
+          const itemNameB = String(b.node.itemName ?? '').trim()
+          const itemNameCompare = itemNameA.localeCompare(itemNameB, currentCompareLocale.value, {
+            sensitivity: 'base'
+          })
+
+          if (itemNameCompare !== 0) {
+            return sortDirection === 'desc' ? -itemNameCompare : itemNameCompare
+          }
+        }
+
+        if (options.sortByOrderId) {
+          const orderA = a.node.orderId ?? 0
+          const orderB = b.node.orderId ?? 0
+          const orderCompare = sortDirection === 'desc' ? orderB - orderA : orderA - orderB
+
+          if (orderCompare !== 0) {
+            return orderCompare
+          }
+        }
+
+        return 0
+      })
+    }
+
     const filteredRecords = allGameRecords.value.filter(record => {
       const { node } = record
       const normalizedKeyword = options.keyword?.trim().toLowerCase()
@@ -340,6 +493,20 @@ export const useGameStore = defineStore('game', () => {
         const isKeywordMatched = searchableFields.some(field => field.includes(normalizedKeyword))
 
         if (!isKeywordMatched) {
+          return false
+        }
+      }
+
+      if (normalizedGameTypeCodes.length > 0) {
+        const gameTypeCodes = String(node.gameTypeCode ?? '')
+          .split(',')
+          .map(code => code.trim())
+          .filter(Boolean)
+
+        if (
+          gameTypeCodes.length === 0 ||
+          !gameTypeCodes.some(code => normalizedGameTypeCodes.includes(code))
+        ) {
           return false
         }
       }
@@ -388,18 +555,7 @@ export const useGameStore = defineStore('game', () => {
     })
 
     if (!options.includeDescendants) {
-      if (!options.sortByOrderId) {
-        return filteredRecords
-      }
-
-      const sortDirection = options.sortDirection ?? 'asc'
-
-      return [...filteredRecords].sort((a, b) => {
-        const orderA = a.node.orderId ?? 0
-        const orderB = b.node.orderId ?? 0
-
-        return sortDirection === 'desc' ? orderB - orderA : orderA - orderB
-      })
+      return sortRecords(filteredRecords)
     }
 
     const mergedRecordMap = new Map<number, FlattenedGameRecord>()
@@ -413,18 +569,7 @@ export const useGameStore = defineStore('game', () => {
 
     const mergedRecords = [...mergedRecordMap.values()]
 
-    if (!options.sortByOrderId) {
-      return mergedRecords
-    }
-
-    const sortDirection = options.sortDirection ?? 'asc'
-
-    return mergedRecords.sort((a, b) => {
-      const orderA = a.node.orderId ?? 0
-      const orderB = b.node.orderId ?? 0
-
-      return sortDirection === 'desc' ? orderB - orderA : orderA - orderB
-    })
+    return sortRecords(mergedRecords)
   }
 
   /** 根据条件查询游戏节点，只返回原始节点数据 */
@@ -535,6 +680,15 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  /** 获取自定义游戏类型 */
+  const getGameTypeData = async (forceRefresh = false) => {
+    if (forceRefresh) {
+      return normalizeGameTypeData(await refreshGameTypeData(true))
+    }
+
+    return normalizeGameTypeData(await ensureGameTypeData())
+  }
+
   return {
     searchHistory,
     loadSearchHistory,
@@ -545,6 +699,7 @@ export const useGameStore = defineStore('game', () => {
     queryGameRecordsPage,
     queryGameDataPage,
     queryGameBrandData,
-    queryGameBrandDataPage
+    queryGameBrandDataPage,
+    getGameTypeData
   }
 })
