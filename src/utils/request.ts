@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
+import axios, { AxiosInstance, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { v4 as uuidv4 } from 'uuid'
 import { getDeviceTraceId } from './deviceId'
 import { AESUtils } from './encrypt'
@@ -6,6 +6,7 @@ import { getLanguageCode as getLocaleLanguageCode } from './locale'
 import i18n from '@/i18n'
 import CryptoJS from 'crypto-js'
 import { showToast } from 'vant'
+import { API_ERROR_CODE_MESSAGES } from '@/constants/api-error-code-messages'
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
@@ -14,6 +15,28 @@ const MANUAL_LOGOUT_SUPPRESSION_STORAGE_KEY = 'manualLogoutSuppressedUntil'
 const MANUAL_LOGOUT_SUPPRESSION_MS = 5000
 
 let isHandlingAuthExpired = false
+
+export type ApiResponsePayload = {
+  code?: unknown
+  message?: string
+  success?: boolean
+}
+
+export type ApiResponseToastOptions = {
+  showSuccessToast?: boolean
+  showErrorToast?: boolean
+}
+
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    showSuccessToast?: boolean
+    showErrorToast?: boolean
+    skipRequestEncryption?: boolean
+    directEncryptedPayload?: boolean
+  }
+}
+
+type RequestConfigWithToastOptions = InternalAxiosRequestConfig
 
 const getStoredManualLogoutSuppressedUntil = () => {
   if (typeof window === 'undefined') {
@@ -167,7 +190,9 @@ export function triggerAuthExpiredLogout() {
 
 function getResponseErrorMessage(data: unknown, fallback: string) {
   if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
-    return data.message
+    return (
+      translateApiMessageByCode('code' in data ? data.code : undefined, data.message) || fallback
+    )
   }
 
   return fallback
@@ -177,6 +202,84 @@ function translateToastMessage(key: string) {
   return i18n.global.t(key)
 }
 
+function resolveApiMessageLocale() {
+  return getLanguageCode() === 'zh' ? 'zh' : 'eng'
+}
+
+export function translateApiMessageByCode(code: unknown, fallbackMessage = '') {
+  if (typeof code !== 'string') {
+    return fallbackMessage
+  }
+
+  const localizedMessages = API_ERROR_CODE_MESSAGES[code as keyof typeof API_ERROR_CODE_MESSAGES]
+
+  if (!localizedMessages) {
+    return fallbackMessage
+  }
+
+  return resolveApiMessageLocale() === 'zh' ? localizedMessages[1] : localizedMessages[0]
+}
+
+export function normalizeApiResponseMessage<T extends ApiResponsePayload>(payload: T): T {
+  if (!payload || typeof payload !== 'object') {
+    return payload
+  }
+
+  const translatedMessage = translateApiMessageByCode(payload.code, payload.message || '')
+
+  if (translatedMessage) {
+    payload.message = translatedMessage
+  }
+
+  return payload
+}
+
+function isApiResponseSuccess(payload: ApiResponsePayload) {
+  if (typeof payload.code === 'string') {
+    return payload.code === 'C2'
+  }
+
+  if (typeof payload.success === 'boolean') {
+    return payload.success
+  }
+
+  return false
+}
+
+export function showApiResponseToast(
+  payload: ApiResponsePayload,
+  options?: ApiResponseToastOptions
+) {
+  if (!payload?.message) {
+    return
+  }
+
+  const isSuccess = isApiResponseSuccess(payload)
+
+  if (isSuccess) {
+    if (options?.showSuccessToast === false) {
+      return
+    }
+
+    showToast({
+      message: payload.message,
+      type: 'success',
+      zIndex: 999999
+    })
+    return
+  }
+
+  if (options?.showErrorToast === false) {
+    return
+  }
+
+  showToast({
+    message: payload.message,
+    type: 'fail',
+    zIndex: 999999
+  })
+}
+
 function rejectAuthExpiredResponse(payload: unknown) {
   if (
     payload &&
@@ -184,9 +287,12 @@ function rejectAuthExpiredResponse(payload: unknown) {
     'code' in payload &&
     shouldHandleAuthExpiredCode(payload.code)
   ) {
+    const normalizedPayload = normalizeApiResponseMessage(payload)
     const message =
-      'message' in payload && typeof payload.message === 'string' && payload.message
-        ? payload.message
+      'message' in normalizedPayload &&
+      typeof normalizedPayload.message === 'string' &&
+      normalizedPayload.message
+        ? normalizedPayload.message
         : translateToastMessage('common.sessionExpired')
 
     triggerAuthExpiredLogout()
@@ -196,20 +302,36 @@ function rejectAuthExpiredResponse(payload: unknown) {
   return null
 }
 
+function finalizeApiResponse<T extends ApiResponsePayload>(
+  payload: T,
+  options?: ApiResponseToastOptions
+) {
+  const normalizedPayload = normalizeApiResponseMessage(payload)
+  const authExpiredError = rejectAuthExpiredResponse(normalizedPayload)
+
+  if (authExpiredError) {
+    return authExpiredError
+  }
+
+  showApiResponseToast(normalizedPayload, options)
+  return normalizedPayload
+}
+
 // 请求拦截器
 service.interceptors.request.use(
-  (config: any) => {
-    config.headers = config.headers || {}
-    Object.assign(config.headers, buildCommonRequestHeaders(config.url))
+  (config: RequestConfigWithToastOptions) => {
+    const headers = (config.headers || {}) as Record<string, unknown>
+    Object.assign(headers, buildCommonRequestHeaders(config.url))
+    config.headers = headers as RequestConfigWithToastOptions['headers']
 
     // 13 位时间戳
-    const sitetime = config.headers.sitetime as string
+    const sitetime = String(headers.sitetime || '')
 
     // 加密请求数据
     if (config.data && config.method === 'post' && !config.skipRequestEncryption) {
       try {
         // 加密 key: site + sitetime 后 8 位
-        const site = config.headers.site
+        const site = String(headers.site || '')
         const last8Digits = sitetime.slice(-8)
         const encryptKey = site + last8Digits
 
@@ -272,38 +394,21 @@ service.interceptors.response.use(
           const decryptKey = site + last8Digits
           const decryptedData = AESUtils.decryptAES(encryptedString, decryptKey)
 
-          const authExpiredError = rejectAuthExpiredResponse(decryptedData)
-          if (authExpiredError) {
-            return authExpiredError
-          }
-
-          return decryptedData
+          return finalizeApiResponse(
+            decryptedData,
+            response.config as RequestConfigWithToastOptions
+          )
         } else {
-          const authExpiredError = rejectAuthExpiredResponse(res)
-          if (authExpiredError) {
-            return authExpiredError
-          }
-
-          return res
+          return finalizeApiResponse(res, response.config as RequestConfigWithToastOptions)
         }
       } catch (error) {
         console.error(error)
 
-        const authExpiredError = rejectAuthExpiredResponse(res)
-        if (authExpiredError) {
-          return authExpiredError
-        }
-
-        return res
+        return finalizeApiResponse(res, response.config as RequestConfigWithToastOptions)
       }
     }
 
-    const authExpiredError = rejectAuthExpiredResponse(res)
-    if (authExpiredError) {
-      return authExpiredError
-    }
-
-    return res
+    return finalizeApiResponse(res, response.config as RequestConfigWithToastOptions)
   },
   (error: AxiosError) => {
     if (error.response) {
@@ -317,7 +422,8 @@ service.interceptors.response.use(
               error.response?.data,
               translateToastMessage('common.internalServerError')
             ),
-            type: 'fail'
+            type: 'fail',
+            zIndex: 999999
           })
           break
         default:
@@ -326,7 +432,8 @@ service.interceptors.response.use(
               error.response?.data,
               translateToastMessage('common.unknownError')
             ),
-            type: 'fail'
+            type: 'fail',
+            zIndex: 999999
           })
       }
     }

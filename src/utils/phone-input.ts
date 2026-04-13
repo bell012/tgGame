@@ -3,14 +3,33 @@
  */
 
 /**
- * 格式化手机号：只保留数字，最多10位
+ * 格式化菲律宾手机号：去除区号/前导 0 后，仅保留 9 开头的 10 位号码
  * @param value 输入的字符串
- * @returns 格式化后的纯数字字符串（最多10位）
+ * @returns 格式化后的纯数字字符串（9 开头，最多10位）
  */
 export const formatPhoneNumber = (value: string): string => {
-  const digitsOnly = value.replace(/\D/g, '')
+  let digitsOnly = value.replace(/\D/g, '')
+
+  if (digitsOnly.startsWith('63')) {
+    digitsOnly = digitsOnly.slice(2)
+  }
+
+  if (digitsOnly.startsWith('0')) {
+    digitsOnly = digitsOnly.slice(1)
+  }
+
+  if (digitsOnly && !digitsOnly.startsWith('9')) {
+    const firstMobileDigitIndex = digitsOnly.indexOf('9')
+    digitsOnly = firstMobileDigitIndex >= 0 ? digitsOnly.slice(firstMobileDigitIndex) : ''
+  }
+
   return digitsOnly.slice(0, 10)
 }
+
+/**
+ * 验证菲律宾手机号是否符合 9 开头且共 10 位数字的规则。
+ */
+export const isValidPhoneNumber = (value: string): boolean => /^9\d{9}$/.test(value)
 
 /**
  * 处理手机号输入事件

@@ -104,13 +104,6 @@ export function useMemberCardVerificationFlow<T>(options: UseMemberCardVerificat
         areaCode: resolvedAreaCode.value
       })
 
-      if (response?.message) {
-        showToast({
-          message: response.message,
-          type: response?.code === 'C2' ? 'success' : 'fail'
-        })
-      }
-
       if (response?.code === 'C2') {
         smsCountdownTrigger.value += 1
         return true
@@ -198,11 +191,6 @@ export function useMemberCardVerificationFlow<T>(options: UseMemberCardVerificat
       })
 
       if (response?.code !== 'C2') {
-        showToast({
-          message: String(response?.message || 'Invalid sms code'),
-          type: 'fail',
-          duration: 3000
-        })
         return false
       }
 

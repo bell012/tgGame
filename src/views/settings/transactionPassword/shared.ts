@@ -225,8 +225,6 @@ export const useTransactionPassword = () => {
         startCountdown()
         await focusVerificationInput()
       }
-
-      showMessageToast(response?.message ?? '')
     } catch (error) {
       console.error(error)
     } finally {
@@ -257,7 +255,6 @@ export const useTransactionPassword = () => {
         return
       }
 
-      showMessageToast(response?.message ?? '')
       verificationCode.value = ''
       await focusVerificationInput()
     } finally {
@@ -276,19 +273,22 @@ export const useTransactionPassword = () => {
     try {
       isUpdatingPassword.value = true
 
-      const response = await Api.user.modifyMemberInfo({
-        busiPwd: StringExtension.md5(transactionPassword.value)
-      })
+      const response = await Api.user.modifyMemberInfo(
+        {
+          busiPwd: StringExtension.md5(transactionPassword.value)
+        },
+        {
+          showSuccessToast: true,
+          showErrorToast: true
+        }
+      )
 
       if (response?.code === 'C2') {
         resetTransactionPasswordState({ clearCountdown: true })
         await userStore.refreshCurrentUserData()
         syncTransactionPasswordMode()
-        showMessageToast(response?.message ?? '')
         return
       }
-
-      showMessageToast(response?.message ?? '')
     } catch (error) {
       console.error(error)
     } finally {
