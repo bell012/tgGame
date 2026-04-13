@@ -18,7 +18,7 @@
         @click="emit('select', option.value)"
       >
         <div class="flex min-w-0 items-center gap-[10px]">
-          <img :src="option.icon" :alt="option.label" :class="iconClass" />
+          <SmartImage :src="option.icon" :alt="option.label" :class="iconClass" />
           <div :class="labelClass">{{ option.label }}</div>
         </div>
 
@@ -37,6 +37,7 @@ import { computed, ref, watch } from 'vue'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 export type CurrencySelectorMode = 'balance' | 'radio'
 

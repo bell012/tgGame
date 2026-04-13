@@ -45,7 +45,7 @@
                   {{ t('gameDetail.profit') }}
                 </div>
                 <div class="flex items-center gap-[8px]">
-                  <img
+                  <SmartImage
                     class="w-[20px] h-[20px] min-w-[20px] object-contain"
                     :alt="currentRequestCurrency"
                     :src="currentCurrencyIcon"
@@ -57,7 +57,7 @@
                   {{ t('gameDetail.wagered') }}
                 </div>
                 <div class="flex items-center gap-[8px]">
-                  <img
+                  <SmartImage
                     class="w-[20px] h-[20px] min-w-[20px] object-contain"
                     :alt="currentRequestCurrency"
                     :src="currentCurrencyIcon"
@@ -98,6 +98,7 @@ import { getCurrencyIconByCode } from '../currency-select-options'
 import { storeToRefs } from 'pinia'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 const props = withDefaults(
   defineProps<{
