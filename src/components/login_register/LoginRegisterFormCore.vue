@@ -322,15 +322,6 @@ const handleLogin = async () => {
 
     // 登录接口
     const response = await Api.auth.login(loginData)
-    if (response && response.message) {
-      showToast({
-        message: response.message,
-        duration: 2000,
-        wordBreak: 'break-word',
-        zIndex: 10001
-      })
-    }
-
     if (response.success && response.result && response.result.tradeToken) {
       // 根据"记住我"状态保存或清除登录信息
       if (formData.value.signin.rememberMe) {
@@ -374,15 +365,6 @@ const handleRegister = async () => {
 
     // 注册接口
     const response = await Api.auth.register(registerData)
-    if (response && response.message) {
-      showToast({
-        message: response.message,
-        duration: 2000,
-        wordBreak: 'break-word',
-        zIndex: 10001
-      })
-    }
-
     if (response.success && response.result) {
       try {
         await userStore.refreshCurrentUserData(formData.value.signup.account)
@@ -421,15 +403,6 @@ const handleSendCode = async () => {
       telephone: telephone,
       areaCode: defaultAreaCode
     })
-    if (response && response.message) {
-      showToast({
-        message: response.message,
-        duration: 2000,
-        wordBreak: 'break-word',
-        zIndex: 10001
-      })
-    }
-
     // 只有短信接口返回 C2 时，才开始60秒倒计时
     if (response?.code === 'C2') {
       startCountdown()

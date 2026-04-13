@@ -179,13 +179,6 @@ export const useWithdrawFlow = () => {
         areaCode: resolvedAreaCode.value
       })
 
-      if (response?.message) {
-        showToast({
-          message: response.message,
-          type: response?.code === 'C2' ? 'success' : 'fail'
-        })
-      }
-
       if (response?.code === 'C2') {
         smsCountdownTrigger.value += 1
         return true
@@ -215,11 +208,6 @@ export const useWithdrawFlow = () => {
       })
 
       if (checkResponse?.code !== 'C2') {
-        showToast({
-          message: checkResponse?.message || t('withdraw.sms_code_invalid'),
-          type: 'fail',
-          duration: FAIL_TOAST_DURATION
-        })
         return
       }
 

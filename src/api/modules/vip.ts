@@ -14,7 +14,9 @@ export function vipList(data: VipListForm): Promise<VipListResponse> {
   return request({
     url: '/vp/vipList',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -23,7 +25,9 @@ export function myVipInfo(data: MyVipInfoForm): Promise<MyVipInfoResponse> {
   return request({
     url: '/vp/myVipInfo',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -32,7 +36,9 @@ export function getVipInfo(data: GetVipInfoForm): Promise<GetVipInfoResponse> {
   return request({
     url: '/vp/getVipInfo',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -41,7 +47,9 @@ export function upgradedPoints(data: {}): Promise<CommonResponse> {
   return request({
     url: '/vp/upgradedPoints',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -50,7 +58,9 @@ export function dayPoints(data: {}): Promise<CommonResponse> {
   return request({
     url: '/vp/dayPoints',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -59,7 +69,9 @@ export function weekPoints(data: {}): Promise<CommonResponse> {
   return request({
     url: '/vp/weekPoints',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 // 会员福利 每月奖励领取
@@ -67,6 +79,8 @@ export function monthPoints(data: {}): Promise<CommonResponse> {
   return request({
     url: '/vp/monthPoints',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }

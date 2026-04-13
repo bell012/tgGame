@@ -26,7 +26,9 @@ export function getLoginAndRegisterSetting(data: {}): Promise<LoginSetResponse> 
   return request({
     url: '/ad/getLoginAndRegisterSetting',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false, // 不显示成功轻提示
+    showErrorToast: false // 不显示失败轻提示
   })
 }
 
@@ -39,7 +41,9 @@ export function login(data: LoginForm): Promise<LoginResponse> {
   return request({
     url: '/mc/loginMember',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true, // 显示成功轻提示
+    showErrorToast: true // 显示失败轻提示
   })
 }
 
@@ -52,7 +56,9 @@ export function register(data: RegisterForm): Promise<RegisterResponse> {
   return request({
     url: '/mc/newMember',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -65,7 +71,9 @@ export function sendSms(data: SmsForm): Promise<SmsResponse> {
   return request({
     url: '/sy/sms',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 /**
@@ -77,7 +85,9 @@ export function checkSms(data: CheckSmsForm): Promise<CheckSmsResponse> {
   return request({
     url: '/sy/checkSms',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -90,6 +100,8 @@ export function resetPassword(data: ResetPasswordForm): Promise<ResetPasswordRes
   return request({
     url: '/mc/resetPassword',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }

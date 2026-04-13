@@ -2,7 +2,7 @@
  * 用户信息相关 API
  */
 
-import request from '@/utils/request'
+import request, { type ApiResponseToastOptions } from '@/utils/request'
 import type {
   ModifyMemberInfoForm,
   ModifyMemberInfoResponse,
@@ -31,7 +31,9 @@ export function queryAcctInfo(data: QueryAcctInfoForm): Promise<QueryAcctInfoRes
   return request({
     url: '/acct/queryAcctInfo',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -44,7 +46,9 @@ export function selectMember(data: SelectMemberForm): Promise<SelectMemberRespon
   return request({
     url: '/mc/selectMember',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -53,11 +57,17 @@ export function selectMember(data: SelectMemberForm): Promise<SelectMemberRespon
  * @param data 会员信息
  * @returns Promise<ModifyMemberInfoResponse>
  */
-export function modifyMemberInfo(data: ModifyMemberInfoForm): Promise<ModifyMemberInfoResponse> {
+export function modifyMemberInfo(
+  data: ModifyMemberInfoForm,
+  options?: ApiResponseToastOptions
+): Promise<ModifyMemberInfoResponse> {
   return request({
     url: '/mc/modifyMemberInfo',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -70,7 +80,9 @@ export function getGameBetTotal(data: GameBetTotalForm): Promise<GameBetTotalRes
   return request({
     url: '/special/getGameBetTotal',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -80,12 +92,16 @@ export function getGameBetTotal(data: GameBetTotalForm): Promise<GameBetTotalRes
  * @returns Promise<ModifyMemberTelePhoneResponse>
  */
 export function modifyMemberTelePhone(
-  data: ModifyMemberTelePhoneForm
+  data: ModifyMemberTelePhoneForm,
+  options?: ApiResponseToastOptions
 ): Promise<ModifyMemberTelePhoneResponse> {
   return request({
     url: '/mc/modifyMemberTelePhone',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -98,7 +114,9 @@ export function sendFeedback(data: SendFeedbackForm): Promise<SendFeedbackRespon
   return request({
     url: '/f/sendFeedback',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -111,7 +129,9 @@ export function queryFeedbacks(data: QueryFeedbacksForm): Promise<QueryFeedbacks
   return request({
     url: '/f/queryFeedbacks',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -126,6 +146,8 @@ export function receiveAllFeedback(
   return request({
     url: '/f/receiveAllFeedback',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
