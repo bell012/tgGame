@@ -41,7 +41,7 @@
         <div class="flex items-center my-2.5 px-2 justify-between">
           <!-- 队 A -->
           <div class="flex flex-col items-center w-1/3">
-            <img src="@/static/img/explore/a.png" class="w-9 h-9 mb-2" />
+            <SmartImage :src="teamAImage" alt="" class="w-9 h-9 mb-2" />
             <div
               class="text-text-1 text-xs font-bold text-center leading-tight break-words line-clamp-2"
             >
@@ -57,7 +57,7 @@
 
           <!-- 队 B -->
           <div class="flex flex-col items-center w-1/3">
-            <img src="@/static/img/explore/b.png" class="w-9 h-9 mb-2" />
+            <SmartImage :src="teamBImage" alt="" class="w-9 h-9 mb-2" />
 
             <div
               class="text-text-1 text-xs font-bold text-center leading-tight break-words line-clamp-2"
@@ -98,6 +98,8 @@
   </div>
 </template>
 <script setup lang="ts">
+import teamAImage from '@/static/img/explore/a.png'
+import teamBImage from '@/static/img/explore/b.png'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
 import PlayIcon from '@/static/svg/explore/play.svg?component'
 import { useI18n } from 'vue-i18n'

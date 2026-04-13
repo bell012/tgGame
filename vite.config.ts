@@ -1,11 +1,51 @@
+import imagemin from 'imagemin'
+import imageminWebp from 'imagemin-webp'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import viteImagemin from 'vite-plugin-imagemin'
 import { VitePWA } from 'vite-plugin-pwa'
 import svgLoader from 'vite-svg-loader'
 
 const themedSvgColorPattern = /^(?:white|#fff(?:fff)?|#b3bec1)$/i
+const convertibleImagePattern = /\.(png|jpe?g)$/i
+
+const createWebpAssetsPlugin = (): Plugin => ({
+  name: 'tg-game:webp-assets',
+  apply: 'build',
+  enforce: 'post',
+  async generateBundle(_, bundle) {
+    const assetEntries = Object.entries(bundle).filter(([, output]) => {
+      return output.type === 'asset' && convertibleImagePattern.test(output.fileName)
+    })
+
+    await Promise.all(
+      assetEntries.map(async ([, output]) => {
+        if (output.type !== 'asset') {
+          return
+        }
+
+        const sourceBuffer =
+          typeof output.source === 'string'
+            ? Buffer.from(output.source)
+            : Buffer.from(output.source)
+        const webpSource = await imagemin.buffer(sourceBuffer, {
+          plugins: [
+            imageminWebp({
+              quality: 80
+            })
+          ]
+        })
+
+        this.emitFile({
+          type: 'asset',
+          fileName: output.fileName.replace(convertibleImagePattern, '.webp'),
+          source: webpSource
+        })
+      })
+    )
+  }
+})
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -41,6 +81,7 @@ export default defineConfig({
         ]
       }
     }),
+    createWebpAssetsPlugin(),
     viteImagemin({
       filter: /\.(png|jpe?g)$/i,
       mozjpeg: {
@@ -94,7 +135,7 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // 不缓存 index.html，确保每次都能获取最新版本
-        globPatterns: ['**/*.{js,css,ico,png,svg,json,woff2}'],
+        globPatterns: ['**/*.{js,css,ico,png,webp,svg,json,woff2}'],
         // 排除 index.html
         globIgnores: ['**/index.html'],
         // 导航请求使用网络优先策略

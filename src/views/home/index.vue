@@ -9,9 +9,9 @@
       class="banner relative aspect-[1.73] overflow-hidden rounded-xl bg-bg-3 sm:aspect-[4.785]"
     >
       <!-- H5 背景 -->
-      <img src="./headBack_h5.png" alt="" class="h-full w-full object-cover sm:hidden" />
+      <SmartImage :src="headBackH5Image" alt="" class="h-full w-full object-cover sm:hidden" />
       <!-- PC 背景：backImg 铺满 -->
-      <img
+      <SmartImage
         :src="backImg"
         alt=""
         class="pointer-events-none absolute inset-0 hidden h-full w-full object-cover sm:block"
@@ -339,6 +339,7 @@ import contract from '@/static/img/home/contract.png'
 import fishing from '@/static/img/home/fishing.png'
 import live from '@/static/img/home/live.png'
 import slots from '@/static/img/home/slots.png'
+import headBackH5Image from './headBack_h5.png'
 
 import placeholderImg from '@/static/img/home/errImg1.png'
 import backImg from '@/static/img/home/banner.jpg'

@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 z-[60] flex items-center justify-center bg-mask-60-1 px-5">
     <div class="relative overflow-hidden" :class="modeConfig.cardClass">
-      <img :src="ruleBgImage" alt="Claim Success" class="block w-full" />
+      <SmartImage :src="ruleBgImage" alt="Claim Success" class="block w-full" />
 
       <div class="absolute inset-0 flex flex-col items-center" :class="modeConfig.contentClass">
         <p class="text-center font-[700] text-common-100" :class="modeConfig.amountClass">

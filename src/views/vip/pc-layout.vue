@@ -54,12 +54,16 @@
               <section
                 :key="viewedVipLevel"
                 class="vip-card-panel rounded-[30px] bg-cover bg-center bg-no-repeat px-[64px] pb-[39px] pt-[56px]"
-                :style="{ backgroundImage: `url(${cardH5BgImage})` }"
+                :style="{ backgroundImage: resolveBackgroundImage(cardH5BgImage) }"
               >
                 <div class="relative z-[1] flex h-full flex-col">
                   <div class="flex items-center gap-[25px]">
                     <div class="flex shrink-0 items-center">
-                      <img :src="cardVipImage" alt="VIP Card" class="h-[59px] w-[66px] shrink-0" />
+                      <SmartImage
+                        :src="cardVipImage"
+                        alt="VIP Card"
+                        class="h-[59px] w-[66px] shrink-0"
+                      />
                       <p class="text-[80px] font-[700] leading-[60px] text-theme-primary">
                         {{ viewedVipLevel }}
                       </p>
@@ -91,7 +95,7 @@
                   </div>
                 </div>
 
-                <img
+                <SmartImage
                   :src="cardVipRightImage"
                   alt="VIP Decoration"
                   class="pointer-events-none absolute right-[32px] top-1/2 h-[252px] w-[282px] -translate-y-1/2"
@@ -200,6 +204,7 @@ import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useVipStore } from '@/stores/vip'
+import { resolveBackgroundImage } from '@/utils/image'
 import VipBadgeIcon from '@/static/svg/vip_1.svg?component'
 import VipWordmarkIcon from '@/static/svg/vip_2.svg?component'
 import cardVipImage from '@/static/img/personalCenter/card_vip.png'
