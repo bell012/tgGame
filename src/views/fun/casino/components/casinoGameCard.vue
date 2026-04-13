@@ -6,6 +6,7 @@
   >
     <gameErrImg class="h-full w-full" alt="Crash" :img="gameImage" />
     <div
+      v-if="gameCovernameShow"
       class="absolute inset-x-0 bottom-6 flex w-full items-center justify-center px-2 text-center text-sm sm:text-base font-bold leading-4 text-common-100 sm:font-extrabold"
     >
       {{ game.itemName }}
@@ -22,6 +23,7 @@
       class="absolute left-0 top-0 flex h-full w-full cursor-pointer items-center justify-center bg-mask-60-1 opacity-0 sm:group-hover:opacity-100"
     >
       <div
+        v-if="gameCovernameShow"
         class="absolute inset-x-0 top-0 flex h-2/5 w-full items-center justify-center px-2 text-center text-base font-bold leading-4 text-common-100 sm:font-extrabold"
       >
         {{ game.itemName }}
@@ -43,6 +45,7 @@ import { casinoIcons } from '@/static/svg/casino'
 import { StringExtension } from '@/utils/string-extension'
 import type { GameDataItem } from '@/api/interface/game'
 import gameErrImg from '@/components/common/gameErrImg.vue'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 
 const props = defineProps<{
   game: GameDataItem
@@ -52,8 +55,9 @@ defineEmits<{
   click: []
 }>()
 
+const siteConfigStore = useSiteConfigStore()
 const gameImage = computed(() => {
-  const imagePath = props.game.conUrl || props.game.icon1 || props.game.icon2 || props.game.icon3
+  const imagePath = props.game.icon2 || props.game.conUrl || props.game.icon1 || props.game.icon3
   const src = imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
 
   return {
@@ -64,5 +68,23 @@ const gameImage = computed(() => {
 
 const initNum = computed(() => {
   return StringExtension.getRandomInt(props.game.initScoreNum ?? 0, props.game.initScoreStar ?? 0)
+})
+
+/** | 游戏封面名称显示 | `0` 不显示，`1` 显示 | */
+const gameCovernameShow = computed(() => {
+  const value = Number(
+    (
+      siteConfigStore.config as
+        | {
+            baseSiteConfig?: {
+              game_covername_show?: string | number
+            }
+          }
+        | null
+        | undefined
+    )?.baseSiteConfig?.game_covername_show ?? 0
+  )
+
+  return Number.isFinite(value) && value > 0
 })
 </script>
