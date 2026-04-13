@@ -16,7 +16,9 @@
         class="flex h-16 shrink-0 items-center justify-center rounded-lg bg-bg-2"
         @click="handleClick(item)"
       >
-        <gameErrImg class="h-6 w-4/5 sm:h-11" :img="getBrandImg(item)" />
+        <div class="h-6 w-4/5 sm:h-11">
+          <gameErrImg :img="getBrandImg(item)" />
+        </div>
       </a>
     </div>
 
