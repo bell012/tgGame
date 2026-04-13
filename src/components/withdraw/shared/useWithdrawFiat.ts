@@ -2,20 +2,16 @@ import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
-import type {
-  AddMemberCardForm,
-  FastAmountItem,
-  MemberCardItem,
-  WithdrawManagerItem
-} from '@/api/interface/withdraw'
+import type { FastAmountItem, MemberCardItem, WithdrawManagerItem } from '@/api/interface/withdraw'
 import { showToast } from 'vant'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useMemberCardDefaultFlow } from '@/composables/useMemberCardDefaultFlow'
+import { useMemberCardVerificationFlow } from '@/composables/useMemberCardVerificationFlow'
 import { getBalanceByCurrency } from '@/utils/balance'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
-import { StringExtension } from '@/utils/string-extension'
 import { splitWithdrawManagerMethods } from './withdrawManager'
 import { requestOpenWithdrawKindReminder } from './useWithdrawFlow'
 
@@ -94,17 +90,11 @@ export function useWithdrawFiat() {
   const amount = ref<number>()
   const accountListVisible = ref(false)
   const addAccountVisible = ref(false)
-  const addAccountPaymentPasswordVisible = ref(false)
-  const addAccountSmsVerificationVisible = ref(false)
   const reopenAccountListAfterAdd = ref(false)
   const isLoadingMemberCards = ref(false)
   const hasLoadedMemberCards = ref(false)
   const hasMemberCardsLoadError = ref(false)
   const isRefreshingBalance = ref(false)
-  const isSendingAddAccountSmsCode = ref(false)
-  const isCheckingAddAccountSmsCode = ref(false)
-  const isSubmittingAddAccount = ref(false)
-  const addAccountSmsCountdownTrigger = ref(0)
   const pendingAccountNo = ref('')
   const pendingAccountName = ref('')
 
@@ -146,46 +136,80 @@ export function useWithdrawFiat() {
 
     return availableAccounts.value.length < limit
   })
-  const addMemberCardVerifyWay = computed(() => {
-    const baseSiteConfig = (
-      siteConfigStore.config as
-        | {
-            baseSiteConfig?: {
-              add_member_card_security_verify_way?: string | number
-              addMemberCardSecurityVerifyWay?: string | number
-            }
-          }
-        | null
-        | undefined
-    )?.baseSiteConfig
+  const {
+    maskedPhoneNumber,
+    isSendingSmsCode: isSendingAddAccountSmsCode,
+    isCheckingSmsCode: isCheckingAddAccountSmsCode,
+    isCheckingPaymentPassword: isCheckingAddAccountPaymentPassword,
+    isSubmitting: isSubmittingAddAccount,
+    paymentPasswordVisible: addAccountPaymentPasswordVisible,
+    smsVerificationVisible: addAccountSmsVerificationVisible,
+    smsCountdownTrigger: addAccountSmsCountdownTrigger,
+    beginSubmit: beginAddAccountSubmit,
+    closeSmsVerification: closeAddAccountSmsVerificationState,
+    closePaymentPasswordVerification: closeAddAccountPaymentPasswordState,
+    handleSmsVerificationResend: handleAddAccountSmsVerificationResend,
+    handleSmsVerificationConfirm: handleAddAccountSmsVerificationConfirm,
+    handlePaymentPasswordVerificationConfirm: handleAddAccountPaymentPasswordConfirm
+  } = useMemberCardVerificationFlow<{ accountNo: string; accountName: string }>({
+    buildRequestData: (data, verifyCode) => {
+      const nextType = Number(selectedMethod.value.cardType ?? 0)
+      const nextCardType = Number(selectedMethod.value.paymentCode ?? 0)
 
-    return String(
-      baseSiteConfig?.add_member_card_security_verify_way ??
-        baseSiteConfig?.addMemberCardSecurityVerifyWay ??
-        ''
-    ).trim()
-  })
-  const needAddMemberCardBusiPwd = computed(() => addMemberCardVerifyWay.value === '2')
-  const needAddMemberCardTelephoneSms = computed(() => addMemberCardVerifyWay.value === '1')
-  const resolvedAreaCode = computed(() => String(userStore.userInfo?.areaCode ?? '').trim())
-  const resolvedTelephone = computed(() =>
-    String(userStore.userInfo?.telephone ?? '')
-      .trim()
-      .replace(/\D/g, '')
-  )
-  const maskedPhoneNumber = computed(() => {
-    const areaCode = resolvedAreaCode.value
-    const telephone = resolvedTelephone.value
+      if (!nextType || !nextCardType) {
+        return null
+      }
 
-    if (!telephone) {
-      return ''
+      return {
+        accountNo: data.accountNo,
+        accountName: data.accountName,
+        accountSubNo: '',
+        cardType: nextCardType,
+        defaultCard: 1,
+        remark: '',
+        type: nextType,
+        validDate: 0,
+        ...(verifyCode ? { verifyCode } : {})
+      }
+    },
+    submitRequest: async requestData => {
+      try {
+        const response = await Api.withdraw.addMemberCard(requestData)
+
+        if (response?.code !== 'C2') {
+          showToast({
+            message: String(response?.message || 'Add account failed'),
+            type: 'fail',
+            duration: 3000
+          })
+          return false
+        }
+
+        return true
+      } catch (error) {
+        console.error(error)
+        showToast({
+          message: 'Add account failed',
+          type: 'fail',
+          duration: 3000
+        })
+        return false
+      }
+    },
+    onRequireTransactionPassword: () => {
+      requestOpenWithdrawKindReminder()
+    },
+    onSubmitted: async () => {
+      const nextAccountNo = pendingAccountNo.value.trim()
+      await loadMemberCards()
+      syncSelectedAccount()
+      selectedAccount.value =
+        availableAccounts.value.find(item => item.accountNo === nextAccountNo) ?? null
+      closeAddAccount()
+    },
+    onSubmitFailed: () => {
+      reopenAddAccountForm()
     }
-
-    if (telephone.length <= 4) {
-      return `+${areaCode}-${telephone}`
-    }
-
-    return `+${areaCode}-${telephone.slice(0, 3)}****${telephone.slice(-4)}`
   })
 
   const syncSelectedAccount = ({ preserveCurrent = true }: { preserveCurrent?: boolean } = {}) => {
@@ -205,9 +229,7 @@ export function useWithdrawFiat() {
 
     const nextAccount =
       matchedAccount ??
-      availableAccounts.value.find(
-        account => Number(account.defaultCard ?? account.isDefault ?? 0) === 1
-      ) ??
+      availableAccounts.value.find(account => Number(account.defaultCard ?? 0) === 1) ??
       null
 
     selectedAccount.value = nextAccount
@@ -268,7 +290,7 @@ export function useWithdrawFiat() {
 
       memberCards.value = result.map((item, index) => ({
         ...item,
-        localId: String(item.rowId ?? `${item.paymentCode ?? 'wallet'}-${index}`)
+        localId: String(item.rowId ?? `wallet-${index}`)
       }))
       hasLoadedMemberCards.value = true
     } catch (error) {
@@ -383,225 +405,62 @@ export function useWithdrawFiat() {
     closeAccountList()
   }
 
-  const handleToggleAccountDefault = (localId: string) => {
-    const nextSelectedAccount =
-      availableAccounts.value.find(item => item.localId === localId) ?? null
-    const nextCardType = selectedMethod.value.paymentCode
+  const { setDefault: applyAccountDefault } = useMemberCardDefaultFlow<string>({
+    resolveTarget: localId => {
+      const nextSelectedAccount =
+        availableAccounts.value.find(item => item.localId === localId) ?? null
 
-    if (!nextSelectedAccount || nextCardType == null || String(nextCardType).trim() === '') {
-      return
-    }
+      if (!nextSelectedAccount) {
+        return null
+      }
 
-    if (Number(nextSelectedAccount.defaultCard ?? nextSelectedAccount.isDefault ?? 0) === 1) {
-      showToast({
-        message: t('withdraw.default_account_cannot_be_changed'),
-        type: 'fail',
-        duration: 3000
-      })
-      return
-    }
-
-    void (async () => {
+      return {
+        rowId: nextSelectedAccount.rowId,
+        cardType: selectedMethod.value.paymentCode,
+        defaultCard: nextSelectedAccount.defaultCard
+      }
+    },
+    alreadyDefaultMessage: t('withdraw.default_account_cannot_be_changed'),
+    updateFailedMessage: 'Update default account failed',
+    submitDefault: async (rowId, cardType) => {
       try {
         const response = await Api.withdraw.modifyDefaultCard({
-          rowId: nextSelectedAccount.rowId,
-          cardType: nextCardType,
+          rowId,
+          cardType,
           defaultCard: 1,
           validDate: 0
         })
 
-        if (response?.code !== 'C2') {
-          showToast({
-            message: String(response?.message || 'Update default account failed'),
-            type: 'fail',
-            duration: 3000
-          })
-          return
-        }
-
-        memberCards.value = memberCards.value.map(item => ({
-          ...item,
-          defaultCard: item.localId === localId ? 1 : 0,
-          isDefault: item.localId === localId ? 1 : 0
-        }))
-
-        selectedAccount.value =
-          availableAccounts.value.find(item => item.localId === localId) ?? selectedAccount.value
-        syncSelectedAccount()
+        return response?.code === 'C2'
       } catch (error) {
         console.error(error)
-        showToast({
-          message: 'Update default account failed',
-          type: 'fail',
-          duration: 3000
-        })
+        return false
       }
-    })()
-  }
+    },
+    onSuccess: localId => {
+      memberCards.value = memberCards.value.map(item => ({
+        ...item,
+        defaultCard: item.localId === localId ? 1 : 0
+      }))
 
-  const buildAddMemberCardForm = (
-    nextAccountNo: string,
-    nextAccountName: string,
-    verifiedValue?: string
-  ): AddMemberCardForm | null => {
-    const nextType = Number(selectedMethod.value.cardType ?? 0)
-    const nextCardType = Number(selectedMethod.value.paymentCode ?? 0)
-
-    if (!nextType || !nextCardType) {
-      return null
+      selectedAccount.value =
+        availableAccounts.value.find(item => item.localId === localId) ?? selectedAccount.value
+      syncSelectedAccount()
     }
+  })
 
-    return {
-      ...(addMemberCardVerifyWay.value ? { verifyType: addMemberCardVerifyWay.value } : {}),
-      ...(verifiedValue ? { verifyCode: StringExtension.md5(verifiedValue) } : {}),
-      type: nextType,
-      cardType: nextCardType,
-      accountNo: nextAccountNo,
-      accountName: nextAccountName,
-      accountSubNo: '',
-      defaultCard: 1,
-      validDate: 0,
-      remark: ''
-    }
-  }
-
-  const submitAddAccount = async (verifiedValue?: string) => {
-    const nextAccountNo = pendingAccountNo.value.trim()
-    const nextAccountName = pendingAccountName.value.trim()
-
-    if (!nextAccountNo || !nextAccountName) {
-      return
-    }
-
-    const requestData = buildAddMemberCardForm(nextAccountNo, nextAccountName, verifiedValue)
-
-    if (!requestData) {
-      showToast({
-        message: 'Unavailable',
-        type: 'fail',
-        duration: 3000
-      })
-      return
-    }
-
-    try {
-      isSubmittingAddAccount.value = true
-      const response = await Api.withdraw.addMemberCard(requestData)
-
-      if (response?.code !== 'C2') {
-        showToast({
-          message: String(response?.message || 'Add account failed'),
-          type: 'fail',
-          duration: 3000
-        })
-        reopenAddAccountForm()
-        return
-      }
-    } catch (error) {
-      console.error(error)
-      showToast({
-        message: 'Add account failed',
-        type: 'fail',
-        duration: 3000
-      })
-      reopenAddAccountForm()
-      return
-    } finally {
-      isSubmittingAddAccount.value = false
-    }
-
-    await loadMemberCards()
-    syncSelectedAccount()
-    selectedAccount.value =
-      availableAccounts.value.find(item => item.accountNo === nextAccountNo) ?? null
-    closeAddAccount()
-  }
-
-  const sendAddAccountSmsCode = async () => {
-    if (isSendingAddAccountSmsCode.value) {
-      return false
-    }
-
-    if (!resolvedTelephone.value) {
-      showToast({
-        message: 'Phone number unavailable',
-        type: 'fail',
-        duration: 3000
-      })
-      return false
-    }
-
-    try {
-      isSendingAddAccountSmsCode.value = true
-      const response = await Api.auth.sendSms({
-        telephone: resolvedTelephone.value,
-        areaCode: resolvedAreaCode.value
-      })
-
-      if (response?.message) {
-        showToast({
-          message: response.message,
-          type: response?.code === 'C2' ? 'success' : 'fail'
-        })
-      }
-
-      if (response?.code === 'C2') {
-        addAccountSmsCountdownTrigger.value += 1
-        return true
-      }
-
-      return false
-    } finally {
-      isSendingAddAccountSmsCode.value = false
-    }
+  const handleToggleAccountDefault = (localId: string) => {
+    void applyAccountDefault(localId)
   }
 
   const closeAddAccountPaymentPassword = () => {
-    addAccountPaymentPasswordVisible.value = false
+    closeAddAccountPaymentPasswordState()
     reopenAddAccountForm()
   }
 
   const closeAddAccountSmsVerification = () => {
-    addAccountSmsVerificationVisible.value = false
+    closeAddAccountSmsVerificationState()
     reopenAddAccountForm()
-  }
-
-  const handleAddAccountPaymentPasswordConfirm = async (password: string) => {
-    addAccountPaymentPasswordVisible.value = false
-    await submitAddAccount(password)
-  }
-
-  const handleAddAccountSmsVerificationResend = async () => {
-    await sendAddAccountSmsCode()
-  }
-
-  const handleAddAccountSmsVerificationConfirm = async (code: string) => {
-    if (isCheckingAddAccountSmsCode.value || isSubmittingAddAccount.value) {
-      return
-    }
-
-    try {
-      isCheckingAddAccountSmsCode.value = true
-      const response = await Api.auth.checkSms({
-        telephone: resolvedTelephone.value,
-        areaCode: resolvedAreaCode.value,
-        smsCode: code
-      })
-
-      if (response?.code !== 'C2') {
-        showToast({
-          message: String(response?.message || 'Invalid sms code'),
-          type: 'fail',
-          duration: 3000
-        })
-        return
-      }
-
-      addAccountSmsVerificationVisible.value = false
-      await submitAddAccount(code)
-    } finally {
-      isCheckingAddAccountSmsCode.value = false
-    }
   }
 
   const confirmAddAccount = async () => {
@@ -612,20 +471,14 @@ export function useWithdrawFiat() {
       return
     }
 
-    if (needAddMemberCardBusiPwd.value) {
-      addAccountVisible.value = false
-      addAccountPaymentPasswordVisible.value = true
-      return
-    }
+    const result = await beginAddAccountSubmit({
+      accountNo: nextAccountNo,
+      accountName: nextAccountName
+    })
 
-    if (needAddMemberCardTelephoneSms.value) {
+    if (result === 'password' || result === 'sms') {
       addAccountVisible.value = false
-      addAccountSmsVerificationVisible.value = true
-      await sendAddAccountSmsCode()
-      return
     }
-
-    await submitAddAccount()
   }
 
   const applyQuickAmount = (quickAmount: FastAmountItem) => {
@@ -687,6 +540,7 @@ export function useWithdrawFiat() {
     handleAddAccountSmsVerificationResend,
     isAmountDisabled,
     isCheckingAddAccountSmsCode,
+    isCheckingAddAccountPaymentPassword,
     isRefreshingBalance,
     isSendingAddAccountSmsCode,
     isSubmittingAddAccount,

@@ -1,5 +1,5 @@
 import CNYFlagIcon from '@/static/img/flag/CNY.webp'
-import PHPFlagIcon from '@/static/img/flag/PHP.png'
+import PHPFlagIcon from '@/static/img/flag/PHP.webp'
 import USDFlagIcon from '@/static/img/flag/USD.webp'
 
 /**
