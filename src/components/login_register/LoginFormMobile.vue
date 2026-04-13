@@ -74,7 +74,7 @@
                       <div class="flex-col">
                         <h2 class="flex items-center text-xs">
                           <TurntableIcon class="w-3.5 h-3.5 fill-none" />
-                          <div class="ml-1.5 text-text-1">5 BTC%</div>
+                          <div class="ml-1.5 text-text-1">5 BTC</div>
                         </h2>
                         <!-- 每日免费幸运旋转 -->
                         <p class="text-text-2 mt-0.5 text-[9px]">
