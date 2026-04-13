@@ -30,6 +30,7 @@
 import Api from '@/api'
 import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
+import { AESUtils } from '@/utils/encrypt'
 import { getCurrentCurrency, getDefaultAreaCode, getLanguageCode } from '@/utils/locale'
 import {
   handlePasswordInput,
@@ -60,6 +61,9 @@ const emit = defineEmits<{
 const userStore = useUserStore()
 const defaultAreaCode = getDefaultAreaCode()
 const REGISTER_SMS_COUNTDOWN_STORAGE_KEY = 'register-sms-countdown'
+const REMEMBERED_ACCOUNT_STORAGE_KEY = 'rememberedAccount'
+const REMEMBERED_PASSWORD_STORAGE_KEY = 'rememberedPassword'
+const REMEMBERED_CREDENTIALS_KEY_SEED = 'tgGame-remember-signin'
 
 const {
   remainingSeconds: countdown,
@@ -89,27 +93,98 @@ const showPassword = ref({
 
 const showConfirmPassword = ref(false)
 
-// 从 localStorage 读取保存的账号
-const getSavedAccount = () => {
+/**
+ * 获取记住我信息使用的本地 AES 密钥。
+ */
+const getRememberedCredentialsAESKey = () => {
+  const host = typeof window !== 'undefined' ? window.location.host : 'tgGame'
+  return StringExtension.tail16(`${host}-${REMEMBERED_CREDENTIALS_KEY_SEED}`)
+}
+
+/**
+ * 加密记住我的本地存储值。
+ */
+const encryptRememberedValue = (value: string) => {
+  if (!value) return ''
+
   try {
-    const saved = localStorage.getItem('rememberedAccount')
-    if (saved) {
-      return saved
+    return AESUtils.encryptAES(value, getRememberedCredentialsAESKey())
+  } catch (error) {
+    console.error(error)
+    return value
+  }
+}
+
+/**
+ * 解密记住我的本地存储值
+ */
+const decryptRememberedValue = (value: string) => {
+  if (!value) return ''
+
+  try {
+    const decryptedValue = AESUtils.decryptAES(value, getRememberedCredentialsAESKey())
+    return typeof decryptedValue === 'string' ? decryptedValue : String(decryptedValue ?? '')
+  } catch {
+    return value
+  }
+}
+
+/**
+ * 读取并解密指定 key 对应的记住我存储值。
+ */
+const getRememberedStorageValue = (key: string) => {
+  try {
+    const storedValue = localStorage.getItem(key) || ''
+    return decryptRememberedValue(storedValue)
+  } catch (error) {
+    console.error(error)
+    return ''
+  }
+}
+
+/**
+ * 写入加密后的记住我存储值；空值时直接删除。
+ */
+const setRememberedStorageValue = (key: string, value: string) => {
+  try {
+    if (!value) {
+      localStorage.removeItem(key)
+      return
+    }
+
+    localStorage.setItem(key, encryptRememberedValue(value))
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+/**
+ * 从 localStorage 读取保存的登录信息。
+ */
+const getSavedSigninCredentials = () => {
+  try {
+    return {
+      account: getRememberedStorageValue(REMEMBERED_ACCOUNT_STORAGE_KEY),
+      password: getRememberedStorageValue(REMEMBERED_PASSWORD_STORAGE_KEY)
     }
   } catch (error) {
     console.error(error)
   }
-  return null
+
+  return {
+    account: '',
+    password: ''
+  }
 }
 
 // 表单数据
-const savedAccount = getSavedAccount()
+const savedSigninCredentials = getSavedSigninCredentials()
 const formData = ref({
   // 登录表单
   signin: {
-    account: savedAccount || '',
-    password: '',
-    rememberMe: savedAccount ? true : false
+    account: savedSigninCredentials.account,
+    password: savedSigninCredentials.password,
+    rememberMe: Boolean(savedSigninCredentials.account || savedSigninCredentials.password)
   },
   // 注册表单
   signup: {
@@ -144,8 +219,12 @@ const checkboxAnimating = ref({
 const setActiveTab = (tab: 'signin' | 'signup') => {
   activeTab.value = tab
   if (tab === 'signin') {
-    formData.value.signin.account = ''
-    formData.value.signin.password = ''
+    const savedCredentials = getSavedSigninCredentials()
+    formData.value.signin.account = savedCredentials.account
+    formData.value.signin.password = savedCredentials.password
+    formData.value.signin.rememberMe = Boolean(
+      savedCredentials.account || savedCredentials.password
+    )
   } else {
     formData.value.signup.account = ''
     formData.value.signup.code = ''
@@ -250,11 +329,13 @@ const handleLogin = async () => {
     }
 
     if (response.success && response.result && response.result.tradeToken) {
-      // 根据"记住我"状态保存或清除账号
+      // 根据"记住我"状态保存或清除登录信息
       if (formData.value.signin.rememberMe) {
-        localStorage.setItem('rememberedAccount', formData.value.signin.account)
+        setRememberedStorageValue(REMEMBERED_ACCOUNT_STORAGE_KEY, formData.value.signin.account)
+        setRememberedStorageValue(REMEMBERED_PASSWORD_STORAGE_KEY, formData.value.signin.password)
       } else {
-        localStorage.removeItem('rememberedAccount')
+        localStorage.removeItem(REMEMBERED_ACCOUNT_STORAGE_KEY)
+        localStorage.removeItem(REMEMBERED_PASSWORD_STORAGE_KEY)
       }
       try {
         await userStore.refreshCurrentUserData(formData.value.signin.account)
@@ -365,12 +446,12 @@ const openResetPassword = () => {
 
 // 重置表单数据
 const resetForm = () => {
-  const savedAccount = getSavedAccount()
+  const savedCredentials = getSavedSigninCredentials()
 
   // 重置登录表单
-  formData.value.signin.account = savedAccount || ''
-  formData.value.signin.password = ''
-  formData.value.signin.rememberMe = savedAccount ? true : false
+  formData.value.signin.account = savedCredentials.account
+  formData.value.signin.password = savedCredentials.password
+  formData.value.signin.rememberMe = Boolean(savedCredentials.account || savedCredentials.password)
 
   // 重置注册表单
   formData.value.signup.account = ''
