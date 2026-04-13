@@ -36,6 +36,7 @@ import {
   handlePasswordInput,
   handlePhoneInput,
   handleVerificationCodeInput,
+  isValidPhoneNumber,
   isValidPassword
 } from '@/utils/phone-input'
 import { StringExtension } from '@/utils/string-extension'
@@ -197,13 +198,15 @@ const formData = ref({
 
 // 登录表单验证
 const isSigninValid = computed(() => {
-  return formData.value.signin.account.length === 10 && formData.value.signin.password.length > 0
+  return (
+    isValidPhoneNumber(formData.value.signin.account) && formData.value.signin.password.length > 0
+  )
 })
 
 // 注册表单验证
 const isSignupValid = computed(() => {
   return (
-    formData.value.signup.account.length === 10 &&
+    isValidPhoneNumber(formData.value.signup.account) &&
     formData.value.signup.code.length > 0 &&
     isValidPassword(formData.value.signup.password) &&
     formData.value.signup.password === formData.value.signup.confirmPassword
@@ -410,7 +413,7 @@ const handleSendCode = async () => {
       return
     }
 
-    if (telephone.length !== 10) {
+    if (!isValidPhoneNumber(telephone)) {
       return
     }
     // 发送短信接口

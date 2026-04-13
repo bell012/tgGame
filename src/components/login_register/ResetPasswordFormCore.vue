@@ -23,6 +23,7 @@ import {
   handlePhoneInput,
   handlePasswordInput,
   handleVerificationCodeInput,
+  isValidPhoneNumber,
   isValidPassword
 } from '@/utils/phone-input'
 import Api from '@/api'
@@ -59,7 +60,7 @@ const formData = ref({
 // 重置密码表单验证
 const isResetValid = computed(() => {
   return (
-    formData.value.account.length === 10 &&
+    isValidPhoneNumber(formData.value.account) &&
     formData.value.code.length > 0 &&
     isValidPassword(formData.value.password) &&
     formData.value.password === formData.value.confirmPassword
@@ -121,7 +122,7 @@ const handleSendCode = async () => {
       return
     }
 
-    if (telephone.length !== 10) {
+    if (!isValidPhoneNumber(telephone)) {
       return
     }
 
