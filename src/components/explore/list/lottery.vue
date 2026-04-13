@@ -7,10 +7,10 @@
           <div class="flex justify-between py-[8px]" v-for="child in item.items" :key="child.id">
             <div class="flex items-center gap-[10px]">
               <section class="relative min-w-[24px] min-h-[24px] w-[24px] h-[24px] overflow-hidden">
-                <img
+                <SmartImage
                   class="w-[24px] min-w-[24px] absolute"
                   alt="countries"
-                  src="@/static/img/explore/countries.png"
+                  :src="countriesImg"
                   :style="`top: -${getImageTop(child.country)}px`"
                 />
               </section>
@@ -39,10 +39,10 @@
         <div class="flex justify-between">
           <div><FavoritesFull class="w-4 h-4" /></div>
           <section class="relative min-w-[24px] min-h-[24px] w-[24px] h-[24px] overflow-hidden">
-            <img
+            <SmartImage
               class="w-[24px] min-w-[24px] absolute"
               alt="countries"
-              src="@/static/img/explore/countries.png"
+              :src="countriesImg"
               :style="`top: -${getImageTop(child.country)}px`"
             />
           </section>
@@ -74,6 +74,8 @@
 </template>
 
 <script setup lang="ts">
+import SmartImage from '@/components/common/SmartImage.vue'
+import countriesImg from '@/static/img/explore/countries.png'
 import FavoritesFull from '@/static/svg/casino/favorites_full.svg?component'
 import { computed, inject, Ref } from 'vue'
 import { COUNTRIES, getTimeDifference, groupByName } from '../consts'

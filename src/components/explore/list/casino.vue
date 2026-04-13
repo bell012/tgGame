@@ -11,7 +11,7 @@
       <div class="game-card group w-full relative cursor-pointer" @click="itemClick(item)">
         <!-- 卡片-->
         <div class="w-full aspect-[0.75] overflow-hidden rounded-lg">
-          <img
+          <SmartImage
             :src="baseUrl + item.icon2"
             alt=""
             class="game-card-image w-full h-full object-contain"
@@ -31,7 +31,7 @@
         <div
           class="flex px-1 py-1 bg-[var(--color-mask-20)] rounded-md absolute items-center bottom-1 right-1"
         >
-          <img :src="numImg" alt="" class="w-2.5 h-2.5 mr-0.5" />
+          <SmartImage :src="numImg" alt="" class="w-2.5 h-2.5 mr-0.5" />
           <div class="text-[10px] text-text-1">{{ item.initScoreNum ?? 0 }}</div>
         </div>
       </div>
@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+import SmartImage from '@/components/common/SmartImage.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import gameImg from '@/static/img/explore/game.png'

@@ -13,7 +13,7 @@
 
     <!-- 列表无数据时显示 -->
     <div v-else class="w-full flex justify-center items-center flex-col mt-[17px]">
-      <img :src="defaultImg" alt="empty" class="w-[220px] h-[200px] object-contain mb-2.5" />
+      <SmartImage :src="defaultImg" alt="empty" class="w-[220px] h-[200px] object-contain mb-2.5" />
       <div class="text-xs text-center">{{ t('search.stay') }}</div>
     </div>
 
@@ -62,6 +62,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import SmartImage from '@/components/common/SmartImage.vue'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
 import defaultImg from '@/static/img/explore/default.png'

@@ -10,10 +10,10 @@
         <!-- 国家图标 --->
         <div class="flex items-center gap-[10px]" v-if="countryImage && modelValue">
           <section class="relative min-w-[16px] min-h-[16px] w-[16px] h-[16px] overflow-hidden">
-            <img
+            <SmartImage
               class="w-[16px] min-w-[16px] absolute"
               alt="countries"
-              src="@/static/img/explore/countries.png"
+              :src="countriesImg"
               :style="`top: -${getImageTop()}px`"
             />
           </section>
@@ -59,6 +59,8 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Popup from './popup.vue'
+import SmartImage from '@/components/common/SmartImage.vue'
+import countriesImg from '@/static/img/explore/countries.png'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { COUNTRIES } from '../consts'
 
