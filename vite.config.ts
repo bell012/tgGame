@@ -1,6 +1,7 @@
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
+import viteImagemin from 'vite-plugin-imagemin'
 import { VitePWA } from 'vite-plugin-pwa'
 import svgLoader from 'vite-svg-loader'
 
@@ -39,6 +40,23 @@ export default defineConfig({
           }
         ]
       }
+    }),
+    viteImagemin({
+      filter: /\.(png|jpe?g)$/i,
+      mozjpeg: {
+        quality: 80
+      },
+
+      pngquant: {
+        // png 压缩
+        quality: [0.7, 0.85],
+        speed: 4
+      },
+
+      optipng: false,
+      svgo: false,
+      gifsicle: false,
+      jpegTran: false
     }),
     VitePWA({
       registerType: 'autoUpdate',
