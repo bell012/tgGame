@@ -148,7 +148,10 @@
             </button>
 
             <!-- 以访客身份 -->
-            <div class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer">
+            <div
+              class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer"
+              @click="handleGuestContinue"
+            >
               {{ t('common.continue') }}
             </div>
           </template>
@@ -267,7 +270,10 @@
             </button>
 
             <!-- 以访客身份 -->
-            <div class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer">
+            <div
+              class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer"
+              @click="handleGuestContinue"
+            >
               {{ t('common.continue') }}
             </div>
           </template>
@@ -325,6 +331,13 @@ const handleRegisterSuccess = () => {
 const handleLoginSuccess = () => {
   emit('close')
   window.location.reload()
+}
+
+/**
+ * 以访客身份继续时关闭当前弹窗。
+ */
+const handleGuestContinue = () => {
+  emit('close')
 }
 
 const resetForm = () => {
