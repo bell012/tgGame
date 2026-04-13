@@ -47,7 +47,7 @@
                 <ChecedIcon v-if="isSelected(item)" class="tp-check-icon w-5 h-5 cursor-pointer" />
                 <UnchecedIcon v-else class="tp-check-icon w-5 h-5 cursor-pointer" />
                 <div class="provider-logo-box">
-                  <img
+                  <SmartImage
                     v-if="shouldShowLogo(item)"
                     class="provider-logo-image"
                     :src="resolveLogoSrc(item)"
@@ -90,6 +90,7 @@ import UnchecedIcon from '@/static/svg/explore/cube-unchecked.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import { useI18n } from 'vue-i18n'
 import ClearIcon from '@/static/svg/explore/clear.svg?component'
+import SmartImage from '@/components/common/SmartImage.vue'
 import { computed, ref, watch } from 'vue'
 
 interface OptionItem {

@@ -39,10 +39,10 @@
                     v-if="item.value && countryImage"
                     class="relative min-w-[16px] min-h-[16px] w-[16px] h-[16px] overflow-hidden"
                   >
-                    <img
+                    <SmartImage
                       class="w-[16px] min-w-[16px] absolute"
                       alt="countries"
-                      src="@/static/img/explore/countries.png"
+                      :src="countriesImg"
                       :style="`top: -${getImageTop(item)}px`"
                     />
                   </section>
@@ -63,6 +63,8 @@
 import CloseIcon from '@/static/svg/close.svg?component'
 import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
+import SmartImage from '@/components/common/SmartImage.vue'
+import countriesImg from '@/static/img/explore/countries.png'
 import { useI18n } from 'vue-i18n'
 import { COUNTRIES } from '../consts'
 
