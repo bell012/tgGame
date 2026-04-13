@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import ruleBgImage from '@/static/img/personalCenter/rule_bg.png'
+import ruleBgImage from '@/static/img/personalCenter/rule_bg.webp'
 
 const props = withDefaults(
   defineProps<{
