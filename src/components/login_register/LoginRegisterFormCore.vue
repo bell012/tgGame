@@ -427,8 +427,10 @@ const handleSendCode = async () => {
       })
     }
 
-    // 开始60秒倒计时
-    startCountdown()
+    // 只有短信接口返回 C2 时，才开始60秒倒计时
+    if (response?.code === 'C2') {
+      startCountdown()
+    }
   } catch (error) {
     console.error(error)
   }
