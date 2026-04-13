@@ -45,7 +45,7 @@
                 :value="formData.account"
                 type="text"
                 inputmode="numeric"
-                :placeholder="t('common.enter_phone_number')"
+                :placeholder="t('common.enter_account')"
                 class="w-full h-[50px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                 @input="handleAccountInput"
               />
