@@ -274,7 +274,7 @@ import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?ur
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?url'
 import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
-import PersonIcon from '@/static/svg/game/detail/comment/person.svg?url'
+import PersonIcon from '@/static/svg/game/detail/comment/person.webp?url'
 import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?url'
 import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?url'
 import { useThemeStore } from '@/stores/theme'
