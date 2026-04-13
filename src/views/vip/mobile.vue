@@ -155,7 +155,6 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { showToast } from 'vant'
 import H5Header from '@/components/common/H5Header.vue'
 import { useVipStore } from '@/stores/vip'
 import RuleIcon from '@/static/svg/rule.svg?component'
@@ -282,10 +281,6 @@ const handleClaim = async (card: VipBenefitCard) => {
     const response = await claimVipBenefit(card.key)
 
     if (!response?.success) {
-      showToast({
-        message: response?.message || t('common.unknownError'),
-        type: 'fail'
-      })
       return
     }
 

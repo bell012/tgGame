@@ -34,7 +34,9 @@ export function queryWithdrawManager(
   return request({
     url: '/with/queryWithdrawManager',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -47,7 +49,9 @@ export function selectMemberCard(data?: SelectMemberCardForm): Promise<SelectMem
   return request({
     url: '/mc/selectMemberCard',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -60,7 +64,9 @@ export function addMemberCard(data: AddMemberCardForm): Promise<AddMemberCardRes
   return request({
     url: '/mc/addMemberCard',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -73,7 +79,9 @@ export function modifyDefaultCard(data: ModifyDefaultCardForm): Promise<ModifyDe
   return request({
     url: '/mc/modifyDefaultCard',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -86,7 +94,9 @@ export function delMemberCard(data: DelMemberCardForm): Promise<DelMemberCardRes
   return request({
     url: '/mc/delMemberCard',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -99,7 +109,9 @@ export function queryFastAmount(params: QueryFastAmountForm): Promise<QueryFastA
   return request({
     url: '/qa/getBonusLimitList',
     method: 'get',
-    params
+    params,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -110,7 +122,9 @@ export function queryFastAmount(params: QueryFastAmountForm): Promise<QueryFastA
 export function queryNeedBetAmountForApp(): Promise<QueryNeedBetAmountForAppResponse> {
   return request({
     url: '/inspect/queryNeedBetAmountForApp',
-    method: 'get'
+    method: 'get',
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -125,7 +139,9 @@ export function queryWithdrawConfigByMember(
   return request({
     url: '/wc/queryWithdrawConfigByMember',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -140,7 +156,9 @@ export function submitTransferOrder(
   return request({
     url: '/tc/submitTransferOrder',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -155,7 +173,9 @@ export function queryWithdrawOrderList(
   return request({
     url: '/bosu/queryNewWithdrawOrderList',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -170,6 +190,8 @@ export function queryTheWithdrawOrder(
   return request({
     url: '/bosu/queryTheWithdrawOrder',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }

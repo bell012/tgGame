@@ -131,15 +131,6 @@ const handleSendCode = async () => {
       telephone: telephone,
       areaCode: defaultAreaCode
     })
-    if (response && response.message) {
-      showToast({
-        message: response.message,
-        duration: 2000,
-        wordBreak: 'break-word',
-        zIndex: 10001
-      })
-    }
-
     // 只有短信接口返回 C2 时，才开始60秒倒计时
     if (response?.code === 'C2') {
       startCountdown()
@@ -163,15 +154,6 @@ const handleResetPassword = async () => {
 
     // 重置密码接口
     const response = await Api.auth.resetPassword(resetPasswordData)
-    if (response && response.message) {
-      showToast({
-        message: response.message,
-        duration: 2000,
-        wordBreak: 'break-word',
-        zIndex: 10001
-      })
-    }
-
     // 重置密码成功，清空表单
     if (response && response.success) {
       resetForm()

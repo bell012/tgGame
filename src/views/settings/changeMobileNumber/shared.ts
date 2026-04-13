@@ -285,8 +285,6 @@ export const useChangeMobileNumber = () => {
         startCurrentCountdown()
         await focusCurrentVerificationInput()
       }
-
-      showMessageToast(response?.message ?? '')
     } catch (error) {
       console.error(error)
     } finally {
@@ -319,7 +317,6 @@ export const useChangeMobileNumber = () => {
         return
       }
 
-      showMessageToast(response?.message ?? '')
       currentVerificationCode.value = ''
       await focusCurrentVerificationInput()
     } finally {
@@ -356,8 +353,6 @@ export const useChangeMobileNumber = () => {
         startNewCountdown()
         await focusNewVerificationInput()
       }
-
-      showMessageToast(response?.message ?? '')
     } catch (error) {
       console.error(error)
     } finally {
@@ -375,12 +370,17 @@ export const useChangeMobileNumber = () => {
 
     try {
       isConfirmingNewCode.value = true
-      const response = await Api.user.modifyMemberTelePhone({
-        telephone: newTelephone.value,
-        areaCode: defaultAreaCode,
-        smsCode: newVerificationCode.value,
-        phoneBindStatus: 0
-      })
+      const response = await Api.user.modifyMemberTelePhone(
+        {
+          telephone: newTelephone.value,
+          areaCode: defaultAreaCode,
+          smsCode: newVerificationCode.value,
+          phoneBindStatus: 0
+        },
+        {
+          showErrorToast: true
+        }
+      )
 
       if (response?.code === 'C2') {
         updatedTelephone.value = newTelephone.value
@@ -391,7 +391,6 @@ export const useChangeMobileNumber = () => {
         return
       }
 
-      showMessageToast(response?.message ?? '')
       newVerificationCode.value = ''
       await focusNewVerificationInput()
     } catch (error) {

@@ -197,7 +197,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { showToast } from 'vant'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useVipStore } from '@/stores/vip'
 import VipBadgeIcon from '@/static/svg/vip_1.svg?component'
@@ -304,10 +303,6 @@ const handleClaim = async (card: VipBenefitCard) => {
     const response = await claimVipBenefit(card.key)
 
     if (!response?.success) {
-      showToast({
-        message: response?.message || t('common.unknownError'),
-        type: 'fail'
-      })
       return
     }
 
