@@ -16,11 +16,13 @@ export type FeedbackRecord = {
   replyContent: string[]
 }
 
-export const feedbackStatusTextMap: Record<FeedbackStatus, string> = {
-  accepted: '已采纳',
-  pending: '待处理',
-  rejected: '未采纳'
-}
+type FeedbackTranslate = (key: string, params?: Record<string, unknown>) => string
+
+export const getFeedbackStatusTextMap = (t: FeedbackTranslate): Record<FeedbackStatus, string> => ({
+  accepted: t('personalCenter.feedback.status.accepted'),
+  pending: t('personalCenter.feedback.status.pending'),
+  rejected: t('personalCenter.feedback.status.rejected')
+})
 
 export const feedbackStatusClassMap: Record<FeedbackStatus, string> = {
   accepted: 'text-theme-primary',
@@ -32,21 +34,22 @@ export const FEEDBACK_UPLOAD_MAX_COUNT = 4
 export const FEEDBACK_CLAIM_SUCCESS_TARGET_AMOUNT = 100
 export const FEEDBACK_CLAIM_AMOUNT_ANIMATION_DURATION = 680
 
-export const feedbackTypeOptions = [
-  { label: '建议', value: '1' },
-  { label: '游戏异常', value: '2' },
-  { label: '充值问题', value: '3' },
-  { label: '其他', value: '4' }
+export const getFeedbackTypeOptions = (t: FeedbackTranslate) => [
+  { label: t('personalCenter.feedback.feedbackType.suggestion'), value: '1' },
+  { label: t('personalCenter.feedback.feedbackType.gameException'), value: '2' },
+  { label: t('personalCenter.feedback.feedbackType.depositIssue'), value: '3' },
+  { label: t('personalCenter.feedback.feedbackType.other'), value: '4' }
 ]
 
-const feedbackPlaceholderTexts = [
-  '亲爱的玩家，请详细描述您在游戏中遇到的你认为需要改进的问题或者建议，方便我们能给您提供更好的服务',
-  '请尽量提供问题发生的时间、操作、功能模块、截图等信息，我们会尽快为您处理。',
-  '请详细描述您遇到的问题，如有支付单号请一并提供，我们会尽快为您处理。',
-  '请详细描述您遇到的其他问题或需要咨询的事项。'
+const getFeedbackPlaceholderTexts = (t: FeedbackTranslate) => [
+  t('personalCenter.feedback.placeholder.suggestion'),
+  t('personalCenter.feedback.placeholder.gameException'),
+  t('personalCenter.feedback.placeholder.depositIssue'),
+  t('personalCenter.feedback.placeholder.other')
 ]
 
-export const getFeedbackPlaceholderText = (selectedType: string) => {
+export const getFeedbackPlaceholderText = (selectedType: string, t: FeedbackTranslate) => {
+  const feedbackPlaceholderTexts = getFeedbackPlaceholderTexts(t)
   const index = Number(selectedType) - 1
   return feedbackPlaceholderTexts[index] || feedbackPlaceholderTexts[0]
 }
@@ -95,18 +98,18 @@ export const formatFeedbackSubmitTime = (value: unknown) => {
   return `${year}-${month}-${day} ${hour}:${minute}:${second}`
 }
 
-export const getFeedbackTypeLabel = (value: unknown) => {
+export const getFeedbackTypeLabel = (value: unknown, t: FeedbackTranslate) => {
   const normalizedValue = String(value ?? '').trim()
   if (normalizedValue === '1') {
-    return '建议'
+    return t('personalCenter.feedback.feedbackType.suggestion')
   }
   if (normalizedValue === '2') {
-    return '游戏异常'
+    return t('personalCenter.feedback.feedbackType.gameException')
   }
   if (normalizedValue === '3') {
-    return '充值问题'
+    return t('personalCenter.feedback.feedbackType.depositIssue')
   }
-  return '其他'
+  return t('personalCenter.feedback.feedbackType.other')
 }
 
 export const getUploadedFeedbackPath = (result: unknown) => {
@@ -135,20 +138,22 @@ export const getFeedbackUploadFileName = (file: Blob | File, index: number) => {
   return sanitizedFileName || fallbackName
 }
 
-export const feedbackDetailTemplates: Record<FeedbackStatus, FeedbackRecord> = {
+export const getFeedbackDetailTemplates = (
+  t: FeedbackTranslate
+): Record<FeedbackStatus, FeedbackRecord> => ({
   accepted: {
     recordId: '',
     ticketNo: '--',
     content: '',
     status: 'accepted',
     submitTime: '--',
-    feedbackType: '其他',
+    feedbackType: t('personalCenter.feedback.feedbackType.other'),
     detailContent: '',
     screenshotImages: [],
-    resultHint: '您的建议已被采纳，并为您发放奖励，感谢您的支持！',
-    replyTeam: '运营团队',
+    resultHint: t('personalCenter.feedback.resultHint.accepted'),
+    replyTeam: t('personalCenter.feedback.reply.team'),
     replyTime: '--',
-    replyContent: ['您好，感谢您的反馈，我们已记录并采纳您的建议。']
+    replyContent: [t('personalCenter.feedback.reply.accepted')]
   },
   pending: {
     recordId: '',
@@ -156,11 +161,11 @@ export const feedbackDetailTemplates: Record<FeedbackStatus, FeedbackRecord> = {
     content: '',
     status: 'pending',
     submitTime: '--',
-    feedbackType: '其他',
+    feedbackType: t('personalCenter.feedback.feedbackType.other'),
     detailContent: '',
     screenshotImages: [],
-    resultHint: '您的建议已提交，正在处理中，请耐心等待。',
-    replyTeam: '运营团队',
+    resultHint: t('personalCenter.feedback.resultHint.pending'),
+    replyTeam: t('personalCenter.feedback.reply.team'),
     replyTime: '--',
     replyContent: []
   },
@@ -170,12 +175,12 @@ export const feedbackDetailTemplates: Record<FeedbackStatus, FeedbackRecord> = {
     content: '',
     status: 'rejected',
     submitTime: '--',
-    feedbackType: '其他',
+    feedbackType: t('personalCenter.feedback.feedbackType.other'),
     detailContent: '',
     screenshotImages: [],
-    resultHint: '感谢您的建议，本次暂未采纳，欢迎继续反馈更多想法。',
-    replyTeam: '运营团队',
+    resultHint: t('personalCenter.feedback.resultHint.rejected'),
+    replyTeam: t('personalCenter.feedback.reply.team'),
     replyTime: '--',
-    replyContent: ['您好，已评估本次建议，当前版本暂不支持，感谢您的理解与支持。']
+    replyContent: [t('personalCenter.feedback.reply.rejected')]
   }
-}
+})

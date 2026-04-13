@@ -2,12 +2,12 @@
   <div>
     <section v-if="isMobile" class="fixed inset-0 overflow-y-auto bg-bg-1">
       <div class="min-h-screen bg-bg-1">
-        <H5Header title="偏好设定" />
+        <H5Header :title="t('preferencesSettings.pageTitle')" />
 
         <main class="px-3.5 pb-6 pt-3.5">
           <section class="rounded-[12px] bg-bg-2 px-3">
             <h3 class="border-b border-opacity-10 py-3 text-[15px] font-[700] text-text-1">
-              账户设置
+              {{ t('preferencesSettings.accountSettings') }}
             </h3>
 
             <button
@@ -15,7 +15,9 @@
               class="flex w-full items-center justify-between py-4"
               @click="openCurrencyPopup"
             >
-              <span class="text-[15px] font-[700] text-text-1">显示币种</span>
+              <span class="text-[15px] font-[700] text-text-1">{{
+                t('preferencesSettings.displayCurrency')
+              }}</span>
               <div class="flex items-center gap-2.5">
                 <span class="text-[15px] font-[400] text-text-2">{{ currentCurrency }}</span>
                 <div class="flex h-5 w-5 items-center justify-center rounded-md bg-bg-1">
@@ -29,7 +31,9 @@
               class="flex w-full items-center justify-between py-4"
               @click="openLanguagePopup"
             >
-              <span class="text-[15px] font-[700] text-text-1">变更语言</span>
+              <span class="text-[15px] font-[700] text-text-1">{{
+                t('preferencesSettings.changeLanguage')
+              }}</span>
               <div class="flex items-center gap-2.5">
                 <span class="text-[15px] font-[400] text-text-2">{{ currentLanguageLabel }}</span>
                 <div class="flex h-5 w-5 items-center justify-center rounded-md bg-bg-1">
@@ -39,7 +43,9 @@
             </button>
 
             <div class="flex items-center justify-between py-4">
-              <span class="text-[15px] font-[700] text-text-1">Theme</span>
+              <span class="text-[15px] font-[700] text-text-1">{{
+                t('preferencesSettings.theme')
+              }}</span>
               <div class="flex items-center rounded-lg bg-bg-1 p-0.5">
                 <button
                   type="button"
@@ -67,12 +73,12 @@
 
           <section class="mt-3.5 rounded-[12px] bg-bg-2 px-3">
             <h3 class="border-b border-opacity-10 py-3 text-[15px] font-[700] text-text-1">
-              隐私设置
+              {{ t('preferencesSettings.privacySettings') }}
             </h3>
 
             <div class="flex items-center justify-between py-4">
               <span class="flex-1 pr-3 text-[15px] font-[700] leading-[1.35] text-text-1">
-                在个人资料中隐藏我的游戏资料
+                {{ t('preferencesSettings.hideGameDataInProfile') }}
               </span>
               <button
                 type="button"
@@ -89,7 +95,7 @@
 
             <div class="flex items-center justify-between py-4">
               <span class="flex-1 pr-3 text-[15px] font-[700] leading-[1.35] text-text-1">
-                从公开清单中隐藏我的用户名
+                {{ t('preferencesSettings.hideUsernameFromPublicList') }}
               </span>
               <button
                 type="button"
@@ -111,14 +117,18 @@
     <SettingsLayout v-else current-tab="preferences">
       <div class="w-full space-y-4">
         <section class="rounded-xl bg-bg-2 px-5 py-4">
-          <h3 class="border-b border-opacity-10 pb-3 text-xl font-[700] text-text-1">账户设置</h3>
+          <h3 class="border-b border-opacity-10 pb-3 text-xl font-[700] text-text-1">
+            {{ t('preferencesSettings.accountSettings') }}
+          </h3>
 
           <button
             type="button"
             class="flex w-full items-center justify-between py-4"
             @click="openCurrencyPopup"
           >
-            <span class="text-lg font-[700] text-text-1">显示币种</span>
+            <span class="text-lg font-[700] text-text-1">{{
+              t('preferencesSettings.displayCurrency')
+            }}</span>
             <div ref="desktopCurrencyAnchorRef" class="flex items-center gap-2.5">
               <span class="text-base text-text-2">{{ currentCurrency }}</span>
               <div class="flex h-6 w-6 items-center justify-center rounded-md bg-bg-1">
@@ -132,8 +142,10 @@
             class="flex w-full items-center justify-between py-4"
             @click="openLanguagePopup"
           >
-            <span class="text-lg font-[700] text-text-1">变更语言</span>
-            <div class="flex items-center gap-2.5">
+            <span class="text-lg font-[700] text-text-1">{{
+              t('preferencesSettings.changeLanguage')
+            }}</span>
+            <div ref="desktopLanguageAnchorRef" class="flex items-center gap-2.5">
               <span class="text-base text-text-2">{{ currentLanguageLabel }}</span>
               <div class="flex h-6 w-6 items-center justify-center rounded-md bg-bg-1">
                 <ArrowRightIcon class="h-3.5 w-3.5 text-text-2" />
@@ -142,7 +154,7 @@
           </button>
 
           <div class="flex items-center justify-between py-4">
-            <span class="text-lg font-[700] text-text-1">Theme</span>
+            <span class="text-lg font-[700] text-text-1">{{ t('preferencesSettings.theme') }}</span>
             <div class="flex items-center rounded-lg bg-bg-1 p-0.5">
               <button
                 type="button"
@@ -169,11 +181,13 @@
         </section>
 
         <section class="rounded-xl bg-bg-2 px-5 py-4">
-          <h3 class="border-b border-opacity-10 pb-3 text-xl font-[700] text-text-1">隐私设置</h3>
+          <h3 class="border-b border-opacity-10 pb-3 text-xl font-[700] text-text-1">
+            {{ t('preferencesSettings.privacySettings') }}
+          </h3>
 
           <div class="flex items-center justify-between py-4">
             <span class="flex-1 pr-4 text-lg font-[700] leading-[1.35] text-text-1">
-              在个人资料中隐藏我的游戏资料
+              {{ t('preferencesSettings.hideGameDataInProfile') }}
             </span>
             <button
               type="button"
@@ -190,7 +204,7 @@
 
           <div class="flex items-center justify-between py-4">
             <span class="flex-1 pr-4 text-lg font-[700] leading-[1.35] text-text-1">
-              从公开清单中隐藏我的用户名
+              {{ t('preferencesSettings.hideUsernameFromPublicList') }}
             </span>
             <button
               type="button"
@@ -222,6 +236,8 @@
     <Teleport to="body">
       <LanguagePopup
         v-model:visible="showLanguagePopup"
+        :desktop="!isMobile"
+        :desktop-anchor="languagePopupAnchor"
         :selected-language="localeStore.currentLanguage"
         :options="languageOptions"
         @select="handleLanguageSelect"
@@ -232,6 +248,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
 import { SITE_CONFIG_STORAGE_KEY } from '@/stores/siteConfig'
@@ -295,12 +312,15 @@ type BalanceCarrier = Partial<Record<BalanceFieldKey, number>> & {
 const isMobile = useIsMobile()
 const localeStore = useLocaleStore()
 const themeStore = useThemeStore()
+const { t } = useI18n()
 const hideGameData = ref(false)
 const hideUserName = ref(false)
 const showCurrencyPopup = ref(false)
 const showLanguagePopup = ref(false)
 const currencyPopupAnchor = ref<PopupAnchorRect | null>(null)
+const languagePopupAnchor = ref<PopupAnchorRect | null>(null)
 const desktopCurrencyAnchorRef = ref<HTMLElement | null>(null)
+const desktopLanguageAnchorRef = ref<HTMLElement | null>(null)
 const currentCurrency = ref('PHP')
 const currencyOptions = ref<CurrencyOption[]>([])
 const languageOptions = computed<LocaleOption[]>(() => getLocaleOptions())
@@ -422,6 +442,21 @@ const openCurrencyPopup = () => {
 }
 
 const openLanguagePopup = () => {
+  if (!isMobile.value) {
+    const anchorElement = desktopLanguageAnchorRef.value
+    if (anchorElement) {
+      const rect = anchorElement.getBoundingClientRect()
+      languagePopupAnchor.value = {
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height
+      }
+    } else {
+      languagePopupAnchor.value = null
+    }
+  }
+
   showLanguagePopup.value = true
 }
 

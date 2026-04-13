@@ -7,7 +7,7 @@
         :class="{ 'feedback-tab-pc-button-active': activeTab === 'create' }"
         @click="emit('change', 'create')"
       >
-        创建反馈
+        {{ t('personalCenter.feedback.tabs.create') }}
       </button>
       <button
         type="button"
@@ -15,7 +15,7 @@
         :class="{ 'feedback-tab-pc-button-active': activeTab === 'mine' }"
         @click="emit('change', 'mine')"
       >
-        我的反馈
+        {{ t('personalCenter.feedback.tabs.mine') }}
       </button>
     </div>
   </div>
@@ -31,7 +31,7 @@
       "
       @click="emit('change', 'create')"
     >
-      创建反馈
+      {{ t('personalCenter.feedback.tabs.create') }}
     </button>
     <button
       type="button"
@@ -43,12 +43,13 @@
       "
       @click="emit('change', 'mine')"
     >
-      我的反馈
+      {{ t('personalCenter.feedback.tabs.mine') }}
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { FeedbackTab } from '../types'
 
 // 仅负责标签切换展示，业务状态仍由父组件统一维护。
@@ -60,6 +61,8 @@ defineProps<{
 const emit = defineEmits<{
   change: [tab: FeedbackTab]
 }>()
+
+const { t } = useI18n()
 </script>
 
 <style scoped>

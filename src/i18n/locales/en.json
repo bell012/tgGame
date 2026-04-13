@@ -658,6 +658,89 @@
       "zoom": "Zoom",
       "save": "Save",
       "saveSuccess": "Saved successfully"
+    },
+    "feedback": {
+      "pageTitle": "Feedback",
+      "detailTitle": "Record Details",
+      "tabs": {
+        "create": "Create Feedback",
+        "mine": "My Feedback"
+      },
+      "createTab": {
+        "sectionTitle": "Feedback",
+        "requiredType": "Required feedback type",
+        "uploadPhotos": "Upload Photos",
+        "submitFeedback": "Submit Feedback",
+        "rewardRulesTitle": "Reward Rules",
+        "rewardRulesDescription": "We offer generous rewards for valid feedback to improve our system and features, and to provide a better experience. Once accepted, rewards will be granted based on usefulness (unaccepted feedback is excluded)."
+      },
+      "myTab": {
+        "rewardAmount": "Feedback Amount",
+        "rewardIconAlt": "Feedback reward icon",
+        "claim": "Claim",
+        "loading": "Loading...",
+        "empty": "No feedback records",
+        "ticketNoPrefix": "Ticket No: "
+      },
+      "claimPopup": {
+        "title": "Claim Successful",
+        "description": "The bonus has been credited to your wallet.",
+        "confirm": "OK",
+        "bowAlt": "Bow decoration"
+      },
+      "detail": {
+        "feedbackNo": "Feedback No.",
+        "processingStatus": "Processing Status",
+        "submitTime": "Submitted At",
+        "feedbackType": "Feedback Type",
+        "feedbackContent": "Feedback Content",
+        "screenshotAlt": "Screenshot {index}",
+        "previewImageAlt": "Preview Image"
+      },
+      "feedbackType": {
+        "suggestion": "Suggestion",
+        "gameException": "Game Issue",
+        "depositIssue": "Deposit Issue",
+        "other": "Other"
+      },
+      "placeholder": {
+        "suggestion": "Dear player, please describe the issue or suggestion in detail so we can improve and provide better service.",
+        "gameException": "Please provide as much detail as possible, such as time, actions, module, and screenshots. We will handle it as soon as possible.",
+        "depositIssue": "Please describe the issue in detail. If available, include the payment order number. We will handle it as soon as possible.",
+        "other": "Please describe other issues or inquiries in detail."
+      },
+      "status": {
+        "accepted": "Accepted",
+        "pending": "Pending",
+        "rejected": "Not Accepted"
+      },
+      "resultHint": {
+        "accepted": "Your suggestion has been accepted and rewarded. Thank you for your support!",
+        "pending": "Your suggestion has been submitted and is being processed. Please wait patiently.",
+        "rejected": "Thank you for your suggestion. It is not accepted this time, and we welcome more feedback."
+      },
+      "reply": {
+        "team": "Operations Team",
+        "accepted": "Hello, thank you for your feedback. We have recorded and accepted your suggestion.",
+        "rejected": "Hello, we have reviewed your suggestion. It is not supported in the current version. Thank you for your understanding and support."
+      },
+      "uploadStatus": {
+        "uploading": "Uploading...",
+        "success": "Upload successful",
+        "failed": "Upload failed"
+      },
+      "toast": {
+        "selectFeedbackType": "Please select a feedback type",
+        "enterFeedbackContent": "Please enter feedback content",
+        "imageUploading": "Images are uploading, please submit later",
+        "uploadFailed": "Upload failed",
+        "submitFailed": "Submission failed",
+        "submitSuccess": "Submitted successfully",
+        "fetchFeedbackListFailed": "Failed to fetch feedback list",
+        "claimFailed": "Claim failed",
+        "claimSuccess": "Claim successful",
+        "fetchFeedbackDetailFailed": "Failed to fetch feedback details"
+      }
     }
   },
   "userMenu": {
@@ -961,6 +1044,19 @@
       "whitelistManagement": "Whitelist Management"
     },
     "hintNotAvailable": "Not available yet."
+  },
+  "preferencesSettings": {
+    "pageTitle": "Preferences",
+    "accountSettings": "Account Settings",
+    "displayCurrency": "Display Currency",
+    "changeLanguage": "Change Language",
+    "theme": "Theme",
+    "privacySettings": "Privacy Settings",
+    "hideGameDataInProfile": "Hide my game data in profile",
+    "hideUsernameFromPublicList": "Hide my username from public lists",
+    "currencyPopupTitle": "Currency",
+    "currencyPopupSectionLabel": "Cash",
+    "languagePopupTitle": "Language"
   },
   "payment_methods": {
     "title": "Payment Methods",

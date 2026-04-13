@@ -4,14 +4,22 @@
       <div class="feedback-claim-popup-card">
         <img :src="feedbackStarIcon" alt="" class="feedback-claim-popup-star" />
         <img :src="feedbackEllipseIcon" alt="" class="feedback-claim-popup-ellipse" />
-        <img :src="feedbackBowIcon" alt="bow" class="feedback-claim-popup-bow" />
+        <img
+          :src="feedbackBowIcon"
+          :alt="t('personalCenter.feedback.claimPopup.bowAlt')"
+          class="feedback-claim-popup-bow"
+        />
 
         <p class="feedback-claim-popup-amount">{{ claimSuccessAmount }}</p>
-        <p class="feedback-claim-popup-title">Claim Successful</p>
-        <p class="feedback-claim-popup-description">The bonus has been credited to your wallet.</p>
+        <p class="feedback-claim-popup-title">
+          {{ t('personalCenter.feedback.claimPopup.title') }}
+        </p>
+        <p class="feedback-claim-popup-description">
+          {{ t('personalCenter.feedback.claimPopup.description') }}
+        </p>
 
         <button type="button" class="feedback-claim-popup-confirm" @click="emit('close')">
-          OK
+          {{ t('personalCenter.feedback.claimPopup.confirm') }}
         </button>
       </div>
     </div>
@@ -19,6 +27,8 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 // 成功弹窗：仅负责展示动画与关闭事件。
 defineProps<{
   show: boolean
@@ -31,6 +41,8 @@ defineProps<{
 const emit = defineEmits<{
   close: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <style scoped>
