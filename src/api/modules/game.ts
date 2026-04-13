@@ -15,7 +15,8 @@ import type {
   PublishCommentResponse,
   GameDetailResponse,
   GetGameRanListParams,
-  QueryGameDetailsParams
+  QueryGameDetailsParams,
+  GameTypeResponse
 } from '@/api/interface/game'
 
 /**
@@ -25,6 +26,17 @@ import type {
 export function getGameData(): Promise<GameDataResponse> {
   return request({
     url: '/gc/queryGameListForApp',
+    method: 'post'
+  })
+}
+
+/**
+ * 获取自定义游戏类型
+ * @returns Promise<GameTypeResponse>
+ */
+export function getGameType(): Promise<GameTypeResponse> {
+  return request({
+    url: '/gc/getGameType',
     method: 'post'
   })
 }
