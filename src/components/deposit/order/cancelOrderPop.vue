@@ -148,10 +148,6 @@ const handleConfirmCancel = async () => {
     })
 
     if (!cancelResponse?.success) {
-      showToast({
-        message: cancelResponse?.message || t('deposit.cancel_failed'),
-        type: 'fail'
-      })
       return
     }
 

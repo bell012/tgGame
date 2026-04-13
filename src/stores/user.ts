@@ -16,6 +16,8 @@ import {
 } from '@/utils/profile-customization'
 
 const ACCT_INFO_STORAGE_KEY = 'acctInfo'
+const REMEMBERED_ACCOUNT_STORAGE_KEY = 'rememberedAccount'
+const REMEMBERED_PASSWORD_STORAGE_KEY = 'rememberedPassword'
 
 export const useUserStore = defineStore('user', () => {
   const userInfo = profileUserInfoState
@@ -144,7 +146,14 @@ export const useUserStore = defineStore('user', () => {
    * 清除所有用户相关的本地状态，但保留语言、货币和主题设置
    */
   const clearUserSessionData = () => {
-    clearStorageExcept(['language', 'currency', 'theme', SITE_CONFIG_STORAGE_KEY])
+    clearStorageExcept([
+      'language',
+      'currency',
+      'theme',
+      SITE_CONFIG_STORAGE_KEY,
+      REMEMBERED_ACCOUNT_STORAGE_KEY,
+      REMEMBERED_PASSWORD_STORAGE_KEY
+    ])
     clearProfileAvatarPreviewState()
     syncProfileCustomizationState()
     syncProfileUserInfoState()

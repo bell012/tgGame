@@ -23,6 +23,7 @@ import {
   handlePhoneInput,
   handlePasswordInput,
   handleVerificationCodeInput,
+  isValidPhoneNumber,
   isValidPassword
 } from '@/utils/phone-input'
 import Api from '@/api'
@@ -59,7 +60,7 @@ const formData = ref({
 // 重置密码表单验证
 const isResetValid = computed(() => {
   return (
-    formData.value.account.length === 10 &&
+    isValidPhoneNumber(formData.value.account) &&
     formData.value.code.length > 0 &&
     isValidPassword(formData.value.password) &&
     formData.value.password === formData.value.confirmPassword
@@ -121,7 +122,7 @@ const handleSendCode = async () => {
       return
     }
 
-    if (telephone.length !== 10) {
+    if (!isValidPhoneNumber(telephone)) {
       return
     }
 
@@ -130,17 +131,10 @@ const handleSendCode = async () => {
       telephone: telephone,
       areaCode: defaultAreaCode
     })
-    if (response && response.message) {
-      showToast({
-        message: response.message,
-        duration: 2000,
-        wordBreak: 'break-word',
-        zIndex: 10001
-      })
+    // 只有短信接口返回 C2 时，才开始60秒倒计时
+    if (response?.code === 'C2') {
+      startCountdown()
     }
-
-    // 开始60秒倒计时
-    startCountdown()
   } catch (error) {
     console.error(error)
   }
@@ -160,15 +154,6 @@ const handleResetPassword = async () => {
 
     // 重置密码接口
     const response = await Api.auth.resetPassword(resetPasswordData)
-    if (response && response.message) {
-      showToast({
-        message: response.message,
-        duration: 2000,
-        wordBreak: 'break-word',
-        zIndex: 10001
-      })
-    }
-
     // 重置密码成功，清空表单
     if (response && response.success) {
       resetForm()
