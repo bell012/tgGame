@@ -2,7 +2,7 @@
   <!-- 法币充值面板容器 -->
   <div v-if="payMethods.length > 0" class="w-full bg-bg-2 p-6 rounded-lg font-['Inter']">
     <!-- 支付方式标题 -->
-    <p class="text-sm font-bold leading-normal text-text-1">Deposit Methods</p>
+    <p class="text-sm font-bold leading-normal text-text-1">{{ t('deposit.methods') }}</p>
     <!-- 支付方式列表外层容器 -->
     <div class="mt-2.5 overflow-hidden">
       <!-- 支付方式横向滚动容器 -->
@@ -34,7 +34,9 @@
     <!-- 充值渠道区域 -->
     <div v-if="showChannelSection" class="mt-4 flex flex-col gap-2">
       <!-- 充值渠道标题 -->
-      <p class="text-sm font-bold leading-normal text-text-1">Deposit Channel</p>
+      <p class="text-sm font-bold leading-normal text-text-1">
+        {{ t('deposit.deposit_channel') }}
+      </p>
       <!-- 充值渠道按钮列表 -->
       <div class="grid grid-cols-6 gap-4">
         <!-- 单个充值渠道按钮 -->
@@ -56,7 +58,9 @@
     </div>
 
     <!-- 充值金额标题 -->
-    <p class="mt-4 text-sm font-bold leading-normal text-text-1">Deposit Amount</p>
+    <p class="mt-4 text-sm font-bold leading-normal text-text-1">
+      {{ t('deposit.deposit_amount') }}
+    </p>
     <!-- 充值金额输入容器 -->
     <div
       class="flex items-center w-full mt-2 p-3 rounded-lg bg-input-3 border focus-within:border-[color:var(--color-theme-level-1)] focus-within:ring-0"
@@ -100,7 +104,7 @@
           :key="preset"
           @click="selectPresetAmount(preset)"
           class="relative flex h-10 items-center justify-center rounded-lg text-base font-bold leading-[19px] transition-colors lg:hover:bg-theme-primary"
-          :class="[preset === amount ? 'bg-[#2AEE88] text-black' : 'bg-bg-2 text-text-1']"
+          :class="[preset === amount ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-1']"
         >
           <!-- 预设金额文本 -->
           <span>{{ preset }}</span>
@@ -110,7 +114,7 @@
             class="pointer-events-none absolute -right-1 -top-1 min-w-8 rounded-lg bg-center bg-contain bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4"
             :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
           >
-            {{ presetDiscountRatioMap[preset] + '% Bonus' }}
+            {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}
           </span>
         </button>
       </div>
@@ -121,7 +125,7 @@
           class="mx-auto flex items-center gap-1 text-xs text-text-3 lg:hover:text-text-1 transition"
           @click="expanded = !expanded"
         >
-          {{ expanded ? 'Collapse' : 'Expand' }}
+          {{ expanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}
           <ExpandUpDoubleIcon v-if="expanded" class="w-[9px] h-2" />
           <ExpandDownDoubleIcon v-else class="w-[9px] h-2" />
         </button>
@@ -281,8 +285,8 @@ const channelOptions = computed(() =>
 // 计算充值金额输入框占位文案
 const amountPlaceholder = computed(() =>
   isManualAmountAllowed.value
-    ? 'Please select or enter deposit amount.'
-    : 'Please select a preset deposit amount.'
+    ? t('deposit.deposit_amount_input_or_select_placeholder')
+    : t('deposit.deposit_amount_preset_placeholder')
 )
 const isAmountInputHighlighted = ref(false)
 const currentOrderId = ref('')
@@ -587,9 +591,18 @@ const loadPayColumnPage = async () => {
       response?.success && Array.isArray(response.result) ? response.result : []
     //  如果result中的的item 中的 columnName 不包含在   PAY_CHANNEL_TAB_LIST 中，那么就不显示（剔除该item）
     // 在result 中剔除   "columnName": "USDT泰达币"
-    payMethods.value = result.filter(
-      item => item.columnName !== 'USDT泰达币' && Boolean(resolvePayChannelTabKey(item.columnName))
-    )
+    // 按照 sortNo 升序排序；相同 sortNo 时保持后台返回顺序
+    payMethods.value = result
+      .map((item, index) => ({ item, index }))
+      .filter(
+        ({ item }) =>
+          item.columnName !== 'USDT泰达币' && Boolean(resolvePayChannelTabKey(item.columnName))
+      )
+      .sort((a, b) => {
+        const sortDiff = a.item.sortNo - b.item.sortNo
+        return sortDiff !== 0 ? sortDiff : a.index - b.index
+      })
+      .map(({ item }) => item)
     methodItemRefs.value = new Array(payMethods.value.length).fill(null)
 
     const defaultMethod = payMethods.value[0]

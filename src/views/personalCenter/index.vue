@@ -52,14 +52,14 @@
       <!-- VIP 模块 -->
       <div
         class="relative rounded-lg overflow-hidden w-full h-[78px] flex justify-between items-start"
-        :style="{ backgroundImage: `url(${vipBG})`, backgroundSize: 'cover' }"
+        :style="{ backgroundImage: resolveBackgroundImage(vipBG), backgroundSize: 'cover' }"
         @click="handleVip"
       >
         <div class="flex min-w-0 flex-1 flex-col">
           <div class="mb-[5px] mt-1 flex w-full min-w-0 items-center justify-between">
             <div class="flex items-center">
-              <img :src="vipLeft" alt="VIP" class="w-[25px] h-[16px] mx-[5px]" />
-              <img :src="vipIcon" alt="VIP" class="w-[32px] h-[14px]" />
+              <SmartImage :src="vipLeft" alt="VIP" class="w-[25px] h-[16px] mx-[5px]" />
+              <SmartImage :src="vipIcon" alt="VIP" class="w-[32px] h-[14px]" />
               <span class="text-white text-lg font-bold">{{ vipLevel }}</span>
             </div>
           </div>
@@ -86,7 +86,7 @@
           </div>
         </div>
         <div class="w-[66px] h-[63px] shrink-0 mx-[6px] my-[8px]">
-          <img :src="vipRight" alt="Diamond" class="w-full h-full object-cover" />
+          <SmartImage :src="vipRight" alt="Diamond" class="w-full h-full object-cover" />
         </div>
       </div>
     </div>
@@ -95,7 +95,7 @@
     <div class="mb-[5px] mx-3.5">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <img :src="balanceIcon" alt="Balance" class="w-5 h-5" />
+          <SmartImage :src="balanceIcon" alt="Balance" class="w-5 h-5" />
           <span class="text-text-2 text-sm">{{ t('personalCenter.totalBalance') }}</span>
         </div>
         <span class="text-text-1 text-lg font-bold">{{ totalBalance }}</span>
@@ -216,7 +216,7 @@
     <!-- Referral & get -->
     <div class="bg-bg-2 rounded-lg mx-3.5 mb-2.5 px-3 py-2.5" @click="openReferralPopup">
       <div class="flex items-center gap-2.5">
-        <img :src="referralIcon" alt="Referral" class="w-[56px] h-[53px]" />
+        <SmartImage :src="referralIcon" alt="Referral" class="w-[56px] h-[53px]" />
         <div class="flex-1">
           <div class="mb-[5px] flex items-center">
             <span class="text-text-2 text-[12px]">{{ t('personalCenter.referralGet') }}</span>
@@ -355,6 +355,7 @@ import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
 import SunIcon from '@/static/svg/personalCenter/icon33.svg?component'
+import { resolveBackgroundImage } from '@/utils/image'
 import DepositIocn from '@/static/svg/personalCenter/icon1.svg?component'
 import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
 import SignOut from '@/static/svg/personalCenter/icon18.svg?component'

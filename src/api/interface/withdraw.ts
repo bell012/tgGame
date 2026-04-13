@@ -59,16 +59,20 @@ export interface SelectMemberCardForm {
  * 会员收款账号项
  */
 export interface MemberCardItem {
-  rowId: string | number
-  type?: string | number
-  cardType?: string | number
+  rowId: number
+  memberRowId?: number
+  type?: number
+  cardType?: number
   accountName?: string
   accountNo?: string
-  bankName?: string
-  walletAddress?: string
-  paymentCode?: string | number
-  defaultCard?: number | boolean
-  isDefault?: number | boolean
+  accountSubNo?: string
+  currency?: string
+  operator?: string
+  remark?: string
+  status?: number
+  createTime?: number
+  validDate?: number
+  defaultCard?: number
   [key: string]: unknown
 }
 
@@ -85,7 +89,7 @@ export interface AddMemberCardForm {
    */
   type: number
   /**
-   * 收款账号卡类型
+   * 收款账号卡类型 paymentCode
    */
   cardType: number
   /**

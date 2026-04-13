@@ -1,7 +1,12 @@
 <template>
   <div>
     <div v-if="isMobile" class="fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1">
-      <H5Header :title="t('deposit.title')" showSort :rightIcon="DetailsIcon" />
+      <H5Header
+        :title="t('deposit.title')"
+        showSort
+        :rightIcon="DetailsIcon"
+        @sort="openDepositOrder"
+      />
       <div class="flex-1 min-h-0">
         <depositContentPanel v-model="tabType" class="h-full" />
       </div>
@@ -15,21 +20,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useIsMobile } from '@/composables/useMediaQuery'
 import H5Header from '@/components/common/H5Header.vue'
 import depositContentPanel, {
   type DepositTabType
 } from '@/components/deposit/deposit/depositContentPanel.vue'
 import personalCenterDepositContentPanel from '@/components/deposit/deposit/personalCenterDepositContentPanel.vue'
-import WalletLayout from '../index.vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
+import { navigateToName } from '@/utils/router'
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import WalletLayout from '../index.vue'
 
 const { t } = useI18n()
 
 const isMobile = useIsMobile()
 const tabType = ref<DepositTabType>('Crypto')
+
+const openDepositOrder = () => {
+  void navigateToName('my-orders')
+}
 </script>
 
 <style scoped lang="scss"></style>

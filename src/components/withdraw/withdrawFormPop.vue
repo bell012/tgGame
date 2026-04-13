@@ -49,7 +49,7 @@
               {{ field.label }}
             </p>
             <div
-              class="mt-2.5 rounded-xl border bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0 p-[14px]"
+              class="mt-2.5 rounded-xl bg-input-3 border border-opacity-10 focus-within:border-theme-primary focus-within:ring-0 p-[14px]"
             >
               <input
                 :value="modelValue[field.key] ?? ''"

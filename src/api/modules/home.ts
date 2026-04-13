@@ -8,7 +8,9 @@ import type { GameDataResponse } from '@/api/interface/home.interface'
 export function getGameData(): Promise<GameDataResponse> {
   return request({
     url: '/gc/queryGameListForApp',
-    method: 'post'
+    method: 'post',
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -16,7 +18,9 @@ export function getGameData(): Promise<GameDataResponse> {
 export function getActivityType(): Promise<any> {
   return request({
     url: '/ac/queryGameListForApp',
-    method: 'post'
+    method: 'post',
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 // 近期大奖
@@ -24,7 +28,9 @@ export function getRecentBigWins(data: any): Promise<any> {
   return request({
     url: '/special/getRecentBigWins',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -33,7 +39,9 @@ export function getQuerySlideshow(data: any): Promise<any> {
   return request({
     url: '/ac/querySlideshow',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -41,7 +49,9 @@ export function getQuerySlideshow(data: any): Promise<any> {
 export function getGameBrandList(): Promise<any> {
   return request({
     url: '/gc/gameBrandList',
-    method: 'post'
+    method: 'post',
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -50,6 +60,8 @@ export function dlicgh(data: any): Promise<any> {
   return request({
     url: '/sy/dlicgh',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }

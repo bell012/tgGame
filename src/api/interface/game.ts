@@ -281,3 +281,28 @@ export interface GameBrandResponse {
   success?: boolean
   [key: string]: unknown
 }
+
+/**自定义游戏类型 */
+export interface GameTypeItem {
+  /**游戏分类编码 */
+  gameTypeCode: string
+  /**游戏分类名称 */
+  gameTypeName: string
+  /**状态 */
+  enable: number
+  /**未选中图标 */
+  icon: string
+  /**选中图标 */
+  iconSelect: string
+  /**排序编码 */
+  sortNum: number
+  [key: string]: unknown
+}
+
+/**查询自定义游戏类型接口返回结构 */
+export interface GameTypeResponse {
+  code: string | number
+  message: string
+  result: GameTypeItem[]
+  success: boolean
+}

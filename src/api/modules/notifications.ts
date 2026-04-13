@@ -12,6 +12,8 @@ export function queryNoticeMsg(data: QueryNoticeMsgForm): Promise<QueryNoticeMsg
   return request({
     url: '/ac/queryNoticeMsg',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }

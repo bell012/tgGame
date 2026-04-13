@@ -33,7 +33,7 @@
           <div
             class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 cursor-pointer pl-6"
           >
-            <img
+            <SmartImage
               v-for="cert in rightCertifications"
               :key="cert.id"
               :src="footer3Image"
@@ -197,7 +197,7 @@
 
           <!-- 右边：认证图标 -->
           <div class="flex-1 cursor-pointer">
-            <img
+            <SmartImage
               :src="footer4_2Image"
               alt="Certification"
               class="h-[60px] w-auto"

@@ -49,7 +49,7 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/fun/casino/gameList/index.vue'),
     meta: {
       title: '游戏列表',
-      requiresAuth: true, // 需要登录后才能进入路由
+      requiresAuth: false, // 需要登录后才能进入路由
       mobile: {
         hideBottomBar: true, // H5路由进入后是否隐藏全局底部 TabBar
         hideTopNav: true // H5 路由进入后是否隐藏全局顶部 TopNav
@@ -568,6 +568,21 @@ const baseRoutes: RouteRecordRaw[] = [
       description: '交易密码',
       requiresAuth: true,
       mobileOnly: true, //pc中路由不可见 H5中路由可见
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'payment-methods',
+    name: 'payment-methods',
+    component: () => import('@/views/settings/paymentMethods/index.vue'),
+    meta: {
+      title: '收款管理',
+      description: '收款管理',
+      requiresAuth: true,
       slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,

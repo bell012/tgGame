@@ -4,7 +4,7 @@
     <button
       ref="triggerRef"
       @click.stop="togglePopup"
-      class="w-full flex items-center justify-between px-2.5 py-[11px] bg-[var(--color-opacity-5)] rounded-lg border border-solid border-[var(--color-opacity-10)]"
+      class="w-full flex items-center justify-between px-2.5 py-[11px] bg-bg-2 rounded-lg border border-solid border-[var(--color-opacity-10)]"
     >
       <div class="flex items-center flex-1 text-xs">
         <span class="mr-2.5 text-text-2">{{ label }}:</span>
@@ -97,7 +97,14 @@
                   class="h-5 w-5"
                 />
                 <div v-if="Multi" class="ml-2.5 flex items-center w-[100px] h-[22px]">
-                  <img class="w-full h-full object-contain" :src="item?.icon" />
+                  <gameErrImg
+                    class="!bg-transparent"
+                    :img="{
+                      maintain: false,
+                      src: item?.icon,
+                      fit: 'contain' as const
+                    }"
+                  />
                 </div>
               </div>
             </div>
@@ -134,6 +141,7 @@ import CubeUnchecedIcon from '@/static/svg/cube-unchecked.svg?component'
 import ClearIcon from '@/static/svg/clear.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
+import gameErrImg from '@/components/common/gameErrImg.vue'
 
 const { t } = useI18n()
 

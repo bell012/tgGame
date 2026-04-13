@@ -45,7 +45,10 @@
     "JoinNow": "立即加入",
     "ExclusivePromotions": "专属优惠",
     "DontDisplayThisForNext7Day": "下次7天内不再显示",
-    "Poker": "扑克"
+    "Poker": "扑克",
+    "banner_sign_up": "立即注册，获得",
+    "banner_sign_up_amount": "高达 ",
+    "banner_sign_up_amount1": "$20,000,00"
   },
   "common": {
     "loading": "加载中...",
@@ -63,7 +66,7 @@
     "enter_password": "6–16个字符(字母和数字)",
     "confirm_password": "确认密码",
     "enter_confirm_password": "请重新输入您的密码",
-    "remember_me": "记住我",
+    "remember_me": "记住密码",
     "forget_password": "忘记密码",
     "reset_password": "重置密码",
     "continue": "以访客身份",
@@ -114,7 +117,8 @@
     "transactionPassword": "交易密码",
     "confirmTransactionPassword": "确认交易密码",
     "transactionPasswordSetSuccessfully": "您的交易密码已设置成功。",
-    "transactionPasswordChangedSuccessfully": "您的交易密码已修改成功。"
+    "transactionPasswordChangedSuccessfully": "您的交易密码已修改成功。",
+    "delete": "删除"
   },
   "pwa": {
     "offlineReady": "应用已就绪，可离线使用",
@@ -671,6 +675,7 @@
   },
   "deposit": {
     "title": "充值",
+    "methods": "充值方式",
     "tabs": {
       "crypto": "数字币",
       "fiat": "法币"
@@ -680,11 +685,17 @@
     "deposit_amount": "充值金额",
     "how_to_deposit": "如何充值",
     "deposit_amount_input_placeholder": "请选择充值金额",
+    "deposit_amount_input_or_select_placeholder": "请选择或输入充值金额。",
+    "deposit_amount_preset_placeholder": "请选择预设充值金额。",
     "deposit_now": "立即充值",
     "load_from_wallet": "从您的钱包加载",
+    "wallet_bonus_alt": "钱包奖励",
     "wagering_no": "无流水",
     "wagering_multiple": "{multiple}倍流水",
     "withdrawal_no_wagering_tip": "提款无需流水",
+    "bonus": "赠金",
+    "bonus_label": "{ratio}%赠金",
+    "unavailable": "暂不可用",
     "deposit_order": "充值订单",
     "order_currency": "币种",
     "order_payment_amount": "支付金额",
@@ -718,11 +729,18 @@
     "upload_btn_text": "添加凭证",
     "upload_proof_confirm_btn_text": "立即上传凭证",
     "payment_receipt_sample_title": "支付凭证样本",
+    "payment_receipt_sample_alt": "支付凭证样本",
+    "delete_image_alt": "删除图片",
+    "upload_status_uploading": "上传中...",
+    "upload_status_success": "上传成功",
+    "upload_status_failed": "上传失败",
     "upload_proof_again_btn_text": "重新上传凭证",
     "upload_proof_verifying_marquee": "已收到付款，正在核实您的订单。感谢您的耐心等待。",
     "upload_proof_reminder_title": "温馨提示",
     "upload_proof_reminder_line_1": "· 为确保资金顺利到账，请上传正确的支付凭证截图。",
     "upload_proof_reminder_line_2": "· 若您已上传凭证，请耐心等待，审核通常需要 1-5 分钟。",
+    "cancel_failed": "取消失败",
+    "query_order_failed": "查询订单失败",
     "status": {
       "pending": "待处理",
       "success": "成功",
@@ -764,7 +782,12 @@
     "crypto_help": "如何提现加密货币？",
     "crypto_address_notice": "请确保收款地址正确无误。若资金发送到错误地址，将无法找回。",
     "default_address_cannot_be_changed": "默认地址不允许修改",
+    "default_address_cannot_be_deleted": "默认地址不允许删除",
     "default_account_cannot_be_changed": "默认账号不允许修改",
+    "default_account_cannot_be_deleted": "默认账号不允许删除",
+    "delete_receive_address_not_supported": "当前不支持删除收款账号",
+    "delete_receive_account_title": "Delete Notification",
+    "delete_receive_account_desc": "确认删除{name}收款地址吗？",
     "withdraw_now": "立即提现",
     "you_get": "预计到账",
     "kind_reminder_title": "温馨提示",
@@ -937,5 +960,11 @@
       "whitelistManagement": "白名单管理"
     },
     "hintNotAvailable": "暂不可用。"
+  },
+  "payment_methods": {
+    "title": "收款管理",
+    "sms_content_text": "添加收款账号短信验证",
+    "busiPwd_content_text": "添加收款账号交易密码验证",
+    "account_detail_title": "收款账号详情"
   }
 }

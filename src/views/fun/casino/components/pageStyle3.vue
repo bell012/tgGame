@@ -103,8 +103,7 @@ const { t } = useI18n()
 const gameStore = useGameStore()
 
 const sortOptions = [
-  { label: t('casino.filter_hot'), value: 'hot' },
-  { label: t('casino.filter_new'), value: 'latest' },
+  { label: t('search.sortDefault'), value: 'default' },
   { label: 'A-Z', value: 'a-z' },
   { label: 'Z-A', value: 'z-a' }
 ]
@@ -141,10 +140,9 @@ const resolvedQueryOptions = computed<GameQueryOptions>(() => {
     ...(props.queryOptions ?? props.modules ?? {})
   }
   const sortOptionMap: Record<string, Partial<GameQueryOptions>> = {
-    hot: { hot: 1, sortByOrderId: true, sortDirection: 'asc' },
-    latest: { sortByOrderId: true, sortDirection: 'desc' },
-    'a-z': { sortByOrderId: true, sortDirection: 'asc' },
-    'z-a': { sortByOrderId: true, sortDirection: 'desc' }
+    default: { sortByOrderId: true },
+    'a-z': { sortByOrderId: true, sortByItemName: true, sortDirection: 'asc' },
+    'z-a': { sortByOrderId: true, sortByItemName: true, sortDirection: 'desc' }
   }
 
   return {

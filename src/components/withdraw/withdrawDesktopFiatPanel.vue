@@ -81,19 +81,13 @@
               <button
                 type="button"
                 class="flex h-4 w-[30px] items-center rounded-full p-px transition-colors duration-200"
-                :class="
-                  Number(item.defaultCard ?? item.isDefault ?? 0) === 1
-                    ? 'bg-theme-primary'
-                    : 'bg-white/60'
-                "
+                :class="Number(item.defaultCard ?? 0) === 1 ? 'bg-theme-primary' : 'bg-white/60'"
                 @click.stop="handleToggleAccountDefault(item.localId)"
               >
                 <div
                   class="h-[14px] w-[14px] rounded-full bg-common-100 transition-transform duration-200"
                   :class="
-                    Number(item.defaultCard ?? item.isDefault ?? 0) === 1
-                      ? 'translate-x-[14px]'
-                      : 'translate-x-0'
+                    Number(item.defaultCard ?? 0) === 1 ? 'translate-x-[14px]' : 'translate-x-0'
                   "
                 />
               </button>
@@ -246,7 +240,7 @@ import gameErrImg from '@/components/common/gameErrImg.vue'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RefreshIcon from '@/static/svg/refresh.svg?component'
-import { computed, type ComponentPublicInstance, nextTick, ref } from 'vue'
+import { computed, type ComponentPublicInstance, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FastAmountItem } from '@/api/interface/withdraw'
 import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
@@ -346,16 +340,7 @@ const handleAccountCardsWheel = (event: WheelEvent) => {
 
 const handleAccountCardClick = async (localId: string) => {
   handleSelectAccount(localId)
-  await nextTick()
-
-  const container = accountCardsRef.value
-  const target = container?.querySelector<HTMLElement>(`[data-account-card-id="${localId}"]`)
-
-  target?.scrollIntoView({
-    behavior: 'smooth',
-    block: 'nearest',
-    inline: 'nearest'
-  })
+  await scrollAccountCardIntoView(localId)
 }
 
 const resolveFiatCardBackground = (paymentCode?: string | number) => {
@@ -381,6 +366,31 @@ const scrollMethodIntoView = async (index: number) => {
     inline: 'center'
   })
 }
+
+const scrollAccountCardIntoView = async (localId?: string | null) => {
+  if (!localId) return
+
+  await nextTick()
+
+  const container = accountCardsRef.value
+  const target = container?.querySelector<HTMLElement>(`[data-account-card-id="${localId}"]`)
+
+  if (!container || !target) return
+
+  target.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center'
+  })
+}
+
+watch(
+  () => selectedAccount.value?.localId,
+  localId => {
+    void scrollAccountCardIntoView(localId)
+  },
+  { flush: 'post' }
+)
 
 const formatQuickAmount = (value: FastAmountItem['amount']) => {
   const nextAmount = Number(value ?? 0)
