@@ -117,7 +117,8 @@
     "transactionPassword": "交易密码",
     "confirmTransactionPassword": "确认交易密码",
     "transactionPasswordSetSuccessfully": "您的交易密码已设置成功。",
-    "transactionPasswordChangedSuccessfully": "您的交易密码已修改成功。"
+    "transactionPasswordChangedSuccessfully": "您的交易密码已修改成功。",
+    "delete": "删除"
   },
   "pwa": {
     "offlineReady": "应用已就绪，可离线使用",
@@ -781,7 +782,12 @@
     "crypto_help": "如何提现加密货币？",
     "crypto_address_notice": "请确保收款地址正确无误。若资金发送到错误地址，将无法找回。",
     "default_address_cannot_be_changed": "默认地址不允许修改",
+    "default_address_cannot_be_deleted": "默认地址不允许删除",
     "default_account_cannot_be_changed": "默认账号不允许修改",
+    "default_account_cannot_be_deleted": "默认账号不允许删除",
+    "delete_receive_address_not_supported": "当前不支持删除收款账号",
+    "delete_receive_account_title": "Delete Notification",
+    "delete_receive_account_desc": "确认删除{name}收款地址吗？",
     "withdraw_now": "立即提现",
     "you_get": "预计到账",
     "kind_reminder_title": "温馨提示",
@@ -954,5 +960,11 @@
       "whitelistManagement": "白名单管理"
     },
     "hintNotAvailable": "暂不可用。"
+  },
+  "payment_methods": {
+    "title": "收款管理",
+    "sms_content_text": "添加收款账号短信验证",
+    "busiPwd_content_text": "添加收款账号交易密码验证",
+    "account_detail_title": "收款账号详情"
   }
 }
