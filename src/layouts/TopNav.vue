@@ -14,7 +14,7 @@
           class="hidden md:flex w-[150px] h-[48px] ml-0 md:ml-5 items-center cursor-pointer"
           @click="navigateTo('/')"
         >
-          <img src="/src/static/img/home/logo.png" alt="" class="w-full h-full" />
+          <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
         <!-- H5端 Logo (登录后小logo) -->
         <div
@@ -23,6 +23,7 @@
           @click="navigateTo('/')"
         >
           <img src="/src/static/img/home/logo_h5.png" alt="" class="w-full h-full" />
+          <MainLogoIcon class="w-full h-full" />
         </div>
         <!-- H5端 Logo (未登录大logo) -->
         <div
@@ -30,7 +31,7 @@
           class="flex md:hidden w-[150px] h-[48px] items-center cursor-pointer"
           @click="navigateTo('/')"
         >
-          <img src="/src/static/img/home/logo.png" alt="" class="w-full h-full" />
+          <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
       </div>
 
@@ -252,6 +253,7 @@ import GiftIcon from '@/static/svg/login/gift.svg?component'
 import BellIcon from '@/static/svg/bell.svg?component'
 import Jia from '@/static/svg/login/jia.svg?component'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
+import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import {
   getCurrencyImageByCode,
   getCurrencySymbol,
