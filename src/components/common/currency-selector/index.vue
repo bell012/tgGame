@@ -2,7 +2,7 @@
   <div>
     <div v-if="showSearch" :class="searchWrapperClass">
       <SearchIcon :class="searchIconClass" />
-      <input v-model="keyword" :placeholder="searchPlaceholder" :class="searchInputClass" />
+      <input v-model="keyword" :placeholder="resolvedSearchPlaceholder" :class="searchInputClass" />
     </div>
 
     <div :class="listClass">
@@ -34,6 +34,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
@@ -73,7 +74,7 @@ const props = withDefaults(
     visible: false,
     mode: 'balance',
     showSearch: false,
-    searchPlaceholder: '搜索',
+    searchPlaceholder: '',
     sectionLabel: '',
     listClass: '',
     sectionLabelClass: 'mb-2.5 text-xs font-[700] text-text-2',
@@ -91,11 +92,14 @@ const props = withDefaults(
   }
 )
 
+const { t } = useI18n()
+
 const emit = defineEmits<{
   select: [value: string]
 }>()
 
 const keyword = ref('')
+const resolvedSearchPlaceholder = computed(() => props.searchPlaceholder || t('search.placeholder'))
 
 const normalizedKeyword = computed(() => keyword.value.trim().toUpperCase())
 

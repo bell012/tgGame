@@ -22,7 +22,9 @@
         >
           <div v-if="!props.desktop" class="flex items-center justify-between">
             <div></div>
-            <div class="text-base font-bold text-text-1">Currency</div>
+            <div class="text-base font-bold text-text-1">
+              {{ t('preferencesSettings.currencyPopupTitle') }}
+            </div>
             <button
               type="button"
               class="flex h-7 w-7 items-center justify-center rounded-md bg-opacity-10"
@@ -39,7 +41,7 @@
               :options="listOptions"
               :selected-value="props.selectedCurrency"
               mode="balance"
-              section-label="Cash"
+              :section-label="t('preferencesSettings.currencyPopupSectionLabel')"
               :list-class="
                 props.desktop
                   ? 'max-h-[420px] overflow-y-auto overscroll-contain pr-0.5'
@@ -58,6 +60,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 
@@ -90,6 +93,7 @@ const emit = defineEmits<{
   'update:visible': [value: boolean]
   select: [value: string]
 }>()
+const { t } = useI18n()
 
 const listOptions = computed(() => {
   return props.options.map(item => ({
