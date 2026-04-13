@@ -45,7 +45,7 @@
                   type="button"
                   @click.stop="toggleEmojiPicker"
                 >
-                  <img alt="" :src="EmoIcon" class="size-[24px]" />
+                  <SmartImage alt="" :src="EmoIcon" class="size-[24px]" />
                 </button>
 
                 <div
@@ -139,7 +139,7 @@
                   type="button"
                   @click.stop="toggleEmojiPicker"
                 >
-                  <img alt="" :src="EmoIcon" class="size-[24px]" />
+                  <SmartImage alt="" :src="EmoIcon" class="size-[24px]" />
                 </button>
 
                 <div
@@ -190,6 +190,7 @@ import { useThemeStore } from '@/stores/theme'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 interface Props {
   modelValue: boolean

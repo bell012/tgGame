@@ -2,7 +2,7 @@
   <div
     class="w-full h-full flex items-center justify-center overflow-hidden rounded-[8px] bg-[var(--color-background-level-2)] sm:h-full"
   >
-    <img
+    <SmartImage
       :src="currentSrc"
       alt=""
       draggable="false"
@@ -19,7 +19,7 @@
       v-if="props.img.maintain"
       class="z-10 absolute inset-0 bg-[var(--color-mask-60-1)] backdrop-blur-1 flex justify-center items-center"
     >
-      <img class="w-[31px]" :src="maintainImg" alt="" />
+      <SmartImage class="w-[31px]" :src="maintainImg" alt="" />
     </div>
   </div>
 </template>
@@ -31,6 +31,7 @@ import { useThemeStore } from '@/stores/theme'
 import errorImg from '@/static/img/home/errImg.png'
 import errorImg1 from '@/static/img/home/errImg1.png'
 import maintainImg from '@/static/img/home/maintain.png'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 const themeStore = useThemeStore()
 const { theme } = storeToRefs(themeStore)

@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center gap-[4px]">
-    <img
+    <SmartImage
       v-for="i in count"
       :key="i"
       :src="i <= activeCount ? StarActiveIcon : StarIcon"
@@ -15,6 +15,7 @@
 import StarIcon from '@/static/svg/game/detail/comment/star.svg?url'
 import StarActiveIcon from '@/static/svg/game/detail/comment/star_active.svg?url'
 import { useI18n } from 'vue-i18n'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 const props = withDefaults(
   defineProps<{

@@ -14,13 +14,13 @@
           class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[12px]"
         >
           <h3 class="win-item-divider flex gap-[8px] pb-[12px]">
-            <img class="size-[20px]" alt="" :src="RackIcon" />
+            <SmartImage class="size-[20px]" alt="" :src="RackIcon" />
             <div class="text-[12px] font-bold">{{ getPlayerName(item) }}</div>
           </h3>
           <div class="flex justify-between mt-[12px] text-[12px]">
             <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.payout') }}</div>
             <div class="flex items-center gap-[8px]">
-              <img
+              <SmartImage
                 class="w-[20px] h-[20px] min-w-[20px] object-contain"
                 :alt="currentRequestCurrency"
                 :src="currentCurrencyIcon"
@@ -31,7 +31,7 @@
           <div class="flex justify-between mt-[12px] text-[12px]">
             <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.wager') }}</div>
             <div class="flex items-center gap-[8px]">
-              <img
+              <SmartImage
                 class="w-[20px] h-[20px] min-w-[20px] object-contain"
                 :alt="currentRequestCurrency"
                 :src="currentCurrencyIcon"
@@ -62,7 +62,7 @@
             :class="{ 'pc-winlist-row-alt': index % 2 === 0 }"
           >
             <div class="pc-winlist-player">
-              <img
+              <SmartImage
                 v-if="index < rankIcons.length"
                 class="size-[24px] shrink-0"
                 alt=""
@@ -71,7 +71,7 @@
               <span class="truncate">{{ getPlayerName(item) }}</span>
             </div>
             <div class="pc-winlist-cell">
-              <img
+              <SmartImage
                 class="w-[22px] h-[22px] min-w-[22px] object-contain"
                 :alt="currentRequestCurrency"
                 :src="currentCurrencyIcon"
@@ -79,7 +79,7 @@
               <span class="text-[var(--color-theme-level-1)]">{{ formatPayOut(item.payOut) }}</span>
             </div>
             <div class="pc-winlist-cell">
-              <img
+              <SmartImage
                 class="w-[22px] h-[22px] min-w-[22px] object-contain"
                 :alt="currentRequestCurrency"
                 :src="currentCurrencyIcon"
@@ -110,6 +110,7 @@ import { getCurrencyIconByCode } from '../currency-select-options'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 const props = withDefaults(
   defineProps<{

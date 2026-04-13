@@ -1,7 +1,7 @@
 <template>
   <div class="currency-info-container">
     <div class="image-content relative w-full h-[640px]">
-      <img
+      <SmartImage
         class="absolute top-0 left-0 w-full h-full object-cover rounded-t-[20px]"
         alt=""
         :src="displayGameImg"
@@ -41,6 +41,7 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 
 import { computed, ComputedRef, inject, onMounted } from 'vue'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 const userStore = useUserStore()
 const authModalStore = useAuthModalStore()

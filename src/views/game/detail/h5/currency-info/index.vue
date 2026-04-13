@@ -2,7 +2,7 @@
   <div class="w-full h-full p-[12px] bg-[var(--color-background-level-3)] rounded-t-[10px]">
     <div class="flex gap-[10px]">
       <div class="w-[110px] h-[146px]">
-        <img :src="displayGameImg" alt="" class="w-full h-full object-contain rounded-md" />
+        <SmartImage :src="displayGameImg" alt="" class="w-full h-full object-contain rounded-md" />
       </div>
       <div class="flex-1 flex flex-col justify-between">
         <div class="flex-1 flex flex-col justify-around">
@@ -34,6 +34,7 @@ import CurrencyBar from '../currency-bar/index.vue'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 const { gamePlay, currentGameDetail } = useGamePlatformPlay()
 const { t } = useI18n()
