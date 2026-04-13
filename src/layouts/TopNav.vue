@@ -22,7 +22,7 @@
           class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer"
           @click="navigateTo('/')"
         >
-          <img src="/src/static/img/home/logo_h5.png" alt="" class="w-full h-full" />
+          <SmartImage :src="mobileLogoImage" alt="" class="w-full h-full" />
           <MainLogoIcon class="w-full h-full" />
         </div>
         <!-- H5端 Logo (未登录大logo) -->
@@ -254,6 +254,7 @@ import BellIcon from '@/static/svg/bell.svg?component'
 import Jia from '@/static/svg/login/jia.svg?component'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
+import mobileLogoImage from '@/static/img/home/logo_h5.png'
 import {
   getCurrencyImageByCode,
   getCurrencySymbol,
