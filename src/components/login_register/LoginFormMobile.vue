@@ -48,11 +48,7 @@
                 <div class="w-full relative h-50 box-content">
                   <div class="w-full z-10 p-4">
                     <div class="flex items-center justify-between">
-                      <img
-                        src="/src/static/img/home/logo.png"
-                        alt="BC.GAME Logo"
-                        class="w-auto h-12"
-                      />
+                      <SmartImage :src="loginLogoImage" alt="BC.GAME Logo" class="w-auto h-12" />
                       <button
                         class="w-7 h-7 bg-opacity-10 rounded-md flex items-center justify-center"
                         @click="handleClose"
@@ -60,7 +56,14 @@
                         <CloseIcon class="w-3 h-3 fill-none" />
                       </button>
                     </div>
-                    <div class="flex flex-col justify-start space-y-4 h-[140px] mt-4 headBg">
+                    <div
+                      class="flex flex-col justify-start space-y-4 h-[140px] mt-4"
+                      :style="{
+                        backgroundImage: loginHeadBackground,
+                        backgroundSize: '100% 100%',
+                        backgroundRepeat: 'no-repeat'
+                      }"
+                    >
                       <div class="flex-col">
                         <h2 class="flex items-center text-xs">
                           <GiftIcon class="w-3.5 h-3.5 fill-none" />
@@ -376,7 +379,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 // import ExternalIcon from '@/static/svg/login/external.svg?component'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
@@ -387,11 +390,17 @@ import FreePerksIcon from '@/static/svg/login/free_perks.svg?component'
 import SafeIcon from '@/static/svg/login/safe.svg?component'
 import PasswordIcon from '@/static/svg/login/password.svg?component'
 import CheckIcon from '@/static/svg/login/check.svg?component'
+import loginHeadDarkImage from '@/static/img/home/login_h5_h.png'
+import loginHeadLightImage from '@/static/img/home/login_h5_b.png'
+import loginLogoImage from '@/static/img/home/logo.png'
+import { useThemeStore } from '@/stores/theme'
+import { resolveBackgroundImage } from '@/utils/image'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const themeStore = useThemeStore()
 const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 interface Props {
   visible: boolean
@@ -409,6 +418,11 @@ const emit = defineEmits<{
 
 const showDrawer = ref(false)
 const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
+const loginHeadBackground = computed(() => {
+  const backgroundImage = themeStore.theme === 'light' ? loginHeadLightImage : loginHeadDarkImage
+
+  return `${resolveBackgroundImage(backgroundImage)}`
+})
 
 watch(
   () => props.visible,
@@ -447,15 +461,6 @@ const handleLoginSuccess = () => {
 </script>
 
 <style scoped lang="scss">
-.headBg {
-  background: url('/src/static/img/home/login_h5_h.png') no-repeat;
-  background-size: 100% 100%;
-}
-
-:root.light .headBg {
-  background: url('/src/static/img/home/login_h5_b.png') no-repeat;
-  background-size: 100% 100%;
-}
 .tab-button-new {
   position: relative;
 

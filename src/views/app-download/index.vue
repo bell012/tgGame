@@ -5,7 +5,7 @@
       <header class="fixed top-0 left-0 right-0 z-50 h-14 bg-[#0d090699]">
         <div class="w-[1280px] h-14 mx-auto px-2 flex items-center justify-between">
           <div class="flex items-center">
-            <img src="/src/static/img/home/logo.png" alt="" class="w-44 h-auto cursor-pointer" />
+            <SmartImage :src="appLogoImage" alt="" class="w-44 h-auto cursor-pointer" />
           </div>
 
           <div class="flex items-center gap-3">
@@ -15,7 +15,7 @@
                 <span class="text-xs text-text-1 font-[800]">BC.GAME</span>
                 <span class="text-xs text-theme-level-1 font-[800]">App</span>
               </div>
-              <img :src="currentArrowImage" alt="" class="w-3.5 h-3.5 ml-1 -rotate-90" />
+              <SmartImage :src="currentArrowImage" alt="" class="w-3.5 h-3.5 ml-1 -rotate-90" />
             </div>
 
             <button
@@ -102,11 +102,7 @@
                     class="flex-1 flex items-center justify-center w-full h-11 mt-4 mx-5 btn-primary rounded-lg"
                   >
                     <span class="text-base text-text-4">扫码下载</span>
-                    <img
-                      src="/src/static/img/app-download/app_download_7.png"
-                      alt=""
-                      class="w-6 h-6"
-                    />
+                    <SmartImage :src="appDownloadActionIcon" alt="" class="w-6 h-6" />
                   </button>
                   <div class="w-14 h-14 qrcode_absolute">
                     <canvas ref="qrCode1" class="w-full h-full p-1 bg-white rounded-md"></canvas>
@@ -150,11 +146,7 @@
                     class="flex-1 flex items-center justify-center w-full h-11 mt-4 mx-5 btn-primary rounded-lg"
                   >
                     <span class="text-base text-text-4">扫码解锁</span>
-                    <img
-                      src="/src/static/img/app-download/app_download_7.png"
-                      alt=""
-                      class="w-6 h-6"
-                    />
+                    <SmartImage :src="appDownloadActionIcon" alt="" class="w-6 h-6" />
                   </button>
                   <div class="w-14 h-14 qrcode_absolute">
                     <canvas ref="qrCode2" class="w-full h-full p-1 bg-white rounded-md"></canvas>
@@ -221,11 +213,7 @@
                     class="flex-1 flex items-center justify-center w-full h-11 mt-4 mx-5 btn-primary rounded-lg"
                   >
                     <span class="text-base text-text-4">Scan to Download</span>
-                    <img
-                      src="/src/static/img/app-download/app_download_7.png"
-                      alt=""
-                      class="w-6 h-6"
-                    />
+                    <SmartImage :src="appDownloadActionIcon" alt="" class="w-6 h-6" />
                   </button>
                   <div class="w-14 h-14 qrcode_absolute">
                     <canvas ref="qrCode3" class="w-full h-full p-1 bg-white rounded-md"></canvas>
@@ -332,7 +320,7 @@
           <div class="p-8 footer">
             <div class="w-[1280px] mx-auto">
               <div class="flex items-start justify-between mb-8">
-                <img src="/src/static/img/home/logo.png" alt="" class="w-36 h-auto" />
+                <SmartImage :src="appLogoImage" alt="" class="w-36 h-auto" />
 
                 <div class="flex flex-col w-80">
                   <h3 class="text-sm font-[600] text-text-2 mb-4">Accepted Networks</h3>
@@ -465,11 +453,7 @@
                       class="w-full h-12 btn-primary rounded-md flex items-center justify-center gap-1 mt-4"
                       @click="deviceType === 'ios' ? handleIOSDownload() : handleAndroidDownload()"
                     >
-                      <img
-                        src="/src/static/img/app-download/app_download_7.png"
-                        alt=""
-                        class="w-6 h-6"
-                      />
+                      <SmartImage :src="appDownloadActionIcon" alt="" class="w-6 h-6" />
                       <span class="text-base text-text-4 font-[800]">
                         {{ deviceType === 'ios' ? 'Download on App Store' : 'Download App' }}
                       </span>
@@ -477,7 +461,7 @@
                   </div>
 
                   <div class="flex justify-center mb-4">
-                    <img :src="currentArrowImage" alt="" class="w-6 h-6 rotate-360" />
+                    <SmartImage :src="currentArrowImage" alt="" class="w-6 h-6 rotate-360" />
                   </div>
 
                   <div class="mb-4">
@@ -511,7 +495,7 @@
                   </div>
 
                   <div v-if="deviceType === 'ios'" class="flex justify-center mb-4">
-                    <img :src="currentArrowImage" alt="" class="w-6 h-6 rotate-360" />
+                    <SmartImage :src="currentArrowImage" alt="" class="w-6 h-6 rotate-360" />
                   </div>
 
                   <div class="mb-4">
@@ -555,7 +539,7 @@
           <footer class="mt-5 p-8 footer">
             <div class="w-full mx-auto">
               <div class="flex items-start justify-between mb-8">
-                <img src="/src/static/img/home/logo.png" alt="" class="w-36 h-auto" />
+                <SmartImage :src="appLogoImage" alt="" class="w-36 h-auto" />
               </div>
 
               <div class="mb-6 space-y-3">
@@ -602,6 +586,11 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import QRCode from 'qrcode'
 import LoginIcon2 from '@/static/svg/login/login_icon_2.svg?component'
+import appDownloadActionIcon from '@/static/img/app-download/app_download_7.png'
+import arrowRight1Image from '@/static/img/app-download/arrow_right_1.png'
+import arrowRight2Image from '@/static/img/app-download/arrow_right_2.png'
+import arrowRight3Image from '@/static/img/app-download/arrow_right_3.png'
+import appLogoImage from '@/static/img/home/logo.png'
 import { navigateTo } from '@/utils/router'
 
 // 下载链接配置
@@ -640,9 +629,10 @@ const qrCodeHover3 = ref<HTMLCanvasElement>()
 // 箭头动画
 const currentArrowIndex = ref(1)
 const arrowAnimationInterval = ref<number | null>(null)
+const arrowImages = [arrowRight1Image, arrowRight2Image, arrowRight3Image]
 
 const currentArrowImage = computed(() => {
-  return `/src/static/img/app-download/arrow_right_${currentArrowIndex.value}.png`
+  return arrowImages[currentArrowIndex.value - 1] ?? arrowImages[0]
 })
 
 // 返回主页

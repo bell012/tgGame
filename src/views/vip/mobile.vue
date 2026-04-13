@@ -53,11 +53,11 @@
           >
             <section
               class="relative h-[158px] rounded-[15px] bg-cover bg-center bg-no-repeat px-[20px] py-[15px]"
-              :style="{ backgroundImage: `url(${cardH5BgImage})` }"
+              :style="{ backgroundImage: resolveBackgroundImage(cardH5BgImage) }"
             >
               <div class="relative z-[1] flex flex-col items-start gap-3">
                 <div class="flex items-center">
-                  <img
+                  <SmartImage
                     :src="cardVipImage"
                     alt="VIP Card"
                     class="mr-[3px] h-[30px] w-[33px] shrink-0"
@@ -91,7 +91,7 @@
                   </p>
                 </div>
 
-                <img
+                <SmartImage
                   :src="cardVipRightImage"
                   alt="VIP Decoration"
                   class="pointer-events-none absolute right-[-20px] top-[50px] h-[188px] w-[160px] -translate-y-1/2"
@@ -164,6 +164,7 @@ import VipWordmarkIcon from '@/static/svg/vip_2.svg?component'
 import cardH5BgImage from '@/static/img/personalCenter/card_H5_BG.png'
 import cardVipImage from '@/static/img/personalCenter/card_vip.png'
 import cardVipRightImage from '@/static/img/personalCenter/card_vip_right.png'
+import { resolveBackgroundImage } from '@/utils/image'
 import { getCurrencySymbol } from '@/utils/locale'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'

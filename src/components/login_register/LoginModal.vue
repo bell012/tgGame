@@ -41,11 +41,11 @@
             <!-- 左侧图片区域 -->
             <div class="w-1/2 p-6 flex flex-col bg-bg-2">
               <div class="z-10 w-full flex justify-center">
-                <img src="/src/static/img/home/logo.png" alt="Logo" class="w-auto h-12" />
+                <SmartImage :src="loginLogoImage" alt="Logo" class="w-auto h-12" />
               </div>
 
               <div class="w-full h-[245px] mt-6">
-                <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
+                <SmartImage :src="pcBackgroundImage" alt="" class="w-full h-full" />
               </div>
 
               <div class="mt-6">
@@ -132,11 +132,11 @@
             <!-- 左侧图片区域 -->
             <div class="w-1/2 p-6 flex flex-col bg-bg-2">
               <div class="z-10 w-full flex justify-center">
-                <img src="/src/static/img/home/logo.png" alt="Logo" class="w-auto h-12" />
+                <SmartImage :src="loginLogoImage" alt="Logo" class="w-auto h-12" />
               </div>
 
               <div class="w-full h-[245px] mt-6">
-                <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
+                <SmartImage :src="pcBackgroundImage" alt="" class="w-full h-full" />
               </div>
 
               <div class="mt-6">
@@ -219,6 +219,7 @@ import ResetPasswordDesktop from './ResetPasswordDesktop.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useThemeStore } from '@/stores/theme'
 import { useI18n } from 'vue-i18n'
+import loginLogoImage from '@/static/img/home/logo.png'
 import loginPcDark from '@/static/img/home/login_pc_h.png'
 import loginPcLight from '@/static/img/home/login_pc_b.png'
 import Api from '@/api'
