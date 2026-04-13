@@ -65,7 +65,8 @@ watch(theme, () => {
 
 <style scoped lang="scss">
 .game-err-img {
-  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .game-err-img.error {

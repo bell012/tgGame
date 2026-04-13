@@ -49,7 +49,7 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/fun/casino/gameList/index.vue'),
     meta: {
       title: '游戏列表',
-      requiresAuth: true, // 需要登录后才能进入路由
+      requiresAuth: false, // 需要登录后才能进入路由
       mobile: {
         hideBottomBar: true, // H5路由进入后是否隐藏全局底部 TabBar
         hideTopNav: true // H5 路由进入后是否隐藏全局顶部 TopNav

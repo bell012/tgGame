@@ -3,48 +3,7 @@
     class="casino-page max-w-[1248px] mx-auto pt-2.5 sm:p-4 w-full font-['Inter'] px-3.5 sm:px-0"
     :style="mobileStyle"
   >
-    <div
-      v-if="!isLoggedIn && currentTabCode === ''"
-      class="banner bg-bg-3 relative aspect-[1.73] sm:aspect-[4.785] rounded-xl mb-2.5"
-    >
-      <img
-        class="absolute right-0 bottom-0 w-full md:w-auto md:h-full"
-        src="/src/static/img/casino/banner_bg.webp"
-        alt="casino"
-      />
-      <div
-        class="absolute left-2 top-0 flex h-full origin-top flex-col py-4 sm:left-[14%] sm:top-1/2 sm:-translate-y-1/2 sm:h-auto sm:items-center sm:py-0 sm:text-center"
-      >
-        <h1 class="font-inter text-xl font-bold leading-normal text-text-1">
-          {{ t('casino.banner_title') }}
-        </h1>
-        <div
-          class="rounded-xl p-0 text-lg font-semibold sm:mt-4 sm:px-[60px] sm:py-3 sm:backdrop-blur-md sm:bg-[rgba(169,169,169,0.2)]"
-        >
-          <h2 class="font-inter text-xs font-medium leading-[18px] text-text-1">
-            {{ t('casino.banner_sign_up') }}
-          </h2>
-          <h2 class="font-inter text-xs sm:text-sm font-bold leading-normal text-theme-primary">
-            ₱1,176,029.77
-          </h2>
-          <h2 class="font-inter text-xs font-medium leading-[18px] text-text-1">
-            {{ t('casino.banner_subtitle') }}
-          </h2>
-        </div>
-        <button
-          class="flex justify-center items-center mt-auto w-[94px] h-[35px] py-[9px] px-[15px] pl-[16px] rounded-lg btn-primary text-xs sm:text-sm font-bold leading-normal text-center text-text-4 sm:mt-5 sm:w-[200px]"
-          type="button"
-          @click.stop="showLoginModal = true"
-        >
-          {{ t('casino.join_now') }}
-        </button>
-      </div>
-    </div>
-
-    <casinoSlideshow
-      v-if="currentTabCode !== '' && querySlideshowList.length > 0"
-      :list="querySlideshowList"
-    />
+    <casinoSlideshow v-if="querySlideshowList.length > 0" :list="querySlideshowList" />
 
     <div
       ref="searchRef"
@@ -149,23 +108,31 @@
             :key="inx"
             :ref="el => (tabRefs[inx] = el as HTMLButtonElement)"
             :class="{
-              'bg-opacity-10': item.sysGameTypeCode === currentTabCode,
-              active: item.sysGameTypeCode === currentTabCode
+              'bg-bg-2': item.sysGameTypeCode === currentTabCode
             }"
-            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-opacity-10"
+            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
             @click.stop="onTabButton(item)"
           >
-            <img
-              v-if="typeof item?.icon === 'string'"
-              :src="item.icon"
-              class="w-5 h-5 mr-[7px] object-contain"
-            />
-            <component
-              v-else-if="item?.icon"
-              :is="item.icon"
-              :class="item.sysGameTypeCode === currentTabCode ? 'fill-primary' : 'fill-text-2'"
-              class="w-5 h-5 mr-[7px]"
-            />
+            <div class="h-5 w-5 mr-[7px]">
+              <img
+                v-if="item.sysGameTypeCode !== currentTabCode && typeof item?.icon === 'string'"
+                :src="item.icon"
+                class="w-full h-full object-contain"
+              />
+              <img
+                v-else-if="
+                  item.sysGameTypeCode === currentTabCode && typeof item?.iconSelect === 'string'
+                "
+                :src="item.iconSelect"
+                class="w-full h-full object-contain"
+              />
+              <component
+                v-else-if="item?.icon"
+                :is="item.icon"
+                :class="item.sysGameTypeCode === currentTabCode ? 'fill-primary' : 'fill-text-2'"
+                class="w-full h-full"
+              />
+            </div>
             <div
               :class="item.sysGameTypeCode === currentTabCode ? 'text-text-1' : 'text-text-2'"
               class="font-[700]"
@@ -309,7 +276,8 @@ const currentPageProps = computed(() => {
   switch (getPageStyle.value) {
     case pageStyle1:
       return {
-        modules: lobbyButtons.value
+        modules: lobbyButtons.value,
+        loading: !hasLoaded.value
       }
     case pageStyle2:
     case pageStyle3:
@@ -483,7 +451,9 @@ const userInfo = ref<any>(null)
 const isLoggedIn = computed(() => {
   return userInfo.value && userInfo.value.tradeToken
 })
-const { tabButtons, lobbyButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
+const { tabButtons, lobbyButtons, hasLoaded, loadCasinoTabButtons } = useCasinoTabButtons({
+  isLoggedIn
+})
 // localStorage 用户信息
 const loadUserInfo = () => {
   const storedUserInfo = localStorage.getItem('userInfo')
@@ -521,6 +491,7 @@ watch(
 )
 
 let resizeObserver: ResizeObserver | null = null
+
 onMounted(() => {
   loadUserInfo()
   gameStore.loadSearchHistory()
