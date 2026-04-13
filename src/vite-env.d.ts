@@ -8,6 +8,12 @@ declare module '*.vue' {
   export default component
 }
 
+declare module 'vue' {
+  export interface GlobalComponents {
+    SmartImage: (typeof import('@/components/common/SmartImage.vue'))['default']
+  }
+}
+
 // SVG 作为组件导入
 declare module '*.svg?component' {
   import type { DefineComponent } from 'vue'
