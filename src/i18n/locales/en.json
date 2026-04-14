@@ -108,6 +108,7 @@
     "gotIt": "Got it",
     "ok": "OK",
     "pleaseEnterThePhoneNumber": "Please enter the phone number",
+    "pleaseEnterCorrectPhoneNumber": "Please enter a valid phone number",
     "changeMobileNumber": "Change Mobile Number",
     "newMobileNumber": "New Mobile Number",
     "enterNewMobileNumber": "Enter your new mobile number",
