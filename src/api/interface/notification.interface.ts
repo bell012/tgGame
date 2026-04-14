@@ -20,32 +20,65 @@ export interface QueryNoticeMsgForm {
  * 通知记录
  */
 export interface NoticeRecord {
-  channelId: string[]
+  /** 终端渠道 */
+  channelId?: string[]
+  /** 创建时间 */
   createTime: number
-  displayTime: number
+  /** 展示时间 */
+  displayTime?: number
+  /** 状态 */
   enable: number
+  /** 内容类型：0 HTML、1 图片、2 文本 */
   isImage: number
-  jumpType: number
+  /**
+   * 跳转类型：
+   * 1 URL 跳转
+   * 2 跳转内部页面
+   * 3 跳转游戏
+   */
+  jumpType?: number
+  /** 语言编码 */
   languageCode: string
+  /** 跳转地址 */
   linkUrl: string
-  linkType: number
+  /**
+   * 跳转子类型：
+   * jumpType = 1 时：
+   * 0 不跳转
+   * 1 内部 URL 跳转
+   * 2 外部 URL 跳转
+   *
+   * jumpType = 2 时：
+   * 0 不跳转
+   * 1 活动
+   * 2 充值栏目
+   * 3 分享转盘
+   * 4 充值页面
+   * 5 积分转盘
+   * 6 邀请好友
+   * 7 登录注册页
+   */
+  linkType?: number
   loginAfterPopWay: number
   loginBeforePopWay: number
-  memberIds: string[]
+  memberIds?: string[]
   msgType: string
+  msgVersion?: number
   noticeText: string
   noticeTitle: string
   noticeType: string
-  operator: string
+  operator?: string
   pushChannel: string
+  readStatus?: number
+  readTime?: number
   recipientObj: number
   rowId: number
-  scene: number
-  showTimeEnd: number
-  showTimeStart: number
+  scene?: number
+  showTimeEnd?: number
+  showTimeStart?: number
   site: string
   sort: number
-  sysLevelIds: string[]
+  sysLevelIds?: string[]
 }
 
 /**

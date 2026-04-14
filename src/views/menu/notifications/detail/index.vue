@@ -4,7 +4,7 @@
     :class="
       props.panelMode
         ? 'notification-detail-page h-full bg-bg-1'
-        : 'notification-detail-page min-h-screen bg-bg-1 -mx-[14px] sm:mx-auto sm:max-w-[420px]'
+        : 'notification-detail-page fixed inset-0 z-[60] overflow-y-auto bg-bg-1'
     "
   >
     <!-- 通知详情容器 -->
@@ -12,7 +12,7 @@
       :class="
         props.panelMode
           ? 'notification-detail-shell flex h-full min-h-0 flex-col bg-bg-1'
-          : 'notification-detail-shell min-h-screen bg-bg-1'
+          : 'notification-detail-shell min-h-screen bg-bg-1 sm:mx-auto sm:max-w-[420px]'
       "
       style="font-family: Inter, sans-serif"
     >
