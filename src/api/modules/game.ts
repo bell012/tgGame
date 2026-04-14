@@ -39,7 +39,9 @@ export function getGameData(): Promise<GameDataResponse> {
 export function getGameType(): Promise<GameTypeResponse> {
   return request({
     url: '/gc/getGameType',
-    method: 'post'
+    method: 'post',
+    showSuccessToast: false,
+    showErrorToast: true
   })
 }
 
