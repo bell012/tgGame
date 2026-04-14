@@ -23,7 +23,7 @@
           @click="navigateTo('/')"
         >
           <SmartImage :src="mobileLogoImage" alt="" class="w-full h-full" />
-          <MainLogoIcon class="w-full h-full" />
+          <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
         <!-- H5端 Logo (未登录大logo) -->
         <div

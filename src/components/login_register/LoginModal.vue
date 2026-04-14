@@ -43,7 +43,7 @@
             <!-- 左侧图片区域 -->
             <div class="w-1/2 p-6 flex flex-col bg-bg-2">
               <div class="z-10 w-full flex justify-center">
-                <SmartImage :src="loginLogoImage" alt="Logo" class="w-auto h-12" />
+                <MainLogoIcon class="h-12 w-auto text-text-1" />
               </div>
 
               <div class="w-full h-[245px] mt-6">
@@ -140,7 +140,7 @@
             <!-- 左侧图片区域 -->
             <div class="w-1/2 p-6 flex flex-col bg-bg-2">
               <div class="z-10 w-full flex justify-center">
-                <SmartImage :src="loginLogoImage" alt="Logo" class="w-auto h-12" />
+                <MainLogoIcon class="h-12 w-auto text-text-1" />
               </div>
 
               <div class="w-full h-[245px] mt-6">
@@ -232,7 +232,7 @@ import ResetPasswordMobile from './ResetPasswordMobile.vue'
 import ResetPasswordDesktop from './ResetPasswordDesktop.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useI18n } from 'vue-i18n'
-import loginLogoImage from '@/static/img/home/logo.png'
+import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import Api from '@/api'
 import { getLanguageCode } from '@/utils/locale'
 
