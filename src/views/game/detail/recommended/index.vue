@@ -289,7 +289,10 @@ const getGameData = async () => {
     return cacheData
   }
 
-  const res = await Api.home.getGameData()
+  const res = await Api.home.getGameData({
+    showSuccessToast: false,
+    showErrorToast: true
+  })
   const nextList = Array.isArray(res?.result) ? (res.result as GameDataSection[]) : []
   cacheGlobal.__gameDetailGameDataCache__ = nextList
   return nextList

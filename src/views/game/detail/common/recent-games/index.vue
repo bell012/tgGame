@@ -100,12 +100,18 @@ const fetchGameRanList = async () => {
 
   isRankLoading.value = true
   try {
-    const res = await Api.game.getGameRanList({
-      itemCode,
-      platformCode,
-      type,
-      currency: currentRequestCurrency.value
-    })
+    const res = await Api.game.getGameRanList(
+      {
+        itemCode,
+        platformCode,
+        type,
+        currency: currentRequestCurrency.value
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     const rawResult = res?.result
     const records = (rawResult as { records?: unknown } | undefined)?.records
     rankList.value = Array.isArray(rawResult)

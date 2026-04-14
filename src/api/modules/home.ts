@@ -1,16 +1,17 @@
-import request from '@/utils/request'
+import request, { type ApiResponseToastOptions } from '@/utils/request'
 import type { GameDataResponse } from '@/api/interface/home.interface'
 
 /**
  * 获取首页数据
  * @returns Promise<any>
  */
-export function getGameData(): Promise<GameDataResponse> {
+export function getGameData(options?: ApiResponseToastOptions): Promise<GameDataResponse> {
   return request({
     url: '/gc/queryGameListForApp',
     method: 'post',
     showSuccessToast: true,
-    showErrorToast: true
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -24,13 +25,14 @@ export function getActivityType(): Promise<any> {
   })
 }
 // 近期大奖
-export function getRecentBigWins(data: any): Promise<any> {
+export function getRecentBigWins(data: any, options?: ApiResponseToastOptions): Promise<any> {
   return request({
     url: '/special/getRecentBigWins',
     method: 'post',
     data,
     showSuccessToast: true,
-    showErrorToast: true
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -46,12 +48,13 @@ export function getQuerySlideshow(data: any): Promise<any> {
 }
 
 // 供应商 /gc/gameBrandList
-export function getGameBrandList(): Promise<any> {
+export function getGameBrandList(options?: ApiResponseToastOptions): Promise<any> {
   return request({
     url: '/gc/gameBrandList',
     method: 'post',
     showSuccessToast: true,
-    showErrorToast: true
+    showErrorToast: true,
+    ...options
   })
 }
 

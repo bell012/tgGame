@@ -150,7 +150,10 @@ const topTabChange = (code: string) => {
 
 const getQueryGameListForApp = async () => {
   try {
-    const res = await Api.home.getGameData()
+    const res = await Api.home.getGameData({
+      showSuccessToast: false,
+      showErrorToast: true
+    })
     const nextList = Array.isArray(res?.result) ? (res.result as GameSection[]) : []
     queryGameList.value = nextList
   } catch (error) {
@@ -187,7 +190,10 @@ const queryProviderList = ref<GameBrandItem[]>([])
 
 const getGameBrandList = async () => {
   try {
-    const res = await Api.home.getGameBrandList()
+    const res = await Api.home.getGameBrandList({
+      showSuccessToast: false,
+      showErrorToast: true
+    })
     queryProviderList.value = Array.isArray(res?.result) ? (res.result as GameBrandItem[]) : []
   } catch (error) {
     console.error('getGameBrandList failed', error)

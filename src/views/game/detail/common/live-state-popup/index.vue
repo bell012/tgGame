@@ -185,10 +185,16 @@ const fetchGameStatistics = async () => {
 
   isLoading.value = true
   try {
-    const res = await Api.game.getGameStatistics({
-      itemCode,
-      platformCode
-    })
+    const res = await Api.game.getGameStatistics(
+      {
+        itemCode,
+        platformCode
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
 
     const result = res?.result
     if (result && typeof result === 'object') {
@@ -218,10 +224,16 @@ const refreshGameStatistics = async () => {
   }
   isLoading.value = true
   try {
-    await Api.game.refreshGameStatistics({
-      itemCode,
-      platformCode
-    })
+    await Api.game.refreshGameStatistics(
+      {
+        itemCode,
+        platformCode
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     fetchGameStatistics()
   } catch (error) {
     console.error('refreshGameStatistics failed', error)

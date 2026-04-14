@@ -705,14 +705,20 @@ const requestCommentsList = async (subjectId: string) => {
   isCommentLoading.value = true
   try {
     const commentLikeCacheMap = getCommentLikeCacheMap()
-    const res = await Api.game.getCommentsList({
-      subjectId,
-      current: 1,
-      size: 100,
-      root: '0',
-      parent: '0',
-      memberRowId: validMemberRowId
-    })
+    const res = await Api.game.getCommentsList(
+      {
+        subjectId,
+        current: 1,
+        size: 100,
+        root: '0',
+        parent: '0',
+        memberRowId: validMemberRowId
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     const rootComments = parseCommentRecords(res?.result).map((item, index) =>
       mapCommentItem(item, index, 'root-comment', subjectId, commentLikeCacheMap)
     )
@@ -727,14 +733,20 @@ const requestCommentsList = async (subjectId: string) => {
         }
 
         try {
-          const childrenRes = await Api.game.getCommentsList({
-            subjectId,
-            current: 1,
-            size: 100,
-            parent: parentId,
-            root: null,
-            memberRowId: validMemberRowId
-          })
+          const childrenRes = await Api.game.getCommentsList(
+            {
+              subjectId,
+              current: 1,
+              size: 100,
+              parent: parentId,
+              root: null,
+              memberRowId: validMemberRowId
+            },
+            {
+              showSuccessToast: false,
+              showErrorToast: true
+            }
+          )
           item.children = parseCommentRecords(childrenRes?.result).map((childItem, childIndex) =>
             mapCommentItem(
               childItem,
@@ -768,10 +780,16 @@ const requestCommentSubject = async () => {
 
   try {
     const { memberRowId } = getAcctInfoFromStorage()
-    const res = await Api.game.getCommentSubject({
-      gameId,
-      memberRowId: memberRowId || undefined
-    })
+    const res = await Api.game.getCommentSubject(
+      {
+        gameId,
+        memberRowId: memberRowId || undefined
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     const result = res?.result
     commentSubjectId.value = normalizeQueryValue(result?.subjectId ?? result?.id ?? result?.rowId)
     await requestCommentsList(commentSubjectId.value)
@@ -897,15 +915,21 @@ const submitComment = async (content: string) => {
   try {
     const replyParentId = normalizeQueryValue(replyTargetComment.value?.id)
     const isReplyComment = Boolean(replyParentId)
-    await Api.game.publishComment({
-      subjectId,
-      memberId,
-      memberRowId: Math.trunc(memberRowIdNumber),
-      content: commentContent,
-      root: isReplyComment ? '1' : '0',
-      parent: isReplyComment ? replyParentId : '0',
-      replyIndex: ''
-    })
+    await Api.game.publishComment(
+      {
+        subjectId,
+        memberId,
+        memberRowId: Math.trunc(memberRowIdNumber),
+        content: commentContent,
+        root: isReplyComment ? '1' : '0',
+        parent: isReplyComment ? replyParentId : '0',
+        replyIndex: ''
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     await requestCommentsList(subjectId)
     replyTargetComment.value = null
   } catch (error) {

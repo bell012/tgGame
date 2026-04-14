@@ -171,7 +171,13 @@ const readCachedAcctInfo = () => {
 
 const fetchAcctInfo = async () => {
   try {
-    const response = await Api.user.queryAcctInfo({})
+    const response = await Api.user.queryAcctInfo(
+      {},
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     if (response?.result) {
       acctInfo.value = response.result
       return
