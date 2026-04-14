@@ -1,6 +1,6 @@
 ﻿<template>
   <div
-    class="casino-page max-w-[1248px] mx-auto pt-2.5 sm:p-4 w-full font-['Inter'] px-3.5 sm:px-0"
+    class="casino-page max-w-[1248px] mx-auto px-3.5 py-3 sm:py-4 sm:px-3 w-full font-['Inter']"
     :style="mobileStyle"
   >
     <casinoSlideshow v-if="querySlideshowList.length > 0" :list="querySlideshowList" />
@@ -173,7 +173,7 @@ import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
-import type { QuerySlideshowItem } from '@/api/interface/home.interface'
+import type { QuerySlideshowItem, QuerySlideshowRequest } from '@/api/interface/home.interface'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
 import { useGameStore } from '@/stores/game'
 import { useLayoutStore } from '@/stores/layout'
@@ -367,7 +367,7 @@ const currentSlideshowColumnCode = computed(() => {
 
 const getQuerySlideshow = async () => {
   try {
-    const response = await Api.home.getQuerySlideshow({
+    const requestData: QuerySlideshowRequest = {
       languageCode: getStorageLanguageCode(String(locale.value)),
       param: {
         ColumnCode: currentSlideshowColumnCode.value
@@ -377,11 +377,12 @@ const getQuerySlideshow = async () => {
         current: 1,
         size: 10
       }
-    })
+    }
 
-    querySlideshowList.value = Array.isArray(response?.result?.records)
-      ? response.result.records
-      : []
+    const response = await Api.home.getQuerySlideshow(requestData)
+    const records = response?.result?.records
+
+    querySlideshowList.value = Array.isArray(records) ? records : []
   } catch (error) {
     console.error('getQuerySlideshow failed', error)
     querySlideshowList.value = []
@@ -394,7 +395,7 @@ const loadSuggestedGames = async () => {
     hot: 1,
     page: 1,
     pageSize: 12,
-    sortByOrderId: true
+    sortByHotOrderId: true
   })
 
   suggestedArr.value = [...new Set(hotGameResult.list.map(item => item.itemName?.trim() ?? ''))]
