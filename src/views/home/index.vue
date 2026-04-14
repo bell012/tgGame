@@ -14,7 +14,7 @@
         alt=""
         class="h-full w-full object-cover block sm:hidden"
       />
-      <!-- PC 背景：backImg 铺满 -->
+      <!-- PC 背景：backImg -->
       <SmartImage
         :src="backImg"
         alt=""
@@ -54,9 +54,9 @@
         </button>
       </div>
 
-      <!-- PC：backImg 上左侧垂直居中，避免 inset+max-w 导致错位 -->
+      <!-- PC：backImg-->
       <div
-        class="pointer-events-none absolute inset-0 z-10 hidden sm:flex sm:items-center sm:justify-start"
+        class="pointer-events-none absolute inset-0 z-10 max-sm:hidden sm:flex sm:items-center sm:justify-start"
       >
         <div
           class="pointer-events-auto flex w-full max-w-[min(26rem,calc(100%-2rem))] flex-col items-center gap-3 pl-4 pr-3 sm:pl-6 md:max-w-[28rem] md:pl-10 lg:max-w-[30rem] lg:pl-[13%]"
@@ -251,7 +251,7 @@
         <div
           class="relative z-10 flex h-full flex-col items-center justify-center lg:!flex-row-reverse"
         >
-          <div class="flex items-center justify-center hidden lg:!flex">
+          <div class="max-lg:hidden lg:flex lg:items-center lg:justify-center">
             <img class="-ml-1 w-6" :src="BTC" /><img class="-ml-1 w-6" :src="ETH" />
             <img class="-ml-1 w-6" :src="BNB" /><img class="-ml-1 w-6" :src="XRP" />
             <img class="-ml-1 w-6" :src="USDT" /><img class="-ml-1 w-6" :src="USDC" />
@@ -259,7 +259,7 @@
             <img class="-ml-1 w-6" :src="DOGE" /><img class="-ml-1 w-6" :src="MATIC" />
             <img class="-ml-1 w-6" :src="TRX" />
           </div>
-          <div class="flex items-center justify-center mx-auto gap-6 hidden sm:!flex">
+          <div class="max-sm:hidden sm:flex sm:items-center sm:justify-center mx-auto gap-6">
             <img class="w-14" :src="MAYA" />
             <img class="w-20" :src="GCASH" />
             <img class="w-14" :src="VISA" />
