@@ -40,7 +40,7 @@ import SmartImage from '@/components/common/SmartImage.vue'
 import {
   getCurrencySelectOptionsFromCache,
   type CurrencyOptionItem
-} from '../../common/currency-select-options'
+} from '@/components/common/currency-selector/currency-select-options'
 
 const isMobile = useIsMobile()
 const visible = ref(false)

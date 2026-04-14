@@ -348,7 +348,7 @@ import {
   type Locale,
   type LocaleOption
 } from '@/utils/locale'
-import { getCurrencyIconByCode } from '@/views/game/detail/common/currency-select-options'
+import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { showToast } from 'vant'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
