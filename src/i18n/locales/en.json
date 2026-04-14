@@ -120,18 +120,6 @@
     "transactionPasswordChangedSuccessfully": "Your transaction password has been changed successfully.",
     "delete": "Delete"
   },
-  "pwa": {
-    "offlineReady": "App ready to work offline",
-    "offlineMessage": "App cached and ready to work offline",
-    "newContent": "New content available",
-    "updateMessage": "New version available, click to reload and update",
-    "reload": "Reload",
-    "close": "Close",
-    "installTitle": "Install App",
-    "installMessage": "Add app to home screen for a better experience",
-    "install": "Install Now",
-    "later": "Maybe Later"
-  },
   "theme": {
     "toggle": "Toggle Theme",
     "light": "Light Mode",
