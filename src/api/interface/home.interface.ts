@@ -63,7 +63,7 @@ export interface QuerySlideshowParam {
 export interface QuerySlideshowRequest {
   languageCode?: string
   param?: QuerySlideshowParam
-  channelId: string
+  channelId: string // 1：竖版 2：横版  3：PC   4：H5
   page: QuerySlideshowPageRequest
 }
 

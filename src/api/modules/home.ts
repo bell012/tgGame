@@ -46,8 +46,8 @@ export function getQuerySlideshow(data: QuerySlideshowRequest): Promise<QuerySli
     url: '/ac/querySlideshow',
     method: 'post',
     data,
-    showSuccessToast: true,
-    showErrorToast: true
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
