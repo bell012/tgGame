@@ -1,8 +1,8 @@
 <template>
   <!-- 顶部搜索 -->
-  <div class="relative bg-[var(--color-background-level-1)]">
+  <div class="relative">
     <div
-      class="border border-solid text-[14px] border-opacity-10 rounded-md h-[40px] flex items-center justify-between p-[8px] cursor-pointer"
+      class="select-trigger border border-solid text-[14px] border-opacity-10 rounded-md h-[40px] flex items-center justify-between p-[8px] cursor-pointer"
       @click="visible = true"
     >
       <div class="flex gap-[10px]">
@@ -22,7 +22,7 @@
         <!-- 无国家图标 -->
         <div v-else>{{ inputText }}</div>
       </div>
-      <div class="bg-[var(--color-background-level-2)] rounded-md">
+      <div class="trigger-arrow-bg bg-[var(--color-background-level-2)] rounded-md">
         <div class="icon size-4 transition-all -rotate-90">
           <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -117,5 +117,15 @@ const handleConfirm = (data: OptionItem) => {
   height: 24px;
   padding: 4px;
   fill: currentColor;
+}
+
+@media (max-width: 767px) {
+  .select-trigger {
+    background: var(--color-background-level-3);
+  }
+
+  .trigger-arrow-bg {
+    background: var(--color-opacity-10);
+  }
 }
 </style>

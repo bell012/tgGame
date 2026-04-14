@@ -1,37 +1,39 @@
 <template>
   <div class="search-container">
-    <!-- 搜索框-->
-    <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
-    <!-- 顶部tab切换 -->
-    <top-tab
-      v-if="currentType === 'casino' || currentType === 'sports'"
-      :tab-list="topTabList"
-      @change="topTabChange"
-    />
-    <!-- 筛选条件 -->
-    <div class="grid lg:grid-cols-4 grid-cols-2 gap-4" v-if="currentType === 'casino'">
-      <select-popup
-        :label="t('search.sort')"
-        v-model="currentSort"
-        :dataList="sortList"
-        @change="sortChange"
+    <div :class="{ 'search-filter-panel': isMobile }">
+      <!-- 搜索框-->
+      <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
+      <!-- 顶部tab切换 -->
+      <top-tab
+        v-if="currentType === 'casino' || currentType === 'sports'"
+        :tab-list="topTabList"
+        @change="topTabChange"
       />
-      <multiple-select-popup
-        :label="t('search.providers')"
-        v-model="currentProvider"
-        :dataList="providerOptions"
-        @change="providerChange"
-      />
-    </div>
-    <!-- 国家 -->
-    <div class="w-full mt-[12px]">
-      <select-popup
-        v-if="currentType === 'lottery'"
-        v-model="currentCountry"
-        :dataList="countryOptions"
-        @change="countryChange"
-        country-image
-      />
+      <!-- 筛选条件 -->
+      <div class="grid lg:grid-cols-4 grid-cols-2 lg:gap-4 gap-2.5" v-if="currentType === 'casino'">
+        <select-popup
+          :label="t('search.sort')"
+          v-model="currentSort"
+          :dataList="sortList"
+          @change="sortChange"
+        />
+        <multiple-select-popup
+          :label="t('search.providers')"
+          v-model="currentProvider"
+          :dataList="providerOptions"
+          @change="providerChange"
+        />
+      </div>
+      <!-- 国家 -->
+      <div class="w-full mt-[12px]">
+        <select-popup
+          v-if="currentType === 'lottery'"
+          v-model="currentCountry"
+          :dataList="countryOptions"
+          @change="countryChange"
+          country-image
+        />
+      </div>
     </div>
     <!-- 列表采用动态组件渲染 -->
     <component :is="listCompMap[currentType]" />
@@ -41,6 +43,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, provide, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import TopInput from './top-input/index.vue'
 import TopTab from './top-tab/index.vue'
 import SelectPopup from './select-popup/index.vue'
@@ -55,6 +58,7 @@ import { countryList } from '@/components/explore/mock/index.ts'
 
 const themeStore = useThemeStore()
 const { t } = useI18n()
+const isMobile = useIsMobile()
 
 const listCompMap = {
   casino: Casino,
@@ -253,6 +257,16 @@ onMounted(() => {
 @media (max-width: 767px) {
   .search-container {
     padding-top: 60px;
+  }
+
+  .search-filter-panel {
+    background: var(--color-background-level-1);
+    margin-left: -12px;
+    margin-right: -12px;
+    padding: 10px 12px 12px;
+    border-top: 1px solid var(--color-opacity-10);
+    border-bottom: 1px solid var(--color-opacity-10);
+    margin-bottom: 12px;
   }
 }
 </style>
