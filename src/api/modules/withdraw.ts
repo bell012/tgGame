@@ -35,7 +35,7 @@ export function queryWithdrawManager(
     url: '/with/queryWithdrawManager',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -50,7 +50,7 @@ export function selectMemberCard(data?: SelectMemberCardForm): Promise<SelectMem
     url: '/mc/selectMemberCard',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -65,7 +65,7 @@ export function addMemberCard(data: AddMemberCardForm): Promise<AddMemberCardRes
     url: '/mc/addMemberCard',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -80,7 +80,7 @@ export function modifyDefaultCard(data: ModifyDefaultCardForm): Promise<ModifyDe
     url: '/mc/modifyDefaultCard',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -95,7 +95,7 @@ export function delMemberCard(data: DelMemberCardForm): Promise<DelMemberCardRes
     url: '/mc/delMemberCard',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -110,7 +110,7 @@ export function queryFastAmount(params: QueryFastAmountForm): Promise<QueryFastA
     url: '/qa/getBonusLimitList',
     method: 'get',
     params,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -174,7 +174,7 @@ export function queryWithdrawOrderList(
     url: '/bosu/queryNewWithdrawOrderList',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -191,7 +191,7 @@ export function queryTheWithdrawOrder(
     url: '/bosu/queryTheWithdrawOrder',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
