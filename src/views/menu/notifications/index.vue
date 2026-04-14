@@ -4,7 +4,7 @@
     :class="
       props.panelMode
         ? 'notification-list-page h-full bg-bg-1'
-        : 'notification-list-page min-h-screen bg-bg-1 -mx-[14px] sm:mx-auto sm:max-w-[420px]'
+        : 'notification-list-page fixed inset-0 z-[60] overflow-y-auto bg-bg-1'
     "
   >
     <!-- 通知列表容器 -->
@@ -12,7 +12,7 @@
       :class="
         props.panelMode
           ? 'notifications-shell flex h-full min-h-0 flex-col bg-bg-1'
-          : 'notifications-shell min-h-screen bg-bg-1'
+          : 'notifications-shell min-h-screen bg-bg-1 sm:mx-auto sm:max-w-[420px]'
       "
       style="font-family: Inter, avertastd, sans-serif"
     >
@@ -33,7 +33,7 @@
         :class="
           props.panelMode
             ? 'page-body min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-3'
-            : 'page-body mt-[14px] px-[14px] pb-[calc(env(safe-area-inset-bottom)+74px)]'
+            : 'page-body px-[14px] pb-[calc(env(safe-area-inset-bottom)+74px)] pt-[14px]'
         "
       >
         <!-- 通知分类导航 -->
@@ -124,6 +124,7 @@
             <template v-else>
               <!-- 普通通知点击区域 -->
               <div class="cursor-pointer" @click="openNotificationDetail(item)">
+                <!-- 普通通知标题区域 -->
                 <div class="notice-title-row flex items-center gap-[7px]">
                   <h2
                     class="notice-title min-w-0 break-words text-[14px] font-[700] leading-[1.25] text-text-1"
@@ -439,6 +440,7 @@ import delIcon from '@/static/svg/del.svg?component'
 import markReadIcon from '@/static/svg/mark-read-icon.svg?component'
 
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+import { useAuthModalStore } from '@/stores/authModal'
 import { getLanguageCode } from '@/utils/locale'
 import { formatNotificationTime } from '@/utils/notification'
 import {
@@ -452,10 +454,17 @@ import { navigateTo } from '@/utils/router'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+// 通知分类类型。
 type NotificationCategory = 'promotions' | 'transactions' | 'system'
-const PAGE_SIZE = 10
+// 通知分类常量列表，统一用于遍历所有通知 tab。
+const NOTIFICATION_CATEGORIES: NotificationCategory[] = ['promotions', 'transactions', 'system']
+// 通知列表单次分页拉取数量。
+const PAGE_SIZE = 100
+// 通知详情数据在 sessionStorage 中的缓存键。
 const NOTIFICATION_DETAIL_STORAGE_KEY = 'menuNotificationDetail'
+// 通知列表状态在 sessionStorage 中的缓存键。
 const NOTIFICATION_LIST_STATE_STORAGE_KEY = 'menuNotificationListState'
+// 通知列表恢复标记在 sessionStorage 中的缓存键。
 const NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY = 'menuNotificationListRestoreFlag'
 
 interface NotificationItem extends NoticeRecord {
@@ -477,13 +486,6 @@ interface NotificationListState {
   categories: Record<NotificationCategory, NotificationCategoryState>
 }
 
-interface LegacyNotificationListState {
-  activeTab: NotificationCategory
-  showUnreadOnly: boolean
-  notifications: NotificationItem[]
-  loadedCategories: NotificationCategory[]
-}
-
 const props = withDefaults(
   defineProps<{
     panelMode?: boolean
@@ -498,6 +500,9 @@ const emit = defineEmits<{
   close: []
 }>()
 
+// 登录弹窗状态管理。
+const authModalStore = useAuthModalStore()
+// 当前页面的国际化方法。
 const { t } = useI18n()
 
 // 生成顶部分类 tabs 数据。
@@ -573,7 +578,7 @@ const isNotificationCategoryState = (value: unknown): value is NotificationCateg
   )
 }
 
-// 判断值是否为新版通知列表缓存结构。
+// 判断值是否为当前通知列表缓存结构。
 const isNotificationListState = (value: unknown): value is NotificationListState => {
   if (!value || typeof value !== 'object') {
     return false
@@ -595,56 +600,6 @@ const isNotificationListState = (value: unknown): value is NotificationListState
   )
 }
 
-// 判断值是否为旧版通知列表缓存结构。
-const isLegacyNotificationListState = (value: unknown): value is LegacyNotificationListState => {
-  if (!value || typeof value !== 'object') {
-    return false
-  }
-
-  const state = value as Partial<LegacyNotificationListState>
-  return (
-    isNotificationCategory(state.activeTab) &&
-    typeof state.showUnreadOnly === 'boolean' &&
-    Array.isArray(state.notifications) &&
-    Array.isArray(state.loadedCategories) &&
-    state.loadedCategories.every(category => isNotificationCategory(category))
-  )
-}
-
-// 将旧版分类缓存推断为当前使用的分类状态。
-const inferLegacyCategoryState = (
-  items: NotificationItem[],
-  loaded: boolean
-): NotificationCategoryState => {
-  const itemCount = items.length
-  const finished = loaded && itemCount < PAGE_SIZE
-
-  return {
-    items,
-    nextPage: loaded ? Math.floor(itemCount / PAGE_SIZE) + 1 : 1,
-    finished,
-    total: loaded ? itemCount : null,
-    loaded
-  }
-}
-
-// 将旧版通知列表缓存转换为新版分类结构。
-const convertLegacyState = (
-  state: LegacyNotificationListState
-): Record<NotificationCategory, NotificationCategoryState> => {
-  const nextCategories = createDefaultCategoryStates()
-
-  ;(['promotions', 'transactions', 'system'] as NotificationCategory[]).forEach(category => {
-    const categoryItems = state.notifications.filter(item => item.category === category)
-    nextCategories[category] = inferLegacyCategoryState(
-      categoryItems,
-      state.loadedCategories.includes(category)
-    )
-  })
-
-  return nextCategories
-}
-
 // 从 sessionStorage 恢复通知列表缓存状态。
 const restoreNotificationListState = (): NotificationListState | null => {
   const rawValue = sessionStorage.getItem(NOTIFICATION_LIST_STATE_STORAGE_KEY)
@@ -660,14 +615,6 @@ const restoreNotificationListState = (): NotificationListState | null => {
         activeTab: parsedValue.activeTab,
         showUnreadOnly: parsedValue.showUnreadOnly,
         categories: cloneCategoryStates(parsedValue.categories)
-      }
-    }
-
-    if (isLegacyNotificationListState(parsedValue)) {
-      return {
-        activeTab: parsedValue.activeTab,
-        showUnreadOnly: parsedValue.showUnreadOnly,
-        categories: convertLegacyState(parsedValue)
       }
     }
 
@@ -727,9 +674,7 @@ const mergeCategoryItems = (current: NotificationItem[], incoming: NotificationI
 
 // 聚合所有分类通知，供未读数量统计使用。
 const notifications = computed(() =>
-  (['promotions', 'transactions', 'system'] as NotificationCategory[]).flatMap(
-    category => categoryStates.value[category].items
-  )
+  NOTIFICATION_CATEGORIES.flatMap(category => categoryStates.value[category].items)
 )
 
 // 按分类统计未读数量，用于顶部 tab 徽标显示。
@@ -876,12 +821,13 @@ const mapRecordToNotification = (
   category: NotificationCategory
 ): NotificationItem => {
   const normalizedIsImage = normalizeIsImage(Number(record.isImage))
+
   return {
     ...record,
     isImage: normalizedIsImage,
     category,
     msgType: record.msgType || category,
-    read: false
+    read: Number(record.readStatus) === 1
   }
 }
 
@@ -910,7 +856,7 @@ const applyNotificationCache = (items: NotificationItem[]) => {
     .filter(item => !deletedIds.has(item.rowId))
     .map(item => ({
       ...item,
-      read: readIds.has(item.rowId)
+      read: item.read || readIds.has(item.rowId)
     }))
 }
 
@@ -929,6 +875,12 @@ const persistNotificationListState = () => {
 const clearNotificationListState = () => {
   sessionStorage.removeItem(NOTIFICATION_LIST_STATE_STORAGE_KEY)
   sessionStorage.removeItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY)
+}
+
+// 为离开通知列表的同 tab 跳转保存恢复现场。
+const prepareNotificationListRestore = () => {
+  persistNotificationListState()
+  sessionStorage.setItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY, '1')
 }
 
 // 请求指定分类的通知分页数据。
@@ -1025,8 +977,9 @@ const prefetchCategoryBadge = async (category: NotificationCategory) => {
 
 // 初始化通知分类数据。
 const initializeNotificationCategories = () => {
-  void prefetchCategoryBadge('promotions')
-  void prefetchCategoryBadge('system')
+  NOTIFICATION_CATEGORIES.forEach(category => {
+    void prefetchCategoryBadge(category)
+  })
 }
 
 // 删除单条通知（通过 rowId + category 定位）。
@@ -1053,42 +1006,8 @@ const handlePanelClose = () => {
   emit('close')
 }
 
-// 打开通知详情页，并同步更新当前列表中的已读状态。
-// TODO：后续可能细分跳转逻辑
-// if (jumpType == 1) {
-//   // URL跳转
-//   if (linkType == 0) {
-//     // 不跳转
-//   } else if (linkType == 1) {
-//     // 内部URL跳转
-//     // H5/PC：嵌套打开
-//     // APP：应用内打开
-//     // 目标地址看 linkUrl
-//   } else if (linkType == 2) {
-//     // 外部URL跳转
-//     // H5/PC：新窗口
-//     // APP：浏览器打开
-//     // 目标地址看 linkUrl
-//   }
-// } else if (jumpType == 2) {
-//   // 内部页面跳转
-//   if (linkType == 1) {
-//     // 活动
-//   } else if (linkType == 2) {
-//     // 充值栏目
-//   } else if (linkType == 3) {
-//     // 分享转盘
-//   } else if (linkType == 4) {
-//     // 充值页面
-//   } else if (linkType == 5) {
-//     // 积分转盘
-//   }
-//   // 具体参数可能也看 linkUrl
-// } else if (jumpType == 3) {
-//   // 跳转游戏
-//   // 具体目标可能看 linkUrl
-// }
-const openNotificationDetail = (item: NotificationItem) => {
+// 将通知标记为已读，并同步本地列表状态。
+const markNotificationAsReadInState = (item: NotificationItem) => {
   markNotificationAsRead(item.rowId)
   updateCategoryState(item.category, state => ({
     ...state,
@@ -1096,14 +1015,16 @@ const openNotificationDetail = (item: NotificationItem) => {
       notification.rowId === item.rowId ? { ...notification, read: true } : notification
     )
   }))
+}
 
+// 打开通知详情页。
+const openNotificationDetailPage = (item: NotificationItem) => {
   if (props.panelMode) {
     emit('open-detail', item)
     return
   }
 
-  persistNotificationListState()
-  sessionStorage.setItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY, '1')
+  prepareNotificationListRestore()
   sessionStorage.setItem(NOTIFICATION_DETAIL_STORAGE_KEY, JSON.stringify(item))
   navigateTo('/menu/notifications/detail', {
     query: {
@@ -1111,6 +1032,179 @@ const openNotificationDetail = (item: NotificationItem) => {
       category: item.category
     }
   })
+}
+
+// 将 jumpType 规整为数字，值含义：
+// 0 不跳转
+// 1 URL 跳转
+// 2 跳转内部页面
+// 3 跳转游戏
+const getNormalizedJumpType = (value: number | undefined) => Number(value) || 0
+
+// 将 linkType 规整为数字。
+// jumpType = 1 时：0 不跳转、1 内部 URL、2 外部 URL。
+// jumpType = 2 时：0 不跳转、1 活动、2 充值栏目、3 分享转盘、4 充值页面、5 积分转盘、6 邀请好友、7 登录注册页。
+const getNormalizedLinkType = (value: number | undefined) => Number(value) || 0
+
+// 将 linkUrl 规整为去除首尾空白的字符串。
+const getNormalizedLinkUrl = (value: string | undefined) => String(value ?? '').trim()
+
+// 判断链接是否为 http/https 绝对地址。
+const isAbsoluteHttpUrl = (value: string) => /^https?:\/\//i.test(value)
+
+// 判断链接是否为项目内部可识别的路由路径。
+const isInternalRoutePath = (value: string) =>
+  /^\/?[A-Za-z0-9/_-]+(?:\?[A-Za-z0-9\-._~%!$&'()*+,;=:@/?]*)?(?:#[^\s]*)?$/.test(value)
+
+// 判断通知是否配置了列表页直接跳转行为。
+const isJumpNotification = (item: NotificationItem) => {
+  // jumpType：0 不跳转、1 URL 跳转、2 跳转内部页面、3 跳转游戏。
+  const jumpType = getNormalizedJumpType(item.jumpType)
+  // linkType：在不同 jumpType 下代表不同子类型，具体含义见上方注释。
+  const linkType = getNormalizedLinkType(item.linkType)
+  const linkUrl = getNormalizedLinkUrl(item.linkUrl)
+
+  if (jumpType === 1) {
+    return (linkType === 1 || linkType === 2) && Boolean(linkUrl)
+  }
+
+  if (jumpType === 2) {
+    return linkType > 0 || Boolean(linkUrl)
+  }
+
+  if (jumpType === 3) {
+    return Boolean(linkUrl)
+  }
+
+  return false
+}
+
+// 处理通知配置的内部 URL 跳转。
+const openNotificationInternalUrl = (linkUrl: string) => {
+  if (!linkUrl) {
+    return false
+  }
+
+  if (isAbsoluteHttpUrl(linkUrl)) {
+    prepareNotificationListRestore()
+    window.open(linkUrl, '_self')
+    return true
+  }
+
+  if (!isInternalRoutePath(linkUrl)) {
+    return false
+  }
+
+  prepareNotificationListRestore()
+  navigateTo(linkUrl)
+  return true
+}
+
+// 处理“跳转内部页面”类型的通知点击。
+const handleInternalPageJump = (item: NotificationItem) => {
+  // linkType：1 活动、2 充值栏目、3 分享转盘、4 充值页面、5 积分转盘、6 邀请好友、7 登录注册页。
+  const linkType = getNormalizedLinkType(item.linkType)
+  const linkUrl = getNormalizedLinkUrl(item.linkUrl)
+
+  if (openNotificationInternalUrl(linkUrl)) {
+    return true
+  }
+
+  if (linkType === 2 || linkType === 4) {
+    prepareNotificationListRestore()
+    navigateTo('/deposit')
+    return true
+  }
+
+  if (linkType === 6) {
+    prepareNotificationListRestore()
+    navigateTo('/menu/referral')
+    return true
+  }
+
+  if (linkType === 7) {
+    authModalStore.openLoginModal()
+    return true
+  }
+
+  return false
+}
+
+// 处理“跳转游戏”类型的通知点击。
+const handleGameJump = async (item: NotificationItem) => {
+  const [pgType, platformCode, gameCode] = getNormalizedLinkUrl(item.linkUrl)
+    .split('|')
+    .map(value => value.trim())
+
+  if (!pgType || !platformCode || !gameCode) {
+    console.warn('notification game jump payload invalid', item)
+    return false
+  }
+
+  prepareNotificationListRestore()
+
+  try {
+    const response = await Api.game.getloginPlatform({
+      pgType,
+      platformCode,
+      gameCode
+    })
+
+    const platformLink = String(response?.result?.platformLink ?? '').trim()
+    if (!platformLink) {
+      console.warn('notification game jump missing platformLink', response)
+      return false
+    }
+
+    window.open(platformLink, '_self')
+    return true
+  } catch (error) {
+    console.error('handleGameJump failed', error)
+    return false
+  }
+}
+
+// 点击通知：跳转型直接执行跳转，其余进入详情。
+const openNotificationDetail = async (item: NotificationItem) => {
+  markNotificationAsReadInState(item)
+
+  if (!isJumpNotification(item)) {
+    openNotificationDetailPage(item)
+    return
+  }
+
+  // jumpType：0 不跳转、1 URL 跳转、2 跳转内部页面、3 跳转游戏。
+  const jumpType = getNormalizedJumpType(item.jumpType)
+  // linkType：jumpType = 1 时表示 URL 类型；jumpType = 2 时表示内部页面类型。
+  const linkType = getNormalizedLinkType(item.linkType)
+  const linkUrl = getNormalizedLinkUrl(item.linkUrl)
+
+  if (jumpType === 1) {
+    if (linkType === 2 && isAbsoluteHttpUrl(linkUrl)) {
+      window.open(linkUrl, '_blank', 'noopener,noreferrer')
+      return
+    }
+
+    if (linkType === 1 && openNotificationInternalUrl(linkUrl)) {
+      return
+    }
+
+    console.warn('notification url jump skipped', item)
+    return
+  }
+
+  if (jumpType === 2) {
+    if (handleInternalPageJump(item)) {
+      return
+    }
+
+    console.warn('notification internal page jump skipped', item)
+    return
+  }
+
+  if (jumpType === 3) {
+    await handleGameJump(item)
+  }
 }
 
 // 关闭删除确认弹窗，并清空待删除项。
