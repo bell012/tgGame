@@ -44,7 +44,7 @@ export function getQuerySlideshow(data: QuerySlideshowRequest): Promise<QuerySli
     url: '/ac/querySlideshow',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -54,7 +54,7 @@ export function getGameBrandList(): Promise<any> {
   return request({
     url: '/gc/gameBrandList',
     method: 'post',
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
