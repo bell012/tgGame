@@ -1,5 +1,9 @@
 import request from '@/utils/request'
-import type { GameDataResponse } from '@/api/interface/home.interface'
+import type {
+  GameDataResponse,
+  QuerySlideshowRequest,
+  QuerySlideshowResponse
+} from '@/api/interface/home.interface'
 
 /**
  * 获取首页数据
@@ -29,7 +33,7 @@ export function getRecentBigWins(data: any): Promise<any> {
 }
 
 // 近期大奖
-export function getQuerySlideshow(data: any): Promise<any> {
+export function getQuerySlideshow(data: QuerySlideshowRequest): Promise<QuerySlideshowResponse> {
   return request({
     url: '/ac/querySlideshow',
     method: 'post',

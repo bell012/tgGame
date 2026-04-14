@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div ref="pageRootRef" class="w-full">
     <div class="my-2.5 w-full">
       <filterSheet
         :sortOptions="sortOptions"
@@ -73,7 +73,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
@@ -101,6 +101,7 @@ const emit = defineEmits<{
 }>()
 const { t } = useI18n()
 const gameStore = useGameStore()
+const pageRootRef = ref<HTMLElement | null>(null)
 
 const sortOptions = [
   { label: t('search.sortDefault'), value: 'default' },
@@ -161,6 +162,27 @@ const baseQueryKey = computed(() =>
   })
 )
 
+const getScrollParent = (element: HTMLElement | null) => {
+  if (!element || typeof window === 'undefined') {
+    return null
+  }
+
+  let parent = element.parentElement
+
+  while (parent) {
+    const { overflowY } = window.getComputedStyle(parent)
+    const isScrollable = ['auto', 'scroll', 'overlay'].includes(overflowY)
+
+    if (isScrollable && parent.scrollHeight > parent.clientHeight) {
+      return parent
+    }
+
+    parent = parent.parentElement
+  }
+
+  return null
+}
+
 const getBrandIcon = (item: GameBrandItem) => {
   const imagePath = item.banner || item.icon
   return imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
@@ -209,12 +231,38 @@ const handleProvider = (value: string[]) => {
   })
 }
 
+const scrollToFirstRow = async () => {
+  await nextTick()
+  const target = pageRootRef.value
+
+  if (!target || typeof window === 'undefined') {
+    return
+  }
+
+  const scrollParent = getScrollParent(target)
+
+  if (scrollParent) {
+    scrollParent.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+    return
+  }
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
+
 const goPrev = () => {
   page.value = Math.min(Math.max(1, page.value - 1), Math.max(1, totalPages.value))
+  void scrollToFirstRow()
 }
 
 const goNext = () => {
   page.value = Math.min(Math.max(1, page.value + 1), Math.max(1, totalPages.value))
+  void scrollToFirstRow()
 }
 
 const handleClick = (rowId?: string | number) => {
