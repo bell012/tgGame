@@ -40,7 +40,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-import { getCurrencyIconByCode } from '@/views/game/detail/common/currency-select-options'
+import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 
 const props = defineProps<{
   visible: boolean

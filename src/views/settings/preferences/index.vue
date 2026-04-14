@@ -261,7 +261,7 @@ import {
   type Locale,
   type LocaleOption
 } from '@/utils/locale'
-import { getCurrencyIconByCode } from '@/views/game/detail/common/currency-select-options'
+import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import H5Header from '@/components/common/H5Header.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
