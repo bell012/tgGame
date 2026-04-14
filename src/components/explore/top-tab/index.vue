@@ -1,9 +1,15 @@
 <template>
-  <div class="flex w-full justify-between overflow-x-auto scrollbar-none my-3.5 md:justify-start">
+  <div
+    class="flex w-full justify-between overflow-x-auto scrollbar-none my-2.5 md:my-3.5 md:justify-start"
+  >
     <div
       v-for="item in renderTabList"
       :key="item.sysGameTypeCode"
-      :class="{ 'bg-[var(--color-opacity-10)]': item.sysGameTypeCode === currentTabCode }"
+      :class="
+        item.sysGameTypeCode === currentTabCode
+          ? 'bg-[var(--color-background-level-2)] text-text-1'
+          : 'text-text-2'
+      "
       class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center cursor-pointer"
       @click="changeTab(item.sysGameTypeCode)"
     >

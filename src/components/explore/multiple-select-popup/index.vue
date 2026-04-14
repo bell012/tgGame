@@ -1,15 +1,15 @@
 <template>
   <!-- 顶部搜索 -->
-  <div class="relative bg-[var(--color-background-level-1)]">
+  <div class="relative">
     <div
-      class="border border-solid border-opacity-10 text-[14px] rounded-md h-[40px] flex items-center justify-between p-[8px] cursor-pointer"
+      class="select-trigger border border-solid border-opacity-10 text-[14px] rounded-md h-[40px] flex items-center justify-between p-[8px] cursor-pointer"
       @click="visible = true"
     >
       <div class="flex gap-[10px]">
         <div class="text-[var(--color-text-level-3)]">{{ label }}</div>
         <div>{{ inputText }}</div>
       </div>
-      <div class="bg-[var(--color-background-level-2)] rounded-md">
+      <div class="trigger-arrow-bg bg-[var(--color-background-level-2)] rounded-md">
         <div class="icon size-4 transition-all -rotate-90">
           <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -92,5 +92,15 @@ const handleConfirm = (data: string[]) => {
   height: 24px;
   padding: 4px;
   fill: currentColor;
+}
+
+@media (max-width: 767px) {
+  .select-trigger {
+    background: var(--color-background-level-3);
+  }
+
+  .trigger-arrow-bg {
+    background: var(--color-opacity-10);
+  }
 }
 </style>
