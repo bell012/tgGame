@@ -230,20 +230,17 @@ import TurntableIcon from '@/static/svg/login/turntable.svg?skipsvgo'
 import FreePerksIcon from '@/static/svg/login/free_perks.svg?skipsvgo'
 import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
-import loginHeadDarkImage from '@/static/img/home/login_h5_h.png'
-import loginHeadLightImage from '@/static/img/home/login_h5_b.png'
 import loginLogoImage from '@/static/img/home/logo.png'
-import { useThemeStore } from '@/stores/theme'
 import { resolveBackgroundImage } from '@/utils/image'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import ResetPasswordFormCore from './ResetPasswordFormCore.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const themeStore = useThemeStore()
 const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 interface Props {
   visible: boolean
+  backgroundImageUrl?: string
 }
 
 const props = defineProps<Props>()
@@ -255,9 +252,7 @@ const emit = defineEmits<{
 const showDrawer = ref(false)
 const resetPasswordFormRef = ref<InstanceType<typeof ResetPasswordFormCore> | null>(null)
 const loginHeadBackground = computed(() => {
-  const backgroundImage = themeStore.theme === 'light' ? loginHeadLightImage : loginHeadDarkImage
-
-  return resolveBackgroundImage(backgroundImage)
+  return resolveBackgroundImage(props.backgroundImageUrl || '')
 })
 
 watch(

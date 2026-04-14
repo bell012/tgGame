@@ -4,6 +4,7 @@
     v-if="isMobile"
     :visible="modelValue && !showResetPassword"
     :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
+    :background-image-url="mobileBackgroundImage"
     @update:visible="handleClose"
     @open-reset-password="openResetPassword"
   />
@@ -12,6 +13,7 @@
   <ResetPasswordMobile
     v-if="isMobile"
     :visible="showResetPassword"
+    :background-image-url="mobileBackgroundImage"
     @update:visible="handleResetPasswordClose"
   />
 
@@ -229,21 +231,45 @@ import LoginFormMobile from './LoginFormMobile.vue'
 import ResetPasswordMobile from './ResetPasswordMobile.vue'
 import ResetPasswordDesktop from './ResetPasswordDesktop.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { useThemeStore } from '@/stores/theme'
 import { useI18n } from 'vue-i18n'
 import loginLogoImage from '@/static/img/home/logo.png'
-import loginPcDark from '@/static/img/home/login_pc_h.png'
-import loginPcLight from '@/static/img/home/login_pc_b.png'
 import Api from '@/api'
+import { getLanguageCode } from '@/utils/locale'
 
 // 是否为移动端
 const isMobile = useIsMobile()
-const themeStore = useThemeStore()
 const { t } = useI18n()
 
-// 主题动态背景图
+const ABSOLUTE_IMAGE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
+const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
+const authBannerImageUrl = ref('')
+
+const resolveAuthBannerUrl = (value: unknown) => {
+  const imagePath = String(value ?? '').trim()
+
+  if (!imagePath) {
+    return ''
+  }
+
+  if (ABSOLUTE_IMAGE_URL_PATTERN.test(imagePath)) {
+    return imagePath
+  }
+
+  if (!gameImageBaseUrl) {
+    return imagePath
+  }
+
+  const normalizedImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`
+  return `${gameImageBaseUrl}${normalizedImagePath}`
+}
+
+// 登录/注册弹窗背景图
 const pcBackgroundImage = computed(() => {
-  return themeStore.theme === 'dark' ? loginPcDark : loginPcLight
+  return authBannerImageUrl.value
+})
+
+const mobileBackgroundImage = computed(() => {
+  return authBannerImageUrl.value
 })
 
 interface Props {
@@ -263,27 +289,37 @@ const activeTab = ref<'login' | 'register' | 'resetPassword'>(props.defaultTab)
 const showResetPassword = ref(false)
 const loginFormDesktopRef = ref<InstanceType<typeof LoginFormDesktop> | null>(null)
 
-watch(
-  () => props.modelValue,
-  async newVal => {
-    if (newVal) {
-      activeTab.value = props.defaultTab
-      showResetPassword.value = false
-      // 弹窗打开时请求登录注册配置
-      await fetchLoginAndRegisterSetting()
-      if (!isMobile.value) {
-        loginFormDesktopRef.value?.resetForm()
-      }
+watch([() => props.modelValue, () => isMobile.value], async ([newVal]) => {
+  if (newVal) {
+    activeTab.value = props.defaultTab
+    showResetPassword.value = false
+    await fetchAuthBannerImage()
+    if (!isMobile.value) {
+      loginFormDesktopRef.value?.resetForm()
     }
   }
-)
+})
 
-// 请求登录注册配置
-const fetchLoginAndRegisterSetting = async () => {
+// 请求登录/注册弹窗图片
+const fetchAuthBannerImage = async () => {
   try {
-    const response = await Api.auth.getLoginAndRegisterSetting({})
-    console.log('登录注册配置:', response)
+    const response = await Api.home.getQuerySlideshow({
+      languageCode: getLanguageCode(),
+      channelId: isMobile.value ? '4' : '3',
+      page: {
+        current: 1,
+        size: 10
+      }
+    })
+
+    const records = Array.isArray(response?.result?.records) ? response.result.records : []
+    authBannerImageUrl.value =
+      records
+        .filter(item => Number(item?.deploymentPath) === 5)
+        .map(item => resolveAuthBannerUrl(item?.url))
+        .find(Boolean) || ''
   } catch (error) {
+    authBannerImageUrl.value = ''
     console.error(error)
   }
 }

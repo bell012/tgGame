@@ -379,7 +379,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-// import ExternalIcon from '@/static/svg/login/external.svg?component'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
 import GiftIcon from '@/static/svg/login/gift.svg?skipsvgo'
@@ -388,21 +387,18 @@ import FreePerksIcon from '@/static/svg/login/free_perks.svg?skipsvgo'
 import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import CheckIcon from '@/static/svg/login/check.svg?skipsvgo'
-import loginHeadDarkImage from '@/static/img/home/login_h5_h.png'
-import loginHeadLightImage from '@/static/img/home/login_h5_b.png'
 import loginLogoImage from '@/static/img/home/logo.png'
-import { useThemeStore } from '@/stores/theme'
 import { resolveBackgroundImage } from '@/utils/image'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const themeStore = useThemeStore()
 const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 interface Props {
   visible: boolean
   defaultTab?: 'signin' | 'signup'
+  backgroundImageUrl?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -417,9 +413,7 @@ const emit = defineEmits<{
 const showDrawer = ref(false)
 const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
 const loginHeadBackground = computed(() => {
-  const backgroundImage = themeStore.theme === 'light' ? loginHeadLightImage : loginHeadDarkImage
-
-  return `${resolveBackgroundImage(backgroundImage)}`
+  return resolveBackgroundImage(props.backgroundImageUrl || '')
 })
 
 watch(
