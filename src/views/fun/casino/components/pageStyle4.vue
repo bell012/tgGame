@@ -47,7 +47,7 @@
         <!-- 总页码 -->
         <span
           class="flex items-center justify-center rounded-md px-2 py-2 text-xs font-bold leading-3 text-text-1"
-          >{{ totalPages }}</span
+          >{{ totalPages < 10 ? '0' + totalPages : totalPages }}</span
         >
       </div>
 

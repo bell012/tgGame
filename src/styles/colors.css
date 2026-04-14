@@ -142,7 +142,7 @@
   --color-common-60: rgba(255, 255, 255, 0.6);
 
   /* ========== 输入框色 (Input) - 浅色模式 ========== */
-  --color-input-level-1: rgba(0, 0, 0, 0.06);
+  --color-input-level-1: #ffffff;
   --color-input-level-2: #ffffff;
   --color-input-level-3: #ffffff;
 
