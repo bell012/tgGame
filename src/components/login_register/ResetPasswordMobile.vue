@@ -33,7 +33,7 @@
                 <div class="w-full relative h-50 box-content">
                   <div class="w-full z-10 p-4">
                     <div class="flex items-center justify-between">
-                      <SmartImage :src="loginLogoImage" alt="BC.GAME Logo" class="w-auto h-12" />
+                      <MainLogoIcon class="h-12 w-auto text-text-1" />
                       <button
                         class="w-7 h-7 bg-opacity-10 rounded-md flex items-center justify-center"
                         @click="handleClose"
@@ -230,7 +230,7 @@ import TurntableIcon from '@/static/svg/login/turntable.svg?skipsvgo'
 import FreePerksIcon from '@/static/svg/login/free_perks.svg?skipsvgo'
 import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
-import loginLogoImage from '@/static/img/home/logo.png'
+import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import { resolveBackgroundImage } from '@/utils/image'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import ResetPasswordFormCore from './ResetPasswordFormCore.vue'
