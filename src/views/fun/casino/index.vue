@@ -7,7 +7,7 @@
 
     <div
       ref="searchRef"
-      class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border border-opacity-10 bg-opacity-6 focus-within:border-theme-primary focus-within:ring-2 transition"
+      class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border border-input-2 bg-input-1 focus-within:border-theme-primary focus-within:ring-2 transition"
     >
       <img class="w-[18px] h-[18px]" src="/src/static/img/casino/search.webp" alt="search" />
       <input
