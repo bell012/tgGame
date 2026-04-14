@@ -5,7 +5,7 @@
       <header class="fixed top-0 left-0 right-0 z-50 h-14 bg-[#0d090699]">
         <div class="w-[1280px] h-14 mx-auto px-2 flex items-center justify-between">
           <div class="flex items-center">
-            <SmartImage :src="appLogoImage" alt="" class="w-44 h-auto cursor-pointer" />
+            <MainLogoIcon class="h-auto w-44 cursor-pointer text-text-1" />
           </div>
 
           <div class="flex items-center gap-3">
@@ -320,7 +320,7 @@
           <div class="p-8 footer">
             <div class="w-[1280px] mx-auto">
               <div class="flex items-start justify-between mb-8">
-                <SmartImage :src="appLogoImage" alt="" class="w-36 h-auto" />
+                <MainLogoIcon class="h-auto w-36 text-text-1" />
 
                 <div class="flex flex-col w-80">
                   <h3 class="text-sm font-[600] text-text-2 mb-4">Accepted Networks</h3>
@@ -539,7 +539,7 @@
           <footer class="mt-5 p-8 footer">
             <div class="w-full mx-auto">
               <div class="flex items-start justify-between mb-8">
-                <SmartImage :src="appLogoImage" alt="" class="w-36 h-auto" />
+                <MainLogoIcon class="h-auto w-36 text-text-1" />
               </div>
 
               <div class="mb-6 space-y-3">
@@ -590,7 +590,7 @@ import appDownloadActionIcon from '@/static/img/app-download/app_download_7.png'
 import arrowRight1Image from '@/static/img/app-download/arrow_right_1.png'
 import arrowRight2Image from '@/static/img/app-download/arrow_right_2.png'
 import arrowRight3Image from '@/static/img/app-download/arrow_right_3.png'
-import appLogoImage from '@/static/img/home/logo.png'
+import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import { navigateTo } from '@/utils/router'
 
 // 下载链接配置
