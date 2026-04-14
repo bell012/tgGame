@@ -27,13 +27,17 @@ import type {
  * @param data 空对象
  * @returns Promise<QueryAcctInfoResponse>
  */
-export function queryAcctInfo(data: QueryAcctInfoForm): Promise<QueryAcctInfoResponse> {
+export function queryAcctInfo(
+  data: QueryAcctInfoForm,
+  options?: ApiResponseToastOptions
+): Promise<QueryAcctInfoResponse> {
   return request({
     url: '/acct/queryAcctInfo',
     method: 'post',
     data,
     showSuccessToast: false,
-    showErrorToast: false
+    showErrorToast: false,
+    ...options
   })
 }
 

@@ -272,16 +272,22 @@ const fetchBetRecords = async () => {
   }
 
   try {
-    const res = await Api.game.getGameBetRecordList({
-      page: {
-        current: 1,
-        size: 100
+    const res = await Api.game.getGameBetRecordList(
+      {
+        page: {
+          current: 1,
+          size: 100
+        },
+        platformCode,
+        gameCode,
+        currency: currentRequestCurrency.value,
+        betType: currentBetType.value
       },
-      platformCode,
-      gameCode,
-      currency: currentRequestCurrency.value,
-      betType: currentBetType.value
-    })
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     const rawResult = res?.result
     const records = (rawResult as { records?: unknown } | undefined)?.records
     const recordList = Array.isArray(rawResult)
@@ -300,10 +306,16 @@ const fetchBetRecords = async () => {
 const fetchHighRollerRecords = async () => {
   try {
     const currency = currentRequestCurrency.value
-    const res = await Api.home.getRecentBigWins({
-      currency,
-      type: 2
-    })
+    const res = await Api.home.getRecentBigWins(
+      {
+        currency,
+        type: 2
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     const rawResult = res?.result
     const recordList = Array.isArray(rawResult) ? rawResult : []
     highRollerRows.value = recordList.map((item, index) =>
