@@ -373,6 +373,8 @@ const getQuerySlideshow = async () => {
         ColumnCode: currentSlideshowColumnCode.value
       },
       channelId: isMobile.value ? '4' : '3',
+      deploymentPath: 1,
+      requireLogin: isLoggedIn.value ? 1 : 0,
       page: {
         current: 1,
         size: 10
