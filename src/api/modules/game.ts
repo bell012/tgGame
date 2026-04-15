@@ -23,12 +23,13 @@ import type {
  * 获取游戏列表数据
  * @returns Promise<GameDataResponse>
  */
-export function getGameData(): Promise<GameDataResponse> {
+export function getGameData(options?: ApiResponseToastOptions): Promise<GameDataResponse> {
   return request({
     url: '/gc/queryGameListForApp',
     method: 'post',
     showSuccessToast: true,
-    showErrorToast: true
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -36,12 +37,13 @@ export function getGameData(): Promise<GameDataResponse> {
  * 获取自定义游戏类型
  * @returns Promise<GameTypeResponse>
  */
-export function getGameType(): Promise<GameTypeResponse> {
+export function getGameType(options?: ApiResponseToastOptions): Promise<GameTypeResponse> {
   return request({
     url: '/gc/getGameType',
     method: 'post',
-    showSuccessToast: false,
-    showErrorToast: true
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -49,12 +51,13 @@ export function getGameType(): Promise<GameTypeResponse> {
  * 获取游戏品牌列表数据
  * @returns Promise<GameBrandResponse>
  */
-export function getGameBrandData(): Promise<GameBrandResponse> {
+export function getGameBrandData(options?: ApiResponseToastOptions): Promise<GameBrandResponse> {
   return request({
     url: '/gc/gameBrandList',
     method: 'post',
     showSuccessToast: true,
-    showErrorToast: true
+    showErrorToast: true,
+    ...options
   })
 }
 
