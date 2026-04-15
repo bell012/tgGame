@@ -252,8 +252,20 @@ export const useGameStore = defineStore('game', () => {
   }
 
   /** 更新 store 中的品牌列表数据 */
+  const normalizeGameBrandData = (nextBrandData: GameBrandItem[]) => {
+    return [...nextBrandData]
+      .filter(item => item.enable === 1)
+      .sort((a, b) => {
+        const sortNumA = typeof a.sortNum === 'number' ? a.sortNum : Number.MAX_SAFE_INTEGER
+        const sortNumB = typeof b.sortNum === 'number' ? b.sortNum : Number.MAX_SAFE_INTEGER
+
+        return sortNumA - sortNumB
+      })
+  }
+
+  /** 更新 store 中的品牌列表数据 */
   const setGameBrandDataState = (nextBrandData: GameBrandItem[]) => {
-    brandData.value = nextBrandData
+    brandData.value = normalizeGameBrandData(nextBrandData)
     brandDataLanguageCode.value = currentLanguageCode.value
 
     return brandData.value
@@ -293,7 +305,9 @@ export const useGameStore = defineStore('game', () => {
 
     pendingRequest = (async () => {
       try {
-        const response = await Api.game.getGameData()
+        const response = await Api.game.getGameData({
+          showSuccessToast: false
+        })
         return setGameDataState(response?.result ?? [])
       } catch (error) {
         console.error('refreshGameData failed', error)
@@ -321,7 +335,9 @@ export const useGameStore = defineStore('game', () => {
 
     pendingBrandRequest = (async () => {
       try {
-        const response = await Api.game.getGameBrandData()
+        const response = await Api.game.getGameBrandData({
+          showSuccessToast: false
+        })
         return setGameBrandDataState(response?.result ?? [])
       } catch (error) {
         console.error('refreshGameBrandData failed', error)
@@ -349,7 +365,9 @@ export const useGameStore = defineStore('game', () => {
 
     pendingGameTypeRequest = (async () => {
       try {
-        const response = await Api.game.getGameType()
+        const response = await Api.game.getGameType({
+          showSuccessToast: false
+        })
         return setGameTypeDataState(response?.result ?? [])
       } catch (error) {
         console.error('refreshGameTypeData failed', error)
@@ -414,7 +432,7 @@ export const useGameStore = defineStore('game', () => {
         return records
       }
 
-      const sortDirection = options.sortDirection ?? 'desc'
+      const sortDirection = options.sortDirection ?? 'asc'
 
       return [...records].sort((a, b) => {
         if (options.sortByHotOrderId) {
@@ -422,7 +440,8 @@ export const useGameStore = defineStore('game', () => {
             typeof a.node.hotOrderId === 'number' ? a.node.hotOrderId : Number.MIN_SAFE_INTEGER
           const hotOrderB =
             typeof b.node.hotOrderId === 'number' ? b.node.hotOrderId : Number.MIN_SAFE_INTEGER
-          const hotOrderCompare = hotOrderB - hotOrderA
+          const hotOrderCompare =
+            sortDirection === 'desc' ? hotOrderB - hotOrderA : hotOrderA - hotOrderB
 
           if (hotOrderCompare !== 0) {
             return hotOrderCompare
