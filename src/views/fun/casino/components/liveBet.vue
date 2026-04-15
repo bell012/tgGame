@@ -62,7 +62,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 import Api from '@/api'
 import placeholderImg from '@/static/img/home/errImg.png'
-import { getCurrencyIconByCode } from '@/views/game/detail/common/currency-select-options'
+import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { getCurrentCurrency } from '@/utils/locale'
 
 interface LiveBetRow {

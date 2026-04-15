@@ -1,7 +1,7 @@
 <template>
   <div :class="feedbackPageContainerClass">
     <H5Header
-      title="意见反馈"
+      :title="t('personalCenter.feedback.pageTitle')"
       :show-back="!isEmbeddedMode"
       :disable-default-back="isEmbeddedMode"
       :fixed-top="!isEmbeddedMode"
@@ -70,6 +70,7 @@ import deleteIcon from '@/static/img/payment/upload_delete.png'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
+import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
 import { getCurrencySymbol } from '@/utils/locale'
 import {
@@ -77,11 +78,11 @@ import {
   FEEDBACK_CLAIM_SUCCESS_TARGET_AMOUNT,
   FEEDBACK_UPLOAD_MAX_COUNT,
   feedbackStatusClassMap,
-  feedbackStatusTextMap,
-  feedbackTypeOptions,
   formatFeedbackSubmitTime,
-  getFeedbackPlaceholderText,
+  getFeedbackStatusTextMap,
   getFeedbackTypeLabel,
+  getFeedbackTypeOptions,
+  getFeedbackPlaceholderText,
   getFeedbackUploadFileName,
   getUploadedFeedbackPath,
   normalizeFeedbackStatus
@@ -107,6 +108,7 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+const { t } = useI18n()
 
 // 页面基础状态
 const activeTab = ref<FeedbackTab>('create')
@@ -145,7 +147,8 @@ const claimAmountAnimationDuration = FEEDBACK_CLAIM_AMOUNT_ANIMATION_DURATION
 const claimSuccessAmount = ref(`${claimAmountCurrencySymbol}0.00`)
 let claimAmountAnimationFrame: number | null = null
 
-const placeholderText = computed(() => getFeedbackPlaceholderText(selectedType.value))
+const feedbackTypeOptions = computed(() => getFeedbackTypeOptions(t))
+const placeholderText = computed(() => getFeedbackPlaceholderText(selectedType.value, t))
 
 // 图片上传：维持原有上传逻辑与状态提示
 const feedbackImageAfterRead: UploaderAfterRead = async (items, detail) => {
@@ -163,7 +166,7 @@ const feedbackImageAfterRead: UploaderAfterRead = async (items, detail) => {
     }
 
     file.status = 'uploading'
-    file.message = '上传中...'
+    file.message = t('personalCenter.feedback.uploadStatus.uploading')
 
     try {
       const response = await Api.picture.upload({
@@ -172,22 +175,23 @@ const feedbackImageAfterRead: UploaderAfterRead = async (items, detail) => {
       })
 
       if (!response?.success) {
-        throw new Error(response?.message || '上传失败')
+        throw new Error(response?.message || t('personalCenter.feedback.toast.uploadFailed'))
       }
 
       const uploadedPath = getUploadedFeedbackPath(response.result)
       if (!uploadedPath) {
-        throw new Error(response?.message || '上传失败')
+        throw new Error(response?.message || t('personalCenter.feedback.toast.uploadFailed'))
       }
 
       uploadedFeedbackUrls.value[currentIndex] = uploadedPath
       file.status = 'done'
-      file.message = '上传成功'
+      file.message = t('personalCenter.feedback.uploadStatus.success')
     } catch (error) {
       file.status = 'failed'
-      file.message = '上传失败'
+      file.message = t('personalCenter.feedback.uploadStatus.failed')
       showToast({
-        message: error instanceof Error ? error.message : '上传失败',
+        message:
+          error instanceof Error ? error.message : t('personalCenter.feedback.toast.uploadFailed'),
         position: 'middle',
         type: 'fail'
       })
@@ -220,19 +224,31 @@ const handleSubmitFeedback = async () => {
 
   const feedbackType = String(selectedType.value ?? '').trim()
   if (!feedbackType) {
-    showToast({ message: '请选择反馈类型', position: 'middle', type: 'fail' })
+    showToast({
+      message: t('personalCenter.feedback.toast.selectFeedbackType'),
+      position: 'middle',
+      type: 'fail'
+    })
     return
   }
 
   const content = String(feedbackContent.value ?? '').trim()
   if (!content) {
-    showToast({ message: '请输入反馈内容', position: 'middle', type: 'fail' })
+    showToast({
+      message: t('personalCenter.feedback.toast.enterFeedbackContent'),
+      position: 'middle',
+      type: 'fail'
+    })
     return
   }
 
   const hasUploadingFile = feedbackFileList.value.some(file => file.status === 'uploading')
   if (hasUploadingFile) {
-    showToast({ message: '图片上传中，请稍后提交', position: 'middle', type: 'fail' })
+    showToast({
+      message: t('personalCenter.feedback.toast.imageUploading'),
+      position: 'middle',
+      type: 'fail'
+    })
     return
   }
 
@@ -245,11 +261,11 @@ const handleSubmitFeedback = async () => {
     })
 
     if (!response?.success) {
-      throw new Error(response?.message || '提交失败')
+      throw new Error(response?.message || t('personalCenter.feedback.toast.submitFailed'))
     }
 
     showToast({
-      message: '提交成功',
+      message: t('personalCenter.feedback.toast.submitSuccess'),
       position: 'middle',
       type: 'success',
       zIndex: 100100
@@ -257,7 +273,8 @@ const handleSubmitFeedback = async () => {
     resetCreateFeedbackForm()
   } catch (error) {
     showToast({
-      message: error instanceof Error ? error.message : '提交失败',
+      message:
+        error instanceof Error ? error.message : t('personalCenter.feedback.toast.submitFailed'),
       position: 'middle',
       type: 'fail'
     })
@@ -291,7 +308,9 @@ const fetchMyFeedbackList = async () => {
   try {
     const response = await Api.user.queryFeedbacks({})
     if (!response?.success) {
-      throw new Error(response?.message || '获取反馈列表失败')
+      throw new Error(
+        response?.message || t('personalCenter.feedback.toast.fetchFeedbackListFailed')
+      )
     }
 
     const responseList = Array.isArray(response.result) ? response.result : []
@@ -307,7 +326,7 @@ const fetchMyFeedbackList = async () => {
         status: normalizeFeedbackStatus(item?.status),
         showDot: false,
         submitTime: formatFeedbackSubmitTime(item?.createTime),
-        feedbackType: getFeedbackTypeLabel(item?.feedbackType),
+        feedbackType: getFeedbackTypeLabel(item?.feedbackType, t),
         screenshotImages: [],
         detailContent: String(item?.content ?? '').trim() || '--'
       }
@@ -316,7 +335,10 @@ const fetchMyFeedbackList = async () => {
     closeFeedbackDetailPopup()
     myFeedbackList.value = []
     showToast({
-      message: error instanceof Error ? error.message : '获取反馈列表失败',
+      message:
+        error instanceof Error
+          ? error.message
+          : t('personalCenter.feedback.toast.fetchFeedbackListFailed'),
       position: 'middle',
       type: 'fail'
     })
@@ -370,12 +392,12 @@ const handleReceiveAllFeedback = async () => {
   try {
     const response = await Api.user.receiveAllFeedback({})
     if (!response?.success) {
-      throw new Error(response?.message || '领取失败')
+      throw new Error(response?.message || t('personalCenter.feedback.toast.claimFailed'))
     }
 
     openClaimSuccessPopup()
     showToast({
-      message: '领取成功',
+      message: t('personalCenter.feedback.toast.claimSuccess'),
       position: 'middle',
       type: 'success',
       zIndex: 100100
@@ -383,7 +405,8 @@ const handleReceiveAllFeedback = async () => {
     void fetchMyFeedbackList()
   } catch (error) {
     showToast({
-      message: error instanceof Error ? error.message : '领取失败',
+      message:
+        error instanceof Error ? error.message : t('personalCenter.feedback.toast.claimFailed'),
       position: 'middle',
       type: 'fail'
     })
@@ -427,6 +450,6 @@ onBeforeUnmount(() => {
   stopClaimAmountAnimation()
 })
 
-const statusTextMap = feedbackStatusTextMap
 const statusClassMap = feedbackStatusClassMap
+const statusTextMap = computed(() => getFeedbackStatusTextMap(t))
 </script>

@@ -42,16 +42,11 @@ export const getCasinoQueryOptions = (
     case '':
     case 'providers':
       return undefined
-    case 'originals':
-      return {
-        ...baseOptions,
-        platformCode: 'JILI_DZ'
-      }
     case 'hot_games':
       return {
         ...baseOptions,
         hot: 1,
-        sortByOrderId: true
+        sortByHotOrderId: true
       }
     case 'favorites':
     case 'recent':
@@ -59,7 +54,7 @@ export const getCasinoQueryOptions = (
     default:
       return {
         ...baseOptions,
-        sysGameTypeCode: normalizedTabCode
+        gameTypeCode: normalizedTabCode
       }
   }
 }

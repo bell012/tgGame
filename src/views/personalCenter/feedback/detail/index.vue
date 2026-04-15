@@ -1,7 +1,7 @@
 <template>
   <div :class="feedbackDetailPageContainerClass">
     <H5Header
-      title="记录详情"
+      :title="t('personalCenter.feedback.detailTitle')"
       :disable-default-back="isEmbeddedMode"
       :fixed-top="!isEmbeddedMode"
       @back="handleDetailBack"
@@ -10,28 +10,30 @@
     <div class="px-3.5 pb-6 pt-3">
       <section class="rounded-[12px] bg-bg-2 p-3.5">
         <div class="feedback-detail-row">
-          <span>反馈编号</span>
+          <span>{{ t('personalCenter.feedback.detail.feedbackNo') }}</span>
           <span class="text-text-1">{{ feedbackDetail.ticketNo }}</span>
         </div>
 
         <div class="feedback-detail-row mt-2.5">
-          <span>处理状态</span>
+          <span>{{ t('personalCenter.feedback.detail.processingStatus') }}</span>
           <span class="font-[700]" :class="statusClassMap[feedbackDetail.status]">
             {{ statusTextMap[feedbackDetail.status] }}
           </span>
         </div>
 
         <div class="feedback-detail-row mt-2.5">
-          <span>提交时间</span>
+          <span>{{ t('personalCenter.feedback.detail.submitTime') }}</span>
           <span class="text-text-1">{{ feedbackDetail.submitTime }}</span>
         </div>
 
         <div class="feedback-detail-row mt-2.5">
-          <span>反馈类型</span>
+          <span>{{ t('personalCenter.feedback.detail.feedbackType') }}</span>
           <span class="text-text-1">{{ feedbackDetail.feedbackType }}</span>
         </div>
 
-        <div class="mt-2.5 text-[15px] text-text-2">反馈内容</div>
+        <div class="mt-2.5 text-[15px] text-text-2">
+          {{ t('personalCenter.feedback.detail.feedbackContent') }}
+        </div>
         <div class="mt-2 rounded-[8px] bg-bg-3 px-3 py-2.5 text-[15px] leading-[20px] text-text-2">
           {{ feedbackDetail.detailContent }}
         </div>
@@ -44,7 +46,11 @@
             class="feedback-screenshot-item overflow-hidden rounded-[8px] bg-bg-3"
             @click="openScreenshotPreview(index)"
           >
-            <img :src="image" :alt="`截图${index + 1}`" class="h-full w-full object-cover" />
+            <img
+              :src="image"
+              :alt="t('personalCenter.feedback.detail.screenshotAlt', { index: index + 1 })"
+              class="h-full w-full object-cover"
+            />
           </button>
         </div>
 
@@ -90,7 +96,11 @@
         </button>
 
         <div class="feedback-desktop-preview-image-wrap">
-          <img :src="currentPreviewImage" alt="预览图片" class="feedback-desktop-preview-image" />
+          <img
+            :src="currentPreviewImage"
+            :alt="t('personalCenter.feedback.detail.previewImageAlt')"
+            class="feedback-desktop-preview-image"
+          />
         </div>
 
         <button
@@ -115,12 +125,14 @@ import type { QueryFeedbackItem } from '@/api/interface/user'
 import {
   type FeedbackRecord,
   type FeedbackStatus,
-  feedbackDetailTemplates,
-  feedbackStatusClassMap,
-  feedbackStatusTextMap
+  getFeedbackDetailTemplates,
+  getFeedbackStatusTextMap,
+  getFeedbackTypeLabel,
+  feedbackStatusClassMap
 } from '@/views/personalCenter/feedback/consts'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { showImagePreview, showToast } from 'vant'
 
 const props = withDefaults(
@@ -139,6 +151,7 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const { t } = useI18n()
 const isEmbeddedMode = computed(() => Boolean(props.embedded))
 const feedbackDetailPageContainerClass = computed(() => {
   return isEmbeddedMode.value
@@ -198,20 +211,6 @@ const formatFeedbackSubmitTime = (value: unknown) => {
   return `${year}-${month}-${day} ${hour}:${minute}:${second}`
 }
 
-const getFeedbackTypeLabel = (value: unknown) => {
-  const normalizedValue = String(value ?? '').trim()
-  if (normalizedValue === '1') {
-    return '建议'
-  }
-  if (normalizedValue === '2') {
-    return '游戏异常'
-  }
-  if (normalizedValue === '3') {
-    return '充值问题'
-  }
-  return '其他'
-}
-
 const ABSOLUTE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
 const resolveFeedbackImageUrl = (value: unknown) => {
   const imagePath = String(value ?? '').trim()
@@ -233,8 +232,10 @@ const resolveFeedbackImageUrl = (value: unknown) => {
   return `${normalizedBaseUrl}${normalizedImagePath}`
 }
 
+const feedbackDetailTemplates = computed(() => getFeedbackDetailTemplates(t))
+
 const getTemplateRecordByStatus = (status: FeedbackStatus) => {
-  return feedbackDetailTemplates[status] ?? feedbackDetailTemplates.pending
+  return feedbackDetailTemplates.value[status] ?? feedbackDetailTemplates.value.pending
 }
 
 const mapFeedbackApiItemToDetail = (
@@ -257,7 +258,7 @@ const mapFeedbackApiItemToDetail = (
     ticketNo,
     status,
     submitTime: formatFeedbackSubmitTime(item?.createTime),
-    feedbackType: getFeedbackTypeLabel(item?.feedbackType),
+    feedbackType: getFeedbackTypeLabel(item?.feedbackType, t),
     detailContent,
     content: detailContent,
     screenshotImages
@@ -268,7 +269,7 @@ const feedbackDetail = computed(() => {
   return mapFeedbackApiItemToDetail(feedbackApiItem.value, currentRecordId.value)
 })
 
-const statusTextMap = feedbackStatusTextMap
+const statusTextMap = computed(() => getFeedbackStatusTextMap(t))
 const statusClassMap = feedbackStatusClassMap
 const showDesktopPreview = ref(false)
 const desktopPreviewIndex = ref(0)
@@ -291,7 +292,9 @@ const fetchFeedbackDetail = async (recordId: string) => {
   try {
     const response = await Api.user.queryFeedbacks({})
     if (!response?.success) {
-      throw new Error(response?.message || '获取反馈详情失败')
+      throw new Error(
+        response?.message || t('personalCenter.feedback.toast.fetchFeedbackDetailFailed')
+      )
     }
 
     const feedbackList = Array.isArray(response.result) ? response.result : []
@@ -300,7 +303,10 @@ const fetchFeedbackDetail = async (recordId: string) => {
   } catch (error) {
     feedbackApiItem.value = null
     showToast({
-      message: error instanceof Error ? error.message : '获取反馈详情失败',
+      message:
+        error instanceof Error
+          ? error.message
+          : t('personalCenter.feedback.toast.fetchFeedbackDetailFailed'),
       position: 'middle',
       type: 'fail'
     })

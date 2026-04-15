@@ -177,11 +177,6 @@ export function useWithdrawFiat() {
         const response = await Api.withdraw.addMemberCard(requestData)
 
         if (response?.code !== 'C2') {
-          showToast({
-            message: String(response?.message || 'Add account failed'),
-            type: 'fail',
-            duration: 3000
-          })
           return false
         }
 

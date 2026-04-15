@@ -348,7 +348,7 @@ import {
   type Locale,
   type LocaleOption
 } from '@/utils/locale'
-import { getCurrencyIconByCode } from '@/views/game/detail/common/currency-select-options'
+import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { showToast } from 'vant'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
@@ -364,7 +364,7 @@ import border2Image from '@/static/img/personalCenter/border_2.png'
 import border3Image from '@/static/img/personalCenter/border_3.png'
 import border4Image from '@/static/img/personalCenter/border_4.png'
 import border5Image from '@/static/img/personalCenter/border_5.png'
-import vipBG from '@/static/img/personalCenter/vigBG.png'
+import vipBG from '@/static/img/personalCenter/vigBG.webp'
 import vipLeft from '@/static/img/personalCenter/vip_left.png'
 import vipIcon from '@/static/img/personalCenter/vip.png'
 import vipRight from '@/static/img/personalCenter/vip_right.png'

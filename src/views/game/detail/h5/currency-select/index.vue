@@ -7,7 +7,7 @@
     >
       <div class="flex gap-[10px] min-w-0">
         <div v-if="selectedData" class="flex gap-[8px] items-center min-w-0">
-          <img alt="" :src="selectedData.icon" class="size-[24px] object-contain" />
+          <SmartImage alt="" :src="selectedData.icon" class="size-[24px] object-contain" />
           <div class="text-[14px] shrink-0">{{ selectedData.label }}</div>
           <div class="text-[14px] font-semibold truncate">({{ selectedBalanceText }})</div>
         </div>
@@ -36,10 +36,11 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useLocaleStore } from '@/stores/locale'
 import { storeToRefs } from 'pinia'
+import SmartImage from '@/components/common/SmartImage.vue'
 import {
   getCurrencySelectOptionsFromCache,
   type CurrencyOptionItem
-} from '../../common/currency-select-options'
+} from '@/components/common/currency-selector/currency-select-options'
 
 const isMobile = useIsMobile()
 const visible = ref(false)
@@ -172,7 +173,13 @@ const readCachedAcctInfo = () => {
 
 const fetchAcctInfo = async () => {
   try {
-    const response = await Api.user.queryAcctInfo({})
+    const response = await Api.user.queryAcctInfo(
+      {},
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     if (response?.result) {
       acctInfo.value = response.result
       return

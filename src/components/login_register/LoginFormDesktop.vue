@@ -86,7 +86,7 @@
             </div>
             <div class="mb-6">
               <div class="relative">
-                <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
+                <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
                 <!-- 请输入密码 -->
                 <input
                   :value="formData.signin.password"
@@ -100,8 +100,8 @@
                   class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                   @click="togglePassword('signin')"
                 >
-                  <EyeIcon v-if="!showPassword.signin" class="w-5 h-5 fill-none" />
-                  <EyeOffIcon v-else class="w-5 h-5 fill-none" />
+                  <EyeIcon v-if="!showPassword.signin" class="w-5 h-5 text-text-2" />
+                  <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
                 </button>
               </div>
             </div>
@@ -148,7 +148,10 @@
             </button>
 
             <!-- 以访客身份 -->
-            <div class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer">
+            <div
+              class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer"
+              @click="handleGuestContinue"
+            >
               {{ t('common.continue') }}
             </div>
           </template>
@@ -181,7 +184,7 @@
             </div>
             <div class="mb-6">
               <div class="relative">
-                <SafeIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
+                <SafeIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
                 <!-- 请输入验证码 -->
                 <input
                   :value="formData.signup.code"
@@ -210,7 +213,7 @@
             </div>
             <div class="mb-10">
               <div class="relative">
-                <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
+                <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
                 <!-- 请输入密码 -->
                 <input
                   :value="formData.signup.password"
@@ -224,8 +227,8 @@
                   class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                   @click="togglePassword('signup')"
                 >
-                  <EyeIcon v-if="!showPassword.signup" class="w-5 h-5 fill-none" />
-                  <EyeOffIcon v-else class="w-5 h-5 fill-none" />
+                  <EyeIcon v-if="!showPassword.signup" class="w-5 h-5 text-text-2" />
+                  <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
                 </button>
               </div>
             </div>
@@ -236,7 +239,7 @@
             </div>
             <div class="mb-6">
               <div class="relative">
-                <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
+                <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
                 <!-- 请输入确认密码 -->
                 <input
                   :value="formData.signup.confirmPassword"
@@ -250,8 +253,8 @@
                   class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                   @click="togglePassword('confirmPassword')"
                 >
-                  <EyeIcon v-if="!showPassword.confirmPassword" class="w-5 h-5 fill-none" />
-                  <EyeOffIcon v-else class="w-5 h-5 fill-none" />
+                  <EyeIcon v-if="!showPassword.confirmPassword" class="w-5 h-5 text-text-2" />
+                  <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
                 </button>
               </div>
             </div>
@@ -267,7 +270,10 @@
             </button>
 
             <!-- 以访客身份 -->
-            <div class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer">
+            <div
+              class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer"
+              @click="handleGuestContinue"
+            >
               {{ t('common.continue') }}
             </div>
           </template>
@@ -284,9 +290,9 @@
 import { ref, watch } from 'vue'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
-import SafeIcon from '@/static/svg/login/safe.svg?component'
-import PasswordIcon from '@/static/svg/login/password.svg?component'
-import CheckIcon from '@/static/svg/login/check.svg?component'
+import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
+import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
+import CheckIcon from '@/static/svg/login/check.svg?skipsvgo'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
 import { useI18n } from 'vue-i18n'
@@ -325,6 +331,13 @@ const handleRegisterSuccess = () => {
 const handleLoginSuccess = () => {
   emit('close')
   window.location.reload()
+}
+
+/**
+ * 以访客身份继续时关闭当前弹窗。
+ */
+const handleGuestContinue = () => {
+  emit('close')
 }
 
 const resetForm = () => {

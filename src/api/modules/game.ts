@@ -1,4 +1,4 @@
-import request from '@/utils/request'
+import request, { type ApiResponseToastOptions } from '@/utils/request'
 import type {
   GameBetRecordListResponse,
   GameStatisticsResponse,
@@ -15,7 +15,8 @@ import type {
   PublishCommentResponse,
   GameDetailResponse,
   GetGameRanListParams,
-  QueryGameDetailsParams
+  QueryGameDetailsParams,
+  GameTypeResponse
 } from '@/api/interface/game'
 
 /**
@@ -25,7 +26,22 @@ import type {
 export function getGameData(): Promise<GameDataResponse> {
   return request({
     url: '/gc/queryGameListForApp',
-    method: 'post'
+    method: 'post',
+    showSuccessToast: true,
+    showErrorToast: true
+  })
+}
+
+/**
+ * 获取自定义游戏类型
+ * @returns Promise<GameTypeResponse>
+ */
+export function getGameType(): Promise<GameTypeResponse> {
+  return request({
+    url: '/gc/getGameType',
+    method: 'post',
+    showSuccessToast: false,
+    showErrorToast: true
   })
 }
 
@@ -36,7 +52,9 @@ export function getGameData(): Promise<GameDataResponse> {
 export function getGameBrandData(): Promise<GameBrandResponse> {
   return request({
     url: '/gc/gameBrandList',
-    method: 'post'
+    method: 'post',
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -45,11 +63,17 @@ export function getGameBrandData(): Promise<GameBrandResponse> {
  * @param params rowId
  * @returns Promise<GameDetailResponse>
  */
-export function queryGameDetails(params: QueryGameDetailsParams): Promise<GameDetailResponse> {
+export function queryGameDetails(
+  params: QueryGameDetailsParams,
+  options?: ApiResponseToastOptions
+): Promise<GameDetailResponse> {
   return request({
     url: '/gc/queryGameDetails',
     method: 'get',
-    params
+    params,
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -58,11 +82,17 @@ export function queryGameDetails(params: QueryGameDetailsParams): Promise<GameDe
  * @param data itemCode, platformCode, type, currency
  * @returns Promise<GameRanListResponse>
  */
-export function getGameRanList(data: GetGameRanListParams): Promise<GameRanListResponse> {
+export function getGameRanList(
+  data: GetGameRanListParams,
+  options?: ApiResponseToastOptions
+): Promise<GameRanListResponse> {
   return request({
     url: '/gr/getGameRanList',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -72,12 +102,16 @@ export function getGameRanList(data: GetGameRanListParams): Promise<GameRanListR
  * @returns Promise<GameBetRecordListResponse>
  */
 export function getGameBetRecordList(
-  data: GetGameBetRecordListParams
+  data: GetGameBetRecordListParams,
+  options?: ApiResponseToastOptions
 ): Promise<GameBetRecordListResponse> {
   return request({
     url: '/special/getGameBetRecordList',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -86,11 +120,17 @@ export function getGameBetRecordList(
  * @param data itemCode, platformCode
  * @returns Promise<GameStatisticsResponse>
  */
-export function getGameStatistics(data: GetGameStatisticsParams): Promise<GameStatisticsResponse> {
+export function getGameStatistics(
+  data: GetGameStatisticsParams,
+  options?: ApiResponseToastOptions
+): Promise<GameStatisticsResponse> {
   return request({
     url: '/special/getGameStatistics',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -100,12 +140,16 @@ export function getGameStatistics(data: GetGameStatisticsParams): Promise<GameSt
  * @returns Promise<GameStatisticsResponse>
  */
 export function refreshGameStatistics(
-  data: GetGameStatisticsParams
+  data: GetGameStatisticsParams,
+  options?: ApiResponseToastOptions
 ): Promise<GameStatisticsResponse> {
   return request({
-    url: '/special/refreshCameStatistics',
+    url: '/special/refreshGameStatistics',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -113,7 +157,9 @@ export function getloginPlatform(data: any): Promise<any> {
   return request({
     url: '/gc/loginPlatform',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -123,12 +169,16 @@ export function getloginPlatform(data: any): Promise<any> {
  * @returns Promise<GameCommentSubjectResponse>
  */
 export function getCommentSubject(
-  data: GetCommentSubjectParams
+  data: GetCommentSubjectParams,
+  options?: ApiResponseToastOptions
 ): Promise<GameCommentSubjectResponse> {
   return request({
     url: '/comment/sub/getCommentSubject',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -137,11 +187,17 @@ export function getCommentSubject(
  * @param data subjectId, current, pageSize, memberRowId, root, parent
  * @returns Promise<GameCommentListResponse>
  */
-export function getCommentsList(data: GetCommentsListParams): Promise<GameCommentListResponse> {
+export function getCommentsList(
+  data: GetCommentsListParams,
+  options?: ApiResponseToastOptions
+): Promise<GameCommentListResponse> {
   return request({
     url: '/comment/sub/getCommentsList',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -150,10 +206,16 @@ export function getCommentsList(data: GetCommentsListParams): Promise<GameCommen
  * @param data subjectId, memberId, memberRowId, content, root, parent, replyIndex
  * @returns Promise<PublishCommentResponse>
  */
-export function publishComment(data: PublishCommentParams): Promise<PublishCommentResponse> {
+export function publishComment(
+  data: PublishCommentParams,
+  options?: ApiResponseToastOptions
+): Promise<PublishCommentResponse> {
   return request({
     url: '/comment/sub/publishComment',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }

@@ -1,8 +1,8 @@
 <template>
   <!-- 顶部搜索 -->
-  <div class="relative bg-[var(--color-background-level-1)]">
+  <div class="relative">
     <div
-      class="border border-solid text-[14px] border-opacity-10 rounded-md h-[40px] flex items-center justify-between p-[8px] cursor-pointer"
+      class="select-trigger border border-solid text-[14px] border-opacity-10 rounded-md h-[40px] flex items-center justify-between p-[8px] cursor-pointer"
       @click="visible = true"
     >
       <div class="flex gap-[10px]">
@@ -10,10 +10,10 @@
         <!-- 国家图标 --->
         <div class="flex items-center gap-[10px]" v-if="countryImage && modelValue">
           <section class="relative min-w-[16px] min-h-[16px] w-[16px] h-[16px] overflow-hidden">
-            <img
+            <SmartImage
               class="w-[16px] min-w-[16px] absolute"
               alt="countries"
-              src="@/static/img/explore/countries.png"
+              :src="countriesImg"
               :style="`top: -${getImageTop()}px`"
             />
           </section>
@@ -22,7 +22,7 @@
         <!-- 无国家图标 -->
         <div v-else>{{ inputText }}</div>
       </div>
-      <div class="bg-[var(--color-background-level-2)] rounded-md">
+      <div class="trigger-arrow-bg bg-[var(--color-background-level-2)] rounded-md">
         <div class="icon size-4 transition-all -rotate-90">
           <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -59,6 +59,8 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Popup from './popup.vue'
+import SmartImage from '@/components/common/SmartImage.vue'
+import countriesImg from '@/static/img/explore/countries.png'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { COUNTRIES } from '../consts'
 
@@ -115,5 +117,15 @@ const handleConfirm = (data: OptionItem) => {
   height: 24px;
   padding: 4px;
   fill: currentColor;
+}
+
+@media (max-width: 767px) {
+  .select-trigger {
+    background: var(--color-background-level-3);
+  }
+
+  .trigger-arrow-bg {
+    background: var(--color-opacity-10);
+  }
 }
 </style>

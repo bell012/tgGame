@@ -192,15 +192,6 @@ export const useChangeLoginPassword = () => {
         startCountdown()
         await focusVerificationInput()
       }
-
-      if (response?.message) {
-        showToast({
-          message: response.message,
-          duration: 2000,
-          wordBreak: 'break-word',
-          zIndex: 10030
-        })
-      }
     } catch (error) {
       console.error(error)
     } finally {
@@ -229,15 +220,6 @@ export const useChangeLoginPassword = () => {
         return
       }
 
-      if (response?.message) {
-        showToast({
-          message: response.message,
-          duration: 2000,
-          wordBreak: 'break-word',
-          zIndex: 10030
-        })
-      }
-
       verificationCode.value = ''
       await focusVerificationInput()
     } finally {
@@ -255,23 +237,19 @@ export const useChangeLoginPassword = () => {
 
     try {
       isUpdatingPassword.value = true
-      const response = await Api.user.modifyMemberInfo({
-        memberPwd: StringExtension.md5(newPassword.value)
-      })
+      const response = await Api.user.modifyMemberInfo(
+        {
+          memberPwd: StringExtension.md5(newPassword.value)
+        },
+        {
+          showErrorToast: true
+        }
+      )
 
       if (response?.code === 'C2') {
         resetChangeLoginPasswordState()
         await userStore.handleAuthExpired()
         return
-      }
-
-      if (response?.message) {
-        showToast({
-          message: response.message,
-          duration: 2000,
-          wordBreak: 'break-word',
-          zIndex: 10030
-        })
       }
     } catch (error) {
       console.error(error)

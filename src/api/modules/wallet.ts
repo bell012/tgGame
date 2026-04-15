@@ -31,7 +31,9 @@ export function queryDlicgh(data: QueryDlicghForm): Promise<QueryDlicghResponse>
   return request({
     url: '/sy/dlicgh',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -42,7 +44,9 @@ export function queryPayColumnPage(
   return request({
     url: '/pc/queryPayColumnPage',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -53,7 +57,9 @@ export function queryPayColumnWithSubList(
   return request({
     url: '/pc/queryPayColumnWithSubList',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -64,7 +70,9 @@ export function queryPaySubColumnPage(
   return request({
     url: '/pc/queryPaySubColumnPage',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -75,7 +83,9 @@ export function payRechargeQuickAmts(
   return request({
     url: '/pc/payRechargeQuickAmts',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -84,7 +94,9 @@ export function queryDiscountList(data: QueryDiscountListForm): Promise<QueryDis
   return request({
     url: '/rd/queryDiscountList',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -95,7 +107,9 @@ export function queryPayOrderByOrderId(
   return request({
     url: '/pc/queryPayOrderByOrderId',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -106,7 +120,9 @@ export function queryMemberPayOrderPage(
   return request({
     url: '/pc/queryMemberPayOrderPage',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
@@ -125,7 +141,9 @@ export function submitPayOrder(data: SubmitPayOrderPageForm): Promise<SubmitPayO
   return request({
     url: '/pc/submitPayOrder',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -136,7 +154,9 @@ export function cancelPayOrderStatus(
   return request({
     url: '/pc/cancelPayOrderStatus',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 
@@ -150,6 +170,8 @@ export function updatePayOrderRemark(
     data: {
       orderId: String(data.orderId),
       orderRemark: data.orderRemark
-    }
+    },
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }

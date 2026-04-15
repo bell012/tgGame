@@ -57,7 +57,7 @@
           {{ t('gameDetail.ratings', { count: ratingCount }) }}
         </div>
         <div class="flex justify-center items-center mt-[4px]">
-          <img
+          <SmartImage
             v-for="avatarIndex in avatarCount"
             :key="avatarIndex"
             alt=""
@@ -91,7 +91,7 @@
       </transition>
     </div>
     <div class="flex items-center gap-[10px] mt-[10px]">
-      <img alt="" :src="PersonIcon" class="size-[44px] rounded-[44px]" />
+      <SmartImage alt="" :src="PersonIcon" class="size-[44px] rounded-[44px]" />
       <div
         class="flex-1 flex h-[50px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[4px] px-[12px] cursor-pointer"
         @click="openCommentPopup"
@@ -99,7 +99,7 @@
         <div class="text-[12px] text-[var(--color-text-level-2)]">
           {{ t('gameDetail.leaveYourComment') }}
         </div>
-        <img alt="" :src="EmoIcon" class="size-[18px]" />
+        <SmartImage alt="" :src="EmoIcon" class="size-[18px]" />
       </div>
     </div>
 
@@ -134,13 +134,13 @@
       >
         <div class="flex justify-between">
           <div class="flex text-[12px] items-center gap-[8px]">
-            <img alt="" :src="comment.avatarUrl" class="size-[26px] rounded-[26px]" />
+            <SmartImage alt="" :src="comment.avatarUrl" class="size-[26px] rounded-[26px]" />
             <div class="text-[var(--color-text-level-2)]">{{ comment.memberName }}</div>
             <div class="text-[var(--color-text-level-3)]">{{ comment.timeText }}</div>
           </div>
           <div class="flex items-center gap-[10px]">
             <div>
-              <img
+              <SmartImage
                 alt=""
                 :src="CommentIcon"
                 class="size-[16px] cursor-pointer"
@@ -148,7 +148,7 @@
               />
             </div>
             <div class="relative">
-              <img
+              <SmartImage
                 alt=""
                 :src="ZanIcon"
                 class="size-[16px] cursor-pointer transition duration-200"
@@ -163,7 +163,7 @@
               </div>
             </div>
             <div class="relative">
-              <img
+              <SmartImage
                 alt=""
                 :src="UnzanIcon"
                 class="size-[16px] cursor-pointer transition duration-200"
@@ -194,13 +194,13 @@
             >
               <div class="flex justify-between">
                 <div class="flex text-[12px] items-center gap-[8px]">
-                  <img alt="" :src="child.avatarUrl" class="size-[26px] rounded-[26px]" />
+                  <SmartImage alt="" :src="child.avatarUrl" class="size-[26px] rounded-[26px]" />
                   <div class="text-[var(--color-text-level-2)]">{{ child.memberName }}</div>
                   <div class="text-[var(--color-text-level-3)]">{{ child.timeText }}</div>
                 </div>
                 <div class="flex items-center gap-[10px]">
                   <div class="relative">
-                    <img
+                    <SmartImage
                       alt=""
                       :src="ZanIcon"
                       class="size-[16px] cursor-pointer transition duration-200"
@@ -215,7 +215,7 @@
                     </div>
                   </div>
                   <div class="relative">
-                    <img
+                    <SmartImage
                       alt=""
                       :src="UnzanIcon"
                       class="size-[16px] cursor-pointer transition duration-200"
@@ -244,7 +244,7 @@
             @click="toggleChildrenVisible(comment)"
           >
             {{ comment.isChildrenExpanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}
-            <img
+            <SmartImage
               alt=""
               :src="comment.isChildrenExpanded ? ExpandUpDoubleIcon : ExpandDownDoubleIcon"
               class="w-[9px] h-[8px] opacity-85"
@@ -274,7 +274,7 @@ import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?ur
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?url'
 import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
-import PersonIcon from '@/static/svg/game/detail/comment/person.svg?url'
+import PersonIcon from '@/static/svg/game/detail/comment/person.webp?url'
 import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?url'
 import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?url'
 import { useThemeStore } from '@/stores/theme'
@@ -293,6 +293,7 @@ import { useRoute } from 'vue-router'
 import CommentPopup from './comment-popup.vue'
 import ProgressBar from './progress.vue'
 import Star from './star.vue'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 type CurrentGameDetail = {
   initScoreNum?: number | string
@@ -704,14 +705,20 @@ const requestCommentsList = async (subjectId: string) => {
   isCommentLoading.value = true
   try {
     const commentLikeCacheMap = getCommentLikeCacheMap()
-    const res = await Api.game.getCommentsList({
-      subjectId,
-      current: 1,
-      size: 100,
-      root: '0',
-      parent: '0',
-      memberRowId: validMemberRowId
-    })
+    const res = await Api.game.getCommentsList(
+      {
+        subjectId,
+        current: 1,
+        size: 100,
+        root: '0',
+        parent: '0',
+        memberRowId: validMemberRowId
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     const rootComments = parseCommentRecords(res?.result).map((item, index) =>
       mapCommentItem(item, index, 'root-comment', subjectId, commentLikeCacheMap)
     )
@@ -726,14 +733,20 @@ const requestCommentsList = async (subjectId: string) => {
         }
 
         try {
-          const childrenRes = await Api.game.getCommentsList({
-            subjectId,
-            current: 1,
-            size: 100,
-            parent: parentId,
-            root: null,
-            memberRowId: validMemberRowId
-          })
+          const childrenRes = await Api.game.getCommentsList(
+            {
+              subjectId,
+              current: 1,
+              size: 100,
+              parent: parentId,
+              root: null,
+              memberRowId: validMemberRowId
+            },
+            {
+              showSuccessToast: false,
+              showErrorToast: true
+            }
+          )
           item.children = parseCommentRecords(childrenRes?.result).map((childItem, childIndex) =>
             mapCommentItem(
               childItem,
@@ -767,10 +780,16 @@ const requestCommentSubject = async () => {
 
   try {
     const { memberRowId } = getAcctInfoFromStorage()
-    const res = await Api.game.getCommentSubject({
-      gameId,
-      memberRowId: memberRowId || undefined
-    })
+    const res = await Api.game.getCommentSubject(
+      {
+        gameId,
+        memberRowId: memberRowId || undefined
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     const result = res?.result
     commentSubjectId.value = normalizeQueryValue(result?.subjectId ?? result?.id ?? result?.rowId)
     await requestCommentsList(commentSubjectId.value)
@@ -896,15 +915,21 @@ const submitComment = async (content: string) => {
   try {
     const replyParentId = normalizeQueryValue(replyTargetComment.value?.id)
     const isReplyComment = Boolean(replyParentId)
-    await Api.game.publishComment({
-      subjectId,
-      memberId,
-      memberRowId: Math.trunc(memberRowIdNumber),
-      content: commentContent,
-      root: isReplyComment ? '1' : '0',
-      parent: isReplyComment ? replyParentId : '0',
-      replyIndex: ''
-    })
+    await Api.game.publishComment(
+      {
+        subjectId,
+        memberId,
+        memberRowId: Math.trunc(memberRowIdNumber),
+        content: commentContent,
+        root: isReplyComment ? '1' : '0',
+        parent: isReplyComment ? replyParentId : '0',
+        replyIndex: ''
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     await requestCommentsList(subjectId)
     replyTargetComment.value = null
   } catch (error) {

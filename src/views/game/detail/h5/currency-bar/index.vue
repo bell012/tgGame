@@ -1,26 +1,26 @@
 <template>
   <div class="bg-[var(--color-background-level-6)] p-[12px] rounded-b-[10px] relative">
     <div class="flex justify-between items-center">
-      <img
+      <SmartImage
         alt=""
         class="size-[16px] cursor-pointer"
         :src="LineIcon"
         @click="liveStateVisibleClick"
       />
       <div class="flex justify-end items-center gap-[10px] cursor-pointer">
-        <img
+        <SmartImage
           alt=""
           class="size-[16px]"
           :src="starActived ? StarActiveIcon : StarIcon"
           @click="toggleStar"
         />
-        <img
+        <SmartImage
           alt=""
           class="size-[16px]"
           :src="loveActived ? LoveActiveIcon : LoveIcon"
           @click="toggleLove"
         />
-        <img alt="" class="size-[16px]" :src="TgIcon" @click="shareVisibleClick" />
+        <SmartImage alt="" class="size-[16px]" :src="TgIcon" @click="shareVisibleClick" />
       </div>
     </div>
     <Teleport to="body" v-if="isMobile">
@@ -47,6 +47,7 @@ import { ref } from 'vue'
 import LiveStatePopup from './live-state-popup.vue'
 import SharePopup from './share-popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 const isMobile = useIsMobile()
 

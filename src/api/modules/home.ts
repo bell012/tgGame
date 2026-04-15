@@ -1,14 +1,21 @@
-import request from '@/utils/request'
-import type { GameDataResponse } from '@/api/interface/home.interface'
+import request, { type ApiResponseToastOptions } from '@/utils/request'
+import type {
+  GameDataResponse,
+  QuerySlideshowRequest,
+  QuerySlideshowResponse
+} from '@/api/interface/home.interface'
 
 /**
  * 获取首页数据
  * @returns Promise<any>
  */
-export function getGameData(): Promise<GameDataResponse> {
+export function getGameData(options?: ApiResponseToastOptions): Promise<GameDataResponse> {
   return request({
     url: '/gc/queryGameListForApp',
-    method: 'post'
+    method: 'post',
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
@@ -16,32 +23,41 @@ export function getGameData(): Promise<GameDataResponse> {
 export function getActivityType(): Promise<any> {
   return request({
     url: '/ac/queryGameListForApp',
-    method: 'post'
+    method: 'post',
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }
 // 近期大奖
-export function getRecentBigWins(data: any): Promise<any> {
+export function getRecentBigWins(data: any, options?: ApiResponseToastOptions): Promise<any> {
   return request({
     url: '/special/getRecentBigWins',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true,
+    ...options
   })
 }
 
 // 近期大奖
-export function getQuerySlideshow(data: any): Promise<any> {
+export function getQuerySlideshow(data: QuerySlideshowRequest): Promise<QuerySlideshowResponse> {
   return request({
     url: '/ac/querySlideshow',
     method: 'post',
-    data
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
 // 供应商 /gc/gameBrandList
-export function getGameBrandList(): Promise<any> {
+export function getGameBrandList(options?: ApiResponseToastOptions): Promise<any> {
   return request({
     url: '/gc/gameBrandList',
-    method: 'post'
+    method: 'post',
+    showSuccessToast: options?.showSuccessToast ?? false,
+    showErrorToast: options?.showErrorToast ?? true
   })
 }
 
@@ -50,6 +66,8 @@ export function dlicgh(data: any): Promise<any> {
   return request({
     url: '/sy/dlicgh',
     method: 'post',
-    data
+    data,
+    showSuccessToast: true,
+    showErrorToast: true
   })
 }

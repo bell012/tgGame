@@ -45,7 +45,7 @@
                   {{ t('gameDetail.profit') }}
                 </div>
                 <div class="flex items-center gap-[8px]">
-                  <img
+                  <SmartImage
                     class="w-[20px] h-[20px] min-w-[20px] object-contain"
                     :alt="currentRequestCurrency"
                     :src="currentCurrencyIcon"
@@ -57,7 +57,7 @@
                   {{ t('gameDetail.wagered') }}
                 </div>
                 <div class="flex items-center gap-[8px]">
-                  <img
+                  <SmartImage
                     class="w-[20px] h-[20px] min-w-[20px] object-contain"
                     :alt="currentRequestCurrency"
                     :src="currentCurrencyIcon"
@@ -94,10 +94,11 @@ import { useLocaleStore } from '@/stores/locale'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RefreshIcon from '@/static/svg/game/detail/refresh.svg?component'
 import { getCurrencySymbol } from '@/utils/locale'
-import { getCurrencyIconByCode } from '../currency-select-options'
+import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { storeToRefs } from 'pinia'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -184,10 +185,16 @@ const fetchGameStatistics = async () => {
 
   isLoading.value = true
   try {
-    const res = await Api.game.getGameStatistics({
-      itemCode,
-      platformCode
-    })
+    const res = await Api.game.getGameStatistics(
+      {
+        itemCode,
+        platformCode
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
 
     const result = res?.result
     if (result && typeof result === 'object') {
@@ -215,25 +222,19 @@ const refreshGameStatistics = async () => {
     statistics.value = emptyStatistics()
     return
   }
-
   isLoading.value = true
   try {
-    const res = await Api.game.refreshGameStatistics({
-      itemCode,
-      platformCode
-    })
-
-    const result = res?.result
-    if (result && typeof result === 'object') {
-      statistics.value = {
-        profit: result.profit ?? 0,
-        wagered: result.wagered ?? 0,
-        win: result.win ?? 0,
-        lose: result.lose ?? 0
+    await Api.game.refreshGameStatistics(
+      {
+        itemCode,
+        platformCode
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
       }
-      return
-    }
-    statistics.value = emptyStatistics()
+    )
+    fetchGameStatistics()
   } catch (error) {
     console.error('refreshGameStatistics failed', error)
     statistics.value = emptyStatistics()

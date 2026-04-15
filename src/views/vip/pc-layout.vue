@@ -201,7 +201,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { showToast } from 'vant'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useVipStore } from '@/stores/vip'
 import { resolveBackgroundImage } from '@/utils/image'
@@ -211,7 +210,7 @@ import cardVipImage from '@/static/img/personalCenter/card_vip.png'
 import { getCurrencySymbol } from '@/utils/locale'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
-import cardH5BgImage from '@/static/img/personalCenter/card_H5_BG.png'
+import cardH5BgImage from '@/static/img/personalCenter/card_H5_BG.webp'
 import cardVipRightImage from '@/static/img/personalCenter/card_vip_right2.png'
 import Arrow_left from '@/static/svg/arrow_left.svg?component'
 import Arrow_right from '@/static/svg/arrow_right2.svg?component'
@@ -309,10 +308,6 @@ const handleClaim = async (card: VipBenefitCard) => {
     const response = await claimVipBenefit(card.key)
 
     if (!response?.success) {
-      showToast({
-        message: response?.message || t('common.unknownError'),
-        type: 'fail'
-      })
       return
     }
 
