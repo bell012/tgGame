@@ -109,12 +109,23 @@
         <div>{{ $t('home.RecentBigWins') }}</div>
       </h2>
     </div>
-    <div class="marquee px-4 sm:rounded-xl sm:bg-layer3 sm:px-3 mx-[-1rem] my-0 sm:mx-0 sm:my-0">
-      <div class="marquee-track recent-big-win inline-flex items-center gap-3 sm:gap-3.5">
+    <div
+      ref="marqueeRef"
+      class="marquee px-4 sm:rounded-xl sm:bg-layer3 sm:px-3 mx-[-1rem] my-0 sm:mx-0 sm:my-0 touch-pan-x select-none sm:cursor-grab sm:active:cursor-grabbing"
+      @scroll.passive="onMarqueeScroll"
+      @pointerdown="onMarqueePointerDown"
+      @pointermove="onMarqueePointerMove"
+      @pointerup="onMarqueePointerUp"
+      @pointercancel="onMarqueePointerCancel"
+      @mouseenter="marqueeHoverPaused = true"
+      @mouseleave="marqueeHoverPaused = false"
+      @click.capture="onMarqueeClickCapture"
+    >
+      <div class="marquee-track recent-big-win flex flex-nowrap items-center gap-3 sm:gap-3.5">
         <a
           class="sm:w-13 flex h-28 w-14 flex-none flex-col items-center text-xs hover:opacity-80 sm:h-[106px] inactive"
           v-for="(item, idx) in duplicatedList"
-          :key="idx"
+          :key="`win-${idx}`"
         >
           <div class="relative mb-1 w-full rounded-lg pt-[133%]">
             <img :src="item.src" class="absolute left-0 top-0 w-full rounded-lg" />
@@ -305,11 +316,11 @@ import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import ActivityPop from '@/components/activityPop.vue'
 import { navigateTo } from '@/utils/router'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
-
+import { getCurrentCurrency } from '@/utils/locale'
 import EventList from './components/eventList.vue'
 import GameList from './components/gameList.vue'
 import NewEvent from './components/newEvent.vue'
@@ -354,7 +365,7 @@ import backImg from '@/static/img/home/banner.jpg'
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
-
+const currentCurrency = computed(() => getCurrentCurrency())
 const { t, locale } = useI18n()
 
 interface EventListItem {
@@ -426,7 +437,7 @@ interface RecentBigWin {
 const list = ref<RecentBigWin[]>([])
 const getRecentBigWinsData = async () => {
   try {
-    const res = await Api.home.getRecentBigWins({ currency: 'PHP', type: 1 })
+    const res = await Api.home.getRecentBigWins({ currency: currentCurrency.value, type: 1 })
     list.value =
       res.result?.map((item: any) => ({
         src: toGameImageUrl(item.coverImg),
@@ -435,9 +446,175 @@ const getRecentBigWinsData = async () => {
       })) || []
   } catch (error) {
     console.error('getRecentBigWins failed', error)
+  } finally {
+    void nextTick(() => startMarqueeRaf())
   }
 }
-const duplicatedList = computed(() => [...list.value, ...list.value])
+
+const MARQUEE_REPEAT = 4
+const duplicatedList = computed(() =>
+  Array.from({ length: MARQUEE_REPEAT }, () => list.value).flat()
+)
+
+/** 近期大奖：自动 scrollLeft*/
+const marqueeRef = ref<HTMLElement | null>(null)
+const marqueeHoverPaused = ref(false)
+const marqueePointerActive = ref(false)
+const AUTO_MARQUEE_SEGMENT_SEC = 20
+let marqueeRafId = 0
+let marqueeLastTs = 0
+let marqueeProgramScroll = false
+let marqueeUserScrollUntil = 0
+/** 松手或用户滚动后：无操作满此时长再恢复自动滚 */
+const MARQUEE_IDLE_RESUME_MS = 2000
+let marqueeLoopRunning = false
+
+let marqueeLastProgrammaticScrollMs = 0
+let marqueeResizeObserver: ResizeObserver | null = null
+
+const stopMarqueeRaf = () => {
+  marqueeLoopRunning = false
+  if (marqueeRafId) {
+    cancelAnimationFrame(marqueeRafId)
+    marqueeRafId = 0
+  }
+  marqueeLastTs = 0
+}
+
+const stepMarquee = (ts: number) => {
+  if (!marqueeLoopRunning) return
+  marqueeRafId = requestAnimationFrame(stepMarquee)
+  const el = marqueeRef.value
+  if (!el) return
+
+  if (
+    marqueePointerActive.value ||
+    marqueeHoverPaused.value ||
+    Date.now() < marqueeUserScrollUntil
+  ) {
+    marqueeLastTs = ts
+    return
+  }
+
+  const segment = el.scrollWidth / MARQUEE_REPEAT
+  if (segment < 8 || el.scrollWidth <= el.clientWidth + 2) {
+    marqueeLastTs = ts
+    return
+  }
+
+  if (!marqueeLastTs) marqueeLastTs = ts
+  const dt = Math.min(0.08, (ts - marqueeLastTs) / 1000)
+  marqueeLastTs = ts
+  const speedPxPerSec = segment / AUTO_MARQUEE_SEGMENT_SEC
+
+  marqueeProgramScroll = true
+  marqueeLastProgrammaticScrollMs = performance.now()
+  el.scrollLeft += speedPxPerSec * dt
+  if (el.scrollLeft >= segment) {
+    el.scrollLeft -= segment
+    marqueeLastProgrammaticScrollMs = performance.now()
+  }
+  queueMicrotask(() => {
+    marqueeProgramScroll = false
+  })
+}
+
+const startMarqueeRaf = () => {
+  stopMarqueeRaf()
+  void nextTick(() => {
+    requestAnimationFrame(() => {
+      const el = marqueeRef.value
+      if (!el || list.value.length === 0) {
+        return
+      }
+      marqueeLoopRunning = true
+      marqueeLastTs = 0
+      marqueeRafId = requestAnimationFrame(stepMarquee)
+    })
+  })
+}
+
+const bumpMarqueeUserIdlePause = () => {
+  marqueeUserScrollUntil = Date.now() + MARQUEE_IDLE_RESUME_MS
+}
+
+const onMarqueeScroll = () => {
+  if (marqueeProgramScroll) return
+  if (performance.now() - marqueeLastProgrammaticScrollMs < 48) return
+  bumpMarqueeUserIdlePause()
+}
+
+const marqueeDrag = {
+  active: false,
+  pointerId: -1,
+  startX: 0,
+  startScroll: 0,
+  moved: false
+}
+const MARQUEE_DRAG_THRESHOLD = 8
+let marqueeSuppressClick = false
+
+const onMarqueePointerDown = (e: PointerEvent) => {
+  marqueeSuppressClick = false
+  marqueePointerActive.value = true
+  if (e.pointerType !== 'mouse' || e.button !== 0) return
+  const el = marqueeRef.value
+  if (!el) return
+  marqueeDrag.active = true
+  marqueeDrag.moved = false
+  marqueeDrag.pointerId = e.pointerId
+  marqueeDrag.startX = e.clientX
+  marqueeDrag.startScroll = el.scrollLeft
+  el.setPointerCapture(e.pointerId)
+}
+
+const onMarqueePointerMove = (e: PointerEvent) => {
+  if (!marqueeDrag.active || e.pointerId !== marqueeDrag.pointerId) return
+  const el = marqueeRef.value
+  if (!el) return
+  const dx = e.clientX - marqueeDrag.startX
+  if (Math.abs(dx) > MARQUEE_DRAG_THRESHOLD) {
+    marqueeDrag.moved = true
+  }
+  marqueeLastProgrammaticScrollMs = performance.now()
+  el.scrollLeft = marqueeDrag.startScroll - dx
+}
+
+const onMarqueePointerUp = (e: PointerEvent) => {
+  marqueePointerActive.value = false
+  if (marqueeDrag.active && e.pointerId === marqueeDrag.pointerId) {
+    const el = marqueeRef.value
+    try {
+      el?.releasePointerCapture(e.pointerId)
+    } catch {
+      console.error('releasePointerCapture failed')
+    }
+    if (marqueeDrag.moved) {
+      marqueeSuppressClick = true
+    }
+    marqueeDrag.active = false
+    marqueeDrag.pointerId = -1
+  }
+  // 松手后起算：后续无操作满 MARQUEE_IDLE_RESUME_MS 再恢复自动滚（惯性滚动仍会走 onMarqueeScroll 续期）
+  bumpMarqueeUserIdlePause()
+}
+
+const onMarqueePointerCancel = onMarqueePointerUp
+
+const onMarqueeClickCapture = (e: MouseEvent) => {
+  if (!marqueeSuppressClick) return
+  e.preventDefault()
+  e.stopPropagation()
+  marqueeSuppressClick = false
+}
+
+watch(
+  () => duplicatedList.value.length,
+  () => {
+    startMarqueeRaf()
+  },
+  { flush: 'post', immediate: true }
+)
 
 const gameData = ref<HomeGameSection[]>([])
 const rawGameData = ref<RawGameDataItem[]>([])
@@ -500,6 +677,7 @@ onMounted(async () => {
   try {
     const res = await Api.home.getGameData()
     const rawResult = Array.isArray(res.result) ? res.result : []
+    console.log('rawResult', rawResult)
     rawGameData.value = rawResult
     gameData.value = mapHomeGameSections(rawResult)
     localStorage.setItem('gameData', JSON.stringify(rawResult))
@@ -509,6 +687,21 @@ onMounted(async () => {
   } catch (error) {
     console.error('getGameData failed', error)
   }
+
+  void nextTick(() => {
+    const el = marqueeRef.value
+    if (!el || typeof ResizeObserver === 'undefined') return
+    marqueeResizeObserver = new ResizeObserver(() => {
+      startMarqueeRaf()
+    })
+    marqueeResizeObserver.observe(el)
+  })
+})
+
+onUnmounted(() => {
+  marqueeResizeObserver?.disconnect()
+  marqueeResizeObserver = null
+  stopMarqueeRaf()
 })
 </script>
 
@@ -536,24 +729,41 @@ onMounted(async () => {
   transform: scale(0.833);
 }
 .marquee {
-  width: 100%;
-  overflow: hidden;
-  padding: 0;
   width: calc(100% + 2rem);
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0;
+  scroll-behavior: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* 两侧渐隐，突出横向自动滚动区域 */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 12px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 12px),
+    transparent 100%
+  );
+}
+
+.marquee::-webkit-scrollbar {
+  display: none;
 }
 
 .marquee-track {
   margin: 10px 0;
-  display: inline-flex;
+  width: max-content;
   gap: 0.875rem;
   padding: 0 1rem;
-  /* 控制速度 */
-  animation: marquee 20s linear infinite;
-  will-change: transform;
-}
-
-.marquee-track:hover {
-  animation-play-state: paused;
 }
 
 .marquee-track a {
@@ -562,15 +772,6 @@ onMounted(async () => {
 
 .bg-layer4 {
   background-color: var(--color-background-level-2);
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 @media (min-width: 640px) {
