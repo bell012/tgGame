@@ -248,6 +248,7 @@
     "emptyMessage": "Stay tuned, something is coming soon.",
     "tapToViewDetails": "Tap to view details",
     "loading": "Loading notifications...",
+    "jumpOpenFailed": "Failed to open the link. Please try again later.",
     "loadingMore": "Loading more notifications...",
     "noMore": "No more notifications",
     "deleteDialog": {

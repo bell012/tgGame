@@ -483,6 +483,7 @@
     "emptyMessage": "敬请期待，精彩内容即将上线！",
     "tapToViewDetails": "点击查看详情",
     "loading": "通知加载中...",
+    "jumpOpenFailed": "链接打开失败，请稍后重试。",
     "loadingMore": "加载更多通知...",
     "noMore": "没有更多通知了",
     "deleteDialog": {
