@@ -77,7 +77,7 @@
             :class="[
               isTransactionNotification(item)
                 ? props.panelMode
-                  ? 'min-h-[361px] gap-[30px] rounded-[30px] bg-[#323738] px-[42px] pb-0 pt-[42px]'
+                  ? 'min-h-[168px] gap-[14px] rounded-[18px] bg-[#323738] px-[16px] pb-0 pt-[16px]'
                   : 'min-h-[120px] gap-[10px] rounded-[10px] bg-[#323738] px-[14px] pb-0 pt-[14px]'
                 : 'gap-[10px] rounded-[10px] bg-bg-2 px-[14px] pb-[10px] pt-[14px]',
               { 'notice-card-read opacity-[0.72]': item.read }
@@ -87,13 +87,13 @@
               <!-- 交易通知内容 -->
               <div
                 class="notice-title-row flex w-full items-center"
-                :class="props.panelMode ? 'min-h-[51px] gap-[21px]' : 'min-h-[17px] gap-[7px]'"
+                :class="props.panelMode ? 'min-h-[22px] gap-[8px]' : 'min-h-[17px] gap-[7px]'"
               >
                 <h2
                   class="notice-title min-w-0 break-words font-[700] text-white"
                   :class="
                     props.panelMode
-                      ? 'max-w-[476px] text-[42px] leading-[51px]'
+                      ? 'max-w-[220px] text-[16px] leading-[22px]'
                       : 'max-w-[159px] text-[14px] leading-[17px]'
                   "
                 >
@@ -101,10 +101,7 @@
                 </h2>
                 <span
                   class="notice-dot shrink-0 rounded-full"
-                  :class="[
-                    props.panelMode ? 'hidden' : 'h-[8px] w-[8px]',
-                    getTransactionStatusDotClass(item)
-                  ]"
+                  :class="['h-[8px] w-[8px]', getTransactionStatusDotClass(item)]"
                 ></span>
               </div>
 
@@ -113,7 +110,7 @@
                 class="notice-message w-full break-words font-[400] text-white"
                 :class="
                   props.panelMode
-                    ? 'min-h-[88px] text-[36px] leading-[44px]'
+                    ? 'min-h-[54px] text-[13px] leading-[18px]'
                     : 'min-h-[30px] text-[12px] leading-[15px]'
                 "
               >
@@ -124,14 +121,12 @@
               <div
                 class="notice-footer flex w-full items-center justify-between border-t border-t-white/[0.06]"
                 :class="
-                  props.panelMode ? 'min-h-[120px] gap-[24px] py-[30px]' : 'gap-[12px] py-[10px]'
+                  props.panelMode ? 'min-h-[52px] gap-[12px] py-[12px]' : 'gap-[12px] py-[10px]'
                 "
               >
                 <time
                   class="notice-time font-[400] text-[#B3BEC1]"
-                  :class="
-                    props.panelMode ? 'text-[36px] leading-[44px]' : 'text-[12px] leading-[15px]'
-                  "
+                  :class="'text-[12px] leading-[15px]'"
                 >
                   {{ getNoticeTime(item) }}
                 </time>
@@ -141,7 +136,7 @@
                   class="delete-button inline-flex shrink-0 items-center justify-center bg-white/[0.1]"
                   :class="
                     props.panelMode
-                      ? 'h-[60px] w-[60px] rounded-[18px]'
+                      ? 'h-[24px] w-[24px] rounded-[8px]'
                       : 'h-[20px] w-[20px] rounded-[6px]'
                   "
                   @click.stop="removeNotification(item)"
@@ -149,7 +144,7 @@
                 >
                   <component
                     :is="delIcon"
-                    :class="props.panelMode ? 'h-[22px] w-[22px]' : 'h-[13px] w-[13px]'"
+                    :class="props.panelMode ? 'h-[14px] w-[14px]' : 'h-[13px] w-[13px]'"
                   />
                 </button>
               </div>
@@ -488,10 +483,10 @@ import {
 import type { TradeMessageStreamItem } from '@/utils/payOrderSync'
 import { getPayOrderDisplayStatus, normalizePayOrderType } from '@/utils/payOrderSync'
 import { navigateTo } from '@/utils/router'
+import { closeToast, showLoadingToast, showToast } from 'vant'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NavigationFailureType, isNavigationFailure } from 'vue-router'
-import { closeToast, showLoadingToast, showToast } from 'vant'
 
 // 通知分类类型。
 type NotificationCategory = 'promotions' | 'transactions' | 'system'
@@ -805,6 +800,18 @@ const notifications = computed(() =>
 const unreadCountByCategory = computed<Record<NotificationCategory, number>>(() => {
   return notifications.value.reduce(
     (acc, item) => {
+      if (item.category === 'transactions') {
+        if (
+          !item.read &&
+          item.transactionKey &&
+          !tradeMessageSyncStore.clearedBadgeMessageKeys.includes(item.transactionKey)
+        ) {
+          acc.transactions += 1
+        }
+
+        return acc
+      }
+
       if (!item.read) {
         acc[item.category] += 1
       }
@@ -1162,7 +1169,8 @@ const markTransactionsAsReadOnView = () => {
     return
   }
 
-  tradeMessageSyncStore.markTradeMessagesAsRead(
+  // 清空 Transactions 提示角标，但不改动消息已读状态。
+  tradeMessageSyncStore.clearTradeMessageBadges(
     transactionNotifications.value
       .map(item => item.transactionKey)
       .filter((item): item is string => Boolean(item))

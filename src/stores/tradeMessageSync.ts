@@ -41,6 +41,7 @@ interface TradeMessageSyncPersistedState {
   messageStream: TradeMessageStreamItem[]
   orderStatusMap: OrderStatusMap
   readMessageKeys: string[]
+  clearedBadgeMessageKeys: string[]
   deletedMessageKeys: string[]
 }
 
@@ -73,6 +74,9 @@ const parseStoredTradeMessageSyncState = (): TradeMessageSyncPersistedState | nu
           : {},
       readMessageKeys: Array.isArray(parsedValue.readMessageKeys)
         ? parsedValue.readMessageKeys.map(value => String(value))
+        : [],
+      clearedBadgeMessageKeys: Array.isArray(parsedValue.clearedBadgeMessageKeys)
+        ? parsedValue.clearedBadgeMessageKeys.map(value => String(value))
         : [],
       deletedMessageKeys: Array.isArray(parsedValue.deletedMessageKeys)
         ? parsedValue.deletedMessageKeys.map(value => String(value))
@@ -145,6 +149,7 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
   const lastSyncTime = ref<number>()
   const latestOrderId = ref<string>()
   const readMessageKeys = ref<string[]>([])
+  const clearedBadgeMessageKeys = ref<string[]>([])
   const deletedMessageKeys = ref<string[]>([])
   const isInitialized = ref(false)
   const isSyncing = ref(false)
@@ -185,6 +190,7 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
       messageStream: messageStream.value,
       orderStatusMap: orderStatusMap.value,
       readMessageKeys: readMessageKeys.value,
+      clearedBadgeMessageKeys: clearedBadgeMessageKeys.value,
       deletedMessageKeys: deletedMessageKeys.value
     }
 
@@ -197,6 +203,7 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
     lastSyncTime.value = undefined
     latestOrderId.value = undefined
     readMessageKeys.value = []
+    clearedBadgeMessageKeys.value = []
     deletedMessageKeys.value = []
     connectionError.value = ''
   }
@@ -214,6 +221,7 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
     lastSyncTime.value = storedState.lastSyncTime
     latestOrderId.value = storedState.latestOrderId
     readMessageKeys.value = [...storedState.readMessageKeys]
+    clearedBadgeMessageKeys.value = [...storedState.clearedBadgeMessageKeys]
     deletedMessageKeys.value = [...storedState.deletedMessageKeys]
   }
 
@@ -666,7 +674,38 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
     }
 
     const nextKeys = Array.from(new Set([...readMessageKeys.value, ...messageKeys.filter(Boolean)]))
+
+    if (nextKeys.length === readMessageKeys.value.length) {
+      return
+    }
+
     readMessageKeys.value = nextKeys
+    persistState()
+  }
+
+  const clearTradeMessageBadge = (messageKey: string) => {
+    if (!messageKey || clearedBadgeMessageKeys.value.includes(messageKey)) {
+      return
+    }
+
+    clearedBadgeMessageKeys.value = [...clearedBadgeMessageKeys.value, messageKey]
+    persistState()
+  }
+
+  const clearTradeMessageBadges = (messageKeys: string[]) => {
+    if (messageKeys.length === 0) {
+      return
+    }
+
+    const nextKeys = Array.from(
+      new Set([...clearedBadgeMessageKeys.value, ...messageKeys.filter(Boolean)])
+    )
+
+    if (nextKeys.length === clearedBadgeMessageKeys.value.length) {
+      return
+    }
+
+    clearedBadgeMessageKeys.value = nextKeys
     persistState()
   }
 
@@ -703,6 +742,7 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
     lastSyncTime,
     latestOrderId,
     readMessageKeys,
+    clearedBadgeMessageKeys,
     deletedMessageKeys,
     isInitialized,
     isSyncing,
@@ -712,6 +752,8 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
     forceSyncTradeMessages,
     markTradeMessageAsRead,
     markTradeMessagesAsRead,
+    clearTradeMessageBadge,
+    clearTradeMessageBadges,
     markTradeMessageAsDeleted,
     handleIncomingTradePushMessage,
     ingestTradePushMessage
