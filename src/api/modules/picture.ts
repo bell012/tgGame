@@ -1,5 +1,6 @@
 import {
   buildCommonRequestHeaders,
+  normalizeApiResponseMessage,
   resolveRequestUrl,
   shouldHandleAuthExpiredCode,
   triggerAuthExpiredLogout
@@ -50,7 +51,7 @@ export async function upload({
     body: formData
   })
 
-  const result = await parseUploadResponse(response)
+  const result = normalizeApiResponseMessage(await parseUploadResponse(response))
 
   if (response.status === 401 || shouldHandleAuthExpiredCode(result.code)) {
     triggerAuthExpiredLogout()

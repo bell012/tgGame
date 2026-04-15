@@ -301,11 +301,6 @@ export function useWithdrawCrypto() {
         const response = await Api.withdraw.addMemberCard(requestData)
 
         if (response?.code !== 'C2') {
-          showToast({
-            message: String(response?.message || 'Add address failed'),
-            type: 'fail',
-            duration: FAIL_TOAST_DURATION
-          })
           return false
         }
 

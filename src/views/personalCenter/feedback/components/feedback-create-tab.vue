@@ -2,8 +2,12 @@
   <div>
     <section class="rounded-[12px] bg-bg-2 p-3.5">
       <div class="flex items-center text-sm">
-        <span class="font-[700] text-text-1">意见反馈</span>
-        <span class="ml-1 text-xs text-text-3">(必选反馈类型)</span>
+        <span class="font-[700] text-text-1">{{
+          t('personalCenter.feedback.createTab.sectionTitle')
+        }}</span>
+        <span class="ml-1 text-xs text-text-3">
+          ({{ t('personalCenter.feedback.createTab.requiredType') }})
+        </span>
       </div>
 
       <div class="mt-3 rounded-[10px] bg-bg-3 p-2.5">
@@ -36,7 +40,7 @@
 
       <div class="mt-3">
         <div class="text-sm font-[700] text-text-1">
-          上传照片
+          {{ t('personalCenter.feedback.createTab.uploadPhotos') }}
           <span class="ml-1 text-xs font-[500] text-text-3">
             ({{ feedbackUploadCount }}/{{ feedbackUploadMaxCount }})
           </span>
@@ -57,7 +61,7 @@
             <div
               class="absolute -right-1.5 -top-1.5 h-4 w-4 overflow-hidden rounded-full sm:h-5 sm:w-5"
             >
-              <img :src="deleteIcon" alt="delete" class="h-full w-full" />
+              <img :src="deleteIcon" :alt="t('common.delete')" class="h-full w-full" />
             </div>
           </template>
           <div
@@ -96,14 +100,16 @@
         :disabled="isSubmittingFeedback"
         @click="onSubmit"
       >
-        提交反馈
+        {{ t('personalCenter.feedback.createTab.submitFeedback') }}
       </button>
     </section>
 
     <section class="mt-3.5 rounded-[12px] bg-bg-2 p-3.5">
-      <div class="text-[15px] font-[700] text-text-1">奖励规则</div>
+      <div class="text-[15px] font-[700] text-text-1">
+        {{ t('personalCenter.feedback.createTab.rewardRulesTitle') }}
+      </div>
       <div class="mt-2 text-sm leading-[22px] text-text-3">
-        我们设立了丰厚的奖励来收集反馈，以优化系统和功能，为您提供更好的体验！一旦被接受，将根据有用性给予奖励（不包括那些未被接受的）。
+        {{ t('personalCenter.feedback.createTab.rewardRulesDescription') }}
       </div>
     </section>
   </div>
@@ -112,6 +118,7 @@
 <script setup lang="ts">
 import type { FeedbackTypeOption } from '../types'
 import { Uploader, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
+import { useI18n } from 'vue-i18n'
 
 // 创建反馈模块：只负责表单 UI 渲染，接口请求由父组件处理。
 const selectedTypeModel = defineModel<string>('selectedType', { required: true })
@@ -131,6 +138,8 @@ defineProps<{
   beforeDelete: (_file: UploaderFileListItem, detail: { index: number }) => boolean
   onSubmit: () => void
 }>()
+
+const { t } = useI18n()
 </script>
 
 <style scoped>

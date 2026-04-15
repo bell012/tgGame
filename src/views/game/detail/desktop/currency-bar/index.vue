@@ -5,13 +5,13 @@
   >
     <div class="toolbar-actions flex justify-start items-center gap-[10px]">
       <div class="toolbar-icon-btn" @click="settingVisibleClick">
-        <img alt="" class="toolbar-icon toolbar-icon--setting" :src="SettingIcon" />
+        <SmartImage alt="" class="toolbar-icon toolbar-icon--setting" :src="SettingIcon" />
       </div>
       <div class="toolbar-icon-btn" :class="{ 'is-active': starActived }" @click="toggleStar">
-        <img alt="" class="toolbar-icon" :src="starActived ? StarActiveIcon : StarIcon" />
+        <SmartImage alt="" class="toolbar-icon" :src="starActived ? StarActiveIcon : StarIcon" />
       </div>
       <div class="toolbar-icon-btn" @click="liveStateVisibleClick">
-        <img alt="" class="toolbar-icon" :src="LineIcon" />
+        <SmartImage alt="" class="toolbar-icon" :src="LineIcon" />
       </div>
     </div>
     <!--Setting Popup-->
@@ -50,6 +50,7 @@ import LiveStatePopup from './live-state-popup.vue'
 import SharePopup from './share-popup.vue'
 import SettingPopup from './setting-popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 const isMobile = useIsMobile()
 const themeStore = useThemeStore()

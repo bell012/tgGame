@@ -46,7 +46,7 @@
             <td class="py-2 px-3 text-text-1 truncate">{{ item.profit }}x</td>
             <td class="cell" role="cell">
               <div class="flex items-center justify-center">
-                <img
+                <SmartImage
                   :src="currentCurrencyIcon"
                   class="icon object-contain"
                   :alt="currentRequestCurrency"
@@ -56,7 +56,7 @@
             </td>
             <td class="py-2 px-3 text-[12px]">
               <div class="flex items-center justify-end gap-1">
-                <img
+                <SmartImage
                   :src="currentCurrencyIcon"
                   class="w-3 h-3 object-contain"
                   :alt="currentRequestCurrency"
@@ -105,7 +105,11 @@
           >
             <td class="py-2 px-3">
               <div class="flex items-center gap-1 min-w-0">
-                <img :src="item.gameIcon" class="w-3.5 h-3.5 object-contain" :alt="item.game" />
+                <SmartImage
+                  :src="item.gameIcon"
+                  class="w-3.5 h-3.5 object-contain"
+                  :alt="item.game"
+                />
                 <span class="text-text-1 truncate">{{ item.game }}</span>
               </div>
             </td>
@@ -120,7 +124,7 @@
                 >
                   {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
                 </span>
-                <img
+                <SmartImage
                   :src="currentCurrencyIcon"
                   class="w-3 h-3 object-contain"
                   :alt="currentRequestCurrency"
@@ -146,10 +150,11 @@ import Api from '@/api'
 import type { GameBetRecordItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
 import placeholderImg from '@/static/img/home/errImg.png'
-import { getCurrencyIconByCode } from '../currency-select-options'
+import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { storeToRefs } from 'pinia'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 const activeTab = ref(0)
 const { t } = useI18n()
@@ -267,16 +272,22 @@ const fetchBetRecords = async () => {
   }
 
   try {
-    const res = await Api.game.getGameBetRecordList({
-      page: {
-        current: 1,
-        size: 100
+    const res = await Api.game.getGameBetRecordList(
+      {
+        page: {
+          current: 1,
+          size: 100
+        },
+        platformCode,
+        gameCode,
+        currency: currentRequestCurrency.value,
+        betType: currentBetType.value
       },
-      platformCode,
-      gameCode,
-      currency: currentRequestCurrency.value,
-      betType: currentBetType.value
-    })
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     const rawResult = res?.result
     const records = (rawResult as { records?: unknown } | undefined)?.records
     const recordList = Array.isArray(rawResult)
@@ -295,10 +306,16 @@ const fetchBetRecords = async () => {
 const fetchHighRollerRecords = async () => {
   try {
     const currency = currentRequestCurrency.value
-    const res = await Api.home.getRecentBigWins({
-      currency,
-      type: 2
-    })
+    const res = await Api.home.getRecentBigWins(
+      {
+        currency,
+        type: 2
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     const rawResult = res?.result
     const recordList = Array.isArray(rawResult) ? rawResult : []
     highRollerRows.value = recordList.map((item, index) =>

@@ -45,7 +45,7 @@
                 :value="formData.account"
                 type="text"
                 inputmode="numeric"
-                :placeholder="t('common.enter_phone_number')"
+                :placeholder="t('common.enter_account')"
                 class="w-full h-[50px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                 @input="handleAccountInput"
               />
@@ -58,7 +58,7 @@
           </div>
           <div class="mb-6">
             <div class="relative">
-              <SafeIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
+              <SafeIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
               <!-- 请输入验证码 -->
               <input
                 :value="formData.code"
@@ -85,7 +85,7 @@
           <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.password') }}</div>
           <div class="mb-6">
             <div class="relative">
-              <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
+              <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
               <!-- 请输入密码 -->
               <input
                 :value="formData.password"
@@ -99,8 +99,8 @@
                 class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                 @click="togglePassword"
               >
-                <EyeIcon v-if="!showPassword" class="w-5 h-5 fill-none" />
-                <EyeOffIcon v-else class="w-5 h-5 fill-none" />
+                <EyeIcon v-if="!showPassword" class="w-5 h-5 text-text-2" />
+                <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
               </button>
             </div>
           </div>
@@ -111,7 +111,7 @@
           </div>
           <div class="mb-10">
             <div class="relative">
-              <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none" />
+              <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
               <!-- 请输入确认密码 -->
               <input
                 :value="formData.confirmPassword"
@@ -125,8 +125,8 @@
                 class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                 @click="toggleConfirmPassword"
               >
-                <EyeIcon v-if="!showConfirmPassword" class="w-5 h-5 fill-none" />
-                <EyeOffIcon v-else class="w-5 h-5 fill-none" />
+                <EyeIcon v-if="!showConfirmPassword" class="w-5 h-5 text-text-2" />
+                <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
               </button>
             </div>
           </div>
@@ -152,8 +152,8 @@
 <script setup lang="ts">
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
-import SafeIcon from '@/static/svg/login/safe.svg?component'
-import PasswordIcon from '@/static/svg/login/password.svg?component'
+import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
+import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import ResetPasswordFormCore from './ResetPasswordFormCore.vue'
 import { useI18n } from 'vue-i18n'

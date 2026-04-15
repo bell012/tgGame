@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="home max-w-[1248px] mx-auto px-3.5 py-2 sm:px-4 sm:py-4">
     <div style="height: 65px" class="sm:hidden"></div>
-    <div v-if="userInfo">
+    <div v-if="isLogin">
       <HomeCarouselImg v-if="querySlideshowList.length" :list="querySlideshowList" />
     </div>
     <div
@@ -9,8 +9,12 @@
       class="banner relative aspect-[1.73] overflow-hidden rounded-xl bg-bg-3 sm:aspect-[4.785]"
     >
       <!-- H5 背景 -->
-      <SmartImage :src="headBackH5Image" alt="" class="h-full w-full object-cover sm:hidden" />
-      <!-- PC 背景：backImg 铺满 -->
+      <SmartImage
+        :src="headBackH5Image"
+        alt=""
+        class="h-full w-full object-cover block sm:hidden"
+      />
+      <!-- PC 背景：backImg -->
       <SmartImage
         :src="backImg"
         alt=""
@@ -50,9 +54,9 @@
         </button>
       </div>
 
-      <!-- PC：backImg 上左侧垂直居中，避免 inset+max-w 导致错位 -->
+      <!-- PC：backImg-->
       <div
-        class="pointer-events-none absolute inset-0 z-10 hidden sm:flex sm:items-center sm:justify-start"
+        class="pointer-events-none absolute inset-0 z-10 max-sm:hidden sm:flex sm:items-center sm:justify-start"
       >
         <div
           class="pointer-events-auto flex w-full max-w-[min(26rem,calc(100%-2rem))] flex-col items-center gap-3 pl-4 pr-3 sm:pl-6 md:max-w-[28rem] md:pl-10 lg:max-w-[30rem] lg:pl-[13%]"
@@ -247,7 +251,7 @@
         <div
           class="relative z-10 flex h-full flex-col items-center justify-center lg:!flex-row-reverse"
         >
-          <div class="flex items-center justify-center hidden lg:!flex">
+          <div class="max-lg:hidden lg:flex lg:items-center lg:justify-center">
             <img class="-ml-1 w-6" :src="BTC" /><img class="-ml-1 w-6" :src="ETH" />
             <img class="-ml-1 w-6" :src="BNB" /><img class="-ml-1 w-6" :src="XRP" />
             <img class="-ml-1 w-6" :src="USDT" /><img class="-ml-1 w-6" :src="USDC" />
@@ -255,7 +259,7 @@
             <img class="-ml-1 w-6" :src="DOGE" /><img class="-ml-1 w-6" :src="MATIC" />
             <img class="-ml-1 w-6" :src="TRX" />
           </div>
-          <div class="flex items-center justify-center mx-auto gap-6 hidden sm:!flex">
+          <div class="max-sm:hidden sm:flex sm:items-center sm:justify-center mx-auto gap-6">
             <img class="w-14" :src="MAYA" />
             <img class="w-20" :src="GCASH" />
             <img class="w-14" :src="VISA" />
@@ -283,7 +287,7 @@
 
   <!-- 提示弹窗 -->
   <H5HomePop
-    v-if="shouldShowH5HomePop"
+    v-if="shouldShowH5HomePop && !isLogin"
     class="sm:hidden"
     @close="closeH5HomePop"
     @open-login="openRegisterModal"
@@ -297,12 +301,15 @@ import router from '@/router'
 import H5HomePop from '@/components/H5HomePop.vue'
 import HomeCarouselImg from '@/components/homeCarouselImg.vue'
 import { useAuthModalStore } from '@/stores/authModal'
-import { stripLocalePrefix } from '@/utils/locale'
-
+import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import ActivityPop from '@/components/activityPop.vue'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
+import { storeToRefs } from 'pinia'
+
 import EventList from './components/eventList.vue'
 import GameList from './components/gameList.vue'
 import NewEvent from './components/newEvent.vue'
@@ -344,6 +351,12 @@ import headBackH5Image from './headBack_h5.png'
 import placeholderImg from '@/static/img/home/errImg1.png'
 import backImg from '@/static/img/home/banner.jpg'
 
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
+const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
+
+const { t, locale } = useI18n()
+
 interface EventListItem {
   image: string
   rowId: number
@@ -359,10 +372,9 @@ interface HomeGameSection {
   sysGameTypeName: string
 }
 
-const { t } = useI18n()
+const isMobile = useIsMobile()
 const authModalStore = useAuthModalStore()
 const showH5HomePop = ref(true)
-const userInfo = ref<any>(null)
 const isActiveHomeRoute = computed(() => stripLocalePrefix(router.currentRoute.value.path) === '/')
 const shouldShowH5HomePop = computed(() => isActiveHomeRoute.value && showH5HomePop.value)
 const closeH5HomePop = () => {
@@ -463,21 +475,29 @@ const sportsEventList = computed<EventListItem[]>(() => {
 const querySlideshowList = ref<any>([])
 const getQuerySlideshow = async () => {
   try {
-    const res = await Api.home.getQuerySlideshow({
-      channelld: '4',
-      page: { current: 1, size: 10 },
-      type: 1,
-      deploymentPath: 1
+    const response = await Api.home.getQuerySlideshow({
+      languageCode: getStorageLanguageCode(String(locale.value)),
+      param: {
+        ColumnCode: ''
+      },
+      channelId: isMobile.value ? '4' : '3',
+      page: {
+        current: 1,
+        size: 10
+      }
     })
-    querySlideshowList.value = res.result || []
+    console.log('getQuerySlideshow response', response)
+    querySlideshowList.value = Array.isArray(response?.result?.records)
+      ? response.result.records
+      : []
   } catch (error) {
     console.error('getQuerySlideshow failed', error)
+    querySlideshowList.value = []
   }
 }
 
 onMounted(async () => {
   try {
-    userInfo.value = localStorage.getItem('userInfo')
     const res = await Api.home.getGameData()
     const rawResult = Array.isArray(res.result) ? res.result : []
     rawGameData.value = rawResult

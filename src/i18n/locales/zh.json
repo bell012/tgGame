@@ -66,7 +66,7 @@
     "enter_password": "6–16个字符(字母和数字)",
     "confirm_password": "确认密码",
     "enter_confirm_password": "请重新输入您的密码",
-    "remember_me": "记住我",
+    "remember_me": "记住密码",
     "forget_password": "忘记密码",
     "reset_password": "重置密码",
     "continue": "以访客身份",
@@ -108,6 +108,7 @@
     "gotIt": "知道了",
     "ok": "确定",
     "pleaseEnterThePhoneNumber": "请输入手机号码",
+    "pleaseEnterCorrectPhoneNumber": "请输入正确的手机号码",
     "changeMobileNumber": "更改手机号码",
     "newMobileNumber": "新手机号码",
     "enterNewMobileNumber": "请输入您的新手机号码",
@@ -119,18 +120,6 @@
     "transactionPasswordSetSuccessfully": "您的交易密码已设置成功。",
     "transactionPasswordChangedSuccessfully": "您的交易密码已修改成功。",
     "delete": "删除"
-  },
-  "pwa": {
-    "offlineReady": "应用已就绪，可离线使用",
-    "offlineMessage": "应用已缓存，现在可以离线使用了",
-    "newContent": "发现新内容",
-    "updateMessage": "有新版本可用，点击重新加载以更新",
-    "reload": "重新加载",
-    "close": "关闭",
-    "installTitle": "安装应用",
-    "installMessage": "将应用添加到主屏幕，获得更好的体验",
-    "install": "立即安装",
-    "later": "稍后再说"
   },
   "theme": {
     "toggle": "切换主题",
@@ -658,6 +647,89 @@
       "zoom": "缩放",
       "save": "保存",
       "saveSuccess": "保存成功"
+    },
+    "feedback": {
+      "pageTitle": "意见反馈",
+      "detailTitle": "记录详情",
+      "tabs": {
+        "create": "创建反馈",
+        "mine": "我的反馈"
+      },
+      "createTab": {
+        "sectionTitle": "意见反馈",
+        "requiredType": "必选反馈类型",
+        "uploadPhotos": "上传照片",
+        "submitFeedback": "提交反馈",
+        "rewardRulesTitle": "奖励规则",
+        "rewardRulesDescription": "我们设立了丰厚的奖励来收集反馈，以优化系统和功能，为您提供更好的体验！一旦被接受，将根据有用性给予奖励（不包括那些未被接受的）。"
+      },
+      "myTab": {
+        "rewardAmount": "反馈金额",
+        "rewardIconAlt": "反馈奖励图标",
+        "claim": "领取",
+        "loading": "加载中...",
+        "empty": "暂无反馈记录",
+        "ticketNoPrefix": "反馈单号："
+      },
+      "claimPopup": {
+        "title": "领取成功",
+        "description": "奖励已发放至您的钱包。",
+        "confirm": "确定",
+        "bowAlt": "礼带装饰"
+      },
+      "detail": {
+        "feedbackNo": "反馈编号",
+        "processingStatus": "处理状态",
+        "submitTime": "提交时间",
+        "feedbackType": "反馈类型",
+        "feedbackContent": "反馈内容",
+        "screenshotAlt": "截图{index}",
+        "previewImageAlt": "预览图片"
+      },
+      "feedbackType": {
+        "suggestion": "建议",
+        "gameException": "游戏异常",
+        "depositIssue": "充值问题",
+        "other": "其他"
+      },
+      "placeholder": {
+        "suggestion": "亲爱的玩家，请详细描述您在游戏中遇到的你认为需要改进的问题或者建议，方便我们能给您提供更好的服务",
+        "gameException": "请尽量提供问题发生的时间、操作、功能模块、截图等信息，我们会尽快为您处理。",
+        "depositIssue": "请详细描述您遇到的问题，如有支付单号请一并提供，我们会尽快为您处理。",
+        "other": "请详细描述您遇到的其他问题或需要咨询的事项。"
+      },
+      "status": {
+        "accepted": "已采纳",
+        "pending": "待处理",
+        "rejected": "未采纳"
+      },
+      "resultHint": {
+        "accepted": "您的建议已被采纳，并为您发放奖励，感谢您的支持！",
+        "pending": "您的建议已提交，正在处理中，请耐心等待。",
+        "rejected": "感谢您的建议，本次暂未采纳，欢迎继续反馈更多想法。"
+      },
+      "reply": {
+        "team": "运营团队",
+        "accepted": "您好，感谢您的反馈，我们已记录并采纳您的建议。",
+        "rejected": "您好，已评估本次建议，当前版本暂不支持，感谢您的理解与支持。"
+      },
+      "uploadStatus": {
+        "uploading": "上传中...",
+        "success": "上传成功",
+        "failed": "上传失败"
+      },
+      "toast": {
+        "selectFeedbackType": "请选择反馈类型",
+        "enterFeedbackContent": "请输入反馈内容",
+        "imageUploading": "图片上传中，请稍后提交",
+        "uploadFailed": "上传失败",
+        "submitFailed": "提交失败",
+        "submitSuccess": "提交成功",
+        "fetchFeedbackListFailed": "获取反馈列表失败",
+        "claimFailed": "领取失败",
+        "claimSuccess": "领取成功",
+        "fetchFeedbackDetailFailed": "获取反馈详情失败"
+      }
     }
   },
   "userMenu": {
@@ -961,6 +1033,19 @@
       "whitelistManagement": "白名单管理"
     },
     "hintNotAvailable": "暂不可用。"
+  },
+  "preferencesSettings": {
+    "pageTitle": "偏好设定",
+    "accountSettings": "账户设置",
+    "displayCurrency": "显示币种",
+    "changeLanguage": "变更语言",
+    "theme": "主题",
+    "privacySettings": "隐私设置",
+    "hideGameDataInProfile": "在个人资料中隐藏我的游戏资料",
+    "hideUsernameFromPublicList": "从公开清单中隐藏我的用户名",
+    "currencyPopupTitle": "货币",
+    "currencyPopupSectionLabel": "现金",
+    "languagePopupTitle": "语言"
   },
   "payment_methods": {
     "title": "收款管理",

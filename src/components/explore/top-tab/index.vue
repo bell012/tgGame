@@ -1,13 +1,19 @@
 <template>
-  <div class="flex w-full justify-between overflow-x-auto scrollbar-none my-3.5 md:justify-start">
+  <div
+    class="flex w-full justify-between overflow-x-auto scrollbar-none my-2.5 md:my-3.5 md:justify-start"
+  >
     <div
       v-for="item in renderTabList"
       :key="item.sysGameTypeCode"
-      :class="{ 'bg-[var(--color-opacity-10)]': item.sysGameTypeCode === currentTabCode }"
+      :class="
+        item.sysGameTypeCode === currentTabCode
+          ? 'bg-[var(--color-background-level-2)] text-text-1'
+          : 'text-text-2'
+      "
       class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center cursor-pointer"
       @click="changeTab(item.sysGameTypeCode)"
     >
-      <img
+      <SmartImage
         :src="item.sysGameTypeCode === currentTabCode ? item.iconActive : item.icon"
         alt=""
         class="w-5 h-5 mr-[7px]"
@@ -21,6 +27,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import SmartImage from '@/components/common/SmartImage.vue'
 import g1Img from '@/static/img/explore/g1.png'
 import g1aImg from '@/static/img/explore/g1a.png'
 import g2Img from '@/static/img/explore/g2.png'

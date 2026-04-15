@@ -127,7 +127,13 @@ const getCurrentGameDetailByApi = async () => {
   const targetRowId = rowId.value
 
   try {
-    const res = await Api.game.queryGameDetails({ rowId: targetRowId })
+    const res = await Api.game.queryGameDetails(
+      { rowId: targetRowId },
+      {
+        showSuccessToast: false,
+        showErrorToast: true
+      }
+    )
     const result = res?.result
     if (result && typeof result === 'object') {
       currentGameDetailState.value = result as CurrentGameDetail
@@ -168,7 +174,10 @@ const getGameDataForApp = async () => {
 
   isGameDataLoading.value = true
   try {
-    const res = await Api.home.getGameData()
+    const res = await Api.home.getGameData({
+      showSuccessToast: false,
+      showErrorToast: true
+    })
     const nextList = Array.isArray(res?.result) ? (res.result as GameDataSection[]) : []
     gameData.value = nextList
     gameDetailCacheGlobal.__gameDetailGameDataCache__ = nextList
