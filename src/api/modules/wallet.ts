@@ -13,6 +13,8 @@ import type {
   QueryPayColumnWithSubListResponse,
   QueryMemberPayOrderPageForm,
   QueryMemberPayOrderPageResponse,
+  QueryMemberPayOrderSyncReq,
+  QueryMemberPayOrderSyncResponse,
   QueryPayOrderByOrderIdForm,
   QueryPayOrderByOrderIdResponse,
   QueryPaySubColumnPageForm,
@@ -103,6 +105,17 @@ export function queryMemberPayOrderPage(
 ): Promise<QueryMemberPayOrderPageResponse> {
   return request({
     url: '/pc/queryMemberPayOrderPage',
+    method: 'post',
+    data
+  })
+}
+
+// 查询会员充值/提现订单消息补偿同步
+export function queryMemberPayOrderSync(
+  data: QueryMemberPayOrderSyncReq
+): Promise<QueryMemberPayOrderSyncResponse> {
+  return request({
+    url: '/pc/queryMemberPayOrderSync',
     method: 'post',
     data
   })
