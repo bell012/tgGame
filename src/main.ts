@@ -22,6 +22,7 @@ app.mount('#app')
 import { useThemeStore } from './stores/theme'
 import { useLocaleStore } from './stores/locale'
 import { useSiteConfigStore } from './stores/siteConfig'
+import { useTradeMessageSyncStore } from './stores/tradeMessageSync'
 
 const themeStore = useThemeStore()
 themeStore.initTheme()
@@ -33,4 +34,7 @@ router.isReady().then(() => {
 
   const siteConfigStore = useSiteConfigStore()
   void siteConfigStore.initSiteConfig()
+
+  const tradeMessageSyncStore = useTradeMessageSyncStore()
+  tradeMessageSyncStore.init()
 })

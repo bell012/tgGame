@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import H5Header from '@/components/common/H5Header.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-import { formatNotificationTime } from '@/utils/notification'
+import { formatDisplayTime } from '@/utils/date'
 import { markNotificationAsRead } from '@/utils/notification-cache'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, ref } from 'vue'
@@ -214,7 +214,7 @@ const handlePanelClose = () => {
 const detailTitle = computed(() => currentDetailItem.value?.noticeTitle || t('notifications.item'))
 
 // 格式化通知详情的展示时间。
-const detailTime = computed(() => formatNotificationTime(currentDetailItem.value?.createTime))
+const detailTime = computed(() => formatDisplayTime(currentDetailItem.value?.createTime))
 const normalizedNoticeText = computed(() => {
   const rawContent = normalizeNoticeContent(currentDetailItem.value?.noticeText || '')
   const decodedContent = decodeHtmlEntities(rawContent)
