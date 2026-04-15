@@ -129,7 +129,6 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
       providers: providersResult.list
     }
     hasLoaded.value = true
-    console.log(lobbyGameMap.value)
 
     return tabButtons.value
   }
