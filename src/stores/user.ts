@@ -143,13 +143,14 @@ export const useUserStore = defineStore('user', () => {
   }
 
   /**
-   * 清除所有用户相关的本地状态，但保留语言、货币和主题设置
+   * 清除所有用户相关的本地状态，但保留语言、货币和主题设置和设备device_trace_id
    */
   const clearUserSessionData = () => {
     clearStorageExcept([
       'language',
       'currency',
       'theme',
+      'device_trace_id',
       SITE_CONFIG_STORAGE_KEY,
       REMEMBERED_ACCOUNT_STORAGE_KEY,
       REMEMBERED_PASSWORD_STORAGE_KEY
