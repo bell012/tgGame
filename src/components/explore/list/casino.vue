@@ -29,7 +29,7 @@
               <div class="game-card-provider">{{ getProviderName(item) }}</div>
               <div class="game-card-player">
                 <PlayerCountIcon class="game-card-player-icon" />
-                <div class="game-card-player-num">{{ toScore(item.initScoreNum) }}</div>
+                <div class="game-card-player-num">{{ getPlayerCount(item) }}</div>
               </div>
             </div>
           </div>
@@ -44,6 +44,7 @@ import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import PlayerCountIcon from '@/static/svg/casino/player_count.svg?component'
+import { StringExtension } from '@/utils/string-extension'
 import { computed, inject, onBeforeUnmount, Ref, ref, watch } from 'vue'
 import { navigateToName } from '@/utils/router'
 
@@ -63,6 +64,7 @@ type CasinoGameItem = {
   brandCode?: string | number
   hot?: number | string
   initScoreNum?: number | string
+  initScoreStar?: number | string
   num?: number
   gameItemHotVo?: {
     hot?: number | string
@@ -231,6 +233,14 @@ const itemClick = (item: CasinoGameItem) => {
 const toScore = (value: unknown) => {
   const score = Number(value)
   return Number.isFinite(score) ? score : 0
+}
+
+const getPlayerCount = (item: CasinoGameItem) => {
+  const scoreStart = toScore(item.initScoreNum)
+  const scoreEnd = toScore(item.initScoreStar)
+  const min = Math.min(scoreStart, scoreEnd)
+  const max = Math.max(scoreStart, scoreEnd)
+  return StringExtension.getRandomInt(min, max)
 }
 
 const getItemName = (item: CasinoGameItem) => {
