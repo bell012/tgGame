@@ -51,6 +51,30 @@ export interface GameDataResponse {
   result?: GameDataItem[]
 }
 
+export interface GetRecentBigWinsParams {
+  currency: string
+  type: 1 | 2
+}
+
+export interface RecentBigWinsItem {
+  coverImg?: string
+  currency?: string
+  gameName?: string
+  multiple?: number | string
+  nickName?: string
+  rowId?: number | string
+  vipId?: number
+  winAmount?: number | string
+  [key: string]: unknown
+}
+
+export interface RecentBigWinsResponse {
+  code: string | number
+  message: string
+  success: boolean
+  result?: RecentBigWinsItem[]
+}
+
 export interface QuerySlideshowPageRequest {
   current: number
   size: number
