@@ -2,7 +2,7 @@
   <div
     class="w-full h-full flex items-center justify-center overflow-hidden rounded-[8px] bg-[var(--color-background-level-2)] sm:h-full"
   >
-    <SmartImage
+    <img
       :src="currentSrc"
       alt=""
       draggable="false"
