@@ -65,7 +65,7 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/fun/casino/brandGameList/index.vue'),
     meta: {
       title: '厂商游戏列表',
-      requiresAuth: true,
+      requiresAuth: false,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true

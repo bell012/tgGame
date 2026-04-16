@@ -65,6 +65,10 @@ export interface QuerySlideshowRequest {
   param?: QuerySlideshowParam
   channelId: string // 1：竖版 2：横版  3：PC   4：H5
   page: QuerySlideshowPageRequest
+  /** 应用场景 1:首页 2:个人中心 3:好友分享 4:邀请好友 5:登录与注册 6:首页（未登录） */
+  deploymentPath?: number
+  /** 登录状态 0:未登录 1:已登录 */
+  requireLogin?: number
 }
 
 /** 轮播图跳转类型：1 url 跳转，2 跳转内部项面，3 跳转游戏 */

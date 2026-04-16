@@ -388,7 +388,6 @@ import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import CheckIcon from '@/static/svg/login/check.svg?skipsvgo'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
-import { resolveBackgroundImage } from '@/utils/image'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
 import { useI18n } from 'vue-i18n'
@@ -412,8 +411,13 @@ const emit = defineEmits<{
 
 const showDrawer = ref(false)
 const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
+
+/**
+ * 图片地址转换
+ */
 const loginHeadBackground = computed(() => {
-  return resolveBackgroundImage(props.backgroundImageUrl || '')
+  const imageUrl = String(props.backgroundImageUrl ?? '').trim()
+  return imageUrl ? `url("${imageUrl}")` : ''
 })
 
 watch(

@@ -231,7 +231,6 @@ import FreePerksIcon from '@/static/svg/login/free_perks.svg?skipsvgo'
 import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
-import { resolveBackgroundImage } from '@/utils/image'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import ResetPasswordFormCore from './ResetPasswordFormCore.vue'
 import { useI18n } from 'vue-i18n'
@@ -251,8 +250,13 @@ const emit = defineEmits<{
 
 const showDrawer = ref(false)
 const resetPasswordFormRef = ref<InstanceType<typeof ResetPasswordFormCore> | null>(null)
+
+/**
+ * 图片地址转换
+ */
 const loginHeadBackground = computed(() => {
-  return resolveBackgroundImage(props.backgroundImageUrl || '')
+  const imageUrl = String(props.backgroundImageUrl ?? '').trim()
+  return imageUrl ? `url("${imageUrl}")` : ''
 })
 
 watch(
