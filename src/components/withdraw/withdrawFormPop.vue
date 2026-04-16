@@ -26,7 +26,7 @@
             <p class="text-sm sm:text-base leading-normal text-text-1">{{ topInfo.label }}</p>
             <div class="flex items-center">
               <div v-if="topInfo.icon" class="mr-2 h-4 w-4 shrink-0 overflow-hidden rounded-full">
-                <gameErrImg
+                <gameRemoteImg
                   :img="{ src: topInfo.icon, maintain: false, fit: 'contain' }"
                   class="h-full w-full"
                 />
@@ -84,7 +84,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import withdrawPopShell from './withdrawPopShell.vue'
 

@@ -255,6 +255,61 @@ export interface QueryMemberPayOrderPageResponse {
   result?: QueryMemberPayOrderPageResult
 }
 
+/**
+ * 会员充提 MQTT 实时推送消息
+ */
+export interface TradePushMessage {
+  msgType: number
+  amount?: number | string
+  currency?: string
+  orderId: string
+  orderType: number | string
+  orderStatus?: number
+  isFirst?: number
+  payId?: string
+  createTime?: number
+  status?: number
+}
+
+/**
+ * 会员充提补偿同步请求参数
+ */
+export interface QueryMemberPayOrderSyncReq {
+  lastSyncTime?: number
+  latestOrderId?: string
+}
+
+/**
+ * 会员充提补偿同步单条消息
+ */
+export interface MemberPayOrderSyncItem {
+  messageTime: number
+  orderId: string
+  orderType: '0' | '1'
+  status: number
+  busiAmount: number | string
+  currency: string
+}
+
+/**
+ * 会员充提补偿同步返回结果
+ */
+export interface QueryMemberPayOrderSyncResp {
+  records: MemberPayOrderSyncItem[]
+  nextSyncTime: number
+  hasMore: boolean
+}
+
+/**
+ * 会员充提补偿同步响应
+ */
+export interface QueryMemberPayOrderSyncResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryMemberPayOrderSyncResp
+}
+
 export interface UpdatePayOrderRemarkForm {
   orderId: string | number
   orderRemark: string

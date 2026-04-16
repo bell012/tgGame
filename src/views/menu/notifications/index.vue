@@ -4,7 +4,7 @@
     :class="
       props.panelMode
         ? 'notification-list-page h-full bg-bg-1'
-        : 'notification-list-page min-h-screen bg-bg-1 -mx-[14px] sm:mx-auto sm:max-w-[420px]'
+        : 'notification-list-page fixed inset-0 z-[60] overflow-y-auto bg-bg-1'
     "
   >
     <!-- 通知列表容器 -->
@@ -12,7 +12,7 @@
       :class="
         props.panelMode
           ? 'notifications-shell flex h-full min-h-0 flex-col bg-bg-1'
-          : 'notifications-shell min-h-screen bg-bg-1'
+          : 'notifications-shell min-h-screen bg-bg-1 sm:mx-auto sm:max-w-[420px]'
       "
       style="font-family: Inter, avertastd, sans-serif"
     >
@@ -33,7 +33,7 @@
         :class="
           props.panelMode
             ? 'page-body min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-3'
-            : 'page-body mt-[14px] px-[14px] pb-[calc(env(safe-area-inset-bottom)+74px)]'
+            : 'page-body px-[14px] pb-[calc(env(safe-area-inset-bottom)+74px)] pt-[14px]'
         "
       >
         <!-- 通知分类导航 -->
@@ -72,51 +72,80 @@
           <!-- 通知卡片 -->
           <article
             v-for="item in filteredNotifications"
-            :key="`${item.category}-${item.rowId}`"
-            class="notice-card flex flex-col rounded-[10px]"
+            :key="item.localId"
+            class="notice-card flex flex-col"
             :class="[
               isTransactionNotification(item)
-                ? 'gap-[10px] bg-bg-2 px-[14px] pb-0 pt-[14px]'
-                : 'gap-[10px] bg-bg-2 px-[14px] pb-[10px] pt-[14px]',
+                ? props.panelMode
+                  ? 'min-h-[168px] gap-[14px] rounded-[18px] bg-[#323738] px-[16px] pb-0 pt-[16px]'
+                  : 'min-h-[120px] gap-[10px] rounded-[10px] bg-[#323738] px-[14px] pb-0 pt-[14px]'
+                : 'gap-[10px] rounded-[10px] bg-bg-2 px-[14px] pb-[10px] pt-[14px]',
               { 'notice-card-read opacity-[0.72]': item.read }
             ]"
           >
             <template v-if="isTransactionNotification(item)">
               <!-- 交易通知内容 -->
-              <div class="notice-title-row flex items-center gap-[7px]">
+              <div
+                class="notice-title-row flex w-full items-center"
+                :class="props.panelMode ? 'min-h-[22px] gap-[8px]' : 'min-h-[17px] gap-[7px]'"
+              >
                 <h2
-                  class="notice-title min-w-0 break-words text-[14px] font-[700] leading-[17px] text-text-1"
+                  class="notice-title min-w-0 break-words font-[700] text-white"
+                  :class="
+                    props.panelMode
+                      ? 'max-w-[220px] text-[16px] leading-[22px]'
+                      : 'max-w-[159px] text-[14px] leading-[17px]'
+                  "
                 >
                   {{ getNoticeTitle(item) }}
                 </h2>
                 <span
-                  v-if="!item.read"
-                  class="notice-dot h-[8px] w-[8px] shrink-0 rounded-full bg-theme-primary"
+                  class="notice-dot shrink-0 rounded-full"
+                  :class="['h-[8px] w-[8px]', getTransactionStatusDotClass(item)]"
                 ></span>
               </div>
 
               <!-- 交易通知正文 -->
               <p
-                class="notice-message break-words text-[12px] font-[400] leading-[15px] text-text-1"
+                class="notice-message w-full break-words font-[400] text-white"
+                :class="
+                  props.panelMode
+                    ? 'min-h-[54px] text-[13px] leading-[18px]'
+                    : 'min-h-[30px] text-[12px] leading-[15px]'
+                "
               >
                 {{ getTransactionMessage(item) }}
               </p>
 
               <!-- 交易通知底部信息 -->
               <div
-                class="notice-footer flex items-center justify-between gap-[12px] border-t border-opacity-5 py-[10px]"
+                class="notice-footer flex w-full items-center justify-between border-t border-t-white/[0.06]"
+                :class="
+                  props.panelMode ? 'min-h-[52px] gap-[12px] py-[12px]' : 'gap-[12px] py-[10px]'
+                "
               >
-                <time class="notice-time text-[12px] font-[400] leading-[15px] text-text-2">
+                <time
+                  class="notice-time font-[400] text-[#B3BEC1]"
+                  :class="'text-[12px] leading-[15px]'"
+                >
                   {{ getNoticeTime(item) }}
                 </time>
 
                 <button
                   type="button"
-                  class="delete-button inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[6px] bg-opacity-10"
-                  @click.stop="removeNotification(item.rowId, item.category)"
+                  class="delete-button inline-flex shrink-0 items-center justify-center bg-white/[0.1]"
+                  :class="
+                    props.panelMode
+                      ? 'h-[24px] w-[24px] rounded-[8px]'
+                      : 'h-[20px] w-[20px] rounded-[6px]'
+                  "
+                  @click.stop="removeNotification(item)"
                   :aria-label="$t('notifications.deleteAria')"
                 >
-                  <component :is="delIcon" class="h-[13px] w-[13px]" />
+                  <component
+                    :is="delIcon"
+                    :class="props.panelMode ? 'h-[14px] w-[14px]' : 'h-[13px] w-[13px]'"
+                  />
                 </button>
               </div>
             </template>
@@ -124,6 +153,7 @@
             <template v-else>
               <!-- 普通通知点击区域 -->
               <div class="cursor-pointer" @click="openNotificationDetail(item)">
+                <!-- 普通通知标题区域 -->
                 <div class="notice-title-row flex items-center gap-[7px]">
                   <h2
                     class="notice-title min-w-0 break-words text-[14px] font-[700] leading-[1.25] text-text-1"
@@ -185,7 +215,7 @@
                 <button
                   type="button"
                   class="delete-button inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[6px] bg-opacity-10"
-                  @click.stop="removeNotification(item.rowId, item.category)"
+                  @click.stop="removeNotification(item)"
                   :aria-label="$t('notifications.deleteAria')"
                 >
                   <component :is="delIcon" class="h-[13px] w-[13px]" />
@@ -439,8 +469,10 @@ import delIcon from '@/static/svg/del.svg?component'
 import markReadIcon from '@/static/svg/mark-read-icon.svg?component'
 
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+import { useAuthModalStore } from '@/stores/authModal'
+import { useTradeMessageSyncStore } from '@/stores/tradeMessageSync'
+import { formatDisplayTime } from '@/utils/date'
 import { getLanguageCode } from '@/utils/locale'
-import { formatNotificationTime } from '@/utils/notification'
 import {
   getDeletedNotificationIds,
   getReadNotificationIds,
@@ -448,19 +480,35 @@ import {
   markNotificationAsRead,
   markNotificationsAsRead
 } from '@/utils/notification-cache'
+import type { TradeMessageStreamItem } from '@/utils/payOrderSync'
+import { getPayOrderDisplayStatus, normalizePayOrderType } from '@/utils/payOrderSync'
 import { navigateTo } from '@/utils/router'
-import { computed, ref, watch } from 'vue'
+import { closeToast, showLoadingToast, showToast } from 'vant'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { NavigationFailureType, isNavigationFailure } from 'vue-router'
 
+// 通知分类类型。
 type NotificationCategory = 'promotions' | 'transactions' | 'system'
-const PAGE_SIZE = 10
+// 通知分类常量列表，统一用于遍历所有通知 tab。
+const NOTIFICATION_CATEGORIES: NotificationCategory[] = ['promotions', 'transactions', 'system']
+// 通知列表单次分页拉取数量。
+const PAGE_SIZE = 100
+// 通知详情数据在 sessionStorage 中的缓存键。
 const NOTIFICATION_DETAIL_STORAGE_KEY = 'menuNotificationDetail'
+// 通知列表状态在 sessionStorage 中的缓存键。
 const NOTIFICATION_LIST_STATE_STORAGE_KEY = 'menuNotificationListState'
+// 通知列表恢复标记在 sessionStorage 中的缓存键。
 const NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY = 'menuNotificationListRestoreFlag'
+// 通知内部 URL 连通性校验的超时时间。
+const NOTIFICATION_URL_OPEN_TIMEOUT_MS = 8000
 
 interface NotificationItem extends NoticeRecord {
   category: NotificationCategory
   read: boolean
+  localId: string
+  transactionKey?: string
+  tradeMessage?: TradeMessageStreamItem
 }
 
 interface NotificationCategoryState {
@@ -477,11 +525,15 @@ interface NotificationListState {
   categories: Record<NotificationCategory, NotificationCategoryState>
 }
 
-interface LegacyNotificationListState {
-  activeTab: NotificationCategory
-  showUnreadOnly: boolean
-  notifications: NotificationItem[]
-  loadedCategories: NotificationCategory[]
+const hashNotificationKey = (value: string) => {
+  let hash = 0
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash << 5) - hash + value.charCodeAt(index)
+    hash |= 0
+  }
+
+  return Math.abs(hash) + 1
 }
 
 const props = withDefaults(
@@ -498,6 +550,11 @@ const emit = defineEmits<{
   close: []
 }>()
 
+// 登录弹窗状态管理。
+const authModalStore = useAuthModalStore()
+// 充提消息同步状态管理。
+const tradeMessageSyncStore = useTradeMessageSyncStore()
+// 当前页面的国际化方法。
 const { t } = useI18n()
 
 // 生成顶部分类 tabs 数据。
@@ -515,7 +572,7 @@ const tabLabelMap = computed<Record<NotificationCategory, string>>(() => ({
 }))
 
 const showDeleteConfirm = ref(false)
-const pendingDelete = ref<{ rowId: number; category: NotificationCategory } | null>(null)
+const pendingDelete = ref<NotificationItem | null>(null)
 const isDeletingNotification = ref(false)
 // 页面分类和接口 msgType 的映射关系
 const msgTypeMap: Record<NotificationCategory, number> = {
@@ -573,7 +630,7 @@ const isNotificationCategoryState = (value: unknown): value is NotificationCateg
   )
 }
 
-// 判断值是否为新版通知列表缓存结构。
+// 判断值是否为当前通知列表缓存结构。
 const isNotificationListState = (value: unknown): value is NotificationListState => {
   if (!value || typeof value !== 'object') {
     return false
@@ -595,56 +652,6 @@ const isNotificationListState = (value: unknown): value is NotificationListState
   )
 }
 
-// 判断值是否为旧版通知列表缓存结构。
-const isLegacyNotificationListState = (value: unknown): value is LegacyNotificationListState => {
-  if (!value || typeof value !== 'object') {
-    return false
-  }
-
-  const state = value as Partial<LegacyNotificationListState>
-  return (
-    isNotificationCategory(state.activeTab) &&
-    typeof state.showUnreadOnly === 'boolean' &&
-    Array.isArray(state.notifications) &&
-    Array.isArray(state.loadedCategories) &&
-    state.loadedCategories.every(category => isNotificationCategory(category))
-  )
-}
-
-// 将旧版分类缓存推断为当前使用的分类状态。
-const inferLegacyCategoryState = (
-  items: NotificationItem[],
-  loaded: boolean
-): NotificationCategoryState => {
-  const itemCount = items.length
-  const finished = loaded && itemCount < PAGE_SIZE
-
-  return {
-    items,
-    nextPage: loaded ? Math.floor(itemCount / PAGE_SIZE) + 1 : 1,
-    finished,
-    total: loaded ? itemCount : null,
-    loaded
-  }
-}
-
-// 将旧版通知列表缓存转换为新版分类结构。
-const convertLegacyState = (
-  state: LegacyNotificationListState
-): Record<NotificationCategory, NotificationCategoryState> => {
-  const nextCategories = createDefaultCategoryStates()
-
-  ;(['promotions', 'transactions', 'system'] as NotificationCategory[]).forEach(category => {
-    const categoryItems = state.notifications.filter(item => item.category === category)
-    nextCategories[category] = inferLegacyCategoryState(
-      categoryItems,
-      state.loadedCategories.includes(category)
-    )
-  })
-
-  return nextCategories
-}
-
 // 从 sessionStorage 恢复通知列表缓存状态。
 const restoreNotificationListState = (): NotificationListState | null => {
   const rawValue = sessionStorage.getItem(NOTIFICATION_LIST_STATE_STORAGE_KEY)
@@ -660,14 +667,6 @@ const restoreNotificationListState = (): NotificationListState | null => {
         activeTab: parsedValue.activeTab,
         showUnreadOnly: parsedValue.showUnreadOnly,
         categories: cloneCategoryStates(parsedValue.categories)
-      }
-    }
-
-    if (isLegacyNotificationListState(parsedValue)) {
-      return {
-        activeTab: parsedValue.activeTab,
-        showUnreadOnly: parsedValue.showUnreadOnly,
-        categories: convertLegacyState(parsedValue)
       }
     }
 
@@ -725,10 +724,75 @@ const mergeCategoryItems = (current: NotificationItem[], incoming: NotificationI
   return merged
 }
 
+// 将充提消息金额格式化为文案中的展示形式。
+const formatTransactionAmountText = (item: TradeMessageStreamItem) => {
+  const rawAmount = item.busiAmount ?? item.amount
+  const normalizedAmount = Number(rawAmount)
+  const amountText = Number.isFinite(normalizedAmount)
+    ? Number.isInteger(normalizedAmount)
+      ? String(normalizedAmount)
+      : String(normalizedAmount)
+    : String(rawAmount ?? '').trim()
+  const currencyText = String(item.currency ?? '').trim()
+
+  return [amountText, currencyText].filter(Boolean).join(' ')
+}
+
+// 将充提消息转换为交易通知卡片数据。
+const mapTradeMessageToNotification = (item: TradeMessageStreamItem): NotificationItem => {
+  const transactionKey = item.key
+  const rowId = hashNotificationKey(transactionKey)
+
+  return {
+    channelId: [],
+    createTime: item.messageTime,
+    enable: 1,
+    isImage: 0,
+    jumpType: undefined,
+    languageCode: getLanguageCode(),
+    linkUrl: '',
+    linkType: undefined,
+    loginAfterPopWay: 0,
+    loginBeforePopWay: 0,
+    msgType: 'transactions',
+    noticeText: '',
+    noticeTitle: '',
+    noticeType: '0',
+    pushChannel: '',
+    recipientObj: 0,
+    rowId,
+    site: '',
+    sort: 0,
+    category: 'transactions',
+    read: tradeMessageSyncStore.readMessageKeys.includes(transactionKey),
+    localId: `transactions-${transactionKey}`,
+    transactionKey,
+    tradeMessage: item
+  }
+}
+
+// 生成交易通知列表，删除后的消息不会继续展示。
+const transactionNotifications = computed(() =>
+  tradeMessageSyncStore.messageStream
+    .filter(item => !tradeMessageSyncStore.deletedMessageKeys.includes(item.key))
+    .map(item => mapTradeMessageToNotification(item))
+)
+
+// 构造交易分类的运行时状态，便于和普通通知共用列表逻辑。
+const transactionCategoryState = computed<NotificationCategoryState>(() => ({
+  items: transactionNotifications.value,
+  nextPage: 1,
+  finished: true,
+  total: transactionNotifications.value.length,
+  loaded: tradeMessageSyncStore.isInitialized
+}))
+
 // 聚合所有分类通知，供未读数量统计使用。
 const notifications = computed(() =>
-  (['promotions', 'transactions', 'system'] as NotificationCategory[]).flatMap(
-    category => categoryStates.value[category].items
+  NOTIFICATION_CATEGORIES.flatMap(category =>
+    category === 'transactions'
+      ? transactionCategoryState.value.items
+      : categoryStates.value[category].items
   )
 )
 
@@ -736,6 +800,18 @@ const notifications = computed(() =>
 const unreadCountByCategory = computed<Record<NotificationCategory, number>>(() => {
   return notifications.value.reduce(
     (acc, item) => {
+      if (item.category === 'transactions') {
+        if (
+          !item.read &&
+          item.transactionKey &&
+          !tradeMessageSyncStore.clearedBadgeMessageKeys.includes(item.transactionKey)
+        ) {
+          acc.transactions += 1
+        }
+
+        return acc
+      }
+
       if (!item.read) {
         acc[item.category] += 1
       }
@@ -752,7 +828,11 @@ const unreadCountByCategory = computed<Record<NotificationCategory, number>>(() 
 
 // 当前激活分类的未读数量。
 const currentTabUnreadCount = computed(() => unreadCountByCategory.value[activeTab.value])
-const activeCategoryState = computed(() => categoryStates.value[activeTab.value])
+const activeCategoryState = computed(() =>
+  activeTab.value === 'transactions'
+    ? transactionCategoryState.value
+    : categoryStates.value[activeTab.value]
+)
 const activeCategoryLoaded = computed(() => activeCategoryState.value.loaded)
 const activeCategoryFinished = computed(() => activeCategoryState.value.finished)
 
@@ -763,7 +843,7 @@ const filteredNotifications = computed(() => {
 
 // 判断是否为交易通知，用于切换交易卡片样式。
 const isTransactionNotification = (item: NotificationItem) => {
-  return item.category === 'transactions' || item.msgType === 'transactions'
+  return item.category === 'transactions'
 }
 
 // 将通知图片路径转换为完整资源地址。
@@ -775,17 +855,84 @@ const toGameImageUrl = (value: string) => {
 }
 // 获取通知标题，接口为空时回退到分类标题。
 const getNoticeTitle = (item: NotificationItem) => {
+  if (isTransactionNotification(item) && item.tradeMessage) {
+    const orderType = normalizePayOrderType(item.tradeMessage.orderType)
+    const displayStatus = getPayOrderDisplayStatus(orderType, item.tradeMessage.status)
+
+    if (orderType === '0') {
+      return displayStatus === 'success'
+        ? 'Deposit Successful'
+        : displayStatus === 'failed'
+          ? 'Deposit Failed'
+          : 'Deposit in Progress'
+    }
+
+    return displayStatus === 'success'
+      ? 'Withdrawal Successful'
+      : displayStatus === 'failed'
+        ? 'Withdrawal Failed'
+        : 'Withdrawal in Progress'
+  }
+
   return item.noticeTitle || tabLabelMap.value[item.category]
 }
 
-// 获取交易卡片正文内容，优先使用 noticeText。
+// 获取交易卡片正文内容。
 const getTransactionMessage = (item: NotificationItem) => {
-  return item.noticeText || getNoticeTitle(item)
+  if (!item.tradeMessage) {
+    return item.noticeText || getNoticeTitle(item)
+  }
+
+  const orderType = normalizePayOrderType(item.tradeMessage.orderType)
+  const displayStatus = getPayOrderDisplayStatus(orderType, item.tradeMessage.status)
+  const amountText = formatTransactionAmountText(item.tradeMessage)
+
+  if (orderType === '0') {
+    if (displayStatus === 'success') {
+      return `Your ${amountText} deposit has been completed successfully. Enjoy your game!`
+    }
+
+    if (displayStatus === 'failed') {
+      return `Your ${amountText} deposit could not be completed. Please try again or contact support.`
+    }
+
+    return 'Your deposit proof has been submitted successfully and is currently under review.'
+  }
+
+  if (displayStatus === 'success') {
+    return `Your withdrawal of ${amountText} has been completed successfully.`
+  }
+
+  if (displayStatus === 'failed') {
+    return `Your withdrawal of ${amountText} could not be completed. Please try again or contact support.`
+  }
+
+  return `Your withdrawal request for ${amountText} is being processed. Please wait patiently.`
+}
+
+// 返回交易通知圆点颜色。
+const getTransactionStatusDotClass = (item: NotificationItem) => {
+  if (!item.tradeMessage) {
+    return 'bg-theme-primary'
+  }
+
+  const orderType = normalizePayOrderType(item.tradeMessage.orderType)
+  const displayStatus = getPayOrderDisplayStatus(orderType, item.tradeMessage.status)
+
+  if (displayStatus === 'success') {
+    return 'bg-[#2AEE88]'
+  }
+
+  if (displayStatus === 'failed') {
+    return 'bg-[#FF6B6B]'
+  }
+
+  return 'bg-[#FFB020]'
 }
 
 // 将 createTime 格式化为页面展示时间。
 const getNoticeTime = (item: NotificationItem) => {
-  return formatNotificationTime(item.createTime)
+  return formatDisplayTime(item.createTime)
 }
 
 // 判断当前通知是否有可展示的图片内容。
@@ -876,12 +1023,14 @@ const mapRecordToNotification = (
   category: NotificationCategory
 ): NotificationItem => {
   const normalizedIsImage = normalizeIsImage(Number(record.isImage))
+
   return {
     ...record,
     isImage: normalizedIsImage,
     category,
+    localId: `${category}-${record.rowId}`,
     msgType: record.msgType || category,
-    read: false
+    read: Number(record.readStatus) === 1
   }
 }
 
@@ -910,7 +1059,7 @@ const applyNotificationCache = (items: NotificationItem[]) => {
     .filter(item => !deletedIds.has(item.rowId))
     .map(item => ({
       ...item,
-      read: readIds.has(item.rowId)
+      read: item.read || readIds.has(item.rowId)
     }))
 }
 
@@ -929,6 +1078,12 @@ const persistNotificationListState = () => {
 const clearNotificationListState = () => {
   sessionStorage.removeItem(NOTIFICATION_LIST_STATE_STORAGE_KEY)
   sessionStorage.removeItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY)
+}
+
+// 为离开通知列表的同 tab 跳转保存恢复现场。
+const prepareNotificationListRestore = () => {
+  persistNotificationListState()
+  sessionStorage.setItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY, '1')
 }
 
 // 请求指定分类的通知分页数据。
@@ -1000,14 +1155,34 @@ const createCategoryLoader = (category: NotificationCategory) =>
 
 const categoryLoaders = {
   promotions: createCategoryLoader('promotions'),
-  transactions: createCategoryLoader('transactions'),
+  transactions: {
+    loading: computed(() => activeTab.value === 'transactions' && tradeMessageSyncStore.isSyncing)
+  },
   system: createCategoryLoader('system')
 }
 
 const activeCategoryLoading = computed(() => categoryLoaders[activeTab.value].loading.value)
 
+// 当用户停留在交易通知 tab 时，将当前交易消息标记为已读。
+const markTransactionsAsReadOnView = () => {
+  if (activeTab.value !== 'transactions') {
+    return
+  }
+
+  // 清空 Transactions 提示角标，但不改动消息已读状态。
+  tradeMessageSyncStore.clearTradeMessageBadges(
+    transactionNotifications.value
+      .map(item => item.transactionKey)
+      .filter((item): item is string => Boolean(item))
+  )
+}
+
 // 预取非当前分类的第一页数据，用于提前展示未读徽标。
 const prefetchCategoryBadge = async (category: NotificationCategory) => {
+  if (category === 'transactions') {
+    return
+  }
+
   if (activeTab.value === category || categoryStates.value[category].loaded) {
     return
   }
@@ -1025,13 +1200,14 @@ const prefetchCategoryBadge = async (category: NotificationCategory) => {
 
 // 初始化通知分类数据。
 const initializeNotificationCategories = () => {
-  void prefetchCategoryBadge('promotions')
-  void prefetchCategoryBadge('system')
+  NOTIFICATION_CATEGORIES.forEach(category => {
+    void prefetchCategoryBadge(category)
+  })
 }
 
 // 删除单条通知（通过 rowId + category 定位）。
-const removeNotification = (rowId: number, category: NotificationCategory) => {
-  pendingDelete.value = { rowId, category }
+const removeNotification = (item: NotificationItem) => {
+  pendingDelete.value = item
   showDeleteConfirm.value = true
 }
 
@@ -1053,42 +1229,42 @@ const handlePanelClose = () => {
   emit('close')
 }
 
-// 打开通知详情页，并同步更新当前列表中的已读状态。
-// TODO：后续可能细分跳转逻辑
-// if (jumpType == 1) {
-//   // URL跳转
-//   if (linkType == 0) {
-//     // 不跳转
-//   } else if (linkType == 1) {
-//     // 内部URL跳转
-//     // H5/PC：嵌套打开
-//     // APP：应用内打开
-//     // 目标地址看 linkUrl
-//   } else if (linkType == 2) {
-//     // 外部URL跳转
-//     // H5/PC：新窗口
-//     // APP：浏览器打开
-//     // 目标地址看 linkUrl
-//   }
-// } else if (jumpType == 2) {
-//   // 内部页面跳转
-//   if (linkType == 1) {
-//     // 活动
-//   } else if (linkType == 2) {
-//     // 充值栏目
-//   } else if (linkType == 3) {
-//     // 分享转盘
-//   } else if (linkType == 4) {
-//     // 充值页面
-//   } else if (linkType == 5) {
-//     // 积分转盘
-//   }
-//   // 具体参数可能也看 linkUrl
-// } else if (jumpType == 3) {
-//   // 跳转游戏
-//   // 具体目标可能看 linkUrl
-// }
-const openNotificationDetail = (item: NotificationItem) => {
+// promotions/system 执行 URL 跳转前展示加载提示。
+const showNotificationJumpLoading = () => {
+  showLoadingToast({
+    message: t('common.loading'),
+    duration: 0,
+    forbidClick: true,
+    loadingType: 'spinner'
+  })
+}
+
+// 关闭通知跳转中的加载提示。
+const hideNotificationJumpLoading = () => {
+  closeToast()
+}
+
+// 通知跳转失败时弹出提示。
+const showNotificationJumpFailedToast = () => {
+  showToast({
+    message: t('notifications.jumpOpenFailed'),
+    position: 'middle',
+    type: 'fail'
+  })
+}
+
+// 页面卸载时兜底关闭跳转中的加载提示，避免残留到新页面。
+onUnmounted(() => {
+  hideNotificationJumpLoading()
+})
+
+// 将通知标记为已读，并同步本地列表状态。
+const markNotificationAsReadInState = (item: NotificationItem) => {
+  if (item.transactionKey) {
+    tradeMessageSyncStore.markTradeMessageAsRead(item.transactionKey)
+    return
+  }
+
   markNotificationAsRead(item.rowId)
   updateCategoryState(item.category, state => ({
     ...state,
@@ -1096,14 +1272,16 @@ const openNotificationDetail = (item: NotificationItem) => {
       notification.rowId === item.rowId ? { ...notification, read: true } : notification
     )
   }))
+}
 
+// 打开通知详情页。
+const openNotificationDetailPage = (item: NotificationItem) => {
   if (props.panelMode) {
     emit('open-detail', item)
     return
   }
 
-  persistNotificationListState()
-  sessionStorage.setItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY, '1')
+  prepareNotificationListRestore()
   sessionStorage.setItem(NOTIFICATION_DETAIL_STORAGE_KEY, JSON.stringify(item))
   navigateTo('/menu/notifications/detail', {
     query: {
@@ -1111,6 +1289,235 @@ const openNotificationDetail = (item: NotificationItem) => {
       category: item.category
     }
   })
+}
+
+// 将 jumpType 规整为数字，值含义：
+// 0 不跳转
+// 1 URL 跳转
+// 2 跳转内部页面
+// 3 跳转游戏
+const getNormalizedJumpType = (value: number | undefined) => Number(value) || 0
+
+// 将 linkType 规整为数字。
+// jumpType = 1 时：0 不跳转、1 内部 URL、2 外部 URL。
+// jumpType = 2 时：0 不跳转、1 活动、2 充值栏目、3 分享转盘、4 充值页面、5 积分转盘、6 邀请好友、7 登录注册页。
+const getNormalizedLinkType = (value: number | undefined) => Number(value) || 0
+
+// 将 linkUrl 规整为去除首尾空白的字符串。
+const getNormalizedLinkUrl = (value: string | undefined) => String(value ?? '').trim()
+
+// 判断链接是否为 http/https 绝对地址。
+const isAbsoluteHttpUrl = (value: string) => /^https?:\/\//i.test(value)
+
+// 判断链接是否为项目内部可识别的路由路径。
+const isInternalRoutePath = (value: string) =>
+  /^\/?[A-Za-z0-9/_-]+(?:\?[A-Za-z0-9\-._~%!$&'()*+,;=:@/?]*)?(?:#[^\s]*)?$/.test(value)
+
+// 在同页打开内部 URL 前，先做一次连通性校验。
+const verifyNotificationInternalUrl = async (linkUrl: string) => {
+  if (!isAbsoluteHttpUrl(linkUrl)) {
+    return true
+  }
+
+  const abortController = new AbortController()
+  const timeoutId = window.setTimeout(
+    () => abortController.abort(),
+    NOTIFICATION_URL_OPEN_TIMEOUT_MS
+  )
+
+  try {
+    await fetch(linkUrl, {
+      method: 'GET',
+      mode: 'no-cors',
+      cache: 'no-store',
+      signal: abortController.signal
+    })
+    return true
+  } catch (error) {
+    console.error('verifyNotificationInternalUrl failed', error)
+    return false
+  } finally {
+    window.clearTimeout(timeoutId)
+  }
+}
+
+// 判断通知是否配置了列表页直接跳转行为。
+const isJumpNotification = (item: NotificationItem) => {
+  // jumpType：0 不跳转、1 URL 跳转、2 跳转内部页面、3 跳转游戏。
+  const jumpType = getNormalizedJumpType(item.jumpType)
+  // linkType：在不同 jumpType 下代表不同子类型，具体含义见上方注释。
+  const linkType = getNormalizedLinkType(item.linkType)
+  const linkUrl = getNormalizedLinkUrl(item.linkUrl)
+
+  if (jumpType === 1) {
+    return (linkType === 1 || linkType === 2) && Boolean(linkUrl)
+  }
+
+  if (jumpType === 2) {
+    return linkType > 0 || Boolean(linkUrl)
+  }
+
+  if (jumpType === 3) {
+    return Boolean(linkUrl)
+  }
+
+  return false
+}
+
+// 处理通知配置的内部 URL 跳转。
+const openNotificationInternalUrl = async (linkUrl: string) => {
+  if (!linkUrl) {
+    return false
+  }
+
+  if (isAbsoluteHttpUrl(linkUrl)) {
+    const canOpen = await verifyNotificationInternalUrl(linkUrl)
+    if (!canOpen) {
+      return false
+    }
+
+    prepareNotificationListRestore()
+    return Boolean(window.open(linkUrl, '_self'))
+  }
+
+  if (!isInternalRoutePath(linkUrl)) {
+    return false
+  }
+
+  prepareNotificationListRestore()
+  const navigationResult = await navigateTo(linkUrl)
+
+  if (
+    navigationResult &&
+    (isNavigationFailure(navigationResult, NavigationFailureType.aborted) ||
+      isNavigationFailure(navigationResult, NavigationFailureType.cancelled))
+  ) {
+    return false
+  }
+
+  return true
+}
+
+// 处理“跳转内部页面”类型的通知点击。
+const handleInternalPageJump = async (item: NotificationItem) => {
+  // linkType：1 活动、2 充值栏目、3 分享转盘、4 充值页面、5 积分转盘、6 邀请好友、7 登录注册页。
+  const linkType = getNormalizedLinkType(item.linkType)
+  const linkUrl = getNormalizedLinkUrl(item.linkUrl)
+
+  if (await openNotificationInternalUrl(linkUrl)) {
+    return true
+  }
+
+  if (linkType === 2 || linkType === 4) {
+    prepareNotificationListRestore()
+    await navigateTo('/deposit')
+    return true
+  }
+
+  if (linkType === 6) {
+    prepareNotificationListRestore()
+    await navigateTo('/menu/referral')
+    return true
+  }
+
+  if (linkType === 7) {
+    authModalStore.openLoginModal()
+    return true
+  }
+
+  return false
+}
+
+// 处理“跳转游戏”类型的通知点击。
+const handleGameJump = async (item: NotificationItem) => {
+  const [pgType, platformCode, gameCode] = getNormalizedLinkUrl(item.linkUrl)
+    .split('|')
+    .map(value => value.trim())
+
+  if (!pgType || !platformCode || !gameCode) {
+    console.warn('notification game jump payload invalid', item)
+    return false
+  }
+
+  prepareNotificationListRestore()
+
+  try {
+    const response = await Api.game.getloginPlatform({
+      pgType,
+      platformCode,
+      gameCode
+    })
+
+    const platformLink = String(response?.result?.platformLink ?? '').trim()
+    if (!platformLink) {
+      console.warn('notification game jump missing platformLink', response)
+      return false
+    }
+
+    window.open(platformLink, '_self')
+    return true
+  } catch (error) {
+    console.error('handleGameJump failed', error)
+    return false
+  }
+}
+
+// 点击通知：跳转型直接执行跳转，其余进入详情。
+const openNotificationDetail = async (item: NotificationItem) => {
+  markNotificationAsReadInState(item)
+
+  if (!isJumpNotification(item)) {
+    openNotificationDetailPage(item)
+    return
+  }
+
+  // jumpType：0 不跳转、1 URL 跳转、2 跳转内部页面、3 跳转游戏。
+  const jumpType = getNormalizedJumpType(item.jumpType)
+  // linkType：jumpType = 1 时表示 URL 类型；jumpType = 2 时表示内部页面类型。
+  const linkType = getNormalizedLinkType(item.linkType)
+  const linkUrl = getNormalizedLinkUrl(item.linkUrl)
+  const shouldShowUrlJumpLoading = item.category !== 'transactions' && jumpType === 1
+
+  if (jumpType === 1) {
+    try {
+      if (shouldShowUrlJumpLoading) {
+        showNotificationJumpLoading()
+      }
+
+      if (linkType === 2 && isAbsoluteHttpUrl(linkUrl)) {
+        window.open(linkUrl, '_blank', 'noopener,noreferrer')
+        return
+      }
+
+      if (linkType === 1 && (await openNotificationInternalUrl(linkUrl))) {
+        return
+      }
+    } finally {
+      if (shouldShowUrlJumpLoading) {
+        hideNotificationJumpLoading()
+      }
+    }
+
+    if (linkType === 1) {
+      showNotificationJumpFailedToast()
+    }
+
+    console.warn('notification url jump skipped', item)
+    return
+  }
+
+  if (jumpType === 2) {
+    if (await handleInternalPageJump(item)) {
+      return
+    }
+
+    console.warn('notification internal page jump skipped', item)
+    return
+  }
+
+  if (jumpType === 3) {
+    await handleGameJump(item)
+  }
 }
 
 // 关闭删除确认弹窗，并清空待删除项。
@@ -1129,16 +1536,20 @@ const confirmRemoveNotification = () => {
     return
   }
 
-  const { rowId, category } = pendingDelete.value
+  const pendingItem = pendingDelete.value
   isDeletingNotification.value = true
 
   try {
-    markNotificationAsDeleted(rowId)
+    if (pendingItem.transactionKey) {
+      tradeMessageSyncStore.markTradeMessageAsDeleted(pendingItem.transactionKey)
+    } else {
+      markNotificationAsDeleted(pendingItem.rowId)
+      updateCategoryState(pendingItem.category, state => ({
+        ...state,
+        items: state.items.filter(item => item.rowId !== pendingItem.rowId)
+      }))
+    }
 
-    updateCategoryState(category, state => ({
-      ...state,
-      items: state.items.filter(item => item.rowId !== rowId)
-    }))
     showDeleteConfirm.value = false
     pendingDelete.value = null
   } catch (error) {
@@ -1150,6 +1561,15 @@ const confirmRemoveNotification = () => {
 
 // 将当前 tab 下所有通知标记为已读。
 const markCurrentTabAsRead = () => {
+  if (activeTab.value === 'transactions') {
+    tradeMessageSyncStore.markTradeMessagesAsRead(
+      activeCategoryState.value.items
+        .map(item => item.transactionKey)
+        .filter((item): item is string => Boolean(item))
+    )
+    return
+  }
+
   const currentTabIds = activeCategoryState.value.items.map(item => item.rowId)
   markNotificationsAsRead(currentTabIds)
   updateCategoryState(activeTab.value, state => ({
@@ -1173,4 +1593,14 @@ watch(
   },
   { deep: true }
 )
+
+// 切换到交易通知 tab 后，当前交易消息立即标记为已读。
+watch(activeTab, () => {
+  markTransactionsAsReadOnView()
+})
+
+// 停留在交易通知 tab 时，新收到的交易消息也自动标记为已读。
+watch(transactionNotifications, () => {
+  markTransactionsAsReadOnView()
+})
 </script>

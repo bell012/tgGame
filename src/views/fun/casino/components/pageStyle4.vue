@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div ref="pageRootRef" class="w-full">
     <div v-if="isLoading" class="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-7">
       <div
         v-for="index in resolvedPageSize"
@@ -17,7 +17,7 @@
         @click="handleClick(item)"
       >
         <div class="h-6 w-4/5 sm:h-11">
-          <gameErrImg :img="getBrandImg(item)" />
+          <gameRemoteImg :img="getBrandImg(item)" />
         </div>
       </a>
     </div>
@@ -47,7 +47,7 @@
         <!-- 总页码 -->
         <span
           class="flex items-center justify-center rounded-md px-2 py-2 text-xs font-bold leading-3 text-text-1"
-          >{{ totalPages }}</span
+          >{{ totalPages < 10 ? '0' + totalPages : totalPages }}</span
         >
       </div>
 
@@ -64,14 +64,14 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
 import type { GameBrandItem } from '@/api/interface/game'
 import type { GameQueryOptions } from '@/stores/game'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 
 interface Props {
   queryOptions?: GameQueryOptions & { keyword?: string }
@@ -80,6 +80,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const gameStore = useGameStore()
+const pageRootRef = ref<HTMLElement | null>(null)
 const page = ref(1)
 const total = ref(0)
 const totalPages = ref(1)
@@ -90,6 +91,27 @@ const canNext = computed(() => page.value < totalPages.value)
 const resolvedQueryOptions = computed(() => props.queryOptions ?? props.modules ?? {})
 const resolvedPageSize = computed(() => Math.max(1, resolvedQueryOptions.value.pageSize ?? 28))
 const resolvedQueryKey = computed(() => JSON.stringify(resolvedQueryOptions.value))
+
+const getScrollParent = (element: HTMLElement | null) => {
+  if (!element || typeof window === 'undefined') {
+    return null
+  }
+
+  let parent = element.parentElement
+
+  while (parent) {
+    const { overflowY } = window.getComputedStyle(parent)
+    const isScrollable = ['auto', 'scroll', 'overlay'].includes(overflowY)
+
+    if (isScrollable && parent.scrollHeight > parent.clientHeight) {
+      return parent
+    }
+
+    parent = parent.parentElement
+  }
+
+  return null
+}
 
 const getBrandImg = (item: GameBrandItem) => {
   const imagePath = item.banner || item.icon
@@ -102,12 +124,38 @@ const getBrandImg = (item: GameBrandItem) => {
   }
 }
 
+const scrollToFirstRow = async () => {
+  await nextTick()
+  const target = pageRootRef.value
+
+  if (!target || typeof window === 'undefined') {
+    return
+  }
+
+  const scrollParent = getScrollParent(target)
+
+  if (scrollParent) {
+    scrollParent.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+    return
+  }
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
+
 const goPrev = () => {
   page.value = Math.min(Math.max(1, page.value - 1), Math.max(1, totalPages.value))
+  void scrollToFirstRow()
 }
 
 const goNext = () => {
   page.value = Math.min(Math.max(1, page.value + 1), Math.max(1, totalPages.value))
+  void scrollToFirstRow()
 }
 
 const handleClick = (item: GameBrandItem) => {

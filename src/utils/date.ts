@@ -5,6 +5,60 @@ const DATE_TIME_FORMAT_LOCALE_MAP: Record<string, string> = {
   eng: 'en-US'
 }
 
+const DISPLAY_TIME_LABEL_MAP: Record<
+  string,
+  {
+    justNow: string
+    today: string
+    yesterday: string
+  }
+> = {
+  zh: {
+    justNow: '刚刚',
+    today: '今天',
+    yesterday: '昨天'
+  },
+  eng: {
+    justNow: 'Just now',
+    today: 'Today',
+    yesterday: 'Yesterday'
+  }
+}
+
+const getDateTimeLocale = () => {
+  const languageCode = getLanguageCode()
+
+  return {
+    languageCode,
+    locale: DATE_TIME_FORMAT_LOCALE_MAP[languageCode] || DATE_TIME_FORMAT_LOCALE_MAP.eng,
+    labels: DISPLAY_TIME_LABEL_MAP[languageCode] || DISPLAY_TIME_LABEL_MAP.eng
+  }
+}
+
+const isSameDay = (left: Date, right: Date) =>
+  left.getFullYear() === right.getFullYear() &&
+  left.getMonth() === right.getMonth() &&
+  left.getDate() === right.getDate()
+
+const formatDisplayClockTime = (date: Date, locale: string, languageCode: string) => {
+  return new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: languageCode !== 'zh'
+  }).format(date)
+}
+
+const formatDisplayDateTime = (date: Date, locale: string, languageCode: string) => {
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: languageCode === 'zh' ? '2-digit' : 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: languageCode !== 'zh'
+  }).format(date)
+}
+
 export const normalizeTimestamp = (value?: number | string | null): number | null => {
   if (value === null || value === undefined || value === '') {
     return null
@@ -55,4 +109,40 @@ export const formatTimestamp = (value?: number | string | null): string => {
   }, {})
 
   return `${partMap.month ?? '00'}/${partMap.day ?? '00'}/${partMap.year ?? '0000'} ${partMap.hour ?? '00'}:${partMap.minute ?? '00'}:${partMap.second ?? '00'} ${partMap.dayPeriod ?? ''}`.trim()
+}
+
+// 展示层时间格式：刚刚 / 今天 / 昨天 / 具体日期。
+export const formatDisplayTime = (value?: number | string | null): string => {
+  const timestamp = normalizeTimestamp(value)
+  const { languageCode, locale, labels } = getDateTimeLocale()
+
+  if (!timestamp) {
+    return labels.justNow
+  }
+
+  const date = new Date(timestamp)
+
+  if (Number.isNaN(date.getTime())) {
+    return labels.justNow
+  }
+
+  const now = new Date()
+  const elapsedMs = now.getTime() - date.getTime()
+
+  if (elapsedMs >= 0 && elapsedMs < 60 * 1000) {
+    return labels.justNow
+  }
+
+  if (isSameDay(date, now)) {
+    return `${labels.today} ${formatDisplayClockTime(date, locale, languageCode)}`
+  }
+
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+
+  if (isSameDay(date, yesterday)) {
+    return `${labels.yesterday} ${formatDisplayClockTime(date, locale, languageCode)}`
+  }
+
+  return formatDisplayDateTime(date, locale, languageCode)
 }

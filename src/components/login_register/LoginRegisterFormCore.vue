@@ -322,7 +322,7 @@ const handleLogin = async () => {
 
     // 登录接口
     const response = await Api.auth.login(loginData)
-    if (response.success && response.result && response.result.tradeToken) {
+    if (response.code == 'C2') {
       // 根据"记住我"状态保存或清除登录信息
       if (formData.value.signin.rememberMe) {
         setRememberedStorageValue(REMEMBERED_ACCOUNT_STORAGE_KEY, formData.value.signin.account)
@@ -365,7 +365,7 @@ const handleRegister = async () => {
 
     // 注册接口
     const response = await Api.auth.register(registerData)
-    if (response.success && response.result) {
+    if (response.code == 'C2') {
       try {
         await userStore.refreshCurrentUserData(formData.value.signup.account)
       } catch (error) {
@@ -396,6 +396,11 @@ const handleSendCode = async () => {
     }
 
     if (!isValidPhoneNumber(telephone)) {
+      showToast({
+        message: t('common.pleaseEnterCorrectPhoneNumber'),
+        type: 'fail',
+        zIndex: 10001
+      })
       return
     }
     // 发送短信接口

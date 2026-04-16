@@ -5,6 +5,11 @@ import Api from '@/api'
 export const SITE_CONFIG_STORAGE_KEY = 'config'
 
 export type SiteConfig = Record<string, unknown>
+export interface PushMessageMqttConfig {
+  host: string
+  username: string
+  password: string
+}
 
 const parseStoredSiteConfig = (): SiteConfig | null => {
   const storedValue = localStorage.getItem(SITE_CONFIG_STORAGE_KEY)
@@ -51,6 +56,25 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
   const syncStoredConfig = () => {
     return setConfigState(parseStoredSiteConfig(), false)
   }
+
+  const getConfigValue = <T = unknown>(key: string): T | undefined => {
+    if (!config.value || !(key in config.value)) {
+      return undefined
+    }
+
+    return config.value[key] as T
+  }
+
+  const getConfigString = (key: string) => {
+    const value = getConfigValue(key)
+    return typeof value === 'string' ? value.trim() : ''
+  }
+
+  const getPushMessageMqttConfig = (): PushMessageMqttConfig => ({
+    host: getConfigString('push.msg.url'),
+    username: getConfigString('srqoi342'),
+    password: getConfigString('hsdkie')
+  })
 
   const refreshSiteConfig = async () => {
     if (pendingRequest) {
@@ -99,6 +123,9 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
     isInitialized,
     setConfigState,
     syncStoredConfig,
+    getConfigValue,
+    getConfigString,
+    getPushMessageMqttConfig,
     initSiteConfig,
     refreshSiteConfig
   }

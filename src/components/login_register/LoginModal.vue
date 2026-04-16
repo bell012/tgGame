@@ -4,6 +4,7 @@
     v-if="isMobile"
     :visible="modelValue && !showResetPassword"
     :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
+    :background-image-url="mobileBackgroundImage"
     @update:visible="handleClose"
     @open-reset-password="openResetPassword"
   />
@@ -12,6 +13,7 @@
   <ResetPasswordMobile
     v-if="isMobile"
     :visible="showResetPassword"
+    :background-image-url="mobileBackgroundImage"
     @update:visible="handleResetPasswordClose"
   />
 
@@ -35,69 +37,75 @@
               class="absolute top-5 right-5 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
               @click="handleClose"
             >
-              <CloseIcon class="w-4 h-4 fill-none" />
+              <CloseIcon class="w-4 h-4 text-text-1" />
             </button>
 
             <!-- 左侧图片区域 -->
             <div class="w-1/2 p-6 flex flex-col bg-bg-2">
               <div class="z-10 w-full flex justify-center">
-                <SmartImage :src="loginLogoImage" alt="Logo" class="w-auto h-12" />
+                <MainLogoIcon class="h-12 w-auto text-text-1" />
               </div>
 
               <div class="w-full h-[245px] mt-6">
-                <SmartImage :src="pcBackgroundImage" alt="" class="w-full h-full" />
+                <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
               </div>
 
-              <div class="mt-6">
-                <div class="mb-3 mt-6 flex items-stretch justify-between">
+              <div class="mt-4">
+                <div class="mb-3 flex items-stretch justify-between">
                   <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
-                      <GiftIcon class="w-5 h-5 fill-none" />
-                      <span class="text-[14px] font-[800] text-text-1 ml-1.5">470%</span>
+                      <GiftIcon class="w-8 h-8" />
+                    </div>
+                    <div class="flex items-center justify-center mt-2">
+                      <span class="text-base font-[700] text-text-1">470%</span>
                     </div>
                     <!-- 首存奖金 -->
-                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                    <div class="text-[11px] text-text-2 mt-1 text-center">
                       {{ t('common.welcome_deposit_bonus') }}
                     </div>
                   </div>
 
-                  <div class="w-px bg-[#e4eaf019]"></div>
+                  <div class="w-px bg-opacity-5"></div>
 
                   <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
-                      <TurntableIcon class="w-5 h-5 fill-none" />
-                      <span class="text-[14px] font-[800] text-text-1 ml-1.5">5 BTC</span>
+                      <TurntableIcon class="w-8 h-8" />
+                    </div>
+                    <div class="flex items-center justify-center mt-2">
+                      <span class="text-base font-[700] text-text-1">5 BTC</span>
                     </div>
                     <!-- 每日免费幸运旋转 -->
-                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                    <div class="text-[11px] text-text-2 mt-1 text-center">
                       {{ t('common.free_daily_lucky_spin') }}
                     </div>
                   </div>
 
-                  <div class="w-px bg-[#e4eaf019]"></div>
+                  <div class="w-px bg-opacity-5"></div>
 
                   <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
-                      <FreePerksIcon class="w-5 h-5 fill-none" />
+                      <FreePerksIcon class="w-8 h-8" />
+                    </div>
+                    <div class="flex items-center justify-center mt-2">
                       <!-- 免费福利 -->
-                      <span class="text-[14px] font-[800] text-text-1 ml-1.5">
+                      <span class="text-base font-[700] text-text-1">
                         {{ t('common.free_perks') }}
                       </span>
                     </div>
                     <!-- 每日免费参与奖金 -->
-                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                    <div class="text-[11px] text-text-2 mt-1 text-center">
                       {{ t('common.daily_free_rewards_bonuses') }}
                     </div>
                   </div>
                 </div>
 
-                <div class="flex items-center justify-center flex-col mt-6">
+                <div class="flex items-center justify-center flex-col mt-16">
                   <!-- 保持桀骜不训 -->
-                  <h2 class="w-full text-center text-[36px] font-[800] text-text-1 mb-1">
+                  <h2 class="w-full text-center text-4xl font-[700] text-text-1 mb-3">
                     {{ t('common.stay_untamed') }}
                   </h2>
                   <!-- 注册并获得欢迎奖金 -->
-                  <p class="w-full text-center text-[16px] font-[600] text-text-1">
+                  <p class="w-full text-center text-base font-[700] text-text-1">
                     {{ t('common.sign_up_get_welcome_bonus') }}
                   </p>
                 </div>
@@ -126,69 +134,75 @@
               class="absolute top-5 right-5 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
               @click="handleClose"
             >
-              <CloseIcon class="w-4 h-4 fill-none" />
+              <CloseIcon class="w-4 h-4 text-text-1" />
             </button>
 
             <!-- 左侧图片区域 -->
             <div class="w-1/2 p-6 flex flex-col bg-bg-2">
               <div class="z-10 w-full flex justify-center">
-                <SmartImage :src="loginLogoImage" alt="Logo" class="w-auto h-12" />
+                <MainLogoIcon class="h-12 w-auto text-text-1" />
               </div>
 
               <div class="w-full h-[245px] mt-6">
-                <SmartImage :src="pcBackgroundImage" alt="" class="w-full h-full" />
+                <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
               </div>
 
-              <div class="mt-6">
-                <div class="mb-3 mt-6 flex items-stretch justify-between">
+              <div class="mt-4">
+                <div class="mb-3 flex items-stretch justify-between">
                   <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
-                      <GiftIcon class="w-5 h-5 fill-none" />
-                      <span class="text-[14px] font-[800] text-text-1 ml-1.5">470%</span>
+                      <GiftIcon class="w-8 h-8" />
+                    </div>
+                    <div class="flex items-center justify-center mt-2">
+                      <span class="text-base font-[700] text-text-1">470%</span>
                     </div>
                     <!-- 首存奖金 -->
-                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                    <div class="text-[11px] text-text-2 mt-1 text-center">
                       {{ t('common.welcome_deposit_bonus') }}
                     </div>
                   </div>
 
-                  <div class="w-px bg-[#e4eaf019]"></div>
+                  <div class="w-px bg-opacity-5"></div>
 
                   <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
-                      <TurntableIcon class="w-5 h-5 fill-none" />
-                      <span class="text-[14px] font-[800] text-text-1 ml-1.5">5 BTC</span>
+                      <TurntableIcon class="w-8 h-8" />
+                    </div>
+                    <div class="flex items-center justify-center mt-2">
+                      <span class="text-base font-[700] text-text-1">5 BTC</span>
                     </div>
                     <!-- 每日免费幸运旋转 -->
-                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                    <div class="text-[11px] text-text-2 mt-1 text-center">
                       {{ t('common.free_daily_lucky_spin') }}
                     </div>
                   </div>
 
-                  <div class="w-px bg-[#e4eaf019]"></div>
+                  <div class="w-px bg-opacity-5"></div>
 
                   <div class="flex-1 flex flex-col items-center justify-start px-2">
                     <div class="flex items-center justify-center">
-                      <FreePerksIcon class="w-5 h-5 fill-none" />
+                      <FreePerksIcon class="w-8 h-8" />
+                    </div>
+                    <div class="flex items-center justify-center mt-2">
                       <!-- 免费福利 -->
-                      <span class="text-[14px] font-[800] text-text-1 ml-1.5">{{
-                        t('common.free_perks')
-                      }}</span>
+                      <span class="text-base font-[700] text-text-1">
+                        {{ t('common.free_perks') }}
+                      </span>
                     </div>
                     <!-- 每日免费参与奖金 -->
-                    <div class="text-[10px] text-text-2 mt-2 text-center">
+                    <div class="text-[11px] text-text-2 mt-1 text-center">
                       {{ t('common.daily_free_rewards_bonuses') }}
                     </div>
                   </div>
                 </div>
 
-                <div class="flex items-center justify-center flex-col mt-6">
+                <div class="flex items-center justify-center flex-col mt-16">
                   <!-- 保持桀骜不训 -->
-                  <h2 class="w-full text-center text-[36px] font-[800] text-text-1 mb-1">
+                  <h2 class="w-full text-center text-4xl font-[700] text-text-1 mb-3">
                     {{ t('common.stay_untamed') }}
                   </h2>
                   <!-- 注册并获得欢迎奖金 -->
-                  <p class="w-full text-center text-[16px] font-[600] text-text-1">
+                  <p class="w-full text-center text-base font-[700] text-text-1">
                     {{ t('common.sign_up_get_welcome_bonus') }}
                   </p>
                 </div>
@@ -209,29 +223,53 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-import GiftIcon from '@/static/svg/login/gift.svg?component'
-import TurntableIcon from '@/static/svg/login/turntable.svg?component'
-import FreePerksIcon from '@/static/svg/login/free_perks.svg?component'
+import GiftIcon from '@/static/svg/login/gift.svg?skipsvgo'
+import TurntableIcon from '@/static/svg/login/turntable.svg?skipsvgo'
+import FreePerksIcon from '@/static/svg/login/free_perks.svg?skipsvgo'
 import LoginFormDesktop from './LoginFormDesktop.vue'
 import LoginFormMobile from './LoginFormMobile.vue'
 import ResetPasswordMobile from './ResetPasswordMobile.vue'
 import ResetPasswordDesktop from './ResetPasswordDesktop.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { useThemeStore } from '@/stores/theme'
 import { useI18n } from 'vue-i18n'
-import loginLogoImage from '@/static/img/home/logo.png'
-import loginPcDark from '@/static/img/home/login_pc_h.png'
-import loginPcLight from '@/static/img/home/login_pc_b.png'
+import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import Api from '@/api'
+import { getLanguageCode } from '@/utils/locale'
 
 // 是否为移动端
 const isMobile = useIsMobile()
-const themeStore = useThemeStore()
 const { t } = useI18n()
 
-// 主题动态背景图
+const ABSOLUTE_IMAGE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
+const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
+const authBannerImageUrl = ref('')
+
+const resolveAuthBannerUrl = (value: unknown) => {
+  const imagePath = String(value ?? '').trim()
+
+  if (!imagePath) {
+    return ''
+  }
+
+  if (ABSOLUTE_IMAGE_URL_PATTERN.test(imagePath)) {
+    return imagePath
+  }
+
+  if (!gameImageBaseUrl) {
+    return imagePath
+  }
+
+  const normalizedImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`
+  return `${gameImageBaseUrl}${normalizedImagePath}`
+}
+
+// 登录/注册弹窗背景图
 const pcBackgroundImage = computed(() => {
-  return themeStore.theme === 'dark' ? loginPcDark : loginPcLight
+  return authBannerImageUrl.value
+})
+
+const mobileBackgroundImage = computed(() => {
+  return authBannerImageUrl.value
 })
 
 interface Props {
@@ -251,20 +289,19 @@ const activeTab = ref<'login' | 'register' | 'resetPassword'>(props.defaultTab)
 const showResetPassword = ref(false)
 const loginFormDesktopRef = ref<InstanceType<typeof LoginFormDesktop> | null>(null)
 
-watch(
-  () => props.modelValue,
-  async newVal => {
-    if (newVal) {
-      activeTab.value = props.defaultTab
-      showResetPassword.value = false
-      // 弹窗打开时请求登录注册配置
-      await fetchLoginAndRegisterSetting()
-      if (!isMobile.value) {
-        loginFormDesktopRef.value?.resetForm()
-      }
+watch([() => props.modelValue, () => isMobile.value], async ([newVal]) => {
+  if (newVal) {
+    activeTab.value = props.defaultTab
+    showResetPassword.value = false
+    // 弹窗打开时请求登录注册配置
+    await fetchLoginAndRegisterSetting()
+    // 请求登录/注册弹窗图片
+    await fetchAuthBannerImage()
+    if (!isMobile.value) {
+      loginFormDesktopRef.value?.resetForm()
     }
   }
-)
+})
 
 // 请求登录注册配置
 const fetchLoginAndRegisterSetting = async () => {
@@ -272,6 +309,30 @@ const fetchLoginAndRegisterSetting = async () => {
     const response = await Api.auth.getLoginAndRegisterSetting({})
     console.log('登录注册配置:', response)
   } catch (error) {
+    console.error(error)
+  }
+}
+
+// 请求登录/注册弹窗图片
+const fetchAuthBannerImage = async () => {
+  try {
+    const response = await Api.home.getQuerySlideshow({
+      languageCode: getLanguageCode(),
+      channelId: isMobile.value ? '4' : '3',
+      page: {
+        current: 1,
+        size: 10
+      }
+    })
+
+    const records = Array.isArray(response?.result?.records) ? response.result.records : []
+    authBannerImageUrl.value =
+      records
+        .filter(item => Number(item?.deploymentPath) === 5)
+        .map(item => resolveAuthBannerUrl(item?.url))
+        .find(Boolean) || ''
+  } catch (error) {
+    authBannerImageUrl.value = ''
     console.error(error)
   }
 }

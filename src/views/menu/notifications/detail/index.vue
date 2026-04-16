@@ -4,7 +4,7 @@
     :class="
       props.panelMode
         ? 'notification-detail-page h-full bg-bg-1'
-        : 'notification-detail-page min-h-screen bg-bg-1 -mx-[14px] sm:mx-auto sm:max-w-[420px]'
+        : 'notification-detail-page fixed inset-0 z-[60] overflow-y-auto bg-bg-1'
     "
   >
     <!-- 通知详情容器 -->
@@ -12,7 +12,7 @@
       :class="
         props.panelMode
           ? 'notification-detail-shell flex h-full min-h-0 flex-col bg-bg-1'
-          : 'notification-detail-shell min-h-screen bg-bg-1'
+          : 'notification-detail-shell min-h-screen bg-bg-1 sm:mx-auto sm:max-w-[420px]'
       "
       style="font-family: Inter, sans-serif"
     >
@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import H5Header from '@/components/common/H5Header.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-import { formatNotificationTime } from '@/utils/notification'
+import { formatDisplayTime } from '@/utils/date'
 import { markNotificationAsRead } from '@/utils/notification-cache'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, ref } from 'vue'
@@ -214,7 +214,7 @@ const handlePanelClose = () => {
 const detailTitle = computed(() => currentDetailItem.value?.noticeTitle || t('notifications.item'))
 
 // 格式化通知详情的展示时间。
-const detailTime = computed(() => formatNotificationTime(currentDetailItem.value?.createTime))
+const detailTime = computed(() => formatDisplayTime(currentDetailItem.value?.createTime))
 const normalizedNoticeText = computed(() => {
   const rawContent = normalizeNoticeContent(currentDetailItem.value?.noticeText || '')
   const decodedContent = decodeHtmlEntities(rawContent)
