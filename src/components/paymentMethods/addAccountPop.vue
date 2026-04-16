@@ -32,7 +32,7 @@
               v-if="option.customRoundIcon"
               class="mr-2 h-4 w-4 shrink-0 overflow-hidden rounded-full"
             >
-              <gameErrImg
+              <gameRemoteImg
                 :img="{ src: option.customRoundIcon, maintain: false, fit: 'contain' }"
                 class="h-full w-full"
               />
@@ -230,7 +230,7 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import RadioCheckedIcon from '@/static/svg/radio-checked-hollow.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import PopShell from './popShell.vue'
 import { AddAccountOption, PaymentMethodsOption } from './shared/usePaymentMethodsService'
 

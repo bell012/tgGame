@@ -17,7 +17,7 @@
         @click="handleClick(item)"
       >
         <div class="h-6 w-4/5 sm:h-11">
-          <gameErrImg :img="getBrandImg(item)" />
+          <gameRemoteImg :img="getBrandImg(item)" />
         </div>
       </a>
     </div>
@@ -71,7 +71,7 @@ import type { GameBrandItem } from '@/api/interface/game'
 import type { GameQueryOptions } from '@/stores/game'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 
 interface Props {
   queryOptions?: GameQueryOptions & { keyword?: string }

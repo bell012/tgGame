@@ -59,7 +59,7 @@
               <div
                 class="mr-2 h-[34px] w-[34px] shrink-0 overflow-hidden rounded-full border border-common-100"
               >
-                <gameErrImg
+                <gameRemoteImg
                   :img="{ src: selectedMethod.selectedIcon, maintain: false, fit: 'contain' }"
                   class="h-full w-full"
                 />
@@ -236,7 +236,7 @@ import GCashCardIcon from '@/static/svg/withdraw/GCash_card.svg?component'
 import GrabPayCardIcon from '@/static/svg/withdraw/GrabPay_card.svg?component'
 import MAYACardIcon from '@/static/svg/withdraw/MAYA_card.svg?component'
 import ShopeePayCardIcon from '@/static/svg/withdraw/ShopeePay_card.svg?component'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RefreshIcon from '@/static/svg/refresh.svg?component'
