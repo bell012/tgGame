@@ -30,13 +30,14 @@
     >
       <div class="flex min-w-0 flex-1 items-center">
         <div class="mr-2.5 h-10 w-10 shrink-0 rounded-full">
-          <gameErrImg
+          <gameRemoteImg
             :img="{
               src: option.customRoundIcon,
               maintain: false,
               fit: 'contain'
             }"
             class="h-full w-full"
+            :alt="option.label"
           />
         </div>
         <div class="min-w-0 flex-1 text-left">
@@ -68,7 +69,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { AccountCardOption } from './shared/usePaymentMethodsService'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import DeleteIcon from '@/static/svg/del.svg?component'
 
 const ACTION_WIDTH = 76

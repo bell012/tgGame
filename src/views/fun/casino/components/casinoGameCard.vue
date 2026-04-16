@@ -4,7 +4,7 @@
     class="game-item group relative flex h-full w-full flex-col items-center overflow-hidden rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
     @click="$emit('click')"
   >
-    <gameErrImg class="h-full w-full" alt="Crash" :img="gameImage" />
+    <gameRemoteImg class="h-full w-full" :img="gameImage" :alt="game.itemName" />
     <div
       v-if="gameCovernameShow"
       class="absolute inset-x-0 bottom-6 flex w-full items-center justify-center px-2 text-center text-sm sm:text-base font-bold leading-4 text-common-100 sm:font-extrabold"
@@ -44,7 +44,7 @@ import { computed } from 'vue'
 import { casinoIcons } from '@/static/svg/casino'
 import { StringExtension } from '@/utils/string-extension'
 import type { GameDataItem } from '@/api/interface/game'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 
 const props = defineProps<{

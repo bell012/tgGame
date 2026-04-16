@@ -5,18 +5,21 @@
     v-model:page="page"
     :total-pages="totalPages"
     key-field="rowId"
-    class="mt-[20px]"
+    class="casino-grid-pager mt-[8px]"
   >
     <template #item="{ item }">
       <div class="game-card group w-full relative cursor-pointer" @click="itemClick(item)">
         <!-- 卡片-->
-        <div class="w-full aspect-[0.75] overflow-hidden rounded-lg">
-          <SmartImage
-            :src="baseUrl + item.icon2"
+        <div class="game-card-media w-full aspect-[0.75] overflow-hidden rounded-lg relative">
+          <img
+            :src="resolveGameImageSrc(item.icon2)"
             alt=""
-            class="game-card-image w-full h-full object-contain"
+            class="game-card-image w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
             @error="handleImageError"
           />
+          <div class="game-card-shadow"></div>
           <div class="game-card-mask">
             <div class="game-card-play">
               <svg class="game-card-play-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -27,12 +30,16 @@
               </svg>
             </div>
           </div>
-        </div>
-        <div
-          class="flex px-1 py-1 bg-[var(--color-mask-20)] rounded-md absolute items-center bottom-1 right-1"
-        >
-          <SmartImage :src="numImg" alt="" class="w-2.5 h-2.5 mr-0.5" />
-          <div class="text-[10px] text-text-1">{{ item.initScoreNum ?? 0 }}</div>
+          <div class="game-card-meta">
+            <div class="game-card-title">{{ getItemName(item) }}</div>
+            <div class="game-card-subline">
+              <div class="game-card-provider">{{ getProviderName(item) }}</div>
+              <div class="game-card-player">
+                <SmartImage :src="numImg" alt="" class="game-card-player-icon" />
+                <div class="game-card-player-num">{{ toScore(item.initScoreNum) }}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </template>
@@ -55,12 +62,15 @@ type CasinoGameItem = {
   id?: string | number
   rowId?: string | number
   icon2?: string
+  itemName?: string
   platformName?: string
+  providerName?: string
+  brandName?: string
   itemCode?: string | number
   platformCode?: string | number
   brandCode?: string | number
   hot?: number | string
-  initScoreNum?: number
+  initScoreNum?: number | string
   num?: number
   gameItemHotVo?: {
     hot?: number | string
@@ -69,11 +79,37 @@ type CasinoGameItem = {
 
 const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
 
+const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value)
+
+const resolveGameImageSrc = (icon2?: string) => {
+  const source = String(icon2 ?? '').trim()
+  if (!source) {
+    return gameImg
+  }
+
+  if (isAbsoluteUrl(source)) {
+    return source
+  }
+
+  const normalizedBaseUrl = String(baseUrl ?? '').replace(/\/+$/, '')
+  const normalizedSource = source.replace(/^\/+/, '')
+
+  if (!normalizedBaseUrl) {
+    return source
+  }
+
+  return `${normalizedBaseUrl}/${normalizedSource}`
+}
+
 const injectedGameList = inject<Ref<unknown[]>>('explore-game-list', ref([]))
 const keyword = inject('explore-keywords') as Ref<string>
 const injectedHotGameList = inject<Ref<CasinoGameItem[]>>('explore-hot-game-list', ref([]))
 const injectCurrentSort = inject<Ref<string>>('explore-current-sort', ref('0'))
 const injectCurrentProvider = inject<Ref<string[]>>('explore-current-provider', ref([]))
+const injectedProviderNameMap = inject<Ref<Record<string, string>>>(
+  'explore-provider-name-map',
+  ref({})
+)
 
 const gameList = computed<CasinoGameItem[]>(() =>
   Array.isArray(injectedGameList.value) ? (injectedGameList.value as CasinoGameItem[]) : []
@@ -192,6 +228,32 @@ const itemClick = (item: CasinoGameItem) => {
   navigateToName('gameDetail', { params: { rowId } })
 }
 
+const toScore = (value: unknown) => {
+  const score = Number(value)
+  return Number.isFinite(score) ? score : 0
+}
+
+const getItemName = (item: CasinoGameItem) => {
+  const title = String(item.itemName ?? item.platformName ?? '').trim()
+  return title || '--'
+}
+
+const getProviderName = (item: CasinoGameItem) => {
+  const directProviderName = String(item.providerName ?? item.brandName ?? '').trim()
+  if (directProviderName) {
+    return directProviderName
+  }
+
+  const brandCode = String(item.brandCode ?? '').trim()
+  const mappedProviderName = String(injectedProviderNameMap.value[brandCode] ?? '').trim()
+  if (mappedProviderName) {
+    return mappedProviderName
+  }
+
+  const fallbackProviderName = String(item.platformName ?? '').trim()
+  return fallbackProviderName || '--'
+}
+
 const handleImageError = (event: Event) => {
   const target = event.target as HTMLImageElement | null
   if (!target) return
@@ -208,8 +270,25 @@ const handleImageError = (event: Event) => {
     filter 0.35s ease;
 }
 
+.game-card-media {
+  background: var(--color-background-level-2);
+}
+
 .game-card {
   transition: transform 0.35s ease;
+}
+
+.game-card-shadow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.02) 0%,
+    rgba(0, 0, 0, 0.12) 45%,
+    rgba(0, 0, 0, 0.68) 100%
+  );
+  z-index: 1;
 }
 
 .game-card-mask {
@@ -221,6 +300,70 @@ const handleImageError = (event: Event) => {
   background: linear-gradient(180deg, rgba(8, 12, 18, 0.18) 0%, rgba(8, 12, 18, 0.55) 100%);
   opacity: 0;
   transition: opacity 0.35s ease;
+  z-index: 2;
+}
+
+.game-card-meta {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 6px;
+  z-index: 3;
+}
+
+.game-card-title {
+  margin-bottom: 4px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.05;
+  text-transform: uppercase;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.game-card-subline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.game-card-provider {
+  flex: 1;
+  min-width: 0;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.game-card-player {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  padding: 2px 5px;
+  background: rgba(36, 132, 214, 0.86);
+}
+
+.game-card-player-icon {
+  width: 10px;
+  height: 10px;
+  margin-right: 2px;
+}
+
+.game-card-player-num {
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .game-card-play {
@@ -264,6 +407,16 @@ const handleImageError = (event: Event) => {
 
   .game-card:hover .game-card-play {
     transform: translateY(0) scale(1);
+  }
+}
+
+.casino-grid-pager :deep(.grid.w-full) {
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .casino-grid-pager :deep(.grid.w-full) {
+    gap: 11px;
   }
 }
 </style>

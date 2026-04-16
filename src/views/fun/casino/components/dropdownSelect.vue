@@ -97,13 +97,14 @@
                   class="h-5 w-5"
                 />
                 <div v-if="Multi" class="ml-2.5 flex items-center w-[100px] h-[22px]">
-                  <gameErrImg
+                  <gameRemoteImg
                     class="!bg-transparent"
                     :img="{
                       maintain: false,
                       src: item?.icon,
                       fit: 'contain' as const
                     }"
+                    :alt="item?.label"
                   />
                 </div>
               </div>
@@ -141,7 +142,7 @@ import CubeUnchecedIcon from '@/static/svg/cube-unchecked.svg?component'
 import ClearIcon from '@/static/svg/clear.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 
 const { t } = useI18n()
 

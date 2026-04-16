@@ -1,12 +1,14 @@
 <template>
   <div
-    class="w-full h-full flex items-center justify-center overflow-hidden rounded-[8px] bg-[var(--color-background-level-2)] sm:h-full"
+    class="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[8px] bg-[var(--color-background-level-2)] sm:h-full"
   >
     <img
       :src="currentSrc"
-      alt=""
+      :alt="props.alt"
       draggable="false"
-      class="game-err-img"
+      loading="lazy"
+      decoding="async"
+      class="game-remote-img"
       :class="{
         error: hasError,
         'object-contain': !hasError && props.img.fit === 'contain',
@@ -17,9 +19,9 @@
     />
     <div
       v-if="props.img.maintain"
-      class="z-10 absolute inset-0 bg-[var(--color-mask-60-1)] backdrop-blur-1 flex justify-center items-center"
+      class="absolute inset-0 z-10 flex items-center justify-center bg-[var(--color-mask-60-1)] backdrop-blur-1"
     >
-      <SmartImage class="w-[31px]" :src="maintainImg" alt="" />
+      <img :src="maintainImg" :alt="props.alt" class="w-[31px]" loading="lazy" decoding="async" />
     </div>
   </div>
 </template>
@@ -31,30 +33,36 @@ import { useThemeStore } from '@/stores/theme'
 import errorImg from '@/static/img/home/errImg.png'
 import errorImg1 from '@/static/img/home/errImg1.png'
 import maintainImg from '@/static/img/home/maintain.png'
-import SmartImage from '@/components/common/SmartImage.vue'
 
-const themeStore = useThemeStore()
-const { theme } = storeToRefs(themeStore)
-// src: string
-// maintain?: boolean
 interface Props {
+  alt?: string
   img: {
     maintain: boolean
-    // 接口可能返回 conUrl 或 src，这里兼容两者
     conUrl?: string
     src?: string
     fit?: 'cover' | 'contain'
   }
 }
+
 const props = defineProps<Props>()
+
+const themeStore = useThemeStore()
+const { theme } = storeToRefs(themeStore)
 const currentSrc = ref(props.img.conUrl ?? props.img.src ?? '')
 const hasError = ref(false)
 
+const updateSource = () => {
+  hasError.value = false
+  currentSrc.value = props.img.conUrl ?? props.img.src ?? ''
+}
+
 const handleError = () => {
-  if (!hasError.value) {
-    hasError.value = true
-    currentSrc.value = theme.value === 'dark' ? errorImg : errorImg1
+  if (hasError.value) {
+    return
   }
+
+  hasError.value = true
+  currentSrc.value = theme.value === 'dark' ? errorImg : errorImg1
 }
 
 watch(theme, () => {
@@ -62,15 +70,22 @@ watch(theme, () => {
     currentSrc.value = theme.value === 'dark' ? errorImg : errorImg1
   }
 })
+
+watch(
+  () => [props.img.conUrl, props.img.src],
+  () => {
+    updateSource()
+  }
+)
 </script>
 
 <style scoped lang="scss">
-.game-err-img {
+.game-remote-img {
   max-width: 100%;
   max-height: 100%;
 }
 
-.game-err-img.error {
+.game-remote-img.error {
   width: 31px;
   object-fit: contain;
 }

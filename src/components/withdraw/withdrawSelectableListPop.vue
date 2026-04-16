@@ -31,9 +31,10 @@
         >
           <div class="flex min-w-0 items-center">
             <div v-if="icon" class="mr-3 h-10 w-10 shrink-0 overflow-hidden rounded-full">
-              <gameErrImg
+              <gameRemoteImg
                 :img="{ src: icon, maintain: false, fit: 'contain' }"
                 class="h-full w-full"
+                :alt="item.title"
               />
             </div>
             <div class="min-w-0">
@@ -90,7 +91,7 @@
               v-if="icon"
               class="mr-3 h-10 w-10 sm:h-6 sm:w-6 shrink-0 overflow-hidden rounded-full"
             >
-              <gameErrImg
+              <gameRemoteImg
                 :img="{ src: icon, maintain: false, fit: 'contain' }"
                 class="h-full w-full"
               />
@@ -135,7 +136,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RadioCheckedIcon from '@/static/svg/radio-checked-hollow.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
