@@ -19,7 +19,7 @@
                 <div
                   class="relative z-10 flex h-[64px] w-[64px] items-center justify-center overflow-hidden rounded-full border-4 border-bg-2"
                 >
-                  <gameErrImg
+                  <gameRemoteImg
                     :img="{ src: option.customRoundIcon, maintain: false, fit: 'contain' }"
                     class="h-full w-full"
                   />
@@ -83,7 +83,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
 import H5Header from '@/components/common/H5Header.vue'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import PopShell from './popShell.vue'
 import { AccountCardOption } from './shared/usePaymentMethodsService'
