@@ -17,7 +17,7 @@
           @click="handleSlideClick(slide)"
           @dragstart.prevent
         >
-          <gameErrImg class="h-full w-full" :img="getSlideImage(slide)" />
+          <gameRemoteImg class="h-full w-full" :img="getSlideImage(slide)" />
         </button>
       </SwipeItem>
     </Swipe>
@@ -56,7 +56,7 @@ import { Swipe, SwipeItem } from 'vant'
 import type { SwipeInstance } from 'vant'
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { navigateTo, navigateToName } from '@/utils/router'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 
 const AUTO_PLAY_INTERVAL = 3000
 
