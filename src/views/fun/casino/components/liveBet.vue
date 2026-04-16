@@ -67,6 +67,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import Api from '@/api'
+import type { RecentBigWinsItem } from '@/api/interface/home.interface'
 import placeholderImg from '@/static/img/home/errImg.png'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
@@ -126,7 +127,7 @@ const getRecentBigWinsData = async () => {
       }
     )
 
-    sourceRows.value = (res?.result ?? []).map((item: any, index: number) => ({
+    sourceRows.value = (res?.result ?? []).map((item: RecentBigWinsItem, index: number) => ({
       id: Number(item.rowId ?? index),
       game: String(item.gameName ?? '--'),
       gameIcon: toGameImageUrl(item.coverImg ?? ''),
