@@ -353,37 +353,53 @@ const onTabButton = (tab: any) => {
   navigateTo(`/casino/${tab.sysGameTypeCode}`)
 }
 
-const currentSlideshowColumnCode = computed(() => {
-  if (basePageStyle.value === pageStyle3) {
-    const normalizedTabCode = String(currentTabCode.value ?? '').trim()
-
-    if (normalizedTabCode) {
-      return normalizedTabCode
-    }
-  }
-
-  return undefined
-})
+let slideshowRequestToken = 0
 
 const getQuerySlideshow = async () => {
+  const requestToken = ++slideshowRequestToken
+
   try {
-    const requestData: QuerySlideshowRequest = {
-      languageCode: getStorageLanguageCode(String(locale.value)),
-      param: {
-        ColumnCode: currentSlideshowColumnCode.value
-      },
-      channelId: isMobile.value ? '4' : '3',
-      page: {
-        current: 1,
-        size: 10
+    const nextSlides: QuerySlideshowItem[] = []
+    let currentPage = 1
+    let totalPages = 1
+
+    do {
+      const requestData: QuerySlideshowRequest = {
+        languageCode: getStorageLanguageCode(String(locale.value)),
+        channelId: isMobile.value ? '4' : '3',
+        deploymentPath: 1,
+        requireLogin: isLoggedIn.value ? 1 : 0,
+        page: {
+          current: currentPage,
+          size: 100
+        }
       }
+
+      const response = await Api.home.getQuerySlideshow(requestData)
+
+      if (requestToken !== slideshowRequestToken) {
+        return
+      }
+
+      const result = response?.result
+      const records = Array.isArray(result?.records) ? result.records : []
+
+      nextSlides.push(...records)
+      currentPage = Number(result?.current ?? currentPage)
+      totalPages = Math.max(1, Number(result?.pages ?? totalPages))
+      currentPage += 1
+    } while (currentPage <= totalPages)
+
+    if (requestToken !== slideshowRequestToken) {
+      return
     }
 
-    const response = await Api.home.getQuerySlideshow(requestData)
-    const records = response?.result?.records
-
-    querySlideshowList.value = Array.isArray(records) ? records : []
+    querySlideshowList.value = nextSlides
   } catch (error) {
+    if (requestToken !== slideshowRequestToken) {
+      return
+    }
+
     console.error('getQuerySlideshow failed', error)
     querySlideshowList.value = []
   }
@@ -551,7 +567,7 @@ watch(
 )
 
 watch(
-  () => [currentTabCode.value, locale.value, isMobile.value],
+  () => [locale.value, isMobile.value, isLoggedIn.value],
   () => {
     void getQuerySlideshow()
   }

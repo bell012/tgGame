@@ -47,7 +47,7 @@
               </div>
 
               <div class="w-full h-[245px] mt-6">
-                <SmartImage :src="pcBackgroundImage" alt="" class="w-full h-full" />
+                <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
               </div>
 
               <div class="mt-4">
@@ -144,7 +144,7 @@
               </div>
 
               <div class="w-full h-[245px] mt-6">
-                <SmartImage :src="pcBackgroundImage" alt="" class="w-full h-full" />
+                <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
               </div>
 
               <div class="mt-4">
