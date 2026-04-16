@@ -41,6 +41,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import type { SelectMemberResult } from '@/api/interface/user'
 import H5Header from '@/components/common/H5Header.vue'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
@@ -65,9 +66,9 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const isMobile = useIsMobile()
-const userInfo = ref<any>(null)
+const userInfo = ref<SelectMemberResult | null>(null)
 const isLoggedIn = computed(() => {
-  return userInfo.value && userInfo.value.tradeToken
+  return Boolean(userInfo.value?.tradeToken)
 })
 const { tabButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
 
