@@ -13,7 +13,7 @@ export function getGameData(options?: ApiResponseToastOptions): Promise<GameData
   return request({
     url: '/gc/queryGameListForApp',
     method: 'post',
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -24,7 +24,7 @@ export function getActivityType(): Promise<any> {
   return request({
     url: '/ac/queryGameListForApp',
     method: 'post',
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -34,7 +34,7 @@ export function getRecentBigWins(data: any, options?: ApiResponseToastOptions): 
     url: '/special/getRecentBigWins',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -67,7 +67,7 @@ export function dlicgh(data: any): Promise<any> {
     url: '/sy/dlicgh',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
