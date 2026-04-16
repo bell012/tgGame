@@ -33,12 +33,12 @@
                 <div class="w-full relative h-50 box-content">
                   <div class="w-full z-10 p-4">
                     <div class="flex items-center justify-between">
-                      <SmartImage :src="loginLogoImage" alt="BC.GAME Logo" class="w-auto h-12" />
+                      <MainLogoIcon class="h-12 w-auto text-text-1" />
                       <button
                         class="w-7 h-7 bg-opacity-10 rounded-md flex items-center justify-center"
                         @click="handleClose"
                       >
-                        <CloseIcon class="w-3 h-3 fill-none" />
+                        <CloseIcon class="w-3 h-3 text-text-1" />
                       </button>
                     </div>
                     <div
@@ -51,7 +51,7 @@
                     >
                       <div class="flex-col">
                         <h2 class="flex items-center text-xs">
-                          <GiftIcon class="w-3.5 h-3.5 fill-none" />
+                          <GiftIcon class="w-3.5 h-3.5" />
                           <div class="ml-1.5 text-text-1">470%</div>
                         </h2>
                         <!-- 首存奖金 -->
@@ -61,7 +61,7 @@
                       </div>
                       <div class="flex-col">
                         <h2 class="flex items-center text-xs">
-                          <TurntableIcon class="w-3.5 h-3.5 fill-none" />
+                          <TurntableIcon class="w-3.5 h-3.5" />
                           <div class="ml-1.5 text-text-1">5 BTC%</div>
                         </h2>
                         <!-- 每日免费幸运旋转 -->
@@ -71,7 +71,7 @@
                       </div>
                       <div class="flex-col">
                         <h2 class="flex items-center text-xs">
-                          <FreePerksIcon class="w-3.5 h-3.5 fill-none" />
+                          <FreePerksIcon class="w-3.5 h-3.5" />
                           <!-- 免费福利 -->
                           <div class="ml-1.5 text-text-1">{{ t('common.free_perks') }}</div>
                         </h2>
@@ -126,9 +126,7 @@
                   </div>
                   <div class="mb-3">
                     <div class="relative">
-                      <SafeIcon
-                        class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none"
-                      />
+                      <SafeIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
                       <!-- 请输入验证码 -->
                       <input
                         :value="formData.code"
@@ -157,9 +155,7 @@
                   </div>
                   <div class="mb-3">
                     <div class="relative">
-                      <PasswordIcon
-                        class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none"
-                      />
+                      <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
                       <!-- 请输入密码 -->
                       <input
                         :value="formData.password"
@@ -173,8 +169,8 @@
                         class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                         @click="togglePassword"
                       >
-                        <EyeIcon v-if="!showPassword" class="w-4 h-4 fill-none" />
-                        <EyeOffIcon v-else class="w-4 h-4 fill-none" />
+                        <EyeIcon v-if="!showPassword" class="w-4 h-4 text-text-2" />
+                        <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
                       </button>
                     </div>
                   </div>
@@ -185,9 +181,7 @@
                   </div>
                   <div class="mb-10">
                     <div class="relative">
-                      <PasswordIcon
-                        class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 fill-none"
-                      />
+                      <PasswordIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
                       <!-- 请输入确认密码 -->
                       <input
                         :value="formData.confirmPassword"
@@ -201,8 +195,8 @@
                         class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                         @click="toggleConfirmPassword"
                       >
-                        <EyeIcon v-if="!showConfirmPassword" class="w-4 h-4 fill-none" />
-                        <EyeOffIcon v-else class="w-4 h-4 fill-none" />
+                        <EyeIcon v-if="!showConfirmPassword" class="w-4 h-4 text-text-2" />
+                        <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
                       </button>
                     </div>
                   </div>
@@ -231,25 +225,21 @@ import { computed, ref, watch, nextTick } from 'vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
-import GiftIcon from '@/static/svg/login/gift.svg?component'
-import TurntableIcon from '@/static/svg/login/turntable.svg?component'
-import FreePerksIcon from '@/static/svg/login/free_perks.svg?component'
-import SafeIcon from '@/static/svg/login/safe.svg?component'
-import PasswordIcon from '@/static/svg/login/password.svg?component'
-import loginHeadDarkImage from '@/static/img/home/login_h5_h.png'
-import loginHeadLightImage from '@/static/img/home/login_h5_b.png'
-import loginLogoImage from '@/static/img/home/logo.png'
-import { useThemeStore } from '@/stores/theme'
-import { resolveBackgroundImage } from '@/utils/image'
+import GiftIcon from '@/static/svg/login/gift.svg?skipsvgo'
+import TurntableIcon from '@/static/svg/login/turntable.svg?skipsvgo'
+import FreePerksIcon from '@/static/svg/login/free_perks.svg?skipsvgo'
+import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
+import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
+import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import ResetPasswordFormCore from './ResetPasswordFormCore.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const themeStore = useThemeStore()
 const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 interface Props {
   visible: boolean
+  backgroundImageUrl?: string
 }
 
 const props = defineProps<Props>()
@@ -260,10 +250,13 @@ const emit = defineEmits<{
 
 const showDrawer = ref(false)
 const resetPasswordFormRef = ref<InstanceType<typeof ResetPasswordFormCore> | null>(null)
-const loginHeadBackground = computed(() => {
-  const backgroundImage = themeStore.theme === 'light' ? loginHeadLightImage : loginHeadDarkImage
 
-  return resolveBackgroundImage(backgroundImage)
+/**
+ * 图片地址转换
+ */
+const loginHeadBackground = computed(() => {
+  const imageUrl = String(props.backgroundImageUrl ?? '').trim()
+  return imageUrl ? `url("${imageUrl}")` : ''
 })
 
 watch(

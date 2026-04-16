@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="sidebar-menu px-3.5 sm:px-4">
+  <div class="sidebar-menu px-3.5 sm:px-0">
     <!-- BC代币 -->
     <div v-if="!isCollapsed">
       <div

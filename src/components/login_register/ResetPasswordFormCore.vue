@@ -123,6 +123,11 @@ const handleSendCode = async () => {
     }
 
     if (!isValidPhoneNumber(telephone)) {
+      showToast({
+        message: t('common.pleaseEnterCorrectPhoneNumber'),
+        type: 'fail',
+        zIndex: 10001
+      })
       return
     }
 

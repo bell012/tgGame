@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div ref="pageRootRef" class="w-full">
     <div class="my-2.5 w-full">
       <filterSheet
         :sortOptions="sortOptions"
@@ -56,7 +56,7 @@
         <!-- 总页码 -->
         <span
           class="flex items-center justify-center rounded-md px-2 py-2 text-xs font-bold leading-3 text-text-1"
-          >{{ totalPages }}</span
+          >{{ totalPages < 10 ? '0' + totalPages : totalPages }}</span
         >
       </div>
 
@@ -73,7 +73,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
@@ -101,6 +101,7 @@ const emit = defineEmits<{
 }>()
 const { t } = useI18n()
 const gameStore = useGameStore()
+const pageRootRef = ref<HTMLElement | null>(null)
 
 const sortOptions = [
   { label: t('search.sortDefault'), value: 'default' },
@@ -140,7 +141,7 @@ const resolvedQueryOptions = computed<GameQueryOptions>(() => {
     ...(props.queryOptions ?? props.modules ?? {})
   }
   const sortOptionMap: Record<string, Partial<GameQueryOptions>> = {
-    default: { sortByOrderId: true },
+    default: { sortByOrderId: true, sortDirection: 'desc' },
     'a-z': { sortByOrderId: true, sortByItemName: true, sortDirection: 'asc' },
     'z-a': { sortByOrderId: true, sortByItemName: true, sortDirection: 'desc' }
   }
@@ -160,6 +161,27 @@ const baseQueryKey = computed(() =>
     providerNames: props.providerNames ?? []
   })
 )
+
+const getScrollParent = (element: HTMLElement | null) => {
+  if (!element || typeof window === 'undefined') {
+    return null
+  }
+
+  let parent = element.parentElement
+
+  while (parent) {
+    const { overflowY } = window.getComputedStyle(parent)
+    const isScrollable = ['auto', 'scroll', 'overlay'].includes(overflowY)
+
+    if (isScrollable && parent.scrollHeight > parent.clientHeight) {
+      return parent
+    }
+
+    parent = parent.parentElement
+  }
+
+  return null
+}
 
 const getBrandIcon = (item: GameBrandItem) => {
   const imagePath = item.banner || item.icon
@@ -209,12 +231,38 @@ const handleProvider = (value: string[]) => {
   })
 }
 
+const scrollToFirstRow = async () => {
+  await nextTick()
+  const target = pageRootRef.value
+
+  if (!target || typeof window === 'undefined') {
+    return
+  }
+
+  const scrollParent = getScrollParent(target)
+
+  if (scrollParent) {
+    scrollParent.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+    return
+  }
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
+
 const goPrev = () => {
   page.value = Math.min(Math.max(1, page.value - 1), Math.max(1, totalPages.value))
+  void scrollToFirstRow()
 }
 
 const goNext = () => {
   page.value = Math.min(Math.max(1, page.value + 1), Math.max(1, totalPages.value))
+  void scrollToFirstRow()
 }
 
 const handleClick = (rowId?: string | number) => {

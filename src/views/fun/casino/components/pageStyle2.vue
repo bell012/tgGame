@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div ref="pageRootRef" class="w-full">
     <div v-if="isLoading" class="grid w-full gap-2.5 grid-cols-3 sm:grid-cols-8">
       <div
         v-for="index in resolvedPageSize"
@@ -45,7 +45,7 @@
         <!-- 总页码 -->
         <span
           class="flex items-center justify-center rounded-md px-2 py-2 text-xs font-bold leading-3 text-text-1"
-          >{{ totalPages }}</span
+          >{{ totalPages < 10 ? '0' + totalPages : totalPages }}</span
         >
       </div>
 
@@ -62,7 +62,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
 import type { GameDataItem } from '@/api/interface/game'
@@ -79,6 +79,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const gameStore = useGameStore()
+const pageRootRef = ref<HTMLElement | null>(null)
 const page = ref(1)
 const totalPages = ref(1)
 const total = ref(0)
@@ -97,12 +98,59 @@ const resolvedQueryOptions = computed<GameQueryOptions>(() => ({
 const resolvedPageSize = computed(() => Math.max(1, resolvedQueryOptions.value.pageSize ?? 27))
 const resolvedQueryKey = computed(() => JSON.stringify(resolvedQueryOptions.value))
 
+const getScrollParent = (element: HTMLElement | null) => {
+  if (!element || typeof window === 'undefined') {
+    return null
+  }
+
+  let parent = element.parentElement
+
+  while (parent) {
+    const { overflowY } = window.getComputedStyle(parent)
+    const isScrollable = ['auto', 'scroll', 'overlay'].includes(overflowY)
+
+    if (isScrollable && parent.scrollHeight > parent.clientHeight) {
+      return parent
+    }
+
+    parent = parent.parentElement
+  }
+
+  return null
+}
+
+const scrollToFirstRow = async () => {
+  await nextTick()
+  const target = pageRootRef.value
+
+  if (!target || typeof window === 'undefined') {
+    return
+  }
+
+  const scrollParent = getScrollParent(target)
+
+  if (scrollParent) {
+    scrollParent.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+    return
+  }
+
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
+
 const goPrev = () => {
   page.value = Math.min(Math.max(1, page.value - 1), Math.max(1, totalPages.value))
+  void scrollToFirstRow()
 }
 
 const goNext = () => {
   page.value = Math.min(Math.max(1, page.value + 1), Math.max(1, totalPages.value))
+  void scrollToFirstRow()
 }
 
 const handleClick = (rowId?: string | number) => {

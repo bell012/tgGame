@@ -1,13 +1,13 @@
 ﻿<template>
   <div
-    class="casino-page max-w-[1248px] mx-auto pt-2.5 sm:p-4 w-full font-['Inter'] px-3.5 sm:px-0"
+    class="casino-page max-w-[1248px] mx-auto px-3.5 py-3 sm:py-4 sm:px-3 w-full font-['Inter']"
     :style="mobileStyle"
   >
     <casinoSlideshow v-if="querySlideshowList.length > 0" :list="querySlideshowList" />
 
     <div
       ref="searchRef"
-      class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border border-opacity-10 bg-opacity-6 focus-within:border-theme-primary focus-within:ring-2 transition"
+      class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border border-input-2 bg-input-1 focus-within:border-theme-primary focus-within:ring-2 transition"
     >
       <img class="w-[18px] h-[18px]" src="/src/static/img/casino/search.webp" alt="search" />
       <input
@@ -173,7 +173,7 @@ import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
-import type { QuerySlideshowItem } from '@/api/interface/home.interface'
+import type { QuerySlideshowItem, QuerySlideshowRequest } from '@/api/interface/home.interface'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
 import { useGameStore } from '@/stores/game'
 import { useLayoutStore } from '@/stores/layout'
@@ -353,36 +353,53 @@ const onTabButton = (tab: any) => {
   navigateTo(`/casino/${tab.sysGameTypeCode}`)
 }
 
-const currentSlideshowColumnCode = computed(() => {
-  if (basePageStyle.value === pageStyle3) {
-    const normalizedTabCode = String(currentTabCode.value ?? '').trim()
-
-    if (normalizedTabCode) {
-      return normalizedTabCode
-    }
-  }
-
-  return undefined
-})
+let slideshowRequestToken = 0
 
 const getQuerySlideshow = async () => {
-  try {
-    const response = await Api.home.getQuerySlideshow({
-      languageCode: getStorageLanguageCode(String(locale.value)),
-      param: {
-        ColumnCode: currentSlideshowColumnCode.value
-      },
-      channelId: isMobile.value ? '4' : '3',
-      page: {
-        current: 1,
-        size: 10
-      }
-    })
+  const requestToken = ++slideshowRequestToken
 
-    querySlideshowList.value = Array.isArray(response?.result?.records)
-      ? response.result.records
-      : []
+  try {
+    const nextSlides: QuerySlideshowItem[] = []
+    let currentPage = 1
+    let totalPages = 1
+
+    do {
+      const requestData: QuerySlideshowRequest = {
+        languageCode: getStorageLanguageCode(String(locale.value)),
+        channelId: isMobile.value ? '4' : '3',
+        deploymentPath: 1,
+        requireLogin: isLoggedIn.value ? 1 : 0,
+        page: {
+          current: currentPage,
+          size: 100
+        }
+      }
+
+      const response = await Api.home.getQuerySlideshow(requestData)
+
+      if (requestToken !== slideshowRequestToken) {
+        return
+      }
+
+      const result = response?.result
+      const records = Array.isArray(result?.records) ? result.records : []
+
+      nextSlides.push(...records)
+      currentPage = Number(result?.current ?? currentPage)
+      totalPages = Math.max(1, Number(result?.pages ?? totalPages))
+      currentPage += 1
+    } while (currentPage <= totalPages)
+
+    if (requestToken !== slideshowRequestToken) {
+      return
+    }
+
+    querySlideshowList.value = nextSlides
   } catch (error) {
+    if (requestToken !== slideshowRequestToken) {
+      return
+    }
+
     console.error('getQuerySlideshow failed', error)
     querySlideshowList.value = []
   }
@@ -394,7 +411,7 @@ const loadSuggestedGames = async () => {
     hot: 1,
     page: 1,
     pageSize: 12,
-    sortByOrderId: true
+    sortByHotOrderId: true
   })
 
   suggestedArr.value = [...new Set(hotGameResult.list.map(item => item.itemName?.trim() ?? ''))]
@@ -550,7 +567,7 @@ watch(
 )
 
 watch(
-  () => [currentTabCode.value, locale.value, isMobile.value],
+  () => [locale.value, isMobile.value, isLoggedIn.value],
   () => {
     void getQuerySlideshow()
   }
