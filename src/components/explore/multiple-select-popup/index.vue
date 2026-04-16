@@ -2,14 +2,18 @@
   <!-- 顶部搜索 -->
   <div class="relative">
     <div
-      class="select-trigger border border-solid border-opacity-10 text-[14px] rounded-md h-[40px] flex items-center justify-between p-[8px] cursor-pointer"
+      class="select-trigger border border-solid rounded-[10px] h-[50px] flex items-center justify-between px-[10px] cursor-pointer"
       @click="visible = true"
     >
-      <div class="flex gap-[10px]">
-        <div class="text-[var(--color-text-level-3)]">{{ label }}</div>
-        <div>{{ inputText }}</div>
+      <div class="select-trigger-content flex items-center gap-[10px] min-w-0">
+        <div class="select-trigger-label text-[var(--color-text-level-2)] shrink-0">
+          {{ label }}
+        </div>
+        <div class="select-trigger-value truncate">{{ inputText }}</div>
       </div>
-      <div class="trigger-arrow-bg bg-[var(--color-background-level-2)] rounded-md">
+      <div
+        class="trigger-arrow-bg bg-[var(--color-background-level-2)] rounded-[8px] h-8 w-8 flex items-center justify-center shrink-0"
+      >
         <div class="icon size-4 transition-all -rotate-90">
           <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -94,13 +98,29 @@ const handleConfirm = (data: string[]) => {
   fill: currentColor;
 }
 
+.select-trigger {
+  border-color: var(--color-opacity-10);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.select-trigger-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.select-trigger-value {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.trigger-arrow-bg {
+  border: 1px solid var(--color-opacity-10);
+}
+
 @media (max-width: 767px) {
   .select-trigger {
-    background: var(--color-background-level-3);
-  }
-
-  .trigger-arrow-bg {
-    background: var(--color-opacity-10);
+    height: 52px;
   }
 }
 </style>

@@ -47,7 +47,7 @@
                 <ChecedIcon v-if="isSelected(item)" class="tp-check-icon w-5 h-5 cursor-pointer" />
                 <UnchecedIcon v-else class="tp-check-icon w-5 h-5 cursor-pointer" />
                 <div class="provider-logo-box">
-                  <SmartImage
+                  <img
                     v-if="shouldShowLogo(item)"
                     class="provider-logo-image"
                     :src="resolveLogoSrc(item)"
@@ -90,7 +90,6 @@ import UnchecedIcon from '@/static/svg/explore/cube-unchecked.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import { useI18n } from 'vue-i18n'
 import ClearIcon from '@/static/svg/explore/clear.svg?component'
-import SmartImage from '@/components/common/SmartImage.vue'
 import { computed, ref, watch } from 'vue'
 
 interface OptionItem {
@@ -100,6 +99,7 @@ interface OptionItem {
   logo?: string
   brandName?: string
   providerName?: string
+  brandCode?: string
   brandId?: string | number
   [key: string]: string | number | undefined
 }
@@ -117,6 +117,7 @@ const emit = defineEmits<{
 }>()
 
 const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
+const isAbsoluteLogoUrl = (value: string) => /^(https?:\/\/|\/\/|data:|blob:)/i.test(value)
 
 const { t } = useI18n()
 const keyword = ref('')
@@ -156,10 +157,18 @@ const resolveLogoSrc = (item: OptionItem) => {
     .map(value => String(value ?? '').trim())
     .find(Boolean)
   if (!icon) return ''
-  if (/^(https?:\/\/|\/\/|data:|blob:)/i.test(icon)) {
+  if (isAbsoluteLogoUrl(icon)) {
     return icon
   }
-  return `${baseUrl}${icon}`
+
+  const normalizedBaseUrl = String(baseUrl ?? '').replace(/\/+$/, '')
+  const normalizedIcon = icon.replace(/^\/+/, '')
+
+  if (!normalizedBaseUrl) {
+    return icon
+  }
+
+  return `${normalizedBaseUrl}/${normalizedIcon}`
 }
 
 const getLogoKey = (item: OptionItem) => {
@@ -175,17 +184,24 @@ const handleLogoError = (item: OptionItem) => {
   brokenLogoMap.value[getLogoKey(item)] = true
 }
 
-const isSelected = (item: any) => {
-  const index = props.selectedIds?.indexOf(item.brandCode)
+const getBrandCode = (item: OptionItem) => String(item.brandCode ?? '').trim()
+
+const isSelected = (item: OptionItem) => {
+  const brandCode = getBrandCode(item)
+  if (!brandCode) return false
+  const index = props.selectedIds?.indexOf(brandCode)
   return index !== -1
 }
 
-const confirm = (item: any) => {
+const confirm = (item: OptionItem) => {
+  const brandCode = getBrandCode(item)
+  if (!brandCode) return
+
   const arr = [...props.selectedIds]
   if (isSelected(item)) {
-    arr.splice(arr.indexOf(item.brandCode), 1)
+    arr.splice(arr.indexOf(brandCode), 1)
   } else {
-    arr.push(item.brandCode)
+    arr.push(brandCode)
   }
   emit('confirm', arr)
 }

@@ -19,13 +19,14 @@
         <div
           class="mr-2 h-[34px] w-[34px] shrink-0 overflow-hidden rounded-full border border-common-100"
         >
-          <gameErrImg
+          <gameRemoteImg
             :img="{
               src: option.customRoundIcon,
               maintain: false,
               fit: 'contain'
             }"
             class="h-full w-full"
+            :alt="option.label"
           />
         </div>
         <span class="truncate">{{ option.label }}</span>
@@ -81,7 +82,7 @@
 import { AccountCardOption } from './shared/usePaymentMethodsService'
 import { useI18n } from 'vue-i18n'
 import DeleteIcon from '@/static/svg/del.svg?component'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 
 const props = withDefaults(
   defineProps<{

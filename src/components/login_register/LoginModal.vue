@@ -293,12 +293,25 @@ watch([() => props.modelValue, () => isMobile.value], async ([newVal]) => {
   if (newVal) {
     activeTab.value = props.defaultTab
     showResetPassword.value = false
+    // 弹窗打开时请求登录注册配置
+    await fetchLoginAndRegisterSetting()
+    // 请求登录/注册弹窗图片
     await fetchAuthBannerImage()
     if (!isMobile.value) {
       loginFormDesktopRef.value?.resetForm()
     }
   }
 })
+
+// 请求登录注册配置
+const fetchLoginAndRegisterSetting = async () => {
+  try {
+    const response = await Api.auth.getLoginAndRegisterSetting({})
+    console.log('登录注册配置:', response)
+  } catch (error) {
+    console.error(error)
+  }
+}
 
 // 请求登录/注册弹窗图片
 const fetchAuthBannerImage = async () => {

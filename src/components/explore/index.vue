@@ -6,11 +6,15 @@
       <!-- 顶部tab切换 -->
       <top-tab
         v-if="currentType === 'casino' || currentType === 'sports'"
+        class="search-top-tabs"
         :tab-list="topTabList"
         @change="topTabChange"
       />
       <!-- 筛选条件 -->
-      <div class="grid lg:grid-cols-4 grid-cols-2 lg:gap-4 gap-2.5" v-if="currentType === 'casino'">
+      <div
+        class="search-select-row grid lg:grid-cols-4 grid-cols-2 lg:gap-4 gap-2.5"
+        v-if="currentType === 'casino'"
+      >
         <select-popup
           :label="t('search.sort')"
           v-model="currentSort"
@@ -25,9 +29,8 @@
         />
       </div>
       <!-- 国家 -->
-      <div class="w-full mt-[12px]">
+      <div v-if="currentType === 'lottery'" class="w-full mt-[12px]">
         <select-popup
-          v-if="currentType === 'lottery'"
           v-model="currentCountry"
           :dataList="countryOptions"
           @change="countryChange"
@@ -92,11 +95,13 @@ type ExploreHotGameItem = {
 
 type GameBrandItem = {
   providerId?: number | string
+  providerCode?: number | string
   providerName?: string
   logo?: string
   logoWhite?: string
   retrieveId?: string
   brandId?: number | string
+  brandCode?: number | string
   brandName?: string
   brandLogo?: string
   brandLogoWhite?: string
@@ -166,10 +171,15 @@ const getQueryGameListForApp = async () => {
   }
 }
 
-const changeTypeHandler = (val: keyof typeof listCompMap) => {
-  currentType.value = val
+const changeTypeHandler = (val: string) => {
+  if (!(val in listCompMap)) {
+    return
+  }
+
+  const nextType = val as keyof typeof listCompMap
+  currentType.value = nextType
   currentSubGameTypeCode.value = ''
-  if (val !== 'casino') {
+  if (nextType !== 'casino') {
     exploreHotGameList.value = []
   }
 }
@@ -224,6 +234,28 @@ const providerOptions = computed(() => {
   })
 })
 
+const providerNameMap = computed<Record<string, string>>(() => {
+  return queryProviderList.value.reduce<Record<string, string>>((acc, item) => {
+    const providerName = String(item.providerName ?? item.brandName ?? '').trim()
+    if (!providerName) {
+      return acc
+    }
+
+    const providerCodeList = [item.providerId, item.providerCode, item.brandId, item.brandCode]
+
+    providerCodeList
+      .map(code => String(code ?? '').trim())
+      .filter(Boolean)
+      .forEach(code => {
+        acc[code] = providerName
+      })
+
+    return acc
+  }, {})
+})
+
+provide('explore-provider-name-map', providerNameMap)
+
 // 国家
 const currentCountry = ref('')
 const countryOptions = computed(() =>
@@ -263,10 +295,17 @@ onMounted(() => {
     background: var(--color-background-level-1);
     margin-left: -12px;
     margin-right: -12px;
-    padding: 10px 12px 12px;
-    border-top: 1px solid var(--color-opacity-10);
-    border-bottom: 1px solid var(--color-opacity-10);
-    margin-bottom: 12px;
+    padding: 10px 12px 8px;
+    margin-bottom: 0;
+  }
+
+  .search-top-tabs {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .search-select-row {
+    margin-bottom: 0;
   }
 }
 </style>

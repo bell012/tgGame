@@ -2,19 +2,21 @@
   <!-- 顶部搜索 -->
   <div class="relative top-search" @mousedown="onWrapDown">
     <div
-      class="h-[26px] flex items-center absolute left-2.5 top-1/2 -translate-y-1/2"
+      class="top-search-leading h-[28px] flex items-center absolute left-3 top-1/2 -translate-y-1/2"
       @click="typeVisible = true"
     >
-      <div class="text-[12px] font-[700] mr-[6px] cursor-pointer">{{ currentTypeName }}</div>
-      <pull_down class="w-2 h-2" />
-      <div class="w-[1px] h-[26px] mx-2.5 bg-[var(--color-border-level-1)]"></div>
-      <SearchIcon class="w-[18px] h-[18px] fill-none stroke-text-2 opacity-50" />
+      <div class="top-search-type text-[12px] font-[700] mr-[6px] cursor-pointer">
+        {{ currentTypeName }}
+      </div>
+      <pull_down class="top-search-pull w-2 h-2" />
+      <div class="top-search-divider w-[1px] h-[26px] mx-2.5 bg-[var(--color-opacity-10)]"></div>
+      <SearchIcon class="w-[18px] h-[18px] fill-none stroke-text-2 opacity-60" />
     </div>
     <input
       v-model="keyword"
       type="text"
       :placeholder="t('search.placeholder')"
-      class="w-full h-[42px] pl-[110px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-opacity-10 text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+      class="top-search-input w-full h-[50px] pl-[116px] pr-11 rounded-[10px] border text-text-1 text-[14px] font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
       @input="onInput"
       @keydown.enter.prevent="onSearch"
       @focus="focusClick"
@@ -32,7 +34,7 @@
     <!-- 搜索记录框 -->
     <div
       v-if="isOpen"
-      class="absolute panel left-0 top-[50px] bg-[var(--color-background-level-2)] z-[99] border border-[var(--color-border-level-1)] w-full rounded-lg px-3.5 pt-5 pb-3 flex flex-col items-center"
+      class="absolute panel left-0 top-[58px] bg-[var(--color-background-level-2)] z-[99] border border-[var(--color-border-level-1)] w-full rounded-lg px-3.5 pt-5 pb-3 flex flex-col items-center"
     >
       <div
         class="absolute -right-1.5 -top-1.5 w-5 h-5 bg-[var(--color-background-level-3)] flex items-center justify-center rounded-3xl"
@@ -138,7 +140,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'change-type': [id: any]
+  'change-type': [id: string]
   search: [keyword: string]
 }>()
 
@@ -284,5 +286,29 @@ onBeforeUnmount(() => {
   position: absolute;
   left: 0;
   width: 100%;
+}
+
+.top-search-input {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border-color: var(--color-opacity-10);
+}
+
+.top-search-input::placeholder {
+  font-weight: 500;
+}
+
+@media (max-width: 767px) {
+  .top-search-leading {
+    left: 12px;
+  }
+
+  .top-search-type {
+    max-width: 68px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 16px;
+    line-height: 1;
+  }
 }
 </style>
