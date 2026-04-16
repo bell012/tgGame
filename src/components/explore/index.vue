@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, provide, ref } from 'vue'
+import { computed, onMounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import TopInput from './top-input/index.vue'
@@ -264,8 +264,13 @@ const changeTypeHandler = (val: string) => {
   }
 
   const nextType = val as keyof typeof listCompMap
+  if (nextType === currentType.value) {
+    return
+  }
+
   currentType.value = nextType
-  currentSubGameTypeCode.value = ''
+  currentSubGameTypeCode.value =
+    nextType === 'casino' ? (topTabList.value[0]?.sysGameTypeCode ?? '') : ''
   if (nextType !== 'casino') {
     exploreHotGameList.value = []
   }
@@ -365,6 +370,26 @@ const sortChange = (val: string) => {
 const countryChange = (val: string) => {
   console.log(val)
 }
+
+watch(
+  topTabList,
+  list => {
+    if (currentType.value !== 'casino') {
+      return
+    }
+
+    if (!list.length) {
+      currentSubGameTypeCode.value = ''
+      return
+    }
+
+    const hasCurrentCode = list.some(item => item.sysGameTypeCode === currentSubGameTypeCode.value)
+    if (!hasCurrentCode) {
+      currentSubGameTypeCode.value = list[0].sysGameTypeCode
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   getQueryGameListForApp()
