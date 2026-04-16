@@ -75,7 +75,7 @@
             @click="handleBrandClick(brand)"
           >
             <div class="h-6 w-4/5 sm:h-11">
-              <gameErrImg :img="getBrandImg(brand)" />
+              <gameRemoteImg :img="getBrandImg(brand)" />
             </div>
           </div>
         </div>
@@ -136,7 +136,7 @@ import { navigateTo, navigateToName } from '@/utils/router'
 import { casinoIcons } from '@/static/svg/casino'
 import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
 import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
-import gameErrImg from '@/components/common/gameErrImg.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { getGameListTabSlug } from '../casinoPageConfig'
 import casinoGameCard from './casinoGameCard.vue'
 import liveBet from './liveBet.vue'
