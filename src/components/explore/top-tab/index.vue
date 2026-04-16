@@ -1,24 +1,24 @@
 <template>
   <div
-    class="flex w-full justify-between overflow-x-auto scrollbar-none my-2.5 md:my-3.5 md:justify-start"
+    class="top-tab-row flex w-full overflow-x-auto scrollbar-none gap-2.5 md:gap-3 my-2.5 md:my-3.5"
   >
     <div
       v-for="item in renderTabList"
       :key="item.sysGameTypeCode"
       :class="
         item.sysGameTypeCode === currentTabCode
-          ? 'bg-[var(--color-background-level-2)] text-text-1'
-          : 'text-text-2'
+          ? 'top-tab-item-active text-text-1'
+          : 'top-tab-item-inactive text-text-2'
       "
-      class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center cursor-pointer"
+      class="top-tab-item flex h-[42px] px-3 shrink-0 rounded-[10px] text-xs items-center cursor-pointer"
       @click="changeTab(item.sysGameTypeCode)"
     >
       <SmartImage
         :src="item.sysGameTypeCode === currentTabCode ? item.iconActive : item.icon"
         alt=""
-        class="w-5 h-5 mr-[7px]"
+        class="w-[18px] h-[18px] mr-1.5"
       />
-      <div class="font-[700]">
+      <div class="font-[700] whitespace-nowrap">
         {{ item.sysGameTypeName }}
       </div>
     </div>
@@ -97,3 +97,22 @@ watch(
   { immediate: true }
 )
 </script>
+
+<style scoped lang="scss">
+.top-tab-row {
+  -webkit-overflow-scrolling: touch;
+}
+
+.top-tab-item {
+  border: 1px solid transparent;
+}
+
+.top-tab-item-active {
+  background: var(--color-background-level-2);
+  border-color: var(--color-opacity-10);
+}
+
+.top-tab-item-inactive {
+  background: transparent;
+}
+</style>
