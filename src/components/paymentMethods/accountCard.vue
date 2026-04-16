@@ -26,6 +26,7 @@
               fit: 'contain'
             }"
             class="h-full w-full"
+            :alt="option.label"
           />
         </div>
         <span class="truncate">{{ option.label }}</span>

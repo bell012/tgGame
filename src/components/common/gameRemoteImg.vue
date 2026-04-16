@@ -4,7 +4,7 @@
   >
     <img
       :src="currentSrc"
-      alt=""
+      :alt="props.alt"
       draggable="false"
       loading="lazy"
       decoding="async"
@@ -21,7 +21,7 @@
       v-if="props.img.maintain"
       class="absolute inset-0 z-10 flex items-center justify-center bg-[var(--color-mask-60-1)] backdrop-blur-1"
     >
-      <img :src="maintainImg" alt="" class="w-[31px]" loading="lazy" decoding="async" />
+      <img :src="maintainImg" :alt="props.alt" class="w-[31px]" loading="lazy" decoding="async" />
     </div>
   </div>
 </template>
@@ -35,6 +35,7 @@ import errorImg1 from '@/static/img/home/errImg1.png'
 import maintainImg from '@/static/img/home/maintain.png'
 
 interface Props {
+  alt?: string
   img: {
     maintain: boolean
     conUrl?: string

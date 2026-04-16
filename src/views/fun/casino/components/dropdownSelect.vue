@@ -104,6 +104,7 @@
                       src: item?.icon,
                       fit: 'contain' as const
                     }"
+                    :alt="item?.label"
                   />
                 </div>
               </div>

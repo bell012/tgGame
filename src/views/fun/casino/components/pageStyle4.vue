@@ -17,7 +17,7 @@
         @click="handleClick(item)"
       >
         <div class="h-6 w-4/5 sm:h-11">
-          <gameRemoteImg :img="getBrandImg(item)" />
+          <gameRemoteImg :img="getBrandImg(item)" :alt="item.brandName" />
         </div>
       </a>
     </div>
