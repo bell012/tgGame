@@ -5,9 +5,6 @@ import type {
   QueryMemberPayOrderSyncResp,
   TradePushMessage
 } from '@/api/interface/wallet'
-import mqtt, { type MqttClient } from 'mqtt'
-import { defineStore } from 'pinia'
-import { computed, ref, watch } from 'vue'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
 import type { OrderStatusMap, TradeMessageStreamItem } from '@/utils/payOrderSync'
@@ -21,6 +18,9 @@ import {
   normalizeTradePushMessage,
   shouldReplaceOrderStatusCacheItem
 } from '@/utils/payOrderSync'
+import mqtt, { type MqttClient } from 'mqtt'
+import { defineStore } from 'pinia'
+import { computed, ref, watch } from 'vue'
 
 const TRADE_MESSAGE_SYNC_STORAGE_KEY = 'memberTradeMessageSync'
 const MQTT_RECONNECT_PERIOD_MS = 3000
@@ -555,6 +555,7 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
           const decodedPayload = payload.toString()
           const parsedPayload = JSON.parse(decodedPayload)
           handleTradePushPayload(parsedPayload)
+          console.log(parsedPayload)
         } catch (error) {
           console.error(error)
         }
