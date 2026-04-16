@@ -2,7 +2,7 @@
   <div v-if="slides.length > 0" class="mb-3">
     <Swipe
       ref="swipeRef"
-      class="overflow-hidden rounded-lg bg-bg-1 aspect-[1041/450] sm:aspect-[1340/280]"
+      class="overflow-hidden rounded-lg sm:rounded-xl bg-bg-1 w-full"
       :autoplay="slides.length > 1 ? AUTO_PLAY_INTERVAL : 0"
       :show-indicators="false"
       :touchable="slides.length > 1"
@@ -17,15 +17,16 @@
           @click="handleSlideClick(slide)"
           @dragstart.prevent
         >
-          <gameRemoteImg class="h-full w-full" :img="getSlideImage(slide)" />
+          <gameRemoteImg
+            class="h-full w-full"
+            :img="getSlideImage(slide)"
+            :alt="slide.slideshowName"
+          />
         </button>
       </SwipeItem>
     </Swipe>
 
-    <div
-      v-if="slides.length > 1"
-      class="mt-2 flex items-center justify-center gap-2 px-3 sm:hidden"
-    >
+    <div v-if="slides.length > 1" class="mt-2 flex items-center justify-center gap-2 px-3 sm:mt-3">
       <button
         v-for="(slide, index) in slides"
         :key="slide.rowId"
@@ -33,8 +34,8 @@
         class="relative overflow-hidden transition-all duration-300"
         :class="
           currentIndex === index
-            ? 'h-1.5 w-12 rounded-full bg-opacity-10'
-            : 'size-1.5 rounded-full bg-opacity-10'
+            ? 'h-1.5 w-10 sm:h-2 sm:w-[72px] rounded-full bg-opacity-10'
+            : 'h-1.5 w-1.5 sm:h-2 sm:w-10 rounded-full bg-opacity-10'
         "
         :aria-label="slide.slideshowName || `slide-${index + 1}`"
         @click="goTo(index)"
@@ -81,7 +82,8 @@ const getSlideImage = (slide: QuerySlideshowItem) => {
 
   return {
     maintain: false,
-    src
+    src,
+    fit: 'contain' as const
   }
 }
 
