@@ -1,6 +1,7 @@
 <template>
   <div
-    class="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[8px] bg-[var(--color-background-level-2)] sm:h-full"
+    class="game-remote-root relative flex h-full w-full items-center justify-center overflow-hidden rounded-[8px] bg-[var(--color-background-level-2)] sm:h-full"
+    :class="{ 'is-error': hasError }"
   >
     <img
       :src="currentSrc"

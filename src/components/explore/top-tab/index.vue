@@ -14,7 +14,7 @@
       @click="changeTab(item.sysGameTypeCode)"
     >
       <SmartImage
-        :src="item.sysGameTypeCode === currentTabCode ? item.iconActive : item.icon"
+        :src="item.sysGameTypeCode === currentTabCode ? item.iconActive || item.icon : item.icon"
         alt=""
         class="w-[18px] h-[18px] mr-1.5"
       />
@@ -42,6 +42,8 @@ import g5aImg from '@/static/img/explore/g5a.png'
 type TopTabItem = {
   sysGameTypeCode: string
   sysGameTypeName: string
+  icon?: string
+  iconActive?: string
 }
 
 const props = withDefaults(
@@ -72,8 +74,8 @@ const renderTabList = computed(() => {
     const iconPair = iconList[index % iconList.length]
     return {
       ...item,
-      icon: iconPair.icon,
-      iconActive: iconPair.iconActive
+      icon: item.icon || iconPair.icon,
+      iconActive: item.iconActive || item.icon || iconPair.iconActive
     }
   })
 })

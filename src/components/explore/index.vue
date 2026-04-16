@@ -52,6 +52,7 @@ import TopTab from './top-tab/index.vue'
 import SelectPopup from './select-popup/index.vue'
 import MultipleSelectPopup from './multiple-select-popup/index.vue'
 import { useThemeStore } from '@/stores/theme'
+import { useGameStore } from '@/stores/game'
 import Api from '@/api'
 import Casino from '@/components/explore/list/casino.vue'
 import Sports from '@/components/explore/list/sports.vue'
@@ -60,6 +61,7 @@ import Lottery from '@/components/explore/list/lottery.vue'
 import { countryList } from '@/components/explore/mock/index.ts'
 
 const themeStore = useThemeStore()
+const gameStore = useGameStore()
 const { t } = useI18n()
 const isMobile = useIsMobile()
 
@@ -82,6 +84,15 @@ type GameSubNode = {
 type TopTabItem = {
   sysGameTypeCode: string
   sysGameTypeName: string
+  icon?: string
+  iconActive?: string
+}
+
+type GameTypeConfigItem = {
+  gameTypeCode?: string
+  gameTypeName?: string
+  icon?: string
+  iconSelect?: string
 }
 
 type ExploreHotGameItem = {
@@ -127,6 +138,27 @@ provide('explore-current-type', currentType)
 const currentSubGameTypeCode = ref('')
 
 const queryGameList = ref<GameSection[]>([])
+const queryGameTypeList = ref<GameTypeConfigItem[]>([])
+
+const imageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
+
+const normalizeImageUrl = (value?: string) => {
+  const source = String(value ?? '').trim()
+  if (!source) {
+    return ''
+  }
+
+  if (/^https?:\/\//i.test(source)) {
+    return source
+  }
+
+  const normalizedSource = source.replace(/^\/+/, '')
+  if (!imageBaseUrl) {
+    return normalizedSource
+  }
+
+  return `${imageBaseUrl}/${normalizedSource}`
+}
 
 const currentTypeGameList = computed(() => {
   const section = queryGameList.value.find(
@@ -144,13 +176,58 @@ const currentTypeGameList = computed(() => {
 provide('explore-game-list', currentTypeGameList)
 
 const topTabList = computed<TopTabItem[]>(() => {
-  const list = Array.isArray(queryGameList.value) ? (queryGameList.value as GameSection[]) : []
-  return list
-    .map(item => ({
-      sysGameTypeCode: item?.sysGameTypeCode ?? '',
-      sysGameTypeName: item?.sysGameTypeName ?? ''
-    }))
-    .filter(item => item.sysGameTypeCode && item.sysGameTypeName)
+  const sectionList = Array.isArray(queryGameList.value)
+    ? (queryGameList.value as GameSection[])
+    : []
+  const sectionMap = new Map<string, GameSection>()
+
+  sectionList.forEach(item => {
+    const code = String(item?.sysGameTypeCode ?? '').trim()
+    if (!code || sectionMap.has(code)) {
+      return
+    }
+    sectionMap.set(code, item)
+  })
+
+  const mergedList: TopTabItem[] = []
+
+  queryGameTypeList.value.forEach(item => {
+    const code = String(item?.gameTypeCode ?? '').trim()
+    if (!code) {
+      return
+    }
+
+    const matchedSection = sectionMap.get(code)
+    if (!matchedSection) {
+      return
+    }
+
+    mergedList.push({
+      sysGameTypeCode: code,
+      sysGameTypeName:
+        String(item?.gameTypeName ?? '').trim() ||
+        String(matchedSection?.sysGameTypeName ?? '').trim(),
+      icon: normalizeImageUrl(item?.icon),
+      iconActive: normalizeImageUrl(item?.iconSelect)
+    })
+
+    sectionMap.delete(code)
+  })
+
+  sectionMap.forEach(item => {
+    const code = String(item?.sysGameTypeCode ?? '').trim()
+    const name = String(item?.sysGameTypeName ?? '').trim()
+    if (!code || !name) {
+      return
+    }
+
+    mergedList.push({
+      sysGameTypeCode: code,
+      sysGameTypeName: name
+    })
+  })
+
+  return mergedList
 })
 
 const topTabChange = (code: string) => {
@@ -168,6 +245,16 @@ const getQueryGameListForApp = async () => {
   } catch (error) {
     console.error('queryGameListForApp failed', error)
     queryGameList.value = []
+  }
+}
+
+const getGameTypeList = async () => {
+  try {
+    const result = await gameStore.getGameTypeData()
+    queryGameTypeList.value = Array.isArray(result) ? (result as GameTypeConfigItem[]) : []
+  } catch (error) {
+    console.error('getGameTypeList failed', error)
+    queryGameTypeList.value = []
   }
 }
 
@@ -281,6 +368,7 @@ const countryChange = (val: string) => {
 
 onMounted(() => {
   getQueryGameListForApp()
+  getGameTypeList()
   getGameBrandList()
 })
 </script>

@@ -11,14 +11,7 @@
       <div class="game-card group w-full relative cursor-pointer" @click="itemClick(item)">
         <!-- 卡片-->
         <div class="game-card-media w-full aspect-[0.75] overflow-hidden rounded-lg relative">
-          <img
-            :src="resolveGameImageSrc(item.icon2)"
-            alt=""
-            class="game-card-image w-full h-full object-cover"
-            loading="lazy"
-            decoding="async"
-            @error="handleImageError"
-          />
+          <gameRemoteImg class="game-card-image-wrap h-full w-full" :img="getGameImage(item)" />
           <div class="game-card-shadow"></div>
           <div class="game-card-mask">
             <div class="game-card-play">
@@ -35,7 +28,7 @@
             <div class="game-card-subline">
               <div class="game-card-provider">{{ getProviderName(item) }}</div>
               <div class="game-card-player">
-                <SmartImage :src="numImg" alt="" class="game-card-player-icon" />
+                <PlayerCountIcon class="game-card-player-icon" />
                 <div class="game-card-player-num">{{ toScore(item.initScoreNum) }}</div>
               </div>
             </div>
@@ -47,11 +40,10 @@
 </template>
 
 <script setup lang="ts">
-import SmartImage from '@/components/common/SmartImage.vue'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import gameImg from '@/static/img/explore/game.png'
-import numImg from '@/static/img/explore/num.png'
+import PlayerCountIcon from '@/static/svg/casino/player_count.svg?component'
 import { computed, inject, onBeforeUnmount, Ref, ref, watch } from 'vue'
 import { navigateToName } from '@/utils/router'
 
@@ -84,7 +76,7 @@ const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value)
 const resolveGameImageSrc = (icon2?: string) => {
   const source = String(icon2 ?? '').trim()
   if (!source) {
-    return gameImg
+    return ''
   }
 
   if (isAbsoluteUrl(source)) {
@@ -99,6 +91,14 @@ const resolveGameImageSrc = (icon2?: string) => {
   }
 
   return `${normalizedBaseUrl}/${normalizedSource}`
+}
+
+const getGameImage = (item: CasinoGameItem) => {
+  return {
+    maintain: false,
+    src: resolveGameImageSrc(item.icon2),
+    fit: 'cover' as const
+  }
 }
 
 const injectedGameList = inject<Ref<unknown[]>>('explore-game-list', ref([]))
@@ -253,21 +253,18 @@ const getProviderName = (item: CasinoGameItem) => {
   const fallbackProviderName = String(item.platformName ?? '').trim()
   return fallbackProviderName || '--'
 }
-
-const handleImageError = (event: Event) => {
-  const target = event.target as HTMLImageElement | null
-  if (!target) return
-  // 避免默认图也加载失败时反复触发 error。
-  target.onerror = null
-  target.src = gameImg
-}
 </script>
 
 <style scoped lang="scss">
-.game-card-image {
+.game-card-image-wrap :deep(.game-remote-img) {
   transition:
     transform 0.35s ease,
     filter 0.35s ease;
+}
+
+.game-card-image-wrap :deep(.game-remote-img:not(.error)) {
+  width: 100%;
+  height: 100%;
 }
 
 .game-card-media {
@@ -289,6 +286,20 @@ const handleImageError = (event: Event) => {
     rgba(0, 0, 0, 0.68) 100%
   );
   z-index: 1;
+}
+
+.game-card-image-wrap.is-error + .game-card-shadow,
+.game-card-image-wrap.is-error ~ .game-card-mask {
+  display: none;
+}
+
+.game-card-image-wrap.is-error ~ .game-card-meta .game-card-title,
+.game-card-image-wrap.is-error ~ .game-card-meta .game-card-provider {
+  display: none;
+}
+
+.game-card-image-wrap.is-error ~ .game-card-meta .game-card-subline {
+  justify-content: flex-end;
 }
 
 .game-card-mask {
@@ -348,20 +359,25 @@ const handleImageError = (event: Event) => {
 .game-card-player {
   display: inline-flex;
   align-items: center;
+  height: 20px;
   border-radius: 6px;
-  padding: 2px 5px;
-  background: rgba(36, 132, 214, 0.86);
+  padding: 2px 6px 2px 5px;
+  background: var(--color-mask-20);
+  backdrop-filter: blur(1px);
 }
 
 .game-card-player-icon {
-  width: 10px;
-  height: 10px;
-  margin-right: 2px;
+  width: 12px;
+  height: 12px;
+  margin-right: 3px;
+  color: #fff;
+  fill: currentColor;
+  flex-shrink: 0;
 }
 
 .game-card-player-num {
   color: #fff;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1;
 }
@@ -396,7 +412,7 @@ const handleImageError = (event: Event) => {
     transform: translateY(-10px);
   }
 
-  .game-card:hover .game-card-image {
+  .game-card:hover .game-card-image-wrap :deep(.game-remote-img:not(.error)) {
     transform: scale(1.06);
     filter: brightness(0.82);
   }
