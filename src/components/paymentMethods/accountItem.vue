@@ -37,6 +37,7 @@
               fit: 'contain'
             }"
             class="h-full w-full"
+            :alt="option.label"
           />
         </div>
         <div class="min-w-0 flex-1 text-left">

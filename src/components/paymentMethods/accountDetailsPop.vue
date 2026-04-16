@@ -22,6 +22,7 @@
                   <gameRemoteImg
                     :img="{ src: option.customRoundIcon, maintain: false, fit: 'contain' }"
                     class="h-full w-full"
+                    :alt="option.label"
                   />
                 </div>
               </div>
