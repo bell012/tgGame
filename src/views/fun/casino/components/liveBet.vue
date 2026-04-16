@@ -32,7 +32,13 @@
         >
           <td class="px-3 py-2">
             <div :key="item.id" class="flex min-w-0 items-center gap-1">
-              <img :src="item.gameIcon" class="w-3.5 h-3.5" :alt="item.game" />
+              <div class="h-3.5 w-3.5 shrink-0">
+                <gameRemoteImg
+                  class="!rounded-none !bg-transparent"
+                  :img="{ src: item.gameIcon, maintain: false, fit: 'contain' }"
+                  :alt="item.game"
+                />
+              </div>
               <span class="min-w-0 truncate text-text-1">
                 {{ item.game }}
               </span>
@@ -62,6 +68,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 import Api from '@/api'
 import placeholderImg from '@/static/img/home/errImg.png'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { getCurrentCurrency } from '@/utils/locale'
 

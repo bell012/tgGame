@@ -17,7 +17,11 @@
           @click="handleSlideClick(slide)"
           @dragstart.prevent
         >
-          <gameRemoteImg class="h-full w-full" :img="getSlideImage(slide)" />
+          <gameRemoteImg
+            class="h-full w-full"
+            :img="getSlideImage(slide)"
+            :alt="slide.slideshowName"
+          />
         </button>
       </SwipeItem>
     </Swipe>

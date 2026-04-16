@@ -34,6 +34,7 @@
               <gameRemoteImg
                 :img="{ src: icon, maintain: false, fit: 'contain' }"
                 class="h-full w-full"
+                :alt="item.title"
               />
             </div>
             <div class="min-w-0">
