@@ -51,8 +51,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import ScrollBar from '@/static/svg/scroll-bar.svg?component'
-import { navigateTo } from '@/utils/router'
+import { navigateTo, navigateToName } from '@/utils/router'
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
+import { useUserStore } from '@/stores/user'
+import { useAuthModalStore } from '@/stores/authModal'
+import { storeToRefs } from 'pinia'
+const userStore = useUserStore()
+const authModalStore = useAuthModalStore()
+const { userInfo } = storeToRefs(userStore)
+const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
 interface Props {
   list: any[]
 }
@@ -69,13 +76,79 @@ const getSlideImage = (slide: any): string => {
   return slide?.url ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${slide.url}` : ''
 }
 const handleCarouselClick = (slide: QuerySlideshowItem) => {
-  if (slide.jumpType === 1 && slide.linkUrl) {
-    if (slide.linkType === 2) {
-      window.open(slide.linkUrl, '_blank', 'noopener,noreferrer')
+  console.log('handleCarouselClick', slide)
+  switch (slide.jumpType) {
+    case 1:
+      handleUrlJump(slide)
       return
-    }
-    navigateTo(slide.linkUrl)
+    case 2:
+      handleInternalJump(slide)
+      return
+    case 3:
+      handleGameJump(slide)
+      return
+    default:
+      return
   }
+}
+const handleUrlJump = (slide: QuerySlideshowItem) => {
+  const linkUrl = String(slide.linkUrl ?? '').trim()
+  
+  if (!linkUrl && !isLogin.value) {
+    // 打开登录页面
+    authModalStore.openLoginModal()
+    return
+  }
+
+  if (slide.linkType === 2) {
+    window.open(linkUrl, '_blank', 'noopener,noreferrer')
+    return
+  }
+
+  navigateTo(linkUrl)
+}
+const handleInternalJump = (slide: QuerySlideshowItem) => {
+  const linkId = String(slide.linkId ?? '').trim()
+
+  switch (slide.linkType) {
+    case 1:
+      // TODO: 活动详情页路由未明确，先保留占位，避免点击无反馈。
+      if (linkId) {
+        navigateTo(`/menu?activityId=${linkId}`)
+        return
+      }
+
+      navigateTo('/menu')
+      return
+    case 2:
+      navigateTo('/deposit')
+      return
+    case 3:
+      // TODO: 分享转盘页路由未明确，当前先跳邀请好友页占位。
+      navigateTo('/menu/referral')
+      return
+    default:
+      return
+  }
+}
+const handleGameJump = (slide: QuerySlideshowItem) => {
+  const linkId = String(slide.linkId ?? '').trim()
+
+  if (!linkId) {
+    return
+  }
+
+  if (slide.platformType === 2) {
+
+    navigateToName('brandGameList', {
+      params: { brandCode: linkId }
+    })
+    return
+  }
+  // TODO: 自定义类型游戏当前按 game list tab 占位，后续可按真实业务再细化。
+  navigateToName('gameList', {
+    params: { tabKey: linkId }
+  })
 }
 const onCarouselScroll = () => {
   const el = carouselRef.value
