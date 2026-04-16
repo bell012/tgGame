@@ -43,7 +43,7 @@
         <CloseIcon class="w-4 h-4 stroke-text-2" />
       </div>
       <div class="text-xs text-[var(--color-text-level-2)]">
-        Search requires at least 2 characters.
+        {{ t('casino.search_tips') }}
       </div>
       <!-- 历史记录 -->
       <div class="flex justify-between w-full text-xs my-2.5">
@@ -289,8 +289,8 @@ onBeforeUnmount(() => {
 }
 
 .top-search-input {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
-  border-color: var(--color-opacity-10);
+  background: var(--color-input-level-1);
+  border-color: var(--color-input-level-2);
 }
 
 .top-search-input::placeholder {
