@@ -9,11 +9,7 @@
     </div>
 
     <div v-else-if="pageData.length > 0" class="grid w-full gap-2.5 grid-cols-3 sm:grid-cols-8">
-      <div
-        v-for="(game, i) in pageData"
-        :key="game.rowId ?? i"
-        class="aspect-[330/438] min-h-[146px]"
-      >
+      <div v-for="(game, i) in pageData" :key="game.rowId ?? i" class="aspect-[330/438]">
         <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>

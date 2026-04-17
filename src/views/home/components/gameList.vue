@@ -65,6 +65,7 @@
           <div class="w-full h-full">
             <gameErrImg :img="value.img" />
           </div>
+          <div class="absolute inset-x-0 bottom-6 flex w-full items-center justify-center px-2 text-center text-sm sm:text-base font-bold leading-4 text-common-100 sm:font-extrabold">{{ value.itemName }}</div>
           <div
             class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-black_alpha20 px-1.5"
           >
@@ -81,9 +82,9 @@
               @click="handleClick(value.rowId)"
             >
               <div
-                class="flex justify-center items-center center absolute left-0 top-0 flex h-[40%] w-full px-2 text-center font-extrabold leading-4 text-[white]"
+                class="flex justify-center items-center center absolute left-0 top-0 h-[40%] w-full px-2 text-center font-extrabold leading-4 text-[white]"
               >
-                Crash
+              {{ value.itemName }}
               </div>
               <div
                 class="flex h-9 w-9 rounded-full bg-[#fff3] transition-all duration-300 group-hover:scale-150"
@@ -119,6 +120,7 @@ interface GameItem {
   }
   number: number
   rowId: number
+  itemName: string
 }
 
 interface Props {
@@ -141,7 +143,8 @@ const normalizeGameItem = (item: any): GameItem => {
       src: String(conUrl)
     },
     number,
-    rowId: item.rowId
+    rowId: item.rowId,
+    itemName: String(item?.itemName ?? '')
   }
 }
 

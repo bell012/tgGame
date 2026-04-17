@@ -26,7 +26,7 @@ interface Props {
   modelValue: boolean
   orderInfo: Partial<QueryPayOrderByOrderIdResult>
   methodIcon?: string
-  orderStatus?: 'Completed' | 'Cancelled'
+  orderStatus?: 'Completed' | 'Cancelled' | 'Failed'
 }
 
 withDefaults(defineProps<Props>(), {

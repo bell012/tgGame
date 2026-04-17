@@ -97,7 +97,7 @@ const emit = defineEmits<{
   'cancel-success': [detail: QueryPayOrderByOrderIdResult]
 }>()
 
-const countdownTime = ref<number>(4 * 1000)
+const countdownTime = ref<number>(60 * 1000)
 const disabledConfirm = ref<boolean>(false)
 const isSubmitting = ref<boolean>(false)
 const cancellations = computed<cancellationType[]>(() => [
