@@ -13,7 +13,7 @@ export function queryNoticeMsg(data: QueryNoticeMsgForm): Promise<QueryNoticeMsg
     url: '/ac/queryNoticeMsg',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }

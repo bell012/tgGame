@@ -65,7 +65,7 @@
                 }}</span>
                 <span class="led-font text-secondary-7 text-[33px] font-bold leading-none">:</span>
                 <span class="led-font text-secondary-7 text-[33px] font-bold leading-none">{{
-                  timeData.seconds
+                  formatCountdownUnit(timeData.seconds)
                 }}</span>
               </template>
             </CountDown>
@@ -234,7 +234,11 @@
 <script setup lang="ts">
 import type { QueryPayOrderByOrderIdResult } from '@/api/interface/wallet'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { isOrderTerminalStatus, normalizeOrderStatusCode } from '@/constants/orderStatus'
+import {
+  getOrderStatusColorClass,
+  isOrderTerminalStatus,
+  normalizeOrderStatusCode
+} from '@/constants/orderStatus'
 import CloseIcon from '@/static/svg/close.svg?component'
 import CryptoOrderCountdownIcon from '@/static/svg/deposit/crypto-order-countdown.svg?component'
 import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifying.svg?component'
@@ -274,7 +278,7 @@ const targetRef = ref<HTMLElement | null>(null)
 const cancelOrderPopShow = ref<boolean>(false)
 const cancelResultPopShow = ref<boolean>(false)
 const cancelResultOrderInfo = ref<Partial<QueryPayOrderByOrderIdResult>>({})
-const cancelResultStatus = ref<'Completed' | 'Cancelled'>('Cancelled')
+const cancelResultStatus = ref<'Completed' | 'Cancelled' | 'Failed'>('Cancelled')
 const uploadPopShow = ref<boolean>(false)
 const confirmUploadStatus = ref<'not_started' | 'in_progress' | 'completed'>('not_started')
 const orderStatus = ref<'Completed' | 'Cancelled'>('Completed')
@@ -282,6 +286,8 @@ const orderStatus = ref<'Completed' | 'Cancelled'>('Completed')
 // 过滤详情行中的空项，保证渲染数据结构稳定
 const compactRows = (rows: Array<DetailRowItem | null>) =>
   rows.filter((row): row is DetailRowItem => row !== null)
+
+const formatCountdownUnit = (value: number | string) => String(value).padStart(2, '0')
 
 // 格式化时间戳为本地字符串
 const formatTimestamp = (timestamp?: number) => {
@@ -454,6 +460,10 @@ const completedStatusTitle = computed(() =>
   isOrderCompleted.value ? t('deposit.order_completed') : t('deposit.order_cancelled')
 )
 
+const isFailedDepositStatus = computed(
+  () => getOrderStatusColorClass('deposit', rawOrderInfo.value.status) === 'text-assistRed'
+)
+
 // 关闭订单弹窗
 const handleClose = () => {
   emit('close')
@@ -543,11 +553,23 @@ const openTerminalResultPopByOrderDetail = (detail: Partial<QueryPayOrderByOrder
     return
   }
 
-  cancelResultStatus.value = statusCode === 1 ? 'Completed' : 'Cancelled'
+  cancelResultStatus.value = statusCode === 1 ? 'Completed' : 'Failed'
   cancelResultOrderInfo.value = { ...detail }
   cancelResultPopShow.value = true
   confirmUploadStatus.value = 'completed'
   emit('hidden', false)
+}
+
+const openFailedResultPopByOrderDetail = (detail: Partial<QueryPayOrderByOrderIdResult>) => {
+  if (cancelResultPopShow.value || !isFailedDepositStatus.value) {
+    return
+  }
+
+  cancelResultStatus.value = 'Failed'
+  cancelResultOrderInfo.value = { ...detail }
+  cancelResultPopShow.value = true
+  confirmUploadStatus.value = 'completed'
+  emit('hidden', true)
 }
 
 // 复制文本到剪贴板并提示成功
@@ -576,6 +598,14 @@ watch(
     }
 
     openTerminalResultPopByOrderDetail(rawOrderInfo.value)
+  },
+  { immediate: true }
+)
+
+watch(
+  () => rawOrderInfo.value.status,
+  () => {
+    openFailedResultPopByOrderDetail(rawOrderInfo.value)
   },
   { immediate: true }
 )

@@ -784,6 +784,7 @@
     "order_exchange_rate": "汇率",
     "order_completed": "订单完成",
     "order_cancelled": "订单取消",
+    "order_failed": "订单失败",
     "order_pay_and_upload_tips": "请在时限内完成付款并上传凭证",
     "order_save_qr_code": "保存二维码",
     "order_copy_address": "复制地址",
