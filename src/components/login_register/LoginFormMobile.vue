@@ -56,45 +56,8 @@
                         <CloseIcon class="w-3 h-3 text-text-1" />
                       </button>
                     </div>
-                    <div
-                      class="flex flex-col justify-start space-y-4 h-[140px] mt-4"
-                      :style="{
-                        backgroundImage: loginHeadBackground,
-                        backgroundSize: '100% 100%',
-                        backgroundRepeat: 'no-repeat'
-                      }"
-                    >
-                      <div class="flex-col">
-                        <h2 class="flex items-center text-xs">
-                          <GiftIcon class="w-3.5 h-3.5" />
-                          <div class="ml-1.5 text-text-1">470%</div>
-                        </h2>
-                        <!-- 首存奖金 -->
-                        <p class="text-text-2 mt-0.5 text-[9px]">
-                          {{ t('common.welcome_deposit_bonus') }}
-                        </p>
-                      </div>
-                      <div class="flex-col">
-                        <h2 class="flex items-center text-xs">
-                          <TurntableIcon class="w-3.5 h-3.5" />
-                          <div class="ml-1.5 text-text-1">5 BTC</div>
-                        </h2>
-                        <!-- 每日免费幸运旋转 -->
-                        <p class="text-text-2 mt-0.5 text-[9px]">
-                          {{ t('common.free_daily_lucky_spin') }}
-                        </p>
-                      </div>
-                      <div class="flex-col">
-                        <h2 class="flex items-center text-xs">
-                          <FreePerksIcon class="w-3.5 h-3.5" />
-                          <!-- 免费福利 -->
-                          <div class="ml-1.5 text-text-1">{{ t('common.free_perks') }}</div>
-                        </h2>
-                        <!-- 每日免费奖励与奖金 -->
-                        <p class="text-text-2 mt-0.5 text-[9px]">
-                          {{ t('common.daily_free_rewards_bonuses') }}
-                        </p>
-                      </div>
+                    <div class="mt-4 w-full h-[140px]">
+                      <img :src="h5BackgroundImage" alt="" class="w-full h-full" />
                     </div>
                   </div>
                 </div>
@@ -381,9 +344,6 @@ import { computed, ref, watch, nextTick } from 'vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
-import GiftIcon from '@/static/svg/login/gift.svg?skipsvgo'
-import TurntableIcon from '@/static/svg/login/turntable.svg?skipsvgo'
-import FreePerksIcon from '@/static/svg/login/free_perks.svg?skipsvgo'
 import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import CheckIcon from '@/static/svg/login/check.svg?skipsvgo'
@@ -412,12 +372,9 @@ const emit = defineEmits<{
 const showDrawer = ref(false)
 const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
 
-/**
- * 图片地址转换
- */
-const loginHeadBackground = computed(() => {
-  const imageUrl = String(props.backgroundImageUrl ?? '').trim()
-  return imageUrl ? `url("${imageUrl}")` : ''
+// 登录/注册弹窗背景图
+const h5BackgroundImage = computed(() => {
+  return props.backgroundImageUrl
 })
 
 watch(
