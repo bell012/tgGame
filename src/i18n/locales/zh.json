@@ -936,7 +936,10 @@
     },
     "claimed": "已领取",
     "locked": "已锁定",
-    "goalHint": "您已完成当前 VIP 等级目标",
+    "goalHint": {
+      "unlocked": "升级成功，权益已解锁",
+      "keepGoing": "继续努力，向您的 VIP 目标迈进"
+    },
     "claimPopup": {
       "title": "领取成功",
       "description": "奖金已发放至您的钱包。",

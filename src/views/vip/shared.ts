@@ -4,6 +4,7 @@ import Api from '@/api'
 import type { CommonResponse } from '@/api/interface/vip'
 import { useUserStore } from '@/stores/user'
 import { useVipStore } from '@/stores/vip'
+import { useThemeStore } from '@/stores/theme'
 import {
   DEFAULT_AVATAR_FRAME_ID,
   profileCustomizationState,
@@ -22,6 +23,31 @@ import item3Image from '@/static/img/personalCenter/item_3.png'
 import item4Image from '@/static/img/personalCenter/item_4.png'
 import rule1Icon from '@/static/svg/rule_1.svg?skipsvgo'
 import rule2Icon from '@/static/svg/rule_2.svg?skipsvgo'
+import VipCardWordmarkIcon from '@/static/svg/vip/vip.svg?component'
+import VipLevel0Icon from '@/static/svg/vip/0.svg?component'
+import VipLevel1Icon from '@/static/svg/vip/1.svg?component'
+import VipLevel2Icon from '@/static/svg/vip/2.svg?component'
+import VipLevel3Icon from '@/static/svg/vip/3.svg?component'
+import VipLevel4Icon from '@/static/svg/vip/4.svg?component'
+import VipLevel5Icon from '@/static/svg/vip/5.svg?component'
+import VipLevel6Icon from '@/static/svg/vip/6.svg?component'
+import VipLevel7Icon from '@/static/svg/vip/7.svg?component'
+import VipLevel8Icon from '@/static/svg/vip/8.svg?component'
+import VipLevel9Icon from '@/static/svg/vip/9.svg?component'
+import VipLevel10Icon from '@/static/svg/vip/10.svg?component'
+import VipRight0Icon from '@/static/svg/vip/vip0.svg?skipsvgo'
+import VipRight1Icon from '@/static/svg/vip/vip1.svg?skipsvgo'
+import VipRight2Icon from '@/static/svg/vip/vip2.svg?skipsvgo'
+import VipRight3Icon from '@/static/svg/vip/vip3.svg?skipsvgo'
+import VipRight4Icon from '@/static/svg/vip/vip4.svg?skipsvgo'
+import VipRight5Icon from '@/static/svg/vip/vip5.svg?skipsvgo'
+import VipRight6Icon from '@/static/svg/vip/vip6.svg?skipsvgo'
+import VipRight7Icon from '@/static/svg/vip/vip7.svg?skipsvgo'
+import VipRight8Icon from '@/static/svg/vip/vip8.svg?skipsvgo'
+import VipRight9Icon from '@/static/svg/vip/vip9.svg?skipsvgo'
+import VipRight10Icon from '@/static/svg/vip/vip10.svg?skipsvgo'
+import VipCornerUnlockedIcon from '@/static/svg/vip/kai.svg?component'
+import VipCornerLockedIcon from '@/static/svg/vip/suo.svg?component'
 
 type Translate = (key: string) => string
 
@@ -59,6 +85,44 @@ export interface VipRetentionCard {
   icon: Component
 }
 
+type VipThemeVariant =
+  | 'vip0'
+  | 'vip1'
+  | 'vip2'
+  | 'vip3'
+  | 'vip4'
+  | 'vip5'
+  | 'vip6'
+  | 'vip7'
+  | 'vip8'
+  | 'vip9'
+  | 'vip10'
+
+type VipCardThemeConfig = {
+  darkBackground: string
+  lightBackground: string
+  accentColor: string
+  progressTextColor: string
+  progressTrackColor: string
+  progressFillColor: string
+  wordmarkColor: string
+  rightDecoration: Component
+}
+
+export interface VipCardTheme {
+  background: string
+  accentColor: string
+  progressTextColor: string
+  progressTrackColor: string
+  progressFillColor: string
+  wordmarkColor: string
+  wordmarkIcon: Component
+  levelNumberIcon: Component
+  rightDecorationIcon: Component
+  cornerBadgeIcon: Component
+  goalHintKey: string
+}
+
 const benefitCardBackgroundMap: Record<VipBenefitCardKey, string> = {
   levelUp: 'linear-gradient(90deg, #1C3D57 0%, #313333 100%)',
   daily: 'linear-gradient(90deg, #59461D 0%, #313333 87.05%)',
@@ -72,6 +136,160 @@ const avatarFrameImageMap: Record<Exclude<AvatarFrameId, 'none'>, string> = {
   border_3: border3Image,
   border_4: border4Image,
   border_5: border5Image
+}
+
+const vipLevelNumberIconMap: Record<number, Component> = {
+  0: VipLevel0Icon,
+  1: VipLevel1Icon,
+  2: VipLevel2Icon,
+  3: VipLevel3Icon,
+  4: VipLevel4Icon,
+  5: VipLevel5Icon,
+  6: VipLevel6Icon,
+  7: VipLevel7Icon,
+  8: VipLevel8Icon,
+  9: VipLevel9Icon,
+  10: VipLevel10Icon
+}
+
+const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
+  vip0: {
+    darkBackground: 'linear-gradient(180deg, #8C989A 0%, #414747 100%)',
+    lightBackground: 'linear-gradient(180deg, #DBDBDB 0%, #C4C8C8 100%)',
+    wordmarkColor: '#FFFFFF',
+    accentColor: '#FFFFFF',
+    progressTextColor: '#8F9D9E',
+    progressTrackColor: 'rgba(255, 255, 255, 0.15)',
+    progressFillColor: '#FFFFFF',
+    rightDecoration: VipRight0Icon
+  },
+  vip1: {
+    darkBackground: 'linear-gradient(180deg, #8C7797 0%, #3F2E45 100%)',
+    lightBackground: 'linear-gradient(180deg, #FAE9FF 0%, #DCBFE1 100%)',
+    wordmarkColor: '#B599CB',
+    accentColor: '#B599CB',
+    progressTextColor: '#9A83AC',
+    progressTrackColor: 'rgba(181, 153, 203, 0.15)',
+    progressFillColor: '#B599CB',
+    rightDecoration: VipRight1Icon
+  },
+  vip2: {
+    darkBackground: 'linear-gradient(180deg, #557364 0%, #2C4235 100%)',
+    lightBackground: 'linear-gradient(180deg, #D0F9E1 0%, #A5DBB0 100%)',
+    wordmarkColor: '#70BD88',
+    accentColor: '#70BD88',
+    progressTextColor: '#5D9771',
+    progressTrackColor: 'rgba(112, 189, 136, 0.15)',
+    progressFillColor: '#70BD88',
+    rightDecoration: VipRight2Icon
+  },
+  vip3: {
+    darkBackground: 'linear-gradient(180deg, #938E37 0%, #434018 100%)',
+    lightBackground: 'linear-gradient(180deg, #FFFCC9 0%, #EBE781 100%)',
+    wordmarkColor: '#D3BF04',
+    accentColor: '#D3BF04',
+    progressTextColor: '#B6A348',
+    progressTrackColor: 'rgba(211, 191, 4, 0.15)',
+    progressFillColor: '#D3BF04',
+    rightDecoration: VipRight3Icon
+  },
+  vip4: {
+    darkBackground: 'linear-gradient(180deg, #26918C 0%, #263D3F 100%)',
+    lightBackground: 'linear-gradient(180deg, #D6FFED 0%, #A5F8FF 100%)',
+    wordmarkColor: '#2AD2CA',
+    accentColor: '#2AD2CA',
+    progressTextColor: '#45AEA0',
+    progressTrackColor: 'rgba(42, 210, 202, 0.15)',
+    progressFillColor: '#2AD2CA',
+    rightDecoration: VipRight4Icon
+  },
+  vip5: {
+    darkBackground: 'linear-gradient(180deg, #137134 0%, #1A2F25 100%)',
+    lightBackground: 'linear-gradient(180deg, #CFFED7 0%, #8CE5BA 100%)',
+    wordmarkColor: '#2AEE88',
+    accentColor: '#2AEE88',
+    progressTextColor: '#198E48',
+    progressTrackColor: 'rgba(42, 238, 136, 0.15)',
+    progressFillColor: '#2AEE88',
+    rightDecoration: VipRight5Icon
+  },
+  vip6: {
+    darkBackground: 'linear-gradient(180deg, #103781 0%, #1D1F2E 100%)',
+    lightBackground: 'linear-gradient(180deg, #C4E7FF 0%, #A5C3FF 100%)',
+    wordmarkColor: '#2AB3EE',
+    accentColor: '#2AB3EE',
+    progressTextColor: '#3E5DA3',
+    progressTrackColor: 'rgba(42, 179, 238, 0.15)',
+    progressFillColor: '#2AB3EE',
+    rightDecoration: VipRight6Icon
+  },
+  vip7: {
+    darkBackground: 'linear-gradient(180deg, #833AB0 0%, #372841 100%)',
+    lightBackground: 'linear-gradient(180deg, #E5CAFF 0%, #F3A5FF 100%)',
+    wordmarkColor: '#C064F5',
+    accentColor: '#C064F5',
+    progressTextColor: '#A365B5',
+    progressTrackColor: 'rgba(192, 100, 245, 0.15)',
+    progressFillColor: '#C064F5',
+    rightDecoration: VipRight7Icon
+  },
+  vip8: {
+    darkBackground: 'linear-gradient(180deg, #AD9041 0%, #423829 100%)',
+    lightBackground: 'linear-gradient(180deg, #FFF9C7 0%, #FFDBA5 100%)',
+    wordmarkColor: '#EEB440',
+    accentColor: '#EEB440',
+    progressTextColor: '#B79A51',
+    progressTrackColor: 'rgba(238, 180, 64, 0.15)',
+    progressFillColor: '#EEB440',
+    rightDecoration: VipRight8Icon
+  },
+  vip9: {
+    darkBackground: 'linear-gradient(180deg, #B13585 0%, #2E1D28 100%)',
+    lightBackground: 'linear-gradient(180deg, #FFC8EC 0%, #FFA5BF 100%)',
+    wordmarkColor: '#FD63D4',
+    accentColor: '#FD63D4',
+    progressTextColor: '#B5649A',
+    progressTrackColor: 'rgba(253, 99, 212, 0.15)',
+    progressFillColor: '#FD63D4',
+    rightDecoration: VipRight9Icon
+  },
+  vip10: {
+    darkBackground: 'linear-gradient(180deg, #9D1A1D 0%, #2E1D1D 100%)',
+    lightBackground: 'linear-gradient(180deg, #FFCDCE 0%, #FFA5A7 100%)',
+    wordmarkColor: '#FF5659',
+    accentColor: '#FF5659',
+    progressTextColor: '#C54C4E',
+    progressTrackColor: 'rgba(255, 86, 89, 0.15)',
+    progressFillColor: '#FF5659',
+    rightDecoration: VipRight10Icon
+  }
+}
+
+const resolveVipThemeVariant = (vipId?: number | null): VipThemeVariant => {
+  if (typeof vipId === 'number' && vipId >= 0 && vipId <= 10) {
+    return `vip${vipId}` as VipThemeVariant
+  }
+
+  return 'vip0'
+}
+
+const resolveVipCardCornerBadgeIcon = (
+  currentVipId?: number | null,
+  viewedVipId?: number | null
+) => {
+  return currentVipId === viewedVipId ? VipCornerUnlockedIcon : VipCornerLockedIcon
+}
+
+const resolveVipCardGoalHintKey = (currentVipId?: number | null, viewedVipId?: number | null) => {
+  return currentVipId === viewedVipId ? 'vipPage.goalHint.unlocked' : 'vipPage.goalHint.keepGoing'
+}
+
+const resolveVipLevelNumberIcon = (vipId?: number | null) => {
+  if (typeof vipId === 'number' && vipId >= 0 && vipId <= 10) {
+    return vipLevelNumberIconMap[vipId]
+  }
+
+  return VipLevel0Icon
 }
 
 const getClampedProgress = (currentValue: number, targetValue: number) => {
@@ -138,8 +356,10 @@ const createProgressItem = (
 export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) => {
   const userStore = useUserStore()
   const vipStore = useVipStore()
+  const themeStore = useThemeStore()
   const { userInfo } = storeToRefs(userStore)
   const { myVipInfo, vipInfo, vipList } = storeToRefs(vipStore)
+  const { theme } = storeToRefs(themeStore)
 
   const avatarUrl = computed(() => resolveProfileAvatarUrl(userInfo.value?.headPortrait))
 
@@ -170,6 +390,28 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
       getVipTargetConfigById(resolvedViewedVipId.value)?.vipId ?? resolvedViewedVipId.value ?? 0
     )
   })
+
+  const getVipCardThemeByVipId = (vipId?: number | null): VipCardTheme => {
+    const resolvedVipId = vipId ?? currentVipLevel.value
+    const themeVariant = resolveVipThemeVariant(resolvedVipId)
+    const themeConfig = vipCardThemeConfigMap[themeVariant]
+
+    return {
+      background: theme.value === 'dark' ? themeConfig.darkBackground : themeConfig.lightBackground,
+      accentColor: themeConfig.accentColor,
+      progressTextColor: themeConfig.progressTextColor,
+      progressTrackColor: themeConfig.progressTrackColor,
+      progressFillColor: themeConfig.progressFillColor,
+      wordmarkColor: themeConfig.wordmarkColor,
+      wordmarkIcon: VipCardWordmarkIcon,
+      levelNumberIcon: resolveVipLevelNumberIcon(resolvedVipId),
+      rightDecorationIcon: themeConfig.rightDecoration,
+      cornerBadgeIcon: resolveVipCardCornerBadgeIcon(currentVipLevel.value, resolvedVipId),
+      goalHintKey: resolveVipCardGoalHintKey(currentVipLevel.value, resolvedVipId)
+    }
+  }
+
+  const viewedVipCardTheme = computed(() => getVipCardThemeByVipId(resolvedViewedVipId.value))
 
   const getProgressItemsByVipId = (vipId?: number | null): VipProgressItem[] => {
     const targetConfig = getVipTargetConfigById(vipId)
@@ -296,6 +538,8 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
     vipLevel: currentVipLevel,
     currentVipLevel,
     viewedVipLevel,
+    viewedVipCardTheme,
+    getVipCardThemeByVipId,
     progressItems,
     overallProgress,
     getProgressItemsByVipId,
