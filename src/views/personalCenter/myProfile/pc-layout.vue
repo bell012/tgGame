@@ -25,22 +25,11 @@
             <div class="inline-flex h-[28px] min-w-[48px] items-center"></div>
             <div class="flex flex-col items-center text-center">
               <div class="relative h-[60px] w-[60px] overflow-visible">
-                <div
-                  :class="[
-                    'absolute overflow-hidden rounded-full',
-                    selectedAvatarFrameImage ? 'inset-[4px]' : 'inset-0 border-2 border-icon-2'
-                  ]"
-                >
+                <div class="absolute overflow-hidden rounded-full border-4 border-opacity-15">
                   <img :src="avatarUrl" alt="Avatar" class="h-full w-full object-cover" />
                 </div>
-                <img
-                  v-if="selectedAvatarFrameImage"
-                  :src="selectedAvatarFrameImage"
-                  alt="Avatar Frame"
-                  class="pointer-events-none absolute inset-0 h-full w-full object-contain"
-                />
                 <span
-                  class="absolute bottom-[-6px] left-1/2 z-10 flex h-[20px] min-w-[44px] -translate-x-1/2 items-center justify-center rounded border border-icon-1 bg-text-2 px-0.5 text-xs font-[700] text-text-1"
+                  class="absolute bottom-[-6px] left-1/2 z-10 flex h-[20px] min-w-[44px] -translate-x-1/2 items-center justify-center rounded border border-icon-1 bg-text-2 px-0.5 text-xs font-[700] text-text-1 bg-[linear-gradient(90deg,#CACACA_0.27%,#6D6D6D_51.62%,#CACACA_99.82%)]"
                   >VIP{{ userInfo?.vipId || 0 }}</span
                 >
               </div>
@@ -159,7 +148,6 @@ const { t } = useI18n()
 const {
   userInfo,
   avatarUrl,
-  selectedAvatarFrameImage,
   displayName,
   profileId,
   topStats,

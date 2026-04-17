@@ -140,7 +140,7 @@
             </div>
             <!-- 用户头像 (H5端) -->
             <div
-              class="cursor-pointer w-[33px] h-[33px] border border-opacity-15 flex items-center justify-center bg-opacity-5 rounded-full overflow-hidden"
+              class="cursor-pointer w-[33px] h-[33px] border-2 border-opacity-15 flex items-center justify-center bg-opacity-5 rounded-full overflow-hidden"
               @click="handleAvatarClick"
             >
               <img :src="avatarUrl" alt="Avatar" class="w-[28px] h-[28px] object-cover" />
@@ -176,7 +176,7 @@
           <!-- 用户头像 (PC端) -->
           <div ref="userMenuRef" class="hidden md:block relative">
             <div
-              class="cursor-pointer w-[44px] h-[44px] border border-opacity-15 flex items-center justify-center bg-opacity-5 rounded-full overflow-hidden mr-2"
+              class="cursor-pointer w-[44px] h-[44px] border-3 border-opacity-15 flex items-center justify-center bg-opacity-5 rounded-full overflow-hidden mr-2"
               @click="toggleUserMenu"
             >
               <img :src="avatarUrl" alt="Avatar" class="w-[38px] h-[38px] object-cover" />
