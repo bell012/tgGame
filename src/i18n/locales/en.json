@@ -380,7 +380,8 @@
     "favorites": "Favorites",
     "recent": "Recent",
     "filter_hot": "Hot",
-    "filter_new": "New"
+    "filter_new": "New",
+    "view_all": "View All"
   },
   "gameDetail": {
     "playWithSelectedCurrency": "Play with selected currency",
