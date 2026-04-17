@@ -360,8 +360,8 @@
         >
           <div class="flex justify-between items-center">
             <div class="flex-1 p-2.5 pr-0">
-              <h3 class="text-sm font-semibold text-text-1 mb-1">应用程式</h3>
-              <p class="text-xs text-text-2 leading-tight">专属功能全面解锁 玩乐无限升级</p>
+              <h3 class="text-sm font-semibold text-text-1 mb-1">{{ t('sidebar_menu.app_download.title') }}</h3>
+              <p class="text-xs text-text-2 leading-tight">{{ t('sidebar_menu.app_download.subtitle') }}</p>
             </div>
             <div class="w-[80px] h-auto flex-shrink-0 pt-1 pr-1">
               <div class="w-full h-full rounded flex items-center justify-center text-[10px]">
