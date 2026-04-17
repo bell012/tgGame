@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="slides.length" class="w-full max-h-[90vh] flex flex-col bg-bg-1 rounded-t-xl overflow-hidden">
+    <div v-if="slides.length" class="w-full flex flex-col bg-bg-1">
       <Swipe
         ref="swipeRef"
         class="mt-2.5 mb-2.5 flex-1 min-h-0"
@@ -14,7 +14,7 @@
           <img
             :src="getSlideImage(item)"
             :alt="`slide-${index + 1}`"
-            class="max-h-full w-full max-w-[100vw] object-contain"
+            class="max-h-full w-full max-w-[100vw] object-contain rounded-xl overflow-hidden"
             @click="handleCarouselClick(item)"
           />
         </SwipeItem>
