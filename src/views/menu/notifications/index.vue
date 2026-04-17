@@ -18,251 +18,266 @@
     >
       <!-- 页面头部 -->
       <H5Header
-        :title="$t('notifications.title')"
-        :show-sort="props.panelMode"
+        :title="notificationPageTitle"
+        :show-sort="props.panelMode && !shouldShowMobileTransactionOrderDetail"
         :show-back="!props.panelMode"
-        :right-icon="props.panelMode ? CloseIcon : undefined"
+        :right-icon="
+          props.panelMode && !shouldShowMobileTransactionOrderDetail ? CloseIcon : undefined
+        "
         :fixed-top="!props.panelMode"
-        :disable-default-back="props.panelMode"
+        :disable-default-back="props.panelMode || shouldShowMobileTransactionOrderDetail"
         @back="handleHeaderBack"
         @sort="handlePanelClose"
       />
 
       <!-- 页面主体 -->
-      <main
-        :class="
-          props.panelMode
-            ? 'page-body min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-3'
-            : 'page-body px-[14px] pb-[calc(env(safe-area-inset-bottom)+74px)] pt-[14px]'
-        "
-      >
-        <!-- 通知分类导航 -->
-        <nav
-          class="tab-bar flex min-h-[37px] w-full items-stretch rounded-[12px] bg-bg-2"
-          :aria-label="$t('notifications.tabsAria')"
-        >
-          <button
-            v-for="tab in tabs"
-            :key="tab.key"
-            type="button"
-            class="tab-button flex min-w-0 flex-1 items-center justify-center gap-[4px] rounded-[12px] px-[8px] py-[11px]"
-            :class="activeTab === tab.key ? 'tab-button-active bg-bg-3 text-text-1' : 'text-text-2'"
-            @click="activeTab = tab.key"
+      <main :class="notificationMainClass">
+        <template v-if="shouldShowMobileTransactionOrderDetail && selectedTransactionOrder">
+          <OrderDetailScrollPanel
+            :order="selectedTransactionOrder"
+            :tab="selectedTransactionTab"
+            @copy-order-no="handleCopyOrderNo"
+          />
+        </template>
+
+        <template v-else>
+          <!-- 通知分类导航 -->
+          <nav
+            class="tab-bar flex min-h-[37px] w-full items-stretch rounded-[12px] bg-bg-2"
+            :aria-label="$t('notifications.tabsAria')"
           >
-            <span
-              class="tab-text whitespace-nowrap text-[12px] leading-[1.2]"
-              :class="activeTab === tab.key ? 'font-[700]' : 'font-[400]'"
+            <button
+              v-for="tab in tabs"
+              :key="tab.key"
+              type="button"
+              class="tab-button flex min-w-0 flex-1 items-center justify-center gap-[4px] rounded-[12px] px-[8px] py-[11px]"
+              :class="
+                activeTab === tab.key ? 'tab-button-active bg-bg-3 text-text-1' : 'text-text-2'
+              "
+              @click="activeTab = tab.key"
             >
-              {{ tab.label }}
-            </span>
-            <span
-              v-if="unreadCountByCategory[tab.key] > 0"
-              class="tab-badge min-w-[18px] rounded-[5px] bg-theme-primary px-[5px] text-center text-[10px] font-[700] leading-[16px] text-text-4"
-            >
-              {{ unreadCountByCategory[tab.key] }}
-            </span>
-          </button>
-        </nav>
+              <span
+                class="tab-text whitespace-nowrap text-[12px] leading-[1.2]"
+                :class="activeTab === tab.key ? 'font-[700]' : 'font-[400]'"
+              >
+                {{ tab.label }}
+              </span>
+              <span
+                v-if="unreadCountByCategory[tab.key] > 0"
+                class="tab-badge min-w-[18px] rounded-[5px] bg-theme-primary px-[5px] text-center text-[10px] font-[700] leading-[16px] text-text-4"
+              >
+                {{ unreadCountByCategory[tab.key] }}
+              </span>
+            </button>
+          </nav>
 
-        <!-- 通知列表区域 -->
-        <section
-          v-if="filteredNotifications.length > 0"
-          class="notice-stack mt-[14px] flex flex-col gap-[10px]"
-        >
-          <!-- 通知卡片 -->
-          <article
-            v-for="item in filteredNotifications"
-            :key="item.localId"
-            class="notice-card flex flex-col"
-            :class="[
-              isTransactionNotification(item)
-                ? props.panelMode
-                  ? 'min-h-[168px] gap-[14px] rounded-[18px] bg-bg-2 px-[16px] pb-0 pt-[16px]'
-                  : 'min-h-[120px] gap-[10px] rounded-[10px] bg-bg-2 px-[14px] pb-0 pt-[14px]'
-                : 'gap-[10px] rounded-[10px] bg-bg-2 px-[14px] pb-[10px] pt-[14px]',
-              { 'notice-card-read opacity-[0.72]': item.read }
-            ]"
+          <!-- 通知列表区域 -->
+          <section
+            v-if="filteredNotifications.length > 0"
+            class="notice-stack mt-[14px] flex flex-col gap-[10px]"
           >
-            <template v-if="isTransactionNotification(item)">
-              <!-- 交易通知内容 -->
-              <div
-                class="notice-title-row flex w-full items-center"
-                :class="props.panelMode ? 'min-h-[22px] gap-[8px]' : 'min-h-[17px] gap-[7px]'"
-              >
-                <h2
-                  class="notice-title min-w-0 break-words font-[700] text-text-1"
-                  :class="
-                    props.panelMode
-                      ? 'max-w-[220px] text-[16px] leading-[22px]'
-                      : 'max-w-[159px] text-[14px] leading-[17px]'
-                  "
+            <!-- 通知卡片 -->
+            <article
+              v-for="item in filteredNotifications"
+              :key="item.localId"
+              class="notice-card flex flex-col"
+              :class="[
+                isTransactionNotification(item)
+                  ? props.panelMode
+                    ? 'min-h-[168px] gap-[14px] rounded-[18px] bg-bg-2 px-[16px] pb-0 pt-[16px] cursor-pointer'
+                    : 'min-h-[120px] gap-[10px] rounded-[10px] bg-bg-2 px-[14px] pb-0 pt-[14px] cursor-pointer'
+                  : 'gap-[10px] rounded-[10px] bg-bg-2 px-[14px] pb-[10px] pt-[14px]',
+                { 'notice-card-read opacity-[0.72]': item.read }
+              ]"
+              @click="
+                isTransactionNotification(item)
+                  ? handleTransactionNotificationClick(item)
+                  : undefined
+              "
+            >
+              <template v-if="isTransactionNotification(item)">
+                <!-- 交易通知内容 -->
+                <div
+                  class="notice-title-row flex w-full items-center"
+                  :class="props.panelMode ? 'min-h-[22px] gap-[8px]' : 'min-h-[17px] gap-[7px]'"
                 >
-                  {{ getNoticeTitle(item) }}
-                </h2>
-                <span
-                  class="notice-dot h-[8px] w-[8px] shrink-0 rounded-full bg-theme-primary"
-                  :class="['h-[8px] w-[8px]', getTransactionStatusDotClass(item)]"
-                ></span>
-              </div>
-
-              <!-- 交易通知正文 -->
-              <p
-                class="notice-message w-full break-words font-[400] text-text-1"
-                :class="
-                  props.panelMode
-                    ? 'min-h-[54px] text-[13px] leading-[18px]'
-                    : 'min-h-[30px] text-[12px] leading-[15px]'
-                "
-              >
-                {{ getTransactionMessage(item) }}
-              </p>
-
-              <!-- 交易通知底部信息 -->
-              <div
-                class="notice-footer flex w-full items-center justify-between border-t border-t-white/[0.06]"
-                :class="
-                  props.panelMode ? 'min-h-[52px] gap-[12px] py-[12px]' : 'gap-[12px] py-[10px]'
-                "
-              >
-                <time
-                  class="notice-time font-[400] text-text-2"
-                  :class="'text-[12px] leading-[15px]'"
-                >
-                  {{ getNoticeTime(item) }}
-                </time>
-
-                <button
-                  type="button"
-                  class="delete-button inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[6px] bg-opacity-10"
-                  :class="
-                    props.panelMode
-                      ? 'h-[24px] w-[24px] rounded-[8px]'
-                      : 'h-[20px] w-[20px] rounded-[6px]'
-                  "
-                  @click.stop="removeNotification(item)"
-                  :aria-label="$t('notifications.deleteAria')"
-                >
-                  <component :is="delIcon" class="h-[13px] w-[13px]" />
-                </button>
-              </div>
-            </template>
-
-            <template v-else>
-              <!-- 普通通知点击区域 -->
-              <div class="cursor-pointer" @click="openNotificationDetail(item)">
-                <!-- 普通通知标题区域 -->
-                <div class="notice-title-row flex items-center gap-[7px]">
                   <h2
-                    class="notice-title min-w-0 break-words text-[14px] font-[700] leading-[1.25] text-text-1"
+                    class="notice-title min-w-0 break-words font-[700] text-text-1"
+                    :class="
+                      props.panelMode
+                        ? 'max-w-[220px] text-[16px] leading-[22px]'
+                        : 'max-w-[159px] text-[14px] leading-[17px]'
+                    "
                   >
                     {{ getNoticeTitle(item) }}
                   </h2>
                   <span
                     v-if="!item.read"
                     class="notice-dot h-[8px] w-[8px] shrink-0 rounded-full bg-theme-primary"
+                    :class="['h-[8px] w-[8px]', getTransactionStatusDotClass(item)]"
                   ></span>
                 </div>
 
-                <!-- 通知预览图片区 -->
-                <div
-                  v-if="hasPreviewImage(item)"
-                  class="notice-preview mt-[10px] h-[150px] w-full overflow-hidden rounded-[8px]"
+                <!-- 交易通知正文 -->
+                <p
+                  class="notice-message w-full break-words font-[400] text-text-1"
+                  :class="
+                    props.panelMode
+                      ? 'min-h-[54px] text-[13px] leading-[18px]'
+                      : 'min-h-[30px] text-[12px] leading-[15px]'
+                  "
                 >
-                  <img
-                    :src="toGameImageUrl(item.noticeText)"
-                    :alt="getNoticeTitle(item)"
-                    class="notice-image h-full w-full object-cover"
-                  />
-                </div>
+                  {{ getTransactionMessage(item) }}
+                </p>
 
-                <!-- 通知预览文本区 -->
+                <!-- 交易通知底部信息 -->
                 <div
-                  v-else
-                  class="notice-content-preview mt-[10px] flex min-h-[32px] flex-col justify-between gap-[10px] rounded-[8px] px-[12px] py-[12px]"
+                  class="notice-footer flex w-full items-center justify-between border-t border-t-white/[0.06]"
+                  :class="
+                    props.panelMode ? 'min-h-[52px] gap-[12px] py-[12px]' : 'gap-[12px] py-[10px]'
+                  "
                 >
-                  <p
-                    class="notice-summary overflow-hidden break-words text-[12px] leading-[1.5] text-text-1"
-                    style="
-                      display: -webkit-box;
-                      -webkit-box-orient: vertical;
-                      -webkit-line-clamp: 4;
-                    "
+                  <time
+                    class="notice-time font-[400] text-text-2"
+                    :class="'text-[12px] leading-[15px]'"
                   >
-                    {{ getNoticeSummary(item) }}
-                  </p>
+                    {{ getNoticeTime(item) }}
+                  </time>
+
+                  <button
+                    type="button"
+                    class="delete-button inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[6px] bg-opacity-10"
+                    :class="
+                      props.panelMode
+                        ? 'h-[24px] w-[24px] rounded-[8px]'
+                        : 'h-[20px] w-[20px] rounded-[6px]'
+                    "
+                    @click.stop="removeNotification(item)"
+                    :aria-label="$t('notifications.deleteAria')"
+                  >
+                    <component :is="delIcon" class="h-[13px] w-[13px]" />
+                  </button>
                 </div>
-              </div>
+              </template>
 
-              <!-- 普通通知底部信息 -->
-              <div
-                class="notice-footer flex items-center justify-between gap-[12px]"
-                :class="
-                  !hasPreviewImage(item)
-                    ? 'border-t border-t-[var(--color-opacity-6,#FFFFFF0F)] pt-[10px]'
-                    : ''
-                "
-              >
-                <time
-                  class="notice-time cursor-pointer text-[12px] font-[400] leading-[1.2] text-text-2"
-                  @click="openNotificationDetail(item)"
+              <template v-else>
+                <!-- 普通通知点击区域 -->
+                <div class="cursor-pointer" @click="openNotificationDetail(item)">
+                  <!-- 普通通知标题区域 -->
+                  <div class="notice-title-row flex items-center gap-[7px]">
+                    <h2
+                      class="notice-title min-w-0 break-words text-[14px] font-[700] leading-[1.25] text-text-1"
+                    >
+                      {{ getNoticeTitle(item) }}
+                    </h2>
+                    <span
+                      v-if="!item.read"
+                      class="notice-dot h-[8px] w-[8px] shrink-0 rounded-full bg-theme-primary"
+                    ></span>
+                  </div>
+
+                  <!-- 通知预览图片区 -->
+                  <div
+                    v-if="hasPreviewImage(item)"
+                    class="notice-preview mt-[10px] h-[150px] w-full overflow-hidden rounded-[8px]"
+                  >
+                    <img
+                      :src="toGameImageUrl(item.noticeText)"
+                      :alt="getNoticeTitle(item)"
+                      class="notice-image h-full w-full object-cover"
+                    />
+                  </div>
+
+                  <!-- 通知预览文本区 -->
+                  <div
+                    v-else
+                    class="notice-content-preview mt-[10px] flex min-h-[32px] flex-col justify-between gap-[10px] rounded-[8px] px-[12px] py-[12px]"
+                  >
+                    <p
+                      class="notice-summary overflow-hidden break-words text-[12px] leading-[1.5] text-text-1"
+                      style="
+                        display: -webkit-box;
+                        -webkit-box-orient: vertical;
+                        -webkit-line-clamp: 4;
+                      "
+                    >
+                      {{ getNoticeSummary(item) }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 普通通知底部信息 -->
+                <div
+                  class="notice-footer flex items-center justify-between gap-[12px]"
+                  :class="
+                    !hasPreviewImage(item)
+                      ? 'border-t border-t-[var(--color-opacity-6,#FFFFFF0F)] pt-[10px]'
+                      : ''
+                  "
                 >
-                  {{ getNoticeTime(item) }}
-                </time>
+                  <time
+                    class="notice-time cursor-pointer text-[12px] font-[400] leading-[1.2] text-text-2"
+                    @click="openNotificationDetail(item)"
+                  >
+                    {{ getNoticeTime(item) }}
+                  </time>
 
-                <button
-                  type="button"
-                  class="delete-button inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[6px] bg-opacity-10"
-                  @click.stop="removeNotification(item)"
-                  :aria-label="$t('notifications.deleteAria')"
-                >
-                  <component :is="delIcon" class="h-[13px] w-[13px]" />
-                </button>
-              </div>
-            </template>
-          </article>
-        </section>
+                  <button
+                    type="button"
+                    class="delete-button inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[6px] bg-opacity-10"
+                    @click.stop="removeNotification(item)"
+                    :aria-label="$t('notifications.deleteAria')"
+                  >
+                    <component :is="delIcon" class="h-[13px] w-[13px]" />
+                  </button>
+                </div>
+              </template>
+            </article>
+          </section>
 
-        <!-- 首次加载提示 -->
-        <div
-          v-else-if="activeCategoryLoading && !activeCategoryLoaded"
-          class="mt-[14px] flex items-center justify-center py-[36px] text-[12px] text-text-2"
-        >
-          {{ $t('notifications.loading') }}
-        </div>
+          <!-- 首次加载提示 -->
+          <div
+            v-else-if="activeCategoryLoading && !activeCategoryLoaded"
+            class="mt-[14px] flex items-center justify-center py-[36px] text-[12px] text-text-2"
+          >
+            {{ $t('notifications.loading') }}
+          </div>
 
-        <!-- 空状态 -->
-        <ThemedEmptyState
-          v-else
-          :dark-image="defaultImgDark"
-          :light-image="defaultImgLight"
-          :image-alt="$t('notifications.title')"
-          :message="$t('notifications.emptyMessage')"
-          text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
-        />
+          <!-- 空状态 -->
+          <ThemedEmptyState
+            v-else
+            :dark-image="defaultImgDark"
+            :light-image="defaultImgLight"
+            :image-alt="$t('notifications.title')"
+            :message="$t('notifications.emptyMessage')"
+            text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
+          />
 
-        <!-- 加载更多监听锚点 -->
-        <div ref="loadMoreSentinel" class="h-px w-full"></div>
+          <!-- 加载更多监听锚点 -->
+          <div ref="loadMoreSentinel" class="h-px w-full"></div>
 
-        <!-- 加载更多提示 -->
-        <p
-          v-if="activeCategoryLoading && activeCategoryLoaded"
-          class="pb-[16px] pt-[14px] text-center text-[12px] text-text-2"
-        >
-          {{ $t('notifications.loadingMore') }}
-        </p>
+          <!-- 加载更多提示 -->
+          <p
+            v-if="activeCategoryLoading && activeCategoryLoaded"
+            class="pb-[16px] pt-[14px] text-center text-[12px] text-text-2"
+          >
+            {{ $t('notifications.loadingMore') }}
+          </p>
 
-        <p
-          v-else-if="
-            activeCategoryLoaded && activeCategoryFinished && filteredNotifications.length > 0
-          "
-          class="pb-[16px] pt-[14px] text-center text-[12px] text-text-2"
-        >
-          {{ $t('notifications.noMore') }}
-        </p>
+          <p
+            v-else-if="
+              activeCategoryLoaded && activeCategoryFinished && filteredNotifications.length > 0
+            "
+            class="pb-[16px] pt-[14px] text-center text-[12px] text-text-2"
+          >
+            {{ $t('notifications.noMore') }}
+          </p>
+        </template>
       </main>
 
       <!-- 页面底部操作栏 -->
       <footer
+        v-if="!shouldShowMobileTransactionOrderDetail"
         :class="
           props.panelMode
             ? 'bottom-bar shrink-0 flex h-[49px] items-center justify-between gap-[14px] bg-bg-2 px-[14px]'
@@ -444,6 +459,49 @@
           </template>
         </section>
       </div>
+
+      <depositPopShell
+        :model-value="shouldShowDesktopTransactionOrderDetail"
+        @overlay-close="closeTransactionOrderDetail"
+      >
+        <div
+          v-if="shouldShowDesktopTransactionOrderDetail && selectedTransactionOrder"
+          class="relative h-[500px] w-[480px] flex flex-col items-center gap-4 rounded-lg modal-container bg-bg-1 font-['Inter']"
+        >
+          <div class="relative h-14 w-full shrink-0 rounded-t-lg bg-bg-2">
+            <h2
+              class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[18px] font-bold leading-[22px] text-text-1"
+            >
+              {{
+                selectedTransactionTab === 'deposits'
+                  ? t('deposit.deposit_order')
+                  : t('withdraw.withdraw_order')
+              }}
+            </h2>
+
+            <button
+              type="button"
+              class="absolute right-4 top-1/2 z-10 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md bg-opacity-10"
+              @click="closeTransactionOrderDetail"
+            >
+              <CloseIcon class="h-3 w-3 fill-none" />
+            </button>
+          </div>
+
+          <OrderDetailScrollPanel
+            :order="selectedTransactionOrder"
+            :tab="selectedTransactionTab"
+            mode="pc"
+            @copy-order-no="handleCopyOrderNo"
+          />
+        </div>
+      </depositPopShell>
+
+      <depositCryptoOrderPop
+        v-model:model-value="transactionCryptoOrderPopShow"
+        :order-info="selectedTransactionCryptoOrderInfo"
+        @close="closeTransactionCryptoOrderPop"
+      />
     </div>
   </section>
 </template>
@@ -455,8 +513,15 @@ import type {
   QueryNoticeMsgResponse,
   QueryNoticeMsgResult
 } from '@/api/interface/notification.interface'
+import type {
+  QueryMemberPayOrderPageRecord,
+  QueryPayOrderByOrderIdResult
+} from '@/api/interface/wallet'
 import H5Header from '@/components/common/H5Header.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import depositCryptoOrderPop from '@/components/deposit/order/crypto/depositCryptoOrderPop.vue'
+import depositPopShell from '@/components/deposit/shared/depositPopShell.vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import {
   default as defaultImgDark,
   default as defaultImgLight
@@ -478,8 +543,14 @@ import {
   markNotificationsAsRead
 } from '@/utils/notification-cache'
 import type { TradeMessageStreamItem } from '@/utils/payOrderSync'
-import { getPayOrderDisplayStatus, normalizePayOrderType } from '@/utils/payOrderSync'
+import {
+  applyOrderStatusCacheToOrderDetail,
+  getPayOrderDisplayStatus,
+  normalizePayOrderType
+} from '@/utils/payOrderSync'
 import { navigateTo } from '@/utils/router'
+import OrderDetailScrollPanel from '@/views/wallet/myOrders/OrderDetailScrollPanel.vue'
+import { copyTextWithFallback, type OrderTab } from '@/views/wallet/myOrders/shared'
 import { closeToast, showLoadingToast, showToast } from 'vant'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -499,6 +570,8 @@ const NOTIFICATION_LIST_STATE_STORAGE_KEY = 'menuNotificationListState'
 const NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY = 'menuNotificationListRestoreFlag'
 // 通知内部 URL 连通性校验的超时时间。
 const NOTIFICATION_URL_OPEN_TIMEOUT_MS = 8000
+const CRYPTO_PAY_CHANNEL_CODE = '45'
+const CRYPTO_ORDER_KEYWORDS = ['usdt', 'btc', 'eth', 'trx', 'usdc', 'bnb', 'doge', 'sol', 'xrp']
 
 interface NotificationItem extends NoticeRecord {
   category: NotificationCategory
@@ -551,6 +624,7 @@ const emit = defineEmits<{
 const authModalStore = useAuthModalStore()
 // 充提消息同步状态管理。
 const tradeMessageSyncStore = useTradeMessageSyncStore()
+const isMobile = useIsMobile()
 // 当前页面的国际化方法。
 const { t } = useI18n()
 
@@ -571,6 +645,10 @@ const tabLabelMap = computed<Record<NotificationCategory, string>>(() => ({
 const showDeleteConfirm = ref(false)
 const pendingDelete = ref<NotificationItem | null>(null)
 const isDeletingNotification = ref(false)
+const selectedTransactionOrder = ref<QueryMemberPayOrderPageRecord | null>(null)
+const selectedTransactionTab = ref<OrderTab>('deposits')
+const transactionCryptoOrderPopShow = ref(false)
+const selectedTransactionCryptoOrderInfo = ref<Partial<QueryPayOrderByOrderIdResult>>({})
 // 页面分类和接口 msgType 的映射关系
 const msgTypeMap: Record<NotificationCategory, number> = {
   promotions: 0,
@@ -838,6 +916,34 @@ const filteredNotifications = computed(() => {
   return activeCategoryState.value.items.filter(item => (showUnreadOnly.value ? !item.read : true))
 })
 
+const shouldShowMobileTransactionOrderDetail = computed(
+  () => isMobile.value && !props.panelMode && !!selectedTransactionOrder.value
+)
+
+const shouldShowDesktopTransactionOrderDetail = computed(
+  () => !isMobile.value && !!selectedTransactionOrder.value
+)
+
+const notificationPageTitle = computed(() => {
+  if (!shouldShowMobileTransactionOrderDetail.value) {
+    return t('notifications.title')
+  }
+
+  return selectedTransactionTab.value === 'deposits'
+    ? t('wallet.myOrdersPage.depositDetails')
+    : t('wallet.myOrdersPage.withdrawalDetails')
+})
+
+const notificationMainClass = computed(() => {
+  if (shouldShowMobileTransactionOrderDetail.value) {
+    return 'page-body min-h-0 flex-1 overflow-y-auto overscroll-contain px-0 pb-0 pt-0'
+  }
+
+  return props.panelMode
+    ? 'page-body min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-3'
+    : 'page-body px-[14px] pb-[calc(env(safe-area-inset-bottom)+74px)] pt-[14px]'
+})
+
 // 判断是否为交易通知，用于切换交易卡片样式。
 const isTransactionNotification = (item: NotificationItem) => {
   return item.category === 'transactions'
@@ -926,6 +1032,78 @@ const getTransactionStatusDotClass = (item: NotificationItem) => {
 
   return 'bg-[#FFB020]'
 }
+
+const toOrderTab = (orderType: string | number | null | undefined): OrderTab =>
+  normalizePayOrderType(orderType) === '0' ? 'deposits' : 'withdrawals'
+
+const toOrderDetailRecord = (
+  detail: QueryPayOrderByOrderIdResult
+): QueryMemberPayOrderPageRecord => ({
+  accountAmount: detail.accountAmount,
+  busiAmount: detail.busiAmount,
+  cardType: detail.cardType,
+  columnCode: detail.columnCode,
+  createTime: detail.createTime,
+  currency: detail.currency,
+  memberId: detail.memberId,
+  memberRowId: detail.memberRowId,
+  online: detail.online,
+  orderId: detail.orderId,
+  orderType: detail.orderType,
+  otherAmount: detail.otherAmount,
+  status: detail.status,
+  subColumnCode: detail.subColumnCode,
+  subColumnName: detail.subColumnName,
+  type: detail.type,
+  payChannelCode: detail.payChannelCode,
+  platformName: detail.platformName,
+  accountCurrency: detail.accountCurrency
+})
+
+const looksLikeCryptoOrder = (value: unknown) => {
+  const normalizedValue = String(value ?? '')
+    .trim()
+    .toLowerCase()
+
+  if (!normalizedValue) {
+    return false
+  }
+
+  return CRYPTO_ORDER_KEYWORDS.some(keyword => normalizedValue.includes(keyword))
+}
+
+const isPendingCryptoDepositOrder = (detail: QueryPayOrderByOrderIdResult) => {
+  if (toOrderTab(detail.orderType) !== 'deposits') {
+    return false
+  }
+
+  if (
+    String(detail.type ?? '')
+      .trim()
+      .toLowerCase() === 'crypto'
+  ) {
+    return true
+  }
+
+  if (String(detail.payChannelCode ?? '').trim() === CRYPTO_PAY_CHANNEL_CODE) {
+    return true
+  }
+
+  return [detail.accountCurrency, detail.platformName, detail.subColumnName].some(
+    looksLikeCryptoOrder
+  )
+}
+
+const normalizeQueriedOrderDetail = (
+  detail: ReturnType<typeof applyOrderStatusCacheToOrderDetail>
+): QueryPayOrderByOrderIdResult => ({
+  ...detail,
+  busiAmount: Number(detail.busiAmount ?? 0),
+  currency: String(detail.currency ?? ''),
+  orderId: String(detail.orderId ?? ''),
+  orderType: String(detail.orderType ?? '0'),
+  status: Number(detail.status ?? 0)
+})
 
 // 将 createTime 格式化为页面展示时间。
 const getNoticeTime = (item: NotificationItem) => {
@@ -1210,6 +1388,11 @@ const removeNotification = (item: NotificationItem) => {
 
 // 处理页面头部返回按钮：PC 面板模式返回改为关闭面板。
 const handleHeaderBack = () => {
+  if (shouldShowMobileTransactionOrderDetail.value) {
+    closeTransactionOrderDetail()
+    return
+  }
+
   if (!props.panelMode) {
     return
   }
@@ -1269,6 +1452,81 @@ const markNotificationAsReadInState = (item: NotificationItem) => {
       notification.rowId === item.rowId ? { ...notification, read: true } : notification
     )
   }))
+}
+
+const closeTransactionOrderDetail = () => {
+  selectedTransactionOrder.value = null
+}
+
+const closeTransactionCryptoOrderPop = () => {
+  transactionCryptoOrderPopShow.value = false
+}
+
+const handleCopyOrderNo = async (orderNo: string) => {
+  const copied = await copyTextWithFallback(orderNo)
+  showToast({
+    message: copied ? t('betDetails.copy') : t('common.error'),
+    type: copied ? 'success' : 'fail'
+  })
+}
+
+const handleTransactionNotificationClick = async (item: NotificationItem) => {
+  markNotificationAsReadInState(item)
+
+  const orderId = String(item.tradeMessage?.orderId ?? '').trim()
+  if (!orderId) {
+    showToast({
+      message: t('common.requestError'),
+      type: 'fail'
+    })
+    return
+  }
+
+  showLoadingToast({
+    message: t('common.loading'),
+    duration: 0,
+    forbidClick: true,
+    loadingType: 'spinner'
+  })
+
+  try {
+    const response = await Api.wallet.queryPayOrderByOrderId({ orderId })
+    const detail = response?.success && response.result ? response.result : undefined
+
+    if (!detail) {
+      throw new Error(response?.message || t('common.requestError'))
+    }
+
+    const syncedDetail = normalizeQueriedOrderDetail(
+      applyOrderStatusCacheToOrderDetail(detail, tradeMessageSyncStore.orderStatusMap)
+    )
+    const targetTab = toOrderTab(syncedDetail.orderType)
+    const displayStatus = getPayOrderDisplayStatus(syncedDetail.orderType, syncedDetail.status)
+
+    selectedTransactionTab.value = targetTab
+    selectedTransactionOrder.value = null
+    transactionCryptoOrderPopShow.value = false
+
+    if (
+      targetTab === 'deposits' &&
+      (displayStatus === 'pending' || displayStatus === 'processing') &&
+      isPendingCryptoDepositOrder(syncedDetail)
+    ) {
+      selectedTransactionCryptoOrderInfo.value = syncedDetail
+      transactionCryptoOrderPopShow.value = true
+      return
+    }
+
+    selectedTransactionOrder.value = toOrderDetailRecord(syncedDetail)
+  } catch (error) {
+    console.error('handleTransactionNotificationClick failed', error)
+    showToast({
+      message: error instanceof Error && error.message ? error.message : t('common.requestError'),
+      type: 'fail'
+    })
+  } finally {
+    closeToast()
+  }
 }
 
 // 打开通知详情页。
@@ -1593,6 +1851,8 @@ watch(
 
 // 切换到交易通知 tab 后，当前交易消息立即标记为已读。
 watch(activeTab, () => {
+  closeTransactionOrderDetail()
+  closeTransactionCryptoOrderPop()
   markTransactionsAsReadOnView()
 })
 
