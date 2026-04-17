@@ -589,9 +589,8 @@ const getQuerySlideshow = async () => {
         size: 30
       }
     })
-    querySlideshowList.value = Array.isArray(response?.result?.records)
-      ? response.result.records
-      : []
+    const records = Array.isArray(response?.result?.records) ? response.result.records : []
+    querySlideshowList.value = isLogin.value ? records : records.slice(0, 1)
   } catch (error) {
     console.error('getQuerySlideshow failed', error)
     querySlideshowList.value = []
@@ -602,7 +601,6 @@ onMounted(async () => {
   try {
     const res = await Api.home.getGameData()
     const rawResult = Array.isArray(res.result) ? res.result : []
-    console.log('rawResult', rawResult)
     rawGameData.value = rawResult
     gameData.value = mapHomeGameSections(rawResult)
     localStorage.setItem('gameData', JSON.stringify(rawResult))
