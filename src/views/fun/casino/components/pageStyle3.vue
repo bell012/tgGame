@@ -73,7 +73,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, inject, nextTick, ref, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
@@ -102,6 +102,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const gameStore = useGameStore()
 const pageRootRef = ref<HTMLElement | null>(null)
+const closeDesktopModalFlag = inject<Ref<boolean> | null>('search-close-desktop-modal', null)
 
 const sortOptions = [
   { label: t('search.sortDefault'), value: 'default' },
@@ -265,11 +266,18 @@ const goNext = () => {
   void scrollToFirstRow()
 }
 
+const closeDesktopModal = () => {
+  if (closeDesktopModalFlag) {
+    closeDesktopModalFlag.value = true
+  }
+}
+
 const handleClick = (rowId?: string | number) => {
   if (!rowId) {
     return
   }
 
+  closeDesktopModal()
   navigateToName('gameDetail', { params: { rowId } })
 }
 

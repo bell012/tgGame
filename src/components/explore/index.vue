@@ -1,400 +1,376 @@
 <template>
   <div class="search-container">
     <div :class="{ 'search-filter-panel': isMobile }">
-      <!-- 搜索框-->
       <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
-      <!-- 顶部tab切换 -->
-      <top-tab
-        v-if="currentType === 'casino' || currentType === 'sports'"
-        class="search-top-tabs"
-        :tab-list="topTabList"
-        @change="topTabChange"
-      />
-      <!-- 筛选条件 -->
+    </div>
+
+    <div class="min-h-screen w-full relative">
       <div
-        class="search-select-row grid lg:grid-cols-4 grid-cols-2 lg:gap-4 gap-2.5"
-        v-if="currentType === 'casino'"
+        class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
+        :class="canScrollLeft ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
       >
-        <select-popup
-          :label="t('search.sort')"
-          v-model="currentSort"
-          :dataList="sortList"
-          @change="sortChange"
-        />
-        <multiple-select-popup
-          :label="t('search.providers')"
-          v-model="currentProvider"
-          :dataList="providerOptions"
-          @change="providerChange"
-        />
+        <button
+          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
+          @click="scrollLeft"
+        >
+          <component :is="casinoIcons.chevron_left" class="icon size-4 fill-text-1" />
+        </button>
       </div>
-      <!-- 国家 -->
-      <div v-if="currentType === 'lottery'" class="w-full mt-[12px]">
-        <select-popup
-          v-model="currentCountry"
-          :dataList="countryOptions"
-          @change="countryChange"
-          country-image
-        />
+
+      <div>
+        <div
+          ref="tabScrollRef"
+          class="my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
+          @scroll="updateScrollState"
+        >
+          <button
+            v-for="(item, index) in tabButtons"
+            :key="item.sysGameTypeCode || `tab-${index}`"
+            :ref="el => (tabRefs[index] = el as HTMLButtonElement)"
+            :class="{
+              'bg-bg-2': item.sysGameTypeCode === currentTabCode
+            }"
+            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
+            @click.stop="onTabButton(item)"
+          >
+            <div class="h-5 w-5 mr-[7px]">
+              <img
+                v-if="item.sysGameTypeCode !== currentTabCode && typeof item.icon === 'string'"
+                :src="item.icon"
+                class="w-full h-full object-contain"
+              />
+              <img
+                v-else-if="
+                  item.sysGameTypeCode === currentTabCode && typeof item.iconSelect === 'string'
+                "
+                :src="item.iconSelect"
+                class="w-full h-full object-contain"
+              />
+              <component
+                v-else-if="item.icon"
+                :is="item.icon"
+                :class="item.sysGameTypeCode === currentTabCode ? 'fill-primary' : 'fill-text-2'"
+                class="w-full h-full"
+              />
+            </div>
+            <div
+              :class="item.sysGameTypeCode === currentTabCode ? 'text-text-1' : 'text-text-2'"
+              class="font-[700]"
+            >
+              {{ item.sysGameTypeName }}
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pl-2 sm:flex"
+        :class="canScrollRight ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
+      >
+        <button
+          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
+          @click="scrollRight"
+        >
+          <component :is="casinoIcons.chevron_left" class="icon size-4 rotate-180 fill-text-1" />
+        </button>
+      </div>
+
+      <div class="tabs-content min-h-48">
+        <component :is="getPageStyle" v-bind="currentPageProps" />
       </div>
     </div>
-    <!-- 列表采用动态组件渲染 -->
-    <component :is="listCompMap[currentType]" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, provide, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useIsMobile } from '@/composables/useMediaQuery'
-import TopInput from './top-input/index.vue'
-import TopTab from './top-tab/index.vue'
-import SelectPopup from './select-popup/index.vue'
-import MultipleSelectPopup from './multiple-select-popup/index.vue'
-import { useThemeStore } from '@/stores/theme'
+import type { GameQueryOptions } from '@/stores/game'
 import { useGameStore } from '@/stores/game'
-import Api from '@/api'
-import Casino from '@/components/explore/list/casino.vue'
-import Sports from '@/components/explore/list/sports.vue'
-import Lottery from '@/components/explore/list/lottery.vue'
-// mock数据
-import { countryList } from '@/components/explore/mock/index.ts'
-
-const themeStore = useThemeStore()
-const gameStore = useGameStore()
-const { t } = useI18n()
-const isMobile = useIsMobile()
-
-const listCompMap = {
-  casino: Casino,
-  sports: Sports,
-  lottery: Lottery
-}
-
-type GameSection = {
-  sysGameTypeCode?: string
-  sysGameTypeName?: string
-  subGame?: unknown[]
-}
-
-type GameSubNode = {
-  subGame?: unknown[]
-}
-
-type TopTabItem = {
-  sysGameTypeCode: string
-  sysGameTypeName: string
-  icon?: string
-  iconActive?: string
-}
-
-type GameTypeConfigItem = {
-  gameTypeCode?: string
-  gameTypeName?: string
-  icon?: string
-  iconSelect?: string
-}
+import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
+import { useIsMobile } from '@/composables/useMediaQuery'
+import { casinoIcons } from '@/static/svg/casino'
+import { getCasinoPageMode, getCasinoQueryOptions } from '@/views/fun/casino/casinoPageConfig'
+import pageStyle1 from '@/views/fun/casino/components/pageStyle1.vue'
+import pageStyle2 from '@/views/fun/casino/components/pageStyle2.vue'
+import pageStyle3 from '@/views/fun/casino/components/pageStyle3.vue'
+import pageStyle4 from '@/views/fun/casino/components/pageStyle4.vue'
+import TopInput from './top-input/index.vue'
 
 type ExploreHotGameItem = {
-  id?: string | number
-  rowId?: string | number
   platformName?: string
-  gameItemHotVo?: {
-    hot?: number
-  }
 }
 
-type GameBrandItem = {
-  providerId?: number | string
-  providerCode?: number | string
-  providerName?: string
-  logo?: string
-  logoWhite?: string
-  retrieveId?: string
-  brandId?: number | string
-  brandCode?: number | string
-  brandName?: string
-  brandLogo?: string
-  brandLogoWhite?: string
-}
+const { t } = useI18n()
+const isMobile = useIsMobile()
+const gameStore = useGameStore()
 
-// 搜索的关键字
 const keywords = ref('')
 provide('explore-keywords', keywords)
+
+const currentType = ref('casino')
+provide('explore-current-type', currentType)
+
 const exploreHotGameList = ref<ExploreHotGameItem[]>([])
 provide('explore-hot-game-list', exploreHotGameList)
 
-// top-input
-const typeList = computed(() => [
-  { id: 'casino', name: t('bottom_tab_bar.casino') }
-  // { id: 'sports', name: t('bottom_tab_bar.sports') }
-  // { id: 'lottery', name: 'Lottery' }
-])
+const typeList = computed(() => [{ id: 'casino', name: t('bottom_tab_bar.casino') }])
 
-// 游戏类型
-const currentType = ref<keyof typeof listCompMap>('casino')
-provide('explore-current-type', currentType)
+const activeSearchKeyword = ref('')
 
-const currentSubGameTypeCode = ref('')
-
-const queryGameList = ref<GameSection[]>([])
-const queryGameTypeList = ref<GameTypeConfigItem[]>([])
-
-const imageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
-
-const normalizeImageUrl = (value?: string) => {
-  const source = String(value ?? '').trim()
-  if (!source) {
-    return ''
-  }
-
-  if (/^https?:\/\//i.test(source)) {
-    return source
-  }
-
-  const normalizedSource = source.replace(/^\/+/, '')
-  if (!imageBaseUrl) {
-    return normalizedSource
-  }
-
-  return `${imageBaseUrl}/${normalizedSource}`
+const topInputSearch = (value: string) => {
+  activeSearchKeyword.value = value.trim()
 }
 
-const currentTypeGameList = computed(() => {
-  const section = queryGameList.value.find(
-    item => item?.sysGameTypeCode === currentSubGameTypeCode.value
+const changeTypeHandler = (value: string) => {
+  if (value !== 'casino') {
+    return
+  }
+
+  currentType.value = 'casino'
+}
+
+const tabRefs = ref<HTMLButtonElement[]>([])
+const tabScrollRef = ref<HTMLDivElement | null>(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+const hasSyncedActiveTab = ref(false)
+const currentTabCode = ref('')
+
+const { tabButtons, lobbyButtons, hasLoaded, loadCasinoTabButtons } = useCasinoTabButtons()
+
+const getCurrentTab = computed(() => {
+  if (!tabButtons.value.length) {
+    return undefined
+  }
+
+  return (
+    tabButtons.value.find(item => item.sysGameTypeCode === currentTabCode.value) ??
+    tabButtons.value[0]
   )
-  const list = Array.isArray(section?.subGame) ? (section.subGame as GameSubNode[]) : []
-  return list.reduce<unknown[]>((acc, item) => {
-    if (Array.isArray(item?.subGame)) {
-      acc.push(...item.subGame)
-    }
-    return acc
-  }, [])
 })
 
-provide('explore-game-list', currentTypeGameList)
+const trimmedSearchKeyword = computed(() => activeSearchKeyword.value.trim())
 
-const topTabList = computed<TopTabItem[]>(() => {
-  const sectionList = Array.isArray(queryGameList.value)
-    ? (queryGameList.value as GameSection[])
-    : []
-  const sectionMap = new Map<string, GameSection>()
+const basePageStyle = computed(() => {
+  const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
+  const pageMode = getCasinoPageMode(currentCode)
 
-  sectionList.forEach(item => {
-    const code = String(item?.sysGameTypeCode ?? '').trim()
-    if (!code || sectionMap.has(code)) {
-      return
-    }
-    sectionMap.set(code, item)
-  })
-
-  const mergedList: TopTabItem[] = []
-
-  queryGameTypeList.value.forEach(item => {
-    const code = String(item?.gameTypeCode ?? '').trim()
-    if (!code) {
-      return
-    }
-
-    const matchedSection = sectionMap.get(code)
-    if (!matchedSection) {
-      return
-    }
-
-    mergedList.push({
-      sysGameTypeCode: code,
-      sysGameTypeName:
-        String(item?.gameTypeName ?? '').trim() ||
-        String(matchedSection?.sysGameTypeName ?? '').trim(),
-      icon: normalizeImageUrl(item?.icon),
-      iconActive: normalizeImageUrl(item?.iconSelect)
-    })
-
-    sectionMap.delete(code)
-  })
-
-  sectionMap.forEach(item => {
-    const code = String(item?.sysGameTypeCode ?? '').trim()
-    const name = String(item?.sysGameTypeName ?? '').trim()
-    if (!code || !name) {
-      return
-    }
-
-    mergedList.push({
-      sysGameTypeCode: code,
-      sysGameTypeName: name
-    })
-  })
-
-  return mergedList
+  switch (pageMode) {
+    case 'lobby':
+      return pageStyle1
+    case 'pageStyle2':
+      return pageStyle2
+    case 'pageStyle4':
+      return pageStyle4
+    default:
+      return pageStyle3
+  }
 })
 
-const topTabChange = (code: string) => {
-  currentSubGameTypeCode.value = code
-}
+const getPageStyle = computed(() => {
+  if (trimmedSearchKeyword.value && basePageStyle.value === pageStyle1) {
+    return pageStyle2
+  }
 
-const getQueryGameListForApp = async () => {
-  try {
-    const res = await Api.home.getGameData({
-      showSuccessToast: false,
-      showErrorToast: true
+  return basePageStyle.value
+})
+
+const currentQueryOptions = computed<GameQueryOptions | undefined>(() => {
+  const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
+
+  if (trimmedSearchKeyword.value) {
+    if (basePageStyle.value === pageStyle1) {
+      return {
+        rowType: 3,
+        pageSize: isMobile.value ? 27 : 32,
+        keyword: trimmedSearchKeyword.value
+      }
+    }
+
+    const baseQueryOptions = getCasinoQueryOptions(currentCode, {
+      isMobile: isMobile.value
     })
-    const nextList = Array.isArray(res?.result) ? (res.result as GameSection[]) : []
-    queryGameList.value = nextList
-  } catch (error) {
-    console.error('queryGameListForApp failed', error)
-    queryGameList.value = []
-  }
-}
 
-const getGameTypeList = async () => {
-  try {
-    const result = await gameStore.getGameTypeData()
-    queryGameTypeList.value = Array.isArray(result) ? (result as GameTypeConfigItem[]) : []
-  } catch (error) {
-    console.error('getGameTypeList failed', error)
-    queryGameTypeList.value = []
+    return {
+      ...(baseQueryOptions ?? {
+        pageSize: isMobile.value ? 27 : 32
+      }),
+      keyword: trimmedSearchKeyword.value
+    }
   }
-}
 
-const changeTypeHandler = (val: string) => {
-  if (!(val in listCompMap)) {
+  return getCasinoQueryOptions(currentCode, { isMobile: isMobile.value })
+})
+
+const currentPageProps = computed(() => {
+  switch (getPageStyle.value) {
+    case pageStyle1:
+      return {
+        modules: lobbyButtons.value,
+        loading: !hasLoaded.value,
+        hideLatestBet: true
+      }
+    case pageStyle2:
+    case pageStyle3:
+      return {
+        queryOptions: currentQueryOptions.value
+      }
+    case pageStyle4:
+      return {
+        queryOptions: currentQueryOptions.value
+      }
+    default:
+      return {}
+  }
+})
+
+const updateScrollState = () => {
+  const element = tabScrollRef.value
+  if (!element) {
     return
   }
 
-  const nextType = val as keyof typeof listCompMap
-  if (nextType === currentType.value) {
+  canScrollLeft.value = element.scrollLeft > 0
+  canScrollRight.value = element.scrollLeft + element.clientWidth < element.scrollWidth - 1
+}
+
+const scrollLeft = () => {
+  const element = tabScrollRef.value
+  if (!element) {
     return
   }
 
-  currentType.value = nextType
-  currentSubGameTypeCode.value =
-    nextType === 'casino' ? (topTabList.value[0]?.sysGameTypeCode ?? '') : ''
-  if (nextType !== 'casino') {
+  element.scrollBy({
+    left: -element.clientWidth,
+    behavior: 'smooth'
+  })
+
+  requestAnimationFrame(updateScrollState)
+}
+
+const scrollRight = () => {
+  const element = tabScrollRef.value
+  if (!element) {
+    return
+  }
+
+  element.scrollBy({
+    left: element.clientWidth,
+    behavior: 'smooth'
+  })
+
+  requestAnimationFrame(updateScrollState)
+}
+
+const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth') => {
+  const container = tabScrollRef.value
+  const target = tabRefs.value[index]
+
+  if (!container || !target) {
+    return
+  }
+
+  const targetLeft = target.offsetLeft
+  const targetCenter = targetLeft + target.offsetWidth / 2
+  const nextScrollLeft = Math.max(0, targetCenter - container.clientWidth / 2)
+  const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth)
+
+  container.scrollTo({
+    left: Math.min(nextScrollLeft, maxScrollLeft),
+    behavior
+  })
+}
+
+const clearSearch = () => {
+  keywords.value = ''
+  activeSearchKeyword.value = ''
+}
+
+const onTabButton = (tab: CasinoTabButtonItem) => {
+  if (tab.sysGameTypeCode === currentTabCode.value) {
+    return
+  }
+
+  clearSearch()
+  currentTabCode.value = tab.sysGameTypeCode
+}
+
+const loadSuggestedGames = async () => {
+  try {
+    const hotGameResult = await gameStore.queryGameDataPage({
+      rowType: 3,
+      hot: 1,
+      page: 1,
+      pageSize: 12,
+      sortByHotOrderId: true
+    })
+
+    exploreHotGameList.value = hotGameResult.list
+      .map(item => {
+        const platformName = String(item.platformName ?? item.itemName ?? '').trim()
+        return {
+          platformName
+        }
+      })
+      .filter(item => Boolean(item.platformName))
+  } catch (error) {
+    console.error('loadSuggestedGames failed', error)
     exploreHotGameList.value = []
   }
 }
-const topInputSearch = (_value: string) => {
-  void _value
-}
-
-// 排序
-const currentSort = ref('0')
-provide('explore-current-sort', currentSort)
-
-const sortList = computed(() => [
-  { value: '0', label: t('search.sortDefault') },
-  { value: '1', label: 'A-Z' },
-  { value: '2', label: 'Z-A' }
-])
-
-// 供应商
-const currentProvider = ref<string[]>([])
-provide('explore-current-provider', currentProvider)
-const queryProviderList = ref<GameBrandItem[]>([])
-
-const getGameBrandList = async () => {
-  try {
-    const res = await Api.home.getGameBrandList({
-      showSuccessToast: false,
-      showErrorToast: true
-    })
-    queryProviderList.value = Array.isArray(res?.result) ? (res.result as GameBrandItem[]) : []
-  } catch (error) {
-    console.error('getGameBrandList failed', error)
-    queryProviderList.value = []
-  }
-}
-
-const providerOptions = computed(() => {
-  return queryProviderList.value.map(item => {
-    const providerId = item.providerId ?? item.brandId
-    const providerName = item.providerName ?? item.brandName ?? ''
-    const logo = item.logo ?? item.brandLogo ?? ''
-    const logoWhite = item.logoWhite ?? item.brandLogoWhite ?? logo
-
-    return {
-      ...item,
-      providerId: providerId ?? '',
-      providerName,
-      logo,
-      logoWhite,
-      label: themeStore.theme === 'light' ? logoWhite : logo,
-      value: String(providerId ?? '')
-    }
-  })
-})
-
-const providerNameMap = computed<Record<string, string>>(() => {
-  return queryProviderList.value.reduce<Record<string, string>>((acc, item) => {
-    const providerName = String(item.providerName ?? item.brandName ?? '').trim()
-    if (!providerName) {
-      return acc
-    }
-
-    const providerCodeList = [item.providerId, item.providerCode, item.brandId, item.brandCode]
-
-    providerCodeList
-      .map(code => String(code ?? '').trim())
-      .filter(Boolean)
-      .forEach(code => {
-        acc[code] = providerName
-      })
-
-    return acc
-  }, {})
-})
-
-provide('explore-provider-name-map', providerNameMap)
-
-// 国家
-const currentCountry = ref('')
-const countryOptions = computed(() =>
-  countryList.map(item => {
-    return {
-      label: item || t('search.all'),
-      value: item
-    }
-  })
-)
-
-const providerChange = (val: string[]) => {
-  console.log(val)
-}
-
-const sortChange = (val: string) => {
-  console.log(val)
-}
-
-const countryChange = (val: string) => {
-  console.log(val)
-}
 
 watch(
-  topTabList,
+  tabButtons,
   list => {
-    if (currentType.value !== 'casino') {
-      return
-    }
-
     if (!list.length) {
-      currentSubGameTypeCode.value = ''
+      currentTabCode.value = ''
       return
     }
 
-    const hasCurrentCode = list.some(item => item.sysGameTypeCode === currentSubGameTypeCode.value)
+    const hasCurrentCode = list.some(item => item.sysGameTypeCode === currentTabCode.value)
     if (!hasCurrentCode) {
-      currentSubGameTypeCode.value = list[0].sysGameTypeCode
+      currentTabCode.value = list[0].sysGameTypeCode
     }
   },
   { immediate: true }
 )
 
+watch(
+  () => getCurrentTab.value,
+  async tab => {
+    if (!tab) {
+      return
+    }
+
+    await nextTick()
+    const index = tabButtons.value.findIndex(item => item.sysGameTypeCode === tab.sysGameTypeCode)
+    if (index !== -1) {
+      scrollTabIntoView(index, hasSyncedActiveTab.value ? 'smooth' : 'auto')
+      hasSyncedActiveTab.value = true
+    }
+  },
+  { immediate: true }
+)
+
+let resizeObserver: ResizeObserver | null = null
+
 onMounted(() => {
-  getQueryGameListForApp()
-  getGameTypeList()
-  getGameBrandList()
+  void loadCasinoTabButtons()
+  void loadSuggestedGames()
+  updateScrollState()
+
+  if (tabScrollRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      updateScrollState()
+    })
+
+    resizeObserver.observe(tabScrollRef.value)
+  }
+})
+
+onUnmounted(() => {
+  resizeObserver?.disconnect()
 })
 </script>
 
@@ -409,15 +385,6 @@ onMounted(() => {
     margin-left: -12px;
     margin-right: -12px;
     padding: 10px 12px 8px;
-    margin-bottom: 0;
-  }
-
-  .search-top-tabs {
-    margin-top: 10px;
-    margin-bottom: 10px;
-  }
-
-  .search-select-row {
     margin-bottom: 0;
   }
 }
