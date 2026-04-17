@@ -29,7 +29,15 @@
       </div>
     </div>
 
-    <div v-else class="min-h-48" />
+    <ThemedEmptyState
+      v-else
+      :dark-image="defaultImg"
+      :light-image="defaultWhiteImg"
+      :message="t('search.stay')"
+      container-class="mt-[17px]"
+      image-class="w-[220px] h-[200px] object-contain mb-2.5"
+      text-class="text-xs text-center text-text-1"
+    />
 
     <div v-if="total > 0" class="mt-4 flex items-center justify-center">
       <button
@@ -82,6 +90,9 @@ import type { GameQueryOptions } from '@/stores/game'
 import filterSheet from './filterSheet.vue'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
+import defaultImg from '@/static/img/explore/default.png'
+import defaultWhiteImg from '@/static/img/explore/default_white.png'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import casinoGameCard from './casinoGameCard.vue'
 
 interface Props {
