@@ -58,7 +58,7 @@
           </div>
           <!-- 倒计时展示 -->
           <div class="mx-1 bg-bg-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <CountDown :time="countdownTime">
+            <CountDown :key="countdownKey" :time="countdownTime">
               <template #default="timeData">
                 <span class="led-font text-secondary-7 text-[33px] font-bold leading-none">{{
                   timeData.minutes
@@ -267,9 +267,10 @@ const emit = defineEmits<{
   hidden: [value: boolean]
 }>()
 
+const ORDER_COUNTDOWN_DURATION_MS = 15 * 60 * 1000
+
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const targetRef = ref<HTMLElement | null>(null)
-const countdownTime = ref(15 * 60 * 1000)
 const cancelOrderPopShow = ref<boolean>(false)
 const cancelResultPopShow = ref<boolean>(false)
 const cancelResultOrderInfo = ref<Partial<QueryPayOrderByOrderIdResult>>({})
@@ -308,6 +309,19 @@ const isUploadNotStarted = computed(() => confirmUploadStatus.value === 'not_sta
 const isUploadInProgress = computed(() => confirmUploadStatus.value === 'in_progress')
 const isUploadCompleted = computed(() => confirmUploadStatus.value === 'completed')
 const isOrderCompleted = computed(() => orderStatus.value === 'Completed')
+const orderCreateTime = computed(() => {
+  const createTime = Number(rawOrderInfo.value.createTime)
+  return Number.isFinite(createTime) && createTime > 0 ? createTime : null
+})
+const countdownTime = computed(() => {
+  if (!orderCreateTime.value) {
+    return ORDER_COUNTDOWN_DURATION_MS
+  }
+
+  const expiresAt = orderCreateTime.value + ORDER_COUNTDOWN_DURATION_MS
+  return Math.max(0, expiresAt - Date.now())
+})
+const countdownKey = computed(() => String(orderCreateTime.value ?? 'default'))
 
 const cryptoDisplayAmount = computed(() => {
   const amount = Number(

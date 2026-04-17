@@ -2,7 +2,7 @@
   <div>
     <div v-if="isMobile" class="fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1">
       <H5Header :title="pageTitle" />
-      <div class="flex-1 min-h-0 overflow-y-auto px-[14px] pt-2.5 pb-4">
+      <div ref="mobileScrollRef" class="flex-1 min-h-0 overflow-y-auto px-[14px] pt-2.5 pb-4">
         <pageStyle2 :query-options="queryOptions" />
       </div>
     </div>
@@ -28,9 +28,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import H5Header from '@/components/common/H5Header.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
@@ -45,8 +45,10 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t } = useI18n()
+const route = useRoute()
 const router = useRouter()
 const isMobile = useIsMobile()
+const mobileScrollRef = ref<HTMLElement | null>(null)
 
 const brandCode = computed(() => String(props.brandCode || '').trim())
 const pageTitle = computed(() => {
@@ -67,4 +69,29 @@ const queryOptions = computed(() => ({
 const handleBack = () => {
   router.back()
 }
+
+const scrollPageToTop = () => {
+  nextTick(() => {
+    mobileScrollRef.value?.scrollTo({
+      top: 0,
+      behavior: 'auto'
+    })
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'auto'
+    })
+  })
+}
+
+onMounted(() => {
+  scrollPageToTop()
+})
+
+watch(
+  () => route.fullPath,
+  () => {
+    scrollPageToTop()
+  }
+)
 </script>
