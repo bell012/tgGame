@@ -46,59 +46,11 @@
                 <MainLogoIcon class="h-12 w-auto text-text-1" />
               </div>
 
-              <div class="w-full h-[245px] mt-6">
+              <div class="w-full h-[357px] mt-6">
                 <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
               </div>
 
               <div class="mt-4">
-                <div class="mb-3 flex items-stretch justify-between">
-                  <div class="flex-1 flex flex-col items-center justify-start px-2">
-                    <div class="flex items-center justify-center">
-                      <GiftIcon class="w-8 h-8" />
-                    </div>
-                    <div class="flex items-center justify-center mt-2">
-                      <span class="text-base font-[700] text-text-1">470%</span>
-                    </div>
-                    <!-- 首存奖金 -->
-                    <div class="text-[11px] text-text-2 mt-1 text-center">
-                      {{ t('common.welcome_deposit_bonus') }}
-                    </div>
-                  </div>
-
-                  <div class="w-px bg-opacity-5"></div>
-
-                  <div class="flex-1 flex flex-col items-center justify-start px-2">
-                    <div class="flex items-center justify-center">
-                      <TurntableIcon class="w-8 h-8" />
-                    </div>
-                    <div class="flex items-center justify-center mt-2">
-                      <span class="text-base font-[700] text-text-1">5 BTC</span>
-                    </div>
-                    <!-- 每日免费幸运旋转 -->
-                    <div class="text-[11px] text-text-2 mt-1 text-center">
-                      {{ t('common.free_daily_lucky_spin') }}
-                    </div>
-                  </div>
-
-                  <div class="w-px bg-opacity-5"></div>
-
-                  <div class="flex-1 flex flex-col items-center justify-start px-2">
-                    <div class="flex items-center justify-center">
-                      <FreePerksIcon class="w-8 h-8" />
-                    </div>
-                    <div class="flex items-center justify-center mt-2">
-                      <!-- 免费福利 -->
-                      <span class="text-base font-[700] text-text-1">
-                        {{ t('common.free_perks') }}
-                      </span>
-                    </div>
-                    <!-- 每日免费参与奖金 -->
-                    <div class="text-[11px] text-text-2 mt-1 text-center">
-                      {{ t('common.daily_free_rewards_bonuses') }}
-                    </div>
-                  </div>
-                </div>
-
                 <div class="flex items-center justify-center flex-col mt-16">
                   <!-- 保持桀骜不训 -->
                   <h2 class="w-full text-center text-4xl font-[700] text-text-1 mb-3">
@@ -143,59 +95,11 @@
                 <MainLogoIcon class="h-12 w-auto text-text-1" />
               </div>
 
-              <div class="w-full h-[245px] mt-6">
+              <div class="w-full h-[357px] mt-6">
                 <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
               </div>
 
               <div class="mt-4">
-                <div class="mb-3 flex items-stretch justify-between">
-                  <div class="flex-1 flex flex-col items-center justify-start px-2">
-                    <div class="flex items-center justify-center">
-                      <GiftIcon class="w-8 h-8" />
-                    </div>
-                    <div class="flex items-center justify-center mt-2">
-                      <span class="text-base font-[700] text-text-1">470%</span>
-                    </div>
-                    <!-- 首存奖金 -->
-                    <div class="text-[11px] text-text-2 mt-1 text-center">
-                      {{ t('common.welcome_deposit_bonus') }}
-                    </div>
-                  </div>
-
-                  <div class="w-px bg-opacity-5"></div>
-
-                  <div class="flex-1 flex flex-col items-center justify-start px-2">
-                    <div class="flex items-center justify-center">
-                      <TurntableIcon class="w-8 h-8" />
-                    </div>
-                    <div class="flex items-center justify-center mt-2">
-                      <span class="text-base font-[700] text-text-1">5 BTC</span>
-                    </div>
-                    <!-- 每日免费幸运旋转 -->
-                    <div class="text-[11px] text-text-2 mt-1 text-center">
-                      {{ t('common.free_daily_lucky_spin') }}
-                    </div>
-                  </div>
-
-                  <div class="w-px bg-opacity-5"></div>
-
-                  <div class="flex-1 flex flex-col items-center justify-start px-2">
-                    <div class="flex items-center justify-center">
-                      <FreePerksIcon class="w-8 h-8" />
-                    </div>
-                    <div class="flex items-center justify-center mt-2">
-                      <!-- 免费福利 -->
-                      <span class="text-base font-[700] text-text-1">
-                        {{ t('common.free_perks') }}
-                      </span>
-                    </div>
-                    <!-- 每日免费参与奖金 -->
-                    <div class="text-[11px] text-text-2 mt-1 text-center">
-                      {{ t('common.daily_free_rewards_bonuses') }}
-                    </div>
-                  </div>
-                </div>
-
                 <div class="flex items-center justify-center flex-col mt-16">
                   <!-- 保持桀骜不训 -->
                   <h2 class="w-full text-center text-4xl font-[700] text-text-1 mb-3">
@@ -223,9 +127,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import CloseIcon from '@/static/svg/close.svg?component'
-import GiftIcon from '@/static/svg/login/gift.svg?skipsvgo'
-import TurntableIcon from '@/static/svg/login/turntable.svg?skipsvgo'
-import FreePerksIcon from '@/static/svg/login/free_perks.svg?skipsvgo'
 import LoginFormDesktop from './LoginFormDesktop.vue'
 import LoginFormMobile from './LoginFormMobile.vue'
 import ResetPasswordMobile from './ResetPasswordMobile.vue'
