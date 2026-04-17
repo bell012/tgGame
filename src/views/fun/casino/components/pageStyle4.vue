@@ -64,7 +64,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, inject, nextTick, ref, watch, type Ref } from 'vue'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
 import type { GameBrandItem } from '@/api/interface/game'
@@ -81,6 +81,7 @@ interface Props {
 const props = defineProps<Props>()
 const gameStore = useGameStore()
 const pageRootRef = ref<HTMLElement | null>(null)
+const closeDesktopModalFlag = inject<Ref<boolean> | null>('search-close-desktop-modal', null)
 const page = ref(1)
 const total = ref(0)
 const totalPages = ref(1)
@@ -158,6 +159,12 @@ const goNext = () => {
   void scrollToFirstRow()
 }
 
+const closeDesktopModal = () => {
+  if (closeDesktopModalFlag) {
+    closeDesktopModalFlag.value = true
+  }
+}
+
 const handleClick = (item: GameBrandItem) => {
   const brandCode = String(item.brandCode || '').trim()
 
@@ -165,6 +172,7 @@ const handleClick = (item: GameBrandItem) => {
     return
   }
 
+  closeDesktopModal()
   navigateToName('brandGameList', {
     params: { brandCode },
     query: {
