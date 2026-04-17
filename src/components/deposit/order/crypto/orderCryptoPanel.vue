@@ -22,7 +22,7 @@
         <!-- 订单详情按钮 -->
         <button
           class="absolute right-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
-          @click="handleClose"
+          @click="openDepositOrder"
         >
           <DetailsIcon class="w-4 h-4" />
         </button>
@@ -244,6 +244,7 @@ import CryptoOrderCountdownIcon from '@/static/svg/deposit/crypto-order-countdow
 import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifying.svg?component'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
+import { navigateToName } from '@/utils/router'
 import html2canvas from 'html2canvas'
 import QRCode from 'qrcode'
 import { CountDown, showToast } from 'vant'
@@ -467,6 +468,12 @@ const isFailedDepositStatus = computed(
 // 关闭订单弹窗
 const handleClose = () => {
   emit('close')
+}
+const openDepositOrder = () => {
+  emit('close')
+  requestAnimationFrame(() => {
+    void navigateToName('my-orders')
+  })
 }
 
 // 桌面端关闭上传凭证弹窗时恢复外层订单弹窗
