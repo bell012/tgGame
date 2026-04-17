@@ -380,7 +380,8 @@
     "favorites": "Favorites",
     "recent": "Recent",
     "filter_hot": "Hot",
-    "filter_new": "New"
+    "filter_new": "New",
+    "view_all": "View All"
   },
   "gameDetail": {
     "playWithSelectedCurrency": "Play with selected currency",
@@ -446,6 +447,47 @@
     "shareDefaultTitle": "Share",
     "shareLinkCopySuccess": "Share link copied successfully",
     "copyFailedRetry": "Copy failed, please try again"
+  },
+  "common_footer": {
+    "top": {
+      "left_title": "Crypto Online Casino",
+      "left_desc_1": "Explore 1000+ slots, live dealer tables, crash and original games, plus full sports betting with pre-match and in-play odds. Instant deposits, low fees, fast withdrawals.",
+      "left_desc_2": "Our provably fair systems and audited RNG protect every bet. One wallet across casino and sportsbook keeps things simple, and our mobile-ready site lets you play anywhere. New players can claim welcome bonuses and ongoing cashback. Need help? 24/7 support has you covered. Simple, secure, and built for real-money crypto gaming.",
+      "right_title": "Help us improve your experience",
+      "feedback_reward": "Get rewarded for your valuable feedback!",
+      "feedback_email_label": "Email us:",
+      "security_notice": "If you find any vulnerabilities or leaks, please contact us (security-related issues only; non-related issues will be omitted).",
+      "security_email_label": "Security email:"
+    },
+    "sections": {
+      "casino": "Casino",
+      "sports": "Sports",
+      "promo": "Promo",
+      "support": "Support",
+      "support_legal": "Support/Legal",
+      "about_us": "About Us",
+      "global_community": "Join Our Global Community",
+      "local_community": "Join Our Local Community"
+    },
+    "bottom": {
+      "left_desc_1": "The ultimate crypto gaming destination, trusted by millions worldwide. We bring bold entertainment,cutting-edge experiences, and a thriving community together for non-stop thrills. Play, win, and stay untamed.",
+      "left_desc_2": "Your use of and access to TG.GAME signifies that you fully understand and agree to be legally bound by the contents of our Terms of Service and Responsible Gaming Policy.",
+      "left_desc_3": "Crypto trading is not gambling by definition, therefore it is not covered by our gaming license.",
+      "right_desc_1": "TG.GAME is operated by Twocent Technology Limited, a limited liability company registered in Belize with company registration number 41939, with registered address at Sea Urchin Street #2, San Pedro, Ambergris Caye, Belize. BC.GAME is licensed and regulated by the Government of the Autonomous Island of Anjouan, Union of Comoros and operates under License No. ALSI-202410011-FI1.",
+      "right_desc_2": "TG.GAME has passed all regulatory compliance and is legally authorized to conduct gaming operations for any and all games of chance and wagering."
+    },
+    "alt": {
+      "award": "Award",
+      "certification": "Certification",
+      "logo": "TG.GAME Logo"
+    },
+    "links": {
+      "bc_store": "BC Store",
+      "notice_board": "Notice Board",
+      "law_enforcement": "Law Enforcement",
+      "live_support": "Live Support"
+    },
+    "copyright": "Copyright ©2026 Twocent Technology Limited ALL RIGHTS RESERVED. 1BTC=$89,730.16"
   },
   "sidebar_menu": {
     "app_download": {

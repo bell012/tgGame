@@ -9,16 +9,20 @@
     </div>
 
     <div v-else-if="pageData.length > 0" class="grid w-full gap-2.5 grid-cols-3 sm:grid-cols-8">
-      <div
-        v-for="(game, i) in pageData"
-        :key="game.rowId ?? i"
-        class="aspect-[330/438] min-h-[146px]"
-      >
+      <div v-for="(game, i) in pageData" :key="game.rowId ?? i" class="aspect-[330/438]">
         <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>
 
-    <div v-else class="min-h-48" />
+    <ThemedEmptyState
+      v-else
+      :dark-image="defaultImg"
+      :light-image="defaultWhiteImg"
+      :message="t('search.stay')"
+      container-class="mt-[17px]"
+      image-class="w-[220px] h-[200px] object-contain mb-2.5"
+      text-class="text-xs text-center text-text-1"
+    />
 
     <div v-if="total > 0" class="mt-4 flex items-center justify-center">
       <button
@@ -63,12 +67,16 @@
 </template>
 <script setup lang="ts">
 import { computed, inject, nextTick, ref, watch, type Ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
 import type { GameDataItem } from '@/api/interface/game'
 import type { GameQueryOptions } from '@/stores/game'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
+import defaultImg from '@/static/img/explore/default.png'
+import defaultWhiteImg from '@/static/img/explore/default_white.png'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import casinoGameCard from './casinoGameCard.vue'
 
 interface Props {
@@ -77,6 +85,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n()
 
 const gameStore = useGameStore()
 const pageRootRef = ref<HTMLElement | null>(null)

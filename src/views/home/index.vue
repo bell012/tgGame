@@ -34,7 +34,7 @@
           :key="`win-${idx}`"
         >
           <div class="relative mb-1 w-full rounded-lg pt-[133%]">
-            <img :src="item.src" class="absolute left-0 top-0 w-full rounded-lg" />
+            <img :src="item.src" class="absolute left-0 top-0 w-full rounded-lg" :alt="item.name" />
           </div>
           <div class="w-[118%]">
             <div class="flex items-center justify-center font-extrabold text-secondary">
