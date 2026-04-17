@@ -20,11 +20,7 @@
     </div>
 
     <div v-else-if="pageData.length > 0" class="grid w-full grid-cols-3 gap-2.5 sm:grid-cols-8">
-      <div
-        v-for="(game, index) in pageData"
-        :key="game.rowId ?? index"
-        class="aspect-[330/438] min-h-[146px]"
-      >
+      <div v-for="(game, index) in pageData" :key="game.rowId ?? index" class="aspect-[330/438]">
         <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>
