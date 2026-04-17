@@ -13,21 +13,9 @@
     <div class="p-3.5">
       <div class="mb-3.5 flex items-center cursor-pointer" @click="goToMyProfile">
         <div class="relative mr-3.5 h-[55px] w-[55px] overflow-visible">
-          <div
-            :class="[
-              'absolute overflow-hidden rounded-full',
-              selectedAvatarFrameImage ? 'inset-[4px]' : 'inset-[4px] border-2 border-icon-2'
-            ]"
-          >
+          <div class="absolute overflow-hidden rounded-full inset-[4px] border-4 border-opacity-15">
             <img :src="avatarUrl" alt="Avatar" class="h-full w-full object-cover" />
           </div>
-
-          <img
-            v-if="selectedAvatarFrameImage"
-            :src="selectedAvatarFrameImage"
-            alt="Avatar Frame"
-            class="pointer-events-none absolute inset-0 h-full w-full object-contain"
-          />
         </div>
         <div class="flex flex-1 items-center justify-between">
           <div class="flex flex-col">
@@ -51,16 +39,19 @@
 
       <!-- VIP 模块 -->
       <div
-        class="relative rounded-lg overflow-hidden w-full h-[78px] flex justify-between items-start"
-        :style="{ backgroundImage: resolveBackgroundImage(vipBG), backgroundSize: 'cover' }"
+        class="relative rounded-[10px] overflow-hidden w-full h-[78px] flex justify-between items-start bg-gradient-to-r from-[#0D934D] to-[#084524]"
         @click="handleVip"
       >
         <div class="flex min-w-0 flex-1 flex-col">
-          <div class="mb-[5px] mt-1 flex w-full min-w-0 items-center justify-between">
-            <div class="flex items-center">
-              <SmartImage :src="vipLeft" alt="VIP" class="w-[25px] h-[16px] mx-[5px]" />
+          <div class="mb-[11px] flex w-full min-w-0 items-center justify-between">
+            <div
+              class="flex items-center px-3 py-[5px] rounded-[10px_0] bg-gradient-to-r from-[#10AC5D] to-[#018B6D]"
+            >
+              <SmartImage :src="vipLeft" alt="VIP" class="w-[25px] h-[16px] mr-[5px]" />
               <SmartImage :src="vipIcon" alt="VIP" class="w-[32px] h-[14px]" />
-              <span class="text-white text-lg font-bold">{{ vipLevel }}</span>
+              <span class="text-common-100 text-lg font-bold leading-none italic">{{
+                vipLevel
+              }}</span>
             </div>
           </div>
 
@@ -333,12 +324,7 @@ import { SITE_CONFIG_STORAGE_KEY } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { useVipStore } from '@/stores/vip'
-import {
-  DEFAULT_AVATAR_FRAME_ID,
-  profileCustomizationState,
-  resolveProfileAvatarUrl,
-  type AvatarFrameId
-} from '@/utils/profile-customization'
+import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import {
   getCurrentCurrency,
@@ -355,16 +341,9 @@ import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
 import SunIcon from '@/static/svg/personalCenter/icon33.svg?component'
-import { resolveBackgroundImage } from '@/utils/image'
 import DepositIocn from '@/static/svg/personalCenter/icon1.svg?component'
 import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
 import SignOut from '@/static/svg/personalCenter/icon18.svg?component'
-import border1Image from '@/static/img/personalCenter/border_1.png'
-import border2Image from '@/static/img/personalCenter/border_2.png'
-import border3Image from '@/static/img/personalCenter/border_3.png'
-import border4Image from '@/static/img/personalCenter/border_4.png'
-import border5Image from '@/static/img/personalCenter/border_5.png'
-import vipBG from '@/static/img/personalCenter/vigBG.webp'
 import vipLeft from '@/static/img/personalCenter/vip_left.png'
 import vipIcon from '@/static/img/personalCenter/vip.png'
 import vipRight from '@/static/img/personalCenter/vip_right.png'
@@ -379,14 +358,6 @@ const userStore = useUserStore()
 const vipStore = useVipStore()
 const { userInfo, acctInfo } = storeToRefs(userStore)
 const { myVipInfo } = storeToRefs(vipStore)
-
-const avatarFrameImageMap: Record<Exclude<AvatarFrameId, 'none'>, string> = {
-  border_1: border1Image,
-  border_2: border2Image,
-  border_3: border3Image,
-  border_4: border4Image,
-  border_5: border5Image
-}
 
 const balanceFieldMap = {
   BRL: 'balanceBrl',
@@ -477,12 +448,6 @@ const readCachedConfigCurrencyCodes = () => {
 // 头像 URL
 const avatarUrl = computed(() => {
   return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
-})
-
-const selectedAvatarFrameImage = computed(() => {
-  const avatarFrameId = profileCustomizationState.value.avatarFrameId ?? DEFAULT_AVATAR_FRAME_ID
-  if (avatarFrameId === DEFAULT_AVATAR_FRAME_ID) return ''
-  return avatarFrameImageMap[avatarFrameId as Exclude<AvatarFrameId, 'none'>]
 })
 
 // VIP 等级

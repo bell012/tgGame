@@ -383,9 +383,23 @@ const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth'
   })
 }
 
-const onTabButton = (tab: CasinoTabButtonItem) => {
+const onTabButton = async (tab: CasinoTabButtonItem) => {
   clearSearch()
-  if (tab.sysGameTypeCode === '') return navigateTo('/casino')
+
+  if (tab.sysGameTypeCode === '') {
+    if (currentTabCode.value === '') {
+      scrollPageToTop()
+      return
+    }
+
+    try {
+      await navigateTo('/casino')
+    } finally {
+      scrollPageToTop()
+    }
+    return
+  }
+
   navigateTo(`/casino/${tab.sysGameTypeCode}`)
 }
 
