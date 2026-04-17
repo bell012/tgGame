@@ -170,15 +170,14 @@ const currentQueryOptions = computed<GameQueryOptions | undefined>(() => {
   const baseQueryOptions = getCasinoQueryOptions(currentCode, {
     isMobile: isMobile.value
   })
-
-  if (!trimmedSearchKeyword.value) {
-    return baseQueryOptions
+  const options = baseQueryOptions ?? {
+    pageSize: isMobile.value ? 27 : 32
   }
-
+  if (!trimmedSearchKeyword.value) {
+    return options
+  }
   return {
-    ...(baseQueryOptions ?? {
-      pageSize: isMobile.value ? 27 : 32
-    }),
+    ...options,
     keyword: trimmedSearchKeyword.value
   }
 })
