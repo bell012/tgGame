@@ -171,7 +171,8 @@
     "favorites": "收藏游戏",
     "recent": "最近游戏",
     "filter_hot": "热门",
-    "filter_new": "最新"
+    "filter_new": "最新",
+    "view_all": "查看全部"
   },
   "gameDetail": {
     "playWithSelectedCurrency": "使用所选币种游玩",
