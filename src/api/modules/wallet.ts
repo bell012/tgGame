@@ -7,14 +7,14 @@ import type {
   QueryDiscountListResponse,
   QueryDlicghForm,
   QueryDlicghResponse,
-  QueryPayColumnPageForm,
-  QueryPayColumnPageResponse,
-  QueryPayColumnWithSubListForm,
-  QueryPayColumnWithSubListResponse,
   QueryMemberPayOrderPageForm,
   QueryMemberPayOrderPageResponse,
   QueryMemberPayOrderSyncReq,
   QueryMemberPayOrderSyncResponse,
+  QueryPayColumnPageForm,
+  QueryPayColumnPageResponse,
+  QueryPayColumnWithSubListForm,
+  QueryPayColumnWithSubListResponse,
   QueryPayOrderByOrderIdForm,
   QueryPayOrderByOrderIdResponse,
   QueryPaySubColumnPageForm,
@@ -133,6 +133,8 @@ export function queryMemberPayOrderSync(
   return request({
     url: '/pc/queryMemberPayOrderSync',
     method: 'post',
+    showSuccessToast: false,
+    showErrorToast: false,
     data
   })
 }

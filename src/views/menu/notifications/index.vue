@@ -493,7 +493,7 @@ type NotificationCategory = 'promotions' | 'transactions' | 'system'
 // 通知分类常量列表，统一用于遍历所有通知 tab。
 const NOTIFICATION_CATEGORIES: NotificationCategory[] = ['promotions', 'transactions', 'system']
 // 通知列表单次分页拉取数量。
-const PAGE_SIZE = 100
+const PAGE_SIZE = 30
 // 通知详情数据在 sessionStorage 中的缓存键。
 const NOTIFICATION_DETAIL_STORAGE_KEY = 'menuNotificationDetail'
 // 通知列表状态在 sessionStorage 中的缓存键。
@@ -690,7 +690,7 @@ if (!shouldRestoreNotificationListState) {
 const activeTab = ref<NotificationCategory>(
   restoredNotificationListState?.activeTab ?? 'promotions'
 )
-const showUnreadOnly = ref(restoredNotificationListState?.showUnreadOnly ?? true)
+const showUnreadOnly = ref(restoredNotificationListState?.showUnreadOnly ?? false)
 const categoryStates = ref<Record<NotificationCategory, NotificationCategoryState>>(
   restoredNotificationListState?.categories ?? createDefaultCategoryStates()
 )
