@@ -19,21 +19,17 @@ import {
   shouldReplaceOrderStatusCacheItem
 } from '@/utils/payOrderSync'
 import mqtt, { type MqttClient, type Packet } from 'mqtt'
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { computed, ref, watch } from 'vue'
 
 const TRADE_MESSAGE_SYNC_STORAGE_KEY = 'memberTradeMessageSync'
 const MQTT_RECONNECT_PERIOD_MS = 3000
 const MQTT_KEEP_ALIVE_SECONDS = 55
 const MQTT_PORT = 443
+const MQTT_CONNECT_TIMEOUT_MS = 15000
 const MQTT_DEBUG_STORAGE_KEY = 'mqtt.debug.all'
 const MAX_SYNC_BATCHES = 20
 const MAX_MESSAGE_STREAM_SIZE = 200
-const MQTT_TOPIC_CONFIG_KEYS = [
-  'push.msg.topic',
-  'push.msg.trade.topic',
-  'member.pay.order.topic'
-] as const
 
 interface TradeMessageSyncPersistedState {
   memberId: string
@@ -154,6 +150,158 @@ const isMqttDebugEnabled = () => {
   return value === '1' || value === 'true'
 }
 
+const toMqttErrorPayload = (error: unknown) => {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      cause: (error as Error & { cause?: unknown }).cause
+    }
+  }
+
+  if (error && typeof error === 'object') {
+    return error
+  }
+
+  return { error }
+}
+
+interface MqttBrokerEndpoint {
+  brokerUrl: string
+  port?: number
+}
+
+interface DebuggableEventTarget {
+  addEventListener: (
+    type: string,
+    listener: (event: unknown) => void,
+    options?: boolean | AddEventListenerOptions
+  ) => void
+}
+
+interface DebuggableOnEmitter {
+  on: (event: string, listener: (...args: unknown[]) => void) => void
+}
+
+const ensureWsProtocol = (value: string) => {
+  if (/^wss?:\/\//i.test(value)) {
+    return value
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    return value.replace(/^http/i, 'ws')
+  }
+
+  return `wss://${value}`
+}
+
+const resolveMqttBrokerEndpoint = (rawHost: string): MqttBrokerEndpoint => {
+  const trimmedHost = rawHost.trim()
+  const hostWithProtocol = ensureWsProtocol(trimmedHost)
+
+  try {
+    const endpointUrl = new URL(hostWithProtocol)
+
+    if (!endpointUrl.pathname || endpointUrl.pathname === '/') {
+      endpointUrl.pathname = '/mqtt'
+    }
+
+    const parsedPort = Number(endpointUrl.port)
+    const resolvedPort =
+      Number.isFinite(parsedPort) && parsedPort > 0 ? Math.trunc(parsedPort) : undefined
+
+    return {
+      brokerUrl: endpointUrl.toString(),
+      port: resolvedPort
+    }
+  } catch (error) {
+    console.error(error)
+
+    const normalizedHost = hostWithProtocol.replace(/\/+$/, '')
+
+    return {
+      brokerUrl: normalizedHost.endsWith('/mqtt') ? normalizedHost : `${normalizedHost}/mqtt`,
+      port: MQTT_PORT
+    }
+  }
+}
+
+const sanitizeMqttPacket = (packet: Packet) => {
+  if (packet.cmd !== 'connect') {
+    return packet
+  }
+
+  const connectPacket = packet as Packet & {
+    password?: unknown
+  }
+
+  return {
+    ...connectPacket,
+    password: connectPacket.password ? '***' : connectPacket.password
+  }
+}
+
+const hasAddEventListener = (value: unknown): value is DebuggableEventTarget => {
+  return !!value && typeof value === 'object' && 'addEventListener' in value
+}
+
+const hasOnEmitter = (value: unknown): value is DebuggableOnEmitter => {
+  return !!value && typeof value === 'object' && 'on' in value
+}
+
+const attachUnderlyingWebSocketDebug = (client: MqttClient) => {
+  const streamCandidate = (client as MqttClient & { stream?: unknown }).stream
+  const nestedSocketCandidate =
+    (streamCandidate as { socket?: unknown } | undefined)?.socket ??
+    (streamCandidate as { stream?: unknown } | undefined)?.stream
+
+  const candidates = [streamCandidate, nestedSocketCandidate]
+  const eventTargetCandidate = candidates.find(hasAddEventListener)
+  const onEmitterCandidate = candidates.find(hasOnEmitter)
+
+  if (!eventTargetCandidate && !onEmitterCandidate) {
+    console.warn('[MQTT][WS_DEBUG_UNAVAILABLE]', {
+      streamType: typeof streamCandidate
+    })
+    return
+  }
+
+  if (eventTargetCandidate) {
+    eventTargetCandidate.addEventListener('open', () => {
+      console.log('[MQTT][WS_OPEN]')
+    })
+
+    eventTargetCandidate.addEventListener('close', event => {
+      const closeEvent = event as { code?: unknown; reason?: unknown; wasClean?: unknown }
+
+      console.warn('[MQTT][WS_CLOSE]', {
+        code: closeEvent?.code,
+        reason: closeEvent?.reason,
+        wasClean: closeEvent?.wasClean
+      })
+    })
+
+    eventTargetCandidate.addEventListener('error', event => {
+      console.error('[MQTT][WS_ERROR]', event)
+    })
+  }
+
+  if (onEmitterCandidate) {
+    onEmitterCandidate.on('open', (...args) => {
+      console.log('[MQTT][STREAM_OPEN]', args)
+    })
+
+    onEmitterCandidate.on('close', (...args) => {
+      console.warn('[MQTT][STREAM_CLOSE]', args)
+    })
+
+    onEmitterCandidate.on('error', (...args) => {
+      console.error('[MQTT][STREAM_ERROR]', args)
+    })
+  }
+}
+
 // 统一打印 MQTT 收发包的关键字段，便于排查连接和订阅问题。
 const printMqttPacket = (direction: 'SEND' | 'RECV', packet: Packet) => {
   console.log(`[MQTT][${direction}]`, {
@@ -163,13 +311,14 @@ const printMqttPacket = (direction: 'SEND' | 'RECV', packet: Packet) => {
     messageId: 'messageId' in packet ? packet.messageId : undefined,
     returnCode: 'returnCode' in packet ? packet.returnCode : undefined,
     reasonCode: 'reasonCode' in packet ? packet.reasonCode : undefined,
-    packet
+    packet: sanitizeMqttPacket(packet)
   })
 }
 
 export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
   const siteConfigStore = useSiteConfigStore()
   const userStore = useUserStore()
+  const { userInfo } = storeToRefs(userStore)
 
   const messageStream = ref<TradeMessageStreamItem[]>([])
   const orderStatusMap = ref<OrderStatusMap>({})
@@ -187,6 +336,7 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
   let connectingMqttClient: MqttClient | null = null
   let activeMemberId = ''
   let activeTraceId = ''
+  let activeMqttUserTopic = ''
   let activeMqttTopics: string[] = []
   let syncPromise: Promise<void> | null = null
   let connectPromise: Promise<void> | null = null
@@ -194,13 +344,22 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
   let hasConnectedOnce = false
   let shouldSyncAfterReconnect = false
 
-  const activeUserMemberId = computed(() => String(userStore.userInfo?.memberId ?? '').trim())
-  const activeUserTraceId = computed(() => String(userStore.userInfo?.traceId ?? '').trim())
+  const activeUserMemberId = computed(() => String(userInfo.value?.memberId ?? '').trim())
+  const activeUserTraceId = computed(() => String(userInfo.value?.traceId ?? '').trim())
+  const activeUserMqttTopic = computed(() => {
+    const rowId = String(userInfo.value?.rowId ?? '').trim()
+    if (!rowId) {
+      return ''
+    }
+
+    return `${String(import.meta.env.VITE_SITE_CODE ?? '')}_${rowId}`
+  })
   const mqttConfig = computed(() => siteConfigStore.getPushMessageMqttConfig())
   const hasActiveSession = computed(
     () =>
       !!activeUserMemberId.value &&
       !!activeUserTraceId.value &&
+      !!activeUserMqttTopic.value &&
       !!mqttConfig.value.host &&
       !!mqttConfig.value.username &&
       !!mqttConfig.value.password
@@ -256,33 +415,9 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
     deletedMessageKeys.value = [...storedState.deletedMessageKeys]
   }
 
-  // 将主题模板中的 traceId 和 memberId 占位符替换成当前会话值。
-  const resolveTopicTemplate = (template: string) => {
-    const trimmedTemplate = template.trim()
-
-    if (!trimmedTemplate) {
-      return ''
-    }
-
-    return trimmedTemplate
-      .split('{traceId}')
-      .join(activeTraceId)
-      .split('{memberId}')
-      .join(activeMemberId)
-  }
-
-  // 汇总配置中的 MQTT 主题，并补充当前会话兜底主题后去重返回。
+  // 仅订阅当前用户主题：`${VITE_SITE_CODE}_${rowId}`。
   const resolveMqttTopics = () => {
-    const configuredTopics = MQTT_TOPIC_CONFIG_KEYS.flatMap(key => {
-      const value = siteConfigStore.getConfigString(key)
-      return value
-        .split(',')
-        .map(topic => resolveTopicTemplate(topic))
-        .filter(Boolean)
-    })
-
-    const fallbackTopics = [activeTraceId, activeMemberId].filter(Boolean)
-    return Array.from(new Set([...configuredTopics, ...fallbackTopics]))
+    return activeMqttUserTopic ? [activeMqttUserTopic] : []
   }
 
   // 关闭当前所有 MQTT 客户端实例，并重置连接相关的运行时标记。
@@ -532,23 +667,50 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
       return
     }
 
-    const brokerUrl = `wss://${host}/mqtt`
+    const { brokerUrl, port: brokerPort } = resolveMqttBrokerEndpoint(host)
+    const resolvedPort = brokerPort ?? MQTT_PORT
     const shouldPrintMqttDebugLog = isMqttDebugEnabled()
     let currentClient: MqttClient | null = null
+    const resolvedTopics = resolveMqttTopics()
+
+    if (shouldPrintMqttDebugLog) {
+      console.log('[MQTT][CONNECT_ATTEMPT]', {
+        host,
+        brokerUrl,
+        clientId: activeTraceId,
+        username,
+        hasPassword: Boolean(password),
+        port: resolvedPort,
+        keepalive: MQTT_KEEP_ALIVE_SECONDS,
+        reconnectPeriod: MQTT_RECONNECT_PERIOD_MS,
+        resubscribe: true,
+        activeMemberId,
+        activeTraceId,
+        activeMqttUserTopic,
+        topics: resolvedTopics
+      })
+    }
 
     connectPromise = new Promise<void>((resolve, reject) => {
       const client = mqtt.connect(brokerUrl, {
         clientId: activeTraceId,
         username,
         password,
-        port: MQTT_PORT,
+        port: resolvedPort,
         keepalive: MQTT_KEEP_ALIVE_SECONDS,
+        connectTimeout: MQTT_CONNECT_TIMEOUT_MS,
         reconnectPeriod: MQTT_RECONNECT_PERIOD_MS,
         resubscribe: true
       })
 
-      client.on('connect', () => {
+      let hasConnack = false
+
+      client.on('connect', connack => {
+        hasConnack = true
         console.log('[MQTT] connect success')
+        if (shouldPrintMqttDebugLog) {
+          console.log('[MQTT][CONNACK]', connack)
+        }
       })
 
       client.on('reconnect', () => {
@@ -557,10 +719,34 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
 
       client.on('close', () => {
         console.log('[MQTT] connection closed')
+        if (shouldPrintMqttDebugLog && !hasConnack) {
+          console.warn('[MQTT][CLOSE_BEFORE_CONNACK]')
+        }
+      })
+
+      client.on('offline', () => {
+        if (shouldPrintMqttDebugLog) {
+          console.warn('[MQTT][OFFLINE]')
+        }
+      })
+
+      client.on('disconnect', packet => {
+        if (shouldPrintMqttDebugLog) {
+          console.warn('[MQTT][DISCONNECT]', packet)
+        }
+      })
+
+      client.on('end', () => {
+        if (shouldPrintMqttDebugLog) {
+          console.warn('[MQTT][END]')
+        }
       })
 
       client.on('error', error => {
         console.error('[MQTT] error =>', error)
+        if (shouldPrintMqttDebugLog) {
+          console.error('[MQTT][ERROR_DETAIL]', toMqttErrorPayload(error))
+        }
       })
 
       currentClient = client
@@ -568,6 +754,8 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
       let settled = false
 
       if (shouldPrintMqttDebugLog) {
+        attachUnderlyingWebSocketDebug(client)
+
         client.on('packetsend', packet => {
           printMqttPacket('SEND', packet)
         })
@@ -586,10 +774,17 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
         const topics = resolveMqttTopics()
         activeMqttTopics = topics
 
+        if (shouldPrintMqttDebugLog) {
+          console.log('[MQTT][SUBSCRIBE_TOPICS]', topics)
+        }
+
         if (topics.length > 0) {
-          client.subscribe('#', (error, granted) => {
+          client.subscribe(topics, (error, granted) => {
             if (error) {
               console.error('[MQTT][SUBSCRIBE_ERROR]', error)
+              if (shouldPrintMqttDebugLog) {
+                console.error('[MQTT][SUBSCRIBE_ERROR_DETAIL]', toMqttErrorPayload(error))
+              }
               return
             }
 
@@ -629,6 +824,9 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
       client.on('error', error => {
         console.error(error)
         connectionError.value = error.message
+        if (shouldPrintMqttDebugLog) {
+          console.error('[MQTT][CONNECT_FLOW_ERROR_DETAIL]', toMqttErrorPayload(error))
+        }
 
         if (!settled) {
           settled = true
@@ -687,10 +885,22 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
   const handleSessionChange = async () => {
     const nextMemberId = activeUserMemberId.value
     const nextTraceId = activeUserTraceId.value
+    const nextMqttUserTopic = activeUserMqttTopic.value
 
-    if (!nextMemberId || !nextTraceId) {
+    if (!nextMemberId || !nextTraceId || !nextMqttUserTopic) {
+      if (isMqttDebugEnabled()) {
+        console.warn('[MQTT][SESSION_BLOCKED]', {
+          nextMemberId,
+          nextTraceId,
+          nextMqttUserTopic,
+          hasHost: Boolean(mqttConfig.value.host),
+          hasUsername: Boolean(mqttConfig.value.username),
+          hasPassword: Boolean(mqttConfig.value.password)
+        })
+      }
       activeMemberId = ''
       activeTraceId = ''
+      activeMqttUserTopic = ''
       closeMqttClient()
       clearRuntimeState()
       return
@@ -703,11 +913,31 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
     const shouldReconnect =
       activeMemberId !== nextMemberId ||
       activeTraceId !== nextTraceId ||
+      activeMqttUserTopic !== nextMqttUserTopic ||
       activeMqttTopics.length === 0 ||
       !mqttClient
 
+    if (isMqttDebugEnabled()) {
+      console.log('[MQTT][SESSION_CHANGE]', {
+        current: {
+          activeMemberId,
+          activeTraceId,
+          activeMqttUserTopic,
+          activeMqttTopics
+        },
+        next: {
+          nextMemberId,
+          nextTraceId,
+          nextMqttUserTopic
+        },
+        shouldReconnect,
+        hasClient: Boolean(mqttClient)
+      })
+    }
+
     activeMemberId = nextMemberId
     activeTraceId = nextTraceId
+    activeMqttUserTopic = nextMqttUserTopic
 
     if (!hasActiveSession.value) {
       closeMqttClient()
@@ -746,6 +976,7 @@ export const useTradeMessageSyncStore = defineStore('tradeMessageSync', () => {
         () => [
           activeUserMemberId.value,
           activeUserTraceId.value,
+          activeUserMqttTopic.value,
           mqttConfig.value.host,
           mqttConfig.value.username,
           mqttConfig.value.password
