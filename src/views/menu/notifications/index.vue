@@ -77,8 +77,8 @@
             :class="[
               isTransactionNotification(item)
                 ? props.panelMode
-                  ? 'min-h-[168px] gap-[14px] rounded-[18px] bg-[#323738] px-[16px] pb-0 pt-[16px]'
-                  : 'min-h-[120px] gap-[10px] rounded-[10px] bg-[#323738] px-[14px] pb-0 pt-[14px]'
+                  ? 'min-h-[168px] gap-[14px] rounded-[18px] bg-bg-2 px-[16px] pb-0 pt-[16px]'
+                  : 'min-h-[120px] gap-[10px] rounded-[10px] bg-bg-2 px-[14px] pb-0 pt-[14px]'
                 : 'gap-[10px] rounded-[10px] bg-bg-2 px-[14px] pb-[10px] pt-[14px]',
               { 'notice-card-read opacity-[0.72]': item.read }
             ]"
@@ -90,7 +90,7 @@
                 :class="props.panelMode ? 'min-h-[22px] gap-[8px]' : 'min-h-[17px] gap-[7px]'"
               >
                 <h2
-                  class="notice-title min-w-0 break-words font-[700] text-white"
+                  class="notice-title min-w-0 break-words font-[700] text-text-1"
                   :class="
                     props.panelMode
                       ? 'max-w-[220px] text-[16px] leading-[22px]'
@@ -100,14 +100,14 @@
                   {{ getNoticeTitle(item) }}
                 </h2>
                 <span
-                  class="notice-dot shrink-0 rounded-full"
+                  class="notice-dot h-[8px] w-[8px] shrink-0 rounded-full bg-theme-primary"
                   :class="['h-[8px] w-[8px]', getTransactionStatusDotClass(item)]"
                 ></span>
               </div>
 
               <!-- 交易通知正文 -->
               <p
-                class="notice-message w-full break-words font-[400] text-white"
+                class="notice-message w-full break-words font-[400] text-text-1"
                 :class="
                   props.panelMode
                     ? 'min-h-[54px] text-[13px] leading-[18px]'
@@ -125,7 +125,7 @@
                 "
               >
                 <time
-                  class="notice-time font-[400] text-[#B3BEC1]"
+                  class="notice-time font-[400] text-text-2"
                   :class="'text-[12px] leading-[15px]'"
                 >
                   {{ getNoticeTime(item) }}
@@ -133,7 +133,7 @@
 
                 <button
                   type="button"
-                  class="delete-button inline-flex shrink-0 items-center justify-center bg-white/[0.1]"
+                  class="delete-button inline-flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[6px] bg-opacity-10"
                   :class="
                     props.panelMode
                       ? 'h-[24px] w-[24px] rounded-[8px]'
@@ -142,10 +142,7 @@
                   @click.stop="removeNotification(item)"
                   :aria-label="$t('notifications.deleteAria')"
                 >
-                  <component
-                    :is="delIcon"
-                    :class="props.panelMode ? 'h-[14px] w-[14px]' : 'h-[13px] w-[13px]'"
-                  />
+                  <component :is="delIcon" class="h-[13px] w-[13px]" />
                 </button>
               </div>
             </template>
@@ -896,7 +893,7 @@ const getTransactionMessage = (item: NotificationItem) => {
       return `Your ${amountText} deposit could not be completed. Please try again or contact support.`
     }
 
-    return 'Your deposit proof has been submitted successfully and is currently under review.'
+    return `Your ${amountText} deposit proof has been submitted successfully and is currently under review.`
   }
 
   if (displayStatus === 'success') {
@@ -1169,12 +1166,12 @@ const markTransactionsAsReadOnView = () => {
     return
   }
 
-  // 清空 Transactions 提示角标，但不改动消息已读状态。
-  tradeMessageSyncStore.clearTradeMessageBadges(
-    transactionNotifications.value
-      .map(item => item.transactionKey)
-      .filter((item): item is string => Boolean(item))
-  )
+  // // 清空 Transactions 提示角标，但不改动消息已读状态。
+  // tradeMessageSyncStore.clearTradeMessageBadges(
+  //   transactionNotifications.value
+  //     .map(item => item.transactionKey)
+  //     .filter((item): item is string => Boolean(item))
+  // )
 }
 
 // 预取非当前分类的第一页数据，用于提前展示未读徽标。

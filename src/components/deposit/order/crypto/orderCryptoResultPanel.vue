@@ -81,7 +81,7 @@ import orderStatusResult from '../orderStatusResult.vue'
 interface Props {
   orderInfo: Partial<QueryPayOrderByOrderIdResult>
   methodIcon?: string
-  orderStatus?: 'Completed' | 'Cancelled'
+  orderStatus?: 'Completed' | 'Cancelled' | 'Failed'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -135,7 +135,11 @@ const formatAmountText = (amount?: number, currency?: string) => {
 const displayStatus = computed(() => props.orderStatus)
 
 const displayTitle = computed(() =>
-  displayStatus.value === 'Cancelled' ? t('deposit.order_cancelled') : t('deposit.order_completed')
+  displayStatus.value === 'Cancelled'
+    ? t('deposit.order_cancelled')
+    : displayStatus.value === 'Failed'
+      ? t('deposit.order_failed')
+      : t('deposit.order_completed')
 )
 
 const totalPaymentText = computed(() =>

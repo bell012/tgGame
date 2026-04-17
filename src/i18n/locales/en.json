@@ -785,6 +785,7 @@
     "order_exchange_rate": "Exchange Rate",
     "order_completed": "Order Completed",
     "order_cancelled": "Order Cancelled",
+    "order_failed": "Order Failed",
     "order_pay_and_upload_tips": "Please pay within and upload proof",
     "order_save_qr_code": "Save QR Code",
     "order_copy_address": "Copy Address",

@@ -18,7 +18,7 @@ import OrderStatusCancelledIcon from '@/static/svg/deposit/order-status-cancelle
 import OrderStatusCompletedIcon from '@/static/svg/deposit/order-status-completed.svg?component'
 
 defineProps<{
-  status: 'Completed' | 'Cancelled'
+  status: 'Completed' | 'Cancelled' | 'Failed'
   title: string
 }>()
 </script>

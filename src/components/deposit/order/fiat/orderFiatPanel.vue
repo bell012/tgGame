@@ -5,7 +5,7 @@
     :style="panelInlineStyle"
   >
     <!-- 弹窗头部 -->
-    <div class="relative shrink-0 flex items-center justify-between h-14">
+    <div class="relative shrink-0 flex items-center justify-between h-14 rounded-t-lg bg-bg-2">
       <h2 class="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg font-semibold text-text-1">
         {{ t('deposit.deposit_order') }}
       </h2>
@@ -81,9 +81,9 @@ import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import { showToast } from 'vant'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { FiatOrderType } from '../orderType'
 import type { DetailRowItem } from '../orderDetailRows.vue'
 import orderDetailRows from '../orderDetailRows.vue'
+import type { FiatOrderType } from '../orderType'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
