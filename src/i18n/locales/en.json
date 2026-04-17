@@ -988,7 +988,10 @@
     },
     "claimed": "Claimed",
     "locked": "Locked",
-    "goalHint": "You've completed this VIP level goal",
+    "goalHint": {
+      "unlocked": "Upgrade successful. Benefits unlocked",
+      "keepGoing": "Keep going to reach your VIP goal"
+    },
     "claimPopup": {
       "title": "Claim Successful",
       "description": "The bonus has been credited to your wallet.",

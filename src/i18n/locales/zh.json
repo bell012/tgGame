@@ -649,7 +649,7 @@
     "transaction": "交易",
     "transactionDetails": "交易详情",
     "remarks": "备注",
-    "rollover": "流水",
+    "rollover": "流水稽查",
     "betHistory": "投注历史",
     "notification": "通知",
     "referEarn": "推荐并赚取",
@@ -987,7 +987,10 @@
     },
     "claimed": "已领取",
     "locked": "已锁定",
-    "goalHint": "您已完成当前 VIP 等级目标",
+    "goalHint": {
+      "unlocked": "升级成功，权益已解锁",
+      "keepGoing": "继续努力，向您的 VIP 目标迈进"
+    },
     "claimPopup": {
       "title": "领取成功",
       "description": "奖金已发放至您的钱包。",
