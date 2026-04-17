@@ -5,25 +5,13 @@
     <div class="px-3.5 pb-8 pt-[25px]">
       <section class="flex flex-col items-center">
         <div class="relative h-[120px] w-[120px] overflow-visible">
-          <div
-            :class="[
-              'absolute overflow-hidden rounded-full',
-              selectedAvatarFrameImage ? 'inset-[14px]' : 'inset-[2px] border-2 border-icon-2'
-            ]"
-          >
+          <div class="absolute overflow-hidden rounded-full inset-0 border-4 border-opacity-15">
             <img :src="avatarUrl" alt="Avatar" class="h-full w-full rounded-full object-cover" />
           </div>
 
-          <img
-            v-if="selectedAvatarFrameImage"
-            :src="selectedAvatarFrameImage"
-            alt="Avatar Frame"
-            class="pointer-events-none absolute inset-0 z-10 h-full w-full object-contain"
-          />
-
           <button
             type="button"
-            class="absolute bottom-0 left-1/2 z-20 h-[28px] min-w-[80px] -translate-x-1/2 rounded-[6px] bg-theme-primary px-2 text-xs font-[700] text-text-4"
+            class="absolute bottom-0 left-1/2 z-20 h-[28px] min-w-[84px] -translate-x-1/2 rounded-[6px] bg-theme-primary px-2 text-xs font-[700] text-text-4"
             @click="openAvatarActionSheet"
           >
             {{ t('personalCenter.editProfile.editAvatar') }}
@@ -48,48 +36,6 @@
         <p class="mt-[7px] text-xs text-text-3">
           {{ t('personalCenter.editProfile.usernameHint') }}
         </p>
-      </section>
-
-      <section class="mt-5">
-        <div class="flex items-center justify-between">
-          <h3 class="text-sm font-[400] text-text-1">
-            {{ t('personalCenter.editProfile.avatarFrame') }}
-          </h3>
-          <p v-if="unlockHintText" class="text-xs text-text-2">{{ unlockHintText }}</p>
-        </div>
-
-        <div class="mt-5 grid grid-cols-4 gap-x-1.5 gap-y-4">
-          <button
-            v-for="item in avatarFrameOptions"
-            :key="item.id"
-            type="button"
-            class="relative"
-            :disabled="item.locked"
-            @click="selectAvatarFrame(item.id)"
-          >
-            <div
-              :class="[
-                'relative flex h-[98px] items-center justify-center rounded-[10px] transition-all',
-                item.id === selectedAvatarFrameId ? 'bg-bg-2' : 'bg-transparent',
-                item.locked ? 'opacity-90' : ''
-              ]"
-            >
-              <img :src="item.image" :alt="item.id" class="h-[80px] w-[80px] object-contain" />
-
-              <LockIcon
-                v-if="item.locked"
-                class="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-text-1"
-              />
-
-              <span
-                v-if="item.id === selectedAvatarFrameId"
-                class="absolute bottom-2 left-1/2 flex h-[16px] min-w-[52px] -translate-x-1/2 items-center justify-center rounded-full bg-theme-primary px-1 text-[10px] font-[700] text-text-4"
-              >
-                {{ t('personalCenter.editProfile.inUse') }}
-              </span>
-            </div>
-          </button>
-        </div>
       </section>
 
       <button
@@ -236,13 +182,11 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
-import LockIcon from '@/static/svg/lock.svg?component'
 import { useEditProfile } from './shared'
 
 const { t } = useI18n()
 const {
   nickName,
-  selectedAvatarFrameId,
   showAvatarActionSheet,
   showAvatarCropper,
   cameraInputRef,
@@ -254,13 +198,9 @@ const {
   isUploadingAvatar,
   isSavingProfile,
   avatarUrl,
-  unlockHintText,
   canSave,
-  selectedAvatarFrameImage,
   cropImageStyle,
-  avatarFrameOptions,
   handleNickNameChange,
-  selectAvatarFrame,
   openAvatarActionSheet,
   closeAvatarActionSheet,
   triggerAvatarInput,

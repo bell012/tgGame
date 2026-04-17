@@ -8,7 +8,7 @@
       />
     </div>
 
-    <div v-else class="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-7">
+    <div v-else-if="brandList.length > 0" class="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-7">
       <a
         v-for="item in brandList"
         :key="item.rowId"
@@ -21,6 +21,16 @@
         </div>
       </a>
     </div>
+
+    <ThemedEmptyState
+      v-else
+      :dark-image="defaultImg"
+      :light-image="defaultWhiteImg"
+      :message="t('search.stay')"
+      container-class="mt-[17px]"
+      image-class="w-[220px] h-[200px] object-contain mb-2.5"
+      text-class="text-xs text-center text-text-1"
+    />
 
     <div v-if="total > 0" class="mt-4 flex items-center justify-center">
       <button
@@ -65,12 +75,16 @@
 </template>
 <script setup lang="ts">
 import { computed, inject, nextTick, ref, watch, type Ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
 import type { GameBrandItem } from '@/api/interface/game'
 import type { GameQueryOptions } from '@/stores/game'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
+import defaultImg from '@/static/img/explore/default.png'
+import defaultWhiteImg from '@/static/img/explore/default_white.png'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 
 interface Props {
@@ -79,6 +93,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n()
 const gameStore = useGameStore()
 const pageRootRef = ref<HTMLElement | null>(null)
 const closeDesktopModalFlag = inject<Ref<boolean> | null>('search-close-desktop-modal', null)

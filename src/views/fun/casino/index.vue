@@ -1,5 +1,6 @@
 ﻿<template>
   <div
+    ref="pageRootRef"
     class="casino-page max-w-[1248px] mx-auto px-3.5 py-3 sm:py-4 sm:px-3 w-full font-['Inter']"
     :style="mobileStyle"
   >
@@ -212,6 +213,7 @@ const mobileStyle = computed(() => {
 })
 
 const tabRefs = ref<HTMLButtonElement[]>([])
+const pageRootRef = ref<HTMLElement | null>(null)
 const showLoginModal = ref(false)
 const showHistoryPanel = ref(false)
 const searchText = ref('')
@@ -300,6 +302,39 @@ const canScrollRight = ref(false)
 const hasSyncedActiveTab = ref(false)
 let searchDebounceTimer: number | undefined
 
+const findScrollableParent = (element: HTMLElement | null) => {
+  let current = element?.parentElement ?? null
+
+  while (current) {
+    const { overflowY } = window.getComputedStyle(current)
+
+    if (
+      (overflowY === 'auto' || overflowY === 'scroll') &&
+      current.scrollHeight > current.clientHeight
+    ) {
+      return current
+    }
+
+    current = current.parentElement
+  }
+
+  return null
+}
+
+const scrollPageToTop = () => {
+  nextTick(() => {
+    findScrollableParent(pageRootRef.value)?.scrollTo({
+      top: 0,
+      behavior: 'auto'
+    })
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'auto'
+    })
+  })
+}
+
 const updateScrollState = () => {
   const el = tabScrollRef.value
   if (!el) return
@@ -348,9 +383,23 @@ const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth'
   })
 }
 
-const onTabButton = (tab: CasinoTabButtonItem) => {
+const onTabButton = async (tab: CasinoTabButtonItem) => {
   clearSearch()
-  if (tab.sysGameTypeCode === '') return navigateTo('/casino')
+
+  if (tab.sysGameTypeCode === '') {
+    if (currentTabCode.value === '') {
+      scrollPageToTop()
+      return
+    }
+
+    try {
+      await navigateTo('/casino')
+    } finally {
+      scrollPageToTop()
+    }
+    return
+  }
+
   navigateTo(`/casino/${tab.sysGameTypeCode}`)
 }
 
@@ -516,6 +565,7 @@ onMounted(() => {
   getGameData()
   void getQuerySlideshow()
   void loadSuggestedGames()
+  scrollPageToTop()
   updateScrollState()
 
   document.addEventListener('click', handleClickOutside)
@@ -564,6 +614,7 @@ watch(
     }
 
     clearSearch()
+    scrollPageToTop()
   }
 )
 

@@ -2,7 +2,7 @@
   <div>
     <div v-if="isMobile" class="fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1">
       <H5Header :title="pageTitle" />
-      <div class="flex-1 min-h-0 overflow-y-auto px-[14px] pt-2.5 pb-4">
+      <div ref="mobileScrollRef" class="flex-1 min-h-0 overflow-y-auto px-[14px] pt-2.5 pb-4">
         <component
           :is="currentPageComponent"
           v-bind="currentPageProps"
@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import type { SelectMemberResult } from '@/api/interface/user'
@@ -66,6 +66,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const isMobile = useIsMobile()
+const mobileScrollRef = ref<HTMLElement | null>(null)
 const userInfo = ref<SelectMemberResult | null>(null)
 const isLoggedIn = computed(() => {
   return Boolean(userInfo.value?.tradeToken)
@@ -175,6 +176,20 @@ const handleBack = () => {
   router.back()
 }
 
+const scrollPageToTop = () => {
+  nextTick(() => {
+    mobileScrollRef.value?.scrollTo({
+      top: 0,
+      behavior: 'auto'
+    })
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'auto'
+    })
+  })
+}
+
 const loadUserInfo = () => {
   const storedUserInfo = localStorage.getItem('userInfo')
 
@@ -194,7 +209,15 @@ const loadUserInfo = () => {
 onMounted(() => {
   loadUserInfo()
   void loadCasinoTabButtons()
+  scrollPageToTop()
 })
+
+watch(
+  () => route.fullPath,
+  () => {
+    scrollPageToTop()
+  }
+)
 </script>
 
 <style scoped lang="scss"></style>

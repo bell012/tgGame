@@ -76,7 +76,7 @@
       </div>
 
       <div class="tabs-content min-h-48">
-        <component :is="getPageStyle" v-bind="currentPageProps" />
+        <component :is="currentPageStyle" v-bind="currentPageProps" />
       </div>
     </div>
   </div>
@@ -91,7 +91,6 @@ import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/use
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { casinoIcons } from '@/static/svg/casino'
 import { getCasinoPageMode, getCasinoQueryOptions } from '@/views/fun/casino/casinoPageConfig'
-import pageStyle1 from '@/views/fun/casino/components/pageStyle1.vue'
 import pageStyle2 from '@/views/fun/casino/components/pageStyle2.vue'
 import pageStyle3 from '@/views/fun/casino/components/pageStyle3.vue'
 import pageStyle4 from '@/views/fun/casino/components/pageStyle4.vue'
@@ -137,7 +136,7 @@ const canScrollRight = ref(false)
 const hasSyncedActiveTab = ref(false)
 const currentTabCode = ref('')
 
-const { tabButtons, lobbyButtons, hasLoaded, loadCasinoTabButtons } = useCasinoTabButtons()
+const { tabButtons, loadCasinoTabButtons } = useCasinoTabButtons()
 
 const getCurrentTab = computed(() => {
   if (!tabButtons.value.length) {
@@ -152,13 +151,11 @@ const getCurrentTab = computed(() => {
 
 const trimmedSearchKeyword = computed(() => activeSearchKeyword.value.trim())
 
-const basePageStyle = computed(() => {
+const currentPageStyle = computed(() => {
   const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
   const pageMode = getCasinoPageMode(currentCode)
 
   switch (pageMode) {
-    case 'lobby':
-      return pageStyle1
     case 'pageStyle2':
       return pageStyle2
     case 'pageStyle4':
@@ -168,60 +165,26 @@ const basePageStyle = computed(() => {
   }
 })
 
-const getPageStyle = computed(() => {
-  if (trimmedSearchKeyword.value && basePageStyle.value === pageStyle1) {
-    return pageStyle2
-  }
-
-  return basePageStyle.value
-})
-
 const currentQueryOptions = computed<GameQueryOptions | undefined>(() => {
   const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
-
-  if (trimmedSearchKeyword.value) {
-    if (basePageStyle.value === pageStyle1) {
-      return {
-        rowType: 3,
-        pageSize: isMobile.value ? 27 : 32,
-        keyword: trimmedSearchKeyword.value
-      }
-    }
-
-    const baseQueryOptions = getCasinoQueryOptions(currentCode, {
-      isMobile: isMobile.value
-    })
-
-    return {
-      ...(baseQueryOptions ?? {
-        pageSize: isMobile.value ? 27 : 32
-      }),
-      keyword: trimmedSearchKeyword.value
-    }
+  const baseQueryOptions = getCasinoQueryOptions(currentCode, {
+    isMobile: isMobile.value
+  })
+  const options = baseQueryOptions ?? {
+    pageSize: isMobile.value ? 27 : 32
   }
-
-  return getCasinoQueryOptions(currentCode, { isMobile: isMobile.value })
+  if (!trimmedSearchKeyword.value) {
+    return options
+  }
+  return {
+    ...options,
+    keyword: trimmedSearchKeyword.value
+  }
 })
 
-const currentPageProps = computed(() => {
-  switch (getPageStyle.value) {
-    case pageStyle1:
-      return {
-        modules: lobbyButtons.value,
-        loading: !hasLoaded.value,
-        hideLatestBet: true
-      }
-    case pageStyle2:
-    case pageStyle3:
-      return {
-        queryOptions: currentQueryOptions.value
-      }
-    case pageStyle4:
-      return {
-        queryOptions: currentQueryOptions.value
-      }
-    default:
-      return {}
+const currentPageProps = computed<Record<string, unknown>>(() => {
+  return {
+    queryOptions: currentQueryOptions.value
   }
 })
 

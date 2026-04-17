@@ -87,10 +87,27 @@
           <div
             v-for="(game, i) in getDisplayList(item.items)"
             :key="game.rowId ?? i"
-            class="aspect-[330/438] min-h-[146px]"
+            class="aspect-[330/438]"
           >
             <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
           </div>
+          <button
+            type="button"
+            class="relative flex aspect-[330/438] flex-col items-center justify-center rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
+            @click="handleViewAll(item)"
+          >
+            <SmartImage :src="viewAllLightIcon" alt="view all" class="dark:hidden w-full h-full" />
+            <SmartImage
+              :src="viewAllDarkIcon"
+              alt="view all"
+              class="hidden dark:block w-full h-full"
+            />
+            <span
+              class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-bold text-text-1 sm:text-base"
+            >
+              {{ t('casino.view_all') }}
+            </span>
+          </button>
         </div>
       </div>
     </div>
@@ -142,6 +159,8 @@ import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { getGameListTabSlug } from '../casinoPageConfig'
 import casinoGameCard from './casinoGameCard.vue'
 import liveBet from './liveBet.vue'
+import viewAllDarkIcon from '@/static/img/casino/all_view_dark.png'
+import viewAllLightIcon from '@/static/img/casino/all_view_light.png'
 
 const props = defineProps<{
   modules?: CasinoLobbyButtonItem[]
@@ -217,11 +236,11 @@ const scrollRight = (index: number) => {
 }
 
 const getDisplayList = (list: GameDataItem[]) => {
-  return isMobile.value ? list.slice(0, 11) : list.slice(0, 15)
+  return isMobile.value ? list.slice(0, 10) : list.slice(0, 10)
 }
 
 const getDisplayBrandList = (list: GameBrandItem[]) => {
-  return isMobile.value ? list.slice(0, 11) : list.slice(0, 15)
+  return isMobile.value ? list.slice(0, 10) : list.slice(0, 10)
 }
 
 const getBrandImg = (item: GameBrandItem) => {
