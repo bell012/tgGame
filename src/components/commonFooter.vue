@@ -1,18 +1,52 @@
 <template>
   <footer class="w-full bg-bg-6 py-6">
-    <div class="pb-1 pt-8 max-w-[1200px] mx-auto">
+    <div class="max-w-[1200px] mx-auto font-['Inter']">
       <!-- 第一排 -->
-      <div class="flex flex-wrap justify-center">
+      <div class="border-b border-opacity-10 pb-6">
+        <div class="flex items-start justify-between gap-x-8 mb-3 px-4">
+          <!-- 左边：标题 -->
+          <div class="flex-1 text-left">
+            <h3 class="text-text-1 text-base font-bold">{{ t('common_footer.top.left_title') }}</h3>
+            <!-- 文字说明 -->
+            <div class="mt-3 flex-1 max-w-xl space-y-3">
+              <p class="text-text-2 text-xs">{{ t('common_footer.top.left_desc_1') }}</p>
+              <p class="text-text-2 text-xs">{{ t('common_footer.top.left_desc_2') }}</p>
+            </div>
+          </div>
+
+          <!-- 右边：标题 -->
+          <div class="flex-1 text-left">
+            <h3 class="text-text-1 text-base font-bold">
+              {{ t('common_footer.top.right_title') }}
+            </h3>
+            <!-- 文字说明 -->
+            <div class="mt-3 flex-1 max-w-xl space-y-3">
+              <p class="text-text-2 text-xs">{{ t('common_footer.top.feedback_reward') }}</p>
+              <p class="text-text-2 text-xs">
+                {{ t('common_footer.top.feedback_email_label')
+                }}<span class="ml-2 text-theme-primary">feedback@tggame.com</span>
+              </p>
+              <p class="text-text-2 text-xs">{{ t('common_footer.top.security_notice') }}</p>
+              <p class="text-text-2 text-xs">
+                {{ t('common_footer.top.security_email_label')
+                }}<span class="ml-2 text-theme-primary">security@tggame.com</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 第二排 -->
+      <div class="mt-6 flex flex-wrap justify-center">
         <div
           class="max-w-[50%] flex-shrink-0 flex-grow-0 basis-1/2 px-1.5 mb-7 sm:max-w-[12.5%] sm:basis-[1/8]"
           v-for="i in 8"
           :key="`award-${i}`"
         >
-          <img :src="footer1Image" alt="Award" class="h-auto max-w-full" />
+          <img :src="footer1Image" :alt="t('common_footer.alt.award')" class="h-auto max-w-full" />
         </div>
       </div>
 
-      <!-- 第二排 -->
+      <!-- 第三排 -->
       <div class="w-full px-4 py-4 border-y border-[#e4eaf019]">
         <div class="flex w-full flex-wrap gap-x-10 divide-x divide-[#e4eaf019]">
           <!-- 左边5个图标 -->
@@ -23,7 +57,7 @@
               v-for="cert in leftCertifications"
               :key="cert.id"
               :src="footer2Image"
-              alt="Certification"
+              :alt="t('common_footer.alt.certification')"
               class="h-auto w-[94px]"
               @click="cert.handler"
             />
@@ -37,7 +71,7 @@
               v-for="cert in rightCertifications"
               :key="cert.id"
               :src="footer3Image"
-              alt="Certification"
+              :alt="t('common_footer.alt.certification')"
               class="h-auto w-[52px]"
               @click="cert.handler"
             />
@@ -45,11 +79,13 @@
         </div>
       </div>
 
-      <!-- 第三排 -->
+      <!-- 第四排 -->
       <div class="flex w-full flex-wrap justify-between gap-x-4 gap-y-4 px-4 py-6">
         <!-- 娱乐城 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">娱乐城</h3>
+          <h3 class="mb-5 text-base font-extrabold text-text-1">
+            {{ t('common_footer.sections.casino') }}
+          </h3>
           <ul class="space-y-3">
             <li
               v-for="item in casinoLinks"
@@ -72,7 +108,9 @@
 
         <!-- 体育 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">体育</h3>
+          <h3 class="mb-5 text-base font-extrabold text-text-1">
+            {{ t('common_footer.sections.sports') }}
+          </h3>
           <ul class="space-y-3">
             <li
               v-for="item in sportsLinks"
@@ -95,10 +133,12 @@
 
         <!-- 支援 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">支援</h3>
+          <h3 class="mb-5 text-base font-extrabold text-text-1">
+            {{ t('common_footer.sections.promo') }}
+          </h3>
           <ul class="space-y-3">
             <li
-              v-for="item in supportLinks"
+              v-for="item in promoLinks"
               :key="item.id"
               class="flex items-center gap-1 text-[14px] text-text-2 font-[600] cursor-pointer w-fit group"
               @click="item.handler"
@@ -118,7 +158,9 @@
 
         <!-- 支援/法律 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">支援/法律</h3>
+          <h3 class="mb-5 text-base font-extrabold text-text-1">
+            {{ t('common_footer.sections.support_legal') }}
+          </h3>
           <ul class="space-y-3">
             <li
               v-for="item in legalLinks"
@@ -141,10 +183,12 @@
 
         <!-- 支援 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">支援</h3>
+          <h3 class="mb-5 text-base font-extrabold text-text-1">
+            {{ t('common_footer.sections.about_us') }}
+          </h3>
           <ul class="space-y-3">
             <li
-              v-for="item in supportLinks2"
+              v-for="item in aboutLinks"
               :key="item.id"
               class="flex items-center gap-1 text-[14px] text-text-2 font-[600] cursor-pointer w-fit group"
               @click="item.handler"
@@ -164,7 +208,9 @@
 
         <!-- 加入我们的会社群 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">加入我们的会社群</h3>
+          <h3 class="mb-5 text-base font-extrabold text-text-1">
+            {{ t('common_footer.sections.global_community') }}
+          </h3>
           <div class="grid grid-cols-4 gap-2">
             <div
               v-for="social in socialMediaLinks"
@@ -174,7 +220,9 @@
               <component :is="LoginIcon1" class="w-6 h-6 fill-none" @click="social.handler" />
             </div>
           </div>
-          <h3 class="mb-5 mt-6 text-base font-extrabold text-text-1">加入我们的会本地群</h3>
+          <h3 class="mb-5 mt-6 text-base font-extrabold text-text-1">
+            {{ t('common_footer.sections.local_community') }}
+          </h3>
           <div class="grid grid-cols-4 gap-2">
             <div
               v-for="local in localGroupLinks"
@@ -187,60 +235,43 @@
         </div>
       </div>
 
-      <!-- 第四排 -->
-      <div class="border-t border-[#e4eaf019] pt-8">
-        <div class="flex items-center justify-between gap-x-8 mb-3 px-4">
+      <!-- 第五排 -->
+      <div class="border-t border-opacity-10 pt-8">
+        <div class="flex items-start justify-between gap-x-8 mb-3 px-4">
           <!-- 左边：Logo -->
-          <div class="flex-1">
-            <img :src="footer4_1Image" alt="BC.GAME Logo" class="h-8 w-auto" />
+          <div class="flex-1 text-left">
+            <div class="h-12 flex items-center">
+              <MainLogoIcon class="h-8 w-auto text-text-1" :alt="t('common_footer.alt.logo')" />
+            </div>
+            <!-- 文字说明 -->
+            <div class="mt-6 flex-1 max-w-xl space-y-4">
+              <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_1') }}</p>
+              <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_2') }}</p>
+              <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_3') }}</p>
+            </div>
           </div>
 
           <!-- 右边：认证图标 -->
-          <div class="flex-1 cursor-pointer">
+          <div class="flex-1 text-left">
             <SmartImage
               :src="footer4_2Image"
-              alt="Certification"
-              class="h-[60px] w-auto"
+              :alt="t('common_footer.alt.certification')"
+              class="h-12 w-auto"
               @click="bottomCertification.handler"
             />
-          </div>
-        </div>
-
-        <div class="flex items-start justify-between px-4">
-          <!-- 左边：文字说明 -->
-          <div class="flex-1 max-w-xl space-y-4">
-            <p class="text-text-2 text-[12px]">
-              本游戏平台人员都经过培训,确保负责任的游戏。我们将不断的努力,提升您的游戏体验,尖端的体验和我们的服务更加愉快。我们承诺对您的数据。立即开始。高兴。领到奖金是不可。
-            </p>
-            <p class="text-text-2 text-[12px]">
-              您使用有限 BC.GAME 即 Twocent Technology Limited
-              的管理公司。该公司根据库拉索岛法律注册并获得许可。并且获得库拉索岛政府颁发的许可证。并且获得库拉索岛政府颁发的许可证。
-            </p>
-            <p class="text-text-2 text-[12px]">
-              赌博可能会上瘾。请谨慎游戏并了解手中的赌博游戏是否适合您。因此请务必谨慎行事并遵守当地法律法规。
-            </p>
-          </div>
-
-          <!-- 右边：文字说明 -->
-          <div class="flex-shrink-0 max-w-md space-y-2">
-            <p class="text-text-2 text-[12px]">
-              BC.GAME由 Twocent Technology Limited
-              负责营运。该公司依据伯利兹法律注册成立为有限责任公司，注册编号为 41939，注册地址为 Sea
-              Urchin Street #2, San Pedro, Ambergris Caye, Belize。
-              BC.GAME已获科摩罗联盟属下安朱昂自治岛政府授权并受其监管，并持有牌照编号
-              ALSI-202410011-FI1。
-            </p>
-            <p class="text-text-2 text-[12px]">
-              BC.GAME已通过所有监管合规审查，依法获准经营任何形式的博彩及游戏相关业务。
-            </p>
+            <!-- 文字说明 -->
+            <div class="mt-6 flex-1 max-w-xl space-y-4">
+              <p class="text-text-2 text-xs">{{ t('common_footer.bottom.right_desc_1') }}</p>
+              <p class="text-text-2 text-xs">{{ t('common_footer.bottom.right_desc_2') }}</p>
+            </div>
           </div>
         </div>
 
         <!-- 版权信息 -->
         <div
-          class="text-center mt-8 pt-8 pb-2 px-4 border-t border-[#e4eaf019] text-text-2 text-[12px]"
+          class="text-center mt-8 pt-8 pb-2 px-4 border-t border-[#e4eaf019] text-text-2 text-xs"
         >
-          版权 ©2024 Twocent Technology Limited 版权所有。IBTC-U15899,442,15
+          {{ t('common_footer.copyright') }}
         </div>
       </div>
     </div>
@@ -248,15 +279,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { navigateTo } from '@/utils/router'
+import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
 import LoginIcon1 from '@/static/svg/login/login_icon_1.svg?component'
 import ExternalIcon from '@/static/svg/external.svg?component'
 
 const footer1Image = new URL('@/static/img/commonFooter/footer_1.webp', import.meta.url).href
 const footer2Image = new URL('@/static/img/commonFooter/footer_2_1.webp', import.meta.url).href
 const footer3Image = new URL('@/static/img/commonFooter/footer_3_1.png', import.meta.url).href
-const footer4_1Image = new URL('@/static/img/commonFooter/footer_4_1.webp', import.meta.url).href
 const footer4_2Image = new URL('@/static/img/commonFooter/footer_4_2.png', import.meta.url).href
+import MainLogoIcon from '@/static/svg/main-logo.svg?component'
+
+const { t } = useI18n()
+const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
+const { tabButtons: casinoTabButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
+
+type FooterLink = {
+  id: string
+  name: string
+  hasExternalIcon: boolean
+  handler: () => void
+}
 
 // 第二排左边认证图标
 const leftCertifications = computed(() => [
@@ -327,138 +372,127 @@ const rightCertifications = computed(() => [
 ])
 
 // 娱乐城链接
-const casinoLinks = computed(() => [
-  {
-    id: 'casino-home',
-    name: '娱乐城首页',
+const casinoLinks = computed<FooterLink[]>(() =>
+  casinoTabButtons.value.map(item => ({
+    id: `casino_${item.sysGameTypeCode || 'home'}`,
+    name: item.sysGameTypeName,
     hasExternalIcon: false,
     handler: () => {
-      console.log('娱乐城首页')
+      if (!item.sysGameTypeCode) {
+        navigateTo('/casino')
+        return
+      }
+
+      navigateTo(`/casino/${item.sysGameTypeCode}`)
     }
-  },
-  {
-    id: 'casino-slots',
-    name: '老虎机',
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('老虎机')
-    }
-  },
-  {
-    id: 'casino-live',
-    name: '真人娱乐城',
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('真人娱乐城')
-    }
-  },
-  {
-    id: 'casino-lottery',
-    name: '彩票发售',
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('彩票发售')
-    }
-  },
-  {
-    id: 'casino-fishing',
-    name: '捕鱼',
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('捕鱼')
-    }
-  },
-  {
-    id: 'casino-chess',
-    name: '棋牌游戏',
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('棋牌游戏')
-    }
-  },
-  {
-    id: 'casino-21',
-    name: '二十一点',
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('二十一点')
-    }
-  },
-  {
-    id: 'casino-wheel',
-    name: '轮盘赌',
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('轮盘赌')
-    }
-  },
-  {
-    id: 'casino-music',
-    name: '百家乐',
-    hasExternalIcon: false,
-    handler: () => {
-      console.log('百家乐')
-    }
-  }
-])
+  }))
+)
 
 // 体育链接
 const sportsLinks = computed(() => [
   {
-    id: 'sports-home',
-    name: '体育首页',
+    id: 'sports_fifa',
+    name: t('sidebar_menu.sports.children.fifa'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('体育首页')
+      console.log('点击 FIFA')
     }
   },
   {
-    id: 'sports-search',
-    name: '搜寻',
+    id: 'sports_soccer',
+    name: t('sidebar_menu.sports.children.soccer'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('搜寻')
+      console.log('点击 足球')
     }
   },
   {
-    id: 'sports-rules',
-    name: '规则',
+    id: 'sports_basketball',
+    name: t('sidebar_menu.sports.children.basketball'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('规则')
+      console.log('点击 篮球')
     }
   },
   {
-    id: 'sports-stats',
-    name: '体育投注深入解剖',
-    hasExternalIcon: true,
+    id: 'sports_tennis',
+    name: t('sidebar_menu.sports.children.tennis'),
+    hasExternalIcon: false,
     handler: () => {
-      console.log('体育投注深入解剖')
+      console.log('点击 网球')
+    }
+  },
+  {
+    id: 'sports_badminton',
+    name: t('sidebar_menu.sports.children.badminton'),
+    hasExternalIcon: false,
+    handler: () => {
+      console.log('点击 羽毛球')
+    }
+  },
+  {
+    id: 'sports_boxing',
+    name: t('sidebar_menu.sports.children.boxing'),
+    hasExternalIcon: false,
+    handler: () => {
+      console.log('点击 拳击')
+    }
+  },
+  {
+    id: 'sports_darts',
+    name: t('sidebar_menu.sports.children.darts'),
+    hasExternalIcon: false,
+    handler: () => {
+      console.log('点击 飞镖')
+    }
+  },
+  {
+    id: 'sports_american_football',
+    name: t('sidebar_menu.sports.children.american_football'),
+    hasExternalIcon: false,
+    handler: () => {
+      console.log('点击 美式足球')
+    }
+  },
+  {
+    id: 'sports_table_tennis',
+    name: t('sidebar_menu.sports.children.table_tennis'),
+    hasExternalIcon: false,
+    handler: () => {
+      console.log('点击 乒乓球')
+    }
+  },
+  {
+    id: 'sports_volleyball',
+    name: t('sidebar_menu.sports.children.volleyball'),
+    hasExternalIcon: false,
+    handler: () => {
+      console.log('点击 排球')
     }
   }
 ])
 
-// 支援链接
-const supportLinks = computed(() => [
+// 优惠链接
+const promoLinks = computed(() => [
   {
     id: 'support-vip',
-    name: 'VIP俱乐部',
+    name: t('sidebar_menu.links.vip.name'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('VIP俱乐部')
+      navigateTo('/vip')
     }
   },
   {
     id: 'support-promo',
-    name: '推荐',
+    name: t('sidebar_menu.links.recommend'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('推荐')
+      navigateTo('/menu/referral')
     }
   },
   {
     id: 'support-affiliate',
-    name: '促销',
+    name: t('sidebar_menu.promotions.label'),
     hasExternalIcon: false,
     handler: () => {
       console.log('促销')
@@ -466,7 +500,7 @@ const supportLinks = computed(() => [
   },
   {
     id: 'support-sponsorship',
-    name: '彩票',
+    name: t('sidebar_menu.lottery.label'),
     hasExternalIcon: false,
     handler: () => {
       console.log('彩票')
@@ -474,15 +508,15 @@ const supportLinks = computed(() => [
   },
   {
     id: 'support-friends',
-    name: '推荐朋友',
+    name: t('sidebar_menu.promotions.children.invite_rewards'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('推荐朋友')
+      navigateTo('/menu/referral')
     }
   },
   {
     id: 'support-bc',
-    name: 'BC 商店',
+    name: t('common_footer.links.bc_store'),
     hasExternalIcon: true,
     handler: () => {
       console.log('BC 商店')
@@ -494,7 +528,7 @@ const supportLinks = computed(() => [
 const legalLinks = computed(() => [
   {
     id: 'legal-license',
-    name: '许可证',
+    name: t('sidebar_menu.about_us.items.license'),
     hasExternalIcon: false,
     handler: () => {
       console.log('许可证')
@@ -502,15 +536,15 @@ const legalLinks = computed(() => [
   },
   {
     id: 'legal-help',
-    name: '帮助中心',
+    name: t('sidebar_menu.support.items.help_center'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('帮助中心')
+      console.log('点击 帮助中心')
     }
   },
   {
     id: 'legal-fairness',
-    name: '推荐博彩',
+    name: t('sidebar_menu.legal.items.fairness'),
     hasExternalIcon: false,
     handler: () => {
       console.log('推荐博彩')
@@ -518,7 +552,7 @@ const legalLinks = computed(() => [
   },
   {
     id: 'legal-notice',
-    name: '公告栏',
+    name: t('common_footer.links.notice_board'),
     hasExternalIcon: false,
     handler: () => {
       console.log('公告栏')
@@ -526,15 +560,15 @@ const legalLinks = computed(() => [
   },
   {
     id: 'legal-forum',
-    name: '常见问题',
+    name: t('sidebar_menu.support.items.faq'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('常见问题')
+      console.log('点击 常见问题')
     }
   },
   {
     id: 'legal-privacy',
-    name: '隐私权政策',
+    name: t('sidebar_menu.legal.items.privacy_policy'),
     hasExternalIcon: false,
     handler: () => {
       console.log('隐私权政策')
@@ -542,7 +576,7 @@ const legalLinks = computed(() => [
   },
   {
     id: 'legal-terms',
-    name: '服务条款',
+    name: t('sidebar_menu.legal.items.terms_of_service'),
     hasExternalIcon: false,
     handler: () => {
       console.log('服务条款')
@@ -550,7 +584,7 @@ const legalLinks = computed(() => [
   },
   {
     id: 'legal-kyc',
-    name: '执法机关',
+    name: t('common_footer.links.law_enforcement'),
     hasExternalIcon: false,
     handler: () => {
       console.log('执法机关')
@@ -558,15 +592,15 @@ const legalLinks = computed(() => [
   },
   {
     id: 'legal-responsibility',
-    name: '负责任赌博',
+    name: t('sidebar_menu.legal.items.gamble_aware'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('负责任赌博')
+      console.log('点击 理性博彩')
     }
   },
   {
     id: 'legal-aml',
-    name: 'AML',
+    name: t('sidebar_menu.legal.items.aml'),
     hasExternalIcon: false,
     handler: () => {
       console.log('AML')
@@ -574,7 +608,7 @@ const legalLinks = computed(() => [
   },
   {
     id: 'legal-audit',
-    name: '设计资源',
+    name: t('sidebar_menu.about_us.items.design_resources'),
     hasExternalIcon: true,
     handler: () => {
       console.log('设计资源')
@@ -582,7 +616,7 @@ const legalLinks = computed(() => [
   },
   {
     id: 'legal-online',
-    name: '线上客服',
+    name: t('common_footer.links.live_support'),
     hasExternalIcon: false,
     handler: () => {
       console.log('线上客服')
@@ -590,35 +624,35 @@ const legalLinks = computed(() => [
   },
   {
     id: 'legal-ceo',
-    name: 'CEO 信箱',
+    name: t('sidebar_menu.support.items.ceo_inbox'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('CEO 信箱')
+      console.log('点击 CEO 信箱')
     }
   }
 ])
 
-// 支援链接2
-const supportLinks2 = computed(() => [
+// 关于我们链接
+const aboutLinks = computed(() => [
   {
     id: 'support2-news',
-    name: '新闻',
+    name: t('sidebar_menu.about_us.items.news'),
     hasExternalIcon: true,
     handler: () => {
-      console.log('新闻')
+      console.log('点击 新闻')
     }
   },
   {
     id: 'support2-partner',
-    name: '与我们合作',
+    name: t('sidebar_menu.about_us.items.work_with_us'),
     hasExternalIcon: true,
     handler: () => {
-      console.log('与我们合作')
+      console.log('点击 与我们合作')
     }
   },
   {
     id: 'support2-intro',
-    name: '商务简介',
+    name: t('sidebar_menu.about_us.items.business_contacts'),
     hasExternalIcon: false,
     handler: () => {
       console.log('商务简介')
@@ -626,26 +660,26 @@ const supportLinks2 = computed(() => [
   },
   {
     id: 'support2-service',
-    name: '服务台',
+    name: t('sidebar_menu.about_us.items.help_desk'),
     hasExternalIcon: true,
     handler: () => {
-      console.log('服务台')
+      console.log('点击 服务台')
     }
   },
   {
     id: 'support2-verify',
-    name: '验证代理商',
+    name: t('sidebar_menu.about_us.items.verify_representative'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('验证代理商')
+      console.log('点击 验证代表')
     }
   },
   {
     id: 'support2-verify-game',
-    name: '验证本网站',
+    name: t('sidebar_menu.about_us.items.design_resources'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('验证本网站')
+      console.log('点击 设计资源')
     }
   }
 ])
@@ -725,4 +759,8 @@ const bottomCertification = {
     console.log('bottom-cert')
   }
 }
+
+onMounted(() => {
+  void loadCasinoTabButtons()
+})
 </script>

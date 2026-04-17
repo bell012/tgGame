@@ -238,6 +238,47 @@
     "shareLinkCopySuccess": "分享链接复制成功",
     "copyFailedRetry": "复制失败，请重试"
   },
+  "common_footer": {
+    "top": {
+      "left_title": "加密线上娱乐城",
+      "left_desc_1": "探索超过 1000 款老虎机、真人荷官桌台、Crash 与原创游戏，同时享受赛前与滚球体育投注。即时存款、低手续费、快速提现。",
+      "left_desc_2": "我们的可验证公平系统与经审计 RNG 为每一笔投注提供保障。娱乐城与体育共用一个钱包，流程更简单；移动端友好的站点让你随时随地畅玩。新玩家可领取欢迎奖励与持续返水。如需帮助，24/7 客服随时为你服务。简单、安全，专为真实加密娱乐而打造。",
+      "right_title": "帮助我们提升你的体验",
+      "feedback_reward": "分享你的宝贵反馈，还有机会获得奖励！",
+      "feedback_email_label": "联系我们：",
+      "security_notice": "如果你发现任何漏洞或信息泄露，请联系我们（仅限安全相关问题，非相关内容将不予处理）。",
+      "security_email_label": "安全邮箱："
+    },
+    "sections": {
+      "casino": "娱乐城",
+      "sports": "体育",
+      "promo": "优惠",
+      "support": "支持",
+      "support_legal": "支持 / 法律",
+      "about_us": "关于我们",
+      "global_community": "加入我们的全球社区",
+      "local_community": "加入我们的本地社区"
+    },
+    "bottom": {
+      "left_desc_1": "值得全球数百万用户信赖的加密游戏目的地。我们将大胆的娱乐体验、前沿玩法与活跃社区融合在一起，带来持续不断的刺激。尽情游戏、赢取奖励，保持无畏。",
+      "left_desc_2": "使用和访问 TG.GAME 即表示你已充分理解并同意受我们的《服务条款》和《负责任博彩政策》内容的法律约束。",
+      "left_desc_3": "加密货币交易在定义上不属于赌博，因此不在我们的博彩牌照覆盖范围内。",
+      "right_desc_1": "TG.GAME 由 Twocent Technology Limited 运营，该公司是在伯利兹注册的有限责任公司，公司注册号为 41939，注册地址为 Sea Urchin Street #2, San Pedro, Ambergris Caye, Belize。BC.GAME 受科摩罗联盟昂儒昂自治岛政府许可并监管，牌照号为 ALSI-202410011-FI1。",
+      "right_desc_2": "TG.GAME 已通过所有监管合规要求，并依法获准开展各类机会游戏及投注业务。"
+    },
+    "alt": {
+      "award": "奖项",
+      "certification": "认证",
+      "logo": "TG.GAME 标志"
+    },
+    "links": {
+      "bc_store": "BC 商店",
+      "notice_board": "公告栏",
+      "law_enforcement": "执法机关",
+      "live_support": "线上客服"
+    },
+    "copyright": "版权所有 ©2026 Twocent Technology Limited。保留所有权利。1BTC=$89,730.16"
+  },
   "sidebar_menu": {
     "app_download": {
       "title": "应用程式",
