@@ -62,7 +62,7 @@
   <Teleport to="body">
     <div
       v-if="desktopDropdownVisible && !isMobile"
-      class="fixed z-[1200] rounded-lg border border-white/5 bg-[#292d2e] p-3 shadow-lg"
+      class="fixed z-[1200] rounded-lg border border-opacity-5 bg-bg-2 p-3 shadow-lg"
       :style="desktopDropdownStyle"
     >
       <div class="space-y-2">
@@ -70,8 +70,9 @@
           v-for="item in networkOptions"
           :key="item.value"
           type="button"
-          class="flex h-10 w-full items-center justify-between rounded-lg bg-[#3b4142] px-3 text-left"
+          class="flex h-10 w-full items-center justify-between rounded-lg px-3 text-left lg:hover:bg-opacity-10"
           @click="handleDesktopNetworkSelect(item.value)"
+          :class="{ 'bg-opacity-10': network === item.value }"
         >
           <span class="text-sm font-bold leading-normal text-text-1">
             {{ item.label }}
