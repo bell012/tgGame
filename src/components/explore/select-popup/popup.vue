@@ -10,7 +10,7 @@
     </transition>
     <!-- 面板 -->
     <transition :name="desktop ? 'desktop-up-down' : 'up-down'">
-      <div v-show="visible" class="fixed z-[9999] left-0 bottom-0 w-full lg:relative">
+      <div v-show="visible" class="tp-sheet fixed z-[9999] left-0 bottom-0 w-full lg:relative">
         <div class="tp-panel bg-[var(--color-background-level-2)] rounded-t-xl pt-2.5 px-3.5">
           <div class="tp-header flex items-center justify-between mb-2.5" v-if="!desktop">
             <div></div>
@@ -54,6 +54,7 @@
             </div>
           </div>
         </div>
+        <div class="tp-safe-area-fill" aria-hidden="true"></div>
       </div>
     </transition>
   </div>
@@ -102,9 +103,39 @@ const getImageTop = (item: OptionItem) => {
 @use '../../../styles/mixins' as *;
 /* 面板 */
 .tp-panel {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: 12px;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 10px 10px 0 0;
+}
+
+.tp-sheet {
+  background: transparent;
+}
+
+.tp-safe-area-fill {
+  height: constant(safe-area-inset-bottom);
+  height: env(safe-area-inset-bottom);
+  background: var(--color-background-level-2);
+  pointer-events: none;
+}
+
+.tp-item:last-child {
+  margin-bottom: 0;
+}
+
+@media (min-width: 1024px) {
+  .tp-sheet {
+    padding-bottom: 0;
+  }
+
+  .tp-safe-area-fill {
+    display: none;
+  }
+
+  .tp-panel {
+    padding-bottom: 0;
+    border-radius: 10px;
+  }
 }
 @include popup-transition;
 // 设置的弹窗打开关闭的过渡动画

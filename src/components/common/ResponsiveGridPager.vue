@@ -13,7 +13,11 @@
 
     <!-- 列表无数据时显示 -->
     <div v-else class="w-full flex justify-center items-center flex-col mt-[17px]">
-      <SmartImage :src="defaultImg" alt="empty" class="w-[220px] h-[200px] object-contain mb-2.5" />
+      <SmartImage
+        :src="emptyImageSrc"
+        alt="empty"
+        class="w-[220px] h-[200px] object-contain mb-2.5"
+      />
       <div class="text-xs text-center">{{ t('search.stay') }}</div>
     </div>
 
@@ -43,7 +47,7 @@
         <!-- 总页码 -->
         <span
           class="rounded-md flex items-center justify-center font-bold text-xs text-text-1 leading-[12px] px-[7px] py-[7px]"
-          >{{ totalPages }}</span
+          >{{ totalPages < 10 ? '0' + totalPages : totalPages }}</span
         >
       </div>
 
@@ -62,12 +66,17 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import SmartImage from '@/components/common/SmartImage.vue'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
 import defaultImg from '@/static/img/explore/default.png'
+import defaultWhiteImg from '@/static/img/explore/default_white.png'
+import { useThemeStore } from '@/stores/theme'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
+const themeStore = useThemeStore()
+const { theme } = storeToRefs(themeStore)
 const props = withDefaults(
   defineProps<{
     /** 当前页要渲染的列表 */
@@ -101,6 +110,7 @@ const emit = defineEmits<{
 
 const canPrev = computed(() => props.page > 1)
 const canNext = computed(() => props.page < props.totalPages)
+const emptyImageSrc = computed(() => (theme.value === 'light' ? defaultWhiteImg : defaultImg))
 
 const setPage = (p: number) => {
   const next = Math.min(Math.max(1, p), Math.max(1, props.totalPages))

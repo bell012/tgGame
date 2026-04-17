@@ -92,9 +92,10 @@
 
           <div class="flex flex-3 flex-wrap gap-2 lg:!gap-3">
             <button
-              v-for="value in listImg"
+              v-for="value in visibleListImg"
               class="button button-m center relative h-20 flex-1 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px]"
               type="button"
+              @click="toCasino(value.sysGameTypeCode)"
               style="
                 background-image: linear-gradient(
                   to left,
@@ -238,6 +239,7 @@ import icon4 from './img/Image3.svg?url'
 import icon from './img/Image4.svg?url'
 import icon5 from './img/Image5.svg?url'
 import icon6 from './img/Image6.svg?url'
+import icon7 from './img/Image7.svg?url'
 
 import ADA from '@/static/svg/coin/ADA.black.svg?url'
 import BNB from '@/static/svg/coin/BNB.black.svg?url'
@@ -263,10 +265,9 @@ import contract from '@/static/img/home/contract.png'
 import fishing from '@/static/img/home/fishing.png'
 import live from '@/static/img/home/live.png'
 import slots from '@/static/img/home/slots.png'
-import headBackH5Image from './headBack_h5.png'
+import table from '@/static/img/home/table.png'
 
 import placeholderImg from '@/static/img/home/errImg1.png'
-import backImg from '@/static/img/home/banner.jpg'
 
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
@@ -310,30 +311,50 @@ const listImg = computed(() => [
   {
     name: t('home.Poker'),
     img: contract,
-    icon: icon
+    icon: icon,
+    sysGameTypeCode: ''
   },
   {
     name: t('home.slots'),
     img: slots,
-    icon: icon1
+    icon: icon1,
+    sysGameTypeCode: 'DZ'
   },
   {
     name: t('home.fishing'),
     img: fishing,
-    icon: icon2
+    icon: icon2,
+    sysGameTypeCode: 'BY'
   },
   {
     name: t('home.live'),
     img: live,
-    icon: icon3
+    icon: icon3,
+    sysGameTypeCode: 'live'
   },
   {
     name: t('home.lottery'),
     img: combination,
-    icon: icon4
+    icon: icon4,
+    sysGameTypeCode: ''
+  },
+  {
+    name: t('home.table'),
+    img: table,
+    icon: icon7,
+    sysGameTypeCode: 'QP'
   }
 ])
-
+const visibleListImg = computed(() =>
+  isMobile.value ? listImg.value.filter(item => item.sysGameTypeCode !== 'QP') : listImg.value
+)
+const toCasino = (sysGameTypeCode: string) => {
+  if (!sysGameTypeCode) {
+    navigateTo('/casino')
+    return
+  }
+  navigateTo(`/casino/${sysGameTypeCode}`)
+}
 interface RecentBigWin {
   src: string
   name: string
@@ -561,17 +582,15 @@ const getQuerySlideshow = async () => {
     const response = await Api.home.getQuerySlideshow({
       languageCode: getStorageLanguageCode(String(locale.value)),
       deploymentPath: 1,
-      requireLogin: isLogin.value ? 1 : 0,  
+      requireLogin: isLogin.value ? 1 : 0,
       channelId: isMobile.value ? '4' : '3',
       page: {
         current: 1,
         size: 30
       }
     })
-    console.log('getQuerySlideshow response', response)
-    querySlideshowList.value = Array.isArray(response?.result?.records)
-      ? response.result.records
-      : []
+    const records = Array.isArray(response?.result?.records) ? response.result.records : []
+    querySlideshowList.value = isLogin.value ? records : records.slice(0, 1)
   } catch (error) {
     console.error('getQuerySlideshow failed', error)
     querySlideshowList.value = []
@@ -582,7 +601,6 @@ onMounted(async () => {
   try {
     const res = await Api.home.getGameData()
     const rawResult = Array.isArray(res.result) ? res.result : []
-    console.log('rawResult', rawResult)
     rawGameData.value = rawResult
     gameData.value = mapHomeGameSections(rawResult)
     localStorage.setItem('gameData', JSON.stringify(rawResult))

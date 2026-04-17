@@ -174,7 +174,8 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
 import type { QuerySlideshowItem, QuerySlideshowRequest } from '@/api/interface/home.interface'
-import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
+import type { SelectMemberResult } from '@/api/interface/user'
+import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
 import { useGameStore } from '@/stores/game'
 import { useLayoutStore } from '@/stores/layout'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -347,7 +348,7 @@ const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth'
   })
 }
 
-const onTabButton = (tab: any) => {
+const onTabButton = (tab: CasinoTabButtonItem) => {
   clearSearch()
   if (tab.sysGameTypeCode === '') return navigateTo('/casino')
   navigateTo(`/casino/${tab.sysGameTypeCode}`)
@@ -462,11 +463,11 @@ const handleClickOutside = (e: MouseEvent) => {
 }
 
 // 用户信息
-const userInfo = ref<any>(null)
+const userInfo = ref<SelectMemberResult | null>(null)
 
 // 是否已登录
 const isLoggedIn = computed(() => {
-  return userInfo.value && userInfo.value.tradeToken
+  return Boolean(userInfo.value?.tradeToken)
 })
 const { tabButtons, lobbyButtons, hasLoaded, loadCasinoTabButtons } = useCasinoTabButtons({
   isLoggedIn

@@ -62,7 +62,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, inject, nextTick, ref, watch, type Ref } from 'vue'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
 import type { GameDataItem } from '@/api/interface/game'
@@ -85,6 +85,7 @@ const totalPages = ref(1)
 const total = ref(0)
 const isLoading = ref(false)
 const pageData = ref<GameDataItem[]>([])
+const closeDesktopModalFlag = inject<Ref<boolean> | null>('search-close-desktop-modal', null)
 const canPrev = computed(() => page.value > 1)
 const canNext = computed(() => page.value < totalPages.value)
 const fallbackQueryOptions: GameQueryOptions = {
@@ -153,11 +154,18 @@ const goNext = () => {
   void scrollToFirstRow()
 }
 
+const closeDesktopModal = () => {
+  if (closeDesktopModalFlag) {
+    closeDesktopModalFlag.value = true
+  }
+}
+
 const handleClick = (rowId?: string | number) => {
   if (!rowId) {
     return
   }
 
+  closeDesktopModal()
   navigateToName('gameDetail', { params: { rowId } })
 }
 

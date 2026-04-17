@@ -1,10 +1,11 @@
 <template>
   <div
-    class="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[8px] bg-[var(--color-background-level-2)] sm:h-full"
+    class="game-remote-root relative flex h-full w-full items-center justify-center overflow-hidden bg-bg-2 rounded-lg sm:rounded-xl"
+    :class="{ 'is-error': hasError }"
   >
     <img
       :src="currentSrc"
-      alt=""
+      :alt="props.alt"
       draggable="false"
       loading="lazy"
       decoding="async"
@@ -19,9 +20,9 @@
     />
     <div
       v-if="props.img.maintain"
-      class="absolute inset-0 z-10 flex items-center justify-center bg-[var(--color-mask-60-1)] backdrop-blur-1"
+      class="absolute inset-0 z-10 flex items-center justify-center bg-mask-60-1 backdrop-blur-1"
     >
-      <img :src="maintainImg" alt="" class="w-[31px]" loading="lazy" decoding="async" />
+      <SmartImage :src="maintainImg" :alt="props.alt" class="w-[31px]" />
     </div>
   </div>
 </template>
@@ -33,8 +34,10 @@ import { useThemeStore } from '@/stores/theme'
 import errorImg from '@/static/img/home/errImg.png'
 import errorImg1 from '@/static/img/home/errImg1.png'
 import maintainImg from '@/static/img/home/maintain.png'
+import SmartImage from '@/components/common/SmartImage.vue'
 
 interface Props {
+  alt?: string
   img: {
     maintain: boolean
     conUrl?: string

@@ -454,7 +454,10 @@
       <transition name="leave-feedback-modal">
         <div
           v-if="showLeaveFeedbackModal"
-          class="leave-feedback-modal-mask"
+          :class="[
+            'leave-feedback-modal-mask',
+            { 'leave-feedback-modal-mask-login-unauthed': !isLoggedIn }
+          ]"
           @click.self="handleCloseLeaveFeedbackModal"
         >
           <div class="leave-feedback-modal-card">
@@ -1332,6 +1335,12 @@ onMounted(() => {
   justify-content: center;
   padding: 20px;
   background: rgba(3, 10, 18, 0.65);
+}
+
+@media (min-width: 641px) {
+  .leave-feedback-modal-mask-login-unauthed {
+    z-index: 9999;
+  }
 }
 
 .leave-feedback-modal-card {

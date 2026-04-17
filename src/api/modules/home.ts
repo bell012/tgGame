@@ -1,8 +1,10 @@
 import request, { type ApiResponseToastOptions } from '@/utils/request'
 import type {
   GameDataResponse,
+  GetRecentBigWinsParams,
   QuerySlideshowRequest,
-  QuerySlideshowResponse
+  QuerySlideshowResponse,
+  RecentBigWinsResponse
 } from '@/api/interface/home.interface'
 
 /**
@@ -13,7 +15,7 @@ export function getGameData(options?: ApiResponseToastOptions): Promise<GameData
   return request({
     url: '/gc/queryGameListForApp',
     method: 'post',
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -24,17 +26,20 @@ export function getActivityType(): Promise<any> {
   return request({
     url: '/ac/queryGameListForApp',
     method: 'post',
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
 // 近期大奖
-export function getRecentBigWins(data: any, options?: ApiResponseToastOptions): Promise<any> {
+export function getRecentBigWins(
+  data: GetRecentBigWinsParams,
+  options?: ApiResponseToastOptions
+): Promise<RecentBigWinsResponse> {
   return request({
     url: '/special/getRecentBigWins',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -67,7 +72,7 @@ export function dlicgh(data: any): Promise<any> {
     url: '/sy/dlicgh',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
