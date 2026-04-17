@@ -992,25 +992,37 @@ const getTransactionMessage = (item: NotificationItem) => {
 
   if (orderType === '0') {
     if (displayStatus === 'success') {
-      return `Your ${amountText} deposit has been completed successfully. Enjoy your game!`
+      return t('notifications.transactions.depositSuccess', {
+        amount: amountText
+      })
     }
 
     if (displayStatus === 'failed') {
-      return `Your ${amountText} deposit could not be completed. Please try again or contact support.`
+      return t('notifications.transactions.depositFailed', {
+        amount: amountText
+      })
     }
 
-    return `Your ${amountText} deposit proof has been submitted successfully and is currently under review.`
+    return t('notifications.transactions.depositProcessing', {
+      amount: amountText
+    })
   }
 
   if (displayStatus === 'success') {
-    return `Your withdrawal of ${amountText} has been completed successfully.`
+    return t('notifications.transactions.withdrawalSuccess', {
+      amount: amountText
+    })
   }
 
   if (displayStatus === 'failed') {
-    return `Your withdrawal of ${amountText} could not be completed. Please try again or contact support.`
+    return t('notifications.transactions.withdrawalFailed', {
+      amount: amountText
+    })
   }
 
-  return `Your withdrawal request for ${amountText} is being processed. Please wait patiently.`
+  return t('notifications.transactions.withdrawalProcessing', {
+    amount: amountText
+  })
 }
 
 // 返回交易通知圆点颜色。

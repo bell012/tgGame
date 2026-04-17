@@ -252,6 +252,14 @@
     "jumpOpenFailed": "Failed to open the link. Please try again later.",
     "loadingMore": "Loading more notifications...",
     "noMore": "No more notifications",
+    "transactions": {
+      "depositSuccess": "Your {amount} deposit has been completed successfully. Enjoy your game!",
+      "depositFailed": "Your {amount} deposit could not be completed. Please try again or contact support.",
+      "depositProcessing": "Your {amount} deposit proof has been submitted successfully and is currently under review.",
+      "withdrawalSuccess": "Your withdrawal of {amount} has been completed successfully.",
+      "withdrawalFailed": "Your withdrawal of {amount} could not be completed. Please try again or contact support.",
+      "withdrawalProcessing": "Your withdrawal request for {amount} is being processed. Please wait patiently."
+    },
     "deleteDialog": {
       "title": "Delete Notification",
       "description": "Are you sure you want to delete this notification?",

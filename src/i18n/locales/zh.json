@@ -529,6 +529,14 @@
     "jumpOpenFailed": "链接打开失败，请稍后重试。",
     "loadingMore": "加载更多通知...",
     "noMore": "没有更多通知了",
+    "transactions": {
+      "depositSuccess": "您的 {amount} 充值已成功完成，祝您游戏愉快！",
+      "depositFailed": "您的 {amount} 充值未能完成，请重试或联系客服。",
+      "depositProcessing": "您的 {amount} 充值凭证已成功提交，目前正在审核中。",
+      "withdrawalSuccess": "您提交的 {amount} 提现已成功完成。",
+      "withdrawalFailed": "您提交的 {amount} 提现未能完成，请重试或联系客服。",
+      "withdrawalProcessing": "您提交的 {amount} 提现申请正在处理中，请耐心等待。"
+    },
     "deleteDialog": {
       "title": "删除通知",
       "description": "确认删除这条通知吗？",
