@@ -26,7 +26,8 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'casino',
     component: () => import('@/views/fun/casino/index.vue'),
     meta: {
-      title: '娱乐城'
+      title: '娱乐城',
+      keepAlive: true
     },
     props: route => ({
       tabKey: route.params.tabKey as string | undefined
@@ -37,7 +38,8 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'casinoTabKey',
     component: () => import('@/views/fun/casino/index.vue'),
     meta: {
-      title: '娱乐城'
+      title: '娱乐城',
+      keepAlive: true
     },
     props: route => ({
       tabKey: route.params.tabKey as string

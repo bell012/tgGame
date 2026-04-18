@@ -387,6 +387,10 @@ export const useGameStore = defineStore('game', () => {
       return gameData.value
     }
 
+    if (pendingRequest) {
+      return pendingRequest
+    }
+
     return refreshGameData(true)
   }
 
@@ -396,6 +400,10 @@ export const useGameStore = defineStore('game', () => {
       return brandData.value
     }
 
+    if (pendingBrandRequest) {
+      return pendingBrandRequest
+    }
+
     return refreshGameBrandData(true)
   }
 
@@ -403,6 +411,10 @@ export const useGameStore = defineStore('game', () => {
   const ensureGameTypeData = async () => {
     if (hasGameTypeData.value && gameTypeDataLanguageCode.value === currentLanguageCode.value) {
       return gameTypeData.value
+    }
+
+    if (pendingGameTypeRequest) {
+      return pendingGameTypeRequest
     }
 
     return refreshGameTypeData(true)
@@ -627,7 +639,12 @@ export const useGameStore = defineStore('game', () => {
   const queryGameDataPage = async (
     options: GameQueryOptions = {}
   ): Promise<GameQueryPageResult<GameDataItem>> => {
-    await ensureGameData()
+    if (options.forceRefresh) {
+      await refreshGameData(true)
+    } else {
+      await ensureGameData()
+    }
+
     const pageResult = queryGameRecordsPage(options)
 
     return {
@@ -714,6 +731,9 @@ export const useGameStore = defineStore('game', () => {
     addSearchHistory,
     removeSearchHistory,
     clearSearchHistory,
+    refreshGameData,
+    refreshGameBrandData,
+    refreshGameTypeData,
     queryGameData,
     queryGameRecordsPage,
     queryGameDataPage,
