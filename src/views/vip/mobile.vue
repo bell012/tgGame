@@ -4,46 +4,14 @@
       <H5Header
         :title="$t('sidebar_menu.links.vip.prefix')"
         :show-sort="true"
-        :right-icon="RuleIcon"
-        @sort="openRulesPopup"
+        :right-icon="KefuIcon"
+        @sort="openKefuPopup"
       />
 
       <main class="px-[14px] py-[20px]">
-        <div class="flex items-center justify-between">
-          <div class="flex min-w-0 items-center gap-3">
-            <div class="relative h-[66px] w-[66px] overflow-visible">
-              <div
-                :class="[
-                  'absolute rounded-full',
-                  selectedAvatarFrameImage ? 'inset-[4px]' : 'inset-[4px] border-2 border-icon-2'
-                ]"
-              >
-                <img :src="avatarUrl" alt="Avatar" class="h-full w-full object-cover" />
-              </div>
-              <img
-                v-if="selectedAvatarFrameImage"
-                :src="selectedAvatarFrameImage"
-                alt="Avatar Frame"
-                class="pointer-events-none absolute inset-0 h-full w-full object-contain"
-              />
-            </div>
-
-            <div class="flex flex-col">
-              <div class="flex shrink-0 items-center gap-0.5">
-                <VipBadgeIcon class="h-4 w-4 text-text-1" />
-                <VipWordmarkIcon class="h-[14px] w-[32px] text-text-1" />
-                <span class="text-lg font-[700] text-text-1">{{ currentVipLevel }}</span>
-              </div>
-              <div class="truncate text-base font-[700] text-text-1">
-                {{ userInfo?.nickName || '-' }}
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div
           ref="vipCarouselRef"
-          class="vip-mobile-carousel pt-[30px] mb-[14px] flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden scroll-smooth touch-pan-x"
+          class="vip-mobile-carousel pt-[20px] mb-[14px] flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden scroll-smooth touch-pan-x"
           @scroll.passive="onVipCarouselScroll"
         >
           <div
@@ -59,12 +27,12 @@
                 <div class="flex items-center">
                   <component
                     :is="getVipCardTheme(vip.vipId).wordmarkIcon"
-                    class="h-[30px] w-[33px] shrink-0"
+                    class="h-[30px] w-[33px]"
                     :style="{ color: getVipCardTheme(vip.vipId).wordmarkColor }"
                   />
                   <component
                     :is="getVipCardTheme(vip.vipId).levelNumberIcon"
-                    class="ml-[3px] h-[30px] w-auto shrink-0"
+                    class="ml-[3px] h-[30px] w-auto"
                     :style="{ color: getVipCardTheme(vip.vipId).accentColor }"
                   />
                 </div>
@@ -121,6 +89,19 @@
           </div>
         </div>
 
+        <div class="mb-[7px] flex items-center">
+          <span class="text-sm font-[700] text-text-1">
+            {{ $t('vipPage.exclusiveBenefitsTitle', { vipId: currentVipLevel }) }}
+          </span>
+          <button
+            type="button"
+            class="flex items-center justify-center px-[7px] py-[4px]"
+            @click="openBenefitExplainPopup"
+          >
+            <ExplainIcon class="h-3.5 w-3.5 text-text-2" />
+          </button>
+        </div>
+
         <section class="space-y-[7px]">
           <article
             v-for="card in benefitCards"
@@ -142,25 +123,60 @@
               </p>
             </div>
 
-            <button
+            <div
               type="button"
-              :disabled="!card.claimable || claimingCardKey === card.key"
-              @click="handleClaim(card)"
+              :disabled="card.status === 'claim' && claimingCardKey === card.key"
+              @click="handleBenefitAction(card)"
               :class="
-                card.status === 'claimed'
-                  ? 'bg-theme-2 text-text-4'
-                  : card.status === 'claim'
-                    ? 'bg-theme-primary text-text-4'
-                    : 'bg-opacity-5 text-text-2'
+                card.status === 'claim'
+                  ? 'bg-theme-primary text-text-4'
+                  : 'text-secondary-7 border border-secondary-7'
               "
-              class="relative flex h-[34px] w-[80px] px-3.5 shrink-0 items-center justify-center overflow-hidden rounded-lg text-sm font-[500]"
+              class="relative flex h-[34px] w-[100px] px-3.5 shrink-0 items-center justify-center overflow-hidden rounded-lg text-sm font-[500]"
             >
-              <span v-if="card.status === 'claimed'" class="absolute inset-0 bg-mask-20" />
               <span class="relative z-[1]">{{ card.buttonText }}</span>
-            </button>
+            </div>
           </article>
         </section>
+
+        <!-- tab栏 -->
+        <section class="mt-[14px]">
+          <div class="flex rounded-[8px] bg-bg-8">
+            <button
+              type="button"
+              class="flex-1 rounded-[8px] px-[14px] py-[11px] font-[700] h-[39px]"
+              :class="
+                activeContentTab === 'comparison'
+                  ? 'bg-bg-7 text-text-1 text-sm'
+                  : 'text-text-2 text-xs'
+              "
+              @click="activeContentTab = 'comparison'"
+            >
+              {{ $t('vipPage.tabs.benefitsComparison') }}
+            </button>
+            <button
+              type="button"
+              class="flex-1 rounded-[8px] px-[14px] py-[11px] font-[700] h-[39px]"
+              :class="
+                activeContentTab === 'rules' ? 'bg-bg-7 text-text-1 text-sm' : 'text-text-2 text-xs'
+              "
+              @click="activeContentTab = 'rules'"
+            >
+              {{ $t('vipPage.tabs.vipRules') }}
+            </button>
+          </div>
+
+          <div class="mt-[10px]">
+            <BenefitComparisonPanel
+              v-if="activeContentTab === 'comparison'"
+              :columns="benefitComparisonColumns"
+            />
+            <VipRulesContent v-else :retention-cards="retentionCards" :rules="rules" />
+          </div>
+        </section>
       </main>
+
+      <BenefitExplainPopup v-if="showBenefitExplainPopup" @close="closeBenefitExplainPopup" />
 
       <ClaimSuccessPopup
         v-if="showClaimSuccessPopup"
@@ -174,37 +190,40 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 import H5Header from '@/components/common/H5Header.vue'
 import { useVipStore } from '@/stores/vip'
-import RuleIcon from '@/static/svg/rule.svg?component'
-import VipBadgeIcon from '@/static/svg/vip_1.svg?component'
-import VipWordmarkIcon from '@/static/svg/vip_2.svg?component'
+import KefuIcon from '@/static/svg/vip/kefu.svg?component'
+import ExplainIcon from '@/static/svg/vip/explain.svg?component'
 import { getCurrencySymbol } from '@/utils/locale'
+import { navigateTo } from '@/utils/router'
+import BenefitComparisonPanel from './BenefitComparisonPanel.vue'
+import BenefitExplainPopup from './BenefitExplainPopup.vue'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
+import VipRulesContent from './VipRulesContent.vue'
 import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
 
 const { t } = useI18n()
-const router = useRouter()
 const vipStore = useVipStore()
+const showBenefitExplainPopup = ref(false)
 const showClaimSuccessPopup = ref(false)
 const claimSuccessAmount = ref(`${getCurrencySymbol()}0.00`)
 const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
+const activeContentTab = ref<'comparison' | 'rules'>('comparison')
 const vipCarouselRef = ref<HTMLElement | null>(null)
 const selectedVipIndex = ref(0)
 const viewedVipId = ref<number | null>(null)
 const hasInitializedViewedVip = ref(false)
 
 const {
-  userInfo,
-  avatarUrl,
-  selectedAvatarFrameImage,
   vipLevels,
   currentVipLevel,
   getProgressItemsByVipId,
   getOverallProgressByVipId,
   getVipCardThemeByVipId,
   benefitCards,
+  benefitComparisonColumns,
+  retentionCards,
+  rules,
   initializeVipPage
 } = useVipPageData(t, { viewedVipId })
 
@@ -284,14 +303,27 @@ watch(selectedVipIndex, () => {
   syncViewedVipId()
 })
 
-// 规则页面
-const openRulesPopup = () => {
-  void router.push({ name: 'rule' })
+// 点击客服
+const openKefuPopup = () => {
+  console.log('点击客服')
 }
 
-// 领取可用奖励并展示成功弹窗。
-const handleClaim = async (card: VipBenefitCard) => {
-  if (!card.claimable || claimingCardKey.value === card.key) {
+const openBenefitExplainPopup = () => {
+  showBenefitExplainPopup.value = true
+}
+
+const closeBenefitExplainPopup = () => {
+  showBenefitExplainPopup.value = false
+}
+
+// 根据按钮状态处理领取或跳转升级。
+const handleBenefitAction = async (card: VipBenefitCard) => {
+  if (card.status === 'upgrade') {
+    void navigateTo('/casino')
+    return
+  }
+
+  if (claimingCardKey.value === card.key) {
     return
   }
 
