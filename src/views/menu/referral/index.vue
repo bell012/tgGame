@@ -242,10 +242,19 @@
       :referral-link="referralLink"
       :phone-numbers="referralPhoneNumbers"
     />
+
+    <!-- 领取成功弹窗 -->
+    <ClaimSuccessPopup
+      v-model:visible="showClaimPopup"
+      :amount="estimatedCommission"
+      :currency-symbol="claimCurrencySymbol"
+      @confirm="handleConfirmClaimPopup"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
@@ -259,13 +268,16 @@ import { useReferralPage } from './useReferralPage'
 const {
   showQrDialog,
   showShareSheet,
+  showClaimPopup,
   estimatedCommission,
+  claimCurrencySymbol,
   referralLink,
   referralPhoneNumbers,
   referralMetrics,
   pcTabs,
   copyReferralLink,
   handleClaimCommission,
+  handleConfirmClaimPopup,
   handleCommissionRule,
   handleCommissionRecords,
   handleReferralRecords,
