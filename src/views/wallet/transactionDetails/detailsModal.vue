@@ -2,7 +2,7 @@
   <!-- PC-详情弹窗 -->
   <div
     v-if="modelValue && detail"
-    class="hidden md:flex fixed inset-0 bg-mask-60-1 z-50 items-center justify-center"
+    class="hidden sm:flex fixed inset-0 bg-mask-60-1 z-50 items-center justify-center"
     @click.self="closeModal"
   >
     <div class="bg-bg-1 rounded-lg w-[480px] overflow-hidden">

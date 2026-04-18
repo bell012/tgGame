@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- PC 端布局 -->
-    <div class="hidden md:block max-w-[1336px] mx-auto pt-[20px]">
+    <div class="hidden sm:block max-w-[1336px] mx-auto pt-[20px]">
       <!-- PC 内容区 -->
       <PcLayout
         :tabs="pcTabs"
@@ -20,7 +20,7 @@
     </div>
 
     <!-- H5 端布局 -->
-    <section class="block md:hidden fixed inset-0 overflow-y-auto bg-bg-1">
+    <section class="block sm:hidden fixed inset-0 overflow-y-auto bg-bg-1">
       <!-- 页面容器 -->
       <div class="min-h-screen bg-bg-1 -mx-[14px] sm:mx-auto sm:max-w-[420px]">
         <!-- 移动端导航栏 -->

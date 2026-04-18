@@ -1,14 +1,14 @@
 <template>
   <div>
     <!-- PC 端布局 -->
-    <WalletLayout current-tab="rollover" class="hidden md:block">
+    <WalletLayout current-tab="rollover" class="hidden sm:block">
       <div class="bg-bg-2 rounded-xl overflow-hidden">
         <PcLayout />
       </div>
     </WalletLayout>
 
     <!-- H5 端布局 -->
-    <div class="fixed inset-0 bg-bg-1 md:hidden flex flex-col overflow-hidden">
+    <div class="fixed inset-0 bg-bg-1 sm:hidden flex flex-col overflow-hidden">
       <H5Header :title="$t('wallet.rollover')" :show-sort="true" @sort="handleSort" />
 
       <div ref="scrollRoot" class="flex-1 overflow-y-auto">
