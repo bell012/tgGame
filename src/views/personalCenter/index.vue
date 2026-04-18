@@ -622,6 +622,12 @@ const settingsMenus = computed(() => [
     handler: () => console.log('Refer and Earn clicked')
   },
   {
+    id: 'rebate',
+    name: t('personalCenter.rebate'),
+    icon: getIcon(3),
+    handler: () => navigateTo('/personal-center/rebate')
+  },
+  {
     id: 'affiliate',
     name: t('personalCenter.affiliate'),
     icon: getIcon(11),

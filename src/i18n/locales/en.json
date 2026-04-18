@@ -561,6 +561,7 @@
     },
     "links": {
       "vip": { "prefix": "VIP", "name": "Club" },
+      "rebate": "Rebate",
       "bonus": "Bonus",
       "recommend": "Referral",
       "forum": "Forum",
@@ -654,6 +655,7 @@
     "betHistory": "Bet History",
     "notification": "Notification",
     "referEarn": "Refer and Earn",
+    "rebate": "Rebate",
     "affiliate": "Affiliate",
     "globalSetting": "Global Setting",
     "language": "Language",
@@ -988,7 +990,10 @@
     },
     "claimed": "Claimed",
     "locked": "Locked",
-    "goalHint": "You've completed this VIP level goal",
+    "goalHint": {
+      "unlocked": "Upgrade successful. Benefits unlocked",
+      "keepGoing": "Keep going to reach your VIP goal"
+    },
     "claimPopup": {
       "title": "Claim Successful",
       "description": "The bonus has been credited to your wallet.",

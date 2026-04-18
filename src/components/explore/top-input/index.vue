@@ -167,11 +167,19 @@ const onBlur = () => {
   downInPanel = false
 }
 
+const shouldShowSearchPanel = (trimmedKeyword: string) => {
+  return currentType.value === 'casino' && trimmedKeyword.length < 2
+}
+
 const emitSearch = () => {
-  emit('search', keyword.value.trim())
+  const trimmedKeyword = keyword.value.trim()
+  emit('search', trimmedKeyword)
+  isOpen.value = shouldShowSearchPanel(trimmedKeyword)
 }
 
 const onInput = () => {
+  isOpen.value = shouldShowSearchPanel(keyword.value.trim())
+
   if (timer !== null) clearTimeout(timer)
   timer = setTimeout(emitSearch, 300)
   timer = setTimeout(() => {
@@ -254,9 +262,7 @@ const clearHistory = () => {
 }
 
 const focusClick = () => {
-  if (currentType.value === 'casino') {
-    isOpen.value = true
-  }
+  isOpen.value = shouldShowSearchPanel(keyword.value.trim())
 }
 
 // 点击搜索历史和建议
