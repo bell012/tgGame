@@ -989,9 +989,18 @@
     },
     "claimed": "Claimed",
     "locked": "Locked",
+    "exclusiveBenefitsTitle": "VIP {vipId} Exclusive Benefits",
     "goalHint": {
       "unlocked": "Upgrade successful. Benefits unlocked",
       "keepGoing": "Keep going to reach your VIP goal"
+    },
+    "benefitExplainPopup": {
+      "title": "VIP Exclusive Benefits",
+      "item1": "1. Each time you level up, you can claim the corresponding level-up bonus on the VIP Benefits page. A 1x turnover requirement applies to the bonus.",
+      "item2": "2. Once you reach the corresponding VIP level, you can claim the weekly bonus on the VIP Benefits page every Monday. A 1x turnover requirement applies to the bonus.",
+      "item3": "3. Once you reach the corresponding VIP level, you can claim the monthly bonus on the VIP Benefits page on the 1st of each month. A 1x turnover requirement applies to the bonus.",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
     },
     "claimPopup": {
       "title": "Claim Successful",

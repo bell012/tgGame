@@ -3,41 +3,7 @@
     <div class="mt-[16px]">
       <h1 class="text-xl font-[700] text-text-1">{{ $t('userMenu.vipClub') }}</h1>
 
-      <div class="mt-6 flex flex-col gap-4">
-        <section class="rounded-2xl h-[108px] bg-bg-2 p-6">
-          <div class="flex items-center justify-between gap-4">
-            <div class="flex min-w-0 items-center gap-4">
-              <div class="relative h-[60px] w-[60px] overflow-visible">
-                <div
-                  :class="[
-                    'absolute overflow-hidden rounded-full',
-                    selectedAvatarFrameImage ? 'inset-[4px]' : 'inset-[4px] border-2 border-icon-2'
-                  ]"
-                >
-                  <img :src="avatarUrl" alt="Avatar" class="h-full w-full object-cover" />
-                </div>
-                <img
-                  v-if="selectedAvatarFrameImage"
-                  :src="selectedAvatarFrameImage"
-                  alt="Avatar Frame"
-                  class="pointer-events-none absolute inset-0 h-full w-full object-contain"
-                />
-              </div>
-
-              <div class="flex flex-col">
-                <div class="flex shrink-0 items-center gap-0.5">
-                  <VipBadgeIcon class="h-6 w-6 text-text-1" />
-                  <VipWordmarkIcon class="h-5 w-[47.5px] text-text-1" />
-                  <span class="text-2xl font-[700] text-text-1">{{ currentVipLevel }}</span>
-                </div>
-                <div class="text-lg font-[700] text-text-1 mt-2">
-                  {{ userInfo?.nickName || '-' }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
+      <div class="mt-4 flex flex-col gap-4">
         <div class="relative h-[256px]">
           <button
             type="button"
@@ -134,7 +100,20 @@
         </div>
       </div>
 
-      <section class="mt-4 grid grid-cols-4 gap-3.5">
+      <div class="my-4 flex items-center">
+        <span class="text-sm font-[700] text-text-1">
+          {{ $t('vipPage.exclusiveBenefitsTitle', { vipId: currentVipLevel }) }}
+        </span>
+        <button
+          type="button"
+          class="flex items-center justify-center px-[12px] py-[4px]"
+          @click="openBenefitExplainPopup"
+        >
+          <ExplainIcon class="h-4 w-4 text-text-2" />
+        </button>
+      </div>
+
+      <section class="grid grid-cols-3 gap-3.5">
         <article
           v-for="card in benefitCards"
           :key="card.key"
@@ -154,22 +133,19 @@
             {{ card.amount }}
           </p>
 
-          <button
+          <div
             type="button"
-            :disabled="!card.claimable || claimingCardKey === card.key"
-            @click="handleClaim(card)"
+            :disabled="card.status === 'claim' && claimingCardKey === card.key"
+            @click="handleBenefitAction(card)"
             :class="
-              card.status === 'claimed'
-                ? 'bg-theme-2 text-text-4'
-                : card.status === 'claim'
-                  ? 'bg-theme-primary text-text-4'
-                  : 'bg-opacity-5 text-text-2'
+              card.status === 'claim'
+                ? 'bg-theme-primary text-text-4'
+                : 'text-secondary-7 border border-secondary-7'
             "
-            class="relative mt-[20px] flex h-[40px] w-[220px] items-center justify-center overflow-hidden rounded-lg text-sm font-[700]"
+            class="relative mt-[20px] flex h-[40px] w-[300px] items-center justify-center overflow-hidden rounded-lg text-sm font-[700]"
           >
-            <span v-if="card.status === 'claimed'" class="absolute inset-0 bg-mask-20" />
             <span class="relative z-[1]">{{ card.buttonText }}</span>
-          </button>
+          </div>
         </article>
       </section>
 
@@ -211,6 +187,7 @@
         :amount="claimSuccessAmount"
         @confirm="confirmClaimSuccess"
       />
+      <BenefitExplainPopup v-if="showBenefitExplainPopup" @close="closeBenefitExplainPopup" />
     </div>
   </div>
   <CommonFooter class="mt-[40px]" />
@@ -221,9 +198,10 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useVipStore } from '@/stores/vip'
-import VipBadgeIcon from '@/static/svg/vip_1.svg?component'
-import VipWordmarkIcon from '@/static/svg/vip_2.svg?component'
+import ExplainIcon from '@/static/svg/vip/explain.svg?component'
 import { getCurrencySymbol } from '@/utils/locale'
+import { navigateTo } from '@/utils/router'
+import BenefitExplainPopup from './BenefitExplainPopup.vue'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
 import Arrow_left from '@/static/svg/arrow_left.svg?component'
@@ -231,6 +209,7 @@ import Arrow_right from '@/static/svg/arrow_right2.svg?component'
 
 const { t } = useI18n()
 const vipStore = useVipStore()
+const showBenefitExplainPopup = ref(false)
 const showClaimSuccessPopup = ref(false)
 const claimSuccessAmount = ref(`${getCurrencySymbol()}0.00`)
 const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
@@ -245,9 +224,6 @@ const selectedVipId = computed(() => {
 })
 
 const {
-  userInfo,
-  avatarUrl,
-  selectedAvatarFrameImage,
   vipLevels,
   currentVipLevel,
   viewedVipLevel,
@@ -292,6 +268,14 @@ const goToNextVip = () => {
   updateSelectedVipIndex(selectedVipIndex.value + 1, 'next')
 }
 
+const openBenefitExplainPopup = () => {
+  showBenefitExplainPopup.value = true
+}
+
+const closeBenefitExplainPopup = () => {
+  showBenefitExplainPopup.value = false
+}
+
 watch(
   [vipLevels, currentVipLevel],
   ([levels, activeVipLevel]) => {
@@ -312,8 +296,13 @@ watch(
   { immediate: true }
 )
 
-const handleClaim = async (card: VipBenefitCard) => {
-  if (!card.claimable || claimingCardKey.value === card.key) {
+const handleBenefitAction = async (card: VipBenefitCard) => {
+  if (card.status === 'upgrade') {
+    void navigateTo('/casino')
+    return
+  }
+
+  if (claimingCardKey.value === card.key) {
     return
   }
 
