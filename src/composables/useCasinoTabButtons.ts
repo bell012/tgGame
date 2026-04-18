@@ -88,7 +88,6 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
 
   const loadCasinoTabButtons = async (forceRefresh = false) => {
     gameTypeList.value = await gameStore.getGameTypeData(forceRefresh)
-
     const nextLobbyGameMap: Record<string, GameDataItem[]> = {
       hot_games: []
     }

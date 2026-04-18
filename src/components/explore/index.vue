@@ -3,7 +3,6 @@
     <div :class="{ 'search-filter-panel': isMobile }">
       <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
     </div>
-
     <div class="min-h-screen w-full relative">
       <div
         class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"

@@ -19,7 +19,9 @@ import type {
   QueryFeedbacksForm,
   QueryFeedbacksResponse,
   ReceiveAllFeedbackForm,
-  ReceiveAllFeedbackResponse
+  ReceiveAllFeedbackResponse,
+  SelectRebateRateForm,
+  SelectRebateRateResponse
 } from '@/api/interface/user'
 
 /**
@@ -153,5 +155,24 @@ export function receiveAllFeedback(
     data,
     showSuccessToast: true,
     showErrorToast: true
+  })
+}
+
+/**
+ * 查询返水比例
+ * @param data 空对象
+ * @returns Promise<SelectRebateRateResponse>
+ */
+export function selectRebateRate(
+  data: SelectRebateRateForm = {},
+  options?: ApiResponseToastOptions
+): Promise<SelectRebateRateResponse> {
+  return request({
+    url: '/re/selectRebateRate',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: false,
+    ...options
   })
 }
