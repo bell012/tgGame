@@ -270,6 +270,7 @@
 import Api from '@/api'
 import type { GameCommentListItem } from '@/api/interface/game'
 import { useGameRating } from '@/composables/useGameRating'
+import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?url'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?url'
 import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
@@ -317,6 +318,7 @@ const { t } = useI18n()
 const themeStore = useThemeStore()
 const isLightTheme = computed(() => themeStore.theme === 'light')
 
+const { requireLogin } = useRequireLoginAction()
 const { rating: userRating, setRating } = useGameRating()
 
 const baseRatingCount = computed(() => {
@@ -358,6 +360,9 @@ const scoreText = computed(() => scoreValue.value.toFixed(1))
 const activeStarCount = computed(() => Math.max(0, Math.min(5, Math.round(scoreValue.value))))
 
 const handleRateChange = (value: number) => {
+  if (!requireLogin()) {
+    return
+  }
   setRating(value)
 }
 
@@ -825,11 +830,17 @@ const selectSort = (value: string) => {
 }
 
 const openCommentPopup = () => {
+  if (!requireLogin()) {
+    return
+  }
   replyTargetComment.value = null
   isCommentPopupOpen.value = true
 }
 
 const openReplyCommentPopup = (comment: ReviewCommentViewItem) => {
+  if (!requireLogin()) {
+    return
+  }
   replyTargetComment.value = comment
   isCommentPopupOpen.value = true
 }
@@ -890,6 +901,10 @@ const toggleChildrenVisible = (comment: ReviewCommentViewItem) => {
 }
 
 const submitComment = async (content: string) => {
+  if (!requireLogin()) {
+    return
+  }
+
   const commentContent = String(content ?? '').trim()
   if (!commentContent) {
     return
