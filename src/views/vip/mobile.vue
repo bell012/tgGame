@@ -138,6 +138,42 @@
             </div>
           </article>
         </section>
+
+        <!-- tab栏 -->
+        <section class="mt-[14px]">
+          <div class="flex rounded-[8px] bg-bg-8">
+            <button
+              type="button"
+              class="flex-1 rounded-[8px] px-[14px] py-[11px] font-[700] h-[39px]"
+              :class="
+                activeContentTab === 'comparison'
+                  ? 'bg-bg-7 text-text-1 text-sm'
+                  : 'text-text-2 text-xs'
+              "
+              @click="activeContentTab = 'comparison'"
+            >
+              {{ $t('vipPage.tabs.benefitsComparison') }}
+            </button>
+            <button
+              type="button"
+              class="flex-1 rounded-[8px] px-[14px] py-[11px] font-[700] h-[39px]"
+              :class="
+                activeContentTab === 'rules' ? 'bg-bg-7 text-text-1 text-sm' : 'text-text-2 text-xs'
+              "
+              @click="activeContentTab = 'rules'"
+            >
+              {{ $t('vipPage.tabs.vipRules') }}
+            </button>
+          </div>
+
+          <div class="mt-[10px]">
+            <BenefitComparisonPanel
+              v-if="activeContentTab === 'comparison'"
+              :columns="benefitComparisonColumns"
+            />
+            <VipRulesContent v-else :retention-cards="retentionCards" :rules="rules" />
+          </div>
+        </section>
       </main>
 
       <BenefitExplainPopup v-if="showBenefitExplainPopup" @close="closeBenefitExplainPopup" />
@@ -160,8 +196,10 @@ import KefuIcon from '@/static/svg/vip/kefu.svg?component'
 import ExplainIcon from '@/static/svg/vip/explain.svg?component'
 import { getCurrencySymbol } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import BenefitComparisonPanel from './BenefitComparisonPanel.vue'
 import BenefitExplainPopup from './BenefitExplainPopup.vue'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
+import VipRulesContent from './VipRulesContent.vue'
 import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
 
 const { t } = useI18n()
@@ -170,6 +208,7 @@ const showBenefitExplainPopup = ref(false)
 const showClaimSuccessPopup = ref(false)
 const claimSuccessAmount = ref(`${getCurrencySymbol()}0.00`)
 const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
+const activeContentTab = ref<'comparison' | 'rules'>('comparison')
 const vipCarouselRef = ref<HTMLElement | null>(null)
 const selectedVipIndex = ref(0)
 const viewedVipId = ref<number | null>(null)
@@ -182,6 +221,9 @@ const {
   getOverallProgressByVipId,
   getVipCardThemeByVipId,
   benefitCards,
+  benefitComparisonColumns,
+  retentionCards,
+  rules,
   initializeVipPage
 } = useVipPageData(t, { viewedVipId })
 

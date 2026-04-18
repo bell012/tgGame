@@ -989,6 +989,15 @@
     "claimed": "已领取",
     "locked": "已锁定",
     "exclusiveBenefitsTitle": "VIP {vipId} 专属权益",
+    "tabs": {
+      "benefitsComparison": "权益对比",
+      "vipRules": "VIP 规则"
+    },
+    "benefitsComparison": {
+      "currentLevel": "当前等级：V{vipId}",
+      "unlockLevel": "解锁 V{vipId}",
+      "totalRewards": "总奖励"
+    },
     "goalHint": {
       "unlocked": "升级成功，权益已解锁",
       "keepGoing": "继续努力，向您的 VIP 目标迈进"
