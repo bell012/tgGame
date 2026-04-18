@@ -193,16 +193,15 @@ const getGameDataForApp = async () => {
 }
 
 watch(
-  [rowId],
+  rowId,
   () => {
     void getCurrentGameDetailByApi()
   },
-  { flush: 'post' }
+  { immediate: true, flush: 'post' }
 )
 
 onMounted(async () => {
   await getGameDataForApp()
-  await getCurrentGameDetailByApi()
 })
 </script>
 <style scoped lang="scss">
