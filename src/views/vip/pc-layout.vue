@@ -142,7 +142,7 @@
                 ? 'bg-theme-primary text-text-4'
                 : 'text-secondary-7 border border-secondary-7'
             "
-            class="relative mt-[20px] flex h-[40px] w-[300px] items-center justify-center overflow-hidden rounded-lg text-sm font-[700]"
+            class="relative mt-[20px] flex h-[40px] w-[300px] items-center justify-center overflow-hidden rounded-lg text-sm font-[700] cursor-pointer"
           >
             <span class="relative z-[1]">{{ card.buttonText }}</span>
           </div>
