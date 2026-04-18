@@ -1,3 +1,4 @@
+<!-- 领取成功弹窗 -->
 <template>
   <div class="fixed inset-0 z-[60] flex items-center justify-center bg-mask-60-1 px-5">
     <div class="relative overflow-hidden" :class="modeConfig.cardClass">

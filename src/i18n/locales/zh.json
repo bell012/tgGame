@@ -989,9 +989,27 @@
     },
     "claimed": "已领取",
     "locked": "已锁定",
+    "exclusiveBenefitsTitle": "VIP {vipId} 专属权益",
+    "tabs": {
+      "benefitsComparison": "权益对比",
+      "vipRules": "VIP 规则"
+    },
+    "benefitsComparison": {
+      "currentLevel": "当前等级：V{vipId}",
+      "unlockLevel": "解锁 V{vipId}",
+      "totalRewards": "总奖励"
+    },
     "goalHint": {
       "unlocked": "升级成功，权益已解锁",
       "keepGoing": "继续努力，向您的 VIP 目标迈进"
+    },
+    "benefitExplainPopup": {
+      "title": "VIP 专属权益",
+      "item1": "1. 每次升级后，您都可以在 VIP 权益页面领取对应的升级奖励。该奖励需完成 1 倍流水。",
+      "item2": "2. 达到对应 VIP 等级后，您可以在每周一于 VIP 权益页面领取每周奖励。该奖励需完成 1 倍流水。",
+      "item3": "3. 达到对应 VIP 等级后，您可以在每月 1 日于 VIP 权益页面领取每月奖励。该奖励需完成 1 倍流水。",
+      "confirm": "确认",
+      "cancel": "取消"
     },
     "claimPopup": {
       "title": "领取成功",

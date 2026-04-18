@@ -2,7 +2,7 @@ import QRCode from 'qrcode'
 import { showToast } from 'vant'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { navigateTo } from '@/utils/router'
 
 export interface ReferralMetric {
   key: string
@@ -19,7 +19,6 @@ export interface ReferralTab {
 
 export const useReferralPage = () => {
   const { t } = useI18n()
-  const router = useRouter()
   const activePcTab = ref('referral')
 
   const qrCodeCanvas = ref<HTMLCanvasElement>()
@@ -142,17 +141,17 @@ export const useReferralPage = () => {
 
   // 处理佣金规则入口点击。
   const handleCommissionRule = () => {
-    router.push('/menu/referral/commission-rules')
+    navigateTo('/menu/referral/commission-rules')
   }
 
   // 处理佣金获取方式入口点击。
   const handleCommissionRecords = () => {
-    router.push('/menu/referral/commission-records')
+    navigateTo('/menu/referral/commission-records')
   }
 
   // 处理推荐记录入口点击。
   const handleReferralRecords = () => {
-    router.push('/menu/referral/referral-records')
+    navigateTo('/menu/referral/referral-records')
   }
 
   // 处理 PC 端 tab 点击。
