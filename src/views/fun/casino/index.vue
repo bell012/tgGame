@@ -170,15 +170,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import {
+  computed,
+  ref,
+  watch,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  onActivated,
+  onDeactivated
+} from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
 import type { QuerySlideshowItem, QuerySlideshowRequest } from '@/api/interface/home.interface'
-import type { SelectMemberResult } from '@/api/interface/user'
 import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
 import { useGameStore } from '@/stores/game'
 import { useLayoutStore } from '@/stores/layout'
+import { useUserStore } from '@/stores/user'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import CommonFooter from '@/components/commonFooter.vue'
@@ -221,7 +230,9 @@ const activeSearchKeyword = ref('')
 const suggestedArr = ref<string[]>([])
 const querySlideshowList = ref<QuerySlideshowItem[]>([])
 const gameStore = useGameStore()
+const userStore = useUserStore()
 const { searchHistory } = storeToRefs(gameStore)
+const { userInfo } = storeToRefs(userStore)
 
 const getCurrentTab = computed(() => {
   const key = props.tabKey ?? ''
@@ -280,7 +291,7 @@ const currentPageProps = computed(() => {
     case pageStyle1:
       return {
         modules: lobbyButtons.value,
-        loading: !hasLoaded.value
+        loading: isLobbyButtonsLoading.value && !hasLoaded.value && lobbyButtons.value.length === 0
       }
     case pageStyle2:
     case pageStyle3:
@@ -300,6 +311,7 @@ const tabScrollRef = ref<HTMLDivElement | null>(null)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
 const hasSyncedActiveTab = ref(false)
+const tabScrollLeft = ref(0)
 let searchDebounceTimer: number | undefined
 
 const findScrollableParent = (element: HTMLElement | null) => {
@@ -339,6 +351,7 @@ const updateScrollState = () => {
   const el = tabScrollRef.value
   if (!el) return
 
+  tabScrollLeft.value = el.scrollLeft
   canScrollLeft.value = el.scrollLeft > 0
   canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1
 }
@@ -511,32 +524,18 @@ const handleClickOutside = (e: MouseEvent) => {
   }
 }
 
-// 用户信息
-const userInfo = ref<SelectMemberResult | null>(null)
-
 // 是否已登录
 const isLoggedIn = computed(() => {
   return Boolean(userInfo.value?.tradeToken)
 })
-const { tabButtons, lobbyButtons, hasLoaded, loadCasinoTabButtons } = useCasinoTabButtons({
-  isLoggedIn
-})
-// localStorage 用户信息
-const loadUserInfo = () => {
-  const storedUserInfo = localStorage.getItem('userInfo')
-  if (storedUserInfo) {
-    try {
-      userInfo.value = JSON.parse(storedUserInfo)
-    } catch (error) {
-      console.error(error)
-      userInfo.value = null
-    }
-  }
-}
+const { tabButtons, lobbyButtons, hasLoaded, isLobbyButtonsLoading, loadCasinoLobbyButtons } =
+  useCasinoTabButtons({
+    isLoggedIn
+  })
 
 const getGameData = async (forceRefresh = false) => {
   try {
-    await loadCasinoTabButtons(forceRefresh)
+    await loadCasinoLobbyButtons(forceRefresh)
   } catch (error) {
     console.error('getGameData failed', error)
   }
@@ -550,7 +549,7 @@ watch(
     await nextTick()
     const index = tabButtons.value.findIndex(item => item.sysGameTypeCode === tab.sysGameTypeCode)
     if (index !== -1) {
-      scrollTabIntoView(index, hasSyncedActiveTab.value ? 'smooth' : 'auto')
+      scrollTabIntoView(index, 'auto')
       hasSyncedActiveTab.value = true
     }
   },
@@ -560,7 +559,6 @@ watch(
 let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
-  loadUserInfo()
   gameStore.loadSearchHistory()
   getGameData()
   void getQuerySlideshow()
@@ -576,6 +574,32 @@ onMounted(() => {
 
     resizeObserver.observe(tabScrollRef.value)
   }
+})
+
+onActivated(() => {
+  nextTick(() => {
+    const el = tabScrollRef.value
+    if (!el) return
+
+    el.scrollTo({
+      left: tabScrollLeft.value,
+      behavior: 'auto'
+    })
+
+    const currentIndex = tabButtons.value.findIndex(
+      item => item.sysGameTypeCode === currentTabCode.value
+    )
+
+    if (currentIndex !== -1) {
+      scrollTabIntoView(currentIndex, 'auto')
+    }
+
+    updateScrollState()
+  })
+})
+
+onDeactivated(() => {
+  tabScrollLeft.value = tabScrollRef.value?.scrollLeft ?? tabScrollLeft.value
 })
 
 onUnmounted(() => {
@@ -622,6 +646,13 @@ watch(
   () => [locale.value, isMobile.value, isLoggedIn.value],
   () => {
     void getQuerySlideshow()
+  }
+)
+
+watch(
+  () => locale.value,
+  () => {
+    void getGameData(true)
   }
 )
 </script>

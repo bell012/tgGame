@@ -33,8 +33,21 @@
           <!-- 主内容当前页 -->
           <router-view
             v-if="shouldRenderCurrentRouteInMain(route)"
-            :key="getMainRouteViewKey(route)"
-          />
+            v-slot="{ Component, route: viewRoute }"
+          >
+            <KeepAlive>
+              <component
+                :is="Component"
+                v-if="viewRoute.meta?.keepAlive"
+                :key="getMainRouteViewKey(viewRoute)"
+              />
+            </KeepAlive>
+            <component
+              :is="Component"
+              v-if="!viewRoute.meta?.keepAlive"
+              :key="getMainRouteViewKey(viewRoute)"
+            />
+          </router-view>
         </section>
 
         <!-- PC 端通知面板占位列 -->
