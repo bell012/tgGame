@@ -1,5 +1,6 @@
 import { createGameFavoriteKey } from '@/utils/game-favorite-cache'
 import { getGameRatingByKey, setGameRatingByKey } from '@/utils/game-rating-cache'
+import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -19,6 +20,7 @@ const normalizeRating = (value: unknown) => {
 
 export const useGameRating = () => {
   const route = useRoute()
+  const { requireLogin } = useRequireLoginAction()
 
   const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
     'game-detail-current-game',
@@ -44,6 +46,10 @@ export const useGameRating = () => {
   )
 
   const setRating = (nextRating: number) => {
+    if (!requireLogin()) {
+      return 0
+    }
+
     const key = ratingKey.value
     if (!key) {
       return 0
