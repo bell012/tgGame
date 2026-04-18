@@ -344,6 +344,7 @@
     },
     "links": {
       "vip": { "prefix": "VIP", "name": "俱乐部" },
+      "rebate": "洗码",
       "bonus": "奖金",
       "recommend": "推荐",
       "forum": "论坛",

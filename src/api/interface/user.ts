@@ -234,3 +234,14 @@ export interface ReceiveAllFeedbackResponse {
   success: boolean
   result?: unknown
 }
+
+// 查询返水比例 请求参数（无参数）
+export interface SelectRebateRateForm {}
+
+// 查询返水比例 响应
+export interface SelectRebateRateResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: Record<string, unknown> | Record<string, unknown>[] | null
+}

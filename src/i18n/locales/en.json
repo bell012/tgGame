@@ -561,6 +561,7 @@
     },
     "links": {
       "vip": { "prefix": "VIP", "name": "Club" },
+      "rebate": "Rebate",
       "bonus": "Bonus",
       "recommend": "Referral",
       "forum": "Forum",
