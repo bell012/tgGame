@@ -18,7 +18,6 @@ import border3Image from '@/static/img/personalCenter/border_3.png'
 import border4Image from '@/static/img/personalCenter/border_4.png'
 import border5Image from '@/static/img/personalCenter/border_5.png'
 import item1Image from '@/static/img/personalCenter/item_1.png'
-import item2Image from '@/static/img/personalCenter/item_2.png'
 import item3Image from '@/static/img/personalCenter/item_3.png'
 import item4Image from '@/static/img/personalCenter/item_4.png'
 import rule1Icon from '@/static/svg/rule_1.svg?skipsvgo'
@@ -55,8 +54,8 @@ interface UseVipPageDataOptions {
   viewedVipId?: Readonly<Ref<number | null | undefined>>
 }
 
-export type VipBenefitCardKey = 'levelUp' | 'daily' | 'weekly' | 'monthly'
-export type VipBenefitCardStatus = 'claimed' | 'claim' | 'locked'
+export type VipBenefitCardKey = 'levelUp' | 'weekly' | 'monthly'
+export type VipBenefitCardStatus = 'claim' | 'upgrade'
 
 export interface VipProgressItem {
   key: string
@@ -71,8 +70,6 @@ export interface VipBenefitCard {
   title: string
   amount: string
   status: VipBenefitCardStatus
-  claimed: boolean
-  claimable: boolean
   buttonText: string
   background: string
   image: string
@@ -123,11 +120,24 @@ export interface VipCardTheme {
   goalHintKey: string
 }
 
-const benefitCardBackgroundMap: Record<VipBenefitCardKey, string> = {
-  levelUp: 'linear-gradient(90deg, #1C3D57 0%, #313333 100%)',
-  daily: 'linear-gradient(90deg, #59461D 0%, #313333 87.05%)',
-  weekly: 'linear-gradient(90deg, #5F3A25 0%, #313333 88.71%)',
-  monthly: 'linear-gradient(90deg, #60292B 0%, #313333 87.88%)'
+type VipBenefitCardBackground = {
+  darkBackground: string
+  lightBackground: string
+}
+
+const benefitCardBackgroundMap: Record<VipBenefitCardKey, VipBenefitCardBackground> = {
+  levelUp: {
+    darkBackground: 'linear-gradient(90deg, #255580 0%, #313333 100%)',
+    lightBackground: 'linear-gradient(90deg, #ADD5F9 0%, #FFF 100%)'
+  },
+  weekly: {
+    darkBackground: 'linear-gradient(90deg, #834A26 0%, #313333 100%)',
+    lightBackground: 'linear-gradient(90deg, #FECFB3 0%, #FFF 100%)'
+  },
+  monthly: {
+    darkBackground: 'linear-gradient(90deg, #733032 0%, #313333 100%)',
+    lightBackground: 'linear-gradient(90deg, #FEB6B6 0%, #FFF 100%)'
+  }
 }
 
 const avatarFrameImageMap: Record<Exclude<AvatarFrameId, 'none'>, string> = {
@@ -265,6 +275,9 @@ const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
   }
 }
 
+/**
+ * 将 vipId 映射到卡片主题配置 key；超出 vip0-vip10 时统一回退到 vip0。
+ */
 const resolveVipThemeVariant = (vipId?: number | null): VipThemeVariant => {
   if (typeof vipId === 'number' && vipId >= 0 && vipId <= 10) {
     return `vip${vipId}` as VipThemeVariant
@@ -273,6 +286,9 @@ const resolveVipThemeVariant = (vipId?: number | null): VipThemeVariant => {
   return 'vip0'
 }
 
+/**
+ * 根据当前用户等级与当前卡片等级，决定右下角显示解锁还是未解锁角标。
+ */
 const resolveVipCardCornerBadgeIcon = (
   currentVipId?: number | null,
   viewedVipId?: number | null
@@ -280,10 +296,16 @@ const resolveVipCardCornerBadgeIcon = (
   return currentVipId === viewedVipId ? VipCornerUnlockedIcon : VipCornerLockedIcon
 }
 
+/**
+ * 根据当前用户等级与当前卡片等级，返回卡片底部提示文案 key。
+ */
 const resolveVipCardGoalHintKey = (currentVipId?: number | null, viewedVipId?: number | null) => {
   return currentVipId === viewedVipId ? 'vipPage.goalHint.unlocked' : 'vipPage.goalHint.keepGoing'
 }
 
+/**
+ * 根据 vipId 返回左侧等级数字 SVG；超出范围时默认回退到 vip0。
+ */
 const resolveVipLevelNumberIcon = (vipId?: number | null) => {
   if (typeof vipId === 'number' && vipId >= 0 && vipId <= 10) {
     return vipLevelNumberIconMap[vipId]
@@ -292,6 +314,9 @@ const resolveVipLevelNumberIcon = (vipId?: number | null) => {
   return VipLevel0Icon
 }
 
+/**
+ * 计算单个进度值百分比，并将结果限制在 0-100 区间内。
+ */
 const getClampedProgress = (currentValue: number, targetValue: number) => {
   if (!targetValue || targetValue <= 0) {
     return 0
@@ -300,46 +325,53 @@ const getClampedProgress = (currentValue: number, targetValue: number) => {
   return Math.min(Math.max((currentValue / targetValue) * 100, 0), 100)
 }
 
+/**
+ * 根据当前浅色/暗黑主题，返回权益卡片对应的渐变背景。
+ */
+const resolveBenefitCardBackground = (key: VipBenefitCardKey, currentTheme: 'light' | 'dark') => {
+  const backgroundConfig = benefitCardBackgroundMap[key]
+  return currentTheme === 'dark'
+    ? backgroundConfig.darkBackground
+    : backgroundConfig.lightBackground
+}
+
+/**
+ * 组装单个权益卡片展示数据，包括金额、按钮文案、背景与图片。
+ */
 const createBenefitCard = (
   t: Translate,
   key: VipBenefitCardKey,
   titleKey: string,
   amount: number | undefined,
   status: VipBenefitCardStatus,
-  image: string
+  image: string,
+  background: string
 ) => {
-  const claimed = status === 'claimed'
-  const claimable = status === 'claim'
-
   return {
     key,
     title: t(titleKey),
     amount: formatBalance(amount ?? 0),
     status,
-    claimed,
-    claimable,
-    buttonText: claimed
-      ? t('vipPage.claimed')
-      : claimable
-        ? t('referral.claim')
-        : t('vipPage.locked'),
-    background: benefitCardBackgroundMap[key],
+    buttonText: status === 'claim' ? t('referral.claim') : t('personalCenter.upgrade'),
+    background,
     image
   }
 }
 
+/**
+ * 将后端权益状态值映射为前端按钮状态：2 为 Claim，其余默认显示 Upgrade。
+ */
 const getBenefitCardStatus = (state: number | undefined): VipBenefitCardStatus => {
   if (Number(state) === 2) {
     return 'claim'
   }
 
-  if (Number(state) === 3) {
-    return 'claimed'
-  }
-
-  return 'locked'
+  return 'upgrade'
 }
 
+/**
+ * 组装单个 VIP 进度项的展示数据。
+ */
 const createProgressItem = (
   key: string,
   label: string,
@@ -353,6 +385,9 @@ const createProgressItem = (
   progress: getClampedProgress(currentValue, targetValue)
 })
 
+/**
+ * 聚合 VIP 页面 H5 / PC 共用的展示数据与业务方法。
+ */
 export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) => {
   const userStore = useUserStore()
   const vipStore = useVipStore()
@@ -375,6 +410,9 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
 
   const currentVipLevel = computed(() => myVipInfo.value?.vipId ?? userInfo.value?.vipId ?? 0)
 
+  /**
+   * 按传入等级获取对应 VIP 配置；缺失时依次回退到当前等级配置与列表首项。
+   */
   const getVipTargetConfigById = (vipId?: number | null) => {
     return (
       vipStore.getVipTargetConfig(vipId ?? currentVipLevel.value) ??
@@ -391,6 +429,9 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
     )
   })
 
+  /**
+   * 根据卡片等级生成顶部 VIP 卡片所需的主题、角标与文案配置。
+   */
   const getVipCardThemeByVipId = (vipId?: number | null): VipCardTheme => {
     const resolvedVipId = vipId ?? currentVipLevel.value
     const themeVariant = resolveVipThemeVariant(resolvedVipId)
@@ -413,6 +454,9 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
 
   const viewedVipCardTheme = computed(() => getVipCardThemeByVipId(resolvedViewedVipId.value))
 
+  /**
+   * 按指定 VIP 等级返回有效投注与充值两项进度数据。
+   */
   const getProgressItemsByVipId = (vipId?: number | null): VipProgressItem[] => {
     const targetConfig = getVipTargetConfigById(vipId)
 
@@ -432,6 +476,9 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
     ]
   }
 
+  /**
+   * 计算当前卡片总进度，投注与充值各占 50%。
+   */
   const getOverallProgressByVipId = (vipId?: number | null) => {
     const [betProgress, rechargeProgress] = getProgressItemsByVipId(vipId)
 
@@ -441,6 +488,9 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
     )
   }
 
+  /**
+   * 按指定 VIP 等级返回保级要求卡片数据。
+   */
   const getRetentionCardsByVipId = (vipId?: number | null): VipRetentionCard[] => {
     const targetConfig = getVipTargetConfigById(vipId)
 
@@ -478,15 +528,8 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
         'vipPage.cards.levelUp',
         benefitInfo?.upgradedMoney,
         getBenefitCardStatus(benefitInfo?.upgradedState),
-        item1Image
-      ),
-      createBenefitCard(
-        t,
-        'daily',
-        'vipPage.cards.daily',
-        benefitInfo?.dayMoney,
-        getBenefitCardStatus(benefitInfo?.dayState),
-        item2Image
+        item1Image,
+        resolveBenefitCardBackground('levelUp', theme.value)
       ),
       createBenefitCard(
         t,
@@ -494,7 +537,8 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
         'vipPage.cards.weekly',
         benefitInfo?.weekMoney,
         getBenefitCardStatus(benefitInfo?.weekState),
-        item3Image
+        item3Image,
+        resolveBenefitCardBackground('weekly', theme.value)
       ),
       createBenefitCard(
         t,
@@ -502,7 +546,8 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
         'vipPage.cards.monthly',
         benefitInfo?.monthMoney,
         getBenefitCardStatus(benefitInfo?.monthState),
-        item4Image
+        item4Image,
+        resolveBenefitCardBackground('monthly', theme.value)
       )
     ]
   })
@@ -552,12 +597,13 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
   }
 }
 
+/**
+ * 按权益卡片类型调用对应领取接口。
+ */
 export const claimVipBenefit = (key: VipBenefitCardKey): Promise<CommonResponse> => {
   switch (key) {
     case 'levelUp':
       return Api.vip.upgradedPoints({})
-    case 'daily':
-      return Api.vip.dayPoints({})
     case 'weekly':
       return Api.vip.weekPoints({})
     case 'monthly':
