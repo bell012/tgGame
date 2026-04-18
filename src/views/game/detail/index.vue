@@ -3,9 +3,7 @@
     <div v-if="isGameDataLoading" class="detail-loading-mask" aria-live="polite" aria-busy="true">
       <div class="detail-loading-spinner"></div>
     </div>
-    <h5-header class="block sm:block md:hidden lg:hidden">{{
-      currentGameDetail?.itemName ?? ''
-    }}</h5-header>
+    <h5-header class="block sm:hidden">{{ currentGameDetail?.itemName ?? '' }}</h5-header>
     <h5-currency-info v-if="isMobile"></h5-currency-info>
     <desktop-currency-info v-else></desktop-currency-info>
     <recent-games></recent-games>

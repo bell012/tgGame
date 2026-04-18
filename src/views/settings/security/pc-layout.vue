@@ -3,11 +3,11 @@
     <h1 class="text-sm font-bold text-text-1 pb-6 mb-2.5 border-b border-opacity-5 required">
       {{ t('securitySettings.pageTitle') }}
     </h1>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
       <div
         v-for="card in cards"
         :key="card.cardKey"
-        class="rounded-xl bg-bg-3 p-5 md:p-6 flex flex-col min-h-[200px] border border-transparent hover:border-opacity-10 hover:border-[var(--color-opacity-15)] transition-colors"
+        class="rounded-xl bg-bg-3 p-5 sm:p-6 flex flex-col min-h-[200px] border border-transparent hover:border-opacity-10 hover:border-[var(--color-opacity-15)] transition-colors"
       >
         <div class="flex items-start justify-between gap-3 mb-4">
           <component :is="card.icon" class="w-9 h-9 shrink-0 text-icon-2" />
@@ -29,7 +29,7 @@
         <h2 class="text-base font-bold text-text-1 mb-2">
           {{ t(`securitySettings.cards.${card.cardKey}.title`) }}
         </h2>
-        <p class="text-xs md:text-sm text-text-2 leading-relaxed mb-5 flex-1">
+        <p class="text-xs sm:text-sm text-text-2 leading-relaxed mb-5 flex-1">
           {{ t(`securitySettings.cards.${card.cardKey}.desc`) }}
         </p>
         <button
