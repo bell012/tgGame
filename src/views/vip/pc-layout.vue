@@ -61,12 +61,12 @@
                     <div class="flex shrink-0 items-center">
                       <component
                         :is="viewedVipCardTheme.wordmarkIcon"
-                        class="h-[59px] w-[66px] shrink-0"
+                        class="h-[59px] w-[66px]"
                         :style="{ color: viewedVipCardTheme.wordmarkColor }"
                       />
                       <component
                         :is="viewedVipCardTheme.levelNumberIcon"
-                        class="ml-[1px] h-[59px] w-auto shrink-0"
+                        class="ml-[1px] h-[59px] w-auto"
                         :style="{ color: viewedVipCardTheme.accentColor }"
                       />
                     </div>

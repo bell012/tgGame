@@ -59,12 +59,12 @@
                 <div class="flex items-center">
                   <component
                     :is="getVipCardTheme(vip.vipId).wordmarkIcon"
-                    class="h-[30px] w-[33px] shrink-0"
+                    class="h-[30px] w-[33px]"
                     :style="{ color: getVipCardTheme(vip.vipId).wordmarkColor }"
                   />
                   <component
                     :is="getVipCardTheme(vip.vipId).levelNumberIcon"
-                    class="ml-[3px] h-[30px] w-auto shrink-0"
+                    class="ml-[3px] h-[30px] w-auto"
                     :style="{ color: getVipCardTheme(vip.vipId).accentColor }"
                   />
                 </div>
