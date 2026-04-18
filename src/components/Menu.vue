@@ -360,8 +360,12 @@
         >
           <div class="flex justify-between items-center">
             <div class="flex-1 p-2.5 pr-0">
-              <h3 class="text-sm font-semibold text-text-1 mb-1">{{ t('sidebar_menu.app_download.title') }}</h3>
-              <p class="text-xs text-text-2 leading-tight">{{ t('sidebar_menu.app_download.subtitle') }}</p>
+              <h3 class="text-sm font-semibold text-text-1 mb-1">
+                {{ t('sidebar_menu.app_download.title') }}
+              </h3>
+              <p class="text-xs text-text-2 leading-tight">
+                {{ t('sidebar_menu.app_download.subtitle') }}
+              </p>
             </div>
             <div class="w-[80px] h-auto flex-shrink-0 pt-1 pr-1">
               <div class="w-full h-full rounded flex items-center justify-center text-[10px]">
@@ -525,6 +529,7 @@ import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
 import { getLocaleLabel } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
+import RebateIcon from '@/static/svg/personalCenter/icon3.svg?component'
 import type { Component } from 'vue'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -885,6 +890,13 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
 
 // 普通链接数据
 const normalLinks = computed(() => [
+  {
+    id: 'rebate',
+    name: t('sidebar_menu.links.rebate'),
+    icon: RebateIcon,
+    external: false,
+    handler: () => navigateTo('/personal-center/rebate')
+  },
   {
     id: 'vip',
     name: t('sidebar_menu.links.vip.name'),

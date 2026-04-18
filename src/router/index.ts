@@ -26,7 +26,8 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'casino',
     component: () => import('@/views/fun/casino/index.vue'),
     meta: {
-      title: '娱乐城'
+      title: '娱乐城',
+      keepAlive: true
     },
     props: route => ({
       tabKey: route.params.tabKey as string | undefined
@@ -37,7 +38,8 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'casinoTabKey',
     component: () => import('@/views/fun/casino/index.vue'),
     meta: {
-      title: '娱乐城'
+      title: '娱乐城',
+      keepAlive: true
     },
     props: route => ({
       tabKey: route.params.tabKey as string
@@ -203,7 +205,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '游戏详情',
       description: '游戏详情',
-      requiresAuth: true,
+      // requiresAuth: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -338,6 +340,21 @@ const baseRoutes: RouteRecordRaw[] = [
       description: '编辑资料',
       requiresAuth: true,
       mobileOnly: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'personal-center/rebate',
+    name: 'personal-center-rebate',
+    component: () => import('@/views/personalCenter/rebate/index.vue'),
+    meta: {
+      title: 'Rebate',
+      description: 'Rebate',
+      requiresAuth: true,
       slideTransition: true,
       mobile: {
         hideBottomBar: true,

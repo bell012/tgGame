@@ -10,6 +10,7 @@
     <desktop-currency-info v-else></desktop-currency-info>
     <recent-games></recent-games>
     <game-list
+      v-if="currentCategoryHotGameList.length > 0"
       :title="t('home.RecommendedGames')"
       :list="currentCategoryHotGameList"
       @all-click="openCurrentCategoryAllGamesPage"

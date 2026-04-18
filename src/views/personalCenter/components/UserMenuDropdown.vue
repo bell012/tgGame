@@ -160,7 +160,7 @@ const mainMenus = computed(() => [
   },
   {
     id: 'rollover-overview',
-    name: t('userMenu.rolloverOverview'),
+    name: t('personalCenter.rollover'),
     icon: getIcon(65),
     handler: () => {
       navigateTo('/rollover')

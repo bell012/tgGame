@@ -9,12 +9,12 @@
       />
 
       <main class="px-[14px] py-[20px]">
-        <div class="flex items-center justify-between mb-[30px]">
+        <div class="flex items-center justify-between">
           <div class="flex min-w-0 items-center gap-3">
             <div class="relative h-[66px] w-[66px] overflow-visible">
               <div
                 :class="[
-                  'absolute overflow-hidden rounded-full',
+                  'absolute rounded-full',
                   selectedAvatarFrameImage ? 'inset-[4px]' : 'inset-[4px] border-2 border-icon-2'
                 ]"
               >
@@ -43,7 +43,7 @@
 
         <div
           ref="vipCarouselRef"
-          class="vip-mobile-carousel mb-[14px] flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden scroll-smooth touch-pan-x"
+          class="vip-mobile-carousel pt-[30px] mb-[14px] flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden scroll-smooth touch-pan-x"
           @scroll.passive="onVipCarouselScroll"
         >
           <div
@@ -52,49 +52,69 @@
             class="min-w-full shrink-0 snap-center snap-always rounded-[15px] mx-[10px]"
           >
             <section
-              class="relative h-[158px] rounded-[15px] bg-cover bg-center bg-no-repeat px-[20px] py-[15px]"
-              :style="{ backgroundImage: resolveBackgroundImage(cardH5BgImage) }"
+              class="relative h-[158px] rounded-[15px] px-[20px] py-[15px]"
+              :style="{ background: getVipCardTheme(vip.vipId).background }"
             >
               <div class="relative z-[1] flex flex-col items-start gap-3">
                 <div class="flex items-center">
-                  <SmartImage
-                    :src="cardVipImage"
-                    alt="VIP Card"
-                    class="mr-[3px] h-[30px] w-[33px] shrink-0"
+                  <component
+                    :is="getVipCardTheme(vip.vipId).wordmarkIcon"
+                    class="h-[30px] w-[33px] shrink-0"
+                    :style="{ color: getVipCardTheme(vip.vipId).wordmarkColor }"
                   />
-                  <p class="text-[38px] font-[700] leading-[30px] text-theme-primary">
-                    {{ vip.vipId }}
-                  </p>
+                  <component
+                    :is="getVipCardTheme(vip.vipId).levelNumberIcon"
+                    class="ml-[3px] h-[30px] w-auto shrink-0"
+                    :style="{ color: getVipCardTheme(vip.vipId).accentColor }"
+                  />
                 </div>
 
                 <div class="flex w-full flex-1 flex-col justify-center pr-[10px]">
                   <div class="space-y-1.5">
                     <div v-for="item in getProgressItemsByVipId(vip.vipId)" :key="item.key">
                       <div class="flex items-center">
-                        <span class="text-xs text-[#198E48]">{{ item.label }}：</span>
-                        <span class="text-xs text-[#198E48]"
+                        <span
+                          class="text-xs"
+                          :style="{ color: getVipCardTheme(vip.vipId).progressTextColor }"
+                          >{{ item.label }}：</span
+                        >
+                        <span
+                          class="text-xs"
+                          :style="{ color: getVipCardTheme(vip.vipId).progressTextColor }"
                           >{{ item.current }}/{{ item.target }}</span
                         >
                       </div>
                     </div>
                   </div>
 
-                  <div class="mt-[15px] h-[8px] w-full overflow-hidden rounded-full bg-theme-3">
+                  <div
+                    class="mt-[15px] h-[8px] w-full rounded-full"
+                    :style="{ background: getVipCardTheme(vip.vipId).progressTrackColor }"
+                  >
                     <div
-                      class="h-full rounded-full bg-theme-primary transition-all"
-                      :style="{ width: `${getOverallProgressByVipId(vip.vipId)}%` }"
+                      class="h-full rounded-full transition-all"
+                      :style="{
+                        width: `${getOverallProgressByVipId(vip.vipId)}%`,
+                        background: getVipCardTheme(vip.vipId).progressFillColor
+                      }"
                     />
                   </div>
 
-                  <p class="mt-[15px] text-center text-xs text-[#198E48]">
-                    {{ $t('vipPage.goalHint') }}
+                  <p
+                    class="mt-[15px] text-center text-xs"
+                    :style="{ color: getVipCardTheme(vip.vipId).progressTextColor }"
+                  >
+                    {{ $t(getVipCardTheme(vip.vipId).goalHintKey) }}
                   </p>
                 </div>
 
-                <SmartImage
-                  :src="cardVipRightImage"
-                  alt="VIP Decoration"
-                  class="pointer-events-none absolute right-[-20px] top-[50px] h-[188px] w-[160px] -translate-y-1/2"
+                <component
+                  :is="getVipCardTheme(vip.vipId).rightDecorationIcon"
+                  class="pointer-events-none absolute right-[-18px] top-[30px] z-[2] h-[160px] w-[160px] -translate-y-1/2"
+                />
+                <component
+                  :is="getVipCardTheme(vip.vipId).cornerBadgeIcon"
+                  class="pointer-events-none absolute bottom-[-11px] right-[-20px] z-[2] h-[21px] w-[25px] text-common-100"
                 />
               </div>
             </section>
@@ -160,10 +180,6 @@ import { useVipStore } from '@/stores/vip'
 import RuleIcon from '@/static/svg/rule.svg?component'
 import VipBadgeIcon from '@/static/svg/vip_1.svg?component'
 import VipWordmarkIcon from '@/static/svg/vip_2.svg?component'
-import cardH5BgImage from '@/static/img/personalCenter/card_H5_BG.webp'
-import cardVipImage from '@/static/img/personalCenter/card_vip.png'
-import cardVipRightImage from '@/static/img/personalCenter/card_vip_right.webp'
-import { resolveBackgroundImage } from '@/utils/image'
 import { getCurrencySymbol } from '@/utils/locale'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
@@ -187,9 +203,12 @@ const {
   currentVipLevel,
   getProgressItemsByVipId,
   getOverallProgressByVipId,
+  getVipCardThemeByVipId,
   benefitCards,
   initializeVipPage
 } = useVipPageData(t, { viewedVipId })
+
+const getVipCardTheme = (vipId?: number | null) => getVipCardThemeByVipId(vipId)
 
 const displayVipLevels = computed(() => {
   if (vipLevels.value.length) {

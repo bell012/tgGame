@@ -103,7 +103,7 @@
               class="hidden dark:block w-full h-full"
             />
             <span
-              class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-bold text-text-1 sm:text-base"
+              class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-bold text-common-100 sm:text-base"
             >
               {{ t('casino.view_all') }}
             </span>

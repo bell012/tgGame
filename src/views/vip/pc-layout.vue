@@ -53,28 +53,34 @@
             <Transition :name="vipCardTransitionName">
               <section
                 :key="viewedVipLevel"
-                class="vip-card-panel rounded-[30px] bg-cover bg-center bg-no-repeat px-[64px] pb-[39px] pt-[56px]"
-                :style="{ backgroundImage: resolveBackgroundImage(cardH5BgImage) }"
+                class="vip-card-panel overflow-hidden rounded-[30px] px-[64px] pb-[39px] pt-[56px]"
+                :style="{ background: viewedVipCardTheme.background }"
               >
                 <div class="relative z-[1] flex h-full flex-col">
                   <div class="flex items-center gap-[25px]">
                     <div class="flex shrink-0 items-center">
-                      <SmartImage
-                        :src="cardVipImage"
-                        alt="VIP Card"
+                      <component
+                        :is="viewedVipCardTheme.wordmarkIcon"
                         class="h-[59px] w-[66px] shrink-0"
+                        :style="{ color: viewedVipCardTheme.wordmarkColor }"
                       />
-                      <p class="text-[80px] font-[700] leading-[60px] text-theme-primary">
-                        {{ viewedVipLevel }}
-                      </p>
+                      <component
+                        :is="viewedVipCardTheme.levelNumberIcon"
+                        class="ml-[1px] h-[59px] w-auto shrink-0"
+                        :style="{ color: viewedVipCardTheme.accentColor }"
+                      />
                     </div>
 
                     <div class="min-w-0 flex-1 space-y-[12px]">
                       <div v-for="item in progressItems" :key="item.key" class="flex items-center">
-                        <span class="text-[20px] leading-none text-[#198E48]"
+                        <span
+                          class="text-[20px] leading-none"
+                          :style="{ color: viewedVipCardTheme.progressTextColor }"
                           >{{ item.label }}：</span
                         >
-                        <span class="text-[20px] font-[700] leading-none text-[#198E48]"
+                        <span
+                          class="text-[20px] font-[700] leading-none"
+                          :style="{ color: viewedVipCardTheme.progressTextColor }"
                           >{{ item.current }}/{{ item.target }}</span
                         >
                       </div>
@@ -82,23 +88,35 @@
                   </div>
 
                   <div class="mt-[48px]">
-                    <div class="h-[18px] w-[847px] overflow-hidden rounded-full bg-theme-3">
+                    <div
+                      class="h-[18px] w-[847px] overflow-hidden rounded-full"
+                      :style="{ background: viewedVipCardTheme.progressTrackColor }"
+                    >
                       <div
-                        class="h-full rounded-full bg-theme-primary transition-all"
-                        :style="{ width: `${overallProgress}%` }"
+                        class="h-full rounded-full transition-all"
+                        :style="{
+                          width: `${overallProgress}%`,
+                          background: viewedVipCardTheme.progressFillColor
+                        }"
                       />
                     </div>
 
-                    <p class="mt-[16px] text-base text-[#198E48]">
-                      {{ $t('vipPage.goalHint') }}
+                    <p
+                      class="mt-[16px] text-base"
+                      :style="{ color: viewedVipCardTheme.progressTextColor }"
+                    >
+                      {{ $t(viewedVipCardTheme.goalHintKey) }}
                     </p>
                   </div>
                 </div>
 
-                <SmartImage
-                  :src="cardVipRightImage"
-                  alt="VIP Decoration"
-                  class="pointer-events-none absolute right-[32px] top-1/2 h-[252px] w-[282px] -translate-y-1/2"
+                <component
+                  :is="viewedVipCardTheme.rightDecorationIcon"
+                  class="pointer-events-none absolute right-[32px] top-1/2 z-[2] h-[256px] w-[282px] -translate-y-1/2"
+                />
+                <component
+                  :is="viewedVipCardTheme.cornerBadgeIcon"
+                  class="pointer-events-none absolute bottom-[-2px] right-[-3px] z-[2] h-[54px] w-[64px] text-common-100"
                 />
               </section>
             </Transition>
@@ -203,15 +221,11 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useVipStore } from '@/stores/vip'
-import { resolveBackgroundImage } from '@/utils/image'
 import VipBadgeIcon from '@/static/svg/vip_1.svg?component'
 import VipWordmarkIcon from '@/static/svg/vip_2.svg?component'
-import cardVipImage from '@/static/img/personalCenter/card_vip.png'
 import { getCurrencySymbol } from '@/utils/locale'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
-import cardH5BgImage from '@/static/img/personalCenter/card_H5_BG.webp'
-import cardVipRightImage from '@/static/img/personalCenter/card_vip_right2.png'
 import Arrow_left from '@/static/svg/arrow_left.svg?component'
 import Arrow_right from '@/static/svg/arrow_right2.svg?component'
 
@@ -237,6 +251,7 @@ const {
   vipLevels,
   currentVipLevel,
   viewedVipLevel,
+  viewedVipCardTheme,
   progressItems,
   overallProgress,
   benefitCards,
