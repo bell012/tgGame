@@ -990,6 +990,15 @@
     "claimed": "Claimed",
     "locked": "Locked",
     "exclusiveBenefitsTitle": "VIP {vipId} Exclusive Benefits",
+    "tabs": {
+      "benefitsComparison": "Benefits Comparison",
+      "vipRules": "VIP Rules"
+    },
+    "benefitsComparison": {
+      "currentLevel": "Current Level: V{vipId}",
+      "unlockLevel": "Unlock V{vipId}",
+      "totalRewards": "Total Rewards"
+    },
     "goalHint": {
       "unlocked": "Upgrade successful. Benefits unlocked",
       "keepGoing": "Keep going to reach your VIP goal"

@@ -1,7 +1,7 @@
 import { computed, type Component, type Ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import Api from '@/api'
-import type { CommonResponse } from '@/api/interface/vip'
+import type { CommonResponse, VipListItem } from '@/api/interface/vip'
 import { useUserStore } from '@/stores/user'
 import { useVipStore } from '@/stores/vip'
 import { useThemeStore } from '@/stores/theme'
@@ -48,7 +48,7 @@ import VipRight10Icon from '@/static/svg/vip/vip10.svg?skipsvgo'
 import VipCornerUnlockedIcon from '@/static/svg/vip/kai.svg?component'
 import VipCornerLockedIcon from '@/static/svg/vip/suo.svg?component'
 
-type Translate = (key: string) => string
+type Translate = (key: string, named?: Record<string, unknown>) => string
 
 interface UseVipPageDataOptions {
   viewedVipId?: Readonly<Ref<number | null | undefined>>
@@ -80,6 +80,20 @@ export interface VipRetentionCard {
   label: string
   amount: string
   icon: Component
+}
+
+export interface VipBenefitComparisonRow {
+  key: string
+  label: string
+  amount: string
+  emphasized?: boolean
+}
+
+export interface VipBenefitComparisonColumn {
+  key: 'current' | 'unlock'
+  vipId: number
+  title: string
+  rows: VipBenefitComparisonRow[]
 }
 
 type VipThemeVariant =
@@ -125,6 +139,9 @@ type VipBenefitCardBackground = {
   lightBackground: string
 }
 
+type VipListRewardMoneyField = 'upgradedMoney' | 'weekMoney' | 'monthMoney'
+type VipListRewardAmountField = 'upgradedAmount' | 'weekAmount' | 'monthAmount'
+
 const benefitCardBackgroundMap: Record<VipBenefitCardKey, VipBenefitCardBackground> = {
   levelUp: {
     darkBackground: 'linear-gradient(90deg, #255580 0%, #313333 100%)',
@@ -137,6 +154,27 @@ const benefitCardBackgroundMap: Record<VipBenefitCardKey, VipBenefitCardBackgrou
   monthly: {
     darkBackground: 'linear-gradient(90deg, #733032 0%, #313333 100%)',
     lightBackground: 'linear-gradient(90deg, #FEB6B6 0%, #FFF 100%)'
+  }
+}
+
+const vipListRewardFieldMap: Record<
+  VipBenefitCardKey,
+  {
+    money: VipListRewardMoneyField
+    amount: VipListRewardAmountField
+  }
+> = {
+  levelUp: {
+    money: 'upgradedMoney',
+    amount: 'upgradedAmount'
+  },
+  weekly: {
+    money: 'weekMoney',
+    amount: 'weekAmount'
+  },
+  monthly: {
+    money: 'monthMoney',
+    amount: 'monthAmount'
   }
 }
 
@@ -336,6 +374,73 @@ const resolveBenefitCardBackground = (key: VipBenefitCardKey, currentTheme: 'lig
 }
 
 /**
+ * 从 VIP 等级配置中读取奖励金额，优先使用 *Money 字段，缺失时回退到旧的 *Amount 字段。
+ */
+const resolveVipListRewardAmount = (targetConfig: VipListItem | null, key: VipBenefitCardKey) => {
+  if (!targetConfig) {
+    return 0
+  }
+
+  const rewardField = vipListRewardFieldMap[key]
+  return targetConfig[rewardField.money] ?? targetConfig[rewardField.amount] ?? 0
+}
+
+/**
+ * 计算单个 VIP 等级的三项奖励总额。
+ */
+const getVipBenefitTotalRewards = (targetConfig: VipListItem | null) => {
+  return (
+    resolveVipListRewardAmount(targetConfig, 'levelUp') +
+    resolveVipListRewardAmount(targetConfig, 'weekly') +
+    resolveVipListRewardAmount(targetConfig, 'monthly')
+  )
+}
+
+/**
+ * 组装权益对比区单列数据，包含三项奖励及总奖励。
+ */
+const createBenefitComparisonColumn = (
+  t: Translate,
+  key: 'current' | 'unlock',
+  targetConfig: VipListItem | null,
+  fallbackVipId: number
+): VipBenefitComparisonColumn => {
+  const resolvedVipId = targetConfig?.vipId ?? fallbackVipId
+
+  return {
+    key,
+    vipId: resolvedVipId,
+    title:
+      key === 'current'
+        ? t('vipPage.benefitsComparison.currentLevel', { vipId: resolvedVipId })
+        : t('vipPage.benefitsComparison.unlockLevel', { vipId: resolvedVipId }),
+    rows: [
+      {
+        key: 'levelUp',
+        label: t('vipPage.cards.levelUp'),
+        amount: formatBalance(resolveVipListRewardAmount(targetConfig, 'levelUp'))
+      },
+      {
+        key: 'weekly',
+        label: t('vipPage.cards.weekly'),
+        amount: formatBalance(resolveVipListRewardAmount(targetConfig, 'weekly'))
+      },
+      {
+        key: 'monthly',
+        label: t('vipPage.cards.monthly'),
+        amount: formatBalance(resolveVipListRewardAmount(targetConfig, 'monthly'))
+      },
+      {
+        key: 'totalRewards',
+        label: t('vipPage.benefitsComparison.totalRewards'),
+        amount: formatBalance(getVipBenefitTotalRewards(targetConfig)),
+        emphasized: true
+      }
+    ]
+  }
+}
+
+/**
  * 组装单个权益卡片展示数据，包括金额、按钮文案、背景与图片。
  */
 const createBenefitCard = (
@@ -423,6 +528,29 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
   }
 
   const resolvedViewedVipId = computed(() => options?.viewedVipId?.value ?? currentVipLevel.value)
+
+  /**
+   * 读取当前正在查看的 VIP 卡片配置，用于权益对比区展示。
+   */
+  const viewedVipTargetConfig = computed(() => getVipTargetConfigById(viewedVipLevel.value))
+
+  /**
+   * 获取当前查看卡片的下一档 VIP 配置；若已是最高等级则返回 null。
+   */
+  const nextVipTargetConfig = computed(() => {
+    if (!vipLevels.value.length) {
+      return null
+    }
+
+    const currentIndex = vipLevels.value.findIndex(item => item.vipId === viewedVipLevel.value)
+
+    if (currentIndex >= 0) {
+      return vipLevels.value[currentIndex + 1] ?? null
+    }
+
+    return vipLevels.value.find(item => (item.vipId ?? 0) > viewedVipLevel.value) ?? null
+  })
+
   const viewedVipLevel = computed(() => {
     return (
       getVipTargetConfigById(resolvedViewedVipId.value)?.vipId ?? resolvedViewedVipId.value ?? 0
@@ -453,6 +581,37 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
   }
 
   const viewedVipCardTheme = computed(() => getVipCardThemeByVipId(resolvedViewedVipId.value))
+
+  /**
+   * 返回权益对比 Tab 所需的当前等级与下一等级数据；最高等级仅保留当前等级一列。
+   */
+  const benefitComparisonColumns = computed<VipBenefitComparisonColumn[]>(() => {
+    const currentColumn = createBenefitComparisonColumn(
+      t,
+      'current',
+      viewedVipTargetConfig.value,
+      viewedVipLevel.value
+    )
+
+    if (!nextVipTargetConfig.value) {
+      return [currentColumn]
+    }
+
+    return [
+      currentColumn,
+      createBenefitComparisonColumn(
+        t,
+        'unlock',
+        nextVipTargetConfig.value,
+        nextVipTargetConfig.value.vipId ?? viewedVipLevel.value
+      )
+    ]
+  })
+
+  /**
+   * 标记当前等级是否仍有下一档 VIP，用于控制对比区箭头与双列布局。
+   */
+  const hasNextVipLevel = computed(() => Boolean(nextVipTargetConfig.value))
 
   /**
    * 按指定 VIP 等级返回有效投注与充值两项进度数据。
@@ -590,6 +749,8 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
     getProgressItemsByVipId,
     getOverallProgressByVipId,
     benefitCards,
+    benefitComparisonColumns,
+    hasNextVipLevel,
     retentionCards,
     getRetentionCardsByVipId,
     rules,

@@ -149,35 +149,41 @@
         </article>
       </section>
 
-      <!-- 规则 -->
-      <h2 class="text-base font-[700] text-text-1 mt-[24px] mb-[16px]">
-        {{ $t('vipPage.rulesTitle') }}
-      </h2>
-      <section class="rounded-[16px] bg-bg-2 p-6">
-        <h3 class="text-base font-[700] text-text-1">
-          {{ $t('vipPage.retention.title') }}
-        </h3>
-
-        <div class="mt-2 grid grid-cols-2 gap-4">
-          <article
-            v-for="card in retentionCards"
-            :key="card.key"
-            class="flex items-center justify-between h-[80px] rounded-[16px] bg-opacity-5 p-6"
+      <!-- tab栏 -->
+      <section class="mt-[24px]">
+        <div class="flex w-full rounded-[8px] bg-bg-8">
+          <button
+            type="button"
+            class="h-[48px] w-full rounded-[8px] p-[14px] font-[700]"
+            :class="
+              activeContentTab === 'comparison'
+                ? 'bg-bg-7 text-base text-text-1'
+                : 'text-base text-text-2'
+            "
+            @click="activeContentTab = 'comparison'"
           >
-            <div class="flex items-center gap-4">
-              <component :is="card.icon" class="h-8 w-8" />
-              <p class="text-base font-[700] text-text-1">{{ card.label }}</p>
-            </div>
-
-            <p class="text-2xl font-[700] text-text-1">{{ card.amount }}</p>
-          </article>
+            {{ $t('vipPage.tabs.benefitsComparison') }}
+          </button>
+          <button
+            type="button"
+            class="h-[48px] w-full rounded-[8px] p-[14px] font-[700]"
+            :class="
+              activeContentTab === 'rules'
+                ? 'bg-bg-7 text-base text-text-1'
+                : 'text-base text-text-2'
+            "
+            @click="activeContentTab = 'rules'"
+          >
+            {{ $t('vipPage.tabs.vipRules') }}
+          </button>
         </div>
 
-        <div class="mt-4 space-y-4">
-          <article v-for="rule in rules" :key="rule.key">
-            <h3 class="text-base font-[700] text-text-1">{{ rule.title }}</h3>
-            <p class="mt-2 text-sm text-text-2">{{ rule.description }}</p>
-          </article>
+        <div class="mt-[24px]">
+          <BenefitComparisonPanel
+            v-if="activeContentTab === 'comparison'"
+            :columns="benefitComparisonColumns"
+          />
+          <VipRulesContent v-else :retention-cards="retentionCards" :rules="rules" />
         </div>
       </section>
 
@@ -201,8 +207,10 @@ import { useVipStore } from '@/stores/vip'
 import ExplainIcon from '@/static/svg/vip/explain.svg?component'
 import { getCurrencySymbol } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import BenefitComparisonPanel from './BenefitComparisonPanel.vue'
 import BenefitExplainPopup from './BenefitExplainPopup.vue'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
+import VipRulesContent from './VipRulesContent.vue'
 import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
 import Arrow_left from '@/static/svg/arrow_left.svg?component'
 import Arrow_right from '@/static/svg/arrow_right2.svg?component'
@@ -213,6 +221,7 @@ const showBenefitExplainPopup = ref(false)
 const showClaimSuccessPopup = ref(false)
 const claimSuccessAmount = ref(`${getCurrencySymbol()}0.00`)
 const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
+const activeContentTab = ref<'comparison' | 'rules'>('comparison')
 const selectedVipIndex = ref(0)
 const hasInitializedViewedVip = ref(false)
 const vipCardTransitionName = ref<'vip-card-slide-next' | 'vip-card-slide-prev'>(
@@ -231,6 +240,7 @@ const {
   progressItems,
   overallProgress,
   benefitCards,
+  benefitComparisonColumns,
   retentionCards,
   rules,
   initializeVipPage
