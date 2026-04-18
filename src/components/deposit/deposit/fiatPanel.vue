@@ -75,7 +75,7 @@
       <DepositTokenIcon class="w-6 h-6 mr-3 text-theme-primary" />
       <input
         type="number"
-        v-model="amount"
+        v-model.number="amount"
         :readonly="!isManualAmountAllowed"
         :inputmode="isManualAmountAllowed ? 'decimal' : 'none'"
         :placeholder="amountPlaceholder"
@@ -167,6 +167,7 @@ import payPalIcon from '@/static/img/payment/payPal.png'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
 import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
+import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
 import {
   computed,
@@ -255,7 +256,7 @@ const amountPlaceholder = computed(() =>
     ? t('deposit.deposit_amount_input_or_select_placeholder')
     : t('deposit.deposit_amount_preset_placeholder')
 )
-const isAmountInputHighlighted = ref(false)
+const isAmountInputHighlighted = computed(() => !isDepositDisabled.value)
 const currentOrderId = ref('')
 const pollTimer = ref<number | null>(null)
 
@@ -274,13 +275,11 @@ const handleHidden = () => {
 // 清空金额
 const clearAmount = () => {
   amount.value = undefined
-  isAmountInputHighlighted.value = false
 }
 
 // 选择预设金额并回填输入框
 const selectPresetAmount = (preset: number) => {
   amount.value = preset
-  isAmountInputHighlighted.value = true
 }
 
 // 解析充值渠道名称
@@ -402,7 +401,8 @@ const queryOrderDetail = async () => {
 
   try {
     const response = await Api.wallet.queryPayOrderByOrderId({ orderId: currentOrderId.value })
-    const detail = response?.success ? response.result : undefined
+    ensureApiBusinessSuccess(response)
+    const detail = response.result
     if (!detail) return
 
     applyOrderDetail(detail)
@@ -484,8 +484,8 @@ const loadPaySubColumnPage = async (columnCode: number) => {
       }
     }
     const response = await Api.wallet.queryPaySubColumnPage(param)
-    const result: QueryPaySubColumnItem[] =
-      response?.success && Array.isArray(response.result) ? response.result : []
+    ensureApiBusinessSuccess(response)
+    const result: QueryPaySubColumnItem[] = Array.isArray(response.result) ? response.result : []
     paySubColumns.value = result
     selectedSubColumn.value = result[0] ?? null
     syncPresetAmounts()
@@ -504,7 +504,8 @@ const loadPayRechargeQuickAmts = async (columnCode: number) => {
 
   try {
     const response = await Api.wallet.payRechargeQuickAmts({ columnCode })
-    const result = response?.success ? response.result : undefined
+    ensureApiBusinessSuccess(response)
+    const result = response.result
 
     quickAmountConfig.value = result ?? null
     syncPresetAmounts()
@@ -519,8 +520,8 @@ const loadPayRechargeQuickAmts = async (columnCode: number) => {
 const loadDiscountList = async (payChannelCode: string) => {
   try {
     const response = await Api.wallet.queryDiscountList({ payChannelCode })
-    const result: QueryDiscountListItem[] =
-      response?.success && Array.isArray(response.result) ? response.result : []
+    ensureApiBusinessSuccess(response)
+    const result: QueryDiscountListItem[] = Array.isArray(response.result) ? response.result : []
     discountList.value = result
     syncSelectedDiscountItem()
   } catch (error) {
@@ -544,8 +545,8 @@ const loadPayColumnPage = async () => {
       languageCode,
       currency
     })
-    const result: QueryPayColumnItem[] =
-      response?.success && Array.isArray(response.result) ? response.result : []
+    ensureApiBusinessSuccess(response)
+    const result: QueryPayColumnItem[] = Array.isArray(response.result) ? response.result : []
 
     payMethods.value = result.filter(
       item => item.columnName !== 'USDT泰达币' && Boolean(resolvePayChannelTabKey(item.columnName))
@@ -637,6 +638,7 @@ const doDeposit = async () => {
 
   try {
     const response = await Api.wallet.submitPayOrder(param)
+    ensureApiBusinessSuccess(response)
     const submitResult = response.result
     currentOrderId.value = submitResult?.orderId !== undefined ? String(submitResult.orderId) : ''
 

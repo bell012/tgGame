@@ -144,7 +144,7 @@ export function submitPayOrder(data: SubmitPayOrderPageForm): Promise<SubmitPayO
     url: '/pc/submitPayOrder',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }

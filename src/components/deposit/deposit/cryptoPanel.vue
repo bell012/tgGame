@@ -223,6 +223,7 @@ import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?
 import DepositTokenIcon from '@/static/svg/deposit/deposit-token.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
+import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
 import { showToast } from 'vant'
 import {
@@ -512,7 +513,8 @@ const loadPayColumnPage = async () => {
       currency: getCurrentCurrency()
     })
 
-    const result = response?.success && Array.isArray(response.result) ? response.result : []
+    ensureApiBusinessSuccess(response)
+    const result = Array.isArray(response.result) ? response.result : []
     payMethods.value = result.filter(item => item.columnName === CRYPTO_COLUMN_NAME)
 
     const defaultMethod = payMethods.value[0] ?? null
@@ -561,8 +563,8 @@ const loadPaySubColumnPage = async (columnCode: number) => {
       }
     }
     const response = await Api.wallet.queryPaySubColumnPage(param)
-    const result: QueryPaySubColumnItem[] =
-      response?.success && Array.isArray(response.result) ? response.result : []
+    ensureApiBusinessSuccess(response)
+    const result: QueryPaySubColumnItem[] = Array.isArray(response.result) ? response.result : []
 
     paySubColumns.value = result
     selectedSubColumn.value = result[0] ?? null
@@ -582,7 +584,8 @@ const loadPayRechargeQuickAmts = async (columnCode: number) => {
 
   try {
     const response = await Api.wallet.payRechargeQuickAmts({ columnCode })
-    const result = response?.success ? response.result : undefined
+    ensureApiBusinessSuccess(response)
+    const result = response.result
 
     quickAmountConfig.value = result ?? null
     syncPresetAmounts()
@@ -599,7 +602,8 @@ const loadDiscountList = async (payChannelCode: string) => {
     const response = await Api.wallet.queryDiscountList({
       payChannelCode
     })
-    discountList.value = response?.success && Array.isArray(response.result) ? response.result : []
+    ensureApiBusinessSuccess(response)
+    discountList.value = Array.isArray(response.result) ? response.result : []
     selectedDiscountItem.value = discountList.value[0] ?? null
   } catch (error) {
     console.error('queryDiscountList failed', error)
@@ -635,7 +639,8 @@ const queryOrderDetail = async () => {
 
   try {
     const response = await Api.wallet.queryPayOrderByOrderId({ orderId: currentOrderId.value })
-    const detail = response?.success ? response.result : undefined
+    ensureApiBusinessSuccess(response)
+    const detail = response.result
     if (!detail) return
 
     applyOrderDetail(detail)
@@ -674,6 +679,7 @@ const doDeposit = async () => {
 
   try {
     const response = await Api.wallet.submitPayOrder(param)
+    ensureApiBusinessSuccess(response)
     const submitResult = response.result
     currentOrderId.value = submitResult?.orderId !== undefined ? String(submitResult.orderId) : ''
     currentCreateTime.value = submitResult?.createTime ?? null
