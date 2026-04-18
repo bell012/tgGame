@@ -291,7 +291,7 @@ const currentPageProps = computed(() => {
     case pageStyle1:
       return {
         modules: lobbyButtons.value,
-        loading: isLobbyButtonsLoading.value && !hasLoaded.value && lobbyButtons.value.length === 0
+        loading: isLobbyButtonsLoading.value && !hasLoaded.value
       }
     case pageStyle2:
     case pageStyle3:

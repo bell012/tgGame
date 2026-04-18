@@ -11,7 +11,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useMemberCardDefaultFlow } from '@/composables/useMemberCardDefaultFlow'
 import { useMemberCardVerificationFlow } from '@/composables/useMemberCardVerificationFlow'
 import { getBalanceByCurrency } from '@/utils/balance'
-import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
+import { getCurrentCurrency, getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import { splitWithdrawManagerMethods } from './withdrawManager'
 import { requestOpenWithdrawKindReminder } from './useWithdrawFlow'
 
@@ -98,10 +98,19 @@ export function useWithdrawFiat() {
   const pendingAccountNo = ref('')
   const pendingAccountName = ref('')
 
-  const currencySymbol = computed(() => getCurrencySymbol(currentCurrency.value))
-  const balanceAmount = computed(() => getBalanceByCurrency(acctInfo.value, currentCurrency.value))
+  const resolvedCurrency = computed(() => {
+    const nextCurrency = String(currentCurrency.value ?? '').trim()
+
+    if (!nextCurrency || nextCurrency.toLowerCase() === 'none') {
+      return getCurrentCurrency()
+    }
+
+    return nextCurrency
+  })
+  const currencySymbol = computed(() => getCurrencySymbol(resolvedCurrency.value))
+  const balanceAmount = computed(() => getBalanceByCurrency(acctInfo.value, resolvedCurrency.value))
   const formattedBalance = computed(() =>
-    getFormattedBalance(balanceAmount.value, currentCurrency.value, 2)
+    getFormattedBalance(balanceAmount.value, resolvedCurrency.value, 2)
   )
   const isAmountDisabled = computed(() => !amount.value || Number(amount.value) <= 0)
   const availableAccounts = computed(() =>
