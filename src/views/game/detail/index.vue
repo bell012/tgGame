@@ -17,9 +17,11 @@
     ></game-list>
     <bets-list></bets-list>
   </div>
+  <CommonFooter class="hidden sm:block mt-[40px]" />
 </template>
 <script setup lang="ts">
 import Api from '@/api'
+import CommonFooter from '@/components/commonFooter.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, provide, ref, watch } from 'vue'
