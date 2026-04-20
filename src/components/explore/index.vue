@@ -111,6 +111,8 @@ provide('explore-current-type', currentType)
 
 const exploreHotGameList = ref<ExploreHotGameItem[]>([])
 provide('explore-hot-game-list', exploreHotGameList)
+const exploreSuggestedList = ref<string[]>([])
+provide('explore-suggested-list', exploreSuggestedList)
 
 const typeList = computed(() => [{ id: 'casino', name: t('bottom_tab_bar.casino') }])
 
@@ -268,17 +270,14 @@ const loadSuggestedGames = async () => {
       sortByHotOrderId: true
     })
 
-    exploreHotGameList.value = hotGameResult.list
-      .map(item => {
-        const platformName = String(item.platformName ?? item.itemName ?? '').trim()
-        return {
-          platformName
-        }
-      })
-      .filter(item => Boolean(item.platformName))
+    exploreSuggestedList.value = [
+      ...new Set(hotGameResult.list.map(item => item.itemName?.trim() ?? ''))
+    ]
+      .filter(Boolean)
+      .slice(0, 6)
   } catch (error) {
     console.error('loadSuggestedGames failed', error)
-    exploreHotGameList.value = []
+    exploreSuggestedList.value = []
   }
 }
 

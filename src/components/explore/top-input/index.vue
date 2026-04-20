@@ -45,38 +45,36 @@
       <div class="text-xs text-[var(--color-text-level-2)]">
         {{ t('casino.search_tips') }}
       </div>
-      <!-- 历史记录 -->
-      <div class="flex justify-between w-full text-xs my-2.5">
-        <div class="font-bold">{{ t('search.history') }}</div>
-        <div
-          class="text-[var(--color-text-level-2)] cursor-pointer"
-          v-if="history.length > 0"
-          @click="clearHistory"
-        >
-          {{ t('search.clear') }}（{{ history?.length }}）
-        </div>
-      </div>
-      <!-- 搜索历史记录 -->
-      <div class="w-full">
-        <div v-if="history?.length > 0" class="flex flex-wrap gap-2">
-          <div
-            v-for="(item, inx) in history.slice(0, 5)"
-            :key="inx"
-            class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] inline-flex items-center cursor-pointer"
-          >
-            <div
-              class="text-xs text-[var(--color-text-level-2)] mr-0.5 break-words max-w-full cursor-pointer"
-              @click="goSearch(item)"
-            >
-              {{ item }}
-            </div>
-            <CloseIcon
-              class="w-4 h-4 stroke-text-2 shrink-0 cursor-pointer"
-              @click.stop="deleteItem(item)"
-            />
+      <template v-if="history.length > 0">
+        <!-- 历史记录 -->
+        <div class="flex justify-between w-full text-xs my-2.5">
+          <div class="font-bold">{{ t('search.history') }}</div>
+          <div class="text-[var(--color-text-level-2)] cursor-pointer" @click="clearHistory">
+            {{ t('search.clear') }}（{{ history.length }}）
           </div>
         </div>
-      </div>
+        <!-- 搜索历史记录 -->
+        <div class="w-full">
+          <div class="flex flex-wrap gap-2">
+            <div
+              v-for="(item, inx) in history.slice(0, 5)"
+              :key="inx"
+              class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] inline-flex items-center cursor-pointer"
+            >
+              <div
+                class="text-xs text-[var(--color-text-level-2)] mr-0.5 break-words max-w-full cursor-pointer"
+                @click="goSearch(item)"
+              >
+                {{ item }}
+              </div>
+              <CloseIcon
+                class="w-4 h-4 stroke-text-2 shrink-0 cursor-pointer"
+                @click.stop="deleteItem(item)"
+              />
+            </div>
+          </div>
+        </div>
+      </template>
       <!-- 接口返回搜索选项 -->
       <div class="text-xs my-2.5 w-full">
         <div class="font-bold">{{ t('search.suggested') }}</div>
@@ -129,9 +127,6 @@ import pull_down from '@/static/svg/explore/pull-down.svg?component'
 import { useIsMobile } from '@/composables/useMediaQuery'
 
 type TypeItem = { id: string; name: string }
-type HotGameItem = {
-  platformName?: string
-}
 const SEARCH_HISTORY_STORAGE_KEY = 'explore_search_history'
 const MAX_HISTORY_COUNT = 20
 
@@ -149,7 +144,7 @@ const isMobile = useIsMobile()
 
 const keyword = inject('explore-keywords') as Ref<string>
 const currentType = inject('explore-current-type') as Ref<string>
-const hotGameList = inject<Ref<HotGameItem[]>>('explore-hot-game-list', ref([]))
+const suggestedSource = inject<Ref<string[]>>('explore-suggested-list', ref([]))
 
 const typeVisible = ref(false)
 
@@ -198,16 +193,7 @@ const currentTypeName = computed(() => {
   return item ? item.name : ''
 })
 const suggestedList = computed(() => {
-  const seen = new Set<string>()
-  return hotGameList.value
-    .map(item => String(item.platformName ?? '').trim())
-    .filter(platformName => {
-      if (!platformName) return false
-      const normalizedName = platformName.toLowerCase()
-      if (seen.has(normalizedName)) return false
-      seen.add(normalizedName)
-      return true
-    })
+  return suggestedSource.value.map(item => String(item ?? '').trim()).filter(Boolean)
 })
 
 // 类型选择确认
