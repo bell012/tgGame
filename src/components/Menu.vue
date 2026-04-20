@@ -39,7 +39,7 @@
           <div
             :class="[
               'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed',
-              { 'launch-card-active': activeMenuId === menu.id }
+              { 'launch-card-active': isMenuGroupActive(menu) }
             ]"
             :data-tooltip="menu.name"
             @mouseenter="updateTooltipPosition"
@@ -58,7 +58,7 @@
               :key="item.id"
               :class="[
                 'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed mt-1',
-                { 'launch-card-active': activeMenuId === item.id }
+                { 'launch-card-active': isSubmenuBranchActive(item) }
               ]"
               :data-tooltip="item.name"
               @mouseenter="updateTooltipPosition"
@@ -82,7 +82,7 @@
           v-else-if="isCollapsed"
           :class="[
             'relative flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer menu-item-collapsed',
-            { 'launch-card-active': activeMenuId === menu.id }
+            { 'launch-card-active': isMenuGroupActive(menu) }
           ]"
           :data-tooltip="menu.name"
           @mouseenter="updateTooltipPosition"
@@ -99,7 +99,8 @@
         <template v-else>
           <div
             :class="[
-              'flex items-center justify-between launch-card-active h-10 bg-bg-2 rounded-lg cursor-pointer'
+              'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
+              { 'launch-card-active': isMenuGroupActive(menu) }
             ]"
             @click="handleMenuExpand(menu)"
           >
@@ -126,7 +127,7 @@
                 :key="item.id"
                 :class="[
                   'relative flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer',
-                  { 'launch-card-active': activeMenuId === item.id }
+                  { 'launch-card-active': isSubmenuBranchActive(item) }
                 ]"
                 @click="handleMenuItemClick(item)"
                 @mouseenter="
@@ -143,7 +144,12 @@
                     />
                     <component v-else :is="item.icon" class="w-6 h-6 fill-text-2" />
                   </div>
-                  <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
+                  <span
+                    class="text-sm font-[600]"
+                    :class="isSubmenuBranchActive(item) ? 'text-theme-primary' : 'text-text-1'"
+                  >
+                    {{ item.name }}
+                  </span>
                 </div>
                 <!-- 有子菜单时显示右箭头 -->
                 <div v-if="item.children && item.children.length > 0" class="mr-2">
@@ -178,7 +184,7 @@
             <span v-if="link.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
               link.name2
             }}</span>
-            <span class="text-sm font-[600] text-text-1">{{ link.name }}</span>
+            <span class="text-sm font-[600] text-text-1" >{{ link.name }}</span>
           </template>
         </div>
         <div
@@ -202,7 +208,7 @@
           <div
             :class="[
               'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed',
-              { 'launch-card-active': activeMenuId === menu.id }
+              { 'launch-card-active': isMenuGroupActive(menu) }
             ]"
             :data-tooltip="menu.name"
             @mouseenter="updateTooltipPosition"
@@ -221,7 +227,7 @@
               :key="item.id"
               :class="[
                 'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed mt-1',
-                { 'launch-card-active': activeMenuId === item.id }
+                { 'launch-card-active': isSubmenuBranchActive(item) }
               ]"
               :data-tooltip="item.name"
               @mouseenter="updateTooltipPosition"
@@ -246,7 +252,7 @@
           v-else-if="isCollapsed"
           :class="[
             'relative flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer menu-item-collapsed',
-            { 'launch-card-active': activeMenuId === menu.id }
+            { 'launch-card-active': isMenuGroupActive(menu) }
           ]"
           :data-tooltip="menu.name"
           @mouseenter="updateTooltipPosition"
@@ -263,7 +269,8 @@
         <template v-else>
           <div
             :class="[
-              'flex items-center justify-between launch-card-active h-10 bg-bg-2 rounded-lg cursor-pointer'
+              'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
+              { 'launch-card-active': isMenuGroupActive(menu) }
             ]"
             @click="handleMenuExpand(menu)"
           >
@@ -290,7 +297,7 @@
                 :key="item.id"
                 :class="[
                   'flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer',
-                  { 'launch-card-active': activeMenuId === item.id }
+                  { 'launch-card-active': isSubmenuBranchActive(item) }
                 ]"
                 @click="handleMenuItemClick(item)"
               >
@@ -303,7 +310,12 @@
                     />
                     <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
                   </div>
-                  <span class="text-sm font-[600] text-text-1">{{ item.name }}</span>
+                  <span
+                    class="text-sm font-[600]"
+                    :class="isSubmenuBranchActive(item) ? 'text-theme-primary' : 'text-text-1'"
+                  >
+                    {{ item.name }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -504,7 +516,14 @@
                   @click="handleThirdLevelClick(subItem)"
                 >
                   <div class="w-6 h-6 flex items-center justify-center mr-2"></div>
-                  <span class="text-sm font-[600] text-text-1">{{ subItem.name }}</span>
+                  <span
+                    class="text-sm font-[600]"
+                    :class="
+                      activeThirdLevelMenuId === subItem.id ? 'text-theme-primary' : 'text-text-1'
+                    "
+                  >
+                    {{ subItem.name }}
+                  </span>
                 </div>
               </template>
             </template>
@@ -579,6 +598,33 @@ const activeMenuId = ref<string>('')
 const activeThirdLevelMenuId = ref<string>('')
 const showLeaveFeedbackModal = ref(false)
 
+/** 用于高亮父级 */
+const isSubmenuBranchActive = (item: SidebarSubmenuItem): boolean => {
+  if (activeMenuId.value === item.id) return true
+  const children = item.children
+  if (!children?.length) return false
+  return children.some(
+    child =>
+      child.id === activeThirdLevelMenuId.value || isSubmenuBranchActive(child)
+  )
+}
+
+/** 父级分组选中 */
+const isMenuGroupActive = (menu: SidebarMenuGroup): boolean => {
+  if (activeMenuId.value === menu.id) return true
+  return menu.children.some(child => isSubmenuBranchActive(child))
+}
+
+/** 当前三级选中 */
+const menuOwnsThirdLevel = (menu: SidebarMenuGroup, thirdId: string): boolean => {
+  if (!thirdId) return false
+  const branchHasThird = (item: SidebarSubmenuItem): boolean => {
+    if (item.children?.some(c => c.id === thirdId)) return true
+    return item.children?.some(c => branchHasThird(c)) ?? false
+  }
+  return menu.children.some(item => branchHasThird(item))
+}
+
 // 当前悬浮的子菜单
 const hoveredSubmenu = ref<{ parentId: string; itemId: string } | null>(null)
 const submenuPosition = ref({ top: 0, left: 0 })
@@ -605,8 +651,14 @@ const toggleMenu = (menuId: string) => {
 }
 
 // 菜单展开
-const handleMenuExpand = (menu: any) => {
+const handleMenuExpand = (menu: SidebarMenuGroup) => {
   activeMenuId.value = menu.id
+  if (
+    activeThirdLevelMenuId.value &&
+    !menuOwnsThirdLevel(menu, activeThirdLevelMenuId.value)
+  ) {
+    activeThirdLevelMenuId.value = ''
+  }
   if (menu.handler) {
     menu.handler()
   }
@@ -623,6 +675,7 @@ const handleMenuCollapse = (menu: any) => {
 // 菜单项点击
 const handleMenuItemClick = (item: any) => {
   activeMenuId.value = item.id
+  activeThirdLevelMenuId.value = ''
   if (item.handler) {
     item.handler()
   }

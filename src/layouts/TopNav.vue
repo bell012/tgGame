@@ -9,6 +9,13 @@
         >
           <FoldIcon class="w-6 h-6 fill-none" />
         </div>
+        <!-- h5菜单 -->
+        <div
+          class="md:hidden cursor-pointer w-[40px] h-[40px] rounded-lg flex items-center justify-center"
+           @click="navigateTo('/menu')"
+        >
+          <FoldIconH5 class="h-6" :class="isH5MenuActive ? 'text-theme-primary' : 'text-text-1'" />
+        </div>
         <!-- PC端 Logo -->
         <div
           class="hidden sm:flex w-[150px] h-[48px] ml-0 sm:ml-5 items-center cursor-pointer"
@@ -19,8 +26,7 @@
         <!-- H5端 Logo (登录后小logo) -->
         <div
           v-if="isLoggedIn"
-          class="flex sm:hidden w-[26px] h-[26px] items-center cursor-pointer"
-          @click="navigateTo('/')"
+          class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer"
         >
           <SmartImage :src="mobileLogoImage" alt="" class="w-full h-full" />
           <MainLogoIcon class="w-full h-full text-text-1" />
@@ -235,6 +241,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useLocaleStore } from '@/stores/locale'
@@ -246,6 +253,7 @@ import SelectModal from '@/components/SelectModal.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
+import FoldIconH5 from '@/static/svg/foldH5.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
 import ChatIcon from '@/static/svg/chat.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
@@ -259,6 +267,7 @@ import {
   getCurrencyImageByCode,
   getCurrencySymbol,
   formatBalance,
+  stripLocalePrefix,
   type Locale
 } from '@/utils/locale'
 
@@ -266,6 +275,7 @@ const { t } = useI18n()
 const authModalStore = useAuthModalStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
+const route = useRoute()
 const userStore = useUserStore()
 const { acctInfo, userInfo } = storeToRefs(userStore)
 const { visible: showLoginModal } = storeToRefs(authModalStore)
@@ -293,6 +303,7 @@ const isLoggedIn = computed(() => {
 const avatarUrl = computed(() => {
   return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
 })
+const isH5MenuActive = computed(() => stripLocalePrefix(route.path) === '/menu')
 
 // 当前币种代码
 const currentCurrencyCode = computed(() => {

@@ -83,8 +83,8 @@
     </div>
 
     <!-- Total Balance -->
-    <div class="mb-[5px] mx-3.5">
-      <div class="flex items-center justify-between">
+    <div class="mb-2.5 mx-3.5">
+      <div class="flex items-center justify-between bg-bg-2 py-2.5 px-3.5 rounded-lg">
         <div class="flex items-center gap-2">
           <SmartImage :src="balanceIcon" alt="Balance" class="w-5 h-5" />
           <span class="text-text-2 text-sm">{{ t('personalCenter.totalBalance') }}</span>
