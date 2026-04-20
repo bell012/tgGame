@@ -217,7 +217,13 @@ const selectItem = (item: { value: string }) => {
   }
 }
 
-const clearAll = () => emit('update:selected-list', [])
+const clearAll = () => {
+  emit('update:selected-list', [])
+
+  if (isMobile.value) {
+    closePopup()
+  }
+}
 
 const GAP = 5
 const updatePopupPlacement = () => {

@@ -3,81 +3,91 @@
     <div :class="{ 'search-filter-panel': isMobile }">
       <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
     </div>
-    <div class="min-h-screen w-full relative">
-      <div
-        class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
-        :class="canScrollLeft ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
-      >
-        <button
-          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
-          @click="scrollLeft"
-        >
-          <component :is="casinoIcons.chevron_left" class="icon size-4 fill-text-1" />
-        </button>
-      </div>
-
-      <div>
+    <tempalte v-if="currentType === 'casino'">
+      <div class="min-h-screen w-full relative">
         <div
-          ref="tabScrollRef"
-          class="my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
-          @scroll="updateScrollState"
+          class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
+          :class="canScrollLeft ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
         >
           <button
-            v-for="(item, index) in tabButtons"
-            :key="item.sysGameTypeCode || `tab-${index}`"
-            :ref="el => (tabRefs[index] = el as HTMLButtonElement)"
-            :class="{
-              'bg-bg-2': item.sysGameTypeCode === currentTabCode
-            }"
-            class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
-            @click.stop="onTabButton(item)"
+            class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
+            @click="scrollLeft"
           >
-            <div class="h-5 w-5 mr-[7px]">
-              <img
-                v-if="item.sysGameTypeCode !== currentTabCode && typeof item.icon === 'string'"
-                :src="item.icon"
-                class="w-full h-full object-contain"
-              />
-              <img
-                v-else-if="
-                  item.sysGameTypeCode === currentTabCode && typeof item.iconSelect === 'string'
-                "
-                :src="item.iconSelect"
-                class="w-full h-full object-contain"
-              />
-              <component
-                v-else-if="item.icon"
-                :is="item.icon"
-                :class="item.sysGameTypeCode === currentTabCode ? 'fill-primary' : 'fill-text-2'"
-                class="w-full h-full"
-              />
-            </div>
-            <div
-              :class="item.sysGameTypeCode === currentTabCode ? 'text-text-1' : 'text-text-2'"
-              class="font-[700]"
-            >
-              {{ item.sysGameTypeName }}
-            </div>
+            <component :is="casinoIcons.chevron_left" class="icon size-4 fill-text-1" />
           </button>
         </div>
-      </div>
 
-      <div
-        class="absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pl-2 sm:flex"
-        :class="canScrollRight ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
-      >
-        <button
-          class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
-          @click="scrollRight"
+        <div>
+          <div
+            ref="tabScrollRef"
+            class="my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
+            @scroll="updateScrollState"
+          >
+            <button
+              v-for="(item, index) in tabButtons"
+              :key="item.sysGameTypeCode || `tab-${index}`"
+              :ref="el => (tabRefs[index] = el as HTMLButtonElement)"
+              :class="{
+                'bg-bg-2': item.sysGameTypeCode === currentTabCode
+              }"
+              class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
+              @click.stop="onTabButton(item)"
+            >
+              <div class="h-5 w-5 mr-[7px]">
+                <img
+                  v-if="item.sysGameTypeCode !== currentTabCode && typeof item.icon === 'string'"
+                  :src="item.icon"
+                  class="w-full h-full object-contain"
+                />
+                <img
+                  v-else-if="
+                    item.sysGameTypeCode === currentTabCode && typeof item.iconSelect === 'string'
+                  "
+                  :src="item.iconSelect"
+                  class="w-full h-full object-contain"
+                />
+                <component
+                  v-else-if="item.icon"
+                  :is="item.icon"
+                  :class="item.sysGameTypeCode === currentTabCode ? 'fill-primary' : 'fill-text-2'"
+                  class="w-full h-full"
+                />
+              </div>
+              <div
+                :class="item.sysGameTypeCode === currentTabCode ? 'text-text-1' : 'text-text-2'"
+                class="font-[700]"
+              >
+                {{ item.sysGameTypeName }}
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pl-2 sm:flex"
+          :class="
+            canScrollRight ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'
+          "
         >
-          <component :is="casinoIcons.chevron_left" class="icon size-4 rotate-180 fill-text-1" />
-        </button>
-      </div>
+          <button
+            class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
+            @click="scrollRight"
+          >
+            <component :is="casinoIcons.chevron_left" class="icon size-4 rotate-180 fill-text-1" />
+          </button>
+        </div>
 
-      <div class="tabs-content min-h-48">
-        <component :is="currentPageStyle" v-bind="currentPageProps" />
+        <div class="tabs-content min-h-48">
+          <component :is="currentPageStyle" v-bind="currentPageProps" />
+        </div>
       </div>
-    </div>
+    </tempalte>
+    <tempalte v-if="currentType === 'sports'">
+      <div class="min-h-screen w-full relative">正在开发，敬请期待...</div>
+    </tempalte>
+    <tempalte v-if="currentType === 'lottery'">
+      <div class="min-h-screen w-full relative">正在开发，敬请期待...</div>
+    </tempalte>
   </div>
 </template>
 
@@ -114,7 +124,11 @@ provide('explore-hot-game-list', exploreHotGameList)
 const exploreSuggestedList = ref<string[]>([])
 provide('explore-suggested-list', exploreSuggestedList)
 
-const typeList = computed(() => [{ id: 'casino', name: t('bottom_tab_bar.casino') }])
+const typeList = computed(() => [
+  { id: 'casino', name: t('bottom_tab_bar.casino') },
+  { id: 'sports', name: '体育' },
+  { id: 'lottery', name: '彩票' }
+])
 
 const activeSearchKeyword = ref('')
 
@@ -123,11 +137,7 @@ const topInputSearch = (value: string) => {
 }
 
 const changeTypeHandler = (value: string) => {
-  if (value !== 'casino') {
-    return
-  }
-
-  currentType.value = 'casino'
+  currentType.value = value || 'casino'
 }
 
 const tabRefs = ref<HTMLButtonElement[]>([])
