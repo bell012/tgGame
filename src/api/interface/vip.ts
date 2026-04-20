@@ -10,14 +10,17 @@ export interface VipListItem {
   keepRechargeAmount: number
   moneyType: number
   monthAmount: number
+  monthMoney?: number
   monthFlag: number
   rechargeAmount: number
   rowId: number
   site: string
   upgradedAmount: number
+  upgradedMoney?: number
   upgradedFlag: number
   vipId: number
   weekAmount: number
+  weekMoney?: number
   weekFlag: number
 }
 

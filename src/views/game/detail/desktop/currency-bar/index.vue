@@ -44,6 +44,7 @@ import LineIcon from '@/static/svg/game/detail/lines.svg?url'
 import StarIcon from '@/static/svg/game/detail/star.svg?url'
 import StarActiveIcon from '@/static/svg/game/detail/star_active.svg?url'
 import { useGameFavorite } from '@/composables/useGameFavorite'
+import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { useThemeStore } from '@/stores/theme'
 import { computed, ref } from 'vue'
 import LiveStatePopup from './live-state-popup.vue'
@@ -54,6 +55,7 @@ import SmartImage from '@/components/common/SmartImage.vue'
 
 const isMobile = useIsMobile()
 const themeStore = useThemeStore()
+const { requireLogin } = useRequireLoginAction()
 
 const { isFavorite: starActived, toggleFavorite: toggleStar } = useGameFavorite()
 const isLightTheme = computed(() => themeStore.theme === 'light')
@@ -67,10 +69,16 @@ const settingVisibleClick = () => {
 }
 
 const liveStateVisibleClick = () => {
+  if (!requireLogin()) {
+    return
+  }
   liveStateVisible.value = true
 }
 
 const shareClick = () => {
+  if (!requireLogin()) {
+    return
+  }
   shareVisible.value = true
 }
 </script>

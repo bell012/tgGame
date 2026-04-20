@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#000]">
     <!-- PC端 - 大于640px显示 -->
-    <div class="hidden sm:block md:min-w-[1280px] pcBG">
+    <div class="hidden sm:block sm:min-w-[1280px] pcBG">
       <header class="fixed top-0 left-0 right-0 z-50 h-14 bg-[#0d090699]">
         <div class="w-[1280px] h-14 mx-auto px-2 flex items-center justify-between">
           <div class="flex items-center">

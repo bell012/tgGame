@@ -26,7 +26,8 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'casino',
     component: () => import('@/views/fun/casino/index.vue'),
     meta: {
-      title: '娱乐城'
+      title: '娱乐城',
+      keepAlive: true
     },
     props: route => ({
       tabKey: route.params.tabKey as string | undefined
@@ -37,7 +38,8 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'casinoTabKey',
     component: () => import('@/views/fun/casino/index.vue'),
     meta: {
-      title: '娱乐城'
+      title: '娱乐城',
+      keepAlive: true
     },
     props: route => ({
       tabKey: route.params.tabKey as string
@@ -203,7 +205,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '游戏详情',
       description: '游戏详情',
-      requiresAuth: true,
+      // requiresAuth: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -273,22 +275,6 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '个人中心',
       description: '个人中心',
-      requiresAuth: true,
-      mobileOnly: true, //pc中路由不可见 H5中路由可见
-      slideTransition: true, // 启用滑动动画
-      mobile: {
-        hideBottomBar: true,
-        hideTopNav: true
-      }
-    }
-  },
-  {
-    path: 'rule',
-    name: 'rule',
-    component: () => import('@/views/rule/index.vue'),
-    meta: {
-      title: '规则',
-      description: '规则',
       requiresAuth: true,
       mobileOnly: true, //pc中路由不可见 H5中路由可见
       slideTransition: true, // 启用滑动动画

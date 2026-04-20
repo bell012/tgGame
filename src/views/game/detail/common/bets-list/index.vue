@@ -100,11 +100,14 @@
         <tbody v-if="highRollerRows.length">
           <tr
             v-for="(item, index) in highRollerRows"
-            :key="item.id"
+            :key="`${item.id}-${index}`"
             :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
           >
             <td class="py-2 px-3">
-              <div class="flex items-center gap-1 min-w-0">
+              <div
+                class="flex items-center gap-1 min-w-0 cursor-pointer"
+                @click="handleHighRollerGameClick"
+              >
                 <SmartImage
                   :src="item.gameIcon"
                   class="w-3.5 h-3.5 object-contain"
@@ -113,16 +116,14 @@
                 <span class="text-text-1 truncate">{{ item.game }}</span>
               </div>
             </td>
-            <td class="py-2 px-3 text-text-1 truncate">
+            <td class="py-2 px-3 text-text-1 truncate cursor-pointer">
               {{ item.player }}
             </td>
-            <td class="py-2 px-3 text-text-1 truncate">{{ item.multiplier }}x</td>
+            <td class="py-2 px-3 text-text-1 truncate">x{{ item.multiplier }}</td>
             <td class="py-2 px-3 text-[12px]">
               <div class="flex items-center justify-end gap-1">
-                <span
-                  :class="item.profitNumber >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''"
-                >
-                  {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
+                <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
+                  {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
                 </span>
                 <SmartImage
                   :src="currentCurrencyIcon"
@@ -151,8 +152,9 @@ import type { GameBetRecordItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
 import placeholderImg from '@/static/img/home/errImg.png'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
+import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
-import { computed, inject, ref, watch, type ComputedRef } from 'vue'
+import { computed, inject, onBeforeUnmount, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SmartImage from '@/components/common/SmartImage.vue'
 
@@ -180,18 +182,21 @@ interface IRow {
 }
 
 interface IHighRollerRow {
-  id: string
+  id: number
   game: string
   gameIcon: string
   player: string
-  multiplier: string
-  profit: string
-  profitNumber: number
+  multiplier: number
+  profit: number
 }
 
 const rows = ref<IRow[]>([])
+const highRollerSourceRows = ref<IHighRollerRow[]>([])
 const highRollerRows = ref<IHighRollerRow[]>([])
 const isLoading = ref(false)
+
+const MAX_VISIBLE_ROWS = 10
+const SCROLL_INTERVAL_MS = 1000
 
 const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   'game-detail-current-game',
@@ -212,6 +217,10 @@ const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestC
 
 const currentBetType = computed<1 | 2>(() => (activeTab.value === 1 ? 2 : 1))
 const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
+
+const handleHighRollerGameClick = () => {
+  navigateTo('/bet-history')
+}
 
 const parseAmount = (value: unknown) => {
   const parsed = Number(normalizeValue(value))
@@ -250,16 +259,14 @@ const toGameImageUrl = (value: unknown) => {
 }
 
 const mapHighRollerToRow = (item: Record<string, unknown>, index: number): IHighRollerRow => {
-  const game = normalizeValue(item.gameName) || '--'
-  const profitNumber = parseAmount(item.winAmount)
+  const icon = toGameImageUrl(item.coverImg)
   return {
-    id: normalizeValue(item.rowId) || `${game}-${index}`,
-    game,
-    gameIcon: toGameImageUrl(item.coverImg),
-    player: normalizeValue(item.nickName) || '--',
-    multiplier: formatAmount(item.multiple),
-    profit: formatAmount(item.winAmount),
-    profitNumber
+    id: Number(item.rowId ?? index),
+    game: String(item.gameName ?? '--'),
+    gameIcon: icon || placeholderImg,
+    player: String(item.nickName ?? '--'),
+    multiplier: parseAmount(item.multiple),
+    profit: parseAmount(item.winAmount)
   }
 }
 
@@ -304,6 +311,7 @@ const fetchBetRecords = async () => {
 }
 
 const fetchHighRollerRecords = async () => {
+  stopHighRollerAutoScroll()
   try {
     const currency = currentRequestCurrency.value
     const res = await Api.home.getRecentBigWins(
@@ -318,13 +326,56 @@ const fetchHighRollerRecords = async () => {
     )
     const rawResult = res?.result
     const recordList = Array.isArray(rawResult) ? rawResult : []
-    highRollerRows.value = recordList.map((item, index) =>
+    highRollerSourceRows.value = recordList.map((item, index) =>
       mapHighRollerToRow((item as Record<string, unknown>) ?? {}, index)
     )
   } catch (error) {
     console.error('fetchHighRollerRecords failed', error)
+    highRollerSourceRows.value = []
     highRollerRows.value = []
   }
+}
+
+let highRollerAutoScrollTimer: number | null = null
+let highRollerNextScrollIndex = 0
+
+const stopHighRollerAutoScroll = () => {
+  if (highRollerAutoScrollTimer != null) {
+    window.clearTimeout(highRollerAutoScrollTimer)
+    highRollerAutoScrollTimer = null
+  }
+}
+
+const scheduleNextHighRollerScroll = () => {
+  highRollerAutoScrollTimer = window.setTimeout(() => {
+    const list = highRollerSourceRows.value
+    const nextRow = list[highRollerNextScrollIndex]
+    if (!nextRow || list.length === 0) {
+      return
+    }
+
+    highRollerRows.value = [nextRow, ...highRollerRows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
+    highRollerNextScrollIndex = (highRollerNextScrollIndex + 1) % list.length
+    scheduleNextHighRollerScroll()
+  }, SCROLL_INTERVAL_MS)
+}
+
+const startHighRollerAutoScroll = () => {
+  stopHighRollerAutoScroll()
+  const list = highRollerSourceRows.value
+  if (list.length === 0) {
+    highRollerRows.value = []
+    return
+  }
+
+  if (list.length <= MAX_VISIBLE_ROWS) {
+    highRollerRows.value = [...list]
+    return
+  }
+
+  highRollerRows.value = list.slice(0, MAX_VISIBLE_ROWS)
+  highRollerNextScrollIndex = MAX_VISIBLE_ROWS % list.length
+  scheduleNextHighRollerScroll()
 }
 
 const fetchTableData = async () => {
@@ -336,6 +387,8 @@ const fetchTableData = async () => {
       return
     }
 
+    stopHighRollerAutoScroll()
+    highRollerSourceRows.value = []
     highRollerRows.value = []
     await fetchBetRecords()
   } finally {
@@ -350,6 +403,23 @@ watch(
   },
   { immediate: true }
 )
+
+watch(
+  highRollerSourceRows,
+  () => {
+    if (activeTab.value !== 2) {
+      stopHighRollerAutoScroll()
+      return
+    }
+
+    startHighRollerAutoScroll()
+  },
+  { deep: true }
+)
+
+onBeforeUnmount(() => {
+  stopHighRollerAutoScroll()
+})
 </script>
 
 <style scoped>

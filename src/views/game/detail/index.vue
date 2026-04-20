@@ -3,9 +3,7 @@
     <div v-if="isGameDataLoading" class="detail-loading-mask" aria-live="polite" aria-busy="true">
       <div class="detail-loading-spinner"></div>
     </div>
-    <h5-header class="block sm:block md:hidden lg:hidden">{{
-      currentGameDetail?.itemName ?? ''
-    }}</h5-header>
+    <h5-header class="block sm:hidden">{{ currentGameDetail?.itemName ?? '' }}</h5-header>
     <h5-currency-info v-if="isMobile"></h5-currency-info>
     <desktop-currency-info v-else></desktop-currency-info>
     <recent-games></recent-games>
@@ -17,9 +15,11 @@
     ></game-list>
     <bets-list></bets-list>
   </div>
+  <CommonFooter class="hidden sm:block mt-[40px]" />
 </template>
 <script setup lang="ts">
 import Api from '@/api'
+import CommonFooter from '@/components/commonFooter.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, provide, ref, watch } from 'vue'
@@ -191,16 +191,15 @@ const getGameDataForApp = async () => {
 }
 
 watch(
-  [rowId],
+  rowId,
   () => {
     void getCurrentGameDetailByApi()
   },
-  { flush: 'post' }
+  { immediate: true, flush: 'post' }
 )
 
 onMounted(async () => {
   await getGameDataForApp()
-  await getCurrentGameDetailByApi()
 })
 </script>
 <style scoped lang="scss">

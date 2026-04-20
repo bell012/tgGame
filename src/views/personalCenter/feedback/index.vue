@@ -68,7 +68,6 @@ import feedbackStarIcon from '@/static/svg/feedback/star.svg?url'
 import feedbackEllipseIcon from '@/static/svg/feedback/ellipse.svg?url'
 import deleteIcon from '@/static/img/payment/upload_delete.png'
 import { computed, onBeforeUnmount, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { showToast, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
@@ -93,6 +92,7 @@ import FeedbackMyTab from './components/feedback-my-tab.vue'
 import FeedbackClaimSuccessPopup from './components/feedback-claim-success-popup.vue'
 import FeedbackDetailPopup from './components/feedback-detail-popup.vue'
 import type { FeedbackListItem, FeedbackTab } from './types'
+import { navigateToName } from '@/utils/router'
 
 const props = withDefaults(
   defineProps<{
@@ -107,7 +107,6 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const router = useRouter()
 const { t } = useI18n()
 
 // 页面基础状态
@@ -427,8 +426,7 @@ const goToFeedbackDetail = (recordId: string) => {
     return
   }
 
-  router.push({
-    name: 'personal-center-feedback-detail',
+  navigateToName('personal-center-feedback-detail', {
     params: { recordId }
   })
 }

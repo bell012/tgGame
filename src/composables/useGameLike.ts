@@ -1,5 +1,6 @@
 import { createGameFavoriteKey } from '@/utils/game-favorite-cache'
 import { isGameLikedByKey, setGameLikedByKey } from '@/utils/game-like-cache'
+import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -11,6 +12,7 @@ type CurrentGameDetail = {
 
 export const useGameLike = () => {
   const route = useRoute()
+  const { requireLogin } = useRequireLoginAction()
 
   const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
     'game-detail-current-game',
@@ -36,6 +38,10 @@ export const useGameLike = () => {
   )
 
   const toggleLike = () => {
+    if (!requireLogin()) {
+      return false
+    }
+
     const key = likeKey.value
     if (!key) {
       return false

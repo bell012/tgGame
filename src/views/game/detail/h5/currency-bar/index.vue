@@ -43,6 +43,7 @@ import StarActiveIcon from '@/static/svg/game/detail/star_active.svg?url'
 import LoveActiveIcon from '@/static/svg/game/detail/love_active.svg?url'
 import { useGameFavorite } from '@/composables/useGameFavorite'
 import { useGameLike } from '@/composables/useGameLike'
+import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { ref } from 'vue'
 import LiveStatePopup from './live-state-popup.vue'
 import SharePopup from './share-popup.vue'
@@ -50,6 +51,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import SmartImage from '@/components/common/SmartImage.vue'
 
 const isMobile = useIsMobile()
+const { requireLogin } = useRequireLoginAction()
 
 const { isFavorite: starActived, toggleFavorite: toggleStar } = useGameFavorite()
 const { isLiked: loveActived, toggleLike: toggleLove } = useGameLike()
@@ -58,10 +60,16 @@ const liveStateVisible = ref(false)
 const shareVisible = ref(false)
 
 const liveStateVisibleClick = () => {
+  if (!requireLogin()) {
+    return
+  }
   liveStateVisible.value = true
 }
 
 const shareVisibleClick = () => {
+  if (!requireLogin()) {
+    return
+  }
   shareVisible.value = true
 }
 </script>

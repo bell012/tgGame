@@ -1,8 +1,18 @@
 <template>
   <div class="w-full h-full p-[12px] bg-[var(--color-background-level-3)] rounded-t-[10px]">
     <div class="flex gap-[10px]">
-      <div class="w-[110px] h-[146px]">
-        <img :src="displayGameImg" alt="" class="w-full h-full object-contain rounded-md" />
+      <div
+        class="w-[110px] h-[146px] rounded-md bg-[var(--color-background-level-2)] flex items-center justify-center overflow-hidden"
+      >
+        <img
+          :src="displayGameImg"
+          alt=""
+          :class="
+            isFallbackImage
+              ? 'w-[31px] h-[31px] object-contain opacity-85'
+              : 'w-full h-full object-contain'
+          "
+        />
       </div>
       <div class="flex-1 flex flex-col justify-between">
         <div class="flex-1 flex flex-col justify-around">
@@ -27,16 +37,21 @@
   <currency-bar></currency-bar>
 </template>
 <script setup lang="ts">
-import defaultGameImg from '@/static/img/explore/game.png'
+import errorImg from '@/static/img/home/errImg.png'
+import errorImg1 from '@/static/img/home/errImg1.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import CurrencySelect from '../currency-select/index.vue'
 import CurrencyBar from '../currency-bar/index.vue'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
+import { useThemeStore } from '@/stores/theme'
+import { storeToRefs } from 'pinia'
 
 const { gamePlay, currentGameDetail } = useGamePlatformPlay()
 const { t } = useI18n()
+const themeStore = useThemeStore()
+const { theme } = storeToRefs(themeStore)
 
 const selectedData = ref<{ value: string; label: string; icon: string } | undefined>(undefined)
 const handleCurrencyChange = (
@@ -54,14 +69,15 @@ const toImageUrl = (value: string) => {
   return `${String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')}${imagePath}`
 }
 
-const displayGameImg = computed(() => {
-  const rawImage =
-    currentGameDetail.value?.icon2 ??
-    currentGameDetail.value?.conUrl ??
-    currentGameDetail.value?.gameItemHotVo?.defaultImage ??
-    ''
-  return toImageUrl(String(rawImage)) || defaultGameImg
+const rawGameImage = computed(() => {
+  // 详情页仅使用真实游戏图，后端 defaultImage 视为占位图，不在此处使用
+  const rawImage = currentGameDetail.value?.icon2 ?? currentGameDetail.value?.conUrl ?? ''
+  return toImageUrl(String(rawImage))
 })
+
+const placeholderIcon = computed(() => (theme.value === 'dark' ? errorImg : errorImg1))
+const isFallbackImage = computed(() => !rawGameImage.value)
+const displayGameImg = computed(() => rawGameImage.value || placeholderIcon.value)
 </script>
 <style scoped lang="scss">
 .play-btn {
