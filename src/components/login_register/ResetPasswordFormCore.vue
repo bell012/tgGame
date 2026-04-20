@@ -160,7 +160,7 @@ const handleResetPassword = async () => {
     // 重置密码接口
     const response = await Api.auth.resetPassword(resetPasswordData)
     // 重置密码成功，清空表单
-    if (response && response.success) {
+    if (response.code == 'C2') {
       resetForm()
     }
   } catch (error) {
