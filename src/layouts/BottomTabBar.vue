@@ -36,9 +36,9 @@ const menus = computed(() => [
     id: 'menu',
     name: t('bottom_tab_bar.menu'),
     icon: 'menu',
-    route: '/menu',
-    handler: () => navigateTo('/menu'),
-    active: isActive('/menu', true)
+    route: '/',
+    handler: () => navigateTo('/'),
+    active: isActive('/', true)
   },
   {
     id: 'explore',
