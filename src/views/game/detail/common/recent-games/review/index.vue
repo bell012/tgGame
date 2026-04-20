@@ -61,7 +61,7 @@
             v-for="avatarIndex in avatarCount"
             :key="avatarIndex"
             alt=""
-            :src="PersonIcon"
+            :src="currentUserAvatarUrl"
             class="size-[26px] rounded-[26px]"
           />
         </div>
@@ -91,7 +91,7 @@
       </transition>
     </div>
     <div class="flex items-center gap-[10px] mt-[10px]">
-      <SmartImage alt="" :src="PersonIcon" class="size-[44px] rounded-[44px]" />
+      <SmartImage alt="" :src="currentUserAvatarUrl" class="size-[44px] rounded-[44px]" />
       <div
         class="flex-1 flex h-[50px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[4px] px-[12px] cursor-pointer"
         @click="openCommentPopup"
@@ -271,6 +271,7 @@ import Api from '@/api'
 import type { GameCommentListItem } from '@/api/interface/game'
 import { useGameRating } from '@/composables/useGameRating'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
+import { useUserStore } from '@/stores/user'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?url'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?url'
 import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
@@ -279,6 +280,8 @@ import PersonIcon from '@/static/svg/game/detail/comment/person.webp?url'
 import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?url'
 import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?url'
 import { useThemeStore } from '@/stores/theme'
+import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
+import { storeToRefs } from 'pinia'
 import {
   computed,
   inject,
@@ -316,7 +319,10 @@ const route = useRoute()
 const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
 const { t } = useI18n()
 const themeStore = useThemeStore()
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
 const isLightTheme = computed(() => themeStore.theme === 'light')
+const currentUserAvatarUrl = computed(() => resolveProfileAvatarUrl(userInfo.value?.headPortrait))
 
 const { requireLogin } = useRequireLoginAction()
 const { rating: userRating, setRating } = useGameRating()

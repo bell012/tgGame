@@ -4,14 +4,21 @@
       <!-- 左侧 -->
       <div class="flex items-center">
         <div
-          class="hidden md:flex cursor-pointer search w-[40px] h-[40px] rounded-lg flex items-center justify-center"
+          class="hidden sm:flex cursor-pointer search w-[40px] h-[40px] rounded-lg items-center justify-center"
           @click="handleToggleSidebar"
         >
           <FoldIcon class="w-6 h-6 fill-none" />
         </div>
+        <!-- h5菜单 -->
+        <div
+          class="sm:hidden cursor-pointer w-[40px] h-[40px] rounded-lg flex items-center justify-center"
+           @click="navigateTo('/menu')"
+        >
+          <FoldIconH5 class="h-6" :class="isH5MenuActive ? 'text-theme-primary' : 'text-text-1'" />
+        </div>
         <!-- PC端 Logo -->
         <div
-          class="hidden md:flex w-[150px] h-[48px] ml-0 md:ml-5 items-center cursor-pointer"
+          class="hidden sm:flex w-[150px] h-[48px] ml-0 sm:ml-5 items-center cursor-pointer"
           @click="navigateTo('/')"
         >
           <MainLogoIcon class="w-full h-full text-text-1" />
@@ -20,7 +27,6 @@
         <div
           v-if="isLoggedIn"
           class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer"
-          @click="navigateTo('/')"
         >
           <SmartImage :src="mobileLogoImage" alt="" class="w-full h-full" />
           <MainLogoIcon class="w-full h-full text-text-1" />
@@ -28,7 +34,7 @@
         <!-- H5端 Logo (未登录大logo) -->
         <div
           v-else
-          class="flex md:hidden w-[150px] h-[48px] items-center cursor-pointer"
+          class="flex sm:hidden w-[150px] h-[48px] items-center cursor-pointer"
           @click="navigateTo('/')"
         >
           <MainLogoIcon class="w-full h-full text-text-1" />
@@ -38,7 +44,7 @@
       <!-- 右侧 -->
       <div class="flex-1 flex items-center justify-end">
         <div
-          class="hidden md:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
+          class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
           @click="openExploreModal"
         >
           <SearchIcon class="w-6 h-6 fill-none" />
@@ -48,14 +54,14 @@
         <template v-if="!isLoggedIn">
           <!-- 登入 -->
           <div
-            class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-transparent border-0 md:border-2 border-[#e4eaf019] mr-1"
+            class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-transparent border-0 sm:border-2 border-[#e4eaf019] mr-1"
             @click="openLoginModal"
           >
             {{ t('home.sign_In') }}
           </div>
           <!-- 注册 -->
           <div
-            class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 md:mr-3"
+            class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 sm:mr-3"
             @click="openRegisterModal"
           >
             {{ t('home.sign_Up') }}
@@ -65,7 +71,7 @@
         <!-- 已登录状态 -->
         <template v-else>
           <div
-            class="hidden md:flex items-center justify-between search h-[40px] p-1 rounded-lg mr-3"
+            class="hidden sm:flex items-center justify-between search h-[40px] p-1 rounded-lg mr-3"
             style="width: 260px"
           >
             <div class="flex items-center justify-center cursor-pointer ml-1">
@@ -95,7 +101,7 @@
 
           <!-- H5 余额和充值容器 -->
           <div
-            class="flex md:hidden items-center justify-between search w-[184px] h-[33px] p-1 rounded-lg mr-2"
+            class="flex sm:hidden items-center justify-between search w-[184px] h-[33px] p-1 rounded-lg mr-2"
           >
             <div class="flex items-center justify-center cursor-pointer ml-1">
               <div class="w-5 h-5 mr-1">
@@ -124,7 +130,7 @@
           </div>
 
           <!-- H5 礼物、通知、头像 -->
-          <div class="flex md:hidden items-center">
+          <div class="flex sm:hidden items-center">
             <!-- 礼物图标 -->
             <div
               class="cursor-pointer search w-[33px] h-[33px] flex items-center justify-center rounded-lg mr-2"
@@ -149,13 +155,13 @@
 
           <!-- 礼物图标 -->
           <div
-            class="hidden md:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
+            class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
           >
             <GiftIcon class="w-6 h-6 fill-none" />
           </div>
 
           <!-- 聊天和通知容器 (带边框和分隔线) -->
-          <div class="hidden md:flex items-center search h-[40px] rounded-lg mr-3">
+          <div class="hidden sm:flex items-center search h-[40px] rounded-lg mr-3">
             <!-- 聊天图标 -->
             <div class="flex items-center justify-center cursor-pointer w-[40px] h-[40px]">
               <ChatIcon class="w-6 h-6 fill-none" />
@@ -174,7 +180,7 @@
           </div>
 
           <!-- 用户头像 (PC端) -->
-          <div ref="userMenuRef" class="hidden md:block relative">
+          <div ref="userMenuRef" class="hidden sm:block relative">
             <div
               class="cursor-pointer w-[44px] h-[44px] border-3 border-opacity-15 flex items-center justify-center bg-opacity-5 rounded-full overflow-hidden mr-2"
               @click="toggleUserMenu"
@@ -190,7 +196,7 @@
         <!-- 未登录时显示的聊天图标 -->
         <div
           v-if="!isLoggedIn"
-          class="hidden md:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
+          class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
         >
           <ChatIcon class="w-6 h-6 fill-none" />
         </div>
@@ -201,7 +207,7 @@
           class="flex items-center justify-center w-auto h-[40px] rounded-lg overflow-hidden relative"
         >
           <div
-            class="hidden md:flex items-center justify-center cursor-pointer search w-[40px] h-[40px]"
+            class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px]"
             @click="openLanguageModal"
           >
             <LanguageIcon class="w-6 h-6 fill-none" />
@@ -209,7 +215,7 @@
           <template v-if="localeStore.currentCurrency !== 'none'">
             <div class="absolute left-10 top-2 h-6 w-[1px] line"></div>
             <div
-              class="hidden md:flex items-center justify-center cursor-pointer search w-auto h-[40px] px-2"
+              class="hidden sm:flex items-center justify-center cursor-pointer search w-auto h-[40px] px-2"
               @click="openCurrencyModal"
             >
               <span class="text">{{ localeStore.currentCurrency }}</span>
@@ -235,6 +241,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useLocaleStore } from '@/stores/locale'
@@ -246,6 +253,7 @@ import SelectModal from '@/components/SelectModal.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
+import FoldIconH5 from '@/static/svg/foldH5.svg?component'
 import SearchIcon from '@/static/svg/search.svg?component'
 import ChatIcon from '@/static/svg/chat.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
@@ -259,6 +267,7 @@ import {
   getCurrencyImageByCode,
   getCurrencySymbol,
   formatBalance,
+  stripLocalePrefix,
   type Locale
 } from '@/utils/locale'
 
@@ -266,6 +275,7 @@ const { t } = useI18n()
 const authModalStore = useAuthModalStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
+const route = useRoute()
 const userStore = useUserStore()
 const { acctInfo, userInfo } = storeToRefs(userStore)
 const { visible: showLoginModal } = storeToRefs(authModalStore)
@@ -293,6 +303,7 @@ const isLoggedIn = computed(() => {
 const avatarUrl = computed(() => {
   return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
 })
+const isH5MenuActive = computed(() => stripLocalePrefix(route.path) === '/menu')
 
 // 当前币种代码
 const currentCurrencyCode = computed(() => {

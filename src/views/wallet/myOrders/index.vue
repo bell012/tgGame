@@ -3,7 +3,7 @@
     <!-- H5 端页面容器 -->
     <div
       v-if="isReady && isMobile"
-      class="fixed inset-0 flex flex-col overflow-hidden bg-bg-1 md:hidden"
+      class="fixed inset-0 flex flex-col overflow-hidden bg-bg-1 sm:hidden"
     >
       <!-- H5 订单详情页面 -->
       <template v-if="selectedMobileOrder">

@@ -2,7 +2,7 @@
   <div>
     <div
       v-if="isReady && isMobile"
-      class="fixed inset-0 block bg-bg-1 md:hidden flex flex-col overflow-hidden"
+      class="fixed inset-0 bg-bg-1 sm:hidden flex flex-col overflow-hidden"
     >
       <H5Header :title="$t('personalCenter.transaction')" :show-sort="true" @sort="handleSort" />
 

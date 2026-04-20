@@ -47,7 +47,7 @@ export const API_ERROR_CODE_MESSAGES = {
   ],
   C37: ['Current user has been logged out.', '当前用户已登出。'],
   C38: ['Your bank account information cannot be modified.', '您的银行卡信息无法修改。'],
-  C41: ['The number of bank cards has reached the limit.', '银行卡数量已达上限。'],
+  C41: ['Incorrect verification code.', '验证码错误。'],
   C42: ['A member can bind up to 3 bank cards.', '一个会员最多绑定 3 张银行卡。'],
   C43: ['Please enter a correct bank card number.', '请输入正确的银行卡号。'],
   C46: [
@@ -81,7 +81,6 @@ export const API_ERROR_CODE_MESSAGES = {
   E2: ['Account does not exist.', '账号不存在。'],
   E3: ['The current game is under maintenance.', '当前游戏维护中。'],
   E4: ['Order status is abnormal.', '订单状态异常。'],
-  E5: ['Incorrect verification code.', '验证码错误。'],
   E6: ['Incorrect old password.', '旧密码错误。'],
   E7: ['Request content length is invalid.', '请求内容长度无效。'],
   E8: ['Illegal upload.', '非法上传。'],
