@@ -173,7 +173,11 @@ const emitSearch = () => {
 }
 
 const onInput = () => {
-  isOpen.value = shouldShowSearchPanel(keyword.value.trim())
+  const str = keyword.value.trim()
+  if (str.length === 1) {
+    return
+  }
+  isOpen.value = shouldShowSearchPanel(str)
 
   if (timer !== null) clearTimeout(timer)
   timer = setTimeout(emitSearch, 300)
@@ -183,6 +187,10 @@ const onInput = () => {
 }
 
 const onSearch = () => {
+  const str = keyword.value.trim()
+  if (str.length === 1) {
+    return
+  }
   if (timer !== null) clearTimeout(timer)
   emitSearch()
   addHistory(keyword.value)

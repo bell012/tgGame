@@ -194,9 +194,18 @@ const currentQueryOptions = computed<GameQueryOptions | undefined>(() => {
 })
 
 const currentPageProps = computed<Record<string, unknown>>(() => {
-  return {
+  const baseProps: Record<string, unknown> = {
     queryOptions: currentQueryOptions.value
   }
+
+  if (currentPageStyle.value === pageStyle3) {
+    return {
+      ...baseProps,
+      hideSortWhenKeyword: isMobile.value
+    }
+  }
+
+  return baseProps
 })
 
 const updateScrollState = () => {
