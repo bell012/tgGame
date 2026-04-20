@@ -4,14 +4,14 @@
       <!-- 左侧 -->
       <div class="flex items-center">
         <div
-          class="sm:flex cursor-pointer search w-[40px] h-[40px] rounded-lg flex items-center justify-center"
+          class="hidden sm:flex cursor-pointer search w-[40px] h-[40px] rounded-lg items-center justify-center"
           @click="handleToggleSidebar"
         >
           <FoldIcon class="w-6 h-6 fill-none" />
         </div>
         <!-- h5菜单 -->
         <div
-          class="md:hidden cursor-pointer w-[40px] h-[40px] rounded-lg flex items-center justify-center"
+          class="sm:hidden cursor-pointer w-[40px] h-[40px] rounded-lg flex items-center justify-center"
            @click="navigateTo('/menu')"
         >
           <FoldIconH5 class="h-6" :class="isH5MenuActive ? 'text-theme-primary' : 'text-text-1'" />

@@ -26,6 +26,7 @@ import { useI18n } from 'vue-i18n'
 import { bottomTabBarIcons } from '@/static/svg/bottom_tab_bar'
 import { useLayoutStore } from '@/stores/layout'
 import { navigateTo } from '@/utils/router'
+import { stripLocalePrefix } from '@/utils/locale'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -33,9 +34,9 @@ const layoutStore = useLayoutStore()
 
 const menus = computed(() => [
   {
-    id: 'menu',
-    name: t('bottom_tab_bar.menu'),
-    icon: 'menu',
+    id: 'home',
+    name: t('home.home'),
+    icon: 'home',
     route: '/',
     handler: () => navigateTo('/'),
     active: isActive('/', true)
@@ -80,7 +81,7 @@ const menus = computed(() => [
  * @param exact 是否精确匹配（默认 false）
  */
 const isActive = (path: string, exact = false) => {
-  const currentPath = route.path.replace(/^\/(zh|en)/, '')
+  const currentPath = stripLocalePrefix(route.path)
   return computed(() => {
     if (exact) return currentPath === path
     return currentPath === path || currentPath.startsWith(path + '/')
