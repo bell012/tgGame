@@ -1,7 +1,8 @@
 ﻿<template>
-  <div class="grid lg:grid-cols-4 grid-cols-2 gap-4">
+  <div :class="containerClass">
     <!-- 排序选择 -->
     <DropdownSelect
+      v-if="!hideSort"
       :options="resolvedSortOptions"
       :selected="sortBy"
       :label="t('casino.sort')"
@@ -45,13 +46,20 @@ const props = withDefaults(
     providerOptions?: ProviderOption[]
     selectedSort?: string
     selectedProviders?: string[]
+    hideSort?: boolean
   }>(),
   {
     sortOptions: undefined,
     providerOptions: () => [],
     selectedSort: '',
-    selectedProviders: () => []
+    selectedProviders: () => [],
+    hideSort: false
   }
+)
+
+const hideSort = computed(() => props.hideSort)
+const containerClass = computed(() =>
+  hideSort.value ? 'grid grid-cols-1 gap-4' : 'grid lg:grid-cols-4 grid-cols-2 gap-4'
 )
 
 const resolvedSortOptions = computed<FilterOption[]>(() => {

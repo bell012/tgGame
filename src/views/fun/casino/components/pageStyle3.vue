@@ -6,6 +6,7 @@
         :providerOptions="providerOptions"
         :selected-sort="selectedSort"
         :selected-providers="selectedProviders"
+        :hide-sort="hideSortFilter"
         @update:sort="handleSort"
         @update:providers="handleProvider"
       />
@@ -33,7 +34,7 @@
       text-class="text-xs text-center text-text-1"
     />
 
-    <div v-if="total > 0" class="mt-4 flex items-center justify-center">
+    <div v-if="total > 0 && totalPages > 1" class="mt-4 flex items-center justify-center">
       <button
         type="button"
         class="flex h-9 items-center justify-center rounded-bl-lg rounded-tl-lg bg-bg-2 px-2.5 text-xs"
@@ -95,6 +96,7 @@ interface Props {
   sortValue?: string
   providerNames?: string[]
   providerCodes?: string[]
+  hideSortWhenKeyword?: boolean
 }
 
 const props = defineProps<Props>()
@@ -157,6 +159,14 @@ const resolvedQueryOptions = computed<GameQueryOptions>(() => {
     ...sortOptionMap[selectedSort.value],
     brandCodes: selectedProviders.value
   }
+})
+const hideSortFilter = computed(() => {
+  if (!props.hideSortWhenKeyword) {
+    return false
+  }
+
+  const keyword = String((props.queryOptions ?? props.modules ?? {}).keyword ?? '').trim()
+  return keyword.length > 0
 })
 const resolvedQueryKey = computed(() => JSON.stringify(resolvedQueryOptions.value))
 const baseQueryKey = computed(() =>
