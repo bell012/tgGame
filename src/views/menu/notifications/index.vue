@@ -543,11 +543,7 @@ import {
   markNotificationsAsRead
 } from '@/utils/notification-cache'
 import type { TradeMessageStreamItem } from '@/utils/payOrderSync'
-import {
-  applyOrderStatusCacheToOrderDetail,
-  getPayOrderDisplayStatus,
-  normalizePayOrderType
-} from '@/utils/payOrderSync'
+import { getPayOrderDisplayStatus, normalizePayOrderType } from '@/utils/payOrderSync'
 import { navigateTo } from '@/utils/router'
 import OrderDetailScrollPanel from '@/views/wallet/myOrders/OrderDetailScrollPanel.vue'
 import { copyTextWithFallback, type OrderTab } from '@/views/wallet/myOrders/shared'
@@ -1107,7 +1103,7 @@ const isPendingCryptoDepositOrder = (detail: QueryPayOrderByOrderIdResult) => {
 }
 
 const normalizeQueriedOrderDetail = (
-  detail: ReturnType<typeof applyOrderStatusCacheToOrderDetail>
+  detail: QueryPayOrderByOrderIdResult
 ): QueryPayOrderByOrderIdResult => ({
   ...detail,
   busiAmount: Number(detail.busiAmount ?? 0),
@@ -1509,11 +1505,9 @@ const handleTransactionNotificationClick = async (item: NotificationItem) => {
       throw new Error(response?.message || t('common.requestError'))
     }
 
-    const syncedDetail = normalizeQueriedOrderDetail(
-      applyOrderStatusCacheToOrderDetail(detail, tradeMessageSyncStore.orderStatusMap)
-    )
-    const targetTab = toOrderTab(syncedDetail.orderType)
-    const displayStatus = getPayOrderDisplayStatus(syncedDetail.orderType, syncedDetail.status)
+    const latestDetail = normalizeQueriedOrderDetail(detail)
+    const targetTab = toOrderTab(latestDetail.orderType)
+    const displayStatus = getPayOrderDisplayStatus(latestDetail.orderType, latestDetail.status)
 
     selectedTransactionTab.value = targetTab
     selectedTransactionOrder.value = null
@@ -1522,14 +1516,14 @@ const handleTransactionNotificationClick = async (item: NotificationItem) => {
     if (
       targetTab === 'deposits' &&
       (displayStatus === 'pending' || displayStatus === 'processing') &&
-      isPendingCryptoDepositOrder(syncedDetail)
+      isPendingCryptoDepositOrder(latestDetail)
     ) {
-      selectedTransactionCryptoOrderInfo.value = syncedDetail
+      selectedTransactionCryptoOrderInfo.value = latestDetail
       transactionCryptoOrderPopShow.value = true
       return
     }
 
-    selectedTransactionOrder.value = toOrderDetailRecord(syncedDetail)
+    selectedTransactionOrder.value = toOrderDetailRecord(latestDetail)
   } catch (error) {
     console.error('handleTransactionNotificationClick failed', error)
     showToast({
