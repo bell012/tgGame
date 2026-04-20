@@ -1,6 +1,6 @@
 <template>
   <div
-    class="top-tab-row flex w-full overflow-x-auto scrollbar-none gap-2.5 md:gap-3 my-2.5 md:my-3.5"
+    class="top-tab-row flex w-full overflow-x-auto scrollbar-none gap-2.5 sm:gap-3 my-2.5 sm:my-3.5"
   >
     <div
       v-for="item in renderTabList"

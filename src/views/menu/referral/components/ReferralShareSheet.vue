@@ -16,18 +16,18 @@
 
     <Transition
       enter-active-class="transition-all duration-200 ease-out"
-      enter-from-class="translate-y-full md:translate-y-4 md:opacity-0"
+      enter-from-class="translate-y-full sm:translate-y-4 sm:opacity-0"
       leave-active-class="transition-all duration-200 ease-in"
-      leave-to-class="translate-y-full md:translate-y-4 md:opacity-0"
+      leave-to-class="translate-y-full sm:translate-y-4 sm:opacity-0"
     >
       <!-- 分享弹窗底部抽屉 -->
       <div
         v-if="visible"
-        class="fixed bottom-0 left-0 right-0 z-[1201] mx-auto w-full max-w-[420px] md:inset-0 md:flex md:max-w-none md:items-center md:justify-center md:px-4"
+        class="fixed bottom-0 left-0 right-0 z-[1201] mx-auto w-full max-w-[420px] sm:inset-0 sm:flex sm:max-w-none sm:items-center sm:justify-center sm:px-4"
       >
         <!-- 分享弹窗容器 -->
         <div
-          class="max-h-[82vh] overflow-y-auto rounded-t-[12px] bg-bg-1 px-[14px] pb-[calc(env(safe-area-inset-bottom)+18px)] pt-[14px] md:w-full md:max-w-[720px] md:rounded-[16px] md:px-[24px] md:pb-[24px] md:pt-[24px]"
+          class="max-h-[82vh] overflow-y-auto rounded-t-[12px] bg-bg-1 px-[14px] pb-[calc(env(safe-area-inset-bottom)+18px)] pt-[14px] sm:w-full sm:max-w-[720px] sm:rounded-[16px] sm:px-[24px] sm:pb-[24px] sm:pt-[24px]"
         >
           <!-- 分享弹窗头部 -->
           <div class="relative flex min-h-[48px] items-center justify-center">

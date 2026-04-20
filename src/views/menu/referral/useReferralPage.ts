@@ -1,3 +1,4 @@
+import { getCurrentCurrency } from '@/utils/locale'
 import QRCode from 'qrcode'
 import { showToast } from 'vant'
 import { computed, onMounted, ref } from 'vue'
@@ -24,6 +25,7 @@ export const useReferralPage = () => {
   const qrCodeCanvas = ref<HTMLCanvasElement>()
   const showQrDialog = ref(false)
   const showShareSheet = ref(false)
+  const showClaimPopup = ref(false)
 
   const estimatedCommission = '9,999.99'
   const referralLink = 'https://racewin.example.com/ref/AGENT888'
@@ -96,6 +98,9 @@ export const useReferralPage = () => {
     }
   ])
 
+  // 解析当前佣金弹窗的币种。
+  const claimCurrencySymbol = computed(() => getCurrentCurrency())
+
   // 生成移动端代理邀请二维码。
   const generateQRCode = async () => {
     if (!qrCodeCanvas.value) return
@@ -133,10 +138,7 @@ export const useReferralPage = () => {
 
   // 处理佣金领取点击。
   const handleClaimCommission = () => {
-    showToast({
-      message: t('referral.claimPending'),
-      type: 'success'
-    })
+    showClaimPopup.value = true
   }
 
   // 处理佣金规则入口点击。
@@ -177,6 +179,16 @@ export const useReferralPage = () => {
     showShareSheet.value = true
   }
 
+  // 关闭领取弹窗。
+  const handleCloseClaimPopup = () => {
+    showClaimPopup.value = false
+  }
+
+  // 确认领取弹窗。
+  const handleConfirmClaimPopup = () => {
+    showClaimPopup.value = false
+  }
+
   // 设置移动端二维码画布引用。
   const setQrCodeCanvas = (canvas: HTMLCanvasElement | null) => {
     qrCodeCanvas.value = canvas ?? undefined
@@ -191,13 +203,17 @@ export const useReferralPage = () => {
   return {
     showQrDialog,
     showShareSheet,
+    showClaimPopup,
     estimatedCommission,
+    claimCurrencySymbol,
     referralLink,
     referralPhoneNumbers,
     referralMetrics,
     pcTabs,
     copyReferralLink,
     handleClaimCommission,
+    handleCloseClaimPopup,
+    handleConfirmClaimPopup,
     handleCommissionRule,
     handleCommissionRecords,
     handleReferralRecords,
