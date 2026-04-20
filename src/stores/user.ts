@@ -5,6 +5,7 @@ import { SITE_CONFIG_STORAGE_KEY } from '@/stores/siteConfig'
 import type { QueryAcctInfoResult } from '@/api/interface/user'
 import { useAuthModalStore } from '@/stores/authModal'
 import { withLocalePrefix } from '@/utils/locale'
+import { NOTIFICATION_CACHE_STORAGE_PREFIXES } from '@/utils/notification-cache'
 import { setManualLogoutInProgress } from '@/utils/request'
 import { getCurrentLocale, navigateTo } from '@/utils/router'
 import {
@@ -18,6 +19,7 @@ import {
 const ACCT_INFO_STORAGE_KEY = 'acctInfo'
 const REMEMBERED_ACCOUNT_STORAGE_KEY = 'rememberedAccount'
 const REMEMBERED_PASSWORD_STORAGE_KEY = 'rememberedPassword'
+const TRADE_MESSAGE_SYNC_STORAGE_KEY = 'memberTradeMessageSync'
 
 export const useUserStore = defineStore('user', () => {
   const userInfo = profileUserInfoState
@@ -42,13 +44,20 @@ export const useUserStore = defineStore('user', () => {
    * 清除 localStorage 中除指定键外的所有数据
    * @param keys - 需要保留的键数组
    */
-  function clearStorageExcept(keys: string[]) {
+  function clearStorageExcept(keys: string[], keyPrefixes: string[] = []) {
     const keep: Record<string, string> = {}
 
-    keys.forEach(key => {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index)
+      if (!key || (!keys.includes(key) && !keyPrefixes.some(prefix => key.startsWith(prefix)))) {
+        continue
+      }
+
       const value = localStorage.getItem(key)
-      if (value) keep[key] = value
-    })
+      if (value !== null) {
+        keep[key] = value
+      }
+    }
 
     localStorage.clear()
 
@@ -143,18 +152,22 @@ export const useUserStore = defineStore('user', () => {
   }
 
   /**
-   * 清除所有用户相关的本地状态，但保留语言、货币和主题设置和设备device_trace_id
+   * 清除所有用户相关的本地状态，但保留基础偏好设置和按账号隔离的通知缓存
    */
   const clearUserSessionData = () => {
-    clearStorageExcept([
-      'language',
-      'currency',
-      'theme',
-      'device_trace_id',
-      SITE_CONFIG_STORAGE_KEY,
-      REMEMBERED_ACCOUNT_STORAGE_KEY,
-      REMEMBERED_PASSWORD_STORAGE_KEY
-    ])
+    clearStorageExcept(
+      [
+        'language',
+        'currency',
+        'theme',
+        'device_trace_id',
+        SITE_CONFIG_STORAGE_KEY,
+        REMEMBERED_ACCOUNT_STORAGE_KEY,
+        REMEMBERED_PASSWORD_STORAGE_KEY,
+        TRADE_MESSAGE_SYNC_STORAGE_KEY
+      ],
+      [...NOTIFICATION_CACHE_STORAGE_PREFIXES]
+    )
     clearProfileAvatarPreviewState()
     syncProfileCustomizationState()
     syncProfileUserInfoState()
