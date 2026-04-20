@@ -83,10 +83,10 @@
       </div>
     </tempalte>
     <tempalte v-if="currentType === 'sports'">
-      <div class="min-h-screen w-full relative">正在开发，敬请期待...</div>
+      <div class="min-h-screen w-full relative"></div>
     </tempalte>
     <tempalte v-if="currentType === 'lottery'">
-      <div class="min-h-screen w-full relative">正在开发，敬请期待...</div>
+      <div class="min-h-screen w-full relative"></div>
     </tempalte>
   </div>
 </template>
