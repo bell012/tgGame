@@ -40,7 +40,7 @@
         </div>
 
         <div
-          class="mt-3 sm:mt-4 pl-3 sm:pl-4 text-sm font-normal leading-normal text-secondary-7"
+          class="mt-3 pl-3 text-sm font-normal leading-normal text-secondary-7 underline underline-offset-[4px] sm:mt-4 sm:pl-4"
           @click.stop="paymentReceiptSampleShow = true"
         >
           {{ t('deposit.upload_view_btn_text') }}
@@ -96,6 +96,7 @@ import deleteIcon from '@/static/img/payment/upload_delete.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import BulletDotIcon from '@/static/svg/deposit/bullet-dot.svg?component'
 import PlusIcon from '@/static/svg/deposit/plus.svg?component'
+import { resolveUploadErrorMessage } from '@/utils/upload-error'
 import { showToast, Uploader, UploaderAfterRead, UploaderFileListItem } from 'vant'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -165,10 +166,11 @@ const imageAfterRead: UploaderAfterRead = async items => {
       file.status = 'done'
       file.message = t('deposit.upload_status_success')
     } catch (error) {
+      const errorMessage = resolveUploadErrorMessage(error, t, t('deposit.upload_status_failed'))
       file.status = 'failed'
-      file.message = t('deposit.upload_status_failed')
+      file.message = t('personalCenter.feedback.toast.uploadFailed')
       showToast({
-        message: error instanceof Error ? error.message : t('common.error'),
+        message: errorMessage,
         type: 'fail'
       })
     } finally {
@@ -180,6 +182,7 @@ const imageAfterRead: UploaderAfterRead = async items => {
 // 删除图片
 const imageDelete = () => {
   uploadedFilePath.value = ''
+  return true
 }
 
 const getUploadedFilePath = (result: unknown) => {

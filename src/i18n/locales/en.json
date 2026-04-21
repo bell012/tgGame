@@ -57,6 +57,7 @@
     "noMoreData": "No more data",
     "noData": "No data available at the moment.",
     "error": "Error",
+    "upload_file_too_large_failed": "File is too large, upload failed!",
     "requestError": "Request error",
     "success": "Success",
     "confirm": "Confirm",

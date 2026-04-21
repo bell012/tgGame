@@ -57,6 +57,7 @@
     "noMoreData": "没有更多了",
     "noData": "目前没有可用数据",
     "error": "错误",
+    "upload_file_too_large_failed": "文件过大，上传失败！",
     "requestError": "请求错误",
     "success": "成功",
     "confirm": "确认",
