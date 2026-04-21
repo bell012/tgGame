@@ -47,7 +47,7 @@
         class="w-full flex-1 min-h-0 relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[628px]"
       >
         <!-- 数字币待支付卡片 -->
-        <div ref="targetRef" class="w-full bg-bg-2 rounded-lg relative">
+        <div class="w-full bg-bg-2 rounded-lg relative">
           <!-- 倒计时与提示区域 -->
           <div class="relative flex items-center p-3 border-b border-input-1">
             <!-- 倒计时图标容器 -->
@@ -269,10 +269,9 @@ import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import QRCode from 'qrcode'
-import { CountDown, closeToast, showLoadingToast, showToast } from 'vant'
+import { CountDown, showToast } from 'vant'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { saveElementAsImage } from '../shared/saveElementImage'
 import uploadProofPop from '../uploadProof/uploadProofPop.vue'
 import cancelOrderPop from './cancelOrderPop.vue'
 import orderAmountHeader from './orderAmountHeader.vue'
@@ -293,7 +292,6 @@ const props = defineProps<Props>()
 const emit = defineEmits(['close', 'hidden'])
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const targetRef = ref<HTMLElement | null>(null)
 const countdownTime = ref(15 * 60 * 1000)
 const cancelOrderPopShow = ref<boolean>(false)
 const uploadPopShow = ref<boolean>(false)
@@ -570,43 +568,12 @@ const renderQrCode = async () => {
   })
 }
 
-// 截图当前支付信息区域并保存图片
-const doCapture = async () => {
-  const el = targetRef.value
-  if (!el) return
-
-  showLoadingToast({
-    message: t('deposit.order_save_qr_code_loading'),
-    forbidClick: true,
-    duration: 0
+// 临时改为仅提示用户手动截图保存二维码
+const doCapture = () => {
+  showToast({
+    message: t('deposit.order_save_qr_code_manual_tip'),
+    type: 'success'
   })
-
-  try {
-    const result = await saveElementAsImage(el, {
-      fileName: `deposit-order-${cryptoOrderNo.value || Date.now()}.png`
-    })
-
-    if (result === 'cancelled') {
-      closeToast()
-      return
-    }
-
-    closeToast()
-    showToast({
-      message:
-        result === 'previewed'
-          ? t('deposit.order_save_qr_code_preview_tip')
-          : t('deposit.order_save_qr_code_success'),
-      type: 'success'
-    })
-  } catch (error) {
-    console.error('saveElementAsImage failed', error)
-    closeToast()
-    showToast({
-      message: t('common.error'),
-      type: 'fail'
-    })
-  }
 }
 
 // 打开取消订单确认弹窗

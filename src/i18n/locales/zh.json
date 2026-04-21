@@ -844,6 +844,7 @@
     "order_save_qr_code_loading": "图片生成中...",
     "order_save_qr_code_success": "二维码已开始下载",
     "order_save_qr_code_preview_tip": "图片已打开，请长按保存",
+    "order_save_qr_code_manual_tip": "请截图保存二维码",
     "order_copy_address": "复制地址",
     "copy_success": "复制成功",
     "copy_failed": "复制失败",
