@@ -79,6 +79,7 @@ const cryptoPaymentCodes = [5]
 const fiatPaymentCodes = [13, 17, 59, 60]
 
 export function usePaymentMethodsService() {
+  let memberCardsRequestId = 0
   /**全部收款方式 */
   const paymentMethodsOptions = ref<PaymentMethodsOption[]>()
   /**收款方式是否加载成功 */
@@ -125,17 +126,29 @@ export function usePaymentMethodsService() {
    * @param paymentCode 收款账号编码
    */
   const loadMemberCards = async (currency: string, paymentCode: string | number) => {
+    const requestId = ++memberCardsRequestId
+
     try {
       hasLoadedAccountOptions.value = false
+      accountOptions.value = []
       const requestData = {
         currency: currency,
         cardType: paymentCode
       }
       const response = await Api.withdraw.selectMemberCard(requestData)
+
+      if (requestId !== memberCardsRequestId) {
+        return
+      }
+
       const result = Array.isArray(response.result) ? response.result : []
       accountOptions.value = result.map(normalizeAccountOption)
       hasLoadedAccountOptions.value = true
     } catch (error) {
+      if (requestId !== memberCardsRequestId) {
+        return
+      }
+
       console.error(error)
       hasLoadedAccountOptions.value = false
     }

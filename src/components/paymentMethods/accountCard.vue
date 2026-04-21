@@ -49,18 +49,35 @@
           {{ option.accountNo }}
         </div>
       </div>
+
       <div
         class="absolute bottom-0 left-0 flex w-full items-center justify-between rounded-b-xl bg-mask-20 px-3 py-2 text-xs"
       >
-        <button
-          type="button"
-          class="inline-flex h-5 w-5 items-center justify-center"
-          :disabled="!enableDelete"
-          @click.stop="doDelete"
-        >
-          <DeleteIcon class="h-5 w-5" />
-        </button>
-        <div class="flex items-center gap-2">
+        <template v-if="showDelete">
+          <button
+            type="button"
+            class="inline-flex h-5 w-5 items-center justify-center"
+            :disabled="!enableDelete"
+            @click.stop="doDelete"
+          >
+            <DeleteIcon class="h-5 w-5" />
+          </button>
+          <div class="flex items-center gap-2">
+            <div>{{ t('withdraw.default_wallet') }}</div>
+            <button
+              type="button"
+              class="flex h-4 w-[30px] items-center rounded-full p-px transition-colors duration-200"
+              :class="option.defaultCard === 1 ? 'bg-theme-primary' : 'bg-white/60'"
+              @click.stop="setDefault"
+            >
+              <div
+                class="h-[14px] w-[14px] rounded-full bg-common-100 transition-transform duration-200"
+                :class="option.defaultCard === 1 ? 'translate-x-[14px]' : 'translate-x-0'"
+              />
+            </button>
+          </div>
+        </template>
+        <template v-else>
           <div>{{ t('withdraw.default_wallet') }}</div>
           <button
             type="button"
@@ -73,7 +90,7 @@
               :class="option.defaultCard === 1 ? 'translate-x-[14px]' : 'translate-x-0'"
             />
           </button>
-        </div>
+        </template>
       </div>
     </div>
   </button>
@@ -89,10 +106,12 @@ const props = withDefaults(
     option: AccountCardOption
     isActive: boolean
     enableDelete?: boolean
+    showDelete?: boolean
   }>(),
   {
     isActive: false,
-    enableDelete: true
+    enableDelete: true,
+    showDelete: true
   }
 )
 

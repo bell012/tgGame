@@ -1,7 +1,7 @@
 <template>
   <div class="font-['Inter']">
     <div
-      v-if="status === 'processing'"
+      v-if="orderItem?.status === 'processing'"
       class="w-full rounded-xl bg-bg-2 px-4 pt-4 pb-4 sm:px-4 sm:pt-8"
     >
       <div class="flex items-center border-b border-input-1 p-3 text-text-1">
@@ -120,33 +120,28 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
-import type { WithdrawOrderStatus } from './shared/types'
+import type { WithdrawOrderViewData } from './shared/useWithdrawFlow'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import ProcessingIcon from '@/static/svg/deposit/record.svg?component'
 import OrderCompletedIcon from '@/static/svg/withdraw/order_completed.svg?component'
 
 interface Props {
-  status: WithdrawOrderStatus
-  amountText: string
-  orderNo: string
-  createdAt: string
-  methodLabel: string
-  methodIcon?: string
+  orderItem?: WithdrawOrderViewData
 }
 
 const props = defineProps<Props>()
 const { t } = useI18n()
 
 const statusTitle = computed(() =>
-  props.status === 'completed'
+  props.orderItem?.status === 'completed'
     ? t('withdraw.order_completed_title')
     : t('withdraw.order_processing_title')
 )
 
-const methodBadge = computed(() => props.methodLabel.slice(0, 1).toUpperCase())
-const methodIcon = computed(() => String(props.methodIcon ?? '').trim())
+const methodBadge = computed(() => props.orderItem?.methodLabel.slice(0, 1).toUpperCase())
+const methodIcon = computed(() => String(props.orderItem?.methodIcon ?? '').trim())
 const amountParts = computed(() => {
-  const value = String(props.amountText || '').trim()
+  const value = String(props.orderItem?.amountText || '').trim()
   const match = value.match(/^([\d.,]+)\s*([A-Za-z]+)?$/)
 
   if (!match) {
@@ -164,23 +159,23 @@ const amountCurrency = computed(() => amountParts.value.currency)
 const detailRows = computed(() => [
   {
     label: t('withdraw.amount'),
-    value: props.amountText,
+    value: props.orderItem?.amountText,
     type: 'amount' as const
   },
   {
     label: t('withdraw.order_no'),
-    value: props.orderNo,
-    copyValue: props.orderNo,
+    value: props.orderItem?.orderNo,
+    copyValue: props.orderItem?.orderNo,
     type: 'orderNo' as const
   },
   {
     label: t('withdraw.created_at'),
-    value: props.createdAt,
+    value: props.orderItem?.createdAt,
     type: 'createdAt' as const
   },
   {
     label: t('withdraw.withdraw_method'),
-    value: props.methodLabel,
+    value: props.orderItem?.methodLabel,
     type: 'method' as const
   }
 ])
