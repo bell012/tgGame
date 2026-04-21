@@ -220,10 +220,6 @@ import {
   default as defaultImgDark,
   default as defaultImgLight
 } from '@/static/img/explore/default.png'
-import gCashIcon from '@/static/img/payment/gCash.png'
-import grabPayIcon from '@/static/img/payment/grabPay.png'
-import mayaIcon from '@/static/img/payment/maya.png'
-import payPalIcon from '@/static/img/payment/payPal.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
@@ -253,14 +249,6 @@ const emit = defineEmits<{
 
 const defaultPresetAmounts: number[] = []
 const presetAmounts = ref<number[]>([...defaultPresetAmounts])
-const fallbackMethodIcons: Record<string, string> = {
-  GCash: gCashIcon,
-  MAYA: mayaIcon,
-  Maya: mayaIcon,
-  GrabPay: grabPayIcon,
-  PayPal: payPalIcon
-}
-
 const paySubColumns = ref<QueryPaySubColumnItem[]>([])
 
 const payMethods = ref<QueryPayColumnItem[]>([])
@@ -373,9 +361,9 @@ const toPayImageUrl = (value: string) => {
   return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
 }
 
-// 解析支付方式图标，优先接口图标，失败回退本地图标
+// 解析支付方式图标，统一使用支付栏目接口返回的 defaultOrderIcon
 const resolveMethodIcon = (item: QueryPayColumnItem) => {
-  return toPayImageUrl(item.gradientLogo) || fallbackMethodIcons[item.columnName]
+  return toPayImageUrl(item.defaultOrderIcon)
 }
 
 // 规范化预设金额，过滤无效值并提供默认值

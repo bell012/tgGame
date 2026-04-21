@@ -5,12 +5,14 @@
     :class="wrapperClass"
   >
     <!-- 金额与币种区域 -->
-    <div class="relative flex h-12 w-full items-end justify-center gap-1 isolate">
-      <p class="text-center text-text-1 text-xl sm:text-[40px] font-bold leading-[48px] capitalize">
+    <div class="relative flex w-full items-baseline justify-center gap-[3px] isolate">
+      <p
+        class="shrink-0 whitespace-nowrap text-center text-[26.67px] font-bold leading-[32.33px] text-text-1 capitalize"
+      >
         {{ amount }}
       </p>
       <p
-        class="text-center text-text-1 text-base sm:text-[18px] font-bold leading-[22px] capitalize"
+        class="shrink-0 whitespace-nowrap text-center text-[14px] font-bold leading-[17px] text-text-3 capitalize"
       >
         {{ method }}
       </p>
@@ -18,7 +20,7 @@
     <!-- 汇率展示区域 -->
     <div
       v-if="displayRate"
-      class="order-1 h-[19px] w-full grow-0 shrink-0 text-center font-['Inter'] text-[16px] font-normal leading-[19px] text-[#B3BEC1]"
+      class="order-1 h-[35px] w-full grow-0 shrink-0 text-center font-['Inter'] text-[16px] font-normal leading-[19px] text-[#B3BEC1]"
     >
       {{ displayRate }}
     </div>

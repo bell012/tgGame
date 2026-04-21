@@ -855,7 +855,7 @@
     "upload_proof_tips_1_2": "amount, address, status, timestamp, and transaction ID.",
     "upload_proof_tips_2": "You are solely responsible for any financial losses caused by uploading the wrong screenshot.",
     "upload_view_btn_text": "View Sample Receipt",
-    "upload_btn_text": "Add Proof",
+    "upload_btn_text": "Upload Proof",
     "upload_proof_confirm_btn_text": "Upload Proof Now",
     "payment_receipt_sample_title": "Payment Receipt Sample",
     "payment_receipt_sample_alt": "Payment receipt sample",
