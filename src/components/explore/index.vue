@@ -126,8 +126,8 @@ provide('explore-suggested-list', exploreSuggestedList)
 
 const typeList = computed(() => [
   { id: 'casino', name: t('bottom_tab_bar.casino') },
-  { id: 'sports', name: '体育' },
-  { id: 'lottery', name: '彩票' }
+  { id: 'sports', name: t('bottom_tab_bar.sports') },
+  { id: 'lottery', name: t('home.Lottery') }
 ])
 
 const activeSearchKeyword = ref('')
