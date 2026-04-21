@@ -1,6 +1,6 @@
 ﻿<template>
   <div class="home max-w-[1248px] mx-auto px-3.5 py-2 sm:px-4 sm:py-4">
-    <div style="height: 65px" class="sm:hidden"></div>
+    <div style="height: 55px" class="sm:hidden"></div>
     <HomeCarouselImg v-if="querySlideshowList.length" :list="querySlideshowList" />
 
     <div class="flex items-center mt-2 sm:mt-6 h-8">
@@ -350,7 +350,6 @@ const visibleListImg = computed(() =>
 )
 const toCasino = (sysGameTypeCode: string) => {
   if (!sysGameTypeCode) {
-    navigateTo('/casino')
     return
   }
   navigateTo(`/casino/${sysGameTypeCode}`)
