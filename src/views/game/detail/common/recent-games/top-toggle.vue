@@ -1,12 +1,14 @@
 <template>
-  <div class="flex justify-between items-center" @click="toggleIsOpen">
+  <div class="top-toggle-card flex justify-between items-center" @click="toggleIsOpen">
     <div class="flex flex-col">
-      <h3 class="text-[14px]">{{ gameName }}</h3>
+      <h3 class="text-[14px] font-extrabold">{{ gameName }}</h3>
       <div class="flex gap-[4px] text-[12px]">
         <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.by') }}</div>
-        <div class="text-[var(--color-theme-level-1)]">{{ providerName }}</div>
+        <div class="text-[var(--color-theme-level-1)] font-bold">{{ providerName }}</div>
       </div>
-      <div class="text-[var(--color-theme-level-1)] text-[12px]"># {{ gameTypeName }}</div>
+      <div class="text-[var(--color-theme-level-1)] text-[12px] font-bold">
+        # {{ gameTypeName }}
+      </div>
     </div>
     <div class="toggle-arrow-wrap">
       <ArrowDownIcon class="icon" :class="{ 'is-open': isOpen }" />
@@ -50,6 +52,11 @@ const toggleIsOpen = () => {
 </script>
 
 <style scoped lang="scss">
+.top-toggle-card {
+  border-radius: 10px;
+  padding: 12px;
+}
+
 .toggle-arrow-wrap {
   width: 24px;
   height: 24px;
@@ -71,9 +78,13 @@ const toggleIsOpen = () => {
   transform: rotate(180deg);
 }
 
+:global(:root.light) .top-toggle-card {
+  background: #ffffff;
+}
+
 :global(:root.light) .toggle-arrow-wrap {
-  background: rgba(95, 116, 145, 0.16);
-  border: 1px solid rgba(95, 116, 145, 0.22);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: #e3e3e3;
+  border: none;
+  box-shadow: none;
 }
 </style>

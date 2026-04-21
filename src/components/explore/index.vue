@@ -265,17 +265,13 @@ const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth'
   })
 }
 
-const clearSearch = () => {
-  keywords.value = ''
-  activeSearchKeyword.value = ''
-}
-
 const onTabButton = (tab: CasinoTabButtonItem) => {
   if (tab.sysGameTypeCode === currentTabCode.value) {
     return
   }
 
-  clearSearch()
+  // 切换分类时保留当前关键词，并基于新分类自动刷新检索结果
+  activeSearchKeyword.value = keywords.value.trim()
   currentTabCode.value = tab.sysGameTypeCode
 }
 

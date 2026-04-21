@@ -1,6 +1,6 @@
 <template>
   <div
-    class="recent-games-container w-full h-full p-[12px] bg-[var(--color-background-level-3)] rounded-[10px] mt-[12px]"
+    class="recent-games-container w-full h-full p-[12px] bg-[var(--color-background-level-2)] rounded-[10px] mt-[12px]"
   >
     <top-toggle />
     <transition name="open-fade">
@@ -144,6 +144,11 @@ const tabIndexClick = (index: number) => {
 </script>
 
 <style scoped lang="scss">
+:global(:root.light) .recent-games-container {
+  background: #f4f4f4;
+  border: none;
+}
+
 .active {
   background-color: var(--color-input-level-2);
   height: 100%;
@@ -159,19 +164,19 @@ const tabIndexClick = (index: number) => {
 }
 
 .recent-games-tabs-light {
-  background: #f2f6fc !important;
-  border: 1px solid rgba(102, 121, 146, 0.24);
+  background: #e3e3e3 !important;
+  border: none;
 }
 
 .recent-games-tabs-light .recent-games-tab.active {
-  background: linear-gradient(180deg, #edf3fb 0%, #e1eaf6 100%);
-  border: 1px solid rgba(102, 121, 146, 0.32);
-  box-shadow: 0 2px 8px rgba(30, 46, 72, 0.1);
-  color: #182230;
+  background: #ffffff;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  box-shadow: none;
+  color: #111111;
 }
 
 .recent-games-tabs-light .recent-games-tab:not(.active) {
-  color: #4f5f75;
+  color: #5f6368;
 }
 
 .open-fade-enter-active,

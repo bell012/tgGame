@@ -2,7 +2,9 @@
   <div class="mt-[12px]">
     <!-- Header -->
     <div class="grid lg:grid-cols-2 grid-cols-1 gap-4">
-      <h2 class="flex items-center">{{ t('home.LatestBet') }}</h2>
+      <h2 class="flex items-center text-base font-extrabold text-primary">
+        {{ t('casino.latest_bet') }}
+      </h2>
       <div class="flex w-full lg:w-auto lg:justify-end items-center sm:justify-start justify-start">
         <div class="bet-tabs flex w-full lg:w-auto items-center">
           <button
@@ -26,10 +28,10 @@
       >
         <thead class="table-head pc-only" role="rowgroup">
           <tr role="row" class="bg-bg-2 text-text-2">
-            <th>{{ t('home.Player') }}</th>
-            <th>{{ t('home.Profit') }}</th>
+            <th>{{ t('gameDetail.betId') }}</th>
             <th class="sm:w-auto">{{ t('gameDetail.bet') }}</th>
-            <th class="text-right">{{ t('home.Multiplier') }}</th>
+            <th>{{ t('gameDetail.payout') }}</th>
+            <th class="text-right">{{ t('gameDetail.profit') }}</th>
           </tr>
         </thead>
         <tbody v-if="rows.length">
@@ -40,10 +42,9 @@
           >
             <td class="py-2 px-3 text-text-1 truncate">
               <span class="text-text-1 truncate">
-                {{ item.player }}
+                {{ item.betId }}
               </span>
             </td>
-            <td class="py-2 px-3 text-text-1 truncate">{{ item.profit }}x</td>
             <td class="cell" role="cell">
               <div class="flex items-center justify-center">
                 <SmartImage
@@ -54,6 +55,7 @@
                 <span>{{ item.bet }}</span>
               </div>
             </td>
+            <td class="py-2 px-3 text-text-1 truncate">{{ item.payout }}x</td>
             <td class="py-2 px-3 text-[12px]">
               <div class="flex items-center justify-end gap-1">
                 <SmartImage
@@ -63,12 +65,12 @@
                 />
                 <span
                   :class="
-                    item.multiplierNumber >= 0
+                    item.profitNumber >= 0
                       ? 'text-[var(--color-secondary-level-4)]'
                       : 'text-[#ff4d4f]'
                   "
                 >
-                  {{ item.multiplierNumber >= 0 ? '+' : '' }}{{ item.multiplier }}
+                  {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
                 </span>
               </div>
             </td>
@@ -174,11 +176,11 @@ type CurrentGameDetail = {
 
 interface IRow {
   id: string
-  player: string
-  profit: string
+  betId: string
   bet: string
-  multiplier: string
-  multiplierNumber: number
+  payout: string
+  profit: string
+  profitNumber: number
 }
 
 interface IHighRollerRow {
@@ -233,17 +235,16 @@ const formatAmount = (value: unknown) => {
 }
 
 const mapRecordToRow = (item: GameBetRecordItem, index: number): IRow => {
-  const player =
-    normalizeValue(item.memberName ?? item.memberId ?? item.userName ?? item.betId) || '-'
-  const profitRate = parseAmount(item.multiple ?? item.mult ?? item.multiplier)
-  const multiplierNumber = parseAmount(item.profit ?? item.winAmount)
+  const betId = normalizeValue(item.betId) || '-'
+  const payoutRate = parseAmount(item.multiple ?? item.mult ?? item.multiplier)
+  const profitNumber = parseAmount(item.profit ?? item.winAmount)
   return {
-    id: normalizeValue(item.betId) || `${player}-${index}`,
-    player,
-    profit: formatAmount(profitRate),
+    id: `${betId}-${index}`,
+    betId,
     bet: formatAmount(item.bet ?? item.wager),
-    multiplier: formatAmount(item.profit ?? item.winAmount),
-    multiplierNumber
+    payout: formatAmount(payoutRate),
+    profit: formatAmount(item.profit ?? item.winAmount),
+    profitNumber
   }
 }
 
@@ -431,22 +432,55 @@ onBeforeUnmount(() => {
 
 .bet-tabs {
   background: var(--color-background-level-8);
-  border-radius: 8px;
-  overflow: hidden;
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
 }
 
 .bet-tab {
+  min-height: 34px;
   padding: 6px 28px;
   background: transparent;
-  color: #9ca3af;
-  border: none;
+  color: var(--color-text-level-2);
+  border: 1px solid transparent;
+  border-radius: 8px;
   white-space: nowrap;
   word-break: keep-all;
+  font-weight: 700;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
 }
 
 .bet-tab.active {
-  background: var(--color-background-level-7);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%),
+    var(--color-background-level-7);
+  border-color: var(--color-opacity-10);
   color: var(--color-text-level-1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+:global(:root.light) .bet-tabs {
+  border-radius: 10px;
+  background: #e3e3e3;
+  border: none;
+}
+
+:global(:root.light) .bet-tab {
+  border-radius: 8px;
+  color: #5f6368;
+}
+
+:global(:root.light) .bet-tab.active {
+  background: #ffffff;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  box-shadow: none;
+  color: #111111;
 }
 
 .table-wrap {
@@ -473,7 +507,7 @@ onBeforeUnmount(() => {
 }
 .table-head th {
   padding: 10px 14px;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
 }
 

@@ -35,6 +35,7 @@ import Popup from './popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useLocaleStore } from '@/stores/locale'
+import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
 import SmartImage from '@/components/common/SmartImage.vue'
 import {
@@ -47,9 +48,12 @@ const visible = ref(false)
 
 const localeStore = useLocaleStore()
 const siteConfigStore = useSiteConfigStore()
+const userStore = useUserStore()
 const { config } = storeToRefs(siteConfigStore)
 const { currentCurrency } = storeToRefs(localeStore)
+const { userInfo } = storeToRefs(userStore)
 const acctInfo = ref<QueryAcctInfoResult | null>(null)
+const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken))
 
 const selectOptions = computed(() => getCurrencySelectOptionsFromCache(config.value))
 provide('currency-select-options', selectOptions)
@@ -170,6 +174,11 @@ const readCachedAcctInfo = () => {
 }
 
 const fetchAcctInfo = async () => {
+  if (!isLoggedIn.value) {
+    acctInfo.value = null
+    return
+  }
+
   try {
     const response = await Api.user.queryAcctInfo(
       {},
@@ -190,8 +199,13 @@ const fetchAcctInfo = async () => {
 }
 
 onMounted(() => {
-  acctInfo.value = readCachedAcctInfo()
-  void fetchAcctInfo()
+  if (isLoggedIn.value) {
+    acctInfo.value = readCachedAcctInfo()
+    void fetchAcctInfo()
+    return
+  }
+
+  acctInfo.value = null
 })
 </script>
 

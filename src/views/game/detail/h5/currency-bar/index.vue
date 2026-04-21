@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-[var(--color-background-level-6)] p-[12px] rounded-b-[10px] relative">
+  <div
+    class="currency-toolbar p-[12px] rounded-b-[10px] relative"
+    :class="{ 'currency-toolbar-light': isLightTheme }"
+  >
     <div class="flex justify-between items-center">
       <SmartImage
         alt=""
@@ -44,14 +47,17 @@ import LoveActiveIcon from '@/static/svg/game/detail/love_active.svg?url'
 import { useGameFavorite } from '@/composables/useGameFavorite'
 import { useGameLike } from '@/composables/useGameLike'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import LiveStatePopup from './live-state-popup.vue'
 import SharePopup from './share-popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import SmartImage from '@/components/common/SmartImage.vue'
+import { useThemeStore } from '@/stores/theme'
 
 const isMobile = useIsMobile()
 const { requireLogin } = useRequireLoginAction()
+const themeStore = useThemeStore()
+const isLightTheme = computed(() => themeStore.theme === 'light')
 
 const { isFavorite: starActived, toggleFavorite: toggleStar } = useGameFavorite()
 const { isLiked: loveActived, toggleLike: toggleLove } = useGameLike()
@@ -74,6 +80,17 @@ const shareVisibleClick = () => {
 }
 </script>
 <style lang="scss" scoped>
+.currency-toolbar {
+  background: var(--color-background-level-6);
+  border-top: 1px solid var(--color-opacity-10);
+}
+
+.currency-toolbar-light {
+  background: #cccccc !important;
+  border-top: none;
+  box-shadow: none;
+}
+
 .desktop-popup {
   top: calc(100% + 10px);
   position: absolute;

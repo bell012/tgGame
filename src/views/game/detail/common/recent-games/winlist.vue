@@ -13,9 +13,9 @@
           :key="`${index}-${getPlayerName(item)}-${toPlainText(item.payOut)}`"
           class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[12px]"
         >
-          <h3 class="win-item-divider flex gap-[8px] pb-[12px]">
-            <SmartImage class="size-[20px]" alt="" :src="RackIcon" />
-            <div class="text-[12px] font-bold">{{ getPlayerName(item) }}</div>
+          <h3 class="win-item-divider flex items-center gap-[8px] pb-[12px]">
+            <SmartImage class="size-[20px] shrink-0" alt="" :src="RackIcon" />
+            <div class="text-[12px] leading-[20px] font-bold">{{ getPlayerName(item) }}</div>
           </h3>
           <div class="flex justify-between mt-[12px] text-[12px]">
             <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.payout') }}</div>

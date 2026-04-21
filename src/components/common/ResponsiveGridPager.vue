@@ -22,7 +22,10 @@
     </div>
 
     <!-- 上一页 / 当前页码/总页码 / 下一页 -->
-    <div v-if="showPager && items?.length" class="mt-4 flex items-center justify-center">
+    <div
+      v-if="showPager && items?.length && totalPages > 1"
+      class="mt-4 flex items-center justify-center"
+    >
       <button
         type="button"
         class="px-[9px] h-[35px] rounded-tl-lg rounded-bl-lg text-xs flex items-center justify-center bg-[var(--color-background-level-2)]"
