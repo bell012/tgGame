@@ -25,7 +25,7 @@
 
         <button
           class="absolute right-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
-          @click="handleClose"
+          @click="openDepositOrder"
         >
           <DetailsIcon class="w-4 h-4 text-icon-1" />
         </button>
@@ -53,6 +53,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import CloseIcon from '@/static/svg/close.svg?component'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
+import { navigateToName } from '@/utils/router'
 import { useI18n } from 'vue-i18n'
 import depositContentPanel, { type DepositTabType } from './depositContentPanel.vue'
 
@@ -82,5 +83,12 @@ const handleClose = () => {
 // 处理隐藏状态事件
 const handleHidden = (val: boolean) => {
   emit('hidden', val)
+}
+
+const openDepositOrder = () => {
+  emit('close')
+  requestAnimationFrame(() => {
+    void navigateToName('my-orders')
+  })
 }
 </script>

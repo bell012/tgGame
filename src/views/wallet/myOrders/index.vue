@@ -24,6 +24,7 @@
         <OrderDetailScrollPanel
           :order="selectedMobileOrder"
           :tab="activeTopTab"
+          :order-type-icon-map="orderTypeIconMap"
           @copy-order-no="handleCopyOrderNo"
         />
       </template>
@@ -258,8 +259,10 @@ import {
   getMyOrderStatusText,
   getMyOrderTypeIcon,
   getMyOrderTypeLabel,
+  loadMyOrderTypeIconMap,
   matchMyOrdersTypeFilter,
   type MyOrdersFilterValues,
+  type OrderTypeIconMap,
   type OrderTab,
   type OrderTimeFilter,
   type OrderTypeFilter
@@ -271,6 +274,7 @@ const isReady = ref(false)
 
 const activeTopTab = ref<OrderTab>('deposits')
 const selectedMobileOrder = ref<QueryMemberPayOrderPageRecord | null>(null)
+const orderTypeIconMap = ref<OrderTypeIconMap>({})
 
 const scrollRoot = ref<HTMLElement | null>(null)
 const loadMoreSentinel = ref<HTMLElement | null>(null)
@@ -379,7 +383,7 @@ const getOrderTypeLabel = (record: QueryMemberPayOrderPageRecord) =>
   getMyOrderTypeLabel(record, String(locale.value || 'eng'))
 
 const getOrderTypeIcon = (record: QueryMemberPayOrderPageRecord) =>
-  getMyOrderTypeIcon(record, String(locale.value || 'eng'))
+  getMyOrderTypeIcon(record, String(locale.value || 'eng'), orderTypeIconMap.value)
 
 const getOrderStatusText = (record: QueryMemberPayOrderPageRecord) =>
   getMyOrderStatusText(activeTopTab.value, record.status, t)
@@ -470,6 +474,13 @@ const handleCopyOrderNo = async (orderNo: string) => {
 }
 
 onMounted(() => {
+  void loadMyOrderTypeIconMap()
+    .then(result => {
+      orderTypeIconMap.value = result
+    })
+    .catch(error => {
+      console.error('loadMyOrderTypeIconMap failed', error)
+    })
   isReady.value = true
 })
 </script>
