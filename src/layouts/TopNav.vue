@@ -12,7 +12,7 @@
         <!-- h5菜单 -->
         <div
           class="sm:hidden cursor-pointer w-[40px] h-[40px] rounded-lg flex items-center justify-center"
-           @click="navigateTo('/menu')"
+          @click="navigateTo('/menu')"
         >
           <FoldIconH5 class="h-6" :class="isH5MenuActive ? 'text-theme-primary' : 'text-text-1'" />
         </div>
@@ -24,10 +24,7 @@
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
         <!-- H5端 Logo (登录后小logo) -->
-        <div
-          v-if="isLoggedIn"
-          class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer"
-        >
+        <div v-if="isLoggedIn" class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer">
           <SmartImage :src="mobileLogoImage" alt="" class="w-full h-full" />
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
