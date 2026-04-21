@@ -63,14 +63,12 @@
               </div>
             </template>
             <div
-              class="box-border flex h-[100px] w-[100px] flex-col items-center justify-center gap-[7px] rounded-[8px] border border-dashed border-[#B3BEC1] sm:h-[150px] sm:w-[150px]"
+              class="box-border flex h-[100px] w-[100px] flex-col items-center justify-center gap-[7px] rounded-[8px] border border-dashed text-text-3 sm:h-[150px] sm:w-[150px]"
             >
               <div class="flex h-4 w-4 items-center justify-center">
                 <PlusIcon class="h-4 w-4" />
               </div>
-              <div
-                class="w-[74px] text-center text-[12px] font-normal leading-[15px] text-[#B3BEC1]"
-              >
+              <div class="w-[74px] text-center text-[12px] font-normal leading-[15px] text-text-3">
                 {{ t('deposit.upload_btn_text') }}
               </div>
             </div>

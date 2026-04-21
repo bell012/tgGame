@@ -12,7 +12,7 @@
         {{ amount }}
       </p>
       <p
-        class="shrink-0 whitespace-nowrap text-center text-[14px] font-bold leading-[17px] text-text-3 capitalize"
+        class="shrink-0 whitespace-nowrap text-center text-[14px] font-bold leading-[17px] text-text-1 capitalize"
       >
         {{ method }}
       </p>
@@ -20,7 +20,7 @@
     <!-- 汇率展示区域 -->
     <div
       v-if="displayRate"
-      class="order-1 h-[35px] w-full grow-0 shrink-0 text-center font-['Inter'] text-[16px] font-normal leading-[19px] text-[#B3BEC1]"
+      class="order-1 h-[35px] w-full grow-0 shrink-0 text-center font-['Inter'] text-[16px] font-normal leading-[19px] text-text-3"
     >
       {{ displayRate }}
     </div>

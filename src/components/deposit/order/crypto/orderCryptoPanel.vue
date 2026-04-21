@@ -244,12 +244,13 @@ import CryptoOrderCountdownIcon from '@/static/svg/deposit/crypto-order-countdow
 import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifying.svg?component'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
+import { copyTextWithFallback } from '@/utils/clipboard'
 import { navigateToName } from '@/utils/router'
-import html2canvas from 'html2canvas'
 import QRCode from 'qrcode'
-import { CountDown, showToast } from 'vant'
+import { CountDown, closeToast, showLoadingToast, showToast } from 'vant'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { saveElementAsImage } from '../../shared/saveElementImage'
 import uploadProofPop from '../../uploadProof/uploadProofPop.vue'
 import cancelOrderPop from '../cancelOrderPop.vue'
 import orderAmountHeader from '../orderAmountHeader.vue'
@@ -509,28 +510,43 @@ const renderQrCode = async () => {
   })
 }
 
-// 截图当前支付信息区域并复制图片到剪贴板
+// 截图当前支付信息区域并保存图片
 const doCapture = async () => {
   const el = targetRef.value
   if (!el) return
 
-  await document.fonts.ready
-  const canvas = await html2canvas(el, {
-    scale: window.devicePixelRatio || 2,
-    useCORS: true,
-    scrollX: 0,
-    scrollY: 0,
-    backgroundColor: '#fff'
+  showLoadingToast({
+    message: t('deposit.order_save_qr_code_loading'),
+    forbidClick: true,
+    duration: 0
   })
 
-  canvas.toBlob(async blob => {
-    if (!blob) return
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+  try {
+    const result = await saveElementAsImage(el, {
+      fileName: `deposit-order-${cryptoOrderNo.value || Date.now()}.png`
+    })
+
+    if (result === 'cancelled') {
+      closeToast()
+      return
+    }
+
+    closeToast()
     showToast({
-      message: t('betDetails.copy'),
+      message:
+        result === 'previewed'
+          ? t('deposit.order_save_qr_code_preview_tip')
+          : t('deposit.order_save_qr_code_success'),
       type: 'success'
     })
-  })
+  } catch (error) {
+    console.error('saveElementAsImage failed', error)
+    closeToast()
+    showToast({
+      message: t('common.error'),
+      type: 'fail'
+    })
+  }
 }
 
 // 打开取消订单确认弹窗
@@ -580,11 +596,11 @@ const openFailedResultPopByOrderDetail = (detail: Partial<QueryPayOrderByOrderId
 }
 
 // 复制文本到剪贴板并提示成功
-const copyWord = (word: string) => {
-  navigator.clipboard.writeText(word)
+const copyWord = async (word: string) => {
+  const copied = await copyTextWithFallback(word)
   showToast({
-    message: t('betDetails.copy'),
-    type: 'success'
+    message: copied ? t('deposit.copy_success') : t('deposit.copy_failed'),
+    type: copied ? 'success' : 'fail'
   })
 }
 
