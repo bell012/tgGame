@@ -98,6 +98,12 @@
       :option="selectAccountCardOption"
       @close="closeAccountDetailsPop"
     />
+    <KindReminderPop
+      v-model="kindReminderVisible"
+      @settings="handleKindReminderSettings"
+      @skip="handleKindReminderSkid"
+      @close="handleKindReminderSkid"
+    />
   </div>
 </template>
 
@@ -117,8 +123,10 @@ import AddAccountPop from '@/components/paymentMethods/addAccountPop.vue'
 import SmsVerificationPop from '@/components/paymentMethods/smsVerificationPop.vue'
 import PaymentPasswordPop from '@/components/paymentMethods/paymentPasswordPop.vue'
 import AccountDetailsPop from '@/components/paymentMethods/accountDetailsPop.vue'
+import KindReminderPop from '@/components/paymentMethods/kindReminderPop.vue'
 
 const {
+  kindReminderVisible,
   addAccountOptionVisible,
   hasDeleteAccount,
   deleteNotificationVisible,
@@ -147,6 +155,8 @@ const {
   handleMethodTabClick,
   isMethodTabActive,
   closeSmsVerification,
+  handleKindReminderSettings,
+  handleKindReminderSkid,
   handleAddAccountOptionSmsVerificationResend,
   handleAddAccountOptionSmsVerificationConfirm,
   closePaymentPasswordVerification,
