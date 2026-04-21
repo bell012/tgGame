@@ -1,5 +1,6 @@
 // 全局code对应英中多语言
 export const API_ERROR_CODE_MESSAGES = {
+  A003: ['Account does not exist.', '账号不存在。'],
   C1: ['Session has expired, please log in again.', '会话已过期，请重新登录。'],
   C2: ['Operation successful.', '操作成功。'],
   C3: ['This feature has been disabled.', '此功能已被禁用。'],

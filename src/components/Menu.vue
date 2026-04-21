@@ -793,7 +793,7 @@ const expandableMenus = computed<SidebarMenuGroup[]>(() => [
     name: t('sidebar_menu.sports.label'),
     icon: side.sportsIcon,
     handler: () => {
-      console.log('点击体育')
+      navigateTo('/sports')
     },
     children: [
       {
