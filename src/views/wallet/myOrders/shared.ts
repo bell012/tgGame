@@ -1,4 +1,6 @@
+import Api from '@/api'
 import type {
+  QueryPayColumnItem,
   QueryMemberPayOrderPageForm,
   QueryMemberPayOrderPageRecord
 } from '@/api/interface/wallet'
@@ -8,9 +10,10 @@ import gCashIcon from '@/static/img/payment/gCash.png'
 import grabPayIcon from '@/static/img/payment/grabPay.png'
 import mayaIcon from '@/static/img/payment/maya.png'
 import shopeePayIcon from '@/static/svg/coin/shopeePay.svg?url'
-import { getFormattedBalance } from '@/utils/locale'
+import { getCurrentCurrency, getFormattedBalance, getLanguageCode } from '@/utils/locale'
 
 type TranslateFn = (key: string) => string
+export type OrderTypeIconMap = Record<string, string>
 
 export type OrderTab = 'deposits' | 'withdrawals'
 export type OrderStatus = string
@@ -43,6 +46,11 @@ const TYPE_ICON_MAP: Record<Exclude<OrderTypeFilter, 'all'>, string> = {
   grabpay: grabPayIcon,
   shopeepay: shopeePayIcon,
   usdt: usdtIcon
+}
+
+const toOrderTypeImageUrl = (value?: string) => {
+  if (!value) return ''
+  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
 }
 
 /**
@@ -172,8 +180,44 @@ export const getMyOrderTypeLabel = (record: QueryMemberPayOrderPageRecord, local
 /**
  * 返回订单支付方式图标。
  */
-export const getMyOrderTypeIcon = (record: QueryMemberPayOrderPageRecord, localeKey = 'eng') =>
+export const getMyOrderTypeIcon = (
+  record: QueryMemberPayOrderPageRecord,
+  localeKey = 'eng',
+  orderTypeIconMap: OrderTypeIconMap = {}
+) =>
+  orderTypeIconMap[String(record.columnCode ?? '')] ||
   TYPE_ICON_MAP[getMyOrderTypeValue(record, localeKey)]
+
+/**
+ * 加载订单支付方式图标映射。
+ */
+export const loadMyOrderTypeIconMap = async (): Promise<OrderTypeIconMap> => {
+  const response = await Api.wallet.queryPayColumnPage({
+    page: {
+      current: 1,
+      size: 9999
+    },
+    languageCode: getLanguageCode(),
+    currency: getCurrentCurrency(),
+    param: {
+      columnCode: ''
+    }
+  })
+
+  if (!response.success) {
+    throw new Error(response.message || 'queryPayColumnPage failed')
+  }
+
+  const result: QueryPayColumnItem[] = Array.isArray(response.result) ? response.result : []
+
+  return result.reduce<OrderTypeIconMap>((iconMap, item) => {
+    const iconUrl = toOrderTypeImageUrl(item.defaultOrderIcon)
+    if (!iconUrl) return iconMap
+
+    iconMap[String(item.columnCode)] = iconUrl
+    return iconMap
+  }, {})
+}
 
 /**
  * 格式化订单时间。

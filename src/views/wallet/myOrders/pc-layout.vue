@@ -105,6 +105,7 @@
         :order="selectedDesktopOrder"
         :tab="activeTopTab"
         mode="pc"
+        :order-type-icon-map="orderTypeIconMap"
         @copy-order-no="handleCopyOrderNo"
       />
     </div>
@@ -122,7 +123,7 @@ import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import depositPopShell from '@/components/deposit/shared/depositPopShell.vue'
 import EmptyImg from '@/static/img/personalCenter/noData.png'
 import CloseIcon from '@/static/svg/close.svg?component'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
 import MyOrdersTablePanel from './MyOrdersTablePanel.vue'
@@ -140,8 +141,10 @@ import {
   getMyOrderStatusClass,
   getMyOrderStatusText,
   getMyOrderTypeLabel,
+  loadMyOrderTypeIconMap,
   matchMyOrdersTypeFilter,
   type MyOrdersFilterValues,
+  type OrderTypeIconMap,
   type OrderTab,
   type OrderTimeFilter,
   type OrderTypeFilter
@@ -159,6 +162,7 @@ const desktopPagination = reactive({
 const selectedDesktopOrder = ref<QueryMemberPayOrderPageRecord | null>(null)
 const desktopRecords = ref<QueryMemberPayOrderPageRecord[]>([])
 const desktopTotalPages = ref(1)
+const orderTypeIconMap = ref<OrderTypeIconMap>({})
 
 /**
  * 归一化筛选值。
@@ -311,4 +315,14 @@ watch(
   },
   { immediate: true }
 )
+
+onMounted(() => {
+  void loadMyOrderTypeIconMap()
+    .then(result => {
+      orderTypeIconMap.value = result
+    })
+    .catch(error => {
+      console.error('loadMyOrderTypeIconMap failed', error)
+    })
+})
 </script>

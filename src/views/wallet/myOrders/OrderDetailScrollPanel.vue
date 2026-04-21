@@ -248,6 +248,7 @@ import {
   getMyOrderStatusText,
   getMyOrderTypeIcon,
   getMyOrderTypeLabel,
+  type OrderTypeIconMap,
   type OrderTab
 } from './shared'
 
@@ -255,6 +256,7 @@ interface Props {
   order: QueryMemberPayOrderPageRecord
   tab: OrderTab
   mode?: 'mobile' | 'pc'
+  orderTypeIconMap?: OrderTypeIconMap
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -285,7 +287,9 @@ const statusText = computed(() => getMyOrderStatusText(props.tab, props.order.st
 const statusClass = computed(() => getMyOrderStatusClass(props.tab, props.order.status))
 const createdAt = computed(() => formatMyOrderTime(props.order.createTime))
 const methodName = computed(() => getMyOrderTypeLabel(props.order, String(locale.value || 'eng')))
-const methodIcon = computed(() => getMyOrderTypeIcon(props.order, String(locale.value || 'eng')))
+const methodIcon = computed(() =>
+  getMyOrderTypeIcon(props.order, String(locale.value || 'eng'), props.orderTypeIconMap ?? {})
+)
 const heroCurrencySymbol = computed(() => getCurrencySymbol(props.order.currency))
 
 // 格式化页面展示金额（不含币种符号）
