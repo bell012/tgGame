@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getCurrentCurrency } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
@@ -115,6 +115,7 @@ interface LiveRow {
 const MAX_VISIBLE_ROWS = 10
 /** 列表轮播间隔 */
 const SCROLL_INTERVAL_MS = 1000
+const RECENT_BIG_WINS_REFRESH_INTERVAL_MS = 10 * 60 * 1000
 
 const sourceRows = ref<LiveRow[]>([])
 const displayRows = ref<LiveRow[]>([])
@@ -129,12 +130,20 @@ const handlePlayerClick = () => {
 }
 
 let autoScrollTimer: number | null = null
+let recentBigWinsTimer: number | null = null
 let nextScrollIndex = 0
 
 const stopAutoScroll = () => {
   if (autoScrollTimer != null) {
     window.clearTimeout(autoScrollTimer)
     autoScrollTimer = null
+  }
+}
+
+const stopRecentBigWinsTimer = () => {
+  if (recentBigWinsTimer != null) {
+    window.clearInterval(recentBigWinsTimer)
+    recentBigWinsTimer = null
   }
 }
 
@@ -231,8 +240,16 @@ watch(
   { deep: true }
 )
 
+onMounted(() => {
+  stopRecentBigWinsTimer()
+  recentBigWinsTimer = window.setInterval(() => {
+    void getRecentBigWinsData()
+  }, RECENT_BIG_WINS_REFRESH_INTERVAL_MS)
+})
+
 onUnmounted(() => {
   stopAutoScroll()
+  stopRecentBigWinsTimer()
 })
 </script>
 

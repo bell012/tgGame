@@ -576,14 +576,6 @@ const sportsEventList = computed<EventListItem[]>(() => {
 })
 
 const querySlideshowList = ref<any>([])
-const GAME_DATA_REFRESH_INTERVAL_MS = 10 * 60 * 1000
-let gameDataTimer: ReturnType<typeof setInterval> | null = null
-
-const stopGameDataTimer = () => {
-  if (!gameDataTimer) return
-  clearInterval(gameDataTimer)
-  gameDataTimer = null
-}
 
 const fetchGameData = async () => {
   try {
@@ -592,7 +584,6 @@ const fetchGameData = async () => {
     rawGameData.value = rawResult
     gameData.value = mapHomeGameSections(rawResult)
     localStorage.setItem('gameData', JSON.stringify(rawResult))
-    console.log('fetchGameData success执行')
   } catch (error) {
     console.error('getGameData failed', error)
   }
@@ -622,10 +613,6 @@ onMounted(async () => {
   await fetchGameData()
   getRecentBigWinsData()
   getQuerySlideshow()
-  stopGameDataTimer()
-  gameDataTimer = setInterval(() => {
-    void fetchGameData()
-  }, GAME_DATA_REFRESH_INTERVAL_MS)
 
   void nextTick(() => {
     const el = marqueeRef.value
@@ -641,7 +628,6 @@ onUnmounted(() => {
   marqueeResizeObserver?.disconnect()
   marqueeResizeObserver = null
   stopMarqueeRaf()
-  stopGameDataTimer()
 })
 </script>
 
