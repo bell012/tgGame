@@ -126,8 +126,8 @@ provide('explore-suggested-list', exploreSuggestedList)
 
 const typeList = computed(() => [
   { id: 'casino', name: t('bottom_tab_bar.casino') },
-  { id: 'sports', name: '体育' },
-  { id: 'lottery', name: '彩票' }
+  { id: 'sports', name: t('bottom_tab_bar.sports') },
+  { id: 'lottery', name: t('home.Lottery') }
 ])
 
 const activeSearchKeyword = ref('')
@@ -265,17 +265,13 @@ const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth'
   })
 }
 
-const clearSearch = () => {
-  keywords.value = ''
-  activeSearchKeyword.value = ''
-}
-
 const onTabButton = (tab: CasinoTabButtonItem) => {
   if (tab.sysGameTypeCode === currentTabCode.value) {
     return
   }
 
-  clearSearch()
+  // 切换分类时保留当前关键词，并基于新分类自动刷新检索结果
+  activeSearchKeyword.value = keywords.value.trim()
   currentTabCode.value = tab.sysGameTypeCode
 }
 

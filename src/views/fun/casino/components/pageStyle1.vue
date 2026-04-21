@@ -96,11 +96,11 @@
             class="relative flex aspect-[330/438] flex-col items-center justify-center rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
             @click="handleViewAll(item)"
           >
-            <SmartImage :src="viewAllLightIcon" alt="view all" class="dark:hidden w-full h-full" />
+            <SmartImage :src="viewAllLightIcon" alt="view all" class="dark:!hidden w-full h-full" />
             <SmartImage
               :src="viewAllDarkIcon"
               alt="view all"
-              class="hidden dark:block w-full h-full"
+              class="!hidden dark:!block w-full h-full"
             />
             <span
               class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-bold text-common-100 sm:text-base"

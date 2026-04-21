@@ -612,10 +612,18 @@ const loadDiscountList = async (payChannelCode: string) => {
   }
 }
 
+const toPayImageUrl = (value: string) => {
+  if (!value) return ''
+  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+}
+
 // 根据订单详情刷新弹窗中的订单信息
 const applyOrderDetail = (detail?: QueryPayOrderByOrderIdResult) => {
   if (detail) {
-    orderInfo.value = detail
+    orderInfo.value = {
+      ...detail,
+      method_icon: toPayImageUrl(selectedMethod.value?.defaultOrderIcon ?? '')
+    }
     return
   }
 
@@ -628,7 +636,7 @@ const applyOrderDetail = (detail?: QueryPayOrderByOrderIdResult) => {
     accountNo: selectedSubColumn.value?.offlineAccount?.accountNo ?? '',
     busiAmount: Number(amount.value ?? 0),
     currency: getCurrentCurrency(),
-    method_icon: selectedMethod.value?.columnIco ?? selectedMethod.value?.defaultOrderIcon ?? '',
+    method_icon: toPayImageUrl(selectedMethod.value?.defaultOrderIcon ?? ''),
     status: 0
   }
 }

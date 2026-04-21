@@ -78,6 +78,7 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import FiatOrderAmountIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
+import { copyTextWithFallback } from '@/utils/clipboard'
 import { navigateToName } from '@/utils/router'
 import { showToast } from 'vant'
 import { computed } from 'vue'
@@ -154,11 +155,11 @@ const handleClose = () => {
 }
 
 // 复制文本到剪贴板
-const copyWord = (word: string) => {
-  navigator.clipboard.writeText(word)
+const copyWord = async (word: string) => {
+  const copied = await copyTextWithFallback(word)
   showToast({
-    message: t('betDetails.copy'),
-    type: 'success'
+    message: copied ? t('deposit.copy_success') : t('deposit.copy_failed'),
+    type: copied ? 'success' : 'fail'
   })
 }
 

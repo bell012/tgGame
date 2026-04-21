@@ -48,7 +48,10 @@
           </div>
         </div>
         <div class="w-full">
-          <div v-if="searchHistory?.length > 0" class="flex flex-wrap gap-2">
+          <div
+            v-if="searchHistory?.length > 0"
+            class="flex flex-wrap gap-2 max-h-14 overflow-hidden"
+          >
             <div
               v-for="(item, inx) in searchHistory.slice(0, 5)"
               :key="inx"

@@ -40,7 +40,7 @@
         </div>
 
         <div
-          class="mt-3 sm:mt-4 pl-3 sm:pl-4 text-sm font-normal leading-normal text-secondary-7"
+          class="mt-3 pl-3 text-sm font-normal leading-normal text-secondary-7 underline underline-offset-[4px] sm:mt-4 sm:pl-4"
           @click.stop="paymentReceiptSampleShow = true"
         >
           {{ t('deposit.upload_view_btn_text') }}
@@ -51,7 +51,7 @@
             v-model="fileList"
             :max-count="1"
             :preview-full-image="true"
-            :preview-size="isMobile ? 120 : 150"
+            :preview-size="uploadPreviewSize"
             :after-read="imageAfterRead"
             :before-delete="imageDelete"
             :preview-options="{ closeable: true }"
@@ -63,14 +63,12 @@
               </div>
             </template>
             <div
-              class="w-[100px] h-[100px] sm:w-[150px] sm:h-[150px] flex flex-col items-center justify-center rounded-xl border-[1.5px] border-dashed border-fill-icon-2"
+              class="box-border flex h-[100px] w-[100px] flex-col items-center justify-center gap-[7px] rounded-[8px] border border-dashed text-text-3 sm:h-[150px] sm:w-[150px]"
             >
-              <div class="w-4 h-4 sm:w-6 sm:h-6">
-                <PlusIcon class="w-4 h-4 sm:w-6 sm:h-6" />
+              <div class="flex h-4 w-4 items-center justify-center">
+                <PlusIcon class="h-4 w-4" />
               </div>
-              <div
-                class="mt-1.5 sm:mt-3 text-xs sm:text-base sm:font-bold leading-normal text-text-2"
-              >
+              <div class="w-[74px] text-center text-[12px] font-normal leading-[15px] text-text-3">
                 {{ t('deposit.upload_btn_text') }}
               </div>
             </div>
@@ -96,6 +94,7 @@ import deleteIcon from '@/static/img/payment/upload_delete.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import BulletDotIcon from '@/static/svg/deposit/bullet-dot.svg?component'
 import PlusIcon from '@/static/svg/deposit/plus.svg?component'
+import { resolveUploadErrorMessage } from '@/utils/upload-error'
 import { showToast, Uploader, UploaderAfterRead, UploaderFileListItem } from 'vant'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -126,6 +125,7 @@ const isBindingRemark = ref(false)
 const canConfirmUpload = computed(
   () => !!uploadedFilePath.value && !isUploadingImage.value && !isBindingRemark.value
 )
+const uploadPreviewSize = computed(() => (isMobile.value ? 100 : 150))
 
 const imageAfterRead: UploaderAfterRead = async items => {
   // 如果传入的 items 是单个文件对象，转换为数组处理
@@ -165,10 +165,11 @@ const imageAfterRead: UploaderAfterRead = async items => {
       file.status = 'done'
       file.message = t('deposit.upload_status_success')
     } catch (error) {
+      const errorMessage = resolveUploadErrorMessage(error, t, t('deposit.upload_status_failed'))
       file.status = 'failed'
-      file.message = t('deposit.upload_status_failed')
+      file.message = t('personalCenter.feedback.toast.uploadFailed')
       showToast({
-        message: error instanceof Error ? error.message : t('common.error'),
+        message: errorMessage,
         type: 'fail'
       })
     } finally {
@@ -180,6 +181,7 @@ const imageAfterRead: UploaderAfterRead = async items => {
 // 删除图片
 const imageDelete = () => {
   uploadedFilePath.value = ''
+  return true
 }
 
 const getUploadedFilePath = (result: unknown) => {

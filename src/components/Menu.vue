@@ -184,7 +184,7 @@
             <span v-if="link.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
               link.name2
             }}</span>
-            <span class="text-sm font-[600] text-text-1" >{{ link.name }}</span>
+            <span class="text-sm font-[600] text-text-1">{{ link.name }}</span>
           </template>
         </div>
         <div
@@ -604,8 +604,7 @@ const isSubmenuBranchActive = (item: SidebarSubmenuItem): boolean => {
   const children = item.children
   if (!children?.length) return false
   return children.some(
-    child =>
-      child.id === activeThirdLevelMenuId.value || isSubmenuBranchActive(child)
+    child => child.id === activeThirdLevelMenuId.value || isSubmenuBranchActive(child)
   )
 }
 
@@ -653,10 +652,7 @@ const toggleMenu = (menuId: string) => {
 // 菜单展开
 const handleMenuExpand = (menu: SidebarMenuGroup) => {
   activeMenuId.value = menu.id
-  if (
-    activeThirdLevelMenuId.value &&
-    !menuOwnsThirdLevel(menu, activeThirdLevelMenuId.value)
-  ) {
+  if (activeThirdLevelMenuId.value && !menuOwnsThirdLevel(menu, activeThirdLevelMenuId.value)) {
     activeThirdLevelMenuId.value = ''
   }
   if (menu.handler) {

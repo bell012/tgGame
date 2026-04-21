@@ -34,7 +34,10 @@
       text-class="text-xs text-center text-text-1"
     />
 
-    <div v-if="total > 0 && totalPages > 1" class="mt-4 flex items-center justify-center">
+    <div
+      v-if="!isMobile && total > 0 && totalPages > 1"
+      class="mt-4 flex items-center justify-center"
+    >
       <button
         type="button"
         class="flex h-9 items-center justify-center rounded-bl-lg rounded-tl-lg bg-bg-2 px-2.5 text-xs"
@@ -80,6 +83,7 @@ import { computed, inject, nextTick, ref, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
 import type { GameQueryOptions } from '@/stores/game'
 import filterSheet from './filterSheet.vue'
@@ -108,6 +112,7 @@ const emit = defineEmits<{
 }>()
 const { t } = useI18n()
 const gameStore = useGameStore()
+const isMobile = useIsMobile()
 const pageRootRef = ref<HTMLElement | null>(null)
 const closeDesktopModalFlag = inject<Ref<boolean> | null>('search-close-desktop-modal', null)
 
@@ -168,7 +173,12 @@ const hideSortFilter = computed(() => {
   const keyword = String((props.queryOptions ?? props.modules ?? {}).keyword ?? '').trim()
   return keyword.length > 0
 })
-const resolvedQueryKey = computed(() => JSON.stringify(resolvedQueryOptions.value))
+const resolvedQueryKey = computed(() =>
+  JSON.stringify({
+    queryOptions: resolvedQueryOptions.value,
+    isMobile: isMobile.value
+  })
+)
 const baseQueryKey = computed(() =>
   JSON.stringify({
     ...(props.queryOptions ?? props.modules ?? {}),
@@ -300,6 +310,16 @@ const getGameData = async () => {
   isLoading.value = true
 
   try {
+    if (isMobile.value) {
+      const list = await gameStore.queryGameData(resolvedQueryOptions.value)
+
+      page.value = 1
+      total.value = list.length
+      totalPages.value = 1
+      pageData.value = list
+      return
+    }
+
     const res = await gameStore.queryGameDataPage({
       ...resolvedQueryOptions.value,
       page: page.value,

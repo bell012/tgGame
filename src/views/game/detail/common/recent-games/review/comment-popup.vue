@@ -34,6 +34,7 @@
               ref="desktopTextareaRef"
               v-model="commentText"
               class="comment-popup-textarea h-[150px] w-full resize-none rounded-[12px] p-[12px] text-[14px] font-semibold outline-none"
+              :class="{ 'comment-popup-textarea-active': hasCommentContent }"
               maxlength="500"
               :placeholder="inputPlaceholder"
             ></textarea>
@@ -41,11 +42,15 @@
             <div class="mt-[10px] flex items-center justify-between gap-[12px]">
               <div ref="desktopEmojiRef" class="relative">
                 <button
-                  class="flex size-[24px] items-center justify-center opacity-90"
+                  class="comment-emoji-trigger flex size-[24px] items-center justify-center opacity-90"
+                  :class="{ 'comment-emoji-trigger-active': isEmojiPickerOpen }"
                   type="button"
                   @click.stop="toggleEmojiPicker"
                 >
-                  <SmartImage alt="" :src="EmoIcon" class="size-[24px]" />
+                  <EmoIconSvg
+                    class="comment-emoji-trigger-icon size-[24px]"
+                    :class="{ 'comment-emoji-trigger-icon-active': isEmojiPickerOpen }"
+                  />
                 </button>
 
                 <div
@@ -84,7 +89,7 @@
                 </div>
               </div>
               <button
-                class="h-[40px] min-w-[166px] rounded-[10px] bg-[var(--color-theme-level-1)] px-[24px] text-[16px] font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50"
+                class="comment-popup-post-btn h-[40px] min-w-[166px] rounded-[10px] px-[24px] text-[16px] font-semibold disabled:cursor-not-allowed"
                 type="button"
                 :disabled="!commentText.trim()"
                 @click="submitComment"
@@ -115,7 +120,7 @@
                 {{ t('gameDetail.leaveCommentsTitle') }}
               </div>
               <button
-                class="h-[40px] justify-self-end rounded-[12px] bg-[var(--color-theme-level-1)] px-[14px] text-[14px] font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50"
+                class="comment-popup-post-btn h-[40px] justify-self-end rounded-[12px] px-[14px] text-[14px] font-semibold disabled:cursor-not-allowed"
                 type="button"
                 :disabled="!commentText.trim()"
                 @click="submitComment"
@@ -128,6 +133,7 @@
               ref="mobileTextareaRef"
               v-model="commentText"
               class="comment-popup-textarea mt-[10px] h-[190px] w-full resize-none rounded-[10px] p-[12px] text-[14px] outline-none"
+              :class="{ 'comment-popup-textarea-active': hasCommentContent }"
               maxlength="500"
               :placeholder="inputPlaceholder"
             ></textarea>
@@ -135,11 +141,15 @@
             <div class="mt-[8px] flex justify-end">
               <div ref="mobileEmojiRef" class="relative">
                 <button
-                  class="flex size-[24px] items-center justify-center opacity-90"
+                  class="comment-emoji-trigger flex size-[24px] items-center justify-center opacity-90"
+                  :class="{ 'comment-emoji-trigger-active': isEmojiPickerOpen }"
                   type="button"
                   @click.stop="toggleEmojiPicker"
                 >
-                  <SmartImage alt="" :src="EmoIcon" class="size-[24px]" />
+                  <EmoIconSvg
+                    class="comment-emoji-trigger-icon size-[24px]"
+                    :class="{ 'comment-emoji-trigger-icon-active': isEmojiPickerOpen }"
+                  />
                 </button>
 
                 <div
@@ -189,8 +199,7 @@
 import { useThemeStore } from '@/stores/theme'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
-import SmartImage from '@/components/common/SmartImage.vue'
+import EmoIconSvg from '@/static/svg/game/detail/comment/emo.svg?component'
 
 interface Props {
   modelValue: boolean
@@ -347,6 +356,8 @@ const inputPlaceholder = computed(() => {
   return placeholder || t('gameDetail.commentDefaultPlaceholder')
 })
 
+const hasCommentContent = computed(() => Boolean(commentText.value.trim()))
+
 const closePopup = () => {
   isEmojiPickerOpen.value = false
   emit('update:modelValue', false)
@@ -476,14 +487,48 @@ onBeforeUnmount(() => {
   color: #fff;
 }
 
+.comment-popup-textarea.comment-popup-textarea-active {
+  border-color: var(--color-theme-level-1);
+}
+
 .comment-popup-textarea::placeholder {
   color: #dce4ea;
+}
+
+.comment-popup-post-btn {
+  border: 1px solid #20c56d;
+  background: linear-gradient(135deg, #2ddf80 0%, #95e969 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  color: #061a10;
+  transition:
+    filter 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.comment-popup-post-btn:not(:disabled):active {
+  filter: brightness(0.96);
+}
+
+.comment-popup-post-btn:disabled {
+  border-color: rgba(107, 121, 136, 0.45);
+  background: #4f5a65;
+  box-shadow: none;
+  color: #9cabbc;
 }
 
 .comment-emoji-panel {
   border: 1px solid #3f4750;
   background: #252d35;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+:deep(.comment-emoji-trigger-icon path) {
+  fill: #b3bec1;
+  transition: fill 0.2s ease;
+}
+
+:deep(.comment-emoji-trigger-icon.comment-emoji-trigger-icon-active path) {
+  fill: var(--color-theme-level-1);
 }
 
 .comment-emoji-divider {
@@ -535,8 +580,18 @@ onBeforeUnmount(() => {
   color: #1d2a3d;
 }
 
+.comment-popup-panel.is-light .comment-popup-textarea.comment-popup-textarea-active {
+  border-color: var(--color-theme-level-1);
+}
+
 .comment-popup-panel.is-light .comment-popup-textarea::placeholder {
   color: #8a9ab1;
+}
+
+.comment-popup-panel.is-light .comment-popup-post-btn:disabled {
+  border-color: #c8d4e3;
+  background: #e9eff6;
+  color: #90a0b2;
 }
 
 .comment-popup-panel.is-light .comment-emoji-panel {

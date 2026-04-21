@@ -345,6 +345,7 @@ const handleGameClick = (item: GameDataItem) => {
 const handleBack = () => {
   if (sourceRowId.value) {
     navigateToName('gameDetail', {
+      replace: true,
       params: {
         rowId: sourceRowId.value
       }

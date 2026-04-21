@@ -58,11 +58,11 @@
         </div>
         <div class="flex justify-center items-center mt-[4px]">
           <SmartImage
-            v-for="avatarIndex in avatarCount"
-            :key="avatarIndex"
+            v-for="(avatarUrl, avatarIndex) in displayRatingAvatarUrls"
+            :key="`${avatarUrl}-${avatarIndex}`"
             alt=""
-            :src="currentUserAvatarUrl"
-            class="size-[26px] rounded-[26px]"
+            :src="avatarUrl"
+            class="size-[26px] rounded-[26px] border border-[var(--color-background-level-1)] -ml-[8px] first:ml-0"
           />
         </div>
       </div>
@@ -134,7 +134,12 @@
       >
         <div class="flex justify-between">
           <div class="flex text-[12px] items-center gap-[8px]">
-            <SmartImage alt="" :src="comment.avatarUrl" class="size-[26px] rounded-[26px]" />
+            <SmartImage
+              alt=""
+              :src="comment.avatarUrl"
+              class="size-[26px] rounded-[26px]"
+              @error="handleCommentAvatarError(comment)"
+            />
             <div class="text-[var(--color-text-level-2)]">{{ comment.memberName }}</div>
             <div class="text-[var(--color-text-level-3)]">{{ comment.timeText }}</div>
           </div>
@@ -194,7 +199,12 @@
             >
               <div class="flex justify-between">
                 <div class="flex text-[12px] items-center gap-[8px]">
-                  <SmartImage alt="" :src="child.avatarUrl" class="size-[26px] rounded-[26px]" />
+                  <SmartImage
+                    alt=""
+                    :src="child.avatarUrl"
+                    class="size-[26px] rounded-[26px]"
+                    @error="handleCommentAvatarError(child)"
+                  />
                   <div class="text-[var(--color-text-level-2)]">{{ child.memberName }}</div>
                   <div class="text-[var(--color-text-level-3)]">{{ child.timeText }}</div>
                 </div>
@@ -276,7 +286,11 @@ import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?ur
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?url'
 import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
-import PersonIcon from '@/static/svg/game/detail/comment/person.webp?url'
+import RatingAvatarP1 from '@/static/svg/game/detail/comment/p1.svg?url'
+import RatingAvatarP2 from '@/static/svg/game/detail/comment/p2.webp?url'
+import RatingAvatarP3 from '@/static/svg/game/detail/comment/p3.svg?url'
+import RatingAvatarP4 from '@/static/svg/game/detail/comment/p4.svg?url'
+import RatingAvatarP5 from '@/static/svg/game/detail/comment/p5.svg?url'
 import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?url'
 import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?url'
 import { useThemeStore } from '@/stores/theme'
@@ -322,24 +336,88 @@ const themeStore = useThemeStore()
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
 const isLightTheme = computed(() => themeStore.theme === 'light')
-const currentUserAvatarUrl = computed(() => resolveProfileAvatarUrl(userInfo.value?.headPortrait))
+const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken))
+const currentUserAvatarUrl = computed(() => {
+  if (!isLoggedIn.value) {
+    return RatingAvatarP1
+  }
+
+  return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
+})
 
 const { requireLogin } = useRequireLoginAction()
 const { rating: userRating, setRating } = useGameRating()
+const ratingCountFromSubject = ref(0)
 
-const baseRatingCount = computed(() => {
-  const parsed = Number(currentGameDetail.value?.initScoreNum)
+const normalizePositiveInt = (value: unknown) => {
+  const parsed = Number(value)
   if (!Number.isFinite(parsed) || parsed <= 0) {
     return 0
   }
   return Math.trunc(parsed)
+}
+
+const baseRatingCount = computed(() => {
+  // 评论主体接口有评分人数时优先使用，避免和详情接口字段语义冲突
+  if (ratingCountFromSubject.value > 0) {
+    return ratingCountFromSubject.value
+  }
+
+  const loadedCommentCount = commentList.value.reduce(
+    (sum, comment) => sum + 1 + comment.children.length,
+    0
+  )
+  if (loadedCommentCount > 0) {
+    return loadedCommentCount
+  }
+
+  return normalizePositiveInt(currentGameDetail.value?.initScoreNum)
 })
 
 const ratingCount = computed(() => {
   return baseRatingCount.value + (userRating.value > 0 ? 1 : 0)
 })
 
-const avatarCount = computed(() => Math.min(8, Math.max(0, ratingCount.value)))
+const MAX_RATING_AVATAR_COUNT = 5
+const FALLBACK_RATING_AVATAR_URLS = [
+  RatingAvatarP1,
+  RatingAvatarP2,
+  RatingAvatarP3,
+  RatingAvatarP4,
+  RatingAvatarP5
+]
+
+const ratingAvatarUrls = computed(() => {
+  const uniqueAvatarUrls: string[] = []
+  const seen = new Set<string>()
+
+  const appendAvatar = (avatarUrl: string) => {
+    const normalizedUrl = normalizeQueryValue(avatarUrl)
+    if (!normalizedUrl || seen.has(normalizedUrl)) {
+      return
+    }
+    seen.add(normalizedUrl)
+    uniqueAvatarUrls.push(normalizedUrl)
+  }
+
+  commentList.value.forEach(comment => {
+    appendAvatar(comment.avatarUrl)
+    comment.children.forEach(child => appendAvatar(child.avatarUrl))
+  })
+
+  return uniqueAvatarUrls.slice(0, MAX_RATING_AVATAR_COUNT)
+})
+
+const displayRatingAvatarUrls = computed(() => {
+  if (ratingAvatarUrls.value.length) {
+    return ratingAvatarUrls.value
+  }
+  const fallbackCount = Math.min(MAX_RATING_AVATAR_COUNT, Math.max(0, ratingCount.value))
+  if (fallbackCount <= 0) {
+    return []
+  }
+  return FALLBACK_RATING_AVATAR_URLS.slice(0, fallbackCount)
+})
 
 const scoreValue = computed(() => {
   const rawScore = Number(currentGameDetail.value?.initScoreStar)
@@ -348,17 +426,7 @@ const scoreValue = computed(() => {
     return 4.0
   }
 
-  // 兼容后端枚举值：1/2/3 -> 4.0/4.5/5.0
-  if (rawScore === 1) return 4.0
-  if (rawScore === 2) return 4.5
-  if (rawScore === 3) return 5.0
-
-  // 兼容后端直接返回评分值：4.0/4.5/5.0
-  if (rawScore >= 4 && rawScore <= 5) {
-    return rawScore
-  }
-
-  return 4.0
+  return Math.max(0, Math.min(5, rawScore))
 })
 
 const scoreText = computed(() => scoreValue.value.toFixed(1))
@@ -601,6 +669,7 @@ type ReviewCommentViewItem = {
 }
 
 const commentList = ref<ReviewCommentViewItem[]>([])
+const DEFAULT_COMMENT_AVATAR_URL = RatingAvatarP1
 
 const toSafeNumber = (value: unknown) => {
   const parsed = Number(value)
@@ -637,12 +706,19 @@ const formatElapsedTime = (timestamp: number) => {
 const resolveCommentAvatar = (avatar: unknown) => {
   const avatarPath = normalizeQueryValue(avatar)
   if (!avatarPath) {
-    return PersonIcon
+    return DEFAULT_COMMENT_AVATAR_URL
   }
   if (/^(data:|blob:|https?:\/\/|\/)/i.test(avatarPath)) {
     return avatarPath
   }
   return gameImageBaseUrl ? `${gameImageBaseUrl}${avatarPath}` : avatarPath
+}
+
+const handleCommentAvatarError = (comment: ReviewCommentViewItem) => {
+  if (!comment || comment.avatarUrl === DEFAULT_COMMENT_AVATAR_URL) {
+    return
+  }
+  comment.avatarUrl = DEFAULT_COMMENT_AVATAR_URL
 }
 
 const mapCommentItem = (
@@ -785,6 +861,7 @@ const requestCommentSubject = async () => {
   const gameId = currentGameId.value
   if (!gameId) {
     commentSubjectId.value = ''
+    ratingCountFromSubject.value = 0
     commentList.value = []
     return
   }
@@ -802,11 +879,21 @@ const requestCommentSubject = async () => {
       }
     )
     const result = res?.result
+    ratingCountFromSubject.value = Math.max(
+      normalizePositiveInt(result?.scoreNum),
+      normalizePositiveInt(result?.ratingNum),
+      normalizePositiveInt(result?.ratingCount),
+      normalizePositiveInt(result?.scoreCount),
+      normalizePositiveInt(result?.commentNum),
+      normalizePositiveInt(result?.commentCount),
+      normalizePositiveInt(result?.total)
+    )
     commentSubjectId.value = normalizeQueryValue(result?.subjectId ?? result?.id ?? result?.rowId)
     await requestCommentsList(commentSubjectId.value)
   } catch (error) {
     console.error('getCommentSubject failed', error)
     commentSubjectId.value = ''
+    ratingCountFromSubject.value = 0
     commentList.value = []
   }
 }
@@ -825,7 +912,7 @@ const sortOptions = computed(() => [
 const commentInputPlaceholder = computed(() => {
   const memberName = normalizeQueryValue(replyTargetComment.value?.memberName)
   if (!memberName) {
-    return t('gameDetail.leaveYourComment')
+    return t('gameDetail.commentDefaultPlaceholder')
   }
   return t('gameDetail.replyToUser', { name: memberName })
 })
