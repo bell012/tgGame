@@ -83,6 +83,45 @@
         :class="{ 'cursor-not-allowed': !isManualAmountAllowed }"
       />
     </div>
+    <!-- 流水选项与提示区域 -->
+    <div class="mt-4 flex flex-col gap-2">
+      <!-- 流水选项切换容器 -->
+      <div class="border-b border-opacity-10 pb-2">
+        <!-- 流水选项列表 -->
+        <div class="flex items-center gap-6 overflow-x-auto scrollbar-hide">
+          <template v-for="(item, index) in wageringOptions" :key="item.rowId">
+            <!-- 单个流水选项按钮 -->
+            <button
+              type="button"
+              class="relative shrink-0 pb-1 text-sm leading-5 transition-colors"
+              :class="
+                selectedDiscountItem?.rowId === item.rowId
+                  ? 'font-bold text-text-1'
+                  : 'text-text-2 lg:hover:text-text-1'
+              "
+              @click="selectWagering(item.rowId)"
+            >
+              {{ item.label }}
+              <span
+                v-if="selectedDiscountItem?.rowId === item.rowId"
+                class="absolute inset-x-0 -bottom-[9px] h-px bg-theme-primary"
+              ></span>
+            </button>
+
+            <!-- 流水选项分隔线 -->
+            <div
+              v-if="index !== wageringOptions.length - 1"
+              class="h-[14px] w-px shrink-0 bg-opacity-10"
+            ></div>
+          </template>
+        </div>
+      </div>
+
+      <!-- 提款流水提示文案 -->
+      <p class="text-xs leading-[15px] text-secondary-7">
+        {{ t('deposit.withdrawal_no_wagering_tip') }}
+      </p>
+    </div>
     <!-- 预设金额区域 -->
     <div class="mt-4 w-full relative">
       <!-- 预设金额按钮网格 -->
@@ -230,17 +269,14 @@ const selectedDiscountPayChannelCode = computed(() =>
 )
 const presetDiscountRatioMap = computed<Record<number, string>>(() => {
   const ratioMap: Record<number, string> = {}
+  const currentDiscountItem = selectedDiscountItem.value
 
-  discountList.value.forEach(item => {
-    if (item.multiple !== 1) return
+  currentDiscountItem?.discounts?.forEach(discount => {
+    const discountAmount = Number(discount.amount)
+    if (!Number.isFinite(discountAmount)) return
+    if (ratioMap[discountAmount] !== undefined) return
 
-    item.discounts?.forEach(discount => {
-      const discountAmount = Number(discount.amount)
-      if (!Number.isFinite(discountAmount)) return
-      if (ratioMap[discountAmount] !== undefined) return
-
-      ratioMap[discountAmount] = String(discount.ratio)
-    })
+    ratioMap[discountAmount] = String(discount.ratio)
   })
 
   return ratioMap
@@ -249,6 +285,13 @@ const channelOptions = computed(() =>
   paySubColumns.value.map(item => ({
     rowId: item.rowId,
     label: parseSubColumnName(item)
+  }))
+)
+const wageringOptions = computed(() =>
+  discountList.value.map(item => ({
+    rowId: item.rowId,
+    multiple: item.multiple,
+    label: formatWageringLabel(item.multiple)
   }))
 )
 const amountPlaceholder = computed(() =>
@@ -327,29 +370,13 @@ const syncPresetAmounts = () => {
   presetAmounts.value = normalizePresetAmounts(selectedSubColumn.value?.defaultRechargeAmount ?? [])
 }
 
-// 根据金额查找优惠项
-const findDiscountItemByAmount = (targetAmount?: number | string) => {
-  const normalizedAmount = Number(targetAmount)
-  if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) return null
+// 格式化流水倍数展示文案
+const formatWageringLabel = (multiple: number) =>
+  multiple === 0 ? t('deposit.wagering_no') : t('deposit.wagering_multiple', { multiple })
 
-  for (const item of discountList.value) {
-    if (item.multiple !== 1) continue
-
-    const matchedDiscount = item.discounts?.find(
-      discount => Number(discount.amount) === normalizedAmount
-    )
-
-    if (matchedDiscount) {
-      return item
-    }
-  }
-
-  return null
-}
-
-// 同步已选优惠项
-const syncSelectedDiscountItem = () => {
-  selectedDiscountItem.value = findDiscountItemByAmount(amount.value)
+// 选择当前流水倍数选项
+const selectWagering = (rowId: number) => {
+  selectedDiscountItem.value = discountList.value.find(item => item.rowId === rowId) ?? null
 }
 
 // 获取当前选中充值金额对应的优惠比例
@@ -523,7 +550,7 @@ const loadDiscountList = async (payChannelCode: string) => {
     ensureApiBusinessSuccess(response)
     const result: QueryDiscountListItem[] = Array.isArray(response.result) ? response.result : []
     discountList.value = result
-    syncSelectedDiscountItem()
+    selectedDiscountItem.value = result[0] ?? null
   } catch (error) {
     console.error('queryDiscountList failed', error)
     discountList.value = []
@@ -625,9 +652,9 @@ const doDeposit = async () => {
   const param: SubmitPayOrderPageForm = {
     columnCode: String(selectedMethod.value.columnCode),
     busiAmount: String(amount.value ?? 0),
-    payChannelCode: String(selectedMethod.value.columnCode),
+    payChannelCode: selectedDiscountPayChannelCode.value || String(selectedMethod.value.columnCode),
     channelId: isMobile.value ? 4 : 3,
-    subColumnCode: selectedDiscountItem.value?.rowId ?? selectedSubColumn.value.rowId,
+    subColumnCode: selectedSubColumn.value.rowId,
     flows: selectedDiscountItem.value?.multiple ?? 0
   }
 
@@ -687,13 +714,6 @@ watch(
     }
 
     void loadDiscountList(selectedDiscountPayChannelCode.value)
-  }
-)
-
-watch(
-  () => amount.value,
-  () => {
-    syncSelectedDiscountItem()
   }
 )
 

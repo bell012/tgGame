@@ -21,7 +21,7 @@
         <!-- 移动端详情按钮 -->
         <button
           class="absolute right-3.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
-          @click="handleClose"
+          @click="openDepositOrder"
         >
           <DetailsIcon class="w-4 h-4" />
         </button>
@@ -78,6 +78,7 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import FiatOrderAmountIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
+import { navigateToName } from '@/utils/router'
 import { showToast } from 'vant'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -158,6 +159,13 @@ const copyWord = (word: string) => {
   showToast({
     message: t('betDetails.copy'),
     type: 'success'
+  })
+}
+
+const openDepositOrder = () => {
+  emit('close')
+  requestAnimationFrame(() => {
+    void navigateToName('my-orders')
   })
 }
 </script>

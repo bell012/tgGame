@@ -6,7 +6,7 @@
       <!-- 币种展示区域 -->
       <div class="flex items-center justify-between gap-2">
         <!-- 币种按钮列表 -->
-        <div class="mx-auto flex max-w-[744px] flex-1 items-center justify-center gap-4">
+        <div class="mr-auto flex max-w-[744px] min-w-0 flex-1 items-center justify-start gap-4">
           <!-- 单个币种按钮 -->
           <button
             v-for="coin in visibleCoins"
