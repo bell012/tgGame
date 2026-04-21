@@ -66,7 +66,7 @@
                 v-if="unreadCountByCategory[tab.key] > 0"
                 class="tab-badge min-w-[18px] rounded-[5px] bg-theme-primary px-[5px] text-center text-[10px] font-[700] leading-[16px] text-text-4"
               >
-                {{ unreadCountByCategory[tab.key] }}
+                {{ formatUnreadCount(unreadCountByCategory[tab.key]) }}
               </span>
             </button>
           </nav>
@@ -896,6 +896,9 @@ const unreadCountByCategory = computed<Record<NotificationCategory, number>>(() 
     }
   )
 })
+
+// 格式化顶部未读角标，超过 99 统一显示 99+。
+const formatUnreadCount = (count: number) => (count > 99 ? '99+' : String(count))
 
 // 当前激活分类的未读数量。
 const currentTabUnreadCount = computed(() => unreadCountByCategory.value[activeTab.value])
