@@ -299,8 +299,6 @@ onUnmounted(() => {
 }
 .table-head th {
   padding: 10px 14px;
-  /* background: var(--color-background-level-8); */
-  /* color: var(--color-text-level-2); */
   font-weight: 600;
   white-space: nowrap;
 }
@@ -339,14 +337,6 @@ onUnmounted(() => {
   }
 }
 
-/* .table tbody tr:nth-child(odd) {
-  background: var(--color-background-level-3);
-  color: var(--color-text-level-1);
-}
-.table tbody tr:nth-child(even) {
-  background: var(--color-background-level-2);
-  color: var(--color-text-level-1);
-} */
 .cell {
   gap: 8px;
   overflow: hidden;

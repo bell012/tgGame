@@ -1,6 +1,6 @@
 ﻿<template>
   <header class="top-nav">
-    <div class="h-full flex items-center justify-between px-4">
+    <div class="top-nav-inner h-full flex items-center justify-between px-4">
       <!-- 左侧 -->
       <div class="flex items-center">
         <div
@@ -429,5 +429,13 @@ defineExpose({
 }
 .line {
   background-color: #e4eaf019;
+}
+
+@media (max-width: 370px) {
+  .top-nav-inner {
+    width: 125%;
+    transform: scale(0.79);
+    transform-origin: left center;
+  }
 }
 </style>

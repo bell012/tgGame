@@ -577,6 +577,28 @@ const sportsEventList = computed<EventListItem[]>(() => {
 })
 
 const querySlideshowList = ref<any>([])
+const GAME_DATA_REFRESH_INTERVAL_MS = 10 * 60 * 1000
+let gameDataTimer: ReturnType<typeof setInterval> | null = null
+
+const stopGameDataTimer = () => {
+  if (!gameDataTimer) return
+  clearInterval(gameDataTimer)
+  gameDataTimer = null
+}
+
+const fetchGameData = async () => {
+  try {
+    const res = await Api.home.getGameData()
+    const rawResult = Array.isArray(res.result) ? res.result : []
+    rawGameData.value = rawResult
+    gameData.value = mapHomeGameSections(rawResult)
+    localStorage.setItem('gameData', JSON.stringify(rawResult))
+    console.log('fetchGameData success执行')
+  } catch (error) {
+    console.error('getGameData failed', error)
+  }
+}
+
 const getQuerySlideshow = async () => {
   try {
     const response = await Api.home.getQuerySlideshow({
@@ -598,18 +620,13 @@ const getQuerySlideshow = async () => {
 }
 
 onMounted(async () => {
-  try {
-    const res = await Api.home.getGameData()
-    const rawResult = Array.isArray(res.result) ? res.result : []
-    rawGameData.value = rawResult
-    gameData.value = mapHomeGameSections(rawResult)
-    localStorage.setItem('gameData', JSON.stringify(rawResult))
-
-    getRecentBigWinsData()
-    getQuerySlideshow()
-  } catch (error) {
-    console.error('getGameData failed', error)
-  }
+  await fetchGameData()
+  getRecentBigWinsData()
+  getQuerySlideshow()
+  stopGameDataTimer()
+  gameDataTimer = setInterval(() => {
+    void fetchGameData()
+  }, GAME_DATA_REFRESH_INTERVAL_MS)
 
   void nextTick(() => {
     const el = marqueeRef.value
@@ -625,6 +642,7 @@ onUnmounted(() => {
   marqueeResizeObserver?.disconnect()
   marqueeResizeObserver = null
   stopMarqueeRaf()
+  stopGameDataTimer()
 })
 </script>
 
