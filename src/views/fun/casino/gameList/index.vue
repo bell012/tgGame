@@ -87,7 +87,9 @@ const currentPageComponent = computed(() => {
 })
 const normalizedSort = computed(() => {
   const sortValue = route.query.sort
-  return typeof sortValue === 'string' && sortValue.trim() ? sortValue.trim().toLowerCase() : 'hot'
+  return typeof sortValue === 'string' && sortValue.trim()
+    ? sortValue.trim().toLowerCase()
+    : 'default'
 })
 const normalizedProviderCodes = computed(() => {
   const providerQueryValue = route.query.providerCode

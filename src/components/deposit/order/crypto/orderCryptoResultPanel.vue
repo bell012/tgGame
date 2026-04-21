@@ -1,12 +1,12 @@
 <template>
   <!-- 数字币订单结果弹窗主容器 -->
   <div
-    class="relative w-full max-w-[481px] h-full sm:h-auto sm:max-h-[562px] flex flex-col sm:rounded-lg modal-container bg-[#242626] overflow-hidden font-['Inter']"
+    class="relative w-full max-w-[481px] h-full sm:h-auto sm:max-h-[562px] flex flex-col sm:rounded-lg modal-container bg-bg-1 overflow-hidden font-['Inter']"
   >
     <!-- 数字币订单结果头部 -->
-    <div class="relative shrink-0 h-14 bg-[#323738]">
+    <div class="relative shrink-0 h-14 bg-bg-2">
       <h2
-        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-base sm:text-lg font-bold text-white"
+        class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-base sm:text-lg font-bold text-text-1"
       >
         {{ t('deposit.deposit_order') }}
       </h2>
@@ -14,14 +14,14 @@
       <template v-if="isMobile">
         <!-- 移动端返回按钮 -->
         <button
-          class="absolute left-3.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-md flex items-center justify-center z-10 bg-white/10"
+          class="absolute left-3.5 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-md bg-opacity-10 text-text-1"
           @click="handleClose"
         >
           <LeftArrowIcon class="w-4 h-4" />
         </button>
         <!-- 移动端详情按钮 -->
         <button
-          class="absolute right-3.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-md flex items-center justify-center z-10 bg-white/10"
+          class="absolute right-3.5 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-md bg-opacity-10 text-text-1"
           @click="handleClose"
         >
           <DetailsIcon class="w-4 h-4" />
@@ -31,7 +31,7 @@
       <template v-else>
         <!-- 桌面端关闭按钮 -->
         <button
-          class="absolute right-4 top-4 w-6 h-6 rounded bg-white/10 flex items-center justify-center z-10"
+          class="absolute right-4 top-4 z-10 flex h-6 w-6 items-center justify-center rounded bg-opacity-10 text-text-1"
           @click="handleClose"
         >
           <CloseIcon class="w-3 h-3 fill-none" />
@@ -40,10 +40,10 @@
     </div>
 
     <!-- 数字币订单结果内容区域 -->
-    <div class="flex-1 min-h-0 p-4 overflow-y-auto bg-[#242626]">
+    <div class="flex-1 min-h-0 overflow-y-auto bg-bg-1 p-4">
       <!-- 数字币订单结果卡片 -->
       <div
-        class="w-full min-h-full sm:min-h-0 rounded-lg bg-[#323738] px-4 py-8 flex flex-col items-center gap-6"
+        class="flex min-h-full w-full flex-col items-center gap-6 rounded-lg bg-bg-2 px-4 py-8 sm:min-h-0"
       >
         <!-- 订单状态展示区域 -->
         <div class="flex flex-col items-center gap-4">
@@ -51,11 +51,11 @@
         </div>
 
         <!-- 订单明细区域 -->
-        <div class="w-full rounded-lg bg-[#2D3131] px-5 py-4">
+        <div class="w-full rounded-lg bg-bg-4 px-5 py-4">
           <orderDetailRows
             :rows="detailRows"
             row-class="min-h-5 py-2 flex items-center justify-between gap-4"
-            value-class="max-w-[240px] text-base text-white flex items-center justify-end text-right break-all"
+            value-class="max-w-[240px] text-base text-text-1 flex items-center justify-end text-right break-all"
             icon-class="w-5 h-5 mr-1"
             @copy="copyWord"
           />
@@ -71,6 +71,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import CloseIcon from '@/static/svg/close.svg?component'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
+import { copyTextWithFallback } from '@/utils/clipboard'
 import { showToast } from 'vant'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -227,11 +228,11 @@ const handleClose = () => {
 }
 
 // 复制明细内容到剪贴板
-const copyWord = (word: string) => {
-  navigator.clipboard.writeText(word)
+const copyWord = async (word: string) => {
+  const copied = await copyTextWithFallback(word)
   showToast({
-    message: t('betDetails.copy'),
-    type: 'success'
+    message: copied ? t('deposit.copy_success') : t('deposit.copy_failed'),
+    type: copied ? 'success' : 'fail'
   })
 }
 </script>

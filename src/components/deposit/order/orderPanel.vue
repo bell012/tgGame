@@ -47,7 +47,7 @@
         class="w-full flex-1 min-h-0 relative bg-bg-1 p-4 rounded-bl-lg rounded-br-lg overflow-y-auto sm:max-h-[628px]"
       >
         <!-- 数字币待支付卡片 -->
-        <div ref="targetRef" class="w-full bg-bg-2 rounded-lg relative">
+        <div class="w-full bg-bg-2 rounded-lg relative">
           <!-- 倒计时与提示区域 -->
           <div class="relative flex items-center p-3 border-b border-input-1">
             <!-- 倒计时图标容器 -->
@@ -267,7 +267,7 @@ import FiatOrderAmountIcon from '@/static/svg/deposit/fiat-order-amount.svg?comp
 
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
-import html2canvas from 'html2canvas'
+import { copyTextWithFallback } from '@/utils/clipboard'
 import QRCode from 'qrcode'
 import { CountDown, showToast } from 'vant'
 import { computed, nextTick, ref, watch } from 'vue'
@@ -292,7 +292,6 @@ const props = defineProps<Props>()
 const emit = defineEmits(['close', 'hidden'])
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const targetRef = ref<HTMLElement | null>(null)
 const countdownTime = ref(15 * 60 * 1000)
 const cancelOrderPopShow = ref<boolean>(false)
 const uploadPopShow = ref<boolean>(false)
@@ -569,27 +568,11 @@ const renderQrCode = async () => {
   })
 }
 
-// 截图当前支付信息区域并复制图片到剪贴板
-const doCapture = async () => {
-  const el = targetRef.value
-  if (!el) return
-
-  await document.fonts.ready
-  const canvas = await html2canvas(el, {
-    scale: window.devicePixelRatio || 2,
-    useCORS: true,
-    scrollX: 0,
-    scrollY: 0,
-    backgroundColor: '#fff'
-  })
-
-  canvas.toBlob(async blob => {
-    if (!blob) return
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-    showToast({
-      message: t('betDetails.copy'),
-      type: 'success'
-    })
+// 临时改为仅提示用户手动截图保存二维码
+const doCapture = () => {
+  showToast({
+    message: t('deposit.order_save_qr_code_manual_tip'),
+    type: 'success'
   })
 }
 
@@ -599,11 +582,11 @@ const doCancelOrder = () => {
 }
 
 // 复制文本内容到剪贴板并给出提示
-const copyWord = (word: string) => {
-  navigator.clipboard.writeText(word)
+const copyWord = async (word: string) => {
+  const copied = await copyTextWithFallback(word)
   showToast({
-    message: t('betDetails.copy'),
-    type: 'success'
+    message: copied ? t('deposit.copy_success') : t('deposit.copy_failed'),
+    type: copied ? 'success' : 'fail'
   })
 }
 

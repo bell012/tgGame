@@ -12,7 +12,7 @@
         <!-- h5菜单 -->
         <div
           class="sm:hidden cursor-pointer w-[40px] h-[40px] rounded-lg flex items-center justify-center"
-           @click="navigateTo('/menu')"
+          @click="toggleH5Menu"
         >
           <FoldIconH5 class="h-6" :class="isH5MenuActive ? 'text-theme-primary' : 'text-text-1'" />
         </div>
@@ -24,10 +24,7 @@
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
         <!-- H5端 Logo (登录后小logo) -->
-        <div
-          v-if="isLoggedIn"
-          class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer"
-        >
+        <div v-if="isLoggedIn" class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer">
           <SmartImage :src="mobileLogoImage" alt="" class="w-full h-full" />
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
@@ -241,7 +238,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useLocaleStore } from '@/stores/locale'
@@ -276,6 +273,7 @@ const authModalStore = useAuthModalStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
 const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 const { acctInfo, userInfo } = storeToRefs(userStore)
 const { visible: showLoginModal } = storeToRefs(authModalStore)
@@ -386,6 +384,15 @@ const handleCurrencyChange = (code: string) => {
 
 const openDeposit = () => {
   navigateTo('/deposit')
+}
+
+const toggleH5Menu = () => {
+  if (isH5MenuActive.value) {
+    router.back()
+    return
+  }
+
+  navigateTo('/menu')
 }
 
 // 处理通知图标点击。
