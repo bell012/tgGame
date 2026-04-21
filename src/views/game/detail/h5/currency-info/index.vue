@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full p-[12px] bg-[var(--color-background-level-3)] rounded-t-[10px]">
+  <div class="currency-info-panel w-full h-full p-[12px] rounded-t-[10px]">
     <div class="flex gap-[10px]">
       <div
         class="w-[110px] h-[146px] rounded-md bg-[var(--color-background-level-2)] flex items-center justify-center overflow-hidden"
@@ -80,6 +80,15 @@ const isFallbackImage = computed(() => !rawGameImage.value)
 const displayGameImg = computed(() => rawGameImage.value || placeholderIcon.value)
 </script>
 <style scoped lang="scss">
+.currency-info-panel {
+  background: var(--color-background-level-2);
+}
+
+:global(:root.light) .currency-info-panel {
+  background: #ffffff;
+  border: none;
+}
+
 .play-btn {
   border-radius: 8px;
   background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);

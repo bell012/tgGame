@@ -219,7 +219,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '推荐游戏',
       description: '推荐游戏',
-      requiresAuth: true,
+      requiresAuth: false,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
