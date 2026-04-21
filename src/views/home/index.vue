@@ -1,6 +1,6 @@
 ﻿<template>
   <div class="home max-w-[1248px] mx-auto px-3.5 py-2 sm:px-4 sm:py-4">
-    <div style="height: 65px" class="sm:hidden"></div>
+    <div style="height: 55px" class="sm:hidden"></div>
     <HomeCarouselImg v-if="querySlideshowList.length" :list="querySlideshowList" />
 
     <div class="flex items-center mt-2 sm:mt-6 h-8">
@@ -350,7 +350,6 @@ const visibleListImg = computed(() =>
 )
 const toCasino = (sysGameTypeCode: string) => {
   if (!sysGameTypeCode) {
-    navigateTo('/casino')
     return
   }
   navigateTo(`/casino/${sysGameTypeCode}`)
@@ -577,6 +576,28 @@ const sportsEventList = computed<EventListItem[]>(() => {
 })
 
 const querySlideshowList = ref<any>([])
+const GAME_DATA_REFRESH_INTERVAL_MS = 10 * 60 * 1000
+let gameDataTimer: ReturnType<typeof setInterval> | null = null
+
+const stopGameDataTimer = () => {
+  if (!gameDataTimer) return
+  clearInterval(gameDataTimer)
+  gameDataTimer = null
+}
+
+const fetchGameData = async () => {
+  try {
+    const res = await Api.home.getGameData()
+    const rawResult = Array.isArray(res.result) ? res.result : []
+    rawGameData.value = rawResult
+    gameData.value = mapHomeGameSections(rawResult)
+    localStorage.setItem('gameData', JSON.stringify(rawResult))
+    console.log('fetchGameData success执行')
+  } catch (error) {
+    console.error('getGameData failed', error)
+  }
+}
+
 const getQuerySlideshow = async () => {
   try {
     const response = await Api.home.getQuerySlideshow({
@@ -598,18 +619,13 @@ const getQuerySlideshow = async () => {
 }
 
 onMounted(async () => {
-  try {
-    const res = await Api.home.getGameData()
-    const rawResult = Array.isArray(res.result) ? res.result : []
-    rawGameData.value = rawResult
-    gameData.value = mapHomeGameSections(rawResult)
-    localStorage.setItem('gameData', JSON.stringify(rawResult))
-
-    getRecentBigWinsData()
-    getQuerySlideshow()
-  } catch (error) {
-    console.error('getGameData failed', error)
-  }
+  await fetchGameData()
+  getRecentBigWinsData()
+  getQuerySlideshow()
+  stopGameDataTimer()
+  gameDataTimer = setInterval(() => {
+    void fetchGameData()
+  }, GAME_DATA_REFRESH_INTERVAL_MS)
 
   void nextTick(() => {
     const el = marqueeRef.value
@@ -625,6 +641,7 @@ onUnmounted(() => {
   marqueeResizeObserver?.disconnect()
   marqueeResizeObserver = null
   stopMarqueeRaf()
+  stopGameDataTimer()
 })
 </script>
 
