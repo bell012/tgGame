@@ -1,4 +1,4 @@
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useLocaleStore } from '@/stores/locale'
@@ -284,18 +284,17 @@ export function usePaymentMethodsFlow() {
     closeAddAddressForm()
   }
 
-  onMounted(async () => {
+  const initialization = async () => {
     await siteConfigStore.initSiteConfig()
-    loadWithdrawMethods().then(() => {
-      if (
-        hasLoadedPaymentMethodsOptions.value &&
-        paymentMethodsOptions.value &&
-        paymentMethodsOptions.value.length > 0
-      ) {
-        handleMethodTabClick(paymentMethodsOptions.value[0])
-      }
-    })
-  })
+    await loadWithdrawMethods()
+    if (
+      hasLoadedPaymentMethodsOptions.value &&
+      paymentMethodsOptions.value &&
+      paymentMethodsOptions.value.length > 0
+    ) {
+      handleMethodTabClick(paymentMethodsOptions.value[0])
+    }
+  }
 
   return {
     addAccountOptionVisible,
@@ -341,6 +340,7 @@ export function usePaymentMethodsFlow() {
     closePaymentPasswordVerification,
     handleAddAccountOptionPaymentPasswordVerificationConfirm,
     openAccountDetailsPop,
-    closeAccountDetailsPop
+    closeAccountDetailsPop,
+    initialization
   }
 }
