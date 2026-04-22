@@ -1,5 +1,5 @@
 <template>
-  <withdrawPopShell
+  <PopShell
     v-model="visible"
     :transition-type="isMobile ? 'drawer-slide' : 'modal'"
     :full-height="isMobile"
@@ -44,26 +44,19 @@
       <div
         class="w-full flex-1 min-h-0 overflow-y-auto bg-bg-1 p-3 sm:max-h-[548px] sm:rounded-bl-xl sm:rounded-br-xl"
       >
-        <withdrawOrderContent
-          :status="status"
-          :amount-text="amountText"
-          :order-no="orderNo"
-          :created-at="createdAt"
-          :method-label="methodLabel"
-          :method-icon="methodIcon"
-        />
+        <withdrawOrderContent :orderItem="orderItem" />
       </div>
     </div>
-  </withdrawPopShell>
+  </PopShell>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import type { WithdrawOrderStatus } from './shared/types'
-import withdrawPopShell from './withdrawPopShell.vue'
-import withdrawOrderContent from './withdrawOrderContent.vue'
+import type { WithdrawOrderViewData } from './shared/useWithdrawFlow'
+import PopShell from './popShell.vue'
+import withdrawOrderContent from './orderContent.vue'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
@@ -71,12 +64,7 @@ import { navigateToName } from '@/utils/router'
 
 interface Props {
   modelValue: boolean
-  status: WithdrawOrderStatus
-  amountText: string
-  orderNo: string
-  createdAt: string
-  methodLabel: string
-  methodIcon?: string
+  orderItem?: WithdrawOrderViewData
 }
 
 const props = defineProps<Props>()

@@ -219,6 +219,8 @@ export function useMemberCardVerificationFlow<T>(options: UseMemberCardVerificat
     addAccountSecurityVerifyWay,
     hasTransactionPassword,
     maskedPhoneNumber,
+    resolvedAreaCode,
+    resolvedTelephone,
     isSendingSmsCode,
     isCheckingSmsCode,
     isCheckingPaymentPassword,

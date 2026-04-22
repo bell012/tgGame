@@ -258,6 +258,13 @@ const isMobile = useIsMobile()
 
 const accountNo = ref<string>()
 const accountName = ref<string>()
+const defaultCryptoNetwork = computed(() => {
+  if (props.option?.kind !== 'crypto') {
+    return undefined
+  }
+
+  return props.option.networks?.[0]?.text
+})
 const canConfirm = computed(() => {
   return Boolean(accountNo.value && accountName.value)
 })
@@ -300,12 +307,13 @@ watch(
 )
 
 watch(
-  () => props.option,
-  value => {
-    if (value && value.kind === 'crypto' && value.networks && value.networks.length > 0) {
-      accountName.value = value.networks[0].text
+  () => [props.modelValue, defaultCryptoNetwork.value] as const,
+  ([isOpen, network]) => {
+    if (isOpen && network) {
+      accountName.value = network
     }
-  }
+  },
+  { immediate: true }
 )
 
 watch(desktopDropdownVisible, async value => {

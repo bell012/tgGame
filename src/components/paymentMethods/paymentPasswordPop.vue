@@ -66,6 +66,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CloseIcon from '@/static/svg/close.svg?component'
 import PopShell from './popShell.vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
 
 interface Props {
   modelValue: boolean
@@ -81,6 +82,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const isMobile = useIsMobile()
 const inputRef = ref<HTMLInputElement | null>(null)
 const passwordValue = ref('')
 const resolvedConfirmText = computed(() => t('common.confirm'))
@@ -139,7 +141,7 @@ watch(passwordValue, value => {
   }
 
   if (normalized.length === 6) {
-    if (window.matchMedia('(min-width: 640px)').matches) {
+    if (!isMobile.value) {
       return
     }
 

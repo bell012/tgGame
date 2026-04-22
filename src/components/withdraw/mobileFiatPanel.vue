@@ -11,16 +11,16 @@
           <div
             class="shrink-0 flex flex-col items-center justify-center p-2 rounded-lg basis-[31.25%]"
             :class="{
-              'border border-theme-primary bg-theme-3': selectedMethod.name === item.name,
-              'border border-transparent bg-bg-4': selectedMethod.name !== item.name
+              'border border-theme-primary bg-theme-3': selectMethodsOption?.label === item.label,
+              'border border-transparent bg-bg-4': selectMethodsOption?.label !== item.label
             }"
-            v-for="(item, index) in payMethods"
-            :key="item.paymentCode ?? index"
+            v-for="(item, index) in methodsOptions"
+            :key="index"
             :ref="el => setMethodItemRef(el, index)"
             @click.stop="selectMethod(item, index)"
           >
-            <img class="h-5" :src="item.icon" />
-            <p class="text-sm font-bold leading-normal text-text-1">{{ item.name }}</p>
+            <img class="h-5" :src="item.customIcon" />
+            <p class="text-sm font-bold leading-normal text-text-1">{{ item.label }}</p>
           </div>
         </div>
       </div>
@@ -32,20 +32,20 @@
         >
           <span>{{ t('withdraw.e_wallet_address') }}</span>
           <button
-            v-if="selectedAccount"
+            v-if="hasSelectedReceiveAddress"
             type="button"
             class="flex items-center text-xs sm:text-sm text-text-2"
-            @click="openAccountList"
+            @click="emit('handleOpenAcountListPop')"
           >
             {{ t('withdraw.change') }}
             <ChevronRightSmallIcon class="ml-1 h-2 w-1" />
           </button>
         </div>
         <button
-          v-if="!selectedAccount"
+          v-if="!hasSelectedReceiveAddress"
           type="button"
           class="mt-2 flex h-[45px] w-full items-center justify-center rounded-lg border border-dashed border-theme-primary text-sm font-bold text-theme-primary"
-          @click="openAccountList"
+          @click="emit('handleOpenAcountListPop')"
         >
           <AddPlusIcon class="mr-2 h-4 w-4 text-current" />
           {{ t('withdraw.add_e_wallet') }}
@@ -54,17 +54,19 @@
           v-else
           type="button"
           class="mt-2 flex w-full items-center rounded-lg bg-opacity-6 p-[14px] text-left"
-          @click="openAccountList"
+          @click="emit('handleOpenAcountListPop')"
         >
           <div class="mr-3 h-[25px] w-[25px] shrink-0 overflow-hidden rounded-full">
             <gameRemoteImg
-              :img="{ src: selectedMethod.selectedIcon, maintain: false, fit: 'contain' }"
+              v-if="accountCardOption?.customRoundIcon"
+              :img="{ src: accountCardOption?.customRoundIcon, maintain: false, fit: 'contain' }"
               class="h-full w-full"
+              :alt="accountCardOption?.label"
             />
           </div>
           <div class="min-w-0 flex-1 text-sm font-semibold text-text-1">
             <p class="truncate">
-              {{ selectedAccount.accountNo }}
+              {{ accountCardOption?.accountNo }}
             </p>
           </div>
         </button>
@@ -87,12 +89,12 @@
         }}</span>
         <input
           type="number"
-          v-model="amount"
+          v-model="amountModel"
           :placeholder="t('withdraw.amount_placeholder')"
           class="flex-1 text-base font-bold leading-normal text-text-1 bg-transparent outline-none focus:outline-none focus:ring-0 placeholder:text-xs placeholder:font-normal"
         />
       </div>
-      <div v-if="quickAmounts.length" class="mt-4 w-full relative">
+      <div v-if="quickAmounts && quickAmounts.length > 0" class="mt-4 w-full relative">
         <div
           ref="presetsRef"
           class="grid grid-cols-3 gap-2 rounded-tl-lg rounded-tr-lg bg-bg-4 p-2.5 transition-all duration-300"
@@ -136,47 +138,6 @@
       >
         {{ t('withdraw.withdraw_now') }}
       </button>
-      <withdrawFiatAccountListPop
-        v-model="accountListVisible"
-        :items="availableAccounts"
-        :selected-id="selectedAccount?.localId"
-        :icon="selectedMethod.selectedIcon"
-        :show-add-button="canAddAccount"
-        @select="handleSelectAccount"
-        @add="openAddAccount"
-      />
-      <withdrawFiatAddAccountPop
-        v-model="addAccountVisible"
-        v-model:account-no="pendingAccountNo"
-        v-model:account-name="pendingAccountName"
-        @close="closeAddAccount"
-        @confirm="confirmAddAccount"
-      />
-      <withdrawPaymentPasswordPop
-        v-model="addAccountPaymentPasswordVisible"
-        :amount="0"
-        :currency-code="currentCurrency"
-        :loading="isSubmittingAddAccount"
-        :show-amount-section="false"
-        :confirm-text="t('common.confirm')"
-        :description-text="t('withdraw.verification_transaction_password')"
-        @close="closeAddAccountPaymentPassword"
-        @confirm="handleAddAccountPaymentPasswordConfirm"
-      />
-      <withdrawSmsVerificationPop
-        v-model="addAccountSmsVerificationVisible"
-        :amount="0"
-        :currency-code="currentCurrency"
-        :phone-number="maskedPhoneNumber"
-        :sending="isSendingAddAccountSmsCode"
-        :loading="isCheckingAddAccountSmsCode || isSubmittingAddAccount"
-        :countdown-trigger="addAccountSmsCountdownTrigger"
-        :show-amount-section="false"
-        :confirm-text="t('common.confirm')"
-        @close="closeAddAccountSmsVerification"
-        @resend="handleAddAccountSmsVerificationResend"
-        @confirm="handleAddAccountSmsVerificationConfirm"
-      />
     </div>
   </div>
 </template>
@@ -190,60 +151,45 @@ import { computed, type ComponentPublicInstance, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FastAmountItem } from '@/api/interface/withdraw'
 import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
-import withdrawFiatAccountListPop from './withdrawFiatAccountListPop.vue'
-import withdrawFiatAddAccountPop from './withdrawFiatAddAccountPop.vue'
-import withdrawPaymentPasswordPop from './withdrawPaymentPasswordPop.vue'
-import withdrawSmsVerificationPop from './withdrawSmsVerificationPop.vue'
-import type { WithdrawSubmitPayload } from './shared/types'
-import { useWithdrawFiat } from './shared/useWithdrawFiat'
 
 const { t } = useI18n()
-const {
-  accountListVisible,
-  amount,
-  applyQuickAmount,
-  availableAccounts,
-  addAccountVisible,
-  addAccountPaymentPasswordVisible,
-  addAccountSmsCountdownTrigger,
-  addAccountSmsVerificationVisible,
-  balanceAmount,
-  canAddAccount,
-  closeAddAccount,
-  closeAddAccountPaymentPassword,
-  closeAddAccountSmsVerification,
-  confirmAddAccount,
-  currentCurrency,
-  currencySymbol,
-  formattedBalance,
-  handleAddAccountPaymentPasswordConfirm,
-  handleAddAccountSmsVerificationConfirm,
-  handleAddAccountSmsVerificationResend,
-  isCheckingAddAccountSmsCode,
-  isSendingAddAccountSmsCode,
-  isSubmittingAddAccount,
-  isWithdrawDisabled,
-  maskedPhoneNumber,
-  openAccountList,
-  openAddAccount,
-  payMethods,
-  pendingAccountName,
-  pendingAccountNo,
-  quickAmounts,
-  handleSelectAccount,
-  selectedAccount,
-  selectedMethod,
-  selectMethod: selectMethodOption
-} = useWithdrawFiat()
+
+import type {
+  AccountCardOption,
+  PaymentMethodsOption
+} from '@/components/paymentMethods/shared/usePaymentMethodsService'
+
+interface Props {
+  methodsOptions?: PaymentMethodsOption[]
+  selectMethodsOption?: PaymentMethodsOption
+  accountCardOption?: AccountCardOption
+  hasSelectedReceiveAddress: boolean
+  amount?: number
+  quickAmounts?: FastAmountItem[]
+  isWithdrawDisabled: boolean
+  currencySymbol: string
+  isRefreshingBalance: boolean
+  formattedBalance: string
+}
+const props = defineProps<Props>()
 
 const methodListRef = ref<HTMLDivElement | null>(null)
 const methodItemRefs = ref<Array<HTMLElement | null>>([])
 const presetsRef = ref<HTMLDivElement | null>(null)
 const { expanded } = usePresetGrid(presetsRef)
-const showExpandButton = computed(() => quickAmounts.value.length > 3)
+const showExpandButton = computed(() => props.quickAmounts && props.quickAmounts.length > 6)
+const amountModel = computed({
+  get: () => props.amount,
+  set: value => emit('update:amount', value)
+})
 
 const emit = defineEmits<{
-  submit: [payload: WithdrawSubmitPayload]
+  'update:amount': [value: number | undefined]
+  methodTabClick: [value: PaymentMethodsOption]
+  applyQuickAmount: [value: FastAmountItem]
+  handleOpenAcountListPop: []
+  refreshBalance: []
+  beginSubmitWithdraw: []
 }>()
 
 const setMethodItemRef = (el: Element | ComponentPublicInstance | null, index: number) => {
@@ -266,8 +212,8 @@ const handleMethodListWheel = (event: WheelEvent) => {
   })
 }
 
-const selectMethod = async (method: (typeof payMethods.value)[number], index: number) => {
-  await selectMethodOption(method)
+const selectMethod = async (option: PaymentMethodsOption, index: number) => {
+  emit('methodTabClick', option)
   scrollMethodIntoView(index)
 }
 
@@ -292,24 +238,15 @@ const formatQuickAmount = (value: FastAmountItem['amount']) => {
     : String(value ?? '')
 }
 
+const applyQuickAmount = (value: FastAmountItem) => {
+  emit('applyQuickAmount', value)
+}
+
 const doWithdrawDeposit = () => {
-  if (isWithdrawDisabled.value) {
+  if (props.isWithdrawDisabled) {
     return
   }
-
-  emit('submit', {
-    tabType: 'Fiat',
-    amount: Number(amount.value),
-    balanceAmount: balanceAmount.value,
-    channelId: 4,
-    currencyCode: currentCurrency.value,
-    methodLabel: selectedMethod.value.name,
-    methodIcon: selectedMethod.value.selectedIcon || selectedMethod.value.icon,
-    paymentCode: selectedMethod.value.paymentCode,
-    accountRowId: selectedAccount.value?.rowId,
-    phoneNumber: selectedAccount.value?.accountNo,
-    accountName: selectedAccount.value?.accountName
-  })
+  emit('beginSubmitWithdraw')
 }
 </script>
 <style scoped lang="scss">
