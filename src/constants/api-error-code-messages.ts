@@ -14,7 +14,7 @@ export const API_ERROR_CODE_MESSAGES = {
   C11: ['Withdrawals are under maintenance, please try again later.', '提款维护中，请稍后再试。'],
   C12: ['Not supported.', '不支持。'],
   C13: ['This IP has no access permission.', '该 IP 无访问权限。'],
-  C14: ['Password error.', '密码错误。'],
+  C14: ['Incorrect account or password.', '账号或者密码错误。'],
   C15: ['No access permission.', '无访问权限。'],
   C16: ['This promotion has not started yet.', '该活动尚未开始。'],
   C17: ['This promotion has ended.', '该活动已结束。'],
@@ -283,7 +283,10 @@ export const API_ERROR_CODE_MESSAGES = {
   E171: ['This cryptocurrency type is currently unavailable.', '当前虚拟币种暂不可用。'],
   E172: ['No audit standards configuration found.', '未找到稽核标准配置。'],
   E173: ['No overdue bonus configuration found.', '未找到过期奖励配置。'],
-  E174: ['No permission to claim overdue bonus.', '无权领取过期奖励。']
+  E174: ['No permission to claim overdue bonus.', '无权领取过期奖励。'],
+  E177: ['The account is invalid, please contact customer service.', '账号无效，请联系客服。'],
+  E206: ['This mobile phone number is already registered.', '该手机号码已注册。'],
+  me2: ['Registration restrictions, contact customer service.', '注册限制,联系客服']
 } as const satisfies Record<string, readonly [english: string, chinese: string]>
 
 export type ApiErrorCodeMessageMap = typeof API_ERROR_CODE_MESSAGES
