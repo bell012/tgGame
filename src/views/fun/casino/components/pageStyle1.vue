@@ -25,7 +25,7 @@
   <template v-else>
     <div class="modules mb-4" v-for="(item, index) in lobbyButtons" :key="index">
       <div class="mt-2 flex h-8 items-center font-inter sm:mt-6">
-        <h2 class="flex items-center text-sm font-bold text-text-1 sm:text-base sm:font-extrabold">
+        <h2 class="flex items-center text-base font-bold text-text-1 sm:text-xl">
           {{ item.sysGameTypeName }}
         </h2>
         <button
@@ -113,7 +113,7 @@
     </div>
     <template v-if="!hideLatestBet">
       <div class="mt-2 flex h-8 items-center sm:mt-6">
-        <h2 class="flex items-center text-base font-extrabold text-primary">
+        <h2 class="flex items-center text-base font-bold text-text-1 sm:text-xl">
           {{ t('casino.latest_bet') }}
         </h2>
         <span class="ml-auto"></span>
