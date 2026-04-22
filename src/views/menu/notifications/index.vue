@@ -564,6 +564,8 @@ const NOTIFICATION_DETAIL_STORAGE_KEY = 'menuNotificationDetail'
 const NOTIFICATION_LIST_STATE_STORAGE_KEY = 'menuNotificationListState'
 // 通知列表恢复标记在 sessionStorage 中的缓存键。
 const NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY = 'menuNotificationListRestoreFlag'
+// 游戏列表接口缓存键。
+const GAME_LIST_FOR_APP_CACHE_STORAGE_KEY = 'gameData'
 // 通知内部 URL 连通性校验的超时时间。
 const NOTIFICATION_URL_OPEN_TIMEOUT_MS = 8000
 const CRYPTO_PAY_CHANNEL_CODE = '45'
@@ -591,6 +593,17 @@ interface NotificationListState {
   categories: Record<NotificationCategory, NotificationCategoryState>
 }
 
+interface GameListForAppNode {
+  gameTypeCode?: string
+  platformCode?: string
+  itemCode?: string
+  rowId?: string | number
+  subGame?: GameListForAppNode[]
+  [key: string]: unknown
+}
+
+let gameListForAppCache: GameListForAppNode[] | null = null
+
 const hashNotificationKey = (value: string) => {
   let hash = 0
 
@@ -600,6 +613,67 @@ const hashNotificationKey = (value: string) => {
   }
 
   return Math.abs(hash) + 1
+}
+
+const normalizeGameLookupValue = (value: unknown) => String(value ?? '').trim()
+
+const restoreCachedGameListForApp = () => {
+  if (gameListForAppCache) {
+    return gameListForAppCache
+  }
+
+  const rawValue = localStorage.getItem(GAME_LIST_FOR_APP_CACHE_STORAGE_KEY)
+  if (!rawValue) {
+    return null
+  }
+
+  try {
+    const parsedValue = JSON.parse(rawValue) as unknown
+    if (!Array.isArray(parsedValue)) {
+      return null
+    }
+
+    gameListForAppCache = parsedValue as GameListForAppNode[]
+    return gameListForAppCache
+  } catch (error) {
+    console.error('restoreCachedGameListForApp failed', error)
+    return null
+  }
+}
+
+const fetchAndCacheGameListForApp = async () => {
+  const cachedValue = restoreCachedGameListForApp()
+  if (cachedValue) {
+    return cachedValue
+  }
+
+  const response = await Api.home.getGameData({
+    showSuccessToast: false,
+    showErrorToast: true
+  })
+  const result = Array.isArray(response.result)
+    ? (response.result as unknown as GameListForAppNode[])
+    : []
+
+  gameListForAppCache = result
+  localStorage.setItem(GAME_LIST_FOR_APP_CACHE_STORAGE_KEY, JSON.stringify(result))
+
+  return result
+}
+
+const flattenGameListForAppItems = (items: GameListForAppNode[]) => {
+  const flattenedItems: GameListForAppNode[] = []
+
+  const traverse = (item: GameListForAppNode) => {
+    flattenedItems.push(item)
+
+    const children = Array.isArray(item.subGame) ? item.subGame : []
+    children.forEach(child => traverse(child))
+  }
+
+  items.forEach(traverse)
+
+  return flattenedItems
 }
 
 const props = withDefaults(
@@ -1646,12 +1720,15 @@ const isJumpNotification = (item: NotificationItem) => {
 
 // 处理通知配置的内部 URL 跳转。
 const openNotificationInternalUrl = async (linkUrl: string) => {
+  // 如果通知没有配置 linkUrl，则直接视为不可跳转。
   if (!linkUrl) {
     return false
   }
 
+  // 如果是完整的 http/https 地址，则按外部完整链接处理。
   if (isAbsoluteHttpUrl(linkUrl)) {
     const canOpen = await verifyNotificationInternalUrl(linkUrl)
+    // 如果外部地址连通性校验失败，则终止本次跳转。
     if (!canOpen) {
       return false
     }
@@ -1660,6 +1737,7 @@ const openNotificationInternalUrl = async (linkUrl: string) => {
     return Boolean(window.open(linkUrl, '_self'))
   }
 
+  // 如果既不是完整 URL，也不是站内可识别路由，则不执行跳转。
   if (!isInternalRoutePath(linkUrl)) {
     return false
   }
@@ -1667,6 +1745,7 @@ const openNotificationInternalUrl = async (linkUrl: string) => {
   prepareNotificationListRestore()
   const navigationResult = await navigateTo(linkUrl)
 
+  // 如果路由跳转被中止或取消，则视为跳转失败。
   if (
     navigationResult &&
     (isNavigationFailure(navigationResult, NavigationFailureType.aborted) ||
@@ -1684,13 +1763,15 @@ const handleInternalPageJump = async (item: NotificationItem) => {
   const linkType = getNormalizedLinkType(item.linkType)
   const linkUrl = getNormalizedLinkUrl(item.linkUrl)
 
-  if (await openNotificationInternalUrl(linkUrl)) {
-    return true
-  }
+  // 优先判断， 因为当 linkType === 2的时候 linkUrl可能有值
 
   if (linkType === 2 || linkType === 4) {
     prepareNotificationListRestore()
     await navigateTo('/deposit')
+    return true
+  }
+
+  if (await openNotificationInternalUrl(linkUrl)) {
     return true
   }
 
@@ -1714,27 +1795,41 @@ const handleGameJump = async (item: NotificationItem) => {
     .split('|')
     .map(value => value.trim())
 
+  // 如果只有 pgType，则跳转到娱乐城对应分类页。
+  if (pgType && !platformCode && !gameCode) {
+    prepareNotificationListRestore()
+    await navigateTo(`/casino/${pgType}`)
+    return true
+  }
+
   if (!pgType || !platformCode || !gameCode) {
     console.warn('notification game jump payload invalid', item)
     return false
   }
 
-  prepareNotificationListRestore()
-
   try {
-    const response = await Api.game.getloginPlatform({
-      pgType,
-      platformCode,
-      gameCode
+    const gameList = await fetchAndCacheGameListForApp()
+    const matchedGame = flattenGameListForAppItems(gameList).find(game => {
+      return (
+        normalizeGameLookupValue(game.gameTypeCode) === normalizeGameLookupValue(pgType) &&
+        normalizeGameLookupValue(game.platformCode) === normalizeGameLookupValue(platformCode) &&
+        normalizeGameLookupValue(game.itemCode) === normalizeGameLookupValue(gameCode)
+      )
     })
 
-    const platformLink = String(response?.result?.platformLink ?? '').trim()
-    if (!platformLink) {
-      console.warn('notification game jump missing platformLink', response)
+    const targetRowId = normalizeGameLookupValue(matchedGame?.rowId)
+    if (!targetRowId) {
+      console.warn('notification game jump target not found in queryGameListForApp', {
+        pgType,
+        platformCode,
+        gameCode,
+        item
+      })
       return false
     }
 
-    window.open(platformLink, '_self')
+    prepareNotificationListRestore()
+    await navigateTo(`/game/${targetRowId}`)
     return true
   } catch (error) {
     console.error('handleGameJump failed', error)
