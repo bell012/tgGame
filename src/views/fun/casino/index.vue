@@ -87,7 +87,7 @@
       </div>
     </div>
 
-    <div class="h-full w-full relative">
+    <div class="w-full relative">
       <!-- 左箭头 -->
       <div
         class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
@@ -181,7 +181,8 @@ import {
   onMounted,
   onUnmounted,
   onActivated,
-  onDeactivated
+  onDeactivated,
+  type StyleValue
 } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
@@ -216,10 +217,18 @@ const props = withDefaults(defineProps<Props>(), {
 const { t, locale } = useI18n()
 const layoutStore = useLayoutStore()
 const isMobile = useIsMobile()
-const mobileStyle = computed(() => {
+const mobileStyle = computed<StyleValue | undefined>(() => {
   if (isMobile.value) {
+    const topNavHeight = layoutStore.TOPNAV_HEIGHT
+    const bottomTabHeight = layoutStore.BOTTOM_TAB_HEIGHT
+
     return {
-      marginTop: `${layoutStore.TOPNAV_HEIGHT}px`
+      boxSizing: 'border-box',
+      height: `calc(100dvh - ${topNavHeight + bottomTabHeight}px)`,
+      marginTop: `${topNavHeight}px`,
+      overflowY: 'auto',
+      overscrollBehavior: 'contain',
+      WebkitOverflowScrolling: 'touch'
     }
   }
 })

@@ -140,7 +140,7 @@
           {{ t('casino.high_roller') }}
         </button>
       </div>
-      <div class="my-3 h-[430px]">
+      <div class="mt-3 h-[430px]">
         <liveBet :type="latestBetIndex === 0 ? 1 : 2" />
       </div>
     </template>
