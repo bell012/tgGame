@@ -809,6 +809,21 @@ const formatTransactionAmountText = (item: TradeMessageStreamItem) => {
   return [amountText, currencyText].filter(Boolean).join(' ')
 }
 
+// 获取交易通知排序使用的时间戳，优先使用消息 createTime。
+const getTradeMessageSortTime = (item: TradeMessageStreamItem) => {
+  const createTime = Number(item.createTime)
+  if (Number.isFinite(createTime) && createTime > 0) {
+    return createTime
+  }
+
+  const messageTime = Number(item.messageTime)
+  if (Number.isFinite(messageTime) && messageTime > 0) {
+    return messageTime
+  }
+
+  return 0
+}
+
 // 将充提消息转换为交易通知卡片数据。
 const mapTradeMessageToNotification = (item: TradeMessageStreamItem): NotificationItem => {
   const transactionKey = item.key
@@ -816,7 +831,7 @@ const mapTradeMessageToNotification = (item: TradeMessageStreamItem): Notificati
 
   return {
     channelId: [],
-    createTime: item.messageTime,
+    createTime: getTradeMessageSortTime(item),
     enable: 1,
     isImage: 0,
     jumpType: undefined,
@@ -842,10 +857,11 @@ const mapTradeMessageToNotification = (item: TradeMessageStreamItem): Notificati
   }
 }
 
-// 生成交易通知列表，删除后的消息不会继续展示。
+// 生成交易通知列表，按 createTime 倒序展示，最新消息排在最上方。
 const transactionNotifications = computed(() =>
-  tradeMessageSyncStore.messageStream
+  [...tradeMessageSyncStore.messageStream]
     .filter(item => !tradeMessageSyncStore.deletedMessageKeys.includes(item.key))
+    .sort((left, right) => getTradeMessageSortTime(right) - getTradeMessageSortTime(left))
     .map(item => mapTradeMessageToNotification(item))
 )
 
