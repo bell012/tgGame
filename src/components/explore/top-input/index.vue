@@ -285,7 +285,8 @@ onBeforeUnmount(() => {
   top: calc(100% + 10px);
   position: absolute;
   left: 0;
-  width: 100%;
+  width: 280px;
+  max-width: calc(100vw - 24px);
 }
 
 .top-search-input {

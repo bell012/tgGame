@@ -15,20 +15,35 @@
         />
       </div>
       <div class="flex-1 flex flex-col justify-between">
-        <div class="flex-1 flex flex-col justify-around">
-          <div class="text-[15px] font-bold">{{ t('gameDetail.playWithSelectedCurrency') }}</div>
-          <currency-select @change="handleCurrencyChange"></currency-select>
-          <div class="text-[13px] text-[var(--color-text-level-2)] text-center">
-            {{ t('gameDetail.playNowHint') }}
+        <template v-if="isLogin">
+          <div class="flex-1 flex flex-col justify-around">
+            <div class="text-[15px] font-bold">{{ t('gameDetail.playWithSelectedCurrency') }}</div>
+            <currency-select @change="handleCurrencyChange"></currency-select>
+            <div class="text-[13px] text-[var(--color-text-level-2)] text-center">
+              {{ t('gameDetail.playNowHint') }}
+            </div>
           </div>
-        </div>
+        </template>
+        <template v-else>
+          <div class="flex-1 flex flex-col justify-start pt-[4px]">
+            <div
+              class="line-clamp-2 text-[15px] font-bold leading-[18px] text-[var(--color-text-level-1)]"
+            >
+              {{ displayGameName }}
+            </div>
+            <div class="mt-[4px] text-[12px] leading-[16px] text-[var(--color-text-level-2)]">
+              {{ t('gameDetail.by') }}
+              <span class="text-[var(--color-text-level-1)]">{{ displayProviderName }}</span>
+            </div>
+          </div>
+        </template>
 
-        <div class="play-btn">
+        <div class="play-btn cursor-pointer" @click="handlePlayAction">
           <div class="w-[16px] h-[16px]">
             <play-icon class="w-full h-full" />
           </div>
-          <div class="text-[15px] font-bold text-[#000]" @click="gamePlay">
-            {{ t('gameDetail.playNow') }}
+          <div class="text-[15px] font-bold text-[#000]">
+            {{ playButtonText }}
           </div>
         </div>
       </div>
@@ -42,16 +57,22 @@ import errorImg1 from '@/static/img/home/errImg1.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import CurrencySelect from '../currency-select/index.vue'
 import CurrencyBar from '../currency-bar/index.vue'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
 import { useThemeStore } from '@/stores/theme'
+import { useUserStore } from '@/stores/user'
+import { useAuthModalStore } from '@/stores/authModal'
 import { storeToRefs } from 'pinia'
 
 const { gamePlay, currentGameDetail } = useGamePlatformPlay()
 const { t } = useI18n()
 const themeStore = useThemeStore()
+const userStore = useUserStore()
+const authModalStore = useAuthModalStore()
 const { theme } = storeToRefs(themeStore)
+const { userInfo } = storeToRefs(userStore)
+const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
 
 const selectedData = ref<{ value: string; label: string; icon: string } | undefined>(undefined)
 const handleCurrencyChange = (
@@ -78,6 +99,34 @@ const rawGameImage = computed(() => {
 const placeholderIcon = computed(() => (theme.value === 'dark' ? errorImg : errorImg1))
 const isFallbackImage = computed(() => !rawGameImage.value)
 const displayGameImg = computed(() => rawGameImage.value || placeholderIcon.value)
+const displayGameName = computed(() => {
+  return String(currentGameDetail.value?.itemName ?? '').trim() || '--'
+})
+const displayGameType = computed(() => {
+  const typeName = String(
+    (currentGameDetail.value as { sysGameTypeName?: string } | null)?.sysGameTypeName ?? ''
+  ).trim()
+  const platformName = String(currentGameDetail.value?.platformName ?? '').trim()
+  return typeName || platformName || '--'
+})
+const displayProviderName = computed(() => {
+  const providerName = String(currentGameDetail.value?.platformName ?? '').trim()
+  return providerName || displayGameType.value
+})
+const playButtonText = computed(() => (isLogin.value ? t('gameDetail.playNow') : t('home.sign_In')))
+
+const handlePlayAction = () => {
+  if (!isLogin.value) {
+    authModalStore.openLoginModal()
+    return
+  }
+
+  void gamePlay()
+}
+
+onMounted(() => {
+  userStore.syncStoredUserData()
+})
 </script>
 <style scoped lang="scss">
 .currency-info-panel {
