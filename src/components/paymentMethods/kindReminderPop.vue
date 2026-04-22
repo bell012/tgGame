@@ -1,5 +1,5 @@
 <template>
-  <withdrawPopShell v-model="visible" @close="handleClose">
+  <popShell v-model="visible" @close="handleClose">
     <div
       class="relative mx-auto w-[300px] rounded-xl bg-bg-1 p-5 font-['Inter'] sm:w-[464px] sm:rounded-[24px] sm:bg-bg-1 sm:p-8"
     >
@@ -39,14 +39,14 @@
         </button>
       </div>
     </div>
-  </withdrawPopShell>
+  </popShell>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CloseIcon from '@/static/svg/close.svg?component'
-import withdrawPopShell from './withdrawPopShell.vue'
+import popShell from './popShell.vue'
 
 interface Props {
   modelValue: boolean

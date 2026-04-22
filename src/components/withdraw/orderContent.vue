@@ -1,7 +1,7 @@
 <template>
   <div class="font-['Inter']">
     <div
-      v-if="status === 'processing'"
+      v-if="orderItem?.status === 'processing'"
       class="w-full rounded-xl bg-bg-2 px-4 pt-4 pb-4 sm:px-4 sm:pt-8"
     >
       <div class="flex items-center border-b border-input-1 p-3 text-text-1">
@@ -63,10 +63,14 @@
     <div v-else class="w-full rounded-xl bg-bg-2 px-4 pt-10 pb-8">
       <div class="flex flex-col items-center font-['Inter']">
         <div class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]">
-          <OrderCompletedIcon class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]" />
+          <OrderCancelledIcon
+            v-if="orderItem?.status === 'cancelled'"
+            class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]"
+          />
+          <OrderCompletedIcon v-else class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]" />
         </div>
         <p class="mt-4 text-sm font-bold leading-normal text-text-1 sm:text-base">
-          {{ t('withdraw.order_completed') }}
+          {{ resultStatusText }}
         </p>
       </div>
       <div class="mt-6 grid gap-5 sm:gap-4 rounded-lg bg-bg-4 px-5 py-3">
@@ -120,33 +124,34 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { showToast } from 'vant'
-import type { WithdrawOrderStatus } from './shared/types'
+import type { WithdrawOrderViewData } from './shared/useWithdrawFlow'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import ProcessingIcon from '@/static/svg/deposit/record.svg?component'
+import OrderCancelledIcon from '@/static/svg/withdraw/order_cancelled.svg?component'
 import OrderCompletedIcon from '@/static/svg/withdraw/order_completed.svg?component'
 
 interface Props {
-  status: WithdrawOrderStatus
-  amountText: string
-  orderNo: string
-  createdAt: string
-  methodLabel: string
-  methodIcon?: string
+  orderItem?: WithdrawOrderViewData
 }
 
 const props = defineProps<Props>()
 const { t } = useI18n()
 
 const statusTitle = computed(() =>
-  props.status === 'completed'
+  props.orderItem?.status === 'completed'
     ? t('withdraw.order_completed_title')
     : t('withdraw.order_processing_title')
 )
+const resultStatusText = computed(() =>
+  props.orderItem?.status === 'cancelled'
+    ? t('withdraw.order_cancelled')
+    : t('withdraw.order_completed')
+)
 
-const methodBadge = computed(() => props.methodLabel.slice(0, 1).toUpperCase())
-const methodIcon = computed(() => String(props.methodIcon ?? '').trim())
+const methodBadge = computed(() => props.orderItem?.methodLabel.slice(0, 1).toUpperCase())
+const methodIcon = computed(() => String(props.orderItem?.methodIcon ?? '').trim())
 const amountParts = computed(() => {
-  const value = String(props.amountText || '').trim()
+  const value = String(props.orderItem?.amountText || '').trim()
   const match = value.match(/^([\d.,]+)\s*([A-Za-z]+)?$/)
 
   if (!match) {
@@ -164,23 +169,23 @@ const amountCurrency = computed(() => amountParts.value.currency)
 const detailRows = computed(() => [
   {
     label: t('withdraw.amount'),
-    value: props.amountText,
+    value: props.orderItem?.amountText,
     type: 'amount' as const
   },
   {
     label: t('withdraw.order_no'),
-    value: props.orderNo,
-    copyValue: props.orderNo,
+    value: props.orderItem?.orderNo,
+    copyValue: props.orderItem?.orderNo,
     type: 'orderNo' as const
   },
   {
     label: t('withdraw.created_at'),
-    value: props.createdAt,
+    value: props.orderItem?.createdAt,
     type: 'createdAt' as const
   },
   {
     label: t('withdraw.withdraw_method'),
-    value: props.methodLabel,
+    value: props.orderItem?.methodLabel,
     type: 'method' as const
   }
 ])

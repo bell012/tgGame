@@ -34,9 +34,11 @@
               ref="desktopTextareaRef"
               v-model="commentText"
               class="comment-popup-textarea h-[150px] w-full resize-none rounded-[12px] p-[12px] text-[14px] font-semibold outline-none"
-              :class="{ 'comment-popup-textarea-active': hasCommentContent }"
+              :class="{ 'comment-popup-textarea-active': hasCommentContent || isTextareaFocused }"
               maxlength="500"
               :placeholder="inputPlaceholder"
+              @focus="handleTextareaFocus"
+              @blur="handleTextareaBlur"
             ></textarea>
 
             <div class="mt-[10px] flex items-center justify-between gap-[12px]">
@@ -133,9 +135,11 @@
               ref="mobileTextareaRef"
               v-model="commentText"
               class="comment-popup-textarea mt-[10px] h-[190px] w-full resize-none rounded-[10px] p-[12px] text-[14px] outline-none"
-              :class="{ 'comment-popup-textarea-active': hasCommentContent }"
+              :class="{ 'comment-popup-textarea-active': hasCommentContent || isTextareaFocused }"
               maxlength="500"
               :placeholder="inputPlaceholder"
+              @focus="handleTextareaFocus"
+              @blur="handleTextareaBlur"
             ></textarea>
 
             <div class="mt-[8px] flex justify-end">
@@ -339,6 +343,7 @@ const bodyOverflowCache = ref('')
 const isEmojiPickerOpen = ref(false)
 const activeEmojiCategory = ref<EmojiCategory>('smileys')
 const recentEmojis = ref(['😀', '😅', '😍', '😡', '😗', '🤗', '😏', '😬'])
+const isTextareaFocused = ref(false)
 const desktopTextareaRef = ref<HTMLTextAreaElement | null>(null)
 const mobileTextareaRef = ref<HTMLTextAreaElement | null>(null)
 const desktopEmojiRef = ref<HTMLElement | null>(null)
@@ -360,6 +365,7 @@ const hasCommentContent = computed(() => Boolean(commentText.value.trim()))
 
 const closePopup = () => {
   isEmojiPickerOpen.value = false
+  isTextareaFocused.value = false
   emit('update:modelValue', false)
 }
 
@@ -373,6 +379,14 @@ const submitComment = () => {
 
 const toggleEmojiPicker = () => {
   isEmojiPickerOpen.value = !isEmojiPickerOpen.value
+}
+
+const handleTextareaFocus = () => {
+  isTextareaFocused.value = true
+}
+
+const handleTextareaBlur = () => {
+  isTextareaFocused.value = false
 }
 
 const selectEmoji = (emoji: string) => {
@@ -435,6 +449,7 @@ watch(
       return
     }
     isEmojiPickerOpen.value = false
+    isTextareaFocused.value = false
     document.body.style.overflow = bodyOverflowCache.value
   }
 )

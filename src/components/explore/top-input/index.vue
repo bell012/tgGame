@@ -163,7 +163,7 @@ const onBlur = () => {
 }
 
 const shouldShowSearchPanel = (trimmedKeyword: string) => {
-  return currentType.value === 'casino' && trimmedKeyword.length < 2
+  return currentType.value === 'casino' && trimmedKeyword.length === 0
 }
 
 const emitSearch = () => {
@@ -174,9 +174,6 @@ const emitSearch = () => {
 
 const onInput = () => {
   const str = keyword.value.trim()
-  if (str.length === 1) {
-    return
-  }
   isOpen.value = shouldShowSearchPanel(str)
 
   if (timer !== null) clearTimeout(timer)
@@ -187,10 +184,6 @@ const onInput = () => {
 }
 
 const onSearch = () => {
-  const str = keyword.value.trim()
-  if (str.length === 1) {
-    return
-  }
   if (timer !== null) clearTimeout(timer)
   emitSearch()
   addHistory(keyword.value)
@@ -234,7 +227,7 @@ const loadHistory = () => {
 
 const addHistory = (value: string) => {
   const trimmedValue = value.trim()
-  if (trimmedValue.length < 2) return
+  if (!trimmedValue) return
 
   const dedupedHistory = history.value.filter(
     item => item.toLowerCase() !== trimmedValue.toLowerCase()
@@ -285,7 +278,8 @@ onBeforeUnmount(() => {
   top: calc(100% + 10px);
   position: absolute;
   left: 0;
-  width: 100%;
+  width: 280px;
+  max-width: calc(100vw - 24px);
 }
 
 .top-search-input {

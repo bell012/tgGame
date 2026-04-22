@@ -25,7 +25,7 @@
   <template v-else>
     <div class="modules mb-4" v-for="(item, index) in lobbyButtons" :key="index">
       <div class="mt-2 flex h-8 items-center font-inter sm:mt-6">
-        <h2 class="flex items-center text-sm font-bold text-text-1 sm:text-base sm:font-extrabold">
+        <h2 class="flex items-center text-base font-bold text-text-1 sm:text-xl">
           {{ item.sysGameTypeName }}
         </h2>
         <button
@@ -113,17 +113,17 @@
     </div>
     <template v-if="!hideLatestBet">
       <div class="mt-2 flex h-8 items-center sm:mt-6">
-        <h2 class="flex items-center text-base font-extrabold text-primary">
+        <h2 class="flex items-center text-base font-bold text-text-1 sm:text-xl">
           {{ t('casino.latest_bet') }}
         </h2>
         <span class="ml-auto"></span>
       </div>
       <div
-        class="mt-2 flex w-full rounded bg-opacity-6 text-text-2 sm:!-mt-9 sm:ml-auto sm:max-w-[347px]"
+        class="mt-2 flex w-full rounded-lg bg-bg-8 text-text-2 sm:!-mt-9 sm:ml-auto sm:max-w-[347px]"
       >
         <button
           :class="{
-            'bg-opacity-10 text-text-4 dark:text-text-1 ': latestBetIndex === 0
+            'bg-bg-7 text-text-1': latestBetIndex === 0
           }"
           class="flex h-10 flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
           @click.stop="latestBetIndex = 0"
@@ -132,7 +132,7 @@
         </button>
         <button
           :class="{
-            'bg-opacity-10 text-text-4 dark:text-text-1 ': latestBetIndex === 1
+            'bg-bg-7 text-text-1': latestBetIndex === 1
           }"
           class="flex h-10 flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
           @click.stop="latestBetIndex = 1"
@@ -140,7 +140,7 @@
           {{ t('casino.high_roller') }}
         </button>
       </div>
-      <div class="my-3 h-[430px]">
+      <div class="mt-3 h-[430px]">
         <liveBet :type="latestBetIndex === 0 ? 1 : 2" />
       </div>
     </template>

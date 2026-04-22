@@ -15,60 +15,61 @@
         <div
           :class="
             props.desktop
-              ? 'tp-panel pointer-events-auto w-full max-w-[520px] rounded-[12px] bg-[var(--color-background-level-2)]'
-              : 'tp-panel pointer-events-auto w-full max-w-none rounded-t-[12px] rounded-b-0 bg-[var(--color-background-level-2)]'
+              ? 'tp-panel pointer-events-auto w-full max-w-[560px] rounded-[16px] bg-[var(--color-background-level-2)]'
+              : 'tp-panel pointer-events-auto w-full max-w-none rounded-t-[16px] rounded-b-0 bg-[var(--color-background-level-2)]'
           "
           @click.stop
         >
           <div class="tp-header h-[64px] px-5 flex items-center justify-between">
-            <div class="w-7 h-7" />
+            <div class="w-10 h-10" />
             <div class="text-[16px]/[24px] text-[var(--color-text-level-1)] font-bold">
               {{ t('gameDetail.shareThisGame') }}
             </div>
             <button
               type="button"
-              class="w-7 h-7 rounded bg-[var(--color-opacity-10)] flex items-center justify-center"
+              class="w-10 h-10 rounded-[10px] bg-[var(--color-opacity-10)] flex items-center justify-center"
               @click="close"
             >
-              <CloseIcon class="stroke-text-1 w-4 h-4" />
+              <CloseIcon class="stroke-text-1 w-5 h-5" />
             </button>
           </div>
-          <div class="px-4 pb-4">
-            <div class="rounded-[10px] px-4 py-[18px]">
-              <div class="text-[14px]/[20px] text-[var(--color-text-level-1)]">
-                {{ t('gameDetail.shareInviteHint') }}
-              </div>
-              <div class="grid grid-cols-5 gap-x-5 mt-3.5">
-                <button
-                  v-for="item in shareList"
-                  :key="item.key"
-                  type="button"
-                  class="flex flex-col items-center min-w-0"
-                  @click="handleChannelShare(item.key)"
-                >
-                  <component :is="item.icon" class="size-[54px]" />
-                  <div class="text-[11px]/[14px] mt-2 text-[var(--color-text-level-1)] text-center">
-                    {{ item.label }}
-                  </div>
-                </button>
-              </div>
-              <div class="text-[14px]/[20px] mt-4 text-[var(--color-text-level-1)] font-medium">
-                {{ t('gameDetail.shareViaWebLink') }}
-              </div>
-              <div
-                class="mt-2.5 h-[56px] rounded-[10px] border border-[var(--color-opacity-20)] bg-[var(--color-background-level-4)] px-3 flex items-center justify-between gap-3"
+          <div class="px-5 pb-[calc(env(safe-area-inset-bottom)+20px)] sm:pb-5">
+            <div class="text-[14px]/[20px] text-[var(--color-text-level-1)]">
+              {{ t('gameDetail.shareViaSocialMedia') }}
+            </div>
+            <div class="share-channel-list mt-4">
+              <button
+                v-for="item in shareList"
+                :key="item.key"
+                type="button"
+                class="share-channel-item flex flex-col items-center min-w-0"
+                @click="handleChannelShare(item.key)"
               >
-                <div class="text-[11px]/[14px] text-[var(--color-text-level-2)] truncate">
-                  {{ shareUrl }}
+                <img :src="item.icon" alt="" class="size-[52px] rounded-full object-contain" />
+                <div class="text-[11px]/[14px] mt-2 text-[var(--color-text-level-1)] text-center">
+                  {{ item.label }}
                 </div>
-                <button
-                  type="button"
-                  class="h-[40px] min-w-[86px] rounded-[10px] bg-[var(--color-opacity-10)] text-[14px]/[20px] text-[var(--color-primary)] font-bold"
-                  @click="handleCopy"
-                >
-                  {{ t('gameDetail.copy') }}
-                </button>
+              </button>
+            </div>
+
+            <div class="text-[14px]/[20px] mt-5 text-[var(--color-text-level-1)] font-medium">
+              {{ t('gameDetail.shareViaWebLink') }}
+            </div>
+            <div
+              class="mt-2.5 h-[58px] rounded-[12px] border border-[var(--color-opacity-20)] bg-[var(--color-background-level-4)] px-2 flex items-center gap-2"
+            >
+              <div
+                class="flex-1 min-w-0 text-[11px]/[14px] text-[var(--color-theme-level-1)] truncate px-2"
+              >
+                {{ shareUrl }}
               </div>
+              <button
+                type="button"
+                class="h-[42px] min-w-[84px] rounded-[10px] bg-[var(--color-opacity-10)] text-[14px]/[20px] text-[var(--color-text-level-1)] font-bold"
+                @click="handleCopy"
+              >
+                {{ t('gameDetail.copy') }}
+              </button>
             </div>
           </div>
         </div>
@@ -79,20 +80,33 @@
 
 <script setup lang="ts">
 import CloseIcon from '@/static/svg/close.svg?component'
-import maisIcon from '@/static/svg/game/detail/share/mais.svg?component'
-import facebookIcon from '@/static/svg/game/detail/share/facebook.svg?component'
-import whatsappIcon from '@/static/svg/game/detail/share/whatsapp.svg?component'
-import telegramIcon from '@/static/svg/game/detail/share/telegram.svg?component'
-import tiktokIcon from '@/static/svg/game/detail/share/tiktok.svg?component'
+import shareRound1 from '@/static/svg/game/detail/share-round/1.svg?url'
+import shareRound2 from '@/static/svg/game/detail/share-round/2.svg?url'
+import shareRound3 from '@/static/svg/game/detail/share-round/3.svg?url'
+import shareRound4 from '@/static/svg/game/detail/share-round/4.svg?url'
+import shareRound5 from '@/static/svg/game/detail/share-round/5.svg?url'
+import shareRound6 from '@/static/svg/game/detail/share-round/6.svg?url'
+import shareRound7 from '@/static/svg/game/detail/share-round/7.svg?url'
+import shareRound8 from '@/static/svg/game/detail/share-round/8.svg?url'
+import shareRound9 from '@/static/svg/game/detail/share-round/9.svg?url'
 import { showToast } from 'vant'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-type ShareChannelKey = 'mais' | 'facebook' | 'whatsapp' | 'telegram' | 'tiktok'
+type ShareChannelKey =
+  | 'mais'
+  | 'facebook'
+  | 'whatsapp'
+  | 'telegram'
+  | 'email'
+  | 'line'
+  | 'x'
+  | 'skype'
+  | 'linkedin'
 type ShareChannel = {
   key: ShareChannelKey
   label: string
-  icon: object
+  icon: string
 }
 type ChannelOpenConfig = {
   appUrl: string
@@ -116,27 +130,47 @@ const shareList = computed<ShareChannel[]>(() => [
   {
     key: 'mais',
     label: 'Mais',
-    icon: maisIcon
+    icon: shareRound1
   },
   {
     key: 'facebook',
-    icon: facebookIcon,
+    icon: shareRound2,
     label: t('gameDetail.shareChannelFacebook')
   },
   {
     key: 'whatsapp',
-    icon: whatsappIcon,
+    icon: shareRound3,
     label: t('gameDetail.shareChannelWhatsapp')
   },
   {
     key: 'telegram',
-    icon: telegramIcon,
+    icon: shareRound4,
     label: t('gameDetail.shareChannelTelegram')
   },
   {
-    key: 'tiktok',
-    icon: tiktokIcon,
-    label: t('gameDetail.shareChannelTiktok')
+    key: 'email',
+    icon: shareRound5,
+    label: 'Email'
+  },
+  {
+    key: 'line',
+    icon: shareRound6,
+    label: 'Line'
+  },
+  {
+    key: 'x',
+    icon: shareRound7,
+    label: 'X'
+  },
+  {
+    key: 'skype',
+    icon: shareRound8,
+    label: 'Skype'
+  },
+  {
+    key: 'linkedin',
+    icon: shareRound9,
+    label: 'Linkedin'
   }
 ])
 
@@ -271,18 +305,44 @@ const handleChannelShare = async (channel: ShareChannelKey) => {
     return
   }
 
-  try {
-    await copyText(shareUrl)
-  } catch (error) {
-    console.error(error)
+  if (channel === 'email') {
+    if (typeof window !== 'undefined') {
+      window.location.href = `mailto:?subject=${encodeURIComponent(t('gameDetail.shareDefaultTitle'))}&body=${encodedText}`
+    }
+    return
   }
 
-  openAppWithStoreFallback({
-    appUrl: 'snssdk1233://',
-    webUrl: 'https://www.tiktok.com/',
-    androidStoreUrl: 'https://play.google.com/store/apps/details?id=com.zhiliaoapp.musically',
-    iosStoreUrl: 'https://apps.apple.com/app/tiktok/id835599320'
-  })
+  if (channel === 'line') {
+    const webUrl = `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`
+    openAppWithStoreFallback({
+      appUrl: `line://msg/text/${encodedText}`,
+      webUrl,
+      androidStoreUrl: 'https://play.google.com/store/apps/details?id=jp.naver.line.android',
+      iosStoreUrl: 'https://apps.apple.com/app/line/id443904275'
+    })
+    return
+  }
+
+  if (channel === 'x') {
+    const webUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`
+    openAppWithStoreFallback({
+      appUrl: `twitter://post?message=${encodedText}`,
+      webUrl,
+      androidStoreUrl: 'https://play.google.com/store/apps/details?id=com.twitter.android',
+      iosStoreUrl: 'https://apps.apple.com/app/x/id333903271'
+    })
+    return
+  }
+
+  if (channel === 'skype') {
+    openInNewTab(`https://web.skype.com/share?url=${encodedUrl}`)
+    return
+  }
+
+  if (channel === 'linkedin') {
+    openInNewTab(`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`)
+    return
+  }
 }
 
 const handleCopy = async () => {
@@ -312,6 +372,18 @@ const handleCopy = async () => {
 
 .tp-panel {
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+}
+
+.share-channel-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 8px;
+  row-gap: 20px;
+}
+
+.share-channel-item {
+  width: calc((100% - 32px) / 5);
 }
 
 // .tp-header {

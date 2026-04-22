@@ -13,7 +13,11 @@ import shopeePayIcon from '@/static/svg/coin/shopeePay.svg?url'
 import { getCurrentCurrency, getFormattedBalance, getLanguageCode } from '@/utils/locale'
 
 type TranslateFn = (key: string) => string
-export type OrderTypeIconMap = Record<string, string>
+export interface OrderTypeMeta {
+  icon: string
+  label: string
+}
+export type OrderTypeIconMap = Record<string, OrderTypeMeta>
 
 export type OrderTab = 'deposits' | 'withdrawals'
 export type OrderStatus = string
@@ -174,8 +178,19 @@ export const getMyOrderTypeValue = (
 /**
  * 返回订单支付方式名称。
  */
-export const getMyOrderTypeLabel = (record: QueryMemberPayOrderPageRecord, localeKey = 'eng') =>
-  parseOrderMethodName(record.subColumnName, localeKey)
+export const getMyOrderTypeLabel = (
+  record: QueryMemberPayOrderPageRecord,
+  localeKey = 'eng',
+  orderTypeIconMap: OrderTypeIconMap = {}
+) => {
+  const columnLabel = orderTypeIconMap[String(record.columnCode ?? '')]?.label
+
+  if (String(record.orderType) === '1' && columnLabel) {
+    return columnLabel
+  }
+
+  return parseOrderMethodName(record.subColumnName, localeKey)
+}
 
 /**
  * 返回订单支付方式图标。
@@ -185,7 +200,7 @@ export const getMyOrderTypeIcon = (
   localeKey = 'eng',
   orderTypeIconMap: OrderTypeIconMap = {}
 ) =>
-  orderTypeIconMap[String(record.columnCode ?? '')] ||
+  orderTypeIconMap[String(record.columnCode ?? '')]?.icon ||
   TYPE_ICON_MAP[getMyOrderTypeValue(record, localeKey)]
 
 /**
@@ -212,9 +227,14 @@ export const loadMyOrderTypeIconMap = async (): Promise<OrderTypeIconMap> => {
 
   return result.reduce<OrderTypeIconMap>((iconMap, item) => {
     const iconUrl = toOrderTypeImageUrl(item.defaultOrderIcon)
-    if (!iconUrl) return iconMap
+    const label = String(item.columnName ?? '').trim()
 
-    iconMap[String(item.columnCode)] = iconUrl
+    if (!iconUrl && !label) return iconMap
+
+    iconMap[String(item.columnCode)] = {
+      icon: iconUrl,
+      label
+    }
     return iconMap
   }, {})
 }
