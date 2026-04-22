@@ -21,21 +21,21 @@
       />
       <button
         v-show="searchText"
-        class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-bg-1 rounded-lg flex items-center justify-center z-10"
+        class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-opacity-10 rounded-lg flex items-center justify-center z-10"
         @click="clearSearch"
       >
-        <CloseIcon class="w-[18px] h-[18px] fill-text-1" />
+        <CloseIcon class="w-[18px] h-[18px] fill-icon-1" />
       </button>
       <div
         v-show="showHistoryPanel && !searchText"
         @click.stop="showHistoryPanel = false"
-        class="absolute left-0 right-0 p-4 top-full w-full z-20 mt-3 flex flex-col items-center rounded-lg bg-bg-2 border border-[var(--color-border-level-1)]"
+        class="absolute left-0 right-0 p-4 top-full w-full z-20 mt-3 flex flex-col items-center rounded-lg bg-bg-2 border border-opacity-10"
       >
         <button
-          class="absolute -right-2 -top-2 w-5 h-5 bg-bg-4 flex items-center justify-center z-10 rounded-full"
+          class="absolute -right-2 -top-2 w-5 h-5 bg-bg-3 flex items-center justify-center z-10 rounded-full"
           @click.stop="showHistoryPanel = false"
         >
-          <CloseIcon class="w-[12px] h-[12px] fill-text-1" />
+          <CloseIcon class="w-[12px] h-[12px] fill-icon-2" />
         </button>
         <div class="text-xs text-text-2">
           {{ t('casino.search_tips') }}
