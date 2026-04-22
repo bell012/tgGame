@@ -1,20 +1,32 @@
 <template>
   <div class="detail-page w-full h-full max-w-[1248px] mx-auto pt-[60px] px-[12px]">
+    <!-- Loading -->
     <div v-if="isGameDataLoading" class="detail-loading-mask" aria-live="polite" aria-busy="true">
-      <div class="detail-loading-spinner"></div>
+      <div class="detail-loading-spinner" />
     </div>
-    <h5-header class="block sm:hidden">{{ currentGameDetail?.itemName ?? '' }}</h5-header>
-    <h5-currency-info v-if="isMobile"></h5-currency-info>
-    <desktop-currency-info v-else></desktop-currency-info>
-    <recent-games></recent-games>
-    <game-list
-      v-if="currentCategoryHotGameList.length > 0"
-      :title="t('home.RecommendedGames')"
-      :list="currentCategoryHotGameList"
-      @all-click="openCurrentCategoryAllGamesPage"
-    ></game-list>
-    <bets-list></bets-list>
+    <!-- Header -->
+    <h5-header class="block sm:hidden">
+      {{ currentGameDetail?.itemName ?? '' }}
+    </h5-header>
+    <!-- Currency Info -->
+    <template v-if="isMobile">
+      <h5-currency-info />
+    </template>
+    <template v-else>
+      <desktop-currency-info />
+    </template>
+    <!-- Game Content -->
+    <recent-games />
+    <template v-if="hasCurrentCategoryHotGames">
+      <game-list
+        :title="t('home.RecommendedGames')"
+        :list="currentCategoryHotGameList"
+        @all-click="openCurrentCategoryAllGamesPage"
+      />
+    </template>
+    <bets-list />
   </div>
+  <!-- Footer -->
   <CommonFooter class="hidden sm:block mt-[40px]" />
 </template>
 <script setup lang="ts">
@@ -73,32 +85,71 @@ type CurrentGameDetail =
     } & Record<string, unknown>)
   | null
 
+// ===== 常量与全局缓存 =====
+const API_REQUEST_OPTIONS = {
+  showSuccessToast: false,
+  showErrorToast: true
+} as const
+
 const gameDetailCacheGlobal = globalThis as typeof globalThis & GameDetailCacheGlobal
 
+// ===== 基础状态 =====
 const gameData = ref<GameDataSection[]>([])
 provide('game-detail-game-data', gameData)
 
 const { t } = useI18n()
-
 const isMobile = useIsMobile()
 const route = useRoute()
 const isGameDataLoading = ref(false)
+const currentGameDetailState = ref<CurrentGameDetail>(null)
 
-const getQueryValue = (value: unknown) => {
+// ===== 工具函数 =====
+const normalizeQueryValue = (value: unknown) => {
   if (Array.isArray(value)) {
     return String(value[0] ?? '').trim()
   }
   return String(value ?? '').trim()
 }
 
-const rowId = computed(() => getQueryValue(route.params.rowId))
-const currentGameDetailState = ref<CurrentGameDetail>(null)
+const getSectionProviderList = (section?: GameDataSection) => {
+  return Array.isArray(section?.subGame) ? section.subGame : []
+}
 
+const flattenProviderGames = (providerList: GameDataProvider[]) => {
+  return providerList.flatMap(provider =>
+    Array.isArray(provider?.subGame) ? provider.subGame : []
+  )
+}
+
+const isHotGame = (game: GameDataItem) => {
+  const hotValue = game.gameItemHotVo?.hot ?? game.hot
+  return Number(hotValue) === 1
+}
+
+const getGameSectionByTypeCode = (sections: GameDataSection[], targetTypeCode: string) => {
+  return sections.find(section => normalizeQueryValue(section?.sysGameTypeCode) === targetTypeCode)
+}
+
+const buildRecommendedPageQuery = (pageTitle: string) => {
+  return {
+    ...(currentGameRowId.value ? { rowId: currentGameRowId.value } : {}),
+    ...(currentGameTypeCode.value ? { sysGameTypeCode: currentGameTypeCode.value } : {}),
+    ...(pageTitle ? { title: pageTitle } : {})
+  }
+}
+
+// ===== 派生状态 =====
+const rowId = computed(() => normalizeQueryValue(route.params.rowId))
 const currentGameDetail = computed<CurrentGameDetail>(() => currentGameDetailState.value)
-
 provide('game-detail-current-game', currentGameDetail)
 
-const currentGameTypeCode = computed(() => getQueryValue(currentGameDetail.value?.sysGameTypeCode))
+const currentGameTypeCode = computed(() =>
+  normalizeQueryValue(currentGameDetail.value?.sysGameTypeCode)
+)
+const currentGameRowId = computed(() => normalizeQueryValue(currentGameDetail.value?.rowId))
+const currentGamePageTitle = computed(() =>
+  normalizeQueryValue(currentGameDetail.value?.platformName ?? currentGameDetail.value?.itemName)
+)
 
 const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
   const targetTypeCode = currentGameTypeCode.value
@@ -106,35 +157,24 @@ const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
     return []
   }
 
-  const targetSection = gameData.value.find(
-    section => getQueryValue(section?.sysGameTypeCode) === targetTypeCode
-  )
+  const targetSection = getGameSectionByTypeCode(gameData.value, targetTypeCode)
   if (!targetSection) {
     return []
   }
 
-  const providerList = Array.isArray(targetSection.subGame) ? targetSection.subGame : []
-  const allGames = providerList.flatMap(provider =>
-    Array.isArray(provider?.subGame) ? provider.subGame : []
-  )
+  const providerList = getSectionProviderList(targetSection)
+  const allGames = flattenProviderGames(providerList)
 
-  return allGames.filter(game => {
-    const hotValue = game.gameItemHotVo?.hot ?? game.hot
-    return Number(hotValue) === 1
-  })
+  return allGames.filter(isHotGame)
 })
+const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.value.length > 0)
 
-const getCurrentGameDetailByApi = async () => {
+// ===== 数据请求 =====
+const fetchCurrentGameDetail = async () => {
   const targetRowId = rowId.value
 
   try {
-    const res = await Api.game.queryGameDetails(
-      { rowId: targetRowId },
-      {
-        showSuccessToast: false,
-        showErrorToast: true
-      }
-    )
+    const res = await Api.game.queryGameDetails({ rowId: targetRowId }, API_REQUEST_OPTIONS)
     const result = res?.result
     if (result && typeof result === 'object') {
       currentGameDetailState.value = result as CurrentGameDetail
@@ -144,29 +184,7 @@ const getCurrentGameDetailByApi = async () => {
   }
 }
 
-const openCurrentCategoryAllGamesPage = () => {
-  const nextList = Array.isArray(currentCategoryHotGameList.value)
-    ? [...currentCategoryHotGameList.value]
-    : []
-  const pageTitle = getQueryValue(
-    currentGameDetail.value?.platformName ?? currentGameDetail.value?.itemName
-  )
-
-  gameDetailCacheGlobal.__gameDetailAllListCache__ = nextList
-  gameDetailCacheGlobal.__gameDetailAllPageTitleCache__ = pageTitle
-
-  navigateTo('/game/detail/recommended', {
-    query: {
-      ...(getQueryValue(currentGameDetail.value?.rowId)
-        ? { rowId: getQueryValue(currentGameDetail.value?.rowId) }
-        : {}),
-      ...(currentGameTypeCode.value ? { sysGameTypeCode: currentGameTypeCode.value } : {}),
-      ...(pageTitle ? { title: pageTitle } : {})
-    }
-  })
-}
-
-const getGameDataForApp = async () => {
+const fetchGameDataForApp = async () => {
   const cachedList = gameDetailCacheGlobal.__gameDetailGameDataCache__
   if (Array.isArray(cachedList) && cachedList.length) {
     gameData.value = cachedList
@@ -175,10 +193,7 @@ const getGameDataForApp = async () => {
 
   isGameDataLoading.value = true
   try {
-    const res = await Api.home.getGameData({
-      showSuccessToast: false,
-      showErrorToast: true
-    })
+    const res = await Api.home.getGameData(API_REQUEST_OPTIONS)
     const nextList = Array.isArray(res?.result) ? (res.result as GameDataSection[]) : []
     gameData.value = nextList
     gameDetailCacheGlobal.__gameDetailGameDataCache__ = nextList
@@ -190,16 +205,32 @@ const getGameDataForApp = async () => {
   }
 }
 
+// ===== 页面动作 =====
+const openCurrentCategoryAllGamesPage = () => {
+  const nextList = Array.isArray(currentCategoryHotGameList.value)
+    ? [...currentCategoryHotGameList.value]
+    : []
+  const pageTitle = currentGamePageTitle.value
+
+  gameDetailCacheGlobal.__gameDetailAllListCache__ = nextList
+  gameDetailCacheGlobal.__gameDetailAllPageTitleCache__ = pageTitle
+
+  navigateTo('/game/detail/recommended', {
+    query: buildRecommendedPageQuery(pageTitle)
+  })
+}
+
+// ===== 监听与生命周期 =====
 watch(
   rowId,
   () => {
-    void getCurrentGameDetailByApi()
+    void fetchCurrentGameDetail()
   },
   { immediate: true, flush: 'post' }
 )
 
 onMounted(async () => {
-  await getGameDataForApp()
+  await fetchGameDataForApp()
 })
 </script>
 <style scoped lang="scss">
