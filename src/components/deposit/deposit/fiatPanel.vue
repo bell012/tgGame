@@ -84,46 +84,44 @@
       />
     </div>
     <!-- 流水选项与提示区域 -->
-    <div class="mt-4 flex flex-col gap-2">
-      <!-- 流水选项切换容器 -->
-      <div class="border-b border-opacity-10 pb-2">
-        <!-- 流水选项列表 -->
-        <div class="flex items-center gap-6 overflow-x-auto scrollbar-hide">
-          <template v-for="(item, index) in wageringOptions" :key="item.rowId">
-            <!-- 单个流水选项按钮 -->
-            <button
-              type="button"
-              class="relative shrink-0 pb-1 text-sm leading-5 transition-colors"
-              :class="
-                selectedDiscountItem?.rowId === item.rowId
-                  ? 'font-bold text-text-1'
-                  : 'text-text-2 lg:hover:text-text-1'
-              "
-              @click="selectWagering(item.rowId)"
-            >
-              {{ item.label }}
-              <span
-                v-if="selectedDiscountItem?.rowId === item.rowId"
-                class="absolute inset-x-0 -bottom-[9px] h-px bg-theme-primary"
-              ></span>
-            </button>
+    <div
+      class="mt-4 border-b border-opacity-10 pb-2.5 overflow-x-auto scrollbar-hide touch-pan-x scroll-smooth"
+    >
+      <!-- 流水选项列表 -->
+      <div class="flex items-center w-max relative">
+        <template v-for="(item, index) in wageringOptions" :key="item.rowId">
+          <!-- 单个流水选项按钮 -->
+          <button
+            type="button"
+            class="relative shrink-0 whitespace-nowrap text-xs sm:text-sm transition-colors"
+            :class="
+              selectedDiscountItem?.rowId === item.rowId
+                ? 'text-text-1'
+                : 'text-text-2 lg:hover:text-text-1'
+            "
+            @click="selectWagering(item.rowId)"
+          >
+            {{ item.label }}
+            <span
+              v-if="selectedDiscountItem?.rowId === item.rowId"
+              class="absolute left-0 -bottom-2.5 h-[2px] w-full bg-theme-primary"
+            ></span>
+          </button>
 
-            <!-- 流水选项分隔线 -->
-            <div
-              v-if="index !== wageringOptions.length - 1"
-              class="h-[14px] w-px shrink-0 bg-opacity-10"
-            ></div>
-          </template>
-        </div>
+          <!-- 流水选项分隔线 -->
+          <div
+            v-if="index !== wageringOptions.length - 1"
+            class="h-4 w-px shrink-0 mx-5 bg-opacity-10"
+          ></div>
+        </template>
       </div>
-
-      <!-- 提款流水提示文案 -->
-      <p class="text-xs leading-[15px] text-secondary-7">
-        {{ t('deposit.withdrawal_no_wagering_tip') }}
-      </p>
     </div>
     <!-- 预设金额区域 -->
     <div class="mt-4 w-full relative">
+      <!-- 提款流水提示文案 -->
+      <p class="py-3 text-xs text-secondary-7">
+        {{ t('deposit.withdrawal_no_wagering_tip') }}
+      </p>
       <!-- 预设金额按钮网格 -->
       <div
         ref="presetsRef"
@@ -255,6 +253,7 @@ const isManualAmountAllowed = computed(
 const selectedDiscountPayChannelCode = computed(() =>
   resolvePayChannelTabKey(selectedMethod.value?.columnName)
 )
+
 const presetDiscountRatioMap = computed<Record<number, string>>(() => {
   const ratioMap: Record<number, string> = {}
   const currentDiscountItem = selectedDiscountItem.value
