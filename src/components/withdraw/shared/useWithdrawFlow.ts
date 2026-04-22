@@ -227,15 +227,15 @@ export const useWithdrawFlow = () => {
     selectAccountCardOption.value = accountCardOptions.value?.[0]
   }
 
-  const handleClickWithdrawTab = async (tab: WithdrawTab, isDesktop?: boolean) => {
+  const handleClickWithdrawTab = async (tab: WithdrawTab) => {
     if (!tab) return
     if (tab.value === 'Crypto') {
-      await cryptoInitialization(isDesktop)
+      await cryptoInitialization()
       return
     }
 
     if (tab.value === 'Fiat') {
-      await fiatInitialization(isDesktop)
+      await fiatInitialization()
       return
     }
   }
@@ -656,18 +656,13 @@ export const useWithdrawFlow = () => {
     await submitWithdraw()
   }
 
-  const handleWithdrawMethodTabClick = async (
-    option: PaymentMethodsOption,
-    isDesktop?: boolean
-  ) => {
+  const handleWithdrawMethodTabClick = async (option: PaymentMethodsOption) => {
     await handleMethodTabClick(option)
     amount.value = undefined
-    if (isDesktop) {
-      selectFirstAccountCardOption()
-    }
+    selectFirstAccountCardOption()
   }
 
-  const cryptoTabClick = async (isDesktop?: boolean) => {
+  const cryptoTabClick = async () => {
     if (!cryptoPaymentMethodsOptions.value.length) {
       return
     }
@@ -678,20 +673,14 @@ export const useWithdrawFlow = () => {
       ) ?? cryptoPaymentMethodsOptions.value[0]
 
     await handleWithdrawMethodTabClick(firstCryptoMethod)
-    if (isDesktop) {
-      selectFirstAccountCardOption()
-    }
   }
 
-  const fiatTabClick = async (isDesktop?: boolean) => {
+  const fiatTabClick = async () => {
     if (!fiatPaymentMethodsOptions.value.length) {
       return
     }
 
     await handleWithdrawMethodTabClick(fiatPaymentMethodsOptions.value[0])
-    if (isDesktop) {
-      selectFirstAccountCardOption()
-    }
   }
 
   const resetWithdrawState = ({
@@ -707,31 +696,31 @@ export const useWithdrawFlow = () => {
     pendingWithdrawSmsCode.value = undefined
   }
 
-  const cryptoInitialization = async (isDesktop?: boolean) => {
+  const cryptoInitialization = async () => {
     try {
       hasLoadedWithdraw.value = false
       await initialization()
       selectWithdrawTab.value = withdrawTabs.value[0]
-      await cryptoTabClick(isDesktop)
+      await cryptoTabClick()
     } catch (error) {
       console.log(error)
     } finally {
       hasLoadedWithdraw.value = true
-      resetWithdrawState({ resetSelectedAccount: !isDesktop })
+      resetWithdrawState({ resetSelectedAccount: false })
     }
   }
 
-  const fiatInitialization = async (isDesktop?: boolean) => {
+  const fiatInitialization = async () => {
     try {
       hasLoadedWithdraw.value = false
       await initialization()
       selectWithdrawTab.value = withdrawTabs.value[1]
-      await fiatTabClick(isDesktop)
+      await fiatTabClick()
     } catch (error) {
       console.log(error)
     } finally {
       hasLoadedWithdraw.value = true
-      resetWithdrawState({ resetSelectedAccount: !isDesktop })
+      resetWithdrawState({ resetSelectedAccount: false })
     }
   }
 

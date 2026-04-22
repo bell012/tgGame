@@ -249,15 +249,15 @@ const {
 const isWithdrawPanelLoading = computed(() => !hasLoadedWithdraw.value)
 
 const handleDesktopClickWithdrawTab = (tab: WithdrawTab) => {
-  handleClickWithdrawTab(tab, true)
+  handleClickWithdrawTab(tab)
 }
 
 const handleDesktopWithdrawMethodTabClick = (option: PaymentMethodsOption) => {
-  handleWithdrawMethodTabClick(option, true)
+  handleWithdrawMethodTabClick(option)
 }
 
 onMounted(async () => {
-  await cryptoInitialization(true)
+  await cryptoInitialization()
 })
 </script>
 
