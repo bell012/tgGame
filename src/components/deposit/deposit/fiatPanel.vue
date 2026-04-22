@@ -117,7 +117,7 @@
       </div>
     </div>
     <!-- 预设金额区域 -->
-    <div class="mt-4 w-full relative">
+    <div class="w-full relative">
       <!-- 提款流水提示文案 -->
       <p class="py-3 text-xs text-secondary-7">
         {{ t('deposit.withdrawal_no_wagering_tip') }}
@@ -135,13 +135,13 @@
           v-for="preset in presetAmounts"
           :key="preset"
           @click="selectPresetAmount(preset)"
-          class="relative flex h-10 items-center justify-center rounded-lg text-base font-bold leading-[19px] transition-colors sm:text-lg lg:hover:bg-theme-primary"
+          class="relative text-base sm:text-lg py-[7px] sm:py-3 rounded-lg lg:hover:bg-theme-primary"
           :class="[preset === amount ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-1']"
         >
           <span>{{ preset }}</span>
           <span
             v-if="presetDiscountRatioMap[preset] !== undefined"
-            class="pointer-events-none absolute -right-1 -top-1 min-w-8 rounded-lg bg-center bg-contain bg-no-repeat px-2 py-0.5 text-center text-xs font-bold leading-4"
+            class="absolute -top-2 -right-1 text-[10px] text-text-1 px-2 pb-0.5 bg-contain bg-no-repeat bg-center"
             :style="{ backgroundImage: `url(${addBonusBadgeBg})` }"
           >
             {{ t('deposit.bonus_label', { ratio: presetDiscountRatioMap[preset] }) }}
