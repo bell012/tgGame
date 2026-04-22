@@ -54,7 +54,8 @@
             class="flex h-9 items-center justify-center rounded-lg sm:rounded-xl border border-opacity-15 bg-opacity-6 text-2xl font-bold text-text-1 sm:h-[60px]"
             :class="passwordValue.length === index - 1 ? 'border-theme-primary' : ''"
           >
-            <span v-if="passwordValue.length >= index" class="size-3 rounded-full bg-text-1" />
+            <!-- <span v-if="passwordValue.length >= index" class="size-3 rounded-full bg-text-1" /> -->
+            <span class="text-lg">{{ passwordValue[index - 1] || '' }}</span>
           </div>
         </div>
       </button>

@@ -119,11 +119,11 @@
         <span class="ml-auto"></span>
       </div>
       <div
-        class="mt-2 flex w-full rounded bg-opacity-6 text-text-2 sm:!-mt-9 sm:ml-auto sm:max-w-[347px]"
+        class="mt-2 flex w-full rounded-lg bg-bg-8 text-text-2 sm:!-mt-9 sm:ml-auto sm:max-w-[347px]"
       >
         <button
           :class="{
-            'bg-opacity-10 text-text-4 dark:text-text-1 ': latestBetIndex === 0
+            'bg-bg-7 text-text-1': latestBetIndex === 0
           }"
           class="flex h-10 flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
           @click.stop="latestBetIndex = 0"
@@ -132,7 +132,7 @@
         </button>
         <button
           :class="{
-            'bg-opacity-10 text-text-4 dark:text-text-1 ': latestBetIndex === 1
+            'bg-bg-7 text-text-1': latestBetIndex === 1
           }"
           class="flex h-10 flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
           @click.stop="latestBetIndex = 1"
@@ -140,7 +140,7 @@
           {{ t('casino.high_roller') }}
         </button>
       </div>
-      <div class="my-3 h-[430px]">
+      <div class="mt-3 h-[430px]">
         <liveBet :type="latestBetIndex === 0 ? 1 : 2" />
       </div>
     </template>
