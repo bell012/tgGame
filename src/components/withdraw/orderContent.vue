@@ -63,10 +63,14 @@
     <div v-else class="w-full rounded-xl bg-bg-2 px-4 pt-10 pb-8">
       <div class="flex flex-col items-center font-['Inter']">
         <div class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]">
-          <OrderCompletedIcon class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]" />
+          <OrderCancelledIcon
+            v-if="orderItem?.status === 'cancelled'"
+            class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]"
+          />
+          <OrderCompletedIcon v-else class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]" />
         </div>
         <p class="mt-4 text-sm font-bold leading-normal text-text-1 sm:text-base">
-          {{ t('withdraw.order_completed') }}
+          {{ resultStatusText }}
         </p>
       </div>
       <div class="mt-6 grid gap-5 sm:gap-4 rounded-lg bg-bg-4 px-5 py-3">
@@ -123,6 +127,7 @@ import { showToast } from 'vant'
 import type { WithdrawOrderViewData } from './shared/useWithdrawFlow'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import ProcessingIcon from '@/static/svg/deposit/record.svg?component'
+import OrderCancelledIcon from '@/static/svg/withdraw/order_cancelled.svg?component'
 import OrderCompletedIcon from '@/static/svg/withdraw/order_completed.svg?component'
 
 interface Props {
@@ -136,6 +141,11 @@ const statusTitle = computed(() =>
   props.orderItem?.status === 'completed'
     ? t('withdraw.order_completed_title')
     : t('withdraw.order_processing_title')
+)
+const resultStatusText = computed(() =>
+  props.orderItem?.status === 'cancelled'
+    ? t('withdraw.order_cancelled')
+    : t('withdraw.order_completed')
 )
 
 const methodBadge = computed(() => props.orderItem?.methodLabel.slice(0, 1).toUpperCase())

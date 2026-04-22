@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import type { WithdrawOrderViewData } from './shared/useWithdrawFlow'
@@ -90,4 +90,8 @@ const handleOpenTransaction = () => {
   handleClose()
   void navigateToName('my-orders')
 }
+
+onUnmounted(() => {
+  emit('close')
+})
 </script>
