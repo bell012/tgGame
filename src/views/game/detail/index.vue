@@ -1,5 +1,8 @@
 <template>
-  <div class="detail-page w-full h-full max-w-[1248px] mx-auto pt-[8px] sm:pt-[20px] px-[12px]">
+  <div
+    ref="detailPageRef"
+    class="detail-page w-full h-full max-w-[1248px] mx-auto pt-[8px] sm:pt-[20px] px-[12px]"
+  >
     <!-- Loading -->
     <div v-if="isGameDataLoading" class="detail-loading-mask" aria-live="polite" aria-busy="true">
       <div class="detail-loading-spinner" />
@@ -34,7 +37,7 @@ import Api from '@/api'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateTo } from '@/utils/router'
-import { computed, onMounted, provide, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import H5Header from './h5/header.vue'
@@ -102,6 +105,36 @@ const isMobile = useIsMobile()
 const route = useRoute()
 const isGameDataLoading = ref(false)
 const currentGameDetailState = ref<CurrentGameDetail>(null)
+const detailPageRef = ref<HTMLElement | null>(null)
+const isBrowserEnv = typeof window !== 'undefined' && typeof document !== 'undefined'
+
+const resetScrollToTop = () => {
+  if (!isBrowserEnv) {
+    // iOS / WebView fallback
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+    return
+  }
+
+  let currentParent = detailPageRef.value?.parentElement ?? null
+  while (currentParent) {
+    const { overflowY } = window.getComputedStyle(currentParent)
+    const isScrollable =
+      (overflowY === 'auto' || overflowY === 'scroll') &&
+      currentParent.scrollHeight > currentParent.clientHeight
+    if (isScrollable) {
+      if (typeof currentParent.scrollTo === 'function') {
+        currentParent.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        currentParent.scrollTop = 0
+      }
+      return
+    }
+    currentParent = currentParent.parentElement
+  }
+
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+}
 
 // ===== 工具函数 =====
 const normalizeQueryValue = (value: unknown) => {
@@ -181,6 +214,9 @@ const fetchCurrentGameDetail = async () => {
     }
   } catch (error) {
     console.error('getCurrentGameDetailByApi failed', error)
+  } finally {
+    await nextTick()
+    resetScrollToTop()
   }
 }
 
