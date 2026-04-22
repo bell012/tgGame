@@ -101,7 +101,12 @@
         <div
           ref="presetsRef"
           class="grid grid-cols-6 gap-2 rounded-tl-lg rounded-tr-lg bg-bg-4 p-2 transition-all duration-300"
-          :class="expanded ? 'max-h-64 overflow-y-auto' : 'max-h-[104px] overflow-hidden'"
+          :class="{
+            'max-h-64 overflow-y-auto': expanded,
+            'max-h-[104px] overflow-hidden': !expanded,
+            'rounded-tl-lg rounded-tr-lg': showExpandButton,
+            'rounded-lg': !showExpandButton
+          }"
         >
           <button
             v-for="(item, index) in quickAmounts"

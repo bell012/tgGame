@@ -1,5 +1,5 @@
 import { storeToRefs } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
 import { useUserStore } from '@/stores/user'
@@ -27,9 +27,10 @@ import { getCurrentCurrency, getCurrencySymbol, getFormattedBalance } from '@/ut
 import { showToast } from 'vant'
 import { formatTimestamp } from '@/utils/date'
 import { StringExtension } from '@/utils/string-extension'
+import { isOrderTerminalStatus } from '@/constants/orderStatus'
 
 export type WithdrawTabType = 'Crypto' | 'Fiat'
-export type WithdrawOrderStatus = 'processing' | 'completed'
+export type WithdrawOrderStatus = 'processing' | 'completed' | 'cancelled'
 
 export type WithdrawTab = {
   value: WithdrawTabType
@@ -52,6 +53,7 @@ const COIN_ICON_MAP: Record<string, string> = {
   BTC: BTCIcon,
   USDC: USDCIcon
 }
+const WITHDRAW_ORDER_POLL_INTERVAL_MS = 10 * 1000
 
 const DEFAULT_CRYPTO_OPTIONS: PaymentMethodsOption[] = DEFAULT_COINS.filter(
   item => item.name !== 'USDT'
@@ -142,6 +144,37 @@ const resolveCoinExchangeRate = (
   return null
 }
 
+const formatWithdrawAmountText = (amount: string | number | undefined, currencyCode: string) => {
+  const nextAmount = Number(amount ?? 0)
+  const amountText = Number.isFinite(nextAmount) ? nextAmount.toFixed(0) : String(amount ?? 0)
+
+  return `${amountText}${currencyCode}`
+}
+
+const getCurrencyFromAmountText = (value?: string) => {
+  const match = String(value ?? '')
+    .trim()
+    .match(/[A-Za-z]+$/)
+
+  return match?.[0] ?? ''
+}
+
+const toWithdrawOrderStatus = (status: unknown): WithdrawOrderStatus => {
+  const normalized = String(status ?? '')
+    .trim()
+    .toLowerCase()
+
+  if (normalized === '3') {
+    return 'completed'
+  }
+
+  if (normalized === '2' || normalized === '5') {
+    return 'cancelled'
+  }
+
+  return 'processing'
+}
+
 export const useWithdrawFlow = () => {
   const { t } = useI18n()
   const isMobile = useIsMobile()
@@ -205,6 +238,8 @@ export const useWithdrawFlow = () => {
   const isWithdrawSubmitting = ref(false)
   const withdrawOrder = ref<WithdrawOrderViewData>()
   const hasLoadedWithdraw = ref(false)
+  let withdrawOrderPollTimer: number | null = null
+  let isWithdrawOrderPolling = false
 
   const cryptoPaymentCodes = [5]
   const withdrawVerifyWay = computed(() =>
@@ -223,19 +258,32 @@ export const useWithdrawFlow = () => {
   )
   const needWithdrawBusiPwd = computed(() => withdrawVerifyWay.value === '1')
   const needWithdrawTelephoneSms = computed(() => withdrawVerifyWay.value === '2')
-  const selectFirstAccountCardOption = () => {
-    selectAccountCardOption.value = accountCardOptions.value?.[0]
+  const syncSelectedAccountCardOption = () => {
+    const options = accountCardOptions.value
+
+    if (!options.length) {
+      selectAccountCardOption.value = undefined
+      return
+    }
+
+    const currentRowId = selectAccountCardOption.value?.rowId
+    const hasCurrentOption =
+      currentRowId != null && options.some(option => String(option.rowId) === String(currentRowId))
+
+    if (!hasCurrentOption) {
+      selectAccountCardOption.value = options[0]
+    }
   }
 
-  const handleClickWithdrawTab = async (tab: WithdrawTab, isDesktop?: boolean) => {
+  const handleClickWithdrawTab = async (tab: WithdrawTab) => {
     if (!tab) return
     if (tab.value === 'Crypto') {
-      await cryptoInitialization(isDesktop)
+      await cryptoInitialization()
       return
     }
 
     if (tab.value === 'Fiat') {
-      await fiatInitialization(isDesktop)
+      await fiatInitialization()
       return
     }
   }
@@ -388,6 +436,7 @@ export const useWithdrawFlow = () => {
   }
 
   const resetWithdrawFlow = () => {
+    stopWithdrawOrderPolling()
     kindReminderVisible.value = false
     withdrawPaymentPasswordVisible.value = false
     withdrawSmsVerificationVisible.value = false
@@ -397,6 +446,7 @@ export const useWithdrawFlow = () => {
   }
 
   const closeWithdrawOrder = () => {
+    stopWithdrawOrderPolling()
     withdrawOrderVisible.value = false
   }
 
@@ -529,45 +579,97 @@ export const useWithdrawFlow = () => {
     }
   }
 
-  const formatAmountText = (amount: string | number | undefined, currencyCode: string) => {
-    const nextAmount = Number(amount ?? 0)
-    const amountText = Number.isFinite(nextAmount) ? nextAmount.toFixed(0) : String(amount ?? 0)
-
-    return `${amountText}${currencyCode}`
-  }
-
-  const normalizeOrderStatus = (status: unknown): WithdrawOrderStatus => {
-    const normalized = String(status ?? '')
-      .trim()
-      .toLowerCase()
-
-    if (normalized === '3') {
-      return 'completed'
-    }
-
-    return 'processing'
-  }
-
-  const buildOrderViewData = (detail?: WithdrawOrderDetail | null): WithdrawOrderViewData => {
-    const currencyCode = selectAccountCardOption.value?.currency || 'PHP'
-    const amountText = formatAmountText(detail?.busiAmount ?? amount.value, currencyCode)
-    const orderId = String(detail?.orderId ?? '')
-    const orderNo = String(detail?.orderNo ?? orderId)
+  const buildWithdrawOrderViewData = (
+    detail?: WithdrawOrderDetail | null
+  ): WithdrawOrderViewData => {
+    const previousOrder = withdrawOrder.value
+    const currencyCode =
+      selectAccountCardOption.value?.currency ||
+      getCurrencyFromAmountText(previousOrder?.amountText) ||
+      'PHP'
+    const amountText = formatWithdrawAmountText(detail?.busiAmount ?? amount.value, currencyCode)
+    const orderId = String(detail?.orderId ?? previousOrder?.orderId ?? '')
+    const orderNo = String(detail?.orderNo ?? previousOrder?.orderNo ?? orderId)
     const createdAt = formatTimestamp(
       (detail?.createTime ?? null) as string | number | null | undefined
     )
-    const methodLabel = String(detail?.paymentName ?? selectAccountCardOption.value?.label ?? '')
-    const methodIcon = String(selectAccountCardOption.value?.customRoundIcon ?? '')
+    const methodLabel = String(
+      detail?.paymentName ??
+        selectAccountCardOption.value?.label ??
+        previousOrder?.methodLabel ??
+        ''
+    )
+    const methodIcon = String(
+      selectAccountCardOption.value?.customRoundIcon ?? previousOrder?.methodIcon ?? ''
+    )
 
     return {
       orderId,
       orderNo,
       amountText,
-      createdAt,
+      createdAt: createdAt || previousOrder?.createdAt || '',
       methodLabel,
       methodIcon,
-      status: normalizeOrderStatus(detail?.status)
+      status: toWithdrawOrderStatus(detail?.status)
     }
+  }
+
+  const applyWithdrawOrderDetail = (detail?: WithdrawOrderDetail | null) => {
+    withdrawOrder.value = buildWithdrawOrderViewData(detail)
+  }
+
+  const queryAndApplyWithdrawOrder = async (orderId: string | number) => {
+    const detailResponse = await Api.withdraw.queryTheWithdrawOrder({ orderId })
+    const detail = detailResponse?.result
+
+    applyWithdrawOrderDetail(detail ?? { orderId })
+
+    return detail
+  }
+
+  const stopWithdrawOrderPolling = () => {
+    if (withdrawOrderPollTimer !== null) {
+      window.clearInterval(withdrawOrderPollTimer)
+      withdrawOrderPollTimer = null
+    }
+
+    isWithdrawOrderPolling = false
+  }
+
+  const pollWithdrawOrder = async (orderId: string | number) => {
+    if (isWithdrawOrderPolling) {
+      return
+    }
+
+    try {
+      isWithdrawOrderPolling = true
+      const detail = await queryAndApplyWithdrawOrder(orderId)
+
+      if (!detail) {
+        return
+      }
+
+      if (isOrderTerminalStatus('withdraw', detail.status)) {
+        stopWithdrawOrderPolling()
+        refreshBalance()
+      }
+    } catch (error) {
+      console.error('queryTheWithdrawOrder polling failed', error)
+    } finally {
+      isWithdrawOrderPolling = false
+    }
+  }
+
+  const startWithdrawOrderPolling = (orderId: string | number, status?: string | number) => {
+    stopWithdrawOrderPolling()
+
+    if (isOrderTerminalStatus('withdraw', status)) {
+      return
+    }
+
+    withdrawOrderPollTimer = window.setInterval(() => {
+      void pollWithdrawOrder(orderId)
+    }, WITHDRAW_ORDER_POLL_INTERVAL_MS)
   }
 
   const buildSubmitTransferOrderForm = (withdrawNumber = 0): SubmitTransferOrderForm => {
@@ -599,6 +701,7 @@ export const useWithdrawFlow = () => {
     }
 
     try {
+      stopWithdrawOrderPolling()
       isWithdrawSubmitting.value = true
       amountVerification()
       await ensureNoPendingWithdrawOrder()
@@ -615,9 +718,9 @@ export const useWithdrawFlow = () => {
         throw new Error(String(submitResponse?.message || 'withdraw.submit_failed'))
       }
 
-      const detailResponse = await Api.withdraw.queryTheWithdrawOrder({ orderId })
-      withdrawOrder.value = buildOrderViewData(detailResponse?.result)
+      const detail = await queryAndApplyWithdrawOrder(orderId)
       withdrawOrderVisible.value = true
+      startWithdrawOrderPolling(orderId, detail?.status)
       refreshBalance()
     } catch (error) {
       const messageKey = error instanceof Error ? error.message : 'withdraw.submit_failed'
@@ -656,18 +759,13 @@ export const useWithdrawFlow = () => {
     await submitWithdraw()
   }
 
-  const handleWithdrawMethodTabClick = async (
-    option: PaymentMethodsOption,
-    isDesktop?: boolean
-  ) => {
+  const handleWithdrawMethodTabClick = async (option: PaymentMethodsOption) => {
     await handleMethodTabClick(option)
     amount.value = undefined
-    if (isDesktop) {
-      selectFirstAccountCardOption()
-    }
+    syncSelectedAccountCardOption()
   }
 
-  const cryptoTabClick = async (isDesktop?: boolean) => {
+  const cryptoTabClick = async () => {
     if (!cryptoPaymentMethodsOptions.value.length) {
       return
     }
@@ -678,20 +776,14 @@ export const useWithdrawFlow = () => {
       ) ?? cryptoPaymentMethodsOptions.value[0]
 
     await handleWithdrawMethodTabClick(firstCryptoMethod)
-    if (isDesktop) {
-      selectFirstAccountCardOption()
-    }
   }
 
-  const fiatTabClick = async (isDesktop?: boolean) => {
+  const fiatTabClick = async () => {
     if (!fiatPaymentMethodsOptions.value.length) {
       return
     }
 
     await handleWithdrawMethodTabClick(fiatPaymentMethodsOptions.value[0])
-    if (isDesktop) {
-      selectFirstAccountCardOption()
-    }
   }
 
   const resetWithdrawState = ({
@@ -707,31 +799,31 @@ export const useWithdrawFlow = () => {
     pendingWithdrawSmsCode.value = undefined
   }
 
-  const cryptoInitialization = async (isDesktop?: boolean) => {
+  const cryptoInitialization = async () => {
     try {
       hasLoadedWithdraw.value = false
       await initialization()
       selectWithdrawTab.value = withdrawTabs.value[0]
-      await cryptoTabClick(isDesktop)
+      await cryptoTabClick()
     } catch (error) {
       console.log(error)
     } finally {
       hasLoadedWithdraw.value = true
-      resetWithdrawState({ resetSelectedAccount: !isDesktop })
+      resetWithdrawState({ resetSelectedAccount: false })
     }
   }
 
-  const fiatInitialization = async (isDesktop?: boolean) => {
+  const fiatInitialization = async () => {
     try {
       hasLoadedWithdraw.value = false
       await initialization()
       selectWithdrawTab.value = withdrawTabs.value[1]
-      await fiatTabClick(isDesktop)
+      await fiatTabClick()
     } catch (error) {
       console.log(error)
     } finally {
       hasLoadedWithdraw.value = true
-      resetWithdrawState({ resetSelectedAccount: !isDesktop })
+      resetWithdrawState({ resetSelectedAccount: false })
     }
   }
 
@@ -741,6 +833,14 @@ export const useWithdrawFlow = () => {
       loadQuickAmounts()
     }
   )
+
+  watch(accountCardOptions, () => {
+    syncSelectedAccountCardOption()
+  })
+
+  onUnmounted(() => {
+    stopWithdrawOrderPolling()
+  })
 
   return {
     smsCountdownTrigger,
