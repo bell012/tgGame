@@ -857,7 +857,7 @@ const mapTradeMessageToNotification = (item: TradeMessageStreamItem): Notificati
   }
 }
 
-// 生成交易通知列表，按 createTime 倒序展示，最新消息排在最上方。
+// 生成交易通知列表，按 createTime 倒序展示，最新消息排在最上方。删除后的消息不会继续展示。
 const transactionNotifications = computed(() =>
   [...tradeMessageSyncStore.messageStream]
     .filter(item => !tradeMessageSyncStore.deletedMessageKeys.includes(item.key))
