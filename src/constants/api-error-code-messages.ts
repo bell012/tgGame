@@ -274,7 +274,7 @@ export const API_ERROR_CODE_MESSAGES = {
   E162: ['No feedback images found.', '未找到反馈图片。'],
   E163: ['Your level is insufficient to share the app.', '等级不足，无法分享应用。'],
   E164: ['Withdrawal turnover is zero.', '提款流水为 0。'],
-  E165: ['No payment method found for recharge.', '未找到充值支付方式。'],
+  E165: ['Access is restricted.', '访问受限。'],
   E166: ['Please wait 1 minute before resubmitting.', '请等待 1 分钟后再提交。'],
   E167: ['No service information found.', '未找到服务信息。'],
   E168: ['Actual amount cannot be less than zero.', '实际金额不能小于 0。'],
