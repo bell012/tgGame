@@ -8,8 +8,12 @@
       <div class="flex gap-[10px] min-w-0">
         <div v-if="selectedData" class="flex gap-[8px] items-center min-w-0">
           <SmartImage alt="" :src="selectedData.icon" class="size-[24px] object-contain" />
-          <div class="text-[14px] shrink-0">{{ selectedData.label }}</div>
-          <div class="text-[14px] font-semibold truncate">({{ selectedBalanceText }})</div>
+          <div class="text-[14px] leading-[20px] shrink-0">{{ selectedData.label }}</div>
+          <div class="balance-text text-[14px] font-semibold shrink-0">
+            <span class="balance-bracket">(</span>
+            <span>{{ selectedBalanceText }}</span>
+            <span class="balance-bracket">)</span>
+          </div>
         </div>
       </div>
       <div class="ml-auto flex items-center gap-[8px] min-w-0">
@@ -249,6 +253,19 @@ onMounted(() => {
   width: 14px;
   height: 14px;
   fill: none;
+}
+
+.balance-text {
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.balance-bracket {
+  line-height: 1;
+  position: relative;
+  top: -0.5px;
 }
 
 :global(:root.light) .currency-select-trigger {
