@@ -188,7 +188,7 @@ const statusOptions = computed(() => createMyOrdersStatusOptions(t))
 const desktopRows = computed(() =>
   desktopRecords.value.map(item => ({
     id: item.orderId,
-    type: getMyOrderTypeLabel(item, String(locale.value || 'eng')),
+    type: getMyOrderTypeLabel(item, String(locale.value || 'eng'), orderTypeIconMap.value),
     time: formatMyOrderTime(item.createTime),
     amount: formatDisplayAmount(Number(item.busiAmount ?? 0), item.currency),
     status: getMyOrderStatusText(activeTopTab.value, item.status, t),
