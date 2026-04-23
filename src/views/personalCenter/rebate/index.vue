@@ -53,52 +53,56 @@
       </main>
     </section>
 
-    <div v-else class="mx-auto max-w-[1336px] px-3.5 pb-6 pt-5">
-      <h2 class="text-[30px] font-[700] text-text-1">洗码</h2>
+    <div v-else>
+      <div class="mx-auto max-w-[1336px] px-3.5 pb-6 pt-5">
+        <h2 class="text-[30px] font-[700] text-text-1">洗码</h2>
 
-      <RebateOverviewCard
-        :claimable-amount-text="claimableAmountText"
-        :eligible-turnover-text="eligibleTurnoverText"
-        :is-mobile="false"
-        :today-valid-bets-text="todayValidBetsText"
-        @eligible-turnover-click="openEligibleTurnoverPopup"
-      >
-        <template #desktop-action>
-          <button
-            type="button"
-            class="h-[45px] min-w-[220px] rounded-[8px] bg-theme-primary px-5 text-sm font-[700] text-text-4"
-            @click="handleClaimRebate"
-          >
-            Claim
-          </button>
-        </template>
-      </RebateOverviewCard>
+        <RebateOverviewCard
+          :claimable-amount-text="claimableAmountText"
+          :eligible-turnover-text="eligibleTurnoverText"
+          :is-mobile="false"
+          :today-valid-bets-text="todayValidBetsText"
+          @eligible-turnover-click="openEligibleTurnoverPopup"
+        >
+          <template #desktop-action>
+            <button
+              type="button"
+              class="h-[45px] min-w-[220px] rounded-[8px] bg-theme-primary px-5 text-sm font-[700] text-text-4"
+              @click="handleClaimRebate"
+            >
+              Claim
+            </button>
+          </template>
+        </RebateOverviewCard>
 
-      <RebateActionTabs
-        :active-tab="activeTab"
-        :is-mobile="false"
-        @open-records="handleOpenRebateRecords"
-        @open-rules="openRebateRulesPopup"
-      />
+        <RebateActionTabs
+          :active-tab="activeTab"
+          :is-mobile="false"
+          @open-records="handleOpenRebateRecords"
+          @open-rules="openRebateRulesPopup"
+        />
 
-      <RebateCategoryTabs
-        :active-category="activeCategory"
-        :categories="categoryOptions"
-        :is-mobile="false"
-        @update:active-category="activeCategory = $event"
-      />
+        <RebateCategoryTabs
+          :active-category="activeCategory"
+          :categories="categoryOptions"
+          :is-mobile="false"
+          @update:active-category="activeCategory = $event"
+        />
 
-      <RebateProgressCard
-        :current-rebate-text="currentRebateText"
-        :current-valid-bets-plain-text="currentValidBetsPlainText"
-        :is-mobile="false"
-        :next-rebate-text="nextRebateText"
-        :progress-percent="progressPercent"
-        :progress-percent-text="progressPercentText"
-        :target-valid-bets-text="targetValidBetsText"
-      />
+        <RebateProgressCard
+          :current-rebate-text="currentRebateText"
+          :current-valid-bets-plain-text="currentValidBetsPlainText"
+          :is-mobile="false"
+          :next-rebate-text="nextRebateText"
+          :progress-percent="progressPercent"
+          :progress-percent-text="progressPercentText"
+          :target-valid-bets-text="targetValidBetsText"
+        />
 
-      <RebateRateTable :is-mobile="false" :rows="rebateRows" />
+        <RebateRateTable :is-mobile="false" :rows="rebateRows" />
+      </div>
+
+      <CommonFooter class="mt-[40px]" />
     </div>
 
     <ClaimSuccessPopup
@@ -127,6 +131,7 @@
 
 <script setup lang="ts">
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
+import CommonFooter from '@/components/commonFooter.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { rebateRuleSections } from './constants'
 import EligibleTurnoverPopup from './components/dialogs/EligibleTurnoverPopup.vue'
