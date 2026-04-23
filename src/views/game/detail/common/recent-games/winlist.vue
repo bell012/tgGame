@@ -12,6 +12,7 @@
           v-for="(item, index) in props.list"
           :key="`${index}-${getPlayerName(item)}-${toPlainText(item.payOut)}`"
           class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[12px]"
+          :class="{ 'mb-0': index === props.list.length - 1 }"
         >
           <div class="win-item-divider flex min-h-[20px] items-center gap-[8px] pb-[12px]">
             <SmartImage class="size-[20px] shrink-0" alt="" :src="RackIcon" />

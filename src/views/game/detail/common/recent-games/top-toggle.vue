@@ -54,7 +54,7 @@ const toggleIsOpen = () => {
 <style scoped lang="scss">
 .top-toggle-card {
   border-radius: 10px;
-  padding: 12px;
+  padding: 0;
 }
 
 .toggle-arrow-wrap {
