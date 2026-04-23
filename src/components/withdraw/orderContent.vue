@@ -27,7 +27,7 @@
       </div>
       <div class="mt-8 grid gap-5 sm:gap-4 rounded-lg bg-bg-4 px-5 py-3">
         <div
-          v-for="item in detailRows"
+          v-for="item in processingDetailRows"
           :key="item.label"
           class="flex items-center justify-between font-['Inter']"
         >
@@ -189,6 +189,7 @@ const detailRows = computed(() => [
     type: 'method' as const
   }
 ])
+const processingDetailRows = computed(() => detailRows.value.slice(1))
 
 const copyText = async (value: string) => {
   try {
