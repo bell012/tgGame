@@ -9,16 +9,12 @@
         <p :class="getTitleClass(currentColumn.key)">{{ currentColumn.title }}</p>
 
         <div class="mt-[20px] space-y-[23px] sm:mt-[29px] sm:space-y-[29px]">
-          <div
-            v-for="row in currentDetailRows"
-            :key="row.key"
-            class="flex items-center justify-between"
-          >
-            <span class="text-sm text-text-2 sm:text-base sm:text-center sm:w-full">{{
+          <div v-for="row in currentDetailRows" :key="row.key" class="flex items-center">
+            <span class="min-w-0 w-3/5 truncate text-sm text-text-2 sm:text-base sm:text-center">{{
               row.label
             }}</span>
             <span
-              class="sm:text-center sm:w-full"
+              class="min-w-0 w-2/5 truncate text-right sm:text-center"
               :class="getDetailAmountClass(currentColumn.key)"
               >{{ row.amount }}</span
             >
@@ -38,9 +34,11 @@
             :key="row.key"
             class="flex items-center justify-center"
           >
-            <span class="sm:text-center sm:w-full" :class="getDetailAmountClass(nextColumn.key)">{{
-              row.amount
-            }}</span>
+            <span
+              class="min-w-0 w-full truncate text-center"
+              :class="getDetailAmountClass(nextColumn.key)"
+              >{{ row.amount }}</span
+            >
           </div>
         </div>
       </article>
@@ -51,14 +49,14 @@
         v-if="currentTotalRow"
         class="min-w-0 w-full rounded-[10px] bg-bg-2 px-[20px] h-[60px] flex items-center justify-between sm:rounded-[16px] sm:px-[24px] sm:h-[48px]"
       >
-        <div class="w-full flex items-center justify-between">
+        <div class="flex w-full items-center">
           <span
-            class="text-sm font-[400] text-text-1 sm:text-base sm:font-[700] sm:text-center sm:w-full"
+            class="min-w-0 w-3/5 truncate text-sm font-[400] text-text-1 sm:text-base sm:font-[700] sm:text-center"
           >
             {{ currentTotalRow.label }}
           </span>
           <span
-            class="text-sm font-[700] text-secondary-7 sm:text-base sm:font-[700] sm:text-center sm:w-full"
+            class="min-w-0 w-2/5 truncate text-right text-sm font-[700] text-secondary-7 sm:text-base sm:font-[700] sm:text-center"
           >
             {{ currentTotalRow.amount }}
           </span>
@@ -72,7 +70,9 @@
         class="min-w-0 w-full rounded-[10px] bg-bg-2 px-[20px] h-[60px] flex items-center justify-between sm:rounded-[16px] sm:px-[24px] sm:h-[48px]"
       >
         <div class="w-full flex items-center justify-center">
-          <span class="text-sm font-[700] text-secondary-7 sm:text-base">
+          <span
+            class="min-w-0 w-full truncate text-center text-sm font-[700] text-secondary-7 sm:text-base"
+          >
             {{ nextTotalRow.amount }}
           </span>
         </div>
