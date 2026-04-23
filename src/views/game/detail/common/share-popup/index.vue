@@ -34,7 +34,7 @@
             </button>
           </div>
           <div class="px-5 pb-[calc(env(safe-area-inset-bottom)+20px)] sm:pb-5">
-            <div class="text-[14px]/[20px] text-[var(--color-text-level-1)]">
+            <div class="text-[14px]/[20px] text-[var(--color-text-level-1)] font-normal">
               {{ t('gameDetail.shareViaSocialMedia') }}
             </div>
             <div class="share-channel-list mt-4">
@@ -52,7 +52,7 @@
               </button>
             </div>
 
-            <div class="text-[14px]/[20px] mt-5 text-[var(--color-text-level-1)] font-medium">
+            <div class="text-[14px]/[20px] mt-5 text-[var(--color-text-level-1)] font-normal">
               {{ t('gameDetail.shareViaWebLink') }}
             </div>
             <div

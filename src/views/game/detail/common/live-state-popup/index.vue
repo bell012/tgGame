@@ -101,7 +101,7 @@ import RefreshIcon from '@/static/svg/game/detail/refresh.svg?component'
 import { getCurrencySymbol } from '@/utils/locale'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { storeToRefs } from 'pinia'
-import { computed, inject, ref, watch, type ComputedRef } from 'vue'
+import { computed, inject, ref, watch, type ComputedRef, type CSSProperties } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SmartImage from '@/components/common/SmartImage.vue'
 
@@ -183,7 +183,7 @@ const wageredText = computed(() => {
 const winCount = computed(() => formatCount(statistics.value.win))
 const loseCount = computed(() => formatCount(statistics.value.lose))
 
-const h5PanelSurfaceStyle = computed((): Record<string, string> => {
+const h5PanelSurfaceStyle = computed((): CSSProperties => {
   if (!isLightTheme.value || props.panelClass !== 'tp-panel-h5') {
     return {}
   }
@@ -192,7 +192,7 @@ const h5PanelSurfaceStyle = computed((): Record<string, string> => {
   }
 })
 
-const h5StatsShellStyle = computed((): Record<string, string> => {
+const h5StatsShellStyle = computed((): CSSProperties => {
   if (!isLightTheme.value || props.panelClass !== 'tp-panel-h5') {
     return {}
   }
@@ -201,7 +201,7 @@ const h5StatsShellStyle = computed((): Record<string, string> => {
   }
 })
 
-const h5StatsGridStyle = computed((): Record<string, string> => {
+const h5StatsGridStyle = computed((): CSSProperties => {
   if (!isLightTheme.value || props.panelClass !== 'tp-panel-h5') {
     return {}
   }
@@ -210,7 +210,7 @@ const h5StatsGridStyle = computed((): Record<string, string> => {
   }
 })
 
-const h5ValueStyle = computed((): Record<string, string> => {
+const h5ValueStyle = computed((): CSSProperties => {
   if (!isLightTheme.value || props.panelClass !== 'tp-panel-h5') {
     return {}
   }
@@ -219,7 +219,7 @@ const h5ValueStyle = computed((): Record<string, string> => {
   }
 })
 
-const h5DividerLineStyle = computed((): Record<string, string> => {
+const h5DividerLineStyle = computed((): CSSProperties => {
   if (!isLightTheme.value || props.panelClass !== 'tp-panel-h5') {
     return {}
   }
