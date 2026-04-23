@@ -183,7 +183,7 @@ const wageredText = computed(() => {
 const winCount = computed(() => formatCount(statistics.value.win))
 const loseCount = computed(() => formatCount(statistics.value.lose))
 
-const h5PanelSurfaceStyle = computed<CSSProperties>(() => {
+const h5PanelSurfaceStyle = computed((): CSSProperties => {
   if (!isLightTheme.value || props.panelClass !== 'tp-panel-h5') {
     return {}
   }
@@ -192,7 +192,7 @@ const h5PanelSurfaceStyle = computed<CSSProperties>(() => {
   }
 })
 
-const h5StatsShellStyle = computed<CSSProperties>(() => {
+const h5StatsShellStyle = computed((): CSSProperties => {
   if (!isLightTheme.value || props.panelClass !== 'tp-panel-h5') {
     return {}
   }
@@ -210,7 +210,7 @@ const h5StatsGridStyle = computed((): CSSProperties => {
   }
 })
 
-const h5ValueStyle = computed<CSSProperties>(() => {
+const h5ValueStyle = computed((): CSSProperties => {
   if (!isLightTheme.value || props.panelClass !== 'tp-panel-h5') {
     return {}
   }
@@ -219,7 +219,7 @@ const h5ValueStyle = computed<CSSProperties>(() => {
   }
 })
 
-const h5DividerLineStyle = computed<CSSProperties>(() => {
+const h5DividerLineStyle = computed((): CSSProperties => {
   if (!isLightTheme.value || props.panelClass !== 'tp-panel-h5') {
     return {}
   }

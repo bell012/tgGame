@@ -59,7 +59,8 @@
 
           <!-- 搜索框 -->
           <div v-if="search" class="relative mb-2.5">
-            <SearchIcon
+            <component
+              :is="isDarkTheme ? SearchBlackIcon : SearchIcon"
               class="absolute left-2.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] opacity-50"
             />
             <input
@@ -134,6 +135,7 @@
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useThemeStore } from '@/stores/theme'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RadioCheckedIcon from '@/static/svg/radio-checked-hollow.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
@@ -141,6 +143,7 @@ import CubeChecedIcon from '@/static/svg/cube-checked.svg?component'
 import CubeUnchecedIcon from '@/static/svg/cube-unchecked.svg?component'
 import ClearIcon from '@/static/svg/clear.svg?component'
 import SearchIcon from '@/static/svg/explore/search.svg?component'
+import SearchBlackIcon from '@/static/svg/explore/search_black.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 
@@ -165,8 +168,10 @@ const emit = defineEmits<{
 }>()
 
 const isMobile = useIsMobile()
+const themeStore = useThemeStore()
 const popupShow = ref(false)
 const keyword = ref('')
+const isDarkTheme = computed(() => themeStore.theme === 'dark')
 
 const selectedLabel = computed(() => {
   if (props.Multi) return props.selectedList.length > 0 ? `+${props.selectedList.length}` : 'All'
