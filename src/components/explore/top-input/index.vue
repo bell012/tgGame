@@ -34,7 +34,7 @@
     <!-- 搜索记录框 -->
     <div
       v-if="isOpen"
-      class="absolute panel left-0 top-[58px] bg-[var(--color-background-level-2)] z-[99] border border-[var(--color-border-level-1)] w-full rounded-lg px-3.5 pt-5 pb-3 flex flex-col items-center"
+      class="absolute panel left-0 top-[58px] bg-[var(--color-background-level-2)] z-[99] border border-[var(--color-opacity-10)] w-full rounded-lg px-3.5 pt-5 pb-3 flex flex-col items-center"
     >
       <div
         class="absolute -right-1.5 -top-1.5 w-5 h-5 bg-[var(--color-background-level-3)] flex items-center justify-center rounded-3xl"
