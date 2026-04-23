@@ -20,11 +20,11 @@
             <div class="text-sm text-text-1">$0.00771</div>
           </div>
         </div>
-        <div v-if="!isCollapsed" class="text-text-3 text-xl">
+        <!-- <div v-if="!isCollapsed" class="text-text-3 text-xl">
           <div class="w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center">
             <Arrow_right class="w-4 h-4 fill-none" />
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
 

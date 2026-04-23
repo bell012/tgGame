@@ -438,10 +438,17 @@ defineExpose({
   background-color: #e4eaf019;
 }
 
-@media (max-width: 370px) {
+@media (max-width: 375px) {
   .top-nav-inner {
     width: 125%;
     transform: scale(0.79);
+    transform-origin: left center;
+  }
+}
+@media (max-width: 390px) {
+  .top-nav-inner {
+    width: 111%;
+    transform: scale(0.9);
     transform-origin: left center;
   }
 }
