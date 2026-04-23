@@ -42,7 +42,10 @@
               :class="[
                 'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer',
                 { 'menu-item-collapsed': isCollapsed },
-                { 'border-t border-opacity-6': index > 0 && menu.children && menu.children.length > 1 },
+                {
+                  'border-t border-opacity-6':
+                    index > 0 && menu.children && menu.children.length > 1
+                },
                 {
                   'rounded-t-lg rounded-b-none':
                     index === 0 && menu.children && menu.children.length > 1
@@ -447,6 +450,7 @@ import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { getLocaleLabel } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
@@ -469,6 +473,7 @@ const emit = defineEmits<{
 const themeStore = useThemeStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
+const isMobile = useIsMobile()
 
 const { t } = useI18n()
 const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
@@ -622,8 +627,12 @@ const handleCustomerServiceClick = () => {
 }
 
 const handleLeaveFeedbackClick = () => {
-  activeMenuId.value = 'leave-feedback'
-  showLeaveFeedbackModal.value = true
+  if (!isMobile.value) {
+    activeMenuId.value = 'leave-feedback'
+    showLeaveFeedbackModal.value = true
+  } else {
+    navigateTo('/personal-center/feedback')
+  }
 }
 
 const handleCloseLeaveFeedbackModal = () => {
@@ -717,7 +726,11 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
     groupKey: 'recent-favorites-group',
     renderAsGroup: true,
     children: [
-      { id: 'recently-played', name: t('menu.recently-played'), icon: newSideIcons. recentlyPlayedIcon },
+      {
+        id: 'recently-played',
+        name: t('menu.recently-played'),
+        icon: newSideIcons.recentlyPlayedIcon
+      },
       { id: 'favorites', name: t('menu.favorites'), icon: newSideIcons.favoritesIcon }
     ]
   },
@@ -728,7 +741,10 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
     groupKey: 'vouchers',
     children: isLoggedIn.value
       ? [
-          { id: 'cash-voucher', name: t('menu.cash-voucher'), icon: newSideIcons.cashVoucherIcon },
+          { 
+            id: 'cash-voucher', 
+            name: t('menu.cash-voucher'), 
+            icon: newSideIcons.cashVoucherIcon },
           {
             id: 'lucky-red-envelope',
             name: t('menu.lucky-red-envelope'),
@@ -739,13 +755,29 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
             name: t('menu.smash-golden-egg'),
             icon: newSideIcons.smashGoldenEggIcon
           },
-          { id: 'mystery-box', name: t('menu.mystery-box'), icon: newSideIcons.mysteryBoxIcon },
-          { id: 'lucky-spin', name: t('menu.lucky-spin'), icon: newSideIcons.luckySpinIcon }
+          { 
+            id: 'mystery-box',
+            name: t('menu.mystery-box'),
+            icon: newSideIcons.mysteryBoxIcon },
+          { 
+            id: 'lucky-spin', 
+            name: t('menu.lucky-spin'), 
+            icon: newSideIcons.luckySpinIcon }
         ]
       : []
   },
-  { id: 'task-center', name: t('menu.task-center'), icon: newSideIcons.taskCenterIcon, groupKey: 'task-center' },
-  { id: 'promotion-center', name: t('menu.promotion-center'), icon: newSideIcons.promotionCenterIcon, groupKey: 'promotion-center' },
+  {
+    id: 'task-center',
+    name: t('menu.task-center'),
+    icon: newSideIcons.taskCenterIcon,
+    groupKey: 'task-center'
+  },
+  {
+    id: 'promotion-center',
+    name: t('menu.promotion-center'),
+    icon: newSideIcons.promotionCenterIcon,
+    groupKey: 'promotion-center'
+  },
   {
     id: 'combination1',
     name: 'combination1',
@@ -753,21 +785,43 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
     groupKey: 'combination1',
     renderAsGroup: true,
     children: [
-    { id: 'red-envelope-event', name: t('menu.red-envelope-event'), icon: newSideIcons.redEnvelopeEventIcon },
-    { id: 'credit-loan', name: t('menu.credit-loan'), icon: newSideIcons.creditLoanIcon },
-    { id: 'lottery-event', name: t('menu.lottery-event'), icon: newSideIcons.lotteryEventIcon },
-    { id: 'lucky-wheel', name: t('menu.lucky-wheel'), icon: newSideIcons.luckyWheelIcon },
-    { id: 'promo-code', name: t('menu.promo-code'), icon: newSideIcons.promoCodeIcon },
+      {
+        id: 'red-envelope-event',
+        name: t('menu.red-envelope-event'),
+        icon: newSideIcons.redEnvelopeEventIcon
+      },
+      { 
+        id: 'credit-loan', 
+        name: t('menu.credit-loan'), 
+        icon: newSideIcons.creditLoanIcon },
+      { 
+        id: 'lottery-event', 
+        name: t('menu.lottery-event'), 
+        icon: newSideIcons.lotteryEventIcon },
+      { 
+        id: 'lucky-wheel', 
+        name: t('menu.lucky-wheel'), 
+        icon: newSideIcons.luckyWheelIcon },
+      { 
+        id: 'promo-code', 
+        name: t('menu.promo-code'), 
+        icon: newSideIcons.promoCodeIcon }
     ]
   },
-  
-  { id: 'vip-center', name: t('menu.vip-center'), icon: newSideIcons.vipCenterIcon, groupKey: 'vip-center', handler: () => navigateTo('/vip') },
+
+  {
+    id: 'vip-center',
+    name: t('menu.vip-center'),
+    icon: newSideIcons.vipCenterIcon,
+    groupKey: 'vip-center',
+    handler: () => navigateTo('/vip')
+  },
   {
     id: 'referral',
     name: t('menu.referral'),
     icon: newSideIcons.referralIcon,
     groupKey: 'referral',
-    handler: () => navigateTo('/menu/referral')
+    handler: () => console.log('跳转邀请好友')
   },
   {
     id: 'rebate',
@@ -783,16 +837,52 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
     groupKey: 'combination2',
     renderAsGroup: true,
     children: [
-      { id: 'my-orders', name: t('menu.my-orders'), icon: newSideIcons.myOrdersIcon },
-      { id: 'bet-history', name: t('menu.bet-history'), icon: newSideIcons. betHistoryIcon },
-      { id: 'transaction', name: t('menu.transaction'), icon: newSideIcons.transactionIcon },
-      { id: 'rewards', name: t('menu.rewards'), icon: newSideIcons.rewardsIcon },
-      { id: 'rollover', name: t('menu.rollover'), icon: newSideIcons.rolloverIcon },
+      {
+        id: 'my-orders',
+        name: t('menu.my-orders'),
+        icon: newSideIcons.myOrdersIcon,
+        handler: () => navigateTo('my-orders')
+      },
+      {
+        id: 'bet-history',
+        name: t('menu.bet-history'),
+        icon: newSideIcons.betHistoryIcon,
+        handler: () => navigateTo('bet-history')
+      },
+      {
+        id: 'transaction',
+        name: t('menu.transaction'),
+        icon: newSideIcons.transactionIcon,
+        handler: () => navigateTo('transaction')
+      },
+      { 
+        id: 'rewards', 
+        name: t('menu.rewards'), 
+        icon: newSideIcons.rewardsIcon 
+      },
+      {
+        id: 'rollover',
+        name: t('menu.rollover'),
+        icon: newSideIcons.rolloverIcon,
+        handler: () => navigateTo('rollover')
+      }
     ]
   },
-  
-  { id: 'payment-methods', name: t('menu.payment-methods'), icon: newSideIcons.paymentMethodsIcon, groupKey: 'payment-methods' },
-  { id: 'security', name: t('menu.security'), icon: newSideIcons.securityIcon, groupKey: 'security' },
+
+  {
+    id: 'payment-methods',
+    name: t('menu.payment-methods'),
+    icon: newSideIcons.paymentMethodsIcon,
+    groupKey: 'payment-methods',
+    handler: () => navigateTo('payment-methods')
+  },
+  {
+    id: 'security',
+    name: t('menu.security'),
+    icon: newSideIcons.securityIcon,
+    groupKey: 'security',
+    handler: () => navigateTo('security')
+  },
   {
     id: 'combination3',
     name: 'combination3',
@@ -800,18 +890,27 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
     groupKey: 'combination3',
     renderAsGroup: true,
     children: [
-    { id: 'sponsorships', name: t('menu.sponsorships'), icon: newSideIcons.sponsorshipsIcon },
-    {
-      id: 'leave-feedback',
-      name: t('menu.leave-feedback'),
-      icon: newSideIcons.leaveFeedbackIcon,
-      handler: handleLeaveFeedbackClick
-    },
-    { id: 'legal', name: t('menu.legal'), icon: newSideIcons.legalIcon },
-    { id: 'about', name: t('menu.about'), icon: newSideIcons.aboutIcon }
+      { 
+        id: 'sponsorships', 
+        name: t('menu.sponsorships'), 
+        icon: newSideIcons.sponsorshipsIcon 
+      },
+      {
+        id: 'leave-feedback',
+        name: t('menu.leave-feedback'),
+        icon: newSideIcons.leaveFeedbackIcon,
+        handler: handleLeaveFeedbackClick
+      },
+      { 
+        id: 'legal', 
+        name: t('menu.legal'), 
+        icon: newSideIcons.legalIcon },
+      { 
+        id: 'about', 
+        name: t('menu.about'), 
+        icon: newSideIcons.aboutIcon }
     ]
-  },
-  
+  }
 ])
 
 const sidebarMenuGroups = computed<SidebarMenuGroup[][]>(() => {
