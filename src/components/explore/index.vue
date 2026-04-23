@@ -20,43 +20,36 @@
         <div>
           <div
             ref="tabScrollRef"
-            class="my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
+            class="explore-tabs-scroll my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
             @scroll="updateScrollState"
           >
             <button
               v-for="(item, index) in tabButtons"
               :key="item.sysGameTypeCode || `tab-${index}`"
               :ref="el => (tabRefs[index] = el as HTMLButtonElement)"
-              :class="{
-                'bg-bg-2': item.sysGameTypeCode === currentTabCode
-              }"
-              class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
+              :class="{ 'explore-tab-button--active': isActiveCasinoTab(item) }"
+              class="explore-tab-button flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
               @click.stop="onTabButton(item)"
             >
-              <div class="h-5 w-5 mr-[7px]">
+              <div class="explore-tab-icon h-5 w-5 mr-[7px]">
                 <img
-                  v-if="item.sysGameTypeCode !== currentTabCode && typeof item.icon === 'string'"
+                  v-if="!isActiveCasinoTab(item) && typeof item.icon === 'string'"
                   :src="item.icon"
                   class="w-full h-full object-contain"
                 />
                 <img
-                  v-else-if="
-                    item.sysGameTypeCode === currentTabCode && typeof item.iconSelect === 'string'
-                  "
+                  v-else-if="isActiveCasinoTab(item) && typeof item.iconSelect === 'string'"
                   :src="item.iconSelect"
                   class="w-full h-full object-contain"
                 />
                 <component
                   v-else-if="item.icon"
                   :is="item.icon"
-                  :class="item.sysGameTypeCode === currentTabCode ? 'fill-primary' : 'fill-text-2'"
+                  :class="isActiveCasinoTab(item) ? 'fill-primary' : 'fill-text-2'"
                   class="w-full h-full"
                 />
               </div>
-              <div
-                :class="item.sysGameTypeCode === currentTabCode ? 'text-text-1' : 'text-text-2'"
-                class="font-[700]"
-              >
+              <div class="explore-tab-label font-[700] text-text-2">
                 {{ item.sysGameTypeName }}
               </div>
             </button>
@@ -310,6 +303,8 @@ const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth'
   })
 }
 
+const isActiveCasinoTab = (tab: CasinoTabButtonItem) => tab.sysGameTypeCode === currentTabCode.value
+
 const scrollElementToTop = (element: Element | HTMLElement | null) => {
   element?.scrollTo({
     top: 0,
@@ -480,6 +475,14 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.explore-tab-button--active {
+  background: var(--color-background-level-2);
+
+  .explore-tab-label {
+    color: var(--color-text-level-1);
+  }
+}
+
 @media (max-width: 767px) {
   .search-filter-panel {
     background: var(--color-background-level-1);
@@ -487,6 +490,49 @@ onUnmounted(() => {
     margin-right: -12px;
     padding: 10px 12px 8px;
     margin-bottom: 0;
+  }
+
+  .explore-tabs-scroll {
+    height: 62px;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+
+  .explore-tab-button {
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 20px;
+    color: var(--color-text-level-2);
+  }
+
+  .explore-tab-button--active {
+    background: var(--color-background-level-2);
+  }
+
+  .explore-tab-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+  }
+
+  .explore-tab-label {
+    max-width: 120px;
+    overflow: hidden;
+    color: var(--color-text-level-2);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .explore-tab-button--active .explore-tab-label {
+    color: var(--color-text-level-1);
+    font-weight: 700;
   }
 }
 </style>

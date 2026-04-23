@@ -21,7 +21,11 @@
           </div>
 
           <div class="mt-5 grid grid-cols-2">
-            <div class="border-r border-opacity-10 px-2 text-center">
+            <button
+              type="button"
+              class="border-r border-opacity-10 px-2 text-center"
+              @click="openEligibleTurnoverPopup"
+            >
               <p class="text-[16px] font-[700] leading-none text-text-1">
                 {{ eligibleTurnoverText }}
               </p>
@@ -29,7 +33,7 @@
                 <span class="text-[12px] leading-none">可计洗码流水</span>
                 <InfoIcon class="h-3.5 w-3.5 text-text-2 opacity-80" />
               </div>
-            </div>
+            </button>
             <div class="px-2 text-center">
               <p class="text-[16px] font-[700] leading-none text-theme-primary">
                 {{ claimableAmountText }}
@@ -42,9 +46,9 @@
         <button
           type="button"
           class="mt-3 h-[45px] w-full rounded-[10px] bg-theme-primary text-[16px] font-[700] text-text-4"
-          @click="handleStartPlaying"
+          @click="handleClaimRebate"
         >
-          开始游戏
+          Claim
         </button>
 
         <div class="mt-3 grid grid-cols-2 gap-2.5">
@@ -56,7 +60,7 @@
                 ? 'bg-bg-3 text-text-1'
                 : 'bg-bg-2 text-text-2 hover:text-text-1'
             "
-            @click="activeTab = 'records'"
+            @click="handleOpenRebateRecords"
           >
             洗码记录
           </button>
@@ -68,7 +72,7 @@
                 ? 'bg-bg-3 text-text-1'
                 : 'bg-bg-2 text-text-2 hover:text-text-1'
             "
-            @click="activeTab = 'rules'"
+            @click="openRebateRulesPopup"
           >
             <span>洗码规则</span>
             <InfoIcon class="h-3.5 w-3.5 opacity-80" />
@@ -169,14 +173,18 @@
           <button
             type="button"
             class="h-[45px] min-w-[220px] rounded-[8px] bg-theme-primary px-5 text-sm font-[700] text-text-4"
-            @click="handleStartPlaying"
+            @click="handleClaimRebate"
           >
-            开始游戏
+            Claim
           </button>
         </div>
 
         <div class="mt-4 grid grid-cols-2 border-t border-opacity-10 pt-4">
-          <div class="border-r border-opacity-10 px-2 text-center">
+          <button
+            type="button"
+            class="border-r border-opacity-10 px-2 text-center"
+            @click="openEligibleTurnoverPopup"
+          >
             <p class="text-[26px] font-[700] leading-none text-text-1">
               {{ eligibleTurnoverText }}
             </p>
@@ -184,7 +192,7 @@
               <span class="text-sm">可计洗码流水</span>
               <InfoIcon class="h-3.5 w-3.5 opacity-80" />
             </div>
-          </div>
+          </button>
           <div class="px-2 text-center">
             <p class="text-[26px] font-[700] leading-none text-theme-primary">
               {{ claimableAmountText }}
@@ -203,7 +211,7 @@
               ? 'bg-bg-3 text-text-1'
               : 'bg-bg-2 text-text-2 hover:text-text-1'
           "
-          @click="activeTab = 'records'"
+          @click="handleOpenRebateRecords"
         >
           洗码记录
         </button>
@@ -213,7 +221,7 @@
           :class="
             activeTab === 'rules' ? 'bg-bg-3 text-text-1' : 'bg-bg-2 text-text-2 hover:text-text-1'
           "
-          @click="activeTab = 'rules'"
+          @click="openRebateRulesPopup"
         >
           <span>洗码规则</span>
           <InfoIcon class="h-3.5 w-3.5 opacity-80" />
@@ -292,18 +300,205 @@
         </div>
       </section>
     </div>
+
+    <ClaimSuccessPopup
+      v-model:visible="showClaimSuccessPopup"
+      :amount="claimableAmountText"
+      @confirm="handleClaimSuccessConfirm"
+    />
+
+    <popShell
+      v-model="showRebateRecordsPopup"
+      transition-type="modal"
+      @close="closeRebateRecordsPopup"
+    >
+      <section
+        class="mx-auto max-h-[72vh] w-[460px] overflow-hidden rounded-[12px] bg-bg-2 shadow-[0_18px_54px_rgba(0,0,0,0.32)]"
+      >
+        <div class="relative flex items-center justify-center bg-bg-3 px-4 py-3">
+          <h3 class="text-[16px] font-[700] leading-[20px] text-text-1">Rebate Records</h3>
+          <button
+            type="button"
+            class="absolute right-4 top-1/2 flex h-[28px] w-[28px] -translate-y-1/2 items-center justify-center rounded-[8px] bg-white/10 text-text-1"
+            @click="closeRebateRecordsPopup"
+          >
+            <CloseIcon class="h-4 w-4" />
+          </button>
+        </div>
+
+        <div class="max-h-[calc(72vh-52px)] overflow-y-auto px-4 pb-4 pt-3">
+          <RebateRecordsContent panel-mode />
+        </div>
+      </section>
+    </popShell>
+
+    <popShell
+      v-model="showEligibleTurnoverPopup"
+      :transition-type="isMobile ? 'bottom-sheet' : 'modal'"
+    >
+      <section
+        class="eligible-turnover-panel w-full bg-bg-2 text-text-1"
+        :class="
+          isMobile
+            ? 'rounded-t-[18px] px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-4'
+            : 'mx-auto w-[360px] rounded-[12px] px-4 pb-5 pt-3 shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
+        "
+      >
+        <div class="relative flex items-center justify-center">
+          <h3
+            class="text-center font-[700] text-text-1"
+            :class="isMobile ? 'text-[20px] leading-[24px]' : 'text-[16px] leading-[20px]'"
+          >
+            Eligible Turnover
+          </h3>
+          <button
+            type="button"
+            class="absolute right-0 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-[10px] bg-bg-3 text-text-1"
+            :class="isMobile ? 'h-[40px] w-[40px]' : 'h-[28px] w-[28px]'"
+            @click="closeEligibleTurnoverPopup"
+          >
+            <CloseIcon :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
+          </button>
+        </div>
+
+        <div class="mt-5 rounded-[12px] bg-bg-3" :class="isMobile ? 'px-4 py-5' : 'px-4 py-4'">
+          <div class="flex items-center justify-between gap-3 text-text-2">
+            <span :class="isMobile ? 'text-[12px] leading-[16px]' : 'text-[14px] leading-[20px]'">
+              Pending Rebate Turnover
+            </span>
+            <span
+              class="shrink-0 text-right text-text-1"
+              :class="isMobile ? 'text-[14px]' : 'text-[16px]'"
+            >
+              {{ pendingRebateTurnoverText }}
+            </span>
+          </div>
+          <div
+            class="mt-4 flex items-center justify-between gap-3 text-text-2"
+            :class="isMobile ? 'text-[12px] leading-[16px]' : 'text-[14px] leading-[20px]'"
+          >
+            <span>Promo Bonus Turnover Deduction</span>
+            <span
+              class="shrink-0 text-right text-text-1"
+              :class="isMobile ? 'text-[14px]' : 'text-[16px]'"
+            >
+              {{ promoBonusTurnoverDeductionText }}
+            </span>
+          </div>
+          <div
+            class="mt-4 flex items-center justify-between gap-3"
+            :class="isMobile ? 'text-[12px] leading-[16px]' : 'text-[14px] leading-[20px]'"
+          >
+            <span class="text-text-2">Eligible Rebate Turnover</span>
+            <span
+              class="shrink-0 text-right text-theme-primary"
+              :class="isMobile ? 'text-[14px]' : 'text-[16px]'"
+            >
+              {{ eligibleTurnoverText }}
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <p class="font-[700] text-text-1" :class="isMobile ? 'text-[12px]' : 'text-[14px]'">
+            Calculation Rule :
+          </p>
+          <p
+            class="mt-2 text-text-2"
+            :class="isMobile ? 'text-[12px] leading-[18px]' : 'text-[14px] leading-[22px]'"
+          >
+            Pending rebate turnover - promo bonus turnover deduction = eligible rebate turnover.
+          </p>
+        </div>
+
+        <div class="mt-6">
+          <p class="font-[700] text-text-1" :class="isMobile ? 'text-[12px]' : 'text-[14px]'">
+            Promo Bonus Turnover Deduction Note :
+          </p>
+          <p
+            class="mt-2 text-text-2"
+            :class="isMobile ? 'text-[12px] leading-[18px]' : 'text-[14px] leading-[22px]'"
+          >
+            Turnover generated from claimed promo bonuses that is not eligible for rebate.
+          </p>
+        </div>
+      </section>
+    </popShell>
+
+    <popShell
+      v-model="showRebateRulesPopup"
+      :transition-type="isMobile ? 'bottom-sheet' : 'modal'"
+      @close="closeRebateRulesPopup"
+    >
+      <section
+        class="rebate-rules-panel w-full bg-bg-2 text-text-1"
+        :class="
+          isMobile
+            ? 'max-h-[calc(100dvh-120px)] overflow-y-auto rounded-t-[18px] px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-4'
+            : 'mx-auto max-h-[70vh] w-[420px] overflow-y-auto rounded-[12px] px-4 pb-5 pt-3 shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
+        "
+      >
+        <div class="relative flex items-center justify-center">
+          <h3
+            class="text-center font-[700] text-text-1"
+            :class="isMobile ? 'text-[20px] leading-[24px]' : 'text-[16px] leading-[20px]'"
+          >
+            Rebate Rules
+          </h3>
+          <button
+            type="button"
+            class="absolute right-0 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-[10px] bg-bg-3 text-text-1"
+            :class="isMobile ? 'h-[40px] w-[40px]' : 'h-[28px] w-[28px]'"
+            @click="closeRebateRulesPopup"
+          >
+            <CloseIcon :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
+          </button>
+        </div>
+
+        <div class="mt-6 space-y-6">
+          <section v-for="section in rebateRuleSections" :key="section.title">
+            <h4
+              class="font-[700] text-text-1"
+              :class="isMobile ? 'text-[14px] leading-[20px]' : 'text-[14px] leading-[20px]'"
+            >
+              {{ section.title }}
+            </h4>
+            <p
+              v-if="section.content"
+              class="mt-2 whitespace-pre-line text-text-2"
+              :class="isMobile ? 'text-[12px] leading-[18px]' : 'text-[14px] leading-[22px]'"
+            >
+              {{ section.content }}
+            </p>
+            <ul
+              v-if="section.items?.length"
+              class="rebate-rules-list mt-2 text-text-2"
+              :class="isMobile ? 'text-[12px] leading-[18px]' : 'text-[14px] leading-[22px]'"
+            >
+              <li v-for="item in section.items" :key="item">
+                {{ item }}
+              </li>
+            </ul>
+          </section>
+        </div>
+      </section>
+    </popShell>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, type Component } from 'vue'
 import Api from '@/api'
+import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
+import popShell from '@/components/withdraw/popShell.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { casinoIcons } from '@/static/svg/casino'
+import CloseIcon from '@/static/svg/close.svg?component'
 import InfoIcon from '@/static/svg/info.svg?component'
 import { sideIcons } from '@/static/svg/side'
 import { navigateTo } from '@/utils/router'
+import RebateRecordsContent from './components/RebateRecordsContent.vue'
 
 type RebateTab = 'records' | 'rules'
 
@@ -320,14 +515,26 @@ type RebateRow = {
   isCurrent: boolean
 }
 
+type RebateRuleSection = {
+  title: string
+  content: string
+  items?: string[]
+}
+
 const isMobile = useIsMobile()
 const { side } = sideIcons
 
 const activeTab = ref<RebateTab>('records')
 const activeCategory = ref('slots')
+const showClaimSuccessPopup = ref(false)
+const showRebateRecordsPopup = ref(false)
+const showEligibleTurnoverPopup = ref(false)
+const showRebateRulesPopup = ref(false)
 
 const todayValidBets = ref(0)
 const eligibleTurnover = ref(0)
+const pendingRebateTurnover = ref(0)
+const promoBonusTurnoverDeduction = ref(0)
 const claimableAmount = ref(0)
 const currentValidBets = ref(0)
 const targetValidBets = ref(500000)
@@ -336,6 +543,43 @@ const nextRebateValue = ref(0.8)
 const rebateRowsFromApi = ref<RebateRow[]>([])
 
 const supportHeaderIcon = side.helpIcon
+const rebateRuleSections: RebateRuleSection[] = [
+  {
+    title: 'Rebate Explanation :',
+    content:
+      'Rebates are calculated based on your valid bets and applicable rebate rate. The more you bet, the more rebate you can receive.'
+  },
+  {
+    title: 'Calculation Period :',
+    content:
+      'Only valid bets placed within the recent period set by the system, such as the last 7 or 30 days, will be counted. Bets placed outside this period will be cleared automatically and will no longer be included in the rebate calculation.'
+  },
+  {
+    title: 'Claim Rules :',
+    content:
+      'Once your rebate amount meets the claim requirement, you may claim it. The minimum claim amount must be greater than 0.01. The actual claim method is subject to what is shown on the page.'
+  },
+  {
+    title: 'Payout Method :',
+    content:
+      'Rebate rewards will be credited to your account in cash. Please refer to the actual amount received.'
+  },
+  {
+    title: 'Valid Bet Rules :',
+    content:
+      'Only bets that meet the platform rules will be counted as valid bets. The following are not eligible for rebate:',
+    items: [
+      'Invalid or cancelled orders;',
+      'Hedge betting or other abnormal betting behavior;',
+      'Certain promotional activities or selected games.'
+    ]
+  },
+  {
+    title: 'Calculation Formula :',
+    content:
+      'Rebate Amount = Valid Bets × Applicable Rebate Rate.\nRebate rates may vary by game. Please refer to the rate shown on the page.'
+  }
+] as const
 
 const pickField = (source: Record<string, unknown>, keys: string[]) => {
   for (const key of keys) {
@@ -456,6 +700,18 @@ const applyRebateRateResponse = (result: unknown) => {
     'canReceiveAmount',
     'receiveAmount'
   ])
+  const pendingRebateTurnoverValue = pickField(rawResult, [
+    'pendingRebateTurnover',
+    'pendingTurnover',
+    'pendingBetAmount',
+    'waitRebateTurnover'
+  ])
+  const promoBonusTurnoverDeductionValue = pickField(rawResult, [
+    'promoBonusTurnoverDeduction',
+    'bonusTurnoverDeduction',
+    'turnoverDeduction',
+    'deductionAmount'
+  ])
   const currentValidBetsValue = pickField(rawResult, [
     'currentValidBets',
     'currentBetAmount',
@@ -481,6 +737,18 @@ const applyRebateRateResponse = (result: unknown) => {
   }
   if (claimableAmountValue !== undefined) {
     claimableAmount.value = toNumber(claimableAmountValue, claimableAmount.value)
+  }
+  if (promoBonusTurnoverDeductionValue !== undefined) {
+    promoBonusTurnoverDeduction.value = toNumber(
+      promoBonusTurnoverDeductionValue,
+      promoBonusTurnoverDeduction.value
+    )
+  }
+  if (pendingRebateTurnoverValue !== undefined) {
+    pendingRebateTurnover.value = toNumber(pendingRebateTurnoverValue, pendingRebateTurnover.value)
+  } else if (eligibleTurnoverValue !== undefined) {
+    pendingRebateTurnover.value =
+      toNumber(eligibleTurnoverValue, eligibleTurnover.value) + promoBonusTurnoverDeduction.value
   }
   if (currentValidBetsValue !== undefined) {
     currentValidBets.value = toNumber(currentValidBetsValue, currentValidBets.value)
@@ -571,8 +839,16 @@ const formatAmount = (value: number) => {
   return value.toFixed(2)
 }
 
+const formatDetailAmount = (value: number) => {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2)
+}
+
 const todayValidBetsText = computed(() => formatAmount(todayValidBets.value))
 const eligibleTurnoverText = computed(() => formatAmount(eligibleTurnover.value))
+const pendingRebateTurnoverText = computed(() => formatDetailAmount(pendingRebateTurnover.value))
+const promoBonusTurnoverDeductionText = computed(() =>
+  formatDetailAmount(promoBonusTurnoverDeduction.value)
+)
 const claimableAmountText = computed(() => formatAmount(claimableAmount.value))
 
 const currentRebateText = computed(() => `${currentRebateValue.value.toFixed(2)}%`)
@@ -613,8 +889,45 @@ const rebateRows = computed<RebateRow[]>(() => {
   return defaultRebateRows.value
 })
 
-const handleStartPlaying = () => {
-  navigateTo('/casino')
+const handleClaimRebate = () => {
+  showClaimSuccessPopup.value = true
+}
+
+const handleClaimSuccessConfirm = () => {
+  showClaimSuccessPopup.value = false
+}
+
+const handleOpenRebateRecords = () => {
+  activeTab.value = 'records'
+
+  if (isMobile.value) {
+    void navigateTo('/personal-center/rebate-records')
+    return
+  }
+
+  showRebateRecordsPopup.value = true
+}
+
+const closeRebateRecordsPopup = () => {
+  showRebateRecordsPopup.value = false
+}
+
+const openEligibleTurnoverPopup = () => {
+  showEligibleTurnoverPopup.value = true
+}
+
+const closeEligibleTurnoverPopup = () => {
+  showEligibleTurnoverPopup.value = false
+}
+
+const openRebateRulesPopup = () => {
+  activeTab.value = 'rules'
+  showRebateRulesPopup.value = true
+}
+
+const closeRebateRulesPopup = () => {
+  showRebateRulesPopup.value = false
+  activeTab.value = 'records'
 }
 
 const handleSupportClick = () => {
@@ -623,6 +936,11 @@ const handleSupportClick = () => {
 </script>
 
 <style scoped lang="scss">
+.rebate-rules-list {
+  padding-left: 18px;
+  list-style: disc;
+}
+
 .rebate-coin {
   width: 52px;
   height: 52px;
