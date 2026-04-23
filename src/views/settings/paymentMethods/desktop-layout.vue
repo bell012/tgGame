@@ -100,11 +100,17 @@
       @close="closePaymentPasswordVerification"
       @confirm="handleAddAccountOptionPaymentPasswordVerificationConfirm"
     />
+    <KindReminderPop
+      v-model="kindReminderVisible"
+      @settings="handleKindReminderSettings"
+      @skip="handleKindReminderSkid"
+      @close="handleKindReminderSkid"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { type ComponentPublicInstance, nextTick, ref } from 'vue'
+import { type ComponentPublicInstance, nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePaymentMethodsFlow } from '@/components/paymentMethods/shared/usePaymentMethodsFlow'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
@@ -113,8 +119,10 @@ import DeleteNotificationPop from '@/components/paymentMethods/deleteNotificatio
 import AddAccountPop from '@/components/paymentMethods/addAccountPop.vue'
 import SmsVerificationPop from '@/components/paymentMethods/smsVerificationPop.vue'
 import PaymentPasswordPop from '@/components/paymentMethods/paymentPasswordPop.vue'
+import KindReminderPop from '@/components/paymentMethods/kindReminderPop.vue'
 
 const {
+  kindReminderVisible,
   addAccountOptionVisible,
   hasDeleteAccount,
   deleteNotificationVisible,
@@ -141,10 +149,13 @@ const {
   handleMethodTabClick,
   isMethodTabActive,
   closeSmsVerification,
+  handleKindReminderSettings,
+  handleKindReminderSkid,
   handleAddAccountOptionSmsVerificationResend,
   handleAddAccountOptionSmsVerificationConfirm,
   closePaymentPasswordVerification,
-  handleAddAccountOptionPaymentPasswordVerificationConfirm
+  handleAddAccountOptionPaymentPasswordVerificationConfirm,
+  initialization
 } = usePaymentMethodsFlow()
 const { t } = useI18n()
 
@@ -195,6 +206,10 @@ const handleMethodTabPress = async (
   await nextTick()
   scrollMethodTabIntoView(index)
 }
+
+onMounted(async () => {
+  await initialization()
+})
 </script>
 
 <style scoped lang="scss">

@@ -47,23 +47,19 @@
             </td>
             <td class="cell" role="cell">
               <div class="flex items-center justify-center">
+                <span class="order-1">{{ item.bet }}</span>
                 <SmartImage
                   :src="currentCurrencyIcon"
-                  class="icon object-contain"
+                  class="icon object-contain shrink-0 order-2"
                   :alt="currentRequestCurrency"
                 />
-                <span>{{ item.bet }}</span>
               </div>
             </td>
             <td class="py-2 px-3 text-text-1 truncate">{{ item.payout }}x</td>
             <td class="py-2 px-3 text-[12px]">
               <div class="flex items-center justify-end gap-1">
-                <SmartImage
-                  :src="currentCurrencyIcon"
-                  class="w-3 h-3 object-contain"
-                  :alt="currentRequestCurrency"
-                />
                 <span
+                  class="order-1"
                   :class="
                     item.profitNumber >= 0
                       ? 'text-[var(--color-secondary-level-4)]'
@@ -72,6 +68,11 @@
                 >
                   {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
                 </span>
+                <SmartImage
+                  :src="currentCurrencyIcon"
+                  class="w-3 h-3 object-contain shrink-0 order-2"
+                  :alt="currentRequestCurrency"
+                />
               </div>
             </td>
           </tr>
@@ -129,7 +130,7 @@
                 </span>
                 <SmartImage
                   :src="currentCurrencyIcon"
-                  class="w-3 h-3 object-contain"
+                  class="w-3 h-3 object-contain shrink-0 order-2"
                   :alt="currentRequestCurrency"
                 />
               </div>
@@ -444,7 +445,11 @@ onBeforeUnmount(() => {
   color: var(--color-text-level-2);
   border: 1px solid transparent;
   border-radius: 8px;
+  box-sizing: border-box;
+  min-width: 0;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   word-break: keep-all;
   font-weight: 700;
   transition:
@@ -552,6 +557,78 @@ onBeforeUnmount(() => {
   transition: transform 0.3s ease;
 }
 
+@media (max-width: 1023px) {
+  .bet-tab {
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bet-tabs {
+    width: 100%;
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .bet-tab {
+    flex: 1;
+    min-height: 32px;
+    padding: 6px 6px;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.1;
+  }
+
+  .bet-tab.active {
+    box-shadow: none;
+  }
+
+  .table-head th {
+    padding: 8px 6px;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .table tbody tr td {
+    padding: 9px 6px !important;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .high-roller-table td:nth-child(1),
+  .high-roller-table th:nth-child(1) {
+    width: 26%;
+  }
+
+  .high-roller-table td:nth-child(2),
+  .high-roller-table th:nth-child(2) {
+    width: 23%;
+  }
+
+  .high-roller-table td:nth-child(3),
+  .high-roller-table th:nth-child(3) {
+    width: 24%;
+  }
+
+  .high-roller-table td:nth-child(4),
+  .high-roller-table th:nth-child(4) {
+    width: 27%;
+  }
+
+  .high-roller-table td:nth-child(1) span,
+  .high-roller-table td:nth-child(2) span {
+    white-space: nowrap;
+  }
+
+  .high-roller-table td:nth-child(3),
+  .high-roller-table td:nth-child(4),
+  .high-roller-table td:nth-child(4) span {
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 375px) {
   .bet-tabs {
     width: 100%;
@@ -559,19 +636,24 @@ onBeforeUnmount(() => {
 
   .bet-tab {
     flex: 1;
-    padding: 6px 8px;
+    min-height: 31px;
+    padding: 6px 3px;
     text-align: center;
-    font-size: 12px;
+    font-size: 10px;
   }
 
   .table-head th {
-    padding: 8px 8px;
-    font-size: 12px;
+    padding: 8px 6px;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .table tbody tr td {
-    padding: 10px 8px !important;
+    padding: 10px 6px !important;
     font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .table:not(.high-roller-table) td:nth-child(1),
@@ -603,22 +685,22 @@ onBeforeUnmount(() => {
 
   .high-roller-table td:nth-child(1),
   .high-roller-table th:nth-child(1) {
-    width: 30%;
+    width: 25%;
   }
 
   .high-roller-table td:nth-child(2),
   .high-roller-table th:nth-child(2) {
-    width: 24%;
+    width: 22%;
   }
 
   .high-roller-table td:nth-child(3),
   .high-roller-table th:nth-child(3) {
-    width: 18%;
+    width: 24%;
   }
 
   .high-roller-table td:nth-child(4),
   .high-roller-table th:nth-child(4) {
-    width: 28%;
+    width: 29%;
   }
 
   .high-roller-table td:nth-child(3),

@@ -1,5 +1,5 @@
 <template>
-  <withdrawPopShell v-model="visible" @close="handleClose">
+  <PopShell v-model="visible" @close="handleClose">
     <div
       class="relative mx-auto w-[300px] rounded-xl bg-bg-1 px-5 pb-6 pt-5 font-['Inter'] sm:w-[464px] sm:rounded-[24px] sm:bg-bg-1 sm:p-8"
     >
@@ -54,7 +54,8 @@
             class="flex h-9 items-center justify-center rounded-lg sm:rounded-xl border border-opacity-15 bg-opacity-6 text-2xl font-bold text-text-1 sm:h-[60px]"
             :class="passwordValue.length === index - 1 ? 'border-theme-primary' : ''"
           >
-            <span v-if="passwordValue.length >= index" class="size-3 rounded-full bg-text-1" />
+            <!-- <span v-if="passwordValue.length >= index" class="size-3 rounded-full bg-text-1" /> -->
+            <span class="text-lg">{{ passwordValue[index - 1] || '' }}</span>
           </div>
         </div>
       </button>
@@ -79,14 +80,15 @@
         class="sr-only"
       />
     </div>
-  </withdrawPopShell>
+  </PopShell>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import CloseIcon from '@/static/svg/close.svg?component'
-import withdrawPopShell from './withdrawPopShell.vue'
+import PopShell from './popShell.vue'
 
 interface Props {
   modelValue: boolean
@@ -108,6 +110,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const isMobile = useIsMobile()
 const inputRef = ref<HTMLInputElement | null>(null)
 const passwordValue = ref('')
 
@@ -173,7 +176,7 @@ watch(passwordValue, value => {
   }
 
   if (normalized.length === 6) {
-    if (window.matchMedia('(min-width: 640px)').matches) {
+    if (!isMobile.value) {
       return
     }
 

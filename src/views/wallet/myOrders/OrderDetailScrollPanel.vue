@@ -286,7 +286,9 @@ const showBonus = computed(() => Number(props.order.otherAmount ?? 0) > 0)
 const statusText = computed(() => getMyOrderStatusText(props.tab, props.order.status, t))
 const statusClass = computed(() => getMyOrderStatusClass(props.tab, props.order.status))
 const createdAt = computed(() => formatMyOrderTime(props.order.createTime))
-const methodName = computed(() => getMyOrderTypeLabel(props.order, String(locale.value || 'eng')))
+const methodName = computed(() =>
+  getMyOrderTypeLabel(props.order, String(locale.value || 'eng'), props.orderTypeIconMap ?? {})
+)
 const methodIcon = computed(() =>
   getMyOrderTypeIcon(props.order, String(locale.value || 'eng'), props.orderTypeIconMap ?? {})
 )

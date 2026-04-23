@@ -65,7 +65,11 @@
           <div class="w-full h-full">
             <gameErrImg :img="value.img" />
           </div>
-          <div class="absolute inset-x-0 bottom-6 flex w-full items-center justify-center px-2 text-center text-sm sm:text-base font-bold leading-4 text-common-100 sm:font-extrabold">{{ value.itemName }}</div>
+          <div
+            class="absolute inset-x-0 bottom-6 flex w-full items-center justify-center px-2 text-center text-sm sm:text-base font-bold leading-4 text-common-100 sm:font-extrabold"
+          >
+            {{ value.itemName }}
+          </div>
           <div
             class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-black_alpha20 px-1.5"
           >
@@ -84,7 +88,7 @@
               <div
                 class="flex justify-center items-center center absolute left-0 top-0 h-[40%] w-full px-2 text-center font-extrabold leading-4 text-[white]"
               >
-              {{ value.itemName }}
+                {{ value.itemName }}
               </div>
               <div
                 class="flex h-9 w-9 rounded-full bg-[#fff3] transition-all duration-300 group-hover:scale-150"
@@ -109,7 +113,6 @@
 import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './img/peopleNumber.svg?component'
-import { useAuthModalStore } from '@/stores/authModal'
 import { StringExtension } from '@/utils/string-extension'
 import { navigateToName } from '@/utils/router'
 import { navigateTo } from '@/utils/router'
@@ -130,7 +133,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const authModalStore = useAuthModalStore()
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
 
@@ -152,12 +154,7 @@ const normalizedList = computed(() => {
   return (props.list ?? []).map((item: any) => normalizeGameItem(item))
 })
 const handleClick = (rowId: number) => {
-  let userInfo = localStorage.getItem('userInfo')
-  if (userInfo) {
-    navigateToName('gameDetail', { params: { rowId } })
-  } else {
-    authModalStore.openRegisterModal()
-  }
+  navigateToName('gameDetail', { params: { rowId } })
 }
 const prevDisabled = ref(true)
 const nextDisabled = ref(false)

@@ -14,7 +14,7 @@ export const API_ERROR_CODE_MESSAGES = {
   C11: ['Withdrawals are under maintenance, please try again later.', '提款维护中，请稍后再试。'],
   C12: ['Not supported.', '不支持。'],
   C13: ['This IP has no access permission.', '该 IP 无访问权限。'],
-  C14: ['Password error.', '密码错误。'],
+  C14: ['Incorrect account or password.', '账号或者密码错误。'],
   C15: ['No access permission.', '无访问权限。'],
   C16: ['This promotion has not started yet.', '该活动尚未开始。'],
   C17: ['This promotion has ended.', '该活动已结束。'],
@@ -274,7 +274,7 @@ export const API_ERROR_CODE_MESSAGES = {
   E162: ['No feedback images found.', '未找到反馈图片。'],
   E163: ['Your level is insufficient to share the app.', '等级不足，无法分享应用。'],
   E164: ['Withdrawal turnover is zero.', '提款流水为 0。'],
-  E165: ['No payment method found for recharge.', '未找到充值支付方式。'],
+  E165: ['Access is restricted.', '访问受限。'],
   E166: ['Please wait 1 minute before resubmitting.', '请等待 1 分钟后再提交。'],
   E167: ['No service information found.', '未找到服务信息。'],
   E168: ['Actual amount cannot be less than zero.', '实际金额不能小于 0。'],
@@ -283,7 +283,10 @@ export const API_ERROR_CODE_MESSAGES = {
   E171: ['This cryptocurrency type is currently unavailable.', '当前虚拟币种暂不可用。'],
   E172: ['No audit standards configuration found.', '未找到稽核标准配置。'],
   E173: ['No overdue bonus configuration found.', '未找到过期奖励配置。'],
-  E174: ['No permission to claim overdue bonus.', '无权领取过期奖励。']
+  E174: ['No permission to claim overdue bonus.', '无权领取过期奖励。'],
+  E177: ['The account is invalid, please contact customer service.', '账号无效，请联系客服。'],
+  E206: ['This mobile phone number is already registered.', '该手机号码已注册。'],
+  me2: ['Registration restrictions, contact customer service.', '注册限制,联系客服']
 } as const satisfies Record<string, readonly [english: string, chinese: string]>
 
 export type ApiErrorCodeMessageMap = typeof API_ERROR_CODE_MESSAGES

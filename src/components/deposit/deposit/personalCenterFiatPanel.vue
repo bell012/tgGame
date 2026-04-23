@@ -422,7 +422,7 @@ const applyOrderDetail = (detail: QueryPayOrderByOrderIdResult) => {
     method: selectedMethod.value?.columnName ?? '',
     method_icon: selectedMethod.value ? resolveMethodIcon(selectedMethod.value) : '',
     currency: detail.currency || getCurrentCurrency(),
-    bonus: String(detail.returnAmount ?? 0),
+    bonus: String(detail.otherAmount ?? 0),
     type: 'Fiat',
     status: String(detail.status ?? 0)
   }

@@ -112,7 +112,7 @@ import {
 import { navigateTo } from '@/utils/router'
 import NotificationDetailPage from '@/views/menu/notifications/detail/index.vue'
 import NotificationListPage from '@/views/menu/notifications/index.vue'
-import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
+import { computed, markRaw, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router'
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
@@ -215,7 +215,7 @@ const getMainRouteViewKey = (currentRoute: RouteLocationNormalizedLoaded) => {
 }
 
 const resolveRouteSnapshot = (fullPath: string) => {
-  return router.resolve(fullPath) as RouteLocationNormalizedLoaded
+  return markRaw(router.resolve(fullPath) as RouteLocationNormalizedLoaded)
 }
 
 const isLocaleOnlyRouteChange = (

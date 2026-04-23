@@ -4,7 +4,7 @@
     <button
       ref="triggerRef"
       @click.stop="togglePopup"
-      class="w-full flex items-center justify-between px-2.5 py-[11px] bg-bg-2 rounded-lg border border-solid border-[var(--color-opacity-10)]"
+      class="w-full flex items-center justify-between px-2.5 py-[11px] bg-[var(--color-opacity-10)] rounded-lg border border-solid border-[var(--color-opacity-10)]"
     >
       <div class="flex items-center flex-1 text-xs">
         <span class="mr-2.5 text-text-2">{{ label }}:</span>
@@ -59,14 +59,16 @@
 
           <!-- 搜索框 -->
           <div v-if="search" class="relative mb-2.5">
-            <SearchIcon
-              class="w-[18px] h-[18px] fill-none stroke-text-2 opacity-50 absolute left-2.5 top-1/2 -translate-y-1/2"
+            <component
+              :is="isDarkTheme ? SearchBlackIcon : SearchIcon"
+              class="absolute left-2.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] opacity-50"
             />
             <input
               v-model="keyword"
               type="text"
               :placeholder="t('home.search')"
-              class="w-full h-[42px] pl-[38px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-[var(--color-border-level-1)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+              class="w-full h-[42px] pl-[38px] pr-11 rounded-lg border border-[var(--color-opacity-10)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+              :class="isDarkTheme ? 'bg-[var(--color-background-level-3)]' : 'bg-white'"
             />
           </div>
 
@@ -134,13 +136,15 @@
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useThemeStore } from '@/stores/theme'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RadioCheckedIcon from '@/static/svg/radio-checked-hollow.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
 import CubeChecedIcon from '@/static/svg/cube-checked.svg?component'
 import CubeUnchecedIcon from '@/static/svg/cube-unchecked.svg?component'
 import ClearIcon from '@/static/svg/clear.svg?component'
-import SearchIcon from '@/static/svg/search-icon.svg?component'
+import SearchIcon from '@/static/svg/explore/search.svg?component'
+import SearchBlackIcon from '@/static/svg/explore/search_black.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 
@@ -165,8 +169,10 @@ const emit = defineEmits<{
 }>()
 
 const isMobile = useIsMobile()
+const themeStore = useThemeStore()
 const popupShow = ref(false)
 const keyword = ref('')
+const isDarkTheme = computed(() => themeStore.theme === 'dark')
 
 const selectedLabel = computed(() => {
   if (props.Multi) return props.selectedList.length > 0 ? `+${props.selectedList.length}` : 'All'

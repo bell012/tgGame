@@ -1,4 +1,4 @@
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useLocaleStore } from '@/stores/locale'
@@ -113,14 +113,14 @@ export function usePaymentMethodsFlow() {
     )
   }
 
-  const handleMethodTabClick = (option: PaymentMethodsOption) => {
+  const handleMethodTabClick = async (option: PaymentMethodsOption) => {
     selectPaymentMethodsOption.value = option
-    requestMemberCards()
+    await requestMemberCards()
   }
 
-  const requestMemberCards = () => {
+  const requestMemberCards = async () => {
     if (selectPaymentMethodsOption.value && selectPaymentMethodsOption.value.paymentCode) {
-      loadMemberCards(currentCurrency.value, selectPaymentMethodsOption.value.paymentCode)
+      await loadMemberCards(currentCurrency.value, selectPaymentMethodsOption.value.paymentCode)
     }
   }
 
@@ -186,6 +186,8 @@ export function usePaymentMethodsFlow() {
   const {
     hasTransactionPassword,
     maskedPhoneNumber,
+    resolvedAreaCode,
+    resolvedTelephone,
     isSendingSmsCode,
     isCheckingSmsCode,
     isCheckingPaymentPassword,
@@ -284,18 +286,17 @@ export function usePaymentMethodsFlow() {
     closeAddAddressForm()
   }
 
-  onMounted(async () => {
+  const initialization = async () => {
     await siteConfigStore.initSiteConfig()
-    loadWithdrawMethods().then(() => {
-      if (
-        hasLoadedPaymentMethodsOptions.value &&
-        paymentMethodsOptions.value &&
-        paymentMethodsOptions.value.length > 0
-      ) {
-        handleMethodTabClick(paymentMethodsOptions.value[0])
-      }
-    })
-  })
+    await loadWithdrawMethods()
+    if (
+      hasLoadedPaymentMethodsOptions.value &&
+      paymentMethodsOptions.value &&
+      paymentMethodsOptions.value.length > 0
+    ) {
+      await handleMethodTabClick(paymentMethodsOptions.value[0])
+    }
+  }
 
   return {
     addAccountOptionVisible,
@@ -315,6 +316,8 @@ export function usePaymentMethodsFlow() {
     hasTransactionPassword,
     selectPaymentMethodsOption,
     maskedPhoneNumber,
+    resolvedAreaCode,
+    resolvedTelephone,
     isSendingSmsCode,
     isCheckingSmsCode,
     isCheckingPaymentPassword,
@@ -341,6 +344,7 @@ export function usePaymentMethodsFlow() {
     closePaymentPasswordVerification,
     handleAddAccountOptionPaymentPasswordVerificationConfirm,
     openAccountDetailsPop,
-    closeAccountDetailsPop
+    closeAccountDetailsPop,
+    initialization
   }
 }

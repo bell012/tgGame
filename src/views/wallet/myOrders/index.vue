@@ -380,7 +380,7 @@ const formatDisplayAmount = (amount: number, currency: string) => {
 }
 
 const getOrderTypeLabel = (record: QueryMemberPayOrderPageRecord) =>
-  getMyOrderTypeLabel(record, String(locale.value || 'eng'))
+  getMyOrderTypeLabel(record, String(locale.value || 'eng'), orderTypeIconMap.value)
 
 const getOrderTypeIcon = (record: QueryMemberPayOrderPageRecord) =>
   getMyOrderTypeIcon(record, String(locale.value || 'eng'), orderTypeIconMap.value)

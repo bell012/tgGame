@@ -3,10 +3,10 @@
   <teleport to="body">
     <transition name="search-modal-fade">
       <div
-        v-if="modelValue"
-        class="fixed inset-0 z-[9999] bg-[var(--color-mask-96-3)] overflow-hidden"
+        v-if="props.modelValue"
+        class="fixed inset-0 z-[9999] bg-[var(--color-mask-96-3)] overflow-hidden top-[60px]"
       >
-        <div class="w-full h-full flex justify-center overflow-y-auto">
+        <div class="w-full h-full overflow-y-auto" :style="desktopContentWrapStyle">
           <div class="h-full w-full mx-auto max-w-[1248px]">
             <!-- 【标题】和【关闭按钮】 -->
             <div
@@ -37,20 +37,35 @@
 <script setup lang="ts">
 import CloseIcon from '@/static/svg/close.svg?component'
 import Explore from '@/components/explore/index.vue'
-import { provide, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 interface Props {
   modelValue: boolean
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [val: boolean]
 }>()
 const { t } = useI18n()
 
 const isCloseDesktopModal = ref(false)
+const desktopContentOffset = ref(0)
+
+const updateDesktopContentOffset = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const sidebarElement = document.querySelector('.sidebar') as HTMLElement | null
+  desktopContentOffset.value = sidebarElement?.offsetWidth ?? 0
+}
+
+const desktopContentWrapStyle = computed(() => ({
+  paddingLeft: `${desktopContentOffset.value}px`
+}))
+
 provide('search-close-desktop-modal', isCloseDesktopModal)
 watch(
   () => isCloseDesktopModal.value,
@@ -61,6 +76,27 @@ watch(
     }
   }
 )
+
+watch(
+  () => props.modelValue,
+  async visible => {
+    if (!visible) {
+      return
+    }
+
+    await nextTick()
+    updateDesktopContentOffset()
+  }
+)
+
+onMounted(() => {
+  updateDesktopContentOffset()
+  window.addEventListener('resize', updateDesktopContentOffset)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateDesktopContentOffset)
+})
 
 const close = () => {
   emit('update:modelValue', false)

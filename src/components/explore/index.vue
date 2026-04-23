@@ -201,7 +201,7 @@ const currentPageProps = computed<Record<string, unknown>>(() => {
   if (currentPageStyle.value === pageStyle3) {
     return {
       ...baseProps,
-      hideSortWhenKeyword: isMobile.value
+      hideSortWhenKeyword: true
     }
   }
 

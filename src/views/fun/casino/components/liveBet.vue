@@ -83,6 +83,7 @@ interface LiveBetRow {
 }
 
 const MAX_VISIBLE_ROWS = 10
+const RECENT_BIG_WINS_REFRESH_INTERVAL_MS = 10 * 60 * 1000
 
 const props = withDefaults(
   defineProps<{
@@ -99,10 +100,11 @@ const loading = ref(false)
 const currentCurrency = computed(() => getCurrentCurrency())
 const currencyIcon = computed(() => getCurrencyIconByCode(currentCurrency.value))
 let autoScrollTimer: number | null = null
+let recentBigWinsRefreshTimer: number | null = null
 let nextScrollIndex = 0
 
 const getRandomScrollInterval = () => {
-  return Math.floor(Math.random() * 701) + 300
+  return Math.floor(Math.random() * 800) + 300
 }
 
 const toGameImageUrl = (value?: string) => {
@@ -141,6 +143,22 @@ const getRecentBigWinsData = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const stopRecentBigWinsRefresh = () => {
+  if (recentBigWinsRefreshTimer) {
+    window.clearInterval(recentBigWinsRefreshTimer)
+    recentBigWinsRefreshTimer = null
+  }
+}
+
+const startRecentBigWinsRefresh = () => {
+  stopRecentBigWinsRefresh()
+  void getRecentBigWinsData()
+
+  recentBigWinsRefreshTimer = window.setInterval(() => {
+    void getRecentBigWinsData()
+  }, RECENT_BIG_WINS_REFRESH_INTERVAL_MS)
 }
 
 const rows = computed<LiveBetRow[]>(() => {
@@ -187,7 +205,7 @@ const startAutoScroll = () => {
 watch(
   [() => props.type, () => currentCurrency.value],
   () => {
-    void getRecentBigWinsData()
+    startRecentBigWinsRefresh()
   },
   { immediate: true }
 )
@@ -202,6 +220,7 @@ watch(
 
 onUnmounted(() => {
   stopAutoScroll()
+  stopRecentBigWinsRefresh()
 })
 </script>
 
