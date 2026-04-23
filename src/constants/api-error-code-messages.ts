@@ -286,7 +286,11 @@ export const API_ERROR_CODE_MESSAGES = {
   E174: ['No permission to claim overdue bonus.', '无权领取过期奖励。'],
   E177: ['The account is invalid, please contact customer service.', '账号无效，请联系客服。'],
   E206: ['This mobile phone number is already registered.', '该手机号码已注册。'],
-  me2: ['Registration restrictions, contact customer service.', '注册限制,联系客服']
+  me2: ['Registration restrictions, contact customer service.', '注册限制,联系客服'],
+  pre22: [
+    'You have a withdrawal in progress. Please try again later.',
+    '您有正在出款的订单，请稍后再申请'
+  ]
 } as const satisfies Record<string, readonly [english: string, chinese: string]>
 
 export type ApiErrorCodeMessageMap = typeof API_ERROR_CODE_MESSAGES
