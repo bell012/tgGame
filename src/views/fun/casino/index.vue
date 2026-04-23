@@ -2,19 +2,21 @@
   <div
     ref="pageRootRef"
     class="casino-page max-w-[1248px] mx-auto px-3.5 py-3 sm:py-4 sm:px-3 w-full font-['Inter']"
-    :style="mobileStyle"
+    :style="casinoPageStyle"
   >
     <casinoSlideshow v-if="querySlideshowList.length > 0" :list="querySlideshowList" />
 
     <div
       ref="searchRef"
       class="relative flex items-center self-stretch py-[10px] px-[10px] rounded-lg border border-input-2 bg-input-1 focus-within:border-theme-primary focus-within:ring-2 transition"
+      @mousedown="handleSearchWrapMouseDown"
     >
       <img class="w-[18px] h-[18px]" src="/src/static/img/casino/search.webp" alt="search" />
       <input
         v-model="searchText"
         @keydown.enter.prevent="onSearch"
         @focus="showHistoryPanel = true"
+        @blur="handleSearchBlur"
         class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0 text-xs sm:text-sm"
         type="text"
         :placeholder="t('casino.placeholder')"
@@ -29,7 +31,7 @@
       <div
         v-show="showHistoryPanel && !searchText"
         @click.stop="showHistoryPanel = false"
-        class="absolute left-0 right-0 p-4 top-full w-full z-20 mt-3 flex flex-col items-center rounded-lg bg-bg-2 border border-opacity-10"
+        class="search-history-panel absolute left-0 right-0 p-4 top-full w-full z-20 mt-3 flex flex-col items-center rounded-lg bg-bg-2 border border-opacity-10"
       >
         <button
           class="absolute -right-2 -top-2 w-5 h-5 bg-bg-3 flex items-center justify-center z-10 rounded-full"
@@ -217,19 +219,13 @@ const props = withDefaults(defineProps<Props>(), {
 const { t, locale } = useI18n()
 const layoutStore = useLayoutStore()
 const isMobile = useIsMobile()
-const mobileStyle = computed<StyleValue | undefined>(() => {
-  if (isMobile.value) {
-    const topNavHeight = layoutStore.TOPNAV_HEIGHT
-    const bottomTabHeight = layoutStore.BOTTOM_TAB_HEIGHT
+const casinoPageStyle = computed<StyleValue | undefined>(() => {
+  if (!isMobile.value) {
+    return undefined
+  }
 
-    return {
-      boxSizing: 'border-box',
-      height: `calc(100dvh - ${topNavHeight + bottomTabHeight}px)`,
-      marginTop: `${topNavHeight}px`,
-      overflowY: 'auto',
-      overscrollBehavior: 'contain',
-      WebkitOverflowScrolling: 'touch'
-    }
+  return {
+    paddingTop: `${layoutStore.TOPNAV_HEIGHT + 12}px`
   }
 })
 
@@ -325,6 +321,7 @@ const canScrollRight = ref(false)
 const hasSyncedActiveTab = ref(false)
 const tabScrollLeft = ref(0)
 let searchDebounceTimer: number | undefined
+let downInSearchPanel = false
 
 const findScrollableParent = (element: HTMLElement | null) => {
   let current = element?.parentElement ?? null
@@ -527,13 +524,16 @@ const clearSearch = () => {
   showHistoryPanel.value = false
 }
 
-const handleClickOutside = (e: MouseEvent) => {
-  if (!searchRef.value) return
+const handleSearchWrapMouseDown = (event: MouseEvent) => {
+  downInSearchPanel = (event.target as HTMLElement).closest('.search-history-panel') != null
+}
 
-  const target = e.target as Node
-  if (!searchRef.value.contains(target)) {
+const handleSearchBlur = () => {
+  if (!downInSearchPanel) {
     showHistoryPanel.value = false
   }
+
+  downInSearchPanel = false
 }
 
 // 是否已登录
@@ -578,7 +578,6 @@ onMounted(() => {
   scrollPageToTop()
   updateScrollState()
 
-  document.addEventListener('click', handleClickOutside)
   if (tabScrollRef.value) {
     resizeObserver = new ResizeObserver(() => {
       updateScrollState()
@@ -620,7 +619,6 @@ onUnmounted(() => {
   }
 
   resizeObserver?.disconnect()
-  document.removeEventListener('click', handleClickOutside)
 })
 
 watch(searchText, value => {
