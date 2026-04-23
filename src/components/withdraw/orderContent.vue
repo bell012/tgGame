@@ -65,9 +65,12 @@
         <div class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]">
           <OrderCancelledIcon
             v-if="orderItem?.status === 'cancelled'"
-            class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]"
+            class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px] text-common-100"
           />
-          <OrderCompletedIcon v-else class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]" />
+          <OrderCompletedIcon
+            v-else
+            class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px] text-common-100"
+          />
         </div>
         <p class="mt-4 text-sm font-bold leading-normal text-text-1 sm:text-base">
           {{ resultStatusText }}
