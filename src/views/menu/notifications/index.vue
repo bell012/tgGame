@@ -617,6 +617,22 @@ const hashNotificationKey = (value: string) => {
 
 const normalizeGameLookupValue = (value: unknown) => String(value ?? '').trim()
 
+const splitGameLookupValues = (value: unknown) =>
+  normalizeGameLookupValue(value)
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean)
+
+const isGameLookupValueMatched = (sourceValue: unknown, targetValue: unknown) => {
+  const normalizedTargetValue = normalizeGameLookupValue(targetValue)
+
+  if (!normalizedTargetValue) {
+    return false
+  }
+
+  return splitGameLookupValues(sourceValue).includes(normalizedTargetValue)
+}
+
 const restoreCachedGameListForApp = () => {
   if (gameListForAppCache) {
     return gameListForAppCache
@@ -1811,9 +1827,9 @@ const handleGameJump = async (item: NotificationItem) => {
     const gameList = await fetchAndCacheGameListForApp()
     const matchedGame = flattenGameListForAppItems(gameList).find(game => {
       return (
-        normalizeGameLookupValue(game.gameTypeCode) === normalizeGameLookupValue(pgType) &&
-        normalizeGameLookupValue(game.platformCode) === normalizeGameLookupValue(platformCode) &&
-        normalizeGameLookupValue(game.itemCode) === normalizeGameLookupValue(gameCode)
+        isGameLookupValueMatched(game.gameTypeCode, pgType) &&
+        isGameLookupValueMatched(game.platformCode, platformCode) &&
+        isGameLookupValueMatched(game.itemCode, gameCode)
       )
     })
 
