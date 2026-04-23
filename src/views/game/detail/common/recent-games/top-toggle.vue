@@ -3,11 +3,8 @@
     <div class="flex flex-col">
       <h3 class="text-[14px] font-extrabold">{{ gameName }}</h3>
       <div class="flex gap-[4px] text-[12px]">
-        <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.by') }}</div>
+        <div class="text-[var(--color-text-level-2)]">By</div>
         <div class="text-[var(--color-theme-level-1)] font-bold">{{ providerName }}</div>
-      </div>
-      <div class="text-[var(--color-theme-level-1)] text-[12px] font-bold">
-        # {{ gameTypeName }}
       </div>
     </div>
     <div class="toggle-arrow-wrap">
@@ -18,15 +15,12 @@
 <script setup lang="ts">
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import { computed, inject, Ref, type ComputedRef } from 'vue'
-import { useI18n } from 'vue-i18n'
 
 const isOpen = inject('isRgOpen') as Ref<boolean>
-const { t } = useI18n()
 
 type CurrentGameDetail = {
   itemName?: string
   platformName?: string
-  sysGameTypeName?: string
 } | null
 
 const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
@@ -42,10 +36,6 @@ const providerName = computed(() => {
   return String(currentGameDetail.value?.platformName ?? '').trim() || 'PG Soft'
 })
 
-const gameTypeName = computed(() => {
-  return String(currentGameDetail.value?.sysGameTypeName ?? '').trim() || t('home.Slots')
-})
-
 const toggleIsOpen = () => {
   isOpen.value = !isOpen.value
 }
@@ -54,7 +44,7 @@ const toggleIsOpen = () => {
 <style scoped lang="scss">
 .top-toggle-card {
   border-radius: 10px;
-  padding: 12px;
+  padding: 0;
 }
 
 .toggle-arrow-wrap {

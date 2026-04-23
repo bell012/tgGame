@@ -36,6 +36,7 @@
     </div>
     <ReviewCommentEntry
       :avatar-url="currentUserAvatarUrl"
+      :show-avatar="isLoggedIn"
       :placeholder-text="t('gameDetail.leaveYourComment')"
       @open="openCommentPopup"
     />
@@ -183,7 +184,7 @@ const FALLBACK_RATING_AVATAR_URLS = [
   RatingAvatarP5
 ]
 
-const hasUserRating = computed(() => Number(userRating.value) > 0)
+const hasUserRating = computed(() => isLoggedIn.value && Number(userRating.value) > 0)
 
 const ratingPreviewCount = computed(() => {
   return Math.min(

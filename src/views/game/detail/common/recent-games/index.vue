@@ -6,6 +6,7 @@
     <TopToggle />
     <transition name="open-fade">
       <div v-if="isOpen">
+        <div class="recent-games-type-tag"># {{ gameTypeName }}</div>
         <!-- 面板信息 -->
         <Rginfo />
         <!-- Tab -->
@@ -50,6 +51,7 @@ import Review from './review/index.vue'
 type CurrentGameDetail = {
   itemCode?: string | number
   platformCode?: string
+  sysGameTypeName?: string
 } | null
 
 type TabValue = 1 | 2 | 3
@@ -95,6 +97,10 @@ const isLightTheme = computed(() => themeStore.theme === 'light')
 
 // 统一做字符串标准化，避免 undefined/null 造成请求参数异常
 const normalizeValue = (value: unknown) => String(value ?? '').trim()
+
+const gameTypeName = computed(() => {
+  return normalizeValue(currentGameDetail.value?.sysGameTypeName) || t('home.Slots')
+})
 
 // 当前游戏请求参数
 const currentItemCode = computed(() => normalizeValue(currentGameDetail.value?.itemCode))
@@ -210,6 +216,19 @@ const tabIndexClick = (index: number) => {
 
 .recent-games-tabs-light .recent-games-tab:not(.active) {
   color: #5f6368;
+}
+
+.recent-games-type-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 4px;
+  border-radius: 6px;
+  background: var(--color-opacity-10);
+  padding: 4px 8px;
+  color: var(--color-text-level-2);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
 }
 
 .open-fade-enter-active,

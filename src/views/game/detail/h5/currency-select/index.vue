@@ -1,6 +1,6 @@
 <template>
   <!-- 顶部搜索 -->
-  <div class="currency-select-trigger relative bg-[var(--color-input-level-2)] rounded-[10px]">
+  <div class="currency-select-trigger relative rounded-[10px]">
     <div
       class="text-[14px] h-[36px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px] rounded-[10px] bg-opacity-10"
       @click="visible = true"
@@ -235,7 +235,7 @@ onMounted(() => {
 
 .currency-select-trigger {
   border: none;
-  background: var(--color-background-level-3) !important;
+  background: var(--color-opacity-10);
   box-shadow: inset 0 1px 0 var(--color-opacity-5);
 }
 
@@ -269,9 +269,6 @@ onMounted(() => {
 }
 
 :global(:root.light) .currency-select-trigger {
-  background: #e8eef7 !important;
-  box-shadow:
-    0 2px 6px rgba(24, 38, 64, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  background: var(--color-opacity-10);
 }
 </style>

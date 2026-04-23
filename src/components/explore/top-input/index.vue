@@ -34,7 +34,7 @@
     <!-- 搜索记录框 -->
     <div
       v-if="isOpen"
-      class="absolute panel left-0 top-[58px] bg-[var(--color-background-level-2)] z-[99] border border-[var(--color-border-level-1)] w-full rounded-lg px-3.5 pt-5 pb-3 flex flex-col items-center"
+      class="absolute panel left-0 top-[58px] bg-[var(--color-background-level-2)] z-[99] border border-[var(--color-opacity-10)] w-full rounded-lg px-3.5 pt-5 pb-3 flex flex-col items-center"
     >
       <div
         class="absolute -right-1.5 -top-1.5 w-5 h-5 bg-[var(--color-background-level-3)] flex items-center justify-center rounded-3xl"
@@ -80,7 +80,7 @@
         <div class="font-bold">{{ t('search.suggested') }}</div>
       </div>
       <div class="w-full">
-        <div v-if="suggestedList.length > 0" class="flex flex-wrap gap-2">
+        <div v-if="suggestedList.length > 0" class="suggested-list flex flex-wrap gap-2">
           <div
             v-for="(item, inx) in suggestedList"
             :key="inx"
@@ -289,6 +289,12 @@ onBeforeUnmount(() => {
 
 .top-search-input::placeholder {
   font-weight: 500;
+}
+
+.suggested-list {
+  // Keep suggested tags within two rows at most.
+  max-height: 56px;
+  overflow: hidden;
 }
 
 @media (max-width: 767px) {
