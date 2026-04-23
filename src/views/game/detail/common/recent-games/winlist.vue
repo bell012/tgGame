@@ -13,10 +13,12 @@
           :key="`${index}-${getPlayerName(item)}-${toPlainText(item.payOut)}`"
           class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[12px]"
         >
-          <h3 class="win-item-divider flex items-center gap-[8px] pb-[12px]">
+          <div class="win-item-divider flex min-h-[20px] items-center gap-[8px] pb-[12px]">
             <SmartImage class="size-[20px] shrink-0" alt="" :src="RackIcon" />
-            <div class="text-[12px] leading-[20px] font-bold">{{ getPlayerName(item) }}</div>
-          </h3>
+            <span class="win-player-name truncate text-[12px] font-bold">{{
+              getPlayerName(item)
+            }}</span>
+          </div>
           <div class="flex justify-between mt-[12px] text-[12px]">
             <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.payout') }}</div>
             <div class="flex items-center gap-[8px]">
@@ -68,7 +70,7 @@
                 alt=""
                 :src="rankIcons[index]"
               />
-              <span class="truncate">{{ getPlayerName(item) }}</span>
+              <span class="pc-winlist-player-name truncate">{{ getPlayerName(item) }}</span>
             </div>
             <div class="pc-winlist-cell">
               <SmartImage
@@ -181,6 +183,13 @@ const getPlayerName = (item: GameRanListItem) => {
   border-bottom: 1px solid var(--color-opacity-10);
 }
 
+.win-player-name {
+  display: inline-flex;
+  align-items: center;
+  line-height: 20px;
+  transform: translateY(1px);
+}
+
 .pc-winlist-header {
   display: grid;
   grid-template-columns: 1.1fr 1fr 1fr 0.9fr;
@@ -220,6 +229,14 @@ const getPlayerName = (item: GameRanListItem) => {
   font-size: 16px;
   font-weight: 700;
   min-width: 0;
+}
+
+.pc-winlist-player-name {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  line-height: 24px;
+  transform: translateY(1px);
 }
 
 .pc-winlist-cell {

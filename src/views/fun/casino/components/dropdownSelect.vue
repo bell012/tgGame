@@ -4,7 +4,7 @@
     <button
       ref="triggerRef"
       @click.stop="togglePopup"
-      class="w-full flex items-center justify-between px-2.5 py-[11px] bg-bg-2 rounded-lg border border-solid border-[var(--color-opacity-10)]"
+      class="w-full flex items-center justify-between px-2.5 py-[11px] bg-[var(--color-opacity-10)] rounded-lg border border-solid border-[var(--color-opacity-10)]"
     >
       <div class="flex items-center flex-1 text-xs">
         <span class="mr-2.5 text-text-2">{{ label }}:</span>
@@ -67,7 +67,8 @@
               v-model="keyword"
               type="text"
               :placeholder="t('home.search')"
-              class="w-full h-[42px] pl-[38px] pr-11 rounded-lg bg-[var(--color-opacity-6)] border border-[var(--color-border-level-1)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+              class="w-full h-[42px] pl-[38px] pr-11 rounded-lg border border-[var(--color-opacity-10)] text-text-1 text-xs font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+              :class="isDarkTheme ? 'bg-[var(--color-background-level-3)]' : 'bg-white'"
             />
           </div>
 
