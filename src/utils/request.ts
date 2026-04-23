@@ -321,7 +321,9 @@ function finalizeApiResponse<T extends ApiResponsePayload>(
 service.interceptors.request.use(
   (config: RequestConfigWithToastOptions) => {
     const headers = (config.headers || {}) as Record<string, unknown>
-    Object.assign(headers, buildCommonRequestHeaders(config.url))
+    const explicitHeaders = { ...headers }
+    // 允许单个接口覆盖公共头，例如代理接口需要区分 PC=3、H5=4。
+    Object.assign(headers, buildCommonRequestHeaders(config.url), explicitHeaders)
     config.headers = headers as RequestConfigWithToastOptions['headers']
 
     // 13 位时间戳

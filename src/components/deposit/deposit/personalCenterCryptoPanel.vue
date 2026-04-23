@@ -21,7 +21,7 @@
             @click.stop="selectCoinCode(coin.code)"
           >
             <img class="mr-2 h-5 w-5 shrink-0" :src="coin.icon" :alt="coin.name" />
-            <span class="font-bold">{{ coin.name }}</span>
+            <span class="font-bold text-text-1">{{ coin.name }}</span>
           </button>
         </div>
 

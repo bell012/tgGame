@@ -15,7 +15,7 @@
         v-model="searchText"
         @keydown.enter.prevent="onSearch"
         @focus="showHistoryPanel = true"
-        class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0"
+        class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0 text-xs sm:text-sm"
         type="text"
         :placeholder="t('casino.placeholder')"
       />
@@ -41,7 +41,7 @@
           {{ t('casino.search_tips') }}
         </div>
         <!-- 历史记录 -->
-        <div class="flex justify-between w-full text-xs my-2.5">
+        <div v-if="searchHistory?.length > 0" class="flex justify-between w-full text-xs my-2.5">
           <div class="font-bold">{{ t('casino.history') }}</div>
           <div class="text-text-2" @click.stop="deleteAll()">
             {{ t('casino.clear') }}（{{ searchHistory?.length }}）
@@ -50,15 +50,15 @@
         <div class="w-full">
           <div
             v-if="searchHistory?.length > 0"
-            class="flex flex-wrap gap-2 max-h-14 overflow-hidden"
+            class="flex max-h-14 flex-wrap gap-2 overflow-hidden"
           >
             <div
-              v-for="(item, inx) in searchHistory.slice(0, 5)"
+              v-for="(item, inx) in searchHistory"
               :key="inx"
-              class="px-1.5 py-1 rounded bg-opacity-10 inline-flex items-center"
+              class="inline-flex h-6 max-w-full items-center rounded bg-opacity-10 px-1.5 py-1"
             >
               <div
-                class="text-xs text-text-2 mr-1 break-words max-w-full"
+                class="mr-1 max-w-full overflow-hidden whitespace-nowrap text-xs text-text-2"
                 @click.stop="goSearch(item)"
               >
                 {{ item }}

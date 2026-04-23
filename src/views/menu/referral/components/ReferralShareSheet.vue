@@ -62,14 +62,24 @@
               <div class="mt-[14px] grid grid-cols-5 gap-y-[14px] px-[10px]">
                 <!-- 渠道项 -->
                 <button
-                  v-for="channel in shareChannels"
+                  v-for="channel in normalizedShareChannels"
                   :key="channel.key"
                   type="button"
                   class="flex flex-col items-center gap-[6px] px-[4px]"
-                  @click="handleOpenChannel(channel.key)"
+                  @click="handleOpenChannel(channel)"
                 >
                   <!-- 渠道图标 -->
-                  <component :is="channel.icon" class="h-[40px] w-[40px]" />
+                  <img
+                    v-if="channel.iconImage"
+                    :src="channel.iconImage"
+                    class="h-[40px] w-[40px] rounded-full object-cover"
+                    alt=""
+                  />
+                  <component
+                    v-else-if="channel.icon"
+                    :is="channel.icon"
+                    class="h-[40px] w-[40px]"
+                  />
 
                   <!-- 渠道名称 -->
                   <span class="text-center text-[11px] font-[400] leading-[13px] text-text-1">
@@ -173,18 +183,28 @@ import whatsappIcon from '@/static/svg/game/detail/share/whatsapp.svg?component'
 import telegramIcon from '@/static/svg/game/detail/share/telegram.svg?component'
 import tiktokIcon from '@/static/svg/game/detail/share/tiktok.svg?component'
 
-type ShareChannelKey = 'mais' | 'facebook' | 'whatsapp' | 'telegram' | 'tiktok'
+type ShareChannelKey =
+  | 'mais' // Line/Mais 分享兜底
+  | 'facebook' // Facebook 分享兜底
+  | 'whatsapp' // WhatsApp 分享兜底
+  | 'telegram' // Telegram 分享兜底
+  | 'tiktok' // Tiktok 暂用邮件分享兜底
 
 interface ShareChannel {
-  key: ShareChannelKey
+  key: string
   label: string
-  icon: object
+  icon?: object
+  iconImage?: string
+  shareUrl?: string
 }
 
 const props = defineProps<{
   visible: boolean
   referralLink: string
   phoneNumbers: string[]
+  shareChannels?: any[]
+  whatsappConfig?: any
+  smsConfig?: any
 }>()
 
 const emit = defineEmits<{
@@ -197,7 +217,7 @@ const visibleRef = computed(() => props.visible)
 
 useLockBodyScroll(visibleRef)
 
-const shareChannels = shallowRef<ShareChannel[]>([
+const fallbackShareChannels = shallowRef<ShareChannel[]>([
   {
     key: 'mais',
     label: 'Mais',
@@ -225,6 +245,25 @@ const shareChannels = shallowRef<ShareChannel[]>([
   }
 ])
 
+// 优先使用后台 agent61 配置，接口为空或配置无效时回退到内置渠道。
+const normalizedShareChannels = computed<ShareChannel[]>(() => {
+  if (!Array.isArray(props.shareChannels) || props.shareChannels.length === 0) {
+    return fallbackShareChannels.value
+  }
+
+  const channels = props.shareChannels
+    .filter(item => item && typeof item === 'object' && item.openStatus !== 0)
+    .map((item, index) => ({
+      key: String(item.rowId ?? item.shareName ?? index),
+      label: String(item.shareName ?? ''),
+      iconImage: typeof item.shareDomainImage === 'string' ? item.shareDomainImage : '',
+      shareUrl: typeof item.shareDomainUrl === 'string' ? item.shareDomainUrl : ''
+    }))
+    .filter(item => item.label)
+
+  return channels.length > 0 ? channels : fallbackShareChannels.value
+})
+
 // 关闭分享弹窗。
 const handleClose = () => {
   emit('update:visible', false)
@@ -247,35 +286,88 @@ const copyReferralLink = async () => {
   }
 }
 
-// 根据渠道打开分享链接。
-const handleOpenChannel = (channel: ShareChannelKey) => {
+const buildShareUrlFromTemplate = (url: string) => {
   const encodedUrl = encodeURIComponent(props.referralLink)
   const encodedText = encodeURIComponent(`${t('referral.shareDefaultText')} ${props.referralLink}`)
 
+  // 后台模板支持 {shareUrl} 和 {shareText} 两类占位符。
+  return url.split('{shareUrl}').join(encodedUrl).split('{shareText}').join(encodedText)
+}
+
+const getFallbackShareUrl = (channel: string) => {
+  const encodedUrl = encodeURIComponent(props.referralLink)
+  const encodedText = encodeURIComponent(`${t('referral.shareDefaultText')} ${props.referralLink}`)
+  const normalizedChannel = channel.toLowerCase()
+
   const shareUrlMap: Record<ShareChannelKey, string> = {
+    // mais：Line/Mais 分享 URL。
     mais: `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`,
+    // facebook：Facebook 分享 URL。
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+    // whatsapp：WhatsApp 分享 URL。
     whatsapp: `https://wa.me/?text=${encodedText}`,
+    // telegram：Telegram 分享 URL。
     telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`,
+    // tiktok：暂无标准 Web 分享入口，使用邮件分享兜底。
     tiktok: `mailto:?subject=${encodeURIComponent(t('referral.title'))}&body=${encodedText}`
   }
 
-  window.open(shareUrlMap[channel], '_blank', 'noopener,noreferrer')
+  if (normalizedChannel.includes('facebook')) return shareUrlMap.facebook
+  if (normalizedChannel.includes('whatsapp')) return shareUrlMap.whatsapp
+  if (normalizedChannel.includes('telegram')) return shareUrlMap.telegram
+  if (normalizedChannel.includes('tiktok')) return shareUrlMap.tiktok
+  if (normalizedChannel.includes('line') || normalizedChannel.includes('mais'))
+    return shareUrlMap.mais
+
+  return ''
+}
+
+// 根据渠道打开分享链接。
+const handleOpenChannel = (channel: ShareChannel) => {
+  const configuredUrl = channel.shareUrl ? buildShareUrlFromTemplate(channel.shareUrl) : ''
+  const fallbackUrl = getFallbackShareUrl(channel.label || channel.key)
+  const targetUrl = configuredUrl || fallbackUrl
+
+  if (!targetUrl) {
+    void copyReferralLink()
+    return
+  }
+
+  window.open(targetUrl, '_blank', 'noopener,noreferrer')
+}
+
+const buildConfiguredMessage = (config: any) => {
+  // agent66 的 WhatsApp/SMS 文案配置可能字段为空，这里按 title + content + 专属链接容错拼接。
+  const title = typeof config?.title === 'string' ? config.title.trim() : ''
+  const content = typeof config?.content === 'string' ? config.content.trim() : ''
+  const text = [title, content, props.referralLink].filter(Boolean).join('\n')
+
+  return text || `${t('referral.randomSharePrefix')}\n${props.phoneNumbers.join('\n')}`
 }
 
 // 通过 WhatsApp 发送随机号码。
 const handleSendViaWhatsApp = () => {
-  const encodedText = encodeURIComponent(
-    `${t('referral.randomSharePrefix')}\n${props.phoneNumbers.join('\n')}`
-  )
+  if (typeof props.whatsappConfig?.link === 'string' && props.whatsappConfig.link.trim()) {
+    window.open(
+      buildShareUrlFromTemplate(props.whatsappConfig.link.trim()),
+      '_blank',
+      'noopener,noreferrer'
+    )
+    return
+  }
+
+  const encodedText = encodeURIComponent(buildConfiguredMessage(props.whatsappConfig))
   window.open(`https://wa.me/?text=${encodedText}`, '_blank', 'noopener,noreferrer')
 }
 
 // 通过短信发送随机号码。
 const handleSendViaSms = () => {
-  const body = encodeURIComponent(
-    `${t('referral.randomSharePrefix')}\n${props.phoneNumbers.join(', ')}`
-  )
+  if (typeof props.smsConfig?.link === 'string' && props.smsConfig.link.trim()) {
+    window.location.href = buildShareUrlFromTemplate(props.smsConfig.link.trim())
+    return
+  }
+
+  const body = encodeURIComponent(buildConfiguredMessage(props.smsConfig))
   window.location.href = `sms:?body=${body}`
 }
 </script>

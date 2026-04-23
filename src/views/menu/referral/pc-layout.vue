@@ -251,9 +251,9 @@
               <!-- 游戏类型筛选 -->
               <CustomSelect
                 class="w-[330px]"
-                v-model="filters.gameType"
-                :options="gameTypeOptions"
-                :placeholder="$t('referral.commissionRecords.filterTitles.game')"
+                v-model="filters.settlementType"
+                :options="settlementTypeOptions"
+                :placeholder="$t('referral.commissionRecords.filterTitles.settlementType')"
               />
 
               <!-- 状态筛选 -->
@@ -271,16 +271,24 @@
             <!-- 列表表头 -->
             <div class="grid h-12 grid-cols-4 items-center rounded-t-lg bg-bg-3 px-4">
               <!-- 表头: 账号 -->
-              <p class="text-center text-sm font-[700] leading-[17px] text-text-1">Account</p>
+              <p class="text-center text-sm font-[700] leading-[17px] text-text-1">
+                {{ $t('referral.commissionRecords.table.account') }}
+              </p>
 
-              <!-- 表头: 游戏 -->
-              <p class="text-center text-sm font-[700] leading-[17px] text-text-1">Game</p>
+              <!-- 表头: 结算周期 -->
+              <p class="text-center text-sm font-[700] leading-[17px] text-text-1">
+                {{ $t('referral.commissionRecords.table.settlementType') }}
+              </p>
 
               <!-- 表头: 佣金 -->
-              <p class="text-center text-sm font-[700] leading-[17px] text-text-1">Commission</p>
+              <p class="text-center text-sm font-[700] leading-[17px] text-text-1">
+                {{ $t('referral.commissionRecords.table.commission') }}
+              </p>
 
               <!-- 表头: 时间 -->
-              <p class="text-center text-sm font-[700] leading-[17px] text-text-1">Date & Time</p>
+              <p class="text-center text-sm font-[700] leading-[17px] text-text-1">
+                {{ $t('referral.commissionRecords.table.dateTime') }}
+              </p>
             </div>
 
             <!-- 列表内容 -->
@@ -298,7 +306,7 @@
 
                 <!-- 列: 游戏 -->
                 <p class="text-center text-sm font-[700] leading-[17px] text-text-1">
-                  {{ item.gameLabel }}
+                  {{ item.settlementLabel }}
                 </p>
 
                 <!-- 列: 佣金 -->
@@ -314,6 +322,13 @@
                   {{ item.time }}
                 </p>
               </div>
+            </div>
+
+            <div
+              v-else-if="commissionRecordsLoading"
+              class="flex h-[240px] items-center justify-center text-sm font-[700] text-text-2"
+            >
+              {{ $t('common.loading') }}
             </div>
 
             <!-- 空状态 -->
@@ -544,33 +559,50 @@
 </template>
 
 <script setup lang="ts">
+import Api from '@/api'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import commissionHero from '@/static/img/referral/referral-commission-hero.png'
 import DirectionIcon from '@/static/svg/direction-right.svg?component'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
+import { formatTimestamp } from '@/utils/date'
 import QRCode from 'qrcode'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ReferralMetric, ReferralTab } from './useReferralPage'
 
 type ActiveTabKey = 'referral' | 'commission-records' | 'referral-records' | 'commission-rules'
-type RecordGameType = 'slots' | 'sports' | 'casino'
-type RecordStatus = 'completed' | 'pending'
-type ReferralRecordStatus = 'valid' | 'invalid'
-type ReferralRecordPeriod = 'today' | 'week' | 'month'
+type CommissionFilterStatus =
+  | 'all' // 全部领取状态
+  | '0' // 未领取
+  | '1' // 已领取
+  | '2' // 已过期
+type SettlementFilterType =
+  | 'all' // 全部结算周期
+  | '1' // 日结
+  | '2' // 周结
+  | '3' // 月结
+type ReferralRecordStatus =
+  | 'valid' // 有效推荐
+  | 'invalid' // 无效推荐
+type ReferralRecordPeriod =
+  | 'today' // 今天
+  | 'week' // 本周
+  | 'month' // 本月
 type ReferralFilterStatus = 'all' | ReferralRecordStatus
 type ReferralFilterTime = 'all' | ReferralRecordPeriod
 
 interface CommissionRecordItem {
-  id: number
+  id: string
   account: string
-  gameType: RecordGameType
-  gameLabel: string
+  settlementType: number
+  settlementLabel: string
   commission: number
+  creationTime: number
   time: string
-  status: RecordStatus
+  status: number
+  statusLabel: string
 }
 
 interface ReferralRecordItem {
@@ -604,12 +636,18 @@ const pcQrCodeCanvas = ref<HTMLCanvasElement>()
 const searchKeyword = ref('')
 const page = ref(1)
 const pageSize = 10
+const commissionTotalPages = ref(1)
+const commissionTotal = ref(0)
+const commissionRecordsLoading = ref(false)
 const referralSearchKeyword = ref('')
 const referralPage = ref(1)
 const referralPageSize = 10
 
-const filters = ref({
-  gameType: 'all_games',
+const filters = ref<{
+  settlementType: SettlementFilterType
+  status: CommissionFilterStatus
+}>({
+  settlementType: 'all',
   status: 'all'
 })
 const referralFilters = ref<{ status: ReferralFilterStatus; time: ReferralFilterTime }>({
@@ -617,117 +655,9 @@ const referralFilters = ref<{ status: ReferralFilterStatus; time: ReferralFilter
   time: 'all'
 })
 
-const commissionRecords = ref<CommissionRecordItem[]>([
-  {
-    id: 1,
-    account: '972345678',
-    gameType: 'slots',
-    gameLabel: 'Slots',
-    commission: 1000,
-    time: '12/18/2026 11:14',
-    status: 'completed'
-  },
-  {
-    id: 2,
-    account: '972345679',
-    gameType: 'sports',
-    gameLabel: 'Sports',
-    commission: 680,
-    time: '12/17/2026 15:42',
-    status: 'completed'
-  },
-  {
-    id: 3,
-    account: '972345680',
-    gameType: 'casino',
-    gameLabel: 'Casino',
-    commission: -320,
-    time: '12/16/2026 08:27',
-    status: 'pending'
-  },
-  {
-    id: 4,
-    account: '972345681',
-    gameType: 'slots',
-    gameLabel: 'Slots',
-    commission: 540,
-    time: '12/10/2026 19:03',
-    status: 'completed'
-  },
-  {
-    id: 5,
-    account: '972345682',
-    gameType: 'casino',
-    gameLabel: 'Casino',
-    commission: -750,
-    time: '12/08/2026 21:16',
-    status: 'pending'
-  },
-  {
-    id: 6,
-    account: '972345683',
-    gameType: 'sports',
-    gameLabel: 'Sports',
-    commission: 420,
-    time: '12/07/2026 10:33',
-    status: 'completed'
-  },
-  {
-    id: 7,
-    account: '972345684',
-    gameType: 'slots',
-    gameLabel: 'Slots',
-    commission: 1280,
-    time: '12/06/2026 22:48',
-    status: 'completed'
-  },
-  {
-    id: 8,
-    account: '972345685',
-    gameType: 'casino',
-    gameLabel: 'Casino',
-    commission: -220,
-    time: '12/05/2026 09:15',
-    status: 'pending'
-  },
-  {
-    id: 9,
-    account: '972345686',
-    gameType: 'sports',
-    gameLabel: 'Sports',
-    commission: 900,
-    time: '12/04/2026 12:02',
-    status: 'completed'
-  },
-  {
-    id: 10,
-    account: '972345687',
-    gameType: 'slots',
-    gameLabel: 'Slots',
-    commission: 350,
-    time: '12/03/2026 14:51',
-    status: 'completed'
-  },
-  {
-    id: 11,
-    account: '972345688',
-    gameType: 'casino',
-    gameLabel: 'Casino',
-    commission: 410,
-    time: '12/02/2026 17:09',
-    status: 'completed'
-  },
-  {
-    id: 12,
-    account: '972345689',
-    gameType: 'sports',
-    gameLabel: 'Sports',
-    commission: -185,
-    time: '12/01/2026 07:26',
-    status: 'pending'
-  }
-])
+const commissionRecords = ref<CommissionRecordItem[]>([])
 
+// 推荐记录接口暂未提供，本页该 tab 仍保留原静态占位数据。
 const referralRecords = ref<ReferralRecordItem[]>([
   { id: 1, account: '972345678', status: 'valid', period: 'today', time: '12/18/2026 11:14:15 AM' },
   {
@@ -773,17 +703,24 @@ const referralRecords = ref<ReferralRecordItem[]>([
   { id: 12, account: '972345689', status: 'valid', period: 'month', time: '12/03/2026 09:14:15 AM' }
 ])
 
-const gameTypeOptions = computed(() => [
-  { label: t('referral.commissionRecords.filters.all_games'), value: 'all_games' },
-  { label: t('referral.commissionRecords.filters.slots'), value: 'slots' },
-  { label: t('referral.commissionRecords.filters.sports'), value: 'sports' },
-  { label: t('referral.commissionRecords.filters.casino'), value: 'casino' }
+const settlementTypeOptions = computed(() => [
+  { label: t('referral.commissionRecords.filters.all'), value: 'all' },
+  // 1：日结
+  { label: t('referral.commissionRecords.filters.daily'), value: '1' },
+  // 2：周结
+  { label: t('referral.commissionRecords.filters.weekly'), value: '2' },
+  // 3：月结
+  { label: t('referral.commissionRecords.filters.monthly'), value: '3' }
 ])
 
 const statusOptions = computed(() => [
   { label: t('referral.commissionRecords.filters.all'), value: 'all' },
-  { label: t('referral.commissionRecords.filters.completed'), value: 'completed' },
-  { label: t('referral.commissionRecords.filters.pending'), value: 'pending' }
+  // 0：未领取
+  { label: t('referral.commissionRecords.filters.unclaimed'), value: '0' },
+  // 1：已领取
+  { label: t('referral.commissionRecords.filters.claimed'), value: '1' },
+  // 2：已过期
+  { label: t('referral.commissionRecords.filters.expired'), value: '2' }
 ])
 
 const referralStatusOptions = computed(() => [
@@ -811,14 +748,10 @@ const filteredCommissionRecords = computed(() => {
     const matchesKeyword =
       keyword.length === 0 ||
       item.account.toLowerCase().includes(keyword) ||
-      item.gameLabel.toLowerCase().includes(keyword)
+      item.settlementLabel.toLowerCase().includes(keyword) ||
+      item.statusLabel.toLowerCase().includes(keyword)
 
-    const matchesGame =
-      filters.value.gameType === 'all_games' || item.gameType === filters.value.gameType
-
-    const matchesStatus = filters.value.status === 'all' || item.status === filters.value.status
-
-    return matchesKeyword && matchesGame && matchesStatus
+    return matchesKeyword
   })
 })
 
@@ -836,14 +769,9 @@ const filteredReferralRecords = computed(() => {
   })
 })
 
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredCommissionRecords.value.length / pageSize))
-)
+const totalPages = computed(() => Math.max(1, commissionTotalPages.value))
 
-const currentPageRecords = computed(() => {
-  const start = (page.value - 1) * pageSize
-  return filteredCommissionRecords.value.slice(start, start + pageSize)
-})
+const currentPageRecords = computed(() => filteredCommissionRecords.value)
 
 const referralTotalPages = computed(() =>
   Math.max(1, Math.ceil(filteredReferralRecords.value.length / referralPageSize))
@@ -862,6 +790,92 @@ const canPrev = computed(() => page.value > 1)
 const canNext = computed(() => page.value < totalPages.value)
 const referralCanPrev = computed(() => referralPage.value > 1)
 const referralCanNext = computed(() => referralPage.value < referralTotalPages.value)
+
+const getSettlementTypeLabel = (settlementType: number) => {
+  const labelMap: Record<number, string> = {
+    // 1：日结
+    1: t('referral.commissionRecords.filters.daily'),
+    // 2：周结
+    2: t('referral.commissionRecords.filters.weekly'),
+    // 3：月结
+    3: t('referral.commissionRecords.filters.monthly')
+  }
+
+  return labelMap[settlementType] || '--'
+}
+
+const getCommissionStatusLabel = (status: number) => {
+  const labelMap: Record<number, string> = {
+    // 0：未领取
+    0: t('referral.commissionRecords.filters.unclaimed'),
+    // 1：已领取
+    1: t('referral.commissionRecords.filters.claimed'),
+    // 2：已过期
+    2: t('referral.commissionRecords.filters.expired')
+  }
+
+  return labelMap[status] || '--'
+}
+
+const mapCommissionRecord = (item: any): CommissionRecordItem => {
+  // 后端调试期返回先按 any 兼容，字段稳定后再收敛类型。
+  const settlementType = Number(item?.settlementType ?? 0)
+  const status = Number(item?.status ?? 0)
+  const creationTime = Number(item?.creationTime ?? 0)
+
+  return {
+    id: String(item?.rowId ?? `${item?.userId ?? ''}-${creationTime}-${status}`),
+    account: String(item?.userAccount || item?.userId || '--'),
+    settlementType,
+    settlementLabel: getSettlementTypeLabel(settlementType),
+    commission: Number(item?.amount ?? 0),
+    creationTime,
+    time: formatTimestamp(creationTime),
+    status,
+    statusLabel: getCommissionStatusLabel(status)
+  }
+}
+
+const fetchCommissionRecords = async (targetPage = 1) => {
+  commissionRecordsLoading.value = true
+
+  try {
+    const param: Record<string, unknown> = {
+      current: targetPage,
+      size: pageSize
+    }
+
+    if (filters.value.settlementType !== 'all') {
+      // settlementType：1 日结，2 周结，3 月结。
+      param.settlementType = Number(filters.value.settlementType)
+    }
+
+    if (filters.value.status !== 'all') {
+      // status：0 未领取，1 已领取，2 已过期。
+      param.status = Number(filters.value.status)
+    }
+
+    const response = await Api.agent.queryCommissionRecords(param, {
+      // PC 端代理接口渠道固定传 3。
+      channelId: '3'
+    })
+    const result = response?.result || {}
+
+    commissionRecords.value = Array.isArray(result.records)
+      ? result.records.map(mapCommissionRecord)
+      : []
+    page.value = Number(result.current || targetPage)
+    commissionTotalPages.value = Number(result.pages || 1)
+    commissionTotal.value = Number(result.total || 0)
+  } catch (error) {
+    console.error(error)
+    commissionRecords.value = []
+    commissionTotalPages.value = 1
+    commissionTotal.value = 0
+  } finally {
+    commissionRecordsLoading.value = false
+  }
+}
 
 // 生成 PC 端代理邀请二维码。
 const generatePcQRCode = async () => {
@@ -907,20 +921,20 @@ const getReferralStatusClass = (status: ReferralRecordStatus) => {
 }
 
 // 设置分页页码。
-const setPage = (targetPage: number) => {
+const setPage = async (targetPage: number) => {
   const nextPage = Math.min(Math.max(1, targetPage), Math.max(1, totalPages.value))
   if (nextPage === page.value) return
-  page.value = nextPage
+  await fetchCommissionRecords(nextPage)
 }
 
 // 切换到上一页。
 const goPrev = () => {
-  setPage(page.value - 1)
+  void setPage(page.value - 1)
 }
 
 // 切换到下一页。
 const goNext = () => {
-  setPage(page.value + 1)
+  void setPage(page.value + 1)
 }
 
 // 设置推荐记录分页页码。
@@ -966,7 +980,11 @@ const handleShare = () => {
 }
 
 // 监听筛选条件变化后重置页码。
-watch([searchKeyword, () => filters.value.gameType, () => filters.value.status], () => {
+watch([() => filters.value.settlementType, () => filters.value.status], () => {
+  void fetchCommissionRecords(1)
+})
+
+watch(searchKeyword, () => {
   page.value = 1
 })
 
@@ -1003,5 +1021,6 @@ watch(
 // 页面挂载后初始化 PC 二维码。
 onMounted(() => {
   generatePcQRCode()
+  void fetchCommissionRecords(1)
 })
 </script>

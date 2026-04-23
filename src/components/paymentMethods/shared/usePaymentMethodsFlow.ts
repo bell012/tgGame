@@ -5,6 +5,7 @@ import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { AddMemberCardForm } from '@/api/interface/withdraw'
 import { useMemberCardDefaultFlow } from '@/composables/useMemberCardDefaultFlow'
+import { StringExtension } from '@/utils/string-extension'
 import {
   AddAccountOption,
   AccountCardOption,
@@ -203,14 +204,24 @@ export function usePaymentMethodsFlow() {
     handlePaymentPasswordVerificationConfirm:
       handleAddAccountOptionPaymentPasswordVerificationConfirm
   } = useMemberCardVerificationFlow<AddAccountOption>({
-    buildRequestData: (data): AddMemberCardForm | null => {
+    buildRequestData: (data, verifyCode): AddMemberCardForm | null => {
       if (!data.type || !data.cardType || !data.accountNo || !data.accountName) {
         return null
       }
 
+      const verifyType = addAccountSecurityVerifyWay.value
+      const normalizedVerifyCode = String(verifyCode ?? '').trim()
+
+      if (verifyType !== 0 && !normalizedVerifyCode) {
+        return null
+      }
+
       return {
-        ...(addAccountSecurityVerifyWay.value !== 0
-          ? { verifyType: String(addAccountSecurityVerifyWay.value) }
+        ...(verifyType !== 0
+          ? {
+              verifyType: String(verifyType),
+              verifyCode: StringExtension.md5(normalizedVerifyCode)
+            }
           : {}),
         type: data.type,
         cardType: data.cardType,
