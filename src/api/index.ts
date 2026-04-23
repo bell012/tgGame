@@ -8,6 +8,7 @@
  */
 
 import * as auth from './modules/auth'
+import * as agent from './modules/agent'
 import * as game from './modules/game'
 import * as home from './modules/home'
 import * as notifications from './modules/notifications'
@@ -19,6 +20,7 @@ import * as vip from './modules/vip'
 import * as wallet from './modules/wallet'
 
 const Api = {
+  agent, // 一级代理
   notifications, // 模块
   auth, // 登录、注册、短信验证码
   game, // 游戏数据

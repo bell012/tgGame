@@ -200,7 +200,7 @@
       </div>
     </div>
     <NewEvent class="mt-2" />
-    <ActivityPop v-if="shouldShowActivityPop" class="sm:hidden" @close="closeActivityPop" />
+    <!-- <ActivityPop v-if="shouldShowActivityPop" class="sm:hidden" @close="closeActivityPop" /> -->
   </div>
 
   <!-- 提示弹窗 -->

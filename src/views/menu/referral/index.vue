@@ -241,12 +241,15 @@
       v-model:visible="showShareSheet"
       :referral-link="referralLink"
       :phone-numbers="referralPhoneNumbers"
+      :share-channels="shareChannels"
+      :whatsapp-config="whatsappConfig"
+      :sms-config="smsConfig"
     />
 
     <!-- 领取成功弹窗 -->
     <ClaimSuccessPopup
       v-model:visible="showClaimPopup"
-      :amount="estimatedCommission"
+      :amount="claimedCommission"
       :currency-symbol="claimCurrencySymbol"
       @confirm="handleConfirmClaimPopup"
     />
@@ -270,9 +273,13 @@ const {
   showShareSheet,
   showClaimPopup,
   estimatedCommission,
+  claimedCommission,
   claimCurrencySymbol,
   referralLink,
   referralPhoneNumbers,
+  shareChannels,
+  whatsappConfig,
+  smsConfig,
   referralMetrics,
   pcTabs,
   copyReferralLink,

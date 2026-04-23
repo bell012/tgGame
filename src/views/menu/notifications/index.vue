@@ -265,6 +265,14 @@
           </p>
 
           <p
+            v-else-if="activeCategoryError"
+            class="pb-[16px] pt-[14px] text-center text-[12px] text-secondary-4"
+            @click="handleActiveCategoryRetry"
+          >
+            {{ $t('common.requestError') }}
+          </p>
+
+          <p
             v-else-if="
               activeCategoryLoaded && activeCategoryFinished && filteredNotifications.length > 0
             "
@@ -616,6 +624,22 @@ const hashNotificationKey = (value: string) => {
 }
 
 const normalizeGameLookupValue = (value: unknown) => String(value ?? '').trim()
+
+const splitGameLookupValues = (value: unknown) =>
+  normalizeGameLookupValue(value)
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean)
+
+const isGameLookupValueMatched = (sourceValue: unknown, targetValue: unknown) => {
+  const normalizedTargetValue = normalizeGameLookupValue(targetValue)
+
+  if (!normalizedTargetValue) {
+    return false
+  }
+
+  return splitGameLookupValues(sourceValue).includes(normalizedTargetValue)
+}
 
 const restoreCachedGameListForApp = () => {
   if (gameListForAppCache) {
@@ -1432,12 +1456,19 @@ const createCategoryLoader = (category: NotificationCategory) =>
 const categoryLoaders = {
   promotions: createCategoryLoader('promotions'),
   transactions: {
-    loading: computed(() => activeTab.value === 'transactions' && tradeMessageSyncStore.isSyncing)
+    loading: computed(() => activeTab.value === 'transactions' && tradeMessageSyncStore.isSyncing),
+    error: computed<unknown | null>(() => null),
+    retry: async () => undefined
   },
   system: createCategoryLoader('system')
 }
 
 const activeCategoryLoading = computed(() => categoryLoaders[activeTab.value].loading.value)
+const activeCategoryError = computed(() => categoryLoaders[activeTab.value].error.value)
+
+const handleActiveCategoryRetry = async () => {
+  await categoryLoaders[activeTab.value].retry()
+}
 
 // 当用户停留在交易通知 tab 时，将当前交易消息标记为已读。
 const markTransactionsAsReadOnView = () => {
@@ -1811,9 +1842,9 @@ const handleGameJump = async (item: NotificationItem) => {
     const gameList = await fetchAndCacheGameListForApp()
     const matchedGame = flattenGameListForAppItems(gameList).find(game => {
       return (
-        normalizeGameLookupValue(game.gameTypeCode) === normalizeGameLookupValue(pgType) &&
-        normalizeGameLookupValue(game.platformCode) === normalizeGameLookupValue(platformCode) &&
-        normalizeGameLookupValue(game.itemCode) === normalizeGameLookupValue(gameCode)
+        isGameLookupValueMatched(game.gameTypeCode, pgType) &&
+        isGameLookupValueMatched(game.platformCode, platformCode) &&
+        isGameLookupValueMatched(game.itemCode, gameCode)
       )
     })
 

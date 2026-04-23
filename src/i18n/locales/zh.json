@@ -564,6 +564,8 @@
     "totalReferrals": "总邀请人数",
     "newReferralsToday": "今日新增邀请",
     "newReferralsYesterday": "昨日新增邀请",
+    "newReferralsThisWeek": "本周新增邀请",
+    "newReferralsLastWeek": "上周新增邀请",
     "statisticsHint": "当前展示周维度统计。",
     "shareHint": "保存二维码并分享给好友，方便他们快速加入。",
     "viewQrCode": "查看二维码",
@@ -583,6 +585,7 @@
     "copy": "复制",
     "copySuccess": "复制成功",
     "copyFailed": "复制失败",
+    "noClaimableCommission": "暂无可领取佣金",
     "claimPending": "领取申请已提交",
     "comingSoon": "功能开发中",
     "cta": "立即邀请",
@@ -598,7 +601,14 @@
         "outcome": "盈亏筛选",
         "status": "状态筛选",
         "time": "时间筛选",
-        "platform": "平台筛选"
+        "platform": "平台筛选",
+        "settlementType": "结算周期"
+      },
+      "table": {
+        "account": "账号",
+        "settlementType": "结算周期",
+        "commission": "佣金",
+        "dateTime": "日期时间"
       },
       "filters": {
         "all_games": "全部游戏",
@@ -610,6 +620,12 @@
         "loss": "仅亏损",
         "completed": "已完成",
         "pending": "处理中",
+        "unclaimed": "未领取",
+        "claimed": "已领取",
+        "expired": "已过期",
+        "daily": "日结",
+        "weekly": "周结",
+        "monthly": "月结",
         "today": "今天",
         "week": "本周",
         "month": "本月"
@@ -1136,5 +1152,39 @@
     "sms_content_text": "添加收款账号短信验证",
     "busiPwd_content_text": "添加收款账号交易密码验证",
     "account_detail_title": "收款账号详情"
+  },
+  "menu":{
+    "crypto-account": "加密账户",
+    "game-categories": "游戏分类",
+    "recently-played": "最近常玩",
+    "favorites": "收藏中心",
+    "vouchers": "票劵",
+    "cash-voucher": "现金兑换",
+    "lucky-red-envelope": "幸运红包",
+    "smash-golden-egg": "砸金蛋",
+    "mystery-box": "开盲盒",
+    "lucky-spin": "大转盘",
+    "task-center": "任务中心",
+    "promotion-center": "优惠中心",
+    "red-envelope-event": "红包活动",
+    "credit-loan": "借呗",
+    "lottery-event": "彩票活动",
+    "lucky-wheel": "幸运转盘",
+    "promo-code": "优惠码",
+    "vip-center": "VIP中心",
+    "referral": "我的代理",
+    "rebate": "返水",
+    "my-orders": "我的订单",
+    "bet-history": "投注记录",
+    "transaction": "资金明细",
+    "rewards": "奖励中心",
+    "rollover": "流水稽查",
+    "payment-methods": "收款管理",
+    "security": "账户安全",
+    "sponsorships": "赞助合作",
+    "leave-feedback": "意见反馈",
+    "legal": "法律条款",
+    "about": "关于我们"
   }
 }
+

@@ -261,6 +261,8 @@ export interface WithdrawOrderDetail {
   orderId?: string | number
   orderNo?: string
   busiAmount?: string | number
+  currency?: string
+  currencyCode?: string
   createTime?: string
   cardType?: string | number
   paymentName?: string

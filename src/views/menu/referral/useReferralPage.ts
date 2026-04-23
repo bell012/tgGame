@@ -1,7 +1,11 @@
+import Api from '@/api'
+import { useIsMobile } from '@/composables/useMediaQuery'
+import { useUserStore } from '@/stores/user'
 import { getCurrentCurrency } from '@/utils/locale'
 import QRCode from 'qrcode'
+import { storeToRefs } from 'pinia'
 import { showToast } from 'vant'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateTo } from '@/utils/router'
 
@@ -20,56 +24,73 @@ export interface ReferralTab {
 
 export const useReferralPage = () => {
   const { t } = useI18n()
+  const userStore = useUserStore()
+  const { userInfo, acctInfo } = storeToRefs(userStore)
+  const isMobile = useIsMobile()
   const activePcTab = ref('referral')
 
   const qrCodeCanvas = ref<HTMLCanvasElement>()
   const showQrDialog = ref(false)
   const showShareSheet = ref(false)
   const showClaimPopup = ref(false)
+  const isClaimingCommission = ref(false)
 
-  const estimatedCommission = '9,999.99'
-  const referralLink = 'https://racewin.example.com/ref/AGENT888'
-  const referralPhoneNumbers = [
-    '67566778887',
-    '67566771234',
-    '67566775678',
-    '67566772345',
-    '67566778901',
-    '67566774567',
-    '67566773456',
-    '67566779876',
-    '67566775432',
-    '67566776789',
-    '67566777654',
-    '67566770987',
-    '67566771122',
-    '67566773344',
-    '67566775566',
-    '67566777788',
-    '67566779900',
-    '67566772233',
-    '67566774455',
-    '67566776677',
-    '67566778899'
-  ]
+  const estimatedCommission = ref('0.00')
+  const claimedCommission = ref('0.00')
+  const invitationStats = ref<any>({})
+  const referralPhoneNumbers = ref<string[]>([])
+  const shareChannels = ref<any[]>([])
+  const whatsappConfig = ref<any>(null)
+  const smsConfig = ref<any>(null)
+
+  // 代理接口渠道：PC=3，H5=4。
+  const agentChannelId = computed(() => (isMobile.value ? '4' : '3'))
+
+  const currentMemberId = computed(() =>
+    String(userInfo.value?.memberId || acctInfo.value?.memberId || '').trim()
+  )
+
+  // 专属链接按后台方案 1 生成：当前 H5 域名 + 会员 ID。
+  const referralLink = computed(() => {
+    if (typeof window === 'undefined') {
+      return currentMemberId.value ? `/h5?id=${encodeURIComponent(currentMemberId.value)}` : '/h5'
+    }
+
+    const baseUrl = `${window.location.origin}/h5`
+    if (!currentMemberId.value) {
+      return baseUrl
+    }
+
+    return `${baseUrl}?id=${encodeURIComponent(currentMemberId.value)}`
+  })
+
+  const toNumber = (value: unknown) => {
+    const numericValue = Number(value)
+    return Number.isFinite(numericValue) ? numericValue : 0
+  }
+
+  const formatAmount = (value: unknown) => toNumber(value).toFixed(2)
 
   const referralMetrics = computed<ReferralMetric[]>(() => [
     {
       key: 'total',
-      value: '100',
+      // teamNum：当前团队总人数。
+      value: String(toNumber(invitationStats.value?.teamNum)),
       label: t('referral.totalReferrals'),
       iconText: 'T'
     },
     {
-      key: 'today',
-      value: '26',
-      label: t('referral.newReferralsToday'),
+      key: 'week',
+      // newTeamNum：本周新增团队人数。
+      value: String(toNumber(invitationStats.value?.newTeamNum)),
+      label: t('referral.newReferralsThisWeek'),
       iconText: 'N'
     },
     {
-      key: 'yesterday',
-      value: '18',
-      label: t('referral.newReferralsYesterday'),
+      key: 'lastWeek',
+      // lastNewTeamNum：上周新增团队人数。
+      value: String(toNumber(invitationStats.value?.lastNewTeamNum)),
+      label: t('referral.newReferralsLastWeek'),
       iconText: 'Y'
     }
   ])
@@ -106,7 +127,7 @@ export const useReferralPage = () => {
     if (!qrCodeCanvas.value) return
 
     try {
-      await QRCode.toCanvas(qrCodeCanvas.value, referralLink, {
+      await QRCode.toCanvas(qrCodeCanvas.value, referralLink.value, {
         width: 84,
         margin: 0,
         color: {
@@ -122,7 +143,7 @@ export const useReferralPage = () => {
   // 复制代理邀请链接。
   const copyReferralLink = async () => {
     try {
-      await navigator.clipboard.writeText(referralLink)
+      await navigator.clipboard.writeText(referralLink.value)
       showToast({
         message: t('referral.copySuccess'),
         type: 'success'
@@ -136,9 +157,86 @@ export const useReferralPage = () => {
     }
   }
 
+  const loadEstimatedCommission = async () => {
+    // agent75：未领取佣金总额，用于顶部预估佣金展示。
+    const response = await Api.agent.queryEstimatedCommission({
+      channelId: agentChannelId.value
+    })
+
+    estimatedCommission.value = formatAmount(response?.result)
+  }
+
+  const loadInvitationStats = async () => {
+    // agent76：团队人数、当前/上周新增邀请统计。
+    const response = await Api.agent.queryInvitationStats({
+      channelId: agentChannelId.value
+    })
+
+    invitationStats.value = response?.result || {}
+  }
+
+  const loadShareChannels = async () => {
+    // agent61：openStatus=1 表示只读取开启的分享渠道。
+    const response = await Api.agent.queryShareChannels(
+      { openStatus: 1 },
+      {
+        channelId: agentChannelId.value
+      }
+    )
+
+    shareChannels.value = Array.isArray(response?.result) ? response.result : []
+  }
+
+  const loadNumberPool = async () => {
+    // agent66：号码池和 WhatsApp/SMS 文案配置。
+    const response = await Api.agent.queryNumberPool({
+      channelId: agentChannelId.value
+    })
+    const result = response?.result || {}
+
+    referralPhoneNumbers.value = Array.isArray(result.numList) ? result.numList.map(String) : []
+    whatsappConfig.value = result.whatsappConfig || null
+    smsConfig.value = result.smsConfig || null
+  }
+
+  const refreshReferralOverview = async () => {
+    await Promise.allSettled([
+      loadEstimatedCommission(),
+      loadInvitationStats(),
+      loadShareChannels(),
+      loadNumberPool()
+    ])
+  }
+
   // 处理佣金领取点击。
-  const handleClaimCommission = () => {
-    showClaimPopup.value = true
+  const handleClaimCommission = async () => {
+    if (isClaimingCommission.value) return
+
+    isClaimingCommission.value = true
+
+    try {
+      // agent77：领取成功后以接口返回的实际金额为准。
+      const response = await Api.agent.claimCommission({
+        channelId: agentChannelId.value
+      })
+      const amount = toNumber(response?.result)
+
+      if (amount <= 0) {
+        showToast({
+          message: t('referral.noClaimableCommission'),
+          type: 'fail'
+        })
+        return
+      }
+
+      claimedCommission.value = formatAmount(amount)
+      showClaimPopup.value = true
+      await Promise.allSettled([loadEstimatedCommission(), loadInvitationStats()])
+    } catch (error) {
+      console.error(error)
+    } finally {
+      isClaimingCommission.value = false
+    }
   }
 
   // 处理佣金规则入口点击。
@@ -196,7 +294,13 @@ export const useReferralPage = () => {
 
   // 页面挂载后初始化滚动位置和二维码。
   onMounted(() => {
+    userStore.syncStoredUserData()
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    generateQRCode()
+    void refreshReferralOverview()
+  })
+
+  watch(referralLink, () => {
     generateQRCode()
   })
 
@@ -205,9 +309,13 @@ export const useReferralPage = () => {
     showShareSheet,
     showClaimPopup,
     estimatedCommission,
+    claimedCommission,
     claimCurrencySymbol,
     referralLink,
     referralPhoneNumbers,
+    shareChannels,
+    whatsappConfig,
+    smsConfig,
     referralMetrics,
     pcTabs,
     copyReferralLink,

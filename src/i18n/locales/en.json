@@ -284,6 +284,8 @@
     "totalReferrals": "Total Referrals",
     "newReferralsToday": "New Referrals Today",
     "newReferralsYesterday": "New Referrals Yesterday",
+    "newReferralsThisWeek": "New Referrals This Week",
+    "newReferralsLastWeek": "New Referrals Last Week",
     "statisticsHint": "Showing weekly statistics.",
     "shareHint": "Save the QR code and share it with your friends so they can join easily.",
     "viewQrCode": "View QR Code",
@@ -303,6 +305,7 @@
     "copy": "Copy",
     "copySuccess": "Copied successfully",
     "copyFailed": "Copy failed",
+    "noClaimableCommission": "No claimable commission",
     "claimPending": "Claim request submitted",
     "comingSoon": "Feature coming soon",
     "cta": "Invite Now",
@@ -318,7 +321,14 @@
         "outcome": "Win/Loss Selection",
         "status": "Statuses Selection",
         "time": "Date Selection",
-        "platform": "Platform Selection"
+        "platform": "Platform Selection",
+        "settlementType": "Settlement Type"
+      },
+      "table": {
+        "account": "Account",
+        "settlementType": "Settlement",
+        "commission": "Commission",
+        "dateTime": "Date & Time"
       },
       "filters": {
         "all_games": "All Games",
@@ -330,6 +340,12 @@
         "loss": "Loss Only",
         "completed": "Completed",
         "pending": "Pending",
+        "unclaimed": "Unclaimed",
+        "claimed": "Claimed",
+        "expired": "Expired",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
         "today": "Today",
         "week": "This Week",
         "month": "This Month"
@@ -1137,5 +1153,39 @@
     "sms_content_text": "Add memberCard SMS verification.",
     "busiPwd_content_text": "Add memberCard transaction password verification.",
     "account_detail_title": "Details"
+  },
+  "menu":{
+    "crypto-account": "Crypto Account",
+    "game-categories": "Game Categories",
+    "recently-played": "Recently Played",
+    "favorites": "Favorites",
+    "vouchers": "Vouchers",
+    "cash-voucher": "Cash Voucher",
+    "lucky-red-envelope": "Lucky Red Envelope",
+    "smash-golden-egg": "Smash the Golden Egg",
+    "mystery-box": "Mystery Box",
+    "lucky-spin": "Lucky Spin",
+    "task-center": "Task Center",
+    "promotion-center": "Promotions Center",
+    "red-envelope-event": "Red Envelope Event",
+    "credit-loan": "Credit Loan",
+    "lottery-event": "Lottery Event",
+    "lucky-wheel": "Lucky Wheel",
+    "promo-code": "Promo Code",
+    "vip-center": "VIP Center",
+    "referral": "Referral",
+    "rebate": "Rebate",
+    "my-orders": "My Orders",
+    "bet-history": "Bet History",
+    "transaction": "Transaction",
+    "rewards": "Rewards",
+    "rollover": "Rollover",
+    "payment-methods": "Payment Methods",
+    "security": "Security",
+    "sponsorships": "Sponsorships",
+    "leave-feedback": "Leave Feedback",
+    "legal": "Legal",
+    "about": "About"
   }
 }
+

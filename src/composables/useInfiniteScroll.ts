@@ -38,6 +38,11 @@ export interface UseInfiniteScrollOptions<TItem, TResponse> {
   immediate?: boolean
 
   /**
+   * 请求失败后是否暂停自动加载，避免哨兵仍在可视区域时持续重试
+   */
+  pauseOnError?: boolean
+
+  /**
    * 初始页码
    */
   initialPage?: number
@@ -114,6 +119,7 @@ export function useInfiniteScroll<TItem, TResponse>(
 
   const loading = ref(false)
   const finished = ref(false)
+  const pausedByError = ref(false)
   const error = shallowRef<unknown | null>(null)
   const total = ref<number | null>(null)
 
@@ -148,21 +154,24 @@ export function useInfiniteScroll<TItem, TResponse>(
     page.value = options.initialPage ?? 1
     loading.value = false
     finished.value = false
+    pausedByError.value = false
     error.value = null
     total.value = null
   }
 
-  async function loadMore() {
+  async function loadMore(optionsOverride: { force?: boolean } = {}) {
     const enabled = resolveValue(options.enabled ?? true)
 
     if (!enabled) return
     if (loading.value) return
     if (finished.value) return
+    if (pausedByError.value && !optionsOverride.force) return
 
     const currentPage = page.value
     const currentPageSize = pageSize.value
 
     loading.value = true
+    pausedByError.value = false
     error.value = null
 
     const controller = new AbortController()
@@ -209,6 +218,7 @@ export function useInfiniteScroll<TItem, TResponse>(
 
       if (!isAbortError) {
         error.value = err
+        pausedByError.value = options.pauseOnError !== false
         options.onError?.(err)
       }
     } finally {
@@ -223,6 +233,12 @@ export function useInfiniteScroll<TItem, TResponse>(
     await loadMore()
   }
 
+  async function retry() {
+    pausedByError.value = false
+    error.value = null
+    await loadMore({ force: true })
+  }
+
   function reset() {
     abortCurrentRequest()
     resetState()
@@ -233,7 +249,11 @@ export function useInfiniteScroll<TItem, TResponse>(
     root: options.root,
     threshold: options.threshold ?? 0,
     rootMargin: options.rootMargin ?? '0px 0px 200px 0px',
-    enabled: () => resolveValue(options.enabled ?? true) && !loading.value && !finished.value,
+    enabled: () =>
+      resolveValue(options.enabled ?? true) &&
+      !loading.value &&
+      !finished.value &&
+      !pausedByError.value,
     onChange: ({ isIntersecting }) => {
       if (!isIntersecting) return
       void loadMore()
@@ -248,6 +268,7 @@ export function useInfiniteScroll<TItem, TResponse>(
       if (list.value.length > 0) return
       if (loading.value) return
       if (finished.value) return
+      if (pausedByError.value) return
 
       void loadMore()
     },
@@ -262,6 +283,7 @@ export function useInfiniteScroll<TItem, TResponse>(
     pageSize: readonly(pageSize),
     loading: readonly(loading),
     finished: readonly(finished),
+    pausedByError: readonly(pausedByError),
     error: readonly(error),
     total: readonly(total),
 
@@ -270,6 +292,7 @@ export function useInfiniteScroll<TItem, TResponse>(
 
     loadMore,
     refresh,
+    retry,
     reset,
     abortCurrentRequest,
     reconnectObserver: observer.reconnect,

@@ -584,9 +584,10 @@ export const useWithdrawFlow = () => {
   ): WithdrawOrderViewData => {
     const previousOrder = withdrawOrder.value
     const currencyCode =
-      selectAccountCardOption.value?.currency ||
+      detail?.currency ||
+      detail?.currencyCode ||
       getCurrencyFromAmountText(previousOrder?.amountText) ||
-      'PHP'
+      resolvedCurrency.value
     const amountText = formatWithdrawAmountText(detail?.busiAmount ?? amount.value, currencyCode)
     const orderId = String(detail?.orderId ?? previousOrder?.orderId ?? '')
     const orderNo = String(detail?.orderNo ?? previousOrder?.orderNo ?? orderId)
@@ -690,7 +691,7 @@ export const useWithdrawFlow = () => {
       withdrawNumber,
       channelId: isMobile.value ? 4 : 3,
       columnCode,
-      currencyCode: selectAccountCardOption.value?.currency,
+      currencyCode: resolvedCurrency.value,
       modifyBy: modifyBy ? StringExtension.md5(modifyBy) : modifyBy
     }
   }
@@ -733,7 +734,7 @@ export const useWithdrawFlow = () => {
       console.log(error)
     } finally {
       isWithdrawSubmitting.value = false
-      resetWithdrawState()
+      resetWithdrawState({ resetSelectedAccount: false })
     }
   }
 

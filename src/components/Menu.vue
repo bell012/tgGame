@@ -20,52 +20,51 @@
             <div class="text-sm text-text-1">$0.00771</div>
           </div>
         </div>
-        <div v-if="!isCollapsed" class="text-text-3 text-xl">
+        <!-- <div v-if="!isCollapsed" class="text-text-3 text-xl">
           <div class="w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center">
             <Arrow_right class="w-4 h-4 fill-none" />
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
 
-    <!-- 可展开菜单组 -->
-    <div class="flex flex-col">
-      <div v-for="menu in expandableMenus" :key="menu.id" class="flex flex-col mt-1">
-        <div
-          v-if="isCollapsed && expandedMenus.includes(menu.id)"
-          class="bg-bg-2 rounded-lg overflow-visible"
-        >
-          <!-- 父菜单 -->
-          <div
-            :class="[
-              'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed',
-              { 'launch-card-active': isMenuGroupActive(menu) }
-            ]"
-            :data-tooltip="menu.name"
-            @mouseenter="updateTooltipPosition"
-            @click="handleMenuExpand(menu)"
-          >
-            <div class="flex items-center w-full justify-center relative">
-              <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="menu.icon" class="w-6 h-6 fill-none" />
-              </div>
-            </div>
-          </div>
-          <!-- 子菜单 -->
-          <div class="flex flex-col">
+    <div class="flex flex-col mt-1">
+      <div
+        v-for="(menuGroup, groupIndex) in sidebarMenuGroups"
+        :key="`group-${groupIndex}`"
+        class="flex flex-col mt-1"
+      >
+        <div v-for="(menu, menuIndex) in menuGroup" :key="menu.id" class="flex flex-col">
+          <div v-if="hasGroupedChildren(menu)" class="bg-bg-2 rounded-lg overflow-visible">
             <div
-              v-for="item in menu.children"
+              v-for="(item, index) in menu.children"
               :key="item.id"
               :class="[
-                'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed mt-1',
+                'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer',
+                { 'menu-item-collapsed': isCollapsed },
+                {
+                  'border-t border-opacity-6':
+                    index > 0 && menu.children && menu.children.length > 1
+                },
+                {
+                  'rounded-t-lg rounded-b-none':
+                    index === 0 && menu.children && menu.children.length > 1
+                },
+                {
+                  'rounded-b-lg rounded-t-none':
+                    menu.children && index === menu.children.length - 1 && menu.children.length > 1
+                },
+                {
+                  'rounded-none': menu.children && index > 0 && index < menu.children.length - 1
+                },
                 { 'launch-card-active': isSubmenuBranchActive(item) }
               ]"
               :data-tooltip="item.name"
-              @mouseenter="updateTooltipPosition"
+              @mouseenter="e => isCollapsed && updateTooltipPosition(e)"
               @click="handleMenuItemClick(item)"
             >
-              <div class="flex items-center w-full justify-center">
-                <div class="w-10 h-10 flex items-center justify-center">
+              <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
+                <div class="w-10 h-10 flex items-center justify-center text-text-2">
                   <img
                     v-if="typeof item.icon === 'string'"
                     :src="item.icon"
@@ -73,274 +72,179 @@
                   />
                   <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
                 </div>
+                <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">{{
+                  item.name
+                }}</span>
               </div>
             </div>
           </div>
-        </div>
-        <!-- 折叠时，未展开的菜单 -->
-        <div
-          v-else-if="isCollapsed"
-          :class="[
-            'relative flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer menu-item-collapsed',
-            { 'launch-card-active': isMenuGroupActive(menu) }
-          ]"
-          :data-tooltip="menu.name"
-          @mouseenter="updateTooltipPosition"
-          @click="handleMenuExpand(menu)"
-        >
-          <div class="flex items-center w-full justify-center relative">
-            <div class="w-10 h-10 flex items-center justify-center">
-              <component :is="menu.icon" class="w-6 h-6 fill-none" />
-            </div>
-          </div>
-        </div>
 
-        <!-- 展开时的菜单 -->
-        <template v-else>
           <div
-            :class="[
-              'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
-              { 'launch-card-active': isMenuGroupActive(menu) }
-            ]"
-            @click="handleMenuExpand(menu)"
+            v-else-if="isCollapsed && hasChildren(menu) && expandedMenus.includes(menu.id)"
+            class="bg-bg-2 rounded-lg overflow-visible"
           >
-            <div class="flex items-center">
-              <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="menu.icon" class="w-6 h-6 fill-none" />
-              </div>
-              <span class="text-sm font-[600] text-text-1">{{ menu.name }}</span>
-            </div>
             <div
-              class="w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
-              :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
-              @click.stop="handleMenuCollapse(menu)"
+              :class="[
+                'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed',
+                { 'launch-card-active': isMenuGroupActive(menu) }
+              ]"
+              :data-tooltip="menu.name2 ? `${menu.name2} ${menu.name}` : menu.name"
+              @mouseenter="updateTooltipPosition"
+              @click="handleMenuClick(menu)"
             >
-              <Arrow_down class="w-4 h-4 fill-none" />
-            </div>
-          </div>
-
-          <!-- 子菜单 -->
-          <transition name="expand">
-            <div v-if="expandedMenus.includes(menu.id)" class="flex flex-col bg-bg-2 rounded-b-lg">
-              <div
-                v-for="item in menu.children"
-                :key="item.id"
-                :class="[
-                  'relative flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer',
-                  { 'launch-card-active': isSubmenuBranchActive(item) }
-                ]"
-                @click="handleMenuItemClick(item)"
-                @mouseenter="
-                  (e: MouseEvent) => item.children && handleSubmenuHover(e, menu.id, item.id)
-                "
-                @mouseleave="item.children && startClearSubmenuHover()"
-              >
-                <div class="flex items-center">
-                  <div class="w-10 h-10 flex items-center justify-center">
-                    <img
-                      v-if="typeof item.icon === 'string'"
-                      :src="item.icon"
-                      class="w-6 h-6 object-contain"
-                    />
-                    <component v-else :is="item.icon" class="w-6 h-6 fill-text-2" />
-                  </div>
-                  <span
-                    class="text-sm font-[600]"
-                    :class="isSubmenuBranchActive(item) ? 'text-theme-primary' : 'text-text-1'"
-                  >
-                    {{ item.name }}
-                  </span>
-                </div>
-                <!-- 有子菜单时显示右箭头 -->
-                <div v-if="item.children && item.children.length > 0" class="mr-2">
-                  <Arrow_right class="w-4 h-4 fill-none" />
+              <div class="flex items-center w-full justify-center">
+                <div class="w-10 h-10 flex items-center justify-center text-text-2">
+                  <img
+                    v-if="typeof menu.icon === 'string'"
+                    :src="menu.icon"
+                    class="w-6 h-6 object-contain"
+                  />
+                  <component v-else :is="menu.icon" class="w-6 h-6 fill-none" />
                 </div>
               </div>
             </div>
-          </transition>
-        </template>
-      </div>
-    </div>
-
-    <!-- 普通链接组 -->
-    <div class="flex flex-col my-2 py-1 rounded-lg bg-bg-2 normalLink">
-      <div
-        v-for="(link, index) in normalLinks"
-        :key="index"
-        :class="[
-          'flex items-center launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
-          { 'relative menu-item-collapsed justify-center': isCollapsed },
-          { 'launch-card-active': activeMenuId === link.id }
-        ]"
-        :data-tooltip="isCollapsed ? (link.name2 ? `${link.name2} ${link.name}` : link.name) : ''"
-        @mouseenter="e => isCollapsed && updateTooltipPosition(e)"
-        @click="handleNormalLinkClick(link)"
-      >
-        <div class="flex items-center" :class="{ 'justify-center': isCollapsed }">
-          <div class="w-10 h-10 flex items-center justify-center">
-            <component :is="link.icon" class="w-6 h-6 fill-none" />
+            <div class="flex flex-col">
+              <template v-for="item in menu.children" :key="item.id">
+                <div
+                  :class="[
+                    'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed mt-1',
+                    { 'launch-card-active': isSubmenuBranchActive(item) }
+                  ]"
+                  :data-tooltip="item.name"
+                  @mouseenter="updateTooltipPosition"
+                  @click="handleMenuItemClick(item)"
+                >
+                  <div class="flex items-center w-full justify-center">
+                    <div class="w-10 h-10 flex items-center justify-center">
+                      <img
+                        v-if="typeof item.icon === 'string'"
+                        :src="item.icon"
+                        class="w-6 h-6 object-contain"
+                      />
+                      <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
           </div>
-          <template v-if="!isCollapsed">
-            <span v-if="link.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
-              link.name2
-            }}</span>
-            <span class="text-sm font-[600] text-text-1">{{ link.name }}</span>
-          </template>
-        </div>
-        <div
-          v-if="!isCollapsed && link.external"
-          class="w-4 h-4 flex items-center justify-center ml-1"
-        >
-          <External class="w-full h-full fill-none" />
-        </div>
-      </div>
-    </div>
 
-    <!-- 底部功能组 -->
-    <div class="flex flex-col mt-1">
-      <!-- 赞助  -->
-      <div v-for="menu in bottomMenus" :key="menu.id" class="flex flex-col mt-1">
-        <div
-          v-if="isCollapsed && expandedMenus.includes(menu.id)"
-          class="bg-bg-2 rounded-lg overflow-visible"
-        >
-          <!-- 父菜单 -->
           <div
+            v-else-if="isCollapsed"
             :class="[
-              'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed',
+              'relative flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer menu-item-collapsed',
+              { 'border-t border-opacity-6': menuIndex > 0 && menuGroup.length > 1 },
+              { 'rounded-t-lg rounded-b-none': menuIndex === 0 && menuGroup.length > 1 },
+              {
+                'rounded-b-lg rounded-t-none':
+                  menuIndex === menuGroup.length - 1 && menuGroup.length > 1
+              },
+              { 'rounded-none': menuIndex > 0 && menuIndex < menuGroup.length - 1 },
               { 'launch-card-active': isMenuGroupActive(menu) }
             ]"
-            :data-tooltip="menu.name"
+            :data-tooltip="menu.name2 ? `${menu.name2} ${menu.name}` : menu.name"
             @mouseenter="updateTooltipPosition"
-            @click="handleMenuExpand(menu)"
+            @click="handleMenuClick(menu)"
           >
             <div class="flex items-center w-full justify-center">
               <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="menu.icon" class="w-6 h-6 fill-none" />
+                <img
+                  v-if="typeof menu.icon === 'string'"
+                  :src="menu.icon"
+                  class="w-6 h-6 object-contain"
+                />
+                <component v-else :is="menu.icon" class="w-6 h-6 fill-none" />
               </div>
             </div>
           </div>
-          <!-- 子菜单 -->
-          <div class="flex flex-col">
+
+          <template v-else>
             <div
-              v-for="item in menu.children"
-              :key="item.id"
               :class="[
-                'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed mt-1',
-                { 'launch-card-active': isSubmenuBranchActive(item) }
+                'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
+                { 'border-t border-opacity-6': menuIndex > 0 && menuGroup.length > 1 },
+                { 'rounded-t-lg rounded-b-none': menuIndex === 0 && menuGroup.length > 1 },
+                {
+                  'rounded-b-lg rounded-t-none':
+                    menuIndex === menuGroup.length - 1 && menuGroup.length > 1
+                },
+                { 'rounded-none': menuIndex > 0 && menuIndex < menuGroup.length - 1 },
+                { 'launch-card-active': isMenuGroupActive(menu) },
+                { normalLink: menu.section === 'normal' }
               ]"
-              :data-tooltip="item.name"
-              @mouseenter="updateTooltipPosition"
-              @click="handleMenuItemClick(item)"
+              @click="handleMenuClick(menu)"
             >
-              <div class="flex items-center w-full justify-center">
-                <div class="w-10 h-10 flex items-center justify-center">
+              <div class="flex items-center">
+                <div class="w-10 h-10 flex items-center justify-center text-text-2">
                   <img
-                    v-if="typeof item.icon === 'string'"
-                    :src="item.icon"
+                    v-if="typeof menu.icon === 'string'"
+                    :src="menu.icon"
                     class="w-6 h-6 object-contain"
                   />
-                  <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
+                  <component v-else :is="menu.icon" class="w-6 h-6 fill-none" />
                 </div>
+                <span v-if="menu.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
+                  menu.name2
+                }}</span>
+                <span class="text-sm font-[600] text-text-1">{{ menu.name }}</span>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 折叠时，未展开的菜单 -->
-        <div
-          v-else-if="isCollapsed"
-          :class="[
-            'relative flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer menu-item-collapsed',
-            { 'launch-card-active': isMenuGroupActive(menu) }
-          ]"
-          :data-tooltip="menu.name"
-          @mouseenter="updateTooltipPosition"
-          @click="handleMenuExpand(menu)"
-        >
-          <div class="flex items-center w-full justify-center">
-            <div class="w-10 h-10 flex items-center justify-center">
-              <component :is="menu.icon" class="w-6 h-6 fill-none" />
-            </div>
-          </div>
-        </div>
-
-        <!-- 展开时的菜单 -->
-        <template v-else>
-          <div
-            :class="[
-              'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
-              { 'launch-card-active': isMenuGroupActive(menu) }
-            ]"
-            @click="handleMenuExpand(menu)"
-          >
-            <div class="flex items-center">
-              <div class="w-10 h-10 flex items-center justify-center">
-                <component :is="menu.icon" class="w-6 h-6 fill-none" />
-              </div>
-              <span class="text-sm font-[600] text-text-1">{{ menu.name }}</span>
-            </div>
-            <div
-              class="w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
-              :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
-              @click.stop="handleMenuCollapse(menu)"
-            >
-              <Arrow_down class="w-4 h-4 fill-none" />
-            </div>
-          </div>
-
-          <!-- 子菜单 -->
-          <transition name="expand">
-            <div v-if="expandedMenus.includes(menu.id)" class="flex flex-col bg-bg-2 rounded-b-lg">
               <div
-                v-for="item in menu.children"
-                :key="item.id"
-                :class="[
-                  'flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer',
-                  { 'launch-card-active': isSubmenuBranchActive(item) }
-                ]"
-                @click="handleMenuItemClick(item)"
+                v-if="hasChildren(menu)"
+                class="w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center mr-1.5 transition-transform duration-300 cursor-pointer"
+                :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
+                @click.stop="handleMenuCollapse(menu)"
               >
-                <div class="flex items-center">
-                  <div class="w-10 h-10 flex items-center justify-center">
-                    <img
-                      v-if="typeof item.icon === 'string'"
-                      :src="item.icon"
-                      class="w-6 h-6 object-contain"
-                    />
-                    <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
-                  </div>
-                  <span
-                    class="text-sm font-[600]"
-                    :class="isSubmenuBranchActive(item) ? 'text-theme-primary' : 'text-text-1'"
-                  >
-                    {{ item.name }}
-                  </span>
-                </div>
+                <Arrow_down class="w-4 h-4 fill-none" />
+              </div>
+              <div
+                v-else-if="menu.external"
+                class="w-4 h-4 flex items-center justify-center ml-1 mr-2"
+              >
+                <External class="w-full h-full fill-none" />
               </div>
             </div>
-          </transition>
-        </template>
-      </div>
 
-      <!-- Leave Feedback -->
-      <div
-        :class="[
-          'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-1',
-          { 'relative menu-item-collapsed justify-center': isCollapsed },
-          { 'launch-card-active': activeMenuId === 'leave-feedback' }
-        ]"
-        :data-tooltip="isCollapsed ? t('personalCenter.leaveFeedback') : ''"
-        @mouseenter="e => isCollapsed && updateTooltipPosition(e)"
-        @click="handleLeaveFeedbackClick"
-      >
-        <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
-          <div class="w-10 h-10 flex items-center justify-center">
-            <component :is="support.ceo_inbox" class="w-6 h-6 fill-none" />
-          </div>
-          <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">
-            {{ t('personalCenter.leaveFeedback') }}
-          </span>
+            <transition name="expand">
+              <div
+                v-if="hasChildren(menu) && expandedMenus.includes(menu.id)"
+                class="flex flex-col bg-bg-2 rounded-b-lg"
+              >
+                <div
+                  v-for="item in menu.children"
+                  :key="item.id"
+                  :class="[
+                    'relative flex items-center justify-between launch-card mt-1 h-10 bg-bg-2 rounded-lg cursor-pointer',
+                    { 'launch-card-active': isSubmenuBranchActive(item) }
+                  ]"
+                  @click="handleMenuItemClick(item)"
+                  @mouseenter="
+                    (e: MouseEvent) => item.children && handleSubmenuHover(e, menu.id, item.id)
+                  "
+                  @mouseleave="item.children && startClearSubmenuHover()"
+                >
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 flex items-center justify-center text-text-2">
+                      <img
+                        v-if="typeof item.icon === 'string'"
+                        :src="item.icon"
+                        class="w-6 h-6 object-contain"
+                      />
+                      <component v-else :is="item.icon" class="w-6 h-6 fill-text-2" />
+                    </div>
+                    <span
+                      class="text-sm font-[600]"
+                      :class="isSubmenuBranchActive(item) ? 'text-theme-primary' : 'text-text-1'"
+                    >
+                      {{ item.name }}
+                    </span>
+                  </div>
+                  <div v-if="item.children && item.children.length > 0" class="mr-2">
+                    <Arrow_right class="w-4 h-4 fill-none" />
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </template>
         </div>
       </div>
 
@@ -450,7 +354,7 @@
         >
           <div class="flex items-center justify-center">
             <div class="w-4 h-4 flex items-center justify-center">
-              <component :is="side.icon_19" class="w-4 h-4 fill-text-2 fill-none" />
+              <component :is="side.icon_19" class="w-4 h-4 fill-text-2" />
             </div>
             <span
               v-if="!isCollapsed"
@@ -502,7 +406,7 @@
         @mouseenter="cancelClearSubmenuHover"
         @mouseleave="clearSubmenuHover"
       >
-        <template v-for="menu in expandableMenus" :key="menu.id">
+        <template v-for="menu in menusWithChildren" :key="menu.id">
           <template v-if="menu.id === hoveredSubmenu.parentId">
             <template v-for="item in menu.children" :key="item.id">
               <template v-if="item.id === hoveredSubmenu.itemId && item.children">
@@ -541,16 +445,18 @@ import External from '@/static/svg/external.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { sideIcons } from '@/static/svg/side'
+import newSideIcons from '@/static/svg/side/newIcon'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { getLocaleLabel } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
-import RebateIcon from '@/static/svg/personalCenter/icon3.svg?component'
+
 import type { Component } from 'vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 interface Props {
   isCollapsed?: boolean
@@ -567,25 +473,34 @@ const emit = defineEmits<{
 const themeStore = useThemeStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
+const isMobile = useIsMobile()
+
 const { t } = useI18n()
 const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
 const { tabButtons: casinoTabButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
-const { side, sports, lottery, support, sponsorships, aboutUs, legal } = sideIcons
-
+const { side, support } = sideIcons
 type SidebarSubmenuItem = {
   id: string
   name: string
   icon: string | Component
-  handler: () => void
+  handler?: () => void
   children?: SidebarSubmenuItem[]
+  external?: boolean
+  name2?: string
+  section?: 'expandable' | 'normal' | 'bottom'
 }
 
 type SidebarMenuGroup = {
   id: string
   name: string
-  icon: Component
-  handler: () => void
-  children: SidebarSubmenuItem[]
+  icon: string | Component
+  handler?: () => void
+  children?: SidebarSubmenuItem[]
+  renderAsGroup?: boolean
+  external?: boolean
+  name2?: string
+  section?: 'expandable' | 'normal' | 'bottom'
+  groupKey?: string
 }
 
 // 展开的菜单 ID 列表
@@ -611,17 +526,29 @@ const isSubmenuBranchActive = (item: SidebarSubmenuItem): boolean => {
 /** 父级分组选中 */
 const isMenuGroupActive = (menu: SidebarMenuGroup): boolean => {
   if (activeMenuId.value === menu.id) return true
-  return menu.children.some(child => isSubmenuBranchActive(child))
+  const children = menu.children
+  if (!children?.length) return false
+  return children.some(child => isSubmenuBranchActive(child))
 }
 
 /** 当前三级选中 */
 const menuOwnsThirdLevel = (menu: SidebarMenuGroup, thirdId: string): boolean => {
   if (!thirdId) return false
+  const children = menu.children
+  if (!children?.length) return false
   const branchHasThird = (item: SidebarSubmenuItem): boolean => {
     if (item.children?.some(c => c.id === thirdId)) return true
     return item.children?.some(c => branchHasThird(c)) ?? false
   }
-  return menu.children.some(item => branchHasThird(item))
+  return children.some(item => branchHasThird(item))
+}
+
+const hasChildren = (menu: SidebarMenuGroup): boolean => {
+  return Boolean(menu.children && menu.children.length > 0)
+}
+
+const hasGroupedChildren = (menu: SidebarMenuGroup): boolean => {
+  return Boolean(menu.renderAsGroup && menu.children && menu.children.length > 0)
 }
 
 // 当前悬浮的子菜单
@@ -663,6 +590,14 @@ const handleMenuExpand = (menu: SidebarMenuGroup) => {
   }
 }
 
+const handleMenuClick = (menu: SidebarMenuGroup) => {
+  if (hasChildren(menu)) {
+    handleMenuExpand(menu)
+    return
+  }
+  handleMenuItemClick(menu)
+}
+
 // 箭头点击（可以展开/折叠）
 const handleMenuCollapse = (menu: any) => {
   toggleMenu(menu.id)
@@ -685,14 +620,6 @@ const updateTooltipPosition = (event: MouseEvent) => {
   target.style.setProperty('--tooltip-top', `${top}px`)
 }
 
-// 处理普通链接点击
-const handleNormalLinkClick = (link: any) => {
-  activeMenuId.value = link.id
-  if (link.handler) {
-    link.handler()
-  }
-}
-
 // 处理客服点击
 const handleCustomerServiceClick = () => {
   activeMenuId.value = 'customer-service'
@@ -700,8 +627,12 @@ const handleCustomerServiceClick = () => {
 }
 
 const handleLeaveFeedbackClick = () => {
-  activeMenuId.value = 'leave-feedback'
-  showLeaveFeedbackModal.value = true
+  if (!isMobile.value) {
+    activeMenuId.value = 'leave-feedback'
+    showLeaveFeedbackModal.value = true
+  } else {
+    navigateTo('/personal-center/feedback')
+  }
 }
 
 const handleCloseLeaveFeedbackModal = () => {
@@ -760,7 +691,6 @@ const handleThirdLevelClick = (item: any) => {
   }
   hoveredSubmenu.value = null
 }
-
 const buildCasinoMenuChildren = (): SidebarSubmenuItem[] => {
   return casinoTabButtons.value
     .filter(item => item.sysGameTypeCode !== '')
@@ -773,471 +703,233 @@ const buildCasinoMenuChildren = (): SidebarSubmenuItem[] => {
       }
     }))
 }
-// 可展开菜单组数据
-const expandableMenus = computed<SidebarMenuGroup[]>(() => [
+const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
   {
-    id: 'casino',
-    name: t('sidebar_menu.casino.title'),
-    icon: side.casinoIcon,
-    handler: () => {
-      navigateTo('/casino')
-    },
+    id: 'crypto-account',
+    name: t('menu.crypto-account'),
+    icon: newSideIcons.cryptoAccountIcon,
+    handler: () => console.log('点击 Crypto Account'),
+    groupKey: 'crypto-account'
+  },
+  {
+    id: 'game-categories',
+    name: t('menu.game-categories'),
+    icon: newSideIcons.gameCategoriesIcon,
+    handler: () => navigateTo('/casino'),
+    groupKey: 'game-categories',
     children: buildCasinoMenuChildren()
   },
   {
-    id: 'sports',
-    name: t('sidebar_menu.sports.label'),
-    icon: side.sportsIcon,
-    handler: () => {
-      navigateTo('/sports')
-    },
+    id: 'recent-favorites-group',
+    name: 'Recent And Favorites',
+    icon: newSideIcons.recentlyPlayedIcon,
+    groupKey: 'recent-favorites-group',
+    renderAsGroup: true,
     children: [
       {
-        id: 'sports_fifa',
-        name: t('sidebar_menu.sports.children.fifa'),
-        icon: sports.fifa,
-        handler: () => console.log('点击 FIFA')
+        id: 'recently-played',
+        name: t('menu.recently-played'),
+        icon: newSideIcons.recentlyPlayedIcon
       },
-      {
-        id: 'sports_soccer',
-        name: t('sidebar_menu.sports.children.soccer'),
-        icon: sports.soccer,
-        handler: () => console.log('点击 足球')
-      },
-      {
-        id: 'sports_basketball',
-        name: t('sidebar_menu.sports.children.basketball'),
-        icon: sports.basketball,
-        handler: () => console.log('点击 篮球')
-      },
-      {
-        id: 'sports_tennis',
-        name: t('sidebar_menu.sports.children.tennis'),
-        icon: sports.tennis,
-        handler: () => console.log('点击 网球')
-      },
-      {
-        id: 'sports_badminton',
-        name: t('sidebar_menu.sports.children.badminton'),
-        icon: sports.badminton,
-        handler: () => console.log('点击 羽毛球')
-      },
-      {
-        id: 'sports_boxing',
-        name: t('sidebar_menu.sports.children.boxing'),
-        icon: sports.boxing,
-        handler: () => console.log('点击 拳击')
-      },
-      {
-        id: 'sports_darts',
-        name: t('sidebar_menu.sports.children.darts'),
-        icon: sports.darts,
-        handler: () => console.log('点击 飞镖')
-      },
-      {
-        id: 'sports_american_football',
-        name: t('sidebar_menu.sports.children.american_football'),
-        icon: sports.american_football,
-        handler: () => console.log('点击 美式足球')
-      },
-      {
-        id: 'sports_table_tennis',
-        name: t('sidebar_menu.sports.children.table_tennis'),
-        icon: sports.table_tennis,
-        handler: () => console.log('点击 乒乓球')
-      },
-      {
-        id: 'sports_volleyball',
-        name: t('sidebar_menu.sports.children.volleyball'),
-        icon: sports.volleyball,
-        handler: () => console.log('点击 排球')
-      }
+      { id: 'favorites', name: t('menu.favorites'), icon: newSideIcons.favoritesIcon }
     ]
   },
   {
-    id: 'Anniversary',
-    name: t('sidebar_menu.anniversary.label'),
-    icon: side.anniversaryIcon,
-    handler: () => {
-      console.log('周年庆')
-    },
-    children: []
+    id: 'vouchers',
+    name: t('menu.vouchers'),
+    icon: newSideIcons.vouchersIcon,
+    groupKey: 'vouchers',
+    children: isLoggedIn.value
+      ? [
+          { 
+            id: 'cash-voucher', 
+            name: t('menu.cash-voucher'), 
+            icon: newSideIcons.cashVoucherIcon },
+          {
+            id: 'lucky-red-envelope',
+            name: t('menu.lucky-red-envelope'),
+            icon: newSideIcons.luckyRedEnvelopeIcon
+          },
+          {
+            id: 'smash-golden-egg',
+            name: t('menu.smash-golden-egg'),
+            icon: newSideIcons.smashGoldenEggIcon
+          },
+          { 
+            id: 'mystery-box',
+            name: t('menu.mystery-box'),
+            icon: newSideIcons.mysteryBoxIcon },
+          { 
+            id: 'lucky-spin', 
+            name: t('menu.lucky-spin'), 
+            icon: newSideIcons.luckySpinIcon }
+        ]
+      : []
   },
   {
-    id: 'lottery',
-    name: t('sidebar_menu.lottery.label'),
-    icon: side.lotteryIcon,
-    handler: () => {
-      console.log('点击彩票')
-    },
-    children: [
-      {
-        id: 'lottery_my_bets',
-        name: t('sidebar_menu.lottery.children.my_bets'),
-        icon: lottery.my_bets,
-        handler: () => console.log('点击 我的投注')
-      },
-      {
-        id: 'lottery_all_lotteries',
-        name: t('sidebar_menu.lottery.children.all_lotteries'),
-        icon: lottery.all_lotteries,
-        handler: () => console.log('点击 所有彩票')
-      },
-      {
-        id: 'lottery_favorites',
-        name: t('sidebar_menu.lottery.children.favorites'),
-        icon: lottery.favorites,
-        handler: () => console.log('点击 我的最爱')
-      },
-      {
-        id: 'lottery_popular',
-        name: t('sidebar_menu.lottery.children.popular'),
-        icon: lottery.popular,
-        handler: () => console.log('点击 热门彩票')
-      }
-    ]
+    id: 'task-center',
+    name: t('menu.task-center'),
+    icon: newSideIcons.taskCenterIcon,
+    groupKey: 'task-center'
   },
   {
-    id: 'crypto',
-    name: t('sidebar_menu.crypto.label'),
-    icon: side.tradingIcon,
-    handler: () => {
-      console.log('点击加密货币期货')
-    },
-    children: [
-      {
-        id: 'crypto_1',
-        name: t('sidebar_menu.crypto.children.crypto_1'),
-        icon: side.tradingIcon,
-        handler: () => console.log('点击 加密货币 1')
-      },
-      {
-        id: 'crypto_2',
-        name: t('sidebar_menu.crypto.children.crypto_2'),
-        icon: side.tradingIcon,
-        handler: () => console.log('点击 加密货币 2')
-      }
-    ]
+    id: 'promotion-center',
+    name: t('menu.promotion-center'),
+    icon: newSideIcons.promotionCenterIcon,
+    groupKey: 'promotion-center'
   },
   {
-    id: 'promotions',
-    name: t('sidebar_menu.promotions.label'),
-    icon: side.promotionIcon,
-    handler: () => {
-      console.log('点击促销')
-    },
+    id: 'combination1',
+    name: 'combination1',
+    icon: newSideIcons.redEnvelopeEventIcon,
+    groupKey: 'combination1',
+    renderAsGroup: true,
     children: [
       {
-        id: 'promotions_invite_rewards',
-        name: t('sidebar_menu.promotions.children.invite_rewards'),
-        icon: lottery.invite_rewards,
-        handler: () => navigateTo('/menu/referral')
-      }
+        id: 'red-envelope-event',
+        name: t('menu.red-envelope-event'),
+        icon: newSideIcons.redEnvelopeEventIcon
+      },
+      { 
+        id: 'credit-loan', 
+        name: t('menu.credit-loan'), 
+        icon: newSideIcons.creditLoanIcon },
+      { 
+        id: 'lottery-event', 
+        name: t('menu.lottery-event'), 
+        icon: newSideIcons.lotteryEventIcon },
+      { 
+        id: 'lucky-wheel', 
+        name: t('menu.lucky-wheel'), 
+        icon: newSideIcons.luckyWheelIcon },
+      { 
+        id: 'promo-code', 
+        name: t('menu.promo-code'), 
+        icon: newSideIcons.promoCodeIcon }
     ]
-  }
-])
+  },
 
-// 普通链接数据
-const normalLinks = computed(() => [
   {
-    id: 'rebate',
-    name: t('sidebar_menu.links.rebate'),
-    icon: RebateIcon,
-    external: false,
-    handler: () => navigateTo('/personal-center/rebate')
-  },
-  {
-    id: 'vip',
-    name: t('sidebar_menu.links.vip.name'),
-    name2: t('sidebar_menu.links.vip.prefix'),
-    icon: side.vipClubIcon,
-    external: false,
+    id: 'vip-center',
+    name: t('menu.vip-center'),
+    icon: newSideIcons.vipCenterIcon,
+    groupKey: 'vip-center',
     handler: () => navigateTo('/vip')
   },
   {
-    id: 'prize',
-    name: t('sidebar_menu.links.bonus'),
-    icon: side.bonusIcon,
-    external: false,
-    handler: () => console.log('点击 奖金')
+    id: 'referral',
+    name: t('menu.referral'),
+    icon: newSideIcons.referralIcon,
+    groupKey: 'referral',
+    handler: () => console.log('跳转邀请好友')
   },
   {
-    id: 'recommend',
-    name: t('sidebar_menu.links.recommend'),
-    icon: side.affiliateIcon,
-    external: false,
-    handler: () => navigateTo('/menu/referral')
+    id: 'rebate',
+    name: t('menu.rebate'),
+    icon: newSideIcons.rebateIcon,
+    groupKey: 'rebate',
+    handler: () => navigateTo('/personal-center/rebate')
   },
   {
-    id: 'forum',
-    name: t('sidebar_menu.links.forum'),
-    icon: side.forumIcon,
-    external: true,
-    handler: () => console.log('点击 论坛')
+    id: 'combination2',
+    name: 'combination2',
+    icon: newSideIcons.myOrdersIcon,
+    groupKey: 'combination2',
+    renderAsGroup: true,
+    children: [
+      {
+        id: 'my-orders',
+        name: t('menu.my-orders'),
+        icon: newSideIcons.myOrdersIcon,
+        handler: () => navigateTo('my-orders')
+      },
+      {
+        id: 'bet-history',
+        name: t('menu.bet-history'),
+        icon: newSideIcons.betHistoryIcon,
+        handler: () => navigateTo('bet-history')
+      },
+      {
+        id: 'transaction',
+        name: t('menu.transaction'),
+        icon: newSideIcons.transactionIcon,
+        handler: () => navigateTo('transaction')
+      },
+      { 
+        id: 'rewards', 
+        name: t('menu.rewards'), 
+        icon: newSideIcons.rewardsIcon 
+      },
+      {
+        id: 'rollover',
+        name: t('menu.rollover'),
+        icon: newSideIcons.rolloverIcon,
+        handler: () => navigateTo('rollover')
+      }
+    ]
   },
-  {
-    id: 'verified',
-    name: t('sidebar_menu.links.verified'),
-    icon: side.fairIcon,
-    external: false,
-    handler: () => console.log('点击 可验证公平')
-  },
-  {
-    id: 'responsible',
-    name: t('sidebar_menu.links.responsible'),
-    icon: side.accountIcon,
-    external: false,
-    handler: () => console.log('点击 负责任博彩')
-  },
-  {
-    id: 'blog',
-    name: t('sidebar_menu.links.blog'),
-    icon: side.blogIcon,
-    external: true,
-    handler: () => console.log('点击 部落格')
-  },
-  {
-    id: 'sports_injection',
-    name: t('sidebar_menu.links.betting_insights'),
-    icon: side.bettingInsightsIcon,
-    external: true,
-    handler: () => console.log('点击 体育投注深入解剖')
-  }
-])
 
-// 底部菜单组
-const bottomMenus = computed<SidebarMenuGroup[]>(() => [
   {
-    id: 'sponsorships',
-    name: t('sidebar_menu.sponsorships.label'),
-    icon: side.sponsorshipsIcon,
-    handler: () => {
-      console.log('点击赞助')
-    },
-    children: [
-      {
-        id: 'sponsorships_sponsorship_journey',
-        name: t('sidebar_menu.sponsorships.items.sponsorship_journey'),
-        icon: sponsorships.sponsorship_journey,
-        handler: () => console.log('点击 赞助之旅')
-      },
-      {
-        id: 'sponsorships_o_higgins',
-        name: t('sidebar_menu.sponsorships.items.o_higgins'),
-        icon: sponsorships.o_higgins,
-        handler: () => console.log("点击 O'HIGGINS")
-      },
-      {
-        id: 'sponsorships_jason_derulo',
-        name: t('sidebar_menu.sponsorships.items.jason_derulo'),
-        icon: sponsorships.jason_derulo,
-        handler: () => console.log('点击 Jason Derulo')
-      },
-      {
-        id: 'sponsorships_lil_pump',
-        name: t('sidebar_menu.sponsorships.items.lil_pump'),
-        icon: sponsorships.lil_pump,
-        handler: () => console.log('点击 Lil Pump')
-      },
-      {
-        id: 'sponsorships_colby_covington',
-        name: t('sidebar_menu.sponsorships.items.colby_covington'),
-        icon: sponsorships.colby_covington,
-        handler: () => console.log('点击 Colby Covington')
-      },
-      {
-        id: 'sponsorships_miami_club',
-        name: t('sidebar_menu.sponsorships.items.miami_club'),
-        icon: sponsorships.miami_club,
-        handler: () => console.log('点击 Miami Club')
-      },
-      {
-        id: 'sponsorships_tg_game_esports',
-        name: t('sidebar_menu.sponsorships.items.tg_game_esports'),
-        icon: sponsorships.tg_game_esports,
-        handler: () => console.log('点击 TG Game Esports')
-      },
-      {
-        id: 'sponsorships_st_kitts_nevis_patriots',
-        name: t('sidebar_menu.sponsorships.items.st_kitts_nevis_patriots'),
-        icon: sponsorships.st_kitts_nevis_patriots,
-        handler: () => console.log('点击 St. Kitts & Nevis Patriots')
-      },
-      {
-        id: 'sponsorships_kwara_united',
-        name: t('sidebar_menu.sponsorships.items.kwara_united'),
-        icon: sponsorships.kwara_united,
-        handler: () => console.log('点击 Kwara United')
-      },
-      {
-        id: 'sponsorships_sashimi_poker',
-        name: t('sidebar_menu.sponsorships.items.sashimi_poker'),
-        icon: sponsorships.sashimi_poker,
-        handler: () => console.log('点击 Sashimi Poker')
-      },
-      {
-        id: 'sponsorships_leicester_city',
-        name: t('sidebar_menu.sponsorships.items.leicester_city'),
-        icon: sponsorships.leicester_city,
-        handler: () => console.log('点击 Leicester City')
-      },
-      {
-        id: 'sponsorships_krasava',
-        name: t('sidebar_menu.sponsorships.items.krasava'),
-        icon: sponsorships.krasava,
-        handler: () => console.log('点击 KRASAVA')
-      },
-      {
-        id: 'sponsorships_deccan_gladiators',
-        name: t('sidebar_menu.sponsorships.items.deccan_gladiators'),
-        icon: sponsorships.deccan_gladiators,
-        handler: () => console.log('点击 Deccan Gladiators')
-      },
-      {
-        id: 'sponsorships_jean_silva',
-        name: t('sidebar_menu.sponsorships.items.jean_silva'),
-        icon: sponsorships.jean_silva,
-        handler: () => console.log('点击 Jean Silva')
-      }
-    ]
+    id: 'payment-methods',
+    name: t('menu.payment-methods'),
+    icon: newSideIcons.paymentMethodsIcon,
+    groupKey: 'payment-methods',
+    handler: () => navigateTo('payment-methods')
   },
   {
-    id: 'support',
-    name: t('sidebar_menu.support.label'),
-    icon: side.helpIcon,
-    handler: () => {
-      console.log('点击支援')
-    },
-    children: [
-      {
-        id: 'support_help_center',
-        name: t('sidebar_menu.support.items.help_center'),
-        icon: support.help_center,
-        handler: () => console.log('点击 帮助中心')
-      },
-      {
-        id: 'support_faq',
-        name: t('sidebar_menu.support.items.faq'),
-        icon: support.faq,
-        handler: () => console.log('点击 常见问题')
-      },
-      {
-        id: 'support_ceo_inbox',
-        name: t('sidebar_menu.support.items.ceo_inbox'),
-        icon: support.ceo_inbox,
-        handler: () => console.log('点击 CEO 信箱')
-      }
-    ]
+    id: 'security',
+    name: t('menu.security'),
+    icon: newSideIcons.securityIcon,
+    groupKey: 'security',
+    handler: () => navigateTo('security')
   },
   {
-    id: 'legal',
-    name: t('sidebar_menu.legal.label'),
-    icon: side.legalIcon,
-    handler: () => {
-      console.log('点击法律条款')
-    },
+    id: 'combination3',
+    name: 'combination3',
+    icon: newSideIcons.sponsorshipsIcon,
+    groupKey: 'combination3',
+    renderAsGroup: true,
     children: [
-      {
-        id: 'legal_tg_licenses',
-        name: t('sidebar_menu.legal.items.tg_licenses'),
-        icon: legal.tg_licenses,
-        handler: () => console.log('点击 BC 牌照')
+      { 
+        id: 'sponsorships', 
+        name: t('menu.sponsorships'), 
+        icon: newSideIcons.sponsorshipsIcon 
       },
       {
-        id: 'legal_gamble_aware',
-        name: t('sidebar_menu.legal.items.gamble_aware'),
-        icon: legal.gamble_aware,
-        handler: () => console.log('点击 理性博彩')
+        id: 'leave-feedback',
+        name: t('menu.leave-feedback'),
+        icon: newSideIcons.leaveFeedbackIcon,
+        handler: handleLeaveFeedbackClick
       },
-      {
-        id: 'legal_fairness',
-        name: t('sidebar_menu.legal.items.fairness'),
-        icon: legal.fairness,
-        handler: () => console.log('点击 公平性')
-      },
-      {
-        id: 'legal_privacy_policy',
-        name: t('sidebar_menu.legal.items.privacy_policy'),
-        icon: legal.privacy_policy,
-        handler: () => console.log('点击 隐私权政策')
-      },
-      {
-        id: 'legal_terms_of_service',
-        name: t('sidebar_menu.legal.items.terms_of_service'),
-        icon: legal.terms_of_service,
-        handler: () => console.log('点击 服务条款')
-      },
-      {
-        id: 'legal_aml',
-        name: t('sidebar_menu.legal.items.aml'),
-        icon: legal.aml,
-        handler: () => console.log('点击 AML')
-      }
-    ]
-  },
-  {
-    id: 'about_us',
-    name: t('sidebar_menu.about_us.label'),
-    icon: side.tipsHelpIcon,
-    handler: () => {
-      console.log('点击关于我们')
-    },
-    children: [
-      {
-        id: 'about_us_achievement',
-        name: t('sidebar_menu.about_us.items.achievement'),
-        icon: aboutUs.achievement,
-        handler: () => console.log('点击 成就')
-      },
-      {
-        id: 'about_us_news',
-        name: t('sidebar_menu.about_us.items.news'),
-        icon: aboutUs.news,
-        handler: () => console.log('点击 新闻')
-      },
-      {
-        id: 'about_us_work_with_us',
-        name: t('sidebar_menu.about_us.items.work_with_us'),
-        icon: aboutUs.work_with_us,
-        handler: () => console.log('点击 与我们合作')
-      },
-      {
-        id: 'about_us_business_contacts',
-        name: t('sidebar_menu.about_us.items.business_contacts'),
-        icon: aboutUs.business_contacts,
-        handler: () => console.log('点击 商务联络人')
-      },
-      {
-        id: 'about_us_license',
-        name: t('sidebar_menu.about_us.items.license'),
-        icon: aboutUs.license,
-        handler: () => console.log('点击 许可证')
-      },
-      {
-        id: 'about_us_help_desk',
-        name: t('sidebar_menu.about_us.items.help_desk'),
-        icon: aboutUs.help_desk,
-        handler: () => console.log('点击 服务台')
-      },
-      {
-        id: 'about_us_verify_representative',
-        name: t('sidebar_menu.about_us.items.verify_representative'),
-        icon: aboutUs.verify_representative,
-        handler: () => console.log('点击 验证代表')
-      },
-      {
-        id: 'about_us_design_resources',
-        name: t('sidebar_menu.about_us.items.design_resources'),
-        icon: aboutUs.design_resources,
-        handler: () => console.log('点击 设计资源')
-      }
+      { 
+        id: 'legal', 
+        name: t('menu.legal'), 
+        icon: newSideIcons.legalIcon },
+      { 
+        id: 'about', 
+        name: t('menu.about'), 
+        icon: newSideIcons.aboutIcon }
     ]
   }
 ])
 
-onMounted(() => {
-  void loadCasinoTabButtons()
+const sidebarMenuGroups = computed<SidebarMenuGroup[][]>(() => {
+  const groups = new Map<string, SidebarMenuGroup[]>()
+  sidebarMenus.value.forEach(menu => {
+    const groupKey = menu.groupKey ?? menu.id
+    const currentGroup = groups.get(groupKey)
+    if (currentGroup) {
+      currentGroup.push(menu)
+      return
+    }
+    groups.set(groupKey, [menu])
+  })
+  return Array.from(groups.values())
 })
+
+const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
+  sidebarMenus.value.filter(menu => hasChildren(menu))
+)
 </script>
 
 <style scoped lang="scss">
