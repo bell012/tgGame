@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import H5Header from '@/components/common/H5Header.vue'
 import { sideIcons } from '@/static/svg/side'
-import RebateRecordsContent from '../components/RebateRecordsContent.vue'
+import RebateRecordsContent from '../components/records/RebateRecordsContent.vue'
 
 const { side } = sideIcons
 const supportHeaderIcon = side.helpIcon
