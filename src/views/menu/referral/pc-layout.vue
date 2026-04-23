@@ -573,10 +573,23 @@ import { useI18n } from 'vue-i18n'
 import type { ReferralMetric, ReferralTab } from './useReferralPage'
 
 type ActiveTabKey = 'referral' | 'commission-records' | 'referral-records' | 'commission-rules'
-type CommissionFilterStatus = 'all' | '0' | '1' | '2'
-type SettlementFilterType = 'all' | '1' | '2' | '3'
-type ReferralRecordStatus = 'valid' | 'invalid'
-type ReferralRecordPeriod = 'today' | 'week' | 'month'
+type CommissionFilterStatus =
+  | 'all' // 全部领取状态
+  | '0' // 未领取
+  | '1' // 已领取
+  | '2' // 已过期
+type SettlementFilterType =
+  | 'all' // 全部结算周期
+  | '1' // 日结
+  | '2' // 周结
+  | '3' // 月结
+type ReferralRecordStatus =
+  | 'valid' // 有效推荐
+  | 'invalid' // 无效推荐
+type ReferralRecordPeriod =
+  | 'today' // 今天
+  | 'week' // 本周
+  | 'month' // 本月
 type ReferralFilterStatus = 'all' | ReferralRecordStatus
 type ReferralFilterTime = 'all' | ReferralRecordPeriod
 
@@ -644,6 +657,7 @@ const referralFilters = ref<{ status: ReferralFilterStatus; time: ReferralFilter
 
 const commissionRecords = ref<CommissionRecordItem[]>([])
 
+// 推荐记录接口暂未提供，本页该 tab 仍保留原静态占位数据。
 const referralRecords = ref<ReferralRecordItem[]>([
   { id: 1, account: '972345678', status: 'valid', period: 'today', time: '12/18/2026 11:14:15 AM' },
   {
@@ -691,15 +705,21 @@ const referralRecords = ref<ReferralRecordItem[]>([
 
 const settlementTypeOptions = computed(() => [
   { label: t('referral.commissionRecords.filters.all'), value: 'all' },
+  // 1：日结
   { label: t('referral.commissionRecords.filters.daily'), value: '1' },
+  // 2：周结
   { label: t('referral.commissionRecords.filters.weekly'), value: '2' },
+  // 3：月结
   { label: t('referral.commissionRecords.filters.monthly'), value: '3' }
 ])
 
 const statusOptions = computed(() => [
   { label: t('referral.commissionRecords.filters.all'), value: 'all' },
+  // 0：未领取
   { label: t('referral.commissionRecords.filters.unclaimed'), value: '0' },
+  // 1：已领取
   { label: t('referral.commissionRecords.filters.claimed'), value: '1' },
+  // 2：已过期
   { label: t('referral.commissionRecords.filters.expired'), value: '2' }
 ])
 
@@ -773,8 +793,11 @@ const referralCanNext = computed(() => referralPage.value < referralTotalPages.v
 
 const getSettlementTypeLabel = (settlementType: number) => {
   const labelMap: Record<number, string> = {
+    // 1：日结
     1: t('referral.commissionRecords.filters.daily'),
+    // 2：周结
     2: t('referral.commissionRecords.filters.weekly'),
+    // 3：月结
     3: t('referral.commissionRecords.filters.monthly')
   }
 
@@ -783,8 +806,11 @@ const getSettlementTypeLabel = (settlementType: number) => {
 
 const getCommissionStatusLabel = (status: number) => {
   const labelMap: Record<number, string> = {
+    // 0：未领取
     0: t('referral.commissionRecords.filters.unclaimed'),
+    // 1：已领取
     1: t('referral.commissionRecords.filters.claimed'),
+    // 2：已过期
     2: t('referral.commissionRecords.filters.expired')
   }
 
@@ -792,6 +818,7 @@ const getCommissionStatusLabel = (status: number) => {
 }
 
 const mapCommissionRecord = (item: any): CommissionRecordItem => {
+  // 后端调试期返回先按 any 兼容，字段稳定后再收敛类型。
   const settlementType = Number(item?.settlementType ?? 0)
   const status = Number(item?.status ?? 0)
   const creationTime = Number(item?.creationTime ?? 0)
@@ -819,14 +846,17 @@ const fetchCommissionRecords = async (targetPage = 1) => {
     }
 
     if (filters.value.settlementType !== 'all') {
+      // settlementType：1 日结，2 周结，3 月结。
       param.settlementType = Number(filters.value.settlementType)
     }
 
     if (filters.value.status !== 'all') {
+      // status：0 未领取，1 已领取，2 已过期。
       param.status = Number(filters.value.status)
     }
 
     const response = await Api.agent.queryCommissionRecords(param, {
+      // PC 端代理接口渠道固定传 3。
       channelId: '3'
     })
     const result = response?.result || {}

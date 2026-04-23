@@ -144,9 +144,19 @@ import { formatTimestamp } from '@/utils/date'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-type RecordStatus = '0' | '1' | '2'
-type RecordPeriod = 'today' | 'week' | 'month'
-type SettlementFilterType = 'all' | '1' | '2' | '3'
+type RecordStatus =
+  | '0' // 未领取
+  | '1' // 已领取
+  | '2' // 已过期
+type RecordPeriod =
+  | 'today' // 今天
+  | 'week' // 本周
+  | 'month' // 本月
+type SettlementFilterType =
+  | 'all' // 全部结算周期
+  | '1' // 日结
+  | '2' // 周结
+  | '3' // 月结
 
 interface CommissionRecord {
   id: string
@@ -177,8 +187,11 @@ const filterGroups = computed<FilterGroup[]>(() => [
     title: t('referral.commissionRecords.filterTitles.status'),
     options: [
       { label: t('referral.commissionRecords.filters.all'), value: 'all' },
+      // 0：未领取
       { label: t('referral.commissionRecords.filters.unclaimed'), value: '0' },
+      // 1：已领取
       { label: t('referral.commissionRecords.filters.claimed'), value: '1' },
+      // 2：已过期
       { label: t('referral.commissionRecords.filters.expired'), value: '2' }
     ]
   },
@@ -186,8 +199,11 @@ const filterGroups = computed<FilterGroup[]>(() => [
     title: t('referral.commissionRecords.filterTitles.settlementType'),
     options: [
       { label: t('referral.commissionRecords.filters.all'), value: 'all' },
+      // 1：日结
       { label: t('referral.commissionRecords.filters.daily'), value: '1' },
+      // 2：周结
       { label: t('referral.commissionRecords.filters.weekly'), value: '2' },
+      // 3：月结
       { label: t('referral.commissionRecords.filters.monthly'), value: '3' }
     ]
   },
@@ -195,8 +211,11 @@ const filterGroups = computed<FilterGroup[]>(() => [
     title: t('referral.commissionRecords.filterTitles.time'),
     options: [
       { label: t('referral.commissionRecords.filters.all'), value: 'all' },
+      // today：今天 00:00:00 至今天 23:59:59。
       { label: t('referral.commissionRecords.filters.today'), value: 'today' },
+      // week：本周一 00:00:00 至今天 23:59:59。
       { label: t('referral.commissionRecords.filters.week'), value: 'week' },
+      // month：本月 1 日 00:00:00 至今天 23:59:59。
       { label: t('referral.commissionRecords.filters.month'), value: 'month' }
     ]
   }
@@ -231,6 +250,7 @@ const handleSort = () => {
 }
 
 const handleFilterApply = (values: Record<string, string | string[]>) => {
+  // FilterPopup 使用数组索引作为 key：0 状态，1 结算周期，2 时间。
   const status = getSingleValue(values['0']) as 'all' | RecordStatus
   const settlementType = getSingleValue(values['1']) as SettlementFilterType
   const time = getSingleValue(values['2']) as 'all' | RecordPeriod
@@ -242,8 +262,11 @@ const handleFilterApply = (values: Record<string, string | string[]>) => {
 
 const getSettlementTypeLabel = (settlementType: number) => {
   const labelMap: Record<number, string> = {
+    // 1：日结
     1: t('referral.commissionRecords.filters.daily'),
+    // 2：周结
     2: t('referral.commissionRecords.filters.weekly'),
+    // 3：月结
     3: t('referral.commissionRecords.filters.monthly')
   }
 
@@ -258,6 +281,7 @@ const getTimeRange = (period: 'all' | RecordPeriod) => {
   start.setHours(0, 0, 0, 0)
 
   if (period === 'week') {
+    // 周筛选按自然周计算，周一为起始日。
     const day = start.getDay() || 7
     start.setDate(start.getDate() - day + 1)
   }
@@ -276,6 +300,7 @@ const getTimeRange = (period: 'all' | RecordPeriod) => {
 }
 
 const mapCommissionRecord = (item: any): CommissionRecord => {
+  // 后端调试期返回先按 any 兼容，字段稳定后再收敛类型。
   const settlementType = Number(item?.settlementType ?? 0)
   const status = Number(item?.status ?? 0)
   const creationTime = Number(item?.creationTime ?? 0)
@@ -303,14 +328,17 @@ const fetchCommissionRecords = async (targetPage = 1) => {
     }
 
     if (selectedStatusFilter.value !== 'all') {
+      // status：0 未领取，1 已领取，2 已过期。
       param.status = Number(selectedStatusFilter.value)
     }
 
     if (selectedSettlementTypeFilter.value !== 'all') {
+      // settlementType：1 日结，2 周结，3 月结。
       param.settlementType = Number(selectedSettlementTypeFilter.value)
     }
 
     const response = await Api.agent.queryCommissionRecords(param, {
+      // H5 端代理接口渠道固定传 4。
       channelId: '4'
     })
     const result = response?.result || {}

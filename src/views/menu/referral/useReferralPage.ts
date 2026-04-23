@@ -43,12 +43,14 @@ export const useReferralPage = () => {
   const whatsappConfig = ref<any>(null)
   const smsConfig = ref<any>(null)
 
+  // 代理接口渠道：PC=3，H5=4。
   const agentChannelId = computed(() => (isMobile.value ? '4' : '3'))
 
   const currentMemberId = computed(() =>
     String(userInfo.value?.memberId || acctInfo.value?.memberId || '').trim()
   )
 
+  // 专属链接按后台方案 1 生成：当前 H5 域名 + 会员 ID。
   const referralLink = computed(() => {
     if (typeof window === 'undefined') {
       return currentMemberId.value ? `/h5?id=${encodeURIComponent(currentMemberId.value)}` : '/h5'
@@ -72,18 +74,21 @@ export const useReferralPage = () => {
   const referralMetrics = computed<ReferralMetric[]>(() => [
     {
       key: 'total',
+      // teamNum：当前团队总人数。
       value: String(toNumber(invitationStats.value?.teamNum)),
       label: t('referral.totalReferrals'),
       iconText: 'T'
     },
     {
       key: 'week',
+      // newTeamNum：本周新增团队人数。
       value: String(toNumber(invitationStats.value?.newTeamNum)),
       label: t('referral.newReferralsThisWeek'),
       iconText: 'N'
     },
     {
       key: 'lastWeek',
+      // lastNewTeamNum：上周新增团队人数。
       value: String(toNumber(invitationStats.value?.lastNewTeamNum)),
       label: t('referral.newReferralsLastWeek'),
       iconText: 'Y'
@@ -153,6 +158,7 @@ export const useReferralPage = () => {
   }
 
   const loadEstimatedCommission = async () => {
+    // agent75：未领取佣金总额，用于顶部预估佣金展示。
     const response = await Api.agent.queryEstimatedCommission({
       channelId: agentChannelId.value
     })
@@ -161,6 +167,7 @@ export const useReferralPage = () => {
   }
 
   const loadInvitationStats = async () => {
+    // agent76：团队人数、当前/上周新增邀请统计。
     const response = await Api.agent.queryInvitationStats({
       channelId: agentChannelId.value
     })
@@ -169,6 +176,7 @@ export const useReferralPage = () => {
   }
 
   const loadShareChannels = async () => {
+    // agent61：openStatus=1 表示只读取开启的分享渠道。
     const response = await Api.agent.queryShareChannels(
       { openStatus: 1 },
       {
@@ -180,6 +188,7 @@ export const useReferralPage = () => {
   }
 
   const loadNumberPool = async () => {
+    // agent66：号码池和 WhatsApp/SMS 文案配置。
     const response = await Api.agent.queryNumberPool({
       channelId: agentChannelId.value
     })
@@ -206,6 +215,7 @@ export const useReferralPage = () => {
     isClaimingCommission.value = true
 
     try {
+      // agent77：领取成功后以接口返回的实际金额为准。
       const response = await Api.agent.claimCommission({
         channelId: agentChannelId.value
       })

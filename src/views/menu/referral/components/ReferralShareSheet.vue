@@ -183,7 +183,12 @@ import whatsappIcon from '@/static/svg/game/detail/share/whatsapp.svg?component'
 import telegramIcon from '@/static/svg/game/detail/share/telegram.svg?component'
 import tiktokIcon from '@/static/svg/game/detail/share/tiktok.svg?component'
 
-type ShareChannelKey = 'mais' | 'facebook' | 'whatsapp' | 'telegram' | 'tiktok'
+type ShareChannelKey =
+  | 'mais' // Line/Mais 分享兜底
+  | 'facebook' // Facebook 分享兜底
+  | 'whatsapp' // WhatsApp 分享兜底
+  | 'telegram' // Telegram 分享兜底
+  | 'tiktok' // Tiktok 暂用邮件分享兜底
 
 interface ShareChannel {
   key: string
@@ -240,6 +245,7 @@ const fallbackShareChannels = shallowRef<ShareChannel[]>([
   }
 ])
 
+// 优先使用后台 agent61 配置，接口为空或配置无效时回退到内置渠道。
 const normalizedShareChannels = computed<ShareChannel[]>(() => {
   if (!Array.isArray(props.shareChannels) || props.shareChannels.length === 0) {
     return fallbackShareChannels.value
@@ -284,6 +290,7 @@ const buildShareUrlFromTemplate = (url: string) => {
   const encodedUrl = encodeURIComponent(props.referralLink)
   const encodedText = encodeURIComponent(`${t('referral.shareDefaultText')} ${props.referralLink}`)
 
+  // 后台模板支持 {shareUrl} 和 {shareText} 两类占位符。
   return url.split('{shareUrl}').join(encodedUrl).split('{shareText}').join(encodedText)
 }
 
@@ -293,10 +300,15 @@ const getFallbackShareUrl = (channel: string) => {
   const normalizedChannel = channel.toLowerCase()
 
   const shareUrlMap: Record<ShareChannelKey, string> = {
+    // mais：Line/Mais 分享 URL。
     mais: `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`,
+    // facebook：Facebook 分享 URL。
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+    // whatsapp：WhatsApp 分享 URL。
     whatsapp: `https://wa.me/?text=${encodedText}`,
+    // telegram：Telegram 分享 URL。
     telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`,
+    // tiktok：暂无标准 Web 分享入口，使用邮件分享兜底。
     tiktok: `mailto:?subject=${encodeURIComponent(t('referral.title'))}&body=${encodedText}`
   }
 
@@ -325,6 +337,7 @@ const handleOpenChannel = (channel: ShareChannel) => {
 }
 
 const buildConfiguredMessage = (config: any) => {
+  // agent66 的 WhatsApp/SMS 文案配置可能字段为空，这里按 title + content + 专属链接容错拼接。
   const title = typeof config?.title === 'string' ? config.title.trim() : ''
   const content = typeof config?.content === 'string' ? config.content.trim() : ''
   const text = [title, content, props.referralLink].filter(Boolean).join('\n')
