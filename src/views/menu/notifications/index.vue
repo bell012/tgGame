@@ -265,6 +265,14 @@
           </p>
 
           <p
+            v-else-if="activeCategoryError"
+            class="pb-[16px] pt-[14px] text-center text-[12px] text-secondary-4"
+            @click="handleActiveCategoryRetry"
+          >
+            {{ $t('common.requestError') }}
+          </p>
+
+          <p
             v-else-if="
               activeCategoryLoaded && activeCategoryFinished && filteredNotifications.length > 0
             "
@@ -1448,12 +1456,19 @@ const createCategoryLoader = (category: NotificationCategory) =>
 const categoryLoaders = {
   promotions: createCategoryLoader('promotions'),
   transactions: {
-    loading: computed(() => activeTab.value === 'transactions' && tradeMessageSyncStore.isSyncing)
+    loading: computed(() => activeTab.value === 'transactions' && tradeMessageSyncStore.isSyncing),
+    error: computed<unknown | null>(() => null),
+    retry: async () => undefined
   },
   system: createCategoryLoader('system')
 }
 
 const activeCategoryLoading = computed(() => categoryLoaders[activeTab.value].loading.value)
+const activeCategoryError = computed(() => categoryLoaders[activeTab.value].error.value)
+
+const handleActiveCategoryRetry = async () => {
+  await categoryLoaders[activeTab.value].retry()
+}
 
 // 当用户停留在交易通知 tab 时，将当前交易消息标记为已读。
 const markTransactionsAsReadOnView = () => {
