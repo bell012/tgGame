@@ -41,7 +41,7 @@
           {{ t('casino.search_tips') }}
         </div>
         <!-- 历史记录 -->
-        <div class="flex justify-between w-full text-xs my-2.5">
+        <div v-if="searchHistory?.length > 0" class="flex justify-between w-full text-xs my-2.5">
           <div class="font-bold">{{ t('casino.history') }}</div>
           <div class="text-text-2" @click.stop="deleteAll()">
             {{ t('casino.clear') }}（{{ searchHistory?.length }}）
