@@ -93,8 +93,25 @@
           </article>
         </section>
 
+        <button
+          v-if="filteredRecords.length > 0 && currentPage < totalPages"
+          type="button"
+          class="mt-[12px] flex h-[38px] w-full items-center justify-center rounded-[8px] bg-bg-2 text-[12px] font-[700] text-text-1"
+          :disabled="isLoading"
+          @click="handleLoadMore"
+        >
+          {{ isLoading ? $t('common.loading') : $t('common.loadingMore') }}
+        </button>
+
+        <p
+          v-if="isLoading && filteredRecords.length === 0"
+          class="py-8 text-center text-[12px] font-[500] text-text-2"
+        >
+          {{ $t('common.loading') }}
+        </p>
+
         <ThemedEmptyState
-          v-else
+          v-else-if="!isLoading && filteredRecords.length === 0"
           :dark-image="defaultImgDark"
           :light-image="defaultImgLight"
           :image-alt="$t('referral.commissionRecords.title')"
@@ -114,6 +131,7 @@
 </template>
 
 <script setup lang="ts">
+import Api from '@/api'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
@@ -122,27 +140,23 @@ import {
   default as defaultImgLight
 } from '@/static/img/explore/default.png'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
-import { computed, ref } from 'vue'
+import { formatTimestamp } from '@/utils/date'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-type RecordOutcome = 'win' | 'loss'
-type RecordStatus = 'completed' | 'pending'
+type RecordStatus = '0' | '1' | '2'
 type RecordPeriod = 'today' | 'week' | 'month'
-type RecordPlatform = 'casino' | 'sports' | 'slots'
-type RecordGame = 'all_games' | 'slots' | 'sports' | 'casino'
+type SettlementFilterType = 'all' | '1' | '2' | '3'
 
 interface CommissionRecord {
-  id: number
+  id: string
   title: string
   amount: number
   subAccount: string
   time: string
   iconText: string
-  outcome: RecordOutcome
-  status: RecordStatus
-  period: RecordPeriod
-  platform: RecordPlatform
-  game: Exclude<RecordGame, 'all_games'>
+  status: number
+  settlementType: number
 }
 
 const { t } = useI18n()
@@ -150,36 +164,31 @@ const { t } = useI18n()
 const showFilterPopup = ref(false)
 const filterValues = ref<Record<string, string | string[]>>({})
 const searchKeyword = ref('')
-const selectedGameFilter = ref<RecordGame>('all_games')
-const selectedOutcomeFilter = ref<'all' | RecordOutcome>('all')
 const selectedStatusFilter = ref<'all' | RecordStatus>('all')
 const selectedTimeFilter = ref<'all' | RecordPeriod>('all')
-const selectedPlatformFilter = ref<'all' | RecordPlatform>('all')
+const selectedSettlementTypeFilter = ref<SettlementFilterType>('all')
+const isLoading = ref(false)
+const currentPage = ref(1)
+const totalPages = ref(1)
+const pageSize = 20
 
 const filterGroups = computed<FilterGroup[]>(() => [
-  {
-    title: t('referral.commissionRecords.filterTitles.game'),
-    options: [
-      { label: t('referral.commissionRecords.filters.all_games'), value: 'all_games' },
-      { label: t('referral.commissionRecords.filters.slots'), value: 'slots' },
-      { label: t('referral.commissionRecords.filters.sports'), value: 'sports' },
-      { label: t('referral.commissionRecords.filters.casino'), value: 'casino' }
-    ]
-  },
-  {
-    title: t('referral.commissionRecords.filterTitles.outcome'),
-    options: [
-      { label: t('referral.commissionRecords.filters.all'), value: 'all' },
-      { label: t('referral.commissionRecords.filters.win'), value: 'win' },
-      { label: t('referral.commissionRecords.filters.loss'), value: 'loss' }
-    ]
-  },
   {
     title: t('referral.commissionRecords.filterTitles.status'),
     options: [
       { label: t('referral.commissionRecords.filters.all'), value: 'all' },
-      { label: t('referral.commissionRecords.filters.completed'), value: 'completed' },
-      { label: t('referral.commissionRecords.filters.pending'), value: 'pending' }
+      { label: t('referral.commissionRecords.filters.unclaimed'), value: '0' },
+      { label: t('referral.commissionRecords.filters.claimed'), value: '1' },
+      { label: t('referral.commissionRecords.filters.expired'), value: '2' }
+    ]
+  },
+  {
+    title: t('referral.commissionRecords.filterTitles.settlementType'),
+    options: [
+      { label: t('referral.commissionRecords.filters.all'), value: 'all' },
+      { label: t('referral.commissionRecords.filters.daily'), value: '1' },
+      { label: t('referral.commissionRecords.filters.weekly'), value: '2' },
+      { label: t('referral.commissionRecords.filters.monthly'), value: '3' }
     ]
   },
   {
@@ -190,112 +199,18 @@ const filterGroups = computed<FilterGroup[]>(() => [
       { label: t('referral.commissionRecords.filters.week'), value: 'week' },
       { label: t('referral.commissionRecords.filters.month'), value: 'month' }
     ]
-  },
-  {
-    title: t('referral.commissionRecords.filterTitles.platform'),
-    options: [
-      { label: t('referral.commissionRecords.filters.all'), value: 'all' },
-      { label: t('referral.commissionRecords.filters.casino'), value: 'casino' },
-      { label: t('referral.commissionRecords.filters.sports'), value: 'sports' },
-      { label: t('referral.commissionRecords.filters.slots'), value: 'slots' }
-    ]
   }
 ])
 
-const records = ref<CommissionRecord[]>([
-  {
-    id: 1,
-    title: 'Deposit',
-    amount: 1000,
-    subAccount: '972345678',
-    time: '12/18/2026 11:14',
-    iconText: '+',
-    outcome: 'win',
-    status: 'completed',
-    period: 'today',
-    platform: 'casino',
-    game: 'slots'
-  },
-  {
-    id: 2,
-    title: 'Invite Bonus',
-    amount: 680,
-    subAccount: '972345679',
-    time: '12/17/2026 15:42',
-    iconText: 'I',
-    outcome: 'win',
-    status: 'completed',
-    period: 'week',
-    platform: 'sports',
-    game: 'sports'
-  },
-  {
-    id: 3,
-    title: 'Rebate',
-    amount: 320,
-    subAccount: '972345680',
-    time: '12/16/2026 08:27',
-    iconText: '%',
-    outcome: 'loss',
-    status: 'pending',
-    period: 'week',
-    platform: 'casino',
-    game: 'casino'
-  },
-  {
-    id: 4,
-    title: 'Activity Reward',
-    amount: 540,
-    subAccount: '972345681',
-    time: '12/10/2026 19:03',
-    iconText: 'A',
-    outcome: 'win',
-    status: 'completed',
-    period: 'month',
-    platform: 'slots',
-    game: 'slots'
-  },
-  {
-    id: 5,
-    title: 'VIP Bonus',
-    amount: 750,
-    subAccount: '972345682',
-    time: '12/08/2026 21:16',
-    iconText: 'V',
-    outcome: 'loss',
-    status: 'completed',
-    period: 'month',
-    platform: 'casino',
-    game: 'casino'
-  }
-])
+const records = ref<CommissionRecord[]>([])
 
 const filteredRecords = computed(() =>
   records.value.filter(item => {
     const keyword = searchKeyword.value.trim().toLowerCase()
-    const matchesKeyword =
+    return (
       keyword.length === 0 ||
       item.subAccount.toLowerCase().includes(keyword) ||
       item.title.toLowerCase().includes(keyword)
-
-    const matchesGame =
-      selectedGameFilter.value === 'all_games' || item.game === selectedGameFilter.value
-    const matchesOutcome =
-      selectedOutcomeFilter.value === 'all' || item.outcome === selectedOutcomeFilter.value
-    const matchesStatus =
-      selectedStatusFilter.value === 'all' || item.status === selectedStatusFilter.value
-    const matchesTime =
-      selectedTimeFilter.value === 'all' || item.period === selectedTimeFilter.value
-    const matchesPlatform =
-      selectedPlatformFilter.value === 'all' || item.platform === selectedPlatformFilter.value
-
-    return (
-      matchesKeyword &&
-      matchesGame &&
-      matchesOutcome &&
-      matchesStatus &&
-      matchesTime &&
-      matchesPlatform
     )
   })
 )
@@ -316,19 +231,119 @@ const handleSort = () => {
 }
 
 const handleFilterApply = (values: Record<string, string | string[]>) => {
-  const game = getSingleValue(values['0']) as RecordGame
-  const outcome = getSingleValue(values['1']) as 'all' | RecordOutcome
-  const status = getSingleValue(values['2']) as 'all' | RecordStatus
-  const time = getSingleValue(values['3']) as 'all' | RecordPeriod
-  const platform = getSingleValue(values['4']) as 'all' | RecordPlatform
+  const status = getSingleValue(values['0']) as 'all' | RecordStatus
+  const settlementType = getSingleValue(values['1']) as SettlementFilterType
+  const time = getSingleValue(values['2']) as 'all' | RecordPeriod
 
-  if (game) selectedGameFilter.value = game
-  if (outcome) selectedOutcomeFilter.value = outcome
   if (status) selectedStatusFilter.value = status
+  if (settlementType) selectedSettlementTypeFilter.value = settlementType
   if (time) selectedTimeFilter.value = time
-  if (platform) selectedPlatformFilter.value = platform
+}
+
+const getSettlementTypeLabel = (settlementType: number) => {
+  const labelMap: Record<number, string> = {
+    1: t('referral.commissionRecords.filters.daily'),
+    2: t('referral.commissionRecords.filters.weekly'),
+    3: t('referral.commissionRecords.filters.monthly')
+  }
+
+  return labelMap[settlementType] || '--'
+}
+
+const getTimeRange = (period: 'all' | RecordPeriod) => {
+  if (period === 'all') return {}
+
+  const now = new Date()
+  const start = new Date(now)
+  start.setHours(0, 0, 0, 0)
+
+  if (period === 'week') {
+    const day = start.getDay() || 7
+    start.setDate(start.getDate() - day + 1)
+  }
+
+  if (period === 'month') {
+    start.setDate(1)
+  }
+
+  const end = new Date(now)
+  end.setHours(23, 59, 59, 999)
+
+  return {
+    startTime: start.getTime(),
+    endTime: end.getTime()
+  }
+}
+
+const mapCommissionRecord = (item: any): CommissionRecord => {
+  const settlementType = Number(item?.settlementType ?? 0)
+  const status = Number(item?.status ?? 0)
+  const creationTime = Number(item?.creationTime ?? 0)
+
+  return {
+    id: String(item?.rowId ?? `${item?.userId ?? ''}-${creationTime}-${status}`),
+    title: getSettlementTypeLabel(settlementType),
+    amount: Number(item?.amount ?? 0),
+    subAccount: String(item?.userAccount || item?.userId || '--'),
+    time: formatTimestamp(creationTime),
+    iconText: '$',
+    status,
+    settlementType
+  }
+}
+
+const fetchCommissionRecords = async (targetPage = 1) => {
+  isLoading.value = true
+
+  try {
+    const param: Record<string, unknown> = {
+      ...getTimeRange(selectedTimeFilter.value),
+      current: targetPage,
+      size: pageSize
+    }
+
+    if (selectedStatusFilter.value !== 'all') {
+      param.status = Number(selectedStatusFilter.value)
+    }
+
+    if (selectedSettlementTypeFilter.value !== 'all') {
+      param.settlementType = Number(selectedSettlementTypeFilter.value)
+    }
+
+    const response = await Api.agent.queryCommissionRecords(param, {
+      channelId: '4'
+    })
+    const result = response?.result || {}
+    const nextRecords = Array.isArray(result.records) ? result.records.map(mapCommissionRecord) : []
+
+    records.value = targetPage > 1 ? [...records.value, ...nextRecords] : nextRecords
+    currentPage.value = Number(result.current || targetPage)
+    totalPages.value = Math.max(1, Number(result.pages || 1))
+  } catch (error) {
+    console.error(error)
+    if (targetPage === 1) {
+      records.value = []
+      currentPage.value = 1
+      totalPages.value = 1
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleLoadMore = () => {
+  if (isLoading.value || currentPage.value >= totalPages.value) return
+  void fetchCommissionRecords(currentPage.value + 1)
 }
 
 // 格式化金额显示。
-const formatAmount = (amount: number) => amount.toFixed(2)
+const formatAmount = (amount: number) => (Number.isFinite(amount) ? amount : 0).toFixed(2)
+
+watch([selectedStatusFilter, selectedSettlementTypeFilter, selectedTimeFilter], () => {
+  void fetchCommissionRecords(1)
+})
+
+onMounted(() => {
+  void fetchCommissionRecords(1)
+})
 </script>

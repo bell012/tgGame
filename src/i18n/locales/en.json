@@ -284,6 +284,8 @@
     "totalReferrals": "Total Referrals",
     "newReferralsToday": "New Referrals Today",
     "newReferralsYesterday": "New Referrals Yesterday",
+    "newReferralsThisWeek": "New Referrals This Week",
+    "newReferralsLastWeek": "New Referrals Last Week",
     "statisticsHint": "Showing weekly statistics.",
     "shareHint": "Save the QR code and share it with your friends so they can join easily.",
     "viewQrCode": "View QR Code",
@@ -303,6 +305,7 @@
     "copy": "Copy",
     "copySuccess": "Copied successfully",
     "copyFailed": "Copy failed",
+    "noClaimableCommission": "No claimable commission",
     "claimPending": "Claim request submitted",
     "comingSoon": "Feature coming soon",
     "cta": "Invite Now",
@@ -318,7 +321,14 @@
         "outcome": "Win/Loss Selection",
         "status": "Statuses Selection",
         "time": "Date Selection",
-        "platform": "Platform Selection"
+        "platform": "Platform Selection",
+        "settlementType": "Settlement Type"
+      },
+      "table": {
+        "account": "Account",
+        "settlementType": "Settlement",
+        "commission": "Commission",
+        "dateTime": "Date & Time"
       },
       "filters": {
         "all_games": "All Games",
@@ -330,6 +340,12 @@
         "loss": "Loss Only",
         "completed": "Completed",
         "pending": "Pending",
+        "unclaimed": "Unclaimed",
+        "claimed": "Claimed",
+        "expired": "Expired",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
         "today": "Today",
         "week": "This Week",
         "month": "This Month"

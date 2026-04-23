@@ -62,14 +62,24 @@
               <div class="mt-[14px] grid grid-cols-5 gap-y-[14px] px-[10px]">
                 <!-- 渠道项 -->
                 <button
-                  v-for="channel in shareChannels"
+                  v-for="channel in normalizedShareChannels"
                   :key="channel.key"
                   type="button"
                   class="flex flex-col items-center gap-[6px] px-[4px]"
-                  @click="handleOpenChannel(channel.key)"
+                  @click="handleOpenChannel(channel)"
                 >
                   <!-- 渠道图标 -->
-                  <component :is="channel.icon" class="h-[40px] w-[40px]" />
+                  <img
+                    v-if="channel.iconImage"
+                    :src="channel.iconImage"
+                    class="h-[40px] w-[40px] rounded-full object-cover"
+                    alt=""
+                  />
+                  <component
+                    v-else-if="channel.icon"
+                    :is="channel.icon"
+                    class="h-[40px] w-[40px]"
+                  />
 
                   <!-- 渠道名称 -->
                   <span class="text-center text-[11px] font-[400] leading-[13px] text-text-1">
@@ -176,15 +186,20 @@ import tiktokIcon from '@/static/svg/game/detail/share/tiktok.svg?component'
 type ShareChannelKey = 'mais' | 'facebook' | 'whatsapp' | 'telegram' | 'tiktok'
 
 interface ShareChannel {
-  key: ShareChannelKey
+  key: string
   label: string
-  icon: object
+  icon?: object
+  iconImage?: string
+  shareUrl?: string
 }
 
 const props = defineProps<{
   visible: boolean
   referralLink: string
   phoneNumbers: string[]
+  shareChannels?: any[]
+  whatsappConfig?: any
+  smsConfig?: any
 }>()
 
 const emit = defineEmits<{
@@ -197,7 +212,7 @@ const visibleRef = computed(() => props.visible)
 
 useLockBodyScroll(visibleRef)
 
-const shareChannels = shallowRef<ShareChannel[]>([
+const fallbackShareChannels = shallowRef<ShareChannel[]>([
   {
     key: 'mais',
     label: 'Mais',
@@ -225,6 +240,24 @@ const shareChannels = shallowRef<ShareChannel[]>([
   }
 ])
 
+const normalizedShareChannels = computed<ShareChannel[]>(() => {
+  if (!Array.isArray(props.shareChannels) || props.shareChannels.length === 0) {
+    return fallbackShareChannels.value
+  }
+
+  const channels = props.shareChannels
+    .filter(item => item && typeof item === 'object' && item.openStatus !== 0)
+    .map((item, index) => ({
+      key: String(item.rowId ?? item.shareName ?? index),
+      label: String(item.shareName ?? ''),
+      iconImage: typeof item.shareDomainImage === 'string' ? item.shareDomainImage : '',
+      shareUrl: typeof item.shareDomainUrl === 'string' ? item.shareDomainUrl : ''
+    }))
+    .filter(item => item.label)
+
+  return channels.length > 0 ? channels : fallbackShareChannels.value
+})
+
 // 关闭分享弹窗。
 const handleClose = () => {
   emit('update:visible', false)
@@ -247,10 +280,17 @@ const copyReferralLink = async () => {
   }
 }
 
-// 根据渠道打开分享链接。
-const handleOpenChannel = (channel: ShareChannelKey) => {
+const buildShareUrlFromTemplate = (url: string) => {
   const encodedUrl = encodeURIComponent(props.referralLink)
   const encodedText = encodeURIComponent(`${t('referral.shareDefaultText')} ${props.referralLink}`)
+
+  return url.split('{shareUrl}').join(encodedUrl).split('{shareText}').join(encodedText)
+}
+
+const getFallbackShareUrl = (channel: string) => {
+  const encodedUrl = encodeURIComponent(props.referralLink)
+  const encodedText = encodeURIComponent(`${t('referral.shareDefaultText')} ${props.referralLink}`)
+  const normalizedChannel = channel.toLowerCase()
 
   const shareUrlMap: Record<ShareChannelKey, string> = {
     mais: `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`,
@@ -260,22 +300,61 @@ const handleOpenChannel = (channel: ShareChannelKey) => {
     tiktok: `mailto:?subject=${encodeURIComponent(t('referral.title'))}&body=${encodedText}`
   }
 
-  window.open(shareUrlMap[channel], '_blank', 'noopener,noreferrer')
+  if (normalizedChannel.includes('facebook')) return shareUrlMap.facebook
+  if (normalizedChannel.includes('whatsapp')) return shareUrlMap.whatsapp
+  if (normalizedChannel.includes('telegram')) return shareUrlMap.telegram
+  if (normalizedChannel.includes('tiktok')) return shareUrlMap.tiktok
+  if (normalizedChannel.includes('line') || normalizedChannel.includes('mais'))
+    return shareUrlMap.mais
+
+  return ''
+}
+
+// 根据渠道打开分享链接。
+const handleOpenChannel = (channel: ShareChannel) => {
+  const configuredUrl = channel.shareUrl ? buildShareUrlFromTemplate(channel.shareUrl) : ''
+  const fallbackUrl = getFallbackShareUrl(channel.label || channel.key)
+  const targetUrl = configuredUrl || fallbackUrl
+
+  if (!targetUrl) {
+    void copyReferralLink()
+    return
+  }
+
+  window.open(targetUrl, '_blank', 'noopener,noreferrer')
+}
+
+const buildConfiguredMessage = (config: any) => {
+  const title = typeof config?.title === 'string' ? config.title.trim() : ''
+  const content = typeof config?.content === 'string' ? config.content.trim() : ''
+  const text = [title, content, props.referralLink].filter(Boolean).join('\n')
+
+  return text || `${t('referral.randomSharePrefix')}\n${props.phoneNumbers.join('\n')}`
 }
 
 // 通过 WhatsApp 发送随机号码。
 const handleSendViaWhatsApp = () => {
-  const encodedText = encodeURIComponent(
-    `${t('referral.randomSharePrefix')}\n${props.phoneNumbers.join('\n')}`
-  )
+  if (typeof props.whatsappConfig?.link === 'string' && props.whatsappConfig.link.trim()) {
+    window.open(
+      buildShareUrlFromTemplate(props.whatsappConfig.link.trim()),
+      '_blank',
+      'noopener,noreferrer'
+    )
+    return
+  }
+
+  const encodedText = encodeURIComponent(buildConfiguredMessage(props.whatsappConfig))
   window.open(`https://wa.me/?text=${encodedText}`, '_blank', 'noopener,noreferrer')
 }
 
 // 通过短信发送随机号码。
 const handleSendViaSms = () => {
-  const body = encodeURIComponent(
-    `${t('referral.randomSharePrefix')}\n${props.phoneNumbers.join(', ')}`
-  )
+  if (typeof props.smsConfig?.link === 'string' && props.smsConfig.link.trim()) {
+    window.location.href = buildShareUrlFromTemplate(props.smsConfig.link.trim())
+    return
+  }
+
+  const body = encodeURIComponent(buildConfiguredMessage(props.smsConfig))
   window.location.href = `sms:?body=${body}`
 }
 </script>
