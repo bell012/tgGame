@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useLocaleStore } from '@/stores/locale'
 import { useUserStore } from '@/stores/user'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useTradeMessageSyncStore } from '@/stores/tradeMessageSync'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import BTCIcon from '@/static/img/crypto/BTC.png'
 import ETHIcon from '@/static/img/crypto/ETH.png'
@@ -19,6 +20,7 @@ import {
   FastAmountItem,
   QueryWithdrawConfigByMemberResponse,
   SubmitTransferOrderForm,
+  SubmitTransferOrderResult,
   WithdrawOrderDetail
 } from '@/api/interface/withdraw'
 import Api from '@/api'
@@ -47,14 +49,21 @@ export interface WithdrawOrderViewData {
   status: WithdrawOrderStatus
 }
 
+// 订单弹窗的数据既可能来自详情接口，也可能来自提交结果和 MQTT 消息，这里统一兼容字段。
+type WithdrawOrderViewSource = Omit<Partial<WithdrawOrderDetail>, 'createTime'> &
+  Partial<SubmitTransferOrderResult> & {
+    busiAmount?: string | number
+    createTime?: string | number
+    currency?: string
+    currencyCode?: string
+  }
+
 const COIN_ICON_MAP: Record<string, string> = {
   USDT: USDTIcon,
   ETH: ETHIcon,
   BTC: BTCIcon,
   USDC: USDCIcon
 }
-const WITHDRAW_ORDER_POLL_INTERVAL_MS = 10 * 1000
-
 const DEFAULT_CRYPTO_OPTIONS: PaymentMethodsOption[] = DEFAULT_COINS.filter(
   item => item.name !== 'USDT'
 ).map(item => ({
@@ -159,6 +168,48 @@ const getCurrencyFromAmountText = (value?: string) => {
   return match?.[0] ?? ''
 }
 
+// 兼容接口返回的数字时间戳、数字字符串和日期字符串。
+const normalizeWithdrawOrderCreateTime = (value?: string | number | null) => {
+  if (value === null || value === undefined || value === '') {
+    return null
+  }
+
+  if (typeof value === 'number') {
+    return value
+  }
+
+  const normalizedValue = String(value).trim()
+
+  if (!normalizedValue) {
+    return null
+  }
+
+  const numericValue = Number(normalizedValue)
+
+  if (Number.isFinite(numericValue) && numericValue > 0) {
+    return numericValue
+  }
+
+  const parsedTimestamp = Date.parse(normalizedValue)
+
+  if (Number.isFinite(parsedTimestamp) && parsedTimestamp > 0) {
+    return parsedTimestamp
+  }
+
+  return null
+}
+
+// MQTT 更新状态时不会带 createTime，这里没有新时间就沿用上一次展示的时间。
+const getWithdrawOrderCreatedAt = (createTime?: string | number | null, previousCreatedAt = '') => {
+  const timestamp = normalizeWithdrawOrderCreateTime(createTime)
+
+  if (!timestamp) {
+    return previousCreatedAt
+  }
+
+  return formatTimestamp(timestamp)
+}
+
 const toWithdrawOrderStatus = (status: unknown): WithdrawOrderStatus => {
   const normalized = String(status ?? '')
     .trim()
@@ -180,6 +231,7 @@ export const useWithdrawFlow = () => {
   const isMobile = useIsMobile()
   const localeStore = useLocaleStore()
   const userStore = useUserStore()
+  const tradeMessageSyncStore = useTradeMessageSyncStore()
   const { currentCurrency } = storeToRefs(localeStore)
   const { acctInfo } = storeToRefs(userStore)
   const siteConfigStore = useSiteConfigStore()
@@ -238,8 +290,10 @@ export const useWithdrawFlow = () => {
   const isWithdrawSubmitting = ref(false)
   const withdrawOrder = ref<WithdrawOrderViewData>()
   const hasLoadedWithdraw = ref(false)
-  let withdrawOrderPollTimer: number | null = null
-  let isWithdrawOrderPolling = false
+  // 当前打开中的提现订单 id，后续收到 MQTT 状态更新时按这个订单去刷新弹窗。
+  const activeWithdrawOrderId = ref('')
+  // 终态只需要处理一次，避免重复刷新余额。
+  const hasHandledActiveWithdrawTerminalStatus = ref(false)
 
   const cryptoPaymentCodes = [5]
   const withdrawVerifyWay = computed(() =>
@@ -258,6 +312,8 @@ export const useWithdrawFlow = () => {
   )
   const needWithdrawBusiPwd = computed(() => withdrawVerifyWay.value === '1')
   const needWithdrawTelephoneSms = computed(() => withdrawVerifyWay.value === '2')
+
+  // 账号列表刷新后，确保默认始终选中当前可用列表里的第一条。
   const syncSelectedAccountCardOption = () => {
     const options = accountCardOptions.value
 
@@ -436,18 +492,21 @@ export const useWithdrawFlow = () => {
   }
 
   const resetWithdrawFlow = () => {
-    stopWithdrawOrderPolling()
     kindReminderVisible.value = false
     withdrawPaymentPasswordVisible.value = false
     withdrawSmsVerificationVisible.value = false
     withdrawOrderVisible.value = false
+    activeWithdrawOrderId.value = ''
+    hasHandledActiveWithdrawTerminalStatus.value = false
     pendingWithdrawPaymentPassword.value = undefined
     pendingWithdrawSmsCode.value = undefined
   }
 
+  // 关闭订单弹窗时，只清掉当前订单跟踪状态，不影响其他提现页数据。
   const closeWithdrawOrder = () => {
-    stopWithdrawOrderPolling()
     withdrawOrderVisible.value = false
+    activeWithdrawOrderId.value = ''
+    hasHandledActiveWithdrawTerminalStatus.value = false
   }
 
   const sendSmsCode = async () => {
@@ -580,7 +639,7 @@ export const useWithdrawFlow = () => {
   }
 
   const buildWithdrawOrderViewData = (
-    detail?: WithdrawOrderDetail | null
+    detail?: WithdrawOrderViewSource | null
   ): WithdrawOrderViewData => {
     const previousOrder = withdrawOrder.value
     const currencyCode =
@@ -591,9 +650,7 @@ export const useWithdrawFlow = () => {
     const amountText = formatWithdrawAmountText(detail?.busiAmount ?? amount.value, currencyCode)
     const orderId = String(detail?.orderId ?? previousOrder?.orderId ?? '')
     const orderNo = String(detail?.orderNo ?? previousOrder?.orderNo ?? orderId)
-    const createdAt = formatTimestamp(
-      (detail?.createTime ?? null) as string | number | null | undefined
-    )
+    const createdAt = getWithdrawOrderCreatedAt(detail?.createTime, previousOrder?.createdAt)
     const methodLabel = String(
       detail?.paymentName ??
         selectAccountCardOption.value?.label ??
@@ -608,17 +665,18 @@ export const useWithdrawFlow = () => {
       orderId,
       orderNo,
       amountText,
-      createdAt: createdAt || previousOrder?.createdAt || '',
+      createdAt,
       methodLabel,
       methodIcon,
       status: toWithdrawOrderStatus(detail?.status)
     }
   }
 
-  const applyWithdrawOrderDetail = (detail?: WithdrawOrderDetail | null) => {
+  const applyWithdrawOrderDetail = (detail?: WithdrawOrderViewSource | null) => {
     withdrawOrder.value = buildWithdrawOrderViewData(detail)
   }
 
+  // 提交成功后先查一次订单详情，把 createTime、paymentName 这类完整字段补齐。
   const queryAndApplyWithdrawOrder = async (orderId: string | number) => {
     const detailResponse = await Api.withdraw.queryTheWithdrawOrder({ orderId })
     const detail = detailResponse?.result
@@ -628,49 +686,29 @@ export const useWithdrawFlow = () => {
     return detail
   }
 
-  const stopWithdrawOrderPolling = () => {
-    if (withdrawOrderPollTimer !== null) {
-      window.clearInterval(withdrawOrderPollTimer)
-      withdrawOrderPollTimer = null
-    }
+  // MQTT 只负责更新订单状态和金额等增量字段，不覆盖详情接口已经拿到的时间信息。
+  const applyWithdrawOrderFromTradeMessage = (orderId: string) => {
+    const cachedOrder = tradeMessageSyncStore.orderStatusMap[orderId]
 
-    isWithdrawOrderPolling = false
-  }
-
-  const pollWithdrawOrder = async (orderId: string | number) => {
-    if (isWithdrawOrderPolling) {
+    if (!cachedOrder || cachedOrder.orderType !== '1') {
       return
     }
 
-    try {
-      isWithdrawOrderPolling = true
-      const detail = await queryAndApplyWithdrawOrder(orderId)
-
-      if (!detail) {
-        return
-      }
-
-      if (isOrderTerminalStatus('withdraw', detail.status)) {
-        stopWithdrawOrderPolling()
-        refreshBalance()
-      }
-    } catch (error) {
-      console.error('queryTheWithdrawOrder polling failed', error)
-    } finally {
-      isWithdrawOrderPolling = false
+    const orderDetail = {
+      orderId: cachedOrder.orderId,
+      busiAmount: cachedOrder.busiAmount,
+      currency: cachedOrder.currency,
+      status: cachedOrder.status
     }
-  }
+    applyWithdrawOrderDetail(orderDetail)
 
-  const startWithdrawOrderPolling = (orderId: string | number, status?: string | number) => {
-    stopWithdrawOrderPolling()
-
-    if (isOrderTerminalStatus('withdraw', status)) {
-      return
+    if (
+      isOrderTerminalStatus('withdraw', cachedOrder.status) &&
+      !hasHandledActiveWithdrawTerminalStatus.value
+    ) {
+      hasHandledActiveWithdrawTerminalStatus.value = true
+      refreshBalance()
     }
-
-    withdrawOrderPollTimer = window.setInterval(() => {
-      void pollWithdrawOrder(orderId)
-    }, WITHDRAW_ORDER_POLL_INTERVAL_MS)
   }
 
   const buildSubmitTransferOrderForm = (withdrawNumber = 0): SubmitTransferOrderForm => {
@@ -702,7 +740,6 @@ export const useWithdrawFlow = () => {
     }
 
     try {
-      stopWithdrawOrderPolling()
       isWithdrawSubmitting.value = true
       amountVerification()
       await ensureNoPendingWithdrawOrder()
@@ -719,9 +756,26 @@ export const useWithdrawFlow = () => {
         throw new Error(String(submitResponse?.message || 'withdraw.submit_failed'))
       }
 
-      const detail = await queryAndApplyWithdrawOrder(orderId)
+      activeWithdrawOrderId.value = String(orderId)
+      hasHandledActiveWithdrawTerminalStatus.value = false
+
+      // 先用提交结果回显订单弹窗，避免等待接口时页面没有反馈。
+      applyWithdrawOrderDetail({
+        orderId,
+        orderNo: submitResult?.orderNo,
+        busiAmount: amount.value,
+        currency: resolvedCurrency.value,
+        status: submitResult?.status ?? 4,
+        createTime: Date.now()
+      })
       withdrawOrderVisible.value = true
-      startWithdrawOrderPolling(orderId, detail?.status)
+
+      // 首次进入订单弹窗时补齐完整详情，后续状态变更交给 MQTT 更新。
+      await queryAndApplyWithdrawOrder(orderId)
+      applyWithdrawOrderFromTradeMessage(String(orderId))
+      void tradeMessageSyncStore.forceSyncTradeMessages().then(() => {
+        applyWithdrawOrderFromTradeMessage(String(orderId))
+      })
       refreshBalance()
     } catch (error) {
       const messageKey = error instanceof Error ? error.message : 'withdraw.submit_failed'
@@ -839,8 +893,23 @@ export const useWithdrawFlow = () => {
     syncSelectedAccountCardOption()
   })
 
+  // 监听当前订单的 MQTT 状态变化，收到更新后同步刷新订单弹窗。
+  watch(
+    () => {
+      const orderId = activeWithdrawOrderId.value
+      return orderId ? tradeMessageSyncStore.orderStatusMap[orderId] : undefined
+    },
+    cachedOrder => {
+      if (!cachedOrder || !activeWithdrawOrderId.value) {
+        return
+      }
+
+      applyWithdrawOrderFromTradeMessage(activeWithdrawOrderId.value)
+    }
+  )
+
   onUnmounted(() => {
-    stopWithdrawOrderPolling()
+    activeWithdrawOrderId.value = ''
   })
 
   return {

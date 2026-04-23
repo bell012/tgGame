@@ -956,6 +956,7 @@
     "order_processing_title": "您的提现申请正在处理中。",
     "order_completed_title": "提现订单已完成",
     "order_completed": "订单已完成",
+    "order_cancelled": "订单取消",
     "order_no": "订单编号",
     "created_at": "创建时间",
     "withdraw_method": "提现方式",
@@ -1153,7 +1154,7 @@
     "busiPwd_content_text": "添加收款账号交易密码验证",
     "account_detail_title": "收款账号详情"
   },
-  "menu":{
+  "menu": {
     "crypto-account": "加密账户",
     "game-categories": "游戏分类",
     "recently-played": "最近常玩",
@@ -1187,4 +1188,3 @@
     "about": "关于我们"
   }
 }
-
