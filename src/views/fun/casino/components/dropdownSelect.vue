@@ -60,7 +60,7 @@
           <!-- 搜索框 -->
           <div v-if="search" class="relative mb-2.5">
             <SearchIcon
-              class="w-[18px] h-[18px] fill-none stroke-text-2 opacity-50 absolute left-2.5 top-1/2 -translate-y-1/2"
+              class="absolute left-2.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] opacity-50"
             />
             <input
               v-model="keyword"
@@ -140,7 +140,7 @@ import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
 import CubeChecedIcon from '@/static/svg/cube-checked.svg?component'
 import CubeUnchecedIcon from '@/static/svg/cube-unchecked.svg?component'
 import ClearIcon from '@/static/svg/clear.svg?component'
-import SearchIcon from '@/static/svg/search-icon.svg?component'
+import SearchIcon from '@/static/svg/explore/search.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 

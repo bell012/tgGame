@@ -80,7 +80,7 @@
         <div class="font-bold">{{ t('search.suggested') }}</div>
       </div>
       <div class="w-full">
-        <div v-if="suggestedList.length > 0" class="flex flex-wrap gap-2">
+        <div v-if="suggestedList.length > 0" class="suggested-list flex flex-wrap gap-2">
           <div
             v-for="(item, inx) in suggestedList"
             :key="inx"
@@ -289,6 +289,12 @@ onBeforeUnmount(() => {
 
 .top-search-input::placeholder {
   font-weight: 500;
+}
+
+.suggested-list {
+  // Keep suggested tags within two rows at most.
+  max-height: 56px;
+  overflow: hidden;
 }
 
 @media (max-width: 767px) {
