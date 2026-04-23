@@ -201,7 +201,7 @@ const h5StatsShellStyle = computed<CSSProperties>(() => {
   }
 })
 
-const h5StatsGridStyle = computed<CSSProperties>(() => {
+const h5StatsGridStyle = computed((): CSSProperties => {
   if (!isLightTheme.value || props.panelClass !== 'tp-panel-h5') {
     return {}
   }
