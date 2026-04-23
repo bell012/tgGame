@@ -15,7 +15,7 @@
         v-model="searchText"
         @keydown.enter.prevent="onSearch"
         @focus="showHistoryPanel = true"
-        class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0"
+        class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0 text-xs sm:text-sm"
         type="text"
         :placeholder="t('casino.placeholder')"
       />
