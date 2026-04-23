@@ -55,14 +55,14 @@
         </div>
         <!-- 搜索历史记录 -->
         <div class="w-full">
-          <div class="flex flex-wrap gap-2">
+          <div class="history-list flex flex-wrap gap-2">
             <div
-              v-for="(item, inx) in history.slice(0, 5)"
+              v-for="(item, inx) in history"
               :key="inx"
-              class="px-1.5 py-1 rounded bg-[var(--color-opacity-10)] inline-flex items-center cursor-pointer"
+              class="history-item px-1.5 py-1 rounded bg-[var(--color-opacity-10)] inline-flex items-center cursor-pointer max-w-full"
             >
               <div
-                class="text-xs text-[var(--color-text-level-2)] mr-0.5 break-words max-w-full cursor-pointer"
+                class="text-xs text-[var(--color-text-level-2)] mr-0.5 truncate min-w-0 cursor-pointer"
                 @click="goSearch(item)"
               >
                 {{ item }}
@@ -295,6 +295,16 @@ onBeforeUnmount(() => {
   // Keep suggested tags within two rows at most.
   max-height: 56px;
   overflow: hidden;
+}
+
+.history-list {
+  // Keep history tags within two rows at most.
+  max-height: 56px;
+  overflow: hidden;
+}
+
+.history-item {
+  line-height: 16px;
 }
 
 @media (max-width: 767px) {

@@ -1,9 +1,9 @@
 <template>
-  <div class="search-container">
+  <div ref="pageRootRef" class="search-container" :style="mobileStyle">
     <div :class="{ 'search-filter-panel': isMobile }">
       <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
     </div>
-    <tempalte v-if="currentType === 'casino'">
+    <template v-if="currentType === 'casino'">
       <div class="min-h-screen w-full relative">
         <div
           class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
@@ -81,21 +81,32 @@
           <component :is="currentPageStyle" v-bind="currentPageProps" />
         </div>
       </div>
-    </tempalte>
-    <tempalte v-if="currentType === 'sports'">
+    </template>
+    <template v-if="currentType === 'sports'">
       <div class="min-h-screen w-full relative"></div>
-    </tempalte>
-    <tempalte v-if="currentType === 'lottery'">
+    </template>
+    <template v-if="currentType === 'lottery'">
       <div class="min-h-screen w-full relative"></div>
-    </tempalte>
+    </template>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  provide,
+  ref,
+  watch,
+  type StyleValue
+} from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import type { GameQueryOptions } from '@/stores/game'
 import { useGameStore } from '@/stores/game'
+import { useLayoutStore } from '@/stores/layout'
 import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { casinoIcons } from '@/static/svg/casino'
@@ -110,8 +121,31 @@ type ExploreHotGameItem = {
 }
 
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
 const isMobile = useIsMobile()
 const gameStore = useGameStore()
+const layoutStore = useLayoutStore()
+const EXPLORE_CASINO_TAB_QUERY_KEY = 'casinoTab'
+
+const pageRootRef = ref<HTMLElement | null>(null)
+const mobileStyle = computed<StyleValue | undefined>(() => {
+  if (!isMobile.value) {
+    return undefined
+  }
+
+  const topNavHeight = layoutStore.TOPNAV_HEIGHT
+  const bottomTabHeight = layoutStore.BOTTOM_TAB_HEIGHT
+
+  return {
+    boxSizing: 'border-box',
+    height: `calc(100dvh - ${topNavHeight + bottomTabHeight}px)`,
+    marginTop: `${topNavHeight}px`,
+    overflowY: 'auto',
+    overscrollBehavior: 'contain',
+    WebkitOverflowScrolling: 'touch'
+  }
+})
 
 const keywords = ref('')
 provide('explore-keywords', keywords)
@@ -145,7 +179,18 @@ const tabScrollRef = ref<HTMLDivElement | null>(null)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
 const hasSyncedActiveTab = ref(false)
-const currentTabCode = ref('')
+
+const getQueryStringValue = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return String(value[0] ?? '')
+  }
+
+  return String(value ?? '')
+}
+
+const getRouteTabCode = () => getQueryStringValue(route.query[EXPLORE_CASINO_TAB_QUERY_KEY])
+const isExploreRoute = computed(() => String(route.name || '').replace(/^Locale/, '') === 'explore')
+const currentTabCode = ref(getRouteTabCode())
 
 const { tabButtons, loadCasinoTabButtons } = useCasinoTabButtons()
 
@@ -265,6 +310,55 @@ const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth'
   })
 }
 
+const scrollElementToTop = (element: Element | HTMLElement | null) => {
+  element?.scrollTo({
+    top: 0,
+    behavior: 'auto'
+  })
+}
+
+const scrollScrollableAncestorsToTop = (element: HTMLElement | null) => {
+  let current: HTMLElement | null = element
+
+  while (current) {
+    const { overflowY } = window.getComputedStyle(current)
+    const isScrollable = ['auto', 'scroll', 'overlay'].includes(overflowY)
+
+    if ((isScrollable && current.scrollHeight > current.clientHeight) || current.scrollTop > 0) {
+      scrollElementToTop(current)
+    }
+
+    current = current.parentElement
+  }
+}
+
+const scrollPageToTop = () => {
+  nextTick(() => {
+    scrollScrollableAncestorsToTop(pageRootRef.value)
+    scrollElementToTop(document.scrollingElement)
+    window.scrollTo({
+      top: 0,
+      behavior: 'auto'
+    })
+  })
+}
+
+const syncRouteTabCode = (tabCode: string) => {
+  if (!isExploreRoute.value || getRouteTabCode() === tabCode) {
+    return
+  }
+
+  const nextQuery = { ...route.query }
+
+  if (tabCode) {
+    nextQuery[EXPLORE_CASINO_TAB_QUERY_KEY] = tabCode
+  } else {
+    delete nextQuery[EXPLORE_CASINO_TAB_QUERY_KEY]
+  }
+
+  void router.replace({ query: nextQuery })
+}
+
 const onTabButton = (tab: CasinoTabButtonItem) => {
   if (tab.sysGameTypeCode === currentTabCode.value) {
     return
@@ -273,6 +367,7 @@ const onTabButton = (tab: CasinoTabButtonItem) => {
   // 切换分类时保留当前关键词，并基于新分类自动刷新检索结果
   activeSearchKeyword.value = keywords.value.trim()
   currentTabCode.value = tab.sysGameTypeCode
+  syncRouteTabCode(tab.sysGameTypeCode)
 }
 
 const loadSuggestedGames = async () => {
@@ -300,16 +395,49 @@ watch(
   tabButtons,
   list => {
     if (!list.length) {
-      currentTabCode.value = ''
+      return
+    }
+
+    const routeTabCode = getRouteTabCode()
+    const hasRouteTabCode = list.some(item => item.sysGameTypeCode === routeTabCode)
+
+    if (routeTabCode && hasRouteTabCode) {
+      currentTabCode.value = routeTabCode
       return
     }
 
     const hasCurrentCode = list.some(item => item.sysGameTypeCode === currentTabCode.value)
     if (!hasCurrentCode) {
       currentTabCode.value = list[0].sysGameTypeCode
+      syncRouteTabCode(currentTabCode.value)
     }
   },
   { immediate: true }
+)
+
+watch(
+  () => route.query[EXPLORE_CASINO_TAB_QUERY_KEY],
+  value => {
+    if (!isExploreRoute.value) {
+      return
+    }
+
+    const routeTabCode = getQueryStringValue(value)
+
+    if (!tabButtons.value.length) {
+      currentTabCode.value = routeTabCode
+      return
+    }
+
+    const nextTabCode =
+      routeTabCode && tabButtons.value.some(item => item.sysGameTypeCode === routeTabCode)
+        ? routeTabCode
+        : tabButtons.value[0].sysGameTypeCode
+
+    if (currentTabCode.value !== nextTabCode) {
+      currentTabCode.value = nextTabCode
+    }
+  }
 )
 
 watch(
@@ -334,6 +462,7 @@ let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
   void loadCasinoTabButtons()
   void loadSuggestedGames()
+  scrollPageToTop()
   updateScrollState()
 
   if (tabScrollRef.value) {
@@ -352,10 +481,6 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 @media (max-width: 767px) {
-  .search-container {
-    padding-top: 60px;
-  }
-
   .search-filter-panel {
     background: var(--color-background-level-1);
     margin-left: -12px;
