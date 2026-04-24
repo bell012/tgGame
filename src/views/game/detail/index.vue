@@ -40,6 +40,11 @@ import { navigateTo } from '@/utils/router'
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import {
+  findGameDetailItemByIdentity,
+  normalizeGameDetailValue,
+  resolveGameDetailHotList
+} from './shared'
 import H5Header from './h5/header.vue'
 import H5CurrencyInfo from './h5/currency-info/index.vue'
 import DesktopCurrencyInfo from './desktop/currency-info/index.vue'
@@ -48,28 +53,28 @@ import RecentGames from './common/recent-games/index.vue'
 import GameList from './common/game-list/index.vue'
 
 type GameDataItem = {
+  rowId?: string | number
   itemCode?: string | number
   platformCode?: string
+  gameTypeCode?: string
   sysGameTypeCode?: string
+  itemName?: string
   platformName?: string
   hot?: number | string
   icon2?: string
   conUrl?: string
   initScoreNum?: number | string
+  subGame?: GameDataItem[]
   gameItemHotVo?: {
     defaultImage?: string
     hot?: number | string
   }
 }
 
-type GameDataProvider = {
-  subGame?: GameDataItem[]
-}
-
 type GameDataSection = {
   sysGameTypeCode?: string
   sysGameTypeName?: string
-  subGame?: GameDataProvider[]
+  subGame?: GameDataItem[]
 }
 
 type GameDetailCacheGlobal = {
@@ -81,8 +86,11 @@ type GameDetailCacheGlobal = {
 type CurrentGameDetail =
   | ({
       rowId?: string | number
+      itemCode?: string | number
+      platformCode?: string
       itemName?: string
       platformName?: string
+      gameTypeCode?: string
       sysGameTypeName?: string
       sysGameTypeCode?: string
     } & Record<string, unknown>)
@@ -137,68 +145,65 @@ const resetScrollToTop = () => {
 }
 
 // ===== 工具函数 =====
-const normalizeQueryValue = (value: unknown) => {
-  if (Array.isArray(value)) {
-    return String(value[0] ?? '').trim()
-  }
-  return String(value ?? '').trim()
-}
-
-const getSectionProviderList = (section?: GameDataSection) => {
-  return Array.isArray(section?.subGame) ? section.subGame : []
-}
-
-const flattenProviderGames = (providerList: GameDataProvider[]) => {
-  return providerList.flatMap(provider =>
-    Array.isArray(provider?.subGame) ? provider.subGame : []
-  )
-}
-
-const isHotGame = (game: GameDataItem) => {
-  const hotValue = game.gameItemHotVo?.hot ?? game.hot
-  return Number(hotValue) === 1
-}
-
-const getGameSectionByTypeCode = (sections: GameDataSection[], targetTypeCode: string) => {
-  return sections.find(section => normalizeQueryValue(section?.sysGameTypeCode) === targetTypeCode)
-}
-
 const buildRecommendedPageQuery = (pageTitle: string) => {
   return {
     ...(currentGameRowId.value ? { rowId: currentGameRowId.value } : {}),
+    ...(currentGameItemCode.value ? { itemCode: currentGameItemCode.value } : {}),
+    ...(currentGamePlatformCode.value ? { platformCode: currentGamePlatformCode.value } : {}),
+    ...(currentGameCategoryCode.value ? { gameTypeCode: currentGameCategoryCode.value } : {}),
     ...(currentGameTypeCode.value ? { sysGameTypeCode: currentGameTypeCode.value } : {}),
     ...(pageTitle ? { title: pageTitle } : {})
   }
 }
 
 // ===== 派生状态 =====
-const rowId = computed(() => normalizeQueryValue(route.params.rowId))
+const rowId = computed(() => normalizeGameDetailValue(route.params.rowId))
 const currentGameDetail = computed<CurrentGameDetail>(() => currentGameDetailState.value)
 provide('game-detail-current-game', currentGameDetail)
 
+const currentGameFromTree = computed(() =>
+  findGameDetailItemByIdentity(gameData.value, {
+    rowId: rowId.value,
+    itemCode: normalizeGameDetailValue(currentGameDetail.value?.itemCode),
+    platformCode: normalizeGameDetailValue(currentGameDetail.value?.platformCode)
+  })
+)
+const currentGameCategoryCode = computed(() =>
+  normalizeGameDetailValue(
+    currentGameFromTree.value?.gameTypeCode ?? currentGameDetail.value?.gameTypeCode
+  )
+)
 const currentGameTypeCode = computed(() =>
-  normalizeQueryValue(currentGameDetail.value?.sysGameTypeCode)
+  normalizeGameDetailValue(
+    currentGameFromTree.value?.sysGameTypeCode ?? currentGameDetail.value?.sysGameTypeCode
+  )
 )
-const currentGameRowId = computed(() => normalizeQueryValue(currentGameDetail.value?.rowId))
-const currentGamePageTitle = computed(() =>
-  normalizeQueryValue(currentGameDetail.value?.platformName ?? currentGameDetail.value?.itemName)
+const currentGameRowId = computed(() =>
+  normalizeGameDetailValue(currentGameDetail.value?.rowId ?? rowId.value)
 )
+const currentGameItemCode = computed(() =>
+  normalizeGameDetailValue(currentGameDetail.value?.itemCode ?? currentGameFromTree.value?.itemCode)
+)
+const currentGamePlatformCode = computed(() =>
+  normalizeGameDetailValue(
+    currentGameDetail.value?.platformCode ?? currentGameFromTree.value?.platformCode
+  )
+)
+const currentGamePageTitle = computed(() => {
+  return normalizeGameDetailValue(
+    currentGameDetail.value?.platformName ??
+      currentGameFromTree.value?.platformName ??
+      currentGameDetail.value?.itemName
+  )
+})
 
 const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
-  const targetTypeCode = currentGameTypeCode.value
-  if (!targetTypeCode) {
-    return []
-  }
-
-  const targetSection = getGameSectionByTypeCode(gameData.value, targetTypeCode)
-  if (!targetSection) {
-    return []
-  }
-
-  const providerList = getSectionProviderList(targetSection)
-  const allGames = flattenProviderGames(providerList)
-
-  return allGames.filter(isHotGame)
+  const list = resolveGameDetailHotList(gameData.value, {
+    gameTypeCode: currentGameCategoryCode.value,
+    sysGameTypeCode: currentGameTypeCode.value,
+    excludeRowId: currentGameRowId.value
+  }) as GameDataItem[]
+  return list
 })
 const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.value.length > 0)
 

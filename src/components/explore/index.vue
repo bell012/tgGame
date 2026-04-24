@@ -28,10 +28,10 @@
               :key="item.sysGameTypeCode || `tab-${index}`"
               :ref="el => (tabRefs[index] = el as HTMLButtonElement)"
               :class="{ 'explore-tab-button--active': isActiveCasinoTab(item) }"
-              class="explore-tab-button flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
+              class="explore-tab-button flex h-[36px] shrink-0 items-center rounded-lg px-2.5 leading-none lg:hover:bg-bg-2"
               @click.stop="onTabButton(item)"
             >
-              <div class="explore-tab-icon h-5 w-5 mr-[7px]">
+              <div class="explore-tab-icon mr-1.5 h-4 w-4">
                 <img
                   v-if="!isActiveCasinoTab(item) && typeof item.icon === 'string'"
                   :src="item.icon"
@@ -49,7 +49,7 @@
                   class="w-full h-full"
                 />
               </div>
-              <div class="explore-tab-label font-[700] text-text-2">
+              <div class="explore-tab-label font-[700] text-text-2 leading-none">
                 {{ item.sysGameTypeName }}
               </div>
             </button>
@@ -501,11 +501,11 @@ onUnmounted(() => {
   }
 
   .explore-tab-button {
-    height: 44px;
+    height: 36px;
     padding: 0 14px;
-    border-radius: 8px;
-    font-size: 16px;
-    line-height: 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 36px;
     color: var(--color-text-level-2);
   }
 
@@ -523,9 +523,8 @@ onUnmounted(() => {
     max-width: 120px;
     overflow: hidden;
     color: var(--color-text-level-2);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
-    line-height: 20px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
