@@ -122,6 +122,28 @@ export const useRebatePage = () => {
   const nextRebateValue = ref(0.8)
   const rebateRowsFromApi = ref<RebateRow[]>([])
 
+  const applyRebateOverviewResponse = (result: unknown) => {
+    if (!result) {
+      return
+    }
+
+    const rawResult = result as Record<string, unknown>
+
+    const todayValidBetsValue = pickField(rawResult, ['betAmount'])
+    const eligibleTurnoverValue = pickField(rawResult, ['flowAmount'])
+    const claimableAmountValue = pickField(rawResult, ['rebatePoints'])
+
+    if (todayValidBetsValue !== undefined) {
+      todayValidBets.value = toNumber(todayValidBetsValue, todayValidBets.value)
+    }
+    if (eligibleTurnoverValue !== undefined) {
+      eligibleTurnover.value = toNumber(eligibleTurnoverValue, eligibleTurnover.value)
+    }
+    if (claimableAmountValue !== undefined) {
+      claimableAmount.value = toNumber(claimableAmountValue, claimableAmount.value)
+    }
+  }
+
   const applyRebateRateResponse = (result: unknown) => {
     if (!result) {
       return
@@ -131,22 +153,6 @@ export const useRebatePage = () => {
       ? { list: result }
       : ((result as Record<string, unknown>) ?? {})
 
-    const todayValidBetsValue = pickField(rawResult, [
-      'todayValidBets',
-      'todayValidBet',
-      'todayBetAmount'
-    ])
-    const eligibleTurnoverValue = pickField(rawResult, [
-      'eligibleTurnover',
-      'validTurnover',
-      'turnoverAmount'
-    ])
-    const claimableAmountValue = pickField(rawResult, [
-      'claimableAmount',
-      'rebateAmount',
-      'canReceiveAmount',
-      'receiveAmount'
-    ])
     const pendingRebateTurnoverValue = pickField(rawResult, [
       'pendingRebateTurnover',
       'pendingTurnover',
@@ -176,15 +182,6 @@ export const useRebatePage = () => {
     ])
     const nextRebateRate = pickField(rawResult, ['nextRebate', 'nextRebateRate'])
 
-    if (todayValidBetsValue !== undefined) {
-      todayValidBets.value = toNumber(todayValidBetsValue, todayValidBets.value)
-    }
-    if (eligibleTurnoverValue !== undefined) {
-      eligibleTurnover.value = toNumber(eligibleTurnoverValue, eligibleTurnover.value)
-    }
-    if (claimableAmountValue !== undefined) {
-      claimableAmount.value = toNumber(claimableAmountValue, claimableAmount.value)
-    }
     if (promoBonusTurnoverDeductionValue !== undefined) {
       promoBonusTurnoverDeduction.value = toNumber(
         promoBonusTurnoverDeductionValue,
@@ -196,9 +193,8 @@ export const useRebatePage = () => {
         pendingRebateTurnoverValue,
         pendingRebateTurnover.value
       )
-    } else if (eligibleTurnoverValue !== undefined) {
-      pendingRebateTurnover.value =
-        toNumber(eligibleTurnoverValue, eligibleTurnover.value) + promoBonusTurnoverDeduction.value
+    } else {
+      pendingRebateTurnover.value = eligibleTurnover.value + promoBonusTurnoverDeduction.value
     }
     if (currentValidBetsValue !== undefined) {
       currentValidBets.value = toNumber(currentValidBetsValue, currentValidBets.value)
@@ -240,6 +236,19 @@ export const useRebatePage = () => {
     rebateRowsFromApi.value = normalizedRows
   }
 
+  const loadRebateOverview = async () => {
+    try {
+      const response = await Api.user.queryRebateGameData()
+      if (!response?.success) {
+        throw new Error(response?.message || 'load rebate overview failed')
+      }
+
+      applyRebateOverviewResponse(response.result)
+    } catch (error) {
+      console.error('loadRebateOverview failed', error)
+    }
+  }
+
   const loadRebateRate = async () => {
     try {
       const response = await Api.user.selectRebateRate()
@@ -254,6 +263,7 @@ export const useRebatePage = () => {
   }
 
   onMounted(() => {
+    void loadRebateOverview()
     void loadRebateRate()
   })
 
