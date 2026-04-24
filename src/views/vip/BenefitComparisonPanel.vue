@@ -24,7 +24,7 @@
 
       <article
         v-if="nextColumn"
-        class="min-w-0 rounded-[10px] bg-bg-2 px-[20px] pb-[10px] pt-[7px] sm:rounded-[16px] sm:px-[24px] sm:pb-[14px] sm:pt-[12px]"
+        class="min-w-0 rounded-[10px] bg-bg-2 px-[4px] pb-[10px] pt-[7px] sm:rounded-[16px] sm:px-[24px] sm:pb-[14px] sm:pt-[12px]"
       >
         <p :class="getTitleClass(nextColumn.key)">{{ nextColumn.title }}</p>
 
@@ -67,7 +67,7 @@
 
       <article
         v-if="nextTotalRow"
-        class="min-w-0 w-full rounded-[10px] bg-bg-2 px-[20px] h-[60px] flex items-center justify-between sm:rounded-[16px] sm:px-[24px] sm:h-[48px]"
+        class="min-w-0 w-full rounded-[10px] bg-bg-2 px-[4px] h-[60px] flex items-center justify-between sm:rounded-[16px] sm:px-[24px] sm:h-[48px]"
       >
         <div class="w-full flex items-center justify-center">
           <span
