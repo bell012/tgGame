@@ -347,6 +347,22 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'personal-center/rebate-records',
+    name: 'personal-center-rebate-records',
+    component: () => import('@/views/personalCenter/rebate/records/index.vue'),
+    meta: {
+      title: 'Rebate Records',
+      description: 'Rebate Records',
+      requiresAuth: true,
+      mobileOnly: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'personal-center/feedback',
     name: 'personal-center-feedback',
     component: () => import('@/views/personalCenter/feedback/index.vue'),

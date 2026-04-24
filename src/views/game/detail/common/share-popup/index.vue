@@ -306,20 +306,16 @@ const handleChannelShare = async (channel: ShareChannelKey) => {
   }
 
   if (channel === 'email') {
-    if (typeof window !== 'undefined') {
-      window.location.href = `mailto:?subject=${encodeURIComponent(t('gameDetail.shareDefaultTitle'))}&body=${encodedText}`
-    }
+    openInNewTab(
+      `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(
+        t('gameDetail.shareDefaultTitle')
+      )}&body=${encodedText}`
+    )
     return
   }
 
   if (channel === 'line') {
-    const webUrl = `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`
-    openAppWithStoreFallback({
-      appUrl: `line://msg/text/${encodedText}`,
-      webUrl,
-      androidStoreUrl: 'https://play.google.com/store/apps/details?id=jp.naver.line.android',
-      iosStoreUrl: 'https://apps.apple.com/app/line/id443904275'
-    })
+    openInNewTab(`https://social-plugins.line.me/lineit/share?url=${encodedUrl}`)
     return
   }
 

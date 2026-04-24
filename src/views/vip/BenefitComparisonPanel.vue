@@ -103,17 +103,17 @@ const currentTotalRow = computed(
 const nextTotalRow = computed(() => nextColumn.value?.rows.find(row => row.emphasized) ?? null)
 const detailGridClass = computed(() =>
   hasNextColumn.value
-    ? 'grid grid-cols-[230px_minmax(0,1fr)] gap-[12px] sm:grid-cols-2 sm:gap-[28px] sm:grid-cols-[864px_minmax(0,1fr)]'
+    ? 'grid grid-cols-[220px_minmax(0,1fr)] gap-[12px] sm:grid-cols-2 sm:gap-[28px] sm:grid-cols-[864px_minmax(0,1fr)]'
     : 'grid grid-cols-1'
 )
 const totalGridClass = computed(() =>
   hasNextColumn.value
-    ? 'relative grid grid-cols-[230px_minmax(0,1fr)] gap-[12px] sm:grid-cols-2 sm:gap-[28px] sm:grid-cols-[864px_minmax(0,1fr)]'
+    ? 'relative grid grid-cols-[220px_minmax(0,1fr)] gap-[12px] sm:grid-cols-2 sm:gap-[28px] sm:grid-cols-[864px_minmax(0,1fr)]'
     : 'grid grid-cols-1'
 )
 const arrowClass = computed(
   () =>
-    'pointer-events-none absolute left-[calc(230px+5px)] top-1/2 z-[1] h-[25px] w-[25px] -translate-x-1/2 -translate-y-1/2 sm:left-1/2 sm:h-[26px] sm:w-[39px] sm:left-[calc(864px+15px)]'
+    'pointer-events-none absolute left-[calc(220px+5px)] top-1/2 z-[1] h-[25px] w-[25px] -translate-x-1/2 -translate-y-1/2 sm:left-1/2 sm:h-[26px] sm:w-[39px] sm:left-[calc(864px+15px)]'
 )
 
 const getTitleClass = (key: VipBenefitComparisonColumn['key']) => {

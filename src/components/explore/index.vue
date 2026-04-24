@@ -1,9 +1,9 @@
 <template>
-  <div class="search-container">
+  <div ref="pageRootRef" class="search-container" :style="mobileStyle">
     <div :class="{ 'search-filter-panel': isMobile }">
       <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
     </div>
-    <tempalte v-if="currentType === 'casino'">
+    <template v-if="currentType === 'casino'">
       <div class="min-h-screen w-full relative">
         <div
           class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
@@ -20,43 +20,36 @@
         <div>
           <div
             ref="tabScrollRef"
-            class="my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
+            class="explore-tabs-scroll my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
             @scroll="updateScrollState"
           >
             <button
               v-for="(item, index) in tabButtons"
               :key="item.sysGameTypeCode || `tab-${index}`"
               :ref="el => (tabRefs[index] = el as HTMLButtonElement)"
-              :class="{
-                'bg-bg-2': item.sysGameTypeCode === currentTabCode
-              }"
-              class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
+              :class="{ 'explore-tab-button--active': isActiveCasinoTab(item) }"
+              class="explore-tab-button flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
               @click.stop="onTabButton(item)"
             >
-              <div class="h-5 w-5 mr-[7px]">
+              <div class="explore-tab-icon h-5 w-5 mr-[7px]">
                 <img
-                  v-if="item.sysGameTypeCode !== currentTabCode && typeof item.icon === 'string'"
+                  v-if="!isActiveCasinoTab(item) && typeof item.icon === 'string'"
                   :src="item.icon"
                   class="w-full h-full object-contain"
                 />
                 <img
-                  v-else-if="
-                    item.sysGameTypeCode === currentTabCode && typeof item.iconSelect === 'string'
-                  "
+                  v-else-if="isActiveCasinoTab(item) && typeof item.iconSelect === 'string'"
                   :src="item.iconSelect"
                   class="w-full h-full object-contain"
                 />
                 <component
                   v-else-if="item.icon"
                   :is="item.icon"
-                  :class="item.sysGameTypeCode === currentTabCode ? 'fill-primary' : 'fill-text-2'"
+                  :class="isActiveCasinoTab(item) ? 'fill-primary' : 'fill-text-2'"
                   class="w-full h-full"
                 />
               </div>
-              <div
-                :class="item.sysGameTypeCode === currentTabCode ? 'text-text-1' : 'text-text-2'"
-                class="font-[700]"
-              >
+              <div class="explore-tab-label font-[700] text-text-2">
                 {{ item.sysGameTypeName }}
               </div>
             </button>
@@ -81,21 +74,32 @@
           <component :is="currentPageStyle" v-bind="currentPageProps" />
         </div>
       </div>
-    </tempalte>
-    <tempalte v-if="currentType === 'sports'">
+    </template>
+    <template v-if="currentType === 'sports'">
       <div class="min-h-screen w-full relative"></div>
-    </tempalte>
-    <tempalte v-if="currentType === 'lottery'">
+    </template>
+    <template v-if="currentType === 'lottery'">
       <div class="min-h-screen w-full relative"></div>
-    </tempalte>
+    </template>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  provide,
+  ref,
+  watch,
+  type StyleValue
+} from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import type { GameQueryOptions } from '@/stores/game'
 import { useGameStore } from '@/stores/game'
+import { useLayoutStore } from '@/stores/layout'
 import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { casinoIcons } from '@/static/svg/casino'
@@ -110,8 +114,31 @@ type ExploreHotGameItem = {
 }
 
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
 const isMobile = useIsMobile()
 const gameStore = useGameStore()
+const layoutStore = useLayoutStore()
+const EXPLORE_CASINO_TAB_QUERY_KEY = 'casinoTab'
+
+const pageRootRef = ref<HTMLElement | null>(null)
+const mobileStyle = computed<StyleValue | undefined>(() => {
+  if (!isMobile.value) {
+    return undefined
+  }
+
+  const topNavHeight = layoutStore.TOPNAV_HEIGHT
+  const bottomTabHeight = layoutStore.BOTTOM_TAB_HEIGHT
+
+  return {
+    boxSizing: 'border-box',
+    height: `calc(100dvh - ${topNavHeight + bottomTabHeight}px)`,
+    marginTop: `${topNavHeight}px`,
+    overflowY: 'auto',
+    overscrollBehavior: 'contain',
+    WebkitOverflowScrolling: 'touch'
+  }
+})
 
 const keywords = ref('')
 provide('explore-keywords', keywords)
@@ -145,7 +172,18 @@ const tabScrollRef = ref<HTMLDivElement | null>(null)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
 const hasSyncedActiveTab = ref(false)
-const currentTabCode = ref('')
+
+const getQueryStringValue = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return String(value[0] ?? '')
+  }
+
+  return String(value ?? '')
+}
+
+const getRouteTabCode = () => getQueryStringValue(route.query[EXPLORE_CASINO_TAB_QUERY_KEY])
+const isExploreRoute = computed(() => String(route.name || '').replace(/^Locale/, '') === 'explore')
+const currentTabCode = ref(getRouteTabCode())
 
 const { tabButtons, loadCasinoTabButtons } = useCasinoTabButtons()
 
@@ -265,6 +303,57 @@ const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth'
   })
 }
 
+const isActiveCasinoTab = (tab: CasinoTabButtonItem) => tab.sysGameTypeCode === currentTabCode.value
+
+const scrollElementToTop = (element: Element | HTMLElement | null) => {
+  element?.scrollTo({
+    top: 0,
+    behavior: 'auto'
+  })
+}
+
+const scrollScrollableAncestorsToTop = (element: HTMLElement | null) => {
+  let current: HTMLElement | null = element
+
+  while (current) {
+    const { overflowY } = window.getComputedStyle(current)
+    const isScrollable = ['auto', 'scroll', 'overlay'].includes(overflowY)
+
+    if ((isScrollable && current.scrollHeight > current.clientHeight) || current.scrollTop > 0) {
+      scrollElementToTop(current)
+    }
+
+    current = current.parentElement
+  }
+}
+
+const scrollPageToTop = () => {
+  nextTick(() => {
+    scrollScrollableAncestorsToTop(pageRootRef.value)
+    scrollElementToTop(document.scrollingElement)
+    window.scrollTo({
+      top: 0,
+      behavior: 'auto'
+    })
+  })
+}
+
+const syncRouteTabCode = (tabCode: string) => {
+  if (!isExploreRoute.value || getRouteTabCode() === tabCode) {
+    return
+  }
+
+  const nextQuery = { ...route.query }
+
+  if (tabCode) {
+    nextQuery[EXPLORE_CASINO_TAB_QUERY_KEY] = tabCode
+  } else {
+    delete nextQuery[EXPLORE_CASINO_TAB_QUERY_KEY]
+  }
+
+  void router.replace({ query: nextQuery })
+}
+
 const onTabButton = (tab: CasinoTabButtonItem) => {
   if (tab.sysGameTypeCode === currentTabCode.value) {
     return
@@ -273,6 +362,7 @@ const onTabButton = (tab: CasinoTabButtonItem) => {
   // 切换分类时保留当前关键词，并基于新分类自动刷新检索结果
   activeSearchKeyword.value = keywords.value.trim()
   currentTabCode.value = tab.sysGameTypeCode
+  syncRouteTabCode(tab.sysGameTypeCode)
 }
 
 const loadSuggestedGames = async () => {
@@ -300,16 +390,49 @@ watch(
   tabButtons,
   list => {
     if (!list.length) {
-      currentTabCode.value = ''
+      return
+    }
+
+    const routeTabCode = getRouteTabCode()
+    const hasRouteTabCode = list.some(item => item.sysGameTypeCode === routeTabCode)
+
+    if (routeTabCode && hasRouteTabCode) {
+      currentTabCode.value = routeTabCode
       return
     }
 
     const hasCurrentCode = list.some(item => item.sysGameTypeCode === currentTabCode.value)
     if (!hasCurrentCode) {
       currentTabCode.value = list[0].sysGameTypeCode
+      syncRouteTabCode(currentTabCode.value)
     }
   },
   { immediate: true }
+)
+
+watch(
+  () => route.query[EXPLORE_CASINO_TAB_QUERY_KEY],
+  value => {
+    if (!isExploreRoute.value) {
+      return
+    }
+
+    const routeTabCode = getQueryStringValue(value)
+
+    if (!tabButtons.value.length) {
+      currentTabCode.value = routeTabCode
+      return
+    }
+
+    const nextTabCode =
+      routeTabCode && tabButtons.value.some(item => item.sysGameTypeCode === routeTabCode)
+        ? routeTabCode
+        : tabButtons.value[0].sysGameTypeCode
+
+    if (currentTabCode.value !== nextTabCode) {
+      currentTabCode.value = nextTabCode
+    }
+  }
 )
 
 watch(
@@ -334,6 +457,7 @@ let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
   void loadCasinoTabButtons()
   void loadSuggestedGames()
+  scrollPageToTop()
   updateScrollState()
 
   if (tabScrollRef.value) {
@@ -351,17 +475,64 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@media (max-width: 767px) {
-  .search-container {
-    padding-top: 60px;
-  }
+.explore-tab-button--active {
+  background: var(--color-background-level-2);
 
+  .explore-tab-label {
+    color: var(--color-text-level-1);
+  }
+}
+
+@media (max-width: 767px) {
   .search-filter-panel {
     background: var(--color-background-level-1);
     margin-left: -12px;
     margin-right: -12px;
     padding: 10px 12px 8px;
     margin-bottom: 0;
+  }
+
+  .explore-tabs-scroll {
+    height: 62px;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+
+  .explore-tab-button {
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 20px;
+    color: var(--color-text-level-2);
+  }
+
+  .explore-tab-button--active {
+    background: var(--color-background-level-2);
+  }
+
+  .explore-tab-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+  }
+
+  .explore-tab-label {
+    max-width: 120px;
+    overflow: hidden;
+    color: var(--color-text-level-2);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .explore-tab-button--active .explore-tab-label {
+    color: var(--color-text-level-1);
+    font-weight: 700;
   }
 }
 </style>
