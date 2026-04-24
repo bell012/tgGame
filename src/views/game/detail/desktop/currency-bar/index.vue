@@ -164,8 +164,9 @@ const shareClick = () => {
 }
 
 .desktop-popup {
-  bottom: calc(100% + 6px);
+  bottom: calc(100% + 12px);
   position: absolute;
   left: 20px;
+  left: calc(50% - 240px);
 }
 </style>
