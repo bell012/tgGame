@@ -168,6 +168,7 @@ const resolvedQueryOptions = computed<GameQueryOptions>(() => {
   return {
     ...baseOptions,
     ...sortOptionMap[selectedSort.value],
+    // sysGameTypeCode
     brandCodes: selectedProviders.value
   }
 })
@@ -227,7 +228,7 @@ const getScrollParent = (element: HTMLElement | null) => {
 }
 
 const getBrandIcon = (item: GameBrandItem) => {
-  const imagePath = item.banner || item.icon
+  const imagePath = item.icon4 // || item.icon
   return imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
 }
 
