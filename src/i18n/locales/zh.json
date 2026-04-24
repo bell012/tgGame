@@ -181,7 +181,7 @@
     "playNow": "立即开始",
     "playWithBalanceIn": "使用余额币种游玩",
     "confirmAndPlay": "确认并开始",
-    "signInPrompt": "欢迎来到 Dragon-Phoenix，请先登录后继续。",
+    "signInPrompt": "欢迎来到 {gameName}，请先登录后继续。",
     "liveStatsTitle": "实时数据",
     "betId": "投注ID",
     "bet": "投注",

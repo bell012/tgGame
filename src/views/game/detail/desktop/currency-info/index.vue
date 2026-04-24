@@ -25,7 +25,7 @@
         class="play-card absolute z-[2] top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-[var(--color-background-level-1)] p-[28px] rounded-lg"
       >
         <div class="text-[12px] text-center pb-[8px] text-[var(--color-text-level-2)]">
-          {{ t('gameDetail.signInPrompt') }}
+          {{ t('gameDetail.signInPrompt', { gameName: displayGameName }) }}
         </div>
         <div class="play-btn w-[408px] h-[40px] cursor-pointer" @click="handleSignIn">
           <div class="w-[16px] h-[16px]">
@@ -102,6 +102,13 @@ const rawGameImage = computed(() => {
 const placeholderIcon = computed(() => (theme.value === 'dark' ? errorImg : errorImg1))
 const isFallbackImage = computed(() => !rawGameImage.value)
 const displayGameImg = computed(() => rawGameImage.value || placeholderIcon.value)
+const displayGameName = computed(() => {
+  return (
+    String(
+      currentGameDetail.value?.itemName ?? currentGameDetail.value?.platformName ?? ''
+    ).trim() || '--'
+  )
+})
 </script>
 <style scoped lang="scss">
 .image-main {

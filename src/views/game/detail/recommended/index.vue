@@ -62,6 +62,11 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import type { GameDataItem as CasinoCardGameDataItem } from '@/api/interface/game'
 import casinoGameCard from '@/views/fun/casino/components/casinoGameCard.vue'
+import {
+  findGameDetailItemByIdentity,
+  normalizeGameDetailValue,
+  resolveGameDetailHotList
+} from '../shared'
 
 type GameDataItem = {
   rowId?: string | number
@@ -69,27 +74,29 @@ type GameDataItem = {
   platformCode?: string
   itemName?: string
   platformName?: string
+  gameTypeCode?: string
   sysGameTypeCode?: string
   initScoreNum?: number | string
   hot?: number | string
   icon2?: string
   conUrl?: string
+  subGame?: GameDataItem[]
   gameItemHotVo?: {
     defaultImage?: string
     hot?: number | string
   }
 }
 
-type GameDataProvider = {
+type GameDataSection = {
+  sysGameTypeCode?: string
   subGame?: GameDataItem[]
 }
 
-type GameDataSection = {
-  sysGameTypeCode?: string
-  subGame?: GameDataProvider[]
-}
-
 type GameDetailCurrent = {
+  rowId?: string | number
+  itemCode?: string | number
+  platformCode?: string
+  gameTypeCode?: string
   sysGameTypeCode?: string
   platformName?: string
 }
@@ -114,19 +121,12 @@ const pageTitle = ref(defaultPageTitle.value)
 const isCustomPageTitle = ref(false)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(gameList.value.length / PAGE_SIZE)))
-const sourceRowId = computed(() => getQueryValue(route.query.rowId))
+const sourceRowId = computed(() => normalizeGameDetailValue(route.query.rowId))
 
 const pagedGameList = computed(() => {
   const start = (page.value - 1) * PAGE_SIZE
   return gameList.value.slice(start, start + PAGE_SIZE)
 })
-
-const getQueryValue = (value: unknown) => {
-  if (Array.isArray(value)) {
-    return String(value[0] ?? '').trim()
-  }
-  return String(value ?? '').trim()
-}
 
 const toCasinoCardGame = (item: GameDataItem): CasinoCardGameDataItem => {
   const initScoreNum = Number(item.initScoreNum ?? 0)
@@ -139,80 +139,6 @@ const toCasinoCardGame = (item: GameDataItem): CasinoCardGameDataItem => {
     // 保持本页历史表现：人数显示接近 initScoreNum（避免 card 内随机区间影响）
     initScoreStar: initScoreNum
   } as CasinoCardGameDataItem
-}
-
-const findGameDetailByCodes = (
-  data: unknown,
-  targetItemCode: string,
-  targetPlatformCode: string
-): GameDetailCurrent | null => {
-  if (!targetItemCode || !targetPlatformCode) {
-    return null
-  }
-
-  const visited = new WeakSet<object>()
-
-  const dfs = (node: unknown): GameDetailCurrent | null => {
-    if (!node || typeof node !== 'object') {
-      return null
-    }
-
-    if (Array.isArray(node)) {
-      for (const child of node) {
-        const found = dfs(child)
-        if (found) {
-          return found
-        }
-      }
-      return null
-    }
-
-    if (visited.has(node)) {
-      return null
-    }
-    visited.add(node)
-
-    const currentNode = node as Record<string, unknown>
-    const currentItemCode = getQueryValue(currentNode.itemCode)
-    const currentPlatformCode = getQueryValue(currentNode.platformCode)
-
-    if (currentItemCode === targetItemCode && currentPlatformCode === targetPlatformCode) {
-      return currentNode as GameDetailCurrent
-    }
-
-    for (const value of Object.values(currentNode)) {
-      const found = dfs(value)
-      if (found) {
-        return found
-      }
-    }
-    return null
-  }
-
-  return dfs(data)
-}
-
-const resolveCurrentCategoryHotGameList = (sections: GameDataSection[], typeCode: string) => {
-  if (!typeCode) {
-    return []
-  }
-
-  const targetSection = sections.find(
-    section => getQueryValue(section?.sysGameTypeCode) === getQueryValue(typeCode)
-  )
-  if (!targetSection) {
-    return []
-  }
-
-  const providerList = Array.isArray(targetSection.subGame) ? targetSection.subGame : []
-  const allGames = providerList.flatMap(provider =>
-    Array.isArray(provider?.subGame) ? provider.subGame : []
-  )
-
-  return allGames.filter(game => {
-    const hotValue = game.gameItemHotVo?.hot ?? game.hot
-    return Number(hotValue) === 1
-  })
 }
 
 const getGameData = async () => {
@@ -232,7 +158,7 @@ const getGameData = async () => {
 
 const initPageData = async () => {
   const cacheTitle =
-    getQueryValue(route.query.title) || cacheGlobal.__gameDetailAllPageTitleCache__ || ''
+    normalizeGameDetailValue(route.query.title) || cacheGlobal.__gameDetailAllPageTitleCache__ || ''
   const cachedList = cacheGlobal.__gameDetailAllListCache__
 
   if (cacheTitle) {
@@ -247,23 +173,31 @@ const initPageData = async () => {
 
   try {
     const sectionList = await getGameData()
-    let targetTypeCode = getQueryValue(route.query.sysGameTypeCode)
+    const currentGame = findGameDetailItemByIdentity(sectionList, {
+      rowId: sourceRowId.value,
+      itemCode: normalizeGameDetailValue(route.query.itemCode),
+      platformCode: normalizeGameDetailValue(route.query.platformCode)
+    }) as GameDetailCurrent | null
+    const targetGameTypeCode = normalizeGameDetailValue(
+      route.query.gameTypeCode ?? currentGame?.gameTypeCode
+    )
+    const targetSysGameTypeCode = normalizeGameDetailValue(
+      route.query.sysGameTypeCode ?? currentGame?.sysGameTypeCode
+    )
 
-    if (!targetTypeCode) {
-      const currentItemCode = getQueryValue(route.query.itemCode)
-      const currentPlatformCode = getQueryValue(route.query.platformCode)
-      const currentGame = findGameDetailByCodes(sectionList, currentItemCode, currentPlatformCode)
-      targetTypeCode = getQueryValue(currentGame?.sysGameTypeCode)
-      if (!cacheTitle) {
-        const platformName = getQueryValue(currentGame?.platformName)
-        if (platformName) {
-          pageTitle.value = platformName
-          isCustomPageTitle.value = true
-        }
+    if (!cacheTitle) {
+      const platformName = normalizeGameDetailValue(currentGame?.platformName)
+      if (platformName) {
+        pageTitle.value = platformName
+        isCustomPageTitle.value = true
       }
     }
 
-    gameList.value = resolveCurrentCategoryHotGameList(sectionList, targetTypeCode)
+    gameList.value = resolveGameDetailHotList(sectionList, {
+      gameTypeCode: targetGameTypeCode,
+      sysGameTypeCode: targetSysGameTypeCode,
+      excludeRowId: sourceRowId.value
+    }) as GameDataItem[]
   } catch (error) {
     console.error('initPageData failed', error)
     gameList.value = []

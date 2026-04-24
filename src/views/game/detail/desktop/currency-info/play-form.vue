@@ -2,7 +2,7 @@
   <div class="currency-info-container">
     <div class="play-form">
       <div class="form-row">
-        <div class="form-label">{{ t('gameDetail.playWithBalanceIn') }}</div>
+        <div class="form-label">{{ t('gameDetail.playWithSelectedCurrency') }}</div>
         <div class="form-control">
           <currency-select class="w-full"></currency-select>
         </div>
@@ -15,7 +15,7 @@
       <div class="w-[16px] h-[16px]">
         <play-icon class="w-full h-full" />
       </div>
-      <div class="text-[15px] font-bold text-[#000]">{{ t('gameDetail.confirmAndPlay') }}</div>
+      <div class="text-[15px] font-bold text-[#000]">{{ t('gameDetail.playNow') }}</div>
     </button>
   </div>
 </template>

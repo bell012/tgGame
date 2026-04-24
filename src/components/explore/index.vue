@@ -28,10 +28,10 @@
               :key="item.sysGameTypeCode || `tab-${index}`"
               :ref="el => (tabRefs[index] = el as HTMLButtonElement)"
               :class="{ 'explore-tab-button--active': isActiveCasinoTab(item) }"
-              class="explore-tab-button flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
+              class="explore-tab-button flex h-[36px] shrink-0 items-center rounded-lg px-2.5 leading-none lg:hover:bg-bg-2"
               @click.stop="onTabButton(item)"
             >
-              <div class="explore-tab-icon h-5 w-5 mr-[7px]">
+              <div class="explore-tab-icon mr-1.5 h-4 w-4">
                 <img
                   v-if="!isActiveCasinoTab(item) && typeof item.icon === 'string'"
                   :src="item.icon"
@@ -49,7 +49,7 @@
                   class="w-full h-full"
                 />
               </div>
-              <div class="explore-tab-label font-[700] text-text-2">
+              <div class="explore-tab-label font-[700] text-text-2 leading-none">
                 {{ item.sysGameTypeName }}
               </div>
             </button>
@@ -100,13 +100,16 @@ import { useRoute, useRouter } from 'vue-router'
 import type { GameQueryOptions } from '@/stores/game'
 import { useGameStore } from '@/stores/game'
 import { useLayoutStore } from '@/stores/layout'
-import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
+import {
+  useExploreCasinoTabButtons,
+  type ExploreCasinoTabButtonItem
+} from '@/composables/useExploreCasinoTabButtons'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { casinoIcons } from '@/static/svg/casino'
-import { getCasinoPageMode, getCasinoQueryOptions } from '@/views/fun/casino/casinoPageConfig'
-import pageStyle2 from '@/views/fun/casino/components/pageStyle2.vue'
-import pageStyle3 from '@/views/fun/casino/components/pageStyle3.vue'
-import pageStyle4 from '@/views/fun/casino/components/pageStyle4.vue'
+import { getExploreCasinoPageMode, getExploreCasinoQueryOptions } from './exploreCasinoConfig'
+import pageStyle2 from './pageStyle2.vue'
+import pageStyle3 from './pageStyle3.vue'
+import pageStyle4 from './pageStyle4.vue'
 import TopInput from './top-input/index.vue'
 
 type ExploreHotGameItem = {
@@ -185,7 +188,7 @@ const getRouteTabCode = () => getQueryStringValue(route.query[EXPLORE_CASINO_TAB
 const isExploreRoute = computed(() => String(route.name || '').replace(/^Locale/, '') === 'explore')
 const currentTabCode = ref(getRouteTabCode())
 
-const { tabButtons, loadCasinoTabButtons } = useCasinoTabButtons()
+const { tabButtons, loadExploreCasinoTabButtons } = useExploreCasinoTabButtons()
 
 const getCurrentTab = computed(() => {
   if (!tabButtons.value.length) {
@@ -202,7 +205,7 @@ const trimmedSearchKeyword = computed(() => activeSearchKeyword.value.trim())
 
 const currentPageStyle = computed(() => {
   const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
-  const pageMode = getCasinoPageMode(currentCode)
+  const pageMode = getExploreCasinoPageMode(currentCode)
 
   switch (pageMode) {
     case 'pageStyle2':
@@ -216,7 +219,7 @@ const currentPageStyle = computed(() => {
 
 const currentQueryOptions = computed<GameQueryOptions | undefined>(() => {
   const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
-  const baseQueryOptions = getCasinoQueryOptions(currentCode, {
+  const baseQueryOptions = getExploreCasinoQueryOptions(currentCode, {
     isMobile: isMobile.value
   })
   const options = baseQueryOptions ?? {
@@ -303,7 +306,8 @@ const scrollTabIntoView = (index: number, behavior: 'auto' | 'smooth' = 'smooth'
   })
 }
 
-const isActiveCasinoTab = (tab: CasinoTabButtonItem) => tab.sysGameTypeCode === currentTabCode.value
+const isActiveCasinoTab = (tab: ExploreCasinoTabButtonItem) =>
+  tab.sysGameTypeCode === currentTabCode.value
 
 const scrollElementToTop = (element: Element | HTMLElement | null) => {
   element?.scrollTo({
@@ -354,7 +358,7 @@ const syncRouteTabCode = (tabCode: string) => {
   void router.replace({ query: nextQuery })
 }
 
-const onTabButton = (tab: CasinoTabButtonItem) => {
+const onTabButton = (tab: ExploreCasinoTabButtonItem) => {
   if (tab.sysGameTypeCode === currentTabCode.value) {
     return
   }
@@ -455,7 +459,7 @@ watch(
 let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
-  void loadCasinoTabButtons()
+  void loadExploreCasinoTabButtons()
   void loadSuggestedGames()
   scrollPageToTop()
   updateScrollState()
@@ -501,11 +505,11 @@ onUnmounted(() => {
   }
 
   .explore-tab-button {
-    height: 44px;
+    height: 36px;
     padding: 0 14px;
-    border-radius: 8px;
-    font-size: 16px;
-    line-height: 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 36px;
     color: var(--color-text-level-2);
   }
 
@@ -523,9 +527,8 @@ onUnmounted(() => {
     max-width: 120px;
     overflow: hidden;
     color: var(--color-text-level-2);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
-    line-height: 20px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }

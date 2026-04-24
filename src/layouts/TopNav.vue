@@ -68,10 +68,14 @@
         <!-- 已登录状态 -->
         <template v-else>
           <div
+            ref="desktopCurrencyAnchorRef"
             class="hidden sm:flex items-center justify-between search h-[40px] p-1 rounded-lg mr-3"
             style="width: 260px"
           >
-            <div class="flex items-center justify-center cursor-pointer ml-1">
+            <div
+              class="flex items-center justify-center cursor-pointer ml-1"
+              @click="openLoggedInCurrencyPopup"
+            >
               <div class="w-10 h-10 mr-1">
                 <img
                   :src="currentCurrencyIcon"
@@ -81,12 +85,15 @@
               </div>
               <!-- 金额 -->
               <span class="text-[14px] font-[600] text-text-1">
-                {{ getCurrencySymbol(userInfo?.currency) }}{{ formatBalance(acctInfo?.balancePhp) }}
+                {{ currentBalanceText }}
               </span>
             </div>
             <!-- 充值 -->
             <div class="flex items-center">
-              <ArrowDownIcon class="w-5 h-5 mr-1 cursor-pointer" />
+              <ArrowDownIcon
+                class="w-5 h-5 mr-1 cursor-pointer"
+                @click="openLoggedInCurrencyPopup"
+              />
               <div
                 class="cursor-pointer h-8 text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
                 @click="openDeposit"
@@ -98,9 +105,13 @@
 
           <!-- H5 余额和充值容器 -->
           <div
+            ref="mobileCurrencyAnchorRef"
             class="flex sm:hidden items-center justify-between search w-[184px] h-[33px] p-1 rounded-lg mr-2"
           >
-            <div class="flex items-center justify-center cursor-pointer ml-1">
+            <div
+              class="flex items-center justify-center cursor-pointer ml-1"
+              @click="openLoggedInCurrencyPopup"
+            >
               <div class="w-5 h-5 mr-1">
                 <img
                   :src="currentCurrencyIcon"
@@ -110,12 +121,15 @@
               </div>
               <!-- 金额 -->
               <span class="text-[14px] font-[600] text-text-1">
-                {{ getCurrencySymbol(userInfo?.currency) }}{{ formatBalance(acctInfo?.balancePhp) }}
+                {{ currentBalanceText }}
               </span>
             </div>
 
             <div class="flex items-center">
-              <ArrowDownIcon class="w-6 h-6 mr-1 cursor-pointer" />
+              <ArrowDownIcon
+                class="w-6 h-6 mr-1 cursor-pointer"
+                @click="openLoggedInCurrencyPopup"
+              />
               <!-- 充值按钮 -->
               <div
                 class="cursor-pointer w-[26px] h-[26px] text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
@@ -230,6 +244,17 @@
       @select-currency="handleCurrencyChange"
     />
 
+    <Teleport to="body">
+      <CurrencyPopup
+        v-model:visible="showCurrencyPopup"
+        :desktop="!isMobile"
+        :desktop-anchor="currencyPopupAnchor"
+        :selected-currency="currentCurrencyCode"
+        :options="currencyOptions"
+        @select="handleLoggedInCurrencySelect"
+      />
+    </Teleport>
+
     <!-- PC 搜索弹窗 -->
     <ExploreDesktop v-model="showExplorehModal" />
   </header>
@@ -243,10 +268,14 @@ import { useI18n } from 'vue-i18n'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useLocaleStore } from '@/stores/locale'
 import { useLayoutStore } from '@/stores/layout'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
+import { useIsMobile } from '@/composables/useMediaQuery'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
+import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
 import FoldIcon from '@/static/svg/fold.svg?component'
@@ -260,22 +289,18 @@ import Jia from '@/static/svg/login/jia.svg?component'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import mobileLogoImage from '@/static/img/home/logo_h5.png'
-import {
-  getCurrencyImageByCode,
-  getCurrencySymbol,
-  formatBalance,
-  stripLocalePrefix,
-  type Locale
-} from '@/utils/locale'
+import { stripLocalePrefix, type Locale } from '@/utils/locale'
 
 const { t } = useI18n()
 const authModalStore = useAuthModalStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
+const siteConfigStore = useSiteConfigStore()
+const isMobile = useIsMobile()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-const { acctInfo, userInfo } = storeToRefs(userStore)
+const { userInfo } = storeToRefs(userStore)
 const { visible: showLoginModal } = storeToRefs(authModalStore)
 
 const emit = defineEmits<{
@@ -285,12 +310,23 @@ const emit = defineEmits<{
 
 const showModal = ref(false)
 const modalType = ref<'language' | 'currency'>('language')
+const showCurrencyPopup = ref(false)
+const currencyPopupAnchor = ref<PopupAnchorRect | null>(null)
 
 const showExplorehModal = ref(false)
 
 // 用户菜单下拉框
 const showUserMenu = ref(false)
 const userMenuRef = ref<HTMLElement | null>(null)
+const desktopCurrencyAnchorRef = ref<HTMLElement | null>(null)
+const mobileCurrencyAnchorRef = ref<HTMLElement | null>(null)
+
+type PopupAnchorRect = {
+  top: number
+  left: number
+  width: number
+  height: number
+}
 
 // 是否已登录
 const isLoggedIn = computed(() => {
@@ -302,19 +338,17 @@ const avatarUrl = computed(() => {
   return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
 })
 const isH5MenuActive = computed(() => stripLocalePrefix(route.path) === '/menu')
-
-// 当前币种代码
-const currentCurrencyCode = computed(() => {
-  return String(userInfo.value?.currency || 'PHP').toUpperCase()
-})
-
-// 当前币种图片
-const currentCurrencyIcon = computed(() => {
-  return getCurrencyImageByCode(currentCurrencyCode.value)
-})
+const {
+  currentCurrencyCode,
+  currentCurrencyIcon,
+  currentBalanceText,
+  currencyOptions,
+  setDisplayCurrency
+} = useDisplayCurrency()
 
 const handleStorageChange = () => {
   userStore.syncStoredUserData()
+  siteConfigStore.syncStoredConfig()
 }
 
 const handleUserMenuClickOutside = (event: MouseEvent) => {
@@ -332,6 +366,7 @@ const handleUserMenuClickOutside = (event: MouseEvent) => {
 // 组件挂载时加载用户信息
 onMounted(() => {
   userStore.syncStoredUserData()
+  siteConfigStore.syncStoredConfig()
   window.addEventListener('storage', handleStorageChange)
   document.addEventListener('click', handleUserMenuClickOutside)
 })
@@ -362,6 +397,26 @@ const openCurrencyModal = () => {
   showModal.value = true
 }
 
+const openLoggedInCurrencyPopup = () => {
+  const anchorElement = isMobile.value
+    ? mobileCurrencyAnchorRef.value
+    : desktopCurrencyAnchorRef.value
+
+  if (!isMobile.value && anchorElement) {
+    const rect = anchorElement.getBoundingClientRect()
+    currencyPopupAnchor.value = {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height
+    }
+  } else {
+    currencyPopupAnchor.value = null
+  }
+
+  showCurrencyPopup.value = true
+}
+
 const openLoginModal = () => {
   authModalStore.openLoginModal()
 }
@@ -380,6 +435,10 @@ const handleLanguageChange = (code: Locale) => {
 
 const handleCurrencyChange = (code: string) => {
   localeStore.setCurrency(code)
+}
+
+const handleLoggedInCurrencySelect = (code: string) => {
+  setDisplayCurrency(code)
 }
 
 const openDeposit = () => {

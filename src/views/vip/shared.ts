@@ -20,31 +20,31 @@ import border5Image from '@/static/img/personalCenter/border_5.png'
 import item1Image from '@/static/img/personalCenter/item_1.png'
 import item3Image from '@/static/img/personalCenter/item_3.png'
 import item4Image from '@/static/img/personalCenter/item_4.png'
-import rule1Icon from '@/static/svg/rule_1.svg?skipsvgo'
-import rule2Icon from '@/static/svg/rule_2.svg?skipsvgo'
-import VipCardWordmarkIcon from '@/static/svg/vip/vip.svg?component'
-import VipLevel0Icon from '@/static/svg/vip/0.svg?component'
-import VipLevel1Icon from '@/static/svg/vip/1.svg?component'
-import VipLevel2Icon from '@/static/svg/vip/2.svg?component'
-import VipLevel3Icon from '@/static/svg/vip/3.svg?component'
-import VipLevel4Icon from '@/static/svg/vip/4.svg?component'
-import VipLevel5Icon from '@/static/svg/vip/5.svg?component'
-import VipLevel6Icon from '@/static/svg/vip/6.svg?component'
-import VipLevel7Icon from '@/static/svg/vip/7.svg?component'
-import VipLevel8Icon from '@/static/svg/vip/8.svg?component'
-import VipLevel9Icon from '@/static/svg/vip/9.svg?component'
-import VipLevel10Icon from '@/static/svg/vip/10.svg?component'
-import VipRight0Icon from '@/static/svg/vip/vip0.svg?skipsvgo'
-import VipRight1Icon from '@/static/svg/vip/vip1.svg?skipsvgo'
-import VipRight2Icon from '@/static/svg/vip/vip2.svg?skipsvgo'
-import VipRight3Icon from '@/static/svg/vip/vip3.svg?skipsvgo'
-import VipRight4Icon from '@/static/svg/vip/vip4.svg?skipsvgo'
-import VipRight5Icon from '@/static/svg/vip/vip5.svg?skipsvgo'
-import VipRight6Icon from '@/static/svg/vip/vip6.svg?skipsvgo'
-import VipRight7Icon from '@/static/svg/vip/vip7.svg?skipsvgo'
-import VipRight8Icon from '@/static/svg/vip/vip8.svg?skipsvgo'
-import VipRight9Icon from '@/static/svg/vip/vip9.svg?skipsvgo'
-import VipRight10Icon from '@/static/svg/vip/vip10.svg?skipsvgo'
+import rule1Icon from '@/static/svg/rule_1.svg?url'
+import rule2Icon from '@/static/svg/rule_2.svg?url'
+import VipCardWordmarkIcon from '@/static/svg/vip/vip.svg?url'
+import VipLevel0Icon from '@/static/svg/vip/0.svg?url'
+import VipLevel1Icon from '@/static/svg/vip/1.svg?url'
+import VipLevel2Icon from '@/static/svg/vip/2.svg?url'
+import VipLevel3Icon from '@/static/svg/vip/3.svg?url'
+import VipLevel4Icon from '@/static/svg/vip/4.svg?url'
+import VipLevel5Icon from '@/static/svg/vip/5.svg?url'
+import VipLevel6Icon from '@/static/svg/vip/6.svg?url'
+import VipLevel7Icon from '@/static/svg/vip/7.svg?url'
+import VipLevel8Icon from '@/static/svg/vip/8.svg?url'
+import VipLevel9Icon from '@/static/svg/vip/9.svg?url'
+import VipLevel10Icon from '@/static/svg/vip/10.svg?url'
+import VipRight0Icon from '@/static/svg/vip/vip0.svg?url'
+import VipRight1Icon from '@/static/svg/vip/vip1.svg?url'
+import VipRight2Icon from '@/static/svg/vip/vip2.svg?url'
+import VipRight3Icon from '@/static/svg/vip/vip3.svg?url'
+import VipRight4Icon from '@/static/svg/vip/vip4.svg?url'
+import VipRight5Icon from '@/static/svg/vip/vip5.svg?url'
+import VipRight6Icon from '@/static/svg/vip/vip6.svg?url'
+import VipRight7Icon from '@/static/svg/vip/vip7.svg?url'
+import VipRight8Icon from '@/static/svg/vip/vip8.svg?url'
+import VipRight9Icon from '@/static/svg/vip/vip9.svg?url'
+import VipRight10Icon from '@/static/svg/vip/vip10.svg?url'
 import VipCornerUnlockedIcon from '@/static/svg/vip/kai.svg?component'
 import VipCornerLockedIcon from '@/static/svg/vip/suo.svg?component'
 
@@ -79,7 +79,7 @@ export interface VipRetentionCard {
   key: string
   label: string
   amount: string
-  icon: Component
+  icon: string
 }
 
 export interface VipBenefitComparisonRow {
@@ -117,7 +117,7 @@ type VipCardThemeConfig = {
   progressTrackColor: string
   progressFillColor: string
   wordmarkColor: string
-  rightDecoration: Component
+  rightDecoration: string
 }
 
 export interface VipCardTheme {
@@ -127,9 +127,9 @@ export interface VipCardTheme {
   progressTrackColor: string
   progressFillColor: string
   wordmarkColor: string
-  wordmarkIcon: Component
-  levelNumberIcon: Component
-  rightDecorationIcon: Component
+  wordmarkIcon: string
+  levelNumberIcon: string
+  rightDecorationIcon: string
   cornerBadgeIcon: Component
   goalHintKey: string
 }
@@ -186,7 +186,7 @@ const avatarFrameImageMap: Record<Exclude<AvatarFrameId, 'none'>, string> = {
   border_5: border5Image
 }
 
-const vipLevelNumberIconMap: Record<number, Component> = {
+const vipLevelNumberIconMap: Record<number, string> = {
   0: VipLevel0Icon,
   1: VipLevel1Icon,
   2: VipLevel2Icon,

@@ -15,8 +15,9 @@
           @scroll.passive="onVipCarouselScroll"
         >
           <div
-            v-for="vip in displayVipLevels"
+            v-for="(vip, index) in displayVipLevels"
             :key="vip.rowId ?? vip.vipId"
+            :ref="el => setVipCardRef(el, index)"
             class="min-w-full shrink-0 snap-center snap-always rounded-[15px] mx-[10px]"
           >
             <section
@@ -25,15 +26,17 @@
             >
               <div class="relative z-[1] flex flex-col items-start gap-3">
                 <div class="flex items-center">
-                  <component
-                    :is="getVipCardTheme(vip.vipId).wordmarkIcon"
+                  <img
+                    :src="getVipCardTheme(vip.vipId).wordmarkIcon"
+                    alt=""
+                    aria-hidden="true"
                     class="h-[30px] w-[33px]"
-                    :style="{ color: getVipCardTheme(vip.vipId).wordmarkColor }"
                   />
-                  <component
-                    :is="getVipCardTheme(vip.vipId).levelNumberIcon"
+                  <img
+                    :src="getVipCardTheme(vip.vipId).levelNumberIcon"
+                    alt=""
+                    aria-hidden="true"
                     class="ml-[3px] h-[30px] w-auto"
-                    :style="{ color: getVipCardTheme(vip.vipId).accentColor }"
                   />
                 </div>
 
@@ -76,8 +79,10 @@
                   </p>
                 </div>
 
-                <component
-                  :is="getVipCardTheme(vip.vipId).rightDecorationIcon"
+                <img
+                  :src="getVipCardTheme(vip.vipId).rightDecorationIcon"
+                  alt=""
+                  aria-hidden="true"
                   class="pointer-events-none absolute right-[-18px] top-[30px] z-[2] h-[160px] w-[160px] -translate-y-1/2"
                 />
                 <component
@@ -188,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
 import { useVipStore } from '@/stores/vip'
@@ -210,6 +215,7 @@ const claimSuccessAmount = ref(`${getCurrencySymbol()}0.00`)
 const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
 const activeContentTab = ref<'comparison' | 'rules'>('comparison')
 const vipCarouselRef = ref<HTMLElement | null>(null)
+const vipCardRefs = ref<HTMLElement[]>([])
 const selectedVipIndex = ref(0)
 const viewedVipId = ref<number | null>(null)
 const hasInitializedViewedVip = ref(false)
@@ -241,29 +247,63 @@ const syncViewedVipId = () => {
   viewedVipId.value = displayVipLevels.value[selectedVipIndex.value]?.vipId ?? currentVipLevel.value
 }
 
+const setVipCardRef = (el: Element | ComponentPublicInstance | null, index: number) => {
+  if (!(el instanceof HTMLElement)) {
+    return
+  }
+
+  vipCardRefs.value[index] = el
+}
+
+const getNearestVipCardIndex = () => {
+  const carouselElement = vipCarouselRef.value
+  if (!carouselElement) {
+    return 0
+  }
+
+  const cardElements = vipCardRefs.value.filter(Boolean)
+  if (!cardElements.length) {
+    return 0
+  }
+
+  const carouselRect = carouselElement.getBoundingClientRect()
+  const carouselCenterX = carouselRect.left + carouselRect.width / 2
+
+  let nearestIndex = 0
+  let nearestDistance = Number.POSITIVE_INFINITY
+
+  cardElements.forEach((cardElement, index) => {
+    const cardRect = cardElement.getBoundingClientRect()
+    const cardCenterX = cardRect.left + cardRect.width / 2
+    const distance = Math.abs(cardCenterX - carouselCenterX)
+
+    if (distance < nearestDistance) {
+      nearestDistance = distance
+      nearestIndex = index
+    }
+  })
+
+  return nearestIndex
+}
+
 const scrollToVipCard = (index: number, behavior: 'auto' | 'smooth' = 'smooth') => {
+  const targetCardElement = vipCardRefs.value[index]
+  if (targetCardElement) {
+    targetCardElement.scrollIntoView({ behavior, block: 'nearest', inline: 'center' })
+    return
+  }
+
   const carouselElement = vipCarouselRef.value
   if (!carouselElement) {
     return
   }
 
-  const width = carouselElement.offsetWidth
-  carouselElement.scrollTo({ left: index * width, behavior })
+  carouselElement.scrollTo({ left: index * carouselElement.offsetWidth, behavior })
 }
 
 const onVipCarouselScroll = () => {
-  const carouselElement = vipCarouselRef.value
-  if (!carouselElement) {
-    return
-  }
-
-  const width = carouselElement.offsetWidth
-  if (!width) {
-    return
-  }
-
   const nextIndex = Math.min(
-    Math.max(Math.round(carouselElement.scrollLeft / width), 0),
+    Math.max(getNearestVipCardIndex(), 0),
     displayVipLevels.value.length - 1
   )
 

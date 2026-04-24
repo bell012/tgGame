@@ -414,7 +414,7 @@
     "playNow": "Play Now",
     "playWithBalanceIn": "Play with balance in",
     "confirmAndPlay": "Confirm and Play",
-    "signInPrompt": "Welcome to dragon-phoenix, please sign in to proceed.",
+    "signInPrompt": "Welcome to {gameName}, please sign in to proceed.",
     "liveStatsTitle": "Live Stats",
     "betId": "Bet ID",
     "bet": "Bet",
