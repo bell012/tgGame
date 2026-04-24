@@ -26,15 +26,17 @@
             >
               <div class="relative z-[1] flex flex-col items-start gap-3">
                 <div class="flex items-center">
-                  <component
-                    :is="getVipCardTheme(vip.vipId).wordmarkIcon"
+                  <img
+                    :src="getVipCardTheme(vip.vipId).wordmarkIcon"
+                    alt=""
+                    aria-hidden="true"
                     class="h-[30px] w-[33px]"
-                    :style="{ color: getVipCardTheme(vip.vipId).wordmarkColor }"
                   />
-                  <component
-                    :is="getVipCardTheme(vip.vipId).levelNumberIcon"
+                  <img
+                    :src="getVipCardTheme(vip.vipId).levelNumberIcon"
+                    alt=""
+                    aria-hidden="true"
                     class="ml-[3px] h-[30px] w-auto"
-                    :style="{ color: getVipCardTheme(vip.vipId).accentColor }"
                   />
                 </div>
 
@@ -77,8 +79,10 @@
                   </p>
                 </div>
 
-                <component
-                  :is="getVipCardTheme(vip.vipId).rightDecorationIcon"
+                <img
+                  :src="getVipCardTheme(vip.vipId).rightDecorationIcon"
+                  alt=""
+                  aria-hidden="true"
                   class="pointer-events-none absolute right-[-18px] top-[30px] z-[2] h-[160px] w-[160px] -translate-y-1/2"
                 />
                 <component
