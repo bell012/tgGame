@@ -98,14 +98,14 @@ export interface QuerySlideshowRequest {
 /** 轮播图跳转类型：1 url 跳转，2 跳转内部项面，3 跳转游戏 */
 export type QuerySlideshowJumpType = 1 | 2 | 3
 
-/** jumpType=1 时：1 内部跳转，2 外部跳转 */
-export type QuerySlideshowUrlLinkType = 1 | 2
+/** jumpType=1 时：0 不跳转,1 内部跳转，2 外部跳转 */
+export type QuerySlideshowUrlLinkType = 0 | 1 | 2
 
-/** jumpType=2 时：1 活动，2 充值栏目，3 分享转盘 */
-export type QuerySlideshowInnerLinkType = 1 | 2 | 3
+/** jumpType=2 时：0 不跳转，1 活动ID，2 充值栏目，3 分享转盘，4 充值页面，5 积分转盘，6 邀请好友，7 登录注册页面 */
+export type QuerySlideshowInnerLinkType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
 
-/** jumpType=3 时：1 自定义类型游戏，2 厂商游戏 */
-export type QuerySlideshowPlatformType = 1 | 2
+/** jumpType=3 时：0 不跳转，1 自定义类型游戏，2 厂商游戏，3 游戏类型 */
+export type QuerySlideshowPlatformType = 0 | 1 | 2 | 3
 
 /** 应用场景：1 首页，2 个人中心，3 好友分享，4 邀请好友，5 登录与注册，6 首页未登录 */
 export type QuerySlideshowDeploymentPath = 1 | 2 | 3 | 4 | 5 | 6

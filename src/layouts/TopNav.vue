@@ -24,7 +24,7 @@
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
         <!-- H5端 Logo (登录后小logo) -->
-        <div v-if="isLoggedIn" class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer">
+        <div v-if="isLoggedIn" class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer mobileLogo">
           <SmartImage :src="mobileLogoImage" alt="" class="w-full h-full" />
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
@@ -44,7 +44,7 @@
           class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
           @click="openExploreModal"
         >
-          <SearchIcon class="w-6 h-6 fill-none" />
+          <SearchIcon class="w-6 h-6 text-icon-2" />
         </div>
 
         <!-- 未登录状态 -->
@@ -497,18 +497,21 @@ defineExpose({
   background-color: #e4eaf019;
 }
 
-@media (max-width: 375px) {
-  .top-nav-inner {
-    width: 125%;
-    transform: scale(0.79);
-    transform-origin: left center;
-  }
-}
 @media (max-width: 390px) {
   .top-nav-inner {
     width: 111%;
     transform: scale(0.9);
     transform-origin: left center;
+  }
+}
+@media (max-width: 360px) {
+  .top-nav-inner {
+    width: 117%;
+    transform: scale(0.85);
+    transform-origin: left center;
+  }
+  .mobileLogo {
+    margin-left: 2px;
   }
 }
 </style>
