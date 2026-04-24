@@ -23,6 +23,9 @@
       @pointermove="onMarqueePointerMove"
       @pointerup="onMarqueePointerUp"
       @pointercancel="onMarqueePointerCancel"
+      @touchstart.passive="onMarqueeTouchStart"
+      @touchend.passive="onMarqueeTouchEnd"
+      @touchcancel.passive="onMarqueeTouchEnd"
       @mouseenter="marqueeHoverPaused = true"
       @mouseleave="marqueeHoverPaused = false"
       @click.capture="onMarqueeClickCapture"
@@ -394,6 +397,7 @@ let marqueeUserScrollUntil = 0
 /** 松手或用户滚动后：无操作满此时长再恢复自动滚 */
 const MARQUEE_IDLE_RESUME_MS = 2000
 let marqueeLoopRunning = false
+let marqueeProgramScrollResetTimer = 0
 
 let marqueeLastProgrammaticScrollMs = 0
 let marqueeResizeObserver: ResizeObserver | null = null
@@ -404,6 +408,11 @@ const stopMarqueeRaf = () => {
     cancelAnimationFrame(marqueeRafId)
     marqueeRafId = 0
   }
+  if (marqueeProgramScrollResetTimer) {
+    window.clearTimeout(marqueeProgramScrollResetTimer)
+    marqueeProgramScrollResetTimer = 0
+  }
+  marqueeProgramScroll = false
   marqueeLastTs = 0
 }
 
@@ -434,15 +443,18 @@ const stepMarquee = (ts: number) => {
   const speedPxPerSec = segment / AUTO_MARQUEE_SEGMENT_SEC
 
   marqueeProgramScroll = true
+  if (marqueeProgramScrollResetTimer) {
+    window.clearTimeout(marqueeProgramScrollResetTimer)
+  }
+  marqueeProgramScrollResetTimer = window.setTimeout(() => {
+    marqueeProgramScroll = false
+  }, 120)
   marqueeLastProgrammaticScrollMs = performance.now()
   el.scrollLeft += speedPxPerSec * dt
   if (el.scrollLeft >= segment) {
     el.scrollLeft -= segment
     marqueeLastProgrammaticScrollMs = performance.now()
   }
-  queueMicrotask(() => {
-    marqueeProgramScroll = false
-  })
 }
 
 const startMarqueeRaf = () => {
@@ -464,9 +476,20 @@ const bumpMarqueeUserIdlePause = () => {
   marqueeUserScrollUntil = Date.now() + MARQUEE_IDLE_RESUME_MS
 }
 
+const beginMarqueeInteraction = () => {
+  marqueePointerActive.value = true
+}
+
+const endMarqueeInteraction = () => {
+  marqueePointerActive.value = false
+  bumpMarqueeUserIdlePause()
+}
+
 const onMarqueeScroll = () => {
   if (marqueeProgramScroll) return
-  if (performance.now() - marqueeLastProgrammaticScrollMs < 48) return
+  if (performance.now() - marqueeLastProgrammaticScrollMs < 120) return
+  // 仅在用户按住/拖动期间续期，避免自动滚动触发 scroll 导致暂停被无限续期
+  if (!marqueePointerActive.value) return
   bumpMarqueeUserIdlePause()
 }
 
@@ -482,16 +505,19 @@ let marqueeSuppressClick = false
 
 const onMarqueePointerDown = (e: PointerEvent) => {
   marqueeSuppressClick = false
-  marqueePointerActive.value = true
-  if (e.pointerType !== 'mouse' || e.button !== 0) return
-  const el = marqueeRef.value
-  if (!el) return
-  marqueeDrag.active = true
-  marqueeDrag.moved = false
-  marqueeDrag.pointerId = e.pointerId
-  marqueeDrag.startX = e.clientX
-  marqueeDrag.startScroll = el.scrollLeft
-  el.setPointerCapture(e.pointerId)
+  beginMarqueeInteraction()
+  if (e.pointerType === 'mouse' && e.button === 0) {
+    const el = marqueeRef.value
+    if (!el) return
+
+    marqueeDrag.active = true
+    marqueeDrag.moved = false
+    marqueeDrag.pointerId = e.pointerId
+    marqueeDrag.startX = e.clientX
+    marqueeDrag.startScroll = el.scrollLeft
+
+    el.setPointerCapture(e.pointerId)
+  }
 }
 
 const onMarqueePointerMove = (e: PointerEvent) => {
@@ -507,7 +533,6 @@ const onMarqueePointerMove = (e: PointerEvent) => {
 }
 
 const onMarqueePointerUp = (e: PointerEvent) => {
-  marqueePointerActive.value = false
   if (marqueeDrag.active && e.pointerId === marqueeDrag.pointerId) {
     const el = marqueeRef.value
     try {
@@ -521,11 +546,26 @@ const onMarqueePointerUp = (e: PointerEvent) => {
     marqueeDrag.active = false
     marqueeDrag.pointerId = -1
   }
-  // 松手后起算：后续无操作满 MARQUEE_IDLE_RESUME_MS 再恢复自动滚（惯性滚动仍会走 onMarqueeScroll 续期）
-  bumpMarqueeUserIdlePause()
+  endMarqueeInteraction()
 }
 
 const onMarqueePointerCancel = onMarqueePointerUp
+
+const onMarqueeTouchStart = () => {
+  marqueeSuppressClick = false
+  beginMarqueeInteraction()
+}
+
+const onMarqueeTouchEnd = () => {
+  endMarqueeInteraction()
+}
+
+const resetMarqueeInteraction = () => {
+  if (!marqueePointerActive.value && !marqueeDrag.active) return
+  endMarqueeInteraction()
+  marqueeDrag.active = false
+  marqueeDrag.pointerId = -1
+}
 
 const onMarqueeClickCapture = (e: MouseEvent) => {
   if (!marqueeSuppressClick) return
@@ -613,6 +653,14 @@ onMounted(async () => {
   await fetchGameData()
   getRecentBigWinsData()
   getQuerySlideshow()
+  window.addEventListener('pointerup', resetMarqueeInteraction, true)
+  window.addEventListener('pointercancel', resetMarqueeInteraction, true)
+  window.addEventListener('touchend', resetMarqueeInteraction, { capture: true, passive: true })
+  window.addEventListener('touchcancel', resetMarqueeInteraction, {
+    capture: true,
+    passive: true
+  })
+  window.addEventListener('blur', resetMarqueeInteraction)
 
   void nextTick(() => {
     const el = marqueeRef.value
@@ -625,6 +673,11 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  window.removeEventListener('pointerup', resetMarqueeInteraction, true)
+  window.removeEventListener('pointercancel', resetMarqueeInteraction, true)
+  window.removeEventListener('touchend', resetMarqueeInteraction, true)
+  window.removeEventListener('touchcancel', resetMarqueeInteraction, true)
+  window.removeEventListener('blur', resetMarqueeInteraction)
   marqueeResizeObserver?.disconnect()
   marqueeResizeObserver = null
   stopMarqueeRaf()

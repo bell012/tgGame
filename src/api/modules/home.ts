@@ -76,3 +76,14 @@ export function dlicgh(data: any): Promise<any> {
     showErrorToast: true
   })
 }
+
+
+export function getLatestList(data: any): Promise<any> {
+  return request({
+    url: '/special/getLatestList',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true
+  })
+}
