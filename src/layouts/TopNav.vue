@@ -44,7 +44,7 @@
           class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
           @click="openExploreModal"
         >
-          <SearchIcon class="w-6 h-6 fill-none" />
+          <SearchIcon class="w-6 h-6 text-icon-2" />
         </div>
 
         <!-- 未登录状态 -->
