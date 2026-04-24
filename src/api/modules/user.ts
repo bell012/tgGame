@@ -71,7 +71,7 @@ export function modifyMemberInfo(
     url: '/mc/modifyMemberInfo',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -105,7 +105,7 @@ export function modifyMemberTelePhone(
     url: '/mc/modifyMemberTelePhone',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -121,7 +121,7 @@ export function sendFeedback(data: SendFeedbackForm): Promise<SendFeedbackRespon
     url: '/f/sendFeedback',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -153,7 +153,7 @@ export function receiveAllFeedback(
     url: '/f/receiveAllFeedback',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }

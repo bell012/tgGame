@@ -48,7 +48,7 @@ export function upgradedPoints(data: {}): Promise<CommonResponse> {
     url: '/vp/upgradedPoints',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -59,7 +59,7 @@ export function dayPoints(data: {}): Promise<CommonResponse> {
     url: '/vp/dayPoints',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -70,7 +70,7 @@ export function weekPoints(data: {}): Promise<CommonResponse> {
     url: '/vp/weekPoints',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -80,7 +80,7 @@ export function monthPoints(data: {}): Promise<CommonResponse> {
     url: '/vp/monthPoints',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }

@@ -157,7 +157,7 @@ export function cancelPayOrderStatus(
     url: '/pc/cancelPayOrderStatus',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -173,7 +173,7 @@ export function updatePayOrderRemark(
       orderId: String(data.orderId),
       orderRemark: data.orderRemark
     },
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }

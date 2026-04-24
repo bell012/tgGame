@@ -16,7 +16,7 @@ export function queryOrderInfoPage(
     url: '/gc/queryOrderInfoPage',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -27,7 +27,7 @@ export function queryAcctHisPage(data: QueryAcctHisPageForm): Promise<QueryAcctH
     url: '/acct/queryAcctHisPage',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -38,7 +38,7 @@ export function queryInspectPage(data: QueryInspectPageForm): Promise<QueryInspe
     url: '/inspect/queryInspectPage',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
