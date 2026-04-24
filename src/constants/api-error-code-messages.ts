@@ -1,6 +1,5 @@
 // 全局code对应英中多语言
 export const API_ERROR_CODE_MESSAGES = {
-  '200': ['Operation successful.', '操作成功'],
   C1: ['Please contact customer service.', '请联系客服'],
   C2: ['Operation successful.', '操作成功'],
   C3: ['Data already exists. Please enter it again.', '数据已存在,请重新输入'],
