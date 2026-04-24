@@ -193,17 +193,13 @@ const getRecentBigWinsData = async () => {
   stopAutoScroll()
   loading.value = true
   try {
-    const res = await Api.home.getRecentBigWins(
+    const res = await Api.home.getLatestList(
       {
-        currency: currentCurrency.value,
         type: activeType.value
-      },
-      {
-        showSuccessToast: false,
-        showErrorToast: true
       }
     )
     const list = Array.isArray(res?.result) ? res.result : []
+    console.log(res, '------')
     sourceRows.value = list.map((item: Record<string, unknown>, index: number) => {
       const icon = toGameImageUrl(String(item.coverImg ?? ''))
       return {
