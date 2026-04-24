@@ -123,7 +123,7 @@ export function queryNeedBetAmountForApp(): Promise<QueryNeedBetAmountForAppResp
   return request({
     url: '/inspect/queryNeedBetAmountForApp',
     method: 'get',
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -140,7 +140,7 @@ export function queryWithdrawConfigByMember(
     url: '/wc/queryWithdrawConfigByMember',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -157,7 +157,7 @@ export function submitTransferOrder(
     url: '/tc/submitTransferOrder',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
