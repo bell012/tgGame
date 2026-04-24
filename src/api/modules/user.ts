@@ -20,6 +20,8 @@ import type {
   QueryFeedbacksResponse,
   ReceiveAllFeedbackForm,
   ReceiveAllFeedbackResponse,
+  RebateDataForm,
+  RebateDataResponse,
   QueryRebateGameDataForm,
   QueryRebateGameDataResponse,
   SelectRebateRateForm,
@@ -171,6 +173,25 @@ export function selectRebateRate(
 ): Promise<SelectRebateRateResponse> {
   return request({
     url: '/re/selectRebateRate',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: false,
+    ...options
+  })
+}
+
+/**
+ * 查询洗码数据
+ * @param data 空对象
+ * @returns Promise<RebateDataResponse>
+ */
+export function rebateData(
+  data: RebateDataForm = {},
+  options?: ApiResponseToastOptions
+): Promise<RebateDataResponse> {
+  return request({
+    url: '/re/rebateData',
     method: 'post',
     data,
     showSuccessToast: false,

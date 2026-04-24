@@ -246,6 +246,17 @@ export interface SelectRebateRateResponse {
   result?: Record<string, unknown> | Record<string, unknown>[] | null
 }
 
+// 查询洗码数据 请求参数（无参数）
+export interface RebateDataForm {}
+
+// 查询洗码数据 响应
+export interface RebateDataResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: Record<string, unknown>[] | null
+}
+
 // 查询洗码游戏数据 请求参数（无参数）
 export interface QueryRebateGameDataForm {}
 

@@ -22,84 +22,6 @@ const toNumber = (value: unknown, fallback = 0) => {
   return Number.isFinite(parsedValue) ? parsedValue : fallback
 }
 
-const toRateNumber = (value: unknown, fallback = 0) => {
-  if (typeof value === 'string' && value.includes('%')) {
-    return toNumber(value.replace('%', ''), fallback)
-  }
-
-  return toNumber(value, fallback)
-}
-
-const toRateText = (value: unknown, fallback = '0.00%') => {
-  if (typeof value === 'string') {
-    const normalizedValue = value.trim()
-    if (!normalizedValue) {
-      return fallback
-    }
-
-    if (normalizedValue.includes('%')) {
-      return normalizedValue
-    }
-
-    const parsedValue = Number(normalizedValue)
-    return Number.isFinite(parsedValue) ? `${parsedValue.toFixed(2)}%` : fallback
-  }
-
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return `${value.toFixed(2)}%`
-  }
-
-  return fallback
-}
-
-const toBoolean = (value: unknown) => {
-  if (typeof value === 'boolean') {
-    return value
-  }
-
-  if (typeof value === 'number') {
-    return value === 1
-  }
-
-  if (typeof value === 'string') {
-    const normalizedValue = value.trim().toLowerCase()
-    return normalizedValue === '1' || normalizedValue === 'true' || normalizedValue === 'yes'
-  }
-
-  return false
-}
-
-const normalizeRebateRow = (value: unknown, index: number): RebateRow | null => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return null
-  }
-
-  const rawRow = value as Record<string, unknown>
-  const rawValidBets = pickField(rawRow, [
-    'validBets',
-    'validBet',
-    'betRange',
-    'threshold',
-    'title',
-    'name'
-  ])
-  const validBets = String(rawValidBets ?? '').trim()
-  if (!validBets) {
-    return null
-  }
-
-  const rawRate = pickField(rawRow, ['rebateRate', 'rate', 'rebate', 'ratio', 'percent'])
-  const rawCurrent = pickField(rawRow, ['isCurrent', 'current', 'active', 'selected'])
-  const rawId = pickField(rawRow, ['id', 'rowId', 'levelId', 'sortNum'])
-
-  return {
-    id: String(rawId ?? `row-${index}`),
-    validBets,
-    rebateRate: toRateText(rawRate, '0.00%'),
-    isCurrent: toBoolean(rawCurrent)
-  }
-}
-
 export const useRebatePage = () => {
   const isMobile = useIsMobile()
   const { side } = sideIcons
@@ -120,7 +42,6 @@ export const useRebatePage = () => {
   const targetValidBets = ref(500000)
   const currentRebateValue = ref(0.7)
   const nextRebateValue = ref(0.8)
-  const rebateRowsFromApi = ref<RebateRow[]>([])
 
   const applyRebateOverviewResponse = (result: unknown) => {
     if (!result) {
@@ -144,98 +65,6 @@ export const useRebatePage = () => {
     }
   }
 
-  const applyRebateRateResponse = (result: unknown) => {
-    if (!result) {
-      return
-    }
-
-    const rawResult: Record<string, unknown> = Array.isArray(result)
-      ? { list: result }
-      : ((result as Record<string, unknown>) ?? {})
-
-    const pendingRebateTurnoverValue = pickField(rawResult, [
-      'pendingRebateTurnover',
-      'pendingTurnover',
-      'pendingBetAmount',
-      'waitRebateTurnover'
-    ])
-    const promoBonusTurnoverDeductionValue = pickField(rawResult, [
-      'promoBonusTurnoverDeduction',
-      'bonusTurnoverDeduction',
-      'turnoverDeduction',
-      'deductionAmount'
-    ])
-    const currentValidBetsValue = pickField(rawResult, [
-      'currentValidBets',
-      'currentBetAmount',
-      'validBetAmount'
-    ])
-    const targetValidBetsValue = pickField(rawResult, [
-      'targetValidBets',
-      'nextLevelValidBets',
-      'targetBetAmount'
-    ])
-    const currentRebateRate = pickField(rawResult, [
-      'currentRebate',
-      'currentRebateRate',
-      'rebateRate'
-    ])
-    const nextRebateRate = pickField(rawResult, ['nextRebate', 'nextRebateRate'])
-
-    if (promoBonusTurnoverDeductionValue !== undefined) {
-      promoBonusTurnoverDeduction.value = toNumber(
-        promoBonusTurnoverDeductionValue,
-        promoBonusTurnoverDeduction.value
-      )
-    }
-    if (pendingRebateTurnoverValue !== undefined) {
-      pendingRebateTurnover.value = toNumber(
-        pendingRebateTurnoverValue,
-        pendingRebateTurnover.value
-      )
-    } else {
-      pendingRebateTurnover.value = eligibleTurnover.value + promoBonusTurnoverDeduction.value
-    }
-    if (currentValidBetsValue !== undefined) {
-      currentValidBets.value = toNumber(currentValidBetsValue, currentValidBets.value)
-    }
-    if (targetValidBetsValue !== undefined) {
-      targetValidBets.value = toNumber(targetValidBetsValue, targetValidBets.value)
-    }
-    if (currentRebateRate !== undefined) {
-      currentRebateValue.value = toRateNumber(currentRebateRate, currentRebateValue.value)
-    }
-    if (nextRebateRate !== undefined) {
-      nextRebateValue.value = toRateNumber(nextRebateRate, nextRebateValue.value)
-    }
-
-    const rawRateList = pickField(rawResult, [
-      'rebateRates',
-      'rebateRateList',
-      'list',
-      'rows',
-      'records'
-    ])
-
-    if (!Array.isArray(rawRateList)) {
-      return
-    }
-
-    const normalizedRows = rawRateList
-      .map((item, index) => normalizeRebateRow(item, index))
-      .filter((item): item is RebateRow => item !== null)
-
-    if (normalizedRows.length === 0) {
-      return
-    }
-
-    if (!normalizedRows.some(item => item.isCurrent)) {
-      normalizedRows[0].isCurrent = true
-    }
-
-    rebateRowsFromApi.value = normalizedRows
-  }
-
   const loadRebateOverview = async () => {
     try {
       const response = await Api.user.queryRebateGameData()
@@ -248,24 +77,6 @@ export const useRebatePage = () => {
       console.error('loadRebateOverview failed', error)
     }
   }
-
-  const loadRebateRate = async () => {
-    try {
-      const response = await Api.user.selectRebateRate()
-      if (!response?.success) {
-        throw new Error(response?.message || 'load rebate rate failed')
-      }
-
-      applyRebateRateResponse(response.result)
-    } catch (error) {
-      console.error('loadRebateRate failed', error)
-    }
-  }
-
-  onMounted(() => {
-    void loadRebateOverview()
-    void loadRebateRate()
-  })
 
   const categoryOptions = computed<RebateCategory[]>(() => [
     {
@@ -346,13 +157,7 @@ export const useRebatePage = () => {
     }))
   })
 
-  const rebateRows = computed<RebateRow[]>(() => {
-    if (rebateRowsFromApi.value.length > 0) {
-      return rebateRowsFromApi.value
-    }
-
-    return defaultRebateRows.value
-  })
+  const rebateRows = computed<RebateRow[]>(() => defaultRebateRows.value)
 
   const handleClaimRebate = () => {
     showClaimSuccessPopup.value = true
@@ -398,6 +203,12 @@ export const useRebatePage = () => {
   const handleSupportClick = () => {
     console.log('open live support')
   }
+
+  onMounted(() => {
+    void loadRebateOverview()
+    void Api.user.rebateData()
+    void Api.user.selectRebateRate()
+  })
 
   return {
     activeCategory,
