@@ -89,11 +89,11 @@
               </div>
             </button>
           </div>
-
-          <div class="flex flex-3 flex-wrap gap-2 lg:!gap-3">
+          
+          <div class="flex flex-3 flex-nowrap gap-2 overflow-x-auto lg:flex-wrap lg:overflow-visible lg:!gap-3">
             <button
-              v-for="value in visibleListImg"
-              class="button button-m center relative h-20 flex-1 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px]"
+              v-for="value in listImg"
+              class="button button-m center relative h-20 w-[calc((100%-2.5rem)/5.1)] shrink-0 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px] lg:min-w-0 lg:flex-1 lg:w-auto"
               type="button"
               @click="toCasino(value.sysGameTypeCode)"
               style="
