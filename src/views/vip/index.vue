@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="w-full h-full">
     <MobileLayout v-if="isReady && isMobile" />
     <PcLayout v-else-if="isReady" />
   </div>

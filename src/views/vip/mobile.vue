@@ -1,6 +1,6 @@
 <template>
-  <section class="fixed inset-0 overflow-y-auto bg-bg-1">
-    <div class="min-h-screen bg-bg-1">
+  <section class="vip-mobile-page fixed inset-0 overflow-y-auto bg-bg-1">
+    <div class="min-h-full bg-bg-1">
       <H5Header
         :title="$t('sidebar_menu.links.vip.prefix')"
         :show-sort="true"
@@ -357,6 +357,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.vip-mobile-page {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 .vip-mobile-carousel {
   scrollbar-width: none;
   -ms-overflow-style: none;
