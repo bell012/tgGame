@@ -61,7 +61,7 @@ export function getGameBrandList(options?: ApiResponseToastOptions): Promise<any
   return request({
     url: '/gc/gameBrandList',
     method: 'post',
-    showSuccessToast: options?.showSuccessToast ?? false,
+    showSuccessToast: false,
     showErrorToast: options?.showErrorToast ?? true
   })
 }

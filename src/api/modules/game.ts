@@ -27,7 +27,7 @@ export function getGameData(options?: ApiResponseToastOptions): Promise<GameData
   return request({
     url: '/gc/queryGameListForApp',
     method: 'post',
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -41,7 +41,7 @@ export function getGameType(options?: ApiResponseToastOptions): Promise<GameType
   return request({
     url: '/gc/getGameType',
     method: 'post',
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -55,7 +55,7 @@ export function getGameBrandData(options?: ApiResponseToastOptions): Promise<Gam
   return request({
     url: '/gc/gameBrandList',
     method: 'post',
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -74,7 +74,7 @@ export function queryGameDetails(
     url: '/gc/queryGameDetails',
     method: 'get',
     params,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -93,7 +93,7 @@ export function getGameRanList(
     url: '/gr/getGameRanList',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -112,7 +112,7 @@ export function getGameBetRecordList(
     url: '/special/getGameBetRecordList',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -131,7 +131,7 @@ export function getGameStatistics(
     url: '/special/getGameStatistics',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -150,7 +150,7 @@ export function refreshGameStatistics(
     url: '/special/refreshGameStatistics',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -161,7 +161,7 @@ export function getloginPlatform(data: any): Promise<any> {
     url: '/gc/loginPlatform',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -179,7 +179,7 @@ export function getCommentSubject(
     url: '/comment/sub/getCommentSubject',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -198,7 +198,7 @@ export function getCommentsList(
     url: '/comment/sub/getCommentsList',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -217,7 +217,7 @@ export function publishComment(
     url: '/comment/sub/publishComment',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })

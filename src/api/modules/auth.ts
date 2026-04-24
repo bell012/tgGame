@@ -42,7 +42,7 @@ export function login(data: LoginForm): Promise<LoginResponse> {
     url: '/mc/loginMember',
     method: 'post',
     data,
-    showSuccessToast: true, // 显示成功轻提示
+    showSuccessToast: false, // 显示成功轻提示
     showErrorToast: true // 显示失败轻提示
   })
 }
@@ -57,7 +57,7 @@ export function register(data: RegisterForm): Promise<RegisterResponse> {
     url: '/mc/newMember',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -72,7 +72,7 @@ export function sendSms(data: SmsForm): Promise<SmsResponse> {
     url: '/sy/sms',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -86,7 +86,7 @@ export function checkSms(data: CheckSmsForm): Promise<CheckSmsResponse> {
     url: '/sy/checkSms',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -101,7 +101,7 @@ export function resetPassword(data: ResetPasswordForm): Promise<ResetPasswordRes
     url: '/mc/resetPassword',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
