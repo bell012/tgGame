@@ -5,7 +5,7 @@
         <p class="text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">当前返水比例</p>
         <p
           class="mt-1 font-[700] leading-none text-text-1"
-          :class="isMobile ? 'text-[18px]' : 'text-[26px]'"
+          :class="isMobile ? 'text-[12px]' : 'text-[14px]'"
         >
           {{ currentRebateText }}
         </p>
@@ -14,7 +14,7 @@
         <p class="text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">下一档返水比例</p>
         <p
           class="mt-1 font-[700] leading-none text-text-1"
-          :class="isMobile ? 'text-[18px]' : 'text-[26px]'"
+          :class="isMobile ? 'text-[12px]' : 'text-[14px]'"
         >
           {{ nextRebateText }}
         </p>
@@ -27,7 +27,7 @@
         :style="{ width: `${progressPercent}%` }"
       ></div>
       <span
-        class="absolute left-1 top-1/2 -translate-y-1/2 rounded-full bg-theme-primary px-2 py-[1px] font-[700] leading-none text-text-4"
+        class="absolute left-0 top-1/2 -translate-y-1/2 rounded-full bg-theme-primary px-2 py-[1px] font-[700] leading-none text-text-4"
         :class="isMobile ? 'text-[10px]' : 'text-xs'"
       >
         {{ progressPercentText }}

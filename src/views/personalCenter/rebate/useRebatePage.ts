@@ -1,6 +1,6 @@
 import Api from '@/api'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { sideIcons } from '@/static/svg/side'
+import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -23,6 +23,12 @@ type RebateApiRow = Record<string, unknown>
 type TranslateFn = (key: string) => string
 type CategoryLabelStrategy = (translate: TranslateFn) => string
 type DeviceType = 'mobile' | 'desktop'
+type SuccessArrayResponse = {
+  success?: boolean
+  result?: unknown
+}
+
+const DEFAULT_TIER_START_VALUE = 0.01
 
 /**
  * 分类名称策略（策略模式）：
@@ -53,6 +59,11 @@ const pickField = (source: Record<string, unknown>, keys: string[]) => {
 
   return undefined
 }
+
+/**
+ * 统一规范化 code 字段（去空格 + 字符串化）。
+ */
+const normalizeCode = (value: unknown) => String(value ?? '').trim()
 
 /**
  * 安全转数字：
@@ -98,7 +109,7 @@ const toDisplayNumberText = (value: unknown, fallback = '0') => {
     return fallback
   }
 
-  return Number.isInteger(parsedValue) ? String(parsedValue) : String(parsedValue)
+  return String(parsedValue)
 }
 
 /**
@@ -110,6 +121,22 @@ const formatRatioPercentText = (value: number) =>
   Number.isInteger(value) ? `${value}%` : `${value.toFixed(2)}%`
 
 /**
+ * 进度百分比文案格式化：
+ * - 0 显示 0%
+ * - 小于 1% 的值保留更多小数，避免被误显示成 0%
+ * - 大于等于 1% 时保留两位小数并去掉多余 0
+ */
+const formatProgressPercentText = (value: number) => {
+  if (value <= 0) {
+    return '0%'
+  }
+
+  const precisionValue = value < 1 ? value.toFixed(4) : value.toFixed(2)
+  const normalizedValue = precisionValue.replace(/\.?0+$/, '')
+  return `${normalizedValue}%`
+}
+
+/**
  * 根据游戏类型 code 获取 tab 名称。
  * 若 code 未配置策略，则回退为 code 本身，再回退为 "--"。
  */
@@ -117,6 +144,12 @@ const getRebateCategoryLabel = (code: string, translate: TranslateFn) => {
   const labelStrategy = CATEGORY_LABEL_STRATEGIES[code]
   return labelStrategy ? labelStrategy(translate) : code || '--'
 }
+
+/**
+ * 判断接口是否返回了“成功 + 数组结果”。
+ */
+const isSuccessArrayResult = (response: SuccessArrayResponse | null | undefined) =>
+  Boolean(response?.success && Array.isArray(response.result))
 
 /**
  * 将后端图片字段统一转为可用图片 URL。
@@ -165,7 +198,7 @@ const buildRebateCategories = (rows: RebateApiRow[], translate: TranslateFn): Re
   const seenCategoryIds = new Set<string>()
 
   return rows.reduce<RebateCategory[]>((acc, row) => {
-    const sysGameTypeCode = String(row.sysGameTypeCode ?? '').trim()
+    const sysGameTypeCode = normalizeCode(row.sysGameTypeCode)
     if (!sysGameTypeCode || seenCategoryIds.has(sysGameTypeCode)) {
       return acc
     }
@@ -202,7 +235,7 @@ const getRebateRateVosByCategoryCode = (
   }
 
   const matchedCategory = categoryConfigs.find(
-    row => String(row.sysGameTypeCode ?? '').trim() === categoryCode
+    row => normalizeCode(row.sysGameTypeCode) === categoryCode
   )
   if (!matchedCategory) {
     return []
@@ -254,9 +287,9 @@ const buildRebateRowsFromRateVos = (
 const buildTierStartValuesFromRateVos = (rateVos: RebateApiRow[]): number[] =>
   rateVos.map((_, index) => {
     if (index === 0) {
-      return 0.01
+      return DEFAULT_TIER_START_VALUE
     }
-    return toNumber(rateVos[index - 1]?.betLine, 0.01)
+    return toNumber(rateVos[index - 1]?.betLine, DEFAULT_TIER_START_VALUE)
   })
 
 /**
@@ -265,11 +298,12 @@ const buildTierStartValuesFromRateVos = (rateVos: RebateApiRow[]): number[] =>
  */
 const findMatchedTierIndex = (currentValidBets: number, tierStartValues: number[]) => {
   let matchedIndex = -1
-  tierStartValues.forEach((startValue, index) => {
+  for (let index = 0; index < tierStartValues.length; index += 1) {
+    const startValue = tierStartValues[index]
     if (currentValidBets >= startValue) {
       matchedIndex = index
     }
-  })
+  }
   return matchedIndex
 }
 
@@ -277,7 +311,7 @@ const findMatchedTierIndex = (currentValidBets: number, tierStartValues: number[
  * 进度百分比计算，返回区间 [0, 100]。
  */
 const calcProgressPercent = (currentValue: number, targetValue: number) => {
-  if (!targetValue) {
+  if (targetValue <= 0) {
     return 0
   }
   const ratio = (currentValue / targetValue) * 100
@@ -313,8 +347,6 @@ const runMountedLoaders = (loaders: Array<() => Promise<void>>) => {
 export const useRebatePage = () => {
   const { t } = useI18n()
   const isMobile = useIsMobile()
-  const { side } = sideIcons
-
   // ============================================================
   // 模块 A：页面级交互状态（RebateActionTabs + 各类弹窗）
   // ============================================================
@@ -348,27 +380,32 @@ export const useRebatePage = () => {
   const claimableAmount = ref(0)
 
   /**
+   * 将来源对象中的候选字段解析为数字并回填到指定状态。
+   * 字段不存在时不覆盖原状态，避免把已有值重置掉。
+   */
+  const applyOptionalNumberToState = (
+    source: RebateApiRow,
+    fieldCandidates: string[],
+    targetState: { value: number }
+  ) => {
+    const rawFieldValue = pickField(source, fieldCandidates)
+    if (rawFieldValue === undefined) {
+      return
+    }
+    targetState.value = toNumber(rawFieldValue, targetState.value)
+  }
+
+  /**
    * 解析并应用 queryRebateGameData 结果到概览卡状态。
    */
   const applyRebateOverviewResponse = (result: unknown) => {
-    if (!result) {
+    if (!isPlainObject(result)) {
       return
     }
 
-    const rawResult = result as RebateApiRow
-    const todayValidBetsValue = pickField(rawResult, ['betAmount'])
-    const eligibleTurnoverValue = pickField(rawResult, ['flowAmount'])
-    const claimableAmountValue = pickField(rawResult, ['rebatePoints'])
-
-    if (todayValidBetsValue !== undefined) {
-      todayValidBets.value = toNumber(todayValidBetsValue, todayValidBets.value)
-    }
-    if (eligibleTurnoverValue !== undefined) {
-      eligibleTurnover.value = toNumber(eligibleTurnoverValue, eligibleTurnover.value)
-    }
-    if (claimableAmountValue !== undefined) {
-      claimableAmount.value = toNumber(claimableAmountValue, claimableAmount.value)
-    }
+    applyOptionalNumberToState(result, ['betAmount'], todayValidBets)
+    applyOptionalNumberToState(result, ['flowAmount'], eligibleTurnover)
+    applyOptionalNumberToState(result, ['rebatePoints'], claimableAmount)
   }
 
   /**
@@ -423,7 +460,7 @@ export const useRebatePage = () => {
   const loadRebateCategories = async () => {
     try {
       const response = await Api.user.selectRebateRate()
-      if (!response?.success || !Array.isArray(response.result)) {
+      if (!isSuccessArrayResult(response)) {
         return
       }
 
@@ -454,7 +491,7 @@ export const useRebatePage = () => {
   const loadRebateData = async () => {
     try {
       const response = await Api.user.rebateData()
-      if (!response?.success || !Array.isArray(response.result)) {
+      if (!isSuccessArrayResult(response)) {
         rebateDataRows.value = []
         return
       }
@@ -472,7 +509,7 @@ export const useRebatePage = () => {
   const categoryOptions = computed<RebateCategory[]>(() => rebateCategoriesFromApi.value)
 
   // ============================================================
-  // 模块 D：RebateProgressCard（进度卡）
+  // 模块 D：分类投注聚合（供进度卡与表格复用）
   // ============================================================
 
   /**
@@ -485,7 +522,7 @@ export const useRebatePage = () => {
    */
   const currentCategoryRebateRows = computed(() =>
     rebateDataRows.value.filter(
-      item => String(item.sysGameTypeCode ?? '').trim() === currentCategoryCode.value
+      item => normalizeCode(item.sysGameTypeCode) === currentCategoryCode.value
     )
   )
 
@@ -554,7 +591,7 @@ export const useRebatePage = () => {
   )
 
   // ============================================================
-  // 模块 D：RebateProgressCard（进度卡）
+  // 模块 F：RebateProgressCard（最终文案与进度）
   // ============================================================
 
   /**
@@ -573,46 +610,38 @@ export const useRebatePage = () => {
    */
   const targetValidBetsValue = computed(() => {
     if (currentValidBetsValue.value === 0) {
-      return 0.01
+      return DEFAULT_TIER_START_VALUE
     }
 
     if (currentTierIndex.value < 0) {
-      return 0.01
+      return DEFAULT_TIER_START_VALUE
     }
 
     const currentTierBetLineValue =
       currentCategoryRebateRateVos.value[currentTierIndex.value]?.betLine
-    return toNumber(currentTierBetLineValue, 0.01)
+    return toNumber(currentTierBetLineValue, DEFAULT_TIER_START_VALUE)
   })
 
   /**
    * 进度卡分母 X（红框值）的文本版本。
    */
   const targetValidBetsText = computed(() =>
-    toDisplayNumberText(targetValidBetsValue.value, '0.01')
+    toDisplayNumberText(targetValidBetsValue.value, String(DEFAULT_TIER_START_VALUE))
   )
 
   /**
    * 进度百分比（0-100），用于进度条宽度与百分比文本。
    *
    * 规则：
-   * 1. 当前有效投注 / 总投注数(X)；
-   * 2. 若当前返水比例 == 下一档返水比例，且值 > 0，则直接 100%。
+   * 仅按：当前有效投注 / 总投注数(X)。
    */
-  const progressPercent = computed(() => {
-    if (
-      currentTierRatioValue.value > 0 &&
-      currentTierRatioValue.value === nextTierRatioValue.value
-    ) {
-      return 100
-    }
-
-    return calcProgressPercent(currentValidBetsValue.value, targetValidBetsValue.value)
-  })
-  const progressPercentText = computed(() => `${Math.floor(progressPercent.value)}%`)
+  const progressPercent = computed(() =>
+    calcProgressPercent(currentValidBetsValue.value, targetValidBetsValue.value)
+  )
+  const progressPercentText = computed(() => formatProgressPercentText(progressPercent.value))
 
   // ============================================================
-  // 模块 F：页面交互行为（按钮、Tab、弹窗）
+  // 模块 G：页面交互行为（按钮、Tab、弹窗）
   // ============================================================
 
   /**
@@ -690,7 +719,7 @@ export const useRebatePage = () => {
   }
 
   // ============================================================
-  // 模块 G：生命周期编排（页面初始化）
+  // 模块 H：生命周期编排（页面初始化）
   // ============================================================
 
   /**
@@ -738,7 +767,7 @@ export const useRebatePage = () => {
     showEligibleTurnoverPopup,
     showRebateRecordsPopup,
     showRebateRulesPopup,
-    supportHeaderIcon: side.helpIcon,
+    supportHeaderIcon: CustomerServiceIcon,
     targetValidBetsText,
     todayValidBetsText
   }

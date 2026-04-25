@@ -1,11 +1,11 @@
 <template>
   <popShell v-model="visible" :transition-type="isMobile ? 'bottom-sheet' : 'modal'">
     <section
-      class="w-full bg-bg-2 text-text-1"
+      class="bg-bg-2 text-text-1"
       :class="
         isMobile
-          ? 'rounded-t-[18px] px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-4'
-          : 'mx-auto w-[360px] rounded-[12px] px-4 pb-5 pt-3 shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
+          ? 'w-full rounded-t-[18px] px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-4'
+          : 'mx-auto w-[420px] max-w-[calc(100vw-40px)] rounded-[12px] px-4 pb-5 pt-3 shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
       "
     >
       <div class="relative flex items-center justify-center">

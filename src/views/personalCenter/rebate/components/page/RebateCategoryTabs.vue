@@ -5,7 +5,7 @@
       :key="category.id"
       type="button"
       :class="buttonClass(category.id === activeCategory)"
-      @click="$emit('update:activeCategory', category.id)"
+      @click="handleCategoryClick(category.id, $event)"
     >
       <img
         v-if="isImageIcon(getIcon(category, category.id === activeCategory))"
@@ -26,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick } from 'vue'
 import type { RebateCategory } from '../../types'
 
 const props = defineProps<{
@@ -34,7 +35,7 @@ const props = defineProps<{
   isMobile: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   'update:activeCategory': [value: string]
 }>()
 
@@ -60,6 +61,18 @@ const getIcon = (category: RebateCategory, isActive: boolean) => {
 
 const isImageIcon = (icon: RebateCategory['icon']) => {
   return typeof icon === 'string' && icon.trim().length > 0
+}
+
+const handleCategoryClick = async (categoryId: string, event: MouseEvent) => {
+  emit('update:activeCategory', categoryId)
+
+  await nextTick()
+  const currentButton = event.currentTarget as HTMLButtonElement | null
+  currentButton?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center'
+  })
 }
 </script>
 
