@@ -4,7 +4,11 @@
     class="casino-page max-w-[1248px] mx-auto px-3.5 py-3 sm:py-4 sm:px-3 w-full font-['Inter']"
     :style="casinoPageStyle"
   >
-    <casinoSlideshow v-if="querySlideshowList.length > 0" :list="querySlideshowList" />
+    <casinoSlideshow
+      v-if="isSlideshowLoading || querySlideshowList.length > 0"
+      :list="querySlideshowList"
+      :loading="isSlideshowLoading"
+    />
 
     <div
       ref="searchRef"
@@ -146,6 +150,15 @@
               {{ item.sysGameTypeName }}
             </div>
           </button>
+          <div
+            v-for="index in tabSkeletonCount"
+            v-show="isInitialLobbyLoading"
+            :key="`tab-skeleton-${index}`"
+            class="flex h-[38px] w-24 shrink-0 items-center rounded-lg bg-bg-2 px-[7px] py-[9px] animate-pulse sm:w-28"
+          >
+            <div class="mr-[7px] h-5 w-5 shrink-0 rounded bg-bg-3" />
+            <div class="h-3 w-12 rounded bg-bg-3 sm:w-16" />
+          </div>
         </div>
       </div>
 
@@ -237,6 +250,7 @@ const searchText = ref('')
 const activeSearchKeyword = ref('')
 const suggestedArr = ref<string[]>([])
 const querySlideshowList = ref<QuerySlideshowItem[]>([])
+const isSlideshowLoading = ref(false)
 const gameStore = useGameStore()
 const userStore = useUserStore()
 const { searchHistory } = storeToRefs(gameStore)
@@ -299,7 +313,7 @@ const currentPageProps = computed(() => {
     case pageStyle1:
       return {
         modules: lobbyButtons.value,
-        loading: isLobbyButtonsLoading.value && !hasLoaded.value
+        loading: isInitialLobbyLoading.value
       }
     case pageStyle2:
     case pageStyle3:
@@ -429,6 +443,7 @@ let slideshowRequestToken = 0
 
 const getQuerySlideshow = async () => {
   const requestToken = ++slideshowRequestToken
+  isSlideshowLoading.value = true
 
   try {
     const nextSlides: QuerySlideshowItem[] = []
@@ -474,6 +489,10 @@ const getQuerySlideshow = async () => {
 
     console.error('getQuerySlideshow failed', error)
     querySlideshowList.value = []
+  } finally {
+    if (requestToken === slideshowRequestToken) {
+      isSlideshowLoading.value = false
+    }
   }
 }
 
@@ -544,6 +563,8 @@ const { tabButtons, lobbyButtons, hasLoaded, isLobbyButtonsLoading, loadCasinoLo
   useCasinoTabButtons({
     isLoggedIn
   })
+const isInitialLobbyLoading = computed(() => isLobbyButtonsLoading.value && !hasLoaded.value)
+const tabSkeletonCount = computed(() => (isMobile.value ? 4 : 6))
 
 const getGameData = async (forceRefresh = false) => {
   try {
