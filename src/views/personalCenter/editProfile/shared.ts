@@ -117,13 +117,18 @@ export const useEditProfile = (options?: { onSaved?: () => void }) => {
       : t('personalCenter.editProfile.unlockHint', { level: vipLevel.value + 1 })
   )
   const isNicknameValid = computed(() => isValidNickname(nickName.value))
-  const canSave = computed(
+
+  /**
+   * 判断当前是否发生变更。
+   */
+  const hasProfileChanges = computed(
     () =>
-      isNicknameValid.value &&
-      (nickName.value !== originalForm.value.nickName ||
-        selectedAvatarFrameId.value !== originalForm.value.avatarFrameId ||
-        pendingHeadPortrait.value !== originalForm.value.headPortrait)
+      nickName.value !== originalForm.value.nickName ||
+      selectedAvatarFrameId.value !== originalForm.value.avatarFrameId ||
+      pendingHeadPortrait.value !== originalForm.value.headPortrait
   )
+
+  const canSave = computed(() => hasProfileChanges.value)
   const selectedAvatarFrameImage = computed(() =>
     selectedAvatarFrameId.value === DEFAULT_AVATAR_FRAME_ID
       ? ''
@@ -451,13 +456,23 @@ export const useEditProfile = (options?: { onSaved?: () => void }) => {
    * 提交编辑资料表单并保存头像框配置。
    */
   const handleSave = async () => {
-    if (!canSave.value || isSavingProfile.value) return
+    if (!hasProfileChanges.value || isSavingProfile.value) return
+    if (!isNicknameValid.value) {
+      showToast({
+        message: t('personalCenter.editProfile.usernameHint'),
+        position: 'middle',
+        type: 'fail'
+      })
+      return
+    }
+
     const payload: { nickName?: string; headPortrait?: string } = { nickName: nickName.value }
     if (pendingHeadPortrait.value) payload.headPortrait = pendingHeadPortrait.value
     isSavingProfile.value = true
     try {
       const response = await Api.user.modifyMemberInfo(payload)
-      if (!response?.success) throw new Error(response?.message || t('common.error'))
+      if (response?.code !== 'C2') return
+
       saveProfileCustomization({ avatarFrameId: selectedAvatarFrameId.value })
       const nextHeadPortrait = pendingHeadPortrait.value || userInfo.value?.headPortrait || ''
       setProfileUserInfoState({
@@ -472,20 +487,10 @@ export const useEditProfile = (options?: { onSaved?: () => void }) => {
         avatarFrameId: selectedAvatarFrameId.value,
         headPortrait: nextHeadPortrait
       }
-      showToast({
-        message: t('personalCenter.editProfile.saveSuccess'),
-        position: 'middle',
-        type: 'success'
-      })
       if (options?.onSaved) options.onSaved()
       else navigateTo('/personal-center/my-profile', { replace: true })
     } catch (error) {
       console.error(error)
-      showToast({
-        message: error instanceof Error ? error.message : t('common.error'),
-        position: 'middle',
-        type: 'fail'
-      })
     } finally {
       isSavingProfile.value = false
     }

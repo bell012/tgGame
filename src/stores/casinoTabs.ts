@@ -18,6 +18,12 @@ export interface CasinoLobbyButtonItem extends CasinoTabButtonItem {
   brandItems?: GameBrandItem[]
 }
 
+interface PendingCasinoTabsRequest<T> {
+  id: symbol
+  languageCode: string
+  promise: Promise<T[]>
+}
+
 export const useCasinoTabsStore = defineStore('casinoTabs', () => {
   const gameStore = useGameStore()
   const gameTypeList = ref<GameTypeItem[]>([])
@@ -28,8 +34,8 @@ export const useCasinoTabsStore = defineStore('casinoTabs', () => {
   const isLobbyButtonsLoading = ref(false)
   const loadedTabLanguageCode = ref<string | null>(null)
   const loadedLobbyLanguageCode = ref<string | null>(null)
-  let pendingTabButtonsRequest: Promise<CasinoTabButtonItem[]> | null = null
-  let pendingLobbyButtonsRequest: Promise<CasinoLobbyButtonItem[]> | null = null
+  let pendingTabButtonsRequest: PendingCasinoTabsRequest<CasinoTabButtonItem> | null = null
+  let pendingLobbyButtonsRequest: PendingCasinoTabsRequest<CasinoLobbyButtonItem> | null = null
 
   const currentLanguageCode = computed(() =>
     getStorageLanguageCode(String(i18n.global.locale.value))
@@ -89,47 +95,64 @@ export const useCasinoTabsStore = defineStore('casinoTabs', () => {
   const tabButtons = computed<CasinoTabButtonItem[]>(() => [...lobbyButtons.value])
 
   const loadCasinoTabButtons = async (forceRefresh = false) => {
-    if (pendingTabButtonsRequest) {
-      return pendingTabButtonsRequest
+    const requestLanguageCode = currentLanguageCode.value
+
+    if (pendingTabButtonsRequest?.languageCode === requestLanguageCode) {
+      return pendingTabButtonsRequest.promise
     }
 
     if (
       !forceRefresh &&
       hasTabButtonsLoaded.value &&
-      loadedTabLanguageCode.value === currentLanguageCode.value
+      loadedTabLanguageCode.value === requestLanguageCode
     ) {
       return tabButtons.value
     }
 
-    pendingTabButtonsRequest = (async () => {
-      gameTypeList.value = await gameStore.getGameTypeData(forceRefresh)
-      hasTabButtonsLoaded.value = true
-      loadedTabLanguageCode.value = currentLanguageCode.value
+    const requestId = Symbol('casino-tab-buttons-request')
+    const promise = (async () => {
+      const nextGameTypeList = await gameStore.getGameTypeData(forceRefresh)
+
+      gameTypeList.value = nextGameTypeList
+      hasTabButtonsLoaded.value = nextGameTypeList.length > 0
+      loadedTabLanguageCode.value = nextGameTypeList.length > 0 ? requestLanguageCode : null
 
       return tabButtons.value
     })()
 
+    const request: PendingCasinoTabsRequest<CasinoTabButtonItem> = {
+      id: requestId,
+      languageCode: requestLanguageCode,
+      promise
+    }
+    pendingTabButtonsRequest = request
+
     try {
-      return await pendingTabButtonsRequest
+      return await promise
     } finally {
-      pendingTabButtonsRequest = null
+      if (pendingTabButtonsRequest?.id === requestId) {
+        pendingTabButtonsRequest = null
+      }
     }
   }
 
   const loadCasinoLobbyButtons = async (forceRefresh = false) => {
-    if (pendingLobbyButtonsRequest) {
-      return pendingLobbyButtonsRequest
+    const requestLanguageCode = currentLanguageCode.value
+
+    if (pendingLobbyButtonsRequest?.languageCode === requestLanguageCode) {
+      return pendingLobbyButtonsRequest.promise
     }
 
     if (
       !forceRefresh &&
       hasLobbyButtonsLoaded.value &&
-      loadedLobbyLanguageCode.value === currentLanguageCode.value
+      loadedLobbyLanguageCode.value === requestLanguageCode
     ) {
       return lobbyButtons.value
     }
 
-    pendingLobbyButtonsRequest = (async () => {
+    const requestId = Symbol('casino-lobby-buttons-request')
+    const promise = (async () => {
       isLobbyButtonsLoading.value = true
 
       try {
@@ -178,19 +201,30 @@ export const useCasinoTabsStore = defineStore('casinoTabs', () => {
         lobbyBrandMap.value = {
           providers: providersResult.list
         }
-        hasLobbyButtonsLoaded.value = true
-        loadedLobbyLanguageCode.value = currentLanguageCode.value
+        hasLobbyButtonsLoaded.value = gameTypeList.value.length > 0
+        loadedLobbyLanguageCode.value = gameTypeList.value.length > 0 ? requestLanguageCode : null
 
         return lobbyButtons.value
       } finally {
-        isLobbyButtonsLoading.value = false
+        if (pendingLobbyButtonsRequest?.id === requestId) {
+          isLobbyButtonsLoading.value = false
+        }
       }
     })()
 
+    const request: PendingCasinoTabsRequest<CasinoLobbyButtonItem> = {
+      id: requestId,
+      languageCode: requestLanguageCode,
+      promise
+    }
+    pendingLobbyButtonsRequest = request
+
     try {
-      return await pendingLobbyButtonsRequest
+      return await promise
     } finally {
-      pendingLobbyButtonsRequest = null
+      if (pendingLobbyButtonsRequest?.id === requestId) {
+        pendingLobbyButtonsRequest = null
+      }
     }
   }
 

@@ -106,6 +106,7 @@ export interface SelectMemberResult {
   withdrawAmount: number
   withdrawNumber: number
   busiPwd: string // 交易密码
+  memberName: string
 }
 
 /**
@@ -123,6 +124,7 @@ export interface SelectMemberResponse {
  */
 export interface ModifyMemberInfoForm {
   nickName?: string
+  memberName?: string
   headPortrait?: string
   memberPwd?: string // 新会员密码
   busiPwd?: string //新交易密码

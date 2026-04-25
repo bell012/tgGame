@@ -99,6 +99,7 @@ export interface RegisterForm {
   memberPwd?: string // 会员密码,手机注册时可以不传
   areaCode: string // 区号（手机号注册时需要）
   telephone: string // 手机号码 手机注册时也要传值
+  nickName: string // 会员姓名
 }
 
 // 注册响应
