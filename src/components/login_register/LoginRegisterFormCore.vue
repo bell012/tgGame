@@ -31,7 +31,12 @@ import Api from '@/api'
 import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
 import { AESUtils } from '@/utils/encrypt'
-import { getCurrentCurrency, getDefaultAreaCode, getLanguageCode } from '@/utils/locale'
+import {
+  generateRegisterMemberName,
+  getCurrentCurrency,
+  getDefaultAreaCode,
+  getLanguageCode
+} from '@/utils/locale'
 import {
   handlePasswordInput,
   handlePhoneInput,
@@ -350,6 +355,8 @@ const handleRegister = async () => {
     const languageCode = getLanguageCode()
     // 获取当前币种
     const currency = getCurrentCurrency()
+    // 生成14 位会员名称。
+    const nickName = generateRegisterMemberName()
 
     const registerData = {
       memberId: `${defaultAreaCode}${formData.value.signup.account}`,
@@ -360,7 +367,8 @@ const handleRegister = async () => {
       smsCode: formData.value.signup.code,
       memberPwd: StringExtension.md5(formData.value.signup.password),
       areaCode: defaultAreaCode,
-      telephone: formData.value.signup.account
+      telephone: formData.value.signup.account,
+      nickName
     }
 
     // 注册接口

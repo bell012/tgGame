@@ -704,7 +704,7 @@
     "editProfile": {
       "title": "Edit Profile",
       "username": "Username",
-      "usernameHint": "Please do not use special characters, as they may not be supported.",
+      "usernameHint": "Must be a combination of 6-20 letters and numbers.",
       "avatarFrame": "Avatar Frame",
       "unlockHint": "Reach VIP {level} to unlock",
       "allUnlockedHint": "All avatar frames unlocked",

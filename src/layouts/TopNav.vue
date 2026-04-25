@@ -24,7 +24,10 @@
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
         <!-- H5端 Logo (登录后小logo) -->
-        <div v-if="isLoggedIn" class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer mobileLogo">
+        <div
+          v-if="isLoggedIn"
+          class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer mobileLogo"
+        >
           <SmartImage :src="mobileLogoImage" alt="" class="w-full h-full" />
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>

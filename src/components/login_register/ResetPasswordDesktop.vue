@@ -1,5 +1,5 @@
 ﻿<template>
-  <ResetPasswordFormCore>
+  <ResetPasswordFormCore @reset-success="emit('reset-success')">
     <template
       #default="{
         showPassword,
@@ -157,6 +157,10 @@ import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import ResetPasswordFormCore from './ResetPasswordFormCore.vue'
 import { useI18n } from 'vue-i18n'
+
+const emit = defineEmits<{
+  'reset-success': []
+}>()
 
 const { t } = useI18n()
 const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
