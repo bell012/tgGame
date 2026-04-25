@@ -119,15 +119,9 @@ const getRecentBigWinsData = async () => {
   loading.value = true
 
   try {
-    const res = await Api.home.getRecentBigWins(
-      {
-        currency: currentCurrency.value,
-        type: props.type
-      },
-      {
-        showSuccessToast: false
-      }
-    )
+    const res = await Api.game.getLatestList({
+      type: props.type
+    })
 
     sourceRows.value = (res?.result ?? []).map((item: RecentBigWinsItem, index: number) => ({
       id: Number(item.rowId ?? index),

@@ -3,6 +3,8 @@ import type {
   GameBetRecordListResponse,
   GameStatisticsResponse,
   GetGameBetRecordListParams,
+  GetLatestListParams,
+  GetLatestListResponse,
   GetCommentsListParams,
   GetCommentSubjectParams,
   GetGameStatisticsParams,
@@ -110,6 +112,25 @@ export function getGameBetRecordList(
 ): Promise<GameBetRecordListResponse> {
   return request({
     url: '/special/getGameBetRecordList',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true,
+    ...options
+  })
+}
+
+/**
+ * 获取最新投注列表
+ * @param data type 1: 最新投注 2: 龙虎榜
+ * @returns Promise<GetLatestListResponse>
+ */
+export function getLatestList(
+  data: GetLatestListParams,
+  options?: ApiResponseToastOptions
+): Promise<GetLatestListResponse> {
+  return request({
+    url: '/special/getLatestList',
     method: 'post',
     data,
     showSuccessToast: false,

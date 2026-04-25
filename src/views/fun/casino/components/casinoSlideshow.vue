@@ -1,5 +1,16 @@
 <template>
-  <div v-if="slides.length > 0" class="mb-3">
+  <div v-if="loading" class="mb-3">
+    <div
+      class="aspect-[343/140] w-full animate-pulse rounded-lg bg-bg-2 sm:aspect-[1248/280] sm:rounded-xl"
+    />
+    <div class="mt-2 flex items-center justify-center gap-2 px-3 sm:mt-3">
+      <div class="h-1.5 w-10 animate-pulse rounded-full bg-bg-2 sm:h-2 sm:w-[72px]" />
+      <div class="h-1.5 w-1.5 animate-pulse rounded-full bg-bg-2 sm:h-2 sm:w-10" />
+      <div class="h-1.5 w-1.5 animate-pulse rounded-full bg-bg-2 sm:h-2 sm:w-10" />
+    </div>
+  </div>
+
+  <div v-else-if="slides.length > 0" class="mb-3">
     <Swipe
       ref="swipeRef"
       class="overflow-hidden rounded-lg sm:rounded-xl bg-bg-1 w-full"
@@ -62,9 +73,15 @@ import { useAuthModalStore } from '@/stores/authModal'
 
 const AUTO_PLAY_INTERVAL = 3000
 
-const props = defineProps<{
-  list: QuerySlideshowItem[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    list: QuerySlideshowItem[]
+    loading?: boolean
+  }>(),
+  {
+    loading: false
+  }
+)
 
 const authModalStore = useAuthModalStore()
 const currentIndex = ref(0)

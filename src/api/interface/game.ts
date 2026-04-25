@@ -135,6 +135,24 @@ export interface GameBetRecordListResponse {
   [key: string]: unknown
 }
 
+/** /special/getLatestList 类型：1 最新投注，2 龙虎榜 */
+export type LatestListType = 1 | 2
+
+export interface GetLatestListParams {
+  type: LatestListType
+}
+
+export interface LatestListItem {
+  [key: string]: unknown
+}
+
+export interface GetLatestListResponse {
+  code: string | number
+  message: string
+  result?: LatestListItem[] | null
+  [key: string]: unknown
+}
+
 export interface GetGameStatisticsParams {
   itemCode: string
   platformCode: string
