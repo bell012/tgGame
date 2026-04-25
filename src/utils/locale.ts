@@ -333,6 +333,26 @@ export const getCurrentCurrency = (): string => {
   return currency
 }
 
+/**
+ * 生成会员注册 memberName。
+ * 规则固定为 14 位：`PH` + 6 位小写英文字母 + 6 位数字。
+ *
+ * 数字段使用当前时间戳的后 6 位
+ */
+export const generateRegisterMemberName = (): string => {
+  const LETTER_COUNT = 6
+  const MEMBER_NAME_PREFIX = 'PH'
+  const LETTER_POOL = 'abcdefghijklmnopqrstuvwxyz'
+  const timestampSuffix = String(Date.now()).slice(-6).padStart(6, '0')
+
+  const randomLetters = Array.from({ length: LETTER_COUNT }, () => {
+    const randomIndex = Math.floor(Math.random() * LETTER_POOL.length)
+    return LETTER_POOL[randomIndex]
+  }).join('')
+
+  return `${MEMBER_NAME_PREFIX}${randomLetters}${timestampSuffix}`
+}
+
 const CURRENCY_FLAG_IMAGE_MAP: Record<string, string> = {
   CNY: CNYFlagIcon,
   PHP: PHPFlagIcon,

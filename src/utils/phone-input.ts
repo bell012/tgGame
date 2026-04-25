@@ -116,12 +116,12 @@ export const formatNickname = (value: string): string => {
 }
 
 /**
- * 验证昵称是否符合要求：3-20位，只能包含字母和数字
+ * 验证昵称是否符合要求：6-20位，只能包含字母和数字，且必须同时包含字母与数字
  * @param value 昵称字符串
  * @returns 是否符合要求
  */
 export const isValidNickname = (value: string): boolean => {
-  return /^[a-zA-Z0-9]{3,20}$/.test(value)
+  return /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z0-9]{6,20}$/.test(value)
 }
 
 /**

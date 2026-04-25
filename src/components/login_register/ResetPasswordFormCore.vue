@@ -31,10 +31,16 @@ import { getDefaultAreaCode } from '@/utils/locale'
 import { StringExtension } from '@/utils/string-extension'
 import { showToast } from 'vant'
 import { useI18n } from 'vue-i18n'
+import { useAuthModalStore } from '@/stores/authModal'
 
 const { t } = useI18n()
 const defaultAreaCode = getDefaultAreaCode()
 const RESET_PASSWORD_SMS_COUNTDOWN_STORAGE_KEY = 'reset-password-sms-countdown'
+const authModalStore = useAuthModalStore()
+
+const emit = defineEmits<{
+  'reset-success': []
+}>()
 
 const {
   remainingSeconds: countdown,
@@ -159,9 +165,11 @@ const handleResetPassword = async () => {
 
     // 重置密码接口
     const response = await Api.auth.resetPassword(resetPasswordData)
-    // 重置密码成功，清空表单
+    // 重置密码成功后，重置表单并切回登录弹窗。
     if (response.code == 'C2') {
       resetForm()
+      authModalStore.openLoginModal()
+      emit('reset-success')
     }
   } catch (error) {
     console.error(error)

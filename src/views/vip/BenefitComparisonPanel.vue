@@ -63,7 +63,13 @@
         </div>
       </article>
 
-      <ArrowheadIcon v-if="hasNextColumn" :class="arrowClass" />
+      <img
+        :src="ArrowheadIcon"
+        alt=""
+        aria-hidden="true"
+        v-if="hasNextColumn"
+        :class="arrowClass"
+      />
 
       <article
         v-if="nextTotalRow"
@@ -83,7 +89,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import ArrowheadIcon from '@/static/svg/vip/arrowhead.svg?skipsvgo'
+import ArrowheadIcon from '@/static/svg/vip/arrowhead.svg?url'
 import type { VipBenefitComparisonColumn } from './shared'
 
 const props = defineProps<{

@@ -204,13 +204,15 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
   onMounted(async () => {
     profileRequestDate.value = new Date()
     const res = await Api.user.getGameBetTotal({})
-    const result = res.result
-    gameBetSummary.value = {
-      betAmount: Number(result?.betAmount ?? 0),
-      total: Number(result?.total ?? 0),
-      win: String(result?.win ?? '0')
+    if (res?.code === 'C2') {
+      const result = res.result
+      gameBetSummary.value = {
+        betAmount: Number(result?.betAmount ?? 0),
+        total: Number(result?.total ?? 0),
+        win: String(result?.win ?? '0')
+      }
+      favoriteGameList.value = Array.isArray(result?.list) ? result.list : []
     }
-    favoriteGameList.value = Array.isArray(result?.list) ? result.list : []
     userStore.syncStoredUserData()
     await userStore.refreshCurrentUserData()
   })
