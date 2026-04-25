@@ -540,6 +540,7 @@ import markReadIcon from '@/static/svg/mark-read-icon.svg?component'
 
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useAuthModalStore } from '@/stores/authModal'
+import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
 import { useTradeMessageSyncStore } from '@/stores/tradeMessageSync'
 import { formatDisplayTime } from '@/utils/date'
 import { getLanguageCode } from '@/utils/locale'
@@ -716,6 +717,8 @@ const emit = defineEmits<{
 
 // 登录弹窗状态管理。
 const authModalStore = useAuthModalStore()
+// 首页铃铛未读状态管理。
+const notificationIndicatorStore = useNotificationIndicatorStore()
 // 充提消息同步状态管理。
 const tradeMessageSyncStore = useTradeMessageSyncStore()
 const isMobile = useIsMobile()
@@ -1570,6 +1573,11 @@ onUnmounted(() => {
   hideNotificationJumpLoading()
 })
 
+// 普通通知状态变更后，同步刷新首页铃铛使用的未读态。
+const refreshStaticNotificationIndicator = () => {
+  void notificationIndicatorStore.refreshStaticUnread()
+}
+
 // 将通知标记为已读，并同步本地列表状态。
 const markNotificationAsReadInState = (item: NotificationItem) => {
   if (item.transactionKey) {
@@ -1584,6 +1592,7 @@ const markNotificationAsReadInState = (item: NotificationItem) => {
       notification.rowId === item.rowId ? { ...notification, read: true } : notification
     )
   }))
+  refreshStaticNotificationIndicator()
 }
 
 const closeTransactionOrderDetail = () => {
@@ -1954,6 +1963,7 @@ const confirmRemoveNotification = () => {
         ...state,
         items: state.items.filter(item => item.rowId !== pendingItem.rowId)
       }))
+      refreshStaticNotificationIndicator()
     }
 
     showDeleteConfirm.value = false
@@ -1982,6 +1992,7 @@ const markCurrentTabAsRead = () => {
     ...state,
     items: state.items.map(item => ({ ...item, read: true }))
   }))
+  refreshStaticNotificationIndicator()
 }
 
 sessionStorage.removeItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY)

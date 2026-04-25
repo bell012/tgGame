@@ -154,7 +154,7 @@ export const isTradeMessageTypeSupported = (msgType: unknown) => {
 
 export const normalizeTradePushMessage = (message: TradePushMessage): TradeMessageStreamItem => {
   const orderType = normalizePayOrderType(message.orderType)
-  const status = normalizePayOrderStatus(message.status ?? message.orderStatus)
+  const status = normalizePayOrderStatus(message.orderStatus)
   const messageTime = Number(message.createTime ?? Date.now())
 
   return {
