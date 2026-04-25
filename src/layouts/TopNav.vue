@@ -156,8 +156,13 @@
               class="cursor-pointer search w-[33px] h-[33px] flex items-center justify-center rounded-lg mr-2"
               @click="handleNotificationClick"
             >
-              <BellUnreadIcon v-if="shouldShowUnreadBell" class="w-8 h-8 fill-none" />
-              <BellDefaultIcon v-else class="w-8 h-8 fill-none" />
+              <SmartImage
+                v-if="shouldShowUnreadBell"
+                :src="bellUnreadImage"
+                alt=""
+                class="w-6 h-6"
+              />
+              <SmartImage v-else :src="bellDefaultImage" alt="" class="w-6 h-6" />
             </div>
             <!-- 用户头像 (H5端) -->
             <div
@@ -190,8 +195,13 @@
               class="flex items-center justify-center cursor-pointer w-[40px] h-[40px]"
               @click="handleNotificationClick"
             >
-              <BellUnreadIcon v-if="shouldShowUnreadBell" class="w-8 h-8 fill-none" />
-              <BellDefaultIcon v-else class="w-8 h-8 fill-none" />
+              <SmartImage
+                v-if="shouldShowUnreadBell"
+                :src="bellUnreadImage"
+                alt=""
+                class="w-6 h-6"
+              />
+              <SmartImage v-else :src="bellDefaultImage" alt="" class="w-6 h-6" />
             </div>
           </div>
 
@@ -270,10 +280,10 @@ import SelectModal from '@/components/SelectModal.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import bellDefaultImage from '@/static/img/bell.png'
+import bellUnreadImage from '@/static/img/bell_n.png'
 import mobileLogoImage from '@/static/img/home/logo_h5.png'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
-import BellDefaultIcon from '@/static/svg/bell.svg?component'
-import BellUnreadIcon from '@/static/svg/bell_n.svg?component'
 import ChatIcon from '@/static/svg/chat.svg?component'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import FoldIconH5 from '@/static/svg/foldH5.svg?component'
