@@ -143,6 +143,14 @@ export interface GetLatestListParams {
 }
 
 export interface LatestListItem {
+  coverImg?: string
+  currency?: string
+  gameName?: string
+  multiple?: number | string
+  nickName?: string
+  rowId?: number | string
+  vipId?: number
+  winAmount?: number | string
   [key: string]: unknown
 }
 
@@ -150,6 +158,7 @@ export interface GetLatestListResponse {
   code: string | number
   message: string
   result?: LatestListItem[] | null
+  success?: boolean
   [key: string]: unknown
 }
 
