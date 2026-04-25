@@ -52,10 +52,10 @@
           <td class="py-2 px-3 text-center text-[12px]">x{{ item.multiplier }}</td>
           <td class="px-3 py-2 text-[12px]">
             <div class="flex items-center justify-end gap-1">
-              <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
+              <span :class="item.profit >= 0 ? 'text-secondary-4' : 'text-text-2'">
                 {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
               </span>
-              <img :src="currencyIcon" class="w-3 h-3" :alt="item.game" />
+              <img :src="item.currencyIcon" class="w-3 h-3" :alt="item.currency" />
             </div>
           </td>
         </tr>
@@ -67,11 +67,10 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import Api from '@/api'
-import type { RecentBigWinsItem } from '@/api/interface/home.interface'
+import type { LatestListItem } from '@/api/interface/game'
 import placeholderImg from '@/static/img/home/errImg.png'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
-import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
-import { getCurrentCurrency } from '@/utils/locale'
+import { getCurrencyImageByCode } from '@/utils/locale'
 
 interface LiveBetRow {
   id: number
@@ -80,10 +79,12 @@ interface LiveBetRow {
   player: string
   multiplier: number
   profit: number
+  currency: string
+  currencyIcon: string
 }
 
 const MAX_VISIBLE_ROWS = 10
-const RECENT_BIG_WINS_REFRESH_INTERVAL_MS = 10 * 60 * 1000
+const LATEST_LIST_REFRESH_INTERVAL_MS = 10 * 60 * 1000
 
 const props = withDefaults(
   defineProps<{
@@ -97,10 +98,8 @@ const props = withDefaults(
 const sourceRows = ref<LiveBetRow[]>([])
 const displayRows = ref<LiveBetRow[]>([])
 const loading = ref(false)
-const currentCurrency = computed(() => getCurrentCurrency())
-const currencyIcon = computed(() => getCurrencyIconByCode(currentCurrency.value))
 let autoScrollTimer: number | null = null
-let recentBigWinsRefreshTimer: number | null = null
+let latestListRefreshTimer: number | null = null
 let nextScrollIndex = 0
 
 const getRandomScrollInterval = () => {
@@ -115,50 +114,50 @@ const toGameImageUrl = (value?: string) => {
   return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
 }
 
-const getRecentBigWinsData = async () => {
+const getLatestListData = async () => {
   loading.value = true
 
   try {
-    const res = await Api.home.getRecentBigWins(
-      {
-        currency: currentCurrency.value,
-        type: props.type
-      },
-      {
-        showSuccessToast: false
-      }
-    )
+    const res = await Api.game.getLatestList({
+      type: props.type
+    })
 
-    sourceRows.value = (res?.result ?? []).map((item: RecentBigWinsItem, index: number) => ({
-      id: Number(item.rowId ?? index),
-      game: String(item.gameName ?? '--'),
-      gameIcon: toGameImageUrl(item.coverImg ?? ''),
-      player: String(item.nickName ?? '--'),
-      multiplier: Number(item.multiple ?? 0),
-      profit: Number(item.winAmount ?? 0)
-    }))
+    sourceRows.value = (res?.result ?? []).map((item: LatestListItem, index: number) => {
+      const currency = String(item.currency ?? '').trim()
+
+      return {
+        id: Number(item.rowId ?? index),
+        game: String(item.gameName ?? '--'),
+        gameIcon: toGameImageUrl(item.coverImg ?? ''),
+        player: String(item.nickName ?? '--'),
+        multiplier: Number(item.multiple ?? 0),
+        profit: Number(item.winAmount ?? 0),
+        currency,
+        currencyIcon: getCurrencyImageByCode(currency)
+      }
+    })
   } catch (error) {
     sourceRows.value = []
-    console.error('getRecentBigWins failed', error)
+    console.error('getLatestList failed', error)
   } finally {
     loading.value = false
   }
 }
 
-const stopRecentBigWinsRefresh = () => {
-  if (recentBigWinsRefreshTimer) {
-    window.clearInterval(recentBigWinsRefreshTimer)
-    recentBigWinsRefreshTimer = null
+const stopLatestListRefresh = () => {
+  if (latestListRefreshTimer) {
+    window.clearInterval(latestListRefreshTimer)
+    latestListRefreshTimer = null
   }
 }
 
-const startRecentBigWinsRefresh = () => {
-  stopRecentBigWinsRefresh()
-  void getRecentBigWinsData()
+const startLatestListRefresh = () => {
+  stopLatestListRefresh()
+  void getLatestListData()
 
-  recentBigWinsRefreshTimer = window.setInterval(() => {
-    void getRecentBigWinsData()
-  }, RECENT_BIG_WINS_REFRESH_INTERVAL_MS)
+  latestListRefreshTimer = window.setInterval(() => {
+    void getLatestListData()
+  }, LATEST_LIST_REFRESH_INTERVAL_MS)
 }
 
 const rows = computed<LiveBetRow[]>(() => {
@@ -203,9 +202,9 @@ const startAutoScroll = () => {
 }
 
 watch(
-  [() => props.type, () => currentCurrency.value],
+  () => props.type,
   () => {
-    startRecentBigWinsRefresh()
+    startLatestListRefresh()
   },
   { immediate: true }
 )
@@ -220,7 +219,7 @@ watch(
 
 onUnmounted(() => {
   stopAutoScroll()
-  stopRecentBigWinsRefresh()
+  stopLatestListRefresh()
 })
 </script>
 

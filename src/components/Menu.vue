@@ -439,18 +439,18 @@
 </template>
 
 <script setup lang="ts">
+import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import Arrow_down from '@/static/svg/arrow_down.svg?component'
 import Arrow_right from '@/static/svg/arrow_right.svg?component'
+import CloseIcon from '@/static/svg/close.svg?component'
 import External from '@/static/svg/external.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
-import CloseIcon from '@/static/svg/close.svg?component'
 import { sideIcons } from '@/static/svg/side'
 import newSideIcons from '@/static/svg/side/newIcon'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
-import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
-import { useIsMobile } from '@/composables/useMediaQuery'
 import { getLocaleLabel } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
@@ -477,8 +477,8 @@ const isMobile = useIsMobile()
 
 const { t } = useI18n()
 const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
-const { tabButtons: casinoTabButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
-const { side, support } = sideIcons
+const { tabButtons: casinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
+const { side } = sideIcons
 type SidebarSubmenuItem = {
   id: string
   name: string
@@ -741,10 +741,11 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
     groupKey: 'vouchers',
     children: isLoggedIn.value
       ? [
-          { 
-            id: 'cash-voucher', 
-            name: t('menu.cash-voucher'), 
-            icon: newSideIcons.cashVoucherIcon },
+          {
+            id: 'cash-voucher',
+            name: t('menu.cash-voucher'),
+            icon: newSideIcons.cashVoucherIcon
+          },
           {
             id: 'lucky-red-envelope',
             name: t('menu.lucky-red-envelope'),
@@ -755,14 +756,16 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
             name: t('menu.smash-golden-egg'),
             icon: newSideIcons.smashGoldenEggIcon
           },
-          { 
+          {
             id: 'mystery-box',
             name: t('menu.mystery-box'),
-            icon: newSideIcons.mysteryBoxIcon },
-          { 
-            id: 'lucky-spin', 
-            name: t('menu.lucky-spin'), 
-            icon: newSideIcons.luckySpinIcon }
+            icon: newSideIcons.mysteryBoxIcon
+          },
+          {
+            id: 'lucky-spin',
+            name: t('menu.lucky-spin'),
+            icon: newSideIcons.luckySpinIcon
+          }
         ]
       : []
   },
@@ -790,22 +793,26 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
         name: t('menu.red-envelope-event'),
         icon: newSideIcons.redEnvelopeEventIcon
       },
-      { 
-        id: 'credit-loan', 
-        name: t('menu.credit-loan'), 
-        icon: newSideIcons.creditLoanIcon },
-      { 
-        id: 'lottery-event', 
-        name: t('menu.lottery-event'), 
-        icon: newSideIcons.lotteryEventIcon },
-      { 
-        id: 'lucky-wheel', 
-        name: t('menu.lucky-wheel'), 
-        icon: newSideIcons.luckyWheelIcon },
-      { 
-        id: 'promo-code', 
-        name: t('menu.promo-code'), 
-        icon: newSideIcons.promoCodeIcon }
+      {
+        id: 'credit-loan',
+        name: t('menu.credit-loan'),
+        icon: newSideIcons.creditLoanIcon
+      },
+      {
+        id: 'lottery-event',
+        name: t('menu.lottery-event'),
+        icon: newSideIcons.lotteryEventIcon
+      },
+      {
+        id: 'lucky-wheel',
+        name: t('menu.lucky-wheel'),
+        icon: newSideIcons.luckyWheelIcon
+      },
+      {
+        id: 'promo-code',
+        name: t('menu.promo-code'),
+        icon: newSideIcons.promoCodeIcon
+      }
     ]
   },
 
@@ -855,10 +862,10 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
         icon: newSideIcons.transactionIcon,
         handler: () => navigateTo('transaction')
       },
-      { 
-        id: 'rewards', 
-        name: t('menu.rewards'), 
-        icon: newSideIcons.rewardsIcon 
+      {
+        id: 'rewards',
+        name: t('menu.rewards'),
+        icon: newSideIcons.rewardsIcon
       },
       {
         id: 'rollover',
@@ -890,10 +897,10 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
     groupKey: 'combination3',
     renderAsGroup: true,
     children: [
-      { 
-        id: 'sponsorships', 
-        name: t('menu.sponsorships'), 
-        icon: newSideIcons.sponsorshipsIcon 
+      {
+        id: 'sponsorships',
+        name: t('menu.sponsorships'),
+        icon: newSideIcons.sponsorshipsIcon
       },
       {
         id: 'leave-feedback',
@@ -901,14 +908,16 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
         icon: newSideIcons.leaveFeedbackIcon,
         handler: handleLeaveFeedbackClick
       },
-      { 
-        id: 'legal', 
-        name: t('menu.legal'), 
-        icon: newSideIcons.legalIcon },
-      { 
-        id: 'about', 
-        name: t('menu.about'), 
-        icon: newSideIcons.aboutIcon }
+      {
+        id: 'legal',
+        name: t('menu.legal'),
+        icon: newSideIcons.legalIcon
+      },
+      {
+        id: 'about',
+        name: t('menu.about'),
+        icon: newSideIcons.aboutIcon
+      }
     ]
   }
 ])

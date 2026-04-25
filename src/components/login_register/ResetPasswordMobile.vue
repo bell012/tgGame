@@ -1,5 +1,5 @@
 ﻿<template>
-  <ResetPasswordFormCore ref="resetPasswordFormRef">
+  <ResetPasswordFormCore ref="resetPasswordFormRef" @reset-success="handleResetPasswordSuccess">
     <template
       #default="{
         showPassword,
@@ -206,6 +206,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:visible': [value: boolean]
+  'reset-success': []
 }>()
 
 const showDrawer = ref(false)
@@ -237,6 +238,18 @@ const handleClose = () => {
     resetPasswordFormRef.value?.resetForm()
     emit('update:visible', false)
   }, 350)
+}
+
+/**
+ * 重置密码成功后，先关闭当前重置密码，切回登录弹窗。
+ */
+const handleResetPasswordSuccess = () => {
+  showDrawer.value = false
+
+  setTimeout(() => {
+    resetPasswordFormRef.value?.resetForm()
+    emit('reset-success')
+  }, 500)
 }
 </script>
 

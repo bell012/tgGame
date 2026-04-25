@@ -24,7 +24,10 @@
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
         <!-- H5端 Logo (登录后小logo) -->
-        <div v-if="isLoggedIn" class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer mobileLogo">
+        <div
+          v-if="isLoggedIn"
+          class="flex md:hidden w-[26px] h-[26px] items-center cursor-pointer mobileLogo"
+        >
           <SmartImage :src="mobileLogoImage" alt="" class="w-full h-full" />
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
@@ -153,7 +156,13 @@
               class="cursor-pointer search w-[33px] h-[33px] flex items-center justify-center rounded-lg mr-2"
               @click="handleNotificationClick"
             >
-              <BellIcon class="w-4 h-4 fill-none" />
+              <SmartImage
+                v-if="shouldShowUnreadBell"
+                :src="bellUnreadImage"
+                alt=""
+                class="w-6 h-6"
+              />
+              <SmartImage v-else :src="bellDefaultImage" alt="" class="w-6 h-6" />
             </div>
             <!-- 用户头像 (H5端) -->
             <div
@@ -186,7 +195,13 @@
               class="flex items-center justify-center cursor-pointer w-[40px] h-[40px]"
               @click="handleNotificationClick"
             >
-              <BellIcon class="w-6 h-6 fill-none" />
+              <SmartImage
+                v-if="shouldShowUnreadBell"
+                :src="bellUnreadImage"
+                alt=""
+                class="w-6 h-6"
+              />
+              <SmartImage v-else :src="bellDefaultImage" alt="" class="w-6 h-6" />
             </div>
           </div>
 
@@ -261,47 +276,51 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { useAuthModalStore } from '@/stores/authModal'
-import { useLocaleStore } from '@/stores/locale'
-import { useLayoutStore } from '@/stores/layout'
-import { useSiteConfigStore } from '@/stores/siteConfig'
-import { useUserStore } from '@/stores/user'
-import { useIsMobile } from '@/composables/useMediaQuery'
-import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
-import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
-import { navigateTo } from '@/utils/router'
 import SelectModal from '@/components/SelectModal.vue'
-import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
-import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useIsMobile } from '@/composables/useMediaQuery'
+import bellDefaultImage from '@/static/img/bell.png'
+import bellUnreadImage from '@/static/img/bell_n.png'
+import mobileLogoImage from '@/static/img/home/logo_h5.png'
+import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
+import ChatIcon from '@/static/svg/chat.svg?component'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import FoldIconH5 from '@/static/svg/foldH5.svg?component'
-import SearchIcon from '@/static/svg/search.svg?component'
-import ChatIcon from '@/static/svg/chat.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
 import GiftIcon from '@/static/svg/login/gift.svg?component'
-import BellIcon from '@/static/svg/bell.svg?component'
 import Jia from '@/static/svg/login/jia.svg?component'
-import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
-import mobileLogoImage from '@/static/img/home/logo_h5.png'
+import SearchIcon from '@/static/svg/search.svg?component'
+import { useAuthModalStore } from '@/stores/authModal'
+import { useLayoutStore } from '@/stores/layout'
+import { useLocaleStore } from '@/stores/locale'
+import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
+import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useUserStore } from '@/stores/user'
 import { stripLocalePrefix, type Locale } from '@/utils/locale'
+import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
+import { navigateTo } from '@/utils/router'
+import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
+import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
+import { storeToRefs } from 'pinia'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const authModalStore = useAuthModalStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
+const notificationIndicatorStore = useNotificationIndicatorStore()
 const siteConfigStore = useSiteConfigStore()
-const isMobile = useIsMobile()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-const { userInfo } = storeToRefs(userStore)
+const isMobile = useIsMobile()
+const { acctInfo, userInfo } = storeToRefs(userStore)
 const { visible: showLoginModal } = storeToRefs(authModalStore)
+const { hasUnread } = storeToRefs(notificationIndicatorStore)
 
 const emit = defineEmits<{
   'toggle-sidebar': []
@@ -330,7 +349,15 @@ type PopupAnchorRect = {
 
 // 是否已登录
 const isLoggedIn = computed(() => {
-  return Boolean(userInfo.value?.tradeToken)
+  return Boolean(userInfo.value?.tradeToken || acctInfo.value?.memberId)
+})
+
+// 当前是否处于首页，H5 端仍然只在首页显示铃铛未读态。
+const isHomeRoute = computed(() => stripLocalePrefix(route.path) === '/')
+
+// PC 端只要顶部导航仍显示就处理未读态；H5 端继续限制在首页处理。
+const shouldShowUnreadBell = computed(() => {
+  return isLoggedIn.value && hasUnread.value && (!isMobile.value || isHomeRoute.value)
 })
 
 // 用户头像 URL
@@ -346,9 +373,46 @@ const {
   setDisplayCurrency
 } = useDisplayCurrency()
 
+// 同步同账号在其他标签页更新后的本地用户信息。
 const handleStorageChange = () => {
   userStore.syncStoredUserData()
   siteConfigStore.syncStoredConfig()
+}
+
+// 顶部导航可见时触发普通通知未读刷新：仅拉 promotions / system 两类消息。
+const refreshVisibleNotificationIndicator = async () => {
+  if (!isLoggedIn.value || (isMobile.value && !isHomeRoute.value)) {
+    return
+  }
+
+  await notificationIndicatorStore.refreshStaticUnread()
+}
+
+// 登录成功后主动刷新普通通知未读态，便于首页首次展示正确铃铛状态。
+const handleLoginStateChange = (loggedIn: boolean, previousLoggedIn?: boolean) => {
+  if (!loggedIn || previousLoggedIn) {
+    return
+  }
+
+  void notificationIndicatorStore.refreshStaticUnread()
+}
+
+// 已登录状态切回首页时，主动刷新普通通知未读态；PC 端不受首页限制。
+const handleHomeRouteChange = (isHome: boolean, wasHome?: boolean) => {
+  if (!isMobile.value || !isHome || wasHome || !isLoggedIn.value) {
+    return
+  }
+
+  void notificationIndicatorStore.refreshStaticUnread()
+}
+
+// 页面从后台回到前台时，只要顶部导航当前规则允许，就主动刷新普通通知未读态。
+const handleVisibilityChange = () => {
+  if (document.visibilityState !== 'visible') {
+    return
+  }
+
+  void refreshVisibleNotificationIndicator()
 }
 
 const handleUserMenuClickOutside = (event: MouseEvent) => {
@@ -369,18 +433,32 @@ onMounted(() => {
   siteConfigStore.syncStoredConfig()
   window.addEventListener('storage', handleStorageChange)
   document.addEventListener('click', handleUserMenuClickOutside)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+
+  void refreshVisibleNotificationIndicator()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('storage', handleStorageChange)
   document.removeEventListener('click', handleUserMenuClickOutside)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 
-// 监听登录弹窗关闭，重新加载用户信息
-watch(showLoginModal, newVal => {
-  if (!newVal) {
+// 监听登录弹窗关闭，重新同步用户信息，供后续登录态判断使用。
+watch(showLoginModal, visible => {
+  if (!visible) {
     userStore.syncStoredUserData()
   }
+})
+
+// 监听登录态变化，在登录成功后主动拉取普通通知未读状态。
+watch(isLoggedIn, (loggedIn, previousLoggedIn) => {
+  handleLoginStateChange(loggedIn, previousLoggedIn)
+})
+
+// 监听首页路由切换，满足条件时刷新普通通知未读状态。
+watch(isHomeRoute, (isHome, wasHome) => {
+  handleHomeRouteChange(isHome, wasHome)
 })
 
 const handleToggleSidebar = () => {

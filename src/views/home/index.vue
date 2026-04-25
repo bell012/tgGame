@@ -1,71 +1,28 @@
-﻿<template>
-  <div class="home max-w-[1248px] mx-auto px-3.5 py-2 sm:px-4 sm:py-4">
+<template>
+  <div class="home mx-auto max-w-[1248px] px-3.5 py-2 sm:px-4 sm:py-4">
     <div style="height: 55px" class="sm:hidden"></div>
-    <HomeCarouselImg v-if="querySlideshowList.length" :list="querySlideshowList" />
 
-    <div class="flex items-center mt-2 sm:mt-6 h-8">
-      <h2 class="flex items-center text-base font-extrabold text-primary">
-        <div class="relative mr-2 h-2 w-2">
-          <div class="absolute left-0 top-0 h-full w-full rounded-full bg-success z-10"></div>
-          <div
-            class="absolute left-0 top-0 h-full w-full rounded-full bg-success animate-ping"
-          ></div>
-        </div>
-        <!-- 近期大奖 -->
-        <div>{{ $t('home.RecentBigWins') }}</div>
-      </h2>
-    </div>
-    <div
-      ref="marqueeRef"
-      class="marquee px-4 sm:rounded-xl sm:bg-layer3 sm:px-3 mx-[-1rem] my-0 sm:mx-0 sm:my-0 touch-pan-x select-none sm:cursor-grab sm:active:cursor-grabbing"
-      @scroll.passive="onMarqueeScroll"
-      @pointerdown="onMarqueePointerDown"
-      @pointermove="onMarqueePointerMove"
-      @pointerup="onMarqueePointerUp"
-      @pointercancel="onMarqueePointerCancel"
-      @touchstart.passive="onMarqueeTouchStart"
-      @touchend.passive="onMarqueeTouchEnd"
-      @touchcancel.passive="onMarqueeTouchEnd"
-      @mouseenter="marqueeHoverPaused = true"
-      @mouseleave="marqueeHoverPaused = false"
-      @click.capture="onMarqueeClickCapture"
-    >
-      <div class="marquee-track recent-big-win flex flex-nowrap items-center gap-3 sm:gap-3.5">
-        <a
-          class="sm:w-13 flex h-28 w-14 flex-none flex-col items-center text-xs hover:opacity-80 sm:h-[106px] inactive"
-          v-for="(item, idx) in duplicatedList"
-          :key="`win-${idx}`"
-        >
-          <div class="relative mb-1 w-full rounded-lg pt-[133%]">
-            <img :src="item.src" class="absolute left-0 top-0 w-full rounded-lg" :alt="item.name" />
-          </div>
-          <div class="w-[118%]">
-            <div class="flex items-center justify-center font-extrabold text-secondary">
-              <img class="size-[0.875rem]" :src="icon" /><span class="ellipsis -ml-0.5 text-xxs">{{
-                item.name
-              }}</span>
-            </div>
-            <div
-              class="whitespace-nowrap text-nowrap text-center font-extrabold text-brand text-xxs"
-            >
-              {{ item.number }}
-            </div>
-          </div>
-        </a>
-      </div>
-    </div>
+    <HomeCarouselImg
+      v-if="isSlideshowLoading || querySlideshowList.length"
+      :list="querySlideshowList"
+      :loading="isSlideshowLoading"
+    />
+
+    <RecentBigWins />
+
     <div class="overflow-hidden px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
       <div class="-mx-4 bg-layer2">
         <div class="flex w-full flex-col items-stretch gap-2 sm:mt-6 lg:!gap-3">
           <div class="flex flex-3 gap-2 lg:!gap-3">
             <button
-              class="button button-m center relative bg-game-casino h-32 flex-1 overflow-hidden rounded-xl p-[10px] font-extrabold sm:h-[176px] sm:p-5 col-span-2 col-start-1"
+              class="button button-m center relative col-span-2 col-start-1 h-32 flex-1 overflow-hidden rounded-xl bg-game-casino p-[10px] font-extrabold sm:h-[176px] sm:p-5"
               type="button"
               @click="navigateTo('/casino')"
             >
               <img
-                class="absolute right-[1px] top-0 h-[100%] left-[31%] sm:left-auto"
+                class="absolute left-[31%] right-[1px] top-0 h-[100%] sm:left-auto"
                 src="./img/casino.png"
+                alt=""
               />
               <div class="relative z-10 flex h-full flex-auto flex-col">
                 <div class="flex items-center">
@@ -76,12 +33,13 @@
               </div>
             </button>
             <button
-              class="button button-m center relative bg-game-sports h-32 flex-1 overflow-hidden p-[10px] rounded-xl font-extrabold sm:h-[176px] sm:p-5 col-start-1"
+              class="button button-m center relative col-start-1 h-32 flex-1 overflow-hidden rounded-xl bg-game-sports p-[10px] font-extrabold sm:h-[176px] sm:p-5"
               type="button"
             >
               <img
-                class="absolute right-[1px] top-0 h-[100%] left-[34%] sm:left-auto"
+                class="absolute left-[34%] right-[1px] top-0 h-[100%] sm:left-auto"
                 src="./img/sports.png"
+                alt=""
               />
               <div class="relative z-10 flex h-full flex-auto flex-col">
                 <div class="flex items-center">
@@ -92,11 +50,14 @@
               </div>
             </button>
           </div>
-          
-          <div class="flex flex-3 flex-nowrap gap-2 overflow-x-auto lg:flex-wrap lg:overflow-visible lg:!gap-3">
+
+          <div
+            class="flex flex-3 flex-nowrap gap-2 overflow-x-auto lg:flex-wrap lg:overflow-visible lg:!gap-3"
+          >
             <button
               v-for="value in listImg"
-              class="button button-m center relative h-20 w-[calc((100%-2.5rem)/5.1)] shrink-0 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px] lg:min-w-0 lg:flex-1 lg:w-auto"
+              :key="value.name"
+              class="button button-m center relative h-20 w-[calc((100%-2.5rem)/5.1)] shrink-0 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px] lg:min-w-0 lg:w-auto lg:flex-1"
               type="button"
               @click="toCasino(value.sysGameTypeCode)"
               style="
@@ -108,8 +69,9 @@
               "
             >
               <img
-                class="absolute top-[10%] left-1/2 -translate-x-1/2 gameTypeImg sm:left-[50%] sm:top-[16%] sm:h-[66%] sm:-translate-x-[10%]"
+                class="gameTypeImg absolute left-1/2 top-[10%] -translate-x-1/2 sm:left-[50%] sm:top-[16%] sm:h-[66%] sm:-translate-x-[10%]"
                 :src="value.img"
+                alt=""
               />
               <div class="pcState absolute left-2 top-2 flex flex-col">
                 <div class="color_icon_img bcpoker" style="transform: scale(0.8)">
@@ -117,84 +79,94 @@
                 </div>
                 <h2 class="ml-1 text-sm font-extrabold">{{ value.name }}</h2>
               </div>
-              <div class="absolute bottom-1 left-0 block w-full text-center h5State">
-                <span class="text-[0.625rem] sm:text-sm font-extrabold">{{ value.name }}</span>
+              <div class="h5State absolute bottom-1 left-0 block w-full text-center">
+                <span class="text-[0.625rem] font-extrabold sm:text-sm">{{ value.name }}</span>
               </div>
             </button>
           </div>
         </div>
       </div>
     </div>
+
     <div>
-      <GameList
-        :title="value.sysGameTypeName"
-        :sysGameTypeCode="value.sysGameTypeCode"
-        :list="value.list"
-        v-for="value in gameData"
-        :key="value.sysGameTypeName"
+      <template v-if="isGameDataLoading">
+        <GameList v-for="index in homeGameSkeletonCount" :key="`game-skeleton-${index}`" loading />
+      </template>
+      <template v-else>
+        <GameList
+          v-for="value in gameData"
+          :key="value.sysGameTypeName"
+          :title="value.sysGameTypeName"
+          :sysGameTypeCode="value.sysGameTypeCode"
+          :list="value.list"
+        />
+      </template>
+      <EventList
+        v-if="isGameDataLoading || sportsEventList.length"
+        :list="sportsEventList"
+        :loading="isGameDataLoading"
       />
-      <EventList v-if="sportsEventList.length" :list="sportsEventList" />
-      <!-- <GameList :title="$t(gamelist1.title)" :list="gamelist1.list" /> -->
     </div>
+
     <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
-      <div class="w-full flex items-center justify-between px-[22px] pb-4 pt-3 lg:!hidden">
-        <img class="w-6" :src="BTC" /><img class="w-6" :src="ETH" /><img
-          class="w-6"
-          :src="BNB"
-        /><img class="w-6" :src="XRP" /><img class="w-6" :src="USDT" /><img
-          class="w-6"
-          :src="USDC"
-        /><img class="w-6" :src="SOL" /><img class="w-6" :src="ADA" /><img
-          class="w-6"
-          :src="DOGE"
-        /><img class="w-6" :src="MATIC" /><img class="w-6" :src="TRX" />
+      <div class="w-full items-center justify-between px-[22px] pb-4 pt-3 lg:!hidden flex">
+        <img class="w-6" :src="BTC" alt="" />
+        <img class="w-6" :src="ETH" alt="" />
+        <img class="w-6" :src="BNB" alt="" />
+        <img class="w-6" :src="XRP" alt="" />
+        <img class="w-6" :src="USDT" alt="" />
+        <img class="w-6" :src="USDC" alt="" />
+        <img class="w-6" :src="SOL" alt="" />
+        <img class="w-6" :src="ADA" alt="" />
+        <img class="w-6" :src="DOGE" alt="" />
+        <img class="w-6" :src="MATIC" alt="" />
+        <img class="w-6" :src="TRX" alt="" />
       </div>
 
       <div class="relative h-20 rounded-xl bg-bg-2 lg:px-8">
         <div class="pointer-events-none absolute left-0 size-full overflow-hidden blur">
-          <img class="absolute -top-3 left-4 scale-[2]" :src="dotC8z5Aoh" /><img
-            class="absolute left-24 top-14 scale-150"
-            :src="dotC8z5Aoh"
-          /><img class="absolute -top-2 left-40 scale-[2]" :src="dotC8z5Aoh" /><img
-            class="absolute -top-3 left-72 scale-[3]"
-            :src="dotC8z5Aoh"
-          /><img class="absolute left-80 top-15 scale-150" :src="dotC8z5Aoh" /><img
-            class="absolute -bottom-3 right-4 scale-[2]"
-            :src="dotC8z5Aoh"
-          /><img class="absolute bottom-14 right-24 scale-150" :src="dotC8z5Aoh" /><img
-            class="absolute -bottom-2 right-40 scale-[2]"
-            :src="dotC8z5Aoh"
-          /><img class="absolute -bottom-3 right-72 scale-[3]" :src="dotC8z5Aoh" /><img
-            class="absolute bottom-15 right-80 scale-150"
-            :src="dotC8z5Aoh"
-          />
+          <img class="absolute -top-3 left-4 scale-[2]" :src="dotC8z5Aoh" alt="" />
+          <img class="absolute left-24 top-14 scale-150" :src="dotC8z5Aoh" alt="" />
+          <img class="absolute -top-2 left-40 scale-[2]" :src="dotC8z5Aoh" alt="" />
+          <img class="absolute -top-3 left-72 scale-[3]" :src="dotC8z5Aoh" alt="" />
+          <img class="absolute left-80 top-15 scale-150" :src="dotC8z5Aoh" alt="" />
+          <img class="absolute -bottom-3 right-4 scale-[2]" :src="dotC8z5Aoh" alt="" />
+          <img class="absolute bottom-14 right-24 scale-150" :src="dotC8z5Aoh" alt="" />
+          <img class="absolute -bottom-2 right-40 scale-[2]" :src="dotC8z5Aoh" alt="" />
+          <img class="absolute -bottom-3 right-72 scale-[3]" :src="dotC8z5Aoh" alt="" />
+          <img class="absolute bottom-15 right-80 scale-150" :src="dotC8z5Aoh" alt="" />
         </div>
         <div
           class="relative z-10 flex h-full flex-col items-center justify-center lg:!flex-row-reverse"
         >
           <div class="max-lg:hidden lg:flex lg:items-center lg:justify-center">
-            <img class="-ml-1 w-6" :src="BTC" /><img class="-ml-1 w-6" :src="ETH" />
-            <img class="-ml-1 w-6" :src="BNB" /><img class="-ml-1 w-6" :src="XRP" />
-            <img class="-ml-1 w-6" :src="USDT" /><img class="-ml-1 w-6" :src="USDC" />
-            <img class="-ml-1 w-6" :src="SOL" /><img class="-ml-1 w-6" :src="ADA" />
-            <img class="-ml-1 w-6" :src="DOGE" /><img class="-ml-1 w-6" :src="MATIC" />
-            <img class="-ml-1 w-6" :src="TRX" />
+            <img class="-ml-1 w-6" :src="BTC" alt="" />
+            <img class="-ml-1 w-6" :src="ETH" alt="" />
+            <img class="-ml-1 w-6" :src="BNB" alt="" />
+            <img class="-ml-1 w-6" :src="XRP" alt="" />
+            <img class="-ml-1 w-6" :src="USDT" alt="" />
+            <img class="-ml-1 w-6" :src="USDC" alt="" />
+            <img class="-ml-1 w-6" :src="SOL" alt="" />
+            <img class="-ml-1 w-6" :src="ADA" alt="" />
+            <img class="-ml-1 w-6" :src="DOGE" alt="" />
+            <img class="-ml-1 w-6" :src="MATIC" alt="" />
+            <img class="-ml-1 w-6" :src="TRX" alt="" />
           </div>
-          <div class="max-sm:hidden sm:flex sm:items-center sm:justify-center mx-auto gap-6">
-            <img class="w-14" :src="MAYA" />
-            <img class="w-20" :src="GCASH" />
-            <img class="w-14" :src="VISA" />
-            <img class="w-13" :src="GROU" />
-            <img class="w-23" :src="SHOPEE" />
+          <div class="mx-auto hidden items-center justify-center gap-6 max-sm:hidden sm:flex">
+            <img class="w-14" :src="MAYA" alt="" />
+            <img class="w-20" :src="GCASH" alt="" />
+            <img class="w-14" :src="VISA" alt="" />
+            <img class="w-13" :src="GROU" alt="" />
+            <img class="w-23" :src="SHOPEE" alt="" />
           </div>
-          <div class="w-full flex items-center justify-between px-[10px] mt-2 sm:hidden">
-            <img class="h-[13px]" :src="MAYA" />
-            <img class="h-[13px]" :src="GCASH" />
-            <img class="h-[13px]" :src="VISA" />
-            <img class="h-[13px]" :src="GROU" />
-            <img class="h-[13px]" :src="SHOPEE" />
+          <div class="mt-2 flex w-full items-center justify-between px-[10px] sm:hidden">
+            <img class="h-[13px]" :src="MAYA" alt="" />
+            <img class="h-[13px]" :src="GCASH" alt="" />
+            <img class="h-[13px]" :src="VISA" alt="" />
+            <img class="h-[13px]" :src="GROU" alt="" />
+            <img class="h-[13px]" :src="SHOPEE" alt="" />
           </div>
-          <div class="flex items-center justify-center mt-4 gap-11 lg:!mt-0">
+          <div class="mt-4 flex items-center justify-center gap-11 lg:!mt-0">
             <div class="text-lg font-extrabold sm:text-2xl">
               <span class="text-secondary-4">300%</span> {{ $t('home.DepositBonus') }}
             </div>
@@ -202,11 +174,10 @@
         </div>
       </div>
     </div>
+
     <NewEvent class="mt-2" />
-    <!-- <ActivityPop v-if="shouldShowActivityPop" class="sm:hidden" @close="closeActivityPop" /> -->
   </div>
 
-  <!-- 提示弹窗 -->
   <H5HomePop
     v-if="shouldShowH5HomePop && !isLogin"
     class="sm:hidden"
@@ -218,22 +189,22 @@
 
 <script setup lang="ts">
 import Api from '@/api'
-import router from '@/router'
+import CommonFooter from '@/components/commonFooter.vue'
 import H5HomePop from '@/components/H5HomePop.vue'
 import HomeCarouselImg from '@/components/homeCarouselImg.vue'
-import { useAuthModalStore } from '@/stores/authModal'
-import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import ActivityPop from '@/components/activityPop.vue'
-import { navigateTo } from '@/utils/router'
-import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
+import router from '@/router'
+import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
+import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
+import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
-import { getCurrentCurrency } from '@/utils/locale'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import EventList from './components/eventList.vue'
 import GameList from './components/gameList.vue'
 import NewEvent from './components/newEvent.vue'
+import RecentBigWins from './components/RecentBigWins.vue'
 
 import icon1 from './img/Image.svg?url'
 import icon2 from './img/Image1.svg?url'
@@ -248,35 +219,27 @@ import ADA from '@/static/svg/coin/ADA.black.svg?url'
 import BNB from '@/static/svg/coin/BNB.black.svg?url'
 import BTC from '@/static/svg/coin/BTC.black.svg?url'
 import DOGE from '@/static/svg/coin/DOGE.black.svg?url'
+import dotC8z5Aoh from '@/static/svg/coin/dot-C8z5Aoh_.svg?url'
 import ETH from '@/static/svg/coin/ETH.black.svg?url'
+import GCASH from '@/static/svg/coin/gcash.svg?url'
 import GROU from '@/static/svg/coin/GrouPay.svg?url'
 import MATIC from '@/static/svg/coin/MATIC.black.svg?url'
+import MAYA from '@/static/svg/coin/maya.svg?url'
+import SHOPEE from '@/static/svg/coin/shopeePay.svg?url'
 import SOL from '@/static/svg/coin/SOL.black.svg?url'
 import TRX from '@/static/svg/coin/TRX.black.svg?url'
 import USDC from '@/static/svg/coin/USDC.black.svg?url'
 import USDT from '@/static/svg/coin/USDT.black.svg?url'
 import VISA from '@/static/svg/coin/VISA.svg?url'
 import XRP from '@/static/svg/coin/XRP.black.svg?url'
-import dotC8z5Aoh from '@/static/svg/coin/dot-C8z5Aoh_.svg?url'
-import GCASH from '@/static/svg/coin/gcash.svg?url'
-import MAYA from '@/static/svg/coin/maya.svg?url'
-import SHOPEE from '@/static/svg/coin/shopeePay.svg?url'
 
-import CommonFooter from '@/components/commonFooter.vue'
 import combination from '@/static/img/home/combination.png'
 import contract from '@/static/img/home/contract.png'
+import placeholderImg from '@/static/img/home/errImg1.png'
 import fishing from '@/static/img/home/fishing.png'
 import live from '@/static/img/home/live.png'
 import slots from '@/static/img/home/slots.png'
 import table from '@/static/img/home/table.png'
-
-import placeholderImg from '@/static/img/home/errImg1.png'
-
-const userStore = useUserStore()
-const { userInfo } = storeToRefs(userStore)
-const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
-const currentCurrency = computed(() => getCurrentCurrency())
-const { t, locale } = useI18n()
 
 interface EventListItem {
   image: string
@@ -293,21 +256,28 @@ interface HomeGameSection {
   sysGameTypeName: string
 }
 
-const isMobile = useIsMobile()
+const userStore = useUserStore()
 const authModalStore = useAuthModalStore()
+const { userInfo } = storeToRefs(userStore)
+const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
+const { t, locale } = useI18n()
+const isMobile = useIsMobile()
+
 const showH5HomePop = ref(true)
 const isActiveHomeRoute = computed(() => stripLocalePrefix(router.currentRoute.value.path) === '/')
 const shouldShowH5HomePop = computed(() => isActiveHomeRoute.value && showH5HomePop.value)
+const gameData = ref<HomeGameSection[]>([])
+const rawGameData = ref<RawGameDataItem[]>([])
+const querySlideshowList = ref<any[]>([])
+const isGameDataLoading = ref(false)
+const isSlideshowLoading = ref(false)
+
 const closeH5HomePop = () => {
   showH5HomePop.value = false
 }
+
 const openRegisterModal = () => {
   authModalStore.openRegisterModal()
-}
-const showActivityPop = ref(true)
-const shouldShowActivityPop = computed(() => isActiveHomeRoute.value && showActivityPop.value)
-const closeActivityPop = () => {
-  showActivityPop.value = false
 }
 
 const listImg = computed(() => [
@@ -348,242 +318,15 @@ const listImg = computed(() => [
     sysGameTypeCode: 'QP'
   }
 ])
-const visibleListImg = computed(() =>
-  isMobile.value ? listImg.value.filter(item => item.sysGameTypeCode !== 'QP') : listImg.value
-)
+
+const homeGameSkeletonCount = computed(() => (isMobile.value ? 2 : 3))
+
 const toCasino = (sysGameTypeCode: string) => {
   if (!sysGameTypeCode) {
     return
   }
   navigateTo(`/casino/${sysGameTypeCode}`)
 }
-interface RecentBigWin {
-  src: string
-  name: string
-  number: string
-}
-
-const list = ref<RecentBigWin[]>([])
-const getRecentBigWinsData = async () => {
-  try {
-    const res = await Api.home.getRecentBigWins({ currency: currentCurrency.value, type: 1 })
-    list.value =
-      res.result?.map((item: any) => ({
-        src: toGameImageUrl(item.coverImg),
-        name: item.nickName,
-        number: item.winAmount
-      })) || []
-  } catch (error) {
-    console.error('getRecentBigWins failed', error)
-  } finally {
-    void nextTick(() => startMarqueeRaf())
-  }
-}
-
-const MARQUEE_REPEAT = 4
-const duplicatedList = computed(() =>
-  Array.from({ length: MARQUEE_REPEAT }, () => list.value).flat()
-)
-
-/** 近期大奖：自动 scrollLeft*/
-const marqueeRef = ref<HTMLElement | null>(null)
-const marqueeHoverPaused = ref(false)
-const marqueePointerActive = ref(false)
-const AUTO_MARQUEE_SEGMENT_SEC = 20
-let marqueeRafId = 0
-let marqueeLastTs = 0
-let marqueeProgramScroll = false
-let marqueeUserScrollUntil = 0
-/** 松手或用户滚动后：无操作满此时长再恢复自动滚 */
-const MARQUEE_IDLE_RESUME_MS = 2000
-let marqueeLoopRunning = false
-let marqueeProgramScrollResetTimer = 0
-
-let marqueeLastProgrammaticScrollMs = 0
-let marqueeResizeObserver: ResizeObserver | null = null
-
-const stopMarqueeRaf = () => {
-  marqueeLoopRunning = false
-  if (marqueeRafId) {
-    cancelAnimationFrame(marqueeRafId)
-    marqueeRafId = 0
-  }
-  if (marqueeProgramScrollResetTimer) {
-    window.clearTimeout(marqueeProgramScrollResetTimer)
-    marqueeProgramScrollResetTimer = 0
-  }
-  marqueeProgramScroll = false
-  marqueeLastTs = 0
-}
-
-const stepMarquee = (ts: number) => {
-  if (!marqueeLoopRunning) return
-  marqueeRafId = requestAnimationFrame(stepMarquee)
-  const el = marqueeRef.value
-  if (!el) return
-
-  if (
-    marqueePointerActive.value ||
-    marqueeHoverPaused.value ||
-    Date.now() < marqueeUserScrollUntil
-  ) {
-    marqueeLastTs = ts
-    return
-  }
-
-  const segment = el.scrollWidth / MARQUEE_REPEAT
-  if (segment < 8 || el.scrollWidth <= el.clientWidth + 2) {
-    marqueeLastTs = ts
-    return
-  }
-
-  if (!marqueeLastTs) marqueeLastTs = ts
-  const dt = Math.min(0.08, (ts - marqueeLastTs) / 1000)
-  marqueeLastTs = ts
-  const speedPxPerSec = segment / AUTO_MARQUEE_SEGMENT_SEC
-
-  marqueeProgramScroll = true
-  if (marqueeProgramScrollResetTimer) {
-    window.clearTimeout(marqueeProgramScrollResetTimer)
-  }
-  marqueeProgramScrollResetTimer = window.setTimeout(() => {
-    marqueeProgramScroll = false
-  }, 120)
-  marqueeLastProgrammaticScrollMs = performance.now()
-  el.scrollLeft += speedPxPerSec * dt
-  if (el.scrollLeft >= segment) {
-    el.scrollLeft -= segment
-    marqueeLastProgrammaticScrollMs = performance.now()
-  }
-}
-
-const startMarqueeRaf = () => {
-  stopMarqueeRaf()
-  void nextTick(() => {
-    requestAnimationFrame(() => {
-      const el = marqueeRef.value
-      if (!el || list.value.length === 0) {
-        return
-      }
-      marqueeLoopRunning = true
-      marqueeLastTs = 0
-      marqueeRafId = requestAnimationFrame(stepMarquee)
-    })
-  })
-}
-
-const bumpMarqueeUserIdlePause = () => {
-  marqueeUserScrollUntil = Date.now() + MARQUEE_IDLE_RESUME_MS
-}
-
-const beginMarqueeInteraction = () => {
-  marqueePointerActive.value = true
-}
-
-const endMarqueeInteraction = () => {
-  marqueePointerActive.value = false
-  bumpMarqueeUserIdlePause()
-}
-
-const onMarqueeScroll = () => {
-  if (marqueeProgramScroll) return
-  if (performance.now() - marqueeLastProgrammaticScrollMs < 120) return
-  // 仅在用户按住/拖动期间续期，避免自动滚动触发 scroll 导致暂停被无限续期
-  if (!marqueePointerActive.value) return
-  bumpMarqueeUserIdlePause()
-}
-
-const marqueeDrag = {
-  active: false,
-  pointerId: -1,
-  startX: 0,
-  startScroll: 0,
-  moved: false
-}
-const MARQUEE_DRAG_THRESHOLD = 8
-let marqueeSuppressClick = false
-
-const onMarqueePointerDown = (e: PointerEvent) => {
-  marqueeSuppressClick = false
-  beginMarqueeInteraction()
-  if (e.pointerType === 'mouse' && e.button === 0) {
-    const el = marqueeRef.value
-    if (!el) return
-
-    marqueeDrag.active = true
-    marqueeDrag.moved = false
-    marqueeDrag.pointerId = e.pointerId
-    marqueeDrag.startX = e.clientX
-    marqueeDrag.startScroll = el.scrollLeft
-
-    el.setPointerCapture(e.pointerId)
-  }
-}
-
-const onMarqueePointerMove = (e: PointerEvent) => {
-  if (!marqueeDrag.active || e.pointerId !== marqueeDrag.pointerId) return
-  const el = marqueeRef.value
-  if (!el) return
-  const dx = e.clientX - marqueeDrag.startX
-  if (Math.abs(dx) > MARQUEE_DRAG_THRESHOLD) {
-    marqueeDrag.moved = true
-  }
-  marqueeLastProgrammaticScrollMs = performance.now()
-  el.scrollLeft = marqueeDrag.startScroll - dx
-}
-
-const onMarqueePointerUp = (e: PointerEvent) => {
-  if (marqueeDrag.active && e.pointerId === marqueeDrag.pointerId) {
-    const el = marqueeRef.value
-    try {
-      el?.releasePointerCapture(e.pointerId)
-    } catch {
-      console.error('releasePointerCapture failed')
-    }
-    if (marqueeDrag.moved) {
-      marqueeSuppressClick = true
-    }
-    marqueeDrag.active = false
-    marqueeDrag.pointerId = -1
-  }
-  endMarqueeInteraction()
-}
-
-const onMarqueePointerCancel = onMarqueePointerUp
-
-const onMarqueeTouchStart = () => {
-  marqueeSuppressClick = false
-  beginMarqueeInteraction()
-}
-
-const onMarqueeTouchEnd = () => {
-  endMarqueeInteraction()
-}
-
-const resetMarqueeInteraction = () => {
-  if (!marqueePointerActive.value && !marqueeDrag.active) return
-  endMarqueeInteraction()
-  marqueeDrag.active = false
-  marqueeDrag.pointerId = -1
-}
-
-const onMarqueeClickCapture = (e: MouseEvent) => {
-  if (!marqueeSuppressClick) return
-  e.preventDefault()
-  e.stopPropagation()
-  marqueeSuppressClick = false
-}
-
-watch(
-  () => duplicatedList.value.length,
-  () => {
-    startMarqueeRaf()
-  },
-  { flush: 'post', immediate: true }
-)
-
-const gameData = ref<HomeGameSection[]>([])
-const rawGameData = ref<RawGameDataItem[]>([])
 
 const toGameImageUrl = (value: string) => {
   if (!value) {
@@ -615,9 +358,8 @@ const sportsEventList = computed<EventListItem[]>(() => {
   }))
 })
 
-const querySlideshowList = ref<any>([])
-
 const fetchGameData = async () => {
+  isGameDataLoading.value = true
   try {
     const res = await Api.home.getGameData()
     const rawResult = Array.isArray(res.result) ? res.result : []
@@ -626,10 +368,13 @@ const fetchGameData = async () => {
     localStorage.setItem('gameData', JSON.stringify(rawResult))
   } catch (error) {
     console.error('getGameData failed', error)
+  } finally {
+    isGameDataLoading.value = false
   }
 }
 
 const getQuerySlideshow = async () => {
+  isSlideshowLoading.value = true
   try {
     const response = await Api.home.getQuerySlideshow({
       languageCode: getStorageLanguageCode(String(locale.value)),
@@ -646,107 +391,19 @@ const getQuerySlideshow = async () => {
   } catch (error) {
     console.error('getQuerySlideshow failed', error)
     querySlideshowList.value = []
+  } finally {
+    isSlideshowLoading.value = false
   }
 }
 
 onMounted(async () => {
-  await fetchGameData()
-  getRecentBigWinsData()
-  getQuerySlideshow()
-  window.addEventListener('pointerup', resetMarqueeInteraction, true)
-  window.addEventListener('pointercancel', resetMarqueeInteraction, true)
-  window.addEventListener('touchend', resetMarqueeInteraction, { capture: true, passive: true })
-  window.addEventListener('touchcancel', resetMarqueeInteraction, {
-    capture: true,
-    passive: true
-  })
-  window.addEventListener('blur', resetMarqueeInteraction)
-
-  void nextTick(() => {
-    const el = marqueeRef.value
-    if (!el || typeof ResizeObserver === 'undefined') return
-    marqueeResizeObserver = new ResizeObserver(() => {
-      startMarqueeRaf()
-    })
-    marqueeResizeObserver.observe(el)
-  })
-})
-
-onUnmounted(() => {
-  window.removeEventListener('pointerup', resetMarqueeInteraction, true)
-  window.removeEventListener('pointercancel', resetMarqueeInteraction, true)
-  window.removeEventListener('touchend', resetMarqueeInteraction, true)
-  window.removeEventListener('touchcancel', resetMarqueeInteraction, true)
-  window.removeEventListener('blur', resetMarqueeInteraction)
-  marqueeResizeObserver?.disconnect()
-  marqueeResizeObserver = null
-  stopMarqueeRaf()
+  await Promise.all([fetchGameData(), getQuerySlideshow()])
 })
 </script>
 
 <style scoped lang="scss">
 .home {
   background-color: var(--color-background-level-1);
-}
-.bg-success {
-  background-color: #24ee89;
-}
-.border-b-brand {
-  border-bottom-color: #24ee89;
-}
-.text-secondary {
-  color: #b3bec1;
-}
-.ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.text-xxs {
-  font-size: 0.75rem;
-  line-height: 1rem;
-  transform: scale(0.833);
-}
-.marquee {
-  width: calc(100% + 2rem);
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 0;
-  scroll-behavior: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  /* 两侧渐隐，突出横向自动滚动区域 */
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 12px,
-    #000 calc(100% - 12px),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 12px,
-    #000 calc(100% - 12px),
-    transparent 100%
-  );
-}
-
-.marquee::-webkit-scrollbar {
-  display: none;
-}
-
-.marquee-track {
-  margin: 10px 0;
-  width: max-content;
-  gap: 0.875rem;
-  padding: 0 1rem;
-}
-
-.marquee-track a {
-  flex: none;
 }
 
 .bg-layer4 {
@@ -757,14 +414,17 @@ onUnmounted(() => {
   .sm\:h-\[120px\] {
     height: 120px;
   }
+
   .h5State {
     display: none;
   }
 }
+
 @media (max-width: 639px) {
   .pcState {
     display: none;
   }
+
   .gameTypeImg {
     width: 69%;
   }

@@ -1,58 +1,81 @@
 <template>
   <div class="eventList">
-    <div class="mt-2 flex items-center sm:mt-6 h-8">
-      <h2 class="flex items-center text-base font-extrabold text-primary">
-        {{ $t('home.LiveSports') }}
-      </h2>
-      <a
-        href="/gamelist/brand"
-        class="button ml-auto flex items-center gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-[var(--color-background-level-3)]"
-        >{{ $t('home.All') }}</a
-      >
-      <div v-if="!isMobile" class="ml-2 flex gap-x-1">
-        <button
-          @click="scrollPrev"
-          :disabled="prevDisabled"
-          :class="[
-            'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
-            prevDisabled
-              ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
-              : 'bg-[var(--color-button-secondary)]'
-          ]"
-          type="button"
+    <div class="mt-2 flex h-8 items-center sm:mt-6">
+      <template v-if="loading">
+        <div class="h-5 w-24 rounded bg-bg-2 animate-pulse"></div>
+        <div class="ml-auto h-8 w-14 rounded-lg bg-bg-2 animate-pulse"></div>
+        <div v-if="!isMobile" class="ml-2 flex gap-x-1">
+          <div class="size-8 rounded-lg bg-bg-2 animate-pulse"></div>
+          <div class="size-8 rounded-lg bg-bg-2 animate-pulse"></div>
+        </div>
+      </template>
+
+      <template v-else>
+        <h2 class="flex items-center text-base font-extrabold text-primary">
+          {{ $t('home.LiveSports') }}
+        </h2>
+        <a
+          href="/gamelist/brand"
+          class="button ml-auto flex h-8 items-center gap-1 rounded-lg bg-black_alpha5 px-2 font-extrabold dark:bg-[var(--color-background-level-3)]"
+          >{{ $t('home.All') }}</a
         >
-          <div class="icon size-4">
-            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-              ></path>
-            </svg>
-          </div>
-        </button>
-        <button
-          @click="scrollNext"
-          :disabled="nextDisabled"
-          :class="[
-            'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
-            nextDisabled
-              ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
-              : 'bg-[var(--color-button-secondary)]'
-          ]"
-          type="button"
-        >
-          <div class="icon size-4 rotate-180">
-            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-              ></path>
-            </svg>
-          </div>
-        </button>
+        <div v-if="!isMobile" class="ml-2 flex gap-x-1">
+          <button
+            @click="scrollPrev"
+            :disabled="prevDisabled"
+            :class="[
+              'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
+              prevDisabled
+                ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
+                : 'bg-[var(--color-button-secondary)]'
+            ]"
+            type="button"
+          >
+            <div class="icon size-4">
+              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
+                ></path>
+              </svg>
+            </div>
+          </button>
+          <button
+            @click="scrollNext"
+            :disabled="nextDisabled"
+            :class="[
+              'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
+              nextDisabled
+                ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
+                : 'bg-[var(--color-button-secondary)]'
+            ]"
+            type="button"
+          >
+            <div class="icon size-4 rotate-180">
+              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
+                ></path>
+              </svg>
+            </div>
+          </button>
+        </div>
+      </template>
+    </div>
+
+    <div
+      v-if="loading"
+      class="grid-col-1 mx-0 mt-3 grid grid-flow-col gap-2 overflow-hidden"
+      style="--grid-gap: 0.75rem; --grid-padding: 0px; --aspect-ratio: 0.75"
+    >
+      <div v-for="index in skeletonCount" :key="index" class="col-item rounded-[12px]">
+        <div class="aspect-[2.12] rounded-xl bg-bg-2 animate-pulse"></div>
       </div>
     </div>
+
     <div
+      v-else
       ref="listWrap"
-      class="grid snap-x relative snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth hide-scroll mx-0 mt-3 gap-2 grid-col-1"
+      class="grid-col-1 hide-scroll relative mx-0 mt-3 grid snap-x snap-mandatory grid-flow-col gap-2 overflow-x-scroll overflow-y-hidden scroll-smooth"
       style="--grid-gap: 0.75rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
       <div
@@ -82,16 +105,19 @@ interface EventItem {
 
 interface Props {
   list?: EventItem[]
+  loading?: boolean
 }
 // TODO：点击进入游戏详情页
 const handleClick = (rowId: number) => navigateToName('gameDetail', { params: { id: rowId } })
 
 const props = withDefaults(defineProps<Props>(), {
-  list: () => []
+  list: () => [],
+  loading: false
 })
 
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
+const skeletonCount = 3
 
 const prevDisabled = ref(true)
 const nextDisabled = ref(false)

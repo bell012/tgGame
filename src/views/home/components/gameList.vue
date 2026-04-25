@@ -1,72 +1,97 @@
 <template>
   <div class="gameList">
-    <div class="mt-2 flex items-center sm:mt-6 h-8">
-      <h2 class="flex items-center text-base font-extrabold text-primary">
-        {{ props.title }}
-      </h2>
-      <a
-        href="javascript:void(0);"
-        class="button ml-auto flex items-center bg-bg-3 gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-layer5"
-        @click="handleAllClick(props.sysGameTypeCode)"
-        >{{ $t('home.All') }}</a
-      >
-      <div v-if="!isMobile" class="ml-2 flex gap-x-1">
-        <button
-          @click="scrollPrev"
-          :disabled="prevDisabled"
-          :class="[
-            'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
-            prevDisabled
-              ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
-              : 'bg-[var(--color-button-secondary)]'
-          ]"
-          type="button"
+    <div class="mt-2 flex h-8 items-center sm:mt-6">
+      <template v-if="loading">
+        <div class="h-5 w-28 rounded bg-bg-2 animate-pulse"></div>
+        <div class="ml-auto h-8 w-14 rounded-lg bg-bg-2 animate-pulse"></div>
+        <div v-if="!isMobile" class="ml-2 flex gap-x-1">
+          <div class="size-8 rounded-lg bg-bg-2 animate-pulse"></div>
+          <div class="size-8 rounded-lg bg-bg-2 animate-pulse"></div>
+        </div>
+      </template>
+
+      <template v-else>
+        <h2 class="flex items-center text-base font-extrabold text-primary">
+          {{ props.title }}
+        </h2>
+        <a
+          href="javascript:void(0);"
+          class="button ml-auto flex h-8 items-center gap-1 rounded-lg bg-bg-3 bg-black_alpha5 px-2 font-extrabold dark:bg-layer5"
+          @click="handleAllClick(props.sysGameTypeCode)"
+          >{{ $t('home.All') }}</a
         >
-          <div class="icon size-4">
-            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-              ></path>
-            </svg>
-          </div>
-        </button>
-        <button
-          @click="scrollNext"
-          :disabled="nextDisabled"
-          :class="[
-            'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
-            nextDisabled
-              ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
-              : 'bg-[var(--color-button-secondary)]'
-          ]"
-          type="button"
-        >
-          <div class="icon size-4 rotate-180">
-            <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-              ></path>
-            </svg>
-          </div>
-        </button>
-      </div>
+        <div v-if="!isMobile" class="ml-2 flex gap-x-1">
+          <button
+            @click="scrollPrev"
+            :disabled="prevDisabled"
+            :class="[
+              'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
+              prevDisabled
+                ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
+                : 'bg-[var(--color-button-secondary)]'
+            ]"
+            type="button"
+          >
+            <div class="icon size-4">
+              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
+                ></path>
+              </svg>
+            </div>
+          </button>
+          <button
+            @click="scrollNext"
+            :disabled="nextDisabled"
+            :class="[
+              'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
+              nextDisabled
+                ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
+                : 'bg-[var(--color-button-secondary)]'
+            ]"
+            type="button"
+          >
+            <div class="icon size-4 rotate-180">
+              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
+                ></path>
+              </svg>
+            </div>
+          </button>
+        </div>
+      </template>
     </div>
+
     <div
-      class="grid snap-x relative snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth hide-scroll gap-2 pt-3 mx-0 grid-col-3"
+      v-if="loading"
+      class="grid-col-3 mx-0 grid grid-flow-col gap-2 overflow-hidden pt-3"
+      style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
+    >
+      <div
+        v-for="index in skeletonCount"
+        :key="index"
+        class="aspect-[3/4] rounded-lg bg-bg-2 animate-pulse"
+      ></div>
+    </div>
+
+    <div
+      v-else
       ref="listWrap"
+      class="grid-col-3 hide-scroll relative mx-0 grid snap-x snap-mandatory grid-flow-col gap-2 overflow-x-scroll overflow-y-hidden scroll-smooth pt-3"
       style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
       <div v-for="(value, index) in normalizedList" :key="value.img.src + '-' + index">
         <a
           href="javascript:void(0);"
-          class="game-item group relative flex size-full flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2 aspect-[3/4]"
+          class="game-item group relative flex size-full aspect-[3/4] flex-col items-center overflow-hidden rounded-lg transition-all hover:-translate-y-2"
           link=""
         >
-          <div class="w-full h-full">
+          <div class="h-full w-full">
             <gameErrImg :img="value.img" />
           </div>
           <div
-            class="absolute inset-x-0 bottom-6 flex w-full items-center justify-center px-2 text-center text-sm sm:text-base font-bold leading-4 text-common-100 sm:font-extrabold"
+            class="absolute inset-x-0 bottom-6 flex w-full items-center justify-center px-2 text-center text-sm font-bold leading-4 text-common-100 sm:text-base sm:font-extrabold"
           >
             {{ value.itemName }}
           </div>
@@ -82,11 +107,11 @@
             class="center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 group-hover:opacity-100"
           >
             <div
-              class="flex flex-col items-center justify-center gap-2 h-full w-full"
+              class="flex h-full w-full flex-col items-center justify-center gap-2"
               @click="handleClick(value.rowId)"
             >
               <div
-                class="flex justify-center items-center center absolute left-0 top-0 h-[40%] w-full px-2 text-center font-extrabold leading-4 text-[white]"
+                class="center absolute left-0 top-0 flex h-[40%] w-full items-center justify-center px-2 text-center font-extrabold leading-4 text-[white]"
               >
                 {{ value.itemName }}
               </div>
@@ -127,14 +152,21 @@ interface GameItem {
 }
 
 interface Props {
-  title: string
-  list: any[]
-  sysGameTypeCode: string
+  title?: string
+  list?: any[]
+  sysGameTypeCode?: string
+  loading?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  title: '',
+  list: () => [],
+  sysGameTypeCode: '',
+  loading: false
+})
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
+const skeletonCount = 10
 
 const normalizeGameItem = (item: any): GameItem => {
   const conUrl = item?.conUrl ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.conUrl}` : ''

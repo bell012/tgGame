@@ -92,6 +92,12 @@ interface GameBrandQueryOptions {
   pageSize?: number
 }
 
+interface PendingLanguageRequest<T> {
+  id: symbol
+  languageCode: string
+  promise: Promise<T[]>
+}
+
 export const useGameStore = defineStore('game', () => {
   const localeStore = useLocaleStore()
   /** 接口返回的原始游戏树数据 */
@@ -116,11 +122,11 @@ export const useGameStore = defineStore('game', () => {
   const searchHistory = ref<string[]>([])
 
   /** 并发请求复用，避免同一时间重复请求同一个接口 */
-  let pendingRequest: Promise<GameDataItem[]> | null = null
+  let pendingRequest: PendingLanguageRequest<GameDataItem> | null = null
   /** 并发请求复用，避免同一时间重复请求品牌列表接口 */
-  let pendingBrandRequest: Promise<GameBrandItem[]> | null = null
+  let pendingBrandRequest: PendingLanguageRequest<GameBrandItem> | null = null
   /** 并发请求复用，避免同一时间重复请求游戏类型接口 */
-  let pendingGameTypeRequest: Promise<GameTypeItem[]> | null = null
+  let pendingGameTypeRequest: PendingLanguageRequest<GameTypeItem> | null = null
 
   /** 当前是否已经有游戏数据 */
   const hasGameData = computed(() => gameData.value.length > 0)
@@ -246,9 +252,17 @@ export const useGameStore = defineStore('game', () => {
   })
 
   /** 更新 store 中的游戏数据 */
-  const setGameDataState = (nextGameData: GameDataItem[]) => {
+  const toNumber = (value: unknown, fallback = 0) => {
+    const nextValue = Number(value)
+    return Number.isFinite(nextValue) ? nextValue : fallback
+  }
+
+  const setGameDataState = (
+    nextGameData: GameDataItem[],
+    languageCode = currentLanguageCode.value
+  ) => {
     gameData.value = nextGameData
-    gameDataLanguageCode.value = currentLanguageCode.value
+    gameDataLanguageCode.value = languageCode
 
     return gameData.value
   }
@@ -256,19 +270,22 @@ export const useGameStore = defineStore('game', () => {
   /** 更新 store 中的品牌列表数据 */
   const normalizeGameBrandData = (nextBrandData: GameBrandItem[]) => {
     return [...nextBrandData]
-      .filter(item => item.enable === 1)
+      .filter(item => toNumber(item.enable) === 1)
       .sort((a, b) => {
-        const sortNumA = typeof a.sortNum === 'number' ? a.sortNum : Number.MAX_SAFE_INTEGER
-        const sortNumB = typeof b.sortNum === 'number' ? b.sortNum : Number.MAX_SAFE_INTEGER
+        const sortNumA = toNumber(a.sortNum, Number.MAX_SAFE_INTEGER)
+        const sortNumB = toNumber(b.sortNum, Number.MAX_SAFE_INTEGER)
 
         return sortNumA - sortNumB
       })
   }
 
   /** 更新 store 中的品牌列表数据 */
-  const setGameBrandDataState = (nextBrandData: GameBrandItem[]) => {
+  const setGameBrandDataState = (
+    nextBrandData: GameBrandItem[],
+    languageCode = currentLanguageCode.value
+  ) => {
     brandData.value = normalizeGameBrandData(nextBrandData)
-    brandDataLanguageCode.value = currentLanguageCode.value
+    brandDataLanguageCode.value = languageCode
 
     return brandData.value
   }
@@ -276,111 +293,150 @@ export const useGameStore = defineStore('game', () => {
   /** 更新 store 中的游戏类型数据 */
   const normalizeGameTypeData = (nextGameTypeData: GameTypeItem[]) => {
     return [...nextGameTypeData]
-      .filter(item => item.enable === 1)
+      .filter(item => toNumber(item.enable) === 1)
       .sort((a, b) => {
-        const sortNumA = typeof a.sortNum === 'number' ? a.sortNum : Number.MAX_SAFE_INTEGER
-        const sortNumB = typeof b.sortNum === 'number' ? b.sortNum : Number.MAX_SAFE_INTEGER
+        const sortNumA = toNumber(a.sortNum, Number.MAX_SAFE_INTEGER)
+        const sortNumB = toNumber(b.sortNum, Number.MAX_SAFE_INTEGER)
 
         return sortNumA - sortNumB
       })
   }
 
   /** 更新 store 中的游戏类型数据 */
-  const setGameTypeDataState = (nextGameTypeData: GameTypeItem[]) => {
+  const setGameTypeDataState = (
+    nextGameTypeData: GameTypeItem[],
+    languageCode = currentLanguageCode.value
+  ) => {
     gameTypeData.value = normalizeGameTypeData(nextGameTypeData)
-    gameTypeDataLanguageCode.value = currentLanguageCode.value
+    gameTypeDataLanguageCode.value = languageCode
 
     return gameTypeData.value
   }
 
   /** 拉取最新游戏数据；默认命中有效缓存时不重复请求 */
   const refreshGameData = async (force = false) => {
-    if (!force && pendingRequest) {
-      return pendingRequest
+    const requestLanguageCode = currentLanguageCode.value
+
+    if (pendingRequest?.languageCode === requestLanguageCode) {
+      return pendingRequest.promise
     }
 
-    if (!force && hasGameData.value) {
+    if (!force && hasGameData.value && gameDataLanguageCode.value === requestLanguageCode) {
       return gameData.value
     }
 
     isLoading.value = true
 
-    pendingRequest = (async () => {
+    const requestId = Symbol('game-data-request')
+    const promise = (async () => {
       try {
         const response = await Api.game.getGameData({
           showSuccessToast: false
         })
-        return setGameDataState(response?.result ?? [])
+        return setGameDataState(response?.result ?? [], requestLanguageCode)
       } catch (error) {
         console.error('refreshGameData failed', error)
         return gameData.value
       } finally {
-        isLoading.value = false
-        pendingRequest = null
+        if (pendingRequest?.id === requestId) {
+          isLoading.value = false
+          pendingRequest = null
+        }
       }
     })()
 
-    return pendingRequest
+    const request: PendingLanguageRequest<GameDataItem> = {
+      id: requestId,
+      languageCode: requestLanguageCode,
+      promise
+    }
+
+    pendingRequest = request
+    return request.promise
   }
 
   /** 拉取最新品牌列表数据；默认命中有效缓存时不重复请求 */
   const refreshGameBrandData = async (force = false) => {
-    if (!force && pendingBrandRequest) {
-      return pendingBrandRequest
+    const requestLanguageCode = currentLanguageCode.value
+
+    if (pendingBrandRequest?.languageCode === requestLanguageCode) {
+      return pendingBrandRequest.promise
     }
 
-    if (!force && hasBrandData.value) {
+    if (!force && hasBrandData.value && brandDataLanguageCode.value === requestLanguageCode) {
       return brandData.value
     }
 
     isBrandLoading.value = true
 
-    pendingBrandRequest = (async () => {
+    const requestId = Symbol('game-brand-request')
+    const promise = (async () => {
       try {
         const response = await Api.game.getGameBrandData({
           showSuccessToast: false
         })
-        return setGameBrandDataState(response?.result ?? [])
+        return setGameBrandDataState(response?.result ?? [], requestLanguageCode)
       } catch (error) {
         console.error('refreshGameBrandData failed', error)
         return brandData.value
       } finally {
-        isBrandLoading.value = false
-        pendingBrandRequest = null
+        if (pendingBrandRequest?.id === requestId) {
+          isBrandLoading.value = false
+          pendingBrandRequest = null
+        }
       }
     })()
 
-    return pendingBrandRequest
+    const request: PendingLanguageRequest<GameBrandItem> = {
+      id: requestId,
+      languageCode: requestLanguageCode,
+      promise
+    }
+
+    pendingBrandRequest = request
+    return request.promise
   }
 
   /** 拉取最新自定义游戏类型数据；默认命中有效缓存时不重复请求 */
   const refreshGameTypeData = async (force = false) => {
-    if (!force && pendingGameTypeRequest) {
-      return pendingGameTypeRequest
+    const requestLanguageCode = currentLanguageCode.value
+
+    if (pendingGameTypeRequest?.languageCode === requestLanguageCode) {
+      return pendingGameTypeRequest.promise
     }
 
-    if (!force && hasGameTypeData.value) {
+    if (!force && hasGameTypeData.value && gameTypeDataLanguageCode.value === requestLanguageCode) {
       return gameTypeData.value
     }
 
     isGameTypeLoading.value = true
 
-    pendingGameTypeRequest = (async () => {
+    const requestId = Symbol('game-type-request')
+    const promise = (async () => {
       try {
         const response = await Api.game.getGameType({
           showSuccessToast: false
         })
-        return setGameTypeDataState(response?.result ?? [])
+        return setGameTypeDataState(response?.result ?? [], requestLanguageCode)
       } catch (error) {
         console.error('refreshGameTypeData failed', error)
         return gameTypeData.value
       } finally {
-        isGameTypeLoading.value = false
-        pendingGameTypeRequest = null
+        if (pendingGameTypeRequest?.id === requestId) {
+          isGameTypeLoading.value = false
+          pendingGameTypeRequest = null
+        }
       }
     })()
 
-    return pendingGameTypeRequest
+    const request: PendingLanguageRequest<GameTypeItem> = {
+      id: requestId,
+      languageCode: requestLanguageCode,
+      promise
+    }
+
+    pendingGameTypeRequest = request
+    return request.promise
   }
 
   /** 优先使用内存数据，没有时再请求接口 */
@@ -389,8 +445,8 @@ export const useGameStore = defineStore('game', () => {
       return gameData.value
     }
 
-    if (pendingRequest) {
-      return pendingRequest
+    if (pendingRequest?.languageCode === currentLanguageCode.value) {
+      return pendingRequest.promise
     }
 
     return refreshGameData(true)
@@ -402,8 +458,8 @@ export const useGameStore = defineStore('game', () => {
       return brandData.value
     }
 
-    if (pendingBrandRequest) {
-      return pendingBrandRequest
+    if (pendingBrandRequest?.languageCode === currentLanguageCode.value) {
+      return pendingBrandRequest.promise
     }
 
     return refreshGameBrandData(true)
@@ -415,8 +471,8 @@ export const useGameStore = defineStore('game', () => {
       return gameTypeData.value
     }
 
-    if (pendingGameTypeRequest) {
-      return pendingGameTypeRequest
+    if (pendingGameTypeRequest?.languageCode === currentLanguageCode.value) {
+      return pendingGameTypeRequest.promise
     }
 
     return refreshGameTypeData(true)

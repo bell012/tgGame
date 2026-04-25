@@ -77,7 +77,6 @@ export function dlicgh(data: any): Promise<any> {
   })
 }
 
-
 export function getLatestList(data: any): Promise<any> {
   return request({
     url: '/special/getLatestList',

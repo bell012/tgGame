@@ -13,12 +13,19 @@ export interface ExploreCasinoTabButtonItem {
   iconSelect: string | Component
 }
 
+interface PendingExploreCasinoTabsRequest<T> {
+  id: symbol
+  languageCode: string
+  promise: Promise<T[]>
+}
+
 export const useExploreCasinoTabsStore = defineStore('exploreCasinoTabs', () => {
   const gameStore = useGameStore()
   const gameTypeList = ref<GameTypeItem[]>([])
   const hasTabButtonsLoaded = ref(false)
   const loadedTabLanguageCode = ref<string | null>(null)
-  let pendingTabButtonsRequest: Promise<ExploreCasinoTabButtonItem[]> | null = null
+  let pendingTabButtonsRequest: PendingExploreCasinoTabsRequest<ExploreCasinoTabButtonItem> | null =
+    null
 
   const currentLanguageCode = computed(() =>
     getStorageLanguageCode(String(i18n.global.locale.value))
@@ -71,29 +78,44 @@ export const useExploreCasinoTabsStore = defineStore('exploreCasinoTabs', () => 
   })
 
   const loadExploreCasinoTabButtons = async (forceRefresh = false) => {
-    if (pendingTabButtonsRequest) {
-      return pendingTabButtonsRequest
+    const requestLanguageCode = currentLanguageCode.value
+
+    if (pendingTabButtonsRequest?.languageCode === requestLanguageCode) {
+      return pendingTabButtonsRequest.promise
     }
 
     if (
       !forceRefresh &&
       hasTabButtonsLoaded.value &&
-      loadedTabLanguageCode.value === currentLanguageCode.value
+      loadedTabLanguageCode.value === requestLanguageCode
     ) {
       return tabButtons.value
     }
 
-    pendingTabButtonsRequest = (async () => {
-      gameTypeList.value = await gameStore.getGameTypeData(forceRefresh)
-      hasTabButtonsLoaded.value = true
-      loadedTabLanguageCode.value = currentLanguageCode.value
+    const requestId = Symbol('explore-casino-tab-buttons-request')
+    const promise = (async () => {
+      const nextGameTypeList = await gameStore.getGameTypeData(forceRefresh)
+
+      gameTypeList.value = nextGameTypeList
+      hasTabButtonsLoaded.value = nextGameTypeList.length > 0
+      loadedTabLanguageCode.value = nextGameTypeList.length > 0 ? requestLanguageCode : null
+
       return tabButtons.value
     })()
 
+    const request: PendingExploreCasinoTabsRequest<ExploreCasinoTabButtonItem> = {
+      id: requestId,
+      languageCode: requestLanguageCode,
+      promise
+    }
+    pendingTabButtonsRequest = request
+
     try {
-      return await pendingTabButtonsRequest
+      return await promise
     } finally {
-      pendingTabButtonsRequest = null
+      if (pendingTabButtonsRequest?.id === requestId) {
+        pendingTabButtonsRequest = null
+      }
     }
   }
 

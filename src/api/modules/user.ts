@@ -92,7 +92,7 @@ export function getGameBetTotal(data: GameBetTotalForm): Promise<GameBetTotalRes
     method: 'post',
     data,
     showSuccessToast: false,
-    showErrorToast: false
+    showErrorToast: true
   })
 }
 

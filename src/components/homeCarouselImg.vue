@@ -1,6 +1,17 @@
 <template>
   <div>
-    <div v-if="slides.length" class="w-full flex flex-col bg-bg-1">
+    <div v-if="loading" class="mt-2.5 mb-2.5 w-full">
+      <div class="w-full overflow-hidden rounded-xl bg-bg-2" :class="bannerAspectClass">
+        <div class="size-full animate-pulse bg-bg-2"></div>
+      </div>
+      <div class="mt-2 flex items-center justify-center gap-1.5">
+        <div class="h-[5px] w-10 rounded-full bg-bg-2 animate-pulse"></div>
+        <div class="size-[5px] rounded-full bg-bg-2 animate-pulse"></div>
+        <div class="size-[5px] rounded-full bg-bg-2 animate-pulse"></div>
+      </div>
+    </div>
+
+    <div v-else-if="slides.length" class="w-full flex flex-col bg-bg-1">
       <Swipe
         ref="swipeRef"
         class="mt-2.5 mb-2.5 flex-1 min-h-0"
@@ -11,12 +22,14 @@
         @change="handleChange"
       >
         <SwipeItem v-for="(item, index) in slides" :key="index">
-          <img
-            :src="getSlideImage(item)"
-            :alt="`slide-${index + 1}`"
-            class="max-h-full w-full max-w-[100vw] object-contain rounded-xl overflow-hidden"
-            @click="handleCarouselClick(item)"
-          />
+          <div class="w-full overflow-hidden rounded-xl" :class="bannerAspectClass">
+            <img
+              :src="getSlideImage(item)"
+              :alt="`slide-${index + 1}`"
+              class="h-full w-full object-cover"
+              @click="handleCarouselClick(item)"
+            />
+          </div>
         </SwipeItem>
       </Swipe>
       <!-- 左右按钮 + 滑动条 -->
@@ -50,27 +63,35 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { Swipe, SwipeItem } from 'vant'
-import type { SwipeInstance } from 'vant'
-import { navigateTo, navigateToName } from '@/utils/router'
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
-import { useUserStore } from '@/stores/user'
 import { useAuthModalStore } from '@/stores/authModal'
+import { useUserStore } from '@/stores/user'
+import { navigateTo, navigateToName } from '@/utils/router'
 import { storeToRefs } from 'pinia'
+import type { SwipeInstance } from 'vant'
+import { Swipe, SwipeItem } from 'vant'
+import { computed, ref, watch } from 'vue'
 const userStore = useUserStore()
 const authModalStore = useAuthModalStore()
 const { userInfo } = storeToRefs(userStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
 interface Props {
   list: QuerySlideshowItem[]
+  loading?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  loading: false
+})
 
 const currentIndex = ref(0)
 const progressKey = ref(0)
 const swipeRef = ref<SwipeInstance>()
+const bannerAspectClass = computed(() =>
+  isLogin.value
+    ? 'aspect-[1041/450] sm:aspect-[1336/280]'
+    : 'aspect-[3123/1836] sm:aspect-[1336/280]'
+)
 const slides = computed(() => {
   return [...props.list].sort((a, b) => (a.sortNum ?? 0) - (b.sortNum ?? 0))
 })
@@ -97,7 +118,7 @@ const handleCarouselClick = (slide: QuerySlideshowItem) => {
 }
 const handleUrlJump = (slide: QuerySlideshowItem) => {
   const linkUrl = String(slide.linkUrl ?? '').trim()
-  
+
   if (!linkUrl && !isLogin.value) {
     // 打开登录页面
     authModalStore.openLoginModal()
@@ -143,7 +164,6 @@ const handleGameJump = (slide: QuerySlideshowItem) => {
   }
 
   if (slide.platformType === 2) {
-
     navigateToName('brandGameList', {
       params: { brandCode: linkId }
     })

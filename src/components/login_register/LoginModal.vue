@@ -15,6 +15,7 @@
     :visible="showResetPassword"
     :background-image-url="mobileBackgroundImage"
     @update:visible="handleResetPasswordClose"
+    @reset-success="handleResetPasswordSuccess"
   />
 
   <!-- PC 端登录 -->
@@ -115,7 +116,7 @@
 
             <!-- 右侧表单区域 -->
             <div class="w-1/2 bg-bg-1 py-5 px-6">
-              <ResetPasswordDesktop />
+              <ResetPasswordDesktop @reset-success="handleResetPasswordSuccess" />
             </div>
           </div>
         </div>
@@ -272,6 +273,29 @@ const handleResetPasswordClose = () => {
   showResetPassword.value = false
   emit('update:modelValue', false)
 }
+const isResetPasswordClosing = ref(false)
+
+/**
+ * 重置密码成功后，统一切回登录弹窗。
+ */
+const handleResetPasswordSuccess = () => {
+  showResetPassword.value = false
+
+  if (isMobile.value) {
+    activeTab.value = 'login'
+    return
+  }
+
+  isAnimating.value = true
+  isResetPasswordClosing.value = true
+
+  setTimeout(() => {
+    activeTab.value = 'login'
+    isAnimating.value = false
+    isSliding.value = false
+    isResetPasswordClosing.value = false
+  }, 500)
+}
 
 const isAnimating = ref(false)
 const isSliding = ref(false)
@@ -280,6 +304,8 @@ const isSliding = ref(false)
 const getLoginClass = () => {
   if (activeTab.value === 'login' || activeTab.value === 'register') {
     return 'translate-x-0 z-20 opacity-100'
+  } else if (isResetPasswordClosing.value) {
+    return 'translate-x-full z-10 opacity-0'
   } else if (isSliding.value) {
     return '-translate-x-full z-10 opacity-0'
   } else {
@@ -289,6 +315,10 @@ const getLoginClass = () => {
 
 // 忘记密码弹窗
 const getResetPasswordClass = () => {
+  if (activeTab.value === 'resetPassword' && isResetPasswordClosing.value) {
+    return 'translate-x-full z-20 opacity-0'
+  }
+
   if (activeTab.value === 'resetPassword') {
     return 'translate-x-0 z-20 opacity-100'
   } else if (isSliding.value) {
