@@ -1,9 +1,9 @@
 import Api from '@/api'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { casinoIcons } from '@/static/svg/casino'
 import { sideIcons } from '@/static/svg/side'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { RebateCategory, RebateRow, RebateTab } from './types'
 
 const pickField = (source: Record<string, unknown>, keys: string[]) => {
@@ -22,12 +22,45 @@ const toNumber = (value: unknown, fallback = 0) => {
   return Number.isFinite(parsedValue) ? parsedValue : fallback
 }
 
+const getRebateCategoryLabel = (code: string, t: (key: string) => string) => {
+  const labelMap: Record<string, string> = {
+    CP: t('betHistory.filterOptions.lottery'),
+    TY: t('betHistory.filterOptions.sports'),
+    ZR: t('betHistory.filterOptions.live'),
+    SX: t('betHistory.filterOptions.live'),
+    DZ: t('betHistory.filterOptions.electronic'),
+    QP: t('betHistory.filterOptions.chess'),
+    BY: t('betHistory.filterOptions.fishing'),
+    DJ: t('betHistory.filterOptions.esports')
+  }
+
+  return labelMap[code] || code || '--'
+}
+
+const toImageUrl = (value: unknown) => {
+  const normalizedValue = String(value ?? '').trim()
+
+  if (!normalizedValue) {
+    return ''
+  }
+
+  if (/^https?:\/\//i.test(normalizedValue)) {
+    return normalizedValue
+  }
+
+  const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
+  const imagePath = normalizedValue.replace(/^\/+/, '')
+
+  return baseUrl ? `${baseUrl}/${imagePath}` : normalizedValue
+}
+
 export const useRebatePage = () => {
+  const { t } = useI18n()
   const isMobile = useIsMobile()
   const { side } = sideIcons
 
   const activeTab = ref<RebateTab>('records')
-  const activeCategory = ref('slots')
+  const activeCategory = ref('')
   const showClaimSuccessPopup = ref(false)
   const showRebateRecordsPopup = ref(false)
   const showEligibleTurnoverPopup = ref(false)
@@ -38,10 +71,11 @@ export const useRebatePage = () => {
   const pendingRebateTurnover = ref(0)
   const promoBonusTurnoverDeduction = ref(0)
   const claimableAmount = ref(0)
-  const currentValidBets = ref(0)
   const targetValidBets = ref(500000)
   const currentRebateValue = ref(0.7)
   const nextRebateValue = ref(0.8)
+  const rebateCategoriesFromApi = ref<RebateCategory[]>([])
+  const rebateDataRows = ref<Record<string, unknown>[]>([])
 
   const applyRebateOverviewResponse = (result: unknown) => {
     if (!result) {
@@ -78,38 +112,84 @@ export const useRebatePage = () => {
     }
   }
 
-  const categoryOptions = computed<RebateCategory[]>(() => [
-    {
-      id: 'slots',
-      label: '老虎机',
-      icon: casinoIcons.slots
-    },
-    {
-      id: 'table',
-      label: '桌面游戏',
-      icon: casinoIcons.table_games
-    },
-    {
-      id: 'fishing',
-      label: '捕鱼',
-      icon: casinoIcons.fishing
-    },
-    {
-      id: 'roulette',
-      label: '轮盘',
-      icon: casinoIcons.roulette
-    },
-    {
-      id: 'sports',
-      label: '体育',
-      icon: casinoIcons.football
-    },
-    {
-      id: 'lottery',
-      label: '彩票',
-      icon: side.lotteryIcon
+  const loadRebateCategories = async () => {
+    try {
+      const response = await Api.user.selectRebateRate()
+      if (!response?.success || !Array.isArray(response.result)) {
+        return
+      }
+
+      const seenCategoryIds = new Set<string>()
+      const nextCategories = response.result.reduce<RebateCategory[]>((acc, item) => {
+        if (!item || typeof item !== 'object' || Array.isArray(item)) {
+          return acc
+        }
+
+        const rawItem = item as Record<string, unknown>
+        const sysGameTypeCode = String(rawItem.sysGameTypeCode ?? '').trim()
+
+        if (!sysGameTypeCode || seenCategoryIds.has(sysGameTypeCode)) {
+          return acc
+        }
+
+        seenCategoryIds.add(sysGameTypeCode)
+
+        const icon = toImageUrl(rawItem.icon)
+        const activeIcon = toImageUrl(rawItem.activeIcon)
+
+        acc.push({
+          id: sysGameTypeCode,
+          label: getRebateCategoryLabel(sysGameTypeCode, t),
+          icon: icon || activeIcon,
+          activeIcon: activeIcon || icon
+        })
+
+        return acc
+      }, [])
+
+      rebateCategoriesFromApi.value = nextCategories
+
+      if (
+        nextCategories.length > 0 &&
+        !nextCategories.some(category => category.id === activeCategory.value)
+      ) {
+        activeCategory.value = nextCategories[0].id
+      }
+    } catch (error) {
+      console.error('loadRebateCategories failed', error)
     }
-  ])
+  }
+
+  const loadRebateData = async () => {
+    try {
+      const response = await Api.user.rebateData()
+      if (!response?.success || !Array.isArray(response.result)) {
+        rebateDataRows.value = []
+        return
+      }
+
+      rebateDataRows.value = response.result.filter(
+        (item): item is Record<string, unknown> =>
+          !!item && typeof item === 'object' && !Array.isArray(item)
+      )
+    } catch (error) {
+      console.error('loadRebateData failed', error)
+      rebateDataRows.value = []
+    }
+  }
+
+  const categoryOptions = computed<RebateCategory[]>(() => rebateCategoriesFromApi.value)
+
+  const currentCategoryCode = computed(() => activeCategory.value.trim())
+
+  const currentCategoryRebateRows = computed(() =>
+    rebateDataRows.value.filter(
+      item => String(item.sysGameTypeCode ?? '').trim() === currentCategoryCode.value
+    )
+  )
+  const currentValidBetsValue = computed(() =>
+    currentCategoryRebateRows.value.reduce((total, item) => total + toNumber(item.betAmount), 0)
+  )
 
   const formatAmount = (value: number) => {
     return value.toFixed(2)
@@ -129,7 +209,7 @@ export const useRebatePage = () => {
 
   const currentRebateText = computed(() => `${currentRebateValue.value.toFixed(2)}%`)
   const nextRebateText = computed(() => `${nextRebateValue.value.toFixed(2)}%`)
-  const currentValidBetsPlainText = computed(() => String(Math.floor(currentValidBets.value)))
+  const currentValidBetsPlainText = computed(() => String(Math.floor(currentValidBetsValue.value)))
   const targetValidBetsText = computed(() => String(Math.floor(targetValidBets.value)))
 
   const progressPercent = computed(() => {
@@ -137,7 +217,7 @@ export const useRebatePage = () => {
       return 0
     }
 
-    const ratio = (currentValidBets.value / targetValidBets.value) * 100
+    const ratio = (currentValidBetsValue.value / targetValidBets.value) * 100
     return Math.min(Math.max(ratio, 0), 100)
   })
 
@@ -206,8 +286,8 @@ export const useRebatePage = () => {
 
   onMounted(() => {
     void loadRebateOverview()
-    void Api.user.rebateData()
-    void Api.user.selectRebateRate()
+    void loadRebateCategories()
+    void loadRebateData()
   })
 
   return {

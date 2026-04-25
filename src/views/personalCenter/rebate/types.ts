@@ -5,7 +5,8 @@ export type RebateTab = 'records' | 'rules'
 export interface RebateCategory {
   id: string
   label: string
-  icon: Component
+  icon: string | Component
+  activeIcon?: string | Component
 }
 
 export interface RebateRow {

@@ -18,7 +18,7 @@
     <setting-popup
       v-model:visible="settingVisible"
       desktop
-      class="desktop-popup"
+      class="desktop-setting-popup min-w-[136px]"
       @share="shareClick"
     ></setting-popup>
     <!-- live-state -->
@@ -168,5 +168,11 @@ const shareClick = () => {
   position: absolute;
   left: 20px;
   left: calc(50% - 240px);
+}
+
+.desktop-setting-popup {
+  bottom: calc(100% + 12px);
+  position: absolute;
+  left: 20px;
 }
 </style>

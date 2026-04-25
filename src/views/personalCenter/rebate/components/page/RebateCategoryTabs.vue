@@ -7,7 +7,17 @@
       :class="buttonClass(category.id === activeCategory)"
       @click="$emit('update:activeCategory', category.id)"
     >
-      <component :is="category.icon" :class="isMobile ? 'h-[18px] w-[18px]' : 'h-4 w-4'" />
+      <img
+        v-if="isImageIcon(getIcon(category, category.id === activeCategory))"
+        :src="getIcon(category, category.id === activeCategory) as string"
+        :class="isMobile ? 'h-[18px] w-[18px] object-contain' : 'h-4 w-4 object-contain'"
+        alt=""
+      />
+      <component
+        v-else
+        :is="getIcon(category, category.id === activeCategory)"
+        :class="isMobile ? 'h-[18px] w-[18px]' : 'h-4 w-4'"
+      />
       <span :class="isMobile ? 'mt-1 text-[12px] font-[500] leading-none' : ''">
         {{ category.label }}
       </span>
@@ -38,6 +48,18 @@ const buttonClass = (isActive: boolean) => {
     : 'border border-transparent bg-bg-2 text-text-2'
 
   return `${baseClass} ${stateClass}`
+}
+
+const getIcon = (category: RebateCategory, isActive: boolean) => {
+  if (isActive && category.activeIcon) {
+    return category.activeIcon
+  }
+
+  return category.icon
+}
+
+const isImageIcon = (icon: RebateCategory['icon']) => {
+  return typeof icon === 'string' && icon.trim().length > 0
 }
 </script>
 
