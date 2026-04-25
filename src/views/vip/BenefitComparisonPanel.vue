@@ -24,7 +24,7 @@
 
       <article
         v-if="nextColumn"
-        class="min-w-0 rounded-[10px] bg-bg-2 px-[20px] pb-[10px] pt-[7px] sm:rounded-[16px] sm:px-[24px] sm:pb-[14px] sm:pt-[12px]"
+        class="min-w-0 rounded-[10px] bg-bg-2 px-[4px] pb-[10px] pt-[7px] sm:rounded-[16px] sm:px-[24px] sm:pb-[14px] sm:pt-[12px]"
       >
         <p :class="getTitleClass(nextColumn.key)">{{ nextColumn.title }}</p>
 
@@ -67,7 +67,7 @@
 
       <article
         v-if="nextTotalRow"
-        class="min-w-0 w-full rounded-[10px] bg-bg-2 px-[20px] h-[60px] flex items-center justify-between sm:rounded-[16px] sm:px-[24px] sm:h-[48px]"
+        class="min-w-0 w-full rounded-[10px] bg-bg-2 px-[4px] h-[60px] flex items-center justify-between sm:rounded-[16px] sm:px-[24px] sm:h-[48px]"
       >
         <div class="w-full flex items-center justify-center">
           <span
@@ -103,17 +103,17 @@ const currentTotalRow = computed(
 const nextTotalRow = computed(() => nextColumn.value?.rows.find(row => row.emphasized) ?? null)
 const detailGridClass = computed(() =>
   hasNextColumn.value
-    ? 'grid grid-cols-[230px_minmax(0,1fr)] gap-[12px] sm:grid-cols-2 sm:gap-[28px] sm:grid-cols-[864px_minmax(0,1fr)]'
+    ? 'grid grid-cols-[220px_minmax(0,1fr)] gap-[12px] sm:grid-cols-2 sm:gap-[28px] sm:grid-cols-[864px_minmax(0,1fr)]'
     : 'grid grid-cols-1'
 )
 const totalGridClass = computed(() =>
   hasNextColumn.value
-    ? 'relative grid grid-cols-[230px_minmax(0,1fr)] gap-[12px] sm:grid-cols-2 sm:gap-[28px] sm:grid-cols-[864px_minmax(0,1fr)]'
+    ? 'relative grid grid-cols-[220px_minmax(0,1fr)] gap-[12px] sm:grid-cols-2 sm:gap-[28px] sm:grid-cols-[864px_minmax(0,1fr)]'
     : 'grid grid-cols-1'
 )
 const arrowClass = computed(
   () =>
-    'pointer-events-none absolute left-[calc(230px+5px)] top-1/2 z-[1] h-[25px] w-[25px] -translate-x-1/2 -translate-y-1/2 sm:left-1/2 sm:h-[26px] sm:w-[39px] sm:left-[calc(864px+15px)]'
+    'pointer-events-none absolute left-[calc(220px+5px)] top-1/2 z-[1] h-[25px] w-[25px] -translate-x-1/2 -translate-y-1/2 sm:left-1/2 sm:h-[26px] sm:w-[39px] sm:left-[calc(864px+15px)]'
 )
 
 const getTitleClass = (key: VipBenefitComparisonColumn['key']) => {

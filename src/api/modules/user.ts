@@ -20,6 +20,10 @@ import type {
   QueryFeedbacksResponse,
   ReceiveAllFeedbackForm,
   ReceiveAllFeedbackResponse,
+  RebateDataForm,
+  RebateDataResponse,
+  QueryRebateGameDataForm,
+  QueryRebateGameDataResponse,
   SelectRebateRateForm,
   SelectRebateRateResponse
 } from '@/api/interface/user'
@@ -71,7 +75,7 @@ export function modifyMemberInfo(
     url: '/mc/modifyMemberInfo',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -105,7 +109,7 @@ export function modifyMemberTelePhone(
     url: '/mc/modifyMemberTelePhone',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true,
     ...options
   })
@@ -121,7 +125,7 @@ export function sendFeedback(data: SendFeedbackForm): Promise<SendFeedbackRespon
     url: '/f/sendFeedback',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -153,7 +157,7 @@ export function receiveAllFeedback(
     url: '/f/receiveAllFeedback',
     method: 'post',
     data,
-    showSuccessToast: true,
+    showSuccessToast: false,
     showErrorToast: true
   })
 }
@@ -169,6 +173,44 @@ export function selectRebateRate(
 ): Promise<SelectRebateRateResponse> {
   return request({
     url: '/re/selectRebateRate',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: false,
+    ...options
+  })
+}
+
+/**
+ * 查询洗码数据
+ * @param data 空对象
+ * @returns Promise<RebateDataResponse>
+ */
+export function rebateData(
+  data: RebateDataForm = {},
+  options?: ApiResponseToastOptions
+): Promise<RebateDataResponse> {
+  return request({
+    url: '/re/rebateData',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: false,
+    ...options
+  })
+}
+
+/**
+ * 查询洗码游戏数据
+ * @param data 空对象
+ * @returns Promise<QueryRebateGameDataResponse>
+ */
+export function queryRebateGameData(
+  data: QueryRebateGameDataForm = {},
+  options?: ApiResponseToastOptions
+): Promise<QueryRebateGameDataResponse> {
+  return request({
+    url: '/re/queryRebateGameData',
     method: 'post',
     data,
     showSuccessToast: false,

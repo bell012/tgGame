@@ -2,7 +2,7 @@
   <a
     href="javascript:void(0);"
     class="game-item group relative flex h-full w-full flex-col items-center overflow-hidden rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
-    @click="$emit('click')"
+    @click="doClick"
   >
     <gameRemoteImg class="h-full w-full" :img="gameImage" :alt="game.itemName" />
     <div
@@ -11,8 +11,8 @@
     >
       {{ game.itemName }}
     </div>
-    <div class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-mask-20 px-1.5">
-      <div class="icon size-2.5 sm:size-4 text-common-100">
+    <div class="absolute bottom-1 right-1 flex h-5 items-center rounded-lg bg-mask-20 px-1.5">
+      <div class="icon size-2.5 sm:size-4 fill-common-100 text-common-100">
         <component :is="casinoIcons.player_count" class="size-2.5 sm:size-4 fill-current" />
       </div>
       <span class="text-[10px] sm:text-xs font-medium sm:font-semibold text-common-100">{{
@@ -20,6 +20,7 @@
       }}</span>
     </div>
     <div
+      v-if="game.serviceStatus === 0"
       class="absolute left-0 top-0 flex h-full w-full cursor-pointer items-center justify-center bg-mask-60-1 opacity-0 sm:group-hover:opacity-100"
     >
       <div
@@ -29,12 +30,18 @@
         {{ game.itemName }}
       </div>
       <div
-        class="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 transition-all duration-300 sm:group-hover:scale-150"
+        class="flex h-9 w-9 items-center justify-center rounded-full bg-mask-20 transition-all duration-300 sm:group-hover:scale-150"
       >
-        <div class="icon size-full fill-common-100">
+        <div class="icon size-full fill-common-100 text-common-100">
           <component :is="casinoIcons.play_fill" class="size-full fill-current" />
         </div>
       </div>
+    </div>
+    <div
+      v-if="game.serviceStatus === 1"
+      class="absolute left-0 top-0 flex h-full w-full cursor-pointer items-center justify-center bg-mask-60-1"
+    >
+      <underMaintenanceIcon class="h-9 w-9 text-common-100" />
     </div>
   </a>
 </template>
@@ -46,12 +53,13 @@ import { StringExtension } from '@/utils/string-extension'
 import type { GameDataItem } from '@/api/interface/game'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import underMaintenanceIcon from '@/static/svg/game/under_maintenance.svg'
 
 const props = defineProps<{
   game: GameDataItem
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   click: []
 }>()
 
@@ -87,4 +95,9 @@ const gameCovernameShow = computed(() => {
 
   return Number.isFinite(value) && value > 0
 })
+
+const doClick = () => {
+  if (props.game.serviceStatus === 1) return
+  emit('click')
+}
 </script>

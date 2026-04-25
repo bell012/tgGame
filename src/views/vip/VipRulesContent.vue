@@ -13,7 +13,12 @@
           class="py-3.5 flex items-center justify-between sm:h-[80px] sm:p-6 sm:bg-opacity-5 sm:rounded-[16px]"
         >
           <div class="flex items-center gap-2.5 sm:gap-[16px]">
-            <component :is="card.icon" class="h-[25px] w-[25px] sm:h-8 sm:w-8" />
+            <img
+              :src="card.icon"
+              alt=""
+              aria-hidden="true"
+              class="h-[25px] w-[25px] sm:h-8 sm:w-8"
+            />
             <p class="text-sm font-[400] text-text-1 sm:text-base sm:font-[700]">
               {{ card.label }}
             </p>

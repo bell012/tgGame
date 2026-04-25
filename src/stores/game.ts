@@ -26,6 +26,8 @@ export interface GameQueryOptions {
   gameTypeCode?: string
   /** 按 sysGameTypeCode 查询 */
   sysGameTypeCode?: string
+  /** 按多个 sysGameTypeCode 查询 */
+  sysGameTypeCodes?: string[]
   /** 按 brandCode 查询 */
   brandCode?: string
   /** 按多个 brandCode 查询 */
@@ -547,6 +549,19 @@ export const useGameStore = defineStore('game', () => {
         node.sysGameTypeCode?.trim() !== options.sysGameTypeCode.trim()
       ) {
         return false
+      }
+
+      if (options.sysGameTypeCodes?.length) {
+        const sysGameTypeCode = node.sysGameTypeCode?.trim() ?? ''
+        const allowedSysGameTypeCodes = options.sysGameTypeCodes
+          .map((code: string) => code.trim())
+          .filter(Boolean)
+        if (
+          allowedSysGameTypeCodes.length > 0 &&
+          !allowedSysGameTypeCodes.includes(sysGameTypeCode)
+        ) {
+          return false
+        }
       }
 
       if (options.brandCode && node.brandCode?.trim() !== options.brandCode.trim()) {

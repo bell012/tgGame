@@ -245,3 +245,33 @@ export interface SelectRebateRateResponse {
   success: boolean
   result?: Record<string, unknown> | Record<string, unknown>[] | null
 }
+
+// 查询洗码数据 请求参数（无参数）
+export interface RebateDataForm {}
+
+// 查询洗码数据 响应
+export interface RebateDataResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: Record<string, unknown>[] | null
+}
+
+// 查询洗码游戏数据 请求参数（无参数）
+export interface QueryRebateGameDataForm {}
+
+// 查询洗码游戏数据 响应结果
+export interface QueryRebateGameDataResult {
+  betAmount?: number
+  flowAmount?: number
+  rebatePoints?: number
+  [key: string]: unknown
+}
+
+// 查询洗码游戏数据 响应
+export interface QueryRebateGameDataResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryRebateGameDataResult | null
+}

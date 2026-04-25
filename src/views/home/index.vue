@@ -23,6 +23,9 @@
       @pointermove="onMarqueePointerMove"
       @pointerup="onMarqueePointerUp"
       @pointercancel="onMarqueePointerCancel"
+      @touchstart.passive="onMarqueeTouchStart"
+      @touchend.passive="onMarqueeTouchEnd"
+      @touchcancel.passive="onMarqueeTouchEnd"
       @mouseenter="marqueeHoverPaused = true"
       @mouseleave="marqueeHoverPaused = false"
       @click.capture="onMarqueeClickCapture"
@@ -90,10 +93,12 @@
             </button>
           </div>
 
-          <div class="flex flex-3 flex-wrap gap-2 lg:!gap-3">
+          <div
+            class="flex flex-3 flex-nowrap gap-2 overflow-x-auto lg:flex-wrap lg:overflow-visible lg:!gap-3"
+          >
             <button
-              v-for="value in visibleListImg"
-              class="button button-m center relative h-20 flex-1 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px]"
+              v-for="value in listImg"
+              class="button button-m center relative h-20 w-[calc((100%-2.5rem)/5.1)] shrink-0 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px] lg:min-w-0 lg:flex-1 lg:w-auto"
               type="button"
               @click="toCasino(value.sysGameTypeCode)"
               style="
@@ -200,7 +205,7 @@
       </div>
     </div>
     <NewEvent class="mt-2" />
-    <ActivityPop v-if="shouldShowActivityPop" class="sm:hidden" @close="closeActivityPop" />
+    <!-- <ActivityPop v-if="shouldShowActivityPop" class="sm:hidden" @close="closeActivityPop" /> -->
   </div>
 
   <!-- 提示弹窗 -->
@@ -215,19 +220,19 @@
 
 <script setup lang="ts">
 import Api from '@/api'
-import router from '@/router'
 import H5HomePop from '@/components/H5HomePop.vue'
 import HomeCarouselImg from '@/components/homeCarouselImg.vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
+import router from '@/router'
 import { useAuthModalStore } from '@/stores/authModal'
 import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
-import { useIsMobile } from '@/composables/useMediaQuery'
-import ActivityPop from '@/components/activityPop.vue'
-import { navigateTo } from '@/utils/router'
-import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
+// import ActivityPop from '@/components/activityPop.vue'
 import { useUserStore } from '@/stores/user'
-import { storeToRefs } from 'pinia'
 import { getCurrentCurrency } from '@/utils/locale'
+import { navigateTo } from '@/utils/router'
+import { storeToRefs } from 'pinia'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import EventList from './components/eventList.vue'
 import GameList from './components/gameList.vue'
 import NewEvent from './components/newEvent.vue'
@@ -301,11 +306,11 @@ const closeH5HomePop = () => {
 const openRegisterModal = () => {
   authModalStore.openRegisterModal()
 }
-const showActivityPop = ref(true)
-const shouldShowActivityPop = computed(() => isActiveHomeRoute.value && showActivityPop.value)
-const closeActivityPop = () => {
-  showActivityPop.value = false
-}
+// const showActivityPop = ref(true)
+// const shouldShowActivityPop = computed(() => isActiveHomeRoute.value && showActivityPop.value)
+// const closeActivityPop = () => {
+//   showActivityPop.value = false
+// }
 
 const listImg = computed(() => [
   {
@@ -345,9 +350,9 @@ const listImg = computed(() => [
     sysGameTypeCode: 'QP'
   }
 ])
-const visibleListImg = computed(() =>
-  isMobile.value ? listImg.value.filter(item => item.sysGameTypeCode !== 'QP') : listImg.value
-)
+// const visibleListImg = computed(() =>
+//   isMobile.value ? listImg.value.filter(item => item.sysGameTypeCode !== 'QP') : listImg.value
+// )
 const toCasino = (sysGameTypeCode: string) => {
   if (!sysGameTypeCode) {
     return
@@ -394,6 +399,7 @@ let marqueeUserScrollUntil = 0
 /** 松手或用户滚动后：无操作满此时长再恢复自动滚 */
 const MARQUEE_IDLE_RESUME_MS = 2000
 let marqueeLoopRunning = false
+let marqueeProgramScrollResetTimer = 0
 
 let marqueeLastProgrammaticScrollMs = 0
 let marqueeResizeObserver: ResizeObserver | null = null
@@ -404,6 +410,11 @@ const stopMarqueeRaf = () => {
     cancelAnimationFrame(marqueeRafId)
     marqueeRafId = 0
   }
+  if (marqueeProgramScrollResetTimer) {
+    window.clearTimeout(marqueeProgramScrollResetTimer)
+    marqueeProgramScrollResetTimer = 0
+  }
+  marqueeProgramScroll = false
   marqueeLastTs = 0
 }
 
@@ -434,15 +445,18 @@ const stepMarquee = (ts: number) => {
   const speedPxPerSec = segment / AUTO_MARQUEE_SEGMENT_SEC
 
   marqueeProgramScroll = true
+  if (marqueeProgramScrollResetTimer) {
+    window.clearTimeout(marqueeProgramScrollResetTimer)
+  }
+  marqueeProgramScrollResetTimer = window.setTimeout(() => {
+    marqueeProgramScroll = false
+  }, 120)
   marqueeLastProgrammaticScrollMs = performance.now()
   el.scrollLeft += speedPxPerSec * dt
   if (el.scrollLeft >= segment) {
     el.scrollLeft -= segment
     marqueeLastProgrammaticScrollMs = performance.now()
   }
-  queueMicrotask(() => {
-    marqueeProgramScroll = false
-  })
 }
 
 const startMarqueeRaf = () => {
@@ -464,9 +478,20 @@ const bumpMarqueeUserIdlePause = () => {
   marqueeUserScrollUntil = Date.now() + MARQUEE_IDLE_RESUME_MS
 }
 
+const beginMarqueeInteraction = () => {
+  marqueePointerActive.value = true
+}
+
+const endMarqueeInteraction = () => {
+  marqueePointerActive.value = false
+  bumpMarqueeUserIdlePause()
+}
+
 const onMarqueeScroll = () => {
   if (marqueeProgramScroll) return
-  if (performance.now() - marqueeLastProgrammaticScrollMs < 48) return
+  if (performance.now() - marqueeLastProgrammaticScrollMs < 120) return
+  // 仅在用户按住/拖动期间续期，避免自动滚动触发 scroll 导致暂停被无限续期
+  if (!marqueePointerActive.value) return
   bumpMarqueeUserIdlePause()
 }
 
@@ -482,16 +507,19 @@ let marqueeSuppressClick = false
 
 const onMarqueePointerDown = (e: PointerEvent) => {
   marqueeSuppressClick = false
-  marqueePointerActive.value = true
-  if (e.pointerType !== 'mouse' || e.button !== 0) return
-  const el = marqueeRef.value
-  if (!el) return
-  marqueeDrag.active = true
-  marqueeDrag.moved = false
-  marqueeDrag.pointerId = e.pointerId
-  marqueeDrag.startX = e.clientX
-  marqueeDrag.startScroll = el.scrollLeft
-  el.setPointerCapture(e.pointerId)
+  beginMarqueeInteraction()
+  if (e.pointerType === 'mouse' && e.button === 0) {
+    const el = marqueeRef.value
+    if (!el) return
+
+    marqueeDrag.active = true
+    marqueeDrag.moved = false
+    marqueeDrag.pointerId = e.pointerId
+    marqueeDrag.startX = e.clientX
+    marqueeDrag.startScroll = el.scrollLeft
+
+    el.setPointerCapture(e.pointerId)
+  }
 }
 
 const onMarqueePointerMove = (e: PointerEvent) => {
@@ -507,7 +535,6 @@ const onMarqueePointerMove = (e: PointerEvent) => {
 }
 
 const onMarqueePointerUp = (e: PointerEvent) => {
-  marqueePointerActive.value = false
   if (marqueeDrag.active && e.pointerId === marqueeDrag.pointerId) {
     const el = marqueeRef.value
     try {
@@ -521,11 +548,26 @@ const onMarqueePointerUp = (e: PointerEvent) => {
     marqueeDrag.active = false
     marqueeDrag.pointerId = -1
   }
-  // 松手后起算：后续无操作满 MARQUEE_IDLE_RESUME_MS 再恢复自动滚（惯性滚动仍会走 onMarqueeScroll 续期）
-  bumpMarqueeUserIdlePause()
+  endMarqueeInteraction()
 }
 
 const onMarqueePointerCancel = onMarqueePointerUp
+
+const onMarqueeTouchStart = () => {
+  marqueeSuppressClick = false
+  beginMarqueeInteraction()
+}
+
+const onMarqueeTouchEnd = () => {
+  endMarqueeInteraction()
+}
+
+const resetMarqueeInteraction = () => {
+  if (!marqueePointerActive.value && !marqueeDrag.active) return
+  endMarqueeInteraction()
+  marqueeDrag.active = false
+  marqueeDrag.pointerId = -1
+}
 
 const onMarqueeClickCapture = (e: MouseEvent) => {
   if (!marqueeSuppressClick) return
@@ -613,6 +655,14 @@ onMounted(async () => {
   await fetchGameData()
   getRecentBigWinsData()
   getQuerySlideshow()
+  window.addEventListener('pointerup', resetMarqueeInteraction, true)
+  window.addEventListener('pointercancel', resetMarqueeInteraction, true)
+  window.addEventListener('touchend', resetMarqueeInteraction, { capture: true, passive: true })
+  window.addEventListener('touchcancel', resetMarqueeInteraction, {
+    capture: true,
+    passive: true
+  })
+  window.addEventListener('blur', resetMarqueeInteraction)
 
   void nextTick(() => {
     const el = marqueeRef.value
@@ -625,6 +675,11 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  window.removeEventListener('pointerup', resetMarqueeInteraction, true)
+  window.removeEventListener('pointercancel', resetMarqueeInteraction, true)
+  window.removeEventListener('touchend', resetMarqueeInteraction, true)
+  window.removeEventListener('touchcancel', resetMarqueeInteraction, true)
+  window.removeEventListener('blur', resetMarqueeInteraction)
   marqueeResizeObserver?.disconnect()
   marqueeResizeObserver = null
   stopMarqueeRaf()

@@ -61,7 +61,7 @@ export function getGameBrandList(options?: ApiResponseToastOptions): Promise<any
   return request({
     url: '/gc/gameBrandList',
     method: 'post',
-    showSuccessToast: options?.showSuccessToast ?? false,
+    showSuccessToast: false,
     showErrorToast: options?.showErrorToast ?? true
   })
 }
@@ -70,6 +70,16 @@ export function getGameBrandList(options?: ApiResponseToastOptions): Promise<any
 export function dlicgh(data: any): Promise<any> {
   return request({
     url: '/sy/dlicgh',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true
+  })
+}
+
+export function getLatestList(data: any): Promise<any> {
+  return request({
+    url: '/special/getLatestList',
     method: 'post',
     data,
     showSuccessToast: false,

@@ -31,186 +31,43 @@
 </template>
 
 <script setup lang="ts">
-import Api from '@/api'
-import type { QueryAcctInfoResult } from '@/api/interface/user'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
-import { computed, onMounted, provide, ref, watch } from 'vue'
+import { computed, provide, ref } from 'vue'
 import Popup from './popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { useSiteConfigStore } from '@/stores/siteConfig'
-import { useLocaleStore } from '@/stores/locale'
-import { useUserStore } from '@/stores/user'
-import { storeToRefs } from 'pinia'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import SmartImage from '@/components/common/SmartImage.vue'
-import {
-  getCurrencySelectOptionsFromCache,
-  type CurrencyOptionItem
-} from '@/components/common/currency-selector/currency-select-options'
+import type { CurrencyOptionItem } from '@/components/common/currency-selector/currency-select-options'
 
 const isMobile = useIsMobile()
 const visible = ref(false)
+const {
+  currentBalanceAmountText,
+  currentCurrencyCode,
+  currentCurrencyOption,
+  currencySelectOptions,
+  setDisplayCurrency
+} = useDisplayCurrency()
 
-const localeStore = useLocaleStore()
-const siteConfigStore = useSiteConfigStore()
-const userStore = useUserStore()
-const { config } = storeToRefs(siteConfigStore)
-const { currentCurrency } = storeToRefs(localeStore)
-const { userInfo } = storeToRefs(userStore)
-const acctInfo = ref<QueryAcctInfoResult | null>(null)
-const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken))
-
-const selectOptions = computed(() => getCurrencySelectOptionsFromCache(config.value))
+const selectOptions = computed(() => currencySelectOptions.value)
 provide('currency-select-options', selectOptions)
 
-const selectedId = ref('')
+const selectedId = computed(() => currentCurrencyCode.value)
 provide('currency-select-selected-id', selectedId)
 
 const selectedData = computed(() => {
-  return selectOptions.value.find(i => i.value === selectedId.value) ?? selectOptions.value[0]
+  return currentCurrencyOption.value ?? selectOptions.value[0]
 })
-
-const normalizeCurrencyCode = (value: string | null | undefined) => {
-  return String(value ?? '')
-    .trim()
-    .toUpperCase()
-}
-
-const balanceFieldMap = {
-  BRL: 'balanceBrl',
-  CNY: 'balanceCny',
-  IDR: 'balanceIdr',
-  INR: 'balanceInr',
-  JPY: 'balanceJpy',
-  KRW: 'balanceKrw',
-  MXN: 'balanceMxn',
-  MYR: 'balanceMyr',
-  PHP: 'balancePhp',
-  SGD: 'balanceSgd',
-  USD: 'balanceUsd',
-  USDT: 'balanceUsdt',
-  VND: 'balanceVnd'
-} as const
-
-type BalanceFieldKey = (typeof balanceFieldMap)[keyof typeof balanceFieldMap]
-type BalanceCarrier = Partial<Record<BalanceFieldKey, number>> & { balance?: number }
-
-const getBalanceByCurrency = (data: BalanceCarrier | null | undefined, currencyCode: string) => {
-  if (!data || !currencyCode) {
-    return undefined
-  }
-
-  const balanceKey = balanceFieldMap[currencyCode as keyof typeof balanceFieldMap]
-  if (balanceKey && typeof data[balanceKey] === 'number') {
-    return data[balanceKey]
-  }
-
-  const dynamicBalanceKey = `balance${currencyCode.charAt(0)}${currencyCode.slice(1).toLowerCase()}`
-  const dynamicBalanceValue = (data as Record<string, unknown>)[dynamicBalanceKey]
-  if (typeof dynamicBalanceValue === 'number') {
-    return dynamicBalanceValue
-  }
-
-  return typeof data.balance === 'number' ? data.balance : undefined
-}
-
-const formatBalance = (value: number | undefined) => {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return '0.00'
-  }
-  return value.toFixed(2)
-}
 
 const selectedBalanceText = computed(() => {
-  const currencyCode = normalizeCurrencyCode(selectedData.value?.value)
-  const balance = getBalanceByCurrency(acctInfo.value as BalanceCarrier | null, currencyCode)
-  return formatBalance(balance)
+  return currentBalanceAmountText.value
 })
-
-const findValidCurrency = (code: string) => {
-  if (!code || code === 'NONE') {
-    return ''
-  }
-  return selectOptions.value.some(option => option.value === code) ? code : ''
-}
-
-const syncSelectedCurrency = () => {
-  const selectedCode = findValidCurrency(normalizeCurrencyCode(selectedId.value))
-  if (selectedCode) {
-    selectedId.value = selectedCode
-    return
-  }
-
-  const storedCode = findValidCurrency(normalizeCurrencyCode(currentCurrency.value))
-  if (storedCode) {
-    selectedId.value = storedCode
-    return
-  }
-
-  selectedId.value = selectOptions.value[0]?.value ?? ''
-}
 
 const handleSelect = (item: CurrencyOptionItem) => {
-  selectedId.value = item.value
-  localeStore.setCurrency(item.value)
+  setDisplayCurrency(item.value)
 }
-
-watch(selectOptions, syncSelectedCurrency, { immediate: true })
-watch(currentCurrency, syncSelectedCurrency)
 
 provide('currency-select-on-select', handleSelect)
-
-const readCachedAcctInfo = () => {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  const cached = window.localStorage.getItem('acctInfo')
-  if (!cached) {
-    return null
-  }
-
-  try {
-    return JSON.parse(cached) as QueryAcctInfoResult
-  } catch (error) {
-    console.error(error)
-    return null
-  }
-}
-
-const fetchAcctInfo = async () => {
-  if (!isLoggedIn.value) {
-    acctInfo.value = null
-    return
-  }
-
-  try {
-    const response = await Api.user.queryAcctInfo(
-      {},
-      {
-        showSuccessToast: false,
-        showErrorToast: true
-      }
-    )
-    if (response?.result) {
-      acctInfo.value = response.result
-      return
-    }
-  } catch (error) {
-    console.error('fetchAcctInfo failed', error)
-  }
-
-  acctInfo.value = readCachedAcctInfo()
-}
-
-onMounted(() => {
-  if (isLoggedIn.value) {
-    acctInfo.value = readCachedAcctInfo()
-    void fetchAcctInfo()
-    return
-  }
-
-  acctInfo.value = null
-})
 </script>
 
 <style scoped lang="scss">

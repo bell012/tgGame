@@ -58,6 +58,7 @@ import type { SwipeInstance } from 'vant'
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { navigateTo, navigateToName } from '@/utils/router'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
+import { useAuthModalStore } from '@/stores/authModal'
 
 const AUTO_PLAY_INTERVAL = 3000
 
@@ -65,6 +66,7 @@ const props = defineProps<{
   list: QuerySlideshowItem[]
 }>()
 
+const authModalStore = useAuthModalStore()
 const currentIndex = ref(0)
 const progressKey = ref(0)
 const swipeRef = ref<SwipeInstance>()
@@ -98,12 +100,15 @@ const goTo = (index: number) => {
   swipeRef.value?.swipeTo(index)
 }
 
+/** jumpType=1 时：0 不跳转,1 内部跳转，2 外部跳转 */
 const handleUrlJump = (slide: QuerySlideshowItem) => {
   const linkUrl = String(slide.linkUrl ?? '').trim()
 
   if (!linkUrl) {
     return
   }
+
+  if (slide.linkType === 0) return
 
   if (slide.linkType === 2) {
     window.open(linkUrl, '_blank', 'noopener,noreferrer')
@@ -113,11 +118,13 @@ const handleUrlJump = (slide: QuerySlideshowItem) => {
   navigateTo(linkUrl)
 }
 
+/** jumpType=2 时：0 不跳转，1 活动ID，2 充值栏目，3 分享转盘，4 充值页面，5 积分转盘，6 邀请好友，7 登录注册页面 */
 const handleInternalJump = (slide: QuerySlideshowItem) => {
   const linkId = String(slide.linkId ?? '').trim()
 
   switch (slide.linkType) {
     case 1:
+      // 1 活动ID
       // TODO: 活动详情页路由未明确，先保留占位，避免点击无反馈。
       if (linkId) {
         navigateTo(`/menu?activityId=${linkId}`)
@@ -127,17 +134,36 @@ const handleInternalJump = (slide: QuerySlideshowItem) => {
       navigateTo('/menu')
       return
     case 2:
+      // 2 充值栏目
       navigateTo('/deposit')
       return
     case 3:
       // TODO: 分享转盘页路由未明确，当前先跳邀请好友页占位。
       navigateTo('/menu/referral')
       return
+    case 4:
+      // 4 充值页面
+      navigateTo('/deposit')
+      return
+    case 5:
+      // 5 积分转盘
+      // TODO
+      return
+    case 6:
+      // 6 邀请好友
+      // TODO
+      return
+    case 7:
+      // 7 登录注册页面
+      authModalStore.openLoginModal()
+      return
     default:
+      // 0 不跳转
       return
   }
 }
 
+/** jumpType=3 时：0 不跳转，1 自定义类型游戏，2 厂商游戏，3 游戏类型 */
 const handleGameJump = (slide: QuerySlideshowItem) => {
   const linkId = String(slide.linkId ?? '').trim()
 
@@ -158,6 +184,7 @@ const handleGameJump = (slide: QuerySlideshowItem) => {
   })
 }
 
+/** 轮播图跳转类型：1 url 跳转，2 跳转内部项面，3 跳转游戏 */
 const handleSlideClick = (slide: QuerySlideshowItem) => {
   if (slide.enable !== 1) {
     return

@@ -1,78 +1,434 @@
 // 全局code对应英中多语言
 export const API_ERROR_CODE_MESSAGES = {
-  A003: ['Account does not exist.', '账号不存在。'],
-  C1: ['Session has expired, please log in again.', '会话已过期，请重新登录。'],
-  C2: ['Operation successful.', '操作成功。'],
-  C3: ['This feature has been disabled.', '此功能已被禁用。'],
-  C4: ['Data does not exist.', '数据不存在。'],
-  C5: ['Parameter error.', '参数错误。'],
-  C6: ['Login has expired, please log in again.', '登录已过期，请重新登录。'],
+  C1: ['Please contact customer service.', '请联系客服'],
+  C2: ['Operation successful.', '操作成功'],
+  C3: ['Data already exists. Please enter it again.', '数据已存在,请重新输入'],
+  C4: ['Server is busy. Please try again later.', '服务器繁忙，请稍后再试'],
+  C5: ['Invalid request parameters.', '请求参数非法'],
+  C6: ['Please log in again before continuing.', '请重新登录后再操作'],
+  C7: ['Access denied.', '访问拒绝'],
+  C8: ['Invalid input parameters.', '入参异常'],
+  C9: ['Operation failed.', '操作失败'],
   C10: [
-    'This account has been logged in elsewhere, and has been forced to log out.',
-    '该账户已在其他地方登录，已被强制登出。'
+    'Your account is not logged in. Please log in before continuing.',
+    '您的账号未登录，请登录后再操作'
   ],
-  C11: ['Withdrawals are under maintenance, please try again later.', '提款维护中，请稍后再试。'],
-  C12: ['Not supported.', '不支持。'],
-  C13: ['This IP has no access permission.', '该 IP 无访问权限。'],
-  C14: ['Incorrect account or password.', '账号或者密码错误。'],
-  C15: ['No access permission.', '无访问权限。'],
+  C11: ['Invalid agent code.', '无效代理商编码'],
+  C12: ['Account information does not exist.', '账号信息不存在'],
+  C13: ['Invalid account ID.', '无效账号ID'],
+  C14: ['Incorrect account or password.', '账号或者密码错误'],
+  C15: ['Unknown error.', '未知错误'],
+  C19: ['Record ID cannot be empty.', '记录ID不能为空'],
+  C22: ['Invalid amount.', '非法金额'],
+  C23: ['The account has been frozen.', '账号被冻结'],
+  C24: ['Incorrect account or password.', '账号或密码错误'],
+  C29: ['Invalid terminal device.', '无效终端设备'],
+  C32: ['Start time must be earlier than end time.', '开始时间必须小于结束时间'],
+  C33: ['Invalid IP address.', '非法IP'],
+  C34: ['%s is invalid.', '%s无效'],
+  C35: ['Request parameter %s is empty.', '请求参数，%s为空'],
+  C36: ['Message content conversion failed.', '消息内容转换异常'],
+  C37: ['Please log in again.', '请重新登录'],
+  C38: ['Suspicious account address.', '可疑账户地址'],
+  C39: ['Please use the correct signature.', '请使用正确的签名'],
+  C40: ['Please contact customer service.', '请联系客服'],
+  C41: ['Incorrect verification code.', '验证码错误'],
+  C43: ['The game is under maintenance.', '游戏维护中'],
+  C42: ['Operation restricted. Please contact customer service.', '操作限制，联系客服'],
+  C45: [
+    'Popup interval must be a positive integer greater than 1 minute.',
+    '弹窗时间间隔(自由设置，必须大于1分钟，正整数)'
+  ],
+  C46: ['Account already exists.', '账号已存在'],
+  C47: ['Receiving account does not exist.', '收款账号不存在'],
+  C48: ['The old password and new password are the same.', '旧密码与新密码重复'],
+  C49: ['This game only supports betting with account balance.', '该游戏只支持账户余额进行投注'],
+  C50: ['Parent category does not exist.', '上级分类不存在'],
+  C51: ['An article already exists under the third-level category.', '三级分类下已存在文章'],
+  A003: ['Account does not exist.', '账号不存在'],
+  A004: ['Insufficient balance.', '余额不足'],
+  C28: ['Original password is incorrect.', '原密码错误'],
+  me8: ['Required wagering amount cannot be empty.', '需求打码不能为空'],
+  me9: ['Current wagering amount cannot be empty.', '当前打码不能为空'],
+  me10: [
+    'Current wagering amount cannot exceed the required wagering amount.',
+    '当前打码不能大于需求打码'
+  ],
+  C17: ['Invalid date.', '无效日期'],
+  C52: ['You have already participated in this promotion.', '您已参与了该活动'],
+  C53: [
+    'This number is already bound to another account. Please enter another one.',
+    '该号码已绑定其他账号，请重新输入'
+  ],
+  C55: ['Invalid redemption code. Please enter it again.', '兑换码错误，请重新输入'],
+  C56: ['Duplicate check-in.', '重复签到'],
+  C57: [
+    'The limit for this type of receiving account has been reached.',
+    '该类型收款账号数量已达上限'
+  ],
+  C58: ['This PIX withdrawal type is unavailable.', '该PIX出款类型不可用'],
+  C59: ['The feedback module has been disabled.', '意见反馈模块已关闭'],
+  C60: ['Members are not allowed to delete accounts.', '不支持会员删除账号'],
+  C61: ['Promotion already exists.', '活动已存在'],
+  C62: ['All lottery tickets have been claimed.', '彩票已全部领完'],
+  C63: ['No lottery draw period exists for the selected date.', '所选日期内彩票开奖期数不存在'],
+  C64: ['The lottery is currently drawing.', '彩票正在开奖中'],
+  C65: ['Game configuration does not exist.', '游戏配置信息不存在'],
+  C66: ['Reward information does not exist.', '奖励信息不存在'],
+  C67: ['The promotion has ended.', '活动已结束'],
+  C68: ['All red packets have been claimed.', '红包已领完'],
+  C69: ['The red packet has expired.', '红包已过期'],
+  C70: [
+    'It is not time to claim yet. Please claim after the first trigger time each day.',
+    '未到领取时间，请于每日第一个触发时间点后再领取'
+  ],
+  L1: ['Draw process error.', '开奖过程异常'],
+  L2: ['Draw error.', '开奖异常'],
+  L3: ['Bet settlement error.', '注单结算异常'],
+  L4: ['This game round has ended.', '本期游戏已结束'],
+  L5: ['Unknown game. Please do not place bets.', '未知游戏，请勿下注'],
+  L6: ['Unknown game. Please do not place bets.', '未知游戏，请勿下注'],
+  L7: ['Invalid bet content.', '投注内容非法'],
+  L8: ['Drawing is in progress. Changes are not allowed.', '开奖中，禁止修改'],
+  L9: ['Incorrect winning number.', '开奖号码错误'],
+  L10: ['Failed to preset the result.', '预设结果失败'],
+  L11: ['Draw period information does not exist.', '期号信息不存在'],
+  L12: ['VNBB draw failed.', 'VNBB开奖失败'],
+  L13: ['This family has streamers and cannot be deleted.', '当前家族下有主播不容许删除'],
+  L14: ['This lottery type does not support preset results.', '当前彩种不支持预设彩果'],
+  L15: ['Unknown lottery type.', '未知彩种'],
+  me1: ['Same-name restriction.', '同姓名限制'],
+  me2: ['Registration restrictions, contact customer service.', '注册限制,联系客服'],
+  C31: ['Invalid mobile phone number.', '无效手机号码'],
+  C44: ['Invalid invitation code.', '无效邀请码'],
+  pr19: ['Your current VIP level cannot check in.', '当前VIP等级无法签到'],
+  pr21: ['You have already checked in today.', '今日已签到'],
+  pr22: ['Check-in error.', '签到错误'],
+  pr20: ['Check-in amount is 0.', '签到金额为0'],
+  pr28: ['Record does not exist.', '记录不存在'],
+  pre21: ['Invalid status.', '非法状态'],
+  pre22: [
+    'You have a withdrawal in progress. Please try again later.',
+    '您有正在出款的订单，请稍后再申请'
+  ],
+  pre23: [
+    'The payment channel is closed. Please use another recharge method.',
+    '支付通道关闭，请使用其他方式充值'
+  ],
+  pre24: ['Frequency limit.', '频率限制'],
+  pre25: [
+    'This game platform does not support the current currency. Please switch to another currency before entering.',
+    '该游戏平台不支持当前币种，请切换其他币种再进入'
+  ],
+  pre26: ['Game platform error.', '游戏平台异常'],
+  pre27: ['The corresponding exchange rate is not configured.', '未配置对应的汇率'],
+  pre28: ['The game platform does not support this language.', '游戏平台不支持该语言'],
+  T001: [
+    'The target currency amount claimed must be greater than 1. Please continue playing to earn more bonus funds.',
+    '领取到目标币种数量必须大于1请继续游戏，获得更多福利彩金'
+  ],
+  T002: ['Image size cannot exceed 1 MB.', '图片大小限制，不能超过1M'],
+  pay01: ['This channel is not enabled.', '该通道未开启'],
+  pay1: [
+    'Transaction amount supports only one decimal place, for example 1.0.',
+    '交易金额只支持1位小数(例如1.0)'
+  ],
+  pay2: ['Deposit voucher cannot be empty.', '存款凭证不能为空'],
+  D063: ['Transfer is not allowed because downline accounts exist.', '存在下线，无法转移'],
+  E150: [
+    'Duplicate level. One level can only be in one template.',
+    '层级重复，一个层级只能在一个模板中'
+  ],
+  E151: ['The withdrawal template must be disabled.', '出款模板必须是禁用状态'],
+  E152: [
+    'Please contact customer service. Required configuration is missing.',
+    '联系客服，缺少必要配置'
+  ],
+  E153: ['Insufficient turnover. Withdrawal is not allowed.', '流水不够禁止提现'],
+  E154: ['Single withdrawal amount is too high.', '单次取款额过高'],
+  E155: ['Single withdrawal amount is too low.', '单次取款额过低'],
+  E156: ['Withdrawal amount must be a positive integer.', '取款金额必须是正整数'],
+  E157: ['Daily withdrawal count limit reached.', '每日取款次数限制'],
+  E158: ['Daily total withdrawal amount limit reached.', '每日取款总金额限制'],
+  E159: ['Please enter the withdrawal password.', '请输入取款密码'],
+  E160: ['Incorrect password.', '密码错误'],
+  E161: ['Failed to lock.', '上锁失败'],
+  E162: ['Invalid dictionary type.', '非法字典类型'],
+  E163: ['Default configuration cannot be deleted.', '默认配置禁止删除'],
+  E164: ['Account is busy. Please try again later.', '账户繁忙，稍后再试'],
+  E165: ['Access is restricted.', '访问受限'],
+  E166: ['Please set a transaction password.', '请设置交易密码'],
+  E167: ['Please enter feedback.', '请填写反馈意见'],
+  E168: ['This account is being processed.', '该账号正在处理中'],
+  E169: ['Task bonus must be greater than 1.', '任务奖金必须大于1'],
+  E170: ['Task information does not exist.', '任务信息不存在'],
+  E171: ['Access restricted.', '访问限制'],
+  E172: ['Access restricted.', '访问限制'],
+  E173: ['Access restricted.', '访问限制'],
+  E174: ['Invalid status. The order has already been processed.', '状态非法，订单已处理'],
+  E175: ['Invalid order. Please check.', '非法订单，请核查'],
+  E176: ['Account is busy. Please try again later.', '账户繁忙，请稍后再试'],
+  E177: ['The account is invalid, please contact customer service.', '账号无效，请联系客服'],
+  E178: ['Member account or member ID is required.', '会员账号或者会员ID必须输入一个'],
+  E179: ['Permission restricted. Cannot add a new skin.', '权限限制，无法新增皮肤'],
+  E180: ['Permission error.', '权限错误'],
+  E181: [
+    'Required language support is missing. At least one language is required.',
+    '缺少必要的语言支持，至少包含一种语言'
+  ],
+  E182: ['Language information is incomplete.', '语言信息不全'],
+  E183: ['Basic configuration information is missing.', '缺少基础配置信息'],
+  E184: ['Merchant is not enabled.', '商户未启用'],
+  E185: ['Unknown access.', '未知访问'],
+  E186: ['Recharge count and recharge amount cannot be empty.', '充值次数与充值金额不能为空'],
+  E187: ['Site information is missing.', '缺少站点信息'],
+  E188: ['Next level ID must be specified.', '必须指定下一个层级ID'],
+  L16: ['Only two decimal places are allowed.', '只容许有两位小数点'],
+  E189: ['Please set your mobile phone number first.', '请先设置手机号码'],
+  E190: ['Please set a password.', '请设置密码'],
+  E191: ['Insufficient points to participate in the lucky draw.', '积分不够无法参与抽奖'],
+  E192: [
+    'Duplicate level. One currency can only be in one template.',
+    '层级重复，一个币种只能在一个模板中'
+  ],
+  E193: ['Payment platform code and name cannot be empty.', '支付平台编码和名称不能为空'],
+  E194: ['Receiving account cannot be empty.', '收款账号不能为空'],
+  E195: ['Merchant is not enabled.', '商户未启用'],
+  E196: ['This round has ended and cannot be added.', '本期已结束无法新增'],
+  E197: ['Error occurred while saving the bet order process.', '保存注单进程异常'],
+  E198: ['Odds cannot be empty.', '赔率不能为空'],
+  E199: ['Verification failed.', '验证失败'],
+  E200: ['Quick amount must be a positive integer.', '快捷金额必须为正整数'],
+  E201: ['Transaction timed out.', '交易限时'],
+  E202: ['Platform withdrawal limit.', '平台取款限额'],
+  E203: ['Mobile phone number has already been used.', '手机号已被使用'],
+  E204: ['The promotion has expired.', '活动已过期'],
+  E205: [
+    'UPay account is generated automatically and does not need to be bound.',
+    'UPay账号会自动生成无需绑定'
+  ],
+  E206: ['This mobile phone number is already registered.', '该手机号码已注册'],
+  E207: [
+    'Redemption limit: only one redemption is allowed per day.',
+    '兑换限制，每天只容许兑换一次'
+  ],
+  E208: ['Redemption limit.', '兑换限制'],
+  E209: ['Game is in progress.', '游戏进行中'],
+  E210: ['Deposit amount exceeds the maximum limit.', '存款金额超过最高限制'],
+  E211: ['Please log in using your security phone.', '请使用密保手机登陆'],
+  E212: ['Export is queued. Please try again later.', '导出排队中，请稍后重试'],
+  E213: ['This recharge channel is unavailable.', '该充值通道不可用'],
+  E214: ['No claimable amount.', '无可领取金额'],
+  E215: ['SMS sending failed.', '短信发送失败'],
+  E216: ['Deposit amount is below the minimum limit.', '存款金额低于最低限制'],
+  E217: ['Site information does not exist.', '站点信息不存在'],
+  E218: ['Please contact customer service to make changes.', '请联系客服进行更改'],
+  E219: [
+    'Lucky draw attempts are 0. Please share the wheel and try again.',
+    '抽奖次数为0，请分享轮盘之后再来抽奖'
+  ],
+  E220: ['Minimum amount must be greater than 0.', '最小金额必须大于0'],
+  E221: ['Maximum amount must be greater than minimum amount.', '最高金额必须大于最低金额'],
+  E222: ['Start time must be earlier than end time.', '开始时间必须小于结束时间'],
+  E223: ['Lucky coins has ended.', '幸运钱币已结束'],
+  E224: ['Claim conditions have not been met.', '未达到领取条件'],
+  E225: ['The current session has ended.', '当前场次已经结束'],
+  E226: [
+    'Maximum amount cannot exceed three times the minimum amount.',
+    '最高金额不能超出最低金额的3倍'
+  ],
+  E227: ['Supplemental user cannot be empty.', '补料用户不能为空'],
+  E228: [
+    '(Total amount / total quantity / 3) cannot be greater than the minimum amount.',
+    '(总金额/总数量/3)不能大于最低金额'
+  ],
+  E229: ['Please do not claim repeatedly.', '请不要重复领取'],
+  E230: ['The promotion has not started.', '活动未开始'],
+  E231: ['Cloud storage information is not configured.', '未配置云存储信息'],
+  E232: ['Each device can claim only once.', '每个设备限领1次'],
+  E233: ['Only registered devices can claim.', '仅注册设备领取'],
+  E234: ['Each claiming IP can claim only once.', '每个领取IP限领1次'],
+  E235: ['Please bind a receiving method before claiming.', '请先绑定收款方式再领取'],
+  E236: ['Please claim using the app client.', '请使用APP客户端领取'],
+  E237: ['Please claim using the PC client.', '请使用PC客户端领取'],
+  E238: ['Please claim using the H5 client.', '请使用H5客户端领取'],
+  E239: ['Reward amount cannot be empty.', '奖励金额不能为空'],
+  E240: ['Level restriction.', '层级限制'],
+  E241: ['Cannot participate.', '无法参与'],
+  E242: ['Please configure basic app information first.', '请先配置app基础信息'],
+  E243: ['Please configure the OSS acceleration domain first.', '请先配置oss加速域名'],
+  E244: [
+    'OSS acceleration configuration is required only for Alibaba Cloud.',
+    '只有阿里云才需要配置oss加速'
+  ],
+  E245: ['Insufficient cloud storage permissions.', '云存储权限不够'],
+  E246: ['Please configure app lobby domain resolution first.', '请先配置app大厅域名解析'],
+  E247: ['Please wait.', '请稍后'],
+  E248: ['Please bind your mobile phone number before claiming.', '请先绑定手机号再领取'],
+  E249: ['Redemption codes have all been redeemed.', '兑换码已兑换完'],
+  E250: ['The time range must be within 24 hours.', '时间范围必须在24小时内'],
+  E251: ['The red packet has expired.', '红包已过期'],
+  E252: [
+    'After claiming the new user benefit, you must deposit or reach %s before withdrawing.',
+    '领取新人福利后需存款后或者达到%s才能取款'
+  ],
+  E253: ['All red packets have been claimed.', '红包已领完'],
+  E254: ['Red packet has been closed.', '红包已关闭'],
+  E255: ['Invalid redemption code.', '兑换码无效'],
+  E256: ['The allocated red packet total amount is too small.', '分配红包总金额过小'],
+  E258: [
+    'The number of mid-level R players must be greater than the number of high-level R players.',
+    '中级R玩家必须大于大R玩家'
+  ],
+  E259: [
+    'The number of high-level R players must be greater than the number of mid-level high R players.',
+    '高级R玩家必须大于中级大R玩家'
+  ],
+  E260: ['Unsupported security verification method.', '不支持的安全验证方式'],
+  E261: ['Transaction password is incorrect. Please enter it again.', '交易密码错误请重新输入'],
+  E262: [
+    'Please do not use special characters in the account name.',
+    '请勿使用带特殊字符作为账号名'
+  ],
+  E263: [
+    'Mobile phone number format is incorrect. It must be 11 digits and the third digit must be 9.',
+    '手机号格式不正确，必须为11位且第三位是9'
+  ],
+  E264: ['Claim days cannot exceed expiration days.', '领取天数不能大于过期天数'],
+  E265: [
+    'Current wagering amount cannot exceed the required wagering amount.',
+    '当前打码不可以大于需求打码'
+  ],
+  E266: [
+    'Only one SMS service can be enabled for the current site.',
+    '当前站点只能开启一个短信服务'
+  ],
+  E267: ['SMS service is not configured.', '未配置短信服务'],
+  E268: ['Claim failed. You do not have this reward.', '领取失败，您没有该奖励'],
+  E269: ['The current email is not supported.', '不支持当前邮箱'],
+  E270: ['This email has already been used.', '该邮箱已被使用'],
+  E271: ['Invalid email format.', '非法邮箱格式'],
+  E272: ['The order has been locked by someone else.', '订单已被他人锁定'],
+  E273: ['Cannot modify again within 15 days.', '15日内不能重复修改'],
+  E274: ['Nickname is too long.', '昵称长度过长'],
+  E275: ['Cannot be modified within one year.', '一年内不可修改'],
+  E276: [
+    'Original password is incorrect. %s attempts remaining before lockout.',
+    '原密码输入错误，剩余%s次即将锁定'
+  ],
+  E277: [
+    'Old password is locked. Please switch verification method.',
+    '旧密码已锁定，请切换验证方式'
+  ],
+  E278: [
+    'This mobile phone number does not match the account binding information.',
+    '该手机号与账号绑定信息不一致'
+  ],
+  E279: [
+    'Transaction password is incorrect. You have %s attempts remaining.',
+    '交易密码输入错误，还有%s次机会'
+  ],
+  E280: ['Transaction password is incorrect.', '交易密码错误'],
+  E281: [
+    'Transaction password is locked. Please contact customer service.',
+    '交易密码锁定,请联系客服'
+  ],
+  E282: ['ID card has already been bound.', '身份证已被绑定'],
+  E283: ['This withdrawal order has already been split.', '该提现订单已拆单！'],
+  E284: ['Default account cannot be disabled.', '默认账号不能关闭！'],
+  E285: ['This account has not bound a mobile phone number.', '该账号未绑定手机号'],
+  E286: ['Email cannot be empty.', '邮箱不能为空'],
+  E287: ['The claim count limit for this period has been reached.', '本期领取次数已达上限'],
+  E288: ['This game prize pool already exists.', '该游戏奖池已存在'],
+  E289: [
+    'This email does not match the account binding information.',
+    '该邮箱与账号绑定信息不一致'
+  ],
+  E290: ['Please make your first deposit before claiming the reward.', '请先首充再领取奖励'],
+  E291: ['Demo accounts do not support manual deposits.', '试玩账号不支持人工存款'],
+  E292: ['Please claim using the desktop client.', '请使用桌面客户端领取'],
+  DV01: ['Network fluctuation. Please try again later.', '网络波动，请稍后重试'],
+  G001: ['The match has ended.', '比赛已结束'],
+  G002: ['Registration failed.', '报名失败'],
+  G003: ['Failed to cancel registration.', '取消报名失败'],
+  G004: [
+    'Please verify whether the amount on the payment QR code is correct.',
+    '请核对收款二维码金额是否正确'
+  ],
+  G005: ['Receiving method has expired. Please replace it in time.', '收款方式失效,请及时更换'],
+  G037: ['The cancellation attempts for this match have been used up.', '当前比赛可取消次数已用完'],
+  G038: [
+    'The match cannot be canceled within 10 minutes before it starts.',
+    '距开赛十分钟内无法取消比赛'
+  ],
+  G041: ['The match has ended.', '比赛已结束'],
+  C10000: ['bet order not exist', 'bet order not exist'],
+  G042: [
+    'This channel is temporarily unavailable. Please select another channel.',
+    '该通道暂时不可用，请重新选择通道！'
+  ],
+  B031: ['No loan credit is currently available.', '暂无借呗额度'],
+  B032: ['You currently have no credit limit. Please stay tuned.', '你暂无授信额度,请持续关注'],
+  B033: ['Insufficient turnover. Transfer out is not allowed.', '流水不够禁止转出！'],
+  B034: [
+    'Your account does not meet the borrowing requirements. Please contact customer service.',
+    '您的账号不满足借款资格，请联系客服'
+  ],
+  B035: [
+    'The limit for borrowing accounts with the same device ID has been reached.',
+    '相同设备ID的借款账号已达上限'
+  ],
+  B036: [
+    'The limit for borrowing accounts with the same browser fingerprint has been reached.',
+    '相同浏览器指纹的借款账号已达上限'
+  ],
+  B037: [
+    'The limit for borrowing accounts with the same IP has been reached.',
+    '相同IP的借款账号已达上限'
+  ],
+  E293: [
+    'This promotion is automatically issued and cannot be claimed manually.',
+    '该活动为自动派发，禁止手动领取'
+  ],
+  R001: ['Only one red packet promotion of this type can be added.', '该类型红包活动最多添加一个'],
+  L001: ['Failed to acquire lock.', '获取锁失败'],
+  A001: ['Promotion parameter type does not match.', '活动参数类型不匹配'],
+  A002: ['Promotion does not exist.', '活动不存在'],
+  A023: ['Promotion is not supported.', '活动不支持'],
+  A024: ['Promotion already participated.', '活动已参与'],
+  A005: ['Promotion type does not exist.', '活动类型不存在'],
+  A006: ['Voucher does not exist.', '票券不存在'],
+  A007: ['Voucher is not supported.', '票券不支持'],
+  A008: ['Voucher type does not exist.', '票券类型不存在'],
+  A009: ['Voucher has expired.', '票券已过期'],
+  A010: ['Voucher is not yet available for use.', '票券未到使用时间'],
+  A011: ['Your current VIP level cannot participate.', '当前VIP等级无法参与'],
+  A012: ['Check-in conditions have not been met.', '未满足签到条件'],
+  A013: ['Check-in error.', '签到错误'],
+  A014: ['Please claim using the app client.', '请使用APP客户端领取'],
+  A015: ['Prize burst error.', '爆奖错误'],
+  A016: ['Prize burst conditions have not been met.', '未满足爆奖条件'],
+  A017: ['No prize draw items available.', '没有可抽奖项'],
+  A018: ['VIP configuration for this site language already exists.', '该站点语言VIP配置已存在'],
+  A019: [
+    'A member prize burst record already exists for this game.',
+    '该游戏对应会员爆奖记录已存在'
+  ],
+  A020: ['Please complete reward claim information first.', '请先完善领奖资料'],
+  A021: ['Voucher usage conditions have not been met.', '未满足票券使用条件'],
+  A022: ['The information does not meet the requirements.', '资料不满足要求'],
   C16: ['This promotion has not started yet.', '该活动尚未开始。'],
-  C17: ['This promotion has ended.', '该活动已结束。'],
   C18: ['The deposit count condition is not met.', '未满足存款次数条件。'],
-  C19: ['No lucky draw spins available.', '没有幸运转盘次数。'],
   C20: ['Lucky draw chance has been used.', '幸运转盘次数已使用。'],
   C21: ['No rebate is available at the moment.', '当前暂无返水可领取。'],
-  C22: ['Amount exceeds the allowable range.', '金额超出允许范围。'],
-  C23: [
-    'The cashback promotion can be participated in for up to 3 days.',
-    '返水活动最多可参与 3 天。'
-  ],
-  C24: ['This is only available for new members.', '仅限新会员参与。'],
   C25: [
     'The inviter is not the same real person as the current user.',
     '邀请人与当前用户并非同一实名。'
   ],
   C26: ['The current data is under review.', '当前数据审核中。'],
   C27: ['There are ongoing withdrawal requests.', '存在进行中的提款请求。'],
-  C28: ['Registration can only be completed via invitation code.', '仅可通过邀请码注册。'],
-  C29: ['This phone number is already registered.', '该手机号已注册。'],
   C30: ['Invitation code error.', '邀请码错误。'],
-  C31: ['Insufficient turnover.', '流水不足。'],
-  C32: ['Insufficient balance.', '余额不足。'],
-  C33: ['VIP level is not high enough.', 'VIP 等级不足。'],
-  C34: ['Order record does not exist.', '订单记录不存在。'],
-  C35: ['No permission to view the current record.', '无权查看当前记录。'],
-  C36: [
-    'The new password cannot be the same as the current password.',
-    '新密码不能与当前密码相同。'
-  ],
-  C37: ['Current user has been logged out.', '当前用户已登出。'],
-  C38: ['Your bank account information cannot be modified.', '您的银行卡信息无法修改。'],
-  C41: ['Incorrect verification code.', '验证码错误。'],
-  C42: ['A member can bind up to 3 bank cards.', '一个会员最多绑定 3 张银行卡。'],
-  C43: ['Please enter a correct bank card number.', '请输入正确的银行卡号。'],
-  C46: [
-    'There is already an active document currently under review.',
-    '当前已有审核中的有效资料。'
-  ],
-  C47: [
-    'You do not need to upload a voucher because the uploaded one has already been reviewed.',
-    '已上传的凭证已审核，无需重复上传。'
-  ],
-  C48: ['No documents have been uploaded yet.', '尚未上传任何资料。'],
-  C49: ['Current account status is abnormal.', '当前账户状态异常。'],
-  C50: ['The current account has had a withdrawal within 7 days.', '当前账户 7 天内已有提款记录。'],
-  C51: ['There are pending withdrawal orders.', '存在待处理的提款订单。'],
-  C52: ['Insufficient valid bet amount.', '有效投注金额不足。'],
-  C53: ['Current password is incorrect.', '当前密码不正确。'],
   C54: ['Too many incorrect current password attempts.', '当前密码错误次数过多。'],
-  C55: ['No need to send SMS verification code.', '无需发送短信验证码。'],
-  C56: ['Verification failed.', '验证失败。'],
-  C57: ['SMS sending failed.', '短信发送失败。'],
-  C58: ['Content contains contact information.', '内容包含联系方式。'],
-  C59: ['Duplicate feedback is not allowed.', '请勿重复提交反馈。'],
-  C60: ['Transaction password is not set.', '尚未设置交易密码。'],
-  C61: ['Bank card information verification failed.', '银行卡信息校验失败。'],
   D1: ['Download failed.', '下载失败。'],
   D2: ['Parsing failed.', '解析失败。'],
   D3: ['Unsupported package name.', '不支持的包名。'],
@@ -258,35 +614,7 @@ export const API_ERROR_CODE_MESSAGES = {
     'You cannot view this page within 24 hours after changing your password.',
     '修改密码后 24 小时内无法查看该页面。'
   ],
-  E149: ['No access to the withdrawal page within 24 hours.', '24 小时内无权访问提款页面。'],
-  E150: ['No user ID record found.', '未找到用户 ID 记录。'],
-  E151: ['No permission to modify an unbound phone number.', '无权修改未绑定手机号。'],
-  E152: ['No permission to modify phone number.', '无权修改手机号。'],
-  E153: ['Please enter the correct transaction password.', '请输入正确的交易密码。'],
-  E154: ['Transaction password is incorrect.', '交易密码错误。'],
-  E155: ['Initial transaction password cannot be modified directly.', '初始交易密码不能直接修改。'],
-  E156: ['Cryptocurrency wallet address has been disabled.', '虚拟币钱包地址已被禁用。'],
-  E157: ['Recharge order has expired.', '充值订单已过期。'],
-  E158: ['No matching channel found for the order.', '订单未匹配到可用通道。'],
-  E159: ['No available redirection found.', '未找到可跳转内容。'],
-  E160: ['No permission for referral.', '无推荐权限。'],
-  E161: ['Feedback reply not found.', '未找到反馈回复。'],
-  E162: ['No feedback images found.', '未找到反馈图片。'],
-  E163: ['Your level is insufficient to share the app.', '等级不足，无法分享应用。'],
-  E164: ['Withdrawal turnover is zero.', '提款流水为 0。'],
-  E165: ['Access is restricted.', '访问受限。'],
-  E166: ['Please wait 1 minute before resubmitting.', '请等待 1 分钟后再提交。'],
-  E167: ['No service information found.', '未找到服务信息。'],
-  E168: ['Actual amount cannot be less than zero.', '实际金额不能小于 0。'],
-  E169: ['This device has already been registered.', '该设备已注册过。'],
-  E170: ['No user referral information found.', '未找到用户推荐信息。'],
-  E171: ['This cryptocurrency type is currently unavailable.', '当前虚拟币种暂不可用。'],
-  E172: ['No audit standards configuration found.', '未找到稽核标准配置。'],
-  E173: ['No overdue bonus configuration found.', '未找到过期奖励配置。'],
-  E174: ['No permission to claim overdue bonus.', '无权领取过期奖励。'],
-  E177: ['The account is invalid, please contact customer service.', '账号无效，请联系客服。'],
-  E206: ['This mobile phone number is already registered.', '该手机号码已注册。'],
-  me2: ['Registration restrictions, contact customer service.', '注册限制,联系客服']
+  E149: ['No access to the withdrawal page within 24 hours.', '24 小时内无权访问提款页面。']
 } as const satisfies Record<string, readonly [english: string, chinese: string]>
 
 export type ApiErrorCodeMessageMap = typeof API_ERROR_CODE_MESSAGES

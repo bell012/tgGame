@@ -414,7 +414,7 @@
     "playNow": "Play Now",
     "playWithBalanceIn": "Play with balance in",
     "confirmAndPlay": "Confirm and Play",
-    "signInPrompt": "Welcome to dragon-phoenix, please sign in to proceed.",
+    "signInPrompt": "Welcome to {gameName}, please sign in to proceed.",
     "liveStatsTitle": "Live Stats",
     "betId": "Bet ID",
     "bet": "Bet",
@@ -957,6 +957,7 @@
     "order_processing_title": "Your withdrawal request is being processed.",
     "order_completed_title": "Withdrawal order completed",
     "order_completed": "ORDER COMPLETED",
+    "order_cancelled": "Order Cancelled",
     "order_no": "Order No.",
     "created_at": "Created At",
     "withdraw_method": "Withdraw Method",
@@ -1154,7 +1155,7 @@
     "busiPwd_content_text": "Add memberCard transaction password verification.",
     "account_detail_title": "Details"
   },
-  "menu":{
+  "menu": {
     "crypto-account": "Crypto Account",
     "game-categories": "Game Categories",
     "recently-played": "Recently Played",
@@ -1188,4 +1189,3 @@
     "about": "About"
   }
 }
-

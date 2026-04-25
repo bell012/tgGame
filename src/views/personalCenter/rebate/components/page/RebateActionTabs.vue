@@ -1,0 +1,51 @@
+<template>
+  <div class="mt-3 grid grid-cols-2" :class="isMobile ? 'gap-2.5' : 'gap-3'">
+    <button
+      type="button"
+      :class="buttonClass(activeTab === 'records')"
+      @click="$emit('open-records')"
+    >
+      洗码记录
+    </button>
+
+    <button
+      type="button"
+      :class="buttonClass(activeTab === 'rules', true)"
+      @click="$emit('open-rules')"
+    >
+      <span>洗码规则</span>
+      <InfoIcon class="h-3.5 w-3.5 opacity-80" />
+    </button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import InfoIcon from '@/static/svg/info.svg?component'
+import type { RebateTab } from '../../types'
+
+const props = defineProps<{
+  activeTab: RebateTab
+  isMobile: boolean
+}>()
+
+defineEmits<{
+  'open-records': []
+  'open-rules': []
+}>()
+
+const buttonClass = (isActive: boolean, withIcon = false) => {
+  const baseClass = props.isMobile
+    ? withIcon
+      ? 'inline-flex h-[45px] items-center justify-center gap-1 rounded-[10px] text-[16px] font-[500]'
+      : 'h-[45px] rounded-[10px] text-[16px] font-[500]'
+    : withIcon
+      ? 'inline-flex h-[44px] items-center justify-center gap-1 rounded-[10px] text-sm font-[600]'
+      : 'h-[44px] rounded-[10px] text-sm font-[600]'
+
+  const stateClass = isActive ? 'bg-bg-3 text-text-1' : 'bg-bg-2 text-text-2 hover:text-text-1'
+
+  return `${baseClass} ${stateClass}`
+}
+</script>
+
+<style scoped lang="scss"></style>

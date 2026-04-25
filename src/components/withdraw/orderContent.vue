@@ -27,7 +27,7 @@
       </div>
       <div class="mt-8 grid gap-5 sm:gap-4 rounded-lg bg-bg-4 px-5 py-3">
         <div
-          v-for="item in detailRows"
+          v-for="item in processingDetailRows"
           :key="item.label"
           class="flex items-center justify-between font-['Inter']"
         >
@@ -65,9 +65,12 @@
         <div class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]">
           <OrderCancelledIcon
             v-if="orderItem?.status === 'cancelled'"
-            class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]"
+            class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px] text-common-100"
           />
-          <OrderCompletedIcon v-else class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px]" />
+          <OrderCompletedIcon
+            v-else
+            class="h-[60px] w-[60px] sm:h-[76px] sm:w-[76px] text-common-100"
+          />
         </div>
         <p class="mt-4 text-sm font-bold leading-normal text-text-1 sm:text-base">
           {{ resultStatusText }}
@@ -189,6 +192,7 @@ const detailRows = computed(() => [
     type: 'method' as const
   }
 ])
+const processingDetailRows = computed(() => detailRows.value.slice(1))
 
 const copyText = async (value: string) => {
   try {
