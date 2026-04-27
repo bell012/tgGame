@@ -12,7 +12,7 @@ import {
   PaymentMethodsOption,
   usePaymentMethodsService
 } from './usePaymentMethodsService'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import { storeToRefs } from 'pinia'
 import { useMemberCardVerificationFlow } from '@/composables/useMemberCardVerificationFlow'
 
@@ -140,7 +140,7 @@ export function usePaymentMethodsFlow() {
   const { setDefault: modifyDefaultAccountCard } = useMemberCardDefaultFlow<AccountCardOption>({
     resolveTarget: option => option,
     alreadyDefaultMessage: t('withdraw.default_account_cannot_be_changed'),
-    updateFailedMessage: 'Update default account failed',
+    updateFailedMessage: t('withdraw.update_default_account_failed'),
     submitDefault: modifyDefaultCard
   })
 
@@ -149,11 +149,10 @@ export function usePaymentMethodsFlow() {
       return
     }
 
-    if (hasDeleteAccount.value) {
-      showToast({
+    if (!hasDeleteAccount.value) {
+      globalShowToast({
         message: t('withdraw.delete_receive_address_not_supported'),
-        type: 'fail',
-        duration: 3000
+        type: 'fail'
       })
       return
     }
