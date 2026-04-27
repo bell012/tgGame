@@ -39,13 +39,13 @@ import {
 } from '@/utils/locale'
 import {
   handlePasswordInput,
-  handlePhoneInput,
+  handleLoosePhoneInput,
   handleVerificationCodeInput,
   isValidPhoneNumber,
   isValidPassword
 } from '@/utils/phone-input'
 import { StringExtension } from '@/utils/string-extension'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast.ts'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -203,18 +203,16 @@ const formData = ref({
 
 // 登录表单验证
 const isSigninValid = computed(() => {
-  return (
-    isValidPhoneNumber(formData.value.signin.account) && formData.value.signin.password.length > 0
-  )
+  return formData.value.signin.account.length > 0 && formData.value.signin.password.length > 0
 })
 
 // 注册表单验证
 const isSignupValid = computed(() => {
   return (
-    isValidPhoneNumber(formData.value.signup.account) &&
+    formData.value.signup.account.length > 0 &&
     formData.value.signup.code.length > 0 &&
-    isValidPassword(formData.value.signup.password) &&
-    formData.value.signup.password === formData.value.signup.confirmPassword
+    formData.value.signup.password.length > 0 &&
+    formData.value.signup.confirmPassword.length > 0
   )
 })
 
@@ -271,50 +269,104 @@ const handleCheckboxClick = (field: 'rememberMe') => {
   }
 }
 
-// 处理登录账号输入
+/**
+ * 处理登录账号输入。
+ */
 const handleSigninAccountInput = (event: Event) => {
-  handlePhoneInput(event, (value: string) => {
+  handleLoosePhoneInput(event, (value: string) => {
     formData.value.signin.account = value
   })
 }
 
-// 处理登录密码输入
+/**
+ * 处理登录密码输入。
+ */
 const handleSigninPasswordInput = (event: Event) => {
   handlePasswordInput(event, value => {
     formData.value.signin.password = value
   })
 }
 
-// 处理注册账号输入
+/**
+ * 处理注册账号输入。
+ */
 const handleSignupAccountInput = (event: Event) => {
-  handlePhoneInput(event, (value: string) => {
+  handleLoosePhoneInput(event, (value: string) => {
     formData.value.signup.account = value
   })
 }
 
-// 处理注册验证码输入
+/**
+ * 处理注册验证码输入。
+ */
 const handleSignupCodeInput = (event: Event) => {
   handleVerificationCodeInput(event, (value: string) => {
     formData.value.signup.code = value
   })
 }
 
-// 处理注册密码输入
+/**
+ * 处理注册密码输入。
+ */
 const handleSignupPasswordInput = (event: Event) => {
   handlePasswordInput(event, value => {
     formData.value.signup.password = value
   })
 }
 
-// 处理注册确认密码输入
+/**
+ * 处理注册确认密码输入。
+ */
 const handleSignupConfirmPasswordInput = (event: Event) => {
   handlePasswordInput(event, value => {
     formData.value.signup.confirmPassword = value
   })
 }
 
-// 登录
+/**
+ * 校验手机号是否符合登录/注册/忘记密码。
+ */
+const validatePhoneNumber = (value: string) => {
+  if (!isValidPhoneNumber(value)) {
+    globalShowToast(t('common.pleaseEnterCorrectPhone'))
+    return false
+  }
+
+  return true
+}
+
+/**
+ * 校验密码是否满足 6-16 位字母和数字组合规则。
+ */
+const validatePasswordRule = (value: string) => {
+  if (!isValidPassword(value)) {
+    globalShowToast(t('common.passwordRuleInvalid'))
+    return false
+  }
+
+  return true
+}
+
+/**
+ * 校验两次输入的密码是否一致。
+ */
+const validateConfirmPassword = (password: string, confirmPassword: string) => {
+  if (password !== confirmPassword) {
+    globalShowToast(t('common.passwordMismatch'))
+    return false
+  }
+
+  return true
+}
+
+/**
+ * 处理登录。
+ */
 const handleLogin = async () => {
+  if (!validatePhoneNumber(formData.value.signin.account)) {
+    return
+  }
+
   try {
     const loginData = {
       memberId: formData.value.signin.account,
@@ -348,8 +400,24 @@ const handleLogin = async () => {
   }
 }
 
-// 注册
+/**
+ * 处理注册。
+ */
 const handleRegister = async () => {
+  if (!validatePhoneNumber(formData.value.signup.account)) {
+    return
+  }
+
+  if (!validatePasswordRule(formData.value.signup.password)) {
+    return
+  }
+
+  if (
+    !validateConfirmPassword(formData.value.signup.password, formData.value.signup.confirmPassword)
+  ) {
+    return
+  }
+
   try {
     // 获取当前语言
     const languageCode = getLanguageCode()
@@ -386,7 +454,9 @@ const handleRegister = async () => {
   }
 }
 
-// 发送验证码
+/**
+ * 处理发送验证码。
+ */
 const handleSendCode = async () => {
   if (countdown.value > 0) {
     return
@@ -395,20 +465,11 @@ const handleSendCode = async () => {
   try {
     const telephone = formData.value.signup.account
     if (!telephone) {
-      showToast({
-        message: t('common.pleaseEnterThePhoneNumber'),
-        type: 'fail',
-        zIndex: 10001
-      })
+      globalShowToast(t('common.pleaseEnterThePhoneNumber'))
       return
     }
 
-    if (!isValidPhoneNumber(telephone)) {
-      showToast({
-        message: t('common.pleaseEnterCorrectPhoneNumber'),
-        type: 'fail',
-        zIndex: 10001
-      })
+    if (!validatePhoneNumber(telephone)) {
       return
     }
     // 发送短信接口

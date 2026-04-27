@@ -32,6 +32,16 @@ export const formatPhoneNumber = (value: string): string => {
 export const isValidPhoneNumber = (value: string): boolean => /^9\d{9}$/.test(value)
 
 /**
+ * 格式化宽松手机号：仅保留数字，最多 10 位。
+ * 仅用于登录/注册/忘记密码场景，输入阶段不限制首位必须为 9。
+ * @param value 输入的字符串
+ * @returns 格式化后的纯数字字符串（最多10位）
+ */
+export const formatLoosePhoneNumber = (value: string): string => {
+  return value.replace(/\D/g, '').slice(0, 10)
+}
+
+/**
  * 处理手机号输入事件
  * @param event 输入事件
  * @param callback 回调函数，用于更新表单数据
@@ -39,6 +49,18 @@ export const isValidPhoneNumber = (value: string): boolean => /^9\d{9}$/.test(va
 export const handlePhoneInput = (event: Event, callback: (value: string) => void) => {
   const input = event.target as HTMLInputElement
   const formatted = formatPhoneNumber(input.value)
+  callback(formatted)
+  input.value = formatted
+}
+
+/**
+ * 登录/注册/忘记密码输入阶段允许任意数字开头，提交时再校验手机号规则。
+ * @param event 输入事件
+ * @param callback 回调函数，用于更新表单数据
+ */
+export const handleLoosePhoneInput = (event: Event, callback: (value: string) => void) => {
+  const input = event.target as HTMLInputElement
+  const formatted = formatLoosePhoneNumber(input.value)
   callback(formatted)
   input.value = formatted
 }
