@@ -1,8 +1,9 @@
 import Api from '@/api'
 import type { AddMemberCardForm } from '@/api/interface/withdraw'
+import i18n from '@/i18n'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import { computed, ref } from 'vue'
 
 interface UseMemberCardVerificationFlowOptions<T> {
@@ -16,6 +17,7 @@ interface UseMemberCardVerificationFlowOptions<T> {
 type BeginSubmitResult = 'blocked' | 'password' | 'sms' | 'submitted' | 'failed'
 
 export function useMemberCardVerificationFlow<T>(options: UseMemberCardVerificationFlowOptions<T>) {
+  const t = i18n.global.t
   const siteConfigStore = useSiteConfigStore()
   const userStore = useUserStore()
   const pendingData = ref<T | null>(null)
@@ -89,10 +91,9 @@ export function useMemberCardVerificationFlow<T>(options: UseMemberCardVerificat
     }
 
     if (!resolvedTelephone.value) {
-      showToast({
-        message: 'Phone number unavailable',
-        type: 'fail',
-        duration: 3000
+      globalShowToast({
+        message: t('withdraw.phone_number_unavailable'),
+        type: 'fail'
       })
       return false
     }
@@ -125,10 +126,9 @@ export function useMemberCardVerificationFlow<T>(options: UseMemberCardVerificat
     const requestData = options.buildRequestData(data, verifyCode)
 
     if (!requestData) {
-      showToast({
-        message: 'Unavailable',
-        type: 'fail',
-        duration: 3000
+      globalShowToast({
+        message: t('withdraw.unavailable'),
+        type: 'fail'
       })
       return false
     }

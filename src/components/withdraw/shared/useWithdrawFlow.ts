@@ -26,7 +26,7 @@ import {
 import Api from '@/api'
 import { getBalanceByCurrency } from '@/utils/balance'
 import { getCurrentCurrency, getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import { formatTimestamp } from '@/utils/date'
 import { StringExtension } from '@/utils/string-extension'
 import { isOrderTerminalStatus } from '@/constants/orderStatus'
@@ -515,10 +515,9 @@ export const useWithdrawFlow = () => {
     }
 
     if (!resolvedTelephone.value) {
-      showToast({
-        message: 'Phone number unavailable',
-        type: 'fail',
-        duration: 3000
+      globalShowToast({
+        message: t('withdraw.phone_number_unavailable'),
+        type: 'fail'
       })
       return false
     }
@@ -780,10 +779,9 @@ export const useWithdrawFlow = () => {
     } catch (error) {
       const messageKey = error instanceof Error ? error.message : 'withdraw.submit_failed'
 
-      showToast({
+      globalShowToast({
         message: messageKey.startsWith('withdraw.') ? t(messageKey) : messageKey,
-        type: 'fail',
-        duration: 3000
+        type: 'fail'
       })
       console.log(error)
     } finally {

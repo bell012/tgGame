@@ -186,7 +186,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DOGEIcon from '@/static/img/crypto/DOGE.png'
@@ -226,7 +226,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t } = useI18n()
-const unavailableMessage = 'Unavailable'
+const unavailableMessage = t('withdraw.unavailable')
 
 const emit = defineEmits<{
   'update:amount': [value: number | undefined]
@@ -250,7 +250,7 @@ const amountModel = computed({
 })
 
 const showUnavailableToast = () => {
-  showToast({
+  globalShowToast({
     message: unavailableMessage,
     type: 'fail'
   })
