@@ -716,7 +716,7 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
   })
 
   const rules = computed(() => {
-    return Array.from({ length: 10 }, (_, index) => {
+    return Array.from({ length: 9 }, (_, index) => {
       const key = `rule${index + 1}`
       return {
         key,
