@@ -1,4 +1,4 @@
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 
 interface DefaultTarget {
   rowId?: string | number | null
@@ -32,7 +32,7 @@ export function useMemberCardDefaultFlow<T>(options: UseMemberCardDefaultFlowOpt
     }
 
     if (Number(target.defaultCard ?? 0) === 1) {
-      showToast({
+      globalShowToast({
         message: options.alreadyDefaultMessage,
         type: 'fail',
         duration
@@ -43,7 +43,7 @@ export function useMemberCardDefaultFlow<T>(options: UseMemberCardDefaultFlowOpt
     const success = await options.submitDefault(target.rowId, target.cardType)
 
     if (!success) {
-      showToast({
+      globalShowToast({
         message: options.updateFailedMessage,
         type: 'fail',
         duration

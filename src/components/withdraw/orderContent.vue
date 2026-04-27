@@ -126,7 +126,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import type { WithdrawOrderViewData } from './shared/useWithdrawFlow'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import ProcessingIcon from '@/static/svg/deposit/record.svg?component'
@@ -197,12 +197,11 @@ const processingDetailRows = computed(() => detailRows.value.slice(1))
 const copyText = async (value: string) => {
   try {
     await navigator.clipboard.writeText(value)
-    showToast({
-      message: t('betDetails.copy'),
-      type: 'success'
+    globalShowToast({
+      message: t('betDetails.copy')
     })
   } catch {
-    showToast({
+    globalShowToast({
       message: t('common.error'),
       type: 'fail'
     })

@@ -82,7 +82,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import H5Header from '@/components/common/H5Header.vue'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import CopyIcon from '@/static/svg/copy.svg?component'
@@ -122,12 +122,11 @@ const handleCopy = async (value: string) => {
 
   try {
     await navigator.clipboard.writeText(value)
-    showToast({
-      message: t('betDetails.copy'),
-      type: 'success'
+    globalShowToast({
+      message: t('betDetails.copy')
     })
   } catch {
-    showToast({
+    globalShowToast({
       message: t('common.error'),
       type: 'fail'
     })
