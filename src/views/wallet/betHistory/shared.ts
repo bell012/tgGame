@@ -7,7 +7,7 @@ export type QueryRecord = QueryOrderInfoResult['records'][number]
 export type FilterValue = string | string[] | undefined
 
 export interface Item {
-  id: number
+  id: string
   gameType: string
   gameName: string
   gameIcon: string
@@ -130,6 +130,38 @@ export const getBetHistoryGameTypeLabel = (code: string, t: TranslateFn) => {
   return labelMap[code] || code || '--'
 }
 
+/**
+ * 生成投注记录列表项的唯一标识。
+ */
+const resolveBetHistoryItemId = (record: QueryRecord) => {
+  if (record.betId) {
+    return String(record.betId)
+  }
+
+  if (record.issueId) {
+    return String(record.issueId)
+  }
+
+  if (record.rowId !== null && record.rowId !== undefined) {
+    return String(record.rowId)
+  }
+
+  return [
+    record.memberRowId,
+    record.platformCode,
+    record.gameCode,
+    record.betTime,
+    record.createTime,
+    record.betAmount,
+    record.gameAmount
+  ]
+    .map(value => String(value ?? ''))
+    .join('-')
+}
+
+/**
+ * 将接口投注记录映射成页面展示项。
+ */
 export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => {
   const gameType = getBetHistoryGameTypeLabel(record.sysGameTypeCode, t)
   const currency = record.currency || getCurrentCurrency()
@@ -143,7 +175,7 @@ export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => {
     '--'
 
   return {
-    id: record.rowId,
+    id: resolveBetHistoryItemId(record),
     gameType,
     gameName,
     gameIcon: bet,
