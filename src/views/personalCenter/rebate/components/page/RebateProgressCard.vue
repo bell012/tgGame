@@ -2,7 +2,9 @@
   <section class="mt-3 rounded-[14px] bg-bg-2" :class="isMobile ? 'px-3.5 py-3.5' : 'px-4 py-4'">
     <div class="flex items-start justify-between">
       <div>
-        <p class="text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">当前返水比例</p>
+        <p class="text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">
+          {{ t('rebatePage.progress.currentRebate') }}
+        </p>
         <p
           class="mt-1 font-[700] leading-none text-text-1"
           :class="isMobile ? 'text-[12px]' : 'text-[14px]'"
@@ -11,7 +13,9 @@
         </p>
       </div>
       <div class="text-right">
-        <p class="text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">下一档返水比例</p>
+        <p class="text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">
+          {{ t('rebatePage.progress.nextRebate') }}
+        </p>
         <p
           class="mt-1 font-[700] leading-none text-text-1"
           :class="isMobile ? 'text-[12px]' : 'text-[14px]'"
@@ -35,7 +39,7 @@
     </div>
 
     <p class="mt-2 text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">
-      当前有效投注:
+      {{ t('rebatePage.progress.currentValidBets') }}:
       <span class="text-theme-primary">{{ currentValidBetsPlainText }}</span
       >/{{ targetValidBetsText }}
     </p>
@@ -43,6 +47,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 defineProps<{
   currentRebateText: string
   currentValidBetsPlainText: string

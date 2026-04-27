@@ -14,7 +14,7 @@
             isMobile ? 'text-base font-[500] text-text-1' : 'text-[16px] font-[500] text-text-1'
           "
         >
-          今日有效投注:
+          {{ t('rebatePage.overview.todayValidBets') }}:
           <span
             class="ml-1 font-[700] leading-none"
             :class="isMobile ? 'text-[18px]' : 'text-[24px]'"
@@ -43,7 +43,9 @@
           {{ eligibleTurnoverText }}
         </p>
         <div class="mt-1.5 inline-flex items-center gap-1 text-text-2">
-          <span :class="isMobile ? 'text-[12px] leading-none' : 'text-sm'">可计洗码流水</span>
+          <span :class="isMobile ? 'text-[12px] leading-none' : 'text-sm'">
+            {{ t('rebatePage.overview.eligibleTurnover') }}
+          </span>
           <ExplainIcon class="h-3.5 w-3.5 opacity-80" />
         </div>
       </button>
@@ -55,7 +57,9 @@
         >
           {{ claimableAmountText }}
         </p>
-        <p class="mt-1.5 text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">可领取金额</p>
+        <p class="mt-1.5 text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">
+          {{ t('rebatePage.overview.claimableAmount') }}
+        </p>
       </div>
     </div>
   </section>
@@ -64,6 +68,9 @@
 <script setup lang="ts">
 import rebateCoinIcon from '@/static/svg/feedback/dl.svg?url'
 import ExplainIcon from '@/static/svg/vip/explain.svg?component'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 defineProps<{
   claimableAmountText: string

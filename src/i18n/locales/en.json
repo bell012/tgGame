@@ -1155,6 +1155,93 @@
     "busiPwd_content_text": "Add memberCard transaction password verification.",
     "account_detail_title": "Details"
   },
+  "rebatePage": {
+    "title": "Rebate",
+    "claim": "Claim",
+    "goBet": "Start Playing",
+    "actionTabs": {
+      "records": "Rebate Records",
+      "rules": "Rebate Rules"
+    },
+    "overview": {
+      "todayValidBets": "Today's Valid Bets",
+      "eligibleTurnover": "Eligible Turnover",
+      "claimableAmount": "Claimable Amount"
+    },
+    "progress": {
+      "currentRebate": "Current Rebate",
+      "nextRebate": "Next Rebate",
+      "currentValidBets": "Current Valid Bets"
+    },
+    "table": {
+      "validBets": "Valid Bets",
+      "rebateRate": "Rebate Rate"
+    },
+    "eligiblePopup": {
+      "title": "Eligible Turnover",
+      "pendingRebateTurnover": "Pending Rebate Turnover",
+      "promoBonusTurnoverDeduction": "Promo Bonus Turnover Deduction",
+      "eligibleRebateTurnover": "Eligible Rebate Turnover",
+      "calculationRuleTitle": "Calculation Rule :",
+      "calculationRuleContent": "Pending rebate turnover - promo bonus turnover deduction = eligible rebate turnover.",
+      "promoBonusNoteTitle": "Promo Bonus Turnover Deduction Note :",
+      "promoBonusNoteContent": "Turnover generated from claimed promo bonuses that is not eligible for rebate."
+    },
+    "rulesPopup": {
+      "title": "Rebate Rules",
+      "sections": {
+        "rebateExplanation": {
+          "title": "Rebate Explanation :",
+          "content": "Rebates are calculated based on your valid bets and applicable rebate rate. The more you bet, the more rebate you can receive."
+        },
+        "calculationPeriod": {
+          "title": "Calculation Period :",
+          "content": "Only valid bets placed within the recent period set by the system, such as the last 7 or 30 days, will be counted. Bets placed outside this period will be cleared automatically and will no longer be included in the rebate calculation."
+        },
+        "claimRules": {
+          "title": "Claim Rules :",
+          "content": "Once your rebate amount meets the claim requirement, you may claim it. The minimum claim amount must be greater than 0.01. The actual claim method is subject to what is shown on the page."
+        },
+        "payoutMethod": {
+          "title": "Payout Method :",
+          "content": "Rebate rewards will be credited to your account in cash. Please refer to the actual amount received."
+        },
+        "validBetRules": {
+          "title": "Valid Bet Rules :",
+          "content": "Only bets that meet the platform rules will be counted as valid bets. The following are not eligible for rebate:",
+          "items": [
+            "Invalid or cancelled orders;",
+            "Hedge betting or other abnormal betting behavior;",
+            "Certain promotional activities or selected games."
+          ]
+        },
+        "calculationFormula": {
+          "title": "Calculation Formula :",
+          "content": "Rebate Amount = Valid Bets × Applicable Rebate Rate.\nRebate rates may vary by game. Please refer to the rate shown on the page."
+        }
+      }
+    },
+    "records": {
+      "title": "Rebate Records",
+      "periodTabs": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last3Days": "Last 3 Days",
+        "last7Days": "Last 7 Days",
+        "last15Days": "Last 15 Days",
+        "last30Days": "Last 30 Days"
+      },
+      "summary": {
+        "validBets": "Valid Bets",
+        "turnoverDeduction": "Turnover Deduction",
+        "eligibleTurnover": "Eligible Turnover",
+        "rebateAmount": "Rebate Amount"
+      },
+      "turnoverDeductionReminder": "Valid bets from some promotions are not eligible for rebate. Please check the promotion page for details.",
+      "rebateAmountReminder": "The amount must not exceed the daily rebate limit.",
+      "reminderTitle": "Kind Reminder"
+    }
+  },
   "menu": {
     "crypto-account": "Crypto Account",
     "game-categories": "Game Categories",

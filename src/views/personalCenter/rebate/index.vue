@@ -2,7 +2,7 @@
   <div>
     <section v-if="isMobile" class="fixed inset-0 overflow-y-auto bg-bg-1">
       <H5Header
-        title="洗码"
+        :title="t('rebatePage.title')"
         :show-sort="true"
         :right-icon="supportHeaderIcon"
         @sort="handleSupportClick"
@@ -22,7 +22,7 @@
           class="mt-3 h-[45px] w-full rounded-[10px] bg-theme-primary text-[16px] font-[700] text-text-4"
           @click="handleClaimRebate"
         >
-          Claim
+          {{ claimButtonText }}
         </button>
 
         <RebateActionTabs
@@ -55,7 +55,7 @@
 
     <div v-else>
       <div class="mx-auto max-w-[1336px] px-3.5 pb-6 pt-5">
-        <h2 class="text-[30px] font-[700] text-text-1">洗码</h2>
+        <h2 class="text-[30px] font-[700] text-text-1">{{ t('rebatePage.title') }}</h2>
 
         <RebateOverviewCard
           :claimable-amount-text="claimableAmountText"
@@ -70,7 +70,7 @@
               class="h-[45px] min-w-[220px] rounded-[8px] bg-theme-primary px-5 text-sm font-[700] text-text-4"
               @click="handleClaimRebate"
             >
-              Claim
+              {{ claimButtonText }}
             </button>
           </template>
         </RebateOverviewCard>
@@ -107,7 +107,7 @@
 
     <ClaimSuccessPopup
       v-model:visible="showClaimSuccessPopup"
-      :amount="claimableAmountText"
+      :amount="claimSuccessAmountText"
       @confirm="handleClaimSuccessConfirm"
     />
 
@@ -133,7 +133,9 @@
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import H5Header from '@/components/common/H5Header.vue'
-import { rebateRuleSections } from './constants'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { createRebateRuleSections } from './constants'
 import EligibleTurnoverPopup from './components/dialogs/EligibleTurnoverPopup.vue'
 import RebateRecordsModal from './components/dialogs/RebateRecordsModal.vue'
 import RebateRulesPopup from './components/dialogs/RebateRulesPopup.vue'
@@ -144,11 +146,16 @@ import RebateProgressCard from './components/page/RebateProgressCard.vue'
 import RebateRateTable from './components/page/RebateRateTable.vue'
 import { useRebatePage } from './useRebatePage'
 
+const { t } = useI18n()
+const rebateRuleSections = computed(() => createRebateRuleSections(t))
+
 const {
   activeCategory,
   activeTab,
   categoryOptions,
+  claimButtonText,
   claimableAmountText,
+  claimSuccessAmountText,
   currentRebateText,
   currentValidBetsPlainText,
   eligibleTurnoverText,

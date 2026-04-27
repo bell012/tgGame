@@ -277,3 +277,55 @@ export interface QueryRebateGameDataResponse {
   success: boolean
   result?: QueryRebateGameDataResult | null
 }
+
+// 查询洗码记录详情页 请求参数
+export interface QueryRebateDetailPageForm {
+  startTime?: number
+  endTime?: number
+  page?: {
+    current?: number
+    size?: number
+  }
+}
+
+// 查询洗码记录详情页 记录项
+export interface QueryRebateDetailPageRecord {
+  amountRate?: number
+  betAmount?: number
+  createDate?: number
+  currency?: string
+  downloadSite?: string
+  memberId?: string
+  memberRowId?: number
+  rebatePoints?: number
+  sysGameTypeCode?: string
+  [key: string]: unknown
+}
+
+// 查询洗码记录详情页 响应结果
+export interface QueryRebateDetailPageResult {
+  current?: number
+  pages?: number
+  records?: QueryRebateDetailPageRecord[] | null
+  size?: number
+  total?: number
+}
+
+// 查询洗码记录详情页 响应
+export interface QueryRebateDetailPageResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryRebateDetailPageResult | null
+}
+
+// 领取洗码 请求参数（无参数）
+export interface ObtainRebateForm {}
+
+// 领取洗码 响应
+export interface ObtainRebateResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: unknown
+}

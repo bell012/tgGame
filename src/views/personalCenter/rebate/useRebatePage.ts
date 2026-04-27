@@ -433,6 +433,11 @@ export const useRebatePage = () => {
     formatDetailAmount(promoBonusTurnoverDeduction.value)
   )
   const claimableAmountText = computed(() => formatAmount(claimableAmount.value))
+  const claimButtonText = computed(() =>
+    claimableAmount.value > 0 ? t('rebatePage.claim') : t('rebatePage.goBet')
+  )
+  const claimSuccessAmount = ref(0)
+  const claimSuccessAmountText = computed(() => formatAmount(claimSuccessAmount.value))
 
   // ============================================================
   // 模块 C：RebateCategoryTabs（分类 Tab）
@@ -645,10 +650,30 @@ export const useRebatePage = () => {
   // ============================================================
 
   /**
-   * 点击 Claim：打开领取成功弹窗。
+   * 点击主按钮：
+   * - 可领取金额 > 0：调用领取接口并展示成功弹窗
+   * - 可领取金额 <= 0：跳转娱乐城
    */
-  const handleClaimRebate = () => {
-    showClaimSuccessPopup.value = true
+  const handleClaimRebate = async () => {
+    if (claimableAmount.value <= 0) {
+      await navigateTo('/casino')
+      return
+    }
+
+    try {
+      const claimedAmount = claimableAmount.value
+      const response = await Api.user.obtainRebate()
+      if (!response?.success) {
+        throw new Error(response?.message || 'obtain rebate failed')
+      }
+
+      claimSuccessAmount.value = claimedAmount
+      showClaimSuccessPopup.value = true
+
+      await Promise.allSettled([loadRebateOverview(), loadRebateData()])
+    } catch (error) {
+      console.error('handleClaimRebate failed', error)
+    }
   }
 
   /**
@@ -743,7 +768,9 @@ export const useRebatePage = () => {
     activeCategory,
     activeTab,
     categoryOptions,
+    claimButtonText,
     claimableAmountText,
+    claimSuccessAmountText,
     closeEligibleTurnoverPopup,
     closeRebateRecordsPopup,
     closeRebateRulesPopup,

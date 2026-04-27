@@ -1154,6 +1154,89 @@
     "busiPwd_content_text": "添加收款账号交易密码验证",
     "account_detail_title": "收款账号详情"
   },
+  "rebatePage": {
+    "title": "洗码",
+    "claim": "领取",
+    "goBet": "去投注",
+    "actionTabs": {
+      "records": "洗码记录",
+      "rules": "洗码规则"
+    },
+    "overview": {
+      "todayValidBets": "今日有效投注",
+      "eligibleTurnover": "可计洗码流水",
+      "claimableAmount": "可领取金额"
+    },
+    "progress": {
+      "currentRebate": "当前返水比例",
+      "nextRebate": "下一档返水比例",
+      "currentValidBets": "当前有效投注"
+    },
+    "table": {
+      "validBets": "有效投注",
+      "rebateRate": "返水比例"
+    },
+    "eligiblePopup": {
+      "title": "可计洗码流水",
+      "pendingRebateTurnover": "待返水流水",
+      "promoBonusTurnoverDeduction": "优惠奖金流水扣减",
+      "eligibleRebateTurnover": "可计洗码流水",
+      "calculationRuleTitle": "计算规则：",
+      "calculationRuleContent": "待返水流水 - 优惠奖金流水扣减 = 可计洗码流水。",
+      "promoBonusNoteTitle": "优惠奖金流水扣减说明：",
+      "promoBonusNoteContent": "领取优惠奖金产生的流水不计入洗码。"
+    },
+    "rulesPopup": {
+      "title": "洗码规则",
+      "sections": {
+        "rebateExplanation": {
+          "title": "洗码说明：",
+          "content": "洗码按照有效投注与对应返水比例计算，投注越多，可领取返水越高。"
+        },
+        "calculationPeriod": {
+          "title": "计算周期：",
+          "content": "仅统计系统设定周期内（如近 7 天或 30 天）的有效投注。超出周期的数据将自动清除，不再参与洗码计算。"
+        },
+        "claimRules": {
+          "title": "领取规则：",
+          "content": "当洗码金额满足领取条件时可进行领取，最低领取金额需大于 0.01，具体以页面展示为准。"
+        },
+        "payoutMethod": {
+          "title": "派发方式：",
+          "content": "洗码奖励以现金形式发放至您的账户，具体到账金额以实际为准。"
+        },
+        "validBetRules": {
+          "title": "有效投注规则：",
+          "content": "仅符合平台规则的投注计入有效投注，以下情况不参与洗码：",
+          "items": ["无效单、撤销单；", "对冲投注及其他异常投注行为；", "部分活动单与指定游戏。"]
+        },
+        "calculationFormula": {
+          "title": "计算公式：",
+          "content": "洗码金额 = 有效投注 × 对应返水比例。\n不同游戏返水比例可能不同，请以页面展示为准。"
+        }
+      }
+    },
+    "records": {
+      "title": "洗码记录",
+      "periodTabs": {
+        "today": "今天",
+        "yesterday": "昨天",
+        "last3Days": "近 3 天",
+        "last7Days": "近 7 天",
+        "last15Days": "近 15 天",
+        "last30Days": "近 30 天"
+      },
+      "summary": {
+        "validBets": "有效投注",
+        "turnoverDeduction": "流水扣减",
+        "eligibleTurnover": "可计洗码流水",
+        "rebateAmount": "洗码金额"
+      },
+      "turnoverDeductionReminder": "部分优惠活动产生的有效投注不计入返水，请以活动页面说明为准。",
+      "rebateAmountReminder": "可领取金额需满足平台当日领取限制。",
+      "reminderTitle": "温馨提示"
+    }
+  },
   "menu": {
     "crypto-account": "加密账户",
     "game-categories": "游戏分类",

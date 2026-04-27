@@ -5,7 +5,7 @@
       :class="buttonClass(activeTab === 'records')"
       @click="$emit('open-records')"
     >
-      洗码记录
+      {{ t('rebatePage.actionTabs.records') }}
     </button>
 
     <button
@@ -13,7 +13,7 @@
       :class="buttonClass(activeTab === 'rules', true)"
       @click="$emit('open-rules')"
     >
-      <span>洗码规则</span>
+      <span>{{ t('rebatePage.actionTabs.rules') }}</span>
       <ExplainIcon class="h-3.5 w-3.5 opacity-80" />
     </button>
   </div>
@@ -21,7 +21,10 @@
 
 <script setup lang="ts">
 import ExplainIcon from '@/static/svg/vip/explain.svg?component'
+import { useI18n } from 'vue-i18n'
 import type { RebateTab } from '../../types'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   activeTab: RebateTab

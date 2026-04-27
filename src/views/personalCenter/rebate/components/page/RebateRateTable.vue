@@ -8,10 +8,10 @@
     >
       <div></div>
       <div class="text-center text-text-2" :class="isMobile ? 'text-[13px]' : 'text-sm'">
-        有效投注
+        {{ t('rebatePage.table.validBets') }}
       </div>
       <div class="text-center text-text-2" :class="isMobile ? 'text-[13px]' : 'text-sm'">
-        返水比例
+        {{ t('rebatePage.table.rebateRate') }}
       </div>
     </div>
 
@@ -48,6 +48,9 @@
 
 <script setup lang="ts">
 import type { RebateRow } from '../../types'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 defineProps<{
   isMobile: boolean

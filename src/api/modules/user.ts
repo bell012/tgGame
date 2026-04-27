@@ -25,7 +25,11 @@ import type {
   QueryRebateGameDataForm,
   QueryRebateGameDataResponse,
   SelectRebateRateForm,
-  SelectRebateRateResponse
+  SelectRebateRateResponse,
+  QueryRebateDetailPageForm,
+  QueryRebateDetailPageResponse,
+  ObtainRebateForm,
+  ObtainRebateResponse
 } from '@/api/interface/user'
 
 /**
@@ -215,6 +219,44 @@ export function queryRebateGameData(
     data,
     showSuccessToast: false,
     showErrorToast: false,
+    ...options
+  })
+}
+
+/**
+ * 查询洗码记录详情页数据
+ * @param data 空对象
+ * @returns Promise<QueryRebateDetailPageResponse>
+ */
+export function queryRebateDetailPage(
+  data: QueryRebateDetailPageForm = {},
+  options?: ApiResponseToastOptions
+): Promise<QueryRebateDetailPageResponse> {
+  return request({
+    url: '/re/queryRebateDetailPage',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: false,
+    ...options
+  })
+}
+
+/**
+ * 领取洗码
+ * @param data 空对象
+ * @returns Promise<ObtainRebateResponse>
+ */
+export function obtainRebate(
+  data: ObtainRebateForm = {},
+  options?: ApiResponseToastOptions
+): Promise<ObtainRebateResponse> {
+  return request({
+    url: '/re/obtainRebate',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true,
     ...options
   })
 }

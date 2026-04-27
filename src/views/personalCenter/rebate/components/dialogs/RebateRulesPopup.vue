@@ -13,7 +13,7 @@
           class="text-center font-[700] text-text-1"
           :class="isMobile ? 'text-[20px] leading-[24px]' : 'text-[16px] leading-[20px]'"
         >
-          Rebate Rules
+          {{ t('rebatePage.rulesPopup.title') }}
         </h3>
         <button
           type="button"
@@ -56,7 +56,10 @@
 import popShell from '@/components/withdraw/popShell.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { RebateRuleSection } from '../../types'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   isMobile: boolean
