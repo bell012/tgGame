@@ -352,12 +352,9 @@ const isLoggedIn = computed(() => {
   return Boolean(userInfo.value?.tradeToken || acctInfo.value?.memberId)
 })
 
-// 当前是否处于首页，H5 端仍然只在首页显示铃铛未读态。
-const isHomeRoute = computed(() => stripLocalePrefix(route.path) === '/')
-
-// PC 端只要顶部导航仍显示就处理未读态；H5 端继续限制在首页处理。
+// 顶部导航显示通知图标时，PC/H5 均按同一未读规则切换铃铛图片。
 const shouldShowUnreadBell = computed(() => {
-  return isLoggedIn.value && hasUnread.value && (!isMobile.value || isHomeRoute.value)
+  return isLoggedIn.value && hasUnread.value
 })
 
 // 用户头像 URL
@@ -381,7 +378,7 @@ const handleStorageChange = () => {
 
 // 顶部导航可见时触发普通通知未读刷新：仅拉 promotions / system 两类消息。
 const refreshVisibleNotificationIndicator = async () => {
-  if (!isLoggedIn.value || (isMobile.value && !isHomeRoute.value)) {
+  if (!isLoggedIn.value) {
     return
   }
 
@@ -397,9 +394,9 @@ const handleLoginStateChange = (loggedIn: boolean, previousLoggedIn?: boolean) =
   void notificationIndicatorStore.refreshStaticUnread()
 }
 
-// 已登录状态切回首页时，主动刷新普通通知未读态；PC 端不受首页限制。
-const handleHomeRouteChange = (isHome: boolean, wasHome?: boolean) => {
-  if (!isMobile.value || !isHome || wasHome || !isLoggedIn.value) {
+// TopNav 仍显示时路由切换后主动刷新普通通知未读态，保证 PC/H5 铃铛图片同步。
+const handleTopNavRouteChange = (path: string, previousPath?: string) => {
+  if (path === previousPath || !isLoggedIn.value) {
     return
   }
 
@@ -456,10 +453,13 @@ watch(isLoggedIn, (loggedIn, previousLoggedIn) => {
   handleLoginStateChange(loggedIn, previousLoggedIn)
 })
 
-// 监听首页路由切换，满足条件时刷新普通通知未读状态。
-watch(isHomeRoute, (isHome, wasHome) => {
-  handleHomeRouteChange(isHome, wasHome)
-})
+// 监听路由切换，TopNav 存在时满足登录态即刷新普通通知未读状态。
+watch(
+  () => route.path,
+  (path, previousPath) => {
+    handleTopNavRouteChange(path, previousPath)
+  }
+)
 
 const handleToggleSidebar = () => {
   emit('toggle-sidebar')
