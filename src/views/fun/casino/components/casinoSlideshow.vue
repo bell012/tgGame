@@ -64,12 +64,14 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { Swipe, SwipeItem } from 'vant'
 import type { SwipeInstance } from 'vant'
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { navigateTo, navigateToName } from '@/utils/router'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { useAuthModalStore } from '@/stores/authModal'
+import { useThemeStore } from '@/stores/theme'
 
 const AUTO_PLAY_INTERVAL = 3000
 
@@ -84,6 +86,8 @@ const props = withDefaults(
 )
 
 const authModalStore = useAuthModalStore()
+const themeStore = useThemeStore()
+const { theme } = storeToRefs(themeStore)
 const currentIndex = ref(0)
 const progressKey = ref(0)
 const swipeRef = ref<SwipeInstance>()
@@ -97,7 +101,8 @@ const progressStyle = computed(() => ({
 }))
 
 const getSlideImage = (slide: QuerySlideshowItem) => {
-  const src = slide.url ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${slide.url}` : ''
+  const imagePath = theme.value === 'light' ? slide.skinUrl || slide.url : slide.url
+  const src = imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
 
   return {
     maintain: false,
