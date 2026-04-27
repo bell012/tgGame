@@ -94,18 +94,66 @@
       </template>
       <template v-else>
         <GameList
-          v-for="value in gameData"
-          :key="value.sysGameTypeName"
-          :title="value.sysGameTypeName"
-          :sysGameTypeCode="value.sysGameTypeCode"
-          :list="value.list"
+          v-if="firstGameSection"
+          :title="firstGameSection.sysGameTypeName"
+          :sysGameTypeCode="firstGameSection.sysGameTypeCode"
+          :list="firstGameSection.list"
         />
+        <LazySection
+          v-for="value in deferredGameSections"
+          :key="value.sysGameTypeCode || value.sysGameTypeName"
+        >
+          <template #placeholder>
+            <GameList loading />
+          </template>
+          <GameList
+            :title="value.sysGameTypeName"
+            :sysGameTypeCode="value.sysGameTypeCode"
+            :list="value.list"
+          />
+        </LazySection>
       </template>
-      <EventList
-        v-if="isGameDataLoading || sportsEventList.length"
-        :list="sportsEventList"
-        :loading="isGameDataLoading"
-      />
+      <LazySection v-if="isGameDataLoading || sportsEventList.length">
+        <template #placeholder>
+          <div class="mt-2">
+            <div class="mt-2 flex h-8 items-center sm:mt-6">
+              <div class="h-5 w-24 rounded bg-bg-2 animate-pulse"></div>
+              <div class="ml-auto h-8 w-14 rounded-lg bg-bg-2 animate-pulse"></div>
+            </div>
+            <div class="mt-3 grid grid-flow-col gap-2 overflow-hidden">
+              <div
+                v-for="index in 3"
+                :key="`event-skeleton-${index}`"
+                class="rounded-[12px] bg-[var(--color-background-level-2)] p-1"
+              >
+                <div class="aspect-[2.12] rounded-xl bg-bg-2 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <Suspense>
+          <template #default>
+            <AsyncEventList :list="sportsEventList" :loading="isGameDataLoading" />
+          </template>
+          <template #fallback>
+            <div class="mt-2">
+              <div class="mt-2 flex h-8 items-center sm:mt-6">
+                <div class="h-5 w-24 rounded bg-bg-2 animate-pulse"></div>
+                <div class="ml-auto h-8 w-14 rounded-lg bg-bg-2 animate-pulse"></div>
+              </div>
+              <div class="mt-3 grid grid-flow-col gap-2 overflow-hidden">
+                <div
+                  v-for="index in 3"
+                  :key="`event-fallback-${index}`"
+                  class="rounded-[12px] bg-[var(--color-background-level-2)] p-1"
+                >
+                  <div class="aspect-[2.12] rounded-xl bg-bg-2 animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </Suspense>
+      </LazySection>
     </div>
 
     <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
@@ -175,7 +223,49 @@
       </div>
     </div>
 
-    <NewEvent class="mt-2" />
+    <LazySection class="mt-2">
+      <template #placeholder>
+        <div class="mt-2 rounded-xl bg-[var(--color-background-level-2)] p-3 sm:p-4">
+          <div class="mb-3 flex items-center justify-between">
+            <div class="h-5 w-32 rounded bg-bg-2 animate-pulse"></div>
+            <div class="flex gap-2">
+              <div class="h-8 w-20 rounded-lg bg-bg-2 animate-pulse"></div>
+              <div class="h-8 w-20 rounded-lg bg-bg-2 animate-pulse"></div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div
+              v-for="index in 6"
+              :key="`latest-skeleton-${index}`"
+              class="h-10 rounded-lg bg-bg-2 animate-pulse"
+            ></div>
+          </div>
+        </div>
+      </template>
+      <Suspense>
+        <template #default>
+          <AsyncNewEvent class="mt-2" />
+        </template>
+        <template #fallback>
+          <div class="mt-2 rounded-xl bg-[var(--color-background-level-2)] p-3 sm:p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <div class="h-5 w-32 rounded bg-bg-2 animate-pulse"></div>
+              <div class="flex gap-2">
+                <div class="h-8 w-20 rounded-lg bg-bg-2 animate-pulse"></div>
+                <div class="h-8 w-20 rounded-lg bg-bg-2 animate-pulse"></div>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div
+                v-for="index in 6"
+                :key="`latest-fallback-${index}`"
+                class="h-10 rounded-lg bg-bg-2 animate-pulse"
+              ></div>
+            </div>
+          </div>
+        </template>
+      </Suspense>
+    </LazySection>
   </div>
 
   <H5HomePop
@@ -199,11 +289,10 @@ import { useUserStore } from '@/stores/user'
 import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import EventList from './components/eventList.vue'
 import GameList from './components/gameList.vue'
-import NewEvent from './components/newEvent.vue'
+import LazySection from './components/LazySection.vue'
 import RecentBigWins from './components/RecentBigWins.vue'
 
 import icon1 from './img/Image.svg?url'
@@ -258,6 +347,8 @@ interface HomeGameSection {
 
 const userStore = useUserStore()
 const authModalStore = useAuthModalStore()
+const AsyncEventList = defineAsyncComponent(() => import('./components/eventList.vue'))
+const AsyncNewEvent = defineAsyncComponent(() => import('./components/newEvent.vue'))
 const { userInfo } = storeToRefs(userStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
 const { t, locale } = useI18n()
@@ -357,6 +448,8 @@ const sportsEventList = computed<EventListItem[]>(() => {
     image: toGameImageUrl(item?.subGame?.[0]?.gameItemHotVo?.defaultImage ?? '')
   }))
 })
+const firstGameSection = computed<HomeGameSection | null>(() => gameData.value[0] ?? null)
+const deferredGameSections = computed<HomeGameSection[]>(() => gameData.value.slice(1))
 
 const fetchGameData = async () => {
   isGameDataLoading.value = true
