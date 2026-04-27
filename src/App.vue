@@ -2,12 +2,15 @@
   <div>
     <router-view />
     <LoginModal v-model="showLoginModal" :default-tab="loginModalTab" />
+    <!-- 全局弹窗提示 -->
+    <GlobalToast />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import GlobalToast from '@/components/common/GlobalToast.vue'
 import LoginModal from '@/components/login_register/LoginModal.vue'
 import { useAuthModalStore } from '@/stores/authModal'
 

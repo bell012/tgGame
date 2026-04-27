@@ -335,7 +335,6 @@ import {
   type LocaleOption
 } from '@/utils/locale'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
-import { showToast } from 'vant'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import CopyIcon from '@/static/svg/copy.svg?component'
@@ -349,6 +348,7 @@ import vipIcon from '@/static/img/personalCenter/vip.png'
 import vipRight from '@/static/img/personalCenter/vip_right.png'
 import balanceIcon from '@/static/img/personalCenter/balance.png'
 import referralIcon from '@/static/img/personalCenter/yaoqing.png'
+import { globalShowToast } from '@/utils/toast.ts'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -679,19 +679,10 @@ const copyText = async (value?: string) => {
     } else if (!fallbackCopyText(value)) {
       throw new Error('Copy failed')
     }
-
-    showToast({
-      message: t('personalCenter.copySuccess'),
-      position: 'middle',
-      type: 'success'
-    })
+    globalShowToast(t('personalCenter.copySuccess'))
   } catch (err) {
     if (fallbackCopyText(value)) {
-      showToast({
-        message: t('personalCenter.copySuccess'),
-        position: 'middle',
-        type: 'success'
-      })
+      globalShowToast(t('personalCenter.copySuccess'))
       return
     }
 

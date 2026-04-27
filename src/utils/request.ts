@@ -3,9 +3,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { getDeviceTraceId } from './deviceId'
 import { AESUtils } from './encrypt'
 import { getLanguageCode as getLocaleLanguageCode } from './locale'
+import { globalShowToast } from './toast.ts'
 import i18n from '@/i18n'
 import CryptoJS from 'crypto-js'
-import { showToast } from 'vant'
 import { API_ERROR_CODE_MESSAGES } from '@/constants/api-error-code-messages'
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
@@ -261,7 +261,7 @@ export function showApiResponseToast(
       return
     }
 
-    showToast({
+    globalShowToast({
       message: payload.message,
       type: 'success',
       zIndex: 999999
@@ -273,7 +273,7 @@ export function showApiResponseToast(
     return
   }
 
-  showToast({
+  globalShowToast({
     message: payload.message,
     type: 'fail',
     zIndex: 999999
@@ -419,7 +419,7 @@ service.interceptors.response.use(
           triggerAuthExpiredLogout()
           break
         case 500:
-          showToast({
+          globalShowToast({
             message: getResponseErrorMessage(
               error.response?.data,
               translateToastMessage('common.internalServerError')
@@ -429,7 +429,7 @@ service.interceptors.response.use(
           })
           break
         default:
-          showToast({
+          globalShowToast({
             message: getResponseErrorMessage(
               error.response?.data,
               translateToastMessage('common.unknownError')
