@@ -331,14 +331,16 @@ const resolveVipCardCornerBadgeIcon = (
   currentVipId?: number | null,
   viewedVipId?: number | null
 ) => {
-  return currentVipId === viewedVipId ? VipCornerUnlockedIcon : VipCornerLockedIcon
+  return (currentVipId ?? 0) >= (viewedVipId ?? 0) ? VipCornerUnlockedIcon : VipCornerLockedIcon
 }
 
 /**
  * 根据当前用户等级与当前卡片等级，返回卡片底部提示文案 key。
  */
 const resolveVipCardGoalHintKey = (currentVipId?: number | null, viewedVipId?: number | null) => {
-  return currentVipId === viewedVipId ? 'vipPage.goalHint.unlocked' : 'vipPage.goalHint.keepGoing'
+  return (currentVipId ?? 0) >= (viewedVipId ?? 0)
+    ? 'vipPage.goalHint.unlocked'
+    : 'vipPage.goalHint.keepGoing'
 }
 
 /**
@@ -491,6 +493,38 @@ const createProgressItem = (
 })
 
 /**
+ * 根据当前会员等级与目标卡片等级，决定进度项展示值。
+ * - 已解锁的低等级：直接展示满进度
+ * - 当前等级：展示接口返回的真实进度
+ * - 更高等级：展示 0 进度
+ */
+const resolveVipProgressValues = (
+  currentVipId: number,
+  viewedVipId: number,
+  actualValue: number,
+  targetValue: number
+) => {
+  if (viewedVipId < currentVipId) {
+    return {
+      currentValue: targetValue,
+      targetValue
+    }
+  }
+
+  if (viewedVipId > currentVipId) {
+    return {
+      currentValue: 0,
+      targetValue
+    }
+  }
+
+  return {
+    currentValue: actualValue,
+    targetValue
+  }
+}
+
+/**
  * 聚合 VIP 页面 H5 / PC 共用的展示数据与业务方法。
  */
 export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) => {
@@ -618,19 +652,33 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
    */
   const getProgressItemsByVipId = (vipId?: number | null): VipProgressItem[] => {
     const targetConfig = getVipTargetConfigById(vipId)
+    const resolvedViewedVipId = targetConfig?.vipId ?? vipId ?? currentVipLevel.value
+    const resolvedCurrentVipId = currentVipLevel.value ?? 0
+    const betProgressValues = resolveVipProgressValues(
+      resolvedCurrentVipId,
+      resolvedViewedVipId,
+      myVipInfo.value?.betAmount ?? 0,
+      targetConfig?.betAmountLine ?? 0
+    )
+    const rechargeProgressValues = resolveVipProgressValues(
+      resolvedCurrentVipId,
+      resolvedViewedVipId,
+      myVipInfo.value?.rechargeAmount ?? 0,
+      targetConfig?.rechargeAmount ?? 0
+    )
 
     return [
       createProgressItem(
         'validBet',
         t('personalCenter.validBet'),
-        myVipInfo.value?.betAmount ?? 0,
-        targetConfig?.betAmountLine ?? 0
+        betProgressValues.currentValue,
+        betProgressValues.targetValue
       ),
       createProgressItem(
         'deposit',
         t('personalCenter.deposit'),
-        myVipInfo.value?.rechargeAmount ?? 0,
-        targetConfig?.rechargeAmount ?? 0
+        rechargeProgressValues.currentValue,
+        rechargeProgressValues.targetValue
       )
     ]
   }
