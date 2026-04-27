@@ -50,7 +50,7 @@
             :key="index"
             :option="item"
             :is-active="false"
-            :enableDelete="hasDeleteAccount"
+            :enableDelete="true"
             @set-default="modifyDefaultAccountCard"
             @delete="deleteAccountCard"
           />
@@ -124,7 +124,6 @@ import KindReminderPop from '@/components/paymentMethods/kindReminderPop.vue'
 const {
   kindReminderVisible,
   addAccountOptionVisible,
-  hasDeleteAccount,
   deleteNotificationVisible,
   paymentPasswordVisible,
   smsVerificationVisible,

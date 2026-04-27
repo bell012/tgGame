@@ -149,7 +149,7 @@ export function usePaymentMethodsFlow() {
       return
     }
 
-    if (hasDeleteAccount.value) {
+    if (!hasDeleteAccount.value) {
       globalShowToast({
         message: t('withdraw.delete_receive_address_not_supported'),
         type: 'fail'
