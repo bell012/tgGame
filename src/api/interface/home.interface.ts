@@ -124,6 +124,7 @@ export interface QuerySlideshowItem {
   site: string
   slideshowName: string
   sortNum: number
+  skinUrl?: string
   type: number
   url: string
   [key: string]: unknown
