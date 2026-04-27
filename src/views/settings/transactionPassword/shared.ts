@@ -4,8 +4,8 @@ import { useUserStore } from '@/stores/user'
 import { getDefaultAreaCode, getDefaultAreaCodeDisplay } from '@/utils/locale'
 import { handleVerificationCodeInput } from '@/utils/phone-input'
 import { StringExtension } from '@/utils/string-extension'
+import { globalShowToast } from '@/utils/toast.ts'
 import { storeToRefs } from 'pinia'
-import { showToast } from 'vant'
 import { computed, nextTick, onMounted, ref, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -81,26 +81,42 @@ export const useTransactionPassword = () => {
 
   const isUpdatePasswordButtonDisabled: ComputedRef<boolean> = computed(
     () =>
-      transactionPassword.value.length !== 6 ||
-      confirmTransactionPassword.value.length !== 6 ||
-      transactionPassword.value !== confirmTransactionPassword.value ||
-      isUpdatingPassword.value
+      !transactionPassword.value || !confirmTransactionPassword.value || isUpdatingPassword.value
   )
 
   /**
-   * 统一弹出轻提示消息。
+   * 统一弹出全局轻提示消息。
    */
   const showMessageToast = (message: string, zIndex: number = 10030) => {
     if (!message) {
       return
     }
 
-    showToast({
-      message,
-      duration: 2000,
-      wordBreak: 'break-word',
-      zIndex
-    })
+    globalShowToast({ message, zIndex })
+  }
+
+  /**
+   * 校验交易密码是否满足 6 位数字规则。
+   */
+  const validateTransactionPasswordRule = (value: string) => {
+    if (!/^\d{6}$/.test(value)) {
+      globalShowToast(t('common.transactionPasswordRuleInvalid'))
+      return false
+    }
+
+    return true
+  }
+
+  /**
+   * 校验两次输入的交易密码是否一致。
+   */
+  const validateConfirmTransactionPassword = (password: string, confirmation: string) => {
+    if (password !== confirmation) {
+      globalShowToast(t('common.passwordMismatch'))
+      return false
+    }
+
+    return true
   }
 
   /**
@@ -267,6 +283,19 @@ export const useTransactionPassword = () => {
    */
   const handleUpdatePassword = async () => {
     if (isUpdatePasswordButtonDisabled.value) {
+      return
+    }
+
+    if (!validateTransactionPasswordRule(transactionPassword.value)) {
+      return
+    }
+
+    if (
+      !validateConfirmTransactionPassword(
+        transactionPassword.value,
+        confirmTransactionPassword.value
+      )
+    ) {
       return
     }
 

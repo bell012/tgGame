@@ -3,12 +3,12 @@ import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
 import { getDefaultAreaCode, getDefaultAreaCodeDisplay } from '@/utils/locale'
 import {
-  handlePhoneInput,
+  handleLoosePhoneInput,
   handleVerificationCodeInput,
   isValidPhoneNumber
 } from '@/utils/phone-input'
+import { globalShowToast } from '@/utils/toast.ts'
 import { storeToRefs } from 'pinia'
-import { showToast } from 'vant'
 import { computed, nextTick, onMounted, ref, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -119,30 +119,34 @@ export const useChangeMobileNumber = () => {
   )
 
   const isSendNewCodeButtonActive: ComputedRef<boolean> = computed(
-    () => isValidPhoneNumber(newTelephone.value) && !isSendingNewCode.value
+    () => newTelephone.value.length > 0 && !isSendingNewCode.value
   )
 
   const isNewConfirmButtonDisabled: ComputedRef<boolean> = computed(
-    () =>
-      !isValidPhoneNumber(newTelephone.value) ||
-      newVerificationCode.value.length !== 6 ||
-      isConfirmingNewCode.value
+    () => !newTelephone.value || newVerificationCode.value.length !== 6 || isConfirmingNewCode.value
   )
 
   /**
-   * 统一弹出轻提示消息。
+   * 统一弹出全局轻提示消息。
    */
   const showMessageToast = (message: string, zIndex: number = 10030) => {
     if (!message) {
       return
     }
 
-    showToast({
-      message,
-      duration: 2000,
-      wordBreak: 'break-word',
-      zIndex
-    })
+    globalShowToast({ message, zIndex })
+  }
+
+  /**
+   * 校验手机号是否符合
+   */
+  const validatePhoneNumber = (value: string) => {
+    if (!isValidPhoneNumber(value)) {
+      globalShowToast(t('common.pleaseEnterCorrectPhone'))
+      return false
+    }
+
+    return true
   }
 
   /**
@@ -201,7 +205,7 @@ export const useChangeMobileNumber = () => {
    * 处理新手机号输入。
    */
   const handleNewTelephoneChange = (event: Event) => {
-    handlePhoneInput(event, value => {
+    handleLoosePhoneInput(event, value => {
       newTelephone.value = value
     })
   }
@@ -339,8 +343,7 @@ export const useChangeMobileNumber = () => {
       return
     }
 
-    if (!isValidPhoneNumber(newTelephone.value)) {
-      showMessageToast(t('common.pleaseEnterThePhoneNumber'))
+    if (!validatePhoneNumber(newTelephone.value)) {
       return
     }
 
@@ -365,6 +368,10 @@ export const useChangeMobileNumber = () => {
    */
   const handleConfirmNewMobileNumber = async () => {
     if (isNewConfirmButtonDisabled.value) {
+      return
+    }
+
+    if (!validatePhoneNumber(newTelephone.value)) {
       return
     }
 

@@ -1,10 +1,10 @@
 import { computed, onActivated, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
-import { showToast } from 'vant'
 import type { SubGameItem2 } from '@/api/interface/home.interface'
 import type { GameBetTotalResult } from '@/api/interface/user'
 import { useUserStore } from '@/stores/user'
+import { globalShowToast } from '@/utils/toast.ts'
 import { getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
 import {
   DEFAULT_AVATAR_FRAME_ID,
@@ -177,10 +177,10 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
     try {
       if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(value)
       else if (!fallbackCopyText(value)) throw new Error('Copy failed')
-      showToast({ message: t('personalCenter.copySuccess'), position: 'middle', type: 'success' })
+      globalShowToast(t('personalCenter.copySuccess'))
     } catch (error) {
       if (fallbackCopyText(value)) {
-        showToast({ message: t('personalCenter.copySuccess'), position: 'middle', type: 'success' })
+        globalShowToast(t('personalCenter.copySuccess'))
         return
       }
       console.error(error)

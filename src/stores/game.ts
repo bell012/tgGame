@@ -34,6 +34,8 @@ export interface GameQueryOptions {
   brandCodes?: string[]
   /** 按 platformCode 查询 */
   platformCode?: string
+  /** 按多个 platformCode 查询 */
+  platformCodes?: string[]
   /** 按 hot 查询 */
   hot?: number
   /** 按 recommend 查询 */
@@ -90,6 +92,12 @@ interface GameBrandQueryOptions {
   page?: number
   /** 每页条数 */
   pageSize?: number
+}
+
+export interface GamePlatformOption {
+  platformCode: string
+  platformName: string
+  icon4: string
 }
 
 interface PendingLanguageRequest<T> {
@@ -637,6 +645,15 @@ export const useGameStore = defineStore('game', () => {
         return false
       }
 
+      if (options.platformCodes?.length) {
+        const platformCode = node.platformCode?.trim() ?? ''
+        const allowedPlatformCodes = options.platformCodes.map(code => code.trim()).filter(Boolean)
+
+        if (allowedPlatformCodes.length > 0 && !allowedPlatformCodes.includes(platformCode)) {
+          return false
+        }
+      }
+
       if (options.hot !== undefined && (node.hot ?? 0) !== options.hot) {
         return false
       }
@@ -683,6 +700,47 @@ export const useGameStore = defineStore('game', () => {
     }
 
     return queryGameRecords(options).map(record => record.node)
+  }
+
+  /** 根据 gameTypeCode 获取 rowType=2 的游戏平台，并按 platformCode 去重 */
+  const queryGamePlatformsByGameTypeCode = async (
+    gameTypeCode: string,
+    options: Pick<GameQueryOptions, 'forceRefresh'> = {}
+  ): Promise<GamePlatformOption[]> => {
+    const normalizedGameTypeCode = gameTypeCode.trim()
+
+    if (!normalizedGameTypeCode) {
+      return []
+    }
+
+    const list = await queryGameData({
+      gameTypeCode: normalizedGameTypeCode,
+      rowType: 2,
+      forceRefresh: options.forceRefresh
+    })
+    const sortedList = [...list].sort((a, b) => {
+      const orderIdA = Number(a.orderId ?? Number.MAX_SAFE_INTEGER)
+      const orderIdB = Number(b.orderId ?? Number.MAX_SAFE_INTEGER)
+
+      return orderIdA - orderIdB
+    })
+    const platformMap = new Map<string, GamePlatformOption>()
+
+    sortedList.forEach(item => {
+      const platformCode = String(item.platformCode ?? '').trim()
+
+      if (!platformCode || platformMap.has(platformCode)) {
+        return
+      }
+
+      platformMap.set(platformCode, {
+        platformCode,
+        platformName: String(item.platformName ?? '').trim(),
+        icon4: String(item.icon4 ?? '').trim()
+      })
+    })
+
+    return [...platformMap.values()]
   }
 
   /** 根据条件分页查询扁平记录 */
@@ -806,6 +864,7 @@ export const useGameStore = defineStore('game', () => {
     refreshGameBrandData,
     refreshGameTypeData,
     queryGameData,
+    queryGamePlatformsByGameTypeCode,
     queryGameRecordsPage,
     queryGameDataPage,
     queryGameBrandData,

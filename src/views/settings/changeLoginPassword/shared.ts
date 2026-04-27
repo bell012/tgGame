@@ -8,8 +8,8 @@ import {
   isValidPassword
 } from '@/utils/phone-input'
 import { StringExtension } from '@/utils/string-extension'
+import { globalShowToast } from '@/utils/toast.ts'
 import { storeToRefs } from 'pinia'
-import { showToast } from 'vant'
 import { computed, nextTick, onMounted, ref, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -68,12 +68,32 @@ export const useChangeLoginPassword = () => {
   )
 
   const isUpdatePasswordButtonDisabled: ComputedRef<boolean> = computed(
-    () =>
-      !isValidPassword(newPassword.value) ||
-      !confirmPassword.value ||
-      newPassword.value !== confirmPassword.value ||
-      isUpdatingPassword.value
+    () => !newPassword.value || !confirmPassword.value || isUpdatingPassword.value
   )
+
+  /**
+   * 校验登录密码是否满足 6-16 位字母和数字组合规则。
+   */
+  const validatePasswordRule = (value: string) => {
+    if (!isValidPassword(value)) {
+      globalShowToast(t('common.passwordRuleInvalid'))
+      return false
+    }
+
+    return true
+  }
+
+  /**
+   * 校验两次输入的密码是否一致。
+   */
+  const validateConfirmPassword = (password: string, confirmation: string) => {
+    if (password !== confirmation) {
+      globalShowToast(t('common.passwordMismatch'))
+      return false
+    }
+
+    return true
+  }
 
   /**
    * 聚焦验证码输入框。
@@ -171,12 +191,7 @@ export const useChangeLoginPassword = () => {
     }
 
     if (!resolvedTelephone.value) {
-      showToast({
-        message: t('common.phoneNumberUnavailable'),
-        duration: 2000,
-        wordBreak: 'break-word',
-        zIndex: 10001
-      })
+      globalShowToast(t('common.phoneNumberUnavailable'))
       return
     }
 
@@ -232,6 +247,14 @@ export const useChangeLoginPassword = () => {
    */
   const handleUpdatePassword = async () => {
     if (isUpdatePasswordButtonDisabled.value) {
+      return
+    }
+
+    if (!validatePasswordRule(newPassword.value)) {
+      return
+    }
+
+    if (!validateConfirmPassword(newPassword.value, confirmPassword.value)) {
       return
     }
 
