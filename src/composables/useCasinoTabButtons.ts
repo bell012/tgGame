@@ -14,7 +14,9 @@ interface UseCasinoTabButtonsOptions {
 
 export type { CasinoTabButtonItem, CasinoLobbyButtonItem }
 
-export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) => {
+export const useCasinoTabButtons = (_options: UseCasinoTabButtonsOptions = {}) => {
+  void _options
+
   const { locale } = useI18n()
   const casinoTabsStore = useCasinoTabsStore()
   const {
@@ -38,22 +40,6 @@ export const useCasinoTabButtons = (options: UseCasinoTabButtonsOptions = {}) =>
       }
     }
   )
-
-  if (options.isLoggedIn) {
-    watch(
-      () => options.isLoggedIn?.value,
-      async () => {
-        if (hasLobbyButtonsLoaded.value) {
-          await casinoTabsStore.loadCasinoLobbyButtons()
-          return
-        }
-
-        if (hasTabButtonsLoaded.value) {
-          await casinoTabsStore.loadCasinoTabButtons()
-        }
-      }
-    )
-  }
 
   return {
     tabButtons,

@@ -14,13 +14,13 @@
       @click="$emit('open-rules')"
     >
       <span>洗码规则</span>
-      <InfoIcon class="h-3.5 w-3.5 opacity-80" />
+      <ExplainIcon class="h-3.5 w-3.5 opacity-80" />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import InfoIcon from '@/static/svg/info.svg?component'
+import ExplainIcon from '@/static/svg/vip/explain.svg?component'
 import type { RebateTab } from '../../types'
 
 const props = defineProps<{
