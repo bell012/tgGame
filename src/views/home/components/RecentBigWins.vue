@@ -32,7 +32,7 @@
     <div
       v-else
       ref="marqueeRef"
-      class="marquee mx-[-1rem] my-0 max-w-full touch-pan-x select-none px-4 sm:mx-0 sm:rounded-xl sm:bg-layer3 sm:px-3 sm:cursor-grab sm:active:cursor-grabbing"
+      class="marquee my-0 touch-pan-x select-none sm:rounded-xl sm:bg-layer3 sm:cursor-grab sm:active:cursor-grabbing"
       @scroll.passive="onMarqueeScroll"
       @pointerdown="onMarqueePointerDown"
       @pointermove="onMarqueePointerMove"
@@ -110,7 +110,7 @@ const getRecentBigWinsData = async () => {
     list.value =
       res.result?.map((item: any) => ({
         src: toGameImageUrl(item.coverImg),
-        name: item.nickName,
+        name: item.gameName,
         number: item.winAmount
       })) || []
   } catch (error) {
@@ -479,9 +479,10 @@ onUnmounted(() => {
 
 .marquee {
   width: calc(100% + 2rem);
+  margin-left: -1rem;
+  margin-right: -1rem;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0;
   scroll-behavior: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -515,5 +516,18 @@ onUnmounted(() => {
 
 .marquee-track a {
   flex: none;
+}
+
+@media (min-width: 640px) {
+  .marquee {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .marquee-track {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
 }
 </style>

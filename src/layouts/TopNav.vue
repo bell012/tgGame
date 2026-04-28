@@ -1,6 +1,13 @@
 ﻿<template>
   <header class="top-nav">
     <div class="top-nav-inner h-full flex items-center justify-between px-4">
+       <!-- h5菜单 -->
+       <div
+          class="sm:hidden cursor-pointer rounded-lg flex items-center justify-center"
+          @click="toggleH5Menu"
+        >
+          <FoldIconH5 class="h-6 w-6" :class="isH5MenuActive ? 'text-theme-primary' : 'text-text-1'" />
+        </div>
       <!-- 左侧 -->
       <div class="flex items-center">
         <div
@@ -9,13 +16,7 @@
         >
           <FoldIcon class="w-6 h-6 fill-none" />
         </div>
-        <!-- h5菜单 -->
-        <div
-          class="sm:hidden cursor-pointer w-[40px] h-[40px] rounded-lg flex items-center justify-center"
-          @click="toggleH5Menu"
-        >
-          <FoldIconH5 class="h-6" :class="isH5MenuActive ? 'text-theme-primary' : 'text-text-1'" />
-        </div>
+       
         <!-- PC端 Logo -->
         <div
           class="hidden sm:flex w-[150px] h-[48px] ml-0 sm:ml-5 items-center cursor-pointer"
@@ -42,7 +43,7 @@
       </div>
 
       <!-- 右侧 -->
-      <div class="flex-1 flex items-center justify-end">
+      <div class=" flex items-center justify-end">
         <div
           class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
           @click="openExploreModal"
