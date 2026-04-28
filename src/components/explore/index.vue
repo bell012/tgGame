@@ -498,14 +498,14 @@ onUnmounted(() => {
   .explore-tabs-scroll {
     height: 56px;
     align-items: center;
-    gap: 8px;
+    gap: 2px;
     margin-top: 0;
     margin-bottom: 0;
   }
 
   .explore-tab-button {
     height: 36px;
-    padding: 0 10px;
+    padding: 0 7px;
     border-radius: 6px;
     font-size: 14px;
     line-height: 36px;
@@ -519,7 +519,7 @@ onUnmounted(() => {
   .explore-tab-icon {
     width: 20px;
     height: 20px;
-    margin-right: 4px;
+    margin-right: 7px;
   }
 
   .explore-tab-label {

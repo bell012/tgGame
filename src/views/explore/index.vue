@@ -1,5 +1,5 @@
 <template>
-  <explore class="px-[12px]" />
+  <explore class="px-3.5" />
 </template>
 
 <script setup lang="ts">
