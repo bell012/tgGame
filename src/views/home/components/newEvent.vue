@@ -18,7 +18,7 @@
     </div>
 
     <!-- Table -->
-    <div class="table-wrap">
+    <div class="table-wrap h-[430px] overflow-hidden rounded-xl bg-[var(--color-background-level-2)]">
       <table class="table [&_td]:px-3 [&_td]:py-3 sm:[&_td]:px-4" role="table">
         <thead class="table-head pc-only" role="rowgroup">
           <tr role="row" class="bg-bg-2 text-text-2">
@@ -73,7 +73,7 @@
                 <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
                   {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
                 </span>
-                <img :src="currencyIcon" class="w-3 h-3" :alt="item.game" />
+                <img :src="item.currencyIcon" class="w-3 h-3" :alt="item.currency" />
               </div>
             </td>
           </tr>
@@ -86,16 +86,12 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getCurrentCurrency } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import Api from '@/api'
-import placeholderImg from '@/static/img/home/errImg.png'
-import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
+import { getCurrencyImageByCode } from '@/utils/locale'
+
 
 const { t } = useI18n()
-const currentCurrency = computed(() => getCurrentCurrency())
-const currencyIcon = computed(() => getCurrencyIconByCode(currentCurrency.value))
-
 const tabItems = computed(() => [
   { type: 1 as const, label: t('home.LatestBet') },
   { type: 2 as const, label: t('home.HighRoller') }
@@ -107,9 +103,10 @@ interface LiveRow {
   game: string
   gameIcon: string
   player: string
-  betAmount: number
   multiplier: number
   profit: number
+  currency: string
+  currencyIcon: string
 }
 
 const MAX_VISIBLE_ROWS = 10
@@ -181,12 +178,12 @@ const parseAmount = (value: unknown) => {
   return Number.isFinite(n) ? n : 0
 }
 
-const toGameImageUrl = (value?: string) => {
+const toGameImageUrl = (value: unknown) => {
   const path = String(value ?? '').trim()
-  if (!path) return ''
-  if (/^(data:|blob:|https?:\/\/|\/)/i.test(path)) return path
-  const base = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
-  return base ? `${base}${path}` : path
+  if (!path) {
+    return ''
+  }
+  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${path}`
 }
 
 const getRecentBigWinsData = async () => {
@@ -199,27 +196,27 @@ const getRecentBigWinsData = async () => {
     const list = Array.isArray(res?.result) ? res.result : []
     console.log(res, '------')
     sourceRows.value = list.map((item: Record<string, unknown>, index: number) => {
-      const icon = toGameImageUrl(String(item.coverImg ?? ''))
+      const currency = String(item.currency ?? '').trim()
       return {
         id: Number(item.rowId ?? index),
         game: String(item.gameName ?? '--'),
-        gameIcon: icon || placeholderImg,
+        gameIcon: toGameImageUrl(item.coverImg ?? ''),
         player: String(item.nickName ?? '--'),
-        betAmount: parseAmount(item.bet ?? item.wager ?? item.betAmount),
-        multiplier: parseAmount(item.multiple),
-        profit: parseAmount(item.winAmount)
+        multiplier: Number(item.multiple ?? 0),
+        profit: Number(item.winAmount ?? 0),
+        currency,
+        currencyIcon: getCurrencyImageByCode(currency)
       }
     })
   } catch (error) {
     sourceRows.value = []
-    console.error('getRecentBigWins failed', error)
   } finally {
     loading.value = false
   }
 }
 
 watch(
-  [() => activeType.value, () => currentCurrency.value],
+  () => activeType.value,
   () => {
     void getRecentBigWinsData()
   },
