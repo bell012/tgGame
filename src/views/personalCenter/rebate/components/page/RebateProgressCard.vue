@@ -1,5 +1,8 @@
 <template>
-  <section class="mt-3 rounded-[14px] bg-bg-2" :class="isMobile ? 'px-3.5 py-3.5' : 'px-4 py-4'">
+  <section
+    class="mt-3 rounded-[14px] bg-bg-2"
+    :class="isMobile ? 'rebate-progress-mobile px-3.5 py-3.5' : 'px-4 py-4'"
+  >
     <div class="flex items-start justify-between">
       <div>
         <p class="text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">
@@ -7,7 +10,7 @@
         </p>
         <p
           class="mt-1 font-[700] leading-none text-text-1"
-          :class="isMobile ? 'text-[12px]' : 'text-[14px]'"
+          :class="isMobile ? 'text-[14px]' : 'text-[14px]'"
         >
           {{ currentRebateText }}
         </p>
@@ -18,14 +21,14 @@
         </p>
         <p
           class="mt-1 font-[700] leading-none text-text-1"
-          :class="isMobile ? 'text-[12px]' : 'text-[14px]'"
+          :class="isMobile ? 'text-[14px]' : 'text-[14px]'"
         >
           {{ nextRebateText }}
         </p>
       </div>
     </div>
 
-    <div class="relative mt-3 h-3 rounded-full bg-mask-20">
+    <div class="relative mt-3 h-[10px] rounded-full bg-mask-20">
       <div
         class="h-full rounded-full bg-theme-primary transition-all duration-300"
         :style="{ width: `${progressPercent}%` }"
@@ -41,7 +44,7 @@
     <p class="mt-2 text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">
       {{ t('rebatePage.progress.currentValidBets') }}:
       <span class="text-theme-primary">{{ currentValidBetsPlainText }}</span
-      >/{{ targetValidBetsText }}
+      >/<span class="text-text-1">{{ targetValidBetsText }}</span>
     </p>
   </section>
 </template>
@@ -62,4 +65,8 @@ defineProps<{
 }>()
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.rebate-progress-mobile {
+  border: 1px solid var(--color-opacity-5);
+}
+</style>

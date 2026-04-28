@@ -565,21 +565,34 @@ export const useRebatePage = () => {
   )
 
   /**
+   * 页面展示用档位下标：
+   * - 当前有效投注为 0 且存在档位数据时，默认按第一档展示（下标 0）
+   * - 其他场景沿用正常匹配结果
+   */
+  const displayTierIndex = computed(() => {
+    if (currentValidBetsValue.value === 0 && currentCategoryRebateRateVos.value.length > 0) {
+      return 0
+    }
+
+    return currentTierIndex.value
+  })
+
+  /**
    * 当前档和下一档的返水比例（没有下一档时取当前档）。
    */
   const currentTierRatioValue = computed(() => {
-    if (currentTierIndex.value < 0) {
+    if (displayTierIndex.value < 0) {
       return 0
     }
-    return toNumber(currentCategoryRebateRateVos.value[currentTierIndex.value]?.ratio, 0)
+    return toNumber(currentCategoryRebateRateVos.value[displayTierIndex.value]?.ratio, 0)
   })
   const nextTierRatioValue = computed(() => {
-    if (currentTierIndex.value < 0) {
+    if (displayTierIndex.value < 0) {
       return 0
     }
 
     const lastIndex = currentCategoryRebateRateVos.value.length - 1
-    const nextIndex = Math.min(currentTierIndex.value + 1, lastIndex)
+    const nextIndex = Math.min(displayTierIndex.value + 1, lastIndex)
     return toNumber(
       currentCategoryRebateRateVos.value[nextIndex]?.ratio,
       currentTierRatioValue.value
@@ -592,7 +605,7 @@ export const useRebatePage = () => {
    * - 反水比例字段：使用当前条 ratio%
    */
   const rebateRows = computed<RebateRow[]>(() =>
-    buildRebateRowsFromRateVos(currentCategoryRebateRateVos.value, currentTierIndex.value)
+    buildRebateRowsFromRateVos(currentCategoryRebateRateVos.value, displayTierIndex.value)
   )
 
   // ============================================================

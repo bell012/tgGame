@@ -1,5 +1,8 @@
 <template>
-  <section class="rounded-[14px] bg-bg-2" :class="isMobile ? 'px-3.5 py-3.5' : 'px-6 py-5'">
+  <section
+    class="rounded-[14px] bg-bg-2"
+    :class="isMobile ? 'rebate-overview-mobile px-3.5 py-3.5' : 'px-6 py-5'"
+  >
     <div class="flex items-center gap-2.5" :class="isMobile ? '' : 'justify-between'">
       <div class="flex items-center gap-2.5">
         <img
@@ -83,3 +86,10 @@ defineEmits<{
   'eligible-turnover-click': []
 }>()
 </script>
+
+<style scoped lang="scss">
+.rebate-overview-mobile {
+  border: 1px solid var(--color-opacity-5);
+  box-shadow: inset 0 1px 0 var(--color-opacity-5);
+}
+</style>

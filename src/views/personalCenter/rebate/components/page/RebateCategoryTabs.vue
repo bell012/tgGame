@@ -1,9 +1,10 @@
 <template>
-  <div class="mt-3 flex gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+  <div class="mt-3 flex gap-2.5 overflow-x-auto pb-0.5 scrollbar-none">
     <button
       v-for="category in categories"
       :key="category.id"
       type="button"
+      class="rebate-category-tab"
       :class="buttonClass(category.id === activeCategory)"
       @click="handleCategoryClick(category.id, $event)"
     >
@@ -41,11 +42,11 @@ const emit = defineEmits<{
 
 const buttonClass = (isActive: boolean) => {
   const baseClass = props.isMobile
-    ? 'group flex min-w-[72px] shrink-0 flex-col items-center justify-center rounded-[12px] px-2 py-2'
+    ? 'group flex h-[68px] min-w-[68px] shrink-0 flex-col items-center justify-center rounded-[12px] px-2'
     : 'inline-flex h-[40px] min-w-[96px] shrink-0 items-center justify-center gap-1 rounded-full px-4 text-sm font-[600]'
 
   const stateClass = isActive
-    ? 'border border-theme-primary bg-theme-3 text-theme-primary'
+    ? 'border border-theme-primary bg-theme-3 text-text-1'
     : 'border border-transparent bg-bg-2 text-text-2'
 
   return `${baseClass} ${stateClass}`
@@ -76,4 +77,17 @@ const handleCategoryClick = async (categoryId: string, event: MouseEvent) => {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.rebate-category-tab {
+}
+
+:global(:root.light) .rebate-category-tab.bg-bg-2 {
+  background: var(--color-background-level-3);
+  color: var(--color-text-level-2);
+}
+
+:global(:root.light) .rebate-category-tab.border-theme-primary {
+  background: var(--color-theme-level-3);
+  border-color: var(--color-theme-level-1);
+}
+</style>
