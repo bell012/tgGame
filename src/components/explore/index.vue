@@ -20,7 +20,7 @@
         <div>
           <div
             ref="tabScrollRef"
-            class="explore-tabs-scroll my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
+            class="explore-tabs-scroll flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
             @scroll="updateScrollState"
           >
             <button
@@ -491,15 +491,15 @@ onUnmounted(() => {
     background: var(--color-background-level-1);
     margin-left: -12px;
     margin-right: -12px;
-    padding: 10px 12px 8px;
+    padding: 10px 12px 4px;
     margin-bottom: 0;
   }
 
   .explore-tabs-scroll {
-    height: 62px;
+    height: 56px;
     align-items: center;
     gap: 8px;
-    margin-top: 8px;
+    margin-top: 0;
     margin-bottom: 0;
   }
 

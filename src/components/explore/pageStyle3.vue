@@ -187,7 +187,11 @@ const hideSortFilter = computed(() => {
 })
 
 const filterSheetWrapClass = computed(() => {
-  if (isMobile.value || !hideSortFilter.value) {
+  if (isMobile.value) {
+    return 'mt-1 mb-2 w-full'
+  }
+
+  if (!hideSortFilter.value) {
     return 'my-2.5 w-full'
   }
 
