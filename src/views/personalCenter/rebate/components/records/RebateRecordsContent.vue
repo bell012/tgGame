@@ -85,7 +85,7 @@
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
 import ExplainIcon from '@/static/svg/vip/explain.svg?component'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRebateRecords, type RebateRecordsPeriodKey } from '../../useRebateRecords'
 import RebateReminderDialog from './RebateReminderDialog.vue'
@@ -140,19 +140,16 @@ const scrollTabIntoView = (key: RebateRecordsPeriodKey) => {
     return
   }
 
-  const buttonLeft = targetButton.offsetLeft
-  const buttonRight = buttonLeft + targetButton.offsetWidth
-  const visibleLeft = scroller.scrollLeft
-  const visibleRight = visibleLeft + scroller.clientWidth
+  const scrollerRect = scroller.getBoundingClientRect()
+  const buttonRect = targetButton.getBoundingClientRect()
+  const buttonCenterX =
+    buttonRect.left - scrollerRect.left + scroller.scrollLeft + buttonRect.width / 2
+  const targetScrollLeft = buttonCenterX - scroller.clientWidth / 2
+  const maxScrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth)
 
-  if (buttonLeft >= visibleLeft && buttonRight <= visibleRight) {
-    return
-  }
-
-  targetButton.scrollIntoView({
-    behavior: 'smooth',
-    block: 'nearest',
-    inline: 'center'
+  scroller.scrollTo({
+    left: Math.min(Math.max(targetScrollLeft, 0), maxScrollLeft),
+    behavior: 'smooth'
   })
 }
 
@@ -251,6 +248,14 @@ const openRebateAmountPopup = () => {
 onMounted(() => {
   scrollTabIntoView(activePeriod.value)
 })
+
+watch(
+  () => activePeriod.value,
+  async nextPeriod => {
+    await nextTick()
+    scrollTabIntoView(nextPeriod)
+  }
+)
 
 onBeforeUnmount(() => {
   clearSuppressTabClickTimer()
