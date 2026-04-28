@@ -95,7 +95,8 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import BulletDotIcon from '@/static/svg/deposit/bullet-dot.svg?component'
 import PlusIcon from '@/static/svg/deposit/plus.svg?component'
 import { resolveUploadErrorMessage } from '@/utils/upload-error'
-import { showToast, Uploader, UploaderAfterRead, UploaderFileListItem } from 'vant'
+import { globalShowToast } from '@/utils/toast'
+import { Uploader, UploaderAfterRead, UploaderFileListItem } from 'vant'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import paymentReceiptSamplePop from '../paymentReceiptSample/paymentReceiptSamplePop.vue'
@@ -168,7 +169,7 @@ const imageAfterRead: UploaderAfterRead = async items => {
       const errorMessage = resolveUploadErrorMessage(error, t, t('deposit.upload_status_failed'))
       file.status = 'failed'
       file.message = t('personalCenter.feedback.toast.uploadFailed')
-      showToast({
+      globalShowToast({
         message: errorMessage,
         type: 'fail'
       })
@@ -216,7 +217,7 @@ const handleConfirmUpload = async () => {
 
   const orderId = String(props.orderId ?? '').trim()
   if (!orderId) {
-    showToast({
+    globalShowToast({
       message: t('common.error'),
       type: 'fail'
     })
@@ -224,7 +225,7 @@ const handleConfirmUpload = async () => {
   }
 
   if (!uploadedFilePath.value) {
-    showToast({
+    globalShowToast({
       message: t('common.error'),
       type: 'fail'
     })
@@ -245,7 +246,7 @@ const handleConfirmUpload = async () => {
 
     emit('confirmUpload', uploadedFilePath.value)
   } catch (error) {
-    showToast({
+    globalShowToast({
       message: error instanceof Error ? error.message : t('common.error'),
       type: 'fail'
     })

@@ -264,7 +264,7 @@ import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?co
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import {
   computed,
   nextTick,
@@ -383,7 +383,7 @@ const isDepositDisabled = computed(() => !amount.value || Number(amount.value) <
 
 // 显示不可用提示
 const showUnavailableToast = () => {
-  showToast({
+  globalShowToast({
     message: t('deposit.unavailable'),
     type: 'fail'
   })

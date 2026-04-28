@@ -554,9 +554,10 @@ import {
 import type { TradeMessageStreamItem } from '@/utils/payOrderSync'
 import { getPayOrderDisplayStatus, normalizePayOrderType } from '@/utils/payOrderSync'
 import { navigateTo } from '@/utils/router'
+import { globalShowToast } from '@/utils/toast'
 import OrderDetailScrollPanel from '@/views/wallet/myOrders/OrderDetailScrollPanel.vue'
 import { copyTextWithFallback, type OrderTab } from '@/views/wallet/myOrders/shared'
-import { closeToast, showLoadingToast, showToast } from 'vant'
+import { closeToast, showLoadingToast } from 'vant'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NavigationFailureType, isNavigationFailure } from 'vue-router'
@@ -1567,9 +1568,8 @@ const hideNotificationJumpLoading = () => {
 
 // 通知跳转失败时弹出提示。
 const showNotificationJumpFailedToast = () => {
-  showToast({
+  globalShowToast({
     message: t('notifications.jumpOpenFailed'),
-    position: 'middle',
     type: 'fail'
   })
 }
@@ -1611,7 +1611,7 @@ const closeTransactionCryptoOrderPop = () => {
 
 const handleCopyOrderNo = async (orderNo: string) => {
   const copied = await copyTextWithFallback(orderNo)
-  showToast({
+  globalShowToast({
     message: copied ? t('betDetails.copy') : t('common.error'),
     type: copied ? 'success' : 'fail'
   })
@@ -1622,7 +1622,7 @@ const handleTransactionNotificationClick = async (item: NotificationItem) => {
 
   const orderId = String(item.tradeMessage?.orderId ?? '').trim()
   if (!orderId) {
-    showToast({
+    globalShowToast({
       message: t('common.requestError'),
       type: 'fail'
     })
@@ -1665,7 +1665,7 @@ const handleTransactionNotificationClick = async (item: NotificationItem) => {
     selectedTransactionOrder.value = toOrderDetailRecord(latestDetail)
   } catch (error) {
     console.error('handleTransactionNotificationClick failed', error)
-    showToast({
+    globalShowToast({
       message: error instanceof Error && error.message ? error.message : t('common.requestError'),
       type: 'fail'
     })
