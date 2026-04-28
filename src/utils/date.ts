@@ -35,6 +35,8 @@ const getDateTimeLocale = () => {
   }
 }
 
+const isChineseLanguage = (languageCode: string) => languageCode === 'zh'
+
 const isSameDay = (left: Date, right: Date) =>
   left.getFullYear() === right.getFullYear() &&
   left.getMonth() === right.getMonth() &&
@@ -44,7 +46,13 @@ const getFormattedDatePart = (date: Date, locale: string, options: Intl.DateTime
   return new Intl.DateTimeFormat(locale, options).format(date)
 }
 
-const formatDisplayClockTime = (date: Date, locale: string) => {
+const getTwoDigitNumber = (value: number) => String(value).padStart(2, '0')
+
+const formatDisplayClockTime = (date: Date, locale: string, languageCode: string) => {
+  if (isChineseLanguage(languageCode)) {
+    return `${getTwoDigitNumber(date.getHours())}:${getTwoDigitNumber(date.getMinutes())}`
+  }
+
   const parts = new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
@@ -63,12 +71,16 @@ const formatDisplayClockTime = (date: Date, locale: string) => {
   return partMap.dayPeriod ? `${time} ${partMap.dayPeriod}` : time
 }
 
-const formatDisplayDateTime = (date: Date, locale: string) => {
+const formatDisplayDateTime = (date: Date, locale: string, languageCode: string) => {
+  if (isChineseLanguage(languageCode)) {
+    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${formatDisplayClockTime(date, locale, languageCode)}`
+  }
+
   const month = getFormattedDatePart(date, locale, { month: 'short' })
-  const day = String(date.getDate()).padStart(2, '0')
+  const day = getTwoDigitNumber(date.getDate())
   const year = String(date.getFullYear())
 
-  return `${month} ${day}, ${year}, ${formatDisplayClockTime(date, locale)}`
+  return `${month} ${day}, ${year}, ${formatDisplayClockTime(date, locale, languageCode)}`
 }
 
 export const normalizeTimestamp = (value?: number | string | null): number | null => {
@@ -126,7 +138,7 @@ export const formatTimestamp = (value?: number | string | null): string => {
 // 展示层时间格式：刚刚 / 今天 / 昨天 / 具体日期。
 export const formatDisplayTime = (value?: number | string | null): string => {
   const timestamp = normalizeTimestamp(value)
-  const { locale, labels } = getDateTimeLocale()
+  const { languageCode, locale, labels } = getDateTimeLocale()
 
   if (!timestamp) {
     return labels.justNow
@@ -146,15 +158,15 @@ export const formatDisplayTime = (value?: number | string | null): string => {
   }
 
   if (isSameDay(date, now)) {
-    return `${labels.today} ${formatDisplayClockTime(date, locale)}`
+    return `${labels.today} ${formatDisplayClockTime(date, locale, languageCode)}`
   }
 
   const yesterday = new Date(now)
   yesterday.setDate(yesterday.getDate() - 1)
 
   if (isSameDay(date, yesterday)) {
-    return `${labels.yesterday} ${formatDisplayClockTime(date, locale)}`
+    return `${labels.yesterday} ${formatDisplayClockTime(date, locale, languageCode)}`
   }
 
-  return formatDisplayDateTime(date, locale)
+  return formatDisplayDateTime(date, locale, languageCode)
 }
