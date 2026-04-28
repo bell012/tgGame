@@ -123,9 +123,9 @@ import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import depositPopShell from '@/components/deposit/shared/depositPopShell.vue'
 import EmptyImg from '@/static/img/personalCenter/noData.png'
 import CloseIcon from '@/static/svg/close.svg?component'
+import { globalShowToast } from '@/utils/toast'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { showToast } from 'vant'
 import MyOrdersTablePanel from './MyOrdersTablePanel.vue'
 import OrderDetailScrollPanel from './OrderDetailScrollPanel.vue'
 import {
@@ -286,7 +286,7 @@ const handleCloseDetail = () => {
  */
 const handleCopyOrderNo = async (orderNo: string) => {
   const copied = await copyTextWithFallback(orderNo)
-  showToast({
+  globalShowToast({
     message: copied ? t('betDetails.copy') : t('common.error'),
     type: copied ? 'success' : 'fail'
   })
