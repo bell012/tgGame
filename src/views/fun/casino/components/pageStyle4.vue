@@ -1,6 +1,9 @@
 <template>
   <div ref="pageRootRef" class="w-full">
-    <div v-if="isLoading" class="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-7">
+    <div
+      v-if="isLoading && brandList.length === 0"
+      class="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-7"
+    >
       <div
         v-for="index in resolvedPageSize"
         :key="index"
@@ -21,9 +24,14 @@
         </div>
       </a>
     </div>
+    <div
+      v-if="isMobile && isLoading && brandList.length > 0"
+      class="mt-2 h-10 rounded-lg bg-bg-2 animate-pulse"
+    />
+    <div v-if="isMobile && hasMore" ref="loadMoreRef" class="h-1 w-full" />
 
     <ThemedEmptyState
-      v-else
+      v-if="!isLoading && brandList.length === 0"
       :dark-image="defaultImg"
       :light-image="defaultWhiteImg"
       :message="t('search.stay')"
@@ -74,7 +82,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, inject, nextTick, ref, watch, type Ref } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
@@ -104,8 +112,11 @@ const total = ref(0)
 const totalPages = ref(1)
 const isLoading = ref(false)
 const brandList = ref<GameBrandItem[]>([])
+const loadMoreRef = ref<HTMLElement | null>(null)
+let loadMoreObserver: IntersectionObserver | null = null
 const canPrev = computed(() => page.value > 1)
 const canNext = computed(() => page.value < totalPages.value)
+const hasMore = computed(() => isMobile.value && page.value < totalPages.value)
 const resolvedQueryOptions = computed(() => props.queryOptions ?? props.modules ?? {})
 const resolvedPageSize = computed(() => Math.max(1, resolvedQueryOptions.value.pageSize ?? 28))
 const resolvedQueryKey = computed(() =>
@@ -204,21 +215,13 @@ const handleClick = (item: GameBrandItem) => {
 }
 
 const getBrandData = async () => {
+  if (isLoading.value) {
+    return
+  }
+
   isLoading.value = true
 
   try {
-    if (isMobile.value) {
-      const list = await gameStore.queryGameBrandData({
-        keyword: resolvedQueryOptions.value.keyword
-      })
-
-      page.value = 1
-      total.value = list.length
-      totalPages.value = 1
-      brandList.value = list
-      return
-    }
-
     const res = await gameStore.queryGameBrandDataPage({
       keyword: resolvedQueryOptions.value.keyword,
       page: page.value,
@@ -227,10 +230,42 @@ const getBrandData = async () => {
 
     total.value = res.total
     totalPages.value = res.totalPages
+
+    if (isMobile.value && page.value > 1) {
+      brandList.value = [...brandList.value, ...res.list]
+      return
+    }
+
     brandList.value = res.list
   } finally {
     isLoading.value = false
+    void nextTick(setupLoadMoreObserver)
   }
+}
+
+const setupLoadMoreObserver = () => {
+  loadMoreObserver?.disconnect()
+  loadMoreObserver = null
+
+  if (!isMobile.value || !hasMore.value || !loadMoreRef.value) {
+    return
+  }
+
+  loadMoreObserver = new IntersectionObserver(
+    entries => {
+      if (!entries.some(entry => entry.isIntersecting) || isLoading.value || !hasMore.value) {
+        return
+      }
+
+      page.value += 1
+    },
+    {
+      root: null,
+      rootMargin: '200px 0px 200px 0px'
+    }
+  )
+
+  loadMoreObserver.observe(loadMoreRef.value)
 }
 
 watch(
@@ -252,6 +287,15 @@ watch(page, () => {
   }
 
   void getBrandData()
+})
+
+onMounted(() => {
+  setupLoadMoreObserver()
+})
+
+onUnmounted(() => {
+  loadMoreObserver?.disconnect()
+  loadMoreObserver = null
 })
 </script>
 <style scoped lang="scss"></style>

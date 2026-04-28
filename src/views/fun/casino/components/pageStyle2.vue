@@ -1,6 +1,9 @@
 <template>
   <div ref="pageRootRef" class="w-full">
-    <div v-if="isLoading" class="grid w-full gap-2.5 grid-cols-3 sm:grid-cols-8">
+    <div
+      v-if="isLoading && pageData.length === 0"
+      class="grid w-full gap-2.5 grid-cols-3 sm:grid-cols-8"
+    >
       <div
         v-for="index in resolvedPageSize"
         :key="index"
@@ -13,9 +16,14 @@
         <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>
+    <div
+      v-if="isMobile && isLoading && pageData.length > 0"
+      class="mt-2 h-10 rounded-lg bg-bg-2 animate-pulse"
+    />
+    <div v-if="isMobile && hasMore" ref="loadMoreRef" class="h-1 w-full" />
 
     <ThemedEmptyState
-      v-else
+      v-if="!isLoading && pageData.length === 0"
       :dark-image="defaultImg"
       :light-image="defaultWhiteImg"
       :message="t('search.stay')"
@@ -69,7 +77,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, inject, nextTick, ref, watch, type Ref } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
@@ -99,9 +107,12 @@ const totalPages = ref(1)
 const total = ref(0)
 const isLoading = ref(false)
 const pageData = ref<GameDataItem[]>([])
+const loadMoreRef = ref<HTMLElement | null>(null)
+let loadMoreObserver: IntersectionObserver | null = null
 const closeDesktopModalFlag = inject<Ref<boolean> | null>('search-close-desktop-modal', null)
 const canPrev = computed(() => page.value > 1)
 const canNext = computed(() => page.value < totalPages.value)
+const hasMore = computed(() => isMobile.value && page.value < totalPages.value)
 const fallbackQueryOptions: GameQueryOptions = {
   rowType: 3,
   pageSize: 27
@@ -189,19 +200,13 @@ const handleClick = (rowId?: string | number) => {
 }
 
 const getGameData = async () => {
+  if (isLoading.value) {
+    return
+  }
+
   isLoading.value = true
 
   try {
-    if (isMobile.value) {
-      const list = await gameStore.queryGameData(resolvedQueryOptions.value)
-
-      page.value = 1
-      total.value = list.length
-      totalPages.value = 1
-      pageData.value = list
-      return
-    }
-
     const res = await gameStore.queryGameDataPage({
       ...resolvedQueryOptions.value,
       page: page.value,
@@ -210,10 +215,42 @@ const getGameData = async () => {
 
     total.value = res.total
     totalPages.value = res.totalPages
+
+    if (isMobile.value && page.value > 1) {
+      pageData.value = [...pageData.value, ...res.list]
+      return
+    }
+
     pageData.value = res.list
   } finally {
     isLoading.value = false
+    void nextTick(setupLoadMoreObserver)
   }
+}
+
+const setupLoadMoreObserver = () => {
+  loadMoreObserver?.disconnect()
+  loadMoreObserver = null
+
+  if (!isMobile.value || !hasMore.value || !loadMoreRef.value) {
+    return
+  }
+
+  loadMoreObserver = new IntersectionObserver(
+    entries => {
+      if (!entries.some(entry => entry.isIntersecting) || isLoading.value || !hasMore.value) {
+        return
+      }
+
+      page.value += 1
+    },
+    {
+      root: null,
+      rootMargin: '200px 0px 200px 0px'
+    }
+  )
+
+  loadMoreObserver.observe(loadMoreRef.value)
 }
 
 watch(page, () => {
@@ -232,5 +269,14 @@ watch(
   },
   { immediate: true }
 )
+
+onMounted(() => {
+  setupLoadMoreObserver()
+})
+
+onUnmounted(() => {
+  loadMoreObserver?.disconnect()
+  loadMoreObserver = null
+})
 </script>
 <style scoped lang="scss"></style>

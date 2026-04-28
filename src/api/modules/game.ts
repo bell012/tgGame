@@ -18,7 +18,9 @@ import type {
   GameDetailResponse,
   GetGameRanListParams,
   QueryGameDetailsParams,
-  GameTypeResponse
+  GameTypeResponse,
+  QueryGameItemPageParams,
+  QueryGameItemPageResponse
 } from '@/api/interface/game'
 
 /**
@@ -43,6 +45,25 @@ export function getGameType(options?: ApiResponseToastOptions): Promise<GameType
   return request({
     url: '/gc/getGameType',
     method: 'post',
+    showSuccessToast: false,
+    showErrorToast: true,
+    ...options
+  })
+}
+
+/**
+ * 分页查询游戏数据
+ * @param data languageCode, site, param, page
+ * @returns Promise<QueryGameItemPageResponse>
+ */
+export function queryGameItemPage(
+  data: QueryGameItemPageParams,
+  options?: ApiResponseToastOptions
+): Promise<QueryGameItemPageResponse> {
+  return request({
+    url: '/gc/queryGameItemPage',
+    method: 'post',
+    data,
     showSuccessToast: false,
     showErrorToast: true,
     ...options
