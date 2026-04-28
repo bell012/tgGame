@@ -36,16 +36,16 @@ defineEmits<{
   'open-rules': []
 }>()
 
-const buttonClass = (isActive: boolean, withIcon = false) => {
+const buttonClass = (_isActive: boolean, withIcon = false) => {
   const baseClass = props.isMobile
     ? withIcon
-      ? 'inline-flex h-[45px] items-center justify-center gap-1 rounded-[10px] text-[16px] font-[500]'
-      : 'h-[45px] rounded-[10px] text-[16px] font-[500]'
+      ? 'inline-flex h-[44px] items-center justify-center gap-1 rounded-[12px] text-[16px] font-[500]'
+      : 'h-[44px] rounded-[12px] text-[16px] font-[500]'
     : withIcon
       ? 'inline-flex h-[44px] items-center justify-center gap-1 rounded-[10px] text-sm font-[600]'
       : 'h-[44px] rounded-[10px] text-sm font-[600]'
 
-  const stateClass = isActive ? 'bg-bg-3 text-text-1' : 'bg-bg-2 text-text-2 hover:text-text-1'
+  const stateClass = 'bg-bg-2 text-text-2 border border-transparent'
 
   return `${baseClass} ${stateClass}`
 }

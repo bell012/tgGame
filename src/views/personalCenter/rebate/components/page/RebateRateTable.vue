@@ -1,9 +1,12 @@
 <template>
-  <section class="mt-3 overflow-hidden rounded-[14px] bg-bg-2">
+  <section
+    class="mt-3 overflow-hidden rounded-[14px] bg-bg-2"
+    :class="isMobile ? 'rebate-rate-table-mobile' : ''"
+  >
     <div
       class="grid bg-bg-3"
       :class="
-        isMobile ? 'grid-cols-[44px_1fr_1fr] px-3 py-3' : 'grid-cols-[52px_1fr_1fr] px-4 py-3'
+        isMobile ? 'grid-cols-[40px_1fr_1fr] px-3 py-3' : 'grid-cols-[52px_1fr_1fr] px-4 py-3'
       "
     >
       <div></div>
@@ -20,8 +23,8 @@
       :key="row.id"
       class="grid"
       :class="[
-        isMobile ? 'grid-cols-[44px_1fr_1fr] px-3 py-3' : 'grid-cols-[52px_1fr_1fr] px-4 py-3',
-        index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2'
+        isMobile ? 'grid-cols-[40px_1fr_1fr] px-3 py-3' : 'grid-cols-[52px_1fr_1fr] px-4 py-3',
+        index % 2 === 0 ? 'bg-bg-4' : 'bg-bg-3'
       ]"
     >
       <div
@@ -58,4 +61,8 @@ defineProps<{
 }>()
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.rebate-rate-table-mobile {
+  border: 1px solid var(--color-opacity-5);
+}
+</style>
