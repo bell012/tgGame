@@ -46,13 +46,15 @@ const { t } = useI18n()
 .form-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .form-label {
-  flex: 0 0 auto;
-  width: 132px;
-  white-space: nowrap;
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
   color: var(--color-text-level-1);
   font-size: 13px;
   font-weight: 600;
@@ -60,7 +62,7 @@ const { t } = useI18n()
 }
 
 .form-control {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
   height: 36px;
   border-radius: 8px;
