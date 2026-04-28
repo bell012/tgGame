@@ -9,7 +9,9 @@
       "
     >
       <div class="relative">
-        <h3 class="pr-10 text-[18px] font-[700] leading-[22px] text-text-1">Kind Reminder</h3>
+        <h3 class="pr-10 text-[18px] font-[700] leading-[22px] text-text-1">
+          {{ t('rebatePage.records.reminderTitle') }}
+        </h3>
         <button
           type="button"
           class="absolute right-0 top-0 flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-bg-3 text-text-1"
@@ -29,14 +31,14 @@
           class="h-[40px] w-full rounded-[8px] bg-theme-primary text-[16px] font-[700] text-text-4"
           @click="visible = false"
         >
-          Confirm
+          {{ t('common.confirm') }}
         </button>
         <button
           type="button"
           class="h-[40px] w-full rounded-[8px] bg-bg-3 text-[16px] font-[500] text-text-2"
           @click="visible = false"
         >
-          Cancel
+          {{ t('common.cancel') }}
         </button>
       </div>
 
@@ -46,14 +48,14 @@
           class="h-[36px] rounded-[8px] bg-bg-3 text-[14px] font-[600] text-text-2"
           @click="visible = false"
         >
-          Cancel
+          {{ t('common.cancel') }}
         </button>
         <button
           type="button"
           class="h-[36px] rounded-[8px] bg-theme-primary text-[14px] font-[700] text-text-4"
           @click="visible = false"
         >
-          Confirm
+          {{ t('common.confirm') }}
         </button>
       </div>
     </section>
@@ -64,6 +66,9 @@
 import popShell from '@/components/withdraw/popShell.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   isMobile: boolean

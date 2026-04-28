@@ -4,7 +4,9 @@
       class="mx-auto max-h-[72vh] w-[460px] overflow-hidden rounded-[12px] bg-bg-2 shadow-[0_18px_54px_rgba(0,0,0,0.32)]"
     >
       <div class="relative flex items-center justify-center bg-bg-3 px-4 py-3">
-        <h3 class="text-[16px] font-[700] leading-[20px] text-text-1">Rebate Records</h3>
+        <h3 class="text-[16px] font-[700] leading-[20px] text-text-1">
+          {{ t('rebatePage.records.title') }}
+        </h3>
         <button
           type="button"
           class="absolute right-4 top-1/2 flex h-[28px] w-[28px] -translate-y-1/2 items-center justify-center rounded-[8px] bg-white/10 text-text-1"
@@ -25,7 +27,10 @@
 import popShell from '@/components/withdraw/popShell.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import RebateRecordsContent from '../records/RebateRecordsContent.vue'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   modelValue: boolean

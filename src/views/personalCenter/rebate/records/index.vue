@@ -2,7 +2,7 @@
   <section class="fixed inset-0 overflow-y-auto bg-bg-1">
     <div class="min-h-screen bg-bg-1" style="font-family: Inter, avertastd, sans-serif">
       <H5Header
-        title="Rebate Records"
+        :title="t('rebatePage.records.title')"
         :show-sort="true"
         :right-icon="supportHeaderIcon"
         @sort="handleSupportClick"
@@ -17,11 +17,12 @@
 
 <script setup lang="ts">
 import H5Header from '@/components/common/H5Header.vue'
-import { sideIcons } from '@/static/svg/side'
+import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+import { useI18n } from 'vue-i18n'
 import RebateRecordsContent from '../components/records/RebateRecordsContent.vue'
 
-const { side } = sideIcons
-const supportHeaderIcon = side.helpIcon
+const { t } = useI18n()
+const supportHeaderIcon = CustomerServiceIcon
 
 const handleSupportClick = () => {
   console.log('open live support')

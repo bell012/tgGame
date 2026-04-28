@@ -4,7 +4,7 @@
       <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
     </div>
     <template v-if="currentType === 'casino'">
-      <div class="min-h-screen w-full relative">
+      <div :class="contentWrapClass">
         <div
           class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
           :class="canScrollLeft ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
@@ -31,7 +31,7 @@
               class="explore-tab-button flex h-[36px] shrink-0 items-center rounded-lg px-2.5 leading-none lg:hover:bg-bg-2"
               @click.stop="onTabButton(item)"
             >
-              <div class="explore-tab-icon mr-1.5 h-4 w-4">
+              <div class="explore-tab-icon h-4 w-4">
                 <img
                   v-if="!isActiveCasinoTab(item) && typeof item.icon === 'string'"
                   :src="item.icon"
@@ -76,10 +76,10 @@
       </div>
     </template>
     <template v-if="currentType === 'sports'">
-      <div class="min-h-screen w-full relative"></div>
+      <div :class="contentWrapClass"></div>
     </template>
     <template v-if="currentType === 'lottery'">
-      <div class="min-h-screen w-full relative"></div>
+      <div :class="contentWrapClass"></div>
     </template>
   </div>
 </template>
@@ -131,15 +131,10 @@ const mobileStyle = computed<StyleValue | undefined>(() => {
   }
 
   const topNavHeight = layoutStore.TOPNAV_HEIGHT
-  const bottomTabHeight = layoutStore.BOTTOM_TAB_HEIGHT
 
   return {
     boxSizing: 'border-box',
-    height: `calc(100dvh - ${topNavHeight + bottomTabHeight}px)`,
-    marginTop: `${topNavHeight}px`,
-    overflowY: 'auto',
-    overscrollBehavior: 'contain',
-    WebkitOverflowScrolling: 'touch'
+    marginTop: `${topNavHeight}px`
   }
 })
 
@@ -159,6 +154,10 @@ const typeList = computed(() => [
   { id: 'sports', name: t('bottom_tab_bar.sports') },
   { id: 'lottery', name: t('home.Lottery') }
 ])
+
+const contentWrapClass = computed(() =>
+  isMobile.value ? 'w-full relative' : 'min-h-screen w-full relative'
+)
 
 const activeSearchKeyword = ref('')
 
@@ -506,7 +505,7 @@ onUnmounted(() => {
 
   .explore-tab-button {
     height: 36px;
-    padding: 0 14px;
+    padding: 0 10px;
     border-radius: 6px;
     font-size: 14px;
     line-height: 36px;
@@ -520,14 +519,14 @@ onUnmounted(() => {
   .explore-tab-icon {
     width: 20px;
     height: 20px;
-    margin-right: 8px;
+    margin-right: 4px;
   }
 
   .explore-tab-label {
     max-width: 120px;
     overflow: hidden;
     color: var(--color-text-level-2);
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
     text-overflow: ellipsis;
     white-space: nowrap;

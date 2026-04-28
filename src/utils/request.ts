@@ -280,7 +280,10 @@ export function showApiResponseToast(
   })
 }
 
-function rejectAuthExpiredResponse(payload: unknown) {
+/**
+ * 遇到登录失效类业务码时，先补失败提示，再执行统一登录失效处理。
+ */
+function rejectAuthExpiredResponse(payload: unknown, options?: ApiResponseToastOptions) {
   if (
     payload &&
     typeof payload === 'object' &&
@@ -295,6 +298,14 @@ function rejectAuthExpiredResponse(payload: unknown) {
         ? normalizedPayload.message
         : translateToastMessage('common.sessionExpired')
 
+    if (options?.showErrorToast !== false) {
+      globalShowToast({
+        message,
+        type: 'fail',
+        zIndex: 999999
+      })
+    }
+
     triggerAuthExpiredLogout()
     return Promise.reject(new Error(message))
   }
@@ -307,7 +318,7 @@ function finalizeApiResponse<T extends ApiResponsePayload>(
   options?: ApiResponseToastOptions
 ) {
   const normalizedPayload = normalizeApiResponseMessage(payload)
-  const authExpiredError = rejectAuthExpiredResponse(normalizedPayload)
+  const authExpiredError = rejectAuthExpiredResponse(normalizedPayload, options)
 
   if (authExpiredError) {
     return authExpiredError

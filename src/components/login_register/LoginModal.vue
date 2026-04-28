@@ -127,6 +127,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import CloseIcon from '@/static/svg/close.svg?component'
 import LoginFormDesktop from './LoginFormDesktop.vue'
 import LoginFormMobile from './LoginFormMobile.vue'
@@ -137,15 +138,20 @@ import { useI18n } from 'vue-i18n'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import Api from '@/api'
 import { getLanguageCode } from '@/utils/locale'
+import { useThemeStore } from '@/stores/theme'
+import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 
 // 是否为移动端
 const isMobile = useIsMobile()
+const themeStore = useThemeStore()
+const { theme } = storeToRefs(themeStore)
 const { t } = useI18n()
 
 const ABSOLUTE_IMAGE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
 const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
-const authBannerImageUrl = ref('')
+const authBannerRecords = ref<QuerySlideshowItem[]>([])
 
+// 登录/注册弹窗图片地址。
 const resolveAuthBannerUrl = (value: unknown) => {
   const imagePath = String(value ?? '').trim()
 
@@ -164,6 +170,28 @@ const resolveAuthBannerUrl = (value: unknown) => {
   const normalizedImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`
   return `${gameImageBaseUrl}${normalizedImagePath}`
 }
+
+// 根据当前主题决定登录/注册弹窗实际使用的图片。
+const resolveAuthBannerUrlByTheme = (item?: QuerySlideshowItem | null) => {
+  const darkThemeImageUrl = resolveAuthBannerUrl(item?.url)
+  const lightThemeImageUrl = resolveAuthBannerUrl(item?.skinUrl)
+
+  if (theme.value === 'dark') {
+    return darkThemeImageUrl
+  }
+
+  return lightThemeImageUrl || darkThemeImageUrl
+}
+
+// 根据 deploymentPath=5 的轮播图记录和当前主题生成弹窗背景图。
+const authBannerImageUrl = computed(() => {
+  return (
+    authBannerRecords.value
+      .filter(item => Number(item?.deploymentPath) === 5)
+      .map(item => resolveAuthBannerUrlByTheme(item))
+      .find(Boolean) || ''
+  )
+})
 
 // 登录/注册弹窗背景图
 const pcBackgroundImage = computed(() => {
@@ -227,14 +255,11 @@ const fetchAuthBannerImage = async () => {
       }
     })
 
-    const records = Array.isArray(response?.result?.records) ? response.result.records : []
-    authBannerImageUrl.value =
-      records
-        .filter(item => Number(item?.deploymentPath) === 5)
-        .map(item => resolveAuthBannerUrl(item?.url))
-        .find(Boolean) || ''
+    authBannerRecords.value = Array.isArray(response?.result?.records)
+      ? response.result.records
+      : []
   } catch (error) {
-    authBannerImageUrl.value = ''
+    authBannerRecords.value = []
     console.error(error)
   }
 }

@@ -16,7 +16,7 @@
       v-model="keyword"
       type="text"
       :placeholder="t('search.placeholder')"
-      class="top-search-input w-full h-[50px] pl-[116px] pr-11 rounded-[10px] border text-text-1 text-[14px] font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+      class="top-search-input w-full h-[50px] pl-[116px] pr-11 rounded-[10px] border text-text-1 text-[12px] font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
       @input="onInput"
       @keydown.enter.prevent="onSearch"
       @focus="focusClick"
@@ -317,7 +317,7 @@ onBeforeUnmount(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 16px;
+    font-size: 12px;
     line-height: 1;
   }
 }

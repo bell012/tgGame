@@ -13,7 +13,7 @@
           class="text-center font-[700] text-text-1"
           :class="isMobile ? 'text-[20px] leading-[24px]' : 'text-[16px] leading-[20px]'"
         >
-          Eligible Turnover
+          {{ t('rebatePage.eligiblePopup.title') }}
         </h3>
         <button
           type="button"
@@ -28,7 +28,7 @@
       <div class="mt-5 rounded-[12px] bg-bg-3" :class="isMobile ? 'px-4 py-5' : 'px-4 py-4'">
         <div class="flex items-center justify-between gap-3 text-text-2">
           <span :class="isMobile ? 'text-[12px] leading-[16px]' : 'text-[14px] leading-[20px]'">
-            Pending Rebate Turnover
+            {{ t('rebatePage.eligiblePopup.pendingRebateTurnover') }}
           </span>
           <span class="shrink-0 text-right text-text-1" :class="valueClass">
             {{ pendingRebateTurnoverText }}
@@ -39,7 +39,7 @@
           class="mt-4 flex items-center justify-between gap-3 text-text-2"
           :class="isMobile ? 'text-[12px] leading-[16px]' : 'text-[14px] leading-[20px]'"
         >
-          <span>Promo Bonus Turnover Deduction</span>
+          <span>{{ t('rebatePage.eligiblePopup.promoBonusTurnoverDeduction') }}</span>
           <span class="shrink-0 text-right text-text-1" :class="valueClass">
             {{ promoBonusTurnoverDeductionText }}
           </span>
@@ -49,7 +49,9 @@
           class="mt-4 flex items-center justify-between gap-3"
           :class="isMobile ? 'text-[12px] leading-[16px]' : 'text-[14px] leading-[20px]'"
         >
-          <span class="text-text-2">Eligible Rebate Turnover</span>
+          <span class="text-text-2">{{
+            t('rebatePage.eligiblePopup.eligibleRebateTurnover')
+          }}</span>
           <span class="shrink-0 text-right text-theme-primary" :class="valueClass">
             {{ eligibleTurnoverText }}
           </span>
@@ -58,25 +60,25 @@
 
       <div class="mt-6">
         <p class="font-[700] text-text-1" :class="isMobile ? 'text-[12px]' : 'text-[14px]'">
-          Calculation Rule :
+          {{ t('rebatePage.eligiblePopup.calculationRuleTitle') }}
         </p>
         <p
           class="mt-2 text-text-2"
           :class="isMobile ? 'text-[12px] leading-[18px]' : 'text-[14px] leading-[22px]'"
         >
-          Pending rebate turnover - promo bonus turnover deduction = eligible rebate turnover.
+          {{ t('rebatePage.eligiblePopup.calculationRuleContent') }}
         </p>
       </div>
 
       <div class="mt-6">
         <p class="font-[700] text-text-1" :class="isMobile ? 'text-[12px]' : 'text-[14px]'">
-          Promo Bonus Turnover Deduction Note :
+          {{ t('rebatePage.eligiblePopup.promoBonusNoteTitle') }}
         </p>
         <p
           class="mt-2 text-text-2"
           :class="isMobile ? 'text-[12px] leading-[18px]' : 'text-[14px] leading-[22px]'"
         >
-          Turnover generated from claimed promo bonuses that is not eligible for rebate.
+          {{ t('rebatePage.eligiblePopup.promoBonusNoteContent') }}
         </p>
       </div>
     </section>
@@ -87,6 +89,9 @@
 import popShell from '@/components/withdraw/popShell.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   eligibleTurnoverText: string

@@ -39,6 +39,7 @@
       @pointerup="onMarqueePointerUp"
       @pointercancel="onMarqueePointerCancel"
       @touchstart.passive="onMarqueeTouchStart"
+      @touchmove.passive="onMarqueeTouchMove"
       @touchend.passive="onMarqueeTouchEnd"
       @touchcancel.passive="onMarqueeTouchEnd"
       @mouseenter="marqueeHoverPaused = true"
@@ -75,6 +76,7 @@
 import Api from '@/api'
 import icon from '../img/Image4.svg?url'
 import placeholderImg from '@/static/img/home/errImg1.png'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { getCurrentCurrency } from '@/utils/locale'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
@@ -85,6 +87,7 @@ interface RecentBigWin {
 }
 
 const currentCurrency = computed(() => getCurrentCurrency())
+const isMobile = useIsMobile()
 const loading = ref(true)
 const list = ref<RecentBigWin[]>([])
 const skeletonCount = 12
@@ -135,6 +138,7 @@ let marqueeProgramScrollResetTimer = 0
 let marqueeLastProgrammaticScrollMs = 0
 let marqueeResizeObserver: ResizeObserver | null = null
 let marqueeSuppressClick = false
+let marqueeMobileResumeTimer = 0
 
 const marqueeDrag = {
   active: false,
@@ -144,6 +148,47 @@ const marqueeDrag = {
   moved: false
 }
 
+/**
+ * 清理 H5 点击/触摸后的自动恢复定时器
+ */
+const clearMarqueeMobileResumeTimer = () => {
+  if (!marqueeMobileResumeTimer) {
+    return
+  }
+
+  window.clearTimeout(marqueeMobileResumeTimer)
+  marqueeMobileResumeTimer = 0
+}
+
+/**
+ * H5 点击或触摸后，2 秒后强制清理暂停状态并恢复跑马灯滚动。
+ */
+const scheduleMarqueeMobileResume = () => {
+  clearMarqueeMobileResumeTimer()
+
+  if (!isMobile.value) {
+    return
+  }
+
+  marqueeMobileResumeTimer = window.setTimeout(() => {
+    marqueePointerActive.value = false
+    marqueeHoverPaused.value = false
+    marqueeDrag.active = false
+    marqueeDrag.pointerId = -1
+    marqueeUserScrollUntil = 0
+    marqueeProgramScroll = false
+    marqueeLastTs = 0
+    marqueeMobileResumeTimer = 0
+
+    if (!marqueeLoopRunning) {
+      startMarqueeRaf()
+    }
+  }, MARQUEE_IDLE_RESUME_MS)
+}
+
+/**
+ * 停止自动滚动循环，并清理与滚动状态相关的定时器。
+ */
 const stopMarqueeRaf = () => {
   marqueeLoopRunning = false
   if (marqueeRafId) {
@@ -154,6 +199,7 @@ const stopMarqueeRaf = () => {
     window.clearTimeout(marqueeProgramScrollResetTimer)
     marqueeProgramScrollResetTimer = 0
   }
+  clearMarqueeMobileResumeTimer()
   marqueeProgramScroll = false
   marqueeLastTs = 0
 }
@@ -218,23 +264,42 @@ const bumpMarqueeUserIdlePause = () => {
   marqueeUserScrollUntil = Date.now() + MARQUEE_IDLE_RESUME_MS
 }
 
+/**
+ * 记录用户开始与跑马灯交互；H5 下额外启动 2 秒自动恢复。
+ */
 const beginMarqueeInteraction = () => {
   marqueePointerActive.value = true
+  scheduleMarqueeMobileResume()
 }
 
+/**
+ * 结束用户交互并进入 2 秒空闲暂停期，之后恢复自动滚动。
+ */
 const endMarqueeInteraction = () => {
   marqueePointerActive.value = false
   bumpMarqueeUserIdlePause()
+  scheduleMarqueeMobileResume()
 }
 
+/**
+ * 用户手动滚动时，更新空闲恢复时间；H5 下同时强制恢复。
+ */
 const onMarqueeScroll = () => {
   if (marqueeProgramScroll) return
   if (performance.now() - marqueeLastProgrammaticScrollMs < 120) return
   if (!marqueePointerActive.value) return
   bumpMarqueeUserIdlePause()
+  scheduleMarqueeMobileResume()
 }
 
+/**
+ * PC 使用 pointer 事件处理拖拽；H5 走 touch 事件。
+ */
 const onMarqueePointerDown = (e: PointerEvent) => {
+  if (isMobile.value) {
+    return
+  }
+
   marqueeSuppressClick = false
   beginMarqueeInteraction()
   if (e.pointerType === 'mouse' && e.button === 0) {
@@ -251,7 +316,14 @@ const onMarqueePointerDown = (e: PointerEvent) => {
   }
 }
 
+/**
+ * 仅在 PC 拖拽时同步滚动位置；H5 下忽略 pointermove。
+ */
 const onMarqueePointerMove = (e: PointerEvent) => {
+  if (isMobile.value) {
+    return
+  }
+
   if (!marqueeDrag.active || e.pointerId !== marqueeDrag.pointerId) return
   const el = marqueeRef.value
   if (!el) return
@@ -263,7 +335,14 @@ const onMarqueePointerMove = (e: PointerEvent) => {
   el.scrollLeft = marqueeDrag.startScroll - dx
 }
 
+/**
+ * PC 结束 pointer 交互后恢复空闲滚动；H5 下忽略 pointerup。
+ */
 const onMarqueePointerUp = (e: PointerEvent) => {
+  if (isMobile.value) {
+    return
+  }
+
   if (marqueeDrag.active && e.pointerId === marqueeDrag.pointerId) {
     try {
       marqueeRef.value?.releasePointerCapture(e.pointerId)
@@ -281,15 +360,33 @@ const onMarqueePointerUp = (e: PointerEvent) => {
 
 const onMarqueePointerCancel = onMarqueePointerUp
 
+/**
+ * H5 触摸开始时进入暂停态，并启动 2 秒自动恢复计时。
+ */
 const onMarqueeTouchStart = () => {
   marqueeSuppressClick = false
   beginMarqueeInteraction()
 }
 
+/**
+ * H5 手指滑动时持续刷新自动恢复计时，松手后最多 2 秒恢复滚动。
+ */
+const onMarqueeTouchMove = () => {
+  marqueePointerActive.value = true
+  bumpMarqueeUserIdlePause()
+  scheduleMarqueeMobileResume()
+}
+
+/**
+ * H5 触摸结束后进入空闲恢复阶段。
+ */
 const onMarqueeTouchEnd = () => {
   endMarqueeInteraction()
 }
 
+/**
+ * 重置跑马灯交互状态，处理触摸/指针事件异常中断的情况。
+ */
 const resetMarqueeInteraction = () => {
   if (!marqueePointerActive.value && !marqueeDrag.active) return
   endMarqueeInteraction()
@@ -297,7 +394,14 @@ const resetMarqueeInteraction = () => {
   marqueeDrag.pointerId = -1
 }
 
+/**
+ * H5 单击后即使没有后续操作，在 2 秒后自动恢复滚动。
+ */
 const onMarqueeClickCapture = (e: MouseEvent) => {
+  if (isMobile.value) {
+    scheduleMarqueeMobileResume()
+  }
+
   if (!marqueeSuppressClick) return
   e.preventDefault()
   e.stopPropagation()

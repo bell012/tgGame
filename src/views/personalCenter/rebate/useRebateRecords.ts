@@ -1,5 +1,7 @@
 import Api from '@/api'
+import type { QueryRebateDetailPageRecord } from '@/api/interface/user'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 export type RebateRecordsPeriodKey =
   | 'today'
@@ -21,6 +23,9 @@ export interface RebateRecordsSummary {
   rebateAmount: number
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000
+const THIRTY_DAYS_MS = 30 * DAY_MS
+
 const EMPTY_SUMMARY: RebateRecordsSummary = {
   validBets: 0,
   turnoverDeduction: 0,
@@ -28,43 +33,14 @@ const EMPTY_SUMMARY: RebateRecordsSummary = {
   rebateAmount: 0
 }
 
-const PERIOD_TABS: RebateRecordsTab[] = [
-  { key: 'today', label: 'Today' },
-  { key: 'yesterday', label: 'Yesterday' },
-  { key: 'last3Days', label: 'Last 3 Days' },
-  { key: 'last7Days', label: 'Last 7 Days' },
-  { key: 'last15Days', label: 'Last 15 Days' },
-  { key: 'last30Days', label: 'Last 30 Days' }
+const PERIOD_TAB_KEYS: RebateRecordsPeriodKey[] = [
+  'today',
+  'yesterday',
+  'last3Days',
+  'last7Days',
+  'last15Days',
+  'last30Days'
 ]
-
-const PERIOD_SCALES: Record<RebateRecordsPeriodKey, number> = {
-  today: 1,
-  yesterday: 0.86,
-  last3Days: 2.45,
-  last7Days: 4.92,
-  last15Days: 9.86,
-  last30Days: 18.35
-}
-
-const PERIOD_ALIASES: Record<RebateRecordsPeriodKey, string[]> = {
-  today: ['today', '1', 'd1', 'day1', 'same_day'],
-  yesterday: ['yesterday', '1d', 'prev_day', 'previous_day'],
-  last3Days: ['last3days', '3days', '3d', 'last_3_days', 'three_days'],
-  last7Days: ['last7days', '7days', '7d', 'last_7_days', 'seven_days'],
-  last15Days: ['last15days', '15days', '15d', 'last_15_days', 'fifteen_days'],
-  last30Days: ['last30days', '30days', '30d', 'last_30_days', 'thirty_days']
-}
-
-const pickField = (source: Record<string, unknown>, keys: string[]) => {
-  for (const key of keys) {
-    const value = source[key]
-    if (value !== undefined && value !== null && String(value).trim() !== '') {
-      return value
-    }
-  }
-
-  return undefined
-}
 
 const toNumber = (value: unknown, fallback = 0) => {
   const parsedValue = Number(value)
@@ -75,190 +51,114 @@ const roundAmount = (value: number) => Number(value.toFixed(2))
 
 const formatAmount = (value: number) => value.toFixed(2)
 
-const normalizePeriodKey = (value: unknown): RebateRecordsPeriodKey | null => {
-  if (typeof value !== 'string' && typeof value !== 'number') {
-    return null
-  }
-
-  const normalizedValue = String(value)
-    .trim()
-    .toLowerCase()
-    .replace(/[\s_-]+/g, '')
-  if (!normalizedValue) {
-    return null
-  }
-
-  const matchedEntry = Object.entries(PERIOD_ALIASES).find(([, aliases]) => {
-    return aliases.some(alias => alias.replace(/[\s_-]+/g, '') === normalizedValue)
-  })
-
-  return (matchedEntry?.[0] as RebateRecordsPeriodKey | undefined) ?? null
+const getStartOfDay = (timestamp: number) => {
+  const targetDate = new Date(timestamp)
+  targetDate.setHours(0, 0, 0, 0)
+  return targetDate.getTime()
 }
 
-const normalizeSummary = (value: unknown): RebateRecordsSummary | null => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return null
-  }
+const getPeriodRange = (period: RebateRecordsPeriodKey, currentTimestamp = Date.now()) => {
+  const todayStart = getStartOfDay(currentTimestamp)
 
-  const rawValue = value as Record<string, unknown>
-
-  const rawValidBets = pickField(rawValue, [
-    'validBets',
-    'validBet',
-    'betAmount',
-    'todayValidBets',
-    'todayValidBet',
-    'currentValidBets',
-    'currentBetAmount'
-  ])
-  const rawTurnoverDeduction = pickField(rawValue, [
-    'turnoverDeduction',
-    'promoBonusTurnoverDeduction',
-    'bonusTurnoverDeduction',
-    'deductionAmount'
-  ])
-  const rawEligibleTurnover = pickField(rawValue, [
-    'eligibleTurnover',
-    'eligibleRebateTurnover',
-    'validTurnover',
-    'turnoverAmount'
-  ])
-  const rawRebateAmount = pickField(rawValue, [
-    'rebateAmount',
-    'claimableAmount',
-    'canReceiveAmount',
-    'receiveAmount'
-  ])
-
-  const hasSummaryField = [
-    rawValidBets,
-    rawTurnoverDeduction,
-    rawEligibleTurnover,
-    rawRebateAmount
-  ].some(item => item !== undefined)
-
-  if (!hasSummaryField) {
-    return null
-  }
-
-  return {
-    validBets: toNumber(rawValidBets),
-    turnoverDeduction: toNumber(rawTurnoverDeduction),
-    eligibleTurnover: toNumber(rawEligibleTurnover),
-    rebateAmount: toNumber(rawRebateAmount)
-  }
-}
-
-const normalizeSummaryItem = (
-  value: unknown
-): { period: RebateRecordsPeriodKey; summary: RebateRecordsSummary } | null => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return null
-  }
-
-  const rawValue = value as Record<string, unknown>
-  const period = normalizePeriodKey(
-    pickField(rawValue, ['period', 'periodKey', 'range', 'rangeCode', 'tab', 'type', 'dateType'])
-  )
-  const summary = normalizeSummary(rawValue)
-
-  if (!period || !summary) {
-    return null
-  }
-
-  return { period, summary }
-}
-
-const buildFallbackSummaries = (
-  baseSummary: RebateRecordsSummary
-): Record<RebateRecordsPeriodKey, RebateRecordsSummary> => {
-  return PERIOD_TABS.reduce(
-    (accumulator, tab) => {
-      const scale = PERIOD_SCALES[tab.key]
-      accumulator[tab.key] = {
-        validBets: roundAmount(baseSummary.validBets * scale),
-        turnoverDeduction: roundAmount(baseSummary.turnoverDeduction * scale),
-        eligibleTurnover: roundAmount(baseSummary.eligibleTurnover * scale),
-        rebateAmount: roundAmount(baseSummary.rebateAmount * scale)
+  switch (period) {
+    case 'today':
+      return {
+        start: todayStart,
+        end: currentTimestamp
       }
+    case 'yesterday':
+      return {
+        start: todayStart - DAY_MS,
+        end: todayStart - 1
+      }
+    case 'last3Days':
+      return {
+        start: todayStart - 2 * DAY_MS,
+        end: currentTimestamp
+      }
+    case 'last7Days':
+      return {
+        start: todayStart - 6 * DAY_MS,
+        end: currentTimestamp
+      }
+    case 'last15Days':
+      return {
+        start: todayStart - 14 * DAY_MS,
+        end: currentTimestamp
+      }
+    case 'last30Days':
+      return {
+        start: todayStart - 29 * DAY_MS,
+        end: currentTimestamp
+      }
+    default:
+      return {
+        start: todayStart,
+        end: currentTimestamp
+      }
+  }
+}
+
+const filterRecordsByPeriod = (
+  records: QueryRebateDetailPageRecord[],
+  period: RebateRecordsPeriodKey
+) => {
+  const { start, end } = getPeriodRange(period)
+
+  return records.filter(record => {
+    const createDate = toNumber(record.createDate, NaN)
+    if (!Number.isFinite(createDate)) {
+      return false
+    }
+
+    return createDate >= start && createDate <= end
+  })
+}
+
+const summarizeRecords = (records: QueryRebateDetailPageRecord[]): RebateRecordsSummary => {
+  if (!records.length) {
+    return { ...EMPTY_SUMMARY }
+  }
+
+  const total = records.reduce<RebateRecordsSummary>(
+    (accumulator, record) => {
+      const betAmount = toNumber(record.betAmount)
+      const amountRate = toNumber(record.amountRate)
+      const rebatePoints = toNumber(record.rebatePoints)
+
+      accumulator.validBets += betAmount
+      accumulator.eligibleTurnover += amountRate
+      accumulator.rebateAmount += rebatePoints
+      accumulator.turnoverDeduction += rebatePoints - amountRate
       return accumulator
     },
-    {} as Record<RebateRecordsPeriodKey, RebateRecordsSummary>
+    { ...EMPTY_SUMMARY }
   )
-}
 
-const applyResponseToSummaries = (
-  result: unknown,
-  summaries: Record<RebateRecordsPeriodKey, RebateRecordsSummary>
-) => {
-  if (!result) {
-    return
+  return {
+    validBets: roundAmount(total.validBets),
+    turnoverDeduction: roundAmount(total.turnoverDeduction),
+    eligibleTurnover: roundAmount(total.eligibleTurnover),
+    rebateAmount: roundAmount(total.rebateAmount)
   }
-
-  const rawResult: Record<string, unknown> = Array.isArray(result)
-    ? { records: result }
-    : ((result as Record<string, unknown>) ?? {})
-
-  const topLevelSummary = normalizeSummary(rawResult)
-  if (topLevelSummary) {
-    summaries.today = {
-      ...summaries.today,
-      ...topLevelSummary
-    }
-  }
-
-  Object.entries(rawResult).forEach(([key, value]) => {
-    const period = normalizePeriodKey(key)
-    const summary = normalizeSummary(value)
-
-    if (period && summary) {
-      summaries[period] = summary
-    }
-  })
-
-  const rawList = pickField(rawResult, [
-    'rebateRecords',
-    'rebateRecordList',
-    'periodRecords',
-    'summaryList',
-    'records'
-  ])
-
-  if (!Array.isArray(rawList)) {
-    return
-  }
-
-  rawList.forEach(item => {
-    const normalizedItem = normalizeSummaryItem(item)
-    if (!normalizedItem) {
-      return
-    }
-
-    summaries[normalizedItem.period] = normalizedItem.summary
-  })
-}
-
-const createBaseSummary = (result: unknown): RebateRecordsSummary => {
-  const rawResult: Record<string, unknown> = Array.isArray(result)
-    ? {}
-    : ((result as Record<string, unknown>) ?? {})
-
-  const summary = normalizeSummary(rawResult)
-  if (summary) {
-    return summary
-  }
-
-  return { ...EMPTY_SUMMARY }
 }
 
 export const useRebateRecords = () => {
+  const { t } = useI18n()
   const activePeriod = ref<RebateRecordsPeriodKey>('today')
   const isLoading = ref(false)
-  const summaries = ref<Record<RebateRecordsPeriodKey, RebateRecordsSummary>>(
-    buildFallbackSummaries(EMPTY_SUMMARY)
+  const allRecords = ref<QueryRebateDetailPageRecord[]>([])
+  const recordTabs = computed<RebateRecordsTab[]>(() =>
+    PERIOD_TAB_KEYS.map(key => ({
+      key,
+      label: t(`rebatePage.records.periodTabs.${key}`)
+    }))
   )
 
-  const activeSummary = computed(() => summaries.value[activePeriod.value] ?? EMPTY_SUMMARY)
+  const activeSummary = computed(() => {
+    const filteredRecords = filterRecordsByPeriod(allRecords.value, activePeriod.value)
+    return summarizeRecords(filteredRecords)
+  })
 
   const setActivePeriod = (period: RebateRecordsPeriodKey) => {
     activePeriod.value = period
@@ -268,16 +168,25 @@ export const useRebateRecords = () => {
     isLoading.value = true
 
     try {
-      const response = await Api.user.selectRebateRate()
+      const endTime = Date.now()
+      const startTime = endTime - THIRTY_DAYS_MS
+
+      const response = await Api.user.queryRebateDetailPage({
+        startTime,
+        endTime,
+        page: {
+          current: 1,
+          size: 500
+        }
+      })
       if (!response?.success) {
         throw new Error(response?.message || 'load rebate records failed')
       }
 
-      const nextSummaries = buildFallbackSummaries(createBaseSummary(response.result))
-      applyResponseToSummaries(response.result, nextSummaries)
-      summaries.value = nextSummaries
+      allRecords.value = Array.isArray(response.result?.records) ? response.result.records : []
     } catch (error) {
       console.error('loadRebateRecords failed', error)
+      allRecords.value = []
     } finally {
       isLoading.value = false
     }
@@ -292,7 +201,7 @@ export const useRebateRecords = () => {
     activeSummary,
     formatAmount,
     isLoading,
-    recordTabs: PERIOD_TABS,
+    recordTabs,
     setActivePeriod
   }
 }

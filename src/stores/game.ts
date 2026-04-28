@@ -709,10 +709,6 @@ export const useGameStore = defineStore('game', () => {
   ): Promise<GamePlatformOption[]> => {
     const normalizedGameTypeCode = gameTypeCode.trim()
 
-    if (!normalizedGameTypeCode) {
-      return []
-    }
-
     const list = await queryGameData({
       gameTypeCode: normalizedGameTypeCode,
       rowType: 2,

@@ -193,7 +193,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import { useI18n } from 'vue-i18n'
 import DOGEIcon from '@/static/img/crypto/DOGE.png'
 import TRXIcon from '@/static/img/crypto/TRX.png'
@@ -231,7 +231,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t } = useI18n()
-const unavailableMessage = 'Unavailable'
+const unavailableMessage = t('withdraw.unavailable')
 
 const presetsRef = ref<HTMLDivElement | null>(null)
 const { expanded } = usePresetGrid(presetsRef)
@@ -251,7 +251,7 @@ const emit = defineEmits<{
 }>()
 
 const showUnavailableToast = () => {
-  showToast({
+  globalShowToast({
     message: unavailableMessage,
     type: 'fail'
   })

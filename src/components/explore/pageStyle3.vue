@@ -83,7 +83,8 @@ import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
+import type { GameDataItem } from '@/api/interface/game'
+import type { GamePlatformOption } from '@/stores/game'
 import type { GameQueryOptions } from '@/stores/game'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
@@ -127,7 +128,7 @@ const total = ref(0)
 const totalPages = ref(1)
 const isLoading = ref(false)
 const pageData = ref<GameDataItem[]>([])
-const brandOptions = ref<GameBrandItem[]>([])
+const platformOptions = ref<GamePlatformOption[]>([])
 const selectedSort = ref(props.sortValue || sortOptions[0].value)
 const selectedProviders = ref<string[]>(props.providerCodes ?? [])
 const canPrev = computed(() => page.value > 1)
@@ -146,11 +147,15 @@ const resolvedPageSize = computed(() => {
 })
 
 const providerOptions = computed(() => {
-  return brandOptions.value.map(item => ({
-    label: item.brandName,
-    value: item.brandCode,
-    icon: getBrandIcon(item)
+  return platformOptions.value.map(item => ({
+    label: item.platformName,
+    value: item.platformCode,
+    icon: getPlatformIcon(item)
   }))
+})
+
+const currentGameTypeCode = computed(() => {
+  return String((props.queryOptions ?? props.modules ?? {}).gameTypeCode ?? '').trim()
 })
 
 const resolvedQueryOptions = computed<GameQueryOptions>(() => {
@@ -168,8 +173,7 @@ const resolvedQueryOptions = computed<GameQueryOptions>(() => {
   return {
     ...baseOptions,
     ...sortOptionMap[selectedSort.value],
-    // sysGameTypeCode
-    brandCodes: selectedProviders.value
+    platformCodes: selectedProviders.value
   }
 })
 
@@ -227,13 +231,13 @@ const getScrollParent = (element: HTMLElement | null) => {
   return null
 }
 
-const getBrandIcon = (item: GameBrandItem) => {
-  const imagePath = item.icon4 // || item.icon
+const getPlatformIcon = (item: GamePlatformOption) => {
+  const imagePath = item.icon4
   return imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
 }
 
 const syncSelectedProvidersFromNames = (providerNames: string[]) => {
-  if (brandOptions.value.length === 0) {
+  if (platformOptions.value.length === 0) {
     return
   }
 
@@ -241,8 +245,10 @@ const syncSelectedProvidersFromNames = (providerNames: string[]) => {
     .map(providerName => providerName.trim())
     .filter(Boolean)
     .map(providerName => {
-      const matchedBrand = brandOptions.value.find(item => item.brandName.trim() === providerName)
-      return matchedBrand?.brandCode?.trim() ?? ''
+      const matchedPlatform = platformOptions.value.find(
+        item => item.platformName.trim() === providerName
+      )
+      return matchedPlatform?.platformCode?.trim() ?? ''
     })
     .filter(Boolean)
 
@@ -260,10 +266,10 @@ const handleProvider = (value: string[]) => {
 
   const providerNames = value
     .map(providerCode => {
-      const matchedBrand = brandOptions.value.find(
-        item => item.brandCode.trim() === providerCode.trim()
+      const matchedPlatform = platformOptions.value.find(
+        item => item.platformCode.trim() === providerCode.trim()
       )
-      return matchedBrand?.brandName?.trim() ?? ''
+      return matchedPlatform?.platformName?.trim() ?? ''
     })
     .filter(Boolean)
 
@@ -353,8 +359,10 @@ const getGameData = async () => {
   }
 }
 
-const getBrandData = async () => {
-  brandOptions.value = await gameStore.queryGameBrandData()
+const getPlatformData = async () => {
+  platformOptions.value = await gameStore.queryGamePlatformsByGameTypeCode(
+    currentGameTypeCode.value
+  )
   syncSelectedProvidersFromNames(props.providerNames ?? [])
 }
 
@@ -419,5 +427,11 @@ watch(
   { immediate: true }
 )
 
-void getBrandData()
+watch(
+  currentGameTypeCode,
+  () => {
+    void getPlatformData()
+  },
+  { immediate: true }
+)
 </script>

@@ -277,12 +277,17 @@ onMounted(async () => {
 <style scoped lang="scss">
 .detail-page {
   position: relative;
-  min-height: 100vh;
 }
 
-@supports (height: 100svh) {
+@media (min-width: 640px) {
   .detail-page {
-    min-height: 100svh;
+    min-height: 100vh;
+  }
+
+  @supports (height: 100svh) {
+    .detail-page {
+      min-height: 100svh;
+    }
   }
 }
 

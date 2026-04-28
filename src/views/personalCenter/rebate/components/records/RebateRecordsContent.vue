@@ -32,7 +32,7 @@
       <div class="grid grid-cols-2">
         <div class="border-b border-r border-white/5 px-4 py-5 text-center">
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.validBets) }}</p>
-          <p :class="labelClass">Valid Bets</p>
+          <p :class="labelClass">{{ t('rebatePage.records.summary.validBets') }}</p>
         </div>
 
         <button
@@ -42,14 +42,14 @@
         >
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.turnoverDeduction) }}</p>
           <div class="mt-1.5 inline-flex items-center justify-center gap-1 text-text-2">
-            <span :class="textClass">Turnover Deduction</span>
-            <InfoIcon class="h-3.5 w-3.5 opacity-80" />
+            <span :class="textClass">{{ t('rebatePage.records.summary.turnoverDeduction') }}</span>
+            <ExplainIcon class="h-3.5 w-3.5 opacity-80" />
           </div>
         </button>
 
         <div class="border-r border-white/5 px-4 py-5 text-center">
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.eligibleTurnover) }}</p>
-          <p :class="labelClass">Eligible Turnover</p>
+          <p :class="labelClass">{{ t('rebatePage.records.summary.eligibleTurnover') }}</p>
         </div>
 
         <button type="button" class="px-4 py-5 text-center" @click="openRebateAmountPopup">
@@ -57,35 +57,40 @@
             {{ formatAmount(activeSummary.rebateAmount) }}
           </p>
           <div class="mt-1.5 inline-flex items-center justify-center gap-1 text-text-2">
-            <span :class="textClass">Rebate Amount</span>
-            <InfoIcon class="h-3.5 w-3.5 opacity-80" />
+            <span :class="textClass">{{ t('rebatePage.records.summary.rebateAmount') }}</span>
+            <ExplainIcon class="h-3.5 w-3.5 opacity-80" />
           </div>
         </button>
       </div>
     </section>
 
-    <p v-if="isLoading" class="mt-3 text-center text-[12px] text-text-2">Loading...</p>
+    <p v-if="isLoading" class="mt-3 text-center text-[12px] text-text-2">
+      {{ t('common.loading') }}
+    </p>
 
     <RebateReminderDialog
       v-model="showTurnoverDeductionPopup"
       :is-mobile="isMobile"
-      message="Valid bets from some promotions are not eligible for rebate. Please check the promotion page for details."
+      :message="turnoverDeductionReminderMessage"
     />
 
     <RebateReminderDialog
       v-model="showRebateAmountPopup"
       :is-mobile="isMobile"
-      message="The amount must not exceed the daily rebate limit."
+      :message="rebateAmountReminderMessage"
     />
   </section>
 </template>
 
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
-import InfoIcon from '@/static/svg/info.svg?component'
+import ExplainIcon from '@/static/svg/vip/explain.svg?component'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRebateRecords, type RebateRecordsPeriodKey } from '../../useRebateRecords'
 import RebateReminderDialog from './RebateReminderDialog.vue'
+
+const { t } = useI18n()
 
 const props = withDefaults(
   defineProps<{
@@ -272,6 +277,12 @@ const themeNumberClass = computed(() => {
     ? 'text-[15px] font-[700] leading-none text-theme-primary'
     : 'text-[18px] font-[700] leading-none text-theme-primary'
 })
+
+const turnoverDeductionReminderMessage = computed(() =>
+  t('rebatePage.records.turnoverDeductionReminder')
+)
+
+const rebateAmountReminderMessage = computed(() => t('rebatePage.records.rebateAmountReminder'))
 </script>
 
 <style scoped lang="scss"></style>

@@ -79,8 +79,23 @@
         </tbody>
         <tbody v-else>
           <tr class="bg-bg-2">
-            <td colspan="4" class="py-6 text-center text-[12px] text-[var(--color-text-level-2)]">
-              {{ isLoading ? t('common.loading') : t('gameDetail.noData') }}
+            <td colspan="4" class="px-2 py-5">
+              <div
+                v-if="isLoading"
+                class="text-center text-[12px] text-[var(--color-text-level-2)]"
+              >
+                {{ t('common.loading') }}
+              </div>
+              <ThemedEmptyState
+                v-else
+                :dark-image="noDataImg"
+                :light-image="noDataLightImg"
+                :image-alt="t('gameDetail.noData')"
+                :message="t('gameDetail.noData')"
+                container-class="mt-0"
+                image-class="h-[120px] w-auto mb-1.5"
+                text-class="text-[12px] font-[500] leading-[18px] text-text-2"
+              />
             </td>
           </tr>
         </tbody>
@@ -139,8 +154,23 @@
         </tbody>
         <tbody v-else>
           <tr class="bg-bg-2">
-            <td colspan="4" class="py-6 text-center text-[12px] text-[var(--color-text-level-2)]">
-              {{ isLoading ? t('common.loading') : t('gameDetail.noData') }}
+            <td colspan="4" class="px-2 py-5">
+              <div
+                v-if="isLoading"
+                class="text-center text-[12px] text-[var(--color-text-level-2)]"
+              >
+                {{ t('common.loading') }}
+              </div>
+              <ThemedEmptyState
+                v-else
+                :dark-image="noDataImg"
+                :light-image="noDataLightImg"
+                :image-alt="t('gameDetail.noData')"
+                :message="t('gameDetail.noData')"
+                container-class="mt-0"
+                image-class="h-[120px] w-auto mb-1.5"
+                text-class="text-[12px] font-[500] leading-[18px] text-text-2"
+              />
             </td>
           </tr>
         </tbody>
@@ -153,7 +183,10 @@
 import Api from '@/api'
 import type { GameBetRecordItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import placeholderImg from '@/static/img/home/errImg.png'
+import noDataImg from '@/static/img/personalCenter/noData.png'
+import noDataLightImg from '@/static/img/explore/default_white.png'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'

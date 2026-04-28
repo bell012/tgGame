@@ -1,39 +1,35 @@
 import type { RebateRuleSection } from './types'
 
-export const rebateRuleSections: RebateRuleSection[] = [
+type TranslateFn = (key: string) => string
+
+export const createRebateRuleSections = (t: TranslateFn): RebateRuleSection[] => [
   {
-    title: 'Rebate Explanation :',
-    content:
-      'Rebates are calculated based on your valid bets and applicable rebate rate. The more you bet, the more rebate you can receive.'
+    title: t('rebatePage.rulesPopup.sections.rebateExplanation.title'),
+    content: t('rebatePage.rulesPopup.sections.rebateExplanation.content')
   },
   {
-    title: 'Calculation Period :',
-    content:
-      'Only valid bets placed within the recent period set by the system, such as the last 7 or 30 days, will be counted. Bets placed outside this period will be cleared automatically and will no longer be included in the rebate calculation.'
+    title: t('rebatePage.rulesPopup.sections.calculationPeriod.title'),
+    content: t('rebatePage.rulesPopup.sections.calculationPeriod.content')
   },
   {
-    title: 'Claim Rules :',
-    content:
-      'Once your rebate amount meets the claim requirement, you may claim it. The minimum claim amount must be greater than 0.01. The actual claim method is subject to what is shown on the page.'
+    title: t('rebatePage.rulesPopup.sections.claimRules.title'),
+    content: t('rebatePage.rulesPopup.sections.claimRules.content')
   },
   {
-    title: 'Payout Method :',
-    content:
-      'Rebate rewards will be credited to your account in cash. Please refer to the actual amount received.'
+    title: t('rebatePage.rulesPopup.sections.payoutMethod.title'),
+    content: t('rebatePage.rulesPopup.sections.payoutMethod.content')
   },
   {
-    title: 'Valid Bet Rules :',
-    content:
-      'Only bets that meet the platform rules will be counted as valid bets. The following are not eligible for rebate:',
+    title: t('rebatePage.rulesPopup.sections.validBetRules.title'),
+    content: t('rebatePage.rulesPopup.sections.validBetRules.content'),
     items: [
-      'Invalid or cancelled orders;',
-      'Hedge betting or other abnormal betting behavior;',
-      'Certain promotional activities or selected games.'
+      t('rebatePage.rulesPopup.sections.validBetRules.items.0'),
+      t('rebatePage.rulesPopup.sections.validBetRules.items.1'),
+      t('rebatePage.rulesPopup.sections.validBetRules.items.2')
     ]
   },
   {
-    title: 'Calculation Formula :',
-    content:
-      'Rebate Amount = Valid Bets × Applicable Rebate Rate.\nRebate rates may vary by game. Please refer to the rate shown on the page.'
+    title: t('rebatePage.rulesPopup.sections.calculationFormula.title'),
+    content: t('rebatePage.rulesPopup.sections.calculationFormula.content')
   }
 ]

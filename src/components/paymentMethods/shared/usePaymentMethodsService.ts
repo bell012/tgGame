@@ -1,7 +1,8 @@
 import Api from '@/api'
 import { AddMemberCardForm, MemberCardItem, WithdrawManagerItem } from '@/api/interface/withdraw'
+import i18n from '@/i18n'
 import { Component, computed, ref } from 'vue'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import GCashCardIcon from '@/static/svg/withdraw/GCash_card.svg?component'
 import GrabPayCardIcon from '@/static/svg/withdraw/GrabPay_card.svg?component'
 import MAYACardIcon from '@/static/svg/withdraw/MAYA_card.svg?component'
@@ -79,6 +80,7 @@ const cryptoPaymentCodes = [5]
 const fiatPaymentCodes = [13, 17, 59, 60]
 
 export function usePaymentMethodsService() {
+  const t = i18n.global.t
   let memberCardsRequestId = 0
   /**全部收款方式 */
   const paymentMethodsOptions = ref<PaymentMethodsOption[]>()
@@ -163,10 +165,9 @@ export function usePaymentMethodsService() {
       const response = await Api.withdraw.addMemberCard(requestData)
 
       if (response?.code !== 'C2') {
-        showToast({
-          message: String(response?.message || 'Add account failed'),
-          type: 'fail',
-          duration: 3000
+        globalShowToast({
+          message: String(response?.message || t('withdraw.add_account_failed')),
+          type: 'fail'
         })
         return false
       }
@@ -174,10 +175,9 @@ export function usePaymentMethodsService() {
       return true
     } catch (error) {
       console.log(error)
-      showToast({
-        message: 'Add account failed',
-        type: 'fail',
-        duration: 3000
+      globalShowToast({
+        message: t('withdraw.add_account_failed'),
+        type: 'fail'
       })
       return false
     }
@@ -197,10 +197,9 @@ export function usePaymentMethodsService() {
         validDate: 0
       })
       if (response?.code !== 'C2') {
-        showToast({
-          message: String(response?.message || 'Update default account failed'),
-          type: 'fail',
-          duration: 3000
+        globalShowToast({
+          message: String(response?.message || t('withdraw.update_default_account_failed')),
+          type: 'fail'
         })
         return false
       }
@@ -212,10 +211,9 @@ export function usePaymentMethodsService() {
       return true
     } catch (error) {
       console.log(error)
-      showToast({
-        message: 'Update default account failed',
-        type: 'fail',
-        duration: 3000
+      globalShowToast({
+        message: t('withdraw.update_default_account_failed'),
+        type: 'fail'
       })
       return false
     }
@@ -232,20 +230,18 @@ export function usePaymentMethodsService() {
         validDate: 0
       })
       if (response?.code !== 'C2') {
-        showToast({
-          message: String(response?.message || 'Delete account failed'),
-          type: 'fail',
-          duration: 3000
+        globalShowToast({
+          message: String(response?.message || t('withdraw.delete_account_failed')),
+          type: 'fail'
         })
         return
       }
       accountOptions.value = accountOptions.value?.filter(item => item.rowId !== rowId)
     } catch (error) {
       console.log(error)
-      showToast({
-        message: 'Delete account failed',
-        type: 'fail',
-        duration: 3000
+      globalShowToast({
+        message: t('withdraw.delete_account_failed'),
+        type: 'fail'
       })
     }
   }
