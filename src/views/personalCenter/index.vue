@@ -357,7 +357,7 @@ const themeStore = useThemeStore()
 const userStore = useUserStore()
 const vipStore = useVipStore()
 const { userInfo, acctInfo } = storeToRefs(userStore)
-const { myVipInfo } = storeToRefs(vipStore)
+const { myVipInfo, vipList } = storeToRefs(vipStore)
 
 const balanceFieldMap = {
   BRL: 'balanceBrl',
@@ -453,6 +453,15 @@ const avatarUrl = computed(() => {
 // VIP 等级
 const vipLevel = computed(() => myVipInfo.value?.vipId || userInfo.value?.vipId || 0)
 
+// VIP 列表中的最高等级
+const maxVipLevel = computed(() => {
+  if (!vipList.value.length) {
+    return vipLevel.value
+  }
+
+  return vipList.value.reduce((maxVipId, item) => Math.max(maxVipId, item.vipId ?? 0), 0)
+})
+
 const vipTargetConfig = computed(() => vipStore.getVipTargetConfig(vipLevel.value))
 
 const getClampedRatio = (currentValue: number, targetValue: number) => {
@@ -494,7 +503,7 @@ const handleVip = () => {
 
 // 下一个等级
 const nextVipLevel = computed(() => {
-  return vipLevel.value + 1
+  return Math.min(vipLevel.value + 1, maxVipLevel.value)
 })
 
 // 总余额
