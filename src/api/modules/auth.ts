@@ -101,7 +101,7 @@ export function resetPassword(data: ResetPasswordForm): Promise<ResetPasswordRes
     url: '/mc/resetPassword',
     method: 'post',
     data,
-    showSuccessToast: false,
+    showSuccessToast: true,
     showErrorToast: true
   })
 }
