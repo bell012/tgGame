@@ -8,17 +8,19 @@
       :class="buttonClass(category.id === activeCategory)"
       @click="handleCategoryClick(category.id, $event)"
     >
-      <img
-        v-if="isImageIcon(getIcon(category, category.id === activeCategory))"
-        :src="getIcon(category, category.id === activeCategory) as string"
-        :class="isMobile ? 'h-[18px] w-[18px] object-contain' : 'h-4 w-4 object-contain'"
-        alt=""
-      />
-      <component
-        v-else
-        :is="getIcon(category, category.id === activeCategory)"
-        :class="isMobile ? 'h-[18px] w-[18px]' : 'h-4 w-4'"
-      />
+      <template v-if="hasRenderableIcon(getIcon(category, category.id === activeCategory))">
+        <img
+          v-if="isImageIcon(getIcon(category, category.id === activeCategory))"
+          :src="getIcon(category, category.id === activeCategory) as string"
+          :class="isMobile ? 'h-[18px] w-[18px] object-contain' : 'h-4 w-4 object-contain'"
+          alt=""
+        />
+        <component
+          v-else
+          :is="getIcon(category, category.id === activeCategory)"
+          :class="isMobile ? 'h-[18px] w-[18px]' : 'h-4 w-4'"
+        />
+      </template>
       <span :class="isMobile ? 'mt-1 text-[12px] font-[500] leading-none' : ''">
         {{ category.label }}
       </span>
@@ -62,6 +64,14 @@ const getIcon = (category: RebateCategory, isActive: boolean) => {
 
 const isImageIcon = (icon: RebateCategory['icon']) => {
   return typeof icon === 'string' && icon.trim().length > 0
+}
+
+const hasRenderableIcon = (icon: RebateCategory['icon']) => {
+  if (typeof icon === 'string') {
+    return icon.trim().length > 0
+  }
+
+  return !!icon
 }
 
 const handleCategoryClick = async (categoryId: string, event: MouseEvent) => {

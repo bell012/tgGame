@@ -6,7 +6,9 @@
     <div
       class="grid items-center bg-bg-3"
       :class="
-        isMobile ? 'grid-cols-[40px_1fr_1fr] px-3 py-3' : 'grid-cols-[52px_1fr_1fr] px-4 py-3'
+        isMobile
+          ? 'grid-cols-[40px_1fr_1fr] px-3 h-[38px]'
+          : 'grid-cols-[52px_1fr_1fr] px-4 h-[38px]'
       "
     >
       <div></div>
@@ -23,7 +25,9 @@
       :key="row.id"
       class="grid items-center"
       :class="[
-        isMobile ? 'grid-cols-[40px_1fr_1fr] px-3 py-3' : 'grid-cols-[52px_1fr_1fr] px-4 py-3',
+        isMobile
+          ? 'grid-cols-[40px_1fr_1fr] px-3 h-[38px]'
+          : 'grid-cols-[52px_1fr_1fr] px-4 h-[38px]',
         index % 2 === 0 ? 'bg-bg-4' : 'bg-bg-3'
       ]"
     >
