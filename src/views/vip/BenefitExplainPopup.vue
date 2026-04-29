@@ -36,7 +36,7 @@
         </button>
         <button
           type="button"
-          class="h-[40px] w-full rounded-[8px] bg-opacity-10 text-sm font-[700] text-text-2 sm:h-[49px] sm:w-full sm:text-sm sm:rounded-[8px]"
+          class="h-[40px] w-full rounded-[8px] bg-opacity-10 text-sm font-[400] text-text-2 sm:h-[49px] sm:w-full sm:font-[700] sm:text-sm sm:rounded-[8px]"
           @click="$emit('close')"
         >
           {{ $t('vipPage.benefitExplainPopup.cancel') }}
