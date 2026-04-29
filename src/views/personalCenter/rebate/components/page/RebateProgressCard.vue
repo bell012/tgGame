@@ -28,7 +28,12 @@
       </div>
     </div>
 
-    <div class="rebate-progress-track" :style="{ '--progress-percent': `${progressPercent}%` }">
+    <div
+      class="rebate-progress-track"
+      :style="{
+        '--progress-percent-number': progressPercent
+      }"
+    >
       <div class="rebate-progress-fill" :style="{ width: `${progressPercent}%` }"></div>
       <span class="rebate-progress-percent-pill" :class="isMobile ? 'text-[10px]' : 'text-xs'">
         {{ progressPercentText }}
@@ -81,13 +86,12 @@ defineProps<{
 
 .rebate-progress-percent-pill {
   position: absolute;
-  left: clamp(18px, var(--progress-percent), calc(100% - 18px));
+  left: calc((100% - 56px) * (var(--progress-percent-number) / 100) + 28px);
   top: 50%;
   z-index: 1;
   display: inline-flex;
-  min-width: 36px;
+  width: 56px;
   height: 16px;
-  padding: 0 8px;
   align-items: center;
   justify-content: center;
   transform: translate(-50%, -50%);
@@ -96,5 +100,6 @@ defineProps<{
   color: #111a1d;
   font-weight: 700;
   line-height: 1;
+  white-space: nowrap;
 }
 </style>
