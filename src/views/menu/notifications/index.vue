@@ -318,6 +318,7 @@
 
         <!-- 全部标已读按钮 -->
         <button
+          v-if="hasVisibleNotifications"
           type="button"
           class="mark-read-button inline-flex items-center justify-end gap-[6px] text-right text-[12px] font-[400] leading-[1.2]"
           :class="currentTabUnreadCount === 0 ? 'text-text-3' : 'text-theme-primary'"
@@ -329,7 +330,7 @@
           >
             <component :is="markReadIcon" class="h-[24px] w-[24px]" />
           </span>
-          <span v-if="hasVisibleNotifications">{{ $t('notifications.markAllAsRead') }}</span>
+          <span>{{ $t('notifications.markAllAsRead') }}</span>
         </button>
       </footer>
 
@@ -530,10 +531,8 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import depositCryptoOrderPop from '@/components/deposit/order/crypto/depositCryptoOrderPop.vue'
 import depositPopShell from '@/components/deposit/shared/depositPopShell.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import {
-  default as defaultImgDark,
-  default as defaultImgLight
-} from '@/static/img/explore/default.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import delIcon from '@/static/svg/del.svg?component'
 import markReadIcon from '@/static/svg/mark-read-icon.svg?component'

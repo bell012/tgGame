@@ -24,7 +24,8 @@
           >
             <!-- 空状态 -->
             <ThemedEmptyState
-              :dark-image="noDataImg"
+              :dark-image="defaultImgDark"
+              :light-image="defaultImgLight"
               :image-alt="$t('common.noData')"
               :message="$t('common.noData')"
               container-class="mt-0"
@@ -146,7 +147,8 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import WalletLayout from '../index.vue'
 import PcLayout from './pc-layout.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
-import noDataImg from '@/static/img/personalCenter/noData.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import {
   BET_HISTORY_PAGE_SIZE,
   buildBetHistoryQueryForm,

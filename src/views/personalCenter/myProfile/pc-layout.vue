@@ -81,9 +81,12 @@
                 >{{ bottomStat.label }}</span
               >
             </div>
-            <p class="mt-3 text-center text-xl font-[700] text-text-1">
-              {{ bottomStat.value }}
-            </p>
+            <div
+              class="mt-3 flex items-baseline justify-center gap-[4px] text-center text-xl font-[700] text-text-1"
+            >
+              <span>{{ bottomStatCurrencySymbol }}</span>
+              <span>{{ bottomStatAmountText }}</span>
+            </div>
           </div>
         </section>
 
@@ -117,7 +120,8 @@
           </div>
           <ThemedEmptyState
             v-else
-            :dark-image="noDataImage"
+            :dark-image="defaultImgDark"
+            :light-image="defaultImgLight"
             :image-alt="t('personalCenter.myProfile.noFavorites')"
             :message="t('personalCenter.myProfile.noFavorites')"
             container-class="mt-0"
@@ -138,7 +142,8 @@ import CopyIcon from '@/static/svg/copy.svg?component'
 import EditIcon from '@/static/svg/edit.svg?component'
 import StatisticsIcon from '@/static/svg/personalCenter/icon80.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
-import noDataImage from '@/static/img/personalCenter/noData.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import { useMyProfile } from './shared'
 
 defineProps<{ visible: boolean }>()
@@ -152,6 +157,8 @@ const {
   profileId,
   topStats,
   bottomStat,
+  bottomStatCurrencySymbol,
+  bottomStatAmountText,
   favoriteGameCards,
   joinedOnText,
   copyMemberId,

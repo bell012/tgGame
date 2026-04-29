@@ -32,8 +32,8 @@
 
     <ThemedEmptyState
       v-if="!isLoading && brandList.length === 0"
-      :dark-image="defaultImg"
-      :light-image="defaultWhiteImg"
+      :dark-image="defaultImgDark"
+      :light-image="defaultImgLight"
       :message="t('search.stay')"
       container-class="mt-[17px]"
       image-class="w-[220px] h-[200px] object-contain mb-2.5"
@@ -91,8 +91,8 @@ import type { GameBrandItem } from '@/api/interface/game'
 import type { GameQueryOptions } from '@/stores/game'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
-import defaultImg from '@/static/img/explore/default.png'
-import defaultWhiteImg from '@/static/img/explore/default_white.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 

@@ -41,7 +41,8 @@
     <div v-else class="flex h-[520px] flex-col items-center justify-center text-center">
       <!-- 空状态 -->
       <ThemedEmptyState
-        :dark-image="EmptyImg"
+        :dark-image="defaultImgDark"
+        :light-image="defaultImgLight"
         :image-alt="t('common.noData')"
         :message="t('common.noData')"
         container-class="mt-0"
@@ -55,7 +56,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
-import EmptyImg from '@/static/img/personalCenter/noData.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 
 type ViewState = 'table' | 'empty'
 

@@ -88,8 +88,8 @@
               </div>
               <ThemedEmptyState
                 v-else
-                :dark-image="noDataImg"
-                :light-image="noDataLightImg"
+                :dark-image="defaultImgDark"
+                :light-image="defaultImgLight"
                 :image-alt="t('gameDetail.noData')"
                 :message="t('gameDetail.noData')"
                 container-class="mt-0"
@@ -163,8 +163,8 @@
               </div>
               <ThemedEmptyState
                 v-else
-                :dark-image="noDataImg"
-                :light-image="noDataLightImg"
+                :dark-image="defaultImgDark"
+                :light-image="defaultImgLight"
                 :image-alt="t('gameDetail.noData')"
                 :message="t('gameDetail.noData')"
                 container-class="mt-0"
@@ -185,8 +185,8 @@ import type { GameBetRecordItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import placeholderImg from '@/static/img/home/errImg.png'
-import noDataImg from '@/static/img/personalCenter/noData.png'
-import noDataLightImg from '@/static/img/explore/default_white.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
