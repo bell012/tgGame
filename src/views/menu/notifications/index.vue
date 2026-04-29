@@ -318,6 +318,7 @@
 
         <!-- 全部标已读按钮 -->
         <button
+          v-if="hasVisibleNotifications"
           type="button"
           class="mark-read-button inline-flex items-center justify-end gap-[6px] text-right text-[12px] font-[400] leading-[1.2]"
           :class="currentTabUnreadCount === 0 ? 'text-text-3' : 'text-theme-primary'"
@@ -329,7 +330,7 @@
           >
             <component :is="markReadIcon" class="h-[24px] w-[24px]" />
           </span>
-          <span v-if="hasVisibleNotifications">{{ $t('notifications.markAllAsRead') }}</span>
+          <span>{{ $t('notifications.markAllAsRead') }}</span>
         </button>
       </footer>
 
