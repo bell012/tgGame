@@ -155,9 +155,10 @@ export const useRebateRecords = () => {
     }))
   )
 
+  const activeRecords = computed(() => filterRecordsByPeriod(allRecords.value, activePeriod.value))
+
   const activeSummary = computed(() => {
-    const filteredRecords = filterRecordsByPeriod(allRecords.value, activePeriod.value)
-    return summarizeRecords(filteredRecords)
+    return summarizeRecords(activeRecords.value)
   })
 
   const setActivePeriod = (period: RebateRecordsPeriodKey) => {
@@ -198,6 +199,7 @@ export const useRebateRecords = () => {
 
   return {
     activePeriod,
+    activeRecords,
     activeSummary,
     formatAmount,
     isLoading,

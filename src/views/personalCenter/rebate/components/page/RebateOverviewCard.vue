@@ -30,13 +30,10 @@
       <slot name="desktop-action"></slot>
     </div>
 
-    <div
-      class="grid grid-cols-2"
-      :class="isMobile ? 'mt-5' : 'mt-4 border-t border-opacity-10 pt-4'"
-    >
+    <div class="mt-4 grid grid-cols-2 border-t border-white/10 pt-4">
       <button
         type="button"
-        class="border-r border-opacity-10 px-2 text-center"
+        class="border-r border-white/10 px-2 text-center"
         @click="$emit('eligible-turnover-click')"
       >
         <p

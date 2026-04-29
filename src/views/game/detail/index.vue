@@ -36,6 +36,7 @@
 import Api from '@/api'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { getLanguageCode } from '@/utils/request'
 import { navigateTo } from '@/utils/router'
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -234,12 +235,21 @@ const fetchGameDataForApp = async () => {
 
   isGameDataLoading.value = true
   try {
-    const res = await Api.home.getGameData(API_REQUEST_OPTIONS)
-    const nextList = Array.isArray(res?.result) ? (res.result as GameDataSection[]) : []
+    const languageCode = getLanguageCode()
+    const params = {
+      languageCode,
+      site: 'gifphcb9',
+      param: { recommend: 1, syncChildGames: 0, syncBrandChildGames: 0, homeRecommend: 0 },
+      page: { records: [], total: 0, size: 1000, current: 1 }
+    }
+    const res = await Api.game.queryGameItemPage(params, API_REQUEST_OPTIONS)
+    const nextList = Array.isArray(res?.result?.records)
+      ? (res.result.records as unknown as GameDataSection[])
+      : []
     gameData.value = nextList
     gameDetailCacheGlobal.__gameDetailGameDataCache__ = nextList
   } catch (error) {
-    console.error('getGameDataForApp failed', error)
+    console.error('queryGameItemPage for game detail failed', error)
     gameData.value = []
   } finally {
     isGameDataLoading.value = false

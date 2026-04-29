@@ -28,15 +28,9 @@
       </div>
     </div>
 
-    <div class="relative mt-3 h-[10px] rounded-full bg-mask-20">
-      <div
-        class="h-full rounded-full bg-theme-primary transition-all duration-300"
-        :style="{ width: `${progressPercent}%` }"
-      ></div>
-      <span
-        class="absolute left-0 top-1/2 -translate-y-1/2 rounded-full bg-theme-primary px-2 py-[1px] font-[700] leading-none text-text-4"
-        :class="isMobile ? 'text-[10px]' : 'text-xs'"
-      >
+    <div class="rebate-progress-track" :style="{ '--progress-percent': `${progressPercent}%` }">
+      <div class="rebate-progress-fill" :style="{ width: `${progressPercent}%` }"></div>
+      <span class="rebate-progress-percent-pill" :class="isMobile ? 'text-[10px]' : 'text-xs'">
         {{ progressPercentText }}
       </span>
     </div>
@@ -68,5 +62,39 @@ defineProps<{
 <style scoped lang="scss">
 .rebate-progress-mobile {
   border: 1px solid var(--color-opacity-5);
+}
+
+.rebate-progress-track {
+  position: relative;
+  margin-top: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--color-theme-level-3);
+}
+
+.rebate-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--color-theme-level-2);
+  transition: width 0.3s ease;
+}
+
+.rebate-progress-percent-pill {
+  position: absolute;
+  left: clamp(18px, var(--progress-percent), calc(100% - 18px));
+  top: 50%;
+  z-index: 1;
+  display: inline-flex;
+  min-width: 36px;
+  height: 16px;
+  padding: 0 8px;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background: var(--color-theme-level-1);
+  color: #111a1d;
+  font-weight: 700;
+  line-height: 1;
 }
 </style>

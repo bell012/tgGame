@@ -1,6 +1,6 @@
 <template>
-  <section class="fixed inset-0 overflow-y-auto bg-bg-1">
-    <div class="min-h-screen bg-bg-1" style="font-family: Inter, avertastd, sans-serif">
+  <section class="fixed inset-0 overflow-hidden bg-bg-1">
+    <div class="flex h-full flex-col bg-bg-1" style="font-family: Inter, avertastd, sans-serif">
       <H5Header
         :title="t('rebatePage.records.title')"
         :show-sort="true"
@@ -8,7 +8,9 @@
         @sort="handleSupportClick"
       />
 
-      <main class="px-[14px] pb-[calc(env(safe-area-inset-bottom)+24px)] pt-[14px]">
+      <main
+        class="min-h-0 flex-1 overflow-y-auto scrollbar-none px-[14px] pb-[calc(env(safe-area-inset-bottom)+24px)] pt-[14px]"
+      >
         <RebateRecordsContent />
       </main>
     </div>

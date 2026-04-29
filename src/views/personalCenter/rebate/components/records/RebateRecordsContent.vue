@@ -67,6 +67,24 @@
     <p v-if="isLoading" class="mt-3 text-center text-[12px] text-text-2">
       {{ t('common.loading') }}
     </p>
+    <div v-else-if="activeRecords.length === 0" class="mt-8 flex flex-col items-center">
+      <ThemedEmptyState
+        :dark-image="noDataDarkImg"
+        :light-image="noDataLightImg"
+        :image-alt="t('common.noData')"
+        :message="t('common.noData')"
+        container-class="mt-0"
+        image-class="h-[182px] w-auto object-contain"
+        text-class="mt-0 text-[12px] font-[500] leading-[18px] text-text-1"
+      />
+      <button
+        type="button"
+        class="mt-5 h-[40px] w-[200px] rounded-[8px] bg-theme-primary text-[14px] font-[700] text-text-4"
+        @click="handleStartPlaying"
+      >
+        {{ t('rebatePage.goBet') }}
+      </button>
+    </div>
 
     <RebateReminderDialog
       v-model="showTurnoverDeductionPopup"
@@ -84,6 +102,10 @@
 
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import { navigateTo } from '@/utils/router'
+import noDataDarkImg from '@/static/img/personalCenter/noData.png'
+import noDataLightImg from '@/static/img/explore/default_white.png'
 import ExplainIcon from '@/static/svg/vip/explain.svg?component'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -101,8 +123,15 @@ const props = withDefaults(
   }
 )
 
-const { activePeriod, activeSummary, formatAmount, isLoading, recordTabs, setActivePeriod } =
-  useRebateRecords()
+const {
+  activePeriod,
+  activeRecords,
+  activeSummary,
+  formatAmount,
+  isLoading,
+  recordTabs,
+  setActivePeriod
+} = useRebateRecords()
 
 const isMobile = useIsMobile()
 const tabsScrollerRef = ref<HTMLDivElement | null>(null)
@@ -243,6 +272,10 @@ const openTurnoverDeductionPopup = () => {
 
 const openRebateAmountPopup = () => {
   showRebateAmountPopup.value = true
+}
+
+const handleStartPlaying = () => {
+  navigateTo('/')
 }
 
 onMounted(() => {
