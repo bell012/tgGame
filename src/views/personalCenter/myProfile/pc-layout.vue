@@ -81,9 +81,12 @@
                 >{{ bottomStat.label }}</span
               >
             </div>
-            <p class="mt-3 text-center text-xl font-[700] text-text-1">
-              {{ bottomStat.value }}
-            </p>
+            <div
+              class="mt-3 flex items-baseline justify-center gap-[4px] text-center text-xl font-[700] text-text-1"
+            >
+              <span>{{ bottomStatCurrencySymbol }}</span>
+              <span>{{ bottomStatAmountText }}</span>
+            </div>
           </div>
         </section>
 
@@ -154,6 +157,8 @@ const {
   profileId,
   topStats,
   bottomStat,
+  bottomStatCurrencySymbol,
+  bottomStatAmountText,
   favoriteGameCards,
   joinedOnText,
   copyMemberId,

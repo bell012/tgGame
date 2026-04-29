@@ -3,9 +3,15 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import type { SubGameItem2 } from '@/api/interface/home.interface'
 import type { GameBetTotalResult } from '@/api/interface/user'
+import { useLocaleStore } from '@/stores/locale'
 import { useUserStore } from '@/stores/user'
 import { globalShowToast } from '@/utils/toast.ts'
-import { getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
+import {
+  formatBalance,
+  getCurrentCurrency,
+  getCurrencySymbol,
+  getFormattedBalance
+} from '@/utils/locale'
 import {
   DEFAULT_AVATAR_FRAME_ID,
   profileCustomizationState,
@@ -42,7 +48,9 @@ const EMPTY_GAME_BET_SUMMARY: GameBetSummary = { betAmount: 0, total: 0, win: '0
 
 export const useMyProfile = (options?: { onEdit?: () => void }) => {
   const { t, locale } = useI18n()
+  const localeStore = useLocaleStore()
   const userStore = useUserStore()
+  const { currentCurrency: selectedCurrency } = storeToRefs(localeStore)
   const { userInfo, acctInfo } = storeToRefs(userStore)
 
   const avatarFrameImageMap: Record<Exclude<AvatarFrameId, 'none'>, string> = {
@@ -65,9 +73,21 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
   })
   const displayName = computed(() => userInfo.value?.nickName || '')
   const profileId = computed(() => userInfo.value?.memberId || acctInfo.value?.memberId || '--')
-  const currentCurrency = computed(
-    () => acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
-  )
+
+  /**
+   * 优先使用当前已选币种；未选择时回退到账户币种与本地缓存币种。
+   */
+  const currentCurrency = computed(() => {
+    const selectedCurrencyCode = String(selectedCurrency.value ?? '')
+      .trim()
+      .toUpperCase()
+
+    if (selectedCurrencyCode && selectedCurrencyCode !== 'NONE') {
+      return selectedCurrencyCode
+    }
+
+    return acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
+  })
 
   /**
    * 从本地缓存中读取游戏目录，用于映射收藏游戏的名称与图片。
@@ -128,6 +148,19 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
 
   const topStats = computed(() => profileStats.value.slice(0, 2))
   const bottomStat = computed(() => profileStats.value[2])
+
+  /**
+   * 币种符号
+   */
+  const bottomStatCurrencySymbol = computed(() => getCurrencySymbol(currentCurrency.value).trim())
+
+  /**
+   * 总投注金额
+   */
+  const bottomStatAmountText = computed(() =>
+    formatBalance(Number(gameBetSummary.value.betAmount ?? 0), 2)
+  )
+
   const favoriteGameCards = computed<FavoriteGame[]>(() => {
     const gameCatalog = getStoredGameCatalog()
     return favoriteGameList.value.slice(0, 3).map(item => {
@@ -232,6 +265,8 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
     profileId,
     topStats,
     bottomStat,
+    bottomStatCurrencySymbol,
+    bottomStatAmountText,
     favoriteGameCards,
     joinedOnText,
     copyMemberId,

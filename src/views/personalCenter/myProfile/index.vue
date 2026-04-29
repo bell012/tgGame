@@ -69,7 +69,12 @@
             <component :is="bottomStat.icon" class="h-[18px] w-[18px] text-text-2" />
             <span class="text-xs font-[400] text-text-1">{{ bottomStat.label }}</span>
           </div>
-          <p class="mt-1.5 text-base font-[700] text-text-1 text-center">{{ bottomStat.value }}</p>
+          <div
+            class="mt-1.5 flex items-baseline justify-center gap-[2px] text-base font-[700] text-text-1"
+          >
+            <span>{{ bottomStatCurrencySymbol }}</span>
+            <span>{{ bottomStatAmountText }}</span>
+          </div>
         </div>
       </section>
 
@@ -140,6 +145,8 @@ const {
   profileId,
   topStats,
   bottomStat,
+  bottomStatCurrencySymbol,
+  bottomStatAmountText,
   favoriteGameCards,
   joinedOnText,
   copyMemberId,
