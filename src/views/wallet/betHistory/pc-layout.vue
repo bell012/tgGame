@@ -61,7 +61,8 @@
         <!-- 空状态 -->
         <ThemedEmptyState
           v-else-if="!loading && dataList.length === 0"
-          :dark-image="noDataImg"
+          :dark-image="defaultImgDark"
+          :light-image="defaultImgLight"
           :image-alt="$t('common.noData')"
           :message="$t('common.noData')"
           container-class="h-[520px] justify-center"
@@ -120,7 +121,8 @@ import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import BetDetailsModal from '../betDetails/BetDetailsModal.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
-import noDataImg from '@/static/img/personalCenter/noData.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import {
   BET_HISTORY_PAGE_SIZE,
   buildBetHistoryQueryForm,

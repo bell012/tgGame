@@ -530,10 +530,8 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import depositCryptoOrderPop from '@/components/deposit/order/crypto/depositCryptoOrderPop.vue'
 import depositPopShell from '@/components/deposit/shared/depositPopShell.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import {
-  default as defaultImgDark,
-  default as defaultImgLight
-} from '@/static/img/explore/default.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import delIcon from '@/static/svg/del.svg?component'
 import markReadIcon from '@/static/svg/mark-read-icon.svg?component'

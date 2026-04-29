@@ -19,7 +19,8 @@
           <!-- 空状态 -->
           <ThemedEmptyState
             v-else-if="!loading && dataList.length === 0"
-            :dark-image="noDataImg"
+            :dark-image="defaultImgDark"
+            :light-image="defaultImgLight"
             :image-alt="$t('common.noData')"
             :message="$t('common.noData')"
             container-class="mt-[100px] justify-center"
@@ -120,7 +121,8 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import WalletLayout from '../index.vue'
 import PcLayout from './pc-layout.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
-import noDataImg from '@/static/img/personalCenter/noData.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import TransactionAddIcon from '@/static/svg/transaction_add.svg?component'
 import TransactionDecIcon from '@/static/svg/transaction_dec.svg?component'
 import {

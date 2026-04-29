@@ -90,7 +90,8 @@
             >
               <!-- 空状态 -->
               <ThemedEmptyState
-                :dark-image="EmptyImg"
+                :dark-image="defaultImgDark"
+                :light-image="defaultImgLight"
                 :image-alt="t('common.noData')"
                 :message="t('common.noData')"
                 container-class="mt-0"
@@ -235,7 +236,8 @@ import H5Header from '@/components/common/H5Header.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import EmptyImg from '@/static/img/personalCenter/noData.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { navigateTo } from '@/utils/router'
