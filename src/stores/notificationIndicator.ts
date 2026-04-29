@@ -69,9 +69,9 @@ export const useNotificationIndicatorStore = defineStore('notificationIndicator'
     readMessageKeys: tradeReadMessageKeys
   } = storeToRefs(tradeMessageSyncStore)
 
-  const hasPromotionUnread = ref(false)
-  const hasSystemUnread = ref(false)
-  const hasTransactionUnread = ref(false)
+  const promotionUnreadCount = ref(0)
+  const systemUnreadCount = ref(0)
+  const transactionUnreadCount = ref(0)
   const isRefreshingStaticUnread = ref(false)
 
   let refreshPromise: Promise<void> | null = null
@@ -86,26 +86,31 @@ export const useNotificationIndicatorStore = defineStore('notificationIndicator'
    *
    * 只要 promotions、transactions、system 任意一类存在未读，就返回 true。
    */
-  const hasUnread = computed(() => {
-    return hasPromotionUnread.value || hasSystemUnread.value || hasTransactionUnread.value
-  })
+  const hasPromotionUnread = computed(() => promotionUnreadCount.value > 0)
+  const hasSystemUnread = computed(() => systemUnreadCount.value > 0)
+  const hasTransactionUnread = computed(() => transactionUnreadCount.value > 0)
+  const totalUnreadCount = computed(
+    () => promotionUnreadCount.value + systemUnreadCount.value + transactionUnreadCount.value
+  )
+  const hasUnread = computed(() => totalUnreadCount.value > 0)
 
   /**
    * 重置普通通知未读态缓存，通常用于退出登录或切换账号后的清理。
    */
   const resetStaticUnreadState = () => {
-    hasPromotionUnread.value = false
-    hasSystemUnread.value = false
+    promotionUnreadCount.value = 0
+    systemUnreadCount.value = 0
   }
 
   /**
-   * 分页扫描指定分类通知，只要命中一条未读消息就提前结束。
+   * 分页扫描指定分类通知，统计当前账号维度下仍未读的消息数。
    */
-  const fetchCategoryHasUnread = async (msgType: number) => {
+  const fetchCategoryUnreadCount = async (msgType: number) => {
     const readIds = getReadNotificationIds()
     const deletedIds = getDeletedNotificationIds()
     let currentPage = 1
     let totalPages = 1
+    let unreadCount = 0
 
     while (currentPage <= totalPages) {
       const response = await Api.notifications.queryNoticeMsg({
@@ -121,9 +126,9 @@ export const useNotificationIndicatorStore = defineStore('notificationIndicator'
 
       const result = getQueryResult(response)
 
-      if (result.records.some(record => isUnreadNoticeRecord(record, readIds, deletedIds))) {
-        return true
-      }
+      unreadCount += result.records.filter(record =>
+        isUnreadNoticeRecord(record, readIds, deletedIds)
+      ).length
 
       totalPages =
         Number(result.pages) > 0
@@ -132,7 +137,7 @@ export const useNotificationIndicatorStore = defineStore('notificationIndicator'
       currentPage += 1
     }
 
-    return false
+    return unreadCount
   }
 
   /**
@@ -154,13 +159,13 @@ export const useNotificationIndicatorStore = defineStore('notificationIndicator'
       isRefreshingStaticUnread.value = true
 
       try {
-        const [promotionUnread, systemUnread] = await Promise.all([
-          fetchCategoryHasUnread(PROMOTIONS_MSG_TYPE),
-          fetchCategoryHasUnread(SYSTEM_MSG_TYPE)
+        const [nextPromotionUnreadCount, nextSystemUnreadCount] = await Promise.all([
+          fetchCategoryUnreadCount(PROMOTIONS_MSG_TYPE),
+          fetchCategoryUnreadCount(SYSTEM_MSG_TYPE)
         ])
 
-        hasPromotionUnread.value = promotionUnread
-        hasSystemUnread.value = systemUnread
+        promotionUnreadCount.value = nextPromotionUnreadCount
+        systemUnreadCount.value = nextSystemUnreadCount
       } catch (error) {
         console.error('refreshStaticUnread failed', error)
       } finally {
@@ -199,9 +204,9 @@ export const useNotificationIndicatorStore = defineStore('notificationIndicator'
       const readMessageKeySet = new Set(readMessageKeys)
       const deletedMessageKeySet = new Set(deletedMessageKeys)
 
-      hasTransactionUnread.value = messageStream.some(item => {
+      transactionUnreadCount.value = messageStream.filter(item => {
         return !deletedMessageKeySet.has(item.key) && !readMessageKeySet.has(item.key)
-      })
+      }).length
     },
     {
       deep: true,
@@ -214,6 +219,10 @@ export const useNotificationIndicatorStore = defineStore('notificationIndicator'
     hasSystemUnread,
     hasTransactionUnread,
     hasUnread,
+    promotionUnreadCount,
+    systemUnreadCount,
+    transactionUnreadCount,
+    totalUnreadCount,
     isRefreshingStaticUnread,
     refreshStaticUnread,
     resetStaticUnreadState

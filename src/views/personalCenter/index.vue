@@ -311,21 +311,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
+import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import SignOutPopup from '@/components/common/SignOutPopup.vue'
-import CurrencyPopup from '@/views/personalCenter/components/CurrencyPopup.vue'
-import LanguagePopup from '@/views/personalCenter/components/LanguagePopup.vue'
-import ReferralPopup from '@/views/personalCenter/components/ReferralPopup.vue'
+import balanceIcon from '@/static/img/personalCenter/balance.png'
+import vipIcon from '@/static/img/personalCenter/vip.png'
+import vipLeft from '@/static/img/personalCenter/vip_left.png'
+import vipRight from '@/static/img/personalCenter/vip_right.png'
+import referralIcon from '@/static/img/personalCenter/yaoqing.png'
+import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
+import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import CopyIcon from '@/static/svg/copy.svg?component'
+import DepositIocn from '@/static/svg/personalCenter/icon1.svg?component'
+import SignOut from '@/static/svg/personalCenter/icon18.svg?component'
+import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
+import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
+import SunIcon from '@/static/svg/personalCenter/icon33.svg?component'
 import { useLocaleStore } from '@/stores/locale'
+import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
 import { SITE_CONFIG_STORAGE_KEY } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
+import { useTradeMessageSyncStore } from '@/stores/tradeMessageSync'
 import { useUserStore } from '@/stores/user'
 import { useVipStore } from '@/stores/vip'
-import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
-import { navigateTo } from '@/utils/router'
 import {
   getCurrentCurrency,
   getFormattedBalance,
@@ -334,29 +341,27 @@ import {
   type Locale,
   type LocaleOption
 } from '@/utils/locale'
-import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
-import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
-import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
-import CopyIcon from '@/static/svg/copy.svg?component'
-import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
-import SunIcon from '@/static/svg/personalCenter/icon33.svg?component'
-import DepositIocn from '@/static/svg/personalCenter/icon1.svg?component'
-import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
-import SignOut from '@/static/svg/personalCenter/icon18.svg?component'
-import vipLeft from '@/static/img/personalCenter/vip_left.png'
-import vipIcon from '@/static/img/personalCenter/vip.png'
-import vipRight from '@/static/img/personalCenter/vip_right.png'
-import balanceIcon from '@/static/img/personalCenter/balance.png'
-import referralIcon from '@/static/img/personalCenter/yaoqing.png'
+import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
+import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast.ts'
+import CurrencyPopup from '@/views/personalCenter/components/CurrencyPopup.vue'
+import LanguagePopup from '@/views/personalCenter/components/LanguagePopup.vue'
+import ReferralPopup from '@/views/personalCenter/components/ReferralPopup.vue'
+import { storeToRefs } from 'pinia'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const { t } = useI18n()
 const localeStore = useLocaleStore()
+const notificationIndicatorStore = useNotificationIndicatorStore()
 const themeStore = useThemeStore()
+const tradeMessageSyncStore = useTradeMessageSyncStore()
 const userStore = useUserStore()
 const vipStore = useVipStore()
 const { userInfo, acctInfo } = storeToRefs(userStore)
+const { totalUnreadCount } = storeToRefs(notificationIndicatorStore)
 const { myVipInfo, vipList } = storeToRefs(vipStore)
 
 const balanceFieldMap = {
@@ -521,6 +526,14 @@ const totalBalance = computed(() => {
   return getFormattedBalance(currentBalance.value, currentCurrency.value, 2)
 })
 
+const notificationUnreadBadge = computed(() => {
+  if (totalUnreadCount.value <= 0) {
+    return ''
+  }
+
+  return totalUnreadCount.value > 99 ? '99+' : String(totalUnreadCount.value)
+})
+
 // 当前语言
 const currentLanguage = computed(() => {
   return getLocaleLabel(localeStore.currentLanguage)
@@ -615,8 +628,8 @@ const settingsMenus = computed(() => [
     id: 'notification',
     name: t('personalCenter.notification'),
     icon: getIcon(9),
-    badge: '2',
-    handler: () => console.log('Notification clicked')
+    badge: notificationUnreadBadge.value,
+    handler: () => navigateTo('/menu/notifications')
   },
   {
     id: 'refer-earn',
@@ -834,6 +847,10 @@ const handleCurrencySelect = (code: string) => {
 const initializePersonalCenter = async () => {
   userStore.syncStoredUserData()
   await Promise.all([userStore.refreshCurrentUserData(), vipStore.refreshVipData()])
+  await Promise.all([
+    notificationIndicatorStore.refreshStaticUnread(),
+    tradeMessageSyncStore.forceSyncTradeMessages()
+  ])
 }
 
 onMounted(() => {

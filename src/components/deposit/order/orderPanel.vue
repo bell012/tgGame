@@ -269,7 +269,8 @@ import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import QRCode from 'qrcode'
-import { CountDown, showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
+import { CountDown } from 'vant'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import uploadProofPop from '../uploadProof/uploadProofPop.vue'
@@ -570,7 +571,7 @@ const renderQrCode = async () => {
 
 // 临时改为仅提示用户手动截图保存二维码
 const doCapture = () => {
-  showToast({
+  globalShowToast({
     message: t('deposit.order_save_qr_code_manual_tip'),
     type: 'success'
   })
@@ -584,7 +585,7 @@ const doCancelOrder = () => {
 // 复制文本内容到剪贴板并给出提示
 const copyWord = async (word: string) => {
   const copied = await copyTextWithFallback(word)
-  showToast({
+  globalShowToast({
     message: copied ? t('deposit.copy_success') : t('deposit.copy_failed'),
     type: copied ? 'success' : 'fail'
   })

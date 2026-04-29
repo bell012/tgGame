@@ -77,7 +77,8 @@ import type { QueryPayOrderByOrderIdResult } from '@/api/interface/wallet'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RadioCheckedIcon from '@/static/svg/radio-checked-hollow.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
-import { CountDown, showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
+import { CountDown } from 'vant'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -154,7 +155,7 @@ const handleConfirmCancel = async () => {
     const queryResponse = await Api.wallet.queryPayOrderByOrderId({ orderId })
     const detail = queryResponse?.success ? queryResponse.result : undefined
     if (!detail) {
-      showToast({
+      globalShowToast({
         message: queryResponse?.message || t('deposit.query_order_failed'),
         type: 'fail'
       })

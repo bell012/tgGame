@@ -276,7 +276,7 @@ import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?co
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import depositCryptoOrderPop from '../order/crypto/depositCryptoOrderPop.vue'
@@ -416,7 +416,7 @@ const formatWageringLabel = (multiple: number) =>
 
 // 显示当前功能不可用的提示信息
 const showUnavailableToast = () => {
-  showToast({
+  globalShowToast({
     message: t('deposit.unavailable'),
     type: 'fail'
   })
