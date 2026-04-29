@@ -31,12 +31,12 @@
               if (isMobile) {
                 handleCancel()
               } else {
-                handleDelete()
+                handleCancel()
               }
             }
           "
         >
-          {{ isMobile ? t('common.cancel') : t('common.delete') }}
+          {{ t('common.cancel') }}
         </button>
         <button
           type="button"
@@ -46,12 +46,12 @@
               if (isMobile) {
                 handleDelete()
               } else {
-                handleCancel()
+                handleDelete()
               }
             }
           "
         >
-          {{ isMobile ? t('common.delete') : t('common.cancel') }}
+          {{ t('common.delete') }}
         </button>
       </div>
     </div>
