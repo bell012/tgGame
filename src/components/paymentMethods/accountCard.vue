@@ -2,18 +2,22 @@
   <button
     v-if="option"
     type="button"
-    class="relative flex h-[154px] w-[280px] shrink-0 flex-col justify-center rounded-xl border bg-transparent text-base font-bold text-common-100 transition-colors"
-    :style="{
-      border: isActive ? '1px solid var(--color-theme-level-1)' : '1px solid transparent'
-    }"
+    class="relative flex h-[154px] w-[280px] shrink-0 flex-col justify-center overflow-hidden rounded-xl border border-transparent bg-transparent text-base font-bold text-common-100 transition-colors"
     @click.stop="doSelect"
   >
+    <div
+      v-if="isActive"
+      class="pointer-events-none absolute inset-0 z-20 rounded-xl border-2 border-theme-primary"
+    />
     <component
       v-if="option.customCardBackground"
       :is="option.customCardBackground"
-      class="absolute left-0 top-0 h-full w-full"
+      class="pointer-events-none absolute -inset-px h-[calc(100%+2px)] w-[calc(100%+2px)]"
     />
-    <div v-else class="absolute left-0 top-0 h-full w-full rounded-xl bg-bg-4" />
+    <div
+      v-else
+      class="pointer-events-none absolute -inset-px h-[calc(100%+2px)] w-[calc(100%+2px)] rounded-xl bg-bg-4"
+    />
     <div class="relative z-10 h-full w-full px-3 py-2">
       <div class="flex items-center">
         <div
