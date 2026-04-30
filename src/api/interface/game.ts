@@ -74,6 +74,44 @@ export interface GameDataResponse {
   [key: string]: unknown
 }
 
+export interface QueryGameItemPageParams {
+  languageCode?: string
+  site?: string
+  param: {
+    rowType?: number
+    hot?: number
+    syncChildGames?: number
+    syncBrandChildGames?: number
+    homeRecommend?: number
+    [key: string]: unknown
+  }
+  page: {
+    records?: unknown[]
+    total?: number
+    size: number
+    current: number
+    [key: string]: unknown
+  }
+  [key: string]: unknown
+}
+
+export interface QueryGameItemPageResult {
+  records?: GameDataItem[]
+  total?: number
+  size?: number
+  current?: number
+  pages?: number
+  [key: string]: unknown
+}
+
+export interface QueryGameItemPageResponse {
+  code: string | number
+  message: string
+  result?: QueryGameItemPageResult | null
+  success?: boolean
+  [key: string]: unknown
+}
+
 export interface QueryGameDetailsParams {
   rowId: string | number
 }

@@ -47,6 +47,13 @@ const toNumber = (value: unknown, fallback = 0) => {
   return Number.isFinite(parsedValue) ? parsedValue : fallback
 }
 
+const isMeaningfulRecord = (record: QueryRebateDetailPageRecord) => {
+  const betAmount = toNumber(record.betAmount)
+  const amountRate = toNumber(record.amountRate)
+  const rebatePoints = toNumber(record.rebatePoints)
+  return Math.abs(betAmount) > 0 || Math.abs(amountRate) > 0 || Math.abs(rebatePoints) > 0
+}
+
 const roundAmount = (value: number) => Number(value.toFixed(2))
 
 const formatAmount = (value: number) => value.toFixed(2)
@@ -155,9 +162,12 @@ export const useRebateRecords = () => {
     }))
   )
 
+  const activeRecords = computed(() =>
+    filterRecordsByPeriod(allRecords.value, activePeriod.value).filter(isMeaningfulRecord)
+  )
+
   const activeSummary = computed(() => {
-    const filteredRecords = filterRecordsByPeriod(allRecords.value, activePeriod.value)
-    return summarizeRecords(filteredRecords)
+    return summarizeRecords(activeRecords.value)
   })
 
   const setActivePeriod = (period: RebateRecordsPeriodKey) => {
@@ -198,6 +208,7 @@ export const useRebateRecords = () => {
 
   return {
     activePeriod,
+    activeRecords,
     activeSummary,
     formatAmount,
     isLoading,

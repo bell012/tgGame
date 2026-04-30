@@ -114,12 +114,16 @@ export const useGameStore = defineStore('game', () => {
   const brandData = ref<GameBrandItem[]>([])
   /** 接口返回的自定义游戏类型数据 */
   const gameTypeData = ref<GameTypeItem[]>([])
+  /** /gc/queryGameItemPage 返回的热门游戏数据 */
+  const hotGameData = ref<GameDataItem[]>([])
   /** 当前游戏数据对应的语言 */
   const gameDataLanguageCode = ref<string | null>(null)
   /** 当前品牌数据对应的语言 */
   const brandDataLanguageCode = ref<string | null>(null)
   /** 当前游戏类型数据对应的语言 */
   const gameTypeDataLanguageCode = ref<string | null>(null)
+  /** 当前热门游戏数据对应的语言 */
+  const hotGameDataLanguageCode = ref<string | null>(null)
   /** 当前是否处于请求中 */
   const isLoading = ref(false)
   /** 当前品牌列表是否处于请求中 */
@@ -135,6 +139,10 @@ export const useGameStore = defineStore('game', () => {
   let pendingBrandRequest: PendingLanguageRequest<GameBrandItem> | null = null
   /** 并发请求复用，避免同一时间重复请求游戏类型接口 */
   let pendingGameTypeRequest: PendingLanguageRequest<GameTypeItem> | null = null
+  /** 并发请求复用，避免同一时间重复请求热门游戏分页接口 */
+  let pendingHotGameRequest: PendingLanguageRequest<GameDataItem> | null = null
+  /** 并发请求复用，避免同一时间重复触发热门游戏后台补齐 */
+  let pendingHotGameHydrationRequest: PendingLanguageRequest<GameDataItem> | null = null
 
   /** 当前是否已经有游戏数据 */
   const hasGameData = computed(() => gameData.value.length > 0)
@@ -142,6 +150,8 @@ export const useGameStore = defineStore('game', () => {
   const hasBrandData = computed(() => brandData.value.length > 0)
   /** 当前是否已经有游戏类型数据 */
   const hasGameTypeData = computed(() => gameTypeData.value.length > 0)
+  /** 当前是否已经有热门游戏数据 */
+  const hasHotGameData = computed(() => hotGameData.value.length > 0)
   /** 当前界面语言 */
   const currentLanguageCode = computed(() =>
     getStorageLanguageCode(String(i18n.global.locale.value))
@@ -240,25 +250,6 @@ export const useGameStore = defineStore('game', () => {
     })
   }
 
-  /** 扁平化后的全部游戏记录，附带层级和父节点信息 */
-  const allGameRecords = computed(() => flattenGameRecords(gameData.value))
-
-  /** 按 parentRowId 建立子节点索引 */
-  const childGameRecordsByParentRowId = computed<Record<number, FlattenedGameRecord[]>>(() => {
-    return allGameRecords.value.reduce<Record<number, FlattenedGameRecord[]>>((acc, record) => {
-      if (record.parentRowId === null) {
-        return acc
-      }
-
-      if (!acc[record.parentRowId]) {
-        acc[record.parentRowId] = []
-      }
-
-      acc[record.parentRowId].push(record)
-      return acc
-    }, {})
-  })
-
   /** 更新 store 中的游戏数据 */
   const toNumber = (value: unknown, fallback = 0) => {
     const nextValue = Number(value)
@@ -319,6 +310,49 @@ export const useGameStore = defineStore('game', () => {
     gameTypeDataLanguageCode.value = languageCode
 
     return gameTypeData.value
+  }
+
+  /** 更新 store 中的热门游戏数据 */
+  const setHotGameDataState = (
+    nextHotGameData: GameDataItem[],
+    languageCode = currentLanguageCode.value
+  ) => {
+    hotGameData.value = nextHotGameData
+    hotGameDataLanguageCode.value = languageCode
+
+    return hotGameData.value
+  }
+
+  const HOT_GAME_PAGE_SIZE = 100
+  /** 目的：统一热门页查询参数；策略：与 /casino/hot_games 场景保持一致 */
+  const HOT_GAME_QUERY_PARAM = {
+    rowType: 3,
+    hot: 1,
+    syncChildGames: 0,
+    syncBrandChildGames: 0,
+    homeRecommend: 0
+  } as const
+
+  const queryHotGameItemPage = async (currentPage: number, pageSize = HOT_GAME_PAGE_SIZE) => {
+    return Api.game.queryGameItemPage({
+      param: HOT_GAME_QUERY_PARAM,
+      page: {
+        records: [],
+        total: 0,
+        size: pageSize,
+        current: currentPage
+      }
+    })
+  }
+
+  const resolveTotalPages = (pages: unknown, total: unknown, pageSize: number) => {
+    const responsePages = Number(pages ?? 0)
+    if (responsePages > 0) {
+      return responsePages
+    }
+
+    const responseTotal = Number(total ?? 0)
+    return Math.max(1, Math.ceil(responseTotal / Math.max(1, pageSize)))
   }
 
   /** 拉取最新游戏数据；默认命中有效缓存时不重复请求 */
@@ -447,6 +481,103 @@ export const useGameStore = defineStore('game', () => {
     return request.promise
   }
 
+  const hydrateHotGameDataInBackground = (
+    firstPageRecords: GameDataItem[],
+    totalPages: number,
+    pageSize: number,
+    languageCode: string
+  ) => {
+    if (totalPages <= 1) {
+      return
+    }
+
+    if (pendingHotGameHydrationRequest?.languageCode === languageCode) {
+      return
+    }
+
+    const requestId = Symbol('hot-game-data-hydration-request')
+    const promise = (async () => {
+      const mergedRecords = [...firstPageRecords]
+      try {
+        // 策略：从第 2 页开始后台补齐；边界：不阻塞首屏返回
+        for (let currentPage = 2; currentPage <= totalPages; currentPage += 1) {
+          const response = await queryHotGameItemPage(currentPage, pageSize)
+
+          const pageRecords = Array.isArray(response?.result?.records)
+            ? response.result.records
+            : []
+          mergedRecords.push(...pageRecords)
+        }
+
+        return setHotGameDataState(mergedRecords, languageCode)
+      } catch (error) {
+        console.error('hydrateHotGameDataInBackground failed', error)
+        return hotGameData.value
+      } finally {
+        if (pendingHotGameHydrationRequest?.id === requestId) {
+          pendingHotGameHydrationRequest = null
+        }
+      }
+    })()
+
+    pendingHotGameHydrationRequest = {
+      id: requestId,
+      languageCode,
+      promise
+    }
+
+    void promise
+  }
+
+  /** 拉取热门游戏分页数据，首屏优先返回并在后台补齐其余分页 */
+  const refreshHotGameData = async (force = false) => {
+    const requestLanguageCode = currentLanguageCode.value
+
+    if (pendingHotGameRequest?.languageCode === requestLanguageCode) {
+      return pendingHotGameRequest.promise
+    }
+
+    if (!force && hasHotGameData.value && hotGameDataLanguageCode.value === requestLanguageCode) {
+      return hotGameData.value
+    }
+
+    const requestId = Symbol('hot-game-data-request')
+    const promise = (async () => {
+      try {
+        const pageSize = HOT_GAME_PAGE_SIZE
+        // 策略：第一页优先返回；边界：剩余分页异步补齐
+        const response = await queryHotGameItemPage(1, pageSize)
+        const pageResult = response?.result
+        const firstPageRecords = Array.isArray(pageResult?.records) ? pageResult.records : []
+        const totalPages = resolveTotalPages(
+          pageResult?.pages,
+          pageResult?.total ?? firstPageRecords.length,
+          pageSize
+        )
+
+        const firstPageData = setHotGameDataState(firstPageRecords, requestLanguageCode)
+        hydrateHotGameDataInBackground(firstPageRecords, totalPages, pageSize, requestLanguageCode)
+        return firstPageData
+      } catch (error) {
+        console.error('refreshHotGameData failed', error)
+        return hotGameData.value
+      } finally {
+        if (pendingHotGameRequest?.id === requestId) {
+          pendingHotGameRequest = null
+        }
+      }
+    })()
+
+    const request: PendingLanguageRequest<GameDataItem> = {
+      id: requestId,
+      languageCode: requestLanguageCode,
+      promise
+    }
+
+    pendingHotGameRequest = request
+    return request.promise
+  }
+
   /** 优先使用内存数据，没有时再请求接口 */
   const ensureGameData = async () => {
     if (hasGameData.value && gameDataLanguageCode.value === currentLanguageCode.value) {
@@ -486,15 +617,46 @@ export const useGameStore = defineStore('game', () => {
     return refreshGameTypeData(true)
   }
 
-  /** 递归获取指定 rowId 节点下的所有后代记录 */
-  const getDescendantGameRecordsByRowId = (rowId: number): FlattenedGameRecord[] => {
-    const children = childGameRecordsByParentRowId.value[rowId] ?? []
+  /** 优先使用内存中的热门游戏数据，没有时再请求分页接口 */
+  const ensureHotGameData = async () => {
+    if (hasHotGameData.value && hotGameDataLanguageCode.value === currentLanguageCode.value) {
+      return hotGameData.value
+    }
 
-    return children.flatMap(child => [child, ...getDescendantGameRecordsByRowId(child.rowId)])
+    if (pendingHotGameRequest?.languageCode === currentLanguageCode.value) {
+      return pendingHotGameRequest.promise
+    }
+
+    return refreshHotGameData(true)
   }
 
   /** 根据条件过滤扁平记录，像查询表一样使用 */
-  const queryGameRecords = (options: GameQueryOptions = {}) => {
+  const queryGameRecordsFromNodes = (nodes: GameDataItem[], options: GameQueryOptions = {}) => {
+    const sourceRecords = flattenGameRecords(nodes)
+    const childRecordsByParentRowId = sourceRecords.reduce<Record<number, FlattenedGameRecord[]>>(
+      (acc, record) => {
+        if (record.parentRowId === null) {
+          return acc
+        }
+
+        if (!acc[record.parentRowId]) {
+          acc[record.parentRowId] = []
+        }
+
+        acc[record.parentRowId].push(record)
+        return acc
+      },
+      {}
+    )
+
+    const getSourceDescendantGameRecordsByRowId = (rowId: number): FlattenedGameRecord[] => {
+      const children = childRecordsByParentRowId[rowId] ?? []
+
+      return children.flatMap(child => [
+        child,
+        ...getSourceDescendantGameRecordsByRowId(child.rowId)
+      ])
+    }
     const normalizedGameTypeCodes = String(options.gameTypeCode ?? '')
       .split(',')
       .map(code => code.trim())
@@ -568,7 +730,7 @@ export const useGameStore = defineStore('game', () => {
       })
     }
 
-    const filteredRecords = allGameRecords.value.filter(record => {
+    const filteredRecords = sourceRecords.filter(record => {
       const { node } = record
       const normalizedKeyword = options.keyword?.trim().toLowerCase()
 
@@ -681,7 +843,7 @@ export const useGameStore = defineStore('game', () => {
 
     filteredRecords.forEach(record => {
       mergedRecordMap.set(record.rowId, record)
-      getDescendantGameRecordsByRowId(record.rowId).forEach(descendant => {
+      getSourceDescendantGameRecordsByRowId(record.rowId).forEach(descendant => {
         mergedRecordMap.set(descendant.rowId, descendant)
       })
     })
@@ -691,15 +853,31 @@ export const useGameStore = defineStore('game', () => {
     return sortRecords(mergedRecords)
   }
 
-  /** 根据条件查询游戏节点，只返回原始节点数据 */
-  const queryGameData = async (options: GameQueryOptions = {}) => {
-    if (options.forceRefresh) {
-      await refreshGameData(true)
-    } else {
-      await ensureGameData()
+  const isHotGamePageSourceQuery = (options: GameQueryOptions) => {
+    return Number(options.rowType) === 3 && Number(options.hot) === 1
+  }
+
+  const resolveQuerySourceNodes = async (options: GameQueryOptions = {}) => {
+    if (isHotGamePageSourceQuery(options)) {
+      if (options.forceRefresh) {
+        return refreshHotGameData(true)
+      }
+
+      return ensureHotGameData()
     }
 
-    return queryGameRecords(options).map(record => record.node)
+    if (options.forceRefresh) {
+      return refreshGameData(true)
+    }
+
+    return ensureGameData()
+  }
+
+  /** 根据条件查询游戏节点，只返回原始节点数据 */
+  const queryGameData = async (options: GameQueryOptions = {}) => {
+    const sourceNodes = await resolveQuerySourceNodes(options)
+
+    return queryGameRecordsFromNodes(sourceNodes, options).map(record => record.node)
   }
 
   /** 根据 gameTypeCode 获取 rowType=2 的游戏平台，并按 platformCode 去重 */
@@ -741,11 +919,12 @@ export const useGameStore = defineStore('game', () => {
 
   /** 根据条件分页查询扁平记录 */
   const queryGameRecordsPage = (
-    options: GameQueryOptions = {}
+    options: GameQueryOptions = {},
+    sourceNodes: GameDataItem[] = gameData.value
   ): GameQueryPageResult<FlattenedGameRecord> => {
     const page = Math.max(1, options.page ?? 1)
     const pageSize = Math.max(1, options.pageSize ?? 20)
-    const recordList = queryGameRecords(options)
+    const recordList = queryGameRecordsFromNodes(sourceNodes, options)
     const total = recordList.length
     const totalPages = Math.max(1, Math.ceil(total / pageSize))
     const startIndex = (page - 1) * pageSize
@@ -764,13 +943,8 @@ export const useGameStore = defineStore('game', () => {
   const queryGameDataPage = async (
     options: GameQueryOptions = {}
   ): Promise<GameQueryPageResult<GameDataItem>> => {
-    if (options.forceRefresh) {
-      await refreshGameData(true)
-    } else {
-      await ensureGameData()
-    }
-
-    const pageResult = queryGameRecordsPage(options)
+    const sourceNodes = await resolveQuerySourceNodes(options)
+    const pageResult = queryGameRecordsPage(options, sourceNodes)
 
     return {
       ...pageResult,

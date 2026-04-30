@@ -9,11 +9,13 @@
         key-field="rowId"
       >
         <template #item="{ item }">
-          <casinoGameCard
-            class="w-full text-left"
-            :game="toCasinoCardGame(item)"
-            @click="handleGameClick(item)"
-          />
+          <div class="w-full aspect-[330/438]">
+            <casinoGameCard
+              class="size-full text-left"
+              :game="toCasinoCardGame(item)"
+              @click="handleGameClick(item)"
+            />
+          </div>
         </template>
       </ResponsiveGridPager>
     </div>
@@ -37,11 +39,13 @@
           key-field="rowId"
         >
           <template #item="{ item }">
-            <casinoGameCard
-              class="w-full text-left"
-              :game="toCasinoCardGame(item)"
-              @click="handleGameClick(item)"
-            />
+            <div class="w-full aspect-[330/438]">
+              <casinoGameCard
+                class="size-full text-left"
+                :game="toCasinoCardGame(item)"
+                @click="handleGameClick(item)"
+              />
+            </div>
           </template>
         </ResponsiveGridPager>
       </div>
@@ -50,7 +54,6 @@
 </template>
 
 <script setup lang="ts">
-import Api from '@/api'
 import H5Header from '@/components/common/H5Header.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -62,11 +65,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import type { GameDataItem as CasinoCardGameDataItem } from '@/api/interface/game'
 import casinoGameCard from '@/views/fun/casino/components/casinoGameCard.vue'
-import {
-  findGameDetailItemByIdentity,
-  normalizeGameDetailValue,
-  resolveGameDetailHotList
-} from '../shared'
+import { normalizeGameDetailValue, queryGameDetailRecommendedItems } from '../shared'
 
 type GameDataItem = {
   rowId?: string | number
@@ -76,10 +75,17 @@ type GameDataItem = {
   platformName?: string
   gameTypeCode?: string
   sysGameTypeCode?: string
+  rowType?: number | string
   initScoreNum?: number | string
   hot?: number | string
   icon2?: string
+  icon1?: string
+  icon3?: string
+  icon4?: string
   conUrl?: string
+  recommendPicInfo?: string
+  hotPicInfo?: string
+  stylePicInfo?: string
   subGame?: GameDataItem[]
   gameItemHotVo?: {
     defaultImage?: string
@@ -87,31 +93,10 @@ type GameDataItem = {
   }
 }
 
-type GameDataSection = {
-  sysGameTypeCode?: string
-  subGame?: GameDataItem[]
-}
-
-type GameDetailCurrent = {
-  rowId?: string | number
-  itemCode?: string | number
-  platformCode?: string
-  gameTypeCode?: string
-  sysGameTypeCode?: string
-  platformName?: string
-}
-
-type GameDetailCacheGlobal = {
-  __gameDetailGameDataCache__?: GameDataSection[]
-  __gameDetailAllListCache__?: GameDataItem[]
-  __gameDetailAllPageTitleCache__?: string
-}
-
 const PAGE_SIZE = 40
 const isMobile = useIsMobile()
 const route = useRoute()
 const router = useRouter()
-const cacheGlobal = globalThis as typeof globalThis & GameDetailCacheGlobal
 const { t } = useI18n()
 
 const page = ref(1)
@@ -128,76 +113,36 @@ const pagedGameList = computed(() => {
   return gameList.value.slice(start, start + PAGE_SIZE)
 })
 
+const resolveGameImagePath = (item: GameDataItem) => {
+  return String(item.icon4 ?? '').trim()
+}
+
 const toCasinoCardGame = (item: GameDataItem): CasinoCardGameDataItem => {
   const initScoreNum = Number(item.initScoreNum ?? 0)
+  const imagePath = resolveGameImagePath(item)
+
   return {
     ...(item as Record<string, unknown>),
     rowId: Number(item.rowId ?? 0),
-    itemName: String(item.itemName ?? '').trim(),
-    icon2: String(item.icon2 ?? item.conUrl ?? '').trim(),
+    itemName: String(item.itemName ?? item.platformName ?? '').trim(),
+    icon2: imagePath,
+    conUrl: imagePath,
     initScoreNum,
     // 保持本页历史表现：人数显示接近 initScoreNum（避免 card 内随机区间影响）
     initScoreStar: initScoreNum
   } as CasinoCardGameDataItem
 }
 
-const getGameData = async () => {
-  const cacheData = cacheGlobal.__gameDetailGameDataCache__
-  if (Array.isArray(cacheData) && cacheData.length > 0) {
-    return cacheData
-  }
-
-  const res = await Api.home.getGameData({
-    showSuccessToast: false,
-    showErrorToast: true
-  })
-  const nextList = Array.isArray(res?.result) ? (res.result as GameDataSection[]) : []
-  cacheGlobal.__gameDetailGameDataCache__ = nextList
-  return nextList
-}
-
 const initPageData = async () => {
-  const cacheTitle =
-    normalizeGameDetailValue(route.query.title) || cacheGlobal.__gameDetailAllPageTitleCache__ || ''
-  const cachedList = cacheGlobal.__gameDetailAllListCache__
+  const routeTitle = normalizeGameDetailValue(route.query.title)
 
-  if (cacheTitle) {
-    pageTitle.value = cacheTitle
+  if (routeTitle) {
+    pageTitle.value = routeTitle
     isCustomPageTitle.value = true
   }
 
-  if (Array.isArray(cachedList) && cachedList.length > 0) {
-    gameList.value = [...cachedList]
-    return
-  }
-
   try {
-    const sectionList = await getGameData()
-    const currentGame = findGameDetailItemByIdentity(sectionList, {
-      rowId: sourceRowId.value,
-      itemCode: normalizeGameDetailValue(route.query.itemCode),
-      platformCode: normalizeGameDetailValue(route.query.platformCode)
-    }) as GameDetailCurrent | null
-    const targetGameTypeCode = normalizeGameDetailValue(
-      route.query.gameTypeCode ?? currentGame?.gameTypeCode
-    )
-    const targetSysGameTypeCode = normalizeGameDetailValue(
-      route.query.sysGameTypeCode ?? currentGame?.sysGameTypeCode
-    )
-
-    if (!cacheTitle) {
-      const platformName = normalizeGameDetailValue(currentGame?.platformName)
-      if (platformName) {
-        pageTitle.value = platformName
-        isCustomPageTitle.value = true
-      }
-    }
-
-    gameList.value = resolveGameDetailHotList(sectionList, {
-      gameTypeCode: targetGameTypeCode,
-      sysGameTypeCode: targetSysGameTypeCode,
-      excludeRowId: sourceRowId.value
-    }) as GameDataItem[]
+    gameList.value = (await queryGameDetailRecommendedItems()) as unknown as GameDataItem[]
   } catch (error) {
     console.error('initPageData failed', error)
     gameList.value = []

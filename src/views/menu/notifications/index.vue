@@ -87,7 +87,7 @@
                     ? 'min-h-[168px] gap-[14px] rounded-[18px] bg-bg-2 px-[16px] pb-0 pt-[16px] cursor-pointer'
                     : 'min-h-[120px] gap-[10px] rounded-[10px] bg-bg-2 px-[14px] pb-0 pt-[14px] cursor-pointer'
                   : 'gap-[10px] rounded-[10px] bg-bg-2 px-[14px] pb-[10px] pt-[14px]',
-                { 'notice-card-read opacity-[0.72]': item.read }
+                { 'notice-card-read ': item.read }
               ]"
               @click="
                 isTransactionNotification(item)
@@ -102,7 +102,7 @@
                   :class="props.panelMode ? 'min-h-[22px] gap-[8px]' : 'min-h-[17px] gap-[7px]'"
                 >
                   <h2
-                    class="notice-title min-w-0 break-words font-[700] text-text-1"
+                    class="notice-title min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-[700] text-text-1"
                     :class="
                       props.panelMode
                         ? 'max-w-[220px] text-[16px] leading-[22px]'
@@ -166,7 +166,7 @@
                   <!-- 普通通知标题区域 -->
                   <div class="notice-title-row flex items-center gap-[7px]">
                     <h2
-                      class="notice-title min-w-0 break-words text-[14px] font-[700] leading-[1.25] text-text-1"
+                      class="notice-title min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-[700] leading-[1.25] text-text-1"
                     >
                       {{ getNoticeTitle(item) }}
                     </h2>
@@ -249,7 +249,7 @@
             :dark-image="defaultImgDark"
             :light-image="defaultImgLight"
             :image-alt="$t('notifications.title')"
-            :message="$t('notifications.emptyMessage')"
+            :message="emptyStateMessage"
             text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
           />
 
@@ -318,6 +318,7 @@
 
         <!-- 全部标已读按钮 -->
         <button
+          v-if="hasVisibleNotifications"
           type="button"
           class="mark-read-button inline-flex items-center justify-end gap-[6px] text-right text-[12px] font-[400] leading-[1.2]"
           :class="currentTabUnreadCount === 0 ? 'text-text-3' : 'text-theme-primary'"
@@ -530,10 +531,8 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import depositCryptoOrderPop from '@/components/deposit/order/crypto/depositCryptoOrderPop.vue'
 import depositPopShell from '@/components/deposit/shared/depositPopShell.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import {
-  default as defaultImgDark,
-  default as defaultImgLight
-} from '@/static/img/explore/default.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import delIcon from '@/static/svg/del.svg?component'
 import markReadIcon from '@/static/svg/mark-read-icon.svg?component'
@@ -554,9 +553,10 @@ import {
 import type { TradeMessageStreamItem } from '@/utils/payOrderSync'
 import { getPayOrderDisplayStatus, normalizePayOrderType } from '@/utils/payOrderSync'
 import { navigateTo } from '@/utils/router'
+import { globalShowToast } from '@/utils/toast'
 import OrderDetailScrollPanel from '@/views/wallet/myOrders/OrderDetailScrollPanel.vue'
 import { copyTextWithFallback, type OrderTab } from '@/views/wallet/myOrders/shared'
-import { closeToast, showLoadingToast, showToast } from 'vant'
+import { closeToast, showLoadingToast } from 'vant'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { NavigationFailureType, isNavigationFailure } from 'vue-router'
@@ -1031,6 +1031,12 @@ const activeCategoryFinished = computed(() => activeCategoryState.value.finished
 const filteredNotifications = computed(() => {
   return activeCategoryState.value.items.filter(item => (showUnreadOnly.value ? !item.read : true))
 })
+const hasVisibleNotifications = computed(() => filteredNotifications.value.length > 0)
+const emptyStateMessage = computed(() =>
+  activeTab.value === 'transactions'
+    ? t('notifications.transactionsEmptyMessage')
+    : t('notifications.promotionsSystemEmptyMessage')
+)
 
 const shouldShowMobileTransactionOrderDetail = computed(
   () => isMobile.value && !props.panelMode && !!selectedTransactionOrder.value
@@ -1561,9 +1567,8 @@ const hideNotificationJumpLoading = () => {
 
 // 通知跳转失败时弹出提示。
 const showNotificationJumpFailedToast = () => {
-  showToast({
+  globalShowToast({
     message: t('notifications.jumpOpenFailed'),
-    position: 'middle',
     type: 'fail'
   })
 }
@@ -1605,7 +1610,7 @@ const closeTransactionCryptoOrderPop = () => {
 
 const handleCopyOrderNo = async (orderNo: string) => {
   const copied = await copyTextWithFallback(orderNo)
-  showToast({
+  globalShowToast({
     message: copied ? t('betDetails.copy') : t('common.error'),
     type: copied ? 'success' : 'fail'
   })
@@ -1616,7 +1621,7 @@ const handleTransactionNotificationClick = async (item: NotificationItem) => {
 
   const orderId = String(item.tradeMessage?.orderId ?? '').trim()
   if (!orderId) {
-    showToast({
+    globalShowToast({
       message: t('common.requestError'),
       type: 'fail'
     })
@@ -1659,7 +1664,7 @@ const handleTransactionNotificationClick = async (item: NotificationItem) => {
     selectedTransactionOrder.value = toOrderDetailRecord(latestDetail)
   } catch (error) {
     console.error('handleTransactionNotificationClick failed', error)
-    showToast({
+    globalShowToast({
       message: error instanceof Error && error.message ? error.message : t('common.requestError'),
       type: 'fail'
     })
@@ -1671,6 +1676,7 @@ const handleTransactionNotificationClick = async (item: NotificationItem) => {
 // 打开通知详情页。
 const openNotificationDetailPage = (item: NotificationItem) => {
   if (props.panelMode) {
+    prepareNotificationListRestore()
     emit('open-detail', item)
     return
   }

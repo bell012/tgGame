@@ -1,9 +1,14 @@
 <template>
-  <section class="mt-3 overflow-hidden rounded-[14px] bg-bg-2">
+  <section
+    class="mt-3 overflow-hidden rounded-[14px] bg-bg-2"
+    :class="isMobile ? 'rebate-rate-table-mobile' : ''"
+  >
     <div
-      class="grid bg-bg-3"
+      class="grid items-center bg-bg-3"
       :class="
-        isMobile ? 'grid-cols-[44px_1fr_1fr] px-3 py-3' : 'grid-cols-[52px_1fr_1fr] px-4 py-3'
+        isMobile
+          ? 'grid-cols-[40px_1fr_1fr] px-3 h-[38px]'
+          : 'grid-cols-[52px_1fr_1fr] px-4 h-[38px]'
       "
     >
       <div></div>
@@ -18,10 +23,12 @@
     <div
       v-for="(row, index) in rows"
       :key="row.id"
-      class="grid"
+      class="grid items-center"
       :class="[
-        isMobile ? 'grid-cols-[44px_1fr_1fr] px-3 py-3' : 'grid-cols-[52px_1fr_1fr] px-4 py-3',
-        index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2'
+        isMobile
+          ? 'grid-cols-[40px_1fr_1fr] px-3 h-[38px]'
+          : 'grid-cols-[52px_1fr_1fr] px-4 h-[38px]',
+        index % 2 === 0 ? 'bg-bg-4' : 'bg-bg-3'
       ]"
     >
       <div
@@ -31,13 +38,13 @@
         {{ row.isCurrent ? '✓' : '' }}
       </div>
       <div
-        class="text-center text-text-1"
+        class="flex items-center justify-center text-center text-text-1"
         :class="isMobile ? 'text-[14px] leading-none' : 'text-sm font-[600]'"
       >
         {{ row.validBets }}
       </div>
       <div
-        class="text-center text-text-1"
+        class="flex items-center justify-center text-center text-text-1"
         :class="isMobile ? 'text-[14px] leading-none' : 'text-sm font-[600]'"
       >
         {{ row.rebateRate }}
@@ -58,4 +65,8 @@ defineProps<{
 }>()
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.rebate-rate-table-mobile {
+  border: 1px solid var(--color-opacity-5);
+}
+</style>

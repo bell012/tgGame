@@ -1,6 +1,6 @@
 <template>
   <div>
-    <section v-if="isMobile" class="fixed inset-0 overflow-y-auto bg-bg-1">
+    <section v-if="isMobile" class="rebate-mobile-page bg-bg-1">
       <H5Header
         :title="t('rebatePage.title')"
         :show-sort="true"
@@ -8,7 +8,7 @@
         @sort="handleSupportClick"
       />
 
-      <main class="px-3.5 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-3.5">
+      <main class="rebate-mobile-main px-3.5 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-3.5">
         <RebateOverviewCard
           :claimable-amount-text="claimableAmountText"
           :eligible-turnover-text="eligibleTurnoverText"
@@ -19,7 +19,7 @@
 
         <button
           type="button"
-          class="mt-3 h-[45px] w-full rounded-[10px] bg-theme-primary text-[16px] font-[700] text-text-4"
+          class="rebate-mobile-claim-btn mt-3 h-[44px] w-full rounded-[10px] bg-theme-primary text-[16px] font-[700] text-text-4"
           @click="handleClaimRebate"
         >
           {{ claimButtonText }}
@@ -182,4 +182,18 @@ const {
 } = useRebatePage()
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.rebate-mobile-page {
+  min-height: 100%;
+}
+
+.rebate-mobile-main {
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.rebate-mobile-claim-btn {
+  letter-spacing: 0;
+  line-height: 1;
+}
+</style>

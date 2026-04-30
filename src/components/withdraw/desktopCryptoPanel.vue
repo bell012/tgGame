@@ -129,46 +129,6 @@
         </button>
       </div>
     </div>
-    <div class="mt-4">
-      <div v-if="quickAmounts && quickAmounts.length > 0" class="relative w-full">
-        <div
-          ref="presetsRef"
-          class="grid grid-cols-6 gap-2 rounded-tl-lg rounded-tr-lg bg-bg-4 p-2 transition-all duration-300"
-          :class="{
-            'max-h-64 overflow-y-auto': expanded,
-            'max-h-[104px] overflow-hidden': !expanded,
-            'rounded-tl-lg rounded-tr-lg': showExpandButton,
-            'rounded-lg': !showExpandButton
-          }"
-        >
-          <button
-            v-for="(item, index) in quickAmounts"
-            :key="`${item.amount ?? index}`"
-            type="button"
-            class="rounded-lg py-2.5 text-sm font-semibold lg:hover:bg-theme-primary"
-            :class="[
-              Number(item.amount ?? 0) === Number(amount ?? 0)
-                ? 'bg-theme-primary text-text-4'
-                : 'bg-bg-2 text-text-1'
-            ]"
-            @click="applyQuickAmount(item)"
-          >
-            {{ formatQuickAmount(item.amount) }}
-          </button>
-        </div>
-        <div v-if="showExpandButton" class="w-full rounded-bl-lg rounded-br-lg bg-bg-4 py-2">
-          <button
-            type="button"
-            class="mx-auto flex items-center gap-1 text-xs text-text-3 transition lg:hover:text-text-1"
-            @click="expanded = !expanded"
-          >
-            {{ expanded ? t('gameDetail.collapse') : t('gameDetail.expand') }}
-            <ExpandUpDoubleIcon v-if="expanded" class="h-2 w-[9px]" />
-            <ExpandDownDoubleIcon v-else class="h-2 w-[9px]" />
-          </button>
-        </div>
-      </div>
-    </div>
     <div class="mt-6 p-3 rounded-lg bg-theme-3 flex items-start">
       <InfoIcon class="w-4 h-4 mr-1 shrink-0 text-theme-primary" />
       <div class="text-xs text-text-2 font-normal leading-normal">
@@ -193,8 +153,6 @@ import DOGEIcon from '@/static/img/crypto/DOGE.png'
 import TRXIcon from '@/static/img/crypto/TRX.png'
 import BNBIcon from '@/static/img/crypto/BNB.png'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
-import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
-import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
 import AmountInfoIcon from '@/static/svg/deposit/amount-info.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RefreshIcon from '@/static/svg/refresh.svg?component'
@@ -202,7 +160,6 @@ import InfoIcon from '@/static/svg/info.svg?component'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
 import AccountCard from '@/components/paymentMethods/accountCard.vue'
 import type { FastAmountItem } from '@/api/interface/withdraw'
-import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
 import type {
   AccountCardOption,
   PaymentMethodsOption
@@ -241,9 +198,6 @@ const emit = defineEmits<{
 }>()
 
 const addressCardsRef = ref<HTMLDivElement | null>(null)
-const presetsRef = ref<HTMLDivElement | null>(null)
-const { expanded } = usePresetGrid(presetsRef)
-const showExpandButton = computed(() => props.quickAmounts && props.quickAmounts.length > 12)
 const amountModel = computed({
   get: () => props.amount,
   set: value => emit('update:amount', value)
@@ -269,10 +223,6 @@ const openCoinMorePanel = () => {
   return
 }
 
-const applyQuickAmount = (value: FastAmountItem) => {
-  emit('applyQuickAmount', value)
-}
-
 const handleAddressCardsWheel = (event: WheelEvent) => {
   const container = addressCardsRef.value
 
@@ -295,16 +245,6 @@ const handleReceiveAddressCardClick = async (option: AccountCardOption) => {
     block: 'nearest',
     inline: 'center'
   })
-}
-
-const formatQuickAmount = (value: FastAmountItem['amount']) => {
-  const amountValue = Number(value ?? 0)
-
-  if (!Number.isFinite(amountValue)) {
-    return '--'
-  }
-
-  return String(amountValue)
 }
 
 const doWithdrawDeposit = () => {

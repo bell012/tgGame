@@ -90,7 +90,8 @@
             >
               <!-- 空状态 -->
               <ThemedEmptyState
-                :dark-image="EmptyImg"
+                :dark-image="defaultImgDark"
+                :light-image="defaultImgLight"
                 :image-alt="t('common.noData')"
                 :message="t('common.noData')"
                 container-class="mt-0"
@@ -235,11 +236,12 @@ import H5Header from '@/components/common/H5Header.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import EmptyImg from '@/static/img/personalCenter/noData.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { navigateTo } from '@/utils/router'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import WalletLayout from '../index.vue'
@@ -457,7 +459,7 @@ const handleBackFromDetail = () => {
  */
 const handleCustomerServiceClick = () => {
   // TODO：处理客服按钮点击。
-  showToast({
+  globalShowToast({
     message: t('sidebar_menu.customer_service')
   })
 }
@@ -467,7 +469,7 @@ const handleCustomerServiceClick = () => {
  */
 const handleCopyOrderNo = async (orderNo: string) => {
   const copied = await copyTextWithFallback(orderNo)
-  showToast({
+  globalShowToast({
     message: copied ? t('betDetails.copy') : t('common.error'),
     type: copied ? 'success' : 'fail'
   })

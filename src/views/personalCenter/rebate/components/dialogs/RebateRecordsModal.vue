@@ -16,7 +16,7 @@
         </button>
       </div>
 
-      <div class="max-h-[calc(72vh-52px)] overflow-y-auto px-4 pb-4 pt-3">
+      <div class="records-scroll max-h-[calc(72vh-52px)] overflow-y-auto px-4 pb-4 pt-3">
         <RebateRecordsContent panel-mode />
       </div>
     </section>
@@ -46,4 +46,15 @@ const visible = computed({
 })
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.records-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}
+</style>

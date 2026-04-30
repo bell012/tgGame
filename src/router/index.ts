@@ -1,15 +1,15 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import MainLayout from '@/layouts/MainLayout.vue'
 import i18n from '@/i18n'
+import MainLayout from '@/layouts/MainLayout.vue'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import {
+  DEFAULT_LOCALE,
   getLocaleFromRouteParam,
   getPersistedLocale,
   getStorageLanguageCode,
-  withLocalePrefix,
-  DEFAULT_LOCALE
+  withLocalePrefix
 } from '@/utils/locale'
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
 const baseRoutes: RouteRecordRaw[] = [
   {
@@ -171,6 +171,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '通知',
       requiresAuth: true,
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -184,6 +185,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '通知详情',
       requiresAuth: true,
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -339,7 +341,6 @@ const baseRoutes: RouteRecordRaw[] = [
       title: 'Rebate',
       description: 'Rebate',
       requiresAuth: true,
-      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true

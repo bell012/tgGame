@@ -1,3 +1,7 @@
+import Api from '@/api'
+import type { QueryGameItemPageParams } from '@/api/interface/game'
+import { getLanguageCode } from '@/utils/request'
+
 export interface GameDetailHotItem {
   rowId?: string | number
   itemCode?: string | number
@@ -25,11 +29,6 @@ export const splitGameTypeCodes = (value: unknown) => {
     .split(',')
     .map(code => code.trim())
     .filter(Boolean)
-}
-
-export const isGameDetailHotItem = (game: GameDetailHotItem) => {
-  const hotValue = game.gameItemHotVo?.hot ?? game.hot
-  return Number(hotValue) === 1
 }
 
 export const flattenGameDetailLeafItems = (
@@ -98,10 +97,6 @@ export const resolveGameDetailHotList = (
 
   const buildResult = (matcher: (item: GameDetailHotItem) => boolean) => {
     return leafItems.filter(item => {
-      if (!isGameDetailHotItem(item)) {
-        return false
-      }
-
       if (excludeRowId && normalizeGameDetailValue(item.rowId) === excludeRowId) {
         return false
       }
@@ -127,4 +122,21 @@ export const resolveGameDetailHotList = (
   }
 
   return []
+}
+
+const GAME_DETAIL_RECOMMEND_REQUEST_OPTIONS = {
+  showSuccessToast: false,
+  showErrorToast: true
+} as const
+
+export const queryGameDetailRecommendedItems = async () => {
+  const params: QueryGameItemPageParams = {
+    languageCode: getLanguageCode(),
+    site: 'gifphcb9',
+    param: { recommend: 1, syncChildGames: 0, syncBrandChildGames: 0, homeRecommend: 0 },
+    page: { records: [], total: 0, size: 1000, current: 1 }
+  }
+
+  const res = await Api.game.queryGameItemPage(params, GAME_DETAIL_RECOMMEND_REQUEST_OPTIONS)
+  return Array.isArray(res?.result?.records) ? res.result.records : []
 }

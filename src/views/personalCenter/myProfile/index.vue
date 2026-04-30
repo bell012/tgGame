@@ -69,7 +69,12 @@
             <component :is="bottomStat.icon" class="h-[18px] w-[18px] text-text-2" />
             <span class="text-xs font-[400] text-text-1">{{ bottomStat.label }}</span>
           </div>
-          <p class="mt-1.5 text-base font-[700] text-text-1 text-center">{{ bottomStat.value }}</p>
+          <div
+            class="mt-1.5 flex items-baseline justify-center gap-[2px] text-base font-[700] text-text-1"
+          >
+            <span>{{ bottomStatCurrencySymbol }}</span>
+            <span>{{ bottomStatAmountText }}</span>
+          </div>
         </div>
       </section>
 
@@ -105,7 +110,8 @@
         <!-- 空状态 -->
         <ThemedEmptyState
           v-else
-          :dark-image="noDataImage"
+          :dark-image="defaultImgDark"
+          :light-image="defaultImgLight"
           :image-alt="t('personalCenter.myProfile.noFavorites')"
           :message="t('personalCenter.myProfile.noFavorites')"
           container-class="mt-0"
@@ -127,7 +133,8 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import EditIcon from '@/static/svg/edit.svg?component'
 import StatisticsIcon from '@/static/svg/personalCenter/icon80.svg?component'
-import noDataImage from '@/static/img/personalCenter/noData.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import { useMyProfile } from './shared'
 
 const { t } = useI18n()
@@ -138,6 +145,8 @@ const {
   profileId,
   topStats,
   bottomStat,
+  bottomStatCurrencySymbol,
+  bottomStatAmountText,
   favoriteGameCards,
   joinedOnText,
   copyMemberId,

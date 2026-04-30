@@ -112,10 +112,8 @@ import { type ComponentPublicInstance, nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePaymentMethodsFlow } from '@/components/paymentMethods/shared/usePaymentMethodsFlow'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
-import {
-  default as defaultImgDark,
-  default as defaultImgLight
-} from '@/static/img/explore/default.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import AccountItemComponent from '@/components/paymentMethods/accountItem.vue'
 import DeleteNotificationPop from '@/components/paymentMethods/deleteNotificationPop.vue'

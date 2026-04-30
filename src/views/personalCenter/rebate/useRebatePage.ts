@@ -37,11 +37,11 @@ const DEFAULT_TIER_START_VALUE = 0.01
 const CATEGORY_LABEL_STRATEGIES: Record<string, CategoryLabelStrategy> = {
   CP: translate => translate('betHistory.filterOptions.lottery'),
   TY: translate => translate('betHistory.filterOptions.sports'),
-  ZR: translate => translate('betHistory.filterOptions.live'),
-  SX: translate => translate('betHistory.filterOptions.live'),
-  DZ: translate => translate('betHistory.filterOptions.electronic'),
-  QP: translate => translate('betHistory.filterOptions.chess'),
-  BY: translate => translate('betHistory.filterOptions.fishing'),
+  ZR: translate => translate('sidebar_menu.casino.children.live_casino'),
+  SX: translate => translate('sidebar_menu.casino.children.live_casino'),
+  DZ: translate => translate('sidebar_menu.casino.children.slots'),
+  QP: translate => translate('sidebar_menu.casino.children.table_games'),
+  BY: translate => translate('sidebar_menu.casino.children.fishing'),
   DJ: translate => translate('betHistory.filterOptions.esports')
 }
 
@@ -64,6 +64,12 @@ const pickField = (source: Record<string, unknown>, keys: string[]) => {
  * 统一规范化 code 字段（去空格 + 字符串化）。
  */
 const normalizeCode = (value: unknown) => String(value ?? '').trim()
+
+/**
+ * 分类是否启用：
+ * 仅 status === 1（或字符串 "1"）的分类会进入 Tab。
+ */
+const isEnabledRebateCategory = (value: unknown) => Number(value) === 1
 
 /**
  * 安全转数字：
@@ -122,18 +128,15 @@ const formatRatioPercentText = (value: number) =>
 
 /**
  * 进度百分比文案格式化：
- * - 0 显示 0%
- * - 小于 1% 的值保留更多小数，避免被误显示成 0%
- * - 大于等于 1% 时保留两位小数并去掉多余 0
+ * - 小于 1% 显示 0%
+ * - 大于等于 1% 向上取整显示（无小数）
  */
 const formatProgressPercentText = (value: number) => {
-  if (value <= 0) {
+  if (value < 1) {
     return '0%'
   }
 
-  const precisionValue = value < 1 ? value.toFixed(4) : value.toFixed(2)
-  const normalizedValue = precisionValue.replace(/\.?0+$/, '')
-  return `${normalizedValue}%`
+  return `${Math.ceil(value)}%`
 }
 
 /**
@@ -143,6 +146,26 @@ const formatProgressPercentText = (value: number) => {
 const getRebateCategoryLabel = (code: string, translate: TranslateFn) => {
   const labelStrategy = CATEGORY_LABEL_STRATEGIES[code]
   return labelStrategy ? labelStrategy(translate) : code || '--'
+}
+
+/**
+ * 分类名称来源对齐娱乐城：
+ * 1. 优先接口返回名称（gameTypeName/sysGameTypeName/name）
+ * 2. 再按娱乐城文案 key 映射
+ */
+const resolveRebateCategoryLabel = (
+  row: RebateApiRow,
+  sysGameTypeCode: string,
+  translate: TranslateFn
+) => {
+  const apiLabel = String(
+    pickField(row, ['gameTypeName', 'sysGameTypeName', 'name', 'label']) ?? ''
+  ).trim()
+  if (apiLabel) {
+    return apiLabel
+  }
+
+  return getRebateCategoryLabel(sysGameTypeCode, translate)
 }
 
 /**
@@ -198,6 +221,10 @@ const buildRebateCategories = (rows: RebateApiRow[], translate: TranslateFn): Re
   const seenCategoryIds = new Set<string>()
 
   return rows.reduce<RebateCategory[]>((acc, row) => {
+    if (!isEnabledRebateCategory(row.status)) {
+      return acc
+    }
+
     const sysGameTypeCode = normalizeCode(row.sysGameTypeCode)
     if (!sysGameTypeCode || seenCategoryIds.has(sysGameTypeCode)) {
       return acc
@@ -210,7 +237,7 @@ const buildRebateCategories = (rows: RebateApiRow[], translate: TranslateFn): Re
 
     acc.push({
       id: sysGameTypeCode,
-      label: getRebateCategoryLabel(sysGameTypeCode, translate),
+      label: resolveRebateCategoryLabel(row, sysGameTypeCode, translate),
       icon: icon || activeIcon,
       activeIcon: activeIcon || icon
     })
@@ -314,8 +341,15 @@ const calcProgressPercent = (currentValue: number, targetValue: number) => {
   if (targetValue <= 0) {
     return 0
   }
-  const ratio = (currentValue / targetValue) * 100
-  return Math.min(Math.max(ratio, 0), 100)
+
+  const ratioPercent = (currentValue / targetValue) * 100
+  const clampedPercent = Math.min(Math.max(ratioPercent, 0), 100)
+
+  if (clampedPercent < 1) {
+    return 0
+  }
+
+  return Math.ceil(clampedPercent)
 }
 
 /**
@@ -565,21 +599,34 @@ export const useRebatePage = () => {
   )
 
   /**
+   * 页面展示用档位下标：
+   * - 当前有效投注为 0 且存在档位数据时，默认按第一档展示（下标 0）
+   * - 其他场景沿用正常匹配结果
+   */
+  const displayTierIndex = computed(() => {
+    if (currentValidBetsValue.value === 0 && currentCategoryRebateRateVos.value.length > 0) {
+      return 0
+    }
+
+    return currentTierIndex.value
+  })
+
+  /**
    * 当前档和下一档的返水比例（没有下一档时取当前档）。
    */
   const currentTierRatioValue = computed(() => {
-    if (currentTierIndex.value < 0) {
+    if (displayTierIndex.value < 0) {
       return 0
     }
-    return toNumber(currentCategoryRebateRateVos.value[currentTierIndex.value]?.ratio, 0)
+    return toNumber(currentCategoryRebateRateVos.value[displayTierIndex.value]?.ratio, 0)
   })
   const nextTierRatioValue = computed(() => {
-    if (currentTierIndex.value < 0) {
+    if (displayTierIndex.value < 0) {
       return 0
     }
 
     const lastIndex = currentCategoryRebateRateVos.value.length - 1
-    const nextIndex = Math.min(currentTierIndex.value + 1, lastIndex)
+    const nextIndex = Math.min(displayTierIndex.value + 1, lastIndex)
     return toNumber(
       currentCategoryRebateRateVos.value[nextIndex]?.ratio,
       currentTierRatioValue.value
@@ -592,7 +639,7 @@ export const useRebatePage = () => {
    * - 反水比例字段：使用当前条 ratio%
    */
   const rebateRows = computed<RebateRow[]>(() =>
-    buildRebateRowsFromRateVos(currentCategoryRebateRateVos.value, currentTierIndex.value)
+    buildRebateRowsFromRateVos(currentCategoryRebateRateVos.value, displayTierIndex.value)
   )
 
   // ============================================================

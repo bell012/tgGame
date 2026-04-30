@@ -11,7 +11,10 @@
         @update:providers="handleProvider"
       />
     </div>
-    <div v-if="isLoading" class="grid w-full grid-cols-3 gap-2.5 sm:grid-cols-8">
+    <div
+      v-if="isLoading && pageData.length === 0"
+      class="grid w-full grid-cols-3 gap-2.5 sm:grid-cols-8"
+    >
       <div
         v-for="index in resolvedPageSize"
         :key="index"
@@ -23,11 +26,16 @@
         <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>
+    <div
+      v-if="isMobile && isLoading && pageData.length > 0"
+      class="mt-2 h-10 rounded-lg bg-bg-2 animate-pulse"
+    />
+    <div v-if="isMobile && hasMore" ref="loadMoreRef" class="h-1 w-full" />
 
     <ThemedEmptyState
-      v-else
-      :dark-image="defaultImg"
-      :light-image="defaultWhiteImg"
+      v-if="!isLoading && pageData.length === 0"
+      :dark-image="defaultImgDark"
+      :light-image="defaultImgLight"
       :message="t('search.stay')"
       container-class="mt-[17px]"
       image-class="w-[220px] h-[200px] object-contain mb-2.5"
@@ -79,7 +87,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, inject, nextTick, ref, watch, type Ref } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateToName } from '@/utils/router'
 import { useGameStore } from '@/stores/game'
@@ -90,8 +98,8 @@ import type { GameQueryOptions } from '@/stores/game'
 import filterSheet from './filterSheet.vue'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
-import defaultImg from '@/static/img/explore/default.png'
-import defaultWhiteImg from '@/static/img/explore/default_white.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import casinoGameCard from './casinoGameCard.vue'
 
@@ -127,11 +135,15 @@ const total = ref(0)
 const totalPages = ref(1)
 const isLoading = ref(false)
 const pageData = ref<GameDataItem[]>([])
+const loadMoreRef = ref<HTMLElement | null>(null)
+let loadMoreObserver: IntersectionObserver | null = null
+let platformDataRequestToken = 0
 const platformOptions = ref<GamePlatformOption[]>([])
 const selectedSort = ref(props.sortValue || sortOptions[0].value)
 const selectedProviders = ref<string[]>(props.providerCodes ?? [])
 const canPrev = computed(() => page.value > 1)
 const canNext = computed(() => page.value < totalPages.value)
+const hasMore = computed(() => isMobile.value && page.value < totalPages.value)
 const fallbackQueryOptions: GameQueryOptions = {
   rowType: 3,
   pageSize: 27
@@ -321,19 +333,13 @@ const handleClick = (rowId?: string | number) => {
 }
 
 const getGameData = async () => {
+  if (isLoading.value) {
+    return
+  }
+
   isLoading.value = true
 
   try {
-    if (isMobile.value) {
-      const list = await gameStore.queryGameData(resolvedQueryOptions.value)
-
-      page.value = 1
-      total.value = list.length
-      totalPages.value = 1
-      pageData.value = list
-      return
-    }
-
     const res = await gameStore.queryGameDataPage({
       ...resolvedQueryOptions.value,
       page: page.value,
@@ -342,17 +348,75 @@ const getGameData = async () => {
 
     total.value = res.total
     totalPages.value = res.totalPages
+
+    if (isMobile.value && page.value > 1) {
+      pageData.value = [...pageData.value, ...res.list]
+      return
+    }
+
     pageData.value = res.list
   } finally {
     isLoading.value = false
+    void nextTick(setupLoadMoreObserver)
   }
 }
 
-const getPlatformData = async () => {
-  platformOptions.value = await gameStore.queryGamePlatformsByGameTypeCode(
-    currentGameTypeCode.value
+const setupLoadMoreObserver = () => {
+  loadMoreObserver?.disconnect()
+  loadMoreObserver = null
+
+  if (!isMobile.value || !hasMore.value || !loadMoreRef.value) {
+    return
+  }
+
+  loadMoreObserver = new IntersectionObserver(
+    entries => {
+      if (!entries.some(entry => entry.isIntersecting) || isLoading.value || !hasMore.value) {
+        return
+      }
+
+      page.value += 1
+    },
+    {
+      root: null,
+      rootMargin: '200px 0px 200px 0px'
+    }
   )
-  syncSelectedProvidersFromNames(props.providerNames ?? [])
+
+  loadMoreObserver.observe(loadMoreRef.value)
+}
+
+const getPlatformData = async () => {
+  const requestToken = ++platformDataRequestToken
+  const gameTypeCode = currentGameTypeCode.value
+  const nextPlatformOptions = await gameStore.queryGamePlatformsByGameTypeCode(gameTypeCode)
+
+  // 避免旧请求晚返回覆盖新状态，导致 provider 选项“闪退/丢失”
+  if (requestToken !== platformDataRequestToken || gameTypeCode !== currentGameTypeCode.value) {
+    return
+  }
+
+  platformOptions.value = nextPlatformOptions
+
+  const validPlatformCodes = new Set(
+    nextPlatformOptions.map(item => item.platformCode.trim()).filter(Boolean)
+  )
+
+  if ((props.providerCodes ?? []).length > 0) {
+    selectedProviders.value = (props.providerCodes ?? []).filter(code =>
+      validPlatformCodes.has(code.trim())
+    )
+    return
+  }
+
+  if ((props.providerNames ?? []).length > 0) {
+    syncSelectedProvidersFromNames(props.providerNames ?? [])
+    return
+  }
+
+  selectedProviders.value = selectedProviders.value.filter(code =>
+    validPlatformCodes.has(code.trim())
+  )
 }
 
 watch(
@@ -423,5 +487,14 @@ watch(
   },
   { immediate: true }
 )
+
+onMounted(() => {
+  setupLoadMoreObserver()
+})
+
+onUnmounted(() => {
+  loadMoreObserver?.disconnect()
+  loadMoreObserver = null
+})
 </script>
 <style scoped lang="scss"></style>

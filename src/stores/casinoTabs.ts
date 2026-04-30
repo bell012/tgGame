@@ -18,10 +18,55 @@ export interface CasinoLobbyButtonItem extends CasinoTabButtonItem {
   brandItems?: GameBrandItem[]
 }
 
+interface GameDataPageFallback {
+  list: GameDataItem[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+interface GameBrandPageFallback {
+  list: GameBrandItem[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
 interface PendingCasinoTabsRequest<T> {
   id: symbol
   languageCode: string
   promise: Promise<T[]>
+}
+
+const readSettledValue = <T>(
+  settled: PromiseSettledResult<T>,
+  errorMessage: string,
+  fallback: T
+) => {
+  if (settled.status === 'fulfilled') {
+    return settled.value
+  }
+
+  console.error(errorMessage, settled.reason)
+  return fallback
+}
+
+const GAME_DATA_PAGE_FALLBACK: GameDataPageFallback = {
+  list: [],
+  total: 0,
+  page: 1,
+  pageSize: 20,
+  totalPages: 1
+}
+
+const GAME_BRAND_PAGE_FALLBACK: GameBrandPageFallback = {
+  list: [],
+  total: 0,
+  page: 1,
+  pageSize: 20,
+  totalPages: 1
 }
 
 export const useCasinoTabsStore = defineStore('casinoTabs', () => {
@@ -162,44 +207,13 @@ export const useCasinoTabsStore = defineStore('casinoTabs', () => {
           await Promise.all([gameStore.refreshGameData(true), gameStore.refreshGameBrandData(true)])
         }
 
-        const nextLobbyGameMap: Record<string, GameDataItem[]> = {
-          hot_games: []
-        }
-
-        const [hotGamesResult, providersResult] = await Promise.all([
-          gameStore.queryGameDataPage({
-            hot: 1,
-            sortByHotOrderId: true,
-            rowType: 3,
-            page: 1
-          }),
-          gameStore.queryGameBrandDataPage()
-        ])
-
-        nextLobbyGameMap.hot_games = hotGamesResult.list
-
-        await Promise.all(
-          gameTypeList.value.map(async item => {
-            const sysGameTypeCode = item.gameTypeCode?.trim()
-
-            if (!sysGameTypeCode || nextLobbyGameMap[sysGameTypeCode]) {
-              return
-            }
-
-            const { list } = await gameStore.queryGameDataPage({
-              gameTypeCode: sysGameTypeCode,
-              sortByOrderId: true,
-              rowType: 3,
-              page: 1
-            })
-
-            nextLobbyGameMap[sysGameTypeCode] = list
-          })
-        )
+        // 目的：主流程线性可读；策略：先组装游戏，再组装 providers
+        const nextLobbyGameMap = await buildLobbyGameMap()
+        const nextProviderList = await loadProvidersForLobby()
 
         lobbyGameMap.value = nextLobbyGameMap
         lobbyBrandMap.value = {
-          providers: providersResult.list
+          providers: nextProviderList
         }
         hasLobbyButtonsLoaded.value = gameTypeList.value.length > 0
         loadedLobbyLanguageCode.value = gameTypeList.value.length > 0 ? requestLanguageCode : null
@@ -226,6 +240,79 @@ export const useCasinoTabsStore = defineStore('casinoTabs', () => {
         pendingLobbyButtonsRequest = null
       }
     }
+  }
+
+  const loadHotGamesForLobby = async () => {
+    const [hotGamesSettled] = await Promise.allSettled([
+      gameStore.queryGameDataPage({
+        hot: 1,
+        sortByHotOrderId: true,
+        rowType: 3,
+        page: 1
+      })
+    ])
+    const hotGamesResult = readSettledValue(
+      hotGamesSettled,
+      'loadCasinoLobbyButtons hot games failed',
+      {
+        ...GAME_DATA_PAGE_FALLBACK,
+        list: lobbyGameMap.value.hot_games ?? []
+      }
+    )
+
+    return hotGamesResult.list
+  }
+
+  const loadGameTypeGamesForLobby = async (nextLobbyGameMap: Record<string, GameDataItem[]>) => {
+    const settledResults = await Promise.allSettled(
+      gameTypeList.value.map(async item => {
+        const sysGameTypeCode = item.gameTypeCode?.trim()
+
+        if (!sysGameTypeCode || nextLobbyGameMap[sysGameTypeCode]) {
+          return
+        }
+
+        const { list } = await gameStore.queryGameDataPage({
+          gameTypeCode: sysGameTypeCode,
+          sortByOrderId: true,
+          rowType: 3,
+          page: 1
+        })
+
+        nextLobbyGameMap[sysGameTypeCode] = list
+      })
+    )
+
+    settledResults.forEach(result => {
+      if (result.status === 'rejected') {
+        // 边界：单个类型失败不阻断整个大厅渲染
+        console.error('loadCasinoLobbyButtons game type list failed', result.reason)
+      }
+    })
+  }
+
+  const loadProvidersForLobby = async () => {
+    const [providersSettled] = await Promise.allSettled([gameStore.queryGameBrandDataPage()])
+    const providersResult = readSettledValue(
+      providersSettled,
+      'loadCasinoLobbyButtons providers failed',
+      {
+        ...GAME_BRAND_PAGE_FALLBACK,
+        list: lobbyBrandMap.value.providers ?? []
+      }
+    )
+
+    return providersResult.list
+  }
+
+  const buildLobbyGameMap = async () => {
+    // 策略：先放热门，再补各游戏类型，便于定位数据来源
+    const nextLobbyGameMap: Record<string, GameDataItem[]> = {
+      hot_games: await loadHotGamesForLobby()
+    }
+
+    await loadGameTypeGamesForLobby(nextLobbyGameMap)
+    return nextLobbyGameMap
   }
 
   return {

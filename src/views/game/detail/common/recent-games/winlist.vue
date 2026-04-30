@@ -96,9 +96,17 @@
     </template>
     <div
       v-else
-      class="flex items-center justify-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[16px] text-[12px] text-[var(--color-text-level-2)]"
+      class="bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[16px]"
     >
-      {{ t('gameDetail.noData') }}
+      <ThemedEmptyState
+        :dark-image="defaultImgDark"
+        :light-image="defaultImgLight"
+        :image-alt="t('gameDetail.noData')"
+        :message="t('gameDetail.noData')"
+        container-class="mt-0"
+        image-class="h-[96px] w-auto mb-1"
+        text-class="text-[12px] font-[500] leading-[18px] text-text-2"
+      />
     </div>
   </div>
 </template>
@@ -106,6 +114,9 @@
 import RackIcon from '@/static/svg/game/detail/rank1.svg?url'
 import RankIcon2 from '@/static/svg/game/detail/rank2.svg?url'
 import RankIcon3 from '@/static/svg/game/detail/rank3.svg?url'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import type { GameRanListItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'

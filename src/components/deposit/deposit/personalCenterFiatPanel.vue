@@ -216,10 +216,8 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { isOrderTerminalStatus } from '@/constants/orderStatus'
 import { resolvePayChannelTabKey } from '@/constants/payChannelTabs'
 import addBonusBadgeBg from '@/static/img/deposit/add-bonus-badge.png'
-import {
-  default as defaultImgDark,
-  default as defaultImgLight
-} from '@/static/img/explore/default.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?component'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'

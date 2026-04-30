@@ -24,15 +24,18 @@
 
     <ThemedEmptyState
       v-else
-      :dark-image="defaultImg"
-      :light-image="defaultWhiteImg"
+      :dark-image="defaultImgDark"
+      :light-image="defaultImgLight"
       :message="t('search.stay')"
       container-class="mt-[17px]"
       image-class="w-[220px] h-[200px] object-contain mb-2.5"
       text-class="text-xs text-center text-text-1"
     />
 
-    <div v-if="!isMobile && total > 0" class="mt-4 flex items-center justify-center">
+    <div
+      v-if="!isMobile && total > 0 && totalPages > 1"
+      class="mt-4 flex items-center justify-center"
+    >
       <button
         type="button"
         class="flex h-9 items-center justify-center rounded-bl-lg rounded-tl-lg bg-bg-2 px-2.5 text-xs"
@@ -82,8 +85,8 @@ import type { GameBrandItem } from '@/api/interface/game'
 import type { GameQueryOptions } from '@/stores/game'
 import LeftArrow from '@/static/svg/explore/left-arrow.svg?component'
 import RightArrow from '@/static/svg/explore/right-arrow.svg?component'
-import defaultImg from '@/static/img/explore/default.png'
-import defaultWhiteImg from '@/static/img/explore/default_white.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 

@@ -88,8 +88,8 @@
               </div>
               <ThemedEmptyState
                 v-else
-                :dark-image="noDataImg"
-                :light-image="noDataLightImg"
+                :dark-image="defaultImgDark"
+                :light-image="defaultImgLight"
                 :image-alt="t('gameDetail.noData')"
                 :message="t('gameDetail.noData')"
                 container-class="mt-0"
@@ -163,8 +163,8 @@
               </div>
               <ThemedEmptyState
                 v-else
-                :dark-image="noDataImg"
-                :light-image="noDataLightImg"
+                :dark-image="defaultImgDark"
+                :light-image="defaultImgLight"
                 :image-alt="t('gameDetail.noData')"
                 :message="t('gameDetail.noData')"
                 container-class="mt-0"
@@ -185,8 +185,8 @@ import type { GameBetRecordItem } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import placeholderImg from '@/static/img/home/errImg.png'
-import noDataImg from '@/static/img/personalCenter/noData.png'
-import noDataLightImg from '@/static/img/explore/default_white.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
@@ -227,6 +227,7 @@ interface IHighRollerRow {
 }
 
 const rows = ref<IRow[]>([])
+const betSourceRows = ref<IRow[]>([])
 const highRollerSourceRows = ref<IHighRollerRow[]>([])
 const highRollerRows = ref<IHighRollerRow[]>([])
 const isLoading = ref(false)
@@ -309,6 +310,7 @@ const fetchBetRecords = async () => {
   const platformCode = currentPlatformCode.value
   const gameCode = currentGameCode.value
   if (!platformCode || !gameCode) {
+    betSourceRows.value = []
     rows.value = []
     return
   }
@@ -338,9 +340,10 @@ const fetchBetRecords = async () => {
         ? (records as GameBetRecordItem[])
         : []
 
-    rows.value = recordList.map((item, index) => mapRecordToRow(item, index))
+    betSourceRows.value = recordList.map((item, index) => mapRecordToRow(item, index))
   } catch (error) {
     console.error('fetchBetRecords failed', error)
+    betSourceRows.value = []
     rows.value = []
   }
 }
@@ -373,11 +376,20 @@ const fetchHighRollerRecords = async () => {
 
 let highRollerAutoScrollTimer: number | null = null
 let highRollerNextScrollIndex = 0
+let betAutoScrollTimer: number | null = null
+let betNextScrollIndex = 0
 
 const stopHighRollerAutoScroll = () => {
   if (highRollerAutoScrollTimer != null) {
     window.clearTimeout(highRollerAutoScrollTimer)
     highRollerAutoScrollTimer = null
+  }
+}
+
+const stopBetAutoScroll = () => {
+  if (betAutoScrollTimer != null) {
+    window.clearTimeout(betAutoScrollTimer)
+    betAutoScrollTimer = null
   }
 }
 
@@ -413,10 +425,44 @@ const startHighRollerAutoScroll = () => {
   scheduleNextHighRollerScroll()
 }
 
+const scheduleNextBetScroll = () => {
+  betAutoScrollTimer = window.setTimeout(() => {
+    const list = betSourceRows.value
+    const nextRow = list[betNextScrollIndex]
+    if (!nextRow || list.length === 0) {
+      return
+    }
+
+    rows.value = [nextRow, ...rows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
+    betNextScrollIndex = (betNextScrollIndex + 1) % list.length
+    scheduleNextBetScroll()
+  }, SCROLL_INTERVAL_MS)
+}
+
+const startBetAutoScroll = () => {
+  stopBetAutoScroll()
+  const list = betSourceRows.value
+  if (list.length === 0) {
+    rows.value = []
+    return
+  }
+
+  if (list.length <= MAX_VISIBLE_ROWS) {
+    rows.value = [...list]
+    return
+  }
+
+  rows.value = list.slice(0, MAX_VISIBLE_ROWS)
+  betNextScrollIndex = MAX_VISIBLE_ROWS % list.length
+  scheduleNextBetScroll()
+}
+
 const fetchTableData = async () => {
   isLoading.value = true
   try {
     if (activeTab.value === 2) {
+      stopBetAutoScroll()
+      betSourceRows.value = []
       rows.value = []
       await fetchHighRollerRecords()
       return
@@ -440,6 +486,19 @@ watch(
 )
 
 watch(
+  betSourceRows,
+  () => {
+    if (activeTab.value === 2) {
+      stopBetAutoScroll()
+      return
+    }
+
+    startBetAutoScroll()
+  },
+  { deep: true }
+)
+
+watch(
   highRollerSourceRows,
   () => {
     if (activeTab.value !== 2) {
@@ -453,6 +512,7 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  stopBetAutoScroll()
   stopHighRollerAutoScroll()
 })
 </script>
