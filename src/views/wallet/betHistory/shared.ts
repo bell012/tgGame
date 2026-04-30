@@ -1,5 +1,6 @@
 import type { QueryOrderInfoPageForm, QueryOrderInfoResult } from '@/api/interface/record.interface'
 import { getCurrentCurrency, formatBalance } from '@/utils/locale'
+import { formatTimestamp } from '@/utils/date'
 import bet from '@/static/img/personalCenter/bet.png'
 
 type TranslateFn = (key: string) => string
@@ -184,8 +185,8 @@ export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => {
     resultAmount: formatBalance(Math.abs(record.gameAmount), 2),
     currency,
     orderNo: record.betId || record.issueId || String(record.rowId),
-    createdAt: new Date(record.createTime || record.betTime).toLocaleString(),
-    time: new Date(record.betTime).toLocaleString(),
+    createdAt: formatTimestamp(record.createTime || record.betTime),
+    time: formatTimestamp(record.betTime),
     rawData: record
   }
 }
