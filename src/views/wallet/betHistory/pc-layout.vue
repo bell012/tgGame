@@ -2,40 +2,48 @@
   <div class="p-6 pb-0 w-[1032px]">
     <div class="mb-4">
       <div class="flex items-center gap-2 flex-wrap">
-        <CustomSelect
-          class="w-[240px]"
-          v-model="filterValues.time"
-          :options="timeOptions"
-          :placeholder="$t('customSelect.placeholder')"
-        />
-
-        <CustomSelect
-          class="w-[240px]"
-          v-model="filterValues.winlost"
-          :options="winlostOptions"
-          :placeholder="$t('customSelect.placeholder')"
-        />
-
-        <CustomSelect
-          class="w-[240px]"
-          v-model="filterValues.status"
-          :options="statusOptions"
-          :placeholder="$t('customSelect.placeholder')"
-        />
-
+        <!-- 游戏类型 -->
         <CustomSelect
           class="w-[240px]"
           v-model="filterValues.gameType"
           :options="gameTypeOptions"
           :placeholder="$t('customSelect.placeholder')"
         />
+        <!-- 输赢 -->
+        <CustomSelect
+          class="w-[240px]"
+          v-model="filterValues.winlost"
+          :options="winlostOptions"
+          :placeholder="$t('customSelect.placeholder')"
+        />
+        <!-- 状态 -->
+        <CustomSelect
+          class="w-[240px]"
+          v-model="filterValues.status"
+          :options="statusOptions"
+          :placeholder="$t('customSelect.placeholder')"
+        />
+        <!-- 日期 -->
+        <CustomSelect
+          class="w-[240px]"
+          v-model="filterValues.time"
+          :options="timeOptions"
+          :placeholder="$t('customSelect.placeholder')"
+        />
+        <!-- 平台 -->
+        <CustomSelect
+          class="w-[240px]"
+          v-model="filterValues.platform"
+          :options="platformOptions"
+          :placeholder="$t('customSelect.placeholder')"
+        />
       </div>
     </div>
 
     <div class="table-wrapper">
-      <div class="table-header-bar bg-bg-3 rounded-lg py-3">
+      <div class="table-header-bar bg-bg-3 rounded-lg py-3 px-[24px]">
         <div class="grid grid-cols-4 gap-3">
-          <div class="text-text-1 text-sm font-bold text-center">
+          <div class="text-text-1 text-sm font-bold text-left">
             {{ $t('betHistory.type') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
@@ -44,23 +52,16 @@
           <div class="text-text-1 text-sm font-bold text-center">
             {{ $t('betHistory.betAmount') }}
           </div>
-          <div class="text-text-1 text-sm font-bold text-center">
+          <div class="text-text-1 text-sm font-bold text-right">
             {{ $t('betHistory.profit') }}
           </div>
         </div>
       </div>
 
       <div class="table-body min-h-[520px]">
-        <div
-          v-if="error && dataList.length === 0"
-          class="flex h-[520px] items-center justify-center text-sm font-[700] text-secondary-4 cursor-pointer"
-          @click="handleRetry"
-        >
-          {{ $t('common.requestError') }}
-        </div>
         <!-- 空状态 -->
         <ThemedEmptyState
-          v-else-if="!loading && dataList.length === 0"
+          v-if="!loading && dataList.length === 0"
           :dark-image="defaultImgDark"
           :light-image="defaultImgLight"
           :image-alt="$t('common.noData')"
@@ -74,22 +75,24 @@
           <div
             v-for="item in dataList"
             :key="item.id"
-            class="table-row-item grid grid-cols-4 gap-3 py-3 cursor-pointer border-b border-opacity-5"
+            class="table-row-item grid grid-cols-4 gap-3 py-3 cursor-pointer border-b border-opacity-5 px-[24px]"
             @click="handleRowClick(item)"
           >
-            <div class="flex items-center justify-center gap-3">
-              <span class="text-text-1 text-sm font-[700] text-center">{{ item.gameName }}</span>
+            <div class="flex items-center justify-start gap-3">
+              <span class="text-text-1 text-sm font-[700] text-center truncate">{{
+                item.gameName
+              }}</span>
             </div>
             <div class="text-text-2 text-sm font-[700] text-center">{{ item.time }}</div>
             <div class="text-text-1 text-sm font-[700] text-center">{{ item.betAmount }}</div>
-            <div class="flex items-center justify-center gap-1">
+            <div class="flex items-center justify-end gap-1">
               <span
                 :class="item.result === 'win' ? 'text-secondary-2' : 'text-secondary-4'"
                 class="font-[700] text-sm"
               >
-                {{ item.result === 'win' ? '+' : '-' }}{{ item.resultAmount }}
+                {{ item.resultAmount }}
               </span>
-              <ArrowRightIcon class="w-4 h-4 text-text-1" />
+              <ArrowLeftIcon class="w-4 h-4 text-text-1" />
             </div>
           </div>
 
@@ -120,13 +123,14 @@ import CustomSelect from '@/components/common/CustomSelect.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import BetDetailsModal from '../betDetails/BetDetailsModal.vue'
-import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import ArrowLeftIcon from '@/static/svg/arrow_left2.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import {
   BET_HISTORY_PAGE_SIZE,
   buildBetHistoryQueryForm,
   createBetHistoryGameTypeOptions,
+  createBetHistoryPlatformOptions,
   createBetHistoryStatusOptions,
   createBetHistoryTimeOptions,
   createBetHistoryWinlostOptions,
@@ -144,6 +148,7 @@ const currentPage = ref(1)
 const totalPages = ref(1)
 
 const timeOptions = computed(() => createBetHistoryTimeOptions(t))
+const platformOptions = computed(() => createBetHistoryPlatformOptions(t))
 const winlostOptions = computed(() => createBetHistoryWinlostOptions(t))
 const statusOptions = computed(() => createBetHistoryStatusOptions(t))
 const gameTypeOptions = computed(() => createBetHistoryGameTypeOptions(t))
@@ -186,10 +191,6 @@ const handleRowClick = (item: Item) => {
 const handlePageChange = async (page: number) => {
   if (page === currentPage.value || loading.value) return
   await fetchBetHistory(page)
-}
-
-const handleRetry = async () => {
-  await fetchBetHistory(currentPage.value)
 }
 
 watch(

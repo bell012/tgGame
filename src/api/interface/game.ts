@@ -371,3 +371,18 @@ export interface GameTypeResponse {
   result: GameTypeItem[]
   success: boolean
 }
+
+/**游戏名称 或者 平台名称 或者 错误码国际化 响应 */
+export interface GlobalDicResponse {
+  code: string
+  message: string
+  result: [
+    {
+      dic_key: string // 对应gameData 中的platformCode
+      dic_name: string // error_code || game_code  || platform_code
+      dic_value: string // 返回的多语言 游戏名字 或者 平台名字 或者 错误码文案
+      language_code: string // eng || zh
+    }
+  ]
+  success: boolean
+}

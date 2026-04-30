@@ -97,7 +97,7 @@ export const normalizeTimestamp = (value?: number | string | null): number | nul
   return numericValue < 1_000_000_000_000 ? numericValue * 1000 : numericValue
 }
 
-// 13位时间戳转换
+// 13位时间戳转换  月/日/年 + 12小时制 + AM/PM 格式化函数
 export const formatTimestamp = (value?: number | string | null): string => {
   const timestamp = normalizeTimestamp(value)
 

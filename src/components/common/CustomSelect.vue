@@ -2,7 +2,7 @@
   <!-- pc端公共下拉框组件 -->
   <div class="relative w-[240px]" v-click-outside="closeDropdown">
     <div
-      class="select-box bg-input-3 text-text-1 rounded-lg border border-opacity-5 h-[48px] text-sm px-3 flex items-center justify-between"
+      class="select-box text-text-1 rounded-lg bg-input-3 border border-input-2 h-[48px] text-sm px-3 flex items-center justify-between"
       :class="props.disabled ? 'cursor-default opacity-70' : 'cursor-pointer'"
       @click="toggleDropdown"
     >
@@ -24,41 +24,47 @@
       <div
         class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center bg-opacity-10 w-6 h-6 rounded"
       >
-        <ArrowDownIcon class="w-4 h-4" />
+        <ArrowDownIcon class="w-4 h-4 text-text-2" />
       </div>
     </div>
 
     <Transition name="dropdown">
       <div
         v-if="isOpen"
-        class="absolute top-[56px] p-3 left-0 w-full bg-bg-5 rounded-lg border border-opacity-5 overflow-hidden z-50"
+        class="absolute top-[56px] max-h-[600px] px-3 left-0 w-full bg-bg-5 rounded-lg border border-opacity-5 z-50 overflow-auto"
       >
-        <div
-          v-for="option in options"
-          :key="option.value"
-          class="flex items-center justify-between p-3 cursor-pointer rounded-lg hover:bg-bg-2"
-          :class="{ 'bg-bg-3 font-[700]': option.value === modelValue }"
-          @click="selectOption(option)"
-        >
-          <div class="flex items-center gap-2">
-            <!-- icon: string (图片) -->
-            <img
-              v-if="typeof option.icon === 'string'"
-              :src="option.icon"
-              class="w-6 h-6 object-contain"
-            />
+        <div class="pointer-events-none sticky top-0 z-[1] h-3 bg-bg-5"></div>
 
-            <!-- icon: 组件 -->
-            <component v-else-if="option.icon" :is="option.icon" class="w-6 h-6" />
-            <span class="text-text-1 text-sm">
-              {{ option.label }}
-            </span>
+        <div class="relative z-0">
+          <div
+            v-for="option in options"
+            :key="option.value"
+            class="flex items-center justify-between p-3 cursor-pointer rounded-lg hover:bg-bg-2"
+            :class="{ 'bg-bg-3 font-[700]': option.value === modelValue }"
+            @click="selectOption(option)"
+          >
+            <div class="flex items-center gap-2">
+              <!-- icon: string (图片) -->
+              <img
+                v-if="typeof option.icon === 'string'"
+                :src="option.icon"
+                class="w-6 h-6 object-contain"
+              />
+
+              <!-- icon: 组件 -->
+              <component v-else-if="option.icon" :is="option.icon" class="w-6 h-6" />
+              <span class="text-text-1 text-sm">
+                {{ option.label }}
+              </span>
+            </div>
+            <component
+              :is="option.value === modelValue ? DropDownSelectionIcon : DropDownDefaultIcon"
+              class="w-4 h-4"
+            />
           </div>
-          <component
-            :is="option.value === modelValue ? DropDownSelectionIcon : DropDownDefaultIcon"
-            class="w-4 h-4"
-          />
         </div>
+
+        <div class="pointer-events-none sticky bottom-0 z-[1] h-3 bg-bg-5"></div>
       </div>
     </Transition>
   </div>

@@ -2,6 +2,7 @@ import request, { type ApiResponseToastOptions } from '@/utils/request'
 import type {
   GameBetRecordListResponse,
   GameStatisticsResponse,
+  GameDataResponse,
   GetGameBetRecordListParams,
   GetLatestListParams,
   GetLatestListResponse,
@@ -11,7 +12,6 @@ import type {
   PublishCommentParams,
   GameRanListResponse,
   GameBrandResponse,
-  GameDataResponse,
   GameCommentListResponse,
   GameCommentSubjectResponse,
   PublishCommentResponse,
@@ -20,20 +20,21 @@ import type {
   QueryGameDetailsParams,
   GameTypeResponse,
   QueryGameItemPageParams,
-  QueryGameItemPageResponse
+  QueryGameItemPageResponse,
+  GlobalDicResponse
 } from '@/api/interface/game'
 
 /**
  * 获取游戏列表数据
  * @returns Promise<GameDataResponse>
  */
-export function getGameData(options?: ApiResponseToastOptions): Promise<GameDataResponse> {
+export function getGameData(data: {}): Promise<GameDataResponse> {
   return request({
     url: '/gc/queryGameListForApp',
     method: 'post',
+    data,
     showSuccessToast: false,
-    showErrorToast: true,
-    ...options
+    showErrorToast: true
   })
 }
 
@@ -262,5 +263,16 @@ export function publishComment(
     showSuccessToast: false,
     showErrorToast: true,
     ...options
+  })
+}
+
+// 游戏名称 或者 平台名称 或者 错误码国际化
+export function getGlobalDic(data: {}): Promise<GlobalDicResponse> {
+  return request({
+    url: '/sy/getGlobalDic',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true
   })
 }

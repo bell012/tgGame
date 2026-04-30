@@ -335,6 +335,7 @@ import { useUserStore } from '@/stores/user'
 import { useVipStore } from '@/stores/vip'
 import {
   getCurrentCurrency,
+  formatBalance,
   getFormattedBalance,
   getLocaleLabel,
   getLocaleOptions,
@@ -477,14 +478,38 @@ const getClampedRatio = (currentValue: number, targetValue: number) => {
   return Math.min(Math.max(currentValue / targetValue, 0), 1)
 }
 
-// Valid Bet
+/**
+ * 计算当前 VIP 升级还差多少有效投注，按当前等级配置减去 myVipInfo 当前投注值。
+ */
 const remainingBetAmount = computed(() => {
-  return vipTargetConfig.value?.betAmountLine || '-'
+  if (
+    vipTargetConfig.value?.betAmountLine === undefined ||
+    vipTargetConfig.value?.betAmountLine === null
+  ) {
+    return '-'
+  }
+
+  return formatBalance(
+    vipTargetConfig.value.betAmountLine - Number(myVipInfo.value?.betAmount ?? 0),
+    2
+  )
 })
 
-// Deposit
+/**
+ * 计算当前 VIP 升级还差多少存款，按当前等级配置减去 myVipInfo 当前存款值。
+ */
 const remainingRechargeAmount = computed(() => {
-  return vipTargetConfig.value?.rechargeAmount || '-'
+  if (
+    vipTargetConfig.value?.rechargeAmount === undefined ||
+    vipTargetConfig.value?.rechargeAmount === null
+  ) {
+    return '-'
+  }
+
+  return formatBalance(
+    vipTargetConfig.value.rechargeAmount - Number(myVipInfo.value?.rechargeAmount ?? 0),
+    2
+  )
 })
 
 // VIP 进度
