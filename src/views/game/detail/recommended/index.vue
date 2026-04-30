@@ -50,10 +50,10 @@
 </template>
 
 <script setup lang="ts">
-import Api from '@/api'
 import H5Header from '@/components/common/H5Header.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useGameStore } from '@/stores/game'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import { navigateTo } from '@/utils/router'
 import { navigateToName } from '@/utils/router'
@@ -109,6 +109,7 @@ type GameDetailCacheGlobal = {
 
 const PAGE_SIZE = 40
 const isMobile = useIsMobile()
+const gameStore = useGameStore()
 const route = useRoute()
 const router = useRouter()
 const cacheGlobal = globalThis as typeof globalThis & GameDetailCacheGlobal
@@ -147,11 +148,7 @@ const getGameData = async () => {
     return cacheData
   }
 
-  const res = await Api.home.getGameData({
-    showSuccessToast: false,
-    showErrorToast: true
-  })
-  const nextList = Array.isArray(res?.result) ? (res.result as GameDataSection[]) : []
+  const nextList = (await gameStore.ensureGameData()) as GameDataSection[]
   cacheGlobal.__gameDetailGameDataCache__ = nextList
   return nextList
 }

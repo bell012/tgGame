@@ -7,6 +7,8 @@ import { useLocaleStore } from '@/stores/locale'
 import { getStorageLanguageCode } from '@/utils/locale'
 
 const SEARCH_HISTORY_STORAGE_KEY = 'casino_search_history'
+const GAME_DATA_STORAGE_KEY = 'gameData'
+const GAME_DATA_LANGUAGE_STORAGE_KEY = 'gameDataLanguageCode'
 
 interface FlattenedGameRecord {
   /** 当前节点原始数据 */
@@ -166,6 +168,63 @@ export const useGameStore = defineStore('game', () => {
     localStorage.setItem(SEARCH_HISTORY_STORAGE_KEY, JSON.stringify(searchHistory.value))
   }
 
+  /**
+   * 从本地缓存中读取游戏列表数据。
+   */
+  const readGameDataCache = (languageCode = currentLanguageCode.value) => {
+    if (typeof window === 'undefined') {
+      return [] as GameDataItem[]
+    }
+
+    const cachedLanguageCode = String(
+      window.localStorage.getItem(GAME_DATA_LANGUAGE_STORAGE_KEY) ?? ''
+    ).trim()
+
+    if (cachedLanguageCode && cachedLanguageCode !== languageCode) {
+      return [] as GameDataItem[]
+    }
+
+    const rawValue = window.localStorage.getItem(GAME_DATA_STORAGE_KEY)
+    if (!rawValue) {
+      return [] as GameDataItem[]
+    }
+
+    try {
+      const parsedValue = JSON.parse(rawValue) as unknown
+      return Array.isArray(parsedValue) ? (parsedValue as GameDataItem[]) : []
+    } catch (error) {
+      console.error('readGameDataCache failed', error)
+      return [] as GameDataItem[]
+    }
+  }
+
+  /**
+   * 将游戏列表数据写入本地缓存。
+   */
+  const saveGameDataCache = (
+    nextGameData: GameDataItem[],
+    languageCode = currentLanguageCode.value
+  ) => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    window.localStorage.setItem(GAME_DATA_STORAGE_KEY, JSON.stringify(nextGameData))
+    window.localStorage.setItem(GAME_DATA_LANGUAGE_STORAGE_KEY, languageCode)
+  }
+
+  /**
+   * 优先从本地缓存恢复当前语言的游戏列表数据。
+   */
+  const restoreGameDataCache = (languageCode = currentLanguageCode.value) => {
+    const cachedGameData = readGameDataCache(languageCode)
+    if (!cachedGameData.length) {
+      return [] as GameDataItem[]
+    }
+
+    return setGameDataState(cachedGameData, languageCode)
+  }
+
   /** 从本地恢复搜索历史 */
   const loadSearchHistory = () => {
     const storedSearchHistory = localStorage.getItem(SEARCH_HISTORY_STORAGE_KEY)
@@ -262,6 +321,7 @@ export const useGameStore = defineStore('game', () => {
   ) => {
     gameData.value = nextGameData
     gameDataLanguageCode.value = languageCode
+    saveGameDataCache(nextGameData, languageCode)
 
     return gameData.value
   }
@@ -586,6 +646,11 @@ export const useGameStore = defineStore('game', () => {
 
     if (pendingRequest?.languageCode === currentLanguageCode.value) {
       return pendingRequest.promise
+    }
+
+    const cachedGameData = restoreGameDataCache(currentLanguageCode.value)
+    if (cachedGameData.length) {
+      return cachedGameData
     }
 
     return refreshGameData(true)
@@ -1030,6 +1095,7 @@ export const useGameStore = defineStore('game', () => {
     addSearchHistory,
     removeSearchHistory,
     clearSearchHistory,
+    ensureGameData,
     refreshGameData,
     refreshGameBrandData,
     refreshGameTypeData,
