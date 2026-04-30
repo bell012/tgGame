@@ -2,7 +2,7 @@
   <!-- pc端公共下拉框组件 -->
   <div class="relative w-[240px]" v-click-outside="closeDropdown">
     <div
-      class="select-box bg-input-3 text-text-1 rounded-lg border border-opacity-5 h-[48px] text-sm px-3 flex items-center justify-between"
+      class="select-box text-text-1 rounded-lg bg-input-3 border border-input-2 h-[48px] text-sm px-3 flex items-center justify-between"
       :class="props.disabled ? 'cursor-default opacity-70' : 'cursor-pointer'"
       @click="toggleDropdown"
     >
@@ -24,7 +24,7 @@
       <div
         class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center bg-opacity-10 w-6 h-6 rounded"
       >
-        <ArrowDownIcon class="w-4 h-4" />
+        <ArrowDownIcon class="w-4 h-4 text-text-2" />
       </div>
     </div>
 
