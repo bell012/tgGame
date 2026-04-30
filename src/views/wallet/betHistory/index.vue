@@ -153,6 +153,7 @@ import {
   BET_HISTORY_PAGE_SIZE,
   buildBetHistoryQueryForm,
   createBetHistoryGameTypeOptions,
+  createBetHistoryPlatformOptions,
   createBetHistoryStatusOptions,
   createBetHistoryTimeOptions,
   createBetHistoryWinlostOptions,
@@ -193,6 +194,11 @@ const filterGroups = computed<FilterGroup[]>(() => [
     key: 'time',
     title: t('betHistory.filterGroups.date'),
     options: createBetHistoryTimeOptions(t)
+  },
+  {
+    key: 'platform',
+    title: t('betHistory.filterGroups.platform'),
+    options: createBetHistoryPlatformOptions(t)
   }
 ])
 

@@ -318,12 +318,12 @@ export const useGameStore = defineStore('game', () => {
   const setGameDataState = (
     nextGameData: GameDataItem[],
     languageCode = currentLanguageCode.value
-  ) => {
+  ): GameDataItem[] => {
     gameData.value = nextGameData
     gameDataLanguageCode.value = languageCode
     saveGameDataCache(nextGameData, languageCode)
 
-    return gameData.value
+    return nextGameData
   }
 
   /** 更新 store 中的品牌列表数据 */
@@ -416,7 +416,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   /** 拉取最新游戏数据；默认命中有效缓存时不重复请求 */
-  const refreshGameData = async (force = false) => {
+  const refreshGameData = async (force = false): Promise<GameDataItem[]> => {
     const requestLanguageCode = currentLanguageCode.value
 
     if (pendingRequest?.languageCode === requestLanguageCode) {
@@ -424,21 +424,20 @@ export const useGameStore = defineStore('game', () => {
     }
 
     if (!force && hasGameData.value && gameDataLanguageCode.value === requestLanguageCode) {
-      return gameData.value
+      return [...gameData.value]
     }
 
     isLoading.value = true
 
     const requestId = Symbol('game-data-request')
-    const promise = (async () => {
+    const promise: Promise<GameDataItem[]> = (async (): Promise<GameDataItem[]> => {
       try {
-        const response = await Api.game.getGameData({
-          showSuccessToast: false
-        })
-        return setGameDataState(response?.result ?? [], requestLanguageCode)
+        const response = await Api.game.getGameData({})
+        const nextGameData = Array.isArray(response?.result) ? response.result : []
+        return setGameDataState(nextGameData, requestLanguageCode)
       } catch (error) {
         console.error('refreshGameData failed', error)
-        return gameData.value
+        return [...gameData.value]
       } finally {
         if (pendingRequest?.id === requestId) {
           isLoading.value = false
@@ -639,9 +638,9 @@ export const useGameStore = defineStore('game', () => {
   }
 
   /** 优先使用内存数据，没有时再请求接口 */
-  const ensureGameData = async () => {
+  const ensureGameData = async (): Promise<GameDataItem[]> => {
     if (hasGameData.value && gameDataLanguageCode.value === currentLanguageCode.value) {
-      return gameData.value
+      return [...gameData.value]
     }
 
     if (pendingRequest?.languageCode === currentLanguageCode.value) {

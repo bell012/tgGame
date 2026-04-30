@@ -1,7 +1,7 @@
 import type { QueryOrderInfoPageForm, QueryOrderInfoResult } from '@/api/interface/record.interface'
 import { getCurrentCurrency, formatBalance } from '@/utils/locale'
 import { formatTimestamp } from '@/utils/date'
-import { getGameName } from '@/utils/global-dic'
+import { getGameName, getPlatformList, getPlatformName } from '@/utils/global-dic'
 import bet from '@/static/img/personalCenter/bet.png'
 
 type TranslateFn = (key: string) => string
@@ -25,6 +25,7 @@ export interface Item {
 
 export interface BetHistoryFilterValues {
   time: string
+  platform: string
   winlost: string
   status: string
   gameType: string
@@ -41,6 +42,7 @@ export const BET_HISTORY_PAGE_SIZE = 10
 
 export const createDefaultBetHistoryFilterValues = (): BetHistoryFilterValues => ({
   time: 'all',
+  platform: 'all',
   winlost: 'all',
   status: 'all',
   gameType: 'all'
@@ -82,11 +84,21 @@ export const createBetHistoryGameTypeOptions = (t: TranslateFn): SelectOption[] 
   { label: t('betHistory.filterOptions.esports'), value: 'DJ' }
 ]
 
+// 筛选平台
+export const createBetHistoryPlatformOptions = (t: TranslateFn): SelectOption[] => [
+  { label: t('betHistory.filterOptions.all'), value: 'all' },
+  ...getPlatformList().map(item => ({
+    label: getPlatformName(item.platformCode) || item.platformCode,
+    value: item.platformCode
+  }))
+]
+
 export const getSingleFilterValue = (value: FilterValue) =>
   Array.isArray(value) ? (value[0] ?? 'all') : (value ?? 'all')
 
 export const normalizeBetHistoryFilterValues = (values: FilterInput): BetHistoryFilterValues => ({
   time: getSingleFilterValue(values.time),
+  platform: getSingleFilterValue(values.platform),
   winlost: getSingleFilterValue(values.winlost),
   status: getSingleFilterValue(values.status),
   gameType: getSingleFilterValue(values.gameType)
@@ -201,7 +213,7 @@ export const buildBetHistoryQueryForm = (params: {
     param: {
       currency: getCurrentCurrency(),
       sysGameTypeCode: normalized.gameType === 'all' ? null : normalized.gameType,
-      platformCode: null,
+      platformCode: normalized.platform === 'all' ? null : normalized.platform,
       gameCode: null,
       status: normalized.status === 'all' ? null : Number(normalized.status)
     }

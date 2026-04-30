@@ -475,7 +475,8 @@
       "date": "日期选择",
       "winLoss": "赢/输选择",
       "status": "状态选择",
-      "gameType": "游戏类型选择"
+      "gameType": "游戏类型选择",
+      "platform": "平台选择"
     },
     "filters": {
       "all": "全部",

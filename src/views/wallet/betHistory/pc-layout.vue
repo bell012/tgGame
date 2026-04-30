@@ -30,6 +30,13 @@
           :options="timeOptions"
           :placeholder="$t('customSelect.placeholder')"
         />
+        <!-- 平台 -->
+        <CustomSelect
+          class="w-[240px]"
+          v-model="filterValues.platform"
+          :options="platformOptions"
+          :placeholder="$t('customSelect.placeholder')"
+        />
       </div>
     </div>
 
@@ -52,16 +59,9 @@
       </div>
 
       <div class="table-body min-h-[520px]">
-        <div
-          v-if="error && dataList.length === 0"
-          class="flex h-[520px] items-center justify-center text-sm font-[700] text-secondary-4 cursor-pointer"
-          @click="handleRetry"
-        >
-          {{ $t('common.requestError') }}
-        </div>
         <!-- 空状态 -->
         <ThemedEmptyState
-          v-else-if="!loading && dataList.length === 0"
+          v-if="!loading && dataList.length === 0"
           :dark-image="defaultImgDark"
           :light-image="defaultImgLight"
           :image-alt="$t('common.noData')"
@@ -130,6 +130,7 @@ import {
   BET_HISTORY_PAGE_SIZE,
   buildBetHistoryQueryForm,
   createBetHistoryGameTypeOptions,
+  createBetHistoryPlatformOptions,
   createBetHistoryStatusOptions,
   createBetHistoryTimeOptions,
   createBetHistoryWinlostOptions,
@@ -147,6 +148,7 @@ const currentPage = ref(1)
 const totalPages = ref(1)
 
 const timeOptions = computed(() => createBetHistoryTimeOptions(t))
+const platformOptions = computed(() => createBetHistoryPlatformOptions(t))
 const winlostOptions = computed(() => createBetHistoryWinlostOptions(t))
 const statusOptions = computed(() => createBetHistoryStatusOptions(t))
 const gameTypeOptions = computed(() => createBetHistoryGameTypeOptions(t))
@@ -189,10 +191,6 @@ const handleRowClick = (item: Item) => {
 const handlePageChange = async (page: number) => {
   if (page === currentPage.value || loading.value) return
   await fetchBetHistory(page)
-}
-
-const handleRetry = async () => {
-  await fetchBetHistory(currentPage.value)
 }
 
 watch(

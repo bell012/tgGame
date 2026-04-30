@@ -2,6 +2,7 @@ import request, { type ApiResponseToastOptions } from '@/utils/request'
 import type {
   GameBetRecordListResponse,
   GameStatisticsResponse,
+  GameDataResponse,
   GetGameBetRecordListParams,
   GetLatestListParams,
   GetLatestListResponse,
@@ -11,7 +12,6 @@ import type {
   PublishCommentParams,
   GameRanListResponse,
   GameBrandResponse,
-  GameDataResponse,
   GameCommentListResponse,
   GameCommentSubjectResponse,
   PublishCommentResponse,
@@ -28,13 +28,13 @@ import type {
  * 获取游戏列表数据
  * @returns Promise<GameDataResponse>
  */
-export function getGameData(options?: ApiResponseToastOptions): Promise<GameDataResponse> {
+export function getGameData(data: {}): Promise<GameDataResponse> {
   return request({
     url: '/gc/queryGameListForApp',
     method: 'post',
+    data,
     showSuccessToast: false,
-    showErrorToast: true,
-    ...options
+    showErrorToast: true
   })
 }
 
