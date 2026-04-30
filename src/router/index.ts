@@ -104,66 +104,66 @@ const baseRoutes: RouteRecordRaw[] = [
       title: '体育'
     }
   },
-  {
-    path: 'menu',
-    name: 'menu',
-    component: () => import('@/views/menu/index.vue'),
-    meta: {
-      title: '选单'
-    }
-  },
-  {
-    path: 'menu/referral',
-    name: 'menuReferral',
-    component: () => import('@/views/menu/referral/index.vue'),
-    meta: {
-      title: '代理',
-      requiresAuth: true,
-      mobile: {
-        hideBottomBar: true,
-        hideTopNav: true
-      }
-    }
-  },
-  {
-    path: 'menu/referral/commission-records',
-    name: 'menuReferralCommissionRecords',
-    component: () => import('@/views/menu/referral/commission-records/index.vue'),
-    meta: {
-      title: '佣金记录列表',
-      requiresAuth: true,
-      mobile: {
-        hideBottomBar: true,
-        hideTopNav: true
-      }
-    }
-  },
-  {
-    path: 'menu/referral/commission-rules',
-    name: 'menuReferralCommissionRules',
-    component: () => import('@/views/menu/referral/commission-rules/index.vue'),
-    meta: {
-      title: 'Commission Rules',
-      requiresAuth: true,
-      mobile: {
-        hideBottomBar: true,
-        hideTopNav: true
-      }
-    }
-  },
-  {
-    path: 'menu/referral/referral-records',
-    name: 'menuReferralReferralRecords',
-    component: () => import('@/views/menu/referral/referral-records/index.vue'),
-    meta: {
-      title: '我的代理-推荐记录列表',
-      requiresAuth: true,
-      mobile: {
-        hideBottomBar: true,
-        hideTopNav: true
-      }
-    }
-  },
+  // {
+  //   path: 'menu',
+  //   name: 'menu',
+  //   component: () => import('@/views/menu/index.vue'),
+  //   meta: {
+  //     title: '选单'
+  //   }
+  // },
+  // {
+  //   path: 'menu/referral',
+  //   name: 'menuReferral',
+  //   component: () => import('@/views/menu/referral/index.vue'),
+  //   meta: {
+  //     title: '代理',
+  //     requiresAuth: true,
+  //     mobile: {
+  //       hideBottomBar: true,
+  //       hideTopNav: true
+  //     }
+  //   }
+  // },
+  // {
+  //   path: 'menu/referral/commission-records',
+  //   name: 'menuReferralCommissionRecords',
+  //   component: () => import('@/views/menu/referral/commission-records/index.vue'),
+  //   meta: {
+  //     title: '佣金记录列表',
+  //     requiresAuth: true,
+  //     mobile: {
+  //       hideBottomBar: true,
+  //       hideTopNav: true
+  //     }
+  //   }
+  // },
+  // {
+  //   path: 'menu/referral/commission-rules',
+  //   name: 'menuReferralCommissionRules',
+  //   component: () => import('@/views/menu/referral/commission-rules/index.vue'),
+  //   meta: {
+  //     title: 'Commission Rules',
+  //     requiresAuth: true,
+  //     mobile: {
+  //       hideBottomBar: true,
+  //       hideTopNav: true
+  //     }
+  //   }
+  // },
+  // {
+  //   path: 'menu/referral/referral-records',
+  //   name: 'menuReferralReferralRecords',
+  //   component: () => import('@/views/menu/referral/referral-records/index.vue'),
+  //   meta: {
+  //     title: '我的代理-推荐记录列表',
+  //     requiresAuth: true,
+  //     mobile: {
+  //       hideBottomBar: true,
+  //       hideTopNav: true
+  //     }
+  //   }
+  // },
   {
     path: 'menu/notifications',
     name: 'menuNotifications',
