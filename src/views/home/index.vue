@@ -269,7 +269,7 @@
   </div>
 
   <H5HomePop
-    v-if="shouldShowH5HomePop && !isLogin"
+    v-if="shouldShowH5HomePop"
     class="sm:hidden"
     @close="closeH5HomePop"
     @open-login="openRegisterModal"

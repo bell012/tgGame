@@ -145,6 +145,58 @@ export interface QuerySlideshowResponse {
   result?: QuerySlideshowPageResult
 }
 
+export interface QueryNoticeMsgPageRequest {
+  current: number
+  size: number
+}
+
+export interface QueryNoticeMsgRequest {
+  languageCode?: string
+  msgType?: string
+  noticeType?: string
+  noticeTitle?: string
+  startTime?: number
+  endTime?: number
+  channelId?: string
+  enable?: number
+  param?: {
+    scene?: number
+    operator?: string
+  }
+  page: QueryNoticeMsgPageRequest
+}
+
+export interface QueryNoticeMsgItem {
+  rowId: number
+  noticeTitle?: string
+  isImage?: number
+  noticeText?: string
+  noticeType?: string
+  msgType?: string
+  jumpType?: number
+  linkUrl?: string
+  linkType?: number
+  createTime?: number
+  enable?: number
+  scene?: number
+  [key: string]: unknown
+}
+
+export interface QueryNoticeMsgPageResult {
+  records: QueryNoticeMsgItem[]
+  total: number
+  size: number
+  current: number
+  pages: number
+}
+
+export interface QueryNoticeMsgResponse {
+  code: string | number
+  message: string
+  success: boolean
+  result?: QueryNoticeMsgPageResult
+}
+
 export interface SubGameItem {
   brandCode: string
   conUrl: string

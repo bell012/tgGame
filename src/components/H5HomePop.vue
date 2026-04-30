@@ -24,21 +24,30 @@
         <div
           v-for="(item, index) in list"
           :key="index"
-          class="carousel-item flex min-w-full flex-shrink-0 snap-center snap-always items-center justify-center"
+          class="carousel-item flex w-full min-w-full flex-shrink-0 snap-center snap-always items-center justify-center"
         >
           <img
-            :src="item"
+            v-if="item.isImage === 1"
+            :src="item.imageUrl"
             :alt="`slide-${index + 1}`"
-            class="max-h-full w-full max-w-[100vw] object-contain"
+            class="max-h-full w-full max-w-[100vw] cursor-pointer object-contain"
+            @click="handleImageJump(item)"
           />
+          <!-- 文本 -->
+          <div v-if="item.isImage === 2" class="w-[92%] rounded-lg p-3.5  pop-rich-text bg-bg-2">
+            <h2 class="text-base font-bold text-text-1">{{ item.title }}</h2>
+            <div class="mt-2 font-normal text-sm text-text-1" v-html="item.text"></div>
+          </div>
         </div>
+       
       </div>
-      <button
+      <!-- <button
+      
         class="flex justify-center items-center w-[92%] h-[40px] buttonStyle m-auto mb-2.5 text-text-4 font-bold"
         @click.stop="openLogin"
       >
         {{ $t('home.JoinNow') }}
-      </button>
+      </button> -->
 
       <!-- 左右按钮 + 滑动条 -->
       <div
@@ -103,38 +112,316 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import Api from '@/api'
+import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
+import { useUserStore } from '@/stores/user'
+import { storeToRefs } from 'pinia'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { navigateTo, navigateToName } from '@/utils/router'
 import CloseIcon from '@/static/svg/close.svg?component'
 import LeftIcon from '@/static/svg/left-icon.svg?component'
 import RightIcon from '@/static/svg/right-icon.svg?component'
 import ScrollBar from '@/static/svg/scroll-bar.svg?component'
-
 import Image1 from '@/static/img/test/Image1.png'
+import { getStorageLanguageCode } from '@/utils/locale'
 
 const emit = defineEmits<{
   close: []
   'open-login': []
 }>()
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
+const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
+const loginToken = computed(() => String(userInfo.value?.tradeToken ?? ''))
+const { locale } = useI18n()
+const HOME_POP_STORAGE_PREFIX = 'home_pop_notice'
+const HOME_POP_SUPPRESS_KEY = `${HOME_POP_STORAGE_PREFIX}:suppress_until`
+const HOME_POP_SUPPRESS_MS = 24 * 60 * 60 * 1000
 
-const list = [Image1, Image1, Image1]
+interface HomePopItem {
+  rowId: number
+  isImage: number
+  imageUrl: string
+  title: string
+  text: string
+  jumpType: number
+  linkType: number
+  linkUrl: string
+}
+
+const noticeList = ref<QueryNoticeMsgItem[]>([])
+const list = computed<HomePopItem[]>(() => {
+  const records = noticeList.value
+    .map(item => {
+      const isImage = Number(item.isImage ?? 0)
+      return {
+        rowId: Number(item.rowId ?? 0),
+        isImage,
+        imageUrl: isImage === 1 ? normalizeNoticeImage(item.noticeText) : '',
+        title: String(item.noticeTitle ?? ''),
+        text: sanitizeNoticeHtml(item.noticeText),
+        jumpType: Number(item.jumpType ?? 0),
+        linkType: Number(item.linkType ?? 0),
+        linkUrl: String(item.linkUrl ?? '').trim()
+      }
+    })
+    .filter(item => (item.isImage === 1 ? Boolean(item.imageUrl) : item.isImage === 2))
+
+  return records
+})
 const carouselRef = ref<HTMLElement | null>(null)
 const currentIndex = ref(0)
 const checked = ref(false)
 
+const normalizeNoticeImage = (value: unknown) => {
+  const text = String(value ?? '').trim()
+  if (!text) {
+    return ''
+  }
+
+  if (/^https?:\/\//i.test(text) || text.startsWith('data:')) {
+    return text
+  }
+
+  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${text}`
+}
+
+const sanitizeNoticeHtml = (value: unknown) => {
+  const html = String(value ?? '').trim()
+  if (!html) {
+    return ''
+  }
+
+  return html
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    .replace(/\son\w+="[^"]*"/gi, '')
+    .replace(/\son\w+='[^']*'/gi, '')
+}
+
+const sortNoticeRecords = (records: QueryNoticeMsgItem[]) => {
+  return [...records].sort((a, b) => {
+    const sortA = Number(a.sort ?? Number.MAX_SAFE_INTEGER)
+    const sortB = Number(b.sort ?? Number.MAX_SAFE_INTEGER)
+    return sortA - sortB
+  })
+}
+
+const handleImageJump = (item: HomePopItem) => {
+  switch (item.jumpType) {
+    case 1:
+      handleUrlJump(item)
+      return
+    case 2:
+      handleInternalJump(item)
+      return
+    case 3:
+      handleGameJump(item)
+      return
+    default:
+      return
+  }
+}
+
+const handleUrlJump = (item: HomePopItem) => {
+  if (!item.linkUrl) {
+    return
+  }
+  navigateTo(item.linkUrl)
+}
+// 1活动，2充值栏目，3分享转盘，4充值页面，5积分转盘，6 邀请好友，7 登录注册页
+const handleInternalJump = (item: HomePopItem) => {
+  switch (item.linkType) {
+    case 1:
+      console.log('活动')
+      return
+    case 2:
+      navigateTo('/deposit')
+      return
+    case 3:
+      console.log('分享转盘')
+      return
+    case 4:
+      navigateTo('/deposit')
+      return
+    case 5:
+      console.log('积分转盘')
+      return
+    case 6:
+    console.log('邀请好友')
+      return
+    case 7:
+      emit('open-login')
+      return
+
+    default:
+      return
+  }
+}
+
+const handleGameJump = (item: HomePopItem) => {
+  const idFromLinkUrl = Number(item.linkUrl)
+  const gameRowId = Number.isFinite(idFromLinkUrl) && idFromLinkUrl > 0 ? idFromLinkUrl : item.rowId
+  if (!gameRowId) {
+    return
+  }
+  navigateToName('gameDetail', { params: { rowId: gameRowId } })
+}
+
+const getNoticeRowId = (item: QueryNoticeMsgItem) => String(Number(item.rowId ?? 0))
+
+const getTodayKey = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const getNoticePopWay = (item: QueryNoticeMsgItem) => {
+  const beforeWay = Number(item.loginBeforePopWay ?? 0)
+  const afterWay = Number(item.loginAfterPopWay ?? 0)
+  return isLogin.value ? afterWay : beforeWay
+}
+
+const shouldShowNoticeByRule = (item: QueryNoticeMsgItem) => {
+  const rowId = getNoticeRowId(item)
+  if (!rowId || rowId === '0') {
+    return false
+  }
+
+  const popWay = getNoticePopWay(item)
+
+  // 未登录：1 只弹一次，2 每次进入首页都弹
+  if (!isLogin.value) {
+    if (popWay === 2) {
+      return true
+    }
+    if (popWay === 1) {
+      const key = `${HOME_POP_STORAGE_PREFIX}:guest:once:${rowId}`
+      return localStorage.getItem(key) !== '1'
+    }
+    return false
+  }
+
+  // 已登录：1 每日一次，2 每次登录，3 只弹一次，4 每次进入首页都弹
+  if (popWay === 4) {
+    return true
+  }
+  if (popWay === 3) {
+    const key = `${HOME_POP_STORAGE_PREFIX}:login:once:${rowId}`
+    return localStorage.getItem(key) !== '1'
+  }
+  if (popWay === 1) {
+    const key = `${HOME_POP_STORAGE_PREFIX}:login:daily:${rowId}`
+    return localStorage.getItem(key) !== getTodayKey()
+  }
+  if (popWay === 2) {
+    const key = `${HOME_POP_STORAGE_PREFIX}:login:session:${rowId}`
+    return localStorage.getItem(key) !== loginToken.value
+  }
+
+  return false
+}
+
+const markNoticeShownByRule = (item: QueryNoticeMsgItem) => {
+  const rowId = getNoticeRowId(item)
+  if (!rowId || rowId === '0') {
+    return
+  }
+
+  const popWay = getNoticePopWay(item)
+
+  if (!isLogin.value) {
+    if (popWay === 1) {
+      const key = `${HOME_POP_STORAGE_PREFIX}:guest:once:${rowId}`
+      localStorage.setItem(key, '1')
+    }
+    return
+  }
+
+  if (popWay === 3) {
+    const key = `${HOME_POP_STORAGE_PREFIX}:login:once:${rowId}`
+    localStorage.setItem(key, '1')
+    return
+  }
+
+  if (popWay === 1) {
+    const key = `${HOME_POP_STORAGE_PREFIX}:login:daily:${rowId}`
+    localStorage.setItem(key, getTodayKey())
+    return
+  }
+
+  if (popWay === 2) {
+    const key = `${HOME_POP_STORAGE_PREFIX}:login:session:${rowId}`
+    if (loginToken.value) {
+      localStorage.setItem(key, loginToken.value)
+    }
+  }
+}
+
+const getSuppressUntil = () => {
+  const raw = localStorage.getItem(HOME_POP_SUPPRESS_KEY)
+  const value = Number(raw ?? 0)
+  return Number.isFinite(value) ? value : 0
+}
+
+const isSuppressedNow = () => {
+  return Date.now() < getSuppressUntil()
+}
+
+const fetchNoticeList = async () => {
+  if (isSuppressedNow()) {
+    closeWithoutSuppress()
+    return
+  }
+
+  try {
+    const res = await Api.home.queryNoticeMsg({
+      languageCode: getStorageLanguageCode(String(locale.value)),
+      msgType: '0',
+      noticeType: '1',
+      channelId: '4',
+      page: {
+        current: 1,
+        size: 50
+      }
+    })
+    const records = Array.isArray(res?.result?.records) ? res.result.records : []
+    const filtered = sortNoticeRecords(records).filter(item => shouldShowNoticeByRule(item))
+    filtered.forEach(item => {
+      markNoticeShownByRule(item)
+    })
+    noticeList.value = filtered
+    if (noticeList.value.length === 0) {
+      close()
+    }
+  } catch (error) {
+    noticeList.value = []
+    console.error('queryNoticeMsg failed', error)
+  } finally {
+    currentIndex.value = 0
+  }
+}
+
 const close = () => {
+  if (checked.value) {
+    localStorage.setItem(HOME_POP_SUPPRESS_KEY, String(Date.now() + HOME_POP_SUPPRESS_MS))
+  }
   emit('close')
 }
 
-const openLogin = () => {
-  emit('open-login')
+const closeWithoutSuppress = () => {
+  emit('close')
 }
+
 
 const onCarouselScroll = () => {
   const el = carouselRef.value
   if (!el) return
   const width = el.offsetWidth
   const index = Math.round(el.scrollLeft / width)
-  currentIndex.value = Math.min(index, list.length - 1)
+  currentIndex.value = Math.min(index, list.value.length - 1)
 }
 
 const goTo = (index: number) => {
@@ -151,9 +438,17 @@ const prev = () => {
 }
 
 const next = () => {
-  if (currentIndex.value >= list.length - 1) return
+  if (currentIndex.value >= list.value.length - 1) return
   goTo(currentIndex.value + 1)
 }
+
+onMounted(() => {
+  if (isSuppressedNow()) {
+    closeWithoutSuppress()
+    return
+  }
+  void fetchNoticeList()
+})
 </script>
 <style lang="scss" scoped>
 .buttonStyle {
@@ -189,5 +484,17 @@ const next = () => {
   border: solid #fff;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
+}
+
+.pop-rich-text :deep(*) {
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.pop-rich-text {
+  max-height: 180px;
+  overflow-y: auto;
+  text-align: left;
+  -webkit-overflow-scrolling: touch;
 }
 </style>

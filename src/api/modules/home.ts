@@ -2,6 +2,8 @@ import request, { type ApiResponseToastOptions } from '@/utils/request'
 import type {
   GameDataResponse,
   GetRecentBigWinsParams,
+  QueryNoticeMsgRequest,
+  QueryNoticeMsgResponse,
   QuerySlideshowRequest,
   QuerySlideshowResponse,
   RecentBigWinsResponse
@@ -86,3 +88,14 @@ export function getLatestList(data: any): Promise<any> {
     showErrorToast: true
   })
 }
+
+export function queryNoticeMsg(data: QueryNoticeMsgRequest): Promise<QueryNoticeMsgResponse> {
+  return request({
+    url: '/ac/queryNoticeMsg',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
+  })
+}
+
