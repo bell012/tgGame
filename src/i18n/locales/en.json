@@ -314,6 +314,31 @@
     "claimPending": "Claim request submitted",
     "comingSoon": "Feature coming soon",
     "cta": "Invite Now",
+    "h5": {
+      "quickActions": {
+        "tasks": "Tasks",
+        "details": "Details",
+        "rules": "Rules",
+        "guide": "Guide"
+      },
+      "marquee": "Cheers to {account} for reaching No. 1!",
+      "shareChannels": {
+        "facebook": "Facebook",
+        "whatsapp": "Whatsapp",
+        "telegram": "Telegram",
+        "telegramGroup": "Telegram",
+        "tiktok": "Tiktok",
+        "tiktokLive": "Tiktok",
+        "copy": "Copy"
+      },
+      "howToShare": "How to Share",
+      "referralMessage": "Referral Message",
+      "inviteRewardPrefix": "Invite",
+      "inviteRewardSuffix": "Friend and Get",
+      "taskDetails": "Task Details",
+      "copyMessageSuccess": "Referral message copied",
+      "shareGuideHint": "Invite friends through social platforms or by copying the referral message."
+    },
     "commissionRecords": {
       "title": "Commission Records",
       "searchPlaceholder": "Search for a member account",

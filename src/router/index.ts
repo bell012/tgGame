@@ -112,19 +112,19 @@ const baseRoutes: RouteRecordRaw[] = [
   //     title: '选单'
   //   }
   // },
-  // {
-  //   path: 'menu/referral',
-  //   name: 'menuReferral',
-  //   component: () => import('@/views/menu/referral/index.vue'),
-  //   meta: {
-  //     title: '代理',
-  //     requiresAuth: true,
-  //     mobile: {
-  //       hideBottomBar: true,
-  //       hideTopNav: true
-  //     }
-  //   }
-  // },
+  {
+    path: 'menu/referral',
+    name: 'menuReferral',
+    component: () => import('@/views/menu/referral/index.vue'),
+    meta: {
+      title: '代理',
+      requiresAuth: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
   // {
   //   path: 'menu/referral/commission-records',
   //   name: 'menuReferralCommissionRecords',
