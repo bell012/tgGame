@@ -61,9 +61,9 @@
               <span class="ellipsis -ml-0.5 text-xxs">{{ item.name }}</span>
             </div>
             <div
-              class="text-xxs whitespace-nowrap text-nowrap text-center font-extrabold text-brand"
+              class="text-xxs whitespace-nowrap text-nowrap text-center font-extrabold text-brand text-theme-primary"
             >
-              {{ item.number }}
+              {{ item.number }} {{ item.currency }}
             </div>
           </div>
         </a>
@@ -84,6 +84,7 @@ interface RecentBigWin {
   src: string
   name: string
   number: string
+  currency: string
 }
 
 const currentCurrency = computed(() => getCurrentCurrency())
@@ -110,8 +111,9 @@ const getRecentBigWinsData = async () => {
     list.value =
       res.result?.map((item: any) => ({
         src: toGameImageUrl(item.coverImg),
-        name: item.gameName,
-        number: item.winAmount
+        name: item.nickName,
+        number: String(item.winAmount ?? ''),
+        currency: String(item.currency ?? '')
       })) || []
   } catch (error) {
     list.value = []
