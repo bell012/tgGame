@@ -341,7 +341,6 @@ const baseRoutes: RouteRecordRaw[] = [
       title: 'Rebate',
       description: 'Rebate',
       requiresAuth: true,
-      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true

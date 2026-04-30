@@ -1,6 +1,6 @@
 <template>
   <div>
-    <section v-if="isMobile" class="fixed inset-0 overflow-y-auto bg-bg-1">
+    <section v-if="isMobile" class="rebate-mobile-page bg-bg-1">
       <H5Header
         :title="t('rebatePage.title')"
         :show-sort="true"
@@ -183,6 +183,10 @@ const {
 </script>
 
 <style scoped lang="scss">
+.rebate-mobile-page {
+  min-height: 100%;
+}
+
 .rebate-mobile-main {
   max-width: 440px;
   margin: 0 auto;
