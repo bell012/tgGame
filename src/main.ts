@@ -23,6 +23,7 @@ import { useThemeStore } from './stores/theme'
 import { useLocaleStore } from './stores/locale'
 import { useSiteConfigStore } from './stores/siteConfig'
 import { useTradeMessageSyncStore } from './stores/tradeMessageSync'
+import { initGlobalDicCache } from './utils/global-dic'
 
 const themeStore = useThemeStore()
 themeStore.initTheme()
@@ -31,6 +32,9 @@ themeStore.initTheme()
 router.isReady().then(() => {
   const localeStore = useLocaleStore()
   localeStore.initLanguage()
+
+  // 初始化全局多语言字典缓存。
+  void initGlobalDicCache()
 
   const siteConfigStore = useSiteConfigStore()
   void siteConfigStore.initSiteConfig()

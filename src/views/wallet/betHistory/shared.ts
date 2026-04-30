@@ -1,6 +1,7 @@
 import type { QueryOrderInfoPageForm, QueryOrderInfoResult } from '@/api/interface/record.interface'
 import { getCurrentCurrency, formatBalance } from '@/utils/locale'
 import { formatTimestamp } from '@/utils/date'
+import { getGameName } from '@/utils/global-dic'
 import bet from '@/static/img/personalCenter/bet.png'
 
 type TranslateFn = (key: string) => string
@@ -132,7 +133,7 @@ export const getBetHistoryGameTypeLabel = (code: string, t: TranslateFn) => {
 }
 
 /**
- * 生成投注记录列表项的唯一标识。
+ * 列表项的唯一标识。
  */
 const resolveBetHistoryItemId = (record: QueryRecord) => {
   if (record.betId) {
@@ -161,19 +162,12 @@ const resolveBetHistoryItemId = (record: QueryRecord) => {
 }
 
 /**
- * 将接口投注记录映射成页面展示项。
+ * 页面展示数据。
  */
 export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => {
   const gameType = getBetHistoryGameTypeLabel(record.sysGameTypeCode, t)
   const currency = record.currency || getCurrentCurrency()
-  const gameName =
-    record.remark ||
-    record.betContent1 ||
-    record.betContent2 ||
-    [gameType, record.platformCode].filter(Boolean).join(' / ') ||
-    record.gameCode ||
-    record.betId ||
-    '--'
+  const gameName = getGameName('game_code', `${record.platformCode}|${record.gameCode}`) || '-'
 
   return {
     id: resolveBetHistoryItemId(record),

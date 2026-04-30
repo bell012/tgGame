@@ -2,31 +2,32 @@
   <div class="p-6 pb-0 w-[1032px]">
     <div class="mb-4">
       <div class="flex items-center gap-2 flex-wrap">
+        <!-- 游戏类型 -->
         <CustomSelect
           class="w-[240px]"
-          v-model="filterValues.time"
-          :options="timeOptions"
+          v-model="filterValues.gameType"
+          :options="gameTypeOptions"
           :placeholder="$t('customSelect.placeholder')"
         />
-
+        <!-- 输赢 -->
         <CustomSelect
           class="w-[240px]"
           v-model="filterValues.winlost"
           :options="winlostOptions"
           :placeholder="$t('customSelect.placeholder')"
         />
-
+        <!-- 状态 -->
         <CustomSelect
           class="w-[240px]"
           v-model="filterValues.status"
           :options="statusOptions"
           :placeholder="$t('customSelect.placeholder')"
         />
-
+        <!-- 日期 -->
         <CustomSelect
           class="w-[240px]"
-          v-model="filterValues.gameType"
-          :options="gameTypeOptions"
+          v-model="filterValues.time"
+          :options="timeOptions"
           :placeholder="$t('customSelect.placeholder')"
         />
       </div>
@@ -78,7 +79,9 @@
             @click="handleRowClick(item)"
           >
             <div class="flex items-center justify-start gap-3">
-              <span class="text-text-1 text-sm font-[700] text-center">{{ item.gameName }}</span>
+              <span class="text-text-1 text-sm font-[700] text-center truncate">{{
+                item.gameName
+              }}</span>
             </div>
             <div class="text-text-2 text-sm font-[700] text-center">{{ item.time }}</div>
             <div class="text-text-1 text-sm font-[700] text-center">{{ item.betAmount }}</div>

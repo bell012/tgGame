@@ -189,7 +189,7 @@
     "noMore": "No More",
     "status": "Status",
     "filterGroups": {
-      "time": "Time Selection",
+      "date": "Date Selection",
       "winLoss": "Win/Loss Selection",
       "status": "Status Selection",
       "gameType": "Game Type Selection"

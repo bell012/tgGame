@@ -472,7 +472,7 @@
     "noMore": "没有更多了",
     "status": "状态",
     "filterGroups": {
-      "time": "时间选择",
+      "date": "日期选择",
       "winLoss": "赢/输选择",
       "status": "状态选择",
       "gameType": "游戏类型选择"

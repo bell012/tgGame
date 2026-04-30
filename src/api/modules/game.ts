@@ -20,7 +20,8 @@ import type {
   QueryGameDetailsParams,
   GameTypeResponse,
   QueryGameItemPageParams,
-  QueryGameItemPageResponse
+  QueryGameItemPageResponse,
+  GlobalDicResponse
 } from '@/api/interface/game'
 
 /**
@@ -262,5 +263,16 @@ export function publishComment(
     showSuccessToast: false,
     showErrorToast: true,
     ...options
+  })
+}
+
+// 游戏名称 或者 平台名称 或者 错误码国际化
+export function getGlobalDic(data: {}): Promise<GlobalDicResponse> {
+  return request({
+    url: '/sy/getGlobalDic',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true
   })
 }

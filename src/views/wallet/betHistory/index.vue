@@ -54,7 +54,7 @@
                 </div>
 
                 <div class="flex-1 min-w-0">
-                  <h3 class="text-text-1 font-[700] text-sm mb-2.5">
+                  <h3 class="text-text-1 font-[700] text-sm mb-2.5 truncate">
                     {{ item.gameName }}
                   </h3>
                   <div class="flex items-center justify-between text-sm">
@@ -175,9 +175,9 @@ const filterValues = ref<Record<string, string | string[]>>({
 
 const filterGroups = computed<FilterGroup[]>(() => [
   {
-    key: 'time',
-    title: t('betHistory.filterGroups.time'),
-    options: createBetHistoryTimeOptions(t)
+    key: 'gameType',
+    title: t('betHistory.filterGroups.gameType'),
+    options: createBetHistoryGameTypeOptions(t)
   },
   {
     key: 'winlost',
@@ -190,9 +190,9 @@ const filterGroups = computed<FilterGroup[]>(() => [
     options: createBetHistoryStatusOptions(t)
   },
   {
-    key: 'gameType',
-    title: t('betHistory.filterGroups.gameType'),
-    options: createBetHistoryGameTypeOptions(t)
+    key: 'time',
+    title: t('betHistory.filterGroups.date'),
+    options: createBetHistoryTimeOptions(t)
   }
 ])
 
