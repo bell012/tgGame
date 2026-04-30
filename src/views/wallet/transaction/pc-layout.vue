@@ -37,16 +37,9 @@
       </div>
 
       <div class="table-body min-h-[520px]">
-        <div
-          v-if="error && dataList.length === 0"
-          class="flex h-[520px] items-center justify-center text-sm font-[700] text-secondary-4 cursor-pointer"
-          @click="handleRetry"
-        >
-          {{ $t('common.requestError') }}
-        </div>
         <!-- 空状态 -->
         <ThemedEmptyState
-          v-else-if="!loading && dataList.length === 0"
+          v-if="!loading && dataList.length === 0"
           :dark-image="defaultImgDark"
           :light-image="defaultImgLight"
           :image-alt="$t('common.noData')"
@@ -170,10 +163,6 @@ const handleRowClick = (item: Item) => {
 const handlePageChange = async (page: number) => {
   if (page === currentPage.value || loading.value) return
   await fetchTransaction(page)
-}
-
-const handleRetry = async () => {
-  await fetchTransaction(currentPage.value)
 }
 
 watch(

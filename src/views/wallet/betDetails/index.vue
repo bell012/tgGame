@@ -53,9 +53,9 @@
 
           <div class="flex items-center justify-between">
             <span class="text-text-3 text-sm">{{ $t('betDetails.orderNo') }}</span>
-            <div class="flex items-center gap-1">
-              <span class="text-text-1 text-sm">{{ betDetail.orderNo }}</span>
-              <button class="p-1 hover:bg-opacity-5 rounded transition-colors" @click="copyOrderNo">
+            <div class="flex items-center gap-1 max-w-[75%]">
+              <span class="text-text-1 text-sm truncate">{{ betDetail.orderNo }}</span>
+              <button class="p-1" @click="copyOrderNo">
                 <CopyIcon class="w-4 h-4 text-text-2" />
               </button>
             </div>
@@ -77,7 +77,7 @@ import { useRouter } from 'vue-router'
 import H5Header from '@/components/common/H5Header.vue'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import bet from '@/static/img/personalCenter/bet.png'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -153,10 +153,7 @@ onMounted(() => {
 
 const copyOrderNo = () => {
   navigator.clipboard.writeText(betDetail.value.orderNo)
-  showToast({
-    message: t('betDetails.copy'),
-    type: 'success'
-  })
+  globalShowToast(t('betDetails.copy'))
 }
 </script>
 

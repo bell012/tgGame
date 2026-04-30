@@ -22,7 +22,7 @@
               <h3 class="text-text-1 text-xs font-normal mb-2.5">
                 {{ group.title }}
               </h3>
-              <div class="grid grid-cols-3 gap-2.5">
+              <div class="grid grid-cols-3 gap-[7px]">
                 <button
                   v-for="option in group.options"
                   :key="option.value"

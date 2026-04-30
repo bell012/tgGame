@@ -11,6 +11,7 @@ import {
   type Locale
 } from '@/utils/locale'
 import { switchLanguage } from '@/utils/router'
+import { initGlobalDicCache } from '@/utils/global-dic'
 
 export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
@@ -64,11 +65,15 @@ export const useLocaleStore = defineStore('locale', () => {
   }
 
   // 切换语言
-  const setLanguage = (code: Locale) => {
+  const setLanguage = async (code: Locale) => {
     currentLanguage.value = code
     const i18nLocale = getLanguageCode(code) as Locale
     i18n.global.locale.value = i18nLocale
     localStorage.setItem('language', code)
+
+    // 切换语言时同步刷新全局多语言字典缓存。
+    await initGlobalDicCache()
+
     switchLanguage(code)
   }
 

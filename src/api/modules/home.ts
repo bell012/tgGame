@@ -1,6 +1,5 @@
 import request, { type ApiResponseToastOptions } from '@/utils/request'
 import type {
-  GameDataResponse,
   GetRecentBigWinsParams,
   QueryNoticeMsgRequest,
   QueryNoticeMsgResponse,
@@ -8,20 +7,6 @@ import type {
   QuerySlideshowResponse,
   RecentBigWinsResponse
 } from '@/api/interface/home.interface'
-
-/**
- * 获取首页数据
- * @returns Promise<any>
- */
-export function getGameData(options?: ApiResponseToastOptions): Promise<GameDataResponse> {
-  return request({
-    url: '/gc/queryGameListForApp',
-    method: 'post',
-    showSuccessToast: false,
-    showErrorToast: true,
-    ...options
-  })
-}
 
 // 查询活动栏目
 export function getActivityType(): Promise<any> {
@@ -98,4 +83,3 @@ export function queryNoticeMsg(data: QueryNoticeMsgRequest): Promise<QueryNotice
     showErrorToast: false
   })
 }
-
