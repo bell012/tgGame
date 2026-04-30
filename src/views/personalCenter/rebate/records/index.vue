@@ -9,7 +9,7 @@
       />
 
       <main
-        class="min-h-0 flex-1 overflow-y-auto scrollbar-none px-[14px] pb-[calc(env(safe-area-inset-bottom)+24px)] pt-[14px]"
+        class="records-page-scroll min-h-0 flex-1 overflow-y-auto scrollbar-none px-[14px] pb-[calc(env(safe-area-inset-bottom)+24px)] pt-[14px]"
       >
         <RebateRecordsContent />
       </main>
@@ -31,4 +31,15 @@ const handleSupportClick = () => {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.records-page-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}
+</style>

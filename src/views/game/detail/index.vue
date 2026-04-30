@@ -36,15 +36,14 @@
 import Api from '@/api'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { getLanguageCode } from '@/utils/request'
 import { navigateTo } from '@/utils/router'
-import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import {
   findGameDetailItemByIdentity,
   normalizeGameDetailValue,
-  resolveGameDetailHotList
+  queryGameDetailRecommendedItems
 } from './shared'
 import H5Header from './h5/header.vue'
 import H5CurrencyInfo from './h5/currency-info/index.vue'
@@ -72,18 +71,6 @@ type GameDataItem = {
   }
 }
 
-type GameDataSection = {
-  sysGameTypeCode?: string
-  sysGameTypeName?: string
-  subGame?: GameDataItem[]
-}
-
-type GameDetailCacheGlobal = {
-  __gameDetailGameDataCache__?: GameDataSection[]
-  __gameDetailAllListCache__?: GameDataItem[]
-  __gameDetailAllPageTitleCache__?: string
-}
-
 type CurrentGameDetail =
   | ({
       rowId?: string | number
@@ -97,16 +84,14 @@ type CurrentGameDetail =
     } & Record<string, unknown>)
   | null
 
-// ===== 常量与全局缓存 =====
+// ===== 常量 =====
 const API_REQUEST_OPTIONS = {
   showSuccessToast: false,
   showErrorToast: true
 } as const
 
-const gameDetailCacheGlobal = globalThis as typeof globalThis & GameDetailCacheGlobal
-
 // ===== 基础状态 =====
-const gameData = ref<GameDataSection[]>([])
+const gameData = ref<GameDataItem[]>([])
 provide('game-detail-game-data', gameData)
 
 const { t } = useI18n()
@@ -116,6 +101,35 @@ const isGameDataLoading = ref(false)
 const currentGameDetailState = ref<CurrentGameDetail>(null)
 const detailPageRef = ref<HTMLElement | null>(null)
 const isBrowserEnv = typeof window !== 'undefined' && typeof document !== 'undefined'
+let scrollbarHiddenParent: HTMLElement | null = null
+
+const clearParentScrollbarHidden = () => {
+  if (!scrollbarHiddenParent) {
+    return
+  }
+  scrollbarHiddenParent.classList.remove('game-detail-hide-scrollbar')
+  scrollbarHiddenParent = null
+}
+
+const hideParentScrollbar = () => {
+  if (!isBrowserEnv) {
+    return
+  }
+
+  clearParentScrollbarHidden()
+
+  let currentParent = detailPageRef.value?.parentElement ?? null
+  while (currentParent) {
+    const { overflowY } = window.getComputedStyle(currentParent)
+    const isScrollable = overflowY === 'auto' || overflowY === 'scroll'
+    if (isScrollable) {
+      currentParent.classList.add('game-detail-hide-scrollbar')
+      scrollbarHiddenParent = currentParent
+      return
+    }
+    currentParent = currentParent.parentElement
+  }
+}
 
 const resetScrollToTop = () => {
   if (!isBrowserEnv) {
@@ -149,10 +163,6 @@ const resetScrollToTop = () => {
 const buildRecommendedPageQuery = (pageTitle: string) => {
   return {
     ...(currentGameRowId.value ? { rowId: currentGameRowId.value } : {}),
-    ...(currentGameItemCode.value ? { itemCode: currentGameItemCode.value } : {}),
-    ...(currentGamePlatformCode.value ? { platformCode: currentGamePlatformCode.value } : {}),
-    ...(currentGameCategoryCode.value ? { gameTypeCode: currentGameCategoryCode.value } : {}),
-    ...(currentGameTypeCode.value ? { sysGameTypeCode: currentGameTypeCode.value } : {}),
     ...(pageTitle ? { title: pageTitle } : {})
   }
 }
@@ -169,26 +179,8 @@ const currentGameFromTree = computed(() =>
     platformCode: normalizeGameDetailValue(currentGameDetail.value?.platformCode)
   })
 )
-const currentGameCategoryCode = computed(() =>
-  normalizeGameDetailValue(
-    currentGameFromTree.value?.gameTypeCode ?? currentGameDetail.value?.gameTypeCode
-  )
-)
-const currentGameTypeCode = computed(() =>
-  normalizeGameDetailValue(
-    currentGameFromTree.value?.sysGameTypeCode ?? currentGameDetail.value?.sysGameTypeCode
-  )
-)
 const currentGameRowId = computed(() =>
   normalizeGameDetailValue(currentGameDetail.value?.rowId ?? rowId.value)
-)
-const currentGameItemCode = computed(() =>
-  normalizeGameDetailValue(currentGameDetail.value?.itemCode ?? currentGameFromTree.value?.itemCode)
-)
-const currentGamePlatformCode = computed(() =>
-  normalizeGameDetailValue(
-    currentGameDetail.value?.platformCode ?? currentGameFromTree.value?.platformCode
-  )
 )
 const currentGamePageTitle = computed(() => {
   return normalizeGameDetailValue(
@@ -199,12 +191,7 @@ const currentGamePageTitle = computed(() => {
 })
 
 const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
-  const list = resolveGameDetailHotList(gameData.value, {
-    gameTypeCode: currentGameCategoryCode.value,
-    sysGameTypeCode: currentGameTypeCode.value,
-    excludeRowId: currentGameRowId.value
-  }) as GameDataItem[]
-  return list
+  return gameData.value as unknown as GameDataItem[]
 })
 const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.value.length > 0)
 
@@ -227,27 +214,9 @@ const fetchCurrentGameDetail = async () => {
 }
 
 const fetchGameDataForApp = async () => {
-  const cachedList = gameDetailCacheGlobal.__gameDetailGameDataCache__
-  if (Array.isArray(cachedList) && cachedList.length) {
-    gameData.value = cachedList
-    return
-  }
-
   isGameDataLoading.value = true
   try {
-    const languageCode = getLanguageCode()
-    const params = {
-      languageCode,
-      site: 'gifphcb9',
-      param: { recommend: 1, syncChildGames: 0, syncBrandChildGames: 0, homeRecommend: 0 },
-      page: { records: [], total: 0, size: 1000, current: 1 }
-    }
-    const res = await Api.game.queryGameItemPage(params, API_REQUEST_OPTIONS)
-    const nextList = Array.isArray(res?.result?.records)
-      ? (res.result.records as unknown as GameDataSection[])
-      : []
-    gameData.value = nextList
-    gameDetailCacheGlobal.__gameDetailGameDataCache__ = nextList
+    gameData.value = (await queryGameDetailRecommendedItems()) as unknown as GameDataItem[]
   } catch (error) {
     console.error('queryGameItemPage for game detail failed', error)
     gameData.value = []
@@ -258,13 +227,7 @@ const fetchGameDataForApp = async () => {
 
 // ===== 页面动作 =====
 const openCurrentCategoryAllGamesPage = () => {
-  const nextList = Array.isArray(currentCategoryHotGameList.value)
-    ? [...currentCategoryHotGameList.value]
-    : []
   const pageTitle = currentGamePageTitle.value
-
-  gameDetailCacheGlobal.__gameDetailAllListCache__ = nextList
-  gameDetailCacheGlobal.__gameDetailAllPageTitleCache__ = pageTitle
 
   navigateTo('/game/detail/recommended', {
     query: buildRecommendedPageQuery(pageTitle)
@@ -282,26 +245,15 @@ watch(
 
 onMounted(async () => {
   await fetchGameDataForApp()
+  await nextTick()
+  hideParentScrollbar()
+})
+
+onUnmounted(() => {
+  clearParentScrollbarHidden()
 })
 </script>
 <style scoped lang="scss">
-.detail-page {
-  position: relative;
-  min-height: 100vh;
-}
-
-@supports (height: 100svh) {
-  .detail-page {
-    min-height: 100svh;
-  }
-}
-
-@media (min-width: 640px) {
-  .detail-page {
-    min-height: 100vh;
-  }
-}
-
 .detail-loading-mask {
   position: absolute;
   inset: 0;
@@ -331,5 +283,16 @@ onMounted(async () => {
   to {
     transform: rotate(360deg);
   }
+}
+
+:global(.game-detail-hide-scrollbar) {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+:global(.game-detail-hide-scrollbar::-webkit-scrollbar) {
+  width: 0;
+  height: 0;
+  display: none;
 }
 </style>

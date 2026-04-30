@@ -14,7 +14,7 @@
         class="shrink-0 rounded-full px-4 font-[600] transition-colors duration-200"
         :class="
           activePeriod === tab.key
-            ? 'border border-theme-primary bg-theme-3 text-text-1'
+            ? 'border border-solid border-theme-primary bg-theme-3 text-text-1'
             : 'border border-transparent bg-bg-3 text-text-2 hover:text-text-1'
         "
         @click="handleTabClick(tab.key)"
@@ -67,23 +67,27 @@
     <p v-if="isLoading" class="mt-3 text-center text-[12px] text-text-2">
       {{ t('common.loading') }}
     </p>
-    <div v-else-if="activeRecords.length === 0" class="mt-8 flex flex-col items-center">
-      <ThemedEmptyState
-        :dark-image="noDataDarkImg"
-        :light-image="noDataLightImg"
-        :image-alt="t('common.noData')"
-        :message="t('common.noData')"
-        container-class="mt-0"
-        image-class="h-[182px] w-auto object-contain"
-        text-class="mt-0 text-[12px] font-[500] leading-[18px] text-text-1"
-      />
-      <button
-        type="button"
-        class="mt-5 h-[40px] w-[200px] rounded-[8px] bg-theme-primary text-[14px] font-[700] text-text-4"
-        @click="handleStartPlaying"
+    <div v-else-if="activeRecords.length === 0" class="mt-8 flex justify-center">
+      <section
+        class="rebate-records-empty-card flex w-full max-w-[260px] flex-col items-center rounded-[10px]"
       >
-        {{ t('rebatePage.goBet') }}
-      </button>
+        <ThemedEmptyState
+          :dark-image="noDataDarkImg"
+          :light-image="noDataLightImg"
+          :image-alt="t('common.noData')"
+          :message="t('common.noData')"
+          container-class="mt-0"
+          image-class="h-[182px] w-auto object-contain"
+          text-class="mt-0 text-center text-[12px] font-[500] leading-[18px] text-text-1"
+        />
+        <button
+          type="button"
+          class="mt-5 h-[40px] w-[200px] rounded-[8px] bg-theme-primary text-[14px] font-[700] text-text-4"
+          @click="handleStartPlaying"
+        >
+          {{ t('rebatePage.goBet') }}
+        </button>
+      </section>
     </div>
 
     <RebateReminderDialog
@@ -323,4 +327,9 @@ const turnoverDeductionReminderMessage = computed(() =>
 const rebateAmountReminderMessage = computed(() => t('rebatePage.records.rebateAmountReminder'))
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.rebate-records-empty-card {
+  padding: 18px 14px;
+  border: 1px solid var(--color-theme-primary);
+}
+</style>

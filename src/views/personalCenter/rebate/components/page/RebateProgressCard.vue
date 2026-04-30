@@ -31,7 +31,8 @@
     <div
       class="rebate-progress-track"
       :style="{
-        '--progress-percent-number': progressPercent
+        '--progress-percent-number': progressPercent,
+        '--progress-pill-width': isMobile ? '34px' : '44px'
       }"
     >
       <div class="rebate-progress-fill" :style="{ width: `${progressPercent}%` }"></div>
@@ -86,11 +87,14 @@ defineProps<{
 
 .rebate-progress-percent-pill {
   position: absolute;
-  left: calc((100% - 56px) * (var(--progress-percent-number) / 100) + 28px);
+  left: calc(
+    (100% - var(--progress-pill-width, 44px)) * (var(--progress-percent-number) / 100) +
+      (var(--progress-pill-width, 44px) / 2)
+  );
   top: 50%;
   z-index: 1;
   display: inline-flex;
-  width: 56px;
+  width: var(--progress-pill-width, 44px);
   height: 16px;
   align-items: center;
   justify-content: center;
