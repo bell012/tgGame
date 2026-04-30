@@ -1,5 +1,5 @@
 import type { QueryOrderInfoPageForm, QueryOrderInfoResult } from '@/api/interface/record.interface'
-import { getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
+import { getCurrentCurrency, formatBalance } from '@/utils/locale'
 import bet from '@/static/img/personalCenter/bet.png'
 
 type TranslateFn = (key: string) => string
@@ -179,9 +179,9 @@ export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => {
     gameType,
     gameName,
     gameIcon: bet,
-    betAmount: getFormattedBalance(record.betAmount, currency, 2),
+    betAmount: formatBalance(record.betAmount, 2),
     result: record.gameAmount >= 0 ? 'win' : 'loss',
-    resultAmount: getFormattedBalance(Math.abs(record.gameAmount), currency, 2),
+    resultAmount: formatBalance(Math.abs(record.gameAmount), 2),
     currency,
     orderNo: record.betId || record.issueId || String(record.rowId),
     createdAt: new Date(record.createTime || record.betTime).toLocaleString(),

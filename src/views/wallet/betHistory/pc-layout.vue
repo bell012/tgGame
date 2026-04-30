@@ -33,9 +33,9 @@
     </div>
 
     <div class="table-wrapper">
-      <div class="table-header-bar bg-bg-3 rounded-lg py-3">
+      <div class="table-header-bar bg-bg-3 rounded-lg py-3 px-[24px]">
         <div class="grid grid-cols-4 gap-3">
-          <div class="text-text-1 text-sm font-bold text-center">
+          <div class="text-text-1 text-sm font-bold text-left">
             {{ $t('betHistory.type') }}
           </div>
           <div class="text-text-1 text-sm font-bold text-center">
@@ -44,7 +44,7 @@
           <div class="text-text-1 text-sm font-bold text-center">
             {{ $t('betHistory.betAmount') }}
           </div>
-          <div class="text-text-1 text-sm font-bold text-center">
+          <div class="text-text-1 text-sm font-bold text-right">
             {{ $t('betHistory.profit') }}
           </div>
         </div>
@@ -74,22 +74,22 @@
           <div
             v-for="item in dataList"
             :key="item.id"
-            class="table-row-item grid grid-cols-4 gap-3 py-3 cursor-pointer border-b border-opacity-5"
+            class="table-row-item grid grid-cols-4 gap-3 py-3 cursor-pointer border-b border-opacity-5 px-[24px]"
             @click="handleRowClick(item)"
           >
-            <div class="flex items-center justify-center gap-3">
+            <div class="flex items-center justify-start gap-3">
               <span class="text-text-1 text-sm font-[700] text-center">{{ item.gameName }}</span>
             </div>
             <div class="text-text-2 text-sm font-[700] text-center">{{ item.time }}</div>
             <div class="text-text-1 text-sm font-[700] text-center">{{ item.betAmount }}</div>
-            <div class="flex items-center justify-center gap-1">
+            <div class="flex items-center justify-end gap-1">
               <span
                 :class="item.result === 'win' ? 'text-secondary-2' : 'text-secondary-4'"
                 class="font-[700] text-sm"
               >
-                {{ item.result === 'win' ? '+' : '-' }}{{ item.resultAmount }}
+                {{ item.resultAmount }}
               </span>
-              <ArrowRightIcon class="w-4 h-4 text-text-1" />
+              <ArrowLeftIcon class="w-4 h-4 text-text-1" />
             </div>
           </div>
 
@@ -120,7 +120,7 @@ import CustomSelect from '@/components/common/CustomSelect.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import BetDetailsModal from '../betDetails/BetDetailsModal.vue'
-import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import ArrowLeftIcon from '@/static/svg/arrow_left2.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import {
