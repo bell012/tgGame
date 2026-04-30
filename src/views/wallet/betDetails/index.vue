@@ -55,7 +55,7 @@
             <span class="text-text-3 text-sm">{{ $t('betDetails.orderNo') }}</span>
             <div class="flex items-center gap-1 max-w-[75%]">
               <span class="text-text-1 text-sm truncate">{{ betDetail.orderNo }}</span>
-              <button class="p-1 hover:bg-opacity-5 rounded transition-colors" @click="copyOrderNo">
+              <button class="p-1" @click="copyOrderNo">
                 <CopyIcon class="w-4 h-4 text-text-2" />
               </button>
             </div>
