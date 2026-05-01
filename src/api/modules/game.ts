@@ -144,7 +144,7 @@ export function getGameBetRecordList(
 
 /**
  * 获取最新投注列表
- * @param data type 1: 最新投注 2: 龙虎榜
+ * @param data type 1: 最新投注 2: 龙虎榜；currency 币种代码
  * @returns Promise<GetLatestListResponse>
  */
 export function getLatestList(

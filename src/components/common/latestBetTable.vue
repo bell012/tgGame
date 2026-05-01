@@ -22,7 +22,7 @@
           </td>
         </tr>
       </tbody>
-      <tbody v-else>
+      <tbody v-else-if="displayRows.length > 0">
         <tr
           v-for="(item, index) in displayRows"
           :key="`row-${index}`"
@@ -60,6 +60,21 @@
           </td>
         </tr>
       </tbody>
+      <tbody v-else>
+        <tr>
+          <td colspan="4" class="px-3 py-6">
+            <ThemedEmptyState
+              :dark-image="defaultImgDark"
+              :light-image="defaultImgLight"
+              :image-alt="$t('gameDetail.noData')"
+              :message="$t('gameDetail.noData')"
+              container-class="mt-0"
+              image-class="h-[96px] w-auto object-contain mx-auto"
+              text-class="mt-2 text-center text-[12px] font-[500] leading-[18px] text-text-2"
+            />
+          </td>
+        </tr>
+      </tbody>
     </table>
   </div>
 </template>
@@ -69,8 +84,13 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import Api from '@/api'
 import type { LatestListItem } from '@/api/interface/game'
 import placeholderImg from '@/static/img/home/errImg.png'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
-import { getCurrencyImageByCode } from '@/utils/locale'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import { getCurrencyImageByCode, getCurrentCurrency } from '@/utils/locale'
+import { useLocaleStore } from '@/stores/locale'
+import { storeToRefs } from 'pinia'
 
 interface LiveBetRow {
   id: number
@@ -84,7 +104,7 @@ interface LiveBetRow {
 }
 
 const MAX_VISIBLE_ROWS = 10
-const LATEST_LIST_REFRESH_INTERVAL_MS = 10 * 60 * 1000
+const LATEST_LIST_REFRESH_INTERVAL_MS = 5 * 60 * 1000
 
 const props = withDefaults(
   defineProps<{
@@ -94,6 +114,9 @@ const props = withDefaults(
     type: 1
   }
 )
+
+const localeStore = useLocaleStore()
+const { currentCurrency } = storeToRefs(localeStore)
 
 const sourceRows = ref<LiveBetRow[]>([])
 const displayRows = ref<LiveBetRow[]>([])
@@ -119,7 +142,8 @@ const getLatestListData = async () => {
 
   try {
     const res = await Api.game.getLatestList({
-      type: props.type
+      type: props.type,
+      currency: getCurrentCurrency()
     })
 
     sourceRows.value = (res?.result ?? []).map((item: LatestListItem, index: number) => {
@@ -202,7 +226,7 @@ const startAutoScroll = () => {
 }
 
 watch(
-  () => props.type,
+  [() => props.type, currentCurrency],
   () => {
     startLatestListRefresh()
   },
