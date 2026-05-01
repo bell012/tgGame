@@ -4,10 +4,7 @@
 
     <div class="py-3.5 px-3.5">
       <div class="bg-bg-2 rounded-lg px-3.5 pb-3.5 pt-[30px] flex flex-col items-center">
-        <p
-          :class="detail.direction === 'add' ? 'text-secondary-2' : 'text-secondary-4'"
-          class="text-[25px] font-[700] mb-2.5"
-        >
+        <p class="text-[25px] font-[700] text-text-1 mb-2.5">
           {{ detail.amount }}
         </p>
 

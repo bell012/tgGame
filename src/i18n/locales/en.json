@@ -186,6 +186,8 @@
     "time": "Time",
     "payout": "Payout",
     "profit": "Profit",
+    "amount": "Amount",
+    "balance": "Balance",
     "noMore": "No More",
     "status": "Status",
     "filterGroups": {
