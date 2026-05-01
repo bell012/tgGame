@@ -55,7 +55,7 @@ interface UseVipPageDataOptions {
 }
 
 export type VipBenefitCardKey = 'levelUp' | 'weekly' | 'monthly'
-export type VipBenefitCardStatus = 'claim' | 'upgrade'
+export type VipBenefitCardStatus = 'claim' | 'claimed' | 'upgrade'
 
 export interface VipProgressItem {
   key: string
@@ -179,6 +179,14 @@ const vipListRewardFieldMap: Record<
     amount: 'monthAmount'
   }
 }
+
+const vipBenefitTitleKeyMap: Record<VipBenefitCardKey, string> = {
+  levelUp: 'vipPage.cards.levelUp',
+  weekly: 'vipPage.cards.weekly',
+  monthly: 'vipPage.cards.monthly'
+}
+
+const allVipBenefitKeys: VipBenefitCardKey[] = ['levelUp', 'weekly', 'monthly']
 
 const avatarFrameImageMap: Record<Exclude<AvatarFrameId, 'none'>, string> = {
   border_1: border1Image,
@@ -459,14 +467,31 @@ const resolveVipListRewardAmount = (targetConfig: VipListItem | null, key: VipBe
 }
 
 /**
+ * 最高等级不再展示升级奖励，移除 levelUp
+ */
+const getAvailableVipBenefitKeys = (
+  vipId?: number | null,
+  highestVipId?: number | null
+): VipBenefitCardKey[] => {
+  if (highestVipId != null && vipId === highestVipId) {
+    return ['weekly', 'monthly']
+  }
+
+  return ['levelUp', 'weekly', 'monthly']
+}
+
+/**
  * 计算单个 VIP 等级的三项奖励总额。
  */
-const getVipBenefitTotalRewards = (targetConfig: VipListItem | null) => {
-  return (
-    resolveVipListRewardAmount(targetConfig, 'levelUp') +
-    resolveVipListRewardAmount(targetConfig, 'weekly') +
-    resolveVipListRewardAmount(targetConfig, 'monthly')
-  )
+const getVipBenefitTotalRewards = (
+  targetConfig: VipListItem | null,
+  highestVipId?: number | null
+) => {
+  const targetVipId = targetConfig?.vipId
+
+  return getAvailableVipBenefitKeys(targetVipId, highestVipId).reduce((totalAmount, key) => {
+    return totalAmount + resolveVipListRewardAmount(targetConfig, key)
+  }, 0)
 }
 
 /**
@@ -476,9 +501,11 @@ const createBenefitComparisonColumn = (
   t: Translate,
   key: 'current' | 'unlock',
   targetConfig: VipListItem | null,
-  fallbackVipId: number
+  fallbackVipId: number,
+  highestVipId?: number | null
 ): VipBenefitComparisonColumn => {
   const resolvedVipId = targetConfig?.vipId ?? fallbackVipId
+  const benefitKeys = getAvailableVipBenefitKeys(resolvedVipId, highestVipId)
 
   return {
     key,
@@ -488,25 +515,15 @@ const createBenefitComparisonColumn = (
         ? t('vipPage.benefitsComparison.currentLevel', { vipId: resolvedVipId })
         : t('vipPage.benefitsComparison.unlockLevel', { vipId: resolvedVipId }),
     rows: [
-      {
-        key: 'levelUp',
-        label: t('vipPage.cards.levelUp'),
-        amount: formatBalance(resolveVipListRewardAmount(targetConfig, 'levelUp'))
-      },
-      {
-        key: 'weekly',
-        label: t('vipPage.cards.weekly'),
-        amount: formatBalance(resolveVipListRewardAmount(targetConfig, 'weekly'))
-      },
-      {
-        key: 'monthly',
-        label: t('vipPage.cards.monthly'),
-        amount: formatBalance(resolveVipListRewardAmount(targetConfig, 'monthly'))
-      },
+      ...benefitKeys.map(benefitKey => ({
+        key: benefitKey,
+        label: t(vipBenefitTitleKeyMap[benefitKey]),
+        amount: formatBalance(resolveVipListRewardAmount(targetConfig, benefitKey))
+      })),
       {
         key: 'totalRewards',
         label: t('vipPage.benefitsComparison.totalRewards'),
-        amount: formatBalance(getVipBenefitTotalRewards(targetConfig)),
+        amount: formatBalance(getVipBenefitTotalRewards(targetConfig, highestVipId)),
         emphasized: true
       }
     ]
@@ -528,20 +545,29 @@ const createBenefitCard = (
   return {
     key,
     title: t(titleKey),
-    amount: formatBalance(amount ?? 0),
+    amount: formatBalance(status === 'claimed' ? 0 : (amount ?? 0)),
     status,
-    buttonText: status === 'claim' ? t('referral.claim') : t('personalCenter.upgrade'),
+    buttonText:
+      status === 'claim'
+        ? t('referral.claim')
+        : status === 'claimed'
+          ? t('vipPage.claimed')
+          : t('personalCenter.upgrade'),
     background,
     image
   }
 }
 
 /**
- * 将后端权益状态值映射为前端按钮状态：2 为 Claim，其余默认显示 Upgrade。
+ * 按钮状态：2 为 Claim，3 为 Claimed，其余默认显示 Upgrade。
  */
 const getBenefitCardStatus = (state: number | undefined): VipBenefitCardStatus => {
   if (Number(state) === 2) {
     return 'claim'
+  }
+
+  if (Number(state) === 3) {
+    return 'claimed'
   }
 
   return 'upgrade'
@@ -704,7 +730,8 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
       t,
       'current',
       viewedVipTargetConfig.value,
-      viewedVipLevel.value
+      viewedVipLevel.value,
+      highestVipLevel.value
     )
 
     if (!nextVipTargetConfig.value) {
@@ -717,7 +744,8 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
         t,
         'unlock',
         nextVipTargetConfig.value,
-        nextVipTargetConfig.value.vipId ?? viewedVipLevel.value
+        nextVipTargetConfig.value.vipId ?? viewedVipLevel.value,
+        highestVipLevel.value
       )
     ]
   })
@@ -807,36 +835,40 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
 
   const benefitCards = computed<VipBenefitCard[]>(() => {
     const benefitInfo = vipInfo.value
+    const benefitCardValueMap: Record<
+      VipBenefitCardKey,
+      { amount: number | undefined; state: number | undefined; image: string }
+    > = {
+      levelUp: {
+        amount: benefitInfo?.upgradedMoney,
+        state: benefitInfo?.upgradedState,
+        image: item1Image
+      },
+      weekly: {
+        amount: benefitInfo?.weekMoney,
+        state: benefitInfo?.weekState,
+        image: item3Image
+      },
+      monthly: {
+        amount: benefitInfo?.monthMoney,
+        state: benefitInfo?.monthState,
+        image: item4Image
+      }
+    }
 
-    return [
-      createBenefitCard(
+    return allVipBenefitKeys.map(key => {
+      const benefitCardValue = benefitCardValueMap[key]
+
+      return createBenefitCard(
         t,
-        'levelUp',
-        'vipPage.cards.levelUp',
-        benefitInfo?.upgradedMoney,
-        getBenefitCardStatus(benefitInfo?.upgradedState),
-        item1Image,
-        resolveBenefitCardBackground('levelUp', theme.value)
-      ),
-      createBenefitCard(
-        t,
-        'weekly',
-        'vipPage.cards.weekly',
-        benefitInfo?.weekMoney,
-        getBenefitCardStatus(benefitInfo?.weekState),
-        item3Image,
-        resolveBenefitCardBackground('weekly', theme.value)
-      ),
-      createBenefitCard(
-        t,
-        'monthly',
-        'vipPage.cards.monthly',
-        benefitInfo?.monthMoney,
-        getBenefitCardStatus(benefitInfo?.monthState),
-        item4Image,
-        resolveBenefitCardBackground('monthly', theme.value)
+        key,
+        vipBenefitTitleKeyMap[key],
+        benefitCardValue.amount,
+        getBenefitCardStatus(benefitCardValue.state),
+        benefitCardValue.image,
+        resolveBenefitCardBackground(key, theme.value)
       )
-    ]
+    })
   })
 
   const retentionCards = computed<VipRetentionCard[]>(() => {

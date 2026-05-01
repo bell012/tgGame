@@ -148,16 +148,22 @@
 
           <div
             type="button"
-            :disabled="card.status === 'claim' && claimingCardKey === card.key"
+            :disabled="
+              card.status === 'claimed' || (card.status === 'claim' && claimingCardKey === card.key)
+            "
             @click="handleBenefitAction(card)"
             :class="
-              card.status === 'claim'
+              card.status === 'claim' || card.status === 'claimed'
                 ? 'bg-theme-primary text-text-4'
                 : 'text-secondary-7 border border-secondary-7'
             "
-            class="relative mt-[20px] flex h-[40px] w-[300px] items-center justify-center overflow-hidden rounded-lg text-sm font-[700] cursor-pointer"
+            class="relative mt-[20px] flex h-[40px] w-[300px] items-center justify-center overflow-hidden rounded-lg text-sm font-[700] cursor-pointer disabled:cursor-not-allowed"
           >
-            <span class="relative z-[1]">{{ card.buttonText }}</span>
+            <span
+              v-if="card.status === 'claimed'"
+              class="pointer-events-none absolute -inset-px z-[1] rounded-[inherit] bg-mask-60-1"
+            ></span>
+            <span class="relative z-[2]">{{ card.buttonText }}</span>
           </div>
         </article>
       </section>
@@ -326,6 +332,10 @@ watch(
 )
 
 const handleBenefitAction = async (card: VipBenefitCard) => {
+  if (card.status === 'claimed') {
+    return
+  }
+
   if (card.status === 'upgrade') {
     void navigateTo('/casino')
     return
