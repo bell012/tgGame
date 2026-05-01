@@ -31,7 +31,7 @@
     <Transition name="dropdown">
       <div
         v-if="isOpen"
-        class="absolute top-[56px] max-h-[600px] px-3 left-0 w-full bg-bg-5 rounded-lg border border-opacity-5 z-50 overflow-auto"
+        class="absolute top-[56px] max-h-[450px] px-3 left-0 w-full bg-bg-5 rounded-lg border border-opacity-5 z-50 overflow-auto"
       >
         <div class="pointer-events-none sticky top-0 z-[1] h-3 bg-bg-5"></div>
 
@@ -91,11 +91,13 @@ interface Props {
   options: Option[]
   placeholder?: string
   disabled?: boolean
+  usePlaceholderWhenAll?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: '',
-  disabled: false
+  disabled: false,
+  usePlaceholderWhenAll: false
 })
 
 const emit = defineEmits<{
@@ -105,7 +107,15 @@ const emit = defineEmits<{
 
 const isOpen = ref(false)
 
+const shouldDisplayPlaceholder = computed(() => {
+  return props.usePlaceholderWhenAll && props.modelValue === 'all' && Boolean(props.placeholder)
+})
+
 const selectedLabel = computed(() => {
+  if (shouldDisplayPlaceholder.value) {
+    return props.placeholder
+  }
+
   return selectedOption.value?.label || props.placeholder || t('customSelect.placeholder')
 })
 
