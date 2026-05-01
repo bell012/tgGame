@@ -178,6 +178,8 @@ export type LatestListType = 1 | 2
 
 export interface GetLatestListParams {
   type: LatestListType
+  /** 币种代码 */
+  currency: string
 }
 
 export interface LatestListItem {
