@@ -44,35 +44,36 @@
 <script setup lang="ts">
 import Api from '@/api'
 import { computed, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { navigateTo } from '@/utils/router'
 import closeIcon from '@/static/svg/game/detail/close.svg?url'
 
-const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const showExitDialog = ref(false)
 const isConfirmLoading = ref(false)
+const launchState = computed(() => {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const state = window.history.state as { gameLaunch?: Record<string, unknown> } | null
+  return state?.gameLaunch ?? null
+})
 
 const iframeSrc = computed(() => {
-  const rawUrl = Array.isArray(route.query.url) ? route.query.url[0] : route.query.url
-  const url = String(rawUrl ?? '').trim()
+  const url = String(launchState.value?.url ?? '').trim()
   return url
 })
 const gameCode = computed(() => {
-  const raw = Array.isArray(route.query.gameCode) ? route.query.gameCode[0] : route.query.gameCode
-  return String(raw ?? '').trim()
+  return String(launchState.value?.gameCode ?? '').trim()
 })
 const companyCode = computed(() => {
-  const raw = Array.isArray(route.query.companyCode)
-    ? route.query.companyCode[0]
-    : route.query.companyCode
-  return String(raw ?? '').trim()
+  return String(launchState.value?.companyCode ?? '').trim()
 })
 const detailRowId = computed(() => {
-  const raw = Array.isArray(route.query.rowId) ? route.query.rowId[0] : route.query.rowId
-  return String(raw ?? '').trim()
+  return String(launchState.value?.rowId ?? '').trim()
 })
 
 const openExitDialog = () => {

@@ -40,11 +40,13 @@ export function useGamePlatformPlay() {
         const rowId = String(currentGameDetail.value?.rowId ?? '').trim()
         if (gameUrl) {
           await navigateTo('/game-iframe', {
-            query: {
-              url: gameUrl,
-              gameCode,
-              companyCode,
-              rowId
+            state: {
+              gameLaunch: {
+                url: gameUrl,
+                gameCode,
+                companyCode,
+                rowId
+              }
             }
           })
         }
