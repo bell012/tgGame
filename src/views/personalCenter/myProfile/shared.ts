@@ -1,7 +1,6 @@
 import { computed, onActivated, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
-import type { SubGameItem2 } from '@/api/interface/home.interface'
 import type { GameBetTotalResult } from '@/api/interface/user'
 import { useLocaleStore } from '@/stores/locale'
 import { useUserStore } from '@/stores/user'
@@ -12,6 +11,7 @@ import {
   getCurrencySymbol,
   getFormattedBalance
 } from '@/utils/locale'
+import { getGameImage, getGameName } from '@/utils/global-dic'
 import {
   DEFAULT_AVATAR_FRAME_ID,
   profileCustomizationState,
@@ -27,7 +27,6 @@ import border2Image from '@/static/img/personalCenter/border_2.png'
 import border3Image from '@/static/img/personalCenter/border_3.png'
 import border4Image from '@/static/img/personalCenter/border_4.png'
 import border5Image from '@/static/img/personalCenter/border_5.png'
-import favoriteGameFallbackImage from '@/static/img/personalCenter/myProfile.png'
 import Api from '@/api'
 
 type FavoriteGameSourceItem = GameBetTotalResult['list'][number]
@@ -63,7 +62,6 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
 
   const gameBetSummary = ref<GameBetSummary>(EMPTY_GAME_BET_SUMMARY)
   const favoriteGameList = ref<FavoriteGameSourceItem[]>([])
-  const profileRequestDate = ref(new Date())
 
   const avatarUrl = computed(() => resolveProfileAvatarUrl(userInfo.value?.headPortrait))
   const selectedAvatarFrameImage = computed(() => {
@@ -88,41 +86,6 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
 
     return acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
   })
-
-  /**
-   * 从本地缓存中读取游戏目录，用于映射收藏游戏的名称与图片。
-   */
-  const getStoredGameCatalog = (): SubGameItem2[] => {
-    if (typeof window === 'undefined') return []
-    try {
-      const storedValue = localStorage.getItem('gameData')
-      const parsedValue = storedValue ? JSON.parse(storedValue) : []
-      if (!Array.isArray(parsedValue)) return []
-      const gameCatalog: SubGameItem2[] = []
-      parsedValue.forEach(section => {
-        if (!Array.isArray(section?.subGame)) return
-        section.subGame.forEach((provider: any) => {
-          if (Array.isArray(provider?.subGame)) gameCatalog.push(...provider.subGame)
-        })
-      })
-      return gameCatalog
-    } catch (error) {
-      console.error(error)
-      return []
-    }
-  }
-
-  /**
-   * 将游戏图片相对路径转换成完整图片地址。
-   */
-  const toFavoriteGameImage = (value?: string) =>
-    value ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}` : favoriteGameFallbackImage
-
-  /**
-   * 获取收藏游戏展示名称，缺失时回退到 itemCode。
-   */
-  const getFavoriteGameName = (gameItem?: SubGameItem2, fallbackItemCode?: string) =>
-    gameItem?.itemName || fallbackItemCode || '--'
 
   const profileStats = computed(() => [
     {
@@ -162,21 +125,29 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
   )
 
   const favoriteGameCards = computed<FavoriteGame[]>(() => {
-    const gameCatalog = getStoredGameCatalog()
     return favoriteGameList.value.slice(0, 3).map(item => {
-      const matchedGame = gameCatalog.find(
-        game => game?.platformCode === item.platformCode && game?.itemCode === item.itemCode
-      )
+      const gameCode = String(
+        (item as FavoriteGameSourceItem & { gameCode?: string }).gameCode ?? item.itemCode ?? ''
+      ).trim()
+
       return {
-        image: toFavoriteGameImage(matchedGame?.icon2),
-        name: getFavoriteGameName(matchedGame, item.itemCode),
+        image: getGameImage(item.platformCode, gameCode),
+        name: getGameName('game_code', `${item.platformCode}|${gameCode}`) || '-',
         betAmount: getFormattedBalance(Number(item.betAmount ?? 0), currentCurrency.value, 2)
       }
     })
   })
+
+  //  使用userInfo.userInfo 注册时间显示
   const joinedOnText = computed(() => {
-    const baseDate = new Date(`${profileRequestDate.value.toISOString().slice(0, 10)}T00:00:00`)
+    const createTime = Number(userInfo.value?.createTime ?? 0)
+    const baseDate = Number.isFinite(createTime) && createTime > 0 ? new Date(createTime) : null
     const isZh = String(locale.value).toLowerCase().startsWith('zh')
+
+    if (!baseDate || Number.isNaN(baseDate.getTime())) {
+      return t('personalCenter.myProfile.joinedOn', { date: '--' })
+    }
+
     const formattedDate = new Intl.DateTimeFormat(isZh ? 'zh-CN' : 'en-US', {
       year: 'numeric',
       month: isZh ? 'long' : 'short',
@@ -235,7 +206,6 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
    * 初始化我的资料统计与用户信息。
    */
   onMounted(async () => {
-    profileRequestDate.value = new Date()
     const res = await Api.user.getGameBetTotal({})
     if (res?.code === 'C2') {
       const result = res.result

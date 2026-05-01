@@ -23,10 +23,7 @@
 
       <div class="p-4 flex flex-col items-center bg-bg-1">
         <div class="w-full h-full flex flex-col items-center bg-bg-2 rounded-lg p-4 pt-8">
-          <p
-            :class="detail.direction === 'add' ? 'text-secondary-2' : 'text-secondary-4'"
-            class="text-[24px] font-[700] mb-2"
-          >
+          <p class="text-[24px] font-[700] text-text-1 mb-2">
             {{ detail.amount }}
           </p>
 

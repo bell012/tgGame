@@ -92,7 +92,7 @@
             <img :src="item.image" alt="Game" class="h-[96px] w-[73px] shrink-0 object-contain" />
 
             <div class="min-w-0 flex-1">
-              <p class="break-words text-xs font-bold text-text-1">
+              <p class="break-words text-xs font-bold text-text-1 line-clamp-2">
                 {{ item.name }}
               </p>
               <div class="mt-2.5 flex items-center justify-between gap-2.5">

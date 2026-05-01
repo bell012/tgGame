@@ -23,11 +23,8 @@
 
       <div class="p-4 flex flex-col items-center bg-bg-1">
         <div class="w-full h-full flex flex-col items-center bg-bg-2 rounded-lg p-4 pt-8">
-          <p
-            :class="detail.direction === 'add' ? 'text-secondary-2' : 'text-secondary-4'"
-            class="text-[24px] font-[700] mb-2"
-          >
-            {{ detail.betAmount }}
+          <p class="text-[24px] font-[700] text-text-1 mb-2">
+            {{ detail.direction === 'add' ? '+' : '-' }}{{ detail.betAmount }}
           </p>
 
           <h2 class="text-text-1 text-base font-[400] mb-[32px]">{{ detail.gameName }}</h2>
@@ -45,8 +42,8 @@
 
             <div class="flex items-center justify-between">
               <span class="text-text-3">{{ $t('betDetails.orderNo') }}</span>
-              <div class="flex items-center">
-                <span class="text-text-1">{{ detail.orderNo }}</span>
+              <div class="flex items-center max-w-[75%]">
+                <span class="text-text-1 truncate">{{ detail.orderNo }}</span>
                 <button class="p-1" @click="copyOrderNo">
                   <CopyIcon class="w-6 h-6 text-text-2" />
                 </button>
@@ -74,7 +71,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import Close from '@/static/svg/close.svg?component'
 import type { Item } from '../transaction/shared'
@@ -100,10 +97,7 @@ const closeModal = () => {
 const copyOrderNo = () => {
   if (detail.value?.orderNo) {
     navigator.clipboard.writeText(detail.value.orderNo)
-    showToast({
-      message: t('betDetails.copy'),
-      type: 'success'
-    })
+    globalShowToast(t('betDetails.copy'))
   }
 }
 </script>

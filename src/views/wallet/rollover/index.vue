@@ -57,10 +57,7 @@
                   <h3 class="text-text-1 font-[700] text-sm">
                     {{ item.gameName }}
                   </h3>
-                  <p
-                    :class="item.direction === 'add' ? 'text-secondary-2' : 'text-secondary-4'"
-                    class="text-sm font-[700]"
-                  >
+                  <p class="text-base font-[700] text-text-1">
                     {{ item.amount }}
                   </p>
                 </div>
@@ -70,13 +67,13 @@
                 <div class="flex items-center justify-between mb-2.5">
                   <p class="text-text-3 font-[400] text-xs">{{ $t('wallet.actualTurnover') }}</p>
                   <p class="text-text-1 font-[700] text-xs">
-                    {{ item.actualTurnover }}
+                    {{ item.direction === 'add' ? '+' : '-' }}{{ item.actualTurnover }}
                   </p>
                 </div>
                 <div class="flex items-center justify-between">
                   <p class="text-text-3 font-[400] text-xs">{{ $t('wallet.requiredTurnover') }}</p>
                   <p class="text-text-1 font-[700] text-xs">
-                    {{ item.requiredTurnover }}
+                    {{ item.direction === 'add' ? '+' : '-' }}{{ item.requiredTurnover }}
                   </p>
                 </div>
               </div>
@@ -177,17 +174,17 @@ const filterValues = ref<Record<string, string | string[]>>({
 const filterGroups = computed<FilterGroup[]>(() => [
   {
     key: 'time',
-    title: t('betHistory.filterGroups.time'),
+    title: t('betHistory.filterGroups.date'),
     options: createRolloverTimeOptions(t)
   },
   {
     key: 'status',
-    title: t('transaction.status'),
+    title: t('betHistory.filterGroups.status'),
     options: createRolloverStatusOptions(t)
   },
   {
     key: 'type',
-    title: t('transaction.filterGroups.type'),
+    title: t('betHistory.filterGroups.transaction'),
     options: createRolloverTypeOptions(t)
   }
 ])
