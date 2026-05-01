@@ -14,6 +14,7 @@
         :class="desktop ? 'tp-desktop-wrap' : ''"
       >
         <div
+          ref="panelRef"
           class="tp-panel bg-[var(--color-background-level-2)] rounded-t-xl pt-2.5 px-3.5"
           :class="desktop ? 'tp-panel-desktop' : ''"
         >
@@ -49,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, Ref } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, ref, Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
@@ -65,6 +66,7 @@ const emit = defineEmits<{
   'update:visible': [val: boolean]
 }>()
 const { t } = useI18n()
+const panelRef = ref<HTMLElement | null>(null)
 
 // options数据
 const selectOptions = inject('currency-select-options') as Ref<OptionItem[]>
@@ -82,7 +84,7 @@ const listOptions = computed(() => {
 
 const desktopListClass = computed(() => {
   if (props.desktop) {
-    return 'tp-desktop-list max-h-[268px] overflow-y-auto pr-1 pb-2'
+    return 'tp-desktop-list max-h-[236px] overflow-y-auto pr-1 pb-2'
   }
   return 'max-h-[368px] overflow-y-auto'
 })
@@ -105,6 +107,31 @@ const confirmByValue = (value: string) => {
   }
   close()
 }
+
+const handleDocumentPointerDown = (event: MouseEvent) => {
+  if (!props.desktop || !props.visible) {
+    return
+  }
+
+  const target = event.target as Node | null
+  if (!target) {
+    return
+  }
+
+  if (panelRef.value?.contains(target)) {
+    return
+  }
+
+  close()
+}
+
+onMounted(() => {
+  document.addEventListener('mousedown', handleDocumentPointerDown, true)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', handleDocumentPointerDown, true)
+})
 </script>
 <style scoped lang="scss">
 @use '@/styles/mixins' as *;
