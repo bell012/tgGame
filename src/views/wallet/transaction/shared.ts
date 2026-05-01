@@ -1,6 +1,6 @@
 import type { QueryAcctHisPageForm, QueryAcctHisPageResult } from '@/api/interface/record.interface'
 import { formatTimestamp } from '@/utils/date'
-import { getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
+import { getCurrentCurrency, getFormattedBalance, formatBalance } from '@/utils/locale'
 
 type TranslateFn = (key: string) => string
 
@@ -166,8 +166,8 @@ export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => {
     gameType: gameName,
     gameName,
     direction: record.busiAmount >= 0 ? 'add' : 'dec',
-    betAmount: formatSignedTransactionAmount(record.busiAmount, currency),
-    profit: getFormattedBalance(record.newBalance, currency, 2),
+    betAmount: formatBalance(record.busiAmount, 2),
+    profit: formatBalance(record.newBalance, 2),
     currency,
     orderNo: String(record.accountChangeId),
     createdAt: formatTimestamp(record.createTime),

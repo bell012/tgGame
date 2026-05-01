@@ -193,7 +193,8 @@
       "winLoss": "Win/Loss Selection",
       "status": "Statuses Selection",
       "gameType": "Game Type Selection",
-      "platform": "Platform Selection"
+      "platform": "Platform Selection",
+      "transaction": "Transaction Type"
     },
     "filters": {
       "all": "All",

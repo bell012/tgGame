@@ -4,11 +4,8 @@
 
     <div class="py-3.5 px-3.5">
       <div class="bg-bg-2 rounded-lg px-3.5 pb-3.5 pt-[30px] flex flex-col items-center">
-        <p
-          :class="detail.direction === 'add' ? 'text-secondary-2' : 'text-secondary-4'"
-          class="text-[25px] font-[700] mb-2.5"
-        >
-          {{ detail.betAmount }}
+        <p class="text-[25px] font-[700] mb-2.5 text-text-1">
+          {{ detail.direction === 'add' ? '+' : '-' }}{{ detail.betAmount }}
         </p>
 
         <h2 class="text-text-1 text-sm font-[700] mb-[30px]">{{ detail.gameName }}</h2>
@@ -27,9 +24,9 @@
 
           <div class="flex items-center justify-between">
             <span class="text-text-3 text-sm">{{ $t('betDetails.orderNo') }}</span>
-            <div class="flex items-center gap-1">
-              <span class="text-text-1 text-sm">{{ detail.orderNo }}</span>
-              <button class="p-1 hover:bg-opacity-5 rounded transition-colors" @click="copyOrderNo">
+            <div class="flex items-center gap-1 max-w-[75%]">
+              <span class="text-text-1 text-sm truncate">{{ detail.orderNo }}</span>
+              <button class="p-1" @click="copyOrderNo">
                 <CopyIcon class="w-4 h-4 text-text-2" />
               </button>
             </div>
@@ -57,7 +54,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import H5Header from '@/components/common/H5Header.vue'
 import CopyIcon from '@/static/svg/copy.svg?component'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import { useI18n } from 'vue-i18n'
 import { createEmptyTransactionItem, type Item } from '../transaction/shared'
 
@@ -83,12 +80,8 @@ onMounted(() => {
 
 const copyOrderNo = () => {
   if (!detail.value.orderNo) return
-
   navigator.clipboard.writeText(detail.value.orderNo)
-  showToast({
-    message: t('betDetails.copy'),
-    type: 'success'
-  })
+  globalShowToast(t('betDetails.copy'))
 }
 </script>
 

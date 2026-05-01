@@ -48,11 +48,8 @@
                   <h3 class="text-text-1 font-[700] text-sm">
                     {{ item.gameName }}
                   </h3>
-                  <p
-                    :class="item.direction === 'add' ? 'text-secondary-2' : 'text-secondary-4'"
-                    class="text-sm font-[700]"
-                  >
-                    {{ item.betAmount }}
+                  <p class="text-base font-[700] text-text-1">
+                    {{ item.direction === 'add' ? '+' : '-' }}{{ item.betAmount }}
                   </p>
                 </div>
               </div>
@@ -150,12 +147,12 @@ const filterValues = ref<Record<string, string | string[]>>({
 const filterGroups = computed<FilterGroup[]>(() => [
   {
     key: 'time',
-    title: t('betHistory.filterGroups.time'),
+    title: t('betHistory.filterGroups.date'),
     options: createTransactionTimeOptions(t)
   },
   {
     key: 'type',
-    title: t('transaction.filterGroups.type'),
+    title: t('betHistory.filterGroups.transaction'),
     options: createTransactionTypeOptions(t)
   }
 ])

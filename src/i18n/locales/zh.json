@@ -476,7 +476,8 @@
       "winLoss": "赢/输选择",
       "status": "状态选择",
       "gameType": "游戏类型选择",
-      "platform": "平台选择"
+      "platform": "平台选择",
+      "transaction": "交易类型"
     },
     "filters": {
       "all": "全部",
