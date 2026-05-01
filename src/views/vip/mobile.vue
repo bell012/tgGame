@@ -192,6 +192,7 @@
 
       <BenefitExplainPopup v-if="showBenefitExplainPopup" @close="closeBenefitExplainPopup" />
 
+      <!-- 领取弹窗 -->
       <ClaimSuccessPopup
         v-model:visible="showClaimSuccessPopup"
         :amount="claimSuccessAmount"
@@ -225,7 +226,7 @@ import {
 const { t } = useI18n()
 const vipStore = useVipStore()
 const showBenefitExplainPopup = ref(false)
-const showClaimSuccessPopup = ref(true)
+const showClaimSuccessPopup = ref(false)
 const claimSuccessAmount = ref('0.00')
 const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
 const activeContentTab = ref<'comparison' | 'rules'>('comparison')

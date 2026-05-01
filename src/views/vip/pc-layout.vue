@@ -199,7 +199,8 @@
           <VipRulesContent v-else :retention-cards="retentionCards" :rules="rules" />
         </div>
       </section>
-      <!-- v-model:visible="showClaimSuccessPopup" -->
+
+      <!-- 领取弹窗 -->
       <ClaimSuccessPopup
         v-model:visible="showClaimSuccessPopup"
         :amount="claimSuccessAmount"
