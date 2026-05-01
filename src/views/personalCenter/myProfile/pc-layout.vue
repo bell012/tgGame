@@ -106,7 +106,9 @@
                 class="h-[112px] w-[112px] shrink-0 object-contain"
               />
               <div class="min-w-0 flex-1">
-                <p class="break-words text-base font-bold text-text-1">{{ item.name }}</p>
+                <p class="break-words text-base font-bold text-text-1 line-clamp-2">
+                  {{ item.name }}
+                </p>
                 <div class="mt-2 flex items-center justify-between gap-2">
                   <span class="text-base text-text-2">{{
                     t('personalCenter.myProfile.betAmount')

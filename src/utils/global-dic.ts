@@ -17,6 +17,36 @@ type PlatformItem = {
 const normalizeGlobalDicValue = (value: unknown) => String(value ?? '').trim()
 
 /**
+ * 从本地缓存中读取游戏列表数据。
+ */
+const readGameDataCache = (): GameDataItem[] => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  const rawValue = window.localStorage.getItem(GAME_DATA_STORAGE_KEY)
+  if (!rawValue) {
+    return []
+  }
+
+  try {
+    const parsedValue = JSON.parse(rawValue) as unknown
+    return Array.isArray(parsedValue) ? (parsedValue as GameDataItem[]) : []
+  } catch (error) {
+    console.error(error)
+    return []
+  }
+}
+
+/**
+ * 将游戏图片相对路径转换成完整图片地址。
+ */
+const resolveGameImageUrl = (value: unknown) => {
+  const normalizedValue = normalizeGlobalDicValue(value)
+  return normalizedValue ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${normalizedValue}` : ''
+}
+
+/**
  * 从本地缓存中读取全局多语言字典。
  */
 export const readGlobalDicCache = (): GlobalDicItem[] => {
@@ -88,41 +118,46 @@ export const getGameName = (gameCode: unknown, platformCode: unknown, languageCo
 }
 
 /**
+ * 获取游戏图片。
+ */
+export const getGameImage = (platformCode: unknown, gameCode: unknown) => {
+  const normalizedPlatformCode = normalizeGlobalDicValue(platformCode)
+  const normalizedGameCode = normalizeGlobalDicValue(gameCode)
+
+  if (!normalizedPlatformCode || !normalizedGameCode) {
+    return ''
+  }
+
+  const matchedGame = readGameDataCache()
+    .flatMap(section => (Array.isArray(section?.subGame) ? section.subGame : []))
+    .flatMap(provider => (Array.isArray(provider?.subGame) ? provider.subGame : []))
+    .find(game => {
+      return (
+        normalizeGlobalDicValue(game?.platformCode) === normalizedPlatformCode &&
+        normalizeGlobalDicValue(game?.itemCode) === normalizedGameCode
+      )
+    })
+
+  return resolveGameImageUrl(matchedGame?.icon2)
+}
+
+/**
  * 获取平台列表。
  */
 export const getPlatformList = (): PlatformItem[] => {
-  if (typeof window === 'undefined') {
-    return []
-  }
+  const platformCodeSet = new Set<string>()
 
-  const rawValue = window.localStorage.getItem(GAME_DATA_STORAGE_KEY)
-  if (!rawValue) {
-    return []
-  }
-
-  try {
-    const parsedValue = JSON.parse(rawValue) as unknown
-    if (!Array.isArray(parsedValue)) {
-      return []
-    }
-
-    const platformCodeSet = new Set<string>()
-
-    ;(parsedValue as GameDataItem[]).forEach(section => {
-      const providerList = Array.isArray(section?.subGame) ? section.subGame : []
-      providerList.forEach(provider => {
-        const platformCode = normalizeGlobalDicValue(provider?.platformCode)
-        if (platformCode) {
-          platformCodeSet.add(platformCode)
-        }
-      })
+  readGameDataCache().forEach(section => {
+    const providerList = Array.isArray(section?.subGame) ? section.subGame : []
+    providerList.forEach(provider => {
+      const platformCode = normalizeGlobalDicValue(provider?.platformCode)
+      if (platformCode) {
+        platformCodeSet.add(platformCode)
+      }
     })
+  })
 
-    return [...platformCodeSet].map(platformCode => ({ platformCode }))
-  } catch (error) {
-    console.error(error)
-    return []
-  }
+  return [...platformCodeSet].map(platformCode => ({ platformCode }))
 }
 
 /**

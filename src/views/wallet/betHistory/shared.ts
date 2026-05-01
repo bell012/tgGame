@@ -1,7 +1,7 @@
 import type { QueryOrderInfoPageForm, QueryOrderInfoResult } from '@/api/interface/record.interface'
 import { getCurrentCurrency, formatBalance } from '@/utils/locale'
 import { formatTimestamp } from '@/utils/date'
-import { getGameName, getPlatformList, getPlatformName } from '@/utils/global-dic'
+import { getGameImage, getGameName, getPlatformList, getPlatformName } from '@/utils/global-dic'
 import bet from '@/static/img/personalCenter/bet.png'
 
 type TranslateFn = (key: string) => string
@@ -180,12 +180,13 @@ export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => {
   const gameType = getBetHistoryGameTypeLabel(record.sysGameTypeCode, t)
   const currency = record.currency || getCurrentCurrency()
   const gameName = getGameName('game_code', `${record.platformCode}|${record.gameCode}`) || '-'
+  const gameIcon = getGameImage(record.platformCode, record.gameCode) || bet
 
   return {
     id: resolveBetHistoryItemId(record),
     gameType,
     gameName,
-    gameIcon: bet,
+    gameIcon,
     betAmount: formatBalance(record.betAmount, 2),
     result: record.gameAmount >= 0 ? 'win' : 'loss',
     resultAmount: formatBalance(Math.abs(record.gameAmount), 2),
