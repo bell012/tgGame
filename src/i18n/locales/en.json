@@ -189,10 +189,11 @@
     "noMore": "No More",
     "status": "Status",
     "filterGroups": {
-      "time": "Time Selection",
+      "date": "Date Selection",
       "winLoss": "Win/Loss Selection",
-      "status": "Status Selection",
-      "gameType": "Game Type Selection"
+      "status": "Statuses Selection",
+      "gameType": "Game Type Selection",
+      "platform": "Platform Selection"
     },
     "filters": {
       "all": "All",
@@ -1106,7 +1107,8 @@
     },
     "goalHint": {
       "unlocked": "Upgrade successful. Benefits unlocked",
-      "keepGoing": "Keep going to reach your VIP goal"
+      "keepGoing": "Keep going to reach your VIP goal",
+      "achieved": "Max level reached"
     },
     "benefitExplainPopup": {
       "title": "VIP Exclusive Benefits",

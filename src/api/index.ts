@@ -4,7 +4,6 @@
  * 调用示例：
  *   - Api.auth.login(data)
  *   - Api.user.queryAcctInfo(data)
- *   - Api.home.getGameData()
  */
 
 import * as auth from './modules/auth'

@@ -539,6 +539,7 @@ import markReadIcon from '@/static/svg/mark-read-icon.svg?component'
 
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useAuthModalStore } from '@/stores/authModal'
+import { useGameStore } from '@/stores/game'
 import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
 import { useTradeMessageSyncStore } from '@/stores/tradeMessageSync'
 import { formatDisplayTime } from '@/utils/date'
@@ -573,8 +574,6 @@ const NOTIFICATION_DETAIL_STORAGE_KEY = 'menuNotificationDetail'
 const NOTIFICATION_LIST_STATE_STORAGE_KEY = 'menuNotificationListState'
 // 通知列表恢复标记在 sessionStorage 中的缓存键。
 const NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY = 'menuNotificationListRestoreFlag'
-// 游戏列表接口缓存键。
-const GAME_LIST_FOR_APP_CACHE_STORAGE_KEY = 'gameData'
 // 通知内部 URL 连通性校验的超时时间。
 const NOTIFICATION_URL_OPEN_TIMEOUT_MS = 8000
 const CRYPTO_PAY_CHANNEL_CODE = '45'
@@ -642,48 +641,14 @@ const isGameLookupValueMatched = (sourceValue: unknown, targetValue: unknown) =>
   return splitGameLookupValues(sourceValue).includes(normalizedTargetValue)
 }
 
-const restoreCachedGameListForApp = () => {
+const fetchAndCacheGameListForApp = async () => {
   if (gameListForAppCache) {
     return gameListForAppCache
   }
 
-  const rawValue = localStorage.getItem(GAME_LIST_FOR_APP_CACHE_STORAGE_KEY)
-  if (!rawValue) {
-    return null
-  }
-
-  try {
-    const parsedValue = JSON.parse(rawValue) as unknown
-    if (!Array.isArray(parsedValue)) {
-      return null
-    }
-
-    gameListForAppCache = parsedValue as GameListForAppNode[]
-    return gameListForAppCache
-  } catch (error) {
-    console.error('restoreCachedGameListForApp failed', error)
-    return null
-  }
-}
-
-const fetchAndCacheGameListForApp = async () => {
-  const cachedValue = restoreCachedGameListForApp()
-  if (cachedValue) {
-    return cachedValue
-  }
-
-  const response = await Api.home.getGameData({
-    showSuccessToast: false,
-    showErrorToast: true
-  })
-  const result = Array.isArray(response.result)
-    ? (response.result as unknown as GameListForAppNode[])
-    : []
-
+  const result = (await gameStore.ensureGameData()) as unknown as GameListForAppNode[]
   gameListForAppCache = result
-  localStorage.setItem(GAME_LIST_FOR_APP_CACHE_STORAGE_KEY, JSON.stringify(result))
-
-  return result
+  return gameListForAppCache
 }
 
 const flattenGameListForAppItems = (items: GameListForAppNode[]) => {
@@ -717,6 +682,8 @@ const emit = defineEmits<{
 
 // 登录弹窗状态管理。
 const authModalStore = useAuthModalStore()
+// 全局游戏列表状态管理。
+const gameStore = useGameStore()
 // 首页铃铛未读状态管理。
 const notificationIndicatorStore = useNotificationIndicatorStore()
 // 充提消息同步状态管理。

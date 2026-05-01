@@ -70,8 +70,8 @@
 
             <div class="flex items-center justify-between">
               <span class="text-text-3">{{ $t('betDetails.orderNo') }}</span>
-              <div class="flex items-center">
-                <span class="text-text-1">{{ betDetail.orderNo }}</span>
+              <div class="flex items-center max-w-[75%]">
+                <span class="text-text-1 truncate">{{ betDetail.orderNo }}</span>
                 <button class="p-1" @click="copyOrderNo">
                   <CopyIcon class="w-6 h-6 text-text-2" />
                 </button>
@@ -92,7 +92,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import Close from '@/static/svg/close.svg?component'
 import type { Item } from '../betHistory/shared'
@@ -118,10 +118,7 @@ const closeModal = () => {
 const copyOrderNo = () => {
   if (betDetail.value?.orderNo) {
     navigator.clipboard.writeText(betDetail.value.orderNo)
-    showToast({
-      message: t('betDetails.copy'),
-      type: 'success'
-    })
+    globalShowToast(t('betDetails.copy'))
   }
 }
 </script>

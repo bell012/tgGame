@@ -32,7 +32,10 @@
       text-class="text-xs text-center text-text-1"
     />
 
-    <div v-if="!isMobile && total > 0" class="mt-4 flex items-center justify-center">
+    <div
+      v-if="!isMobile && total > 0 && totalPages > 1"
+      class="mt-4 flex items-center justify-center"
+    >
       <button
         type="button"
         class="flex h-9 items-center justify-center rounded-bl-lg rounded-tl-lg bg-bg-2 px-2.5 text-xs"

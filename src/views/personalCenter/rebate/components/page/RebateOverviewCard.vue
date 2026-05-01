@@ -30,13 +30,10 @@
       <slot name="desktop-action"></slot>
     </div>
 
-    <div
-      class="grid grid-cols-2"
-      :class="isMobile ? 'mt-5' : 'mt-4 border-t border-opacity-10 pt-4'"
-    >
+    <div class="rebate-overview-divider mt-4 grid grid-cols-2 border-t pt-4">
       <button
         type="button"
-        class="border-r border-opacity-10 px-2 text-center"
+        class="rebate-overview-divider-cell rebate-overview-middle-divider px-2 text-center"
         @click="$emit('eligible-turnover-click')"
       >
         <p
@@ -91,5 +88,34 @@ defineEmits<{
 .rebate-overview-mobile {
   border: 1px solid var(--color-opacity-5);
   box-shadow: inset 0 1px 0 var(--color-opacity-5);
+}
+
+.rebate-overview-divider {
+  border-color: var(--color-opacity-5);
+}
+
+.rebate-overview-divider-cell {
+  border-color: var(--color-opacity-5);
+}
+
+.rebate-overview-middle-divider {
+  position: relative;
+}
+
+.rebate-overview-middle-divider::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 1px;
+  height: 64px;
+  transform: translateY(-50%);
+  background: var(--color-opacity-5);
+}
+
+@media (max-width: 640px) {
+  .rebate-overview-middle-divider::after {
+    height: 52px;
+  }
 }
 </style>

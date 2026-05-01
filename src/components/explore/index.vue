@@ -4,7 +4,7 @@
       <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
     </div>
     <template v-if="currentType === 'casino'">
-      <div :class="contentWrapClass">
+      <div :class="[contentWrapClass, 'explore-casino-content-wrap']">
         <div
           class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
           :class="canScrollLeft ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
@@ -20,7 +20,7 @@
         <div>
           <div
             ref="tabScrollRef"
-            class="explore-tabs-scroll flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
+            class="explore-tabs-scroll my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
             @scroll="updateScrollState"
           >
             <button
@@ -28,10 +28,10 @@
               :key="item.sysGameTypeCode || `tab-${index}`"
               :ref="el => (tabRefs[index] = el as HTMLButtonElement)"
               :class="{ 'explore-tab-button--active': isActiveCasinoTab(item) }"
-              class="explore-tab-button flex h-[36px] shrink-0 items-center rounded-lg px-2.5 leading-none lg:hover:bg-bg-2"
+              class="explore-tab-button flex h-[36px] shrink-0 items-center rounded-lg px-[7px] py-[9px] text-xs leading-none lg:hover:bg-bg-2"
               @click.stop="onTabButton(item)"
             >
-              <div class="explore-tab-icon h-4 w-4">
+              <div class="explore-tab-icon mr-[7px] h-5 w-5">
                 <img
                   v-if="!isActiveCasinoTab(item) && typeof item.icon === 'string'"
                   :src="item.icon"
@@ -49,7 +49,7 @@
                   class="w-full h-full"
                 />
               </div>
-              <div class="explore-tab-label font-[700] text-text-2 leading-none">
+              <div class="explore-tab-label text-[12px] font-[700] text-text-2 leading-none">
                 {{ item.sysGameTypeName }}
               </div>
             </button>
@@ -70,7 +70,7 @@
           </button>
         </div>
 
-        <div class="tabs-content min-h-48">
+        <div class="explore-tabs-content tabs-content min-h-48">
           <component :is="currentPageStyle" v-bind="currentPageProps" />
         </div>
       </div>
@@ -486,7 +486,23 @@ onUnmounted(() => {
   }
 }
 
+.explore-casino-content-wrap {
+  margin-top: 10px;
+}
+
+.explore-tabs-content {
+  margin-top: 10px;
+}
+
 @media (max-width: 767px) {
+  .explore-casino-content-wrap {
+    margin-top: 0;
+  }
+
+  .explore-tabs-content {
+    margin-top: 0;
+  }
+
   .search-filter-panel {
     background: var(--color-background-level-1);
     margin-left: -12px;

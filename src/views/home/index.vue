@@ -269,7 +269,7 @@
   </div>
 
   <H5HomePop
-    v-if="shouldShowH5HomePop && !isLogin"
+    v-if="shouldShowH5HomePop"
     class="sm:hidden"
     @close="closeH5HomePop"
     @open-login="openRegisterModal"
@@ -285,6 +285,7 @@ import HomeCarouselImg from '@/components/homeCarouselImg.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import router from '@/router'
 import { useAuthModalStore } from '@/stores/authModal'
+import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
@@ -347,6 +348,7 @@ interface HomeGameSection {
 
 const userStore = useUserStore()
 const authModalStore = useAuthModalStore()
+const gameStore = useGameStore()
 const AsyncEventList = defineAsyncComponent(() => import('./components/eventList.vue'))
 const AsyncNewEvent = defineAsyncComponent(() => import('./components/newEvent.vue'))
 const { userInfo } = storeToRefs(userStore)
@@ -454,11 +456,9 @@ const deferredGameSections = computed<HomeGameSection[]>(() => gameData.value.sl
 const fetchGameData = async () => {
   isGameDataLoading.value = true
   try {
-    const res = await Api.home.getGameData()
-    const rawResult = Array.isArray(res.result) ? res.result : []
+    const rawResult = (await gameStore.ensureGameData()) as RawGameDataItem[]
     rawGameData.value = rawResult
     gameData.value = mapHomeGameSections(rawResult)
-    localStorage.setItem('gameData', JSON.stringify(rawResult))
   } catch (error) {
     console.error('getGameData failed', error)
   } finally {

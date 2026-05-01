@@ -472,10 +472,11 @@
     "noMore": "没有更多了",
     "status": "状态",
     "filterGroups": {
-      "time": "时间选择",
+      "date": "日期选择",
       "winLoss": "赢/输选择",
       "status": "状态选择",
-      "gameType": "游戏类型选择"
+      "gameType": "游戏类型选择",
+      "platform": "平台选择"
     },
     "filters": {
       "all": "全部",
@@ -1105,7 +1106,8 @@
     },
     "goalHint": {
       "unlocked": "升级成功，权益已解锁",
-      "keepGoing": "继续努力，向您的 VIP 目标迈进"
+      "keepGoing": "继续加油来提升您的VIP等级",
+      "achieved": "已达到最高等级"
     },
     "benefitExplainPopup": {
       "title": "VIP 专属权益",

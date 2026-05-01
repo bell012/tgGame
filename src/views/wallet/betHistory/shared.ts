@@ -1,5 +1,7 @@
 import type { QueryOrderInfoPageForm, QueryOrderInfoResult } from '@/api/interface/record.interface'
-import { getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
+import { getCurrentCurrency, formatBalance } from '@/utils/locale'
+import { formatTimestamp } from '@/utils/date'
+import { getGameName, getPlatformList, getPlatformName } from '@/utils/global-dic'
 import bet from '@/static/img/personalCenter/bet.png'
 
 type TranslateFn = (key: string) => string
@@ -23,6 +25,7 @@ export interface Item {
 
 export interface BetHistoryFilterValues {
   time: string
+  platform: string
   winlost: string
   status: string
   gameType: string
@@ -39,6 +42,7 @@ export const BET_HISTORY_PAGE_SIZE = 10
 
 export const createDefaultBetHistoryFilterValues = (): BetHistoryFilterValues => ({
   time: 'all',
+  platform: 'all',
   winlost: 'all',
   status: 'all',
   gameType: 'all'
@@ -80,11 +84,21 @@ export const createBetHistoryGameTypeOptions = (t: TranslateFn): SelectOption[] 
   { label: t('betHistory.filterOptions.esports'), value: 'DJ' }
 ]
 
+// 筛选平台
+export const createBetHistoryPlatformOptions = (t: TranslateFn): SelectOption[] => [
+  { label: t('betHistory.filterOptions.all'), value: 'all' },
+  ...getPlatformList().map(item => ({
+    label: getPlatformName(item.platformCode) || item.platformCode,
+    value: item.platformCode
+  }))
+]
+
 export const getSingleFilterValue = (value: FilterValue) =>
   Array.isArray(value) ? (value[0] ?? 'all') : (value ?? 'all')
 
 export const normalizeBetHistoryFilterValues = (values: FilterInput): BetHistoryFilterValues => ({
   time: getSingleFilterValue(values.time),
+  platform: getSingleFilterValue(values.platform),
   winlost: getSingleFilterValue(values.winlost),
   status: getSingleFilterValue(values.status),
   gameType: getSingleFilterValue(values.gameType)
@@ -131,7 +145,7 @@ export const getBetHistoryGameTypeLabel = (code: string, t: TranslateFn) => {
 }
 
 /**
- * 生成投注记录列表项的唯一标识。
+ * 列表项的唯一标识。
  */
 const resolveBetHistoryItemId = (record: QueryRecord) => {
   if (record.betId) {
@@ -160,32 +174,25 @@ const resolveBetHistoryItemId = (record: QueryRecord) => {
 }
 
 /**
- * 将接口投注记录映射成页面展示项。
+ * 页面展示数据。
  */
 export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => {
   const gameType = getBetHistoryGameTypeLabel(record.sysGameTypeCode, t)
   const currency = record.currency || getCurrentCurrency()
-  const gameName =
-    record.remark ||
-    record.betContent1 ||
-    record.betContent2 ||
-    [gameType, record.platformCode].filter(Boolean).join(' / ') ||
-    record.gameCode ||
-    record.betId ||
-    '--'
+  const gameName = getGameName('game_code', `${record.platformCode}|${record.gameCode}`) || '-'
 
   return {
     id: resolveBetHistoryItemId(record),
     gameType,
     gameName,
     gameIcon: bet,
-    betAmount: getFormattedBalance(record.betAmount, currency, 2),
+    betAmount: formatBalance(record.betAmount, 2),
     result: record.gameAmount >= 0 ? 'win' : 'loss',
-    resultAmount: getFormattedBalance(Math.abs(record.gameAmount), currency, 2),
+    resultAmount: formatBalance(Math.abs(record.gameAmount), 2),
     currency,
     orderNo: record.betId || record.issueId || String(record.rowId),
-    createdAt: new Date(record.createTime || record.betTime).toLocaleString(),
-    time: new Date(record.betTime).toLocaleString(),
+    createdAt: formatTimestamp(record.createTime || record.betTime),
+    time: formatTimestamp(record.betTime),
     rawData: record
   }
 }
@@ -206,7 +213,7 @@ export const buildBetHistoryQueryForm = (params: {
     param: {
       currency: getCurrentCurrency(),
       sysGameTypeCode: normalized.gameType === 'all' ? null : normalized.gameType,
-      platformCode: null,
+      platformCode: normalized.platform === 'all' ? null : normalized.platform,
       gameCode: null,
       status: normalized.status === 'all' ? null : Number(normalized.status)
     }

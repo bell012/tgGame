@@ -18,7 +18,7 @@
         <!-- 弹窗定位层 -->
         <div
           v-show="visible"
-          class="fixed inset-0 z-[10021] flex items-center justify-center px-4 py-6 md:px-8"
+          class="fixed inset-0 z-[10021] flex items-center justify-center px-4 py-6 sm:px-8"
           @click.self="handleOverlayClose"
         >
           <!-- 弹窗主体 -->
@@ -26,11 +26,11 @@
             role="dialog"
             aria-modal="true"
             :aria-label="resolvedTitle"
-            class="modal-container relative flex aspect-[900/728] w-full max-w-[300px] flex-col overflow-visible rounded-[24px] bg-[linear-gradient(180deg,#18884E_0%,#062917_100%)] px-5 pb-[30px] pt-[43px] shadow-[0_18px_54px_rgba(0,0,0,0.32)] md:h-[342px] md:max-w-[480px] md:rounded-[40px] md:px-[32px] md:pb-[40px] md:pt-[64px] md:aspect-auto"
+            class="modal-container relative flex aspect-[900/728] w-full max-w-[300px] flex-col overflow-visible rounded-[24px] bg-[linear-gradient(180deg,#18884E_0%,#062917_100%)] px-5 pb-[30px] pt-[43px] shadow-[0_18px_54px_rgba(0,0,0,0.32)] sm:h-[342px] sm:max-w-[480px] sm:rounded-[40px] sm:px-[32px] sm:pb-[40px] sm:pt-[64px] sm:aspect-auto"
           >
             <!-- 顶部装饰区域 -->
             <div
-              class="absolute left-1/2 top-[-28px] w-[232px] -translate-x-1/2 md:top-[-44px] md:h-[68px] md:w-[368px]"
+              class="absolute left-1/2 top-[-35px] w-[232px] -translate-x-1/2 sm:top-[-44px] sm:h-[68px] sm:w-[368px]"
             >
               <!-- 顶部图片容器 -->
               <div class="h-full w-full">
@@ -40,36 +40,36 @@
             </div>
 
             <!-- 内容区域 -->
-            <div class="flex flex-1 flex-col items-center gap-5 md:flex-none md:gap-[48px]">
+            <div class="flex flex-1 flex-col items-center gap-5 sm:flex-none sm:gap-[48px]">
               <!-- 金额区域 -->
-              <div class="flex w-full items-center justify-center gap-1 md:gap-[2px]">
+              <div class="flex w-full items-center justify-center gap-1 sm:gap-[2px]">
                 <!-- 币种角标 -->
                 <div
-                  class="text-center text-[30px] font-[700] leading-[36px] text-common-100 md:text-[40px] md:leading-[48px]"
+                  class="text-center text-[30px] font-[700] leading-[36px] text-common-100 sm:text-[40px] sm:leading-[48px]"
                 >
                   {{ currencyBadge }}
                 </div>
 
                 <!-- 金额文本 -->
                 <div
-                  class="text-center text-[30px] font-[700] leading-[36px] text-common-100 md:text-[40px] md:leading-[48px]"
+                  class="text-center text-[30px] font-[700] leading-[36px] text-common-100 sm:text-[40px] sm:leading-[48px]"
                 >
                   {{ amount }}
                 </div>
               </div>
 
               <!-- 文案区域 -->
-              <div class="flex w-full flex-col items-center gap-[7px] md:gap-[11px]">
+              <div class="flex w-full flex-col items-center gap-[7px] sm:gap-[11px]">
                 <!-- 标题文本 -->
                 <h3
-                  class="w-full text-center text-[16px] font-[700] leading-5 text-common-100 md:text-[20px] md:leading-[24px]"
+                  class="w-full text-center text-[16px] font-[700] leading-5 text-common-100 sm:text-[20px] sm:leading-[24px]"
                 >
                   {{ resolvedTitle }}
                 </h3>
 
                 <!-- 描述文本 -->
                 <p
-                  class="w-full text-center text-[14px] font-[400] leading-[17px] text-common-60 md:text-[16px] md:leading-[19px]"
+                  class="w-full text-center text-[14px] font-[400] leading-[17px] text-common-60 sm:text-[16px] sm:leading-[19px]"
                 >
                   {{ resolvedDesc }}
                 </p>
@@ -77,11 +77,11 @@
             </div>
 
             <!-- 底部按钮区域 -->
-            <div class="mt-5 flex justify-center md:mt-[40px]">
+            <div class="mt-5 flex justify-center sm:mt-[40px]">
               <!-- 主操作按钮 -->
               <button
                 type="button"
-                class="flex h-10 w-full max-w-[240px] items-center justify-center rounded-[8px] bg-theme-primary text-[14px] font-[700] leading-[17px] text-text-4 md:h-[49px] md:max-w-[416px] md:rounded-[8px] md:text-[14px] md:leading-[17px]"
+                class="flex h-10 w-full max-w-[240px] items-center justify-center rounded-[8px] bg-theme-primary text-[14px] font-[700] leading-[17px] text-text-4 sm:h-[49px] sm:max-w-[416px] sm:rounded-[8px] sm:text-[14px] sm:leading-[17px]"
                 @click="handleConfirm"
               >
                 {{ resolvedButtonText }}

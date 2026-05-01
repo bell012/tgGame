@@ -89,7 +89,7 @@ import shareRound6 from '@/static/svg/game/detail/share-round/6.svg?url'
 import shareRound7 from '@/static/svg/game/detail/share-round/7.svg?url'
 import shareRound8 from '@/static/svg/game/detail/share-round/8.svg?url'
 import shareRound9 from '@/static/svg/game/detail/share-round/9.svg?url'
-import { showToast } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -347,14 +347,14 @@ const handleCopy = async () => {
   }
   try {
     await copyText(shareUrl)
-    showToast({
-      message: t('gameDetail.shareLinkCopySuccess'),
+    globalShowToast({
+      message: t('betDetails.copy'),
       type: 'success',
       zIndex: SHARE_TOAST_Z_INDEX
     })
   } catch (error) {
     console.error(error)
-    showToast({
+    globalShowToast({
       message: t('gameDetail.copyFailedRetry'),
       type: 'fail',
       zIndex: SHARE_TOAST_Z_INDEX
