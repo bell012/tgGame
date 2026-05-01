@@ -125,6 +125,20 @@ const baseRoutes: RouteRecordRaw[] = [
       }
     }
   },
+  {
+    path: 'menu/referral/tasks',
+    name: 'menuReferralTasks',
+    component: () => import('@/views/menu/referral/tasks/index.vue'),
+    meta: {
+      title: '任务',
+      requiresAuth: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
   // {
   //   path: 'menu/referral/commission-records',
   //   name: 'menuReferralCommissionRecords',

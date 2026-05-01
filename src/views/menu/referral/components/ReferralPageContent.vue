@@ -392,7 +392,7 @@ const marqueeLoopMessages = computed(() =>
 
 .referral-marquee-track-animated {
   justify-content: flex-start;
-  animation: referral-marquee-slide-left 14s linear infinite;
+  animation: referral-marquee-slide-left 25s linear infinite;
 }
 
 .referral-marquee-track-animated:hover {
@@ -401,7 +401,7 @@ const marqueeLoopMessages = computed(() =>
 
 @keyframes referral-marquee-slide-left {
   from {
-    transform: translateX(100%);
+    transform: translateX(0);
   }
 
   to {

@@ -81,6 +81,7 @@ import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
+import { navigateTo } from '@/utils/router'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import PcLayout from './pc-layout.vue'
 import ReferralPageContent from './components/ReferralPageContent.vue'
@@ -131,6 +132,11 @@ const handleCustomerServiceClick = () => {
  * 处理顶部快捷入口点击。
  */
 const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
+  if (actionId === 'tasks') {
+    navigateTo('/menu/referral/tasks')
+    return
+  }
+
   const actionMessageMap: Record<ReferralQuickActionId, string> = {
     tasks: t('referral.h5.quickActions.tasks'),
     details: t('referral.h5.quickActions.details'),
@@ -180,10 +186,7 @@ const handleClaimClick = () => {
  * 处理任务详情按钮点击。
  */
 const handleTaskDetailsClick = () => {
-  showToast({
-    message: t('referral.comingSoon'),
-    type: 'success'
-  })
+  navigateTo('/menu/referral/tasks')
 }
 
 /**

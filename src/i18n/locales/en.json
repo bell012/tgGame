@@ -339,6 +339,28 @@
       "copyMessageSuccess": "Referral message copied",
       "shareGuideHint": "Invite friends through social platforms or by copying the referral message."
     },
+    "taskPage": {
+      "title": "Task",
+      "resetHint": "Task Reset: 05D 02H 20M. Please claim last month's reward before 4:00 PM on the 1st of each month. Expired rewards will no longer be available.",
+      "rewardsToClaim": "Rewards to Claim",
+      "tabs": {
+        "inviteRegister": "Invite & Register",
+        "cumulativeDeposit": "Cumulative Deposit",
+        "commissionBoost": "Commission Boost",
+        "recommendedWallet": "Wallet"
+      },
+      "friendUnit": "Friend",
+      "friendsUnit": "Friends",
+      "currentProgress": "Current Progress",
+      "maxRewardThisWeek": "Max Reward This Week",
+      "invitedSignUps": "Invited Sign-Ups",
+      "reward": "Reward",
+      "status": "Status",
+      "notAchieved": "Not Achieved",
+      "validInviteTitle": "What counts as a valid invite?",
+      "validInviteDescription": "A member who tops up at least ₱500 this week or places at least ₱1,000 in valid bets.",
+      "taskRulesTitle": "Task Rules"
+    },
     "commissionRecords": {
       "title": "Commission Records",
       "searchPlaceholder": "Search for a member account",
