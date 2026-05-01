@@ -361,6 +361,27 @@
       "validInviteDescription": "A member who tops up at least ₱500 this week or places at least ₱1,000 in valid bets.",
       "taskRulesTitle": "Task Rules"
     },
+    "rulesPage": {
+      "title": "Rules",
+      "guideTitle": "Guide",
+      "howToEarnTitle": "How to Earn",
+      "referralRulesTitle": "Referral Rules",
+      "playGuideHint": "Guide video coming soon",
+      "friendCount": "{count}",
+      "steps": {
+        "shareTitle": "Step 01",
+        "shareText": "Share with Friends",
+        "rewardTitle": "Step 02",
+        "rewardText": "Get rewards when 1 friend completes the valid bets",
+        "unlockTitle": "Step 03",
+        "unlockText": "Share more to unlock higher rewards"
+      },
+      "table": {
+        "level": "Level",
+        "activeFriends": "Active Friends",
+        "rate": "Rate"
+      }
+    },
     "commissionRecords": {
       "title": "Commission Records",
       "searchPlaceholder": "Search for a member account",

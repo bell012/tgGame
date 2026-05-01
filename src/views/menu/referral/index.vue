@@ -137,6 +137,11 @@ const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
     return
   }
 
+  if (actionId === 'rules') {
+    navigateTo('/menu/referral/rules')
+    return
+  }
+
   const actionMessageMap: Record<ReferralQuickActionId, string> = {
     tasks: t('referral.h5.quickActions.tasks'),
     details: t('referral.h5.quickActions.details'),

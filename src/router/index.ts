@@ -152,19 +152,20 @@ const baseRoutes: RouteRecordRaw[] = [
   //     }
   //   }
   // },
-  // {
-  //   path: 'menu/referral/commission-rules',
-  //   name: 'menuReferralCommissionRules',
-  //   component: () => import('@/views/menu/referral/commission-rules/index.vue'),
-  //   meta: {
-  //     title: 'Commission Rules',
-  //     requiresAuth: true,
-  //     mobile: {
-  //       hideBottomBar: true,
-  //       hideTopNav: true
-  //     }
-  //   }
-  // },
+  {
+    path: 'menu/referral/rules',
+    name: 'menuReferralCommissionRules',
+    component: () => import('@/views/menu/referral/rules/index.vue'),
+    meta: {
+      title: 'Commission Rules',
+      requiresAuth: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
   // {
   //   path: 'menu/referral/referral-records',
   //   name: 'menuReferralReferralRecords',
