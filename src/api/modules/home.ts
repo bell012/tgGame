@@ -64,16 +64,6 @@ export function dlicgh(data: any): Promise<any> {
   })
 }
 
-export function getLatestList(data: any): Promise<any> {
-  return request({
-    url: '/special/getLatestList',
-    method: 'post',
-    data,
-    showSuccessToast: false,
-    showErrorToast: true
-  })
-}
-
 export function queryNoticeMsg(data: QueryNoticeMsgRequest): Promise<QueryNoticeMsgResponse> {
   return request({
     url: '/ac/queryNoticeMsg',

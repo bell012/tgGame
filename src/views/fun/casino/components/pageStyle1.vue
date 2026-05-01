@@ -141,7 +141,7 @@
         </button>
       </div>
       <div class="mt-3 h-[430px]">
-        <liveBet :type="latestBetIndex === 0 ? 1 : 2" />
+        <LatestBetTable :type="latestBetIndex === 0 ? 1 : 2" />
       </div>
     </template>
   </template>
@@ -158,7 +158,7 @@ import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { getGameListTabSlug } from '../casinoPageConfig'
 import casinoGameCard from './casinoGameCard.vue'
-import liveBet from './liveBet.vue'
+import LatestBetTable from '@/components/common/latestBetTable.vue'
 import viewAllDarkIcon from '@/static/img/casino/all_view_dark.png'
 import viewAllLightIcon from '@/static/img/casino/all_view_light.png'
 
