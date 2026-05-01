@@ -63,7 +63,6 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
 
   const gameBetSummary = ref<GameBetSummary>(EMPTY_GAME_BET_SUMMARY)
   const favoriteGameList = ref<FavoriteGameSourceItem[]>([])
-  const profileRequestDate = ref(new Date())
 
   const avatarUrl = computed(() => resolveProfileAvatarUrl(userInfo.value?.headPortrait))
   const selectedAvatarFrameImage = computed(() => {
@@ -174,9 +173,17 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
       }
     })
   })
+
+  //  使用userInfo.userInfo 注册时间显示
   const joinedOnText = computed(() => {
-    const baseDate = new Date(`${profileRequestDate.value.toISOString().slice(0, 10)}T00:00:00`)
+    const createTime = Number(userInfo.value?.createTime ?? 0)
+    const baseDate = Number.isFinite(createTime) && createTime > 0 ? new Date(createTime) : null
     const isZh = String(locale.value).toLowerCase().startsWith('zh')
+
+    if (!baseDate || Number.isNaN(baseDate.getTime())) {
+      return t('personalCenter.myProfile.joinedOn', { date: '--' })
+    }
+
     const formattedDate = new Intl.DateTimeFormat(isZh ? 'zh-CN' : 'en-US', {
       year: 'numeric',
       month: isZh ? 'long' : 'short',
@@ -235,7 +242,6 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
    * 初始化我的资料统计与用户信息。
    */
   onMounted(async () => {
-    profileRequestDate.value = new Date()
     const res = await Api.user.getGameBetTotal({})
     if (res?.code === 'C2') {
       const result = res.result
