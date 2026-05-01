@@ -785,13 +785,13 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
       {
         key: 'minimumDeposit',
         label: t('vipPage.retention.minimumDeposit'),
-        amount: formatBalance(targetConfig?.keepAmount ?? 0),
+        amount: formatBalance(targetConfig?.keepRechargeAmount ?? 0),
         icon: rule1Icon
       },
       {
         key: 'minimumValidBet',
         label: t('vipPage.retention.minimumValidBet'),
-        amount: formatBalance(targetConfig?.betAmountLine ?? 0),
+        amount: formatBalance(targetConfig?.keepAmount ?? 0),
         icon: rule2Icon
       }
     ]
