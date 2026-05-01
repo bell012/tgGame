@@ -96,9 +96,8 @@ const isActive = (path: string, exact = false) => {
   left: 0;
   right: 0;
   height: v-bind('layoutStore.BOTTOM_TAB_HEIGHT + "px"');
-  background-color: var(--color-background-level-1);
-  box-shadow: 0 -2px 4px var(--color-mask-20);
-  border-top: 1px solid var(--color-opacity-15);
+  border-radius: 12px 12px 0 0;
+  background: var(--color-background-level-2);
   z-index: 50;
 }
 
