@@ -104,14 +104,14 @@ const baseRoutes: RouteRecordRaw[] = [
       title: '体育'
     }
   },
-  // {
-  //   path: 'menu',
-  //   name: 'menu',
-  //   component: () => import('@/views/menu/index.vue'),
-  //   meta: {
-  //     title: '选单'
-  //   }
-  // },
+  {
+    path: 'menu',
+    name: 'menu',
+    component: () => import('@/components/Menu.vue'),
+    meta: {
+      title: '选单'
+    }
+  },
   {
     path: 'menu/referral',
     name: 'menuReferral',
