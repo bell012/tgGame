@@ -1,4 +1,4 @@
-import { computed, type Component, type Ref } from 'vue'
+import { computed, type CSSProperties, type Component, type Ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import Api from '@/api'
 import type { CommonResponse, VipListItem } from '@/api/interface/vip'
@@ -110,6 +110,7 @@ type VipThemeVariant =
   | 'vip10'
 
 type VipCardThemeConfig = {
+  vipColor: string
   darkBackground: string
   lightBackground: string
   accentColor: string
@@ -121,6 +122,7 @@ type VipCardThemeConfig = {
 }
 
 export interface VipCardTheme {
+  vipColor: string
   background: string
   accentColor: string
   progressTextColor: string
@@ -200,8 +202,23 @@ const vipLevelNumberIconMap: Record<number, string> = {
   10: VipLevel10Icon
 }
 
+const vipLevelNumberAspectRatioMap: Record<number, string> = {
+  0: '64 / 92',
+  1: '36 / 92',
+  2: '62 / 92',
+  3: '58 / 92',
+  4: '68 / 92',
+  5: '60 / 92',
+  6: '64 / 92',
+  7: '64 / 92',
+  8: '66 / 92',
+  9: '62 / 92',
+  10: '114 / 92'
+}
+
 const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
   vip0: {
+    vipColor: '#FFFFFF',
     darkBackground: 'linear-gradient(180deg, #8C989A 0%, #414747 100%)',
     lightBackground: 'linear-gradient(180deg, #DBDBDB 0%, #C4C8C8 100%)',
     wordmarkColor: '#FFFFFF',
@@ -212,6 +229,7 @@ const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
     rightDecoration: VipRight0Icon
   },
   vip1: {
+    vipColor: '#B599CB',
     darkBackground: 'linear-gradient(180deg, #8C7797 0%, #3F2E45 100%)',
     lightBackground: 'linear-gradient(180deg, #FAE9FF 0%, #DCBFE1 100%)',
     wordmarkColor: '#B599CB',
@@ -222,6 +240,7 @@ const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
     rightDecoration: VipRight1Icon
   },
   vip2: {
+    vipColor: '#70BD88',
     darkBackground: 'linear-gradient(180deg, #557364 0%, #2C4235 100%)',
     lightBackground: 'linear-gradient(180deg, #D0F9E1 0%, #A5DBB0 100%)',
     wordmarkColor: '#70BD88',
@@ -232,6 +251,7 @@ const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
     rightDecoration: VipRight2Icon
   },
   vip3: {
+    vipColor: '#D3BF04',
     darkBackground: 'linear-gradient(180deg, #938E37 0%, #434018 100%)',
     lightBackground: 'linear-gradient(180deg, #FFFCC9 0%, #EBE781 100%)',
     wordmarkColor: '#D3BF04',
@@ -242,6 +262,7 @@ const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
     rightDecoration: VipRight3Icon
   },
   vip4: {
+    vipColor: '#2AD2CA',
     darkBackground: 'linear-gradient(180deg, #26918C 0%, #263D3F 100%)',
     lightBackground: 'linear-gradient(180deg, #D6FFED 0%, #A5F8FF 100%)',
     wordmarkColor: '#2AD2CA',
@@ -252,6 +273,7 @@ const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
     rightDecoration: VipRight4Icon
   },
   vip5: {
+    vipColor: '#2AEE88',
     darkBackground: 'linear-gradient(180deg, #137134 0%, #1A2F25 100%)',
     lightBackground: 'linear-gradient(180deg, #CFFED7 0%, #8CE5BA 100%)',
     wordmarkColor: '#2AEE88',
@@ -262,6 +284,7 @@ const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
     rightDecoration: VipRight5Icon
   },
   vip6: {
+    vipColor: '#2AB3EE',
     darkBackground: 'linear-gradient(180deg, #103781 0%, #1D1F2E 100%)',
     lightBackground: 'linear-gradient(180deg, #C4E7FF 0%, #A5C3FF 100%)',
     wordmarkColor: '#2AB3EE',
@@ -272,6 +295,7 @@ const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
     rightDecoration: VipRight6Icon
   },
   vip7: {
+    vipColor: '#C064F5',
     darkBackground: 'linear-gradient(180deg, #833AB0 0%, #372841 100%)',
     lightBackground: 'linear-gradient(180deg, #E5CAFF 0%, #F3A5FF 100%)',
     wordmarkColor: '#C064F5',
@@ -282,6 +306,7 @@ const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
     rightDecoration: VipRight7Icon
   },
   vip8: {
+    vipColor: '#EEB440',
     darkBackground: 'linear-gradient(180deg, #AD9041 0%, #423829 100%)',
     lightBackground: 'linear-gradient(180deg, #FFF9C7 0%, #FFDBA5 100%)',
     wordmarkColor: '#EEB440',
@@ -292,6 +317,7 @@ const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
     rightDecoration: VipRight8Icon
   },
   vip9: {
+    vipColor: '#FD63D4',
     darkBackground: 'linear-gradient(180deg, #B13585 0%, #2E1D28 100%)',
     lightBackground: 'linear-gradient(180deg, #FFC8EC 0%, #FFA5BF 100%)',
     wordmarkColor: '#FD63D4',
@@ -302,6 +328,7 @@ const vipCardThemeConfigMap: Record<VipThemeVariant, VipCardThemeConfig> = {
     rightDecoration: VipRight9Icon
   },
   vip10: {
+    vipColor: '#FF5659',
     darkBackground: 'linear-gradient(180deg, #9D1A1D 0%, #2E1D1D 100%)',
     lightBackground: 'linear-gradient(180deg, #FFCDCE 0%, #FFA5A7 100%)',
     wordmarkColor: '#FF5659',
@@ -337,7 +364,19 @@ const resolveVipCardCornerBadgeIcon = (
 /**
  * 根据当前用户等级与当前卡片等级，返回卡片底部提示文案 key。
  */
-const resolveVipCardGoalHintKey = (currentVipId?: number | null, viewedVipId?: number | null) => {
+const resolveVipCardGoalHintKey = (
+  currentVipId?: number | null,
+  viewedVipId?: number | null,
+  highestVipId?: number | null
+) => {
+  if (
+    highestVipId != null &&
+    (currentVipId ?? 0) === highestVipId &&
+    (viewedVipId ?? 0) === highestVipId
+  ) {
+    return 'vipPage.goalHint.achieved'
+  }
+
   return (currentVipId ?? 0) >= (viewedVipId ?? 0)
     ? 'vipPage.goalHint.unlocked'
     : 'vipPage.goalHint.keepGoing'
@@ -352,6 +391,38 @@ const resolveVipLevelNumberIcon = (vipId?: number | null) => {
   }
 
   return VipLevel0Icon
+}
+
+/**
+ * 根据 vipId 返回左侧等级数字图标的宽高比例；超出范围时默认回退到 vip0。
+ */
+export const getVipLevelNumberAspectRatio = (vipId?: number | null) => {
+  if (typeof vipId === 'number' && vipId >= 0 && vipId <= 10) {
+    return vipLevelNumberAspectRatioMap[vipId]
+  }
+
+  return vipLevelNumberAspectRatioMap[0]
+}
+
+/**
+ * 基于 SVG URL 生成可复用的 mask 着色样式
+ */
+export const getVipMaskIconStyle = (iconUrl: string, color: string): CSSProperties => {
+  const maskImage = `url("${iconUrl}")`
+
+  return {
+    display: 'inline-block',
+    flexShrink: 0,
+    backgroundColor: color,
+    WebkitMaskImage: maskImage,
+    maskImage,
+    WebkitMaskRepeat: 'no-repeat',
+    maskRepeat: 'no-repeat',
+    WebkitMaskPosition: 'center',
+    maskPosition: 'center',
+    WebkitMaskSize: '100% 100%',
+    maskSize: '100% 100%'
+  }
 }
 
 /**
@@ -547,6 +618,10 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
     return [...vipList.value].sort((left, right) => (left.vipId ?? 0) - (right.vipId ?? 0))
   })
 
+  const highestVipLevel = computed(() => {
+    return vipLevels.value[vipLevels.value.length - 1]?.vipId ?? 0
+  })
+
   const currentVipLevel = computed(() => myVipInfo.value?.vipId ?? userInfo.value?.vipId ?? 0)
 
   /**
@@ -601,6 +676,7 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
 
     return {
       background: theme.value === 'dark' ? themeConfig.darkBackground : themeConfig.lightBackground,
+      vipColor: themeConfig.vipColor,
       accentColor: themeConfig.accentColor,
       progressTextColor: themeConfig.progressTextColor,
       progressTrackColor: themeConfig.progressTrackColor,
@@ -610,7 +686,11 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
       levelNumberIcon: resolveVipLevelNumberIcon(resolvedVipId),
       rightDecorationIcon: themeConfig.rightDecoration,
       cornerBadgeIcon: resolveVipCardCornerBadgeIcon(currentVipLevel.value, resolvedVipId),
-      goalHintKey: resolveVipCardGoalHintKey(currentVipLevel.value, resolvedVipId)
+      goalHintKey: resolveVipCardGoalHintKey(
+        currentVipLevel.value,
+        resolvedVipId,
+        highestVipLevel.value
+      )
     }
   }
 
@@ -705,13 +785,13 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
       {
         key: 'minimumDeposit',
         label: t('vipPage.retention.minimumDeposit'),
-        amount: formatBalance(targetConfig?.keepAmount ?? 0),
+        amount: formatBalance(targetConfig?.keepRechargeAmount ?? 0),
         icon: rule1Icon
       },
       {
         key: 'minimumValidBet',
         label: t('vipPage.retention.minimumValidBet'),
-        amount: formatBalance(targetConfig?.betAmountLine ?? 0),
+        amount: formatBalance(targetConfig?.keepAmount ?? 0),
         icon: rule2Icon
       }
     ]

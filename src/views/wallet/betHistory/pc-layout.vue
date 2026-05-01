@@ -7,35 +7,40 @@
           class="w-[240px]"
           v-model="filterValues.gameType"
           :options="gameTypeOptions"
-          :placeholder="$t('customSelect.placeholder')"
+          :placeholder="$t('betHistory.filterGroups.gameType')"
+          use-placeholder-when-all
         />
         <!-- 输赢 -->
         <CustomSelect
           class="w-[240px]"
           v-model="filterValues.winlost"
           :options="winlostOptions"
-          :placeholder="$t('customSelect.placeholder')"
+          :placeholder="$t('betHistory.filterGroups.winLoss')"
+          use-placeholder-when-all
         />
         <!-- 状态 -->
         <CustomSelect
           class="w-[240px]"
           v-model="filterValues.status"
           :options="statusOptions"
-          :placeholder="$t('customSelect.placeholder')"
+          :placeholder="$t('betHistory.filterGroups.status')"
+          use-placeholder-when-all
         />
         <!-- 日期 -->
         <CustomSelect
           class="w-[240px]"
           v-model="filterValues.time"
           :options="timeOptions"
-          :placeholder="$t('customSelect.placeholder')"
+          :placeholder="$t('betHistory.filterGroups.date')"
+          use-placeholder-when-all
         />
         <!-- 平台 -->
         <CustomSelect
           class="w-[240px]"
           v-model="filterValues.platform"
           :options="platformOptions"
-          :placeholder="$t('customSelect.placeholder')"
+          :placeholder="$t('betHistory.filterGroups.platform')"
+          use-placeholder-when-all
         />
       </div>
     </div>

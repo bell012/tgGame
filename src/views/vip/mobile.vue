@@ -26,18 +26,27 @@
             >
               <div class="relative z-[1] flex flex-col items-start gap-3">
                 <div class="flex items-center">
-                  <img
-                    :src="getVipCardTheme(vip.vipId).wordmarkIcon"
-                    alt=""
+                  <span
                     aria-hidden="true"
                     class="h-[30px] w-[33px]"
-                  />
-                  <img
-                    :src="getVipCardTheme(vip.vipId).levelNumberIcon"
-                    alt=""
+                    :style="
+                      getVipMaskIconStyle(
+                        getVipCardTheme(vip.vipId).wordmarkIcon,
+                        getVipCardTheme(vip.vipId).vipColor
+                      )
+                    "
+                  ></span>
+                  <span
                     aria-hidden="true"
-                    class="ml-[3px] h-[30px] w-auto"
-                  />
+                    class="ml-[3px] h-[30px]"
+                    :style="[
+                      getVipMaskIconStyle(
+                        getVipCardTheme(vip.vipId).levelNumberIcon,
+                        getVipCardTheme(vip.vipId).vipColor
+                      ),
+                      { aspectRatio: getVipLevelNumberAspectRatio(vip.vipId) }
+                    ]"
+                  ></span>
                 </div>
 
                 <div class="flex w-full flex-1 flex-col justify-center pr-[10px]">
@@ -183,9 +192,11 @@
 
       <BenefitExplainPopup v-if="showBenefitExplainPopup" @close="closeBenefitExplainPopup" />
 
+      <!-- 领取弹窗 -->
       <ClaimSuccessPopup
-        v-if="showClaimSuccessPopup"
+        v-model:visible="showClaimSuccessPopup"
         :amount="claimSuccessAmount"
+        :close-on-overlay-click="false"
         @confirm="confirmClaimSuccess"
       />
     </div>
@@ -199,19 +210,24 @@ import H5Header from '@/components/common/H5Header.vue'
 import { useVipStore } from '@/stores/vip'
 import KefuIcon from '@/static/svg/vip/kefu.svg?component'
 import ExplainIcon from '@/static/svg/vip/explain.svg?component'
-import { getCurrencySymbol } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import BenefitComparisonPanel from './BenefitComparisonPanel.vue'
 import BenefitExplainPopup from './BenefitExplainPopup.vue'
-import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import VipRulesContent from './VipRulesContent.vue'
-import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
+import {
+  claimVipBenefit,
+  getVipLevelNumberAspectRatio,
+  getVipMaskIconStyle,
+  type VipBenefitCard,
+  useVipPageData
+} from './shared'
 
 const { t } = useI18n()
 const vipStore = useVipStore()
 const showBenefitExplainPopup = ref(false)
 const showClaimSuccessPopup = ref(false)
-const claimSuccessAmount = ref(`${getCurrencySymbol()}0.00`)
+const claimSuccessAmount = ref('0.00')
 const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
 const activeContentTab = ref<'comparison' | 'rules'>('comparison')
 const vipCarouselRef = ref<HTMLElement | null>(null)
@@ -377,7 +393,7 @@ const handleBenefitAction = async (card: VipBenefitCard) => {
     }
 
     await vipStore.refreshVipInfo()
-    claimSuccessAmount.value = `${getCurrencySymbol()}${card.amount}`
+    claimSuccessAmount.value = card.amount
     showClaimSuccessPopup.value = true
   } catch (error) {
     console.error(error)

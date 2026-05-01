@@ -828,7 +828,7 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
     name: t('menu.referral'),
     icon: newSideIcons.referralIcon,
     groupKey: 'referral',
-    handler: () => console.log('跳转邀请好友')
+    handler: () => navigateTo('/menu/referral')
   },
   {
     id: 'rebate',
