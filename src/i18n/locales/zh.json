@@ -244,7 +244,9 @@
     "shareChannelTiktok": "TikTok",
     "shareDefaultTitle": "分享",
     "shareLinkCopySuccess": "分享链接复制成功",
-    "copyFailedRetry": "复制失败，请重试"
+    "copyFailedRetry": "复制失败，请重试",
+    "exitGameConfirm": "确定要退出游戏吗？",
+    "invalidGameUrl": "游戏链接无效"
   },
   "common_footer": {
     "top": {
@@ -596,6 +598,103 @@
     "claimPending": "领取申请已提交",
     "comingSoon": "功能开发中",
     "cta": "立即邀请",
+    "h5": {
+      "quickActions": {
+        "tasks": "任务",
+        "details": "详情",
+        "rules": "规则",
+        "guide": "指南"
+      },
+      "marquee": "恭喜 {account} 荣登榜首！",
+      "shareChannels": {
+        "facebook": "Facebook",
+        "whatsapp": "Whatsapp",
+        "telegram": "Telegram",
+        "telegramGroup": "Telegram",
+        "tiktok": "Tiktok",
+        "tiktokLive": "Tiktok",
+        "copy": "复制"
+      },
+      "howToShare": "如何分享",
+      "referralMessage": "推荐文案",
+      "inviteRewardPrefix": "邀请",
+      "inviteRewardSuffix": "位好友并获得",
+      "taskDetails": "任务详情",
+      "copyMessageSuccess": "推荐文案已复制",
+      "shareGuideHint": "可通过社交平台或复制推荐文案邀请好友。"
+    },
+    "taskPage": {
+      "title": "任务",
+      "resetHint": "任务重置：05天02时20分。请在每月 1 日下午 4:00 前领取上月奖励，逾期将无法领取。",
+      "rewardsToClaim": "待领取奖励",
+      "tabs": {
+        "inviteRegister": "邀请注册",
+        "cumulativeDeposit": "累计充值",
+        "commissionBoost": "佣金加成",
+        "recommendedWallet": "钱包"
+      },
+      "friendUnit": "位好友",
+      "friendsUnit": "位好友",
+      "currentProgress": "当前进度",
+      "maxRewardThisWeek": "本周最高奖励",
+      "invitedSignUps": "邀请注册数",
+      "reward": "奖励",
+      "status": "状态",
+      "notAchieved": "未达成",
+      "validInviteTitle": "什么算有效邀请？",
+      "validInviteDescription": "本周累计充值至少 ₱500，或有效投注累计达到 ₱1,000 的会员，视为有效邀请。",
+      "taskRulesTitle": "任务规则"
+    },
+    "rulesPage": {
+      "title": "规则",
+      "guideTitle": "指南",
+      "howToEarnTitle": "如何赚取",
+      "referralRulesTitle": "推荐规则",
+      "playGuideHint": "指南视频暂未开放",
+      "friendCount": "{count}人",
+      "steps": {
+        "shareTitle": "步骤 01",
+        "shareText": "分享给好友",
+        "rewardTitle": "步骤 02",
+        "rewardText": "当 1 位好友完成有效投注后即可获得奖励",
+        "unlockTitle": "步骤 03",
+        "unlockText": "分享越多，解锁越高奖励"
+      },
+      "table": {
+        "level": "等级",
+        "activeFriends": "有效好友",
+        "rate": "比例"
+      }
+    },
+    "detailsPage": {
+      "title": "好友",
+      "filter": "筛选",
+      "detailText": "详情",
+      "avatarAlt": "头像",
+      "friendDetailHint": "好友详情暂未开放：",
+      "date": {
+        "today": "今日"
+      },
+      "tabs": {
+        "friends": "好友",
+        "stats": "统计",
+        "rewardHistory": "奖励记录",
+        "claimHistory": "领取记录"
+      },
+      "summary": {
+        "newFriends": "新增好友",
+        "activeFriends": "有效好友",
+        "validBets": "有效投注"
+      },
+      "labels": {
+        "deposit": "充值：",
+        "validBets": "有效投注："
+      },
+      "status": {
+        "active": "有效",
+        "inactive": "未激活"
+      }
+    },
     "commissionRecords": {
       "title": "佣金记录列表",
       "searchPlaceholder": "搜索会员账号",

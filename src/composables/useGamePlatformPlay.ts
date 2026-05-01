@@ -1,7 +1,9 @@
 import Api from '@/api'
+import { navigateTo } from '@/utils/router'
 import { computed, inject, type ComputedRef } from 'vue'
 
 export type GameDetailForPlatformPlay = {
+  rowId?: string | number
   itemCode?: string | number
   platformCode?: string
   pgType?: string
@@ -33,8 +35,18 @@ export function useGamePlatformPlay() {
       if (res.code === 'C2') {
         const raw = res.result?.platformLink
         const gameUrl = typeof raw === 'string' ? raw.trim() : ''
+        const gameCode = String(currentGameDetail.value?.itemCode ?? '').trim()
+        const companyCode = String(currentGameDetail.value?.platformCode ?? '').trim()
+        const rowId = String(currentGameDetail.value?.rowId ?? '').trim()
         if (gameUrl) {
-          window.open(gameUrl, '_self')
+          await navigateTo('/game-iframe', {
+            query: {
+              url: gameUrl,
+              gameCode,
+              companyCode,
+              rowId
+            }
+          })
         }
       }
     } catch (error) {

@@ -104,14 +104,14 @@ const baseRoutes: RouteRecordRaw[] = [
       title: '体育'
     }
   },
-  {
-    path: 'menu',
-    name: 'menu',
-    component: () => import('@/views/menu/index.vue'),
-    meta: {
-      title: '选单'
-    }
-  },
+  // {
+  //   path: 'menu',
+  //   name: 'menu',
+  //   component: () => import('@/views/menu/index.vue'),
+  //   meta: {
+  //     title: '选单'
+  //   }
+  // },
   {
     path: 'menu/referral',
     name: 'menuReferral',
@@ -126,12 +126,13 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'menu/referral/commission-records',
-    name: 'menuReferralCommissionRecords',
-    component: () => import('@/views/menu/referral/commission-records/index.vue'),
+    path: 'menu/referral/tasks',
+    name: 'menuReferralTasks',
+    component: () => import('@/views/menu/referral/tasks/index.vue'),
     meta: {
-      title: '佣金记录列表',
+      title: '任务',
       requiresAuth: true,
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
@@ -139,31 +140,59 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'menu/referral/commission-rules',
+    path: 'menu/referral/details',
+    name: 'menuReferralDetails',
+    component: () => import('@/views/menu/referral/details/index.vue'),
+    meta: {
+      title: 'Friends',
+      requiresAuth: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  // {
+  //   path: 'menu/referral/commission-records',
+  //   name: 'menuReferralCommissionRecords',
+  //   component: () => import('@/views/menu/referral/commission-records/index.vue'),
+  //   meta: {
+  //     title: '佣金记录列表',
+  //     requiresAuth: true,
+  //     mobile: {
+  //       hideBottomBar: true,
+  //       hideTopNav: true
+  //     }
+  //   }
+  // },
+  {
+    path: 'menu/referral/rules',
     name: 'menuReferralCommissionRules',
-    component: () => import('@/views/menu/referral/commission-rules/index.vue'),
+    component: () => import('@/views/menu/referral/rules/index.vue'),
     meta: {
       title: 'Commission Rules',
       requiresAuth: true,
+      slideTransition: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
       }
     }
   },
-  {
-    path: 'menu/referral/referral-records',
-    name: 'menuReferralReferralRecords',
-    component: () => import('@/views/menu/referral/referral-records/index.vue'),
-    meta: {
-      title: '我的代理-推荐记录列表',
-      requiresAuth: true,
-      mobile: {
-        hideBottomBar: true,
-        hideTopNav: true
-      }
-    }
-  },
+  // {
+  //   path: 'menu/referral/referral-records',
+  //   name: 'menuReferralReferralRecords',
+  //   component: () => import('@/views/menu/referral/referral-records/index.vue'),
+  //   meta: {
+  //     title: '我的代理-推荐记录列表',
+  //     requiresAuth: true,
+  //     mobile: {
+  //       hideBottomBar: true,
+  //       hideTopNav: true
+  //     }
+  //   }
+  // },
   {
     path: 'menu/notifications',
     name: 'menuNotifications',
@@ -222,6 +251,21 @@ const baseRoutes: RouteRecordRaw[] = [
       title: '推荐游戏',
       description: '推荐游戏',
       requiresAuth: false,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'game-iframe',
+    name: 'gameIframe',
+    component: () => import('@/views/game/iframe/index.vue'),
+    meta: {
+      title: '游戏',
+      description: '游戏',
+      requiresAuth: true,
+      fullScreen: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true

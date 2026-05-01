@@ -182,14 +182,13 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type { GameBetRecordItem } from '@/api/interface/game'
-import { useLocaleStore } from '@/stores/locale'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import placeholderImg from '@/static/img/home/errImg.png'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { navigateTo } from '@/utils/router'
-import { storeToRefs } from 'pinia'
 import { computed, inject, onBeforeUnmount, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SmartImage from '@/components/common/SmartImage.vue'
@@ -240,15 +239,14 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   computed(() => null)
 )
 
-const localeStore = useLocaleStore()
-const { actualCurrency } = storeToRefs(localeStore)
+const { currentCurrencyCode } = useDisplayCurrency()
 
 const normalizeValue = (value: unknown) => String(value ?? '').trim()
 
 const currentGameCode = computed(() => normalizeValue(currentGameDetail.value?.itemCode))
 const currentPlatformCode = computed(() => normalizeValue(currentGameDetail.value?.platformCode))
 const currentRequestCurrency = computed(
-  () => normalizeValue(actualCurrency.value).toUpperCase() || 'USD'
+  () => normalizeValue(currentCurrencyCode.value).toUpperCase() || 'PHP'
 )
 const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestCurrency.value))
 

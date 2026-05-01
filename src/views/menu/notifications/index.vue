@@ -610,8 +610,6 @@ interface GameListForAppNode {
   [key: string]: unknown
 }
 
-let gameListForAppCache: GameListForAppNode[] | null = null
-
 const hashNotificationKey = (value: string) => {
   let hash = 0
 
@@ -639,16 +637,6 @@ const isGameLookupValueMatched = (sourceValue: unknown, targetValue: unknown) =>
   }
 
   return splitGameLookupValues(sourceValue).includes(normalizedTargetValue)
-}
-
-const fetchAndCacheGameListForApp = async () => {
-  if (gameListForAppCache) {
-    return gameListForAppCache
-  }
-
-  const result = (await gameStore.ensureGameData()) as unknown as GameListForAppNode[]
-  gameListForAppCache = result
-  return gameListForAppCache
 }
 
 const flattenGameListForAppItems = (items: GameListForAppNode[]) => {
@@ -1821,7 +1809,7 @@ const handleGameJump = async (item: NotificationItem) => {
   }
 
   try {
-    const gameList = await fetchAndCacheGameListForApp()
+    const gameList = (await gameStore.ensureGameData()) as unknown as GameListForAppNode[]
     const matchedGame = flattenGameListForAppItems(gameList).find(game => {
       return (
         isGameLookupValueMatched(game.gameTypeCode, pgType) &&

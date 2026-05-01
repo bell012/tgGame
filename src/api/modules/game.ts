@@ -144,7 +144,7 @@ export function getGameBetRecordList(
 
 /**
  * 获取最新投注列表
- * @param data type 1: 最新投注 2: 龙虎榜
+ * @param data type 1: 最新投注 2: 龙虎榜；currency 币种代码
  * @returns Promise<GetLatestListResponse>
  */
 export function getLatestList(
@@ -202,6 +202,16 @@ export function refreshGameStatistics(
 export function getloginPlatform(data: any): Promise<any> {
   return request({
     url: '/gc/loginPlatform',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true
+  })
+}
+
+export function logoutAllPlatform(data: { companyCode?: string; gameCode?: string }): Promise<any> {
+  return request({
+    url: '/gc/logoutAllPlatform',
     method: 'post',
     data,
     showSuccessToast: false,

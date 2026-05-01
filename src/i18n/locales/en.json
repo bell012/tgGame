@@ -318,6 +318,103 @@
     "claimPending": "Claim request submitted",
     "comingSoon": "Feature coming soon",
     "cta": "Invite Now",
+    "h5": {
+      "quickActions": {
+        "tasks": "Tasks",
+        "details": "Details",
+        "rules": "Rules",
+        "guide": "Guide"
+      },
+      "marquee": "Cheers to {account} for reaching No. 1!",
+      "shareChannels": {
+        "facebook": "Facebook",
+        "whatsapp": "Whatsapp",
+        "telegram": "Telegram",
+        "telegramGroup": "Telegram",
+        "tiktok": "Tiktok",
+        "tiktokLive": "Tiktok",
+        "copy": "Copy"
+      },
+      "howToShare": "How to Share",
+      "referralMessage": "Referral Message",
+      "inviteRewardPrefix": "Invite",
+      "inviteRewardSuffix": "Friend and Get",
+      "taskDetails": "Task Details",
+      "copyMessageSuccess": "Referral message copied",
+      "shareGuideHint": "Invite friends through social platforms or by copying the referral message."
+    },
+    "taskPage": {
+      "title": "Task",
+      "resetHint": "Task Reset: 05D 02H 20M. Please claim last month's reward before 4:00 PM on the 1st of each month. Expired rewards will no longer be available.",
+      "rewardsToClaim": "Rewards to Claim",
+      "tabs": {
+        "inviteRegister": "Invite & Register",
+        "cumulativeDeposit": "Cumulative Deposit",
+        "commissionBoost": "Commission Boost",
+        "recommendedWallet": "Wallet"
+      },
+      "friendUnit": "Friend",
+      "friendsUnit": "Friends",
+      "currentProgress": "Current Progress",
+      "maxRewardThisWeek": "Max Reward This Week",
+      "invitedSignUps": "Invited Sign-Ups",
+      "reward": "Reward",
+      "status": "Status",
+      "notAchieved": "Not Achieved",
+      "validInviteTitle": "What counts as a valid invite?",
+      "validInviteDescription": "A member who tops up at least ₱500 this week or places at least ₱1,000 in valid bets.",
+      "taskRulesTitle": "Task Rules"
+    },
+    "rulesPage": {
+      "title": "Rules",
+      "guideTitle": "Guide",
+      "howToEarnTitle": "How to Earn",
+      "referralRulesTitle": "Referral Rules",
+      "playGuideHint": "Guide video coming soon",
+      "friendCount": "{count}",
+      "steps": {
+        "shareTitle": "Step 01",
+        "shareText": "Share with Friends",
+        "rewardTitle": "Step 02",
+        "rewardText": "Get rewards when 1 friend completes the valid bets",
+        "unlockTitle": "Step 03",
+        "unlockText": "Share more to unlock higher rewards"
+      },
+      "table": {
+        "level": "Level",
+        "activeFriends": "Active Friends",
+        "rate": "Rate"
+      }
+    },
+    "detailsPage": {
+      "title": "Friends",
+      "filter": "Filter",
+      "detailText": "Details",
+      "avatarAlt": "avatar",
+      "friendDetailHint": "Friend detail coming soon:",
+      "date": {
+        "today": "Today"
+      },
+      "tabs": {
+        "friends": "Friends",
+        "stats": "Stats",
+        "rewardHistory": "Reward History",
+        "claimHistory": "Claim History"
+      },
+      "summary": {
+        "newFriends": "New Friends",
+        "activeFriends": "Active Friends",
+        "validBets": "Valid Bets"
+      },
+      "labels": {
+        "deposit": "Deposit:",
+        "validBets": "Valid Bets:"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      }
+    },
     "commissionRecords": {
       "title": "Commission Records",
       "searchPlaceholder": "Search for a member account",
@@ -482,7 +579,9 @@
     "shareChannelTiktok": "TikTok",
     "shareDefaultTitle": "Share",
     "shareLinkCopySuccess": "Share link copied successfully",
-    "copyFailedRetry": "Copy failed, please try again"
+    "copyFailedRetry": "Copy failed, please try again",
+    "exitGameConfirm": "Are you sure you want to exit the game?",
+    "invalidGameUrl": "Invalid game url"
   },
   "common_footer": {
     "top": {
