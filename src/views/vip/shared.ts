@@ -364,7 +364,19 @@ const resolveVipCardCornerBadgeIcon = (
 /**
  * 根据当前用户等级与当前卡片等级，返回卡片底部提示文案 key。
  */
-const resolveVipCardGoalHintKey = (currentVipId?: number | null, viewedVipId?: number | null) => {
+const resolveVipCardGoalHintKey = (
+  currentVipId?: number | null,
+  viewedVipId?: number | null,
+  highestVipId?: number | null
+) => {
+  if (
+    highestVipId != null &&
+    (currentVipId ?? 0) === highestVipId &&
+    (viewedVipId ?? 0) === highestVipId
+  ) {
+    return 'vipPage.goalHint.achieved'
+  }
+
   return (currentVipId ?? 0) >= (viewedVipId ?? 0)
     ? 'vipPage.goalHint.unlocked'
     : 'vipPage.goalHint.keepGoing'
@@ -606,6 +618,10 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
     return [...vipList.value].sort((left, right) => (left.vipId ?? 0) - (right.vipId ?? 0))
   })
 
+  const highestVipLevel = computed(() => {
+    return vipLevels.value[vipLevels.value.length - 1]?.vipId ?? 0
+  })
+
   const currentVipLevel = computed(() => myVipInfo.value?.vipId ?? userInfo.value?.vipId ?? 0)
 
   /**
@@ -670,7 +686,11 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
       levelNumberIcon: resolveVipLevelNumberIcon(resolvedVipId),
       rightDecorationIcon: themeConfig.rightDecoration,
       cornerBadgeIcon: resolveVipCardCornerBadgeIcon(currentVipLevel.value, resolvedVipId),
-      goalHintKey: resolveVipCardGoalHintKey(currentVipLevel.value, resolvedVipId)
+      goalHintKey: resolveVipCardGoalHintKey(
+        currentVipLevel.value,
+        resolvedVipId,
+        highestVipLevel.value
+      )
     }
   }
 

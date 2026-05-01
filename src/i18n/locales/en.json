@@ -1039,7 +1039,8 @@
     },
     "goalHint": {
       "unlocked": "Upgrade successful. Benefits unlocked",
-      "keepGoing": "Keep going to reach your VIP goal"
+      "keepGoing": "Keep going to reach your VIP goal",
+      "achieved": "Max level reached"
     },
     "benefitExplainPopup": {
       "title": "VIP Exclusive Benefits",
