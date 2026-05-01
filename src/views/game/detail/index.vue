@@ -43,6 +43,7 @@ import { useRoute } from 'vue-router'
 import {
   findGameDetailItemByIdentity,
   normalizeGameDetailValue,
+  splitGameTypeCodes,
   queryGameDetailRecommendedItems
 } from './shared'
 import H5Header from './h5/header.vue'
@@ -190,9 +191,36 @@ const currentGamePageTitle = computed(() => {
   )
 })
 
+const isGameTypeCodeMatched = (targetGameTypeCode: unknown, candidateGameTypeCode: unknown) => {
+  const targetCodeList = splitGameTypeCodes(targetGameTypeCode)
+  const candidateCodeList = splitGameTypeCodes(candidateGameTypeCode)
+
+  if (targetCodeList.length === 0 || candidateCodeList.length === 0) {
+    return false
+  }
+
+  const targetCodeSet = new Set(targetCodeList)
+  return candidateCodeList.some(code => targetCodeSet.has(code))
+}
+
 const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
-  return gameData.value as unknown as GameDataItem[]
+  const sourceList = gameData.value as unknown as GameDataItem[]
+  const targetGameTypeCode = currentGameDetail.value?.gameTypeCode
+  const excludeRowId = normalizeGameDetailValue(currentGameRowId.value)
+
+  if (!targetGameTypeCode) {
+    return sourceList
+  }
+
+  return sourceList.filter(item => {
+    if (excludeRowId && normalizeGameDetailValue(item.rowId) === excludeRowId) {
+      return false
+    }
+
+    return isGameTypeCodeMatched(targetGameTypeCode, item.gameTypeCode)
+  })
 })
+
 const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.value.length > 0)
 
 // ===== 数据请求 =====

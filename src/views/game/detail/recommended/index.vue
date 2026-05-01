@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import Api from '@/api'
 import H5Header from '@/components/common/H5Header.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -65,7 +66,11 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import type { GameDataItem as CasinoCardGameDataItem } from '@/api/interface/game'
 import casinoGameCard from '@/views/fun/casino/components/casinoGameCard.vue'
-import { normalizeGameDetailValue, queryGameDetailRecommendedItems } from '../shared'
+import {
+  normalizeGameDetailValue,
+  queryGameDetailRecommendedItems,
+  splitGameTypeCodes
+} from '../shared'
 
 type GameDataItem = {
   rowId?: string | number
@@ -107,6 +112,7 @@ const isCustomPageTitle = ref(false)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(gameList.value.length / PAGE_SIZE)))
 const sourceRowId = computed(() => normalizeGameDetailValue(route.query.rowId))
+const currentGameTypeCode = ref('')
 
 const pagedGameList = computed(() => {
   const start = (page.value - 1) * PAGE_SIZE
@@ -115,6 +121,36 @@ const pagedGameList = computed(() => {
 
 const resolveGameImagePath = (item: GameDataItem) => {
   return String(item.icon4 ?? '').trim()
+}
+
+const isGameTypeCodeMatched = (targetGameTypeCode: unknown, candidateGameTypeCode: unknown) => {
+  const targetCodeList = splitGameTypeCodes(targetGameTypeCode)
+  const candidateCodeList = splitGameTypeCodes(candidateGameTypeCode)
+
+  if (targetCodeList.length === 0 || candidateCodeList.length === 0) {
+    return false
+  }
+
+  const targetCodeSet = new Set(targetCodeList)
+  return candidateCodeList.some(code => targetCodeSet.has(code))
+}
+
+const fetchCurrentGameTypeCode = async () => {
+  if (!sourceRowId.value) {
+    currentGameTypeCode.value = ''
+    return
+  }
+
+  try {
+    const res = await Api.game.queryGameDetails(
+      { rowId: sourceRowId.value },
+      { showSuccessToast: false, showErrorToast: true }
+    )
+    currentGameTypeCode.value = normalizeGameDetailValue(res?.result?.gameTypeCode)
+  } catch (error) {
+    console.error('fetchCurrentGameTypeCode failed', error)
+    currentGameTypeCode.value = ''
+  }
 }
 
 const toCasinoCardGame = (item: GameDataItem): CasinoCardGameDataItem => {
@@ -142,7 +178,26 @@ const initPageData = async () => {
   }
 
   try {
-    gameList.value = (await queryGameDetailRecommendedItems()) as unknown as GameDataItem[]
+    await fetchCurrentGameTypeCode()
+
+    const sourceList = (await queryGameDetailRecommendedItems()) as unknown as GameDataItem[]
+    const excludeRowId = sourceRowId.value
+    const targetGameTypeCode = currentGameTypeCode.value
+
+    if (!targetGameTypeCode) {
+      gameList.value = sourceList.filter(
+        item => !excludeRowId || normalizeGameDetailValue(item.rowId) !== excludeRowId
+      )
+      return
+    }
+
+    gameList.value = sourceList.filter(item => {
+      if (excludeRowId && normalizeGameDetailValue(item.rowId) === excludeRowId) {
+        return false
+      }
+
+      return isGameTypeCodeMatched(targetGameTypeCode, item.gameTypeCode)
+    })
   } catch (error) {
     console.error('initPageData failed', error)
     gameList.value = []
