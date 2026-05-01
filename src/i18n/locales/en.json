@@ -191,7 +191,7 @@
     "filterGroups": {
       "date": "Date Selection",
       "winLoss": "Win/Loss Selection",
-      "status": "Status Selection",
+      "status": "Statuses Selection",
       "gameType": "Game Type Selection",
       "platform": "Platform Selection"
     },
