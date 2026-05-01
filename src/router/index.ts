@@ -244,6 +244,21 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'game-iframe',
+    name: 'gameIframe',
+    component: () => import('@/views/game/iframe/index.vue'),
+    meta: {
+      title: '游戏',
+      description: '游戏',
+      requiresAuth: true,
+      fullScreen: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'chat-public',
     name: 'chat-public',
     component: () => import('@/views/chat/chat-public/index.vue'),

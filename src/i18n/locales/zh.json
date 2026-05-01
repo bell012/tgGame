@@ -244,7 +244,9 @@
     "shareChannelTiktok": "TikTok",
     "shareDefaultTitle": "分享",
     "shareLinkCopySuccess": "分享链接复制成功",
-    "copyFailedRetry": "复制失败，请重试"
+    "copyFailedRetry": "复制失败，请重试",
+    "exitGameConfirm": "确定要退出游戏吗？",
+    "invalidGameUrl": "游戏链接无效"
   },
   "common_footer": {
     "top": {

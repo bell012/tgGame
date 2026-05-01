@@ -209,6 +209,16 @@ export function getloginPlatform(data: any): Promise<any> {
   })
 }
 
+export function logoutAllPlatform(data: { companyCode?: string; gameCode?: string }): Promise<any> {
+  return request({
+    url: '/gc/logoutAllPlatform',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true
+  })
+}
+
 /**
  * 查询游戏社交主体信息
  * @param data gameId, memberRowId

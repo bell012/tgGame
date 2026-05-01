@@ -547,7 +547,9 @@
     "shareChannelTiktok": "TikTok",
     "shareDefaultTitle": "Share",
     "shareLinkCopySuccess": "Share link copied successfully",
-    "copyFailedRetry": "Copy failed, please try again"
+    "copyFailedRetry": "Copy failed, please try again",
+    "exitGameConfirm": "Are you sure you want to exit the game?",
+    "invalidGameUrl": "Invalid game url"
   },
   "common_footer": {
     "top": {

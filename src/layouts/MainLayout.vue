@@ -2,7 +2,7 @@
   <div class="flex min-h-screen">
     <!-- 顶部导航 -->
     <TopNav
-      v-if="!hideTopNav"
+      v-if="!hideTopNav && !isFullscreenRoute"
       ref="topNavRef"
       @toggle-sidebar="toggleSidebar"
       @notification-click="handleNotificationClick"
@@ -10,7 +10,7 @@
 
     <!-- 侧边栏 -->
     <Sidebar
-      v-if="!isMobile"
+      v-if="!isMobile && !isFullscreenRoute"
       class="hidden sm:flex"
       ref="sidebarRef"
       @open-language-modal="openLanguageModal"
@@ -20,7 +20,7 @@
     <!-- 主内容区 -->
     <main class="flex-1 overflow-y-auto transition-all duration-300 ease-in-out" :style="mainStyle">
       <!-- 主内容容器 -->
-      <div class="flex min-h-full items-start gap-4">
+      <div :class="isFullscreenRoute ? 'min-h-full' : 'flex min-h-full items-start gap-4'">
         <!-- 路由内容区域 -->
         <section class="min-w-0 flex-1">
           <!-- 主内容背景页 -->
@@ -51,12 +51,15 @@
         </section>
 
         <!-- PC 端通知面板占位列 -->
-        <div v-if="showNotificationPanel && !isMobile" class="w-[312px] shrink-0"></div>
+        <div
+          v-if="showNotificationPanel && !isMobile && !isFullscreenRoute"
+          class="w-[312px] shrink-0"
+        ></div>
 
         <!-- PC 端通知侧边面板 -->
         <transition name="notification-panel">
           <aside
-            v-if="showNotificationPanel && !isMobile"
+            v-if="showNotificationPanel && !isMobile && !isFullscreenRoute"
             class="fixed z-40 w-[312px] overflow-hidden bg-bg-1"
             :style="notificationPanelStyle"
           >
@@ -363,6 +366,10 @@ watch(
 )
 
 const mainStyle = computed(() => {
+  if (isFullscreenRoute.value) {
+    return {}
+  }
+
   if (isMobile.value) {
     return {
       marginBottom: `${layoutStore.BOTTOM_TAB_HEIGHT}px`
@@ -433,6 +440,8 @@ interface MobileRouteMeta {
   hideBottomBar?: boolean
   hideTopNav?: boolean
 }
+
+const isFullscreenRoute = computed(() => route.meta?.fullScreen === true)
 
 onMounted(() => {
   lastResolvedDeviceMode.value = isMobile.value
