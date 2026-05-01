@@ -50,12 +50,14 @@
         </ResponsiveGridPager>
       </div>
     </div>
+    <CommonFooter class="mt-[40px]" />
   </div>
 </template>
 
 <script setup lang="ts">
 import Api from '@/api'
 import H5Header from '@/components/common/H5Header.vue'
+import CommonFooter from '@/components/commonFooter.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
