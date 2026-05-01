@@ -137,6 +137,11 @@ const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
     return
   }
 
+  if (actionId === 'details') {
+    navigateTo('/menu/referral/details')
+    return
+  }
+
   if (actionId === 'rules') {
     navigateTo('/menu/referral/rules')
     return

@@ -139,6 +139,20 @@ const baseRoutes: RouteRecordRaw[] = [
       }
     }
   },
+  {
+    path: 'menu/referral/details',
+    name: 'menuReferralDetails',
+    component: () => import('@/views/menu/referral/details/index.vue'),
+    meta: {
+      title: 'Friends',
+      requiresAuth: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
   // {
   //   path: 'menu/referral/commission-records',
   //   name: 'menuReferralCommissionRecords',

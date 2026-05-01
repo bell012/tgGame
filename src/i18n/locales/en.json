@@ -383,6 +383,35 @@
         "rate": "Rate"
       }
     },
+    "detailsPage": {
+      "title": "Friends",
+      "filter": "Filter",
+      "detailText": "Details",
+      "avatarAlt": "avatar",
+      "friendDetailHint": "Friend detail coming soon:",
+      "date": {
+        "today": "Today"
+      },
+      "tabs": {
+        "friends": "Friends",
+        "stats": "Stats",
+        "rewardHistory": "Reward History",
+        "claimHistory": "Claim History"
+      },
+      "summary": {
+        "newFriends": "New Friends",
+        "activeFriends": "Active Friends",
+        "validBets": "Valid Bets"
+      },
+      "labels": {
+        "deposit": "Deposit:",
+        "validBets": "Valid Bets:"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      }
+    },
     "commissionRecords": {
       "title": "Commission Records",
       "searchPlaceholder": "Search for a member account",
