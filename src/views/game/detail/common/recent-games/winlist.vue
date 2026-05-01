@@ -104,7 +104,7 @@
         :image-alt="t('gameDetail.noData')"
         :message="t('gameDetail.noData')"
         container-class="mt-0"
-        image-class="h-[96px] w-auto mb-1"
+        image-class="h-[120px] w-auto mb-1.5"
         text-class="text-[12px] font-[500] leading-[18px] text-text-2"
       />
     </div>
