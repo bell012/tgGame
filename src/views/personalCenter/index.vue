@@ -490,7 +490,7 @@ const remainingBetAmount = computed(() => {
   }
 
   return formatBalance(
-    vipTargetConfig.value.betAmountLine - Number(myVipInfo.value?.betAmount ?? 0),
+    Math.max(vipTargetConfig.value.betAmountLine - Number(myVipInfo.value?.betAmount ?? 0), 0),
     2
   )
 })
@@ -507,7 +507,10 @@ const remainingRechargeAmount = computed(() => {
   }
 
   return formatBalance(
-    vipTargetConfig.value.rechargeAmount - Number(myVipInfo.value?.rechargeAmount ?? 0),
+    Math.max(
+      vipTargetConfig.value.rechargeAmount - Number(myVipInfo.value?.rechargeAmount ?? 0),
+      0
+    ),
     2
   )
 })
