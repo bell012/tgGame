@@ -199,11 +199,11 @@
           <VipRulesContent v-else :retention-cards="retentionCards" :rules="rules" />
         </div>
       </section>
-
+      <!-- v-model:visible="showClaimSuccessPopup" -->
       <ClaimSuccessPopup
-        v-if="showClaimSuccessPopup"
-        mode="pc"
+        v-model:visible="showClaimSuccessPopup"
         :amount="claimSuccessAmount"
+        :close-on-overlay-click="false"
         @confirm="confirmClaimSuccess"
       />
       <BenefitExplainPopup v-if="showBenefitExplainPopup" @close="closeBenefitExplainPopup" />
@@ -218,11 +218,10 @@ import { useI18n } from 'vue-i18n'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useVipStore } from '@/stores/vip'
 import ExplainIcon from '@/static/svg/vip/explain.svg?component'
-import { getCurrencySymbol } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import BenefitComparisonPanel from './BenefitComparisonPanel.vue'
 import BenefitExplainPopup from './BenefitExplainPopup.vue'
-import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import VipRulesContent from './VipRulesContent.vue'
 import {
   claimVipBenefit,
@@ -238,7 +237,7 @@ const { t } = useI18n()
 const vipStore = useVipStore()
 const showBenefitExplainPopup = ref(false)
 const showClaimSuccessPopup = ref(false)
-const claimSuccessAmount = ref(`${getCurrencySymbol()}0.00`)
+const claimSuccessAmount = ref('0.00')
 const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
 const activeContentTab = ref<'comparison' | 'rules'>('comparison')
 const selectedVipIndex = ref(0)
@@ -345,7 +344,7 @@ const handleBenefitAction = async (card: VipBenefitCard) => {
     }
 
     await vipStore.refreshVipInfo()
-    claimSuccessAmount.value = `${getCurrencySymbol()}${card.amount}`
+    claimSuccessAmount.value = card.amount
     showClaimSuccessPopup.value = true
   } catch (error) {
     console.error(error)

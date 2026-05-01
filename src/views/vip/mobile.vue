@@ -193,8 +193,9 @@
       <BenefitExplainPopup v-if="showBenefitExplainPopup" @close="closeBenefitExplainPopup" />
 
       <ClaimSuccessPopup
-        v-if="showClaimSuccessPopup"
+        v-model:visible="showClaimSuccessPopup"
         :amount="claimSuccessAmount"
+        :close-on-overlay-click="false"
         @confirm="confirmClaimSuccess"
       />
     </div>
@@ -208,11 +209,10 @@ import H5Header from '@/components/common/H5Header.vue'
 import { useVipStore } from '@/stores/vip'
 import KefuIcon from '@/static/svg/vip/kefu.svg?component'
 import ExplainIcon from '@/static/svg/vip/explain.svg?component'
-import { getCurrencySymbol } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import BenefitComparisonPanel from './BenefitComparisonPanel.vue'
 import BenefitExplainPopup from './BenefitExplainPopup.vue'
-import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import VipRulesContent from './VipRulesContent.vue'
 import {
   claimVipBenefit,
@@ -225,8 +225,8 @@ import {
 const { t } = useI18n()
 const vipStore = useVipStore()
 const showBenefitExplainPopup = ref(false)
-const showClaimSuccessPopup = ref(false)
-const claimSuccessAmount = ref(`${getCurrencySymbol()}0.00`)
+const showClaimSuccessPopup = ref(true)
+const claimSuccessAmount = ref('0.00')
 const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
 const activeContentTab = ref<'comparison' | 'rules'>('comparison')
 const vipCarouselRef = ref<HTMLElement | null>(null)
@@ -392,7 +392,7 @@ const handleBenefitAction = async (card: VipBenefitCard) => {
     }
 
     await vipStore.refreshVipInfo()
-    claimSuccessAmount.value = `${getCurrencySymbol()}${card.amount}`
+    claimSuccessAmount.value = card.amount
     showClaimSuccessPopup.value = true
   } catch (error) {
     console.error(error)
