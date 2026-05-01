@@ -27,7 +27,7 @@
     </Teleport>
     <live-state-popup
       v-else
-      class="desktop-popup w-[320px]"
+      class="desktop-live-popup w-[320px]"
       v-model:visible="liveStateVisible"
       desktop
     />
@@ -166,8 +166,13 @@ const shareClick = () => {
 .desktop-popup {
   bottom: calc(100% + 12px);
   position: absolute;
-  left: 20px;
   left: calc(50% - 240px);
+}
+
+.desktop-live-popup {
+  bottom: calc(100% + 12px);
+  position: absolute;
+  left: 20px;
 }
 
 .desktop-setting-popup {
