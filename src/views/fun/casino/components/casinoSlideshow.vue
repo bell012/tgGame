@@ -68,9 +68,10 @@ import { storeToRefs } from 'pinia'
 import { Swipe, SwipeItem } from 'vant'
 import type { SwipeInstance } from 'vant'
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
-import { navigateTo, navigateToName } from '@/utils/router'
+import { navigateTo } from '@/utils/router'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { useAuthModalStore } from '@/stores/authModal'
+import { useGameStore } from '@/stores/game'
 import { useThemeStore } from '@/stores/theme'
 
 const AUTO_PLAY_INTERVAL = 3000
@@ -86,6 +87,7 @@ const props = withDefaults(
 )
 
 const authModalStore = useAuthModalStore()
+const gameStore = useGameStore()
 const themeStore = useThemeStore()
 const { theme } = storeToRefs(themeStore)
 const currentIndex = ref(0)
@@ -186,28 +188,95 @@ const handleInternalJump = (slide: QuerySlideshowItem) => {
 }
 
 /** jumpType=3 时：0 不跳转，1 自定义类型游戏，2 厂商游戏，3 游戏类型 */
-const handleGameJump = (slide: QuerySlideshowItem) => {
-  const linkId = String(slide.linkId ?? '').trim()
+interface GameListForAppNode {
+  gameTypeCode?: string
+  platformCode?: string
+  itemCode?: string
+  rowId?: string | number
+  subGame?: GameListForAppNode[]
+  [key: string]: unknown
+}
 
-  if (!linkId) {
+const normalizeGameLookupValue = (value: unknown) => String(value ?? '').trim()
+
+const splitGameLookupValues = (value: unknown) =>
+  normalizeGameLookupValue(value)
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean)
+
+const isGameLookupValueMatched = (sourceValue: unknown, targetValue: unknown) => {
+  const normalizedTargetValue = normalizeGameLookupValue(targetValue)
+
+  if (!normalizedTargetValue) {
+    return false
+  }
+
+  return splitGameLookupValues(sourceValue).includes(normalizedTargetValue)
+}
+
+const flattenGameListForAppItems = (items: GameListForAppNode[]) => {
+  const flattenedItems: GameListForAppNode[] = []
+
+  const traverse = (item: GameListForAppNode) => {
+    flattenedItems.push(item)
+
+    const children = Array.isArray(item.subGame) ? item.subGame : []
+    children.forEach(child => traverse(child))
+  }
+
+  items.forEach(traverse)
+
+  return flattenedItems
+}
+
+const handleGameJump = async (slide: QuerySlideshowItem) => {
+  // 兼容通知页同款 payload：pgType|platformCode|gameCode
+  const [pgType, platformCode, gameCode] = String(slide.linkUrl ?? '')
+    .trim()
+    .split('|')
+    .map(value => value.trim())
+
+  if (pgType && !platformCode && !gameCode) {
+    await navigateTo(`/casino/${pgType}`)
     return
   }
 
-  if (slide.platformType === 2) {
-    navigateToName('brandGameList', {
-      params: { brandCode: linkId }
-    })
-    return
+  if (pgType && platformCode && gameCode) {
+    try {
+      const gameList = (await gameStore.ensureGameData()) as unknown as GameListForAppNode[]
+      const matchedGame = flattenGameListForAppItems(gameList).find(game => {
+        return (
+          isGameLookupValueMatched(game.gameTypeCode, pgType) &&
+          isGameLookupValueMatched(game.platformCode, platformCode) &&
+          isGameLookupValueMatched(game.itemCode, gameCode)
+        )
+      })
+
+      const targetRowId = normalizeGameLookupValue(matchedGame?.rowId)
+      if (!targetRowId) {
+        console.warn('slideshow game jump target not found in queryGameListForApp', {
+          pgType,
+          platformCode,
+          gameCode,
+          slide
+        })
+        return
+      }
+
+      await navigateTo(`/game/${targetRowId}`)
+      return
+    } catch (error) {
+      console.error('handleGameJump failed', error)
+      return
+    }
   }
 
-  // TODO: 自定义类型游戏当前按 game list tab 占位，后续可按真实业务再细化。
-  navigateToName('gameList', {
-    params: { tabKey: linkId }
-  })
+  console.warn('slideshow game jump payload invalid', slide)
 }
 
 /** 轮播图跳转类型：1 url 跳转，2 跳转内部项面，3 跳转游戏 */
-const handleSlideClick = (slide: QuerySlideshowItem) => {
+const handleSlideClick = async (slide: QuerySlideshowItem) => {
   if (slide.enable !== 1) {
     return
   }
@@ -220,7 +289,7 @@ const handleSlideClick = (slide: QuerySlideshowItem) => {
       handleInternalJump(slide)
       return
     case 3:
-      handleGameJump(slide)
+      await handleGameJump(slide)
       return
     default:
       return
