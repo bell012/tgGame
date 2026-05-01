@@ -26,18 +26,27 @@
             >
               <div class="relative z-[1] flex flex-col items-start gap-3">
                 <div class="flex items-center">
-                  <img
-                    :src="getVipCardTheme(vip.vipId).wordmarkIcon"
-                    alt=""
+                  <span
                     aria-hidden="true"
                     class="h-[30px] w-[33px]"
-                  />
-                  <img
-                    :src="getVipCardTheme(vip.vipId).levelNumberIcon"
-                    alt=""
+                    :style="
+                      getVipMaskIconStyle(
+                        getVipCardTheme(vip.vipId).wordmarkIcon,
+                        getVipCardTheme(vip.vipId).vipColor
+                      )
+                    "
+                  ></span>
+                  <span
                     aria-hidden="true"
-                    class="ml-[3px] h-[30px] w-auto"
-                  />
+                    class="ml-[3px] h-[30px]"
+                    :style="[
+                      getVipMaskIconStyle(
+                        getVipCardTheme(vip.vipId).levelNumberIcon,
+                        getVipCardTheme(vip.vipId).vipColor
+                      ),
+                      { aspectRatio: getVipLevelNumberAspectRatio(vip.vipId) }
+                    ]"
+                  ></span>
                 </div>
 
                 <div class="flex w-full flex-1 flex-col justify-center pr-[10px]">
@@ -205,7 +214,13 @@ import BenefitComparisonPanel from './BenefitComparisonPanel.vue'
 import BenefitExplainPopup from './BenefitExplainPopup.vue'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import VipRulesContent from './VipRulesContent.vue'
-import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
+import {
+  claimVipBenefit,
+  getVipLevelNumberAspectRatio,
+  getVipMaskIconStyle,
+  type VipBenefitCard,
+  useVipPageData
+} from './shared'
 
 const { t } = useI18n()
 const vipStore = useVipStore()

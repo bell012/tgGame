@@ -25,18 +25,27 @@
                 <div class="relative z-[1] flex h-full flex-col">
                   <div class="flex items-center gap-[25px]">
                     <div class="flex shrink-0 items-center">
-                      <img
-                        :src="viewedVipCardTheme.wordmarkIcon"
-                        alt=""
+                      <span
                         aria-hidden="true"
                         class="h-[59px] w-[66px]"
-                      />
-                      <img
-                        :src="viewedVipCardTheme.levelNumberIcon"
-                        alt=""
+                        :style="
+                          getVipMaskIconStyle(
+                            viewedVipCardTheme.wordmarkIcon,
+                            viewedVipCardTheme.vipColor
+                          )
+                        "
+                      ></span>
+                      <span
                         aria-hidden="true"
-                        class="ml-[1px] h-[59px] w-auto"
-                      />
+                        class="ml-[1px] h-[59px]"
+                        :style="[
+                          getVipMaskIconStyle(
+                            viewedVipCardTheme.levelNumberIcon,
+                            viewedVipCardTheme.vipColor
+                          ),
+                          { aspectRatio: getVipLevelNumberAspectRatio(viewedVipLevel) }
+                        ]"
+                      ></span>
                     </div>
 
                     <div class="min-w-0 flex-1 space-y-[12px]">
@@ -215,7 +224,13 @@ import BenefitComparisonPanel from './BenefitComparisonPanel.vue'
 import BenefitExplainPopup from './BenefitExplainPopup.vue'
 import ClaimSuccessPopup from './ClaimSuccessPopup.vue'
 import VipRulesContent from './VipRulesContent.vue'
-import { claimVipBenefit, type VipBenefitCard, useVipPageData } from './shared'
+import {
+  claimVipBenefit,
+  getVipLevelNumberAspectRatio,
+  getVipMaskIconStyle,
+  type VipBenefitCard,
+  useVipPageData
+} from './shared'
 import Arrow_left from '@/static/svg/arrow_left.svg?component'
 import Arrow_right from '@/static/svg/arrow_right2.svg?component'
 
