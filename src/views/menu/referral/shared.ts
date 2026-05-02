@@ -1,26 +1,22 @@
-import facebookIcon from '@/static/img/referral/社交媒体.png'
-import whatsappIcon from '@/static/img/referral/Group 1597886325 1.png'
-import quickTaskIcon from '@/static/img/referral/Frame 2087330625.png'
-import quickDetailsIcon from '@/static/img/referral/Frame 2087330625 (1).png'
-import quickRulesIcon from '@/static/img/referral/Frame 2087330625 (2).png'
-import quickGuideIcon from '@/static/img/referral/Frame 2087330625 (3).png'
-import referralBanner from '@/static/img/referral/Frame 2131331296.png'
-import commissionCoinIcon from '@/static/img/referral/金币.png'
-import telegramIcon from '@/static/svg/game/detail/share/telegram.svg?url'
-import tiktokIcon from '@/static/svg/game/detail/share/tiktok.svg?url'
-import copyIcon from '@/static/svg/copy.svg?url'
+import quickTaskIcon from '@/static/img/referral/quick-action-task.png'
+import quickDetailsIcon from '@/static/img/referral/quick-action-details.png'
+import quickRulesIcon from '@/static/img/referral/quick-action-rules.png'
+import quickGuideIcon from '@/static/img/referral/quick-action-guide.png'
+import referralBanner from '@/static/img/referral/referral-banner.png'
+import commissionCoinIcon from '@/static/img/referral/referral-coin.png'
 
 type TranslateFn = (key: string, named?: Record<string, unknown>) => string
 
 export type ReferralQuickActionId = 'tasks' | 'details' | 'rules' | 'guide'
-export type ReferralSocialChannelId =
-  | 'facebook'
-  | 'whatsapp'
-  | 'telegram'
-  | 'telegram-group'
-  | 'tiktok'
-  | 'tiktok-live'
-  | 'copy'
+
+export interface ReferralShareChannelApiItem {
+  openStatus?: unknown
+  shareDomainImage?: unknown
+  shareDomainUrl?: unknown
+  shareName?: unknown
+  site?: unknown
+  sort?: unknown
+}
 
 export interface ReferralQuickAction {
   id: ReferralQuickActionId
@@ -29,10 +25,66 @@ export interface ReferralQuickAction {
 }
 
 export interface ReferralSocialChannel {
-  id: ReferralSocialChannelId
-  label: string
-  icon: string
-  iconClass?: string
+  openStatus: number
+  shareDomainImage: string
+  shareDomainUrl: string
+  shareName: string
+  site: string
+  sort: number
+}
+
+/**
+ * 将分享图标字段转换为可用图片地址。
+ */
+export const toReferralSocialChannelImageUrl = (value: unknown) => {
+  const normalizedValue = String(value ?? '').trim()
+
+  if (!normalizedValue) {
+    return ''
+  }
+
+  if (/^https?:\/\//i.test(normalizedValue)) {
+    return normalizedValue
+  }
+
+  const imageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
+  const imagePath = normalizedValue.replace(/^\/+/, '')
+
+  return imageBaseUrl ? `${imageBaseUrl}/${imagePath}` : normalizedValue
+}
+
+/**
+ * 将接口返回的分享渠道配置转换为页面可用数据。
+ */
+export const buildReferralSocialChannelsFromApi = (result: unknown): ReferralSocialChannel[] => {
+  if (!Array.isArray(result)) {
+    return []
+  }
+
+  return result
+    .filter(item => Number((item as ReferralShareChannelApiItem)?.openStatus ?? 1) === 1)
+    .map((item, index) => {
+      const channelItem = (item ?? {}) as ReferralShareChannelApiItem
+      const shareName = String(channelItem.shareName ?? '').trim()
+      const shareDomainImage = toReferralSocialChannelImageUrl(channelItem.shareDomainImage)
+      const shareDomainUrl = String(channelItem.shareDomainUrl ?? '').trim()
+      const site = String(channelItem.site ?? '').trim()
+      const sort = Number(channelItem.sort)
+
+      return {
+        openStatus: Number(channelItem.openStatus ?? 1),
+        shareDomainImage,
+        shareDomainUrl,
+        shareName,
+        site,
+        sort: Number.isFinite(sort) ? sort : index
+      }
+    })
+    .filter(
+      item =>
+        Boolean(item.shareName) && Boolean(item.shareDomainImage) && Boolean(item.shareDomainUrl)
+    )
+    .sort((left, right) => left.sort - right.sort)
 }
 
 /**
@@ -70,52 +122,6 @@ export const getReferralBannerImage = () => referralBanner
  * 返回佣金图标资源。
  */
 export const getReferralCommissionCoinImage = () => commissionCoinIcon
-
-/**
- * 生成推荐页社交分享渠道数据。
- */
-export const createReferralSocialChannels = (t: TranslateFn): ReferralSocialChannel[] => [
-  {
-    id: 'facebook',
-    label: t('referral.h5.shareChannels.facebook'),
-    icon: facebookIcon
-  },
-  {
-    id: 'whatsapp',
-    label: t('referral.h5.shareChannels.whatsapp'),
-    icon: whatsappIcon
-  },
-  {
-    id: 'telegram',
-    label: t('referral.h5.shareChannels.telegram'),
-    icon: telegramIcon,
-    iconClass: 'rounded-[15px] bg-[#1DC1FA] p-2.5'
-  },
-  {
-    id: 'telegram-group',
-    label: t('referral.h5.shareChannels.telegramGroup'),
-    icon: telegramIcon,
-    iconClass: 'rounded-[15px] bg-[#1DC1FA] p-2.5'
-  },
-  {
-    id: 'tiktok',
-    label: t('referral.h5.shareChannels.tiktok'),
-    icon: tiktokIcon,
-    iconClass: 'rounded-[15px] bg-[#111111] p-2.5'
-  },
-  {
-    id: 'tiktok-live',
-    label: t('referral.h5.shareChannels.tiktokLive'),
-    icon: tiktokIcon,
-    iconClass: 'rounded-[15px] bg-[#111111] p-2.5'
-  },
-  {
-    id: 'copy',
-    label: t('referral.copy'),
-    icon: copyIcon,
-    iconClass: 'rounded-[15px] bg-bg-3 p-2.5'
-  }
-]
 
 /**
  * 生成推荐页榜单祝贺文案。

@@ -21,6 +21,7 @@
           :quick-actions="quickActions"
           :marquee-messages="marqueeMessages"
           :social-channels="socialChannels"
+          :social-channels-loading="socialChannelsLoading"
           :banner-image="bannerImage"
           :commission-coin-image="commissionCoinImage"
           :estimated-commission-label="t('referral.estimatedCommission')"
@@ -50,6 +51,7 @@
         :quick-actions="quickActions"
         :marquee-messages="marqueeMessages"
         :social-channels="socialChannels"
+        :social-channels-loading="socialChannelsLoading"
         :banner-image="bannerImage"
         :commission-coin-image="commissionCoinImage"
         :estimated-commission-label="t('referral.estimatedCommission')"
@@ -75,7 +77,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import Api from '@/api'
 import { showToast } from 'vant'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
@@ -87,14 +90,14 @@ import PcLayout from './pc-layout.vue'
 import ReferralPageContent from './components/ReferralPageContent.vue'
 import {
   buildReferralShareMessage,
+  buildReferralSocialChannelsFromApi,
   createReferralMarqueeMessages,
   createReferralQuickActions,
-  createReferralSocialChannels,
   getDefaultReferralLink,
   getReferralBannerImage,
   getReferralCommissionCoinImage,
   type ReferralQuickActionId,
-  type ReferralSocialChannelId
+  type ReferralSocialChannel
 } from './shared'
 
 const { t } = useI18n()
@@ -104,12 +107,15 @@ const estimatedCommissionAmount = '9999.99'
 const inviteRewardCount = '1'
 const inviteRewardAmount = '36'
 const referralLink = getDefaultReferralLink()
+const socialChannelsLoading = ref(true)
+const apiSocialChannels = ref<ReferralSocialChannel[]>([])
 
 const quickActions = computed(() => createReferralQuickActions(t))
 const marqueeMessages = computed(() => createReferralMarqueeMessages(t))
-const socialChannels = computed(() => createReferralSocialChannels(t))
+const socialChannels = computed(() => apiSocialChannels.value)
 const bannerImage = getReferralBannerImage()
 const commissionCoinImage = getReferralCommissionCoinImage()
+const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
 
 /**
  * 处理页面初始化完成状态，避免首屏端态抖动。
@@ -117,6 +123,16 @@ const commissionCoinImage = getReferralCommissionCoinImage()
 onMounted(() => {
   isReady.value = true
 })
+
+watch(
+  () => currentAgentChannelId.value,
+  () => {
+    void fetchSocialChannels()
+  },
+  {
+    immediate: true
+  }
+)
 
 /**
  * 处理客服按钮点击。
@@ -200,40 +216,45 @@ const handleTaskDetailsClick = () => {
 }
 
 /**
- * 根据渠道构建分享链接。
+ * 获取当前分享渠道使用的目标链接。
  */
-const buildShareUrl = (channelId: ReferralSocialChannelId) => {
-  const shareMessage = buildReferralShareMessage(t, referralLink)
-  const encodedLink = encodeURIComponent(referralLink)
-  const encodedMessage = encodeURIComponent(shareMessage)
+const resolveShareTargetUrl = (channel: ReferralSocialChannel) =>
+  String(channel.shareDomainUrl ?? '').trim()
 
-  const shareUrlMap: Partial<Record<ReferralSocialChannelId, string>> = {
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`,
-    whatsapp: `https://wa.me/?text=${encodedMessage}`,
-    telegram: `https://t.me/share/url?url=${encodedLink}&text=${encodedMessage}`,
-    'telegram-group': `https://t.me/share/url?url=${encodedLink}&text=${encodedMessage}`,
-    tiktok: `https://www.tiktok.com/`,
-    'tiktok-live': `https://www.tiktok.com/`
+/**
+ * 处理获取社交分享渠道配置。
+ */
+async function fetchSocialChannels() {
+  socialChannelsLoading.value = true
+  apiSocialChannels.value = []
+
+  try {
+    const response = await Api.agent.queryShareChannels(
+      {
+        openStatus: 1
+      },
+      {
+        channelId: currentAgentChannelId.value
+      }
+    )
+
+    if (response?.code !== 'C2') {
+      return
+    }
+
+    apiSocialChannels.value = buildReferralSocialChannelsFromApi(response.result)
+  } catch (error) {
+    console.error(error)
+  } finally {
+    socialChannelsLoading.value = false
   }
-
-  return shareUrlMap[channelId] || ''
 }
 
 /**
  * 处理社交渠道分享点击。
  */
-const handleShareChannel = async (channelId: ReferralSocialChannelId) => {
-  if (channelId === 'copy') {
-    const copied = await copyTextWithFallback(referralLink)
-
-    showToast({
-      message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
-      type: copied ? 'success' : 'fail'
-    })
-    return
-  }
-
-  const shareUrl = buildShareUrl(channelId)
+const handleShareChannel = (channel: ReferralSocialChannel) => {
+  const shareUrl = resolveShareTargetUrl(channel)
 
   if (!shareUrl) {
     showToast({

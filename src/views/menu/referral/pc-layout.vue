@@ -25,6 +25,7 @@
       :quick-actions="props.quickActions"
       :marquee-messages="props.marqueeMessages"
       :social-channels="props.socialChannels"
+      :social-channels-loading="props.socialChannelsLoading"
       :banner-image="props.bannerImage"
       :commission-coin-image="props.commissionCoinImage"
       :estimated-commission-label="props.estimatedCommissionLabel"
@@ -51,17 +52,13 @@
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { useI18n } from 'vue-i18n'
 import ReferralPageContent from './components/ReferralPageContent.vue'
-import type {
-  ReferralQuickAction,
-  ReferralQuickActionId,
-  ReferralSocialChannel,
-  ReferralSocialChannelId
-} from './shared'
+import type { ReferralQuickAction, ReferralQuickActionId, ReferralSocialChannel } from './shared'
 
 interface Props {
   quickActions: ReferralQuickAction[]
   marqueeMessages: string[]
   socialChannels: ReferralSocialChannel[]
+  socialChannelsLoading: boolean
   bannerImage: string
   commissionCoinImage: string
   estimatedCommissionLabel: string
@@ -81,7 +78,7 @@ const props = defineProps<Props>()
 defineEmits<{
   'customer-service': []
   'quick-action': [value: ReferralQuickActionId]
-  'share-channel': [value: ReferralSocialChannelId]
+  'share-channel': [value: ReferralSocialChannel]
   'share-guide': []
   'copy-message': []
   claim: []

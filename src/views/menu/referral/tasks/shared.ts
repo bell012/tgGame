@@ -1,4 +1,4 @@
-import commissionCoinIcon from '@/static/img/referral/金币.png'
+import commissionCoinIcon from '@/static/img/referral/referral-coin.png'
 import taskRulesPlaceholderImage from '@/static/img/referral/claim_popup_hero.png'
 
 type TranslateFn = (key: string) => string
