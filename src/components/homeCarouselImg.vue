@@ -12,26 +12,46 @@
     </div>
 
     <div v-else-if="slides.length" class="w-full flex flex-col bg-bg-1">
-      <Swipe
-        ref="swipeRef"
-        class="mt-2.5 mb-2.5 flex-1 min-h-0"
-        :autoplay="slides.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
-        :show-indicators="false"
-        :touchable="slides.length > 1"
-        lazy-render
-        @change="handleChange"
-      >
-        <SwipeItem v-for="(item, index) in slides" :key="index">
-          <div class="w-full overflow-hidden rounded-xl" :class="bannerAspectClass">
-            <img
-              :src="getSlideImage(item)"
-              :alt="`slide-${index + 1}`"
-              class="h-full w-full object-cover"
-              @click="handleCarouselClick(item)"
-            />
-          </div>
-        </SwipeItem>
-      </Swipe>
+      <div class="relative mt-2.5 mb-2.5 w-full min-h-0 overflow-visible">
+        <Swipe
+          ref="swipeRef"
+          class="min-h-0 w-full"
+          :autoplay="slides.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
+          :show-indicators="false"
+          :touchable="slides.length > 1"
+          lazy-render
+          @change="handleChange"
+        >
+          <SwipeItem v-for="(item, index) in slides" :key="index">
+            <div class="w-full overflow-hidden rounded-xl px-3" :class="bannerAspectClass">
+              <img
+                :src="getSlideImage(item)"
+                :alt="`slide-${index + 1}`"
+                class="w-full object-cover"
+                @click="handleCarouselClick(item)"
+              />
+            </div>
+          </SwipeItem>
+        </Swipe>
+        <template v-if="slides.length > 1">
+          <button
+            type="button"
+            class="absolute left-3 top-1/2 z-10 hidden -translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
+            aria-label="上一张"
+            @click.stop="swipePrev"
+          >
+            <ArrowLeft2Icon class="size-4 [&_path]:fill-current" />
+          </button>
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 z-10 hidden translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
+            aria-label="下一张"
+            @click.stop="swipeNext"
+          >
+            <ArrowRightIcon class="size-4 [&_path]:fill-current" />
+          </button>
+        </template>
+      </div>
       <!-- 左右按钮 + 滑动条 -->
       <div v-if="slides.length > 1" class="flex flex-shrink-0 items-center justify-center px-4">
         <div class="flex w-[25%] min-w-0 items-center justify-between gap-2">
@@ -65,16 +85,15 @@
 <script setup lang="ts">
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
-import { useUserStore } from '@/stores/user'
 import { navigateTo, navigateToName } from '@/utils/router'
-import { storeToRefs } from 'pinia'
 import type { SwipeInstance } from 'vant'
 import { Swipe, SwipeItem } from 'vant'
 import { computed, ref, watch } from 'vue'
-const userStore = useUserStore()
+import ArrowLeft2Icon from '@/static/svg/arrow_left2.svg?component'
+import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+
 const authModalStore = useAuthModalStore()
-const { userInfo } = storeToRefs(userStore)
-const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
+
 interface Props {
   list: QuerySlideshowItem[]
   loading?: boolean
@@ -87,11 +106,9 @@ const props = withDefaults(defineProps<Props>(), {
 const currentIndex = ref(0)
 const progressKey = ref(0)
 const swipeRef = ref<SwipeInstance>()
-const bannerAspectClass = computed(() =>
-  isLogin.value
-    ? 'aspect-[1041/450] sm:aspect-[1336/280]'
-    : 'aspect-[3123/1836] sm:aspect-[1336/280]'
-)
+const AUTO_PLAY_INTERVAL_MS = 10000
+/** H5：1041:450；PC：1340:280 */
+const bannerAspectClass = 'aspect-[1041/450] lg:aspect-[1340/280]'
 const slides = computed(() => {
   return [...props.list].sort((a, b) => (a.sortNum ?? 0) - (b.sortNum ?? 0))
 })
@@ -116,63 +133,60 @@ const handleCarouselClick = (slide: QuerySlideshowItem) => {
       return
   }
 }
+// jumpType=1：linkType 0 不跳转，1 站内路由，2 外部网页
 const handleUrlJump = (slide: QuerySlideshowItem) => {
   const linkUrl = String(slide.linkUrl ?? '').trim()
-
-  if (!linkUrl && !isLogin.value) {
-    // 打开登录页面
-    authModalStore.openLoginModal()
+  if (!linkUrl) {
     return
   }
-
-  if (slide.linkType === 2) {
+  const linkType = Number(slide.linkType ?? 0)
+  if (linkType === 0) {
+    return
+  }
+  if (linkType === 2) {
     window.open(linkUrl, '_blank', 'noopener,noreferrer')
     return
   }
-
   navigateTo(linkUrl)
 }
-const handleInternalJump = (slide: QuerySlideshowItem) => {
-  const linkId = String(slide.linkId ?? '').trim()
 
+// 1活动，2充值栏目，3分享转盘，4充值页面，5积分转盘，6 邀请好友，7 登录注册页
+const handleInternalJump = (slide: QuerySlideshowItem) => {
   switch (slide.linkType) {
     case 1:
-      // TODO: 活动详情页路由未明确，先保留占位，避免点击无反馈。
-      if (linkId) {
-        navigateTo(`/menu?activityId=${linkId}`)
-        return
-      }
-
-      navigateTo('/menu')
+      console.log('活动')
       return
     case 2:
       navigateTo('/deposit')
       return
     case 3:
-      // TODO: 分享转盘页路由未明确，当前先跳邀请好友页占位。
-      navigateTo('/menu/referral')
+      console.log('分享转盘')
+      return
+    case 4:
+      navigateTo('/deposit')
+      return
+    case 5:
+      console.log('积分转盘')
+      return
+    case 6:
+      console.log('邀请好友')
+      return
+    case 7:
+      authModalStore.openLoginModal()
       return
     default:
       return
   }
 }
+
 const handleGameJump = (slide: QuerySlideshowItem) => {
-  const linkId = String(slide.linkId ?? '').trim()
-
-  if (!linkId) {
+  const idFromLinkUrl = Number(slide.linkUrl)
+  const gameRowId =
+    Number.isFinite(idFromLinkUrl) && idFromLinkUrl > 0 ? idFromLinkUrl : slide.rowId
+  if (!gameRowId) {
     return
   }
-
-  if (slide.platformType === 2) {
-    navigateToName('brandGameList', {
-      params: { brandCode: linkId }
-    })
-    return
-  }
-  // TODO: 自定义类型游戏当前按 game list tab 占位，后续可按真实业务再细化。
-  navigateToName('gameList', {
-    params: { tabKey: linkId }
-  })
+  navigateToName('gameDetail', { params: { rowId: gameRowId } })
 }
 const handleChange = (index: number) => {
   currentIndex.value = index
@@ -185,7 +199,13 @@ const goTo = (index: number) => {
   swipeRef.value?.swipeTo(index)
 }
 
-const AUTO_PLAY_INTERVAL_MS = 10000
+const swipePrev = () => {
+  swipeRef.value?.prev()
+}
+
+const swipeNext = () => {
+  swipeRef.value?.next()
+}
 
 watch(
   slides,

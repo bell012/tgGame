@@ -34,12 +34,11 @@
             @click="handleImageJump(item)"
           />
           <!-- 文本 -->
-          <div v-if="item.isImage === 2" class="w-[92%] rounded-lg p-3.5  pop-rich-text bg-bg-2">
+          <div v-if="item.isImage === 2" class="w-[92%] rounded-lg p-3.5 pop-rich-text bg-bg-2">
             <h2 class="text-base font-bold text-text-1">{{ item.title }}</h2>
             <div class="mt-2 font-normal text-sm text-text-1" v-html="item.text"></div>
           </div>
         </div>
-       
       </div>
       <!-- <button
       
@@ -114,6 +113,7 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
+import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
@@ -123,13 +123,12 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import LeftIcon from '@/static/svg/left-icon.svg?component'
 import RightIcon from '@/static/svg/right-icon.svg?component'
 import ScrollBar from '@/static/svg/scroll-bar.svg?component'
-import Image1 from '@/static/img/test/Image1.png'
 import { getStorageLanguageCode } from '@/utils/locale'
 
 const emit = defineEmits<{
   close: []
-  'open-login': []
 }>()
+const authModalStore = useAuthModalStore()
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
@@ -224,10 +223,19 @@ const handleImageJump = (item: HomePopItem) => {
 }
 
 const handleUrlJump = (item: HomePopItem) => {
-  if (!item.linkUrl) {
+  const linkUrl = String(item.linkUrl ?? '').trim()
+  if (!linkUrl) {
     return
   }
-  navigateTo(item.linkUrl)
+  const linkType = Number(item.linkType ?? 0)
+  if (linkType === 0) {
+    return
+  }
+  if (linkType === 2) {
+    window.open(linkUrl, '_blank', 'noopener,noreferrer')
+    return
+  }
+  navigateTo(linkUrl)
 }
 // 1活动，2充值栏目，3分享转盘，4充值页面，5积分转盘，6 邀请好友，7 登录注册页
 const handleInternalJump = (item: HomePopItem) => {
@@ -248,10 +256,10 @@ const handleInternalJump = (item: HomePopItem) => {
       console.log('积分转盘')
       return
     case 6:
-    console.log('邀请好友')
+      console.log('邀请好友')
       return
     case 7:
-      emit('open-login')
+      authModalStore.openLoginModal()
       return
 
     default:
@@ -414,7 +422,6 @@ const close = () => {
 const closeWithoutSuppress = () => {
   emit('close')
 }
-
 
 const onCarouselScroll = () => {
   const el = carouselRef.value
