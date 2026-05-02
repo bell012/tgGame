@@ -91,7 +91,7 @@
                 :dark-image="defaultImgDark"
                 :light-image="defaultImgLight"
                 :image-alt="t('gameDetail.noData')"
-                :message="t('gameDetail.noData')"
+                :message="t('gameDetail.stayTunedComingSoon')"
                 container-class="mt-0"
                 image-class="h-[120px] w-auto mb-1.5"
                 text-class="text-[12px] font-[500] leading-[18px] text-text-2"
@@ -166,7 +166,7 @@
                 :dark-image="defaultImgDark"
                 :light-image="defaultImgLight"
                 :image-alt="t('gameDetail.noData')"
-                :message="t('gameDetail.noData')"
+                :message="t('gameDetail.stayTunedComingSoon')"
                 container-class="mt-0"
                 image-class="h-[120px] w-auto mb-1.5"
                 text-class="text-[12px] font-[500] leading-[18px] text-text-2"
@@ -188,13 +188,18 @@ import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useUserStore } from '@/stores/user'
 import { navigateTo } from '@/utils/router'
 import { computed, inject, onBeforeUnmount, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SmartImage from '@/components/common/SmartImage.vue'
+import { storeToRefs } from 'pinia'
 
 const activeTab = ref(0)
 const { t } = useI18n()
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
+const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken))
 
 const tabs = computed(() => [
   { value: 0, label: t('gameDetail.allBets') },
@@ -466,6 +471,13 @@ const fetchTableData = async () => {
       return
     }
 
+    if (!isLoggedIn.value) {
+      stopBetAutoScroll()
+      betSourceRows.value = []
+      rows.value = []
+      return
+    }
+
     stopHighRollerAutoScroll()
     highRollerSourceRows.value = []
     highRollerRows.value = []
@@ -476,7 +488,7 @@ const fetchTableData = async () => {
 }
 
 watch(
-  [activeTab, currentPlatformCode, currentGameCode, currentRequestCurrency],
+  [activeTab, currentPlatformCode, currentGameCode, currentRequestCurrency, isLoggedIn],
   () => {
     void fetchTableData()
   },
@@ -605,6 +617,10 @@ onBeforeUnmount(() => {
   padding: 10px 14px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.table-head th {
+  background: var(--color-background-level-4);
 }
 
 .table-row {

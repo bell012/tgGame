@@ -151,10 +151,10 @@ const confirmExit = async () => {
 }
 
 .game-iframe-page__close-btn {
-  position: absolute;
+  position: fixed;
   top: 48px;
   left: 14px;
-  z-index: 20;
+  z-index: 9999;
   width: 50px;
   height: 50px;
   border: 0;
@@ -170,9 +170,9 @@ const confirmExit = async () => {
 }
 
 .game-iframe-page__dialog-mask {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
