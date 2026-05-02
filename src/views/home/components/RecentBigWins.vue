@@ -32,14 +32,12 @@
     <div
       v-else
       ref="marqueeRef"
-      class="marquee my-0 touch-pan-x select-none sm:rounded-xl sm:bg-layer3 sm:cursor-grab sm:active:cursor-grabbing"
+      class="marquee my-0 touch-pan-y select-none sm:rounded-xl sm:bg-layer3"
       @scroll.passive="onMarqueeScroll"
       @pointerdown="onMarqueePointerDown"
-      @pointermove="onMarqueePointerMove"
       @pointerup="onMarqueePointerUp"
       @pointercancel="onMarqueePointerCancel"
       @touchstart.passive="onMarqueeTouchStart"
-      @touchmove.passive="onMarqueeTouchMove"
       @touchend.passive="onMarqueeTouchEnd"
       @touchcancel.passive="onMarqueeTouchEnd"
       @mouseenter="marqueeHoverPaused = true"
@@ -63,7 +61,7 @@
             <div
               class="text-xxs whitespace-nowrap text-nowrap text-center font-extrabold text-brand text-theme-primary"
             >
-              {{ item.number }} {{ item.currency }}
+              {{ formatRecentBigWinAmount(item.number) }} {{ item.currency }}
             </div>
           </div>
         </a>
@@ -104,6 +102,23 @@ const toGameImageUrl = (value: string) => {
   return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
 }
 
+/** 大额展示：≥1000 转为千分位 + 两位小数 + K，如 1,497.00K；否则两位小数 + 千分位 */
+const formatRecentBigWinAmount = (raw: string) => {
+  const cleaned = String(raw).replace(/,/g, '').trim()
+  const n = Number(cleaned)
+  if (!Number.isFinite(n)) {
+    return raw || '0.00'
+  }
+  const opts: Intl.NumberFormatOptions = {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }
+  if (Math.abs(n) >= 1000) {
+    return `${(n / 1000).toLocaleString('en-US', opts)}K`
+  }
+  return n.toLocaleString('en-US', opts)
+}
+
 const getRecentBigWinsData = async () => {
   loading.value = true
   try {
@@ -129,7 +144,6 @@ const marqueeHoverPaused = ref(false)
 const marqueePointerActive = ref(false)
 const AUTO_MARQUEE_SEGMENT_SEC = 20
 const MARQUEE_IDLE_RESUME_MS = 2000
-const MARQUEE_DRAG_THRESHOLD = 8
 
 let marqueeRafId = 0
 let marqueeLastTs = 0
@@ -139,16 +153,7 @@ let marqueeLoopRunning = false
 let marqueeProgramScrollResetTimer = 0
 let marqueeLastProgrammaticScrollMs = 0
 let marqueeResizeObserver: ResizeObserver | null = null
-let marqueeSuppressClick = false
 let marqueeMobileResumeTimer = 0
-
-const marqueeDrag = {
-  active: false,
-  pointerId: -1,
-  startX: 0,
-  startScroll: 0,
-  moved: false
-}
 
 /**
  * 清理 H5 点击/触摸后的自动恢复定时器
@@ -175,8 +180,6 @@ const scheduleMarqueeMobileResume = () => {
   marqueeMobileResumeTimer = window.setTimeout(() => {
     marqueePointerActive.value = false
     marqueeHoverPaused.value = false
-    marqueeDrag.active = false
-    marqueeDrag.pointerId = -1
     marqueeUserScrollUntil = 0
     marqueeProgramScroll = false
     marqueeLastTs = 0
@@ -297,66 +300,22 @@ const onMarqueeScroll = () => {
 /**
  * PC 使用 pointer 事件处理拖拽；H5 走 touch 事件。
  */
-const onMarqueePointerDown = (e: PointerEvent) => {
+const onMarqueePointerDown = () => {
   if (isMobile.value) {
     return
   }
 
-  marqueeSuppressClick = false
   beginMarqueeInteraction()
-  if (e.pointerType === 'mouse' && e.button === 0) {
-    const el = marqueeRef.value
-    if (!el) return
-
-    marqueeDrag.active = true
-    marqueeDrag.moved = false
-    marqueeDrag.pointerId = e.pointerId
-    marqueeDrag.startX = e.clientX
-    marqueeDrag.startScroll = el.scrollLeft
-
-    el.setPointerCapture(e.pointerId)
-  }
 }
 
 /**
- * 仅在 PC 拖拽时同步滚动位置；H5 下忽略 pointermove。
+ * PC 结束 pointer 交互后进入空闲恢复；H5 下忽略 pointerup（由 touch 处理）。
  */
-const onMarqueePointerMove = (e: PointerEvent) => {
+const onMarqueePointerUp = () => {
   if (isMobile.value) {
     return
   }
 
-  if (!marqueeDrag.active || e.pointerId !== marqueeDrag.pointerId) return
-  const el = marqueeRef.value
-  if (!el) return
-  const dx = e.clientX - marqueeDrag.startX
-  if (Math.abs(dx) > MARQUEE_DRAG_THRESHOLD) {
-    marqueeDrag.moved = true
-  }
-  marqueeLastProgrammaticScrollMs = performance.now()
-  el.scrollLeft = marqueeDrag.startScroll - dx
-}
-
-/**
- * PC 结束 pointer 交互后恢复空闲滚动；H5 下忽略 pointerup。
- */
-const onMarqueePointerUp = (e: PointerEvent) => {
-  if (isMobile.value) {
-    return
-  }
-
-  if (marqueeDrag.active && e.pointerId === marqueeDrag.pointerId) {
-    try {
-      marqueeRef.value?.releasePointerCapture(e.pointerId)
-    } catch {
-      console.error('releasePointerCapture failed')
-    }
-    if (marqueeDrag.moved) {
-      marqueeSuppressClick = true
-    }
-    marqueeDrag.active = false
-    marqueeDrag.pointerId = -1
-  }
   endMarqueeInteraction()
 }
 
@@ -366,17 +325,7 @@ const onMarqueePointerCancel = onMarqueePointerUp
  * H5 触摸开始时进入暂停态，并启动 2 秒自动恢复计时。
  */
 const onMarqueeTouchStart = () => {
-  marqueeSuppressClick = false
   beginMarqueeInteraction()
-}
-
-/**
- * H5 手指滑动时持续刷新自动恢复计时，松手后最多 2 秒恢复滚动。
- */
-const onMarqueeTouchMove = () => {
-  marqueePointerActive.value = true
-  bumpMarqueeUserIdlePause()
-  scheduleMarqueeMobileResume()
 }
 
 /**
@@ -390,24 +339,17 @@ const onMarqueeTouchEnd = () => {
  * 重置跑马灯交互状态，处理触摸/指针事件异常中断的情况。
  */
 const resetMarqueeInteraction = () => {
-  if (!marqueePointerActive.value && !marqueeDrag.active) return
+  if (!marqueePointerActive.value) return
   endMarqueeInteraction()
-  marqueeDrag.active = false
-  marqueeDrag.pointerId = -1
 }
 
 /**
  * H5 单击后即使没有后续操作，在 2 秒后自动恢复滚动。
  */
-const onMarqueeClickCapture = (e: MouseEvent) => {
+const onMarqueeClickCapture = () => {
   if (isMobile.value) {
     scheduleMarqueeMobileResume()
   }
-
-  if (!marqueeSuppressClick) return
-  e.preventDefault()
-  e.stopPropagation()
-  marqueeSuppressClick = false
 }
 
 watch(
@@ -483,8 +425,9 @@ onUnmounted(() => {
   width: calc(100% + 2rem);
   margin-left: -1rem;
   margin-right: -1rem;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
+  touch-action: pan-y;
   scroll-behavior: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
