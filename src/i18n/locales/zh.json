@@ -598,6 +598,15 @@
     "claimPending": "领取申请已提交",
     "comingSoon": "功能开发中",
     "cta": "立即邀请",
+    "invitePoster": {
+      "saveImage": "保存海报",
+      "copyLink": "复制链接",
+      "inviteNow": "立即分享",
+      "posterAlt": "邀请海报",
+      "saveHint": "请截图保存海报。",
+      "saveStarted": "图片下载已开始",
+      "saveFailed": "图片保存失败"
+    },
     "h5": {
       "quickActions": {
         "tasks": "任务",
@@ -670,6 +679,7 @@
       "title": "好友",
       "filter": "筛选",
       "detailText": "详情",
+      "showNow": "立即查看",
       "avatarAlt": "头像",
       "friendDetailHint": "好友详情暂未开放：",
       "date": {

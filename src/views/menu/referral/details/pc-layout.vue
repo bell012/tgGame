@@ -31,7 +31,7 @@
         :deposit-label="props.depositLabel"
         :valid-bets-label="props.validBetsLabel"
         :detail-text="props.detailText"
-        :invite-text="props.inviteText"
+        :empty-action-text="props.emptyActionText"
         :empty-text="props.emptyText"
         :empty-alt="props.emptyAlt"
         :avatar-alt="props.avatarAlt"
@@ -44,7 +44,7 @@
         @open-date-picker="$emit('open-date-picker')"
         @open-filter="$emit('open-filter')"
         @go-friend-detail="$emit('go-friend-detail', $event)"
-        @invite="$emit('invite')"
+        @show-poster="$emit('show-poster')"
       />
     </div>
   </section>
@@ -68,7 +68,7 @@ interface Props {
   depositLabel: string
   validBetsLabel: string
   detailText: string
-  inviteText: string
+  emptyActionText: string
   emptyText: string
   emptyAlt: string
   avatarAlt: string
@@ -87,6 +87,6 @@ defineEmits<{
   'open-date-picker': []
   'open-filter': []
   'go-friend-detail': [value: ReferralDetailsFriendItem]
-  invite: []
+  'show-poster': []
 }>()
 </script>

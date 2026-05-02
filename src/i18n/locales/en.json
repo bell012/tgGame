@@ -318,6 +318,15 @@
     "claimPending": "Claim request submitted",
     "comingSoon": "Feature coming soon",
     "cta": "Invite Now",
+    "invitePoster": {
+      "saveImage": "Save Poster",
+      "copyLink": "Copy Link",
+      "inviteNow": "Share Now",
+      "posterAlt": "invite poster",
+      "saveHint": "Please take a screenshot to save the poster.",
+      "saveStarted": "Image download started",
+      "saveFailed": "Image save failed"
+    },
     "h5": {
       "quickActions": {
         "tasks": "Tasks",
@@ -390,6 +399,7 @@
       "title": "Friends",
       "filter": "Filter",
       "detailText": "Details",
+      "showNow": "Show Now",
       "avatarAlt": "avatar",
       "friendDetailHint": "Friend detail coming soon:",
       "date": {
