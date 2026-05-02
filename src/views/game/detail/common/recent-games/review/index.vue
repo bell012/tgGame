@@ -205,6 +205,7 @@ const displayRatingAvatarUrls = computed(() => {
 const displayRatingCount = computed(() => displayRatingAvatarUrls.value.length)
 
 const scoreValue = computed(() => {
+  debugger
   const rawScore = Number(currentGameDetail.value?.initScoreStar)
 
   if (!Number.isFinite(rawScore)) {

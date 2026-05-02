@@ -164,6 +164,14 @@ const confirmExit = async () => {
   cursor: pointer;
 }
 
+@media (orientation: landscape) {
+  .game-iframe-page__close-btn {
+    top: calc(env(safe-area-inset-top) + 8px);
+    right: calc(env(safe-area-inset-right) + 8px);
+    left: auto;
+  }
+}
+
 .game-iframe-page__close-icon {
   width: 100%;
   height: 100%;
