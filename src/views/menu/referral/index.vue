@@ -73,6 +73,18 @@
         @task-details="handleTaskDetailsClick"
       />
     </div>
+
+    <!-- 推荐文案弹窗 -->
+    <ReferralMessagePopup
+      v-model="showReferralMessagePopup"
+      :mode="isMobile ? 'mobile' : 'pc'"
+      :title="t('referral.messagePopup.title')"
+      :description="t('referral.messagePopup.description')"
+      :copy-text="t('personalCenter.editProfile.save')"
+      :presets="referralMessagePresets"
+      :initial-message="defaultReferralMessage"
+      @copy="handleConfirmReferralMessageCopy"
+    />
   </div>
 </template>
 
@@ -88,9 +100,11 @@ import { navigateTo } from '@/utils/router'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import PcLayout from './pc-layout.vue'
 import ReferralPageContent from './components/ReferralPageContent.vue'
+import ReferralMessagePopup from './components/ReferralMessagePopup.vue'
 import {
   buildReferralShareMessage,
   buildReferralSocialChannelsFromApi,
+  createReferralMessagePresets,
   createReferralMarqueeMessages,
   createReferralQuickActions,
   getDefaultReferralLink,
@@ -109,8 +123,11 @@ const inviteRewardAmount = '36'
 const referralLink = getDefaultReferralLink()
 const socialChannelsLoading = ref(true)
 const apiSocialChannels = ref<ReferralSocialChannel[]>([])
+const showReferralMessagePopup = ref(false)
 
 const quickActions = computed(() => createReferralQuickActions(t))
+const referralMessagePresets = computed(() => createReferralMessagePresets(t))
+const defaultReferralMessage = computed(() => referralMessagePresets.value[0] || '')
 const marqueeMessages = computed(() => createReferralMarqueeMessages(t))
 const socialChannels = computed(() => apiSocialChannels.value)
 const bannerImage = getReferralBannerImage()
@@ -187,15 +204,26 @@ const handleShareGuideClick = () => {
 }
 
 /**
- * 处理推荐文案复制。
+ * 处理打开推荐文案弹窗。
  */
-const handleCopyReferralMessage = async () => {
-  const copied = await copyTextWithFallback(buildReferralShareMessage(t, referralLink))
+const handleCopyReferralMessage = () => {
+  showReferralMessagePopup.value = true
+}
+
+/**
+ * 处理确认复制推荐文案。
+ */
+const handleConfirmReferralMessageCopy = async (message: string) => {
+  const copied = await copyTextWithFallback(buildReferralShareMessage(message, referralLink))
 
   showToast({
     message: copied ? t('referral.h5.copyMessageSuccess') : t('referral.copyFailed'),
     type: copied ? 'success' : 'fail'
   })
+
+  if (copied) {
+    showReferralMessagePopup.value = false
+  }
 }
 
 /**

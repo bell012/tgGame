@@ -327,6 +327,15 @@
       "saveStarted": "Image download started",
       "saveFailed": "Image save failed"
     },
+    "messagePopup": {
+      "title": "Referral Message",
+      "description": "This message will be added automatically before the link when copied",
+      "presets": {
+        "exclusiveRewards": "Tap to claim now",
+        "earnTogether": "Join now and get exclusive rewards",
+        "unlockBonus": "Invite friends and unlock surprise rewards"
+      }
+    },
     "h5": {
       "quickActions": {
         "tasks": "Tasks",

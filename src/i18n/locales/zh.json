@@ -607,6 +607,15 @@
       "saveStarted": "图片下载已开始",
       "saveFailed": "图片保存失败"
     },
+    "messagePopup": {
+      "title": "推荐文案",
+      "description": "复制时会自动将此文案添加到链接前面",
+      "presets": {
+        "exclusiveRewards": "立即点击领取",
+        "earnTogether": "立即加入，领取专属奖励",
+        "unlockBonus": "邀请好友，解锁惊喜奖励"
+      }
+    },
     "h5": {
       "quickActions": {
         "tasks": "任务",

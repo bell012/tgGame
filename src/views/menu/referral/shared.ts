@@ -133,12 +133,21 @@ export const createReferralMarqueeMessages = (t: TranslateFn): string[] => [
 ]
 
 /**
+ * 生成推荐文案弹窗预设文案列表。
+ */
+export const createReferralMessagePresets = (t: TranslateFn): string[] => [
+  t('referral.messagePopup.presets.exclusiveRewards'),
+  t('referral.messagePopup.presets.earnTogether'),
+  t('referral.messagePopup.presets.unlockBonus')
+]
+
+/**
  * 构建推荐页默认分享链接。
  */
 export const getDefaultReferralLink = () => 'https://www.tggame.com/invite/877*****'
 
 /**
- * 构建推荐页默认分享文案。
+ * 构建推荐页复制文案内容。
  */
-export const buildReferralShareMessage = (t: TranslateFn, referralLink: string) =>
-  `${t('referral.shareDefaultText')} ${referralLink}`
+export const buildReferralShareMessage = (message: string, referralLink: string) =>
+  [String(message ?? '').trim(), String(referralLink ?? '').trim()].filter(Boolean).join(' ')
