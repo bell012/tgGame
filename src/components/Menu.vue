@@ -301,7 +301,7 @@
         :class="[
           'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-2'
         ]"
-        @click="() => emit('open-language-modal')"
+        @click="openLanguagePopup()"
       >
         <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
@@ -435,6 +435,14 @@
         </template>
       </div>
     </teleport>
+    <Teleport to="body">
+      <LanguagePopup
+        v-model:visible="showLanguagePopup"
+        :selected-language="localeStore.currentLanguage"
+        :options="languageOptions"
+        @select="handleLanguageSelect"
+      />
+    </Teleport>
   </div>
 </template>
 
@@ -451,9 +459,10 @@ import newSideIcons from '@/static/svg/side/newIcon'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
-import { getLocaleLabel } from '@/utils/locale'
+import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
+import LanguagePopup from '@/views/settings/preferences/language-popup.vue'
 
 import type { Component } from 'vue'
 import { computed, ref } from 'vue'
@@ -465,10 +474,6 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   isCollapsed: false
 })
-
-const emit = defineEmits<{
-  'open-language-modal': []
-}>()
 
 const themeStore = useThemeStore()
 const localeStore = useLocaleStore()
@@ -512,6 +517,7 @@ const activeMenuId = ref<string>('')
 // 当前选中的三级菜单
 const activeThirdLevelMenuId = ref<string>('')
 const showLeaveFeedbackModal = ref(false)
+const showLanguagePopup = ref(false)
 
 /** 用于高亮父级 */
 const isSubmenuBranchActive = (item: SidebarSubmenuItem): boolean => {
@@ -560,7 +566,15 @@ let submenuHideTimer: ReturnType<typeof setTimeout> | null = null
 const currentLanguageName = computed(() => {
   return getLocaleLabel(localeStore.currentLanguage)
 })
+const languageOptions = computed<LocaleOption[]>(() => getLocaleOptions())
 
+const handleLanguageSelect = (code: Locale) => {
+  localeStore.setLanguage(code)
+}
+
+const openLanguagePopup = () => {
+  showLanguagePopup.value = true
+}
 // 应用程式下载点击
 const handleAppDownloadClick = () => {
   navigateTo('/app-download')
