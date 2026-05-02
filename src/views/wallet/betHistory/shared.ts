@@ -1,7 +1,7 @@
 import type { QueryOrderInfoPageForm, QueryOrderInfoResult } from '@/api/interface/record.interface'
 import { getCurrentCurrency, formatBalance } from '@/utils/locale'
 import { formatTimestamp } from '@/utils/date'
-import { getGameImage, getGameName, getPlatformList, getPlatformName } from '@/utils/global-dic'
+import { getGameImage, getGameName, getPlatformList } from '@/utils/global-dic'
 import bet from '@/static/img/personalCenter/bet.png'
 
 type TranslateFn = (key: string) => string
@@ -88,7 +88,7 @@ export const createBetHistoryGameTypeOptions = (t: TranslateFn): SelectOption[] 
 export const createBetHistoryPlatformOptions = (t: TranslateFn): SelectOption[] => [
   { label: t('betHistory.filterOptions.all'), value: 'all' },
   ...getPlatformList().map(item => ({
-    label: getPlatformName(item.platformCode) || item.platformCode,
+    label: item.platformName || item.platformCode,
     value: item.platformCode
   }))
 ]

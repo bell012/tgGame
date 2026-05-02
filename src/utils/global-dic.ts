@@ -9,6 +9,7 @@ const GAME_DATA_STORAGE_KEY = 'gameData'
 type GlobalDicItem = GlobalDicResponse['result'][number]
 type PlatformItem = {
   platformCode: string
+  platformName: string
 }
 
 /**
@@ -145,19 +146,24 @@ export const getGameImage = (platformCode: unknown, gameCode: unknown) => {
  * 获取平台列表。
  */
 export const getPlatformList = (): PlatformItem[] => {
-  const platformCodeSet = new Set<string>()
+  const platformMap = new Map<string, PlatformItem>()
 
   readGameDataCache().forEach(section => {
     const providerList = Array.isArray(section?.subGame) ? section.subGame : []
     providerList.forEach(provider => {
       const platformCode = normalizeGlobalDicValue(provider?.platformCode)
+      const platformName = normalizeGlobalDicValue(provider?.platformName)
+
       if (platformCode) {
-        platformCodeSet.add(platformCode)
+        platformMap.set(platformCode, {
+          platformCode,
+          platformName: platformName || platformCode
+        })
       }
     })
   })
 
-  return [...platformCodeSet].map(platformCode => ({ platformCode }))
+  return [...platformMap.values()]
 }
 
 /**
