@@ -23,7 +23,7 @@
           @change="handleChange"
         >
           <SwipeItem v-for="(item, index) in slides" :key="index">
-            <div class="w-full overflow-hidden rounded-xl px-3" :class="bannerAspectClass">
+            <div class="w-full h-full overflow-hidden rounded-xl px-3">
               <img
                 :src="getSlideImage(item)"
                 :alt="`slide-${index + 1}`"

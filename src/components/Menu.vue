@@ -475,6 +475,10 @@ withDefaults(defineProps<Props>(), {
   isCollapsed: false
 })
 
+const emit = defineEmits<{
+  'open-language-modal': []
+}>()
+
 const themeStore = useThemeStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
@@ -573,7 +577,11 @@ const handleLanguageSelect = (code: Locale) => {
 }
 
 const openLanguagePopup = () => {
-  showLanguagePopup.value = true
+  if (isMobile.value) {
+    showLanguagePopup.value = true
+    return
+  }
+  emit('open-language-modal')
 }
 // 应用程式下载点击
 const handleAppDownloadClick = () => {
