@@ -204,6 +204,15 @@
 
         <BenefitExplainPopup v-if="showBenefitExplainPopup" @close="closeBenefitExplainPopup" />
 
+        <LevelUpConfirmationPopup
+          v-model="showLevelUpConfirmationPopup"
+          :total-amount="levelUpClaimSummary.totalAmount"
+          :reward-count="levelUpClaimSummary.rewardCount"
+          :items="levelUpClaimSummary.items"
+          :claiming="claimingCardKey === 'levelUp'"
+          @confirm="confirmLevelUpClaim"
+        />
+
         <!-- 领取弹窗 -->
         <ClaimSuccessPopup
           v-model:visible="showClaimSuccessPopup"
@@ -227,6 +236,7 @@ import { navigateTo } from '@/utils/router'
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import BenefitComparisonPanel from './BenefitComparisonPanel.vue'
 import BenefitExplainPopup from './BenefitExplainPopup.vue'
+import LevelUpConfirmationPopup from './LevelUpConfirmationPopup.vue'
 import VipRulesContent from './VipRulesContent.vue'
 import {
   claimVipBenefit,
@@ -239,9 +249,11 @@ import {
 const { t } = useI18n()
 const vipStore = useVipStore()
 const showBenefitExplainPopup = ref(false)
+const showLevelUpConfirmationPopup = ref(false)
 const showClaimSuccessPopup = ref(false)
 const claimSuccessAmount = ref('0.00')
 const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
+const pendingLevelUpCard = ref<VipBenefitCard | null>(null)
 const activeContentTab = ref<'comparison' | 'rules'>('comparison')
 const vipCarouselRef = ref<HTMLElement | null>(null)
 const vipCardRefs = ref<HTMLElement[]>([])
@@ -256,6 +268,7 @@ const {
   getOverallProgressByVipId,
   getVipCardThemeByVipId,
   benefitCards,
+  levelUpClaimSummary,
   benefitComparisonColumns,
   retentionCards,
   rules,
@@ -372,6 +385,12 @@ watch(selectedVipIndex, () => {
   syncViewedVipId()
 })
 
+watch(showLevelUpConfirmationPopup, visible => {
+  if (!visible) {
+    pendingLevelUpCard.value = null
+  }
+})
+
 // 点击客服
 const openKefuPopup = () => {
   console.log('点击客服')
@@ -385,17 +404,14 @@ const closeBenefitExplainPopup = () => {
   showBenefitExplainPopup.value = false
 }
 
-// 根据按钮状态处理领取或跳转升级。
-const handleBenefitAction = async (card: VipBenefitCard) => {
-  if (card.status === 'claimed') {
-    return
-  }
+// 打开升级奖励确认弹窗。
+const openLevelUpConfirmationPopup = (card: VipBenefitCard) => {
+  pendingLevelUpCard.value = card
+  showLevelUpConfirmationPopup.value = true
+}
 
-  if (card.status === 'upgrade') {
-    void navigateTo('/casino')
-    return
-  }
-
+// 按卡片类型执行领取接口，并在成功后刷新数据与弹出成功提示。
+const executeBenefitClaim = async (card: VipBenefitCard, successAmount = card.amount) => {
   if (claimingCardKey.value === card.key) {
     return
   }
@@ -410,13 +426,46 @@ const handleBenefitAction = async (card: VipBenefitCard) => {
     }
 
     await vipStore.refreshVipInfo()
-    claimSuccessAmount.value = card.amount
+    claimSuccessAmount.value = successAmount
     showClaimSuccessPopup.value = true
   } catch (error) {
     console.error(error)
   } finally {
     claimingCardKey.value = null
   }
+}
+
+// 根据按钮状态处理领取或跳转升级。
+const handleBenefitAction = async (card: VipBenefitCard) => {
+  if (card.status === 'claimed') {
+    return
+  }
+
+  if (card.status === 'upgrade') {
+    void navigateTo('/casino')
+    return
+  }
+
+  if (card.key === 'levelUp') {
+    openLevelUpConfirmationPopup(card)
+    return
+  }
+
+  await executeBenefitClaim(card)
+}
+
+// 确认领取升级奖励，先关闭确认弹窗，再发起领取请求。
+const confirmLevelUpClaim = async () => {
+  const targetCard = pendingLevelUpCard.value
+
+  if (!targetCard) {
+    return
+  }
+
+  showLevelUpConfirmationPopup.value = false
+  await nextTick()
+  pendingLevelUpCard.value = null
+  await executeBenefitClaim(targetCard, levelUpClaimSummary.value.totalAmount)
 }
 
 const confirmClaimSuccess = () => {

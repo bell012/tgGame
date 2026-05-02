@@ -1157,6 +1157,16 @@
       "description": "The bonus has been credited to your wallet.",
       "ok": "OK"
     },
+    "levelUpConfirmPopup": {
+      "title": "Level-up Bonus",
+      "rewardCount": "Total {count} rewards",
+      "rewardCountPrefix": "Total ",
+      "rewardCountSuffix": " rewards",
+      "description": "After confirmation, it will be released to the balance in one go.",
+      "rewardItemTitle": "VIP{vipId} Level-up Bonus",
+      "balanceHint": "Once credited, you can check the reward in your balance.",
+      "claim": "Claim"
+    },
     "retention": {
       "title": "VIP Level Retention Requirements",
       "minimumDeposit": "Minimum Deposit",

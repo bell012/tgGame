@@ -215,6 +215,14 @@
         :close-on-overlay-click="false"
         @confirm="confirmClaimSuccess"
       />
+      <LevelUpConfirmationPopup
+        v-model="showLevelUpConfirmationPopup"
+        :total-amount="levelUpClaimSummary.totalAmount"
+        :reward-count="levelUpClaimSummary.rewardCount"
+        :items="levelUpClaimSummary.items"
+        :claiming="claimingCardKey === 'levelUp'"
+        @confirm="confirmLevelUpClaim"
+      />
       <BenefitExplainPopup v-if="showBenefitExplainPopup" @close="closeBenefitExplainPopup" />
     </div>
   </div>
@@ -222,7 +230,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useVipStore } from '@/stores/vip'
@@ -231,6 +239,7 @@ import { navigateTo } from '@/utils/router'
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import BenefitComparisonPanel from './BenefitComparisonPanel.vue'
 import BenefitExplainPopup from './BenefitExplainPopup.vue'
+import LevelUpConfirmationPopup from './LevelUpConfirmationPopup.vue'
 import VipRulesContent from './VipRulesContent.vue'
 import {
   claimVipBenefit,
@@ -245,9 +254,11 @@ import Arrow_right from '@/static/svg/arrow_right2.svg?component'
 const { t } = useI18n()
 const vipStore = useVipStore()
 const showBenefitExplainPopup = ref(false)
+const showLevelUpConfirmationPopup = ref(false)
 const showClaimSuccessPopup = ref(false)
 const claimSuccessAmount = ref('0.00')
 const claimingCardKey = ref<VipBenefitCard['key'] | null>(null)
+const pendingLevelUpCard = ref<VipBenefitCard | null>(null)
 const activeContentTab = ref<'comparison' | 'rules'>('comparison')
 const selectedVipIndex = ref(0)
 const hasInitializedViewedVip = ref(false)
@@ -267,6 +278,7 @@ const {
   progressItems,
   overallProgress,
   benefitCards,
+  levelUpClaimSummary,
   benefitComparisonColumns,
   retentionCards,
   rules,
@@ -313,6 +325,37 @@ const closeBenefitExplainPopup = () => {
   showBenefitExplainPopup.value = false
 }
 
+// 打开升级奖励确认弹窗。
+const openLevelUpConfirmationPopup = (card: VipBenefitCard) => {
+  pendingLevelUpCard.value = card
+  showLevelUpConfirmationPopup.value = true
+}
+
+// 按卡片类型执行领取接口，并在成功后刷新数据与弹出成功提示。
+const executeBenefitClaim = async (card: VipBenefitCard, successAmount = card.amount) => {
+  if (claimingCardKey.value === card.key) {
+    return
+  }
+
+  claimingCardKey.value = card.key
+
+  try {
+    const response = await claimVipBenefit(card.key)
+
+    if (!response?.success) {
+      return
+    }
+
+    await vipStore.refreshVipInfo()
+    claimSuccessAmount.value = successAmount
+    showClaimSuccessPopup.value = true
+  } catch (error) {
+    console.error(error)
+  } finally {
+    claimingCardKey.value = null
+  }
+}
+
 watch(
   [vipLevels, currentVipLevel],
   ([levels, activeVipLevel]) => {
@@ -333,6 +376,12 @@ watch(
   { immediate: true }
 )
 
+watch(showLevelUpConfirmationPopup, visible => {
+  if (!visible) {
+    pendingLevelUpCard.value = null
+  }
+})
+
 const handleBenefitAction = async (card: VipBenefitCard) => {
   if (card.status === 'claimed') {
     return
@@ -343,27 +392,26 @@ const handleBenefitAction = async (card: VipBenefitCard) => {
     return
   }
 
-  if (claimingCardKey.value === card.key) {
+  if (card.key === 'levelUp') {
+    openLevelUpConfirmationPopup(card)
     return
   }
 
-  claimingCardKey.value = card.key
+  await executeBenefitClaim(card)
+}
 
-  try {
-    const response = await claimVipBenefit(card.key)
+// 确认领取升级奖励，先关闭确认弹窗，再发起领取请求。
+const confirmLevelUpClaim = async () => {
+  const targetCard = pendingLevelUpCard.value
 
-    if (!response?.success) {
-      return
-    }
-
-    await vipStore.refreshVipInfo()
-    claimSuccessAmount.value = card.amount
-    showClaimSuccessPopup.value = true
-  } catch (error) {
-    console.error(error)
-  } finally {
-    claimingCardKey.value = null
+  if (!targetCard) {
+    return
   }
+
+  showLevelUpConfirmationPopup.value = false
+  await nextTick()
+  pendingLevelUpCard.value = null
+  await executeBenefitClaim(targetCard, levelUpClaimSummary.value.totalAmount)
 }
 
 const confirmClaimSuccess = () => {
