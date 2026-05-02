@@ -415,6 +415,43 @@
         "inactive": "Inactive"
       }
     },
+    "friendDetailPage": {
+      "title": "Details",
+      "total": "Total",
+      "labels": {
+        "lastLoginTime": "Last Login Time:",
+        "userId": "User ID:",
+        "name": "Name:"
+      },
+      "dateTabs": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last3Days": "Last 3 Days",
+        "last15Days": "Last 15 Days",
+        "last30Days": "Last 30 Days"
+      },
+      "statsTabs": {
+        "gameStats": "Game Stats",
+        "topUpStats": "Top-Up Stats"
+      },
+      "summary": {
+        "validBets": "Valid Bets",
+        "profit": "Profit",
+        "depositAmount": "Deposit Amount",
+        "numberOfDeposits": "Number of Deposits"
+      },
+      "table": {
+        "game": "Game",
+        "validBets": "Valid Bets",
+        "profit": "Profit",
+        "paymentMethod": "Payment Method",
+        "depositAmount": "Deposit Amount",
+        "numberOfDeposits": "Number of Deposits"
+      },
+      "tableValues": {
+        "slots": "Slots"
+      }
+    },
     "commissionRecords": {
       "title": "Commission Records",
       "searchPlaceholder": "Search for a member account",
@@ -1156,6 +1193,16 @@
       "title": "Claim Successful",
       "description": "The bonus has been credited to your wallet.",
       "ok": "OK"
+    },
+    "levelUpConfirmPopup": {
+      "title": "Level-up Bonus",
+      "rewardCount": "Total {count} rewards",
+      "rewardCountPrefix": "Total ",
+      "rewardCountSuffix": " rewards",
+      "description": "After confirmation, it will be released to the balance in one go.",
+      "rewardItemTitle": "VIP{vipId} Level-up Bonus",
+      "balanceHint": "Once credited, you can check the reward in your balance.",
+      "claim": "Claim"
     },
     "retention": {
       "title": "VIP Level Retention Requirements",

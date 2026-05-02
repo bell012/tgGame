@@ -172,9 +172,10 @@ const handleInvite = () => {
  * 处理进入好友详情。
  */
 const handleGoFriendDetail = (item: ReferralDetailsFriendItem) => {
-  showToast({
-    message: `${t('referral.detailsPage.friendDetailHint')} ${item.id}`,
-    type: 'success'
+  navigateTo('/menu/referral/details/friend', {
+    query: {
+      id: item.id
+    }
   })
 }
 </script>

@@ -9,6 +9,12 @@ const GAME_DATA_STORAGE_KEY = 'gameData'
 type GlobalDicItem = GlobalDicResponse['result'][number]
 type PlatformItem = {
   platformCode: string
+  platformName: string
+}
+
+type GameTypeItem = {
+  sysGameTypeCode: string
+  sysGameTypeName: string
 }
 
 /**
@@ -145,19 +151,45 @@ export const getGameImage = (platformCode: unknown, gameCode: unknown) => {
  * 获取平台列表。
  */
 export const getPlatformList = (): PlatformItem[] => {
-  const platformCodeSet = new Set<string>()
+  const platformMap = new Map<string, PlatformItem>()
 
   readGameDataCache().forEach(section => {
     const providerList = Array.isArray(section?.subGame) ? section.subGame : []
     providerList.forEach(provider => {
       const platformCode = normalizeGlobalDicValue(provider?.platformCode)
+      const platformName = normalizeGlobalDicValue(provider?.platformName)
+
       if (platformCode) {
-        platformCodeSet.add(platformCode)
+        platformMap.set(platformCode, {
+          platformCode,
+          platformName: platformName || platformCode
+        })
       }
     })
   })
 
-  return [...platformCodeSet].map(platformCode => ({ platformCode }))
+  return [...platformMap.values()]
+}
+
+/**
+ * 获取游戏类型列表。
+ */
+export const getGameTypeList = (): GameTypeItem[] => {
+  const gameTypeMap = new Map<string, GameTypeItem>()
+
+  readGameDataCache().forEach(section => {
+    const sysGameTypeCode = normalizeGlobalDicValue(section?.sysGameTypeCode)
+    const sysGameTypeName = normalizeGlobalDicValue(section?.sysGameTypeName)
+
+    if (sysGameTypeCode && !gameTypeMap.has(sysGameTypeCode)) {
+      gameTypeMap.set(sysGameTypeCode, {
+        sysGameTypeCode,
+        sysGameTypeName: sysGameTypeName || sysGameTypeCode
+      })
+    }
+  })
+
+  return [...gameTypeMap.values()]
 }
 
 /**
