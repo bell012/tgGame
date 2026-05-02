@@ -1,5 +1,5 @@
 <template>
-  <div class="home mx-auto max-w-[1248px] px-3.5 py-2 sm:px-4 sm:py-4">
+  <div class="home mx-auto max-w-[1248px] py-2 sm:px-4 sm:py-4">
     <div style="height: 55px" class="sm:hidden"></div>
 
     <HomeCarouselImg
@@ -7,135 +7,118 @@
       :list="querySlideshowList"
       :loading="isSlideshowLoading"
     />
+    <div class="px-3.5">
+      <RecentBigWins />
 
-    <RecentBigWins />
+      <div class="overflow-hidden px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
+        <div class="-mx-4 bg-layer2">
+          <div class="flex w-full flex-col items-stretch gap-2 sm:mt-6 lg:!gap-3">
+            <div class="flex flex-3 gap-2 lg:!gap-3">
+              <button
+                class="button button-m center relative col-span-2 col-start-1 h-32 flex-1 overflow-hidden rounded-xl bg-game-casino p-[10px] font-extrabold sm:h-[176px] sm:p-5"
+                type="button"
+                @click="navigateTo('/casino')"
+              >
+                <img
+                  class="absolute left-[31%] right-[1px] top-0 h-[100%] sm:left-auto"
+                  src="./img/casino.png"
+                  alt=""
+                />
+                <div class="relative z-10 flex h-full flex-auto flex-col">
+                  <div class="flex items-center">
+                    <div class="color_icon_img casino" style="transform: scale(1)"></div>
+                    <img :src="icon5" alt="" class="w-[19px]" />
+                    <h2 class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Casino') }}</h2>
+                  </div>
+                </div>
+              </button>
+              <button
+                class="button button-m center relative col-start-1 h-32 flex-1 overflow-hidden rounded-xl bg-game-sports p-[10px] font-extrabold sm:h-[176px] sm:p-5"
+                type="button"
+              >
+                <img
+                  class="absolute left-[34%] right-[1px] top-0 h-[100%] sm:left-auto"
+                  src="./img/sports.png"
+                  alt=""
+                />
+                <div class="relative z-10 flex h-full flex-auto flex-col">
+                  <div class="flex items-center">
+                    <div class="color_icon_img sports" style="transform: scale(1)"></div>
+                    <img :src="icon6" alt="" class="w-[19px]" />
+                    <span class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Sports') }}</span>
+                  </div>
+                </div>
+              </button>
+            </div>
 
-    <div class="overflow-hidden px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
-      <div class="-mx-4 bg-layer2">
-        <div class="flex w-full flex-col items-stretch gap-2 sm:mt-6 lg:!gap-3">
-          <div class="flex flex-3 gap-2 lg:!gap-3">
-            <button
-              class="button button-m center relative col-span-2 col-start-1 h-32 flex-1 overflow-hidden rounded-xl bg-game-casino p-[10px] font-extrabold sm:h-[176px] sm:p-5"
-              type="button"
-              @click="navigateTo('/casino')"
+            <div
+              class="flex flex-3 flex-nowrap gap-2 overflow-x-auto lg:flex-wrap lg:overflow-visible lg:!gap-3"
             >
-              <img
-                class="absolute left-[31%] right-[1px] top-0 h-[100%] sm:left-auto"
-                src="./img/casino.png"
-                alt=""
-              />
-              <div class="relative z-10 flex h-full flex-auto flex-col">
-                <div class="flex items-center">
-                  <div class="color_icon_img casino" style="transform: scale(1)"></div>
-                  <img :src="icon5" alt="" class="w-[19px]" />
-                  <h2 class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Casino') }}</h2>
+              <button
+                v-for="value in listImg"
+                :key="value.name"
+                class="button button-m center relative h-20 w-[calc((100%-2.5rem)/5.1)] shrink-0 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px] lg:min-w-0 lg:w-auto lg:flex-1"
+                type="button"
+                @click="toCasino(value.sysGameTypeCode)"
+                style="
+                  background-image: linear-gradient(
+                    to left,
+                    rgba(39, 232, 187, 0.2),
+                    transparent 75%
+                  );
+                "
+              >
+                <img
+                  class="gameTypeImg absolute left-1/2 top-[10%] -translate-x-1/2 sm:left-[50%] sm:top-[16%] sm:h-[66%] sm:-translate-x-[10%]"
+                  :src="value.img"
+                  alt=""
+                />
+                <div class="pcState absolute left-2 top-2 flex flex-col">
+                  <div class="color_icon_img bcpoker" style="transform: scale(0.8)">
+                    <img :src="value.icon" alt="" />
+                  </div>
+                  <h2 class="ml-1 text-sm font-extrabold">{{ value.name }}</h2>
                 </div>
-              </div>
-            </button>
-            <button
-              class="button button-m center relative col-start-1 h-32 flex-1 overflow-hidden rounded-xl bg-game-sports p-[10px] font-extrabold sm:h-[176px] sm:p-5"
-              type="button"
-            >
-              <img
-                class="absolute left-[34%] right-[1px] top-0 h-[100%] sm:left-auto"
-                src="./img/sports.png"
-                alt=""
-              />
-              <div class="relative z-10 flex h-full flex-auto flex-col">
-                <div class="flex items-center">
-                  <div class="color_icon_img sports" style="transform: scale(1)"></div>
-                  <img :src="icon6" alt="" class="w-[19px]" />
-                  <span class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Sports') }}</span>
+                <div class="h5State absolute bottom-1 left-0 block w-full text-center">
+                  <span class="text-[0.625rem] font-extrabold sm:text-sm">{{ value.name }}</span>
                 </div>
-              </div>
-            </button>
-          </div>
-
-          <div
-            class="flex flex-3 flex-nowrap gap-2 overflow-x-auto lg:flex-wrap lg:overflow-visible lg:!gap-3"
-          >
-            <button
-              v-for="value in listImg"
-              :key="value.name"
-              class="button button-m center relative h-20 w-[calc((100%-2.5rem)/5.1)] shrink-0 overflow-hidden rounded-xl bg-layer4 p-2 font-extrabold sm:h-[120px] lg:min-w-0 lg:w-auto lg:flex-1"
-              type="button"
-              @click="toCasino(value.sysGameTypeCode)"
-              style="
-                background-image: linear-gradient(
-                  to left,
-                  rgba(39, 232, 187, 0.2),
-                  transparent 75%
-                );
-              "
-            >
-              <img
-                class="gameTypeImg absolute left-1/2 top-[10%] -translate-x-1/2 sm:left-[50%] sm:top-[16%] sm:h-[66%] sm:-translate-x-[10%]"
-                :src="value.img"
-                alt=""
-              />
-              <div class="pcState absolute left-2 top-2 flex flex-col">
-                <div class="color_icon_img bcpoker" style="transform: scale(0.8)">
-                  <img :src="value.icon" alt="" />
-                </div>
-                <h2 class="ml-1 text-sm font-extrabold">{{ value.name }}</h2>
-              </div>
-              <div class="h5State absolute bottom-1 left-0 block w-full text-center">
-                <span class="text-[0.625rem] font-extrabold sm:text-sm">{{ value.name }}</span>
-              </div>
-            </button>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div>
-      <template v-if="isGameDataLoading">
-        <GameList v-for="index in homeGameSkeletonCount" :key="`game-skeleton-${index}`" loading />
-      </template>
-      <template v-else>
-        <GameList
-          v-if="firstGameSection"
-          :title="firstGameSection.sysGameTypeName"
-          :sysGameTypeCode="firstGameSection.sysGameTypeCode"
-          :list="firstGameSection.list"
-        />
-        <LazySection
-          v-for="value in deferredGameSections"
-          :key="value.sysGameTypeCode || value.sysGameTypeName"
-        >
-          <template #placeholder>
-            <GameList loading />
-          </template>
+      <div>
+        <template v-if="isGameDataLoading">
           <GameList
-            :title="value.sysGameTypeName"
-            :sysGameTypeCode="value.sysGameTypeCode"
-            :list="value.list"
+            v-for="index in homeGameSkeletonCount"
+            :key="`game-skeleton-${index}`"
+            loading
           />
-        </LazySection>
-      </template>
-      <LazySection v-if="isGameDataLoading || sportsEventList.length">
-        <template #placeholder>
-          <div class="mt-2">
-            <div class="mt-2 flex h-8 items-center sm:mt-6">
-              <div class="h-5 w-24 rounded bg-bg-2 animate-pulse"></div>
-              <div class="ml-auto h-8 w-14 rounded-lg bg-bg-2 animate-pulse"></div>
-            </div>
-            <div class="mt-3 grid grid-flow-col gap-2 overflow-hidden">
-              <div
-                v-for="index in 3"
-                :key="`event-skeleton-${index}`"
-                class="rounded-[12px] bg-[var(--color-background-level-2)] p-1"
-              >
-                <div class="aspect-[2.12] rounded-xl bg-bg-2 animate-pulse"></div>
-              </div>
-            </div>
-          </div>
         </template>
-        <Suspense>
-          <template #default>
-            <AsyncEventList :list="sportsEventList" :loading="isGameDataLoading" />
-          </template>
-          <template #fallback>
+        <template v-else>
+          <GameList
+            v-if="firstGameSection"
+            :title="firstGameSection.sysGameTypeName"
+            :sysGameTypeCode="firstGameSection.sysGameTypeCode"
+            :list="firstGameSection.list"
+          />
+          <LazySection
+            v-for="value in deferredGameSections"
+            :key="value.sysGameTypeCode || value.sysGameTypeName"
+          >
+            <template #placeholder>
+              <GameList loading />
+            </template>
+            <GameList
+              :title="value.sysGameTypeName"
+              :sysGameTypeCode="value.sysGameTypeCode"
+              :list="value.list"
+            />
+          </LazySection>
+        </template>
+        <LazySection v-if="isGameDataLoading || sportsEventList.length">
+          <template #placeholder>
             <div class="mt-2">
               <div class="mt-2 flex h-8 items-center sm:mt-6">
                 <div class="h-5 w-24 rounded bg-bg-2 animate-pulse"></div>
@@ -144,7 +127,7 @@
               <div class="mt-3 grid grid-flow-col gap-2 overflow-hidden">
                 <div
                   v-for="index in 3"
-                  :key="`event-fallback-${index}`"
+                  :key="`event-skeleton-${index}`"
                   class="rounded-[12px] bg-[var(--color-background-level-2)] p-1"
                 >
                   <div class="aspect-[2.12] rounded-xl bg-bg-2 animate-pulse"></div>
@@ -152,101 +135,100 @@
               </div>
             </div>
           </template>
-        </Suspense>
-      </LazySection>
-    </div>
-
-    <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
-      <div class="w-full items-center justify-between px-[22px] pb-4 pt-3 lg:!hidden flex">
-        <img class="w-6" :src="BTC" alt="" />
-        <img class="w-6" :src="ETH" alt="" />
-        <img class="w-6" :src="BNB" alt="" />
-        <img class="w-6" :src="XRP" alt="" />
-        <img class="w-6" :src="USDT" alt="" />
-        <img class="w-6" :src="USDC" alt="" />
-        <img class="w-6" :src="SOL" alt="" />
-        <img class="w-6" :src="ADA" alt="" />
-        <img class="w-6" :src="DOGE" alt="" />
-        <img class="w-6" :src="MATIC" alt="" />
-        <img class="w-6" :src="TRX" alt="" />
+          <Suspense>
+            <template #default>
+              <AsyncEventList :list="sportsEventList" :loading="isGameDataLoading" />
+            </template>
+            <template #fallback>
+              <div class="mt-2">
+                <div class="mt-2 flex h-8 items-center sm:mt-6">
+                  <div class="h-5 w-24 rounded bg-bg-2 animate-pulse"></div>
+                  <div class="ml-auto h-8 w-14 rounded-lg bg-bg-2 animate-pulse"></div>
+                </div>
+                <div class="mt-3 grid grid-flow-col gap-2 overflow-hidden">
+                  <div
+                    v-for="index in 3"
+                    :key="`event-fallback-${index}`"
+                    class="rounded-[12px] bg-[var(--color-background-level-2)] p-1"
+                  >
+                    <div class="aspect-[2.12] rounded-xl bg-bg-2 animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </Suspense>
+        </LazySection>
       </div>
 
-      <div class="relative h-20 rounded-xl bg-bg-2 lg:px-8">
-        <div class="pointer-events-none absolute left-0 size-full overflow-hidden blur">
-          <img class="absolute -top-3 left-4 scale-[2]" :src="dotC8z5Aoh" alt="" />
-          <img class="absolute left-24 top-14 scale-150" :src="dotC8z5Aoh" alt="" />
-          <img class="absolute -top-2 left-40 scale-[2]" :src="dotC8z5Aoh" alt="" />
-          <img class="absolute -top-3 left-72 scale-[3]" :src="dotC8z5Aoh" alt="" />
-          <img class="absolute left-80 top-15 scale-150" :src="dotC8z5Aoh" alt="" />
-          <img class="absolute -bottom-3 right-4 scale-[2]" :src="dotC8z5Aoh" alt="" />
-          <img class="absolute bottom-14 right-24 scale-150" :src="dotC8z5Aoh" alt="" />
-          <img class="absolute -bottom-2 right-40 scale-[2]" :src="dotC8z5Aoh" alt="" />
-          <img class="absolute -bottom-3 right-72 scale-[3]" :src="dotC8z5Aoh" alt="" />
-          <img class="absolute bottom-15 right-80 scale-150" :src="dotC8z5Aoh" alt="" />
+      <div class="mt-4 rounded-xl bg-[var(--color-background-level-2)] sm:mt-7">
+        <div class="w-full items-center justify-between px-[22px] pb-4 pt-3 lg:!hidden flex">
+          <img class="w-6" :src="BTC" alt="" />
+          <img class="w-6" :src="ETH" alt="" />
+          <img class="w-6" :src="BNB" alt="" />
+          <img class="w-6" :src="XRP" alt="" />
+          <img class="w-6" :src="USDT" alt="" />
+          <img class="w-6" :src="USDC" alt="" />
+          <img class="w-6" :src="SOL" alt="" />
+          <img class="w-6" :src="ADA" alt="" />
+          <img class="w-6" :src="DOGE" alt="" />
+          <img class="w-6" :src="MATIC" alt="" />
+          <img class="w-6" :src="TRX" alt="" />
         </div>
-        <div
-          class="relative z-10 flex h-full flex-col items-center justify-center lg:!flex-row-reverse"
-        >
-          <div class="max-lg:hidden lg:flex lg:items-center lg:justify-center">
-            <img class="-ml-1 w-6" :src="BTC" alt="" />
-            <img class="-ml-1 w-6" :src="ETH" alt="" />
-            <img class="-ml-1 w-6" :src="BNB" alt="" />
-            <img class="-ml-1 w-6" :src="XRP" alt="" />
-            <img class="-ml-1 w-6" :src="USDT" alt="" />
-            <img class="-ml-1 w-6" :src="USDC" alt="" />
-            <img class="-ml-1 w-6" :src="SOL" alt="" />
-            <img class="-ml-1 w-6" :src="ADA" alt="" />
-            <img class="-ml-1 w-6" :src="DOGE" alt="" />
-            <img class="-ml-1 w-6" :src="MATIC" alt="" />
-            <img class="-ml-1 w-6" :src="TRX" alt="" />
+
+        <div class="relative h-20 rounded-xl bg-bg-2 lg:px-8">
+          <div class="pointer-events-none absolute left-0 size-full overflow-hidden blur">
+            <img class="absolute -top-3 left-4 scale-[2]" :src="dotC8z5Aoh" alt="" />
+            <img class="absolute left-24 top-14 scale-150" :src="dotC8z5Aoh" alt="" />
+            <img class="absolute -top-2 left-40 scale-[2]" :src="dotC8z5Aoh" alt="" />
+            <img class="absolute -top-3 left-72 scale-[3]" :src="dotC8z5Aoh" alt="" />
+            <img class="absolute left-80 top-15 scale-150" :src="dotC8z5Aoh" alt="" />
+            <img class="absolute -bottom-3 right-4 scale-[2]" :src="dotC8z5Aoh" alt="" />
+            <img class="absolute bottom-14 right-24 scale-150" :src="dotC8z5Aoh" alt="" />
+            <img class="absolute -bottom-2 right-40 scale-[2]" :src="dotC8z5Aoh" alt="" />
+            <img class="absolute -bottom-3 right-72 scale-[3]" :src="dotC8z5Aoh" alt="" />
+            <img class="absolute bottom-15 right-80 scale-150" :src="dotC8z5Aoh" alt="" />
           </div>
-          <div class="mx-auto hidden items-center justify-center gap-6 max-sm:hidden sm:flex">
-            <img class="w-14" :src="MAYA" alt="" />
-            <img class="w-20" :src="GCASH" alt="" />
-            <img class="w-14" :src="VISA" alt="" />
-            <img class="w-13" :src="GROU" alt="" />
-            <img class="w-23" :src="SHOPEE" alt="" />
-          </div>
-          <div class="mt-2 flex w-full items-center justify-between px-[10px] sm:hidden">
-            <img class="h-[13px]" :src="MAYA" alt="" />
-            <img class="h-[13px]" :src="GCASH" alt="" />
-            <img class="h-[13px]" :src="VISA" alt="" />
-            <img class="h-[13px]" :src="GROU" alt="" />
-            <img class="h-[13px]" :src="SHOPEE" alt="" />
-          </div>
-          <div class="mt-4 flex items-center justify-center gap-11 lg:!mt-0">
-            <div class="text-lg font-extrabold sm:text-2xl">
-              <span class="text-secondary-4">300%</span> {{ $t('home.DepositBonus') }}
+          <div
+            class="relative z-10 flex h-full flex-col items-center justify-center lg:!flex-row-reverse"
+          >
+            <div class="max-lg:hidden lg:flex lg:items-center lg:justify-center">
+              <img class="-ml-1 w-6" :src="BTC" alt="" />
+              <img class="-ml-1 w-6" :src="ETH" alt="" />
+              <img class="-ml-1 w-6" :src="BNB" alt="" />
+              <img class="-ml-1 w-6" :src="XRP" alt="" />
+              <img class="-ml-1 w-6" :src="USDT" alt="" />
+              <img class="-ml-1 w-6" :src="USDC" alt="" />
+              <img class="-ml-1 w-6" :src="SOL" alt="" />
+              <img class="-ml-1 w-6" :src="ADA" alt="" />
+              <img class="-ml-1 w-6" :src="DOGE" alt="" />
+              <img class="-ml-1 w-6" :src="MATIC" alt="" />
+              <img class="-ml-1 w-6" :src="TRX" alt="" />
+            </div>
+            <div class="mx-auto hidden items-center justify-center gap-6 max-sm:hidden sm:flex">
+              <img class="w-14" :src="MAYA" alt="" />
+              <img class="w-20" :src="GCASH" alt="" />
+              <img class="w-14" :src="VISA" alt="" />
+              <img class="w-13" :src="GROU" alt="" />
+              <img class="w-23" :src="SHOPEE" alt="" />
+            </div>
+            <div class="mt-2 flex w-full items-center justify-between px-[10px] sm:hidden">
+              <img class="h-[13px]" :src="MAYA" alt="" />
+              <img class="h-[13px]" :src="GCASH" alt="" />
+              <img class="h-[13px]" :src="VISA" alt="" />
+              <img class="h-[13px]" :src="GROU" alt="" />
+              <img class="h-[13px]" :src="SHOPEE" alt="" />
+            </div>
+            <div class="mt-4 flex items-center justify-center gap-11 lg:!mt-0">
+              <div class="text-lg font-extrabold sm:text-2xl">
+                <span class="text-secondary-4">300%</span> {{ $t('home.DepositBonus') }}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <LazySection class="mt-2">
-      <template #placeholder>
-        <div class="mt-2 rounded-xl bg-[var(--color-background-level-2)] p-3 sm:p-4">
-          <div class="mb-3 flex items-center justify-between">
-            <div class="h-5 w-32 rounded bg-bg-2 animate-pulse"></div>
-            <div class="flex gap-2">
-              <div class="h-8 w-20 rounded-lg bg-bg-2 animate-pulse"></div>
-              <div class="h-8 w-20 rounded-lg bg-bg-2 animate-pulse"></div>
-            </div>
-          </div>
-          <div class="space-y-2">
-            <div
-              v-for="index in 6"
-              :key="`latest-skeleton-${index}`"
-              class="h-10 rounded-lg bg-bg-2 animate-pulse"
-            ></div>
-          </div>
-        </div>
-      </template>
-      <Suspense>
-        <template #default>
-          <AsyncNewEvent class="mt-2" />
-        </template>
-        <template #fallback>
+      <LazySection class="mt-2">
+        <template #placeholder>
           <div class="mt-2 rounded-xl bg-[var(--color-background-level-2)] p-3 sm:p-4">
             <div class="mb-3 flex items-center justify-between">
               <div class="h-5 w-32 rounded bg-bg-2 animate-pulse"></div>
@@ -258,22 +240,40 @@
             <div class="space-y-2">
               <div
                 v-for="index in 6"
-                :key="`latest-fallback-${index}`"
+                :key="`latest-skeleton-${index}`"
                 class="h-10 rounded-lg bg-bg-2 animate-pulse"
               ></div>
             </div>
           </div>
         </template>
-      </Suspense>
-    </LazySection>
+        <Suspense>
+          <template #default>
+            <AsyncNewEvent class="mt-2" />
+          </template>
+          <template #fallback>
+            <div class="mt-2 rounded-xl bg-[var(--color-background-level-2)] p-3 sm:p-4">
+              <div class="mb-3 flex items-center justify-between">
+                <div class="h-5 w-32 rounded bg-bg-2 animate-pulse"></div>
+                <div class="flex gap-2">
+                  <div class="h-8 w-20 rounded-lg bg-bg-2 animate-pulse"></div>
+                  <div class="h-8 w-20 rounded-lg bg-bg-2 animate-pulse"></div>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div
+                  v-for="index in 6"
+                  :key="`latest-fallback-${index}`"
+                  class="h-10 rounded-lg bg-bg-2 animate-pulse"
+                ></div>
+              </div>
+            </div>
+          </template>
+        </Suspense>
+      </LazySection>
+    </div>
   </div>
 
-  <H5HomePop
-    v-if="shouldShowH5HomePop"
-    class="sm:hidden"
-    @close="closeH5HomePop"
-    @open-login="openRegisterModal"
-  />
+  <H5HomePop v-if="shouldShowH5HomePop" class="sm:hidden" @close="closeH5HomePop" />
   <CommonFooter class="hidden sm:block" />
 </template>
 
@@ -284,7 +284,6 @@ import H5HomePop from '@/components/H5HomePop.vue'
 import HomeCarouselImg from '@/components/homeCarouselImg.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import router from '@/router'
-import { useAuthModalStore } from '@/stores/authModal'
 import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
@@ -347,7 +346,6 @@ interface HomeGameSection {
 }
 
 const userStore = useUserStore()
-const authModalStore = useAuthModalStore()
 const gameStore = useGameStore()
 const AsyncEventList = defineAsyncComponent(() => import('./components/eventList.vue'))
 const AsyncNewEvent = defineAsyncComponent(() => import('./components/newEvent.vue'))
@@ -367,10 +365,6 @@ const isSlideshowLoading = ref(false)
 
 const closeH5HomePop = () => {
   showH5HomePop.value = false
-}
-
-const openRegisterModal = () => {
-  authModalStore.openRegisterModal()
 }
 
 const listImg = computed(() => [
