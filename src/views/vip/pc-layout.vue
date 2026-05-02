@@ -153,15 +153,17 @@
             "
             @click="handleBenefitAction(card)"
             :class="
-              card.status === 'claim' || card.status === 'claimed'
-                ? 'bg-theme-primary text-text-4'
-                : 'text-secondary-7 border border-secondary-7'
+              card.status === 'claimed'
+                ? 'bg-theme-2 text-text-4'
+                : card.status === 'claim'
+                  ? 'bg-theme-primary text-text-4'
+                  : 'text-secondary-7 border border-secondary-7'
             "
             class="relative mt-[20px] flex h-[40px] w-[300px] items-center justify-center overflow-hidden rounded-lg text-sm font-[700] cursor-pointer disabled:cursor-not-allowed"
           >
             <span
               v-if="card.status === 'claimed'"
-              class="pointer-events-none absolute -inset-px z-[1] rounded-[inherit] bg-mask-60-1"
+              class="pointer-events-none absolute -inset-px z-[1] rounded-[inherit]"
             ></span>
             <span class="relative z-[2]">{{ card.buttonText }}</span>
           </div>
