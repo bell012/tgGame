@@ -12,6 +12,11 @@ type PlatformItem = {
   platformName: string
 }
 
+type GameTypeItem = {
+  sysGameTypeCode: string
+  sysGameTypeName: string
+}
+
 /**
  * 局字典查询值。
  */
@@ -164,6 +169,27 @@ export const getPlatformList = (): PlatformItem[] => {
   })
 
   return [...platformMap.values()]
+}
+
+/**
+ * 获取游戏类型列表。
+ */
+export const getGameTypeList = (): GameTypeItem[] => {
+  const gameTypeMap = new Map<string, GameTypeItem>()
+
+  readGameDataCache().forEach(section => {
+    const sysGameTypeCode = normalizeGlobalDicValue(section?.sysGameTypeCode)
+    const sysGameTypeName = normalizeGlobalDicValue(section?.sysGameTypeName)
+
+    if (sysGameTypeCode && !gameTypeMap.has(sysGameTypeCode)) {
+      gameTypeMap.set(sysGameTypeCode, {
+        sysGameTypeCode,
+        sysGameTypeName: sysGameTypeName || sysGameTypeCode
+      })
+    }
+  })
+
+  return [...gameTypeMap.values()]
 }
 
 /**

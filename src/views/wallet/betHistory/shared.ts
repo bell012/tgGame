@@ -1,7 +1,7 @@
 import type { QueryOrderInfoPageForm, QueryOrderInfoResult } from '@/api/interface/record.interface'
 import { getCurrentCurrency, formatBalance } from '@/utils/locale'
 import { formatTimestamp } from '@/utils/date'
-import { getGameImage, getGameName, getPlatformList } from '@/utils/global-dic'
+import { getGameImage, getGameName, getGameTypeList, getPlatformList } from '@/utils/global-dic'
 import bet from '@/static/img/personalCenter/bet.png'
 
 type TranslateFn = (key: string) => string
@@ -75,13 +75,10 @@ export const createBetHistoryStatusOptions = (t: TranslateFn): SelectOption[] =>
 // 筛选游戏
 export const createBetHistoryGameTypeOptions = (t: TranslateFn): SelectOption[] => [
   { label: t('betHistory.filterOptions.all'), value: 'all' },
-  { label: t('betHistory.filterOptions.lottery'), value: 'CP' },
-  { label: t('betHistory.filterOptions.sports'), value: 'TY' },
-  { label: t('betHistory.filterOptions.live'), value: 'ZR' },
-  { label: t('betHistory.filterOptions.electronic'), value: 'DZ' },
-  { label: t('betHistory.filterOptions.chess'), value: 'QP' },
-  { label: t('betHistory.filterOptions.fishing'), value: 'BY' },
-  { label: t('betHistory.filterOptions.esports'), value: 'DJ' }
+  ...getGameTypeList().map(item => ({
+    label: item.sysGameTypeName || item.sysGameTypeCode,
+    value: item.sysGameTypeCode
+  }))
 ]
 
 // 筛选平台
