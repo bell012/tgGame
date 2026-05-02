@@ -102,7 +102,7 @@
         :dark-image="defaultImgDark"
         :light-image="defaultImgLight"
         :image-alt="t('gameDetail.noData')"
-        :message="t('gameDetail.noData')"
+        :message="t('gameDetail.stayTunedComingSoon')"
         container-class="mt-0"
         image-class="h-[120px] w-auto mb-1.5"
         text-class="text-[12px] font-[500] leading-[18px] text-text-2"

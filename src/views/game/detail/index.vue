@@ -41,7 +41,6 @@ import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import {
-  findGameDetailItemByIdentity,
   normalizeGameDetailValue,
   splitGameTypeCodes,
   queryGameDetailRecommendedItems
@@ -173,24 +172,9 @@ const rowId = computed(() => normalizeGameDetailValue(route.params.rowId))
 const currentGameDetail = computed<CurrentGameDetail>(() => currentGameDetailState.value)
 provide('game-detail-current-game', currentGameDetail)
 
-const currentGameFromTree = computed(() =>
-  findGameDetailItemByIdentity(gameData.value, {
-    rowId: rowId.value,
-    itemCode: normalizeGameDetailValue(currentGameDetail.value?.itemCode),
-    platformCode: normalizeGameDetailValue(currentGameDetail.value?.platformCode)
-  })
-)
 const currentGameRowId = computed(() =>
   normalizeGameDetailValue(currentGameDetail.value?.rowId ?? rowId.value)
 )
-const currentGamePageTitle = computed(() => {
-  return normalizeGameDetailValue(
-    currentGameDetail.value?.platformName ??
-      currentGameFromTree.value?.platformName ??
-      currentGameDetail.value?.itemName
-  )
-})
-
 const isGameTypeCodeMatched = (targetGameTypeCode: unknown, candidateGameTypeCode: unknown) => {
   const targetCodeList = splitGameTypeCodes(targetGameTypeCode)
   const candidateCodeList = splitGameTypeCodes(candidateGameTypeCode)
@@ -255,10 +239,8 @@ const fetchGameDataForApp = async () => {
 
 // ===== 页面动作 =====
 const openCurrentCategoryAllGamesPage = () => {
-  const pageTitle = currentGamePageTitle.value
-
   navigateTo('/game/detail/recommended', {
-    query: buildRecommendedPageQuery(pageTitle)
+    query: buildRecommendedPageQuery(t('home.RecommendedGames'))
   })
 }
 

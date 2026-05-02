@@ -110,7 +110,6 @@ const page = ref(1)
 const gameList = ref<GameDataItem[]>([])
 const defaultPageTitle = computed(() => t('home.RecommendedGames'))
 const pageTitle = ref(defaultPageTitle.value)
-const isCustomPageTitle = ref(false)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(gameList.value.length / PAGE_SIZE)))
 const sourceRowId = computed(() => normalizeGameDetailValue(route.query.rowId))
@@ -172,13 +171,6 @@ const toCasinoCardGame = (item: GameDataItem): CasinoCardGameDataItem => {
 }
 
 const initPageData = async () => {
-  const routeTitle = normalizeGameDetailValue(route.query.title)
-
-  if (routeTitle) {
-    pageTitle.value = routeTitle
-    isCustomPageTitle.value = true
-  }
-
   try {
     await fetchCurrentGameTypeCode()
 
@@ -211,6 +203,11 @@ const handleGameClick = (item: GameDataItem) => {
 }
 
 const handleBack = () => {
+  if (typeof window !== 'undefined' && window.history.length > 1) {
+    router.back()
+    return
+  }
+
   if (sourceRowId.value) {
     navigateToName('gameDetail', {
       replace: true,
@@ -218,11 +215,6 @@ const handleBack = () => {
         rowId: sourceRowId.value
       }
     })
-    return
-  }
-
-  if (typeof window !== 'undefined' && window.history.length > 1) {
-    router.back()
     return
   }
 
@@ -234,9 +226,7 @@ onMounted(() => {
 })
 
 watch(defaultPageTitle, value => {
-  if (!isCustomPageTitle.value) {
-    pageTitle.value = value
-  }
+  pageTitle.value = value
 })
 </script>
 

@@ -5,7 +5,10 @@
       :key="category.id"
       type="button"
       class="rebate-category-tab"
-      :class="buttonClass(category.id === activeCategory)"
+      :class="[
+        buttonClass(category.id === activeCategory),
+        category.id === activeCategory ? 'is-active' : 'is-inactive'
+      ]"
       @click="handleCategoryClick(category.id, $event)"
     >
       <template v-if="hasRenderableIcon(getIcon(category, category.id === activeCategory))">
@@ -44,11 +47,11 @@ const emit = defineEmits<{
 
 const buttonClass = (isActive: boolean) => {
   const baseClass = props.isMobile
-    ? 'group flex h-[68px] min-w-[68px] shrink-0 flex-col items-center justify-center rounded-[12px] px-2'
-    : 'inline-flex h-[40px] min-w-[96px] shrink-0 items-center justify-center gap-1 rounded-full px-4 text-sm font-[600]'
+    ? 'group flex h-[68px] min-w-[68px] shrink-0 flex-col items-center justify-center rounded-[12px] px-2 outline-none focus:outline-none focus-visible:outline-none'
+    : 'inline-flex h-[40px] min-w-[96px] shrink-0 items-center justify-center gap-1 rounded-full px-4 text-sm font-[600] outline-none focus:outline-none focus-visible:outline-none'
 
   const stateClass = isActive
-    ? 'border border-theme-primary bg-theme-3 text-text-1'
+    ? 'border bg-theme-3 text-text-1'
     : 'border border-transparent bg-bg-2 text-text-2'
 
   return `${baseClass} ${stateClass}`
@@ -91,12 +94,18 @@ const handleCategoryClick = async (categoryId: string, event: MouseEvent) => {
 .rebate-category-tab {
 }
 
+.rebate-category-tab.is-active {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--color-theme-level-1) !important;
+}
+
 :global(:root.light) .rebate-category-tab.bg-bg-2 {
   background: var(--color-background-level-3);
   color: var(--color-text-level-2);
 }
 
-:global(:root.light) .rebate-category-tab.border-theme-primary {
+:global(:root.light) .rebate-category-tab.is-active {
   background: var(--color-theme-level-3);
   border-color: var(--color-theme-level-1);
 }
