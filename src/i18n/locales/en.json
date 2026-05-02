@@ -415,6 +415,43 @@
         "inactive": "Inactive"
       }
     },
+    "friendDetailPage": {
+      "title": "Details",
+      "total": "Total",
+      "labels": {
+        "lastLoginTime": "Last Login Time:",
+        "userId": "User ID:",
+        "name": "Name:"
+      },
+      "dateTabs": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last3Days": "Last 3 Days",
+        "last15Days": "Last 15 Days",
+        "last30Days": "Last 30 Days"
+      },
+      "statsTabs": {
+        "gameStats": "Game Stats",
+        "topUpStats": "Top-Up Stats"
+      },
+      "summary": {
+        "validBets": "Valid Bets",
+        "profit": "Profit",
+        "depositAmount": "Deposit Amount",
+        "numberOfDeposits": "Number of Deposits"
+      },
+      "table": {
+        "game": "Game",
+        "validBets": "Valid Bets",
+        "profit": "Profit",
+        "paymentMethod": "Payment Method",
+        "depositAmount": "Deposit Amount",
+        "numberOfDeposits": "Number of Deposits"
+      },
+      "tableValues": {
+        "slots": "Slots"
+      }
+    },
     "commissionRecords": {
       "title": "Commission Records",
       "searchPlaceholder": "Search for a member account",

@@ -695,6 +695,43 @@
         "inactive": "未激活"
       }
     },
+    "friendDetailPage": {
+      "title": "详情",
+      "total": "总计",
+      "labels": {
+        "lastLoginTime": "最后登录时间：",
+        "userId": "用户 ID：",
+        "name": "名称："
+      },
+      "dateTabs": {
+        "today": "今日",
+        "yesterday": "昨日",
+        "last3Days": "近 3 天",
+        "last15Days": "近 15 天",
+        "last30Days": "近 30 天"
+      },
+      "statsTabs": {
+        "gameStats": "游戏统计",
+        "topUpStats": "充值统计"
+      },
+      "summary": {
+        "validBets": "有效投注",
+        "profit": "盈亏",
+        "depositAmount": "充值金额",
+        "numberOfDeposits": "充值次数"
+      },
+      "table": {
+        "game": "游戏",
+        "validBets": "有效投注",
+        "profit": "盈亏",
+        "paymentMethod": "支付方式",
+        "depositAmount": "充值金额",
+        "numberOfDeposits": "充值次数"
+      },
+      "tableValues": {
+        "slots": "老虎机"
+      }
+    },
     "commissionRecords": {
       "title": "佣金记录列表",
       "searchPlaceholder": "搜索会员账号",
