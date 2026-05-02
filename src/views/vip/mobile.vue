@@ -1,211 +1,215 @@
 <template>
-  <section class="vip-mobile-page fixed inset-0 overflow-y-auto bg-bg-1">
-    <div class="min-h-full bg-bg-1">
-      <H5Header
-        :title="$t('sidebar_menu.links.vip.prefix')"
-        :show-sort="true"
-        :right-icon="KefuIcon"
-        @sort="openKefuPopup"
-      />
+  <section class="fixed inset-0 flex min-h-0 flex-col overflow-hidden bg-bg-1">
+    <H5Header
+      :title="$t('sidebar_menu.links.vip.prefix')"
+      :show-sort="true"
+      :right-icon="KefuIcon"
+      @sort="openKefuPopup"
+    />
 
-      <main class="px-[14px] py-[20px]">
-        <div
-          ref="vipCarouselRef"
-          class="vip-mobile-carousel pt-[20px] mb-[14px] flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden scroll-smooth touch-pan-x"
-          @scroll.passive="onVipCarouselScroll"
-        >
+    <div class="vip-mobile-page flex-1 min-h-0 overflow-y-auto overscroll-contain bg-bg-1">
+      <div class="min-h-full bg-bg-1">
+        <main class="px-[14px] py-[20px]">
           <div
-            v-for="(vip, index) in displayVipLevels"
-            :key="vip.rowId ?? vip.vipId"
-            :ref="el => setVipCardRef(el, index)"
-            class="min-w-full shrink-0 snap-center snap-always rounded-[15px] mx-[10px]"
+            ref="vipCarouselRef"
+            class="vip-mobile-carousel pt-[20px] mb-[14px] flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-contain scroll-smooth touch-pan-x"
+            @scroll.passive="onVipCarouselScroll"
           >
-            <section
-              class="relative h-[158px] rounded-[15px] px-[20px] py-[15px]"
-              :style="{ background: getVipCardTheme(vip.vipId).background }"
+            <div
+              v-for="(vip, index) in displayVipLevels"
+              :key="vip.rowId ?? vip.vipId"
+              :ref="el => setVipCardRef(el, index)"
+              class="min-w-full shrink-0 snap-center snap-always rounded-[15px] mx-[10px]"
             >
-              <div class="relative z-[1] flex flex-col items-start gap-3">
-                <div class="flex items-center">
-                  <span
-                    aria-hidden="true"
-                    class="h-[30px] w-[33px]"
-                    :style="
-                      getVipMaskIconStyle(
-                        getVipCardTheme(vip.vipId).wordmarkIcon,
-                        getVipCardTheme(vip.vipId).vipColor
-                      )
-                    "
-                  ></span>
-                  <span
-                    aria-hidden="true"
-                    class="ml-[3px] h-[30px]"
-                    :style="[
-                      getVipMaskIconStyle(
-                        getVipCardTheme(vip.vipId).levelNumberIcon,
-                        getVipCardTheme(vip.vipId).vipColor
-                      ),
-                      { aspectRatio: getVipLevelNumberAspectRatio(vip.vipId) }
-                    ]"
-                  ></span>
-                </div>
+              <section
+                class="relative h-[158px] rounded-[15px] px-[20px] py-[15px]"
+                :style="{ background: getVipCardTheme(vip.vipId).background }"
+              >
+                <div class="relative z-[1] flex flex-col items-start gap-3">
+                  <div class="flex items-center">
+                    <span
+                      aria-hidden="true"
+                      class="h-[30px] w-[33px]"
+                      :style="
+                        getVipMaskIconStyle(
+                          getVipCardTheme(vip.vipId).wordmarkIcon,
+                          getVipCardTheme(vip.vipId).vipColor
+                        )
+                      "
+                    ></span>
+                    <span
+                      aria-hidden="true"
+                      class="ml-[3px] h-[30px]"
+                      :style="[
+                        getVipMaskIconStyle(
+                          getVipCardTheme(vip.vipId).levelNumberIcon,
+                          getVipCardTheme(vip.vipId).vipColor
+                        ),
+                        { aspectRatio: getVipLevelNumberAspectRatio(vip.vipId) }
+                      ]"
+                    ></span>
+                  </div>
 
-                <div class="flex w-full flex-1 flex-col justify-center pr-[10px]">
-                  <div class="space-y-1.5">
-                    <div v-for="item in getProgressItemsByVipId(vip.vipId)" :key="item.key">
-                      <div class="flex items-center">
-                        <span
-                          class="text-xs"
-                          :style="{ color: getVipCardTheme(vip.vipId).progressTextColor }"
-                          >{{ item.label }}：</span
-                        >
-                        <span
-                          class="text-xs"
-                          :style="{ color: getVipCardTheme(vip.vipId).progressTextColor }"
-                          >{{ item.current }}/{{ item.target }}</span
-                        >
+                  <div class="flex w-full flex-1 flex-col justify-center pr-[10px]">
+                    <div class="space-y-1.5">
+                      <div v-for="item in getProgressItemsByVipId(vip.vipId)" :key="item.key">
+                        <div class="flex items-center">
+                          <span
+                            class="text-xs"
+                            :style="{ color: getVipCardTheme(vip.vipId).progressTextColor }"
+                            >{{ item.label }}：</span
+                          >
+                          <span
+                            class="text-xs"
+                            :style="{ color: getVipCardTheme(vip.vipId).progressTextColor }"
+                            >{{ item.current }}/{{ item.target }}</span
+                          >
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div
-                    class="mt-[15px] h-[8px] w-full rounded-full"
-                    :style="{ background: getVipCardTheme(vip.vipId).progressTrackColor }"
-                  >
                     <div
-                      class="h-full rounded-full transition-all"
-                      :style="{
-                        width: `${getOverallProgressByVipId(vip.vipId)}%`,
-                        background: getVipCardTheme(vip.vipId).progressFillColor
-                      }"
-                    />
+                      class="mt-[15px] h-[8px] w-full rounded-full"
+                      :style="{ background: getVipCardTheme(vip.vipId).progressTrackColor }"
+                    >
+                      <div
+                        class="h-full rounded-full transition-all"
+                        :style="{
+                          width: `${getOverallProgressByVipId(vip.vipId)}%`,
+                          background: getVipCardTheme(vip.vipId).progressFillColor
+                        }"
+                      />
+                    </div>
+
+                    <p
+                      class="mt-[15px] text-center text-xs"
+                      :style="{ color: getVipCardTheme(vip.vipId).progressTextColor }"
+                    >
+                      {{ $t(getVipCardTheme(vip.vipId).goalHintKey) }}
+                    </p>
                   </div>
 
-                  <p
-                    class="mt-[15px] text-center text-xs"
-                    :style="{ color: getVipCardTheme(vip.vipId).progressTextColor }"
-                  >
-                    {{ $t(getVipCardTheme(vip.vipId).goalHintKey) }}
-                  </p>
+                  <img
+                    :src="getVipCardTheme(vip.vipId).rightDecorationIcon"
+                    alt=""
+                    aria-hidden="true"
+                    class="pointer-events-none absolute right-[-18px] top-[30px] z-[2] h-[160px] w-[160px] -translate-y-1/2"
+                  />
+                  <component
+                    :is="getVipCardTheme(vip.vipId).cornerBadgeIcon"
+                    class="pointer-events-none absolute bottom-[-11px] right-[-20px] z-[2] h-[21px] w-[25px] text-common-100"
+                  />
                 </div>
+              </section>
+            </div>
+          </div>
 
-                <img
-                  :src="getVipCardTheme(vip.vipId).rightDecorationIcon"
-                  alt=""
-                  aria-hidden="true"
-                  class="pointer-events-none absolute right-[-18px] top-[30px] z-[2] h-[160px] w-[160px] -translate-y-1/2"
-                />
-                <component
-                  :is="getVipCardTheme(vip.vipId).cornerBadgeIcon"
-                  class="pointer-events-none absolute bottom-[-11px] right-[-20px] z-[2] h-[21px] w-[25px] text-common-100"
-                />
+          <div class="mb-[7px] flex items-center">
+            <span class="text-sm font-[700] text-text-1">
+              {{ $t('vipPage.exclusiveBenefitsTitle', { vipId: currentVipLevel }) }}
+            </span>
+            <button
+              type="button"
+              class="flex items-center justify-center px-[7px] py-[4px]"
+              @click="openBenefitExplainPopup"
+            >
+              <ExplainIcon class="h-3.5 w-3.5 text-text-2" />
+            </button>
+          </div>
+
+          <section class="space-y-[7px]">
+            <article
+              v-for="card in benefitCards"
+              :key="card.key"
+              :style="{ background: card.background }"
+              class="flex h-[74px] w-full items-center gap-2.5 overflow-hidden rounded-[10px] px-[14px]"
+            >
+              <img
+                :src="card.image"
+                alt="VIP Benefit"
+                class="h-[50px] w-[50px] shrink-0 object-contain"
+              />
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-xs font-[400] text-text-1">
+                  {{ card.title }}
+                </p>
+                <p class="text-base font-[700] text-text-1 mt-1">
+                  {{ card.amount }}
+                </p>
               </div>
-            </section>
-          </div>
-        </div>
 
-        <div class="mb-[7px] flex items-center">
-          <span class="text-sm font-[700] text-text-1">
-            {{ $t('vipPage.exclusiveBenefitsTitle', { vipId: currentVipLevel }) }}
-          </span>
-          <button
-            type="button"
-            class="flex items-center justify-center px-[7px] py-[4px]"
-            @click="openBenefitExplainPopup"
-          >
-            <ExplainIcon class="h-3.5 w-3.5 text-text-2" />
-          </button>
-        </div>
+              <div
+                type="button"
+                :disabled="
+                  card.status === 'claimed' ||
+                  (card.status === 'claim' && claimingCardKey === card.key)
+                "
+                @click="handleBenefitAction(card)"
+                :class="
+                  card.status === 'claim' || card.status === 'claimed'
+                    ? 'bg-theme-primary text-text-4'
+                    : 'text-secondary-7 border border-secondary-7'
+                "
+                class="relative flex h-[34px] w-[100px] px-3.5 shrink-0 items-center justify-center overflow-hidden rounded-lg text-sm font-[500] disabled:cursor-not-allowed"
+              >
+                <span
+                  v-if="card.status === 'claimed'"
+                  class="pointer-events-none absolute -inset-px z-[1] rounded-[inherit] bg-mask-60-1"
+                ></span>
+                <span class="relative z-[2]">{{ card.buttonText }}</span>
+              </div>
+            </article>
+          </section>
 
-        <section class="space-y-[7px]">
-          <article
-            v-for="card in benefitCards"
-            :key="card.key"
-            :style="{ background: card.background }"
-            class="flex h-[74px] w-full items-center gap-2.5 overflow-hidden rounded-[10px] px-[14px]"
-          >
-            <img
-              :src="card.image"
-              alt="VIP Benefit"
-              class="h-[50px] w-[50px] shrink-0 object-contain"
-            />
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-xs font-[400] text-text-1">
-                {{ card.title }}
-              </p>
-              <p class="text-base font-[700] text-text-1 mt-1">
-                {{ card.amount }}
-              </p>
+          <!-- tab栏 -->
+          <section class="mt-[14px]">
+            <div class="flex rounded-[8px] bg-bg-8">
+              <button
+                type="button"
+                class="flex-1 rounded-[8px] px-[14px] py-[11px] font-[700] h-[39px]"
+                :class="
+                  activeContentTab === 'comparison'
+                    ? 'bg-bg-7 text-text-1 text-sm'
+                    : 'text-text-2 text-xs'
+                "
+                @click="activeContentTab = 'comparison'"
+              >
+                {{ $t('vipPage.tabs.benefitsComparison') }}
+              </button>
+              <button
+                type="button"
+                class="flex-1 rounded-[8px] px-[14px] py-[11px] font-[700] h-[39px]"
+                :class="
+                  activeContentTab === 'rules'
+                    ? 'bg-bg-7 text-text-1 text-sm'
+                    : 'text-text-2 text-xs'
+                "
+                @click="activeContentTab = 'rules'"
+              >
+                {{ $t('vipPage.tabs.vipRules') }}
+              </button>
             </div>
 
-            <div
-              type="button"
-              :disabled="
-                card.status === 'claimed' ||
-                (card.status === 'claim' && claimingCardKey === card.key)
-              "
-              @click="handleBenefitAction(card)"
-              :class="
-                card.status === 'claim' || card.status === 'claimed'
-                  ? 'bg-theme-primary text-text-4'
-                  : 'text-secondary-7 border border-secondary-7'
-              "
-              class="relative flex h-[34px] w-[100px] px-3.5 shrink-0 items-center justify-center overflow-hidden rounded-lg text-sm font-[500] disabled:cursor-not-allowed"
-            >
-              <span
-                v-if="card.status === 'claimed'"
-                class="pointer-events-none absolute -inset-px z-[1] rounded-[inherit] bg-mask-60-1"
-              ></span>
-              <span class="relative z-[2]">{{ card.buttonText }}</span>
+            <div class="mt-[10px]">
+              <BenefitComparisonPanel
+                v-if="activeContentTab === 'comparison'"
+                :columns="benefitComparisonColumns"
+              />
+              <VipRulesContent v-else :retention-cards="retentionCards" :rules="rules" />
             </div>
-          </article>
-        </section>
+          </section>
+        </main>
 
-        <!-- tab栏 -->
-        <section class="mt-[14px]">
-          <div class="flex rounded-[8px] bg-bg-8">
-            <button
-              type="button"
-              class="flex-1 rounded-[8px] px-[14px] py-[11px] font-[700] h-[39px]"
-              :class="
-                activeContentTab === 'comparison'
-                  ? 'bg-bg-7 text-text-1 text-sm'
-                  : 'text-text-2 text-xs'
-              "
-              @click="activeContentTab = 'comparison'"
-            >
-              {{ $t('vipPage.tabs.benefitsComparison') }}
-            </button>
-            <button
-              type="button"
-              class="flex-1 rounded-[8px] px-[14px] py-[11px] font-[700] h-[39px]"
-              :class="
-                activeContentTab === 'rules' ? 'bg-bg-7 text-text-1 text-sm' : 'text-text-2 text-xs'
-              "
-              @click="activeContentTab = 'rules'"
-            >
-              {{ $t('vipPage.tabs.vipRules') }}
-            </button>
-          </div>
+        <BenefitExplainPopup v-if="showBenefitExplainPopup" @close="closeBenefitExplainPopup" />
 
-          <div class="mt-[10px]">
-            <BenefitComparisonPanel
-              v-if="activeContentTab === 'comparison'"
-              :columns="benefitComparisonColumns"
-            />
-            <VipRulesContent v-else :retention-cards="retentionCards" :rules="rules" />
-          </div>
-        </section>
-      </main>
-
-      <BenefitExplainPopup v-if="showBenefitExplainPopup" @close="closeBenefitExplainPopup" />
-
-      <!-- 领取弹窗 -->
-      <ClaimSuccessPopup
-        v-model:visible="showClaimSuccessPopup"
-        :amount="claimSuccessAmount"
-        :close-on-overlay-click="false"
-        @confirm="confirmClaimSuccess"
-      />
+        <!-- 领取弹窗 -->
+        <ClaimSuccessPopup
+          v-model:visible="showClaimSuccessPopup"
+          :amount="claimSuccessAmount"
+          :close-on-overlay-click="false"
+          @confirm="confirmClaimSuccess"
+        />
+      </div>
     </div>
   </section>
 </template>
@@ -425,11 +429,14 @@ onMounted(() => {
 
 <style scoped>
 .vip-mobile-page {
+  overscroll-behavior: contain;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
 }
 
 .vip-mobile-carousel {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
