@@ -1,5 +1,7 @@
 <template>
-  <div class="h-full w-full bg-bg-1 overflow-y-auto">
+  <div
+    class="personal-center-mobile-page h-full min-h-0 w-full overflow-y-auto overscroll-contain bg-bg-1"
+  >
     <div class="flex items-center h-[49px] px-3.5">
       <button
         @click="handleBack"
@@ -886,4 +888,9 @@ onMounted(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.personal-center-mobile-page {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+</style>

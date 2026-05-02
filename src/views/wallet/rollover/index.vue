@@ -11,7 +11,10 @@
     <div class="fixed inset-0 bg-bg-1 sm:hidden flex flex-col overflow-hidden">
       <H5Header :title="$t('wallet.rollover')" :show-sort="true" @sort="handleSort" />
 
-      <div ref="scrollRoot" class="flex-1 overflow-y-auto">
+      <div
+        ref="scrollRoot"
+        class="rollover-scroll-root flex-1 min-h-0 overflow-y-auto overscroll-contain"
+      >
         <div class="py-3.5 px-3.5">
           <!-- 无数据状态 -->
           <div
@@ -249,5 +252,11 @@ const handleRetry = async () => {
   await refresh()
 }
 </script>
+
+<style scoped>
+.rollover-scroll-root {
+  -webkit-overflow-scrolling: touch;
+}
+</style>
 
 <style scoped lang="scss"></style>

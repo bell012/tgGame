@@ -1,47 +1,49 @@
 <template>
-  <div class="fixed inset-0 bg-bg-1 overflow-y-auto">
+  <div class="fixed inset-0 flex min-h-0 flex-col overflow-hidden bg-bg-1">
     <H5Header :title="$t('personalCenter.transactionDetails')" />
 
-    <div class="py-3.5 px-3.5">
-      <div class="bg-bg-2 rounded-lg px-3.5 pb-3.5 pt-[30px] flex flex-col items-center">
-        <p class="text-[25px] font-[700] mb-2.5 text-text-1">
-          {{ detail.direction === 'add' ? '+' : '-' }}{{ detail.betAmount }}
-        </p>
+    <div class="transaction-details-mobile-scroll flex-1 min-h-0 overflow-y-auto bg-bg-1">
+      <div class="py-3.5 px-3.5">
+        <div class="bg-bg-2 rounded-lg px-3.5 pb-3.5 pt-[30px] flex flex-col items-center">
+          <p class="text-[25px] font-[700] mb-2.5 text-text-1">
+            {{ detail.direction === 'add' ? '+' : '-' }}{{ detail.betAmount }}
+          </p>
 
-        <h2 class="text-text-1 text-sm font-[700] mb-[30px]">{{ detail.gameName }}</h2>
+          <h2 class="text-text-1 text-sm font-[700] mb-[30px]">{{ detail.gameName }}</h2>
 
-        <!-- 详细信息列表 -->
-        <div class="w-full space-y-5 bg-bg-4 rounded-lg p-3.5">
-          <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('betDetails.currency') }}</span>
-            <span class="text-text-1 text-sm">{{ detail.currency }}</span>
-          </div>
-
-          <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('transaction.amount') }}</span>
-            <span class="text-text-1 text-sm">{{ detail.betAmount }}</span>
-          </div>
-
-          <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('betDetails.orderNo') }}</span>
-            <div class="flex items-center gap-1 max-w-[75%]">
-              <span class="text-text-1 text-sm truncate">{{ detail.orderNo }}</span>
-              <button class="p-1" @click="copyOrderNo">
-                <CopyIcon class="w-4 h-4 text-text-2" />
-              </button>
+          <!-- 详细信息列表 -->
+          <div class="w-full space-y-5 bg-bg-4 rounded-lg p-3.5">
+            <div class="flex items-center justify-between">
+              <span class="text-text-3 text-sm">{{ $t('betDetails.currency') }}</span>
+              <span class="text-text-1 text-sm">{{ detail.currency }}</span>
             </div>
-          </div>
 
-          <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('betDetails.createdAt') }}</span>
-            <span class="text-text-1 text-sm">{{ detail.createdAt }}</span>
-          </div>
+            <div class="flex items-center justify-between">
+              <span class="text-text-3 text-sm">{{ $t('transaction.amount') }}</span>
+              <span class="text-text-1 text-sm">{{ detail.betAmount }}</span>
+            </div>
 
-          <div class="flex items-center justify-between">
-            <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
-            <span class="text-text-1 text-sm text-right break-all max-w-[60%]">{{
-              detail.remarks
-            }}</span>
+            <div class="flex items-center justify-between">
+              <span class="text-text-3 text-sm">{{ $t('betDetails.orderNo') }}</span>
+              <div class="flex items-center gap-1 max-w-[75%]">
+                <span class="text-text-1 text-sm truncate">{{ detail.orderNo }}</span>
+                <button class="p-1" @click="copyOrderNo">
+                  <CopyIcon class="w-4 h-4 text-text-2" />
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-text-3 text-sm">{{ $t('betDetails.createdAt') }}</span>
+              <span class="text-text-1 text-sm">{{ detail.createdAt }}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
+              <span class="text-text-1 text-sm text-right break-all max-w-[60%]">{{
+                detail.remarks
+              }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -85,4 +87,9 @@ const copyOrderNo = () => {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.transaction-details-mobile-scroll {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+</style>

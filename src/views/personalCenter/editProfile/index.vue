@@ -1,72 +1,74 @@
 <template>
-  <div class="fixed inset-0 overflow-y-auto bg-bg-1">
+  <div class="fixed inset-0 flex min-h-0 flex-col overflow-hidden bg-bg-1">
     <H5Header :title="t('personalCenter.editProfile.title')" />
 
-    <div class="px-3.5 pb-8 pt-[25px]">
-      <section class="flex flex-col items-center">
-        <div class="relative h-[120px] w-[120px] overflow-visible">
-          <div class="absolute overflow-hidden rounded-full inset-0 border-4 border-opacity-15">
-            <img :src="avatarUrl" alt="Avatar" class="h-full w-full rounded-full object-cover" />
+    <div class="edit-profile-mobile-scroll flex-1 min-h-0 overflow-y-auto bg-bg-1">
+      <div class="px-3.5 pb-8 pt-[25px]">
+        <section class="flex flex-col items-center">
+          <div class="relative h-[120px] w-[120px] overflow-visible">
+            <div class="absolute overflow-hidden rounded-full inset-0 border-4 border-opacity-15">
+              <img :src="avatarUrl" alt="Avatar" class="h-full w-full rounded-full object-cover" />
+            </div>
+
+            <button
+              type="button"
+              class="absolute bottom-0 left-1/2 z-20 h-[28px] min-w-[84px] -translate-x-1/2 rounded-[6px] bg-theme-primary px-2 text-xs font-[700] text-text-4"
+              @click="openAvatarActionSheet"
+            >
+              {{ t('personalCenter.editProfile.editAvatar') }}
+            </button>
           </div>
+        </section>
 
-          <button
-            type="button"
-            class="absolute bottom-0 left-1/2 z-20 h-[28px] min-w-[84px] -translate-x-1/2 rounded-[6px] bg-theme-primary px-2 text-xs font-[700] text-text-4"
-            @click="openAvatarActionSheet"
-          >
-            {{ t('personalCenter.editProfile.editAvatar') }}
-          </button>
-        </div>
-      </section>
+        <section class="mt-[25px]">
+          <h3 class="text-sm font-[400] text-text-1">
+            {{ t('personalCenter.editProfile.username') }}
+          </h3>
+          <input
+            :value="nickName"
+            type="text"
+            maxlength="20"
+            spellcheck="false"
+            autocapitalize="off"
+            autocomplete="off"
+            class="mt-[7px] h-[40px] w-full rounded-lg border border-input-2 bg-input-1 px-3 py-[13px] text-xs font-[700] text-text-1 outline-none placeholder:text-text-2"
+            @input="handleNickNameChange"
+          />
+          <p class="mt-[7px] text-xs text-text-3">
+            {{ t('personalCenter.editProfile.usernameHint') }}
+          </p>
+        </section>
 
-      <section class="mt-[25px]">
-        <h3 class="text-sm font-[400] text-text-1">
-          {{ t('personalCenter.editProfile.username') }}
-        </h3>
+        <button
+          type="button"
+          class="relative mt-5 flex h-[40px] w-full items-center justify-center overflow-hidden rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
+          :class="canSave && !isSavingProfile ? '' : 'cursor-not-allowed'"
+          :disabled="!canSave || isSavingProfile"
+          @click="handleSave"
+        >
+          <span
+            v-if="!canSave || isSavingProfile"
+            class="absolute inset-0 z-10 rounded-lg bg-black/35"
+          ></span>
+          <span class="relative z-20">{{ t('personalCenter.editProfile.save') }}</span>
+        </button>
+
         <input
-          :value="nickName"
-          type="text"
-          maxlength="20"
-          spellcheck="false"
-          autocapitalize="off"
-          autocomplete="off"
-          class="mt-[7px] h-[40px] w-full rounded-lg border border-input-2 bg-input-1 px-3 py-[13px] text-xs font-[700] text-text-1 outline-none placeholder:text-text-2"
-          @input="handleNickNameChange"
+          ref="cameraInputRef"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          class="hidden"
+          @change="handleFileInputChange"
         />
-        <p class="mt-[7px] text-xs text-text-3">
-          {{ t('personalCenter.editProfile.usernameHint') }}
-        </p>
-      </section>
-
-      <button
-        type="button"
-        class="relative mt-5 flex h-[40px] w-full items-center justify-center overflow-hidden rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
-        :class="canSave && !isSavingProfile ? '' : 'cursor-not-allowed'"
-        :disabled="!canSave || isSavingProfile"
-        @click="handleSave"
-      >
-        <span
-          v-if="!canSave || isSavingProfile"
-          class="absolute inset-0 z-10 rounded-lg bg-black/35"
-        ></span>
-        <span class="relative z-20">{{ t('personalCenter.editProfile.save') }}</span>
-      </button>
-
-      <input
-        ref="cameraInputRef"
-        type="file"
-        accept="image/*"
-        capture="environment"
-        class="hidden"
-        @change="handleFileInputChange"
-      />
-      <input
-        ref="galleryInputRef"
-        type="file"
-        accept="image/*"
-        class="hidden"
-        @change="handleFileInputChange"
-      />
+        <input
+          ref="galleryInputRef"
+          type="file"
+          accept="image/*"
+          class="hidden"
+          @change="handleFileInputChange"
+        />
+      </div>
     </div>
 
     <transition name="popup-fade">
@@ -217,6 +219,11 @@ const {
 @use '@/styles/mixins' as *;
 
 @include popup-transition;
+
+.edit-profile-mobile-scroll {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
 
 .crop-viewport {
   touch-action: none;
