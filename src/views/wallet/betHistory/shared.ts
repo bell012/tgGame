@@ -128,6 +128,12 @@ const getTimeRange = (value: string) => {
 }
 
 export const getBetHistoryGameTypeLabel = (code: string, t: TranslateFn) => {
+  const matchedGameType = getGameTypeList().find(item => item.sysGameTypeCode === code)
+
+  if (matchedGameType?.sysGameTypeName) {
+    return matchedGameType.sysGameTypeName
+  }
+
   const labelMap: Record<string, string> = {
     CP: t('betHistory.filterOptions.lottery'),
     TY: t('betHistory.filterOptions.sports'),
@@ -190,7 +196,7 @@ export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => {
     currency,
     orderNo: record.betId || record.issueId || String(record.rowId),
     createdAt: formatTimestamp(record.createTime || record.betTime),
-    time: formatTimestamp(record.betTime),
+    time: formatTimestamp(record.createTime || record.betTime),
     rawData: record
   }
 }
