@@ -35,7 +35,10 @@
         <H5Header :title="t('wallet.myOrders')" :show-sort="true" @sort="handleOpenMobileFilter" />
 
         <!-- H5 列表滚动区域 -->
-        <div ref="scrollRoot" class="flex-1 overflow-y-auto">
+        <div
+          ref="scrollRoot"
+          class="my-orders-scroll-root flex-1 min-h-0 overflow-y-auto overscroll-contain"
+        >
           <!-- H5 列表内容区域 -->
           <div class="px-3.5 pb-4 pt-3.5">
             <!-- H5 顶部切换栏 -->
@@ -486,3 +489,9 @@ onMounted(() => {
   isReady.value = true
 })
 </script>
+
+<style scoped lang="scss">
+.my-orders-scroll-root {
+  -webkit-overflow-scrolling: touch;
+}
+</style>
