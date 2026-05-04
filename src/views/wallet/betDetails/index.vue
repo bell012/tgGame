@@ -1,6 +1,11 @@
 <template>
   <div class="fixed inset-0 bg-bg-1 overflow-y-auto">
-    <H5Header :title="$t('betDetails.title')" />
+    <H5Header
+      :title="$t('betDetails.title')"
+      :show-sort="true"
+      :right-icon="KefuIcon"
+      @sort="openKefuPopup"
+    />
 
     <div class="py-3.5 px-3.5">
       <div class="bg-bg-2 rounded-lg px-3.5 pb-3.5 pt-[30px] flex flex-col items-center">
@@ -79,6 +84,7 @@ import CopyIcon from '@/static/svg/copy.svg?component'
 import bet from '@/static/img/personalCenter/bet.png'
 import { globalShowToast } from '@/utils/toast'
 import { useI18n } from 'vue-i18n'
+import KefuIcon from '@/static/svg/vip/kefu.svg?component'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -154,6 +160,11 @@ onMounted(() => {
 const copyOrderNo = () => {
   navigator.clipboard.writeText(betDetail.value.orderNo)
   globalShowToast(t('betDetails.copy'))
+}
+
+// 点击客服
+const openKefuPopup = () => {
+  console.log('点击客服')
 }
 </script>
 
