@@ -2,7 +2,10 @@
   <div>
     <div v-if="isMobile" class="fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1">
       <H5Header :title="pageTitle" />
-      <div ref="mobileScrollRef" class="flex-1 min-h-0 overflow-y-auto px-[14px] pt-2.5 pb-4">
+      <div
+        ref="mobileScrollRef"
+        class="casino-fullpage-scroll-y flex-1 min-h-0 overflow-y-auto px-[14px] pt-2.5 pb-4"
+      >
         <component
           :is="currentPageComponent"
           v-bind="currentPageProps"
@@ -222,4 +225,29 @@ watch(
 )
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+/* 仅本页：抵消 _base 全局 ::-webkit-scrollbar{display:none}，与全局轨道/滑块变量一致 */
+.casino-fullpage-scroll-y {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
+}
+
+.casino-fullpage-scroll-y::-webkit-scrollbar {
+  display: block !important;
+  width: 4px;
+  height: 4px;
+}
+
+.casino-fullpage-scroll-y::-webkit-scrollbar-track {
+  background-color: var(--color-scrollbar-track);
+}
+
+.casino-fullpage-scroll-y::-webkit-scrollbar-thumb {
+  background-color: var(--color-scrollbar-thumb);
+  border-radius: 4px;
+
+  &:hover {
+    background-color: var(--color-scrollbar-thumb-hover);
+  }
+}
+</style>
