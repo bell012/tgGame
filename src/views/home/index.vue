@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="home mx-auto max-w-[1248px] py-2 sm:px-4 sm:py-4">
     <div style="height: 55px" class="sm:hidden"></div>
 
@@ -101,6 +101,7 @@
             v-if="firstGameSection"
             :title="firstGameSection.sysGameTypeName"
             :sysGameTypeCode="firstGameSection.sysGameTypeCode"
+            :platformLogoSrc="firstGameSection.platformLogoSrc"
             :list="firstGameSection.list"
           />
           <LazySection
@@ -113,6 +114,7 @@
             <GameList
               :title="value.sysGameTypeName"
               :sysGameTypeCode="value.sysGameTypeCode"
+              :platformLogoSrc="value.platformLogoSrc"
               :list="value.list"
             />
           </LazySection>
@@ -343,6 +345,7 @@ interface HomeGameSection {
   sysGameTypeCode: string
   list: RawGameDataItem[]
   sysGameTypeName: string
+  platformLogoSrc: string
 }
 
 const userStore = useUserStore()
@@ -426,7 +429,8 @@ const mapHomeGameSections = (source: RawGameDataItem[]): HomeGameSection[] => {
   return source.map(item => ({
     list: item?.subGame?.[0]?.subGame?.slice(0, 10) || [],
     sysGameTypeCode: item?.sysGameTypeCode || '',
-    sysGameTypeName: item?.sysGameTypeName || ''
+    sysGameTypeName: item?.sysGameTypeName || '',
+    platformLogoSrc: item?.subGame?.[0]?.icon4 || ''
   }))
 }
 

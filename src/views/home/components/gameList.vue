@@ -91,9 +91,17 @@
             <gameErrImg :img="value.img" />
           </div>
           <div
-            class="absolute inset-x-0 bottom-6 flex w-full items-center justify-center px-2 text-center text-sm font-bold leading-4 text-common-100 sm:text-base sm:font-extrabold"
+            class="absolute inset-x-0 bottom-2 flex w-full flex-col items-center px-2 text-center"
           >
-            {{ value.itemName }}
+            <div class="text-sm font-bold leading-4 text-common-100 sm:text-base sm:font-extrabold">
+              {{ value.itemName }}
+            </div>
+            <img
+              v-if="platformLogoUrl"
+              :src="platformLogoUrl"
+              alt="platform logo"
+              class="platform-logo mt-1"
+            />
           </div>
           <div
             class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-black_alpha20 px-1.5"
@@ -155,6 +163,7 @@ interface Props {
   title?: string
   list?: any[]
   sysGameTypeCode?: string
+  platformLogoSrc?: string
   loading?: boolean
 }
 
@@ -185,6 +194,13 @@ const normalizeGameItem = (item: any): GameItem => {
 const normalizedList = computed(() => {
   return (props.list ?? []).map((item: any) => normalizeGameItem(item))
 })
+
+const platformLogoUrl = computed(() => {
+  return props.platformLogoSrc
+    ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${props.platformLogoSrc}`
+    : ''
+})
+
 const handleClick = (rowId: number) => {
   navigateToName('gameDetail', { params: { rowId } })
 }
@@ -255,6 +271,12 @@ const scrollPrev = () => {
     justify-content: center;
     align-items: center;
     border-radius: 8px;
+  }
+  .platform-logo {
+    width: auto;
+    max-width: 70%;
+    height: 14px;
+    object-fit: contain;
   }
 }
 
