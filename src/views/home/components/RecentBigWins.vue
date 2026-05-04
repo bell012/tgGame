@@ -32,7 +32,7 @@
     <div
       v-else
       ref="marqueeRef"
-      class="marquee my-0 touch-pan-y select-none sm:rounded-xl sm:bg-layer3"
+      class="marquee my-0 select-none sm:rounded-xl sm:bg-layer3"
       @scroll.passive="onMarqueeScroll"
       @pointerdown="onMarqueePointerDown"
       @pointerup="onMarqueePointerUp"
@@ -44,14 +44,24 @@
       @mouseleave="marqueeHoverPaused = false"
       @click.capture="onMarqueeClickCapture"
     >
-      <div class="marquee-track recent-big-win flex flex-nowrap items-center gap-3 sm:gap-3.5">
+      <div
+        ref="marqueeInnerRef"
+        class="marquee-track recent-big-win flex flex-nowrap items-center gap-3 sm:gap-3.5"
+      >
         <a
           v-for="(item, idx) in duplicatedList"
           :key="`win-${idx}`"
           class="inactive flex h-28 w-14 flex-none flex-col items-center text-xs hover:opacity-80 sm:h-[106px] sm:w-13"
         >
           <div class="relative mb-1 w-full rounded-lg pt-[133%]">
-            <img :src="item.src" class="absolute left-0 top-0 w-full rounded-lg" :alt="item.name" />
+            <img
+              :src="item.src"
+              class="absolute left-0 top-0 w-full rounded-lg"
+              :alt="item.name"
+              loading="lazy"
+              decoding="async"
+              fetchpriority="low"
+            />
           </div>
           <div class="w-[118%]">
             <div class="flex items-center justify-center font-extrabold text-secondary">
@@ -140,20 +150,30 @@ const getRecentBigWinsData = async () => {
 }
 
 const marqueeRef = ref<HTMLElement | null>(null)
+const marqueeInnerRef = ref<HTMLElement | null>(null)
+const marqueeSegmentPx = ref(0)
+const marqueeCanAutoScroll = ref(false)
 const marqueeHoverPaused = ref(false)
 const marqueePointerActive = ref(false)
+/** 系统开启「减少动态效果」 matchMedia */
+const marqueeReducedMotionActive = ref(
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+)
 const AUTO_MARQUEE_SEGMENT_SEC = 20
 const MARQUEE_IDLE_RESUME_MS = 2000
 
 let marqueeRafId = 0
 let marqueeLastTs = 0
-let marqueeProgramScroll = false
 let marqueeUserScrollUntil = 0
 let marqueeLoopRunning = false
-let marqueeProgramScrollResetTimer = 0
-let marqueeLastProgrammaticScrollMs = 0
+
+let marqueeScrollRemainder = 0
 let marqueeResizeObserver: ResizeObserver | null = null
+let marqueeResizeDebounceTimer = 0
 let marqueeMobileResumeTimer = 0
+let marqueeVisibilityHandler: (() => void) | null = null
+let marqueeReducedMotionMql: MediaQueryList | null = null
+let marqueeReducedMotionHandler: (() => void) | null = null
 
 /**
  * 清理 H5 点击/触摸后的自动恢复定时器
@@ -181,7 +201,6 @@ const scheduleMarqueeMobileResume = () => {
     marqueePointerActive.value = false
     marqueeHoverPaused.value = false
     marqueeUserScrollUntil = 0
-    marqueeProgramScroll = false
     marqueeLastTs = 0
     marqueeMobileResumeTimer = 0
 
@@ -200,13 +219,26 @@ const stopMarqueeRaf = () => {
     cancelAnimationFrame(marqueeRafId)
     marqueeRafId = 0
   }
-  if (marqueeProgramScrollResetTimer) {
-    window.clearTimeout(marqueeProgramScrollResetTimer)
-    marqueeProgramScrollResetTimer = 0
-  }
   clearMarqueeMobileResumeTimer()
-  marqueeProgramScroll = false
   marqueeLastTs = 0
+}
+
+/**
+ * 在轨道尺寸变化后更新缓存（一次布局读取），供 RAF 循环使用。
+ */
+const measureMarqueeSegment = () => {
+  const outer = marqueeRef.value
+  const inner = marqueeInnerRef.value
+  if (!outer || !inner || list.value.length === 0) {
+    marqueeSegmentPx.value = 0
+    marqueeCanAutoScroll.value = false
+    return
+  }
+
+  const innerWidth = inner.scrollWidth
+  const segment = innerWidth / MARQUEE_REPEAT
+  marqueeSegmentPx.value = segment
+  marqueeCanAutoScroll.value = segment >= 8 && innerWidth > outer.clientWidth + 2
 }
 
 const stepMarquee = (ts: number) => {
@@ -214,6 +246,16 @@ const stepMarquee = (ts: number) => {
   marqueeRafId = requestAnimationFrame(stepMarquee)
   const el = marqueeRef.value
   if (!el) return
+
+  if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+    marqueeLastTs = ts
+    return
+  }
+
+  if (marqueeReducedMotionActive.value) {
+    marqueeLastTs = ts
+    return
+  }
 
   if (
     marqueePointerActive.value ||
@@ -224,29 +266,30 @@ const stepMarquee = (ts: number) => {
     return
   }
 
-  const segment = el.scrollWidth / MARQUEE_REPEAT
-  if (segment < 8 || el.scrollWidth <= el.clientWidth + 2) {
+  const segment = marqueeSegmentPx.value
+  if (!marqueeCanAutoScroll.value || segment < 8) {
     marqueeLastTs = ts
     return
   }
 
   if (!marqueeLastTs) marqueeLastTs = ts
-  const dt = Math.min(0.08, (ts - marqueeLastTs) / 1000)
+  const dt = Math.min(0.1, (ts - marqueeLastTs) / 1000)
   marqueeLastTs = ts
   const speedPxPerSec = segment / AUTO_MARQUEE_SEGMENT_SEC
 
-  marqueeProgramScroll = true
-  if (marqueeProgramScrollResetTimer) {
-    window.clearTimeout(marqueeProgramScrollResetTimer)
-  }
-  marqueeProgramScrollResetTimer = window.setTimeout(() => {
-    marqueeProgramScroll = false
-  }, 120)
-  marqueeLastProgrammaticScrollMs = performance.now()
-  el.scrollLeft += speedPxPerSec * dt
-  if (el.scrollLeft >= segment) {
-    el.scrollLeft -= segment
-    marqueeLastProgrammaticScrollMs = performance.now()
+  let deltaPx = speedPxPerSec * dt + marqueeScrollRemainder
+  const stepInt = Math.trunc(deltaPx)
+  marqueeScrollRemainder = deltaPx - stepInt
+
+  if (stepInt !== 0) {
+    el.scrollLeft += stepInt
+    let sl = el.scrollLeft
+    let wrapGuard = 0
+    while (sl >= segment - 0.5 && wrapGuard < 8) {
+      el.scrollLeft = sl - segment
+      sl = el.scrollLeft
+      wrapGuard += 1
+    }
   }
 }
 
@@ -256,6 +299,14 @@ const startMarqueeRaf = () => {
     requestAnimationFrame(() => {
       const el = marqueeRef.value
       if (!el || list.value.length === 0 || loading.value) {
+        return
+      }
+      if (marqueeReducedMotionActive.value) {
+        return
+      }
+      measureMarqueeSegment()
+      marqueeScrollRemainder = 0
+      if (!marqueeCanAutoScroll.value) {
         return
       }
       marqueeLoopRunning = true
@@ -274,6 +325,7 @@ const bumpMarqueeUserIdlePause = () => {
  */
 const beginMarqueeInteraction = () => {
   marqueePointerActive.value = true
+  marqueeScrollRemainder = 0
   scheduleMarqueeMobileResume()
 }
 
@@ -290,8 +342,6 @@ const endMarqueeInteraction = () => {
  * 用户手动滚动时，更新空闲恢复时间；H5 下同时强制恢复。
  */
 const onMarqueeScroll = () => {
-  if (marqueeProgramScroll) return
-  if (performance.now() - marqueeLastProgrammaticScrollMs < 120) return
   if (!marqueePointerActive.value) return
   bumpMarqueeUserIdlePause()
   scheduleMarqueeMobileResume()
@@ -355,7 +405,10 @@ const onMarqueeClickCapture = () => {
 watch(
   () => duplicatedList.value.length,
   () => {
-    startMarqueeRaf()
+    void nextTick(() => {
+      measureMarqueeSegment()
+      startMarqueeRaf()
+    })
   },
   { flush: 'post', immediate: true }
 )
@@ -368,6 +421,40 @@ watch(
   { immediate: true }
 )
 
+/**
+ * loading 结束后才有跑马 DOM；须在轨道挂载后再监听宽度变化。
+ */
+const attachMarqueeResizeObserver = () => {
+  const inner = marqueeInnerRef.value
+  if (!inner || typeof ResizeObserver === 'undefined') {
+    return
+  }
+
+  marqueeResizeObserver?.disconnect()
+  marqueeResizeObserver = new ResizeObserver(() => {
+    if (marqueeResizeDebounceTimer) {
+      window.clearTimeout(marqueeResizeDebounceTimer)
+    }
+    marqueeResizeDebounceTimer = window.setTimeout(() => {
+      marqueeResizeDebounceTimer = 0
+      measureMarqueeSegment()
+      startMarqueeRaf()
+    }, 120)
+  })
+  marqueeResizeObserver.observe(inner)
+}
+
+watch(
+  () => loading.value,
+  isLoading => {
+    if (isLoading) {
+      return
+    }
+    void nextTick(() => attachMarqueeResizeObserver())
+  },
+  { flush: 'post' }
+)
+
 onMounted(() => {
   window.addEventListener('pointerup', resetMarqueeInteraction, true)
   window.addEventListener('pointercancel', resetMarqueeInteraction, true)
@@ -378,14 +465,27 @@ onMounted(() => {
   })
   window.addEventListener('blur', resetMarqueeInteraction)
 
-  void nextTick(() => {
-    const el = marqueeRef.value
-    if (!el || typeof ResizeObserver === 'undefined') return
-    marqueeResizeObserver = new ResizeObserver(() => {
+  marqueeVisibilityHandler = () => {
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+      stopMarqueeRaf()
+    } else {
       startMarqueeRaf()
-    })
-    marqueeResizeObserver.observe(el)
-  })
+    }
+  }
+  document.addEventListener('visibilitychange', marqueeVisibilityHandler)
+
+  marqueeReducedMotionMql = window.matchMedia('(prefers-reduced-motion: reduce)')
+  marqueeReducedMotionHandler = () => {
+    marqueeReducedMotionActive.value = Boolean(marqueeReducedMotionMql?.matches)
+    if (marqueeReducedMotionActive.value) {
+      stopMarqueeRaf()
+    } else {
+      startMarqueeRaf()
+    }
+  }
+  marqueeReducedMotionMql.addEventListener('change', marqueeReducedMotionHandler)
+
+  void nextTick(() => attachMarqueeResizeObserver())
 })
 
 onUnmounted(() => {
@@ -394,6 +494,19 @@ onUnmounted(() => {
   window.removeEventListener('touchend', resetMarqueeInteraction, true)
   window.removeEventListener('touchcancel', resetMarqueeInteraction, true)
   window.removeEventListener('blur', resetMarqueeInteraction)
+  if (marqueeVisibilityHandler) {
+    document.removeEventListener('visibilitychange', marqueeVisibilityHandler)
+    marqueeVisibilityHandler = null
+  }
+  if (marqueeReducedMotionMql && marqueeReducedMotionHandler) {
+    marqueeReducedMotionMql.removeEventListener('change', marqueeReducedMotionHandler)
+  }
+  marqueeReducedMotionMql = null
+  marqueeReducedMotionHandler = null
+  if (marqueeResizeDebounceTimer) {
+    window.clearTimeout(marqueeResizeDebounceTimer)
+    marqueeResizeDebounceTimer = 0
+  }
   marqueeResizeObserver?.disconnect()
   marqueeResizeObserver = null
   stopMarqueeRaf()
@@ -425,13 +538,14 @@ onUnmounted(() => {
   width: calc(100% + 2rem);
   margin-left: -1rem;
   margin-right: -1rem;
-  overflow-x: hidden;
+  overflow-x: auto;
   overflow-y: hidden;
-  touch-action: pan-y;
+  touch-action: pan-x pan-y;
   scroll-behavior: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  contain: content;
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0,
@@ -457,6 +571,8 @@ onUnmounted(() => {
   width: max-content;
   gap: 0.875rem;
   padding: 0 1rem;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .marquee-track a {
