@@ -5,6 +5,7 @@
     :visible="modelValue && !showResetPassword"
     :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
     :background-image-url="mobileBackgroundImage"
+    :background-loading="isAuthBannerLoading"
     @update:visible="handleClose"
     @open-reset-password="openResetPassword"
   />
@@ -14,6 +15,7 @@
     v-if="isMobile"
     :visible="showResetPassword"
     :background-image-url="mobileBackgroundImage"
+    :background-loading="isAuthBannerLoading"
     @update:visible="handleResetPasswordClose"
     @reset-success="handleResetPasswordSuccess"
   />
@@ -47,8 +49,20 @@
                 <MainLogoIcon class="h-12 w-auto text-text-1" />
               </div>
 
-              <div class="w-full h-[357px] mt-6">
-                <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
+              <div class="relative mt-6 h-[357px] w-full overflow-hidden rounded-xl bg-bg-2">
+                <div
+                  v-if="showPcBackgroundSkeleton"
+                  class="absolute inset-0 animate-pulse bg-bg-2"
+                ></div>
+                <img
+                  v-if="pcBackgroundImage"
+                  :src="pcBackgroundImage"
+                  alt=""
+                  class="h-full w-full transition-opacity duration-300"
+                  :class="showPcBackgroundSkeleton ? 'opacity-0' : 'opacity-100'"
+                  @load="handlePcBackgroundLoad"
+                  @error="handlePcBackgroundError"
+                />
               </div>
 
               <div class="mt-4">
@@ -96,8 +110,20 @@
                 <MainLogoIcon class="h-12 w-auto text-text-1" />
               </div>
 
-              <div class="w-full h-[357px] mt-6">
-                <img :src="pcBackgroundImage" alt="" class="w-full h-full" />
+              <div class="relative mt-6 h-[357px] w-full overflow-hidden rounded-xl bg-bg-2">
+                <div
+                  v-if="showPcBackgroundSkeleton"
+                  class="absolute inset-0 animate-pulse bg-bg-2"
+                ></div>
+                <img
+                  v-if="pcBackgroundImage"
+                  :src="pcBackgroundImage"
+                  alt=""
+                  class="h-full w-full transition-opacity duration-300"
+                  :class="showPcBackgroundSkeleton ? 'opacity-0' : 'opacity-100'"
+                  @load="handlePcBackgroundLoad"
+                  @error="handlePcBackgroundError"
+                />
               </div>
 
               <div class="mt-4">
@@ -150,6 +176,8 @@ const { t } = useI18n()
 const ABSOLUTE_IMAGE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
 const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
 const authBannerRecords = ref<QuerySlideshowItem[]>([])
+const isAuthBannerLoading = ref(false)
+const isPcBackgroundLoaded = ref(false)
 
 // 登录/注册弹窗图片地址。
 const resolveAuthBannerUrl = (value: unknown) => {
@@ -198,6 +226,10 @@ const pcBackgroundImage = computed(() => {
   return authBannerImageUrl.value
 })
 
+const showPcBackgroundSkeleton = computed(() => {
+  return isAuthBannerLoading.value || (!!pcBackgroundImage.value && !isPcBackgroundLoaded.value)
+})
+
 const mobileBackgroundImage = computed(() => {
   return authBannerImageUrl.value
 })
@@ -218,6 +250,14 @@ const emit = defineEmits<{
 const activeTab = ref<'login' | 'register' | 'resetPassword'>(props.defaultTab)
 const showResetPassword = ref(false)
 const loginFormDesktopRef = ref<InstanceType<typeof LoginFormDesktop> | null>(null)
+
+watch(
+  () => pcBackgroundImage.value,
+  () => {
+    isPcBackgroundLoaded.value = false
+  },
+  { immediate: true }
+)
 
 watch([() => props.modelValue, () => isMobile.value], async ([newVal]) => {
   if (newVal) {
@@ -245,6 +285,8 @@ const fetchLoginAndRegisterSetting = async () => {
 
 // 请求登录/注册弹窗图片
 const fetchAuthBannerImage = async () => {
+  isAuthBannerLoading.value = true
+
   try {
     const response = await Api.home.getQuerySlideshow({
       languageCode: getLanguageCode(),
@@ -261,7 +303,17 @@ const fetchAuthBannerImage = async () => {
   } catch (error) {
     authBannerRecords.value = []
     console.error(error)
+  } finally {
+    isAuthBannerLoading.value = false
   }
+}
+
+const handlePcBackgroundLoad = () => {
+  isPcBackgroundLoaded.value = true
+}
+
+const handlePcBackgroundError = () => {
+  isPcBackgroundLoaded.value = true
 }
 
 watch(

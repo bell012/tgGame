@@ -56,8 +56,20 @@
                         <CloseIcon class="w-3 h-3 text-text-1" />
                       </button>
                     </div>
-                    <div class="mt-4 w-full h-[140px]">
-                      <img :src="h5BackgroundImage" alt="" class="w-full h-full" />
+                    <div class="relative mt-4 h-[140px] w-full overflow-hidden rounded-xl bg-bg-2">
+                      <div
+                        v-if="showH5BackgroundSkeleton"
+                        class="absolute inset-0 animate-pulse bg-bg-2"
+                      ></div>
+                      <img
+                        v-if="h5BackgroundImage"
+                        :src="h5BackgroundImage"
+                        alt=""
+                        class="h-full w-full transition-opacity duration-300"
+                        :class="showH5BackgroundSkeleton ? 'opacity-0' : 'opacity-100'"
+                        @load="handleH5BackgroundLoad"
+                        @error="handleH5BackgroundError"
+                      />
                     </div>
                   </div>
                 </div>
@@ -358,6 +370,7 @@ interface Props {
   visible: boolean
   defaultTab?: 'signin' | 'signup'
   backgroundImageUrl?: string
+  backgroundLoading?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -371,16 +384,30 @@ const emit = defineEmits<{
 
 const showDrawer = ref(false)
 const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
+const isH5BackgroundLoaded = ref(false)
 
 // 登录/注册弹窗背景图
 const h5BackgroundImage = computed(() => {
   return props.backgroundImageUrl
 })
 
+const showH5BackgroundSkeleton = computed(() => {
+  return props.backgroundLoading || (!!h5BackgroundImage.value && !isH5BackgroundLoaded.value)
+})
+
+watch(
+  () => h5BackgroundImage.value,
+  () => {
+    isH5BackgroundLoaded.value = false
+  },
+  { immediate: true }
+)
+
 watch(
   () => props.visible,
   async newVal => {
     if (newVal) {
+      isH5BackgroundLoaded.value = false
       loginFormRef.value?.resetForm()
       await nextTick()
       setTimeout(() => {
@@ -392,6 +419,14 @@ watch(
   },
   { immediate: true }
 )
+
+const handleH5BackgroundLoad = () => {
+  isH5BackgroundLoaded.value = true
+}
+
+const handleH5BackgroundError = () => {
+  isH5BackgroundLoaded.value = true
+}
 
 const handleClose = () => {
   showDrawer.value = false

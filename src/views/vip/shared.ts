@@ -98,6 +98,7 @@ export interface VipBenefitComparisonRow {
   label: string
   amount: string
   emphasized?: boolean
+  placeholder?: boolean
 }
 
 export interface VipBenefitComparisonColumn {
@@ -560,6 +561,22 @@ const createBenefitComparisonColumn = (
 ): VipBenefitComparisonColumn => {
   const resolvedVipId = targetConfig?.vipId ?? fallbackVipId
   const benefitKeys = getAvailableVipBenefitKeys(resolvedVipId, highestVipId)
+  const shouldReserveLevelUpRow =
+    key === 'unlock' && highestVipId != null && resolvedVipId === highestVipId
+  const detailRows: VipBenefitComparisonRow[] = benefitKeys.map(benefitKey => ({
+    key: benefitKey,
+    label: t(vipBenefitTitleKeyMap[benefitKey]),
+    amount: formatBalance(resolveVipListRewardAmount(targetConfig, benefitKey))
+  }))
+
+  if (shouldReserveLevelUpRow) {
+    detailRows.unshift({
+      key: 'levelUpPlaceholder',
+      label: '',
+      amount: '0.00',
+      placeholder: true
+    })
+  }
 
   return {
     key,
@@ -569,11 +586,7 @@ const createBenefitComparisonColumn = (
         ? t('vipPage.benefitsComparison.currentLevel', { vipId: resolvedVipId })
         : t('vipPage.benefitsComparison.unlockLevel', { vipId: resolvedVipId }),
     rows: [
-      ...benefitKeys.map(benefitKey => ({
-        key: benefitKey,
-        label: t(vipBenefitTitleKeyMap[benefitKey]),
-        amount: formatBalance(resolveVipListRewardAmount(targetConfig, benefitKey))
-      })),
+      ...detailRows,
       {
         key: 'totalRewards',
         label: t('vipPage.benefitsComparison.totalRewards'),

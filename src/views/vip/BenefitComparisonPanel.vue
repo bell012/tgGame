@@ -2,14 +2,20 @@
 <template>
   <section class="space-y-[10px] sm:space-y-[24px]">
     <div :class="detailGridClass">
-      <article
-        v-if="currentColumn"
-        class="min-w-0 rounded-[10px] bg-bg-2 px-[20px] pb-[10px] pt-[7px] sm:rounded-[16px] sm:px-[24px] sm:pb-[14px] sm:pt-[12px]"
-      >
-        <p :class="getTitleClass(currentColumn.key)">{{ currentColumn.title }}</p>
+      <article v-if="currentColumn" class="min-w-0 rounded-[10px] bg-bg-2 sm:rounded-[16px]">
+        <p
+          class="py-[8px] px-[20px] sm:px-[12px] sm:py-[15px]"
+          :class="getTitleClass(currentColumn.key)"
+        >
+          {{ currentColumn.title }}
+        </p>
 
-        <div class="mt-[20px] space-y-[23px] sm:mt-[29px] sm:space-y-[29px]">
-          <div v-for="row in currentDetailRows" :key="row.key" class="flex items-center">
+        <div class="">
+          <div
+            v-for="row in currentDetailRows"
+            :key="row.key"
+            class="flex items-center border-t border-opacity-6 px-[20px] py-[12px] sm:px-[12px] sm:py-[15px]"
+          >
             <span class="min-w-0 w-3/5 truncate text-sm text-text-2 sm:text-base sm:text-center">{{
               row.label
             }}</span>
@@ -22,21 +28,23 @@
         </div>
       </article>
 
-      <article
-        v-if="nextColumn"
-        class="min-w-0 rounded-[10px] bg-bg-2 px-[4px] pb-[10px] pt-[7px] sm:rounded-[16px] sm:px-[24px] sm:pb-[14px] sm:pt-[12px]"
-      >
-        <p :class="getTitleClass(nextColumn.key)">{{ nextColumn.title }}</p>
+      <article v-if="nextColumn" class="min-w-0 rounded-[10px] bg-bg-2 sm:rounded-[16px]">
+        <p
+          class="py-[8px] px-[4px] sm:px-[12px] sm:py-[15px]"
+          :class="getTitleClass(nextColumn.key)"
+        >
+          {{ nextColumn.title }}
+        </p>
 
-        <div class="mt-[20px] space-y-[23px] sm:mt-[29px] sm:space-y-[29px]">
+        <div class="">
           <div
             v-for="row in nextDetailRows"
             :key="row.key"
-            class="flex items-center justify-center"
+            class="flex items-center justify-center border-t border-opacity-6 px-[4px] py-[12px] sm:px-[12px] sm:py-[15px]"
           >
             <span
               class="min-w-0 w-full truncate text-center"
-              :class="getDetailAmountClass(nextColumn.key)"
+              :class="[getDetailAmountClass(nextColumn.key), row.placeholder ? 'invisible' : '']"
               >{{ row.amount }}</span
             >
           </div>
