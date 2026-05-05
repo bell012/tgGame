@@ -30,10 +30,9 @@
           :current-progress-label="t('referral.taskPage.currentProgress')"
           :max-reward-value="maxRewardValue"
           :max-reward-label="t('referral.taskPage.maxRewardThisWeek')"
-          :invited-sign-ups-label="t('referral.taskPage.invitedSignUps')"
-          :reward-label="t('referral.taskPage.reward')"
-          :status-label="t('referral.taskPage.status')"
+          :reward-table-columns="rewardTableColumns"
           :reward-rows="rewardRows"
+          :reward-table-loading="rewardTableLoading"
           :valid-invite-title="t('referral.taskPage.validInviteTitle')"
           :valid-invite-description="t('referral.taskPage.validInviteDescription')"
           :task-rules-title="t('referral.taskPage.taskRulesTitle')"
@@ -61,10 +60,9 @@
         :current-progress-label="t('referral.taskPage.currentProgress')"
         :max-reward-value="maxRewardValue"
         :max-reward-label="t('referral.taskPage.maxRewardThisWeek')"
-        :invited-sign-ups-label="t('referral.taskPage.invitedSignUps')"
-        :reward-label="t('referral.taskPage.reward')"
-        :status-label="t('referral.taskPage.status')"
+        :reward-table-columns="rewardTableColumns"
         :reward-rows="rewardRows"
+        :reward-table-loading="rewardTableLoading"
         :valid-invite-title="t('referral.taskPage.validInviteTitle')"
         :valid-invite-description="t('referral.taskPage.validInviteDescription')"
         :task-rules-title="t('referral.taskPage.taskRulesTitle')"
@@ -78,19 +76,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { showToast } from 'vant'
 import { useI18n } from 'vue-i18n'
+import Api from '@/api'
 import H5Header from '@/components/common/H5Header.vue'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import PcLayout from './pc-layout.vue'
 import ReferralTaskPageContent from './components/ReferralTaskPageContent.vue'
 import {
-  createReferralTaskRewardRows,
+  buildReferralTaskRewardTable,
   createReferralTaskTabs,
   getReferralTaskCoinImage,
   getReferralTaskRulesPlaceholderImage,
+  type ReferralTaskRewardConfig,
   type ReferralTaskTabKey
 } from './shared'
 
@@ -98,14 +98,31 @@ const { t } = useI18n()
 const isMobile = useIsMobile()
 const isReady = ref(false)
 const activeTab = ref<ReferralTaskTabKey>('invite-register')
+const rewardTableLoading = ref(false)
+const taskRewardConfig = ref<ReferralTaskRewardConfig | null>(null)
 const rewardsToClaimAmount = '0.00'
 const currentProgressValue = '0'
 const maxRewardValue = '8990'
 const coinImage = getReferralTaskCoinImage()
 const taskRulesImage = getReferralTaskRulesPlaceholderImage()
 
+const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
 const taskTabs = computed(() => createReferralTaskTabs(t))
-const rewardRows = computed(() => createReferralTaskRewardRows(t))
+const rewardTable = computed(() =>
+  buildReferralTaskRewardTable(taskRewardConfig.value, activeTab.value, t)
+)
+const rewardTableColumns = computed(() => rewardTable.value.columns)
+const rewardRows = computed(() => rewardTable.value.rows)
+
+watch(
+  () => currentAgentChannelId.value,
+  () => {
+    fetchTaskRewardConfig()
+  },
+  {
+    immediate: true
+  }
+)
 
 /**
  * 处理页面初始化完成状态，避免首屏端态抖动。
@@ -113,6 +130,26 @@ const rewardRows = computed(() => createReferralTaskRewardRows(t))
 onMounted(() => {
   isReady.value = true
 })
+
+/**
+ * 获取任务奖励配置。
+ */
+async function fetchTaskRewardConfig() {
+  rewardTableLoading.value = true
+
+  try {
+    const response = await Api.agent.queryTaskRewardConfig({
+      channelId: currentAgentChannelId.value
+    })
+
+    taskRewardConfig.value = response?.result?.config ?? null
+  } catch (error) {
+    console.error('[referral-task] fetch task reward config failed:', error)
+    taskRewardConfig.value = null
+  } finally {
+    rewardTableLoading.value = false
+  }
+}
 
 /**
  * 处理客服按钮点击。
@@ -132,10 +169,7 @@ const handleTabClick = (tabKey: ReferralTaskTabKey) => {
     return
   }
 
-  showToast({
-    message: t('referral.comingSoon'),
-    type: 'success'
-  })
+  activeTab.value = tabKey
 }
 
 /**
