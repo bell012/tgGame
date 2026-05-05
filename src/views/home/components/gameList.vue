@@ -103,13 +103,16 @@
               class="platform-logo mt-1"
             />
           </div>
+          <!-- 人数标签 -->
           <div
-            class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-black_alpha20 px-1.5"
+            class="absolute bottom-1 right-1 inline-flex h-5 items-center justify-center gap-0.5 rounded-md bg-black_alpha20 bg-mask-20 px-1"
           >
-            <div class="icon size-4">
+            <div class="icon flex size-4 shrink-0 items-center justify-center leading-none">
               <peopleNumber />
             </div>
-            <span class="text-xs font-semibold text-alw_white">{{ value.number }}</span>
+            <span class="flex items-center text-xs leading-none font-semibold text-alw_white">{{
+              value.number
+            }}</span>
           </div>
           <div
             class="center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 group-hover:opacity-100"

@@ -5,8 +5,11 @@
     <div class="transaction-details-mobile-scroll flex-1 min-h-0 overflow-y-auto bg-bg-1">
       <div class="py-3.5 px-3.5">
         <div class="bg-bg-2 rounded-lg px-3.5 pb-3.5 pt-[30px] flex flex-col items-center">
-          <p class="text-[25px] font-[700] mb-2.5 text-text-1">
-            {{ detail.direction === 'add' ? '+' : '-' }}{{ detail.betAmount }}
+          <p class="text-[25px] font-[700] mb-2.5 text-text-1 flex items-center">
+            <span :class="['mr-[2px]', detail.direction === 'dec' ? 'relative -top-0.5' : '']">{{
+              detail.direction === 'add' ? '+' : '-'
+            }}</span>
+            <span>{{ detail.betAmount }}</span>
           </p>
 
           <h2 class="text-text-1 text-sm font-[700] mb-[30px]">{{ detail.gameName }}</h2>
@@ -20,7 +23,9 @@
 
             <div class="flex items-center justify-between">
               <span class="text-text-3 text-sm">{{ $t('transaction.amount') }}</span>
-              <span class="text-text-1 text-sm">{{ detail.betAmount }}</span>
+              <p class="text-text-1 text-sm flex items-center">
+                <span>{{ detail.betAmount }}</span>
+              </p>
             </div>
 
             <div class="flex items-center justify-between">
@@ -40,9 +45,10 @@
 
             <div class="flex items-center justify-between">
               <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
-              <span class="text-text-1 text-sm text-right break-all max-w-[60%]">{{
+              <span class="text-text-1 text-sm text-right break-all max-w-[60%]">-</span>
+              <!-- <span class="text-text-1 text-sm text-right break-all max-w-[60%]">{{
                 detail.remarks
-              }}</span>
+              }}</span> -->
             </div>
           </div>
         </div>

@@ -138,9 +138,9 @@ export interface QueryInspectPageResult {
     currency: string // 货币 PHP
     changeType: number
     amount: number // 金额
-    betAmount: number // Actual Turnover
-    currentBetAmount: number // Required Turnover
-    status: number // 状态0:已完成 1:未完成
+    betAmount: number // Required Turnover
+    currentBetAmount: number // Actual Turnover
+    status: number // 状态1:已完成 0:未完成
     createTime: number // 创建时间
     modifyBy: string
     modifyTime: number

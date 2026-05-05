@@ -1,6 +1,6 @@
 import type { QueryAcctHisPageForm, QueryAcctHisPageResult } from '@/api/interface/record.interface'
 import { formatTimestamp } from '@/utils/date'
-import { getCurrentCurrency, getFormattedBalance, formatBalance } from '@/utils/locale'
+import { getCurrentCurrency, formatBalance } from '@/utils/locale'
 
 type TranslateFn = (key: string) => string
 
@@ -13,6 +13,7 @@ export interface Item {
   gameName: string
   direction: 'add' | 'dec'
   betAmount: string
+  signedBetAmount: string
   profit: string
   currency: string
   orderNo: string
@@ -70,6 +71,7 @@ export const createEmptyTransactionItem = (): Item => ({
   gameName: '--',
   direction: 'add',
   betAmount: '--',
+  signedBetAmount: '--',
   profit: '--',
   currency: getCurrentCurrency(),
   orderNo: '',
@@ -152,21 +154,34 @@ export const getTransactionTypeLabel = (changeType: number, t: TranslateFn) => {
     : String(changeType || '--')
 }
 
-export const formatSignedTransactionAmount = (amount: number, currency: string) => {
+export const formatSignedTransactionAmount = (amount: number) => {
   const prefix = amount >= 0 ? '+' : '-'
-  return `${prefix}${getFormattedBalance(Math.abs(amount), currency, 2)}`
+  return `${prefix}${formatBalance(Math.abs(amount), 2)}`
+}
+
+const getTransactionDeltaAmount = (record: QueryRecord) => {
+  const newBalance = Number(record.newBalance ?? 0)
+  const oldBalance = Number(record.oldBalance ?? 0)
+
+  if (!Number.isFinite(newBalance) || !Number.isFinite(oldBalance)) {
+    return 0
+  }
+
+  return newBalance - oldBalance
 }
 
 export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => {
   const currency = record.currency || getCurrentCurrency()
   const gameName = getTransactionTypeLabel(record.changeType, t)
+  const deltaAmount = getTransactionDeltaAmount(record)
 
   return {
     id: record.accountChangeId,
     gameType: gameName,
     gameName,
-    direction: record.busiAmount >= 0 ? 'add' : 'dec',
-    betAmount: formatBalance(record.busiAmount, 2),
+    direction: deltaAmount >= 0 ? 'add' : 'dec',
+    betAmount: formatBalance(Math.abs(deltaAmount), 2),
+    signedBetAmount: formatSignedTransactionAmount(deltaAmount),
     profit: formatBalance(record.newBalance, 2),
     currency,
     orderNo: String(record.accountChangeId),
