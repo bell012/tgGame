@@ -1,14 +1,14 @@
 <template>
   <section>
     <div class="mt-2 flex h-8 items-center sm:mt-6">
-      <h2 class="flex items-center text-base font-extrabold text-primary">
+      <h2 class="flex items-center text-base font-extrabold">
         <div class="relative mr-2 h-2 w-2">
           <div class="absolute left-0 top-0 z-10 h-full w-full rounded-full bg-success"></div>
           <div
             class="absolute left-0 top-0 h-full w-full rounded-full bg-success animate-ping"
           ></div>
         </div>
-        <div>{{ $t('home.RecentBigWins') }}</div>
+        <div class="text-theme-primary">{{ $t('home.RecentBigWins') }}</div>
       </h2>
     </div>
 
@@ -63,13 +63,13 @@
               fetchpriority="low"
             />
           </div>
-          <div class="w-[118%]">
-            <div class="flex items-center justify-center font-extrabold text-secondary">
+          <div class="w-[100%]">
+            <div class="flex items-center justify-center font-bold text-secondary">
               <img class="size-[0.875rem]" :src="icon" alt="" />
               <span class="ellipsis -ml-0.5 text-xxs">{{ item.name }}</span>
             </div>
             <div
-              class="text-xxs whitespace-nowrap text-nowrap text-center font-extrabold text-brand text-theme-primary"
+              class="text-xxs whitespace-nowrap text-nowrap text-center font-bold text-brand text-theme-primary"
             >
               {{ formatRecentBigWinAmount(item.number) }} {{ item.currency }}
             </div>
