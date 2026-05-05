@@ -83,6 +83,33 @@
       @copy-link="handleCopyPosterLink"
       @invite="handleInviteNow"
     />
+
+    <!-- PC 好友详情弹窗 -->
+    <FriendDetailPcPopup
+      v-if="!isMobile && showFriendDetailPopup"
+      :page-title="t('referral.friendDetailPage.title')"
+      :active-date-tab="friendActiveDateTab"
+      :active-stats-tab="friendActiveStatsTab"
+      :avatar-alt="t('referral.detailsPage.avatarAlt')"
+      :empty-alt="t('common.noData')"
+      :empty-dark-image="friendEmptyDarkImage"
+      :empty-light-image="friendEmptyLightImage"
+      :empty-text="t('common.noData')"
+      :last-login-time-label="t('referral.friendDetailPage.labels.lastLoginTime')"
+      :member-info="friendMemberInfo"
+      :name-label="t('referral.friendDetailPage.labels.name')"
+      :total-title="t('referral.friendDetailPage.total')"
+      :user-id-label="t('referral.friendDetailPage.labels.userId')"
+      :date-tabs="friendDateTabs"
+      :stats-tabs="friendStatsTabs"
+      :summary-list="friendCurrentSummaryList"
+      :table-columns="friendCurrentTableColumns"
+      :table-list="friendCurrentTableList"
+      @close="handleCloseFriendDetailPopup"
+      @change-date-tab="handleChangeFriendDateTab"
+      @change-stats-tab="handleChangeFriendStatsTab"
+      @copy-account="handleCopyFriendAccount"
+    />
   </div>
 </template>
 
@@ -96,6 +123,22 @@ import { globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getDefaultReferralLink } from '../shared'
+import FriendDetailPcPopup from './friend/pc-layout.vue'
+import {
+  createReferralFriendDetailDateTabs,
+  createReferralFriendDetailGameColumns,
+  createReferralFriendDetailGameRows,
+  createReferralFriendDetailGameSummary,
+  createReferralFriendDetailMember,
+  createReferralFriendDetailStatsTabs,
+  createReferralFriendDetailTopUpColumns,
+  createReferralFriendDetailTopUpRows,
+  createReferralFriendDetailTopUpSummary,
+  getReferralFriendDetailEmptyDarkImage,
+  getReferralFriendDetailEmptyLightImage,
+  type ReferralFriendDetailDateTabValue,
+  type ReferralFriendDetailStatsTabValue
+} from './friend/shared'
 import InvitePosterPopup from './components/InvitePosterPopup.vue'
 import ReferralDetailsPageContent from './components/ReferralDetailsPageContent.vue'
 import PcLayout from './pc-layout.vue'
@@ -115,9 +158,15 @@ const isMobile = useIsMobile()
 const isReady = ref(false)
 const activeTab = ref<ReferralDetailsTabValue>('friends')
 const showInvitePosterPopup = ref(false)
+const showFriendDetailPopup = ref(false)
+const selectedFriendAccount = ref<string>()
+const friendActiveDateTab = ref<ReferralFriendDetailDateTabValue>('today')
+const friendActiveStatsTab = ref<ReferralFriendDetailStatsTabValue>('game-stats')
 const emptyDarkImage = getReferralDetailsEmptyDarkImage()
 const emptyLightImage = getReferralDetailsEmptyLightImage()
 const invitePosterImages = getReferralDetailsInvitePosterImages()
+const friendEmptyDarkImage = getReferralFriendDetailEmptyDarkImage()
+const friendEmptyLightImage = getReferralFriendDetailEmptyLightImage()
 const referralLink = getDefaultReferralLink()
 
 /**
@@ -139,6 +188,50 @@ const friendsList = computed(() => createReferralDetailsFriends(t))
  * 根据当前标签返回展示列表。
  */
 const visibleFriendsList = computed(() => (activeTab.value === 'friends' ? friendsList.value : []))
+
+/**
+ * 生成当前弹窗好友基础信息。
+ */
+const friendMemberInfo = computed(() =>
+  createReferralFriendDetailMember(selectedFriendAccount.value)
+)
+
+/**
+ * 生成弹窗日期筛选标签。
+ */
+const friendDateTabs = computed(() => createReferralFriendDetailDateTabs(t))
+
+/**
+ * 生成弹窗统计类型标签。
+ */
+const friendStatsTabs = computed(() => createReferralFriendDetailStatsTabs(t))
+
+/**
+ * 生成弹窗当前汇总数据。
+ */
+const friendCurrentSummaryList = computed(() =>
+  friendActiveStatsTab.value === 'game-stats'
+    ? createReferralFriendDetailGameSummary(t)
+    : createReferralFriendDetailTopUpSummary(t)
+)
+
+/**
+ * 生成弹窗当前表头数据。
+ */
+const friendCurrentTableColumns = computed(() =>
+  friendActiveStatsTab.value === 'game-stats'
+    ? createReferralFriendDetailGameColumns(t)
+    : createReferralFriendDetailTopUpColumns(t)
+)
+
+/**
+ * 生成弹窗当前表格数据。
+ */
+const friendCurrentTableList = computed(() =>
+  friendActiveStatsTab.value === 'game-stats'
+    ? createReferralFriendDetailGameRows(t)
+    : createReferralFriendDetailTopUpRows()
+)
 
 /**
  * 处理页面初始化完成状态，避免首屏端态抖动。
@@ -185,6 +278,14 @@ const handleOpenFilter = () => {
  * 处理进入好友详情。
  */
 const handleGoFriendDetail = (item: ReferralDetailsFriendItem) => {
+  if (!isMobile.value) {
+    selectedFriendAccount.value = item.id
+    friendActiveDateTab.value = 'today'
+    friendActiveStatsTab.value = 'game-stats'
+    showFriendDetailPopup.value = true
+    return
+  }
+
   navigateTo('/referral/details/friend', {
     query: {
       id: item.id
@@ -227,5 +328,38 @@ const handleCopyPosterLink = async () => {
 const handleInviteNow = () => {
   showInvitePosterPopup.value = false
   navigateTo('/referral')
+}
+
+/**
+ * 处理关闭好友详情弹窗。
+ */
+const handleCloseFriendDetailPopup = () => {
+  showFriendDetailPopup.value = false
+}
+
+/**
+ * 处理切换好友详情日期筛选。
+ */
+const handleChangeFriendDateTab = (value: ReferralFriendDetailDateTabValue) => {
+  friendActiveDateTab.value = value
+}
+
+/**
+ * 处理切换好友详情统计类型。
+ */
+const handleChangeFriendStatsTab = (value: ReferralFriendDetailStatsTabValue) => {
+  friendActiveStatsTab.value = value
+}
+
+/**
+ * 处理复制好友账号。
+ */
+const handleCopyFriendAccount = async () => {
+  const copied = await copyTextWithFallback(friendMemberInfo.value.account)
+
+  globalShowToast({
+    message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
+    type: copied ? 'success' : 'fail'
+  })
 }
 </script>

@@ -18,9 +18,10 @@
               ]"
               @click="handleMenuClick(item.key, item.path)"
             >
-              <component
-                :is="item.icon"
-                :class="['h-6 w-6', props.currentTab === item.key ? 'text-text-4' : 'text-text-2']"
+              <img
+                :src="props.currentTab === item.key ? item.activeIcon : item.icon"
+                :alt="item.label"
+                class="h-6 w-6 shrink-0"
               />
 
               <span>{{ item.label }}</span>
@@ -40,16 +41,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw } from 'vue'
-import { useI18n } from 'vue-i18n'
 import CommonFooter from '@/components/commonFooter.vue'
+import DetailsActiveIcon from '@/static/svg/referral/details-active.svg?url'
+import DetailsIcon from '@/static/svg/referral/details.svg?url'
+import GuideActiveIcon from '@/static/svg/referral/guide-active.svg?url'
+import GuideIcon from '@/static/svg/referral/guide.svg?url'
+import ReferralActiveIcon from '@/static/svg/referral/referral-active.svg?url'
+import ReferralIcon from '@/static/svg/referral/referral.svg?url'
+import RulesActiveIcon from '@/static/svg/referral/rules-active.svg?url'
+import RulesIcon from '@/static/svg/referral/rules.svg?url'
+import TasksActiveIcon from '@/static/svg/referral/tasks-active.svg?url'
+import TasksIcon from '@/static/svg/referral/tasks.svg?url'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
-import ReferralIcon from '@/static/svg/side/newIcon/referral.svg?component'
-import TaskCenterIcon from '@/static/svg/side/newIcon/task-center.svg?component'
-import MyOrdersIcon from '@/static/svg/side/newIcon/my-orders.svg?component'
-import LegalIcon from '@/static/svg/side/newIcon/legal.svg?component'
-import AboutIcon from '@/static/svg/side/newIcon/about.svg?component'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 type ReferralDesktopTab = 'referral' | 'tasks' | 'details' | 'rules' | 'guide'
 
@@ -62,7 +68,8 @@ interface ReferralDesktopMenuItem {
   key: ReferralDesktopTab
   label: string
   path?: string
-  icon: unknown
+  icon: string
+  activeIcon: string
 }
 
 const props = defineProps<Props>()
@@ -74,30 +81,35 @@ const menuItems = computed<ReferralDesktopMenuItem[]>(() => [
     key: 'referral',
     label: t('referral.title'),
     path: '/referral',
-    icon: markRaw(ReferralIcon)
+    icon: ReferralIcon,
+    activeIcon: ReferralActiveIcon
   },
   {
     key: 'tasks',
     label: t('referral.taskPage.title'),
     path: '/referral/tasks',
-    icon: markRaw(TaskCenterIcon)
+    icon: TasksIcon,
+    activeIcon: TasksActiveIcon
   },
   {
     key: 'details',
-    label: t('referral.detailsPage.title'),
+    label: t('referral.detailsPage.detailText'),
     path: '/referral/details',
-    icon: markRaw(MyOrdersIcon)
+    icon: DetailsIcon,
+    activeIcon: DetailsActiveIcon
   },
   {
     key: 'rules',
     label: t('referral.rulesPage.title'),
     path: '/referral/rules',
-    icon: markRaw(LegalIcon)
+    icon: RulesIcon,
+    activeIcon: RulesActiveIcon
   },
   {
     key: 'guide',
     label: t('referral.h5.quickActions.guide'),
-    icon: markRaw(AboutIcon)
+    icon: GuideIcon,
+    activeIcon: GuideActiveIcon
   }
 ])
 

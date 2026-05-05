@@ -102,7 +102,16 @@
       </section>
 
       <!-- 日期筛选标签区域 -->
-      <nav class="mt-[14px] overflow-x-auto">
+      <nav
+        ref="dateTabNavRef"
+        class="mt-[14px] cursor-grab overflow-x-auto overflow-y-hidden scrollbar-hide touch-pan-x active:cursor-grabbing"
+        @wheel.stop.prevent="handleDateTabWheel"
+        @pointerdown="handleDateTabPointerDown"
+        @pointermove="handleDateTabPointerMove"
+        @pointerup="handleDateTabPointerUp"
+        @pointercancel="handleDateTabPointerUp"
+        @mouseleave="handleDateTabPointerLeave"
+      >
         <!-- 日期筛选列表 -->
         <div class="flex w-max items-center gap-[8px]">
           <!-- 日期筛选项 -->
@@ -110,15 +119,24 @@
             v-for="item in props.dateTabs"
             :key="item.value"
             type="button"
-            class="flex h-[31px] shrink-0 items-center justify-center rounded-full px-[20px] text-[12px] leading-[15px]"
+            class="box-border flex h-[30.67px] shrink-0 flex-col items-start justify-center gap-[3.33px] rounded-[18px] px-[20px] py-[8px]"
             :class="
               props.activeDateTab === item.value
-                ? 'border border-theme-primary bg-theme-3 font-[700] text-common-100'
-                : 'bg-bg-2 font-[500] text-text-2'
+                ? 'border border-solid border-theme-primary bg-theme-3'
+                : 'bg-bg-2'
             "
-            @click="$emit('change-date-tab', item.value)"
+            @click="handleDateTabClick(item.value)"
           >
-            {{ item.label }}
+            <span
+              class="flex items-center text-[12px]"
+              :class="
+                props.activeDateTab === item.value
+                  ? 'font-[700] leading-[14.67px] text-common-100'
+                  : 'font-[500] leading-[18px] text-text-2'
+              "
+            >
+              {{ item.label }}
+            </span>
           </button>
         </div>
       </nav>
@@ -262,6 +280,7 @@
 <script setup lang="ts">
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import CopyIcon from '@/static/svg/copy.svg?component'
+import { ref } from 'vue'
 import type {
   ReferralFriendDetailDateTabValue,
   ReferralFriendDetailMemberInfo,
@@ -293,9 +312,102 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   'change-date-tab': [value: ReferralFriendDetailDateTabValue]
   'change-stats-tab': [value: ReferralFriendDetailStatsTabValue]
   'copy-account': []
 }>()
+
+const dateTabNavRef = ref<HTMLElement | null>(null)
+const isDateTabDragging = ref(false)
+const didDateTabDrag = ref(false)
+const dateTabPointerStartX = ref(0)
+const dateTabScrollStartLeft = ref(0)
+
+/**
+ * 处理点击日期筛选标签。
+ */
+function handleDateTabClick(value: ReferralFriendDetailDateTabValue) {
+  if (didDateTabDrag.value) {
+    didDateTabDrag.value = false
+    return
+  }
+
+  emit('change-date-tab', value)
+}
+
+/**
+ * 处理日期筛选标签区域滚轮横向滚动。
+ */
+function handleDateTabWheel(event: WheelEvent) {
+  const container = dateTabNavRef.value
+
+  if (!container) {
+    return
+  }
+
+  const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY
+
+  container.scrollLeft += delta
+}
+
+/**
+ * 处理日期筛选标签区域拖拽开始。
+ */
+function handleDateTabPointerDown(event: PointerEvent) {
+  const container = dateTabNavRef.value
+
+  if (!container || container.scrollWidth <= container.clientWidth) {
+    return
+  }
+
+  isDateTabDragging.value = true
+  didDateTabDrag.value = false
+  dateTabPointerStartX.value = event.clientX
+  dateTabScrollStartLeft.value = container.scrollLeft
+  container.setPointerCapture(event.pointerId)
+}
+
+/**
+ * 处理日期筛选标签区域拖拽移动。
+ */
+function handleDateTabPointerMove(event: PointerEvent) {
+  const container = dateTabNavRef.value
+
+  if (!container || !isDateTabDragging.value) {
+    return
+  }
+
+  const deltaX = event.clientX - dateTabPointerStartX.value
+
+  if (Math.abs(deltaX) > 4) {
+    didDateTabDrag.value = true
+  }
+
+  container.scrollLeft = dateTabScrollStartLeft.value - deltaX
+}
+
+/**
+ * 处理日期筛选标签区域拖拽结束。
+ */
+function handleDateTabPointerUp(event: PointerEvent) {
+  const container = dateTabNavRef.value
+
+  if (!container || !isDateTabDragging.value) {
+    return
+  }
+
+  isDateTabDragging.value = false
+
+  if (container.hasPointerCapture(event.pointerId)) {
+    container.releasePointerCapture(event.pointerId)
+  }
+}
+
+/**
+ * 处理日期筛选标签区域鼠标离开。
+ */
+function handleDateTabPointerLeave() {
+  isDateTabDragging.value = false
+}
 </script>

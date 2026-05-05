@@ -64,7 +64,7 @@
         :summary-list="currentSummaryList"
         :table-columns="currentTableColumns"
         :table-list="currentTableList"
-        @go-rules="handleGoRules"
+        @close="handleClosePopup"
         @change-date-tab="handleChangeDateTab"
         @change-stats-tab="handleChangeStatsTab"
         @copy-account="handleCopyAccount"
@@ -74,15 +74,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { showToast } from 'vant'
-import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import RuleIcon from '@/static/svg/rule.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { navigateTo } from '@/utils/router'
+import { showToast } from 'vant'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import ReferralFriendDetailPageContent from './components/ReferralFriendDetailPageContent.vue'
 import PcLayout from './pc-layout.vue'
 import {
@@ -172,6 +172,13 @@ onMounted(() => {
  */
 const handleGoRules = () => {
   navigateTo('/referral/rules')
+}
+
+/**
+ * 处理关闭 PC 好友明细弹窗。
+ */
+const handleClosePopup = () => {
+  navigateTo('/referral/details')
 }
 
 /**
