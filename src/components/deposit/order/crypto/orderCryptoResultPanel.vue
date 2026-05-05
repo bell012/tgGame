@@ -72,6 +72,7 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
+import { formatTimestamp } from '@/utils/date'
 import { globalShowToast } from '@/utils/toast'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -100,12 +101,6 @@ const isMobile = useIsMobile()
 // 过滤空明细项，保证明细列表结构稳定
 const compactRows = (rows: Array<DetailRowItem | null>) =>
   rows.filter((row): row is DetailRowItem => row !== null)
-
-// 格式化时间戳为本地时间文本
-const formatTimestamp = (timestamp?: number) => {
-  if (!timestamp) return ''
-  return new Date(timestamp).toLocaleString()
-}
 
 // 解析网络名称，兼容纯文本与 JSON 字符串
 const parseNetworkName = (subColumnName?: unknown) => {
