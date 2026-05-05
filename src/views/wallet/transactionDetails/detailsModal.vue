@@ -57,9 +57,10 @@
 
             <div class="flex items-center justify-between">
               <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
-              <span class="text-text-1 text-sm text-right break-all max-w-[60%]">{{
+              <span class="text-text-1 text-sm text-right break-all max-w-[60%]">-</span>
+              <!-- <span class="text-text-1 text-sm text-right break-all max-w-[60%]">{{
                 detail.remarks
-              }}</span>
+              }}</span> -->
             </div>
           </div>
         </div>
