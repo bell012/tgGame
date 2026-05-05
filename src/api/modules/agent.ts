@@ -51,6 +51,10 @@ export const queryShareChannels = (
   options?: AgentRequestOptions
 ): Promise<any> => callAgentAction('agent61', param, options)
 
+// agent57：查询任务奖励配置。
+export const queryTaskRewardConfig = (options?: AgentRequestOptions): Promise<any> =>
+  callAgentAction('agent57', undefined, options)
+
 // agent66：查询号码池与 WhatsApp/SMS 配置。
 export const queryNumberPool = (options?: AgentRequestOptions): Promise<any> =>
   callAgentAction('agent66', undefined, options)

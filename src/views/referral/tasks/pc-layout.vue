@@ -1,24 +1,5 @@
 <template>
-  <!-- PC 任务页容器 -->
-  <section
-    class="mx-auto w-full max-w-[1120px] px-6 py-6"
-    style="font-family: Inter, avertastd, sans-serif"
-  >
-    <!-- PC 任务页头部 -->
-    <div class="mb-5 flex items-center justify-between rounded-[16px] bg-bg-2 px-5 py-4">
-      <!-- PC 任务页标题 -->
-      <h1 class="text-[24px] font-[700] leading-[29px] text-text-1">{{ props.pageTitle }}</h1>
-
-      <!-- PC 客服按钮 -->
-      <button
-        type="button"
-        class="flex h-11 w-11 items-center justify-center rounded-[12px] bg-opacity-5"
-        @click="$emit('customer-service')"
-      >
-        <CustomerServiceIcon class="h-5 w-5 text-text-1" />
-      </button>
-    </div>
-
+  <ReferralLayout current-tab="tasks" :page-title="props.pageTitle">
     <!-- PC 任务页内容 -->
     <ReferralTaskPageContent
       mode="pc"
@@ -34,10 +15,9 @@
       :current-progress-label="props.currentProgressLabel"
       :max-reward-value="props.maxRewardValue"
       :max-reward-label="props.maxRewardLabel"
-      :invited-sign-ups-label="props.invitedSignUpsLabel"
-      :reward-label="props.rewardLabel"
-      :status-label="props.statusLabel"
+      :reward-table-columns="props.rewardTableColumns"
       :reward-rows="props.rewardRows"
+      :reward-table-loading="props.rewardTableLoading"
       :valid-invite-title="props.validInviteTitle"
       :valid-invite-description="props.validInviteDescription"
       :task-rules-title="props.taskRulesTitle"
@@ -45,11 +25,11 @@
       @claim="$emit('claim')"
       @tab-click="$emit('tab-click', $event)"
     />
-  </section>
+  </ReferralLayout>
 </template>
 
 <script setup lang="ts">
-import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+import ReferralLayout from '../ReferralLayout.vue'
 import ReferralTaskPageContent from './components/ReferralTaskPageContent.vue'
 import type { ReferralTaskRewardRow, ReferralTaskTab, ReferralTaskTabKey } from './shared'
 
@@ -67,10 +47,9 @@ interface Props {
   currentProgressLabel: string
   maxRewardValue: string
   maxRewardLabel: string
-  invitedSignUpsLabel: string
-  rewardLabel: string
-  statusLabel: string
+  rewardTableColumns: string[]
   rewardRows: ReferralTaskRewardRow[]
+  rewardTableLoading: boolean
   validInviteTitle: string
   validInviteDescription: string
   taskRulesTitle: string
@@ -80,7 +59,6 @@ interface Props {
 const props = defineProps<Props>()
 
 defineEmits<{
-  'customer-service': []
   claim: []
   'tab-click': [value: ReferralTaskTabKey]
 }>()

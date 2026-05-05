@@ -12,32 +12,20 @@
       <!-- 快捷入口区域 -->
       <section class="flex flex-col gap-3.5">
         <!-- 快捷入口列表 -->
-        <div :class="props.mode === 'pc' ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-4 gap-2.5'">
+        <div v-if="props.mode !== 'pc'" class="grid grid-cols-4 gap-2.5">
           <!-- 快捷入口按钮 -->
           <button
             v-for="item in props.quickActions"
             :key="item.id"
             type="button"
-            class="flex flex-col items-center justify-start"
-            :class="props.mode === 'pc' ? 'gap-3 rounded-[16px]' : 'gap-2 rounded-[10px]'"
+            class="flex flex-col items-center justify-start gap-2 rounded-[10px]"
             @click="$emit('quick-action', item.id)"
           >
             <!-- 快捷入口图标 -->
-            <img
-              :src="item.icon"
-              :alt="item.label"
-              :class="
-                props.mode === 'pc'
-                  ? 'h-[68px] w-[68px] object-contain'
-                  : 'h-[46px] w-[46px] object-contain'
-              "
-            />
+            <img :src="item.icon" :alt="item.label" class="h-[46px] w-[46px] object-contain" />
 
             <!-- 快捷入口文案 -->
-            <span
-              class="text-center font-[400] text-text-1"
-              :class="props.mode === 'pc' ? 'text-base leading-[20px]' : 'text-sm leading-[17px]'"
-            >
+            <span class="text-center text-sm font-[400] leading-[17px] text-text-1">
               {{ item.label }}
             </span>
           </button>
@@ -87,28 +75,55 @@
       >
         <!-- 社交分享按钮滚动区 -->
         <div class="overflow-x-auto">
+          <!-- 社交分享骨架列表 -->
+          <div
+            v-if="props.socialChannelsLoading"
+            class="flex min-w-max"
+            :class="props.mode === 'pc' ? 'gap-6' : 'gap-3.5'"
+          >
+            <!-- 社交分享骨架项 -->
+            <div
+              v-for="index in socialChannelSkeletonCount"
+              :key="`social-channel-skeleton-${index}`"
+              class="flex flex-col items-center"
+              :class="props.mode === 'pc' ? 'w-[88px] gap-3' : 'w-[60px] gap-2'"
+            >
+              <!-- 社交分享骨架图标 -->
+              <div
+                class="animate-pulse rounded-[15px] bg-bg-4"
+                :class="props.mode === 'pc' ? 'h-[72px] w-[72px]' : 'h-10 w-10'"
+              ></div>
+
+              <!-- 社交分享骨架文案 -->
+              <div
+                class="animate-pulse rounded-full bg-bg-4"
+                :class="props.mode === 'pc' ? 'h-4 w-16' : 'h-3 w-12'"
+              ></div>
+            </div>
+          </div>
+
           <!-- 社交分享按钮列表 -->
-          <div class="flex min-w-max" :class="props.mode === 'pc' ? 'gap-6' : 'gap-3.5'">
+          <div v-else class="flex min-w-max" :class="props.mode === 'pc' ? 'gap-6' : 'gap-3.5'">
             <!-- 社交分享按钮 -->
             <button
               v-for="item in props.socialChannels"
-              :key="item.id"
+              :key="`${item.shareName}-${item.sort}`"
               type="button"
               class="flex flex-col items-center"
               :class="props.mode === 'pc' ? 'w-[88px] gap-3' : 'w-[60px] gap-2'"
-              @click="$emit('share-channel', item.id)"
+              @click="$emit('share-channel', item)"
             >
               <!-- 社交分享图标容器 -->
               <div
                 class="flex items-center justify-center"
-                :class="
-                  props.mode === 'pc'
-                    ? ['h-[72px] w-[72px]', item.iconClass || '']
-                    : ['h-10 w-10', item.iconClass || '']
-                "
+                :class="props.mode === 'pc' ? 'h-[72px] w-[72px]' : 'h-10 w-10'"
               >
                 <!-- 社交分享图标 -->
-                <img :src="item.icon" :alt="item.label" class="h-full w-full object-contain" />
+                <img
+                  :src="item.shareDomainImage"
+                  :alt="item.shareName"
+                  class="h-full w-full object-contain"
+                />
               </div>
 
               <!-- 社交分享文案 -->
@@ -116,7 +131,7 @@
                 class="w-full text-center font-[400] text-text-1"
                 :class="props.mode === 'pc' ? 'text-sm leading-[20px]' : 'text-xs leading-[15px]'"
               >
-                {{ item.label }}
+                {{ item.shareName }}
               </span>
             </button>
           </div>
@@ -332,18 +347,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type {
-  ReferralQuickAction,
-  ReferralQuickActionId,
-  ReferralSocialChannel,
-  ReferralSocialChannelId
-} from '../shared'
+import type { ReferralQuickAction, ReferralQuickActionId, ReferralSocialChannel } from '../shared'
 
 interface Props {
   mode: 'mobile' | 'pc'
   quickActions: ReferralQuickAction[]
   marqueeMessages: string[]
   socialChannels: ReferralSocialChannel[]
+  socialChannelsLoading: boolean
   bannerImage: string
   commissionCoinImage: string
   estimatedCommissionLabel: string
@@ -362,7 +373,7 @@ const props = defineProps<Props>()
 
 defineEmits<{
   'quick-action': [value: ReferralQuickActionId]
-  'share-channel': [value: ReferralSocialChannelId]
+  'share-channel': [value: ReferralSocialChannel]
   'share-guide': []
   'copy-message': []
   claim: []
@@ -382,6 +393,11 @@ const marqueeLoopMessages = computed(() =>
     ? [...props.marqueeMessages, ...props.marqueeMessages]
     : props.marqueeMessages
 )
+
+/**
+ * 生成社交分享区域骨架数量。
+ */
+const socialChannelSkeletonCount = computed(() => 6)
 </script>
 
 <style scoped>

@@ -223,6 +223,7 @@ import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?co
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?component'
 import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?component'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
+import { formatTimestamp } from '@/utils/date'
 import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
 import {
   computed,
@@ -403,12 +404,6 @@ const resolveSelectedDiscountRatio = () => {
   const ratio = Number(matchedDiscount?.ratio)
 
   return Number.isFinite(ratio) && ratio > 0 ? ratio : undefined
-}
-
-// 格式化订单时间
-const formatTimestamp = (timestamp?: number) => {
-  if (!timestamp) return ''
-  return new Date(timestamp).toLocaleString()
 }
 
 // 应用订单详情到弹窗数据

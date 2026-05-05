@@ -84,13 +84,13 @@
 </template>
 <script setup lang="ts">
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
+import ArrowLeft2Icon from '@/static/svg/arrow_left2.svg?component'
+import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import { useAuthModalStore } from '@/stores/authModal'
 import { navigateTo, navigateToName } from '@/utils/router'
 import type { SwipeInstance } from 'vant'
 import { Swipe, SwipeItem } from 'vant'
 import { computed, ref, watch } from 'vue'
-import ArrowLeft2Icon from '@/static/svg/arrow_left2.svg?component'
-import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 
 const authModalStore = useAuthModalStore()
 

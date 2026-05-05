@@ -10,6 +10,7 @@ import gCashIcon from '@/static/img/payment/gCash.png'
 import grabPayIcon from '@/static/img/payment/grabPay.png'
 import mayaIcon from '@/static/img/payment/maya.png'
 import shopeePayIcon from '@/static/svg/coin/shopeePay.svg?url'
+import { formatTimestamp } from '@/utils/date'
 import { getCurrentCurrency, getFormattedBalance, getLanguageCode } from '@/utils/locale'
 
 type TranslateFn = (key: string) => string
@@ -243,8 +244,7 @@ export const loadMyOrderTypeIconMap = async (): Promise<OrderTypeIconMap> => {
  * 格式化订单时间。
  */
 export const formatMyOrderTime = (timestamp?: number) => {
-  if (!timestamp) return ''
-  return new Date(timestamp).toLocaleString()
+  return formatTimestamp(timestamp)
 }
 
 /**

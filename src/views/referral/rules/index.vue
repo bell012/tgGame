@@ -105,6 +105,6 @@ const handlePlayGuide = () => {
  * 处理点击邀请按钮。
  */
 const handleInvite = () => {
-  navigateTo('/menu/referral')
+  navigateTo('/referral')
 }
 </script>

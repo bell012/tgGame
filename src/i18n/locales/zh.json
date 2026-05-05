@@ -598,6 +598,24 @@
     "claimPending": "领取申请已提交",
     "comingSoon": "功能开发中",
     "cta": "立即邀请",
+    "invitePoster": {
+      "saveImage": "保存海报",
+      "copyLink": "复制链接",
+      "inviteNow": "立即分享",
+      "posterAlt": "邀请海报",
+      "saveHint": "请截图保存海报。",
+      "saveStarted": "图片下载已开始",
+      "saveFailed": "图片保存失败"
+    },
+    "messagePopup": {
+      "title": "推荐文案",
+      "description": "复制时会自动将此文案添加到链接前面",
+      "presets": {
+        "exclusiveRewards": "立即点击领取",
+        "earnTogether": "立即加入，领取专属奖励",
+        "unlockBonus": "邀请好友，解锁惊喜奖励"
+      }
+    },
     "h5": {
       "quickActions": {
         "tasks": "任务",
@@ -638,8 +656,12 @@
       "currentProgress": "当前进度",
       "maxRewardThisWeek": "本周最高奖励",
       "invitedSignUps": "邀请注册数",
+      "depositAmount": "充值金额",
+      "commissionBoost": "佣金加成",
+      "depositors": "充值人数",
       "reward": "奖励",
       "status": "状态",
+      "achieved": "已达成",
       "notAchieved": "未达成",
       "validInviteTitle": "什么算有效邀请？",
       "validInviteDescription": "本周累计充值至少 ₱500，或有效投注累计达到 ₱1,000 的会员，视为有效邀请。",
@@ -670,6 +692,7 @@
       "title": "好友",
       "filter": "筛选",
       "detailText": "详情",
+      "showNow": "立即查看",
       "avatarAlt": "头像",
       "friendDetailHint": "好友详情暂未开放：",
       "date": {

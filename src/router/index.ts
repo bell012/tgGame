@@ -113,9 +113,9 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'menu/referral',
-    name: 'menuReferral',
-    component: () => import('@/views/menu/referral/index.vue'),
+    path: 'referral',
+    name: 'referral',
+    component: () => import('@/views/referral/index.vue'),
     meta: {
       title: '代理',
       requiresAuth: true,
@@ -126,9 +126,9 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'menu/referral/tasks',
-    name: 'menuReferralTasks',
-    component: () => import('@/views/menu/referral/tasks/index.vue'),
+    path: 'referral/tasks',
+    name: 'referralTasks',
+    component: () => import('@/views/referral/tasks/index.vue'),
     meta: {
       title: '任务',
       requiresAuth: true,
@@ -140,9 +140,9 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'menu/referral/details',
-    name: 'menuReferralDetails',
-    component: () => import('@/views/menu/referral/details/index.vue'),
+    path: 'referral/details',
+    name: 'referralDetails',
+    component: () => import('@/views/referral/details/index.vue'),
     meta: {
       title: 'Friends',
       requiresAuth: true,
@@ -154,9 +154,9 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
-    path: 'menu/referral/details/friend',
-    name: 'menuReferralFriendDetail',
-    component: () => import('@/views/menu/referral/details/friend/index.vue'),
+    path: 'referral/details/friend',
+    name: 'referralFriendDetail',
+    component: () => import('@/views/referral/details/friend/index.vue'),
     meta: {
       title: 'Details',
       requiresAuth: true,
@@ -168,9 +168,9 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   // {
-  //   path: 'menu/referral/commission-records',
-  //   name: 'menuReferralCommissionRecords',
-  //   component: () => import('@/views/menu/referral/commission-records/index.vue'),
+  //   path: 'referral/commission-records',
+  //   name: 'referralCommissionRecords',
+  //   component: () => import('@/views/referral/commission-records/index.vue'),
   //   meta: {
   //     title: '佣金记录列表',
   //     requiresAuth: true,
@@ -181,9 +181,9 @@ const baseRoutes: RouteRecordRaw[] = [
   //   }
   // },
   {
-    path: 'menu/referral/rules',
-    name: 'menuReferralCommissionRules',
-    component: () => import('@/views/menu/referral/rules/index.vue'),
+    path: 'referral/rules',
+    name: 'referralCommissionRules',
+    component: () => import('@/views/referral/rules/index.vue'),
     meta: {
       title: 'Commission Rules',
       requiresAuth: true,
@@ -195,9 +195,9 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   // {
-  //   path: 'menu/referral/referral-records',
-  //   name: 'menuReferralReferralRecords',
-  //   component: () => import('@/views/menu/referral/referral-records/index.vue'),
+  //   path: 'referral/referral-records',
+  //   name: 'referralReferralRecords',
+  //   component: () => import('@/views/referral/referral-records/index.vue'),
   //   meta: {
   //     title: '我的代理-推荐记录列表',
   //     requiresAuth: true,
