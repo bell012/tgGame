@@ -87,6 +87,7 @@
 
 <script setup lang="ts">
 import popShell from '@/components/withdraw/popShell.vue'
+import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -113,6 +114,8 @@ const visible = computed({
 const valueClass = computed(() => {
   return props.isMobile ? 'text-[14px]' : 'text-[16px]'
 })
+
+useLockBodyScroll(visible)
 </script>
 
 <style scoped lang="scss"></style>
