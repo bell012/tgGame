@@ -94,7 +94,7 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type { GameStatisticsResult } from '@/api/interface/game'
-import { useLocaleStore } from '@/stores/locale'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useThemeStore } from '@/stores/theme'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RefreshIcon from '@/static/svg/game/detail/refresh.svg?component'
@@ -133,10 +133,9 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   computed(() => null)
 )
 
-const localeStore = useLocaleStore()
 const themeStore = useThemeStore()
-const { actualCurrency } = storeToRefs(localeStore)
 const { theme } = storeToRefs(themeStore)
+const { currentCurrencyCode } = useDisplayCurrency()
 const { t } = useI18n()
 const isLightTheme = computed(() => theme.value === 'light')
 
@@ -145,7 +144,7 @@ const normalizeValue = (value: unknown) => String(value ?? '').trim()
 const currentItemCode = computed(() => normalizeValue(currentGameDetail.value?.itemCode))
 const currentPlatformCode = computed(() => normalizeValue(currentGameDetail.value?.platformCode))
 const currentRequestCurrency = computed(
-  () => normalizeValue(actualCurrency.value).toUpperCase() || 'USD'
+  () => normalizeValue(currentCurrencyCode.value).toUpperCase() || 'PHP'
 )
 const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestCurrency.value))
 
@@ -173,11 +172,11 @@ const formatCount = (value: unknown) => {
 }
 
 const profitText = computed(() => {
-  return `${getCurrencySymbol(actualCurrency.value)}${formatAmount(statistics.value.profit)}`
+  return `${getCurrencySymbol(currentRequestCurrency.value)}${formatAmount(statistics.value.profit)}`
 })
 
 const wageredText = computed(() => {
-  return `${getCurrencySymbol(actualCurrency.value)}${formatAmount(statistics.value.wagered)}`
+  return `${getCurrencySymbol(currentRequestCurrency.value)}${formatAmount(statistics.value.wagered)}`
 })
 
 const winCount = computed(() => formatCount(statistics.value.win))
@@ -301,7 +300,7 @@ const handleRefreshGameStatistics = () => {
 }
 
 watch(
-  [() => props.visible, currentItemCode, currentPlatformCode, actualCurrency],
+  [() => props.visible, currentItemCode, currentPlatformCode, currentCurrencyCode],
   () => {
     if (!props.visible) {
       return

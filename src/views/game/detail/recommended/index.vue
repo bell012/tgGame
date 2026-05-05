@@ -1,7 +1,7 @@
 <template>
   <div v-if="isMobile" class="fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1">
     <H5Header :title="pageTitle" disable-default-back @back="handleBack" />
-    <div class="flex-1 min-h-0 overflow-y-auto px-2.5 pt-2.5 pb-4 sm:px-4">
+    <div ref="mobileScrollRef" class="flex-1 min-h-0 overflow-y-auto px-2.5 pt-2.5 pb-4 sm:px-4">
       <ResponsiveGridPager
         :items="pagedGameList"
         v-model:page="page"
@@ -63,7 +63,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import { navigateTo } from '@/utils/router'
 import { navigateToName } from '@/utils/router'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onActivated, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import type { GameDataItem as CasinoCardGameDataItem } from '@/api/interface/game'
@@ -108,6 +108,7 @@ const { t } = useI18n()
 
 const page = ref(1)
 const gameList = ref<GameDataItem[]>([])
+const mobileScrollRef = ref<HTMLElement | null>(null)
 const defaultPageTitle = computed(() => t('home.RecommendedGames'))
 const pageTitle = ref(defaultPageTitle.value)
 
@@ -221,8 +222,24 @@ const handleBack = () => {
   navigateTo('/')
 }
 
+const resetPageScrollTop = async () => {
+  await nextTick()
+  mobileScrollRef.value?.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+
+  if (typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }
+}
+
 onMounted(() => {
+  void resetPageScrollTop()
   void initPageData()
+})
+
+onActivated(() => {
+  void resetPageScrollTop()
 })
 
 watch(defaultPageTitle, value => {

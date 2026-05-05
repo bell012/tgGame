@@ -128,9 +128,11 @@ const confirmExit = async () => {
 
 <style scoped>
 .game-iframe-page {
-  position: relative;
+  position: fixed;
+  inset: 0;
   width: 100%;
-  height: 100dvh;
+  height: 100vh;
+  overflow: hidden;
   background: #000;
 }
 
@@ -151,9 +153,9 @@ const confirmExit = async () => {
 }
 
 .game-iframe-page__close-btn {
-  position: fixed;
-  top: 48px;
-  left: 14px;
+  position: absolute;
+  top: max(calc(env(safe-area-inset-top) + 12px), 12px);
+  left: max(calc(env(safe-area-inset-left) + 12px), 12px);
   z-index: 9999;
   width: 50px;
   height: 50px;
@@ -161,15 +163,9 @@ const confirmExit = async () => {
   border-radius: 9999px;
   padding: 0;
   background: rgba(0, 0, 0, 0.55);
+  transform: translateZ(0);
+  will-change: transform;
   cursor: pointer;
-}
-
-@media (orientation: landscape) {
-  .game-iframe-page__close-btn {
-    top: calc(env(safe-area-inset-top) + 8px);
-    right: calc(env(safe-area-inset-right) + 8px);
-    left: auto;
-  }
 }
 
 .game-iframe-page__close-icon {

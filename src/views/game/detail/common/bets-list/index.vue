@@ -344,6 +344,7 @@ const fetchBetRecords = async () => {
         : []
 
     betSourceRows.value = recordList.map((item, index) => mapRecordToRow(item, index))
+    rows.value = betSourceRows.value.slice(0, MAX_VISIBLE_ROWS)
   } catch (error) {
     console.error('fetchBetRecords failed', error)
     betSourceRows.value = []
@@ -370,6 +371,7 @@ const fetchHighRollerRecords = async () => {
     highRollerSourceRows.value = recordList.map((item, index) =>
       mapHighRollerToRow((item as Record<string, unknown>) ?? {}, index)
     )
+    startHighRollerAutoScroll()
   } catch (error) {
     console.error('fetchHighRollerRecords failed', error)
     highRollerSourceRows.value = []
@@ -379,20 +381,11 @@ const fetchHighRollerRecords = async () => {
 
 let highRollerAutoScrollTimer: number | null = null
 let highRollerNextScrollIndex = 0
-let betAutoScrollTimer: number | null = null
-let betNextScrollIndex = 0
 
 const stopHighRollerAutoScroll = () => {
   if (highRollerAutoScrollTimer != null) {
     window.clearTimeout(highRollerAutoScrollTimer)
     highRollerAutoScrollTimer = null
-  }
-}
-
-const stopBetAutoScroll = () => {
-  if (betAutoScrollTimer != null) {
-    window.clearTimeout(betAutoScrollTimer)
-    betAutoScrollTimer = null
   }
 }
 
@@ -428,57 +421,23 @@ const startHighRollerAutoScroll = () => {
   scheduleNextHighRollerScroll()
 }
 
-const scheduleNextBetScroll = () => {
-  betAutoScrollTimer = window.setTimeout(() => {
-    const list = betSourceRows.value
-    const nextRow = list[betNextScrollIndex]
-    if (!nextRow || list.length === 0) {
-      return
-    }
-
-    rows.value = [nextRow, ...rows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
-    betNextScrollIndex = (betNextScrollIndex + 1) % list.length
-    scheduleNextBetScroll()
-  }, SCROLL_INTERVAL_MS)
-}
-
-const startBetAutoScroll = () => {
-  stopBetAutoScroll()
-  const list = betSourceRows.value
-  if (list.length === 0) {
-    rows.value = []
-    return
-  }
-
-  if (list.length <= MAX_VISIBLE_ROWS) {
-    rows.value = [...list]
-    return
-  }
-
-  rows.value = list.slice(0, MAX_VISIBLE_ROWS)
-  betNextScrollIndex = MAX_VISIBLE_ROWS % list.length
-  scheduleNextBetScroll()
-}
-
 const fetchTableData = async () => {
   isLoading.value = true
   try {
     if (activeTab.value === 2) {
-      stopBetAutoScroll()
       betSourceRows.value = []
       rows.value = []
       await fetchHighRollerRecords()
       return
     }
 
+    stopHighRollerAutoScroll()
     if (!isLoggedIn.value) {
-      stopBetAutoScroll()
       betSourceRows.value = []
       rows.value = []
       return
     }
 
-    stopHighRollerAutoScroll()
     highRollerSourceRows.value = []
     highRollerRows.value = []
     await fetchBetRecords()
@@ -495,34 +454,7 @@ watch(
   { immediate: true }
 )
 
-watch(
-  betSourceRows,
-  () => {
-    if (activeTab.value === 2) {
-      stopBetAutoScroll()
-      return
-    }
-
-    startBetAutoScroll()
-  },
-  { deep: true }
-)
-
-watch(
-  highRollerSourceRows,
-  () => {
-    if (activeTab.value !== 2) {
-      stopHighRollerAutoScroll()
-      return
-    }
-
-    startHighRollerAutoScroll()
-  },
-  { deep: true }
-)
-
 onBeforeUnmount(() => {
-  stopBetAutoScroll()
   stopHighRollerAutoScroll()
 })
 </script>

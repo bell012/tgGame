@@ -52,6 +52,25 @@ export function queryAcctInfo(
 }
 
 /**
+ * 切换钱包币种
+ * @param data currency
+ * @returns Promise<any>
+ */
+export function changeWallet(
+  data: { currency: string },
+  options?: ApiResponseToastOptions
+): Promise<any> {
+  return request({
+    url: '/acct/changeWallet',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true,
+    ...options
+  })
+}
+
+/**
  * 查询会员信息
  * @param data 会员ID
  * @returns Promise<SelectMemberResponse>

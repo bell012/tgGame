@@ -129,14 +129,14 @@ const formatRatioPercentText = (value: number) =>
 /**
  * 进度百分比文案格式化：
  * - 小于 1% 显示 0%
- * - 大于等于 1% 向上取整显示（无小数）
+ * - 大于等于 1% 向下取整显示（无小数）
  */
 const formatProgressPercentText = (value: number) => {
   if (value < 1) {
     return '0%'
   }
 
-  return `${Math.ceil(value)}%`
+  return `${Math.floor(value)}%`
 }
 
 /**
@@ -349,7 +349,7 @@ const calcProgressPercent = (currentValue: number, targetValue: number) => {
     return 0
   }
 
-  return Math.ceil(clampedPercent)
+  return Math.floor(clampedPercent)
 }
 
 /**
@@ -534,7 +534,6 @@ export const useRebatePage = () => {
         rebateDataRows.value = []
         return
       }
-
       rebateDataRows.value = normalizeRebateDataRows(response.result)
     } catch (error) {
       console.error('loadRebateData failed', error)
