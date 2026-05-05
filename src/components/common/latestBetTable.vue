@@ -1,22 +1,24 @@
 <template>
-  <div
-    class="relative w-full h-[430px] overflow-hidden rounded-xl bg-[var(--color-background-level-2)]"
-  >
-    <table class="h-full w-full table-fixed text-sm text-[14px] text-text-2">
-      <thead class="bg-[var(--color-opacity-6)] text-[12px]">
-        <tr>
-          <td class="w-[36%] px-3 py-[10px]">{{ $t('home.Game') }}</td>
-          <td class="w-[26%] px-3 py-[10px]">{{ $t('home.Player') }}</td>
-          <td class="w-[16%] px-3 py-[10px] text-center">{{ $t('home.Multiplier') }}</td>
-          <td class="w-[22%] px-3 py-[10px] text-right">{{ $t('home.Profit') }}</td>
+  <div class="relative w-full h-[430px] overflow-hidden rounded-lg sm:rounded-xl bg-bg-2">
+    <table
+      class="h-full w-full table-fixed border-collapse border-spacing-0 font-['Inter'] text-xs sm:text-sm font-medium sm:font-bold leading-[18px] sm:leading-normal text-text-2"
+    >
+      <thead class="bg-bg-2">
+        <tr class="sm:h-12">
+          <td class="w-[27.09%] sm:w-1/4 px-2.5 py-2.5 sm:px-6 sm:py-0">{{ $t('home.Game') }}</td>
+          <td class="w-[23.05%] sm:w-1/4 px-2.5 py-2.5 sm:px-0 sm:py-0 text-center">
+            {{ $t('home.Player') }}
+          </td>
+          <td class="w-[23.05%] sm:w-1/4 px-2.5 py-2.5 sm:px-0 sm:py-0 text-center">
+            {{ $t('home.Multiplier') }}
+          </td>
+          <td class="w-[26.81%] sm:w-1/4 px-2.5 py-2.5 sm:px-6 sm:py-0 text-right">
+            {{ $t('home.Profit') }}
+          </td>
         </tr>
       </thead>
       <tbody v-if="loading">
-        <tr
-          v-for="index in 10"
-          :key="index"
-          :class="index % 2 === 0 ? 'bg-[var(--color-opacity-10)]' : 'bg-[var(--color-opacity-6)]'"
-        >
+        <tr v-for="index in 10" :key="index" :class="index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2'">
           <td colspan="4" class="px-3 py-2">
             <div class="h-8 animate-pulse rounded bg-bg-3" />
           </td>
@@ -26,11 +28,10 @@
         <tr
           v-for="(item, index) in displayRows"
           :key="`row-${index}`"
-          :class="[
-            index % 2 === 0 ? 'bg-[var(--color-opacity-10)]' : 'bg-[var(--color-opacity-6)]'
-          ]"
+          class="sm:h-12"
+          :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
         >
-          <td class="px-3 py-2">
+          <td class="px-2.5 py-2.5 sm:px-6 sm:py-0">
             <div :key="item.id" class="flex min-w-0 items-center gap-1">
               <div class="h-3.5 w-3.5 shrink-0">
                 <gameRemoteImg
@@ -39,19 +40,21 @@
                   :alt="item.game"
                 />
               </div>
-              <span class="min-w-0 truncate text-text-1">
+              <span class="block min-w-0 max-w-[58px] truncate text-text-1 sm:max-w-none">
                 {{ item.game }}
               </span>
             </div>
           </td>
-          <td class="px-3 py-2">
-            <span class="block truncate text-text-1">
+          <td class="px-2.5 py-2.5 sm:px-0 sm:py-0 text-center">
+            <span class="mx-auto block max-w-[60px] truncate text-text-1 sm:max-w-none">
               {{ item.player }}
             </span>
           </td>
-          <td class="py-2 px-3 text-center text-[12px]">x{{ item.multiplier }}</td>
-          <td class="px-3 py-2 text-[12px]">
-            <div class="flex items-center justify-end gap-1">
+          <td class="px-2.5 py-2.5 sm:px-0 sm:py-0 text-center text-xs sm:text-sm">
+            <span class="mx-auto block max-w-[60px] truncate">{{ item.multiplier }}x</span>
+          </td>
+          <td class="px-2.5 py-2.5 sm:px-6 sm:py-0 text-right text-xs sm:text-sm">
+            <div class="ml-auto flex w-[73px] max-w-full items-center justify-end gap-1 sm:w-auto">
               <span :class="item.profit >= 0 ? 'text-secondary-4' : 'text-text-2'">
                 {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
               </span>
@@ -62,15 +65,15 @@
       </tbody>
       <tbody v-else>
         <tr>
-          <td colspan="4" class="px-3 py-6">
+          <td colspan="4" class="px-2.5 py-6">
             <ThemedEmptyState
               :dark-image="defaultImgDark"
               :light-image="defaultImgLight"
               :image-alt="$t('gameDetail.noData')"
               :message="$t('gameDetail.noData')"
               container-class="mt-0"
-              image-class="h-[96px] w-auto object-contain mx-auto"
-              text-class="mt-2 text-center text-[12px] font-[500] leading-[18px] text-text-2"
+              image-class="h-24 w-auto object-contain mx-auto"
+              text-class="mt-2 text-center text-xs sm:text-sm font-medium sm:font-bold leading-[18px] text-text-2"
             />
           </td>
         </tr>
