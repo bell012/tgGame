@@ -21,19 +21,25 @@
         <transition name="drawer-mask">
           <div
             v-if="visible"
-            class="fixed inset-0 bg-black/60 z-[10000] overflow-hidden"
+            class="fixed inset-0 bg-mask-60-1 z-[10000] overflow-hidden"
             @click="handleClose"
           >
             <transition name="drawer-slide">
               <div
                 v-if="showDrawer"
-                class="absolute right-0 top-0 h-full w-full bg-bg-1 overflow-y-auto shadow-2xl"
+                class="absolute right-0 top-0 h-full w-full overflow-y-auto shadow-2xl container_bg"
                 @click.stop
               >
                 <div class="w-full relative h-50 box-content">
                   <div class="w-full z-10 p-4">
                     <div class="flex items-center justify-between">
-                      <MainLogoIcon class="h-12 w-auto text-text-1" />
+                      <div class="flex items-center">
+                        <FoldIconH5
+                          class="h-5 w-5 text-text-1 mr-[7px] cursor-pointer"
+                          @click="handleNavigateToMenu"
+                        />
+                        <MainLogoIcon class="h-[49px] w-auto text-text-1" />
+                      </div>
                       <button
                         class="w-7 h-7 bg-opacity-10 rounded-md flex items-center justify-center"
                         @click="handleClose"
@@ -208,6 +214,8 @@ import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import ResetPasswordFormCore from './ResetPasswordFormCore.vue'
 import { useI18n } from 'vue-i18n'
+import FoldIconH5 from '@/static/svg/foldH5.svg?component'
+import { navigateTo } from '@/utils/router'
 
 const { t } = useI18n()
 const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
@@ -277,6 +285,15 @@ const handleClose = () => {
   }, 350)
 }
 
+const handleNavigateToMenu = () => {
+  showDrawer.value = false
+  setTimeout(() => {
+    resetPasswordFormRef.value?.resetForm()
+    emit('update:visible', false)
+    void navigateTo('/menu')
+  }, 350)
+}
+
 /**
  * 重置密码成功后，先关闭当前重置密码，切回登录弹窗。
  */
@@ -342,5 +359,15 @@ const handleResetPasswordSuccess = () => {
 .drawer-slide-enter-to,
 .drawer-slide-leave-from {
   transform: translateX(0);
+}
+
+.container_bg {
+  background:
+    radial-gradient(
+      102.8% 51.58% at 100% 0%,
+      rgba(35, 238, 136, 0.06) 0%,
+      rgba(35, 238, 136, 0) 100%
+    ),
+    var(--color-background-level-1, #242626);
 }
 </style>
