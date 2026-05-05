@@ -23,3 +23,13 @@
 .drawer-slide-leave-from {
   transform: translateX(0);
 }
+
+/* 登录/注册/忘记密码输入框统一样式 */
+.auth-input-placeholder::placeholder {
+  opacity: 0.6;
+}
+// 密码*的大小
+.auth-password-mask:not(:placeholder-shown) {
+  font-size: 20px;
+  line-height: 20px;
+}

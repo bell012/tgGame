@@ -4,6 +4,9 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        inter: ['Inter', 'sans-serif']
+      },
       colors: {
         // ========== 主题色 (Theme) ==========
         'theme-primary': 'var(--color-theme-level-1)',

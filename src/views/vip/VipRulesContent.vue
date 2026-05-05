@@ -1,16 +1,18 @@
 <!-- 规则组件 -->
 <template>
   <section class="space-y-2.5 sm:bg-bg-2 sm:p-[24px] sm:rounded-[10px]">
-    <div class="rounded-[10px] bg-bg-2 p-3.5 pb-[0px] sm:p-0 sm:pb-0">
-      <h3 class="text-sm font-[700] text-text-1 sm:text-base">
+    <div class="rounded-[10px] bg-bg-2 pb-[0px] sm:p-0 sm:pb-0">
+      <h3
+        class="text-sm font-[700] py-3.5 px-3.5 text-text-1 border-b border-opacity-6 sm:border-b-0 sm:py-0 sm:px-0 sm:text-base"
+      >
         {{ $t('vipPage.retention.title') }}
       </h3>
 
-      <div class="mt-3.5 sm:mt-[8px] sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0">
+      <div class="sm:mt-[8px] sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0">
         <article
           v-for="card in retentionCards"
           :key="card.key"
-          class="py-3.5 flex items-center justify-between sm:h-[80px] sm:p-6 sm:bg-opacity-5 sm:rounded-[16px]"
+          class="py-3.5 mx-3.5 flex items-center justify-between border-b border-opacity-6 last:border-b-0 sm:border-b-0 sm:mx-0 sm:h-[80px] sm:p-6 sm:bg-opacity-5 sm:rounded-[16px]"
         >
           <div class="flex items-center gap-2.5 sm:gap-[16px]">
             <img

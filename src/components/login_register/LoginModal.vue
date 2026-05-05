@@ -80,7 +80,7 @@
             </div>
 
             <!-- 右侧表单区域 -->
-            <div class="w-1/2 bg-bg-1 py-5 px-6">
+            <div class="w-1/2 bg-bg-1 p-4">
               <LoginFormDesktop
                 ref="loginFormDesktopRef"
                 :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
@@ -141,7 +141,7 @@
             </div>
 
             <!-- 右侧表单区域 -->
-            <div class="w-1/2 bg-bg-1 py-5 px-6">
+            <div class="w-1/2 bg-bg-1 p-4">
               <ResetPasswordDesktop @reset-success="handleResetPasswordSuccess" />
             </div>
           </div>

@@ -121,7 +121,7 @@
                 class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center"
                 @click="toggleNewPassword"
               >
-                <EyeIcon v-if="!showNewPassword" class="h-6 w-6 text-text-2" />
+                <EyeIcon v-if="showNewPassword" class="h-6 w-6 text-text-2" />
                 <EyeOffIcon v-else class="h-6 w-6 text-text-2" />
               </button>
             </div>
@@ -142,7 +142,7 @@
                 class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center"
                 @click="toggleConfirmPassword"
               >
-                <EyeIcon v-if="!showConfirmPassword" class="h-6 w-6 text-text-2" />
+                <EyeIcon v-if="showConfirmPassword" class="h-6 w-6 text-text-2" />
                 <EyeOffIcon v-else class="h-6 w-6 text-text-2" />
               </button>
             </div>
