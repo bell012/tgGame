@@ -11,9 +11,12 @@
     >
       {{ game.itemName }}
     </div>
-    <div class="absolute bottom-1 right-1 flex h-5 items-center rounded-lg bg-mask-20 px-1.5">
-      <div class="icon size-2.5 sm:size-4 fill-common-100 text-common-100">
-        <component :is="casinoIcons.player_count" class="size-2.5 sm:size-4 fill-current" />
+    <div class="absolute bottom-1 right-1 flex h-5 items-center rounded-[6px] bg-mask-20 px-1.5">
+      <div class="icon h-[10px] w-[10px] sm:size-4 fill-common-100 text-common-100">
+        <component
+          :is="casinoIcons.player_count"
+          class="h-[10px] w-[10px] sm:size-4 fill-current"
+        />
       </div>
       <span class="text-[10px] sm:text-xs font-medium sm:font-semibold text-common-100">{{
         initNum

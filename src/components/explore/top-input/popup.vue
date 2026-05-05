@@ -11,13 +11,13 @@
     <!-- 面板 -->
     <transition :name="desktop ? 'desktop-up-down' : 'up-down'">
       <div v-show="visible" class="fixed z-[9999] left-0 bottom-0 w-full lg:relative">
-        <div class="tp-panel bg-[var(--color-background-level-2)] rounded-t-xl pt-2.5 px-3.5">
+        <div class="tp-panel bg-bg-1 rounded-t-xl pt-2.5 px-3.5">
           <div class="tp-header flex items-center justify-between mb-2.5" v-if="!desktop">
             <div></div>
             <div class="text-base font-bold text-[var(--color-text-level-1)]">Select</div>
             <div
               @click="close"
-              class="w-7 h-7 rounded bg-[var(--color-opacity-10)] flex items-center justify-center"
+              class="w-7 h-7 rounded-[4px] bg-[var(--color-opacity-10)] flex items-center justify-center"
             >
               <CloseIcon class="stroke-text-1 w-4 h-4" />
             </div>
@@ -27,13 +27,25 @@
             <div
               v-for="(item, inx) in typeList"
               :key="inx"
-              class="tp-item mb-2.5 px-2.5 flex items-center justify-between h-[42px] rounded-lg cursor-pointer"
+              class="tp-item mb-[20px] px-2.5 flex items-center justify-between h-[42px] rounded-[8px] cursor-pointer"
               :class="isSelected(item) ? 'bg-[var(--color-opacity-10)]' : ''"
               @click="confirm(item)"
             >
-              <div>{{ item.name }}</div>
-              <ChecedIcon v-if="isSelected(item)" class="w-5 h-5 cursor-pointer" />
-              <UnchecedIcon v-else class="w-5 h-5 cursor-pointer" />
+              <div class="font-[700]">{{ item.name }}</div>
+              <span
+                class="relative box-border inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border-[2px]"
+                :class="
+                  isSelected(item)
+                    ? 'border-theme-primary bg-theme-primary'
+                    : 'border-[var(--color-opacity-10)] bg-transparent'
+                "
+              >
+                <span
+                  v-if="isSelected(item)"
+                  class="h-[10px] w-[10px] rounded-full"
+                  :class="isDarkTheme ? 'bg-black' : 'bg-white'"
+                />
+              </span>
             </div>
           </div>
         </div>
@@ -44,8 +56,8 @@
 
 <script setup lang="ts">
 import CloseIcon from '@/static/svg/close.svg?component'
-import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
-import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
+import { useThemeStore } from '@/stores/theme'
+import { computed } from 'vue'
 
 type OptionItem = { id: string; name: string }
 
@@ -60,6 +72,9 @@ const emit = defineEmits<{
   'update:visible': [val: boolean]
   confirm: [val: OptionItem]
 }>()
+
+const themeStore = useThemeStore()
+const isDarkTheme = computed(() => themeStore.theme === 'dark')
 
 const close = () => emit('update:visible', false)
 

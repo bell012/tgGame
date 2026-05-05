@@ -2,7 +2,7 @@
   <div class="relative">
     <button
       ref="triggerRef"
-      class="flex w-full items-center justify-between rounded-lg border border-solid border-[var(--color-opacity-10)] bg-[var(--color-opacity-10)] px-2.5 py-[11px]"
+      class="flex h-[42px] w-full items-center justify-between rounded-lg border border-solid border-[var(--color-opacity-10)] bg-[var(--color-opacity-10)] px-2.5"
       @click.stop="togglePopup"
     >
       <div class="flex flex-1 items-center text-xs">
@@ -12,9 +12,9 @@
         </span>
       </div>
       <span
-        class="flex h-5 w-5 items-center justify-center rounded-[6px] bg-[var(--color-opacity-10)] fill-text-1"
+        class="flex h-6 w-6 items-center justify-center rounded-[6px] bg-[var(--color-opacity-10)] fill-text-1"
       >
-        <component :is="casinoIcons.dropdown_chevron" class="h-2 w-2 fill-current" />
+        <component :is="casinoIcons.dropdown_chevron" class="h-4 w-4 fill-current" />
       </span>
     </button>
 
@@ -36,33 +36,33 @@
       >
         <div
           ref="popupRef"
-          class="flex flex-col rounded-t-xl bg-[var(--color-background-level-1)] px-3.5 pt-2.5"
+          class="flex flex-col rounded-t-xl bg-bg-1 px-3.5 pt-2.5"
           :class="{
             'max-h-[75vh]': isMobile,
             'desktop-popup-inner max-h-[16rem] overflow-y-auto rounded-xl': !isMobile
           }"
         >
-          <div v-if="isMobile" class="mb-2.5 flex items-center justify-between">
+          <div v-if="isMobile" class="mb-[20px] flex items-center justify-between">
             <div class="w-7" />
             <div class="text-base font-bold text-[var(--color-text-level-1)]">Select</div>
             <button
-              class="flex h-7 w-7 items-center justify-center rounded bg-[var(--color-opacity-10)]"
+              class="flex h-7 w-7 items-center justify-center rounded-[4px] bg-[var(--color-opacity-10)]"
               @click.stop="closePopup"
             >
               <CloseIcon class="h-4 w-4 stroke-text-1" />
             </button>
           </div>
 
-          <div v-if="search" class="relative mb-2.5">
+          <div v-if="search" class="relative mb-[20px]">
             <component
               :is="isDarkTheme ? SearchBlackIcon : SearchIcon"
-              class="absolute left-2.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 opacity-50"
+              class="absolute left-2.5 top-1/2 h-[14px] w-[14px] -translate-y-1/2 opacity-70"
             />
             <input
               v-model="keyword"
               type="text"
               :placeholder="t('home.search')"
-              class="h-[42px] w-full rounded-lg border border-[var(--color-opacity-10)] pl-[38px] pr-11 text-xs font-[600] text-text-1 outline-none placeholder:text-text-2 focus:border-theme-primary"
+              class="h-[42px] w-full rounded-lg border border-[var(--color-opacity-10)] pl-[38px] pr-11 text-[14px] font-[700] text-text-1 outline-none placeholder:text-text-2 focus:border-theme-primary"
               :class="isDarkTheme ? 'bg-[var(--color-background-level-3)]' : 'bg-white'"
             />
           </div>
@@ -72,27 +72,46 @@
               <div
                 v-for="item in filteredOptions"
                 :key="item.value"
-                class="mb-2.5 flex h-[42px] cursor-pointer items-center rounded-lg px-2.5"
+                class="mb-[20px] flex h-[42px] cursor-pointer items-center rounded-lg px-2.5"
                 :class="{
                   'justify-between': !Multi,
                   'bg-[var(--color-opacity-10)]': isSelected(item)
                 }"
                 @click="selectItem(item)"
               >
-                <span v-if="!Multi">{{ item.label }}</span>
-                <component
-                  :is="
+                <span v-if="!Multi" class="font-[700]">{{ item.label }}</span>
+                <span
+                  v-if="Multi"
+                  class="box-border inline-flex h-[20px] w-[20px] items-center justify-center rounded-[6px] border"
+                  :class="
                     isSelected(item)
-                      ? Multi
-                        ? CubeChecedIcon
-                        : RadioCheckedIcon
-                      : Multi
-                        ? CubeUnchecedIcon
-                        : RadioUncheckedIcon
+                      ? 'border-theme-primary bg-theme-primary'
+                      : 'border-[var(--color-opacity-20)] bg-transparent'
                   "
-                  class="h-5 w-5"
-                />
-                <div v-if="Multi" class="ml-2.5 flex h-[22px] w-[100px] items-center">
+                >
+                  <span
+                    v-if="isSelected(item)"
+                    class="text-[12px] font-bold leading-none text-black"
+                  >
+                    ✓
+                  </span>
+                </span>
+                <span
+                  v-else-if="!Multi"
+                  class="relative box-border inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border-[2px]"
+                  :class="
+                    isSelected(item)
+                      ? 'border-theme-primary bg-theme-primary'
+                      : 'border-[var(--color-opacity-10)] bg-transparent'
+                  "
+                >
+                  <span
+                    v-if="isSelected(item)"
+                    class="h-[10px] w-[10px] rounded-full"
+                    :class="isDarkTheme ? 'bg-black' : 'bg-white'"
+                  />
+                </span>
+                <div v-if="Multi" class="ml-2.5 flex h-[30px] w-[100px] items-center">
                   <gameRemoteImg
                     class="!bg-transparent"
                     :img="{
@@ -130,10 +149,6 @@ import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useThemeStore } from '@/stores/theme'
 import CloseIcon from '@/static/svg/close.svg?component'
-import RadioCheckedIcon from '@/static/svg/radio-checked-hollow.svg?component'
-import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
-import CubeChecedIcon from '@/static/svg/cube-checked.svg?component'
-import CubeUnchecedIcon from '@/static/svg/cube-unchecked.svg?component'
 import ClearIcon from '@/static/svg/clear.svg?component'
 import SearchIcon from '@/static/svg/explore/search.svg?component'
 import SearchBlackIcon from '@/static/svg/explore/search_black.svg?component'
