@@ -127,7 +127,7 @@
                           type="text"
                           inputmode="numeric"
                           :placeholder="t('common.enter_account')"
-                          class="w-full h-[47px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          class="auth-input-placeholder w-full h-[47px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                           @input="handleSigninAccountInput"
                         />
                       </div>
@@ -145,7 +145,8 @@
                           :value="formData.signin.password"
                           :type="showPassword.signin ? 'text' : 'password'"
                           :placeholder="t('common.enter_password')"
-                          class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          class="auth-input-placeholder w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          :class="showPassword.signin ? '' : 'auth-password-mask'"
                           @input="handleSigninPasswordInput"
                         />
                         <button
@@ -153,7 +154,7 @@
                           class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                           @click="togglePassword('signin')"
                         >
-                          <EyeIcon v-if="!showPassword.signin" class="w-4 h-4 text-text-2" />
+                          <EyeIcon v-if="showPassword.signin" class="w-4 h-4 text-text-2" />
                           <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
                         </button>
                       </div>
@@ -230,7 +231,7 @@
                           type="text"
                           inputmode="numeric"
                           :placeholder="t('common.enter_account')"
-                          class="w-full h-[47px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          class="auth-input-placeholder w-full h-[47px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                           @input="handleSignupAccountInput"
                         />
                       </div>
@@ -249,7 +250,7 @@
                           type="text"
                           inputmode="numeric"
                           :placeholder="t('common.enter_verification')"
-                          class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          class="auth-input-placeholder w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                           @input="handleSignupCodeInput"
                         />
                         <!-- 获取验证码 -->
@@ -277,7 +278,8 @@
                           :value="formData.signup.password"
                           :type="showPassword.signup ? 'text' : 'password'"
                           :placeholder="t('common.enter_password')"
-                          class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          class="auth-input-placeholder w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          :class="showPassword.signup ? '' : 'auth-password-mask'"
                           @input="handleSignupPasswordInput"
                         />
                         <button
@@ -285,7 +287,7 @@
                           class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                           @click="togglePassword('signup')"
                         >
-                          <EyeIcon v-if="!showPassword.signup" class="w-4 h-4 text-text-2" />
+                          <EyeIcon v-if="showPassword.signup" class="w-4 h-4 text-text-2" />
                           <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
                         </button>
                       </div>
@@ -303,7 +305,8 @@
                           :value="formData.signup.confirmPassword"
                           :type="showConfirmPassword ? 'text' : 'password'"
                           :placeholder="t('common.enter_confirm_password')"
-                          class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          class="auth-input-placeholder w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                          :class="showConfirmPassword ? '' : 'auth-password-mask'"
                           @input="handleSignupConfirmPasswordInput"
                         />
                         <button
@@ -311,7 +314,7 @@
                           class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                           @click="toggleConfirmPassword"
                         >
-                          <EyeIcon v-if="!showConfirmPassword" class="w-4 h-4 text-text-2" />
+                          <EyeIcon v-if="showConfirmPassword" class="w-4 h-4 text-text-2" />
                           <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
                         </button>
                       </div>

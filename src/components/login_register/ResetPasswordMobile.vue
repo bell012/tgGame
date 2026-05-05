@@ -89,7 +89,7 @@
                         type="text"
                         inputmode="numeric"
                         :placeholder="t('common.enter_account')"
-                        class="w-full h-[47px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        class="auth-input-placeholder w-full h-[47px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                         @input="handleAccountInput"
                       />
                     </div>
@@ -108,7 +108,7 @@
                         type="text"
                         inputmode="numeric"
                         :placeholder="t('common.enter_verification')"
-                        class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        class="auth-input-placeholder w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
                         @input="handleCodeInput"
                       />
                       <!-- 获取验证码 -->
@@ -136,7 +136,8 @@
                         :value="formData.password"
                         :type="showPassword ? 'text' : 'password'"
                         :placeholder="t('common.enter_password')"
-                        class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        class="auth-input-placeholder w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        :class="showPassword ? '' : 'auth-password-mask'"
                         @input="handlePasswordInput"
                       />
                       <button
@@ -144,7 +145,7 @@
                         class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                         @click="togglePassword"
                       >
-                        <EyeIcon v-if="!showPassword" class="w-4 h-4 text-text-2" />
+                        <EyeIcon v-if="showPassword" class="w-4 h-4 text-text-2" />
                         <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
                       </button>
                     </div>
@@ -162,7 +163,8 @@
                         :value="formData.confirmPassword"
                         :type="showConfirmPassword ? 'text' : 'password'"
                         :placeholder="t('common.enter_confirm_password')"
-                        class="w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        class="auth-input-placeholder w-full h-[47px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                        :class="showConfirmPassword ? '' : 'auth-password-mask'"
                         @input="handleConfirmPasswordInput"
                       />
                       <button
@@ -170,7 +172,7 @@
                         class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
                         @click="toggleConfirmPassword"
                       >
-                        <EyeIcon v-if="!showConfirmPassword" class="w-4 h-4 text-text-2" />
+                        <EyeIcon v-if="showConfirmPassword" class="w-4 h-4 text-text-2" />
                         <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
                       </button>
                     </div>
