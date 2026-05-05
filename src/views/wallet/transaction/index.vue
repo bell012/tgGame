@@ -51,8 +51,12 @@
                   <h3 class="text-text-1 font-[700] text-sm">
                     {{ item.gameName }}
                   </h3>
-                  <p class="text-base font-[700] text-text-1">
-                    {{ item.direction === 'add' ? '+' : '-' }}{{ item.betAmount }}
+                  <p class="text-base font-[700] text-text-1 flex items-center">
+                    <span
+                      :class="['mr-[2px]', item.direction === 'dec' ? 'relative -top-0.5' : '']"
+                      >{{ item.direction === 'add' ? '+' : '-' }}</span
+                    >
+                    <span>{{ item.betAmount }}</span>
                   </p>
                 </div>
               </div>

@@ -23,8 +23,11 @@
 
       <div class="p-4 flex flex-col items-center bg-bg-1">
         <div class="w-full h-full flex flex-col items-center bg-bg-2 rounded-lg p-4 pt-8">
-          <p class="text-[24px] font-[700] text-text-1 mb-2">
-            {{ detail.direction === 'add' ? '+' : '-' }}{{ detail.betAmount }}
+          <p class="text-[24px] font-[700] text-text-1 mb-2 flex items-center">
+            <span :class="['mr-[2px]', detail.direction === 'dec' ? 'relative -top-0.5' : '']">{{
+              detail.direction === 'add' ? '+' : '-'
+            }}</span>
+            <span>{{ detail.betAmount }}</span>
           </p>
 
           <h2 class="text-text-1 text-base font-[400] mb-[32px]">{{ detail.gameName }}</h2>
@@ -37,7 +40,9 @@
 
             <div class="flex items-center justify-between">
               <span class="text-text-3">{{ $t('transaction.amount') }}</span>
-              <span class="text-text-1">{{ detail.betAmount }}</span>
+              <p class="text-text-1 inline-flex items-center">
+                <span>{{ detail.betAmount }}</span>
+              </p>
             </div>
 
             <div class="flex items-center justify-between">
