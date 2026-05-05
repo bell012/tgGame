@@ -1214,6 +1214,16 @@
       "description": "奖金已发放至您的钱包。",
       "ok": "确定"
     },
+    "levelUpConfirmPopup": {
+      "title": "升级奖励",
+      "rewardCount": "共 {count} 笔奖励",
+      "rewardCountPrefix": "共",
+      "rewardCountSuffix": "笔奖励",
+      "description": "确认后一次性发放至余额",
+      "rewardItemTitle": "VIP{vipId}晋级礼金",
+      "balanceHint": "奖励到账后可在余额查看",
+      "claim": "领取"
+    },
     "retention": {
       "title": "VIP 等级保级要求",
       "minimumDeposit": "最低存款",

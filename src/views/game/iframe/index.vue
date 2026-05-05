@@ -151,10 +151,10 @@ const confirmExit = async () => {
 }
 
 .game-iframe-page__close-btn {
-  position: absolute;
+  position: fixed;
   top: 48px;
   left: 14px;
-  z-index: 20;
+  z-index: 9999;
   width: 50px;
   height: 50px;
   border: 0;
@@ -164,15 +164,23 @@ const confirmExit = async () => {
   cursor: pointer;
 }
 
+@media (orientation: landscape) {
+  .game-iframe-page__close-btn {
+    top: calc(env(safe-area-inset-top) + 8px);
+    right: calc(env(safe-area-inset-right) + 8px);
+    left: auto;
+  }
+}
+
 .game-iframe-page__close-icon {
   width: 100%;
   height: 100%;
 }
 
 .game-iframe-page__dialog-mask {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;

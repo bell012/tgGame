@@ -75,6 +75,17 @@ export interface VipBenefitCard {
   image: string
 }
 
+export interface VipLevelUpClaimRewardItem {
+  vipId: number
+  amount: string
+}
+
+export interface VipLevelUpClaimSummary {
+  totalAmount: string
+  rewardCount: number
+  items: VipLevelUpClaimRewardItem[]
+}
+
 export interface VipRetentionCard {
   key: string
   label: string
@@ -87,6 +98,7 @@ export interface VipBenefitComparisonRow {
   label: string
   amount: string
   emphasized?: boolean
+  placeholder?: boolean
 }
 
 export interface VipBenefitComparisonColumn {
@@ -178,6 +190,49 @@ const vipListRewardFieldMap: Record<
     money: 'monthMoney',
     amount: 'monthAmount'
   }
+}
+
+const resolvePendingVipLevelId = (item: unknown): number | null => {
+  if (typeof item === 'number' && Number.isFinite(item)) {
+    return item
+  }
+
+  if (typeof item === 'string') {
+    const resolvedVipId = Number(item)
+    return Number.isFinite(resolvedVipId) ? resolvedVipId : null
+  }
+
+  if (item && typeof item === 'object') {
+    const rawVipId =
+      (item as Record<string, unknown>).vipId ??
+      (item as Record<string, unknown>).vipLevel ??
+      (item as Record<string, unknown>).level
+
+    if (typeof rawVipId === 'number' && Number.isFinite(rawVipId)) {
+      return rawVipId
+    }
+
+    if (typeof rawVipId === 'string') {
+      const resolvedVipId = Number(rawVipId)
+      return Number.isFinite(resolvedVipId) ? resolvedVipId : null
+    }
+  }
+
+  return null
+}
+
+const normalizePendingVipLevels = (upgradedVipLevels: unknown): number[] => {
+  if (!Array.isArray(upgradedVipLevels)) {
+    return []
+  }
+
+  return Array.from(
+    new Set(
+      upgradedVipLevels
+        .map(item => resolvePendingVipLevelId(item))
+        .filter((vipId): vipId is number => vipId !== null)
+    )
+  ).sort((left, right) => left - right)
 }
 
 const vipBenefitTitleKeyMap: Record<VipBenefitCardKey, string> = {
@@ -506,6 +561,22 @@ const createBenefitComparisonColumn = (
 ): VipBenefitComparisonColumn => {
   const resolvedVipId = targetConfig?.vipId ?? fallbackVipId
   const benefitKeys = getAvailableVipBenefitKeys(resolvedVipId, highestVipId)
+  const shouldReserveLevelUpRow =
+    key === 'unlock' && highestVipId != null && resolvedVipId === highestVipId
+  const detailRows: VipBenefitComparisonRow[] = benefitKeys.map(benefitKey => ({
+    key: benefitKey,
+    label: t(vipBenefitTitleKeyMap[benefitKey]),
+    amount: formatBalance(resolveVipListRewardAmount(targetConfig, benefitKey))
+  }))
+
+  if (shouldReserveLevelUpRow) {
+    detailRows.unshift({
+      key: 'levelUpPlaceholder',
+      label: '',
+      amount: '0.00',
+      placeholder: true
+    })
+  }
 
   return {
     key,
@@ -515,11 +586,7 @@ const createBenefitComparisonColumn = (
         ? t('vipPage.benefitsComparison.currentLevel', { vipId: resolvedVipId })
         : t('vipPage.benefitsComparison.unlockLevel', { vipId: resolvedVipId }),
     rows: [
-      ...benefitKeys.map(benefitKey => ({
-        key: benefitKey,
-        label: t(vipBenefitTitleKeyMap[benefitKey]),
-        amount: formatBalance(resolveVipListRewardAmount(targetConfig, benefitKey))
-      })),
+      ...detailRows,
       {
         key: 'totalRewards',
         label: t('vipPage.benefitsComparison.totalRewards'),
@@ -871,6 +938,22 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
     })
   })
 
+  /**
+   * 升级奖励确认弹窗的总额、笔数与各 VIP 明细。
+   */
+  const levelUpClaimSummary = computed<VipLevelUpClaimSummary>(() => {
+    const pendingVipIds = normalizePendingVipLevels(vipInfo.value?.upgradedVipLevels)
+
+    return {
+      totalAmount: formatBalance(vipInfo.value?.upgradedAmount ?? 0),
+      rewardCount: pendingVipIds.length,
+      items: pendingVipIds.map(vipId => ({
+        vipId,
+        amount: formatBalance(getVipTargetConfigById(vipId)?.upgradedAmount ?? 0)
+      }))
+    }
+  })
+
   const retentionCards = computed<VipRetentionCard[]>(() => {
     return getRetentionCardsByVipId(resolvedViewedVipId.value)
   })
@@ -909,6 +992,7 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
     getProgressItemsByVipId,
     getOverallProgressByVipId,
     benefitCards,
+    levelUpClaimSummary,
     benefitComparisonColumns,
     hasNextVipLevel,
     retentionCards,

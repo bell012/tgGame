@@ -37,7 +37,7 @@
 
         <button
           type="button"
-          class="border-b border-white/5 px-4 py-5 text-center"
+          class="border-0 border-b border-solid border-white/5 px-4 py-5 text-center"
           @click="openTurnoverDeductionPopup"
         >
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.turnoverDeduction) }}</p>

@@ -11,7 +11,10 @@
     <div class="fixed inset-0 bg-bg-1 sm:hidden flex flex-col overflow-hidden">
       <H5Header :title="$t('wallet.rollover')" :show-sort="true" @sort="handleSort" />
 
-      <div ref="scrollRoot" class="flex-1 overflow-y-auto">
+      <div
+        ref="scrollRoot"
+        class="rollover-scroll-root flex-1 min-h-0 overflow-y-auto overscroll-contain"
+      >
         <div class="py-3.5 px-3.5">
           <!-- 无数据状态 -->
           <div
@@ -64,13 +67,16 @@
               </div>
 
               <div class="bg-bg-4 rounded-[10px] px-3 py-2.5 mb-2.5 mt-2.5">
-                <div class="flex items-center justify-between mb-2.5">
+                <div class="flex items-center justify-between">
                   <p class="text-text-3 font-[400] text-xs">{{ $t('wallet.actualTurnover') }}</p>
                   <p class="text-text-1 font-[700] text-xs">
                     {{ item.direction === 'add' ? '+' : '-' }}{{ item.actualTurnover }}
                   </p>
                 </div>
-                <div class="flex items-center justify-between">
+                <div
+                  v-if="Number(item.requiredTurnover) > 0"
+                  class="flex items-center justify-between mt-2.5"
+                >
                   <p class="text-text-3 font-[400] text-xs">{{ $t('wallet.requiredTurnover') }}</p>
                   <p class="text-text-1 font-[700] text-xs">
                     {{ item.direction === 'add' ? '+' : '-' }}{{ item.requiredTurnover }}
@@ -249,5 +255,11 @@ const handleRetry = async () => {
   await refresh()
 }
 </script>
+
+<style scoped>
+.rollover-scroll-root {
+  -webkit-overflow-scrolling: touch;
+}
+</style>
 
 <style scoped lang="scss"></style>

@@ -43,10 +43,11 @@
               <span class="text-text-3">{{ $t('wallet.requiredTurnover') }}</span>
               <span class="text-text-1">{{ detail.requiredTurnover }}</span>
             </div>
-            <div class="flex items-center justify-between">
+
+            <!-- <div class="flex items-center justify-between">
               <span class="text-text-3">{{ $t('wallet.applicableGames') }}</span>
               <span class="text-text-1">{{ detail.applicableGames }}</span>
-            </div>
+            </div> -->
 
             <div class="flex items-center justify-between">
               <span class="text-text-3 text-sm">{{ $t('wallet.orderStatus') }}</span>
