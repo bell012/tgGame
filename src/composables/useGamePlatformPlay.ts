@@ -1,4 +1,5 @@
 import Api from '@/api'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { navigateTo } from '@/utils/router'
 import { computed, inject, type ComputedRef } from 'vue'
 
@@ -20,6 +21,7 @@ export type GameDetailForPlatformPlay = {
  * 游戏详情页「进入游戏」：调登录平台接口并跳转 platformLink（依赖 provide：game-detail-current-game）
  */
 export function useGamePlatformPlay() {
+  const { currentCurrencyCode } = useDisplayCurrency()
   const currentGameDetail = inject<ComputedRef<GameDetailForPlatformPlay>>(
     'game-detail-current-game',
     computed(() => null)
@@ -27,10 +29,16 @@ export function useGamePlatformPlay() {
 
   const gamePlay = async () => {
     try {
+      // 首次进入时先同步服务端钱包币种，避免游戏内币种/国旗与页面选择不一致。
+      await Api.user.changeWallet({
+        currency: currentCurrencyCode.value
+      })
+
       const res = await Api.game.getloginPlatform({
         pgType: currentGameDetail.value?.pgType,
         gameCode: currentGameDetail.value?.itemCode,
-        platformCode: currentGameDetail.value?.platformCode
+        platformCode: currentGameDetail.value?.platformCode,
+        currency: currentCurrencyCode.value
       })
       if (res.code === 'C2') {
         const raw = res.result?.platformLink

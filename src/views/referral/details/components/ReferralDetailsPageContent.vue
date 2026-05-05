@@ -209,13 +209,13 @@
           text-class="mt-[10px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
         />
 
-        <!-- 邀请按钮 -->
+        <!-- 空状态操作按钮 -->
         <button
           type="button"
-          class="mt-[20px] h-[40px] w-[200px] rounded-[8px] bg-theme-2 text-[14px] font-[700] leading-[17px] text-text-4"
-          @click="$emit('invite')"
+          class="mt-[20px] h-[40px] w-[200px] rounded-[8px] bg-theme-primary text-[14px] font-[700] leading-[17px] text-text-4"
+          @click="$emit('show-poster')"
         >
-          {{ props.inviteText }}
+          {{ props.emptyActionText }}
         </button>
       </section>
     </main>
@@ -240,7 +240,7 @@ interface Props {
   depositLabel: string
   validBetsLabel: string
   detailText: string
-  inviteText: string
+  emptyActionText: string
   emptyText: string
   emptyAlt: string
   avatarAlt: string
@@ -258,6 +258,6 @@ defineEmits<{
   'open-date-picker': []
   'open-filter': []
   'go-friend-detail': [value: ReferralDetailsFriendItem]
-  invite: []
+  'show-poster': []
 }>()
 </script>

@@ -57,7 +57,7 @@
 
                 <div
                   v-if="isEmojiPickerOpen"
-                  class="comment-emoji-panel absolute bottom-[calc(100%+10px)] left-0 z-20 w-[256px] rounded-[10px] p-[8px]"
+                  class="comment-emoji-panel comment-emoji-panel--left-trigger absolute bottom-[calc(100%+10px)] left-0 z-20 w-[256px] rounded-[10px] p-[8px]"
                   @click.stop
                 >
                   <div class="comment-emoji-divider grid grid-cols-8 gap-[6px] border-b pb-[8px]">
@@ -158,7 +158,7 @@
 
                 <div
                   v-if="isEmojiPickerOpen"
-                  class="comment-emoji-panel absolute bottom-[calc(100%+10px)] right-0 z-20 w-[256px] rounded-[10px] p-[8px]"
+                  class="comment-emoji-panel comment-emoji-panel--right-trigger absolute bottom-[calc(100%+10px)] right-0 z-20 w-[256px] rounded-[10px] p-[8px]"
                   @click.stop
                 >
                   <div class="comment-emoji-divider grid grid-cols-8 gap-[6px] border-b pb-[8px]">
@@ -532,9 +532,30 @@ onBeforeUnmount(() => {
 }
 
 .comment-emoji-panel {
+  position: absolute;
   border: 1px solid #3f4750;
   background: #252d35;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.comment-emoji-panel::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  width: 10px;
+  height: 10px;
+  background: #252d35;
+  border-right: 1px solid #3f4750;
+  border-bottom: 1px solid #3f4750;
+  transform: rotate(45deg);
+}
+
+.comment-emoji-panel--left-trigger::after {
+  left: 12px;
+}
+
+.comment-emoji-panel--right-trigger::after {
+  right: 14px;
 }
 
 :deep(.comment-emoji-trigger-icon path) {
@@ -613,6 +634,12 @@ onBeforeUnmount(() => {
   border-color: #ced9e8;
   background: #f8fbff;
   box-shadow: 0 10px 24px rgba(24, 38, 64, 0.2);
+}
+
+.comment-popup-panel.is-light .comment-emoji-panel::after {
+  background: #f8fbff;
+  border-right-color: #ced9e8;
+  border-bottom-color: #ced9e8;
 }
 
 .comment-popup-panel.is-light .comment-emoji-divider {

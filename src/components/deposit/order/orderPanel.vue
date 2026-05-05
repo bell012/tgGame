@@ -268,6 +268,7 @@ import FiatOrderAmountIcon from '@/static/svg/deposit/fiat-order-amount.svg?comp
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
+import { formatTimestamp } from '@/utils/date'
 import QRCode from 'qrcode'
 import { globalShowToast } from '@/utils/toast'
 import { CountDown } from 'vant'
@@ -302,12 +303,6 @@ const orderStatus = ref<'Completed' | 'Cancelled'>('Completed')
 // 过滤详情行数组中的空项，保证渲染数据类型稳定
 const compactRows = (rows: Array<DetailRowItem | null>) =>
   rows.filter((row): row is DetailRowItem => row !== null)
-
-// 格式化时间戳
-const formatTimestamp = (timestamp?: number) => {
-  if (!timestamp) return ''
-  return new Date(timestamp).toLocaleString()
-}
 
 // 解析网络名称
 const parseNetworkName = (subColumnName?: unknown) => {

@@ -70,25 +70,31 @@
       <!-- 任务标签区域 -->
       <section class="overflow-x-auto">
         <!-- 任务标签列表 -->
-        <div class="flex w-max" :class="props.mode === 'pc' ? 'gap-3' : 'gap-2'">
-          <!-- 任务标签按钮 -->
+        <div class="flex w-max items-center" :class="props.mode === 'pc' ? 'gap-3' : 'gap-2'">
+          <!-- 任务标签项 -->
           <button
             v-for="item in props.tabs"
             :key="item.key"
             type="button"
-            class="flex items-center rounded-full border text-left"
-            :class="
-              item.key === props.activeTab
-                ? props.mode === 'pc'
-                  ? 'border-theme-primary bg-theme-3 px-5 py-3 text-base font-[700] text-common-100'
-                  : 'border-theme-primary bg-theme-3 px-4 py-2 text-sm font-[700] text-common-100'
-                : props.mode === 'pc'
-                  ? 'border-transparent bg-bg-2 px-5 py-3 text-base font-[500] text-text-2'
-                  : 'border-transparent bg-bg-2 px-4 py-2 text-sm font-[500] text-text-2'
-            "
+            class="box-border flex h-[30.67px] shrink-0 flex-col items-start justify-center gap-[3.33px] rounded-[18px] px-5 py-2 transition-colors"
+            :class="[
+              props.activeTab === item.key
+                ? 'border border-solid border-theme-primary bg-theme-primary/15'
+                : 'border border-transparent bg-bg-2'
+            ]"
             @click="$emit('tab-click', item.key)"
           >
-            {{ item.label }}
+            <!-- 任务标签文字 -->
+            <span
+              class="flex items-center text-xs"
+              :class="
+                props.activeTab === item.key
+                  ? 'font-[700] leading-[14.67px] text-common-100'
+                  : 'font-[500] leading-[18px] text-text-2'
+              "
+            >
+              {{ item.label }}
+            </span>
           </button>
         </div>
       </section>
@@ -174,76 +180,94 @@
       >
         <!-- 奖励表格头部 -->
         <div class="grid grid-cols-3 bg-bg-2">
-          <!-- 奖励表格头部第一列 -->
+          <!-- 奖励表格头部单元格 -->
           <div
+            v-for="column in props.rewardTableColumns"
+            :key="column"
             class="flex items-center justify-center text-center font-[400] text-text-2"
             :class="
               props.mode === 'pc' ? 'min-h-[64px] px-3 text-sm' : 'min-h-[34px] px-2 text-[11px]'
             "
           >
-            {{ props.invitedSignUpsLabel }}
-          </div>
-
-          <!-- 奖励表格头部第二列 -->
-          <div
-            class="flex items-center justify-center text-center font-[400] text-text-2"
-            :class="
-              props.mode === 'pc' ? 'min-h-[64px] px-3 text-sm' : 'min-h-[34px] px-2 text-[11px]'
-            "
-          >
-            {{ props.rewardLabel }}
-          </div>
-
-          <!-- 奖励表格头部第三列 -->
-          <div
-            class="flex items-center justify-center text-center font-[400] text-text-2"
-            :class="
-              props.mode === 'pc' ? 'min-h-[64px] px-3 text-sm' : 'min-h-[34px] px-2 text-[11px]'
-            "
-          >
-            {{ props.statusLabel }}
+            {{ column }}
           </div>
         </div>
 
         <!-- 奖励表格列表 -->
         <div>
-          <!-- 奖励表格行 -->
-          <div
-            v-for="(item, index) in props.rewardRows"
-            :key="`${item.invitedFriends}-${item.reward}`"
-            class="grid grid-cols-3"
-            :class="index % 2 === 0 ? 'bg-common-100/5' : ''"
-          >
-            <!-- 奖励表格行第一列 -->
+          <!-- 奖励表格骨架屏 -->
+          <template v-if="props.rewardTableLoading">
+            <!-- 奖励表格骨架行 -->
             <div
-              class="flex items-center justify-center text-center text-common-100"
-              :class="
-                props.mode === 'pc' ? 'min-h-[68px] px-3 text-base' : 'min-h-[37px] px-2 text-sm'
-              "
+              v-for="index in 4"
+              :key="`reward-table-skeleton-${index}`"
+              class="grid grid-cols-3"
+              :class="index % 2 === 1 ? 'bg-[var(--color-opacity-6,#FFFFFF0F)]' : 'bg-bg-2'"
             >
-              {{ item.invitedFriends }}
+              <!-- 奖励表格骨架单元格 -->
+              <div
+                v-for="columnIndex in 3"
+                :key="`reward-table-skeleton-${index}-${columnIndex}`"
+                class="flex items-center justify-center"
+                :class="
+                  props.mode === 'pc' ? 'min-h-[68px] px-3 text-base' : 'min-h-[37px] px-2 text-sm'
+                "
+              >
+                <span
+                  class="h-3 animate-pulse rounded-full bg-common-100/10"
+                  :class="props.mode === 'pc' ? 'w-20' : 'w-14'"
+                ></span>
+              </div>
             </div>
+          </template>
 
-            <!-- 奖励表格行第二列 -->
+          <template v-else>
+            <!-- 奖励表格行 -->
             <div
-              class="flex items-center justify-center text-center text-common-100"
-              :class="
-                props.mode === 'pc' ? 'min-h-[68px] px-3 text-base' : 'min-h-[37px] px-2 text-sm'
-              "
+              v-for="(item, index) in props.rewardRows"
+              :key="`${item.condition}-${item.reward}-${index}`"
+              class="grid grid-cols-3"
+              :class="index % 2 === 0 ? 'bg-[var(--color-opacity-6,#FFFFFF0F)]' : 'bg-bg-2'"
             >
-              {{ item.reward }}
-            </div>
+              <!-- 奖励表格行第一列 -->
+              <div
+                class="flex items-center justify-center text-center text-common-100"
+                :class="
+                  props.mode === 'pc' ? 'min-h-[68px] px-3 text-base' : 'min-h-[37px] px-2 text-sm'
+                "
+              >
+                <span>{{ item.condition }}</span>
+                <span
+                  v-if="item.conditionUnit"
+                  class="ml-1 font-[400] text-text-2"
+                  :class="props.mode === 'pc' ? 'text-sm' : 'text-[11px]'"
+                >
+                  {{ item.conditionUnit }}
+                </span>
+              </div>
 
-            <!-- 奖励表格行第三列 -->
-            <div
-              class="flex items-center justify-center text-center text-text-3"
-              :class="
-                props.mode === 'pc' ? 'min-h-[68px] px-3 text-base' : 'min-h-[37px] px-2 text-sm'
-              "
-            >
-              {{ item.status }}
+              <!-- 奖励表格行第二列 -->
+              <div
+                class="flex items-center justify-center text-center text-common-100"
+                :class="
+                  props.mode === 'pc' ? 'min-h-[68px] px-3 text-base' : 'min-h-[37px] px-2 text-sm'
+                "
+              >
+                {{ item.reward }}
+              </div>
+
+              <!-- 奖励表格行第三列 -->
+              <div
+                class="flex items-center justify-center text-center"
+                :class="[
+                  props.mode === 'pc' ? 'min-h-[68px] px-3 text-base' : 'min-h-[37px] px-2 text-sm',
+                  item.achieved ? 'text-theme-primary' : 'text-text-3'
+                ]"
+              >
+                {{ item.status }}
+              </div>
             </div>
-          </div>
+          </template>
         </div>
       </section>
 
@@ -329,10 +353,9 @@ interface Props {
   currentProgressLabel: string
   maxRewardValue: string
   maxRewardLabel: string
-  invitedSignUpsLabel: string
-  rewardLabel: string
-  statusLabel: string
+  rewardTableColumns: string[]
   rewardRows: ReferralTaskRewardRow[]
+  rewardTableLoading: boolean
   validInviteTitle: string
   validInviteDescription: string
   taskRulesTitle: string

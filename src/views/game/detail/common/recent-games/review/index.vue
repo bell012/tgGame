@@ -203,21 +203,25 @@ const displayRatingAvatarUrls = computed(() => {
 })
 
 const displayRatingCount = computed(() => displayRatingAvatarUrls.value.length)
+const SCORE_TYPE_TO_VALUE: Record<number, number> = {
+  1: 4.0,
+  2: 4.5,
+  3: 5.0
+}
 
 const scoreValue = computed(() => {
-  debugger
-  const rawScore = Number(currentGameDetail.value?.initScoreStar)
+  const scoreType = Number(currentGameDetail.value?.initScoreStar)
 
-  if (!Number.isFinite(rawScore)) {
+  if (!Number.isFinite(scoreType)) {
     return 4.0
   }
 
-  return Math.max(0, Math.min(5, rawScore))
+  return SCORE_TYPE_TO_VALUE[scoreType] ?? 4.0
 })
 
 const scoreText = computed(() => scoreValue.value.toFixed(1))
 
-const activeStarCount = computed(() => Math.max(0, Math.min(5, Math.round(scoreValue.value))))
+const activeStarCount = computed(() => scoreValue.value)
 
 const handleRateChange = (value: number) => {
   if (!requireLogin()) {

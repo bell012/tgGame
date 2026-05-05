@@ -1778,7 +1778,7 @@ const handleInternalPageJump = async (item: NotificationItem) => {
 
   if (linkType === 6) {
     prepareNotificationListRestore()
-    await navigateTo('/menu/referral')
+    await navigateTo('/referral')
     return true
   }
 

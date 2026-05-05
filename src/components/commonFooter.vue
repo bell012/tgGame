@@ -487,7 +487,7 @@ const promoLinks = computed(() => [
     name: t('sidebar_menu.links.recommend'),
     hasExternalIcon: false,
     handler: () => {
-      navigateTo('/menu/referral')
+      navigateTo('/referral')
     }
   },
   {
@@ -511,7 +511,7 @@ const promoLinks = computed(() => [
     name: t('sidebar_menu.promotions.children.invite_rewards'),
     hasExternalIcon: false,
     handler: () => {
-      navigateTo('/menu/referral')
+      navigateTo('/referral')
     }
   },
   {

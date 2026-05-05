@@ -245,6 +245,7 @@ import CryptoOrderVerifyingIcon from '@/static/svg/deposit/crypto-order-verifyin
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
+import { formatTimestamp } from '@/utils/date'
 import { navigateToName } from '@/utils/router'
 import QRCode from 'qrcode'
 import { globalShowToast } from '@/utils/toast'
@@ -289,12 +290,6 @@ const compactRows = (rows: Array<DetailRowItem | null>) =>
   rows.filter((row): row is DetailRowItem => row !== null)
 
 const formatCountdownUnit = (value: number | string) => String(value).padStart(2, '0')
-
-// 格式化时间戳为本地字符串
-const formatTimestamp = (timestamp?: number) => {
-  if (!timestamp) return ''
-  return new Date(timestamp).toLocaleString()
-}
 
 // 解析网络字段，兼容 JSON 字符串和纯文本
 const parseNetworkName = (subColumnName?: unknown) => {

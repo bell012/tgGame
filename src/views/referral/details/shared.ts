@@ -1,6 +1,8 @@
-import avatarImage from '@/static/img/home/avatar.png'
 import emptyDarkImage from '@/static/img/explore/default.png'
 import emptyLightImage from '@/static/img/explore/default_white.png'
+import avatarImage from '@/static/img/home/avatar.png'
+import invitePosterFallbackImage from '@/static/img/personalCenter/yaoqing.png'
+import invitePosterImage from '@/static/img/personalCenter/yaoqing2.png'
 
 type TranslateFn = (key: string, named?: Record<string, unknown>) => string
 
@@ -42,6 +44,14 @@ export const getReferralDetailsEmptyDarkImage = () => emptyDarkImage
  * 返回推荐详情页空状态浅色资源。
  */
 export const getReferralDetailsEmptyLightImage = () => emptyLightImage
+
+/**
+ * 返回推荐详情页邀请海报资源。
+ */
+export const getReferralDetailsInvitePosterImages = () => [
+  invitePosterImage,
+  invitePosterFallbackImage
+]
 
 /**
  * 生成推荐详情页顶部标签数据。

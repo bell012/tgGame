@@ -65,12 +65,15 @@
             </div>
             <div class="text-text-2 text-sm font-[700] text-center">{{ item.time }}</div>
             <div class="text-text-1 text-sm font-[700] text-center">
-              <span
+              <p
                 :class="item.direction === 'add' ? 'text-secondary-4' : 'text-secondary-2'"
-                class="font-[700] text-sm"
+                class="font-[700] text-sm inline-flex items-center"
               >
-                {{ item.direction === 'add' ? '+' : '-' }}{{ item.betAmount }}
-              </span>
+                <span :class="['mr-[2px]', item.direction === 'dec' ? 'relative -top-0.5' : '']">{{
+                  item.direction === 'add' ? '+' : '-'
+                }}</span>
+                <span>{{ item.betAmount }}</span>
+              </p>
             </div>
             <div class="flex items-center justify-end gap-1">
               <span class="text-text-1 text-sm font-[700] text-center">{{ item.profit }}</span>

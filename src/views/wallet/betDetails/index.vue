@@ -28,14 +28,18 @@
             >
               {{ betDetail.result === 'win' ? $t('betHistory.win') : $t('betHistory.loss') }}
             </span>
-            <span
+            <p
+              class="flex items-center"
               :class="[
                 'text-base font-[700]',
                 betDetail.result === 'win' ? 'text-secondary-2' : 'text-secondary-4'
               ]"
             >
-              {{ betDetail.result === 'win' ? '+' : '-' }}{{ betDetail.resultAmount }}
-            </span>
+              <span :class="['mr-[2px]', betDetail.result === 'loss' ? 'relative -top-0.5' : '']">{{
+                betDetail.result === 'win' ? '+' : '-'
+              }}</span>
+              <span>{{ betDetail.resultAmount }}</span>
+            </p>
           </div>
 
           <!-- 详细信息列表 -->
@@ -52,9 +56,13 @@
 
             <div class="flex items-center justify-between">
               <span class="text-text-3 text-sm">{{ $t('betDetails.winLoss') }}</span>
-              <span class="text-text-1 text-sm">
-                {{ betDetail.result === 'win' ? '+' : '-' }}{{ betDetail.resultAmount }}
-              </span>
+              <p class="text-text-1 text-sm flex items-center">
+                <span
+                  :class="['mr-[2px]', betDetail.result === 'loss' ? 'relative -top-0.5' : '']"
+                  >{{ betDetail.result === 'win' ? '+' : '-' }}</span
+                >
+                <span>{{ betDetail.resultAmount }}</span>
+              </p>
             </div>
 
             <div class="flex items-center justify-between">
