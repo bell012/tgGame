@@ -1,24 +1,5 @@
 <template>
-  <!-- PC 推荐页容器 -->
-  <section
-    class="mx-auto w-full max-w-[1120px] px-6 py-6"
-    style="font-family: Inter, avertastd, sans-serif"
-  >
-    <!-- PC 推荐页头部 -->
-    <div class="mb-5 flex items-center justify-between rounded-[16px] bg-bg-2 px-5 py-4">
-      <!-- PC 推荐页标题 -->
-      <h1 class="text-[24px] font-[700] leading-[29px] text-text-1">{{ t('referral.title') }}</h1>
-
-      <!-- PC 客服按钮 -->
-      <button
-        type="button"
-        class="flex h-11 w-11 items-center justify-center rounded-[12px] bg-opacity-5"
-        @click="$emit('customer-service')"
-      >
-        <CustomerServiceIcon class="h-5 w-5 text-text-1" />
-      </button>
-    </div>
-
+  <ReferralLayout current-tab="referral" :page-title="t('referral.title')">
     <!-- PC 推荐页内容 -->
     <ReferralPageContent
       mode="pc"
@@ -45,12 +26,12 @@
       @claim="$emit('claim')"
       @task-details="$emit('task-details')"
     />
-  </section>
+  </ReferralLayout>
 </template>
 
 <script setup lang="ts">
-import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { useI18n } from 'vue-i18n'
+import ReferralLayout from './ReferralLayout.vue'
 import ReferralPageContent from './components/ReferralPageContent.vue'
 import type { ReferralQuickAction, ReferralQuickActionId, ReferralSocialChannel } from './shared'
 
@@ -76,7 +57,6 @@ interface Props {
 const props = defineProps<Props>()
 
 defineEmits<{
-  'customer-service': []
   'quick-action': [value: ReferralQuickActionId]
   'share-channel': [value: ReferralSocialChannel]
   'share-guide': []

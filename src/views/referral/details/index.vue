@@ -62,7 +62,6 @@
         :tabs="tabs"
         :summary-list="summaryList"
         :friends-list="visibleFriendsList"
-        @go-rules="handleGoRules"
         @change-tab="handleChangeTab"
         @open-date-picker="handleOpenDatePicker"
         @open-filter="handleOpenFilter"
@@ -152,7 +151,7 @@ onMounted(() => {
  * 处理跳转规则页。
  */
 const handleGoRules = () => {
-  navigateTo('/menu/referral/rules')
+  navigateTo('/referral/rules')
 }
 
 /**
@@ -186,7 +185,7 @@ const handleOpenFilter = () => {
  * 处理进入好友详情。
  */
 const handleGoFriendDetail = (item: ReferralDetailsFriendItem) => {
-  navigateTo('/menu/referral/details/friend', {
+  navigateTo('/referral/details/friend', {
     query: {
       id: item.id
     }
@@ -227,6 +226,6 @@ const handleCopyPosterLink = async () => {
  */
 const handleInviteNow = () => {
   showInvitePosterPopup.value = false
-  navigateTo('/menu/referral')
+  navigateTo('/referral')
 }
 </script>

@@ -12,32 +12,20 @@
       <!-- 快捷入口区域 -->
       <section class="flex flex-col gap-3.5">
         <!-- 快捷入口列表 -->
-        <div :class="props.mode === 'pc' ? 'grid grid-cols-4 gap-5' : 'grid grid-cols-4 gap-2.5'">
+        <div v-if="props.mode !== 'pc'" class="grid grid-cols-4 gap-2.5">
           <!-- 快捷入口按钮 -->
           <button
             v-for="item in props.quickActions"
             :key="item.id"
             type="button"
-            class="flex flex-col items-center justify-start"
-            :class="props.mode === 'pc' ? 'gap-3 rounded-[16px]' : 'gap-2 rounded-[10px]'"
+            class="flex flex-col items-center justify-start gap-2 rounded-[10px]"
             @click="$emit('quick-action', item.id)"
           >
             <!-- 快捷入口图标 -->
-            <img
-              :src="item.icon"
-              :alt="item.label"
-              :class="
-                props.mode === 'pc'
-                  ? 'h-[68px] w-[68px] object-contain'
-                  : 'h-[46px] w-[46px] object-contain'
-              "
-            />
+            <img :src="item.icon" :alt="item.label" class="h-[46px] w-[46px] object-contain" />
 
             <!-- 快捷入口文案 -->
-            <span
-              class="text-center font-[400] text-text-1"
-              :class="props.mode === 'pc' ? 'text-base leading-[20px]' : 'text-sm leading-[17px]'"
-            >
+            <span class="text-center text-sm font-[400] leading-[17px] text-text-1">
               {{ item.label }}
             </span>
           </button>

@@ -163,7 +163,7 @@ const handleInternalJump = (slide: QuerySlideshowItem) => {
       return
     case 3:
       // TODO: 分享转盘页路由未明确，当前先跳邀请好友页占位。
-      navigateTo('/menu/referral')
+      navigateTo('/referral')
       return
     case 4:
       // 4 充值页面

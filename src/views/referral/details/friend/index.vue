@@ -171,7 +171,7 @@ onMounted(() => {
  * 处理跳转规则页。
  */
 const handleGoRules = () => {
-  navigateTo('/menu/referral/rules')
+  navigateTo('/referral/rules')
 }
 
 /**

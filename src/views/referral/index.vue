@@ -64,7 +64,6 @@
         :invite-reward-suffix="t('referral.h5.inviteRewardSuffix')"
         :invite-reward-amount="inviteRewardAmount"
         :task-details-text="t('referral.h5.taskDetails')"
-        @customer-service="handleCustomerServiceClick"
         @quick-action="handleQuickActionClick"
         @share-channel="handleShareChannel"
         @share-guide="handleShareGuideClick"
@@ -166,17 +165,17 @@ const handleCustomerServiceClick = () => {
  */
 const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
   if (actionId === 'tasks') {
-    navigateTo('/menu/referral/tasks')
+    navigateTo('/referral/tasks')
     return
   }
 
   if (actionId === 'details') {
-    navigateTo('/menu/referral/details')
+    navigateTo('/referral/details')
     return
   }
 
   if (actionId === 'rules') {
-    navigateTo('/menu/referral/rules')
+    navigateTo('/referral/rules')
     return
   }
 
@@ -240,7 +239,7 @@ const handleClaimClick = () => {
  * 处理任务详情按钮点击。
  */
 const handleTaskDetailsClick = () => {
-  navigateTo('/menu/referral/tasks')
+  navigateTo('/referral/tasks')
 }
 
 /**

@@ -67,7 +67,6 @@
         :valid-invite-description="t('referral.taskPage.validInviteDescription')"
         :task-rules-title="t('referral.taskPage.taskRulesTitle')"
         :task-rules-image="taskRulesImage"
-        @customer-service="handleCustomerServiceClick"
         @claim="handleClaimClick"
         @tab-click="handleTabClick"
       />
