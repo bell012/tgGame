@@ -4,7 +4,7 @@
       class="w-full table-fixed border-collapse border-spacing-0 font-['Inter'] text-xs sm:text-sm font-medium sm:font-bold leading-[18px] sm:leading-normal text-text-2"
     >
       <thead class="bg-bg-2">
-        <tr class="h-10 sm:h-12">
+        <tr class="h-[39px] sm:h-12">
           <td class="w-[27.09%] sm:w-1/4 px-2.5 py-2.5 sm:px-6 sm:py-0">{{ $t('home.Game') }}</td>
           <td class="w-[23.05%] sm:w-1/4 px-2.5 py-2.5 sm:px-0 sm:py-0 text-center">
             {{ $t('home.Player') }}
@@ -28,7 +28,7 @@
         <tr
           v-for="(item, index) in displayRows"
           :key="`row-${index}`"
-          class="h-10 sm:h-12"
+          class="h-[39px] sm:h-12"
           :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
         >
           <td class="px-2.5 py-2.5 sm:px-6 sm:py-0">
