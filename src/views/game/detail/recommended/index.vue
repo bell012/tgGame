@@ -60,6 +60,7 @@ import H5Header from '@/components/common/H5Header.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useGameStore } from '@/stores/game'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import { navigateTo } from '@/utils/router'
 import { navigateToName } from '@/utils/router'
@@ -76,6 +77,7 @@ import {
 
 type GameDataItem = {
   rowId?: string | number
+  brandCode?: string
   itemCode?: string | number
   platformCode?: string
   itemName?: string
@@ -104,16 +106,28 @@ const PAGE_SIZE = 40
 const isMobile = useIsMobile()
 const route = useRoute()
 const router = useRouter()
+const gameStore = useGameStore()
 const { t } = useI18n()
 
 const page = ref(1)
 const gameList = ref<GameDataItem[]>([])
 const mobileScrollRef = ref<HTMLElement | null>(null)
 const defaultPageTitle = computed(() => t('home.RecommendedGames'))
-const pageTitle = ref(defaultPageTitle.value)
+const pageTitle = computed(
+  () => normalizeGameDetailValue(route.query.title) || defaultPageTitle.value
+)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(gameList.value.length / PAGE_SIZE)))
 const sourceRowId = computed(() => normalizeGameDetailValue(route.query.rowId))
+const sourcePlatformCode = computed(() => normalizeGameDetailValue(route.query.platformCode))
+const sourceBrandCode = computed(() => {
+  const queryBrandCode = normalizeGameDetailValue(route.query.brandCode)
+  if (queryBrandCode) {
+    return queryBrandCode
+  }
+
+  return sourcePlatformCode.value.split('_')[0]?.trim() ?? ''
+})
 const currentGameTypeCode = ref('')
 
 const pagedGameList = computed(() => {
@@ -175,9 +189,35 @@ const initPageData = async () => {
   try {
     await fetchCurrentGameTypeCode()
 
-    const sourceList = (await queryGameDetailRecommendedItems()) as unknown as GameDataItem[]
     const excludeRowId = sourceRowId.value
+    const targetBrandCode = sourceBrandCode.value
+    const targetPlatformCode = sourcePlatformCode.value
     const targetGameTypeCode = currentGameTypeCode.value
+
+    if (targetBrandCode) {
+      const providerGames = (await gameStore.queryGameData({
+        rowType: 3,
+        brandCodes: [targetBrandCode]
+      })) as unknown as GameDataItem[]
+
+      gameList.value = providerGames.filter(
+        item => !excludeRowId || normalizeGameDetailValue(item.rowId) !== excludeRowId
+      )
+      return
+    }
+
+    const sourceList = (await queryGameDetailRecommendedItems()) as unknown as GameDataItem[]
+
+    if (targetPlatformCode) {
+      gameList.value = sourceList.filter(item => {
+        if (excludeRowId && normalizeGameDetailValue(item.rowId) === excludeRowId) {
+          return false
+        }
+
+        return normalizeGameDetailValue(item.platformCode) === targetPlatformCode
+      })
+      return
+    }
 
     if (!targetGameTypeCode) {
       gameList.value = sourceList.filter(
@@ -235,16 +275,21 @@ const resetPageScrollTop = async () => {
 
 onMounted(() => {
   void resetPageScrollTop()
-  void initPageData()
 })
 
 onActivated(() => {
   void resetPageScrollTop()
 })
 
-watch(defaultPageTitle, value => {
-  pageTitle.value = value
-})
+watch(
+  [sourceRowId, sourcePlatformCode, sourceBrandCode],
+  () => {
+    page.value = 1
+    void resetPageScrollTop()
+    void initPageData()
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped lang="scss">

@@ -2,16 +2,14 @@
   <div class="top-toggle-card flex justify-between items-center" @click="toggleIsOpen">
     <div class="flex flex-col">
       <h3 class="text-[14px] font-extrabold">{{ gameName }}</h3>
-      <div class="flex gap-[4px] text-[12px]">
-        <div class="text-[var(--color-text-level-2)]">By</div>
-        <button
-          type="button"
-          class="provider-link text-[var(--color-theme-level-1)] font-extrabold"
-          @click.stop="openProviderGames"
-        >
-          {{ providerName }}
-        </button>
-      </div>
+      <button
+        type="button"
+        class="provider-link flex gap-[4px] text-[12px]"
+        @click.stop="openProviderGames"
+      >
+        <span class="text-[var(--color-text-level-2)]">By</span>
+        <span class="text-[var(--color-theme-level-1)] font-extrabold">{{ providerName }}</span>
+      </button>
     </div>
     <div class="toggle-arrow-wrap">
       <ArrowDownIcon class="icon" :class="{ 'is-open': isOpen }" />
@@ -20,12 +18,14 @@
 </template>
 <script setup lang="ts">
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
-import { navigateTo } from '@/utils/router'
+import { navigateToName } from '@/utils/router'
 import { computed, inject, Ref, type ComputedRef } from 'vue'
 
 const isOpen = inject('isRgOpen') as Ref<boolean>
 
 type CurrentGameDetail = {
+  brandCode?: string
+  brandName?: string
   itemName?: string
   platformCode?: string
   platformName?: string
@@ -48,19 +48,39 @@ const providerCode = computed(() => {
   return String(currentGameDetail.value?.platformCode ?? '').trim()
 })
 
+const brandCode = computed(() => {
+  const currentBrandCode = String(currentGameDetail.value?.brandCode ?? '').trim()
+  if (currentBrandCode) {
+    return currentBrandCode
+  }
+
+  return providerCode.value.split('_')[0]?.trim() ?? ''
+})
+
+const brandPageTitle = computed(() => {
+  const currentBrandName = String(currentGameDetail.value?.brandName ?? '').trim()
+  if (currentBrandName) {
+    return currentBrandName
+  }
+
+  return brandCode.value ? `${brandCode.value} games` : providerName.value
+})
+
 const toggleIsOpen = () => {
   isOpen.value = !isOpen.value
 }
 
 const openProviderGames = () => {
-  if (!providerCode.value) {
+  if (!brandCode.value) {
     return
   }
 
-  navigateTo('/game/detail/recommended', {
+  navigateToName('brandGameList', {
+    params: {
+      brandCode: brandCode.value
+    },
     query: {
-      platformCode: providerCode.value,
-      title: providerName.value
+      brandName: brandPageTitle.value
     }
   })
 }
@@ -103,6 +123,7 @@ const openProviderGames = () => {
   background: transparent;
   line-height: 16px;
   cursor: pointer;
+  text-align: left;
 }
 
 :global(:root.light .top-toggle-card) {
