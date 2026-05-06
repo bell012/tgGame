@@ -45,12 +45,14 @@ const {
   currentBalanceAmountText,
   currentCurrencyCode,
   currentCurrencyOption,
+  currencyOptions,
   currencySelectOptions,
   setDisplayCurrency
 } = useDisplayCurrency()
 
 const selectOptions = computed(() => currencySelectOptions.value)
 provide('currency-select-options', selectOptions)
+provide('currency-select-balance-options', currencyOptions)
 
 const selectedId = computed(() => currentCurrencyCode.value)
 provide('currency-select-selected-id', selectedId)

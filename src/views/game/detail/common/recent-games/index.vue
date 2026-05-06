@@ -11,7 +11,7 @@
         <Rginfo />
         <!-- Tab -->
         <div
-          class="recent-games-tabs flex h-[50px] justify-between items-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[20px] p-[4px] max-w-[500px]"
+          class="recent-games-tabs flex h-[42px] justify-between items-center rounded-[7px] mb-[10px] mt-[20px] p-[4px] max-w-[500px]"
           :class="{ 'recent-games-tabs-light': isLightTheme }"
         >
           <div
@@ -183,18 +183,30 @@ const tabIndexClick = (index: number) => {
 </script>
 
 <style scoped lang="scss">
-:global(:root.light) .recent-games-container {
-  background: #f4f4f4;
+.recent-games-container {
+  background: #2f3435;
+}
+
+:global(:root.light .recent-games-container) {
+  background: #ffffff;
   border: none;
 }
 
 .active {
-  background-color: var(--color-input-level-2);
+  background-color: #3c4243;
   height: 100%;
-  border-radius: 10px;
+  border-radius: 6px;
+  color: var(--color-text-level-1);
+  font-weight: 800;
 }
 
 .recent-games-tab {
+  height: 100%;
+  border-radius: 6px;
+  color: var(--color-text-level-2);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
   transition:
     background-color 0.2s ease,
     color 0.2s ease,
@@ -202,14 +214,18 @@ const tabIndexClick = (index: number) => {
     border-color 0.2s ease;
 }
 
+.recent-games-tabs {
+  background: #202424;
+}
+
 .recent-games-tabs-light {
-  background: #e3e3e3 !important;
+  background: #f4f4f4 !important;
   border: none;
 }
 
 .recent-games-tabs-light .recent-games-tab.active {
   background: #ffffff;
-  border: 1px solid rgba(17, 17, 17, 0.08);
+  border: none;
   box-shadow: none;
   color: #111111;
 }

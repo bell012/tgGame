@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-1 bg-[var(--color-background-level-2)] h-[8px] rounded-[10px] w-full">
-    <div class="child-bar h-[8px] rounded-[10px]" :style="`width: ${percent}%`"></div>
+  <div class="progress-track flex flex-1 rounded-[10px] w-full">
+    <div class="child-bar rounded-[10px]" :style="`width: ${percent}%`"></div>
   </div>
 </template>
 <script setup lang="ts">
@@ -14,7 +14,17 @@ withDefaults(
 )
 </script>
 <style lang="scss" scoped>
+.progress-track {
+  height: 5px;
+  background: #3a4142;
+}
+
 .child-bar {
+  height: 5px;
   background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
+}
+
+:global(:root.light .progress-track) {
+  background: #e5e5e5;
 }
 </style>

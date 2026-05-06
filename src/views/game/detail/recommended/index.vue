@@ -3,6 +3,7 @@
     <H5Header :title="pageTitle" disable-default-back @back="handleBack" />
     <div ref="mobileScrollRef" class="flex-1 min-h-0 overflow-y-auto px-2.5 pt-2.5 pb-4 sm:px-4">
       <ResponsiveGridPager
+        v-if="!isPageLoading"
         :items="pagedGameList"
         v-model:page="page"
         :total-pages="totalPages"
@@ -18,6 +19,13 @@
           </div>
         </template>
       </ResponsiveGridPager>
+      <div v-else class="grid w-full grid-cols-3 gap-[11px]" aria-busy="true">
+        <div
+          v-for="index in mobileSkeletonCount"
+          :key="`mobile-skeleton-${index}`"
+          class="aspect-[330/438] rounded-lg bg-bg-2 animate-pulse"
+        ></div>
+      </div>
     </div>
   </div>
 
@@ -32,6 +40,7 @@
 
       <div class="recommended-page-pc__body">
         <ResponsiveGridPager
+          v-if="!isPageLoading"
           class="recommended-page-pc__pager"
           :items="pagedGameList"
           v-model:page="page"
@@ -48,6 +57,13 @@
             </div>
           </template>
         </ResponsiveGridPager>
+        <div v-else class="recommended-page-pc__skeleton-grid" aria-busy="true">
+          <div
+            v-for="index in pcSkeletonCount"
+            :key="`pc-skeleton-${index}`"
+            class="recommended-page-pc__skeleton-card bg-bg-2 animate-pulse"
+          ></div>
+        </div>
       </div>
     </div>
     <CommonFooter class="mt-[40px]" />
@@ -60,6 +76,7 @@ import H5Header from '@/components/common/H5Header.vue'
 import CommonFooter from '@/components/commonFooter.vue'
 import ResponsiveGridPager from '@/components/common/ResponsiveGridPager.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useGameStore } from '@/stores/game'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import { navigateTo } from '@/utils/router'
 import { navigateToName } from '@/utils/router'
@@ -76,6 +93,7 @@ import {
 
 type GameDataItem = {
   rowId?: string | number
+  brandCode?: string
   itemCode?: string | number
   platformCode?: string
   itemName?: string
@@ -101,20 +119,37 @@ type GameDataItem = {
 }
 
 const PAGE_SIZE = 40
+const MOBILE_SKELETON_COUNT = 12
+const PC_SKELETON_COUNT = 24
 const isMobile = useIsMobile()
 const route = useRoute()
 const router = useRouter()
+const gameStore = useGameStore()
 const { t } = useI18n()
 
 const page = ref(1)
 const gameList = ref<GameDataItem[]>([])
+const isPageLoading = ref(true)
 const mobileScrollRef = ref<HTMLElement | null>(null)
 const defaultPageTitle = computed(() => t('home.RecommendedGames'))
-const pageTitle = ref(defaultPageTitle.value)
+const pageTitle = computed(
+  () => normalizeGameDetailValue(route.query.title) || defaultPageTitle.value
+)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(gameList.value.length / PAGE_SIZE)))
 const sourceRowId = computed(() => normalizeGameDetailValue(route.query.rowId))
+const sourcePlatformCode = computed(() => normalizeGameDetailValue(route.query.platformCode))
+const sourceBrandCode = computed(() => {
+  const queryBrandCode = normalizeGameDetailValue(route.query.brandCode)
+  if (queryBrandCode) {
+    return queryBrandCode
+  }
+
+  return sourcePlatformCode.value.split('_')[0]?.trim() ?? ''
+})
 const currentGameTypeCode = ref('')
+const mobileSkeletonCount = MOBILE_SKELETON_COUNT
+const pcSkeletonCount = PC_SKELETON_COUNT
 
 const pagedGameList = computed(() => {
   const start = (page.value - 1) * PAGE_SIZE
@@ -172,12 +207,39 @@ const toCasinoCardGame = (item: GameDataItem): CasinoCardGameDataItem => {
 }
 
 const initPageData = async () => {
+  isPageLoading.value = true
   try {
     await fetchCurrentGameTypeCode()
 
-    const sourceList = (await queryGameDetailRecommendedItems()) as unknown as GameDataItem[]
     const excludeRowId = sourceRowId.value
+    const targetBrandCode = sourceBrandCode.value
+    const targetPlatformCode = sourcePlatformCode.value
     const targetGameTypeCode = currentGameTypeCode.value
+
+    if (targetBrandCode) {
+      const providerGames = (await gameStore.queryGameData({
+        rowType: 3,
+        brandCodes: [targetBrandCode]
+      })) as unknown as GameDataItem[]
+
+      gameList.value = providerGames.filter(
+        item => !excludeRowId || normalizeGameDetailValue(item.rowId) !== excludeRowId
+      )
+      return
+    }
+
+    const sourceList = (await queryGameDetailRecommendedItems()) as unknown as GameDataItem[]
+
+    if (targetPlatformCode) {
+      gameList.value = sourceList.filter(item => {
+        if (excludeRowId && normalizeGameDetailValue(item.rowId) === excludeRowId) {
+          return false
+        }
+
+        return normalizeGameDetailValue(item.platformCode) === targetPlatformCode
+      })
+      return
+    }
 
     if (!targetGameTypeCode) {
       gameList.value = sourceList.filter(
@@ -196,6 +258,8 @@ const initPageData = async () => {
   } catch (error) {
     console.error('initPageData failed', error)
     gameList.value = []
+  } finally {
+    isPageLoading.value = false
   }
 }
 
@@ -235,16 +299,21 @@ const resetPageScrollTop = async () => {
 
 onMounted(() => {
   void resetPageScrollTop()
-  void initPageData()
 })
 
 onActivated(() => {
   void resetPageScrollTop()
 })
 
-watch(defaultPageTitle, value => {
-  pageTitle.value = value
-})
+watch(
+  [sourceRowId, sourcePlatformCode, sourceBrandCode],
+  () => {
+    page.value = 1
+    void resetPageScrollTop()
+    void initPageData()
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped lang="scss">
@@ -305,5 +374,16 @@ watch(defaultPageTitle, value => {
 
 .recommended-page-pc__pager :deep(.grid) {
   gap: 10px;
+}
+
+.recommended-page-pc__skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.recommended-page-pc__skeleton-card {
+  aspect-ratio: 330 / 438;
+  border-radius: 8px;
 }
 </style>

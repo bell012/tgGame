@@ -15,7 +15,7 @@
           :class="panelClass"
           :style="h5PanelSurfaceStyle"
         >
-          <div v-if="!desktop" class="tp-header flex items-center justify-between mb-2.5">
+          <div v-if="!desktop" class="tp-header flex items-center justify-between mb-5">
             <div></div>
             <div class="tp-popup-title text-base font-bold">
               {{ t('gameDetail.liveStatsTitle') }}
@@ -54,7 +54,9 @@
                     :alt="currentRequestCurrency"
                     :src="currentCurrencyIcon"
                   />
-                  <div class="text-[var(--color-theme-level-1)] text-[15px]">{{ profitText }}</div>
+                  <div class="text-[var(--color-theme-level-1)] text-[15px] font-[700]">
+                    {{ profitText }}
+                  </div>
                 </div>
 
                 <div class="tp-label text-[14px] mt-[20px]">
@@ -66,7 +68,9 @@
                     :alt="currentRequestCurrency"
                     :src="currentCurrencyIcon"
                   />
-                  <div class="text-[var(--color-theme-level-1)] text-[15px]">{{ wageredText }}</div>
+                  <div class="text-[var(--color-theme-level-1)] text-[15px] font-[700]">
+                    {{ wageredText }}
+                  </div>
                 </div>
               </div>
               <div class="flex-1 pl-[12px]">
@@ -339,7 +343,7 @@ const close = () => {
 }
 
 .tp-panel-h5.tp-panel-surface {
-  background: var(--color-background-level-2);
+  background: var(--color-background-level-1);
 }
 
 .tp-panel-h5 .tp-popup-title {
@@ -355,7 +359,7 @@ const close = () => {
 }
 
 .tp-panel-h5 .tp-stats-shell {
-  background: var(--color-background-level-3);
+  background: var(--color-background-level-2);
 }
 
 .tp-panel-h5 .tp-divider {
@@ -365,15 +369,15 @@ const close = () => {
 .tp-divider-line {
   width: 100%;
   height: 1px;
-  background: var(--color-opacity-30);
+  background: var(--color-opacity-10);
 }
 
 .tp-panel-h5 .tp-stats-grid {
-  background: var(--color-background-level-1);
+  background: var(--color-background-level-3);
 }
 
 .tp-panel-h5 .tp-col-divider {
-  border-color: var(--color-opacity-30);
+  border-color: var(--color-opacity-10);
 }
 
 .tp-panel-h5 .tp-label {
@@ -386,7 +390,7 @@ const close = () => {
 }
 
 .tp-panel-h5 .tp-refresh-icon {
-  stroke: var(--color-text-level-2);
+  stroke: #b3bec1;
 }
 
 :global(:root.light) .tp-panel-h5.tp-panel-surface {
@@ -416,16 +420,16 @@ const close = () => {
 }
 
 :global(:root.light) .tp-panel-h5 .tp-divider-line {
-  background: #d9d9d9;
+  background: #e3e3e3;
 }
 
 :global(:root.light) .tp-panel-h5 .tp-stats-grid {
-  background: #f0f0f0;
+  background: #f5f5f5;
   border: none;
 }
 
 :global(:root.light) .tp-panel-h5 .tp-col-divider {
-  border-color: #d9d9d9;
+  border-color: #e3e3e3;
 }
 
 :global(:root.light) .tp-panel-h5 .tp-section-title {
@@ -443,7 +447,7 @@ const close = () => {
 }
 
 :global(:root.light) .tp-panel-h5 .tp-refresh-icon {
-  stroke: #99a1aa;
+  stroke: #7f8a8e;
 }
 
 .tp-panel-desktop.tp-panel-surface {

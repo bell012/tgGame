@@ -34,13 +34,12 @@
             :visible="props.visible"
             :options="listOptions"
             :selected-value="selectedId"
-            mode="radio"
-            show-search
-            :search-placeholder="t('home.search')"
+            mode="balance"
             :list-class="desktopListClass"
             item-class="tp-item mb-2.5 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left cursor-pointer"
             selected-item-class="bg-[var(--color-opacity-10)] tp-item-selected"
-            label-class="text-[14px] text-[var(--color-text-level-1)]"
+            label-class="text-[14px] text-[var(--color-text-level-1)] font-[700]"
+            trailing-class="text-xs font-[700] text-text-1"
             @select="confirmByValue"
           />
         </div>
@@ -56,6 +55,7 @@ import CurrencySelectorList from '@/components/common/currency-selector/index.vu
 import CloseIcon from '@/static/svg/close.svg?component'
 
 type OptionItem = { value: string; label: string; icon: string }
+type BalanceOptionItem = { code: string; icon: string; balanceText: string }
 
 const props = defineProps<{
   visible: boolean
@@ -70,15 +70,21 @@ const panelRef = ref<HTMLElement | null>(null)
 
 // options数据
 const selectOptions = inject('currency-select-options') as Ref<OptionItem[]>
+const balanceOptions = inject<Ref<BalanceOptionItem[]>>('currency-select-balance-options')
 // 选中那一条数据
 const selectedId = inject('currency-select-selected-id') as Ref<string>
 const onSelect = inject<(item: OptionItem) => void>('currency-select-on-select')
 
 const listOptions = computed(() => {
+  const balanceMap = new Map(
+    (balanceOptions?.value ?? []).map(item => [item.code, item.balanceText] as const)
+  )
+
   return selectOptions.value.map(item => ({
     value: item.value,
     label: item.label,
-    icon: item.icon
+    icon: item.icon,
+    trailingText: balanceMap.get(item.value) ?? `${item.value} 0.00`
   }))
 })
 

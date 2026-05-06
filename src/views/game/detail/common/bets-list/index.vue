@@ -2,7 +2,7 @@
   <div class="mt-[12px]">
     <!-- Header -->
     <div class="grid lg:grid-cols-2 grid-cols-1 gap-4">
-      <h2 class="flex items-center text-base font-extrabold text-primary">
+      <h2 class="flex items-center text-[14px] font-extrabold text-primary">
         {{ t('casino.latest_bet') }}
       </h2>
       <div class="flex w-full lg:w-auto lg:justify-end items-center sm:justify-start justify-start">
@@ -469,12 +469,15 @@ onBeforeUnmount(() => {
 .bet-tabs {
   background: var(--color-background-level-8);
   border-radius: 10px;
-  padding: 4px;
-  gap: 4px;
+  height: 39px;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
 }
 
 .bet-tab {
-  min-height: 34px;
+  height: 100%;
+  min-height: 0;
   padding: 6px 28px;
   background: transparent;
   color: var(--color-text-level-2);
@@ -547,8 +550,10 @@ onBeforeUnmount(() => {
 }
 .table-head th {
   padding: 10px 14px;
+  height: 39px;
   font-weight: 700;
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .table-head th {
@@ -605,13 +610,15 @@ onBeforeUnmount(() => {
 @media (max-width: 480px) {
   .bet-tabs {
     width: 100%;
-    padding: 3px;
-    gap: 3px;
+    height: 39px;
+    padding: 0;
+    gap: 0;
   }
 
   .bet-tab {
     flex: 1;
-    min-height: 32px;
+    height: 100%;
+    min-height: 0;
     padding: 6px 6px;
     text-align: center;
     font-size: 13px;
@@ -671,11 +678,13 @@ onBeforeUnmount(() => {
 @media (max-width: 375px) {
   .bet-tabs {
     width: 100%;
+    height: 39px;
   }
 
   .bet-tab {
     flex: 1;
-    min-height: 31px;
+    height: 100%;
+    min-height: 0;
     padding: 6px 3px;
     text-align: center;
     font-size: 10px;

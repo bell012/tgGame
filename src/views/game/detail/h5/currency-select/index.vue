@@ -1,15 +1,15 @@
 <template>
   <!-- 顶部搜索 -->
-  <div class="currency-select-trigger relative rounded-[10px]">
+  <div class="currency-select-trigger relative rounded-[6px]">
     <div
-      class="text-[14px] h-[36px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px] rounded-[10px] bg-opacity-10"
+      class="text-[14px] h-[36px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px] rounded-[6px] bg-opacity-10"
       @click="visible = true"
     >
       <div class="flex gap-[10px] min-w-0">
         <div v-if="selectedData" class="flex gap-[8px] items-center min-w-0">
           <SmartImage alt="" :src="selectedData.icon" class="size-[24px] object-contain" />
-          <div class="text-[14px] leading-[20px] shrink-0">{{ selectedData.label }}</div>
-          <div class="balance-text text-[14px] font-semibold shrink-0">
+          <div class="text-[14px] font-[700] leading-[20px] shrink-0">{{ selectedData.label }}</div>
+          <div class="balance-text text-[14px] font-[700] shrink-0">
             <span class="balance-bracket">(</span>
             <span>{{ selectedBalanceText }}</span>
             <span class="balance-bracket">)</span>
@@ -48,12 +48,14 @@ const {
   currentBalanceAmountText,
   currentCurrencyCode,
   currentCurrencyOption,
+  currencyOptions,
   currencySelectOptions,
   setDisplayCurrency
 } = useDisplayCurrency()
 
 const selectOptions = computed(() => currencySelectOptions.value)
 provide('currency-select-options', selectOptions)
+provide('currency-select-balance-options', currencyOptions)
 
 const selectedId = computed(() => currentCurrencyCode.value)
 provide('currency-select-selected-id', selectedId)
@@ -92,8 +94,8 @@ watch(
 
 .currency-select-trigger {
   border: none;
-  background: var(--color-opacity-10);
-  box-shadow: inset 0 1px 0 var(--color-opacity-5);
+  background: var(--color-background-level-3);
+  box-shadow: none;
 }
 
 .trigger-arrow-bg {
@@ -109,7 +111,10 @@ watch(
 .trigger-arrow-icon {
   width: 14px;
   height: 14px;
-  fill: none;
+}
+
+.trigger-arrow-icon :deep(path) {
+  fill: #93a0a4;
 }
 
 .balance-text {
@@ -126,6 +131,15 @@ watch(
 }
 
 :global(:root.light) .currency-select-trigger {
-  background: var(--color-opacity-10);
+  background: #d9d9d9;
+  box-shadow: none;
+}
+
+:global(:root.light) .trigger-arrow-bg {
+  background: #d5dbe1;
+}
+
+:global(:root.light) .trigger-arrow-icon :deep(path) {
+  fill: #7f8a8e;
 }
 </style>

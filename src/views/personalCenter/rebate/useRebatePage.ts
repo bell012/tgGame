@@ -410,7 +410,6 @@ export const useRebatePage = () => {
   const todayValidBets = ref(0)
   const eligibleTurnover = ref(0)
   const pendingRebateTurnover = ref(0)
-  const promoBonusTurnoverDeduction = ref(0)
   const claimableAmount = ref(0)
 
   /**
@@ -439,6 +438,7 @@ export const useRebatePage = () => {
 
     applyOptionalNumberToState(result, ['betAmount'], todayValidBets)
     applyOptionalNumberToState(result, ['flowAmount'], eligibleTurnover)
+    applyOptionalNumberToState(result, ['flowAmount'], pendingRebateTurnover)
     applyOptionalNumberToState(result, ['rebatePoints'], claimableAmount)
   }
 
@@ -463,9 +463,7 @@ export const useRebatePage = () => {
   const todayValidBetsText = computed(() => formatAmount(todayValidBets.value))
   const eligibleTurnoverText = computed(() => formatAmount(eligibleTurnover.value))
   const pendingRebateTurnoverText = computed(() => formatDetailAmount(pendingRebateTurnover.value))
-  const promoBonusTurnoverDeductionText = computed(() =>
-    formatDetailAmount(promoBonusTurnoverDeduction.value)
-  )
+  const promoBonusTurnoverDeductionText = computed(() => formatDetailAmount(0))
   const claimableAmountText = computed(() => formatAmount(claimableAmount.value))
   const claimButtonText = computed(() =>
     claimableAmount.value > 0 ? t('rebatePage.claim') : t('rebatePage.goBet')

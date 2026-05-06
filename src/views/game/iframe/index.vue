@@ -1,9 +1,5 @@
 <template>
   <div class="game-iframe-page">
-    <button type="button" class="game-iframe-page__close-btn" @click="openExitDialog">
-      <img :src="closeIcon" alt="close" class="game-iframe-page__close-icon" />
-    </button>
-
     <iframe
       v-if="iframeSrc"
       class="game-iframe-page__frame"
@@ -12,6 +8,18 @@
       allowfullscreen
     />
     <div v-else class="game-iframe-page__empty">{{ t('gameDetail.invalidGameUrl') }}</div>
+
+    <div
+      class="game-iframe-page__swipe-edge"
+      aria-hidden="true"
+      @touchstart="handleSwipeStart"
+      @touchmove="handleSwipeMove"
+      @touchend="handleSwipeEnd"
+      @touchcancel="handleSwipeEnd"
+    />
+    <button type="button" class="game-iframe-page__close-btn" @click="openExitDialog">
+      <img :src="closeIcon" alt="close" class="game-iframe-page__close-icon" />
+    </button>
 
     <div v-if="showExitDialog" class="game-iframe-page__dialog-mask" @click="closeExitDialog">
       <div class="game-iframe-page__dialog" @click.stop>
@@ -53,6 +61,8 @@ const router = useRouter()
 const { t } = useI18n()
 const showExitDialog = ref(false)
 const isConfirmLoading = ref(false)
+const swipeStartX = ref(0)
+const swipeStartY = ref(0)
 const launchState = computed(() => {
   if (typeof window === 'undefined') {
     return null
@@ -75,6 +85,35 @@ const companyCode = computed(() => {
 const detailRowId = computed(() => {
   return String(launchState.value?.rowId ?? '').trim()
 })
+
+const handleSwipeStart = (event: TouchEvent) => {
+  const touch = event.touches[0]
+  if (!touch) {
+    return
+  }
+
+  swipeStartX.value = touch.clientX
+  swipeStartY.value = touch.clientY
+}
+
+const handleSwipeMove = (event: TouchEvent) => {
+  const touch = event.touches[0]
+  if (!touch) {
+    return
+  }
+
+  const distanceX = touch.clientX - swipeStartX.value
+  const distanceY = Math.abs(touch.clientY - swipeStartY.value)
+
+  if (distanceX >= 40 && distanceY <= 50) {
+    openExitDialog()
+  }
+}
+
+const handleSwipeEnd = () => {
+  swipeStartX.value = 0
+  swipeStartY.value = 0
+}
 
 const openExitDialog = () => {
   showExitDialog.value = true
@@ -130,19 +169,27 @@ const confirmExit = async () => {
 .game-iframe-page {
   position: fixed;
   inset: 0;
+  z-index: 9999;
+  isolation: isolate;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: #000;
 }
 
 .game-iframe-page__frame {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
   width: 100%;
   height: 100%;
   border: 0;
 }
 
 .game-iframe-page__empty {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
   display: flex;
@@ -152,11 +199,23 @@ const confirmExit = async () => {
   font-size: 14px;
 }
 
+.game-iframe-page__swipe-edge {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2147483646;
+  width: max(calc(env(safe-area-inset-left) + 24px), 24px);
+  height: 100vh;
+  height: 100dvh;
+  background: transparent;
+  touch-action: none;
+}
+
 .game-iframe-page__close-btn {
-  position: absolute;
+  position: fixed;
   top: max(calc(env(safe-area-inset-top) + 12px), 12px);
   left: max(calc(env(safe-area-inset-left) + 12px), 12px);
-  z-index: 9999;
+  z-index: 2147483647;
   width: 50px;
   height: 50px;
   border: 0;
@@ -166,6 +225,20 @@ const confirmExit = async () => {
   transform: translateZ(0);
   will-change: transform;
   cursor: pointer;
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (orientation: landscape) {
+  .game-iframe-page__swipe-edge {
+    width: max(calc(env(safe-area-inset-left) + 44px), 44px);
+  }
+
+  .game-iframe-page__close-btn {
+    top: max(calc(env(safe-area-inset-top) + 10px), 10px);
+    right: max(calc(env(safe-area-inset-right) + 10px), 10px);
+    left: auto;
+  }
 }
 
 .game-iframe-page__close-icon {
@@ -176,7 +249,7 @@ const confirmExit = async () => {
 .game-iframe-page__dialog-mask {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 2147483647;
   display: flex;
   align-items: center;
   justify-content: center;
