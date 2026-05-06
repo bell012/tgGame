@@ -74,7 +74,7 @@
                   type="text"
                   inputmode="numeric"
                   :placeholder="t('common.enter_account')"
-                  class="auth-input-placeholder w-full h-[50px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  class="auth-input-placeholder w-full h-[50px] pl-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
                   @input="handleSigninAccountInput"
                 />
               </div>
@@ -92,13 +92,13 @@
                   :value="formData.signin.password"
                   :type="showPassword.signin ? 'text' : 'password'"
                   :placeholder="t('common.enter_password')"
-                  class="auth-input-placeholder w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  class="auth-input-placeholder w-full h-[50px] pl-10 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
                   :class="showPassword.signin ? '' : 'auth-password-mask'"
                   @input="handleSigninPasswordInput"
                 />
                 <button
                   type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
                   @click="togglePassword('signin')"
                 >
                   <EyeIcon v-if="showPassword.signin" class="w-5 h-5 text-text-2" />
@@ -140,8 +140,8 @@
 
             <!-- 登录 -->
             <button
-              class="btn-primary w-full h-[40px] mt-[48px] rounded-lg text-sm text-text-4 transition-all"
-              :class="{ 'opacity-40 cursor-not-allowed': !isSigninValid }"
+              class="btn-primary w-full h-[40px] mt-[48px] rounded-lg text-sm font-[700] text-text-4 transition-all"
+              :class="{ 'opacity-60 cursor-not-allowed': !isSigninValid }"
               :disabled="!isSigninValid"
               @click="handleLogin"
             >
@@ -173,7 +173,7 @@
                   type="text"
                   inputmode="numeric"
                   :placeholder="t('common.enter_account')"
-                  class="auth-input-placeholder w-full h-[50px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  class="auth-input-placeholder w-full h-[50px] pl-12 pr-[3px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
                   @input="handleSignupAccountInput"
                 />
               </div>
@@ -192,7 +192,7 @@
                   type="text"
                   inputmode="numeric"
                   :placeholder="t('common.enter_verification')"
-                  class="auth-input-placeholder w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  class="auth-input-placeholder w-full h-[50px] pl-10 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
                   @input="handleSignupCodeInput"
                 />
                 <!-- 获取验证码 -->
@@ -224,13 +224,13 @@
                   :value="formData.signup.password"
                   :type="showPassword.signup ? 'text' : 'password'"
                   :placeholder="t('common.enter_password')"
-                  class="auth-input-placeholder w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  class="auth-input-placeholder w-full h-[50px] pl-10 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
                   :class="showPassword.signup ? '' : 'auth-password-mask'"
                   @input="handleSignupPasswordInput"
                 />
                 <button
                   type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
                   @click="togglePassword('signup')"
                 >
                   <EyeIcon v-if="showPassword.signup" class="w-5 h-5 text-text-2" />
@@ -251,13 +251,13 @@
                   :value="formData.signup.confirmPassword"
                   :type="showPassword.confirmPassword ? 'text' : 'password'"
                   :placeholder="t('common.enter_confirm_password')"
-                  class="auth-input-placeholder w-full h-[50px] pl-10 pr-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-sm focus:outline-none focus:border-theme-primary placeholder:text-text-3"
+                  class="auth-input-placeholder w-full h-[50px] pl-10 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
                   :class="showPassword.confirmPassword ? '' : 'auth-password-mask'"
                   @input="handleSignupConfirmPasswordInput"
                 />
                 <button
                   type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
                   @click="togglePassword('confirmPassword')"
                 >
                   <EyeIcon v-if="showPassword.confirmPassword" class="w-5 h-5 text-text-2" />
@@ -268,8 +268,8 @@
 
             <!-- 注册 -->
             <button
-              class="btn-primary w-full h-[40px] rounded-lg text-sm text-text-4 transition-all"
-              :class="{ 'opacity-40 cursor-not-allowed': !isSignupValid }"
+              class="btn-primary w-full h-[40px] rounded-lg text-sm font-[700] text-text-4 transition-all"
+              :class="{ 'opacity-60 cursor-not-allowed': !isSignupValid }"
               :disabled="!isSignupValid"
               @click="handleRegister"
             >

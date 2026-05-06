@@ -95,7 +95,7 @@
                         type="text"
                         inputmode="numeric"
                         :placeholder="t('common.enter_account')"
-                        class="auth-input-placeholder w-full h-[47px] pl-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs"
+                        class="auth-input-placeholder w-full h-[47px] pl-12 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
                         @input="handleAccountInput"
                       />
                     </div>
@@ -114,7 +114,7 @@
                         type="text"
                         inputmode="numeric"
                         :placeholder="t('common.enter_verification')"
-                        class="auth-input-placeholder w-full h-[47px] pl-10 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs"
+                        class="auth-input-placeholder w-full h-[47px] pl-10 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
                         @input="handleCodeInput"
                       />
                       <!-- 获取验证码 -->
@@ -146,7 +146,7 @@
                         :value="formData.password"
                         :type="showPassword ? 'text' : 'password'"
                         :placeholder="t('common.enter_password')"
-                        class="auth-input-placeholder w-full h-[47px] pl-10 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs"
+                        class="auth-input-placeholder w-full h-[47px] pl-10 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
                         :class="showPassword ? '' : 'auth-password-mask'"
                         @input="handlePasswordInput"
                       />
@@ -173,7 +173,7 @@
                         :value="formData.confirmPassword"
                         :type="showConfirmPassword ? 'text' : 'password'"
                         :placeholder="t('common.enter_confirm_password')"
-                        class="auth-input-placeholder w-full h-[47px] pl-10 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-xs focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs"
+                        class="auth-input-placeholder w-full h-[47px] pl-10 bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
                         :class="showConfirmPassword ? '' : 'auth-password-mask'"
                         @input="handleConfirmPasswordInput"
                       />
