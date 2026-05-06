@@ -131,10 +131,8 @@ const page = ref(1)
 const gameList = ref<GameDataItem[]>([])
 const isPageLoading = ref(true)
 const mobileScrollRef = ref<HTMLElement | null>(null)
-const defaultPageTitle = computed(() => t('home.RecommendedGames'))
-const pageTitle = computed(
-  () => normalizeGameDetailValue(route.query.title) || defaultPageTitle.value
-)
+const defaultPageTitle = computed(() => t('home.RelatedGames'))
+const pageTitle = computed(() => defaultPageTitle.value)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(gameList.value.length / PAGE_SIZE)))
 const sourceRowId = computed(() => normalizeGameDetailValue(route.query.rowId))
