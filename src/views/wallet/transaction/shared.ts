@@ -160,6 +160,14 @@ export const formatSignedTransactionAmount = (amount: number) => {
 }
 
 const getTransactionDeltaAmount = (record: QueryRecord) => {
+  if (Number(record.changeType) === 1) {
+    const winLoseAmount = Number(record.winLoseAmount)
+
+    if (Number.isFinite(winLoseAmount)) {
+      return winLoseAmount
+    }
+  }
+
   const newBalance = Number(record.newBalance ?? 0)
   const oldBalance = Number(record.oldBalance ?? 0)
 
