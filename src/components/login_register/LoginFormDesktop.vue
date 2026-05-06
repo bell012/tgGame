@@ -32,7 +32,7 @@
       <div class="w-full h-full flex flex-col">
         <div class="flex gap-[48px] mb-10">
           <button
-            class="relative min-w-20 pb-3 text-2xl font-[700] font-inter tab-button-new"
+            class="relative min-w-20 pb-3 text-2xl font-[700] font-inter transition-all duration-200 tab-button-new"
             :class="activeTab === 'signin' ? 'text-text-1' : 'text-text-2'"
             @click="setActiveTab('signin')"
           >
@@ -44,7 +44,7 @@
             ></div>
           </button>
           <button
-            class="relative min-w-20 pb-1.5 text-2xl font-[700] font-inter tab-button-new"
+            class="relative min-w-20 pb-1.5 text-2xl font-[700] font-inter transition-all duration-200 tab-button-new"
             :class="activeTab === 'signup' ? 'text-text-1' : 'text-text-2'"
             @click="setActiveTab('signup')"
           >
@@ -198,8 +198,12 @@
                 <!-- 获取验证码 -->
                 <button
                   type="button"
-                  class="absolute right-4 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-xs font-[500] rounded-lg transition-opacity"
-                  :class="{ 'opacity-50 cursor-not-allowed': countdown > 0 }"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 h-7 min-w-[70px] px-2 text-xs font-[500] rounded-lg transition-opacity"
+                  :class="
+                    countdown > 0
+                      ? 'bg-opacity-6 text-text-2 cursor-not-allowed'
+                      : 'bg-secondary-3 text-theme-primary'
+                  "
                   :disabled="countdown > 0"
                   @click="handleSendCode"
                 >

@@ -71,8 +71,12 @@
               <!-- 获取验证码 -->
               <button
                 type="button"
-                class="absolute right-4 top-1/2 -translate-y-1/2 h-7 px-2 bg-secondary-3 text-theme-primary text-sm font-[500] rounded-lg transition-opacity"
-                :class="{ 'opacity-50 cursor-not-allowed': countdown > 0 }"
+                class="absolute right-4 top-1/2 -translate-y-1/2 h-7 min-w-[70px] px-2 text-sm font-[500] rounded-lg transition-opacity"
+                :class="
+                  countdown > 0
+                    ? 'bg-opacity-6 text-text-2 cursor-not-allowed'
+                    : 'bg-secondary-3 text-theme-primary'
+                "
                 :disabled="countdown > 0"
                 @click="handleSendCode"
               >
