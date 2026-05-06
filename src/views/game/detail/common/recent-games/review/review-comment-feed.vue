@@ -92,12 +92,11 @@
           {{ comment.content }}
         </div>
         <transition name="child-comments-collapse">
-          <div v-if="comment.children.length > 0 && comment.isChildrenExpanded" class="mt-[10px]">
-            <div
-              v-for="child in comment.children"
-              :key="child.id"
-              class="border-t border-[var(--color-opacity-10)] pt-[12px] pb-[8px]"
-            >
+          <div
+            v-if="comment.children.length > 0 && comment.isChildrenExpanded"
+            class="mt-[10px] pl-[20px] border-t border-[var(--color-opacity-10)]"
+          >
+            <div v-for="child in comment.children" :key="child.id" class="pt-[12px] pb-[8px]">
               <div class="review-comment-main-row flex h-[36px] items-center justify-between">
                 <div class="flex items-center gap-[8px] text-[11px] font-[500]">
                   <SmartImage
