@@ -28,13 +28,14 @@
               <span class="text-text-1 text-sm">{{ detail.requiredTurnover }}</span>
             </div>
 
-            <!-- <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between">
               <span class="text-text-3 text-sm">{{ $t('wallet.applicableGames') }}</span>
-              <span class="text-text-1 text-sm">{{ detail.applicableGames }}</span>
-            </div> -->
+              <span class="text-text-1 text-sm">- -</span>
+              <!-- <span class="text-text-1 text-sm">{{ detail.applicableGames }}</span> -->
+            </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-text-3 text-sm">{{ $t('personalCenter.remarks') }}</span>
+              <span class="text-text-3 text-sm">{{ $t('wallet.orderStatus') }}</span>
               <span
                 class="text-sm"
                 :class="detail.status ? 'text-secondary-4' : 'text-secondary-2'"
