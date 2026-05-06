@@ -2,7 +2,7 @@
   <div>
     <div
       v-if="props.loading"
-      class="flex items-center justify-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[16px] text-[12px] text-[var(--color-text-level-2)]"
+      class="recent-games-content-box flex items-center justify-center rounded-[10px] mb-[10px] mt-[12px] p-[16px] text-[12px] text-[var(--color-text-level-2)]"
     >
       {{ t('common.loading') }}
     </div>
@@ -11,7 +11,7 @@
         <div
           v-for="(item, index) in props.list"
           :key="`${index}-${getPlayerName(item)}-${toPlainText(item.payOut)}`"
-          class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[12px]"
+          class="recent-games-content-box flex flex-col rounded-[10px] mb-[10px] mt-[12px] p-[12px]"
           :class="{ 'mb-0': index === props.list.length - 1 }"
         >
           <div class="win-item-divider flex min-h-[20px] items-center gap-[8px] pb-[12px]">
@@ -94,10 +94,7 @@
         </div>
       </div>
     </template>
-    <div
-      v-else
-      class="bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[12px] p-[16px]"
-    >
+    <div v-else class="recent-games-content-box rounded-[10px] mb-[10px] mt-[12px] p-[16px]">
       <ThemedEmptyState
         :dark-image="defaultImgDark"
         :light-image="defaultImgLight"
@@ -195,6 +192,14 @@ const getPlayerName = (item: GameRanListItem) => {
   border-bottom: 1px solid var(--color-opacity-10);
 }
 
+.recent-games-content-box {
+  background: #202424;
+}
+
+:global(:root.light .recent-games-content-box) {
+  background: #f4f4f4;
+}
+
 .win-player-name {
   display: inline-flex;
   align-items: center;
@@ -208,7 +213,7 @@ const getPlayerName = (item: GameRanListItem) => {
   align-items: center;
   gap: 12px;
   padding: 0 18px;
-  height: 44px;
+  height: 39px;
   color: var(--color-text-level-2);
   font-size: 15px;
   font-weight: 600;

@@ -1,12 +1,12 @@
 <template>
   <div class="gameList">
-    <div class="mt-2 flex items-center sm:mt-6 h-8">
-      <h2 class="flex items-center text-base font-extrabold text-primary">
+    <div class="mt-[14px] flex items-center sm:mt-6 h-8">
+      <h2 class="flex items-center text-[14px] font-extrabold text-primary leading-none">
         {{ props.title }}
       </h2>
       <button
         type="button"
-        class="button ml-auto flex items-center bg-bg-3 gap-1 rounded-lg font-extrabold h-8 bg-black_alpha5 px-2 dark:bg-layer5"
+        class="button ml-auto flex items-center justify-center bg-bg-3 rounded-lg font-extrabold h-[24px] min-w-[31px] text-[12px] leading-none bg-black_alpha5 px-[6px] dark:bg-layer5"
         @click="emit('all-click')"
       >
         {{ $t('home.All') }}
@@ -53,7 +53,7 @@
       </div>
     </div>
     <div
-      class="grid snap-x relative snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth hide-scroll gap-2 pt-3 mx-0 grid-col-3"
+      class="grid snap-x relative snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth hide-scroll gap-2 pt-[14px] mx-0 grid-col-3"
       ref="listWrap"
       style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >

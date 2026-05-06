@@ -136,8 +136,8 @@ const chageCurrency = async (value: string) => {
   }
   isChangingCurrency.value = true
   try {
-    await Api.user.changeWallet({ currency: value })
     emit('select', value)
+    await Api.user.changeWallet({ currency: value })
   } catch (error) {
     console.error('changeWallet failed', error)
     return

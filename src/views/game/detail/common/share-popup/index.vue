@@ -15,8 +15,8 @@
         <div
           :class="
             props.desktop
-              ? 'tp-panel pointer-events-auto w-full max-w-[560px] rounded-[16px] bg-[var(--color-background-level-2)]'
-              : 'tp-panel pointer-events-auto w-full max-w-none rounded-t-[16px] rounded-b-0 bg-[var(--color-background-level-2)]'
+              ? 'tp-panel pointer-events-auto w-full max-w-[560px] rounded-[16px] bg-bg-1'
+              : 'tp-panel pointer-events-auto w-full max-w-none rounded-t-[16px] rounded-b-0 bg-bg-1'
           "
           @click.stop
         >
@@ -27,14 +27,14 @@
             </div>
             <button
               type="button"
-              class="w-10 h-10 rounded-[10px] bg-[var(--color-opacity-10)] flex items-center justify-center"
+              class="w-7 h-7 rounded-[8px] bg-[var(--color-opacity-10)] flex items-center justify-center"
               @click="close"
             >
-              <CloseIcon class="stroke-text-1 w-5 h-5" />
+              <CloseIcon class="stroke-text-1 w-4 h-4" />
             </button>
           </div>
           <div class="px-5 pb-[calc(env(safe-area-inset-bottom)+20px)] sm:pb-5">
-            <div class="text-[14px]/[20px] text-[var(--color-text-level-1)] font-normal">
+            <div class="text-[14px]/[20px] text-[var(--color-text-level-2)] font-normal">
               {{ t('gameDetail.shareViaSocialMedia') }}
             </div>
             <div class="share-channel-list mt-4">
@@ -52,11 +52,11 @@
               </button>
             </div>
 
-            <div class="text-[14px]/[20px] mt-5 text-[var(--color-text-level-1)] font-normal">
+            <div class="text-[14px]/[20px] mt-5 text-[var(--color-text-level-2)] font-normal">
               {{ t('gameDetail.shareViaWebLink') }}
             </div>
             <div
-              class="mt-2.5 h-[58px] rounded-[12px] border border-[var(--color-opacity-20)] bg-[var(--color-background-level-4)] px-2 flex items-center gap-2"
+              class="share-link-box mt-2.5 h-[40px] rounded-[10px] border px-2 flex items-center gap-2"
             >
               <div
                 class="flex-1 min-w-0 text-[11px]/[14px] text-[var(--color-theme-level-1)] truncate px-2"
@@ -65,7 +65,7 @@
               </div>
               <button
                 type="button"
-                class="h-[42px] min-w-[84px] rounded-[10px] bg-[var(--color-opacity-10)] text-[14px]/[20px] text-[var(--color-text-level-1)] font-bold"
+                class="share-copy-btn h-[27px] min-w-[53px] rounded-[8px] text-[12px]/[16px] text-[var(--color-text-level-1)] font-bold"
                 @click="handleCopy"
               >
                 {{ t('gameDetail.copy') }}
@@ -370,6 +370,16 @@ const handleCopy = async () => {
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
 }
 
+.share-link-box {
+  border-color: var(--color-opacity-10);
+  background: var(--color-background-level-3);
+}
+
+.share-copy-btn {
+  background: var(--color-opacity-10);
+  border: 1px solid transparent;
+}
+
 .share-channel-list {
   display: flex;
   flex-wrap: wrap;
@@ -380,6 +390,20 @@ const handleCopy = async () => {
 
 .share-channel-item {
   width: calc((100% - 32px) / 5);
+}
+
+:global(:root.light) .tp-panel {
+  box-shadow: 0 12px 28px rgba(28, 45, 74, 0.16);
+}
+
+:global(:root.light) .share-link-box {
+  border-color: #d9dee5;
+  background: #ffffff;
+}
+
+:global(:root.light) .share-copy-btn {
+  background: #e6e9ee;
+  border-color: #d0d6dd;
 }
 
 // .tp-header {

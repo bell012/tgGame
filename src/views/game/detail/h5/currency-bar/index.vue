@@ -10,7 +10,7 @@
         :src="LineIcon"
         @click="liveStateVisibleClick"
       />
-      <div class="flex justify-end items-center gap-[10px] cursor-pointer">
+      <div class="flex justify-end items-center gap-[14px] cursor-pointer">
         <SmartImage
           alt=""
           class="size-[16px]"
@@ -86,7 +86,7 @@ const shareVisibleClick = () => {
 }
 
 .currency-toolbar-light {
-  background: #cccccc !important;
+  background: #e3e3e3 !important;
   border-top: none;
   box-shadow: none;
 }
