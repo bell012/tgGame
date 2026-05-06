@@ -65,7 +65,7 @@
           </div>
           <!-- 注册 -->
           <div
-            class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 sm:mr-3"
+            class="cursor-pointer font-bold w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 sm:mr-3"
             @click="openRegisterModal"
           >
             {{ t('home.sign_Up') }}
@@ -228,7 +228,7 @@
           v-if="!isLoggedIn"
           class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
         >
-          <ChatIcon class="w-6 h-6 fill-none" />
+          <ChatIcon class="w-5 h-5 fill-none translate-y-[2px] translate-x-[2px]" />
         </div>
 
         <!-- 语言和币种选择 (未登录时显示) -->

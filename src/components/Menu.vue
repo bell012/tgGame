@@ -32,7 +32,7 @@
       <div
         v-for="(menuGroup, groupIndex) in sidebarMenuGroups"
         :key="`group-${groupIndex}`"
-        class="flex flex-col mt-1"
+        class="flex flex-col mt-3"
       >
         <div v-for="(menu, menuIndex) in menuGroup" :key="menu.id" class="flex flex-col">
           <div v-if="hasGroupedChildren(menu)" class="bg-bg-2 rounded-lg overflow-visible">
@@ -43,8 +43,7 @@
                 'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer',
                 { 'menu-item-collapsed': isCollapsed },
                 {
-                  'border-t border-opacity-6':
-                    index > 0 && menu.children && menu.children.length > 1
+                  'border-opacity-6': index > 0 && menu.children && menu.children.length > 1
                 },
                 {
                   'rounded-t-lg rounded-b-none':
@@ -121,7 +120,7 @@
                         :src="item.icon"
                         class="w-6 h-6 object-contain"
                       />
-                      <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
+                      <component v-else :is="item.icon" class="w-6 h-6 fill-text-2" />
                     </div>
                   </div>
                 </div>
@@ -133,7 +132,7 @@
             v-else-if="isCollapsed"
             :class="[
               'relative flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer menu-item-collapsed',
-              { 'border-t border-opacity-6': menuIndex > 0 && menuGroup.length > 1 },
+              { 'border-opacity-6': menuIndex > 0 && menuGroup.length > 1 },
               { 'rounded-t-lg rounded-b-none': menuIndex === 0 && menuGroup.length > 1 },
               {
                 'rounded-b-lg rounded-t-none':
@@ -162,7 +161,7 @@
             <div
               :class="[
                 'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer',
-                { 'border-t border-opacity-6': menuIndex > 0 && menuGroup.length > 1 },
+                { 'border-opacity-6': menuIndex > 0 && menuGroup.length > 1 },
                 { 'rounded-t-lg rounded-b-none': menuIndex === 0 && menuGroup.length > 1 },
                 {
                   'rounded-b-lg rounded-t-none':
