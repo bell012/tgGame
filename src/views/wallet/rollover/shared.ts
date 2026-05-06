@@ -162,6 +162,9 @@ export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => ({
   rawData: record
 })
 
+// 过滤掉Required Turnover 小于等于0 整个item数据
+export const shouldDisplayRolloverItem = (item: Item) => Number(item.requiredTurnover) > 0
+
 export const buildRolloverQueryForm = (params: {
   page: number
   pageSize: number
