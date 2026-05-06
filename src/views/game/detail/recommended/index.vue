@@ -1,7 +1,10 @@
 <template>
   <div v-if="isMobile" class="fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1">
     <H5Header :title="pageTitle" disable-default-back @back="handleBack" />
-    <div ref="mobileScrollRef" class="flex-1 min-h-0 overflow-y-auto px-2.5 pt-2.5 pb-4 sm:px-4">
+    <div
+      ref="mobileScrollRef"
+      class="recommended-page-mobile__body flex-1 min-h-0 overflow-y-auto px-2.5 pt-2.5 pb-4 sm:px-4"
+    >
       <ResponsiveGridPager
         v-if="!isPageLoading"
         :items="pagedGameList"
@@ -25,6 +28,14 @@
           :key="`mobile-skeleton-${index}`"
           class="aspect-[330/438] rounded-lg bg-bg-2 animate-pulse"
         ></div>
+      </div>
+      <div
+        v-if="isPageLoading"
+        class="recommended-page-loading-mask"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div class="recommended-page-loading-spinner" />
       </div>
     </div>
   </div>
@@ -63,6 +74,14 @@
             :key="`pc-skeleton-${index}`"
             class="recommended-page-pc__skeleton-card bg-bg-2 animate-pulse"
           ></div>
+        </div>
+        <div
+          v-if="isPageLoading"
+          class="recommended-page-loading-mask"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <div class="recommended-page-loading-spinner" />
         </div>
       </div>
     </div>
@@ -317,33 +336,37 @@ watch(
 <style scoped lang="scss">
 .recommended-page-pc {
   width: 100%;
+  min-height: 100%;
   padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .recommended-page-pc__container {
+  flex: 1;
   width: 100%;
-  max-width: 1248px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   border-radius: 10px;
   overflow: hidden;
   background: var(--color-background-level-2);
 }
 
 .recommended-page-pc__header {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 2;
   height: 48px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 14px;
   background: var(--color-background-level-2);
   border-bottom: 1px solid var(--color-border-level-1);
 }
 
 .recommended-page-pc__back-btn {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
   width: 32px;
   height: 32px;
   border: 0;
@@ -356,14 +379,17 @@ watch(
 
 .recommended-page-pc__title {
   margin: 0;
-  font-size: 24px;
+  font-size: 28px;
   line-height: 1;
   font-weight: 800;
   color: var(--color-text-level-1);
+  text-align: left;
 }
 
 .recommended-page-pc__body {
-  padding: 12px 14px 16px;
+  position: relative;
+  padding: 12px 14px 18px;
+  min-height: 0;
 }
 
 .recommended-page-pc__pager :deep(.sm\:grid-cols-8) {
@@ -383,5 +409,40 @@ watch(
 .recommended-page-pc__skeleton-card {
   aspect-ratio: 330 / 438;
   border-radius: 8px;
+}
+
+.recommended-page-mobile__body {
+  position: relative;
+}
+
+.recommended-page-loading-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 12, 18, 0.36);
+  backdrop-filter: blur(1px);
+}
+
+.recommended-page-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 3px solid rgba(255, 255, 255, 0.34);
+  border-top-color: #fff;
+  animation: recommended-page-loading-spin 0.8s linear infinite;
+}
+
+@keyframes recommended-page-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+:global(:root.light) .recommended-page-loading-spinner {
+  border-color: rgba(27, 36, 49, 0.24);
+  border-top-color: #1b2431;
 }
 </style>
