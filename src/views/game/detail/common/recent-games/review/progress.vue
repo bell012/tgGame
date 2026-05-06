@@ -16,7 +16,7 @@ withDefaults(
 <style lang="scss" scoped>
 .progress-track {
   height: 5px;
-  background: #303637;
+  background: #3a4142;
 }
 
 .child-bar {
@@ -25,6 +25,6 @@ withDefaults(
 }
 
 :global(:root.light .progress-track) {
-  background: #e2e2e2;
+  background: #e5e5e5;
 }
 </style>

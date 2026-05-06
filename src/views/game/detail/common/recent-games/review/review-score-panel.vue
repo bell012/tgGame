@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="review-score-overview flex flex-col lg:flex-row rounded-[10px] mb-[10px] p-[12px]">
-      <div class="score-head lg:flex-1 flex items-center gap-[10px]">
+      <div class="score-head lg:flex-1 flex items-center justify-center gap-[10px]">
         <div class="score-text">{{ scoreText }}</div>
         <div>
           <Star :count="5" :active-count="activeStarCount" :size="18" :gap="4" />
@@ -10,7 +10,7 @@
           </div>
         </div>
       </div>
-      <div class="rating-bars lg:flex-1 flex flex-col mt-[12px] gap-[8px]">
+      <div class="rating-bars lg:flex-1 flex flex-col mt-[12px] gap-[6px]">
         <div class="flex justify-between items-center gap-[10px]">
           <Star :count="5" class="rating-bar-stars" :size="18" :gap="4" />
           <ProgressBar :percent="ratingProgressPercents[0] ?? 0" />
@@ -64,7 +64,7 @@
             :key="`${avatarUrl}-${avatarIndex}`"
             alt=""
             :src="avatarUrl"
-            class="size-[26px] rounded-[26px] border border-[var(--color-background-level-1)] -ml-[8px] first:ml-0"
+            class="rating-avatar -ml-[6px] first:ml-0"
           />
         </div>
       </div>
@@ -95,12 +95,13 @@ const emit = defineEmits<{
 
 <style scoped lang="scss">
 .review-score-overview {
+  --review-star-active: #2aee88;
+  --review-star-muted: #687779;
   background: #202424;
 }
 
 .score-head {
-  justify-content: center;
-  padding-left: 22px;
+  width: 100%;
 }
 
 .score-text {
@@ -119,16 +120,33 @@ const emit = defineEmits<{
 .rating-bar-stars {
   width: 106px;
   flex: 0 0 106px;
+  --review-star-muted: #b3bec1;
 }
 
 .review-action-card {
+  --review-star-active: #2aee88;
+  --review-star-muted: #b3bec1;
   height: 76px;
   padding: 10px 8px;
   background: #202424;
 }
 
+.rating-avatar {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 26px;
+  border: 1px solid #202424;
+  object-fit: cover;
+}
+
 :global(:root.light .review-score-overview),
 :global(:root.light .review-action-card) {
+  --review-star-muted: #6f7f80;
   background: #f4f4f4;
+}
+
+:global(:root.light .rating-avatar) {
+  border-color: #ffffff;
 }
 </style>

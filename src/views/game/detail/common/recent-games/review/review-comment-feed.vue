@@ -2,7 +2,7 @@
   <div>
     <div
       v-if="isCommentLoading && !sortedCommentList.length"
-      class="flex items-center justify-center gap-[8px] bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[18px] px-[12px]"
+      class="review-comment-state flex h-[40px] items-center justify-center gap-[8px] rounded-[7px] mb-[10px] mt-[10px] px-[12px]"
     >
       <div
         class="size-[16px] rounded-full border-[2px] border-[var(--color-text-level-3)] border-t-transparent animate-spin"
@@ -14,7 +14,7 @@
 
     <div
       v-else-if="isCommentLoading"
-      class="flex items-center justify-center gap-[8px] bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[10px] px-[12px]"
+      class="review-comment-state flex h-[40px] items-center justify-center gap-[8px] rounded-[7px] mb-[10px] mt-[10px] px-[12px]"
     >
       <div
         class="size-[14px] rounded-full border-[2px] border-[var(--color-text-level-3)] border-t-transparent animate-spin"
@@ -164,7 +164,7 @@
 
     <div
       v-else-if="!isCommentLoading"
-      class="flex items-center justify-center bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[18px] px-[12px] text-[12px] text-[var(--color-text-level-3)]"
+      class="review-comment-state flex h-[40px] items-center justify-center rounded-[7px] mb-[10px] mt-[10px] px-[12px] text-[12px] text-[var(--color-text-level-3)]"
     >
       {{ noCommentsText }}
     </div>
@@ -200,6 +200,14 @@ const emit = defineEmits<{
 </script>
 
 <style scoped>
+.review-comment-state {
+  background: #202424;
+}
+
+:global(:root.light .review-comment-state) {
+  background: #f4f4f4;
+}
+
 .comment-like-icon-active {
   filter: brightness(0) saturate(100%) invert(67%) sepia(95%) saturate(512%) hue-rotate(98deg)
     brightness(95%) contrast(95%);

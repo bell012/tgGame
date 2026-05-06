@@ -8,30 +8,28 @@
       :style="starStyle"
       @click="handleClick(i)"
     >
-      <SmartImage
-        :src="StarIcon"
-        :alt="
+      <span class="sr-only">
+        {{
           getStarFillPercent(i) > 0
             ? t('gameDetail.starActiveAlt')
             : t('gameDetail.starInactiveAlt')
-        "
-        class="size-full"
-      />
-      <SmartImage
+        }}
+      </span>
+      <StarIcon class="star-symbol size-full" />
+      <span
         v-if="getStarFillPercent(i) > 0"
-        :src="StarActiveIcon"
-        alt=""
-        class="absolute left-0 top-0 size-full"
-        :style="{ clipPath: `inset(0 ${100 - getStarFillPercent(i)}% 0 0)` }"
-      />
+        class="absolute left-0 top-0 h-full overflow-hidden"
+        :style="{ width: `${getStarFillPercent(i)}%` }"
+      >
+        <StarActiveIcon class="star-symbol-active h-full" :style="{ width: `${props.size}px` }" />
+      </span>
     </span>
   </div>
 </template>
 <script setup lang="ts">
-import StarIcon from '@/static/svg/game/detail/comment/star.svg?url'
-import StarActiveIcon from '@/static/svg/game/detail/comment/star_active.svg?url'
+import StarIcon from '@/static/svg/game/detail/comment/star.svg?component'
+import StarActiveIcon from '@/static/svg/game/detail/comment/star_active.svg?component'
 import { useI18n } from 'vue-i18n'
-import SmartImage from '@/components/common/SmartImage.vue'
 import { computed } from 'vue'
 
 const props = withDefaults(
@@ -72,3 +70,13 @@ const handleClick = (value: number) => {
   emit('change', value)
 }
 </script>
+
+<style scoped lang="scss">
+.star-symbol :deep(path) {
+  fill: var(--review-star-muted);
+}
+
+.star-symbol-active :deep(path) {
+  fill: var(--review-star-active);
+}
+</style>
