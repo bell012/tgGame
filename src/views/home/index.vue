@@ -478,7 +478,7 @@ const getQuerySlideshow = async () => {
       }
     })
     const records = Array.isArray(response?.result?.records) ? response.result.records : []
-    querySlideshowList.value = isLogin.value ? records : records.slice(0, 1)
+    querySlideshowList.value = records
   } catch (error) {
     console.error('getQuerySlideshow failed', error)
     querySlideshowList.value = []

@@ -11,18 +11,18 @@
       </div>
     </div>
 
-    <div v-else-if="slides.length" class="w-full flex flex-col bg-bg-1">
+    <div v-else-if="visibleSlides.length" class="w-full flex flex-col bg-bg-1">
       <div class="relative mt-2.5 mb-2.5 w-full min-h-0 overflow-visible">
         <Swipe
           ref="swipeRef"
           class="min-h-0 w-full"
-          :autoplay="slides.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
+          :autoplay="visibleSlides.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
           :show-indicators="false"
-          :touchable="slides.length > 1"
+          :touchable="visibleSlides.length > 1"
           lazy-render
           @change="handleChange"
         >
-          <SwipeItem v-for="(item, index) in slides" :key="index">
+          <SwipeItem v-for="(item, index) in visibleSlides" :key="index">
             <div class="w-full h-full overflow-hidden rounded-xl px-3">
               <img
                 :src="getSlideImage(item)"
@@ -33,7 +33,7 @@
             </div>
           </SwipeItem>
         </Swipe>
-        <template v-if="slides.length > 1">
+        <template v-if="visibleSlides.length > 1">
           <button
             type="button"
             class="absolute left-3 top-1/2 z-10 hidden -translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
@@ -53,11 +53,14 @@
         </template>
       </div>
       <!-- 左右按钮 + 滑动条 -->
-      <div v-if="slides.length > 1" class="flex flex-shrink-0 items-center justify-center px-4">
+      <div
+        v-if="visibleSlides.length > 1"
+        class="flex flex-shrink-0 items-center justify-center px-4"
+      >
         <div class="flex w-[25%] min-w-0 items-center justify-between gap-2">
           <div class="flex min-w-0 flex-1 items-center justify-center gap-1.5">
             <button
-              v-for="(_, index) in slides"
+              v-for="(_, index) in visibleSlides"
               :key="index"
               type="button"
               class="flex shrink-0 items-center justify-center transition-colors"
@@ -87,12 +90,16 @@ import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import ArrowLeft2Icon from '@/static/svg/arrow_left2.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import { useAuthModalStore } from '@/stores/authModal'
+import { useUserStore } from '@/stores/user'
 import { navigateTo, navigateToName } from '@/utils/router'
+import { storeToRefs } from 'pinia'
 import type { SwipeInstance } from 'vant'
 import { Swipe, SwipeItem } from 'vant'
 import { computed, ref, watch } from 'vue'
 
 const authModalStore = useAuthModalStore()
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
 
 interface Props {
   list: QuerySlideshowItem[]
@@ -111,6 +118,10 @@ const AUTO_PLAY_INTERVAL_MS = 10000
 const bannerAspectClass = 'aspect-[1041/450] lg:aspect-[1340/280]'
 const slides = computed(() => {
   return [...props.list].sort((a, b) => (a.sortNum ?? 0) - (b.sortNum ?? 0))
+})
+const visibleSlides = computed(() => {
+  const isLoggedIn = Boolean(userInfo.value?.tradeToken)
+  return isLoggedIn ? slides.value : slides.value.slice(0, 1)
 })
 const progressStyle = computed(() => ({
   animationDuration: `${AUTO_PLAY_INTERVAL_MS}ms`
@@ -208,7 +219,7 @@ const swipeNext = () => {
 }
 
 watch(
-  slides,
+  visibleSlides,
   nextSlides => {
     if (currentIndex.value >= nextSlides.length) {
       currentIndex.value = 0
