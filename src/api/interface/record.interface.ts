@@ -101,6 +101,7 @@ export interface QueryAcctHisPageResult {
     memberRowId: number // 会员id
     newBalance: number // 新余额
     oldBalance: number // 旧余额
+    winLoseAmount?: number // 输赢金额（游戏切换时使用）
     site: string
   }>
   size: number
