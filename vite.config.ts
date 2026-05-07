@@ -1,6 +1,6 @@
+import vue from '@vitejs/plugin-vue'
 import imagemin from 'imagemin'
 import imageminWebp from 'imagemin-webp'
-import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { defineConfig, type Plugin } from 'vite'
 import viteImagemin from 'vite-plugin-imagemin'

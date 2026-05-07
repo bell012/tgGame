@@ -6,6 +6,8 @@ import request, { type ApiResponseToastOptions } from '@/utils/request'
 import type {
   ModifyMemberInfoForm,
   ModifyMemberInfoResponse,
+  GetSubMemberByIdForm,
+  GetSubMemberByIdResponse,
   QueryAcctInfoForm,
   QueryAcctInfoResponse,
   SelectMemberForm,
@@ -82,6 +84,25 @@ export function selectMember(data: SelectMemberForm): Promise<SelectMemberRespon
     data,
     showSuccessToast: false,
     showErrorToast: false
+  })
+}
+
+/**
+ * 查询下级会员详情
+ * @param data 下级会员 rowId
+ * @returns Promise<GetSubMemberByIdResponse>
+ */
+export function getSubMemberById(
+  data: GetSubMemberByIdForm,
+  options?: ApiResponseToastOptions
+): Promise<GetSubMemberByIdResponse> {
+  return request({
+    url: '/mc/getSubMemberById',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: false,
+    ...options
   })
 }
 

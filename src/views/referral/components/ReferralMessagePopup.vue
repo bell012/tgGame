@@ -4,85 +4,144 @@
     <!-- 弹窗遮罩层 -->
     <div
       v-if="props.modelValue"
-      class="fixed inset-0 z-[9999] flex items-end justify-center bg-mask-60-1"
+      class="fixed inset-0 z-[9999] flex justify-center bg-mask-60-1"
+      :class="props.mode === 'pc' ? 'items-center px-4' : 'items-end'"
       @click.self="handleClose"
     >
-      <!-- 弹窗主体容器 -->
-      <div
-        class="w-full bg-bg-1 shadow-2xl"
-        :class="
-          props.mode === 'pc'
-            ? 'max-w-[720px] rounded-t-[20px] px-5 pb-8 pt-5'
-            : 'rounded-t-[12px] px-3.5 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-4'
-        "
+      <!-- PC 弹窗主体 -->
+      <section
+        v-if="props.mode === 'pc'"
+        class="flex h-[582px] w-[464px] flex-col rounded-[24px] bg-bg-1 p-8 shadow-2xl"
         style="font-family: Inter, avertastd, sans-serif"
         @click.stop
       >
-        <!-- 弹窗标题区域 -->
-        <div class="text-center">
-          <!-- 弹窗标题 -->
-          <h3
-            class="font-[700] text-text-1"
-            :class="props.mode === 'pc' ? 'text-[24px] leading-[29px]' : 'text-base leading-[20px]'"
+        <!-- PC 弹窗内容容器 -->
+        <div class="flex h-full w-full flex-col items-start gap-6">
+          <!-- PC 弹窗标题说明区域 -->
+          <div class="flex w-full flex-col items-start gap-2">
+            <!-- PC 弹窗标题和关闭按钮 -->
+            <div class="flex w-full items-start justify-between gap-4">
+              <!-- PC 弹窗标题 -->
+              <h3
+                class="flex min-h-6 items-center text-[20px] font-bold leading-6 capitalize text-text-1"
+              >
+                {{ props.title }}
+              </h3>
+
+              <!-- PC 关闭按钮 -->
+              <button
+                type="button"
+                class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-bg-2"
+                @click="handleClose"
+              >
+                <CloseIcon class="h-4 w-4 fill-none" />
+              </button>
+            </div>
+
+            <!-- PC 弹窗说明文案 -->
+            <p class="w-full text-center text-sm font-normal leading-5 text-text-3">
+              {{ props.description }}
+            </p>
+          </div>
+
+          <!-- PC 文案输入区域 -->
+          <div
+            class="box-border flex w-full flex-col items-end gap-[30px] rounded-[16px] border border-theme-primary bg-bg-2 p-5"
           >
+            <!-- PC 文案输入框 -->
+            <textarea
+              v-model="draftMessage"
+              class="h-[68px] w-full resize-none border-0 bg-transparent p-0 text-sm font-normal leading-5 text-text-1 outline-none placeholder:text-text-3"
+              :maxlength="props.maxLength"
+              :placeholder="props.initialMessage"
+            ></textarea>
+
+            <!-- PC 字数统计 -->
+            <span class="text-sm font-normal leading-5 text-text-3">
+              {{ `${currentLength}/${props.maxLength}` }}
+            </span>
+          </div>
+
+          <!-- PC 预设文案按钮区域 -->
+          <div class="flex w-full flex-col gap-3">
+            <!-- PC 预设文案按钮 -->
+            <button
+              v-for="(preset, index) in props.presets"
+              :key="`referral-message-preset-${index}`"
+              type="button"
+              class="flex h-12 w-full items-center justify-center rounded-[8px] bg-bg-2 px-4 text-center text-sm font-normal leading-5 text-theme-primary"
+              @click="handleSelectPreset(preset)"
+            >
+              {{ preset }}
+            </button>
+          </div>
+
+          <!-- PC 复制按钮 -->
+          <button
+            type="button"
+            class="mt-auto flex h-12 w-full items-center justify-center rounded-[8px] bg-theme-primary text-center text-sm font-bold leading-[17px] text-text-4"
+            @click="handleCopy"
+          >
+            {{ props.copyText }}
+          </button>
+        </div>
+      </section>
+
+      <!-- H5 弹窗主体容器 -->
+      <div
+        v-else
+        class="w-full rounded-t-[12px] bg-bg-1 px-3.5 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-4 shadow-2xl"
+        style="font-family: Inter, avertastd, sans-serif"
+        @click.stop
+      >
+        <!-- H5 弹窗标题区域 -->
+        <div class="text-center">
+          <!-- H5 弹窗标题 -->
+          <h3 class="text-base leading-[20px] font-[700] text-text-1">
             {{ props.title }}
           </h3>
 
-          <!-- 弹窗说明文案 -->
+          <!-- H5 弹窗说明文案 -->
           <p
-            class="mx-auto mt-3 text-center font-[400] text-text-3"
-            :class="
-              props.mode === 'pc'
-                ? 'max-w-[560px] text-sm leading-[20px]'
-                : 'max-w-[300px] text-xs leading-[18px]'
-            "
+            class="mx-auto mt-3 max-w-[300px] text-center text-xs leading-[18px] font-[400] text-text-3"
           >
             {{ props.description }}
           </p>
         </div>
 
-        <!-- 文案输入区域 -->
-        <div
-          class="mt-5 rounded-[10px] border border-theme-primary bg-bg-2"
-          :class="props.mode === 'pc' ? 'p-4' : 'p-3.5'"
-        >
-          <!-- 文案输入框 -->
+        <!-- H5 文案输入区域 -->
+        <div class="mt-5 rounded-[10px] border border-theme-primary bg-bg-2 p-3.5">
+          <!-- H5 文案输入框 -->
           <textarea
             v-model="draftMessage"
-            class="min-h-[96px] w-full resize-none border-0 bg-transparent p-0 font-[400] text-text-1 outline-none placeholder:text-text-3"
-            :class="props.mode === 'pc' ? 'text-base leading-[24px]' : 'text-sm leading-[20px]'"
+            class="min-h-[96px] w-full resize-none border-0 bg-transparent p-0 text-sm leading-[20px] font-[400] text-text-1 outline-none placeholder:text-text-3"
             :maxlength="props.maxLength"
           ></textarea>
 
-          <!-- 字数统计 -->
-          <div
-            class="mt-3 text-right font-[400] text-text-3"
-            :class="props.mode === 'pc' ? 'text-sm leading-[20px]' : 'text-xs leading-[15px]'"
-          >
+          <!-- H5 字数统计 -->
+          <div class="mt-3 text-right text-xs leading-[15px] font-[400] text-text-3">
             {{ `${currentLength}/${props.maxLength}` }}
           </div>
         </div>
 
-        <!-- 预设文案按钮区域 -->
-        <div class="mt-5 flex flex-col" :class="props.mode === 'pc' ? 'gap-3' : 'gap-2.5'">
-          <!-- 预设文案按钮 -->
+        <!-- H5 预设文案按钮区域 -->
+        <div class="mt-5 flex flex-col gap-2.5">
+          <!-- H5 预设文案按钮 -->
           <button
             v-for="(preset, index) in props.presets"
             :key="`referral-message-preset-${index}`"
             type="button"
-            class="rounded-[10px] bg-bg-2 px-4 text-center font-[400] text-theme-primary"
-            :class="props.mode === 'pc' ? 'h-[52px] text-base' : 'h-10 text-sm'"
+            class="h-10 rounded-[10px] bg-bg-2 px-4 text-center text-sm font-[400] text-theme-primary"
             @click="handleSelectPreset(preset)"
           >
             {{ preset }}
           </button>
         </div>
 
-        <!-- 复制按钮区域 -->
+        <!-- H5 复制按钮区域 -->
         <button
           type="button"
-          class="mt-5 w-full rounded-[10px] bg-theme-primary font-[700] text-text-4"
-          :class="props.mode === 'pc' ? 'h-[52px] text-base' : 'h-10 text-sm'"
+          class="mt-5 h-10 w-full rounded-[10px] bg-theme-primary text-sm font-[700] text-text-4"
           @click="handleCopy"
         >
           {{ props.copyText }}
@@ -93,8 +152,8 @@
 </template>
 
 <script setup lang="ts">
+import CloseIcon from '@/static/svg/close.svg?component'
 import { computed, ref, watch } from 'vue'
-
 interface Props {
   modelValue: boolean
   mode: 'mobile' | 'pc'

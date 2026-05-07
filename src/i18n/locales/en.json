@@ -364,7 +364,11 @@
     },
     "taskPage": {
       "title": "Task",
-      "resetHint": "Task Reset: 05D 02H 20M. Please claim last month's reward before 4:00 PM on the 1st of each month. Expired rewards will no longer be available.",
+      "resetHint": {
+        "daily": "Task Reset: {countdown}. Rewards can be claimed after 00:00 every day.",
+        "weekly": "Task Reset: {countdown}. Rewards can be claimed after 00:00 every Monday.",
+        "monthly": "Task Reset: {countdown}. Rewards can be claimed after 00:00 on the 1st of each month."
+      },
       "rewardsToClaim": "Rewards to Claim",
       "tabs": {
         "inviteRegister": "Invite & Register",
@@ -385,7 +389,12 @@
       "achieved": "Achieved",
       "notAchieved": "Not Achieved",
       "validInviteTitle": "What counts as a valid invite?",
-      "validInviteDescription": "A member who tops up at least ₱500 this week or places at least ₱1,000 in valid bets.",
+      "validInviteDescription": "A member who tops up at least {rechargeAmount} {period} or places at least {betAmount} in valid bets.",
+      "periodLabel": {
+        "daily": "today",
+        "weekly": "this week",
+        "monthly": "this month"
+      },
       "taskRulesTitle": "Task Rules"
     },
     "rulesPage": {
@@ -416,8 +425,14 @@
       "showNow": "Show Now",
       "avatarAlt": "avatar",
       "friendDetailHint": "Friend detail coming soon:",
+      "dateSelection": "Date Selection",
       "date": {
-        "today": "Today"
+        "all": "All",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last3Days": "Last 3 Days",
+        "last15Days": "Last 15 Days",
+        "last30Days": "Last 30 Days"
       },
       "tabs": {
         "friends": "Friends",

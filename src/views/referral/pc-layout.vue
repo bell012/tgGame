@@ -7,7 +7,8 @@
       :marquee-messages="props.marqueeMessages"
       :social-channels="props.socialChannels"
       :social-channels-loading="props.socialChannelsLoading"
-      :banner-image="props.bannerImage"
+      :banner-loading="props.bannerLoading"
+      :banner-slides="props.bannerSlides"
       :commission-coin-image="props.commissionCoinImage"
       :estimated-commission-label="props.estimatedCommissionLabel"
       :estimated-commission-amount="props.estimatedCommissionAmount"
@@ -25,6 +26,7 @@
       @copy-message="$emit('copy-message')"
       @claim="$emit('claim')"
       @task-details="$emit('task-details')"
+      @banner-click="$emit('banner-click', $event)"
     />
   </ReferralLayout>
 </template>
@@ -33,14 +35,20 @@
 import { useI18n } from 'vue-i18n'
 import ReferralLayout from './ReferralLayout.vue'
 import ReferralPageContent from './components/ReferralPageContent.vue'
-import type { ReferralQuickAction, ReferralQuickActionId, ReferralSocialChannel } from './shared'
+import type {
+  ReferralBannerSlide,
+  ReferralQuickAction,
+  ReferralQuickActionId,
+  ReferralSocialChannel
+} from './shared'
 
 interface Props {
   quickActions: ReferralQuickAction[]
   marqueeMessages: string[]
   socialChannels: ReferralSocialChannel[]
   socialChannelsLoading: boolean
-  bannerImage: string
+  bannerLoading: boolean
+  bannerSlides: ReferralBannerSlide[]
   commissionCoinImage: string
   estimatedCommissionLabel: string
   estimatedCommissionAmount: string
@@ -63,6 +71,7 @@ defineEmits<{
   'copy-message': []
   claim: []
   'task-details': []
+  'banner-click': [value: ReferralBannerSlide]
 }>()
 
 const { t } = useI18n()

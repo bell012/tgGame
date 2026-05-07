@@ -64,7 +64,7 @@
         :summary-list="currentSummaryList"
         :table-columns="currentTableColumns"
         :table-list="currentTableList"
-        @go-rules="handleGoRules"
+        @close="handleClosePopup"
         @change-date-tab="handleChangeDateTab"
         @change-stats-tab="handleChangeStatsTab"
         @copy-account="handleCopyAccount"
@@ -74,30 +74,35 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { showToast } from 'vant'
-import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import Api from '@/api'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import RuleIcon from '@/static/svg/rule.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { navigateTo } from '@/utils/router'
+import { showToast } from 'vant'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import ReferralFriendDetailPageContent from './components/ReferralFriendDetailPageContent.vue'
 import PcLayout from './pc-layout.vue'
 import {
+  buildReferralFriendDetailDateRange,
   createReferralFriendDetailDateTabs,
   createReferralFriendDetailGameColumns,
   createReferralFriendDetailGameRows,
   createReferralFriendDetailGameSummary,
   createReferralFriendDetailMember,
+  createReferralFriendDetailTopUpRows,
   createReferralFriendDetailStatsTabs,
   createReferralFriendDetailTopUpColumns,
-  createReferralFriendDetailTopUpRows,
   createReferralFriendDetailTopUpSummary,
   getReferralFriendDetailEmptyDarkImage,
   getReferralFriendDetailEmptyLightImage,
   type ReferralFriendDetailDateTabValue,
+  type ReferralFriendDetailGameStatItem,
+  type ReferralFriendDetailMemberResult,
+  type ReferralFriendDetailTopUpStatResult,
   type ReferralFriendDetailStatsTabValue
 } from './shared'
 
@@ -107,21 +112,37 @@ const isMobile = useIsMobile()
 const isReady = ref(false)
 const activeDateTab = ref<ReferralFriendDetailDateTabValue>('today')
 const activeStatsTab = ref<ReferralFriendDetailStatsTabValue>('game-stats')
+const memberDetailResult = ref<ReferralFriendDetailMemberResult | null>(null)
+const gameStatsResult = ref<ReferralFriendDetailGameStatItem[]>([])
+const topUpStatsResult = ref<ReferralFriendDetailTopUpStatResult | null>(null)
 const emptyDarkImage = getReferralFriendDetailEmptyDarkImage()
 const emptyLightImage = getReferralFriendDetailEmptyLightImage()
+const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
 
 /**
- * 从路由参数中解析好友账号。
+ * 从路由参数中解析好友 rowId。
  */
-const accountFromRoute = computed(() => {
-  const account = route.query.id
-  return typeof account === 'string' && account ? account : undefined
+const userIdFromRoute = computed(() => {
+  const userId = route.query.userId ?? route.query.id
+  return typeof userId === 'string' && userId ? userId : undefined
+})
+
+/**
+ * 从路由参数中解析好友 VIP 等级。
+ */
+const vipIdFromRoute = computed(() => {
+  const vipId = route.query.vipId
+  const nextVipId = Number(vipId)
+
+  return Number.isFinite(nextVipId) ? nextVipId : undefined
 })
 
 /**
  * 生成好友基础信息。
  */
-const memberInfo = computed(() => createReferralFriendDetailMember(accountFromRoute.value))
+const memberInfo = computed(() =>
+  createReferralFriendDetailMember(memberDetailResult.value, vipIdFromRoute.value)
+)
 
 /**
  * 生成日期筛选标签。
@@ -138,8 +159,8 @@ const statsTabs = computed(() => createReferralFriendDetailStatsTabs(t))
  */
 const currentSummaryList = computed(() =>
   activeStatsTab.value === 'game-stats'
-    ? createReferralFriendDetailGameSummary(t)
-    : createReferralFriendDetailTopUpSummary(t)
+    ? createReferralFriendDetailGameSummary(t, gameStatsResult.value)
+    : createReferralFriendDetailTopUpSummary(t, topUpStatsResult.value)
 )
 
 /**
@@ -156,8 +177,8 @@ const currentTableColumns = computed(() =>
  */
 const currentTableList = computed(() =>
   activeStatsTab.value === 'game-stats'
-    ? createReferralFriendDetailGameRows(t)
-    : createReferralFriendDetailTopUpRows()
+    ? createReferralFriendDetailGameRows(t, gameStatsResult.value)
+    : createReferralFriendDetailTopUpRows(topUpStatsResult.value)
 )
 
 /**
@@ -167,11 +188,98 @@ onMounted(() => {
   isReady.value = true
 })
 
+watch(
+  () => [userIdFromRoute.value, currentAgentChannelId.value] as const,
+  () => {
+    void fetchReferralFriendDetailData()
+  },
+  {
+    immediate: true
+  }
+)
+
+/**
+ * 获取好友详情页基础信息和统计数据。
+ */
+async function fetchReferralFriendDetailData() {
+  const userId = userIdFromRoute.value
+
+  if (!userId) {
+    memberDetailResult.value = null
+    gameStatsResult.value = []
+    topUpStatsResult.value = null
+    return
+  }
+
+  try {
+    const memberResponse = await Api.user.getSubMemberById({
+      rowId: userId
+    })
+
+    memberDetailResult.value = memberResponse?.result ?? null
+    await fetchReferralFriendDetailStats()
+  } catch (error) {
+    console.error('[referral-friend-detail] fetch member detail failed:', error)
+    memberDetailResult.value = null
+    gameStatsResult.value = []
+    topUpStatsResult.value = null
+  }
+}
+
+/**
+ * 获取好友详情页当前日期下的统计数据。
+ */
+async function fetchReferralFriendDetailStats() {
+  const userId = String(memberDetailResult.value?.rowId ?? userIdFromRoute.value ?? '')
+  const userAccount = String(memberDetailResult.value?.memberId ?? '')
+
+  if (!userId || !userAccount) {
+    gameStatsResult.value = []
+    topUpStatsResult.value = null
+    return
+  }
+
+  const dateRange = buildReferralFriendDetailDateRange(activeDateTab.value)
+  const queryParam = {
+    userAccount,
+    userId,
+    ...dateRange
+  }
+
+  try {
+    const [gameResponse, topUpResponse] = await Promise.all([
+      Api.agent.queryReferralFriendGameStats(queryParam, {
+        channelId: currentAgentChannelId.value
+      }),
+      Api.agent.queryReferralFriendTopUpStats(queryParam, {
+        channelId: currentAgentChannelId.value
+      })
+    ])
+
+    gameStatsResult.value = Array.isArray(gameResponse?.result) ? gameResponse.result : []
+    topUpStatsResult.value =
+      topUpResponse?.result && typeof topUpResponse.result === 'object'
+        ? topUpResponse.result
+        : null
+  } catch (error) {
+    console.error('[referral-friend-detail] fetch friend stats failed:', error)
+    gameStatsResult.value = []
+    topUpStatsResult.value = null
+  }
+}
+
 /**
  * 处理跳转规则页。
  */
 const handleGoRules = () => {
   navigateTo('/referral/rules')
+}
+
+/**
+ * 处理关闭 PC 好友明细弹窗。
+ */
+const handleClosePopup = () => {
+  navigateTo('/referral/details')
 }
 
 /**
@@ -191,7 +299,7 @@ const handleCopyAccount = async () => {
  */
 const handleChangeDateTab = (value: ReferralFriendDetailDateTabValue) => {
   activeDateTab.value = value
-  handleFetchStats()
+  void fetchReferralFriendDetailStats()
 }
 
 /**
@@ -199,13 +307,5 @@ const handleChangeDateTab = (value: ReferralFriendDetailDateTabValue) => {
  */
 const handleChangeStatsTab = (value: ReferralFriendDetailStatsTabValue) => {
   activeStatsTab.value = value
-  handleFetchStats()
-}
-
-/**
- * 处理获取统计数据。
- */
-const handleFetchStats = () => {
-  // 预留接口接入点，当前页面使用静态示例数据。
 }
 </script>
