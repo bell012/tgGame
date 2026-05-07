@@ -531,6 +531,8 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import depositCryptoOrderPop from '@/components/deposit/order/crypto/depositCryptoOrderPop.vue'
 import depositPopShell from '@/components/deposit/shared/depositPopShell.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useAuthModalStore } from '@/stores/authModal'
+import { useGameStore } from '@/stores/game'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import CloseIcon from '@/static/svg/close.svg?component'
@@ -538,10 +540,15 @@ import delIcon from '@/static/svg/del.svg?component'
 import markReadIcon from '@/static/svg/mark-read-icon.svg?component'
 
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
-import { useAuthModalStore } from '@/stores/authModal'
-import { useGameStore } from '@/stores/game'
 import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
 import { useTradeMessageSyncStore } from '@/stores/tradeMessageSync'
+import {
+  executeConfiguredJump,
+  getNormalizedJumpType,
+  getNormalizedLinkType,
+  isAbsoluteHttpUrl,
+  isConfiguredJumpItem
+} from '@/utils/contentJump'
 import { formatDisplayTime } from '@/utils/date'
 import { getLanguageCode } from '@/utils/locale'
 import {
@@ -560,7 +567,6 @@ import { copyTextWithFallback, type OrderTab } from '@/views/wallet/myOrders/sha
 import { closeToast, showLoadingToast } from 'vant'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NavigationFailureType, isNavigationFailure } from 'vue-router'
 
 // 通知分类类型。
 type NotificationCategory = 'promotions' | 'transactions' | 'system'
@@ -601,15 +607,6 @@ interface NotificationListState {
   categories: Record<NotificationCategory, NotificationCategoryState>
 }
 
-interface GameListForAppNode {
-  gameTypeCode?: string
-  platformCode?: string
-  itemCode?: string
-  rowId?: string | number
-  subGame?: GameListForAppNode[]
-  [key: string]: unknown
-}
-
 const hashNotificationKey = (value: string) => {
   let hash = 0
 
@@ -619,39 +616,6 @@ const hashNotificationKey = (value: string) => {
   }
 
   return Math.abs(hash) + 1
-}
-
-const normalizeGameLookupValue = (value: unknown) => String(value ?? '').trim()
-
-const splitGameLookupValues = (value: unknown) =>
-  normalizeGameLookupValue(value)
-    .split(',')
-    .map(item => item.trim())
-    .filter(Boolean)
-
-const isGameLookupValueMatched = (sourceValue: unknown, targetValue: unknown) => {
-  const normalizedTargetValue = normalizeGameLookupValue(targetValue)
-
-  if (!normalizedTargetValue) {
-    return false
-  }
-
-  return splitGameLookupValues(sourceValue).includes(normalizedTargetValue)
-}
-
-const flattenGameListForAppItems = (items: GameListForAppNode[]) => {
-  const flattenedItems: GameListForAppNode[] = []
-
-  const traverse = (item: GameListForAppNode) => {
-    flattenedItems.push(item)
-
-    const children = Array.isArray(item.subGame) ? item.subGame : []
-    children.forEach(child => traverse(child))
-  }
-
-  items.forEach(traverse)
-
-  return flattenedItems
 }
 
 const props = withDefaults(
@@ -1646,28 +1610,6 @@ const openNotificationDetailPage = (item: NotificationItem) => {
   })
 }
 
-// 将 jumpType 规整为数字，值含义：
-// 0 不跳转
-// 1 URL 跳转
-// 2 跳转内部页面
-// 3 跳转游戏
-const getNormalizedJumpType = (value: number | undefined) => Number(value) || 0
-
-// 将 linkType 规整为数字。
-// jumpType = 1 时：0 不跳转、1 内部 URL、2 外部 URL。
-// jumpType = 2 时：0 不跳转、1 活动、2 充值栏目、3 分享转盘、4 充值页面、5 积分转盘、6 邀请好友、7 登录注册页。
-const getNormalizedLinkType = (value: number | undefined) => Number(value) || 0
-
-// 将 linkUrl 规整为去除首尾空白的字符串。
-const getNormalizedLinkUrl = (value: string | undefined) => String(value ?? '').trim()
-
-// 判断链接是否为 http/https 绝对地址。
-const isAbsoluteHttpUrl = (value: string) => /^https?:\/\//i.test(value)
-
-// 判断链接是否为项目内部可识别的路由路径。
-const isInternalRoutePath = (value: string) =>
-  /^\/?[A-Za-z0-9/_-]+(?:\?[A-Za-z0-9\-._~%!$&'()*+,;=:@/?]*)?(?:#[^\s]*)?$/.test(value)
-
 // 在同页打开内部 URL 前，先做一次连通性校验。
 const verifyNotificationInternalUrl = async (linkUrl: string) => {
   if (!isAbsoluteHttpUrl(linkUrl)) {
@@ -1697,146 +1639,7 @@ const verifyNotificationInternalUrl = async (linkUrl: string) => {
 }
 
 // 判断通知是否配置了列表页直接跳转行为。
-const isJumpNotification = (item: NotificationItem) => {
-  // jumpType：0 不跳转、1 URL 跳转、2 跳转内部页面、3 跳转游戏。
-  const jumpType = getNormalizedJumpType(item.jumpType)
-  // linkType：在不同 jumpType 下代表不同子类型，具体含义见上方注释。
-  const linkType = getNormalizedLinkType(item.linkType)
-  const linkUrl = getNormalizedLinkUrl(item.linkUrl)
-
-  if (jumpType === 1) {
-    return (linkType === 1 || linkType === 2) && Boolean(linkUrl)
-  }
-
-  if (jumpType === 2) {
-    return linkType > 0 || Boolean(linkUrl)
-  }
-
-  if (jumpType === 3) {
-    return Boolean(linkUrl)
-  }
-
-  return false
-}
-
-// 处理通知配置的内部 URL 跳转。
-const openNotificationInternalUrl = async (linkUrl: string) => {
-  // 如果通知没有配置 linkUrl，则直接视为不可跳转。
-  if (!linkUrl) {
-    return false
-  }
-
-  // 如果是完整的 http/https 地址，则按外部完整链接处理。
-  if (isAbsoluteHttpUrl(linkUrl)) {
-    const canOpen = await verifyNotificationInternalUrl(linkUrl)
-    // 如果外部地址连通性校验失败，则终止本次跳转。
-    if (!canOpen) {
-      return false
-    }
-
-    prepareNotificationListRestore()
-    return Boolean(window.open(linkUrl, '_self'))
-  }
-
-  // 如果既不是完整 URL，也不是站内可识别路由，则不执行跳转。
-  if (!isInternalRoutePath(linkUrl)) {
-    return false
-  }
-
-  prepareNotificationListRestore()
-  const navigationResult = await navigateTo(linkUrl)
-
-  // 如果路由跳转被中止或取消，则视为跳转失败。
-  if (
-    navigationResult &&
-    (isNavigationFailure(navigationResult, NavigationFailureType.aborted) ||
-      isNavigationFailure(navigationResult, NavigationFailureType.cancelled))
-  ) {
-    return false
-  }
-
-  return true
-}
-
-// 处理“跳转内部页面”类型的通知点击。
-const handleInternalPageJump = async (item: NotificationItem) => {
-  // linkType：1 活动、2 充值栏目、3 分享转盘、4 充值页面、5 积分转盘、6 邀请好友、7 登录注册页。
-  const linkType = getNormalizedLinkType(item.linkType)
-  const linkUrl = getNormalizedLinkUrl(item.linkUrl)
-
-  // 优先判断， 因为当 linkType === 2的时候 linkUrl可能有值
-
-  if (linkType === 2 || linkType === 4) {
-    prepareNotificationListRestore()
-    await navigateTo('/deposit')
-    return true
-  }
-
-  if (await openNotificationInternalUrl(linkUrl)) {
-    return true
-  }
-
-  if (linkType === 6) {
-    prepareNotificationListRestore()
-    await navigateTo('/referral')
-    return true
-  }
-
-  if (linkType === 7) {
-    authModalStore.openLoginModal()
-    return true
-  }
-
-  return false
-}
-
-// 处理“跳转游戏”类型的通知点击。
-const handleGameJump = async (item: NotificationItem) => {
-  const [pgType, platformCode, gameCode] = getNormalizedLinkUrl(item.linkUrl)
-    .split('|')
-    .map(value => value.trim())
-
-  // 如果只有 pgType，则跳转到娱乐城对应分类页。
-  if (pgType && !platformCode && !gameCode) {
-    prepareNotificationListRestore()
-    await navigateTo(`/casino/${pgType}`)
-    return true
-  }
-
-  if (!pgType || !platformCode || !gameCode) {
-    console.warn('notification game jump payload invalid', item)
-    return false
-  }
-
-  try {
-    const gameList = (await gameStore.ensureGameData()) as unknown as GameListForAppNode[]
-    const matchedGame = flattenGameListForAppItems(gameList).find(game => {
-      return (
-        isGameLookupValueMatched(game.gameTypeCode, pgType) &&
-        isGameLookupValueMatched(game.platformCode, platformCode) &&
-        isGameLookupValueMatched(game.itemCode, gameCode)
-      )
-    })
-
-    const targetRowId = normalizeGameLookupValue(matchedGame?.rowId)
-    if (!targetRowId) {
-      console.warn('notification game jump target not found in queryGameListForApp', {
-        pgType,
-        platformCode,
-        gameCode,
-        item
-      })
-      return false
-    }
-
-    prepareNotificationListRestore()
-    await navigateTo(`/game/${targetRowId}`)
-    return true
-  } catch (error) {
-    console.error('handleGameJump failed', error)
-    return false
-  }
-}
+const isJumpNotification = (item: NotificationItem) => isConfiguredJumpItem(item)
 
 // 点击通知：跳转型直接执行跳转，其余进入详情。
 const openNotificationDetail = async (item: NotificationItem) => {
@@ -1851,7 +1654,6 @@ const openNotificationDetail = async (item: NotificationItem) => {
   const jumpType = getNormalizedJumpType(item.jumpType)
   // linkType：jumpType = 1 时表示 URL 类型；jumpType = 2 时表示内部页面类型。
   const linkType = getNormalizedLinkType(item.linkType)
-  const linkUrl = getNormalizedLinkUrl(item.linkUrl)
   const shouldShowUrlJumpLoading = item.category !== 'transactions' && jumpType === 1
 
   if (jumpType === 1) {
@@ -1860,12 +1662,14 @@ const openNotificationDetail = async (item: NotificationItem) => {
         showNotificationJumpLoading()
       }
 
-      if (linkType === 2 && isAbsoluteHttpUrl(linkUrl)) {
-        window.open(linkUrl, '_blank', 'noopener,noreferrer')
-        return
-      }
-
-      if (linkType === 1 && (await openNotificationInternalUrl(linkUrl))) {
+      if (
+        await executeConfiguredJump(item, {
+          beforeNavigate: prepareNotificationListRestore,
+          verifyInternalHttpUrl: verifyNotificationInternalUrl,
+          openLoginModal: () => authModalStore.openLoginModal(),
+          loadGameData: () => gameStore.ensureGameData()
+        })
+      ) {
         return
       }
     } finally {
@@ -1882,17 +1686,24 @@ const openNotificationDetail = async (item: NotificationItem) => {
     return
   }
 
-  if (jumpType === 2) {
-    if (await handleInternalPageJump(item)) {
-      return
-    }
+  if (
+    await executeConfiguredJump(item, {
+      beforeNavigate: prepareNotificationListRestore,
+      verifyInternalHttpUrl: verifyNotificationInternalUrl,
+      openLoginModal: () => authModalStore.openLoginModal(),
+      loadGameData: () => gameStore.ensureGameData()
+    })
+  ) {
+    return
+  }
 
+  if (jumpType === 2) {
     console.warn('notification internal page jump skipped', item)
     return
   }
 
   if (jumpType === 3) {
-    await handleGameJump(item)
+    console.warn('notification game jump skipped', item)
   }
 }
 

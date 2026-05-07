@@ -36,6 +36,9 @@ export interface ReferralBannerSlide {
   rowId: number
   image: string
   sort: number
+  jumpType: number
+  linkType: number
+  linkUrl: string
 }
 
 /**
@@ -119,7 +122,10 @@ export const buildReferralBannerSlidesFromApi = (result: unknown): ReferralBanne
       return {
         rowId: Number.isFinite(rowId) ? rowId : index,
         image,
-        sort: Number.isFinite(sort) ? sort : index
+        sort: Number.isFinite(sort) ? sort : index,
+        jumpType: Number(record.jumpType) || 0,
+        linkType: Number(record.linkType) || 0,
+        linkUrl: String(record.linkUrl ?? '').trim()
       }
     })
     .filter(item => Boolean(item.image))

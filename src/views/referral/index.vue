@@ -41,6 +41,7 @@
           @copy-message="handleCopyReferralMessage"
           @claim="handleClaimClick"
           @task-details="handleTaskDetailsClick"
+          @banner-click="handleBannerClick"
         />
       </div>
     </div>
@@ -72,6 +73,7 @@
         @copy-message="handleCopyReferralMessage"
         @claim="handleClaimClick"
         @task-details="handleTaskDetailsClick"
+        @banner-click="handleBannerClick"
       />
     </div>
 
@@ -90,25 +92,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
 import Api from '@/api'
-import { showToast } from 'vant'
-import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+import { useAuthModalStore } from '@/stores/authModal'
+import { useGameStore } from '@/stores/game'
 import { copyTextWithFallback } from '@/utils/clipboard'
+import { executeConfiguredJump } from '@/utils/contentJump'
 import { getLanguageCode } from '@/utils/request'
 import { navigateTo } from '@/utils/router'
-import { useIsMobile } from '@/composables/useMediaQuery'
-import PcLayout from './pc-layout.vue'
-import ReferralPageContent from './components/ReferralPageContent.vue'
+import { showToast } from 'vant'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ReferralMessagePopup from './components/ReferralMessagePopup.vue'
+import ReferralPageContent from './components/ReferralPageContent.vue'
+import PcLayout from './pc-layout.vue'
 import {
   buildReferralBannerSlidesFromApi,
   buildReferralShareMessage,
   buildReferralSocialChannelsFromApi,
-  createReferralMessagePresets,
   createReferralMarqueeMessages,
+  createReferralMessagePresets,
   createReferralQuickActions,
   getDefaultReferralLink,
   getReferralCommissionCoinImage,
@@ -118,6 +123,8 @@ import {
 } from './shared'
 
 const { t, locale } = useI18n()
+const authModalStore = useAuthModalStore()
+const gameStore = useGameStore()
 const isMobile = useIsMobile()
 const isReady = ref(false)
 const estimatedCommissionAmount = '9999.99'
@@ -256,6 +263,20 @@ const handleClaimClick = () => {
  */
 const handleTaskDetailsClick = () => {
   navigateTo('/referral/tasks')
+}
+
+/**
+ * 处理推荐页横幅点击跳转。
+ */
+const handleBannerClick = async (slide: ReferralBannerSlide) => {
+  if (
+    !(await executeConfiguredJump(slide, {
+      openLoginModal: () => authModalStore.openLoginModal(),
+      loadGameData: () => gameStore.ensureGameData()
+    }))
+  ) {
+    console.warn('referral banner jump skipped', slide)
+  }
 }
 
 /**

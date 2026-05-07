@@ -26,6 +26,7 @@
       @copy-message="$emit('copy-message')"
       @claim="$emit('claim')"
       @task-details="$emit('task-details')"
+      @banner-click="$emit('banner-click', $event)"
     />
   </ReferralLayout>
 </template>
@@ -70,6 +71,7 @@ defineEmits<{
   'copy-message': []
   claim: []
   'task-details': []
+  'banner-click': [value: ReferralBannerSlide]
 }>()
 
 const { t } = useI18n()

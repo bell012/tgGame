@@ -36,13 +36,16 @@
           class="overflow-hidden"
           :class="props.mode === 'pc' ? 'rounded-[16px]' : 'rounded-[10px]'"
         >
+          <!-- 横幅骨架占位 -->
           <div
             v-if="props.bannerLoading || props.bannerSlides.length === 0"
             class="w-full animate-pulse bg-bg-2"
             :class="props.mode === 'pc' ? 'h-[180px]' : 'h-[100px]'"
           ></div>
 
+          <!-- 横幅轮播区域 -->
           <div v-else class="relative">
+            <!-- 横幅轮播组件 -->
             <Swipe
               class="w-full"
               :autoplay="props.bannerSlides.length > 1 ? bannerAutoplayInterval : 0"
@@ -51,17 +54,22 @@
               lazy-render
               @change="handleBannerChange"
             >
+              <!-- 横幅轮播项 -->
               <SwipeItem v-for="slide in props.bannerSlides" :key="slide.rowId">
-                <img
-                  :src="slide.image"
-                  alt="referral banner"
-                  class="w-full object-cover"
-                  :class="props.mode === 'pc' ? 'h-[180px]' : 'h-[100px]'"
-                />
+                <!-- 横幅点击按钮 -->
+                <button type="button" class="block w-full" @click="$emit('banner-click', slide)">
+                  <!-- 横幅图片 -->
+                  <img
+                    :src="slide.image"
+                    alt="referral banner"
+                    class="w-full object-cover"
+                    :class="props.mode === 'pc' ? 'h-[180px]' : 'h-[100px]'"
+                  />
+                </button>
               </SwipeItem>
             </Swipe>
 
-            <div
+            <!-- <div
               v-if="props.bannerSlides.length > 1"
               class="pointer-events-none absolute inset-x-0 bottom-2 flex items-center justify-center gap-1.5"
             >
@@ -75,7 +83,7 @@
                     : 'h-[5px] w-[5px] bg-common-100/30'
                 "
               ></span>
-            </div>
+            </div> -->
           </div>
         </div>
       </section>
@@ -381,8 +389,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
 import { Swipe, SwipeItem } from 'vant'
+import { computed, ref, watch } from 'vue'
 import type {
   ReferralBannerSlide,
   ReferralQuickAction,
@@ -420,6 +428,7 @@ defineEmits<{
   'copy-message': []
   claim: []
   'task-details': []
+  'banner-click': [value: ReferralBannerSlide]
 }>()
 
 /**
