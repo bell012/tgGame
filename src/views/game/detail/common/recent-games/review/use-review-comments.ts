@@ -33,6 +33,11 @@ type UseReviewCommentsOptions = {
 }
 
 const COMMENT_LIKE_STORAGE_KEY = 'gameCommentLikeMap'
+const SORT_TYPE_MAP: Record<ReviewSortValue, 1 | 2 | 3> = {
+  newest: 1,
+  likes: 2,
+  comments: 3
+}
 
 export const useReviewComments = (options: UseReviewCommentsOptions) => {
   const { currentGameId, gameImageBaseUrl, defaultCommentAvatarUrl, requireLogin, t } = options
@@ -59,6 +64,8 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     return commentList.value.reduce((sum, comment) => sum + 1 + comment.children.length, 0)
   })
 
+  const currentSortType = computed(() => SORT_TYPE_MAP[activeSort.value] ?? 1)
+
   const commentInputPlaceholder = computed(() => {
     const memberName = normalizeQueryValue(replyTargetComment.value?.memberName)
     if (!memberName) {
@@ -67,19 +74,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     return t('gameDetail.replyToUser', { name: memberName })
   })
 
-  const sortedCommentList = computed(() => {
-    const source = [...commentList.value]
-
-    if (activeSort.value === 'comments') {
-      return source.sort((a, b) => b.children.length - a.children.length)
-    }
-
-    if (activeSort.value === 'likes') {
-      return source.sort((a, b) => b.likeCount - a.likeCount)
-    }
-
-    return source.sort((a, b) => b.createTime - a.createTime)
-  })
+  const sortedCommentList = computed(() => commentList.value)
 
   const getAcctInfoFromStorage = () => {
     if (typeof window === 'undefined') {
@@ -199,7 +194,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     }
   }
 
-  const requestCommentsList = async (subjectId: string) => {
+  const requestCommentsList = async (subjectId: string, sortType = currentSortType.value) => {
     if (!subjectId) {
       commentList.value = []
       return
@@ -215,6 +210,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
       const res = await Api.game.getCommentsList(
         {
           subjectId,
+          sortType,
           current: 1,
           size: 100,
           root: '0',
@@ -243,6 +239,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
             const childrenRes = await Api.game.getCommentsList(
               {
                 subjectId,
+                sortType,
                 current: 1,
                 size: 100,
                 parent: parentId,
@@ -291,6 +288,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
       const res = await Api.game.getCommentSubject(
         {
           gameId,
+          sortType: currentSortType.value,
           memberRowId: memberRowId || undefined
         },
         {
@@ -309,7 +307,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
         normalizePositiveInt(result?.total)
       )
       commentSubjectId.value = normalizeQueryValue(result?.subjectId ?? result?.id ?? result?.rowId)
-      await requestCommentsList(commentSubjectId.value)
+      await requestCommentsList(commentSubjectId.value, currentSortType.value)
     } catch (error) {
       console.error('getCommentSubject failed', error)
       commentSubjectId.value = ''
@@ -318,13 +316,14 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     }
   }
 
-  const selectSort = (value: ReviewSortValue) => {
+  const selectSort = async (value: ReviewSortValue) => {
     /**
      *  排序类别：1，时间排序，2，点赞数，3，评论回复数(默认是1)
      *  private Integer sortType;
      */
     activeSort.value = value
     isSortPopupOpen.value = false
+    await requestCommentSubject()
   }
 
   const openCommentPopup = () => {
