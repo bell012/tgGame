@@ -188,3 +188,37 @@ export interface QueryReferralDetailsClaimHistoryResult {
  * 推荐详情领取记录响应
  */
 export interface QueryReferralDetailsClaimHistoryResponse extends AgentApiResponse<QueryReferralDetailsClaimHistoryResult> {}
+
+/**
+ * 推荐详情佣金记录数据项
+ */
+export interface QueryReferralDetailsRewardHistoryItem {
+  amount?: number
+  commissionAmount?: number
+  createTime?: number
+  creationTime?: number
+  currency?: string
+  currencyCode?: string
+  rowId?: string | number
+  settlementType?: number | string
+  statisticsDate?: number
+  status?: number | string
+  userAccount?: string
+  userId?: string
+}
+
+/**
+ * 推荐详情佣金记录结果
+ */
+export interface QueryReferralDetailsRewardHistoryResult {
+  current?: number
+  pages?: number
+  records?: QueryReferralDetailsRewardHistoryItem[]
+  size?: number
+  total?: number
+}
+
+/**
+ * 推荐详情佣金记录响应
+ */
+export interface QueryReferralDetailsRewardHistoryResponse extends AgentApiResponse<QueryReferralDetailsRewardHistoryResult> {}

@@ -1,6 +1,9 @@
 <template>
-  <section class="flex flex-col gap-[10px]">
-    <section class="overflow-hidden rounded-[10px] bg-bg-2">
+  <section
+    class="flex flex-col"
+    :class="props.isMobile ? 'gap-[10px]' : 'w-full max-w-[1032px] gap-[24px]'"
+  >
+    <section v-if="props.isMobile" class="overflow-hidden rounded-[10px] bg-bg-2">
       <div class="relative flex h-[40px] items-center justify-between px-[14px]">
         <button
           type="button"
@@ -42,6 +45,36 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <section v-else class="flex w-full flex-col gap-[12px]">
+      <div class="flex h-[48px] items-center">
+        <CustomSelect
+          class="w-[336px]"
+          :model-value="props.activeDateValue"
+          :options="pcSelectDateOptions"
+          @update:model-value="$emit('change-date', $event as ReferralDetailsDateFilterValue)"
+        />
+      </div>
+
+      <section class="flex h-[70px] items-center rounded-[12px] bg-[#323738] px-[24px]">
+        <div class="flex w-full items-start justify-between py-[24px]">
+          <span class="text-[14px] font-[400] leading-[20px] text-text-2">
+            {{ props.totalCommissionLabel }}
+          </span>
+
+          <div class="flex h-[22px] items-center gap-[8px]">
+            <img
+              :src="currencyIcon"
+              :alt="props.currencyCode"
+              class="h-[20px] w-[20px] rounded-full object-cover"
+            />
+            <span class="text-[18px] font-[700] leading-[22px] text-white">
+              {{ props.totalCommission }}
+            </span>
+          </div>
+        </div>
+      </section>
     </section>
 
     <section
@@ -90,14 +123,22 @@
 </template>
 
 <script setup lang="ts">
+import CustomSelect from '@/components/common/CustomSelect.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import { computed } from 'vue'
-import type { ReferralDetailsClaimHistoryRow } from '../shared'
+import type {
+  ReferralDetailsClaimHistoryRow,
+  ReferralDetailsDateFilterValue,
+  ReferralDetailsDateOption
+} from '../shared'
 
 interface Props {
+  isMobile: boolean
   dateLabel: string
+  activeDateValue: ReferralDetailsDateFilterValue
+  dateOptions: ReferralDetailsDateOption[]
   totalCommissionLabel: string
   totalCommission: string
   timeLabel: string
@@ -114,7 +155,14 @@ const props = defineProps<Props>()
 
 defineEmits<{
   'open-date-picker': []
+  'change-date': [value: ReferralDetailsDateFilterValue]
 }>()
 
 const currencyIcon = computed(() => getCurrencyIconByCode(props.currencyCode))
+const pcSelectDateOptions = computed(() =>
+  props.dateOptions.map(item => ({
+    label: item.label,
+    value: item.value
+  }))
+)
 </script>

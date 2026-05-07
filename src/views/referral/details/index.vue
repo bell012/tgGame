@@ -21,10 +21,14 @@
           :is-mobile="true"
           :active-tab="activeTab"
           :date-label="currentDateLabel"
+          :active-date-value="appliedDateFilterValues.time"
+          :date-options="referralDetailsDateOptions"
           :filter-text="t('referral.detailsPage.filter')"
           :deposit-label="t('referral.detailsPage.labels.deposit')"
           :valid-bets-label="t('referral.detailsPage.labels.validBets')"
           :total-commission-label="t('referral.detailsPage.claimHistory.totalCommission')"
+          :reward-history-time-label="t('referral.detailsPage.rewardHistory.time')"
+          :reward-history-commission-label="t('referral.detailsPage.rewardHistory.commission')"
           :claim-history-time-label="t('referral.detailsPage.claimHistory.time')"
           :claim-history-rewards-label="t('referral.detailsPage.claimHistory.rewards')"
           :top-up-title="t('referral.detailsPage.topUpTitle')"
@@ -41,6 +45,9 @@
           :stats-chart-cards="statsChartCards"
           :top-up-summary-list="topUpSummaryList"
           :top-up-table-rows="topUpTableRows"
+          :reward-history-total-commission="rewardHistoryTotalCommission"
+          :reward-history-currency-code="rewardHistoryCurrencyCode"
+          :reward-history-rows="rewardHistoryRows"
           :claim-history-total-commission="claimHistoryTotalCommission"
           :claim-history-currency-code="claimHistoryCurrencyCode"
           :claim-history-rows="claimHistoryRows"
@@ -61,10 +68,14 @@
         :is-mobile="false"
         :active-tab="activeTab"
         :date-label="currentDateLabel"
+        :active-date-value="appliedDateFilterValues.time"
+        :date-options="referralDetailsDateOptions"
         :filter-text="t('referral.detailsPage.filter')"
         :deposit-label="t('referral.detailsPage.labels.deposit')"
         :valid-bets-label="t('referral.detailsPage.labels.validBets')"
         :total-commission-label="t('referral.detailsPage.claimHistory.totalCommission')"
+        :reward-history-time-label="t('referral.detailsPage.rewardHistory.time')"
+        :reward-history-commission-label="t('referral.detailsPage.rewardHistory.commission')"
         :claim-history-time-label="t('referral.detailsPage.claimHistory.time')"
         :claim-history-rewards-label="t('referral.detailsPage.claimHistory.rewards')"
         :top-up-title="t('referral.detailsPage.topUpTitle')"
@@ -81,10 +92,14 @@
         :stats-chart-cards="statsChartCards"
         :top-up-summary-list="topUpSummaryList"
         :top-up-table-rows="topUpTableRows"
+        :reward-history-total-commission="rewardHistoryTotalCommission"
+        :reward-history-currency-code="rewardHistoryCurrencyCode"
+        :reward-history-rows="rewardHistoryRows"
         :claim-history-total-commission="claimHistoryTotalCommission"
         :claim-history-currency-code="claimHistoryCurrencyCode"
         :claim-history-rows="claimHistoryRows"
         @change-tab="handleChangeTab"
+        @change-date="handleChangeDateFilter"
         @open-date-picker="handleOpenDatePicker"
         @open-filter="handleOpenFilter"
         @go-friend-detail="handleGoFriendDetail"
@@ -145,7 +160,10 @@
 
 <script setup lang="ts">
 import Api from '@/api'
-import type { QueryReferralDetailsChartStatsResult } from '@/api/interface/agent'
+import type {
+  QueryReferralDetailsChartStatsResult,
+  QueryReferralDetailsRewardHistoryResponse
+} from '@/api/interface/agent'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -186,6 +204,7 @@ import {
   createReferralDetailsDateOptions,
   createReferralDetailsClaimHistoryRows,
   createReferralDetailsFriends,
+  createReferralDetailsRewardHistoryRows,
   createReferralDetailsSummaryList,
   createReferralDetailsTopUpRows,
   createReferralDetailsTopUpSummary,
@@ -196,11 +215,15 @@ import {
   getReferralDetailsEmptyDarkImage,
   getReferralDetailsEmptyLightImage,
   getReferralDetailsInvitePosterImages,
+  getReferralDetailsRewardHistoryCurrencyCode,
+  getReferralDetailsRewardHistoryTotalCommission,
   normalizeReferralDetailsFilterValues,
+  type ReferralDetailsDateFilterValue,
   type ReferralDetailsStatsChartCard,
   type ReferralDetailsFilterValues,
   type ReferralDetailsFriendItem,
   type ReferralDetailsClaimHistoryResult,
+  type ReferralDetailsRewardHistoryResult,
   type ReferralDetailsStatsResult,
   type ReferralDetailsTabValue,
   type ReferralDetailsTopUpStatsResult
@@ -215,6 +238,7 @@ const showMobileDateFilterPopup = ref(false)
 const showFriendDetailPopup = ref(false)
 const detailsChartStatsResult = ref<QueryReferralDetailsChartStatsResult | null>(null)
 const detailsTopUpStatsResult = ref<ReferralDetailsTopUpStatsResult | null>(null)
+const rewardHistoryResult = ref<ReferralDetailsRewardHistoryResult | null>(null)
 const claimHistoryResult = ref<ReferralDetailsClaimHistoryResult | null>(null)
 const selectedFriendUserId = ref<string>()
 const selectedFriendVipId = ref<number>()
@@ -242,6 +266,7 @@ const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
  * 生成推荐详情页标签数据。
  */
 const tabs = computed(() => createReferralDetailsTabs(t))
+const referralDetailsDateOptions = computed(() => createReferralDetailsDateOptions(t))
 
 /**
  * 生成 H5 日期筛选弹窗配置。
@@ -250,7 +275,7 @@ const mobileDateFilterGroups = computed<FilterGroup[]>(() => [
   {
     key: 'time',
     title: t('referral.detailsPage.dateSelection'),
-    options: createReferralDetailsDateOptions(t).map(item => ({
+    options: referralDetailsDateOptions.value.map(item => ({
       label: item.label,
       value: item.value
     }))
@@ -324,6 +349,27 @@ const topUpSummaryList = computed(() =>
  * 生成推荐详情页充值统计表格数据。
  */
 const topUpTableRows = computed(() => createReferralDetailsTopUpRows(detailsTopUpStatsResult.value))
+
+/**
+ * 生成推荐详情页佣金记录表格数据。
+ */
+const rewardHistoryRows = computed(() =>
+  createReferralDetailsRewardHistoryRows(rewardHistoryResult.value)
+)
+
+/**
+ * 生成推荐详情页佣金记录总佣金。
+ */
+const rewardHistoryTotalCommission = computed(() =>
+  getReferralDetailsRewardHistoryTotalCommission(rewardHistoryResult.value)
+)
+
+/**
+ * 返回推荐详情页佣金记录币种。
+ */
+const rewardHistoryCurrencyCode = computed(() =>
+  getReferralDetailsRewardHistoryCurrencyCode(rewardHistoryResult.value)
+)
 
 /**
  * 生成推荐详情页领取记录表格数据。
@@ -466,6 +512,31 @@ async function fetchReferralDetailsTopUpStats() {
 }
 
 /**
+ * 获取推荐详情页佣金记录数据。
+ */
+async function fetchReferralDetailsRewardHistory() {
+  try {
+    const response: QueryReferralDetailsRewardHistoryResponse =
+      await Api.agent.queryCommissionRecords(
+        {
+          ...buildReferralDetailsDateRange(appliedDateFilterValues.value.time),
+          current: 1,
+          size: 200
+        },
+        {
+          channelId: currentAgentChannelId.value
+        }
+      )
+
+    rewardHistoryResult.value =
+      response?.result && typeof response.result === 'object' ? response.result : null
+  } catch (error) {
+    console.error('[referral-details] fetch referral details reward history failed:', error)
+    rewardHistoryResult.value = null
+  }
+}
+
+/**
  * 获取推荐详情页领取记录数据。
  */
 async function fetchReferralDetailsClaimHistory() {
@@ -500,6 +571,11 @@ async function fetchActiveReferralDetailsData() {
 
   if (activeTab.value === 'stats') {
     await Promise.all([fetchReferralDetailsChartStats(), fetchReferralDetailsTopUpStats()])
+    return
+  }
+
+  if (activeTab.value === 'reward-history') {
+    await fetchReferralDetailsRewardHistory()
     return
   }
 
@@ -589,6 +665,21 @@ const handleGoRules = () => {
  */
 const handleChangeTab = (value: ReferralDetailsTabValue) => {
   activeTab.value = value
+}
+
+/**
+ * 处理切换日期筛选。
+ */
+const handleChangeDateFilter = async (value: ReferralDetailsDateFilterValue) => {
+  mobileDateFilterValues.value = {
+    ...mobileDateFilterValues.value,
+    time: value
+  }
+  appliedDateFilterValues.value = {
+    ...appliedDateFilterValues.value,
+    time: value
+  }
+  await fetchActiveReferralDetailsData()
 }
 
 /**

@@ -4,19 +4,29 @@
     <!-- 页面主体内容 -->
     <main class="px-[14px] pt-[14px] pb-[30px]">
       <!-- 顶部标签区域 -->
-      <nav class="mb-[14px] overflow-x-auto">
+      <nav
+        class="mb-[14px] overflow-x-auto"
+        :class="props.isMobile ? '' : 'w-full max-w-[1032px] overflow-hidden rounded-[8px] bg-bg-2'"
+      >
         <!-- 标签列表 -->
-        <div class="flex w-max items-center gap-[8px]">
+        <div
+          class="flex items-center"
+          :class="props.isMobile ? 'w-max gap-[8px]' : 'h-[40px] w-full gap-0'"
+        >
           <!-- 标签按钮 -->
           <button
             v-for="item in props.tabs"
             :key="item.value"
             type="button"
-            class="flex h-[31px] shrink-0 items-center justify-center rounded-full px-[20px] text-[12px] leading-[15px]"
+            class="flex items-center justify-center"
             :class="
-              props.activeTab === item.value
-                ? 'border border-theme-primary bg-theme-3 font-[700] text-common-100'
-                : 'bg-bg-2 font-[500] text-text-2'
+              props.isMobile
+                ? props.activeTab === item.value
+                  ? 'h-[31px] shrink-0 rounded-full border border-theme-primary bg-theme-3 px-[20px] text-[12px] font-[700] leading-[15px] text-common-100'
+                  : 'h-[31px] shrink-0 rounded-full bg-bg-2 px-[20px] text-[12px] font-[500] leading-[15px] text-text-2'
+                : props.activeTab === item.value
+                  ? 'h-[40px] flex-1 rounded-[8px] bg-[#3B4142] text-[14px] font-[700] leading-[17px] text-white'
+                  : 'h-[40px] flex-1 rounded-[8px] text-[14px] font-[700] leading-[17px] text-text-2'
             "
             @click="$emit('change-tab', item.value)"
           >
@@ -30,16 +40,42 @@
         v-if="props.activeTab === 'stats'"
         :is-mobile="props.isMobile"
         :date-label="props.dateLabel"
+        :active-date-value="props.activeDateValue"
+        :date-options="props.dateOptions"
         :top-up-title="props.topUpTitle"
         :chart-cards="props.statsChartCards"
         :top-up-summary-list="props.topUpSummaryList"
         :top-up-table-rows="props.topUpTableRows"
         @open-date-picker="$emit('open-date-picker')"
+        @change-date="$emit('change-date', $event)"
+      />
+
+      <ReferralDetailsRewardHistoryContent
+        v-else-if="props.activeTab === 'reward-history'"
+        :is-mobile="props.isMobile"
+        :date-label="props.dateLabel"
+        :active-date-value="props.activeDateValue"
+        :date-options="props.dateOptions"
+        :total-commission-label="props.totalCommissionLabel"
+        :total-commission="props.rewardHistoryTotalCommission"
+        :time-label="props.rewardHistoryTimeLabel"
+        :commission-label="props.rewardHistoryCommissionLabel"
+        :currency-code="props.rewardHistoryCurrencyCode"
+        :reward-history-rows="props.rewardHistoryRows"
+        :empty-text="props.emptyText"
+        :empty-alt="props.emptyAlt"
+        :empty-dark-image="props.emptyDarkImage"
+        :empty-light-image="props.emptyLightImage"
+        @open-date-picker="$emit('open-date-picker')"
+        @change-date="$emit('change-date', $event)"
       />
 
       <ReferralDetailsClaimHistoryContent
         v-else-if="props.activeTab === 'claim-history'"
+        :is-mobile="props.isMobile"
         :date-label="props.dateLabel"
+        :active-date-value="props.activeDateValue"
+        :date-options="props.dateOptions"
         :total-commission-label="props.totalCommissionLabel"
         :total-commission="props.claimHistoryTotalCommission"
         :time-label="props.claimHistoryTimeLabel"
@@ -51,6 +87,7 @@
         :empty-dark-image="props.emptyDarkImage"
         :empty-light-image="props.emptyLightImage"
         @open-date-picker="$emit('open-date-picker')"
+        @change-date="$emit('change-date', $event)"
       />
 
       <!-- 好友标签页内容 -->
@@ -272,9 +309,13 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import ReferralDetailsClaimHistoryContent from './ReferralDetailsClaimHistoryContent.vue'
+import ReferralDetailsRewardHistoryContent from './ReferralDetailsRewardHistoryContent.vue'
 import ReferralDetailsStatsContent from './ReferralDetailsStatsContent.vue'
 import type {
   ReferralDetailsClaimHistoryRow,
+  ReferralDetailsDateFilterValue,
+  ReferralDetailsDateOption,
+  ReferralDetailsRewardHistoryRow,
   ReferralDetailsStatsChartCard,
   ReferralDetailsFriendItem,
   ReferralDetailsSummaryItem,
@@ -288,10 +329,14 @@ interface Props {
   isMobile: boolean
   activeTab: ReferralDetailsTabValue
   dateLabel: string
+  activeDateValue: ReferralDetailsDateFilterValue
+  dateOptions: ReferralDetailsDateOption[]
   filterText: string
   depositLabel: string
   validBetsLabel: string
   totalCommissionLabel: string
+  rewardHistoryTimeLabel: string
+  rewardHistoryCommissionLabel: string
   claimHistoryTimeLabel: string
   claimHistoryRewardsLabel: string
   detailText: string
@@ -308,6 +353,9 @@ interface Props {
   statsChartCards: ReferralDetailsStatsChartCard[]
   topUpSummaryList: ReferralDetailsTopUpSummaryItem[]
   topUpTableRows: ReferralDetailsTopUpTableRow[]
+  rewardHistoryTotalCommission: string
+  rewardHistoryCurrencyCode: string
+  rewardHistoryRows: ReferralDetailsRewardHistoryRow[]
   claimHistoryTotalCommission: string
   claimHistoryCurrencyCode: string
   claimHistoryRows: ReferralDetailsClaimHistoryRow[]
@@ -317,6 +365,7 @@ const props = defineProps<Props>()
 
 defineEmits<{
   'change-tab': [value: ReferralDetailsTabValue]
+  'change-date': [value: ReferralDetailsDateFilterValue]
   'open-date-picker': []
   'open-filter': []
   'go-friend-detail': [value: ReferralDetailsFriendItem]

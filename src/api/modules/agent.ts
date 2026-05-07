@@ -2,6 +2,7 @@ import type {
   AgentApiResponse,
   QueryReferralDetailsClaimHistoryResponse,
   QueryReferralDetailsChartStatsResponse,
+  QueryReferralDetailsRewardHistoryResponse,
   QueryReferralDetailsTopUpStatsResponse,
   QueryTaskRewardConfigResponse
 } from '@/api/interface/agent'
@@ -72,7 +73,7 @@ export const queryNumberPool = (options?: AgentRequestOptions): Promise<AgentApi
 export const queryCommissionRecords = (
   param: Record<string, unknown>,
   options?: AgentRequestOptions
-): Promise<AgentApiResponse> => callAgentAction('agent68', param, options)
+): Promise<QueryReferralDetailsRewardHistoryResponse> => callAgentAction('agent68', param, options)
 
 // agent87：查询推荐详情页团队成员统计。
 export const queryReferralDetailsStats = (

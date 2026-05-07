@@ -5,6 +5,7 @@ import invitePosterFallbackImage from '@/static/img/personalCenter/yaoqing.png'
 import invitePosterImage from '@/static/img/personalCenter/yaoqing2.png'
 import type {
   QueryReferralDetailsClaimHistoryResult,
+  QueryReferralDetailsRewardHistoryResult,
   QueryReferralDetailsTopUpStatsResult
 } from '@/api/interface/agent'
 import { formatTimestamp } from '@/utils/date'
@@ -62,6 +63,12 @@ export interface ReferralDetailsClaimHistoryRow {
   reward: string
 }
 
+export interface ReferralDetailsRewardHistoryRow {
+  id: string
+  time: string
+  commission: string
+}
+
 export interface ReferralDetailsStatsChartCard {
   title: string
   xAxisData: string[]
@@ -98,6 +105,7 @@ export interface ReferralDetailsStatsResult {
 
 export type ReferralDetailsTopUpStatsResult = QueryReferralDetailsTopUpStatsResult
 export type ReferralDetailsClaimHistoryResult = QueryReferralDetailsClaimHistoryResult
+export type ReferralDetailsRewardHistoryResult = QueryReferralDetailsRewardHistoryResult
 
 /**
  * 返回推荐详情页默认头像资源。
@@ -393,4 +401,37 @@ export const createReferralDetailsClaimHistoryRows = (
     id: String(item.rowId ?? `${item.creationTime ?? 0}-${item.obtainType ?? 0}`),
     time: formatTimestamp(item.creationTime),
     reward: formatBalance(Number(item.amount ?? 0), 2)
+  }))
+
+/**
+ * 计算推荐详情页佣金记录总佣金。
+ */
+export const getReferralDetailsRewardHistoryTotalCommission = (
+  result?: ReferralDetailsRewardHistoryResult | null
+) =>
+  formatBalance(
+    (result?.records ?? []).reduce(
+      (sum, item) => sum + Number(item.commissionAmount ?? item.amount ?? 0),
+      0
+    ),
+    2
+  )
+
+/**
+ * 返回推荐详情页佣金记录币种。
+ */
+export const getReferralDetailsRewardHistoryCurrencyCode = (
+  result?: ReferralDetailsRewardHistoryResult | null
+) => String(result?.records?.[0]?.currencyCode ?? result?.records?.[0]?.currency ?? '')
+
+/**
+ * 生成推荐详情页佣金记录表格数据。
+ */
+export const createReferralDetailsRewardHistoryRows = (
+  result?: ReferralDetailsRewardHistoryResult | null
+): ReferralDetailsRewardHistoryRow[] =>
+  (result?.records ?? []).map(item => ({
+    id: String(item.rowId ?? `${item.createTime ?? item.creationTime ?? 0}`),
+    time: formatTimestamp(item.createTime ?? item.creationTime ?? item.statisticsDate),
+    commission: formatBalance(Number(item.commissionAmount ?? item.amount ?? 0), 2)
   }))

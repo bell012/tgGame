@@ -1,11 +1,8 @@
 <template>
   <!-- 统计图表卡片 -->
-  <section class="overflow-hidden rounded-[10px] bg-bg-2">
+  <component :is="props.showContainer ? 'section' : 'div'" :class="containerClass">
     <!-- 图表标题栏 -->
-    <div
-      v-if="props.showHeader"
-      class="relative flex h-[37px] items-center px-[14px] sm:h-[52px] sm:px-[24px]"
-    >
+    <div v-if="props.showHeader" :class="headerClass">
       <!-- 图表标题 -->
       <h3
         class="text-[14px] font-[700] leading-[17px] text-text-1 sm:text-[20px] sm:leading-[24px]"
@@ -20,30 +17,47 @@
     </div>
 
     <!-- 图表内容区域 -->
-    <div class="px-[8px] py-[10px] sm:px-[18px] sm:py-[18px]">
+    <div :class="contentClass">
       <!-- 图表挂载节点 -->
-      <div ref="chartRef" class="h-[180px] w-full sm:h-[280px]"></div>
+      <div ref="chartRef" :class="chartClass"></div>
     </div>
-  </section>
+  </component>
 </template>
 
 <script setup lang="ts">
 import * as echarts from 'echarts'
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 interface Props {
   title: string
   xAxisData: string[]
   seriesData: number[]
   showHeader?: boolean
+  showContainer?: boolean
+  contentPaddingClass?: string
+  chartHeightClass?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  showHeader: true
+  showHeader: true,
+  showContainer: true,
+  contentPaddingClass: 'px-[8px] py-[10px] sm:px-[18px] sm:py-[18px]',
+  chartHeightClass: 'h-[180px] sm:h-[280px]'
 })
 
 const chartRef = ref<HTMLDivElement | null>(null)
 let chartInstance: echarts.ECharts | null = null
+
+const containerClass = computed(() =>
+  props.showContainer ? 'overflow-hidden rounded-[10px] bg-bg-2' : ''
+)
+
+const headerClass = computed(
+  () => 'relative flex h-[37px] items-center px-[14px] sm:h-[52px] sm:px-[24px]'
+)
+
+const contentClass = computed(() => props.contentPaddingClass)
+const chartClass = computed(() => `${props.chartHeightClass} w-full`)
 
 /**
  * 构建统计图表配置。
