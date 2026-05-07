@@ -1,7 +1,7 @@
 <template>
   <div
     ref="detailPageRef"
-    class="detail-page w-full h-full max-w-[1248px] mx-auto pt-[8px] sm:pt-[20px] px-[12px]"
+    class="detail-page w-full h-full max-w-[1248px] mx-auto pt-[14px] sm:pt-[20px] px-[12px]"
   >
     <!-- Loading -->
     <div v-if="isGameDataLoading" class="detail-loading-mask" aria-live="polite" aria-busy="true">

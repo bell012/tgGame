@@ -44,20 +44,21 @@
             <div class="mt-[10px] flex items-center justify-between gap-[12px]">
               <div ref="desktopEmojiRef" class="relative">
                 <button
-                  class="comment-emoji-trigger flex size-[24px] items-center justify-center opacity-90"
+                  class="comment-emoji-trigger flex size-[28px] items-center justify-center"
                   :class="{ 'comment-emoji-trigger-active': isEmojiPickerOpen }"
                   type="button"
                   @click.stop="toggleEmojiPicker"
                 >
-                  <EmoIconSvg
-                    class="comment-emoji-trigger-icon size-[24px]"
-                    :class="{ 'comment-emoji-trigger-icon-active': isEmojiPickerOpen }"
+                  <img
+                    class="comment-emoji-trigger-icon size-[18px]"
+                    :src="isEmojiPickerOpen ? emoGreenIcon : emoIcon"
+                    alt="emoji"
                   />
                 </button>
 
                 <div
                   v-if="isEmojiPickerOpen"
-                  class="comment-emoji-panel absolute bottom-[calc(100%+10px)] left-0 z-20 w-[256px] rounded-[10px] p-[8px]"
+                  class="comment-emoji-panel comment-emoji-panel--left-trigger absolute bottom-[calc(100%+10px)] left-0 z-20 w-[256px] rounded-[10px] p-[8px]"
                   @click.stop
                 >
                   <div class="comment-emoji-divider grid grid-cols-8 gap-[6px] border-b pb-[8px]">
@@ -72,16 +73,17 @@
                     </button>
                   </div>
 
-                  <div class="mt-[6px] grid grid-cols-6 gap-[6px]">
+                  <div class="comment-emoji-category-bar mt-[6px] grid grid-cols-6 gap-[6px]">
                     <button
                       v-for="item in emojiCategoryItems"
                       :key="item.value"
-                      class="flex h-[20px] items-center justify-center rounded-[6px] text-[13px] transition-colors duration-150"
-                      :class="
+                      class="comment-emoji-category-btn flex h-[24px] items-center justify-center rounded-[6px] text-[17px] transition-colors duration-150"
+                      :class="[
                         activeEmojiCategory === item.value
                           ? 'comment-emoji-category-active'
-                          : 'comment-emoji-category'
-                      "
+                          : 'comment-emoji-category',
+                        { 'comment-emoji-category-btn--recent': item.value === 'recent' }
+                      ]"
                       type="button"
                       @click="activeEmojiCategory = item.value"
                     >
@@ -122,7 +124,7 @@
                 {{ t('gameDetail.leaveCommentsTitle') }}
               </div>
               <button
-                class="comment-popup-post-btn h-[40px] justify-self-end rounded-[12px] px-[14px] text-[14px] font-semibold disabled:cursor-not-allowed"
+                class="comment-popup-post-btn h-[28px] w-[50px] justify-self-end rounded-[8px] px-0 text-[12px] font-semibold disabled:cursor-not-allowed"
                 type="button"
                 :disabled="!commentText.trim()"
                 @click="submitComment"
@@ -145,20 +147,21 @@
             <div class="mt-[8px] flex justify-end">
               <div ref="mobileEmojiRef" class="relative">
                 <button
-                  class="comment-emoji-trigger flex size-[24px] items-center justify-center opacity-90"
+                  class="comment-emoji-trigger flex size-[28px] items-center justify-center"
                   :class="{ 'comment-emoji-trigger-active': isEmojiPickerOpen }"
                   type="button"
                   @click.stop="toggleEmojiPicker"
                 >
-                  <EmoIconSvg
-                    class="comment-emoji-trigger-icon size-[24px]"
-                    :class="{ 'comment-emoji-trigger-icon-active': isEmojiPickerOpen }"
+                  <img
+                    class="comment-emoji-trigger-icon size-[18px]"
+                    :src="isEmojiPickerOpen ? emoGreenIcon : emoIcon"
+                    alt="emoji"
                   />
                 </button>
 
                 <div
                   v-if="isEmojiPickerOpen"
-                  class="comment-emoji-panel absolute bottom-[calc(100%+10px)] right-0 z-20 w-[256px] rounded-[10px] p-[8px]"
+                  class="comment-emoji-panel comment-emoji-panel--right-trigger absolute bottom-[calc(100%+10px)] right-0 z-20 w-[256px] rounded-[10px] p-[8px]"
                   @click.stop
                 >
                   <div class="comment-emoji-divider grid grid-cols-8 gap-[6px] border-b pb-[8px]">
@@ -173,16 +176,17 @@
                     </button>
                   </div>
 
-                  <div class="mt-[6px] grid grid-cols-6 gap-[6px]">
+                  <div class="comment-emoji-category-bar mt-[6px] grid grid-cols-6 gap-[6px]">
                     <button
                       v-for="item in emojiCategoryItems"
                       :key="item.value"
-                      class="flex h-[20px] items-center justify-center rounded-[6px] text-[13px] transition-colors duration-150"
-                      :class="
+                      class="comment-emoji-category-btn flex h-[24px] items-center justify-center rounded-[6px] text-[17px] transition-colors duration-150"
+                      :class="[
                         activeEmojiCategory === item.value
                           ? 'comment-emoji-category-active'
-                          : 'comment-emoji-category'
-                      "
+                          : 'comment-emoji-category',
+                        { 'comment-emoji-category-btn--recent': item.value === 'recent' }
+                      ]"
                       type="button"
                       @click="activeEmojiCategory = item.value"
                     >
@@ -203,7 +207,8 @@
 import { useThemeStore } from '@/stores/theme'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import EmoIconSvg from '@/static/svg/game/detail/comment/emo.svg?component'
+import emoIcon from '@/static/svg/game/detail/comment/emo.svg?url'
+import emoGreenIcon from '@/static/svg/game/detail/comment/emo_green.svg?url'
 
 interface Props {
   modelValue: boolean
@@ -497,9 +502,11 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-textarea {
-  border: 1px solid var(--color-theme-level-1);
-  background: #353a3f;
-  color: #fff;
+  border: 1px solid var(--color-input-level-2, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  background: var(--color-input-level-1, rgba(255, 255, 255, 0.06));
+  color: #e7edf3;
+  caret-color: var(--color-theme-level-1);
 }
 
 .comment-popup-textarea.comment-popup-textarea-active {
@@ -507,17 +514,29 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-textarea::placeholder {
-  color: #dce4ea;
+  color: #9eacbb;
 }
 
 .comment-popup-post-btn {
-  border: 1px solid #20c56d;
-  background: linear-gradient(135deg, #2ddf80 0%, #95e969 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  border: none;
+  border-radius: 8px;
+  background: #4f5a65;
+  box-shadow: none;
   color: #061a10;
+  appearance: none;
+  -webkit-appearance: none;
   transition:
     filter 0.2s ease,
     opacity 0.2s ease;
+}
+
+.comment-popup-post-btn:not(:disabled) {
+  background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
+  box-shadow:
+    0 0 12px 0 rgba(35, 238, 136, 0.3),
+    0 -2px 0 0 #1dca6a inset;
+  color: #061a10;
+  opacity: 1;
 }
 
 .comment-popup-post-btn:not(:disabled):active {
@@ -525,21 +544,60 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-post-btn:disabled {
-  border-color: rgba(107, 121, 136, 0.45);
-  background: #4f5a65;
-  box-shadow: none;
-  color: #9cabbc;
+  border: none;
+  border-radius: 8px;
+  opacity: 0.6;
+  background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
+  box-shadow:
+    0 0 12px 0 rgba(35, 238, 136, 0.3),
+    0 -2px 0 0 #1dca6a inset;
+  color: #061a10;
 }
 
 .comment-emoji-panel {
+  position: absolute;
   border: 1px solid #3f4750;
   background: #252d35;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  border-radius: 8px;
+}
+
+.comment-emoji-panel::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  width: 10px;
+  height: 10px;
+  background: #252d35;
+  border-right: 1px solid #3f4750;
+  border-bottom: 1px solid #3f4750;
+  transform: rotate(45deg);
+}
+
+.comment-emoji-panel--left-trigger::after {
+  left: 12px;
+}
+
+.comment-emoji-panel--right-trigger::after {
+  right: 14px;
 }
 
 :deep(.comment-emoji-trigger-icon path) {
   fill: #b3bec1;
   transition: fill 0.2s ease;
+}
+
+.comment-emoji-trigger {
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.comment-emoji-trigger:focus,
+.comment-emoji-trigger:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 :deep(.comment-emoji-trigger-icon.comment-emoji-trigger-icon-active path) {
@@ -548,6 +606,24 @@ onBeforeUnmount(() => {
 
 .comment-emoji-divider {
   border-bottom-color: #3f4750;
+}
+
+.comment-emoji-category-bar {
+  padding-top: 6px;
+}
+
+.comment-emoji-category-btn {
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  font-weight: 600;
+}
+
+.comment-emoji-category-btn--recent {
+  font-size: 22px;
+  line-height: 1;
+  padding-bottom: 4px;
 }
 
 .comment-emoji-item:hover {
@@ -569,7 +645,7 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-panel.is-light .comment-popup-shell {
-  background: linear-gradient(180deg, #f9fcff 0%, #ecf2fa 100%);
+  background: #eef3fa;
 }
 
 .comment-popup-panel.is-light .comment-popup-shell-desktop {
@@ -590,9 +666,9 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-panel.is-light .comment-popup-textarea {
-  border-color: #c7d4e6;
+  border-color: #d4deeb;
   background: #fff;
-  color: #1d2a3d;
+  color: #4f5f75;
 }
 
 .comment-popup-panel.is-light .comment-popup-textarea.comment-popup-textarea-active {
@@ -600,13 +676,28 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-panel.is-light .comment-popup-textarea::placeholder {
-  color: #8a9ab1;
+  color: #9ba9bc;
 }
 
 .comment-popup-panel.is-light .comment-popup-post-btn:disabled {
-  border-color: #c8d4e3;
-  background: #e9eff6;
-  color: #90a0b2;
+  border-color: #d6e0ec;
+  background: #eaf0f7;
+  color: #a4b1c2;
+}
+
+.comment-popup-panel.is-light :deep(.comment-emoji-trigger-icon path) {
+  fill: #a9b5c4;
+}
+
+.comment-popup-panel.is-light .comment-emoji-trigger {
+  border: none;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.comment-popup-panel.is-light :deep(.comment-emoji-trigger-icon *) {
+  stroke: none !important;
 }
 
 .comment-popup-panel.is-light .comment-emoji-panel {
@@ -615,8 +706,18 @@ onBeforeUnmount(() => {
   box-shadow: 0 10px 24px rgba(24, 38, 64, 0.2);
 }
 
+.comment-popup-panel.is-light .comment-emoji-panel::after {
+  background: #f8fbff;
+  border-right-color: #ced9e8;
+  border-bottom-color: #ced9e8;
+}
+
 .comment-popup-panel.is-light .comment-emoji-divider {
   border-bottom-color: #d4dfed;
+}
+
+.comment-popup-panel.is-light .comment-emoji-category-bar {
+  border-top: none;
 }
 
 .comment-popup-panel.is-light .comment-emoji-item:hover {

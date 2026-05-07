@@ -15,6 +15,10 @@ export const getExploreCasinoPageMode = (tabCode: string): ExploreCasinoPageMode
     return 'pageStyle2'
   }
 
+  if (normalizedTabCode === 'TG') {
+    return 'pageStyle2'
+  }
+
   return 'pageStyle3'
 }
 

@@ -2,21 +2,21 @@
   <!-- 顶部搜索 -->
   <div class="relative top-search" @mousedown="onWrapDown">
     <div
-      class="top-search-leading h-[28px] flex items-center absolute left-3 top-1/2 -translate-y-1/2"
+      class="top-search-leading h-[24px] flex items-center absolute left-[11px] top-1/2 -translate-y-1/2"
       @click="typeVisible = true"
     >
-      <div class="top-search-type text-[12px] font-[700] mr-[6px] cursor-pointer">
+      <div class="top-search-type text-[12px] font-[700] mr-[2px] cursor-pointer">
         {{ currentTypeName }}
       </div>
-      <pull_down class="top-search-pull w-2 h-2" />
-      <div class="top-search-divider w-[1px] h-[26px] mx-2.5 bg-[var(--color-opacity-10)]"></div>
-      <SearchIcon class="w-[18px] h-[18px] fill-none stroke-text-2 opacity-60" />
+      <pull_down class="top-search-pull w-[8px] h-[8px]" />
+      <div class="top-search-divider w-[1px] h-[24px] mx-[11px] bg-[var(--color-opacity-10)]"></div>
+      <SearchIcon class="w-[14px] h-[14px] fill-none stroke-text-2 opacity-60" />
     </div>
     <input
       v-model="keyword"
       type="text"
       :placeholder="t('search.placeholder')"
-      class="top-search-input w-full h-[50px] pl-[116px] pr-11 rounded-[10px] border text-text-1 text-[12px] font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+      class="top-search-input w-full h-[42px] pl-[116px] pr-[14px] rounded-[8px] border text-text-1 text-[12px] font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
       @input="onInput"
       @keydown.enter.prevent="onSearch"
       @focus="focusClick"
@@ -25,16 +25,16 @@
     <button
       v-if="keyword"
       type="button"
-      class="absolute right-2 top-1/2 -translate-y-1/2 w-[22px] h-[22px] rounded flex items-center justify-center hover:bg-[var(--color-opacity-6)]"
+      class="absolute right-[11px] top-1/2 -translate-y-1/2 w-[14px] h-[14px] rounded flex items-center justify-center hover:bg-[var(--color-opacity-6)]"
       @click="clear"
       aria-label="clear"
     >
-      <CloseIcon class="w-5 h-5 stroke-text-2" />
+      <CloseIcon class="w-[14px] h-[14px] stroke-text-2" />
     </button>
     <!-- 搜索记录框 -->
     <div
       v-if="isOpen"
-      class="absolute panel left-0 top-[58px] bg-[var(--color-background-level-2)] z-[99] border border-[var(--color-opacity-10)] w-full rounded-lg px-3.5 pt-5 pb-3 flex flex-col items-center"
+      class="absolute panel left-0 top-[56px] bg-[var(--color-background-level-2)] z-[99] border border-[var(--color-opacity-10)] w-full rounded-lg px-3.5 pt-5 pb-3 flex flex-col items-center"
     >
       <div
         class="absolute -right-1.5 -top-1.5 w-5 h-5 bg-[var(--color-background-level-3)] flex items-center justify-center rounded-3xl"
@@ -47,9 +47,12 @@
       </div>
       <template v-if="history.length > 0">
         <!-- 历史记录 -->
-        <div class="flex justify-between w-full text-xs my-2.5">
+        <div class="relative w-full text-xs my-2.5">
           <div class="font-bold">{{ t('search.history') }}</div>
-          <div class="text-[var(--color-text-level-2)] cursor-pointer" @click="clearHistory">
+          <div
+            class="absolute right-[-10px] top-1/2 -translate-y-1/2 text-[var(--color-text-level-2)] cursor-pointer"
+            @click="clearHistory"
+          >
             {{ t('search.clear') }}（{{ history.length }}）
           </div>
         </div>
@@ -285,6 +288,12 @@ onBeforeUnmount(() => {
 .top-search-input {
   background: var(--color-input-level-1);
   border-color: var(--color-input-level-2);
+  caret-color: var(--color-theme-level-1);
+}
+
+.top-search-input:focus {
+  border-color: var(--color-theme-level-1);
+  box-shadow: 0 0 0 1px var(--color-theme-level-1);
 }
 
 .top-search-input::placeholder {

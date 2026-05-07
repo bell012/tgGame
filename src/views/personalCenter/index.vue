@@ -25,9 +25,7 @@
               {{ userInfo?.nickName || '-' }}
             </h2>
             <div class="flex items-center">
-              <span class="text-text-2 text-xs font-[500]"
-                >ID: {{ userInfo?.memberId || '-' }}</span
-              >
+              <span class="text-text-2 text-xs font-[500]">ID: {{ displayLinkCode }}</span>
               <button class="p-1" @click.stop="copyMemberId">
                 <CopyIcon class="w-4 h-4 text-text-2" />
               </button>
@@ -354,6 +352,7 @@ import { storeToRefs } from 'pinia'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { formatLinkCode } from '@/utils/toast'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -456,6 +455,10 @@ const readCachedConfigCurrencyCodes = () => {
 // 头像 URL
 const avatarUrl = computed(() => {
   return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
+})
+
+const displayLinkCode = computed(() => {
+  return formatLinkCode(userInfo.value?.linkCode) || '-'
 })
 
 // VIP 等级
@@ -741,7 +744,7 @@ const copyReferralLink = async () => {
 }
 
 const copyMemberId = async () => {
-  await copyText(userInfo.value?.memberId)
+  await copyText(formatLinkCode(userInfo.value?.linkCode))
 }
 
 const goToMyProfile = () => {

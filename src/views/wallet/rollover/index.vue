@@ -73,10 +73,7 @@
                     {{ item.direction === 'add' ? '+' : '-' }}{{ item.actualTurnover }}
                   </p>
                 </div>
-                <div
-                  v-if="Number(item.requiredTurnover) > 0"
-                  class="flex items-center justify-between mt-2.5"
-                >
+                <div class="flex items-center justify-between mt-2.5">
                   <p class="text-text-3 font-[400] text-xs">{{ $t('wallet.requiredTurnover') }}</p>
                   <p class="text-text-1 font-[700] text-xs">
                     {{ item.direction === 'add' ? '+' : '-' }}{{ item.requiredTurnover }}
@@ -163,6 +160,7 @@ import {
   createRolloverTypeOptions,
   hasMoreByTotal,
   mapRecordToItem,
+  shouldDisplayRolloverItem,
   type Item
 } from './shared'
 
@@ -223,7 +221,10 @@ const {
   enabled: () => isMobile.value,
   pageSize: ROLLOVER_PAGE_SIZE,
   load: async ({ page, pageSize }) => fetchRollover(page, pageSize),
-  getItems: response => response.result?.records?.map(record => mapRecordToItem(record, t)) ?? [],
+  getItems: response =>
+    response.result?.records
+      ?.map(record => mapRecordToItem(record, t))
+      .filter(item => shouldDisplayRolloverItem(item)) ?? [],
   getTotal: response => response.result?.total,
   getHasMore: (response, { page, pageSize, items }) =>
     hasMoreByTotal(response.result?.total, page, pageSize, items.length),

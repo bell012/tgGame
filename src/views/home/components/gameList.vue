@@ -18,26 +18,20 @@
           href="javascript:void(0);"
           class="button ml-auto flex h-8 items-center gap-1 rounded-lg bg-bg-3 bg-black_alpha5 px-2 font-extrabold dark:bg-layer5"
           @click="handleAllClick(props.sysGameTypeCode)"
-          >{{ $t('home.All') }}</a
-        >
+          >{{ $t('home.All') }} <ArrowRightIcon v-if="!isMobile" class="size-4"
+        /></a>
         <div v-if="!isMobile" class="ml-2 flex gap-x-1">
           <button
             @click="scrollPrev"
             :disabled="prevDisabled"
             :class="[
               'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
-              prevDisabled
-                ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
-                : 'bg-[var(--color-button-secondary)]'
+              prevDisabled ? 'bg-bg-4 cursor-not-allowed' : 'bg-bg-3'
             ]"
             type="button"
           >
             <div class="icon size-4">
-              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-                ></path>
-              </svg>
+              <ArrowLeftIcon class="size-4" />
             </div>
           </button>
           <button
@@ -45,18 +39,12 @@
             :disabled="nextDisabled"
             :class="[
               'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
-              nextDisabled
-                ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
-                : 'bg-[var(--color-button-secondary)]'
+              nextDisabled ? 'bg-bg-4 cursor-not-allowed' : 'bg-bg-3'
             ]"
             type="button"
           >
-            <div class="icon size-4 rotate-180">
-              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
-                ></path>
-              </svg>
+            <div class="icon size-4">
+              <ArrowRightIcon class="size-4" />
             </div>
           </button>
         </div>
@@ -103,13 +91,16 @@
               class="platform-logo mt-1"
             />
           </div>
+          <!-- 人数标签 -->
           <div
-            class="absolute bottom-1 right-1 flex h-5 items-center rounded-md bg-black_alpha20 px-1.5"
+            class="absolute bottom-1 right-1 inline-flex h-5 items-center justify-center gap-0.5 rounded bg-black_alpha20 bg-mask-20 px-1"
           >
-            <div class="icon size-4">
+            <div class="icon flex size-4 shrink-0 items-center justify-center leading-none">
               <peopleNumber />
             </div>
-            <span class="text-xs font-semibold text-alw_white">{{ value.number }}</span>
+            <span class="flex items-center text-xs leading-none font-semibold text-alw_white">{{
+              value.number
+            }}</span>
           </div>
           <div
             class="center absolute left-0 top-0 h-full w-full cursor-pointer bg-[#00000099] opacity-0 group-hover:opacity-100"
@@ -149,6 +140,8 @@ import peopleNumber from './img/peopleNumber.svg?component'
 import { StringExtension } from '@/utils/string-extension'
 import { navigateToName } from '@/utils/router'
 import { navigateTo } from '@/utils/router'
+import ArrowLeftIcon from '@/static/svg/arrow_left2.svg?component'
+import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 interface GameItem {
   img: {
     maintain: boolean

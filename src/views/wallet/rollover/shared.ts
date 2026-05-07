@@ -152,15 +152,18 @@ export const mapRecordToItem = (record: QueryRecord, t: TranslateFn): Item => ({
   gameName: getRolloverTypeLabel(record.changeType, t),
   direction: record.amount >= 0 ? 'add' : 'dec',
   amount: formatSignedAmount(record.amount),
-  actualTurnover: formatBalance(record.betAmount),
-  requiredTurnover: formatBalance(record.currentBetAmount),
+  actualTurnover: formatBalance(record.currentBetAmount),
+  requiredTurnover: formatBalance(record.betAmount),
   currency: record.currency || getCurrentCurrency(),
   time: formatTimestamp(record.createTime),
   createdAt: formatTimestamp(record.createTime),
   applicableGames: t('wallet.allGames'),
-  status: record.status === 0,
+  status: record.status === 1,
   rawData: record
 })
+
+// 过滤掉Required Turnover 小于等于0 整个item数据
+export const shouldDisplayRolloverItem = (item: Item) => Number(item.requiredTurnover) > 0
 
 export const buildRolloverQueryForm = (params: {
   page: number

@@ -49,10 +49,10 @@
                 <MainLogoIcon class="h-12 w-auto text-text-1" />
               </div>
 
-              <div class="relative mt-6 h-[357px] w-full overflow-hidden rounded-xl bg-bg-2">
+              <div class="relative mt-6 h-[357px] w-full overflow-hidden">
                 <div
                   v-if="showPcBackgroundSkeleton"
-                  class="absolute inset-0 animate-pulse bg-bg-2"
+                  class="absolute inset-0 animate-pulse bg-bg-4 rounded-xl"
                 ></div>
                 <img
                   v-if="pcBackgroundImage"
@@ -80,7 +80,7 @@
             </div>
 
             <!-- 右侧表单区域 -->
-            <div class="w-1/2 bg-bg-1 py-5 px-6">
+            <div class="w-1/2 bg-bg-1 p-4">
               <LoginFormDesktop
                 ref="loginFormDesktopRef"
                 :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
@@ -110,10 +110,10 @@
                 <MainLogoIcon class="h-12 w-auto text-text-1" />
               </div>
 
-              <div class="relative mt-6 h-[357px] w-full overflow-hidden rounded-xl bg-bg-2">
+              <div class="relative mt-6 h-[357px] w-full overflow-hidden">
                 <div
                   v-if="showPcBackgroundSkeleton"
-                  class="absolute inset-0 animate-pulse bg-bg-2"
+                  class="absolute inset-0 animate-pulse bg-bg-4 rounded-xl"
                 ></div>
                 <img
                   v-if="pcBackgroundImage"
@@ -141,7 +141,7 @@
             </div>
 
             <!-- 右侧表单区域 -->
-            <div class="w-1/2 bg-bg-1 py-5 px-6">
+            <div class="w-1/2 bg-bg-1 p-4">
               <ResetPasswordDesktop @reset-success="handleResetPasswordSuccess" />
             </div>
           </div>
@@ -227,7 +227,10 @@ const pcBackgroundImage = computed(() => {
 })
 
 const showPcBackgroundSkeleton = computed(() => {
-  return isAuthBannerLoading.value || (!!pcBackgroundImage.value && !isPcBackgroundLoaded.value)
+  return (
+    (!pcBackgroundImage.value && isAuthBannerLoading.value) ||
+    (!!pcBackgroundImage.value && !isPcBackgroundLoaded.value)
+  )
 })
 
 const mobileBackgroundImage = computed(() => {

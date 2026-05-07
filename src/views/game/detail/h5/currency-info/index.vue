@@ -1,5 +1,5 @@
 <template>
-  <div class="currency-info-panel w-full h-full p-[12px] rounded-t-[10px]">
+  <div class="currency-info-panel w-full h-full p-[14px] pb-[20px] rounded-t-[10px]">
     <div class="flex gap-[10px]">
       <div
         class="w-[110px] h-[146px] rounded-md bg-[var(--color-background-level-2)] flex items-center justify-center overflow-hidden"
@@ -19,7 +19,7 @@
           <div class="flex-1 flex flex-col justify-around">
             <div class="text-[15px] font-bold">{{ t('gameDetail.playWithSelectedCurrency') }}</div>
             <currency-select @change="handleCurrencyChange"></currency-select>
-            <div class="text-[13px] text-[var(--color-text-level-2)] text-center">
+            <div class="text-[10px] font-[500] text-[var(--color-text-level-2)] text-center">
               {{ t('gameDetail.playNowHint') }}
             </div>
           </div>
@@ -33,7 +33,7 @@
             </div>
             <div class="mt-[4px] text-[12px] leading-[16px] text-[var(--color-text-level-2)]">
               {{ t('gameDetail.by') }}
-              <span class="text-[var(--color-text-level-1)]">{{ displayProviderName }}</span>
+              <span class="text-[var(--color-theme-level-1)]">{{ displayProviderName }}</span>
             </div>
           </div>
         </template>

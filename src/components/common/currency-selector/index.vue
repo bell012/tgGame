@@ -15,7 +15,7 @@
         :key="option.value"
         type="button"
         :class="[itemClass, isSelected(option) ? selectedItemClass : '']"
-        @click="emit('select', option.value)"
+        @click="chageCurrency(option.value)"
       >
         <div class="flex min-w-0 items-center gap-[10px]">
           <SmartImage :src="option.icon" :alt="option.label" :class="iconClass" />
@@ -33,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+import Api from '@/api'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
@@ -99,6 +100,7 @@ const emit = defineEmits<{
 }>()
 
 const keyword = ref('')
+const isChangingCurrency = ref(false)
 const resolvedSearchPlaceholder = computed(() => props.searchPlaceholder || t('search.placeholder'))
 
 const normalizedKeyword = computed(() => keyword.value.trim().toUpperCase())
@@ -126,6 +128,22 @@ const filteredOptions = computed(() => {
 
 const isSelected = (option: CurrencySelectorOption) => {
   return option.value === props.selectedValue
+}
+
+const chageCurrency = async (value: string) => {
+  if (!value || value === props.selectedValue || isChangingCurrency.value) {
+    return
+  }
+  isChangingCurrency.value = true
+  try {
+    emit('select', value)
+    await Api.user.changeWallet({ currency: value })
+  } catch (error) {
+    console.error('changeWallet failed', error)
+    return
+  } finally {
+    isChangingCurrency.value = false
+  }
 }
 
 watch(

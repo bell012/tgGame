@@ -131,6 +131,7 @@ import {
   createRolloverTimeOptions,
   createRolloverTypeOptions,
   mapRecordToItem,
+  shouldDisplayRolloverItem,
   type Item
 } from './shared'
 
@@ -163,7 +164,10 @@ const fetchRollover = async (page = 1) => {
       throw new Error(response.message || t('common.requestError'))
     }
 
-    dataList.value = response.result?.records?.map(record => mapRecordToItem(record, t)) ?? []
+    dataList.value =
+      response.result?.records
+        ?.map(record => mapRecordToItem(record, t))
+        .filter(item => shouldDisplayRolloverItem(item)) ?? []
     currentPage.value = response.result?.current || page
     totalPages.value = Math.max(1, response.result?.pages || 1)
   } catch (requestError) {

@@ -129,14 +129,14 @@ const formatRatioPercentText = (value: number) =>
 /**
  * 进度百分比文案格式化：
  * - 小于 1% 显示 0%
- * - 大于等于 1% 向上取整显示（无小数）
+ * - 大于等于 1% 向下取整显示（无小数）
  */
 const formatProgressPercentText = (value: number) => {
   if (value < 1) {
     return '0%'
   }
 
-  return `${Math.ceil(value)}%`
+  return `${Math.floor(value)}%`
 }
 
 /**
@@ -349,7 +349,7 @@ const calcProgressPercent = (currentValue: number, targetValue: number) => {
     return 0
   }
 
-  return Math.ceil(clampedPercent)
+  return Math.floor(clampedPercent)
 }
 
 /**
@@ -410,7 +410,6 @@ export const useRebatePage = () => {
   const todayValidBets = ref(0)
   const eligibleTurnover = ref(0)
   const pendingRebateTurnover = ref(0)
-  const promoBonusTurnoverDeduction = ref(0)
   const claimableAmount = ref(0)
 
   /**
@@ -439,6 +438,7 @@ export const useRebatePage = () => {
 
     applyOptionalNumberToState(result, ['betAmount'], todayValidBets)
     applyOptionalNumberToState(result, ['flowAmount'], eligibleTurnover)
+    applyOptionalNumberToState(result, ['flowAmount'], pendingRebateTurnover)
     applyOptionalNumberToState(result, ['rebatePoints'], claimableAmount)
   }
 
@@ -463,9 +463,7 @@ export const useRebatePage = () => {
   const todayValidBetsText = computed(() => formatAmount(todayValidBets.value))
   const eligibleTurnoverText = computed(() => formatAmount(eligibleTurnover.value))
   const pendingRebateTurnoverText = computed(() => formatDetailAmount(pendingRebateTurnover.value))
-  const promoBonusTurnoverDeductionText = computed(() =>
-    formatDetailAmount(promoBonusTurnoverDeduction.value)
-  )
+  const promoBonusTurnoverDeductionText = computed(() => formatDetailAmount(0))
   const claimableAmountText = computed(() => formatAmount(claimableAmount.value))
   const claimButtonText = computed(() =>
     claimableAmount.value > 0 ? t('rebatePage.claim') : t('rebatePage.goBet')
@@ -534,7 +532,6 @@ export const useRebatePage = () => {
         rebateDataRows.value = []
         return
       }
-
       rebateDataRows.value = normalizeRebateDataRows(response.result)
     } catch (error) {
       console.error('loadRebateData failed', error)
@@ -571,6 +568,13 @@ export const useRebatePage = () => {
   const currentValidBetsValue = computed(() =>
     currentCategoryRebateRows.value.reduce((total, item) => total + toNumber(item.betAmount), 0)
   )
+  const effectiveCurrentValidBetsValue = computed(() => {
+    if (currentValidBetsValue.value > 0) {
+      return currentValidBetsValue.value
+    }
+
+    return todayValidBets.value > 0 ? todayValidBets.value : 0
+  })
 
   // ============================================================
   // 模块 E：RebateRateTable（返利表格）
@@ -595,7 +599,7 @@ export const useRebatePage = () => {
    * 当前有效投注匹配到的档位下标。
    */
   const currentTierIndex = computed(() =>
-    findMatchedTierIndex(currentValidBetsValue.value, currentCategoryTierStartValues.value)
+    findMatchedTierIndex(effectiveCurrentValidBetsValue.value, currentCategoryTierStartValues.value)
   )
 
   /**
@@ -604,7 +608,10 @@ export const useRebatePage = () => {
    * - 其他场景沿用正常匹配结果
    */
   const displayTierIndex = computed(() => {
-    if (currentValidBetsValue.value === 0 && currentCategoryRebateRateVos.value.length > 0) {
+    if (
+      effectiveCurrentValidBetsValue.value === 0 &&
+      currentCategoryRebateRateVos.value.length > 0
+    ) {
       return 0
     }
 
@@ -653,24 +660,24 @@ export const useRebatePage = () => {
    */
   const currentRebateText = computed(() => formatRatioPercentText(currentTierRatioValue.value))
   const nextRebateText = computed(() => formatRatioPercentText(nextTierRatioValue.value))
-  const currentValidBetsPlainText = computed(() => String(Math.floor(currentValidBetsValue.value)))
+  const currentValidBetsPlainText = computed(() =>
+    String(Math.floor(effectiveCurrentValidBetsValue.value))
+  )
 
   /**
    * 进度卡分母 X（红框值）的数值版本：
-   * - 默认取打勾这一档在 rebateRateVos 中的 betLine
-   * - 当当前有效投注为 0 时，固定为 0.01
+   * - 取当前档对应的 betLine（即下一档门槛）
+   * - 若未匹配到档位则取第一档 betLine 兜底
    */
   const targetValidBetsValue = computed(() => {
-    if (currentValidBetsValue.value === 0) {
+    const rateVos = currentCategoryRebateRateVos.value
+    if (rateVos.length === 0) {
       return DEFAULT_TIER_START_VALUE
     }
 
-    if (currentTierIndex.value < 0) {
-      return DEFAULT_TIER_START_VALUE
-    }
-
-    const currentTierBetLineValue =
-      currentCategoryRebateRateVos.value[currentTierIndex.value]?.betLine
+    const normalizedTierIndex =
+      currentTierIndex.value < 0 ? 0 : Math.min(currentTierIndex.value, rateVos.length - 1)
+    const currentTierBetLineValue = rateVos[normalizedTierIndex]?.betLine
     return toNumber(currentTierBetLineValue, DEFAULT_TIER_START_VALUE)
   })
 
@@ -688,7 +695,7 @@ export const useRebatePage = () => {
    * 仅按：当前有效投注 / 总投注数(X)。
    */
   const progressPercent = computed(() =>
-    calcProgressPercent(currentValidBetsValue.value, targetValidBetsValue.value)
+    calcProgressPercent(effectiveCurrentValidBetsValue.value, targetValidBetsValue.value)
   )
   const progressPercentText = computed(() => formatProgressPercentText(progressPercent.value))
 

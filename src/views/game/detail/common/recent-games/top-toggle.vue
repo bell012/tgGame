@@ -2,10 +2,14 @@
   <div class="top-toggle-card flex justify-between items-center" @click="toggleIsOpen">
     <div class="flex flex-col">
       <h3 class="text-[14px] font-extrabold">{{ gameName }}</h3>
-      <div class="flex gap-[4px] text-[12px]">
-        <div class="text-[var(--color-text-level-2)]">By</div>
-        <div class="text-[var(--color-theme-level-1)] font-bold">{{ providerName }}</div>
-      </div>
+      <button
+        type="button"
+        class="provider-link flex gap-[4px] text-[12px]"
+        @click.stop="openProviderGames"
+      >
+        <span class="text-[var(--color-text-level-2)]">By</span>
+        <span class="text-[var(--color-theme-level-1)] font-extrabold">{{ providerName }}</span>
+      </button>
     </div>
     <div class="toggle-arrow-wrap">
       <ArrowDownIcon class="icon" :class="{ 'is-open': isOpen }" />
@@ -14,12 +18,16 @@
 </template>
 <script setup lang="ts">
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
+import { navigateToName } from '@/utils/router'
 import { computed, inject, Ref, type ComputedRef } from 'vue'
 
 const isOpen = inject('isRgOpen') as Ref<boolean>
 
 type CurrentGameDetail = {
+  brandCode?: string
+  brandName?: string
   itemName?: string
+  platformCode?: string
   platformName?: string
 } | null
 
@@ -36,8 +44,45 @@ const providerName = computed(() => {
   return String(currentGameDetail.value?.platformName ?? '').trim() || 'PG Soft'
 })
 
+const providerCode = computed(() => {
+  return String(currentGameDetail.value?.platformCode ?? '').trim()
+})
+
+const brandCode = computed(() => {
+  const currentBrandCode = String(currentGameDetail.value?.brandCode ?? '').trim()
+  if (currentBrandCode) {
+    return currentBrandCode
+  }
+
+  return providerCode.value.split('_')[0]?.trim() ?? ''
+})
+
+const brandPageTitle = computed(() => {
+  const currentBrandName = String(currentGameDetail.value?.brandName ?? '').trim()
+  if (currentBrandName) {
+    return currentBrandName
+  }
+
+  return brandCode.value ? `${brandCode.value} games` : providerName.value
+})
+
 const toggleIsOpen = () => {
   isOpen.value = !isOpen.value
+}
+
+const openProviderGames = () => {
+  if (!brandCode.value) {
+    return
+  }
+
+  navigateToName('brandGameList', {
+    params: {
+      brandCode: brandCode.value
+    },
+    query: {
+      brandName: brandPageTitle.value
+    }
+  })
 }
 </script>
 
@@ -48,33 +93,50 @@ const toggleIsOpen = () => {
 }
 
 .toggle-arrow-wrap {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-opacity-10);
+  background: #3b4142;
 }
 
 .icon {
-  width: 14px;
-  height: 14px;
-  fill: none;
+  width: 13px;
+  height: 13px;
   transition: transform 0.3s ease-in-out;
   transform: rotate(0deg);
+}
+
+.icon :deep(path) {
+  fill: #f2f5f5 !important;
 }
 .icon.is-open {
   transform: rotate(180deg);
 }
 
-:global(:root.light) .top-toggle-card {
-  background: #ffffff;
+.provider-link {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  line-height: 16px;
+  cursor: pointer;
+  text-align: left;
 }
 
-:global(:root.light) .toggle-arrow-wrap {
-  background: #e3e3e3;
+:global(:root.light .top-toggle-card) {
+  background: transparent;
+}
+
+:global(:root.light .toggle-arrow-wrap) {
+  background: #f0f1f1;
   border: none;
   box-shadow: none;
+}
+
+:global(:root.light .icon path) {
+  fill: #111111 !important;
 }
 </style>

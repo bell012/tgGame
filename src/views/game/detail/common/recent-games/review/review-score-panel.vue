@@ -1,44 +1,42 @@
 <template>
   <div>
-    <div
-      class="flex flex-col lg:flex-row bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] p-[12px]"
-    >
-      <div class="lg:flex-1 flex justify-start items-center gap-[20px]">
-        <div class="text-[26px] font-bold w-[100px] text-right">{{ scoreText }}</div>
+    <div class="review-score-overview flex flex-col lg:flex-row rounded-[10px] mb-[10px] p-[12px]">
+      <div class="score-head lg:flex-1 flex items-center justify-center gap-[10px]">
+        <div class="score-text">{{ scoreText }}</div>
         <div>
-          <Star :count="5" :active-count="activeStarCount" />
+          <Star :count="5" :active-count="activeStarCount" :size="18" :gap="4" />
           <div class="text-[13px] text-[var(--color-text-level-2)] hidden lg:block">
             {{ outOfFiveText }}
           </div>
         </div>
       </div>
-      <div class="lg:flex-1 flex flex-col mt-[12px] gap-[10px]">
+      <div class="rating-bars lg:flex-1 flex flex-col mt-[12px] gap-[6px]">
         <div class="flex justify-between items-center gap-[10px]">
-          <Star :count="5" class="w-[100px]" />
+          <Star :count="5" class="rating-bar-stars" :size="18" :gap="4" />
           <ProgressBar :percent="ratingProgressPercents[0] ?? 0" />
         </div>
         <div class="flex justify-between items-center gap-[10px]">
-          <Star :count="4" class="w-[100px]" />
+          <Star :count="4" class="rating-bar-stars" :size="18" :gap="4" />
           <ProgressBar :percent="ratingProgressPercents[1] ?? 0" />
         </div>
         <div class="flex justify-between items-center gap-[10px]">
-          <Star :count="3" class="w-[100px]" />
+          <Star :count="3" class="rating-bar-stars" :size="18" :gap="4" />
           <ProgressBar :percent="ratingProgressPercents[2] ?? 0" />
         </div>
         <div class="flex justify-between items-center gap-[10px]">
-          <Star :count="2" class="w-[100px]" />
+          <Star :count="2" class="rating-bar-stars" :size="18" :gap="4" />
           <ProgressBar :percent="ratingProgressPercents[3] ?? 0" />
         </div>
         <div class="flex justify-between items-center gap-[10px]">
-          <Star :count="1" class="w-[100px]" />
+          <Star :count="1" class="rating-bar-stars" :size="18" :gap="4" />
           <ProgressBar :percent="ratingProgressPercents[4] ?? 0" />
         </div>
       </div>
     </div>
 
-    <div class="flex gap-[20px]">
+    <div class="flex gap-[6px]">
       <div
-        class="flex-1 flex flex-col justify-center items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[12px]"
+        class="review-action-card flex-1 flex flex-col justify-center items-center rounded-[7px]"
       >
         <div class="text-[var(--color-text-level-2)] text-[12px] text-center">
           {{ rateThisGameText }}
@@ -47,13 +45,15 @@
           :count="5"
           :active-count="userRating"
           :clickable="true"
+          :size="18"
+          :gap="4"
           class="flex justify-center mt-[4px]"
           @change="emit('rate-change', $event)"
         />
       </div>
 
       <div
-        class="flex-1 flex flex-col justify-center items-center bg-[var(--color-background-level-1)] rounded-[10px] p-[12px]"
+        class="review-action-card flex-1 flex flex-col justify-center items-center rounded-[7px]"
       >
         <div class="text-[var(--color-text-level-2)] text-[12px] text-center">
           {{ ratingsText }}
@@ -64,7 +64,7 @@
             :key="`${avatarUrl}-${avatarIndex}`"
             alt=""
             :src="avatarUrl"
-            class="size-[26px] rounded-[26px] border border-[var(--color-background-level-1)] -ml-[8px] first:ml-0"
+            class="rating-avatar -ml-[6px] first:ml-0"
           />
         </div>
       </div>
@@ -92,3 +92,61 @@ const emit = defineEmits<{
   'rate-change': [value: number]
 }>()
 </script>
+
+<style scoped lang="scss">
+.review-score-overview {
+  --review-star-active: #2aee88;
+  --review-star-muted: #687779;
+  background: #202424;
+}
+
+.score-head {
+  width: 100%;
+}
+
+.score-text {
+  min-width: 34px;
+  color: var(--color-text-level-1);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: right;
+}
+
+.rating-bars {
+  width: 100%;
+}
+
+.rating-bar-stars {
+  width: 106px;
+  flex: 0 0 106px;
+  --review-star-muted: #b3bec1;
+}
+
+.review-action-card {
+  --review-star-active: #2aee88;
+  --review-star-muted: #b3bec1;
+  height: 76px;
+  padding: 10px 8px;
+  background: #202424;
+}
+
+.rating-avatar {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 26px;
+  border: 1px solid #202424;
+  object-fit: cover;
+}
+
+:global(:root.light .review-score-overview),
+:global(:root.light .review-action-card) {
+  --review-star-muted: #6f7f80;
+  background: #f4f4f4;
+}
+
+:global(:root.light .rating-avatar) {
+  border-color: #ffffff;
+}
+</style>

@@ -2,22 +2,28 @@
   <div class="lg:flex">
     <div class="stats-divider flex-1 flex mt-[12px] pb-[6px] text-[13px]">
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
-        <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.houseEdge') }}</div>
-        <div class="text-[var(--color-theme-level-1)]">{{ houseEdgeText }}</div>
+        <div class="stats-label text-[var(--color-text-level-2)]">
+          {{ t('gameDetail.houseEdge') }}
+        </div>
+        <div class="stats-value text-[var(--color-theme-level-1)]">{{ houseEdgeText }}</div>
       </div>
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
-        <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.rtpReturnToPlayer') }}</div>
-        <div class="text-[var(--color-theme-level-1)]">{{ rtpText }}</div>
+        <div class="stats-label text-[var(--color-text-level-2)]">
+          {{ t('gameDetail.rtpReturnToPlayer') }}
+        </div>
+        <div class="stats-value text-[var(--color-theme-level-1)]">{{ rtpText }}</div>
       </div>
     </div>
     <div class="stats-divider flex-1 flex mt-[12px] pb-[6px] text-[13px]">
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
-        <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.maxWin') }}</div>
-        <div class="text-[var(--color-theme-level-1)]">-</div>
+        <div class="stats-label text-[var(--color-text-level-2)]">{{ t('gameDetail.maxWin') }}</div>
+        <div class="stats-value text-[var(--color-theme-level-1)]">-</div>
       </div>
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
-        <div class="text-[var(--color-text-level-2)]">{{ t('gameDetail.stakesRange') }}</div>
-        <div class="text-[var(--color-text-level-1)]">-</div>
+        <div class="stats-label text-[var(--color-text-level-2)]">
+          {{ t('gameDetail.stakesRange') }}
+        </div>
+        <div class="stats-value text-[var(--color-text-level-1)]">-</div>
       </div>
     </div>
   </div>
@@ -85,6 +91,18 @@ const houseEdgeText = computed(() => {
 </script>
 <style lang="scss" scoped>
 .stats-divider {
-  border-bottom: 1px solid var(--color-opacity-10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stats-label {
+  font-weight: 650;
+}
+
+.stats-value {
+  font-weight: 700;
+}
+
+:global(:root.light .stats-divider) {
+  border-bottom-color: rgba(17, 17, 17, 0.08);
 }
 </style>
