@@ -50,7 +50,7 @@
                     <div class="relative h-[140px] w-full overflow-hidden">
                       <div
                         v-if="showH5BackgroundSkeleton"
-                        class="absolute inset-0 animate-pulse bg-bg-2 rounded-xl"
+                        class="absolute inset-0 animate-pulse bg-bg-4 rounded-xl"
                       ></div>
                       <img
                         v-if="h5BackgroundImage"
@@ -246,7 +246,10 @@ const h5BackgroundImage = computed(() => {
 })
 
 const showH5BackgroundSkeleton = computed(() => {
-  return props.backgroundLoading || (!!h5BackgroundImage.value && !isH5BackgroundLoaded.value)
+  return (
+    (!h5BackgroundImage.value && !!props.backgroundLoading) ||
+    (!!h5BackgroundImage.value && !isH5BackgroundLoaded.value)
+  )
 })
 
 watch(

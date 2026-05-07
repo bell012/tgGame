@@ -28,6 +28,7 @@ import border3Image from '@/static/img/personalCenter/border_3.png'
 import border4Image from '@/static/img/personalCenter/border_4.png'
 import border5Image from '@/static/img/personalCenter/border_5.png'
 import Api from '@/api'
+import { formatLinkCode } from '@/utils/toast'
 
 type FavoriteGameSourceItem = GameBetTotalResult['list'][number]
 
@@ -70,7 +71,7 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
     return avatarFrameImageMap[avatarFrameId as Exclude<AvatarFrameId, 'none'>]
   })
   const displayName = computed(() => userInfo.value?.nickName || '')
-  const profileId = computed(() => userInfo.value?.memberId || acctInfo.value?.memberId || '--')
+  const profileId = computed(() => formatLinkCode(userInfo.value?.linkCode) || '-')
 
   /**
    * 优先使用当前已选币种；未选择时回退到账户币种与本地缓存币种。

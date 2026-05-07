@@ -98,3 +98,12 @@ export function globalShowToast(input: string | GlobalToastOptions) {
     hideTimer = null
   }, globalToastState.duration)
 }
+
+/**
+ * 去除linkCode中的_1000019180_   前后_符号
+ */
+export function formatLinkCode(value: unknown) {
+  return String(value ?? '')
+    .trim()
+    .replace(/^_+|_+$/g, '')
+}

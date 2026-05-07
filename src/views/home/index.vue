@@ -12,8 +12,8 @@
 
       <div class="overflow-hidden px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
         <div class="-mx-4 bg-layer2">
-          <div class="flex w-full flex-col items-stretch gap-2 sm:mt-6 lg:!gap-3">
-            <div class="flex flex-3 gap-2 lg:!gap-3">
+          <div class="flex w-full flex-col items-stretch gap-2 sm:mt-4 lg:!gap-4">
+            <div class="flex flex-3 gap-2 lg:!gap-4">
               <button
                 class="button button-m center relative col-span-2 col-start-1 h-32 flex-1 overflow-hidden rounded-xl bg-game-casino p-[10px] font-extrabold sm:h-[176px] sm:p-5"
                 type="button"
@@ -27,7 +27,7 @@
                 <div class="relative z-10 flex h-full flex-auto flex-col">
                   <div class="flex items-center">
                     <div class="color_icon_img casino" style="transform: scale(1)"></div>
-                    <img :src="icon5" alt="" class="w-[19px]" />
+                    <img :src="icon5" alt="" class="w-[19px] sm:w-[32px]" />
                     <h2 class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Casino') }}</h2>
                   </div>
                 </div>
@@ -44,7 +44,7 @@
                 <div class="relative z-10 flex h-full flex-auto flex-col">
                   <div class="flex items-center">
                     <div class="color_icon_img sports" style="transform: scale(1)"></div>
-                    <img :src="icon6" alt="" class="w-[19px]" />
+                    <img :src="icon6" alt="" class="w-[19px] sm:w-[32px]" />
                     <span class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Sports') }}</span>
                   </div>
                 </div>
@@ -52,7 +52,7 @@
             </div>
 
             <div
-              class="flex flex-3 flex-nowrap gap-2 overflow-x-auto lg:flex-wrap lg:overflow-visible lg:!gap-3"
+              class="flex flex-nowrap gap-2 overflow-x-auto lg:flex-wrap lg:overflow-visible lg:!gap-4"
             >
               <button
                 v-for="value in listImg"
@@ -74,10 +74,10 @@
                   alt=""
                 />
                 <div class="pcState absolute left-2 top-2 flex flex-col">
-                  <div class="color_icon_img bcpoker" style="transform: scale(0.8)">
-                    <img :src="value.icon" alt="" />
+                  <div class="color_icon_img bcpoker">
+                    <img :src="value.icon" class="w-[32px] h-[32px]" alt="" />
                   </div>
-                  <h2 class="ml-1 text-sm font-extrabold">{{ value.name }}</h2>
+                  <h2 class="ml-1 text-[13px] font-extrabold">{{ value.name }}</h2>
                 </div>
                 <div class="h5State absolute bottom-1 left-0 block w-full text-center">
                   <span class="text-[0.625rem] font-extrabold sm:text-sm">{{ value.name }}</span>
@@ -301,10 +301,10 @@ import icon1 from './img/Image.svg?url'
 import icon2 from './img/Image1.svg?url'
 import icon3 from './img/Image2.svg?url'
 import icon4 from './img/Image3.svg?url'
-import icon from './img/Image4.svg?url'
 import icon5 from './img/Image5.svg?url'
 import icon6 from './img/Image6.svg?url'
 import icon7 from './img/Image7.svg?url'
+import pokerIcon from './img/pokerIcon.svg?url'
 
 import ADA from '@/static/svg/coin/ADA.black.svg?url'
 import BNB from '@/static/svg/coin/BNB.black.svg?url'
@@ -374,7 +374,7 @@ const listImg = computed(() => [
   {
     name: t('home.Poker'),
     img: contract,
-    icon: icon,
+    icon: pokerIcon,
     sysGameTypeCode: ''
   },
   {
@@ -478,7 +478,7 @@ const getQuerySlideshow = async () => {
       }
     })
     const records = Array.isArray(response?.result?.records) ? response.result.records : []
-    querySlideshowList.value = isLogin.value ? records : records.slice(0, 1)
+    querySlideshowList.value = records
   } catch (error) {
     console.error('getQuerySlideshow failed', error)
     querySlideshowList.value = []
