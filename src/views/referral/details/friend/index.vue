@@ -212,14 +212,9 @@ async function fetchReferralFriendDetailData() {
   }
 
   try {
-    const memberResponse = await Api.user.getSubMemberById(
-      {
-        rowId: userId
-      },
-      {
-        showErrorToast: false
-      }
-    )
+    const memberResponse = await Api.user.getSubMemberById({
+      rowId: userId
+    })
 
     memberDetailResult.value = memberResponse?.result ?? null
     await fetchReferralFriendDetailStats()

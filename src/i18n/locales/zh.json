@@ -643,7 +643,11 @@
     },
     "taskPage": {
       "title": "任务",
-      "resetHint": "任务重置：05天02时20分。请在每月 1 日下午 4:00 前领取上月奖励，逾期将无法领取。",
+      "resetHint": {
+        "daily": "任务重置：{countdown}，每日 00:00 后可领取佣金。",
+        "weekly": "任务重置：{countdown}，每周一 00:00 后可领取佣金。",
+        "monthly": "任务重置：{countdown}，每月 1 日 00:00 后可领取奖励。"
+      },
       "rewardsToClaim": "待领取奖励",
       "tabs": {
         "inviteRegister": "邀请注册",
@@ -664,7 +668,12 @@
       "achieved": "已达成",
       "notAchieved": "未达成",
       "validInviteTitle": "什么算有效邀请？",
-      "validInviteDescription": "本周累计充值至少 ₱500，或有效投注累计达到 ₱1,000 的会员，视为有效邀请。",
+      "validInviteDescription": "好友{period}累计充值至少 {rechargeAmount}，或完成至少 {betAmount} 有效投注，即视为有效邀请。",
+      "periodLabel": {
+        "daily": "今日",
+        "weekly": "本周",
+        "monthly": "本月"
+      },
       "taskRulesTitle": "任务规则"
     },
     "rulesPage": {

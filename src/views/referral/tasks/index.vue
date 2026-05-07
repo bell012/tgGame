@@ -18,7 +18,7 @@
         <!-- H5 任务页内容 -->
         <ReferralTaskPageContent
           mode="mobile"
-          :reset-hint="t('referral.taskPage.resetHint')"
+          :reset-hint="resetHintText"
           :rewards-to-claim-label="t('referral.taskPage.rewardsToClaim')"
           :rewards-to-claim-amount="rewardsToClaimAmount"
           :coin-image="coinImage"
@@ -34,7 +34,7 @@
           :reward-rows="rewardRows"
           :reward-table-loading="rewardTableLoading"
           :valid-invite-title="t('referral.taskPage.validInviteTitle')"
-          :valid-invite-description="t('referral.taskPage.validInviteDescription')"
+          :valid-invite-description="validInviteDescriptionText"
           :task-rules-title="t('referral.taskPage.taskRulesTitle')"
           :task-rules-image="taskRulesImage"
           @claim="handleClaimClick"
@@ -48,7 +48,7 @@
       <!-- PC 任务页布局 -->
       <PcLayout
         :page-title="t('referral.taskPage.title')"
-        :reset-hint="t('referral.taskPage.resetHint')"
+        :reset-hint="resetHintText"
         :rewards-to-claim-label="t('referral.taskPage.rewardsToClaim')"
         :rewards-to-claim-amount="rewardsToClaimAmount"
         :coin-image="coinImage"
@@ -64,7 +64,7 @@
         :reward-rows="rewardRows"
         :reward-table-loading="rewardTableLoading"
         :valid-invite-title="t('referral.taskPage.validInviteTitle')"
-        :valid-invite-description="t('referral.taskPage.validInviteDescription')"
+        :valid-invite-description="validInviteDescriptionText"
         :task-rules-title="t('referral.taskPage.taskRulesTitle')"
         :task-rules-image="taskRulesImage"
         @claim="handleClaimClick"
@@ -86,18 +86,22 @@ import PcLayout from './pc-layout.vue'
 import ReferralTaskPageContent from './components/ReferralTaskPageContent.vue'
 import {
   buildReferralTaskRewardTable,
+  createReferralTaskResetHint,
   createReferralTaskTabs,
+  createReferralTaskValidInviteDescription,
   getReferralTaskCoinImage,
   getReferralTaskRulesPlaceholderImage,
+  type ReferralTaskRewardConfigResult,
   type ReferralTaskRewardConfig,
   type ReferralTaskTabKey
 } from './shared'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 const isReady = ref(false)
 const activeTab = ref<ReferralTaskTabKey>('invite-register')
 const rewardTableLoading = ref(false)
+const taskRewardResult = ref<ReferralTaskRewardConfigResult | null>(null)
 const taskRewardConfig = ref<ReferralTaskRewardConfig | null>(null)
 const rewardsToClaimAmount = '0.00'
 const currentProgressValue = '0'
@@ -112,6 +116,12 @@ const rewardTable = computed(() =>
 )
 const rewardTableColumns = computed(() => rewardTable.value.columns)
 const rewardRows = computed(() => rewardTable.value.rows)
+const resetHintText = computed(() =>
+  createReferralTaskResetHint(t, String(locale.value), taskRewardResult.value)
+)
+const validInviteDescriptionText = computed(() =>
+  createReferralTaskValidInviteDescription(t, taskRewardResult.value)
+)
 
 watch(
   () => currentAgentChannelId.value,
@@ -141,9 +151,11 @@ async function fetchTaskRewardConfig() {
       channelId: currentAgentChannelId.value
     })
 
+    taskRewardResult.value = response?.result ?? null
     taskRewardConfig.value = response?.result?.config ?? null
   } catch (error) {
     console.error('[referral-task] fetch task reward config failed:', error)
+    taskRewardResult.value = null
     taskRewardConfig.value = null
   } finally {
     rewardTableLoading.value = false
