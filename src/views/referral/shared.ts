@@ -2,7 +2,6 @@ import quickTaskIcon from '@/static/img/referral/quick-action-task.png'
 import quickDetailsIcon from '@/static/img/referral/quick-action-details.png'
 import quickRulesIcon from '@/static/img/referral/quick-action-rules.png'
 import quickGuideIcon from '@/static/img/referral/quick-action-guide.png'
-import referralBanner from '@/static/img/referral/referral-banner.png'
 import commissionCoinIcon from '@/static/img/referral/referral-coin.png'
 
 type TranslateFn = (key: string, named?: Record<string, unknown>) => string
@@ -33,10 +32,16 @@ export interface ReferralSocialChannel {
   sort: number
 }
 
+export interface ReferralBannerSlide {
+  rowId: number
+  image: string
+  sort: number
+}
+
 /**
- * 将分享图标字段转换为可用图片地址。
+ * 将资源字段转换为可用图片地址。
  */
-export const toReferralSocialChannelImageUrl = (value: unknown) => {
+export const toReferralAssetImageUrl = (value: unknown) => {
   const normalizedValue = String(value ?? '').trim()
 
   if (!normalizedValue) {
@@ -52,6 +57,11 @@ export const toReferralSocialChannelImageUrl = (value: unknown) => {
 
   return imageBaseUrl ? `${imageBaseUrl}/${imagePath}` : normalizedValue
 }
+
+/**
+ * 将分享图标字段转换为可用图片地址。
+ */
+export const toReferralSocialChannelImageUrl = (value: unknown) => toReferralAssetImageUrl(value)
 
 /**
  * 将接口返回的分享渠道配置转换为页面可用数据。
@@ -88,6 +98,35 @@ export const buildReferralSocialChannelsFromApi = (result: unknown): ReferralSoc
 }
 
 /**
+ * 将接口返回的轮播图配置转换为推荐页横幅轮播数据。
+ */
+export const buildReferralBannerSlidesFromApi = (result: unknown): ReferralBannerSlide[] => {
+  if (!Array.isArray(result)) {
+    return []
+  }
+
+  return result
+    .filter(item => {
+      const record = (item ?? {}) as Record<string, unknown>
+      return Number(record.deploymentPath) === 4 && Number(record.enable ?? 1) === 1
+    })
+    .map((item, index) => {
+      const record = (item ?? {}) as Record<string, unknown>
+      const image = toReferralAssetImageUrl(record.url)
+      const rowId = Number(record.rowId)
+      const sort = Number(record.sortNum)
+
+      return {
+        rowId: Number.isFinite(rowId) ? rowId : index,
+        image,
+        sort: Number.isFinite(sort) ? sort : index
+      }
+    })
+    .filter(item => Boolean(item.image))
+    .sort((left, right) => left.sort - right.sort)
+}
+
+/**
  * 生成推荐页顶部快捷入口数据。
  */
 export const createReferralQuickActions = (t: TranslateFn): ReferralQuickAction[] => [
@@ -112,11 +151,6 @@ export const createReferralQuickActions = (t: TranslateFn): ReferralQuickAction[
     icon: quickGuideIcon
   }
 ]
-
-/**
- * 返回推荐页横幅资源。
- */
-export const getReferralBannerImage = () => referralBanner
 
 /**
  * 返回佣金图标资源。

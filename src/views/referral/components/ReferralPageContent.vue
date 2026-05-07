@@ -36,12 +36,47 @@
           class="overflow-hidden"
           :class="props.mode === 'pc' ? 'rounded-[16px]' : 'rounded-[10px]'"
         >
-          <img
-            :src="props.bannerImage"
-            alt="referral banner"
-            class="w-full object-cover"
+          <div
+            v-if="props.bannerLoading || props.bannerSlides.length === 0"
+            class="w-full animate-pulse bg-bg-2"
             :class="props.mode === 'pc' ? 'h-[180px]' : 'h-[100px]'"
-          />
+          ></div>
+
+          <div v-else class="relative">
+            <Swipe
+              class="w-full"
+              :autoplay="props.bannerSlides.length > 1 ? bannerAutoplayInterval : 0"
+              :show-indicators="false"
+              :touchable="props.bannerSlides.length > 1"
+              lazy-render
+              @change="handleBannerChange"
+            >
+              <SwipeItem v-for="slide in props.bannerSlides" :key="slide.rowId">
+                <img
+                  :src="slide.image"
+                  alt="referral banner"
+                  class="w-full object-cover"
+                  :class="props.mode === 'pc' ? 'h-[180px]' : 'h-[100px]'"
+                />
+              </SwipeItem>
+            </Swipe>
+
+            <div
+              v-if="props.bannerSlides.length > 1"
+              class="pointer-events-none absolute inset-x-0 bottom-2 flex items-center justify-center gap-1.5"
+            >
+              <span
+                v-for="(slide, index) in props.bannerSlides"
+                :key="`banner-indicator-${slide.rowId}`"
+                class="rounded-full transition-all duration-300"
+                :class="
+                  bannerActiveIndex === index
+                    ? 'h-[5px] w-6 bg-theme-primary'
+                    : 'h-[5px] w-[5px] bg-common-100/30'
+                "
+              ></span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -346,8 +381,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { ReferralQuickAction, ReferralQuickActionId, ReferralSocialChannel } from '../shared'
+import { computed, ref, watch } from 'vue'
+import { Swipe, SwipeItem } from 'vant'
+import type {
+  ReferralBannerSlide,
+  ReferralQuickAction,
+  ReferralQuickActionId,
+  ReferralSocialChannel
+} from '../shared'
 
 interface Props {
   mode: 'mobile' | 'pc'
@@ -355,7 +396,8 @@ interface Props {
   marqueeMessages: string[]
   socialChannels: ReferralSocialChannel[]
   socialChannelsLoading: boolean
-  bannerImage: string
+  bannerLoading: boolean
+  bannerSlides: ReferralBannerSlide[]
   commissionCoinImage: string
   estimatedCommissionLabel: string
   estimatedCommissionAmount: string
@@ -398,6 +440,29 @@ const marqueeLoopMessages = computed(() =>
  * 生成社交分享区域骨架数量。
  */
 const socialChannelSkeletonCount = computed(() => 6)
+
+const bannerAutoplayInterval = 3000
+const bannerActiveIndex = ref(0)
+
+/**
+ * 处理横幅轮播切换。
+ */
+const handleBannerChange = (index: number) => {
+  bannerActiveIndex.value = index
+}
+
+watch(
+  () => props.bannerSlides,
+  slides => {
+    if (bannerActiveIndex.value >= slides.length) {
+      bannerActiveIndex.value = 0
+    }
+  },
+  {
+    deep: true,
+    immediate: true
+  }
+)
 </script>
 
 <style scoped>
