@@ -19,7 +19,7 @@
       <Swipe
         ref="swipeRef"
         class="mt-2.5 mb-2.5 flex-1 min-h-0 w-full bg-bg-1"
-        :loop="false"
+        :autoplay="list.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
         :show-indicators="false"
         :touchable="list.length > 1"
         lazy-render
@@ -76,16 +76,18 @@
               class="flex shrink-0 items-center justify-center transition-colors"
               :class="
                 currentIndex === index
-                  ? 'h-[5px] w-6'
+                  ? 'h-[5px] w-10 rounded-full overflow-hidden bg-[var(--color-background-level-4)]'
                   : 'size-[5px] rounded-full bg-[var(--color-background-level-4)]'
               "
               :aria-label="`第 ${index + 1} 张`"
               @click="goTo(index)"
             >
-              <ScrollBar
+              <span
                 v-if="currentIndex === index"
-                class="h-[5px] w-6 shrink-0 [&_svg]:h-full [&_svg]:w-full [&_svg]:object-contain"
-              />
+                class="slideshow-indicator-progress h-full w-full origin-left rounded-full bg-[var(--color-theme-level-1)]"
+                :key="`${index}-${progressKey}`"
+                :style="progressStyle"
+              ></span>
             </button>
           </div>
 
@@ -128,7 +130,6 @@ import { navigateTo, navigateToName } from '@/utils/router'
 import CloseIcon from '@/static/svg/close.svg?component'
 import LeftIcon from '@/static/svg/left-icon.svg?component'
 import RightIcon from '@/static/svg/right-icon.svg?component'
-import ScrollBar from '@/static/svg/scroll-bar.svg?component'
 import { getStorageLanguageCode } from '@/utils/locale'
 
 const emit = defineEmits<{
@@ -143,6 +144,7 @@ const { locale } = useI18n()
 const HOME_POP_STORAGE_PREFIX = 'home_pop_notice'
 const HOME_POP_SUPPRESS_KEY = `${HOME_POP_STORAGE_PREFIX}:suppress_until`
 const HOME_POP_SUPPRESS_MS = 24 * 60 * 60 * 1000
+const AUTO_PLAY_INTERVAL_MS = 10000
 
 interface HomePopItem {
   rowId: number
@@ -177,6 +179,7 @@ const list = computed<HomePopItem[]>(() => {
 })
 const swipeRef = ref<SwipeInstance>()
 const currentIndex = ref(0)
+const progressKey = ref(0)
 const checked = ref(false)
 let lockedScrollY = 0
 let isPageScrollLocked = false
@@ -185,6 +188,9 @@ let previousBodyPosition = ''
 let previousBodyTop = ''
 let previousBodyWidth = ''
 let previousHtmlOverflow = ''
+const progressStyle = computed(() => ({
+  animationDuration: `${AUTO_PLAY_INTERVAL_MS}ms`
+}))
 
 const normalizeNoticeImage = (value: unknown) => {
   const text = String(value ?? '').trim()
@@ -422,6 +428,7 @@ const fetchNoticeList = async () => {
     console.error('queryNoticeMsg failed', error)
   } finally {
     currentIndex.value = 0
+    progressKey.value += 1
   }
 }
 
@@ -476,10 +483,12 @@ const unlockPageScroll = () => {
 
 const handleChange = (index: number) => {
   currentIndex.value = index
+  progressKey.value += 1
 }
 
 const goTo = (index: number) => {
   currentIndex.value = index
+  progressKey.value += 1
   swipeRef.value?.swipeTo(index)
 }
 
@@ -506,6 +515,22 @@ onMounted(() => {
 onBeforeUnmount(unlockPageScroll)
 </script>
 <style lang="scss" scoped>
+@keyframes slideshow-indicator-fill {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.slideshow-indicator-progress {
+  animation-name: slideshow-indicator-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
 .buttonStyle {
   border-radius: 8px;
   background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
