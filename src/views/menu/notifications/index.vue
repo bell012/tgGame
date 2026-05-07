@@ -602,6 +602,7 @@ interface NotificationCategoryState {
 }
 
 interface NotificationListState {
+  languageCode: string
   activeTab: NotificationCategory
   showUnreadOnly: boolean
   categories: Record<NotificationCategory, NotificationCategoryState>
@@ -642,7 +643,7 @@ const notificationIndicatorStore = useNotificationIndicatorStore()
 const tradeMessageSyncStore = useTradeMessageSyncStore()
 const isMobile = useIsMobile()
 // 当前页面的国际化方法。
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // 生成顶部分类 tabs 数据。
 const tabs = computed<Array<{ key: NotificationCategory; label: string }>>(() => [
@@ -728,7 +729,11 @@ const isNotificationListState = (value: unknown): value is NotificationListState
   }
 
   const state = value as Partial<NotificationListState>
-  if (!isNotificationCategory(state.activeTab) || typeof state.showUnreadOnly !== 'boolean') {
+  if (
+    typeof state.languageCode !== 'string' ||
+    !isNotificationCategory(state.activeTab) ||
+    typeof state.showUnreadOnly !== 'boolean'
+  ) {
     return false
   }
 
@@ -753,8 +758,9 @@ const restoreNotificationListState = (): NotificationListState | null => {
   try {
     const parsedValue = JSON.parse(rawValue) as unknown
 
-    if (isNotificationListState(parsedValue)) {
+    if (isNotificationListState(parsedValue) && parsedValue.languageCode === getLanguageCode()) {
       return {
+        languageCode: parsedValue.languageCode,
         activeTab: parsedValue.activeTab,
         showUnreadOnly: parsedValue.showUnreadOnly,
         categories: cloneCategoryStates(parsedValue.categories)
@@ -1294,6 +1300,7 @@ const applyNotificationCache = (items: NotificationItem[]) => {
 // 持久化通知列表页状态，用于详情返回时直接恢复。
 const persistNotificationListState = () => {
   const nextState: NotificationListState = {
+    languageCode: getLanguageCode(),
     activeTab: activeTab.value,
     showUnreadOnly: showUnreadOnly.value,
     categories: cloneCategoryStates(categoryStates.value)
@@ -1306,6 +1313,34 @@ const persistNotificationListState = () => {
 const clearNotificationListState = () => {
   sessionStorage.removeItem(NOTIFICATION_LIST_STATE_STORAGE_KEY)
   sessionStorage.removeItem(NOTIFICATION_LIST_RESTORE_FLAG_STORAGE_KEY)
+}
+
+// 在语言切换后重置 promotions/system 的分页状态，并按当前页签重新拉取数据。
+const refreshNotificationsByLocaleChange = async () => {
+  clearNotificationListState()
+  closeTransactionOrderDetail()
+  closeTransactionCryptoOrderPop()
+
+  categoryLoaders.promotions.reset()
+  categoryLoaders.system.reset()
+
+  categoryStates.value = {
+    ...categoryStates.value,
+    promotions: createEmptyCategoryState(),
+    system: createEmptyCategoryState()
+  }
+
+  if (activeTab.value === 'promotions' || activeTab.value === 'system') {
+    await categoryLoaders[activeTab.value].refresh()
+  }
+
+  NOTIFICATION_CATEGORIES.forEach(category => {
+    if (category === 'transactions' || category === activeTab.value) {
+      return
+    }
+
+    void prefetchCategoryBadge(category)
+  })
 }
 
 // 为离开通知列表的同 tab 跳转保存恢复现场。
@@ -1794,4 +1829,16 @@ watch(activeTab, () => {
 watch(transactionNotifications, () => {
   markTransactionsAsReadOnView()
 })
+
+// 本地语言切换后，重新请求语言相关的通知数据。
+watch(
+  () => locale.value,
+  (nextLocale, previousLocale) => {
+    if (nextLocale === previousLocale) {
+      return
+    }
+
+    void refreshNotificationsByLocaleChange()
+  }
+)
 </script>
