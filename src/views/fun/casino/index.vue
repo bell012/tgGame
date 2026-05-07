@@ -78,7 +78,10 @@
           <div class="font-bold">{{ t('casino.suggested') }}</div>
         </div>
         <div class="w-full">
-          <div v-if="suggestedArr?.length > 0" class="flex flex-wrap gap-2">
+          <div
+            v-if="suggestedArr?.length > 0"
+            class="flex max-h-14 flex-wrap gap-2 overflow-hidden"
+          >
             <div
               v-for="(item, inx) in suggestedArr"
               :key="inx"
