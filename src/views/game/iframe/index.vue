@@ -236,8 +236,8 @@ const confirmExit = async () => {
 
   .game-iframe-page__close-btn {
     top: max(calc(env(safe-area-inset-top) + 10px), 10px);
-    right: max(calc(env(safe-area-inset-right) + 10px), 10px);
-    left: auto;
+    left: max(calc(env(safe-area-inset-left) + 10px), 10px);
+    right: auto;
   }
 }
 
