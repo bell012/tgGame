@@ -415,8 +415,14 @@
       "showNow": "Show Now",
       "avatarAlt": "avatar",
       "friendDetailHint": "Friend detail coming soon:",
+      "dateSelection": "Date Selection",
       "date": {
-        "today": "Today"
+        "all": "All",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last3Days": "Last 3 Days",
+        "last15Days": "Last 15 Days",
+        "last30Days": "Last 30 Days"
       },
       "tabs": {
         "friends": "Friends",

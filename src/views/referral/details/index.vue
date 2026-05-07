@@ -19,7 +19,7 @@
         <!-- H5 推荐详情页内容 -->
         <ReferralDetailsPageContent
           :active-tab="activeTab"
-          :date-label="t('referral.detailsPage.date.today')"
+          :date-label="currentDateLabel"
           :filter-text="t('referral.detailsPage.filter')"
           :deposit-label="t('referral.detailsPage.labels.deposit')"
           :valid-bets-label="t('referral.detailsPage.labels.validBets')"
@@ -48,7 +48,7 @@
       <PcLayout
         :page-title="t('referral.detailsPage.title')"
         :active-tab="activeTab"
-        :date-label="t('referral.detailsPage.date.today')"
+        :date-label="currentDateLabel"
         :filter-text="t('referral.detailsPage.filter')"
         :deposit-label="t('referral.detailsPage.labels.deposit')"
         :valid-bets-label="t('referral.detailsPage.labels.validBets')"
@@ -84,6 +84,15 @@
       @invite="handleInviteNow"
     />
 
+    <!-- H5 日期筛选弹窗 -->
+    <FilterPopup
+      v-if="isMobile"
+      v-model:visible="showMobileDateFilterPopup"
+      v-model="mobileDateFilterValues"
+      :filter-groups="mobileDateFilterGroups"
+      @apply="handleMobileDateFilterApply"
+    />
+
     <!-- PC 好友详情弹窗 -->
     <FriendDetailPcPopup
       v-if="!isMobile && showFriendDetailPopup"
@@ -114,17 +123,20 @@
 </template>
 
 <script setup lang="ts">
+import Api from '@/api'
+import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import RuleIcon from '@/static/svg/rule.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getDefaultReferralLink } from '../shared'
 import FriendDetailPcPopup from './friend/pc-layout.vue'
 import {
+  buildReferralFriendDetailDateRange,
   createReferralFriendDetailDateTabs,
   createReferralFriendDetailGameColumns,
   createReferralFriendDetailGameRows,
@@ -137,19 +149,29 @@ import {
   getReferralFriendDetailEmptyDarkImage,
   getReferralFriendDetailEmptyLightImage,
   type ReferralFriendDetailDateTabValue,
-  type ReferralFriendDetailStatsTabValue
+  type ReferralFriendDetailGameStatItem,
+  type ReferralFriendDetailMemberResult,
+  type ReferralFriendDetailStatsTabValue,
+  type ReferralFriendDetailTopUpStatResult
 } from './friend/shared'
 import InvitePosterPopup from './components/InvitePosterPopup.vue'
 import ReferralDetailsPageContent from './components/ReferralDetailsPageContent.vue'
 import PcLayout from './pc-layout.vue'
 import {
+  buildReferralDetailsDateRange,
+  createDefaultReferralDetailsFilterValues,
+  createReferralDetailsDateOptions,
   createReferralDetailsFriends,
   createReferralDetailsSummaryList,
   createReferralDetailsTabs,
+  getReferralDetailsDateLabel,
   getReferralDetailsEmptyDarkImage,
   getReferralDetailsEmptyLightImage,
   getReferralDetailsInvitePosterImages,
+  normalizeReferralDetailsFilterValues,
+  type ReferralDetailsFilterValues,
   type ReferralDetailsFriendItem,
+  type ReferralDetailsStatsResult,
   type ReferralDetailsTabValue
 } from './shared'
 
@@ -158,16 +180,29 @@ const isMobile = useIsMobile()
 const isReady = ref(false)
 const activeTab = ref<ReferralDetailsTabValue>('friends')
 const showInvitePosterPopup = ref(false)
+const showMobileDateFilterPopup = ref(false)
 const showFriendDetailPopup = ref(false)
-const selectedFriendAccount = ref<string>()
+const selectedFriendUserId = ref<string>()
+const selectedFriendVipId = ref<number>()
 const friendActiveDateTab = ref<ReferralFriendDetailDateTabValue>('today')
 const friendActiveStatsTab = ref<ReferralFriendDetailStatsTabValue>('game-stats')
+const friendMemberDetailResult = ref<ReferralFriendDetailMemberResult | null>(null)
+const friendGameStatsResult = ref<ReferralFriendDetailGameStatItem[]>([])
+const friendTopUpStatsResult = ref<ReferralFriendDetailTopUpStatResult | null>(null)
+const mobileDateFilterValues = ref<Record<string, string | string[]>>({
+  ...createDefaultReferralDetailsFilterValues()
+})
+const appliedDateFilterValues = ref<ReferralDetailsFilterValues>(
+  createDefaultReferralDetailsFilterValues()
+)
+const detailsStatsResult = ref<ReferralDetailsStatsResult | null>(null)
 const emptyDarkImage = getReferralDetailsEmptyDarkImage()
 const emptyLightImage = getReferralDetailsEmptyLightImage()
 const invitePosterImages = getReferralDetailsInvitePosterImages()
 const friendEmptyDarkImage = getReferralFriendDetailEmptyDarkImage()
 const friendEmptyLightImage = getReferralFriendDetailEmptyLightImage()
 const referralLink = getDefaultReferralLink()
+const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
 
 /**
  * 生成推荐详情页标签数据。
@@ -175,14 +210,35 @@ const referralLink = getDefaultReferralLink()
 const tabs = computed(() => createReferralDetailsTabs(t))
 
 /**
- * 生成推荐详情页统计数据。
+ * 生成 H5 日期筛选弹窗配置。
  */
-const summaryList = computed(() => createReferralDetailsSummaryList(t))
+const mobileDateFilterGroups = computed<FilterGroup[]>(() => [
+  {
+    key: 'time',
+    title: t('referral.detailsPage.dateSelection'),
+    options: createReferralDetailsDateOptions(t).map(item => ({
+      label: item.label,
+      value: item.value
+    }))
+  }
+])
 
 /**
- * 生成推荐详情页好友列表示例数据。
+ * 生成推荐详情页当前日期文案。
  */
-const friendsList = computed(() => createReferralDetailsFriends(t))
+const currentDateLabel = computed(() =>
+  getReferralDetailsDateLabel(t, appliedDateFilterValues.value.time)
+)
+
+/**
+ * 生成推荐详情页统计数据。
+ */
+const summaryList = computed(() => createReferralDetailsSummaryList(t, detailsStatsResult.value))
+
+/**
+ * 生成推荐详情页好友列表数据。
+ */
+const friendsList = computed(() => createReferralDetailsFriends(t, detailsStatsResult.value))
 
 /**
  * 根据当前标签返回展示列表。
@@ -193,7 +249,7 @@ const visibleFriendsList = computed(() => (activeTab.value === 'friends' ? frien
  * 生成当前弹窗好友基础信息。
  */
 const friendMemberInfo = computed(() =>
-  createReferralFriendDetailMember(selectedFriendAccount.value)
+  createReferralFriendDetailMember(friendMemberDetailResult.value, selectedFriendVipId.value)
 )
 
 /**
@@ -211,8 +267,8 @@ const friendStatsTabs = computed(() => createReferralFriendDetailStatsTabs(t))
  */
 const friendCurrentSummaryList = computed(() =>
   friendActiveStatsTab.value === 'game-stats'
-    ? createReferralFriendDetailGameSummary(t)
-    : createReferralFriendDetailTopUpSummary(t)
+    ? createReferralFriendDetailGameSummary(t, friendGameStatsResult.value)
+    : createReferralFriendDetailTopUpSummary(t, friendTopUpStatsResult.value)
 )
 
 /**
@@ -229,8 +285,8 @@ const friendCurrentTableColumns = computed(() =>
  */
 const friendCurrentTableList = computed(() =>
   friendActiveStatsTab.value === 'game-stats'
-    ? createReferralFriendDetailGameRows(t)
-    : createReferralFriendDetailTopUpRows()
+    ? createReferralFriendDetailGameRows(t, friendGameStatsResult.value)
+    : createReferralFriendDetailTopUpRows(friendTopUpStatsResult.value)
 )
 
 /**
@@ -239,6 +295,109 @@ const friendCurrentTableList = computed(() =>
 onMounted(() => {
   isReady.value = true
 })
+
+watch(
+  () => currentAgentChannelId.value,
+  () => {
+    void fetchReferralDetailsStats()
+  },
+  {
+    immediate: true
+  }
+)
+
+/**
+ * 获取推荐详情页团队成员统计。
+ */
+async function fetchReferralDetailsStats() {
+  try {
+    const response = await Api.agent.queryReferralDetailsStats(
+      buildReferralDetailsDateRange(appliedDateFilterValues.value.time),
+      {
+        channelId: currentAgentChannelId.value
+      }
+    )
+
+    detailsStatsResult.value = response?.result ?? null
+  } catch (error) {
+    console.error('[referral-details] fetch referral details stats failed:', error)
+    detailsStatsResult.value = null
+  }
+}
+
+/**
+ * 获取 PC 弹窗好友详情基础信息和统计数据。
+ */
+async function fetchSelectedFriendDetailData() {
+  const userId = selectedFriendUserId.value
+
+  if (!userId) {
+    friendMemberDetailResult.value = null
+    friendGameStatsResult.value = []
+    friendTopUpStatsResult.value = null
+    return
+  }
+
+  try {
+    const memberResponse = await Api.user.getSubMemberById(
+      {
+        rowId: userId
+      },
+      {
+        showErrorToast: false
+      }
+    )
+
+    friendMemberDetailResult.value = memberResponse?.result ?? null
+    await fetchSelectedFriendDetailStats()
+  } catch (error) {
+    console.error('[referral-details] fetch selected friend detail failed:', error)
+    friendMemberDetailResult.value = null
+    friendGameStatsResult.value = []
+    friendTopUpStatsResult.value = null
+  }
+}
+
+/**
+ * 获取 PC 弹窗好友详情当前日期下的统计数据。
+ */
+async function fetchSelectedFriendDetailStats() {
+  const userId = String(friendMemberDetailResult.value?.rowId ?? selectedFriendUserId.value ?? '')
+  const userAccount = String(friendMemberDetailResult.value?.memberId ?? '')
+
+  if (!userId || !userAccount) {
+    friendGameStatsResult.value = []
+    friendTopUpStatsResult.value = null
+    return
+  }
+
+  const queryParam = {
+    userAccount,
+    userId,
+    ...buildReferralFriendDetailDateRange(friendActiveDateTab.value)
+  }
+
+  try {
+    const [gameResponse, topUpResponse] = await Promise.all([
+      Api.agent.queryReferralFriendGameStats(queryParam, {
+        channelId: currentAgentChannelId.value
+      }),
+      Api.agent.queryReferralFriendTopUpStats(queryParam, {
+        channelId: currentAgentChannelId.value
+      })
+    ])
+
+    friendGameStatsResult.value = Array.isArray(gameResponse?.result) ? gameResponse.result : []
+    friendTopUpStatsResult.value =
+      topUpResponse?.result && typeof topUpResponse.result === 'object'
+        ? topUpResponse.result
+        : null
+  } catch (error) {
+    console.error('[referral-details] fetch selected friend stats failed:', error)
+    friendGameStatsResult.value = []
+    friendTopUpStatsResult.value = null
+  }
+}
 
 /**
  * 处理跳转规则页。
@@ -258,6 +417,11 @@ const handleChangeTab = (value: ReferralDetailsTabValue) => {
  * 处理打开日期选择器。
  */
 const handleOpenDatePicker = () => {
+  if (isMobile.value) {
+    showMobileDateFilterPopup.value = true
+    return
+  }
+
   globalShowToast({
     message: t('referral.comingSoon'),
     type: 'success'
@@ -268,6 +432,11 @@ const handleOpenDatePicker = () => {
  * 处理打开筛选弹窗。
  */
 const handleOpenFilter = () => {
+  if (isMobile.value) {
+    showMobileDateFilterPopup.value = true
+    return
+  }
+
   globalShowToast({
     message: t('referral.comingSoon'),
     type: 'success'
@@ -275,20 +444,35 @@ const handleOpenFilter = () => {
 }
 
 /**
+ * 处理应用 H5 日期筛选。
+ */
+const handleMobileDateFilterApply = async (values: Record<string, string | string[]>) => {
+  mobileDateFilterValues.value = {
+    ...createDefaultReferralDetailsFilterValues(),
+    ...values
+  }
+  appliedDateFilterValues.value = normalizeReferralDetailsFilterValues(values)
+  await fetchReferralDetailsStats()
+}
+
+/**
  * 处理进入好友详情。
  */
 const handleGoFriendDetail = (item: ReferralDetailsFriendItem) => {
   if (!isMobile.value) {
-    selectedFriendAccount.value = item.id
+    selectedFriendUserId.value = item.userId
+    selectedFriendVipId.value = item.vipId
     friendActiveDateTab.value = 'today'
     friendActiveStatsTab.value = 'game-stats'
     showFriendDetailPopup.value = true
+    void fetchSelectedFriendDetailData()
     return
   }
 
   navigateTo('/referral/details/friend', {
     query: {
-      id: item.id
+      userId: item.userId,
+      vipId: String(item.vipId ?? '')
     }
   })
 }
@@ -335,6 +519,11 @@ const handleInviteNow = () => {
  */
 const handleCloseFriendDetailPopup = () => {
   showFriendDetailPopup.value = false
+  selectedFriendUserId.value = undefined
+  selectedFriendVipId.value = undefined
+  friendMemberDetailResult.value = null
+  friendGameStatsResult.value = []
+  friendTopUpStatsResult.value = null
 }
 
 /**
@@ -342,6 +531,7 @@ const handleCloseFriendDetailPopup = () => {
  */
 const handleChangeFriendDateTab = (value: ReferralFriendDetailDateTabValue) => {
   friendActiveDateTab.value = value
+  void fetchSelectedFriendDetailStats()
 }
 
 /**

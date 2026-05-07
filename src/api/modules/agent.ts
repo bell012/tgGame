@@ -64,3 +64,21 @@ export const queryCommissionRecords = (
   param: Record<string, unknown>,
   options?: AgentRequestOptions
 ): Promise<any> => callAgentAction('agent68', param, options)
+
+// agent87：查询推荐详情页团队成员统计。
+export const queryReferralDetailsStats = (
+  param: Record<string, unknown>,
+  options?: AgentRequestOptions
+): Promise<any> => callAgentAction('agent87', param, options)
+
+// agent92：查询好友详情页游戏统计。
+export const queryReferralFriendGameStats = (
+  param: Record<string, unknown>,
+  options?: AgentRequestOptions
+): Promise<any> => callAgentAction('agent92', param, options)
+
+// agent91：查询好友详情页充值统计。
+export const queryReferralFriendTopUpStats = (
+  param: Record<string, unknown>,
+  options?: AgentRequestOptions
+): Promise<any> => callAgentAction('agent91', param, options)
