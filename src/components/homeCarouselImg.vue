@@ -12,13 +12,17 @@
     </div>
 
     <div v-else-if="visibleSlides.length" class="w-full flex flex-col bg-bg-1">
-      <div class="relative mt-2.5 mb-2.5 w-full min-h-0 overflow-visible">
+      <div
+        class="relative mt-2.5 mb-2.5 w-full min-h-0 overflow-visible"
+        @mousedown="handleSwipeMouseDown"
+        @click.capture="handleSwipeClickCapture"
+      >
         <Swipe
           ref="swipeRef"
           class="min-h-0 w-full"
           :autoplay="visibleSlides.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
           :show-indicators="false"
-          :touchable="visibleSlides.length > 1"
+          touchable
           lazy-render
           @change="handleChange"
         >
@@ -27,8 +31,10 @@
               <img
                 :src="getSlideImage(item)"
                 :alt="`slide-${index + 1}`"
-                class="w-full object-cover"
+                class="w-full select-none object-cover"
+                draggable="false"
                 @click="handleCarouselClick(item)"
+                @dragstart.prevent
               />
             </div>
           </SwipeItem>
@@ -95,7 +101,7 @@ import { navigateTo, navigateToName } from '@/utils/router'
 import { storeToRefs } from 'pinia'
 import type { SwipeInstance } from 'vant'
 import { Swipe, SwipeItem } from 'vant'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 const authModalStore = useAuthModalStore()
 const userStore = useUserStore()
@@ -114,8 +120,14 @@ const currentIndex = ref(0)
 const progressKey = ref(0)
 const swipeRef = ref<SwipeInstance>()
 const AUTO_PLAY_INTERVAL_MS = 10000
+const MOUSE_SWIPE_DISTANCE = 50
+const MOUSE_DRAG_DISTANCE = 8
 /** H5：1041:450；PC：1340:280 */
 const bannerAspectClass = 'aspect-[1041/450] lg:aspect-[1340/280]'
+let mouseStartX = 0
+let mouseStartY = 0
+let isMouseDragging = false
+let shouldSuppressClick = false
 const slides = computed(() => {
   return [...props.list].sort((a, b) => (a.sortNum ?? 0) - (b.sortNum ?? 0))
 })
@@ -218,6 +230,81 @@ const swipeNext = () => {
   swipeRef.value?.next()
 }
 
+const removeMouseSwipeListeners = () => {
+  window.removeEventListener('mousemove', handleSwipeMouseMove)
+  window.removeEventListener('mouseup', handleSwipeMouseUp)
+}
+
+const handleSwipeMouseDown = (event: MouseEvent) => {
+  if (visibleSlides.value.length <= 1 || event.button !== 0) {
+    return
+  }
+
+  const target = event.target
+  if (target instanceof HTMLElement && target.closest('button')) {
+    return
+  }
+
+  mouseStartX = event.clientX
+  mouseStartY = event.clientY
+  isMouseDragging = false
+  shouldSuppressClick = false
+
+  window.addEventListener('mousemove', handleSwipeMouseMove)
+  window.addEventListener('mouseup', handleSwipeMouseUp, { once: true })
+}
+
+const handleSwipeMouseMove = (event: MouseEvent) => {
+  const deltaX = event.clientX - mouseStartX
+  const deltaY = event.clientY - mouseStartY
+  const isHorizontalDrag = Math.abs(deltaX) > Math.abs(deltaY)
+
+  if (isHorizontalDrag && Math.abs(deltaX) > MOUSE_DRAG_DISTANCE) {
+    isMouseDragging = true
+    event.preventDefault()
+  }
+}
+
+const suppressNextClick = () => {
+  shouldSuppressClick = true
+  window.setTimeout(() => {
+    shouldSuppressClick = false
+  }, 0)
+}
+
+const handleSwipeMouseUp = (event: MouseEvent) => {
+  removeMouseSwipeListeners()
+
+  const deltaX = event.clientX - mouseStartX
+  const deltaY = event.clientY - mouseStartY
+  const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY)
+
+  if (!isHorizontalSwipe || Math.abs(deltaX) < MOUSE_SWIPE_DISTANCE) {
+    if (isMouseDragging) {
+      suppressNextClick()
+    }
+    return
+  }
+
+  suppressNextClick()
+  if (deltaX > 0) {
+    swipePrev()
+    return
+  }
+
+  swipeNext()
+}
+
+const handleSwipeClickCapture = (event: MouseEvent) => {
+  if (!shouldSuppressClick) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+  shouldSuppressClick = false
+}
+
 watch(
   visibleSlides,
   nextSlides => {
@@ -228,6 +315,8 @@ watch(
   },
   { immediate: true }
 )
+
+onBeforeUnmount(removeMouseSwipeListeners)
 </script>
 <style scoped>
 @keyframes slideshow-indicator-fill {

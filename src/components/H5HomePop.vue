@@ -16,30 +16,34 @@
       </div>
 
       <!-- 轮播图 -->
-      <div
-        ref="carouselRef"
-        class="mt-2.5 mb-2.5 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth touch-pan-x flex-1 min-h-0"
-        @scroll="onCarouselScroll"
+      <Swipe
+        ref="swipeRef"
+        class="mt-2.5 mb-2.5 flex-1 min-h-0 w-full bg-bg-1"
+        :loop="false"
+        :show-indicators="false"
+        :touchable="list.length > 1"
+        lazy-render
+        @change="handleChange"
       >
-        <div
-          v-for="(item, index) in list"
-          :key="index"
-          class="carousel-item flex w-full min-w-full flex-shrink-0 snap-center snap-always items-center justify-center"
-        >
-          <img
-            v-if="item.isImage === 1"
-            :src="item.imageUrl"
-            :alt="`slide-${index + 1}`"
-            class="max-h-full w-full max-w-[100vw] cursor-pointer object-contain"
-            @click="handleImageJump(item)"
-          />
-          <!-- 文本 -->
-          <div v-if="item.isImage === 2" class="w-[92%] rounded-lg p-3.5 pop-rich-text bg-bg-2">
-            <h2 class="text-base font-bold text-text-1">{{ item.title }}</h2>
-            <div class="mt-2 font-normal text-sm text-text-1" v-html="item.text"></div>
+        <SwipeItem v-for="(item, index) in list" :key="index" class="h-full">
+          <div class="flex h-full w-full items-center justify-center">
+            <img
+              v-if="item.isImage === 1"
+              :src="item.imageUrl"
+              :alt="`slide-${index + 1}`"
+              class="max-h-full w-full max-w-[100vw] cursor-pointer select-none object-contain"
+              draggable="false"
+              @click="handleImageJump(item)"
+              @dragstart.prevent
+            />
+            <!-- 文本 -->
+            <div v-if="item.isImage === 2" class="w-[92%] rounded-lg p-3.5 pop-rich-text bg-bg-2">
+              <h2 class="text-base font-bold text-text-1">{{ item.title }}</h2>
+              <div class="mt-2 font-normal text-sm text-text-1" v-html="item.text"></div>
+            </div>
           </div>
-        </div>
-      </div>
+        </SwipeItem>
+      </Swipe>
       <!-- <button
       
         class="flex justify-center items-center w-[92%] h-[40px] buttonStyle m-auto mb-2.5 text-text-4 font-bold"
@@ -104,7 +108,7 @@
         >
           <span class="checkbox-box" />
           <input v-model="checked" type="checkbox" class="sr-only" aria-label="多选" />
-          <span class="text-text-1 text-xs">{{ $t('home.DontDisplayThisForNext7Day') }}</span>
+          <span class="text-text-1 text-xs">{{ $t('home.DontDisplayThisForNextToday') }}</span>
         </label>
       </div>
     </div>
@@ -116,8 +120,10 @@ import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { SwipeInstance } from 'vant'
+import { Swipe, SwipeItem } from 'vant'
 import { navigateTo, navigateToName } from '@/utils/router'
 import CloseIcon from '@/static/svg/close.svg?component'
 import LeftIcon from '@/static/svg/left-icon.svg?component'
@@ -169,9 +175,16 @@ const list = computed<HomePopItem[]>(() => {
 
   return records
 })
-const carouselRef = ref<HTMLElement | null>(null)
+const swipeRef = ref<SwipeInstance>()
 const currentIndex = ref(0)
 const checked = ref(false)
+let lockedScrollY = 0
+let isPageScrollLocked = false
+let previousBodyOverflow = ''
+let previousBodyPosition = ''
+let previousBodyTop = ''
+let previousBodyWidth = ''
+let previousHtmlOverflow = ''
 
 const normalizeNoticeImage = (value: unknown) => {
   const text = String(value ?? '').trim()
@@ -423,39 +436,74 @@ const closeWithoutSuppress = () => {
   emit('close')
 }
 
-const onCarouselScroll = () => {
-  const el = carouselRef.value
-  if (!el) return
-  const width = el.offsetWidth
-  const index = Math.round(el.scrollLeft / width)
-  currentIndex.value = Math.min(index, list.value.length - 1)
+const lockPageScroll = () => {
+  if (isPageScrollLocked) {
+    return
+  }
+
+  const body = document.body
+  const html = document.documentElement
+  lockedScrollY = window.scrollY
+  previousBodyOverflow = body.style.overflow
+  previousBodyPosition = body.style.position
+  previousBodyTop = body.style.top
+  previousBodyWidth = body.style.width
+  previousHtmlOverflow = html.style.overflow
+
+  html.style.overflow = 'hidden'
+  body.style.overflow = 'hidden'
+  body.style.position = 'fixed'
+  body.style.top = `-${lockedScrollY}px`
+  body.style.width = '100%'
+  isPageScrollLocked = true
+}
+
+const unlockPageScroll = () => {
+  if (!isPageScrollLocked) {
+    return
+  }
+
+  const body = document.body
+  const html = document.documentElement
+  html.style.overflow = previousHtmlOverflow
+  body.style.overflow = previousBodyOverflow
+  body.style.position = previousBodyPosition
+  body.style.top = previousBodyTop
+  body.style.width = previousBodyWidth
+  window.scrollTo(0, lockedScrollY)
+  isPageScrollLocked = false
+}
+
+const handleChange = (index: number) => {
+  currentIndex.value = index
 }
 
 const goTo = (index: number) => {
-  const el = carouselRef.value
-  if (!el) return
-  const width = el.offsetWidth
-  el.scrollTo({ left: index * width, behavior: 'smooth' })
   currentIndex.value = index
+  swipeRef.value?.swipeTo(index)
 }
 
 const prev = () => {
   if (currentIndex.value <= 0) return
-  goTo(currentIndex.value - 1)
+  swipeRef.value?.prev()
 }
 
 const next = () => {
   if (currentIndex.value >= list.value.length - 1) return
-  goTo(currentIndex.value + 1)
+  swipeRef.value?.next()
 }
 
 onMounted(() => {
+  lockPageScroll()
+
   if (isSuppressedNow()) {
     closeWithoutSuppress()
     return
   }
   void fetchNoticeList()
 })
+
+onBeforeUnmount(unlockPageScroll)
 </script>
 <style lang="scss" scoped>
 .buttonStyle {
