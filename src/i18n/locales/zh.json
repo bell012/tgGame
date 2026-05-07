@@ -43,6 +43,7 @@
     "TableGames": "桌面游戏",
     "HotGames": "热门游戏",
     "RecommendedGames": "推荐游戏",
+    "RelatedGames": "相关游戏",
     "JoinNow": "立即加入",
     "ExclusivePromotions": "专属优惠",
     "DontDisplayThisForNextToday": "今天不要再显示此内容",
@@ -643,7 +644,11 @@
     },
     "taskPage": {
       "title": "任务",
-      "resetHint": "任务重置：05天02时20分。请在每月 1 日下午 4:00 前领取上月奖励，逾期将无法领取。",
+      "resetHint": {
+        "daily": "任务重置：{countdown}，每日 00:00 后可领取佣金。",
+        "weekly": "任务重置：{countdown}，每周一 00:00 后可领取佣金。",
+        "monthly": "任务重置：{countdown}，每月 1 日 00:00 后可领取奖励。"
+      },
       "rewardsToClaim": "待领取奖励",
       "tabs": {
         "inviteRegister": "邀请注册",
@@ -664,7 +669,12 @@
       "achieved": "已达成",
       "notAchieved": "未达成",
       "validInviteTitle": "什么算有效邀请？",
-      "validInviteDescription": "本周累计充值至少 ₱500，或有效投注累计达到 ₱1,000 的会员，视为有效邀请。",
+      "validInviteDescription": "好友{period}累计充值至少 {rechargeAmount}，或完成至少 {betAmount} 有效投注，即视为有效邀请。",
+      "periodLabel": {
+        "daily": "今日",
+        "weekly": "本周",
+        "monthly": "本月"
+      },
       "taskRulesTitle": "任务规则"
     },
     "rulesPage": {
@@ -695,8 +705,14 @@
       "showNow": "立即查看",
       "avatarAlt": "头像",
       "friendDetailHint": "好友详情暂未开放：",
+      "dateSelection": "日期选择",
       "date": {
-        "today": "今日"
+        "all": "全部",
+        "today": "今日",
+        "yesterday": "昨日",
+        "last3Days": "近 3 天",
+        "last15Days": "近 15 天",
+        "last30Days": "近 30 天"
       },
       "tabs": {
         "friends": "好友",

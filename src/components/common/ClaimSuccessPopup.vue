@@ -26,7 +26,7 @@
             role="dialog"
             aria-modal="true"
             :aria-label="resolvedTitle"
-            class="modal-container relative flex aspect-[900/728] w-full max-w-[300px] flex-col overflow-visible rounded-[24px] bg-[linear-gradient(180deg,#18884E_0%,#062917_100%)] px-5 pb-[30px] pt-[43px] shadow-[0_18px_54px_rgba(0,0,0,0.32)] sm:h-[342px] sm:max-w-[480px] sm:rounded-[40px] sm:px-[32px] sm:pb-[40px] sm:pt-[64px] sm:aspect-auto"
+            class="modal-container relative flex aspect-[900/728] w-full max-w-[300px] flex-col overflow-visible rounded-[24px] bg-[linear-gradient(123deg,#18884E_0%,#062917_100%)] px-5 pb-[30px] pt-[43px] sm:h-[342px] sm:max-w-[480px] sm:rounded-[40px] sm:px-[32px] sm:pb-[40px] sm:pt-[64px] sm:aspect-auto"
           >
             <!-- 顶部装饰区域 -->
             <div

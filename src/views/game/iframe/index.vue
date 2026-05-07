@@ -236,8 +236,8 @@ const confirmExit = async () => {
 
   .game-iframe-page__close-btn {
     top: max(calc(env(safe-area-inset-top) + 10px), 10px);
-    right: max(calc(env(safe-area-inset-right) + 10px), 10px);
-    left: auto;
+    left: max(calc(env(safe-area-inset-left) + 10px), 10px);
+    right: auto;
   }
 }
 
@@ -259,10 +259,11 @@ const confirmExit = async () => {
 
 .game-iframe-page__dialog {
   position: relative;
-  width: min(360px, 100%);
+  width: min(300px, 100%);
+  height: 230px;
   border-radius: 12px;
   padding: 18px 16px 14px;
-  background: #22282d;
+  background: #202932;
   color: #fff;
 }
 
@@ -291,7 +292,7 @@ const confirmExit = async () => {
   margin-bottom: 18px;
   font-size: 14px;
   line-height: 1.4;
-  color: #d5d5d5;
+  color: var(--color-text-level-2);
 }
 
 .game-iframe-page__dialog-confirm,
@@ -318,7 +319,26 @@ const confirmExit = async () => {
 
 .game-iframe-page__dialog-cancel {
   margin-top: 12px;
-  color: #c9c9c9;
-  background: #3a3f45;
+  color: #c6ced8;
+  background: var(--color-opacity-10);
+}
+
+:global(:root.light) .game-iframe-page__dialog {
+  background: #f4f6fa;
+  color: #1f2937;
+}
+
+:global(:root.light) .game-iframe-page__dialog-close {
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+:global(:root.light) .game-iframe-page__dialog-text {
+  color: var(--color-text-level-2);
+}
+
+:global(:root.light) .game-iframe-page__dialog-cancel {
+  color: #6f7a88;
+  background: var(--color-opacity-10);
 }
 </style>

@@ -1,7 +1,14 @@
 import commissionCoinIcon from '@/static/img/referral/referral-coin.png'
 import taskRulesPlaceholderImage from '@/static/img/referral/claim_popup_hero.png'
+import type {
+  QueryTaskRewardConfig,
+  QueryTaskRewardConfigResult,
+  QueryTaskRewardFriendItem,
+  QueryTaskRewardWalletItem
+} from '@/api/interface/agent'
+import { getCurrencySymbol } from '@/utils/locale'
 
-type TranslateFn = (key: string) => string
+type TranslateFn = (key: string, named?: Record<string, unknown>) => string
 
 export type ReferralTaskTabKey =
   | 'invite-register'
@@ -27,45 +34,10 @@ export interface ReferralTaskRewardTable {
   rows: ReferralTaskRewardRow[]
 }
 
-export interface ReferralTaskFriendReward {
-  id?: string
-  min?: number | string
-  max?: number | string
-  reward?: number | string
-  achieved?: boolean
-  status?: number | string
-}
+export type ReferralTaskRewardConfig = QueryTaskRewardConfig
+export type ReferralTaskRewardConfigResult = QueryTaskRewardConfigResult
 
-export interface ReferralTaskRechargeReward {
-  id?: string
-  amount?: number | string
-  reward?: number | string
-  achieved?: boolean
-  status?: number | string
-}
-
-export interface ReferralTaskIncreaseReward {
-  id?: string
-  rebate?: number | string
-  amount?: number | string
-  achieved?: boolean
-  status?: number | string
-}
-
-export interface ReferralTaskWalletReward {
-  id?: string
-  people?: number | string
-  amount?: number | string
-  achieved?: boolean
-  status?: number | string
-}
-
-export interface ReferralTaskRewardConfig {
-  friendList?: ReferralTaskFriendReward[]
-  rechargeList?: ReferralTaskRechargeReward[]
-  increaseList?: ReferralTaskIncreaseReward[]
-  recommendedWallet?: ReferralTaskWalletReward[]
-}
+type ReferralTaskPeriodKey = 'daily' | 'weekly' | 'monthly'
 
 /**
  * 生成任务页顶部标签数据。
@@ -115,7 +87,7 @@ const createStatusText = (
     : t('referral.taskPage.notAchieved')
 }
 
-const createFriendCondition = (item: ReferralTaskFriendReward, t: TranslateFn) => {
+const createFriendCondition = (item: QueryTaskRewardFriendItem, t: TranslateFn) => {
   const max = toText(item.max)
   const condition = max
   const unitCount = toNumber(max)
@@ -126,7 +98,7 @@ const createFriendCondition = (item: ReferralTaskFriendReward, t: TranslateFn) =
   }
 }
 
-const createWalletCondition = (item: ReferralTaskWalletReward, t: TranslateFn) => {
+const createWalletCondition = (item: QueryTaskRewardWalletItem, t: TranslateFn) => {
   const condition = toText(item.people)
 
   return {
@@ -151,6 +123,134 @@ const createRewardRow = (
     status: createStatusText(item, t),
     achieved
   }
+}
+
+const toAmountNumber = (value: unknown, fallback: number) => {
+  const numberValue = Number(value)
+  return Number.isFinite(numberValue) ? numberValue : fallback
+}
+
+const formatTaskAmount = (value: unknown) => {
+  const amount = toAmountNumber(value, 0)
+  const decimals = Number.isInteger(amount) ? 0 : 2
+  return `${getCurrencySymbol()}${amount.toFixed(decimals)}`
+}
+
+const pickFirstDefined = (sources: unknown[], keys: string[]) => {
+  for (const source of sources) {
+    if (!source || typeof source !== 'object') {
+      continue
+    }
+
+    const record = source as Record<string, unknown>
+
+    for (const key of keys) {
+      const value = record[key]
+
+      if (value !== undefined && value !== null && String(value).trim() !== '') {
+        return value
+      }
+    }
+  }
+
+  return undefined
+}
+
+const resolveTaskPeriodKey = (
+  result?: ReferralTaskRewardConfigResult | null
+): ReferralTaskPeriodKey => {
+  const periodValue = String(
+    pickFirstDefined(
+      [result, result?.config],
+      ['resetType', 'rewardType', 'rewardTypeName', 'periodType', 'cycleType']
+    ) ?? ''
+  )
+    .trim()
+    .toLowerCase()
+
+  if (periodValue === 'daily' || periodValue === 'day' || periodValue === '2') {
+    return 'daily'
+  }
+
+  if (periodValue === 'monthly' || periodValue === 'month' || periodValue === '3') {
+    return 'monthly'
+  }
+
+  return 'weekly'
+}
+
+const formatResetCountdown = (countdown: string, localeCode: string) => {
+  const normalizedCountdown = String(countdown ?? '').trim()
+
+  if (!normalizedCountdown) {
+    return ''
+  }
+
+  if (!localeCode.startsWith('zh')) {
+    return normalizedCountdown
+  }
+
+  return normalizedCountdown
+    .replace(/\s*(\d+)\s*D/giu, '$1天')
+    .replace(/\s*(\d+)\s*H/giu, '$1小时')
+    .replace(/\s*(\d+)\s*M/giu, '$1分钟')
+    .replace(/\s*(\d+)\s*S/giu, '$1秒')
+    .replace(/\s+/gu, '')
+}
+
+/**
+ * 生成任务页有效邀请说明文案。
+ */
+export const createReferralTaskValidInviteDescription = (
+  t: TranslateFn,
+  result?: ReferralTaskRewardConfigResult | null
+) => {
+  const periodKey = resolveTaskPeriodKey(result)
+  const rechargeAmount = formatTaskAmount(
+    pickFirstDefined(
+      [result?.config, result],
+      [
+        'validInviteRechargeAmount',
+        'inviteRechargeAmount',
+        'validRechargeAmount',
+        'rechargeThreshold'
+      ]
+    ) ?? 500
+  )
+  const betAmount = formatTaskAmount(
+    pickFirstDefined(
+      [result?.config, result],
+      ['validInviteBetAmount', 'inviteBetAmount', 'validBetAmount', 'betThreshold']
+    ) ?? 1000
+  )
+
+  return t('referral.taskPage.validInviteDescription', {
+    period: t(`referral.taskPage.periodLabel.${periodKey}`),
+    rechargeAmount,
+    betAmount
+  })
+}
+
+/**
+ * 生成任务页重置提示文案。
+ */
+export const createReferralTaskResetHint = (
+  t: TranslateFn,
+  localeCode: string,
+  result?: ReferralTaskRewardConfigResult | null
+) => {
+  const periodKey = resolveTaskPeriodKey(result)
+  const rawCountdown = String(
+    pickFirstDefined(
+      [result, result?.config],
+      ['resetCountdown', 'countdown', 'countDown', 'rewardCountdown']
+    ) ?? '05D 02H 20M'
+  )
+  const countdown = formatResetCountdown(rawCountdown, localeCode)
+
+  return t(`referral.taskPage.resetHint.${periodKey}`, {
+    countdown
+  })
 }
 
 /**

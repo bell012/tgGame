@@ -22,7 +22,8 @@
           :marquee-messages="marqueeMessages"
           :social-channels="socialChannels"
           :social-channels-loading="socialChannelsLoading"
-          :banner-image="bannerImage"
+          :banner-loading="bannerLoading"
+          :banner-slides="bannerSlides"
           :commission-coin-image="commissionCoinImage"
           :estimated-commission-label="t('referral.estimatedCommission')"
           :estimated-commission-amount="estimatedCommissionAmount"
@@ -40,6 +41,7 @@
           @copy-message="handleCopyReferralMessage"
           @claim="handleClaimClick"
           @task-details="handleTaskDetailsClick"
+          @banner-click="handleBannerClick"
         />
       </div>
     </div>
@@ -52,7 +54,8 @@
         :marquee-messages="marqueeMessages"
         :social-channels="socialChannels"
         :social-channels-loading="socialChannelsLoading"
-        :banner-image="bannerImage"
+        :banner-loading="bannerLoading"
+        :banner-slides="bannerSlides"
         :commission-coin-image="commissionCoinImage"
         :estimated-commission-label="t('referral.estimatedCommission')"
         :estimated-commission-amount="estimatedCommissionAmount"
@@ -70,6 +73,7 @@
         @copy-message="handleCopyReferralMessage"
         @claim="handleClaimClick"
         @task-details="handleTaskDetailsClick"
+        @banner-click="handleBannerClick"
       />
     </div>
 
@@ -88,32 +92,39 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
 import Api from '@/api'
-import { showToast } from 'vant'
-import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
-import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
-import { copyTextWithFallback } from '@/utils/clipboard'
-import { navigateTo } from '@/utils/router'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import PcLayout from './pc-layout.vue'
-import ReferralPageContent from './components/ReferralPageContent.vue'
+import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+import { useAuthModalStore } from '@/stores/authModal'
+import { useGameStore } from '@/stores/game'
+import { copyTextWithFallback } from '@/utils/clipboard'
+import { executeConfiguredJump } from '@/utils/contentJump'
+import { getLanguageCode } from '@/utils/request'
+import { navigateTo } from '@/utils/router'
+import { showToast } from 'vant'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ReferralMessagePopup from './components/ReferralMessagePopup.vue'
+import ReferralPageContent from './components/ReferralPageContent.vue'
+import PcLayout from './pc-layout.vue'
 import {
+  buildReferralBannerSlidesFromApi,
   buildReferralShareMessage,
   buildReferralSocialChannelsFromApi,
-  createReferralMessagePresets,
   createReferralMarqueeMessages,
+  createReferralMessagePresets,
   createReferralQuickActions,
   getDefaultReferralLink,
-  getReferralBannerImage,
   getReferralCommissionCoinImage,
+  type ReferralBannerSlide,
   type ReferralQuickActionId,
   type ReferralSocialChannel
 } from './shared'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const authModalStore = useAuthModalStore()
+const gameStore = useGameStore()
 const isMobile = useIsMobile()
 const isReady = ref(false)
 const estimatedCommissionAmount = '9999.99'
@@ -122,14 +133,16 @@ const inviteRewardAmount = '36'
 const referralLink = getDefaultReferralLink()
 const socialChannelsLoading = ref(true)
 const apiSocialChannels = ref<ReferralSocialChannel[]>([])
+const bannerLoading = ref(true)
+const bannerSlides = ref<ReferralBannerSlide[]>([])
 const showReferralMessagePopup = ref(false)
+let referralBannerRequestToken = 0
 
 const quickActions = computed(() => createReferralQuickActions(t))
 const referralMessagePresets = computed(() => createReferralMessagePresets(t))
 const defaultReferralMessage = computed(() => referralMessagePresets.value[0] || '')
 const marqueeMessages = computed(() => createReferralMarqueeMessages(t))
 const socialChannels = computed(() => apiSocialChannels.value)
-const bannerImage = getReferralBannerImage()
 const commissionCoinImage = getReferralCommissionCoinImage()
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
 
@@ -144,6 +157,16 @@ watch(
   () => currentAgentChannelId.value,
   () => {
     void fetchSocialChannels()
+  },
+  {
+    immediate: true
+  }
+)
+
+watch(
+  () => [currentAgentChannelId.value, locale.value] as const,
+  () => {
+    void fetchReferralBanner()
   },
   {
     immediate: true
@@ -243,6 +266,20 @@ const handleTaskDetailsClick = () => {
 }
 
 /**
+ * 处理推荐页横幅点击跳转。
+ */
+const handleBannerClick = async (slide: ReferralBannerSlide) => {
+  if (
+    !(await executeConfiguredJump(slide, {
+      openLoginModal: () => authModalStore.openLoginModal(),
+      loadGameData: () => gameStore.ensureGameData()
+    }))
+  ) {
+    console.warn('referral banner jump skipped', slide)
+  }
+}
+
+/**
  * 获取当前分享渠道使用的目标链接。
  */
 const resolveShareTargetUrl = (channel: ReferralSocialChannel) =>
@@ -274,6 +311,44 @@ async function fetchSocialChannels() {
     console.error(error)
   } finally {
     socialChannelsLoading.value = false
+  }
+}
+
+/**
+ * 处理推荐页活动横幅数据。
+ */
+async function fetchReferralBanner() {
+  const requestToken = ++referralBannerRequestToken
+  bannerLoading.value = true
+  bannerSlides.value = []
+
+  try {
+    const response = await Api.home.getQuerySlideshow({
+      languageCode: getLanguageCode(),
+      channelId: currentAgentChannelId.value,
+      page: {
+        current: 1,
+        size: 100
+      }
+    })
+
+    if (requestToken !== referralBannerRequestToken) {
+      return
+    }
+
+    const records = Array.isArray(response?.result?.records) ? response.result.records : []
+    bannerSlides.value = buildReferralBannerSlidesFromApi(records)
+  } catch (error) {
+    if (requestToken !== referralBannerRequestToken) {
+      return
+    }
+
+    console.error('[referral] fetch banner failed:', error)
+    bannerSlides.value = []
+  } finally {
+    if (requestToken === referralBannerRequestToken) {
+      bannerLoading.value = false
+    }
   }
 }
 

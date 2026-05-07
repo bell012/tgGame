@@ -120,6 +120,35 @@ export interface SelectMemberResponse {
 }
 
 /**
+ * 查询下级会员详情请求参数
+ */
+export interface GetSubMemberByIdForm {
+  rowId: string | number
+}
+
+/**
+ * 查询下级会员详情响应结果
+ */
+export interface GetSubMemberByIdResult {
+  depositFirstAmount?: number
+  loginDate?: number
+  memberId?: string
+  memberName?: string
+  nickName?: string
+  rowId?: number
+}
+
+/**
+ * 查询下级会员详情响应
+ */
+export interface GetSubMemberByIdResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: GetSubMemberByIdResult
+}
+
+/**
  * 修改会员信息请求参数
  */
 export interface ModifyMemberInfoForm {

@@ -205,7 +205,6 @@ const trimmedSearchKeyword = computed(() => activeSearchKeyword.value.trim())
 const currentPageStyle = computed(() => {
   const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
   const pageMode = getExploreCasinoPageMode(currentCode)
-
   switch (pageMode) {
     case 'pageStyle2':
       return pageStyle2
