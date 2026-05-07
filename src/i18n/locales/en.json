@@ -421,6 +421,7 @@
     "detailsPage": {
       "title": "Friends",
       "filter": "Filter",
+      "topUpTitle": "Top-Up Stats",
       "detailText": "Details",
       "showNow": "Show Now",
       "avatarAlt": "avatar",
@@ -444,6 +445,11 @@
         "newFriends": "New Friends",
         "activeFriends": "Active Friends",
         "validBets": "Valid Bets"
+      },
+      "topUpSummary": {
+        "firstDepositors": "First Depositors",
+        "depositors": "Depositors",
+        "depositAmount": "Deposit Amount"
       },
       "labels": {
         "deposit": "Deposit:",

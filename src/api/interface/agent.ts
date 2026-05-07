@@ -104,3 +104,52 @@ export interface QueryTaskRewardConfigResult {
  * 查询任务奖励配置响应
  */
 export interface QueryTaskRewardConfigResponse extends AgentApiResponse<QueryTaskRewardConfigResult> {}
+
+/**
+ * 推荐详情统计图 - 新增好友数据项
+ */
+export interface QueryReferralDetailsNewSubItem {
+  newSub?: number
+  statisticsDate?: number
+}
+
+/**
+ * 推荐详情统计图 - 有效投注数据项
+ */
+export interface QueryReferralDetailsSubBetItem {
+  statisticsDate?: number
+  subBet?: number
+}
+
+/**
+ * 推荐详情统计图结果
+ */
+export interface QueryReferralDetailsChartStatsResult {
+  newSubList?: QueryReferralDetailsNewSubItem[]
+  subBetList?: QueryReferralDetailsSubBetItem[]
+}
+
+/**
+ * 推荐详情统计图响应
+ */
+export interface QueryReferralDetailsChartStatsResponse extends AgentApiResponse<QueryReferralDetailsChartStatsResult> {}
+
+/**
+ * 推荐详情充值统计结果
+ */
+export interface QueryReferralDetailsTopUpStatsResult {
+  paySubRecharge?: number
+  paySubRechargeNum?: number
+  subFirstRecharge?: number
+  subRecharge?: number
+  subRechargeNum?: number
+  upaySubRecharge?: number
+  upaySubRechargeNum?: number
+  usdtSubRecharge?: number
+  usdtSubRechargeNum?: number
+}
+
+/**
+ * 推荐详情充值统计响应
+ */
+export interface QueryReferralDetailsTopUpStatsResponse extends AgentApiResponse<QueryReferralDetailsTopUpStatsResult> {}

@@ -1,4 +1,9 @@
-import type { AgentApiResponse, QueryTaskRewardConfigResponse } from '@/api/interface/agent'
+import type {
+  AgentApiResponse,
+  QueryReferralDetailsChartStatsResponse,
+  QueryReferralDetailsTopUpStatsResponse,
+  QueryTaskRewardConfigResponse
+} from '@/api/interface/agent'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
 
 export type AgentChannelId =
@@ -73,6 +78,18 @@ export const queryReferralDetailsStats = (
   param: Record<string, unknown>,
   options?: AgentRequestOptions
 ): Promise<AgentApiResponse> => callAgentAction('agent87', param, options)
+
+// agent89：查询推荐详情页统计图数据。
+export const queryReferralDetailsChartStats = (
+  param: Record<string, unknown>,
+  options?: AgentRequestOptions
+): Promise<QueryReferralDetailsChartStatsResponse> => callAgentAction('agent89', param, options)
+
+// agent90：查询推荐详情页充值统计。
+export const queryReferralDetailsTopUpStats = (
+  param: Record<string, unknown>,
+  options?: AgentRequestOptions
+): Promise<QueryReferralDetailsTopUpStatsResponse> => callAgentAction('agent90', param, options)
 
 // agent92：查询好友详情页游戏统计。
 export const queryReferralFriendGameStats = (

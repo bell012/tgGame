@@ -701,6 +701,7 @@
     "detailsPage": {
       "title": "好友",
       "filter": "筛选",
+      "topUpTitle": "充值统计",
       "detailText": "详情",
       "showNow": "立即查看",
       "avatarAlt": "头像",
@@ -724,6 +725,11 @@
         "newFriends": "新增好友",
         "activeFriends": "有效好友",
         "validBets": "有效投注"
+      },
+      "topUpSummary": {
+        "firstDepositors": "首充人数",
+        "depositors": "充值人数",
+        "depositAmount": "充值金额"
       },
       "labels": {
         "deposit": "充值：",

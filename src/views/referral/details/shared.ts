@@ -3,6 +3,7 @@ import emptyLightImage from '@/static/img/explore/default_white.png'
 import avatarImage from '@/static/img/home/avatar.png'
 import invitePosterFallbackImage from '@/static/img/personalCenter/yaoqing.png'
 import invitePosterImage from '@/static/img/personalCenter/yaoqing2.png'
+import type { QueryReferralDetailsTopUpStatsResult } from '@/api/interface/agent'
 import { formatTimestamp } from '@/utils/date'
 import { formatBalance } from '@/utils/locale'
 
@@ -41,6 +42,23 @@ export interface ReferralDetailsFriendItem {
   statusText: string
 }
 
+export interface ReferralDetailsTopUpSummaryItem {
+  label: string
+  value: string
+}
+
+export interface ReferralDetailsTopUpTableRow {
+  method: string
+  amount: string
+  count: string
+}
+
+export interface ReferralDetailsStatsChartCard {
+  title: string
+  xAxisData: string[]
+  seriesData: number[]
+}
+
 export interface ReferralDetailsFilterValues {
   time: ReferralDetailsDateFilterValue
 }
@@ -68,6 +86,8 @@ export interface ReferralDetailsStatsResult {
   subNum?: number
   subRecharge?: number
 }
+
+export type ReferralDetailsTopUpStatsResult = QueryReferralDetailsTopUpStatsResult
 
 /**
  * 返回推荐详情页默认头像资源。
@@ -282,3 +302,55 @@ export const createReferralDetailsFriends = (
         : t('referral.detailsPage.status.inactive')
     }
   })
+
+const formatReferralDetailsMetric = (value: number) => {
+  if (!Number.isFinite(value)) {
+    return '0'
+  }
+
+  return Number.isInteger(value) ? String(value) : formatBalance(value, 2)
+}
+
+/**
+ * 生成推荐详情页充值统计汇总数据。
+ */
+export const createReferralDetailsTopUpSummary = (
+  t: TranslateFn,
+  result?: ReferralDetailsTopUpStatsResult | null
+): ReferralDetailsTopUpSummaryItem[] => [
+  {
+    label: t('referral.detailsPage.topUpSummary.firstDepositors'),
+    value: formatReferralDetailsMetric(Number(result?.subFirstRecharge ?? 0))
+  },
+  {
+    label: t('referral.detailsPage.topUpSummary.depositors'),
+    value: formatReferralDetailsMetric(Number(result?.subRechargeNum ?? 0))
+  },
+  {
+    label: t('referral.detailsPage.topUpSummary.depositAmount'),
+    value: formatReferralDetailsMetric(Number(result?.subRecharge ?? 0))
+  }
+]
+
+/**
+ * 生成推荐详情页充值统计表格数据。
+ */
+export const createReferralDetailsTopUpRows = (
+  result?: ReferralDetailsTopUpStatsResult | null
+): ReferralDetailsTopUpTableRow[] => [
+  {
+    method: 'USDT',
+    amount: formatBalance(Number(result?.usdtSubRecharge ?? 0), 2),
+    count: formatReferralDetailsMetric(Number(result?.usdtSubRechargeNum ?? 0))
+  },
+  {
+    method: 'PAY',
+    amount: formatBalance(Number(result?.paySubRecharge ?? 0), 2),
+    count: formatReferralDetailsMetric(Number(result?.paySubRechargeNum ?? 0))
+  },
+  {
+    method: 'UPAY',
+    amount: formatBalance(Number(result?.upaySubRecharge ?? 0), 2),
+    count: formatReferralDetailsMetric(Number(result?.upaySubRechargeNum ?? 0))
+  }
+]
