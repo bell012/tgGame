@@ -3,7 +3,10 @@ import emptyLightImage from '@/static/img/explore/default_white.png'
 import avatarImage from '@/static/img/home/avatar.png'
 import invitePosterFallbackImage from '@/static/img/personalCenter/yaoqing.png'
 import invitePosterImage from '@/static/img/personalCenter/yaoqing2.png'
-import type { QueryReferralDetailsTopUpStatsResult } from '@/api/interface/agent'
+import type {
+  QueryReferralDetailsClaimHistoryResult,
+  QueryReferralDetailsTopUpStatsResult
+} from '@/api/interface/agent'
 import { formatTimestamp } from '@/utils/date'
 import { formatBalance } from '@/utils/locale'
 
@@ -53,6 +56,12 @@ export interface ReferralDetailsTopUpTableRow {
   count: string
 }
 
+export interface ReferralDetailsClaimHistoryRow {
+  id: string
+  time: string
+  reward: string
+}
+
 export interface ReferralDetailsStatsChartCard {
   title: string
   xAxisData: string[]
@@ -88,6 +97,7 @@ export interface ReferralDetailsStatsResult {
 }
 
 export type ReferralDetailsTopUpStatsResult = QueryReferralDetailsTopUpStatsResult
+export type ReferralDetailsClaimHistoryResult = QueryReferralDetailsClaimHistoryResult
 
 /**
  * 返回推荐详情页默认头像资源。
@@ -354,3 +364,33 @@ export const createReferralDetailsTopUpRows = (
     count: formatReferralDetailsMetric(Number(result?.upaySubRechargeNum ?? 0))
   }
 ]
+
+/**
+ * 计算推荐详情页领取记录总佣金。
+ */
+export const getReferralDetailsClaimHistoryTotalCommission = (
+  result?: ReferralDetailsClaimHistoryResult | null
+) =>
+  formatBalance(
+    (result?.records ?? []).reduce((sum, item) => sum + Number(item.commissionAmount ?? 0), 0),
+    2
+  )
+
+/**
+ * 返回推荐详情页领取记录币种。
+ */
+export const getReferralDetailsClaimHistoryCurrencyCode = (
+  result?: ReferralDetailsClaimHistoryResult | null
+) => String(result?.records?.[0]?.currencyCode ?? '')
+
+/**
+ * 生成推荐详情页领取记录表格数据。
+ */
+export const createReferralDetailsClaimHistoryRows = (
+  result?: ReferralDetailsClaimHistoryResult | null
+): ReferralDetailsClaimHistoryRow[] =>
+  (result?.records ?? []).map(item => ({
+    id: String(item.rowId ?? `${item.creationTime ?? 0}-${item.obtainType ?? 0}`),
+    time: formatTimestamp(item.creationTime),
+    reward: formatBalance(Number(item.amount ?? 0), 2)
+  }))

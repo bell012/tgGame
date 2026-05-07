@@ -37,6 +37,22 @@
         @open-date-picker="$emit('open-date-picker')"
       />
 
+      <ReferralDetailsClaimHistoryContent
+        v-else-if="props.activeTab === 'claim-history'"
+        :date-label="props.dateLabel"
+        :total-commission-label="props.totalCommissionLabel"
+        :total-commission="props.claimHistoryTotalCommission"
+        :time-label="props.claimHistoryTimeLabel"
+        :rewards-label="props.claimHistoryRewardsLabel"
+        :currency-code="props.claimHistoryCurrencyCode"
+        :claim-history-rows="props.claimHistoryRows"
+        :empty-text="props.emptyText"
+        :empty-alt="props.emptyAlt"
+        :empty-dark-image="props.emptyDarkImage"
+        :empty-light-image="props.emptyLightImage"
+        @open-date-picker="$emit('open-date-picker')"
+      />
+
       <!-- 好友标签页内容 -->
       <template v-else-if="props.activeTab === 'friends'">
         <!-- 数据统计卡片 -->
@@ -255,8 +271,10 @@
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import ReferralDetailsClaimHistoryContent from './ReferralDetailsClaimHistoryContent.vue'
 import ReferralDetailsStatsContent from './ReferralDetailsStatsContent.vue'
 import type {
+  ReferralDetailsClaimHistoryRow,
   ReferralDetailsStatsChartCard,
   ReferralDetailsFriendItem,
   ReferralDetailsSummaryItem,
@@ -273,6 +291,9 @@ interface Props {
   filterText: string
   depositLabel: string
   validBetsLabel: string
+  totalCommissionLabel: string
+  claimHistoryTimeLabel: string
+  claimHistoryRewardsLabel: string
   detailText: string
   emptyActionText: string
   emptyText: string
@@ -287,6 +308,9 @@ interface Props {
   statsChartCards: ReferralDetailsStatsChartCard[]
   topUpSummaryList: ReferralDetailsTopUpSummaryItem[]
   topUpTableRows: ReferralDetailsTopUpTableRow[]
+  claimHistoryTotalCommission: string
+  claimHistoryCurrencyCode: string
+  claimHistoryRows: ReferralDetailsClaimHistoryRow[]
 }
 
 const props = defineProps<Props>()

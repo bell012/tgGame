@@ -451,6 +451,11 @@
         "depositors": "Depositors",
         "depositAmount": "Deposit Amount"
       },
+      "claimHistory": {
+        "totalCommission": "Total Commission",
+        "time": "Time",
+        "rewards": "Rewards"
+      },
       "labels": {
         "deposit": "Deposit:",
         "validBets": "Valid Bets:"

@@ -153,3 +153,38 @@ export interface QueryReferralDetailsTopUpStatsResult {
  * 推荐详情充值统计响应
  */
 export interface QueryReferralDetailsTopUpStatsResponse extends AgentApiResponse<QueryReferralDetailsTopUpStatsResult> {}
+
+/**
+ * 推荐详情领取记录数据项
+ */
+export interface QueryReferralDetailsClaimHistoryItem {
+  activeNum?: number
+  amount?: number
+  commissionAmount?: number
+  creationTime?: number
+  currencyCode?: string
+  obtainType?: number
+  operator?: string
+  rowId?: string
+  settlementType?: number
+  site?: string
+  status?: number
+  userAccount?: string
+  userId?: string
+}
+
+/**
+ * 推荐详情领取记录结果
+ */
+export interface QueryReferralDetailsClaimHistoryResult {
+  current?: number
+  pages?: number
+  records?: QueryReferralDetailsClaimHistoryItem[]
+  size?: number
+  total?: number
+}
+
+/**
+ * 推荐详情领取记录响应
+ */
+export interface QueryReferralDetailsClaimHistoryResponse extends AgentApiResponse<QueryReferralDetailsClaimHistoryResult> {}

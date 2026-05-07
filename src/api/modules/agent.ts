@@ -1,5 +1,6 @@
 import type {
   AgentApiResponse,
+  QueryReferralDetailsClaimHistoryResponse,
   QueryReferralDetailsChartStatsResponse,
   QueryReferralDetailsTopUpStatsResponse,
   QueryTaskRewardConfigResponse
@@ -90,6 +91,12 @@ export const queryReferralDetailsTopUpStats = (
   param: Record<string, unknown>,
   options?: AgentRequestOptions
 ): Promise<QueryReferralDetailsTopUpStatsResponse> => callAgentAction('agent90', param, options)
+
+// agent86：查询推荐详情页领取记录。
+export const queryReferralDetailsClaimHistory = (
+  param: Record<string, unknown>,
+  options?: AgentRequestOptions
+): Promise<QueryReferralDetailsClaimHistoryResponse> => callAgentAction('agent86', param, options)
 
 // agent92：查询好友详情页游戏统计。
 export const queryReferralFriendGameStats = (

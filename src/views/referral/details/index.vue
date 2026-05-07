@@ -24,6 +24,9 @@
           :filter-text="t('referral.detailsPage.filter')"
           :deposit-label="t('referral.detailsPage.labels.deposit')"
           :valid-bets-label="t('referral.detailsPage.labels.validBets')"
+          :total-commission-label="t('referral.detailsPage.claimHistory.totalCommission')"
+          :claim-history-time-label="t('referral.detailsPage.claimHistory.time')"
+          :claim-history-rewards-label="t('referral.detailsPage.claimHistory.rewards')"
           :top-up-title="t('referral.detailsPage.topUpTitle')"
           :detail-text="t('referral.detailsPage.detailText')"
           :empty-action-text="t('referral.detailsPage.showNow')"
@@ -38,6 +41,9 @@
           :stats-chart-cards="statsChartCards"
           :top-up-summary-list="topUpSummaryList"
           :top-up-table-rows="topUpTableRows"
+          :claim-history-total-commission="claimHistoryTotalCommission"
+          :claim-history-currency-code="claimHistoryCurrencyCode"
+          :claim-history-rows="claimHistoryRows"
           @change-tab="handleChangeTab"
           @open-date-picker="handleOpenDatePicker"
           @open-filter="handleOpenFilter"
@@ -58,6 +64,9 @@
         :filter-text="t('referral.detailsPage.filter')"
         :deposit-label="t('referral.detailsPage.labels.deposit')"
         :valid-bets-label="t('referral.detailsPage.labels.validBets')"
+        :total-commission-label="t('referral.detailsPage.claimHistory.totalCommission')"
+        :claim-history-time-label="t('referral.detailsPage.claimHistory.time')"
+        :claim-history-rewards-label="t('referral.detailsPage.claimHistory.rewards')"
         :top-up-title="t('referral.detailsPage.topUpTitle')"
         :detail-text="t('referral.detailsPage.detailText')"
         :empty-action-text="t('referral.detailsPage.showNow')"
@@ -72,6 +81,9 @@
         :stats-chart-cards="statsChartCards"
         :top-up-summary-list="topUpSummaryList"
         :top-up-table-rows="topUpTableRows"
+        :claim-history-total-commission="claimHistoryTotalCommission"
+        :claim-history-currency-code="claimHistoryCurrencyCode"
+        :claim-history-rows="claimHistoryRows"
         @change-tab="handleChangeTab"
         @open-date-picker="handleOpenDatePicker"
         @open-filter="handleOpenFilter"
@@ -172,11 +184,14 @@ import {
   buildReferralDetailsDateRange,
   createDefaultReferralDetailsFilterValues,
   createReferralDetailsDateOptions,
+  createReferralDetailsClaimHistoryRows,
   createReferralDetailsFriends,
   createReferralDetailsSummaryList,
   createReferralDetailsTopUpRows,
   createReferralDetailsTopUpSummary,
   createReferralDetailsTabs,
+  getReferralDetailsClaimHistoryCurrencyCode,
+  getReferralDetailsClaimHistoryTotalCommission,
   getReferralDetailsDateLabel,
   getReferralDetailsEmptyDarkImage,
   getReferralDetailsEmptyLightImage,
@@ -185,6 +200,7 @@ import {
   type ReferralDetailsStatsChartCard,
   type ReferralDetailsFilterValues,
   type ReferralDetailsFriendItem,
+  type ReferralDetailsClaimHistoryResult,
   type ReferralDetailsStatsResult,
   type ReferralDetailsTabValue,
   type ReferralDetailsTopUpStatsResult
@@ -199,6 +215,7 @@ const showMobileDateFilterPopup = ref(false)
 const showFriendDetailPopup = ref(false)
 const detailsChartStatsResult = ref<QueryReferralDetailsChartStatsResult | null>(null)
 const detailsTopUpStatsResult = ref<ReferralDetailsTopUpStatsResult | null>(null)
+const claimHistoryResult = ref<ReferralDetailsClaimHistoryResult | null>(null)
 const selectedFriendUserId = ref<string>()
 const selectedFriendVipId = ref<number>()
 const friendActiveDateTab = ref<ReferralFriendDetailDateTabValue>('today')
@@ -307,6 +324,27 @@ const topUpSummaryList = computed(() =>
  * 生成推荐详情页充值统计表格数据。
  */
 const topUpTableRows = computed(() => createReferralDetailsTopUpRows(detailsTopUpStatsResult.value))
+
+/**
+ * 生成推荐详情页领取记录表格数据。
+ */
+const claimHistoryRows = computed(() =>
+  createReferralDetailsClaimHistoryRows(claimHistoryResult.value)
+)
+
+/**
+ * 生成推荐详情页领取记录总佣金。
+ */
+const claimHistoryTotalCommission = computed(() =>
+  getReferralDetailsClaimHistoryTotalCommission(claimHistoryResult.value)
+)
+
+/**
+ * 返回推荐详情页领取记录币种。
+ */
+const claimHistoryCurrencyCode = computed(() =>
+  getReferralDetailsClaimHistoryCurrencyCode(claimHistoryResult.value)
+)
 
 /**
  * 生成当前弹窗好友基础信息。
@@ -428,6 +466,30 @@ async function fetchReferralDetailsTopUpStats() {
 }
 
 /**
+ * 获取推荐详情页领取记录数据。
+ */
+async function fetchReferralDetailsClaimHistory() {
+  try {
+    const response = await Api.agent.queryReferralDetailsClaimHistory(
+      {
+        ...buildReferralDetailsDateRange(appliedDateFilterValues.value.time),
+        current: 1,
+        size: 200
+      },
+      {
+        channelId: currentAgentChannelId.value
+      }
+    )
+
+    claimHistoryResult.value =
+      response?.result && typeof response.result === 'object' ? response.result : null
+  } catch (error) {
+    console.error('[referral-details] fetch referral details claim history failed:', error)
+    claimHistoryResult.value = null
+  }
+}
+
+/**
  * 按当前标签获取推荐详情页数据。
  */
 async function fetchActiveReferralDetailsData() {
@@ -438,6 +500,11 @@ async function fetchActiveReferralDetailsData() {
 
   if (activeTab.value === 'stats') {
     await Promise.all([fetchReferralDetailsChartStats(), fetchReferralDetailsTopUpStats()])
+    return
+  }
+
+  if (activeTab.value === 'claim-history') {
+    await fetchReferralDetailsClaimHistory()
   }
 }
 

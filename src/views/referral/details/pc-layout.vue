@@ -8,6 +8,9 @@
       :filter-text="props.filterText"
       :deposit-label="props.depositLabel"
       :valid-bets-label="props.validBetsLabel"
+      :total-commission-label="props.totalCommissionLabel"
+      :claim-history-time-label="props.claimHistoryTimeLabel"
+      :claim-history-rewards-label="props.claimHistoryRewardsLabel"
       :top-up-title="props.topUpTitle"
       :detail-text="props.detailText"
       :empty-action-text="props.emptyActionText"
@@ -22,6 +25,9 @@
       :stats-chart-cards="props.statsChartCards"
       :top-up-summary-list="props.topUpSummaryList"
       :top-up-table-rows="props.topUpTableRows"
+      :claim-history-total-commission="props.claimHistoryTotalCommission"
+      :claim-history-currency-code="props.claimHistoryCurrencyCode"
+      :claim-history-rows="props.claimHistoryRows"
       @change-tab="$emit('change-tab', $event)"
       @open-date-picker="$emit('open-date-picker')"
       @open-filter="$emit('open-filter')"
@@ -35,6 +41,7 @@
 import ReferralLayout from '../ReferralLayout.vue'
 import ReferralDetailsPageContent from './components/ReferralDetailsPageContent.vue'
 import type {
+  ReferralDetailsClaimHistoryRow,
   ReferralDetailsStatsChartCard,
   ReferralDetailsFriendItem,
   ReferralDetailsSummaryItem,
@@ -52,6 +59,9 @@ interface Props {
   filterText: string
   depositLabel: string
   validBetsLabel: string
+  totalCommissionLabel: string
+  claimHistoryTimeLabel: string
+  claimHistoryRewardsLabel: string
   topUpTitle: string
   detailText: string
   emptyActionText: string
@@ -66,6 +76,9 @@ interface Props {
   statsChartCards: ReferralDetailsStatsChartCard[]
   topUpSummaryList: ReferralDetailsTopUpSummaryItem[]
   topUpTableRows: ReferralDetailsTopUpTableRow[]
+  claimHistoryTotalCommission: string
+  claimHistoryCurrencyCode: string
+  claimHistoryRows: ReferralDetailsClaimHistoryRow[]
 }
 
 const props = defineProps<Props>()
