@@ -319,6 +319,10 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
   }
 
   const selectSort = (value: ReviewSortValue) => {
+    /**
+     *  排序类别：1，时间排序，2，点赞数，3，评论回复数(默认是1)
+     *  private Integer sortType;
+     */
     activeSort.value = value
     isSortPopupOpen.value = false
   }

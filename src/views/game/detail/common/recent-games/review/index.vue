@@ -13,6 +13,18 @@
     />
     <div ref="sortMenuRef" class="relative flex justify-between items-center mt-[20px]">
       <div class="text-[12px] text-[var(--color-text-level-2)]">{{ t('gameDetail.comments') }}</div>
+      <button
+        type="button"
+        class="sort-menu-trigger flex h-[24px] w-[24px] items-center justify-center rounded-[6px] transition-colors duration-200"
+        :class="{ 'sort-menu-trigger-light': isLightTheme }"
+        @click.stop="toggleSortPopup"
+      >
+        <span class="sort-menu-trigger-icon">
+          <span />
+          <span />
+          <span />
+        </span>
+      </button>
       <transition name="sort-popup">
         <div
           v-if="isSortPopupOpen"
@@ -230,6 +242,10 @@ const handleRateChange = (value: number) => {
   setRating(value)
 }
 
+const toggleSortPopup = () => {
+  isSortPopupOpen.value = !isSortPopupOpen.value
+}
+
 // ===== 评分分布条（右侧 5 条进度）=====
 const progressRandomSalt = ref(`${Date.now()}-${Math.random()}`)
 
@@ -280,6 +296,27 @@ onBeforeUnmount(() => {
 .sort-menu-popup {
   background: #1f2730;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.sort-menu-trigger {
+  background: var(--color-opacity-10, rgba(255, 255, 255, 0.1));
+}
+
+.sort-menu-trigger-light {
+  background: var(--color-opacity-10, rgba(0, 0, 0, 0.1));
+}
+
+.sort-menu-trigger-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sort-menu-trigger-icon > span {
+  width: 10px;
+  height: 1.6px;
+  border-radius: 999px;
+  background: var(--color-text-level-2, rgba(255, 255, 255, 0.65));
 }
 
 .sort-menu-popup-light {
