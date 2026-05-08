@@ -427,6 +427,11 @@
       "avatarAlt": "avatar",
       "friendDetailHint": "Friend detail coming soon:",
       "dateSelection": "Date Selection",
+      "friendsFilter": {
+        "linkSource": "Link Source",
+        "registrationTime": "Registration Time",
+        "unknownLinkSource": "Unknown"
+      },
       "date": {
         "all": "All",
         "today": "Today",

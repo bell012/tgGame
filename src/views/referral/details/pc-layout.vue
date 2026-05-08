@@ -8,6 +8,8 @@
       :active-date-value="props.activeDateValue"
       :date-options="props.dateOptions"
       :filter-text="props.filterText"
+      :friends-link-source-label="props.friendsLinkSourceLabel"
+      :friends-registration-time-label="props.friendsRegistrationTimeLabel"
       :deposit-label="props.depositLabel"
       :valid-bets-label="props.validBetsLabel"
       :total-commission-label="props.totalCommissionLabel"
@@ -26,6 +28,10 @@
       :tabs="props.tabs"
       :summary-list="props.summaryList"
       :friends-list="props.friendsList"
+      :friends-link-source-value="props.friendsLinkSourceValue"
+      :friends-registration-time-value="props.friendsRegistrationTimeValue"
+      :friends-link-source-options="props.friendsLinkSourceOptions"
+      :friends-registration-time-options="props.friendsRegistrationTimeOptions"
       :stats-chart-cards="props.statsChartCards"
       :top-up-summary-list="props.topUpSummaryList"
       :top-up-table-rows="props.topUpTableRows"
@@ -39,6 +45,10 @@
       @change-date="$emit('change-date', $event)"
       @open-date-picker="$emit('open-date-picker')"
       @open-filter="$emit('open-filter')"
+      @change-friends-link-source-filter="$emit('change-friends-link-source-filter', $event)"
+      @change-friends-registration-time-filter="
+        $emit('change-friends-registration-time-filter', $event)
+      "
       @go-friend-detail="$emit('go-friend-detail', $event)"
       @show-poster="$emit('show-poster')"
     />
@@ -70,6 +80,8 @@ interface Props {
   activeDateValue: ReferralDetailsDateFilterValue
   dateOptions: ReferralDetailsDateOption[]
   filterText: string
+  friendsLinkSourceLabel: string
+  friendsRegistrationTimeLabel: string
   depositLabel: string
   validBetsLabel: string
   totalCommissionLabel: string
@@ -88,6 +100,10 @@ interface Props {
   tabs: ReferralDetailsTabItem[]
   summaryList: ReferralDetailsSummaryItem[]
   friendsList: ReferralDetailsFriendItem[]
+  friendsLinkSourceValue: string
+  friendsRegistrationTimeValue: ReferralDetailsDateFilterValue
+  friendsLinkSourceOptions: Array<{ label: string; value: string }>
+  friendsRegistrationTimeOptions: Array<{ label: string; value: string }>
   statsChartCards: ReferralDetailsStatsChartCard[]
   topUpSummaryList: ReferralDetailsTopUpSummaryItem[]
   topUpTableRows: ReferralDetailsTopUpTableRow[]
@@ -106,6 +122,8 @@ defineEmits<{
   'change-date': [value: ReferralDetailsDateFilterValue]
   'open-date-picker': []
   'open-filter': []
+  'change-friends-link-source-filter': [value: string]
+  'change-friends-registration-time-filter': [value: ReferralDetailsDateFilterValue]
   'go-friend-detail': [value: ReferralDetailsFriendItem]
   'show-poster': []
 }>()

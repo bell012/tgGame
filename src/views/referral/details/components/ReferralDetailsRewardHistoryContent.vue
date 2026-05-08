@@ -6,6 +6,7 @@
     <template v-if="props.isMobile">
       <section class="overflow-hidden rounded-[10px] bg-bg-2">
         <div class="relative flex h-[40px] items-center justify-between px-[14px]">
+          <!-- 按钮块 -->
           <button
             type="button"
             class="flex items-center gap-[7px]"
@@ -57,6 +58,7 @@
           <div class="text-center text-[12px] font-[400] leading-[15px] text-text-2">
             {{ props.timeLabel }}
           </div>
+
           <div class="min-w-[74px] text-center text-[12px] font-[400] leading-[15px] text-text-2">
             {{ props.commissionLabel }}
           </div>
@@ -132,6 +134,7 @@
           >
             {{ props.timeLabel }}
           </div>
+
           <div
             class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-2"
           >
@@ -151,6 +154,7 @@
             >
               {{ row.time }}
             </div>
+
             <div
               class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-white"
             >

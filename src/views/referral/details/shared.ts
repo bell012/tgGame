@@ -42,6 +42,9 @@ export interface ReferralDetailsFriendItem {
   deposit: string | number
   validBets: string | number
   createTime: string
+  creationTimestamp: number
+  linkSource: string
+  linkSourceLabel: string
   status: ReferralDetailsFriendStatus
   statusText: string
 }
@@ -77,6 +80,11 @@ export interface ReferralDetailsStatsChartCard {
 
 export interface ReferralDetailsFilterValues {
   time: ReferralDetailsDateFilterValue
+}
+
+export interface ReferralDetailsFriendsFilterValues {
+  linkSource: string
+  registrationTime: ReferralDetailsDateFilterValue
 }
 
 export interface ReferralDetailsDateOption {
@@ -138,6 +146,15 @@ export const createDefaultReferralDetailsFilterValues = (): ReferralDetailsFilte
 })
 
 /**
+ * 返回推荐详情页好友列表本地筛选默认值。
+ */
+export const createDefaultReferralDetailsFriendsFilterValues =
+  (): ReferralDetailsFriendsFilterValues => ({
+    linkSource: 'all',
+    registrationTime: 'all'
+  })
+
+/**
  * 返回推荐详情页日期筛选项。
  */
 export const createReferralDetailsDateOptions = (t: TranslateFn): ReferralDetailsDateOption[] => [
@@ -194,12 +211,18 @@ export const normalizeReferralDetailsFilterValues = (
   }
 }
 
+/**
+ * 获取getStartOfDay方法。
+ */
 const getStartOfDay = (date: Date) => {
   const nextDate = new Date(date)
   nextDate.setHours(0, 0, 0, 0)
   return nextDate.getTime()
 }
 
+/**
+ * 获取getEndOfDay方法。
+ */
 const getEndOfDay = (date: Date) => {
   const nextDate = new Date(date)
   nextDate.setHours(23, 59, 59, 999)
@@ -304,6 +327,7 @@ export const createReferralDetailsFriends = (
 ): ReferralDetailsFriendItem[] =>
   (result?.memberList ?? []).map(item => {
     const isActive = Number(item.subBet ?? 0) > 0
+    const linkSource = String(item.downloadSite ?? '').trim()
 
     return {
       id: String(item.userAccount ?? item.userId ?? '--'),
@@ -314,6 +338,9 @@ export const createReferralDetailsFriends = (
       deposit: formatBalance(Number(item.subRecharge ?? 0), 2),
       validBets: formatBalance(Number(item.subBet ?? 0), 2),
       createTime: formatTimestamp(item.creationTime),
+      creationTimestamp: Number(item.creationTime ?? 0),
+      linkSource,
+      linkSourceLabel: linkSource || t('referral.detailsPage.friendsFilter.unknownLinkSource'),
       status: isActive ? 'active' : 'inactive',
       statusText: isActive
         ? t('referral.detailsPage.status.active')
@@ -321,6 +348,9 @@ export const createReferralDetailsFriends = (
     }
   })
 
+/**
+ * 格式化formatReferralDetailsMetric方法。
+ */
 const formatReferralDetailsMetric = (value: number) => {
   if (!Number.isFinite(value)) {
     return '0'

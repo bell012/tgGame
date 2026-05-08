@@ -48,7 +48,9 @@
 
     <!-- PC 统计区域 -->
     <section v-else class="flex w-full max-w-[1032px] flex-col gap-[16px]">
+      <!-- 导航块 -->
       <nav class="flex h-[32px] items-center gap-[16px]">
+        <!-- 按钮块 -->
         <button
           v-for="option in pcDateOptions"
           :key="option.value"
@@ -67,6 +69,7 @@
 
       <section class="overflow-hidden rounded-[16px] bg-bg-2 pb-[20px]">
         <div class="flex h-[40px] items-center">
+          <!-- 按钮块 -->
           <button
             v-for="(chart, index) in props.chartCards"
             :key="chart.title"

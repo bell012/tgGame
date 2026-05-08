@@ -81,16 +81,25 @@ const CATEGORY_LABEL_STRATEGIES: Record<string, CategoryLabelStrategy> = {
   DJ: translate => translate('betHistory.filterOptions.esports')
 }
 
+/**
+ * 执行toSafeNumber方法。
+ */
 const toSafeNumber = (value: unknown, fallback = 0) => {
   const nextValue = Number(value)
   return Number.isFinite(nextValue) ? nextValue : fallback
 }
 
+/**
+ * 获取getVipLevelText方法。
+ */
 const getVipLevelText = (vipId?: number | string) => {
   const nextVipId = toSafeNumber(vipId, 0)
   return nextVipId > 0 ? `VIP${nextVipId}` : '--'
 }
 
+/**
+ * 格式化formatSignedAmount方法。
+ */
 const formatSignedAmount = (value: unknown) => {
   const nextValue = toSafeNumber(value, 0)
 
@@ -105,12 +114,18 @@ const formatSignedAmount = (value: unknown) => {
   return formatBalance(0, 2)
 }
 
+/**
+ * 构建buildDayStart方法。
+ */
 const buildDayStart = (date: Date) => {
   const nextDate = new Date(date)
   nextDate.setHours(0, 0, 0, 0)
   return nextDate.getTime()
 }
 
+/**
+ * 构建buildDayEnd方法。
+ */
 const buildDayEnd = (date: Date) => {
   const nextDate = new Date(date)
   nextDate.setHours(23, 59, 59, 999)

@@ -24,6 +24,10 @@
           :active-date-value="appliedDateFilterValues.time"
           :date-options="referralDetailsDateOptions"
           :filter-text="t('referral.detailsPage.filter')"
+          :friends-link-source-label="t('referral.detailsPage.friendsFilter.linkSource')"
+          :friends-registration-time-label="
+            t('referral.detailsPage.friendsFilter.registrationTime')
+          "
           :deposit-label="t('referral.detailsPage.labels.deposit')"
           :valid-bets-label="t('referral.detailsPage.labels.validBets')"
           :total-commission-label="t('referral.detailsPage.claimHistory.totalCommission')"
@@ -42,6 +46,10 @@
           :tabs="tabs"
           :summary-list="summaryList"
           :friends-list="visibleFriendsList"
+          :friends-link-source-value="friendsFilterValues.linkSource"
+          :friends-registration-time-value="friendsFilterValues.registrationTime"
+          :friends-link-source-options="mobileFriendsLinkSourceOptions"
+          :friends-registration-time-options="mobileFriendsRegistrationTimeOptions"
           :stats-chart-cards="statsChartCards"
           :top-up-summary-list="topUpSummaryList"
           :top-up-table-rows="topUpTableRows"
@@ -54,6 +62,8 @@
           @change-tab="handleChangeTab"
           @open-date-picker="handleOpenDatePicker"
           @open-filter="handleOpenFilter"
+          @change-friends-link-source-filter="handleChangeFriendsLinkSourceFilter"
+          @change-friends-registration-time-filter="handleChangeFriendsRegistrationTimeFilter"
           @go-friend-detail="handleGoFriendDetail"
           @show-poster="handleShowInvitePoster"
         />
@@ -71,6 +81,8 @@
         :active-date-value="appliedDateFilterValues.time"
         :date-options="referralDetailsDateOptions"
         :filter-text="t('referral.detailsPage.filter')"
+        :friends-link-source-label="t('referral.detailsPage.friendsFilter.linkSource')"
+        :friends-registration-time-label="t('referral.detailsPage.friendsFilter.registrationTime')"
         :deposit-label="t('referral.detailsPage.labels.deposit')"
         :valid-bets-label="t('referral.detailsPage.labels.validBets')"
         :total-commission-label="t('referral.detailsPage.claimHistory.totalCommission')"
@@ -89,6 +101,10 @@
         :tabs="tabs"
         :summary-list="summaryList"
         :friends-list="visibleFriendsList"
+        :friends-link-source-value="friendsFilterValues.linkSource"
+        :friends-registration-time-value="friendsFilterValues.registrationTime"
+        :friends-link-source-options="mobileFriendsLinkSourceOptions"
+        :friends-registration-time-options="mobileFriendsRegistrationTimeOptions"
         :stats-chart-cards="statsChartCards"
         :top-up-summary-list="topUpSummaryList"
         :top-up-table-rows="topUpTableRows"
@@ -102,6 +118,8 @@
         @change-date="handleChangeDateFilter"
         @open-date-picker="handleOpenDatePicker"
         @open-filter="handleOpenFilter"
+        @change-friends-link-source-filter="handleChangeFriendsLinkSourceFilter"
+        @change-friends-registration-time-filter="handleChangeFriendsRegistrationTimeFilter"
         @go-friend-detail="handleGoFriendDetail"
         @show-poster="handleShowInvitePoster"
       />
@@ -127,6 +145,14 @@
       v-model="mobileDateFilterValues"
       :filter-groups="mobileDateFilterGroups"
       @apply="handleMobileDateFilterApply"
+    />
+
+    <ReferralDetailsFriendsFilterPopup
+      v-model:visible="showMobileFriendsFilterPopup"
+      v-model="friendsFilterValues"
+      :link-source-options="mobileFriendsLinkSourceOptions"
+      :registration-time-options="mobileFriendsRegistrationTimeOptions"
+      @apply="handleMobileFriendsFilterApply"
     />
 
     <!-- PC 好友详情弹窗 -->
@@ -196,11 +222,13 @@ import {
   type ReferralFriendDetailTopUpStatResult
 } from './friend/shared'
 import InvitePosterPopup from './components/InvitePosterPopup.vue'
+import ReferralDetailsFriendsFilterPopup from './components/ReferralDetailsFriendsFilterPopup.vue'
 import ReferralDetailsPageContent from './components/ReferralDetailsPageContent.vue'
 import PcLayout from './pc-layout.vue'
 import {
   buildReferralDetailsDateRange,
   createDefaultReferralDetailsFilterValues,
+  createDefaultReferralDetailsFriendsFilterValues,
   createReferralDetailsDateOptions,
   createReferralDetailsClaimHistoryRows,
   createReferralDetailsFriends,
@@ -219,6 +247,7 @@ import {
   getReferralDetailsRewardHistoryTotalCommission,
   normalizeReferralDetailsFilterValues,
   type ReferralDetailsDateFilterValue,
+  type ReferralDetailsFriendsFilterValues,
   type ReferralDetailsStatsChartCard,
   type ReferralDetailsFilterValues,
   type ReferralDetailsFriendItem,
@@ -235,6 +264,7 @@ const isReady = ref(false)
 const activeTab = ref<ReferralDetailsTabValue>('friends')
 const showInvitePosterPopup = ref(false)
 const showMobileDateFilterPopup = ref(false)
+const showMobileFriendsFilterPopup = ref(false)
 const showFriendDetailPopup = ref(false)
 const detailsChartStatsResult = ref<QueryReferralDetailsChartStatsResult | null>(null)
 const detailsTopUpStatsResult = ref<ReferralDetailsTopUpStatsResult | null>(null)
@@ -250,6 +280,9 @@ const friendTopUpStatsResult = ref<ReferralFriendDetailTopUpStatResult | null>(n
 const mobileDateFilterValues = ref<Record<string, string | string[]>>({
   ...createDefaultReferralDetailsFilterValues()
 })
+const friendsFilterValues = ref<ReferralDetailsFriendsFilterValues>(
+  createDefaultReferralDetailsFriendsFilterValues()
+)
 const appliedDateFilterValues = ref<ReferralDetailsFilterValues>(
   createDefaultReferralDetailsFilterValues()
 )
@@ -309,10 +342,64 @@ const detailsChartAxisData = computed(() =>
  */
 const friendsList = computed(() => createReferralDetailsFriends(t, detailsStatsResult.value))
 
+const mobileFriendsLinkSourceOptions = computed(() => {
+  const optionMap = new Map<string, string>()
+
+  optionMap.set('all', t('referral.detailsPage.date.all'))
+
+  friendsList.value.forEach(item => {
+    if (!item.linkSource || optionMap.has(item.linkSource)) {
+      return
+    }
+
+    optionMap.set(item.linkSource, item.linkSourceLabel)
+  })
+
+  return Array.from(optionMap.entries()).map(([value, label]) => ({
+    label,
+    value
+  }))
+})
+
+const mobileFriendsRegistrationTimeOptions = computed(() =>
+  referralDetailsDateOptions.value.map(item => ({
+    label: item.label,
+    value: item.value
+  }))
+)
+
+const filteredFriendsList = computed(() => {
+  let list = friendsList.value
+
+  if (friendsFilterValues.value.linkSource !== 'all') {
+    list = list.filter(item => item.linkSource === friendsFilterValues.value.linkSource)
+  }
+
+  if (friendsFilterValues.value.registrationTime !== 'all') {
+    const { startTime, endTime } = buildReferralDetailsDateRange(
+      friendsFilterValues.value.registrationTime
+    )
+
+    list = list.filter(item => {
+      if (!item.creationTimestamp) {
+        return false
+      }
+
+      return (
+        item.creationTimestamp >= Number(startTime) && item.creationTimestamp <= Number(endTime)
+      )
+    })
+  }
+
+  return list
+})
+
 /**
  * 根据当前标签返回展示列表。
  */
-const visibleFriendsList = computed(() => (activeTab.value === 'friends' ? friendsList.value : []))
+const visibleFriendsList = computed(() =>
+  activeTab.value === 'friends' ? filteredFriendsList.value : []
+)
 
 /**
  * 生成推荐详情页统计图卡片数据。
@@ -693,7 +780,11 @@ const handleOpenDatePicker = () => {
  * 处理打开筛选弹窗。
  */
 const handleOpenFilter = () => {
-  showMobileDateFilterPopup.value = true
+  if (!isMobile.value || activeTab.value !== 'friends') {
+    return
+  }
+
+  showMobileFriendsFilterPopup.value = true
 }
 
 /**
@@ -706,6 +797,36 @@ const handleMobileDateFilterApply = async (values: Record<string, string | strin
   }
   appliedDateFilterValues.value = normalizeReferralDetailsFilterValues(values)
   await fetchActiveReferralDetailsData()
+}
+
+/**
+ * 处理应用 H5 好友本地筛选。
+ */
+const handleMobileFriendsFilterApply = (values: ReferralDetailsFriendsFilterValues) => {
+  friendsFilterValues.value = {
+    ...createDefaultReferralDetailsFriendsFilterValues(),
+    ...values
+  }
+}
+
+/**
+ * 处理切换好友链接来源筛选。
+ */
+const handleChangeFriendsLinkSourceFilter = (value: string) => {
+  friendsFilterValues.value = {
+    ...friendsFilterValues.value,
+    linkSource: value
+  }
+}
+
+/**
+ * 处理切换好友注册时间筛选。
+ */
+const handleChangeFriendsRegistrationTimeFilter = (value: ReferralDetailsDateFilterValue) => {
+  friendsFilterValues.value = {
+    ...friendsFilterValues.value,
+    registrationTime: value
+  }
 }
 
 /**

@@ -63,15 +63,24 @@ export const createReferralTaskTabs = (t: TranslateFn): ReferralTaskTab[] => [
 
 const toText = (value: number | string | undefined) => String(value ?? '').trim()
 
+/**
+ * 执行toNumber方法。
+ */
 const toNumber = (value: number | string | undefined) => {
   const numberValue = Number(value)
   return Number.isFinite(numberValue) ? numberValue : 0
 }
 
+/**
+ * 获取getFriendUnit方法。
+ */
 const getFriendUnit = (count: number, t: TranslateFn) => {
   return count === 1 ? t('referral.taskPage.friendUnit') : t('referral.taskPage.friendsUnit')
 }
 
+/**
+ * 执行isRewardAchieved方法。
+ */
 const isRewardAchieved = (item: { achieved?: boolean; status?: number | string }) => {
   if (item.achieved === true) return true
 
@@ -87,6 +96,9 @@ const createStatusText = (
     : t('referral.taskPage.notAchieved')
 }
 
+/**
+ * 生成createFriendCondition方法。
+ */
 const createFriendCondition = (item: QueryTaskRewardFriendItem, t: TranslateFn) => {
   const max = toText(item.max)
   const condition = max
@@ -98,6 +110,9 @@ const createFriendCondition = (item: QueryTaskRewardFriendItem, t: TranslateFn) 
   }
 }
 
+/**
+ * 生成createWalletCondition方法。
+ */
 const createWalletCondition = (item: QueryTaskRewardWalletItem, t: TranslateFn) => {
   const condition = toText(item.people)
 
@@ -125,17 +140,26 @@ const createRewardRow = (
   }
 }
 
+/**
+ * 执行toAmountNumber方法。
+ */
 const toAmountNumber = (value: unknown, fallback: number) => {
   const numberValue = Number(value)
   return Number.isFinite(numberValue) ? numberValue : fallback
 }
 
+/**
+ * 格式化formatTaskAmount方法。
+ */
 const formatTaskAmount = (value: unknown) => {
   const amount = toAmountNumber(value, 0)
   const decimals = Number.isInteger(amount) ? 0 : 2
   return `${getCurrencySymbol()}${amount.toFixed(decimals)}`
 }
 
+/**
+ * 执行pickFirstDefined方法。
+ */
 const pickFirstDefined = (sources: unknown[], keys: string[]) => {
   for (const source of sources) {
     if (!source || typeof source !== 'object') {
@@ -179,6 +203,9 @@ const resolveTaskPeriodKey = (
   return 'weekly'
 }
 
+/**
+ * 格式化formatResetCountdown方法。
+ */
 const formatResetCountdown = (countdown: string, localeCode: string) => {
   const normalizedCountdown = String(countdown ?? '').trim()
 
