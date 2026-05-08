@@ -4,10 +4,11 @@
     class="casino-page max-w-[1248px] mx-auto px-3.5 py-3 sm:py-4 sm:px-3 w-full font-['Inter']"
     :style="casinoPageStyle"
   >
-    <casinoSlideshow
+    <HomeCarouselImg
       v-if="isSlideshowLoading || querySlideshowList.length > 0"
       :list="querySlideshowList"
       :loading="isSlideshowLoading"
+      class="mb-3"
     />
 
     <div
@@ -218,7 +219,7 @@ import { getStorageLanguageCode } from '@/utils/locale'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import { getCasinoPageMode, getCasinoQueryOptions } from './casinoPageConfig'
-import casinoSlideshow from './components/casinoSlideshow.vue'
+import HomeCarouselImg from '@/components/homeCarouselImg.vue'
 import pageStyle1 from './components/pageStyle1.vue'
 import pageStyle2 from './components/pageStyle2.vue'
 import pageStyle3 from './components/pageStyle3.vue'
