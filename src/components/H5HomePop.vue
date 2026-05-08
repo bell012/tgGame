@@ -57,9 +57,7 @@
         v-if="list.length > 1"
         class="flex flex-shrink-0 items-center justify-center px-4 pb-2.5"
       >
-        <div
-          class="flex w-full max-w-[100px] min-w-0 items-center justify-between gap-2 sm:w-[25%] sm:max-w-none"
-        >
+        <div class="inline-flex max-w-full min-w-0 items-center justify-center gap-2">
           <button
             type="button"
             class="flex size-2 shrink-0 items-center justify-center rounded-full bg-transparent text-text-1 transition-opacity hover:opacity-80 disabled:opacity-40 [&_svg]:size-full [&_path]:fill-current"
@@ -70,7 +68,7 @@
             <LeftIcon />
           </button>
 
-          <div class="flex min-w-0 flex-1 items-center justify-center gap-1.5">
+          <div class="flex min-w-0 items-center justify-center gap-1.5 overflow-hidden">
             <button
               v-for="(_, index) in list"
               :key="index"

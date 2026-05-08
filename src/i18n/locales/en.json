@@ -830,8 +830,8 @@
       "eng": "English"
     },
     "theme": {
-      "dark": "Dark Mode",
-      "light": "Light Mode"
+      "dark": "Dark",
+      "light": "Light"
     }
   },
   "personalCenter": {
