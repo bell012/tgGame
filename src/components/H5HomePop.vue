@@ -57,7 +57,9 @@
         v-if="list.length > 1"
         class="flex flex-shrink-0 items-center justify-center px-4 pb-2.5"
       >
-        <div class="flex w-[25%] min-w-0 items-center justify-between gap-2">
+        <div
+          class="flex w-full max-w-[100px] min-w-0 items-center justify-between gap-2 sm:w-[25%] sm:max-w-none"
+        >
           <button
             type="button"
             class="flex size-2 shrink-0 items-center justify-center rounded-full bg-transparent text-text-1 transition-opacity hover:opacity-80 disabled:opacity-40 [&_svg]:size-full [&_path]:fill-current"
@@ -76,7 +78,7 @@
               class="flex shrink-0 items-center justify-center transition-colors"
               :class="
                 currentIndex === index
-                  ? 'h-[5px] w-10 rounded-full overflow-hidden bg-[var(--color-background-level-4)]'
+                  ? 'h-[5px] w-6 rounded-full overflow-hidden bg-[var(--color-background-level-4)] sm:w-10'
                   : 'size-[5px] rounded-full bg-[var(--color-background-level-4)]'
               "
               :aria-label="`第 ${index + 1} 张`"
