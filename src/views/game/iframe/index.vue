@@ -213,8 +213,10 @@ const confirmExit = async () => {
 
 .game-iframe-page__close-btn {
   position: fixed;
-  top: max(calc(env(safe-area-inset-top) + 12px), 12px);
-  left: max(calc(env(safe-area-inset-left) + 12px), 12px);
+  /* top: max(calc(env(safe-area-inset-top) + 12px), 12px);
+  left: max(calc(env(safe-area-inset-left) + 12px), 12px); */
+  top: 12px;
+  left: 12px;
   z-index: 2147483647;
   width: 50px;
   height: 50px;
@@ -235,9 +237,11 @@ const confirmExit = async () => {
   }
 
   .game-iframe-page__close-btn {
-    top: max(calc(env(safe-area-inset-top) + 10px), 10px);
+    /* top: max(calc(env(safe-area-inset-top) + 10px), 10px);
     left: max(calc(env(safe-area-inset-left) + 10px), 10px);
-    right: auto;
+    right: auto; */
+    top: 10px;
+    left: 10px;
   }
 }
 
