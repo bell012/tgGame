@@ -3,14 +3,14 @@
     <div class="max-w-[1200px] mx-auto font-['Inter']">
       <!-- 第一排 -->
       <div class="border-b border-opacity-10 pb-6">
-        <div class="flex items-start justify-between gap-x-8 mb-3 px-4">
+        <div class="flex items-start justify-between gap-x-8">
           <!-- 左边：标题 -->
           <div class="flex-1 text-left">
             <h3 class="text-text-1 text-base font-bold">{{ t('common_footer.top.left_title') }}</h3>
             <!-- 文字说明 -->
-            <div class="mt-3 flex-1 max-w-xl space-y-3">
-              <p class="text-text-2 text-xs">{{ t('common_footer.top.left_desc_1') }}</p>
-              <p class="text-text-2 text-xs">{{ t('common_footer.top.left_desc_2') }}</p>
+            <div class="mt-3 max-w-xl space-y-3">
+              <p class="text-text-2 text-[13px]">{{ t('common_footer.top.left_desc_1') }}</p>
+              <p class="text-text-2 text-[13px]">{{ t('common_footer.top.left_desc_2') }}</p>
             </div>
           </div>
 
@@ -20,14 +20,14 @@
               {{ t('common_footer.top.right_title') }}
             </h3>
             <!-- 文字说明 -->
-            <div class="mt-3 flex-1 max-w-xl space-y-3">
-              <p class="text-text-2 text-xs">{{ t('common_footer.top.feedback_reward') }}</p>
-              <p class="text-text-2 text-xs">
+            <div class="mt-3 max-w-xl space-y-3">
+              <p class="text-text-2 text-[13px]">{{ t('common_footer.top.feedback_reward') }}</p>
+              <p class="text-text-2 text-[13px]">
                 {{ t('common_footer.top.feedback_email_label')
                 }}<span class="ml-2 text-theme-primary">feedback@tggame.com</span>
               </p>
-              <p class="text-text-2 text-xs">{{ t('common_footer.top.security_notice') }}</p>
-              <p class="text-text-2 text-xs">
+              <p class="text-text-2 text-[13px]">{{ t('common_footer.top.security_notice') }}</p>
+              <p class="text-text-2 text-[13px]">
                 {{ t('common_footer.top.security_email_label')
                 }}<span class="ml-2 text-theme-primary">security@tggame.com</span>
               </p>
@@ -36,19 +36,23 @@
         </div>
       </div>
       <!-- 第二排 -->
-      <div class="mt-6 flex flex-wrap justify-center">
+      <div class="flex flex-nowrap gap-x-2 overflow-x-auto border-b py-6">
         <div
-          class="max-w-[50%] flex-shrink-0 flex-grow-0 basis-1/2 px-1.5 mb-7 sm:max-w-[12.5%] sm:basis-[1/8]"
+          class="h-[96.209px] w-[160.349px] shrink-0 aspect-[5/3] rounded-[14px]"
           v-for="i in 8"
           :key="`award-${i}`"
         >
-          <img :src="footer1Image" :alt="t('common_footer.alt.award')" class="h-auto max-w-full" />
+          <img
+            :src="footer1Image"
+            :alt="t('common_footer.alt.award')"
+            class="h-full w-full object-contain"
+          />
         </div>
       </div>
 
       <!-- 第三排 -->
-      <div class="w-full px-4 py-4 border-y border-[#e4eaf019]">
-        <div class="flex w-full flex-wrap gap-x-10 divide-x divide-[#e4eaf019]">
+      <div class="w-full border-b border-opacity-10 py-6">
+        <div class="flex w-full flex-wrap gap-x-10">
           <!-- 左边5个图标 -->
           <div
             class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 cursor-pointer"
@@ -80,17 +84,19 @@
       </div>
 
       <!-- 第四排 -->
-      <div class="flex w-full flex-wrap justify-between gap-x-4 gap-y-4 px-4 py-6">
+      <div
+        class="flex w-full flex-wrap justify-between gap-x-4 gap-y-4 py-6 border-b border-opacity-10"
+      >
         <!-- 娱乐城 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">
+          <h3 class="mb-5 text-sm font-bold leading-normal text-text-1">
             {{ t('common_footer.sections.casino') }}
           </h3>
           <ul class="space-y-3">
             <li
               v-for="item in casinoLinks"
               :key="item.id"
-              class="flex items-center gap-1 text-[14px] text-text-2 font-[600] cursor-pointer w-fit group"
+              class="flex items-center gap-1 text-[13px] font-normal leading-normal text-text-2 cursor-pointer w-fit group"
               @click="item.handler"
             >
               <span
@@ -108,14 +114,14 @@
 
         <!-- 体育 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">
+          <h3 class="mb-5 text-sm font-bold leading-normal text-text-1">
             {{ t('common_footer.sections.sports') }}
           </h3>
           <ul class="space-y-3">
             <li
               v-for="item in sportsLinks"
               :key="item.id"
-              class="flex items-center gap-1 text-[14px] text-text-2 font-[600] cursor-pointer w-fit group"
+              class="flex items-center gap-1 text-[13px] font-normal leading-normal text-text-2 cursor-pointer w-fit group"
               @click="item.handler"
             >
               <span
@@ -133,14 +139,14 @@
 
         <!-- 支援 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">
+          <h3 class="mb-5 text-sm font-bold leading-normal text-text-1">
             {{ t('common_footer.sections.promo') }}
           </h3>
           <ul class="space-y-3">
             <li
               v-for="item in promoLinks"
               :key="item.id"
-              class="flex items-center gap-1 text-[14px] text-text-2 font-[600] cursor-pointer w-fit group"
+              class="flex items-center gap-1 text-[13px] font-normal leading-normal text-text-2 cursor-pointer w-fit group"
               @click="item.handler"
             >
               <span
@@ -158,14 +164,14 @@
 
         <!-- 支援/法律 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">
+          <h3 class="mb-5 text-sm font-bold leading-normal text-text-1">
             {{ t('common_footer.sections.support_legal') }}
           </h3>
           <ul class="space-y-3">
             <li
               v-for="item in legalLinks"
               :key="item.id"
-              class="flex items-center gap-1 text-[14px] text-text-2 font-[600] cursor-pointer w-fit group"
+              class="flex items-center gap-1 text-[13px] font-normal leading-normal text-text-2 cursor-pointer w-fit group"
               @click="item.handler"
             >
               <span
@@ -183,14 +189,14 @@
 
         <!-- 支援 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">
+          <h3 class="mb-5 text-sm font-bold leading-normal text-text-1">
             {{ t('common_footer.sections.about_us') }}
           </h3>
           <ul class="space-y-3">
             <li
               v-for="item in aboutLinks"
               :key="item.id"
-              class="flex items-center gap-1 text-[14px] text-text-2 font-[600] cursor-pointer w-fit group"
+              class="flex items-center gap-1 text-[13px] font-normal leading-normal text-text-2 cursor-pointer w-fit group"
               @click="item.handler"
             >
               <span
@@ -208,7 +214,7 @@
 
         <!-- 加入我们的会社群 -->
         <div>
-          <h3 class="mb-5 text-base font-extrabold text-text-1">
+          <h3 class="mb-5 text-sm font-bold leading-normal text-text-1">
             {{ t('common_footer.sections.global_community') }}
           </h3>
           <div class="grid grid-cols-4 gap-2">
@@ -220,7 +226,7 @@
               <component :is="LoginIcon1" class="w-6 h-6 fill-none" @click="social.handler" />
             </div>
           </div>
-          <h3 class="mb-5 mt-6 text-base font-extrabold text-text-1">
+          <h3 class="mb-5 mt-6 text-sm font-bold leading-normal text-text-1">
             {{ t('common_footer.sections.local_community') }}
           </h3>
           <div class="grid grid-cols-4 gap-2">
@@ -236,43 +242,40 @@
       </div>
 
       <!-- 第五排 -->
-      <div class="border-t border-opacity-10 pt-8">
-        <div class="flex items-start justify-between gap-x-8 mb-3 px-4">
-          <!-- 左边：Logo -->
-          <div class="flex-1 text-left">
-            <div class="h-12 flex items-center">
-              <MainLogoIcon class="h-8 w-auto text-text-1" :alt="t('common_footer.alt.logo')" />
-            </div>
-            <!-- 文字说明 -->
-            <div class="mt-6 flex-1 max-w-xl space-y-4">
-              <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_1') }}</p>
-              <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_2') }}</p>
-              <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_3') }}</p>
-            </div>
+      <div class="py-6 border-b border-opacity-10 flex items-start justify-between gap-x-8">
+        <!-- 左边：Logo -->
+        <div class="flex-1 text-left">
+          <div class="h-12 flex items-start">
+            <MainLogoIcon class="h-8 w-auto text-text-1" :alt="t('common_footer.alt.logo')" />
           </div>
+          <!-- 文字说明 -->
+          <div class="mt-6 max-w-xl space-y-4">
+            <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_1') }}</p>
+            <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_2') }}</p>
+            <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_3') }}</p>
+          </div>
+        </div>
 
-          <!-- 右边：认证图标 -->
-          <div class="flex-1 text-left">
+        <!-- 右边：认证图标 -->
+        <div class="flex-1 text-left">
+          <div class="h-12 flex items-start">
             <SmartImage
               :src="footer4_2Image"
               :alt="t('common_footer.alt.certification')"
-              class="h-12 w-auto"
+              class="block h-12 w-auto"
               @click="bottomCertification.handler"
             />
-            <!-- 文字说明 -->
-            <div class="mt-6 flex-1 max-w-xl space-y-4">
-              <p class="text-text-2 text-xs">{{ t('common_footer.bottom.right_desc_1') }}</p>
-              <p class="text-text-2 text-xs">{{ t('common_footer.bottom.right_desc_2') }}</p>
-            </div>
+          </div>
+          <!-- 文字说明 -->
+          <div class="mt-6 max-w-xl space-y-4">
+            <p class="text-text-2 text-xs">{{ t('common_footer.bottom.right_desc_1') }}</p>
+            <p class="text-text-2 text-xs">{{ t('common_footer.bottom.right_desc_2') }}</p>
           </div>
         </div>
-
-        <!-- 版权信息 -->
-        <div
-          class="text-center mt-8 pt-8 pb-2 px-4 border-t border-[#e4eaf019] text-text-2 text-xs"
-        >
-          {{ t('common_footer.copyright') }}
-        </div>
+      </div>
+      <!-- 第六排 版权信息 -->
+      <div class="pt-6 text-center text-xs text-text-2">
+        {{ t('common_footer.copyright') }}
       </div>
     </div>
   </footer>
