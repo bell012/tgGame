@@ -76,7 +76,10 @@
               </p>
             </div>
             <div class="flex items-center justify-end gap-1">
-              <span class="text-text-1 text-sm font-[700] text-center">{{ item.profit }}</span>
+              <span class="flex items-center gap-[4px] text-text-1 text-sm font-[700] text-center">
+                <span>{{ getCurrencySymbol(item.currency) }}</span>
+                <span>{{ item.profit }}</span>
+              </span>
               <ArrowLeftIcon class="w-4 h-4 text-text-1" />
             </div>
           </div>
@@ -107,6 +110,7 @@ import { useI18n } from 'vue-i18n'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import { getCurrencySymbol } from '@/utils/locale'
 import DetailsModal from '../transactionDetails/detailsModal.vue'
 import ArrowLeftIcon from '@/static/svg/arrow_left2.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
