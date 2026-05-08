@@ -1,7 +1,7 @@
 <template>
   <div
     ref="detailPageRef"
-    class="detail-page w-full h-full max-w-[1248px] mx-auto pt-[14px] sm:pt-[20px] px-[12px]"
+    class="detail-page w-full max-w-[1248px] mx-auto pt-[14px] sm:pt-[20px] px-[12px] pb-[20px] sm:pb-[24px]"
   >
     <!-- Loading -->
     <div v-if="isGameDataLoading" class="detail-loading-mask" aria-live="polite" aria-busy="true">
@@ -221,6 +221,7 @@ const fetchCurrentGameDetail = async () => {
     console.error('getCurrentGameDetailByApi failed', error)
   } finally {
     await nextTick()
+    hideParentScrollbar()
     resetScrollToTop()
   }
 }
@@ -234,6 +235,8 @@ const fetchGameDataForApp = async () => {
     gameData.value = []
   } finally {
     isGameDataLoading.value = false
+    await nextTick()
+    hideParentScrollbar()
   }
 }
 
@@ -264,6 +267,17 @@ onUnmounted(() => {
 })
 </script>
 <style scoped lang="scss">
+.detail-page {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.detail-page::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 .detail-loading-mask {
   position: absolute;
   inset: 0;
