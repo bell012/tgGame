@@ -129,6 +129,8 @@
     <InvitePosterPopup
       v-model="showInvitePosterPopup"
       :images="invitePosterImages"
+      :invite-code="displayLinkCode"
+      :share-link="referralShareLink"
       :save-text="t('referral.invitePoster.saveImage')"
       :copy-link-text="t('referral.invitePoster.copyLink')"
       :invite-text="t('referral.invitePoster.inviteNow')"
@@ -193,11 +195,12 @@ import type {
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useUserStore } from '@/stores/user'
 import RuleIcon from '@/static/svg/rule.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { buildReferralChartAxisData, normalizeReferralChartSeriesData } from '@/utils/referralDate'
 import { navigateTo } from '@/utils/router'
-import { globalShowToast } from '@/utils/toast'
+import { formatLinkCode, globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { buildReferralShareMessage, getDefaultReferralLink } from '../shared'
@@ -260,6 +263,7 @@ import {
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
+const userStore = useUserStore()
 const isReady = ref(false)
 const activeTab = ref<ReferralDetailsTabValue>('friends')
 const showInvitePosterPopup = ref(false)
@@ -294,6 +298,10 @@ const friendEmptyDarkImage = getReferralFriendDetailEmptyDarkImage()
 const friendEmptyLightImage = getReferralFriendDetailEmptyLightImage()
 const referralLink = getDefaultReferralLink()
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
+const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.linkCode) || '-')
+const referralShareLink = computed(
+  () => `${referralLink.replace(/\/+$/, '')}/?id=${displayLinkCode.value}`
+)
 
 /**
  * 生成推荐详情页标签数据。
@@ -872,7 +880,7 @@ const handleSavePosterImage = () => {
  * 处理复制推荐链接。
  */
 const handleCopyPosterLink = async () => {
-  const copied = await copyTextWithFallback(referralLink)
+  const copied = await copyTextWithFallback(referralShareLink.value)
 
   globalShowToast({
     message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
@@ -884,7 +892,7 @@ const handleCopyPosterLink = async () => {
  * 处理立即邀请。
  */
 const handleInviteNow = async () => {
-  const shareLink = referralLink
+  const shareLink = referralShareLink.value
   const shareContent = buildReferralShareMessage(
     t('referral.messagePopup.presets.exclusiveRewards'),
     shareLink

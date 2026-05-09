@@ -1,7 +1,7 @@
-import quickTaskIcon from '@/static/img/referral/quick-action-task.png'
 import quickDetailsIcon from '@/static/img/referral/quick-action-details.png'
-import quickRulesIcon from '@/static/img/referral/quick-action-rules.png'
 import quickGuideIcon from '@/static/img/referral/quick-action-guide.png'
+import quickRulesIcon from '@/static/img/referral/quick-action-rules.png'
+import quickTaskIcon from '@/static/img/referral/quick-action-task.png'
 import commissionCoinIcon from '@/static/img/referral/referral-coin.png'
 
 type TranslateFn = (key: string, named?: Record<string, unknown>) => string
@@ -40,6 +40,14 @@ export interface ReferralBannerSlide {
   linkType: number
   linkUrl: string
 }
+
+export interface ReferralBannerPayload {
+  bannerSlides: ReferralBannerSlide[]
+  posterImages: string[]
+}
+
+const referralBannerPayloadCache = new Map<string, ReferralBannerPayload>()
+const referralBannerPendingRequests = new Map<string, Promise<ReferralBannerPayload>>()
 
 /**
  * 将资源字段转换为可用图片地址。
@@ -212,10 +220,54 @@ export const createReferralMessagePresets = (t: TranslateFn): string[] => [
 /**
  * 构建推荐页默认分享链接。
  */
-export const getDefaultReferralLink = () => 'https://www.tggame.com/invite/877*****'
+export const getDefaultReferralLink = () => ' '
 
 /**
  * 构建推荐页复制文案内容。
  */
 export const buildReferralShareMessage = (message: string, referralLink: string) =>
   [String(message ?? '').trim(), String(referralLink ?? '').trim()].filter(Boolean).join(' ')
+
+/**
+ * 构建推荐页横幅请求缓存键。
+ */
+export const buildReferralBannerRequestKey = (channelId: string, languageCode: string) =>
+  `${String(channelId ?? '').trim()}::${String(languageCode ?? '').trim()}`
+
+/**
+ * 读取推荐页横幅缓存数据。
+ */
+export const getCachedReferralBannerPayload = (key: string) =>
+  referralBannerPayloadCache.get(String(key ?? '').trim())
+
+/**
+ * 按缓存键复用推荐页横幅请求，避免同参数重复拉取。
+ */
+export const resolveReferralBannerPayload = async (
+  key: string,
+  loader: () => Promise<ReferralBannerPayload>
+) => {
+  const normalizedKey = String(key ?? '').trim()
+  const cachedPayload = getCachedReferralBannerPayload(normalizedKey)
+
+  if (cachedPayload) {
+    return cachedPayload
+  }
+
+  const pendingRequest = referralBannerPendingRequests.get(normalizedKey)
+  if (pendingRequest) {
+    return pendingRequest
+  }
+
+  const requestPromise = loader()
+    .then(payload => {
+      referralBannerPayloadCache.set(normalizedKey, payload)
+      return payload
+    })
+    .finally(() => {
+      referralBannerPendingRequests.delete(normalizedKey)
+    })
+
+  referralBannerPendingRequests.set(normalizedKey, requestPromise)
+  return requestPromise
+}

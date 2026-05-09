@@ -1,8 +1,8 @@
 import type {
   AgentApiResponse,
   QueryEstimatedCommissionResponse,
-  QueryReferralDetailsClaimHistoryResponse,
   QueryReferralDetailsChartStatsResponse,
+  QueryReferralDetailsClaimHistoryResponse,
   QueryReferralDetailsRewardHistoryResponse,
   QueryReferralDetailsTopUpStatsResponse,
   QueryTaskRewardConfigResponse
@@ -76,11 +76,11 @@ export const queryCommissionRecords = (
   options?: AgentRequestOptions
 ): Promise<QueryReferralDetailsRewardHistoryResponse> => callAgentAction('agent68', param, options)
 
-// agent87：查询推荐详情页团队成员统计。
+// agent88：查询推荐详情页团队成员查询一级代理好友列表统计。
 export const queryReferralDetailsStats = (
   param: Record<string, unknown>,
   options?: AgentRequestOptions
-): Promise<AgentApiResponse> => callAgentAction('agent87', param, options)
+): Promise<AgentApiResponse> => callAgentAction('agent88', param, options)
 
 // agent89：查询推荐详情页统计图数据。
 export const queryReferralDetailsChartStats = (

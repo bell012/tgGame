@@ -93,6 +93,8 @@
     <InvitePosterPopup
       v-model="showInvitePosterPopup"
       :images="posterImages"
+      :invite-code="displayLinkCode"
+      :share-link="resolveChannelReferralLink()"
       :save-text="t('referral.invitePoster.saveImage')"
       :copy-link-text="t('referral.invitePoster.copyLink')"
       :invite-text="t('referral.invitePoster.inviteNow')"
@@ -128,6 +130,7 @@ import ReferralPageContent from './components/ReferralPageContent.vue'
 import InvitePosterPopup from './details/components/InvitePosterPopup.vue'
 import PcLayout from './pc-layout.vue'
 import {
+  buildReferralBannerRequestKey,
   buildReferralBannerSlidesFromApi,
   buildReferralPosterImagesFromApi,
   buildReferralShareMessage,
@@ -135,8 +138,10 @@ import {
   createReferralMarqueeMessages,
   createReferralMessagePresets,
   createReferralQuickActions,
+  getCachedReferralBannerPayload,
   getDefaultReferralLink,
   getReferralCommissionCoinImage,
+  resolveReferralBannerPayload,
   type ReferralBannerSlide,
   type ReferralQuickActionId,
   type ReferralSocialChannel
@@ -174,7 +179,7 @@ const marqueeMessages = computed(() => createReferralMarqueeMessages(t))
 const socialChannels = computed(() => apiSocialChannels.value)
 const commissionCoinImage = getReferralCommissionCoinImage()
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
-const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.linkCode) || '-')
+const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.rowId) || '-')
 
 /**
  * 处理页面初始化完成状态，避免首屏端态抖动。
@@ -425,17 +430,37 @@ async function fetchSocialChannels() {
  */
 async function fetchReferralBanner() {
   const requestToken = ++referralBannerRequestToken
+  const languageCode = getLanguageCode()
+  const requestKey = buildReferralBannerRequestKey(currentAgentChannelId.value, languageCode)
+  const cachedPayload = getCachedReferralBannerPayload(requestKey)
+
+  if (cachedPayload) {
+    bannerLoading.value = false
+    bannerSlides.value = cachedPayload.bannerSlides
+    posterImages.value = cachedPayload.posterImages
+    return
+  }
+
   bannerLoading.value = true
   bannerSlides.value = []
   posterImages.value = []
 
   try {
-    const response = await Api.home.getQuerySlideshow({
-      languageCode: getLanguageCode(),
-      channelId: currentAgentChannelId.value,
-      page: {
-        current: 1,
-        size: 100
+    const payload = await resolveReferralBannerPayload(requestKey, async () => {
+      const response = await Api.home.getQuerySlideshow({
+        languageCode,
+        channelId: currentAgentChannelId.value,
+        page: {
+          current: 1,
+          size: 100
+        }
+      })
+
+      const records = Array.isArray(response?.result?.records) ? response.result.records : []
+
+      return {
+        bannerSlides: buildReferralBannerSlidesFromApi(records),
+        posterImages: buildReferralPosterImagesFromApi(records)
       }
     })
 
@@ -443,9 +468,8 @@ async function fetchReferralBanner() {
       return
     }
 
-    const records = Array.isArray(response?.result?.records) ? response.result.records : []
-    bannerSlides.value = buildReferralBannerSlidesFromApi(records)
-    posterImages.value = buildReferralPosterImagesFromApi(records)
+    bannerSlides.value = payload.bannerSlides
+    posterImages.value = payload.posterImages
   } catch (error) {
     if (requestToken !== referralBannerRequestToken) {
       return
