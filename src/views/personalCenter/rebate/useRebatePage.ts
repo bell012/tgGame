@@ -568,13 +568,7 @@ export const useRebatePage = () => {
   const currentValidBetsValue = computed(() =>
     currentCategoryRebateRows.value.reduce((total, item) => total + toNumber(item.betAmount), 0)
   )
-  const effectiveCurrentValidBetsValue = computed(() => {
-    if (currentValidBetsValue.value > 0) {
-      return currentValidBetsValue.value
-    }
-
-    return todayValidBets.value > 0 ? todayValidBets.value : 0
-  })
+  const effectiveCurrentValidBetsValue = computed(() => currentValidBetsValue.value)
 
   // ============================================================
   // 模块 E：RebateRateTable（返利表格）
