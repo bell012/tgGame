@@ -225,6 +225,7 @@ export interface GameStatisticsResponse {
 export interface GetCommentSubjectParams {
   gameId: string | number
   memberRowId?: string | number
+  sortType: 1 | 2 | 3
 }
 
 export interface GameCommentSubjectResult {
@@ -248,6 +249,7 @@ export interface GetCommentsListParams {
   memberRowId?: number
   root?: string | number | null
   parent?: string | number | null
+  sortType: 1 | 2 | 3
 }
 
 export interface PublishCommentParams {

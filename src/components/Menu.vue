@@ -970,7 +970,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 }
 
 .app-download-card {
-  background: #323738;
+  background: var(--color-background-level-2);
   background-image: radial-gradient(circle at 400% 400%, rgb(36 238 137), transparent 92%);
 }
 

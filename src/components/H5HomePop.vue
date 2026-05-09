@@ -16,30 +16,34 @@
       </div>
 
       <!-- 轮播图 -->
-      <div
-        ref="carouselRef"
-        class="mt-2.5 mb-2.5 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth touch-pan-x flex-1 min-h-0"
-        @scroll="onCarouselScroll"
+      <Swipe
+        ref="swipeRef"
+        class="mt-2.5 mb-2.5 flex-1 min-h-0 w-full bg-bg-1"
+        :autoplay="list.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
+        :show-indicators="false"
+        :touchable="list.length > 1"
+        lazy-render
+        @change="handleChange"
       >
-        <div
-          v-for="(item, index) in list"
-          :key="index"
-          class="carousel-item flex w-full min-w-full flex-shrink-0 snap-center snap-always items-center justify-center"
-        >
-          <img
-            v-if="item.isImage === 1"
-            :src="item.imageUrl"
-            :alt="`slide-${index + 1}`"
-            class="max-h-full w-full max-w-[100vw] cursor-pointer object-contain"
-            @click="handleImageJump(item)"
-          />
-          <!-- 文本 -->
-          <div v-if="item.isImage === 2" class="w-[92%] rounded-lg p-3.5 pop-rich-text bg-bg-2">
-            <h2 class="text-base font-bold text-text-1">{{ item.title }}</h2>
-            <div class="mt-2 font-normal text-sm text-text-1" v-html="item.text"></div>
+        <SwipeItem v-for="(item, index) in list" :key="index" class="h-full">
+          <div class="flex h-full w-full items-center justify-center">
+            <img
+              v-if="item.isImage === 1"
+              :src="item.imageUrl"
+              :alt="`slide-${index + 1}`"
+              class="max-h-full w-full max-w-[100vw] cursor-pointer select-none object-contain"
+              draggable="false"
+              @click="handleImageJump(item)"
+              @dragstart.prevent
+            />
+            <!-- 文本 -->
+            <div v-if="item.isImage === 2" class="w-[92%] rounded-lg p-3.5 pop-rich-text bg-bg-2">
+              <h2 class="text-base font-bold text-text-1">{{ item.title }}</h2>
+              <div class="mt-2 font-normal text-sm text-text-1" v-html="item.text"></div>
+            </div>
           </div>
-        </div>
-      </div>
+        </SwipeItem>
+      </Swipe>
       <!-- <button
       
         class="flex justify-center items-center w-[92%] h-[40px] buttonStyle m-auto mb-2.5 text-text-4 font-bold"
@@ -53,7 +57,7 @@
         v-if="list.length > 1"
         class="flex flex-shrink-0 items-center justify-center px-4 pb-2.5"
       >
-        <div class="flex w-[25%] min-w-0 items-center justify-between gap-2">
+        <div class="inline-flex max-w-full min-w-0 items-center justify-center gap-2">
           <button
             type="button"
             class="flex size-2 shrink-0 items-center justify-center rounded-full bg-transparent text-text-1 transition-opacity hover:opacity-80 disabled:opacity-40 [&_svg]:size-full [&_path]:fill-current"
@@ -64,7 +68,7 @@
             <LeftIcon />
           </button>
 
-          <div class="flex min-w-0 flex-1 items-center justify-center gap-1.5">
+          <div class="flex min-w-0 items-center justify-center gap-1.5 overflow-hidden">
             <button
               v-for="(_, index) in list"
               :key="index"
@@ -72,16 +76,18 @@
               class="flex shrink-0 items-center justify-center transition-colors"
               :class="
                 currentIndex === index
-                  ? 'h-[5px] w-6'
+                  ? 'h-[5px] w-6 rounded-full overflow-hidden bg-[var(--color-background-level-4)] sm:w-10'
                   : 'size-[5px] rounded-full bg-[var(--color-background-level-4)]'
               "
               :aria-label="`第 ${index + 1} 张`"
               @click="goTo(index)"
             >
-              <ScrollBar
+              <span
                 v-if="currentIndex === index"
-                class="h-[5px] w-6 shrink-0 [&_svg]:h-full [&_svg]:w-full [&_svg]:object-contain"
-              />
+                class="slideshow-indicator-progress h-full w-full origin-left rounded-full bg-[var(--color-theme-level-1)]"
+                :key="`${index}-${progressKey}`"
+                :style="progressStyle"
+              ></span>
             </button>
           </div>
 
@@ -104,7 +110,7 @@
         >
           <span class="checkbox-box" />
           <input v-model="checked" type="checkbox" class="sr-only" aria-label="多选" />
-          <span class="text-text-1 text-xs">{{ $t('home.DontDisplayThisForNext7Day') }}</span>
+          <span class="text-text-1 text-xs">{{ $t('home.DontDisplayThisForNextToday') }}</span>
         </label>
       </div>
     </div>
@@ -116,13 +122,14 @@ import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { SwipeInstance } from 'vant'
+import { Swipe, SwipeItem } from 'vant'
 import { navigateTo, navigateToName } from '@/utils/router'
 import CloseIcon from '@/static/svg/close.svg?component'
 import LeftIcon from '@/static/svg/left-icon.svg?component'
 import RightIcon from '@/static/svg/right-icon.svg?component'
-import ScrollBar from '@/static/svg/scroll-bar.svg?component'
 import { getStorageLanguageCode } from '@/utils/locale'
 
 const emit = defineEmits<{
@@ -137,6 +144,7 @@ const { locale } = useI18n()
 const HOME_POP_STORAGE_PREFIX = 'home_pop_notice'
 const HOME_POP_SUPPRESS_KEY = `${HOME_POP_STORAGE_PREFIX}:suppress_until`
 const HOME_POP_SUPPRESS_MS = 24 * 60 * 60 * 1000
+const AUTO_PLAY_INTERVAL_MS = 10000
 
 interface HomePopItem {
   rowId: number
@@ -169,9 +177,20 @@ const list = computed<HomePopItem[]>(() => {
 
   return records
 })
-const carouselRef = ref<HTMLElement | null>(null)
+const swipeRef = ref<SwipeInstance>()
 const currentIndex = ref(0)
+const progressKey = ref(0)
 const checked = ref(false)
+let lockedScrollY = 0
+let isPageScrollLocked = false
+let previousBodyOverflow = ''
+let previousBodyPosition = ''
+let previousBodyTop = ''
+let previousBodyWidth = ''
+let previousHtmlOverflow = ''
+const progressStyle = computed(() => ({
+  animationDuration: `${AUTO_PLAY_INTERVAL_MS}ms`
+}))
 
 const normalizeNoticeImage = (value: unknown) => {
   const text = String(value ?? '').trim()
@@ -409,6 +428,7 @@ const fetchNoticeList = async () => {
     console.error('queryNoticeMsg failed', error)
   } finally {
     currentIndex.value = 0
+    progressKey.value += 1
   }
 }
 
@@ -423,41 +443,94 @@ const closeWithoutSuppress = () => {
   emit('close')
 }
 
-const onCarouselScroll = () => {
-  const el = carouselRef.value
-  if (!el) return
-  const width = el.offsetWidth
-  const index = Math.round(el.scrollLeft / width)
-  currentIndex.value = Math.min(index, list.value.length - 1)
+const lockPageScroll = () => {
+  if (isPageScrollLocked) {
+    return
+  }
+
+  const body = document.body
+  const html = document.documentElement
+  lockedScrollY = window.scrollY
+  previousBodyOverflow = body.style.overflow
+  previousBodyPosition = body.style.position
+  previousBodyTop = body.style.top
+  previousBodyWidth = body.style.width
+  previousHtmlOverflow = html.style.overflow
+
+  html.style.overflow = 'hidden'
+  body.style.overflow = 'hidden'
+  body.style.position = 'fixed'
+  body.style.top = `-${lockedScrollY}px`
+  body.style.width = '100%'
+  isPageScrollLocked = true
+}
+
+const unlockPageScroll = () => {
+  if (!isPageScrollLocked) {
+    return
+  }
+
+  const body = document.body
+  const html = document.documentElement
+  html.style.overflow = previousHtmlOverflow
+  body.style.overflow = previousBodyOverflow
+  body.style.position = previousBodyPosition
+  body.style.top = previousBodyTop
+  body.style.width = previousBodyWidth
+  window.scrollTo(0, lockedScrollY)
+  isPageScrollLocked = false
+}
+
+const handleChange = (index: number) => {
+  currentIndex.value = index
+  progressKey.value += 1
 }
 
 const goTo = (index: number) => {
-  const el = carouselRef.value
-  if (!el) return
-  const width = el.offsetWidth
-  el.scrollTo({ left: index * width, behavior: 'smooth' })
   currentIndex.value = index
+  progressKey.value += 1
+  swipeRef.value?.swipeTo(index)
 }
 
 const prev = () => {
   if (currentIndex.value <= 0) return
-  goTo(currentIndex.value - 1)
+  swipeRef.value?.prev()
 }
 
 const next = () => {
   if (currentIndex.value >= list.value.length - 1) return
-  goTo(currentIndex.value + 1)
+  swipeRef.value?.next()
 }
 
 onMounted(() => {
+  lockPageScroll()
+
   if (isSuppressedNow()) {
     closeWithoutSuppress()
     return
   }
   void fetchNoticeList()
 })
+
+onBeforeUnmount(unlockPageScroll)
 </script>
 <style lang="scss" scoped>
+@keyframes slideshow-indicator-fill {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.slideshow-indicator-progress {
+  animation-name: slideshow-indicator-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
 .buttonStyle {
   border-radius: 8px;
   background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
