@@ -22,7 +22,7 @@
     <div class="table-wrap">
       <table
         v-if="activeTab === 0 || activeTab === 1"
-        class="table [&_td]:px-3 [&_td]:py-3 sm:[&_td]:px-4"
+        class="table [&_td]:px-3 sm:[&_td]:px-4"
         role="table"
         style="overflow-anchor: none"
       >
@@ -40,7 +40,7 @@
             :key="item.id"
             :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
           >
-            <td class="py-2 px-3 text-text-1 truncate">
+            <td class="h-[39px] px-3 text-text-1 truncate">
               <span class="text-text-1 truncate">
                 {{ item.betId }}
               </span>
@@ -55,8 +55,10 @@
                 />
               </div>
             </td>
-            <td class="py-2 px-3 text-text-1 truncate">{{ item.payout }}x</td>
-            <td class="py-2 px-3 text-[12px]">
+            <td class="h-[39px] px-3 text-text-1 truncate">
+              {{ item.payout }}{{ multiplierUnit }}
+            </td>
+            <td class="h-[39px] px-3 text-[12px]">
               <div class="flex items-center justify-end gap-1">
                 <span
                   class="order-1"
@@ -103,7 +105,7 @@
 
       <table
         v-else
-        class="table high-roller-table [&_td]:px-3 [&_td]:py-3 sm:[&_td]:px-4"
+        class="table high-roller-table [&_td]:px-3 sm:[&_td]:px-4"
         role="table"
         style="overflow-anchor: none"
       >
@@ -121,7 +123,7 @@
             :key="`${item.id}-${index}`"
             :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
           >
-            <td class="py-2 px-3">
+            <td class="h-[39px] px-3">
               <div
                 class="flex items-center gap-1 min-w-0 cursor-pointer"
                 @click="handleHighRollerGameClick"
@@ -134,11 +136,13 @@
                 <span class="text-text-1 truncate">{{ item.game }}</span>
               </div>
             </td>
-            <td class="py-2 px-3 text-text-1 truncate cursor-pointer">
+            <td class="h-[39px] px-3 text-text-1 truncate cursor-pointer">
               {{ item.player }}
             </td>
-            <td class="py-2 px-3 text-text-1 truncate">x{{ item.multiplier }}</td>
-            <td class="py-2 px-3 text-[12px]">
+            <td class="h-[39px] px-3 text-text-1 truncate">
+              {{ item.multiplier }}{{ multiplierUnit }}
+            </td>
+            <td class="h-[39px] px-3 text-[12px]">
               <div class="flex items-center justify-end gap-1">
                 <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
                   {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
@@ -206,6 +210,7 @@ const tabs = computed(() => [
   { value: 1, label: t('gameDetail.myBets') },
   { value: 2, label: t('home.HighRoller') }
 ])
+const multiplierUnit = computed(() => t('gameDetail.multiplierUnit'))
 
 type CurrentGameDetail = {
   itemCode?: string | number
@@ -310,6 +315,7 @@ const mapHighRollerToRow = (item: Record<string, unknown>, index: number): IHigh
 }
 
 const fetchBetRecords = async () => {
+  stopBetAutoScroll()
   const platformCode = currentPlatformCode.value
   const gameCode = currentGameCode.value
   if (!platformCode || !gameCode) {
@@ -344,7 +350,7 @@ const fetchBetRecords = async () => {
         : []
 
     betSourceRows.value = recordList.map((item, index) => mapRecordToRow(item, index))
-    rows.value = betSourceRows.value.slice(0, MAX_VISIBLE_ROWS)
+    startBetAutoScroll()
   } catch (error) {
     console.error('fetchBetRecords failed', error)
     betSourceRows.value = []
@@ -381,6 +387,47 @@ const fetchHighRollerRecords = async () => {
 
 let highRollerAutoScrollTimer: number | null = null
 let highRollerNextScrollIndex = 0
+let betAutoScrollTimer: number | null = null
+let betNextScrollIndex = 0
+
+const stopBetAutoScroll = () => {
+  if (betAutoScrollTimer != null) {
+    window.clearTimeout(betAutoScrollTimer)
+    betAutoScrollTimer = null
+  }
+}
+
+const scheduleNextBetScroll = () => {
+  betAutoScrollTimer = window.setTimeout(() => {
+    const list = betSourceRows.value
+    const nextRow = list[betNextScrollIndex]
+    if (!nextRow || list.length === 0) {
+      return
+    }
+
+    rows.value = [nextRow, ...rows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
+    betNextScrollIndex = (betNextScrollIndex + 1) % list.length
+    scheduleNextBetScroll()
+  }, SCROLL_INTERVAL_MS)
+}
+
+const startBetAutoScroll = () => {
+  stopBetAutoScroll()
+  const list = betSourceRows.value
+  if (list.length === 0) {
+    rows.value = []
+    return
+  }
+
+  if (list.length <= MAX_VISIBLE_ROWS) {
+    rows.value = [...list]
+    return
+  }
+
+  rows.value = list.slice(0, MAX_VISIBLE_ROWS)
+  betNextScrollIndex = MAX_VISIBLE_ROWS % list.length
+  scheduleNextBetScroll()
+}
 
 const stopHighRollerAutoScroll = () => {
   if (highRollerAutoScrollTimer != null) {
@@ -425,6 +472,7 @@ const fetchTableData = async () => {
   isLoading.value = true
   try {
     if (activeTab.value === 2) {
+      stopBetAutoScroll()
       betSourceRows.value = []
       rows.value = []
       await fetchHighRollerRecords()
@@ -433,6 +481,7 @@ const fetchTableData = async () => {
 
     stopHighRollerAutoScroll()
     if (!isLoggedIn.value) {
+      stopBetAutoScroll()
       betSourceRows.value = []
       rows.value = []
       return
@@ -455,6 +504,7 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  stopBetAutoScroll()
   stopHighRollerAutoScroll()
 })
 </script>
@@ -540,6 +590,12 @@ onBeforeUnmount(() => {
   table-layout: fixed;
   text-align: center;
 }
+
+.table tbody td:not([colspan]) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  vertical-align: middle;
+}
 .table td:nth-child(1),
 .table th:nth-child(1) {
   text-align: left;
@@ -564,15 +620,18 @@ onBeforeUnmount(() => {
   padding: 0;
 }
 
-.table tbody tr td {
+.table tbody tr td:not([colspan]) {
   vertical-align: middle;
   box-sizing: border-box;
+  height: 39px;
+  min-height: 39px;
+  max-height: 39px;
 }
 
 .cell {
   gap: 8px;
   overflow: hidden;
-  height: 48px;
+  height: 39px;
 }
 
 .icon {
@@ -636,8 +695,11 @@ onBeforeUnmount(() => {
     text-overflow: ellipsis;
   }
 
-  .table tbody tr td {
-    padding: 9px 6px !important;
+  .table tbody tr td:not([colspan]) {
+    height: 39px !important;
+    min-height: 39px !important;
+    max-height: 39px !important;
+    padding: 0 6px !important;
     font-size: 12px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -697,8 +759,11 @@ onBeforeUnmount(() => {
     text-overflow: ellipsis;
   }
 
-  .table tbody tr td {
-    padding: 10px 6px !important;
+  .table tbody tr td:not([colspan]) {
+    height: 39px !important;
+    min-height: 39px !important;
+    max-height: 39px !important;
+    padding: 0 6px !important;
     font-size: 12px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -764,7 +829,7 @@ onBeforeUnmount(() => {
   }
 
   .cell {
-    height: 40px;
+    height: 39px;
   }
 }
 </style>

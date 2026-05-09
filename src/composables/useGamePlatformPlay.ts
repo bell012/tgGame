@@ -51,6 +51,7 @@ export function useGamePlatformPlay() {
             state: {
               gameLaunch: {
                 url: gameUrl,
+                isHorizontal: res.result?.isHorizontal,
                 gameCode,
                 companyCode,
                 rowId

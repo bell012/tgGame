@@ -359,7 +359,9 @@ const isMobile = useIsMobile()
 
 const showH5HomePop = ref(true)
 const isActiveHomeRoute = computed(() => stripLocalePrefix(router.currentRoute.value.path) === '/')
-const shouldShowH5HomePop = computed(() => isActiveHomeRoute.value && showH5HomePop.value)
+const shouldShowH5HomePop = computed(
+  () => isMobile.value && isActiveHomeRoute.value && showH5HomePop.value
+)
 const gameData = ref<HomeGameSection[]>([])
 const rawGameData = ref<RawGameDataItem[]>([])
 const querySlideshowList = ref<any[]>([])

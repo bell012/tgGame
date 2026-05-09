@@ -17,7 +17,12 @@
       @touchend="handleSwipeEnd"
       @touchcancel="handleSwipeEnd"
     />
-    <button type="button" class="game-iframe-page__close-btn" @click="openExitDialog">
+    <button
+      type="button"
+      class="game-iframe-page__close-btn"
+      :class="{ 'game-iframe-page__close-btn--right-top': isHorizontal === '1' }"
+      @click="openExitDialog"
+    >
       <img :src="closeIcon" alt="close" class="game-iframe-page__close-icon" />
     </button>
 
@@ -84,6 +89,10 @@ const companyCode = computed(() => {
 })
 const detailRowId = computed(() => {
   return String(launchState.value?.rowId ?? '').trim()
+})
+
+const isHorizontal = computed(() => {
+  return String(launchState.value?.isHorizontal ?? '').trim()
 })
 
 const handleSwipeStart = (event: TouchEvent) => {
@@ -231,6 +240,11 @@ const confirmExit = async () => {
   visibility: visible;
 }
 
+.game-iframe-page__close-btn--right-top {
+  left: auto;
+  right: 12px;
+}
+
 @media (orientation: landscape) {
   .game-iframe-page__swipe-edge {
     width: max(calc(env(safe-area-inset-left) + 44px), 44px);
@@ -242,6 +256,11 @@ const confirmExit = async () => {
     right: auto; */
     top: 10px;
     left: 10px;
+  }
+
+  .game-iframe-page__close-btn--right-top {
+    left: auto;
+    right: 10px;
   }
 }
 

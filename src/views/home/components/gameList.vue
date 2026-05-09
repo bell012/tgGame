@@ -129,12 +129,30 @@
           </div>
         </a>
       </div>
+      <button
+        type="button"
+        class="relative flex aspect-[330/438] flex-col items-center justify-center rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
+        @click="handleAllClick(props.sysGameTypeCode)"
+      >
+        <SmartImage :src="viewAllLightIcon" alt="view all" class="dark:!hidden w-full h-full" />
+        <SmartImage
+          :src="viewAllDarkIcon"
+          alt="view all"
+          class="!hidden dark:!block w-full h-full"
+        />
+        <span
+          class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-bold text-common-100 sm:text-base"
+        >
+          {{ t('casino.view_all') }}
+        </span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import gameErrImg from '@/components/common/gameErrImg.vue'
 import peopleNumber from './img/peopleNumber.svg?component'
 import { StringExtension } from '@/utils/string-extension'
@@ -142,6 +160,10 @@ import { navigateToName } from '@/utils/router'
 import { navigateTo } from '@/utils/router'
 import ArrowLeftIcon from '@/static/svg/arrow_left2.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import viewAllDarkIcon from '@/static/img/casino/all_view_dark.png'
+import viewAllLightIcon from '@/static/img/casino/all_view_light.png'
+
+const { t } = useI18n()
 interface GameItem {
   img: {
     maintain: boolean

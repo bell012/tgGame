@@ -613,6 +613,7 @@
     "stakesRange": "Stakes Range",
     "by": "By",
     "payout": "Payout",
+    "multiplierUnit": "x",
     "wager": "Wager",
     "mult": "Mult",
     "allBets": "All Bets",
