@@ -352,7 +352,6 @@ import { storeToRefs } from 'pinia'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { formatLinkCode } from '@/utils/toast'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -458,7 +457,7 @@ const avatarUrl = computed(() => {
 })
 
 const displayLinkCode = computed(() => {
-  return formatLinkCode(userInfo.value?.linkCode) || '-'
+  return userInfo.value?.rowId || '-'
 })
 
 // VIP 等级
@@ -744,7 +743,7 @@ const copyReferralLink = async () => {
 }
 
 const copyMemberId = async () => {
-  await copyText(formatLinkCode(userInfo.value?.linkCode))
+  await copyText(String(userInfo.value?.rowId ?? ''))
 }
 
 const goToMyProfile = () => {

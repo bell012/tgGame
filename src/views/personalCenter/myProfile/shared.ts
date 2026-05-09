@@ -28,7 +28,6 @@ import border3Image from '@/static/img/personalCenter/border_3.png'
 import border4Image from '@/static/img/personalCenter/border_4.png'
 import border5Image from '@/static/img/personalCenter/border_5.png'
 import Api from '@/api'
-import { formatLinkCode } from '@/utils/toast'
 
 type FavoriteGameSourceItem = GameBetTotalResult['list'][number]
 
@@ -71,7 +70,7 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
     return avatarFrameImageMap[avatarFrameId as Exclude<AvatarFrameId, 'none'>]
   })
   const displayName = computed(() => userInfo.value?.nickName || '')
-  const profileId = computed(() => formatLinkCode(userInfo.value?.linkCode) || '-')
+  const profileId = computed(() => userInfo.value?.rowId) || '-'
 
   /**
    * 优先使用当前已选币种；未选择时回退到账户币种与本地缓存币种。
@@ -177,7 +176,7 @@ export const useMyProfile = (options?: { onEdit?: () => void }) => {
    * 复制会员 ID。
    */
   const copyMemberId = async () => {
-    const value = profileId.value
+    const value = String(profileId.value)
     if (!value || value === '--') return
     try {
       if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(value)
