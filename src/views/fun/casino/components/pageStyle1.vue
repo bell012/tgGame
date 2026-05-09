@@ -148,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, ref, type Ref } from 'vue'
+import { computed, inject, nextTick, onUnmounted, ref, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateTo, navigateToName } from '@/utils/router'
@@ -177,9 +177,20 @@ const lobbyButtons = computed<CasinoLobbyButtonItem[]>(() => {
 })
 
 const latestBetIndex = ref(0)
-const scrollRefs = ref<HTMLElement[]>([])
+/** 与子项 ref 对齐；卸载或 ref 复位时为 undefined */
+const scrollRefs = ref<(HTMLElement | undefined)[]>([])
 const canScrollLeft = ref<boolean[]>([])
 const canScrollRight = ref<boolean[]>([])
+
+/** scrollLeft / scrollWidth - clientWidth 亚像素对齐，避免左右按钮误判 */
+const SCROLL_EDGE_EPS_PX = 2
+
+const scrollDetachers = new Map<number, () => void>()
+
+const clearScrollBindings = (index: number) => {
+  scrollDetachers.get(index)?.()
+  scrollDetachers.delete(index)
+}
 const skeletonSectionCount = computed(() => (isMobile.value ? 3 : 4))
 const skeletonCardCount = computed(() => (isMobile.value ? 4 : 8))
 const closeDesktopModalFlag = inject<Ref<boolean> | null>('search-close-desktop-modal', null)
@@ -191,12 +202,38 @@ const closeDesktopModal = () => {
 }
 
 const setScrollRef = (el: HTMLElement | null, index: number) => {
-  if (!el) return
+  clearScrollBindings(index)
+
+  if (!el) {
+    scrollRefs.value[index] = undefined
+    canScrollLeft.value[index] = false
+    canScrollRight.value[index] = false
+    return
+  }
+
   scrollRefs.value[index] = el
+
+  const onScroll = () => {
+    updateScrollState(index)
+  }
+
+  el.addEventListener('scroll', onScroll, { passive: true })
+
+  let ro: ResizeObserver | undefined
+  if (typeof ResizeObserver !== 'undefined') {
+    ro = new ResizeObserver(() => {
+      updateScrollState(index)
+    })
+    ro.observe(el)
+  }
+
+  scrollDetachers.set(index, () => {
+    el.removeEventListener('scroll', onScroll)
+    ro?.disconnect()
+  })
 
   nextTick(() => {
     updateScrollState(index)
-    el.addEventListener('scroll', () => updateScrollState(index))
   })
 }
 
@@ -204,11 +241,19 @@ const updateScrollState = (index: number) => {
   const el = scrollRefs.value[index]
   if (!el) return
 
-  const max = el.scrollWidth - el.clientWidth
+  const maxScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth)
+  const eps = SCROLL_EDGE_EPS_PX
+  const sl = el.scrollLeft
 
-  canScrollLeft.value[index] = el.scrollLeft > 1
-  canScrollRight.value[index] = el.scrollLeft < max - 1
+  canScrollLeft.value[index] = sl > eps
+  canScrollRight.value[index] = maxScrollLeft > eps && maxScrollLeft - sl > eps
 }
+
+onUnmounted(() => {
+  for (const i of [...scrollDetachers.keys()]) {
+    clearScrollBindings(i)
+  }
+})
 
 const scrollLeft = (index: number) => {
   const el = scrollRefs.value[index]

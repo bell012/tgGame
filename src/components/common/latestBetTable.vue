@@ -50,8 +50,10 @@
               {{ item.player }}
             </span>
           </td>
-          <td class="px-2.5 py-2.5 sm:px-0 sm:py-0 text-center text-xs sm:text-sm">
-            <span class="mx-auto block max-w-[60px] truncate">{{ item.multiplier }}x</span>
+          <td class="px-2.5 py-2.5 text-center text-xs sm:px-0 sm:py-0 sm:text-sm">
+            <span class="mx-auto block max-w-[60px] truncate"
+              >{{ formatMultiplier(item.multiplier) }}x</span
+            >
           </td>
           <td class="px-2.5 py-2.5 sm:px-6 sm:py-0 text-right text-xs sm:text-sm">
             <div class="ml-auto flex w-[73px] max-w-full items-center justify-end gap-1 sm:w-auto">
@@ -130,6 +132,14 @@ let nextScrollIndex = 0
 
 const getRandomScrollInterval = () => {
   return Math.floor(Math.random() * 800) + 300
+}
+
+const formatMultiplier = (value: number) => {
+  if (!Number.isFinite(value)) {
+    return '0.00'
+  }
+
+  return value.toFixed(2)
 }
 
 const toGameImageUrl = (value?: string) => {
