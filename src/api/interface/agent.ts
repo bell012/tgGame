@@ -106,6 +106,11 @@ export interface QueryTaskRewardConfigResult {
 export interface QueryTaskRewardConfigResponse extends AgentApiResponse<QueryTaskRewardConfigResult> {}
 
 /**
+ * 查询一级代理预估佣金响应
+ */
+export interface QueryEstimatedCommissionResponse extends AgentApiResponse<number> {}
+
+/**
  * 推荐详情统计图 - 新增好友数据项
  */
 export interface QueryReferralDetailsNewSubItem {

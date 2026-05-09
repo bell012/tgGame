@@ -1,5 +1,6 @@
 import type {
   AgentApiResponse,
+  QueryEstimatedCommissionResponse,
   QueryReferralDetailsClaimHistoryResponse,
   QueryReferralDetailsChartStatsResponse,
   QueryReferralDetailsRewardHistoryResponse,
@@ -41,7 +42,7 @@ const callAgentAction = <TResult = unknown>(
 // agent75：查询当前登录一级代理未领取佣金总额。
 export const queryEstimatedCommission = (
   options?: AgentRequestOptions
-): Promise<AgentApiResponse> => callAgentAction('agent75', undefined, options)
+): Promise<QueryEstimatedCommissionResponse> => callAgentAction('agent75', undefined, options)
 
 // agent77：领取当前登录一级代理未领取佣金。
 export const claimCommission = (options?: AgentRequestOptions): Promise<AgentApiResponse> =>

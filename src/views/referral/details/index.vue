@@ -194,13 +194,16 @@ import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.v
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import RuleIcon from '@/static/svg/rule.svg?component'
-import { buildReferralChartAxisData, normalizeReferralChartSeriesData } from '@/utils/referralDate'
 import { copyTextWithFallback } from '@/utils/clipboard'
+import { buildReferralChartAxisData, normalizeReferralChartSeriesData } from '@/utils/referralDate'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getDefaultReferralLink } from '../shared'
+import { buildReferralShareMessage, getDefaultReferralLink } from '../shared'
+import InvitePosterPopup from './components/InvitePosterPopup.vue'
+import ReferralDetailsFriendsFilterPopup from './components/ReferralDetailsFriendsFilterPopup.vue'
+import ReferralDetailsPageContent from './components/ReferralDetailsPageContent.vue'
 import FriendDetailPcPopup from './friend/pc-layout.vue'
 import {
   buildReferralFriendDetailDateRange,
@@ -221,22 +224,19 @@ import {
   type ReferralFriendDetailStatsTabValue,
   type ReferralFriendDetailTopUpStatResult
 } from './friend/shared'
-import InvitePosterPopup from './components/InvitePosterPopup.vue'
-import ReferralDetailsFriendsFilterPopup from './components/ReferralDetailsFriendsFilterPopup.vue'
-import ReferralDetailsPageContent from './components/ReferralDetailsPageContent.vue'
 import PcLayout from './pc-layout.vue'
 import {
   buildReferralDetailsDateRange,
   createDefaultReferralDetailsFilterValues,
   createDefaultReferralDetailsFriendsFilterValues,
-  createReferralDetailsDateOptions,
   createReferralDetailsClaimHistoryRows,
+  createReferralDetailsDateOptions,
   createReferralDetailsFriends,
   createReferralDetailsRewardHistoryRows,
   createReferralDetailsSummaryList,
+  createReferralDetailsTabs,
   createReferralDetailsTopUpRows,
   createReferralDetailsTopUpSummary,
-  createReferralDetailsTabs,
   getReferralDetailsClaimHistoryCurrencyCode,
   getReferralDetailsClaimHistoryTotalCommission,
   getReferralDetailsDateLabel,
@@ -246,13 +246,13 @@ import {
   getReferralDetailsRewardHistoryCurrencyCode,
   getReferralDetailsRewardHistoryTotalCommission,
   normalizeReferralDetailsFilterValues,
+  type ReferralDetailsClaimHistoryResult,
   type ReferralDetailsDateFilterValue,
-  type ReferralDetailsFriendsFilterValues,
-  type ReferralDetailsStatsChartCard,
   type ReferralDetailsFilterValues,
   type ReferralDetailsFriendItem,
-  type ReferralDetailsClaimHistoryResult,
+  type ReferralDetailsFriendsFilterValues,
   type ReferralDetailsRewardHistoryResult,
+  type ReferralDetailsStatsChartCard,
   type ReferralDetailsStatsResult,
   type ReferralDetailsTabValue,
   type ReferralDetailsTopUpStatsResult
@@ -883,11 +883,41 @@ const handleCopyPosterLink = async () => {
 /**
  * 处理立即邀请。
  */
-const handleInviteNow = () => {
-  showInvitePosterPopup.value = false
-  navigateTo('/referral')
-}
+const handleInviteNow = async () => {
+  const shareLink = referralLink
+  const shareContent = buildReferralShareMessage(
+    t('referral.messagePopup.presets.exclusiveRewards'),
+    shareLink
+  )
 
+  if (!shareContent || !shareLink) {
+    globalShowToast({
+      message: t('referral.copyFailed'),
+      type: 'fail'
+    })
+    return
+  }
+
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    try {
+      await navigator.share({
+        title: typeof document !== 'undefined' ? document.title : t('referral.title'),
+        text: shareContent,
+        url: shareLink
+      })
+      return
+    } catch (error) {
+      console.error('[referral details] navigator share failed:', error)
+    }
+  }
+
+  const copied = await copyTextWithFallback(shareContent)
+
+  globalShowToast({
+    message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
+    type: copied ? 'success' : 'fail'
+  })
+}
 /**
  * 处理关闭好友详情弹窗。
  */

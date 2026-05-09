@@ -133,6 +133,34 @@ export const buildReferralBannerSlidesFromApi = (result: unknown): ReferralBanne
 }
 
 /**
+ * 将接口返回的轮播图配置转换为邀请海报图片列表。
+ */
+export const buildReferralPosterImagesFromApi = (result: unknown): string[] => {
+  if (!Array.isArray(result)) {
+    return []
+  }
+
+  return result
+    .filter(item => {
+      const record = (item ?? {}) as Record<string, unknown>
+      return Number(record.deploymentPath) === 3 && Number(record.enable ?? 1) === 1
+    })
+    .map((item, index) => {
+      const record = (item ?? {}) as Record<string, unknown>
+      const image = toReferralAssetImageUrl(record.url)
+      const sort = Number(record.sortNum)
+
+      return {
+        image,
+        sort: Number.isFinite(sort) ? sort : index
+      }
+    })
+    .filter(item => Boolean(item.image))
+    .sort((left, right) => left.sort - right.sort)
+    .map(item => item.image)
+}
+
+/**
  * 生成推荐页顶部快捷入口数据。
  */
 export const createReferralQuickActions = (t: TranslateFn): ReferralQuickAction[] => [
