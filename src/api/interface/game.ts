@@ -114,6 +114,7 @@ export interface QueryGameItemPageResponse {
 
 export interface QueryGameDetailsParams {
   rowId: string | number
+  languageCode?: string
 }
 
 export interface GameDetailResponse {

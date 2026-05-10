@@ -36,7 +36,10 @@
 import Api from '@/api'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useLocaleStore } from '@/stores/locale'
+import { getLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
@@ -97,6 +100,8 @@ provide('game-detail-game-data', gameData)
 const { t } = useI18n()
 const isMobile = useIsMobile()
 const route = useRoute()
+const localeStore = useLocaleStore()
+const { currentLanguage } = storeToRefs(localeStore)
 const isGameDataLoading = ref(false)
 const currentGameDetailState = ref<CurrentGameDetail>(null)
 const detailPageRef = ref<HTMLElement | null>(null)
@@ -210,9 +215,13 @@ const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.val
 // ===== 数据请求 =====
 const fetchCurrentGameDetail = async () => {
   const targetRowId = rowId.value
+  const languageCode = getLanguageCode(currentLanguage.value)
 
   try {
-    const res = await Api.game.queryGameDetails({ rowId: targetRowId }, API_REQUEST_OPTIONS)
+    const res = await Api.game.queryGameDetails(
+      { rowId: targetRowId, languageCode },
+      API_REQUEST_OPTIONS
+    )
     const result = res?.result
     if (result && typeof result === 'object') {
       currentGameDetailState.value = result as CurrentGameDetail
@@ -249,15 +258,15 @@ const openCurrentCategoryAllGamesPage = () => {
 
 // ===== 监听与生命周期 =====
 watch(
-  rowId,
+  [rowId, currentLanguage],
   () => {
     void fetchCurrentGameDetail()
+    void fetchGameDataForApp()
   },
   { immediate: true, flush: 'post' }
 )
 
 onMounted(async () => {
-  await fetchGameDataForApp()
   await nextTick()
   hideParentScrollbar()
 })
