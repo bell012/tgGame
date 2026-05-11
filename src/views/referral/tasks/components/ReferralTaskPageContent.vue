@@ -18,53 +18,86 @@
 
       <!-- 可领取奖励卡片 -->
       <section
-        class="flex items-center justify-between rounded-[10px] bg-bg-2"
-        :class="props.mode === 'pc' ? 'rounded-[16px] px-5 py-5' : 'px-3.5 py-3.5'"
+        class="rounded-[10px] bg-bg-2"
+        :class="props.mode === 'pc' ? 'h-[96px] rounded-[16px] p-[24px]' : 'px-3.5 py-3.5'"
       >
-        <!-- 可领取奖励左侧 -->
-        <div class="flex min-w-0 items-center" :class="props.mode === 'pc' ? 'gap-4' : 'gap-2.5'">
-          <!-- 可领取奖励图标 -->
-          <img
-            :src="props.coinImage"
-            :alt="props.rewardsToClaimLabel"
-            :class="
-              props.mode === 'pc' ? 'h-[56px] w-[56px] object-contain' : 'h-10 w-10 object-contain'
-            "
-          />
+        <template v-if="props.mode === 'pc'">
+          <!-- 可领取奖励卡片内容 -->
+          <div class="flex h-[48px] w-full items-start gap-[36px] self-stretch">
+            <!-- 左侧奖励信息区域 -->
+            <div class="flex h-[48px] min-w-0 flex-1 items-center gap-[16px]">
+              <!-- 标题区域 -->
+              <div class="flex h-[20px] shrink-0 items-center gap-[8px]">
+                <!-- 可领取奖励图标 -->
+                <img
+                  :src="props.coinImage"
+                  :alt="props.rewardsToClaimLabel"
+                  class="h-[20px] w-[20px] shrink-0 object-contain"
+                />
 
-          <!-- 可领取奖励文案 -->
-          <div class="flex min-w-0 flex-col" :class="props.mode === 'pc' ? 'gap-2' : 'gap-1.5'">
-            <!-- 可领取奖励标题 -->
-            <p
-              class="font-[400] text-text-1"
-              :class="props.mode === 'pc' ? 'text-base leading-[20px]' : 'text-xs leading-[15px]'"
-            >
-              {{ props.rewardsToClaimLabel }}
-            </p>
+                <!-- 可领取奖励标题 -->
+                <p
+                  class="flex h-[19px] items-center text-[16px] font-[700] leading-[19px] text-text-1"
+                >
+                  {{ `${props.rewardsToClaimLabel}：` }}
+                </p>
+              </div>
 
-            <!-- 可领取奖励金额 -->
-            <span
-              class="font-[700] text-text-1"
-              :class="props.mode === 'pc' ? 'text-[24px] leading-[29px]' : 'text-lg leading-[22px]'"
+              <!-- 可领取奖励金额 -->
+              <span
+                class="flex h-[48px] min-w-0 items-center text-[40px] font-[700] leading-[48px] text-theme-primary"
+              >
+                {{ props.rewardsToClaimAmount }}
+              </span>
+            </div>
+
+            <!-- 可领取奖励按钮 -->
+            <button
+              type="button"
+              class="flex h-[48px] w-[280px] shrink-0 items-center justify-center gap-[10px] rounded-[8px] bg-theme-primary p-[8px] text-[14px] font-[700] leading-[17px] text-text-4"
+              @click="$emit('claim')"
             >
-              {{ props.rewardsToClaimAmount }}
-            </span>
+              {{ props.claimText }}
+            </button>
           </div>
-        </div>
+        </template>
 
-        <!-- 可领取奖励按钮 -->
-        <button
-          type="button"
-          class="flex shrink-0 items-center justify-center rounded-[10px] font-[700] text-text-4"
-          :class="
-            props.mode === 'pc'
-              ? 'h-[44px] w-[120px] bg-theme-2 text-base'
-              : 'h-[35px] w-[94px] bg-theme-2 text-sm'
-          "
-          @click="$emit('claim')"
-        >
-          {{ props.claimText }}
-        </button>
+        <template v-else>
+          <!-- 可领取奖励移动端布局 -->
+          <div class="flex items-center justify-between">
+            <!-- 可领取奖励左侧 -->
+            <div class="flex min-w-0 items-center gap-2.5">
+              <!-- 可领取奖励图标 -->
+              <img
+                :src="props.coinImage"
+                :alt="props.rewardsToClaimLabel"
+                class="h-10 w-10 object-contain"
+              />
+
+              <!-- 可领取奖励文案 -->
+              <div class="flex min-w-0 flex-col gap-1.5">
+                <!-- 可领取奖励标题 -->
+                <p class="text-xs font-[400] leading-[15px] text-text-1">
+                  {{ props.rewardsToClaimLabel }}
+                </p>
+
+                <!-- 可领取奖励金额 -->
+                <span class="text-lg font-[700] leading-[22px] text-text-1">
+                  {{ props.rewardsToClaimAmount }}
+                </span>
+              </div>
+            </div>
+
+            <!-- 可领取奖励按钮 -->
+            <button
+              type="button"
+              class="flex h-[35px] w-[94px] shrink-0 items-center justify-center rounded-[10px] bg-theme-2 text-sm font-[700] text-text-4"
+              @click="$emit('claim')"
+            >
+              {{ props.claimText }}
+            </button>
+          </div>
+        </template>
       </section>
 
       <!-- 任务标签区域 -->

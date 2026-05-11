@@ -1,11 +1,11 @@
 import type {
   AgentApiResponse,
   QueryEstimatedCommissionResponse,
-  QueryReferralTaskProgressResponse,
   QueryReferralDetailsChartStatsResponse,
   QueryReferralDetailsClaimHistoryResponse,
   QueryReferralDetailsRewardHistoryResponse,
   QueryReferralDetailsTopUpStatsResponse,
+  QueryReferralTaskProgressResponse,
   QueryTaskRewardConfigResponse
 } from '@/api/interface/agent'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
