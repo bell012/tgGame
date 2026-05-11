@@ -5,7 +5,7 @@
       :class="
         isMobile
           ? 'mx-auto w-[328px] rounded-[18px] px-5 pb-5 pt-4 shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
-          : 'mx-auto w-[346px] rounded-[18px] px-5 pb-5 pt-4 shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
+          : 'mx-auto flex h-[225px] w-[492px] flex-col rounded-[18px] px-[32px] pb-[28px] pt-[24px] shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
       "
     >
       <div class="relative">
@@ -21,7 +21,7 @@
         </button>
       </div>
 
-      <p class="mt-5 text-[14px] leading-[22px] text-text-2">
+      <p class="text-[14px] leading-[22px] text-text-2" :class="isMobile ? 'mt-5' : 'mt-[28px]'">
         {{ message }}
       </p>
 
@@ -42,17 +42,17 @@
         </button>
       </div>
 
-      <div v-else class="mt-5 grid grid-cols-2 gap-4">
+      <div v-else class="mt-auto grid grid-cols-2 gap-[22px]">
         <button
           type="button"
-          class="h-[36px] rounded-[8px] bg-bg-3 text-[14px] font-[600] text-text-2"
+          class="h-[42px] rounded-[8px] bg-bg-3 text-[14px] font-[600] text-text-2"
           @click="visible = false"
         >
           {{ t('common.cancel') }}
         </button>
         <button
           type="button"
-          class="h-[36px] rounded-[8px] bg-theme-primary text-[14px] font-[700] text-text-4"
+          class="h-[42px] rounded-[8px] bg-theme-primary text-[14px] font-[700] text-text-4"
           @click="visible = false"
         >
           {{ t('common.confirm') }}

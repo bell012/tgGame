@@ -17,13 +17,13 @@
     <div class="stats-divider flex-1 flex mt-[12px] pb-[6px] text-[13px]">
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
         <div class="stats-label text-[var(--color-text-level-2)]">{{ t('gameDetail.maxWin') }}</div>
-        <div class="stats-value text-[var(--color-theme-level-1)]">-</div>
+        <div class="stats-value text-[var(--color-theme-level-1)]">{{ maxWinText }}</div>
       </div>
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
         <div class="stats-label text-[var(--color-text-level-2)]">
           {{ t('gameDetail.stakesRange') }}
         </div>
-        <div class="stats-value text-[var(--color-text-level-1)]">-</div>
+        <div class="stats-value text-[var(--color-text-level-1)]">{{ stakesRangeText }}</div>
       </div>
     </div>
   </div>
@@ -36,6 +36,8 @@ type CurrentGameDetail =
   | ({
       rtpMax?: string | number | null
       rtpMin?: string | number | null
+      maxWinMax?: string | number | null
+      maxWinMin?: string | number | null
     } & Record<string, unknown>)
   | null
 
@@ -75,6 +77,46 @@ watch(
 
 const formatPercent = (value: number) => `${value.toFixed(2)}%`
 
+const parseDisplayValue = (value: unknown) => {
+  const text = String(value ?? '').trim()
+  return text.length > 0 ? text : null
+}
+
+const formatNumberText = (value: unknown) => {
+  const text = parseDisplayValue(value)
+  if (!text) {
+    return null
+  }
+
+  const normalizedText = text.replace(/,/g, '')
+  const numericValue = Number(normalizedText)
+  if (!Number.isFinite(numericValue)) {
+    return text
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 8
+  }).format(numericValue)
+}
+
+const formatMultiplierText = (value: unknown) => {
+  const text = formatNumberText(value)
+  if (!text) {
+    return '-'
+  }
+
+  return /x$/i.test(text) ? text : `${text}x`
+}
+
+const formatStakeText = (value: unknown) => {
+  const text = formatNumberText(value)
+  if (!text) {
+    return null
+  }
+
+  return text.startsWith('$') ? text : `$${text}`
+}
+
 const rtpText = computed(() => {
   if (randomRtpValue.value === null) {
     return '-'
@@ -87,6 +129,19 @@ const houseEdgeText = computed(() => {
     return '-'
   }
   return formatPercent(100 - randomRtpValue.value)
+})
+
+const maxWinText = computed(() => formatMultiplierText(currentGameDetail.value?.maxWinMax))
+
+const stakesRangeText = computed(() => {
+  const minText = formatStakeText(currentGameDetail.value?.maxWinMin)
+  const maxText = formatStakeText(currentGameDetail.value?.maxWinMax)
+
+  if (!minText || !maxText) {
+    return '-'
+  }
+
+  return `${minText} to ${maxText}`
 })
 </script>
 <style lang="scss" scoped>

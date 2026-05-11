@@ -50,6 +50,8 @@ export interface GameDataItem {
   initScoreStar?: number
   itemCode?: string
   itemName?: string
+  maxWinMax?: string | number | null
+  maxWinMin?: string | number | null
   orderId?: number
   platformCode?: string
   platformName?: string
