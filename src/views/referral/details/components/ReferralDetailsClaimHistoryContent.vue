@@ -58,7 +58,7 @@
         />
       </div>
 
-      <section class="flex h-[70px] items-center rounded-[12px] bg-[#323738] px-[24px]">
+      <section class="flex h-[70px] items-center rounded-[12px] bg-bg-2 px-[24px]">
         <div class="flex w-full items-start justify-between py-[24px]">
           <span class="text-[14px] font-[400] leading-[20px] text-text-2">
             {{ props.totalCommissionLabel }}
@@ -70,7 +70,7 @@
               :alt="props.currencyCode"
               class="h-[20px] w-[20px] rounded-full object-cover"
             />
-            <span class="text-[18px] font-[700] leading-[22px] text-white">
+            <span class="text-[18px] font-[700] leading-[22px] text-text-1">
               {{ props.totalCommission }}
             </span>
           </div>

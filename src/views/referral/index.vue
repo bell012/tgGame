@@ -35,6 +35,22 @@
           :invite-reward-suffix="t('referral.h5.inviteRewardSuffix')"
           :invite-reward-amount="inviteRewardAmount"
           :task-details-text="t('referral.h5.taskDetails')"
+          :commission-boost-loading="commissionBoostLoading"
+          :show-commission-boost="shouldShowCommissionBoost"
+          :active-commission-boost-week-tab="activeCommissionBoostWeekTab"
+          :commission-boost-estimated-commission="commissionBoostViewData.estimatedCommissionText"
+          :commission-boost-friends-delta="commissionBoostViewData.friendsDeltaText"
+          :commission-boost-current-level-rate="commissionBoostViewData.currentLevelRateText"
+          :commission-boost-active-friends="commissionBoostViewData.activeFriendsText"
+          :commission-boost-progress-percent="commissionBoostViewData.progressPercent"
+          :commission-boost-levels="commissionBoostViewData.levels"
+          :this-week-text="t('referral.commissionBoost.thisWeek')"
+          :last-week-text="t('referral.commissionBoost.lastWeek')"
+          :friends-text="t('referral.commissionBoost.friends')"
+          :current-level-text="t('referral.commissionBoost.currentLevel')"
+          :active-friends-text="t('referral.commissionBoost.activeFriends')"
+          :data-updates-every-hour-text="t('referral.commissionBoost.dataUpdatesEveryHour')"
+          :rules-text="t('referral.commissionBoost.rules')"
           @quick-action="handleQuickActionClick"
           @share-channel="handleShareChannel"
           @share-guide="handleShareGuideClick"
@@ -42,6 +58,8 @@
           @claim="handleClaimClick"
           @task-details="handleTaskDetailsClick"
           @banner-click="handleBannerClick"
+          @change-commission-boost-week-tab="handleChangeCommissionBoostWeekTab"
+          @open-rules="handleOpenRules"
         />
       </div>
     </div>
@@ -67,6 +85,22 @@
         :invite-reward-suffix="t('referral.h5.inviteRewardSuffix')"
         :invite-reward-amount="inviteRewardAmount"
         :task-details-text="t('referral.h5.taskDetails')"
+        :commission-boost-loading="commissionBoostLoading"
+        :show-commission-boost="shouldShowCommissionBoost"
+        :active-commission-boost-week-tab="activeCommissionBoostWeekTab"
+        :commission-boost-estimated-commission="commissionBoostViewData.estimatedCommissionText"
+        :commission-boost-friends-delta="commissionBoostViewData.friendsDeltaText"
+        :commission-boost-current-level-rate="commissionBoostViewData.currentLevelRateText"
+        :commission-boost-active-friends="commissionBoostViewData.activeFriendsText"
+        :commission-boost-progress-percent="commissionBoostViewData.progressPercent"
+        :commission-boost-levels="commissionBoostViewData.levels"
+        :this-week-text="t('referral.commissionBoost.thisWeek')"
+        :last-week-text="t('referral.commissionBoost.lastWeek')"
+        :friends-text="t('referral.commissionBoost.friends')"
+        :current-level-text="t('referral.commissionBoost.currentLevel')"
+        :active-friends-text="t('referral.commissionBoost.activeFriends')"
+        :data-updates-every-hour-text="t('referral.commissionBoost.dataUpdatesEveryHour')"
+        :rules-text="t('referral.commissionBoost.rules')"
         @quick-action="handleQuickActionClick"
         @share-channel="handleShareChannel"
         @share-guide="handleShareGuideClick"
@@ -74,6 +108,8 @@
         @claim="handleClaimClick"
         @task-details="handleTaskDetailsClick"
         @banner-click="handleBannerClick"
+        @change-commission-boost-week-tab="handleChangeCommissionBoostWeekTab"
+        @open-rules="handleOpenRules"
       />
     </div>
 
@@ -109,6 +145,10 @@
 
 <script setup lang="ts">
 import Api from '@/api'
+import type {
+  QueryReferralTaskProgressResult,
+  QueryTaskRewardConfigResult
+} from '@/api/interface/agent'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
@@ -133,15 +173,20 @@ import {
   buildReferralBannerRequestKey,
   buildReferralBannerSlidesFromApi,
   buildReferralPosterImagesFromApi,
+  buildReferralTaskWeekRanges,
   buildReferralShareMessage,
   buildReferralSocialChannelsFromApi,
+  createReferralCommissionBoostViewData,
   createReferralMarqueeMessages,
   createReferralMessagePresets,
   createReferralQuickActions,
   getCachedReferralBannerPayload,
   getDefaultReferralLink,
   getReferralCommissionCoinImage,
+  getReferralInviteTaskReward,
+  hasReferralTaskProgressData,
   resolveReferralBannerPayload,
+  type ReferralCommissionBoostWeekTabKey,
   type ReferralBannerSlide,
   type ReferralQuickActionId,
   type ReferralSocialChannel
@@ -154,8 +199,6 @@ const userStore = useUserStore()
 const isMobile = useIsMobile()
 const isReady = ref(false)
 const estimatedCommissionAmount = ref('0.00')
-const inviteRewardCount = '1'
-const inviteRewardAmount = '36'
 const referralLink = getDefaultReferralLink()
 const socialChannelsLoading = ref(true)
 const apiSocialChannels = ref<ReferralSocialChannel[]>([])
@@ -167,6 +210,11 @@ const showInvitePosterPopup = ref(false)
 const claimingCommission = ref(false)
 const currentShareChannel = ref<ReferralSocialChannel | null>(null)
 const customReferralMessage = ref('')
+const taskRewardConfigResult = ref<QueryTaskRewardConfigResult | null>(null)
+const thisWeekTaskProgress = ref<QueryReferralTaskProgressResult | null>(null)
+const lastWeekTaskProgress = ref<QueryReferralTaskProgressResult | null>(null)
+const activeCommissionBoostWeekTab = ref<ReferralCommissionBoostWeekTabKey>('thisWeek')
+const commissionBoostLoading = ref(true)
 let referralBannerRequestToken = 0
 
 const quickActions = computed(() => createReferralQuickActions(t))
@@ -180,6 +228,26 @@ const socialChannels = computed(() => apiSocialChannels.value)
 const commissionCoinImage = getReferralCommissionCoinImage()
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
 const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.rowId) || '-')
+const inviteTaskReward = computed(() => getReferralInviteTaskReward(taskRewardConfigResult.value))
+const inviteRewardCount = computed(() => inviteTaskReward.value.count)
+const inviteRewardAmount = computed(() => inviteTaskReward.value.amount)
+const shouldShowCommissionBoost = computed(
+  () =>
+    hasReferralTaskProgressData(thisWeekTaskProgress.value) ||
+    hasReferralTaskProgressData(lastWeekTaskProgress.value)
+)
+const activeTaskProgress = computed(() =>
+  activeCommissionBoostWeekTab.value === 'thisWeek'
+    ? thisWeekTaskProgress.value
+    : lastWeekTaskProgress.value
+)
+const commissionBoostViewData = computed(() =>
+  createReferralCommissionBoostViewData(
+    t,
+    taskRewardConfigResult.value?.config?.commissionList,
+    activeTaskProgress.value
+  )
+)
 
 /**
  * 处理页面初始化完成状态，避免首屏端态抖动。
@@ -193,6 +261,7 @@ watch(
   () => {
     void fetchSocialChannels()
     void fetchEstimatedCommission()
+    void fetchReferralTaskModuleData()
   },
   {
     immediate: true
@@ -379,6 +448,20 @@ const handleTaskDetailsClick = () => {
 }
 
 /**
+ * 处理切换佣金加码周维度标签。
+ */
+const handleChangeCommissionBoostWeekTab = (value: ReferralCommissionBoostWeekTabKey) => {
+  activeCommissionBoostWeekTab.value = value
+}
+
+/**
+ * 处理打开佣金规则页。
+ */
+const handleOpenRules = () => {
+  navigateTo('/referral/rules')
+}
+
+/**
  * 处理推荐页横幅点击跳转。
  */
 const handleBannerClick = async (slide: ReferralBannerSlide) => {
@@ -422,6 +505,77 @@ async function fetchSocialChannels() {
     console.error(error)
   } finally {
     socialChannelsLoading.value = false
+  }
+}
+
+/**
+ * 处理获取首页任务配置与周任务进度。
+ */
+async function fetchReferralTaskModuleData() {
+  commissionBoostLoading.value = true
+  activeCommissionBoostWeekTab.value = 'thisWeek'
+  const weekRanges = buildReferralTaskWeekRanges()
+
+  try {
+    const [taskConfigResponse, thisWeekProgressResponse, lastWeekProgressResponse] =
+      await Promise.allSettled([
+        Api.agent.queryTaskRewardConfig({
+          channelId: currentAgentChannelId.value
+        }),
+        Api.agent.queryReferralTaskProgress(weekRanges.thisWeek, {
+          channelId: currentAgentChannelId.value
+        }),
+        Api.agent.queryReferralTaskProgress(weekRanges.lastWeek, {
+          channelId: currentAgentChannelId.value
+        })
+      ])
+
+    if (taskConfigResponse.status === 'fulfilled') {
+      try {
+        taskRewardConfigResult.value =
+          ensureApiBusinessSuccess(taskConfigResponse.value).result ?? null
+      } catch (error) {
+        console.error('[referral] fetch task reward config failed:', error)
+        taskRewardConfigResult.value = null
+      }
+    } else {
+      console.error('[referral] fetch task reward config failed:', taskConfigResponse.reason)
+      taskRewardConfigResult.value = null
+    }
+
+    if (thisWeekProgressResponse.status === 'fulfilled') {
+      try {
+        thisWeekTaskProgress.value =
+          ensureApiBusinessSuccess(thisWeekProgressResponse.value).result ?? null
+      } catch (error) {
+        console.error('[referral] fetch this week task progress failed:', error)
+        thisWeekTaskProgress.value = null
+      }
+    } else {
+      console.error(
+        '[referral] fetch this week task progress failed:',
+        thisWeekProgressResponse.reason
+      )
+      thisWeekTaskProgress.value = null
+    }
+
+    if (lastWeekProgressResponse.status === 'fulfilled') {
+      try {
+        lastWeekTaskProgress.value =
+          ensureApiBusinessSuccess(lastWeekProgressResponse.value).result ?? null
+      } catch (error) {
+        console.error('[referral] fetch last week task progress failed:', error)
+        lastWeekTaskProgress.value = null
+      }
+    } else {
+      console.error(
+        '[referral] fetch last week task progress failed:',
+        lastWeekProgressResponse.reason
+      )
+      lastWeekTaskProgress.value = null
+    }
+  } finally {
+    commissionBoostLoading.value = false
   }
 }
 

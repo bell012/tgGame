@@ -1,8 +1,14 @@
+import type {
+  QueryReferralTaskProgressResult,
+  QueryTaskRewardCommissionItem,
+  QueryTaskRewardConfigResult
+} from '@/api/interface/agent'
 import quickDetailsIcon from '@/static/img/referral/quick-action-details.png'
 import quickGuideIcon from '@/static/img/referral/quick-action-guide.png'
 import quickRulesIcon from '@/static/img/referral/quick-action-rules.png'
 import quickTaskIcon from '@/static/img/referral/quick-action-task.png'
 import commissionCoinIcon from '@/static/img/referral/referral-coin.png'
+import { formatBalance } from '@/utils/locale'
 
 type TranslateFn = (key: string, named?: Record<string, unknown>) => string
 
@@ -34,8 +40,8 @@ export interface ReferralSocialChannel {
 
 export interface ReferralBannerSlide {
   rowId: number
-  image: string
-  sort: number
+  url: string
+  sortNum: number
   jumpType: number
   linkType: number
   linkUrl: string
@@ -44,6 +50,28 @@ export interface ReferralBannerSlide {
 export interface ReferralBannerPayload {
   bannerSlides: ReferralBannerSlide[]
   posterImages: string[]
+}
+
+export type ReferralCommissionBoostWeekTabKey = 'thisWeek' | 'lastWeek'
+
+export interface ReferralCommissionBoostLevelView {
+  id: string
+  rateText: string
+  activeFriendsText: string
+}
+
+export interface ReferralCommissionBoostViewData {
+  estimatedCommissionText: string
+  friendsDeltaText: string
+  currentLevelRateText: string
+  activeFriendsText: string
+  progressPercent: number
+  levels: ReferralCommissionBoostLevelView[]
+}
+
+export interface ReferralWeekRange {
+  startTime: number
+  endTime: number
 }
 
 const referralBannerPayloadCache = new Map<string, ReferralBannerPayload>()
@@ -110,6 +138,7 @@ export const buildReferralSocialChannelsFromApi = (result: unknown): ReferralSoc
 
 /**
  * 将接口返回的轮播图配置转换为推荐页横幅轮播数据。
+ * 保留后台原始 key，仅对值做规范化处理。
  */
 export const buildReferralBannerSlidesFromApi = (result: unknown): ReferralBannerSlide[] => {
   if (!Array.isArray(result)) {
@@ -123,21 +152,21 @@ export const buildReferralBannerSlidesFromApi = (result: unknown): ReferralBanne
     })
     .map((item, index) => {
       const record = (item ?? {}) as Record<string, unknown>
-      const image = toReferralAssetImageUrl(record.url)
+      const url = toReferralAssetImageUrl(record.url)
       const rowId = Number(record.rowId)
-      const sort = Number(record.sortNum)
+      const sortNum = Number(record.sortNum)
 
       return {
         rowId: Number.isFinite(rowId) ? rowId : index,
-        image,
-        sort: Number.isFinite(sort) ? sort : index,
+        url,
+        sortNum: Number.isFinite(sortNum) ? sortNum : index,
         jumpType: Number(record.jumpType) || 0,
         linkType: Number(record.linkType) || 0,
         linkUrl: String(record.linkUrl ?? '').trim()
       }
     })
-    .filter(item => Boolean(item.image))
-    .sort((left, right) => left.sort - right.sort)
+    .filter(item => Boolean(item.url))
+    .sort((left, right) => left.sortNum - right.sortNum)
 }
 
 /**
@@ -198,6 +227,139 @@ export const createReferralQuickActions = (t: TranslateFn): ReferralQuickAction[
  * 返回佣金图标资源。
  */
 export const getReferralCommissionCoinImage = () => commissionCoinIcon
+
+/**
+ * 返回邀请任务卡片的首档奖励人数与金额。
+ */
+export const getReferralInviteTaskReward = (result?: QueryTaskRewardConfigResult | null) => {
+  const firstFriendReward = result?.config?.friendList?.[0]
+
+  return {
+    count: String(firstFriendReward?.min ?? '0'),
+    amount: String(firstFriendReward?.reward ?? '0')
+  }
+}
+
+/**
+ * 判断任务进度数据是否存在有效值。
+ */
+export const hasReferralTaskProgressData = (result?: QueryReferralTaskProgressResult | null) => {
+  if (!result) {
+    return false
+  }
+
+  return [
+    result.activeSubNum,
+    result.newSub,
+    result.rechargeSubNum,
+    result.subBet,
+    result.subNum,
+    result.subRecharge
+  ].some(value => Number(value ?? 0) > 0)
+}
+
+/**
+ * 构建推荐页本周与上周的查询区间。
+ */
+export const buildReferralTaskWeekRanges = (now = new Date()) => {
+  const currentDate = new Date(now)
+  const currentDay = currentDate.getDay()
+  const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay
+  const thisWeekStart = new Date(currentDate)
+  thisWeekStart.setDate(currentDate.getDate() + mondayOffset)
+  thisWeekStart.setHours(0, 0, 0, 0)
+
+  const todayEnd = new Date(currentDate)
+  todayEnd.setHours(23, 59, 59, 999)
+
+  const lastWeekStart = new Date(thisWeekStart)
+  lastWeekStart.setDate(thisWeekStart.getDate() - 7)
+
+  const lastWeekEnd = new Date(thisWeekStart)
+  lastWeekEnd.setMilliseconds(-1)
+
+  return {
+    thisWeek: {
+      startTime: thisWeekStart.getTime(),
+      endTime: todayEnd.getTime()
+    },
+    lastWeek: {
+      startTime: lastWeekStart.getTime(),
+      endTime: lastWeekEnd.getTime()
+    }
+  } satisfies Record<ReferralCommissionBoostWeekTabKey, ReferralWeekRange>
+}
+
+/**
+ * 将佣金等级配置转换为佣金加码卡片展示数据。
+ */
+export const createReferralCommissionBoostViewData = (
+  t: TranslateFn,
+  commissionList: QueryTaskRewardCommissionItem[] | undefined,
+  progressResult?: QueryReferralTaskProgressResult | null
+): ReferralCommissionBoostViewData => {
+  const normalizedCommissionLevels = (commissionList ?? [])
+    .map((item, index) => ({
+      id: String(item.id ?? `commission-level-${index}`),
+      people: Number(item.people ?? 0),
+      rate: Number(item.rate ?? 0),
+      dayTeamBet: Number(item.dayTeamBet ?? 0)
+    }))
+    .filter(item => Number.isFinite(item.people) && Number.isFinite(item.rate))
+    .sort((left, right) => left.people - right.people)
+
+  const activeFriends = Number(progressResult?.activeSubNum ?? 0)
+  const validBets = Number(progressResult?.subBet ?? 0)
+  const newFriends = Number(progressResult?.newSub ?? 0)
+  const formatCommissionRateText = (rate: number) => `${String(rate)}%`
+
+  const currentLevel =
+    normalizedCommissionLevels.reduce<(typeof normalizedCommissionLevels)[number] | null>(
+      (matchedLevel, level) => {
+        if (activeFriends >= level.people && validBets >= level.dayTeamBet) {
+          return level
+        }
+
+        return matchedLevel
+      },
+      null
+    ) ?? null
+
+  const currentRate = currentLevel?.rate ?? 0
+  const nextLevel =
+    normalizedCommissionLevels.find(
+      level => activeFriends < level.people || validBets < level.dayTeamBet
+    ) ?? null
+
+  const estimatedCommission = validBets * (currentRate / 100)
+  const nextPeopleTarget = Number(nextLevel?.people ?? 0)
+  const progressPercent =
+    nextPeopleTarget > 0
+      ? Math.max(0, Math.min(100, (activeFriends / nextPeopleTarget) * 100))
+      : normalizedCommissionLevels.length > 0
+        ? 100
+        : 0
+
+  return {
+    estimatedCommissionText: formatBalance(estimatedCommission, 2),
+    friendsDeltaText: `+${Math.max(0, newFriends)}`,
+    currentLevelRateText: formatCommissionRateText(currentRate),
+    activeFriendsText: formatBalance(activeFriends, 0),
+    progressPercent,
+    levels: normalizedCommissionLevels.map(level => ({
+      id: level.id,
+      rateText: formatCommissionRateText(level.rate),
+      activeFriendsText:
+        level.people === 1
+          ? t('referral.commissionBoost.activeFriendSingular', {
+              count: formatBalance(level.people, 0)
+            })
+          : t('referral.commissionBoost.activeFriendPlural', {
+              count: formatBalance(level.people, 0)
+            })
+    }))
+  }
+}
 
 /**
  * 生成推荐页榜单祝贺文案。

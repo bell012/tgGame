@@ -1,6 +1,7 @@
 import type {
   AgentApiResponse,
   QueryEstimatedCommissionResponse,
+  QueryReferralTaskProgressResponse,
   QueryReferralDetailsChartStatsResponse,
   QueryReferralDetailsClaimHistoryResponse,
   QueryReferralDetailsRewardHistoryResponse,
@@ -65,6 +66,12 @@ export const queryShareChannels = (
 export const queryTaskRewardConfig = (
   options?: AgentRequestOptions
 ): Promise<QueryTaskRewardConfigResponse> => callAgentAction('agent57', undefined, options)
+
+// agent87：查询一级代理任务进度。
+export const queryReferralTaskProgress = (
+  param: Record<string, unknown>,
+  options?: AgentRequestOptions
+): Promise<QueryReferralTaskProgressResponse> => callAgentAction('agent87', param, options)
 
 // agent66：查询号码池与 WhatsApp/SMS 配置。
 export const queryNumberPool = (options?: AgentRequestOptions): Promise<AgentApiResponse> =>

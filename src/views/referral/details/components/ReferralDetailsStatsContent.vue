@@ -173,7 +173,7 @@
         <!-- 充值统计汇总卡片 -->
         <section
           class="overflow-hidden"
-          :class="props.isMobile ? 'rounded-[10px] bg-bg-3' : 'rounded-[16px] bg-[#2D3131]'"
+          :class="props.isMobile ? 'rounded-[10px] bg-bg-3' : 'rounded-[16px] bg-bg-3'"
         >
           <!-- 汇总列表 -->
           <div
@@ -203,7 +203,7 @@
                 :class="
                   props.isMobile
                     ? 'text-[11px] leading-[13px] text-text-3'
-                    : 'px-[10px] text-[14px] leading-[20px] text-[#7B7D7D]'
+                    : 'px-[10px] text-[14px] leading-[20px] text-text-3'
                 "
               >
                 {{ item.label }}
@@ -221,7 +221,7 @@
         <!-- 充值统计表格 -->
         <section
           class="overflow-hidden"
-          :class="props.isMobile ? 'rounded-[10px] bg-bg-3' : 'rounded-[16px] bg-[#2D3131]'"
+          :class="props.isMobile ? 'rounded-[10px] bg-bg-3' : 'rounded-[16px] bg-bg-3'"
         >
           <!-- 表格行列表 -->
           <div>

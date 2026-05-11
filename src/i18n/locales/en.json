@@ -362,6 +362,17 @@
       "copyMessageSuccess": "Referral message copied",
       "shareGuideHint": "Invite friends through social platforms or by copying the referral message."
     },
+    "commissionBoost": {
+      "thisWeek": "This Week",
+      "lastWeek": "Last Week",
+      "friends": "Friends",
+      "currentLevel": "Current Level:",
+      "activeFriends": "Active Friends:",
+      "activeFriendSingular": "{count} Active Friend",
+      "activeFriendPlural": "{count} Active Friends",
+      "dataUpdatesEveryHour": "Data updates every hour",
+      "rules": "Rules"
+    },
     "taskPage": {
       "title": "Task",
       "resetHint": {

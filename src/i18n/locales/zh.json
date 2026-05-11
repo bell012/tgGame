@@ -643,6 +643,17 @@
       "copyMessageSuccess": "推荐文案已复制",
       "shareGuideHint": "可通过社交平台或复制推荐文案邀请好友。"
     },
+    "commissionBoost": {
+      "thisWeek": "本周",
+      "lastWeek": "上周",
+      "friends": "好友",
+      "currentLevel": "当前等级:",
+      "activeFriends": "有效好友:",
+      "activeFriendSingular": "{count} 位有效好友",
+      "activeFriendPlural": "{count} 位有效好友",
+      "dataUpdatesEveryHour": "数据每小时更新一次",
+      "rules": "规则"
+    },
     "taskPage": {
       "title": "任务",
       "resetHint": {

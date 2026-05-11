@@ -116,7 +116,7 @@
                 :alt="props.currencyCode"
                 class="h-[20px] w-[20px] rounded-full object-cover"
               />
-              <span class="text-[18px] font-[700] leading-[22px] text-white">
+              <span class="text-[18px] font-[700] leading-[22px] text-text-1">
                 {{ props.totalCommission }}
               </span>
             </div>
@@ -126,7 +126,7 @@
 
       <section
         v-if="props.rewardHistoryRows.length > 0"
-        class="overflow-hidden rounded-[16px] bg-[#282C2D]"
+        class="overflow-hidden rounded-[16px] bg-bg-3"
       >
         <div class="grid h-[48px] grid-cols-2 items-center">
           <div
@@ -147,16 +147,16 @@
             v-for="(row, index) in props.rewardHistoryRows"
             :key="row.id"
             class="grid min-h-[48px] grid-cols-2 items-center"
-            :class="index % 2 === 0 ? 'h-[50px] bg-white/[0.06]' : 'h-[48px] bg-transparent'"
+            :class="index % 2 === 0 ? 'h-[50px] bg-opacity-5' : 'h-[48px] bg-transparent'"
           >
             <div
-              class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-white"
+              class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-1"
             >
               {{ row.time }}
             </div>
 
             <div
-              class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-white"
+              class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-1"
             >
               {{ row.commission }}
             </div>
@@ -166,7 +166,7 @@
 
       <section
         v-else
-        class="flex min-h-[420px] flex-col items-center justify-center rounded-[16px] bg-[#282C2D]"
+        class="flex min-h-[420px] flex-col items-center justify-center rounded-[16px] bg-bg-3"
       >
         <ThemedEmptyState
           :dark-image="props.emptyDarkImage"

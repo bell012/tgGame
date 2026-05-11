@@ -25,7 +25,7 @@
                   ? 'h-[31px] shrink-0 rounded-full border border-theme-primary bg-theme-3 px-[20px] text-[12px] font-[700] leading-[15px] text-common-100'
                   : 'h-[31px] shrink-0 rounded-full bg-bg-2 px-[20px] text-[12px] font-[500] leading-[15px] text-text-2'
                 : props.activeTab === item.value
-                  ? 'h-[40px] flex-1 rounded-[8px] bg-[#3B4142] text-[14px] font-[700] leading-[17px] text-white'
+                  ? 'h-[40px] flex-1 rounded-[8px] bg-bg-3 text-[14px] font-[700] leading-[17px] text-text-1'
                   : 'h-[40px] flex-1 rounded-[8px] text-[14px] font-[700] leading-[17px] text-text-2'
             "
             @click="$emit('change-tab', item.value)"
@@ -306,12 +306,12 @@
                       "
                     >
                       <div
-                        class="min-w-[80px] text-center text-[18px] font-[700] leading-[22px] text-white"
+                        class="min-w-[80px] text-center text-[18px] font-[700] leading-[22px] text-text-1"
                       >
                         {{ item.value }}
                       </div>
 
-                      <div class="text-center text-[14px] font-[400] leading-[20px] text-[#7B7D7D]">
+                      <div class="text-center text-[14px] font-[400] leading-[20px] text-text-3">
                         {{ item.label }}
                       </div>
                     </div>
@@ -327,7 +327,7 @@
                   class="relative flex h-[112px] overflow-hidden rounded-[16px] bg-bg-2"
                 >
                   <div
-                    class="absolute left-0 top-0 z-[1] flex h-[23px] min-w-[80px] items-center justify-center rounded-br-[16px] bg-white/[0.06] px-[16px] text-[12px] font-[400] leading-[15px]"
+                    class="absolute left-0 top-0 z-[1] flex h-[23px] min-w-[80px] items-center justify-center rounded-br-[16px] bg-opacity-5 px-[16px] text-[12px] font-[400] leading-[15px]"
                     :class="item.status === 'active' ? 'text-theme-primary' : 'text-text-2'"
                   >
                     {{ item.statusText }}
@@ -337,7 +337,7 @@
                     class="flex h-full w-full items-center gap-[20px] px-[24px] pt-[28px] pb-[20px] pr-[20px]"
                   >
                     <div
-                      class="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full bg-white/[0.15]"
+                      class="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full bg-opacity-15"
                     >
                       <img
                         class="h-[54px] w-[54px] rounded-full object-cover"
@@ -350,7 +350,7 @@
                       <div class="flex items-start gap-[12px]">
                         <div class="flex min-w-0 flex-1 items-center gap-[5.83px]">
                           <div
-                            class="max-w-[120px] truncate text-[20px] font-[700] leading-[24px] text-white"
+                            class="max-w-[120px] truncate text-[20px] font-[700] leading-[24px] text-text-1"
                           >
                             {{ item.id }}
                           </div>
@@ -372,7 +372,7 @@
                           <span class="text-[16px] font-[400] leading-[19px] text-text-2">
                             {{ props.depositLabel }}
                           </span>
-                          <span class="text-[20px] font-[700] leading-[24px] text-white">
+                          <span class="text-[20px] font-[700] leading-[24px] text-text-1">
                             {{ item.deposit }}
                           </span>
                         </div>
@@ -381,7 +381,7 @@
                           <span class="text-[16px] font-[400] leading-[19px] text-text-2">
                             {{ props.validBetsLabel }}
                           </span>
-                          <span class="text-[20px] font-[700] leading-[24px] text-white">
+                          <span class="text-[20px] font-[700] leading-[24px] text-text-1">
                             {{ item.validBets }}
                           </span>
                         </div>
@@ -392,11 +392,11 @@
                           class="flex flex-1 items-center justify-end gap-[12px]"
                           @click="$emit('go-friend-detail', item)"
                         >
-                          <span class="text-[16px] font-[400] leading-[19px] text-white">
+                          <span class="text-[16px] font-[400] leading-[19px] text-text-1">
                             {{ props.detailText }}
                           </span>
                           <span
-                            class="flex h-[28px] w-[28px] items-center justify-center rounded-[8.4px] bg-white/10"
+                            class="flex h-[28px] w-[28px] items-center justify-center rounded-[8.4px] bg-opacity-10"
                           >
                             <ArrowRightIcon class="h-[11.2px] w-[11.2px] text-text-2" />
                           </span>

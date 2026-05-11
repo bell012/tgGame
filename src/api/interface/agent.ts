@@ -58,6 +58,17 @@ export interface QueryTaskRewardWalletItem {
 }
 
 /**
+ * 任务配置 - 佣金等级项
+ */
+export interface QueryTaskRewardCommissionItem {
+  id?: string
+  level?: string
+  people?: number | string
+  rate?: number | string
+  dayTeamBet?: number | string
+}
+
+/**
  * 任务配置主体
  */
 export interface QueryTaskRewardConfig {
@@ -65,6 +76,9 @@ export interface QueryTaskRewardConfig {
   rechargeList?: QueryTaskRewardRechargeItem[]
   increaseList?: QueryTaskRewardIncreaseItem[]
   recommendedWallet?: QueryTaskRewardWalletItem[]
+  commissionList?: QueryTaskRewardCommissionItem[]
+  betConfigType?: number | string
+  betListMap?: Record<string, unknown>
   validInviteRechargeAmount?: number | string
   validInviteBetAmount?: number | string
   inviteRechargeAmount?: number | string
@@ -109,6 +123,26 @@ export interface QueryTaskRewardConfigResponse extends AgentApiResponse<QueryTas
  * 查询一级代理预估佣金响应
  */
 export interface QueryEstimatedCommissionResponse extends AgentApiResponse<number> {}
+
+/**
+ * 查询一级代理任务进度结果
+ */
+export interface QueryReferralTaskProgressResult {
+  activeSubNum?: number
+  currencyCode?: string
+  newSub?: number
+  rechargeSubNum?: number
+  site?: string
+  subBet?: number
+  subNum?: number
+  subRecharge?: number
+  userId?: string
+}
+
+/**
+ * 查询一级代理任务进度响应
+ */
+export interface QueryReferralTaskProgressResponse extends AgentApiResponse<QueryReferralTaskProgressResult> {}
 
 /**
  * 推荐详情统计图 - 新增好友数据项
