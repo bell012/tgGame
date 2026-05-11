@@ -35,6 +35,22 @@
           :invite-reward-suffix="t('referral.h5.inviteRewardSuffix')"
           :invite-reward-amount="inviteRewardAmount"
           :task-details-text="t('referral.h5.taskDetails')"
+          :commission-boost-loading="commissionBoostLoading"
+          :show-commission-boost="shouldShowCommissionBoost"
+          :active-commission-boost-week-tab="activeCommissionBoostWeekTab"
+          :commission-boost-estimated-commission="commissionBoostViewData.estimatedCommissionText"
+          :commission-boost-friends-delta="commissionBoostViewData.friendsDeltaText"
+          :commission-boost-current-level-rate="commissionBoostViewData.currentLevelRateText"
+          :commission-boost-active-friends="commissionBoostViewData.activeFriendsText"
+          :commission-boost-progress-percent="commissionBoostViewData.progressPercent"
+          :commission-boost-levels="commissionBoostViewData.levels"
+          :this-week-text="t('referral.commissionBoost.thisWeek')"
+          :last-week-text="t('referral.commissionBoost.lastWeek')"
+          :friends-text="t('referral.commissionBoost.friends')"
+          :current-level-text="t('referral.commissionBoost.currentLevel')"
+          :active-friends-text="t('referral.commissionBoost.activeFriends')"
+          :data-updates-every-hour-text="t('referral.commissionBoost.dataUpdatesEveryHour')"
+          :rules-text="t('referral.commissionBoost.rules')"
           @quick-action="handleQuickActionClick"
           @share-channel="handleShareChannel"
           @share-guide="handleShareGuideClick"
@@ -42,6 +58,8 @@
           @claim="handleClaimClick"
           @task-details="handleTaskDetailsClick"
           @banner-click="handleBannerClick"
+          @change-commission-boost-week-tab="handleChangeCommissionBoostWeekTab"
+          @open-rules="handleOpenRules"
         />
       </div>
     </div>
@@ -67,6 +85,22 @@
         :invite-reward-suffix="t('referral.h5.inviteRewardSuffix')"
         :invite-reward-amount="inviteRewardAmount"
         :task-details-text="t('referral.h5.taskDetails')"
+        :commission-boost-loading="commissionBoostLoading"
+        :show-commission-boost="shouldShowCommissionBoost"
+        :active-commission-boost-week-tab="activeCommissionBoostWeekTab"
+        :commission-boost-estimated-commission="commissionBoostViewData.estimatedCommissionText"
+        :commission-boost-friends-delta="commissionBoostViewData.friendsDeltaText"
+        :commission-boost-current-level-rate="commissionBoostViewData.currentLevelRateText"
+        :commission-boost-active-friends="commissionBoostViewData.activeFriendsText"
+        :commission-boost-progress-percent="commissionBoostViewData.progressPercent"
+        :commission-boost-levels="commissionBoostViewData.levels"
+        :this-week-text="t('referral.commissionBoost.thisWeek')"
+        :last-week-text="t('referral.commissionBoost.lastWeek')"
+        :friends-text="t('referral.commissionBoost.friends')"
+        :current-level-text="t('referral.commissionBoost.currentLevel')"
+        :active-friends-text="t('referral.commissionBoost.activeFriends')"
+        :data-updates-every-hour-text="t('referral.commissionBoost.dataUpdatesEveryHour')"
+        :rules-text="t('referral.commissionBoost.rules')"
         @quick-action="handleQuickActionClick"
         @share-channel="handleShareChannel"
         @share-guide="handleShareGuideClick"
@@ -74,6 +108,8 @@
         @claim="handleClaimClick"
         @task-details="handleTaskDetailsClick"
         @banner-click="handleBannerClick"
+        @change-commission-boost-week-tab="handleChangeCommissionBoostWeekTab"
+        @open-rules="handleOpenRules"
       />
     </div>
 
@@ -85,38 +121,72 @@
       :description="t('referral.messagePopup.description')"
       :copy-text="t('personalCenter.editProfile.save')"
       :presets="referralMessagePresets"
-      :initial-message="defaultReferralMessage"
+      :initial-message="activeReferralMessage"
       @copy="handleConfirmReferralMessageCopy"
+    />
+
+    <!-- 邀请海报弹窗 -->
+    <InvitePosterPopup
+      v-model="showInvitePosterPopup"
+      :images="posterImages"
+      :invite-code="displayLinkCode"
+      :share-link="resolveChannelReferralLink()"
+      :save-text="t('referral.invitePoster.saveImage')"
+      :copy-link-text="t('referral.invitePoster.copyLink')"
+      :invite-text="t('referral.invitePoster.inviteNow')"
+      close-text="close"
+      :image-alt="t('referral.invitePoster.posterAlt')"
+      @save="handleSavePosterImage"
+      @copy-link="handleCopyPosterLink"
+      @invite="handleInvitePoster"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import Api from '@/api'
+import type {
+  QueryReferralTaskProgressResult,
+  QueryTaskRewardConfigResult
+} from '@/api/interface/agent'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useGameStore } from '@/stores/game'
+import { useUserStore } from '@/stores/user'
+import { ApiBusinessError, ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { executeConfiguredJump } from '@/utils/contentJump'
+import { formatBalance } from '@/utils/locale'
 import { getLanguageCode } from '@/utils/request'
 import { navigateTo } from '@/utils/router'
+import { formatLinkCode, globalShowToast } from '@/utils/toast'
 import { showToast } from 'vant'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ReferralMessagePopup from './components/ReferralMessagePopup.vue'
 import ReferralPageContent from './components/ReferralPageContent.vue'
+import InvitePosterPopup from './details/components/InvitePosterPopup.vue'
 import PcLayout from './pc-layout.vue'
 import {
+  buildReferralBannerRequestKey,
   buildReferralBannerSlidesFromApi,
+  buildReferralPosterImagesFromApi,
+  buildReferralTaskWeekRanges,
   buildReferralShareMessage,
   buildReferralSocialChannelsFromApi,
+  createReferralCommissionBoostViewData,
   createReferralMarqueeMessages,
   createReferralMessagePresets,
   createReferralQuickActions,
+  getCachedReferralBannerPayload,
   getDefaultReferralLink,
   getReferralCommissionCoinImage,
+  getReferralInviteTaskReward,
+  hasReferralTaskProgressData,
+  resolveReferralBannerPayload,
+  type ReferralCommissionBoostWeekTabKey,
   type ReferralBannerSlide,
   type ReferralQuickActionId,
   type ReferralSocialChannel
@@ -125,26 +195,59 @@ import {
 const { t, locale } = useI18n()
 const authModalStore = useAuthModalStore()
 const gameStore = useGameStore()
+const userStore = useUserStore()
 const isMobile = useIsMobile()
 const isReady = ref(false)
-const estimatedCommissionAmount = '9999.99'
-const inviteRewardCount = '1'
-const inviteRewardAmount = '36'
+const estimatedCommissionAmount = ref('0.00')
 const referralLink = getDefaultReferralLink()
 const socialChannelsLoading = ref(true)
 const apiSocialChannels = ref<ReferralSocialChannel[]>([])
 const bannerLoading = ref(true)
 const bannerSlides = ref<ReferralBannerSlide[]>([])
+const posterImages = ref<string[]>([])
 const showReferralMessagePopup = ref(false)
+const showInvitePosterPopup = ref(false)
+const claimingCommission = ref(false)
+const currentShareChannel = ref<ReferralSocialChannel | null>(null)
+const customReferralMessage = ref('')
+const taskRewardConfigResult = ref<QueryTaskRewardConfigResult | null>(null)
+const thisWeekTaskProgress = ref<QueryReferralTaskProgressResult | null>(null)
+const lastWeekTaskProgress = ref<QueryReferralTaskProgressResult | null>(null)
+const activeCommissionBoostWeekTab = ref<ReferralCommissionBoostWeekTabKey>('thisWeek')
+const commissionBoostLoading = ref(true)
 let referralBannerRequestToken = 0
 
 const quickActions = computed(() => createReferralQuickActions(t))
 const referralMessagePresets = computed(() => createReferralMessagePresets(t))
 const defaultReferralMessage = computed(() => referralMessagePresets.value[0] || '')
+const activeReferralMessage = computed(
+  () => customReferralMessage.value || defaultReferralMessage.value
+)
 const marqueeMessages = computed(() => createReferralMarqueeMessages(t))
 const socialChannels = computed(() => apiSocialChannels.value)
 const commissionCoinImage = getReferralCommissionCoinImage()
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
+const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.rowId) || '-')
+const inviteTaskReward = computed(() => getReferralInviteTaskReward(taskRewardConfigResult.value))
+const inviteRewardCount = computed(() => inviteTaskReward.value.count)
+const inviteRewardAmount = computed(() => inviteTaskReward.value.amount)
+const shouldShowCommissionBoost = computed(
+  () =>
+    hasReferralTaskProgressData(thisWeekTaskProgress.value) ||
+    hasReferralTaskProgressData(lastWeekTaskProgress.value)
+)
+const activeTaskProgress = computed(() =>
+  activeCommissionBoostWeekTab.value === 'thisWeek'
+    ? thisWeekTaskProgress.value
+    : lastWeekTaskProgress.value
+)
+const commissionBoostViewData = computed(() =>
+  createReferralCommissionBoostViewData(
+    t,
+    taskRewardConfigResult.value?.config?.commissionList,
+    activeTaskProgress.value
+  )
+)
 
 /**
  * 处理页面初始化完成状态，避免首屏端态抖动。
@@ -157,6 +260,8 @@ watch(
   () => currentAgentChannelId.value,
   () => {
     void fetchSocialChannels()
+    void fetchEstimatedCommission()
+    void fetchReferralTaskModuleData()
   },
   {
     immediate: true
@@ -172,6 +277,25 @@ watch(
     immediate: true
   }
 )
+
+/**
+ * 获取预估佣金卡片数据。
+ */
+async function fetchEstimatedCommission() {
+  estimatedCommissionAmount.value = '0.00'
+
+  try {
+    const response = ensureApiBusinessSuccess(
+      await Api.agent.queryEstimatedCommission({
+        channelId: currentAgentChannelId.value
+      })
+    )
+
+    estimatedCommissionAmount.value = formatBalance(Number(response.result ?? 0), 2)
+  } catch (error) {
+    console.error('[referral] fetch estimated commission failed:', error)
+  }
+}
 
 /**
  * 处理客服按钮点击。
@@ -236,7 +360,10 @@ const handleCopyReferralMessage = () => {
  * 处理确认复制推荐文案。
  */
 const handleConfirmReferralMessageCopy = async (message: string) => {
-  const copied = await copyTextWithFallback(buildReferralShareMessage(message, referralLink))
+  customReferralMessage.value = String(message ?? '').trim()
+  const copied = await copyTextWithFallback(
+    buildReferralShareMessage(activeReferralMessage.value, referralLink)
+  )
 
   showToast({
     message: copied ? t('referral.h5.copyMessageSuccess') : t('referral.copyFailed'),
@@ -249,13 +376,68 @@ const handleConfirmReferralMessageCopy = async (message: string) => {
 }
 
 /**
+ * 获取当前分享渠道的邀请链接。
+ */
+const resolveChannelReferralLink = () => {
+  const shareDomainUrl = String(currentShareChannel.value?.shareDomainUrl ?? '').trim()
+
+  if (!shareDomainUrl) {
+    return ''
+  }
+
+  return `${shareDomainUrl.replace(/\/+$/, '')}/?id=${displayLinkCode.value}`
+}
+
+/**
+ * 获取当前分享渠道的完整分享文案。
+ */
+const resolveChannelReferralContent = () =>
+  buildReferralShareMessage(activeReferralMessage.value, resolveChannelReferralLink())
+
+/**
  * 处理佣金领取按钮点击。
  */
-const handleClaimClick = () => {
-  showToast({
-    message: t('referral.noClaimableCommission'),
-    type: 'fail'
-  })
+const handleClaimClick = async () => {
+  if (claimingCommission.value) {
+    return
+  }
+
+  if ((Number(estimatedCommissionAmount.value) || 0) <= 0) {
+    showToast({
+      message: t('referral.noClaimableCommission'),
+      type: 'fail'
+    })
+    return
+  }
+
+  claimingCommission.value = true
+
+  try {
+    ensureApiBusinessSuccess(
+      await Api.agent.claimCommission({
+        channelId: currentAgentChannelId.value
+      })
+    )
+
+    showToast({
+      message: t('personalCenter.rebate.toast.claimSuccess'),
+      type: 'success'
+    })
+    await fetchEstimatedCommission()
+  } catch (error) {
+    console.error('[referral] claim commission failed:', error)
+
+    if (error instanceof ApiBusinessError) {
+      return
+    }
+
+    showToast({
+      message: t('personalCenter.rebate.toast.claimFailed'),
+      type: 'fail'
+    })
+  } finally {
+    claimingCommission.value = false
+  }
 }
 
 /**
@@ -263,6 +445,20 @@ const handleClaimClick = () => {
  */
 const handleTaskDetailsClick = () => {
   navigateTo('/referral/tasks')
+}
+
+/**
+ * 处理切换佣金加码周维度标签。
+ */
+const handleChangeCommissionBoostWeekTab = (value: ReferralCommissionBoostWeekTabKey) => {
+  activeCommissionBoostWeekTab.value = value
+}
+
+/**
+ * 处理打开佣金规则页。
+ */
+const handleOpenRules = () => {
+  navigateTo('/referral/rules')
 }
 
 /**
@@ -293,18 +489,16 @@ async function fetchSocialChannels() {
   apiSocialChannels.value = []
 
   try {
-    const response = await Api.agent.queryShareChannels(
-      {
-        openStatus: 1
-      },
-      {
-        channelId: currentAgentChannelId.value
-      }
+    const response = ensureApiBusinessSuccess(
+      await Api.agent.queryShareChannels(
+        {
+          openStatus: 1
+        },
+        {
+          channelId: currentAgentChannelId.value
+        }
+      )
     )
-
-    if (response?.code !== 'C2') {
-      return
-    }
 
     apiSocialChannels.value = buildReferralSocialChannelsFromApi(response.result)
   } catch (error) {
@@ -315,20 +509,112 @@ async function fetchSocialChannels() {
 }
 
 /**
+ * 处理获取首页任务配置与周任务进度。
+ */
+async function fetchReferralTaskModuleData() {
+  commissionBoostLoading.value = true
+  activeCommissionBoostWeekTab.value = 'thisWeek'
+  const weekRanges = buildReferralTaskWeekRanges()
+
+  try {
+    const [taskConfigResponse, thisWeekProgressResponse, lastWeekProgressResponse] =
+      await Promise.allSettled([
+        Api.agent.queryTaskRewardConfig({
+          channelId: currentAgentChannelId.value
+        }),
+        Api.agent.queryReferralTaskProgress(weekRanges.thisWeek, {
+          channelId: currentAgentChannelId.value
+        }),
+        Api.agent.queryReferralTaskProgress(weekRanges.lastWeek, {
+          channelId: currentAgentChannelId.value
+        })
+      ])
+
+    if (taskConfigResponse.status === 'fulfilled') {
+      try {
+        taskRewardConfigResult.value =
+          ensureApiBusinessSuccess(taskConfigResponse.value).result ?? null
+      } catch (error) {
+        console.error('[referral] fetch task reward config failed:', error)
+        taskRewardConfigResult.value = null
+      }
+    } else {
+      console.error('[referral] fetch task reward config failed:', taskConfigResponse.reason)
+      taskRewardConfigResult.value = null
+    }
+
+    if (thisWeekProgressResponse.status === 'fulfilled') {
+      try {
+        thisWeekTaskProgress.value =
+          ensureApiBusinessSuccess(thisWeekProgressResponse.value).result ?? null
+      } catch (error) {
+        console.error('[referral] fetch this week task progress failed:', error)
+        thisWeekTaskProgress.value = null
+      }
+    } else {
+      console.error(
+        '[referral] fetch this week task progress failed:',
+        thisWeekProgressResponse.reason
+      )
+      thisWeekTaskProgress.value = null
+    }
+
+    if (lastWeekProgressResponse.status === 'fulfilled') {
+      try {
+        lastWeekTaskProgress.value =
+          ensureApiBusinessSuccess(lastWeekProgressResponse.value).result ?? null
+      } catch (error) {
+        console.error('[referral] fetch last week task progress failed:', error)
+        lastWeekTaskProgress.value = null
+      }
+    } else {
+      console.error(
+        '[referral] fetch last week task progress failed:',
+        lastWeekProgressResponse.reason
+      )
+      lastWeekTaskProgress.value = null
+    }
+  } finally {
+    commissionBoostLoading.value = false
+  }
+}
+
+/**
  * 处理推荐页活动横幅数据。
  */
 async function fetchReferralBanner() {
   const requestToken = ++referralBannerRequestToken
+  const languageCode = getLanguageCode()
+  const requestKey = buildReferralBannerRequestKey(currentAgentChannelId.value, languageCode)
+  const cachedPayload = getCachedReferralBannerPayload(requestKey)
+
+  if (cachedPayload) {
+    bannerLoading.value = false
+    bannerSlides.value = cachedPayload.bannerSlides
+    posterImages.value = cachedPayload.posterImages
+    return
+  }
+
   bannerLoading.value = true
   bannerSlides.value = []
+  posterImages.value = []
 
   try {
-    const response = await Api.home.getQuerySlideshow({
-      languageCode: getLanguageCode(),
-      channelId: currentAgentChannelId.value,
-      page: {
-        current: 1,
-        size: 100
+    const payload = await resolveReferralBannerPayload(requestKey, async () => {
+      const response = await Api.home.getQuerySlideshow({
+        languageCode,
+        channelId: currentAgentChannelId.value,
+        page: {
+          current: 1,
+          size: 100
+        }
+      })
+
+      const records = Array.isArray(response?.result?.records) ? response.result.records : []
+
+      return {
+        bannerSlides: buildReferralBannerSlidesFromApi(records),
+        posterImages: buildReferralPosterImagesFromApi(records)
       }
     })
 
@@ -336,8 +622,8 @@ async function fetchReferralBanner() {
       return
     }
 
-    const records = Array.isArray(response?.result?.records) ? response.result.records : []
-    bannerSlides.value = buildReferralBannerSlidesFromApi(records)
+    bannerSlides.value = payload.bannerSlides
+    posterImages.value = payload.posterImages
   } catch (error) {
     if (requestToken !== referralBannerRequestToken) {
       return
@@ -345,6 +631,7 @@ async function fetchReferralBanner() {
 
     console.error('[referral] fetch banner failed:', error)
     bannerSlides.value = []
+    posterImages.value = []
   } finally {
     if (requestToken === referralBannerRequestToken) {
       bannerLoading.value = false
@@ -356,9 +643,7 @@ async function fetchReferralBanner() {
  * 处理社交渠道分享点击。
  */
 const handleShareChannel = (channel: ReferralSocialChannel) => {
-  const shareUrl = resolveShareTargetUrl(channel)
-
-  if (!shareUrl) {
+  if (!resolveShareTargetUrl(channel)) {
     showToast({
       message: t('referral.comingSoon'),
       type: 'fail'
@@ -366,6 +651,73 @@ const handleShareChannel = (channel: ReferralSocialChannel) => {
     return
   }
 
-  window.open(shareUrl, '_blank', 'noopener,noreferrer')
+  if (!posterImages.value.length) {
+    showToast({
+      message: t('referral.comingSoon'),
+      type: 'fail'
+    })
+    return
+  }
+
+  currentShareChannel.value = channel
+  showInvitePosterPopup.value = true
+}
+
+/**
+ * 处理保存海报图片。
+ */
+const handleSavePosterImage = () => {
+  globalShowToast({
+    message: t('referral.invitePoster.saveHint'),
+    type: 'success'
+  })
+}
+
+/**
+ * 处理复制海报邀请链接。
+ */
+const handleCopyPosterLink = async () => {
+  const copied = await copyTextWithFallback(resolveChannelReferralContent())
+
+  globalShowToast({
+    message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
+    type: copied ? 'success' : 'fail'
+  })
+}
+
+/**
+ * 处理调用默认分享。
+ */
+const handleInvitePoster = async () => {
+  const shareContent = resolveChannelReferralContent()
+  const shareLink = resolveChannelReferralLink()
+
+  if (!shareContent || !shareLink) {
+    globalShowToast({
+      message: t('referral.copyFailed'),
+      type: 'fail'
+    })
+    return
+  }
+
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    try {
+      await navigator.share({
+        title: typeof document !== 'undefined' ? document.title : t('referral.title'),
+        text: shareContent,
+        url: shareLink
+      })
+      return
+    } catch (error) {
+      console.error('[referral] navigator share failed:', error)
+    }
+  }
+
+  const copied = await copyTextWithFallback(shareContent)
+
+  globalShowToast({
+    message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
+    type: copied ? 'success' : 'fail'
+  })
 }
 </script>

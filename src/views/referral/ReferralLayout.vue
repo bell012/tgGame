@@ -6,6 +6,7 @@
       <!-- 左侧菜单 -->
       <aside class="w-[280px] flex-shrink-0">
         <div class="rounded-xl bg-bg-2 p-4">
+          <!-- 导航块 -->
           <nav class="space-y-2.5">
             <div
               v-for="item in menuItems"

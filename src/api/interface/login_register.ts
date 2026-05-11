@@ -100,6 +100,7 @@ export interface RegisterForm {
   areaCode: string // 区号（手机号注册时需要）
   telephone: string // 手机号码 手机注册时也要传值
   nickName: string // 会员姓名
+  invitationCode?: string // 邀请码
 }
 
 // 注册响应

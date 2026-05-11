@@ -75,15 +75,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { showToast } from 'vant'
-import { useI18n } from 'vue-i18n'
 import Api from '@/api'
 import H5Header from '@/components/common/H5Header.vue'
-import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import PcLayout from './pc-layout.vue'
+import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+import { showToast } from 'vant'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ReferralTaskPageContent from './components/ReferralTaskPageContent.vue'
+import PcLayout from './pc-layout.vue'
 import {
   buildReferralTaskRewardTable,
   createReferralTaskResetHint,
@@ -91,8 +91,8 @@ import {
   createReferralTaskValidInviteDescription,
   getReferralTaskCoinImage,
   getReferralTaskRulesPlaceholderImage,
-  type ReferralTaskRewardConfigResult,
   type ReferralTaskRewardConfig,
+  type ReferralTaskRewardConfigResult,
   type ReferralTaskTabKey
 } from './shared'
 

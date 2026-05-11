@@ -643,6 +643,17 @@
       "copyMessageSuccess": "推荐文案已复制",
       "shareGuideHint": "可通过社交平台或复制推荐文案邀请好友。"
     },
+    "commissionBoost": {
+      "thisWeek": "本周",
+      "lastWeek": "上周",
+      "friends": "好友",
+      "currentLevel": "当前等级:",
+      "activeFriends": "有效好友:",
+      "activeFriendSingular": "{count} 位有效好友",
+      "activeFriendPlural": "{count} 位有效好友",
+      "dataUpdatesEveryHour": "数据每小时更新一次",
+      "rules": "规则"
+    },
     "taskPage": {
       "title": "任务",
       "resetHint": {
@@ -702,11 +713,17 @@
     "detailsPage": {
       "title": "好友",
       "filter": "筛选",
+      "topUpTitle": "充值统计",
       "detailText": "详情",
       "showNow": "立即查看",
       "avatarAlt": "头像",
       "friendDetailHint": "好友详情暂未开放：",
       "dateSelection": "日期选择",
+      "friendsFilter": {
+        "linkSource": "链接来源",
+        "registrationTime": "注册时间",
+        "unknownLinkSource": "未知来源"
+      },
       "date": {
         "all": "全部",
         "today": "今日",
@@ -725,6 +742,20 @@
         "newFriends": "新增好友",
         "activeFriends": "有效好友",
         "validBets": "有效投注"
+      },
+      "topUpSummary": {
+        "firstDepositors": "首充人数",
+        "depositors": "充值人数",
+        "depositAmount": "充值金额"
+      },
+      "rewardHistory": {
+        "time": "时间",
+        "commission": "佣金"
+      },
+      "claimHistory": {
+        "totalCommission": "总佣金",
+        "time": "时间",
+        "rewards": "奖励"
       },
       "labels": {
         "deposit": "充值：",

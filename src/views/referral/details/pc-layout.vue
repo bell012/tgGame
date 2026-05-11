@@ -2,11 +2,22 @@
   <ReferralLayout current-tab="details" :page-title="props.pageTitle">
     <!-- PC 推荐详情页主体内容 -->
     <ReferralDetailsPageContent
+      :is-mobile="props.isMobile"
       :active-tab="props.activeTab"
       :date-label="props.dateLabel"
+      :active-date-value="props.activeDateValue"
+      :date-options="props.dateOptions"
       :filter-text="props.filterText"
+      :friends-link-source-label="props.friendsLinkSourceLabel"
+      :friends-registration-time-label="props.friendsRegistrationTimeLabel"
       :deposit-label="props.depositLabel"
       :valid-bets-label="props.validBetsLabel"
+      :total-commission-label="props.totalCommissionLabel"
+      :reward-history-time-label="props.rewardHistoryTimeLabel"
+      :reward-history-commission-label="props.rewardHistoryCommissionLabel"
+      :claim-history-time-label="props.claimHistoryTimeLabel"
+      :claim-history-rewards-label="props.claimHistoryRewardsLabel"
+      :top-up-title="props.topUpTitle"
       :detail-text="props.detailText"
       :empty-action-text="props.emptyActionText"
       :empty-text="props.emptyText"
@@ -17,9 +28,27 @@
       :tabs="props.tabs"
       :summary-list="props.summaryList"
       :friends-list="props.friendsList"
+      :friends-link-source-value="props.friendsLinkSourceValue"
+      :friends-registration-time-value="props.friendsRegistrationTimeValue"
+      :friends-link-source-options="props.friendsLinkSourceOptions"
+      :friends-registration-time-options="props.friendsRegistrationTimeOptions"
+      :stats-chart-cards="props.statsChartCards"
+      :top-up-summary-list="props.topUpSummaryList"
+      :top-up-table-rows="props.topUpTableRows"
+      :reward-history-total-commission="props.rewardHistoryTotalCommission"
+      :reward-history-currency-code="props.rewardHistoryCurrencyCode"
+      :reward-history-rows="props.rewardHistoryRows"
+      :claim-history-total-commission="props.claimHistoryTotalCommission"
+      :claim-history-currency-code="props.claimHistoryCurrencyCode"
+      :claim-history-rows="props.claimHistoryRows"
       @change-tab="$emit('change-tab', $event)"
+      @change-date="$emit('change-date', $event)"
       @open-date-picker="$emit('open-date-picker')"
       @open-filter="$emit('open-filter')"
+      @change-friends-link-source-filter="$emit('change-friends-link-source-filter', $event)"
+      @change-friends-registration-time-filter="
+        $emit('change-friends-registration-time-filter', $event)
+      "
       @go-friend-detail="$emit('go-friend-detail', $event)"
       @show-poster="$emit('show-poster')"
     />
@@ -30,19 +59,37 @@
 import ReferralLayout from '../ReferralLayout.vue'
 import ReferralDetailsPageContent from './components/ReferralDetailsPageContent.vue'
 import type {
+  ReferralDetailsClaimHistoryRow,
+  ReferralDetailsDateFilterValue,
+  ReferralDetailsDateOption,
+  ReferralDetailsRewardHistoryRow,
+  ReferralDetailsStatsChartCard,
   ReferralDetailsFriendItem,
   ReferralDetailsSummaryItem,
   ReferralDetailsTabItem,
-  ReferralDetailsTabValue
+  ReferralDetailsTabValue,
+  ReferralDetailsTopUpSummaryItem,
+  ReferralDetailsTopUpTableRow
 } from './shared'
 
 interface Props {
   pageTitle: string
+  isMobile: boolean
   activeTab: ReferralDetailsTabValue
   dateLabel: string
+  activeDateValue: ReferralDetailsDateFilterValue
+  dateOptions: ReferralDetailsDateOption[]
   filterText: string
+  friendsLinkSourceLabel: string
+  friendsRegistrationTimeLabel: string
   depositLabel: string
   validBetsLabel: string
+  totalCommissionLabel: string
+  rewardHistoryTimeLabel: string
+  rewardHistoryCommissionLabel: string
+  claimHistoryTimeLabel: string
+  claimHistoryRewardsLabel: string
+  topUpTitle: string
   detailText: string
   emptyActionText: string
   emptyText: string
@@ -53,14 +100,30 @@ interface Props {
   tabs: ReferralDetailsTabItem[]
   summaryList: ReferralDetailsSummaryItem[]
   friendsList: ReferralDetailsFriendItem[]
+  friendsLinkSourceValue: string
+  friendsRegistrationTimeValue: ReferralDetailsDateFilterValue
+  friendsLinkSourceOptions: Array<{ label: string; value: string }>
+  friendsRegistrationTimeOptions: Array<{ label: string; value: string }>
+  statsChartCards: ReferralDetailsStatsChartCard[]
+  topUpSummaryList: ReferralDetailsTopUpSummaryItem[]
+  topUpTableRows: ReferralDetailsTopUpTableRow[]
+  rewardHistoryTotalCommission: string
+  rewardHistoryCurrencyCode: string
+  rewardHistoryRows: ReferralDetailsRewardHistoryRow[]
+  claimHistoryTotalCommission: string
+  claimHistoryCurrencyCode: string
+  claimHistoryRows: ReferralDetailsClaimHistoryRow[]
 }
 
 const props = defineProps<Props>()
 
 defineEmits<{
   'change-tab': [value: ReferralDetailsTabValue]
+  'change-date': [value: ReferralDetailsDateFilterValue]
   'open-date-picker': []
   'open-filter': []
+  'change-friends-link-source-filter': [value: string]
+  'change-friends-registration-time-filter': [value: ReferralDetailsDateFilterValue]
   'go-friend-detail': [value: ReferralDetailsFriendItem]
   'show-poster': []
 }>()

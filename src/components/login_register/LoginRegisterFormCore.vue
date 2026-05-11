@@ -31,6 +31,7 @@ import Api from '@/api'
 import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
 import { AESUtils } from '@/utils/encrypt'
+import { clearInvitationCode, getInvitationCode } from '@/utils/invitationAttribution'
 import {
   generateRegisterMemberName,
   getCurrentCurrency,
@@ -425,6 +426,8 @@ const handleRegister = async () => {
     const currency = getCurrentCurrency()
     // 生成14 位会员名称。
     const nickName = generateRegisterMemberName()
+    // 获取末次归因邀请码。
+    const invitationCode = getInvitationCode()
 
     const registerData = {
       memberId: `${defaultAreaCode}${formData.value.signup.account}`,
@@ -436,12 +439,15 @@ const handleRegister = async () => {
       memberPwd: StringExtension.md5(formData.value.signup.password),
       areaCode: defaultAreaCode,
       telephone: formData.value.signup.account,
-      nickName
+      nickName,
+      ...(invitationCode ? { invitationCode } : {})
     }
 
     // 注册接口
     const response = await Api.auth.register(registerData)
     if (response.code == 'C2') {
+      clearInvitationCode()
+
       try {
         await userStore.refreshCurrentUserData(formData.value.signup.account)
       } catch (error) {

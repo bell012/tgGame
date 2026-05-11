@@ -20,6 +20,22 @@
       :invite-reward-suffix="props.inviteRewardSuffix"
       :invite-reward-amount="props.inviteRewardAmount"
       :task-details-text="props.taskDetailsText"
+      :commission-boost-loading="props.commissionBoostLoading"
+      :show-commission-boost="props.showCommissionBoost"
+      :active-commission-boost-week-tab="props.activeCommissionBoostWeekTab"
+      :commission-boost-estimated-commission="props.commissionBoostEstimatedCommission"
+      :commission-boost-friends-delta="props.commissionBoostFriendsDelta"
+      :commission-boost-current-level-rate="props.commissionBoostCurrentLevelRate"
+      :commission-boost-active-friends="props.commissionBoostActiveFriends"
+      :commission-boost-progress-percent="props.commissionBoostProgressPercent"
+      :commission-boost-levels="props.commissionBoostLevels"
+      :this-week-text="props.thisWeekText"
+      :last-week-text="props.lastWeekText"
+      :friends-text="props.friendsText"
+      :current-level-text="props.currentLevelText"
+      :active-friends-text="props.activeFriendsText"
+      :data-updates-every-hour-text="props.dataUpdatesEveryHourText"
+      :rules-text="props.rulesText"
       @quick-action="$emit('quick-action', $event)"
       @share-channel="$emit('share-channel', $event)"
       @share-guide="$emit('share-guide')"
@@ -27,6 +43,8 @@
       @claim="$emit('claim')"
       @task-details="$emit('task-details')"
       @banner-click="$emit('banner-click', $event)"
+      @change-commission-boost-week-tab="$emit('change-commission-boost-week-tab', $event)"
+      @open-rules="$emit('open-rules')"
     />
   </ReferralLayout>
 </template>
@@ -37,6 +55,8 @@ import ReferralLayout from './ReferralLayout.vue'
 import ReferralPageContent from './components/ReferralPageContent.vue'
 import type {
   ReferralBannerSlide,
+  ReferralCommissionBoostLevelView,
+  ReferralCommissionBoostWeekTabKey,
   ReferralQuickAction,
   ReferralQuickActionId,
   ReferralSocialChannel
@@ -60,6 +80,22 @@ interface Props {
   inviteRewardSuffix: string
   inviteRewardAmount: string
   taskDetailsText: string
+  commissionBoostLoading: boolean
+  showCommissionBoost: boolean
+  activeCommissionBoostWeekTab: ReferralCommissionBoostWeekTabKey
+  commissionBoostEstimatedCommission: string
+  commissionBoostFriendsDelta: string
+  commissionBoostCurrentLevelRate: string
+  commissionBoostActiveFriends: string
+  commissionBoostProgressPercent: number
+  commissionBoostLevels: ReferralCommissionBoostLevelView[]
+  thisWeekText: string
+  lastWeekText: string
+  friendsText: string
+  currentLevelText: string
+  activeFriendsText: string
+  dataUpdatesEveryHourText: string
+  rulesText: string
 }
 
 const props = defineProps<Props>()
@@ -72,6 +108,8 @@ defineEmits<{
   claim: []
   'task-details': []
   'banner-click': [value: ReferralBannerSlide]
+  'change-commission-boost-week-tab': [value: ReferralCommissionBoostWeekTabKey]
+  'open-rules': []
 }>()
 
 const { t } = useI18n()

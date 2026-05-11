@@ -1,4 +1,13 @@
-import type { AgentApiResponse, QueryTaskRewardConfigResponse } from '@/api/interface/agent'
+import type {
+  AgentApiResponse,
+  QueryEstimatedCommissionResponse,
+  QueryReferralTaskProgressResponse,
+  QueryReferralDetailsChartStatsResponse,
+  QueryReferralDetailsClaimHistoryResponse,
+  QueryReferralDetailsRewardHistoryResponse,
+  QueryReferralDetailsTopUpStatsResponse,
+  QueryTaskRewardConfigResponse
+} from '@/api/interface/agent'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
 
 export type AgentChannelId =
@@ -34,7 +43,7 @@ const callAgentAction = <TResult = unknown>(
 // agent75：查询当前登录一级代理未领取佣金总额。
 export const queryEstimatedCommission = (
   options?: AgentRequestOptions
-): Promise<AgentApiResponse> => callAgentAction('agent75', undefined, options)
+): Promise<QueryEstimatedCommissionResponse> => callAgentAction('agent75', undefined, options)
 
 // agent77：领取当前登录一级代理未领取佣金。
 export const claimCommission = (options?: AgentRequestOptions): Promise<AgentApiResponse> =>
@@ -58,6 +67,12 @@ export const queryTaskRewardConfig = (
   options?: AgentRequestOptions
 ): Promise<QueryTaskRewardConfigResponse> => callAgentAction('agent57', undefined, options)
 
+// agent87：查询一级代理任务进度。
+export const queryReferralTaskProgress = (
+  param: Record<string, unknown>,
+  options?: AgentRequestOptions
+): Promise<QueryReferralTaskProgressResponse> => callAgentAction('agent87', param, options)
+
 // agent66：查询号码池与 WhatsApp/SMS 配置。
 export const queryNumberPool = (options?: AgentRequestOptions): Promise<AgentApiResponse> =>
   callAgentAction('agent66', undefined, options)
@@ -66,13 +81,31 @@ export const queryNumberPool = (options?: AgentRequestOptions): Promise<AgentApi
 export const queryCommissionRecords = (
   param: Record<string, unknown>,
   options?: AgentRequestOptions
-): Promise<AgentApiResponse> => callAgentAction('agent68', param, options)
+): Promise<QueryReferralDetailsRewardHistoryResponse> => callAgentAction('agent68', param, options)
 
-// agent87：查询推荐详情页团队成员统计。
+// agent88：查询推荐详情页团队成员查询一级代理好友列表统计。
 export const queryReferralDetailsStats = (
   param: Record<string, unknown>,
   options?: AgentRequestOptions
-): Promise<AgentApiResponse> => callAgentAction('agent87', param, options)
+): Promise<AgentApiResponse> => callAgentAction('agent88', param, options)
+
+// agent89：查询推荐详情页统计图数据。
+export const queryReferralDetailsChartStats = (
+  param: Record<string, unknown>,
+  options?: AgentRequestOptions
+): Promise<QueryReferralDetailsChartStatsResponse> => callAgentAction('agent89', param, options)
+
+// agent90：查询推荐详情页充值统计。
+export const queryReferralDetailsTopUpStats = (
+  param: Record<string, unknown>,
+  options?: AgentRequestOptions
+): Promise<QueryReferralDetailsTopUpStatsResponse> => callAgentAction('agent90', param, options)
+
+// agent86：查询推荐详情页领取记录。
+export const queryReferralDetailsClaimHistory = (
+  param: Record<string, unknown>,
+  options?: AgentRequestOptions
+): Promise<QueryReferralDetailsClaimHistoryResponse> => callAgentAction('agent86', param, options)
 
 // agent92：查询好友详情页游戏统计。
 export const queryReferralFriendGameStats = (

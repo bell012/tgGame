@@ -362,6 +362,17 @@
       "copyMessageSuccess": "Referral message copied",
       "shareGuideHint": "Invite friends through social platforms or by copying the referral message."
     },
+    "commissionBoost": {
+      "thisWeek": "This Week",
+      "lastWeek": "Last Week",
+      "friends": "Friends",
+      "currentLevel": "Current Level:",
+      "activeFriends": "Active Friends:",
+      "activeFriendSingular": "{count} Active Friend",
+      "activeFriendPlural": "{count} Active Friends",
+      "dataUpdatesEveryHour": "Data updates every hour",
+      "rules": "Rules"
+    },
     "taskPage": {
       "title": "Task",
       "resetHint": {
@@ -421,11 +432,17 @@
     "detailsPage": {
       "title": "Friends",
       "filter": "Filter",
+      "topUpTitle": "Top-Up Stats",
       "detailText": "Details",
       "showNow": "Show Now",
       "avatarAlt": "avatar",
       "friendDetailHint": "Friend detail coming soon:",
       "dateSelection": "Date Selection",
+      "friendsFilter": {
+        "linkSource": "Link Source",
+        "registrationTime": "Registration Time",
+        "unknownLinkSource": "Unknown"
+      },
       "date": {
         "all": "All",
         "today": "Today",
@@ -444,6 +461,20 @@
         "newFriends": "New Friends",
         "activeFriends": "Active Friends",
         "validBets": "Valid Bets"
+      },
+      "topUpSummary": {
+        "firstDepositors": "First Depositors",
+        "depositors": "Depositors",
+        "depositAmount": "Deposit Amount"
+      },
+      "rewardHistory": {
+        "time": "Time",
+        "commission": "Commission"
+      },
+      "claimHistory": {
+        "totalCommission": "Total Commission",
+        "time": "Time",
+        "rewards": "Rewards"
       },
       "labels": {
         "deposit": "Deposit:",

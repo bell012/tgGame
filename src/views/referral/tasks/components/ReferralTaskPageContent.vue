@@ -36,7 +36,7 @@
           <div class="flex min-w-0 flex-col" :class="props.mode === 'pc' ? 'gap-2' : 'gap-1.5'">
             <!-- 可领取奖励标题 -->
             <p
-              class="font-[400] text-common-100"
+              class="font-[400] text-text-1"
               :class="props.mode === 'pc' ? 'text-base leading-[20px]' : 'text-xs leading-[15px]'"
             >
               {{ props.rewardsToClaimLabel }}
@@ -44,7 +44,7 @@
 
             <!-- 可领取奖励金额 -->
             <span
-              class="font-[700] text-common-100"
+              class="font-[700] text-text-1"
               :class="props.mode === 'pc' ? 'text-[24px] leading-[29px]' : 'text-lg leading-[22px]'"
             >
               {{ props.rewardsToClaimAmount }}
@@ -89,7 +89,7 @@
               class="flex items-center text-xs"
               :class="
                 props.activeTab === item.key
-                  ? 'font-[700] leading-[14.67px] text-common-100'
+                  ? 'font-[700] leading-[14.67px] text-text-1'
                   : 'font-[500] leading-[18px] text-text-2'
               "
             >
@@ -116,13 +116,13 @@
           <!-- 当前进度数值行 -->
           <div class="flex items-center justify-center gap-1.5">
             <span
-              class="font-[700] text-common-100"
+              class="font-[700] text-text-1"
               :class="props.mode === 'pc' ? 'text-[24px] leading-[29px]' : 'text-lg leading-[22px]'"
             >
               {{ props.currentProgressValue }}
             </span>
             <span
-              class="font-[400] text-common-100"
+              class="font-[400] text-text-1"
               :class="props.mode === 'pc' ? 'text-base leading-[20px]' : 'text-xs leading-[15px]'"
             >
               {{ props.currentProgressUnit }}
@@ -157,7 +157,7 @@
         >
           <!-- 本周最大奖励数值 -->
           <span
-            class="font-[700] text-common-100"
+            class="font-[700] text-text-1"
             :class="props.mode === 'pc' ? 'text-[24px] leading-[29px]' : 'text-lg leading-[22px]'"
           >
             {{ props.maxRewardValue }}
@@ -202,7 +202,7 @@
               v-for="index in 4"
               :key="`reward-table-skeleton-${index}`"
               class="grid grid-cols-3"
-              :class="index % 2 === 1 ? 'bg-[var(--color-opacity-6,#FFFFFF0F)]' : 'bg-bg-2'"
+              :class="index % 2 === 1 ? 'bg-opacity-6' : 'bg-bg-2'"
             >
               <!-- 奖励表格骨架单元格 -->
               <div
@@ -227,11 +227,11 @@
               v-for="(item, index) in props.rewardRows"
               :key="`${item.condition}-${item.reward}-${index}`"
               class="grid grid-cols-3"
-              :class="index % 2 === 0 ? 'bg-[var(--color-opacity-6,#FFFFFF0F)]' : 'bg-bg-2'"
+              :class="index % 2 === 0 ? 'bg-opacity-6' : 'bg-bg-2'"
             >
               <!-- 奖励表格行第一列 -->
               <div
-                class="flex items-center justify-center text-center text-common-100"
+                class="flex items-center justify-center text-center text-text-1"
                 :class="
                   props.mode === 'pc' ? 'min-h-[68px] px-3 text-base' : 'min-h-[37px] px-2 text-sm'
                 "
@@ -248,7 +248,7 @@
 
               <!-- 奖励表格行第二列 -->
               <div
-                class="flex items-center justify-center text-center text-common-100"
+                class="flex items-center justify-center text-center text-text-1"
                 :class="
                   props.mode === 'pc' ? 'min-h-[68px] px-3 text-base' : 'min-h-[37px] px-2 text-sm'
                 "
@@ -275,7 +275,7 @@
       <section class="flex flex-col" :class="props.mode === 'pc' ? 'gap-4' : 'gap-2.5'">
         <!-- 有效邀请标题 -->
         <h2
-          class="font-[400] text-common-100"
+          class="font-[400] text-text-1"
           :class="props.mode === 'pc' ? 'text-[20px] leading-[26px]' : 'text-sm leading-[17px]'"
         >
           {{ props.validInviteTitle }}
@@ -300,7 +300,7 @@
       <section class="flex flex-col" :class="props.mode === 'pc' ? 'gap-4' : 'gap-2.5'">
         <!-- 任务规则标题 -->
         <h2
-          class="font-[400] text-common-100"
+          class="font-[400] text-text-1"
           :class="props.mode === 'pc' ? 'text-[20px] leading-[26px]' : 'text-sm leading-[17px]'"
         >
           {{ props.taskRulesTitle }}

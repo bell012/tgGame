@@ -3,6 +3,11 @@ import emptyLightImage from '@/static/img/explore/default_white.png'
 import avatarImage from '@/static/img/home/avatar.png'
 import invitePosterFallbackImage from '@/static/img/personalCenter/yaoqing.png'
 import invitePosterImage from '@/static/img/personalCenter/yaoqing2.png'
+import type {
+  QueryReferralDetailsClaimHistoryResult,
+  QueryReferralDetailsRewardHistoryResult,
+  QueryReferralDetailsTopUpStatsResult
+} from '@/api/interface/agent'
 import { formatTimestamp } from '@/utils/date'
 import { formatBalance } from '@/utils/locale'
 
@@ -37,12 +42,49 @@ export interface ReferralDetailsFriendItem {
   deposit: string | number
   validBets: string | number
   createTime: string
+  creationTimestamp: number
+  linkSource: string
+  linkSourceLabel: string
   status: ReferralDetailsFriendStatus
   statusText: string
 }
 
+export interface ReferralDetailsTopUpSummaryItem {
+  label: string
+  value: string
+}
+
+export interface ReferralDetailsTopUpTableRow {
+  method: string
+  amount: string
+  count: string
+}
+
+export interface ReferralDetailsClaimHistoryRow {
+  id: string
+  time: string
+  reward: string
+}
+
+export interface ReferralDetailsRewardHistoryRow {
+  id: string
+  time: string
+  commission: string
+}
+
+export interface ReferralDetailsStatsChartCard {
+  title: string
+  xAxisData: string[]
+  seriesData: number[]
+}
+
 export interface ReferralDetailsFilterValues {
   time: ReferralDetailsDateFilterValue
+}
+
+export interface ReferralDetailsFriendsFilterValues {
+  linkSource: string
+  registrationTime: ReferralDetailsDateFilterValue
 }
 
 export interface ReferralDetailsDateOption {
@@ -68,6 +110,10 @@ export interface ReferralDetailsStatsResult {
   subNum?: number
   subRecharge?: number
 }
+
+export type ReferralDetailsTopUpStatsResult = QueryReferralDetailsTopUpStatsResult
+export type ReferralDetailsClaimHistoryResult = QueryReferralDetailsClaimHistoryResult
+export type ReferralDetailsRewardHistoryResult = QueryReferralDetailsRewardHistoryResult
 
 /**
  * 返回推荐详情页默认头像资源。
@@ -98,6 +144,15 @@ export const getReferralDetailsInvitePosterImages = () => [
 export const createDefaultReferralDetailsFilterValues = (): ReferralDetailsFilterValues => ({
   time: 'today'
 })
+
+/**
+ * 返回推荐详情页好友列表本地筛选默认值。
+ */
+export const createDefaultReferralDetailsFriendsFilterValues =
+  (): ReferralDetailsFriendsFilterValues => ({
+    linkSource: 'all',
+    registrationTime: 'all'
+  })
 
 /**
  * 返回推荐详情页日期筛选项。
@@ -156,12 +211,18 @@ export const normalizeReferralDetailsFilterValues = (
   }
 }
 
+/**
+ * 获取getStartOfDay方法。
+ */
 const getStartOfDay = (date: Date) => {
   const nextDate = new Date(date)
   nextDate.setHours(0, 0, 0, 0)
   return nextDate.getTime()
 }
 
+/**
+ * 获取getEndOfDay方法。
+ */
 const getEndOfDay = (date: Date) => {
   const nextDate = new Date(date)
   nextDate.setHours(23, 59, 59, 999)
@@ -266,6 +327,7 @@ export const createReferralDetailsFriends = (
 ): ReferralDetailsFriendItem[] =>
   (result?.memberList ?? []).map(item => {
     const isActive = Number(item.subBet ?? 0) > 0
+    const linkSource = String(item.downloadSite ?? '').trim()
 
     return {
       id: String(item.userAccount ?? item.userId ?? '--'),
@@ -276,9 +338,130 @@ export const createReferralDetailsFriends = (
       deposit: formatBalance(Number(item.subRecharge ?? 0), 2),
       validBets: formatBalance(Number(item.subBet ?? 0), 2),
       createTime: formatTimestamp(item.creationTime),
+      creationTimestamp: Number(item.creationTime ?? 0),
+      linkSource,
+      linkSourceLabel: linkSource || t('referral.detailsPage.friendsFilter.unknownLinkSource'),
       status: isActive ? 'active' : 'inactive',
       statusText: isActive
         ? t('referral.detailsPage.status.active')
         : t('referral.detailsPage.status.inactive')
     }
   })
+
+/**
+ * 格式化formatReferralDetailsMetric方法。
+ */
+const formatReferralDetailsMetric = (value: number) => {
+  if (!Number.isFinite(value)) {
+    return '0'
+  }
+
+  return Number.isInteger(value) ? String(value) : formatBalance(value, 2)
+}
+
+/**
+ * 生成推荐详情页充值统计汇总数据。
+ */
+export const createReferralDetailsTopUpSummary = (
+  t: TranslateFn,
+  result?: ReferralDetailsTopUpStatsResult | null
+): ReferralDetailsTopUpSummaryItem[] => [
+  {
+    label: t('referral.detailsPage.topUpSummary.firstDepositors'),
+    value: formatReferralDetailsMetric(Number(result?.subFirstRecharge ?? 0))
+  },
+  {
+    label: t('referral.detailsPage.topUpSummary.depositors'),
+    value: formatReferralDetailsMetric(Number(result?.subRechargeNum ?? 0))
+  },
+  {
+    label: t('referral.detailsPage.topUpSummary.depositAmount'),
+    value: formatReferralDetailsMetric(Number(result?.subRecharge ?? 0))
+  }
+]
+
+/**
+ * 生成推荐详情页充值统计表格数据。
+ */
+export const createReferralDetailsTopUpRows = (
+  result?: ReferralDetailsTopUpStatsResult | null
+): ReferralDetailsTopUpTableRow[] => [
+  {
+    method: 'USDT',
+    amount: formatBalance(Number(result?.usdtSubRecharge ?? 0), 2),
+    count: formatReferralDetailsMetric(Number(result?.usdtSubRechargeNum ?? 0))
+  },
+  {
+    method: 'PAY',
+    amount: formatBalance(Number(result?.paySubRecharge ?? 0), 2),
+    count: formatReferralDetailsMetric(Number(result?.paySubRechargeNum ?? 0))
+  },
+  {
+    method: 'UPAY',
+    amount: formatBalance(Number(result?.upaySubRecharge ?? 0), 2),
+    count: formatReferralDetailsMetric(Number(result?.upaySubRechargeNum ?? 0))
+  }
+]
+
+/**
+ * 计算推荐详情页领取记录总佣金。
+ */
+export const getReferralDetailsClaimHistoryTotalCommission = (
+  result?: ReferralDetailsClaimHistoryResult | null
+) =>
+  formatBalance(
+    (result?.records ?? []).reduce((sum, item) => sum + Number(item.commissionAmount ?? 0), 0),
+    2
+  )
+
+/**
+ * 返回推荐详情页领取记录币种。
+ */
+export const getReferralDetailsClaimHistoryCurrencyCode = (
+  result?: ReferralDetailsClaimHistoryResult | null
+) => String(result?.records?.[0]?.currencyCode ?? '')
+
+/**
+ * 生成推荐详情页领取记录表格数据。
+ */
+export const createReferralDetailsClaimHistoryRows = (
+  result?: ReferralDetailsClaimHistoryResult | null
+): ReferralDetailsClaimHistoryRow[] =>
+  (result?.records ?? []).map(item => ({
+    id: String(item.rowId ?? `${item.creationTime ?? 0}-${item.obtainType ?? 0}`),
+    time: formatTimestamp(item.creationTime),
+    reward: formatBalance(Number(item.amount ?? 0), 2)
+  }))
+
+/**
+ * 计算推荐详情页佣金记录总佣金。
+ */
+export const getReferralDetailsRewardHistoryTotalCommission = (
+  result?: ReferralDetailsRewardHistoryResult | null
+) =>
+  formatBalance(
+    (result?.records ?? []).reduce(
+      (sum, item) => sum + Number(item.commissionAmount ?? item.amount ?? 0),
+      0
+    ),
+    2
+  )
+
+/**
+ * 返回推荐详情页佣金记录币种。
+ */
+export const getReferralDetailsRewardHistoryCurrencyCode = (
+  result?: ReferralDetailsRewardHistoryResult | null
+) => String(result?.records?.[0]?.currencyCode ?? result?.records?.[0]?.currency ?? '')
+
+/**
+ * 生成推荐详情页佣金记录表格数据。
+ */
+export const createReferralDetailsRewardHistoryRows = (
+  result?: ReferralDetailsRewardHistoryResult | null
+): ReferralDetailsRewardHistoryRow[] =>
+  (result?.records ?? []).map(item => ({
+    id: String(item.rowId ?? `${item.createTime ?? item.creationTime ?? 0}`),
+    time: formatTimestamp(item.createTime ?? item.creationTime ?? item.statisticsDate),
+    commission: formatBalance(Number(item.commissionAmount ?? item.amount ?? 0), 2)
+  }))

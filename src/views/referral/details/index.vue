@@ -18,11 +18,24 @@
       <div class="flex-1 overflow-y-auto">
         <!-- H5 推荐详情页内容 -->
         <ReferralDetailsPageContent
+          :is-mobile="true"
           :active-tab="activeTab"
           :date-label="currentDateLabel"
+          :active-date-value="appliedDateFilterValues.time"
+          :date-options="referralDetailsDateOptions"
           :filter-text="t('referral.detailsPage.filter')"
+          :friends-link-source-label="t('referral.detailsPage.friendsFilter.linkSource')"
+          :friends-registration-time-label="
+            t('referral.detailsPage.friendsFilter.registrationTime')
+          "
           :deposit-label="t('referral.detailsPage.labels.deposit')"
           :valid-bets-label="t('referral.detailsPage.labels.validBets')"
+          :total-commission-label="t('referral.detailsPage.claimHistory.totalCommission')"
+          :reward-history-time-label="t('referral.detailsPage.rewardHistory.time')"
+          :reward-history-commission-label="t('referral.detailsPage.rewardHistory.commission')"
+          :claim-history-time-label="t('referral.detailsPage.claimHistory.time')"
+          :claim-history-rewards-label="t('referral.detailsPage.claimHistory.rewards')"
+          :top-up-title="t('referral.detailsPage.topUpTitle')"
           :detail-text="t('referral.detailsPage.detailText')"
           :empty-action-text="t('referral.detailsPage.showNow')"
           :empty-text="t('common.noData')"
@@ -33,9 +46,24 @@
           :tabs="tabs"
           :summary-list="summaryList"
           :friends-list="visibleFriendsList"
+          :friends-link-source-value="friendsFilterValues.linkSource"
+          :friends-registration-time-value="friendsFilterValues.registrationTime"
+          :friends-link-source-options="mobileFriendsLinkSourceOptions"
+          :friends-registration-time-options="mobileFriendsRegistrationTimeOptions"
+          :stats-chart-cards="statsChartCards"
+          :top-up-summary-list="topUpSummaryList"
+          :top-up-table-rows="topUpTableRows"
+          :reward-history-total-commission="rewardHistoryTotalCommission"
+          :reward-history-currency-code="rewardHistoryCurrencyCode"
+          :reward-history-rows="rewardHistoryRows"
+          :claim-history-total-commission="claimHistoryTotalCommission"
+          :claim-history-currency-code="claimHistoryCurrencyCode"
+          :claim-history-rows="claimHistoryRows"
           @change-tab="handleChangeTab"
           @open-date-picker="handleOpenDatePicker"
           @open-filter="handleOpenFilter"
+          @change-friends-link-source-filter="handleChangeFriendsLinkSourceFilter"
+          @change-friends-registration-time-filter="handleChangeFriendsRegistrationTimeFilter"
           @go-friend-detail="handleGoFriendDetail"
           @show-poster="handleShowInvitePoster"
         />
@@ -47,11 +75,22 @@
       <!-- PC 推荐详情页布局 -->
       <PcLayout
         :page-title="t('referral.detailsPage.title')"
+        :is-mobile="false"
         :active-tab="activeTab"
         :date-label="currentDateLabel"
+        :active-date-value="appliedDateFilterValues.time"
+        :date-options="referralDetailsDateOptions"
         :filter-text="t('referral.detailsPage.filter')"
+        :friends-link-source-label="t('referral.detailsPage.friendsFilter.linkSource')"
+        :friends-registration-time-label="t('referral.detailsPage.friendsFilter.registrationTime')"
         :deposit-label="t('referral.detailsPage.labels.deposit')"
         :valid-bets-label="t('referral.detailsPage.labels.validBets')"
+        :total-commission-label="t('referral.detailsPage.claimHistory.totalCommission')"
+        :reward-history-time-label="t('referral.detailsPage.rewardHistory.time')"
+        :reward-history-commission-label="t('referral.detailsPage.rewardHistory.commission')"
+        :claim-history-time-label="t('referral.detailsPage.claimHistory.time')"
+        :claim-history-rewards-label="t('referral.detailsPage.claimHistory.rewards')"
+        :top-up-title="t('referral.detailsPage.topUpTitle')"
         :detail-text="t('referral.detailsPage.detailText')"
         :empty-action-text="t('referral.detailsPage.showNow')"
         :empty-text="t('common.noData')"
@@ -62,9 +101,25 @@
         :tabs="tabs"
         :summary-list="summaryList"
         :friends-list="visibleFriendsList"
+        :friends-link-source-value="friendsFilterValues.linkSource"
+        :friends-registration-time-value="friendsFilterValues.registrationTime"
+        :friends-link-source-options="mobileFriendsLinkSourceOptions"
+        :friends-registration-time-options="mobileFriendsRegistrationTimeOptions"
+        :stats-chart-cards="statsChartCards"
+        :top-up-summary-list="topUpSummaryList"
+        :top-up-table-rows="topUpTableRows"
+        :reward-history-total-commission="rewardHistoryTotalCommission"
+        :reward-history-currency-code="rewardHistoryCurrencyCode"
+        :reward-history-rows="rewardHistoryRows"
+        :claim-history-total-commission="claimHistoryTotalCommission"
+        :claim-history-currency-code="claimHistoryCurrencyCode"
+        :claim-history-rows="claimHistoryRows"
         @change-tab="handleChangeTab"
+        @change-date="handleChangeDateFilter"
         @open-date-picker="handleOpenDatePicker"
         @open-filter="handleOpenFilter"
+        @change-friends-link-source-filter="handleChangeFriendsLinkSourceFilter"
+        @change-friends-registration-time-filter="handleChangeFriendsRegistrationTimeFilter"
         @go-friend-detail="handleGoFriendDetail"
         @show-poster="handleShowInvitePoster"
       />
@@ -74,6 +129,8 @@
     <InvitePosterPopup
       v-model="showInvitePosterPopup"
       :images="invitePosterImages"
+      :invite-code="displayLinkCode"
+      :share-link="referralShareLink"
       :save-text="t('referral.invitePoster.saveImage')"
       :copy-link-text="t('referral.invitePoster.copyLink')"
       :invite-text="t('referral.invitePoster.inviteNow')"
@@ -86,11 +143,18 @@
 
     <!-- H5 日期筛选弹窗 -->
     <FilterPopup
-      v-if="isMobile"
       v-model:visible="showMobileDateFilterPopup"
       v-model="mobileDateFilterValues"
       :filter-groups="mobileDateFilterGroups"
       @apply="handleMobileDateFilterApply"
+    />
+
+    <ReferralDetailsFriendsFilterPopup
+      v-model:visible="showMobileFriendsFilterPopup"
+      v-model="friendsFilterValues"
+      :link-source-options="mobileFriendsLinkSourceOptions"
+      :registration-time-options="mobileFriendsRegistrationTimeOptions"
+      @apply="handleMobileFriendsFilterApply"
     />
 
     <!-- PC 好友详情弹窗 -->
@@ -124,16 +188,25 @@
 
 <script setup lang="ts">
 import Api from '@/api'
+import type {
+  QueryReferralDetailsChartStatsResult,
+  QueryReferralDetailsRewardHistoryResponse
+} from '@/api/interface/agent'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useUserStore } from '@/stores/user'
 import RuleIcon from '@/static/svg/rule.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
+import { buildReferralChartAxisData, normalizeReferralChartSeriesData } from '@/utils/referralDate'
 import { navigateTo } from '@/utils/router'
-import { globalShowToast } from '@/utils/toast'
+import { formatLinkCode, globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getDefaultReferralLink } from '../shared'
+import { buildReferralShareMessage, getDefaultReferralLink } from '../shared'
+import InvitePosterPopup from './components/InvitePosterPopup.vue'
+import ReferralDetailsFriendsFilterPopup from './components/ReferralDetailsFriendsFilterPopup.vue'
+import ReferralDetailsPageContent from './components/ReferralDetailsPageContent.vue'
 import FriendDetailPcPopup from './friend/pc-layout.vue'
 import {
   buildReferralFriendDetailDateRange,
@@ -154,34 +227,53 @@ import {
   type ReferralFriendDetailStatsTabValue,
   type ReferralFriendDetailTopUpStatResult
 } from './friend/shared'
-import InvitePosterPopup from './components/InvitePosterPopup.vue'
-import ReferralDetailsPageContent from './components/ReferralDetailsPageContent.vue'
 import PcLayout from './pc-layout.vue'
 import {
   buildReferralDetailsDateRange,
   createDefaultReferralDetailsFilterValues,
+  createDefaultReferralDetailsFriendsFilterValues,
+  createReferralDetailsClaimHistoryRows,
   createReferralDetailsDateOptions,
   createReferralDetailsFriends,
+  createReferralDetailsRewardHistoryRows,
   createReferralDetailsSummaryList,
   createReferralDetailsTabs,
+  createReferralDetailsTopUpRows,
+  createReferralDetailsTopUpSummary,
+  getReferralDetailsClaimHistoryCurrencyCode,
+  getReferralDetailsClaimHistoryTotalCommission,
   getReferralDetailsDateLabel,
   getReferralDetailsEmptyDarkImage,
   getReferralDetailsEmptyLightImage,
   getReferralDetailsInvitePosterImages,
+  getReferralDetailsRewardHistoryCurrencyCode,
+  getReferralDetailsRewardHistoryTotalCommission,
   normalizeReferralDetailsFilterValues,
+  type ReferralDetailsClaimHistoryResult,
+  type ReferralDetailsDateFilterValue,
   type ReferralDetailsFilterValues,
   type ReferralDetailsFriendItem,
+  type ReferralDetailsFriendsFilterValues,
+  type ReferralDetailsRewardHistoryResult,
+  type ReferralDetailsStatsChartCard,
   type ReferralDetailsStatsResult,
-  type ReferralDetailsTabValue
+  type ReferralDetailsTabValue,
+  type ReferralDetailsTopUpStatsResult
 } from './shared'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
+const userStore = useUserStore()
 const isReady = ref(false)
 const activeTab = ref<ReferralDetailsTabValue>('friends')
 const showInvitePosterPopup = ref(false)
 const showMobileDateFilterPopup = ref(false)
+const showMobileFriendsFilterPopup = ref(false)
 const showFriendDetailPopup = ref(false)
+const detailsChartStatsResult = ref<QueryReferralDetailsChartStatsResult | null>(null)
+const detailsTopUpStatsResult = ref<ReferralDetailsTopUpStatsResult | null>(null)
+const rewardHistoryResult = ref<ReferralDetailsRewardHistoryResult | null>(null)
+const claimHistoryResult = ref<ReferralDetailsClaimHistoryResult | null>(null)
 const selectedFriendUserId = ref<string>()
 const selectedFriendVipId = ref<number>()
 const friendActiveDateTab = ref<ReferralFriendDetailDateTabValue>('today')
@@ -192,6 +284,9 @@ const friendTopUpStatsResult = ref<ReferralFriendDetailTopUpStatResult | null>(n
 const mobileDateFilterValues = ref<Record<string, string | string[]>>({
   ...createDefaultReferralDetailsFilterValues()
 })
+const friendsFilterValues = ref<ReferralDetailsFriendsFilterValues>(
+  createDefaultReferralDetailsFriendsFilterValues()
+)
 const appliedDateFilterValues = ref<ReferralDetailsFilterValues>(
   createDefaultReferralDetailsFilterValues()
 )
@@ -203,11 +298,16 @@ const friendEmptyDarkImage = getReferralFriendDetailEmptyDarkImage()
 const friendEmptyLightImage = getReferralFriendDetailEmptyLightImage()
 const referralLink = getDefaultReferralLink()
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
+const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.linkCode) || '-')
+const referralShareLink = computed(
+  () => `${referralLink.replace(/\/+$/, '')}/?id=${displayLinkCode.value}`
+)
 
 /**
  * 生成推荐详情页标签数据。
  */
 const tabs = computed(() => createReferralDetailsTabs(t))
+const referralDetailsDateOptions = computed(() => createReferralDetailsDateOptions(t))
 
 /**
  * 生成 H5 日期筛选弹窗配置。
@@ -216,7 +316,7 @@ const mobileDateFilterGroups = computed<FilterGroup[]>(() => [
   {
     key: 'time',
     title: t('referral.detailsPage.dateSelection'),
-    options: createReferralDetailsDateOptions(t).map(item => ({
+    options: referralDetailsDateOptions.value.map(item => ({
       label: item.label,
       value: item.value
     }))
@@ -236,14 +336,156 @@ const currentDateLabel = computed(() =>
 const summaryList = computed(() => createReferralDetailsSummaryList(t, detailsStatsResult.value))
 
 /**
+ * 生成推荐详情页统计图 X 轴数据。
+ */
+const detailsChartAxisData = computed(() =>
+  buildReferralChartAxisData(appliedDateFilterValues.value.time, {
+    today: t('referral.detailsPage.date.today'),
+    yesterday: t('referral.detailsPage.date.yesterday')
+  })
+)
+
+/**
  * 生成推荐详情页好友列表数据。
  */
 const friendsList = computed(() => createReferralDetailsFriends(t, detailsStatsResult.value))
 
+const mobileFriendsLinkSourceOptions = computed(() => {
+  const optionMap = new Map<string, string>()
+
+  optionMap.set('all', t('referral.detailsPage.date.all'))
+
+  friendsList.value.forEach(item => {
+    if (!item.linkSource || optionMap.has(item.linkSource)) {
+      return
+    }
+
+    optionMap.set(item.linkSource, item.linkSourceLabel)
+  })
+
+  return Array.from(optionMap.entries()).map(([value, label]) => ({
+    label,
+    value
+  }))
+})
+
+const mobileFriendsRegistrationTimeOptions = computed(() =>
+  referralDetailsDateOptions.value.map(item => ({
+    label: item.label,
+    value: item.value
+  }))
+)
+
+const filteredFriendsList = computed(() => {
+  let list = friendsList.value
+
+  if (friendsFilterValues.value.linkSource !== 'all') {
+    list = list.filter(item => item.linkSource === friendsFilterValues.value.linkSource)
+  }
+
+  if (friendsFilterValues.value.registrationTime !== 'all') {
+    const { startTime, endTime } = buildReferralDetailsDateRange(
+      friendsFilterValues.value.registrationTime
+    )
+
+    list = list.filter(item => {
+      if (!item.creationTimestamp) {
+        return false
+      }
+
+      return (
+        item.creationTimestamp >= Number(startTime) && item.creationTimestamp <= Number(endTime)
+      )
+    })
+  }
+
+  return list
+})
+
 /**
  * 根据当前标签返回展示列表。
  */
-const visibleFriendsList = computed(() => (activeTab.value === 'friends' ? friendsList.value : []))
+const visibleFriendsList = computed(() =>
+  activeTab.value === 'friends' ? filteredFriendsList.value : []
+)
+
+/**
+ * 生成推荐详情页统计图卡片数据。
+ */
+const statsChartCards = computed<ReferralDetailsStatsChartCard[]>(() => [
+  {
+    title: t('referral.detailsPage.summary.newFriends'),
+    xAxisData: detailsChartAxisData.value.xAxisData,
+    seriesData: normalizeReferralChartSeriesData(
+      detailsChartStatsResult.value?.newSubList,
+      'newSub',
+      detailsChartAxisData.value
+    )
+  },
+  {
+    title: t('referral.detailsPage.summary.validBets'),
+    xAxisData: detailsChartAxisData.value.xAxisData,
+    seriesData: normalizeReferralChartSeriesData(
+      detailsChartStatsResult.value?.subBetList,
+      'subBet',
+      detailsChartAxisData.value
+    )
+  }
+])
+
+/**
+ * 生成推荐详情页充值统计汇总数据。
+ */
+const topUpSummaryList = computed(() =>
+  createReferralDetailsTopUpSummary(t, detailsTopUpStatsResult.value)
+)
+
+/**
+ * 生成推荐详情页充值统计表格数据。
+ */
+const topUpTableRows = computed(() => createReferralDetailsTopUpRows(detailsTopUpStatsResult.value))
+
+/**
+ * 生成推荐详情页佣金记录表格数据。
+ */
+const rewardHistoryRows = computed(() =>
+  createReferralDetailsRewardHistoryRows(rewardHistoryResult.value)
+)
+
+/**
+ * 生成推荐详情页佣金记录总佣金。
+ */
+const rewardHistoryTotalCommission = computed(() =>
+  getReferralDetailsRewardHistoryTotalCommission(rewardHistoryResult.value)
+)
+
+/**
+ * 返回推荐详情页佣金记录币种。
+ */
+const rewardHistoryCurrencyCode = computed(() =>
+  getReferralDetailsRewardHistoryCurrencyCode(rewardHistoryResult.value)
+)
+
+/**
+ * 生成推荐详情页领取记录表格数据。
+ */
+const claimHistoryRows = computed(() =>
+  createReferralDetailsClaimHistoryRows(claimHistoryResult.value)
+)
+
+/**
+ * 生成推荐详情页领取记录总佣金。
+ */
+const claimHistoryTotalCommission = computed(() =>
+  getReferralDetailsClaimHistoryTotalCommission(claimHistoryResult.value)
+)
+
+/**
+ * 返回推荐详情页领取记录币种。
+ */
+const claimHistoryCurrencyCode = computed(() =>
+  getReferralDetailsClaimHistoryCurrencyCode(claimHistoryResult.value)
+)
 
 /**
  * 生成当前弹窗好友基础信息。
@@ -297,9 +539,9 @@ onMounted(() => {
 })
 
 watch(
-  () => currentAgentChannelId.value,
+  [() => currentAgentChannelId.value, activeTab],
   () => {
-    void fetchReferralDetailsStats()
+    void fetchActiveReferralDetailsData()
   },
   {
     immediate: true
@@ -326,6 +568,118 @@ async function fetchReferralDetailsStats() {
 }
 
 /**
+ * 获取推荐详情页统计图数据。
+ */
+async function fetchReferralDetailsChartStats() {
+  try {
+    const response = await Api.agent.queryReferralDetailsChartStats(
+      buildReferralDetailsDateRange(appliedDateFilterValues.value.time),
+      {
+        channelId: currentAgentChannelId.value
+      }
+    )
+
+    detailsChartStatsResult.value = response?.result ?? null
+  } catch (error) {
+    console.error('[referral-details] fetch referral details chart stats failed:', error)
+    detailsChartStatsResult.value = null
+  }
+}
+
+/**
+ * 获取推荐详情页充值统计数据。
+ */
+async function fetchReferralDetailsTopUpStats() {
+  try {
+    const response = await Api.agent.queryReferralDetailsTopUpStats(
+      buildReferralDetailsDateRange(appliedDateFilterValues.value.time),
+      {
+        channelId: currentAgentChannelId.value
+      }
+    )
+
+    detailsTopUpStatsResult.value =
+      response?.result && typeof response.result === 'object' ? response.result : null
+  } catch (error) {
+    console.error('[referral-details] fetch referral details top-up stats failed:', error)
+    detailsTopUpStatsResult.value = null
+  }
+}
+
+/**
+ * 获取推荐详情页佣金记录数据。
+ */
+async function fetchReferralDetailsRewardHistory() {
+  try {
+    const response: QueryReferralDetailsRewardHistoryResponse =
+      await Api.agent.queryCommissionRecords(
+        {
+          ...buildReferralDetailsDateRange(appliedDateFilterValues.value.time),
+          current: 1,
+          size: 200
+        },
+        {
+          channelId: currentAgentChannelId.value
+        }
+      )
+
+    rewardHistoryResult.value =
+      response?.result && typeof response.result === 'object' ? response.result : null
+  } catch (error) {
+    console.error('[referral-details] fetch referral details reward history failed:', error)
+    rewardHistoryResult.value = null
+  }
+}
+
+/**
+ * 获取推荐详情页领取记录数据。
+ */
+async function fetchReferralDetailsClaimHistory() {
+  try {
+    const response = await Api.agent.queryReferralDetailsClaimHistory(
+      {
+        ...buildReferralDetailsDateRange(appliedDateFilterValues.value.time),
+        current: 1,
+        size: 200
+      },
+      {
+        channelId: currentAgentChannelId.value
+      }
+    )
+
+    claimHistoryResult.value =
+      response?.result && typeof response.result === 'object' ? response.result : null
+  } catch (error) {
+    console.error('[referral-details] fetch referral details claim history failed:', error)
+    claimHistoryResult.value = null
+  }
+}
+
+/**
+ * 按当前标签获取推荐详情页数据。
+ */
+async function fetchActiveReferralDetailsData() {
+  if (activeTab.value === 'friends') {
+    await fetchReferralDetailsStats()
+    return
+  }
+
+  if (activeTab.value === 'stats') {
+    await Promise.all([fetchReferralDetailsChartStats(), fetchReferralDetailsTopUpStats()])
+    return
+  }
+
+  if (activeTab.value === 'reward-history') {
+    await fetchReferralDetailsRewardHistory()
+    return
+  }
+
+  if (activeTab.value === 'claim-history') {
+    await fetchReferralDetailsClaimHistory()
+  }
+}
+
+/**
  * 获取 PC 弹窗好友详情基础信息和统计数据。
  */
 async function fetchSelectedFriendDetailData() {
@@ -339,14 +693,9 @@ async function fetchSelectedFriendDetailData() {
   }
 
   try {
-    const memberResponse = await Api.user.getSubMemberById(
-      {
-        rowId: userId
-      },
-      {
-        showErrorToast: false
-      }
-    )
+    const memberResponse = await Api.user.getSubMemberById({
+      rowId: userId
+    })
 
     friendMemberDetailResult.value = memberResponse?.result ?? null
     await fetchSelectedFriendDetailStats()
@@ -414,33 +763,36 @@ const handleChangeTab = (value: ReferralDetailsTabValue) => {
 }
 
 /**
+ * 处理切换日期筛选。
+ */
+const handleChangeDateFilter = async (value: ReferralDetailsDateFilterValue) => {
+  mobileDateFilterValues.value = {
+    ...mobileDateFilterValues.value,
+    time: value
+  }
+  appliedDateFilterValues.value = {
+    ...appliedDateFilterValues.value,
+    time: value
+  }
+  await fetchActiveReferralDetailsData()
+}
+
+/**
  * 处理打开日期选择器。
  */
 const handleOpenDatePicker = () => {
-  if (isMobile.value) {
-    showMobileDateFilterPopup.value = true
-    return
-  }
-
-  globalShowToast({
-    message: t('referral.comingSoon'),
-    type: 'success'
-  })
+  showMobileDateFilterPopup.value = true
 }
 
 /**
  * 处理打开筛选弹窗。
  */
 const handleOpenFilter = () => {
-  if (isMobile.value) {
-    showMobileDateFilterPopup.value = true
+  if (!isMobile.value || activeTab.value !== 'friends') {
     return
   }
 
-  globalShowToast({
-    message: t('referral.comingSoon'),
-    type: 'success'
-  })
+  showMobileFriendsFilterPopup.value = true
 }
 
 /**
@@ -452,7 +804,37 @@ const handleMobileDateFilterApply = async (values: Record<string, string | strin
     ...values
   }
   appliedDateFilterValues.value = normalizeReferralDetailsFilterValues(values)
-  await fetchReferralDetailsStats()
+  await fetchActiveReferralDetailsData()
+}
+
+/**
+ * 处理应用 H5 好友本地筛选。
+ */
+const handleMobileFriendsFilterApply = (values: ReferralDetailsFriendsFilterValues) => {
+  friendsFilterValues.value = {
+    ...createDefaultReferralDetailsFriendsFilterValues(),
+    ...values
+  }
+}
+
+/**
+ * 处理切换好友链接来源筛选。
+ */
+const handleChangeFriendsLinkSourceFilter = (value: string) => {
+  friendsFilterValues.value = {
+    ...friendsFilterValues.value,
+    linkSource: value
+  }
+}
+
+/**
+ * 处理切换好友注册时间筛选。
+ */
+const handleChangeFriendsRegistrationTimeFilter = (value: ReferralDetailsDateFilterValue) => {
+  friendsFilterValues.value = {
+    ...friendsFilterValues.value,
+    registrationTime: value
+  }
 }
 
 /**
@@ -498,7 +880,7 @@ const handleSavePosterImage = () => {
  * 处理复制推荐链接。
  */
 const handleCopyPosterLink = async () => {
-  const copied = await copyTextWithFallback(referralLink)
+  const copied = await copyTextWithFallback(referralShareLink.value)
 
   globalShowToast({
     message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
@@ -509,11 +891,41 @@ const handleCopyPosterLink = async () => {
 /**
  * 处理立即邀请。
  */
-const handleInviteNow = () => {
-  showInvitePosterPopup.value = false
-  navigateTo('/referral')
-}
+const handleInviteNow = async () => {
+  const shareLink = referralShareLink.value
+  const shareContent = buildReferralShareMessage(
+    t('referral.messagePopup.presets.exclusiveRewards'),
+    shareLink
+  )
 
+  if (!shareContent || !shareLink) {
+    globalShowToast({
+      message: t('referral.copyFailed'),
+      type: 'fail'
+    })
+    return
+  }
+
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    try {
+      await navigator.share({
+        title: typeof document !== 'undefined' ? document.title : t('referral.title'),
+        text: shareContent,
+        url: shareLink
+      })
+      return
+    } catch (error) {
+      console.error('[referral details] navigator share failed:', error)
+    }
+  }
+
+  const copied = await copyTextWithFallback(shareContent)
+
+  globalShowToast({
+    message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
+    type: copied ? 'success' : 'fail'
+  })
+}
 /**
  * 处理关闭好友详情弹窗。
  */

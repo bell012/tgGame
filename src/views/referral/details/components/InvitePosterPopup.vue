@@ -28,10 +28,41 @@
               <div
                 v-for="(image, index) in props.images"
                 :key="`${image}-${index}`"
-                class="h-full w-full shrink-0"
+                class="relative h-full w-full shrink-0"
               >
                 <!-- 后台返回的海报图片 -->
                 <img class="h-full w-full object-cover" :src="image" :alt="props.imageAlt" />
+
+                <!-- 邀请码信息区域 -->
+                <div class="absolute left-[20px] top-[141.33px] flex w-[260px] flex-col gap-[5px]">
+                  <!-- 邀请码标题 -->
+                  <div class="h-[17px] text-[14px] leading-[17px] text-white">邀请码</div>
+
+                  <!-- 邀请码展示框 -->
+                  <div
+                    class="relative h-[40px] w-[260px] rounded-[10px] border border-white bg-black/20 backdrop-blur-[1.67px]"
+                  >
+                    <!-- 邀请码文本 -->
+                    <div
+                      class="absolute left-[14px] top-1/2 -translate-y-1/2 text-[16px] font-bold leading-[19px] text-white"
+                    >
+                      {{ props.inviteCode || '-' }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 二维码区域 -->
+                <div
+                  class="absolute left-[20px] top-[230px] flex h-[90px] w-[90px] items-center justify-center rounded-[10px] bg-white"
+                >
+                  <!-- 二维码图片 -->
+                  <img
+                    v-if="qrCodeUrl"
+                    :src="qrCodeUrl"
+                    class="h-[83.38px] w-[83.38px] rounded-[10px] object-contain"
+                    alt="QR Code"
+                  />
+                </div>
               </div>
             </div>
 
@@ -107,6 +138,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import QRCode from 'qrcode'
 import CloseIcon from '@/static/svg/close.svg?component'
 
 interface Props {
@@ -117,6 +149,8 @@ interface Props {
   inviteText: string
   closeText: string
   imageAlt: string
+  inviteCode?: string
+  shareLink?: string
   initialIndex?: number
   autoplay?: boolean
   autoplayInterval?: number
@@ -139,6 +173,7 @@ const activeIndex = ref(0)
 const activeProgress = ref(0)
 const touchStartX = ref(0)
 const touchMoveX = ref(0)
+const qrCodeUrl = ref('')
 
 let autoplayTimer: number | undefined
 let progressTimer: number | undefined
@@ -184,6 +219,21 @@ watch(
   },
   {
     deep: true
+  }
+)
+
+watch(
+  () => [props.modelValue, props.shareLink] as const,
+  ([visible, shareLink]) => {
+    if (!visible) {
+      qrCodeUrl.value = ''
+      return
+    }
+
+    void generateQrCode(shareLink)
+  },
+  {
+    immediate: true
   }
 )
 
@@ -258,6 +308,32 @@ function restartAutoplay() {
   if (!props.modelValue) return
 
   startAutoplay()
+}
+
+/**
+ * 生成当前分享链接对应的二维码图片。
+ */
+async function generateQrCode(shareLink?: string) {
+  const normalizedShareLink = String(shareLink ?? '').trim()
+
+  if (!normalizedShareLink) {
+    qrCodeUrl.value = ''
+    return
+  }
+
+  try {
+    qrCodeUrl.value = await QRCode.toDataURL(normalizedShareLink, {
+      width: 250,
+      margin: 0,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    })
+  } catch (error) {
+    console.error('[referral] generate poster qrcode failed:', error)
+    qrCodeUrl.value = ''
+  }
 }
 
 /**
