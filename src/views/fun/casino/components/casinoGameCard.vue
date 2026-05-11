@@ -7,9 +7,16 @@
     <gameRemoteImg class="h-full w-full" :img="gameImage" :alt="game.itemName" />
     <div
       v-if="gameCovernameShow"
-      class="absolute inset-x-0 bottom-6 flex w-full items-center justify-center px-2 text-center text-sm sm:text-base font-bold leading-4 text-common-100 sm:font-extrabold"
+      class="absolute inset-x-0 bottom-2 flex w-full flex-col items-center justify-center px-2 text-center text-sm sm:text-base font-bold leading-4 text-common-100 sm:font-extrabold"
     >
       {{ game.itemName }}
+      <div v-if="platformLogoImg.src" class="mt-1 h-[14px] w-auto max-w-[70%] bg-transparent">
+        <gameRemoteImg
+          :img="platformLogoImg"
+          :alt="game.platformName || game.itemName"
+          class="h-full w-full bg-transparent"
+        />
+      </div>
     </div>
     <div class="absolute bottom-1 right-1 flex h-5 items-center rounded-[6px] bg-mask-20 px-1.5">
       <div class="icon h-[10px] w-[10px] sm:size-4 fill-common-100 text-common-100">
@@ -50,12 +57,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, reactive, watch } from 'vue'
 import { casinoIcons } from '@/static/svg/casino'
 import { StringExtension } from '@/utils/string-extension'
 import type { GameDataItem } from '@/api/interface/game'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useGameStore } from '@/stores/game'
 import underMaintenanceIcon from '@/static/svg/game/under_maintenance.svg'
 
 const props = defineProps<{
@@ -67,6 +75,7 @@ const emit = defineEmits<{
 }>()
 
 const siteConfigStore = useSiteConfigStore()
+const gameStore = useGameStore()
 const gameImage = computed(() => {
   const imagePath = props.game.icon2 || props.game.conUrl || props.game.icon1 || props.game.icon3
   const src = imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
@@ -80,6 +89,26 @@ const gameImage = computed(() => {
 const initNum = computed(() => {
   return StringExtension.getRandomInt(props.game.initScoreNum ?? 0, props.game.initScoreStar ?? 0)
 })
+
+const platformLogoImg = reactive<{
+  maintain: boolean
+  src: string
+  fit: 'contain'
+}>({
+  maintain: false,
+  src: '',
+  fit: 'contain'
+})
+
+const resolvePlatformLogo = async () => {
+  const platformCode = String(props.game.platformCode ?? '').trim()
+  if (!platformCode) {
+    platformLogoImg.src = ''
+    return
+  }
+
+  platformLogoImg.src = await gameStore.getPlatformLogoByPlatformCode(platformCode)
+}
 
 /** | 游戏封面名称显示 | `0` 不显示，`1` 显示 | */
 const gameCovernameShow = computed(() => {
@@ -103,4 +132,15 @@ const doClick = () => {
   if (props.game.serviceStatus === 1) return
   emit('click')
 }
+
+watch(
+  () => props.game.platformCode,
+  () => {
+    void resolvePlatformLogo()
+  }
+)
+
+onMounted(() => {
+  void resolvePlatformLogo()
+})
 </script>

@@ -8,6 +8,14 @@
       :loading="isSlideshowLoading"
     />
     <div class="px-3.5">
+      <!--Favorites Games -->
+      <GameList
+        v-if="isLogin && (isHomeCollectionsLoading || favoriteHomeGames.length)"
+        :title="t('home.favorites_games')"
+        sysGameTypeCode="favorites"
+        :list="favoriteHomeGames"
+        :loading="isHomeCollectionsLoading"
+      />
       <RecentBigWins />
 
       <div class="overflow-hidden px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
@@ -101,7 +109,6 @@
             v-if="firstGameSection"
             :title="firstGameSection.sysGameTypeName"
             :sysGameTypeCode="firstGameSection.sysGameTypeCode"
-            :platformLogoSrc="firstGameSection.platformLogoSrc"
             :list="firstGameSection.list"
           />
           <LazySection
@@ -114,7 +121,6 @@
             <GameList
               :title="value.sysGameTypeName"
               :sysGameTypeCode="value.sysGameTypeCode"
-              :platformLogoSrc="value.platformLogoSrc"
               :list="value.list"
             />
           </LazySection>
@@ -284,6 +290,8 @@ import Api from '@/api'
 import CommonFooter from '@/components/commonFooter.vue'
 import H5HomePop from '@/components/H5HomePop.vue'
 import HomeCarouselImg from '@/components/homeCarouselImg.vue'
+import type { GameDataItem } from '@/api/interface/game'
+import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import router from '@/router'
 import { useGameStore } from '@/stores/game'
@@ -291,7 +299,7 @@ import { useUserStore } from '@/stores/user'
 import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import LazySection from './components/LazySection.vue'
@@ -337,23 +345,19 @@ interface EventListItem {
   rowId: number
 }
 
-interface RawGameDataItem {
-  [key: string]: any
-}
-
 interface HomeGameSection {
   sysGameTypeCode: string
-  list: RawGameDataItem[]
+  list: GameDataItem[]
   sysGameTypeName: string
-  platformLogoSrc: string
 }
 
 const userStore = useUserStore()
 const gameStore = useGameStore()
 const AsyncEventList = defineAsyncComponent(() => import('./components/eventList.vue'))
 const AsyncNewEvent = defineAsyncComponent(() => import('./components/newEvent.vue'))
-const { userInfo } = storeToRefs(userStore)
+const { userInfo, acctInfo } = storeToRefs(userStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
+const { homeCollectionsData, isHomeCollectionsLoading } = storeToRefs(gameStore)
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 
@@ -363,8 +367,8 @@ const shouldShowH5HomePop = computed(
   () => isMobile.value && isActiveHomeRoute.value && showH5HomePop.value
 )
 const gameData = ref<HomeGameSection[]>([])
-const rawGameData = ref<RawGameDataItem[]>([])
-const querySlideshowList = ref<any[]>([])
+const rawGameData = ref<GameDataItem[]>([])
+const querySlideshowList = ref<QuerySlideshowItem[]>([])
 const isGameDataLoading = ref(false)
 const isSlideshowLoading = ref(false)
 
@@ -427,18 +431,46 @@ const toGameImageUrl = (value: string) => {
   return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
 }
 
-const mapHomeGameSections = (source: RawGameDataItem[]): HomeGameSection[] => {
-  return source.map(item => ({
-    list: item?.subGame?.[0]?.subGame?.slice(0, 10) || [],
-    sysGameTypeCode: item?.sysGameTypeCode || '',
-    sysGameTypeName: item?.sysGameTypeName || '',
-    platformLogoSrc: item?.subGame?.[0]?.icon4 || ''
-  }))
+const queryHomeGameSections = async (): Promise<HomeGameSection[]> => {
+  const rowType1Sections = await gameStore.queryGameData({
+    rowType: 1,
+    sortByOrderId: true
+  })
+
+  const sectionResults = await Promise.all(
+    rowType1Sections.map(async item => {
+      const sysGameTypeCode = String(item?.sysGameTypeCode || '').trim()
+      if (!sysGameTypeCode) {
+        return {
+          list: [],
+          sysGameTypeCode: '',
+          sysGameTypeName: String(item?.sysGameTypeName || '').trim()
+        }
+      }
+
+      const { list } = await gameStore.queryGameDataPage({
+        rowType: 3,
+        sysGameTypeCode,
+        page: 1,
+        pageSize: 10,
+        sortByOrderId: true,
+        sortDirection: 'desc'
+      })
+
+      return {
+        list,
+        sysGameTypeCode,
+        sysGameTypeName: String(item?.sysGameTypeName || '').trim()
+      }
+    })
+  )
+
+  return sectionResults
 }
 
-const sportsProviders = computed<RawGameDataItem[]>(() => {
+const sportsProviders = computed<GameDataItem[]>(() => {
   const sportsSection = rawGameData.value.find(
-    (item: RawGameDataItem) => item?.sysGameTypeCode === 'TY'
+    (item: GameDataItem) => item?.sysGameTypeCode === 'TY'
   )
 
   return sportsSection?.subGame ?? []
@@ -452,13 +484,31 @@ const sportsEventList = computed<EventListItem[]>(() => {
 })
 const firstGameSection = computed<HomeGameSection | null>(() => gameData.value[0] ?? null)
 const deferredGameSections = computed<HomeGameSection[]>(() => gameData.value.slice(1))
+const favoriteHomeGames = computed<GameDataItem[]>(() => {
+  return homeCollectionsData.value.filter(item => Number((item as GameDataItem)?.rowId) > 0) as
+    | GameDataItem[]
+    | []
+})
+
+const fetchHomeFavoritesModule = async () => {
+  if (!isLogin.value) {
+    return
+  }
+
+  const memberRowId = Number(acctInfo.value?.memberRowId)
+  if (!Number.isFinite(memberRowId) || memberRowId <= 0) {
+    return
+  }
+
+  await gameStore.fetchHomeCollectionsData(memberRowId)
+}
 
 const fetchGameData = async () => {
   isGameDataLoading.value = true
   try {
-    const rawResult = (await gameStore.ensureGameData()) as RawGameDataItem[]
+    const rawResult = (await gameStore.ensureGameData()) as GameDataItem[]
     rawGameData.value = rawResult
-    gameData.value = mapHomeGameSections(rawResult)
+    gameData.value = await queryHomeGameSections()
   } catch (error) {
     console.error('getGameData failed', error)
   } finally {
@@ -490,8 +540,18 @@ const getQuerySlideshow = async () => {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchGameData(), getQuerySlideshow()])
+  await Promise.all([fetchGameData(), getQuerySlideshow(), fetchHomeFavoritesModule()])
 })
+
+watch(
+  () => isLogin.value,
+  isNowLogin => {
+    if (!isNowLogin) {
+      return
+    }
+    void fetchHomeFavoritesModule()
+  }
+)
 </script>
 
 <style scoped lang="scss">

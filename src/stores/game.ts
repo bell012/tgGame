@@ -2,7 +2,12 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import i18n from '@/i18n'
 import Api from '@/api'
-import type { GameBrandItem, GameDataItem, GameTypeItem } from '@/api/interface/game'
+import type {
+  CollectionsListItem,
+  GameBrandItem,
+  GameDataItem,
+  GameTypeItem
+} from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
 import { getStorageLanguageCode } from '@/utils/locale'
 
@@ -108,6 +113,8 @@ interface PendingLanguageRequest<T> {
   promise: Promise<T[]>
 }
 
+type HomeCollectionDisplayItem = CollectionsListItem | GameDataItem
+
 export const useGameStore = defineStore('game', () => {
   const localeStore = useLocaleStore()
   /** 接口返回的原始游戏树数据 */
@@ -134,6 +141,16 @@ export const useGameStore = defineStore('game', () => {
   const isGameTypeLoading = ref(false)
   /** 搜索历史 */
   const searchHistory = ref<string[]>([])
+  /** platformCode -> icon4(完整地址) 缓存，避免重复查询 */
+  const platformLogoCache = ref<Record<string, string>>({})
+  /** 首页收藏模块数据（收藏优先，热门补位） */
+  const homeCollectionsData = ref<HomeCollectionDisplayItem[]>([])
+  /** 收藏列表数据（仅接口返回） */
+  const collectionsListData = ref<CollectionsListItem[]>([])
+  /** 首页收藏模块加载状态 */
+  const isHomeCollectionsLoading = ref(false)
+  /** 收藏列表加载状态 */
+  const isCollectionsListLoading = ref(false)
 
   /** 并发请求复用，避免同一时间重复请求同一个接口 */
   let pendingRequest: PendingLanguageRequest<GameDataItem> | null = null
@@ -321,6 +338,7 @@ export const useGameStore = defineStore('game', () => {
   ): GameDataItem[] => {
     gameData.value = nextGameData
     gameDataLanguageCode.value = languageCode
+    platformLogoCache.value = {}
     saveGameDataCache(nextGameData, languageCode)
 
     return nextGameData
@@ -384,6 +402,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const HOT_GAME_PAGE_SIZE = 100
+  const HOME_COLLECTION_TARGET_COUNT = 10
   /** 目的：统一热门页查询参数；策略：与 /casino/hot_games 场景保持一致 */
   const HOT_GAME_QUERY_PARAM = {
     rowType: 3,
@@ -413,6 +432,164 @@ export const useGameStore = defineStore('game', () => {
 
     const responseTotal = Number(total ?? 0)
     return Math.max(1, Math.ceil(responseTotal / Math.max(1, pageSize)))
+  }
+
+  const COLLECTION_TIME_FIELD_CANDIDATES = [
+    'collectionTime',
+    'collectTime',
+    'favoriteTime',
+    'favTime',
+    'updateTime',
+    'updatedAt',
+    'updateAt',
+    'createTime'
+  ] as const
+
+  const toTimestamp = (value: unknown): number => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value
+    }
+
+    if (typeof value === 'string') {
+      const normalizedValue = value.trim()
+      if (!normalizedValue) {
+        return 0
+      }
+
+      const numberValue = Number(normalizedValue)
+      if (Number.isFinite(numberValue)) {
+        return numberValue
+      }
+
+      const dateValue = Date.parse(normalizedValue)
+      return Number.isFinite(dateValue) ? dateValue : 0
+    }
+
+    return 0
+  }
+
+  const resolveCollectionSortTimestamp = (item: Record<string, unknown>) => {
+    for (const fieldName of COLLECTION_TIME_FIELD_CANDIDATES) {
+      const timestamp = toTimestamp(item[fieldName])
+      if (timestamp > 0) {
+        return timestamp
+      }
+    }
+
+    return 0
+  }
+
+  const sortCollectionsByTimeDesc = (list: CollectionsListItem[]) => {
+    return [...list].sort((a, b) => {
+      const timestampA = resolveCollectionSortTimestamp(a as Record<string, unknown>)
+      const timestampB = resolveCollectionSortTimestamp(b as Record<string, unknown>)
+      return timestampB - timestampA
+    })
+  }
+
+  const resolveCollectionsListRecords = (result: unknown): CollectionsListItem[] => {
+    if (Array.isArray(result)) {
+      return result as CollectionsListItem[]
+    }
+
+    if (
+      result &&
+      typeof result === 'object' &&
+      Array.isArray((result as { records?: unknown[] }).records)
+    ) {
+      return (result as { records: CollectionsListItem[] }).records
+    }
+
+    return []
+  }
+
+  const resolveGameUniqueKey = (item: Record<string, unknown>) => {
+    const keyCandidates = ['rowId', 'gameId', 'itemCode', 'itemId', 'id'] as const
+    for (const keyName of keyCandidates) {
+      const value = item[keyName]
+      if (value !== undefined && value !== null && String(value).trim()) {
+        return `${keyName}:${String(value).trim()}`
+      }
+    }
+    return ''
+  }
+
+  /**
+   * 获取首页收藏模块数据：
+   * - 收藏为空：不补位（模块不展示）
+   * - 收藏不足 10 条：用热门补位到 10 条
+   */
+  const fetchHomeCollectionsData = async (
+    memberRowId: number,
+    targetCount = HOME_COLLECTION_TARGET_COUNT
+  ) => {
+    isHomeCollectionsLoading.value = true
+    try {
+      const response = await Api.game.getCollectionsList({ memberRowId })
+      const records = resolveCollectionsListRecords(response?.result)
+      const sortedCollections = sortCollectionsByTimeDesc(records)
+
+      // 无收藏：不补位，不展示模块
+      if (!sortedCollections.length) {
+        homeCollectionsData.value = []
+        return homeCollectionsData.value
+      }
+
+      // 收藏足够：直接截断到目标数
+      if (sortedCollections.length >= targetCount) {
+        homeCollectionsData.value = sortedCollections.slice(0, targetCount)
+        return homeCollectionsData.value
+      }
+
+      // 收藏不足：热门补位
+      const hotGames = await ensureHotGameData()
+      const usedKeys = new Set(
+        sortedCollections
+          .map(item => resolveGameUniqueKey(item as Record<string, unknown>))
+          .filter(Boolean)
+      )
+      const hotFillers: GameDataItem[] = []
+
+      for (const hotGame of hotGames) {
+        const key = resolveGameUniqueKey(hotGame as Record<string, unknown>)
+        if (key && usedKeys.has(key)) {
+          continue
+        }
+        if (key) {
+          usedKeys.add(key)
+        }
+        hotFillers.push(hotGame)
+        if (sortedCollections.length + hotFillers.length >= targetCount) {
+          break
+        }
+      }
+
+      homeCollectionsData.value = [...sortedCollections, ...hotFillers].slice(0, targetCount)
+      return homeCollectionsData.value
+    } catch (error) {
+      console.error('fetchHomeCollectionsData failed', error)
+      homeCollectionsData.value = []
+      return homeCollectionsData.value
+    } finally {
+      isHomeCollectionsLoading.value = false
+    }
+  }
+
+  /** 获取收藏列表数据（仅接口返回，不补位） */
+  const fetchCollectionsListData = async (memberRowId: number) => {
+    isCollectionsListLoading.value = true
+    try {
+      const response = await Api.game.getCollectionsList({ memberRowId })
+      const records = resolveCollectionsListRecords(response?.result)
+      collectionsListData.value = sortCollectionsByTimeDesc(records)
+      return collectionsListData.value
+    } catch (error) {
+      console.error('fetchCollectionsListData failed', error)
+      collectionsListData.value = []
+      return collectionsListData.value
+    } finally {
+      isCollectionsListLoading.value = false
+    }
   }
 
   /** 拉取最新游戏数据；默认命中有效缓存时不重复请求 */
@@ -692,6 +869,44 @@ export const useGameStore = defineStore('game', () => {
     }
 
     return refreshHotGameData(true)
+  }
+
+  const buildPlatformLogoCache = (sourceNodes: GameDataItem[]) => {
+    const nextCache: Record<string, string> = {}
+    const records = flattenGameRecords(sourceNodes)
+
+    records.forEach(({ node }) => {
+      if (Number(node.rowType) !== 2) {
+        return
+      }
+
+      const platformCode = String(node.platformCode ?? '').trim()
+      const icon4 = String(node.icon4 ?? '').trim()
+      if (!platformCode || !icon4 || nextCache[platformCode]) {
+        return
+      }
+
+      nextCache[platformCode] = `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${icon4}`
+    })
+
+    platformLogoCache.value = nextCache
+    return nextCache
+  }
+
+  /** 按 platformCode 获取平台 logo（rowType:2 的 icon4），并带内存缓存 */
+  const getPlatformLogoByPlatformCode = async (platformCode: string) => {
+    const normalizedPlatformCode = String(platformCode ?? '').trim()
+    if (!normalizedPlatformCode) {
+      return ''
+    }
+
+    if (platformLogoCache.value[normalizedPlatformCode]) {
+      return platformLogoCache.value[normalizedPlatformCode]
+    }
+
+    const sourceNodes = await ensureGameData()
+    const cache = buildPlatformLogoCache(sourceNodes)
+    return cache[normalizedPlatformCode] ?? ''
   }
 
   /** 根据条件过滤扁平记录，像查询表一样使用 */
@@ -1089,6 +1304,12 @@ export const useGameStore = defineStore('game', () => {
   }
 
   return {
+    isHomeCollectionsLoading,
+    isCollectionsListLoading,
+    homeCollectionsData,
+    collectionsListData,
+    fetchHomeCollectionsData,
+    fetchCollectionsListData,
     searchHistory,
     loadSearchHistory,
     addSearchHistory,
@@ -1104,6 +1325,7 @@ export const useGameStore = defineStore('game', () => {
     queryGameDataPage,
     queryGameBrandData,
     queryGameBrandDataPage,
-    getGameTypeData
+    getGameTypeData,
+    getPlatformLogoByPlatformCode
   }
 })

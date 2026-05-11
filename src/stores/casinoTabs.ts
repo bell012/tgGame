@@ -272,12 +272,22 @@ export const useCasinoTabsStore = defineStore('casinoTabs', () => {
           return
         }
 
-        const { list } = await gameStore.queryGameDataPage({
-          gameTypeCode: sysGameTypeCode,
-          sortByOrderId: true,
-          rowType: 3,
-          page: 1
-        })
+        const shouldUseDefaultSort = sysGameTypeCode === 'TG'
+        const queryOptions = shouldUseDefaultSort
+          ? {
+              gameTypeCode: sysGameTypeCode,
+              rowType: 3,
+              page: 1
+            }
+          : {
+              gameTypeCode: sysGameTypeCode,
+              sortByOrderId: true,
+              sortDirection: 'desc' as const,
+              rowType: 3,
+              page: 1
+            }
+
+        const { list } = await gameStore.queryGameDataPage(queryOptions)
 
         nextLobbyGameMap[sysGameTypeCode] = list
       })
