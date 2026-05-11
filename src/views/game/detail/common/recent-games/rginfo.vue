@@ -134,8 +134,8 @@ const houseEdgeText = computed(() => {
 const maxWinText = computed(() => formatMultiplierText(currentGameDetail.value?.maxWinMax))
 
 const stakesRangeText = computed(() => {
-  const minText = formatStakeText(currentGameDetail.value?.maxWinMin)
-  const maxText = formatStakeText(currentGameDetail.value?.maxWinMax)
+  const minText = formatStakeText(currentGameDetail.value?.stakesRangeMin)
+  const maxText = formatStakeText(currentGameDetail.value?.stakesRangeMax)
 
   if (!minText || !maxText) {
     return '-'
