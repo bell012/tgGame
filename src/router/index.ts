@@ -62,6 +62,19 @@ const baseRoutes: RouteRecordRaw[] = [
     })
   },
   {
+    path: 'favorites-games',
+    name: 'favoritesGames',
+    component: () => import('@/views/fun/casino/favorites/index.vue'),
+    meta: {
+      title: 'Favorites Games',
+      requiresAuth: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'brand-games/:brandCode',
     name: 'brandGameList',
     component: () => import('@/views/fun/casino/brandGameList/index.vue'),

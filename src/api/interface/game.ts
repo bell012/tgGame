@@ -391,3 +391,61 @@ export interface GlobalDicResponse {
   ]
   success: boolean
 }
+
+/** 获取收藏列表 `/sub/collectionsList` */
+export interface GetCollectionsListForm {
+  memberRowId: number
+}
+
+export interface CollectionsListItem {
+  [key: string]: unknown
+}
+
+export interface GetCollectionsListResponse {
+  code: string | number
+  message: string
+  result?:
+    | CollectionsListItem[]
+    | {
+        records?: CollectionsListItem[]
+        [key: string]: unknown
+      }
+    | null
+  [key: string]: unknown
+}
+
+/** `/gc/loginPlatform` */
+export interface LoginPlatformParams {
+  pgType?: string | number
+  gameCode?: string | number
+  platformCode?: string
+  currency?: string
+}
+
+export interface LoginPlatformResult {
+  platformLink?: string
+  isHorizontal?: boolean | number
+  [key: string]: unknown
+}
+
+export interface LoginPlatformResponse {
+  code: string | number
+  message?: string
+  result?: LoginPlatformResult
+  success?: boolean
+  [key: string]: unknown
+}
+
+/** `/gc/logoutAllPlatform` */
+export interface LogoutAllPlatformParams {
+  companyCode?: string
+  gameCode?: string
+}
+
+export interface LogoutAllPlatformResponse {
+  code: string | number
+  message?: string
+  result?: unknown
+  success?: boolean
+  [key: string]: unknown
+}

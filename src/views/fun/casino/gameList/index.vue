@@ -49,6 +49,7 @@ import H5Header from '@/components/common/H5Header.vue'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useGameStore } from '@/stores/game'
 import {
   getCasinoPageMode,
   getCasinoQueryOptions,
@@ -71,12 +72,16 @@ const router = useRouter()
 const isMobile = useIsMobile()
 const mobileScrollRef = ref<HTMLElement | null>(null)
 const userInfo = ref<SelectMemberResult | null>(null)
+const gameStore = useGameStore()
+const homeSysGameTypeName = ref('')
 const isLoggedIn = computed(() => {
   return Boolean(userInfo.value?.tradeToken)
 })
 const { tabButtons, loadCasinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
 
 const currentTabCode = computed(() => getGameListTabCodeFromSlug(props.tabKey))
+const queryType = computed(() => String(route.query.type ?? '').trim())
+const isHomeType = computed(() => queryType.value === '2')
 const currentPageMode = computed(() => getCasinoPageMode(currentTabCode.value))
 const currentPageComponent = computed(() => {
   switch (currentPageMode.value) {
@@ -109,6 +114,17 @@ const currentPageProps = computed(() => {
   const queryOptions = getCasinoQueryOptions(currentTabCode.value, {
     isMobile: isMobile.value
   })
+  const mergedQueryOptions = queryOptions
+    ? { ...queryOptions }
+    : {
+        rowType: 3,
+        pageSize: isMobile.value ? 27 : 32
+      }
+
+  if (isHomeType.value) {
+    mergedQueryOptions.sysGameTypeCode = currentTabCode.value
+    delete mergedQueryOptions.gameTypeCode
+  }
 
   if (currentPageMode.value === 'pageStyle4') {
     return {}
@@ -116,17 +132,21 @@ const currentPageProps = computed(() => {
 
   if (currentPageMode.value === 'pageStyle3') {
     return {
-      queryOptions,
+      queryOptions: mergedQueryOptions || undefined,
       sortValue: normalizedSort.value,
       providerCodes: normalizedProviderCodes.value
     }
   }
 
   return {
-    queryOptions
+    queryOptions: mergedQueryOptions || undefined
   }
 })
 const pageTitle = computed(() => {
+  if (isHomeType.value && homeSysGameTypeName.value) {
+    return homeSysGameTypeName.value
+  }
+
   const matchedTab = tabButtons.value.find(tab => tab.sysGameTypeCode === currentTabCode.value)
 
   if (matchedTab?.sysGameTypeName) {
@@ -144,6 +164,19 @@ const pageTitle = computed(() => {
       return t('sidebar_menu.casino.title')
   }
 })
+
+const loadHomeSysGameTypeName = async () => {
+  if (!isHomeType.value || !currentTabCode.value) {
+    homeSysGameTypeName.value = ''
+    return
+  }
+
+  const rowType1Sections = await gameStore.queryGameData({
+    rowType: 1,
+    sysGameTypeCode: currentTabCode.value
+  })
+  homeSysGameTypeName.value = String(rowType1Sections[0]?.sysGameTypeName ?? '').trim()
+}
 
 const updateRouteQuery = (nextQuery: Record<string, string | undefined>) => {
   const mergedQuery = {
@@ -214,12 +247,14 @@ const loadUserInfo = () => {
 onMounted(() => {
   loadUserInfo()
   void loadCasinoTabButtons()
+  void loadHomeSysGameTypeName()
   scrollPageToTop()
 })
 
 watch(
-  () => route.fullPath,
+  () => [route.fullPath, currentTabCode.value, isHomeType.value],
   () => {
+    void loadHomeSysGameTypeName()
     scrollPageToTop()
   }
 )

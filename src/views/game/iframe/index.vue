@@ -56,6 +56,7 @@
 
 <script setup lang="ts">
 import Api from '@/api'
+import type { LogoutAllPlatformResponse } from '@/api/interface/game'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -138,7 +139,7 @@ const confirmExit = async () => {
   }
 
   isConfirmLoading.value = true
-  let res: any
+  let res: LogoutAllPlatformResponse | undefined
   try {
     res = await Api.game.logoutAllPlatform({
       companyCode: companyCode.value,
