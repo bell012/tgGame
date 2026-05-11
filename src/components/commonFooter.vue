@@ -35,50 +35,64 @@
           </div>
         </div>
       </div>
-      <!-- 第二排 -->
-      <div class="flex flex-nowrap gap-x-2 overflow-x-auto border-b py-6">
+      <!-- 第二排：固定一栏 8 个，间距 8px，圆角 14px -->
+      <div class="grid w-full grid-cols-8 gap-[8px] border-b border-opacity-10 py-6">
         <div
-          class="h-[96.209px] w-[160.349px] shrink-0 aspect-[5/3] rounded-[14px]"
-          v-for="i in 8"
+          class="aspect-[5/3] w-full min-w-0 overflow-hidden rounded-[14px] bg-bg-5"
+          v-for="(src, i) in row2AwardSrcs"
           :key="`award-${i}`"
         >
-          <img
-            :src="footer1Image"
+          <SmartImage
+            :src="src"
             :alt="t('common_footer.alt.award')"
             class="h-full w-full object-contain"
           />
         </div>
       </div>
 
-      <!-- 第三排 -->
+      <!-- 第三排：行间竖线不用 divide-*（无 token / 易受 reset 影响），用 border-l 显式分隔 -->
       <div class="w-full border-b border-opacity-10 py-6">
         <div class="flex w-full flex-wrap gap-x-10">
-          <!-- 左边5个图标 -->
-          <div
-            class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 cursor-pointer"
-          >
-            <img
+          <!-- 左 -->
+          <div class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6">
+            <a
               v-for="cert in leftCertifications"
               :key="cert.id"
-              :src="footer2Image"
-              :alt="t('common_footer.alt.certification')"
-              class="h-auto w-[94px]"
-              @click="cert.handler"
-            />
+              class="inactive inline-flex max-w-none shrink-0 items-center justify-center"
+              :href="cert.href"
+              :target="cert.targetBlank ? '_blank' : undefined"
+              :rel="cert.targetBlank ? 'noopener noreferrer' : undefined"
+              @click="onPartnerBadgeClick(cert, $event)"
+            >
+              <SmartImage
+                :src="cert.src"
+                :alt="cert.alt || t('common_footer.alt.certification')"
+                class="block h-auto w-full max-w-none object-contain"
+                :style="{ width: `${cert.imgWidthPx}px`, maxWidth: `${cert.imgWidthPx}px` }"
+              />
+            </a>
           </div>
 
-          <!-- 右边5个图标 -->
+          <!-- 右 -->
           <div
-            class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 cursor-pointer pl-6"
+            class="flex flex-shrink-0 flex-grow items-center justify-around gap-x-6 border-l border-solid border-opacity-10 pl-6"
           >
-            <SmartImage
+            <a
               v-for="cert in rightCertifications"
               :key="cert.id"
-              :src="footer3Image"
-              :alt="t('common_footer.alt.certification')"
-              class="h-auto w-[52px]"
-              @click="cert.handler"
-            />
+              class="inactive inline-flex max-w-none shrink-0 items-center justify-center"
+              :href="cert.href"
+              :target="cert.targetBlank ? '_blank' : undefined"
+              :rel="cert.targetBlank ? 'noopener noreferrer' : undefined"
+              @click="onPartnerBadgeClick(cert, $event)"
+            >
+              <SmartImage
+                :src="cert.src"
+                :alt="cert.alt || t('common_footer.alt.certification')"
+                class="block h-auto w-full max-w-none object-contain"
+                :style="{ width: `${cert.imgWidthPx}px`, maxWidth: `${cert.imgWidthPx}px` }"
+              />
+            </a>
           </div>
         </div>
       </div>
@@ -212,8 +226,8 @@
           </ul>
         </div>
 
-        <!-- 加入我们的会社群 -->
         <div>
+          <!-- 加入我们全球社区 -->
           <h3 class="mb-5 text-sm font-bold leading-normal text-text-1">
             {{ t('common_footer.sections.global_community') }}
           </h3>
@@ -221,11 +235,13 @@
             <div
               v-for="social in socialMediaLinks"
               :key="social.id"
-              class="w-[40px] h-[40px] flex items-center justify-center bg-bg-3 rounded-lg cursor-pointer hover:bg-bg-4"
+              class="w-[40px] h-[40px] flex items-center justify-center bg-bg-3 rounded-lg cursor-pointer hover:bg-bg-4 text-icon-2"
+              @click="social.handler"
             >
-              <component :is="LoginIcon1" class="w-6 h-6 fill-none" @click="social.handler" />
+              <component :is="social.icon" class="block h-6 w-6" />
             </div>
           </div>
+          <!-- 加入我们本地社区 -->
           <h3 class="mb-5 mt-6 text-sm font-bold leading-normal text-text-1">
             {{ t('common_footer.sections.local_community') }}
           </h3>
@@ -233,9 +249,10 @@
             <div
               v-for="local in localGroupLinks"
               :key="local.id"
-              class="w-[40px] h-[40px] flex items-center justify-center bg-bg-3 rounded-lg cursor-pointer hover:bg-bg-4"
+              class="w-[40px] h-[40px] flex items-center justify-center bg-bg-3 rounded-lg cursor-pointer hover:bg-bg-4 text-icon-2"
+              @click="local.handler"
             >
-              <component :is="LoginIcon1" class="w-6 h-6 fill-none" @click="local.handler" />
+              <component :is="local.icon" class="block h-6 w-6" />
             </div>
           </div>
         </div>
@@ -282,16 +299,48 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { navigateTo } from '@/utils/router'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
-import LoginIcon1 from '@/static/svg/login/login_icon_1.svg?component'
 import ExternalIcon from '@/static/svg/external.svg?component'
+import SmartImage from '@/components/common/SmartImage.vue'
+import FooterGlobalCommunity01 from '@/static/svg/commonFooter/social/footer_global_community_01.svg?component'
+import FooterGlobalCommunity02 from '@/static/svg/commonFooter/social/footer_global_community_02.svg?component'
+import FooterGlobalCommunity03 from '@/static/svg/commonFooter/social/footer_global_community_03.svg?component'
+import FooterGlobalCommunity04 from '@/static/svg/commonFooter/social/footer_global_community_04.svg?component'
+import FooterGlobalCommunity05 from '@/static/svg/commonFooter/social/footer_global_community_05.svg?component'
+import FooterGlobalCommunity06 from '@/static/svg/commonFooter/social/footer_global_community_06.svg?component'
+import FooterGlobalCommunity07 from '@/static/svg/commonFooter/social/footer_global_community_07.svg?component'
+import FooterGlobalCommunity08 from '@/static/svg/commonFooter/social/footer_global_community_08.svg?component'
+import FooterLocalCommunity01 from '@/static/svg/commonFooter/social/footer_local_community_01.svg?component'
 
-const footer1Image = new URL('@/static/img/commonFooter/footer_1.webp', import.meta.url).href
-const footer2Image = new URL('@/static/img/commonFooter/footer_2_1.webp', import.meta.url).href
-const footer3Image = new URL('@/static/img/commonFooter/footer_3_1.png', import.meta.url).href
+const GLOBAL_COMMUNITY_ICONS: Component[] = [
+  FooterGlobalCommunity01,
+  FooterGlobalCommunity02,
+  FooterGlobalCommunity03,
+  FooterGlobalCommunity04,
+  FooterGlobalCommunity05,
+  FooterGlobalCommunity06,
+  FooterGlobalCommunity07,
+  FooterGlobalCommunity08
+]
+
+/** 本地社群：与设计稿 SVG 导出顺序一致；当前画布仅一枚图标节点 */
+const LOCAL_COMMUNITY_ICONS: Component[] = [FooterLocalCommunity01]
+
+/** 第二排奖项图 */
+const row2AwardSrcs = [
+  new URL('@/static/img/commonFooter/row2/d-92-DCx7K2V3.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row2/d-93-0pkDEp9Z.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row2/d-94-BjjhhHHh.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row2/d-95-CMQSGT4N.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row2/d-96-pZM7QuMr.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row2/d-97-qal8av7f.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row2/d-98-DA42CT6W.png', import.meta.url).href,
+  new URL('@/static/img/commonFooter/row2/d-99-NFJF9gM_.png', import.meta.url).href
+]
+
 const footer4_2Image = new URL('@/static/img/commonFooter/footer_4_2.png', import.meta.url).href
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 
@@ -306,71 +355,159 @@ type FooterLink = {
   handler: () => void
 }
 
-// 第二排左边认证图标
-const leftCertifications = computed(() => [
+/** 第三排徽标：`imgWidthPx` / `href` 与设计稿对齐；站内链用 SPA 跳转 */
+type FooterBadge = {
+  id: string
+  src: string
+  alt?: string
+  imgWidthPx: number
+  href: string
+  external: boolean
+  targetBlank: boolean
+}
+
+const onPartnerBadgeClick = (cert: FooterBadge, e: MouseEvent) => {
+  if (cert.external) return
+  e.preventDefault()
+  navigateTo(cert.href)
+}
+
+const footerRow3Left_sigma = new URL(
+  '@/static/img/commonFooter/row3/footer_row3_left_sigma.webp',
+  import.meta.url
+).href
+const footerRow3Left_responsible = new URL(
+  '@/static/img/commonFooter/row3/footer_row3_left_responsible_gambling.webp',
+  import.meta.url
+).href
+const footerRow3Left_gamcare = new URL(
+  '@/static/img/commonFooter/row3/footer_row3_left_gamcare.webp',
+  import.meta.url
+).href
+const footerRow3Left_betblocker = new URL(
+  '@/static/img/commonFooter/row3/footer_row3_left_betblocker.webp',
+  import.meta.url
+).href
+const footerRow3Left_18_plus = new URL(
+  '@/static/img/commonFooter/row3/footer_row3_left_18_plus.webp',
+  import.meta.url
+).href
+
+const footerRow3Right_leicester = new URL(
+  '@/static/img/commonFooter/row3/footer_row3_right_leicester.webp',
+  import.meta.url
+).href
+const footerRow3Right_miami = new URL(
+  '@/static/img/commonFooter/row3/footer_row3_right_miami.webp',
+  import.meta.url
+).href
+const footerRow3Right_o_higgins = new URL(
+  '@/static/img/commonFooter/row3/footer_row3_right_o_higgins.webp',
+  import.meta.url
+).href
+const footerRow3Right_jason_derulo = new URL(
+  '@/static/img/commonFooter/row3/footer_row3_right_jason_derulo.webp',
+  import.meta.url
+).href
+const footerRow3Right_kwara_united = new URL(
+  '@/static/img/commonFooter/row3/footer_row3_right_kwara_united.webp',
+  import.meta.url
+).href
+
+// 第三排：合规与合作——徽章物料与其他端/产品同源；跳转地址按本产品配置（若有差异可改下列 href）
+const leftCertifications = computed<FooterBadge[]>(() => [
   {
-    id: 'cert-left-1',
-    handler: () => {
-      console.log('cert-left-1')
-    }
+    id: 'cert-row3-sigma',
+    src: footerRow3Left_sigma,
+    alt: 'sigma',
+    imgWidthPx: 94,
+    href: 'https://sigma.world/',
+    external: true,
+    targetBlank: true
   },
   {
-    id: 'cert-left-2',
-    handler: () => {
-      console.log('cert-left-2')
-    }
+    id: 'cert-row3-responsible-gambling',
+    src: footerRow3Left_responsible,
+    alt: 'responsible gambling',
+    imgWidthPx: 104,
+    href: 'https://www.responsiblegambling.org/',
+    external: true,
+    targetBlank: true
   },
   {
-    id: 'cert-left-3',
-    handler: () => {
-      console.log('cert-left-3')
-    }
+    id: 'cert-row3-gamcare',
+    src: footerRow3Left_gamcare,
+    alt: 'GamCare',
+    imgWidthPx: 125,
+    href: 'https://www.gamcare.org.uk/',
+    external: true,
+    targetBlank: true
   },
   {
-    id: 'cert-left-4',
-    handler: () => {
-      console.log('cert-left-4')
-    }
+    id: 'cert-row3-betblocker',
+    src: footerRow3Left_betblocker,
+    alt: 'BetBlocker',
+    imgWidthPx: 180,
+    href: 'https://betblocker.org',
+    external: true,
+    targetBlank: true
   },
   {
-    id: 'cert-left-5',
-    handler: () => {
-      console.log('cert-left-5')
-    }
+    id: 'cert-row3-18-plus',
+    src: footerRow3Left_18_plus,
+    alt: '18+',
+    imgWidthPx: 50,
+    href: '/help/protect-minors',
+    external: false,
+    targetBlank: false
   }
 ])
 
-// 第二排右边认证图标
-const rightCertifications = computed(() => [
+const rightCertifications = computed<FooterBadge[]>(() => [
   {
-    id: 'cert-right-1',
-    handler: () => {
-      console.log('cert-right-1')
-    }
+    id: 'cert-row3-leicester',
+    src: footerRow3Right_leicester,
+    alt: 'Leicester City',
+    imgWidthPx: 52,
+    href: 'https://www.lcfc.com/',
+    external: true,
+    targetBlank: true
   },
   {
-    id: 'cert-right-2',
-    handler: () => {
-      console.log('cert-right-2')
-    }
+    id: 'cert-row3-miami',
+    src: footerRow3Right_miami,
+    alt: 'Inter Miami',
+    imgWidthPx: 52,
+    href: 'https://themiamipc.com/home',
+    external: true,
+    targetBlank: true
   },
   {
-    id: 'cert-right-3',
-    handler: () => {
-      console.log('cert-right-3')
-    }
+    id: 'cert-row3-o-higgins',
+    src: footerRow3Right_o_higgins,
+    alt: 'O Higgins',
+    imgWidthPx: 52,
+    href: 'https://www.ohigginsfc.cl/',
+    external: true,
+    targetBlank: true
   },
   {
-    id: 'cert-right-4',
-    handler: () => {
-      console.log('cert-right-4')
-    }
+    id: 'cert-row3-jason-derulo',
+    src: footerRow3Right_jason_derulo,
+    alt: 'Jason Derulo',
+    imgWidthPx: 100,
+    href: 'https://www.jasonderulo.com/',
+    external: true,
+    targetBlank: true
   },
   {
-    id: 'cert-right-5',
-    handler: () => {
-      console.log('cert-right-5')
-    }
+    id: 'cert-row3-kwara-united',
+    src: footerRow3Right_kwara_united,
+    alt: 'Kwara United',
+    imgWidthPx: 52,
+    href: 'https://x.com/KwaraUnitedFC',
+    external: true,
+    targetBlank: true
   }
 ])
 
@@ -687,73 +824,26 @@ const aboutLinks = computed(() => [
   }
 ])
 
-// 社交媒体链接
-const socialMediaLinks = computed(() => [
-  {
-    id: 'social-1',
+// 社交媒体链接（图标与 Figma SVG 节点顺序一致：左→右、上→下）
+const socialMediaLinks = computed(() =>
+  GLOBAL_COMMUNITY_ICONS.map((icon, i) => ({
+    id: `social-${i + 1}`,
+    icon,
     handler: () => {
-      console.log('social-1')
+      console.log(`social-${i + 1}`)
     }
-  },
-  {
-    id: 'social-2',
-    handler: () => {
-      console.log('social-2')
-    }
-  },
-  {
-    id: 'social-3',
-    handler: () => {
-      console.log('social-3')
-    }
-  },
-  {
-    id: 'social-4',
-    handler: () => {
-      console.log('social-4')
-    }
-  },
-  {
-    id: 'social-5',
-    handler: () => {
-      console.log('social-5')
-    }
-  },
-  {
-    id: 'social-6',
-    handler: () => {
-      console.log('social-6')
-    }
-  },
-  {
-    id: 'social-7',
-    handler: () => {
-      console.log('social-7')
-    }
-  },
-  {
-    id: 'social-8',
-    handler: () => {
-      console.log('social-8')
-    }
-  }
-])
+  }))
+)
 
-// 本地群组链接
-const localGroupLinks = computed(() => [
-  {
-    id: 'local-1',
+const localGroupLinks = computed(() =>
+  LOCAL_COMMUNITY_ICONS.map((icon, i) => ({
+    id: `local-${i + 1}`,
+    icon,
     handler: () => {
-      console.log('local-1')
+      console.log(`local-${i + 1}`)
     }
-  },
-  {
-    id: 'local-2',
-    handler: () => {
-      console.log('local-2')
-    }
-  }
-])
+  }))
+)
 
 // 底部认证图标
 const bottomCertification = {

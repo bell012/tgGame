@@ -1,9 +1,9 @@
 <template>
   <popShell v-model="visible" transition-type="modal">
     <section
-      class="mx-auto max-h-[72vh] w-[460px] overflow-hidden rounded-[12px] bg-bg-2 shadow-[0_18px_54px_rgba(0,0,0,0.32)]"
+      class="mx-auto flex h-[704px] w-[480px] flex-col overflow-hidden rounded-[12px] bg-bg-1 shadow-[0_18px_54px_rgba(0,0,0,0.32)]"
     >
-      <div class="relative flex items-center justify-center bg-bg-3 px-4 py-3">
+      <div class="relative flex items-center justify-center bg-bg-2 px-4 py-3">
         <h3 class="text-[16px] font-[700] leading-[20px] text-text-1">
           {{ t('rebatePage.records.title') }}
         </h3>
@@ -16,7 +16,7 @@
         </button>
       </div>
 
-      <div class="records-scroll max-h-[calc(72vh-52px)] overflow-y-auto px-4 pb-4 pt-3">
+      <div class="records-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-3">
         <RebateRecordsContent panel-mode />
       </div>
     </section>
