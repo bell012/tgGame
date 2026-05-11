@@ -56,7 +56,7 @@
           <div v-if="search" class="relative mb-[20px]">
             <component
               :is="isDarkTheme ? SearchBlackIcon : SearchIcon"
-              class="absolute left-2.5 top-1/2 h-[14px] w-[14px] -translate-y-1/2 opacity-70"
+              class="absolute left-2.5 top-1/2 h-[14px] w-[14px] -translate-y-1/2 text-icon-2 [&_svg]:block [&_svg]:h-full [&_svg]:w-full"
             />
             <input
               v-model="keyword"

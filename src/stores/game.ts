@@ -104,6 +104,7 @@ interface GameBrandQueryOptions {
 export interface GamePlatformOption {
   platformCode: string
   platformName: string
+  icon1: string
   icon4: string
 }
 
@@ -881,12 +882,12 @@ export const useGameStore = defineStore('game', () => {
       }
 
       const platformCode = String(node.platformCode ?? '').trim()
-      const icon4 = String(node.icon4 ?? '').trim()
-      if (!platformCode || !icon4 || nextCache[platformCode]) {
+      const icon1 = String(node.icon1 ?? '').trim()
+      if (!platformCode || !icon1 || nextCache[platformCode]) {
         return
       }
 
-      nextCache[platformCode] = `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${icon4}`
+      nextCache[platformCode] = `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${icon1}`
     })
 
     platformLogoCache.value = nextCache
@@ -1189,6 +1190,7 @@ export const useGameStore = defineStore('game', () => {
       platformMap.set(platformCode, {
         platformCode,
         platformName: String(item.platformName ?? '').trim(),
+        icon1: String(item.icon1 ?? '').trim(),
         icon4: String(item.icon4 ?? '').trim()
       })
     })

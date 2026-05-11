@@ -218,22 +218,16 @@ const handleViewAll = (item: CasinoLobbyButtonItem) => {
   const sysGameTypeCode = String(item.sysGameTypeCode ?? '').trim()
   if (!sysGameTypeCode) return
 
-  if (props.viewAllMode === 'home') {
-    if (sysGameTypeCode === 'favorites') {
-      navigateTo('/favorites-games')
-      return
-    }
-    navigateTo(`/gamelist/${sysGameTypeCode}`, {
-      query: {
-        type: '2'
-      }
-    })
+  if (props.viewAllMode === 'home' && sysGameTypeCode === 'favorites') {
+    navigateTo('/favorites-games')
     return
   }
 
   const tabSlug = getGameListTabSlug(sysGameTypeCode)
   if (!tabSlug) return
-  closeDesktopModal()
+  if (props.viewAllMode !== 'home') {
+    closeDesktopModal()
+  }
   navigateTo(`/gamelist/${tabSlug}`)
 }
 
