@@ -21,13 +21,13 @@
         <transition name="drawer-mask">
           <div
             v-if="visible"
-            class="fixed inset-0 bg-mask-60-1 z-[10000] overflow-hidden"
+            class="auth-mobile-overlay fixed inset-0 bg-mask-60-1 z-[10000] overflow-hidden"
             @click="handleClose"
           >
             <transition name="drawer-slide">
               <div
                 v-if="showDrawer"
-                class="absolute right-0 top-0 h-full w-full overflow-y-auto shadow-2xl container_bg"
+                class="auth-mobile-drawer absolute right-0 top-0 h-full w-full overflow-y-auto shadow-2xl container_bg"
                 @click.stop
               >
                 <div class="w-full relative h-50 box-content">
@@ -209,6 +209,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import CloseIcon from '@/static/svg/close.svg?component'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
@@ -239,6 +240,8 @@ const emit = defineEmits<{
 const showDrawer = ref(false)
 const resetPasswordFormRef = ref<InstanceType<typeof ResetPasswordFormCore> | null>(null)
 const isH5BackgroundLoaded = ref(false)
+
+usePageScrollLock(() => props.visible)
 
 // 登录/注册弹窗背景图
 const h5BackgroundImage = computed(() => {
@@ -366,6 +369,19 @@ const handleResetPasswordSuccess = () => {
 .drawer-slide-enter-to,
 .drawer-slide-leave-from {
   transform: translateX(0);
+}
+
+.auth-mobile-overlay {
+  height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: none;
+}
+
+.auth-mobile-drawer {
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .container_bg {

@@ -8,7 +8,7 @@
     </WalletLayout>
 
     <!-- H5 端布局 -->
-    <div class="fixed inset-0 bg-bg-1 sm:hidden flex flex-col overflow-hidden">
+    <div class="rollover-mobile-page fixed inset-0 bg-bg-1 sm:hidden flex flex-col overflow-hidden">
       <H5Header :title="$t('wallet.rollover')" :show-sort="true" @sort="handleSort" />
 
       <div
@@ -137,6 +137,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import Api from '@/api'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { navigateTo } from '@/utils/router'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -166,6 +167,8 @@ import {
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
+
+usePageScrollLock(() => isMobile.value)
 
 const scrollRoot = ref<HTMLElement | null>(null)
 const loadMoreSentinel = ref<HTMLElement | null>(null)
@@ -258,8 +261,17 @@ const handleRetry = async () => {
 </script>
 
 <style scoped>
+.rollover-mobile-page {
+  height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: none;
+}
+
 .rollover-scroll-root {
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 </style>
 
