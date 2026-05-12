@@ -21,7 +21,14 @@ import type {
   GameTypeResponse,
   QueryGameItemPageParams,
   QueryGameItemPageResponse,
-  GlobalDicResponse
+  GlobalDicResponse,
+  GetCollectionsListForm,
+  GetCollectionsListResponse,
+  CollectionsSubjectForm,
+  LoginPlatformParams,
+  LoginPlatformResponse,
+  LogoutAllPlatformParams,
+  LogoutAllPlatformResponse
 } from '@/api/interface/game'
 
 /**
@@ -199,7 +206,7 @@ export function refreshGameStatistics(
   })
 }
 
-export function getloginPlatform(data: any): Promise<any> {
+export function getloginPlatform(data: LoginPlatformParams): Promise<LoginPlatformResponse> {
   return request({
     url: '/gc/loginPlatform',
     method: 'post',
@@ -209,7 +216,9 @@ export function getloginPlatform(data: any): Promise<any> {
   })
 }
 
-export function logoutAllPlatform(data: { companyCode?: string; gameCode?: string }): Promise<any> {
+export function logoutAllPlatform(
+  data: LogoutAllPlatformParams
+): Promise<LogoutAllPlatformResponse> {
   return request({
     url: '/gc/logoutAllPlatform',
     method: 'post',
@@ -268,6 +277,42 @@ export function publishComment(
 ): Promise<PublishCommentResponse> {
   return request({
     url: '/comment/sub/publishComment',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true,
+    ...options
+  })
+}
+
+/**
+ * 获取收藏列表（`result` 一般为游戏 rowId 数组，对应 gameData 中 rowType:3 的 rowId）
+ * @param data memberRowId 会员ID
+ */
+export function getCollectionsList(
+  data: GetCollectionsListForm,
+  options?: ApiResponseToastOptions
+): Promise<GetCollectionsListResponse> {
+  return request({
+    url: '/comment/sub/collectionsList',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true,
+    ...options
+  })
+}
+
+/**
+ * 收藏 / 取消收藏游戏
+ * @param data memberRowId、gameId、status（0 收藏，1 取消）
+ */
+export function collectionsSubject(
+  data: CollectionsSubjectForm,
+  options?: ApiResponseToastOptions
+): Promise<unknown> {
+  return request({
+    url: '/comment/sub/collectionsSubject',
     method: 'post',
     data,
     showSuccessToast: false,

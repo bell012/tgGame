@@ -72,7 +72,7 @@ export interface QueryAcctHisPageForm {
   param: {
     currency: string | null
   }
-  changeTypes: string[] | null // 变更类型 1.游戏切换   2.会员充值 3.会员取款 4.会员取款退回 5.人工存入 6.人工扣款 7.赠送彩金 8.领取佣金 9货币互换 13.VIP收益 14.红利兑换
+  changeTypes: string[] | null // 变更类型 1.游戏切换   2.会员充值 3.会员取款 4.会员取款退回 5.人工存入 6.人工扣款 7.赠送彩金 8.领取佣金 9货币互换  10.周礼金  11.月礼金  13.VIP收益 14.红利兑换
 }
 
 // 资金明细 响应
@@ -92,7 +92,7 @@ export interface QueryAcctHisPageResult {
     backNote: string
     busiAmount: number // 交易金额
     changeNote: string // 备注说明
-    changeType: number // 变更类型 1.游戏切换   2.会员充值 3.会员取款 4.会员取款退回 5.人工存入 6.人工扣款 7.赠送彩金 8.领取佣金 9货币互换 13.VIP收益 14.红利兑换
+    changeType: number // 变更类型 1.游戏切换   2.会员充值 3.会员取款 4.会员取款退回 5.人工存入 6.人工扣款 7.赠送彩金 8.领取佣金 9货币互换  10.周礼金  11.月礼金  13.VIP收益 14.红利兑换
     createBy: string
     createDate: number
     createTime: number // 更新时间
@@ -117,7 +117,7 @@ export interface QueryInspectPageForm {
     size: number
   }
   state: number | null // 状态0:已完成 1:未完成
-  changeTypes: string[] | null // 变更类型 1.游戏切换 2.会员充值 3.会员取款 4.会员取款退回 5.人工存入 6.人工扣款 7.赠送彩金 8.领取佣金 9货币互换 13VIP收益 14红利兑换
+  changeTypes: string[] | null // 变更类型 1.游戏切换   2.会员充值 3.会员取款 4.会员取款退回 5.人工存入 6.人工扣款 7.赠送彩金 8.领取佣金 9货币互换  10.周礼金  11.月礼金  13.VIP收益 14.红利兑换
 }
 
 // 流水记录 响应

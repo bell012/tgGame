@@ -165,7 +165,7 @@ const resolvedQueryOptions = computed<GameQueryOptions>(() => {
   }
 
   const sortOptionMap: Record<string, Partial<GameQueryOptions>> = {
-    default: { sortByOrderId: true, sortDirection: 'desc' },
+    default: { sortByOrderId: true, sortDirection: 'asc' },
     'a-z': { sortByOrderId: true, sortByItemName: true, sortDirection: 'asc' },
     'z-a': { sortByOrderId: true, sortByItemName: true, sortDirection: 'desc' }
   }

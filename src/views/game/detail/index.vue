@@ -34,9 +34,11 @@
 </template>
 <script setup lang="ts">
 import Api from '@/api'
+import { readIsCollections } from '@/api/interface/game'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
+import { useUserStore } from '@/stores/user'
 import { getLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
@@ -97,10 +99,15 @@ const API_REQUEST_OPTIONS = {
 const gameData = ref<GameDataItem[]>([])
 provide('game-detail-game-data', gameData)
 
+/** 与 getCommentSubject.result.isCollections 同步，供收藏星标 inject */
+const gameDetailSubjectIsCollections = ref<boolean | null>(null)
+provide('game-detail-subject-is-collections', gameDetailSubjectIsCollections)
+
 const { t } = useI18n()
 const isMobile = useIsMobile()
 const route = useRoute()
 const localeStore = useLocaleStore()
+const userStore = useUserStore()
 const { currentLanguage } = storeToRefs(localeStore)
 const isGameDataLoading = ref(false)
 const currentGameDetailState = ref<CurrentGameDetail>(null)
@@ -177,6 +184,36 @@ const rowId = computed(() => normalizeGameDetailValue(route.params.rowId))
 const currentGameDetail = computed<CurrentGameDetail>(() => currentGameDetailState.value)
 provide('game-detail-current-game', currentGameDetail)
 
+const syncFavoriteFromCommentSubject = async (gameIdRaw: string) => {
+  gameDetailSubjectIsCollections.value = null
+  if (!gameIdRaw) {
+    return
+  }
+
+  userStore.syncStoredUserData()
+  const memberRowIdNum = Number(userStore.acctInfo?.memberRowId)
+
+  try {
+    const res = await Api.game.getCommentSubject(
+      {
+        gameId: gameIdRaw,
+        sortType: 1,
+        ...(Number.isFinite(memberRowIdNum) && memberRowIdNum > 0
+          ? { memberRowId: memberRowIdNum }
+          : {})
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: false
+      }
+    )
+    const raw = (res?.result as { isCollections?: unknown } | null | undefined)?.isCollections
+    gameDetailSubjectIsCollections.value = readIsCollections(raw)
+  } catch {
+    gameDetailSubjectIsCollections.value = null
+  }
+}
+
 const currentGameRowId = computed(() =>
   normalizeGameDetailValue(currentGameDetail.value?.rowId ?? rowId.value)
 )
@@ -216,6 +253,7 @@ const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.val
 const fetchCurrentGameDetail = async () => {
   const targetRowId = rowId.value
   const languageCode = getLanguageCode(currentLanguage.value)
+  gameDetailSubjectIsCollections.value = null
 
   try {
     const res = await Api.game.queryGameDetails(
@@ -232,6 +270,9 @@ const fetchCurrentGameDetail = async () => {
     await nextTick()
     hideParentScrollbar()
     resetScrollToTop()
+    if (targetRowId) {
+      void syncFavoriteFromCommentSubject(targetRowId)
+    }
   }
 }
 

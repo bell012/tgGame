@@ -2,7 +2,7 @@
  * 登录注册相关接口类型定义
  */
 
-// 登陆注册设置响应 /ad/getLoginAndRegisterSetting
+// 登陆注册设置响应 /bd/getLoginAndRegisterSetting
 export interface LoginSetResult {
   registerEnable: number // 是否容许注册  0:关闭 1:开启
   memberName: {

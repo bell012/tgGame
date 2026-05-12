@@ -109,6 +109,12 @@ const currentPageProps = computed(() => {
   const queryOptions = getCasinoQueryOptions(currentTabCode.value, {
     isMobile: isMobile.value
   })
+  const mergedQueryOptions = queryOptions
+    ? { ...queryOptions }
+    : {
+        rowType: 3,
+        pageSize: isMobile.value ? 27 : 32
+      }
 
   if (currentPageMode.value === 'pageStyle4') {
     return {}
@@ -116,14 +122,14 @@ const currentPageProps = computed(() => {
 
   if (currentPageMode.value === 'pageStyle3') {
     return {
-      queryOptions,
+      queryOptions: mergedQueryOptions || undefined,
       sortValue: normalizedSort.value,
       providerCodes: normalizedProviderCodes.value
     }
   }
 
   return {
-    queryOptions
+    queryOptions: mergedQueryOptions || undefined
   }
 })
 const pageTitle = computed(() => {
@@ -150,6 +156,7 @@ const updateRouteQuery = (nextQuery: Record<string, string | undefined>) => {
     ...route.query,
     ...nextQuery
   }
+  delete mergedQuery.type
 
   Object.keys(mergedQuery).forEach(key => {
     if (mergedQuery[key] === undefined) {
@@ -211,15 +218,26 @@ const loadUserInfo = () => {
   }
 }
 
+const stripLegacyTypeQuery = () => {
+  if (!('type' in route.query)) {
+    return
+  }
+  const nextQuery = { ...route.query }
+  delete nextQuery.type
+  void router.replace({ query: nextQuery })
+}
+
 onMounted(() => {
   loadUserInfo()
   void loadCasinoTabButtons()
+  stripLegacyTypeQuery()
   scrollPageToTop()
 })
 
 watch(
   () => route.fullPath,
   () => {
+    stripLegacyTypeQuery()
     scrollPageToTop()
   }
 )

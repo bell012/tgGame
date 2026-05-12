@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 flex min-h-0 flex-col overflow-hidden bg-bg-1">
+  <div class="edit-profile-mobile-page fixed inset-0 flex min-h-0 flex-col overflow-hidden bg-bg-1">
     <H5Header :title="t('personalCenter.editProfile.title')" />
 
     <div class="edit-profile-mobile-scroll flex-1 min-h-0 overflow-y-auto bg-bg-1">
@@ -183,10 +183,13 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import H5Header from '@/components/common/H5Header.vue'
 import { useEditProfile } from './shared'
 
 const { t } = useI18n()
+usePageScrollLock(() => true)
+
 const {
   nickName,
   showAvatarActionSheet,
@@ -220,9 +223,17 @@ const {
 
 @include popup-transition;
 
+.edit-profile-mobile-page {
+  height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: none;
+}
+
 .edit-profile-mobile-scroll {
+  overscroll-behavior: contain;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .crop-viewport {
