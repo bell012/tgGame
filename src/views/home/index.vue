@@ -110,6 +110,7 @@
             :title="firstGameSection.sysGameTypeName"
             :sysGameTypeCode="firstGameSection.sysGameTypeCode"
             :list="firstGameSection.list"
+            :brand-items="firstGameSection.brandItems"
           />
           <LazySection
             v-for="value in deferredGameSections"
@@ -122,6 +123,7 @@
               :title="value.sysGameTypeName"
               :sysGameTypeCode="value.sysGameTypeCode"
               :list="value.list"
+              :brand-items="value.brandItems"
             />
           </LazySection>
         </template>
@@ -290,10 +292,12 @@ import Api from '@/api'
 import CommonFooter from '@/components/commonFooter.vue'
 import H5HomePop from '@/components/H5HomePop.vue'
 import HomeCarouselImg from '@/components/homeCarouselImg.vue'
-import type { GameDataItem } from '@/api/interface/game'
+import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
+import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import router from '@/router'
+import { useCasinoTabsStore } from '@/stores/casinoTabs'
 import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
@@ -349,10 +353,12 @@ interface HomeGameSection {
   sysGameTypeCode: string
   list: GameDataItem[]
   sysGameTypeName: string
+  brandItems?: GameBrandItem[]
 }
 
 const userStore = useUserStore()
 const gameStore = useGameStore()
+const casinoTabsStore = useCasinoTabsStore()
 const AsyncEventList = defineAsyncComponent(() => import('./components/eventList.vue'))
 const AsyncNewEvent = defineAsyncComponent(() => import('./components/newEvent.vue'))
 const { userInfo, acctInfo } = storeToRefs(userStore)
@@ -431,41 +437,21 @@ const toGameImageUrl = (value: string) => {
   return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
 }
 
-const queryHomeGameSections = async (): Promise<HomeGameSection[]> => {
-  const rowType1Sections = await gameStore.queryGameData({
-    rowType: 1,
-    sortByOrderId: true
-  })
+const HOME_LOBBY_EXCLUDED_CODES = new Set(['', 'hot_games', 'providers'])
 
-  const sectionResults = await Promise.all(
-    rowType1Sections.map(async item => {
-      const sysGameTypeCode = String(item?.sysGameTypeCode || '').trim()
-      if (!sysGameTypeCode) {
-        return {
-          list: [],
-          sysGameTypeCode: '',
-          sysGameTypeName: String(item?.sysGameTypeName || '').trim()
-        }
-      }
-
-      const { list } = await gameStore.queryGameDataPage({
-        rowType: 3,
-        sysGameTypeCode,
-        page: 1,
-        pageSize: 10,
-        sortByOrderId: true,
-        sortDirection: 'desc'
-      })
-
-      return {
-        list,
-        sysGameTypeCode,
-        sysGameTypeName: String(item?.sysGameTypeName || '').trim()
-      }
+/** 与娱乐城大厅 `loadCasinoLobbyButtons` 同源；首页不展示 hot_games、providers */
+const mapLobbyButtonsToHomeSections = (buttons: CasinoLobbyButtonItem[]): HomeGameSection[] => {
+  return buttons
+    .filter(btn => {
+      const code = String(btn.sysGameTypeCode ?? '').trim()
+      return !HOME_LOBBY_EXCLUDED_CODES.has(code)
     })
-  )
-
-  return sectionResults
+    .map(btn => ({
+      sysGameTypeCode: String(btn.sysGameTypeCode ?? '').trim(),
+      sysGameTypeName: String(btn.sysGameTypeName ?? '').trim(),
+      list: (btn.items ?? []).slice(0, 10)
+    }))
+    .filter(section => section.list.length > 0)
 }
 
 const sportsProviders = computed<GameDataItem[]>(() => {
@@ -506,9 +492,12 @@ const fetchHomeFavoritesModule = async () => {
 const fetchGameData = async () => {
   isGameDataLoading.value = true
   try {
-    const rawResult = (await gameStore.ensureGameData()) as GameDataItem[]
-    rawGameData.value = rawResult
-    gameData.value = await queryHomeGameSections()
+    const [rawResult] = await Promise.all([
+      gameStore.ensureGameData(),
+      casinoTabsStore.loadCasinoLobbyButtons()
+    ])
+    rawGameData.value = rawResult as GameDataItem[]
+    gameData.value = mapLobbyButtonsToHomeSections(casinoTabsStore.lobbyButtons)
   } catch (error) {
     console.error('getGameData failed', error)
   } finally {

@@ -4,6 +4,11 @@
     class="game-item group relative flex h-full w-full flex-col items-center overflow-hidden rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
     @click="doClick"
   >
+    <FavoritesGamesIcon
+      v-if="showFavoriteBadge"
+      class="pointer-events-none absolute left-2 top-2 z-[1] size-[14px] text-common-100 [&_svg]:block [&_svg]:h-full [&_svg]:w-full"
+      aria-hidden="true"
+    />
     <gameRemoteImg class="h-full w-full" :img="gameImage" :alt="game.itemName" />
     <div
       v-if="gameCovernameShow"
@@ -18,8 +23,10 @@
         />
       </div>
     </div>
-    <div class="absolute bottom-1 right-1 flex h-5 items-center rounded-[6px] bg-mask-20 px-1.5">
-      <div class="icon h-[10px] w-[10px] sm:size-4 fill-common-100 text-common-100">
+    <div
+      class="absolute bottom-1 right-1 flex h-5 w-[33px] items-center rounded-[6px] bg-mask-20 px-1.5"
+    >
+      <div class="icon h-[10px] w-[10px] sm:size-4 fill-common-100 text-common-100 mr-0.5">
         <component
           :is="casinoIcons.player_count"
           class="h-[10px] w-[10px] sm:size-4 fill-current"
@@ -31,7 +38,7 @@
     </div>
     <div
       v-if="game.serviceStatus === 0"
-      class="absolute left-0 top-0 flex h-full w-full cursor-pointer items-center justify-center bg-mask-60-1 opacity-0 sm:group-hover:opacity-100"
+      class="absolute left-0 top-0 z-[2] flex h-full w-full cursor-pointer items-center justify-center bg-mask-60-1 opacity-0 sm:group-hover:opacity-100"
     >
       <div
         v-if="gameCovernameShow"
@@ -49,7 +56,7 @@
     </div>
     <div
       v-if="game.serviceStatus === 1"
-      class="absolute left-0 top-0 flex h-full w-full cursor-pointer items-center justify-center bg-mask-60-1"
+      class="absolute left-0 top-0 z-[2] flex h-full w-full cursor-pointer items-center justify-center bg-mask-60-1"
     >
       <underMaintenanceIcon class="h-9 w-9 text-common-100" />
     </div>
@@ -65,10 +72,18 @@ import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useGameStore } from '@/stores/game'
 import underMaintenanceIcon from '@/static/svg/game/under_maintenance.svg'
+import FavoritesGamesIcon from '@/static/svg/game/favorites_games.svg?component'
 
-const props = defineProps<{
-  game: GameDataItem
-}>()
+const props = withDefaults(
+  defineProps<{
+    game: GameDataItem
+    /** 收藏模块等场景：左上角收藏角标 */
+    showFavoriteBadge?: boolean
+  }>(),
+  {
+    showFavoriteBadge: false
+  }
+)
 
 const emit = defineEmits<{
   click: []

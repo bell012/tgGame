@@ -91,6 +91,19 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'recently-played-games',
+    name: 'recentlyPlayedGames',
+    component: () => import('@/views/fun/casino/recentlyPlayed/index.vue'),
+    meta: {
+      title: 'Recently Played',
+      requiresAuth: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'brand-games/:brandCode',
     name: 'brandGameList',
     component: () => import('@/views/fun/casino/brandGameList/index.vue'),

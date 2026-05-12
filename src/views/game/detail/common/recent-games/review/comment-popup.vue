@@ -518,19 +518,23 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-post-btn {
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  background: #4f5a65;
-  box-shadow: none;
-  color: #061a10;
+  background: #3a424a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 10px rgba(0, 0, 0, 0.18);
+  color: #8f9aa6;
   appearance: none;
   -webkit-appearance: none;
   transition:
     filter 0.2s ease,
-    opacity 0.2s ease;
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .comment-popup-post-btn:not(:disabled) {
+  border-color: transparent;
   background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
   box-shadow:
     0 0 12px 0 rgba(35, 238, 136, 0.3),
@@ -539,15 +543,19 @@ onBeforeUnmount(() => {
   opacity: 1;
 }
 
+.comment-popup-post-btn:not(:disabled):hover {
+  filter: brightness(1.04);
+}
+
 .comment-popup-post-btn:not(:disabled):active {
   filter: brightness(0.96);
 }
 
 .comment-popup-post-btn:disabled {
-  border: none;
+  border-color: transparent;
   border-radius: 8px;
   opacity: 0.6;
-  background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
+  background: var(--comment-post-disabled-bg, linear-gradient(90deg, #24ee89 0%, #9fe871 100%));
   box-shadow:
     0 0 12px 0 rgba(35, 238, 136, 0.3),
     0 -2px 0 0 #1dca6a inset;
@@ -679,10 +687,32 @@ onBeforeUnmount(() => {
   color: #9ba9bc;
 }
 
+.comment-popup-panel.is-light .comment-popup-post-btn {
+  border-color: #d5e0ed;
+  background: #e5edf7;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 10px rgba(24, 38, 64, 0.08);
+  color: #8a99ad;
+}
+
+.comment-popup-panel.is-light .comment-popup-post-btn:not(:disabled) {
+  border-color: transparent;
+  background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
+  box-shadow:
+    0 6px 14px rgba(35, 238, 136, 0.22),
+    0 -2px 0 0 #1dca6a inset;
+  color: #061a10;
+}
+
 .comment-popup-panel.is-light .comment-popup-post-btn:disabled {
-  border-color: #d6e0ec;
-  background: #eaf0f7;
-  color: #a4b1c2;
+  border-color: transparent;
+  opacity: 0.6;
+  background: var(--comment-post-disabled-bg, linear-gradient(90deg, #24ee89 0%, #9fe871 100%));
+  box-shadow:
+    0 0 12px 0 rgba(35, 238, 136, 0.3),
+    0 -2px 0 0 #1dca6a inset;
+  color: #061a10;
 }
 
 .comment-popup-panel.is-light :deep(.comment-emoji-trigger-icon path) {

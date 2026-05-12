@@ -37,15 +37,15 @@
           :task-details-text="t('referral.h5.taskDetails')"
           :commission-boost-loading="commissionBoostLoading"
           :show-commission-boost="shouldShowCommissionBoost"
-          :active-commission-boost-week-tab="activeCommissionBoostWeekTab"
-          :commission-boost-estimated-commission="commissionBoostViewData.estimatedCommissionText"
+          :active-commission-boost-period-tab="activeCommissionBoostPeriodTab"
+          :commission-boost-estimated-commission="commissionBoostEstimatedCommissionAmount"
           :commission-boost-friends-delta="commissionBoostViewData.friendsDeltaText"
           :commission-boost-current-level-rate="commissionBoostViewData.currentLevelRateText"
           :commission-boost-active-friends="commissionBoostViewData.activeFriendsText"
           :commission-boost-progress-percent="commissionBoostViewData.progressPercent"
           :commission-boost-levels="commissionBoostViewData.levels"
-          :this-week-text="t('referral.commissionBoost.thisWeek')"
-          :last-week-text="t('referral.commissionBoost.lastWeek')"
+          :current-period-text="commissionBoostPeriodMeta.currentLabel"
+          :previous-period-text="commissionBoostPeriodMeta.previousLabel"
           :friends-text="t('referral.commissionBoost.friends')"
           :current-level-text="t('referral.commissionBoost.currentLevel')"
           :active-friends-text="t('referral.commissionBoost.activeFriends')"
@@ -58,7 +58,7 @@
           @claim="handleClaimClick"
           @task-details="handleTaskDetailsClick"
           @banner-click="handleBannerClick"
-          @change-commission-boost-week-tab="handleChangeCommissionBoostWeekTab"
+          @change-commission-boost-period-tab="handleChangeCommissionBoostPeriodTab"
           @open-rules="handleOpenRules"
         />
       </div>
@@ -87,15 +87,15 @@
         :task-details-text="t('referral.h5.taskDetails')"
         :commission-boost-loading="commissionBoostLoading"
         :show-commission-boost="shouldShowCommissionBoost"
-        :active-commission-boost-week-tab="activeCommissionBoostWeekTab"
-        :commission-boost-estimated-commission="commissionBoostViewData.estimatedCommissionText"
+        :active-commission-boost-period-tab="activeCommissionBoostPeriodTab"
+        :commission-boost-estimated-commission="commissionBoostEstimatedCommissionAmount"
         :commission-boost-friends-delta="commissionBoostViewData.friendsDeltaText"
         :commission-boost-current-level-rate="commissionBoostViewData.currentLevelRateText"
         :commission-boost-active-friends="commissionBoostViewData.activeFriendsText"
         :commission-boost-progress-percent="commissionBoostViewData.progressPercent"
         :commission-boost-levels="commissionBoostViewData.levels"
-        :this-week-text="t('referral.commissionBoost.thisWeek')"
-        :last-week-text="t('referral.commissionBoost.lastWeek')"
+        :current-period-text="commissionBoostPeriodMeta.currentLabel"
+        :previous-period-text="commissionBoostPeriodMeta.previousLabel"
         :friends-text="t('referral.commissionBoost.friends')"
         :current-level-text="t('referral.commissionBoost.currentLevel')"
         :active-friends-text="t('referral.commissionBoost.activeFriends')"
@@ -108,7 +108,7 @@
         @claim="handleClaimClick"
         @task-details="handleTaskDetailsClick"
         @banner-click="handleBannerClick"
-        @change-commission-boost-week-tab="handleChangeCommissionBoostWeekTab"
+        @change-commission-boost-period-tab="handleChangeCommissionBoostPeriodTab"
         @open-rules="handleOpenRules"
       />
     </div>
@@ -140,15 +140,24 @@
       @copy-link="handleCopyPosterLink"
       @invite="handleInvitePoster"
     />
+
+    <!-- 佣金领取确认弹窗 -->
+    <ClaimSuccessPopup
+      v-model:visible="showClaimConfirmPopup"
+      :amount="estimatedCommissionAmount"
+      @confirm="handleConfirmClaimClick"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import Api from '@/api'
 import type {
+  QueryReferralSettlementRuleResult,
   QueryReferralTaskProgressResult,
   QueryTaskRewardConfigResult
 } from '@/api/interface/agent'
+import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
@@ -162,7 +171,6 @@ import { formatBalance } from '@/utils/locale'
 import { getLanguageCode } from '@/utils/request'
 import { navigateTo } from '@/utils/router'
 import { formatLinkCode, globalShowToast } from '@/utils/toast'
-import { showToast } from 'vant'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ReferralMessagePopup from './components/ReferralMessagePopup.vue'
@@ -173,9 +181,10 @@ import {
   buildReferralBannerRequestKey,
   buildReferralBannerSlidesFromApi,
   buildReferralPosterImagesFromApi,
-  buildReferralTaskWeekRanges,
   buildReferralShareMessage,
   buildReferralSocialChannelsFromApi,
+  buildReferralTaskPeriodRanges,
+  createReferralCommissionBoostPeriodMeta,
   createReferralCommissionBoostViewData,
   createReferralMarqueeMessages,
   createReferralMessagePresets,
@@ -186,8 +195,8 @@ import {
   getReferralInviteTaskReward,
   hasReferralTaskProgressData,
   resolveReferralBannerPayload,
-  type ReferralCommissionBoostWeekTabKey,
   type ReferralBannerSlide,
+  type ReferralCommissionBoostPeriodTabKey,
   type ReferralQuickActionId,
   type ReferralSocialChannel
 } from './shared'
@@ -207,13 +216,16 @@ const bannerSlides = ref<ReferralBannerSlide[]>([])
 const posterImages = ref<string[]>([])
 const showReferralMessagePopup = ref(false)
 const showInvitePosterPopup = ref(false)
+const showClaimConfirmPopup = ref(false)
 const claimingCommission = ref(false)
 const currentShareChannel = ref<ReferralSocialChannel | null>(null)
 const customReferralMessage = ref('')
 const taskRewardConfigResult = ref<QueryTaskRewardConfigResult | null>(null)
-const thisWeekTaskProgress = ref<QueryReferralTaskProgressResult | null>(null)
-const lastWeekTaskProgress = ref<QueryReferralTaskProgressResult | null>(null)
-const activeCommissionBoostWeekTab = ref<ReferralCommissionBoostWeekTabKey>('thisWeek')
+const referralSettlementRule = ref<QueryReferralSettlementRuleResult | null>(null)
+const currentPeriodTaskProgress = ref<QueryReferralTaskProgressResult | null>(null)
+const previousPeriodTaskProgress = ref<QueryReferralTaskProgressResult | null>(null)
+const activeCommissionBoostPeriodTab = ref<ReferralCommissionBoostPeriodTabKey>('current')
+const commissionBoostEstimatedCommissionAmount = ref('0.00')
 const commissionBoostLoading = ref(true)
 let referralBannerRequestToken = 0
 
@@ -231,15 +243,18 @@ const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.rowId)
 const inviteTaskReward = computed(() => getReferralInviteTaskReward(taskRewardConfigResult.value))
 const inviteRewardCount = computed(() => inviteTaskReward.value.count)
 const inviteRewardAmount = computed(() => inviteTaskReward.value.amount)
+const commissionBoostPeriodMeta = computed(() =>
+  createReferralCommissionBoostPeriodMeta(t, referralSettlementRule.value)
+)
 const shouldShowCommissionBoost = computed(
   () =>
-    hasReferralTaskProgressData(thisWeekTaskProgress.value) ||
-    hasReferralTaskProgressData(lastWeekTaskProgress.value)
+    hasReferralTaskProgressData(currentPeriodTaskProgress.value) ||
+    hasReferralTaskProgressData(previousPeriodTaskProgress.value)
 )
 const activeTaskProgress = computed(() =>
-  activeCommissionBoostWeekTab.value === 'thisWeek'
-    ? thisWeekTaskProgress.value
-    : lastWeekTaskProgress.value
+  activeCommissionBoostPeriodTab.value === 'current'
+    ? currentPeriodTaskProgress.value
+    : previousPeriodTaskProgress.value
 )
 const commissionBoostViewData = computed(() =>
   createReferralCommissionBoostViewData(
@@ -261,6 +276,7 @@ watch(
   () => {
     void fetchSocialChannels()
     void fetchEstimatedCommission()
+    void fetchCommissionBoostEstimatedCommission()
     void fetchReferralTaskModuleData()
   },
   {
@@ -298,10 +314,29 @@ async function fetchEstimatedCommission() {
 }
 
 /**
+ * 获取佣金加码统计区域的预估佣金。
+ */
+async function fetchCommissionBoostEstimatedCommission() {
+  commissionBoostEstimatedCommissionAmount.value = '0.00'
+
+  try {
+    const response = ensureApiBusinessSuccess(
+      await Api.agent.queryReferralCommissionBoostAmount({
+        channelId: currentAgentChannelId.value
+      })
+    )
+
+    commissionBoostEstimatedCommissionAmount.value = formatBalance(Number(response.result ?? 0), 2)
+  } catch (error) {
+    console.error('[referral] fetch commission boost estimated commission failed:', error)
+  }
+}
+
+/**
  * 处理客服按钮点击。
  */
 const handleCustomerServiceClick = () => {
-  showToast({
+  globalShowToast({
     message: t('sidebar_menu.customer_service'),
     type: 'success'
   })
@@ -333,7 +368,7 @@ const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
     guide: t('referral.h5.quickActions.guide')
   }
 
-  showToast({
+  globalShowToast({
     message: `${actionMessageMap[actionId]} ${t('referral.comingSoon')}`,
     type: 'success'
   })
@@ -343,7 +378,7 @@ const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
  * 处理分享说明按钮点击。
  */
 const handleShareGuideClick = () => {
-  showToast({
+  globalShowToast({
     message: t('referral.h5.shareGuideHint'),
     type: 'success'
   })
@@ -365,7 +400,7 @@ const handleConfirmReferralMessageCopy = async (message: string) => {
     buildReferralShareMessage(activeReferralMessage.value, referralLink)
   )
 
-  showToast({
+  globalShowToast({
     message: copied ? t('referral.h5.copyMessageSuccess') : t('referral.copyFailed'),
     type: copied ? 'success' : 'fail'
   })
@@ -397,16 +432,27 @@ const resolveChannelReferralContent = () =>
 /**
  * 处理佣金领取按钮点击。
  */
-const handleClaimClick = async () => {
+const handleClaimClick = () => {
   if (claimingCommission.value) {
     return
   }
 
   if ((Number(estimatedCommissionAmount.value) || 0) <= 0) {
-    showToast({
+    globalShowToast({
       message: t('referral.noClaimableCommission'),
       type: 'fail'
     })
+    return
+  }
+
+  showClaimConfirmPopup.value = true
+}
+
+/**
+ * 处理佣金领取确认。
+ */
+const handleConfirmClaimClick = async () => {
+  if (claimingCommission.value) {
     return
   }
 
@@ -419,7 +465,7 @@ const handleClaimClick = async () => {
       })
     )
 
-    showToast({
+    globalShowToast({
       message: t('personalCenter.rebate.toast.claimSuccess'),
       type: 'success'
     })
@@ -431,7 +477,7 @@ const handleClaimClick = async () => {
       return
     }
 
-    showToast({
+    globalShowToast({
       message: t('personalCenter.rebate.toast.claimFailed'),
       type: 'fail'
     })
@@ -448,10 +494,10 @@ const handleTaskDetailsClick = () => {
 }
 
 /**
- * 处理切换佣金加码周维度标签。
+ * 处理切换佣金加码周期标签。
  */
-const handleChangeCommissionBoostWeekTab = (value: ReferralCommissionBoostWeekTabKey) => {
-  activeCommissionBoostWeekTab.value = value
+const handleChangeCommissionBoostPeriodTab = (value: ReferralCommissionBoostPeriodTabKey) => {
+  activeCommissionBoostPeriodTab.value = value
 }
 
 /**
@@ -509,26 +555,21 @@ async function fetchSocialChannels() {
 }
 
 /**
- * 处理获取首页任务配置与周任务进度。
+ * 处理获取首页任务配置与周期任务进度。
  */
 async function fetchReferralTaskModuleData() {
   commissionBoostLoading.value = true
-  activeCommissionBoostWeekTab.value = 'thisWeek'
-  const weekRanges = buildReferralTaskWeekRanges()
+  activeCommissionBoostPeriodTab.value = 'current'
 
   try {
-    const [taskConfigResponse, thisWeekProgressResponse, lastWeekProgressResponse] =
-      await Promise.allSettled([
-        Api.agent.queryTaskRewardConfig({
-          channelId: currentAgentChannelId.value
-        }),
-        Api.agent.queryReferralTaskProgress(weekRanges.thisWeek, {
-          channelId: currentAgentChannelId.value
-        }),
-        Api.agent.queryReferralTaskProgress(weekRanges.lastWeek, {
-          channelId: currentAgentChannelId.value
-        })
-      ])
+    const [taskConfigResponse, settlementRuleResponse] = await Promise.allSettled([
+      Api.agent.queryTaskRewardConfig({
+        channelId: currentAgentChannelId.value
+      }),
+      Api.agent.queryReferralSettlementRule({
+        channelId: currentAgentChannelId.value
+      })
+    ])
 
     if (taskConfigResponse.status === 'fulfilled') {
       try {
@@ -543,36 +584,60 @@ async function fetchReferralTaskModuleData() {
       taskRewardConfigResult.value = null
     }
 
-    if (thisWeekProgressResponse.status === 'fulfilled') {
+    if (settlementRuleResponse.status === 'fulfilled') {
       try {
-        thisWeekTaskProgress.value =
-          ensureApiBusinessSuccess(thisWeekProgressResponse.value).result ?? null
+        referralSettlementRule.value =
+          ensureApiBusinessSuccess(settlementRuleResponse.value).result ?? null
       } catch (error) {
-        console.error('[referral] fetch this week task progress failed:', error)
-        thisWeekTaskProgress.value = null
+        console.error('[referral] fetch settlement rule failed:', error)
+        referralSettlementRule.value = null
       }
     } else {
-      console.error(
-        '[referral] fetch this week task progress failed:',
-        thisWeekProgressResponse.reason
-      )
-      thisWeekTaskProgress.value = null
+      console.error('[referral] fetch settlement rule failed:', settlementRuleResponse.reason)
+      referralSettlementRule.value = null
     }
 
-    if (lastWeekProgressResponse.status === 'fulfilled') {
+    const periodRanges = buildReferralTaskPeriodRanges(referralSettlementRule.value)
+    const [currentPeriodProgressResponse, previousPeriodProgressResponse] =
+      await Promise.allSettled([
+        Api.agent.queryReferralTaskProgress(periodRanges.current, {
+          channelId: currentAgentChannelId.value
+        }),
+        Api.agent.queryReferralTaskProgress(periodRanges.previous, {
+          channelId: currentAgentChannelId.value
+        })
+      ])
+
+    if (currentPeriodProgressResponse.status === 'fulfilled') {
       try {
-        lastWeekTaskProgress.value =
-          ensureApiBusinessSuccess(lastWeekProgressResponse.value).result ?? null
+        currentPeriodTaskProgress.value =
+          ensureApiBusinessSuccess(currentPeriodProgressResponse.value).result ?? null
       } catch (error) {
-        console.error('[referral] fetch last week task progress failed:', error)
-        lastWeekTaskProgress.value = null
+        console.error('[referral] fetch current period task progress failed:', error)
+        currentPeriodTaskProgress.value = null
       }
     } else {
       console.error(
-        '[referral] fetch last week task progress failed:',
-        lastWeekProgressResponse.reason
+        '[referral] fetch current period task progress failed:',
+        currentPeriodProgressResponse.reason
       )
-      lastWeekTaskProgress.value = null
+      currentPeriodTaskProgress.value = null
+    }
+
+    if (previousPeriodProgressResponse.status === 'fulfilled') {
+      try {
+        previousPeriodTaskProgress.value =
+          ensureApiBusinessSuccess(previousPeriodProgressResponse.value).result ?? null
+      } catch (error) {
+        console.error('[referral] fetch previous period task progress failed:', error)
+        previousPeriodTaskProgress.value = null
+      }
+    } else {
+      console.error(
+        '[referral] fetch previous period task progress failed:',
+        previousPeriodProgressResponse.reason
+      )
+      previousPeriodTaskProgress.value = null
     }
   } finally {
     commissionBoostLoading.value = false
@@ -644,7 +709,7 @@ async function fetchReferralBanner() {
  */
 const handleShareChannel = (channel: ReferralSocialChannel) => {
   if (!resolveShareTargetUrl(channel)) {
-    showToast({
+    globalShowToast({
       message: t('referral.comingSoon'),
       type: 'fail'
     })
@@ -652,7 +717,7 @@ const handleShareChannel = (channel: ReferralSocialChannel) => {
   }
 
   if (!posterImages.value.length) {
-    showToast({
+    globalShowToast({
       message: t('referral.comingSoon'),
       type: 'fail'
     })

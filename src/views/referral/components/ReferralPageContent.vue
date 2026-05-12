@@ -621,7 +621,7 @@
                   ? 'h-[40px] w-[516px] justify-between gap-[8px] pt-[12px]'
                   : 'gap-2'
               "
-              @click="$emit('change-commission-boost-week-tab', 'thisWeek')"
+              @click="$emit('change-commission-boost-period-tab', 'current')"
             >
               <div
                 class="flex w-full items-center justify-center text-center font-[700]"
@@ -629,22 +629,22 @@
                   props.mode === 'pc'
                     ? [
                         'h-[17px] w-[72px] text-[14px] leading-[17px]',
-                        props.activeCommissionBoostWeekTab === 'thisWeek'
+                        props.activeCommissionBoostPeriodTab === 'current'
                           ? 'text-text-1'
                           : 'text-text-2'
                       ]
                     : [
                         'h-[17px] text-[14px] leading-[17px]',
-                        props.activeCommissionBoostWeekTab === 'thisWeek'
+                        props.activeCommissionBoostPeriodTab === 'current'
                           ? 'text-text-1'
                           : 'text-text-2'
                       ]
                 "
               >
-                {{ props.thisWeekText }}
+                {{ props.currentPeriodText }}
               </div>
               <div
-                v-if="props.activeCommissionBoostWeekTab === 'thisWeek'"
+                v-if="props.activeCommissionBoostPeriodTab === 'current'"
                 class="w-full self-stretch rounded-[10px] bg-theme-primary"
                 :class="props.mode === 'pc' ? 'h-[2px] w-[516px]' : 'h-[2px]'"
               ></div>
@@ -659,7 +659,7 @@
                   ? 'h-[40px] w-[516px] justify-between gap-[8px] pt-[12px]'
                   : 'gap-2'
               "
-              @click="$emit('change-commission-boost-week-tab', 'lastWeek')"
+              @click="$emit('change-commission-boost-period-tab', 'previous')"
             >
               <div
                 class="flex w-full items-center justify-center text-center font-[700]"
@@ -667,22 +667,22 @@
                   props.mode === 'pc'
                     ? [
                         'h-[17px] w-[72px] text-[14px] leading-[17px]',
-                        props.activeCommissionBoostWeekTab === 'lastWeek'
+                        props.activeCommissionBoostPeriodTab === 'previous'
                           ? 'text-text-1'
                           : 'text-text-2'
                       ]
                     : [
                         'h-[17px] text-[14px] leading-[17px]',
-                        props.activeCommissionBoostWeekTab === 'lastWeek'
+                        props.activeCommissionBoostPeriodTab === 'previous'
                           ? 'text-text-1'
                           : 'text-text-2'
                       ]
                 "
               >
-                {{ props.lastWeekText }}
+                {{ props.previousPeriodText }}
               </div>
               <div
-                v-if="props.activeCommissionBoostWeekTab === 'lastWeek'"
+                v-if="props.activeCommissionBoostPeriodTab === 'previous'"
                 class="w-full self-stretch rounded-[10px] bg-theme-primary"
                 :class="props.mode === 'pc' ? 'h-[2px] w-[516px]' : 'h-[2px]'"
               ></div>
@@ -1004,7 +1004,7 @@ import { computed, ref, watch } from 'vue'
 import type {
   ReferralBannerSlide,
   ReferralCommissionBoostLevelView,
-  ReferralCommissionBoostWeekTabKey,
+  ReferralCommissionBoostPeriodTabKey,
   ReferralQuickAction,
   ReferralQuickActionId,
   ReferralSocialChannel
@@ -1031,15 +1031,15 @@ interface Props {
   taskDetailsText: string
   commissionBoostLoading: boolean
   showCommissionBoost: boolean
-  activeCommissionBoostWeekTab: ReferralCommissionBoostWeekTabKey
+  activeCommissionBoostPeriodTab: ReferralCommissionBoostPeriodTabKey
   commissionBoostEstimatedCommission: string
   commissionBoostFriendsDelta: string
   commissionBoostCurrentLevelRate: string
   commissionBoostActiveFriends: string
   commissionBoostProgressPercent: number
   commissionBoostLevels: ReferralCommissionBoostLevelView[]
-  thisWeekText: string
-  lastWeekText: string
+  currentPeriodText: string
+  previousPeriodText: string
   friendsText: string
   currentLevelText: string
   activeFriendsText: string
@@ -1057,7 +1057,7 @@ defineEmits<{
   claim: []
   'task-details': []
   'banner-click': [value: ReferralBannerSlide]
-  'change-commission-boost-week-tab': [value: ReferralCommissionBoostWeekTabKey]
+  'change-commission-boost-period-tab': [value: ReferralCommissionBoostPeriodTabKey]
   'open-rules': []
 }>()
 

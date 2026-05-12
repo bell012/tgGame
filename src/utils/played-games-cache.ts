@@ -1,3 +1,5 @@
+import type { GameDataItem } from '@/api/interface/game'
+
 export const PLAYED_GAMES_STORAGE_KEY = 'PlayedGamesMaxLength50'
 const PLAYED_GAMES_MAX_LENGTH = 50
 
@@ -65,4 +67,13 @@ export const savePlayedGameDetail = (gameDetail: unknown) => {
   const nextGames = [nextGameDetail, ...dedupedGames].slice(0, PLAYED_GAMES_MAX_LENGTH)
 
   window.localStorage.setItem(PLAYED_GAMES_STORAGE_KEY, JSON.stringify(nextGames))
+}
+
+/** 读取本地最近玩过列表（新→旧），供 Recently Played 页展示 */
+export const readPlayedGamesFromStorage = (): GameDataItem[] => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+  const raw = window.localStorage.getItem(PLAYED_GAMES_STORAGE_KEY)
+  return parsePlayedGames(raw) as GameDataItem[]
 }

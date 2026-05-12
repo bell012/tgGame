@@ -3,7 +3,9 @@
     <!-- PC 任务页内容 -->
     <ReferralTaskPageContent
       mode="pc"
-      :reset-hint="props.resetHint"
+      :reset-hint-prefix="props.resetHintPrefix"
+      :reset-hint-countdown="props.resetHintCountdown"
+      :reset-hint-suffix="props.resetHintSuffix"
       :rewards-to-claim-label="props.rewardsToClaimLabel"
       :rewards-to-claim-amount="props.rewardsToClaimAmount"
       :coin-image="props.coinImage"
@@ -22,7 +24,10 @@
       :valid-invite-description="props.validInviteDescription"
       :task-rules-title="props.taskRulesTitle"
       :task-rules-image="props.taskRulesImage"
+      :bottom-action-text="props.bottomActionText"
       @claim="$emit('claim')"
+      @open-progress-reminder="$emit('open-progress-reminder')"
+      @open-rules="$emit('open-rules')"
       @tab-click="$emit('tab-click', $event)"
     />
   </ReferralLayout>
@@ -35,7 +40,9 @@ import type { ReferralTaskRewardRow, ReferralTaskTab, ReferralTaskTabKey } from 
 
 interface Props {
   pageTitle: string
-  resetHint: string
+  resetHintPrefix: string
+  resetHintCountdown: string
+  resetHintSuffix: string
   rewardsToClaimLabel: string
   rewardsToClaimAmount: string
   coinImage: string
@@ -54,12 +61,15 @@ interface Props {
   validInviteDescription: string
   taskRulesTitle: string
   taskRulesImage: string
+  bottomActionText: string
 }
 
 const props = defineProps<Props>()
 
 defineEmits<{
   claim: []
+  'open-progress-reminder': []
+  'open-rules': []
   'tab-click': [value: ReferralTaskTabKey]
 }>()
 </script>

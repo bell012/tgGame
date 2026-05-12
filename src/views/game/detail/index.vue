@@ -8,25 +8,20 @@
       <div class="detail-loading-spinner" />
     </div>
     <!-- Header -->
-    <h5-header class="block sm:hidden">
-      {{ currentGameDetail?.itemName ?? '' }}
-    </h5-header>
+    <h5-header class="block sm:hidden"> {{ currentGameDetail?.itemName ?? '' }} </h5-header>
     <!-- Currency Info -->
-    <template v-if="isMobile">
-      <h5-currency-info />
-    </template>
-    <template v-else>
-      <desktop-currency-info />
-    </template>
+    <h5-currency-info v-if="isMobile" />
+    <desktop-currency-info v-else />
     <!-- Game Content -->
     <recent-games />
-    <template v-if="hasCurrentCategoryHotGames">
-      <game-list
-        :title="t('home.RecommendedGames')"
-        :list="currentCategoryHotGameList"
-        @all-click="openCurrentCategoryAllGamesPage"
-      />
-    </template>
+    <!-- 推荐游戏 -->
+    <game-list
+      v-if="hasCurrentCategoryHotGames"
+      :title="t('home.RecommendedGames')"
+      :list="currentCategoryHotGameList"
+      @all-click="openCurrentCategoryAllGamesPage"
+    />
+    <!-- 投注表格 -->
     <bets-list />
   </div>
   <!-- Footer -->
@@ -34,10 +29,11 @@
 </template>
 <script setup lang="ts">
 import Api from '@/api'
+import { readIsCollections } from '@/api/interface/game'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
-import { getLanguageCode } from '@/utils/locale'
+import { useUserStore } from '@/stores/user'
 import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
@@ -97,10 +93,15 @@ const API_REQUEST_OPTIONS = {
 const gameData = ref<GameDataItem[]>([])
 provide('game-detail-game-data', gameData)
 
+/** 与 getCommentSubject.result.isCollections 同步，供收藏星标 inject */
+const gameDetailSubjectIsCollections = ref<boolean | null>(null)
+provide('game-detail-subject-is-collections', gameDetailSubjectIsCollections)
+
 const { t } = useI18n()
 const isMobile = useIsMobile()
 const route = useRoute()
 const localeStore = useLocaleStore()
+const userStore = useUserStore()
 const { currentLanguage } = storeToRefs(localeStore)
 const isGameDataLoading = ref(false)
 const currentGameDetailState = ref<CurrentGameDetail>(null)
@@ -177,6 +178,36 @@ const rowId = computed(() => normalizeGameDetailValue(route.params.rowId))
 const currentGameDetail = computed<CurrentGameDetail>(() => currentGameDetailState.value)
 provide('game-detail-current-game', currentGameDetail)
 
+const syncFavoriteFromCommentSubject = async (gameIdRaw: string) => {
+  gameDetailSubjectIsCollections.value = null
+  if (!gameIdRaw) {
+    return
+  }
+
+  userStore.syncStoredUserData()
+  const memberRowIdNum = Number(userStore.acctInfo?.memberRowId)
+
+  try {
+    const res = await Api.game.getCommentSubject(
+      {
+        gameId: gameIdRaw,
+        sortType: 1,
+        ...(Number.isFinite(memberRowIdNum) && memberRowIdNum > 0
+          ? { memberRowId: memberRowIdNum }
+          : {})
+      },
+      {
+        showSuccessToast: false,
+        showErrorToast: false
+      }
+    )
+    const raw = (res?.result as { isCollections?: unknown } | null | undefined)?.isCollections
+    gameDetailSubjectIsCollections.value = readIsCollections(raw)
+  } catch {
+    gameDetailSubjectIsCollections.value = null
+  }
+}
+
 const currentGameRowId = computed(() =>
   normalizeGameDetailValue(currentGameDetail.value?.rowId ?? rowId.value)
 )
@@ -215,13 +246,10 @@ const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.val
 // ===== 数据请求 =====
 const fetchCurrentGameDetail = async () => {
   const targetRowId = rowId.value
-  const languageCode = getLanguageCode(currentLanguage.value)
+  gameDetailSubjectIsCollections.value = null
 
   try {
-    const res = await Api.game.queryGameDetails(
-      { rowId: targetRowId, languageCode },
-      API_REQUEST_OPTIONS
-    )
+    const res = await Api.game.queryGameDetails({ rowId: targetRowId }, API_REQUEST_OPTIONS)
     const result = res?.result
     if (result && typeof result === 'object') {
       currentGameDetailState.value = result as CurrentGameDetail
@@ -232,6 +260,9 @@ const fetchCurrentGameDetail = async () => {
     await nextTick()
     hideParentScrollbar()
     resetScrollToTop()
+    if (targetRowId) {
+      void syncFavoriteFromCommentSubject(targetRowId)
+    }
   }
 }
 
@@ -258,10 +289,20 @@ const openCurrentCategoryAllGamesPage = () => {
 
 // ===== 监听与生命周期 =====
 watch(
-  [rowId, currentLanguage],
+  [rowId],
   () => {
     void fetchCurrentGameDetail()
     void fetchGameDataForApp()
+  },
+  { immediate: true, flush: 'post' }
+)
+
+watch(
+  [currentLanguage],
+  ([newLanguage], [oldLanguage]) => {
+    if (!oldLanguage || newLanguage === oldLanguage) return
+
+    void navigateTo('/', { replace: true })
   },
   { immediate: true, flush: 'post' }
 )

@@ -12,6 +12,7 @@
     "none_select_currency": "当未选择任何货币时，某些金额仍会以最后选择的法币显示",
     "RecentBigWins": "近期大奖",
     "favorites_games": "收藏游戏",
+    "recommended_games": "推荐游戏",
     "All": "全部",
     "BCOriginals": "BC 原创",
     "Slots": "老虎机",
@@ -648,8 +649,12 @@
       "shareGuideHint": "可通过社交平台或复制推荐文案邀请好友。"
     },
     "commissionBoost": {
+      "today": "今天",
+      "yesterday": "昨天",
       "thisWeek": "本周",
       "lastWeek": "上周",
+      "thisMonth": "本月",
+      "lastMonth": "上月",
       "friends": "好友",
       "currentLevel": "当前等级:",
       "activeFriends": "有效好友:",
@@ -675,7 +680,9 @@
       "friendUnit": "位好友",
       "friendsUnit": "位好友",
       "currentProgress": "当前进度",
-      "maxRewardThisWeek": "本周最高奖励",
+      "maxRewardThisDay": "今日最高可领",
+      "maxRewardThisWeek": "本周最高可领",
+      "maxRewardThisMonth": "本月最高可领",
       "invitedSignUps": "邀请注册数",
       "depositAmount": "充值金额",
       "commissionBoost": "佣金加成",
@@ -691,7 +698,13 @@
         "weekly": "本周",
         "monthly": "本月"
       },
-      "taskRulesTitle": "任务规则"
+      "taskRulesTitle": "任务规则",
+      "progressReminder": {
+        "title": "温馨提示",
+        "description": "好友需完成基础资料填写，并使用独立的 IP、设备和账号信息，才会被计入有效进度。如对当前进度有疑问，请联系客服协助处理。",
+        "primaryButton": "Confirm",
+        "secondaryButton": "Task Rules"
+      }
     },
     "rulesPage": {
       "title": "规则",

@@ -1,28 +1,28 @@
 <template>
   <div>
     <div v-if="isMobile" class="fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1">
-      <H5Header :title="t('home.favorites_games')" />
+      <H5Header :title="t('menu.recently-played')" />
       <div
         ref="mobileScrollRef"
         class="casino-fullpage-scroll-y flex-1 min-h-0 overflow-y-auto px-[14px] pt-2.5 pb-4"
       >
         <div
-          v-if="isCollectionsListLoading && favoriteGames.length === 0"
+          v-if="isPlayedLoading && playedGames.length === 0"
           class="grid w-full grid-cols-3 gap-2.5"
         >
           <div
             v-for="index in 27"
-            :key="`favorite-loading-mobile-${index}`"
+            :key="`recent-loading-mobile-${index}`"
             class="aspect-[330/438] animate-pulse rounded-lg bg-bg-2"
           />
         </div>
-        <div v-else-if="favoriteGames.length > 0" class="grid w-full grid-cols-3 gap-2.5">
+        <div v-else-if="playedGames.length > 0" class="grid w-full grid-cols-3 gap-2.5">
           <div
-            v-for="(game, index) in favoriteGames"
+            v-for="(game, index) in playedGames"
             :key="game.rowId ?? index"
             class="aspect-[330/438]"
           >
-            <casinoGameCard :game="game" show-favorite-badge @click="handleClick(game.rowId)" />
+            <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
           </div>
         </div>
         <ThemedEmptyState
@@ -34,31 +34,6 @@
           image-class="w-[220px] h-[200px] object-contain mb-2.5"
           text-class="text-xs text-center text-text-1"
         />
-
-        <template v-if="isRecommendedLoading || recommendedGames.length > 0">
-          <h2 class="mt-5 mb-2.5 font-inter text-base font-bold text-text-1">
-            {{ t('home.recommended_games') }}
-          </h2>
-          <div
-            v-if="isRecommendedLoading && recommendedGames.length === 0"
-            class="grid w-full grid-cols-3 gap-2.5"
-          >
-            <div
-              v-for="index in 27"
-              :key="`recommended-loading-mobile-${index}`"
-              class="aspect-[330/438] animate-pulse rounded-lg bg-bg-2"
-            />
-          </div>
-          <div v-else-if="recommendedGames.length > 0" class="grid w-full grid-cols-3 gap-2.5">
-            <div
-              v-for="(game, index) in recommendedGames"
-              :key="`rec-${game.rowId ?? index}`"
-              class="aspect-[330/438]"
-            >
-              <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
-            </div>
-          </div>
-        </template>
       </div>
     </div>
 
@@ -72,27 +47,27 @@
           <ArrowLeftIcon class="h-3.5 w-3.5 text-text-1" />
         </button>
         <h1 class="font-inter text-2xl font-extrabold text-text-1">
-          {{ t('home.favorites_games') }}
+          {{ t('menu.recently-played') }}
         </h1>
       </div>
 
       <div
-        v-if="isCollectionsListLoading && favoriteGames.length === 0"
+        v-if="isPlayedLoading && playedGames.length === 0"
         class="grid w-full grid-cols-8 gap-2.5"
       >
         <div
           v-for="index in 32"
-          :key="`favorite-loading-pc-${index}`"
+          :key="`recent-loading-pc-${index}`"
           class="aspect-[330/438] animate-pulse rounded-lg bg-bg-2"
         />
       </div>
-      <div v-else-if="favoriteGames.length > 0" class="grid w-full grid-cols-8 gap-2.5">
+      <div v-else-if="playedGames.length > 0" class="grid w-full grid-cols-8 gap-2.5">
         <div
-          v-for="(game, index) in favoriteGames"
+          v-for="(game, index) in playedGames"
           :key="game.rowId ?? index"
           class="aspect-[330/438]"
         >
-          <casinoGameCard :game="game" show-favorite-badge @click="handleClick(game.rowId)" />
+          <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
         </div>
       </div>
       <ThemedEmptyState
@@ -104,40 +79,13 @@
         image-class="w-[220px] h-[200px] object-contain mb-2.5"
         text-class="text-xs text-center text-text-1"
       />
-
-      <template v-if="isRecommendedLoading || recommendedGames.length > 0">
-        <h2 class="mt-4 font-inter text-xl font-bold text-text-1">
-          {{ t('home.recommended_games') }}
-        </h2>
-        <div
-          v-if="isRecommendedLoading && recommendedGames.length === 0"
-          class="mt-2.5 grid w-full grid-cols-8 gap-2.5"
-        >
-          <div
-            v-for="index in 32"
-            :key="`recommended-loading-pc-${index}`"
-            class="aspect-[330/438] animate-pulse rounded-lg bg-bg-2"
-          />
-        </div>
-        <div v-else-if="recommendedGames.length > 0" class="mt-2.5 grid w-full grid-cols-8 gap-2.5">
-          <div
-            v-for="(game, index) in recommendedGames"
-            :key="`rec-pc-${game.rowId ?? index}`"
-            class="aspect-[330/438]"
-          >
-            <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
-          </div>
-        </div>
-      </template>
-
       <CommonFooter class="mt-[40px]" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { storeToRefs } from 'pinia'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import type { GameDataItem } from '@/api/interface/game'
@@ -146,13 +94,12 @@ import CommonFooter from '@/components/commonFooter.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useGameStore } from '@/stores/game'
-import { useUserStore } from '@/stores/user'
 import { navigateToName } from '@/utils/router'
+import { readPlayedGamesFromStorage } from '@/utils/played-games-cache'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import casinoGameCard from '../components/casinoGameCard.vue'
-import { getCasinoQueryOptions } from '../casinoPageConfig'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -161,38 +108,19 @@ const isMobile = useIsMobile()
 const mobileScrollRef = ref<HTMLElement | null>(null)
 
 const gameStore = useGameStore()
-const userStore = useUserStore()
-const { acctInfo } = storeToRefs(userStore)
-const { collectionsListData, isCollectionsListLoading } = storeToRefs(gameStore)
-const favoriteGames = computed<GameDataItem[]>(() => collectionsListData.value as GameDataItem[])
+const playedGames = ref<GameDataItem[]>([])
+const isPlayedLoading = ref(false)
 
-const recommendedGames = ref<GameDataItem[]>([])
-const isRecommendedLoading = ref(false)
-
-const fetchRecommendedHotGames = async () => {
-  const opts = getCasinoQueryOptions('hot_games', { isMobile: isMobile.value })
-  if (!opts) {
-    recommendedGames.value = []
-    return
-  }
-  isRecommendedLoading.value = true
+const loadPlayedGames = async () => {
+  isPlayedLoading.value = true
   try {
-    const { list } = await gameStore.queryGameDataPage({ ...opts, page: 1 })
-    recommendedGames.value = list
+    const raw = readPlayedGamesFromStorage()
+    playedGames.value = await gameStore.hydrateSavedGameDetailsList(raw)
   } catch {
-    recommendedGames.value = []
+    playedGames.value = []
   } finally {
-    isRecommendedLoading.value = false
+    isPlayedLoading.value = false
   }
-}
-
-const fetchFavoritesData = async () => {
-  const memberRowId = Number(acctInfo.value?.memberRowId)
-  if (!Number.isFinite(memberRowId) || memberRowId <= 0) {
-    return
-  }
-
-  await gameStore.fetchCollectionsListData(memberRowId)
 }
 
 const handleClick = (rowId?: number | string) => {
@@ -219,13 +147,14 @@ const scrollPageToTop = () => {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchFavoritesData(), fetchRecommendedHotGames()])
+  await loadPlayedGames()
   scrollPageToTop()
 })
 
 watch(
   () => route.fullPath,
   () => {
+    void loadPlayedGames()
     scrollPageToTop()
   }
 )

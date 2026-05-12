@@ -125,6 +125,33 @@ export interface QueryTaskRewardConfigResponse extends AgentApiResponse<QueryTas
 export interface QueryEstimatedCommissionResponse extends AgentApiResponse<number> {}
 
 /**
+ * 查询一级代理结算周期规则结果
+ */
+export interface QueryReferralSettlementRuleResult {
+  activeBet?: number
+  activeRecharge?: number
+  limitType?: number
+  minBet?: number
+  minRecharge?: number
+  multipleBets?: number
+  platformGameCodes?: string[]
+  rowId?: number
+  settlementDay?: number | string
+  settlementType?: number | string
+  site?: string
+}
+
+/**
+ * 查询一级代理结算周期规则响应
+ */
+export interface QueryReferralSettlementRuleResponse extends AgentApiResponse<QueryReferralSettlementRuleResult> {}
+
+/**
+ * 查询一级代理佣金加码预估佣金响应
+ */
+export interface QueryReferralCommissionBoostAmountResponse extends AgentApiResponse<number> {}
+
+/**
  * 查询一级代理任务进度结果
  */
 export interface QueryReferralTaskProgressResult {
