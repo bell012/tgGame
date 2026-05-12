@@ -140,7 +140,7 @@ export function buildCommonRequestHeaders(url = ''): Record<string, string> {
     channelId: '1'
   }
 
-  if (!url.includes('/ad/getLoginAndRegisterSetting')) {
+  if (!url.includes('/bd/getLoginAndRegisterSetting')) {
     const xAuthToken = localStorage.getItem('xAuthToken')
     if (xAuthToken) {
       headers['X-Auth-Token'] = xAuthToken
@@ -376,7 +376,7 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   (response: AxiosResponse) => {
-    if (response.config.url?.includes('/ad/getLoginAndRegisterSetting')) {
+    if (response.config.url?.includes('/bd/getLoginAndRegisterSetting')) {
       const xhr = response.request
       if (xhr && xhr.getResponseHeader) {
         const contentLengths = xhr.getResponseHeader('content-lengths')

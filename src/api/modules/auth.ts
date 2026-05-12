@@ -24,7 +24,7 @@ import type {
  */
 export function getLoginAndRegisterSetting(data: {}): Promise<LoginSetResponse> {
   return request({
-    url: '/ad/getLoginAndRegisterSetting',
+    url: '/bd/getLoginAndRegisterSetting',
     method: 'post',
     data,
     showSuccessToast: false, // 不显示成功轻提示
