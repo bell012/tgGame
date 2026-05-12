@@ -8,25 +8,20 @@
       <div class="detail-loading-spinner" />
     </div>
     <!-- Header -->
-    <h5-header class="block sm:hidden">
-      {{ currentGameDetail?.itemName ?? '' }}
-    </h5-header>
+    <h5-header class="block sm:hidden"> {{ currentGameDetail?.itemName ?? '' }} </h5-header>
     <!-- Currency Info -->
-    <template v-if="isMobile">
-      <h5-currency-info />
-    </template>
-    <template v-else>
-      <desktop-currency-info />
-    </template>
+    <h5-currency-info v-if="isMobile" />
+    <desktop-currency-info v-else />
     <!-- Game Content -->
     <recent-games />
-    <template v-if="hasCurrentCategoryHotGames">
-      <game-list
-        :title="t('home.RecommendedGames')"
-        :list="currentCategoryHotGameList"
-        @all-click="openCurrentCategoryAllGamesPage"
-      />
-    </template>
+    <!-- 推荐游戏 -->
+    <game-list
+      v-if="hasCurrentCategoryHotGames"
+      :title="t('home.RecommendedGames')"
+      :list="currentCategoryHotGameList"
+      @all-click="openCurrentCategoryAllGamesPage"
+    />
+    <!-- 投注表格 -->
     <bets-list />
   </div>
   <!-- Footer -->
