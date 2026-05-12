@@ -58,7 +58,7 @@
           <td class="px-2.5 py-2.5 sm:px-6 sm:py-0 text-right text-xs sm:text-sm">
             <div class="ml-auto flex w-[73px] max-w-full items-center justify-end gap-1 sm:w-auto">
               <span :class="item.profit >= 0 ? 'text-secondary-4' : 'text-text-2'">
-                {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
+                {{ item.profit >= 0 ? '+' : '' }}{{ formatMultiplier(item.profit) }}
               </span>
               <img :src="item.currencyIcon" class="w-3 h-3" :alt="item.currency" />
             </div>
