@@ -49,12 +49,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { showToast } from 'vant'
-import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateTo } from '@/utils/router'
+
+import { globalShowToast } from '@/utils/toast'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ReferralRulesPageContent from './components/ReferralRulesPageContent.vue'
 import PcLayout from './pc-layout.vue'
 import {
@@ -95,7 +96,7 @@ onMounted(() => {
  * 处理播放 Guide 视频。
  */
 const handlePlayGuide = () => {
-  showToast({
+  globalShowToast({
     message: t('referral.rulesPage.playGuideHint'),
     type: 'success'
   })

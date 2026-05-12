@@ -38,7 +38,7 @@
     "BetAmount": "Bet Amount",
     "Multiplier": "Multiplier",
     "Profit": "Profit",
-    "LatestBet": "Latest Bets",
+    "LatestBet": "Latest Bet",
     "HighRoller": "High Roller",
     "WagerContest": "Wager Contest",
     "TGOriginals": "TG Originals",
@@ -365,8 +365,12 @@
       "shareGuideHint": "Invite friends through social platforms or by copying the referral message."
     },
     "commissionBoost": {
+      "today": "Today",
+      "yesterday": "Yesterday",
       "thisWeek": "This Week",
       "lastWeek": "Last Week",
+      "thisMonth": "This Month",
+      "lastMonth": "Last Month",
       "friends": "Friends",
       "currentLevel": "Current Level:",
       "activeFriends": "Active Friends:",
@@ -392,7 +396,9 @@
       "friendUnit": "Friend",
       "friendsUnit": "Friends",
       "currentProgress": "Current Progress",
+      "maxRewardThisDay": "Max Reward This Day",
       "maxRewardThisWeek": "Max Reward This Week",
+      "maxRewardThisMonth": "Max Reward This Month",
       "invitedSignUps": "Invited Sign-Ups",
       "depositAmount": "Deposit Amount",
       "commissionBoost": "Commission Boost",
@@ -408,7 +414,13 @@
         "weekly": "this week",
         "monthly": "this month"
       },
-      "taskRulesTitle": "Task Rules"
+      "taskRulesTitle": "Task Rules",
+      "progressReminder": {
+        "title": "Kind Reminder",
+        "description": "Your friend must complete their basic profile and use unique IP, device, and account information to be counted. If you have any questions about your progress, please contact customer support.",
+        "primaryButton": "Confirm",
+        "secondaryButton": "Task Rules"
+      }
     },
     "rulesPage": {
       "title": "Rules",

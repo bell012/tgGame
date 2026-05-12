@@ -1,11 +1,12 @@
-import commissionCoinIcon from '@/static/img/referral/referral-coin.png'
-import taskRulesPlaceholderImage from '@/static/img/referral/claim_popup_hero.png'
 import type {
+  QueryReferralSettlementRuleResult,
   QueryTaskRewardConfig,
   QueryTaskRewardConfigResult,
   QueryTaskRewardFriendItem,
   QueryTaskRewardWalletItem
 } from '@/api/interface/agent'
+import taskRulesPlaceholderImage from '@/static/img/referral/claim_popup_hero.png'
+import commissionCoinIcon from '@/static/img/referral/referral-coin.png'
 import { getCurrencySymbol } from '@/utils/locale'
 
 type TranslateFn = (key: string, named?: Record<string, unknown>) => string
@@ -32,6 +33,12 @@ export interface ReferralTaskRewardRow {
 export interface ReferralTaskRewardTable {
   columns: string[]
   rows: ReferralTaskRewardRow[]
+}
+
+export interface ReferralTaskResetHintSegments {
+  prefix: string
+  countdown: string
+  suffix: string
 }
 
 export type ReferralTaskRewardConfig = QueryTaskRewardConfig
@@ -158,49 +165,67 @@ const formatTaskAmount = (value: unknown) => {
 }
 
 /**
- * 执行pickFirstDefined方法。
+ * 根据结算规则解析任务周期类型。
  */
-const pickFirstDefined = (sources: unknown[], keys: string[]) => {
-  for (const source of sources) {
-    if (!source || typeof source !== 'object') {
-      continue
-    }
-
-    const record = source as Record<string, unknown>
-
-    for (const key of keys) {
-      const value = record[key]
-
-      if (value !== undefined && value !== null && String(value).trim() !== '') {
-        return value
-      }
-    }
-  }
-
-  return undefined
-}
-
-const resolveTaskPeriodKey = (
-  result?: ReferralTaskRewardConfigResult | null
+export const resolveReferralTaskPeriodKeyFromSettlementRule = (
+  settlementRule?: QueryReferralSettlementRuleResult | null
 ): ReferralTaskPeriodKey => {
-  const periodValue = String(
-    pickFirstDefined(
-      [result, result?.config],
-      ['resetType', 'rewardType', 'rewardTypeName', 'periodType', 'cycleType']
-    ) ?? ''
-  )
-    .trim()
-    .toLowerCase()
+  const settlementType = Number(settlementRule?.settlementType)
 
-  if (periodValue === 'daily' || periodValue === 'day' || periodValue === '2') {
+  if (settlementType === 1) {
     return 'daily'
   }
 
-  if (periodValue === 'monthly' || periodValue === 'month' || periodValue === '3') {
+  if (settlementType === 3) {
     return 'monthly'
   }
 
   return 'weekly'
+}
+
+const getStartOfDay = (date: Date) => {
+  const nextDate = new Date(date)
+  nextDate.setHours(0, 0, 0, 0)
+  return nextDate
+}
+
+const getMonthStartBySettlementDay = (date: Date, settlementDay: number) => {
+  const normalizedSettlementDay = Math.max(1, Math.min(31, settlementDay || 1))
+  const currentPeriodStart = new Date(date)
+
+  if (date.getDate() >= normalizedSettlementDay) {
+    currentPeriodStart.setDate(normalizedSettlementDay)
+  } else {
+    currentPeriodStart.setMonth(currentPeriodStart.getMonth() - 1, normalizedSettlementDay)
+  }
+
+  currentPeriodStart.setHours(0, 0, 0, 0)
+  return currentPeriodStart
+}
+
+const getWeekStartBySettlementDay = (date: Date, settlementDay: number) => {
+  const normalizedSettlementDay = Math.max(1, Math.min(7, settlementDay || 1))
+  const currentJsDay = date.getDay()
+  const targetJsDay = normalizedSettlementDay === 7 ? 0 : normalizedSettlementDay
+  const diff = (currentJsDay - targetJsDay + 7) % 7
+  const weekStart = new Date(date)
+
+  weekStart.setDate(date.getDate() - diff)
+  weekStart.setHours(0, 0, 0, 0)
+  return weekStart
+}
+
+const buildResetCountdownText = (targetDate: Date) => {
+  const diffMs = Math.max(0, targetDate.getTime() - Date.now())
+  const totalMinutes = Math.floor(diffMs / 60000)
+  const totalHours = Math.floor(totalMinutes / 60)
+  const days = Math.floor(totalHours / 24)
+  const hours = totalHours % 24
+  const minutes = totalMinutes % 60
+
+  return `${String(days).padStart(2, '0')}D ${String(hours).padStart(2, '0')}H ${String(
+    minutes
+  ).padStart(2, '0')}M`
 }
 
 /**
@@ -230,26 +255,11 @@ const formatResetCountdown = (countdown: string, localeCode: string) => {
  */
 export const createReferralTaskValidInviteDescription = (
   t: TranslateFn,
-  result?: ReferralTaskRewardConfigResult | null
+  settlementRule?: QueryReferralSettlementRuleResult | null
 ) => {
-  const periodKey = resolveTaskPeriodKey(result)
-  const rechargeAmount = formatTaskAmount(
-    pickFirstDefined(
-      [result?.config, result],
-      [
-        'validInviteRechargeAmount',
-        'inviteRechargeAmount',
-        'validRechargeAmount',
-        'rechargeThreshold'
-      ]
-    ) ?? 500
-  )
-  const betAmount = formatTaskAmount(
-    pickFirstDefined(
-      [result?.config, result],
-      ['validInviteBetAmount', 'inviteBetAmount', 'validBetAmount', 'betThreshold']
-    ) ?? 1000
-  )
+  const periodKey = resolveReferralTaskPeriodKeyFromSettlementRule(settlementRule)
+  const rechargeAmount = formatTaskAmount(settlementRule?.minRecharge ?? 0)
+  const betAmount = formatTaskAmount(settlementRule?.minBet ?? 0)
 
   return t('referral.taskPage.validInviteDescription', {
     period: t(`referral.taskPage.periodLabel.${periodKey}`),
@@ -259,25 +269,92 @@ export const createReferralTaskValidInviteDescription = (
 }
 
 /**
+ * 生成任务页最高奖励标题。
+ */
+export const createReferralTaskMaxRewardLabel = (
+  t: TranslateFn,
+  settlementRule?: QueryReferralSettlementRuleResult | null
+) => {
+  const periodKey = resolveReferralTaskPeriodKeyFromSettlementRule(settlementRule)
+
+  if (periodKey === 'daily') {
+    return t('referral.taskPage.maxRewardThisDay')
+  }
+
+  if (periodKey === 'monthly') {
+    return t('referral.taskPage.maxRewardThisMonth')
+  }
+
+  return t('referral.taskPage.maxRewardThisWeek')
+}
+
+const resolveReferralTaskResetCountdown = (
+  localeCode: string,
+  settlementRule?: QueryReferralSettlementRuleResult | null
+) => {
+  const periodKey = resolveReferralTaskPeriodKeyFromSettlementRule(settlementRule)
+  const settlementDay = Number(settlementRule?.settlementDay ?? 1)
+  const now = new Date()
+  let nextResetTime = new Date(now)
+
+  if (periodKey === 'daily') {
+    nextResetTime = getStartOfDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1))
+  } else if (periodKey === 'monthly') {
+    const currentStart = getMonthStartBySettlementDay(now, settlementDay)
+    nextResetTime = new Date(currentStart)
+    nextResetTime.setMonth(
+      nextResetTime.getMonth() + 1,
+      Math.max(1, Math.min(31, settlementDay || 1))
+    )
+    nextResetTime.setHours(0, 0, 0, 0)
+  } else {
+    const currentStart = getWeekStartBySettlementDay(now, settlementDay)
+    nextResetTime = new Date(currentStart)
+    nextResetTime.setDate(nextResetTime.getDate() + 7)
+    nextResetTime.setHours(0, 0, 0, 0)
+  }
+
+  return {
+    periodKey,
+    countdown: formatResetCountdown(buildResetCountdownText(nextResetTime), localeCode)
+  }
+}
+
+/**
  * 生成任务页重置提示文案。
  */
 export const createReferralTaskResetHint = (
   t: TranslateFn,
   localeCode: string,
-  result?: ReferralTaskRewardConfigResult | null
+  settlementRule?: QueryReferralSettlementRuleResult | null
 ) => {
-  const periodKey = resolveTaskPeriodKey(result)
-  const rawCountdown = String(
-    pickFirstDefined(
-      [result, result?.config],
-      ['resetCountdown', 'countdown', 'countDown', 'rewardCountdown']
-    ) ?? '05D 02H 20M'
-  )
-  const countdown = formatResetCountdown(rawCountdown, localeCode)
+  const { periodKey, countdown } = resolveReferralTaskResetCountdown(localeCode, settlementRule)
 
   return t(`referral.taskPage.resetHint.${periodKey}`, {
     countdown
   })
+}
+
+/**
+ * 拆分任务页重置提示文案，便于单独渲染倒计时样式。
+ */
+export const createReferralTaskResetHintSegments = (
+  t: TranslateFn,
+  localeCode: string,
+  settlementRule?: QueryReferralSettlementRuleResult | null
+): ReferralTaskResetHintSegments => {
+  const { periodKey, countdown } = resolveReferralTaskResetCountdown(localeCode, settlementRule)
+  const marker = '__COUNTDOWN__'
+  const template = t(`referral.taskPage.resetHint.${periodKey}`, {
+    countdown: marker
+  })
+  const [prefix, suffix = ''] = template.split(marker)
+
+  return {
+    prefix,
+    countdown,
+    suffix
+  }
 }
 
 /**

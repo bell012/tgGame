@@ -1,11 +1,13 @@
 import type {
   AgentApiResponse,
+  QueryReferralCommissionBoostAmountResponse,
   QueryEstimatedCommissionResponse,
-  QueryReferralTaskProgressResponse,
   QueryReferralDetailsChartStatsResponse,
   QueryReferralDetailsClaimHistoryResponse,
   QueryReferralDetailsRewardHistoryResponse,
+  QueryReferralSettlementRuleResponse,
   QueryReferralDetailsTopUpStatsResponse,
+  QueryReferralTaskProgressResponse,
   QueryTaskRewardConfigResponse
 } from '@/api/interface/agent'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
@@ -66,6 +68,17 @@ export const queryShareChannels = (
 export const queryTaskRewardConfig = (
   options?: AgentRequestOptions
 ): Promise<QueryTaskRewardConfigResponse> => callAgentAction('agent57', undefined, options)
+
+// agent53：查询一级代理结算周期规则。
+export const queryReferralSettlementRule = (
+  options?: AgentRequestOptions
+): Promise<QueryReferralSettlementRuleResponse> => callAgentAction('agent53', undefined, options)
+
+// agent84：查询一级代理佣金加码预估佣金。
+export const queryReferralCommissionBoostAmount = (
+  options?: AgentRequestOptions
+): Promise<QueryReferralCommissionBoostAmountResponse> =>
+  callAgentAction('agent84', undefined, options)
 
 // agent87：查询一级代理任务进度。
 export const queryReferralTaskProgress = (
