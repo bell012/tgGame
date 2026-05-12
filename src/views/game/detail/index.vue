@@ -39,7 +39,6 @@ import CommonFooter from '@/components/commonFooter.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
 import { useUserStore } from '@/stores/user'
-import { getLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
@@ -252,14 +251,10 @@ const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.val
 // ===== 数据请求 =====
 const fetchCurrentGameDetail = async () => {
   const targetRowId = rowId.value
-  const languageCode = getLanguageCode(currentLanguage.value)
   gameDetailSubjectIsCollections.value = null
 
   try {
-    const res = await Api.game.queryGameDetails(
-      { rowId: targetRowId, languageCode },
-      API_REQUEST_OPTIONS
-    )
+    const res = await Api.game.queryGameDetails({ rowId: targetRowId }, API_REQUEST_OPTIONS)
     const result = res?.result
     if (result && typeof result === 'object') {
       currentGameDetailState.value = result as CurrentGameDetail
