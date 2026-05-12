@@ -47,6 +47,8 @@ export const TRANSACTION_CHANGE_TYPE_VALUES = [
   '7',
   '8',
   '9',
+  '10',
+  '11',
   '13',
   '14'
 ]
@@ -61,6 +63,8 @@ const TRANSACTION_TYPE_KEY_MAP: Record<number, string> = {
   7: 'bonusGift',
   8: 'commissionClaim',
   9: 'currencyExchange',
+  10: 'weeklyBonus',
+  11: 'monthlyBonus',
   13: 'vipIncome',
   14: 'bonusExchange'
 }
@@ -107,6 +111,8 @@ export const createTransactionTypeOptions = (t: TranslateFn): SelectOption[] => 
   { label: t('transaction.typeOptions.bonusGift'), value: '7' },
   { label: t('transaction.typeOptions.commissionClaim'), value: '8' },
   { label: t('transaction.typeOptions.currencyExchange'), value: '9' },
+  { label: t('transaction.typeOptions.weeklyBonus'), value: '10' },
+  { label: t('transaction.typeOptions.monthlyBonus'), value: '11' },
   { label: t('transaction.typeOptions.vipIncome'), value: '13' },
   { label: t('transaction.typeOptions.bonusExchange'), value: '14' }
 ]

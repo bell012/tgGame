@@ -1222,6 +1222,8 @@
       "bonusGift": "赠送彩金",
       "commissionClaim": "领取佣金",
       "currencyExchange": "货币互换",
+      "weeklyBonus": "周礼金",
+      "monthlyBonus": "月礼金",
       "vipIncome": "VIP收益",
       "bonusExchange": "红利兑换"
     }

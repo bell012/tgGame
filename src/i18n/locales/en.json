@@ -1225,6 +1225,8 @@
       "bonusGift": "Bonus Gift",
       "commissionClaim": "Claim Commission",
       "currencyExchange": "Currency Exchange",
+      "weeklyBonus": "Weekly Bonus",
+      "monthlyBonus": "Monthly Bonus",
       "vipIncome": "VIP Income",
       "bonusExchange": "Bonus Exchange"
     }
