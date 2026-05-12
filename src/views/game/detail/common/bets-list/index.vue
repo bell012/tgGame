@@ -30,7 +30,7 @@
           <tr role="row" class="bg-bg-2 text-text-2">
             <th>{{ t('gameDetail.betId') }}</th>
             <th class="sm:w-auto">{{ t('gameDetail.bet') }}</th>
-            <th>{{ t('gameDetail.payout') }}</th>
+            <th>{{ t('home.Multiplier') }}</th>
             <th class="text-right">{{ t('gameDetail.profit') }}</th>
           </tr>
         </thead>
@@ -210,7 +210,7 @@ const tabs = computed(() => [
   { value: 1, label: t('gameDetail.myBets') },
   { value: 2, label: t('home.HighRoller') }
 ])
-const multiplierUnit = computed(() => t('gameDetail.multiplierUnit'))
+const multiplierUnit = 'x' //computed(() => t('gameDetail.multiplierUnit'))
 
 type CurrentGameDetail = {
   itemCode?: string | number
