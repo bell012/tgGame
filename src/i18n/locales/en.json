@@ -243,6 +243,9 @@
     "createdAt": "Created At",
     "copy": "Copy succeeded."
   },
+  "rewardDetails": {
+    "title": "Bet Slip"
+  },
   "notifications": {
     "title": "Notifications",
     "detail": "Notification Detail",

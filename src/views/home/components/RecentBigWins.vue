@@ -48,10 +48,12 @@
         ref="marqueeInnerRef"
         class="marquee-track recent-big-win flex flex-nowrap items-center gap-3 sm:gap-3.5"
       >
-        <a
+        <button
           v-for="(item, idx) in duplicatedList"
           :key="`win-${idx}`"
-          class="inactive flex h-28 w-14 flex-none flex-col items-center text-xs hover:opacity-80 sm:h-[106px] sm:w-13"
+          type="button"
+          class="marquee-item inactive flex h-28 w-14 flex-none cursor-pointer flex-col items-center border-0 bg-transparent p-0 text-xs text-inherit hover:opacity-80 sm:h-[106px] sm:w-13"
+          @click.stop="onRecentBigWinItemClick(idx)"
         >
           <div class="relative mb-1 w-full rounded-lg pt-[133%]">
             <img
@@ -65,7 +67,7 @@
           </div>
           <div class="w-[100%]">
             <div class="flex items-center justify-center font-bold text-secondary">
-              <img class="size-[0.875rem]" :src="icon" alt="" />
+              <img class="size-[0.875rem]" :src="item.icon" alt="" />
               <span class="ellipsis -ml-0.5 text-xxs">{{ item.name }}</span>
             </div>
             <div
@@ -74,18 +76,27 @@
               {{ formatRecentBigWinAmount(item.number) }} {{ item.currency }}
             </div>
           </div>
-        </a>
+        </button>
       </div>
     </div>
+    <RewardDetailsModal v-model="showRewardDetailsModal" :reward="rewardDetailsPayload" />
   </section>
 </template>
 
 <script setup lang="ts">
 import Api from '@/api'
-import icon from '../img/Image4.svg?url'
 import placeholderImg from '@/static/img/home/errImg1.png'
+import vip0Icon from '@/static/img/vip/vip0.png'
+import vip1Vip2Icon from '@/static/img/vip/vip1-vip2.png'
+import vip3Vip4Icon from '@/static/img/vip/vip3-vip4.png'
+import vip5Vip6Icon from '@/static/img/vip/vip5-vip6.png'
+import vip7Vip8Icon from '@/static/img/vip/vip7-vip8.png'
+import vip9Vip10Icon from '@/static/img/vip/vip9-vip10.png'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { getCurrentCurrency } from '@/utils/locale'
+import { navigateTo } from '@/utils/router'
+import RewardDetailsModal from '@/views/home/rewardDetails/RewardDetailsModal.vue'
+import type { RewardDetailsState } from '@/views/home/rewardDetails/types'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 interface RecentBigWin {
@@ -93,7 +104,23 @@ interface RecentBigWin {
   name: string
   number: string
   currency: string
+  icon: string
+  gameName?: string
+  gameType?: string
+  multiple?: number | string
+  rowId?: number | string
+  betAmountRaw?: number | string
+  betTime?: string
 }
+
+const showRewardDetailsModal = ref(false)
+const rewardDetailsPayload = ref<RewardDetailsState | null>(null)
+
+watch(showRewardDetailsModal, open => {
+  if (!open) {
+    rewardDetailsPayload.value = null
+  }
+})
 
 const currentCurrency = computed(() => getCurrentCurrency())
 const isMobile = useIsMobile()
@@ -110,6 +137,26 @@ const toGameImageUrl = (value: string) => {
     return placeholderImg
   }
   return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+}
+
+const getVipIconByVipId = (vipId: unknown) => {
+  const id = Number(vipId)
+  if (!Number.isFinite(id) || id == 0) {
+    return vip0Icon
+  }
+  if (id <= 2) {
+    return vip1Vip2Icon
+  }
+  if (id <= 4) {
+    return vip3Vip4Icon
+  }
+  if (id <= 6) {
+    return vip5Vip6Icon
+  }
+  if (id <= 8) {
+    return vip7Vip8Icon
+  }
+  return vip9Vip10Icon
 }
 
 /** 大额展示：≥1000 转为千分位 + 两位小数 + K，如 1,497.00K；否则两位小数 + 千分位 */
@@ -129,16 +176,78 @@ const formatRecentBigWinAmount = (raw: string) => {
   return n.toLocaleString('en-US', opts)
 }
 
+const formatRewardAmount = (raw: string, currency: string) => {
+  const cleaned = String(raw).replace(/,/g, '').trim()
+  const n = Number(cleaned)
+  if (!Number.isFinite(n)) {
+    return `${raw} ${currency}`.trim()
+  }
+  return `${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`
+}
+
+const formatBetAmountLine = (item: RecentBigWin) => {
+  if (item.betAmountRaw == null || String(item.betAmountRaw).trim() === '') {
+    return '--'
+  }
+  return formatRewardAmount(String(item.betAmountRaw), item.currency)
+}
+
+const formatMultiplierLine = (value?: number | string) => {
+  if (value == null || String(value).trim() === '') {
+    return '--'
+  }
+  const s = String(value).replace(/x$/i, '').trim()
+  if (!s) {
+    return '--'
+  }
+  return `${s}x`
+}
+
+const buildRewardDetailsPayload = (item: RecentBigWin): RewardDetailsState => ({
+  profit: formatRewardAmount(item.number, item.currency),
+  betAmount: formatBetAmountLine(item),
+  multiplier: formatMultiplierLine(item.multiple),
+  userName: item.name,
+  betTime: item.betTime && String(item.betTime).trim() !== '' ? String(item.betTime) : '--',
+  gameName: item.gameName && String(item.gameName).trim() !== '' ? String(item.gameName) : '--',
+  gameType: item.gameType && String(item.gameType).trim() !== '' ? String(item.gameType) : 'Slots',
+  gameCover: item.src || placeholderImg,
+  vipAvatarUrl: item.icon
+})
+
+const onRecentBigWinItemClick = (duplicatedIndex: number) => {
+  const len = list.value.length
+  if (len === 0) {
+    return
+  }
+  const item = list.value[duplicatedIndex % len]
+  const payload = buildRewardDetailsPayload(item)
+  if (isMobile.value) {
+    void navigateTo('/reward-details', { state: { rewardDetails: JSON.stringify(payload) } })
+    return
+  }
+  rewardDetailsPayload.value = payload
+  showRewardDetailsModal.value = true
+}
+
 const getRecentBigWinsData = async () => {
   loading.value = true
   try {
     const res = await Api.home.getRecentBigWins({ currency: currentCurrency.value, type: 1 })
+    console.log('resss', res)
     list.value =
       res.result?.map((item: any) => ({
         src: toGameImageUrl(item.coverImg),
         name: item.nickName,
         number: String(item.winAmount ?? ''),
-        currency: String(item.currency ?? '')
+        currency: String(item.currency ?? ''),
+        icon: getVipIconByVipId(item.vipId),
+        gameName: item.gameName,
+        gameType: item.gameType,
+        multiple: item.multiple,
+        rowId: item.rowId,
+        betAmountRaw: item.betAmount ?? item.gameAmount,
+        betTime: item.betTime ?? item.createTime ?? item.gameTime
       })) || []
   } catch (error) {
     list.value = []
@@ -575,7 +684,7 @@ onUnmounted(() => {
   backface-visibility: hidden;
 }
 
-.marquee-track a {
+.marquee-track .marquee-item {
   flex: none;
 }
 

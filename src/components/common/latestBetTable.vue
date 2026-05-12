@@ -158,7 +158,7 @@ const getLatestListData = async () => {
       type: props.type,
       currency: getCurrentCurrency()
     })
-
+    console.log('res---', res)
     sourceRows.value = (res?.result ?? []).map((item: LatestListItem, index: number) => {
       const currency = String(item.currency ?? '').trim()
 

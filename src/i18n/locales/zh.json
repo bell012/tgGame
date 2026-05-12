@@ -524,6 +524,9 @@
     "createdAt": "创建时间",
     "copy": "复制成功"
   },
+  "rewardDetails": {
+    "title": "投注单"
+  },
   "notifications": {
     "title": "通知",
     "detail": "通知详情",
