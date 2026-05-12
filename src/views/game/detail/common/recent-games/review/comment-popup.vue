@@ -552,14 +552,14 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-post-btn:disabled {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: transparent;
   border-radius: 8px;
-  opacity: 1;
-  background: #3a424a;
+  opacity: 0.6;
+  background: var(--comment-post-disabled-bg, linear-gradient(90deg, #24ee89 0%, #9fe871 100%));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 4px 10px rgba(0, 0, 0, 0.18);
-  color: #8f9aa6;
+    0 0 12px 0 rgba(35, 238, 136, 0.3),
+    0 -2px 0 0 #1dca6a inset;
+  color: #061a10;
 }
 
 .comment-emoji-panel {
@@ -706,12 +706,13 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-panel.is-light .comment-popup-post-btn:disabled {
-  border-color: #c9d6e6;
-  background: #e5edf7;
+  border-color: transparent;
+  opacity: 0.6;
+  background: var(--comment-post-disabled-bg, linear-gradient(90deg, #24ee89 0%, #9fe871 100%));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 4px 10px rgba(24, 38, 64, 0.08);
-  color: #8a99ad;
+    0 0 12px 0 rgba(35, 238, 136, 0.3),
+    0 -2px 0 0 #1dca6a inset;
+  color: #061a10;
 }
 
 .comment-popup-panel.is-light :deep(.comment-emoji-trigger-icon path) {
