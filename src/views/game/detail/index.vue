@@ -294,10 +294,20 @@ const openCurrentCategoryAllGamesPage = () => {
 
 // ===== 监听与生命周期 =====
 watch(
-  [rowId, currentLanguage],
+  [rowId],
   () => {
     void fetchCurrentGameDetail()
     void fetchGameDataForApp()
+  },
+  { immediate: true, flush: 'post' }
+)
+
+watch(
+  [currentLanguage],
+  ([newLanguage], [oldLanguage]) => {
+    if (!oldLanguage || newLanguage === oldLanguage) return
+
+    void navigateTo('/', { replace: true })
   },
   { immediate: true, flush: 'post' }
 )
