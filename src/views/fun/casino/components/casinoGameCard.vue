@@ -23,8 +23,10 @@
         />
       </div>
     </div>
-    <div class="absolute bottom-1 right-1 flex h-5 items-center rounded-[6px] bg-mask-20 px-1.5">
-      <div class="icon h-[10px] w-[10px] sm:size-4 fill-common-100 text-common-100">
+    <div
+      class="absolute bottom-1 right-1 flex h-5 w-[33px] items-center rounded-[6px] bg-mask-20 px-1.5"
+    >
+      <div class="icon h-[10px] w-[10px] sm:size-4 fill-common-100 text-common-100 mr-0.5">
         <component
           :is="casinoIcons.player_count"
           class="h-[10px] w-[10px] sm:size-4 fill-current"
