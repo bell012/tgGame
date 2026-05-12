@@ -191,11 +191,11 @@ const hideSortFilter = computed(() => {
 })
 const filterSheetWrapClass = computed(() => {
   if (isMobile.value || !hideSortFilter.value) {
-    return 'my-2.5 w-full'
+    return 'mt-2.5 mb-3.5 w-full'
   }
 
   // PC 搜索关键词场景只显示“供应商”时，避免筛选框占满整行
-  return 'my-2.5 w-full sm:max-w-[420px]'
+  return 'mt-2.5 mb-3.5 w-full sm:max-w-[420px]'
 })
 const resolvedQueryKey = computed(() =>
   JSON.stringify({
