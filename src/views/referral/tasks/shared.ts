@@ -41,6 +41,11 @@ export interface ReferralTaskResetHintSegments {
   suffix: string
 }
 
+export interface ReferralTaskValidInviteDescriptionSegment {
+  text: string
+  highlighted?: boolean
+}
+
 export type ReferralTaskRewardConfig = QueryTaskRewardConfig
 export type ReferralTaskRewardConfigResult = QueryTaskRewardConfigResult
 
@@ -266,6 +271,48 @@ export const createReferralTaskValidInviteDescription = (
     rechargeAmount,
     betAmount
   })
+}
+
+/**
+ * 拆分任务页有效邀请说明文案，便于单独渲染金额样式。
+ */
+export const createReferralTaskValidInviteDescriptionSegments = (
+  t: TranslateFn,
+  settlementRule?: QueryReferralSettlementRuleResult | null
+): ReferralTaskValidInviteDescriptionSegment[] => {
+  const periodKey = resolveReferralTaskPeriodKeyFromSettlementRule(settlementRule)
+  const rechargeAmount = formatTaskAmount(settlementRule?.minRecharge ?? 0)
+  const betAmount = formatTaskAmount(settlementRule?.minBet ?? 0)
+  const rechargeMarker = '__RECHARGE_AMOUNT__'
+  const betMarker = '__BET_AMOUNT__'
+  const template = t('referral.taskPage.validInviteDescription', {
+    period: t(`referral.taskPage.periodLabel.${periodKey}`),
+    rechargeAmount: rechargeMarker,
+    betAmount: betMarker
+  })
+
+  return template
+    .split(new RegExp(`(${rechargeMarker}|${betMarker})`, 'g'))
+    .filter(Boolean)
+    .map(segment => {
+      if (segment === rechargeMarker) {
+        return {
+          text: rechargeAmount,
+          highlighted: true
+        }
+      }
+
+      if (segment === betMarker) {
+        return {
+          text: betAmount,
+          highlighted: true
+        }
+      }
+
+      return {
+        text: segment
+      }
+    })
 }
 
 /**

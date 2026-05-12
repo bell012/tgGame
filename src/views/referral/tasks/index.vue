@@ -36,7 +36,7 @@
           :reward-rows="rewardRows"
           :reward-table-loading="rewardTableLoading"
           :valid-invite-title="t('referral.taskPage.validInviteTitle')"
-          :valid-invite-description="validInviteDescriptionText"
+          :valid-invite-description-segments="validInviteDescriptionSegments"
           :task-rules-title="t('referral.taskPage.taskRulesTitle')"
           :task-rules-image="taskRulesImage"
           :bottom-action-text="t('referral.invitePoster.inviteNow')"
@@ -71,7 +71,7 @@
         :reward-rows="rewardRows"
         :reward-table-loading="rewardTableLoading"
         :valid-invite-title="t('referral.taskPage.validInviteTitle')"
-        :valid-invite-description="validInviteDescriptionText"
+        :valid-invite-description-segments="validInviteDescriptionSegments"
         :task-rules-title="t('referral.taskPage.taskRulesTitle')"
         :task-rules-image="taskRulesImage"
         :bottom-action-text="t('referral.invitePoster.inviteNow')"
@@ -127,7 +127,7 @@ import {
   createReferralTaskMaxRewardLabel,
   createReferralTaskResetHintSegments,
   createReferralTaskTabs,
-  createReferralTaskValidInviteDescription,
+  createReferralTaskValidInviteDescriptionSegments,
   getReferralTaskCoinImage,
   getReferralTaskRulesPlaceholderImage,
   type ReferralTaskRewardConfig,
@@ -161,8 +161,8 @@ const rewardRows = computed(() => rewardTable.value.rows)
 const resetHintSegments = computed(() =>
   createReferralTaskResetHintSegments(t, String(locale.value), referralSettlementRule.value)
 )
-const validInviteDescriptionText = computed(() =>
-  createReferralTaskValidInviteDescription(t, referralSettlementRule.value)
+const validInviteDescriptionSegments = computed(() =>
+  createReferralTaskValidInviteDescriptionSegments(t, referralSettlementRule.value)
 )
 const maxRewardLabel = computed(() =>
   createReferralTaskMaxRewardLabel(t, referralSettlementRule.value)

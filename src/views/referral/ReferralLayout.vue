@@ -2,7 +2,7 @@
   <div class="max-w-[1336px] mx-auto pt-[14px]">
     <h2 class="mb-4 text-xl font-[700] text-text-1">{{ props.pageTitle }}</h2>
 
-    <div class="flex justify-center gap-6">
+    <div class="flex justify-center gap-6 px-2">
       <!-- 左侧菜单 -->
       <aside class="w-[280px] flex-shrink-0">
         <div class="rounded-xl bg-bg-2 p-4">
