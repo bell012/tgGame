@@ -363,8 +363,12 @@
       "shareGuideHint": "Invite friends through social platforms or by copying the referral message."
     },
     "commissionBoost": {
+      "today": "Today",
+      "yesterday": "Yesterday",
       "thisWeek": "This Week",
       "lastWeek": "Last Week",
+      "thisMonth": "This Month",
+      "lastMonth": "Last Month",
       "friends": "Friends",
       "currentLevel": "Current Level:",
       "activeFriends": "Active Friends:",

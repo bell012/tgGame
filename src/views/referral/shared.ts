@@ -1,4 +1,5 @@
 import type {
+  QueryReferralSettlementRuleResult,
   QueryReferralTaskProgressResult,
   QueryTaskRewardCommissionItem,
   QueryTaskRewardConfigResult
@@ -52,7 +53,8 @@ export interface ReferralBannerPayload {
   posterImages: string[]
 }
 
-export type ReferralCommissionBoostWeekTabKey = 'thisWeek' | 'lastWeek'
+export type ReferralCommissionBoostPeriodTabKey = 'current' | 'previous'
+export type ReferralSettlementPeriodType = 'daily' | 'weekly' | 'monthly'
 
 export interface ReferralCommissionBoostLevelView {
   id: string
@@ -72,6 +74,12 @@ export interface ReferralCommissionBoostViewData {
 export interface ReferralWeekRange {
   startTime: number
   endTime: number
+}
+
+export interface ReferralCommissionBoostPeriodMeta {
+  periodType: ReferralSettlementPeriodType
+  currentLabel: string
+  previousLabel: string
 }
 
 const referralBannerPayloadCache = new Map<string, ReferralBannerPayload>()
@@ -261,33 +269,163 @@ export const hasReferralTaskProgressData = (result?: QueryReferralTaskProgressRe
 /**
  * 构建推荐页本周与上周的查询区间。
  */
-export const buildReferralTaskWeekRanges = (now = new Date()) => {
-  const currentDate = new Date(now)
-  const currentDay = currentDate.getDay()
-  const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay
-  const thisWeekStart = new Date(currentDate)
-  thisWeekStart.setDate(currentDate.getDate() + mondayOffset)
-  thisWeekStart.setHours(0, 0, 0, 0)
+const getStartOfDay = (date: Date) => {
+  const nextDate = new Date(date)
+  nextDate.setHours(0, 0, 0, 0)
+  return nextDate
+}
 
-  const todayEnd = new Date(currentDate)
-  todayEnd.setHours(23, 59, 59, 999)
+const getEndOfDay = (date: Date) => {
+  const nextDate = new Date(date)
+  nextDate.setHours(23, 59, 59, 999)
+  return nextDate
+}
 
-  const lastWeekStart = new Date(thisWeekStart)
-  lastWeekStart.setDate(thisWeekStart.getDate() - 7)
+const getMonthStartBySettlementDay = (date: Date, settlementDay: number) => {
+  const normalizedSettlementDay = Math.max(1, Math.min(31, settlementDay || 1))
+  const currentPeriodStart = new Date(date)
 
-  const lastWeekEnd = new Date(thisWeekStart)
-  lastWeekEnd.setMilliseconds(-1)
+  if (date.getDate() >= normalizedSettlementDay) {
+    currentPeriodStart.setDate(normalizedSettlementDay)
+  } else {
+    currentPeriodStart.setMonth(currentPeriodStart.getMonth() - 1, normalizedSettlementDay)
+  }
+
+  currentPeriodStart.setHours(0, 0, 0, 0)
+  return currentPeriodStart
+}
+
+const getWeekStartBySettlementDay = (date: Date, settlementDay: number) => {
+  const normalizedSettlementDay = Math.max(1, Math.min(7, settlementDay || 1))
+  const currentJsDay = date.getDay()
+  const targetJsDay = normalizedSettlementDay === 7 ? 0 : normalizedSettlementDay
+  const diff = (currentJsDay - targetJsDay + 7) % 7
+  const weekStart = new Date(date)
+
+  weekStart.setDate(date.getDate() - diff)
+  weekStart.setHours(0, 0, 0, 0)
+  return weekStart
+}
+
+/**
+ * 规范化推荐页结算周期类型。
+ */
+export const normalizeReferralSettlementPeriodType = (
+  settlementType?: number | string
+): ReferralSettlementPeriodType => {
+  const normalizedType = Number(settlementType)
+
+  if (normalizedType === 1) {
+    return 'daily'
+  }
+
+  if (normalizedType === 3) {
+    return 'monthly'
+  }
+
+  return 'weekly'
+}
+
+/**
+ * 生成推荐页佣金加码周期标签文案。
+ */
+export const createReferralCommissionBoostPeriodMeta = (
+  t: TranslateFn,
+  settlementRule?: QueryReferralSettlementRuleResult | null
+): ReferralCommissionBoostPeriodMeta => {
+  const periodType = normalizeReferralSettlementPeriodType(settlementRule?.settlementType)
+
+  if (periodType === 'daily') {
+    return {
+      periodType,
+      currentLabel: t('referral.commissionBoost.today'),
+      previousLabel: t('referral.commissionBoost.yesterday')
+    }
+  }
+
+  if (periodType === 'monthly') {
+    return {
+      periodType,
+      currentLabel: t('referral.commissionBoost.thisMonth'),
+      previousLabel: t('referral.commissionBoost.lastMonth')
+    }
+  }
 
   return {
-    thisWeek: {
-      startTime: thisWeekStart.getTime(),
-      endTime: todayEnd.getTime()
+    periodType,
+    currentLabel: t('referral.commissionBoost.thisWeek'),
+    previousLabel: t('referral.commissionBoost.lastWeek')
+  }
+}
+
+/**
+ * 构建推荐页当前周期与上一周期的查询区间。
+ */
+export const buildReferralTaskPeriodRanges = (
+  settlementRule?: QueryReferralSettlementRuleResult | null,
+  now = new Date()
+) => {
+  const periodType = normalizeReferralSettlementPeriodType(settlementRule?.settlementType)
+  const settlementDay = Number(settlementRule?.settlementDay ?? 1)
+  const currentDate = new Date(now)
+  const currentPeriodEnd = getEndOfDay(currentDate)
+
+  if (periodType === 'daily') {
+    const currentStart = getStartOfDay(currentDate)
+    const previousStart = new Date(currentStart)
+    previousStart.setDate(previousStart.getDate() - 1)
+    const previousEnd = new Date(currentStart)
+    previousEnd.setMilliseconds(-1)
+
+    return {
+      current: {
+        startTime: currentStart.getTime(),
+        endTime: currentPeriodEnd.getTime()
+      },
+      previous: {
+        startTime: previousStart.getTime(),
+        endTime: previousEnd.getTime()
+      }
+    } satisfies Record<ReferralCommissionBoostPeriodTabKey, ReferralWeekRange>
+  }
+
+  if (periodType === 'monthly') {
+    const currentStart = getMonthStartBySettlementDay(currentDate, settlementDay)
+    const previousEnd = new Date(currentStart)
+    previousEnd.setMilliseconds(-1)
+    const previousStart = getMonthStartBySettlementDay(
+      new Date(currentStart.getFullYear(), currentStart.getMonth(), currentStart.getDate() - 1),
+      settlementDay
+    )
+
+    return {
+      current: {
+        startTime: currentStart.getTime(),
+        endTime: currentPeriodEnd.getTime()
+      },
+      previous: {
+        startTime: previousStart.getTime(),
+        endTime: previousEnd.getTime()
+      }
+    } satisfies Record<ReferralCommissionBoostPeriodTabKey, ReferralWeekRange>
+  }
+
+  const currentStart = getWeekStartBySettlementDay(currentDate, settlementDay)
+  const previousEnd = new Date(currentStart)
+  previousEnd.setMilliseconds(-1)
+  const previousStart = new Date(currentStart)
+  previousStart.setDate(previousStart.getDate() - 7)
+
+  return {
+    current: {
+      startTime: currentStart.getTime(),
+      endTime: currentPeriodEnd.getTime()
     },
-    lastWeek: {
-      startTime: lastWeekStart.getTime(),
-      endTime: lastWeekEnd.getTime()
+    previous: {
+      startTime: previousStart.getTime(),
+      endTime: previousEnd.getTime()
     }
-  } satisfies Record<ReferralCommissionBoostWeekTabKey, ReferralWeekRange>
+  } satisfies Record<ReferralCommissionBoostPeriodTabKey, ReferralWeekRange>
 }
 
 /**

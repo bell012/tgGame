@@ -22,15 +22,15 @@
       :task-details-text="props.taskDetailsText"
       :commission-boost-loading="props.commissionBoostLoading"
       :show-commission-boost="props.showCommissionBoost"
-      :active-commission-boost-week-tab="props.activeCommissionBoostWeekTab"
+      :active-commission-boost-period-tab="props.activeCommissionBoostPeriodTab"
       :commission-boost-estimated-commission="props.commissionBoostEstimatedCommission"
       :commission-boost-friends-delta="props.commissionBoostFriendsDelta"
       :commission-boost-current-level-rate="props.commissionBoostCurrentLevelRate"
       :commission-boost-active-friends="props.commissionBoostActiveFriends"
       :commission-boost-progress-percent="props.commissionBoostProgressPercent"
       :commission-boost-levels="props.commissionBoostLevels"
-      :this-week-text="props.thisWeekText"
-      :last-week-text="props.lastWeekText"
+      :current-period-text="props.currentPeriodText"
+      :previous-period-text="props.previousPeriodText"
       :friends-text="props.friendsText"
       :current-level-text="props.currentLevelText"
       :active-friends-text="props.activeFriendsText"
@@ -43,7 +43,7 @@
       @claim="$emit('claim')"
       @task-details="$emit('task-details')"
       @banner-click="$emit('banner-click', $event)"
-      @change-commission-boost-week-tab="$emit('change-commission-boost-week-tab', $event)"
+      @change-commission-boost-period-tab="$emit('change-commission-boost-period-tab', $event)"
       @open-rules="$emit('open-rules')"
     />
   </ReferralLayout>
@@ -56,7 +56,7 @@ import ReferralPageContent from './components/ReferralPageContent.vue'
 import type {
   ReferralBannerSlide,
   ReferralCommissionBoostLevelView,
-  ReferralCommissionBoostWeekTabKey,
+  ReferralCommissionBoostPeriodTabKey,
   ReferralQuickAction,
   ReferralQuickActionId,
   ReferralSocialChannel
@@ -82,15 +82,15 @@ interface Props {
   taskDetailsText: string
   commissionBoostLoading: boolean
   showCommissionBoost: boolean
-  activeCommissionBoostWeekTab: ReferralCommissionBoostWeekTabKey
+  activeCommissionBoostPeriodTab: ReferralCommissionBoostPeriodTabKey
   commissionBoostEstimatedCommission: string
   commissionBoostFriendsDelta: string
   commissionBoostCurrentLevelRate: string
   commissionBoostActiveFriends: string
   commissionBoostProgressPercent: number
   commissionBoostLevels: ReferralCommissionBoostLevelView[]
-  thisWeekText: string
-  lastWeekText: string
+  currentPeriodText: string
+  previousPeriodText: string
   friendsText: string
   currentLevelText: string
   activeFriendsText: string
@@ -108,7 +108,7 @@ defineEmits<{
   claim: []
   'task-details': []
   'banner-click': [value: ReferralBannerSlide]
-  'change-commission-boost-week-tab': [value: ReferralCommissionBoostWeekTabKey]
+  'change-commission-boost-period-tab': [value: ReferralCommissionBoostPeriodTabKey]
   'open-rules': []
 }>()
 
