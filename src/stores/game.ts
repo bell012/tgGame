@@ -623,6 +623,14 @@ export const useGameStore = defineStore('game', () => {
   }
 
   /** 获取收藏列表数据（仅接口返回，不补位） */
+  /** 将本地缓存的游玩记录与全量游戏树合并，补全卡片展示字段 */
+  const hydrateSavedGameDetailsList = async (saved: GameDataItem[]): Promise<GameDataItem[]> => {
+    if (!saved.length) {
+      return []
+    }
+    return mergeFavoriteStubsWithGameTree(saved as CollectionsListItem[])
+  }
+
   const fetchCollectionsListData = async (memberRowId: number) => {
     isCollectionsListLoading.value = true
     try {
@@ -1356,6 +1364,7 @@ export const useGameStore = defineStore('game', () => {
     collectionsListData,
     fetchHomeCollectionsData,
     fetchCollectionsListData,
+    hydrateSavedGameDetailsList,
     searchHistory,
     loadSearchHistory,
     addSearchHistory,
