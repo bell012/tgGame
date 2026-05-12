@@ -24,6 +24,7 @@ import type {
   GlobalDicResponse,
   GetCollectionsListForm,
   GetCollectionsListResponse,
+  CollectionsSubjectForm,
   LoginPlatformParams,
   LoginPlatformResponse,
   LogoutAllPlatformParams,
@@ -285,7 +286,7 @@ export function publishComment(
 }
 
 /**
- * 获取收藏列表
+ * 获取收藏列表（`result` 一般为游戏 rowId 数组，对应 gameData 中 rowType:3 的 rowId）
  * @param data memberRowId 会员ID
  */
 export function getCollectionsList(
@@ -294,6 +295,24 @@ export function getCollectionsList(
 ): Promise<GetCollectionsListResponse> {
   return request({
     url: '/comment/sub/collectionsList',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true,
+    ...options
+  })
+}
+
+/**
+ * 收藏 / 取消收藏游戏
+ * @param data memberRowId、gameId、status（0 收藏，1 取消）
+ */
+export function collectionsSubject(
+  data: CollectionsSubjectForm,
+  options?: ApiResponseToastOptions
+): Promise<unknown> {
+  return request({
+    url: '/comment/sub/collectionsSubject',
     method: 'post',
     data,
     showSuccessToast: false,

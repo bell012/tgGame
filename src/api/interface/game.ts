@@ -235,6 +235,8 @@ export interface GameCommentSubjectResult {
   subjectId?: string | number
   rowId?: string | number
   gameId?: string | number
+  /** 当前用户是否已收藏该游戏（getCommentSubject） */
+  isCollections?: boolean
   [key: string]: unknown
 }
 
@@ -244,6 +246,10 @@ export interface GameCommentSubjectResponse {
   result?: GameCommentSubjectResult | null
   [key: string]: unknown
 }
+
+/** `result.isCollections`：后端可能给 boolean / 0 / 1 / 字符串 */
+export const readIsCollections = (raw: unknown): boolean =>
+  raw === true || raw === 1 || raw === '1' || raw === 'true'
 
 export interface GetCommentsListParams {
   subjectId?: string | number
@@ -394,7 +400,7 @@ export interface GlobalDicResponse {
   success: boolean
 }
 
-/** 获取收藏列表 `/sub/collectionsList` */
+/** 获取收藏列表 `/comment/sub/collectionsList` */
 export interface GetCollectionsListForm {
   memberRowId: number
 }
@@ -403,17 +409,31 @@ export interface CollectionsListItem {
   [key: string]: unknown
 }
 
+/**
+ * `result` 多为游戏 rowId 列表（与 gameData 中 rowType:3 的 rowId 一致）；
+ * 兼容旧版：对象列表或 `{ records }`。
+ */
 export interface GetCollectionsListResponse {
   code: string | number
   message: string
   result?:
+    | number[]
     | CollectionsListItem[]
     | {
-        records?: CollectionsListItem[]
+        records?: CollectionsListItem[] | number[]
         [key: string]: unknown
       }
     | null
+  success?: boolean
   [key: string]: unknown
+}
+
+/** 收藏/取消收藏游戏 `/comment/sub/collectionsSubject` — status: 0 收藏，1 取消 */
+export interface CollectionsSubjectForm {
+  memberRowId: number
+  /** 0 收藏，1 取消收藏 */
+  status: 0 | 1
+  gameId: number
 }
 
 /** `/gc/loginPlatform` */

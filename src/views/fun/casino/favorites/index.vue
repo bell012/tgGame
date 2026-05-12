@@ -22,7 +22,7 @@
             :key="game.rowId ?? index"
             class="aspect-[330/438]"
           >
-            <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+            <casinoGameCard :game="game" show-favorite-badge @click="handleClick(game.rowId)" />
           </div>
         </div>
         <ThemedEmptyState
@@ -34,6 +34,31 @@
           image-class="w-[220px] h-[200px] object-contain mb-2.5"
           text-class="text-xs text-center text-text-1"
         />
+
+        <template v-if="isRecommendedLoading || recommendedGames.length > 0">
+          <h2 class="mt-5 mb-2.5 font-inter text-base font-bold text-text-1">
+            {{ t('home.recommended_games') }}
+          </h2>
+          <div
+            v-if="isRecommendedLoading && recommendedGames.length === 0"
+            class="grid w-full grid-cols-3 gap-2.5"
+          >
+            <div
+              v-for="index in 27"
+              :key="`recommended-loading-mobile-${index}`"
+              class="aspect-[330/438] animate-pulse rounded-lg bg-bg-2"
+            />
+          </div>
+          <div v-else-if="recommendedGames.length > 0" class="grid w-full grid-cols-3 gap-2.5">
+            <div
+              v-for="(game, index) in recommendedGames"
+              :key="`rec-${game.rowId ?? index}`"
+              class="aspect-[330/438]"
+            >
+              <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+            </div>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -67,7 +92,7 @@
           :key="game.rowId ?? index"
           class="aspect-[330/438]"
         >
-          <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+          <casinoGameCard :game="game" show-favorite-badge @click="handleClick(game.rowId)" />
         </div>
       </div>
       <ThemedEmptyState
@@ -79,6 +104,32 @@
         image-class="w-[220px] h-[200px] object-contain mb-2.5"
         text-class="text-xs text-center text-text-1"
       />
+
+      <template v-if="isRecommendedLoading || recommendedGames.length > 0">
+        <h2 class="mt-4 font-inter text-xl font-bold text-text-1">
+          {{ t('home.recommended_games') }}
+        </h2>
+        <div
+          v-if="isRecommendedLoading && recommendedGames.length === 0"
+          class="mt-2.5 grid w-full grid-cols-8 gap-2.5"
+        >
+          <div
+            v-for="index in 32"
+            :key="`recommended-loading-pc-${index}`"
+            class="aspect-[330/438] animate-pulse rounded-lg bg-bg-2"
+          />
+        </div>
+        <div v-else-if="recommendedGames.length > 0" class="mt-2.5 grid w-full grid-cols-8 gap-2.5">
+          <div
+            v-for="(game, index) in recommendedGames"
+            :key="`rec-pc-${game.rowId ?? index}`"
+            class="aspect-[330/438]"
+          >
+            <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+          </div>
+        </div>
+      </template>
+
       <CommonFooter class="mt-[40px]" />
     </div>
   </div>
@@ -101,6 +152,7 @@ import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import casinoGameCard from '../components/casinoGameCard.vue'
+import { getCasinoQueryOptions } from '../casinoPageConfig'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -113,6 +165,26 @@ const userStore = useUserStore()
 const { acctInfo } = storeToRefs(userStore)
 const { collectionsListData, isCollectionsListLoading } = storeToRefs(gameStore)
 const favoriteGames = computed<GameDataItem[]>(() => collectionsListData.value as GameDataItem[])
+
+const recommendedGames = ref<GameDataItem[]>([])
+const isRecommendedLoading = ref(false)
+
+const fetchRecommendedHotGames = async () => {
+  const opts = getCasinoQueryOptions('hot_games', { isMobile: isMobile.value })
+  if (!opts) {
+    recommendedGames.value = []
+    return
+  }
+  isRecommendedLoading.value = true
+  try {
+    const { list } = await gameStore.queryGameDataPage({ ...opts, page: 1 })
+    recommendedGames.value = list
+  } catch {
+    recommendedGames.value = []
+  } finally {
+    isRecommendedLoading.value = false
+  }
+}
 
 const fetchFavoritesData = async () => {
   const memberRowId = Number(acctInfo.value?.memberRowId)
@@ -147,7 +219,7 @@ const scrollPageToTop = () => {
 }
 
 onMounted(async () => {
-  await fetchFavoritesData()
+  await Promise.all([fetchFavoritesData(), fetchRecommendedHotGames()])
   scrollPageToTop()
 })
 

@@ -1,5 +1,10 @@
 <template>
-  <casinoGameModule :module="singleModule" :loading="loading" view-all-mode="home" />
+  <casinoGameModule
+    :module="singleModule"
+    :loading="loading"
+    view-all-mode="home"
+    :show-favorite-card-badge="props.sysGameTypeCode === 'favorites'"
+  />
 </template>
 
 <script setup lang="ts">

@@ -1,6 +1,6 @@
 import Api from '@/api'
-import type { GameCommentListItem } from '@/api/interface/game'
-import { computed, ref, watch, type Ref } from 'vue'
+import { readIsCollections, type GameCommentListItem } from '@/api/interface/game'
+import { computed, inject, ref, watch, type Ref } from 'vue'
 import type { ReviewCommentViewItem } from './review-types'
 import {
   type CommentLikeCacheItem,
@@ -41,6 +41,11 @@ const SORT_TYPE_MAP: Record<ReviewSortValue, 1 | 2 | 3> = {
 
 export const useReviewComments = (options: UseReviewCommentsOptions) => {
   const { currentGameId, gameImageBaseUrl, defaultCommentAvatarUrl, requireLogin, t } = options
+
+  const subjectCollectionsRef = inject<Ref<boolean | null> | null>(
+    'game-detail-subject-is-collections',
+    null
+  )
 
   const commentSubjectId = ref('')
   const ratingCountFromSubject = ref(0)
@@ -297,6 +302,10 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
         }
       )
       const result = res?.result
+      if (subjectCollectionsRef && result && typeof result === 'object') {
+        const raw = (result as { isCollections?: unknown }).isCollections
+        subjectCollectionsRef.value = readIsCollections(raw)
+      }
       ratingCountFromSubject.value = Math.max(
         normalizePositiveInt(result?.scoreNum),
         normalizePositiveInt(result?.ratingNum),

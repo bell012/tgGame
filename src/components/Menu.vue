@@ -752,7 +752,12 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
         name: t('menu.recently-played'),
         icon: newSideIcons.recentlyPlayedIcon
       },
-      { id: 'favorites', name: t('menu.favorites'), icon: newSideIcons.favoritesIcon }
+      {
+        id: 'favorites',
+        name: t('menu.favorites'),
+        icon: newSideIcons.favoritesIcon,
+        handler: () => navigateTo('/favorites-games')
+      }
     ]
   },
   {

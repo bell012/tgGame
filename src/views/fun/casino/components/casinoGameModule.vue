@@ -35,7 +35,6 @@
           <button
             type="button"
             class="button inactive ml-auto flex h-8 items-center gap-1 rounded-lg bg-opacity-10 px-2 font-extrabold"
-            :disabled="!canScrollLeft"
             @click="scrollLeft"
           >
             <div class="icon size-4" :class="canScrollLeft ? 'text-text-1' : 'text-icon-3'">
@@ -45,7 +44,6 @@
           <button
             type="button"
             class="button inactive ml-auto flex h-8 items-center gap-1 rounded-lg bg-opacity-10 px-2 font-extrabold"
-            :disabled="!canScrollRight"
             @click="scrollRight"
           >
             <div
@@ -88,7 +86,11 @@
             :key="game.rowId ?? i"
             class="aspect-[330/438] snap-start"
           >
-            <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
+            <casinoGameCard
+              :game="game"
+              :show-favorite-badge="showFavoriteCardBadge"
+              @click="handleClick(game.rowId)"
+            />
           </div>
           <button
             type="button"
@@ -114,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onMounted, onUnmounted, ref, type Ref } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateTo, navigateToName } from '@/utils/router'
@@ -132,9 +134,12 @@ const props = withDefaults(
     module?: CasinoLobbyButtonItem
     loading?: boolean
     viewAllMode?: 'casino' | 'home'
+    /** 收藏横滑等：卡片左上角收藏图标 */
+    showFavoriteCardBadge?: boolean
   }>(),
   {
-    viewAllMode: 'casino'
+    viewAllMode: 'casino',
+    showFavoriteCardBadge: false
   }
 )
 
@@ -166,15 +171,21 @@ const updateScrollState = () => {
 const scrollLeft = () => {
   const el = scrollRef.value
   if (!el) return
-  const target = el.scrollLeft - el.clientWidth
+  const eps = SCROLL_EDGE_EPS_PX
+  const sl = el.scrollLeft
+  if (sl <= eps) return
+  const target = sl - el.clientWidth
   el.scrollTo({ left: Math.max(target, 0), behavior: 'smooth' })
 }
 
 const scrollRight = () => {
   const el = scrollRef.value
   if (!el) return
-  const maxScrollLeft = el.scrollWidth - el.clientWidth
-  const target = el.scrollLeft + el.clientWidth
+  const eps = SCROLL_EDGE_EPS_PX
+  const maxScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth)
+  const sl = el.scrollLeft
+  if (maxScrollLeft <= eps || maxScrollLeft - sl <= eps) return
+  const target = sl + el.clientWidth
   el.scrollTo({ left: Math.min(target, maxScrollLeft), behavior: 'smooth' })
 }
 
@@ -233,6 +244,22 @@ const handleViewAll = (item: CasinoLobbyButtonItem) => {
 
 const onScroll = () => updateScrollState()
 let resizeObserver: ResizeObserver | undefined
+
+watch(
+  () =>
+    [
+      props.loading,
+      props.module?.sysGameTypeCode,
+      props.module?.items?.length,
+      props.module?.brandItems?.length
+    ] as const,
+  () => {
+    nextTick(() => {
+      updateScrollState()
+      requestAnimationFrame(() => updateScrollState())
+    })
+  }
+)
 
 onMounted(() => {
   nextTick(() => {
