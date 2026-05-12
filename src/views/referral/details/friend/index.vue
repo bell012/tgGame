@@ -80,7 +80,8 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import RuleIcon from '@/static/svg/rule.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { navigateTo } from '@/utils/router'
-import { showToast } from 'vant'
+
+import { globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
@@ -93,17 +94,17 @@ import {
   createReferralFriendDetailGameRows,
   createReferralFriendDetailGameSummary,
   createReferralFriendDetailMember,
-  createReferralFriendDetailTopUpRows,
   createReferralFriendDetailStatsTabs,
   createReferralFriendDetailTopUpColumns,
+  createReferralFriendDetailTopUpRows,
   createReferralFriendDetailTopUpSummary,
   getReferralFriendDetailEmptyDarkImage,
   getReferralFriendDetailEmptyLightImage,
   type ReferralFriendDetailDateTabValue,
   type ReferralFriendDetailGameStatItem,
   type ReferralFriendDetailMemberResult,
-  type ReferralFriendDetailTopUpStatResult,
-  type ReferralFriendDetailStatsTabValue
+  type ReferralFriendDetailStatsTabValue,
+  type ReferralFriendDetailTopUpStatResult
 } from './shared'
 
 const { t } = useI18n()
@@ -288,7 +289,7 @@ const handleClosePopup = () => {
 const handleCopyAccount = async () => {
   const copied = await copyTextWithFallback(memberInfo.value.account)
 
-  showToast({
+  globalShowToast({
     message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
     type: copied ? 'success' : 'fail'
   })

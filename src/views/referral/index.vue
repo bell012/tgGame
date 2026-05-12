@@ -140,6 +140,13 @@
       @copy-link="handleCopyPosterLink"
       @invite="handleInvitePoster"
     />
+
+    <!-- 佣金领取确认弹窗 -->
+    <ClaimSuccessPopup
+      v-model:visible="showClaimConfirmPopup"
+      :amount="estimatedCommissionAmount"
+      @confirm="handleConfirmClaimClick"
+    />
   </div>
 </template>
 
@@ -150,6 +157,7 @@ import type {
   QueryReferralTaskProgressResult,
   QueryTaskRewardConfigResult
 } from '@/api/interface/agent'
+import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
@@ -163,7 +171,6 @@ import { formatBalance } from '@/utils/locale'
 import { getLanguageCode } from '@/utils/request'
 import { navigateTo } from '@/utils/router'
 import { formatLinkCode, globalShowToast } from '@/utils/toast'
-import { showToast } from 'vant'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ReferralMessagePopup from './components/ReferralMessagePopup.vue'
@@ -174,9 +181,9 @@ import {
   buildReferralBannerRequestKey,
   buildReferralBannerSlidesFromApi,
   buildReferralPosterImagesFromApi,
-  buildReferralTaskPeriodRanges,
   buildReferralShareMessage,
   buildReferralSocialChannelsFromApi,
+  buildReferralTaskPeriodRanges,
   createReferralCommissionBoostPeriodMeta,
   createReferralCommissionBoostViewData,
   createReferralMarqueeMessages,
@@ -188,8 +195,8 @@ import {
   getReferralInviteTaskReward,
   hasReferralTaskProgressData,
   resolveReferralBannerPayload,
-  type ReferralCommissionBoostPeriodTabKey,
   type ReferralBannerSlide,
+  type ReferralCommissionBoostPeriodTabKey,
   type ReferralQuickActionId,
   type ReferralSocialChannel
 } from './shared'
@@ -209,6 +216,7 @@ const bannerSlides = ref<ReferralBannerSlide[]>([])
 const posterImages = ref<string[]>([])
 const showReferralMessagePopup = ref(false)
 const showInvitePosterPopup = ref(false)
+const showClaimConfirmPopup = ref(false)
 const claimingCommission = ref(false)
 const currentShareChannel = ref<ReferralSocialChannel | null>(null)
 const customReferralMessage = ref('')
@@ -328,7 +336,7 @@ async function fetchCommissionBoostEstimatedCommission() {
  * 处理客服按钮点击。
  */
 const handleCustomerServiceClick = () => {
-  showToast({
+  globalShowToast({
     message: t('sidebar_menu.customer_service'),
     type: 'success'
   })
@@ -360,7 +368,7 @@ const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
     guide: t('referral.h5.quickActions.guide')
   }
 
-  showToast({
+  globalShowToast({
     message: `${actionMessageMap[actionId]} ${t('referral.comingSoon')}`,
     type: 'success'
   })
@@ -370,7 +378,7 @@ const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
  * 处理分享说明按钮点击。
  */
 const handleShareGuideClick = () => {
-  showToast({
+  globalShowToast({
     message: t('referral.h5.shareGuideHint'),
     type: 'success'
   })
@@ -392,7 +400,7 @@ const handleConfirmReferralMessageCopy = async (message: string) => {
     buildReferralShareMessage(activeReferralMessage.value, referralLink)
   )
 
-  showToast({
+  globalShowToast({
     message: copied ? t('referral.h5.copyMessageSuccess') : t('referral.copyFailed'),
     type: copied ? 'success' : 'fail'
   })
@@ -424,16 +432,27 @@ const resolveChannelReferralContent = () =>
 /**
  * 处理佣金领取按钮点击。
  */
-const handleClaimClick = async () => {
+const handleClaimClick = () => {
   if (claimingCommission.value) {
     return
   }
 
   if ((Number(estimatedCommissionAmount.value) || 0) <= 0) {
-    showToast({
+    globalShowToast({
       message: t('referral.noClaimableCommission'),
       type: 'fail'
     })
+    return
+  }
+
+  showClaimConfirmPopup.value = true
+}
+
+/**
+ * 处理佣金领取确认。
+ */
+const handleConfirmClaimClick = async () => {
+  if (claimingCommission.value) {
     return
   }
 
@@ -446,7 +465,7 @@ const handleClaimClick = async () => {
       })
     )
 
-    showToast({
+    globalShowToast({
       message: t('personalCenter.rebate.toast.claimSuccess'),
       type: 'success'
     })
@@ -458,7 +477,7 @@ const handleClaimClick = async () => {
       return
     }
 
-    showToast({
+    globalShowToast({
       message: t('personalCenter.rebate.toast.claimFailed'),
       type: 'fail'
     })
@@ -690,7 +709,7 @@ async function fetchReferralBanner() {
  */
 const handleShareChannel = (channel: ReferralSocialChannel) => {
   if (!resolveShareTargetUrl(channel)) {
-    showToast({
+    globalShowToast({
       message: t('referral.comingSoon'),
       type: 'fail'
     })
@@ -698,7 +717,7 @@ const handleShareChannel = (channel: ReferralSocialChannel) => {
   }
 
   if (!posterImages.value.length) {
-    showToast({
+    globalShowToast({
       message: t('referral.comingSoon'),
       type: 'fail'
     })

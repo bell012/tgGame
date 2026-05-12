@@ -13,26 +13,32 @@
         class="font-[400] text-text-3"
         :class="props.mode === 'pc' ? 'text-sm leading-[22px]' : 'text-[11px] leading-[14px]'"
       >
-        {{ props.resetHint }}
+        <span>{{ props.resetHintPrefix }}</span>
+        <span
+          class="align-middle font-[400] text-text-1"
+          :class="props.mode === 'pc' ? 'text-sm leading-[14px]' : 'text-[11px] leading-[11px]'"
+        >
+          {{ props.resetHintCountdown }}
+        </span>
+        <span>{{ props.resetHintSuffix }}</span>
       </p>
 
       <!-- 可领取奖励卡片 -->
       <section
         class="rounded-[10px] bg-bg-2"
-        :class="props.mode === 'pc' ? 'h-[96px] rounded-[16px] p-[24px]' : 'px-3.5 py-3.5'"
+        :class="props.mode === 'pc' ? 'h-[96px] w-full rounded-[16px] p-[24px]' : 'px-3.5 py-3.5'"
       >
         <template v-if="props.mode === 'pc'">
           <!-- 可领取奖励卡片内容 -->
-          <div class="flex h-[48px] w-full items-start gap-[36px] self-stretch">
-            <!-- 左侧奖励信息区域 -->
-            <div class="flex h-[48px] min-w-0 flex-1 items-center gap-[16px]">
+          <div class="flex h-[48px] w-[984px] items-start gap-[36px] self-stretch">
+            <!-- 左侧可领取奖励信息区域 -->
+            <div class="flex h-[48px] w-[668px] flex-1 items-center gap-[16px]">
               <!-- 标题区域 -->
-              <div class="flex h-[20px] shrink-0 items-center gap-[8px]">
+              <div class="flex h-[20px] items-center gap-[8px]">
                 <!-- 可领取奖励图标 -->
-                <img
-                  :src="props.coinImage"
-                  :alt="props.rewardsToClaimLabel"
-                  class="h-[20px] w-[20px] shrink-0 object-contain"
+                <CommissionOverviewPcIcon
+                  class="h-[20px] w-[20px] shrink-0 text-text-1"
+                  :aria-label="props.rewardsToClaimLabel"
                 />
 
                 <!-- 可领取奖励标题 -->
@@ -71,10 +77,10 @@
               <img
                 :src="props.coinImage"
                 :alt="props.rewardsToClaimLabel"
-                class="h-10 w-10 object-contain"
+                class="h-10 w-10 rounded-full object-cover"
               />
 
-              <!-- 可领取奖励文案 -->
+              <!-- 可领取奖励文案区域 -->
               <div class="flex min-w-0 flex-col gap-1.5">
                 <!-- 可领取奖励标题 -->
                 <p class="text-xs font-[400] leading-[15px] text-text-1">
@@ -91,7 +97,7 @@
             <!-- 可领取奖励按钮 -->
             <button
               type="button"
-              class="flex h-[35px] w-[94px] shrink-0 items-center justify-center rounded-[10px] bg-theme-2 text-sm font-[700] text-text-4"
+              class="flex h-[35px] w-[94px] shrink-0 items-center justify-center rounded-[10px] bg-theme-primary text-sm font-[700] text-text-4"
               @click="$emit('claim')"
             >
               {{ props.claimText }}
@@ -163,7 +169,11 @@
           </div>
 
           <!-- 当前进度说明行 -->
-          <div class="flex items-center justify-center gap-1.5">
+          <button
+            type="button"
+            class="flex items-center justify-center gap-1.5"
+            @click="$emit('open-progress-reminder')"
+          >
             <span
               class="font-[400] text-text-2"
               :class="props.mode === 'pc' ? 'text-sm leading-[20px]' : 'text-[11px] leading-[14px]'"
@@ -176,7 +186,7 @@
             >
               ?
             </span>
-          </div>
+          </button>
         </div>
 
         <!-- 本周最大奖励卡片 -->
@@ -360,9 +370,9 @@
           type="button"
           class="flex w-full items-center justify-center rounded-[10px] bg-theme-primary font-[700] text-text-4"
           :class="props.mode === 'pc' ? 'h-[56px] text-base' : 'h-10 text-sm'"
-          @click="$emit('claim')"
+          @click="$emit('open-rules')"
         >
-          {{ props.claimText }}
+          {{ props.bottomActionText }}
         </button>
       </section>
     </div>
@@ -370,11 +380,14 @@
 </template>
 
 <script setup lang="ts">
+import CommissionOverviewPcIcon from '@/static/svg/referral/yongjin 1.svg?component'
 import type { ReferralTaskRewardRow, ReferralTaskTab, ReferralTaskTabKey } from '../shared'
 
 interface Props {
   mode: 'mobile' | 'pc'
-  resetHint: string
+  resetHintPrefix: string
+  resetHintCountdown: string
+  resetHintSuffix: string
   rewardsToClaimLabel: string
   rewardsToClaimAmount: string
   coinImage: string
@@ -393,12 +406,15 @@ interface Props {
   validInviteDescription: string
   taskRulesTitle: string
   taskRulesImage: string
+  bottomActionText: string
 }
 
 const props = defineProps<Props>()
 
 defineEmits<{
   claim: []
+  'open-progress-reminder': []
+  'open-rules': []
   'tab-click': [value: ReferralTaskTabKey]
 }>()
 </script>

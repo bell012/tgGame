@@ -675,7 +675,9 @@
       "friendUnit": "位好友",
       "friendsUnit": "位好友",
       "currentProgress": "当前进度",
-      "maxRewardThisWeek": "本周最高奖励",
+      "maxRewardThisDay": "今日最高可领",
+      "maxRewardThisWeek": "本周最高可领",
+      "maxRewardThisMonth": "本月最高可领",
       "invitedSignUps": "邀请注册数",
       "depositAmount": "充值金额",
       "commissionBoost": "佣金加成",
@@ -691,7 +693,13 @@
         "weekly": "本周",
         "monthly": "本月"
       },
-      "taskRulesTitle": "任务规则"
+      "taskRulesTitle": "任务规则",
+      "progressReminder": {
+        "title": "温馨提示",
+        "description": "好友需完成基础资料填写，并使用独立的 IP、设备和账号信息，才会被计入有效进度。如对当前进度有疑问，请联系客服协助处理。",
+        "primaryButton": "Confirm",
+        "secondaryButton": "Task Rules"
+      }
     },
     "rulesPage": {
       "title": "规则",
