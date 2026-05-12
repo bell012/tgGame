@@ -272,9 +272,11 @@ export const useCasinoTabsStore = defineStore('casinoTabs', () => {
           return
         }
 
+        // 与 gameList `pageStyle3` 筛选「默认」一致：sortByOrderId + asc
         const { list } = await gameStore.queryGameDataPage({
           gameTypeCode: sysGameTypeCode,
           sortByOrderId: true,
+          sortDirection: 'asc',
           rowType: 3,
           page: 1
         })

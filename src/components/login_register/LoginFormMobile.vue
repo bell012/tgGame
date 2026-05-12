@@ -36,13 +36,13 @@
         <transition name="drawer-mask">
           <div
             v-if="visible"
-            class="fixed inset-0 bg-mask-60-1 z-[10000] overflow-hidden"
+            class="auth-mobile-overlay fixed inset-0 bg-mask-60-1 z-[10000] overflow-hidden"
             @click="handleClose"
           >
             <transition name="drawer-slide">
               <div
                 v-if="showDrawer"
-                class="absolute right-0 top-0 h-full w-full overflow-y-auto shadow-2xl container_bg"
+                class="auth-mobile-drawer absolute right-0 top-0 h-full w-full overflow-y-auto shadow-2xl container_bg"
                 @click.stop
               >
                 <div class="w-full relative h-50 box-content">
@@ -133,7 +133,7 @@
                           type="text"
                           inputmode="numeric"
                           :placeholder="t('common.enter_account')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                          class="auth-input-placeholder w-full h-[47px] pl-[52px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
                           @input="handleSigninAccountInput"
                         />
                       </div>
@@ -151,7 +151,7 @@
                           :value="formData.signin.password"
                           :type="showPassword.signin ? 'text' : 'password'"
                           :placeholder="t('common.enter_password')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[36px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
                           :class="showPassword.signin ? '' : 'auth-password-mask'"
                           @input="handleSigninPasswordInput"
                         />
@@ -237,7 +237,7 @@
                           type="text"
                           inputmode="numeric"
                           :placeholder="t('common.enter_account')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                          class="auth-input-placeholder w-full h-[47px] pl-[52px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
                           @input="handleSignupAccountInput"
                         />
                       </div>
@@ -256,7 +256,7 @@
                           type="text"
                           inputmode="numeric"
                           :placeholder="t('common.enter_verification')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[36px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
                           @input="handleSignupCodeInput"
                         />
                         <!-- 获取验证码 -->
@@ -288,7 +288,7 @@
                           :value="formData.signup.password"
                           :type="showPassword.signup ? 'text' : 'password'"
                           :placeholder="t('common.enter_password')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[36px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
                           :class="showPassword.signup ? '' : 'auth-password-mask'"
                           @input="handleSignupPasswordInput"
                         />
@@ -315,7 +315,7 @@
                           :value="formData.signup.confirmPassword"
                           :type="showConfirmPassword ? 'text' : 'password'"
                           :placeholder="t('common.enter_confirm_password')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[36px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
                           :class="showConfirmPassword ? '' : 'auth-password-mask'"
                           @input="handleSignupConfirmPasswordInput"
                         />
@@ -366,6 +366,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import CloseIcon from '@/static/svg/close.svg?component'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
@@ -400,6 +401,8 @@ const emit = defineEmits<{
 const showDrawer = ref(false)
 const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
 const isH5BackgroundLoaded = ref(false)
+
+usePageScrollLock(() => props.visible)
 
 // 登录/注册弹窗背景图
 const h5BackgroundImage = computed(() => {
@@ -537,6 +540,19 @@ const handleLoginSuccess = () => {
 .drawer-slide-enter-to,
 .drawer-slide-leave-from {
   transform: translateX(0);
+}
+
+.auth-mobile-overlay {
+  height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: none;
+}
+
+.auth-mobile-drawer {
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .container_bg {

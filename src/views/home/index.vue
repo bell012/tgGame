@@ -8,6 +8,14 @@
       :loading="isSlideshowLoading"
     />
     <div class="px-3.5">
+      <!--Favorites Games -->
+      <GameList
+        v-if="isLogin && (isHomeCollectionsLoading || favoriteHomeGames.length)"
+        :title="t('home.favorites_games')"
+        sysGameTypeCode="favorites"
+        :list="favoriteHomeGames"
+        :loading="isHomeCollectionsLoading"
+      />
       <RecentBigWins />
 
       <div class="overflow-hidden px-4 sm:rounded-xl sm:bg-layer3 sm:px-3">
@@ -101,8 +109,8 @@
             v-if="firstGameSection"
             :title="firstGameSection.sysGameTypeName"
             :sysGameTypeCode="firstGameSection.sysGameTypeCode"
-            :platformLogoSrc="firstGameSection.platformLogoSrc"
             :list="firstGameSection.list"
+            :brand-items="firstGameSection.brandItems"
           />
           <LazySection
             v-for="value in deferredGameSections"
@@ -114,8 +122,8 @@
             <GameList
               :title="value.sysGameTypeName"
               :sysGameTypeCode="value.sysGameTypeCode"
-              :platformLogoSrc="value.platformLogoSrc"
               :list="value.list"
+              :brand-items="value.brandItems"
             />
           </LazySection>
         </template>
@@ -284,14 +292,18 @@ import Api from '@/api'
 import CommonFooter from '@/components/commonFooter.vue'
 import H5HomePop from '@/components/H5HomePop.vue'
 import HomeCarouselImg from '@/components/homeCarouselImg.vue'
+import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
+import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
+import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import router from '@/router'
+import { useCasinoTabsStore } from '@/stores/casinoTabs'
 import { useGameStore } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import GameList from './components/gameList.vue'
 import LazySection from './components/LazySection.vue'
@@ -337,23 +349,21 @@ interface EventListItem {
   rowId: number
 }
 
-interface RawGameDataItem {
-  [key: string]: any
-}
-
 interface HomeGameSection {
   sysGameTypeCode: string
-  list: RawGameDataItem[]
+  list: GameDataItem[]
   sysGameTypeName: string
-  platformLogoSrc: string
+  brandItems?: GameBrandItem[]
 }
 
 const userStore = useUserStore()
 const gameStore = useGameStore()
+const casinoTabsStore = useCasinoTabsStore()
 const AsyncEventList = defineAsyncComponent(() => import('./components/eventList.vue'))
 const AsyncNewEvent = defineAsyncComponent(() => import('./components/newEvent.vue'))
-const { userInfo } = storeToRefs(userStore)
+const { userInfo, acctInfo } = storeToRefs(userStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
+const { homeCollectionsData, isHomeCollectionsLoading } = storeToRefs(gameStore)
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 
@@ -363,8 +373,8 @@ const shouldShowH5HomePop = computed(
   () => isMobile.value && isActiveHomeRoute.value && showH5HomePop.value
 )
 const gameData = ref<HomeGameSection[]>([])
-const rawGameData = ref<RawGameDataItem[]>([])
-const querySlideshowList = ref<any[]>([])
+const rawGameData = ref<GameDataItem[]>([])
+const querySlideshowList = ref<QuerySlideshowItem[]>([])
 const isGameDataLoading = ref(false)
 const isSlideshowLoading = ref(false)
 
@@ -427,18 +437,26 @@ const toGameImageUrl = (value: string) => {
   return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
 }
 
-const mapHomeGameSections = (source: RawGameDataItem[]): HomeGameSection[] => {
-  return source.map(item => ({
-    list: item?.subGame?.[0]?.subGame?.slice(0, 10) || [],
-    sysGameTypeCode: item?.sysGameTypeCode || '',
-    sysGameTypeName: item?.sysGameTypeName || '',
-    platformLogoSrc: item?.subGame?.[0]?.icon4 || ''
-  }))
+const HOME_LOBBY_EXCLUDED_CODES = new Set(['', 'hot_games', 'providers'])
+
+/** 与娱乐城大厅 `loadCasinoLobbyButtons` 同源；首页不展示 hot_games、providers */
+const mapLobbyButtonsToHomeSections = (buttons: CasinoLobbyButtonItem[]): HomeGameSection[] => {
+  return buttons
+    .filter(btn => {
+      const code = String(btn.sysGameTypeCode ?? '').trim()
+      return !HOME_LOBBY_EXCLUDED_CODES.has(code)
+    })
+    .map(btn => ({
+      sysGameTypeCode: String(btn.sysGameTypeCode ?? '').trim(),
+      sysGameTypeName: String(btn.sysGameTypeName ?? '').trim(),
+      list: (btn.items ?? []).slice(0, 10)
+    }))
+    .filter(section => section.list.length > 0)
 }
 
-const sportsProviders = computed<RawGameDataItem[]>(() => {
+const sportsProviders = computed<GameDataItem[]>(() => {
   const sportsSection = rawGameData.value.find(
-    (item: RawGameDataItem) => item?.sysGameTypeCode === 'TY'
+    (item: GameDataItem) => item?.sysGameTypeCode === 'TY'
   )
 
   return sportsSection?.subGame ?? []
@@ -452,13 +470,34 @@ const sportsEventList = computed<EventListItem[]>(() => {
 })
 const firstGameSection = computed<HomeGameSection | null>(() => gameData.value[0] ?? null)
 const deferredGameSections = computed<HomeGameSection[]>(() => gameData.value.slice(1))
+const favoriteHomeGames = computed<GameDataItem[]>(() => {
+  return homeCollectionsData.value.filter(item => Number((item as GameDataItem)?.rowId) > 0) as
+    | GameDataItem[]
+    | []
+})
+
+const fetchHomeFavoritesModule = async () => {
+  if (!isLogin.value) {
+    return
+  }
+
+  const memberRowId = Number(acctInfo.value?.memberRowId)
+  if (!Number.isFinite(memberRowId) || memberRowId <= 0) {
+    return
+  }
+
+  await gameStore.fetchHomeCollectionsData(memberRowId)
+}
 
 const fetchGameData = async () => {
   isGameDataLoading.value = true
   try {
-    const rawResult = (await gameStore.ensureGameData()) as RawGameDataItem[]
-    rawGameData.value = rawResult
-    gameData.value = mapHomeGameSections(rawResult)
+    const [rawResult] = await Promise.all([
+      gameStore.ensureGameData(),
+      casinoTabsStore.loadCasinoLobbyButtons()
+    ])
+    rawGameData.value = rawResult as GameDataItem[]
+    gameData.value = mapLobbyButtonsToHomeSections(casinoTabsStore.lobbyButtons)
   } catch (error) {
     console.error('getGameData failed', error)
   } finally {
@@ -490,8 +529,18 @@ const getQuerySlideshow = async () => {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchGameData(), getQuerySlideshow()])
+  await Promise.all([fetchGameData(), getQuerySlideshow(), fetchHomeFavoritesModule()])
 })
+
+watch(
+  () => isLogin.value,
+  isNowLogin => {
+    if (!isNowLogin) {
+      return
+    }
+    void fetchHomeFavoritesModule()
+  }
+)
 </script>
 
 <style scoped lang="scss">

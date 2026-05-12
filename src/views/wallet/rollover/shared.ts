@@ -38,7 +38,21 @@ type FilterInput = Partial<Record<string, FilterValue>>
 
 export const ROLLOVER_PAGE_SIZE = 10
 
-export const ROLLOVER_CHANGE_TYPE_VALUES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '13', '14']
+export const ROLLOVER_CHANGE_TYPE_VALUES = [
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+  '11',
+  '13',
+  '14'
+]
 
 const TRANSACTION_TYPE_KEY_MAP: Record<number, string> = {
   1: 'gameSwitch',
@@ -50,6 +64,8 @@ const TRANSACTION_TYPE_KEY_MAP: Record<number, string> = {
   7: 'bonusGift',
   8: 'commissionClaim',
   9: 'currencyExchange',
+  10: 'weeklyBonus',
+  11: 'monthlyBonus',
   13: 'vipIncome',
   14: 'bonusExchange'
 }
@@ -93,6 +109,8 @@ export const createRolloverTypeOptions = (t: TranslateFn): SelectOption[] => [
   { label: t('transaction.typeOptions.bonusGift'), value: '7' },
   { label: t('transaction.typeOptions.commissionClaim'), value: '8' },
   { label: t('transaction.typeOptions.currencyExchange'), value: '9' },
+  { label: t('transaction.typeOptions.weeklyBonus'), value: '10' },
+  { label: t('transaction.typeOptions.monthlyBonus'), value: '11' },
   { label: t('transaction.typeOptions.vipIncome'), value: '13' },
   { label: t('transaction.typeOptions.bonusExchange'), value: '14' }
 ]

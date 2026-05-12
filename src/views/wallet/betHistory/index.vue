@@ -2,7 +2,7 @@
   <div>
     <div
       v-if="isReady && isMobile"
-      class="fixed inset-0 bg-bg-1 sm:hidden flex flex-col overflow-hidden"
+      class="bet-history-mobile-page fixed inset-0 bg-bg-1 sm:hidden flex flex-col overflow-hidden"
     >
       <H5Header :title="$t('betHistory.title')" :show-sort="true" @sort="handleSort" />
 
@@ -140,6 +140,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import Api from '@/api'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { navigateTo } from '@/utils/router'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -169,6 +170,8 @@ import {
 const { t } = useI18n()
 const isMobile = useIsMobile()
 const isReady = ref(false)
+
+usePageScrollLock(() => isMobile.value)
 
 const scrollRoot = ref<HTMLElement | null>(null)
 const loadMoreSentinel = ref<HTMLElement | null>(null)
@@ -278,8 +281,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.bet-history-mobile-page {
+  height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: none;
+}
+
 .bet-history-scroll-root {
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 </style>
 
