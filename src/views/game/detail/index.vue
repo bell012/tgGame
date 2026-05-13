@@ -10,8 +10,7 @@
     <!-- Header -->
     <h5-header class="block sm:hidden"> {{ currentGameDetail?.itemName ?? '' }} </h5-header>
     <!-- Currency Info -->
-    <h5-currency-info v-if="isMobile" />
-    <desktop-currency-info v-else />
+    <h5-currency-info v-if="isMobile" /> <desktop-currency-info v-else />
     <!-- Game Content -->
     <recent-games />
     <!-- 推荐游戏 -->

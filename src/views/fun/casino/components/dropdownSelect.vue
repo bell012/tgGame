@@ -14,9 +14,12 @@
         </span>
       </div>
       <span
-        class="flex h-5 w-5 items-center justify-center rounded-[6px] bg-opacity-10 fill-text-1"
+        class="flex h-5 w-5 items-center justify-center rounded-[6px] bg-opacity-10 text-text-1"
       >
-        <component :is="casinoIcons.dropdown_chevron" class="h-2 w-2 fill-current" />
+        <component
+          :is="casinoIcons.dropdown_chevron"
+          class="h-2 w-2 fill-current [&_path]:fill-current"
+        />
       </span>
     </button>
 

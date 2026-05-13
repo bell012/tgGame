@@ -12,9 +12,12 @@
         </span>
       </div>
       <span
-        class="flex h-6 w-6 items-center justify-center rounded-[6px] bg-[var(--color-opacity-10)] fill-text-1"
+        class="flex h-6 w-6 items-center justify-center rounded-[6px] bg-[var(--color-opacity-10)] text-text-1"
       >
-        <component :is="casinoIcons.dropdown_chevron" class="h-4 w-4 fill-current" />
+        <component
+          :is="casinoIcons.dropdown_chevron"
+          class="h-4 w-4 fill-current [&_path]:fill-current"
+        />
       </span>
     </button>
 

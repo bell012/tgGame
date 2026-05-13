@@ -26,10 +26,10 @@
     <div
       class="absolute bottom-1 right-1 flex h-5 w-[33px] items-center rounded-[6px] bg-mask-20 px-1.5"
     >
-      <div class="icon h-[10px] w-[10px] sm:size-4 fill-common-100 text-common-100 mr-0.5">
+      <div class="icon mr-0.5 h-[10px] w-[10px] text-common-100 sm:size-4">
         <component
           :is="casinoIcons.player_count"
-          class="h-[10px] w-[10px] sm:size-4 fill-current"
+          class="h-[10px] w-[10px] fill-current sm:size-4 [&_path]:fill-current"
         />
       </div>
       <span class="text-[10px] sm:text-xs font-medium sm:font-semibold text-common-100">{{
@@ -49,8 +49,11 @@
       <div
         class="flex h-9 w-9 items-center justify-center rounded-full bg-mask-20 transition-all duration-300 sm:group-hover:scale-150"
       >
-        <div class="icon size-full fill-common-100 text-common-100">
-          <component :is="casinoIcons.play_fill" class="size-full fill-current" />
+        <div class="icon size-full text-common-100">
+          <component
+            :is="casinoIcons.play_fill"
+            class="size-full fill-current [&_path]:fill-current"
+          />
         </div>
       </div>
     </div>

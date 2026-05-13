@@ -107,7 +107,10 @@
           class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
           @click="scrollLeft"
         >
-          <component :is="casinoIcons.chevron_left" class="icon size-4 fill-text-1" />
+          <component
+            :is="casinoIcons.chevron_left"
+            class="icon size-4 text-text-1 fill-current [&_path]:fill-current"
+          />
         </button>
       </div>
       <!-- 顶部横行滚动tab选择 -->
@@ -143,8 +146,10 @@
               <component
                 v-else-if="item?.icon"
                 :is="item.icon"
-                :class="item.sysGameTypeCode === currentTabCode ? 'fill-primary' : 'fill-text-2'"
-                class="w-full h-full"
+                :class="
+                  item.sysGameTypeCode === currentTabCode ? 'text-theme-primary' : 'text-text-2'
+                "
+                class="h-full w-full fill-current [&_path]:fill-current"
               />
             </div>
             <div
@@ -175,7 +180,10 @@
           class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
           @click="scrollRight"
         >
-          <component :is="casinoIcons.chevron_left" class="icon size-4 rotate-180 fill-text-1" />
+          <component
+            :is="casinoIcons.chevron_left"
+            class="icon size-4 rotate-180 text-text-1 fill-current [&_path]:fill-current"
+          />
         </button>
       </div>
 
