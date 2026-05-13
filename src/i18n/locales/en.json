@@ -388,8 +388,10 @@
       },
       "rewardsToClaim": "Rewards to Claim",
       "tabs": {
+        "commissionRules": "Commission Rules",
         "inviteRegister": "Invite & Register",
         "cumulativeDeposit": "Cumulative Deposit",
+        "directBet": "Direct Bet",
         "commissionBoost": "Commission Boost",
         "recommendedWallet": "Wallet"
       },

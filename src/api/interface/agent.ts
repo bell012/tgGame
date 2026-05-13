@@ -66,6 +66,8 @@ export interface QueryTaskRewardCommissionItem {
   people?: number | string
   rate?: number | string
   dayTeamBet?: number | string
+  achieved?: boolean
+  status?: number | string
 }
 
 /**
@@ -123,6 +125,11 @@ export interface QueryTaskRewardConfigResponse extends AgentApiResponse<QueryTas
  * 查询一级代理预估佣金响应
  */
 export interface QueryEstimatedCommissionResponse extends AgentApiResponse<number> {}
+
+/**
+ * 查询任务页待领取奖励金额响应
+ */
+export interface QueryReferralTaskRewardsToClaimResponse extends AgentApiResponse<number> {}
 
 /**
  * 查询一级代理结算周期规则结果

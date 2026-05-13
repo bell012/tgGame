@@ -28,7 +28,7 @@
           :tabs="taskTabs"
           :active-tab="activeTab"
           :current-progress-value="currentProgressValue"
-          :current-progress-unit="t('referral.taskPage.friendsUnit')"
+          :current-progress-unit="currentProgressUnit"
           :current-progress-label="t('referral.taskPage.currentProgress')"
           :max-reward-value="maxRewardValue"
           :max-reward-label="maxRewardLabel"
@@ -63,7 +63,7 @@
         :tabs="taskTabs"
         :active-tab="activeTab"
         :current-progress-value="currentProgressValue"
-        :current-progress-unit="t('referral.taskPage.friendsUnit')"
+        :current-progress-unit="currentProgressUnit"
         :current-progress-label="t('referral.taskPage.currentProgress')"
         :max-reward-value="maxRewardValue"
         :max-reward-label="maxRewardLabel"
@@ -107,6 +107,7 @@
 import Api from '@/api'
 import type {
   QueryReferralSettlementRuleResult,
+  QueryReferralTaskProgressResult,
   QueryTaskRewardConfigResult
 } from '@/api/interface/agent'
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
@@ -114,21 +115,24 @@ import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { ApiBusinessError, ensureApiBusinessSuccess } from '@/utils/apiBusiness'
-import { formatBalance } from '@/utils/locale'
+import { formatBalance, getCurrencySymbol } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { buildReferralTaskPeriodRanges } from '../shared'
 import ReferralTaskPageContent from './components/ReferralTaskPageContent.vue'
 import ReferralTaskProgressReminderPopup from './components/ReferralTaskProgressReminderPopup.vue'
 import PcLayout from './pc-layout.vue'
 import {
   buildReferralTaskRewardTable,
   createReferralTaskMaxRewardLabel,
+  createReferralTaskMaxRewardValue,
   createReferralTaskResetHintSegments,
   createReferralTaskTabs,
   createReferralTaskValidInviteDescriptionSegments,
   getReferralTaskCoinImage,
+  getReferralTaskProgressFieldByTab,
   getReferralTaskRulesPlaceholderImage,
   type ReferralTaskRewardConfig,
   type ReferralTaskTabKey
@@ -142,9 +146,8 @@ const rewardTableLoading = ref(false)
 const taskRewardResult = ref<QueryTaskRewardConfigResult | null>(null)
 const taskRewardConfig = ref<ReferralTaskRewardConfig | null>(null)
 const referralSettlementRule = ref<QueryReferralSettlementRuleResult | null>(null)
+const taskProgressResult = ref<QueryReferralTaskProgressResult | null>(null)
 const rewardsToClaimAmount = ref('0.00')
-const currentProgressValue = '0'
-const maxRewardValue = '8990'
 const coinImage = getReferralTaskCoinImage()
 const taskRulesImage = getReferralTaskRulesPlaceholderImage()
 const showClaimConfirmPopup = ref(false)
@@ -153,11 +156,35 @@ const claimingCommission = ref(false)
 
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
 const taskTabs = computed(() => createReferralTaskTabs(t))
+const currentProgressField = computed(() => getReferralTaskProgressFieldByTab(activeTab.value))
+const currentProgressCount = computed(() =>
+  Number(taskProgressResult.value?.[currentProgressField.value] ?? 0)
+)
 const rewardTable = computed(() =>
-  buildReferralTaskRewardTable(taskRewardConfig.value, activeTab.value, t)
+  buildReferralTaskRewardTable(
+    taskRewardConfig.value,
+    activeTab.value,
+    t,
+    currentProgressCount.value
+  )
 )
 const rewardTableColumns = computed(() => rewardTable.value.columns)
 const rewardRows = computed(() => rewardTable.value.rows)
+const currentProgressValue = computed(() => String(currentProgressCount.value))
+const currentProgressUnit = computed(() =>
+  activeTab.value === 'invite-register'
+    ? currentProgressCount.value > 1
+      ? t('referral.taskPage.friendsUnit')
+      : t('referral.taskPage.friendUnit')
+    : taskProgressResult.value?.currencyCode || getCurrencySymbol()
+)
+const maxRewardValue = computed(() => {
+  const maxRewardAmount = createReferralTaskMaxRewardValue(taskRewardConfig.value, activeTab.value)
+
+  return Number.isInteger(maxRewardAmount)
+    ? String(maxRewardAmount)
+    : formatBalance(maxRewardAmount, 2)
+})
 const resetHintSegments = computed(() =>
   createReferralTaskResetHintSegments(t, String(locale.value), referralSettlementRule.value)
 )
@@ -193,30 +220,35 @@ async function fetchTaskPageData() {
   rewardsToClaimAmount.value = '0.00'
 
   try {
-    const [taskRewardResponse, settlementRuleResponse, estimatedCommissionResponse] =
-      await Promise.all([
-        Api.agent.queryTaskRewardConfig({
-          channelId: currentAgentChannelId.value
-        }),
-        Api.agent.queryReferralSettlementRule({
-          channelId: currentAgentChannelId.value
-        }),
-        Api.agent.queryEstimatedCommission({
-          channelId: currentAgentChannelId.value
-        })
-      ])
+    const [taskRewardResponse, settlementRuleResponse, rewardsToClaimResponse] = await Promise.all([
+      Api.agent.queryTaskRewardConfig({
+        channelId: currentAgentChannelId.value
+      }),
+      Api.agent.queryReferralSettlementRule({
+        channelId: currentAgentChannelId.value
+      }),
+      Api.agent.queryReferralTaskRewardsToClaim({
+        channelId: currentAgentChannelId.value
+      })
+    ])
 
     const taskRewardBusinessResponse = ensureApiBusinessSuccess(taskRewardResponse)
     const settlementRuleBusinessResponse = ensureApiBusinessSuccess(settlementRuleResponse)
-    const estimatedCommissionBusinessResponse = ensureApiBusinessSuccess(
-      estimatedCommissionResponse
+    const rewardsToClaimBusinessResponse = ensureApiBusinessSuccess(rewardsToClaimResponse)
+    const settlementRule = settlementRuleBusinessResponse.result ?? null
+    const periodRanges = buildReferralTaskPeriodRanges(settlementRule)
+    const taskProgressBusinessResponse = ensureApiBusinessSuccess(
+      await Api.agent.queryReferralTaskProgress(periodRanges.current, {
+        channelId: currentAgentChannelId.value
+      })
     )
 
     taskRewardResult.value = taskRewardBusinessResponse.result ?? null
     taskRewardConfig.value = taskRewardBusinessResponse.result?.config ?? null
-    referralSettlementRule.value = settlementRuleBusinessResponse.result ?? null
+    referralSettlementRule.value = settlementRule
+    taskProgressResult.value = taskProgressBusinessResponse.result ?? null
     rewardsToClaimAmount.value = formatBalance(
-      Number(estimatedCommissionBusinessResponse.result ?? 0),
+      Number(rewardsToClaimBusinessResponse.result ?? 0),
       2
     )
   } catch (error) {
@@ -224,6 +256,7 @@ async function fetchTaskPageData() {
     taskRewardResult.value = null
     taskRewardConfig.value = null
     referralSettlementRule.value = null
+    taskProgressResult.value = null
     rewardsToClaimAmount.value = '0.00'
   } finally {
     rewardTableLoading.value = false
