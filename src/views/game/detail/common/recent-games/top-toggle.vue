@@ -105,12 +105,13 @@ const openProviderGames = () => {
 .icon {
   width: 13px;
   height: 13px;
+  color: var(--color-icon-level-2);
   transition: transform 0.3s ease-in-out;
   transform: rotate(0deg);
 }
 
 .icon :deep(path) {
-  fill: #f2f5f5 !important;
+  fill: currentColor;
 }
 .icon.is-open {
   transform: rotate(180deg);
@@ -134,9 +135,5 @@ const openProviderGames = () => {
   background: #f0f1f1;
   border: none;
   box-shadow: none;
-}
-
-:global(:root.light .icon path) {
-  fill: #111111 !important;
 }
 </style>
