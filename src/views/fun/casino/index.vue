@@ -22,7 +22,7 @@
         @keydown.enter.prevent="onSearch"
         @focus="showHistoryPanel = true"
         @blur="handleSearchBlur"
-        class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0 text-xs sm:text-sm"
+        class="flex-1 ml-[10px] h-[18px] bg-transparent outline-none focus:outline-none focus:ring-0 text-xs sm:text-sm text-text-1 placeholder:text-text-2 sm:placeholder:text-icon-3"
         type="text"
         :placeholder="t('casino.placeholder')"
       />
