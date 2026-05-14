@@ -34,14 +34,9 @@
             {{ props.totalCommissionLabel }}
           </div>
 
-          <div class="flex h-[19.33px] w-[95px] items-center justify-end gap-[2px]">
-            <img
-              :src="currencyIcon"
-              :alt="props.currencyCode"
-              class="h-[14px] w-[14px] rounded-full object-cover"
-            />
+          <div class="flex h-[19.33px] w-[95px] items-center justify-end">
             <span class="w-[79px] text-right text-[16px] font-[700] leading-[19.33px] text-text-1">
-              {{ props.totalCommission }}
+              {{ formattedTotalCommission }}
             </span>
           </div>
         </div>
@@ -65,13 +60,8 @@
           </span>
 
           <div class="flex h-[22px] items-center gap-[8px]">
-            <img
-              :src="currencyIcon"
-              :alt="props.currencyCode"
-              class="h-[20px] w-[20px] rounded-full object-cover"
-            />
             <span class="text-[18px] font-[700] leading-[22px] text-text-1">
-              {{ props.totalCommission }}
+              {{ formattedTotalCommission }}
             </span>
           </div>
         </div>
@@ -82,28 +72,35 @@
       v-if="props.claimHistoryRows.length > 0"
       class="overflow-hidden rounded-[10px] bg-bg-2"
     >
-      <div class="grid h-[35px] grid-cols-[1fr_auto] items-center gap-[12px] px-[14px]">
-        <div class="text-center text-[12px] font-[400] leading-[15px] text-text-2">
+      <div class="grid h-[48px] grid-cols-2 items-center">
+        <div
+          class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-2"
+        >
           {{ props.timeLabel }}
         </div>
 
-        <div class="min-w-[74px] text-center text-[12px] font-[400] leading-[15px] text-text-2">
+        <div
+          class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-2"
+        >
           {{ props.rewardsLabel }}
         </div>
       </div>
-
       <div>
         <div
           v-for="(row, index) in props.claimHistoryRows"
           :key="row.id"
-          class="grid min-h-[48px] grid-cols-[1fr_auto] items-center gap-[12px] px-[14px] py-[10px]"
-          :class="index % 2 === 0 ? 'bg-bg-3' : 'bg-transparent'"
+          class="grid min-h-[48px] grid-cols-2 items-center"
+          :class="index % 2 === 0 ? 'h-[50px] bg-opacity-5' : 'h-[48px] bg-transparent'"
         >
-          <div class="text-center text-[13px] font-[400] leading-[16px] text-text-1">
+          <div
+            class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-1"
+          >
             {{ row.time }}
           </div>
 
-          <div class="min-w-[74px] text-center text-[13px] font-[400] leading-[16px] text-text-1">
+          <div
+            class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-1"
+          >
             {{ row.reward }}
           </div>
         </div>
@@ -127,8 +124,8 @@
 <script setup lang="ts">
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
-import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
+import { getFormattedBalance } from '@/utils/locale'
 import { computed } from 'vue'
 import type {
   ReferralDetailsClaimHistoryRow,
@@ -160,7 +157,9 @@ defineEmits<{
   'change-date': [value: ReferralDetailsDateFilterValue]
 }>()
 
-const currencyIcon = computed(() => getCurrencyIconByCode(props.currencyCode))
+const formattedTotalCommission = computed(() =>
+  getFormattedBalance(Number(props.totalCommission ?? 0), props.currencyCode, 2)
+)
 const pcSelectDateOptions = computed(() =>
   props.dateOptions.map(item => ({
     label: item.label,
