@@ -79,8 +79,7 @@
 
             <button
               type="button"
-              class="mt-5 flex w-full items-center justify-center rounded-xl border-0 py-3.5 text-base font-bold text-[#0d1a14] shadow-[0_6px_20px_rgba(42,238,136,0.35)] transition active:scale-[0.99] sm:mt-4"
-              :class="copyGradientClass"
+              class="mt-5 flex w-full items-center justify-center rounded-xl border-0 py-3.5 text-base font-bold text-[#0d1a14] shadow-[0_6px_20px_rgba(42,238,136,0.35)] transition active:scale-[0.99] sm:mt-4 bg-gradient-to-r from-[#2aee88] via-[#5ef0a0] to-[#9fe871] hover:brightness-105"
               @click="copyLink"
             >
               {{ t('rewardDetails.copyLink') }}
@@ -125,9 +124,6 @@ const props = withDefaults(
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
-
-const copyGradientClass =
-  'bg-gradient-to-r from-[#2aee88] via-[#5ef0a0] to-[#9fe871] hover:brightness-105'
 
 const socialIconsRow1 = [iconUrl, iconFacebook, iconWhatsapp, iconTelegram, iconEmail] as const
 

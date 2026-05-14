@@ -96,6 +96,8 @@ import vip9Vip10Icon from '@/static/img/vip/vip9-vip10.png'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { getCurrentCurrency } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import { useAuthModalStore } from '@/stores/authModal'
+import { useUserStore } from '@/stores/user'
 import { deriveBetAmountFromWinAndMultiplier } from '@/stores/deriveBetAmount'
 import RewardDetailsModal from '@/views/home/rewardDetails/RewardDetailsModal.vue'
 import type { RewardDetailsRawItem } from '@/views/home/rewardDetails/types'
@@ -114,6 +116,13 @@ watch(showRewardDetailsModal, open => {
 
 const currentCurrency = computed(() => getCurrentCurrency())
 const isMobile = useIsMobile()
+const userStore = useUserStore()
+const authModalStore = useAuthModalStore()
+
+const isLoggedIn = () => {
+  const { userInfo, acctInfo } = userStore.syncStoredUserData()
+  return Boolean(userInfo?.tradeToken || acctInfo?.memberId)
+}
 const loading = ref(true)
 const list = ref<RecentBigWin[]>([])
 const skeletonCount = 12
@@ -173,6 +182,10 @@ const onRecentBigWinItemClick = (duplicatedIndex: number) => {
   if (len === 0) {
     return
   }
+  if (!isLoggedIn()) {
+    authModalStore.openLoginModal()
+    return
+  }
   const item = list.value[duplicatedIndex % len]
   if (isMobile.value) {
     void navigateTo('/reward-details', {
@@ -195,6 +208,7 @@ const getRecentBigWinsData = async () => {
           ...item,
           src: toGameImageUrl(String(item.coverImg ?? '')),
           icon: getVipIconByVipId(item.vipId),
+          avatar: toGameImageUrl(String(item.avatar ?? '')),
           betAmount: derivedBet ?? item.betAmount ?? item.gameAmount
         }
       }) || []

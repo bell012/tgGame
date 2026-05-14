@@ -50,10 +50,10 @@
 
         <div class="mt-[14px] flex items-center gap-[10px]">
           <img
-            v-if="row?.icon"
-            :src="row.icon"
+            v-if="row?.avatar"
+            :src="row.avatar"
             alt=""
-            class="h-[52px] w-[52px] shrink-0 rounded-full border-2 border-white/20 object-cover"
+            class="h-[52px] w-[52px] shrink-0 rounded-full object-cover"
           />
           <div
             v-else
@@ -65,7 +65,7 @@
               <span class="truncate text-right text-[#f5f8fc]">{{ row?.nickName ?? '--' }}</span>
             </div>
             <div class="flex justify-between gap-3 text-[15px] leading-[1.4]">
-              <span class="shrink-0 text-[#9ca7b1]">Time</span>
+              <span class="shrink-0 text-[#9ca7b1]">{{ $t('home.time') }}</span>
               <span class="truncate text-right text-[#f5f8fc]">{{ betTimeDisplay }}</span>
             </div>
           </div>
@@ -107,6 +107,7 @@ import ellipseBg from '@/views/home/img/Ellipse.png'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import { formatUsDateTime12h } from '@/utils/date'
 import { deriveBetAmountFromWinAndMultiplier } from '@/stores/deriveBetAmount'
+import { navigateToName } from '@/utils/router'
 import RewardShareModal from './RewardShareModal.vue'
 import type { RewardDetailsRawItem } from './types'
 
@@ -171,7 +172,11 @@ const betAmountDisplay = computed(() => {
   return String(fallback)
 })
 const playGame = () => {
-  // 缺少游戏id数据
-  console.log('playGame', row.value)
+  const item = row.value
+  if (!item) {
+    return
+  }
+  const rowId = item.gameId
+  navigateToName('gameDetail', { params: { rowId } })
 }
 </script>

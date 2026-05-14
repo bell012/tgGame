@@ -52,7 +52,8 @@
     "Poker": "POKER",
     "banner_sign_up": "Sign Up & Get",
     "banner_sign_up_amount": "Up To ",
-    "banner_sign_up_amount1": "$20,000,00"
+    "banner_sign_up_amount1": "$20,000,00",
+    "time": "Time"
   },
   "common": {
     "loading": "Loading...",

@@ -57,6 +57,7 @@ export interface GetRecentBigWinsParams {
 }
 
 export interface RecentBigWinsItem {
+  gameId?: number | string
   coverImg?: string
   currency?: string
   gameName?: string
@@ -72,6 +73,7 @@ export interface RecentBigWinsItem {
   createTime?: string
   gameTime?: string
   [key: string]: unknown
+  avatar?: string
 }
 
 export interface RecentBigWinsResponse {
