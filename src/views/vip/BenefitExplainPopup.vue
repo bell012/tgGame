@@ -14,7 +14,7 @@
           class="flex h-[24px] w-[24px] items-center justify-center rounded-[6px] bg-opacity-10 sm:h-[24px] sm:w-[24px] sm:rounded-[4px]"
           @click="$emit('close')"
         >
-          <CloseIcon class="h-3 w-3 sm:w-[12px] sm:h-[12px] text-text-1" />
+          <CloseIcon class="h-2.5 w-2.5 text-text-1" />
         </button>
       </div>
 

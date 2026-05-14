@@ -21,7 +21,7 @@
           :class="isMobile ? 'h-[40px] w-[40px]' : 'h-[28px] w-[28px]'"
           @click="visible = false"
         >
-          <CloseIcon :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
+          <CloseIcon :class="'h-2.5 w-2.5 text-text-1'" />
         </button>
       </div>
 

@@ -135,6 +135,62 @@ export const formatTimestamp = (value?: number | string | null): string => {
   return `${partMap.month ?? '00'}/${partMap.day ?? '00'}/${partMap.year ?? '0000'} ${partMap.hour ?? '00'}:${partMap.minute ?? '00'}:${partMap.second ?? '00'} ${partMap.dayPeriod ?? ''}`.trim()
 }
 
+/** ISO 字符串、数字时间戳（秒/毫秒）等 → Date */
+const coerceToDate = (value: unknown): Date | null => {
+  if (value === null || value === undefined) {
+    return null
+  }
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value
+  }
+  const s = String(value).trim()
+  if (!s) {
+    return null
+  }
+  const ts = normalizeTimestamp(s)
+  if (ts != null) {
+    const d = new Date(ts)
+    return Number.isNaN(d.getTime()) ? null : d
+  }
+  const parsed = Date.parse(s)
+  if (!Number.isFinite(parsed)) {
+    return null
+  }
+  const d = new Date(parsed)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+/**
+ * 固定 US 展示：12/18/2026 11:14:15 AM（与接口 ISO 或时间戳兼容）
+ */
+export const formatUsDateTime12h = (value?: number | string | null): string => {
+  const date = coerceToDate(value)
+  if (!date) {
+    return '--'
+  }
+
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+    hourCycle: 'h12'
+  })
+
+  const parts = formatter.formatToParts(date)
+  const partMap = parts.reduce<Record<string, string>>((acc, part) => {
+    if (part.type !== 'literal') {
+      acc[part.type] = part.value
+    }
+    return acc
+  }, {})
+
+  return `${partMap.month ?? '00'}/${partMap.day ?? '00'}/${partMap.year ?? '0000'} ${partMap.hour ?? '00'}:${partMap.minute ?? '00'}:${partMap.second ?? '00'} ${partMap.dayPeriod ?? ''}`.trim()
+}
+
 // 展示层时间格式：刚刚 / 今天 / 昨天 / 具体日期。
 export const formatDisplayTime = (value?: number | string | null): string => {
   const timestamp = normalizeTimestamp(value)

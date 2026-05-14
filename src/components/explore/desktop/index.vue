@@ -20,7 +20,7 @@
                 @click="close"
                 aria-label="close"
               >
-                <CloseIcon class="w-4 h-4 stroke-text-2" />
+                <CloseIcon class="h-2.5 w-2.5 text-text-2" />
               </button>
             </div>
             <!-- 内容区域 -->

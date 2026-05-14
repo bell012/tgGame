@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="loading" class="mt-2.5 mb-2.5 w-full">
+    <div v-if="loading" class="w-full">
       <div class="w-full overflow-hidden rounded-xl bg-bg-2" :class="bannerAspectClass">
         <div class="size-full animate-pulse bg-bg-2"></div>
       </div>
@@ -13,7 +13,7 @@
 
     <div v-else-if="visibleSlides.length" class="w-full flex flex-col bg-bg-1">
       <div
-        class="relative mt-2.5 mb-2.5 w-full min-h-0 overflow-visible"
+        class="relative w-full min-h-0 overflow-visible"
         @mousedown="handleSwipeMouseDown"
         @click.capture="handleSwipeClickCapture"
       >

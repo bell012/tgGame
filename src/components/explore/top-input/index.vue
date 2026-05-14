@@ -29,7 +29,7 @@
       @click="clear"
       aria-label="clear"
     >
-      <CloseIcon class="w-[14px] h-[14px] stroke-text-2" />
+      <CloseIcon class="h-2.5 w-2.5 text-text-2" />
     </button>
     <!-- 搜索记录框 -->
     <div
@@ -40,7 +40,7 @@
         class="absolute -right-1.5 -top-1.5 w-5 h-5 bg-[var(--color-background-level-3)] flex items-center justify-center rounded-3xl"
         @click="isOpen = false"
       >
-        <CloseIcon class="w-4 h-4 stroke-text-2" />
+        <CloseIcon class="h-2.5 w-2.5 text-text-2" />
       </div>
       <div class="text-xs text-[var(--color-text-level-2)]">
         {{ t('casino.search_tips') }}
@@ -71,7 +71,7 @@
                 {{ item }}
               </div>
               <CloseIcon
-                class="w-4 h-4 stroke-text-2 shrink-0 cursor-pointer"
+                class="h-2.5 w-2.5 shrink-0 cursor-pointer text-text-2"
                 @click.stop="deleteItem(item)"
               />
             </div>

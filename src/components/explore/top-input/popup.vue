@@ -17,9 +17,9 @@
             <div class="text-base font-bold text-[var(--color-text-level-1)]">Select</div>
             <div
               @click="close"
-              class="w-7 h-7 rounded-[8px] bg-[var(--color-opacity-10)] flex items-center justify-center"
+              class="w-7 h-7 rounded-[4px] bg-[var(--color-opacity-10)] flex items-center justify-center"
             >
-              <CloseIcon class="stroke-icon-2 w-4 h-4" />
+              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </div>
           </div>
           <!-- 选择的内容 -->

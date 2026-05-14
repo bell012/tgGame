@@ -58,8 +58,11 @@ const props = withDefaults(
 )
 
 const hideSort = computed(() => props.hideSort)
+// H5：一行两列、列间距 33@3x→11px；sm+：稿宽 290px、间距 8px（gap-2）
 const containerClass = computed(() =>
-  hideSort.value ? 'grid grid-cols-1 gap-4' : 'grid lg:grid-cols-4 grid-cols-2 gap-4'
+  hideSort.value
+    ? 'grid grid-cols-1 gap-[11px] sm:flex sm:flex-col sm:gap-2 sm:[&>*]:w-[290px]'
+    : 'grid grid-cols-2 gap-[11px] sm:flex sm:flex-row sm:flex-nowrap sm:gap-2 sm:[&>*]:w-[290px] sm:[&>*]:shrink-0'
 )
 
 const resolvedSortOptions = computed<FilterOption[]>(() => {

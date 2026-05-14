@@ -52,7 +52,8 @@
     "Poker": "POKER",
     "banner_sign_up": "Sign Up & Get",
     "banner_sign_up_amount": "Up To ",
-    "banner_sign_up_amount1": "$20,000,00"
+    "banner_sign_up_amount1": "$20,000,00",
+    "time": "Time"
   },
   "common": {
     "loading": "Loading...",
@@ -243,6 +244,18 @@
     "orderNo": "Order No.",
     "createdAt": "Created At",
     "copy": "Copy succeeded."
+  },
+  "rewardDetails": {
+    "title": "Bet Slip",
+    "shareDialogAria": "Share winning moment",
+    "closeShare": "Close",
+    "shareMomentTitle": "Winning tastes sweet!",
+    "shareMomentFallback": "Your big win",
+    "shareViaSocial": "Share via social media",
+    "copyLink": "Copy link",
+    "copyLinkSuccess": "Link copied",
+    "copyLinkFail": "Copy failed, please try again",
+    "shareEmailSubject": "Check this out"
   },
   "notifications": {
     "title": "Notifications",

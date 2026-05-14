@@ -12,11 +12,11 @@
         </span>
       </div>
       <span
-        class="flex h-6 w-6 items-center justify-center rounded-[6px] bg-[var(--color-opacity-10)] text-text-1"
+        class="flex h-5 w-5 items-center justify-center rounded-[6px] bg-[var(--color-opacity-10)] text-text-1"
       >
         <component
           :is="casinoIcons.dropdown_chevron"
-          class="h-4 w-4 fill-current [&_path]:fill-current"
+          class="h-2 w-2 fill-current [&_path]:fill-current"
         />
       </span>
     </button>
@@ -49,10 +49,10 @@
             <div class="w-7" />
             <div class="text-base font-bold text-[var(--color-text-level-1)]">Select</div>
             <button
-              class="flex h-7 w-7 items-center justify-center rounded-[8px] bg-[var(--color-opacity-10)]"
+              class="flex h-7 w-7 items-center justify-center rounded-[4px] bg-[var(--color-opacity-10)]"
               @click.stop="closePopup"
             >
-              <CloseIcon class="h-4 w-4 stroke-icon-2" />
+              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </button>
           </div>
 
