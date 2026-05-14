@@ -24,7 +24,7 @@
               class="tp-close-btn w-7 h-7 rounded-[8px] flex items-center justify-center"
               @click="close"
             >
-              <CloseIcon class="tp-close-icon w-4 h-4" />
+              <CloseIcon class="h-2.5 w-2.5 tp-close-icon" />
             </div>
           </div>
           <div
@@ -355,7 +355,7 @@ const close = () => {
 }
 
 .tp-panel-h5 .tp-close-icon {
-  stroke: var(--color-text-level-1);
+  color: var(--color-text-level-1);
 }
 
 .tp-panel-h5 .tp-stats-shell {
@@ -407,7 +407,7 @@ const close = () => {
 }
 
 :global(:root.light) .tp-panel-h5 .tp-close-icon {
-  stroke: #6d7580;
+  color: #6d7580;
 }
 
 :global(:root.light) .tp-panel-h5 .tp-stats-shell {
@@ -476,7 +476,7 @@ const close = () => {
 }
 
 .tp-panel-desktop .tp-close-icon {
-  stroke: var(--color-text-level-1);
+  color: var(--color-text-level-1);
 }
 
 .tp-panel-desktop .tp-label {

@@ -272,21 +272,22 @@ const parseAmount = (value: unknown) => {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-const formatAmount = (value: unknown) => {
-  const parsed = Number(normalizeValue(value))
-  return Number.isFinite(parsed) ? parsed.toFixed(2) : '0.00'
+const formatApiAmount = (value: unknown) => {
+  const text = normalizeValue(value)
+  return text || '0'
 }
 
 const mapRecordToRow = (item: GameBetRecordItem, index: number): IRow => {
   const betId = normalizeValue(item.betId) || '-'
-  const payoutRate = parseAmount(item.multiple ?? item.mult ?? item.multiplier)
   const profitNumber = parseAmount(item.profit ?? item.winAmount)
   return {
     id: `${betId}-${index}`,
     betId,
-    bet: formatAmount(item.bet ?? item.wager),
-    payout: formatAmount(payoutRate),
-    profit: formatAmount(item.profit ?? item.winAmount),
+    bet: formatApiAmount(item.bet ?? item.wager),
+    payout: formatApiAmount(
+      item.payout ?? item.payOut ?? item.multiple ?? item.mult ?? item.multiplier
+    ),
+    profit: formatApiAmount(item.profit ?? item.winAmount),
     profitNumber
   }
 }

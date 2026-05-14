@@ -4,7 +4,7 @@
     <button
       ref="triggerRef"
       type="button"
-      class="flex w-full items-center justify-between rounded-lg border border-solid border-opacity-10 bg-opacity-10 px-2.5 py-[11px]"
+      class="flex w-full items-center justify-between rounded-lg border border-solid border-opacity-10 sm:border-opacity-6 max-sm:bg-opacity-5 sm:bg-bg-5 px-2.5 py-[11px]"
       @click.stop="togglePopup"
     >
       <div class="flex flex-1 items-center text-xs">
@@ -14,9 +14,12 @@
         </span>
       </div>
       <span
-        class="flex h-5 w-5 items-center justify-center rounded-[6px] bg-opacity-10 fill-text-1"
+        class="flex h-5 w-5 items-center justify-center rounded-[6px] bg-opacity-10 text-text-1"
       >
-        <component :is="casinoIcons.dropdown_chevron" class="h-2 w-2 fill-current" />
+        <component
+          :is="casinoIcons.dropdown_chevron"
+          class="h-2 w-2 fill-current [&_path]:fill-current"
+        />
       </span>
     </button>
 
@@ -51,7 +54,7 @@
               class="flex size-[28px] shrink-0 items-center justify-center rounded bg-opacity-10"
               @click.stop="closePopup"
             >
-              <CloseIcon class="h-3.5 w-3.5 stroke-text-1" />
+              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </button>
           </div>
 

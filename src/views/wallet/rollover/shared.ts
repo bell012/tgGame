@@ -94,8 +94,8 @@ export const createRolloverTimeOptions = createBetHistoryTimeOptions
 
 export const createRolloverStatusOptions = (t: TranslateFn): SelectOption[] => [
   { label: t('betHistory.filterOptions.all'), value: 'all' },
-  { label: t('transaction.completed'), value: '0' },
-  { label: t('transaction.notCompleted'), value: '1' }
+  { label: t('transaction.completed'), value: '1' },
+  { label: t('transaction.notCompleted'), value: '0' }
 ]
 
 export const createRolloverTypeOptions = (t: TranslateFn): SelectOption[] => [

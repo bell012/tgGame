@@ -9,7 +9,7 @@
             @click="handleClose"
           >
             <div class="w-8 h-8 bg-[#464f50] rounded-md flex items-center justify-center">
-              <CloseIcon class="w-4 h-4 stroke-text-1" />
+              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </div>
           </button>
 

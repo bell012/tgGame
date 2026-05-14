@@ -26,7 +26,7 @@
           class="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-[4px] bg-bg-3"
           @click="$emit('close')"
         >
-          <CloseIcon class="h-3 w-3 fill-none text-common-100" />
+          <CloseIcon class="h-2.5 w-2.5 text-common-100" />
         </button>
       </div>
 

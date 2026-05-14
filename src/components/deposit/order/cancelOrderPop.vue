@@ -24,7 +24,7 @@
               class="absolute top-4 right-4 w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center"
               @click="handleClose"
             >
-              <CloseIcon class="w-4 h-4 fill-none" />
+              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </button>
             <!-- 取消提示文案 -->
             <p class="mt-2.5 text-sm font-normal leading-normal text-text-2 font-['Inter']">

@@ -14,7 +14,7 @@
           class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-opacity-10 text-text-1"
           @click="handleClose"
         >
-          <CloseIcon class="size-4" />
+          <CloseIcon class="h-2.5 w-2.5" />
         </button>
       </div>
 

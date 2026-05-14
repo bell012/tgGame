@@ -36,7 +36,7 @@
             class="absolute right-4 top-4 z-10 hidden h-6 w-6 items-center justify-center rounded-md bg-opacity-10 sm:flex"
             @click="handleClose"
           >
-            <CloseIcon class="h-4 w-4 fill-none" />
+            <CloseIcon class="h-2.5 w-2.5 text-text-1" />
           </button>
         </template>
       </div>

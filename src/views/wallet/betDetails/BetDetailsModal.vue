@@ -11,7 +11,7 @@
           class="absolute top-4 right-4 bg-opacity-10 w-6 h-6 rounded flex items-center justify-center"
           @click="closeModal"
         >
-          <Close class="w-3 h-3 text-text-1" />
+          <Close class="h-2.5 w-2.5 text-text-1" />
         </button>
 
         <div class="flex items-center justify-center w-full h-full">

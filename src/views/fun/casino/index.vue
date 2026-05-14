@@ -28,10 +28,10 @@
       />
       <button
         v-show="searchText"
-        class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-opacity-10 rounded-lg flex items-center justify-center z-10"
+        class="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 bg-opacity-10 rounded-[6px] flex items-center justify-center z-10"
         @click="clearSearch"
       >
-        <CloseIcon class="w-[18px] h-[18px] fill-icon-1" />
+        <CloseIcon class="h-2.5 w-2.5 text-icon-1" />
       </button>
       <div
         v-show="showHistoryPanel && !searchText"
@@ -42,7 +42,7 @@
           class="absolute -right-2 -top-2 w-5 h-5 bg-bg-3 flex items-center justify-center z-10 rounded-full"
           @click.stop="showHistoryPanel = false"
         >
-          <CloseIcon class="w-[12px] h-[12px] fill-icon-2" />
+          <CloseIcon class="h-2.5 w-2.5 text-icon-2" />
         </button>
         <div class="text-xs text-text-2">
           {{ t('casino.search_tips') }}
@@ -70,7 +70,7 @@
               >
                 {{ item }}
               </div>
-              <CloseIcon class="w-4 h-4 stroke-text-2 shrink-0" @click.stop="deleteItme(item)" />
+              <CloseIcon class="h-2.5 w-2.5 shrink-0 text-text-2" @click.stop="deleteItme(item)" />
             </div>
           </div>
         </div>
@@ -107,7 +107,10 @@
           class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
           @click="scrollLeft"
         >
-          <component :is="casinoIcons.chevron_left" class="icon size-4 fill-text-1" />
+          <component
+            :is="casinoIcons.chevron_left"
+            class="icon size-4 text-text-1 fill-current [&_path]:fill-current"
+          />
         </button>
       </div>
       <!-- 顶部横行滚动tab选择 -->
@@ -143,8 +146,10 @@
               <component
                 v-else-if="item?.icon"
                 :is="item.icon"
-                :class="item.sysGameTypeCode === currentTabCode ? 'fill-primary' : 'fill-text-2'"
-                class="w-full h-full"
+                :class="
+                  item.sysGameTypeCode === currentTabCode ? 'text-theme-primary' : 'text-text-2'
+                "
+                class="h-full w-full fill-current [&_path]:fill-current"
               />
             </div>
             <div
@@ -175,7 +180,10 @@
           class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
           @click="scrollRight"
         >
-          <component :is="casinoIcons.chevron_left" class="icon size-4 rotate-180 fill-text-1" />
+          <component
+            :is="casinoIcons.chevron_left"
+            class="icon size-4 rotate-180 text-text-1 fill-current [&_path]:fill-current"
+          />
         </button>
       </div>
 

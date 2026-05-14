@@ -10,8 +10,8 @@
       >
         <component
           :is="bottomTabBarIcons[menu.icon]"
-          class="w-[18px] h-[18px] mb-1"
-          :class="menu.active ? 'fill-primary' : 'fill-text-2'"
+          class="mb-1 h-[18px] w-[18px] fill-current [&_path]:fill-current"
+          :class="menu.active ? 'text-theme-primary' : 'text-text-2'"
         />
         <p class="text-xs font-medium">{{ menu.name }}</p>
       </button>
