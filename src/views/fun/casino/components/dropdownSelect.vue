@@ -58,7 +58,6 @@
             </button>
           </div>
 
-          <!-- 搜索框（3@：字号 42→14px；图标 54→18px；字重 500；行高 normal） -->
           <div v-if="search" class="relative mb-2.5">
             <SearchIcon
               class="pointer-events-none absolute left-2.5 top-1/2 size-[18px] -translate-y-1/2 text-icon-2 [&_svg]:block [&_svg]:h-full [&_svg]:w-full [&_svg]:max-h-full [&_svg]:max-w-full"
@@ -68,7 +67,7 @@
               v-model="keyword"
               type="text"
               :placeholder="t('home.search')"
-              class="h-[42px] w-full rounded-lg border border-opacity-10 bg-bg-2 py-0 pl-9 pr-11 not-italic text-[14px] font-medium leading-[normal] text-text-1 outline-none placeholder:text-[14px] placeholder:font-medium placeholder:leading-[normal] placeholder:not-italic placeholder:text-text-3 focus:border-theme-primary dark:bg-bg-3"
+              class="h-[42px] w-full rounded-lg border border-opacity-10 bg-input-1 py-0 pl-9 pr-11 text-sm font-medium text-text-1 outline-none placeholder:text-text-2 focus:border-theme-primary"
             />
           </div>
 
