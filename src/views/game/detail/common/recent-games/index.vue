@@ -237,14 +237,15 @@ const tabIndexClick = (index: number) => {
 .recent-games-type-tag {
   display: inline-flex;
   align-items: center;
-  margin-top: 4px;
+  margin-top: 8px;
   border-radius: 6px;
   background: var(--color-opacity-10);
-  padding: 4px 8px;
+  height: 22px;
+  padding: 0 8px;
   color: var(--color-text-level-2);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 16px;
 }
 
 .open-fade-enter-active,

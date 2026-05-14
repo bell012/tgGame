@@ -1,6 +1,6 @@
 <template>
   <div class="lg:flex">
-    <div class="stats-divider flex-1 flex mt-[12px] pb-[6px] text-[13px]">
+    <div class="stats-divider flex-1 flex mt-[20px] pb-[6px] text-[13px]">
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
         <div class="stats-label text-[var(--color-text-level-2)]">
           {{ t('gameDetail.houseEdge') }}
@@ -14,7 +14,7 @@
         <div class="stats-value text-[var(--color-theme-level-1)]">{{ rtpText }}</div>
       </div>
     </div>
-    <div class="stats-divider flex-1 flex mt-[12px] pb-[6px] text-[13px]">
+    <div class="stats-divider flex-1 flex mt-[20px] pb-[6px] text-[13px]">
       <div class="flex-1 flex flex-col gap-[6px] lg:text-center">
         <div class="stats-label text-[var(--color-text-level-2)]">{{ t('gameDetail.maxWin') }}</div>
         <div class="stats-value text-[var(--color-theme-level-1)]">{{ maxWinText }}</div>

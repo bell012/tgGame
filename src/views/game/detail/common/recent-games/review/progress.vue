@@ -15,12 +15,12 @@ withDefaults(
 </script>
 <style lang="scss" scoped>
 .progress-track {
-  height: 5px;
+  height: 7px;
   background: #3a4142;
 }
 
 .child-bar {
-  height: 5px;
+  height: 7px;
   background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
 }
 

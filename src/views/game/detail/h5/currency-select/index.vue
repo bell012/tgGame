@@ -18,7 +18,10 @@
       </div>
       <div class="ml-auto flex items-center gap-[8px] min-w-0">
         <div class="trigger-arrow-bg">
-          <ArrowDownIcon class="trigger-arrow-icon" />
+          <component
+            :is="casinoIcons.dropdown_chevron"
+            class="trigger-arrow-icon fill-current [&_path]:fill-current"
+          />
         </div>
       </div>
     </div>
@@ -31,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
+import { casinoIcons } from '@/static/svg/casino'
 import { computed, provide, ref, watch } from 'vue'
 import Popup from './popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -94,7 +97,7 @@ watch(
 
 .currency-select-trigger {
   border: none;
-  background: var(--color-background-level-3);
+  background: var(--color-opacity-10);
   box-shadow: none;
 }
 
@@ -111,10 +114,11 @@ watch(
 .trigger-arrow-icon {
   width: 14px;
   height: 14px;
+  color: var(--color-icon-level-2);
 }
 
 .trigger-arrow-icon :deep(path) {
-  fill: #93a0a4;
+  fill: currentColor;
 }
 
 .balance-text {
@@ -128,18 +132,5 @@ watch(
   line-height: 1;
   position: relative;
   top: -0.5px;
-}
-
-:global(:root.light) .currency-select-trigger {
-  background: #d9d9d9;
-  box-shadow: none;
-}
-
-:global(:root.light) .trigger-arrow-bg {
-  background: #d5dbe1;
-}
-
-:global(:root.light) .trigger-arrow-icon :deep(path) {
-  fill: #7f8a8e;
 }
 </style>

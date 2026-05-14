@@ -7,14 +7,23 @@
     <gameRemoteImg class="h-full w-full" :img="gameImage" :alt="game.itemName" />
     <div
       v-if="gameCovernameShow"
-      class="absolute inset-x-0 bottom-6 flex w-full items-center justify-center px-2 text-center text-sm font-bold leading-4 text-common-100 sm:text-base sm:font-extrabold"
+      class="absolute inset-x-0 bottom-2 flex w-full flex-col items-center justify-center px-2 text-center text-sm font-bold leading-4 text-common-100 sm:text-base sm:font-extrabold"
     >
       {{ game.itemName }}
+      <div v-if="platformLogoImg.src" class="mt-1 h-[14px] w-auto max-w-[70%] bg-transparent">
+        <gameRemoteImg
+          :img="platformLogoImg"
+          :alt="game.platformName || game.itemName"
+          class="h-full w-full bg-transparent"
+        />
+      </div>
     </div>
-    <div class="absolute bottom-1 right-1 flex h-5 items-center rounded-[6px] bg-mask-20 px-1.5">
-      <div class="icon h-[10px] w-[10px] text-white sm:size-4">
+    <div
+      class="absolute bottom-1 right-1 flex h-5 w-[33px] items-center rounded-[6px] bg-mask-20 px-1.5"
+    >
+      <div class="icon mr-0.5 h-[10px] w-[10px] text-white">
         <svg
-          class="h-[10px] w-[10px] sm:size-4"
+          class="h-[10px] w-[10px]"
           viewBox="0 0 32 32"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
@@ -26,9 +35,7 @@
           />
         </svg>
       </div>
-      <span class="text-[10px] font-medium text-white sm:text-xs sm:font-semibold">{{
-        initNum
-      }}</span>
+      <span class="text-[10px] font-medium text-white">{{ initNum }}</span>
     </div>
     <div
       v-if="game.serviceStatus === 0"
@@ -61,12 +68,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, reactive, watch } from 'vue'
 import { casinoIcons } from '@/static/svg/casino'
 import { StringExtension } from '@/utils/string-extension'
 import type { GameDataItem } from '@/api/interface/game'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useGameStore } from '@/stores/game'
 import underMaintenanceIcon from '@/static/svg/game/under_maintenance.svg'
 
 const props = defineProps<{
@@ -78,6 +86,7 @@ const emit = defineEmits<{
 }>()
 
 const siteConfigStore = useSiteConfigStore()
+const gameStore = useGameStore()
 
 const gameImage = computed(() => {
   const imagePath = props.game.icon2 || props.game.conUrl || props.game.icon1 || props.game.icon3
@@ -92,6 +101,26 @@ const gameImage = computed(() => {
 const initNum = computed(() => {
   return StringExtension.getRandomInt(props.game.initScoreNum ?? 0, props.game.initScoreStar ?? 0)
 })
+
+const platformLogoImg = reactive<{
+  maintain: boolean
+  src: string
+  fit: 'contain'
+}>({
+  maintain: false,
+  src: '',
+  fit: 'contain'
+})
+
+const resolvePlatformLogo = async () => {
+  const platformCode = String(props.game.platformCode ?? '').trim()
+  if (!platformCode) {
+    platformLogoImg.src = ''
+    return
+  }
+
+  platformLogoImg.src = await gameStore.getPlatformLogoByPlatformCode(platformCode)
+}
 
 const gameCovernameShow = computed(() => {
   const value = Number(
@@ -117,4 +146,15 @@ const doClick = () => {
 
   emit('click')
 }
+
+watch(
+  () => props.game.platformCode,
+  () => {
+    void resolvePlatformLogo()
+  }
+)
+
+onMounted(() => {
+  void resolvePlatformLogo()
+})
 </script>

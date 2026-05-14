@@ -35,8 +35,14 @@
               @click.stop="onTabButton(item)"
             >
               <div class="explore-tab-icon mr-[7px] h-5 w-5">
+                <component
+                  v-if="resolveCasinoTabIcon(item)"
+                  :is="resolveCasinoTabIcon(item)"
+                  :class="isActiveCasinoTab(item) ? 'text-theme-primary' : 'text-icon-2'"
+                  class="h-full w-full fill-current [&_path]:fill-current"
+                />
                 <img
-                  v-if="!isActiveCasinoTab(item) && typeof item.icon === 'string'"
+                  v-else-if="!isActiveCasinoTab(item) && typeof item.icon === 'string'"
                   :src="item.icon"
                   class="w-full h-full object-contain"
                 />
@@ -48,7 +54,7 @@
                 <component
                   v-else-if="item.icon"
                   :is="item.icon"
-                  :class="isActiveCasinoTab(item) ? 'text-theme-primary' : 'text-text-2'"
+                  :class="isActiveCasinoTab(item) ? 'text-theme-primary' : 'text-icon-2'"
                   class="h-full w-full fill-current [&_path]:fill-current"
                 />
               </div>
@@ -99,6 +105,7 @@ import {
   provide,
   ref,
   watch,
+  type Component,
   type StyleValue
 } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -194,6 +201,52 @@ const isExploreRoute = computed(() => String(route.name || '').replace(/^Locale/
 const currentTabCode = ref(getRouteTabCode())
 
 const { tabButtons, loadExploreCasinoTabButtons } = useExploreCasinoTabButtons()
+
+const casinoTabIconMap: Record<string, Component> = {
+  '': casinoIcons.lobby,
+  lobby: casinoIcons.lobby,
+  all: casinoIcons.lobby,
+  all_games: casinoIcons.lobby,
+  hot: casinoIcons.hot_games,
+  hot_games: casinoIcons.hot_games,
+  tg: casinoIcons.tg_originals,
+  originals: casinoIcons.tg_originals,
+  tg_originals: casinoIcons.tg_originals,
+  slot: casinoIcons.slots,
+  slots: casinoIcons.slots,
+  dz: casinoIcons.slots,
+  fishing: casinoIcons.fishing,
+  by: casinoIcons.fishing,
+  table: casinoIcons.table_games,
+  table_games: casinoIcons.table_games,
+  qp: casinoIcons.table_games,
+  live: casinoIcons.live_casino,
+  live_casino: casinoIcons.live_casino,
+  zr: casinoIcons.live_casino,
+  sx: casinoIcons.live_casino,
+  providers: casinoIcons.game_provider,
+  game_provider: casinoIcons.game_provider,
+  game_providers: casinoIcons.game_provider,
+  poker: casinoIcons.poker,
+  roulette: casinoIcons.roulette,
+  baccarat: casinoIcons.baccarat,
+  blackjack: casinoIcons.blackjack
+}
+
+const normalizeCasinoTabIconKey = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+
+const resolveCasinoTabIcon = (tab: ExploreCasinoTabButtonItem) => {
+  const codeKey = normalizeCasinoTabIconKey(tab.sysGameTypeCode)
+  const nameKey = normalizeCasinoTabIconKey(tab.sysGameTypeName)
+
+  return casinoTabIconMap[codeKey] ?? casinoTabIconMap[nameKey]
+}
 
 const getCurrentTab = computed(() => {
   if (!tabButtons.value.length) {
@@ -527,7 +580,7 @@ onUnmounted(() => {
   .explore-tab-button {
     height: 36px;
     padding: 0 7px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 14px;
     line-height: 36px;
     color: var(--color-text-level-2);

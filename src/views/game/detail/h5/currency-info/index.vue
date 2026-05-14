@@ -19,7 +19,9 @@
           <div class="flex-1 flex flex-col justify-around">
             <div class="text-[15px] font-bold">{{ t('gameDetail.playWithSelectedCurrency') }}</div>
             <currency-select @change="handleCurrencyChange"></currency-select>
-            <div class="text-[10px] font-[500] text-[var(--color-text-level-2)] text-center">
+            <div
+              class="text-[12px] leading-[12px] font-[400] text-[var(--color-text-level-2)] text-center"
+            >
               {{ t('gameDetail.playNowHint') }}
             </div>
           </div>
