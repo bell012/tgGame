@@ -11,7 +11,7 @@
           class="absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center justify-center p-2 rounded-[6px] bg-black/10"
           aria-label="close"
         >
-          <CloseIcon class="w-2.5 h-2.5 text-icon-1" @click="close" />
+          <CloseIcon class="h-2.5 w-2.5 text-icon-1" @click="close" />
         </button>
       </div>
 

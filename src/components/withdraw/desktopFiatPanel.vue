@@ -91,7 +91,7 @@
             class="w-6 h-6 bg-opacity-10 rounded-md sm:flex items-center justify-center z-10"
             @click="undefinedAmount"
           >
-            <CloseIcon class="w-4 h-4" />
+            <CloseIcon class="h-2.5 w-2.5" />
           </button>
         </div>
       </div>

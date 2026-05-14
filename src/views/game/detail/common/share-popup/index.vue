@@ -30,7 +30,7 @@
               class="w-7 h-7 rounded-[8px] bg-[var(--color-opacity-10)] flex items-center justify-center"
               @click="close"
             >
-              <CloseIcon class="stroke-text-1 w-4 h-4" />
+              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </button>
           </div>
           <div class="px-5 pb-[calc(env(safe-area-inset-bottom)+20px)] sm:pb-5">

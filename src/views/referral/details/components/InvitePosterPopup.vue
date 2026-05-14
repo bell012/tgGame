@@ -74,7 +74,7 @@
               @click="handleClose"
             >
               <!-- 关闭图标 -->
-              <CloseIcon class="h-[12px] w-[12px] text-text-1" />
+              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </button>
           </div>
 

@@ -120,7 +120,7 @@
               class="ml-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-opacity-10"
               @click="clearAmount"
             >
-              <CloseIcon class="h-4 w-4" />
+              <CloseIcon class="h-2.5 w-2.5" />
             </button>
           </div>
         </div>

@@ -12,7 +12,7 @@
           class="absolute right-4 top-4 hidden h-6 w-6 items-center justify-center rounded-md text-text-1 sm:flex"
           @click="handleClose"
         >
-          <CloseIcon class="size-4" />
+          <CloseIcon class="h-2.5 w-2.5" />
         </button>
       </div>
 
