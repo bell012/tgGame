@@ -34,13 +34,13 @@
 import { useI18n } from 'vue-i18n'
 import Close from '@/static/svg/close.svg?component'
 import Details from './details.vue'
-import type { RewardDetailsState } from './types'
+import type { RewardDetailsRawItem } from './types'
 
 const { t } = useI18n()
 
 defineProps<{
   modelValue: boolean
-  reward: RewardDetailsState | null
+  reward: RewardDetailsRawItem | null
 }>()
 
 const emit = defineEmits<{

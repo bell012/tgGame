@@ -60,11 +60,17 @@ export interface RecentBigWinsItem {
   coverImg?: string
   currency?: string
   gameName?: string
+  gameType?: string
   multiple?: number | string
   nickName?: string
   rowId?: number | string
   vipId?: number
   winAmount?: number | string
+  betAmount?: number | string
+  gameAmount?: number | string
+  betTime?: string
+  createTime?: string
+  gameTime?: string
   [key: string]: unknown
 }
 

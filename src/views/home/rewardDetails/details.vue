@@ -7,15 +7,20 @@
         :style="{ backgroundImage: `url(${ellipseBg})` }"
       />
       <div class="relative z-10">
+        <button
+          type="button"
+          class="absolute right-0 top-0 z-20 flex h-9 w-9 items-center justify-center rounded-lg text-text-1 transition"
+          :aria-label="$t('rewardDetails.shareDialogAria')"
+          @click="showShareModal = true"
+        >
+          <img :src="shareTriggerImg" alt="" class="h-6 w-6 object-contain" />
+        </button>
         <p class="m-0 text-center text-lg font-bold">{{ $t('home.Profit') }}</p>
         <p
           class="mt-[10px] flex items-center justify-center gap-2 font-bold leading-[1.1] text-[#22dd87]"
         >
-          <span
-            class="inline-flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-[linear-gradient(90deg,#213fca_0_50%,#c93f46_50%_100%)] text-[14px] font-bold tracking-[0.3px] text-white"
-            >PH</span
-          >
-          <span class="text-[23px]">{{ display.profit }}</span>
+          <img :src="currencyIconUrl" alt="" class="h-[18px] w-[18px] shrink-0 object-contain" />
+          <span class="text-[23px]">{{ row?.winAmount ?? '--' }}</span>
         </p>
 
         <div
@@ -24,16 +29,17 @@
           <div class="metric-item">
             <p class="m-0 text-sm text-text-2">{{ $t('home.BetAmount') }}</p>
             <p class="mt-1.5 flex items-center justify-center gap-[5px] font-bold">
-              <span
-                class="inline-flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-[linear-gradient(90deg,#213fca_0_50%,#c93f46_50%_100%)] text-[14px] font-bold tracking-[0.3px] text-white"
-                >PH</span
-              >
-              <span>{{ display.betAmount }}</span>
+              <img
+                :src="currencyIconUrl"
+                alt=""
+                class="h-[18px] w-[18px] shrink-0 object-contain"
+              />
+              <span>{{ betAmountDisplay }}</span>
             </p>
           </div>
           <div class="metric-item">
             <p class="m-0 text-sm text-text-2">{{ $t('home.Multiplier') }}</p>
-            <p class="mt-1.5 font-bold">{{ display.multiplier }}</p>
+            <p class="mt-1.5 font-bold">{{ row?.multiple ?? '--' }}</p>
           </div>
         </div>
 
@@ -44,8 +50,8 @@
 
         <div class="mt-[14px] flex items-center gap-[10px]">
           <img
-            v-if="display.vipAvatarUrl"
-            :src="display.vipAvatarUrl"
+            v-if="row?.icon"
+            :src="row.icon"
             alt=""
             class="h-[52px] w-[52px] shrink-0 rounded-full border-2 border-white/20 object-cover"
           />
@@ -56,27 +62,30 @@
           <div class="min-w-0 flex-1">
             <div class="flex justify-between gap-3 text-[15px] leading-[1.4]">
               <span class="shrink-0 text-[#9ca7b1]">{{ $t('home.Player') }}</span>
-              <span class="truncate text-right text-[#f5f8fc]">{{ display.userName }}</span>
+              <span class="truncate text-right text-[#f5f8fc]">{{ row?.nickName ?? '--' }}</span>
             </div>
             <div class="flex justify-between gap-3 text-[15px] leading-[1.4]">
               <span class="shrink-0 text-[#9ca7b1]">Time</span>
-              <span class="truncate text-right text-[#f5f8fc]">{{ display.betTime }}</span>
+              <span class="truncate text-right text-[#f5f8fc]">{{ betTimeDisplay }}</span>
             </div>
           </div>
         </div>
 
         <button
           type="button"
-          class="mt-4 flex w-full items-center rounded-[14px] border-0 bg-white/5 p-[10px]"
+          class="mt-4 flex w-full cursor-pointer items-center rounded-[14px] border-0 bg-white/5 p-[10px] text-left transition hover:bg-white/10"
+          @click="playGame"
         >
           <img
-            :src="display.gameCover"
+            :src="row?.src || placeholderImg"
             alt=""
             class="h-[52px] w-[52px] shrink-0 rounded-[12px] object-cover"
           />
           <div class="ml-[10px] min-w-0 flex-1 text-left">
-            <p class="m-0 truncate text-sm font-bold lowercase">{{ display.gameName }}</p>
-            <p class="mt-0.5 truncate text-[15px] text-[#b2bcc4]">{{ display.gameType }}</p>
+            <p class="m-0 truncate text-sm font-bold lowercase">{{ row?.gameName ?? '--' }}</p>
+            <p class="mt-0.5 truncate text-[15px] text-[#b2bcc4]">
+              {{ row?.sysGameTypeName ?? '--' }}
+            </p>
           </div>
           <span class="mr-1 shrink-0 text-[13px] text-[#d7dee4]">{{
             $t('gameDetail.playNow')
@@ -85,50 +94,84 @@
         </button>
       </div>
     </section>
+    <RewardShareModal v-model="showShareModal" :game-subtitle="String(row?.gameName ?? '')" />
   </main>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import ArrowRight2Icon from '@/static/svg/arrow_right2.svg?component'
+import shareTriggerImg from '@/static/svg/coin/share.svg?url'
 import placeholderImg from '@/static/img/home/errImg1.png'
 import ellipseBg from '@/views/home/img/Ellipse.png'
-import type { RewardDetailsState } from './types'
+import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
+import { formatUsDateTime12h } from '@/utils/date'
+import { deriveBetAmountFromWinAndMultiplier } from '@/stores/deriveBetAmount'
+import RewardShareModal from './RewardShareModal.vue'
+import type { RewardDetailsRawItem } from './types'
+
+const showShareModal = ref(false)
 
 const props = withDefaults(
   defineProps<{
-    rewardData?: RewardDetailsState | null
+    rewardData?: RewardDetailsRawItem | null
   }>(),
   {
     rewardData: null
   }
 )
 
-const parseFromHistory = (): RewardDetailsState | null => {
+const parseFromHistory = (): RewardDetailsRawItem | null => {
   if (typeof history === 'undefined') {
     return null
   }
-  const raw = (history.state as { rewardDetails?: string } | undefined)?.rewardDetails
+  const raw = (history.state as { rewardDetailsRaw?: string } | undefined)?.rewardDetailsRaw
   if (!raw) {
     return null
   }
   try {
-    return JSON.parse(raw) as RewardDetailsState
+    return JSON.parse(raw) as RewardDetailsRawItem
   } catch {
     return null
   }
 }
 
-const FALLBACK: RewardDetailsState = {
-  profit: '0.00',
-  betAmount: '--',
-  multiplier: '--',
-  userName: '--',
-  betTime: '--',
-  gameName: '--',
-  gameType: 'Slots',
-  gameCover: placeholderImg
-}
+const row = computed(() => props.rewardData ?? parseFromHistory())
 
-const display = computed(() => props.rewardData ?? parseFromHistory() ?? FALLBACK)
+const currencyIconUrl = computed(() => getCurrencyIconByCode(row.value?.currency))
+
+const betTimeDisplay = computed(() => {
+  const item = row.value
+  if (!item) {
+    return '--'
+  }
+  const raw = item.betTime ?? item.createTime ?? item.gameTime
+  if (raw == null || String(raw).trim() === '') {
+    return '--'
+  }
+  return formatUsDateTime12h(raw as string | number)
+})
+
+const betAmountDisplay = computed(() => {
+  const item = row.value
+  if (!item) {
+    return '--'
+  }
+  const derived = deriveBetAmountFromWinAndMultiplier(item.winAmount, item.multiple)
+  if (derived != null) {
+    return Number(derived).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
+  }
+  const fallback = item.betAmount ?? item.gameAmount
+  if (fallback == null || String(fallback).trim() === '') {
+    return '--'
+  }
+  return String(fallback)
+})
+const playGame = () => {
+  // 缺少游戏id数据
+  console.log('playGame', row.value)
+}
 </script>

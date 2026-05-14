@@ -245,7 +245,16 @@
     "copy": "Copy succeeded."
   },
   "rewardDetails": {
-    "title": "Bet Slip"
+    "title": "Bet Slip",
+    "shareDialogAria": "Share winning moment",
+    "closeShare": "Close",
+    "shareMomentTitle": "Winning tastes sweet!",
+    "shareMomentFallback": "Your big win",
+    "shareViaSocial": "Share via social media",
+    "copyLink": "Copy link",
+    "copyLinkSuccess": "Link copied",
+    "copyLinkFail": "Copy failed, please try again",
+    "shareEmailSubject": "Check this out"
   },
   "notifications": {
     "title": "Notifications",

@@ -59,7 +59,7 @@
             <img
               :src="item.src"
               class="absolute left-0 top-0 w-full rounded-lg"
-              :alt="item.name"
+              :alt="item.nickName"
               loading="lazy"
               decoding="async"
               fetchpriority="low"
@@ -68,12 +68,12 @@
           <div class="w-[100%]">
             <div class="flex items-center justify-center font-bold text-secondary">
               <img class="size-[0.875rem]" :src="item.icon" alt="" />
-              <span class="ellipsis -ml-0.5 text-xxs">{{ item.name }}</span>
+              <span class="ellipsis -ml-0.5 text-xxs">{{ item.nickName }}</span>
             </div>
             <div
               class="text-xxs whitespace-nowrap text-nowrap text-center font-bold text-brand text-theme-primary"
             >
-              {{ formatRecentBigWinAmount(item.number) }} {{ item.currency }}
+              {{ formatRecentBigWinAmount(item.winAmount) }} {{ item.currency }}
             </div>
           </div>
         </button>
@@ -85,6 +85,7 @@
 
 <script setup lang="ts">
 import Api from '@/api'
+import type { RecentBigWinsItem } from '@/api/interface/home.interface'
 import placeholderImg from '@/static/img/home/errImg1.png'
 import vip0Icon from '@/static/img/vip/vip0.png'
 import vip1Vip2Icon from '@/static/img/vip/vip1-vip2.png'
@@ -95,26 +96,15 @@ import vip9Vip10Icon from '@/static/img/vip/vip9-vip10.png'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { getCurrentCurrency } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import { deriveBetAmountFromWinAndMultiplier } from '@/stores/deriveBetAmount'
 import RewardDetailsModal from '@/views/home/rewardDetails/RewardDetailsModal.vue'
-import type { RewardDetailsState } from '@/views/home/rewardDetails/types'
+import type { RewardDetailsRawItem } from '@/views/home/rewardDetails/types'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
-interface RecentBigWin {
-  src: string
-  name: string
-  number: string
-  currency: string
-  icon: string
-  gameName?: string
-  gameType?: string
-  multiple?: number | string
-  rowId?: number | string
-  betAmountRaw?: number | string
-  betTime?: string
-}
+type RecentBigWin = RewardDetailsRawItem
 
 const showRewardDetailsModal = ref(false)
-const rewardDetailsPayload = ref<RewardDetailsState | null>(null)
+const rewardDetailsPayload = ref<RewardDetailsRawItem | null>(null)
 
 watch(showRewardDetailsModal, open => {
   if (!open) {
@@ -160,8 +150,10 @@ const getVipIconByVipId = (vipId: unknown) => {
 }
 
 /** 大额展示：≥1000 转为千分位 + 两位小数 + K，如 1,497.00K；否则两位小数 + 千分位 */
-const formatRecentBigWinAmount = (raw: string) => {
-  const cleaned = String(raw).replace(/,/g, '').trim()
+const formatRecentBigWinAmount = (raw: string | number | undefined) => {
+  const cleaned = String(raw ?? '')
+    .replace(/,/g, '')
+    .trim()
   const n = Number(cleaned)
   if (!Number.isFinite(n)) {
     return raw || '0.00'
@@ -176,57 +168,19 @@ const formatRecentBigWinAmount = (raw: string) => {
   return n.toLocaleString('en-US', opts)
 }
 
-const formatRewardAmount = (raw: string, currency: string) => {
-  const cleaned = String(raw).replace(/,/g, '').trim()
-  const n = Number(cleaned)
-  if (!Number.isFinite(n)) {
-    return `${raw} ${currency}`.trim()
-  }
-  return `${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`
-}
-
-const formatBetAmountLine = (item: RecentBigWin) => {
-  if (item.betAmountRaw == null || String(item.betAmountRaw).trim() === '') {
-    return '--'
-  }
-  return formatRewardAmount(String(item.betAmountRaw), item.currency)
-}
-
-const formatMultiplierLine = (value?: number | string) => {
-  if (value == null || String(value).trim() === '') {
-    return '--'
-  }
-  const s = String(value).replace(/x$/i, '').trim()
-  if (!s) {
-    return '--'
-  }
-  return `${s}x`
-}
-
-const buildRewardDetailsPayload = (item: RecentBigWin): RewardDetailsState => ({
-  profit: formatRewardAmount(item.number, item.currency),
-  betAmount: formatBetAmountLine(item),
-  multiplier: formatMultiplierLine(item.multiple),
-  userName: item.name,
-  betTime: item.betTime && String(item.betTime).trim() !== '' ? String(item.betTime) : '--',
-  gameName: item.gameName && String(item.gameName).trim() !== '' ? String(item.gameName) : '--',
-  gameType: item.gameType && String(item.gameType).trim() !== '' ? String(item.gameType) : 'Slots',
-  gameCover: item.src || placeholderImg,
-  vipAvatarUrl: item.icon
-})
-
 const onRecentBigWinItemClick = (duplicatedIndex: number) => {
   const len = list.value.length
   if (len === 0) {
     return
   }
   const item = list.value[duplicatedIndex % len]
-  const payload = buildRewardDetailsPayload(item)
   if (isMobile.value) {
-    void navigateTo('/reward-details', { state: { rewardDetails: JSON.stringify(payload) } })
+    void navigateTo('/reward-details', {
+      state: { rewardDetailsRaw: JSON.stringify(item) }
+    })
     return
   }
-  rewardDetailsPayload.value = payload
+  rewardDetailsPayload.value = item
   showRewardDetailsModal.value = true
 }
 
@@ -234,21 +188,16 @@ const getRecentBigWinsData = async () => {
   loading.value = true
   try {
     const res = await Api.home.getRecentBigWins({ currency: currentCurrency.value, type: 1 })
-    console.log('resss', res)
     list.value =
-      res.result?.map((item: any) => ({
-        src: toGameImageUrl(item.coverImg),
-        name: item.nickName,
-        number: String(item.winAmount ?? ''),
-        currency: String(item.currency ?? ''),
-        icon: getVipIconByVipId(item.vipId),
-        gameName: item.gameName,
-        gameType: item.gameType,
-        multiple: item.multiple,
-        rowId: item.rowId,
-        betAmountRaw: item.betAmount ?? item.gameAmount,
-        betTime: item.betTime ?? item.createTime ?? item.gameTime
-      })) || []
+      res.result?.map((item: RecentBigWinsItem) => {
+        const derivedBet = deriveBetAmountFromWinAndMultiplier(item.winAmount, item.multiple)
+        return {
+          ...item,
+          src: toGameImageUrl(String(item.coverImg ?? '')),
+          icon: getVipIconByVipId(item.vipId),
+          betAmount: derivedBet ?? item.betAmount ?? item.gameAmount
+        }
+      }) || []
   } catch (error) {
     list.value = []
     console.error('getRecentBigWins failed', error)

@@ -526,7 +526,16 @@
     "copy": "复制成功"
   },
   "rewardDetails": {
-    "title": "投注单"
+    "title": "投注单",
+    "shareDialogAria": "分享高光时刻",
+    "closeShare": "关闭",
+    "shareMomentTitle": "胜利的滋味真甜！",
+    "shareMomentFallback": "您的大奖",
+    "shareViaSocial": "通过社交媒体分享",
+    "copyLink": "复制链接",
+    "copyLinkSuccess": "链接已复制",
+    "copyLinkFail": "复制失败，请重试",
+    "shareEmailSubject": "来看看这个"
   },
   "notifications": {
     "title": "通知",
