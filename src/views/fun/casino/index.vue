@@ -8,7 +8,7 @@
       v-if="isSlideshowLoading || querySlideshowList.length > 0"
       :list="querySlideshowList"
       :loading="isSlideshowLoading"
-      class="mb-3"
+      class="mb-2.5 sm:mb-10 -mx-3.5 sm:-mx-3"
     />
 
     <div
