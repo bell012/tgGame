@@ -535,15 +535,22 @@ export const useGameStore = defineStore('game', () => {
       return []
     }
     const byRowId = buildRowType3GameMap(await ensureGameData())
-    return stubs.map(item => {
+    const merged: GameDataItem[] = []
+
+    for (const item of stubs) {
       const rid = parsePositiveRowId(
         (item as { rowId?: unknown }).rowId ?? (item as { gameId?: unknown }).gameId
       )
       if (rid == null) {
-        return item as GameDataItem
+        continue
       }
-      return byRowId.get(rid) ?? ({ rowId: rid } as GameDataItem)
-    })
+      const node = byRowId.get(rid)
+      if (node) {
+        merged.push(node)
+      }
+    }
+
+    return merged
   }
 
   const fetchHydratedFavoriteGames = async (memberRowId: number): Promise<GameDataItem[]> => {
