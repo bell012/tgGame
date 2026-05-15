@@ -61,7 +61,7 @@
       <!-- 左右按钮 + 滑动条 -->
       <div
         v-if="visibleSlides.length > 1"
-        class="flex flex-shrink-0 items-center justify-center px-4"
+        class="mt-2 flex flex-shrink-0 items-center justify-center px-4"
       >
         <div class="flex w-[25%] min-w-0 items-center justify-between gap-2">
           <div class="flex min-w-0 flex-1 items-center justify-center gap-1.5">

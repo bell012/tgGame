@@ -1,6 +1,6 @@
 ﻿<template>
   <div class="home mx-auto max-w-[1248px] py-2 sm:px-4 sm:py-4">
-    <div style="height: 55px" class="sm:hidden"></div>
+    <div style="height: 55px" class="mb-2.5 sm:hidden"></div>
 
     <HomeCarouselImg
       v-if="isSlideshowLoading || querySlideshowList.length"
