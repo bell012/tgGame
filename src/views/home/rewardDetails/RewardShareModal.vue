@@ -104,12 +104,20 @@ import iconTelegram from '@/static/svg/coin/tg.svg?url'
 import iconUrl from '@/static/svg/coin/url.svg?url'
 import iconWhatsapp from '@/static/svg/coin/Whatsapp.svg?url'
 import iconX from '@/static/svg/coin/x.svg?url'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { globalShowToast } from '@/utils/toast'
 
+type SiteConfigWithAgentShare = {
+  baseSiteConfig?: {
+    agent_share_url?: string
+  }
+}
+
 const { t } = useI18n()
 const userStore = useUserStore()
+const siteConfigStore = useSiteConfigStore()
 
 const props = withDefaults(
   defineProps<{
@@ -133,13 +141,42 @@ const close = () => {
   emit('update:modelValue', false)
 }
 
+const getShareOrigin = () => {
+  siteConfigStore.syncStoredConfig()
+
+  const agentShareUrl = (
+    siteConfigStore.config as SiteConfigWithAgentShare | null
+  )?.baseSiteConfig?.agent_share_url?.trim()
+
+  if (agentShareUrl) {
+    return agentShareUrl.replace(/\/+$/, '')
+  }
+
+  if (typeof window === 'undefined') {
+    return ''
+  }
+
+  return window.location.origin.replace(/\/+$/, '')
+}
+
 const buildShareUrlWithUserId = () => {
   if (typeof window === 'undefined') return ''
   const userId = userStore.acctInfo?.memberRowId || ''
   if (!userId) return ''
 
-  const origin = window.location.origin.replace(/\/+$/, '')
-  return `${origin}?id=${encodeURIComponent(userId)}`
+  const origin = getShareOrigin()
+  if (!origin) return ''
+
+  const idParam = `id=${encodeURIComponent(userId)}`
+
+  try {
+    const url = new URL(origin.includes('://') ? origin : `https://${origin}`)
+    url.searchParams.set('id', String(userId))
+    return url.toString()
+  } catch {
+    const separator = origin.includes('?') ? '&' : '?'
+    return `${origin}${separator}${idParam}`
+  }
 }
 
 const copyLink = async () => {

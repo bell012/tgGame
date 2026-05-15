@@ -1,16 +1,16 @@
 ﻿<template>
-  <div class="sidebar-menu px-3.5 sm:px-0">
+  <div class="sidebar-menu px-3.5 sm:px-0" :style="mobileMenuStyle">
     <!-- BC代币 -->
-    <div v-if="!isCollapsed">
+    <div v-if="showBcToken">
       <div
-        class="flex items-center justify-between bc-card p-2 rounded-lg cursor-pointer"
+        class="flex items-center justify-between bc-card p-2 bg-bg-2 mt-4 sm:mt-0 rounded-lg cursor-pointer"
         @click="() => console.log('点击 BC代币')"
       >
         <div class="flex items-center flex-1">
           <div class="w-9 h-9 mr-1 flex items-center justify-center">
             <component :is="side.icon_1" class="w-6 h-6 fill-none" />
           </div>
-          <div v-if="!isCollapsed" class="flex-1 min-w-0">
+          <div v-if="showBcToken" class="flex-1 min-w-0">
             <div class="flex items-center">
               <span class="text-sm font-[800] text-text-1 mr-1">
                 {{ t('sidebar_menu.bc_token.title') }}
@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <div class="flex flex-col mt-1">
+    <div class="flex flex-col">
       <div
         v-for="(menuGroup, groupIndex) in sidebarMenuGroups"
         :key="`group-${groupIndex}`"
@@ -470,7 +470,7 @@ interface Props {
   isCollapsed?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isCollapsed: false
 })
 
@@ -482,6 +482,18 @@ const themeStore = useThemeStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
 const isMobile = useIsMobile()
+
+const showBcToken = computed(() => !props.isCollapsed || isMobile.value)
+
+const mobileMenuStyle = computed(() => {
+  if (!isMobile.value) {
+    return undefined
+  }
+
+  return {
+    paddingTop: `calc(env(safe-area-inset-top) + ${layoutStore.TOPNAV_HEIGHT}px)`
+  }
+})
 
 const { t } = useI18n()
 const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
@@ -972,7 +984,6 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 .sidebar-menu {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 .app-download-card {
