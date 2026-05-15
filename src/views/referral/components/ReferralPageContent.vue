@@ -994,7 +994,7 @@
 </template>
 
 <script setup lang="ts">
-import commissionBoostArrowImage from '@/static/img/referral/Frame 2131330770.png'
+import commissionBoostArrowImage from '@/static/img/referral/commission-boost-arrow.png'
 import inviteTaskDecorationH5Image from '@/static/img/referral/invite-task-banner-h5.png'
 import inviteTaskDecorationPcImage from '@/static/img/referral/invite-task-banner-pc.png'
 import inviteTaskRightImage from '@/static/img/referral/invite-task-right.png'
