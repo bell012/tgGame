@@ -15,9 +15,9 @@
         >
           <img :src="shareTriggerImg" alt="" class="h-6 w-6 object-contain" />
         </button>
-        <p class="m-0 text-center text-lg font-bold">{{ $t('home.Profit') }}</p>
+        <p class="m-0 text-center text-lg text-text-1 font-bold">{{ $t('home.Profit') }}</p>
         <p
-          class="mt-[10px] flex items-center justify-center gap-2 font-bold leading-[1.1] text-[#22dd87]"
+          class="mt-[10px] flex items-center justify-center gap-2 font-bold leading-[1.1] text-theme-primary"
         >
           <img :src="currencyIconUrl" alt="" class="h-[18px] w-[18px] shrink-0 object-contain" />
           <span class="text-[23px]">{{ row?.winAmount ?? '--' }}</span>
@@ -34,12 +34,12 @@
                 alt=""
                 class="h-[18px] w-[18px] shrink-0 object-contain"
               />
-              <span>{{ betAmountDisplay }}</span>
+              <span class="text-text-1">{{ betAmountDisplay }}</span>
             </p>
           </div>
           <div class="metric-item">
             <p class="m-0 text-sm text-text-2">{{ $t('home.Multiplier') }}</p>
-            <p class="mt-1.5 font-bold">{{ row?.multiple ?? '--' }}</p>
+            <p class="mt-1.5 font-bold text-text-1">{{ row?.multiple ?? '--' }}</p>
           </div>
         </div>
 
@@ -61,12 +61,12 @@
           />
           <div class="min-w-0 flex-1">
             <div class="flex justify-between gap-3 text-[15px] leading-[1.4]">
-              <span class="shrink-0 text-[#9ca7b1]">{{ $t('home.Player') }}</span>
-              <span class="truncate text-right text-[#f5f8fc]">{{ row?.nickName ?? '--' }}</span>
+              <span class="shrink-0 text-text-2">{{ $t('home.Player') }}</span>
+              <span class="truncate text-right text-text-2">{{ row?.nickName ?? '--' }}</span>
             </div>
             <div class="flex justify-between gap-3 text-[15px] leading-[1.4]">
-              <span class="shrink-0 text-[#9ca7b1]">{{ $t('home.time') }}</span>
-              <span class="truncate text-right text-[#f5f8fc]">{{ betTimeDisplay }}</span>
+              <span class="shrink-0 text-text-2">{{ $t('home.time') }}</span>
+              <span class="truncate text-right text-text-2">{{ betTimeDisplay }}</span>
             </div>
           </div>
         </div>
@@ -83,13 +83,11 @@
           />
           <div class="ml-[10px] min-w-0 flex-1 text-left">
             <p class="m-0 truncate text-sm font-bold lowercase">{{ row?.gameName ?? '--' }}</p>
-            <p class="mt-0.5 truncate text-[15px] text-[#b2bcc4]">
+            <p class="mt-0.5 truncate text-[15px] text-text-1">
               {{ row?.sysGameTypeName ?? '--' }}
             </p>
           </div>
-          <span class="mr-1 shrink-0 text-[13px] text-[#d7dee4]">{{
-            $t('gameDetail.playNow')
-          }}</span>
+          <span class="mr-1 shrink-0 text-[13px] text-text-1">{{ $t('gameDetail.playNow') }}</span>
           <ArrowRight2Icon class="h-3 w-3 shrink-0" />
         </button>
       </div>
