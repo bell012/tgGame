@@ -45,6 +45,9 @@
         @invite="handleInvite"
       />
     </div>
+
+    <!-- PC Guide 视频弹窗 -->
+    <ReferralGuideVideoPopup v-model="showGuideVideoPopup" />
   </div>
 </template>
 
@@ -53,9 +56,9 @@ import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateTo } from '@/utils/router'
 
-import { globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import ReferralGuideVideoPopup from '../components/ReferralGuideVideoPopup.vue'
 import ReferralRulesPageContent from './components/ReferralRulesPageContent.vue'
 import PcLayout from './pc-layout.vue'
 import {
@@ -69,6 +72,7 @@ const { t } = useI18n()
 const isMobile = useIsMobile()
 const isReady = ref(false)
 const guideImage = getReferralRulesGuideImage()
+const showGuideVideoPopup = ref(false)
 
 /**
  * 生成规则表头数据。
@@ -96,10 +100,12 @@ onMounted(() => {
  * 处理播放 Guide 视频。
  */
 const handlePlayGuide = () => {
-  globalShowToast({
-    message: t('referral.rulesPage.playGuideHint'),
-    type: 'success'
-  })
+  if (isMobile.value) {
+    navigateTo('/referral/guide')
+    return
+  }
+
+  showGuideVideoPopup.value = true
 }
 
 /**

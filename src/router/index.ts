@@ -221,6 +221,20 @@ const baseRoutes: RouteRecordRaw[] = [
       }
     }
   },
+  {
+    path: 'referral/guide',
+    name: 'referralGuide',
+    component: () => import('@/views/referral/guide/index.vue'),
+    meta: {
+      title: 'Guide',
+      requiresAuth: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
   // {
   //   path: 'referral/referral-records',
   //   name: 'referralReferralRecords',
