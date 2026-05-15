@@ -2,7 +2,7 @@ import type { GameQueryOptions } from '@/stores/game'
 
 export type CasinoPageMode = 'lobby' | 'pageStyle2' | 'pageStyle3' | 'pageStyle4'
 
-const pageStyle2TabCodes = new Set(['originals', 'hot_games', 'favorites', 'recent', 'TG'])
+const pageStyle2TabCodes = new Set(['originals', 'hot_games', 'TG'])
 
 export const getGameListTabSlug = (tabCode: string) => {
   return tabCode.trim()
@@ -48,9 +48,6 @@ export const getCasinoQueryOptions = (
         hot: 1,
         sortByHotOrderId: true
       }
-    case 'favorites':
-    case 'recent':
-      return baseOptions
     default:
       return {
         ...baseOptions,
