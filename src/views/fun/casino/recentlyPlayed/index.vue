@@ -95,7 +95,7 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useGameStore } from '@/stores/game'
 import { navigateToName } from '@/utils/router'
-import { readPlayedGamesFromStorage } from '@/utils/played-games-cache'
+import { readPlayedRowIdsFromStorage } from '@/utils/played-games-cache'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
@@ -114,8 +114,8 @@ const isPlayedLoading = ref(false)
 const loadPlayedGames = async () => {
   isPlayedLoading.value = true
   try {
-    const raw = readPlayedGamesFromStorage()
-    playedGames.value = await gameStore.hydrateSavedGameDetailsList(raw)
+    const rowIds = readPlayedRowIdsFromStorage()
+    playedGames.value = await gameStore.hydratePlayedRowIds(rowIds)
   } catch {
     playedGames.value = []
   } finally {
