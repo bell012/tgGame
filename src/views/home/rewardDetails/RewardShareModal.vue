@@ -44,7 +44,7 @@
               </p>
 
               <div class="flex flex-col items-center gap-y-3.5 sm:gap-y-4" role="presentation">
-                <div class="flex justify-center gap-[10px] sm:gap-3 max-[360px]:gap-[5px]">
+                <div class="flex justify-center gap-[10px] sm:gap-3 max-[360px]:gap-[0]">
                   <div
                     v-for="(item, idx) in socialIconsRow1"
                     :key="`r1-${idx}`"
@@ -59,7 +59,7 @@
                     />
                   </div>
                 </div>
-                <div class="flex justify-center gap-[10px] sm:gap-3 max-[360px]:gap-[5px]">
+                <div class="flex justify-center gap-[10px] sm:gap-3 max-[360px]:gap-[0]">
                   <div
                     v-for="(item, idx) in socialIconsRow2"
                     :key="`r2-${idx}`"
