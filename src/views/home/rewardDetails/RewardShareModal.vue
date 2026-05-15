@@ -3,7 +3,7 @@
     <Transition name="reward-share-fade">
       <div
         v-if="modelValue"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 px-4 py-6 sm:p-6"
+        class="fixed inset-0 z-[100] flex items-center justify-center px-4 py-6 sm:p-6"
         @click.self="close"
       >
         <div
@@ -14,7 +14,7 @@
         >
           <button
             type="button"
-            class="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-text-1 transition hover:bg-white/15"
+            class="absolute right-3 top-3 z-10 flex h-8 w-8 bg-opacity-10 items-center justify-center rounded-md text-text-1 transition"
             :aria-label="t('rewardDetails.closeShare')"
             @click="close"
           >
@@ -29,7 +29,7 @@
                 class="h-14 w-14 shrink-0 rounded-full object-cover shadow-[0_4px_16px_rgba(245,180,60,0.35)]"
               />
               <div class="min-w-0 flex-1 pt-0.5">
-                <p class="m-0 text-lg font-bold leading-snug text-text-1">
+                <p class="m-0 text-lg font-bold leading-snug text-text-1 max-[360px]:text-base">
                   {{ t('rewardDetails.shareMomentTitle') }}
                 </p>
                 <p class="mt-1 line-clamp-2 text-sm font-medium leading-snug text-text-1">
@@ -44,7 +44,7 @@
               </p>
 
               <div class="flex flex-col items-center gap-y-3.5 sm:gap-y-4" role="presentation">
-                <div class="flex justify-center gap-[10px] sm:gap-3">
+                <div class="flex justify-center gap-[10px] sm:gap-3 max-[360px]:gap-[5px]">
                   <div
                     v-for="(item, idx) in socialIconsRow1"
                     :key="`r1-${idx}`"
@@ -59,7 +59,7 @@
                     />
                   </div>
                 </div>
-                <div class="flex justify-center gap-[10px] sm:gap-3">
+                <div class="flex justify-center gap-[10px] sm:gap-3 max-[360px]:gap-[5px]">
                   <div
                     v-for="(item, idx) in socialIconsRow2"
                     :key="`r2-${idx}`"
