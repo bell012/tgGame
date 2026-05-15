@@ -1,79 +1,93 @@
-import type { GameDataItem } from '@/api/interface/game'
-
-export const PLAYED_GAMES_STORAGE_KEY = 'PlayedGamesMaxLength50'
+const PLAYED_GAMES_STORAGE_KEY_PREFIX = 'PlayedGamesMaxLength50:member_'
 const PLAYED_GAMES_MAX_LENGTH = 50
+const ACCT_INFO_STORAGE_KEY = 'acctInfo'
 
-type PlayedGameDetail = Record<string, unknown>
+/** 登出时保留各账号分桶的最近玩过 rowId 列表 */
+export const PLAYED_GAMES_CACHE_STORAGE_PREFIXES = [PLAYED_GAMES_STORAGE_KEY_PREFIX] as const
 
-const normalizeValue = (value: unknown) => {
-  if (Array.isArray(value)) {
-    return String(value[0] ?? '').trim()
+const parsePositiveRowId = (value: unknown): number | null => {
+  const n = Number(value)
+  return Number.isFinite(n) && n > 0 ? Math.trunc(n) : null
+}
+
+const parseMemberRowIdFromStorage = (): number | null => {
+  if (typeof window === 'undefined') {
+    return null
   }
-  return String(value ?? '').trim()
+
+  const raw = window.localStorage.getItem(ACCT_INFO_STORAGE_KEY)
+  if (!raw) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as { memberRowId?: unknown }
+    return parsePositiveRowId(parsed?.memberRowId)
+  } catch (error) {
+    console.error('parse played games memberRowId failed', error)
+    return null
+  }
 }
 
-const isRecord = (value: unknown): value is PlayedGameDetail => {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
+const resolvePlayedGamesStorageKey = (memberRowId: number) => {
+  return `${PLAYED_GAMES_STORAGE_KEY_PREFIX}${memberRowId}`
 }
 
-const parsePlayedGames = (rawValue: string | null): PlayedGameDetail[] => {
+const parseRowIdArray = (rawValue: string | null): number[] => {
   if (!rawValue) {
     return []
   }
 
   try {
-    const parsedValue = JSON.parse(rawValue) as unknown
-    if (!Array.isArray(parsedValue)) {
+    const parsed = JSON.parse(rawValue) as unknown
+    if (!Array.isArray(parsed)) {
       return []
     }
 
-    return parsedValue.filter(isRecord)
+    const ids: number[] = []
+    for (const item of parsed) {
+      const id = parsePositiveRowId(item)
+      if (id != null) {
+        ids.push(id)
+      }
+    }
+    return ids
   } catch (error) {
-    console.error('parse played games cache failed', error)
+    console.error('parse played games rowId list failed', error)
     return []
   }
 }
 
-const createPlayedGameKey = (gameDetail: PlayedGameDetail) => {
-  const rowId = normalizeValue(gameDetail.rowId)
-  if (rowId) {
-    return `rowId:${rowId}`
-  }
-
-  const itemCode = normalizeValue(gameDetail.itemCode)
-  const platformCode = normalizeValue(gameDetail.platformCode)
-  if (itemCode && platformCode) {
-    return `itemCode:${itemCode}|platformCode:${platformCode}`
-  }
-
-  return ''
-}
-
-const cloneGameDetail = (gameDetail: PlayedGameDetail) => {
-  return JSON.parse(JSON.stringify(gameDetail)) as PlayedGameDetail
-}
-
-export const savePlayedGameDetail = (gameDetail: unknown) => {
-  if (typeof window === 'undefined' || !isRecord(gameDetail)) {
+/** 成功进入游戏前写入；未登录（无 memberRowId）不写入 */
+export const savePlayedGameRowId = (rowId: unknown) => {
+  if (typeof window === 'undefined') {
     return
   }
 
-  const nextGameDetail = cloneGameDetail(gameDetail)
-  const nextGameKey = createPlayedGameKey(nextGameDetail)
-  const storedGames = parsePlayedGames(window.localStorage.getItem(PLAYED_GAMES_STORAGE_KEY))
-  const dedupedGames = nextGameKey
-    ? storedGames.filter(game => createPlayedGameKey(game) !== nextGameKey)
-    : storedGames
-  const nextGames = [nextGameDetail, ...dedupedGames].slice(0, PLAYED_GAMES_MAX_LENGTH)
+  const memberRowId = parseMemberRowIdFromStorage()
+  const gameRowId = parsePositiveRowId(rowId)
+  if (memberRowId == null || gameRowId == null) {
+    return
+  }
 
-  window.localStorage.setItem(PLAYED_GAMES_STORAGE_KEY, JSON.stringify(nextGames))
+  const storageKey = resolvePlayedGamesStorageKey(memberRowId)
+  const storedRowIds = parseRowIdArray(window.localStorage.getItem(storageKey))
+  const dedupedRowIds = storedRowIds.filter(id => id !== gameRowId)
+  const nextRowIds = [gameRowId, ...dedupedRowIds].slice(0, PLAYED_GAMES_MAX_LENGTH)
+
+  window.localStorage.setItem(storageKey, JSON.stringify(nextRowIds))
 }
 
-/** 读取本地最近玩过列表（新→旧），供 Recently Played 页展示 */
-export const readPlayedGamesFromStorage = (): GameDataItem[] => {
+/** 读取当前登录账号的最近玩过 rowId（新→旧） */
+export const readPlayedRowIdsFromStorage = (): number[] => {
   if (typeof window === 'undefined') {
     return []
   }
-  const raw = window.localStorage.getItem(PLAYED_GAMES_STORAGE_KEY)
-  return parsePlayedGames(raw) as GameDataItem[]
+
+  const memberRowId = parseMemberRowIdFromStorage()
+  if (memberRowId == null) {
+    return []
+  }
+
+  return parseRowIdArray(window.localStorage.getItem(resolvePlayedGamesStorageKey(memberRowId)))
 }

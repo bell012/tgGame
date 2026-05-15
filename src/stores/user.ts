@@ -5,6 +5,7 @@ import { SITE_CONFIG_STORAGE_KEY } from '@/stores/siteConfig'
 import type { QueryAcctInfoResult } from '@/api/interface/user'
 import { useAuthModalStore } from '@/stores/authModal'
 import { withLocalePrefix } from '@/utils/locale'
+import { PLAYED_GAMES_CACHE_STORAGE_PREFIXES } from '@/utils/played-games-cache'
 import { NOTIFICATION_CACHE_STORAGE_PREFIXES } from '@/utils/notification-cache'
 import { setManualLogoutInProgress } from '@/utils/request'
 import { getCurrentLocale, navigateTo } from '@/utils/router'
@@ -166,7 +167,7 @@ export const useUserStore = defineStore('user', () => {
         REMEMBERED_PASSWORD_STORAGE_KEY,
         TRADE_MESSAGE_SYNC_STORAGE_KEY
       ],
-      [...NOTIFICATION_CACHE_STORAGE_PREFIXES]
+      [...NOTIFICATION_CACHE_STORAGE_PREFIXES, ...PLAYED_GAMES_CACHE_STORAGE_PREFIXES]
     )
     clearProfileAvatarPreviewState()
     syncProfileCustomizationState()

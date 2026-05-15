@@ -1,6 +1,6 @@
 import Api from '@/api'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
-import { savePlayedGameDetail } from '@/utils/played-games-cache'
+import { savePlayedGameRowId } from '@/utils/played-games-cache'
 import { navigateTo } from '@/utils/router'
 import { computed, inject, type ComputedRef } from 'vue'
 
@@ -50,9 +50,9 @@ export function useGamePlatformPlay() {
         const rowId = String(currentGameDetail.value?.rowId ?? '').trim()
         if (gameUrl) {
           try {
-            savePlayedGameDetail(currentGameDetail.value)
+            savePlayedGameRowId(currentGameDetail.value?.rowId)
           } catch (error) {
-            console.error('save played game detail failed', error)
+            console.error('save played game rowId failed', error)
           }
 
           await navigateTo('/game-iframe', {
