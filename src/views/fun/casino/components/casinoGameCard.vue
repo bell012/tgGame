@@ -24,7 +24,7 @@
       </div>
     </div>
     <div
-      class="absolute bottom-1 right-1 flex h-5 w-[33px] items-center rounded-[6px] bg-mask-20 px-1.5"
+      class="absolute bottom-1 right-1 flex h-5 min-w-[33px] items-center justify-center rounded-[6px] bg-mask-20 px-1"
     >
       <div class="icon mr-0.5 h-[10px] w-[10px] text-white sm:size-4">
         <svg

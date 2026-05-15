@@ -9,14 +9,14 @@
         {{ currentTypeName }}
       </div>
       <pull_down class="top-search-pull w-[8px] h-[8px]" />
-      <div class="top-search-divider w-[1px] h-[24px] mx-[11px] bg-[var(--color-opacity-10)]"></div>
-      <SearchIcon class="w-[14px] h-[14px] fill-none stroke-text-2 opacity-60" />
+      <div class="top-search-divider w-[1px] h-[24px] mx-[5px] bg-[var(--color-opacity-10)]"></div>
+      <SearchIcon class="w-[14px] h-[14px] fill-none stroke-icon-2" />
     </div>
     <input
       v-model="keyword"
       type="text"
       :placeholder="t('search.placeholder')"
-      class="top-search-input w-full h-[42px] pl-[116px] pr-[14px] rounded-[8px] border text-text-1 text-[12px] font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+      class="top-search-input w-full h-[42px] pl-[97px] pr-[14px] rounded-[8px] border text-text-1 text-[12px] font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
       @input="onInput"
       @keydown.enter.prevent="onSearch"
       @focus="focusClick"
@@ -293,7 +293,6 @@ onBeforeUnmount(() => {
 
 .top-search-input:focus {
   border-color: var(--color-theme-level-1);
-  box-shadow: 0 0 0 1px var(--color-theme-level-1);
 }
 
 .top-search-input::placeholder {

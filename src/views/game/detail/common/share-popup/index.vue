@@ -372,11 +372,11 @@ const handleCopy = async () => {
 
 .share-link-box {
   border-color: var(--color-opacity-10);
-  background: var(--color-background-level-3);
+  background: var(--color-input-level-1);
 }
 
 .share-copy-btn {
-  background: var(--color-opacity-10);
+  background: var(--color-input-level-1);
   border: 1px solid transparent;
 }
 
@@ -398,11 +398,11 @@ const handleCopy = async () => {
 
 :global(:root.light) .share-link-box {
   border-color: #d9dee5;
-  background: #ffffff;
+  background: var(--color-input-level-1);
 }
 
 :global(:root.light) .share-copy-btn {
-  background: #e6e9ee;
+  background: var(--color-input-level-1);
   border-color: #d0d6dd;
 }
 

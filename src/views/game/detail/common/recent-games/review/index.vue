@@ -15,15 +15,11 @@
       <div class="text-[12px] text-[var(--color-text-level-2)]">{{ t('gameDetail.comments') }}</div>
       <button
         type="button"
-        class="sort-menu-trigger flex h-[24px] w-[24px] items-center justify-center rounded-[6px] transition-colors duration-200"
+        class="sort-menu-trigger flex items-center justify-center transition-colors duration-200"
         :class="{ 'sort-menu-trigger-light': isLightTheme }"
         @click.stop="toggleSortPopup"
       >
-        <span class="sort-menu-trigger-icon">
-          <span />
-          <span />
-          <span />
-        </span>
+        <SanIcon class="sort-menu-trigger-icon size-[18px]" />
       </button>
       <transition name="sort-popup">
         <div
@@ -83,6 +79,7 @@ import RatingAvatarP2 from '@/static/svg/game/detail/comment/p2.webp?url'
 import RatingAvatarP3 from '@/static/svg/game/detail/comment/p3.svg?url'
 import RatingAvatarP4 from '@/static/svg/game/detail/comment/p4.svg?url'
 import RatingAvatarP5 from '@/static/svg/game/detail/comment/p5.svg?url'
+import SanIcon from '@/static/svg/game/detail/comment/san.svg?component'
 import { useThemeStore } from '@/stores/theme'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { storeToRefs } from 'pinia'
@@ -299,24 +296,21 @@ onBeforeUnmount(() => {
 }
 
 .sort-menu-trigger {
-  background: var(--color-opacity-10, rgba(255, 255, 255, 0.1));
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .sort-menu-trigger-light {
-  background: var(--color-opacity-10, rgba(0, 0, 0, 0.1));
+  background: transparent;
 }
 
 .sort-menu-trigger-icon {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  color: var(--color-icon-level-2);
 }
 
-.sort-menu-trigger-icon > span {
-  width: 10px;
-  height: 1.6px;
-  border-radius: 999px;
-  background: var(--color-text-level-2, rgba(255, 255, 255, 0.65));
+.sort-menu-trigger-icon :deep(path) {
+  fill: currentColor;
 }
 
 .sort-menu-popup-light {

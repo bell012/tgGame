@@ -11,14 +11,14 @@
         @update:providers="handleProvider"
       />
     </div>
-    <div v-if="isLoading" class="grid w-full grid-cols-3 gap-2.5 sm:grid-cols-8">
+    <div v-if="isLoading" class="grid w-full grid-cols-3 gap-[11px] sm:grid-cols-8">
       <div
         v-for="index in resolvedPageSize"
         :key="index"
         class="aspect-[330/438] rounded-lg bg-bg-2 animate-pulse"
       />
     </div>
-    <div v-else-if="pageData.length > 0" class="grid w-full grid-cols-3 gap-2.5 sm:grid-cols-8">
+    <div v-else-if="pageData.length > 0" class="grid w-full grid-cols-3 gap-[11px] sm:grid-cols-8">
       <div v-for="(game, index) in pageData" :key="game.rowId ?? index" class="aspect-[330/438]">
         <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
       </div>
@@ -188,7 +188,7 @@ const hideSortFilter = computed(() => {
 
 const filterSheetWrapClass = computed(() => {
   if (isMobile.value) {
-    return 'mt-1 mb-[14px] w-full'
+    return 'mt-1 mb-[11px] w-full'
   }
 
   if (!hideSortFilter.value) {

@@ -209,7 +209,7 @@ const h5StatsGridStyle = computed((): CSSProperties => {
     return {}
   }
   return {
-    background: '#f0f0f0'
+    background: 'var(--color-background-level-9)'
   }
 })
 
@@ -373,7 +373,7 @@ const close = () => {
 }
 
 .tp-panel-h5 .tp-stats-grid {
-  background: var(--color-background-level-3);
+  background: var(--color-background-level-9);
 }
 
 .tp-panel-h5 .tp-col-divider {
@@ -390,7 +390,12 @@ const close = () => {
 }
 
 .tp-panel-h5 .tp-refresh-icon {
-  stroke: #b3bec1;
+  color: var(--color-icon-level-2);
+}
+
+.tp-panel-h5 .tp-refresh-icon :deep(path) {
+  fill: currentColor;
+  stroke: none;
 }
 
 :global(:root.light) .tp-panel-h5.tp-panel-surface {
@@ -424,7 +429,7 @@ const close = () => {
 }
 
 :global(:root.light) .tp-panel-h5 .tp-stats-grid {
-  background: #f5f5f5;
+  background: var(--color-background-level-9);
   border: none;
 }
 
@@ -444,10 +449,6 @@ const close = () => {
 :global(:root.light) .tp-panel-h5 .tp-value {
   color: #0f0f0f;
   font-weight: 600;
-}
-
-:global(:root.light) .tp-panel-h5 .tp-refresh-icon {
-  stroke: #7f8a8e;
 }
 
 .tp-panel-desktop.tp-panel-surface {
@@ -488,7 +489,12 @@ const close = () => {
 }
 
 .tp-panel-desktop .tp-refresh-icon {
-  stroke: currentColor;
+  color: var(--color-icon-level-2);
+}
+
+.tp-panel-desktop .tp-refresh-icon :deep(path) {
+  fill: currentColor;
+  stroke: none;
 }
 
 @include popup-transition;

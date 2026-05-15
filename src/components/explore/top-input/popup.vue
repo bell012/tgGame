@@ -33,11 +33,11 @@
             >
               <div class="font-[700]">{{ item.name }}</div>
               <span
-                class="relative box-border inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border-[2px]"
+                class="relative box-border inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border"
                 :class="
                   isSelected(item)
                     ? 'border-theme-primary bg-theme-primary'
-                    : 'border-[var(--color-opacity-10)] bg-transparent'
+                    : 'border-icon-2 bg-transparent'
                 "
               >
                 <span
