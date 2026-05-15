@@ -42,7 +42,7 @@
         <template v-if="visibleSlides.length > 1">
           <button
             type="button"
-            class="absolute left-1.5 top-1/2 z-10 hidden -translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
+            class="absolute left-1 top-1/2 z-10 hidden -translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
             aria-label="上一张"
             @click.stop="swipePrev"
           >
@@ -50,7 +50,7 @@
           </button>
           <button
             type="button"
-            class="absolute right-1.5 top-1/2 z-10 hidden translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
+            class="absolute right-1 top-1/2 z-10 hidden translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
             aria-label="下一张"
             @click.stop="swipeNext"
           >
