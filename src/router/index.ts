@@ -23,6 +23,21 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'reward-details',
+    name: 'reward-details',
+    component: () => import('@/views/home/rewardDetails/index.vue'),
+    meta: {
+      title: '投注单',
+      description: '投注单',
+      mobileOnly: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'casino',
     name: 'casino',
     component: () => import('@/views/fun/casino/index.vue'),

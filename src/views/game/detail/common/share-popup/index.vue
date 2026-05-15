@@ -30,7 +30,7 @@
               class="w-7 h-7 rounded-[8px] bg-[var(--color-opacity-10)] flex items-center justify-center"
               @click="close"
             >
-              <CloseIcon class="stroke-text-1 w-4 h-4" />
+              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </button>
           </div>
           <div class="px-5 pb-[calc(env(safe-area-inset-bottom)+20px)] sm:pb-5">
@@ -372,11 +372,11 @@ const handleCopy = async () => {
 
 .share-link-box {
   border-color: var(--color-opacity-10);
-  background: var(--color-background-level-3);
+  background: var(--color-input-level-1);
 }
 
 .share-copy-btn {
-  background: var(--color-opacity-10);
+  background: var(--color-input-level-1);
   border: 1px solid transparent;
 }
 
@@ -398,11 +398,11 @@ const handleCopy = async () => {
 
 :global(:root.light) .share-link-box {
   border-color: #d9dee5;
-  background: #ffffff;
+  background: var(--color-input-level-1);
 }
 
 :global(:root.light) .share-copy-btn {
-  background: #e6e9ee;
+  background: var(--color-input-level-1);
   border-color: #d0d6dd;
 }
 

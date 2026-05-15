@@ -24,7 +24,7 @@
         <img :src="popupShow ? RankCloseIcon : RankIcon" class="w-[18px] h-[18px]" />
       </button>
       <button class="bg-bg-1 rounded-lg flex items-center justify-center">
-        <CloseIcon class="w-[18px] h-[18px] fill-text-1" />
+        <CloseIcon class="h-2.5 w-2.5 text-text-1" />
       </button>
     </div>
   </div>

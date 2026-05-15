@@ -284,48 +284,53 @@ const confirmExit = async () => {
 .game-iframe-page__dialog {
   position: relative;
   width: min(300px, 100%);
-  height: 230px;
-  border-radius: 12px;
-  padding: 18px 16px 14px;
-  background: #202932;
-  color: #fff;
+  border-radius: 8px;
+  padding: 16px 18px 20px;
+  background: var(--color-background-level-1);
+  color: var(--color-text-level-1);
 }
 
 .game-iframe-page__dialog-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 28px;
-  height: 28px;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
   border: 0;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #d5d5d5;
-  font-size: 24px;
+  border-radius: 4px;
+  background: var(--color-background-level-3);
+  color: var(--color-text-level-2);
+  font-size: 16px;
   line-height: 1;
   cursor: pointer;
 }
 
 .game-iframe-page__dialog-title {
+  padding-right: 22px;
   font-size: 16px;
+  line-height: 22px;
   font-weight: 700;
 }
 
 .game-iframe-page__dialog-text {
-  margin-top: 14px;
-  margin-bottom: 18px;
+  margin-top: 8px;
+  margin-bottom: 14px;
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 20px;
   color: var(--color-text-level-2);
 }
 
 .game-iframe-page__dialog-confirm,
 .game-iframe-page__dialog-cancel {
   width: 100%;
-  height: 40px;
+  height: 42px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 6px;
   font-size: 14px;
+  line-height: 20px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -337,32 +342,17 @@ const confirmExit = async () => {
 }
 
 .game-iframe-page__dialog-confirm {
-  color: #000;
-  background: #38e186;
+  color: var(--color-text-level-4);
+  background: var(--color-theme-level-1);
 }
 
 .game-iframe-page__dialog-cancel {
-  margin-top: 12px;
-  color: #c6ced8;
-  background: var(--color-opacity-10);
-}
-
-:global(:root.light) .game-iframe-page__dialog {
-  background: #f4f6fa;
-  color: #1f2937;
-}
-
-:global(:root.light) .game-iframe-page__dialog-close {
-  background: #e5e7eb;
-  color: #6b7280;
-}
-
-:global(:root.light) .game-iframe-page__dialog-text {
+  margin-top: 9px;
   color: var(--color-text-level-2);
+  background: var(--color-background-level-3);
 }
 
 :global(:root.light) .game-iframe-page__dialog-cancel {
-  color: #6f7a88;
-  background: var(--color-opacity-10);
+  background: var(--color-background-level-3);
 }
 </style>

@@ -81,12 +81,12 @@ const shareVisibleClick = () => {
 </script>
 <style lang="scss" scoped>
 .currency-toolbar {
-  background: var(--color-background-level-6);
+  background: var(--color-opacity-10);
   border-top: 1px solid var(--color-opacity-10);
 }
 
 .currency-toolbar-light {
-  background: #e3e3e3 !important;
+  background: var(--color-opacity-10) !important;
   border-top: none;
   box-shadow: none;
 }

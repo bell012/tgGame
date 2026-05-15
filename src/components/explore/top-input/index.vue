@@ -9,14 +9,14 @@
         {{ currentTypeName }}
       </div>
       <pull_down class="top-search-pull w-[8px] h-[8px]" />
-      <div class="top-search-divider w-[1px] h-[24px] mx-[11px] bg-[var(--color-opacity-10)]"></div>
-      <SearchIcon class="w-[14px] h-[14px] fill-none stroke-text-2 opacity-60" />
+      <div class="top-search-divider w-[1px] h-[24px] mx-[5px] bg-[var(--color-opacity-10)]"></div>
+      <SearchIcon class="w-[14px] h-[14px] fill-none stroke-icon-2" />
     </div>
     <input
       v-model="keyword"
       type="text"
       :placeholder="t('search.placeholder')"
-      class="top-search-input w-full h-[42px] pl-[116px] pr-[14px] rounded-[8px] border text-text-1 text-[12px] font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+      class="top-search-input w-full h-[42px] pl-[97px] pr-[14px] rounded-[8px] border text-text-1 text-[12px] font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
       @input="onInput"
       @keydown.enter.prevent="onSearch"
       @focus="focusClick"
@@ -29,7 +29,7 @@
       @click="clear"
       aria-label="clear"
     >
-      <CloseIcon class="w-[14px] h-[14px] stroke-text-2" />
+      <CloseIcon class="h-2.5 w-2.5 text-text-2" />
     </button>
     <!-- 搜索记录框 -->
     <div
@@ -40,7 +40,7 @@
         class="absolute -right-1.5 -top-1.5 w-5 h-5 bg-[var(--color-background-level-3)] flex items-center justify-center rounded-3xl"
         @click="isOpen = false"
       >
-        <CloseIcon class="w-4 h-4 stroke-text-2" />
+        <CloseIcon class="h-2.5 w-2.5 text-text-2" />
       </div>
       <div class="text-xs text-[var(--color-text-level-2)]">
         {{ t('casino.search_tips') }}
@@ -71,7 +71,7 @@
                 {{ item }}
               </div>
               <CloseIcon
-                class="w-4 h-4 stroke-text-2 shrink-0 cursor-pointer"
+                class="h-2.5 w-2.5 shrink-0 cursor-pointer text-text-2"
                 @click.stop="deleteItem(item)"
               />
             </div>
@@ -293,7 +293,6 @@ onBeforeUnmount(() => {
 
 .top-search-input:focus {
   border-color: var(--color-theme-level-1);
-  box-shadow: 0 0 0 1px var(--color-theme-level-1);
 }
 
 .top-search-input::placeholder {

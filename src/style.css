@@ -28,6 +28,6 @@
   }
 
   .svg-icon {
-    color: var(--color-text-level-1);
+    color: inherit;
   }
 }

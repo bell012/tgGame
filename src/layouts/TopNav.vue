@@ -97,10 +97,20 @@
             </div>
             <!-- 充值 -->
             <div class="flex items-center">
-              <ArrowDownIcon
-                class="w-5 h-5 mr-1 cursor-pointer"
+              <button
+                type="button"
+                class="top-nav-currency-arrow-bg mr-1 cursor-pointer"
                 @click="openLoggedInCurrencyPopup"
-              />
+              >
+                <svg
+                  class="top-nav-currency-arrow"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M6 8L10 12L14 8" />
+                </svg>
+              </button>
               <div
                 class="cursor-pointer h-8 text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
                 @click="openDeposit"
@@ -133,10 +143,20 @@
             </div>
 
             <div class="flex items-center">
-              <ArrowDownIcon
-                class="w-6 h-6 mr-1 cursor-pointer"
+              <button
+                type="button"
+                class="top-nav-currency-arrow-bg mr-1 cursor-pointer"
                 @click="openLoggedInCurrencyPopup"
-              />
+              >
+                <svg
+                  class="top-nav-currency-arrow"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M6 8L10 12L14 8" />
+                </svg>
+              </button>
               <!-- 充值按钮 -->
               <div
                 class="cursor-pointer w-[26px] h-[26px] text-[14px] font-[600] px-2 flex items-center justify-center btn-primary rounded-lg"
@@ -287,7 +307,6 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import bellDefaultImage from '@/static/img/bell.png'
 import bellUnreadImage from '@/static/img/bell_n.png'
 import mobileLogoImage from '@/static/img/home/logo_h5.png'
-import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import ChatIcon from '@/static/svg/chat.svg?component'
 import FoldIcon from '@/static/svg/fold.svg?component'
 import FoldIconH5 from '@/static/svg/foldH5.svg?component'
@@ -569,6 +588,35 @@ defineExpose({
 }
 .search {
   background-color: var(--color-background-level-3);
+}
+.top-nav-currency-arrow-bg {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  padding: 0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-opacity-10);
+}
+.top-nav-currency-arrow {
+  width: 20px;
+  height: 20px;
+  color: var(--color-icon-level-2);
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+}
+:global(:root.light) .top-nav-currency-arrow-bg {
+  background: #d5dbe1;
+}
+:global(:root.light) .top-nav-currency-arrow {
+  color: #3b4142;
 }
 .text {
   font-size: 14px;

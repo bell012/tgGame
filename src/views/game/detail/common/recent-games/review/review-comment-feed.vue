@@ -47,17 +47,13 @@
           </div>
           <div class="review-comment-actions">
             <div>
-              <SmartImage
-                alt=""
-                :src="CommentIcon"
+              <CommentIcon
                 class="review-comment-action-icon cursor-pointer"
                 @click="emit('reply-click', comment)"
               />
             </div>
             <div class="relative">
-              <SmartImage
-                alt=""
-                :src="ZanIcon"
+              <ZanIcon
                 class="review-comment-action-icon review-comment-like-icon cursor-pointer transition duration-200"
                 :class="{ 'comment-like-icon-active': comment.isLiked }"
                 @click="emit('toggle-like', comment)"
@@ -70,9 +66,7 @@
               </div>
             </div>
             <div class="relative">
-              <SmartImage
-                alt=""
-                :src="UnzanIcon"
+              <UnzanIcon
                 class="review-comment-action-icon review-comment-like-icon cursor-pointer transition duration-200"
                 :class="{ 'comment-like-icon-active': comment.isDisliked }"
                 @click="emit('toggle-dislike', comment)"
@@ -114,9 +108,7 @@
                 </div>
                 <div class="review-comment-actions review-comment-actions-child">
                   <div class="relative">
-                    <SmartImage
-                      alt=""
-                      :src="ZanIcon"
+                    <ZanIcon
                       class="review-comment-action-icon review-comment-like-icon cursor-pointer transition duration-200"
                       :class="{ 'comment-like-icon-active': child.isLiked }"
                       @click="emit('toggle-like', child)"
@@ -129,9 +121,7 @@
                     </div>
                   </div>
                   <div class="relative">
-                    <SmartImage
-                      alt=""
-                      :src="UnzanIcon"
+                    <UnzanIcon
                       class="review-comment-action-icon review-comment-like-icon cursor-pointer transition duration-200"
                       :class="{ 'comment-like-icon-active': child.isDisliked }"
                       @click="emit('toggle-dislike', child)"
@@ -159,7 +149,7 @@
             class="inline-flex items-center gap-[4px] text-[var(--color-theme-level-1)] text-[12px] leading-[18px] font-[600] transition-opacity duration-200 hover:opacity-80"
             @click="emit('toggle-children', comment)"
           >
-            {{ comment.isChildrenExpanded ? collapseText : expandText }}
+            {{ comment.isChildrenExpanded ? collapseText : getReplySummaryText(comment) }}
             <SmartImage
               alt=""
               :src="comment.isChildrenExpanded ? ExpandUpDoubleIcon : ExpandDownDoubleIcon"
@@ -183,9 +173,9 @@
 import SmartImage from '@/components/common/SmartImage.vue'
 import ExpandDownDoubleIcon from '@/static/svg/deposit/expand-down-double.svg?url'
 import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?url'
-import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?url'
-import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?url'
-import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?url'
+import CommentIcon from '@/static/svg/game/detail/comment/comment.svg?component'
+import UnzanIcon from '@/static/svg/game/detail/comment/unzan.svg?component'
+import ZanIcon from '@/static/svg/game/detail/comment/zan.svg?component'
 import type { ReviewCommentViewItem } from './review-types'
 
 defineProps<{
@@ -205,6 +195,12 @@ const emit = defineEmits<{
   'toggle-children': [comment: ReviewCommentViewItem]
   'avatar-error': [comment: ReviewCommentViewItem]
 }>()
+
+const getReplySummaryText = (comment: ReviewCommentViewItem) => {
+  const count = Math.max(0, Number(comment.replyCount || comment.children.length || 0))
+  const replyLabel = count === 1 ? 'Reply' : 'Replies'
+  return `${count} ${replyLabel}`
+}
 </script>
 
 <style scoped>
@@ -217,9 +213,9 @@ const emit = defineEmits<{
 }
 
 .review-comment-avatar {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
   border-radius: 999px;
 }
 
@@ -234,17 +230,22 @@ const emit = defineEmits<{
 }
 
 .review-comment-meta-name {
-  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
 }
 
 .review-comment-meta-time {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
   opacity: 0.9;
 }
 
 .review-comment-content {
-  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
 }
 
 .review-comment-count-badge {
@@ -270,14 +271,23 @@ const emit = defineEmits<{
 }
 
 .review-comment-like-icon {
-  opacity: 0.92;
-  filter: brightness(0) saturate(100%) invert(78%) sepia(7%) saturate(307%) hue-rotate(160deg)
-    brightness(91%) contrast(88%);
+  color: var(--color-icon-level-2);
+}
+
+.review-comment-like-icon :deep(path) {
+  fill: currentColor;
 }
 
 .comment-like-icon-active {
-  filter: brightness(0) saturate(100%) invert(67%) sepia(95%) saturate(512%) hue-rotate(98deg)
-    brightness(95%) contrast(95%);
+  color: var(--color-theme-level-1);
+}
+
+.review-comment-action-icon :deep(path) {
+  fill: var(--color-icon-level-2);
+}
+
+.comment-like-icon-active :deep(path) {
+  fill: currentColor;
 }
 
 .child-comments-collapse-enter-active,

@@ -12,9 +12,12 @@
         </span>
       </div>
       <span
-        class="flex h-6 w-6 items-center justify-center rounded-[6px] bg-[var(--color-opacity-10)] fill-text-1"
+        class="flex h-5 w-5 items-center justify-center rounded-[6px] bg-[var(--color-opacity-10)] text-text-1"
       >
-        <component :is="casinoIcons.dropdown_chevron" class="h-4 w-4 fill-current" />
+        <component
+          :is="casinoIcons.dropdown_chevron"
+          class="h-2 w-2 fill-current [&_path]:fill-current"
+        />
       </span>
     </button>
 
@@ -49,21 +52,21 @@
               class="flex h-7 w-7 items-center justify-center rounded-[4px] bg-[var(--color-opacity-10)]"
               @click.stop="closePopup"
             >
-              <CloseIcon class="h-4 w-4 stroke-text-1" />
+              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </button>
           </div>
 
           <div v-if="search" class="relative mb-[20px]">
             <component
-              :is="isDarkTheme ? SearchBlackIcon : SearchIcon"
+              :is="SearchIcon"
               class="absolute left-2.5 top-1/2 h-[14px] w-[14px] -translate-y-1/2 text-icon-2 [&_svg]:block [&_svg]:h-full [&_svg]:w-full"
             />
             <input
               v-model="keyword"
               type="text"
               :placeholder="t('home.search')"
-              class="h-[42px] w-full rounded-lg border border-[var(--color-opacity-10)] pl-[38px] pr-11 text-[14px] font-[700] text-text-1 outline-none placeholder:text-text-2 focus:border-theme-primary"
-              :class="isDarkTheme ? 'bg-[var(--color-background-level-3)]' : 'bg-white'"
+              class="h-[42px] w-full rounded-lg border border-[var(--color-opacity-10)] pl-[38px] pr-11 text-[14px] font-[500] text-text-1 outline-none placeholder:font-[500] placeholder:text-text-2 focus:border-theme-primary"
+              :class="isDarkTheme ? 'bg-bg-2' : 'bg-white'"
             />
           </div>
 
@@ -86,7 +89,7 @@
                   :class="
                     isSelected(item)
                       ? 'border-theme-primary bg-theme-primary'
-                      : 'border-[var(--color-opacity-20)] bg-transparent'
+                      : 'border-icon-2 bg-transparent'
                   "
                 >
                   <span
@@ -98,11 +101,11 @@
                 </span>
                 <span
                   v-else-if="!Multi"
-                  class="relative box-border inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border-[2px]"
+                  class="relative box-border inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border"
                   :class="
                     isSelected(item)
                       ? 'border-theme-primary bg-theme-primary'
-                      : 'border-[var(--color-opacity-10)] bg-transparent'
+                      : 'border-icon-2 bg-transparent'
                   "
                 >
                   <span
@@ -151,7 +154,6 @@ import { useThemeStore } from '@/stores/theme'
 import CloseIcon from '@/static/svg/close.svg?component'
 import ClearIcon from '@/static/svg/clear.svg?component'
 import SearchIcon from '@/static/svg/explore/search.svg?component'
-import SearchBlackIcon from '@/static/svg/explore/search_black.svg?component'
 import { casinoIcons } from '@/static/svg/casino'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 

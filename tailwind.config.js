@@ -22,6 +22,7 @@ export default {
         'bg-6': 'var(--color-background-level-6)',
         'bg-7': 'var(--color-background-level-7)',
         'bg-8': 'var(--color-background-level-8)',
+        'bg-9': 'var(--color-background-level-9)',
 
         // ========== 文字色 (Text) ==========
         'text-1': 'var(--color-text-level-1)',

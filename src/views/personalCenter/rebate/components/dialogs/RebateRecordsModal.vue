@@ -12,7 +12,7 @@
           class="absolute right-4 top-1/2 flex h-[28px] w-[28px] -translate-y-1/2 items-center justify-center rounded-[8px] bg-white/10 text-text-1"
           @click="visible = false"
         >
-          <CloseIcon class="h-4 w-4" />
+          <CloseIcon class="h-2.5 w-2.5" />
         </button>
       </div>
 

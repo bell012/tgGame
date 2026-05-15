@@ -40,7 +40,7 @@
               class="absolute top-5 right-5 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
               @click="handleClose"
             >
-              <CloseIcon class="w-4 h-4 text-text-1" />
+              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </button>
 
             <!-- 左侧图片区域 -->
@@ -101,7 +101,7 @@
               class="absolute top-5 right-5 w-8 h-8 bg-opacity-10 rounded-md flex items-center justify-center z-10"
               @click="handleClose"
             >
-              <CloseIcon class="w-4 h-4 text-text-1" />
+              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </button>
 
             <!-- 左侧图片区域 -->

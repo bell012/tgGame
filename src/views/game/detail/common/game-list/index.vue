@@ -184,10 +184,6 @@ const handleGameClick = (item: GameDataItem) => {
 
 <style scoped lang="scss">
 .gameList {
-  .icon {
-    fill: currentColor;
-  }
-
   .button-icon {
     display: flex;
     width: 32px;

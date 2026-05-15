@@ -8,16 +8,20 @@
         @click.stop="openProviderGames"
       >
         <span class="text-[var(--color-text-level-2)]">By</span>
-        <span class="text-[var(--color-theme-level-1)] font-extrabold">{{ providerName }}</span>
+        <span class="text-[var(--color-theme-level-1)] font-[600]">{{ providerName }}</span>
       </button>
     </div>
     <div class="toggle-arrow-wrap">
-      <ArrowDownIcon class="icon" :class="{ 'is-open': isOpen }" />
+      <component
+        :is="casinoIcons.dropdown_chevron"
+        class="icon fill-current [&_path]:fill-current"
+        :class="{ 'is-open': isOpen }"
+      />
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
+import { casinoIcons } from '@/static/svg/casino'
 import { navigateToName } from '@/utils/router'
 import { computed, inject, Ref, type ComputedRef } from 'vue'
 
@@ -93,24 +97,25 @@ const openProviderGames = () => {
 }
 
 .toggle-arrow-wrap {
-  width: 22px;
-  height: 22px;
-  border-radius: 5px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #3b4142;
+  background: var(--color-opacity-10);
 }
 
 .icon {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
+  color: var(--color-icon-level-2);
   transition: transform 0.3s ease-in-out;
   transform: rotate(0deg);
 }
 
 .icon :deep(path) {
-  fill: #f2f5f5 !important;
+  fill: currentColor;
 }
 .icon.is-open {
   transform: rotate(180deg);
@@ -131,12 +136,8 @@ const openProviderGames = () => {
 }
 
 :global(:root.light .toggle-arrow-wrap) {
-  background: #f0f1f1;
+  background: var(--color-opacity-10);
   border: none;
   box-shadow: none;
-}
-
-:global(:root.light .icon path) {
-  fill: #111111 !important;
 }
 </style>

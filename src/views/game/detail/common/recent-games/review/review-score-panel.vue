@@ -105,11 +105,11 @@ const emit = defineEmits<{
 }
 
 .score-text {
-  min-width: 34px;
+  min-width: 46px;
   color: var(--color-text-level-1);
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 800;
-  line-height: 18px;
+  line-height: 24px;
   text-align: right;
 }
 
@@ -120,12 +120,12 @@ const emit = defineEmits<{
 .rating-bar-stars {
   width: 106px;
   flex: 0 0 106px;
-  --review-star-muted: #b3bec1;
+  --review-star-muted: var(--color-icon-level-2);
 }
 
 .review-action-card {
   --review-star-active: #2aee88;
-  --review-star-muted: #b3bec1;
+  --review-star-muted: var(--color-icon-level-2);
   height: 76px;
   padding: 10px 8px;
   background: #202424;
@@ -142,7 +142,7 @@ const emit = defineEmits<{
 
 :global(:root.light .review-score-overview),
 :global(:root.light .review-action-card) {
-  --review-star-muted: #6f7f80;
+  --review-star-muted: var(--color-icon-level-2);
   background: #f4f4f4;
 }
 
