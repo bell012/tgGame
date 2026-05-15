@@ -41,10 +41,25 @@ export interface ReferralTaskResetHintSegments {
   suffix: string
 }
 
+export interface ReferralTaskValidInviteDescriptionSegment {
+  text: string
+  highlighted?: boolean
+}
+
 export type ReferralTaskRewardConfig = QueryTaskRewardConfig
 export type ReferralTaskRewardConfigResult = QueryTaskRewardConfigResult
 
 type ReferralTaskPeriodKey = 'daily' | 'weekly' | 'monthly'
+
+const REFERRAL_TASK_TAB_PROGRESS_FIELD: Record<
+  ReferralTaskTabKey,
+  'subNum' | 'subRecharge' | 'subBet'
+> = {
+  'invite-register': 'subNum',
+  'cumulative-deposit': 'subRecharge',
+  'commission-boost': 'subBet',
+  'recommended-wallet': 'subRecharge'
+}
 
 /**
  * 生成任务页顶部标签数据。
@@ -61,12 +76,16 @@ export const createReferralTaskTabs = (t: TranslateFn): ReferralTaskTab[] => [
   {
     key: 'commission-boost',
     label: t('referral.taskPage.tabs.commissionBoost')
-  },
-  {
-    key: 'recommended-wallet',
-    label: t('referral.taskPage.tabs.recommendedWallet')
   }
+  // recommended-wallet 暂时不展示，类型和表格逻辑保留以便后续恢复。
 ]
+
+/**
+ * 获取当前任务标签对应的进度字段。
+ */
+export const getReferralTaskProgressFieldByTab = (tabKey: ReferralTaskTabKey) => {
+  return REFERRAL_TASK_TAB_PROGRESS_FIELD[tabKey]
+}
 
 const toText = (value: number | string | undefined) => String(value ?? '').trim()
 
@@ -101,6 +120,13 @@ const createStatusText = (
   return isRewardAchieved(item)
     ? t('referral.taskPage.achieved')
     : t('referral.taskPage.notAchieved')
+}
+
+/**
+ * 根据当前进度生成任务状态文案。
+ */
+const createProgressStatusText = (achieved: boolean, t: TranslateFn) => {
+  return achieved ? t('referral.taskPage.achieved') : t('referral.taskPage.notAchieved')
 }
 
 /**
@@ -147,12 +173,35 @@ const createRewardRow = (
   }
 }
 
+const createProgressRewardRow = (
+  condition: string,
+  reward: string,
+  currentProgress: number,
+  targetProgress: number,
+  t: TranslateFn,
+  conditionUnit?: string
+): ReferralTaskRewardRow => {
+  const achieved = currentProgress >= targetProgress
+
+  return {
+    condition,
+    conditionUnit,
+    reward,
+    status: createProgressStatusText(achieved, t),
+    achieved
+  }
+}
+
 /**
  * 执行toAmountNumber方法。
  */
 const toAmountNumber = (value: unknown, fallback: number) => {
   const numberValue = Number(value)
   return Number.isFinite(numberValue) ? numberValue : fallback
+}
+
+const sumNumbers = (values: unknown[]): number => {
+  return values.reduce<number>((total, value) => total + toAmountNumber(value, 0), 0)
 }
 
 /**
@@ -269,6 +318,48 @@ export const createReferralTaskValidInviteDescription = (
 }
 
 /**
+ * 拆分任务页有效邀请说明文案，便于单独渲染金额样式。
+ */
+export const createReferralTaskValidInviteDescriptionSegments = (
+  t: TranslateFn,
+  settlementRule?: QueryReferralSettlementRuleResult | null
+): ReferralTaskValidInviteDescriptionSegment[] => {
+  const periodKey = resolveReferralTaskPeriodKeyFromSettlementRule(settlementRule)
+  const rechargeAmount = formatTaskAmount(settlementRule?.minRecharge ?? 0)
+  const betAmount = formatTaskAmount(settlementRule?.minBet ?? 0)
+  const rechargeMarker = '__RECHARGE_AMOUNT__'
+  const betMarker = '__BET_AMOUNT__'
+  const template = t('referral.taskPage.validInviteDescription', {
+    period: t(`referral.taskPage.periodLabel.${periodKey}`),
+    rechargeAmount: rechargeMarker,
+    betAmount: betMarker
+  })
+
+  return template
+    .split(new RegExp(`(${rechargeMarker}|${betMarker})`, 'g'))
+    .filter(Boolean)
+    .map(segment => {
+      if (segment === rechargeMarker) {
+        return {
+          text: rechargeAmount,
+          highlighted: true
+        }
+      }
+
+      if (segment === betMarker) {
+        return {
+          text: betAmount,
+          highlighted: true
+        }
+      }
+
+      return {
+        text: segment
+      }
+    })
+}
+
+/**
  * 生成任务页最高奖励标题。
  */
 export const createReferralTaskMaxRewardLabel = (
@@ -286,6 +377,28 @@ export const createReferralTaskMaxRewardLabel = (
   }
 
   return t('referral.taskPage.maxRewardThisWeek')
+}
+
+/**
+ * 根据任务配置计算当前标签最高可领取奖励。
+ */
+export const createReferralTaskMaxRewardValue = (
+  config: ReferralTaskRewardConfig | null,
+  activeTab: ReferralTaskTabKey
+) => {
+  if (activeTab === 'cumulative-deposit') {
+    return sumNumbers((config?.rechargeList ?? []).map(item => item.reward))
+  }
+
+  if (activeTab === 'commission-boost') {
+    return sumNumbers((config?.increaseList ?? []).map(item => item.amount))
+  }
+
+  if (activeTab === 'recommended-wallet') {
+    return sumNumbers((config?.recommendedWallet ?? []).map(item => item.amount))
+  }
+
+  return sumNumbers((config?.friendList ?? []).map(item => item.reward))
 }
 
 const resolveReferralTaskResetCountdown = (
@@ -363,7 +476,8 @@ export const createReferralTaskResetHintSegments = (
 export const buildReferralTaskRewardTable = (
   config: ReferralTaskRewardConfig | null,
   activeTab: ReferralTaskTabKey,
-  t: TranslateFn
+  t: TranslateFn,
+  currentProgress = 0
 ): ReferralTaskRewardTable => {
   const baseColumns = [t('referral.taskPage.reward'), t('referral.taskPage.status')]
 
@@ -371,7 +485,13 @@ export const buildReferralTaskRewardTable = (
     return {
       columns: [t('referral.taskPage.depositAmount'), ...baseColumns],
       rows: (config?.rechargeList ?? []).map(item =>
-        createRewardRow(toText(item.amount), toText(item.reward), item, t)
+        createProgressRewardRow(
+          toText(item.amount),
+          toText(item.reward),
+          currentProgress,
+          toNumber(item.amount),
+          t
+        )
       )
     }
   }
@@ -380,7 +500,13 @@ export const buildReferralTaskRewardTable = (
     return {
       columns: [t('referral.taskPage.commissionBoost'), ...baseColumns],
       rows: (config?.increaseList ?? []).map(item =>
-        createRewardRow(toText(item.rebate), toText(item.amount), item, t)
+        createProgressRewardRow(
+          toText(item.rebate),
+          toText(item.amount),
+          currentProgress,
+          toNumber(item.rebate),
+          t
+        )
       )
     }
   }
@@ -399,7 +525,14 @@ export const buildReferralTaskRewardTable = (
     columns: [t('referral.taskPage.invitedSignUps'), ...baseColumns],
     rows: (config?.friendList ?? []).map(item => {
       const { condition, conditionUnit } = createFriendCondition(item, t)
-      return createRewardRow(condition, toText(item.reward), item, t, conditionUnit)
+      return createProgressRewardRow(
+        condition,
+        toText(item.reward),
+        currentProgress,
+        toNumber(item.max),
+        t,
+        conditionUnit
+      )
     })
   }
 }

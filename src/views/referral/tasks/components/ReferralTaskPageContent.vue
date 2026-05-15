@@ -4,9 +4,7 @@
     <!-- 页面主体容器 -->
     <div
       class="relative mx-auto flex flex-col"
-      :class="
-        props.mode === 'pc' ? 'max-w-[960px] gap-6 px-6 pb-10 pt-4' : 'gap-3.5 px-3.5 pb-6 pt-3.5'
-      "
+      :class="props.mode === 'pc' ? '  max-full gap-6 pb-10 pt-4' : 'gap-3.5 px-3.5 pb-6 pt-3.5'"
     >
       <!-- 任务重置提示 -->
       <p
@@ -30,7 +28,7 @@
       >
         <template v-if="props.mode === 'pc'">
           <!-- 可领取奖励卡片内容 -->
-          <div class="flex h-[48px] w-[984px] items-start gap-[36px] self-stretch">
+          <div class="flex h-[48px] w-full items-start gap-[36px] self-stretch">
             <!-- 左侧可领取奖励信息区域 -->
             <div class="flex h-[48px] w-[668px] flex-1 items-center gap-[16px]">
               <!-- 标题区域 -->
@@ -108,34 +106,59 @@
 
       <!-- 任务标签区域 -->
       <section class="overflow-x-auto">
-        <!-- 任务标签列表 -->
-        <div class="flex w-max items-center" :class="props.mode === 'pc' ? 'gap-3' : 'gap-2'">
-          <!-- 任务标签项 -->
-          <button
-            v-for="item in props.tabs"
-            :key="item.key"
-            type="button"
-            class="box-border flex h-[30.67px] shrink-0 flex-col items-start justify-center gap-[3.33px] rounded-[18px] px-5 py-2 transition-colors"
-            :class="[
-              props.activeTab === item.key
-                ? 'border border-solid border-theme-primary bg-theme-primary/15'
-                : 'border border-transparent bg-bg-2'
-            ]"
-            @click="$emit('tab-click', item.key)"
-          >
-            <!-- 任务标签文字 -->
-            <span
-              class="flex items-center text-xs"
-              :class="
-                props.activeTab === item.key
-                  ? 'font-[700] leading-[14.67px] text-text-1'
-                  : 'font-[500] leading-[18px] text-text-2'
-              "
+        <template v-if="props.mode === 'pc'">
+          <!-- PC 任务标签列表 -->
+          <div class="flex h-[40px] w-full items-center rounded-[8px] bg-bg-2 p-0">
+            <!-- PC 任务标签项 -->
+            <button
+              v-for="item in props.tabs"
+              :key="item.key"
+              type="button"
+              class="relative h-[40px] w-[258px] flex-1 rounded-[8px]"
+              :class="props.activeTab === item.key ? 'bg-bg-3' : ''"
+              @click="$emit('tab-click', item.key)"
             >
-              {{ item.label }}
-            </span>
-          </button>
-        </div>
+              <!-- PC 任务标签文字 -->
+              <span
+                class="absolute left-1/2 top-1/2 flex h-[17px] -translate-x-1/2 -translate-y-1/2 items-center justify-center text-center text-[14px] font-[700] leading-[17px]"
+                :class="props.activeTab === item.key ? 'text-text-1' : 'text-text-2'"
+              >
+                {{ item.label }}
+              </span>
+            </button>
+          </div>
+        </template>
+
+        <template v-else>
+          <!-- H5 任务标签列表 -->
+          <div class="flex w-max items-center gap-2">
+            <!-- H5 任务标签项 -->
+            <button
+              v-for="item in props.tabs"
+              :key="item.key"
+              type="button"
+              class="box-border flex h-[30.67px] shrink-0 flex-col items-start justify-center gap-[3.33px] rounded-[18px] px-5 py-2 transition-colors"
+              :class="[
+                props.activeTab === item.key
+                  ? 'border border-solid border-theme-primary bg-theme-primary/15'
+                  : 'border border-transparent bg-bg-2'
+              ]"
+              @click="$emit('tab-click', item.key)"
+            >
+              <!-- H5 任务标签文字 -->
+              <span
+                class="flex items-center text-xs"
+                :class="
+                  props.activeTab === item.key
+                    ? 'font-[700] leading-[14.67px] text-text-1'
+                    : 'font-[500] leading-[18px] text-text-2'
+                "
+              >
+                {{ item.label }}
+              </span>
+            </button>
+          </div>
+        </template>
       </section>
 
       <!-- 进度概览区域 -->
@@ -334,7 +357,20 @@
             class="font-[400] text-text-2"
             :class="props.mode === 'pc' ? 'text-base leading-[26px]' : 'text-xs leading-[17px]'"
           >
-            {{ props.validInviteDescription }}
+            <template
+              v-for="(segment, index) in props.validInviteDescriptionSegments"
+              :key="`valid-invite-description-${index}`"
+            >
+              <span
+                :class="
+                  segment.highlighted
+                    ? 'font-[400] text-[14px] leading-[14px] text-secondary-7'
+                    : ''
+                "
+              >
+                {{ segment.text }}
+              </span>
+            </template>
           </p>
         </div>
       </section>
@@ -381,7 +417,12 @@
 
 <script setup lang="ts">
 import CommissionOverviewPcIcon from '@/static/svg/referral/yongjin 1.svg?component'
-import type { ReferralTaskRewardRow, ReferralTaskTab, ReferralTaskTabKey } from '../shared'
+import type {
+  ReferralTaskRewardRow,
+  ReferralTaskTab,
+  ReferralTaskTabKey,
+  ReferralTaskValidInviteDescriptionSegment
+} from '../shared'
 
 interface Props {
   mode: 'mobile' | 'pc'
@@ -403,7 +444,7 @@ interface Props {
   rewardRows: ReferralTaskRewardRow[]
   rewardTableLoading: boolean
   validInviteTitle: string
-  validInviteDescription: string
+  validInviteDescriptionSegments: ReferralTaskValidInviteDescriptionSegment[]
   taskRulesTitle: string
   taskRulesImage: string
   bottomActionText: string

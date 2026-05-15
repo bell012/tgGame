@@ -147,6 +147,9 @@
       :amount="estimatedCommissionAmount"
       @confirm="handleConfirmClaimClick"
     />
+
+    <!-- PC Guide 视频弹窗 -->
+    <ReferralGuideVideoPopup v-model="showGuideVideoPopup" />
   </div>
 </template>
 
@@ -173,6 +176,7 @@ import { navigateTo } from '@/utils/router'
 import { formatLinkCode, globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import ReferralGuideVideoPopup from './components/ReferralGuideVideoPopup.vue'
 import ReferralMessagePopup from './components/ReferralMessagePopup.vue'
 import ReferralPageContent from './components/ReferralPageContent.vue'
 import InvitePosterPopup from './details/components/InvitePosterPopup.vue'
@@ -217,6 +221,7 @@ const posterImages = ref<string[]>([])
 const showReferralMessagePopup = ref(false)
 const showInvitePosterPopup = ref(false)
 const showClaimConfirmPopup = ref(false)
+const showGuideVideoPopup = ref(false)
 const claimingCommission = ref(false)
 const currentShareChannel = ref<ReferralSocialChannel | null>(null)
 const customReferralMessage = ref('')
@@ -361,6 +366,16 @@ const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
     return
   }
 
+  if (actionId === 'guide') {
+    if (isMobile.value) {
+      navigateTo('/referral/guide')
+      return
+    }
+
+    showGuideVideoPopup.value = true
+    return
+  }
+
   const actionMessageMap: Record<ReferralQuickActionId, string> = {
     tasks: t('referral.h5.quickActions.tasks'),
     details: t('referral.h5.quickActions.details'),
@@ -378,10 +393,12 @@ const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
  * 处理分享说明按钮点击。
  */
 const handleShareGuideClick = () => {
-  globalShowToast({
-    message: t('referral.h5.shareGuideHint'),
-    type: 'success'
-  })
+  if (isMobile.value) {
+    navigateTo('/referral/guide')
+    return
+  }
+
+  showGuideVideoPopup.value = true
 }
 
 /**

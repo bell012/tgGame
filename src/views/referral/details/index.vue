@@ -10,8 +10,8 @@
       <H5Header
         :title="t('referral.detailsPage.title')"
         :show-sort="true"
-        :right-icon="RuleIcon"
-        @sort="handleGoRules"
+        :right-icon="CustomerServiceIcon"
+        @sort="handleCustomerServiceClick"
       />
 
       <!-- H5 滚动内容区域 -->
@@ -188,6 +188,8 @@
 
 <script setup lang="ts">
 import Api from '@/api'
+import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+
 import type {
   QueryReferralDetailsChartStatsResult,
   QueryReferralDetailsRewardHistoryResponse
@@ -196,7 +198,6 @@ import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.v
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useUserStore } from '@/stores/user'
-import RuleIcon from '@/static/svg/rule.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { buildReferralChartAxisData, normalizeReferralChartSeriesData } from '@/utils/referralDate'
 import { navigateTo } from '@/utils/router'
@@ -749,12 +750,14 @@ async function fetchSelectedFriendDetailStats() {
 }
 
 /**
- * 处理跳转规则页。
+ * 处理客服按钮点击。
  */
-const handleGoRules = () => {
-  navigateTo('/referral/rules')
+const handleCustomerServiceClick = () => {
+  globalShowToast({
+    message: t('sidebar_menu.customer_service'),
+    type: 'success'
+  })
 }
-
 /**
  * 处理切换标签。
  */

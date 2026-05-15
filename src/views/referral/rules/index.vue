@@ -18,7 +18,7 @@
           :guide-image="guideImage"
           :how-to-earn-title="t('referral.rulesPage.howToEarnTitle')"
           :referral-rules-title="t('referral.rulesPage.referralRulesTitle')"
-          :invite-text="t('referral.cta')"
+          :invite-text="t('referral.invitePoster.inviteNow')"
           :table-columns="tableColumns"
           :earn-steps="earnSteps"
           :referral-rules="referralRules"
@@ -37,7 +37,7 @@
         :guide-image="guideImage"
         :how-to-earn-title="t('referral.rulesPage.howToEarnTitle')"
         :referral-rules-title="t('referral.rulesPage.referralRulesTitle')"
-        :invite-text="t('referral.cta')"
+        :invite-text="t('referral.invitePoster.inviteNow')"
         :table-columns="tableColumns"
         :earn-steps="earnSteps"
         :referral-rules="referralRules"
@@ -45,17 +45,45 @@
         @invite="handleInvite"
       />
     </div>
+
+    <!-- PC Guide 视频弹窗 -->
+    <ReferralGuideVideoPopup v-model="showGuideVideoPopup" />
+
+    <!-- 邀请海报弹窗 -->
+    <InvitePosterPopup
+      v-model="showInvitePosterPopup"
+      :images="invitePosterImages"
+      :invite-code="displayLinkCode"
+      :share-link="referralShareLink"
+      :save-text="t('referral.invitePoster.saveImage')"
+      :copy-link-text="t('referral.invitePoster.copyLink')"
+      :invite-text="t('referral.invitePoster.inviteNow')"
+      :close-text="t('referral.closeDialog')"
+      :image-alt="t('referral.invitePoster.posterAlt')"
+      @save="handleSavePosterImage"
+      @copy-link="handleCopyPosterLink"
+      @invite="handleInviteNow"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import Api from '@/api'
+import type { QueryTaskRewardCommissionItem } from '@/api/interface/agent'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useUserStore } from '@/stores/user'
+import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
+import { copyTextWithFallback } from '@/utils/clipboard'
 import { navigateTo } from '@/utils/router'
+import { formatLinkCode, globalShowToast } from '@/utils/toast'
 
-import { globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { buildReferralShareMessage, getDefaultReferralLink } from '../shared'
+import ReferralGuideVideoPopup from '../components/ReferralGuideVideoPopup.vue'
+import InvitePosterPopup from '../details/components/InvitePosterPopup.vue'
+import { getReferralDetailsInvitePosterImages } from '../details/shared'
 import ReferralRulesPageContent from './components/ReferralRulesPageContent.vue'
 import PcLayout from './pc-layout.vue'
 import {
@@ -66,9 +94,20 @@ import {
 } from './shared'
 
 const { t } = useI18n()
+const userStore = useUserStore()
 const isMobile = useIsMobile()
 const isReady = ref(false)
 const guideImage = getReferralRulesGuideImage()
+const showGuideVideoPopup = ref(false)
+const showInvitePosterPopup = ref(false)
+const invitePosterImages = getReferralDetailsInvitePosterImages()
+const referralLink = getDefaultReferralLink()
+const commissionList = ref<QueryTaskRewardCommissionItem[]>([])
+const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
+const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.linkCode) || '-')
+const referralShareLink = computed(
+  () => `${referralLink.replace(/\/+$/, '')}/?id=${displayLinkCode.value}`
+)
 
 /**
  * 生成规则表头数据。
@@ -83,29 +122,111 @@ const earnSteps = computed(() => createReferralRulesSteps(t))
 /**
  * 生成佣金规则表格数据。
  */
-const referralRules = computed(() => createReferralRulesRows(t))
+const referralRules = computed(() => createReferralRulesRows(commissionList.value))
 
 /**
  * 处理页面初始化完成状态，避免首屏端态抖动。
  */
 onMounted(() => {
   isReady.value = true
+  void fetchReferralRulesConfig()
 })
+
+/**
+ * 获取规则页佣金等级配置。
+ */
+async function fetchReferralRulesConfig() {
+  try {
+    const response = ensureApiBusinessSuccess(
+      await Api.agent.queryTaskRewardConfig({
+        channelId: currentAgentChannelId.value
+      })
+    )
+
+    commissionList.value = response.result?.config?.commissionList ?? []
+  } catch (error) {
+    console.error('[referral rules] fetch task reward config failed:', error)
+    commissionList.value = []
+  }
+}
 
 /**
  * 处理播放 Guide 视频。
  */
 const handlePlayGuide = () => {
-  globalShowToast({
-    message: t('referral.rulesPage.playGuideHint'),
-    type: 'success'
-  })
+  if (isMobile.value) {
+    navigateTo('/referral/guide')
+    return
+  }
+
+  showGuideVideoPopup.value = true
 }
 
 /**
  * 处理点击邀请按钮。
  */
 const handleInvite = () => {
-  navigateTo('/referral')
+  showInvitePosterPopup.value = true
+}
+
+/**
+ * 处理保存海报图片。
+ */
+const handleSavePosterImage = () => {
+  globalShowToast({
+    message: t('referral.invitePoster.saveHint'),
+    type: 'success'
+  })
+}
+
+/**
+ * 处理复制海报邀请链接。
+ */
+const handleCopyPosterLink = async () => {
+  const copied = await copyTextWithFallback(referralShareLink.value)
+
+  globalShowToast({
+    message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
+    type: copied ? 'success' : 'fail'
+  })
+}
+
+/**
+ * 处理立即分享邀请。
+ */
+const handleInviteNow = async () => {
+  const shareLink = referralShareLink.value
+  const shareContent = buildReferralShareMessage(
+    t('referral.messagePopup.presets.exclusiveRewards'),
+    shareLink
+  )
+
+  if (!shareContent || !shareLink) {
+    globalShowToast({
+      message: t('referral.copyFailed'),
+      type: 'fail'
+    })
+    return
+  }
+
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    try {
+      await navigator.share({
+        title: typeof document !== 'undefined' ? document.title : t('referral.title'),
+        text: shareContent,
+        url: shareLink
+      })
+      return
+    } catch (error) {
+      console.error('[referral rules] navigator share failed:', error)
+    }
+  }
+
+  const copied = await copyTextWithFallback(shareContent)
+
+  globalShowToast({
+    message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
+    type: copied ? 'success' : 'fail'
+  })
 }
 </script>

@@ -332,7 +332,7 @@
     "copyFailed": "Copy failed",
     "noClaimableCommission": "No claimable commission",
     "claimPending": "Claim request submitted",
-    "comingSoon": "Feature coming soon",
+    "comingSoon": "Stay tuned—something's coming!！",
     "cta": "Invite Now",
     "invitePoster": {
       "saveImage": "Save Poster",
@@ -401,8 +401,10 @@
       },
       "rewardsToClaim": "Rewards to Claim",
       "tabs": {
+        "commissionRules": "Commission Rules",
         "inviteRegister": "Invite & Register",
         "cumulativeDeposit": "Cumulative Deposit",
+        "directBet": "Direct Bet",
         "commissionBoost": "Commission Boost",
         "recommendedWallet": "Wallet"
       },

@@ -1,4 +1,5 @@
 import guideImage from '@/static/img/referral/claim_popup_hero.png'
+import type { QueryTaskRewardCommissionItem } from '@/api/interface/agent'
 
 type TranslateFn = (key: string, named?: Record<string, unknown>) => string
 
@@ -11,7 +12,7 @@ export interface ReferralRulesStep {
 }
 
 export interface ReferralRulesRow {
-  level: number
+  level: string
   activeFriends: string
   rate: string
 }
@@ -52,37 +53,13 @@ export const createReferralRulesColumns = (t: TranslateFn) => [
 ]
 
 /**
- * 生成规则页佣金表格数据。
+ * 根据后台佣金等级配置生成规则页表格数据。
  */
-export const createReferralRulesRows = (t: TranslateFn): ReferralRulesRow[] => [
-  {
-    level: 1,
-    activeFriends: t('referral.rulesPage.friendCount', { count: 1 }),
-    rate: '0.10%'
-  },
-  {
-    level: 2,
-    activeFriends: t('referral.rulesPage.friendCount', { count: 2 }),
-    rate: '0.15%'
-  },
-  {
-    level: 3,
-    activeFriends: t('referral.rulesPage.friendCount', { count: 3 }),
-    rate: '0.25%'
-  },
-  {
-    level: 4,
-    activeFriends: t('referral.rulesPage.friendCount', { count: 4 }),
-    rate: '0.30%'
-  },
-  {
-    level: 5,
-    activeFriends: t('referral.rulesPage.friendCount', { count: 5 }),
-    rate: '0.35%'
-  },
-  {
-    level: 6,
-    activeFriends: t('referral.rulesPage.friendCount', { count: 6 }),
-    rate: '0.40%'
-  }
-]
+export const createReferralRulesRows = (
+  commissionList: QueryTaskRewardCommissionItem[]
+): ReferralRulesRow[] =>
+  commissionList.map(row => ({
+    level: String(row.level ?? ''),
+    activeFriends: String(row.people ?? ''),
+    rate: String(row.rate ?? '')
+  }))

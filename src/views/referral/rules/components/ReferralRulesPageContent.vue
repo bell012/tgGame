@@ -47,7 +47,7 @@
           <div class="flex flex-col gap-[20px]">
             <!-- 单个步骤项 -->
             <div
-              v-for="item in props.earnSteps"
+              v-for="(item, index) in props.earnSteps"
               :key="item.step"
               class="flex items-center gap-[10px]"
             >
@@ -55,41 +55,12 @@
               <div
                 class="flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full bg-common-100/10"
               >
-                <!-- 分享图标 -->
-                <svg
-                  v-if="item.icon === 'share'"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  class="h-[30px] w-[30px] text-text-2"
-                >
-                  <path
-                    d="M18 16.1c-.76 0-1.44.3-1.96.78l-7.13-4.15c.05-.23.09-.47.09-.73s-.04-.5-.09-.73l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-2.97-3-2.97-3 1.31-3 2.97c0 .26.04.53.09.76l-7.05 4.11A2.99 2.99 0 0 0 6 9.03c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92 0-1.61-1.31-2.93-2.92-2.93Z"
-                  />
-                </svg>
-
-                <!-- 奖励图标 -->
-                <svg
-                  v-else-if="item.icon === 'reward'"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  class="h-[30px] w-[30px] text-text-2"
-                >
-                  <path
-                    d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z"
-                  />
-                </svg>
-
-                <!-- 解锁图标 -->
-                <svg
-                  v-else
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  class="h-[30px] w-[30px] text-text-2"
-                >
-                  <path
-                    d="M17 8H9V6c0-1.66 1.34-3 3-3 1.31 0 2.42.84 2.83 2h2.07A5.03 5.03 0 0 0 12 1C9.24 1 7 3.24 7 6v2c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2Zm-4 9.73V20h-2v-2.27a2 2 0 1 1 2 0Z"
-                  />
-                </svg>
+                <!-- 步骤图片图标 -->
+                <img
+                  :src="stepIconImages[index]"
+                  :alt="item.step"
+                  class="h-[30px] w-[30px] object-contain"
+                />
               </div>
 
               <!-- 步骤文案区域 -->
@@ -137,7 +108,7 @@
               v-for="(row, index) in props.referralRules"
               :key="row.level"
               class="grid h-[37px] grid-cols-3 items-center"
-              :class="index % 2 === 0 ? 'bg-common-100/5' : 'bg-transparent'"
+              :class="index % 2 === 0 ? 'bg-opacity-6' : 'bg-bg-2'"
             >
               <!-- 等级单元格 -->
               <div class="text-center text-[14px] font-[400] leading-[17px] text-text-1">
@@ -171,7 +142,7 @@
       <!-- 邀请按钮 -->
       <button
         type="button"
-        class="h-[40px] w-full rounded-[8px] bg-theme-2 text-[14px] font-[700] leading-[17px] text-text-4"
+        class="h-[40px] w-full rounded-[8px] bg-theme-primary text-[14px] font-[700] leading-[17px] text-text-4"
         @click="$emit('invite')"
       >
         {{ props.inviteText }}
@@ -181,6 +152,9 @@
 </template>
 
 <script setup lang="ts">
+import stepIconReward from '@/static/img/referral/rules-step-reward.png'
+import stepIconShare from '@/static/img/referral/rules-step-share.png'
+import stepIconUnlock from '@/static/img/referral/rules-step-unlock.png'
 import type { ReferralRulesRow, ReferralRulesStep } from '../shared'
 
 interface Props {
@@ -196,6 +170,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const stepIconImages = [stepIconShare, stepIconReward, stepIconUnlock]
 
 defineEmits<{
   'play-guide': []

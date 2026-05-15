@@ -211,7 +211,7 @@
       >
         <template v-if="props.mode === 'pc'">
           <!-- 佣金概览区域内容 -->
-          <div class="flex h-[48px] w-[984px] items-start gap-[36px] self-stretch">
+          <div class="flex h-[48px] w-full items-start gap-[36px] self-stretch">
             <!-- 左侧佣金信息区域 -->
             <div class="flex h-[48px] w-[668px] flex-1 items-center gap-[16px]">
               <!-- 标题区域 -->
@@ -994,7 +994,7 @@
 </template>
 
 <script setup lang="ts">
-import commissionBoostArrowImage from '@/static/img/referral/Frame 2131330770.png'
+import commissionBoostArrowImage from '@/static/img/referral/commission-boost-arrow.png'
 import inviteTaskDecorationH5Image from '@/static/img/referral/invite-task-banner-h5.png'
 import inviteTaskDecorationPcImage from '@/static/img/referral/invite-task-banner-pc.png'
 import inviteTaskRightImage from '@/static/img/referral/invite-task-right.png'
