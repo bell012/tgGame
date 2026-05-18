@@ -50,11 +50,15 @@
         class="overflow-hidden rounded-[10px] bg-bg-2"
       >
         <div class="grid h-[35px] grid-cols-[1fr_auto] items-center gap-[12px] px-[14px]">
-          <div class="text-center text-[12px] font-[400] leading-[15px] text-text-2">
+          <div
+            class="flex items-center justify-start px-[16px] text-center text-[12px] font-[400] leading-[15px] text-text-2"
+          >
             {{ props.timeLabel }}
           </div>
 
-          <div class="min-w-[74px] text-center text-[12px] font-[400] leading-[15px] text-text-2">
+          <div
+            class="flex items-center justify-center pr-[16px] text-[14px] font-[400] leading-[20px] text-text-2"
+          >
             {{ props.commissionLabel }}
           </div>
         </div>
@@ -66,11 +70,15 @@
             class="grid min-h-[48px] grid-cols-[1fr_auto] items-center gap-[12px] px-[14px] py-[10px]"
             :class="index % 2 === 0 ? 'bg-bg-3' : 'bg-transparent'"
           >
-            <div class="text-center text-[13px] font-[400] leading-[16px] text-text-1">
+            <div
+              class="flex items-center justify-start px-[16px] text-center text-[13px] font-[400] leading-[20px] text-text-1"
+            >
               {{ row.time }}
             </div>
 
-            <div class="min-w-[74px] text-center text-[13px] font-[400] leading-[16px] text-text-1">
+            <div
+              class="flex items-center justify-center pr-[16px] text-[14px] font-[400] leading-[20px] text-text-1"
+            >
               {{ row.commission }}
             </div>
           </div>

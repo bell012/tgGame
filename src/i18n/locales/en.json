@@ -459,7 +459,7 @@
       }
     },
     "detailsPage": {
-      "title": "Friends",
+      "title": "Details",
       "filter": "Filter",
       "topUpTitle": "Top-Up Stats",
       "detailText": "Details",
@@ -489,7 +489,7 @@
       "summary": {
         "newFriends": "New Friends",
         "activeFriends": "Active Friends",
-        "validBets": "Valid Bets"
+        "validBets": "Bets"
       },
       "topUpSummary": {
         "firstDepositors": "First Depositors",

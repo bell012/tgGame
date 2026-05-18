@@ -211,11 +211,11 @@
       >
         <template v-if="props.mode === 'pc'">
           <!-- 佣金概览区域内容 -->
-          <div class="flex h-[48px] w-full items-start gap-[36px] self-stretch">
+          <div class="flex h-[48px] w-full items-center gap-[24px] self-stretch">
             <!-- 左侧佣金信息区域 -->
-            <div class="flex h-[48px] w-[668px] flex-1 items-center gap-[16px]">
+            <div class="flex h-[48px] min-w-0 flex-[1_1_0%] items-center gap-[16px]">
               <!-- 标题区域 -->
-              <div class="flex h-[20px] w-[225px] items-center gap-[8px]">
+              <div class="flex h-[20px] min-w-0 flex-[0_1_auto] items-center gap-[8px]">
                 <!-- 佣金图标 -->
                 <CommissionOverviewPcIcon
                   class="h-[20px] w-[20px] shrink-0 text-text-1"
@@ -224,7 +224,7 @@
 
                 <!-- 佣金标题 -->
                 <p
-                  class="flex h-[19px] w-[197px] items-center text-[16px] font-[700] leading-[19px] text-text-1"
+                  class="flex h-[19px] min-w-0 items-center truncate whitespace-nowrap text-[16px] font-[700] leading-[19px] text-text-1"
                 >
                   {{ `${props.estimatedCommissionLabel}：` }}
                 </p>
@@ -232,7 +232,7 @@
 
               <!-- 佣金额度 -->
               <span
-                class="flex h-[48px] w-[169px] items-center text-[40px] font-[700] leading-[48px] text-theme-primary"
+                class="flex h-[48px] min-w-0 flex-[0_1_auto] items-center whitespace-nowrap text-[40px] font-[700] leading-[48px] text-theme-primary"
               >
                 {{ props.estimatedCommissionAmount }}
               </span>
@@ -241,7 +241,7 @@
             <!-- 领取佣金按钮 -->
             <button
               type="button"
-              class="flex h-[48px] w-[280px] shrink-0 items-center justify-center gap-[10px] rounded-[8px] bg-theme-primary p-[8px] text-[14px] font-[700] leading-[17px] text-text-4"
+              class="flex h-[48px] w-full min-w-[120px] max-w-[280px] flex-[1_1_220px] items-center justify-center gap-[10px] rounded-[8px] bg-theme-primary px-[8px] text-[14px] font-[700] leading-[17px] text-text-4"
               @click="$emit('claim')"
             >
               {{ props.claimText }}
@@ -303,7 +303,7 @@
         class="flex flex-col items-center justify-center bg-bg-2"
         :class="
           props.mode === 'pc'
-            ? 'h-[447px] w-[1032px] gap-[24px] rounded-[16px] pb-[24px]'
+            ? 'h-[447px] w-full gap-[24px] rounded-[16px] pb-[24px]'
             : 'gap-2.5 rounded-[10px] pb-2.5'
         "
       >
@@ -329,7 +329,7 @@
           class="flex items-center bg-bg-3"
           :class="
             props.mode === 'pc'
-              ? 'h-[98px] w-[984px] gap-[33px] rounded-[16px] py-[24px]'
+              ? 'mx-[24px] h-[98px] self-stretch gap-[33px] rounded-[16px] py-[24px]'
               : 'min-h-[82px] w-[calc(100%-28px)] gap-[14px] rounded-[10px] px-[14px] py-[14px]'
           "
         >
@@ -372,7 +372,7 @@
           class="flex w-full flex-col items-start overflow-hidden bg-bg-3"
           :class="
             props.mode === 'pc'
-              ? 'h-[225px] w-[984px] gap-[24px] rounded-[16px]'
+              ? 'mx-[24px] h-[225px] self-stretch gap-[24px] rounded-[16px]'
               : 'w-[calc(100%-28px)] gap-[14px] rounded-[10px]'
           "
         >
@@ -410,7 +410,9 @@
             <div
               class="relative rounded-[30px] bg-theme-3"
               :class="
-                props.mode === 'pc' ? 'h-[12px] w-[936px]' : 'mb-[14px] h-[8px] w-[calc(100%-28px)]'
+                props.mode === 'pc'
+                  ? 'mx-[24px] h-[12px] self-stretch'
+                  : 'mb-[14px] h-[8px] w-[calc(100%-28px)]'
               "
             >
               <div
@@ -425,7 +427,7 @@
               class="flex items-start"
               :class="
                 props.mode === 'pc'
-                  ? 'h-[45px] w-[984px] gap-[52px] px-[24px]'
+                  ? 'h-[45px] w-full justify-between px-[24px]'
                   : 'w-[412px] gap-[30px] px-[14px]'
               "
             >
@@ -598,14 +600,16 @@
         class="flex flex-col items-center justify-center bg-bg-2"
         :class="
           props.mode === 'pc'
-            ? 'h-[447px] w-[1032px] gap-[24px] rounded-[16px] pb-[24px]'
+            ? 'h-[447px] w-full gap-[24px] rounded-[16px] pb-[24px]'
             : 'gap-2.5 rounded-[10px] pb-2.5'
         "
       >
         <!-- 周维度切换区域 -->
         <div
           class="relative w-full bg-bg-2"
-          :class="props.mode === 'pc' ? 'h-[52px] pt-[12px]' : 'h-[42px]'"
+          :class="
+            props.mode === 'pc' ? 'h-[52px] pt-[12px] rounded-[16px] ' : 'rounded-[10px] h-[42px]'
+          "
         >
           <!-- 周维度切换栏 -->
           <div
@@ -618,7 +622,7 @@
               class="flex flex-1 flex-col items-center"
               :class="
                 props.mode === 'pc'
-                  ? 'h-[40px] w-[516px] justify-between gap-[8px] pt-[12px]'
+                  ? 'h-[40px] justify-between gap-[8px] self-stretch pt-[12px]'
                   : 'gap-2'
               "
               @click="$emit('change-commission-boost-period-tab', 'current')"
@@ -646,7 +650,7 @@
               <div
                 v-if="props.activeCommissionBoostPeriodTab === 'current'"
                 class="w-full self-stretch rounded-[10px] bg-theme-primary"
-                :class="props.mode === 'pc' ? 'h-[2px] w-[516px]' : 'h-[2px]'"
+                :class="props.mode === 'pc' ? 'h-[2px]' : 'h-[2px]'"
               ></div>
             </button>
 
@@ -656,7 +660,7 @@
               class="flex flex-1 flex-col items-center"
               :class="
                 props.mode === 'pc'
-                  ? 'h-[40px] w-[516px] justify-between gap-[8px] pt-[12px]'
+                  ? 'h-[40px] justify-between gap-[8px] self-stretch pt-[12px]'
                   : 'gap-2'
               "
               @click="$emit('change-commission-boost-period-tab', 'previous')"
@@ -684,7 +688,7 @@
               <div
                 v-if="props.activeCommissionBoostPeriodTab === 'previous'"
                 class="w-full self-stretch rounded-[10px] bg-theme-primary"
-                :class="props.mode === 'pc' ? 'h-[2px] w-[516px]' : 'h-[2px]'"
+                :class="props.mode === 'pc' ? 'h-[2px]' : 'h-[2px]'"
               ></div>
             </button>
           </div>
@@ -695,13 +699,13 @@
           class="flex items-center bg-bg-3"
           :class="
             props.mode === 'pc'
-              ? 'h-[98px] w-[984px] gap-[33px] rounded-[16px] py-[24px]'
+              ? 'mx-[24px] h-[98px] self-stretch gap-[33px] rounded-[16px] py-[24px]'
               : 'min-h-[82px] w-[calc(100%-28px)] gap-[14px] rounded-[10px] px-[14px] py-[14px]'
           "
         >
           <div
             class="flex flex-1 flex-col items-center"
-            :class="props.mode === 'pc' ? 'h-[50px] w-[431px] gap-[13px]' : 'gap-[5px]'"
+            :class="props.mode === 'pc' ? 'h-[50px] gap-[13px]' : 'gap-[5px]'"
           >
             <div
               class="flex w-full items-center justify-center text-center font-[700] text-text-1"
@@ -734,7 +738,7 @@
 
           <div
             class="flex flex-1 flex-col items-center"
-            :class="props.mode === 'pc' ? 'h-[50px] w-[431px] gap-[13px]' : 'gap-[5px]'"
+            :class="props.mode === 'pc' ? 'h-[50px] gap-[13px]' : 'gap-[5px]'"
           >
             <div
               class="flex w-full items-center justify-center text-center font-[700] text-text-1"
@@ -764,7 +768,7 @@
           class="flex flex-col items-start overflow-hidden bg-bg-3"
           :class="
             props.mode === 'pc'
-              ? 'h-[225px] w-[984px] gap-[24px] rounded-[16px]'
+              ? 'mx-[24px] h-[225px] self-stretch gap-[24px] rounded-[16px]'
               : 'w-[calc(100%-28px)] gap-[14px] rounded-[10px]'
           "
         >
@@ -862,7 +866,9 @@
             <div
               class="relative rounded-[30px] bg-theme-3"
               :class="
-                props.mode === 'pc' ? 'h-[12px] w-[936px]' : 'mb-[14px] h-[8px] w-[calc(100%-28px)]'
+                props.mode === 'pc'
+                  ? 'mx-[24px] h-[12px] self-stretch'
+                  : 'mb-[14px] h-[8px] w-[calc(100%-28px)]'
               "
             >
               <div
@@ -891,7 +897,7 @@
               class="flex items-start"
               :class="
                 props.mode === 'pc'
-                  ? 'h-[45px] w-[984px] gap-[52px] px-[24px]'
+                  ? 'h-[45px] w-full justify-between px-[24px]'
                   : 'w-[412px] gap-[30px] px-[14px]'
               "
             >

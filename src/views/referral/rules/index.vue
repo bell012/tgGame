@@ -84,6 +84,7 @@ import ReferralGuideVideoPopup from '../components/ReferralGuideVideoPopup.vue'
 import InvitePosterPopup from '../details/components/InvitePosterPopup.vue'
 import {
   buildReferralShareMessage,
+  createReferralMessagePresets,
   fetchReferralBannerPayload,
   getDefaultReferralLink
 } from '../shared'
@@ -108,6 +109,8 @@ const referralLink = getDefaultReferralLink()
 const commissionList = ref<QueryTaskRewardCommissionItem[]>([])
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
 const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.linkCode) || '-')
+const referralMessagePresets = computed(() => createReferralMessagePresets(t))
+const activeReferralMessage = computed(() => referralMessagePresets.value[0] || '')
 const referralShareLink = computed(
   () => `${referralLink.replace(/\/+$/, '')}/?id=${displayLinkCode.value}`
 )
@@ -217,7 +220,9 @@ const handleSavePosterImage = () => {
  * 处理复制海报邀请链接。
  */
 const handleCopyPosterLink = async () => {
-  const copied = await copyTextWithFallback(referralShareLink.value)
+  const copied = await copyTextWithFallback(
+    buildReferralShareMessage(activeReferralMessage.value, referralShareLink.value)
+  )
 
   globalShowToast({
     message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
@@ -230,10 +235,7 @@ const handleCopyPosterLink = async () => {
  */
 const handleInviteNow = async () => {
   const shareLink = referralShareLink.value
-  const shareContent = buildReferralShareMessage(
-    t('referral.messagePopup.presets.exclusiveRewards'),
-    shareLink
-  )
+  const shareContent = buildReferralShareMessage(activeReferralMessage.value, shareLink)
 
   if (!shareContent || !shareLink) {
     globalShowToast({

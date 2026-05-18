@@ -72,15 +72,15 @@
       v-if="props.claimHistoryRows.length > 0"
       class="overflow-hidden rounded-[10px] bg-bg-2"
     >
-      <div class="grid h-[48px] grid-cols-2 items-center">
+      <div class="grid h-[35px] grid-cols-[1fr_auto] items-center gap-[12px] px-[14px]">
         <div
-          class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-2"
+          class="flex items-center justify-start px-[16px] text-center text-[12px] font-[400] leading-[15px] text-text-2"
         >
           {{ props.timeLabel }}
         </div>
 
         <div
-          class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-2"
+          class="flex items-center justify-center pr-[16px] text-[14px] font-[400] leading-[20px] text-text-2"
         >
           {{ props.rewardsLabel }}
         </div>
@@ -89,17 +89,17 @@
         <div
           v-for="(row, index) in props.claimHistoryRows"
           :key="row.id"
-          class="grid min-h-[48px] grid-cols-2 items-center"
-          :class="index % 2 === 0 ? 'h-[50px] bg-opacity-5' : 'h-[48px] bg-transparent'"
+          class="grid min-h-[48px] grid-cols-[1fr_auto] items-center gap-[12px] px-[14px] py-[10px]"
+          :class="index % 2 === 0 ? 'bg-bg-3' : 'bg-transparent'"
         >
           <div
-            class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-1"
+            class="flex items-center justify-start px-[16px] text-center text-[13px] font-[400] leading-[20px] text-text-1"
           >
             {{ row.time }}
           </div>
 
           <div
-            class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-1"
+            class="flex items-center justify-center pr-[16px] text-[14px] font-[400] leading-[20px] text-text-1"
           >
             {{ row.reward }}
           </div>
