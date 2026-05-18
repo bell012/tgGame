@@ -38,17 +38,17 @@ import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import BetsList from './common/bets-list/index.vue'
+import GameList from './common/game-list/index.vue'
+import RecentGames from './common/recent-games/index.vue'
+import DesktopCurrencyInfo from './desktop/currency-info/index.vue'
+import H5CurrencyInfo from './h5/currency-info/index.vue'
+import H5Header from './h5/header.vue'
 import {
   normalizeGameDetailValue,
-  splitGameTypeCodes,
-  queryGameDetailRecommendedItems
+  queryGameDetailRecommendedItems,
+  splitGameTypeCodes
 } from './shared'
-import H5Header from './h5/header.vue'
-import H5CurrencyInfo from './h5/currency-info/index.vue'
-import DesktopCurrencyInfo from './desktop/currency-info/index.vue'
-import BetsList from './common/bets-list/index.vue'
-import RecentGames from './common/recent-games/index.vue'
-import GameList from './common/game-list/index.vue'
 
 type GameDataItem = {
   rowId?: string | number
@@ -88,30 +88,37 @@ const API_REQUEST_OPTIONS = {
   showErrorToast: true
 } as const
 
-// ===== 基础状态 =====
-const gameData = ref<GameDataItem[]>([])
-provide('game-detail-game-data', gameData)
-
-/** 与 getCommentSubject.result.isCollections 同步，供收藏星标 inject */
-const gameDetailSubjectIsCollections = ref<boolean | null>(null)
-provide('game-detail-subject-is-collections', gameDetailSubjectIsCollections)
-
+// ===== 组合式依赖 =====
 const { t } = useI18n()
-const isMobile = useIsMobile()
 const route = useRoute()
+const isMobile = useIsMobile()
 const localeStore = useLocaleStore()
 const userStore = useUserStore()
 const { currentLanguage } = storeToRefs(localeStore)
+
+// ===== 基础状态 =====
+const detailPageRef = ref<HTMLElement | null>(null)
+const gameData = ref<GameDataItem[]>([])
 const isGameDataLoading = ref(false)
 const currentGameDetailState = ref<CurrentGameDetail>(null)
-const detailPageRef = ref<HTMLElement | null>(null)
+
+/** 与 getCommentSubject.result.isCollections 同步，供收藏星标 inject */
+const gameDetailSubjectIsCollections = ref<boolean | null>(null)
+
+// ===== provide =====
+provide('game-detail-game-data', gameData)
+provide('game-detail-subject-is-collections', gameDetailSubjectIsCollections)
+
+// ===== 滚动条状态 =====
 const isBrowserEnv = typeof window !== 'undefined' && typeof document !== 'undefined'
 let scrollbarHiddenParent: HTMLElement | null = null
 
+// ===== 滚动条处理 =====
 const clearParentScrollbarHidden = () => {
   if (!scrollbarHiddenParent) {
     return
   }
+
   scrollbarHiddenParent.classList.remove('game-detail-hide-scrollbar')
   scrollbarHiddenParent = null
 }
@@ -165,6 +172,18 @@ const resetScrollToTop = () => {
 }
 
 // ===== 工具函数 =====
+const isGameTypeCodeMatched = (targetGameTypeCode: unknown, candidateGameTypeCode: unknown) => {
+  const targetCodeList = splitGameTypeCodes(targetGameTypeCode)
+  const candidateCodeList = splitGameTypeCodes(candidateGameTypeCode)
+
+  if (targetCodeList.length === 0 || candidateCodeList.length === 0) {
+    return false
+  }
+
+  const targetCodeSet = new Set(targetCodeList)
+  return candidateCodeList.some(code => targetCodeSet.has(code))
+}
+
 const buildRecommendedPageQuery = (pageTitle: string) => {
   return {
     ...(currentGameRowId.value ? { rowId: currentGameRowId.value } : {}),
@@ -175,8 +194,33 @@ const buildRecommendedPageQuery = (pageTitle: string) => {
 // ===== 派生状态 =====
 const rowId = computed(() => normalizeGameDetailValue(route.params.rowId))
 const currentGameDetail = computed<CurrentGameDetail>(() => currentGameDetailState.value)
+const currentGameRowId = computed(() =>
+  normalizeGameDetailValue(currentGameDetail.value?.rowId ?? rowId.value)
+)
+
+const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
+  const sourceList = gameData.value as unknown as GameDataItem[]
+  const targetGameTypeCode = currentGameDetail.value?.gameTypeCode
+  const excludeRowId = normalizeGameDetailValue(currentGameRowId.value)
+
+  if (!targetGameTypeCode) {
+    return sourceList
+  }
+
+  return sourceList.filter(item => {
+    if (excludeRowId && normalizeGameDetailValue(item.rowId) === excludeRowId) {
+      return false
+    }
+
+    return isGameTypeCodeMatched(targetGameTypeCode, item.gameTypeCode)
+  })
+})
+
+const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.value.length > 0)
+
 provide('game-detail-current-game', currentGameDetail)
 
+// ===== 数据同步 =====
 const syncFavoriteFromCommentSubject = async (gameIdRaw: string) => {
   gameDetailSubjectIsCollections.value = null
   if (!gameIdRaw) {
@@ -206,41 +250,6 @@ const syncFavoriteFromCommentSubject = async (gameIdRaw: string) => {
     gameDetailSubjectIsCollections.value = null
   }
 }
-
-const currentGameRowId = computed(() =>
-  normalizeGameDetailValue(currentGameDetail.value?.rowId ?? rowId.value)
-)
-const isGameTypeCodeMatched = (targetGameTypeCode: unknown, candidateGameTypeCode: unknown) => {
-  const targetCodeList = splitGameTypeCodes(targetGameTypeCode)
-  const candidateCodeList = splitGameTypeCodes(candidateGameTypeCode)
-
-  if (targetCodeList.length === 0 || candidateCodeList.length === 0) {
-    return false
-  }
-
-  const targetCodeSet = new Set(targetCodeList)
-  return candidateCodeList.some(code => targetCodeSet.has(code))
-}
-
-const currentCategoryHotGameList = computed<GameDataItem[]>(() => {
-  const sourceList = gameData.value as unknown as GameDataItem[]
-  const targetGameTypeCode = currentGameDetail.value?.gameTypeCode
-  const excludeRowId = normalizeGameDetailValue(currentGameRowId.value)
-
-  if (!targetGameTypeCode) {
-    return sourceList
-  }
-
-  return sourceList.filter(item => {
-    if (excludeRowId && normalizeGameDetailValue(item.rowId) === excludeRowId) {
-      return false
-    }
-
-    return isGameTypeCodeMatched(targetGameTypeCode, item.gameTypeCode)
-  })
-})
-
-const hasCurrentCategoryHotGames = computed(() => currentCategoryHotGameList.value.length > 0)
 
 // ===== 数据请求 =====
 const fetchCurrentGameDetail = async () => {
@@ -286,7 +295,7 @@ const openCurrentCategoryAllGamesPage = () => {
   })
 }
 
-// ===== 监听与生命周期 =====
+// ===== 监听 =====
 watch(
   [rowId],
   () => {
@@ -306,6 +315,7 @@ watch(
   { immediate: true, flush: 'post' }
 )
 
+// ===== 生命周期 =====
 onMounted(async () => {
   await nextTick()
   hideParentScrollbar()
