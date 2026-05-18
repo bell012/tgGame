@@ -188,13 +188,8 @@ const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
 const hasSyncedActiveTab = ref(false)
 
-const getQueryStringValue = (value: unknown) => {
-  if (Array.isArray(value)) {
-    return String(value[0] ?? '')
-  }
-
-  return String(value ?? '')
-}
+const getQueryStringValue = (value: unknown) =>
+  Array.isArray(value) ? String(value[0] ?? '') : String(value ?? '')
 
 const getRouteTabCode = () => getQueryStringValue(route.query[EXPLORE_CASINO_TAB_QUERY_KEY])
 const isExploreRoute = computed(() => String(route.name || '').replace(/^Locale/, '') === 'explore')
@@ -261,17 +256,15 @@ const getCurrentTab = computed(() => {
 
 const trimmedSearchKeyword = computed(() => activeSearchKeyword.value.trim())
 
+const pageStyleMap: Record<string, Component> = {
+  pageStyle2,
+  pageStyle4
+}
+
 const currentPageStyle = computed(() => {
   const currentCode = getCurrentTab.value?.sysGameTypeCode ?? ''
   const pageMode = getExploreCasinoPageMode(currentCode)
-  switch (pageMode) {
-    case 'pageStyle2':
-      return pageStyle2
-    case 'pageStyle4':
-      return pageStyle4
-    default:
-      return pageStyle3
-  }
+  return pageStyleMap[pageMode] ?? pageStyle3
 })
 
 const currentQueryOptions = computed<GameQueryOptions | undefined>(() => {
@@ -584,10 +577,6 @@ onUnmounted(() => {
     font-size: 14px;
     line-height: 36px;
     color: var(--color-text-level-2);
-  }
-
-  .explore-tab-button--active {
-    background: var(--color-background-level-2);
   }
 
   .explore-tab-icon {
