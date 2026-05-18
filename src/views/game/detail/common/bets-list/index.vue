@@ -532,7 +532,7 @@ onBeforeUnmount(() => {
   padding: 6px 28px;
   background: transparent;
   color: var(--color-text-level-2);
-  border: 1px solid transparent;
+  border: none;
   border-radius: 8px;
   box-sizing: border-box;
   min-width: 0;
@@ -549,14 +549,9 @@ onBeforeUnmount(() => {
 }
 
 .bet-tab.active {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%),
-    var(--color-background-level-7);
-  border-color: var(--color-opacity-10);
+  background: var(--color-background-level-7);
   color: var(--color-text-level-1);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
 }
 
 :global(:root.light) .bet-tabs {
@@ -572,7 +567,7 @@ onBeforeUnmount(() => {
 
 :global(:root.light) .bet-tab.active {
   background: #ffffff;
-  border: 1px solid rgba(17, 17, 17, 0.08);
+  border: none;
   box-shadow: none;
   color: #111111;
 }
