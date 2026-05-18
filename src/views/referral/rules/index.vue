@@ -78,12 +78,15 @@ import { copyTextWithFallback } from '@/utils/clipboard'
 import { navigateTo } from '@/utils/router'
 import { formatLinkCode, globalShowToast } from '@/utils/toast'
 
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { buildReferralShareMessage, getDefaultReferralLink } from '../shared'
 import ReferralGuideVideoPopup from '../components/ReferralGuideVideoPopup.vue'
 import InvitePosterPopup from '../details/components/InvitePosterPopup.vue'
-import { getReferralDetailsInvitePosterImages } from '../details/shared'
+import {
+  buildReferralShareMessage,
+  fetchReferralBannerPayload,
+  getDefaultReferralLink
+} from '../shared'
 import ReferralRulesPageContent from './components/ReferralRulesPageContent.vue'
 import PcLayout from './pc-layout.vue'
 import {
@@ -93,14 +96,14 @@ import {
   getReferralRulesGuideImage
 } from './shared'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const userStore = useUserStore()
 const isMobile = useIsMobile()
 const isReady = ref(false)
 const guideImage = getReferralRulesGuideImage()
 const showGuideVideoPopup = ref(false)
 const showInvitePosterPopup = ref(false)
-const invitePosterImages = getReferralDetailsInvitePosterImages()
+const invitePosterImages = ref<string[]>([])
 const referralLink = getDefaultReferralLink()
 const commissionList = ref<QueryTaskRewardCommissionItem[]>([])
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
@@ -132,6 +135,16 @@ onMounted(() => {
   void fetchReferralRulesConfig()
 })
 
+watch(
+  () => [currentAgentChannelId.value, locale.value] as const,
+  () => {
+    void fetchInvitePosterImages()
+  },
+  {
+    immediate: true
+  }
+)
+
 /**
  * 获取规则页佣金等级配置。
  */
@@ -151,6 +164,19 @@ async function fetchReferralRulesConfig() {
 }
 
 /**
+ * 获取邀请海报图片。
+ */
+async function fetchInvitePosterImages() {
+  try {
+    const payload = await fetchReferralBannerPayload(currentAgentChannelId.value)
+    invitePosterImages.value = payload.posterImages
+  } catch (error) {
+    console.error('[referral rules] fetch invite poster images failed:', error)
+    invitePosterImages.value = []
+  }
+}
+
+/**
  * 处理播放 Guide 视频。
  */
 const handlePlayGuide = () => {
@@ -166,6 +192,14 @@ const handlePlayGuide = () => {
  * 处理点击邀请按钮。
  */
 const handleInvite = () => {
+  if (!invitePosterImages.value.length) {
+    globalShowToast({
+      message: t('referral.comingSoon'),
+      type: 'fail'
+    })
+    return
+  }
+
   showInvitePosterPopup.value = true
 }
 

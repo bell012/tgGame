@@ -204,7 +204,11 @@ import { navigateTo } from '@/utils/router'
 import { formatLinkCode, globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { buildReferralShareMessage, getDefaultReferralLink } from '../shared'
+import {
+  buildReferralShareMessage,
+  fetchReferralBannerPayload,
+  getDefaultReferralLink
+} from '../shared'
 import InvitePosterPopup from './components/InvitePosterPopup.vue'
 import ReferralDetailsFriendsFilterPopup from './components/ReferralDetailsFriendsFilterPopup.vue'
 import ReferralDetailsPageContent from './components/ReferralDetailsPageContent.vue'
@@ -246,7 +250,6 @@ import {
   getReferralDetailsDateLabel,
   getReferralDetailsEmptyDarkImage,
   getReferralDetailsEmptyLightImage,
-  getReferralDetailsInvitePosterImages,
   getReferralDetailsRewardHistoryCurrencyCode,
   getReferralDetailsRewardHistoryTotalCommission,
   normalizeReferralDetailsFilterValues,
@@ -262,7 +265,7 @@ import {
   type ReferralDetailsTopUpStatsResult
 } from './shared'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 const userStore = useUserStore()
 const isReady = ref(false)
@@ -294,7 +297,7 @@ const appliedDateFilterValues = ref<ReferralDetailsFilterValues>(
 const detailsStatsResult = ref<ReferralDetailsStatsResult | null>(null)
 const emptyDarkImage = getReferralDetailsEmptyDarkImage()
 const emptyLightImage = getReferralDetailsEmptyLightImage()
-const invitePosterImages = getReferralDetailsInvitePosterImages()
+const invitePosterImages = ref<string[]>([])
 const friendEmptyDarkImage = getReferralFriendDetailEmptyDarkImage()
 const friendEmptyLightImage = getReferralFriendDetailEmptyLightImage()
 const referralLink = getDefaultReferralLink()
@@ -548,6 +551,29 @@ watch(
     immediate: true
   }
 )
+
+watch(
+  () => [currentAgentChannelId.value, locale.value] as const,
+  () => {
+    void fetchInvitePosterImages()
+  },
+  {
+    immediate: true
+  }
+)
+
+/**
+ * 获取邀请海报图片。
+ */
+async function fetchInvitePosterImages() {
+  try {
+    const payload = await fetchReferralBannerPayload(currentAgentChannelId.value)
+    invitePosterImages.value = payload.posterImages
+  } catch (error) {
+    console.error('[referral details] fetch invite poster images failed:', error)
+    invitePosterImages.value = []
+  }
+}
 
 /**
  * 获取推荐详情页团队成员统计。
@@ -866,6 +892,14 @@ const handleGoFriendDetail = (item: ReferralDetailsFriendItem) => {
  * 处理展示邀请海报弹窗。
  */
 const handleShowInvitePoster = () => {
+  if (!invitePosterImages.value.length) {
+    globalShowToast({
+      message: t('referral.comingSoon'),
+      type: 'fail'
+    })
+    return
+  }
+
   showInvitePosterPopup.value = true
 }
 

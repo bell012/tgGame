@@ -7,6 +7,7 @@ import type {
   QueryReferralDetailsRewardHistoryResponse,
   QueryReferralDetailsTopUpStatsResponse,
   QueryReferralSettlementRuleResponse,
+  QueryReferralShareConfigResponse,
   QueryReferralTaskProgressResponse,
   QueryReferralTaskRewardsToClaimResponse,
   QueryTaskRewardConfigResponse
@@ -70,6 +71,11 @@ export const queryShareChannels = (
   param?: { openStatus?: number },
   options?: AgentRequestOptions
 ): Promise<AgentApiResponse> => callAgentAction('agent61', param, options)
+
+// agent64：查询代理分享信息配置。
+export const queryReferralShareConfig = (
+  options?: AgentRequestOptions
+): Promise<QueryReferralShareConfigResponse> => callAgentAction('agent64', undefined, options)
 
 // agent57：查询任务奖励配置。
 export const queryTaskRewardConfig = (

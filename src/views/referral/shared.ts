@@ -4,14 +4,22 @@ import type {
   QueryTaskRewardCommissionItem,
   QueryTaskRewardConfigResult
 } from '@/api/interface/agent'
+import Api from '@/api'
 import quickDetailsIcon from '@/static/img/referral/quick-action-details.png'
 import quickGuideIcon from '@/static/img/referral/quick-action-guide.png'
 import quickRulesIcon from '@/static/img/referral/quick-action-rules.png'
 import quickTaskIcon from '@/static/img/referral/quick-action-task.png'
 import commissionCoinIcon from '@/static/img/referral/referral-coin.png'
-import { formatBalance } from '@/utils/locale'
+import { useSiteConfigStore } from '@/stores/siteConfig'
+import { formatBalance, getLanguageCode } from '@/utils/locale'
 
 type TranslateFn = (key: string, named?: Record<string, unknown>) => string
+
+type SiteConfigWithAgentShare = {
+  baseSiteConfig?: {
+    agent_share_url?: string
+  }
+}
 
 export type ReferralQuickActionId = 'tasks' | 'details' | 'rules' | 'guide'
 
@@ -520,13 +528,33 @@ export const createReferralMessagePresets = (t: TranslateFn): string[] => [
 /**
  * 构建推荐页默认分享链接。
  */
-export const getDefaultReferralLink = () => ' '
+export const getDefaultReferralLink = () => {
+  const siteConfigStore = useSiteConfigStore()
+  siteConfigStore.syncStoredConfig()
+
+  const agentShareUrl = (
+    siteConfigStore.config as SiteConfigWithAgentShare | null
+  )?.baseSiteConfig?.agent_share_url?.trim()
+
+  if (agentShareUrl) {
+    return agentShareUrl.replace(/\/+$/, '')
+  }
+
+  if (typeof window === 'undefined') {
+    return ''
+  }
+
+  return window.location.origin.replace(/\/+$/, '')
+}
 
 /**
  * 构建推荐页复制文案内容。
  */
-export const buildReferralShareMessage = (message: string, referralLink: string) =>
-  [String(message ?? '').trim(), String(referralLink ?? '').trim()].filter(Boolean).join(' ')
+export const buildReferralShareMessage = (...segments: unknown[]) =>
+  segments
+    .map(item => String(item ?? '').trim())
+    .filter(Boolean)
+    .join(' ')
 
 /**
  * 构建推荐页横幅请求缓存键。
@@ -539,6 +567,31 @@ export const buildReferralBannerRequestKey = (channelId: string, languageCode: s
  */
 export const getCachedReferralBannerPayload = (key: string) =>
   referralBannerPayloadCache.get(String(key ?? '').trim())
+
+/**
+ * 请求并缓存推荐页横幅和邀请海报数据。
+ */
+export const fetchReferralBannerPayload = (channelId: string, languageCode = getLanguageCode()) => {
+  const requestKey = buildReferralBannerRequestKey(channelId, languageCode)
+
+  return resolveReferralBannerPayload(requestKey, async () => {
+    const response = await Api.home.getQuerySlideshow({
+      languageCode,
+      channelId,
+      page: {
+        current: 1,
+        size: 100
+      }
+    })
+
+    const records = Array.isArray(response?.result?.records) ? response.result.records : []
+
+    return {
+      bannerSlides: buildReferralBannerSlidesFromApi(records),
+      posterImages: buildReferralPosterImagesFromApi(records)
+    }
+  })
+}
 
 /**
  * 按缓存键复用推荐页横幅请求，避免同参数重复拉取。
