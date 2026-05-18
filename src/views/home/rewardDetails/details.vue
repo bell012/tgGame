@@ -61,7 +61,9 @@
           />
           <div class="min-w-0 flex-1">
             <div class="flex justify-between gap-3 text-[15px] leading-[1.4]">
-              <span class="shrink-0 text-text-2">{{ $t('editProfile.username') }}</span>
+              <span class="shrink-0 text-text-2">{{
+                $t('personalCenter.editProfile.username')
+              }}</span>
               <span class="truncate text-right text-text-2">{{ row?.nickName ?? '--' }}</span>
             </div>
             <div class="flex justify-between gap-3 text-[15px] leading-[1.4]">
