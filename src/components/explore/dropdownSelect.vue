@@ -59,7 +59,7 @@
           <div v-if="search" class="relative mb-[20px]">
             <component
               :is="SearchIcon"
-              class="absolute left-2.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 fill-none stroke-icon-2 [&_svg]:block [&_svg]:h-full [&_svg]:w-full"
+              class="absolute left-2.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-icon-2 fill-current [&_path]:fill-current [&_svg]:block [&_svg]:h-full [&_svg]:w-full"
             />
             <input
               v-model="keyword"

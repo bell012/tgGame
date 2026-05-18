@@ -35,7 +35,7 @@
             </div>
             <div class="mt-[4px] text-[12px] leading-[16px] text-[var(--color-text-level-2)]">
               {{ t('gameDetail.by') }}
-              <span class="text-[var(--color-theme-level-1)]">{{ displayProviderName }}</span>
+              <span class="text-[var(--color-text-level-2)]">{{ displayProviderName }}</span>
             </div>
           </div>
         </template>
@@ -132,11 +132,11 @@ onMounted(() => {
 </script>
 <style scoped lang="scss">
 .currency-info-panel {
-  background: var(--color-background-level-2);
+  background: transparent;
 }
 
 :global(:root.light) .currency-info-panel {
-  background: #ffffff;
+  background: transparent;
   border: none;
 }
 

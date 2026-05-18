@@ -12,7 +12,7 @@
     <transition :name="desktop ? 'desktop-up-down' : 'up-down'">
       <div v-show="visible" class="fixed z-[9999] left-0 bottom-0 w-full lg:relative">
         <div class="tp-panel bg-bg-1 rounded-t-xl pt-2.5 px-3.5">
-          <div class="tp-header flex items-center justify-between mb-2.5" v-if="!desktop">
+          <div class="tp-header flex items-center justify-between mb-[20px]" v-if="!desktop">
             <div></div>
             <div class="text-base font-bold text-[var(--color-text-level-1)]">Select</div>
             <div

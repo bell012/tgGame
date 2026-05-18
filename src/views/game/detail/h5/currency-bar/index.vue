@@ -1,29 +1,21 @@
 <template>
-  <div
-    class="currency-toolbar p-[12px] rounded-b-[10px] relative"
-    :class="{ 'currency-toolbar-light': isLightTheme }"
-  >
+  <div class="currency-toolbar p-[12px] rounded-b-[10px] relative">
     <div class="flex justify-between items-center">
-      <SmartImage
-        alt=""
-        class="size-[16px] cursor-pointer"
-        :src="LineIcon"
-        @click="liveStateVisibleClick"
-      />
+      <button type="button" class="icon-trigger" @click="liveStateVisibleClick">
+        <LineIcon class="toolbar-icon" />
+      </button>
       <div class="flex justify-end items-center gap-[14px] cursor-pointer">
-        <SmartImage
-          alt=""
-          class="size-[16px]"
-          :src="starActived ? StarActiveIcon : StarIcon"
-          @click="toggleStar"
-        />
-        <SmartImage
-          alt=""
-          class="size-[16px]"
-          :src="loveActived ? LoveActiveIcon : LoveIcon"
-          @click="toggleLove"
-        />
-        <SmartImage alt="" class="size-[16px]" :src="TgIcon" @click="shareVisibleClick" />
+        <button type="button" class="icon-trigger" @click="toggleStar">
+          <SmartImage v-if="starActived" alt="" class="size-[16px]" :src="StarActiveIcon" />
+          <StarIcon v-else class="toolbar-icon" />
+        </button>
+        <button type="button" class="icon-trigger" @click="toggleLove">
+          <SmartImage v-if="loveActived" alt="" class="size-[16px]" :src="LoveActiveIcon" />
+          <LoveIcon v-else class="toolbar-icon" />
+        </button>
+        <button type="button" class="icon-trigger" @click="shareVisibleClick">
+          <TgIcon class="toolbar-icon" />
+        </button>
       </div>
     </div>
     <Teleport to="body" v-if="isMobile">
@@ -38,26 +30,23 @@
   </div>
 </template>
 <script setup lang="ts">
-import LineIcon from '@/static/svg/game/detail/lines.svg?url'
-import StarIcon from '@/static/svg/game/detail/star.svg?url'
-import LoveIcon from '@/static/svg/game/detail/love.svg?url'
-import TgIcon from '@/static/svg/game/detail/tg.svg?url'
+import LineIcon from '@/static/svg/game/detail/lines.svg?component'
+import StarIcon from '@/static/svg/game/detail/star.svg?component'
+import LoveIcon from '@/static/svg/game/detail/love.svg?component'
+import TgIcon from '@/static/svg/game/detail/tg.svg?component'
 import StarActiveIcon from '@/static/svg/game/detail/star_active.svg?url'
 import LoveActiveIcon from '@/static/svg/game/detail/love_active.svg?url'
 import { useGameFavorite } from '@/composables/useGameFavorite'
 import { useGameLike } from '@/composables/useGameLike'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import LiveStatePopup from './live-state-popup.vue'
 import SharePopup from './share-popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import SmartImage from '@/components/common/SmartImage.vue'
-import { useThemeStore } from '@/stores/theme'
 
 const isMobile = useIsMobile()
 const { requireLogin } = useRequireLoginAction()
-const themeStore = useThemeStore()
-const isLightTheme = computed(() => themeStore.theme === 'light')
 
 const { isFavorite: starActived, toggleFavorite: toggleStar } = useGameFavorite()
 const { isLiked: loveActived, toggleLike: toggleLove } = useGameLike()
@@ -81,14 +70,29 @@ const shareVisibleClick = () => {
 </script>
 <style lang="scss" scoped>
 .currency-toolbar {
-  background: var(--color-opacity-10);
+  background: var(--color-background-level-3);
   border-top: 1px solid var(--color-opacity-10);
 }
 
-.currency-toolbar-light {
-  background: var(--color-opacity-10) !important;
-  border-top: none;
-  box-shadow: none;
+.icon-trigger {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.toolbar-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-icon-level-2);
+  fill: currentColor;
+}
+
+.toolbar-icon :deep(path) {
+  fill: currentColor;
 }
 
 .desktop-popup {
