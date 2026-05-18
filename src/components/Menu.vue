@@ -3,21 +3,21 @@
     <!-- BC代币 / 顶部提示 -->
     <div
       v-if="showBcToken"
-      class="bc-card mt-4 flex cursor-pointer items-center justify-between rounded-xl bg-bg-2 px-3 py-1.5 sm:mt-0 sm:py-2.5"
+      class="bc-card mt-4 flex h-14 shrink-0 cursor-pointer items-center justify-between rounded-xl bg-bg-2 px-3 sm:mt-0"
       @click="() => console.log('点击 BC代币')"
     >
       <div class="flex min-w-0 flex-1 items-center gap-2.5">
         <div
           class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-theme-primary sm:h-9 sm:w-9"
         ></div>
-        <div class="flex min-w-0 flex-col gap-[5px]">
+        <div class="flex min-w-0 flex-col gap-[7px] sm:gap-[10px]">
           <p class="m-0 text-sm font-bold leading-tight text-text-1">
             {{ t('sidebar_menu.bc_token.title') }}
           </p>
           <p class="m-0 text-xs font-semibold leading-tight text-assistRed">-1.00%</p>
         </div>
       </div>
-      <div class="flex shrink-0 flex-col gap-[5px] pl-3 text-right">
+      <div class="flex shrink-0 flex-col gap-[7px] pl-3 text-right sm:gap-[10px]">
         <p class="m-0 text-sm font-semibold leading-tight text-text-1">1 BC</p>
         <p class="m-0 text-sm leading-tight text-text-1">$0.00783</p>
       </div>
