@@ -147,6 +147,9 @@
       :amount="estimatedCommissionAmount"
       @confirm="handleConfirmClaimClick"
     />
+
+    <!-- PC Guide 视频弹窗 -->
+    <ReferralGuideVideoPopup v-model="showGuideVideoPopup" />
   </div>
 </template>
 
@@ -157,6 +160,7 @@ import type {
   QueryReferralTaskProgressResult,
   QueryTaskRewardConfigResult
 } from '@/api/interface/agent'
+import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -167,12 +171,12 @@ import { useUserStore } from '@/stores/user'
 import { ApiBusinessError, ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { executeConfiguredJump } from '@/utils/contentJump'
-import { formatBalance } from '@/utils/locale'
-import { getLanguageCode } from '@/utils/request'
+import { formatBalance, getLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { formatLinkCode, globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import ReferralGuideVideoPopup from './components/ReferralGuideVideoPopup.vue'
 import ReferralMessagePopup from './components/ReferralMessagePopup.vue'
 import ReferralPageContent from './components/ReferralPageContent.vue'
 import InvitePosterPopup from './details/components/InvitePosterPopup.vue'
@@ -217,6 +221,7 @@ const posterImages = ref<string[]>([])
 const showReferralMessagePopup = ref(false)
 const showInvitePosterPopup = ref(false)
 const showClaimConfirmPopup = ref(false)
+const showGuideVideoPopup = ref(false)
 const claimingCommission = ref(false)
 const currentShareChannel = ref<ReferralSocialChannel | null>(null)
 const customReferralMessage = ref('')
@@ -227,6 +232,7 @@ const previousPeriodTaskProgress = ref<QueryReferralTaskProgressResult | null>(n
 const activeCommissionBoostPeriodTab = ref<ReferralCommissionBoostPeriodTabKey>('current')
 const commissionBoostEstimatedCommissionAmount = ref('0.00')
 const commissionBoostLoading = ref(true)
+const marqueeNoticeRecords = ref<QueryNoticeMsgItem[]>([])
 let referralBannerRequestToken = 0
 
 const quickActions = computed(() => createReferralQuickActions(t))
@@ -235,7 +241,7 @@ const defaultReferralMessage = computed(() => referralMessagePresets.value[0] ||
 const activeReferralMessage = computed(
   () => customReferralMessage.value || defaultReferralMessage.value
 )
-const marqueeMessages = computed(() => createReferralMarqueeMessages(t))
+const marqueeMessages = computed(() => createReferralMarqueeMessages(marqueeNoticeRecords.value))
 const socialChannels = computed(() => apiSocialChannels.value)
 const commissionCoinImage = getReferralCommissionCoinImage()
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
@@ -288,6 +294,16 @@ watch(
   () => [currentAgentChannelId.value, locale.value] as const,
   () => {
     void fetchReferralBanner()
+  },
+  {
+    immediate: true
+  }
+)
+
+watch(
+  () => locale.value,
+  () => {
+    void fetchReferralMarqueeMessages()
   },
   {
     immediate: true
@@ -361,6 +377,16 @@ const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
     return
   }
 
+  if (actionId === 'guide') {
+    if (isMobile.value) {
+      navigateTo('/referral/guide')
+      return
+    }
+
+    showGuideVideoPopup.value = true
+    return
+  }
+
   const actionMessageMap: Record<ReferralQuickActionId, string> = {
     tasks: t('referral.h5.quickActions.tasks'),
     details: t('referral.h5.quickActions.details'),
@@ -378,10 +404,12 @@ const handleQuickActionClick = (actionId: ReferralQuickActionId) => {
  * 处理分享说明按钮点击。
  */
 const handleShareGuideClick = () => {
-  globalShowToast({
-    message: t('referral.h5.shareGuideHint'),
-    type: 'success'
-  })
+  if (isMobile.value) {
+    navigateTo('/referral/guide')
+    return
+  }
+
+  showGuideVideoPopup.value = true
 }
 
 /**
@@ -701,6 +729,35 @@ async function fetchReferralBanner() {
     if (requestToken === referralBannerRequestToken) {
       bannerLoading.value = false
     }
+  }
+}
+
+/**
+ * 处理推荐页跑马灯公告数据。
+ */
+async function fetchReferralMarqueeMessages() {
+  marqueeNoticeRecords.value = []
+
+  try {
+    const response = ensureApiBusinessSuccess(
+      await Api.home.queryNoticeMsg({
+        languageCode: getLanguageCode(),
+        msgType: 2,
+        channelId: 4,
+        sysLevelId: '1',
+        page: {
+          current: 1,
+          size: 30
+        }
+      })
+    )
+
+    marqueeNoticeRecords.value = Array.isArray(response.result?.records)
+      ? response.result.records
+      : []
+  } catch (error) {
+    console.error('[referral] fetch marquee messages failed:', error)
+    marqueeNoticeRecords.value = []
   }
 }
 

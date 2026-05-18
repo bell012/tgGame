@@ -160,12 +160,13 @@ export interface QueryNoticeMsgPageRequest {
 
 export interface QueryNoticeMsgRequest {
   languageCode?: string
-  msgType?: string
+  msgType?: string | number
   noticeType?: string
   noticeTitle?: string
   startTime?: number
   endTime?: number
-  channelId?: string
+  channelId?: string | number
+  sysLevelId?: string | number
   enable?: number
   param?: {
     scene?: number

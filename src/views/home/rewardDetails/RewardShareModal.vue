@@ -3,7 +3,7 @@
     <Transition name="reward-share-fade">
       <div
         v-if="modelValue"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 px-4 py-6 sm:p-6"
+        class="fixed inset-0 z-[100] flex items-center justify-center px-4 py-6 sm:p-6"
         @click.self="close"
       >
         <div
@@ -14,7 +14,7 @@
         >
           <button
             type="button"
-            class="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-text-1 transition hover:bg-white/15"
+            class="absolute right-3 top-3 z-10 flex h-8 w-8 bg-opacity-10 items-center justify-center rounded-md text-text-1 transition"
             :aria-label="t('rewardDetails.closeShare')"
             @click="close"
           >
@@ -29,7 +29,7 @@
                 class="h-14 w-14 shrink-0 rounded-full object-cover shadow-[0_4px_16px_rgba(245,180,60,0.35)]"
               />
               <div class="min-w-0 flex-1 pt-0.5">
-                <p class="m-0 text-lg font-bold leading-snug text-text-1">
+                <p class="m-0 text-lg font-bold leading-snug text-text-1 max-[360px]:text-base">
                   {{ t('rewardDetails.shareMomentTitle') }}
                 </p>
                 <p class="mt-1 line-clamp-2 text-sm font-medium leading-snug text-text-1">
@@ -44,7 +44,7 @@
               </p>
 
               <div class="flex flex-col items-center gap-y-3.5 sm:gap-y-4" role="presentation">
-                <div class="flex justify-center gap-[10px] sm:gap-3">
+                <div class="flex justify-center gap-[10px] sm:gap-3 max-[360px]:gap-[0]">
                   <div
                     v-for="(item, idx) in socialIconsRow1"
                     :key="`r1-${idx}`"
@@ -59,7 +59,7 @@
                     />
                   </div>
                 </div>
-                <div class="flex justify-center gap-[10px] sm:gap-3">
+                <div class="flex justify-center gap-[10px] sm:gap-3 max-[360px]:gap-[0]">
                   <div
                     v-for="(item, idx) in socialIconsRow2"
                     :key="`r2-${idx}`"
@@ -104,12 +104,20 @@ import iconTelegram from '@/static/svg/coin/tg.svg?url'
 import iconUrl from '@/static/svg/coin/url.svg?url'
 import iconWhatsapp from '@/static/svg/coin/Whatsapp.svg?url'
 import iconX from '@/static/svg/coin/x.svg?url'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { globalShowToast } from '@/utils/toast'
 
+type SiteConfigWithAgentShare = {
+  baseSiteConfig?: {
+    agent_share_url?: string
+  }
+}
+
 const { t } = useI18n()
 const userStore = useUserStore()
+const siteConfigStore = useSiteConfigStore()
 
 const props = withDefaults(
   defineProps<{
@@ -133,13 +141,42 @@ const close = () => {
   emit('update:modelValue', false)
 }
 
+const getShareOrigin = () => {
+  siteConfigStore.syncStoredConfig()
+
+  const agentShareUrl = (
+    siteConfigStore.config as SiteConfigWithAgentShare | null
+  )?.baseSiteConfig?.agent_share_url?.trim()
+
+  if (agentShareUrl) {
+    return agentShareUrl.replace(/\/+$/, '')
+  }
+
+  if (typeof window === 'undefined') {
+    return ''
+  }
+
+  return window.location.origin.replace(/\/+$/, '')
+}
+
 const buildShareUrlWithUserId = () => {
   if (typeof window === 'undefined') return ''
   const userId = userStore.acctInfo?.memberRowId || ''
   if (!userId) return ''
 
-  const origin = window.location.origin.replace(/\/+$/, '')
-  return `${origin}?id=${encodeURIComponent(userId)}`
+  const origin = getShareOrigin()
+  if (!origin) return ''
+
+  const idParam = `id=${encodeURIComponent(userId)}`
+
+  try {
+    const url = new URL(origin.includes('://') ? origin : `https://${origin}`)
+    url.searchParams.set('id', String(userId))
+    return url.toString()
+  } catch {
+    const separator = origin.includes('?') ? '&' : '?'
+    return `${origin}${separator}${idParam}`
+  }
 }
 
 const copyLink = async () => {

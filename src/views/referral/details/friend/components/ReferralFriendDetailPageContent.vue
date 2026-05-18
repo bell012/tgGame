@@ -365,7 +365,6 @@ function handleDateTabPointerDown(event: PointerEvent) {
   didDateTabDrag.value = false
   dateTabPointerStartX.value = event.clientX
   dateTabScrollStartLeft.value = container.scrollLeft
-  container.setPointerCapture(event.pointerId)
 }
 
 /**
@@ -382,6 +381,7 @@ function handleDateTabPointerMove(event: PointerEvent) {
 
   if (Math.abs(deltaX) > 4) {
     didDateTabDrag.value = true
+    event.preventDefault()
   }
 
   container.scrollLeft = dateTabScrollStartLeft.value - deltaX
@@ -390,7 +390,7 @@ function handleDateTabPointerMove(event: PointerEvent) {
 /**
  * 处理日期筛选标签区域拖拽结束。
  */
-function handleDateTabPointerUp(event: PointerEvent) {
+function handleDateTabPointerUp() {
   const container = dateTabNavRef.value
 
   if (!container || !isDateTabDragging.value) {
@@ -398,10 +398,6 @@ function handleDateTabPointerUp(event: PointerEvent) {
   }
 
   isDateTabDragging.value = false
-
-  if (container.hasPointerCapture(event.pointerId)) {
-    container.releasePointerCapture(event.pointerId)
-  }
 }
 
 /**

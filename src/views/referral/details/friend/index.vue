@@ -10,8 +10,8 @@
       <H5Header
         :title="t('referral.friendDetailPage.title')"
         :show-sort="true"
-        :right-icon="RuleIcon"
-        @sort="handleGoRules"
+        :right-icon="CustomerServiceIcon"
+        @sort="handleCustomerServiceClick"
       />
 
       <!-- H5 滚动内容区域 -->
@@ -77,16 +77,17 @@
 import Api from '@/api'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import RuleIcon from '@/static/svg/rule.svg?component'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { navigateTo } from '@/utils/router'
 
+import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import ReferralFriendDetailPageContent from './components/ReferralFriendDetailPageContent.vue'
 import PcLayout from './pc-layout.vue'
+
 import {
   buildReferralFriendDetailDateRange,
   createReferralFriendDetailDateTabs,
@@ -270,10 +271,13 @@ async function fetchReferralFriendDetailStats() {
 }
 
 /**
- * 处理跳转规则页。
+ * 处理客服按钮点击。
  */
-const handleGoRules = () => {
-  navigateTo('/referral/rules')
+const handleCustomerServiceClick = () => {
+  globalShowToast({
+    message: t('sidebar_menu.customer_service'),
+    type: 'success'
+  })
 }
 
 /**

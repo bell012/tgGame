@@ -27,7 +27,7 @@
           @change="handleChange"
         >
           <SwipeItem v-for="(item, index) in visibleSlides" :key="index">
-            <div class="w-full h-full overflow-hidden rounded-xl px-3">
+            <div class="w-full h-full overflow-hidden rounded-xl">
               <img
                 :src="getSlideImage(item)"
                 :alt="`slide-${index + 1}`"
@@ -42,7 +42,7 @@
         <template v-if="visibleSlides.length > 1">
           <button
             type="button"
-            class="absolute left-3 top-1/2 z-10 hidden -translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
+            class="absolute left-1 top-1/2 z-10 hidden -translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
             aria-label="上一张"
             @click.stop="swipePrev"
           >
@@ -50,7 +50,7 @@
           </button>
           <button
             type="button"
-            class="absolute right-3 top-1/2 z-10 hidden translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
+            class="absolute right-1 top-1/2 z-10 hidden translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
             aria-label="下一张"
             @click.stop="swipeNext"
           >
@@ -61,7 +61,7 @@
       <!-- 左右按钮 + 滑动条 -->
       <div
         v-if="visibleSlides.length > 1"
-        class="flex flex-shrink-0 items-center justify-center px-4"
+        class="mt-2 flex flex-shrink-0 items-center justify-center px-4"
       >
         <div class="flex w-[25%] min-w-0 items-center justify-between gap-2">
           <div class="flex min-w-0 flex-1 items-center justify-center gap-1.5">

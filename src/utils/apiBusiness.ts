@@ -1,11 +1,11 @@
 export type ApiBusinessResponse = {
-  code?: string
+  code?: string | number
   success?: boolean
   message?: string
 }
 
 export class ApiBusinessError extends Error {
-  code?: string
+  code?: string | number
 
   constructor(response?: ApiBusinessResponse, fallbackMessage = 'Business request failed') {
     super(response?.message || fallbackMessage)
@@ -15,8 +15,8 @@ export class ApiBusinessError extends Error {
 }
 
 export const isApiBusinessSuccess = (response?: ApiBusinessResponse) => {
-  if (typeof response?.code === 'string') {
-    return response.code === 'C2'
+  if (response?.code != null) {
+    return String(response.code) === 'C2'
   }
 
   return response?.success === true

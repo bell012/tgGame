@@ -1,14 +1,14 @@
 ﻿<template>
   <div
     ref="pageRootRef"
-    class="casino-page max-w-[1248px] mx-auto px-3.5 py-3 sm:py-4 sm:px-3 w-full font-['Inter']"
+    class="casino-page max-w-[1340px] mx-auto px-3.5 py-3 sm:py-4 sm:px-4 w-full font-['Inter']"
     :style="casinoPageStyle"
   >
     <HomeCarouselImg
       v-if="isSlideshowLoading || querySlideshowList.length > 0"
       :list="querySlideshowList"
       :loading="isSlideshowLoading"
-      class="mb-2.5 sm:mb-10 -mx-3.5 sm:-mx-3"
+      class="mb-2.5 sm:mb-4"
     />
 
     <div

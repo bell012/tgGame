@@ -502,11 +502,11 @@ export const createReferralCommissionBoostViewData = (
 /**
  * 生成推荐页榜单祝贺文案。
  */
-export const createReferralMarqueeMessages = (t: TranslateFn): string[] => [
-  t('referral.h5.marquee', { account: '877*****' }),
-  t('referral.h5.marquee', { account: '665*****' }),
-  t('referral.h5.marquee', { account: '901*****' })
-]
+export const createReferralMarqueeMessages = (records: unknown[]): string[] => {
+  return records
+    .map(item => String(((item ?? {}) as Record<string, unknown>).noticeTitle ?? '').trim())
+    .filter(Boolean)
+}
 
 /**
  * 生成推荐文案弹窗预设文案列表。

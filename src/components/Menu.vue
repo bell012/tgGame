@@ -1,34 +1,28 @@
 ﻿<template>
-  <div class="sidebar-menu px-3.5 sm:px-0">
-    <!-- BC代币 -->
-    <div v-if="!isCollapsed">
-      <div
-        class="flex items-center justify-between bc-card p-2 rounded-lg cursor-pointer"
-        @click="() => console.log('点击 BC代币')"
-      >
-        <div class="flex items-center flex-1">
-          <div class="w-9 h-9 mr-1 flex items-center justify-center">
-            <component :is="side.icon_1" class="w-6 h-6 fill-none" />
-          </div>
-          <div v-if="!isCollapsed" class="flex-1 min-w-0">
-            <div class="flex items-center">
-              <span class="text-sm font-[800] text-text-1 mr-1">
-                {{ t('sidebar_menu.bc_token.title') }}
-              </span>
-              <span class="text-xs font-[600] text-theme-primary">↑ 0.45%</span>
-            </div>
-            <div class="text-sm text-text-1">$0.00771</div>
-          </div>
+  <div class="sidebar-menu px-3.5 sm:px-0" :style="mobileMenuStyle">
+    <!-- BC代币 / 顶部提示 -->
+    <div
+      v-if="showBcToken"
+      class="bc-card mt-4 flex cursor-pointer items-center justify-between rounded-xl bg-bg-2 px-3 py-1.5 sm:mt-0 sm:py-2.5"
+      @click="() => console.log('点击 BC代币')"
+    >
+      <div class="flex min-w-0 flex-1 items-center gap-2.5">
+        <div
+          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-theme-primary sm:h-9 sm:w-9"
+        ></div>
+        <div class="flex min-w-0 flex-col gap-[5px]">
+          <p class="m-0 text-sm font-bold leading-tight text-text-1">
+            {{ t('sidebar_menu.bc_token.title') }}
+          </p>
+          <p class="m-0 text-xs font-semibold leading-tight text-assistRed">-1.00%</p>
         </div>
-        <!-- <div v-if="!isCollapsed" class="text-text-3 text-xl">
-          <div class="w-6 h-6 bg-opacity-10 rounded-md flex items-center justify-center">
-            <Arrow_right class="w-4 h-4 fill-none" />
-          </div>
-        </div> -->
+      </div>
+      <div class="flex shrink-0 flex-col gap-[5px] pl-3 text-right">
+        <p class="m-0 text-sm font-semibold leading-tight text-text-1">1 BC</p>
+        <p class="m-0 text-sm leading-tight text-text-1">$0.00783</p>
       </div>
     </div>
-
-    <div class="flex flex-col mt-1">
+    <div class="flex flex-col">
       <div
         v-for="(menuGroup, groupIndex) in sidebarMenuGroups"
         :key="`group-${groupIndex}`"
@@ -470,7 +464,7 @@ interface Props {
   isCollapsed?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isCollapsed: false
 })
 
@@ -482,6 +476,18 @@ const themeStore = useThemeStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
 const isMobile = useIsMobile()
+
+const showBcToken = computed(() => !props.isCollapsed || isMobile.value)
+
+const mobileMenuStyle = computed(() => {
+  if (!isMobile.value) {
+    return undefined
+  }
+
+  return {
+    paddingTop: `calc(env(safe-area-inset-top) + ${layoutStore.TOPNAV_HEIGHT}px)`
+  }
+})
 
 const { t } = useI18n()
 const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
@@ -972,7 +978,6 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 .sidebar-menu {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 .app-download-card {

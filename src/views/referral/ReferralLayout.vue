@@ -2,7 +2,7 @@
   <div class="max-w-[1336px] mx-auto pt-[14px]">
     <h2 class="mb-4 text-xl font-[700] text-text-1">{{ props.pageTitle }}</h2>
 
-    <div class="flex justify-center gap-6">
+    <div class="flex justify-center gap-6 px-2">
       <!-- 左侧菜单 -->
       <aside class="w-[280px] flex-shrink-0">
         <div class="rounded-xl bg-bg-2 p-4">
@@ -38,6 +38,9 @@
     </div>
   </div>
 
+  <!-- PC Guide 视频弹窗 -->
+  <ReferralGuideVideoPopup v-model="showGuideVideoPopup" />
+
   <CommonFooter class="mt-[40px]" />
 </template>
 
@@ -54,9 +57,9 @@ import RulesIcon from '@/static/svg/referral/rules.svg?url'
 import TasksActiveIcon from '@/static/svg/referral/tasks-active.svg?url'
 import TasksIcon from '@/static/svg/referral/tasks.svg?url'
 import { navigateTo } from '@/utils/router'
-import { globalShowToast } from '@/utils/toast'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import ReferralGuideVideoPopup from './components/ReferralGuideVideoPopup.vue'
 
 type ReferralDesktopTab = 'referral' | 'tasks' | 'details' | 'rules' | 'guide'
 
@@ -76,6 +79,7 @@ interface ReferralDesktopMenuItem {
 const props = defineProps<Props>()
 
 const { t } = useI18n()
+const showGuideVideoPopup = ref(false)
 
 const menuItems = computed<ReferralDesktopMenuItem[]>(() => [
   {
@@ -119,10 +123,7 @@ const menuItems = computed<ReferralDesktopMenuItem[]>(() => [
  */
 function handleMenuClick(tab: ReferralDesktopTab, path?: string) {
   if (tab === 'guide') {
-    globalShowToast({
-      message: `${t('referral.h5.quickActions.guide')} ${t('referral.comingSoon')}`,
-      type: 'success'
-    })
+    showGuideVideoPopup.value = true
     return
   }
 

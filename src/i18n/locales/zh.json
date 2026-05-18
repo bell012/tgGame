@@ -613,7 +613,7 @@
     "copyFailed": "复制失败",
     "noClaimableCommission": "暂无可领取佣金",
     "claimPending": "领取申请已提交",
-    "comingSoon": "功能开发中",
+    "comingSoon": "敬请期待，更多内容即将到来！！",
     "cta": "立即邀请",
     "invitePoster": {
       "saveImage": "保存海报",
@@ -682,8 +682,10 @@
       },
       "rewardsToClaim": "待领取奖励",
       "tabs": {
+        "commissionRules": "佣金规则",
         "inviteRegister": "邀请注册",
         "cumulativeDeposit": "累计充值",
+        "directBet": "直属打码",
         "commissionBoost": "佣金加成",
         "recommendedWallet": "钱包"
       },

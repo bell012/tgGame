@@ -1,12 +1,12 @@
 ﻿<template>
   <div class="home mx-auto max-w-[1248px] py-2 sm:px-4 sm:py-4">
-    <div style="height: 55px" class="sm:hidden"></div>
+    <div style="height: 55px" class="mb-2.5 sm:hidden"></div>
 
     <HomeCarouselImg
       v-if="isSlideshowLoading || querySlideshowList.length"
       :list="querySlideshowList"
       :loading="isSlideshowLoading"
-      class="sm:mb-2.5"
+      class="px-3.5 sm:mb-2.5"
     />
     <div class="px-3.5">
       <!--Favorites Games -->

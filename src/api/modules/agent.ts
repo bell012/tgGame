@@ -1,13 +1,14 @@
 import type {
   AgentApiResponse,
-  QueryReferralCommissionBoostAmountResponse,
   QueryEstimatedCommissionResponse,
+  QueryReferralCommissionBoostAmountResponse,
   QueryReferralDetailsChartStatsResponse,
   QueryReferralDetailsClaimHistoryResponse,
   QueryReferralDetailsRewardHistoryResponse,
-  QueryReferralSettlementRuleResponse,
   QueryReferralDetailsTopUpStatsResponse,
+  QueryReferralSettlementRuleResponse,
   QueryReferralTaskProgressResponse,
+  QueryReferralTaskRewardsToClaimResponse,
   QueryTaskRewardConfigResponse
 } from '@/api/interface/agent'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
@@ -47,6 +48,12 @@ export const queryEstimatedCommission = (
   options?: AgentRequestOptions
 ): Promise<QueryEstimatedCommissionResponse> => callAgentAction('agent75', undefined, options)
 
+// agent103：查询任务页待领取奖励金额。
+export const queryReferralTaskRewardsToClaim = (
+  options?: AgentRequestOptions
+): Promise<QueryReferralTaskRewardsToClaimResponse> =>
+  callAgentAction('agent103', undefined, options)
+
 // agent77：领取当前登录一级代理未领取佣金。
 export const claimCommission = (options?: AgentRequestOptions): Promise<AgentApiResponse> =>
   callAgentAction('agent77', undefined, {
@@ -82,7 +89,7 @@ export const queryReferralCommissionBoostAmount = (
 
 // agent87：查询一级代理任务进度。
 export const queryReferralTaskProgress = (
-  param: Record<string, unknown>,
+  param?: Record<string, unknown>,
   options?: AgentRequestOptions
 ): Promise<QueryReferralTaskProgressResponse> => callAgentAction('agent87', param, options)
 

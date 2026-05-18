@@ -21,7 +21,7 @@
       :reward-rows="props.rewardRows"
       :reward-table-loading="props.rewardTableLoading"
       :valid-invite-title="props.validInviteTitle"
-      :valid-invite-description="props.validInviteDescription"
+      :valid-invite-description-segments="props.validInviteDescriptionSegments"
       :task-rules-title="props.taskRulesTitle"
       :task-rules-image="props.taskRulesImage"
       :bottom-action-text="props.bottomActionText"
@@ -36,7 +36,12 @@
 <script setup lang="ts">
 import ReferralLayout from '../ReferralLayout.vue'
 import ReferralTaskPageContent from './components/ReferralTaskPageContent.vue'
-import type { ReferralTaskRewardRow, ReferralTaskTab, ReferralTaskTabKey } from './shared'
+import type {
+  ReferralTaskRewardRow,
+  ReferralTaskTab,
+  ReferralTaskTabKey,
+  ReferralTaskValidInviteDescriptionSegment
+} from './shared'
 
 interface Props {
   pageTitle: string
@@ -58,7 +63,7 @@ interface Props {
   rewardRows: ReferralTaskRewardRow[]
   rewardTableLoading: boolean
   validInviteTitle: string
-  validInviteDescription: string
+  validInviteDescriptionSegments: ReferralTaskValidInviteDescriptionSegment[]
   taskRulesTitle: string
   taskRulesImage: string
   bottomActionText: string
