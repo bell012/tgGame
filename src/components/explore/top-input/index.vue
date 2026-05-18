@@ -5,18 +5,18 @@
       class="top-search-leading h-[24px] flex items-center absolute left-[11px] top-1/2 -translate-y-1/2"
       @click="typeVisible = true"
     >
-      <div class="top-search-type text-[12px] font-[700] mr-[2px] cursor-pointer">
+      <div class="top-search-type text-[12px] font-[700] mr-[6px] cursor-pointer">
         {{ currentTypeName }}
       </div>
       <pull_down class="top-search-pull w-[8px] h-[8px]" />
-      <div class="top-search-divider w-[1px] h-[24px] mx-[5px] bg-[var(--color-opacity-10)]"></div>
+      <div class="top-search-divider w-[1px] h-[24px] mx-[12px] bg-[var(--color-opacity-10)]"></div>
       <SearchIcon class="w-[14px] h-[14px] fill-none stroke-icon-2" />
     </div>
     <input
       v-model="keyword"
       type="text"
       :placeholder="t('search.placeholder')"
-      class="top-search-input w-full h-[42px] pl-[97px] pr-[14px] rounded-[8px] border text-text-1 text-[12px] font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
+      class="top-search-input w-full h-[42px] pl-[110px] pr-[14px] rounded-[8px] border text-text-1 text-[12px] font-[600] outline-none focus:border-theme-primary placeholder:text-text-2"
       @input="onInput"
       @keydown.enter.prevent="onSearch"
       @focus="focusClick"
@@ -327,6 +327,11 @@ onBeforeUnmount(() => {
     white-space: nowrap;
     font-size: 12px;
     line-height: 1;
+  }
+
+  // left(12) + type-max(68) + mr(4) + arrow(8) + divider-mx(12) + icon(14) + gap(6) = 124px
+  .top-search-input {
+    padding-left: 110px;
   }
 }
 </style>

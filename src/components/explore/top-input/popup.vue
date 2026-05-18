@@ -17,7 +17,7 @@
             <div class="text-base font-bold text-[var(--color-text-level-1)]">Select</div>
             <div
               @click="close"
-              class="w-7 h-7 rounded-[4px] bg-[var(--color-opacity-10)] flex items-center justify-center"
+              class="w-7 h-7 rounded-[8px] bg-[var(--color-opacity-10)] flex items-center justify-center"
             >
               <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </div>
@@ -33,11 +33,11 @@
             >
               <div class="font-[700]">{{ item.name }}</div>
               <span
-                class="relative box-border inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border"
+                class="relative box-border inline-flex h-[20px] w-[20px] items-center justify-center rounded-full border"
                 :class="
                   isSelected(item)
                     ? 'border-theme-primary bg-theme-primary'
-                    : 'border-icon-2 bg-transparent'
+                    : 'border-[var(--color-opacity-10)] bg-transparent'
                 "
               >
                 <span

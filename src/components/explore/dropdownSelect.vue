@@ -49,7 +49,7 @@
             <div class="w-7" />
             <div class="text-base font-bold text-[var(--color-text-level-1)]">Select</div>
             <button
-              class="flex h-7 w-7 items-center justify-center rounded-[4px] bg-[var(--color-opacity-10)]"
+              class="flex h-7 w-7 items-center justify-center rounded-[8px] bg-[var(--color-opacity-10)]"
               @click.stop="closePopup"
             >
               <CloseIcon class="h-2.5 w-2.5 text-text-1" />
@@ -59,7 +59,7 @@
           <div v-if="search" class="relative mb-[20px]">
             <component
               :is="SearchIcon"
-              class="absolute left-2.5 top-1/2 h-[14px] w-[14px] -translate-y-1/2 text-icon-2 [&_svg]:block [&_svg]:h-full [&_svg]:w-full"
+              class="absolute left-2.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 fill-none stroke-icon-2 [&_svg]:block [&_svg]:h-full [&_svg]:w-full"
             />
             <input
               v-model="keyword"
@@ -89,7 +89,7 @@
                   :class="
                     isSelected(item)
                       ? 'border-theme-primary bg-theme-primary'
-                      : 'border-icon-2 bg-transparent'
+                      : 'border-[var(--color-icon-level-3)] bg-transparent'
                   "
                 >
                   <span
@@ -101,11 +101,11 @@
                 </span>
                 <span
                   v-else-if="!Multi"
-                  class="relative box-border inline-flex h-[22px] w-[22px] items-center justify-center rounded-full border"
+                  class="relative box-border inline-flex h-[20px] w-[20px] items-center justify-center rounded-full border"
                   :class="
                     isSelected(item)
                       ? 'border-theme-primary bg-theme-primary'
-                      : 'border-icon-2 bg-transparent'
+                      : 'border-[var(--color-opacity-10)] bg-transparent'
                   "
                 >
                   <span

@@ -21,9 +21,9 @@
     <div
       class="absolute bottom-1 right-1 flex h-5 w-[33px] items-center rounded-[6px] bg-mask-20 px-1.5"
     >
-      <div class="icon mr-0.5 h-[10px] w-[10px] text-white">
+      <div class="icon mr-0.5 h-[13px] w-[13px] text-white">
         <svg
-          class="h-[10px] w-[10px]"
+          class="h-[13px] w-[13px]"
           viewBox="0 0 32 32"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
