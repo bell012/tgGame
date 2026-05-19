@@ -9,7 +9,7 @@ import {
   getStorageLanguageCode,
   withLocalePrefix
 } from '@/utils/locale'
-import { normalizeInvitationCode, saveInvitationCode } from '@/utils/invitationAttribution'
+import { resolveInvitationCodeFromQuery, saveInvitationCode } from '@/utils/invitationAttribution'
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
 const baseRoutes: RouteRecordRaw[] = [
@@ -782,7 +782,7 @@ router.beforeEach((to, _from, next) => {
   const routeLocaleParam = to.params.locale as string | undefined
   const routeLocale = getLocaleFromRouteParam(routeLocaleParam)
   const persistedLocale = getPersistedLocale()
-  const invitationCode = normalizeInvitationCode(to.query.id)
+  const invitationCode = resolveInvitationCodeFromQuery(to.query as Record<string, unknown>)
 
   if (routeLocaleParam && !routeLocale) {
     next(withLocalePrefix('/', persistedLocale ?? DEFAULT_LOCALE))
