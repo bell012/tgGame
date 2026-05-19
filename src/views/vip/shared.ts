@@ -656,6 +656,14 @@ const createProgressItem = (
   progress: getClampedProgress(currentValue, targetValue)
 })
 
+const createMaxVipProgressItem = (key: string, label: string): VipProgressItem => ({
+  key,
+  label,
+  current: '-',
+  target: '-',
+  progress: 100
+})
+
 /**
  * 根据当前会员等级与目标卡片等级，决定进度项展示值。
  * - 已解锁的低等级：直接展示满进度
@@ -829,6 +837,18 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
     const targetConfig = getVipTargetConfigById(vipId)
     const resolvedViewedVipId = targetConfig?.vipId ?? vipId ?? currentVipLevel.value
     const resolvedCurrentVipId = currentVipLevel.value ?? 0
+
+    if (
+      highestVipLevel.value > 0 &&
+      resolvedCurrentVipId === highestVipLevel.value &&
+      resolvedViewedVipId === highestVipLevel.value
+    ) {
+      return [
+        createMaxVipProgressItem('validBet', t('personalCenter.validBet')),
+        createMaxVipProgressItem('deposit', t('personalCenter.deposit'))
+      ]
+    }
+
     const betProgressValues = resolveVipProgressValues(
       resolvedCurrentVipId,
       resolvedViewedVipId,
