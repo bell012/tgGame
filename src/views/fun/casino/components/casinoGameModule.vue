@@ -1,5 +1,5 @@
 <template>
-  <div class="modules mb-4">
+  <div class="modules mb-2.5 sm:mb-4">
     <template v-if="props.loading">
       <div class="mt-2 flex h-8 items-center font-inter sm:mt-6">
         <div class="h-5 w-24 rounded bg-bg-2 animate-pulse sm:h-6 sm:w-32" />
@@ -21,20 +21,24 @@
     </template>
 
     <template v-else-if="props.module">
-      <div class="mt-2 flex h-8 items-center font-inter sm:mt-6">
+      <div class="mt-2 flex h-6 sm:h-8 items-center font-inter sm:mt-6">
         <h2 class="flex items-center text-base font-bold text-text-1 sm:text-xl">
           {{ props.module.sysGameTypeName }}
         </h2>
         <button
-          class="button inactive ml-auto flex h-6 sm:h-8 items-center gap-1 rounded-lg bg-opacity-10 px-2 text-xs sm:text-sm font-bold text-text-1 whitespace-nowrap"
+          class="button inactive ml-auto flex h-6 sm:h-8 items-center justify-center rounded-lg bg-opacity-10 px-2 text-xs sm:text-sm font-bold text-text-1 whitespace-nowrap"
           @click="handleViewAll(props.module)"
         >
           {{ t('casino.all') }}
+          <div class="hidden sm:block size-4 text-text-1 rotate-180">
+            <component :is="casinoIcons.chevron_left" class="size-4 fill-current" />
+          </div>
         </button>
         <div class="ml-2 hidden gap-x-1 sm:flex">
           <button
             type="button"
-            class="button inactive ml-auto flex h-8 items-center gap-1 rounded-lg bg-opacity-10 px-2 font-extrabold"
+            class="button inactive ml-auto flex h-8 items-center gap-1 rounded-lg px-2 font-extrabold"
+            :class="canScrollLeft ? 'bg-opacity-10' : 'bg-bg-4'"
             @click="scrollLeft"
           >
             <div class="icon size-4" :class="canScrollLeft ? 'text-text-1' : 'text-icon-3'">
@@ -43,7 +47,8 @@
           </button>
           <button
             type="button"
-            class="button inactive ml-auto flex h-8 items-center gap-1 rounded-lg bg-opacity-10 px-2 font-extrabold"
+            class="button inactive ml-auto flex h-8 items-center gap-1 rounded-lg px-2 font-extrabold"
+            :class="canScrollRight ? 'bg-opacity-10' : 'bg-bg-4'"
             @click="scrollRight"
           >
             <div
@@ -63,7 +68,7 @@
             props.module.brandItems.length > 0
           "
           ref="scrollRef"
-          class="relative -mx-[14px] grid snap-x snap-mandatory grid-flow-col auto-cols-[31.2%] gap-2 overflow-x-scroll overflow-y-hidden scroll-smooth px-[14px] pt-3 hide-scroll [scroll-padding-inline:14px] sm:mx-0 sm:auto-cols-[11.82%] sm:px-0 sm:[scroll-padding-inline:0]"
+          class="relative -mx-[14px] grid snap-x snap-mandatory grid-flow-col auto-cols-[31.2%] gap-2 overflow-x-scroll overflow-y-hidden scroll-smooth px-[14px] pt-2.5 sm:pt-3 hide-scroll [scroll-padding-inline:14px] sm:mx-0 sm:auto-cols-[11.82%] sm:px-0 sm:[scroll-padding-inline:0]"
         >
           <div
             v-for="(brand, i) in getDisplayBrandList(props.module.brandItems)"
