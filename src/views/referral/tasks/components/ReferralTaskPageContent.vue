@@ -6,27 +6,10 @@
       class="relative mx-auto flex flex-col"
       :class="props.mode === 'pc' ? '  max-full gap-6 pb-10 pt-4' : 'gap-3.5 px-3.5 pb-6 pt-3.5'"
     >
-      <!-- 任务重置提示 -->
-      <p
-        class="font-[400] text-text-3"
-        :class="props.mode === 'pc' ? 'text-sm leading-[22px]' : 'text-[11px] leading-[14px]'"
-      >
-        <span>{{ props.resetHintPrefix }}</span>
-        <span
-          class="align-middle font-[400] text-text-1"
-          :class="props.mode === 'pc' ? 'text-sm leading-[14px]' : 'text-[11px] leading-[11px]'"
-        >
-          {{ props.resetHintCountdown }}
-        </span>
-        <span>{{ props.resetHintSuffix }}</span>
-      </p>
-
-      <!-- 可领取奖励卡片 -->
-      <section
-        class="rounded-[10px] bg-bg-2"
-        :class="props.mode === 'pc' ? 'h-[96px] w-full rounded-[16px] p-[24px]' : 'px-3.5 py-3.5'"
-      >
-        <template v-if="props.mode === 'pc'">
+      <!-- PC 顶部区域顺序：可领取奖励卡片在上，任务重置提示在下 -->
+      <template v-if="props.mode === 'pc'">
+        <!-- 可领取奖励卡片 -->
+        <section class="h-[96px] w-full rounded-[16px] bg-bg-2 p-[24px]">
           <!-- 可领取奖励卡片内容 -->
           <div class="flex h-[48px] w-full items-start gap-[36px] self-stretch">
             <!-- 左侧可领取奖励信息区域 -->
@@ -64,9 +47,31 @@
               {{ props.claimText }}
             </button>
           </div>
-        </template>
+        </section>
 
-        <template v-else>
+        <!-- 任务重置提示 -->
+        <p class="text-sm font-[400] leading-[22px] text-text-3">
+          <span>{{ props.resetHintPrefix }}</span>
+          <span class="align-middle text-sm font-[400] leading-[14px] text-text-1">
+            {{ props.resetHintCountdown }}
+          </span>
+          <span>{{ props.resetHintSuffix }}</span>
+        </p>
+      </template>
+
+      <!-- H5 顶部区域顺序：任务重置提示在上，可领取奖励卡片在下 -->
+      <template v-else>
+        <!-- 任务重置提示 -->
+        <p class="text-[11px] font-[400] leading-[14px] text-text-3">
+          <span>{{ props.resetHintPrefix }}</span>
+          <span class="align-middle text-[11px] font-[400] leading-[11px] text-text-1">
+            {{ props.resetHintCountdown }}
+          </span>
+          <span>{{ props.resetHintSuffix }}</span>
+        </p>
+
+        <!-- 可领取奖励卡片 -->
+        <section class="rounded-[10px] bg-bg-2 px-3.5 py-3.5">
           <!-- 可领取奖励移动端布局 -->
           <div class="flex items-center justify-between">
             <!-- 可领取奖励左侧 -->
@@ -101,8 +106,8 @@
               {{ props.claimText }}
             </button>
           </div>
-        </template>
-      </section>
+        </section>
+      </template>
 
       <!-- 任务标签区域 -->
       <section class="overflow-x-auto">

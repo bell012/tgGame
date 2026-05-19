@@ -266,10 +266,12 @@
                 <div class="flex h-[48px] items-center gap-[12px]">
                   <CustomSelect
                     class="w-[336px]"
-                    :model-value="props.activeDateValue"
+                    :model-value="pcFriendsDateValue"
                     :options="pcFriendsDateOptions"
+                    :placeholder="pcFriendsDatePlaceholder"
+                    :use-placeholder-when-all="true"
                     @update:model-value="
-                      $emit('change-date', $event as ReferralDetailsDateFilterValue)
+                      handleChangePcFriendsDateFilter($event as ReferralDetailsDateFilterValue)
                     "
                   />
                   <CustomSelect
@@ -324,10 +326,10 @@
                 <article
                   v-for="item in props.friendsList"
                   :key="item.id"
-                  class="relative flex h-[112px] overflow-hidden rounded-[16px] bg-bg-2"
+                  class="relative flex h-[112px] w-full overflow-hidden rounded-[16px] bg-bg-2"
                 >
                   <div
-                    class="absolute left-0 top-0 z-[1] flex h-[23px] min-w-[80px] items-center justify-center rounded-br-[16px] bg-opacity-5 px-[16px] text-[12px] font-[400] leading-[15px]"
+                    class="absolute left-0 top-0 z-[1] flex h-[23px] w-[80px] items-center justify-center rounded-br-[16px] bg-opacity-5 px-[16px] text-[12px] font-[400] leading-[15px]"
                     :class="item.status === 'active' ? 'text-theme-primary' : 'text-text-2'"
                   >
                     {{ item.statusText }}
@@ -346,8 +348,8 @@
                       />
                     </div>
 
-                    <div class="flex min-w-0 flex-1 flex-col gap-[12px]">
-                      <div class="flex items-start gap-[12px]">
+                    <div class="flex h-[64px] min-w-0 flex-1 flex-col gap-[12px]">
+                      <div class="flex h-[24px] items-start gap-[12px]">
                         <div class="flex min-w-0 flex-1 items-center gap-[5.83px]">
                           <div
                             class="max-w-[120px] truncate text-[20px] font-[700] leading-[24px] text-text-1"
@@ -356,19 +358,21 @@
                           </div>
 
                           <div
-                            class="flex h-[24px] items-center justify-center rounded-[8px_8px_8px_0] bg-theme-3 px-[10px] text-[14px] font-[400] leading-[20px] text-theme-primary"
+                            class="flex h-[24px] w-[48px] shrink-0 items-center justify-center rounded-[8px_8px_8px_0] bg-theme-3 text-[14px] font-[400] leading-[20px] text-theme-primary"
                           >
                             {{ item.vipLevel }}
                           </div>
                         </div>
 
-                        <div class="text-[16px] font-[400] leading-[19px] text-text-2">
+                        <div
+                          class="w-[178px] shrink-0 text-[16px] font-[400] leading-[19px] text-text-2"
+                        >
                           {{ item.createTime }}
                         </div>
                       </div>
 
-                      <div class="flex items-center justify-center gap-[159px]">
-                        <div class="flex flex-1 items-center gap-[5.83px]">
+                      <div class="flex h-[28px] items-center">
+                        <div class="flex h-[24px] flex-1 items-center gap-[5.83px]">
                           <span class="text-[16px] font-[400] leading-[19px] text-text-2">
                             {{ props.depositLabel }}
                           </span>
@@ -377,7 +381,7 @@
                           </span>
                         </div>
 
-                        <div class="flex flex-1 items-center gap-[5.83px]">
+                        <div class="flex h-[24px] flex-1 items-center gap-[5.83px]">
                           <span class="text-[16px] font-[400] leading-[19px] text-text-2">
                             {{ props.validBetsLabel }}
                           </span>
@@ -389,7 +393,7 @@
                         <!-- 按钮块 -->
                         <button
                           type="button"
-                          class="flex flex-1 items-center justify-end gap-[12px]"
+                          class="flex h-[28px] flex-1 items-center justify-end gap-[12px]"
                           @click="$emit('go-friend-detail', item)"
                         >
                           <span class="text-[16px] font-[400] leading-[19px] text-text-1">
@@ -454,7 +458,7 @@ import CustomSelect from '@/components/common/CustomSelect.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type {
   ReferralDetailsClaimHistoryRow,
   ReferralDetailsDateFilterValue,
@@ -516,6 +520,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const hasChangedPcFriendsDateFilter = ref(false)
+
 const pcFriendsDateOptions = computed(() =>
   props.dateOptions.map(item => ({
     label: item.label,
@@ -523,7 +529,23 @@ const pcFriendsDateOptions = computed(() =>
   }))
 )
 
-defineEmits<{
+const pcFriendsDatePlaceholder = computed(() => props.dateLabel)
+
+const pcFriendsDateValue = computed<ReferralDetailsDateFilterValue>(() =>
+  !hasChangedPcFriendsDateFilter.value && props.activeDateValue === 'today'
+    ? 'all'
+    : props.activeDateValue
+)
+
+/**
+ * 处理 PC 好友列表日期筛选变更。
+ */
+function handleChangePcFriendsDateFilter(value: ReferralDetailsDateFilterValue) {
+  hasChangedPcFriendsDateFilter.value = true
+  emit('change-date', value)
+}
+
+const emit = defineEmits<{
   'change-tab': [value: ReferralDetailsTabValue]
   'change-date': [value: ReferralDetailsDateFilterValue]
   'open-date-picker': []

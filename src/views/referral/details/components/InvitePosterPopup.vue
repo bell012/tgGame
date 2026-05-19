@@ -9,13 +9,15 @@
     >
       <!-- 弹窗内容容器 -->
       <div
-        class="flex w-[300px] flex-col gap-[20px]"
+        class="flex w-[300px] flex-col gap-[20px] sm:w-[480px]"
         style="font-family: Inter, avertastd, sans-serif"
       >
         <!-- 海报轮播区域 -->
         <div class="flex flex-col items-center gap-[10px]">
           <!-- 海报图片容器 -->
-          <div class="relative h-[340px] w-[300px] overflow-hidden rounded-[20px] bg-bg-2">
+          <div
+            class="relative h-[340px] w-[300px] overflow-hidden rounded-[20px] bg-bg-2 sm:h-[544px] sm:w-[480px] sm:rounded-[32px]"
+          >
             <!-- 轮播轨道 -->
             <div
               class="flex h-full transition-transform duration-300 ease-out"
@@ -34,17 +36,23 @@
                 <img class="h-full w-full object-cover" :src="image" :alt="props.imageAlt" />
 
                 <!-- 邀请码信息区域 -->
-                <div class="absolute left-[20px] top-[141.33px] flex w-[260px] flex-col gap-[5px]">
+                <div
+                  class="absolute left-[20px] top-[141.33px] flex w-[260px] flex-col gap-[5px] sm:left-[32px] sm:top-[226.13px] sm:w-[416px] sm:gap-[8px]"
+                >
                   <!-- 邀请码标题 -->
-                  <div class="h-[17px] text-[14px] leading-[17px] text-white">邀请码</div>
+                  <div
+                    class="h-[17px] text-[14px] leading-[17px] text-white sm:h-[27.2px] sm:text-[22.4px] sm:leading-[27.2px]"
+                  >
+                    邀请码
+                  </div>
 
                   <!-- 邀请码展示框 -->
                   <div
-                    class="relative h-[40px] w-[260px] rounded-[10px] border border-white bg-black/20 backdrop-blur-[1.67px]"
+                    class="relative h-[40px] w-[260px] rounded-[10px] border border-white bg-black/20 backdrop-blur-[1.67px] sm:h-[64px] sm:w-[416px] sm:rounded-[16px] sm:backdrop-blur-[2.67px]"
                   >
                     <!-- 邀请码文本 -->
                     <div
-                      class="absolute left-[14px] top-1/2 -translate-y-1/2 text-[16px] font-bold leading-[19px] text-white"
+                      class="absolute left-[14px] top-1/2 -translate-y-1/2 text-[16px] font-bold leading-[19px] text-white sm:left-[22.4px] sm:text-[25.6px] sm:leading-[30.4px]"
                     >
                       {{ props.inviteCode || '-' }}
                     </div>
@@ -53,13 +61,13 @@
 
                 <!-- 二维码区域 -->
                 <div
-                  class="absolute left-[20px] top-[230px] flex h-[90px] w-[90px] items-center justify-center rounded-[10px] bg-white"
+                  class="absolute left-[20px] top-[230px] flex h-[90px] w-[90px] items-center justify-center rounded-[10px] bg-white sm:left-[32px] sm:top-[368px] sm:h-[144px] sm:w-[144px] sm:rounded-[16px]"
                 >
                   <!-- 二维码图片 -->
                   <img
                     v-if="qrCodeUrl"
                     :src="qrCodeUrl"
-                    class="h-[83.38px] w-[83.38px] rounded-[10px] object-contain"
+                    class="h-[83.38px] w-[83.38px] rounded-[10px] object-contain sm:h-[133.4px] sm:w-[133.4px] sm:rounded-[16px]"
                     alt="QR Code"
                   />
                 </div>
@@ -79,7 +87,7 @@
           </div>
 
           <!-- 轮播指示器 -->
-          <div v-if="shouldShowIndicator" class="flex h-[5px] items-center gap-[4px]">
+          <div v-if="shouldShowIndicator" class="flex h-[5px] items-center gap-[4px] sm:hidden">
             <!-- 轮播指示器项 -->
             <button
               v-for="(_, index) in props.images"
@@ -100,22 +108,22 @@
         </div>
 
         <!-- 弹窗按钮区域 -->
-        <div class="flex flex-col gap-[14px]">
+        <div class="flex flex-col gap-[14px] sm:h-[112px] sm:w-[480px] sm:gap-[16px]">
           <!-- 保存图片按钮 -->
           <button
             type="button"
-            class="h-[40px] w-full rounded-[8px] bg-theme-primary text-[14px] font-[700] leading-[17px] text-text-4"
+            class="h-[40px] w-full rounded-[8px] bg-theme-primary text-[14px] font-[700] leading-[17px] text-text-4 sm:h-[48px] sm:w-[480px] sm:p-[8px]"
             @click="handleSaveImage"
           >
             {{ props.saveText }}
           </button>
 
           <!-- 次级按钮组 -->
-          <div class="flex gap-[14px]">
+          <div class="flex gap-[14px] sm:h-[48px] sm:w-[480px] sm:gap-[12px]">
             <!-- 复制链接按钮 -->
             <button
               type="button"
-              class="h-[40px] flex-1 rounded-[8px] border border-theme-primary bg-theme-3 text-[14px] font-[700] leading-[17px] text-theme-primary"
+              class="h-[40px] flex-1 rounded-[8px] border border-theme-primary bg-theme-3 text-[14px] font-[700] leading-[17px] text-theme-primary sm:h-[48px] sm:w-[234px] sm:p-[8px]"
               @click="handleCopyLink"
             >
               {{ props.copyLinkText }}
@@ -124,7 +132,7 @@
             <!-- 邀请按钮 -->
             <button
               type="button"
-              class="h-[40px] flex-1 rounded-[8px] border border-theme-primary bg-theme-3 text-[14px] font-[700] leading-[17px] text-theme-primary"
+              class="h-[40px] flex-1 rounded-[8px] border border-theme-primary bg-theme-3 text-[14px] font-[700] leading-[17px] text-theme-primary sm:h-[48px] sm:w-[234px] sm:p-[8px]"
               @click="handleInviteNow"
             >
               {{ props.inviteText }}

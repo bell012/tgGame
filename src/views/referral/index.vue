@@ -157,6 +157,7 @@
 import Api from '@/api'
 import type {
   QueryReferralSettlementRuleResult,
+  QueryReferralShareConfigResult,
   QueryReferralTaskProgressResult,
   QueryTaskRewardConfigResult
 } from '@/api/interface/agent'
@@ -183,8 +184,6 @@ import InvitePosterPopup from './details/components/InvitePosterPopup.vue'
 import PcLayout from './pc-layout.vue'
 import {
   buildReferralBannerRequestKey,
-  buildReferralBannerSlidesFromApi,
-  buildReferralPosterImagesFromApi,
   buildReferralShareMessage,
   buildReferralSocialChannelsFromApi,
   buildReferralTaskPeriodRanges,
@@ -193,12 +192,12 @@ import {
   createReferralMarqueeMessages,
   createReferralMessagePresets,
   createReferralQuickActions,
+  fetchReferralBannerPayload,
   getCachedReferralBannerPayload,
   getDefaultReferralLink,
   getReferralCommissionCoinImage,
   getReferralInviteTaskReward,
   hasReferralTaskProgressData,
-  resolveReferralBannerPayload,
   type ReferralBannerSlide,
   type ReferralCommissionBoostPeriodTabKey,
   type ReferralQuickActionId,
@@ -227,6 +226,7 @@ const currentShareChannel = ref<ReferralSocialChannel | null>(null)
 const customReferralMessage = ref('')
 const taskRewardConfigResult = ref<QueryTaskRewardConfigResult | null>(null)
 const referralSettlementRule = ref<QueryReferralSettlementRuleResult | null>(null)
+const referralShareConfig = ref<QueryReferralShareConfigResult | null>(null)
 const currentPeriodTaskProgress = ref<QueryReferralTaskProgressResult | null>(null)
 const previousPeriodTaskProgress = ref<QueryReferralTaskProgressResult | null>(null)
 const activeCommissionBoostPeriodTab = ref<ReferralCommissionBoostPeriodTabKey>('current')
@@ -284,6 +284,7 @@ watch(
     void fetchEstimatedCommission()
     void fetchCommissionBoostEstimatedCommission()
     void fetchReferralTaskModuleData()
+    void fetchReferralShareConfig()
   },
   {
     immediate: true
@@ -424,9 +425,7 @@ const handleCopyReferralMessage = () => {
  */
 const handleConfirmReferralMessageCopy = async (message: string) => {
   customReferralMessage.value = String(message ?? '').trim()
-  const copied = await copyTextWithFallback(
-    buildReferralShareMessage(activeReferralMessage.value, referralLink)
-  )
+  const copied = await copyTextWithFallback(resolveReferralShareContent())
 
   globalShowToast({
     message: copied ? t('referral.h5.copyMessageSuccess') : t('referral.copyFailed'),
@@ -442,20 +441,46 @@ const handleConfirmReferralMessageCopy = async (message: string) => {
  * 获取当前分享渠道的邀请链接。
  */
 const resolveChannelReferralLink = () => {
-  const shareDomainUrl = String(currentShareChannel.value?.shareDomainUrl ?? '').trim()
+  const initUrl = String(referralShareConfig.value?.initUrl ?? '').trim() || referralLink
 
-  if (!shareDomainUrl) {
+  if (!initUrl) {
     return ''
   }
 
-  return `${shareDomainUrl.replace(/\/+$/, '')}/?id=${displayLinkCode.value}`
+  return `${initUrl.replace(/\/+$/, '')}/?id=${displayLinkCode.value}`
 }
 
 /**
- * 获取当前分享渠道的完整分享文案。
+ * 获取分享配置图片完整地址。
  */
-const resolveChannelReferralContent = () =>
-  buildReferralShareMessage(activeReferralMessage.value, resolveChannelReferralLink())
+// const resolveReferralShareImageUrl = () => toReferralAssetImageUrl(referralShareConfig.value?.pic)
+
+/**
+ * 获取完整分享文案。
+ */
+const resolveReferralShareContent = () =>
+  buildReferralShareMessage(
+    activeReferralMessage.value,
+    resolveChannelReferralLink(),
+    String(referralShareConfig.value?.shareName ?? '').trim(),
+    String(referralShareConfig.value?.shareDesc ?? '').trim()
+    // TODO：图片链接待定
+    // resolveReferralShareImageUrl()
+  )
+
+/**
+ * 打开当前选择的社交分享渠道。
+ */
+const openCurrentShareChannelTarget = () => {
+  const shareTargetUrl = resolveShareTargetUrl(currentShareChannel.value)
+
+  if (!shareTargetUrl || typeof window === 'undefined') {
+    return false
+  }
+
+  window.open(shareTargetUrl, '_blank', 'noopener,noreferrer')
+  return true
+}
 
 /**
  * 处理佣金领取按钮点击。
@@ -552,8 +577,8 @@ const handleBannerClick = async (slide: ReferralBannerSlide) => {
 /**
  * 获取当前分享渠道使用的目标链接。
  */
-const resolveShareTargetUrl = (channel: ReferralSocialChannel) =>
-  String(channel.shareDomainUrl ?? '').trim()
+const resolveShareTargetUrl = (channel?: ReferralSocialChannel | null) =>
+  String(channel?.shareDomainUrl ?? '').trim()
 
 /**
  * 处理获取社交分享渠道配置。
@@ -579,6 +604,26 @@ async function fetchSocialChannels() {
     console.error(error)
   } finally {
     socialChannelsLoading.value = false
+  }
+}
+
+/**
+ * 获取代理分享信息配置。
+ */
+async function fetchReferralShareConfig() {
+  referralShareConfig.value = null
+
+  try {
+    const response = ensureApiBusinessSuccess(
+      await Api.agent.queryReferralShareConfig({
+        channelId: currentAgentChannelId.value
+      })
+    )
+
+    referralShareConfig.value = response.result ?? null
+  } catch (error) {
+    console.error('[referral] fetch share config failed:', error)
+    referralShareConfig.value = null
   }
 }
 
@@ -693,23 +738,7 @@ async function fetchReferralBanner() {
   posterImages.value = []
 
   try {
-    const payload = await resolveReferralBannerPayload(requestKey, async () => {
-      const response = await Api.home.getQuerySlideshow({
-        languageCode,
-        channelId: currentAgentChannelId.value,
-        page: {
-          current: 1,
-          size: 100
-        }
-      })
-
-      const records = Array.isArray(response?.result?.records) ? response.result.records : []
-
-      return {
-        bannerSlides: buildReferralBannerSlidesFromApi(records),
-        posterImages: buildReferralPosterImagesFromApi(records)
-      }
-    })
+    const payload = await fetchReferralBannerPayload(currentAgentChannelId.value, languageCode)
 
     if (requestToken !== referralBannerRequestToken) {
       return
@@ -799,7 +828,7 @@ const handleSavePosterImage = () => {
  * 处理复制海报邀请链接。
  */
 const handleCopyPosterLink = async () => {
-  const copied = await copyTextWithFallback(resolveChannelReferralContent())
+  const copied = await copyTextWithFallback(resolveReferralShareContent())
 
   globalShowToast({
     message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
@@ -811,7 +840,7 @@ const handleCopyPosterLink = async () => {
  * 处理调用默认分享。
  */
 const handleInvitePoster = async () => {
-  const shareContent = resolveChannelReferralContent()
+  const shareContent = resolveReferralShareContent()
   const shareLink = resolveChannelReferralLink()
 
   if (!shareContent || !shareLink) {
@@ -822,24 +851,18 @@ const handleInvitePoster = async () => {
     return
   }
 
-  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-    try {
-      await navigator.share({
-        title: typeof document !== 'undefined' ? document.title : t('referral.title'),
-        text: shareContent,
-        url: shareLink
-      })
-      return
-    } catch (error) {
-      console.error('[referral] navigator share failed:', error)
-    }
-  }
-
   const copied = await copyTextWithFallback(shareContent)
 
   globalShowToast({
     message: copied ? t('referral.copySuccess') : t('referral.copyFailed'),
     type: copied ? 'success' : 'fail'
   })
+
+  if (copied && !openCurrentShareChannelTarget()) {
+    globalShowToast({
+      message: t('referral.comingSoon'),
+      type: 'fail'
+    })
+  }
 }
 </script>
