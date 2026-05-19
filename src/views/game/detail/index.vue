@@ -337,6 +337,15 @@ onUnmounted(() => {
   display: none;
 }
 
+@media (max-width: 767px) {
+  .detail-page {
+    height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 .detail-loading-mask {
   position: absolute;
   inset: 0;

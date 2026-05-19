@@ -1,5 +1,5 @@
 <template>
-  <div class="currency-info-panel mt-[14px] w-full h-full p-[14px] pb-[20px] rounded-t-[10px]">
+  <div class="currency-info-panel w-full p-[14px] pb-[20px] rounded-t-[10px]">
     <div class="flex gap-[10px]">
       <div
         class="w-[110px] h-[146px] rounded-md bg-[var(--color-background-level-2)] flex items-center justify-center overflow-hidden"
