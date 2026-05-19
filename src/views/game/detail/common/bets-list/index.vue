@@ -1,7 +1,7 @@
 <template>
-  <div class="mt-[12px]">
+  <div class="mt-[14px]">
     <!-- Header -->
-    <div class="grid lg:grid-cols-2 grid-cols-1 gap-4">
+    <div class="grid lg:grid-cols-2 grid-cols-1 gap-[14px]">
       <h2 class="flex items-center text-[14px] font-extrabold text-primary">
         {{ t('casino.latest_bet') }}
       </h2>
@@ -573,7 +573,7 @@ onBeforeUnmount(() => {
 }
 
 .table-wrap {
-  margin-top: 12px;
+  margin-top: 14px;
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;

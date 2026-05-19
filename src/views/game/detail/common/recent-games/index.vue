@@ -1,6 +1,6 @@
 <template>
   <div
-    class="recent-games-container w-full h-full p-[12px] bg-[var(--color-background-level-2)] rounded-[10px] mt-[12px]"
+    class="recent-games-container w-full h-full p-[12px] bg-[var(--color-background-level-2)] rounded-[10px] mt-[14px]"
   >
     <!-- 顶部开关 -->
     <TopToggle />

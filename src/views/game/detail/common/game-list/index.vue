@@ -1,6 +1,6 @@
 <template>
   <div class="gameList">
-    <div class="mt-[14px] flex items-center sm:mt-6 h-8">
+    <div class="mt-[14px] flex h-[24px] items-center sm:mt-6">
       <h2 class="flex items-center text-[14px] font-extrabold text-primary leading-none">
         {{ props.title }}
       </h2>

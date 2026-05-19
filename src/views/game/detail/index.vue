@@ -371,6 +371,8 @@ onUnmounted(() => {
 :global(.game-detail-hide-scrollbar) {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 :global(.game-detail-hide-scrollbar::-webkit-scrollbar) {
