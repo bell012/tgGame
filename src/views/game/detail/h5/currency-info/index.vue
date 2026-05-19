@@ -14,15 +14,25 @@
           "
         />
       </div>
-      <div class="flex-1 flex flex-col justify-between">
+      <div class="flex-1 flex flex-col">
         <template v-if="isLogin">
-          <div class="flex-1 flex flex-col justify-around">
-            <div class="text-[15px] font-bold">{{ t('gameDetail.playWithSelectedCurrency') }}</div>
+          <div class="flex h-[146px] flex-col justify-between">
+            <div class="text-[15px] font-bold leading-[15px]">
+              {{ t('gameDetail.playWithSelectedCurrency') }}
+            </div>
             <currency-select @change="handleCurrencyChange"></currency-select>
             <div
               class="text-[12px] leading-[12px] font-[400] text-[var(--color-text-level-2)] text-center"
             >
               {{ t('gameDetail.playNowHint') }}
+            </div>
+            <div class="play-btn cursor-pointer" @click="handlePlayAction">
+              <div class="w-[16px] h-[16px]">
+                <play-icon class="w-full h-full" />
+              </div>
+              <div class="text-[15px] font-bold text-[#000]">
+                {{ playButtonText }}
+              </div>
             </div>
           </div>
         </template>
@@ -40,7 +50,7 @@
           </div>
         </template>
 
-        <div class="play-btn cursor-pointer" @click="handlePlayAction">
+        <div v-if="!isLogin" class="play-btn cursor-pointer" @click="handlePlayAction">
           <div class="w-[16px] h-[16px]">
             <play-icon class="w-full h-full" />
           </div>
@@ -132,11 +142,10 @@ onMounted(() => {
 </script>
 <style scoped lang="scss">
 .currency-info-panel {
-  background: transparent;
+  background: var(--color-background-level-2);
 }
 
 :global(:root.light) .currency-info-panel {
-  background: transparent;
   border: none;
 }
 

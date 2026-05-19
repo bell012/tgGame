@@ -308,8 +308,8 @@ const baseRoutes: RouteRecordRaw[] = [
       description: '游戏详情',
       // requiresAuth: true,
       mobile: {
-        hideBottomBar: true
-        // hideTopNav: true
+        hideBottomBar: true,
+        hideTopNav: true
       }
     }
   },

@@ -2,7 +2,7 @@
   <!-- 顶部搜索 -->
   <div class="currency-select-trigger relative rounded-[6px]">
     <div
-      class="text-[14px] h-[36px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px] rounded-[6px] bg-opacity-10"
+      class="text-[14px] h-[36px] flex items-center justify-between p-[8px] cursor-pointer gap-[8px] rounded-[6px]"
       @click="visible = true"
     >
       <div class="flex gap-[10px] min-w-0">
@@ -112,8 +112,8 @@ watch(
 }
 
 .trigger-arrow-icon {
-  width: 14px;
-  height: 14px;
+  width: 8px;
+  height: 8px;
   color: var(--color-icon-level-2);
 }
 

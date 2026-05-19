@@ -70,8 +70,8 @@ const shareVisibleClick = () => {
 </script>
 <style lang="scss" scoped>
 .currency-toolbar {
-  background: var(--color-background-level-3);
-  border-top: 1px solid var(--color-opacity-10);
+  background: var(--color-mask-20);
+  border-top: 0.33px solid var(--color-opacity-10);
 }
 
 .icon-trigger {
@@ -89,10 +89,14 @@ const shareVisibleClick = () => {
   height: 16px;
   color: var(--color-icon-level-2);
   fill: currentColor;
+  stroke: currentColor;
 }
 
-.toolbar-icon :deep(path) {
+.toolbar-icon :deep(path),
+.toolbar-icon :deep(circle),
+.toolbar-icon :deep(rect) {
   fill: currentColor;
+  stroke: currentColor;
 }
 
 .desktop-popup {

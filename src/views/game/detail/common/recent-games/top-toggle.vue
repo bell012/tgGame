@@ -107,8 +107,8 @@ const openProviderGames = () => {
 }
 
 .icon {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   color: var(--color-icon-level-2);
   transition: transform 0.3s ease-in-out;
   transform: rotate(0deg);
