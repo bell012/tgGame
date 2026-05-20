@@ -30,7 +30,7 @@
           <div
             v-for="item in sortOptions"
             :key="item.value"
-            class="sort-menu-popup-item mb-[6px] flex h-[38px] cursor-pointer items-center justify-center rounded-[8px] text-[12px] font-semibold transition-colors duration-200 last:mb-0"
+            class="sort-menu-popup-item mb-[6px] flex h-[30px] cursor-pointer items-center justify-center rounded-[5px] text-[12px] font-semibold transition-colors duration-200 last:mb-0"
             :class="{
               'sort-menu-popup-item-active': activeSort === item.value,
               'sort-menu-popup-item-light': isLightTheme && activeSort !== item.value
@@ -291,8 +291,20 @@ onBeforeUnmount(() => {
 </script>
 <style scoped>
 .sort-menu-popup {
-  background: #1f2730;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  background: var(--color-background-level-2);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+}
+
+.sort-menu-popup::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 12px;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 8px solid var(--color-background-level-2);
 }
 
 .sort-menu-trigger {
@@ -314,24 +326,31 @@ onBeforeUnmount(() => {
 }
 
 .sort-menu-popup-light {
-  background: #edf3fb;
-  border: 1px solid #c7d4e6;
-  box-shadow: 0 10px 24px rgba(108, 132, 160, 0.22);
+  background: var(--color-background-level-2);
+  border: none;
 }
 
 .sort-menu-popup-item {
-  color: #ffffff;
-  background: #353d45;
+  color: var(--color-text-level-1);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .sort-menu-popup-item-light {
-  color: #2a3543;
-  background: #dbe5f2;
+  color: var(--color-text-level-1);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .sort-menu-popup-item-active {
-  color: #ffffff;
-  background: linear-gradient(90deg, #2c9a67 0%, #1d7b52 100%);
+  color: var(--color-text-level-1);
+  background:
+    linear-gradient(90deg, rgba(0, 255, 96, 0.3) 0%, rgba(0, 255, 96, 0) 70.24%),
+    rgba(255, 255, 255, 0.06);
+}
+
+:global(:root.light) .sort-menu-popup-item-active {
+  background:
+    linear-gradient(90deg, rgba(0, 255, 96, 0.3) 0%, rgba(0, 255, 96, 0) 70.24%),
+    rgba(0, 0, 0, 0.06);
 }
 
 .sort-popup-enter-active,

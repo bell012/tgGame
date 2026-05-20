@@ -8,7 +8,7 @@
         @click.stop="openProviderGames"
       >
         <span class="text-[var(--color-text-level-2)]">By</span>
-        <span class="text-[var(--color-text-level-2)] font-[600]">{{ providerName }}</span>
+        <span class="text-[var(--color-theme-level-1)] font-[600]">{{ providerName }}</span>
       </button>
     </div>
     <div class="toggle-arrow-wrap">
