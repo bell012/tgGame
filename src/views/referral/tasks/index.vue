@@ -126,6 +126,8 @@ import ReferralTaskProgressReminderPopup from './components/ReferralTaskProgress
 import PcLayout from './pc-layout.vue'
 import {
   buildReferralTaskRewardTable,
+  createReferralTaskCommissionBoostAchievedRewardValue,
+  createReferralTaskCommissionBoostProgressValue,
   createReferralTaskMaxRewardLabel,
   createReferralTaskMaxRewardValue,
   createReferralTaskResetHintSegments,
@@ -157,9 +159,16 @@ const claimingCommission = ref(false)
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
 const taskTabs = computed(() => createReferralTaskTabs(t))
 const currentProgressField = computed(() => getReferralTaskProgressFieldByTab(activeTab.value))
-const currentProgressCount = computed(() =>
-  Number(taskProgressResult.value?.[currentProgressField.value] ?? 0)
+const commissionBoostProgressValue = computed(() =>
+  createReferralTaskCommissionBoostProgressValue(taskRewardConfig.value, taskProgressResult.value)
 )
+const currentProgressCount = computed(() => {
+  if (activeTab.value === 'commission-boost') {
+    return commissionBoostProgressValue.value
+  }
+
+  return Number(taskProgressResult.value?.[currentProgressField.value] ?? 0)
+})
 const rewardTable = computed(() =>
   buildReferralTaskRewardTable(
     taskRewardConfig.value,
@@ -170,7 +179,20 @@ const rewardTable = computed(() =>
 )
 const rewardTableColumns = computed(() => rewardTable.value.columns)
 const rewardRows = computed(() => rewardTable.value.rows)
-const currentProgressValue = computed(() => String(currentProgressCount.value))
+const currentProgressValue = computed(() => {
+  if (activeTab.value === 'commission-boost') {
+    const achievedRewardAmount = createReferralTaskCommissionBoostAchievedRewardValue(
+      taskRewardConfig.value,
+      commissionBoostProgressValue.value
+    )
+
+    return Number.isInteger(achievedRewardAmount)
+      ? String(achievedRewardAmount)
+      : formatBalance(achievedRewardAmount, 2)
+  }
+
+  return String(currentProgressCount.value)
+})
 const currentProgressUnit = computed(() =>
   activeTab.value === 'invite-register'
     ? currentProgressCount.value > 1
