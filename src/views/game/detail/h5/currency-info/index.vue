@@ -1,5 +1,5 @@
 <template>
-  <div class="currency-info-panel w-full h-full p-[14px] pb-[20px] rounded-t-[10px]">
+  <div class="currency-info-panel w-full p-[14px] pb-[20px] rounded-t-[10px]">
     <div class="flex gap-[10px]">
       <div
         class="w-[110px] h-[146px] rounded-md bg-[var(--color-background-level-2)] flex items-center justify-center overflow-hidden"
@@ -14,15 +14,25 @@
           "
         />
       </div>
-      <div class="flex-1 flex flex-col justify-between">
+      <div class="flex-1 flex flex-col">
         <template v-if="isLogin">
-          <div class="flex-1 flex flex-col justify-around">
-            <div class="text-[15px] font-bold">{{ t('gameDetail.playWithSelectedCurrency') }}</div>
+          <div class="flex h-[146px] flex-col justify-between">
+            <div class="text-[15px] font-bold leading-[15px]">
+              {{ t('gameDetail.playWithSelectedCurrency') }}
+            </div>
             <currency-select @change="handleCurrencyChange"></currency-select>
             <div
               class="text-[12px] leading-[12px] font-[400] text-[var(--color-text-level-2)] text-center"
             >
               {{ t('gameDetail.playNowHint') }}
+            </div>
+            <div class="play-btn cursor-pointer" @click="handlePlayAction">
+              <div class="w-[16px] h-[16px]">
+                <play-icon class="w-full h-full" />
+              </div>
+              <div class="text-[15px] font-bold text-[#000]">
+                {{ playButtonText }}
+              </div>
             </div>
           </div>
         </template>
@@ -35,12 +45,12 @@
             </div>
             <div class="mt-[4px] text-[12px] leading-[16px] text-[var(--color-text-level-2)]">
               {{ t('gameDetail.by') }}
-              <span class="text-[var(--color-theme-level-1)]">{{ displayProviderName }}</span>
+              <span class="text-[var(--color-text-level-2)]">{{ displayProviderName }}</span>
             </div>
           </div>
         </template>
 
-        <div class="play-btn cursor-pointer" @click="handlePlayAction">
+        <div v-if="!isLogin" class="play-btn cursor-pointer" @click="handlePlayAction">
           <div class="w-[16px] h-[16px]">
             <play-icon class="w-full h-full" />
           </div>
@@ -136,7 +146,6 @@ onMounted(() => {
 }
 
 :global(:root.light) .currency-info-panel {
-  background: #ffffff;
   border: none;
 }
 

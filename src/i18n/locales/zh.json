@@ -740,7 +740,7 @@
       }
     },
     "detailsPage": {
-      "title": "好友",
+      "title": "详情",
       "filter": "筛选",
       "topUpTitle": "充值统计",
       "detailText": "详情",
@@ -904,6 +904,7 @@
     "shareViaWebLink": "通过网页链接分享",
     "copyLink": "复制链接",
     "upgrade": "升级",
+    "vipLevelGoalCompleted": "您已完成该 VIP 等级目标",
     "deposit": "存款",
     "validBet": "有效投注",
     "buy": "购买",

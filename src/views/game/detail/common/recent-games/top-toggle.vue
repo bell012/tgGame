@@ -4,11 +4,11 @@
       <h3 class="text-[14px] font-extrabold">{{ gameName }}</h3>
       <button
         type="button"
-        class="provider-link flex gap-[4px] text-[12px]"
+        class="provider-link flex gap-[4px] text-[12px] text-[var(--color-text-level-2)]"
         @click.stop="openProviderGames"
       >
         <span class="text-[var(--color-text-level-2)]">By</span>
-        <span class="text-[var(--color-theme-level-1)] font-[600]">{{ providerName }}</span>
+        <span class="text-[var(--color-text-level-2)] font-[600]">{{ providerName }}</span>
       </button>
     </div>
     <div class="toggle-arrow-wrap">
@@ -97,9 +97,9 @@ const openProviderGames = () => {
 }
 
 .toggle-arrow-wrap {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -107,8 +107,8 @@ const openProviderGames = () => {
 }
 
 .icon {
-  width: 14px;
-  height: 14px;
+  width: 8px;
+  height: 8px;
   color: var(--color-icon-level-2);
   transition: transform 0.3s ease-in-out;
   transform: rotate(0deg);

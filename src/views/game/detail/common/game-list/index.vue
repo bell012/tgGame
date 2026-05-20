@@ -1,12 +1,12 @@
 <template>
   <div class="gameList">
-    <div class="mt-[14px] flex items-center sm:mt-6 h-8">
+    <div class="mt-[14px] flex h-[24px] items-center sm:mt-6">
       <h2 class="flex items-center text-[14px] font-extrabold text-primary leading-none">
         {{ props.title }}
       </h2>
       <button
         type="button"
-        class="button ml-auto flex items-center justify-center bg-bg-3 rounded-lg font-extrabold h-[24px] min-w-[31px] text-[12px] leading-none bg-black_alpha5 px-[6px] dark:bg-layer5"
+        class="button ml-auto flex items-center justify-center bg-bg-3 rounded-[6px] font-extrabold h-[24px] min-w-[31px] text-[12px] leading-none bg-black_alpha5 px-[6px] dark:bg-layer5"
         @click="emit('all-click')"
       >
         {{ $t('home.All') }}

@@ -1,5 +1,5 @@
-import guideImage from '@/static/img/referral/claim_popup_hero.png'
 import type { QueryTaskRewardCommissionItem } from '@/api/interface/agent'
+import guideImage from '/guide/videos/guide-home-intro.png'
 
 type TranslateFn = (key: string, named?: Record<string, unknown>) => string
 

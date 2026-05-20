@@ -18,7 +18,7 @@
           class="tp-panel bg-[var(--color-background-level-2)] rounded-t-xl pt-2.5 px-3.5"
           :class="desktop ? 'tp-panel-desktop' : ''"
         >
-          <div class="tp-header flex items-center justify-between mb-2.5" v-if="!desktop">
+          <div class="tp-header flex items-center justify-between mb-[20px]" v-if="!desktop">
             <div></div>
             <div class="text-base font-bold text-[var(--color-text-level-1)]">
               {{ t('customSelect.placeholder') }}

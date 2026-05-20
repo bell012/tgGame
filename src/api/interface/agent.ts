@@ -179,6 +179,25 @@ export interface QueryReferralTaskProgressResult {
 export interface QueryReferralTaskProgressResponse extends AgentApiResponse<QueryReferralTaskProgressResult> {}
 
 /**
+ * 查询代理分享信息配置结果
+ */
+export interface QueryReferralShareConfigResult {
+  initUrl?: string
+  pic?: string
+  qrDesc?: string
+  rowId?: number
+  shareDesc?: string
+  shareName?: string
+  site?: string
+  viewQrDesc?: string
+}
+
+/**
+ * 查询代理分享信息配置响应
+ */
+export interface QueryReferralShareConfigResponse extends AgentApiResponse<QueryReferralShareConfigResult> {}
+
+/**
  * 推荐详情统计图 - 新增好友数据项
  */
 export interface QueryReferralDetailsNewSubItem {
