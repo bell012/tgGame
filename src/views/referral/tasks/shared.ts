@@ -133,9 +133,9 @@ const createProgressStatusText = (achieved: boolean, t: TranslateFn) => {
  * 生成createFriendCondition方法。
  */
 const createFriendCondition = (item: QueryTaskRewardFriendItem, t: TranslateFn) => {
-  const max = toText(item.max)
-  const condition = max
-  const unitCount = toNumber(max)
+  const min = toText(item.min)
+  const condition = min
+  const unitCount = toNumber(min)
 
   return {
     condition,
@@ -529,7 +529,7 @@ export const buildReferralTaskRewardTable = (
         condition,
         toText(item.reward),
         currentProgress,
-        toNumber(item.max),
+        toNumber(item.min),
         t,
         conditionUnit
       )
