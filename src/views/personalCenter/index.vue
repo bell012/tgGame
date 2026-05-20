@@ -59,10 +59,12 @@
             <div class="w-full min-w-0">
               <div class="flex w-full min-w-0 items-center justify-between mb-1">
                 <span class="min-w-0 flex-1 text-theme-primary text-xs"
-                  >{{ t('personalCenter.upgrade') }}: {{ t('personalCenter.validBet') }}
-                  {{ remainingBetAmount }} {{ t('personalCenter.deposit') }}
-                  {{ remainingRechargeAmount }}</span
-                >
+                  >{{
+                    isMaxVipLevel
+                      ? t('personalCenter.vipLevelGoalCompleted')
+                      : `${t('personalCenter.upgrade')}: ${t('personalCenter.validBet')} ${remainingBetAmount} ${t('personalCenter.deposit')} ${remainingRechargeAmount}`
+                  }}
+                </span>
                 <span class="shrink-0 text-theme-primary text-xs font-bold"
                   >VIP {{ nextVipLevel }}</span
                 >
@@ -472,6 +474,10 @@ const maxVipLevel = computed(() => {
   return vipList.value.reduce((maxVipId, item) => Math.max(maxVipId, item.vipId ?? 0), 0)
 })
 
+const isMaxVipLevel = computed(() => {
+  return vipList.value.length > 0 && vipLevel.value === maxVipLevel.value
+})
+
 const vipTargetConfig = computed(() => vipStore.getVipTargetConfig(vipLevel.value))
 
 const getClampedRatio = (currentValue: number, targetValue: number) => {
@@ -521,6 +527,10 @@ const remainingRechargeAmount = computed(() => {
 
 // VIP 进度
 const vipProgress = computed(() => {
+  if (isMaxVipLevel.value) {
+    return 100
+  }
+
   const betProgress = getClampedRatio(
     myVipInfo.value?.betAmount ?? 0,
     vipTargetConfig.value?.betAmountLine ?? 0

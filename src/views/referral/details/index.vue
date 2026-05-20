@@ -302,7 +302,7 @@ const friendEmptyDarkImage = getReferralFriendDetailEmptyDarkImage()
 const friendEmptyLightImage = getReferralFriendDetailEmptyLightImage()
 const referralLink = getDefaultReferralLink()
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
-const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.linkCode) || '-')
+const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.rowId) || '-')
 const referralShareLink = computed(
   () => `${referralLink.replace(/\/+$/, '')}/?id=${displayLinkCode.value}`
 )

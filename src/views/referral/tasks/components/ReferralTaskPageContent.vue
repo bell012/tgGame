@@ -208,12 +208,13 @@
             >
               {{ props.currentProgressLabel }}
             </span>
-            <span
-              class="flex items-center justify-center rounded-full border border-text-2 text-text-2"
-              :class="props.mode === 'pc' ? 'h-5 w-5 text-[10px]' : 'h-3.5 w-3.5 text-[8px]'"
-            >
-              ?
-            </span>
+
+            <img
+              :src="taskCurrentProgressImage"
+              alt="current progress"
+              class="shrink-0 object-contain"
+              :class="props.mode === 'pc' ? 'h-4 w-4' : 'h-3.5 w-3.5'"
+            />
           </button>
         </div>
 
@@ -421,6 +422,7 @@
 </template>
 
 <script setup lang="ts">
+import taskCurrentProgressImage from '@/static/img/referral/task-current-progress.png'
 import CommissionOverviewPcIcon from '@/static/svg/referral/yongjin 1.svg?component'
 import type {
   ReferralTaskRewardRow,

@@ -267,9 +267,15 @@
           </div>
           <!-- 文字说明 -->
           <div class="mt-6 max-w-xl space-y-4">
-            <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_1') }}</p>
-            <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_2') }}</p>
-            <p class="text-text-2 text-xs">{{ t('common_footer.bottom.left_desc_3') }}</p>
+            <p class="text-text-2 text-xs font-normal">
+              {{ t('common_footer.bottom.left_desc_1') }}
+            </p>
+            <p class="text-text-2 text-xs font-normal">
+              {{ t('common_footer.bottom.left_desc_2') }}
+            </p>
+            <p class="text-text-2 text-xs font-normal">
+              {{ t('common_footer.bottom.left_desc_3') }}
+            </p>
           </div>
         </div>
 
@@ -285,13 +291,17 @@
           </div>
           <!-- 文字说明 -->
           <div class="mt-6 max-w-xl space-y-4">
-            <p class="text-text-2 text-xs">{{ t('common_footer.bottom.right_desc_1') }}</p>
-            <p class="text-text-2 text-xs">{{ t('common_footer.bottom.right_desc_2') }}</p>
+            <p class="text-text-2 text-xs font-normal">
+              {{ t('common_footer.bottom.right_desc_1') }}
+            </p>
+            <p class="text-text-2 text-xs font-normal">
+              {{ t('common_footer.bottom.right_desc_2') }}
+            </p>
           </div>
         </div>
       </div>
       <!-- 第六排 版权信息 -->
-      <div class="pt-6 text-center text-xs text-text-2">
+      <div class="pt-6 text-center text-xs text-text-2 font-normal">
         {{ t('common_footer.copyright') }}
       </div>
     </div>

@@ -1,10 +1,10 @@
+import Api from '@/api'
 import type {
   QueryReferralSettlementRuleResult,
   QueryReferralTaskProgressResult,
   QueryTaskRewardCommissionItem,
   QueryTaskRewardConfigResult
 } from '@/api/interface/agent'
-import Api from '@/api'
 import quickDetailsIcon from '@/static/img/referral/quick-action-details.png'
 import quickGuideIcon from '@/static/img/referral/quick-action-guide.png'
 import quickRulesIcon from '@/static/img/referral/quick-action-rules.png'
@@ -472,16 +472,13 @@ export const createReferralCommissionBoostViewData = (
     ) ?? null
 
   const currentRate = currentLevel?.rate ?? 0
-  const nextLevel =
-    normalizedCommissionLevels.find(
-      level => activeFriends < level.people || validBets < level.dayTeamBet
-    ) ?? null
-
   const estimatedCommission = validBets * (currentRate / 100)
-  const nextPeopleTarget = Number(nextLevel?.people ?? 0)
+  const highestPeopleTarget = Number(
+    normalizedCommissionLevels[normalizedCommissionLevels.length - 1]?.people ?? 0
+  )
   const progressPercent =
-    nextPeopleTarget > 0
-      ? Math.max(0, Math.min(100, (activeFriends / nextPeopleTarget) * 100))
+    highestPeopleTarget > 0
+      ? Math.max(0, Math.min(100, (activeFriends / highestPeopleTarget) * 100))
       : normalizedCommissionLevels.length > 0
         ? 100
         : 0

@@ -797,7 +797,7 @@
                     class="text-text-2"
                     :class="
                       props.mode === 'pc'
-                        ? 'h-[20px] w-[91px] text-center text-[14px] leading-[20px]'
+                        ? 'h-[20px] w-fit shrink-0 whitespace-nowrap text-center text-[14px] leading-[20px]'
                         : 'text-[12px] leading-[14px]'
                     "
                   >
@@ -823,7 +823,7 @@
                     class="text-text-2"
                     :class="
                       props.mode === 'pc'
-                        ? 'h-[20px] w-[96px] text-center text-[14px] leading-[20px]'
+                        ? 'h-[20px] w-fit shrink-0 whitespace-nowrap text-center text-[14px] leading-[20px]'
                         : 'text-[12px] leading-[14px]'
                     "
                   >
@@ -862,7 +862,7 @@
                 ></span>
               </button>
             </div>
-
+            <!-- commission boost -->
             <div
               class="relative rounded-[30px] bg-theme-3"
               :class="
@@ -947,7 +947,7 @@
               class="text-text-2"
               :class="
                 props.mode === 'pc'
-                  ? 'h-[20px] w-[160px] text-center text-[14px] leading-[20px]'
+                  ? 'h-[20px] w-fit shrink-0 whitespace-nowrap text-center text-[14px] leading-[20px]'
                   : 'text-[12px] leading-[14px]'
               "
             >
@@ -1096,8 +1096,8 @@ const getCommissionBoostLevelPcClass = (item: ReferralCommissionBoostLevelView) 
   const index = props.commissionBoostLevels.findIndex(level => level.id === item.id)
 
   return index === 0 || index === props.commissionBoostLevels.length - 1
-    ? 'h-[45px] w-[96px] gap-[8px]'
-    : 'h-[45px] w-[106px] gap-[8px]'
+    ? 'h-[45px] w-[120px] gap-[8px]'
+    : 'h-[45px] w-[120px] gap-[8px]'
 }
 
 const bannerAutoplayInterval = 3000

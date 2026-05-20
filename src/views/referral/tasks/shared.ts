@@ -1,4 +1,5 @@
 import type {
+  QueryReferralTaskProgressResult,
   QueryReferralSettlementRuleResult,
   QueryTaskRewardConfig,
   QueryTaskRewardConfigResult,
@@ -133,9 +134,9 @@ const createProgressStatusText = (achieved: boolean, t: TranslateFn) => {
  * 生成createFriendCondition方法。
  */
 const createFriendCondition = (item: QueryTaskRewardFriendItem, t: TranslateFn) => {
-  const max = toText(item.max)
-  const condition = max
-  const unitCount = toNumber(max)
+  const min = toText(item.min)
+  const condition = min
+  const unitCount = toNumber(min)
 
   return {
     condition,
@@ -179,9 +180,11 @@ const createProgressRewardRow = (
   currentProgress: number,
   targetProgress: number,
   t: TranslateFn,
-  conditionUnit?: string
+  conditionUnit?: string,
+  isAchieved: (currentProgress: number, targetProgress: number) => boolean = (current, target) =>
+    current >= target
 ): ReferralTaskRewardRow => {
-  const achieved = currentProgress >= targetProgress
+  const achieved = isAchieved(currentProgress, targetProgress)
 
   return {
     condition,
@@ -401,6 +404,32 @@ export const createReferralTaskMaxRewardValue = (
   return sumNumbers((config?.friendList ?? []).map(item => item.reward))
 }
 
+export const createReferralTaskCommissionBoostProgressValue = (
+  config: ReferralTaskRewardConfig | null,
+  progressResult?: QueryReferralTaskProgressResult | null
+) => {
+  const inviteProgress = Number(progressResult?.subNum ?? 0)
+  const depositProgress = Number(progressResult?.subRecharge ?? 0)
+  const achievedInviteRewards = (config?.friendList ?? [])
+    .filter(item => inviteProgress >= toNumber(item.min))
+    .map(item => item.reward)
+  const achievedDepositRewards = (config?.rechargeList ?? [])
+    .filter(item => depositProgress >= toNumber(item.amount))
+    .map(item => item.reward)
+
+  return sumNumbers([...achievedInviteRewards, ...achievedDepositRewards])
+}
+
+export const createReferralTaskCommissionBoostAchievedRewardValue = (
+  config: ReferralTaskRewardConfig | null,
+  commissionBoostProgressValue: number
+) =>
+  sumNumbers(
+    (config?.increaseList ?? [])
+      .filter(item => toNumber(item.rebate) < commissionBoostProgressValue)
+      .map(item => item.amount)
+  )
+
 const resolveReferralTaskResetCountdown = (
   localeCode: string,
   settlementRule?: QueryReferralSettlementRuleResult | null
@@ -505,7 +534,9 @@ export const buildReferralTaskRewardTable = (
           toText(item.amount),
           currentProgress,
           toNumber(item.rebate),
-          t
+          t,
+          undefined,
+          (current, target) => target < current
         )
       )
     }
@@ -529,7 +560,7 @@ export const buildReferralTaskRewardTable = (
         condition,
         toText(item.reward),
         currentProgress,
-        toNumber(item.max),
+        toNumber(item.min),
         t,
         conditionUnit
       )
