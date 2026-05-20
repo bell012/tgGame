@@ -108,7 +108,7 @@ const invitePosterImages = ref<string[]>([])
 const referralLink = getDefaultReferralLink()
 const commissionList = ref<QueryTaskRewardCommissionItem[]>([])
 const currentAgentChannelId = computed(() => (isMobile.value ? '4' : '3'))
-const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.linkCode) || '-')
+const displayLinkCode = computed(() => formatLinkCode(userStore.userInfo?.rowId) || '-')
 const referralMessagePresets = computed(() => createReferralMessagePresets(t))
 const activeReferralMessage = computed(() => referralMessagePresets.value[0] || '')
 const referralShareLink = computed(
