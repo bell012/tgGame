@@ -582,8 +582,7 @@ defineExpose({
   left: 0;
   right: 0;
   height: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
-  background-color: var(--color-background-level-5);
-  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.05);
+  background-color: var(--color-background-level-1);
   z-index: 50;
 }
 .search {
