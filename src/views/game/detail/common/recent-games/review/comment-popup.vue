@@ -128,7 +128,7 @@
                 {{ t('gameDetail.leaveCommentsTitle') }}
               </div>
               <button
-                class="comment-popup-post-btn h-[28px] w-[50px] justify-self-end rounded-[8px] px-0 text-[12px] font-semibold disabled:cursor-not-allowed"
+                class="comment-popup-post-btn h-[28px] w-[50px] justify-self-end rounded-[8px] px-0 text-[14px] font-semibold disabled:cursor-not-allowed"
                 type="button"
                 :disabled="!commentText.trim()"
                 @click="submitComment"
@@ -766,7 +766,7 @@ onBeforeUnmount(() => {
   border: 1px solid var(--color-input-level-2, rgba(255, 255, 255, 0.1));
   border-radius: 8px;
   background: var(--color-input-level-1, rgba(255, 255, 255, 0.06));
-  color: #e7edf3;
+  color: var(--color-text-level-1);
   caret-color: var(--color-theme-level-1);
 }
 
@@ -775,32 +775,26 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-textarea::placeholder {
-  color: #9eacbb;
+  color: var(--color-text-level-2);
 }
 
 .comment-popup-post-btn {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none;
   border-radius: 8px;
-  background: #3a424a;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 4px 10px rgba(0, 0, 0, 0.18);
-  color: #8f9aa6;
-  appearance: none;
-  -webkit-appearance: none;
-  transition:
-    filter 0.2s ease,
-    opacity 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.comment-popup-post-btn:not(:disabled) {
-  border-color: transparent;
+  opacity: 0.6;
   background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
   box-shadow:
     0 0 12px 0 rgba(35, 238, 136, 0.3),
     0 -2px 0 0 #1dca6a inset;
   color: #061a10;
+  appearance: none;
+  -webkit-appearance: none;
+  transition:
+    filter 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.comment-popup-post-btn:not(:disabled) {
   opacity: 1;
 }
 
@@ -813,22 +807,15 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-post-btn:disabled {
-  border-color: transparent;
-  border-radius: 8px;
-  opacity: 0.6;
-  background: var(--comment-post-disabled-bg, linear-gradient(90deg, #24ee89 0%, #9fe871 100%));
-  box-shadow:
-    0 0 12px 0 rgba(35, 238, 136, 0.3),
-    0 -2px 0 0 #1dca6a inset;
-  color: #061a10;
+  cursor: not-allowed;
 }
 
 .comment-emoji-panel {
   --emoji-footer-bg: var(--color-background-level-3);
   position: absolute;
   border: none;
-  background: #252d35;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  background: #262d35;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
   border-radius: 8px;
   overflow: visible;
 }
@@ -986,7 +973,7 @@ onBeforeUnmount(() => {
 .comment-popup-panel.is-light .comment-popup-textarea {
   border-color: #d4deeb;
   background: #fff;
-  color: #4f5f75;
+  color: var(--color-text-level-1);
 }
 
 .comment-popup-panel.is-light .comment-popup-textarea.comment-popup-textarea-active {
@@ -994,35 +981,7 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-panel.is-light .comment-popup-textarea::placeholder {
-  color: #9ba9bc;
-}
-
-.comment-popup-panel.is-light .comment-popup-post-btn {
-  border-color: #d5e0ed;
-  background: #e5edf7;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 4px 10px rgba(24, 38, 64, 0.08);
-  color: #8a99ad;
-}
-
-.comment-popup-panel.is-light .comment-popup-post-btn:not(:disabled) {
-  border-color: transparent;
-  background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
-  box-shadow:
-    0 6px 14px rgba(35, 238, 136, 0.22),
-    0 -2px 0 0 #1dca6a inset;
-  color: #061a10;
-}
-
-.comment-popup-panel.is-light .comment-popup-post-btn:disabled {
-  border-color: transparent;
-  opacity: 0.6;
-  background: var(--comment-post-disabled-bg, linear-gradient(90deg, #24ee89 0%, #9fe871 100%));
-  box-shadow:
-    0 0 12px 0 rgba(35, 238, 136, 0.3),
-    0 -2px 0 0 #1dca6a inset;
-  color: #061a10;
+  color: var(--color-text-level-2);
 }
 
 .comment-popup-panel.is-light .comment-emoji-trigger {
@@ -1035,7 +994,7 @@ onBeforeUnmount(() => {
 .comment-popup-panel.is-light .comment-emoji-panel {
   --emoji-footer-bg: var(--color-background-level-3);
   border: none;
-  background: #f8fbff;
+  background: #f6fbff;
 }
 
 .comment-popup-panel.is-light .comment-emoji-panel::after {

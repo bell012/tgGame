@@ -1,5 +1,5 @@
 <template>
-  <div class="progress-track flex flex-1 rounded-[10px] w-full">
+  <div class="progress-track flex-1 min-w-0 rounded-[10px]">
     <div class="child-bar rounded-[10px]" :style="`width: ${percent}%`"></div>
   </div>
 </template>
@@ -15,12 +15,12 @@ withDefaults(
 </script>
 <style lang="scss" scoped>
 .progress-track {
-  height: 7px;
+  height: 8px;
   background: #3a4142;
 }
 
 .child-bar {
-  height: 7px;
+  height: 8px;
   background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
 }
 

@@ -192,14 +192,6 @@ const tabIndexClick = (index: number) => {
   border: none;
 }
 
-.active {
-  background-color: #3c4243;
-  height: 100%;
-  border-radius: 6px;
-  color: var(--color-text-level-1);
-  font-weight: 800;
-}
-
 .recent-games-tab {
   height: 100%;
   border-radius: 6px;
@@ -210,8 +202,16 @@ const tabIndexClick = (index: number) => {
   transition:
     background-color 0.2s ease,
     color 0.2s ease,
+    font-size 0.2s ease,
     box-shadow 0.2s ease,
     border-color 0.2s ease;
+}
+
+.recent-games-tab.active {
+  background-color: #3c4243;
+  color: var(--color-text-level-1);
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .recent-games-tabs {
@@ -227,7 +227,9 @@ const tabIndexClick = (index: number) => {
   background: #ffffff;
   border: none;
   box-shadow: none;
-  color: #111111;
+  color: var(--color-text-level-1);
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .recent-games-tabs-light .recent-games-tab:not(.active) {

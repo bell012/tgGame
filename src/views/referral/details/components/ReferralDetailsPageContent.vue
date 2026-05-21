@@ -352,20 +352,20 @@
                       <div class="flex h-[24px] items-start gap-[12px]">
                         <div class="flex min-w-0 flex-1 items-center gap-[5.83px]">
                           <div
-                            class="max-w-[120px] truncate text-[20px] font-[700] leading-[24px] text-text-1"
+                            class="w-fit shrink-0 whitespace-nowrap truncate text-[20px] font-[700] leading-[24px] text-text-1"
                           >
                             {{ item.id }}
                           </div>
 
                           <div
-                            class="flex h-[24px] w-[48px] shrink-0 items-center justify-center rounded-[8px_8px_8px_0] bg-theme-3 text-[14px] font-[400] leading-[20px] text-theme-primary"
+                            class="flex h-[24px] w-fit shrink-0 whitespace-nowrap items-center justify-center rounded-[8px_8px_8px_0] bg-theme-3 text-[14px] font-[400] leading-[20px] text-theme-primary"
                           >
                             {{ item.vipLevel }}
                           </div>
                         </div>
 
                         <div
-                          class="w-[178px] shrink-0 text-[16px] font-[400] leading-[19px] text-text-2"
+                          class="w-fit shrink-0 whitespace-nowrap text-[16px] font-[400] leading-[19px] text-text-2"
                         >
                           {{ item.createTime }}
                         </div>
@@ -457,7 +457,7 @@
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
-import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import ArrowRightIcon from '@/static/svg/arrow_right2.svg?component'
 import { computed, ref } from 'vue'
 import type {
   ReferralDetailsClaimHistoryRow,
