@@ -18,15 +18,52 @@
     />
 
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#42b883" />
-    <meta name="description" content="A Vue3 + TypeScript + Pinia + Tailwind CSS PWA Application" />
+    <meta name="theme-color" content="#242626" />
+    <meta name="color-scheme" content="dark light" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="TG Game" />
 
     <!-- Apple Touch Icons -->
-    <link rel="mask-icon" href="/mask-icon.svg" color="#42b883" />
+    <link rel="mask-icon" href="/mask-icon.svg" color="#242626" />
+
+    <script>
+      ;(() => {
+        const DARK_BACKGROUND = '#242626'
+        const LIGHT_BACKGROUND = '#f4f4f4'
+
+        try {
+          const savedTheme = localStorage.getItem('theme')
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const resolvedTheme =
+            savedTheme === 'dark' || savedTheme === 'light'
+              ? savedTheme
+              : prefersDark
+                ? 'dark'
+                : 'light'
+          const resolvedBackground =
+            resolvedTheme === 'dark' ? DARK_BACKGROUND : LIGHT_BACKGROUND
+          const html = document.documentElement
+          const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+
+          html.classList.remove('light', 'dark')
+          html.classList.add(resolvedTheme)
+          html.style.backgroundColor = resolvedBackground
+          themeColorMeta?.setAttribute('content', resolvedBackground)
+
+          document.addEventListener(
+            'DOMContentLoaded',
+            () => {
+              document.body.style.backgroundColor = resolvedBackground
+            },
+            { once: true }
+          )
+        } catch (error) {
+          console.error('[theme-color:init]', error)
+        }
+      })()
+    </script>
 
     <title>TG Game</title>
   </head>
