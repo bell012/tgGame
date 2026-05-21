@@ -3,6 +3,7 @@ import emptyLightImage from '@/static/img/explore/default_white.png'
 import avatarImage from '@/static/img/home/avatar.png'
 import invitePosterFallbackImage from '@/static/img/personalCenter/yaoqing.png'
 import invitePosterImage from '@/static/img/personalCenter/yaoqing2.png'
+import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import type {
   QueryReferralDetailsClaimHistoryResult,
   QueryReferralDetailsRewardHistoryResult,
@@ -93,6 +94,7 @@ export interface ReferralDetailsDateOption {
 }
 
 export interface ReferralDetailsApiMemberItem {
+  avatarUrl?: string
   creationTime?: number
   downloadSite?: string
   subBet?: number
@@ -332,7 +334,7 @@ export const createReferralDetailsFriends = (
     return {
       id: String(item.userAccount ?? item.userId ?? '--'),
       userId: String(item.userId ?? ''),
-      avatar: avatarImage,
+      avatar: resolveProfileAvatarUrl(String(item.avatarUrl ?? '').trim()) || avatarImage,
       vipId: Number(item.vipId ?? 0),
       vipLevel: `VIP${Number(item.vipId ?? 0)}`,
       deposit: formatBalance(Number(item.subRecharge ?? 0), 2),

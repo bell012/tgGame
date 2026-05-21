@@ -457,7 +457,7 @@
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import ArrowDownIcon from '@/static/svg/arrow_down.svg?component'
-import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import ArrowRightIcon from '@/static/svg/arrow_right2.svg?component'
 import { computed, ref } from 'vue'
 import type {
   ReferralDetailsClaimHistoryRow,
