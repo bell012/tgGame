@@ -11,6 +11,7 @@ export interface ExploreCasinoTabButtonItem {
   sysGameTypeName: string
   icon: string | Component
   iconSelect: string | Component
+  logo?: string
 }
 
 interface PendingExploreCasinoTabsRequest<T> {
@@ -63,7 +64,10 @@ export const useExploreCasinoTabsStore = defineStore('exploreCasinoTabs', () => 
         sysGameTypeCode,
         sysGameTypeName,
         icon: `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.icon}`,
-        iconSelect: `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.iconSelect}`
+        iconSelect: `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.iconSelect}`,
+        ...(item.logo?.trim()
+          ? { logo: `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.logo}` }
+          : {})
       })
     })
 

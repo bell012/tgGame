@@ -440,7 +440,7 @@
 </template>
 
 <script setup lang="ts">
-import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
+import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import Arrow_down from '@/static/svg/arrow_down.svg?component'
 import Arrow_right from '@/static/svg/arrow_right.svg?component'
@@ -718,13 +718,21 @@ const handleThirdLevelClick = (item: any) => {
   }
   hoveredSubmenu.value = null
 }
+/** 浅色模式下使用logo图片*/
+const gameCategorySubmenuIcon = (item: CasinoTabButtonItem) => {
+  if (themeStore.theme === 'light' && item.logo?.trim()) {
+    return item.logo
+  }
+  return item.icon
+}
+
 const buildCasinoMenuChildren = (): SidebarSubmenuItem[] => {
   return casinoTabButtons.value
     .filter(item => item.sysGameTypeCode !== '')
     .map(item => ({
       id: `casino_${item.sysGameTypeCode}`,
       name: item.sysGameTypeName,
-      icon: item.icon,
+      icon: gameCategorySubmenuIcon(item),
       handler: () => {
         navigateTo(`/casino/${item.sysGameTypeCode}`)
       }
