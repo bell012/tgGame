@@ -28,7 +28,7 @@
         :key="`group-${groupIndex}`"
         class="flex flex-col mt-3"
       >
-        <div v-for="(menu, menuIndex) in menuGroup" :key="menu.id" class="flex flex-col">
+        <div v-for="(menu, menuIndex) in menuGroup" :key="menu.id" class="flex flex-col bg-bg-2">
           <div v-if="hasGroupedChildren(menu)" class="bg-bg-2 rounded-lg overflow-visible">
             <div
               v-for="(item, index) in menu.children"
@@ -316,47 +316,38 @@
       <div
         v-if="!isCollapsed"
         class="flex items-center justify-between h-10 bg-bg-2 rounded-lg cursor-pointer mt-2 p-0.5 sm:mb-4"
+        :class="themeStore.theme === 'light' ? 'bg-bg-3' : 'bg-bg-2'"
       >
         <button
           :class="[
             'flex-1 w-[50%] h-9 rounded-lg border-none cursor-pointer transition-all',
-            themeStore.theme === 'dark' ? 'bg-[#4B5354]' : 'bg-[f9f9f9]'
+            themeStore.theme === 'dark' ? 'bg-[#4B5354]' : 'bg-[#fff]'
           ]"
           @click="themeStore.setTheme('dark')"
         >
           <div class="flex items-center justify-center">
             <div class="w-4 h-4 flex items-center justify-center">
-              <component :is="side.icon_18" class="w-4 h-4 fill-icon-1" />
+              <component :is="side.icon_18" class="w-4 h-4 text-sm font-[600] ml-1 text-text-1" />
             </div>
-            <span
-              v-if="!isCollapsed"
-              :class="[
-                'text-sm font-[600] ml-1',
-                themeStore.theme === 'dark' ? 'text-[#fff]' : 'text-[#B0B9B9]'
-              ]"
-              >{{ t('sidebar_menu.theme.dark') }}</span
-            >
+            <span v-if="!isCollapsed" class="text-sm font-[600] ml-1 text-text-1">{{
+              t('sidebar_menu.theme.dark')
+            }}</span>
           </div>
         </button>
         <button
           :class="[
             'flex-1 w-[50%] h-9 rounded-lg border-none cursor-pointer transition-all',
-            themeStore.theme === 'light' ? 'bg-[#fff]' : 'bg-transparent'
+            themeStore.theme === 'light' ? 'bg-transparent' : 'bg-bg-2'
           ]"
           @click="themeStore.setTheme('light')"
         >
           <div class="flex items-center justify-center">
             <div class="w-4 h-4 flex items-center justify-center">
-              <component :is="side.icon_19" class="w-4 h-4 fill-icon-1" />
+              <component :is="side.icon_19" class="w-4 h-4 text-text-2" />
             </div>
-            <span
-              v-if="!isCollapsed"
-              :class="[
-                'text-sm font-[600] ml-1',
-                themeStore.theme === 'light' ? 'text-[#171A1A]' : 'text-[#A1AFB2]'
-              ]"
-              >{{ t('sidebar_menu.theme.light') }}</span
-            >
+            <span v-if="!isCollapsed" class="text-sm font-[600] ml-1 text-text-2">{{
+              t('sidebar_menu.theme.light')
+            }}</span>
           </div>
         </button>
       </div>

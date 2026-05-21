@@ -37,7 +37,7 @@
                   <div class="flex items-center">
                     <div class="color_icon_img casino" style="transform: scale(1)"></div>
                     <img :src="icon5" alt="" class="w-[19px] sm:w-[32px]" />
-                    <h2 class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Casino') }}</h2>
+                    <h2 class="ml-0.5 text-[12px] sm:text-[12px]">{{ $t('home.Casino') }}</h2>
                   </div>
                 </div>
               </button>
@@ -54,7 +54,7 @@
                   <div class="flex items-center">
                     <div class="color_icon_img sports" style="transform: scale(1)"></div>
                     <img :src="icon6" alt="" class="w-[19px] sm:w-[32px]" />
-                    <span class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Sports') }}</span>
+                    <span class="ml-0.5 text-[12px] sm:text-[12px]">{{ $t('home.Sports') }}</span>
                   </div>
                 </div>
               </button>
