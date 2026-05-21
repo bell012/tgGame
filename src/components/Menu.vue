@@ -254,7 +254,7 @@
       >
         <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
-            <component :is="side.helpIcon" class="w-6 h-6 fill-none" />
+            <component :is="side.helpIcon" class="w-6 h-6 fill-none text-text-2" />
           </div>
           <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">
             {{ t('sidebar_menu.customer_service') }}
@@ -279,7 +279,7 @@
             <div class="w-[80px] h-auto flex-shrink-0 pt-1 pr-1">
               <div class="w-full h-full rounded flex items-center justify-center text-[10px]">
                 <img
-                  src="@/static/img/home/pwa.png.png"
+                  src="@/static/img/home/pwa.png"
                   alt=""
                   class="w-full h-full object-cover rounded"
                 />
@@ -298,7 +298,7 @@
       >
         <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
-            <LanguageIcon class="w-6 h-6 fill-none" />
+            <LanguageIcon class="w-6 h-6 text-text-2" />
           </div>
           <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">{{
             currentLanguageName
@@ -326,7 +326,7 @@
         >
           <div class="flex items-center justify-center">
             <div class="w-4 h-4 flex items-center justify-center">
-              <component :is="side.icon_18" class="w-4 h-4 fill-none" />
+              <component :is="side.icon_18" class="w-4 h-4 fill-icon-1" />
             </div>
             <span
               v-if="!isCollapsed"
@@ -347,7 +347,7 @@
         >
           <div class="flex items-center justify-center">
             <div class="w-4 h-4 flex items-center justify-center">
-              <component :is="side.icon_19" class="w-4 h-4 fill-text-2" />
+              <component :is="side.icon_19" class="w-4 h-4 fill-icon-1" />
             </div>
             <span
               v-if="!isCollapsed"

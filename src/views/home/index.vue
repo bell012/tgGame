@@ -230,7 +230,7 @@
               <img class="h-[13px]" :src="SHOPEE" alt="" />
             </div>
             <div class="mt-4 flex items-center justify-center gap-11 lg:!mt-0">
-              <div class="text-lg font-extrabold sm:text-2xl">
+              <div class="text-lg font-semibold sm:text-2xl">
                 <span class="text-secondary-4">300%</span> {{ $t('home.DepositBonus') }}
               </div>
             </div>
