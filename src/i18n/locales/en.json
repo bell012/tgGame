@@ -1267,6 +1267,7 @@
       "weekly": "Weekly Bonus",
       "monthly": "Monthly Bonus"
     },
+    "ongoing": "Ongoing",
     "claimed": "Claimed",
     "locked": "Locked",
     "exclusiveBenefitsTitle": "VIP {vipId} Exclusive Benefits",
