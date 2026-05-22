@@ -223,8 +223,6 @@ const confirmExit = async () => {
 
 .game-iframe-page__close-btn {
   position: fixed;
-  /* top: max(calc(env(safe-area-inset-top) + 12px), 12px);
-  left: max(calc(env(safe-area-inset-left) + 12px), 12px); */
   top: 12px;
   left: 12px;
   z-index: 2147483647;
