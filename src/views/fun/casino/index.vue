@@ -133,7 +133,7 @@
             <div class="h-5 w-5 mr-[7px]">
               <img
                 v-if="item.sysGameTypeCode !== currentTabCode && typeof item?.icon === 'string'"
-                :src="item.icon"
+                :src="getCasinoTabImageSrc(item, false)"
                 class="w-full h-full object-contain"
               />
               <img
@@ -218,6 +218,7 @@ import type { QuerySlideshowItem, QuerySlideshowRequest } from '@/api/interface/
 import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
 import { useGameStore } from '@/stores/game'
 import { useLayoutStore } from '@/stores/layout'
+import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import LoginModal from '@/components/login_register/LoginModal.vue'
@@ -243,6 +244,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { t, locale } = useI18n()
 const layoutStore = useLayoutStore()
+const themeStore = useThemeStore()
 const isMobile = useIsMobile()
 const casinoPageStyle = computed<StyleValue | undefined>(() => {
   if (!isMobile.value) {
@@ -575,6 +577,20 @@ const { tabButtons, lobbyButtons, hasLoaded, isLobbyButtonsLoading, loadCasinoLo
   useCasinoTabButtons({
     isLoggedIn
   })
+
+const getCasinoTabImageSrc = (item: CasinoTabButtonItem, selected: boolean) => {
+  if (themeStore.theme === 'light' && item.logo?.trim() && typeof item.icon === 'string') {
+    return item.logo
+  }
+  if (selected && typeof item.iconSelect === 'string') {
+    return item.iconSelect
+  }
+  if (!selected && typeof item.icon === 'string') {
+    return item.icon
+  }
+  return undefined
+}
+
 const isInitialLobbyLoading = computed(() => isLobbyButtonsLoading.value && !hasLoaded.value)
 const tabSkeletonCount = computed(() => (isMobile.value ? 4 : 6))
 

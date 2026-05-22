@@ -3,12 +3,12 @@
     <div class="header">
       <h2>{{ $t('home.LatestRound&Race') }}</h2>
 
-      <div class="tabs">
+      <div class="tabs bg-bg-7">
         <button
           v-for="tab in tabItems"
           :key="tab.type"
           type="button"
-          :class="['tab', { active: activeType === tab.type }]"
+          :class="['tab rounded-lg', { active: activeType === tab.type }]"
           @click="activeType = tab.type"
         >
           {{ tab.label }}

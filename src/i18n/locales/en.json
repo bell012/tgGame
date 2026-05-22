@@ -763,8 +763,8 @@
   },
   "sidebar_menu": {
     "app_download": {
-      "title": "App",
-      "subtitle": "Unlock exclusive features and level up your play"
+      "title": "Application",
+      "subtitle": "Unlock Fun with Exclusive Features"
     },
     "bc_token": {
       "title": "BC Token"
@@ -1267,6 +1267,7 @@
       "weekly": "Weekly Bonus",
       "monthly": "Monthly Bonus"
     },
+    "ongoing": "Ongoing",
     "claimed": "Claimed",
     "locked": "Locked",
     "exclusiveBenefitsTitle": "VIP {vipId} Exclusive Benefits",

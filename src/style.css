@@ -14,17 +14,26 @@
   body,
   #app {
     touch-action: manipulation;
+    background-color: var(--color-background-level-1);
+  }
+
+  html {
+    background-color: var(--color-background-level-1);
+    min-height: 100%;
   }
 
   body {
     font-family: avertastd;
     background-color: var(--color-background-level-1);
     color: var(--color-text-level-1);
+    min-height: 100%;
   }
 
   #app {
     width: 100%;
     min-height: 100vh;
+    min-height: 100dvh;
+    background-color: var(--color-background-level-1);
   }
 
   .svg-icon {

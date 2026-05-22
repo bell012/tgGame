@@ -11,6 +11,7 @@ export interface CasinoTabButtonItem {
   sysGameTypeName: string
   icon: string | Component
   iconSelect: string | Component
+  logo?: string
 }
 
 export interface CasinoLobbyButtonItem extends CasinoTabButtonItem {
@@ -119,7 +120,10 @@ export const useCasinoTabsStore = defineStore('casinoTabs', () => {
         sysGameTypeCode,
         sysGameTypeName,
         icon: `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.icon}`,
-        iconSelect: `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.iconSelect}`
+        iconSelect: `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.iconSelect}`,
+        ...(item.logo?.trim()
+          ? { logo: `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.logo}` }
+          : {})
       })
     })
 

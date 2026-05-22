@@ -371,6 +371,8 @@ export interface GameTypeItem {
   icon: string
   /**选中图标 */
   iconSelect: string
+  /**白色模式下显示的 logo */
+  logo?: string
   /**排序编码 */
   sortNum: number
   [key: string]: unknown

@@ -105,9 +105,8 @@ export default defineConfig({
       manifest: {
         name: 'TG Game',
         short_name: 'TGGame',
-        description: 'A Vue3 + TypeScript + Pinia + Tailwind CSS PWA Application',
-        theme_color: '#42b883',
-        background_color: '#ffffff',
+        theme_color: '#242626',
+        background_color: '#242626',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',

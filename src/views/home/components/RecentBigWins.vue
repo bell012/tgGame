@@ -8,7 +8,7 @@
             class="absolute left-0 top-0 h-full w-full rounded-full bg-success animate-ping"
           ></div>
         </div>
-        <div class="text-theme-primary">{{ $t('home.RecentBigWins') }}</div>
+        <div class="text-text-1">{{ $t('home.RecentBigWins') }}</div>
       </h2>
     </div>
 
