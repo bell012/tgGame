@@ -1,27 +1,37 @@
 <template>
   <div
-    ref="detailPageRef"
-    class="detail-page w-full max-w-[1248px] mx-auto pt-[14px] sm:pt-[20px] px-[12px] pb-[20px] sm:pb-[24px]"
+    :class="
+      isMobile
+        ? 'game-detail-mobile fixed inset-0 z-[60] flex min-h-0 flex-col overflow-hidden bg-bg-1'
+        : ''
+    "
   >
-    <!-- Loading -->
-    <div v-if="isGameDataLoading" class="detail-loading-mask" aria-live="polite" aria-busy="true">
-      <div class="detail-loading-spinner" />
+    <h5-header v-if="isMobile" class="shrink-0">
+      {{ currentGameDetail?.itemName ?? '' }}
+    </h5-header>
+    <div
+      ref="detailPageRef"
+      class="detail-page w-full max-w-[1248px] mx-auto pt-[14px] sm:pt-[20px] px-[12px] pb-[20px] sm:pb-[24px]"
+      :class="isMobile ? 'flex-1 min-h-0 overflow-y-auto overscroll-contain' : ''"
+    >
+      <!-- Loading -->
+      <div v-if="isGameDataLoading" class="detail-loading-mask" aria-live="polite" aria-busy="true">
+        <div class="detail-loading-spinner" />
+      </div>
+      <!-- Currency Info -->
+      <h5-currency-info v-if="isMobile" /> <desktop-currency-info v-else />
+      <!-- Game Content -->
+      <recent-games />
+      <!-- 推荐游戏 -->
+      <game-list
+        v-if="hasCurrentCategoryHotGames"
+        :title="t('home.RecommendedGames')"
+        :list="currentCategoryHotGameList"
+        @all-click="openCurrentCategoryAllGamesPage"
+      />
+      <!-- 投注表格 -->
+      <bets-list />
     </div>
-    <!-- Header -->
-    <h5-header class="block sm:hidden"> {{ currentGameDetail?.itemName ?? '' }} </h5-header>
-    <!-- Currency Info -->
-    <h5-currency-info v-if="isMobile" /> <desktop-currency-info v-else />
-    <!-- Game Content -->
-    <recent-games />
-    <!-- 推荐游戏 -->
-    <game-list
-      v-if="hasCurrentCategoryHotGames"
-      :title="t('home.RecommendedGames')"
-      :list="currentCategoryHotGameList"
-      @all-click="openCurrentCategoryAllGamesPage"
-    />
-    <!-- 投注表格 -->
-    <bets-list />
   </div>
   <!-- Footer -->
   <CommonFooter class="hidden sm:block mt-[40px]" />
@@ -124,7 +134,7 @@ const clearParentScrollbarHidden = () => {
 }
 
 const hideParentScrollbar = () => {
-  if (!isBrowserEnv) {
+  if (!isBrowserEnv || isMobile.value) {
     return
   }
 
@@ -148,6 +158,11 @@ const resetScrollToTop = () => {
     // iOS / WebView fallback
     document.documentElement.scrollTop = 0
     document.body.scrollTop = 0
+    return
+  }
+
+  if (isMobile.value && detailPageRef.value) {
+    detailPageRef.value.scrollTop = 0
     return
   }
 
@@ -339,9 +354,6 @@ onUnmounted(() => {
 
 @media (max-width: 767px) {
   .detail-page {
-    height: 100dvh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
 }
@@ -380,8 +392,6 @@ onUnmounted(() => {
 :global(.game-detail-hide-scrollbar) {
   -ms-overflow-style: none;
   scrollbar-width: none;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 :global(.game-detail-hide-scrollbar::-webkit-scrollbar) {
