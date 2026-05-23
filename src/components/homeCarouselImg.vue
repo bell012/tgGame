@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="sm:px-4">
     <div v-if="loading" class="w-full">
       <div class="w-full overflow-hidden rounded-xl bg-bg-2" :class="bannerAspectClass">
         <div class="size-full animate-pulse bg-bg-2"></div>
@@ -19,7 +19,7 @@
       >
         <Swipe
           ref="swipeRef"
-          class="min-h-0 w-full overflow-hidden"
+          class="min-h-0 w-full overflow-hidden rounded-xl"
           :autoplay="visibleSlides.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
           :show-indicators="false"
           touchable
@@ -27,16 +27,20 @@
           @change="handleChange"
         >
           <SwipeItem v-for="(item, index) in visibleSlides" :key="index">
-            <div class="w-full overflow-hidden rounded-xl px-3.5">
-              <img
-                :src="getSlideImage(item)"
-                :alt="`slide-${index + 1}`"
-                class="w-full select-none object-cover rounded-xl"
+            <div class="w-full px-3.5 sm:px-0">
+              <div
+                class="home-carousel-slide relative w-full overflow-hidden rounded-xl"
                 :class="bannerAspectClass"
-                draggable="false"
-                @click="handleCarouselClick(item)"
-                @dragstart.prevent
-              />
+              >
+                <img
+                  :src="getSlideImage(item)"
+                  :alt="`slide-${index + 1}`"
+                  class="absolute inset-0 block h-full w-full select-none rounded-xl object-cover"
+                  draggable="false"
+                  @click="handleCarouselClick(item)"
+                  @dragstart.prevent
+                />
+              </div>
             </div>
           </SwipeItem>
         </Swipe>
@@ -324,12 +328,23 @@ watch(
 onBeforeUnmount(removeMouseSwipeListeners)
 </script>
 <style scoped>
+.home-carousel-slide {
+  width: 100%;
+}
+
 :deep(.van-swipe) {
   overflow: hidden;
+  height: auto;
+}
+
+:deep(.van-swipe__track) {
+  height: auto;
+  align-items: stretch;
 }
 
 :deep(.van-swipe-item) {
   width: 100%;
+  height: auto;
 }
 
 @keyframes slideshow-indicator-fill {
