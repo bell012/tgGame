@@ -29,7 +29,7 @@
     <div v-if="showExitDialog" class="game-iframe-page__dialog-mask" @click="closeExitDialog">
       <div class="game-iframe-page__dialog" @click.stop>
         <button type="button" class="game-iframe-page__dialog-close" @click="closeExitDialog">
-          ×
+          <CloseIcon class="game-iframe-page__dialog-close-icon" aria-hidden="true" />
         </button>
         <div class="game-iframe-page__dialog-title">{{ t('withdraw.kind_reminder_title') }}</div>
         <div class="game-iframe-page__dialog-text">{{ t('gameDetail.exitGameConfirm') }}</div>
@@ -62,6 +62,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { navigateTo } from '@/utils/router'
 import closeIcon from '@/static/svg/game/detail/close.svg?url'
+import CloseIcon from '@/static/svg/close.svg?component'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -223,8 +224,6 @@ const confirmExit = async () => {
 
 .game-iframe-page__close-btn {
   position: fixed;
-  /* top: max(calc(env(safe-area-inset-top) + 12px), 12px);
-  left: max(calc(env(safe-area-inset-left) + 12px), 12px); */
   top: 12px;
   left: 12px;
   z-index: 2147483647;
@@ -281,16 +280,16 @@ const confirmExit = async () => {
 .game-iframe-page__dialog {
   position: relative;
   width: min(300px, 100%);
-  border-radius: 8px;
-  padding: 16px 18px 20px;
+  border-radius: 14px;
+  padding: 20px;
   background: var(--color-background-level-1);
   color: var(--color-text-level-1);
 }
 
 .game-iframe-page__dialog-close {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 14px;
+  right: 14px;
   display: flex;
   width: 28px;
   height: 28px;
@@ -298,22 +297,31 @@ const confirmExit = async () => {
   justify-content: center;
   border: 0;
   border-radius: 6px;
-  background: var(--color-background-level-3);
+  padding: 0;
+  background: var(--color-opacity-10);
   color: var(--color-text-level-1);
-  font-size: 20px;
-  line-height: 1;
   cursor: pointer;
 }
 
+.game-iframe-page__dialog-close-icon {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.game-iframe-page__dialog-close-icon :deep(path) {
+  fill: currentColor;
+}
+
 .game-iframe-page__dialog-title {
-  padding-right: 36px;
+  padding-right: 40px;
   font-size: 16px;
   line-height: 22px;
   font-weight: 700;
 }
 
 .game-iframe-page__dialog-text {
-  margin-top: 8px;
+  margin-top: 14px;
   margin-bottom: 30px;
   font-size: 15px;
   line-height: 20px;
@@ -323,9 +331,9 @@ const confirmExit = async () => {
 .game-iframe-page__dialog-confirm,
 .game-iframe-page__dialog-cancel {
   width: 100%;
-  height: 42px;
+  height: 40px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
   line-height: 20px;
   font-weight: 700;

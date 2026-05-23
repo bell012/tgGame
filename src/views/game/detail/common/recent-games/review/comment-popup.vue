@@ -58,14 +58,14 @@
 
                 <div
                   v-if="isEmojiPickerOpen"
-                  class="comment-emoji-panel comment-emoji-panel--left-trigger absolute bottom-[calc(100%+10px)] left-0 z-20 w-[352px] rounded-[10px] p-[8px]"
+                  class="comment-emoji-panel comment-emoji-panel--left-trigger absolute bottom-[calc(100%+10px)] left-0 z-20 w-[352px]"
                   @click.stop
                 >
                   <div class="comment-emoji-divider grid grid-cols-8 gap-[6px] border-b pb-[0]">
                     <button
                       v-for="emoji in currentEmojiList"
                       :key="emoji"
-                      class="comment-emoji-item flex size-[24px] items-center justify-center rounded-[6px] text-[17px] transition-colors duration-150"
+                      class="comment-emoji-item flex size-[26px] items-center justify-center rounded-[6px] text-[26px] leading-none transition-colors duration-150"
                       type="button"
                       @click="selectEmoji(emoji)"
                     >
@@ -73,7 +73,7 @@
                     </button>
                   </div>
 
-                  <div class="comment-emoji-category-bar mt-[6px] grid grid-cols-7 gap-[4px]">
+                  <div class="comment-emoji-category-bar grid grid-cols-7 gap-[4px]">
                     <button
                       v-for="item in emojiCategoryItems"
                       :key="item.value"
@@ -165,14 +165,14 @@
 
                 <div
                   v-if="isEmojiPickerOpen"
-                  class="comment-emoji-panel comment-emoji-panel--right-trigger absolute bottom-[calc(100%+10px)] right-0 z-20 w-[352px] rounded-[10px] p-[8px]"
+                  class="comment-emoji-panel comment-emoji-panel--right-trigger absolute bottom-[calc(100%+10px)] right-0 z-20 w-[352px]"
                   @click.stop
                 >
                   <div class="comment-emoji-divider grid grid-cols-8 gap-[6px] border-b pb-[0]">
                     <button
                       v-for="emoji in currentEmojiList"
                       :key="emoji"
-                      class="comment-emoji-item flex size-[24px] items-center justify-center rounded-[6px] text-[17px] transition-colors duration-150"
+                      class="comment-emoji-item flex size-[26px] items-center justify-center rounded-[6px] text-[26px] leading-none transition-colors duration-150"
                       type="button"
                       @click="selectEmoji(emoji)"
                     >
@@ -180,7 +180,7 @@
                     </button>
                   </div>
 
-                  <div class="comment-emoji-category-bar mt-[6px] grid grid-cols-7 gap-[4px]">
+                  <div class="comment-emoji-category-bar grid grid-cols-7 gap-[4px]">
                     <button
                       v-for="item in emojiCategoryItems"
                       :key="item.value"
@@ -811,11 +811,14 @@ onBeforeUnmount(() => {
 }
 
 .comment-emoji-panel {
-  --emoji-footer-bg: var(--color-background-level-3);
+  --emoji-panel-bg: #323738;
+  --emoji-footer-bg: var(--color-background-level-9);
+  --emoji-panel-shadow: 0 6.826px 30.716px rgba(0, 0, 0, 0.5);
   position: absolute;
   border: none;
-  background: #262d35;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+  padding: 0;
+  background: var(--emoji-panel-bg);
+  box-shadow: var(--emoji-panel-shadow);
   border-radius: 8px;
   overflow: visible;
 }
@@ -823,14 +826,14 @@ onBeforeUnmount(() => {
 .comment-emoji-panel::after {
   content: '';
   position: absolute;
+  top: calc(100% - 1px);
   right: 14px;
-  bottom: -10px;
   width: 16px;
-  height: 10px;
-  background: transparent;
-  clip-path: none;
-  z-index: 0;
+  height: 11px;
+  background: var(--emoji-footer-bg);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
   pointer-events: none;
+  z-index: 1;
 }
 
 .comment-emoji-panel--left-trigger::after {
@@ -871,7 +874,8 @@ onBeforeUnmount(() => {
 .comment-emoji-divider {
   border-bottom: none;
   place-items: center;
-  max-height: 114px;
+  padding: 10px 10px 5px;
+  max-height: 137px;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -882,33 +886,9 @@ onBeforeUnmount(() => {
 
 .comment-emoji-category-bar {
   position: relative;
-  margin-left: -8px;
-  margin-right: -8px;
-  margin-bottom: -8px;
   border-radius: 0 0 8px 8px;
   background: var(--emoji-footer-bg);
-  padding-top: 6px;
-  padding-bottom: 8px;
-  padding-inline: 8px;
-}
-
-.comment-emoji-category-bar::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  width: 16px;
-  height: 10px;
-  background: var(--emoji-footer-bg);
-  clip-path: polygon(50% 100%, 0 0, 100% 0);
-  pointer-events: none;
-}
-
-.comment-emoji-panel--left-trigger .comment-emoji-category-bar::after {
-  left: 12px;
-}
-
-.comment-emoji-panel--right-trigger .comment-emoji-category-bar::after {
-  right: 14px;
+  padding: 6px 8px 5px;
 }
 
 .comment-emoji-category-btn {
@@ -922,6 +902,15 @@ onBeforeUnmount(() => {
   width: 18px;
   height: 18px;
   object-fit: contain;
+}
+
+.comment-emoji-category .comment-emoji-category-icon {
+  filter: brightness(0) saturate(100%) invert(79%) sepia(6%) saturate(463%) hue-rotate(145deg)
+    brightness(95%) contrast(87%);
+}
+
+.comment-emoji-category-active .comment-emoji-category-icon {
+  filter: brightness(0) invert(1);
 }
 
 .comment-emoji-item {
@@ -992,15 +981,12 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-panel.is-light .comment-emoji-panel {
-  --emoji-footer-bg: var(--color-background-level-3);
+  --emoji-panel-bg: #ffffff;
+  --emoji-footer-bg: var(--color-background-level-9);
+  --emoji-panel-shadow: 0 0 41.807px rgba(172, 172, 172, 0.53);
   border: none;
-  background: #f6fbff;
-}
-
-.comment-popup-panel.is-light .comment-emoji-panel::after {
-  background: transparent;
-  border-right: none;
-  border-bottom: none;
+  background: var(--emoji-panel-bg);
+  box-shadow: var(--emoji-panel-shadow);
 }
 
 .comment-popup-panel.is-light .comment-emoji-divider {
@@ -1008,7 +994,12 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-panel.is-light .comment-emoji-category-bar {
-  background: var(--color-opacity-10);
+  background: var(--emoji-footer-bg);
+}
+
+.comment-popup-panel.is-light .comment-emoji-category .comment-emoji-category-icon,
+.comment-popup-panel.is-light .comment-emoji-category-active .comment-emoji-category-icon {
+  filter: none;
 }
 
 .comment-popup-panel.is-light .comment-emoji-item:hover {
