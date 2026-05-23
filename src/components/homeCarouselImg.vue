@@ -31,7 +31,7 @@
               <img
                 :src="getSlideImage(item)"
                 :alt="`slide-${index + 1}`"
-                class="w-full select-none object-cover"
+                class="w-full select-none object-cover rounded-xl"
                 :class="bannerAspectClass"
                 draggable="false"
                 @click="handleCarouselClick(item)"
@@ -123,18 +123,22 @@ const swipeRef = ref<SwipeInstance>()
 const AUTO_PLAY_INTERVAL_MS = 10000
 const MOUSE_SWIPE_DISTANCE = 50
 const MOUSE_DRAG_DISTANCE = 8
-/** H5：1041:450；PC：1340:280 */
-const bannerAspectClass = 'aspect-[1041/450] lg:aspect-[1340/280]'
 let mouseStartX = 0
 let mouseStartY = 0
 let isMouseDragging = false
 let shouldSuppressClick = false
+const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken))
+/** 未登录 H5：1033:612，PC：1340:280；已登录 H5：1041:450，PC：1340:280 */
+const bannerAspectClass = computed(() =>
+  isLoggedIn.value
+    ? 'aspect-[1041/450] lg:aspect-[1340/280]'
+    : 'aspect-[1033/612] lg:aspect-[1340/280]'
+)
 const slides = computed(() => {
   return [...props.list].sort((a, b) => (a.sortNum ?? 0) - (b.sortNum ?? 0))
 })
 const visibleSlides = computed(() => {
-  const isLoggedIn = Boolean(userInfo.value?.tradeToken)
-  return isLoggedIn ? slides.value : slides.value.slice(0, 1)
+  return isLoggedIn.value ? slides.value : slides.value.slice(0, 1)
 })
 const progressStyle = computed(() => ({
   animationDuration: `${AUTO_PLAY_INTERVAL_MS}ms`
