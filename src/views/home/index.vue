@@ -6,7 +6,7 @@
       v-if="isSlideshowLoading || querySlideshowList.length"
       :list="querySlideshowList"
       :loading="isSlideshowLoading"
-      class="px-3.5 sm:mb-2.5"
+      class="sm:mb-2.5"
     />
     <div class="px-3.5">
       <!--Favorites Games -->

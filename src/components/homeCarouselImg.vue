@@ -13,29 +13,21 @@
 
     <div v-else-if="visibleSlides.length" class="w-full flex flex-col bg-bg-1">
       <div
-        ref="swipeWrapRef"
-        class="home-carousel-swipe-wrap relative w-full min-h-0 overflow-hidden"
-        :style="{ '--home-carousel-slide-gap': `${SLIDE_GAP_PX}px` }"
+        class="relative w-full min-h-0 overflow-hidden"
         @mousedown="handleSwipeMouseDown"
         @click.capture="handleSwipeClickCapture"
       >
         <Swipe
-          v-if="slideWidth > 0"
           ref="swipeRef"
-          class="home-carousel-swipe min-h-0 w-full"
-          :width="slideWidth"
+          class="min-h-0 w-full overflow-hidden"
           :autoplay="visibleSlides.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
           :show-indicators="false"
           touchable
           lazy-render
           @change="handleChange"
         >
-          <SwipeItem
-            v-for="(item, index) in visibleSlides"
-            :key="index"
-            class="home-carousel-swipe__item"
-          >
-            <div class="home-carousel-swipe__slide w-full overflow-hidden rounded-xl">
+          <SwipeItem v-for="(item, index) in visibleSlides" :key="index">
+            <div class="w-full overflow-hidden rounded-xl px-3.5">
               <img
                 :src="getSlideImage(item)"
                 :alt="`slide-${index + 1}`"
@@ -110,7 +102,7 @@ import { navigateTo, navigateToName } from '@/utils/router'
 import { storeToRefs } from 'pinia'
 import type { SwipeInstance } from 'vant'
 import { Swipe, SwipeItem } from 'vant'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 const authModalStore = useAuthModalStore()
 const userStore = useUserStore()
@@ -128,9 +120,6 @@ const props = withDefaults(defineProps<Props>(), {
 const currentIndex = ref(0)
 const progressKey = ref(0)
 const swipeRef = ref<SwipeInstance>()
-const swipeWrapRef = ref<HTMLElement>()
-const slideWidth = ref(0)
-const SLIDE_GAP_PX = 12
 const AUTO_PLAY_INTERVAL_MS = 10000
 const MOUSE_SWIPE_DISTANCE = 50
 const MOUSE_DRAG_DISTANCE = 8
@@ -317,51 +306,26 @@ const handleSwipeClickCapture = (event: MouseEvent) => {
   shouldSuppressClick = false
 }
 
-const updateSlideWidth = () => {
-  const width = swipeWrapRef.value?.offsetWidth ?? 0
-  if (width > 0) {
-    slideWidth.value = width
-  }
-}
-
-let swipeResizeObserver: ResizeObserver | undefined
-
 watch(
   visibleSlides,
-  async nextSlides => {
+  nextSlides => {
     if (currentIndex.value >= nextSlides.length) {
       currentIndex.value = 0
     }
     progressKey.value += 1
-    await nextTick()
-    updateSlideWidth()
-    swipeRef.value?.resize()
   },
   { immediate: true }
 )
 
-onMounted(() => {
-  updateSlideWidth()
-  if (!swipeWrapRef.value || typeof ResizeObserver === 'undefined') {
-    return
-  }
-
-  swipeResizeObserver = new ResizeObserver(() => {
-    updateSlideWidth()
-    swipeRef.value?.resize()
-  })
-  swipeResizeObserver.observe(swipeWrapRef.value)
-})
-
-onBeforeUnmount(() => {
-  removeMouseSwipeListeners()
-  swipeResizeObserver?.disconnect()
-})
+onBeforeUnmount(removeMouseSwipeListeners)
 </script>
 <style scoped>
-.home-carousel-swipe :deep(.home-carousel-swipe__item) {
-  box-sizing: border-box;
-  padding-right: var(--home-carousel-slide-gap);
+:deep(.van-swipe) {
+  overflow: hidden;
+}
+
+:deep(.van-swipe-item) {
+  width: 100%;
 }
 
 @keyframes slideshow-indicator-fill {
