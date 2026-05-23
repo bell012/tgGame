@@ -53,6 +53,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
   const commentList = ref<ReviewCommentViewItem[]>([])
 
   const sortMenuRef = ref<HTMLElement | null>(null)
+  const sortMenuPopupRef = ref<HTMLElement | null>(null)
   const isSortPopupOpen = ref(false)
   const activeSort = ref<ReviewSortValue>('newest')
 
@@ -459,10 +460,14 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
   }
 
   const handleSortMenuOutsideClick = (event: MouseEvent) => {
-    if (!sortMenuRef.value) return
-    if (!sortMenuRef.value.contains(event.target as Node)) {
-      isSortPopupOpen.value = false
+    const target = event.target as Node
+    if (sortMenuRef.value?.contains(target)) {
+      return
     }
+    if (sortMenuPopupRef.value?.contains(target)) {
+      return
+    }
+    isSortPopupOpen.value = false
   }
 
   watch(isCommentPopupOpen, isOpen => {
@@ -477,6 +482,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     isCommentLoading,
     sortedCommentList,
     sortMenuRef,
+    sortMenuPopupRef,
     isSortPopupOpen,
     activeSort,
     sortOptions,
