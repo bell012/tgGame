@@ -1,7 +1,7 @@
 {
   "home": {
     "title": "Welcome to TG Game",
-    "home": "home",
+    "home": "Home",
     "sign_In": "Sign In",
     "sign_Up": "Sign Up",
     "language": "Language",
@@ -1504,7 +1504,7 @@
   },
   "menu": {
     "crypto-account": "Crypto Account",
-    "game-categories": "Game Categories",
+    "game-categories": "Casino",
     "recently-played": "Recently Played",
     "favorites": "Favorites",
     "vouchers": "Vouchers",
