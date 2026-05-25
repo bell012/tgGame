@@ -13,7 +13,8 @@
 
     <div v-else-if="visibleSlides.length" class="w-full flex flex-col bg-bg-1">
       <div
-        class="relative w-full min-h-0 overflow-hidden"
+        ref="swipeRootRef"
+        class="relative w-full min-h-0 overflow-visible"
         @mousedown="handleSwipeMouseDown"
         @click.capture="handleSwipeClickCapture"
       >
@@ -38,6 +39,7 @@
                   class="absolute inset-0 block h-full w-full select-none rounded-xl object-cover"
                   draggable="false"
                   @click="handleCarouselClick(item)"
+                  @load="relayoutSwipe"
                   @dragstart.prevent
                 />
               </div>
@@ -47,19 +49,19 @@
         <template v-if="visibleSlides.length > 1">
           <button
             type="button"
-            class="absolute left-1 top-1/2 z-10 hidden -translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
+            class="home-carousel-nav-btn absolute left-1.5 top-1/2 z-10 hidden size-8 -translate-x-full -translate-y-1/2 items-center justify-center text-icon-1 transition-opacity hover:opacity-70 lg:flex"
             aria-label="上一张"
             @click.stop="swipePrev"
           >
-            <ArrowLeft2Icon class="size-4 [&_path]:fill-current" />
+            <ArrowLeft2Icon class="size-4 shrink-0 fill-current" />
           </button>
           <button
             type="button"
-            class="absolute right-1 top-1/2 z-10 hidden translate-x-full -translate-y-1/2 items-center justify-center p-1 text-icon-1 transition-opacity hover:opacity-70 lg:flex"
+            class="home-carousel-nav-btn absolute right-1.5 top-1/2 z-10 hidden size-8 translate-x-full -translate-y-1/2 items-center justify-center text-icon-1 transition-opacity hover:opacity-70 lg:flex"
             aria-label="下一张"
             @click.stop="swipeNext"
           >
-            <ArrowRightIcon class="size-4 [&_path]:fill-current" />
+            <ArrowRightIcon class="size-4 shrink-0 fill-current" />
           </button>
         </template>
       </div>
@@ -106,7 +108,7 @@ import { navigateTo, navigateToName } from '@/utils/router'
 import { storeToRefs } from 'pinia'
 import type { SwipeInstance } from 'vant'
 import { Swipe, SwipeItem } from 'vant'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const authModalStore = useAuthModalStore()
 const userStore = useUserStore()
@@ -124,6 +126,8 @@ const props = withDefaults(defineProps<Props>(), {
 const currentIndex = ref(0)
 const progressKey = ref(0)
 const swipeRef = ref<SwipeInstance>()
+const swipeRootRef = ref<HTMLElement | null>(null)
+let swipeResizeObserver: ResizeObserver | undefined
 const AUTO_PLAY_INTERVAL_MS = 10000
 const MOUSE_SWIPE_DISTANCE = 50
 const MOUSE_DRAG_DISTANCE = 8
@@ -239,6 +243,31 @@ const swipeNext = () => {
   swipeRef.value?.next()
 }
 
+const relayoutSwipe = () => {
+  nextTick(() => {
+    swipeRef.value?.resize()
+    requestAnimationFrame(() => {
+      swipeRef.value?.resize()
+    })
+  })
+}
+
+const bindSwipeResizeObserver = () => {
+  if (typeof ResizeObserver === 'undefined') {
+    return
+  }
+
+  swipeResizeObserver?.disconnect()
+  swipeResizeObserver = undefined
+
+  if (!swipeRootRef.value) {
+    return
+  }
+
+  swipeResizeObserver = new ResizeObserver(relayoutSwipe)
+  swipeResizeObserver.observe(swipeRootRef.value)
+}
+
 const removeMouseSwipeListeners = () => {
   window.removeEventListener('mousemove', handleSwipeMouseMove)
   window.removeEventListener('mouseup', handleSwipeMouseUp)
@@ -321,15 +350,52 @@ watch(
       currentIndex.value = 0
     }
     progressKey.value += 1
+    relayoutSwipe()
   },
   { immediate: true }
 )
 
-onBeforeUnmount(removeMouseSwipeListeners)
+watch(bannerAspectClass, relayoutSwipe)
+
+watch(
+  () => [props.loading, visibleSlides.value.length] as const,
+  ([loading]) => {
+    if (loading || visibleSlides.value.length === 0) {
+      return
+    }
+
+    nextTick(() => {
+      bindSwipeResizeObserver()
+      relayoutSwipe()
+    })
+  },
+  { immediate: true }
+)
+
+onMounted(() => {
+  window.addEventListener('resize', relayoutSwipe, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  removeMouseSwipeListeners()
+  window.removeEventListener('resize', relayoutSwipe)
+  swipeResizeObserver?.disconnect()
+  swipeResizeObserver = undefined
+})
 </script>
 <style scoped>
 .home-carousel-slide {
   width: 100%;
+}
+
+.home-carousel-nav-btn :deep(svg) {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.home-carousel-nav-btn :deep(path) {
+  fill: currentColor;
 }
 
 :deep(.van-swipe) {
