@@ -120,7 +120,7 @@ import type {
 } from '@/api/interface/wallet'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
-import depositPopShell from '@/components/deposit/shared/depositPopShell.vue'
+import depositPopShell from '@/views/wallet/deposit/components/shared/depositPopShell.vue'
 import EmptyImg from '@/static/img/personalCenter/noData.png'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { globalShowToast } from '@/utils/toast'

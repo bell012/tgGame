@@ -10,10 +10,10 @@
         <div class="filter-panel bg-bg-1 rounded-t-xl p-3.5 pb-5">
           <div class="flex items-center justify-between mb-2.5">
             <div class="flex-1 text-center text-base font-[700] text-text-1">
-              {{ $t('common.filter') }}
+              {{ props.titleText || $t('common.filter') }}
             </div>
             <button class="text-theme-primary text-xs font-[700]" @click="handleApply">
-              {{ $t('common.apply') }}
+              {{ props.applyText || $t('common.apply') }}
             </button>
           </div>
 
@@ -64,6 +64,8 @@ interface Props {
   visible: boolean
   filterGroups: FilterGroup[]
   modelValue?: Record<string, string | string[]>
+  titleText?: string
+  applyText?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {

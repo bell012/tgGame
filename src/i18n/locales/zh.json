@@ -613,8 +613,18 @@
     "copyFailed": "复制失败",
     "noClaimableCommission": "暂无可领取佣金",
     "claimPending": "领取申请已提交",
+    "customerService": "联系客服",
+    "toast": {
+      "claimSuccess": "领取成功",
+      "claimFailed": "领取失败"
+    },
     "comingSoon": "敬请期待，更多内容即将到来！！",
     "cta": "立即邀请",
+    "common": {
+      "filter": "筛选",
+      "apply": "应用",
+      "noData": "暂无数据"
+    },
     "invitePoster": {
       "saveImage": "保存海报",
       "copyLink": "复制链接",
@@ -714,8 +724,8 @@
       "progressReminder": {
         "title": "温馨提示",
         "description": "好友需完成基础资料填写，并使用独立的 IP、设备和账号信息，才会被计入有效进度。如对当前进度有疑问，请联系客服协助处理。",
-        "primaryButton": "Confirm",
-        "secondaryButton": "Task Rules"
+        "primaryButton": "联系客服",
+        "secondaryButton": "任务规则"
       }
     },
     "rulesPage": {
@@ -830,6 +840,15 @@
       },
       "tableValues": {
         "slots": "老虎机"
+      },
+      "gameTypes": {
+        "lottery": "彩票",
+        "sports": "体育",
+        "liveCasino": "真人娱乐场",
+        "slots": "老虎机",
+        "tableGames": "棋牌游戏",
+        "fishing": "捕鱼",
+        "esports": "电竞"
       }
     },
     "commissionRecords": {
@@ -1498,7 +1517,7 @@
   },
   "menu": {
     "crypto-account": "加密账户",
-    "game-categories": "游戏分类",
+    "game-categories": "娱乐城",
     "recently-played": "最近常玩",
     "favorites": "收藏中心",
     "vouchers": "票劵",

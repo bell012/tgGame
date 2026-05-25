@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="sm:px-4">
     <div v-if="loading" class="w-full">
       <div class="w-full overflow-hidden rounded-xl bg-bg-2" :class="bannerAspectClass">
         <div class="size-full animate-pulse bg-bg-2"></div>
@@ -13,13 +13,13 @@
 
     <div v-else-if="visibleSlides.length" class="w-full flex flex-col bg-bg-1">
       <div
-        class="relative w-full min-h-0 overflow-visible"
+        class="relative w-full min-h-0 overflow-hidden"
         @mousedown="handleSwipeMouseDown"
         @click.capture="handleSwipeClickCapture"
       >
         <Swipe
           ref="swipeRef"
-          class="min-h-0 w-full"
+          class="min-h-0 w-full overflow-hidden rounded-xl"
           :autoplay="visibleSlides.length > 1 ? AUTO_PLAY_INTERVAL_MS : 0"
           :show-indicators="false"
           touchable
@@ -27,15 +27,20 @@
           @change="handleChange"
         >
           <SwipeItem v-for="(item, index) in visibleSlides" :key="index">
-            <div class="w-full h-full overflow-hidden rounded-xl">
-              <img
-                :src="getSlideImage(item)"
-                :alt="`slide-${index + 1}`"
-                class="w-full select-none object-cover"
-                draggable="false"
-                @click="handleCarouselClick(item)"
-                @dragstart.prevent
-              />
+            <div class="w-full px-3.5 sm:px-0">
+              <div
+                class="home-carousel-slide relative w-full overflow-hidden rounded-xl"
+                :class="bannerAspectClass"
+              >
+                <img
+                  :src="getSlideImage(item)"
+                  :alt="`slide-${index + 1}`"
+                  class="absolute inset-0 block h-full w-full select-none rounded-xl object-cover"
+                  draggable="false"
+                  @click="handleCarouselClick(item)"
+                  @dragstart.prevent
+                />
+              </div>
             </div>
           </SwipeItem>
         </Swipe>
@@ -122,18 +127,22 @@ const swipeRef = ref<SwipeInstance>()
 const AUTO_PLAY_INTERVAL_MS = 10000
 const MOUSE_SWIPE_DISTANCE = 50
 const MOUSE_DRAG_DISTANCE = 8
-/** H5：1041:450；PC：1340:280 */
-const bannerAspectClass = 'aspect-[1041/450] lg:aspect-[1340/280]'
 let mouseStartX = 0
 let mouseStartY = 0
 let isMouseDragging = false
 let shouldSuppressClick = false
+const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken))
+/** 未登录 H5：1033:612，PC：1340:280；已登录 H5：1041:450，PC：1340:280 */
+const bannerAspectClass = computed(() =>
+  isLoggedIn.value
+    ? 'aspect-[1041/450] lg:aspect-[1340/280]'
+    : 'aspect-[1033/612] lg:aspect-[1340/280]'
+)
 const slides = computed(() => {
   return [...props.list].sort((a, b) => (a.sortNum ?? 0) - (b.sortNum ?? 0))
 })
 const visibleSlides = computed(() => {
-  const isLoggedIn = Boolean(userInfo.value?.tradeToken)
-  return isLoggedIn ? slides.value : slides.value.slice(0, 1)
+  return isLoggedIn.value ? slides.value : slides.value.slice(0, 1)
 })
 const progressStyle = computed(() => ({
   animationDuration: `${AUTO_PLAY_INTERVAL_MS}ms`
@@ -319,6 +328,25 @@ watch(
 onBeforeUnmount(removeMouseSwipeListeners)
 </script>
 <style scoped>
+.home-carousel-slide {
+  width: 100%;
+}
+
+:deep(.van-swipe) {
+  overflow: hidden;
+  height: auto;
+}
+
+:deep(.van-swipe__track) {
+  height: auto;
+  align-items: stretch;
+}
+
+:deep(.van-swipe-item) {
+  width: 100%;
+  height: auto;
+}
+
 @keyframes slideshow-indicator-fill {
   from {
     transform: scaleX(0);

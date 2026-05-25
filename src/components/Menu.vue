@@ -11,7 +11,7 @@
           class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-theme-primary sm:h-9 sm:w-9"
         ></div>
         <div class="flex min-w-0 flex-col gap-[7px] sm:gap-[10px]">
-          <p class="m-0 text-sm font-bold leading-tight text-text-1">
+          <p class="m-0 text-sm font-bold leading-tight text-text-1 whitespace-nowrap">
             {{ t('sidebar_menu.bc_token.title') }}
           </p>
           <p class="m-0 text-xs font-semibold leading-tight text-assistRed">-1.00%</p>

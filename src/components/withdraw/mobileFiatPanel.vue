@@ -155,7 +155,7 @@ import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
 import { computed, type ComponentPublicInstance, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FastAmountItem } from '@/api/interface/withdraw'
-import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
+import { usePresetGrid } from '@/views/wallet/deposit/components/shared/usePresetGrid'
 
 const { t } = useI18n()
 

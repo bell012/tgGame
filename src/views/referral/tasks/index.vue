@@ -290,7 +290,7 @@ async function fetchTaskPageData() {
  */
 const handleCustomerServiceClick = () => {
   globalShowToast({
-    message: t('sidebar_menu.customer_service'),
+    message: t('referral.customerService'),
     type: 'success'
   })
 }
@@ -325,7 +325,7 @@ const handleOpenProgressReminder = () => {
  */
 const handleProgressReminderPrimaryClick = () => {
   globalShowToast({
-    message: t('sidebar_menu.customer_service'),
+    message: t('referral.customerService'),
     type: 'success'
   })
 }
@@ -367,7 +367,7 @@ const handleConfirmClaimClick = async () => {
     )
 
     globalShowToast({
-      message: t('personalCenter.rebate.toast.claimSuccess'),
+      message: t('referral.toast.claimSuccess'),
       type: 'success'
     })
     await fetchTaskPageData()
@@ -379,7 +379,7 @@ const handleConfirmClaimClick = async () => {
     }
 
     globalShowToast({
-      message: t('personalCenter.rebate.toast.claimFailed'),
+      message: t('referral.toast.claimFailed'),
       type: 'fail'
     })
   } finally {

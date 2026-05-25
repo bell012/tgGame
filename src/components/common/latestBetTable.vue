@@ -110,6 +110,9 @@ interface LiveBetRow {
 
 const MAX_VISIBLE_ROWS = 10
 const LATEST_LIST_REFRESH_INTERVAL_MS = 5 * 60 * 1000
+/** 龙虎榜每隔 30–60 秒（追加一条 */
+const HIGH_ROLLER_SCROLL_MIN_SEC = 30
+const HIGH_ROLLER_SCROLL_MAX_SEC = 60
 
 const props = withDefaults(
   defineProps<{
@@ -130,7 +133,18 @@ let autoScrollTimer: number | null = null
 let latestListRefreshTimer: number | null = null
 let nextScrollIndex = 0
 
-const getRandomScrollInterval = () => {
+const isHighRoller = computed(() => props.type === 2)
+
+const getHighRollerScrollInterval = () => {
+  const span = HIGH_ROLLER_SCROLL_MAX_SEC - HIGH_ROLLER_SCROLL_MIN_SEC + 1
+  const seconds = Math.floor(Math.random() * span) + HIGH_ROLLER_SCROLL_MIN_SEC
+  return seconds * 1000
+}
+
+const getScrollInterval = () => {
+  if (isHighRoller.value) {
+    return getHighRollerScrollInterval()
+  }
   return Math.floor(Math.random() * 800) + 300
 }
 
@@ -158,7 +172,6 @@ const getLatestListData = async () => {
       type: props.type,
       currency: getCurrentCurrency()
     })
-    console.log('res---', res)
     sourceRows.value = (res?.result ?? []).map((item: LatestListItem, index: number) => {
       const currency = String(item.currency ?? '').trim()
 
@@ -222,19 +235,25 @@ const scheduleNextScroll = () => {
     displayRows.value = [nextRow, ...displayRows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
     nextScrollIndex = (nextScrollIndex + 1) % rows.value.length
     scheduleNextScroll()
-  }, getRandomScrollInterval())
+  }, getScrollInterval())
 }
 
 const startAutoScroll = () => {
   stopAutoScroll()
 
-  if (rows.value.length <= MAX_VISIBLE_ROWS) {
+  if (rows.value.length === 0) {
+    displayRows.value = []
+    return
+  }
+
+  if (!isHighRoller.value && rows.value.length <= MAX_VISIBLE_ROWS) {
     displayRows.value = [...rows.value]
     return
   }
 
-  displayRows.value = rows.value.slice(0, MAX_VISIBLE_ROWS)
-  nextScrollIndex = MAX_VISIBLE_ROWS % rows.value.length
+  const initialCount = Math.min(MAX_VISIBLE_ROWS, rows.value.length)
+  displayRows.value = rows.value.slice(0, initialCount)
+  nextScrollIndex = initialCount % rows.value.length
   scheduleNextScroll()
 }
 
@@ -247,7 +266,7 @@ watch(
 )
 
 watch(
-  rows,
+  [rows, () => props.type],
   () => {
     startAutoScroll()
   },

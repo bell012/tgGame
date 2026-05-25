@@ -1,7 +1,7 @@
 {
   "home": {
     "title": "Welcome to TG Game",
-    "home": "home",
+    "home": "Home",
     "sign_In": "Sign In",
     "sign_Up": "Sign Up",
     "language": "Language",
@@ -332,8 +332,18 @@
     "copyFailed": "Copy failed",
     "noClaimableCommission": "No claimable commission",
     "claimPending": "Claim request submitted",
+    "customerService": "Customer Service",
+    "toast": {
+      "claimSuccess": "Claim successful",
+      "claimFailed": "Claim failed"
+    },
     "comingSoon": "Stay tuned—something's coming!！",
     "cta": "Invite Now",
+    "common": {
+      "filter": "Filter",
+      "apply": "Apply",
+      "noData": "No data"
+    },
     "invitePoster": {
       "saveImage": "Save Poster",
       "copyLink": "Copy Link",
@@ -433,7 +443,7 @@
       "progressReminder": {
         "title": "Kind Reminder",
         "description": "Your friend must complete their basic profile and use unique IP, device, and account information to be counted. If you have any questions about your progress, please contact customer support.",
-        "primaryButton": "Confirm",
+        "primaryButton": "Customer Service",
         "secondaryButton": "Task Rules"
       }
     },
@@ -549,6 +559,15 @@
       },
       "tableValues": {
         "slots": "Slots"
+      },
+      "gameTypes": {
+        "lottery": "Lottery",
+        "sports": "Sports",
+        "liveCasino": "Live Casino",
+        "slots": "Slots",
+        "tableGames": "Table Games",
+        "fishing": "Fishing",
+        "esports": "Esports"
       }
     },
     "commissionRecords": {
@@ -1505,7 +1524,7 @@
   },
   "menu": {
     "crypto-account": "Crypto Account",
-    "game-categories": "Game Categories",
+    "game-categories": "Casino",
     "recently-played": "Recently Played",
     "favorites": "Favorites",
     "vouchers": "Vouchers",

@@ -179,7 +179,7 @@
                   <!-- 通知预览图片区 -->
                   <div
                     v-if="hasPreviewImage(item)"
-                    class="notice-preview mt-[10px] h-[150px] w-full overflow-hidden rounded-[8px]"
+                    class="notice-preview mt-[10px] aspect-[256/120] w-full overflow-hidden rounded-[8px]"
                   >
                     <img
                       :src="toGameImageUrl(item.noticeText)"
@@ -528,8 +528,8 @@ import type {
 } from '@/api/interface/wallet'
 import H5Header from '@/components/common/H5Header.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
-import depositCryptoOrderPop from '@/components/deposit/order/crypto/depositCryptoOrderPop.vue'
-import depositPopShell from '@/components/deposit/shared/depositPopShell.vue'
+import depositCryptoOrderPop from '@/views/wallet/deposit/components/order/crypto/depositCryptoOrderPop.vue'
+import depositPopShell from '@/views/wallet/deposit/components/shared/depositPopShell.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useGameStore } from '@/stores/game'

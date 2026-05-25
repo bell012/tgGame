@@ -17,7 +17,7 @@
           <!-- 头部块 -->
           <header class="relative flex h-[48px] items-center justify-center">
             <h2 class="text-[16px] font-[700] leading-[19px] text-text-1">
-              {{ t('common.filter') }}
+              {{ t('referral.common.filter') }}
             </h2>
 
             <!-- 按钮块 -->
@@ -26,7 +26,7 @@
               class="absolute right-0 top-1/2 -translate-y-1/2 text-[12px] font-[700] leading-[15px] text-theme-primary"
               @click="handleApply"
             >
-              {{ t('common.apply') }}
+              {{ t('referral.common.apply') }}
             </button>
           </header>
 

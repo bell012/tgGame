@@ -114,7 +114,18 @@ interface PendingLanguageRequest<T> {
   promise: Promise<T[]>
 }
 
-type HomeCollectionDisplayItem = CollectionsListItem | GameDataItem
+export type HomeCollectionItemSource = 'favorite' | 'hot_fill'
+
+export interface HomeCollectionDisplayItem {
+  game: GameDataItem
+  source: HomeCollectionItemSource
+}
+
+const toFavoriteCollectionItems = (games: GameDataItem[]): HomeCollectionDisplayItem[] =>
+  games.map(game => ({ game, source: 'favorite' as const }))
+
+const toHotFillCollectionItems = (games: GameDataItem[]): HomeCollectionDisplayItem[] =>
+  games.map(game => ({ game, source: 'hot_fill' as const }))
 
 export const useGameStore = defineStore('game', () => {
   const localeStore = useLocaleStore()
@@ -591,7 +602,9 @@ export const useGameStore = defineStore('game', () => {
 
       // 收藏足够：直接截断到目标数
       if (hydratedCollections.length >= targetCount) {
-        homeCollectionsData.value = hydratedCollections.slice(0, targetCount)
+        homeCollectionsData.value = toFavoriteCollectionItems(
+          hydratedCollections.slice(0, targetCount)
+        )
         return homeCollectionsData.value
       }
 
@@ -618,7 +631,10 @@ export const useGameStore = defineStore('game', () => {
         }
       }
 
-      homeCollectionsData.value = [...hydratedCollections, ...hotFillers].slice(0, targetCount)
+      homeCollectionsData.value = [
+        ...toFavoriteCollectionItems(hydratedCollections),
+        ...toHotFillCollectionItems(hotFillers)
+      ].slice(0, targetCount)
       return homeCollectionsData.value
     } catch (error) {
       console.error('fetchHomeCollectionsData failed', error)
