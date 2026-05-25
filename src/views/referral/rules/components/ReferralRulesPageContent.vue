@@ -184,7 +184,7 @@
 
               <!-- 佣金比例单元格 -->
               <div class="text-center text-[14px] font-[400] leading-[17px] text-text-1">
-                {{ row.rate }}
+                {{ row.rate + '%' }}
               </div>
             </div>
           </div>
