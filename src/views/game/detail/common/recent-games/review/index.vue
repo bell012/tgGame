@@ -14,6 +14,7 @@
     <div ref="sortMenuRef" class="relative flex justify-between items-center mt-[20px]">
       <div class="text-[12px] text-[var(--color-text-level-2)]">{{ t('gameDetail.comments') }}</div>
       <button
+        ref="sortMenuTriggerRef"
         type="button"
         class="sort-menu-trigger flex items-center justify-center transition-colors duration-200"
         :class="{ 'sort-menu-trigger-light': isLightTheme }"
@@ -21,26 +22,27 @@
       >
         <SanIcon class="sort-menu-trigger-icon size-[18px]" />
       </button>
-      <transition name="sort-popup">
-        <div
-          v-if="isSortPopupOpen"
-          class="sort-menu-popup absolute right-0 bottom-[calc(100%+10px)] z-20 w-[140px] rounded-[10px] p-[8px]"
-          :class="{ 'sort-menu-popup-light': isLightTheme }"
-        >
+      <Teleport to="body">
+        <transition name="sort-popup">
           <div
-            v-for="item in sortOptions"
-            :key="item.value"
-            class="sort-menu-popup-item mb-[6px] flex h-[30px] cursor-pointer items-center justify-center rounded-[5px] text-[12px] font-semibold transition-colors duration-200 last:mb-0"
-            :class="{
-              'sort-menu-popup-item-active': activeSort === item.value,
-              'sort-menu-popup-item-light': isLightTheme && activeSort !== item.value
-            }"
-            @click.stop="selectSort(item.value)"
+            v-if="isSortPopupOpen"
+            ref="sortMenuPopupRef"
+            class="sort-menu-popup fixed z-[1200] w-[140px] rounded-[10px] p-[6px]"
+            :class="{ 'sort-menu-popup-light': isLightTheme }"
+            :style="sortMenuPopupStyle"
           >
-            {{ item.label }}
+            <div
+              v-for="item in sortOptions"
+              :key="item.value"
+              class="sort-menu-popup-item flex h-[30px] cursor-pointer items-center justify-center rounded-[5px] text-[12px] font-medium transition-colors duration-200"
+              :class="{ 'sort-menu-popup-item-active': activeSort === item.value }"
+              @click.stop="selectSort(item.value)"
+            >
+              {{ item.label }}
+            </div>
           </div>
-        </div>
-      </transition>
+        </transition>
+      </Teleport>
     </div>
     <ReviewCommentEntry
       :avatar-url="currentUserAvatarUrl"
@@ -86,6 +88,7 @@ import { storeToRefs } from 'pinia'
 import {
   computed,
   inject,
+  nextTick,
   onActivated,
   onBeforeUnmount,
   onMounted,
@@ -147,6 +150,7 @@ const {
   isCommentLoading,
   sortedCommentList,
   sortMenuRef,
+  sortMenuPopupRef,
   isSortPopupOpen,
   activeSort,
   sortOptions,
@@ -239,9 +243,71 @@ const handleRateChange = (value: number) => {
   setRating(value)
 }
 
+const sortMenuTriggerRef = ref<HTMLElement | null>(null)
+const sortMenuPopupStyle = ref<Record<string, string>>({})
+let sortMenuPositionRaf = 0
+
+const updateSortMenuPopupPosition = () => {
+  const trigger = sortMenuTriggerRef.value
+  if (!trigger) {
+    return
+  }
+
+  const rect = trigger.getBoundingClientRect()
+  const popupWidth = 140
+  const gap = 10
+
+  sortMenuPopupStyle.value = {
+    top: `${rect.top - gap}px`,
+    left: `${rect.right - popupWidth}px`,
+    transform: 'translateY(-100%)'
+  }
+}
+
+const handleSortMenuPositionUpdate = () => {
+  if (!isSortPopupOpen.value) {
+    return
+  }
+
+  if (sortMenuPositionRaf) {
+    cancelAnimationFrame(sortMenuPositionRaf)
+  }
+
+  sortMenuPositionRaf = requestAnimationFrame(() => {
+    updateSortMenuPopupPosition()
+  })
+}
+
+const bindSortMenuPositionListeners = () => {
+  window.addEventListener('scroll', handleSortMenuPositionUpdate, true)
+  window.addEventListener('resize', handleSortMenuPositionUpdate)
+}
+
+const unbindSortMenuPositionListeners = () => {
+  window.removeEventListener('scroll', handleSortMenuPositionUpdate, true)
+  window.removeEventListener('resize', handleSortMenuPositionUpdate)
+
+  if (sortMenuPositionRaf) {
+    cancelAnimationFrame(sortMenuPositionRaf)
+    sortMenuPositionRaf = 0
+  }
+}
+
 const toggleSortPopup = () => {
   isSortPopupOpen.value = !isSortPopupOpen.value
 }
+
+watch(isSortPopupOpen, open => {
+  if (open) {
+    void nextTick(() => {
+      updateSortMenuPopupPosition()
+      bindSortMenuPositionListeners()
+    })
+    return
+  }
+
+  unbindSortMenuPositionListeners()
+})
 
 // ===== 评分分布条（右侧 5 条进度）=====
 const progressRandomSalt = ref(`${Date.now()}-${Math.random()}`)
@@ -286,13 +352,17 @@ watch(scoreValue, () => {
 })
 
 onBeforeUnmount(() => {
+  unbindSortMenuPositionListeners()
   document.removeEventListener('click', handleSortMenuOutsideClick)
 })
 </script>
 <style scoped>
 .sort-menu-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   background: var(--color-background-level-2);
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+  box-shadow: 0 7px 31px rgba(0, 0, 0, 0.5);
 }
 
 .sort-menu-popup::after {
@@ -326,31 +396,24 @@ onBeforeUnmount(() => {
 }
 
 .sort-menu-popup-light {
-  background: var(--color-background-level-2);
-  border: none;
+  background: #ffffff;
+  box-shadow: 0 0 49px rgba(172, 172, 172, 0.53);
+}
+
+.sort-menu-popup-light::after {
+  border-top-color: #ffffff;
 }
 
 .sort-menu-popup-item {
   color: var(--color-text-level-1);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.sort-menu-popup-item-light {
-  color: var(--color-text-level-1);
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--color-opacity-5);
 }
 
 .sort-menu-popup-item-active {
   color: var(--color-text-level-1);
   background:
-    linear-gradient(90deg, rgba(0, 255, 96, 0.3) 0%, rgba(0, 255, 96, 0) 70.24%),
-    rgba(255, 255, 255, 0.06);
-}
-
-:global(:root.light) .sort-menu-popup-item-active {
-  background:
-    linear-gradient(90deg, rgba(0, 255, 96, 0.3) 0%, rgba(0, 255, 96, 0) 70.24%),
-    rgba(0, 0, 0, 0.06);
+    linear-gradient(90deg, rgba(0, 255, 96, 0.3) 0%, rgba(0, 255, 96, 0) 70%),
+    var(--color-opacity-5);
 }
 
 .sort-popup-enter-active,

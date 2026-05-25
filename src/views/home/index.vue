@@ -1,12 +1,12 @@
 ﻿<template>
-  <div class="home mx-auto max-w-[1248px] py-2 sm:px-4 sm:py-4">
+  <div class="home mx-auto max-w-[1248px] py-2 sm:py-4">
     <div style="height: 55px" class="mb-2.5 sm:hidden"></div>
 
     <HomeCarouselImg
       v-if="isSlideshowLoading || querySlideshowList.length"
       :list="querySlideshowList"
       :loading="isSlideshowLoading"
-      class="px-3.5 sm:mb-2.5"
+      class="mb-2.5"
     />
     <div class="px-3.5">
       <!--Favorites Games -->
@@ -37,7 +37,7 @@
                   <div class="flex items-center">
                     <div class="color_icon_img casino" style="transform: scale(1)"></div>
                     <img :src="icon5" alt="" class="w-[19px] sm:w-[32px]" />
-                    <h2 class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Casino') }}</h2>
+                    <h2 class="ml-0.5 text-[12px] sm:text-[12px]">{{ $t('home.Casino') }}</h2>
                   </div>
                 </div>
               </button>
@@ -54,7 +54,7 @@
                   <div class="flex items-center">
                     <div class="color_icon_img sports" style="transform: scale(1)"></div>
                     <img :src="icon6" alt="" class="w-[19px] sm:w-[32px]" />
-                    <span class="ml-0.5 text-sm sm:text-[12px]">{{ $t('home.Sports') }}</span>
+                    <span class="ml-0.5 text-[12px] sm:text-[12px]">{{ $t('home.Sports') }}</span>
                   </div>
                 </div>
               </button>
@@ -230,7 +230,7 @@
               <img class="h-[13px]" :src="SHOPEE" alt="" />
             </div>
             <div class="mt-4 flex items-center justify-center gap-11 lg:!mt-0">
-              <div class="text-lg font-extrabold sm:text-2xl">
+              <div class="text-lg font-semibold sm:text-2xl">
                 <span class="text-secondary-4">300%</span> {{ $t('home.DepositBonus') }}
               </div>
             </div>

@@ -4,6 +4,7 @@
     <TopNav
       v-if="!hideTopNav && !isFullscreenRoute"
       ref="topNavRef"
+      :sidebar-collapsed="isSidebarCollapsed"
       @toggle-sidebar="toggleSidebar"
       @notification-click="handleNotificationClick"
     />

@@ -6,10 +6,15 @@
         class="sm:hidden cursor-pointer rounded-lg flex items-center justify-center"
         @click="toggleH5Menu"
       >
-        <FoldIconH5
-          class="h-6 w-6"
-          :class="isH5MenuActive ? 'text-theme-primary' : 'text-text-1'"
-        />
+        <span class="fold-icon-wrap" :class="{ 'fold-icon-wrap--open': isH5MenuActive }">
+          <FoldIconH5
+            class="h-6 w-6 fold-icon-inner"
+            :class="[
+              isH5MenuActive ? 'text-theme-primary' : 'text-text-1',
+              { 'fold-icon-inner--pulse': h5FoldPulse }
+            ]"
+          />
+        </span>
       </div>
       <!-- 左侧 -->
       <div class="flex items-center">
@@ -17,7 +22,15 @@
           class="hidden sm:flex cursor-pointer search w-[40px] h-[40px] rounded-lg items-center justify-center"
           @click="handleToggleSidebar"
         >
-          <FoldIcon class="w-6 h-6 fill-none" />
+          <span class="fold-icon-wrap" :class="{ 'fold-icon-wrap--open': !props.sidebarCollapsed }">
+            <FoldIconH5
+              class="h-6 w-6 fill-none fold-icon-inner"
+              :class="[
+                !props.sidebarCollapsed ? 'text-theme-primary' : 'text-text-1',
+                { 'fold-icon-inner--pulse': sidebarFoldPulse }
+              ]"
+            />
+          </span>
         </div>
 
         <!-- PC端 Logo -->
@@ -58,14 +71,14 @@
         <template v-if="!isLoggedIn">
           <!-- 登入 -->
           <div
-            class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-transparent border-0 sm:border-2 border-[#e4eaf019] mr-1"
+            class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-opacity-10 border-0 sm:border-2 border-[#e4eaf019] mr-1"
             @click="openLoginModal"
           >
             {{ t('home.sign_In') }}
           </div>
           <!-- 注册 -->
           <div
-            class="cursor-pointer font-bold w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-0 sm:mr-3"
+            class="cursor-pointer font-bold w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary"
             @click="openRegisterModal"
           >
             {{ t('home.sign_Up') }}
@@ -310,7 +323,6 @@ import bellDefaultImage from '@/static/img/bell.png'
 import bellUnreadImage from '@/static/img/bell_n.png'
 import mobileLogoImage from '@/static/img/home/logo_h5.png'
 import ChatIcon from '@/static/svg/chat.svg?component'
-import FoldIcon from '@/static/svg/fold.svg?component'
 import FoldIconH5 from '@/static/svg/foldH5.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
 import GiftIcon from '@/static/svg/login/gift.svg?component'
@@ -347,6 +359,15 @@ const isMobile = useIsMobile()
 const { acctInfo, userInfo } = storeToRefs(userStore)
 const { visible: showLoginModal } = storeToRefs(authModalStore)
 const { hasUnread } = storeToRefs(notificationIndicatorStore)
+
+const props = withDefaults(
+  defineProps<{
+    sidebarCollapsed?: boolean
+  }>(),
+  {
+    sidebarCollapsed: false
+  }
+)
 
 const emit = defineEmits<{
   'toggle-sidebar': []
@@ -389,6 +410,33 @@ const avatarUrl = computed(() => {
   return resolveProfileAvatarUrl(userInfo.value?.headPortrait)
 })
 const isH5MenuActive = computed(() => stripLocalePrefix(route.path) === '/menu')
+
+const FOLD_ICON_ANIM_MS = 300
+const h5FoldPulse = ref(false)
+const sidebarFoldPulse = ref(false)
+let h5FoldPulseTimer: ReturnType<typeof setTimeout> | undefined
+let sidebarFoldPulseTimer: ReturnType<typeof setTimeout> | undefined
+
+const runFoldIconScalePulse = (target: 'h5' | 'sidebar') => {
+  const pulse = target === 'h5' ? h5FoldPulse : sidebarFoldPulse
+  pulse.value = false
+  const existingTimer = target === 'h5' ? h5FoldPulseTimer : sidebarFoldPulseTimer
+  if (existingTimer) {
+    clearTimeout(existingTimer)
+  }
+  requestAnimationFrame(() => {
+    pulse.value = true
+    const timerId = setTimeout(() => {
+      pulse.value = false
+    }, FOLD_ICON_ANIM_MS)
+    if (target === 'h5') {
+      h5FoldPulseTimer = timerId
+    } else {
+      sidebarFoldPulseTimer = timerId
+    }
+  })
+}
+
 const {
   currentCurrencyCode,
   currentCurrencyIcon,
@@ -466,6 +514,12 @@ onBeforeUnmount(() => {
   window.removeEventListener('storage', handleStorageChange)
   document.removeEventListener('click', handleUserMenuClickOutside)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
+  if (h5FoldPulseTimer) {
+    clearTimeout(h5FoldPulseTimer)
+  }
+  if (sidebarFoldPulseTimer) {
+    clearTimeout(sidebarFoldPulseTimer)
+  }
 })
 
 // 监听登录弹窗关闭，重新同步用户信息，供后续登录态判断使用。
@@ -489,6 +543,7 @@ watch(
 )
 
 const handleToggleSidebar = () => {
+  runFoldIconScalePulse('sidebar')
   emit('toggle-sidebar')
 }
 
@@ -553,6 +608,8 @@ const openDeposit = () => {
 }
 
 const toggleH5Menu = () => {
+  runFoldIconScalePulse('h5')
+
   if (isH5MenuActive.value) {
     router.back()
     return
@@ -588,12 +645,49 @@ defineExpose({
   left: 0;
   right: 0;
   height: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
-  background-color: var(--color-background-level-5);
-  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.05);
+  background-color: var(--color-background-level-1);
   z-index: 50;
 }
 .search {
   background-color: var(--color-background-level-3);
+}
+.fold-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center;
+  transform: rotate(0deg);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  backface-visibility: hidden;
+}
+.fold-icon-wrap--open {
+  transform: rotate(180deg);
+}
+.fold-icon-inner {
+  display: block;
+  transform-origin: center;
+  transform-box: fill-box;
+  transform: scale(1);
+}
+.fold-icon-inner--pulse {
+  animation: fold-icon-scale 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes fold-icon-scale {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fold-icon-wrap {
+    transition-duration: 0.01ms;
+  }
+  .fold-icon-inner--pulse {
+    animation: none;
+  }
 }
 .top-nav-currency-arrow-bg {
   width: 24px;

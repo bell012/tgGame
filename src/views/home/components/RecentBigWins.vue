@@ -8,7 +8,7 @@
             class="absolute left-0 top-0 h-full w-full rounded-full bg-success animate-ping"
           ></div>
         </div>
-        <div class="text-theme-primary">{{ $t('home.RecentBigWins') }}</div>
+        <div class="text-text-1">{{ $t('home.RecentBigWins') }}</div>
       </h2>
     </div>
 
@@ -33,16 +33,8 @@
       v-else
       ref="marqueeRef"
       class="marquee my-0 select-none sm:rounded-xl sm:bg-layer3"
-      @scroll.passive="onMarqueeScroll"
-      @pointerdown="onMarqueePointerDown"
-      @pointerup="onMarqueePointerUp"
-      @pointercancel="onMarqueePointerCancel"
-      @touchstart.passive="onMarqueeTouchStart"
-      @touchend.passive="onMarqueeTouchEnd"
-      @touchcancel.passive="onMarqueeTouchEnd"
       @mouseenter="marqueeHoverPaused = true"
       @mouseleave="marqueeHoverPaused = false"
-      @click.capture="onMarqueeClickCapture"
     >
       <div
         ref="marqueeInnerRef"
@@ -226,64 +218,25 @@ const marqueeInnerRef = ref<HTMLElement | null>(null)
 const marqueeSegmentPx = ref(0)
 const marqueeCanAutoScroll = ref(false)
 const marqueeHoverPaused = ref(false)
-const marqueePointerActive = ref(false)
 /** 系统开启「减少动态效果」 matchMedia */
 const marqueeReducedMotionActive = ref(
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 )
 const AUTO_MARQUEE_SEGMENT_SEC = 20
-const MARQUEE_IDLE_RESUME_MS = 2000
 
 let marqueeRafId = 0
 let marqueeLastTs = 0
-let marqueeUserScrollUntil = 0
 let marqueeLoopRunning = false
 
 let marqueeScrollRemainder = 0
 let marqueeResizeObserver: ResizeObserver | null = null
 let marqueeResizeDebounceTimer = 0
-let marqueeMobileResumeTimer = 0
 let marqueeVisibilityHandler: (() => void) | null = null
 let marqueeReducedMotionMql: MediaQueryList | null = null
 let marqueeReducedMotionHandler: (() => void) | null = null
 
 /**
- * 清理 H5 点击/触摸后的自动恢复定时器
- */
-const clearMarqueeMobileResumeTimer = () => {
-  if (!marqueeMobileResumeTimer) {
-    return
-  }
-
-  window.clearTimeout(marqueeMobileResumeTimer)
-  marqueeMobileResumeTimer = 0
-}
-
-/**
- * H5 点击或触摸后，2 秒后强制清理暂停状态并恢复跑马灯滚动。
- */
-const scheduleMarqueeMobileResume = () => {
-  clearMarqueeMobileResumeTimer()
-
-  if (!isMobile.value) {
-    return
-  }
-
-  marqueeMobileResumeTimer = window.setTimeout(() => {
-    marqueePointerActive.value = false
-    marqueeHoverPaused.value = false
-    marqueeUserScrollUntil = 0
-    marqueeLastTs = 0
-    marqueeMobileResumeTimer = 0
-
-    if (!marqueeLoopRunning) {
-      startMarqueeRaf()
-    }
-  }, MARQUEE_IDLE_RESUME_MS)
-}
-
-/**
- * 停止自动滚动循环，并清理与滚动状态相关的定时器。
+ * 停止自动滚动循环。
  */
 const stopMarqueeRaf = () => {
   marqueeLoopRunning = false
@@ -291,7 +244,6 @@ const stopMarqueeRaf = () => {
     cancelAnimationFrame(marqueeRafId)
     marqueeRafId = 0
   }
-  clearMarqueeMobileResumeTimer()
   marqueeLastTs = 0
 }
 
@@ -329,11 +281,7 @@ const stepMarquee = (ts: number) => {
     return
   }
 
-  if (
-    marqueePointerActive.value ||
-    marqueeHoverPaused.value ||
-    Date.now() < marqueeUserScrollUntil
-  ) {
+  if (marqueeHoverPaused.value) {
     marqueeLastTs = ts
     return
   }
@@ -386,92 +334,6 @@ const startMarqueeRaf = () => {
       marqueeRafId = requestAnimationFrame(stepMarquee)
     })
   })
-}
-
-const bumpMarqueeUserIdlePause = () => {
-  marqueeUserScrollUntil = Date.now() + MARQUEE_IDLE_RESUME_MS
-}
-
-/**
- * 记录用户开始与跑马灯交互；H5 下额外启动 2 秒自动恢复。
- */
-const beginMarqueeInteraction = () => {
-  marqueePointerActive.value = true
-  marqueeScrollRemainder = 0
-  scheduleMarqueeMobileResume()
-}
-
-/**
- * 结束用户交互并进入 2 秒空闲暂停期，之后恢复自动滚动。
- */
-const endMarqueeInteraction = () => {
-  marqueePointerActive.value = false
-  bumpMarqueeUserIdlePause()
-  scheduleMarqueeMobileResume()
-}
-
-/**
- * 用户手动滚动时，更新空闲恢复时间；H5 下同时强制恢复。
- */
-const onMarqueeScroll = () => {
-  if (!marqueePointerActive.value) return
-  bumpMarqueeUserIdlePause()
-  scheduleMarqueeMobileResume()
-}
-
-/**
- * PC 使用 pointer 事件处理拖拽；H5 走 touch 事件。
- */
-const onMarqueePointerDown = () => {
-  if (isMobile.value) {
-    return
-  }
-
-  beginMarqueeInteraction()
-}
-
-/**
- * PC 结束 pointer 交互后进入空闲恢复；H5 下忽略 pointerup（由 touch 处理）。
- */
-const onMarqueePointerUp = () => {
-  if (isMobile.value) {
-    return
-  }
-
-  endMarqueeInteraction()
-}
-
-const onMarqueePointerCancel = onMarqueePointerUp
-
-/**
- * H5 触摸开始时进入暂停态，并启动 2 秒自动恢复计时。
- */
-const onMarqueeTouchStart = () => {
-  beginMarqueeInteraction()
-}
-
-/**
- * H5 触摸结束后进入空闲恢复阶段。
- */
-const onMarqueeTouchEnd = () => {
-  endMarqueeInteraction()
-}
-
-/**
- * 重置跑马灯交互状态，处理触摸/指针事件异常中断的情况。
- */
-const resetMarqueeInteraction = () => {
-  if (!marqueePointerActive.value) return
-  endMarqueeInteraction()
-}
-
-/**
- * H5 单击后即使没有后续操作，在 2 秒后自动恢复滚动。
- */
-const onMarqueeClickCapture = () => {
-  if (isMobile.value) {
-    scheduleMarqueeMobileResume()
-  }
 }
 
 watch(
@@ -528,15 +390,6 @@ watch(
 )
 
 onMounted(() => {
-  window.addEventListener('pointerup', resetMarqueeInteraction, true)
-  window.addEventListener('pointercancel', resetMarqueeInteraction, true)
-  window.addEventListener('touchend', resetMarqueeInteraction, { capture: true, passive: true })
-  window.addEventListener('touchcancel', resetMarqueeInteraction, {
-    capture: true,
-    passive: true
-  })
-  window.addEventListener('blur', resetMarqueeInteraction)
-
   marqueeVisibilityHandler = () => {
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
       stopMarqueeRaf()
@@ -561,11 +414,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  window.removeEventListener('pointerup', resetMarqueeInteraction, true)
-  window.removeEventListener('pointercancel', resetMarqueeInteraction, true)
-  window.removeEventListener('touchend', resetMarqueeInteraction, true)
-  window.removeEventListener('touchcancel', resetMarqueeInteraction, true)
-  window.removeEventListener('blur', resetMarqueeInteraction)
   if (marqueeVisibilityHandler) {
     document.removeEventListener('visibilitychange', marqueeVisibilityHandler)
     marqueeVisibilityHandler = null
@@ -610,11 +458,10 @@ onUnmounted(() => {
   width: calc(100% + 2rem);
   margin-left: -1rem;
   margin-right: -1rem;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
-  touch-action: pan-x pan-y;
+  touch-action: pan-y;
   scroll-behavior: auto;
-  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
   contain: content;

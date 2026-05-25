@@ -7,6 +7,28 @@ export const useThemeStore = defineStore('theme', () => {
   const theme = ref<Theme>('light')
   const systemPreference = ref<Theme>('light')
 
+  const syncSystemThemeColor = () => {
+    const html = document.documentElement
+    const computedStyle = getComputedStyle(html)
+    const themeColor = computedStyle.getPropertyValue('--color-background-level-1').trim()
+    const bodyBackgroundColor = document.body
+      ? getComputedStyle(document.body).backgroundColor.trim()
+      : ''
+    const resolvedThemeColor = themeColor || bodyBackgroundColor
+
+    const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    if (themeColorMeta && resolvedThemeColor) {
+      themeColorMeta.setAttribute('content', resolvedThemeColor)
+    }
+
+    if (resolvedThemeColor) {
+      html.style.backgroundColor = resolvedThemeColor
+      if (document.body) {
+        document.body.style.backgroundColor = resolvedThemeColor
+      }
+    }
+  }
+
   const initTheme = () => {
     const savedTheme = localStorage.getItem('theme') as Theme | null
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -39,18 +61,9 @@ export const useThemeStore = defineStore('theme', () => {
       html.classList.remove('dark')
       html.classList.add('light')
     }
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
-    if (metaThemeColor) {
-      setTimeout(() => {
-        const themeColor = getComputedStyle(html)
-          .getPropertyValue('--color-background-level-1')
-          .trim()
-        metaThemeColor.setAttribute(
-          'content',
-          themeColor || (newTheme === 'dark' ? '#242626' : '#FFFFFF')
-        )
-      }, 0)
-    }
+    setTimeout(() => {
+      syncSystemThemeColor()
+    }, 0)
   }
 
   const setTheme = (newTheme: Theme) => {

@@ -607,7 +607,8 @@ const createBenefitCard = (
   amount: number | undefined,
   status: VipBenefitCardStatus,
   image: string,
-  background: string
+  background: string,
+  useOngoingButtonText = false
 ) => {
   return {
     key,
@@ -619,7 +620,9 @@ const createBenefitCard = (
         ? t('referral.claim')
         : status === 'claimed'
           ? t('vipPage.claimed')
-          : t('personalCenter.upgrade'),
+          : useOngoingButtonText
+            ? t('vipPage.ongoing')
+            : t('personalCenter.upgrade'),
     background,
     image
   }
@@ -922,6 +925,7 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
 
   const benefitCards = computed<VipBenefitCard[]>(() => {
     const benefitInfo = vipInfo.value
+    const isTopVipLevelTen = currentVipLevel.value === 10 && highestVipLevel.value === 10
     const benefitCardValueMap: Record<
       VipBenefitCardKey,
       { amount: number | undefined; state: number | undefined; image: string }
@@ -953,7 +957,8 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
         benefitCardValue.amount,
         getBenefitCardStatus(benefitCardValue.state),
         benefitCardValue.image,
-        resolveBenefitCardBackground(key, theme.value)
+        resolveBenefitCardBackground(key, theme.value),
+        isTopVipLevelTen && (key === 'weekly' || key === 'monthly')
       )
     })
   })
