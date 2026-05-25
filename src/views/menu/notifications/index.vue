@@ -179,7 +179,7 @@
                   <!-- 通知预览图片区 -->
                   <div
                     v-if="hasPreviewImage(item)"
-                    class="notice-preview mt-[10px] h-[150px] w-full overflow-hidden rounded-[8px]"
+                    class="notice-preview mt-[10px] aspect-[256/120] w-full overflow-hidden rounded-[8px]"
                   >
                     <img
                       :src="toGameImageUrl(item.noticeText)"
