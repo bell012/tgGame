@@ -1,6 +1,10 @@
 <template>
-  <div ref="pageRootRef" class="search-container" :style="mobileStyle">
-    <div :class="{ 'search-filter-panel': isMobile }">
+  <div
+    ref="pageRootRef"
+    class="search-container sm:flex sm:min-h-0 sm:flex-1 sm:flex-col"
+    :style="mobileStyle"
+  >
+    <div class="shrink-0" :class="{ 'search-filter-panel': isMobile }">
       <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
     </div>
     <template v-if="currentType === 'casino'">
@@ -23,7 +27,7 @@
           </button>
         </div>
 
-        <div>
+        <div class="shrink-0">
           <div
             ref="tabScrollRef"
             class="explore-tabs-scroll my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
@@ -88,7 +92,9 @@
           </button>
         </div>
 
-        <div class="explore-tabs-content tabs-content min-h-48">
+        <div
+          class="explore-tabs-content tabs-content flex min-h-48 flex-1 flex-col overflow-y-auto sm:min-h-0"
+        >
           <component :is="currentPageStyle" v-bind="currentPageProps" />
         </div>
       </div>
@@ -175,7 +181,7 @@ const typeList = computed(() => [
 ])
 
 const contentWrapClass = computed(() =>
-  isMobile.value ? 'w-full relative' : 'min-h-screen w-full relative'
+  isMobile.value ? 'w-full relative' : 'relative flex w-full min-h-0 flex-1 flex-col'
 )
 
 const activeSearchKeyword = ref('')
@@ -585,6 +591,31 @@ onUnmounted(() => {
 
 .explore-tabs-content {
   margin-top: 10px;
+}
+
+@media (min-width: 768px) {
+  .explore-casino-content-wrap {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  :global(.explore-pc-empty-wrap) {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  :global(.explore-pc-empty-state) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0 !important;
+  }
 }
 
 @media (max-width: 767px) {

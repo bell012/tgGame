@@ -4,12 +4,12 @@
     <transition name="search-modal-fade">
       <div
         v-if="props.modelValue"
-        class="search-desktop-shell fixed inset-x-0 bottom-0 z-[9999] overflow-y-auto"
-        :style="{ top: `${layoutStore.TOPNAV_HEIGHT}px` }"
+        class="search-desktop-shell fixed inset-x-0 bottom-0 z-[9999] flex flex-col overflow-hidden"
+        :style="shellStyle"
       >
-        <div class="mx-auto w-full max-w-[1336px] px-4 pb-6">
+        <div class="mx-auto flex h-full min-h-0 w-full max-w-[1336px] flex-col px-4 pb-6">
           <div
-            class="search-desktop-header sticky left-0 top-0 z-10 flex h-14 w-full items-center justify-end"
+            class="search-desktop-header sticky left-0 top-0 z-10 flex h-14 w-full shrink-0 items-center justify-end"
           >
             <div class="flex flex-1 items-center justify-center text-sm font-bold">
               {{ t('bottom_tab_bar.explore') }}
@@ -22,7 +22,7 @@
               <CloseIcon class="h-2.5 w-2.5 text-text-2" />
             </button>
           </div>
-          <explore />
+          <explore class="flex min-h-0 flex-1 flex-col" />
         </div>
       </div>
     </transition>
@@ -33,7 +33,7 @@
 import CloseIcon from '@/static/svg/close.svg?component'
 import Explore from '@/components/explore/index.vue'
 import { useLayoutStore } from '@/stores/layout'
-import { provide, ref, watch } from 'vue'
+import { computed, provide, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 interface Props {
@@ -46,6 +46,15 @@ const emit = defineEmits<{
 }>()
 const { t } = useI18n()
 const layoutStore = useLayoutStore()
+
+const shellStyle = computed(() => {
+  const topNavHeight = layoutStore.TOPNAV_HEIGHT
+
+  return {
+    top: `${topNavHeight}px`,
+    height: `calc(100vh - ${topNavHeight}px)`
+  }
+})
 
 const isCloseDesktopModal = ref(false)
 

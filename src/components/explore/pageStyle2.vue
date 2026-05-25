@@ -1,5 +1,5 @@
 <template>
-  <div ref="pageRootRef" class="w-full">
+  <div ref="pageRootRef" class="flex w-full min-h-0 flex-1 flex-col">
     <div v-if="isLoading" class="grid w-full grid-cols-3 gap-[11px] sm:grid-cols-8">
       <div
         v-for="index in resolvedPageSize"
@@ -14,15 +14,16 @@
       </div>
     </div>
 
-    <ThemedEmptyState
-      v-else
-      :dark-image="defaultImgDark"
-      :light-image="defaultImgLight"
-      :message="t('search.stay')"
-      container-class="mt-[17px] sm:mt-0 sm:min-h-[400px] sm:flex sm:flex-col sm:justify-center"
-      image-class="w-[220px] h-[200px] object-contain mb-2.5"
-      text-class="text-xs text-center text-text-1"
-    />
+    <div v-else class="explore-pc-empty-wrap">
+      <ThemedEmptyState
+        :dark-image="defaultImgDark"
+        :light-image="defaultImgLight"
+        :message="t('search.stay')"
+        container-class="explore-pc-empty-state mt-[17px] sm:mt-0"
+        image-class="w-[220px] h-[200px] object-contain mb-2.5"
+        text-class="text-xs text-center text-text-1"
+      />
+    </div>
 
     <ExplorePcPagination
       v-if="!isMobile && total > 0 && totalPages > 1"
