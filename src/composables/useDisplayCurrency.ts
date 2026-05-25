@@ -4,6 +4,7 @@ import { useLocaleStore } from '@/stores/locale'
 import { SITE_CONFIG_STORAGE_KEY, useSiteConfigStore, type SiteConfig } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
 import { getCurrentCurrency, getFormattedBalance, formatBalance } from '@/utils/locale'
+import { getBalanceByCurrency } from '@/utils/balance'
 import {
   getCurrencyIconByCode,
   getCurrencySelectOptionsFromCache,
@@ -12,28 +13,6 @@ import {
 
 type CachedSiteConfig = {
   currency?: unknown
-}
-
-const balanceFieldMap = {
-  BRL: 'balanceBrl',
-  CNY: 'balanceCny',
-  IDR: 'balanceIdr',
-  INR: 'balanceInr',
-  JPY: 'balanceJpy',
-  KRW: 'balanceKrw',
-  MXN: 'balanceMxn',
-  MYR: 'balanceMyr',
-  PHP: 'balancePhp',
-  SGD: 'balanceSgd',
-  USD: 'balanceUsd',
-  USDT: 'balanceUsdt',
-  VND: 'balanceVnd'
-} as const
-
-type BalanceFieldKey = (typeof balanceFieldMap)[keyof typeof balanceFieldMap]
-type BalanceCarrier = Partial<Record<BalanceFieldKey, number>> & {
-  balance?: number
-  currency?: string
 }
 
 export type DisplayCurrencyOption = {
@@ -88,28 +67,6 @@ export const readDisplayCurrencyCodesFromSiteConfig = (
   }
 }
 
-export const getBalanceByCurrency = (
-  data: BalanceCarrier | null | undefined,
-  currencyCode: string
-) => {
-  if (!data || !currencyCode) {
-    return undefined
-  }
-
-  const balanceKey = balanceFieldMap[currencyCode as keyof typeof balanceFieldMap]
-  if (balanceKey && typeof data[balanceKey] === 'number') {
-    return data[balanceKey]
-  }
-
-  const dynamicBalanceKey = `balance${currencyCode.charAt(0)}${currencyCode.slice(1).toLowerCase()}`
-  const dynamicBalanceValue = (data as Record<string, unknown>)[dynamicBalanceKey]
-  if (typeof dynamicBalanceValue === 'number') {
-    return dynamicBalanceValue
-  }
-
-  return typeof data.balance === 'number' ? data.balance : undefined
-}
-
 export const useDisplayCurrency = () => {
   const localeStore = useLocaleStore()
   const siteConfigStore = useSiteConfigStore()
@@ -155,13 +112,19 @@ export const useDisplayCurrency = () => {
   })
 
   const currentBalance = computed(() => {
-    return (
-      getBalanceByCurrency(acctInfo.value as BalanceCarrier | null, currentCurrencyCode.value) ??
-      getBalanceByCurrency(userInfo.value as BalanceCarrier | null, currentCurrencyCode.value) ??
-      acctInfo.value?.balancePhp ??
-      userInfo.value?.balancePhp ??
-      0
-    )
+    if (acctInfo.value) {
+      return getBalanceByCurrency(acctInfo.value, currentCurrencyCode.value, {
+        fallbackToCurrentBalance: true
+      })
+    }
+
+    if (userInfo.value) {
+      return getBalanceByCurrency(userInfo.value, currentCurrencyCode.value, {
+        fallbackToCurrentBalance: true
+      })
+    }
+
+    return 0
   })
 
   const currentBalanceAmountText = computed(() => formatBalance(currentBalance.value, 2))
@@ -181,12 +144,10 @@ export const useDisplayCurrency = () => {
     }
 
     const codes = mergedCodes.length ? mergedCodes : [fallbackCode]
+    const listBalanceOptions = { fallbackToCurrentBalance: false } as const
 
     return codes.map(code => {
-      const balance =
-        getBalanceByCurrency(acctInfo.value as BalanceCarrier | null, code) ??
-        getBalanceByCurrency(userInfo.value as BalanceCarrier | null, code) ??
-        0
+      const balance = getBalanceByCurrency(userInfo.value, code, listBalanceOptions)
 
       return {
         code,
