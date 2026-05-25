@@ -88,13 +88,13 @@
         >
           <div
             v-for="(game, i) in getDisplayList(props.module.items)"
-            :key="game.rowId ?? i"
+            :key="resolveModuleGame(game).rowId ?? i"
             class="aspect-[330/438] snap-start"
           >
             <casinoGameCard
-              :game="game"
-              :show-favorite-badge="showFavoriteCardBadge"
-              @click="handleClick(game.rowId)"
+              :game="resolveModuleGame(game)"
+              :show-favorite-badge="resolveFavoriteBadge(game)"
+              @click="handleClick(resolveModuleGame(game).rowId)"
             />
           </div>
           <button
@@ -128,6 +128,7 @@ import { navigateTo, navigateToName } from '@/utils/router'
 import { casinoIcons } from '@/static/svg/casino'
 import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
 import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
+import type { HomeCollectionDisplayItem } from '@/stores/game'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { getGameListTabSlug } from '../casinoPageConfig'
 import casinoGameCard from './casinoGameCard.vue'
@@ -194,7 +195,29 @@ const scrollRight = () => {
   el.scrollTo({ left: Math.min(target, maxScrollLeft), behavior: 'smooth' })
 }
 
-const getDisplayList = (list: GameDataItem[]) => {
+type ModuleGameItem = GameDataItem | HomeCollectionDisplayItem
+
+const isHomeCollectionItem = (item: ModuleGameItem): item is HomeCollectionDisplayItem => {
+  return typeof item === 'object' && item !== null && 'source' in item && 'game' in item
+}
+
+const resolveModuleGame = (item: ModuleGameItem): GameDataItem => {
+  return isHomeCollectionItem(item) ? item.game : item
+}
+
+const resolveFavoriteBadge = (item: ModuleGameItem): boolean => {
+  if (!props.showFavoriteCardBadge) {
+    return false
+  }
+
+  if (isHomeCollectionItem(item)) {
+    return item.source === 'favorite'
+  }
+
+  return true
+}
+
+const getDisplayList = (list: ModuleGameItem[]) => {
   return list.slice(0, 10)
 }
 
