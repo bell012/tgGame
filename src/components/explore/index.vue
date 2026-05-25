@@ -6,16 +6,19 @@
     <template v-if="currentType === 'casino'">
       <div :class="[contentWrapClass, 'explore-casino-content-wrap']">
         <div
-          class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
+          class="explore-tab-scroll-fade explore-tab-scroll-fade--left absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center pr-2 sm:flex"
           :class="canScrollLeft ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
         >
           <button
-            class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
+            type="button"
+            class="explore-tab-scroll-btn"
+            :class="{ 'is-disabled': !canScrollLeft }"
+            :disabled="!canScrollLeft"
             @click="scrollLeft"
           >
             <component
               :is="casinoIcons.chevron_left"
-              class="icon size-4 text-text-1 fill-current [&_path]:fill-current"
+              class="explore-tab-scroll-icon size-4 fill-current [&_path]:fill-current"
             />
           </button>
         </div>
@@ -66,18 +69,21 @@
         </div>
 
         <div
-          class="absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pl-2 sm:flex"
+          class="explore-tab-scroll-fade explore-tab-scroll-fade--right absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center pl-2 sm:flex"
           :class="
             canScrollRight ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'
           "
         >
           <button
-            class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
+            type="button"
+            class="explore-tab-scroll-btn"
+            :class="{ 'is-disabled': !canScrollRight }"
+            :disabled="!canScrollRight"
             @click="scrollRight"
           >
             <component
               :is="casinoIcons.chevron_left"
-              class="icon size-4 rotate-180 text-text-1 fill-current [&_path]:fill-current"
+              class="explore-tab-scroll-icon size-4 rotate-180 fill-current [&_path]:fill-current"
             />
           </button>
         </div>
@@ -529,6 +535,42 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@media (min-width: 768px) {
+  .explore-tab-button--active {
+    background: var(--color-background-level-1);
+    border: 1px solid var(--color-opacity-10);
+  }
+
+  .explore-tab-scroll-fade {
+    background: var(--color-background-level-1);
+  }
+
+  .explore-tab-scroll-btn {
+    display: flex;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: var(--color-background-level-3);
+    cursor: pointer;
+
+    .explore-tab-scroll-icon {
+      color: var(--color-text-level-1);
+    }
+
+    &.is-disabled {
+      background: var(--color-background-level-4);
+      cursor: not-allowed;
+
+      .explore-tab-scroll-icon {
+        color: var(--color-text-level-3);
+      }
+    }
+  }
+}
+
 .explore-tab-button--active {
   background: var(--color-background-level-2);
 

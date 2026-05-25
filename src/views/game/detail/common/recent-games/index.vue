@@ -184,11 +184,10 @@ const tabIndexClick = (index: number) => {
 
 <style scoped lang="scss">
 .recent-games-container {
-  background: #2f3435;
+  background: var(--color-background-level-2);
 }
 
 :global(:root.light .recent-games-container) {
-  background: #ffffff;
   border: none;
 }
 

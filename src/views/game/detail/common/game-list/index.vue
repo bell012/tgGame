@@ -6,26 +6,30 @@
       </h2>
       <button
         type="button"
-        class="button ml-auto flex items-center justify-center bg-bg-3 rounded-[6px] font-extrabold h-[24px] min-w-[31px] text-[12px] leading-none bg-black_alpha5 px-[6px] dark:bg-layer5"
-        @click="emit('all-click')"
+        class="game-list-all-btn button ml-auto flex items-center justify-center gap-0.5 bg-bg-3 rounded-[6px] font-extrabold h-[24px] min-w-[31px] text-[12px] leading-none bg-black_alpha5 px-[6px] dark:bg-layer5"
+        @click="handleAllClick"
       >
         {{ $t('home.All') }}
+        <div class="hidden sm:block size-4 rotate-180">
+          <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" class="size-4">
+            <path
+              fill="currentColor"
+              d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
+            />
+          </svg>
+        </div>
       </button>
       <div v-if="!isMobile" class="ml-2 flex gap-x-1">
         <button
           @click="scrollPrev"
           :disabled="prevDisabled"
-          :class="[
-            'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
-            prevDisabled
-              ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
-              : 'bg-[var(--color-button-secondary)]'
-          ]"
+          :class="['game-list-scroll-btn', { 'is-disabled': prevDisabled }]"
           type="button"
         >
           <div class="icon size-4">
             <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
               <path
+                fill="currentColor"
                 d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
               ></path>
             </svg>
@@ -34,17 +38,13 @@
         <button
           @click="scrollNext"
           :disabled="nextDisabled"
-          :class="[
-            'button button-icon button-second button-m size-8 !p-0 hover:opacity-80',
-            nextDisabled
-              ? 'bg-[var(--color-background-level-4)] cursor-not-allowed'
-              : 'bg-[var(--color-button-secondary)]'
-          ]"
+          :class="['game-list-scroll-btn', { 'is-disabled': nextDisabled }]"
           type="button"
         >
           <div class="icon size-4 rotate-180">
             <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
               <path
+                fill="currentColor"
                 d="M20.9717 9.59292L15.2482 15.3155L20.9717 21.0389L18.5143 23.4972L10.3325 15.3164L18.5143 7.1355L20.9717 9.59292Z"
               ></path>
             </svg>
@@ -60,18 +60,39 @@
       <div
         v-for="(value, index) in normalizedList"
         :key="`${value.rowId ?? 'game'}-${index}`"
-        class="aspect-[330/438]"
+        class="aspect-[330/438] snap-start"
       >
         <casinoGameCard class="size-full" :game="value" @click="handleGameClick(value)" />
       </div>
+      <button
+        type="button"
+        class="relative flex aspect-[330/438] snap-start flex-col items-center justify-center rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
+        @click="handleAllClick"
+      >
+        <SmartImage :src="viewAllLightIcon" alt="view all" class="dark:!hidden w-full h-full" />
+        <SmartImage
+          :src="viewAllDarkIcon"
+          alt="view all"
+          class="!hidden dark:!block w-full h-full"
+        />
+        <span
+          class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-bold text-common-100 sm:text-base whitespace-nowrap"
+        >
+          {{ t('casino.view_all') }}
+        </span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import SmartImage from '@/components/common/SmartImage.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateToName } from '@/utils/router'
+import viewAllDarkIcon from '@/static/img/casino/all_view_dark.png'
+import viewAllLightIcon from '@/static/img/casino/all_view_light.png'
 import casinoGameCard from '@/views/fun/casino/components/casinoGameCard.vue'
 import type { GameDataItem } from '@/api/interface/game'
 
@@ -97,6 +118,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'all-click': []
 }>()
+const { t } = useI18n()
 const listWrap = ref<HTMLElement | null>(null)
 const isMobile = useIsMobile()
 
@@ -168,6 +190,10 @@ const scrollPrev = () => {
   setTimeout(updateButtons, 350)
 }
 
+const handleAllClick = () => {
+  emit('all-click')
+}
+
 const handleGameClick = (item: GameDataItem) => {
   const rowId = String(item.rowId ?? '').trim()
   if (!rowId) {
@@ -191,6 +217,45 @@ const handleGameClick = (item: GameDataItem) => {
     justify-content: center;
     align-items: center;
     border-radius: 8px;
+  }
+}
+
+@media (min-width: 768px) {
+  .game-list-all-btn {
+    border: none;
+    font-weight: 700;
+    background: var(--color-background-level-3);
+    color: var(--color-text-level-1);
+  }
+
+  :global(:root.light) .game-list-all-btn {
+    border: 1px solid var(--color-background-level-9);
+    background: var(--color-background-level-5);
+    color: var(--color-text-level-1);
+    font-weight: 500;
+  }
+
+  .game-list-scroll-btn {
+    display: flex;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: var(--color-background-level-3);
+    color: var(--color-text-level-1);
+    cursor: pointer;
+    opacity: 1;
+
+    &.is-disabled,
+    &:disabled {
+      background: var(--color-background-level-4);
+      color: var(--color-text-level-3);
+      cursor: not-allowed;
+      opacity: 1;
+    }
   }
 }
 

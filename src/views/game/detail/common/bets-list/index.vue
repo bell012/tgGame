@@ -27,7 +27,7 @@
         style="overflow-anchor: none"
       >
         <thead class="table-head pc-only" role="rowgroup">
-          <tr role="row" class="bg-bg-2 text-text-2">
+          <tr role="row" class="text-text-2">
             <th>{{ t('gameDetail.betId') }}</th>
             <th class="sm:w-auto">{{ t('gameDetail.bet') }}</th>
             <th>{{ t('home.Multiplier') }}</th>
@@ -110,7 +110,7 @@
         style="overflow-anchor: none"
       >
         <thead class="table-head pc-only" role="rowgroup">
-          <tr role="row" class="bg-bg-2 text-text-2">
+          <tr role="row" class="text-text-2">
             <th>{{ t('home.Game') }}</th>
             <th>{{ t('home.Player') }}</th>
             <th>{{ t('home.Multiplier') }}</th>
@@ -518,7 +518,7 @@ onBeforeUnmount(() => {
 }
 
 .bet-tabs {
-  background: var(--color-background-level-8);
+  background: var(--color-background-level-7);
   border-radius: 10px;
   height: 39px;
   padding: 0;
@@ -549,27 +549,28 @@ onBeforeUnmount(() => {
 }
 
 .bet-tab.active {
-  background: var(--color-background-level-7);
+  background: var(--color-background-level-8);
   color: var(--color-text-level-1);
   box-shadow: none;
 }
 
 :global(:root.light) .bet-tabs {
   border-radius: 10px;
-  background: #e3e3e3;
+  background: var(--color-background-level-5);
   border: none;
 }
 
 :global(:root.light) .bet-tab {
   border-radius: 8px;
-  color: #5f6368;
+  color: var(--color-text-level-2);
+  background: transparent;
 }
 
 :global(:root.light) .bet-tab.active {
-  background: #ffffff;
+  background: var(--color-background-level-3);
   border: none;
   box-shadow: none;
-  color: #111111;
+  color: var(--color-text-level-1);
 }
 
 .table-wrap {
@@ -606,10 +607,7 @@ onBeforeUnmount(() => {
   font-weight: 700;
   white-space: nowrap;
   box-sizing: border-box;
-}
-
-.table-head th {
-  background: var(--color-background-level-4);
+  background: var(--color-background-level-3);
 }
 
 .table-row {
@@ -826,6 +824,28 @@ onBeforeUnmount(() => {
 
   .cell {
     height: 39px;
+  }
+}
+
+@media (min-width: 768px) {
+  :global(:root:not(.light)) .bet-tabs {
+    background: var(--color-background-level-3);
+    border: none;
+  }
+
+  :global(:root:not(.light)) .bet-tab {
+    border: none;
+    background: transparent;
+    color: var(--color-text-level-2);
+  }
+
+  :global(:root:not(.light)) .bet-tab.active {
+    background: var(--color-background-level-2);
+    color: var(--color-text-level-1);
+  }
+
+  :global(:root:not(.light)) .table-wrap {
+    background: var(--color-background-level-3);
   }
 }
 </style>
