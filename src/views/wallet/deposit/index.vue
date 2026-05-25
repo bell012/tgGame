@@ -21,15 +21,15 @@
 
 <script setup lang="ts">
 import H5Header from '@/components/common/H5Header.vue'
-import depositContentPanel, {
-  type DepositTabType
-} from '@/components/deposit/deposit/depositContentPanel.vue'
-import personalCenterDepositContentPanel from '@/components/deposit/deposit/personalCenterDepositContentPanel.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import { navigateToName } from '@/utils/router'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import depositContentPanel, {
+  type DepositTabType
+} from './components/deposit/depositContentPanel.vue'
+import personalCenterDepositContentPanel from './components/deposit/personalCenterDepositContentPanel.vue'
 import WalletLayout from '../index.vue'
 
 const { t } = useI18n()

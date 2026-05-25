@@ -302,7 +302,6 @@
 </template>
 
 <script setup lang="ts">
-import DepositPop from '@/components/deposit/deposit/depositPop.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
 import SelectModal from '@/components/SelectModal.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
@@ -329,6 +328,7 @@ import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
+import DepositPop from '@/views/wallet/deposit/components/deposit/depositPop.vue'
 import { storeToRefs } from 'pinia'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'

@@ -156,7 +156,7 @@ import AccountCard from '@/components/paymentMethods/accountCard.vue'
 import { computed, type ComponentPublicInstance, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FastAmountItem } from '@/api/interface/withdraw'
-import { usePresetGrid } from '@/components/deposit/shared/usePresetGrid'
+import { usePresetGrid } from '@/views/wallet/deposit/components/shared/usePresetGrid'
 import type {
   AccountCardOption,
   PaymentMethodsOption
