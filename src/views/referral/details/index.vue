@@ -38,8 +38,8 @@
           :top-up-title="t('referral.detailsPage.topUpTitle')"
           :detail-text="t('referral.detailsPage.detailText')"
           :empty-action-text="t('referral.detailsPage.showNow')"
-          :empty-text="t('common.noData')"
-          :empty-alt="t('common.noData')"
+          :empty-text="t('referral.common.noData')"
+          :empty-alt="t('referral.common.noData')"
           :avatar-alt="t('referral.detailsPage.avatarAlt')"
           :empty-dark-image="emptyDarkImage"
           :empty-light-image="emptyLightImage"
@@ -93,8 +93,8 @@
         :top-up-title="t('referral.detailsPage.topUpTitle')"
         :detail-text="t('referral.detailsPage.detailText')"
         :empty-action-text="t('referral.detailsPage.showNow')"
-        :empty-text="t('common.noData')"
-        :empty-alt="t('common.noData')"
+        :empty-text="t('referral.common.noData')"
+        :empty-alt="t('referral.common.noData')"
         :avatar-alt="t('referral.detailsPage.avatarAlt')"
         :empty-dark-image="emptyDarkImage"
         :empty-light-image="emptyLightImage"
@@ -146,6 +146,8 @@
       v-model:visible="showMobileDateFilterPopup"
       v-model="mobileDateFilterValues"
       :filter-groups="mobileDateFilterGroups"
+      :title-text="t('referral.common.filter')"
+      :apply-text="t('referral.common.apply')"
       @apply="handleMobileDateFilterApply"
     />
 
@@ -164,10 +166,10 @@
       :active-date-tab="friendActiveDateTab"
       :active-stats-tab="friendActiveStatsTab"
       :avatar-alt="t('referral.detailsPage.avatarAlt')"
-      :empty-alt="t('common.noData')"
+      :empty-alt="t('referral.common.noData')"
       :empty-dark-image="friendEmptyDarkImage"
       :empty-light-image="friendEmptyLightImage"
-      :empty-text="t('common.noData')"
+      :empty-text="t('referral.common.noData')"
       :last-login-time-label="t('referral.friendDetailPage.labels.lastLoginTime')"
       :member-info="friendMemberInfo"
       :name-label="t('referral.friendDetailPage.labels.name')"
@@ -780,7 +782,7 @@ async function fetchSelectedFriendDetailStats() {
  */
 const handleCustomerServiceClick = () => {
   globalShowToast({
-    message: t('sidebar_menu.customer_service'),
+    message: t('referral.customerService'),
     type: 'success'
   })
 }

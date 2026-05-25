@@ -119,7 +119,7 @@
       :mode="isMobile ? 'mobile' : 'pc'"
       :title="t('referral.messagePopup.title')"
       :description="t('referral.messagePopup.description')"
-      :copy-text="t('personalCenter.editProfile.save')"
+      :copy-text="t('referral.copy')"
       :presets="referralMessagePresets"
       :initial-message="activeReferralMessage"
       @copy="handleConfirmReferralMessageCopy"
@@ -134,7 +134,7 @@
       :save-text="t('referral.invitePoster.saveImage')"
       :copy-link-text="t('referral.invitePoster.copyLink')"
       :invite-text="t('referral.invitePoster.inviteNow')"
-      close-text="close"
+      :close-text="t('referral.closeDialog')"
       :image-alt="t('referral.invitePoster.posterAlt')"
       @save="handleSavePosterImage"
       @copy-link="handleCopyPosterLink"
@@ -354,7 +354,7 @@ async function fetchCommissionBoostEstimatedCommission() {
  */
 const handleCustomerServiceClick = () => {
   globalShowToast({
-    message: t('sidebar_menu.customer_service'),
+    message: t('referral.customerService'),
     type: 'success'
   })
 }
@@ -519,7 +519,7 @@ const handleConfirmClaimClick = async () => {
     )
 
     globalShowToast({
-      message: t('personalCenter.rebate.toast.claimSuccess'),
+      message: t('referral.toast.claimSuccess'),
       type: 'success'
     })
     await fetchEstimatedCommission()
@@ -531,7 +531,7 @@ const handleConfirmClaimClick = async () => {
     }
 
     globalShowToast({
-      message: t('personalCenter.rebate.toast.claimFailed'),
+      message: t('referral.toast.claimFailed'),
       type: 'fail'
     })
   } finally {

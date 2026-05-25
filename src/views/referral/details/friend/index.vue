@@ -21,10 +21,10 @@
           :active-date-tab="activeDateTab"
           :active-stats-tab="activeStatsTab"
           :avatar-alt="t('referral.detailsPage.avatarAlt')"
-          :empty-alt="t('common.noData')"
+          :empty-alt="t('referral.common.noData')"
           :empty-dark-image="emptyDarkImage"
           :empty-light-image="emptyLightImage"
-          :empty-text="t('common.noData')"
+          :empty-text="t('referral.common.noData')"
           :last-login-time-label="t('referral.friendDetailPage.labels.lastLoginTime')"
           :member-info="memberInfo"
           :name-label="t('referral.friendDetailPage.labels.name')"
@@ -50,10 +50,10 @@
         :active-date-tab="activeDateTab"
         :active-stats-tab="activeStatsTab"
         :avatar-alt="t('referral.detailsPage.avatarAlt')"
-        :empty-alt="t('common.noData')"
+        :empty-alt="t('referral.common.noData')"
         :empty-dark-image="emptyDarkImage"
         :empty-light-image="emptyLightImage"
-        :empty-text="t('common.noData')"
+        :empty-text="t('referral.common.noData')"
         :last-login-time-label="t('referral.friendDetailPage.labels.lastLoginTime')"
         :member-info="memberInfo"
         :name-label="t('referral.friendDetailPage.labels.name')"
@@ -275,7 +275,7 @@ async function fetchReferralFriendDetailStats() {
  */
 const handleCustomerServiceClick = () => {
   globalShowToast({
-    message: t('sidebar_menu.customer_service'),
+    message: t('referral.customerService'),
     type: 'success'
   })
 }

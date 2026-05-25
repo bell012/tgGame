@@ -71,14 +71,14 @@ export interface ReferralFriendDetailTopUpStatResult {
  * 不同 sysGameTypeCode 对应不同国际化文案来源。
  */
 const CATEGORY_LABEL_STRATEGIES: Record<string, CategoryLabelStrategy> = {
-  CP: translate => translate('betHistory.filterOptions.lottery'),
-  TY: translate => translate('betHistory.filterOptions.sports'),
-  ZR: translate => translate('sidebar_menu.casino.children.live_casino'),
-  SX: translate => translate('sidebar_menu.casino.children.live_casino'),
-  DZ: translate => translate('sidebar_menu.casino.children.slots'),
-  QP: translate => translate('sidebar_menu.casino.children.table_games'),
-  BY: translate => translate('sidebar_menu.casino.children.fishing'),
-  DJ: translate => translate('betHistory.filterOptions.esports')
+  CP: translate => translate('referral.friendDetailPage.gameTypes.lottery'),
+  TY: translate => translate('referral.friendDetailPage.gameTypes.sports'),
+  ZR: translate => translate('referral.friendDetailPage.gameTypes.liveCasino'),
+  SX: translate => translate('referral.friendDetailPage.gameTypes.liveCasino'),
+  DZ: translate => translate('referral.friendDetailPage.gameTypes.slots'),
+  QP: translate => translate('referral.friendDetailPage.gameTypes.tableGames'),
+  BY: translate => translate('referral.friendDetailPage.gameTypes.fishing'),
+  DJ: translate => translate('referral.friendDetailPage.gameTypes.esports')
 }
 
 /**
