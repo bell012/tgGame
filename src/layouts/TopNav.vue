@@ -296,12 +296,15 @@
 
     <!-- PC 搜索弹窗 -->
     <ExploreDesktop v-model="showExplorehModal" />
+
+    <DepositPop v-model="showDepositPop" />
   </header>
 </template>
 
 <script setup lang="ts">
-import SelectModal from '@/components/SelectModal.vue'
+import DepositPop from '@/components/deposit/deposit/depositPop.vue'
 import ExploreDesktop from '@/components/explore/desktop/index.vue'
+import SelectModal from '@/components/SelectModal.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import bellDefaultImage from '@/static/img/bell.png'
@@ -356,6 +359,7 @@ const showCurrencyPopup = ref(false)
 const currencyPopupAnchor = ref<PopupAnchorRect | null>(null)
 
 const showExplorehModal = ref(false)
+const showDepositPop = ref(false)
 
 // 用户菜单下拉框
 const showUserMenu = ref(false)
@@ -543,7 +547,9 @@ const handleLoggedInCurrencySelect = (code: string) => {
 }
 
 const openDeposit = () => {
-  navigateTo('/deposit')
+  showCurrencyPopup.value = false
+  showUserMenu.value = false
+  showDepositPop.value = true
 }
 
 const toggleH5Menu = () => {
