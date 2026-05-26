@@ -391,17 +391,17 @@
           {{ props.taskRulesTitle }}
         </h2>
 
-        <!-- 任务规则图片卡片 -->
+        <!-- 任务规则富文本卡片 -->
         <div
           class="overflow-hidden rounded-[10px] bg-bg-2"
-          :class="props.mode === 'pc' ? 'rounded-[16px]' : ''"
+          :class="props.mode === 'pc' ? 'rounded-[16px] p-5' : 'p-3.5'"
         >
-          <!-- 任务规则占位图片 -->
-          <img
-            :src="props.taskRulesImage"
-            :alt="props.taskRulesTitle"
-            class="h-full w-full object-cover"
-          />
+          <!-- 任务规则富文本 -->
+          <div
+            class="break-words font-[400] text-text-2"
+            :class="props.mode === 'pc' ? 'text-base leading-[26px]' : 'text-xs leading-[21px]'"
+            v-html="normalizedTaskRulesHtml"
+          ></div>
         </div>
       </section>
 
@@ -424,6 +424,7 @@
 <script setup lang="ts">
 import taskCurrentProgressImage from '@/static/img/referral/task-current-progress.png'
 import CommissionOverviewPcIcon from '@/static/svg/referral/yongjin 1.svg?component'
+import { computed } from 'vue'
 import type {
   ReferralTaskRewardRow,
   ReferralTaskTab,
@@ -453,11 +454,22 @@ interface Props {
   validInviteTitle: string
   validInviteDescriptionSegments: ReferralTaskValidInviteDescriptionSegment[]
   taskRulesTitle: string
-  taskRulesImage: string
+  taskRulesHtml: string
   bottomActionText: string
 }
 
 const props = defineProps<Props>()
+
+const sanitizeTaskRulesHtml = (value: string) => {
+  return value
+    .replace(/\\n/g, '\n')
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    .replace(/\son\w+="[^"]*"/gi, '')
+    .replace(/\son\w+='[^']*'/gi, '')
+    .trim()
+}
+
+const normalizedTaskRulesHtml = computed(() => sanitizeTaskRulesHtml(props.taskRulesHtml))
 
 defineEmits<{
   claim: []

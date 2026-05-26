@@ -154,6 +154,24 @@ export interface QueryReferralSettlementRuleResult {
 export interface QueryReferralSettlementRuleResponse extends AgentApiResponse<QueryReferralSettlementRuleResult> {}
 
 /**
+ * 查询任务页规则富文本数据项
+ */
+export interface QueryReferralTaskRuleContentItem {
+  agentIntroduction?: string
+  langCode?: string
+  missionIntroduction?: string
+  previewPic?: string
+  site?: string
+}
+
+/**
+ * 查询任务页规则富文本响应
+ */
+export interface QueryReferralTaskRuleContentResponse extends AgentApiResponse<
+  QueryReferralTaskRuleContentItem[]
+> {}
+
+/**
  * 查询一级代理佣金加码预估佣金响应
  */
 export interface QueryReferralCommissionBoostAmountResponse extends AgentApiResponse<number> {}

@@ -23,7 +23,7 @@
       :valid-invite-title="props.validInviteTitle"
       :valid-invite-description-segments="props.validInviteDescriptionSegments"
       :task-rules-title="props.taskRulesTitle"
-      :task-rules-image="props.taskRulesImage"
+      :task-rules-html="props.taskRulesHtml"
       :bottom-action-text="props.bottomActionText"
       @claim="$emit('claim')"
       @open-progress-reminder="$emit('open-progress-reminder')"
@@ -65,7 +65,7 @@ interface Props {
   validInviteTitle: string
   validInviteDescriptionSegments: ReferralTaskValidInviteDescriptionSegment[]
   taskRulesTitle: string
-  taskRulesImage: string
+  taskRulesHtml: string
   bottomActionText: string
 }
 
