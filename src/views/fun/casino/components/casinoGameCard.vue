@@ -12,9 +12,9 @@
     <gameRemoteImg class="h-full w-full" :img="gameImage" :alt="game.itemName" />
     <div
       v-if="gameCovernameShow"
-      class="absolute inset-x-0 bottom-2 flex w-full flex-col items-center justify-center px-2 text-center text-sm sm:text-base font-bold leading-4 text-common-100 sm:font-extrabold"
+      class="absolute inset-x-0 bottom-2 flex w-full min-w-0 flex-col items-center justify-center px-2 text-center text-sm sm:text-base font-bold leading-4 text-common-100 sm:font-extrabold"
     >
-      {{ game.itemName }}
+      <span class="w-full min-w-0 truncate">{{ game.itemName }}</span>
       <div v-if="platformLogoImg.src" class="mt-1 h-[14px] w-auto max-w-[70%] bg-transparent">
         <gameRemoteImg
           :img="platformLogoImg"
