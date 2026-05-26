@@ -10,30 +10,29 @@
     <transition :name="desktop ? 'desktop-up-down' : 'up-down'">
       <div v-show="visible" class="fixed z-[9999] left-0 bottom-0 w-full lg:relative">
         <div
-          class="bg-[var(--color-background-level-2)] rounded-t-xl p-[16px] rounded-lg text-[14px]"
+          class="setting-popup-panel rounded-lg rounded-t-xl bg-[var(--color-background-level-2)] p-[16px] text-[14px]"
         >
           <div class="flex flex-col gap-[16px]">
-            <div class="flex items-center gap-[8px] cursor-pointer" @click="toggleLove">
-              <SmartImage
-                alt=""
-                class="size-[16px]"
-                :src="loveActived ? LikeActiveIcon : LikeIcon"
+            <div class="setting-item" @click="toggleLove">
+              <LikeIcon
+                class="setting-item-icon"
+                :class="{ 'setting-item-icon--active': loveActived }"
               />
-              <div :class="{ 'text-[#FF9822]': loveActived }">
+              <div class="setting-item-label">
                 {{ t('gameDetail.settingLike') }}
               </div>
             </div>
-            <div class="flex items-center gap-[8px] cursor-pointer" @click="shareClick">
-              <SmartImage alt="" class="size-[16px]" :src="TgIcon" />
-              <div>{{ t('gameDetail.settingShare') }}</div>
+            <div class="setting-item" @click="shareClick">
+              <TgIcon class="setting-item-icon" />
+              <div class="setting-item-label">{{ t('gameDetail.settingShare') }}</div>
             </div>
-            <div class="flex items-center gap-[8px] cursor-pointer">
-              <SmartImage alt="" class="size-[16px]" :src="MovieIcon" />
-              <div>{{ t('gameDetail.settingMovieMode') }}</div>
+            <div class="setting-item">
+              <MovieIcon class="setting-item-icon" />
+              <div class="setting-item-label">{{ t('gameDetail.settingMovieMode') }}</div>
             </div>
-            <div class="flex items-center gap-[8px] cursor-pointer">
-              <SmartImage alt="" class="size-[16px]" :src="FloatIcon" />
-              <div>{{ t('gameDetail.settingFloatMode') }}</div>
+            <div class="setting-item">
+              <FloatIcon class="setting-item-icon" />
+              <div class="setting-item-label">{{ t('gameDetail.settingFloatMode') }}</div>
             </div>
           </div>
         </div>
@@ -44,13 +43,11 @@
 
 <script setup lang="ts">
 import { useGameLike } from '@/composables/useGameLike'
-import TgIcon from '@/static/svg/game/detail/tg.svg?url'
-import LikeIcon from '@/static/svg/game/detail/like_hand.svg?url'
-import LikeActiveIcon from '@/static/svg/game/detail/like_hand_active.svg?url'
-import FloatIcon from '@/static/svg/game/detail/float.svg?url'
-import MovieIcon from '@/static/svg/game/detail/movie.svg?url'
+import TgIcon from '@/static/svg/game/detail/tg.svg?component'
+import LikeIcon from '@/static/svg/game/detail/like_hand.svg?component'
+import FloatIcon from '@/static/svg/game/detail/float.svg?component'
+import MovieIcon from '@/static/svg/game/detail/movie.svg?component'
 import { useI18n } from 'vue-i18n'
-import SmartImage from '@/components/common/SmartImage.vue'
 
 defineProps<{
   visible: boolean
@@ -65,7 +62,6 @@ const emit = defineEmits<{
   share: []
 }>()
 
-// 关闭popup
 const close = () => {
   emit('update:visible', false)
 }
@@ -77,18 +73,58 @@ const shareClick = () => {
 </script>
 <style scoped lang="scss">
 @use '@/styles/mixins' as *;
-/* 面板 */
-.tp-panel {
-  padding-bottom: env(safe-area-inset-bottom);
-  overflow: hidden;
-  border-radius: 10px;
+
+.setting-popup-panel {
+  color: var(--color-text-level-1);
 }
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.setting-item-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--color-icon-level-2);
+  transition: color 0.2s ease;
+}
+
+.setting-item-icon :deep(path) {
+  fill: currentColor;
+}
+
+.setting-item-icon--active {
+  color: var(--color-theme-level-1);
+}
+
+.setting-item-label {
+  color: var(--color-text-level-2);
+  transition: color 0.2s ease;
+}
+
+@media (min-width: 768px) {
+  .setting-item:hover .setting-item-icon:not(.setting-item-icon--active),
+  .setting-item:focus-visible .setting-item-icon:not(.setting-item-icon--active) {
+    color: var(--color-theme-level-1);
+  }
+
+  .setting-item:hover .setting-item-label,
+  .setting-item:focus-visible .setting-item-label {
+    color: var(--color-text-level-1);
+  }
+}
+
 @include popup-transition;
-// 设置的弹窗打开关闭的过渡动画
+
 .desktop-up-down-enter-active,
 .desktop-up-down-leave-active {
   transition: all 0.2s ease;
 }
+
 .desktop-up-down-enter-from,
 .desktop-up-down-leave-to {
   opacity: 0;

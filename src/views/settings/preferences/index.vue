@@ -262,6 +262,7 @@ import {
   type LocaleOption
 } from '@/utils/locale'
 import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
+import { getBalanceByCurrency, type BalanceCarrier } from '@/utils/balance'
 import H5Header from '@/components/common/H5Header.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
@@ -285,28 +286,6 @@ type PopupAnchorRect = {
 
 type CachedSiteConfig = {
   currency?: unknown
-}
-
-const balanceFieldMap = {
-  BRL: 'balanceBrl',
-  CNY: 'balanceCny',
-  IDR: 'balanceIdr',
-  INR: 'balanceInr',
-  JPY: 'balanceJpy',
-  KRW: 'balanceKrw',
-  MXN: 'balanceMxn',
-  MYR: 'balanceMyr',
-  PHP: 'balancePhp',
-  SGD: 'balanceSgd',
-  USD: 'balanceUsd',
-  USDT: 'balanceUsdt',
-  VND: 'balanceVnd'
-} as const
-
-type BalanceFieldKey = (typeof balanceFieldMap)[keyof typeof balanceFieldMap]
-type BalanceCarrier = Partial<Record<BalanceFieldKey, number>> & {
-  balance?: number
-  currency?: string
 }
 
 const isMobile = useIsMobile()
@@ -380,25 +359,6 @@ const readCachedAcctInfo = () => {
   }
 }
 
-const getBalanceByCurrency = (data: BalanceCarrier | null, currencyCode: string) => {
-  if (!data || !currencyCode) {
-    return undefined
-  }
-
-  const balanceKey = balanceFieldMap[currencyCode as keyof typeof balanceFieldMap]
-  if (balanceKey && typeof data[balanceKey] === 'number') {
-    return data[balanceKey]
-  }
-
-  const dynamicBalanceKey = `balance${currencyCode.charAt(0)}${currencyCode.slice(1).toLowerCase()}`
-  const dynamicBalanceValue = (data as Record<string, unknown>)[dynamicBalanceKey]
-  if (typeof dynamicBalanceValue === 'number') {
-    return dynamicBalanceValue
-  }
-
-  return typeof data.balance === 'number' ? data.balance : undefined
-}
-
 const syncCurrencyDataFromCache = () => {
   const codesFromConfig = readCachedConfigCurrencyCodes()
   const fallbackCode =
@@ -407,7 +367,7 @@ const syncCurrencyDataFromCache = () => {
   const acctInfo = readCachedAcctInfo()
 
   currencyOptions.value = codes.map(code => {
-    const balance = getBalanceByCurrency(acctInfo, code)
+    const balance = getBalanceByCurrency(acctInfo, code, { fallbackToCurrentBalance: false })
     return {
       code,
       icon: getCurrencyIconByCode(code),

@@ -1,17 +1,29 @@
 <template>
-  <div
-    class="currency-toolbar px-[20px] py-[10px] rounded-b-[20px] relative"
-    :class="{ 'currency-toolbar-light': isLightTheme }"
-  >
-    <div class="toolbar-actions flex justify-start items-center gap-[10px]">
-      <div class="toolbar-icon-btn" @click="settingVisibleClick">
-        <SmartImage alt="" class="toolbar-icon toolbar-icon--setting" :src="SettingIcon" />
+  <div class="currency-toolbar px-[20px] py-[12px] rounded-b-[20px] relative">
+    <div class="toolbar-actions flex justify-start items-center gap-[12px]">
+      <div class="toolbar-icon-wrap">
+        <button type="button" class="toolbar-icon-btn" @click="settingVisibleClick">
+          <SettingIcon class="toolbar-icon toolbar-icon--setting" />
+        </button>
+        <span class="toolbar-tooltip">{{ t('gameDetail.settingTooltip') }}</span>
       </div>
-      <div class="toolbar-icon-btn" :class="{ 'is-active': starActived }" @click="toggleStar">
-        <SmartImage alt="" class="toolbar-icon" :src="starActived ? StarActiveIcon : StarIcon" />
+      <div class="toolbar-icon-wrap">
+        <button
+          type="button"
+          class="toolbar-icon-btn"
+          :class="{ 'is-active': starActived }"
+          @click="toggleStar"
+        >
+          <StarActiveIcon v-if="starActived" class="toolbar-icon toolbar-icon--active" />
+          <StarIcon v-else class="toolbar-icon" />
+        </button>
+        <span class="toolbar-tooltip">{{ t('gameDetail.favoriteTooltip') }}</span>
       </div>
-      <div class="toolbar-icon-btn" @click="liveStateVisibleClick">
-        <SmartImage alt="" class="toolbar-icon" :src="LineIcon" />
+      <div class="toolbar-icon-wrap">
+        <button type="button" class="toolbar-icon-btn" @click="liveStateVisibleClick">
+          <LineIcon class="toolbar-icon" />
+        </button>
+        <span class="toolbar-tooltip">{{ t('gameDetail.liveStatsTitle') }}</span>
       </div>
     </div>
     <!--Setting Popup-->
@@ -39,26 +51,25 @@
   </div>
 </template>
 <script setup lang="ts">
-import SettingIcon from '@/static/svg/game/detail/setting.svg?url'
-import LineIcon from '@/static/svg/game/detail/lines.svg?url'
-import StarIcon from '@/static/svg/game/detail/star.svg?url'
-import StarActiveIcon from '@/static/svg/game/detail/star_active.svg?url'
+import SettingIcon from '@/static/svg/game/detail/setting.svg?component'
+import LineIcon from '@/static/svg/game/detail/lines.svg?component'
+import StarIcon from '@/static/svg/game/detail/star.svg?component'
+import StarActiveIcon from '@/static/svg/game/detail/star_active.svg?component'
 import { useGameFavorite } from '@/composables/useGameFavorite'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
-import { useThemeStore } from '@/stores/theme'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import LiveStatePopup from './live-state-popup.vue'
 import SharePopup from './share-popup.vue'
 import SettingPopup from './setting-popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import SmartImage from '@/components/common/SmartImage.vue'
+import { useI18n } from 'vue-i18n'
 
 const isMobile = useIsMobile()
-const themeStore = useThemeStore()
+const { t } = useI18n()
+
 const { requireLogin } = useRequireLoginAction()
 
 const { isFavorite: starActived, toggleFavorite: toggleStar } = useGameFavorite()
-const isLightTheme = computed(() => themeStore.theme === 'light')
 
 const settingVisible = ref(false)
 const liveStateVisible = ref(false)
@@ -84,36 +95,83 @@ const shareClick = () => {
 </script>
 <style lang="scss" scoped>
 .currency-toolbar {
-  background: var(--color-background-level-6);
+  background: var(--color-background-level-5);
   border-top: 1px solid var(--color-opacity-10);
 }
 
 .toolbar-actions {
-  min-height: 28px;
+  min-height: 16px;
+}
+
+.toolbar-icon-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.toolbar-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 2;
+  display: none;
+  height: 32px;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--color-background-level-2);
+  color: var(--color-text-level-1);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+  transform: translateX(-50%);
+}
+
+.toolbar-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-top: 6px solid var(--color-background-level-2);
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  transform: translateX(-50%);
 }
 
 .toolbar-icon-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  display: flex;
+  border: 0;
+  padding: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+  background: transparent;
+  box-shadow: none;
+  transition: opacity 0.2s ease;
+}
+
+.toolbar-icon-btn:hover {
+  opacity: 0.85;
 }
 
 .toolbar-icon-btn:active {
-  transform: scale(0.96);
+  opacity: 0.7;
 }
 
 .toolbar-icon {
   width: 16px;
   height: 16px;
+  color: var(--color-text-level-2);
+}
+
+.toolbar-icon :deep(path),
+.toolbar-icon :deep(circle),
+.toolbar-icon :deep(rect) {
+  fill: currentColor;
 }
 
 .toolbar-icon--setting {
@@ -121,46 +179,29 @@ const shareClick = () => {
   height: 18px;
 }
 
+.toolbar-icon--active :deep(path) {
+  fill: var(--color-secondary-level-7);
+}
+
 :global(:root.light) .currency-toolbar {
-  background: linear-gradient(180deg, #e9f0fa 0%, #dde7f4 100%) !important;
-  border-top-color: rgba(95, 116, 145, 0.26);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.82),
-    0 -1px 0 rgba(95, 116, 145, 0.14);
+  background: var(--color-opacity-10);
+  border-top-color: var(--color-opacity-6);
 }
 
-:global(:root.light) .currency-toolbar .toolbar-icon-btn {
-  background: rgba(255, 255, 255, 0.76);
-  border: 1px solid rgba(95, 116, 145, 0.18);
-  box-shadow:
-    0 2px 8px rgba(24, 38, 64, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+:global(:root.light) .toolbar-tooltip {
+  background: var(--color-background-level-2);
+  box-shadow: 0 8px 24px rgba(28, 45, 74, 0.12);
 }
 
-:global(:root.light) .currency-toolbar .toolbar-icon-btn:hover {
-  background: #fff;
-  border-color: rgba(95, 116, 145, 0.32);
+:global(:root.light) .toolbar-tooltip::after {
+  border-top-color: var(--color-background-level-2);
 }
 
-:global(:root.light) .currency-toolbar .toolbar-icon-btn.is-active {
-  background: rgba(35, 207, 116, 0.16);
-  border-color: rgba(35, 207, 116, 0.36);
-}
-
-.currency-toolbar-light {
-  background: linear-gradient(180deg, #e9f0fa 0%, #dde7f4 100%) !important;
-  border-top-color: rgba(95, 116, 145, 0.26);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.82),
-    0 -1px 0 rgba(95, 116, 145, 0.14);
-}
-
-.currency-toolbar-light .toolbar-icon-btn {
-  background: rgba(255, 255, 255, 0.76);
-  border: 1px solid rgba(95, 116, 145, 0.18);
-  box-shadow:
-    0 2px 8px rgba(24, 38, 64, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+@media (min-width: 768px) {
+  .toolbar-icon-wrap:hover .toolbar-tooltip,
+  .toolbar-icon-wrap:focus-within .toolbar-tooltip {
+    display: inline-flex;
+  }
 }
 
 .desktop-popup {

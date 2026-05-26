@@ -1,11 +1,50 @@
 <template>
   <div>
-    <div
-      v-if="props.loading"
-      class="recent-games-content-box flex items-center justify-center rounded-[10px] mb-[10px] mt-[12px] p-[16px] text-[12px] text-[var(--color-text-level-2)]"
-    >
-      {{ t('common.loading') }}
-    </div>
+    <template v-if="props.loading && !props.list.length">
+      <template v-if="isMobile">
+        <div
+          v-for="index in mobileSkeletonCount"
+          :key="`mobile-skeleton-${index}`"
+          class="recent-games-content-box recent-games-skeleton-card rounded-[10px] mb-[10px] mt-[12px] p-[12px]"
+          :class="{ 'mb-0': index === mobileSkeletonCount - 1 }"
+        >
+          <div class="win-item-divider flex min-h-[20px] items-center gap-[8px] pb-[12px]">
+            <div class="recent-games-skeleton-block size-[20px] rounded-full" />
+            <div class="recent-games-skeleton-block h-[12px] w-[120px] rounded-[4px]" />
+          </div>
+          <div v-for="row in 3" :key="row" class="mt-[12px] flex justify-between gap-[12px]">
+            <div class="recent-games-skeleton-block h-[12px] w-[56px] rounded-[4px]" />
+            <div class="recent-games-skeleton-block h-[12px] w-[72px] rounded-[4px]" />
+          </div>
+        </div>
+      </template>
+      <div v-else class="mt-[12px] recent-games-skeleton-pc">
+        <div class="pc-winlist-header">
+          <div
+            v-for="index in 4"
+            :key="`header-skeleton-${index}`"
+            class="recent-games-skeleton-block h-[15px] w-[70px] rounded-[4px]"
+          />
+        </div>
+        <div class="pc-winlist-body">
+          <div
+            v-for="index in pcSkeletonCount"
+            :key="`pc-skeleton-${index}`"
+            class="pc-winlist-row"
+            :class="{ 'pc-winlist-row-alt': index % 2 === 0 }"
+          >
+            <div class="pc-winlist-player">
+              <div class="recent-games-skeleton-block size-[24px] rounded-full" />
+              <div class="recent-games-skeleton-block h-[16px] w-[120px] rounded-[4px]" />
+            </div>
+            <div v-for="cell in 3" :key="cell" class="pc-winlist-cell">
+              <div class="recent-games-skeleton-block size-[22px] rounded-full" />
+              <div class="recent-games-skeleton-block h-[16px] w-[72px] rounded-[4px]" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
     <template v-else-if="props.list.length">
       <template v-if="isMobile">
         <div
@@ -144,6 +183,8 @@ const currentRequestCurrency = computed(
 )
 const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestCurrency.value))
 const rankIcons = [RackIcon, RankIcon2, RankIcon3] as const
+const mobileSkeletonCount = 2
+const pcSkeletonCount = 5
 
 const formatDecimal = (value: unknown) => {
   const valueText = toPlainText(value)
@@ -194,6 +235,26 @@ const getPlayerName = (item: GameRanListItem) => {
 
 .recent-games-content-box {
   background: #202424;
+}
+
+.recent-games-skeleton-block {
+  background: var(--color-opacity-10);
+  animation: recent-games-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.recent-games-skeleton-card {
+  pointer-events: none;
+}
+
+@keyframes recent-games-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 :global(:root.light .recent-games-content-box) {

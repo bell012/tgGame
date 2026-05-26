@@ -31,6 +31,30 @@ export const splitGameTypeCodes = (value: unknown) => {
     .filter(Boolean)
 }
 
+export const resolveGameTypeDisplayNames = (
+  gameTypeCode: unknown,
+  gameTypeItems: Array<{ gameTypeCode?: string; gameTypeName?: string }> = [],
+  fallbackName = ''
+) => {
+  const codes = splitGameTypeCodes(gameTypeCode)
+
+  if (codes.length === 0) {
+    return fallbackName ? [fallbackName] : []
+  }
+
+  const nameByCode = new Map<string, string>()
+  gameTypeItems.forEach(item => {
+    const code = normalizeGameDetailValue(item.gameTypeCode)
+    const name = normalizeGameDetailValue(item.gameTypeName)
+
+    if (code && name) {
+      nameByCode.set(code.toLowerCase(), name)
+    }
+  })
+
+  return codes.map(code => nameByCode.get(code.toLowerCase()) || code)
+}
+
 export const flattenGameDetailLeafItems = (
   nodes: GameDetailHotItem[] = []
 ): GameDetailHotItem[] => {

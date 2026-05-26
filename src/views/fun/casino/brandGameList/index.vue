@@ -11,7 +11,7 @@
     </div>
 
     <div v-else class="w-full p-4">
-      <div class="mb-4 flex items-center gap-3">
+      <div class="mb-4 flex w-full max-w-[1350px] items-center gap-3 mx-auto">
         <button
           type="button"
           class="flex size-[33px] items-center justify-center rounded-md bg-opacity-5"
@@ -19,7 +19,7 @@
         >
           <ArrowLeftIcon class="h-3.5 w-3.5 text-text-1" />
         </button>
-        <h1 class="font-inter text-2xl font-extrabold text-text-1">
+        <h1 class="brand-game-list-title font-inter text-base font-semibold text-text-1">
           {{ pageTitle }}
         </h1>
       </div>
@@ -100,6 +100,11 @@ watch(
 </script>
 
 <style scoped lang="scss">
+.brand-game-list-title {
+  margin: 0;
+  line-height: 22px;
+}
+
 /* 仅本页：抵消 _base 全局隐藏滚动条；样式与 _base 中轨道/滑块变量一致 */
 .casino-fullpage-scroll-y {
   scrollbar-width: thin;

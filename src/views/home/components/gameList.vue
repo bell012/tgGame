@@ -10,12 +10,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
+import type { HomeCollectionDisplayItem } from '@/stores/game'
 import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
 import casinoGameModule from '@/views/fun/casino/components/casinoGameModule.vue'
 
 interface Props {
   title?: string
-  list?: GameDataItem[]
+  list?: (GameDataItem | HomeCollectionDisplayItem)[]
   sysGameTypeCode?: string
   brandItems?: GameBrandItem[]
   loading?: boolean
@@ -23,7 +24,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
-  list: (): GameDataItem[] => [],
+  list: (): (GameDataItem | HomeCollectionDisplayItem)[] => [],
   sysGameTypeCode: '',
   loading: false
 })

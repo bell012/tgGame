@@ -1044,6 +1044,28 @@ onBeforeUnmount(() => {
 }
 
 @media (min-width: 1024px) {
+  .comment-popup-shell-desktop {
+    background: var(--color-background-level-1);
+  }
+
+  .comment-popup-shell-desktop .comment-popup-textarea {
+    background: var(--color-background-level-8);
+  }
+
+  .comment-popup-panel.is-light .comment-popup-shell-desktop {
+    background: var(--color-background-level-1);
+  }
+
+  .comment-popup-panel.is-light .comment-popup-shell-desktop .comment-popup-textarea {
+    background: var(--color-background-level-8);
+  }
+
+  .comment-popup-shell-desktop .comment-popup-post-btn {
+    background: var(--color-theme-level-1);
+    box-shadow: none;
+    color: var(--color-text-level-4);
+  }
+
   .comment-popup-fade-enter-from .comment-popup-panel,
   .comment-popup-fade-leave-to .comment-popup-panel {
     transform: scale(0.96);

@@ -83,7 +83,7 @@ provide('currency-select-on-select', handleSelect)
 .currency-select-trigger {
   border: none;
   background: var(--color-opacity-10);
-  box-shadow: inset 0 1px 0 var(--color-opacity-5);
+  box-shadow: none;
 }
 
 .trigger-arrow-bg {

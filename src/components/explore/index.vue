@@ -1,26 +1,33 @@
 <template>
-  <div ref="pageRootRef" class="search-container" :style="mobileStyle">
-    <div :class="{ 'search-filter-panel': isMobile }">
+  <div
+    ref="pageRootRef"
+    class="search-container sm:flex sm:min-h-0 sm:flex-1 sm:flex-col"
+    :style="mobileStyle"
+  >
+    <div class="shrink-0" :class="{ 'search-filter-panel': isMobile }">
       <top-input :data-list="typeList" @change-type="changeTypeHandler" @search="topInputSearch" />
     </div>
     <template v-if="currentType === 'casino'">
       <div :class="[contentWrapClass, 'explore-casino-content-wrap']">
         <div
-          class="absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pr-2 sm:flex"
+          class="explore-tab-scroll-fade explore-tab-scroll-fade--left absolute left-0 top-0 z-10 hidden h-[38px] items-center justify-center pr-2 sm:flex"
           :class="canScrollLeft ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'"
         >
           <button
-            class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
+            type="button"
+            class="explore-tab-scroll-btn"
+            :class="{ 'is-disabled': !canScrollLeft }"
+            :disabled="!canScrollLeft"
             @click="scrollLeft"
           >
             <component
               :is="casinoIcons.chevron_left"
-              class="icon size-4 text-text-1 fill-current [&_path]:fill-current"
+              class="explore-tab-scroll-icon size-4 fill-current [&_path]:fill-current"
             />
           </button>
         </div>
 
-        <div>
+        <div class="shrink-0">
           <div
             ref="tabScrollRef"
             class="explore-tabs-scroll my-3.5 flex w-full flex-row gap-0.5 overflow-x-auto overflow-y-hidden scrollbar-none touch-pan-x"
@@ -66,23 +73,28 @@
         </div>
 
         <div
-          class="absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center bg-bg-1 pl-2 sm:flex"
+          class="explore-tab-scroll-fade explore-tab-scroll-fade--right absolute right-0 top-0 z-10 hidden h-[38px] items-center justify-center pl-2 sm:flex"
           :class="
             canScrollRight ? 'visible opacity-100' : 'pointer-events-none invisible opacity-0'
           "
         >
           <button
-            class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-opacity-10"
+            type="button"
+            class="explore-tab-scroll-btn"
+            :class="{ 'is-disabled': !canScrollRight }"
+            :disabled="!canScrollRight"
             @click="scrollRight"
           >
             <component
               :is="casinoIcons.chevron_left"
-              class="icon size-4 rotate-180 text-text-1 fill-current [&_path]:fill-current"
+              class="explore-tab-scroll-icon size-4 rotate-180 fill-current [&_path]:fill-current"
             />
           </button>
         </div>
 
-        <div class="explore-tabs-content tabs-content min-h-48">
+        <div
+          class="explore-tabs-content tabs-content flex min-h-48 flex-1 flex-col overflow-y-auto sm:min-h-0"
+        >
           <component :is="currentPageStyle" v-bind="currentPageProps" />
         </div>
       </div>
@@ -169,7 +181,7 @@ const typeList = computed(() => [
 ])
 
 const contentWrapClass = computed(() =>
-  isMobile.value ? 'w-full relative' : 'min-h-screen w-full relative'
+  isMobile.value ? 'w-full relative' : 'relative flex w-full min-h-0 flex-1 flex-col'
 )
 
 const activeSearchKeyword = ref('')
@@ -529,6 +541,42 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@media (min-width: 768px) {
+  .explore-tab-button--active {
+    background: var(--color-background-level-1);
+    border: 1px solid var(--color-opacity-10);
+  }
+
+  .explore-tab-scroll-fade {
+    background: var(--color-background-level-1);
+  }
+
+  .explore-tab-scroll-btn {
+    display: flex;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: var(--color-background-level-3);
+    cursor: pointer;
+
+    .explore-tab-scroll-icon {
+      color: var(--color-text-level-1);
+    }
+
+    &.is-disabled {
+      background: var(--color-background-level-4);
+      cursor: not-allowed;
+
+      .explore-tab-scroll-icon {
+        color: var(--color-text-level-3);
+      }
+    }
+  }
+}
+
 .explore-tab-button--active {
   background: var(--color-background-level-2);
 
@@ -543,6 +591,31 @@ onUnmounted(() => {
 
 .explore-tabs-content {
   margin-top: 10px;
+}
+
+@media (min-width: 768px) {
+  .explore-casino-content-wrap {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  :global(.explore-pc-empty-wrap) {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  :global(.explore-pc-empty-state) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0 !important;
+  }
 }
 
 @media (max-width: 767px) {

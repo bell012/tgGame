@@ -2,7 +2,7 @@ import { computed, ref, type Component } from 'vue'
 import { defineStore } from 'pinia'
 import i18n from '@/i18n'
 import type { GameBrandItem, GameDataItem, GameTypeItem } from '@/api/interface/game'
-import { useGameStore } from '@/stores/game'
+import { useGameStore, type HomeCollectionDisplayItem } from '@/stores/game'
 import { casinoIcons } from '@/static/svg/casino'
 import { getStorageLanguageCode } from '@/utils/locale'
 
@@ -15,7 +15,7 @@ export interface CasinoTabButtonItem {
 }
 
 export interface CasinoLobbyButtonItem extends CasinoTabButtonItem {
-  items?: GameDataItem[]
+  items?: (GameDataItem | HomeCollectionDisplayItem)[]
   brandItems?: GameBrandItem[]
 }
 

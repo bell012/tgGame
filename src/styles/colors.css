@@ -33,6 +33,7 @@
 
   /* ========== 不透明度 (Opacity) ========== */
   --color-opacity-5: rgba(255, 255, 255, 0.06);
+  --color-opacity-6: rgba(255, 255, 255, 0.06);
   --color-opacity-10: rgba(255, 255, 255, 0.1);
   --color-opacity-15: rgba(255, 255, 255, 0.15);
   --color-opacity-30: rgba(255, 255, 255, 0.3);
@@ -113,6 +114,7 @@
 
   /* ========== 不透明度 (Opacity) - 浅色模式 ========== */
   --color-opacity-5: rgba(0, 0, 0, 0.06);
+  --color-opacity-6: rgba(0, 0, 0, 0.06);
   --color-opacity-10: rgba(0, 0, 0, 0.1);
   --color-opacity-15: rgba(0, 0, 0, 0.15);
   --color-opacity-30: rgba(255, 255, 255, 0.3);

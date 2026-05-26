@@ -299,7 +299,7 @@ import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import router from '@/router'
 import { useCasinoTabsStore } from '@/stores/casinoTabs'
-import { useGameStore } from '@/stores/game'
+import { useGameStore, type HomeCollectionDisplayItem } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
@@ -440,6 +440,12 @@ const toGameImageUrl = (value: string) => {
 
 const HOME_LOBBY_EXCLUDED_CODES = new Set(['', 'hot_games', 'providers'])
 
+const isHomeCollectionDisplayItem = (
+  item: GameDataItem | HomeCollectionDisplayItem
+): item is HomeCollectionDisplayItem => {
+  return typeof item === 'object' && item !== null && 'source' in item && 'game' in item
+}
+
 /** 与娱乐城大厅 `loadCasinoLobbyButtons` 同源；首页不展示 hot_games、providers */
 const mapLobbyButtonsToHomeSections = (buttons: CasinoLobbyButtonItem[]): HomeGameSection[] => {
   return buttons
@@ -450,7 +456,9 @@ const mapLobbyButtonsToHomeSections = (buttons: CasinoLobbyButtonItem[]): HomeGa
     .map(btn => ({
       sysGameTypeCode: String(btn.sysGameTypeCode ?? '').trim(),
       sysGameTypeName: String(btn.sysGameTypeName ?? '').trim(),
-      list: (btn.items ?? []).slice(0, 10)
+      list: (btn.items ?? [])
+        .map((item): GameDataItem => (isHomeCollectionDisplayItem(item) ? item.game : item))
+        .slice(0, 10)
     }))
     .filter(section => section.list.length > 0)
 }
@@ -471,10 +479,8 @@ const sportsEventList = computed<EventListItem[]>(() => {
 })
 const firstGameSection = computed<HomeGameSection | null>(() => gameData.value[0] ?? null)
 const deferredGameSections = computed<HomeGameSection[]>(() => gameData.value.slice(1))
-const favoriteHomeGames = computed<GameDataItem[]>(() => {
-  return homeCollectionsData.value.filter(item => Number((item as GameDataItem)?.rowId) > 0) as
-    | GameDataItem[]
-    | []
+const favoriteHomeGames = computed(() => {
+  return homeCollectionsData.value.filter(item => Number(item.game?.rowId) > 0)
 })
 
 const fetchHomeFavoritesModule = async () => {

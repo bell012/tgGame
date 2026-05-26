@@ -6,6 +6,7 @@ export type CommentLikeCacheItem = {
   isLiked: boolean
   isDisliked: boolean
   likeCount: number
+  dislikeCount: number
 }
 
 export type CommentLikeCacheMap = Record<string, CommentLikeCacheItem>
@@ -60,7 +61,8 @@ export const parseCommentLikeCacheItem = (value: unknown): CommentLikeCacheItem 
   return {
     isLiked: normalizeIsLiked(parsedValue.isLiked ?? parsedValue.liked),
     isDisliked: normalizeIsLiked(parsedValue.isDisliked ?? parsedValue.disliked),
-    likeCount: normalizeLikeCount(parsedValue.likeCount)
+    likeCount: normalizeLikeCount(parsedValue.likeCount),
+    dislikeCount: normalizeLikeCount(parsedValue.dislikeCount)
   }
 }
 

@@ -346,6 +346,7 @@ import {
 } from '@/utils/locale'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
+import { getBalanceByCurrency } from '@/utils/balance'
 import { globalShowToast } from '@/utils/toast.ts'
 import CurrencyPopup from '@/views/personalCenter/components/CurrencyPopup.vue'
 import LanguagePopup from '@/views/personalCenter/components/LanguagePopup.vue'
@@ -367,24 +368,6 @@ const { userInfo, acctInfo } = storeToRefs(userStore)
 const { totalUnreadCount } = storeToRefs(notificationIndicatorStore)
 const { myVipInfo, vipList } = storeToRefs(vipStore)
 
-const balanceFieldMap = {
-  BRL: 'balanceBrl',
-  CNY: 'balanceCny',
-  IDR: 'balanceIdr',
-  INR: 'balanceInr',
-  JPY: 'balanceJpy',
-  KRW: 'balanceKrw',
-  MXN: 'balanceMxn',
-  MYR: 'balanceMyr',
-  PHP: 'balancePhp',
-  SGD: 'balanceSgd',
-  USD: 'balanceUsd',
-  USDT: 'balanceUsdt',
-  VND: 'balanceVnd'
-} as const
-
-type BalanceFieldKey = (typeof balanceFieldMap)[keyof typeof balanceFieldMap]
-type BalanceCarrier = Partial<Record<BalanceFieldKey, number>> & { balance?: number }
 type CachedSiteConfig = {
   currency?: unknown
 }
@@ -555,13 +538,19 @@ const nextVipLevel = computed(() => {
 
 // 总余额
 const currentBalance = computed(() => {
-  return (
-    getBalanceByCurrency(acctInfo.value, currentCurrency.value) ??
-    getBalanceByCurrency(userInfo.value, currentCurrency.value) ??
-    acctInfo.value?.balancePhp ??
-    userInfo.value?.balancePhp ??
-    0
-  )
+  if (acctInfo.value) {
+    return getBalanceByCurrency(acctInfo.value, currentCurrency.value, {
+      fallbackToCurrentBalance: true
+    })
+  }
+
+  if (userInfo.value) {
+    return getBalanceByCurrency(userInfo.value, currentCurrency.value, {
+      fallbackToCurrentBalance: true
+    })
+  }
+
+  return 0
 })
 
 const totalBalance = computed(() => {
@@ -606,10 +595,12 @@ const currencyOptions = computed(() => {
   }
 
   const codes = mergedCodes.length ? mergedCodes : [fallbackCode]
+  const listBalanceOptions = { fallbackToCurrentBalance: false } as const
 
   return codes.map(code => {
-    const balance =
-      getBalanceByCurrency(acctInfo.value, code) ?? getBalanceByCurrency(userInfo.value, code) ?? 0
+    const balance = acctInfo.value
+      ? getBalanceByCurrency(acctInfo.value, code, listBalanceOptions)
+      : getBalanceByCurrency(userInfo.value, code, listBalanceOptions)
 
     return {
       code,
@@ -694,27 +685,6 @@ const settingsMenus = computed(() => [
 ])
 
 // 复制推荐链接
-const getBalanceByCurrency = (data: BalanceCarrier | null | undefined, currency: string) => {
-  if (!data || !currency) {
-    return undefined
-  }
-
-  const currencyCode = normalizeCurrencyCode(currency)
-  const balanceKey = balanceFieldMap[currencyCode as keyof typeof balanceFieldMap]
-
-  if (balanceKey && typeof data[balanceKey] === 'number') {
-    return data[balanceKey]
-  }
-
-  const dynamicBalanceKey = `balance${currencyCode.charAt(0)}${currencyCode.slice(1).toLowerCase()}`
-  const dynamicBalanceValue = (data as Record<string, unknown>)[dynamicBalanceKey]
-  if (typeof dynamicBalanceValue === 'number') {
-    return dynamicBalanceValue
-  }
-
-  return typeof data.balance === 'number' ? data.balance : undefined
-}
-
 const fallbackCopyText = (value: string) => {
   const textarea = document.createElement('textarea')
   textarea.value = value
