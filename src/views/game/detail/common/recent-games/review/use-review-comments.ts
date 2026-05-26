@@ -24,10 +24,17 @@ type TranslateFn = (key: string, ...args: unknown[]) => string
 
 export type ReviewSortValue = 'newest' | 'comments' | 'likes'
 
+type MemberIdentity = {
+  memberId: string
+  memberRowId: string
+}
+
 type UseReviewCommentsOptions = {
   currentGameId: Ref<string>
   gameImageBaseUrl: string
   defaultCommentAvatarUrl: string
+  getCurrentUserAvatarUrl: () => string
+  getCurrentMemberIdentity: () => MemberIdentity
   requireLogin: () => boolean
   t: TranslateFn
 }
@@ -40,7 +47,15 @@ const SORT_TYPE_MAP: Record<ReviewSortValue, 1 | 2 | 3> = {
 }
 
 export const useReviewComments = (options: UseReviewCommentsOptions) => {
-  const { currentGameId, gameImageBaseUrl, defaultCommentAvatarUrl, requireLogin, t } = options
+  const {
+    currentGameId,
+    gameImageBaseUrl,
+    defaultCommentAvatarUrl,
+    getCurrentUserAvatarUrl,
+    getCurrentMemberIdentity,
+    requireLogin,
+    t
+  } = options
 
   const subjectCollectionsRef = inject<Ref<boolean | null> | null>(
     'game-detail-subject-is-collections',
@@ -81,6 +96,34 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
   })
 
   const sortedCommentList = computed(() => commentList.value)
+
+  const isSameMember = (
+    item: { memberId?: unknown; memberRowId?: unknown; memberName?: unknown },
+    identity: MemberIdentity
+  ) => {
+    const itemMemberId = normalizeQueryValue(item.memberId)
+    const itemMemberRowId = normalizeQueryValue(item.memberRowId)
+    const itemMemberName = normalizeQueryValue(item.memberName)
+
+    if (identity.memberRowId && itemMemberRowId && identity.memberRowId === itemMemberRowId) {
+      return true
+    }
+    if (identity.memberId && itemMemberId && identity.memberId === itemMemberId) {
+      return true
+    }
+    if (identity.memberId && itemMemberName && identity.memberId === itemMemberName) {
+      return true
+    }
+    return false
+  }
+
+  const hasCurrentUserComment = computed(() => {
+    const identity = getCurrentMemberIdentity()
+    if (!identity.memberId && !identity.memberRowId) {
+      return false
+    }
+    return commentList.value.some(comment => isSameMember(comment, identity))
+  })
 
   const getAcctInfoFromStorage = () => {
     if (typeof window === 'undefined') {
@@ -161,8 +204,30 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     return gameImageBaseUrl ? `${gameImageBaseUrl}${avatarPath}` : avatarPath
   }
 
+  const resolveCommentItemAvatar = (item: GameCommentListItem) => {
+    if (isSameMember(item, getCurrentMemberIdentity())) {
+      const currentUserAvatarUrl = normalizeQueryValue(getCurrentUserAvatarUrl())
+      if (currentUserAvatarUrl) {
+        return currentUserAvatarUrl
+      }
+    }
+    return resolveCommentAvatar(item?.memberAvatar)
+  }
+
   const handleCommentAvatarError = (comment: ReviewCommentViewItem) => {
-    if (!comment || comment.avatarUrl === defaultCommentAvatarUrl) {
+    if (!comment) {
+      return
+    }
+
+    if (isSameMember(comment, getCurrentMemberIdentity())) {
+      const currentUserAvatarUrl = normalizeQueryValue(getCurrentUserAvatarUrl())
+      if (currentUserAvatarUrl && comment.avatarUrl !== currentUserAvatarUrl) {
+        comment.avatarUrl = currentUserAvatarUrl
+        return
+      }
+    }
+
+    if (comment.avatarUrl === defaultCommentAvatarUrl) {
       return
     }
     comment.avatarUrl = defaultCommentAvatarUrl
@@ -186,10 +251,11 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
 
     return {
       id,
+      memberId: normalizeQueryValue(item?.memberId ?? item?.memberName),
       memberName,
       content: normalizeQueryValue(item?.content),
       timeText: formatElapsedTime(createTime),
-      avatarUrl: resolveCommentAvatar(item?.memberAvatar),
+      avatarUrl: resolveCommentItemAvatar(item),
       isLiked: Boolean(cachedLike?.isLiked),
       isDisliked: Boolean(cachedLike?.isDisliked),
       likeStorageKey,
@@ -208,7 +274,70 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     }
   }
 
-  const requestCommentsList = async (subjectId: string, sortType = currentSortType.value) => {
+  const fetchChildCommentsForParent = async (
+    parentComment: ReviewCommentViewItem,
+    subjectId: string,
+    sortType = currentSortType.value
+  ) => {
+    const parentId = normalizeQueryValue(parentComment.id)
+    if (!parentId) {
+      parentComment.children = []
+      return
+    }
+
+    const { memberRowId } = getAcctInfoFromStorage()
+    const memberRowIdNumber = Number(memberRowId)
+    const validMemberRowId = Number.isFinite(memberRowIdNumber) ? memberRowIdNumber : undefined
+    const commentLikeCacheMap = getCommentLikeCacheMap()
+
+    try {
+      const childrenRes = await Api.game.getCommentsList(
+        {
+          subjectId,
+          sortType,
+          current: 1,
+          size: 100,
+          parent: parentId,
+          root: null,
+          memberRowId: validMemberRowId
+        },
+        {
+          showSuccessToast: false,
+          showErrorToast: true
+        }
+      )
+      parentComment.children = parseCommentRecords(childrenRes?.result).map(
+        (childItem, childIndex) =>
+          mapCommentItem(childItem, childIndex, `${parentId}-child`, subjectId, commentLikeCacheMap)
+      )
+      parentComment.replyCount = Math.max(parentComment.replyCount, parentComment.children.length)
+    } catch (error) {
+      console.error('get child comments failed', error)
+      parentComment.children = []
+    }
+  }
+
+  const applyPreviousCommentState = (
+    nextComments: ReviewCommentViewItem[],
+    previousComments: ReviewCommentViewItem[]
+  ) => {
+    const previousCommentMap = new Map(previousComments.map(comment => [comment.id, comment]))
+    nextComments.forEach(comment => {
+      const previous = previousCommentMap.get(comment.id)
+      if (!previous) {
+        return
+      }
+      comment.isChildrenExpanded = previous.isChildrenExpanded
+      comment.children = previous.children
+    })
+  }
+
+  const requestCommentsList = async (
+    subjectId: string,
+    sortType = currentSortType.value,
+    options: { refreshChildren?: boolean } = {}
+  ) => {
+    const { refreshChildren = true } = options
     if (!subjectId) {
       commentList.value = []
       return
@@ -218,9 +347,14 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     const memberRowIdNumber = Number(memberRowId)
     const validMemberRowId = Number.isFinite(memberRowIdNumber) ? memberRowIdNumber : undefined
 
-    isCommentLoading.value = true
+    const shouldShowLoading = commentList.value.length === 0
+    if (shouldShowLoading) {
+      isCommentLoading.value = true
+    }
+
     try {
       const commentLikeCacheMap = getCommentLikeCacheMap()
+      const previousComments = commentList.value
       const res = await Api.game.getCommentsList(
         {
           subjectId,
@@ -239,47 +373,14 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
       const rootComments = parseCommentRecords(res?.result).map((item, index) =>
         mapCommentItem(item, index, 'root-comment', subjectId, commentLikeCacheMap)
       )
+      applyPreviousCommentState(rootComments, previousComments)
       commentList.value = rootComments
 
-      await Promise.all(
-        commentList.value.map(async item => {
-          const parentId = normalizeQueryValue(item.id)
-          if (!parentId) {
-            item.children = []
-            return
-          }
-
-          try {
-            const childrenRes = await Api.game.getCommentsList(
-              {
-                subjectId,
-                sortType,
-                current: 1,
-                size: 100,
-                parent: parentId,
-                root: null,
-                memberRowId: validMemberRowId
-              },
-              {
-                showSuccessToast: false,
-                showErrorToast: true
-              }
-            )
-            item.children = parseCommentRecords(childrenRes?.result).map((childItem, childIndex) =>
-              mapCommentItem(
-                childItem,
-                childIndex,
-                `${parentId}-child`,
-                subjectId,
-                commentLikeCacheMap
-              )
-            )
-          } catch (error) {
-            console.error('get child comments failed', error)
-            item.children = []
-          }
-        })
-      )
+      if (refreshChildren) {
+        await Promise.all(
+          commentList.value.map(item => fetchChildCommentsForParent(item, subjectId, sortType))
+        )
+      }
     } catch (error) {
       console.error('getCommentsList failed', error)
       commentList.value = []
@@ -456,7 +557,8 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     }
 
     try {
-      const replyParentId = normalizeQueryValue(replyTargetComment.value?.id)
+      const replyTarget = replyTargetComment.value
+      const replyParentId = normalizeQueryValue(replyTarget?.id)
       const isReplyComment = Boolean(replyParentId)
       await Api.game.publishComment(
         {
@@ -473,7 +575,17 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
           showErrorToast: true
         }
       )
-      await requestCommentsList(subjectId)
+
+      if (isReplyComment && replyParentId) {
+        const parentComment = commentList.value.find(item => item.id === replyParentId)
+        if (parentComment) {
+          await fetchChildCommentsForParent(parentComment, subjectId)
+          parentComment.isChildrenExpanded = true
+        }
+      } else {
+        await requestCommentsList(subjectId, currentSortType.value, { refreshChildren: false })
+      }
+
       replyTargetComment.value = null
     } catch (error) {
       console.error('publishComment failed', error)
@@ -500,6 +612,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
   return {
     ratingCountFromSubject,
     loadedCommentCount,
+    hasCurrentUserComment,
     isCommentLoading,
     sortedCommentList,
     sortMenuRef,

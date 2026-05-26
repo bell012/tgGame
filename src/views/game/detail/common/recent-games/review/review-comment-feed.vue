@@ -1,30 +1,27 @@
 <template>
-  <div>
+  <div class="review-comment-feed">
     <div
       v-if="isCommentLoading && !sortedCommentList.length"
-      class="review-comment-state flex h-[40px] items-center justify-center gap-[8px] rounded-[7px] mb-[10px] mt-[10px] px-[12px]"
+      class="review-comment-skeleton-list"
+      aria-busy="true"
+      aria-live="polite"
     >
       <div
-        class="size-[16px] rounded-full border-[2px] border-[var(--color-text-level-3)] border-t-transparent animate-spin"
-      ></div>
-      <div class="text-[12px] text-[var(--color-text-level-3)]">
-        {{ loadingCommentsText }}
+        v-for="index in commentSkeletonCount"
+        :key="`comment-skeleton-${index}`"
+        class="review-comment-skeleton-card rounded-[10px] mb-[10px] mt-[10px] px-[12px] py-[12px]"
+      >
+        <div class="flex items-center gap-[8px]">
+          <div class="review-comment-skeleton-block review-comment-skeleton-avatar rounded-full" />
+          <div class="review-comment-skeleton-block h-[12px] w-[96px] rounded-[4px]" />
+          <div class="review-comment-skeleton-block h-[12px] w-[28px] rounded-[4px]" />
+        </div>
+        <div class="review-comment-skeleton-block mt-[10px] h-[12px] w-full rounded-[4px]" />
+        <div class="review-comment-skeleton-block mt-[8px] h-[12px] w-[72%] rounded-[4px]" />
       </div>
     </div>
 
-    <div
-      v-else-if="isCommentLoading"
-      class="review-comment-state flex h-[40px] items-center justify-center gap-[8px] rounded-[7px] mb-[10px] mt-[10px] px-[12px]"
-    >
-      <div
-        class="size-[14px] rounded-full border-[2px] border-[var(--color-text-level-3)] border-t-transparent animate-spin"
-      ></div>
-      <div class="text-[12px] text-[var(--color-text-level-3)]">
-        {{ refreshingCommentsText }}
-      </div>
-    </div>
-
-    <template v-if="sortedCommentList.length">
+    <template v-else-if="sortedCommentList.length">
       <div
         v-for="comment in sortedCommentList"
         :key="comment.id"
@@ -192,6 +189,8 @@ const emit = defineEmits<{
   'avatar-error': [comment: ReviewCommentViewItem]
 }>()
 
+const commentSkeletonCount = 2
+
 const getReplySummaryText = (comment: ReviewCommentViewItem) => {
   const count = Math.max(0, Number(comment.replyCount || comment.children.length || 0))
   const replyLabel = count === 1 ? 'Reply' : 'Replies'
@@ -200,6 +199,44 @@ const getReplySummaryText = (comment: ReviewCommentViewItem) => {
 </script>
 
 <style scoped>
+.review-comment-feed {
+  min-height: 120px;
+}
+
+.review-comment-skeleton-card {
+  background: var(--color-background-level-1);
+}
+
+.review-comment-skeleton-block {
+  background: var(--color-opacity-10);
+  animation: review-comment-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.review-comment-skeleton-avatar {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+}
+
+@media (min-width: 1024px) {
+  .review-comment-skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+}
+
+@keyframes review-comment-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
 .review-comment-state {
   background: #202424;
 }

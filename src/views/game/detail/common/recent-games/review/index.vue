@@ -144,9 +144,14 @@ const currentUserAvatarUrl = computed(() => {
 const { requireLogin } = useRequireLoginAction()
 const { rating: userRating, setRating } = useGameRating()
 const DEFAULT_COMMENT_AVATAR_URL = RatingAvatarP1
+const getCurrentMemberIdentity = () => ({
+  memberId: normalizeQueryValue(userInfo.value?.memberId),
+  memberRowId: normalizeQueryValue(userInfo.value?.memberRowId)
+})
 const {
   ratingCountFromSubject,
   loadedCommentCount,
+  hasCurrentUserComment,
   isCommentLoading,
   sortedCommentList,
   sortMenuRef,
@@ -170,13 +175,16 @@ const {
   currentGameId,
   gameImageBaseUrl,
   defaultCommentAvatarUrl: DEFAULT_COMMENT_AVATAR_URL,
+  getCurrentUserAvatarUrl: () => currentUserAvatarUrl.value,
+  getCurrentMemberIdentity,
   requireLogin,
   t
 })
 
 // ===== 评分概览（评分数、评分头像、评分星级）=====
-const baseRatingCount = computed(() => {
-  // 评论主体接口有评分人数时优先使用，避免和详情接口字段语义冲突
+const initRatingCount = computed(() => normalizePositiveInt(currentGameDetail.value?.initScoreNum))
+
+const actualEngagementCount = computed(() => {
   if (ratingCountFromSubject.value > 0) {
     return ratingCountFromSubject.value
   }
@@ -185,8 +193,10 @@ const baseRatingCount = computed(() => {
     return loadedCommentCount.value
   }
 
-  return normalizePositiveInt(currentGameDetail.value?.initScoreNum)
+  return 0
 })
+
+const baseRatingCount = computed(() => initRatingCount.value + actualEngagementCount.value)
 
 const MAX_RATING_AVATAR_COUNT = 5
 const FALLBACK_RATING_AVATAR_URLS = [
@@ -198,11 +208,18 @@ const FALLBACK_RATING_AVATAR_URLS = [
 ]
 
 const hasUserRating = computed(() => isLoggedIn.value && Number(userRating.value) > 0)
+const shouldShowCurrentUserInRatings = computed(
+  () => hasUserRating.value || hasCurrentUserComment.value
+)
 
 const ratingPreviewCount = computed(() => {
+  if (baseRatingCount.value <= 0 && !shouldShowCurrentUserInRatings.value) {
+    return 0
+  }
+
   return Math.min(
     MAX_RATING_AVATAR_COUNT,
-    Math.max(0, baseRatingCount.value + (hasUserRating.value ? 1 : 0))
+    Math.max(1, baseRatingCount.value + (hasUserRating.value ? 1 : 0))
   )
 })
 
@@ -210,12 +227,12 @@ const displayRatingAvatarUrls = computed(() => {
   return buildRatingPreviewAvatarUrls({
     count: ratingPreviewCount.value,
     fallbackAvatarUrls: FALLBACK_RATING_AVATAR_URLS,
-    hasUserRating: hasUserRating.value,
+    hasUserRating: shouldShowCurrentUserInRatings.value,
     userAvatarUrl: currentUserAvatarUrl.value
   })
 })
 
-const displayRatingCount = computed(() => displayRatingAvatarUrls.value.length)
+const displayRatingCount = computed(() => baseRatingCount.value)
 const SCORE_TYPE_TO_VALUE: Record<number, number> = {
   1: 4.0,
   2: 4.5,

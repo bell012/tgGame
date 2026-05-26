@@ -32,12 +32,11 @@
             {{ tab.label }}
           </div>
         </div>
-        <!-- 内容 -->
-        <template v-if="shouldShowRankList">
-          <Winlist :list="rankList" :loading="isRankLoading" />
-        </template>
-        <!-- 仅在“Review”标签下展示评论面板 -->
-        <Review v-else-if="shouldShowReviewTab" />
+        <!-- 内容：v-show 保持挂载，避免切换 tab 时重复加载与布局跳动 -->
+        <div class="recent-games-tab-content">
+          <Winlist v-show="shouldShowRankList" :list="rankList" :loading="isRankLoading" />
+          <Review v-show="shouldShowReviewTab" />
+        </div>
       </div>
     </transition>
   </div>
@@ -84,8 +83,8 @@ const tabValue = ref<TabValue>(TAB_HIGH_WIN)
 const isOpen = ref(false)
 provide('isRgOpen', isOpen)
 
-// 排行榜数据状态
-const rankList = ref<GameRanListItem[]>([])
+// 排行榜数据状态（按 tab 类型缓存，切换时不展示 loading）
+const rankListByType = ref<Partial<Record<1 | 2, GameRanListItem[]>>>({})
 const isRankLoading = ref(false)
 const { t } = useI18n()
 
@@ -154,6 +153,14 @@ const currentType = computed<1 | 2 | 0>(() => {
   return RANK_TYPE_NONE
 })
 
+const rankList = computed(() => {
+  const type = currentType.value
+  if (type === TAB_HIGH_WIN || type === TAB_LUCKY_WIN) {
+    return rankListByType.value[type] ?? []
+  }
+  return []
+})
+
 // 接口可能返回数组或 { records }，统一兜底成数组
 const parseRankListResult = (result: unknown): GameRanListItem[] => {
   const records = (result as { records?: unknown } | undefined)?.records
@@ -171,13 +178,15 @@ const fetchGameRanList = async () => {
   const type = currentType.value
   const itemCode = currentItemCode.value
   const platformCode = currentPlatformCode.value
-  // 参数不完整时不发请求，直接清空旧数据
   if (!type || !itemCode || !platformCode) {
-    rankList.value = []
     return
   }
 
-  isRankLoading.value = true
+  const hasCachedData = (rankListByType.value[type]?.length ?? 0) > 0
+  if (!hasCachedData) {
+    isRankLoading.value = true
+  }
+
   try {
     const res = await Api.game.getGameRanList(
       {
@@ -188,14 +197,18 @@ const fetchGameRanList = async () => {
       },
       REQUEST_OPTIONS
     )
-    rankList.value = parseRankListResult(res?.result)
+    rankListByType.value[type] = parseRankListResult(res?.result)
   } catch (error) {
     console.error('fetchGameRanList failed', error)
-    rankList.value = []
+    rankListByType.value[type] = []
   } finally {
     isRankLoading.value = false
   }
 }
+
+watch([currentItemCode, currentPlatformCode, currentRequestCurrency], () => {
+  rankListByType.value = {}
+})
 
 watch(
   [tabValue, isOpen, currentItemCode, currentPlatformCode, currentRequestCurrency],
@@ -265,6 +278,15 @@ const tabIndexClick = (index: number) => {
 
 .recent-games-tabs-light .recent-games-tab:not(.active) {
   color: #5f6368;
+}
+
+.recent-games-tab-content {
+  position: relative;
+  min-height: 220px;
+}
+
+.recent-games-tab-content > :not([style*='display: none']) {
+  width: 100%;
 }
 
 .recent-games-type-tags {

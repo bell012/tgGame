@@ -1,5 +1,6 @@
 export type ReviewCommentViewItem = {
   id: string
+  memberId: string
   memberName: string
   content: string
   timeText: string
