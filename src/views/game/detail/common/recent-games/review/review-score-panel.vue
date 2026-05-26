@@ -36,7 +36,8 @@
       </div>
     </div>
 
-    <div class="flex gap-[6px]">
+    <!-- H5：双卡片纵向居中 -->
+    <div class="review-action-cards flex gap-[6px] lg:hidden">
       <div
         class="review-action-card flex-1 flex flex-col justify-center items-center rounded-[7px]"
       >
@@ -74,6 +75,41 @@
         </div>
       </div>
     </div>
+
+    <!-- PC：左右一行 -->
+    <div class="review-action-bar hidden lg:flex items-stretch rounded-[7px]">
+      <div class="review-action-section review-action-section--rate">
+        <div class="review-action-label">
+          {{ rateThisGameText }}
+        </div>
+        <Star
+          :count="5"
+          :active-count="userRating"
+          :clickable="true"
+          :size="20"
+          :gap="4"
+          class="review-action-stars shrink-0"
+          @change="emit('rate-change', $event)"
+        />
+      </div>
+
+      <div class="review-action-divider" aria-hidden="true" />
+
+      <div class="review-action-section review-action-section--ratings">
+        <div class="review-action-label">
+          {{ ratingsText }}
+        </div>
+        <div v-if="displayRatingAvatarUrls.length > 0" class="rating-avatars shrink-0">
+          <SmartImage
+            v-for="(avatarUrl, avatarIndex) in displayRatingAvatarUrls"
+            :key="`${avatarUrl}-${avatarIndex}`"
+            alt=""
+            :src="avatarUrl"
+            class="rating-avatar -ml-[6px] first:ml-0"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -100,7 +136,7 @@ const emit = defineEmits<{
 
 <style scoped lang="scss">
 .review-score-overview {
-  --review-star-active: #2aee88;
+  --review-star-active: var(--color-theme-level-1);
   --review-star-muted: #687779;
   background: #202424;
 }
@@ -138,11 +174,54 @@ const emit = defineEmits<{
 }
 
 .review-action-card {
-  --review-star-active: #2aee88;
+  --review-star-active: var(--color-theme-level-1);
   --review-star-muted: var(--color-icon-level-2);
   height: 76px;
   padding: 10px 8px;
   background: #202424;
+}
+
+@media (min-width: 1024px) {
+  .review-action-bar {
+    --review-star-active: var(--color-theme-level-1);
+    --review-star-muted: var(--color-icon-level-2);
+    min-height: 76px;
+    background: #202424;
+  }
+
+  .review-action-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+    padding: 10px 12px;
+  }
+
+  .review-action-section--ratings {
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .review-action-label {
+    color: var(--color-text-level-2);
+    font-size: 12px;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+
+  .review-action-divider {
+    width: 1px;
+    margin: 12px 0;
+    background: var(--color-opacity-10);
+    flex-shrink: 0;
+  }
+
+  .rating-avatars {
+    display: flex;
+    align-items: center;
+  }
 }
 
 .rating-avatar {
@@ -155,7 +234,8 @@ const emit = defineEmits<{
 }
 
 :global(:root.light .review-score-overview),
-:global(:root.light .review-action-card) {
+:global(:root.light .review-action-card),
+:global(:root.light .review-action-bar) {
   --review-star-muted: var(--color-icon-level-2);
   background: #f4f4f4;
 }

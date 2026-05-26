@@ -1,21 +1,30 @@
 <template>
   <div class="currency-toolbar px-[20px] py-[12px] rounded-b-[20px] relative">
     <div class="toolbar-actions flex justify-start items-center gap-[12px]">
-      <button type="button" class="toolbar-icon-btn" @click="settingVisibleClick">
-        <SettingIcon class="toolbar-icon toolbar-icon--setting" />
-      </button>
-      <button
-        type="button"
-        class="toolbar-icon-btn"
-        :class="{ 'is-active': starActived }"
-        @click="toggleStar"
-      >
-        <StarActiveIcon v-if="starActived" class="toolbar-icon toolbar-icon--active" />
-        <StarIcon v-else class="toolbar-icon" />
-      </button>
-      <button type="button" class="toolbar-icon-btn" @click="liveStateVisibleClick">
-        <LineIcon class="toolbar-icon" />
-      </button>
+      <div class="toolbar-icon-wrap">
+        <button type="button" class="toolbar-icon-btn" @click="settingVisibleClick">
+          <SettingIcon class="toolbar-icon toolbar-icon--setting" />
+        </button>
+        <span class="toolbar-tooltip">{{ t('gameDetail.settingTooltip') }}</span>
+      </div>
+      <div class="toolbar-icon-wrap">
+        <button
+          type="button"
+          class="toolbar-icon-btn"
+          :class="{ 'is-active': starActived }"
+          @click="toggleStar"
+        >
+          <StarActiveIcon v-if="starActived" class="toolbar-icon toolbar-icon--active" />
+          <StarIcon v-else class="toolbar-icon" />
+        </button>
+        <span class="toolbar-tooltip">{{ t('gameDetail.favoriteTooltip') }}</span>
+      </div>
+      <div class="toolbar-icon-wrap">
+        <button type="button" class="toolbar-icon-btn" @click="liveStateVisibleClick">
+          <LineIcon class="toolbar-icon" />
+        </button>
+        <span class="toolbar-tooltip">{{ t('gameDetail.liveStatsTitle') }}</span>
+      </div>
     </div>
     <!--Setting Popup-->
     <setting-popup
@@ -53,8 +62,10 @@ import LiveStatePopup from './live-state-popup.vue'
 import SharePopup from './share-popup.vue'
 import SettingPopup from './setting-popup.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useI18n } from 'vue-i18n'
 
 const isMobile = useIsMobile()
+const { t } = useI18n()
 
 const { requireLogin } = useRequireLoginAction()
 
@@ -90,6 +101,45 @@ const shareClick = () => {
 
 .toolbar-actions {
   min-height: 16px;
+}
+
+.toolbar-icon-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.toolbar-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 2;
+  display: none;
+  height: 32px;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--color-background-level-2);
+  color: var(--color-text-level-1);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+  transform: translateX(-50%);
+}
+
+.toolbar-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-top: 6px solid var(--color-background-level-2);
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  transform: translateX(-50%);
 }
 
 .toolbar-icon-btn {
@@ -136,6 +186,22 @@ const shareClick = () => {
 :global(:root.light) .currency-toolbar {
   background: var(--color-opacity-10);
   border-top-color: var(--color-opacity-6);
+}
+
+:global(:root.light) .toolbar-tooltip {
+  background: var(--color-background-level-2);
+  box-shadow: 0 8px 24px rgba(28, 45, 74, 0.12);
+}
+
+:global(:root.light) .toolbar-tooltip::after {
+  border-top-color: var(--color-background-level-2);
+}
+
+@media (min-width: 768px) {
+  .toolbar-icon-wrap:hover .toolbar-tooltip,
+  .toolbar-icon-wrap:focus-within .toolbar-tooltip {
+    display: inline-flex;
+  }
 }
 
 .desktop-popup {

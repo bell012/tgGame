@@ -30,8 +30,8 @@
         :key="comment.id"
         class="flex flex-col bg-[var(--color-background-level-1)] rounded-[10px] mb-[10px] mt-[10px] py-[12px] px-[12px]"
       >
-        <div class="review-comment-main-row flex h-[36px] items-center justify-between">
-          <div class="flex items-center gap-[8px] text-[11px] font-[500]">
+        <div class="review-comment-main-row flex items-center justify-between">
+          <div class="review-comment-meta flex items-center gap-[8px]">
             <SmartImage
               alt=""
               :src="comment.avatarUrl"
@@ -80,9 +80,7 @@
             </div>
           </div>
         </div>
-        <div
-          class="review-comment-content text-[var(--color-text-level-2)] text-[11px] mt-[8px] leading-[16px]"
-        >
+        <div class="review-comment-content text-[var(--color-text-level-2)] mt-[8px]">
           {{ comment.content }}
         </div>
         <transition name="child-comments-collapse">
@@ -91,8 +89,8 @@
             class="mt-[10px] pl-[20px] border-t border-[var(--color-opacity-10)]"
           >
             <div v-for="child in comment.children" :key="child.id" class="pt-[12px] pb-[8px]">
-              <div class="review-comment-main-row flex h-[36px] items-center justify-between">
-                <div class="flex items-center gap-[8px] text-[11px] font-[500]">
+              <div class="review-comment-main-row flex items-center justify-between">
+                <div class="review-comment-meta flex items-center gap-[8px]">
                   <SmartImage
                     alt=""
                     :src="child.avatarUrl"
@@ -135,9 +133,7 @@
                   </div>
                 </div>
               </div>
-              <div
-                class="review-comment-content text-[var(--color-text-level-2)] text-[11px] mt-[8px] leading-[16px]"
-              >
+              <div class="review-comment-content text-[var(--color-text-level-2)] mt-[8px]">
                 {{ child.content }}
               </div>
             </div>
@@ -217,12 +213,40 @@ const getReplySummaryText = (comment: ReviewCommentViewItem) => {
   height: 26px;
   min-width: 26px;
   border-radius: 999px;
+  object-fit: cover;
+}
+
+.review-comment-main-row {
+  height: 36px;
+}
+
+@media (min-width: 1024px) {
+  .review-comment-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+
+  .review-comment-main-row {
+    height: 40px;
+  }
+
+  .review-comment-meta-name,
+  .review-comment-meta-time,
+  .review-comment-content {
+    font-size: 13px;
+    line-height: 18px;
+  }
 }
 
 .review-comment-actions {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.review-comment-meta {
+  font-weight: 500;
 }
 
 .review-comment-actions-child {

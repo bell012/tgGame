@@ -102,7 +102,7 @@
                   </span>
                 </span>
                 <component
-                  v-else-if="!isMobile && !isLightTheme"
+                  v-else-if="!isMobile"
                   :is="isSelected(item) ? RadioCheckedIcon : RadioUncheckedIcon"
                   :class="[
                     'dropdown-radio-icon h-4 w-4 shrink-0',
@@ -112,7 +112,7 @@
                   ]"
                 />
                 <span
-                  v-else-if="!Multi"
+                  v-else
                   class="dropdown-checkbox box-border inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] border"
                   :class="
                     isSelected(item) ? 'dropdown-checkbox--checked' : 'dropdown-checkbox--unchecked'

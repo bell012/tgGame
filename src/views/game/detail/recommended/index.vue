@@ -59,7 +59,7 @@
           key-field="rowId"
         >
           <template #item="{ item }">
-            <div class="w-full aspect-[330/438]">
+            <div class="w-full aspect-[330/438] sm:aspect-auto sm:h-[213px] sm:w-[160px]">
               <casinoGameCard
                 class="size-full text-left"
                 :game="toCasinoCardGame(item)"
@@ -349,7 +349,9 @@ watch(
   margin: 0;
   border-radius: 10px;
   overflow: hidden;
-  background: var(--color-background-level-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .recommended-page-pc__header {
@@ -362,8 +364,8 @@ watch(
   justify-content: flex-start;
   gap: 10px;
   padding: 0 14px;
-  background: var(--color-background-level-2);
-  border-bottom: 1px solid var(--color-border-level-1);
+  width: min(100%, 1350px);
+  box-sizing: border-box;
 }
 
 .recommended-page-pc__back-btn {
@@ -379,9 +381,9 @@ watch(
 
 .recommended-page-pc__title {
   margin: 0;
-  font-size: 28px;
-  line-height: 1;
-  font-weight: 800;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
   color: var(--color-text-level-1);
   text-align: left;
 }
@@ -390,24 +392,37 @@ watch(
   position: relative;
   padding: 12px 14px 18px;
   min-height: 0;
+  width: min(100%, 1350px);
+  box-sizing: border-box;
+}
+
+.recommended-page-pc__pager {
+  width: 100%;
 }
 
 .recommended-page-pc__pager :deep(.sm\:grid-cols-8) {
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(8, 160px);
 }
 
 .recommended-page-pc__pager :deep(.grid) {
   gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
 }
 
 .recommended-page-pc__skeleton-grid {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(8, 160px);
   gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
 }
 
 .recommended-page-pc__skeleton-card {
-  aspect-ratio: 330 / 438;
+  width: 160px;
+  height: 213px;
   border-radius: 8px;
 }
 

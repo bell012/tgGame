@@ -2,17 +2,24 @@
   <div ref="pageRootRef" class="w-full">
     <div
       v-if="isLoading && pageData.length === 0"
-      class="grid w-full gap-2.5 grid-cols-3 sm:grid-cols-8"
+      class="page-style2-grid grid w-full gap-2.5 grid-cols-3 sm:grid-cols-[repeat(8,160px)]"
     >
       <div
         v-for="index in resolvedPageSize"
         :key="index"
-        class="aspect-[330/438] rounded-lg bg-bg-2 animate-pulse"
+        class="aspect-[330/438] rounded-lg bg-bg-2 animate-pulse sm:aspect-auto sm:h-[213px] sm:w-[160px]"
       />
     </div>
 
-    <div v-else-if="pageData.length > 0" class="grid w-full gap-2.5 grid-cols-3 sm:grid-cols-8">
-      <div v-for="(game, i) in pageData" :key="game.rowId ?? i" class="aspect-[330/438]">
+    <div
+      v-else-if="pageData.length > 0"
+      class="page-style2-grid grid w-full gap-2.5 grid-cols-3 sm:grid-cols-[repeat(8,160px)]"
+    >
+      <div
+        v-for="(game, i) in pageData"
+        :key="game.rowId ?? i"
+        class="aspect-[330/438] sm:aspect-auto sm:h-[213px] sm:w-[160px]"
+      >
         <casinoGameCard :game="game" @click="handleClick(game.rowId)" />
       </div>
     </div>
@@ -279,4 +286,12 @@ onUnmounted(() => {
   loadMoreObserver = null
 })
 </script>
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+@media (min-width: 640px) {
+  .page-style2-grid {
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+}
+</style>

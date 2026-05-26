@@ -671,6 +671,9 @@
   },
   "gameDetail": {
     "playWithSelectedCurrency": "Play with selected currency",
+    "selectedCurrency": "Selected Currency",
+    "settingTooltip": "Settings",
+    "favoriteTooltip": "Favorite",
     "playNowHint": "Tap \"Play Now\" to enter. Good luck and have fun!",
     "playNow": "Play Now",
     "playWithBalanceIn": "Play with balance in",

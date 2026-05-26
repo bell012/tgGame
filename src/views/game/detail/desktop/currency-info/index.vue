@@ -16,13 +16,13 @@
       </div>
       <div
         v-if="isLogin"
-        class="play-card absolute z-[2] top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-[var(--color-background-level-1)] p-[28px] rounded-lg"
+        class="play-card absolute z-[2] top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] p-[28px]"
       >
         <play-form></play-form>
       </div>
       <div
         v-else
-        class="play-card absolute z-[2] top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-[var(--color-background-level-1)] p-[28px] rounded-lg"
+        class="play-card absolute z-[2] top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] p-[28px]"
       >
         <div class="text-[12px] text-center pb-[8px] text-[var(--color-text-level-2)]">
           {{ t('gameDetail.signInPrompt', { gameName: displayGameName }) }}
@@ -31,7 +31,9 @@
           <div class="w-[16px] h-[16px]">
             <play-icon class="w-full h-full" />
           </div>
-          <div class="text-[15px] font-bold text-[#000]">{{ t('home.sign_In') }}</div>
+          <div class="text-[15px] font-bold text-[var(--color-text-level-4)]">
+            {{ t('home.sign_In') }}
+          </div>
         </div>
       </div>
     </div>
@@ -122,12 +124,14 @@ const displayGameName = computed(() => {
   opacity: 0.82;
 }
 
+.play-card {
+  border-radius: 12px;
+  background: var(--color-background-level-5);
+}
+
 .play-btn {
   border-radius: 8px;
-  background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
-  box-shadow:
-    0 0 12px 0 rgba(35, 238, 136, 0.3),
-    0 -2px 0 0 #1dca6a inset;
+  background: var(--color-theme-level-1);
   height: 36px;
   display: flex;
   justify-content: center;
@@ -136,7 +140,7 @@ const displayGameName = computed(() => {
 }
 
 :global(:root.light) .currency-info-container .play-card {
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--color-background-level-5);
   border: 1px solid rgba(96, 116, 144, 0.28);
   box-shadow:
     0 14px 36px rgba(28, 45, 74, 0.18),

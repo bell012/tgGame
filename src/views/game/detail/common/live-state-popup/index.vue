@@ -39,12 +39,12 @@
                 @click="handleRefreshGameStatistics"
               />
             </div>
-            <div class="tp-divider-line mt-[10px]" :style="h5DividerLineStyle" />
+            <div class="tp-divider-line mt-[10px]" />
             <div
               class="tp-stats-grid flex rounded-[10px] mb-[10px] mt-[12px] p-[12px]"
               :style="h5StatsGridStyle"
             >
-              <div class="tp-col-divider flex-1 border-r">
+              <div class="tp-col-divider flex-1 border-r border-[var(--color-opacity-10)]">
                 <div class="tp-label text-[14px]">
                   {{ t('gameDetail.profit') }}
                 </div>
@@ -222,15 +222,6 @@ const h5ValueStyle = computed((): CSSProperties => {
   }
 })
 
-const h5DividerLineStyle = computed((): CSSProperties => {
-  if (!isLightTheme.value || props.panelClass !== 'tp-panel-h5') {
-    return {}
-  }
-  return {
-    background: 'var(--color-opacity-10)'
-  }
-})
-
 const fetchGameStatistics = async () => {
   const itemCode = currentItemCode.value
   const platformCode = currentPlatformCode.value
@@ -362,22 +353,18 @@ const close = () => {
   background: var(--color-background-level-2);
 }
 
-.tp-panel-h5 .tp-divider {
-  border-color: var(--color-opacity-30);
-}
-
 .tp-divider-line {
   width: 100%;
   height: 1px;
   background: var(--color-opacity-10);
 }
 
-.tp-panel-h5 .tp-stats-grid {
-  background: var(--color-background-level-9);
+.tp-col-divider {
+  border-color: var(--color-opacity-10);
 }
 
-.tp-panel-h5 .tp-col-divider {
-  border-color: var(--color-opacity-10);
+.tp-panel-h5 .tp-stats-grid {
+  background: var(--color-background-level-9);
 }
 
 .tp-panel-h5 .tp-label {
@@ -420,21 +407,9 @@ const close = () => {
   border: none;
 }
 
-:global(:root.light) .tp-panel-h5 .tp-divider {
-  border-color: #e5e5e5;
-}
-
-:global(:root.light) .tp-panel-h5 .tp-divider-line {
-  background: #e3e3e3;
-}
-
 :global(:root.light) .tp-panel-h5 .tp-stats-grid {
   background: var(--color-background-level-9);
   border: none;
-}
-
-:global(:root.light) .tp-panel-h5 .tp-col-divider {
-  border-color: #e3e3e3;
 }
 
 :global(:root.light) .tp-panel-h5 .tp-section-title {
@@ -461,11 +436,6 @@ const close = () => {
 
 .tp-panel-desktop .tp-stats-grid {
   background: var(--color-background-level-1);
-}
-
-.tp-panel-desktop .tp-divider,
-.tp-panel-desktop .tp-col-divider {
-  border-color: var(--color-opacity-30);
 }
 
 .tp-panel-desktop .tp-popup-title {

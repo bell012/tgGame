@@ -2,7 +2,7 @@
   <div class="currency-info-container">
     <div class="play-form">
       <div class="form-row">
-        <div class="form-label">{{ t('gameDetail.playWithSelectedCurrency') }}</div>
+        <div class="form-label">{{ t('gameDetail.selectedCurrency') }}</div>
         <div class="form-control">
           <currency-select class="w-full"></currency-select>
         </div>
@@ -15,7 +15,9 @@
       <div class="w-[16px] h-[16px]">
         <play-icon class="w-full h-full" />
       </div>
-      <div class="text-[15px] font-bold text-[#000]">{{ t('gameDetail.playNow') }}</div>
+      <div class="text-[15px] font-bold text-[var(--color-text-level-4)]">
+        {{ t('gameDetail.playNow') }}
+      </div>
     </button>
   </div>
 </template>
@@ -50,11 +52,8 @@ const { t } = useI18n()
 }
 
 .form-label {
-  flex: 0 1 auto;
-  min-width: 0;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
+  flex: 0 0 auto;
+  white-space: nowrap;
   color: var(--color-text-level-1);
   font-size: 13px;
   font-weight: 600;
@@ -64,13 +63,15 @@ const { t } = useI18n()
 .form-control {
   flex: 1 1 auto;
   min-width: 0;
-  height: 36px;
-  border-radius: 8px;
-  background: var(--color-background-level-2);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  color: var(--color-text-level-1);
+}
+
+.form-control :deep(.currency-select-trigger) {
+  width: 100%;
+  border-radius: 8px;
+  background: var(--color-background-level-2);
+  box-shadow: none;
 }
 
 .currency-chip {
@@ -232,10 +233,8 @@ const { t } = useI18n()
 
 .play-btn {
   border-radius: 8px;
-  background: linear-gradient(90deg, #24ee89 0%, #9fe871 100%);
-  box-shadow:
-    0 0 12px 0 rgba(35, 238, 136, 0.3),
-    0 -2px 0 0 #1dca6a inset;
+  background: var(--color-theme-level-1);
+  color: var(--color-text-level-4);
   height: 36px;
   display: flex;
   justify-content: center;
@@ -253,12 +252,10 @@ const { t } = useI18n()
   color: #1c2838;
 }
 
-:global(:root.light) .currency-info-container .form-control {
+:global(:root.light) .currency-info-container .form-control :deep(.currency-select-trigger) {
   background: #fff;
   border: none;
-  box-shadow:
-    0 3px 10px rgba(26, 40, 64, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  box-shadow: 0 3px 10px rgba(26, 40, 64, 0.08);
 }
 
 :global(:root.light) .currency-info-container .play-now-hint {

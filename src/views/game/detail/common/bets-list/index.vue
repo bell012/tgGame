@@ -58,7 +58,7 @@
             <td class="h-[39px] px-3 text-text-1 truncate">
               {{ item.payout }}{{ multiplierUnit }}
             </td>
-            <td class="h-[39px] px-3 text-[12px]">
+            <td class="profit-cell h-[39px] px-3">
               <div class="flex items-center justify-end gap-1">
                 <span
                   class="order-1"
@@ -142,7 +142,7 @@
             <td class="h-[39px] px-3 text-text-1 truncate">
               {{ item.multiplier }}{{ multiplierUnit }}
             </td>
-            <td class="h-[39px] px-3 text-[12px]">
+            <td class="profit-cell h-[39px] px-3">
               <div class="flex items-center justify-end gap-1">
                 <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
                   {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
@@ -626,6 +626,10 @@ onBeforeUnmount(() => {
   gap: 8px;
   overflow: hidden;
   height: 39px;
+}
+
+.profit-cell {
+  font-size: 13px;
 }
 
 .icon {

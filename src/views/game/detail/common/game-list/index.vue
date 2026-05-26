@@ -60,13 +60,13 @@
       <div
         v-for="(value, index) in normalizedList"
         :key="`${value.rowId ?? 'game'}-${index}`"
-        class="aspect-[330/438] snap-start"
+        class="game-list-card aspect-[330/438] snap-start"
       >
         <casinoGameCard class="size-full" :game="value" @click="handleGameClick(value)" />
       </div>
       <button
         type="button"
-        class="relative flex aspect-[330/438] snap-start flex-col items-center justify-center rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
+        class="game-list-card relative flex aspect-[330/438] snap-start flex-col items-center justify-center rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
         @click="handleAllClick"
       >
         <SmartImage :src="viewAllLightIcon" alt="view all" class="dark:!hidden w-full h-full" />
@@ -226,6 +226,16 @@ const handleGameClick = (item: GameDataItem) => {
     font-weight: 700;
     background: var(--color-background-level-3);
     color: var(--color-text-level-1);
+  }
+
+  .grid-col-3 {
+    grid-auto-columns: 160px;
+  }
+
+  .game-list-card {
+    width: 160px;
+    height: 213px;
+    aspect-ratio: auto;
   }
 
   :global(:root.light) .game-list-all-btn {
