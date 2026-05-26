@@ -6,7 +6,15 @@
     <TopToggle />
     <transition name="open-fade">
       <div v-if="isOpen">
-        <div class="recent-games-type-tag"># {{ gameTypeName }}</div>
+        <div v-if="gameTypeTagList.length" class="recent-games-type-tags">
+          <div
+            v-for="(typeName, index) in gameTypeTagList"
+            :key="`${typeName}-${index}`"
+            class="recent-games-type-tag"
+          >
+            # {{ typeName }}
+          </div>
+        </div>
         <!-- 面板信息 -->
         <Rginfo />
         <!-- Tab -->
@@ -37,12 +45,14 @@
 
 <script setup lang="ts">
 import Api from '@/api'
-import type { GameRanListItem } from '@/api/interface/game'
+import type { GameRanListItem, GameTypeItem } from '@/api/interface/game'
+import { useGameStore } from '@/stores/game'
 import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { storeToRefs } from 'pinia'
-import { computed, inject, provide, ref, watch, type ComputedRef } from 'vue'
+import { computed, inject, onMounted, provide, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { resolveGameTypeDisplayNames } from '../../shared'
 import TopToggle from './top-toggle.vue'
 import Winlist from './winlist.vue'
 import Rginfo from './rginfo.vue'
@@ -51,6 +61,7 @@ import Review from './review/index.vue'
 type CurrentGameDetail = {
   itemCode?: string | number
   platformCode?: string
+  gameTypeCode?: string
   sysGameTypeName?: string
 } | null
 
@@ -90,16 +101,37 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   computed(() => null)
 )
 
+const gameStore = useGameStore()
 const localeStore = useLocaleStore()
 const themeStore = useThemeStore()
 const { actualCurrency } = storeToRefs(localeStore)
 const isLightTheme = computed(() => themeStore.theme === 'light')
+const gameTypeList = ref<GameTypeItem[]>([])
 
 // 统一做字符串标准化，避免 undefined/null 造成请求参数异常
 const normalizeValue = (value: unknown) => String(value ?? '').trim()
 
-const gameTypeName = computed(() => {
-  return normalizeValue(currentGameDetail.value?.sysGameTypeName) || t('home.Slots')
+const gameTypeTagList = computed(() => {
+  const fallbackName = normalizeValue(currentGameDetail.value?.sysGameTypeName) || t('home.Slots')
+
+  return resolveGameTypeDisplayNames(
+    currentGameDetail.value?.gameTypeCode,
+    gameTypeList.value,
+    fallbackName
+  )
+})
+
+const loadGameTypeList = async () => {
+  try {
+    gameTypeList.value = await gameStore.getGameTypeData()
+  } catch (error) {
+    console.error('loadGameTypeList failed', error)
+    gameTypeList.value = []
+  }
+}
+
+onMounted(() => {
+  void loadGameTypeList()
 })
 
 // 当前游戏请求参数
@@ -235,10 +267,16 @@ const tabIndexClick = (index: number) => {
   color: #5f6368;
 }
 
+.recent-games-type-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
 .recent-games-type-tag {
   display: inline-flex;
   align-items: center;
-  margin-top: 8px;
   border-radius: 6px;
   background: var(--color-opacity-10);
   height: 22px;

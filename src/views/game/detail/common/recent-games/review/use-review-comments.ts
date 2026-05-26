@@ -144,7 +144,8 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     cacheMap[normalizedKey] = {
       isLiked: Boolean(value.isLiked),
       isDisliked: Boolean(value.isDisliked),
-      likeCount: normalizeLikeCount(value.likeCount)
+      likeCount: normalizeLikeCount(value.likeCount),
+      dislikeCount: normalizeLikeCount(value.dislikeCount)
     }
     saveCommentLikeCacheMap(cacheMap)
   }
@@ -180,6 +181,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     const id = normalizeQueryValue(item?.id ?? item?.rowId) || `${fallbackPrefix}-${index}`
     const likeStorageKey = createCommentLikeCacheKey(subjectId, id)
     const fallbackLikeCount = Math.max(0, Math.trunc(toSafeNumber(item?.likeCount)))
+    const fallbackDislikeCount = Math.max(0, Math.trunc(toSafeNumber(item?.dislikeCount)))
     const cachedLike = getCommentLikeCacheByKey(likeCacheMap, likeStorageKey)
 
     return {
@@ -192,10 +194,16 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
       isDisliked: Boolean(cachedLike?.isDisliked),
       likeStorageKey,
       likeCount: cachedLike ? normalizeLikeCount(cachedLike.likeCount) : fallbackLikeCount,
-      dislikeCount: Math.max(0, Math.trunc(toSafeNumber(item?.dislikeCount))),
+      dislikeCount: cachedLike
+        ? normalizeLikeCount(
+            cachedLike.isDisliked || cachedLike.dislikeCount > 0
+              ? cachedLike.dislikeCount
+              : fallbackDislikeCount
+          )
+        : fallbackDislikeCount,
       replyCount: Math.max(0, Math.trunc(toSafeNumber(item?.replyCount))),
       createTime,
-      isChildrenExpanded: true,
+      isChildrenExpanded: false,
       children: []
     }
   }
@@ -359,19 +367,27 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     }
 
     const nextIsLiked = !comment.isLiked
+    const shouldDeductDislike = nextIsLiked && comment.isDisliked
     const nextLikeCount = nextIsLiked
       ? normalizeLikeCount(comment.likeCount + 1)
       : normalizeLikeCount(comment.likeCount - 1)
+    const nextDislikeCount = shouldDeductDislike
+      ? normalizeLikeCount(comment.dislikeCount - 1)
+      : comment.dislikeCount
 
     comment.isLiked = nextIsLiked
     if (nextIsLiked) {
       comment.isDisliked = false
+      if (shouldDeductDislike) {
+        comment.dislikeCount = nextDislikeCount
+      }
     }
     comment.likeCount = nextLikeCount
     setCommentLikeCacheByKey(likeStorageKey, {
       isLiked: nextIsLiked,
       isDisliked: comment.isDisliked,
-      likeCount: nextLikeCount
+      likeCount: nextLikeCount,
+      dislikeCount: normalizeLikeCount(comment.dislikeCount)
     })
   }
 
@@ -383,6 +399,9 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
 
     const nextIsDisliked = !comment.isDisliked
     const shouldDeductLike = nextIsDisliked && comment.isLiked
+    const nextDislikeCount = nextIsDisliked
+      ? normalizeLikeCount(comment.dislikeCount + 1)
+      : normalizeLikeCount(comment.dislikeCount - 1)
     const nextLikeCount = shouldDeductLike
       ? normalizeLikeCount(comment.likeCount - 1)
       : comment.likeCount
@@ -392,11 +411,13 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
       comment.likeCount = nextLikeCount
     }
     comment.isDisliked = nextIsDisliked
+    comment.dislikeCount = nextDislikeCount
 
     setCommentLikeCacheByKey(likeStorageKey, {
       isLiked: comment.isLiked,
       isDisliked: nextIsDisliked,
-      likeCount: normalizeLikeCount(comment.likeCount)
+      likeCount: normalizeLikeCount(comment.likeCount),
+      dislikeCount: nextDislikeCount
     })
   }
 
