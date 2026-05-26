@@ -322,11 +322,17 @@ export interface UpdatePayOrderRemarkResponse {
 }
 
 export interface QueryPaySubColumnItem {
+  categoryIds?: number[]
+  categorySortNum?: number
+  cleanMin?: number
   columnCode: number
   currency: string
   defaultRechargeAmount: Array<number | string>
+  deviceChannel?: string[]
+  discountRate?: number
   enable: number
   highset: number
+  logoImg?: string
   lowset: number
   manualAmountIn: number
   online: number
@@ -334,12 +340,40 @@ export interface QueryPaySubColumnItem {
   platformCode: string
   platformLogo: string
   platformName: string
+  platformTypeCode?: string
+  platformTypeItem?: string
+  quickAmount: QueryPaySubColumnQuickAmount
+  quickAmountConfigs: QueryPayQuickAmountConfig[]
   rowId: number
+  showChannel?: string[]
   site: string
   sortNum: number
   subColumnName: string
+  sysLevelId?: Array<number | string>
   vipId: Array<number | string>
   offlineAccount?: QueryPayOfflineAccountItem
+}
+
+export interface QueryPaySubColumnQuickAmount {
+  multiple: number
+  payQuickName: string
+  platformTypeCode: string
+  quickAmount: Array<number | string>
+  ratio: number
+  site: string
+}
+
+export interface QueryPayQuickAmountConfig {
+  createTime: number
+  isDeleted: number
+  modifyTime: number
+  multiple: number
+  payQuickName: string
+  paySubColumnId: number
+  quickAmount: Array<number | string>
+  ratio: number
+  rowId: number
+  site: string
 }
 
 export interface QueryPaySubColumnPageResponse {

@@ -46,7 +46,7 @@
           <time class="text-[12px] font-[400] leading-[15px] text-text-2">{{ detailTime }}</time>
 
           <!-- 详情图片 -->
-          <div v-if="hasDetailImage" class="h-[163px] w-full overflow-hidden rounded-[8px]">
+          <div v-if="hasDetailImage" class="aspect-[256/120] w-full overflow-hidden rounded-[8px]">
             <img :src="detailImageUrl" :alt="detailTitle" class="h-full w-full object-cover" />
           </div>
 

@@ -249,10 +249,9 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type {
-  PayRechargeQuickAmtsResult,
-  QueryDiscountListItem,
   QueryPayColumnItem,
   QueryPayOrderByOrderIdResult,
+  QueryPayQuickAmountConfig,
   QueryPaySubColumnItem,
   QueryPaySubColumnPageForm,
   SubmitPayOrderPageForm
@@ -277,7 +276,7 @@ import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?compon
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import depositCryptoOrderPop from '../order/crypto/depositCryptoOrderPop.vue'
 import { usePresetGrid } from '../shared/usePresetGrid'
@@ -289,7 +288,6 @@ const emit = defineEmits<{
 }>()
 
 const CRYPTO_COLUMN_NAME = 'USDT泰达币'
-const CRYPTO_PAY_CHANNEL_CODE = '45'
 const visibleCoins = [
   {
     name: 'USDT',
@@ -317,8 +315,8 @@ const payMethods = ref<QueryPayColumnItem[]>([])
 const selectedMethod = ref<QueryPayColumnItem | null>(null)
 const paySubColumns = ref<QueryPaySubColumnItem[]>([])
 const selectedSubColumn = ref<QueryPaySubColumnItem | null>(null)
-const discountList = ref<QueryDiscountListItem[]>([])
-const selectedDiscountItem = ref<QueryDiscountListItem | null>(null)
+const discountList = computed(() => selectedSubColumn.value?.quickAmountConfigs ?? [])
+const selectedDiscountItem = ref<QueryPayQuickAmountConfig | null>(null)
 const amount = ref<number>()
 const coinCode = ref('USDT')
 const coinMoreShow = ref(false)
@@ -329,7 +327,6 @@ const currentCreateTime = ref<number | null>(null)
 const pollTimer = ref<number | null>(null)
 const presetsRef = ref<HTMLDivElement | null>(null)
 const { expanded } = usePresetGrid(presetsRef)
-const quickAmountConfig = ref<PayRechargeQuickAmtsResult | null>(null)
 
 const channelOptions = computed(() =>
   paySubColumns.value.map(item => ({
@@ -342,31 +339,23 @@ const wageringOptions = computed(() =>
   discountList.value.map(item => ({
     rowId: item.rowId,
     multiple: item.multiple,
-    label: formatWageringLabel(item.multiple)
+    label: item.payQuickName
   }))
 )
-const isDirectRecharge = computed(() => selectedMethod.value?.directRecharge === 1)
-const showChannelSection = computed(() => {
-  const method = selectedMethod.value
-  return method ? method.directRecharge !== 1 : false
-})
-const isManualAmountAllowed = computed(
-  () =>
-    (quickAmountConfig.value?.manualAmountIn ?? selectedSubColumn.value?.manualAmountIn ?? 1) !== 0
-)
-const selectedDiscountPayChannelCode = computed(() =>
+const showChannelSection = computed(() => paySubColumns.value.length > 1)
+const isManualAmountAllowed = computed(() => selectedSubColumn.value?.manualAmountIn !== 0)
+const selectedPayChannelCode = computed(() =>
   resolvePayChannelTabKey(selectedMethod.value?.columnName)
 )
 const presetDiscountRatioMap = computed<Record<number, string>>(() => {
   const ratioMap: Record<number, string> = {}
   const currentDiscountItem = selectedDiscountItem.value
 
-  currentDiscountItem?.discounts?.forEach(discount => {
-    const discountAmount = Number(discount.amount)
+  currentDiscountItem?.quickAmount.forEach(value => {
+    const discountAmount = Number(value)
     if (!Number.isFinite(discountAmount)) return
-    if (ratioMap[discountAmount] !== undefined) return
 
-    ratioMap[discountAmount] = String(discount.ratio)
+    ratioMap[discountAmount] = String(currentDiscountItem.ratio)
   })
 
   return ratioMap
@@ -402,17 +391,8 @@ const normalizePresetAmounts = (values: Array<number | string>) =>
 
 // 按支付方式类型同步预设金额来源
 const syncPresetAmounts = () => {
-  if (isDirectRecharge.value) {
-    presetAmounts.value = normalizePresetAmounts(quickAmountConfig.value?.amounts ?? [])
-    return
-  }
-
-  presetAmounts.value = normalizePresetAmounts(selectedSubColumn.value?.defaultRechargeAmount ?? [])
+  presetAmounts.value = normalizePresetAmounts(selectedDiscountItem.value?.quickAmount ?? [])
 }
-
-// 格式化流水倍数展示文案
-const formatWageringLabel = (multiple: number) =>
-  multiple === 0 ? t('deposit.wagering_no') : t('deposit.wagering_multiple', { multiple })
 
 // 显示当前功能不可用的提示信息
 const showUnavailableToast = () => {
@@ -449,6 +429,7 @@ const selectChannel = (rowId: number) => {
   if (!target) return
 
   selectedSubColumn.value = target
+  selectedDiscountItem.value = discountList.value[0] ?? null
   syncPresetAmounts()
   clearAmount()
 }
@@ -456,6 +437,8 @@ const selectChannel = (rowId: number) => {
 // 选择当前流水倍数选项
 const selectWagering = (rowId: number) => {
   selectedDiscountItem.value = discountList.value.find(item => item.rowId === rowId) ?? null
+  syncPresetAmounts()
+  clearAmount()
 }
 
 // 选择预设充值金额
@@ -513,30 +496,20 @@ const loadPayColumnPage = async () => {
       selectedMethod.value = null
       paySubColumns.value = []
       selectedSubColumn.value = null
-      discountList.value = []
       selectedDiscountItem.value = null
-      quickAmountConfig.value = null
       presetAmounts.value = []
       return
     }
 
     selectedMethod.value = defaultMethod
     await loadPaySubColumnPage(defaultMethod.columnCode)
-    if (defaultMethod.directRecharge === 1) {
-      await loadPayRechargeQuickAmts(defaultMethod.columnCode)
-    } else {
-      quickAmountConfig.value = null
-      syncPresetAmounts()
-    }
   } catch (error) {
     console.error('queryPayColumnPage failed', error)
     payMethods.value = []
     selectedMethod.value = null
     paySubColumns.value = []
     selectedSubColumn.value = null
-    discountList.value = []
     selectedDiscountItem.value = null
-    quickAmountConfig.value = null
     presetAmounts.value = []
   }
 }
@@ -559,47 +532,14 @@ const loadPaySubColumnPage = async (columnCode: number) => {
 
     paySubColumns.value = result
     selectedSubColumn.value = result[0] ?? null
+    selectedDiscountItem.value = discountList.value[0] ?? null
     syncPresetAmounts()
   } catch (error) {
     console.error('queryPaySubColumnPage failed', error)
     paySubColumns.value = []
     selectedSubColumn.value = null
-    presetAmounts.value = []
-  }
-}
-
-// 根据支付方式获取快捷金额
-const loadPayRechargeQuickAmts = async (columnCode: number) => {
-  quickAmountConfig.value = null
-  syncPresetAmounts()
-
-  try {
-    const response = await Api.wallet.payRechargeQuickAmts({ columnCode })
-    ensureApiBusinessSuccess(response)
-    const result = response.result
-
-    quickAmountConfig.value = result ?? null
-    syncPresetAmounts()
-  } catch (error) {
-    console.error('payRechargeQuickAmts failed', error)
-    quickAmountConfig.value = null
-    syncPresetAmounts()
-  }
-}
-
-// 加载流水倍数列表
-const loadDiscountList = async (payChannelCode: string) => {
-  try {
-    const response = await Api.wallet.queryDiscountList({
-      payChannelCode
-    })
-    ensureApiBusinessSuccess(response)
-    discountList.value = Array.isArray(response.result) ? response.result : []
-    selectedDiscountItem.value = discountList.value[0] ?? null
-  } catch (error) {
-    console.error('queryDiscountList failed', error)
-    discountList.value = []
     selectedDiscountItem.value = null
+    presetAmounts.value = []
   }
 }
 
@@ -665,19 +605,15 @@ const doDeposit = async () => {
   const param: SubmitPayOrderPageForm = {
     columnCode: String(selectedMethod.value.columnCode),
     busiAmount: String(amount.value ?? 0),
-    payChannelCode: selectedDiscountPayChannelCode.value || CRYPTO_PAY_CHANNEL_CODE,
+    payChannelCode: selectedPayChannelCode.value,
     channelId: 3,
-    // 取
-    subColumnCode: selectedSubColumn.value?.rowId ?? selectedSubColumn?.value.rowId,
-    // flows: selectedDiscountItem.value?.multiple ?? 0
-    // flows就是加密货币固定类型 0 数字币 后台 计算
-    flows: 0
+    subColumnCode: selectedSubColumn.value.rowId,
+    flows: selectedDiscountItem.value?.multiple ?? 0
   }
-  // 数字币  奖励是后台 计算
-  // const discount = resolveSelectedDiscountRatio()
-  // if (discount !== undefined) {
-  //   param.discount = discount
-  // }
+
+  if (selectedDiscountItem.value) {
+    param.discount = selectedDiscountItem.value.ratio
+  }
 
   try {
     const response = await Api.wallet.submitPayOrder(param)
@@ -718,20 +654,6 @@ onMounted(() => {
   void loadPayColumnPage()
   document.addEventListener('visibilitychange', handleVisibilityChange)
 })
-
-// 监听渠道变化并刷新优惠配置
-watch(
-  () => [selectedSubColumn.value?.rowId, selectedDiscountPayChannelCode.value],
-  () => {
-    if (!selectedDiscountPayChannelCode.value) {
-      discountList.value = []
-      selectedDiscountItem.value = null
-      return
-    }
-
-    void loadDiscountList(selectedDiscountPayChannelCode.value)
-  }
-)
 
 // 页面卸载前清理事件与轮询
 onBeforeUnmount(() => {
