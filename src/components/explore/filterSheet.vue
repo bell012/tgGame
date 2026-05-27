@@ -57,7 +57,9 @@ const props = withDefaults(
 
 const hideSort = computed(() => props.hideSort)
 const containerClass = computed(() =>
-  hideSort.value ? 'grid grid-cols-1 gap-[11px]' : 'grid grid-cols-2 gap-[11px] lg:grid-cols-4'
+  hideSort.value
+    ? 'grid grid-cols-1 gap-[11px] sm:flex sm:flex-col sm:gap-2 sm:[&>*]:w-[290px]'
+    : 'grid grid-cols-2 gap-[11px] sm:flex sm:flex-row sm:flex-nowrap sm:gap-2 sm:[&>*]:w-[290px] sm:[&>*]:shrink-0'
 )
 
 const resolvedSortOptions = computed<FilterOption[]>(() => {
