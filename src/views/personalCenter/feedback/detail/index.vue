@@ -133,7 +133,8 @@ import {
   getFeedbackDetailTemplates,
   getFeedbackStatusTextMap,
   getFeedbackTypeLabel,
-  feedbackStatusClassMap
+  feedbackStatusClassMap,
+  normalizeFeedbackStatus
 } from '@/views/personalCenter/feedback/consts'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -171,30 +172,6 @@ const currentRecordId = computed(() => {
     ? String(props.recordId ?? '').trim()
     : String(route.params.recordId ?? '').trim()
 })
-
-const normalizeFeedbackStatus = (value: unknown): FeedbackStatus => {
-  const normalizedText = String(value ?? '')
-    .trim()
-    .toLowerCase()
-  if (normalizedText === 'accepted') {
-    return 'accepted'
-  }
-  if (normalizedText === 'pending') {
-    return 'pending'
-  }
-  if (normalizedText === 'rejected') {
-    return 'rejected'
-  }
-
-  const normalizedNumber = Number(normalizedText)
-  if (normalizedNumber === 1) {
-    return 'accepted'
-  }
-  if (normalizedNumber === 0) {
-    return 'pending'
-  }
-  return 'rejected'
-}
 
 const formatFeedbackSubmitTime = (value: unknown) => {
   const timestamp = Number(value)
