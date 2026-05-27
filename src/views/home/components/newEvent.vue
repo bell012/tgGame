@@ -8,7 +8,7 @@
           v-for="tab in tabItems"
           :key="tab.type"
           type="button"
-          :class="['tab rounded-lg', { active: activeType === tab.type }]"
+          :class="['tab rounded-lg', { active: activeType !== tab.type }]"
           @click="activeType = tab.type"
         >
           {{ tab.label }}
