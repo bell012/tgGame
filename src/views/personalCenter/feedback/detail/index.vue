@@ -129,6 +129,7 @@ import type { QueryFeedbackItem } from '@/api/interface/user'
 import {
   type FeedbackRecord,
   type FeedbackStatus,
+  extractFeedbackList,
   getFeedbackDetailTemplates,
   getFeedbackStatusTextMap,
   getFeedbackTypeLabel,
@@ -308,7 +309,7 @@ const fetchFeedbackDetail = async (recordId: string) => {
       )
     }
 
-    const feedbackList = Array.isArray(response.result) ? response.result : []
+    const feedbackList = extractFeedbackList(response.result) as QueryFeedbackItem[]
     feedbackApiItem.value =
       feedbackList.find(item => String(item?.rowId ?? '').trim() === recordId) ?? null
   } catch (error) {

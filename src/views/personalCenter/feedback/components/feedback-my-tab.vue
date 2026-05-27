@@ -12,13 +12,18 @@
             <div class="text-sm text-text-1">
               {{ t('personalCenter.feedback.myTab.rewardAmount') }}
             </div>
-            <div class="text-[18px] font-[700] leading-[20px] text-text-1">0.00</div>
+            <div class="text-[18px] font-[700] leading-[20px] text-text-1">{{ rewardAmount }}</div>
           </div>
         </div>
         <button
           type="button"
-          disabled
-          class="h-[36px] min-w-[114px] rounded-[12px] bg-theme-primary px-4 text-[16px] font-[700] text-text-4"
+          :disabled="!canClaimReward || isClaimingReward"
+          class="h-[36px] min-w-[114px] rounded-[12px] px-4 text-[16px] font-[700] text-text-4"
+          :class="
+            canClaimReward && !isClaimingReward
+              ? 'bg-theme-primary'
+              : 'cursor-not-allowed bg-theme-2 opacity-40'
+          "
           @click="emit('claim')"
         >
           {{ t('personalCenter.feedback.myTab.claim') }}
@@ -83,6 +88,9 @@ defineProps<{
   feedbackRewardIcon: string
   isLoading: boolean
   feedbackList: FeedbackListItem[]
+  rewardAmount: string
+  canClaimReward: boolean
+  isClaimingReward: boolean
   statusTextMap: Record<FeedbackStatus, string>
   statusClassMap: Record<FeedbackStatus, string>
 }>()

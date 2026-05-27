@@ -1063,6 +1063,7 @@
         "fetchFeedbackListFailed": "获取反馈列表失败",
         "claimFailed": "领取失败",
         "claimSuccess": "领取成功",
+        "noClaimableReward": "暂无可领取奖励",
         "fetchFeedbackDetailFailed": "获取反馈详情失败"
       }
     }

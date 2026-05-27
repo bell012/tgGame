@@ -1066,6 +1066,7 @@
         "fetchFeedbackListFailed": "Failed to fetch feedback list",
         "claimFailed": "Claim failed",
         "claimSuccess": "Claim successful",
+        "noClaimableReward": "No claimable rewards",
         "fetchFeedbackDetailFailed": "Failed to fetch feedback details"
       }
     }

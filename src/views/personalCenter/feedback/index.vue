@@ -36,6 +36,9 @@
         :feedback-reward-icon="feedbackRewardIcon"
         :is-loading="isLoadingMyFeedbackList"
         :feedback-list="myFeedbackList"
+        :reward-amount="feedbackRewardAmountText"
+        :can-claim-reward="canClaimFeedbackReward"
+        :is-claiming-reward="isReceivingAllFeedback"
         :status-text-map="statusTextMap"
         :status-class-map="statusClassMap"
         @claim="handleReceiveAllFeedback"
@@ -62,6 +65,7 @@
 
 <script setup lang="ts">
 import Api from '@/api'
+import type { QueryFeedbackItem } from '@/api/interface/user'
 import feedbackRewardIcon from '@/static/svg/feedback/dl.svg?url'
 import feedbackBowIcon from '@/static/svg/feedback/hdj.svg?url'
 import feedbackStarIcon from '@/static/svg/feedback/star.svg?url'
@@ -74,9 +78,12 @@ import H5Header from '@/components/common/H5Header.vue'
 import { getCurrencySymbol } from '@/utils/locale'
 import {
   FEEDBACK_CLAIM_AMOUNT_ANIMATION_DURATION,
-  FEEDBACK_CLAIM_SUCCESS_TARGET_AMOUNT,
   FEEDBACK_UPLOAD_MAX_COUNT,
+  extractClaimedFeedbackAmount,
+  extractFeedbackClaimRewardAmount,
+  extractFeedbackList,
   feedbackStatusClassMap,
+  formatFeedbackRewardAmount,
   formatFeedbackSubmitTime,
   getFeedbackStatusTextMap,
   getFeedbackTypeLabel,
@@ -93,6 +100,8 @@ import FeedbackClaimSuccessPopup from './components/feedback-claim-success-popup
 import FeedbackDetailPopup from './components/feedback-detail-popup.vue'
 import type { FeedbackListItem, FeedbackTab } from './types'
 import { navigateToName } from '@/utils/router'
+import { prepareUploadImage } from '@/utils/compress-upload-image'
+import { resolveUploadErrorMessage } from '@/utils/upload-error'
 
 const props = withDefaults(
   defineProps<{
@@ -134,6 +143,7 @@ const feedbackUploadCount = computed(() => uploadedFeedbackUrls.value.filter(Boo
 // 我的反馈状态
 const isLoadingMyFeedbackList = ref(false)
 const myFeedbackList = ref<FeedbackListItem[]>([])
+const feedbackClaimRewardAmount = ref(0)
 const showFeedbackDetailPopup = ref(false)
 const selectedFeedbackDetailRecordId = ref('')
 const isReceivingAllFeedback = ref(false)
@@ -141,10 +151,15 @@ const isReceivingAllFeedback = ref(false)
 // 领取奖励弹窗状态
 const showClaimSuccessPopup = ref(false)
 const claimAmountCurrencySymbol = getCurrencySymbol()
-const claimSuccessTargetAmount = FEEDBACK_CLAIM_SUCCESS_TARGET_AMOUNT
 const claimAmountAnimationDuration = FEEDBACK_CLAIM_AMOUNT_ANIMATION_DURATION
 const claimSuccessAmount = ref(`${claimAmountCurrencySymbol}0.00`)
 let claimAmountAnimationFrame: number | null = null
+let claimSuccessTargetAmount = 0
+
+const feedbackRewardAmountText = computed(() =>
+  formatFeedbackRewardAmount(feedbackClaimRewardAmount.value)
+)
+const canClaimFeedbackReward = computed(() => feedbackClaimRewardAmount.value > 0)
 
 const feedbackTypeOptions = computed(() => getFeedbackTypeOptions(t))
 const placeholderText = computed(() => getFeedbackPlaceholderText(selectedType.value, t))
@@ -168,9 +183,10 @@ const feedbackImageAfterRead: UploaderAfterRead = async (items, detail) => {
     file.message = t('personalCenter.feedback.uploadStatus.uploading')
 
     try {
+      const uploadFile = await prepareUploadImage(rawFile)
       const response = await Api.picture.upload({
-        file: rawFile,
-        fileName: getFeedbackUploadFileName(rawFile, currentIndex)
+        file: uploadFile,
+        fileName: getFeedbackUploadFileName(uploadFile, currentIndex)
       })
 
       if (!response?.success) {
@@ -189,8 +205,11 @@ const feedbackImageAfterRead: UploaderAfterRead = async (items, detail) => {
       file.status = 'failed'
       file.message = t('personalCenter.feedback.uploadStatus.failed')
       showToast({
-        message:
-          error instanceof Error ? error.message : t('personalCenter.feedback.toast.uploadFailed'),
+        message: resolveUploadErrorMessage(
+          error,
+          t,
+          t('personalCenter.feedback.toast.uploadFailed')
+        ),
         position: 'middle',
         type: 'fail'
       })
@@ -304,6 +323,8 @@ const fetchMyFeedbackList = async () => {
   }
 
   isLoadingMyFeedbackList.value = true
+  feedbackClaimRewardAmount.value = 0
+
   try {
     const response = await Api.user.queryFeedbacks({})
     if (!response?.success) {
@@ -312,7 +333,8 @@ const fetchMyFeedbackList = async () => {
       )
     }
 
-    const responseList = Array.isArray(response.result) ? response.result : []
+    feedbackClaimRewardAmount.value = extractFeedbackClaimRewardAmount(response.result)
+    const responseList = extractFeedbackList(response.result) as QueryFeedbackItem[]
     myFeedbackList.value = responseList.map((item, index) => {
       const rowIdText = String(item?.rowId ?? '').trim()
       const fallbackRowId = `feedback-${Date.now()}-${index}`
@@ -333,6 +355,7 @@ const fetchMyFeedbackList = async () => {
   } catch (error) {
     closeFeedbackDetailPopup()
     myFeedbackList.value = []
+    feedbackClaimRewardAmount.value = 0
     showToast({
       message:
         error instanceof Error
@@ -355,8 +378,9 @@ const stopClaimAmountAnimation = () => {
   }
 }
 
-const startClaimAmountAnimation = () => {
+const startClaimAmountAnimation = (targetAmount: number) => {
   stopClaimAmountAnimation()
+  claimSuccessTargetAmount = Math.max(targetAmount, 0)
   claimSuccessAmount.value = formatClaimAmount(0)
   const animationStartTime = performance.now()
 
@@ -377,13 +401,22 @@ const startClaimAmountAnimation = () => {
   claimAmountAnimationFrame = requestAnimationFrame(animate)
 }
 
-const openClaimSuccessPopup = () => {
+const openClaimSuccessPopup = (targetAmount: number) => {
   showClaimSuccessPopup.value = true
-  startClaimAmountAnimation()
+  startClaimAmountAnimation(targetAmount)
 }
 
 const handleReceiveAllFeedback = async () => {
   if (isReceivingAllFeedback.value) {
+    return
+  }
+
+  if (!canClaimFeedbackReward.value) {
+    showToast({
+      message: t('personalCenter.feedback.toast.noClaimableReward'),
+      position: 'middle',
+      type: 'fail'
+    })
     return
   }
 
@@ -394,7 +427,10 @@ const handleReceiveAllFeedback = async () => {
       throw new Error(response?.message || t('personalCenter.feedback.toast.claimFailed'))
     }
 
-    openClaimSuccessPopup()
+    const claimedAmount =
+      extractClaimedFeedbackAmount(response.result) || feedbackClaimRewardAmount.value
+
+    openClaimSuccessPopup(claimedAmount)
     showToast({
       message: t('personalCenter.feedback.toast.claimSuccess'),
       position: 'middle',

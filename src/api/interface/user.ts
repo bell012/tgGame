@@ -233,18 +233,45 @@ export interface QueryFeedbacksForm {}
 
 // 查询我的反馈列表 响应结果
 export interface QueryFeedbackItem {
+  amount?: number | string
+  bonus?: number | string
+  bonusAmount?: number | string
   channelId?: string
+  claimStatus?: number | string
   content?: string
   createTime?: number
   downloadSite?: string
   feedbackType?: number | string
   imgs?: string[]
+  isReceive?: number | string | boolean
   memberCurrency?: string
   memberId?: string
   memberRowId?: number
+  receiveStatus?: number | string
+  received?: number | string | boolean
+  reward?: number | string
+  rewardAmount?: number | string
   rowId?: number | string
   site?: string
   status?: number | string
+  totalReward?: number | string
+  unReceiveAmount?: number | string
+  unreceiveAmount?: number | string
+}
+
+export interface QueryFeedbacksResult {
+  amount?: number | string
+  data?: QueryFeedbackItem[]
+  feedbackList?: QueryFeedbackItem[]
+  feedbacks?: QueryFeedbackItem[]
+  items?: QueryFeedbackItem[]
+  list?: QueryFeedbackItem[]
+  records?: QueryFeedbackItem[]
+  reward?: number | string
+  rewardAmount?: number | string
+  totalReward?: number | string
+  unReceiveAmount?: number | string
+  unreceiveAmount?: number | string
 }
 
 // 查询我的反馈列表 响应
@@ -252,7 +279,7 @@ export interface QueryFeedbacksResponse {
   code: string
   message: string
   success: boolean
-  result?: QueryFeedbackItem[]
+  result?: QueryFeedbackItem[] | QueryFeedbacksResult
 }
 
 // 一键领取反馈奖励 请求参数

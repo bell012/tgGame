@@ -51,6 +51,7 @@
           class="mt-2.5"
           :max-count="feedbackUploadMaxCount"
           :multiple="true"
+          accept="image/jpeg,image/png,image/webp"
           :preview-full-image="true"
           :preview-size="88"
           :after-read="afterRead"

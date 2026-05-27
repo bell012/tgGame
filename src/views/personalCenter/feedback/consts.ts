@@ -1,5 +1,7 @@
 export type FeedbackStatus = 'accepted' | 'pending' | 'rejected'
 
+type FeedbackApiRecord = Record<string, unknown>
+
 export type FeedbackRecord = {
   recordId: string
   ticketNo: string
@@ -130,11 +132,154 @@ export const getUploadedFeedbackPath = (result: unknown) => {
   return typeof target === 'string' ? target.trim() : ''
 }
 
+const FEEDBACK_REWARD_AMOUNT_KEYS = [
+  'unReceiveAmount',
+  'unreceiveAmount',
+  'rewardAmount',
+  'totalReward',
+  'amount',
+  'reward',
+  'bonus',
+  'bonusAmount'
+]
+
+const FEEDBACK_LIST_KEYS = ['feedbacks', 'feedbackList', 'list', 'records', 'data', 'items']
+
+const pickFiniteNumber = (value: unknown) => {
+  const amount = Number(value)
+  return Number.isFinite(amount) ? amount : null
+}
+
+const pickFirstNumber = (record: Record<string, unknown>, keys: string[]) => {
+  for (const key of keys) {
+    const amount = pickFiniteNumber(record[key])
+    if (amount !== null && amount >= 0) {
+      return amount
+    }
+  }
+  return null
+}
+
+const isFeedbackRewardReceived = (record: Record<string, unknown>) => {
+  const receiveCandidates = [
+    record.receiveStatus,
+    record.isReceive,
+    record.received,
+    record.claimStatus
+  ]
+
+  for (const value of receiveCandidates) {
+    const normalized = String(value ?? '')
+      .trim()
+      .toLowerCase()
+
+    if (['1', 'true', 'received', 'claimed', 'yes'].includes(normalized)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+const getFeedbackItemClaimableReward = (item: unknown) => {
+  if (!item || typeof item !== 'object') {
+    return 0
+  }
+
+  const record = item as Record<string, unknown>
+  const reward = pickFirstNumber(record, FEEDBACK_REWARD_AMOUNT_KEYS)
+
+  if (reward === null || reward <= 0) {
+    return 0
+  }
+
+  if (isFeedbackRewardReceived(record)) {
+    return 0
+  }
+
+  if (normalizeFeedbackStatus(record.status) !== 'accepted') {
+    return 0
+  }
+
+  return reward
+}
+
+const sumFeedbackListClaimableReward = (items: FeedbackApiRecord[]) => {
+  return items.reduce<number>((total, item) => total + getFeedbackItemClaimableReward(item), 0)
+}
+
+export const extractFeedbackList = (result: unknown): FeedbackApiRecord[] => {
+  if (Array.isArray(result)) {
+    return result as FeedbackApiRecord[]
+  }
+
+  if (!result || typeof result !== 'object') {
+    return []
+  }
+
+  const record = result as FeedbackApiRecord
+
+  for (const key of FEEDBACK_LIST_KEYS) {
+    const list = record[key]
+    if (Array.isArray(list)) {
+      return list as FeedbackApiRecord[]
+    }
+  }
+
+  return []
+}
+
+export const extractFeedbackClaimRewardAmount = (result: unknown): number => {
+  if (Array.isArray(result)) {
+    return sumFeedbackListClaimableReward(result as FeedbackApiRecord[])
+  }
+
+  if (!result || typeof result !== 'object') {
+    return 0
+  }
+
+  const record = result as FeedbackApiRecord
+  const summaryAmount = pickFirstNumber(record, FEEDBACK_REWARD_AMOUNT_KEYS)
+
+  if (summaryAmount !== null) {
+    return summaryAmount
+  }
+
+  return sumFeedbackListClaimableReward(extractFeedbackList(result))
+}
+
+export const extractClaimedFeedbackAmount = (result: unknown): number => {
+  if (typeof result === 'number') {
+    return Math.max(result, 0)
+  }
+
+  if (typeof result === 'string') {
+    const amount = pickFiniteNumber(result)
+    return amount !== null && amount >= 0 ? amount : 0
+  }
+
+  if (!result || typeof result !== 'object') {
+    return 0
+  }
+
+  return pickFirstNumber(result as Record<string, unknown>, FEEDBACK_REWARD_AMOUNT_KEYS) ?? 0
+}
+
+export const formatFeedbackRewardAmount = (amount: number) => {
+  return Math.max(amount, 0).toFixed(2)
+}
+
 export const getFeedbackUploadFileName = (file: Blob | File, index: number) => {
-  const fallbackName = `feedback_${Date.now()}_${index}`
+  const fallbackName = `feedback_${Date.now()}_${index}.jpg`
   const originalFileName = file instanceof File ? file.name.trim() : fallbackName
   const sanitizedFileName = (originalFileName || fallbackName).replace(/[\\/:*?"<>|\r\n]+/g, '_')
-  return sanitizedFileName || fallbackName
+  const normalizedFileName = sanitizedFileName || fallbackName
+
+  if (/\.(jpe?g|png|webp|gif)$/i.test(normalizedFileName)) {
+    return normalizedFileName.replace(/\.[^.]+$/i, '.jpg')
+  }
+
+  return `${normalizedFileName}.jpg`
 }
 
 export const getFeedbackDetailTemplates = (

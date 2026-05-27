@@ -11,6 +11,20 @@ const isPayloadTooLargeMessage = (message: string) => {
   )
 }
 
+const isHtmlErrorMessage = (message: string) => {
+  const normalizedMessage = message.trim().toLowerCase()
+
+  return (
+    normalizedMessage.startsWith('<!doctype') ||
+    normalizedMessage.startsWith('<html') ||
+    normalizedMessage.includes('<body')
+  )
+}
+
+const isNetworkLoadFailedMessage = (message: string) => {
+  return message.trim().toLowerCase() === 'load failed'
+}
+
 export const resolveUploadErrorMessage = (
   error: unknown,
   t: TranslateFn,
@@ -19,8 +33,14 @@ export const resolveUploadErrorMessage = (
   const rawMessage =
     error instanceof Error ? error.message : typeof error === 'string' ? error : fallbackMessage
 
-  if (typeof rawMessage === 'string' && isPayloadTooLargeMessage(rawMessage)) {
-    return t('common.upload_file_too_large_failed')
+  if (typeof rawMessage === 'string') {
+    if (
+      isPayloadTooLargeMessage(rawMessage) ||
+      isNetworkLoadFailedMessage(rawMessage) ||
+      isHtmlErrorMessage(rawMessage)
+    ) {
+      return t('common.upload_file_too_large_failed')
+    }
   }
 
   return rawMessage || fallbackMessage
