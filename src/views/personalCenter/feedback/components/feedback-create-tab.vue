@@ -75,9 +75,13 @@
 
       <button
         type="button"
-        class="mt-6 h-[46px] w-full rounded-[10px] bg-theme-primary text-base font-[700] text-text-4"
-        :class="{ 'cursor-not-allowed opacity-70': isSubmittingFeedback }"
-        :disabled="isSubmittingFeedback"
+        class="mt-6 h-[46px] w-full rounded-[10px] text-base font-[700] text-text-4"
+        :class="
+          canSubmitFeedback && !isSubmittingFeedback
+            ? 'bg-theme-primary'
+            : 'cursor-not-allowed bg-theme-2 opacity-40'
+        "
+        :disabled="!canSubmitFeedback || isSubmittingFeedback"
         @click="onSubmit"
       >
         {{ t('personalCenter.feedback.createTab.submitFeedback') }}
@@ -99,6 +103,7 @@
 import type { FeedbackTypeOption } from '../types'
 import UploadPhotoIcon from '@/static/svg/feedback/upload-photo.svg?component'
 import { Uploader, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 // 创建反馈模块：只负责表单 UI 渲染，接口请求由父组件处理。
@@ -121,6 +126,13 @@ defineProps<{
 }>()
 
 const { t } = useI18n()
+
+const canSubmitFeedback = computed(() => {
+  return (
+    Boolean(String(selectedTypeModel.value ?? '').trim()) &&
+    Boolean(String(feedbackContentModel.value ?? '').trim())
+  )
+})
 </script>
 
 <style scoped>

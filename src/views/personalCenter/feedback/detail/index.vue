@@ -135,7 +135,9 @@ import {
   getFeedbackTypeLabel,
   feedbackStatusClassMap,
   normalizeFeedbackStatus,
-  formatFeedbackSubmitTime
+  formatFeedbackSubmitTime,
+  getFeedbackAcceptedReplyContent,
+  getFeedbackItemRewardAmount
 } from '@/views/personalCenter/feedback/consts'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -214,6 +216,15 @@ const mapFeedbackApiItemToDetail = (
   const rowIdText = String(item?.rowId ?? '').trim()
   const ticketNo = rowIdText || recordId || templateRecord.ticketNo
   const detailContent = String(item?.content ?? '').trim() || templateRecord.detailContent
+  const feedbackType = getFeedbackTypeLabel(item?.feedbackType, t)
+  const replyContent =
+    status === 'accepted'
+      ? getFeedbackAcceptedReplyContent(t, {
+          topic: detailContent || feedbackType,
+          rewardAmount: getFeedbackItemRewardAmount(item),
+          currency: String(item?.memberCurrency ?? '').trim()
+        })
+      : templateRecord.replyContent
 
   return {
     ...templateRecord,
@@ -221,10 +232,12 @@ const mapFeedbackApiItemToDetail = (
     ticketNo,
     status,
     submitTime: formatFeedbackSubmitTime(item?.createTime),
-    feedbackType: getFeedbackTypeLabel(item?.feedbackType, t),
+    feedbackType,
     detailContent,
     content: detailContent,
-    screenshotImages
+    screenshotImages,
+    replyTime: formatFeedbackSubmitTime(item?.createTime),
+    replyContent
   }
 }
 

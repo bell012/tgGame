@@ -1048,7 +1048,10 @@
       },
       "reply": {
         "team": "Support Team",
-        "accepted": "Hello, thank you for your feedback. We have recorded and accepted your suggestion.",
+        "rewardCurrency": " game coins",
+        "acceptedIntro": "Hello, thank you for taking the time to share your feedback regarding \"{topic}\".",
+        "acceptedBody": "We have prioritized this issue in our development plan. Next, we will strengthen backend monitoring and data analysis to identify and prevent abnormal behavior. We also plan to launch a reporting system so players can more easily help us maintain a fair and equitable gaming environment.",
+        "acceptedReward": "To thank you for your support and contribution, we are pleased to offer you {rewardAmount}{currency} as a reward. Please go to Feedback - My Feedback to claim it!",
         "rejected": "Hello, we have reviewed your suggestion. It is not supported in the current version. Thank you for your understanding and support."
       },
       "uploadStatus": {
