@@ -8,6 +8,7 @@ import type {
   QueryReferralDetailsTopUpStatsResponse,
   QueryReferralSettlementRuleResponse,
   QueryReferralShareConfigResponse,
+  QueryReferralTaskRuleContentResponse,
   QueryReferralTaskProgressResponse,
   QueryReferralTaskRewardsToClaimResponse,
   QueryTaskRewardConfigResponse
@@ -86,6 +87,11 @@ export const queryTaskRewardConfig = (
 export const queryReferralSettlementRule = (
   options?: AgentRequestOptions
 ): Promise<QueryReferralSettlementRuleResponse> => callAgentAction('agent53', undefined, options)
+
+// agent59：查询任务页规则富文本。
+export const queryReferralTaskRuleContent = (
+  options?: AgentRequestOptions
+): Promise<QueryReferralTaskRuleContentResponse> => callAgentAction('agent59', undefined, options)
 
 // agent84：查询一级代理佣金加码预估佣金。
 export const queryReferralCommissionBoostAmount = (

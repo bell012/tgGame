@@ -6,7 +6,6 @@ import type {
   QueryTaskRewardFriendItem,
   QueryTaskRewardWalletItem
 } from '@/api/interface/agent'
-import taskRulesPlaceholderImage from '@/static/img/referral/claim_popup_hero.png'
 import commissionCoinIcon from '@/static/img/referral/referral-coin.png'
 import { getCurrencySymbol } from '@/utils/locale'
 
@@ -572,8 +571,3 @@ export const buildReferralTaskRewardTable = (
  * 返回任务页佣金币图片资源。
  */
 export const getReferralTaskCoinImage = () => commissionCoinIcon
-
-/**
- * 返回任务规则占位图片资源。
- */
-export const getReferralTaskRulesPlaceholderImage = () => taskRulesPlaceholderImage

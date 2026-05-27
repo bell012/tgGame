@@ -38,7 +38,7 @@
           :valid-invite-title="t('referral.taskPage.validInviteTitle')"
           :valid-invite-description-segments="validInviteDescriptionSegments"
           :task-rules-title="t('referral.taskPage.taskRulesTitle')"
-          :task-rules-image="taskRulesImage"
+          :task-rules-html="taskRulesHtml"
           :bottom-action-text="t('referral.invitePoster.inviteNow')"
           @claim="handleClaimClick"
           @open-progress-reminder="handleOpenProgressReminder"
@@ -73,7 +73,7 @@
         :valid-invite-title="t('referral.taskPage.validInviteTitle')"
         :valid-invite-description-segments="validInviteDescriptionSegments"
         :task-rules-title="t('referral.taskPage.taskRulesTitle')"
-        :task-rules-image="taskRulesImage"
+        :task-rules-html="taskRulesHtml"
         :bottom-action-text="t('referral.invitePoster.inviteNow')"
         @claim="handleClaimClick"
         @open-progress-reminder="handleOpenProgressReminder"
@@ -108,6 +108,7 @@ import Api from '@/api'
 import type {
   QueryReferralSettlementRuleResult,
   QueryReferralTaskProgressResult,
+  QueryReferralTaskRuleContentItem,
   QueryTaskRewardConfigResult
 } from '@/api/interface/agent'
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
@@ -135,7 +136,6 @@ import {
   createReferralTaskValidInviteDescriptionSegments,
   getReferralTaskCoinImage,
   getReferralTaskProgressFieldByTab,
-  getReferralTaskRulesPlaceholderImage,
   type ReferralTaskRewardConfig,
   type ReferralTaskTabKey
 } from './shared'
@@ -149,9 +149,9 @@ const taskRewardResult = ref<QueryTaskRewardConfigResult | null>(null)
 const taskRewardConfig = ref<ReferralTaskRewardConfig | null>(null)
 const referralSettlementRule = ref<QueryReferralSettlementRuleResult | null>(null)
 const taskProgressResult = ref<QueryReferralTaskProgressResult | null>(null)
+const taskRuleContents = ref<QueryReferralTaskRuleContentItem[]>([])
 const rewardsToClaimAmount = ref('0.00')
 const coinImage = getReferralTaskCoinImage()
-const taskRulesImage = getReferralTaskRulesPlaceholderImage()
 const showClaimConfirmPopup = ref(false)
 const showProgressReminderPopup = ref(false)
 const claimingCommission = ref(false)
@@ -216,6 +216,14 @@ const validInviteDescriptionSegments = computed(() =>
 const maxRewardLabel = computed(() =>
   createReferralTaskMaxRewardLabel(t, referralSettlementRule.value)
 )
+const taskRulesHtml = computed(() => {
+  const currentLocaleCode = String(locale.value).startsWith('zh') ? 'zh' : 'eng'
+
+  return String(
+    taskRuleContents.value.find(item => item.langCode === currentLocaleCode)?.agentIntroduction ??
+      ''
+  )
+})
 
 watch(
   () => currentAgentChannelId.value,
@@ -242,7 +250,12 @@ async function fetchTaskPageData() {
   rewardsToClaimAmount.value = '0.00'
 
   try {
-    const [taskRewardResponse, settlementRuleResponse, rewardsToClaimResponse] = await Promise.all([
+    const [
+      taskRewardResponse,
+      settlementRuleResponse,
+      rewardsToClaimResponse,
+      taskRuleContentResponse
+    ] = await Promise.all([
       Api.agent.queryTaskRewardConfig({
         channelId: currentAgentChannelId.value
       }),
@@ -251,12 +264,16 @@ async function fetchTaskPageData() {
       }),
       Api.agent.queryReferralTaskRewardsToClaim({
         channelId: currentAgentChannelId.value
+      }),
+      Api.agent.queryReferralTaskRuleContent({
+        channelId: currentAgentChannelId.value
       })
     ])
 
     const taskRewardBusinessResponse = ensureApiBusinessSuccess(taskRewardResponse)
     const settlementRuleBusinessResponse = ensureApiBusinessSuccess(settlementRuleResponse)
     const rewardsToClaimBusinessResponse = ensureApiBusinessSuccess(rewardsToClaimResponse)
+    const taskRuleContentBusinessResponse = ensureApiBusinessSuccess(taskRuleContentResponse)
     const settlementRule = settlementRuleBusinessResponse.result ?? null
     const periodRanges = buildReferralTaskPeriodRanges(settlementRule)
     const taskProgressBusinessResponse = ensureApiBusinessSuccess(
@@ -269,6 +286,7 @@ async function fetchTaskPageData() {
     taskRewardConfig.value = taskRewardBusinessResponse.result?.config ?? null
     referralSettlementRule.value = settlementRule
     taskProgressResult.value = taskProgressBusinessResponse.result ?? null
+    taskRuleContents.value = taskRuleContentBusinessResponse.result ?? []
     rewardsToClaimAmount.value = formatBalance(
       Number(rewardsToClaimBusinessResponse.result ?? 0),
       2
@@ -279,6 +297,7 @@ async function fetchTaskPageData() {
     taskRewardConfig.value = null
     referralSettlementRule.value = null
     taskProgressResult.value = null
+    taskRuleContents.value = []
     rewardsToClaimAmount.value = '0.00'
   } finally {
     rewardTableLoading.value = false
