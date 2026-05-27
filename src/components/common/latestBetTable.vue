@@ -1,5 +1,7 @@
 <template>
-  <div class="relative w-full h-[430px] overflow-hidden rounded-lg sm:rounded-xl bg-bg-2">
+  <div
+    class="relative h-[430px] w-full overflow-hidden [overflow-anchor:none] rounded-lg bg-bg-2 sm:rounded-xl"
+  >
     <table
       class="w-full table-fixed border-collapse border-spacing-0 font-['Inter'] text-xs sm:text-sm font-medium sm:font-bold leading-[18px] sm:leading-normal text-text-2"
     >
@@ -18,9 +20,35 @@
         </tr>
       </thead>
       <tbody v-if="loading">
-        <tr v-for="index in 10" :key="index" :class="index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2'">
-          <td colspan="4" class="px-3 py-2">
-            <div class="h-8 animate-pulse rounded bg-bg-3" />
+        <tr
+          v-for="index in MAX_VISIBLE_ROWS"
+          :key="index"
+          class="box-border h-[39px] sm:h-12"
+          :class="rowStripeClass(index - 1)"
+        >
+          <td class="box-border h-[39px] px-2.5 py-2.5 align-middle sm:h-12 sm:px-6 sm:py-0">
+            <div class="flex min-w-0 items-center gap-1">
+              <div class="h-3.5 w-3.5 shrink-0 rounded bg-text-2/10" />
+              <div class="h-3.5 w-[58px] shrink-0 rounded bg-text-2/10 sm:w-[72px]" />
+            </div>
+          </td>
+          <td
+            class="box-border h-[39px] px-2.5 py-2.5 text-center align-middle sm:h-12 sm:px-0 sm:py-0"
+          >
+            <div class="mx-auto h-3.5 w-14 rounded bg-text-2/10 sm:w-20" />
+          </td>
+          <td
+            class="box-border h-[39px] px-2.5 py-2.5 text-center align-middle sm:h-12 sm:px-0 sm:py-0"
+          >
+            <div class="mx-auto h-3.5 w-10 rounded bg-text-2/10" />
+          </td>
+          <td
+            class="box-border h-[39px] px-2.5 py-2.5 text-right align-middle sm:h-12 sm:px-6 sm:py-0"
+          >
+            <div class="ml-auto flex w-[73px] items-center justify-end gap-1 sm:w-[88px]">
+              <div class="h-3.5 w-12 rounded bg-text-2/10 sm:w-16" />
+              <div class="h-3 w-3 shrink-0 rounded-full bg-text-2/10" />
+            </div>
           </td>
         </tr>
       </tbody>
@@ -29,7 +57,7 @@
           v-for="(item, index) in displayRows"
           :key="`row-${index}`"
           class="h-[39px] sm:h-12"
-          :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
+          :class="rowStripeClass(index)"
         >
           <td class="px-2.5 py-2.5 sm:px-6 sm:py-0">
             <div :key="item.id" class="flex min-w-0 items-center gap-1">
@@ -110,6 +138,7 @@ interface LiveBetRow {
 
 const MAX_VISIBLE_ROWS = 10
 const LATEST_LIST_REFRESH_INTERVAL_MS = 5 * 60 * 1000
+const INITIAL_AUTO_SCROLL_DELAY_MS = 1500
 /** 龙虎榜每隔 30–60 秒（追加一条 */
 const HIGH_ROLLER_SCROLL_MIN_SEC = 30
 const HIGH_ROLLER_SCROLL_MAX_SEC = 60
@@ -129,11 +158,16 @@ const { currentCurrency } = storeToRefs(localeStore)
 const sourceRows = ref<LiveBetRow[]>([])
 const displayRows = ref<LiveBetRow[]>([])
 const loading = ref(false)
+const shouldShowLoadingSkeleton = ref(true)
 let autoScrollTimer: number | null = null
 let latestListRefreshTimer: number | null = null
 let nextScrollIndex = 0
+let deferInitialAutoScroll = true
 
 const isHighRoller = computed(() => props.type === 2)
+
+/** 与数据行共用 0-based 斑马纹，避免 skeleton v-for 从 1 起算导致条纹错位 */
+const rowStripeClass = (index: number) => (index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2')
 
 const getHighRollerScrollInterval = () => {
   const span = HIGH_ROLLER_SCROLL_MAX_SEC - HIGH_ROLLER_SCROLL_MIN_SEC + 1
@@ -149,7 +183,7 @@ const getScrollInterval = () => {
 }
 
 const formatMultiplier = (value: number) => {
-  if (!Number.isFinite(value)) {
+  if (!Number.isFinite(value) || value < 0) {
     return '0.00'
   }
 
@@ -164,8 +198,27 @@ const toGameImageUrl = (value?: string) => {
   return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
 }
 
-const getLatestListData = async () => {
-  loading.value = true
+const syncInitialDisplayRows = () => {
+  if (rows.value.length === 0) {
+    displayRows.value = []
+    return
+  }
+
+  if (!isHighRoller.value && rows.value.length <= MAX_VISIBLE_ROWS) {
+    displayRows.value = [...rows.value]
+    return
+  }
+
+  const initialCount = Math.min(MAX_VISIBLE_ROWS, rows.value.length)
+  displayRows.value = rows.value.slice(0, initialCount)
+}
+
+const getLatestListData = async (options: { withSkeleton?: boolean } = {}) => {
+  const withSkeleton = options.withSkeleton ?? shouldShowLoadingSkeleton.value
+
+  if (withSkeleton) {
+    loading.value = true
+  }
 
   try {
     const res = await Api.game.getLatestList({
@@ -186,11 +239,22 @@ const getLatestListData = async () => {
         currencyIcon: getCurrencyImageByCode(currency)
       }
     })
+
+    if (withSkeleton) {
+      syncInitialDisplayRows()
+    }
   } catch (error) {
     sourceRows.value = []
+    if (withSkeleton) {
+      displayRows.value = []
+    }
     console.error('getLatestList failed', error)
   } finally {
-    loading.value = false
+    if (withSkeleton) {
+      loading.value = false
+      shouldShowLoadingSkeleton.value = false
+      startAutoScroll()
+    }
   }
 }
 
@@ -203,10 +267,13 @@ const stopLatestListRefresh = () => {
 
 const startLatestListRefresh = () => {
   stopLatestListRefresh()
-  void getLatestListData()
+  stopAutoScroll()
+  deferInitialAutoScroll = true
+  shouldShowLoadingSkeleton.value = true
+  void getLatestListData({ withSkeleton: true })
 
   latestListRefreshTimer = window.setInterval(() => {
-    void getLatestListData()
+    void getLatestListData({ withSkeleton: false })
   }, LATEST_LIST_REFRESH_INTERVAL_MS)
 }
 
@@ -225,6 +292,9 @@ const stopAutoScroll = () => {
 }
 
 const scheduleNextScroll = () => {
+  const delay = deferInitialAutoScroll ? INITIAL_AUTO_SCROLL_DELAY_MS : getScrollInterval()
+  deferInitialAutoScroll = false
+
   autoScrollTimer = window.setTimeout(() => {
     const nextRow = rows.value[nextScrollIndex]
 
@@ -235,7 +305,7 @@ const scheduleNextScroll = () => {
     displayRows.value = [nextRow, ...displayRows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
     nextScrollIndex = (nextScrollIndex + 1) % rows.value.length
     scheduleNextScroll()
-  }, getScrollInterval())
+  }, delay)
 }
 
 const startAutoScroll = () => {
@@ -265,18 +335,16 @@ watch(
   { immediate: true }
 )
 
-watch(
-  [rows, () => props.type],
-  () => {
-    startAutoScroll()
-  },
-  { immediate: true }
-)
+watch([rows, () => props.type], () => {
+  if (loading.value) {
+    return
+  }
+
+  startAutoScroll()
+})
 
 onUnmounted(() => {
   stopAutoScroll()
   stopLatestListRefresh()
 })
 </script>
-
-<style scoped lang="scss"></style>

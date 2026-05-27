@@ -22,7 +22,7 @@
       >
         <button
           :class="{
-            'bg-bg-7 text-text-1': latestBetIndex === 0
+            'bg-bg-7 text-text-1': latestBetIndex !== 0
           }"
           class="flex h-10 flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
           @click.stop="latestBetIndex = 0"
@@ -31,7 +31,7 @@
         </button>
         <button
           :class="{
-            'bg-bg-7 text-text-1': latestBetIndex === 1
+            'bg-bg-7 text-text-1': latestBetIndex !== 1
           }"
           class="flex h-10 flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
           @click.stop="latestBetIndex = 1"
