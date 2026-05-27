@@ -990,27 +990,27 @@
       "saveSuccess": "Saved successfully"
     },
     "feedback": {
-      "pageTitle": "Feedback",
-      "detailTitle": "Record Details",
+      "pageTitle": "Leave Feedback",
+      "detailTitle": "Feedback Details",
       "tabs": {
-        "create": "Create Feedback",
+        "create": "Submit Feedback",
         "mine": "My Feedback"
       },
       "createTab": {
-        "sectionTitle": "Feedback",
-        "requiredType": "Required feedback type",
+        "sectionTitle": "Feedback Type",
+        "requiredType": "Required",
         "uploadPhotos": "Upload Photos",
-        "submitFeedback": "Submit Feedback",
+        "submitFeedback": "Submit",
         "rewardRulesTitle": "Reward Rules",
-        "rewardRulesDescription": "We offer generous rewards for valid feedback to improve our system and features, and to provide a better experience. Once accepted, rewards will be granted based on usefulness (unaccepted feedback is excluded)."
+        "rewardRulesDescription": "We reward helpful feedback that helps us improve our features and services. Once approved, the reward will be credited to your account."
       },
       "myTab": {
-        "rewardAmount": "Feedback Amount",
+        "rewardAmount": "Reward Amount",
         "rewardIconAlt": "Feedback reward icon",
         "claim": "Claim",
         "loading": "Loading...",
         "empty": "No feedback records",
-        "ticketNoPrefix": "Ticket No: "
+        "ticketNoPrefix": "Feedback No.: "
       },
       "claimPopup": {
         "title": "Claim Successful",
@@ -1020,37 +1020,34 @@
       },
       "detail": {
         "feedbackNo": "Feedback No.",
-        "processingStatus": "Processing Status",
-        "submitTime": "Submitted At",
-        "feedbackType": "Feedback Type",
+        "processingStatus": "Status",
+        "submitTime": "Created At",
+        "feedbackType": "Type",
         "feedbackContent": "Feedback Content",
         "screenshotAlt": "Screenshot {index}",
         "previewImageAlt": "Preview Image"
       },
       "feedbackType": {
-        "suggestion": "Suggestion",
-        "gameException": "Game Issue",
-        "depositIssue": "Deposit Issue",
-        "other": "Other"
+        "bugReport": "Bug Report",
+        "featureSuggestion": "Feature Suggestion",
+        "otherIssues": "Other Issues",
+        "depositIssue": "Deposit Issue"
       },
       "placeholder": {
-        "suggestion": "Dear player, please describe the issue or suggestion in detail so we can improve and provide better service.",
-        "gameException": "Please provide as much detail as possible, such as time, actions, module, and screenshots. We will handle it as soon as possible.",
-        "depositIssue": "Please describe the issue in detail. If available, include the payment order number. We will handle it as soon as possible.",
-        "other": "Please describe other issues or inquiries in detail."
+        "default": "Please enter your feedback"
       },
       "status": {
-        "accepted": "Accepted",
+        "accepted": "Approved",
         "pending": "Pending",
         "rejected": "Not Accepted"
       },
       "resultHint": {
-        "accepted": "Your suggestion has been accepted and rewarded. Thank you for your support!",
-        "pending": "Your suggestion has been submitted and is being processed. Please wait patiently.",
+        "accepted": "Your suggestion has been accepted, and your reward has been credited. Thank you for your support!",
+        "pending": "Please wait patiently while our team reviews your feedback.",
         "rejected": "Thank you for your suggestion. It is not accepted this time, and we welcome more feedback."
       },
       "reply": {
-        "team": "Operations Team",
+        "team": "Support Team",
         "accepted": "Hello, thank you for your feedback. We have recorded and accepted your suggestion.",
         "rejected": "Hello, we have reviewed your suggestion. It is not supported in the current version. Thank you for your understanding and support."
       },

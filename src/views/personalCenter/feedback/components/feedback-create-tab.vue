@@ -65,30 +65,9 @@
             </div>
           </template>
           <div
-            class="flex h-[88px] w-[88px] items-center justify-center rounded-[10px] border border-dashed border-[var(--color-text-level-3)] bg-bg-3"
+            class="feedback-upload-trigger flex h-[88px] w-[88px] items-center justify-center rounded-[10px] border border-dashed bg-bg-3"
           >
-            <div class="feedback-upload-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect
-                  x="3.5"
-                  y="7.5"
-                  width="17"
-                  height="11"
-                  rx="2.5"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                />
-                <rect x="8" y="5" width="4" height="2.4" rx="1.2" fill="currentColor" />
-                <circle cx="9" cy="13" r="1.7" fill="currentColor" />
-                <path
-                  d="M12 16.2L14.2 13.8C14.7 13.3 15.5 13.3 16 13.8L18.5 16.2"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-              </svg>
-              <span class="feedback-upload-plus">+</span>
-            </div>
+            <UploadPhotoIcon class="feedback-upload-photo-icon" aria-hidden="true" />
           </div>
         </Uploader>
       </div>
@@ -117,6 +96,7 @@
 
 <script setup lang="ts">
 import type { FeedbackTypeOption } from '../types'
+import UploadPhotoIcon from '@/static/svg/feedback/upload-photo.svg?component'
 import { Uploader, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
 import { useI18n } from 'vue-i18n'
 
@@ -168,25 +148,17 @@ const { t } = useI18n()
   transform: translate(-50%, -50%);
 }
 
-.feedback-upload-icon {
-  position: relative;
+.feedback-upload-trigger {
+  border-color: var(--color-text-level-2);
+}
+
+.feedback-upload-photo-icon {
+  width: 30px;
+  height: 29px;
   color: var(--color-text-level-3);
 }
 
-.feedback-upload-icon svg {
-  height: 34px;
-  width: 34px;
-}
-
-.feedback-upload-plus {
-  position: absolute;
-  right: -3px;
-  top: -5px;
-  display: block;
-  min-width: 14px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
+.feedback-upload-photo-icon :deep(path) {
+  fill: currentColor;
 }
 </style>

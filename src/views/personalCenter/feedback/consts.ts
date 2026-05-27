@@ -35,17 +35,16 @@ export const FEEDBACK_CLAIM_SUCCESS_TARGET_AMOUNT = 100
 export const FEEDBACK_CLAIM_AMOUNT_ANIMATION_DURATION = 680
 
 export const getFeedbackTypeOptions = (t: FeedbackTranslate) => [
-  { label: t('personalCenter.feedback.feedbackType.suggestion'), value: '1' },
-  { label: t('personalCenter.feedback.feedbackType.gameException'), value: '2' },
-  { label: t('personalCenter.feedback.feedbackType.depositIssue'), value: '3' },
-  { label: t('personalCenter.feedback.feedbackType.other'), value: '4' }
+  { label: t('personalCenter.feedback.feedbackType.bugReport'), value: '1' },
+  { label: t('personalCenter.feedback.feedbackType.featureSuggestion'), value: '2' },
+  { label: t('personalCenter.feedback.feedbackType.otherIssues'), value: '4' }
 ]
 
 const getFeedbackPlaceholderTexts = (t: FeedbackTranslate) => [
-  t('personalCenter.feedback.placeholder.suggestion'),
-  t('personalCenter.feedback.placeholder.gameException'),
-  t('personalCenter.feedback.placeholder.depositIssue'),
-  t('personalCenter.feedback.placeholder.other')
+  t('personalCenter.feedback.placeholder.default'),
+  t('personalCenter.feedback.placeholder.default'),
+  t('personalCenter.feedback.placeholder.default'),
+  t('personalCenter.feedback.placeholder.default')
 ]
 
 export const getFeedbackPlaceholderText = (selectedType: string, t: FeedbackTranslate) => {
@@ -101,15 +100,15 @@ export const formatFeedbackSubmitTime = (value: unknown) => {
 export const getFeedbackTypeLabel = (value: unknown, t: FeedbackTranslate) => {
   const normalizedValue = String(value ?? '').trim()
   if (normalizedValue === '1') {
-    return t('personalCenter.feedback.feedbackType.suggestion')
+    return t('personalCenter.feedback.feedbackType.bugReport')
   }
   if (normalizedValue === '2') {
-    return t('personalCenter.feedback.feedbackType.gameException')
+    return t('personalCenter.feedback.feedbackType.featureSuggestion')
   }
   if (normalizedValue === '3') {
     return t('personalCenter.feedback.feedbackType.depositIssue')
   }
-  return t('personalCenter.feedback.feedbackType.other')
+  return t('personalCenter.feedback.feedbackType.otherIssues')
 }
 
 export const getUploadedFeedbackPath = (result: unknown) => {
@@ -147,7 +146,7 @@ export const getFeedbackDetailTemplates = (
     content: '',
     status: 'accepted',
     submitTime: '--',
-    feedbackType: t('personalCenter.feedback.feedbackType.other'),
+    feedbackType: t('personalCenter.feedback.feedbackType.otherIssues'),
     detailContent: '',
     screenshotImages: [],
     resultHint: t('personalCenter.feedback.resultHint.accepted'),
@@ -161,7 +160,7 @@ export const getFeedbackDetailTemplates = (
     content: '',
     status: 'pending',
     submitTime: '--',
-    feedbackType: t('personalCenter.feedback.feedbackType.other'),
+    feedbackType: t('personalCenter.feedback.feedbackType.otherIssues'),
     detailContent: '',
     screenshotImages: [],
     resultHint: t('personalCenter.feedback.resultHint.pending'),
@@ -175,7 +174,7 @@ export const getFeedbackDetailTemplates = (
     content: '',
     status: 'rejected',
     submitTime: '--',
-    feedbackType: t('personalCenter.feedback.feedbackType.other'),
+    feedbackType: t('personalCenter.feedback.feedbackType.otherIssues'),
     detailContent: '',
     screenshotImages: [],
     resultHint: t('personalCenter.feedback.resultHint.rejected'),

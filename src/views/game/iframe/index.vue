@@ -9,48 +9,50 @@
     />
     <div v-else class="game-iframe-page__empty">{{ t('gameDetail.invalidGameUrl') }}</div>
 
-    <div
-      class="game-iframe-page__swipe-edge"
-      aria-hidden="true"
-      @touchstart="handleSwipeStart"
-      @touchmove="handleSwipeMove"
-      @touchend="handleSwipeEnd"
-      @touchcancel="handleSwipeEnd"
-    />
-    <button
-      type="button"
-      class="game-iframe-page__close-btn"
-      :class="{ 'game-iframe-page__close-btn--right-top': isHorizontal === '1' }"
-      @click="openExitDialog"
-    >
-      <img :src="closeIcon" alt="close" class="game-iframe-page__close-icon" />
-    </button>
+    <Teleport to="body">
+      <div
+        class="game-iframe-page__swipe-edge"
+        aria-hidden="true"
+        @touchstart="handleSwipeStart"
+        @touchmove="handleSwipeMove"
+        @touchend="handleSwipeEnd"
+        @touchcancel="handleSwipeEnd"
+      />
+      <button
+        type="button"
+        class="game-iframe-page__close-btn"
+        :class="{ 'game-iframe-page__close-btn--right-top': isHorizontal === '1' }"
+        @click="openExitDialog"
+      >
+        <img :src="closeIcon" alt="close" class="game-iframe-page__close-icon" />
+      </button>
 
-    <div v-if="showExitDialog" class="game-iframe-page__dialog-mask" @click="closeExitDialog">
-      <div class="game-iframe-page__dialog" @click.stop>
-        <button type="button" class="game-iframe-page__dialog-close" @click="closeExitDialog">
-          <CloseIcon class="game-iframe-page__dialog-close-icon" aria-hidden="true" />
-        </button>
-        <div class="game-iframe-page__dialog-title">{{ t('withdraw.kind_reminder_title') }}</div>
-        <div class="game-iframe-page__dialog-text">{{ t('gameDetail.exitGameConfirm') }}</div>
-        <button
-          type="button"
-          class="game-iframe-page__dialog-confirm"
-          :disabled="isConfirmLoading"
-          @click="confirmExit"
-        >
-          {{ isConfirmLoading ? t('common.loading') : t('common.confirm') }}
-        </button>
-        <button
-          type="button"
-          class="game-iframe-page__dialog-cancel"
-          :disabled="isConfirmLoading"
-          @click="closeExitDialog"
-        >
-          {{ t('common.cancel') }}
-        </button>
+      <div v-if="showExitDialog" class="game-iframe-page__dialog-mask" @click="closeExitDialog">
+        <div class="game-iframe-page__dialog" @click.stop>
+          <button type="button" class="game-iframe-page__dialog-close" @click="closeExitDialog">
+            <CloseIcon class="game-iframe-page__dialog-close-icon" aria-hidden="true" />
+          </button>
+          <div class="game-iframe-page__dialog-title">{{ t('withdraw.kind_reminder_title') }}</div>
+          <div class="game-iframe-page__dialog-text">{{ t('gameDetail.exitGameConfirm') }}</div>
+          <button
+            type="button"
+            class="game-iframe-page__dialog-confirm"
+            :disabled="isConfirmLoading"
+            @click="confirmExit"
+          >
+            {{ isConfirmLoading ? t('common.loading') : t('common.confirm') }}
+          </button>
+          <button
+            type="button"
+            class="game-iframe-page__dialog-cancel"
+            :disabled="isConfirmLoading"
+            @click="closeExitDialog"
+          >
+            {{ t('common.cancel') }}
+          </button>
+        </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 

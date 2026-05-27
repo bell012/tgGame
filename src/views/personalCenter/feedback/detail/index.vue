@@ -4,7 +4,10 @@
       :title="t('personalCenter.feedback.detailTitle')"
       :disable-default-back="isEmbeddedMode"
       :fixed-top="!isEmbeddedMode"
+      show-sort
+      :right-icon="CustomerServiceIcon"
       @back="handleDetailBack"
+      @sort="handleCustomerServiceClick"
     />
 
     <div class="px-3.5 pb-6 pt-3">
@@ -120,6 +123,7 @@
 import H5Header from '@/components/common/H5Header.vue'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import Api from '@/api'
 import type { QueryFeedbackItem } from '@/api/interface/user'
 import {
@@ -281,6 +285,13 @@ const handleDetailBack = () => {
   if (isEmbeddedMode.value) {
     emit('back')
   }
+}
+
+const handleCustomerServiceClick = () => {
+  showToast({
+    message: t('sidebar_menu.customer_service'),
+    position: 'middle'
+  })
 }
 
 const fetchFeedbackDetail = async (recordId: string) => {

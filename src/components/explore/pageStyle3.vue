@@ -110,10 +110,27 @@ const resolvedPageSize = computed(() => {
   )
 })
 
+const getProviderOptionValue = (item: GamePlatformOption) => {
+  return String(item.brandCode ?? '').trim() || String(item.platformCode ?? '').trim()
+}
+
+const getProviderOptionLabel = (item: GamePlatformOption) => {
+  return String(item.brandName ?? '').trim() || String(item.platformName ?? '').trim()
+}
+
+const findPlatformOptionByValue = (value: string) => {
+  const normalizedValue = value.trim()
+  if (!normalizedValue) {
+    return undefined
+  }
+
+  return platformOptions.value.find(item => getProviderOptionValue(item) === normalizedValue)
+}
+
 const providerOptions = computed(() => {
   return platformOptions.value.map(item => ({
-    label: item.platformName,
-    value: item.platformCode,
+    label: getProviderOptionLabel(item),
+    value: getProviderOptionValue(item),
     icon: getPlatformIcon(item)
   }))
 })
@@ -137,7 +154,7 @@ const resolvedQueryOptions = computed<GameQueryOptions>(() => {
   return {
     ...baseOptions,
     ...sortOptionMap[selectedSort.value],
-    platformCodes: selectedProviders.value
+    brandCodes: selectedProviders.value
   }
 })
 
@@ -213,10 +230,13 @@ const syncSelectedProvidersFromNames = (providerNames: string[]) => {
     .map(providerName => providerName.trim())
     .filter(Boolean)
     .map(providerName => {
-      const matchedPlatform = platformOptions.value.find(
-        item => item.platformName.trim() === providerName
-      )
-      return matchedPlatform?.platformCode?.trim() ?? ''
+      const matchedPlatform = platformOptions.value.find(item => {
+        const optionLabel = getProviderOptionLabel(item)
+        return (
+          optionLabel === providerName || String(item.platformName ?? '').trim() === providerName
+        )
+      })
+      return matchedPlatform ? getProviderOptionValue(matchedPlatform) : ''
     })
     .filter(Boolean)
 
@@ -234,10 +254,8 @@ const handleProvider = (value: string[]) => {
 
   const providerNames = value
     .map(providerCode => {
-      const matchedPlatform = platformOptions.value.find(
-        item => item.platformCode.trim() === providerCode.trim()
-      )
-      return matchedPlatform?.platformName?.trim() ?? ''
+      const matchedPlatform = findPlatformOptionByValue(providerCode)
+      return matchedPlatform ? getProviderOptionLabel(matchedPlatform) : ''
     })
     .filter(Boolean)
 

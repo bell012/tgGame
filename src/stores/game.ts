@@ -102,6 +102,8 @@ interface GameBrandQueryOptions {
 }
 
 export interface GamePlatformOption {
+  brandCode: string
+  brandName: string
   platformCode: string
   platformName: string
   icon1: string
@@ -1236,7 +1238,7 @@ export const useGameStore = defineStore('game', () => {
     return queryGameRecordsFromNodes(sourceNodes, options).map(record => record.node)
   }
 
-  /** 根据 gameTypeCode 获取 rowType=2 的游戏平台，并按 platformCode 去重 */
+  /** 根据 gameTypeCode 获取 rowType=2 的游戏平台，并按 brandCode 去重 */
   const queryGamePlatformsByGameTypeCode = async (
     gameTypeCode: string,
     options: Pick<GameQueryOptions, 'forceRefresh'> = {}
@@ -1257,13 +1259,17 @@ export const useGameStore = defineStore('game', () => {
     const platformMap = new Map<string, GamePlatformOption>()
 
     sortedList.forEach(item => {
+      const brandCode = String(item.brandCode ?? '').trim()
       const platformCode = String(item.platformCode ?? '').trim()
+      const dedupeKey = brandCode || platformCode
 
-      if (!platformCode || platformMap.has(platformCode)) {
+      if (!dedupeKey || platformMap.has(dedupeKey)) {
         return
       }
 
-      platformMap.set(platformCode, {
+      platformMap.set(dedupeKey, {
+        brandCode,
+        brandName: String(item.brandName ?? '').trim(),
         platformCode,
         platformName: String(item.platformName ?? '').trim(),
         icon1: String(item.icon1 ?? '').trim(),

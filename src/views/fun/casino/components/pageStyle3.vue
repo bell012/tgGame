@@ -154,10 +154,27 @@ const resolvedPageSize = computed(() => {
     (props.queryOptions ?? props.modules ?? {}).pageSize ?? fallbackQueryOptions.pageSize ?? 27
   )
 })
+const getProviderOptionValue = (item: GamePlatformOption) => {
+  return String(item.brandCode ?? '').trim() || String(item.platformCode ?? '').trim()
+}
+
+const getProviderOptionLabel = (item: GamePlatformOption) => {
+  return String(item.brandName ?? '').trim() || String(item.platformName ?? '').trim()
+}
+
+const findPlatformOptionByValue = (value: string) => {
+  const normalizedValue = value.trim()
+  if (!normalizedValue) {
+    return undefined
+  }
+
+  return platformOptions.value.find(item => getProviderOptionValue(item) === normalizedValue)
+}
+
 const providerOptions = computed(() => {
   return platformOptions.value.map(item => ({
-    label: item.platformName,
-    value: item.platformCode,
+    label: getProviderOptionLabel(item),
+    value: getProviderOptionValue(item),
     icon: getPlatformIcon(item)
   }))
 })
@@ -178,7 +195,7 @@ const resolvedQueryOptions = computed<GameQueryOptions>(() => {
   return {
     ...baseOptions,
     ...sortOptionMap[selectedSort.value],
-    platformCodes: selectedProviders.value
+    brandCodes: selectedProviders.value
   }
 })
 const hideSortFilter = computed(() => {
@@ -247,10 +264,13 @@ const syncSelectedProvidersFromNames = (providerNames: string[]) => {
     .map(providerName => providerName.trim())
     .filter(Boolean)
     .map(providerName => {
-      const matchedPlatform = platformOptions.value.find(
-        item => item.platformName.trim() === providerName
-      )
-      return matchedPlatform?.platformCode?.trim() ?? ''
+      const matchedPlatform = platformOptions.value.find(item => {
+        const optionLabel = getProviderOptionLabel(item)
+        return (
+          optionLabel === providerName || String(item.platformName ?? '').trim() === providerName
+        )
+      })
+      return matchedPlatform ? getProviderOptionValue(matchedPlatform) : ''
     })
     .filter(Boolean)
 
@@ -267,10 +287,8 @@ const handleProvider = (value: string[]) => {
   emit('update:providers', value)
   const providerNames = value
     .map(providerCode => {
-      const matchedPlatform = platformOptions.value.find(
-        item => item.platformCode.trim() === providerCode.trim()
-      )
-      return matchedPlatform?.platformName?.trim() ?? ''
+      const matchedPlatform = findPlatformOptionByValue(providerCode)
+      return matchedPlatform ? getProviderOptionLabel(matchedPlatform) : ''
     })
     .filter(Boolean)
 
@@ -398,13 +416,13 @@ const getPlatformData = async () => {
 
   platformOptions.value = nextPlatformOptions
 
-  const validPlatformCodes = new Set(
-    nextPlatformOptions.map(item => item.platformCode.trim()).filter(Boolean)
+  const validProviderValues = new Set(
+    nextPlatformOptions.map(item => getProviderOptionValue(item)).filter(Boolean)
   )
 
   if ((props.providerCodes ?? []).length > 0) {
     selectedProviders.value = (props.providerCodes ?? []).filter(code =>
-      validPlatformCodes.has(code.trim())
+      validProviderValues.has(code.trim())
     )
     return
   }
@@ -415,7 +433,7 @@ const getPlatformData = async () => {
   }
 
   selectedProviders.value = selectedProviders.value.filter(code =>
-    validPlatformCodes.has(code.trim())
+    validProviderValues.has(code.trim())
   )
 }
 
