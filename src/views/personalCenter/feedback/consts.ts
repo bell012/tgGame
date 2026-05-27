@@ -66,7 +66,7 @@ export const normalizeFeedbackStatus = (value: unknown): FeedbackStatus => {
     return 'pending'
   }
   if (normalizedText === 'rejected') {
-    return 'rejected'
+    return 'pending'
   }
 
   const normalizedNumber = Number(normalizedText)
@@ -76,7 +76,7 @@ export const normalizeFeedbackStatus = (value: unknown): FeedbackStatus => {
   if (normalizedNumber === 0) {
     return 'pending'
   }
-  return 'rejected'
+  return 'pending'
 }
 
 export const formatFeedbackSubmitTime = (value: unknown) => {
