@@ -168,15 +168,11 @@ const hideSortFilter = computed(() => {
 })
 
 const filterSheetWrapClass = computed(() => {
-  if (isMobile.value) {
-    return 'mt-1 mb-[11px] w-full'
+  if (isMobile.value || !hideSortFilter.value) {
+    return 'mt-2.5 mb-3.5 w-full'
   }
 
-  if (!hideSortFilter.value) {
-    return 'my-2.5 w-full shrink-0'
-  }
-
-  return 'my-2.5 w-full shrink-0 sm:max-w-[420px]'
+  return 'mt-2.5 mb-3.5 w-full sm:max-w-[420px]'
 })
 
 const resolvedQueryKey = computed(() =>

@@ -133,7 +133,11 @@ import {
   getFeedbackDetailTemplates,
   getFeedbackStatusTextMap,
   getFeedbackTypeLabel,
-  feedbackStatusClassMap
+  feedbackStatusClassMap,
+  normalizeFeedbackStatus,
+  formatFeedbackSubmitTime,
+  getFeedbackAcceptedReplyContent,
+  getFeedbackItemRewardAmount
 } from '@/views/personalCenter/feedback/consts'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -171,50 +175,6 @@ const currentRecordId = computed(() => {
     ? String(props.recordId ?? '').trim()
     : String(route.params.recordId ?? '').trim()
 })
-
-const normalizeFeedbackStatus = (value: unknown): FeedbackStatus => {
-  const normalizedText = String(value ?? '')
-    .trim()
-    .toLowerCase()
-  if (normalizedText === 'accepted') {
-    return 'accepted'
-  }
-  if (normalizedText === 'pending') {
-    return 'pending'
-  }
-  if (normalizedText === 'rejected') {
-    return 'rejected'
-  }
-
-  const normalizedNumber = Number(normalizedText)
-  if (normalizedNumber === 1) {
-    return 'accepted'
-  }
-  if (normalizedNumber === 0) {
-    return 'pending'
-  }
-  return 'rejected'
-}
-
-const formatFeedbackSubmitTime = (value: unknown) => {
-  const timestamp = Number(value)
-  if (!Number.isFinite(timestamp) || timestamp <= 0) {
-    return '--'
-  }
-
-  const date = new Date(timestamp)
-  if (Number.isNaN(date.getTime())) {
-    return '--'
-  }
-
-  const year = date.getFullYear()
-  const month = `${date.getMonth() + 1}`.padStart(2, '0')
-  const day = `${date.getDate()}`.padStart(2, '0')
-  const hour = `${date.getHours()}`.padStart(2, '0')
-  const minute = `${date.getMinutes()}`.padStart(2, '0')
-  const second = `${date.getSeconds()}`.padStart(2, '0')
-  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
-}
 
 const ABSOLUTE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
 const resolveFeedbackImageUrl = (value: unknown) => {
@@ -256,6 +216,15 @@ const mapFeedbackApiItemToDetail = (
   const rowIdText = String(item?.rowId ?? '').trim()
   const ticketNo = rowIdText || recordId || templateRecord.ticketNo
   const detailContent = String(item?.content ?? '').trim() || templateRecord.detailContent
+  const feedbackType = getFeedbackTypeLabel(item?.feedbackType, t)
+  const replyContent =
+    status === 'accepted'
+      ? getFeedbackAcceptedReplyContent(t, {
+          topic: detailContent || feedbackType,
+          rewardAmount: getFeedbackItemRewardAmount(item),
+          currency: String(item?.memberCurrency ?? '').trim()
+        })
+      : templateRecord.replyContent
 
   return {
     ...templateRecord,
@@ -263,10 +232,12 @@ const mapFeedbackApiItemToDetail = (
     ticketNo,
     status,
     submitTime: formatFeedbackSubmitTime(item?.createTime),
-    feedbackType: getFeedbackTypeLabel(item?.feedbackType, t),
+    feedbackType,
     detailContent,
     content: detailContent,
-    screenshotImages
+    screenshotImages,
+    replyTime: formatFeedbackSubmitTime(item?.createTime),
+    replyContent
   }
 }
 

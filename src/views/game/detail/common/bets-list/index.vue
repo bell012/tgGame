@@ -140,17 +140,17 @@
               {{ item.player }}
             </td>
             <td class="h-[39px] px-3 text-text-1 truncate">
-              {{ item.multiplier }}{{ multiplierUnit }}
+              {{ formatTableAmount(item.multiplier) }}{{ multiplierUnit }}
             </td>
             <td class="profit-cell h-[39px] px-3">
               <div class="flex items-center justify-end gap-1">
                 <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
-                  {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}
+                  {{ item.profit >= 0 ? '+' : '' }}{{ formatTableAmount(item.profit) }}
                 </span>
                 <SmartImage
-                  :src="currentCurrencyIcon"
+                  :src="item.currencyIcon"
                   class="w-3 h-3 object-contain shrink-0 order-2"
-                  :alt="currentRequestCurrency"
+                  :alt="item.currency"
                 />
               </div>
             </td>
@@ -190,7 +190,7 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import placeholderImg from '@/static/img/home/errImg.png'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
-import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
+import { getCurrencyImageByCode } from '@/utils/locale'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useUserStore } from '@/stores/user'
 import { navigateTo } from '@/utils/router'
@@ -233,6 +233,8 @@ interface IHighRollerRow {
   player: string
   multiplier: number
   profit: number
+  currency: string
+  currencyIcon: string
 }
 
 const rows = ref<IRow[]>([])
@@ -258,7 +260,7 @@ const currentPlatformCode = computed(() => normalizeValue(currentGameDetail.valu
 const currentRequestCurrency = computed(
   () => normalizeValue(currentCurrencyCode.value).toUpperCase() || 'PHP'
 )
-const currentCurrencyIcon = computed(() => getCurrencyIconByCode(currentRequestCurrency.value))
+const currentCurrencyIcon = computed(() => getCurrencyImageByCode(currentRequestCurrency.value))
 
 const currentBetType = computed<1 | 2>(() => (activeTab.value === 1 ? 2 : 1))
 const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
@@ -303,15 +305,27 @@ const toGameImageUrl = (value: unknown) => {
   return gameImageBaseUrl ? `${gameImageBaseUrl}${path}` : path
 }
 
+const formatTableAmount = (value: number) => {
+  if (!Number.isFinite(value) || value < 0) {
+    return '0.00'
+  }
+
+  return value.toFixed(2)
+}
+
 const mapHighRollerToRow = (item: Record<string, unknown>, index: number): IHighRollerRow => {
   const icon = toGameImageUrl(item.coverImg)
+  const currency = normalizeValue(item.currency) || currentRequestCurrency.value
+
   return {
     id: Number(item.rowId ?? index),
     game: String(item.gameName ?? '--'),
     gameIcon: icon || placeholderImg,
     player: String(item.nickName ?? '--'),
     multiplier: parseAmount(item.multiple),
-    profit: parseAmount(item.winAmount)
+    profit: parseAmount(item.winAmount),
+    currency,
+    currencyIcon: getCurrencyImageByCode(currency)
   }
 }
 
@@ -362,19 +376,17 @@ const fetchBetRecords = async () => {
 const fetchHighRollerRecords = async () => {
   stopHighRollerAutoScroll()
   try {
-    const currency = currentRequestCurrency.value
-    const res = await Api.home.getRecentBigWins(
+    const res = await Api.game.getLatestList(
       {
-        currency,
-        type: 2
+        type: 2,
+        currency: currentRequestCurrency.value
       },
       {
         showSuccessToast: false,
         showErrorToast: true
       }
     )
-    const rawResult = res?.result
-    const recordList = Array.isArray(rawResult) ? rawResult : []
+    const recordList = Array.isArray(res?.result) ? res.result : []
     highRollerSourceRows.value = recordList.map((item, index) =>
       mapHighRollerToRow((item as Record<string, unknown>) ?? {}, index)
     )

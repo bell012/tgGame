@@ -1,3 +1,5 @@
+import { formatTimestamp } from '@/utils/date'
+
 export type FeedbackStatus = 'accepted' | 'pending' | 'rejected'
 
 type FeedbackApiRecord = Record<string, unknown>
@@ -66,7 +68,7 @@ export const normalizeFeedbackStatus = (value: unknown): FeedbackStatus => {
     return 'pending'
   }
   if (normalizedText === 'rejected') {
-    return 'rejected'
+    return 'pending'
   }
 
   const normalizedNumber = Number(normalizedText)
@@ -76,28 +78,11 @@ export const normalizeFeedbackStatus = (value: unknown): FeedbackStatus => {
   if (normalizedNumber === 0) {
     return 'pending'
   }
-  return 'rejected'
+  return 'pending'
 }
 
-export const formatFeedbackSubmitTime = (value: unknown) => {
-  const timestamp = Number(value)
-  if (!Number.isFinite(timestamp) || timestamp <= 0) {
-    return '--'
-  }
-
-  const date = new Date(timestamp)
-  if (Number.isNaN(date.getTime())) {
-    return '--'
-  }
-
-  const year = date.getFullYear()
-  const month = `${date.getMonth() + 1}`.padStart(2, '0')
-  const day = `${date.getDate()}`.padStart(2, '0')
-  const hour = `${date.getHours()}`.padStart(2, '0')
-  const minute = `${date.getMinutes()}`.padStart(2, '0')
-  const second = `${date.getSeconds()}`.padStart(2, '0')
-  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
-}
+export const formatFeedbackSubmitTime = (value: unknown) =>
+  formatTimestamp(value as number | string | null)
 
 export const getFeedbackTypeLabel = (value: unknown, t: FeedbackTranslate) => {
   const normalizedValue = String(value ?? '').trim()
@@ -269,6 +254,37 @@ export const formatFeedbackRewardAmount = (amount: number) => {
   return Math.max(amount, 0).toFixed(2)
 }
 
+export const getFeedbackItemRewardAmount = (item: unknown) => {
+  if (!item || typeof item !== 'object') {
+    return 0
+  }
+
+  return pickFirstNumber(item as Record<string, unknown>, FEEDBACK_REWARD_AMOUNT_KEYS) ?? 0
+}
+
+export const getFeedbackAcceptedReplyContent = (
+  t: FeedbackTranslate,
+  params: { topic: string; rewardAmount: number; currency?: string }
+) => {
+  const rewardAmountText =
+    params.rewardAmount > 0
+      ? Number.isInteger(params.rewardAmount)
+        ? String(params.rewardAmount)
+        : formatFeedbackRewardAmount(params.rewardAmount)
+      : '10'
+  const currency =
+    String(params.currency ?? '').trim() || t('personalCenter.feedback.reply.rewardCurrency')
+
+  return [
+    t('personalCenter.feedback.reply.acceptedIntro', { topic: params.topic }),
+    t('personalCenter.feedback.reply.acceptedBody'),
+    t('personalCenter.feedback.reply.acceptedReward', {
+      rewardAmount: rewardAmountText,
+      currency
+    })
+  ]
+}
+
 export const getFeedbackUploadFileName = (file: Blob | File, index: number) => {
   const fallbackName = `feedback_${Date.now()}_${index}.jpg`
   const originalFileName = file instanceof File ? file.name.trim() : fallbackName
@@ -297,7 +313,7 @@ export const getFeedbackDetailTemplates = (
     resultHint: t('personalCenter.feedback.resultHint.accepted'),
     replyTeam: t('personalCenter.feedback.reply.team'),
     replyTime: '--',
-    replyContent: [t('personalCenter.feedback.reply.accepted')]
+    replyContent: []
   },
   pending: {
     recordId: '',

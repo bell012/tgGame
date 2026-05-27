@@ -1238,12 +1238,52 @@ export const useGameStore = defineStore('game', () => {
     return queryGameRecordsFromNodes(sourceNodes, options).map(record => record.node)
   }
 
-  /** 根据 gameTypeCode 获取 rowType=2 的游戏平台，并按 brandCode 去重 */
+  /** 将品牌列表映射为供应商筛选项 */
+  const mapGameBrandItemsToPlatformOptions = (
+    brandItems: GameBrandItem[]
+  ): GamePlatformOption[] => {
+    const seenBrandCodes = new Set<string>()
+
+    return brandItems
+      .map(item => {
+        const brandCode = String(item.brandCode ?? '').trim()
+        const brandName = String(item.brandName ?? '').trim()
+        const icon = String(item.icon ?? '').trim()
+
+        if (!brandCode || seenBrandCodes.has(brandCode)) {
+          return null
+        }
+
+        seenBrandCodes.add(brandCode)
+
+        return {
+          brandCode,
+          brandName,
+          platformCode: brandCode,
+          platformName: brandName,
+          icon1: icon,
+          icon4: icon
+        }
+      })
+      .filter((item): item is GamePlatformOption => item !== null)
+  }
+
+  /** 根据 gameTypeCode 获取供应商筛选项；大厅（空 gameTypeCode）走品牌列表，其余走 rowType=2 平台节点 */
   const queryGamePlatformsByGameTypeCode = async (
     gameTypeCode: string,
     options: Pick<GameQueryOptions, 'forceRefresh'> = {}
   ): Promise<GamePlatformOption[]> => {
     const normalizedGameTypeCode = gameTypeCode.trim()
+
+    if (!normalizedGameTypeCode) {
+      if (options.forceRefresh) {
+        await refreshGameBrandData(true)
+      } else {
+        await ensureGameBrandData()
+      }
+
+      return mapGameBrandItemsToPlatformOptions(brandData.value)
+    }
 
     const list = await queryGameData({
       gameTypeCode: normalizedGameTypeCode,
@@ -1256,18 +1296,35 @@ export const useGameStore = defineStore('game', () => {
 
       return orderIdA - orderIdB
     })
-    const platformMap = new Map<string, GamePlatformOption>()
+    const seenBrandCodes = new Set<string>()
+    const seenPlatformCodes = new Set<string>()
+    const platformOptions: GamePlatformOption[] = []
 
     sortedList.forEach(item => {
       const brandCode = String(item.brandCode ?? '').trim()
       const platformCode = String(item.platformCode ?? '').trim()
-      const dedupeKey = brandCode || platformCode
 
-      if (!dedupeKey || platformMap.has(dedupeKey)) {
+      if (!brandCode && !platformCode) {
         return
       }
 
-      platformMap.set(dedupeKey, {
+      if (brandCode && seenBrandCodes.has(brandCode)) {
+        return
+      }
+
+      if (platformCode && seenPlatformCodes.has(platformCode)) {
+        return
+      }
+
+      if (brandCode) {
+        seenBrandCodes.add(brandCode)
+      }
+
+      if (platformCode) {
+        seenPlatformCodes.add(platformCode)
+      }
+
+      platformOptions.push({
         brandCode,
         brandName: String(item.brandName ?? '').trim(),
         platformCode,
@@ -1277,7 +1334,7 @@ export const useGameStore = defineStore('game', () => {
       })
     })
 
-    return [...platformMap.values()]
+    return platformOptions
   }
 
   /** 根据条件分页查询扁平记录 */
