@@ -14,7 +14,7 @@
     <div v-else-if="visibleSlides.length" class="w-full flex flex-col bg-bg-1">
       <div
         ref="swipeRootRef"
-        class="relative w-full min-h-0 overflow-visible"
+        class="home-carousel-swipe-root relative w-full min-h-0 overflow-visible"
         @mousedown="handleSwipeMouseDown"
         @click.capture="handleSwipeClickCapture"
       >
@@ -396,6 +396,13 @@ onBeforeUnmount(() => {
 
 .home-carousel-nav-btn :deep(path) {
   fill: currentColor;
+}
+
+@media (min-width: 1024px) {
+  .home-carousel-swipe-root:has(.home-carousel-slide:hover) .home-carousel-nav-btn {
+    opacity: 0;
+    pointer-events: none;
+  }
 }
 
 :deep(.van-swipe) {
