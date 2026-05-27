@@ -241,7 +241,9 @@
             <!-- 领取佣金按钮 -->
             <button
               type="button"
-              class="flex h-[48px] w-full min-w-[120px] max-w-[280px] flex-[1_1_220px] items-center justify-center gap-[10px] rounded-[8px] bg-theme-primary px-[8px] text-[14px] font-[700] leading-[17px] text-text-4"
+              class="flex h-[48px] w-full min-w-[120px] max-w-[280px] flex-[1_1_220px] items-center justify-center gap-[10px] rounded-[8px] px-[8px] text-[14px] font-[700] leading-[17px] text-text-4"
+              :class="isClaimDisabled ? 'cursor-not-allowed bg-theme-2' : 'bg-theme-primary'"
+              :disabled="isClaimDisabled"
               @click="$emit('claim')"
             >
               {{ props.claimText }}
@@ -288,7 +290,9 @@
             <!-- 领取佣金按钮 -->
             <button
               type="button"
-              class="flex h-[35px] w-[94px] shrink-0 items-center justify-center rounded-[10px] bg-theme-primary text-sm font-[700] text-text-4"
+              class="flex h-[35px] w-[94px] shrink-0 items-center justify-center rounded-[10px] text-sm font-[700] text-text-4"
+              :class="isClaimDisabled ? 'cursor-not-allowed bg-theme-2' : 'bg-theme-primary'"
+              :disabled="isClaimDisabled"
               @click="$emit('claim')"
             >
               {{ props.claimText }}
@@ -1066,6 +1070,8 @@ defineEmits<{
   'change-commission-boost-period-tab': [value: ReferralCommissionBoostPeriodTabKey]
   'open-rules': []
 }>()
+
+const isClaimDisabled = computed(() => Number(props.estimatedCommissionAmount) <= 0)
 
 /**
  * 判断当前跑马灯是否需要自动滚动。

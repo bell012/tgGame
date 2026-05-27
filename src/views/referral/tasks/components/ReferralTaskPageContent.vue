@@ -41,7 +41,9 @@
             <!-- 可领取奖励按钮 -->
             <button
               type="button"
-              class="flex h-[48px] w-[280px] shrink-0 items-center justify-center gap-[10px] rounded-[8px] bg-theme-primary p-[8px] text-[14px] font-[700] leading-[17px] text-text-4"
+              class="flex h-[48px] w-[280px] shrink-0 items-center justify-center gap-[10px] rounded-[8px] p-[8px] text-[14px] font-[700] leading-[17px] text-text-4"
+              :class="isClaimDisabled ? 'cursor-not-allowed bg-theme-2' : 'bg-theme-primary'"
+              :disabled="isClaimDisabled"
               @click="$emit('claim')"
             >
               {{ props.claimText }}
@@ -100,7 +102,9 @@
             <!-- 可领取奖励按钮 -->
             <button
               type="button"
-              class="flex h-[35px] w-[94px] shrink-0 items-center justify-center rounded-[10px] bg-theme-primary text-sm font-[700] text-text-4"
+              class="flex h-[35px] w-[94px] shrink-0 items-center justify-center rounded-[10px] text-sm font-[700] text-text-4"
+              :class="isClaimDisabled ? 'cursor-not-allowed bg-theme-2' : 'bg-theme-primary'"
+              :disabled="isClaimDisabled"
               @click="$emit('claim')"
             >
               {{ props.claimText }}
@@ -459,6 +463,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const isClaimDisabled = computed(() => Number(props.rewardsToClaimAmount) <= 0)
 
 const sanitizeTaskRulesHtml = (value: string) => {
   return value
