@@ -75,7 +75,6 @@
 <script setup lang="ts">
 import { useGameRating } from '@/composables/useGameRating'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
-import { useUserStore } from '@/stores/user'
 import RatingAvatarP1 from '@/static/svg/game/detail/comment/p1.svg?url'
 import RatingAvatarP2 from '@/static/svg/game/detail/comment/p2.webp?url'
 import RatingAvatarP3 from '@/static/svg/game/detail/comment/p3.svg?url'
@@ -83,6 +82,7 @@ import RatingAvatarP4 from '@/static/svg/game/detail/comment/p4.svg?url'
 import RatingAvatarP5 from '@/static/svg/game/detail/comment/p5.svg?url'
 import SanIcon from '@/static/svg/game/detail/comment/san.svg?component'
 import { useThemeStore } from '@/stores/theme'
+import { useUserStore } from '@/stores/user'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { storeToRefs } from 'pinia'
 import {
@@ -144,9 +144,10 @@ const currentUserAvatarUrl = computed(() => {
 const { requireLogin } = useRequireLoginAction()
 const { rating: userRating, setRating } = useGameRating()
 const DEFAULT_COMMENT_AVATAR_URL = RatingAvatarP1
+
 const getCurrentMemberIdentity = () => ({
   memberId: normalizeQueryValue(userInfo.value?.memberId),
-  memberRowId: normalizeQueryValue(userInfo.value?.memberRowId)
+  memberRowId: normalizeQueryValue(userInfo.value?.rowId)
 })
 const {
   ratingCountFromSubject,
