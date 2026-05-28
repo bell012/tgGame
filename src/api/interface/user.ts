@@ -234,6 +234,7 @@ export interface QueryFeedbacksForm {}
 // 查询我的反馈列表 响应结果
 export interface QueryFeedbackItem {
   amount?: number | string
+  balance?: number | string
   bonus?: number | string
   bonusAmount?: number | string
   channelId?: string

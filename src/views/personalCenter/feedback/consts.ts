@@ -118,6 +118,7 @@ export const getUploadedFeedbackPath = (result: unknown) => {
 }
 
 const FEEDBACK_REWARD_AMOUNT_KEYS = [
+  'balance',
   'unReceiveAmount',
   'unreceiveAmount',
   'rewardAmount',
