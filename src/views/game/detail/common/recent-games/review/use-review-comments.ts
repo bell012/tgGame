@@ -319,7 +319,8 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
 
   const applyPreviousCommentState = (
     nextComments: ReviewCommentViewItem[],
-    previousComments: ReviewCommentViewItem[]
+    previousComments: ReviewCommentViewItem[],
+    preserveExpandedState = true
   ) => {
     const previousCommentMap = new Map(previousComments.map(comment => [comment.id, comment]))
     nextComments.forEach(comment => {
@@ -327,17 +328,19 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
       if (!previous) {
         return
       }
-      comment.isChildrenExpanded = previous.isChildrenExpanded
-      comment.children = previous.children
+      if (preserveExpandedState) {
+        comment.isChildrenExpanded = previous.isChildrenExpanded
+        comment.children = previous.children
+      }
     })
   }
 
   const requestCommentsList = async (
     subjectId: string,
     sortType = currentSortType.value,
-    options: { refreshChildren?: boolean } = {}
+    options: { refreshChildren?: boolean; preserveExpandedState?: boolean } = {}
   ) => {
-    const { refreshChildren = true } = options
+    const { refreshChildren = true, preserveExpandedState = true } = options
     if (!subjectId) {
       commentList.value = []
       return
@@ -373,7 +376,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
       const rootComments = parseCommentRecords(res?.result).map((item, index) =>
         mapCommentItem(item, index, 'root-comment', subjectId, commentLikeCacheMap)
       )
-      applyPreviousCommentState(rootComments, previousComments)
+      applyPreviousCommentState(rootComments, previousComments, preserveExpandedState)
       commentList.value = rootComments
 
       if (refreshChildren) {
@@ -389,7 +392,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     }
   }
 
-  const requestCommentSubject = async () => {
+  const requestCommentSubject = async (options: { preserveExpandedState?: boolean } = {}) => {
     const gameId = currentGameId.value
     if (!gameId) {
       commentSubjectId.value = ''
@@ -426,7 +429,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
         normalizePositiveInt(result?.total)
       )
       commentSubjectId.value = normalizeQueryValue(result?.subjectId ?? result?.id ?? result?.rowId)
-      await requestCommentsList(commentSubjectId.value, currentSortType.value)
+      await requestCommentsList(commentSubjectId.value, currentSortType.value, options)
     } catch (error) {
       console.error('getCommentSubject failed', error)
       commentSubjectId.value = ''
@@ -442,7 +445,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
      */
     activeSort.value = value
     isSortPopupOpen.value = false
-    await requestCommentSubject()
+    await requestCommentSubject({ preserveExpandedState: false })
   }
 
   const openCommentPopup = () => {

@@ -244,7 +244,11 @@ const highRollerRows = ref<IHighRollerRow[]>([])
 const isLoading = ref(false)
 
 const MAX_VISIBLE_ROWS = 10
-const SCROLL_INTERVAL_MS = 1000
+const BET_SCROLL_INTERVAL_MS = 1000
+const LATEST_LIST_REFRESH_INTERVAL_MS = 5 * 60 * 1000
+/** 龙虎榜每隔 30–60 秒追加一条 */
+const HIGH_ROLLER_SCROLL_MIN_SEC = 30
+const HIGH_ROLLER_SCROLL_MAX_SEC = 60
 
 const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   'game-detail-current-game',
@@ -373,8 +377,13 @@ const fetchBetRecords = async () => {
   }
 }
 
-const fetchHighRollerRecords = async () => {
-  stopHighRollerAutoScroll()
+const fetchHighRollerRecords = async (options: { silent?: boolean } = {}) => {
+  const { silent = false } = options
+
+  if (!silent) {
+    stopHighRollerAutoScroll()
+  }
+
   try {
     const res = await Api.game.getLatestList(
       {
@@ -390,6 +399,7 @@ const fetchHighRollerRecords = async () => {
     highRollerSourceRows.value = recordList.map((item, index) =>
       mapHighRollerToRow((item as Record<string, unknown>) ?? {}, index)
     )
+
     startHighRollerAutoScroll()
   } catch (error) {
     console.error('fetchHighRollerRecords failed', error)
@@ -400,8 +410,15 @@ const fetchHighRollerRecords = async () => {
 
 let highRollerAutoScrollTimer: number | null = null
 let highRollerNextScrollIndex = 0
+let highRollerListRefreshTimer: number | null = null
 let betAutoScrollTimer: number | null = null
 let betNextScrollIndex = 0
+
+const getHighRollerScrollInterval = () => {
+  const span = HIGH_ROLLER_SCROLL_MAX_SEC - HIGH_ROLLER_SCROLL_MIN_SEC + 1
+  const seconds = Math.floor(Math.random() * span) + HIGH_ROLLER_SCROLL_MIN_SEC
+  return seconds * 1000
+}
 
 const stopBetAutoScroll = () => {
   if (betAutoScrollTimer != null) {
@@ -421,7 +438,7 @@ const scheduleNextBetScroll = () => {
     rows.value = [nextRow, ...rows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
     betNextScrollIndex = (betNextScrollIndex + 1) % list.length
     scheduleNextBetScroll()
-  }, SCROLL_INTERVAL_MS)
+  }, BET_SCROLL_INTERVAL_MS)
 }
 
 const startBetAutoScroll = () => {
@@ -442,6 +459,21 @@ const startBetAutoScroll = () => {
   scheduleNextBetScroll()
 }
 
+const stopHighRollerListRefresh = () => {
+  if (highRollerListRefreshTimer != null) {
+    window.clearInterval(highRollerListRefreshTimer)
+    highRollerListRefreshTimer = null
+  }
+}
+
+const startHighRollerListRefresh = () => {
+  stopHighRollerListRefresh()
+
+  highRollerListRefreshTimer = window.setInterval(() => {
+    void fetchHighRollerRecords({ silent: true })
+  }, LATEST_LIST_REFRESH_INTERVAL_MS)
+}
+
 const stopHighRollerAutoScroll = () => {
   if (highRollerAutoScrollTimer != null) {
     window.clearTimeout(highRollerAutoScrollTimer)
@@ -460,7 +492,7 @@ const scheduleNextHighRollerScroll = () => {
     highRollerRows.value = [nextRow, ...highRollerRows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
     highRollerNextScrollIndex = (highRollerNextScrollIndex + 1) % list.length
     scheduleNextHighRollerScroll()
-  }, SCROLL_INTERVAL_MS)
+  }, getHighRollerScrollInterval())
 }
 
 const startHighRollerAutoScroll = () => {
@@ -476,8 +508,9 @@ const startHighRollerAutoScroll = () => {
     return
   }
 
-  highRollerRows.value = list.slice(0, MAX_VISIBLE_ROWS)
-  highRollerNextScrollIndex = MAX_VISIBLE_ROWS % list.length
+  const initialCount = Math.min(MAX_VISIBLE_ROWS, list.length)
+  highRollerRows.value = list.slice(0, initialCount)
+  highRollerNextScrollIndex = initialCount % list.length
   scheduleNextHighRollerScroll()
 }
 
@@ -488,11 +521,13 @@ const fetchTableData = async () => {
       stopBetAutoScroll()
       betSourceRows.value = []
       rows.value = []
+      startHighRollerListRefresh()
       await fetchHighRollerRecords()
       return
     }
 
     stopHighRollerAutoScroll()
+    stopHighRollerListRefresh()
     if (!isLoggedIn.value) {
       stopBetAutoScroll()
       betSourceRows.value = []
@@ -519,6 +554,7 @@ watch(
 onBeforeUnmount(() => {
   stopBetAutoScroll()
   stopHighRollerAutoScroll()
+  stopHighRollerListRefresh()
 })
 </script>
 
