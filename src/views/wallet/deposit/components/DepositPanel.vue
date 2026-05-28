@@ -41,7 +41,8 @@
       </template>
     </div>
 
-    <depositContentPanel
+    <DepositPageContent
+      mode="mobile"
       :model-value="modelValue"
       @update:model-value="setActiveTab"
       @hidden="handleHidden"
@@ -55,7 +56,8 @@ import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import LeftArrowIcon from '@/static/svg/left-icon.svg?component'
 import { navigateToName } from '@/utils/router'
 import { useI18n } from 'vue-i18n'
-import depositContentPanel, { type DepositTabType } from './depositContentPanel.vue'
+import type { DepositTabType } from '../shared'
+import DepositPageContent from './DepositPageContent.vue'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()

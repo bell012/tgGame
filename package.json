@@ -19,6 +19,7 @@
     "crypto-js": "^4.2.0",
     "echarts": "^6.0.0",
     "html2canvas": "^1.4.1",
+    "lottie-web": "^5.13.0",
     "mqtt": "^5.15.1",
     "pinia": "^3.0.4",
     "qrcode": "^1.5.4",

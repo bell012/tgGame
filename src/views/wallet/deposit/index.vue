@@ -8,14 +8,10 @@
         @sort="openDepositOrder"
       />
       <div class="flex-1 min-h-0">
-        <depositContentPanel v-model="tabType" class="h-full" />
+        <DepositPageContent v-model="tabType" mode="mobile" class="h-full" />
       </div>
     </div>
-    <WalletLayout v-else current-tab="deposit">
-      <div class="overflow-hidden">
-        <personalCenterDepositContentPanel />
-      </div>
-    </WalletLayout>
+    <PcLayout v-else v-model="tabType" />
   </div>
 </template>
 
@@ -26,11 +22,9 @@ import DetailsIcon from '@/static/svg/deposit/record.svg?component'
 import { navigateToName } from '@/utils/router'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import depositContentPanel, {
-  type DepositTabType
-} from './components/deposit/depositContentPanel.vue'
-import personalCenterDepositContentPanel from './components/deposit/personalCenterDepositContentPanel.vue'
-import WalletLayout from '../index.vue'
+import DepositPageContent from './components/DepositPageContent.vue'
+import PcLayout from './pc-layout.vue'
+import type { DepositTabType } from './shared'
 
 const { t } = useI18n()
 
