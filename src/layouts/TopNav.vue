@@ -185,6 +185,7 @@
             <!-- 礼物图标 -->
             <div
               class="cursor-pointer search w-[33px] h-[33px] flex items-center justify-center rounded-lg mr-2"
+              @click="openLuckySpinModal"
             >
               <GiftIcon class="w-4 h-4 fill-none" />
             </div>
@@ -213,6 +214,7 @@
           <!-- 礼物图标 -->
           <div
             class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
+            @click="openLuckySpinModal"
           >
             <GiftIcon class="w-6 h-6 fill-none" />
           </div>
@@ -338,6 +340,7 @@ import { useUserStore } from '@/stores/user'
 import { stripLocalePrefix, type Locale } from '@/utils/locale'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
+// import { openLuckySpin } from '@/utils/openLuckySpin'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import DepositPop from '@/views/wallet/deposit/components/DepositPop.vue'
@@ -579,6 +582,10 @@ const openLoggedInCurrencyPopup = () => {
 
 const openLoginModal = () => {
   authModalStore.openLoginModal()
+}
+
+const openLuckySpinModal = () => {
+  //  openLuckySpin()
 }
 
 const openRegisterModal = () => {

@@ -69,6 +69,7 @@ import { Swipe, SwipeItem } from 'vant'
 import type { SwipeInstance } from 'vant'
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { navigateTo } from '@/utils/router'
+import { openLuckySpin } from '@/utils/openLuckySpin'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useGameStore } from '@/stores/game'
@@ -162,8 +163,7 @@ const handleInternalJump = (slide: QuerySlideshowItem) => {
       navigateTo('/deposit')
       return
     case 3:
-      // TODO: 分享转盘页路由未明确，当前先跳邀请好友页占位。
-      navigateTo('/referral')
+      openLuckySpin()
       return
     case 4:
       // 4 充值页面

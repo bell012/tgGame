@@ -445,6 +445,7 @@ import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import { openLuckySpin } from '@/utils/openLuckySpin'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
 import LanguagePopup from '@/views/settings/preferences/language-popup.vue'
 
@@ -796,7 +797,8 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
           {
             id: 'lucky-spin',
             name: t('menu.lucky-spin'),
-            icon: newSideIcons.luckySpinIcon
+            icon: newSideIcons.luckySpinIcon,
+            handler: () => openLuckySpin()
           }
         ]
       : []

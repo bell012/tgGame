@@ -41,6 +41,7 @@ import Api from '@/api'
 import { readIsCollections } from '@/api/interface/game'
 import CommonFooter from '@/components/commonFooter.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useGameStore } from '@/stores/game'
 import { useLocaleStore } from '@/stores/locale'
 import { useUserStore } from '@/stores/user'
 import { navigateTo } from '@/utils/router'
@@ -55,6 +56,9 @@ import DesktopCurrencyInfo from './desktop/currency-info/index.vue'
 import H5CurrencyInfo from './h5/currency-info/index.vue'
 import H5Header from './h5/header.vue'
 import {
+  findGameDetailItemByIdentity,
+  isValidGameDetailResult,
+  normalizeGameDetailRecord,
   normalizeGameDetailValue,
   queryGameDetailRecommendedItems,
   splitGameTypeCodes
@@ -104,6 +108,7 @@ const route = useRoute()
 const isMobile = useIsMobile()
 const localeStore = useLocaleStore()
 const userStore = useUserStore()
+const gameStore = useGameStore()
 const { currentLanguage } = storeToRefs(localeStore)
 
 // ===== 基础状态 =====
@@ -274,8 +279,18 @@ const fetchCurrentGameDetail = async () => {
   try {
     const res = await Api.game.queryGameDetails({ rowId: targetRowId }, API_REQUEST_OPTIONS)
     const result = res?.result
-    if (result && typeof result === 'object') {
-      currentGameDetailState.value = result as CurrentGameDetail
+    const listData = (await gameStore.ensureGameData()) as unknown as GameDataItem[]
+    const fallbackItem = findGameDetailItemByIdentity(listData, { rowId: targetRowId })
+
+    if (isValidGameDetailResult(result)) {
+      currentGameDetailState.value = normalizeGameDetailRecord(
+        fallbackItem ?? undefined,
+        result
+      ) as CurrentGameDetail
+    } else if (fallbackItem) {
+      currentGameDetailState.value = normalizeGameDetailRecord(fallbackItem) as CurrentGameDetail
+    } else {
+      currentGameDetailState.value = null
     }
   } catch (error) {
     console.error('getCurrentGameDetailByApi failed', error)

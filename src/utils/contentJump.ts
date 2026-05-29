@@ -214,6 +214,14 @@ const handleInternalPageJump = async (item: ContentJumpSource, options: ContentJ
     return true
   }
 
+  // linkType=3：分享转盘（Lucky Spin）。
+  if (linkType === 3) {
+    runBeforeNavigate(options)
+    const { openLuckySpin } = await import('@/utils/openLuckySpin')
+    openLuckySpin()
+    return true
+  }
+
   // linkType=6：邀请好友页。
   if (linkType === 6) {
     runBeforeNavigate(options)

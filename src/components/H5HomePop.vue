@@ -127,6 +127,7 @@ import { useI18n } from 'vue-i18n'
 import type { SwipeInstance } from 'vant'
 import { Swipe, SwipeItem } from 'vant'
 import { navigateTo, navigateToName } from '@/utils/router'
+import { openLuckySpin } from '@/utils/openLuckySpin'
 import CloseIcon from '@/static/svg/close.svg?component'
 import LeftIcon from '@/static/svg/left-icon.svg?component'
 import RightIcon from '@/static/svg/right-icon.svg?component'
@@ -266,7 +267,7 @@ const handleInternalJump = (item: HomePopItem) => {
       navigateTo('/deposit')
       return
     case 3:
-      console.log('分享转盘')
+      openLuckySpin()
       return
     case 4:
       navigateTo('/deposit')

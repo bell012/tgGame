@@ -153,6 +153,82 @@ const GAME_DETAIL_RECOMMEND_REQUEST_OPTIONS = {
   showErrorToast: true
 } as const
 
+export const parseGameDetailJson = (raw: unknown): Record<string, unknown> => {
+  if (!raw || typeof raw !== 'string') {
+    return {}
+  }
+
+  const text = raw.trim()
+  if (!text) {
+    return {}
+  }
+
+  try {
+    const parsed = JSON.parse(text) as unknown
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : {}
+  } catch {
+    return {}
+  }
+}
+
+const hasDisplayValue = (value: unknown) => {
+  if (value === null || value === undefined) {
+    return false
+  }
+
+  return String(value).trim().length > 0
+}
+
+export const resolveGameMaxWinValue = (detail: Record<string, unknown> | null | undefined) => {
+  if (!detail) {
+    return null
+  }
+
+  const candidates = [detail.maxWin, detail.maxWinMax, detail.maxWinMin]
+  return candidates.find(hasDisplayValue) ?? null
+}
+
+export const isValidGameDetailResult = (result: unknown): result is Record<string, unknown> => {
+  if (!result || typeof result !== 'object' || Array.isArray(result)) {
+    return false
+  }
+
+  if ('status' in result && 'error' in result) {
+    return false
+  }
+
+  return 'rowId' in result || 'itemCode' in result || 'itemName' in result
+}
+
+/** 合并 gameDetailJson、列表缓存与详情接口，统一 maxWin 等统计字段 */
+export const normalizeGameDetailRecord = (
+  ...sources: Array<Record<string, unknown> | null | undefined>
+) => {
+  const merged = sources.reduce<Record<string, unknown>>((acc, source) => {
+    if (!source) {
+      return acc
+    }
+
+    return {
+      ...acc,
+      ...parseGameDetailJson(source.gameDetailJson),
+      ...source
+    }
+  }, {})
+
+  const maxWinValue = resolveGameMaxWinValue(merged)
+  if (hasDisplayValue(maxWinValue)) {
+    merged.maxWin = maxWinValue
+    if (!hasDisplayValue(merged.maxWinMax)) {
+      merged.maxWinMax = maxWinValue
+    }
+  }
+
+  return merged
+}
+
 export const queryGameDetailRecommendedItems = async () => {
   const params: QueryGameItemPageParams = {
     languageCode: getLanguageCode(),

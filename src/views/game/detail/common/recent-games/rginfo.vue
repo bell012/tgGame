@@ -29,6 +29,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import { resolveGameMaxWinValue } from '@/views/game/detail/shared'
 import { computed, inject, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -36,8 +37,11 @@ type CurrentGameDetail =
   | ({
       rtpMax?: string | number | null
       rtpMin?: string | number | null
+      maxWin?: string | number | null
       maxWinMax?: string | number | null
       maxWinMin?: string | number | null
+      stakesRangeMin?: string | number | null
+      stakesRangeMax?: string | number | null
     } & Record<string, unknown>)
   | null
 
@@ -99,15 +103,6 @@ const formatNumberText = (value: unknown) => {
   }).format(numericValue)
 }
 
-const formatMultiplierText = (value: unknown) => {
-  const text = formatNumberText(value)
-  if (!text) {
-    return '-'
-  }
-
-  return /x$/i.test(text) ? text : `${text}x`
-}
-
 const formatStakeText = (value: unknown) => {
   const text = formatNumberText(value)
   if (!text) {
@@ -131,7 +126,10 @@ const houseEdgeText = computed(() => {
   return formatPercent(100 - randomRtpValue.value)
 })
 
-const maxWinText = computed(() => formatMultiplierText(currentGameDetail.value?.maxWinMax))
+const maxWinText = computed(() => {
+  const text = formatNumberText(resolveGameMaxWinValue(currentGameDetail.value))
+  return text ?? '-'
+})
 
 const stakesRangeText = computed(() => {
   const minText = formatStakeText(currentGameDetail.value?.stakesRangeMin)

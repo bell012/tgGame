@@ -846,7 +846,10 @@
       }
     },
     "links": {
-      "vip": { "prefix": "VIP", "name": "Club" },
+      "vip": {
+        "prefix": "VIP",
+        "name": "Club"
+      },
       "rebate": "Rebate",
       "bonus": "Bonus",
       "recommend": "Referral",
@@ -1558,5 +1561,38 @@
     "leave-feedback": "Leave Feedback",
     "legal": "Legal",
     "about": "About"
+  },
+  "luckySpinPage": {
+    "title": "You got Lucky Spin",
+    "subtitle": "Win up to {amount}",
+    "spinExpiresIn": "Spin Expires In",
+    "won": "won",
+    "youHave": "You have",
+    "vouchers": "Vouchers",
+    "expiresOn": "Expires on",
+    "loadFailed": "Failed to load. Please try again.",
+    "retry": "Retry",
+    "prev": "Previous",
+    "next": "Next",
+    "reminder": {
+      "title": "Kind Reminder",
+      "deposit": "Deposit",
+      "finished": "Finished",
+      "rulesTitle": "Rules"
+    },
+    "result": {
+      "congratulations": "Congratulations!",
+      "congratsWon": "Congrats! You Won",
+      "sorry": "Sorry!",
+      "spinAgain": "Spin Again",
+      "noPrize": "No Prize",
+      "creditedToWallet": "Credited to your wallet",
+      "extraSpin": "You earned one extra spin!",
+      "betterLuck": "Better luck next time!",
+      "receivedVouchers": "You received {count} event vouchers",
+      "nextRound": "Next Round",
+      "ok": "OK",
+      "useNow": "Use Now"
+    }
   }
 }

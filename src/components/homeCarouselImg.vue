@@ -105,6 +105,7 @@ import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { navigateTo, navigateToName } from '@/utils/router'
+import { openLuckySpin } from '@/utils/openLuckySpin'
 import { storeToRefs } from 'pinia'
 import type { SwipeInstance } from 'vant'
 import { Swipe, SwipeItem } from 'vant'
@@ -196,7 +197,7 @@ const handleInternalJump = (slide: QuerySlideshowItem) => {
       navigateTo('/deposit')
       return
     case 3:
-      console.log('分享转盘')
+      openLuckySpin()
       return
     case 4:
       navigateTo('/deposit')

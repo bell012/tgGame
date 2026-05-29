@@ -360,7 +360,10 @@
       }
     },
     "links": {
-      "vip": { "prefix": "VIP", "name": "俱乐部" },
+      "vip": {
+        "prefix": "VIP",
+        "name": "俱乐部"
+      },
       "rebate": "洗码",
       "bonus": "奖金",
       "recommend": "推荐",
@@ -1551,5 +1554,38 @@
     "leave-feedback": "意见反馈",
     "legal": "法律条款",
     "about": "关于我们"
+  },
+  "luckySpinPage": {
+    "title": "您获得了 Lucky Spin",
+    "subtitle": "最高赢取 {amount}",
+    "spinExpiresIn": "旋转过期倒计时",
+    "won": "赢得",
+    "youHave": "您有",
+    "vouchers": "张票券",
+    "expiresOn": "过期时间",
+    "loadFailed": "加载失败，请重试",
+    "retry": "重试",
+    "prev": "上一个",
+    "next": "下一个",
+    "reminder": {
+      "title": "温馨提示",
+      "deposit": "充值",
+      "finished": "已完成",
+      "rulesTitle": "活动规则"
+    },
+    "result": {
+      "congratulations": "恭喜！",
+      "congratsWon": "恭喜！您赢得了",
+      "sorry": "很遗憾！",
+      "spinAgain": "再转一次",
+      "noPrize": "未中奖",
+      "creditedToWallet": "已发放至您的钱包",
+      "extraSpin": "您获得了一次额外旋转！",
+      "betterLuck": "下次好运！",
+      "receivedVouchers": "您获得了 {count} 张活动票券",
+      "nextRound": "下一轮",
+      "ok": "确定",
+      "useNow": "立即使用"
+    }
   }
 }

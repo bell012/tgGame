@@ -100,6 +100,8 @@
 
     <!-- 底部Tab栏 -->
     <BottomTabBar class="sm:hidden" v-if="!hideBottomBar" />
+
+    <LuckySpinModal />
   </div>
 </template>
 
@@ -121,6 +123,7 @@ import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-rou
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
 import TopNav from './TopNav.vue'
+import { LuckySpinModal } from '@/views/lucky-spin'
 
 const layoutStore = useLayoutStore()
 const userStore = useUserStore()
