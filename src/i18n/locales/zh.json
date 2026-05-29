@@ -1587,5 +1587,22 @@
       "ok": "确定",
       "useNow": "立即使用"
     }
+  },
+  "checkIn": {
+    "title": "每日签到奖励",
+    "subtitle": "每天签到即可领取奖励",
+    "promoEndsAt": "活动截止时间：{date}",
+    "action": "立即签到",
+    "rewardSectionTitle": "签到奖励预览",
+    "rewardReceivedThisTime": "本次获得奖励",
+    "congratulations": "恭喜获得！",
+    "youGotAReward": "你获得了奖励",
+    "luckySpinReward": "金蛋奖励 x1",
+    "useNow": "立即使用",
+    "rewardCount": "{count} 天",
+    "dayLabel": "第 {day} 天",
+    "claimed": "已领取",
+    "rulesAriaLabel": "打开签到规则",
+    "closeAriaLabel": "关闭签到弹窗"
   }
 }

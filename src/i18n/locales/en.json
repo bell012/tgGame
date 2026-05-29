@@ -1562,6 +1562,7 @@
     "legal": "Legal",
     "about": "About"
   },
+
   "luckySpinPage": {
     "title": "You got Lucky Spin",
     "subtitle": "Win up to {amount}",
@@ -1594,5 +1595,22 @@
       "ok": "OK",
       "useNow": "Use Now"
     }
+  },
+  "checkIn": {
+    "title": "Daily Check-in Rewards",
+    "subtitle": "Check in daily to claim rewards",
+    "promoEndsAt": "Promo ends on: {date}",
+    "action": "Check In Now",
+    "rewardSectionTitle": "Check in for bonus prizes",
+    "rewardReceivedThisTime": "Reward received this time",
+    "congratulations": "Congratulations!",
+    "youGotAReward": "You got a reward",
+    "luckySpinReward": "Lucky Spin x1",
+    "useNow": "Use Now",
+    "rewardCount": "{count} Days",
+    "dayLabel": "DAY {day}",
+    "claimed": "Claimed",
+    "rulesAriaLabel": "Open check-in rules",
+    "closeAriaLabel": "Close check-in popup"
   }
 }
