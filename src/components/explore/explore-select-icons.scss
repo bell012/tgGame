@@ -1,0 +1,96 @@
+// Explore 页三个下拉（分类 / 排序 / 厂商）共用规格
+$explore-select-icon-size-mobile: 20px;
+$explore-select-icon-size-desktop: 16px;
+
+.explore-select-panel--desktop {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-opacity-6);
+  background: var(--color-background-level-5);
+}
+
+.explore-select-item {
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+// 与 layoutStore.MOBILE_BREAKPOINT (640) 对齐：>640 为 PC 下拉
+@media (min-width: 641px) {
+  .explore-select-item {
+    height: 44px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+.explore-select-item--selected {
+  background-color: var(--color-opacity-10);
+}
+
+@media (min-width: 641px) {
+  .explore-select-item--selected {
+    background-color: var(--color-background-level-3);
+  }
+}
+
+:global(:root.light) .explore-select-item--selected {
+  @media (min-width: 641px) {
+    background-color: var(--color-theme-level-3);
+  }
+}
+
+.explore-select-item-label {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--color-text-level-1);
+}
+
+.explore-select-item-label--selected {
+  font-weight: 700;
+}
+
+.explore-select-radio {
+  flex-shrink: 0;
+  width: $explore-select-icon-size-mobile;
+  height: $explore-select-icon-size-mobile;
+
+  @media (min-width: 641px) {
+    width: $explore-select-icon-size-desktop;
+    height: $explore-select-icon-size-desktop;
+  }
+}
+
+.explore-select-radio--unchecked :deep(circle),
+.explore-select-radio--unchecked :deep(rect) {
+  stroke: var(--color-opacity-6);
+  fill: none;
+}
+
+.explore-select-radio--checked :deep(circle),
+.explore-select-radio--checked :deep(rect) {
+  stroke: var(--color-theme-level-1);
+  fill: none;
+}
+
+.explore-select-checkbox {
+  flex-shrink: 0;
+  width: $explore-select-icon-size-mobile;
+  height: $explore-select-icon-size-mobile;
+  color: var(--color-opacity-6);
+
+  @media (min-width: 641px) {
+    width: $explore-select-icon-size-desktop;
+    height: $explore-select-icon-size-desktop;
+  }
+}
+
+.explore-select-checkbox--checked {
+  color: var(--color-theme-level-1);
+}
+
+.explore-select-list--desktop {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}

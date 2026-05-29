@@ -14,7 +14,11 @@
       <div v-show="visible" class="fixed z-[9999] left-0 bottom-0 w-full lg:relative">
         <div
           class="tp-panel"
-          :class="desktop ? 'tp-panel--desktop' : 'rounded-t-xl bg-bg-1 px-3.5 pt-2.5'"
+          :class="
+            desktop
+              ? 'tp-panel--desktop explore-select-panel--desktop'
+              : 'rounded-t-xl bg-bg-1 px-3.5 pt-2.5'
+          "
         >
           <div class="tp-header flex items-center justify-between mb-[20px]" v-if="!desktop">
             <div></div>
@@ -31,26 +35,29 @@
             <div
               v-for="(item, inx) in typeList"
               :key="inx"
-              class="tp-item flex cursor-pointer items-center justify-between rounded-lg"
+              class="tp-item explore-select-item flex items-center justify-between"
               :class="[
-                desktop ? 'h-[44px] px-3' : 'mb-[20px] h-[42px] px-2.5',
-                isSelected(item)
-                  ? desktop
-                    ? 'tp-item--selected-desktop'
-                    : 'bg-[var(--color-opacity-10)]'
-                  : ''
+                desktop ? '' : 'mb-[20px] h-[42px] px-2.5',
+                isSelected(item) ? 'explore-select-item--selected' : ''
               ]"
               @click="confirm(item)"
             >
-              <div :class="desktop ? itemTextClass(item) : 'font-[700] text-text-1'">
+              <div
+                :class="[
+                  desktop ? 'explore-select-item-label' : 'font-[700] text-text-1',
+                  desktop && isSelected(item) ? 'explore-select-item-label--selected' : ''
+                ]"
+              >
                 {{ item.name }}
               </div>
               <component
                 v-if="desktop"
                 :is="isSelected(item) ? RadioCheckedIcon : RadioUncheckedIcon"
                 :class="[
-                  'tp-radio-icon h-4 w-4 shrink-0',
-                  isSelected(item) ? 'tp-radio-icon--checked' : 'tp-radio-icon--unchecked'
+                  'explore-select-radio',
+                  isSelected(item)
+                    ? 'explore-select-radio--checked'
+                    : 'explore-select-radio--unchecked'
                 ]"
               />
               <span
@@ -77,8 +84,6 @@
 import CloseIcon from '@/static/svg/close.svg?component'
 import RadioCheckedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
-import { computed } from 'vue'
-import { useThemeStore } from '@/stores/theme'
 
 type OptionItem = { id: string; name: string }
 
@@ -94,22 +99,9 @@ const emit = defineEmits<{
   confirm: [val: OptionItem]
 }>()
 
-const themeStore = useThemeStore()
-const isLightTheme = computed(() => themeStore.theme === 'light')
-
 const close = () => emit('update:visible', false)
 
 const isSelected = (item: OptionItem) => item.id === props.selectedId
-
-const itemTextClass = (item: OptionItem) => {
-  if (isLightTheme.value) {
-    return 'text-[13px] font-normal leading-none text-text-1'
-  }
-
-  return isSelected(item)
-    ? 'text-[13px] font-bold leading-none text-text-1'
-    : 'text-[13px] font-normal leading-none text-text-1'
-}
 
 const confirm = (item: OptionItem) => {
   emit('confirm', item)
@@ -119,37 +111,12 @@ const confirm = (item: OptionItem) => {
 
 <style scoped lang="scss">
 @use '../../../styles/mixins' as *;
+@use '../explore-select-icons.scss';
 /* 面板 */
 .tp-panel {
   padding-bottom: env(safe-area-inset-bottom);
   overflow: hidden;
   border-radius: 10px;
-}
-
-.tp-panel--desktop {
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid var(--color-opacity-6);
-  background: var(--color-background-level-5);
-}
-
-.tp-item--selected-desktop {
-  background-color: var(--color-background-level-3);
-}
-
-:global(:root.light) .tp-item--selected-desktop {
-  background-color: var(--color-theme-level-3);
-}
-
-.tp-radio-icon--unchecked :deep(circle),
-.tp-radio-icon--unchecked :deep(rect) {
-  stroke: var(--color-opacity-6);
-  fill: none;
-}
-
-.tp-radio-icon--checked :deep(rect) {
-  stroke: var(--color-theme-level-1);
-  fill: none;
 }
 
 .tp-checkbox--unchecked {

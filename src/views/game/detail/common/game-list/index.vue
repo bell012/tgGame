@@ -1,12 +1,12 @@
 <template>
   <div class="gameList">
-    <div class="mt-[14px] flex h-[24px] items-center sm:mt-6">
+    <div class="game-list-header mt-[14px] flex h-[24px] items-center md:h-[30px] sm:mt-6">
       <h2 class="flex items-center text-[14px] font-extrabold text-primary leading-none">
         {{ props.title }}
       </h2>
       <button
         type="button"
-        class="game-list-all-btn button ml-auto flex items-center justify-center gap-0.5 bg-bg-3 rounded-[6px] font-extrabold h-[24px] min-w-[31px] text-[12px] leading-none bg-black_alpha5 px-[6px] dark:bg-layer5"
+        class="game-list-all-btn button ml-auto box-border flex h-[24px] min-h-[24px] max-h-[24px] items-center justify-center gap-0.5 rounded-[6px] bg-bg-3 px-[6px] text-[12px] font-extrabold leading-none md:h-[30px] md:min-h-[30px] md:max-h-[30px]"
         @click="handleAllClick"
       >
         {{ $t('home.All') }}
@@ -53,7 +53,7 @@
       </div>
     </div>
     <div
-      class="grid snap-x relative snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth hide-scroll gap-2 pt-[14px] mx-0 grid-col-3"
+      class="game-list-grid grid snap-x relative snap-mandatory grid-flow-col overflow-x-scroll overflow-y-hidden scroll-smooth hide-scroll gap-2 pt-[14px] mx-0 grid-col-3 md:gap-[10px]"
       ref="listWrap"
       style="--grid-gap: 0.5rem; --grid-padding: 0px; --aspect-ratio: 0.75"
     >
@@ -228,16 +228,6 @@ const handleGameClick = (item: GameDataItem) => {
     color: var(--color-text-level-1);
   }
 
-  .grid-col-3 {
-    grid-auto-columns: 160px;
-  }
-
-  .game-list-card {
-    width: 160px;
-    height: 213px;
-    aspect-ratio: auto;
-  }
-
   :global(:root.light) .game-list-all-btn {
     border: 1px solid var(--color-background-level-9);
     background: var(--color-background-level-5);
@@ -247,8 +237,10 @@ const handleGameClick = (item: GameDataItem) => {
 
   .game-list-scroll-btn {
     display: flex;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
     align-items: center;
     justify-content: center;
     padding: 0;
@@ -307,6 +299,23 @@ const handleGameClick = (item: GameDataItem) => {
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* PC：固定卡片 160px + 列间距（须写在 .grid-col-3 calc 规则之后，避免被覆盖） */
+@media (min-width: 768px) {
+  .game-list-grid.grid-col-3 {
+    --grid-gap: 10px;
+    grid-auto-columns: 160px;
+    gap: var(--grid-gap);
+  }
+
+  .game-list-card {
+    width: 160px;
+    max-width: 160px;
+    height: 213px;
+    aspect-ratio: auto;
+  }
+}
+
 .button[disabled] {
   pointer-events: none;
   opacity: 0.6;
