@@ -250,6 +250,21 @@ const baseRoutes: RouteRecordRaw[] = [
       }
     }
   },
+  {
+    path: 'check-in',
+    name: 'checkIn',
+    component: () => import('@/views/check-in/index.vue'),
+    meta: {
+      title: '签到',
+      description: '签到',
+      requiresAuth: false,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
   // {
   //   path: 'referral/referral-records',
   //   name: 'referralReferralRecords',
