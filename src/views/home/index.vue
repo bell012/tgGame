@@ -285,6 +285,7 @@
   </div>
 
   <H5HomePop v-if="shouldShowH5HomePop" class="sm:hidden" @close="closeH5HomePop" />
+  <TaskPop v-if="isActiveHomeRoute" v-model:visible="showTaskPop" />
   <CommonFooter class="hidden sm:block" />
 </template>
 
@@ -306,6 +307,7 @@ import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import TaskPop from '@/views/activity/components/task-pop.vue'
 import GameList from './components/gameList.vue'
 import LazySection from './components/LazySection.vue'
 import RecentBigWins from './components/RecentBigWins.vue'
@@ -369,6 +371,7 @@ const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 
 const showH5HomePop = ref(true)
+const showTaskPop = ref(false)
 const isActiveHomeRoute = computed(() => stripLocalePrefix(router.currentRoute.value.path) === '/')
 const shouldShowH5HomePop = computed(
   () => isMobile.value && isActiveHomeRoute.value && showH5HomePop.value
@@ -547,6 +550,16 @@ watch(
     }
     void fetchHomeFavoritesModule()
   }
+)
+
+watch(
+  isActiveHomeRoute,
+  active => {
+    if (active) {
+      showTaskPop.value = true
+    }
+  },
+  { immediate: true }
 )
 </script>
 
