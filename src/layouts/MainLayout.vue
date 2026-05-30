@@ -123,7 +123,7 @@ import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-rou
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
 import TopNav from './TopNav.vue'
-import { LuckySpinModal } from '@/views/lucky-spin'
+import { LuckySpinModal } from '@/views/activity/lucky-spin'
 
 const layoutStore = useLayoutStore()
 const userStore = useUserStore()

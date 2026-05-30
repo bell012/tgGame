@@ -132,9 +132,9 @@
               :key="inx"
               :ref="el => (tabRefs[inx] = el as HTMLButtonElement)"
               :class="{
-                'bg-bg-2': item.sysGameTypeCode === currentTabCode
+                'casino-tab-button--active': item.sysGameTypeCode === currentTabCode
               }"
-              class="flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
+              class="casino-tab-button flex px-[7px] py-[9px] shrink-0 rounded-lg text-xs items-center lg:hover:bg-bg-2"
               @click.stop="onTabButton(item)"
             >
               <div class="h-5 w-5 mr-[7px]">
@@ -710,4 +710,14 @@ watch(
 )
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.casino-tab-button--active {
+  background: var(--color-background-level-2);
+}
+
+@media (min-width: 768px) {
+  .casino-tab-button--active {
+    background: var(--color-background-level-1);
+  }
+}
+</style>

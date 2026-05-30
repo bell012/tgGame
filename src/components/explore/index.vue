@@ -544,7 +544,6 @@ onUnmounted(() => {
 @media (min-width: 768px) {
   .explore-tab-button--active {
     background: var(--color-background-level-1);
-    border: 1px solid var(--color-opacity-10);
   }
 
   .explore-tab-scroll-fade {

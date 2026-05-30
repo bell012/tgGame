@@ -945,6 +945,7 @@
     "betHistory": "Bet History",
     "notification": "Notification",
     "referEarn": "Refer and Earn",
+    "myVouchers": "My Vouchers",
     "rebate": "Rebate",
     "affiliate": "Affiliate",
     "globalSetting": "Global Setting",
@@ -1612,5 +1613,9 @@
     "claimed": "Claimed",
     "rulesAriaLabel": "Open check-in rules",
     "closeAriaLabel": "Close check-in popup"
+  },
+  "vouchers": {
+    "myVouchers": "My Vouchers",
+    "voucherHistory": "Voucher History"
   }
 }

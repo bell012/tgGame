@@ -21,24 +21,26 @@
     </template>
 
     <template v-else-if="props.module">
-      <div class="mt-2 flex h-6 sm:h-8 items-center font-inter sm:mt-6">
-        <h2 class="flex items-center text-base font-bold text-text-1 sm:text-xl">
+      <div class="mt-2 flex h-8 items-center font-inter sm:mt-6">
+        <h2 class="flex h-8 items-center text-base font-bold leading-none text-text-1 sm:text-xl">
           {{ props.module.sysGameTypeName }}
         </h2>
         <button
-          class="button inactive ml-auto flex h-6 sm:h-8 items-center justify-center rounded-lg bg-opacity-10 px-2 text-xs sm:text-sm font-bold text-text-1 whitespace-nowrap"
+          type="button"
+          class="button inactive ml-auto flex h-8 shrink-0 items-center justify-center gap-0.5 rounded-lg bg-opacity-10 px-2 text-xs font-bold leading-none text-text-1 whitespace-nowrap sm:text-sm"
           @click="handleViewAll(props.module)"
         >
           {{ t('casino.all') }}
-          <div class="hidden sm:block size-4 text-text-1 rotate-180">
+          <div class="hidden size-4 shrink-0 rotate-180 text-text-1 sm:block">
             <component :is="casinoIcons.chevron_left" class="size-4 fill-current" />
           </div>
         </button>
-        <div class="ml-2 hidden gap-x-1 sm:flex">
+        <div class="ml-2 hidden shrink-0 gap-x-1 sm:flex">
           <button
             type="button"
-            class="button inactive ml-auto flex h-8 items-center gap-1 rounded-lg px-2 font-extrabold"
+            class="button inactive flex size-8 shrink-0 items-center justify-center rounded-lg p-0"
             :class="canScrollLeft ? 'bg-opacity-10' : 'bg-bg-4'"
+            :disabled="!canScrollLeft"
             @click="scrollLeft"
           >
             <div class="icon size-4" :class="canScrollLeft ? 'text-text-1' : 'text-icon-3'">
@@ -47,8 +49,9 @@
           </button>
           <button
             type="button"
-            class="button inactive ml-auto flex h-8 items-center gap-1 rounded-lg px-2 font-extrabold"
+            class="button inactive flex size-8 shrink-0 items-center justify-center rounded-lg p-0"
             :class="canScrollRight ? 'bg-opacity-10' : 'bg-bg-4'"
+            :disabled="!canScrollRight"
             @click="scrollRight"
           >
             <div

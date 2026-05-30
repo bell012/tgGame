@@ -35,11 +35,11 @@
       <div v-show="popupShow" :class="popupShellClass" :style="isMobile ? {} : { top: desktopTop }">
         <div
           ref="popupRef"
-          class="flex flex-col bg-bg-1 px-3.5 pt-2.5"
+          class="flex flex-col bg-bg-1"
           :class="[
             isMobile
-              ? 'max-h-[75vh] rounded-t-xl'
-              : 'pointer-events-auto absolute left-0 max-h-[16rem] w-full overflow-y-auto rounded-xl border border-opacity-6 bg-bg-5'
+              ? 'max-h-[75vh] rounded-t-xl px-3.5 pt-2.5'
+              : 'explore-select-panel--desktop pointer-events-auto absolute left-0 max-h-[16rem] w-full overflow-y-auto'
           ]"
         >
           <div v-if="isMobile" class="mb-2.5 flex items-center justify-between">
@@ -68,18 +68,25 @@
           </div>
 
           <div class="flex-1 overflow-y-auto" :class="{ 'pb-[58px]': Multi }">
-            <div class="flex flex-col">
+            <div class="flex flex-col" :class="{ 'explore-select-list--desktop': !isMobile }">
               <div
                 v-for="item in filteredOptions"
                 :key="item.value"
-                class="mb-2.5 flex h-[42px] cursor-pointer items-center rounded-lg px-2.5"
+                class="explore-select-item flex items-center"
                 :class="{
-                  'bg-opacity-10': isSelected(item),
-                  'justify-between': !Multi
+                  'explore-select-item--selected': isSelected(item),
+                  'justify-between': !Multi,
+                  'mb-2.5 h-[42px] px-2.5': isMobile
                 }"
                 @click="selectItem(item)"
               >
-                <span v-if="!Multi">{{ item.label }}</span>
+                <span
+                  v-if="!Multi"
+                  class="explore-select-item-label"
+                  :class="{ 'explore-select-item-label--selected': isSelected(item) && !isMobile }"
+                >
+                  {{ item.label }}
+                </span>
                 <component
                   :is="
                     isSelected(item)
@@ -90,7 +97,21 @@
                         ? CubeUnchecedIcon
                         : RadioUncheckedIcon
                   "
-                  :class="Multi ? 'h-5 w-5 shrink-0 text-icon-3' : 'h-5 w-5 shrink-0'"
+                  :class="
+                    Multi
+                      ? [
+                          'explore-select-checkbox',
+                          isSelected(item)
+                            ? 'explore-select-checkbox--checked'
+                            : 'explore-select-checkbox--unchecked'
+                        ]
+                      : [
+                          'explore-select-radio',
+                          isSelected(item)
+                            ? 'explore-select-radio--checked'
+                            : 'explore-select-radio--unchecked'
+                        ]
+                  "
                 />
                 <div v-if="Multi" class="ml-2.5 h-[22px] min-w-0 flex items-center justify-start">
                   <gameRemoteImg
@@ -129,7 +150,7 @@ import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import CloseIcon from '@/static/svg/close.svg?component'
-import RadioCheckedIcon from '@/static/svg/radio-checked-hollow.svg?component'
+import RadioCheckedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
 import CubeChecedIcon from '@/static/svg/cube-checked.svg?component'
 import CubeUnchecedIcon from '@/static/svg/cube-unchecked.svg?component'
@@ -287,3 +308,7 @@ watch(popupShow, val => {
 
 onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
 </script>
+
+<style scoped lang="scss">
+@use './explore-select-icons.scss';
+</style>

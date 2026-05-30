@@ -5,11 +5,7 @@
         v-if="modelValue"
         class="fixed inset-0 z-[1200] flex items-end justify-center lg:items-center"
       >
-        <div
-          class="comment-popup-mask absolute inset-0"
-          :class="{ 'comment-popup-mask-light': isLightTheme }"
-          @click="closePopup"
-        ></div>
+        <div class="comment-popup-mask absolute inset-0" @click="closePopup"></div>
 
         <div
           class="comment-popup-panel relative hidden w-full max-w-[440px] lg:block"
@@ -22,11 +18,15 @@
                 {{ t('gameDetail.leaveCommentsTitle') }}
               </div>
               <button
-                class="comment-popup-close absolute right-0 top-[50%] flex size-[24px] -translate-y-[50%] items-center justify-center rounded-[6px] text-[18px] font-bold leading-none"
+                class="comment-popup-close absolute right-0 top-1/2 flex size-[24px] -translate-y-1/2 items-center justify-center rounded-[6px]"
                 type="button"
+                aria-label="close"
                 @click="closePopup"
               >
-                ×
+                <CloseIcon
+                  class="comment-popup-close-icon h-2.5 w-2.5 shrink-0"
+                  aria-hidden="true"
+                />
               </button>
             </div>
 
@@ -215,6 +215,7 @@
 import { useThemeStore } from '@/stores/theme'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import CloseIcon from '@/static/svg/close.svg?component'
 import EmoIcon from '@/static/svg/game/detail/comment/emo.svg?component'
 import EmoRecentsIcon from '@/static/svg/game/detail/comment/emo/Recents.svg?url'
 import EmoSmileysIcon from '@/static/svg/game/detail/comment/emo/Smileys.svg?url'
@@ -733,11 +734,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .comment-popup-mask {
-  background: rgba(0, 0, 0, 0.72);
-}
-
-.comment-popup-mask-light {
-  background: rgba(16, 24, 40, 0.48);
+  background: var(--color-mask-60-1);
 }
 
 .comment-popup-shell {
@@ -758,8 +755,15 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-close {
-  background: #42474d;
-  color: #d4d8dd;
+  border: none;
+  padding: 0;
+  background: var(--color-opacity-10);
+  color: var(--color-text-level-1);
+  cursor: pointer;
+}
+
+.comment-popup-close-icon {
+  display: block;
 }
 
 .comment-popup-textarea {
@@ -955,8 +959,8 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-panel.is-light .comment-popup-close {
-  background: #dfe7f2;
-  color: #52647f;
+  background: var(--color-opacity-10);
+  color: var(--color-icon-level-2);
 }
 
 .comment-popup-panel.is-light .comment-popup-textarea {
@@ -1046,6 +1050,7 @@ onBeforeUnmount(() => {
 @media (min-width: 1024px) {
   .comment-popup-shell-desktop {
     background: var(--color-background-level-1);
+    border: 1px solid var(--color-opacity-6);
   }
 
   .comment-popup-shell-desktop .comment-popup-textarea {
@@ -1054,6 +1059,7 @@ onBeforeUnmount(() => {
 
   .comment-popup-panel.is-light .comment-popup-shell-desktop {
     background: var(--color-background-level-1);
+    border: 1px solid var(--color-background-level-9);
   }
 
   .comment-popup-panel.is-light .comment-popup-shell-desktop .comment-popup-textarea {

@@ -370,6 +370,10 @@ const { myVipInfo, vipList } = storeToRefs(vipStore)
 
 type CachedSiteConfig = {
   currency?: unknown
+  baseSiteConfig?: {
+    supportCurrency?: unknown
+    [key: string]: unknown
+  }
 }
 
 const originalColorIconNumbers = new Set([16, 31])
@@ -429,7 +433,7 @@ const readCachedConfigCurrencyCodes = () => {
 
   try {
     const parsed = JSON.parse(rawConfig) as CachedSiteConfig
-    return parseCurrencyCodes(parsed?.currency)
+    return parseCurrencyCodes(parsed?.baseSiteConfig?.supportCurrency)
   } catch (error) {
     console.error(error)
     return []
@@ -669,6 +673,12 @@ const settingsMenus = computed(() => [
     name: t('personalCenter.referEarn'),
     icon: getIcon(10),
     handler: () => console.log('Refer and Earn clicked')
+  },
+  {
+    id: 'myVouchers',
+    name: t('personalCenter.myVouchers'),
+    icon: getIcon(84),
+    handler: () => navigateTo('/myVouchers')
   },
   {
     id: 'rebate',
