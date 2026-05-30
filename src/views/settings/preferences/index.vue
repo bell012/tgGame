@@ -285,7 +285,9 @@ type PopupAnchorRect = {
 }
 
 type CachedSiteConfig = {
-  currency?: unknown
+  baseSiteConfig?: {
+    supportCurrency?: unknown
+  }
 }
 
 const isMobile = useIsMobile()
@@ -338,7 +340,7 @@ const readCachedConfigCurrencyCodes = () => {
 
   try {
     const parsed = JSON.parse(rawConfig) as CachedSiteConfig
-    return parseCurrencyCodes(parsed?.currency)
+    return parseCurrencyCodes(parsed?.baseSiteConfig?.supportCurrency)
   } catch (error) {
     console.error(error)
     return []
