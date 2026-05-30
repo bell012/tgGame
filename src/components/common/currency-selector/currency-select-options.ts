@@ -141,7 +141,9 @@ const getConfigCurrencyField = (siteConfig: SiteConfig | null | undefined): unkn
   if (!siteConfig || typeof siteConfig !== 'object' || Array.isArray(siteConfig)) {
     return ''
   }
-  return (siteConfig as Record<string, unknown>).currency
+  return (
+    (siteConfig as Record<string, unknown>).baseSiteConfig as Record<string, unknown> | undefined
+  )?.supportCurrency
 }
 
 const readCachedCurrencyCodes = () => {
@@ -156,7 +158,10 @@ const readCachedCurrencyCodes = () => {
       return []
     }
 
-    return parseCurrencyCodes((parsed as Record<string, unknown>).currency)
+    return parseCurrencyCodes(
+      ((parsed as Record<string, unknown>).baseSiteConfig as Record<string, unknown> | undefined)
+        ?.supportCurrency
+    )
   } catch (error) {
     console.error(error)
     return []

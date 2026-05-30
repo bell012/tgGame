@@ -11,10 +11,6 @@ import {
   type CurrencyOptionItem
 } from '@/components/common/currency-selector/currency-select-options'
 
-type CachedSiteConfig = {
-  currency?: unknown
-}
-
 export type DisplayCurrencyOption = {
   code: string
   icon: string
@@ -46,11 +42,19 @@ export const parseDisplayCurrencyCodes = (rawCurrency: unknown) => {
   return []
 }
 
+type CachedSiteConfig = {
+  baseSiteConfig?: {
+    supportCurrency?: unknown
+  }
+}
+
 export const readDisplayCurrencyCodesFromSiteConfig = (
   siteConfig: SiteConfig | null | undefined
 ) => {
   if (siteConfig && typeof siteConfig === 'object' && !Array.isArray(siteConfig)) {
-    return parseDisplayCurrencyCodes((siteConfig as CachedSiteConfig).currency)
+    return parseDisplayCurrencyCodes(
+      (siteConfig as CachedSiteConfig).baseSiteConfig?.supportCurrency
+    )
   }
 
   const rawConfig = localStorage.getItem(SITE_CONFIG_STORAGE_KEY)
@@ -60,7 +64,7 @@ export const readDisplayCurrencyCodesFromSiteConfig = (
 
   try {
     const parsed = JSON.parse(rawConfig) as CachedSiteConfig
-    return parseDisplayCurrencyCodes(parsed?.currency)
+    return parseDisplayCurrencyCodes(parsed?.baseSiteConfig?.supportCurrency)
   } catch (error) {
     console.error(error)
     return []
