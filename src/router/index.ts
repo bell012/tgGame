@@ -736,6 +736,36 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'myVouchers',
+    name: 'myVouchers',
+    component: () => import('@/views/activity/vouchers/myVouchers/index.vue'),
+    meta: {
+      title: '我的票卷',
+      description: '我的票卷',
+      requiresAuth: true,
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'voucherHistory',
+    name: 'voucherHistory',
+    component: () => import('@/views/activity/vouchers/voucherHistory/index.vue'),
+    meta: {
+      title: '票卷记录',
+      description: '票卷记录',
+      requiresAuth: true,
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 
