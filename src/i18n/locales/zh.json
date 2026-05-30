@@ -942,6 +942,7 @@
     "betHistory": "投注历史",
     "notification": "通知",
     "referEarn": "推荐并赚取",
+    "myVouchers": "我的票卷",
     "rebate": "洗码",
     "affiliate": "联盟",
     "globalSetting": "全局设置",
@@ -1587,5 +1588,9 @@
       "ok": "确定",
       "useNow": "立即使用"
     }
+  },
+  "vouchers": {
+    "myVouchers": "我的票卷",
+    "voucherHistory": "票卷记录"
   }
 }

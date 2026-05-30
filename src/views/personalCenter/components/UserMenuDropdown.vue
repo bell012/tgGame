@@ -132,6 +132,15 @@ const mainMenus = computed(() => [
     }
   },
   {
+    id: 'myVouchers',
+    name: t('personalCenter.myVouchers'),
+    icon: getIcon(84),
+    handler: () => {
+      navigateTo('/myVouchers')
+      emit('update:modelValue', false)
+    }
+  },
+  {
     id: 'buy-crypto',
     name: t('userMenu.buyCrypto'),
     icon: getIcon(62),

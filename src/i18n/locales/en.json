@@ -945,6 +945,7 @@
     "betHistory": "Bet History",
     "notification": "Notification",
     "referEarn": "Refer and Earn",
+    "myVouchers": "My Vouchers",
     "rebate": "Rebate",
     "affiliate": "Affiliate",
     "globalSetting": "Global Setting",
@@ -1594,5 +1595,9 @@
       "ok": "OK",
       "useNow": "Use Now"
     }
+  },
+  "vouchers": {
+    "myVouchers": "My Vouchers",
+    "voucherHistory": "Voucher History"
   }
 }
