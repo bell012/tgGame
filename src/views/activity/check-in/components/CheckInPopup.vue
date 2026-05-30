@@ -4,7 +4,7 @@
     <!-- 签到弹窗遮罩层 -->
     <div
       v-if="props.modelValue"
-      class="fixed inset-0 z-[9999] flex items-start justify-center overflow-hidden sm:items-center sm:bg-mask-60-1 sm:px-4 sm:py-8 sm:backdrop-blur-[2px]"
+      class="fixed inset-0 z-[9999] flex h-[100dvh] w-screen items-start justify-center overflow-hidden sm:h-auto sm:w-auto sm:items-center sm:bg-mask-60-1 sm:px-4 sm:py-8 sm:backdrop-blur-[2px]"
       :style="
         isMobile
           ? { background: 'var(--color-mask-60-1, #00000099)', backdropFilter: 'blur(5px)' }
@@ -32,18 +32,14 @@
 </template>
 
 <script setup lang="ts">
-import Api from '@/api'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useUserStore } from '@/stores/user'
 import { getCurrentCurrency } from '@/utils/locale'
 import { storeToRefs } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-  createCheckInViewData,
-  createDefaultCheckInViewData,
-  type CheckInViewData
-} from '../shared'
+import { createDefaultCheckInViewData, type CheckInViewData } from '../shared'
+import { loadActiveCheckInData } from '../checkInData'
 import CheckInMobileLayout from '../mobile-layout.vue'
 import CheckInPcLayout from '../pc-layout.vue'
 
@@ -70,6 +66,10 @@ const isLoggedIn = computed(() => {
   return Boolean(userInfo.value?.tradeToken || acctInfo.value?.memberId)
 })
 
+const currentChannelId = computed(() => {
+  return isMobile.value ? '4' : '3'
+})
+
 const loadCheckInData = async () => {
   if (!props.modelValue || !isLoggedIn.value || isLoading.value) {
     return
@@ -78,26 +78,13 @@ const loadCheckInData = async () => {
   isLoading.value = true
 
   try {
-    const activityListResponse = await Api.activity.queryActivityList({
-      size: 100,
-      current: 1
-    })
-    const checkInActivity = activityListResponse.result?.records?.find(record => {
-      return Number(record.type) === 5 && Number(record.status) === 2 && record.ended !== true
-    })
-
-    if (!checkInActivity?.rowId) {
-      return
-    }
-
-    const checkInStatusResponse = await Api.activity.queryCheckInStatus({
-      activityId: checkInActivity.rowId
-    })
-
-    viewData.value = createCheckInViewData(checkInActivity, checkInStatusResponse.result, {
+    const checkInData = await loadActiveCheckInData({
+      channelId: currentChannelId.value,
       currencyCode: acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency(),
       languageCode: locale.value
     })
+
+    viewData.value = checkInData?.viewData ?? createDefaultCheckInViewData()
   } catch (error) {
     console.error(error)
   } finally {
@@ -111,7 +98,7 @@ const handleClose = () => {
 }
 
 watch(
-  [() => props.modelValue, isLoggedIn, () => locale.value],
+  [() => props.modelValue, isLoggedIn, () => locale.value, currentChannelId],
   ([visible, loggedIn]) => {
     if (visible && loggedIn) {
       void loadCheckInData()

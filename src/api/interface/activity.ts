@@ -64,11 +64,16 @@ export interface ActivityListItem {
   activiName?: string
   activityDesc?: ActivityLanguageTextItem[]
   activityName?: ActivityLanguageTextItem[]
+  channel?: string
   config?: Record<string, CheckInActivityCurrencyConfig | undefined>
   currencyList?: string[]
   endDate?: number
   ended?: boolean
+  homeDisplay?: number
+  loginAfterPopWay?: number
+  loginBeforePopWay?: number
   rowId?: number
+  sortNo?: number
   startDate?: number
   status?: number
   type?: number
