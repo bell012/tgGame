@@ -1,3 +1,12 @@
+import type {
+  ActivityListItem,
+  CheckInActivityCurrencyConfig,
+  CheckInActivitySignConfigItem,
+  CheckInHistorySignItem,
+  CheckInTicketInfo,
+  QueryCheckInStatusResult
+} from '@/api/interface/activity'
+import { formatUsDateTime12h } from '@/utils/date'
 import cashIcon from '@/static/img/check-in/cash.png'
 import giftBoxClosed from '@/static/img/check-in/gift-box-closed.png'
 import giftBoxOpened from '@/static/img/check-in/gift-box-open.png'
@@ -30,14 +39,34 @@ export interface CheckInHeroAmountReward {
 
 export interface CheckInHeroActionReward {
   type: 'action'
-  titleKey: string
+  title?: string
+  titleKey?: string
   icon: string
-  actionKey: string
+  actionLabel?: string
+  actionKey?: string
 }
 
 export type CheckInHeroReward = CheckInHeroAmountReward | CheckInHeroActionReward
 
-// 生成奖励卡片的渐变背景、边框和阴影样式。
+export interface CheckInViewData {
+  activityId?: number
+  promoEndsAt: string
+  rewards: CheckInRewardItem[]
+  canClaim: boolean
+  heroRewards: CheckInHeroReward[]
+  todayIsSign: boolean
+}
+
+interface CheckInRewardPreset {
+  icon: string
+  cardStyle: CSSProperties
+  iconShellStyle: CSSProperties
+  amountStyle: CSSProperties
+}
+
+/**
+ * 生成奖励卡片的渐变背景、边框和阴影样式。
+ */
 const createCardStyle = (
   startColor: string,
   endColor: string,
@@ -48,53 +77,33 @@ const createCardStyle = (
   boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 12px 24px rgba(0, 0, 0, 0.14)'
 })
 
-// 生成奖励图标容器的渐变背景样式。
+/**
+ * 生成奖励图标容器的渐变背景样式。
+ */
 const createIconShellStyle = (startColor: string, endColor: string): CSSProperties => ({
   background: `linear-gradient(180deg, ${startColor} 0%, ${endColor} 100%)`,
   boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.25)'
 })
 
-// 生成奖励金额文字样式。
+/**
+ * 生成奖励金额文字样式。
+ */
 const createAmountStyle = (color: string): CSSProperties => ({
   color,
   textShadow: '0 1px 6px rgba(0, 0, 0, 0.18)'
 })
 
-// 签到按钮和主视觉素材。
+/**
+ * 签到按钮和主视觉素材。
+ */
 export const CHECK_IN_CLOSE_BUTTON = checkInCloseButton
 export const CHECK_IN_RULES_BUTTON = checkInRulesButton
 export const CHECK_IN_HERO_CLOSED = giftBoxClosed
 export const CHECK_IN_HERO_OPENED = giftBoxOpened
 
-// 签到按钮占位状态，后续由接口状态替换。
-export const CHECK_IN_CAN_CLAIM = false
-
-// 主视觉区领取结果占位数据：
-// 0 条 = 未签到，1 条 = 单奖励，2 条 = 双奖励。
-export const CHECK_IN_RECEIVED_REWARDS: CheckInHeroReward[] = [
+const CHECK_IN_REWARD_PRESETS: CheckInRewardPreset[] = [
   {
-    type: 'amount',
-    amount: '100.00',
-    icon: cashIcon
-  },
-  {
-    type: 'action',
-    titleKey: 'checkIn.luckySpinReward',
-    icon: goldenEggIcon,
-    actionKey: 'checkIn.useNow'
-  }
-]
-
-// 签到活动截止时间占位文案。
-export const CHECK_IN_PROMO_ENDS_AT = '12/18/2026 11:14:15 AM'
-
-// 签到奖励占位数据，后续可直接替换为接口返回值。
-export const CHECK_IN_REWARDS: CheckInRewardItem[] = [
-  {
-    day: 1,
-    amount: '100',
     icon: giftBoxIcon,
-    claimed: true,
     cardStyle: createCardStyle(
       'rgba(255, 192, 94, 0.42)',
       'rgba(141, 77, 0, 0.28)',
@@ -104,8 +113,6 @@ export const CHECK_IN_REWARDS: CheckInRewardItem[] = [
     amountStyle: createAmountStyle('#fff09e')
   },
   {
-    day: 2,
-    amount: '0',
     icon: cashIcon,
     cardStyle: createCardStyle(
       'rgba(62, 210, 114, 0.4)',
@@ -116,8 +123,6 @@ export const CHECK_IN_REWARDS: CheckInRewardItem[] = [
     amountStyle: createAmountStyle('#d9ff95')
   },
   {
-    day: 3,
-    amount: '300~800',
     icon: turntableIcon,
     cardStyle: createCardStyle(
       'rgba(192, 116, 255, 0.38)',
@@ -128,8 +133,6 @@ export const CHECK_IN_REWARDS: CheckInRewardItem[] = [
     amountStyle: createAmountStyle('#ffe88d')
   },
   {
-    day: 4,
-    amount: '5K~10K',
     icon: redPacketIcon,
     cardStyle: createCardStyle(
       'rgba(255, 121, 121, 0.36)',
@@ -140,8 +143,6 @@ export const CHECK_IN_REWARDS: CheckInRewardItem[] = [
     amountStyle: createAmountStyle('#ffe88d')
   },
   {
-    day: 5,
-    amount: '800',
     icon: goldenEggIcon,
     cardStyle: createCardStyle(
       'rgba(72, 201, 176, 0.34)',
@@ -152,8 +153,6 @@ export const CHECK_IN_REWARDS: CheckInRewardItem[] = [
     amountStyle: createAmountStyle('#f0ff98')
   },
   {
-    day: 6,
-    amount: '1000',
     icon: goldenEggIcon,
     cardStyle: createCardStyle(
       'rgba(255, 179, 109, 0.36)',
@@ -164,10 +163,7 @@ export const CHECK_IN_REWARDS: CheckInRewardItem[] = [
     amountStyle: createAmountStyle('#fff3a8')
   },
   {
-    day: 7,
-    amount: '1500',
     icon: goldenEggIcon,
-    spanFull: true,
     cardStyle: createCardStyle(
       'rgba(255, 218, 127, 0.28)',
       'rgba(38, 24, 0, 0.32)',
@@ -177,3 +173,245 @@ export const CHECK_IN_REWARDS: CheckInRewardItem[] = [
     amountStyle: createAmountStyle('#fff1ab')
   }
 ]
+
+const CHECK_IN_TICKET_TYPE_ICON_MAP: Record<number, string> = {
+  1: cashIcon,
+  2: giftBoxIcon,
+  3: turntableIcon,
+  4: redPacketIcon,
+  5: giftBoxIcon,
+  6: goldenEggIcon
+}
+
+const DEFAULT_REWARDS: CheckInRewardItem[] = [
+  '100',
+  '0',
+  '300~800',
+  '5K~10K',
+  '800',
+  '1000',
+  '1500'
+].map((amount, index) => {
+  const preset = CHECK_IN_REWARD_PRESETS[index]
+
+  return {
+    day: index + 1,
+    amount,
+    icon: preset.icon,
+    claimed: false,
+    cardStyle: preset.cardStyle,
+    iconShellStyle: preset.iconShellStyle,
+    amountStyle: preset.amountStyle
+  }
+})
+
+const normalizeLanguageCode = (languageCode?: string) => {
+  return String(languageCode ?? '')
+    .trim()
+    .toLowerCase()
+    .startsWith('zh')
+    ? 'zh'
+    : 'eng'
+}
+
+const toNumber = (value: unknown) => {
+  const normalizedValue =
+    typeof value === 'string' && value.trim().length === 0 ? Number.NaN : Number(value)
+
+  return Number.isFinite(normalizedValue) ? normalizedValue : null
+}
+
+const formatRewardAmount = (value: unknown, fixedDigits?: number) => {
+  const numericValue = toNumber(value)
+
+  if (numericValue === null) {
+    return '0'
+  }
+
+  if (typeof fixedDigits === 'number') {
+    return numericValue.toFixed(fixedDigits)
+  }
+
+  return Number.isInteger(numericValue) ? String(numericValue) : numericValue.toFixed(2)
+}
+
+const resolveRewardIcon = (ticketType?: unknown, fallbackIndex = 0) => {
+  const resolvedTicketType = toNumber(ticketType)
+  const mappedIcon =
+    resolvedTicketType !== null ? CHECK_IN_TICKET_TYPE_ICON_MAP[resolvedTicketType] : undefined
+
+  return mappedIcon || CHECK_IN_REWARD_PRESETS[fallbackIndex % CHECK_IN_REWARD_PRESETS.length].icon
+}
+
+const resolveActivityCurrencyConfig = (
+  activity?: ActivityListItem,
+  currencyCode?: string
+): CheckInActivityCurrencyConfig | undefined => {
+  const configMap = activity?.config
+
+  if (!configMap) {
+    return undefined
+  }
+
+  const normalizedCurrencyCode = String(currencyCode ?? '')
+    .trim()
+    .toUpperCase()
+
+  if (normalizedCurrencyCode && configMap[normalizedCurrencyCode]) {
+    return configMap[normalizedCurrencyCode]
+  }
+
+  const firstConfigCurrency = activity?.currencyList?.[0]
+
+  if (firstConfigCurrency && configMap[firstConfigCurrency]) {
+    return configMap[firstConfigCurrency]
+  }
+
+  return Object.values(configMap).find(Boolean)
+}
+
+const resolveTicketLanguageName = (ticket?: CheckInTicketInfo, languageCode?: string) => {
+  const normalizedLanguageCode = normalizeLanguageCode(languageCode)
+
+  const matchedLanguageInfo = ticket?.languageInfo?.find(item => {
+    return normalizeLanguageCode(item.languageCode) === normalizedLanguageCode
+  })
+
+  return matchedLanguageInfo?.name || ticket?.languageInfo?.[0]?.name || ''
+}
+
+const createRewardItemFromConfig = (
+  rewardConfig: CheckInActivitySignConfigItem,
+  index: number,
+  claimed: boolean
+): CheckInRewardItem => {
+  const preset = CHECK_IN_REWARD_PRESETS[index % CHECK_IN_REWARD_PRESETS.length]
+
+  return {
+    day: toNumber(rewardConfig.day) ?? index + 1,
+    amount: formatRewardAmount(rewardConfig.rewardAmount),
+    icon: resolveRewardIcon(rewardConfig.ticketType, index),
+    claimed,
+    cardStyle: preset.cardStyle,
+    iconShellStyle: preset.iconShellStyle,
+    amountStyle: preset.amountStyle
+  }
+}
+
+const resolveTodayHistoryRewards = (status?: QueryCheckInStatusResult) => {
+  const historySign = status?.historySign ?? []
+  const todayRewards = historySign.filter(item => item.todayIsSign)
+
+  if (todayRewards.length > 0) {
+    return todayRewards.slice(0, 2)
+  }
+
+  if (status?.todayIsSign && historySign.length > 0) {
+    return [historySign[historySign.length - 1]]
+  }
+
+  return []
+}
+
+const createPrimaryHeroReward = (
+  historyItem: CheckInHistorySignItem,
+  signConfigMap: Map<number, CheckInActivitySignConfigItem>
+): CheckInHeroAmountReward => {
+  const signDay = toNumber(historyItem.signDays) ?? 0
+  const matchedConfig = signConfigMap.get(signDay)
+  const resolvedAmount =
+    historyItem.todaySignAmount ?? matchedConfig?.rewardAmount ?? historyItem.ticket?.amount ?? 0
+
+  return {
+    type: 'amount',
+    amount: formatRewardAmount(resolvedAmount, 2),
+    icon: resolveRewardIcon(historyItem.ticket?.type ?? matchedConfig?.ticketType)
+  }
+}
+
+const createSecondaryHeroReward = (
+  historyItem: CheckInHistorySignItem,
+  signConfigMap: Map<number, CheckInActivitySignConfigItem>,
+  languageCode?: string
+): CheckInHeroActionReward => {
+  const signDay = toNumber(historyItem.signDays) ?? 0
+  const matchedConfig = signConfigMap.get(signDay)
+  const localizedTitle = resolveTicketLanguageName(historyItem.ticket, languageCode)
+
+  return {
+    type: 'action',
+    title: localizedTitle || undefined,
+    titleKey: localizedTitle ? undefined : 'checkIn.luckySpinReward',
+    icon: resolveRewardIcon(historyItem.ticket?.type ?? matchedConfig?.ticketType),
+    actionKey: 'checkIn.useNow'
+  }
+}
+
+/**
+ * 创建默认签到视图数据，供开发调试和接口未返回时使用。
+ */
+export const createDefaultCheckInViewData = (): CheckInViewData => {
+  return {
+    promoEndsAt: '12/18/2026 11:14:15 AM',
+    rewards: DEFAULT_REWARDS,
+    canClaim: false,
+    heroRewards: [],
+    todayIsSign: false
+  }
+}
+
+/**
+ * 将签到活动配置和签到状态结果转换为页面视图数据。
+ */
+export const createCheckInViewData = (
+  activity?: ActivityListItem,
+  status?: QueryCheckInStatusResult,
+  options?: {
+    currencyCode?: string
+    languageCode?: string
+  }
+): CheckInViewData => {
+  if (!activity || !status) {
+    return createDefaultCheckInViewData()
+  }
+
+  const resolvedConfig = resolveActivityCurrencyConfig(activity, options?.currencyCode)
+  const signConfigs = resolvedConfig?.sign ?? []
+  const historySign = status.historySign ?? []
+  const claimedDays = new Set(
+    historySign.map(item => toNumber(item.signDays)).filter((day): day is number => day !== null)
+  )
+  const signConfigMap = new Map(
+    signConfigs.map(item => [toNumber(item.day) ?? 0, item] as const).filter(item => item[0] > 0)
+  )
+  const todayHistoryRewards = resolveTodayHistoryRewards(status)
+  const heroRewards: CheckInHeroReward[] = []
+
+  if (todayHistoryRewards[0]) {
+    heroRewards.push(createPrimaryHeroReward(todayHistoryRewards[0], signConfigMap))
+  }
+
+  if (todayHistoryRewards[1]) {
+    heroRewards.push(
+      createSecondaryHeroReward(todayHistoryRewards[1], signConfigMap, options?.languageCode)
+    )
+  }
+
+  return {
+    activityId: activity.rowId,
+    promoEndsAt: formatUsDateTime12h(status.endDate ?? activity.endDate),
+    rewards:
+      signConfigs.length > 0
+        ? signConfigs.map((item, index) =>
+            createRewardItemFromConfig(
+              item,
+              index,
+              claimedDays.has(toNumber(item.day) ?? index + 1)
+            )
+          )
+        : DEFAULT_REWARDS,
+    canClaim: !status.todayIsSign,
+    heroRewards,
+    todayIsSign: Boolean(status.todayIsSign)
+  }
+}

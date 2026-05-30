@@ -44,7 +44,7 @@
           <div class="grid w-full grid-cols-2 gap-[12px]">
             <!-- PC 单个奖励卡片 -->
             <article
-              v-for="reward in CHECK_IN_REWARDS"
+              v-for="reward in rewards"
               :key="reward.day"
               class="relative isolate flex h-[64px] items-center gap-[8px] overflow-hidden rounded-[12px] border px-[12px] py-[8px]"
               :style="getPcRewardCardStyle(reward)"
@@ -204,7 +204,10 @@
 
           <div class="absolute inset-x-0 bottom-[78px] flex flex-col items-center gap-[8px]">
             <p class="text-center text-[24px] font-[700] leading-[29px] text-[#F7FF4B]">
-              {{ t(secondaryActionHeroReward.titleKey) }}
+              {{
+                secondaryActionHeroReward.title ||
+                t(secondaryActionHeroReward.titleKey || 'checkIn.luckySpinReward')
+              }}
             </p>
             <p class="text-center text-[16px] font-[400] leading-[19px] text-common-100">
               {{ t('checkIn.youGotAReward') }}
@@ -215,7 +218,10 @@
             type="button"
             class="absolute left-1/2 top-[254px] flex h-[42px] w-[136px] -translate-x-1/2 items-center justify-center rounded-[12px] border border-white/25 bg-white/25 text-[18px] font-[700] leading-[22px] text-common-100"
           >
-            {{ t(secondaryActionHeroReward.actionKey) }}
+            {{
+              secondaryActionHeroReward.actionLabel ||
+              t(secondaryActionHeroReward.actionKey || 'checkIn.useNow')
+            }}
           </button>
         </div>
       </div>
@@ -366,7 +372,10 @@
 
         <div class="absolute inset-x-0 bottom-[52px] flex flex-col items-center gap-[5px]">
           <p class="text-center text-[16px] font-[700] leading-[19px] text-[#F7FF4B]">
-            {{ t(secondaryActionHeroReward.titleKey) }}
+            {{
+              secondaryActionHeroReward.title ||
+              t(secondaryActionHeroReward.titleKey || 'checkIn.luckySpinReward')
+            }}
           </p>
           <p class="text-center text-[12px] font-[400] leading-[14.67px] text-common-100">
             {{ t('checkIn.youGotAReward') }}
@@ -377,7 +386,10 @@
           type="button"
           class="absolute left-1/2 top-[169px] flex h-[28px] w-[90px] -translate-x-1/2 items-center justify-center rounded-[8px] border border-white/25 bg-white/25 text-[12px] font-[700] leading-[14.67px] text-common-100"
         >
-          {{ t(secondaryActionHeroReward.actionKey) }}
+          {{
+            secondaryActionHeroReward.actionLabel ||
+            t(secondaryActionHeroReward.actionKey || 'checkIn.useNow')
+          }}
         </button>
       </div>
     </div>
@@ -472,23 +484,21 @@ import CloseIcon from '@/static/svg/close.svg?component'
 import { computed, type CSSProperties } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
-  CHECK_IN_CAN_CLAIM,
   CHECK_IN_CLOSE_BUTTON,
   CHECK_IN_HERO_CLOSED,
   CHECK_IN_HERO_OPENED,
-  CHECK_IN_PROMO_ENDS_AT,
-  CHECK_IN_RECEIVED_REWARDS,
-  CHECK_IN_REWARDS,
   CHECK_IN_RULES_BUTTON,
   type CheckInHeroActionReward,
   type CheckInHeroAmountReward,
   type CheckInHeroReward,
   type CheckInPageMode,
-  type CheckInRewardItem
+  type CheckInRewardItem,
+  type CheckInViewData
 } from '../shared'
 
 interface Props {
   mode: CheckInPageMode
+  viewData: CheckInViewData
 }
 
 const props = defineProps<Props>()
@@ -505,28 +515,28 @@ const { t } = useI18n()
 const isPc = computed(() => props.mode === 'pc')
 
 // 生成活动截止时间文案。
-const promoEndsText = computed(() => t('checkIn.promoEndsAt', { date: CHECK_IN_PROMO_ENDS_AT }))
+const promoEndsText = computed(() => t('checkIn.promoEndsAt', { date: props.viewData.promoEndsAt }))
 
 // 签到按钮是否处于不可领取状态，后续由接口返回值驱动。
-const isActionDisabled = computed(() => !CHECK_IN_CAN_CLAIM)
+const isActionDisabled = computed(() => !props.viewData.canClaim)
 
 // 主视觉区奖励结果占位数据，后续由签到接口返回值替换。
-const heroRewards = CHECK_IN_RECEIVED_REWARDS
+const heroRewards = computed(() => props.viewData.heroRewards)
 
 // 主视觉区是否处于未签到状态。
-const isHeroPending = heroRewards.length === 0
+const isHeroPending = computed(() => heroRewards.value.length === 0)
 
 // 主视觉区是否展示单奖励结果。
-const isHeroSingle = heroRewards.length === 1
+const isHeroSingle = computed(() => heroRewards.value.length === 1)
 
 // 主视觉区是否展示双奖励结果。
-const isHeroDouble = heroRewards.length > 1
+const isHeroDouble = computed(() => heroRewards.value.length > 1)
 
 // 主视觉区第一个奖励。
-const primaryHeroReward = heroRewards[0]
+const primaryHeroReward = computed(() => heroRewards.value[0])
 
 // 主视觉区第二个奖励。
-const secondaryHeroReward = heroRewards[1]
+const secondaryHeroReward = computed(() => heroRewards.value[1])
 
 // 判断是否为金额奖励。
 const isAmountHeroReward = (reward?: CheckInHeroReward): reward is CheckInHeroAmountReward =>
@@ -537,12 +547,17 @@ const isActionHeroReward = (reward?: CheckInHeroReward): reward is CheckInHeroAc
   reward?.type === 'action'
 
 // 单奖励和双奖励左卡统一使用金额奖励。
-const primaryAmountHeroReward = isAmountHeroReward(primaryHeroReward) ? primaryHeroReward : null
+const primaryAmountHeroReward = computed(() => {
+  return isAmountHeroReward(primaryHeroReward.value) ? primaryHeroReward.value : null
+})
 
 // 双奖励右卡使用功能型奖励。
-const secondaryActionHeroReward = isActionHeroReward(secondaryHeroReward)
-  ? secondaryHeroReward
-  : null
+const secondaryActionHeroReward = computed(() => {
+  return isActionHeroReward(secondaryHeroReward.value) ? secondaryHeroReward.value : null
+})
+
+// 当前签到奖励列表。
+const rewards = computed(() => props.viewData.rewards)
 
 // PC 已领取奖励卡片样式。
 const claimedPcRewardCardStyle: CSSProperties = {
@@ -571,8 +586,8 @@ const getMobileRewardCardStyle = (reward: CheckInRewardItem) => {
 const mobileRewardRows = computed<CheckInRewardItem[][]>(() => {
   const rows: CheckInRewardItem[][] = []
 
-  for (let index = 0; index < CHECK_IN_REWARDS.length; index += 2) {
-    rows.push(CHECK_IN_REWARDS.slice(index, index + 2))
+  for (let index = 0; index < rewards.value.length; index += 2) {
+    rows.push(rewards.value.slice(index, index + 2))
   }
 
   return rows
