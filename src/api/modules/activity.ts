@@ -2,7 +2,11 @@ import type {
   QueryActivityListForm,
   QueryActivityListResponse,
   QueryCheckInStatusForm,
-  QueryCheckInStatusResponse
+  QueryCheckInStatusResponse,
+  MbTicketListForm,
+  MbTicketListResponse,
+  RecordForm,
+  RecordResponse
 } from '@/api/interface/activity'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
 
@@ -31,5 +35,27 @@ export const queryCheckInStatus = (
     data,
     showSuccessToast: false,
     showErrorToast: options?.showErrorToast ?? false
+  })
+}
+
+// 我的票卷列表
+export function mbTicketList(data: MbTicketListForm): Promise<MbTicketListResponse> {
+  return request({
+    url: '/ticket/api/mbTicketList',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true
+  })
+}
+
+// 票卷记录
+export function recordList(data: RecordForm): Promise<RecordResponse> {
+  return request({
+    url: '/ticket/api/record',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true
   })
 }
