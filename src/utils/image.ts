@@ -1,11 +1,29 @@
 const CONVERTIBLE_IMAGE_PATTERN = /\.(png|jpe?g)(\?.*)?(#.*)?$/i
+const REMOTE_URL_PATTERN = /^https?:\/\//i
 
 const getImageMimeType = (value: string) => {
   return /\.png(?:\?.*)?(?:#.*)?$/i.test(value) ? 'image/png' : 'image/jpeg'
 }
 
+const getGameImageBaseUrl = () => String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').trim()
+
+/** CDN / 外链不保证存在同名 .webp，禁止靠改扩展名猜测 */
+const isRemoteImageWithoutWebpTwin = (source: string) => {
+  if (REMOTE_URL_PATTERN.test(source)) {
+    return true
+  }
+
+  const gameImageBaseUrl = getGameImageBaseUrl()
+  return Boolean(gameImageBaseUrl && source.startsWith(gameImageBaseUrl))
+}
+
 export const canGenerateWebpVariant = (value: string) => {
-  return CONVERTIBLE_IMAGE_PATTERN.test(String(value ?? ''))
+  const source = String(value ?? '').trim()
+  if (!source || isRemoteImageWithoutWebpTwin(source)) {
+    return false
+  }
+
+  return CONVERTIBLE_IMAGE_PATTERN.test(source)
 }
 
 export const resolveWebpUrl = (value: string) => {

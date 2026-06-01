@@ -20,165 +20,109 @@
     </div>
     <!-- Table -->
     <div class="table-wrap">
-      <table
-        v-if="activeTab === 0 || activeTab === 1"
-        class="table [&_td]:px-3 sm:[&_td]:px-4"
-        role="table"
-        style="overflow-anchor: none"
+      <div
+        v-if="activeTab !== 2"
+        class="table-scroll-shell relative h-[430px] w-full overflow-hidden [overflow-anchor:none]"
       >
-        <thead class="table-head pc-only" role="rowgroup">
-          <tr role="row" class="text-text-2">
-            <th>{{ t('gameDetail.betId') }}</th>
-            <th class="sm:w-auto">{{ t('gameDetail.bet') }}</th>
-            <th>{{ t('home.Multiplier') }}</th>
-            <th class="text-right">{{ t('gameDetail.profit') }}</th>
-          </tr>
-        </thead>
-        <tbody v-if="rows.length">
-          <tr
-            v-for="(item, index) in rows"
-            :key="item.id"
-            :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
-          >
-            <td class="h-[39px] px-3 text-text-1 truncate">
-              <span class="text-text-1 truncate">
-                {{ item.betId }}
-              </span>
-            </td>
-            <td class="cell" role="cell">
-              <div class="flex items-center justify-center">
-                <span class="order-1">{{ item.bet }}</span>
-                <SmartImage
-                  :src="currentCurrencyIcon"
-                  class="icon object-contain shrink-0 order-2"
-                  :alt="currentRequestCurrency"
-                />
-              </div>
-            </td>
-            <td class="h-[39px] px-3 text-text-1 truncate">
-              {{ item.payout }}{{ multiplierUnit }}
-            </td>
-            <td class="profit-cell h-[39px] px-3">
-              <div class="flex items-center justify-end gap-1">
-                <span
-                  class="order-1"
-                  :class="
-                    item.profitNumber >= 0
-                      ? 'text-[var(--color-secondary-level-4)]'
-                      : 'text-[#ff4d4f]'
-                  "
-                >
-                  {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
+        <table class="table [&_td]:px-3 sm:[&_td]:px-4" role="table" style="overflow-anchor: none">
+          <thead class="table-head pc-only" role="rowgroup">
+            <tr role="row" class="text-text-2">
+              <th>{{ t('gameDetail.betId') }}</th>
+              <th class="sm:w-auto">{{ t('gameDetail.bet') }}</th>
+              <th>{{ t('home.Multiplier') }}</th>
+              <th class="text-right">{{ t('gameDetail.profit') }}</th>
+            </tr>
+          </thead>
+          <tbody v-if="isLoading">
+            <tr
+              v-for="index in MAX_VISIBLE_ROWS"
+              :key="`skeleton-${index}`"
+              class="h-[39px]"
+              :class="[index % 2 === 1 ? 'bg-bg-3' : 'bg-bg-2']"
+            >
+              <td class="h-[39px] px-3">
+                <div class="h-3.5 w-24 max-w-full rounded bg-text-2/10" />
+              </td>
+              <td class="h-[39px] px-3">
+                <div class="flex items-center justify-center gap-1">
+                  <div class="h-3.5 w-10 rounded bg-text-2/10" />
+                  <div class="h-3 w-3 shrink-0 rounded-full bg-text-2/10" />
+                </div>
+              </td>
+              <td class="h-[39px] px-3">
+                <div class="mx-auto h-3.5 w-10 rounded bg-text-2/10" />
+              </td>
+              <td class="h-[39px] px-3">
+                <div class="ml-auto flex w-[73px] items-center justify-end gap-1 sm:w-[88px]">
+                  <div class="h-3.5 w-12 rounded bg-text-2/10 sm:w-16" />
+                  <div class="h-3 w-3 shrink-0 rounded-full bg-text-2/10" />
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          <tbody v-else-if="rows.length">
+            <tr
+              v-for="(item, index) in rows"
+              :key="`row-${index}`"
+              :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
+            >
+              <td class="h-[39px] px-3 text-text-1 truncate">
+                <span class="text-text-1 truncate">
+                  {{ item.betId }}
                 </span>
-                <SmartImage
-                  :src="currentCurrencyIcon"
-                  class="w-3 h-3 object-contain shrink-0 order-2"
-                  :alt="currentRequestCurrency"
+              </td>
+              <td class="cell" role="cell">
+                <div class="flex items-center justify-center">
+                  <span class="order-1">{{ item.bet }}</span>
+                  <SmartImage
+                    :src="currentCurrencyIcon"
+                    class="icon object-contain shrink-0 order-2"
+                    :alt="currentRequestCurrency"
+                  />
+                </div>
+              </td>
+              <td class="h-[39px] px-3 text-text-1 truncate">
+                {{ item.payout }}{{ multiplierUnit }}
+              </td>
+              <td class="profit-cell h-[39px] px-3">
+                <div class="flex items-center justify-end gap-1">
+                  <span
+                    class="order-1"
+                    :class="
+                      item.profitNumber >= 0
+                        ? 'text-[var(--color-secondary-level-4)]'
+                        : 'text-[#ff4d4f]'
+                    "
+                  >
+                    {{ item.profitNumber >= 0 ? '+' : '' }}{{ item.profit }}
+                  </span>
+                  <SmartImage
+                    :src="currentCurrencyIcon"
+                    class="w-3 h-3 object-contain shrink-0 order-2"
+                    :alt="currentRequestCurrency"
+                  />
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          <tbody v-else>
+            <tr class="bg-bg-2">
+              <td colspan="4" class="px-2 py-5">
+                <ThemedEmptyState
+                  :dark-image="defaultImgDark"
+                  :light-image="defaultImgLight"
+                  :image-alt="t('gameDetail.noData')"
+                  :message="t('gameDetail.stayTunedComingSoon')"
+                  container-class="mt-0"
+                  image-class="h-[120px] w-auto mb-1.5"
+                  text-class="text-[12px] font-[500] leading-[18px] text-text-2"
                 />
-              </div>
-            </td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr class="bg-bg-2">
-            <td colspan="4" class="px-2 py-5">
-              <div
-                v-if="isLoading"
-                class="text-center text-[12px] text-[var(--color-text-level-2)]"
-              >
-                {{ t('common.loading') }}
-              </div>
-              <ThemedEmptyState
-                v-else
-                :dark-image="defaultImgDark"
-                :light-image="defaultImgLight"
-                :image-alt="t('gameDetail.noData')"
-                :message="t('gameDetail.stayTunedComingSoon')"
-                container-class="mt-0"
-                image-class="h-[120px] w-auto mb-1.5"
-                text-class="text-[12px] font-[500] leading-[18px] text-text-2"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <table
-        v-else
-        class="table high-roller-table [&_td]:px-3 sm:[&_td]:px-4"
-        role="table"
-        style="overflow-anchor: none"
-      >
-        <thead class="table-head pc-only" role="rowgroup">
-          <tr role="row" class="text-text-2">
-            <th>{{ t('home.Game') }}</th>
-            <th>{{ t('home.Player') }}</th>
-            <th>{{ t('home.Multiplier') }}</th>
-            <th class="text-right">{{ t('home.Profit') }}</th>
-          </tr>
-        </thead>
-        <tbody v-if="highRollerRows.length">
-          <tr
-            v-for="(item, index) in highRollerRows"
-            :key="`${item.id}-${index}`"
-            :class="[index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2']"
-          >
-            <td class="h-[39px] px-3">
-              <div
-                class="flex items-center gap-1 min-w-0 cursor-pointer"
-                @click="handleHighRollerGameClick"
-              >
-                <SmartImage
-                  :src="item.gameIcon"
-                  class="w-3.5 h-3.5 object-contain"
-                  :alt="item.game"
-                />
-                <span class="text-text-1 truncate">{{ item.game }}</span>
-              </div>
-            </td>
-            <td class="h-[39px] px-3 text-text-1 truncate cursor-pointer">
-              {{ item.player }}
-            </td>
-            <td class="h-[39px] px-3 text-text-1 truncate">
-              {{ formatTableAmount(item.multiplier) }}{{ multiplierUnit }}
-            </td>
-            <td class="profit-cell h-[39px] px-3">
-              <div class="flex items-center justify-end gap-1">
-                <span :class="item.profit >= 0 ? 'text-[var(--color-secondary-level-4)]' : ''">
-                  {{ item.profit >= 0 ? '+' : '' }}{{ formatTableAmount(item.profit) }}
-                </span>
-                <SmartImage
-                  :src="item.currencyIcon"
-                  class="w-3 h-3 object-contain shrink-0 order-2"
-                  :alt="item.currency"
-                />
-              </div>
-            </td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr class="bg-bg-2">
-            <td colspan="4" class="px-2 py-5">
-              <div
-                v-if="isLoading"
-                class="text-center text-[12px] text-[var(--color-text-level-2)]"
-              >
-                {{ t('common.loading') }}
-              </div>
-              <ThemedEmptyState
-                v-else
-                :dark-image="defaultImgDark"
-                :light-image="defaultImgLight"
-                :image-alt="t('gameDetail.noData')"
-                :message="t('gameDetail.stayTunedComingSoon')"
-                container-class="mt-0"
-                image-class="h-[120px] w-auto mb-1.5"
-                text-class="text-[12px] font-[500] leading-[18px] text-text-2"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <LatestBetTable v-else :type="2" class="detail-high-roller-table" />
     </div>
   </div>
 </template>
@@ -186,14 +130,13 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type { GameBetRecordItem } from '@/api/interface/game'
+import LatestBetTable from '@/components/common/latestBetTable.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
-import placeholderImg from '@/static/img/home/errImg.png'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import { getCurrencyImageByCode } from '@/utils/locale'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useUserStore } from '@/stores/user'
-import { navigateTo } from '@/utils/router'
 import { computed, inject, onBeforeUnmount, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SmartImage from '@/components/common/SmartImage.vue'
@@ -226,29 +169,13 @@ interface IRow {
   profitNumber: number
 }
 
-interface IHighRollerRow {
-  id: number
-  game: string
-  gameIcon: string
-  player: string
-  multiplier: number
-  profit: number
-  currency: string
-  currencyIcon: string
-}
-
 const rows = ref<IRow[]>([])
 const betSourceRows = ref<IRow[]>([])
-const highRollerSourceRows = ref<IHighRollerRow[]>([])
-const highRollerRows = ref<IHighRollerRow[]>([])
 const isLoading = ref(false)
 
 const MAX_VISIBLE_ROWS = 10
 const BET_SCROLL_INTERVAL_MS = 1000
-const LATEST_LIST_REFRESH_INTERVAL_MS = 5 * 60 * 1000
-/** 龙虎榜每隔 30–60 秒追加一条 */
-const HIGH_ROLLER_SCROLL_MIN_SEC = 30
-const HIGH_ROLLER_SCROLL_MAX_SEC = 60
+const INITIAL_AUTO_SCROLL_DELAY_MS = 1500
 
 const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
   'game-detail-current-game',
@@ -267,11 +194,6 @@ const currentRequestCurrency = computed(
 const currentCurrencyIcon = computed(() => getCurrencyImageByCode(currentRequestCurrency.value))
 
 const currentBetType = computed<1 | 2>(() => (activeTab.value === 1 ? 2 : 1))
-const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
-
-const handleHighRollerGameClick = () => {
-  navigateTo('/bet-history')
-}
 
 const parseAmount = (value: unknown) => {
   const parsed = Number(normalizeValue(value))
@@ -295,41 +217,6 @@ const mapRecordToRow = (item: GameBetRecordItem, index: number): IRow => {
     ),
     profit: formatApiAmount(item.profit ?? item.winAmount),
     profitNumber
-  }
-}
-
-const toGameImageUrl = (value: unknown) => {
-  const path = normalizeValue(value)
-  if (!path) {
-    return placeholderImg
-  }
-  if (/^(data:|blob:|https?:\/\/|\/)/i.test(path)) {
-    return path
-  }
-  return gameImageBaseUrl ? `${gameImageBaseUrl}${path}` : path
-}
-
-const formatTableAmount = (value: number) => {
-  if (!Number.isFinite(value) || value < 0) {
-    return '0.00'
-  }
-
-  return value.toFixed(2)
-}
-
-const mapHighRollerToRow = (item: Record<string, unknown>, index: number): IHighRollerRow => {
-  const icon = toGameImageUrl(item.coverImg)
-  const currency = normalizeValue(item.currency) || currentRequestCurrency.value
-
-  return {
-    id: Number(item.rowId ?? index),
-    game: String(item.gameName ?? '--'),
-    gameIcon: icon || placeholderImg,
-    player: String(item.nickName ?? '--'),
-    multiplier: parseAmount(item.multiple),
-    profit: parseAmount(item.winAmount),
-    currency,
-    currencyIcon: getCurrencyImageByCode(currency)
   }
 }
 
@@ -377,48 +264,9 @@ const fetchBetRecords = async () => {
   }
 }
 
-const fetchHighRollerRecords = async (options: { silent?: boolean } = {}) => {
-  const { silent = false } = options
-
-  if (!silent) {
-    stopHighRollerAutoScroll()
-  }
-
-  try {
-    const res = await Api.game.getLatestList(
-      {
-        type: 2,
-        currency: currentRequestCurrency.value
-      },
-      {
-        showSuccessToast: false,
-        showErrorToast: true
-      }
-    )
-    const recordList = Array.isArray(res?.result) ? res.result : []
-    highRollerSourceRows.value = recordList.map((item, index) =>
-      mapHighRollerToRow((item as Record<string, unknown>) ?? {}, index)
-    )
-
-    startHighRollerAutoScroll()
-  } catch (error) {
-    console.error('fetchHighRollerRecords failed', error)
-    highRollerSourceRows.value = []
-    highRollerRows.value = []
-  }
-}
-
-let highRollerAutoScrollTimer: number | null = null
-let highRollerNextScrollIndex = 0
-let highRollerListRefreshTimer: number | null = null
 let betAutoScrollTimer: number | null = null
 let betNextScrollIndex = 0
-
-const getHighRollerScrollInterval = () => {
-  const span = HIGH_ROLLER_SCROLL_MAX_SEC - HIGH_ROLLER_SCROLL_MIN_SEC + 1
-  const seconds = Math.floor(Math.random() * span) + HIGH_ROLLER_SCROLL_MIN_SEC
-  return seconds * 1000
-}
+let deferBetInitialAutoScroll = true
 
 const stopBetAutoScroll = () => {
   if (betAutoScrollTimer != null) {
@@ -428,6 +276,9 @@ const stopBetAutoScroll = () => {
 }
 
 const scheduleNextBetScroll = () => {
+  const delay = deferBetInitialAutoScroll ? INITIAL_AUTO_SCROLL_DELAY_MS : BET_SCROLL_INTERVAL_MS
+  deferBetInitialAutoScroll = false
+
   betAutoScrollTimer = window.setTimeout(() => {
     const list = betSourceRows.value
     const nextRow = list[betNextScrollIndex]
@@ -438,11 +289,12 @@ const scheduleNextBetScroll = () => {
     rows.value = [nextRow, ...rows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
     betNextScrollIndex = (betNextScrollIndex + 1) % list.length
     scheduleNextBetScroll()
-  }, BET_SCROLL_INTERVAL_MS)
+  }, delay)
 }
 
 const startBetAutoScroll = () => {
   stopBetAutoScroll()
+  deferBetInitialAutoScroll = true
   const list = betSourceRows.value
   if (list.length === 0) {
     rows.value = []
@@ -459,75 +311,16 @@ const startBetAutoScroll = () => {
   scheduleNextBetScroll()
 }
 
-const stopHighRollerListRefresh = () => {
-  if (highRollerListRefreshTimer != null) {
-    window.clearInterval(highRollerListRefreshTimer)
-    highRollerListRefreshTimer = null
-  }
-}
-
-const startHighRollerListRefresh = () => {
-  stopHighRollerListRefresh()
-
-  highRollerListRefreshTimer = window.setInterval(() => {
-    void fetchHighRollerRecords({ silent: true })
-  }, LATEST_LIST_REFRESH_INTERVAL_MS)
-}
-
-const stopHighRollerAutoScroll = () => {
-  if (highRollerAutoScrollTimer != null) {
-    window.clearTimeout(highRollerAutoScrollTimer)
-    highRollerAutoScrollTimer = null
-  }
-}
-
-const scheduleNextHighRollerScroll = () => {
-  highRollerAutoScrollTimer = window.setTimeout(() => {
-    const list = highRollerSourceRows.value
-    const nextRow = list[highRollerNextScrollIndex]
-    if (!nextRow || list.length === 0) {
-      return
-    }
-
-    highRollerRows.value = [nextRow, ...highRollerRows.value.slice(0, MAX_VISIBLE_ROWS - 1)]
-    highRollerNextScrollIndex = (highRollerNextScrollIndex + 1) % list.length
-    scheduleNextHighRollerScroll()
-  }, getHighRollerScrollInterval())
-}
-
-const startHighRollerAutoScroll = () => {
-  stopHighRollerAutoScroll()
-  const list = highRollerSourceRows.value
-  if (list.length === 0) {
-    highRollerRows.value = []
-    return
-  }
-
-  if (list.length <= MAX_VISIBLE_ROWS) {
-    highRollerRows.value = [...list]
-    return
-  }
-
-  const initialCount = Math.min(MAX_VISIBLE_ROWS, list.length)
-  highRollerRows.value = list.slice(0, initialCount)
-  highRollerNextScrollIndex = initialCount % list.length
-  scheduleNextHighRollerScroll()
-}
-
 const fetchTableData = async () => {
+  if (activeTab.value === 2) {
+    stopBetAutoScroll()
+    betSourceRows.value = []
+    rows.value = []
+    return
+  }
+
   isLoading.value = true
   try {
-    if (activeTab.value === 2) {
-      stopBetAutoScroll()
-      betSourceRows.value = []
-      rows.value = []
-      startHighRollerListRefresh()
-      await fetchHighRollerRecords()
-      return
-    }
-
-    stopHighRollerAutoScroll()
-    stopHighRollerListRefresh()
     if (!isLoggedIn.value) {
       stopBetAutoScroll()
       betSourceRows.value = []
@@ -535,8 +328,6 @@ const fetchTableData = async () => {
       return
     }
 
-    highRollerSourceRows.value = []
-    highRollerRows.value = []
     await fetchBetRecords()
   } finally {
     isLoading.value = false
@@ -551,10 +342,15 @@ watch(
   { immediate: true }
 )
 
+watch([betSourceRows, activeTab], () => {
+  if (isLoading.value || activeTab.value === 2) {
+    return
+  }
+  startBetAutoScroll()
+})
+
 onBeforeUnmount(() => {
   stopBetAutoScroll()
-  stopHighRollerAutoScroll()
-  stopHighRollerListRefresh()
 })
 </script>
 
@@ -655,7 +451,7 @@ onBeforeUnmount(() => {
   font-weight: 700;
   white-space: nowrap;
   box-sizing: border-box;
-  background: var(--color-background-level-3);
+  background: var(--color-background-level-2);
 }
 
 .table-row {
@@ -677,7 +473,7 @@ onBeforeUnmount(() => {
 }
 
 .profit-cell {
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .icon {
@@ -876,6 +672,28 @@ onBeforeUnmount(() => {
 
   .cell {
     height: 39px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .bet-tab {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .table-head th {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .table tbody tr td:not([colspan]) {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  :deep(.detail-high-roller-table table) {
+    font-size: 14px;
+    line-height: 20px;
   }
 }
 

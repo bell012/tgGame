@@ -22,18 +22,18 @@
       >
         <button
           :class="{
-            'bg-bg-7 text-text-1': latestBetIndex !== 0
+            'bg-bg-7 text-text-1': latestBetIndex === 0
           }"
-          class="flex h-10 flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
+          class="flex h-[39px] flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
           @click.stop="latestBetIndex = 0"
         >
           {{ t('casino.latest_bet') }}
         </button>
         <button
           :class="{
-            'bg-bg-7 text-text-1': latestBetIndex !== 1
+            'bg-bg-7 text-text-1': latestBetIndex === 1
           }"
-          class="flex h-10 flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
+          class="flex h-[39px] flex-1 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
           @click.stop="latestBetIndex = 1"
         >
           {{ t('casino.high_roller') }}

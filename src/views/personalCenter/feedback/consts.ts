@@ -215,6 +215,27 @@ export const extractFeedbackList = (result: unknown): FeedbackApiRecord[] => {
   return []
 }
 
+const getFeedbackItemSortTime = (item: FeedbackApiRecord) => {
+  const createTime = Number(item.createTime)
+  return Number.isFinite(createTime) && createTime > 0 ? createTime : 0
+}
+
+const getFeedbackItemSortRowId = (item: FeedbackApiRecord) => {
+  const rowId = Number(item.rowId)
+  return Number.isFinite(rowId) ? rowId : 0
+}
+
+export const sortFeedbackItemsByNewest = <T extends FeedbackApiRecord>(items: T[]) => {
+  return [...items].sort((a, b) => {
+    const timeDiff = getFeedbackItemSortTime(b) - getFeedbackItemSortTime(a)
+    if (timeDiff !== 0) {
+      return timeDiff
+    }
+
+    return getFeedbackItemSortRowId(b) - getFeedbackItemSortRowId(a)
+  })
+}
+
 export const extractFeedbackClaimRewardAmount = (result: unknown): number => {
   if (Array.isArray(result)) {
     return sumFeedbackListClaimableReward(result as FeedbackApiRecord[])

@@ -82,6 +82,7 @@ import {
   extractClaimedFeedbackAmount,
   extractFeedbackClaimRewardAmount,
   extractFeedbackList,
+  sortFeedbackItemsByNewest,
   feedbackStatusClassMap,
   formatFeedbackRewardAmount,
   formatFeedbackSubmitTime,
@@ -334,7 +335,9 @@ const fetchMyFeedbackList = async () => {
     }
 
     feedbackClaimRewardAmount.value = extractFeedbackClaimRewardAmount(response.result)
-    const responseList = extractFeedbackList(response.result) as QueryFeedbackItem[]
+    const responseList = sortFeedbackItemsByNewest(
+      extractFeedbackList(response.result) as QueryFeedbackItem[]
+    )
     myFeedbackList.value = responseList.map((item, index) => {
       const rowIdText = String(item?.rowId ?? '').trim()
       const fallbackRowId = `feedback-${Date.now()}-${index}`
@@ -431,12 +434,6 @@ const handleReceiveAllFeedback = async () => {
       extractClaimedFeedbackAmount(response.result) || feedbackClaimRewardAmount.value
 
     openClaimSuccessPopup(claimedAmount)
-    showToast({
-      message: t('personalCenter.feedback.toast.claimSuccess'),
-      position: 'middle',
-      type: 'success',
-      zIndex: 100100
-    })
     void fetchMyFeedbackList()
   } catch (error) {
     showToast({

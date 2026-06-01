@@ -70,7 +70,7 @@ const { t } = useI18n()
 .form-control :deep(.currency-select-trigger) {
   width: 100%;
   border-radius: 8px;
-  background: var(--color-background-level-2);
+  background: var(--color-background-level-3);
   box-shadow: none;
 }
 
@@ -250,12 +250,6 @@ const { t } = useI18n()
 
 :global(:root.light) .currency-info-container .form-label {
   color: #1c2838;
-}
-
-:global(:root.light) .currency-info-container .form-control :deep(.currency-select-trigger) {
-  background: #fff;
-  border: none;
-  box-shadow: 0 3px 10px rgba(26, 40, 64, 0.08);
 }
 
 :global(:root.light) .currency-info-container .play-now-hint {
