@@ -964,8 +964,8 @@ onBeforeUnmount(() => {
 }
 
 .comment-popup-panel.is-light .comment-popup-textarea {
-  border-color: #d4deeb;
-  background: #fff;
+  border: 1px solid var(--color-input-level-2);
+  background: var(--color-input-level-1);
   color: var(--color-text-level-1);
 }
 
@@ -1063,7 +1063,7 @@ onBeforeUnmount(() => {
   }
 
   .comment-popup-panel.is-light .comment-popup-shell-desktop .comment-popup-textarea {
-    background: var(--color-background-level-8);
+    background: var(--color-input-level-1);
   }
 
   .comment-popup-shell-desktop .comment-popup-post-btn {
