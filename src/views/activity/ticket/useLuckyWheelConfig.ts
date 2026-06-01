@@ -1,7 +1,7 @@
-import type { LuckySpinPrize } from '@/components/common/lucky-spin/types'
-import { LUCKY_SPIN_ASSETS } from '@/components/common/lucky-spin/assets'
-import { WHEEL_SEGMENT_COUNT } from '@/components/common/lucky-spin/constants'
-import { LUCKY_SPIN_TOKENS } from '@/components/common/lucky-spin/design-tokens'
+import type { LuckySpinPrize } from '@/views/activity/ticket/types'
+import { LUCKY_SPIN_ASSETS } from '@/views/activity/ticket/assets'
+import { WHEEL_SEGMENT_COUNT } from '@/views/activity/ticket/constants'
+import { LUCKY_SPIN_TOKENS } from '@/views/activity/ticket/design-tokens'
 import { computed, type MaybeRefOrGetter, toValue } from 'vue'
 
 /** 8 格转盘：第 0 格对齐 12 点方向（半格偏移） */

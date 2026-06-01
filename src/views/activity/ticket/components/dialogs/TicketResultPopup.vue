@@ -36,7 +36,7 @@
                   class="flex max-h-[220px] flex-col gap-2 overflow-y-auto"
                   :class="vouchers.length > 1 ? 'pr-1' : ''"
                 >
-                  <LuckySpinVoucherCard v-for="item in vouchers" :key="item.id" :data="item" />
+                  <TicketVoucherCard v-for="item in vouchers" :key="item.id" :data="item" />
                 </div>
                 <button
                   type="button"
@@ -87,10 +87,10 @@
 </template>
 
 <script setup lang="ts">
-import type { LuckySpinResultVariant, LuckySpinVoucherCardData } from './types'
-import { LUCKY_SPIN_ASSETS } from './assets'
-import { RESULT_HERO_IMAGES } from './constants'
-import LuckySpinVoucherCard from './LuckySpinVoucherCard.vue'
+import type { LuckySpinResultVariant, LuckySpinVoucherCardData } from '../../types'
+import { LUCKY_SPIN_ASSETS } from '../../assets'
+import { RESULT_HERO_IMAGES } from '../../constants'
+import TicketVoucherCard from './TicketVoucherCard.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 

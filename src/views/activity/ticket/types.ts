@@ -9,6 +9,15 @@ export type PrizeType = 'cash' | 'spin_again' | 'no_prize' | 'voucher'
 
 export type VoucherCardType = 'golden_egg' | 'lucky_spin' | 'cash_voucher' | string
 
+export type TicketGameId =
+  | 'lucky_spin'
+  | 'golden_egg'
+  | 'mystery_box'
+  | 'cash_voucher'
+  | 'lucky_red_envelope'
+
+export type TicketModalTheme = TicketGameId
+
 export interface WinnerTickerItem {
   id: string
   avatar: string
@@ -35,11 +44,8 @@ export interface LuckySpinVoucherCardData {
 
 export interface LuckySpinPrize {
   index: number
-  /** 用于抽奖结果弹窗等业务分支 */
   type: PrizeType
-  /** 格位展示文案，后端配置 */
   label: string
-  /** 格位展示 icon URL，后端配置 */
   icon: string
   amount?: number
   voucherType?: VoucherCardType
@@ -70,4 +76,31 @@ export interface LuckySpinResult {
   prizeIndex: number
   prize: LuckySpinPrize
   vouchers?: LuckySpinVoucherCardData[]
+}
+
+export interface TicketModalHeaderData {
+  title: string
+  subtitle: string
+  endTime?: number
+  expiresLabel?: string
+  theme?: TicketModalTheme
+}
+
+export interface TicketWinnerTickerData {
+  items: WinnerTickerItem[]
+}
+
+export interface TicketVoucherFooterData {
+  games: VoucherGameItem[]
+  activeIndex: number
+  totalVouchers: number
+  activeGameId?: TicketGameId
+}
+
+export interface OpenTicketToastOptions {
+  gameId: TicketGameId
+  header?: Partial<TicketModalHeaderData>
+  ticker?: TicketWinnerTickerData
+  footer?: Partial<TicketVoucherFooterData>
+  gameProps?: Record<string, unknown>
 }

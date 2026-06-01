@@ -18,9 +18,10 @@
           class="flex shrink-0 items-center justify-center rounded-[8px] transition-all"
           :class="
             index + startIndex === activeIndex
-              ? 'h-[68px] w-[60px] border-2 border-[#B06CFF] shadow-[0_0_12px_rgba(176,108,255,0.5)]'
+              ? 'h-[68px] w-[60px] border-2'
               : 'h-[57px] w-[50px] border-2 border-transparent opacity-75'
           "
+          :style="index + startIndex === activeIndex ? activeItemStyle : undefined"
           :aria-label="item.label"
           @click="emit('select', index + startIndex)"
         >
@@ -55,18 +56,13 @@
 </template>
 
 <script setup lang="ts">
-import type { VoucherGameItem } from './types'
+import type { TicketGameId, TicketVoucherFooterData } from './types'
 import { getGameIcon } from './constants'
+import { getTicketModalTheme } from './design-tokens'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-interface Props {
-  items: VoucherGameItem[]
-  activeIndex: number
-  totalVouchers: number
-}
-
-const props = defineProps<Props>()
+const props = defineProps<TicketVoucherFooterData>()
 const emit = defineEmits<{
   select: [index: number]
   prev: []
@@ -78,11 +74,22 @@ const { t } = useI18n()
 const VISIBLE_COUNT = 5
 const startIndex = ref(0)
 
-const resolveIcon = (item: VoucherGameItem) => item.icon ?? getGameIcon(item.id)
+const resolveIcon = (item: { id: string; icon?: string }) => item.icon ?? getGameIcon(item.id)
+
+const activeItemStyle = computed(() => {
+  const gameId = (props.activeGameId ??
+    props.games[props.activeIndex]?.id ??
+    'lucky_spin') as TicketGameId
+  const theme = getTicketModalTheme(gameId)
+  return {
+    borderColor: theme.activeBorder,
+    boxShadow: theme.activeGlow
+  }
+})
 
 const visibleItems = computed(() => {
-  const end = Math.min(startIndex.value + VISIBLE_COUNT, props.items.length)
-  return props.items.slice(startIndex.value, end)
+  const end = Math.min(startIndex.value + VISIBLE_COUNT, props.games.length)
+  return props.games.slice(startIndex.value, end)
 })
 
 watch(

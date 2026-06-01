@@ -263,3 +263,29 @@ export interface RecordResult {
   size: number
   total: number
 }
+
+import type { LuckySpinInfoResult, LuckySpinResult } from '@/views/activity/ticket/types'
+
+export type {
+  LuckySpinInfoResult,
+  LuckySpinPrize,
+  LuckySpinResult,
+  LuckySpinTask,
+  LuckySpinVoucherCardData,
+  WinnerTickerItem,
+  VoucherGameItem
+} from '@/views/activity/ticket/types'
+
+export interface QueryLuckySpinInfoForm {
+  ticketId?: number
+  rowId?: number
+}
+
+export interface QueryLuckySpinInfoResponse extends ActivityApiResponse<LuckySpinInfoResult> {}
+
+export interface DoLuckySpinForm {
+  ticketId?: number
+  rowId?: number
+}
+
+export interface DoLuckySpinResponse extends ActivityApiResponse<LuckySpinResult> {}

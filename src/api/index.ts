@@ -17,7 +17,6 @@ import * as withdraw from './modules/withdraw'
 import * as user from './modules/user'
 import * as vip from './modules/vip'
 import * as wallet from './modules/wallet'
-import * as promotion from './modules/promotion'
 import * as activity from './modules/activity'
 
 const Api = {
@@ -32,8 +31,7 @@ const Api = {
   withdraw, // 提现
   wallet, // 钱包
   record, // 记录页数据 如：投注记录 资金明显 流水稽查
-  promotion, // 活动促销：Lucky Spin 等
-  activity // 活动：签到等
+  activity // 活动：签到、票券列表、票券活动弹窗（Lucky Spin 等）
 }
 
 export default Api

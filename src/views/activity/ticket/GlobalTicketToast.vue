@@ -1,9 +1,9 @@
 <template>
   <Teleport to="body">
-    <transition name="lucky-spin-fade">
+    <transition name="ticket-toast-fade">
       <div
-        v-show="visible"
-        class="lucky-spin-modal fixed inset-0 z-[60] flex min-h-0 flex-col overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]"
+        v-show="toastState.visible"
+        class="ticket-toast-modal fixed inset-0 z-[60] flex min-h-0 flex-col overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]"
         :class="LUCKY_SPIN_TOKENS.modalMaskClass"
         :style="modalBackdropStyle"
       >
@@ -47,37 +47,37 @@
         </div>
 
         <template v-else-if="spinInfo">
-          <LuckySpinHeroHeader
-            :max-prize-text="spinInfo.maxPrizeText"
-            :end-time="spinInfo.endTime"
-          />
+          <TicketModalHeader v-bind="headerData" />
 
           <div class="mt-1">
             <LuckySpinWheel
+              v-if="toastState.gameId === 'lucky_spin'"
               ref="wheelRef"
               :prizes="spinInfo.prizes"
               :disabled="spinInfo.remainingSpins <= 0 || isSpinning"
               @go="handleWheelGo"
               @spin-end="handleSpinEnd"
             />
+            <component :is="stubGameComponent" v-else />
           </div>
 
-          <LuckySpinWinnerTicker :items="spinInfo.winnerRecords" />
+          <TicketWinnerTicker :items="spinInfo.winnerRecords" />
 
-          <LuckySpinVoucherSelector
-            :items="spinInfo.voucherGames"
+          <TicketVoucherFooter
+            :games="spinInfo.voucherGames"
             :active-index="activeGameIndex"
             :total-vouchers="spinInfo.totalVouchers"
+            :active-game-id="toastState.gameId"
             @select="handleGameSelect"
-            @prev="handleGamePrev"
-            @next="handleGameNext"
+            @prev="handleFooterPrev"
+            @next="handleFooterNext"
             @open-voucher-list="showReminder = true"
           />
         </template>
       </div>
     </transition>
 
-    <LuckySpinResultPopup
+    <TicketResultPopup
       v-model:visible="showResult"
       :variant="resultVariant"
       :highlight-text="resultHighlight"
@@ -95,27 +95,27 @@
 </template>
 
 <script setup lang="ts">
-import {
-  LuckySpinHeroHeader,
-  LuckySpinResultPopup,
-  LuckySpinVoucherSelector,
-  LuckySpinWinnerTicker
-} from '@/components/common/lucky-spin'
-import { LUCKY_SPIN_TOKENS } from '@/components/common/lucky-spin/design-tokens'
+import TicketResultPopup from './components/dialogs/TicketResultPopup.vue'
 import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
-import { useLuckySpinModalStore } from '@/stores/luckySpinModal'
 import LuckySpinReminderPopup from './components/dialogs/LuckySpinReminderPopup.vue'
 import LuckySpinWheel from './components/LuckySpinWheel.vue'
-import type { LuckySpinWheelExpose } from './useLuckySpinModal'
-import { useLuckySpinModal } from './useLuckySpinModal'
-import { storeToRefs } from 'pinia'
+import TicketModalHeader from './TicketModalHeader.vue'
+import TicketWinnerTicker from './TicketWinnerTicker.vue'
+import TicketVoucherFooter from './TicketVoucherFooter.vue'
+import { buildGameHeader, findGameIndex } from './gameHeaderConfig'
+import { getTicketGameComponent } from './registry'
+import { globalTicketToastState, switchTicketGame } from './ticketToast'
+import type { TicketGameId } from './types'
+import { LUCKY_SPIN_TOKENS } from './design-tokens'
+import type { LuckySpinWheelExpose } from './useLuckySpinGame'
+import { useLuckySpinGame } from './useLuckySpinGame'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const luckySpinModalStore = useLuckySpinModalStore()
-const { visible } = storeToRefs(luckySpinModalStore)
+const toastState = globalTicketToastState
 
+const visible = computed(() => toastState.visible)
 useLockBodyScroll(visible)
 
 const modalBackdropStyle = computed(() => ({
@@ -139,12 +139,52 @@ const {
   loadSpinInfo,
   handleWheelGo,
   handleSpinEnd,
-  handleGameSelect,
   handleGamePrev,
   handleGameNext,
   handleDeposit,
   handleClosePage
-} = useLuckySpinModal(wheelRef, visible)
+} = useLuckySpinGame(wheelRef, visible)
+
+const headerData = computed(() => {
+  if (!spinInfo.value) {
+    return {
+      title: '',
+      subtitle: '',
+      theme: toastState.gameId
+    }
+  }
+  return buildGameHeader(toastState.gameId, spinInfo.value, t)
+})
+
+const stubGameComponent = computed(() => getTicketGameComponent(toastState.gameId))
+
+const handleGameSelect = (index: number) => {
+  const game = spinInfo.value?.voucherGames[index]
+  if (!game) return
+
+  activeGameIndex.value = index
+  switchTicketGame(game.id as TicketGameId)
+}
+
+const handleFooterPrev = () => {
+  handleGamePrev()
+  const game = spinInfo.value?.voucherGames[activeGameIndex.value]
+  if (game) switchTicketGame(game.id as TicketGameId)
+}
+
+const handleFooterNext = () => {
+  handleGameNext()
+  const game = spinInfo.value?.voucherGames[activeGameIndex.value]
+  if (game) switchTicketGame(game.id as TicketGameId)
+}
+
+watch(
+  () => toastState.gameId,
+  gameId => {
+    if (!spinInfo.value) return
+    activeGameIndex.value = findGameIndex(spinInfo.value.voucherGames, gameId)
+  }
+)
 
 const handleEscapeKey = (event: KeyboardEvent) => {
   if (event.key !== 'Escape') return
@@ -165,17 +205,17 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-.lucky-spin-modal {
+.ticket-toast-modal {
   -webkit-overflow-scrolling: touch;
 }
 
-.lucky-spin-fade-enter-active,
-.lucky-spin-fade-leave-active {
+.ticket-toast-fade-enter-active,
+.ticket-toast-fade-leave-active {
   transition: opacity 0.24s ease;
 }
 
-.lucky-spin-fade-enter-from,
-.lucky-spin-fade-leave-to {
+.ticket-toast-fade-enter-from,
+.ticket-toast-fade-leave-to {
   opacity: 0;
 }
 </style>

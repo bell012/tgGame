@@ -4,8 +4,8 @@ import type {
   LuckySpinResult,
   LuckySpinResultVariant,
   LuckySpinVoucherCardData
-} from '@/components/common/lucky-spin/types'
-import { useLuckySpinModalStore } from '@/stores/luckySpinModal'
+} from './types'
+import { closeTicketToast } from './ticketToast'
 import { navigateTo } from '@/utils/router'
 import { showToast } from 'vant'
 import type { Ref } from 'vue'
@@ -17,12 +17,11 @@ export interface LuckySpinWheelExpose {
   init: () => void
 }
 
-export const useLuckySpinModal = (
+export const useLuckySpinGame = (
   wheelRef: Ref<LuckySpinWheelExpose | null>,
   visible: Ref<boolean>
 ) => {
   const { t } = useI18n()
-  const luckySpinModalStore = useLuckySpinModalStore()
 
   const isLoading = ref(false)
   const loadError = ref(false)
@@ -37,9 +36,10 @@ export const useLuckySpinModal = (
   const resultVouchers = ref<LuckySpinVoucherCardData[]>([])
   const pendingResult = ref<LuckySpinResult | null>(null)
 
-  const syncActiveGameIndex = (info: LuckySpinInfoResult) => {
-    const luckySpinIndex = info.voucherGames.findIndex(item => item.id === 'lucky_spin')
-    activeGameIndex.value = luckySpinIndex >= 0 ? luckySpinIndex : 0
+  const syncActiveGameIndex = (info: LuckySpinInfoResult, gameId?: string) => {
+    const targetId = gameId ?? 'lucky_spin'
+    const index = info.voucherGames.findIndex(item => item.id === targetId)
+    activeGameIndex.value = index >= 0 ? index : 0
   }
 
   const resetModalState = () => {
@@ -50,6 +50,7 @@ export const useLuckySpinModal = (
     resultHighlight.value = ''
     resultVouchers.value = []
     loadError.value = false
+    spinInfo.value = null
     wheelRef.value?.init()
   }
 
@@ -58,7 +59,7 @@ export const useLuckySpinModal = (
     loadError.value = false
 
     try {
-      const response = await Api.promotion.queryLuckySpinInfo()
+      const response = await Api.activity.queryLuckySpinInfo()
       if (response.success && response.result) {
         spinInfo.value = response.result
         syncActiveGameIndex(response.result)
@@ -106,7 +107,7 @@ export const useLuckySpinModal = (
     isSpinning.value = true
 
     try {
-      const response = await Api.promotion.doLuckySpin()
+      const response = await Api.activity.doLuckySpin()
       if (!response.success || !response.result) {
         isSpinning.value = false
         wheelRef.value?.init()
@@ -139,22 +140,13 @@ export const useLuckySpinModal = (
     }
 
     try {
-      const response = await Api.promotion.queryLuckySpinInfo()
+      const response = await Api.activity.queryLuckySpinInfo()
       if (response.success && response.result && spinInfo.value) {
         spinInfo.value.remainingSpins = response.result.remainingSpins
         spinInfo.value.totalVouchers = response.result.totalVouchers
       }
     } catch {
       // ignore refresh failure
-    }
-  }
-
-  const handleGameSelect = (index: number) => {
-    activeGameIndex.value = index
-    const game = spinInfo.value?.voucherGames[index]
-    if (game?.route && game.id !== 'lucky_spin') {
-      luckySpinModalStore.closeModal()
-      navigateTo(game.route)
     }
   }
 
@@ -172,13 +164,13 @@ export const useLuckySpinModal = (
 
   const handleDeposit = () => {
     showReminder.value = false
-    luckySpinModalStore.closeModal()
+    closeTicketToast()
     navigateTo('/deposit')
   }
 
   const handleClosePage = () => {
     if (isSpinning.value) return
-    luckySpinModalStore.closeModal()
+    closeTicketToast()
   }
 
   watch(
@@ -205,9 +197,9 @@ export const useLuckySpinModal = (
     resultHighlight,
     resultVouchers,
     loadSpinInfo,
+    syncActiveGameIndex,
     handleWheelGo,
     handleSpinEnd,
-    handleGameSelect,
     handleGamePrev,
     handleGameNext,
     handleDeposit,

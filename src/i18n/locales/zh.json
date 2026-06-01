@@ -1589,6 +1589,24 @@
       "useNow": "立即使用"
     }
   },
+  "ticketPage": {
+    "goldenEgg": {
+      "title": "您获得了砸金蛋",
+      "expiresIn": "砸金蛋过期倒计时"
+    },
+    "mysteryBox": {
+      "title": "您获得了开盲盒",
+      "expiresIn": "开盲盒过期倒计时"
+    },
+    "cashVoucher": {
+      "title": "您获得了现金券",
+      "expiresIn": "现金券过期倒计时"
+    },
+    "redPacket": {
+      "title": "您获得了红包",
+      "expiresIn": "红包过期倒计时"
+    }
+  },
   "checkIn": {
     "title": "每日签到奖励",
     "subtitle": "每天签到即可领取奖励",

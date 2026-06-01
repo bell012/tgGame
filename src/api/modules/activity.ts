@@ -6,9 +6,22 @@ import type {
   MbTicketListForm,
   MbTicketListResponse,
   RecordForm,
-  RecordResponse
+  RecordResponse,
+  QueryLuckySpinInfoForm,
+  QueryLuckySpinInfoResponse,
+  DoLuckySpinForm,
+  DoLuckySpinResponse
 } from '@/api/interface/activity'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
+import {
+  createMockLuckySpinInfo,
+  getMockRemainingSpins,
+  mockDoLuckySpin
+} from '@/api/mock/luckySpin'
+
+const USE_MOCK = true
+
+const mockDelay = (ms = 300) => new Promise(resolve => setTimeout(resolve, ms))
 
 // 查询活动列表，用于筛选签到活动。
 export const queryActivityList = (
@@ -57,5 +70,54 @@ export function recordList(data: RecordForm): Promise<RecordResponse> {
     data,
     showSuccessToast: false,
     showErrorToast: true
+  })
+}
+
+/** 查询大转盘活动信息 */
+export const queryLuckySpinInfo = async (
+  _data?: QueryLuckySpinInfoForm,
+  _options?: ApiResponseToastOptions
+): Promise<QueryLuckySpinInfoResponse> => {
+  if (USE_MOCK) {
+    await mockDelay()
+    const info = createMockLuckySpinInfo()
+    return {
+      code: '0',
+      message: 'success',
+      success: true,
+      result: { ...info, remainingSpins: getMockRemainingSpins() }
+    }
+  }
+
+  return request({
+    url: '/ticket/api/luckySpinInfo',
+    method: 'post',
+    data: _data,
+    showSuccessToast: false,
+    showErrorToast: _options?.showErrorToast ?? false
+  })
+}
+
+/** 执行一次大转盘抽奖 */
+export const doLuckySpin = async (
+  _data?: DoLuckySpinForm,
+  _options?: ApiResponseToastOptions
+): Promise<DoLuckySpinResponse> => {
+  if (USE_MOCK) {
+    await mockDelay(500)
+    return {
+      code: '0',
+      message: 'success',
+      success: true,
+      result: mockDoLuckySpin()
+    }
+  }
+
+  return request({
+    url: '/ticket/api/luckySpin',
+    method: 'post',
+    data: _data,
+    showSuccessToast: false,
+    showErrorToast: _options?.showErrorToast ?? false
   })
 }

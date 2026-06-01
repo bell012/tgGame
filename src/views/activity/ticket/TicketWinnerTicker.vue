@@ -1,5 +1,5 @@
 <template>
-  <div v-if="displayItems.length" class="mx-4 mt-2 overflow-hidden">
+  <div v-if="items.length && displayItems.length" class="mx-4 mt-2 overflow-hidden">
     <div class="ticker-track flex w-max items-center gap-2 py-1" :style="trackStyle">
       <div
         v-for="(item, index) in displayItems"
@@ -21,16 +21,11 @@
 </template>
 
 <script setup lang="ts">
-import type { WinnerTickerItem } from './types'
+import type { TicketWinnerTickerData } from './types'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-interface Props {
-  items: WinnerTickerItem[]
-  speed?: number
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<TicketWinnerTickerData & { speed?: number }>(), {
   speed: 40
 })
 
@@ -49,10 +44,10 @@ const trackStyle = computed(() => ({
 
 <style scoped lang="scss">
 .ticker-track {
-  animation: lucky-spin-ticker linear infinite;
+  animation: ticket-winner-ticker linear infinite;
 }
 
-@keyframes lucky-spin-ticker {
+@keyframes ticket-winner-ticker {
   0% {
     transform: translateX(0);
   }

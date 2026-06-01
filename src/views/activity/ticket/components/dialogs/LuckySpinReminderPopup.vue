@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import type { LuckySpinTask } from '@/components/common/lucky-spin/types'
+import type { LuckySpinTask } from '@/views/activity/ticket/types'
 import { useI18n } from 'vue-i18n'
 
 interface Props {

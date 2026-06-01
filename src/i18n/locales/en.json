@@ -1597,6 +1597,24 @@
       "useNow": "Use Now"
     }
   },
+  "ticketPage": {
+    "goldenEgg": {
+      "title": "You got Golden Egg",
+      "expiresIn": "Golden Egg expires in"
+    },
+    "mysteryBox": {
+      "title": "You got Mystery Box",
+      "expiresIn": "Mystery Box expires in"
+    },
+    "cashVoucher": {
+      "title": "You got a Cash Voucher",
+      "expiresIn": "Cash Voucher expires in"
+    },
+    "redPacket": {
+      "title": "You got Red Packet",
+      "expiresIn": "Red Packet expires in"
+    }
+  },
   "checkIn": {
     "title": "Daily Check-in Rewards",
     "subtitle": "Check in daily to claim rewards",

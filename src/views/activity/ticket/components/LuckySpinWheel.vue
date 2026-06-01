@@ -57,9 +57,9 @@
 </template>
 
 <script setup lang="ts">
-import type { LuckySpinPrize } from '@/components/common/lucky-spin/types'
-import { LUCKY_SPIN_ASSETS } from '@/components/common/lucky-spin/assets'
-import { LUCKY_SPIN_TOKENS } from '@/components/common/lucky-spin/design-tokens'
+import type { LuckySpinPrize } from '@/views/activity/ticket/types'
+import { LUCKY_SPIN_ASSETS } from '@/views/activity/ticket/assets'
+import { LUCKY_SPIN_TOKENS } from '@/views/activity/ticket/design-tokens'
 import { LuckyWheel } from '@lucky-canvas/vue'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useLuckyWheelConfig } from '../useLuckyWheelConfig'

@@ -53,5 +53,4 @@ export const getGameIcon = (id: string) =>
   LUCKY_SPIN_ASSETS.vouchers.games[id as keyof typeof LUCKY_SPIN_ASSETS.vouchers.games] ??
   gameLuckySpin
 
-/** 转盘格 icon 完全由后端 prizes[].icon 提供 */
 export const getPrizeIcon = (prize: Pick<LuckySpinPrize, 'icon'>) => prize.icon ?? ''
