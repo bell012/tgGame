@@ -318,4 +318,10 @@ const tabIndexClick = (index: number) => {
   opacity: 0;
   transform: translateY(-10px);
 }
+
+@media (max-width: 640px) {
+  :global(:root:not(.light)) .recent-games-container {
+    background: #282c2d;
+  }
+}
 </style>

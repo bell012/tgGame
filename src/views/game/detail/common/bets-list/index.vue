@@ -1,5 +1,11 @@
 <template>
-  <div class="mt-[14px]">
+  <div
+    class="mt-[14px]"
+    :class="{
+      'bets-list--h5-light': isH5Light,
+      'bets-list--h5-dark': isH5Dark
+    }"
+  >
     <!-- Header -->
     <div class="grid lg:grid-cols-2 grid-cols-1 gap-[14px]">
       <h2 class="flex items-center text-[14px] font-extrabold text-primary">
@@ -136,6 +142,8 @@ import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import { getCurrencyImageByCode } from '@/utils/locale'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useIsMobile } from '@/composables/useMediaQuery'
+import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { computed, inject, onBeforeUnmount, ref, watch, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -144,6 +152,10 @@ import { storeToRefs } from 'pinia'
 
 const activeTab = ref(0)
 const { t } = useI18n()
+const isMobile = useIsMobile()
+const themeStore = useThemeStore()
+const isH5Light = computed(() => isMobile.value && themeStore.theme === 'light')
+const isH5Dark = computed(() => isMobile.value && themeStore.theme === 'dark')
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
 const isLoggedIn = computed(() => Boolean(userInfo.value?.tradeToken))
@@ -717,5 +729,67 @@ onBeforeUnmount(() => {
   :global(:root:not(.light)) .table-wrap {
     background: var(--color-background-level-3);
   }
+}
+
+/* H5 + 浅色主题：Latest Bet 区域样式 */
+.bets-list--h5-light .bet-tabs {
+  background: #e4e6e6;
+}
+
+.bets-list--h5-light .bet-tab {
+  background: #e4e6e6;
+}
+
+.bets-list--h5-light .bet-tab.active {
+  background: #ffffff;
+  color: var(--color-text-level-1);
+}
+
+.bets-list--h5-light .table-wrap,
+.bets-list--h5-light .table-scroll-shell {
+  background: #e4e6e6;
+}
+
+.bets-list--h5-light .table-head th {
+  background: #ffffff;
+  font-weight: 400;
+}
+
+.bets-list--h5-light .table tbody tr,
+.bets-list--h5-light .table tbody tr td {
+  background: #e4e6e6 !important;
+}
+
+.bets-list--h5-light .table-wrap :deep(.detail-high-roller-table) {
+  background: #e4e6e6 !important;
+}
+
+.bets-list--h5-light .table-wrap :deep(.detail-high-roller-table table) {
+  font-weight: 400;
+}
+
+.bets-list--h5-light .table-wrap :deep(.detail-high-roller-table thead),
+.bets-list--h5-light .table-wrap :deep(.detail-high-roller-table thead td) {
+  background: #ffffff !important;
+  font-weight: 400;
+}
+
+.bets-list--h5-light .table-wrap :deep(.detail-high-roller-table tbody tr),
+.bets-list--h5-light .table-wrap :deep(.detail-high-roller-table tbody tr td) {
+  background: #e4e6e6 !important;
+}
+
+/* H5 + 深色主题：Latest Bet 区域 Tab 样式 */
+.bets-list--h5-dark .bet-tabs {
+  background: #323738;
+}
+
+.bets-list--h5-dark .bet-tab {
+  background: #323738;
+}
+
+.bets-list--h5-dark .bet-tab.active {
+  background: #3b4142;
+  color: var(--color-text-level-1);
 }
 </style>
