@@ -1,14 +1,17 @@
 <template>
   <div class="latest-wrap max-w-[1248px] mx-auto sm:px-4 sm:py-4">
     <div class="header">
-      <h2>{{ $t('home.LatestRound&Race') }}</h2>
+      <h2 class="text-base font-bold text-text-1 sm:text-xl">{{ $t('home.LatestRound&Race') }}</h2>
 
       <div class="tabs bg-bg-7">
         <button
           v-for="tab in tabItems"
           :key="tab.type"
           type="button"
-          :class="['tab rounded-lg', { active: activeType !== tab.type }]"
+          :class="[
+            'tab rounded-lg h-[39px] flex-1 shrink-0 items-center justify-center font-bold',
+            { active: activeType === tab.type }
+          ]"
           @click="activeType = tab.type"
         >
           {{ tab.label }}
@@ -48,11 +51,6 @@ const activeType = ref<1 | 2>(1)
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-.header h2 {
-  font-size: 16px;
-  font-weight: 600;
 }
 
 .tabs {
