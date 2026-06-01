@@ -3,11 +3,14 @@
     <transition name="popup-fade">
       <div
         v-show="visible"
-        class="fixed inset-0 z-[10010] flex items-end justify-center bg-mask-60-1"
+        class="fixed inset-0 z-[10010] flex items-end justify-center bg-mask-60-1 sm:items-center"
         @click.self="handleClose"
       >
         <transition name="popup-scale">
-          <div v-show="visible" class="relative w-full rounded-t-xl bg-bg-1 px-4 pb-5 pt-5">
+          <div
+            v-show="visible"
+            class="relative w-full rounded-t-xl bg-bg-1 px-4 pb-5 pt-5 sm:max-w-[400px] sm:mx-auto"
+          >
             <h3 class="text-center text-[18px] font-[700] leading-[22px] text-text-1">
               Kind Reminder
             </h3>
@@ -21,11 +24,11 @@
               <CloseIcon class="h-2.5 w-2.5 text-text-1" />
             </button>
 
-            <p class="mt-4 text-center text-sm leading-[20px] text-text-1">
+            <p class="mt-4 text-sm leading-[20px] text-text-1">
               Complete the tasks below to unlock
               <span class="text-theme-primary">{{ voucherName }}</span>
             </p>
-            <p class="mt-1 text-center text-[14px] leading-[20px] text-text-1">
+            <p class="mt-2.5 text-[14px] leading-[20px] text-text-1">
               Win up to <span class="text-theme-primary">{{ maxReward }}</span> cash
             </p>
 
