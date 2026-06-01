@@ -218,10 +218,7 @@ const ratingPreviewCount = computed(() => {
     return 0
   }
 
-  return Math.min(
-    MAX_RATING_AVATAR_COUNT,
-    Math.max(1, baseRatingCount.value + (hasUserRating.value ? 1 : 0))
-  )
+  return Math.min(MAX_RATING_AVATAR_COUNT, Math.max(1, baseRatingCount.value))
 })
 
 const displayRatingAvatarUrls = computed(() => {
