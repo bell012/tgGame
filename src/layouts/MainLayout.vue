@@ -102,11 +102,13 @@
     <BottomTabBar class="sm:hidden" v-if="!hideBottomBar" />
 
     <LuckySpinModal />
+    <CheckInPopup v-model="checkInVisible" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useCheckInModalStore } from '@/stores/checkInModal'
 import { useLayoutStore } from '@/stores/layout'
 import { useUserStore } from '@/stores/user'
 import {
@@ -118,15 +120,19 @@ import {
 import { navigateTo } from '@/utils/router'
 import NotificationDetailPage from '@/views/menu/notifications/detail/index.vue'
 import NotificationListPage from '@/views/menu/notifications/index.vue'
+import { storeToRefs } from 'pinia'
 import { computed, markRaw, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router'
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
 import TopNav from './TopNav.vue'
+import { CheckInPopup, useCheckInAutoPopup } from '@/views/activity/check-in'
 import { LuckySpinModal } from '@/views/activity/lucky-spin'
 
 const layoutStore = useLayoutStore()
 const userStore = useUserStore()
+const checkInModalStore = useCheckInModalStore()
+const { visible: checkInVisible } = storeToRefs(checkInModalStore)
 const topNavRef = ref<InstanceType<typeof TopNav> | null>(null)
 const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
 const isSidebarCollapsed = ref(false)
@@ -139,6 +145,8 @@ const hasViewportModeInitialized = ref(false)
 const route = useRoute()
 const router = useRouter()
 const DRAWER_TRANSITION_MS = 350
+
+useCheckInAutoPopup()
 
 const redirectMobileOnlyRouteToHome = (localeParam?: string) => {
   const targetLocale = getLocaleFromRouteParam(localeParam)

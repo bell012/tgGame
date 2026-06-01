@@ -253,7 +253,7 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'check-in',
     name: 'checkIn',
-    component: () => import('@/views/check-in/index.vue'),
+    component: () => import('@/views/activity/check-in/index.vue'),
     meta: {
       title: '签到',
       description: '签到',
