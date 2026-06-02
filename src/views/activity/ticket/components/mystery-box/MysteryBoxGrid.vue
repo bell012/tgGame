@@ -1,5 +1,5 @@
 <template>
-  <div class="ticket-game-stub min-h-[200px]" data-game-id="mystery_box" />
+  <div class="ticket-game-stub min-h-[200px]" data-game-id="mystery_box">开盲盒网格界面</div>
 </template>
 
 <script setup lang="ts">

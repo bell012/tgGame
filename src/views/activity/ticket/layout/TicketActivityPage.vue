@@ -46,9 +46,11 @@
       </div>
 
       <template v-else-if="spinInfo">
+        <!-- 活动页头 -->
         <TicketModalHeader v-bind="headerData" />
 
         <div class="mt-1">
+          <!-- 大转盘游戏组件 -->
           <LuckySpinWheel
             v-if="gameId === 'lucky_spin'"
             :ref="setWheelRef"
@@ -57,11 +59,14 @@
             @go="emit('go')"
             @spin-end="emit('spin-end')"
           />
+          <!-- 除了大转盘的其他游戏组件 -->
           <component :is="stubGameComponent" v-else />
         </div>
 
+        <!-- 中奖者列表 -->
         <TicketWinnerTicker :items="spinInfo.winnerRecords" />
 
+        <!-- 优惠券列表 -->
         <TicketVoucherFooter
           :games="spinInfo.voucherGames"
           :active-index="activeGameIndex"
