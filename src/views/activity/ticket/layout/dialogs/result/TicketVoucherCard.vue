@@ -19,8 +19,12 @@
 </template>
 
 <script setup lang="ts">
-import type { LuckySpinVoucherCardData } from '../../shared/types'
-import { getGameIcon, getVoucherCardBg, getVoucherCardTextColors } from '../../shared/constants'
+import type { LuckySpinVoucherCardData } from '@/views/activity/ticket/shared/types'
+import {
+  getGameIcon,
+  getVoucherCardBg,
+  getVoucherCardTextColors
+} from '@/views/activity/ticket/shared/constants'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 

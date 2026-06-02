@@ -11,7 +11,7 @@
           v-if="!task.finished && task.actionType === 'deposit'"
           type="button"
           class="shrink-0 rounded-[6px] bg-theme-primary px-3 py-1 text-[12px] font-[700] text-text-4"
-          @click="handleDeposit"
+          @click="goTicketDeposit"
         >
           {{ t('luckySpinPage.reminder.deposit') }}
         </button>
@@ -30,17 +30,10 @@
 </template>
 
 <script setup lang="ts">
-import { closeTicketDialog, globalTicketDialogState } from '../../shell/ticketDialog'
-import { closeTicketToast } from '../../shell/ticketToast'
-import { navigateTo } from '@/utils/router'
+import { goTicketDeposit } from './composables/goTicketDeposit'
+import { globalTicketDialogState } from '../../shell/ticketDialog'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const dialogState = globalTicketDialogState
-
-const handleDeposit = () => {
-  closeTicketDialog()
-  closeTicketToast()
-  navigateTo('/deposit')
-}
 </script>

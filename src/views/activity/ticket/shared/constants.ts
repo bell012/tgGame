@@ -2,6 +2,14 @@ import type { VoucherCardType } from './types'
 
 export { getGameIcon, getPrizeIcon, LUCKY_SPIN_ASSETS, RESULT_HERO_IMAGES } from './assets'
 
+/** 票券子弹窗 z-index（Reminder 低于 Result，避免叠层错乱） */
+export const TICKET_DIALOG_Z = {
+  reminderMask: 10010,
+  reminderSheet: 10011,
+  resultMask: 10020,
+  resultPanel: 10021
+} as const
+
 export const VOUCHER_CARD_BG: Record<string, string> = {
   golden_egg: 'linear-gradient(90deg, #FFF9E2 0%, #FFEE8C 100%)',
   lucky_spin: 'linear-gradient(90deg, #FCE2FF 0%, #FA9CFF 100%)',

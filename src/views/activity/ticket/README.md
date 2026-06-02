@@ -1,241 +1,352 @@
-# 票券活动弹窗（GlobalTicketToast）开发文档
+# 票券活动模块开发指南
 
-## 1. 模块概述
-
-票券活动弹窗用于展示大转盘、砸金蛋、开盲盒、现金券、红包等票券玩法。弹窗在 `App.vue` 全局挂载 `GlobalTicketToast`，通过 `openTicketToast()` / `openLuckySpin()` 打开。
-
-**设计稿层级（1 主页面 + 2～6 子弹窗）**
-
-| 编号 | 说明                      | 组件 / API                                                      |
-| ---- | ------------------------- | --------------------------------------------------------------- |
-| 1    | 活动主页面                | `GlobalTicketToast.vue` / `openTicketToast()`                   |
-| 2    | 任务提醒（Kind Reminder） | `TicketReminderTasksContent` / `openTicketReminderDialog()`     |
-| 3    | 任务完成（券已解锁）      | `TicketTaskSuccessContent` / `openTicketTaskSuccessDialog()`    |
-| 4    | 现金中奖                  | `TicketResultPopup` variant=`cash` / `openTicketResultDialog()` |
-| 5    | 再转一次                  | `TicketResultPopup` variant=`spin_again` / 同上                 |
-| 6    | 未中奖                    | `TicketResultPopup` variant=`no_prize` / 同上                   |
-| —    | 票券中奖                  | `TicketResultPopup` variant=`voucher_*` / 同上                  |
-
-**UI 结构（自上而下）**
-
-1. `TicketModalHeader` — 标题、副标题、倒计时（theme 随活动变化）
-2. 中间玩法组件 — 按 `gameId` 动态渲染
-3. `TicketWinnerTicker` — 中奖滚动条
-4. `TicketVoucherFooter` — 底部活动切换 + 票券数量
-
-**共用弹窗（`layout/dialogs/`，由根 `GlobalTicketToast.vue` 统一挂载，5 玩法共用）**
-
-1. `layout/dialogs/TicketResultPopup.vue` — 抽奖/玩法结果弹窗（#4 / #5 / #6 / 票券），自读 `globalTicketDialogState`
-2. `layout/dialogs/TicketReminderPopup.vue` — 任务提醒/解锁成功壳层（#2 / #3），按 `kind` 动态渲染子内容
-3. `layout/dialogs/TicketReminderTasksContent.vue` — #2 任务列表 + Deposit
-4. `layout/dialogs/TicketTaskSuccessContent.vue` — #3 解锁成功文案
-5. `layout/dialogs/TicketVoucherCard.vue` — 结果弹窗内的票券卡片
-
-`GlobalTicketToast.vue` 中 `<TicketResultPopup />`、`<TicketReminderPopup />` 零 props 挂载；弹窗组件内部读取 `globalTicketDialogState` 并调用 `closeTicketDialog()`。
-
-**阶段 1 范围**
-
-| 活动   | gameId               | 中间组件                                          | 状态     |
-| ------ | -------------------- | ------------------------------------------------- | -------- |
-| 大转盘 | `lucky_spin`         | `components/lucky-spin/LuckySpinWheel.vue`        | 完整实现 |
-| 砸金蛋 | `golden_egg`         | `components/golden-egg/GoldenEggGrid.vue`         | 空壳     |
-| 开盲盒 | `mystery_box`        | `components/mystery-box/MysteryBoxGrid.vue`       | 空壳     |
-| 现金券 | `cash_voucher`       | `components/cash-voucher/CashVoucherClaim.vue`    | 空壳     |
-| 红包   | `lucky_red_envelope` | `components/lucky-red-envelope/RedPacketOpen.vue` | 空壳     |
+> 路径：`src/views/activity/ticket/`  
+> 入口组件：`GlobalTicketToast`（已在 `App.vue` 全局挂载）
 
 ---
 
-## 2. 目录结构
+## 这是什么？
 
-```
-src/views/activity/ticket/
-├── index.ts                          # 对外 API 入口
-├── README.md
-│
-├── GlobalTicketToast.vue             # 主页 + 子弹窗统一入口（App 级挂载）
-├── ticketToast.ts                    # 兼容层 → shell/ticketToast.ts
-├── ticketDialog.ts                   # 兼容层 → shell/ticketDialog.ts
-├── types.ts                          # 兼容层 → shared/types.ts
-├── constants.ts                      # 兼容层 → shared/constants.ts
-│
-├── shell/                            # 状态 & 注册
-│   ├── ticketToast.ts                # openTicketToast / closeTicketToast / switchTicketGame
-│   ├── ticketDialog.ts               # openTicketReminderDialog / openTicketResultDialog 等
-│   └── registry.ts                   # gameId → 中间组件
-│
-├── layout/                           # 弹窗共享布局
-│   ├── TicketActivityPage.vue        # ① 活动主页面（设计稿 #1）
-│   ├── TicketModalHeader.vue         # 顶部
-│   ├── TicketWinnerTicker.vue        # 滚动条
-│   ├── TicketVoucherFooter.vue       # 底部
-│   └── dialogs/                      # 二级 overlay 弹窗（5 玩法共用）
-│       ├── TicketReminderPopup.vue   # 壳层：遮罩 + bottom sheet + Rules
-│       ├── TicketReminderTasksContent.vue
-│       ├── TicketTaskSuccessContent.vue
-│       ├── TicketResultPopup.vue
-│       └── TicketVoucherCard.vue
-│
-├── components/                       # 仅各玩法组件
-│   ├── lucky-spin/                   # 大转盘完整实现
-│   │   ├── LuckySpinWheel.vue
-│   │   ├── useLuckySpinGame.ts
-│   │   └── useLuckyWheelConfig.ts
-│   ├── golden-egg/                   # 砸金蛋（阶段 1 空壳）
-│   │   └── GoldenEggGrid.vue
-│   ├── mystery-box/                  # 开盲盒（阶段 1 空壳）
-│   │   └── MysteryBoxGrid.vue
-│   ├── cash-voucher/                 # 现金券（阶段 1 空壳）
-│   │   └── CashVoucherClaim.vue
-│   └── lucky-red-envelope/           # 红包（阶段 1 空壳）
-│       └── RedPacketOpen.vue
-│
-└── shared/                           # 跨玩法共享配置
-    ├── types.ts
-    ├── constants.ts
-    ├── design-tokens.ts
-    ├── assets.ts
-    └── gameHeaderConfig.ts
-```
+票券活动是一组**全屏弹窗玩法**，包含大转盘、砸金蛋、开盲盒、现金券、红包等。用户从菜单或首页进入，在弹窗内完成抽奖/领奖，关闭后回到原页面。
+
+**你只需要记住两件事：**
+
+1. **打开活动页** → 调 `openLuckySpin()` 或 `openTicketToast()`
+2. **打开子弹窗**（任务提醒、中奖结果等）→ 调 `openTicketXxxDialog()`
 
 ---
 
-## 3. 打开弹窗
+## 5 分钟上手
+
+### 打开 / 关闭活动
 
 ```ts
 import { openLuckySpin } from '@/utils/openLuckySpin'
-import { openTicketActivity } from '@/utils/openTicketActivity'
+import { closeTicketToast } from '@/views/activity/ticket'
 
-// 登录校验 + 打开大转盘
-openLuckySpin()
-
-// 打开其他票券活动（阶段 1 中间区为空壳）
-openTicketActivity('golden_egg')
-openTicketActivity('mystery_box')
-openTicketActivity('cash_voucher')
-openTicketActivity('lucky_red_envelope')
+openLuckySpin() // 打开大转盘（含登录校验）
+closeTicketToast() // 关闭活动页（会连带关闭所有子弹窗）
 ```
 
-```ts
-import { openTicketToast } from '@/views/activity/ticket'
-
-openTicketToast({ gameId: 'lucky_spin' })
-```
-
-```ts
-import { closeTicketToast, switchTicketGame } from '@/views/activity/ticket'
-
-closeTicketToast()
-switchTicketGame('golden_egg') // Footer 切换时由 GlobalTicketToast 内部调用
-```
-
-**打开子弹窗（#2～#6，GlobalToast 模式）**
+### 打开子弹窗（调试或业务调用）
 
 ```ts
 import {
   openTicketReminderDialog,
-  openTicketTaskSuccessDialog,
   openTicketResultDialog,
   closeTicketDialog
 } from '@/views/activity/ticket'
 
-// #2 任务提醒
+// 任务提醒
 openTicketReminderDialog({ tasks, rules })
 
-// #3 券解锁成功
-openTicketTaskSuccessDialog({ voucherName: 'Golden Egg', rules })
-
-// #4 / #5 / #6 / 票券结果
+// 现金中奖
 openTicketResultDialog({ variant: 'cash', highlightText: '₱100.00' })
-openTicketResultDialog({ variant: 'spin_again', highlightText: 'Spin Again' })
-openTicketResultDialog({ variant: 'no_prize', highlightText: 'No Prize' })
 
-closeTicketDialog()
+// 票券中奖
+openTicketResultDialog({ variant: 'voucher_single', vouchers: [...] })
+
+closeTicketDialog()  // 只关子弹窗，活动页仍在
 ```
-
-`closeTicketToast()` 会自动联动 `closeTicketDialog()` 清空子弹窗状态。
 
 ---
 
-## 4. 后端 API
+## 整体架构
 
-统一使用 `Api.activity`（定义于 `src/api/modules/activity.ts`）：
+```mermaid
+flowchart TB
+  subgraph entry [业务入口]
+    Menu["菜单 / 首页"]
+  end
+
+  subgraph app [App.vue]
+    GT["GlobalTicketToast"]
+  end
+
+  subgraph page [活动页]
+    TAP["TicketActivityPage"]
+    Game["玩法组件 lucky_spin 等"]
+  end
+
+  subgraph dialogs [子弹窗]
+    Reminder["TicketReminderPopup"]
+    Hero["TicketResultHeroPopup"]
+    Cards["TicketResultCardsPopup"]
+  end
+
+  subgraph state [全局状态 shell/]
+    ToastState["ticketToast.ts"]
+    DialogState["ticketDialog.ts"]
+  end
+
+  Menu -->|"openLuckySpin()"| ToastState
+  ToastState --> GT
+  GT --> TAP
+  TAP --> Game
+  GT --> Reminder
+  GT --> Hero
+  GT --> Cards
+  Game -->|"openTicketResultDialog()"| DialogState
+  DialogState --> Hero
+  DialogState --> Cards
+```
+
+**分层原则（由外到内）：**
+
+| 层级 | 目录                    | 职责                                |
+| ---- | ----------------------- | ----------------------------------- |
+| 入口 | `GlobalTicketToast.vue` | 挂载活动页 + 所有子弹窗，编排事件   |
+| 状态 | `shell/`                | 全局 open/close API，不碰 UI        |
+| 布局 | `layout/`               | 活动页骨架、Header/Footer、共用弹窗 |
+| 玩法 | `components/`           | 各活动自己的 UI 与逻辑（如大转盘）  |
+| 共享 | `shared/`               | 类型、常量、图片、主题 token        |
+
+---
+
+## 页面上有什么？
+
+### 活动主页面（设计稿 #1）
+
+`TicketActivityPage` 自上而下：
+
+```
+┌─────────────────────────────┐
+│  ✕ 关闭          ? 任务提醒  │
+├─────────────────────────────┤
+│  TicketModalHeader          │  标题 / 倒计时
+├─────────────────────────────┤
+│  玩法区（按 gameId 切换）     │  如 LuckySpinWheel
+├─────────────────────────────┤
+│  TicketWinnerTicker         │  中奖滚动条
+├─────────────────────────────┤
+│  TicketVoucherFooter        │  底部活动切换 + 票券数
+└─────────────────────────────┘
+```
+
+### 子弹窗一览
+
+| 场景                 | 组件                                        | 打开方式                                                                    |
+| -------------------- | ------------------------------------------- | --------------------------------------------------------------------------- |
+| 任务提醒             | `TicketReminderPopup`                       | `openTicketReminderDialog()`                                                |
+| 券解锁成功           | `TicketReminderPopup`（同一壳层，不同内容） | `openTicketTaskSuccessDialog()`                                             |
+| 现金 / 再转 / 未中奖 | `TicketResultHeroPopup`                     | `openTicketResultDialog({ variant: 'cash' \| 'spin_again' \| 'no_prize' })` |
+| 票券中奖             | `TicketResultCardsPopup`                    | `openTicketResultDialog({ variant: 'voucher_single' \| 'voucher_multi' })`  |
+
+> 子弹窗细节见 [`layout/dialogs/README.md`](layout/dialogs/README.md)
+
+---
+
+## 目录结构
+
+```
+ticket/
+├── GlobalTicketToast.vue       # 总入口（App 挂载这一个就够了）
+├── index.ts                    # 对外 export API
+├── ticketToast.ts              # → shell/ticketToast.ts（兼容 re-export）
+├── ticketDialog.ts             # → shell/ticketDialog.ts
+│
+├── shell/                      # 【状态层】只管数据，不管 UI
+│   ├── ticketToast.ts          #   活动页显隐、当前 gameId
+│   ├── ticketDialog.ts         #   子弹窗 kind + 内容数据
+│   └── registry.ts             #   gameId → 玩法组件映射
+│
+├── layout/                     # 【布局层】多个玩法共用
+│   ├── TicketActivityPage.vue  #   活动主页面
+│   ├── TicketModalHeader.vue
+│   ├── TicketWinnerTicker.vue
+│   ├── TicketVoucherFooter.vue
+│   └── dialogs/                #   子弹窗（Reminder + Result）
+│       └── result/             #   结果弹窗子模块（Hero / Cards）
+│
+├── components/                 # 【玩法层】每个活动独立文件夹
+│   ├── lucky-spin/             #   ✅ 大转盘（已完整实现）
+│   ├── golden-egg/             #   ⏳ 砸金蛋（空壳）
+│   ├── mystery-box/            #   ⏳ 开盲盒（空壳）
+│   ├── cash-voucher/           #   ⏳ 现金券（空壳）
+│   └── lucky-red-envelope/     #   ⏳ 红包（空壳）
+│
+└── shared/                     # 【共享层】类型 / 常量 / 资源
+    ├── types.ts
+    ├── constants.ts
+    ├── assets.ts
+    └── design-tokens.ts
+```
+
+---
+
+## 核心概念（新手必看）
+
+### 1. 全局状态 + 零 props 挂载
+
+子弹窗**不需要**在 `GlobalTicketToast` 里传 props：
+
+```vue
+<!-- GlobalTicketToast.vue -->
+<TicketReminderPopup />
+<TicketResultHeroPopup />
+<TicketResultCardsPopup />
+```
+
+流程是：
+
+```
+业务代码调用 openXxxDialog(data)
+        ↓
+写入 globalTicketDialogState（shell/ticketDialog.ts）
+        ↓
+弹窗组件内部读取 state，自动显示
+        ↓
+用户点击关闭 → closeTicketDialog()
+```
+
+### 2. 两种结果弹窗
+
+| 类型  | 组件                     | 适用 variant                       | UI 形态                   |
+| ----- | ------------------------ | ---------------------------------- | ------------------------- |
+| Hero  | `TicketResultHeroPopup`  | `cash` / `spin_again` / `no_prize` | 标题 + 金额 + 插图 + 按钮 |
+| Cards | `TicketResultCardsPopup` | `voucher_single` / `voucher_multi` | 礼物盒 + 票券卡片列表     |
+
+两者共用 `openTicketResultDialog()`，通过 `variant` 自动路由到对应弹窗。
+
+### 3. 玩法注册表
+
+`shell/registry.ts` 把 `gameId` 映射到中间区组件：
+
+| gameId               | 组件               | 状态   |
+| -------------------- | ------------------ | ------ |
+| `lucky_spin`         | `LuckySpinWheel`   | 已实现 |
+| `golden_egg`         | `GoldenEggGrid`    | 空壳   |
+| `mystery_box`        | `MysteryBoxGrid`   | 空壳   |
+| `cash_voucher`       | `CashVoucherClaim` | 空壳   |
+| `lucky_red_envelope` | `RedPacketOpen`    | 空壳   |
+
+---
+
+## 一次抽奖的完整流程（大转盘示例）
+
+```mermaid
+sequenceDiagram
+  participant User as 用户
+  participant Page as GlobalTicketToast
+  participant Game as useLuckySpinGame
+  participant API as Api.activity
+  participant Dialog as ticketDialog.ts
+  participant Popup as TicketResultHeroPopup
+
+  User->>Page: 点击 GO
+  Page->>Game: handleWheelGo()
+  Game->>API: doLuckySpin()
+  API-->>Game: 返回 prizeIndex
+  Game->>Game: 转盘停到对应格
+  User->>Page: 动画结束 spin-end
+  Game->>Dialog: openTicketResultDialog({ variant, ... })
+  Dialog->>Popup: globalTicketDialogState.kind = result
+  Popup->>User: 展示中奖弹窗
+  User->>Popup: 点击 OK
+  Popup->>Dialog: closeTicketDialog()
+```
+
+关键文件：
+
+- 玩法逻辑 → `components/lucky-spin/useLuckySpinGame.ts`
+- 打开结果弹窗 → `shell/ticketDialog.ts` 的 `openTicketResultDialog()`
+- 弹窗 UI → `layout/dialogs/result/TicketResultHeroPopup.vue`
+
+---
+
+## API 速查
+
+### 活动页（`shell/ticketToast.ts`）
+
+| 方法                          | 说明                    |
+| ----------------------------- | ----------------------- |
+| `openTicketToast({ gameId })` | 打开指定活动            |
+| `closeTicketToast()`          | 关闭活动页 + 清空子弹窗 |
+| `switchTicketGame(gameId)`    | Footer 切换活动         |
+
+### 子弹窗（`shell/ticketDialog.ts`）
+
+| 方法                                                  | 说明                              |
+| ----------------------------------------------------- | --------------------------------- |
+| `openTicketReminderDialog({ tasks, rules })`          | 任务提醒                          |
+| `openTicketTaskSuccessDialog({ voucherName, rules })` | 券解锁成功                        |
+| `openTicketResultDialog(options)`                     | 抽奖结果（Hero / Cards 自动分流） |
+| `closeTicketDialog()`                                 | 关闭当前子弹窗                    |
+
+### 后端接口（`Api.activity`）
+
+| 方法                   | 说明                                 |
+| ---------------------- | ------------------------------------ |
+| `queryLuckySpinInfo()` | 获取活动信息（奖品、任务、剩余次数） |
+| `doLuckySpin()`        | 执行一次抽奖                         |
+
+Mock 数据：`src/api/mock/luckySpin.ts`
+
+### 业务入口（推荐用法）
+
+| 场景                  | 调用                               |
+| --------------------- | ---------------------------------- |
+| 菜单 / 首页打开大转盘 | `openLuckySpin()`                  |
+| 打开其他活动          | `openTicketActivity('golden_egg')` |
+
+---
+
+## 我要改 / 加功能，去哪找？
+
+| 需求               | 去哪改                                                    |
+| ------------------ | --------------------------------------------------------- |
+| 改活动页布局       | `layout/TicketActivityPage.vue`                           |
+| 改 Header / Footer | `layout/TicketModalHeader.vue`、`TicketVoucherFooter.vue` |
+| 改大转盘逻辑       | `components/lucky-spin/`                                  |
+| 改中奖弹窗 UI      | `layout/dialogs/result/`                                  |
+| 改任务提醒弹窗     | `layout/dialogs/TicketReminderPopup.vue`                  |
+| 改文案             | `src/i18n/locales/` → `luckySpinPage.*`                   |
+| 新增一种活动       | 见下方「新增活动 checklist」                              |
+
+### 新增活动 checklist
+
+1. `components/` 下新建玩法文件夹 + 组件
+2. `shell/registry.ts` 注册 `gameId → 组件`
+3. `shared/design-tokens.ts` 补充 theme（如需）
+4. `shared/gameHeaderConfig.ts` + i18n 补充文案
+5. `api/` 补充接口与类型
+6. 玩法 composable 里调用 `openTicketResultDialog()` 展示结果
+7. 更新本文档
+
+### 复用结果弹窗（其他模块）
 
 ```ts
-import Api from '@/api'
-
-const info = await Api.activity.queryLuckySpinInfo()
-const result = await Api.activity.doLuckySpin()
+import {
+  TicketResultHeroPopup,
+  TicketResultCardsPopup
+} from '@/views/activity/ticket/layout/dialogs/result'
 ```
 
-| 方法                 | 说明           | 阶段 |
-| -------------------- | -------------- | ---- |
-| `queryLuckySpinInfo` | 大转盘活动信息 | 1    |
-| `doLuckySpin`        | 执行抽奖       | 1    |
-
-Mock 数据：`src/api/mock/luckySpin.ts`（`USE_MOCK = true` 时生效）。
-
-统一使用 `Api.activity.*`，`Api.promotion` 已移除。
+挂载后配合 `openTicketResultDialog()` 即可，无需传 props。
 
 ---
 
-## 5. 注册表
+## 注意事项
 
-`shell/registry.ts`：
-
-```ts
-TICKET_GAME_COMPONENTS = {
-  lucky_spin: LuckySpinWheel, // components/lucky-spin/LuckySpinWheel.vue
-  golden_egg: GoldenEggGrid, // components/golden-egg/GoldenEggGrid.vue
-  mystery_box: MysteryBoxGrid, // components/mystery-box/MysteryBoxGrid.vue
-  cash_voucher: CashVoucherClaim, // components/cash-voucher/CashVoucherClaim.vue
-  lucky_red_envelope: RedPacketOpen // components/lucky-red-envelope/RedPacketOpen.vue
-}
-```
-
-`isTicketGameImplemented(gameId)` — 阶段 1 仅 `lucky_spin` 返回 `true`。
+- `GlobalTicketToast` **只在 `App.vue` 挂载一次**，不要在 MainLayout 重复挂载
+- 子弹窗组件**不要**在 `GlobalTicketToast` 里传 props，统一读 `globalTicketDialogState`
+- 跨玩法共用的 UI 放 `layout/`，不要放进某个 `components/lucky-spin/` 子目录
+- 关闭活动页 `closeTicketToast()` 会自动调用 `closeTicketDialog()`
 
 ---
 
-## 6. 新增活动（后续迭代）
+## 延伸阅读
 
-1. 在 `api/interface/activity.ts` 补充类型
-2. 在 `api/modules/activity.ts` 补充 HTTP 方法
-3. 在 **对应玩法文件夹内** 填充 UI（如 `components/golden-egg/GoldenEggGrid.vue`）；新玩法在 `components/` 下新建独立文件夹（与 `lucky-spin/` 平级）
-4. 跨玩法弹窗放 `layout/dialogs/`（与 Header/Footer 同属共享 UI，不要放进 `components/` 或某个玩法子目录）
-5. 在 `shared/design-tokens.ts` 补充 theme（若需要）
-6. 在 `shared/gameHeaderConfig.ts` / i18n `ticketPage` 补充文案
-7. 在 `shell/registry.ts` 注册新组件
-8. 更新本文档
+- 子弹窗职责与扩展：[`layout/dialogs/README.md`](layout/dialogs/README.md)
+- 结果弹窗 composable 说明：见 `layout/dialogs/result/composables/` 内各文件注释
 
 ---
 
-## 7. 接入点
+## 变更记录
 
-| 入口                               | 调用              |
-| ---------------------------------- | ----------------- |
-| 菜单 Lucky Spin / Lucky Wheel      | `openLuckySpin()` |
-| 首页轮播 / H5HomePop / contentJump | `openLuckySpin()` |
-
-挂载：`src/App.vue` → `<GlobalTicketToast />`（**不要**在 MainLayout 重复挂载）。
-
----
-
-## 8. i18n
-
-- 大转盘：`luckySpinPage.*`
-- 其他活动 Header：`ticketPage.goldenEgg` / `mysteryBox` / `cashVoucher` / `redPacket`
-
----
-
-## 9. 变更记录
-
-| 日期       | 说明                                                                                                    |
-| ---------- | ------------------------------------------------------------------------------------------------------- |
-| 2026-06-01 | 初版：GlobalTicketToast + 大转盘完整实现 + 4 活动空壳                                                   |
-| 2026-06-01 | 阶段 3 清理：移除 lucky-spin 目录与 promotion API；Menu 接入全部票券入口                                |
-| 2026-06-02 | 目录重组：shell/layout/components/shared 四层；各玩法独立子文件夹；根目录保留兼容 re-export             |
-| 2026-06-02 | dialogs 提升至 components/dialogs/ 作为 5 玩法共用；LuckySpinReminderPopup 重命名为 TicketReminderPopup |
-| 2026-06-02 | dialogs 迁至 layout/dialogs/，与 Header/Footer 同属弹窗共享 UI；components/ 仅保留各玩法                |
-| 2026-06-02 | 子弹窗统一至 GlobalTicketToast.vue；新增 ticketDialog.ts 全局 open/close API（参考 GlobalToast 模式）   |
-| 2026-06-02 | 活动主页面抽离为 layout/TicketActivityPage.vue；GlobalTicketToast 仅负责编排与子弹窗挂载                |
-| 2026-06-02 | 弹窗自包含化：Result/Reminder 自读 globalTicketDialogState；Reminder 拆为壳层 + 子内容组件              |
+| 日期       | 说明                                                        |
+| ---------- | ----------------------------------------------------------- |
+| 2026-06-01 | 初版：GlobalTicketToast + 大转盘 + 4 活动空壳               |
+| 2026-06-02 | 目录四层拆分（shell / layout / components / shared）        |
+| 2026-06-02 | 子弹窗全局 state 化；活动页抽离 TicketActivityPage          |
+| 2026-06-02 | 结果弹窗拆为 TicketResultHeroPopup + TicketResultCardsPopup |

@@ -6,7 +6,6 @@ import {
   openTicketResultDialog
 } from '../../shell/ticketDialog'
 import { closeTicketToast } from '../../shell/ticketToast'
-import { navigateTo } from '@/utils/router'
 import { showToast } from 'vant'
 import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
@@ -172,12 +171,6 @@ export const useLuckySpinGame = (
     activeGameIndex.value = (activeGameIndex.value + 1) % spinInfo.value.voucherGames.length
   }
 
-  const handleDeposit = () => {
-    closeTicketDialog()
-    closeTicketToast()
-    navigateTo('/deposit')
-  }
-
   const handleClosePage = () => {
     if (isSpinning.value) return
     closeTicketToast()
@@ -207,7 +200,6 @@ export const useLuckySpinGame = (
     handleSpinEnd,
     handleGamePrev,
     handleGameNext,
-    handleDeposit,
     handleClosePage
   }
 }

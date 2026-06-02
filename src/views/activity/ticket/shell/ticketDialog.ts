@@ -28,7 +28,7 @@ export interface OpenTicketResultDialogOptions {
   buttonText?: string
 }
 
-interface TicketResultDialogState {
+export interface TicketResultDialogState {
   variant: LuckySpinResultVariant
   highlightText: string
   vouchers: LuckySpinVoucherCardData[]

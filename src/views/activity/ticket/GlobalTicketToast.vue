@@ -1,5 +1,6 @@
 <template>
   <Teleport to="body">
+    <!-- 活动抽奖页面 -->
     <TicketActivityPage
       :visible="toastState.visible"
       :is-loading="isLoading"
@@ -20,14 +21,19 @@
       @prev="handleFooterPrev"
       @next="handleFooterNext"
     />
-
-    <TicketResultPopup />
+    <!-- 帮助中心弹窗 -->
     <TicketReminderPopup />
+    <!-- 活动抽奖结果弹窗1 -->
+    <TicketResultHeroPopup />
+    <!-- 活动抽奖结果弹窗2 -->
+    <TicketResultCardsPopup />
+    <!-- TODO 活动抽奖结果弹窗3 后续可扩展 -->
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import TicketResultPopup from './layout/dialogs/TicketResultPopup.vue'
+import TicketResultCardsPopup from './layout/dialogs/result/TicketResultCardsPopup.vue'
+import TicketResultHeroPopup from './layout/dialogs/result/TicketResultHeroPopup.vue'
 import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
 import TicketReminderPopup from './layout/dialogs/TicketReminderPopup.vue'
 import TicketActivityPage from './layout/TicketActivityPage.vue'
