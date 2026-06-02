@@ -1,10 +1,10 @@
 import Api from '@/api'
-import type {
-  LuckySpinInfoResult,
-  LuckySpinResult,
-  LuckySpinResultVariant,
-  LuckySpinVoucherCardData
-} from '../../shared/types'
+import type { LuckySpinInfoResult, LuckySpinResult } from '../../shared/types'
+import {
+  closeTicketDialog,
+  openTicketReminderDialog,
+  openTicketResultDialog
+} from '../../shell/ticketDialog'
 import { closeTicketToast } from '../../shell/ticketToast'
 import { navigateTo } from '@/utils/router'
 import { showToast } from 'vant'
@@ -28,12 +28,6 @@ export const useLuckySpinGame = (
   const isSpinning = ref(false)
   const spinInfo = ref<LuckySpinInfoResult | null>(null)
   const activeGameIndex = ref(0)
-
-  const showReminder = ref(false)
-  const showResult = ref(false)
-  const resultVariant = ref<LuckySpinResultVariant>('cash')
-  const resultHighlight = ref('')
-  const resultVouchers = ref<LuckySpinVoucherCardData[]>([])
   const pendingResult = ref<LuckySpinResult | null>(null)
 
   const syncActiveGameIndex = (info: LuckySpinInfoResult, gameId?: string) => {
@@ -44,13 +38,10 @@ export const useLuckySpinGame = (
 
   const resetModalState = () => {
     isSpinning.value = false
-    showReminder.value = false
-    showResult.value = false
     pendingResult.value = null
-    resultHighlight.value = ''
-    resultVouchers.value = []
     loadError.value = false
     spinInfo.value = null
+    closeTicketDialog()
     wheelRef.value?.init()
   }
 
@@ -80,27 +71,46 @@ export const useLuckySpinGame = (
     const { prize } = result
 
     if (prize.type === 'cash') {
-      resultVariant.value = 'cash'
-      resultHighlight.value = prize.label
-    } else if (prize.type === 'spin_again') {
-      resultVariant.value = 'spin_again'
-      resultHighlight.value = t('luckySpinPage.result.spinAgain')
-    } else if (prize.type === 'no_prize') {
-      resultVariant.value = 'no_prize'
-      resultHighlight.value = t('luckySpinPage.result.noPrize')
-    } else if (prize.type === 'voucher') {
-      resultVouchers.value = result.vouchers ?? []
-      resultVariant.value = (result.vouchers?.length ?? 0) > 1 ? 'voucher_multi' : 'voucher_single'
+      openTicketResultDialog({
+        variant: 'cash',
+        highlightText: prize.label
+      })
+      return
     }
 
-    showResult.value = true
+    if (prize.type === 'spin_again') {
+      openTicketResultDialog({
+        variant: 'spin_again',
+        highlightText: t('luckySpinPage.result.spinAgain')
+      })
+      return
+    }
+
+    if (prize.type === 'no_prize') {
+      openTicketResultDialog({
+        variant: 'no_prize',
+        highlightText: t('luckySpinPage.result.noPrize')
+      })
+      return
+    }
+
+    if (prize.type === 'voucher') {
+      const vouchers = result.vouchers ?? []
+      openTicketResultDialog({
+        variant: vouchers.length > 1 ? 'voucher_multi' : 'voucher_single',
+        vouchers
+      })
+    }
   }
 
   const handleWheelGo = async () => {
     if (isSpinning.value) return
 
     if (!spinInfo.value?.remainingSpins) {
-      showReminder.value = true
+      openTicketReminderDialog({
+        tasks: spinInfo.value?.tasks ?? [],
+        rules: spinInfo.value?.rules ?? []
+      })
       return
     }
 
@@ -163,7 +173,7 @@ export const useLuckySpinGame = (
   }
 
   const handleDeposit = () => {
-    showReminder.value = false
+    closeTicketDialog()
     closeTicketToast()
     navigateTo('/deposit')
   }
@@ -191,11 +201,6 @@ export const useLuckySpinGame = (
     isSpinning,
     spinInfo,
     activeGameIndex,
-    showReminder,
-    showResult,
-    resultVariant,
-    resultHighlight,
-    resultVouchers,
     loadSpinInfo,
     syncActiveGameIndex,
     handleWheelGo,

@@ -18,33 +18,7 @@
             {{ t('luckySpinPage.reminder.title') }}
           </h3>
 
-          <ul class="mt-4 flex flex-col gap-3">
-            <li v-for="task in tasks" :key="task.id" class="rounded-[10px] bg-bg-1 px-3 py-3">
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-[14px] font-[500] text-text-1">{{ task.title }}</span>
-                <button
-                  v-if="!task.finished && task.actionType === 'deposit'"
-                  type="button"
-                  class="shrink-0 rounded-[6px] bg-theme-primary px-3 py-1 text-[12px] font-[700] text-text-4"
-                  @click="emit('deposit')"
-                >
-                  {{ t('luckySpinPage.reminder.deposit') }}
-                </button>
-                <span
-                  v-else-if="task.finished"
-                  class="shrink-0 text-[12px] font-[500] text-common-60"
-                >
-                  {{ t('luckySpinPage.reminder.finished') }}
-                </span>
-              </div>
-              <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-common-10">
-                <div
-                  class="h-full rounded-full bg-theme-primary transition-all"
-                  :style="{ width: `${task.progress}%` }"
-                />
-              </div>
-            </li>
-          </ul>
+          <component :is="contentComponent" v-if="contentComponent" />
 
           <div class="mt-4">
             <h4 class="text-[14px] font-[700] text-text-1">
@@ -69,26 +43,32 @@
 </template>
 
 <script setup lang="ts">
-import type { LuckySpinTask } from '../../shared/types'
+import { closeTicketDialog, globalTicketDialogState } from '../../shell/ticketDialog'
+import TicketReminderTasksContent from './TicketReminderTasksContent.vue'
+import TicketTaskSuccessContent from './TicketTaskSuccessContent.vue'
+import type { Component } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-interface Props {
-  visible: boolean
-  tasks: LuckySpinTask[]
-  rules: string[]
-}
-
-defineProps<Props>()
-
-const emit = defineEmits<{
-  'update:visible': [value: boolean]
-  deposit: []
-}>()
-
 const { t } = useI18n()
+const dialogState = globalTicketDialogState
+
+const visible = computed(
+  () => dialogState.kind === 'reminder' || dialogState.kind === 'task_success'
+)
+
+const contentComponent = computed<Component | null>(() => {
+  if (dialogState.kind === 'task_success') return TicketTaskSuccessContent
+  if (dialogState.kind === 'reminder') return TicketReminderTasksContent
+  return null
+})
+
+const rules = computed(() =>
+  dialogState.kind === 'task_success' ? dialogState.taskSuccess.rules : dialogState.reminder.rules
+)
 
 const handleClose = () => {
-  emit('update:visible', false)
+  closeTicketDialog()
 }
 </script>
 

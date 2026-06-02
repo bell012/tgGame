@@ -41,7 +41,7 @@
                 <button
                   type="button"
                   class="mt-4 flex h-[44px] w-full items-center justify-center rounded-[10px] bg-theme-primary text-[15px] font-[700] text-text-4"
-                  @click="handleUseNow"
+                  @click="handleClose"
                 >
                   {{ resolvedButtonText }}
                 </button>
@@ -65,7 +65,7 @@
               <button
                 type="button"
                 class="flex h-[44px] w-full max-w-[280px] items-center justify-center rounded-[10px] bg-theme-primary text-[15px] font-[700] text-text-4"
-                @click="handleConfirm"
+                @click="handleClose"
               >
                 {{ resolvedButtonText }}
               </button>
@@ -87,103 +87,66 @@
 </template>
 
 <script setup lang="ts">
-import type { LuckySpinResultVariant, LuckySpinVoucherCardData } from '../../shared/types'
+import { closeTicketDialog, globalTicketDialogState } from '../../shell/ticketDialog'
 import { LUCKY_SPIN_ASSETS } from '../../shared/assets'
 import { RESULT_HERO_IMAGES } from '../../shared/constants'
 import TicketVoucherCard from './TicketVoucherCard.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-interface Props {
-  visible: boolean
-  variant: LuckySpinResultVariant
-  title?: string
-  highlightText?: string
-  subtext?: string
-  heroImage?: string
-  buttonText?: string
-  voucherCount?: number
-  vouchers?: LuckySpinVoucherCardData[]
-  closeOnOverlay?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  title: undefined,
-  highlightText: undefined,
-  subtext: undefined,
-  heroImage: '',
-  buttonText: undefined,
-  voucherCount: 0,
-  vouchers: () => [],
-  closeOnOverlay: true
-})
-
-const emit = defineEmits<{
-  'update:visible': [value: boolean]
-  confirm: []
-  useNow: []
-  close: []
-}>()
-
 const { t } = useI18n()
+const dialogState = globalTicketDialogState
+
+const visible = computed(() => dialogState.kind === 'result')
+const result = computed(() => dialogState.result)
+const variant = computed(() => result.value.variant)
+const vouchers = computed(() => result.value.vouchers)
 
 const isVoucherVariant = computed(
-  () => props.variant === 'voucher_single' || props.variant === 'voucher_multi'
+  () => variant.value === 'voucher_single' || variant.value === 'voucher_multi'
 )
 
 const resolvedTitle = computed(() => {
-  if (props.title) return props.title
+  if (result.value.title) return result.value.title
   if (isVoucherVariant.value) return t('luckySpinPage.result.congratulations')
-  if (props.variant === 'no_prize') return t('luckySpinPage.result.sorry')
+  if (variant.value === 'no_prize') return t('luckySpinPage.result.sorry')
   return t('luckySpinPage.result.congratsWon')
 })
 
-const resolvedHighlight = computed(() => props.highlightText ?? '')
+const resolvedHighlight = computed(() => result.value.highlightText ?? '')
 
 const resolvedHeroImage = computed(() => {
-  if (props.heroImage) return props.heroImage
-  if (props.variant === 'cash' || props.variant === 'spin_again' || props.variant === 'no_prize') {
-    return RESULT_HERO_IMAGES[props.variant]
+  if (result.value.heroImage) return result.value.heroImage
+  if (variant.value === 'cash' || variant.value === 'spin_again' || variant.value === 'no_prize') {
+    return RESULT_HERO_IMAGES[variant.value]
   }
   return ''
 })
 
 const resolvedSubtext = computed(() => {
-  if (props.subtext) return props.subtext
+  if (result.value.subtext) return result.value.subtext
   if (isVoucherVariant.value) {
-    const count = props.voucherCount || props.vouchers.length
+    const count = result.value.voucherCount || vouchers.value.length
     return t('luckySpinPage.result.receivedVouchers', { count })
   }
-  if (props.variant === 'cash') return t('luckySpinPage.result.creditedToWallet')
-  if (props.variant === 'spin_again') return t('luckySpinPage.result.extraSpin')
-  if (props.variant === 'no_prize') return t('luckySpinPage.result.betterLuck')
+  if (variant.value === 'cash') return t('luckySpinPage.result.creditedToWallet')
+  if (variant.value === 'spin_again') return t('luckySpinPage.result.extraSpin')
+  if (variant.value === 'no_prize') return t('luckySpinPage.result.betterLuck')
   return ''
 })
 
 const resolvedButtonText = computed(() => {
-  if (props.buttonText) return props.buttonText
+  if (result.value.buttonText) return result.value.buttonText
   if (isVoucherVariant.value) return t('luckySpinPage.result.useNow')
-  if (props.variant === 'cash') return t('luckySpinPage.result.nextRound')
+  if (variant.value === 'cash') return t('luckySpinPage.result.nextRound')
   return t('luckySpinPage.result.ok')
 })
 
 const handleClose = () => {
-  emit('update:visible', false)
-  emit('close')
+  closeTicketDialog()
 }
 
 const handleOverlayClose = () => {
-  if (!props.closeOnOverlay) return
-  handleClose()
-}
-
-const handleConfirm = () => {
-  emit('confirm')
-  handleClose()
-}
-
-const handleUseNow = () => {
-  emit('useNow')
   handleClose()
 }
 </script>

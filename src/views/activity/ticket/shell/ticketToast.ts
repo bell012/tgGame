@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import { closeTicketDialog } from './ticketDialog'
 import type { OpenTicketToastOptions, TicketGameId } from '../shared/types'
 
 interface GlobalTicketToastState {
@@ -18,6 +19,7 @@ export function openTicketToast(options: OpenTicketToastOptions) {
 
 export function closeTicketToast() {
   globalTicketToastState.visible = false
+  closeTicketDialog()
 }
 
 export function switchTicketGame(gameId: TicketGameId) {

@@ -1572,7 +1572,8 @@
       "title": "温馨提示",
       "deposit": "充值",
       "finished": "已完成",
-      "rulesTitle": "活动规则"
+      "rulesTitle": "活动规则",
+      "unlocked": "恭喜！您的{voucherName}已解锁"
     },
     "result": {
       "congratulations": "恭喜！",

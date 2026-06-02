@@ -1580,7 +1580,8 @@
       "title": "Kind Reminder",
       "deposit": "Deposit",
       "finished": "Finished",
-      "rulesTitle": "Rules"
+      "rulesTitle": "Rules",
+      "unlocked": "Congrats! Your {voucherName} is now unlocked"
     },
     "result": {
       "congratulations": "Congratulations!",
