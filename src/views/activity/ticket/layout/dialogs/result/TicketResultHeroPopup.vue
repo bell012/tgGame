@@ -17,7 +17,12 @@
           :style="{ zIndex: TICKET_DIALOG_Z.resultPanel }"
           @click.self="close"
         >
-          <section role="dialog" aria-modal="true" class="modal-container w-full max-w-[320px]">
+          <section
+            role="dialog"
+            aria-modal="true"
+            class="modal-container w-full"
+            :class="isMobile ? 'max-w-[320px]' : 'max-w-[360px]'"
+          >
             <div class="flex flex-col items-center">
               <h2 class="text-[18px] font-[700] text-common-100">{{ resolvedTitle }}</h2>
               <p class="mt-1 text-[28px] font-[700] text-[#F7D060]">{{ resolvedHighlight }}</p>
@@ -27,7 +32,8 @@
 
               <div
                 v-if="resolvedHeroImage"
-                class="my-4 flex h-[160px] w-[160px] items-center justify-center"
+                class="my-4 flex items-center justify-center"
+                :class="isMobile ? 'h-[160px] w-[160px]' : 'h-[200px] w-[200px]'"
               >
                 <img :src="resolvedHeroImage" alt="" class="h-full w-full object-contain" />
               </div>
@@ -57,12 +63,14 @@
 </template>
 
 <script setup lang="ts">
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { useTicketResultHeroCopy } from './composables/useTicketResultHeroCopy'
 import { useTicketResultHeroDialog } from './composables/useTicketResultHeroDialog'
 import { TICKET_DIALOG_Z } from '@/views/activity/ticket/shared/constants'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const isMobile = useIsMobile()
 const { visible, result, close } = useTicketResultHeroDialog()
 const { resolvedTitle, resolvedHighlight, resolvedHeroImage, resolvedSubtext, resolvedButtonText } =
   useTicketResultHeroCopy(result, t)

@@ -1,5 +1,8 @@
 <template>
-  <header class="flex flex-col items-center px-4 pt-1 text-center">
+  <header
+    class="flex flex-col pt-1"
+    :class="[align === 'start' ? 'items-start px-0 text-left' : 'items-center px-4 text-center']"
+  >
     <h1
       class="bg-clip-text text-[24px] font-[700] leading-[30px] text-transparent"
       :style="{ backgroundImage: themeTokens.titleGradient }"
@@ -10,7 +13,11 @@
       {{ subtitle }}
     </p>
 
-    <div v-if="endTime" class="mt-4 flex items-center justify-center gap-1">
+    <div
+      v-if="endTime"
+      class="mt-4 flex items-center gap-1"
+      :class="align === 'start' ? 'justify-start' : 'justify-center'"
+    >
       <template v-for="(segment, segmentIndex) in countdownSegments" :key="segmentIndex">
         <span
           v-if="segmentIndex > 0"
@@ -51,11 +58,19 @@ import type { TicketModalHeaderData } from '../shared/types'
 import { getTicketModalTheme, LUCKY_SPIN_TOKENS } from '../shared/design-tokens'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
-const props = withDefaults(defineProps<TicketModalHeaderData>(), {
-  endTime: undefined,
-  theme: 'lucky_spin',
-  expiresLabel: ''
-})
+const props = withDefaults(
+  defineProps<
+    TicketModalHeaderData & {
+      align?: 'center' | 'start'
+    }
+  >(),
+  {
+    endTime: undefined,
+    theme: 'lucky_spin',
+    expiresLabel: '',
+    align: 'center'
+  }
+)
 
 const themeTokens = computed(() => getTicketModalTheme(props.theme))
 

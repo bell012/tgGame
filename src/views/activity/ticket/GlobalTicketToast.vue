@@ -86,7 +86,9 @@ const handleOpenReminder = () => {
   if (!spinInfo.value) return
   openTicketReminderDialog({
     tasks: spinInfo.value.tasks,
-    rules: spinInfo.value.rules
+    rules: spinInfo.value.rules,
+    voucherName: headerData.value.title,
+    maxPrizeText: spinInfo.value.maxPrizeText
   })
 }
 

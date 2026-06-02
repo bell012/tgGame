@@ -1588,6 +1588,12 @@
       "title": "温馨提示",
       "deposit": "充值",
       "finished": "已完成",
+      "completed": "已完成",
+      "introUnlock": "完成以下任务以解锁 {voucherName}",
+      "introUnlockPrefix": "完成以下任务以解锁",
+      "introReward": "最高赢取 {amount} 现金",
+      "introRewardPrefix": "最高赢取",
+      "introRewardSuffix": "现金",
       "rulesTitle": "活动规则",
       "unlocked": "恭喜！您的{voucherName}已解锁"
     },

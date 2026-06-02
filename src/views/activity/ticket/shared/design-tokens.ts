@@ -77,3 +77,18 @@ export const LUCKY_SPIN_TOKENS = {
 
 export const getTicketModalTheme = (theme: TicketModalTheme = 'lucky_spin') =>
   TICKET_MODAL_THEMES[theme] ?? TICKET_MODAL_THEMES.lucky_spin
+
+/** PC 端票券活动弹窗尺寸 token */
+export const TICKET_PC_TOKENS = {
+  activityModalWidth: 960,
+  activityModalRadius: 24,
+  activityModalPadding: 28,
+  activityModalBg: 'rgba(26, 26, 46, 0.85)',
+  leftColumnRatio: '42%',
+  rightColumnRatio: '58%',
+  wheelSizePc: 380,
+  reminderModalWidth: 480,
+  resultHeroMaxWidth: 360,
+  resultCardsMaxWidth: 440,
+  resultHeroImageSize: 200
+} as const
