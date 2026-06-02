@@ -50,17 +50,14 @@
         <TicketModalHeader v-bind="headerData" />
 
         <div class="mt-1">
-          <!-- 大转盘游戏组件 -->
-          <LuckySpinWheel
-            v-if="gameId === 'lucky_spin'"
-            :ref="setWheelRef"
-            :prizes="spinInfo.prizes"
-            :disabled="spinInfo.remainingSpins <= 0 || isSpinning"
-            @go="emit('go')"
-            @spin-end="emit('spin-end')"
+          <!-- 游戏组件：大转盘、红包、砸金蛋、开盲盒、现金券 -->
+          <component
+            :is="gameComponent"
+            :key="gameId"
+            :ref="setGameRef"
+            v-bind="gameComponentProps"
+            v-on="gameComponentListeners"
           />
-          <!-- 除了大转盘的其他游戏组件 -->
-          <component :is="stubGameComponent" v-else />
         </div>
 
         <!-- 中奖者列表 -->
@@ -83,14 +80,13 @@
 </template>
 
 <script setup lang="ts">
-import LuckySpinWheel from '../components/lucky-spin/LuckySpinWheel.vue'
 import type { LuckySpinWheelExpose } from '../components/lucky-spin/useLuckySpinGame'
 import { LUCKY_SPIN_TOKENS } from '../shared/design-tokens'
 import type { LuckySpinInfoResult, TicketGameId, TicketModalHeaderData } from '../shared/types'
+import { getTicketGameComponent } from '../shell/registry'
 import TicketModalHeader from './TicketModalHeader.vue'
 import TicketVoucherFooter from './TicketVoucherFooter.vue'
 import TicketWinnerTicker from './TicketWinnerTicker.vue'
-import type { Component } from 'vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -102,7 +98,6 @@ interface Props {
   spinInfo: LuckySpinInfoResult | null
   gameId: TicketGameId
   headerData: TicketModalHeaderData
-  stubGameComponent: Component
   activeGameIndex: number
   registerWheelRef: (el: LuckySpinWheelExpose | null) => void
 }
@@ -127,8 +122,32 @@ const modalBackdropStyle = computed(() => ({
   WebkitBackdropFilter: `blur(${LUCKY_SPIN_TOKENS.modalBlur})`
 }))
 
-const setWheelRef = (el: unknown) => {
-  props.registerWheelRef(el as LuckySpinWheelExpose | null)
+const gameComponent = computed(() => getTicketGameComponent(props.gameId))
+
+const gameComponentProps = computed(() => {
+  if (props.gameId !== 'lucky_spin' || !props.spinInfo) return {}
+  return {
+    prizes: props.spinInfo.prizes,
+    disabled: props.spinInfo.remainingSpins <= 0 || props.isSpinning
+  }
+})
+
+const gameComponentListeners = computed(() => {
+  if (props.gameId !== 'lucky_spin') return {}
+  return {
+    go: () => emit('go'),
+    spinEnd: () => emit('spin-end')
+  }
+})
+
+const setGameRef = (el: unknown) => {
+  if (el && props.gameId === 'lucky_spin') {
+    props.registerWheelRef(el as LuckySpinWheelExpose)
+    return
+  }
+  if (!el) {
+    props.registerWheelRef(null)
+  }
 }
 </script>
 

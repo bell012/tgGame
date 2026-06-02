@@ -9,7 +9,6 @@
       :spin-info="spinInfo"
       :game-id="toastState.gameId"
       :header-data="headerData"
-      :stub-game-component="stubGameComponent"
       :active-game-index="activeGameIndex"
       :register-wheel-ref="registerWheelRef"
       @close="handleClosePage"
@@ -38,7 +37,6 @@ import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
 import TicketReminderPopup from './layout/dialogs/TicketReminderPopup.vue'
 import TicketActivityPage from './layout/TicketActivityPage.vue'
 import { buildGameHeader, findGameIndex } from './shared/gameHeaderConfig'
-import { getTicketGameComponent } from './shell/registry'
 import { openTicketReminderDialog } from './shell/ticketDialog'
 import { globalTicketToastState, switchTicketGame } from './shell/ticketToast'
 import type { TicketGameId } from './shared/types'
@@ -83,8 +81,6 @@ const headerData = computed(() => {
   }
   return buildGameHeader(toastState.gameId, spinInfo.value, t)
 })
-
-const stubGameComponent = computed(() => getTicketGameComponent(toastState.gameId))
 
 const handleOpenReminder = () => {
   if (!spinInfo.value) return
