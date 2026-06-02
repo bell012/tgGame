@@ -5,6 +5,6 @@ export {
   switchTicketGame,
   globalTicketToastState
 } from './ticketToast'
-export { useLuckySpinGame } from './useLuckySpinGame'
-export type { LuckySpinWheelExpose } from './useLuckySpinGame'
+export { useLuckySpinGame } from './components/lucky-spin/useLuckySpinGame'
+export type { LuckySpinWheelExpose } from './components/lucky-spin/useLuckySpinGame'
 export type { TicketGameId, OpenTicketToastOptions } from './types'

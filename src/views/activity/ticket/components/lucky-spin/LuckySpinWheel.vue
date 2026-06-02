@@ -57,12 +57,12 @@
 </template>
 
 <script setup lang="ts">
-import type { LuckySpinPrize } from '@/views/activity/ticket/types'
-import { LUCKY_SPIN_ASSETS } from '@/views/activity/ticket/assets'
-import { LUCKY_SPIN_TOKENS } from '@/views/activity/ticket/design-tokens'
+import type { LuckySpinPrize } from '../../shared/types'
+import { LUCKY_SPIN_ASSETS } from '../../shared/assets'
+import { LUCKY_SPIN_TOKENS } from '../../shared/design-tokens'
 import { LuckyWheel } from '@lucky-canvas/vue'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useLuckyWheelConfig } from '../useLuckyWheelConfig'
+import { useLuckyWheelConfig } from './useLuckyWheelConfig'
 
 interface Props {
   prizes: LuckySpinPrize[]

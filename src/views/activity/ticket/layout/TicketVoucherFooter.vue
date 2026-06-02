@@ -56,9 +56,9 @@
 </template>
 
 <script setup lang="ts">
-import type { TicketGameId, TicketVoucherFooterData } from './types'
-import { getGameIcon } from './constants'
-import { getTicketModalTheme } from './design-tokens'
+import type { TicketGameId, TicketVoucherFooterData } from '../shared/types'
+import { getGameIcon } from '../shared/constants'
+import { getTicketModalTheme } from '../shared/design-tokens'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 

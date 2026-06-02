@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TicketWinnerTickerData } from './types'
+import type { TicketWinnerTickerData } from '../shared/types'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 

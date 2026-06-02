@@ -4,8 +4,8 @@ import type {
   LuckySpinResult,
   LuckySpinResultVariant,
   LuckySpinVoucherCardData
-} from './types'
-import { closeTicketToast } from './ticketToast'
+} from '../../shared/types'
+import { closeTicketToast } from '../../shell/ticketToast'
 import { navigateTo } from '@/utils/router'
 import { showToast } from 'vant'
 import type { Ref } from 'vue'

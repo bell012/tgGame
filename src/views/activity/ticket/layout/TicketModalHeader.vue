@@ -47,8 +47,8 @@
 </template>
 
 <script setup lang="ts">
-import type { TicketModalHeaderData } from './types'
-import { getTicketModalTheme, LUCKY_SPIN_TOKENS } from './design-tokens'
+import type { TicketModalHeaderData } from '../shared/types'
+import { getTicketModalTheme, LUCKY_SPIN_TOKENS } from '../shared/design-tokens'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
 const props = withDefaults(defineProps<TicketModalHeaderData>(), {
