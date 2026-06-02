@@ -1650,6 +1650,9 @@
   },
   "vouchers": {
     "myVouchers": "My Vouchers",
-    "voucherHistory": "Voucher History"
+    "voucherHistory": "Voucher History",
+    "validFrom": "Valid From",
+    "expiresIn": "Expires In",
+    "useNow": "Use Now"
   }
 }

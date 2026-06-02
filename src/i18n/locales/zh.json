@@ -1642,6 +1642,9 @@
   },
   "vouchers": {
     "myVouchers": "我的票卷",
-    "voucherHistory": "票卷记录"
+    "voucherHistory": "票卷记录",
+    "validFrom": "过期时间",
+    "expiresIn": "剩余时间",
+    "useNow": "立即使用"
   }
 }
