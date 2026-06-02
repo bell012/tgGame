@@ -100,8 +100,8 @@
 import {
   getVoucherCardBg,
   getVoucherCardTextColors
-} from '@/components/common/lucky-spin/constants'
-import type { VoucherCardType } from '@/components/common/lucky-spin/types'
+} from '@/views/activity/ticket/shared/constants'
+import type { VoucherCardType } from '@/views/activity/ticket/shared/types'
 import blindBoxImg from '@/static/img/activity/receive-pop/blind-box.png'
 import eggImg from '@/static/img/activity/receive-pop/egg.png'
 import redEnvelopeImg from '@/static/img/activity/receive-pop/red-envelope.png'
