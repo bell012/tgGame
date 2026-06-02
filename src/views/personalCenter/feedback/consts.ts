@@ -215,17 +215,19 @@ export const extractFeedbackList = (result: unknown): FeedbackApiRecord[] => {
   return []
 }
 
-const getFeedbackItemSortTime = (item: FeedbackApiRecord) => {
-  const createTime = Number(item.createTime)
+const getFeedbackItemSortTime = (item: object) => {
+  const record = item as Record<string, unknown>
+  const createTime = Number(record.createTime)
   return Number.isFinite(createTime) && createTime > 0 ? createTime : 0
 }
 
-const getFeedbackItemSortRowId = (item: FeedbackApiRecord) => {
-  const rowId = Number(item.rowId)
+const getFeedbackItemSortRowId = (item: object) => {
+  const record = item as Record<string, unknown>
+  const rowId = Number(record.rowId)
   return Number.isFinite(rowId) ? rowId : 0
 }
 
-export const sortFeedbackItemsByNewest = <T extends FeedbackApiRecord>(items: T[]) => {
+export const sortFeedbackItemsByNewest = <T extends object>(items: T[]) => {
   return [...items].sort((a, b) => {
     const timeDiff = getFeedbackItemSortTime(b) - getFeedbackItemSortTime(a)
     if (timeDiff !== 0) {

@@ -1272,19 +1272,35 @@
       "type": "Transaction Type Selection"
     },
     "typeOptions": {
-      "gameSwitch": "Game Switch",
-      "memberDeposit": "Member Deposit",
-      "memberWithdraw": "Member Withdraw",
-      "memberWithdrawReturn": "Withdraw Return",
-      "manualDeposit": "Manual Deposit",
-      "manualDeduction": "Manual Deduction",
-      "bonusGift": "Bonus Gift",
-      "commissionClaim": "Claim Commission",
-      "currencyExchange": "Currency Exchange",
-      "weeklyBonus": "Weekly Bonus",
-      "monthlyBonus": "Monthly Bonus",
-      "vipIncome": "VIP Income",
-      "bonusExchange": "Bonus Exchange"
+      "game": "Game",
+      "deposit": "Deposit",
+      "withdraw": "Withdraw",
+      "refund": "Refund",
+      "manual_Deposit": "Manual Deposit",
+      "system_Deduction": "System Deduction",
+      "deposit_Bonus": "Deposit Bonus",
+      "withdrawa_Bonus": "Withdrawal Bonus",
+      "bonus_Credit": "Bonus Credit",
+      "weekly_Bonus": "Weekly Bonus",
+      "monthly_Bonus": "Monthly Bonus",
+      "VIP_Upgrade_Bonus": "VIP Upgrade Bonus",
+      "rebate": "Rebate",
+      "task_Reward": "Task Reward",
+      "feedback_Reward": "Feedback Reward",
+      "commission": "Commission",
+      "referral_Bonus": "Referral Bonus",
+      "referral_Spin": "Referral Spin",
+      "red_Packet": "Red Packet",
+      "check-in_Reward": "Check-in Reward",
+      "login_Reward": "Login Reward",
+      "download_Reward": "Download Reward",
+      "sign-up_Reward": "Sign-up Reward",
+      "bonus_Event_Reward": "Bonus Event Reward",
+      "cash_Voucher": "Cash Voucher",
+      "golden_Egg_Voucher": "Golden Egg Voucher",
+      "lucky_Spin_Voucher": "Lucky Spin Voucher",
+      "red_Packet_Voucher": "Red Packet Voucher",
+      "mystery_Box_Voucher": "Mystery Box Voucher"
     }
   },
   "vipPage": {
@@ -1635,6 +1651,9 @@
   },
   "vouchers": {
     "myVouchers": "My Vouchers",
-    "voucherHistory": "Voucher History"
+    "voucherHistory": "Voucher History",
+    "validFrom": "Valid From",
+    "expiresIn": "Expires In",
+    "useNow": "Use Now"
   }
 }
