@@ -58,8 +58,9 @@
 
 <script setup lang="ts">
 import type { LuckySpinPrize } from '../../shared/types'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { LUCKY_SPIN_ASSETS } from '../../shared/assets'
-import { LUCKY_SPIN_TOKENS } from '../../shared/design-tokens'
+import { LUCKY_SPIN_TOKENS, TICKET_PC_TOKENS } from '../../shared/design-tokens'
 import { LuckyWheel } from '@lucky-canvas/vue'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useLuckyWheelConfig } from './useLuckyWheelConfig'
@@ -89,7 +90,13 @@ const containerRef = ref<HTMLElement | null>(null)
 const discRef = ref<HTMLElement | null>(null)
 const discSize = ref(0)
 
-const WHEEL_WIDTH = `min(${LUCKY_SPIN_TOKENS.wheelSize}px, 80.27vw)`
+const isMobile = useIsMobile()
+
+const WHEEL_WIDTH = computed(() =>
+  isMobile.value
+    ? `min(${LUCKY_SPIN_TOKENS.wheelSize}px, 80.27vw)`
+    : `${TICKET_PC_TOKENS.wheelSizePc}px`
+)
 const pointerSize = LUCKY_SPIN_TOKENS.wheelPointerSize
 const goHitSize = '23%'
 

@@ -10,6 +10,8 @@ export type TicketDialogKind = 'none' | 'reminder' | 'task_success' | 'result'
 export interface OpenTicketReminderDialogOptions {
   tasks?: LuckySpinTask[]
   rules?: string[]
+  voucherName?: string
+  maxPrizeText?: string
 }
 
 export interface OpenTicketTaskSuccessDialogOptions {
@@ -44,6 +46,8 @@ interface GlobalTicketDialogState {
   reminder: {
     tasks: LuckySpinTask[]
     rules: string[]
+    voucherName: string
+    maxPrizeText: string
   }
   taskSuccess: {
     voucherName: string
@@ -61,7 +65,7 @@ const createDefaultResult = (): TicketResultDialogState => ({
 
 export const globalTicketDialogState = reactive<GlobalTicketDialogState>({
   kind: 'none',
-  reminder: { tasks: [], rules: [] },
+  reminder: { tasks: [], rules: [], voucherName: '', maxPrizeText: '' },
   taskSuccess: { voucherName: '', rules: [] },
   result: createDefaultResult()
 })
@@ -69,6 +73,8 @@ export const globalTicketDialogState = reactive<GlobalTicketDialogState>({
 export function openTicketReminderDialog(options: OpenTicketReminderDialogOptions = {}) {
   globalTicketDialogState.reminder.tasks = options.tasks ?? []
   globalTicketDialogState.reminder.rules = options.rules ?? []
+  globalTicketDialogState.reminder.voucherName = options.voucherName ?? ''
+  globalTicketDialogState.reminder.maxPrizeText = options.maxPrizeText ?? ''
   globalTicketDialogState.kind = 'reminder'
 }
 
@@ -91,7 +97,7 @@ export function openTicketResultDialog(options: OpenTicketResultDialogOptions) {
 
 export function closeTicketDialog() {
   globalTicketDialogState.kind = 'none'
-  globalTicketDialogState.reminder = { tasks: [], rules: [] }
+  globalTicketDialogState.reminder = { tasks: [], rules: [], voucherName: '', maxPrizeText: '' }
   globalTicketDialogState.taskSuccess = { voucherName: '', rules: [] }
   globalTicketDialogState.result = createDefaultResult()
 }

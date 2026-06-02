@@ -17,7 +17,12 @@
           :style="{ zIndex: TICKET_DIALOG_Z.resultPanel }"
           @click.self="close"
         >
-          <section role="dialog" aria-modal="true" class="modal-container w-full max-w-[320px]">
+          <section
+            role="dialog"
+            aria-modal="true"
+            class="modal-container w-full"
+            :class="isMobile ? 'max-w-[320px]' : 'max-w-[440px]'"
+          >
             <div class="flex flex-col items-center">
               <h2 class="text-[20px] font-[700] text-[#F7D060]">{{ resolvedTitle }}</h2>
               <p class="mt-1 text-center text-[13px] text-common-80">{{ resolvedSubtext }}</p>
@@ -36,7 +41,13 @@
                 </div>
                 <div
                   class="flex flex-col gap-2"
-                  :class="vouchers.length > 1 ? 'max-h-[220px] overflow-y-auto pr-1' : ''"
+                  :class="
+                    vouchers.length > 1
+                      ? isMobile
+                        ? 'max-h-[220px] overflow-y-auto pr-1'
+                        : 'max-h-[280px] overflow-y-auto pr-1'
+                      : ''
+                  "
                 >
                   <TicketVoucherCard v-for="item in vouchers" :key="item.id" :data="item" />
                 </div>
@@ -66,6 +77,7 @@
 </template>
 
 <script setup lang="ts">
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { useTicketResultCardsCopy } from './composables/useTicketResultCardsCopy'
 import { useTicketResultCardsDialog } from './composables/useTicketResultCardsDialog'
 import { LUCKY_SPIN_ASSETS, TICKET_DIALOG_Z } from '@/views/activity/ticket/shared/constants'
@@ -73,6 +85,7 @@ import TicketVoucherCard from './TicketVoucherCard.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const isMobile = useIsMobile()
 const { visible, result, close } = useTicketResultCardsDialog()
 const { vouchers, resolvedTitle, resolvedSubtext, resolvedButtonText } = useTicketResultCardsCopy(
   result,

@@ -1,5 +1,5 @@
 <template>
-  <div class="ticket-game-stub min-h-[200px]" data-game-id="cash_voucher" />
+  <div class="ticket-game-stub min-h-[200px]" data-game-id="cash_voucher">现金券兑换界面</div>
 </template>
 
 <script setup lang="ts">

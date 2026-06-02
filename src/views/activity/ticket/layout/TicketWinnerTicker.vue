@@ -1,5 +1,9 @@
 <template>
-  <div v-if="items.length && displayItems.length" class="mx-4 mt-2 overflow-hidden">
+  <div
+    v-if="items.length && displayItems.length"
+    class="overflow-hidden"
+    :class="compact ? 'mt-0' : 'mx-4 mt-2'"
+  >
     <div class="ticker-track flex w-max items-center gap-2 py-1" :style="trackStyle">
       <div
         v-for="(item, index) in displayItems"
@@ -12,7 +16,10 @@
           <img v-if="item.avatar" :src="item.avatar" alt="" class="h-full w-full object-cover" />
           <span v-else>{{ item.username.charAt(0).toUpperCase() }}</span>
         </div>
-        <span class="whitespace-nowrap text-[12px] text-common-80">
+        <span
+          class="whitespace-nowrap text-common-80"
+          :class="compact ? 'text-[13px]' : 'text-[12px]'"
+        >
           {{ item.username }} {{ t('luckySpinPage.won') }} {{ item.prizeText }}
         </span>
       </div>
@@ -25,9 +32,13 @@ import type { TicketWinnerTickerData } from '../shared/types'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const props = withDefaults(defineProps<TicketWinnerTickerData & { speed?: number }>(), {
-  speed: 40
-})
+const props = withDefaults(
+  defineProps<TicketWinnerTickerData & { speed?: number; compact?: boolean }>(),
+  {
+    speed: 40,
+    compact: false
+  }
+)
 
 const { t } = useI18n()
 

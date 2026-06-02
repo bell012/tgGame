@@ -1596,6 +1596,12 @@
       "title": "Kind Reminder",
       "deposit": "Deposit",
       "finished": "Finished",
+      "completed": "Completed",
+      "introUnlock": "Complete the tasks below to unlock {voucherName}",
+      "introUnlockPrefix": "Complete the tasks below to unlock",
+      "introReward": "Win up to {amount} cash",
+      "introRewardPrefix": "Win up to",
+      "introRewardSuffix": "cash",
       "rulesTitle": "Rules",
       "unlocked": "Congrats! Your {voucherName} is now unlocked"
     },

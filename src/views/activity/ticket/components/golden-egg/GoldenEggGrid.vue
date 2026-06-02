@@ -1,5 +1,5 @@
 <template>
-  <div class="ticket-game-stub min-h-[200px]" data-game-id="golden_egg" />
+  <div class="ticket-game-stub min-h-[200px]" data-game-id="golden_egg">砸金蛋网格界面</div>
 </template>
 
 <script setup lang="ts">

@@ -108,7 +108,9 @@ export const useLuckySpinGame = (
     if (!spinInfo.value?.remainingSpins) {
       openTicketReminderDialog({
         tasks: spinInfo.value?.tasks ?? [],
-        rules: spinInfo.value?.rules ?? []
+        rules: spinInfo.value?.rules ?? [],
+        voucherName: t('luckySpinPage.title'),
+        maxPrizeText: spinInfo.value?.maxPrizeText ?? ''
       })
       return
     }

@@ -1,4 +1,16 @@
 <template>
+  <div v-if="showIntro" class="mt-4 space-y-1 text-[14px] leading-[20px] text-text-1">
+    <p>
+      {{ t('luckySpinPage.reminder.introUnlockPrefix') }}
+      <span class="font-[700] text-theme-primary">{{ introVoucherName }}</span>
+    </p>
+    <p>
+      {{ t('luckySpinPage.reminder.introRewardPrefix') }}
+      <span class="font-[700] text-theme-primary">{{ introMaxPrize }}</span>
+      {{ t('luckySpinPage.reminder.introRewardSuffix') }}
+    </p>
+  </div>
+
   <ul class="mt-4 flex flex-col gap-3">
     <li
       v-for="task in dialogState.reminder.tasks"
@@ -15,15 +27,23 @@
         >
           {{ t('luckySpinPage.reminder.deposit') }}
         </button>
-        <span v-else-if="task.finished" class="shrink-0 text-[12px] font-[500] text-common-60">
-          {{ t('luckySpinPage.reminder.finished') }}
-        </span>
+        <button
+          v-else-if="task.finished"
+          type="button"
+          disabled
+          class="shrink-0 rounded-[6px] border border-theme-primary bg-transparent px-3 py-1 text-[12px] font-[700] text-theme-primary"
+        >
+          {{ t('luckySpinPage.reminder.completed') }}
+        </button>
       </div>
-      <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-common-10">
-        <div
-          class="h-full rounded-full bg-theme-primary transition-all"
-          :style="{ width: `${task.progress}%` }"
-        />
+      <div class="mt-2 flex items-center gap-2">
+        <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-common-10">
+          <div
+            class="h-full rounded-full bg-theme-primary transition-all"
+            :style="{ width: `${task.progress}%` }"
+          />
+        </div>
+        <span class="shrink-0 text-[12px] font-[500] text-text-2">{{ task.progress }}%</span>
       </div>
     </li>
   </ul>
@@ -32,8 +52,18 @@
 <script setup lang="ts">
 import { goTicketDeposit } from './composables/goTicketDeposit'
 import { globalTicketDialogState } from '../../shell/ticketDialog'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const dialogState = globalTicketDialogState
+
+const showIntro = computed(
+  () =>
+    dialogState.kind === 'reminder' &&
+    Boolean(dialogState.reminder.voucherName || dialogState.reminder.maxPrizeText)
+)
+
+const introVoucherName = computed(() => dialogState.reminder.voucherName)
+const introMaxPrize = computed(() => dialogState.reminder.maxPrizeText)
 </script>
