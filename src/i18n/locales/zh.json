@@ -1269,19 +1269,35 @@
       "type": "交易类型选择"
     },
     "typeOptions": {
-      "gameSwitch": "游戏切换",
-      "memberDeposit": "会员充值",
-      "memberWithdraw": "会员取款",
-      "memberWithdrawReturn": "会员取款退回",
-      "manualDeposit": "人工存入",
-      "manualDeduction": "人工扣款",
-      "bonusGift": "赠送彩金",
-      "commissionClaim": "领取佣金",
-      "currencyExchange": "货币互换",
-      "weeklyBonus": "周礼金",
-      "monthlyBonus": "月礼金",
-      "vipIncome": "VIP收益",
-      "bonusExchange": "红利兑换"
+      "game": "游戏",
+      "deposit": "充值",
+      "withdraw": "提现",
+      "refund": "退款",
+      "manual_Deposit": "人工存款",
+      "system_Deduction": "系统扣除",
+      "deposit_Bonus": "充值优惠",
+      "withdrawa_Bonus": "提现加赠",
+      "bonus_Credit": "赠送彩金",
+      "weekly_Bonus": "周礼金",
+      "monthly_Bonus": "月礼金",
+      "VIP_Upgrade_Bonus": "VIP晋级彩金",
+      "rebate": "返水",
+      "task_Reward": "任务奖金",
+      "feedback_Reward": "意见采纳",
+      "commission": "领取佣金",
+      "referral_Bonus": "推荐奖励",
+      "referral_Spin": "转盘抽奖",
+      "red_Packet": "红包活动",
+      "check-in_Reward": "签到奖励",
+      "login_Reward": "登录奖励",
+      "download_Reward": "下载奖励",
+      "sign-up_Reward": "注册奖励",
+      "bonus_Event_Reward": "红利活动奖励",
+      "cash_Voucher": "现金兑换奖励",
+      "golden_Egg_Voucher": "砸金蛋奖励",
+      "lucky_Spin_Voucher": "大转盘奖励",
+      "red_Packet_Voucher": "幸运红包奖励",
+      "mystery_Box_Voucher": "盲盒奖励"
     }
   },
   "vipPage": {
@@ -1572,7 +1588,8 @@
       "title": "温馨提示",
       "deposit": "充值",
       "finished": "已完成",
-      "rulesTitle": "活动规则"
+      "rulesTitle": "活动规则",
+      "unlocked": "恭喜！您的{voucherName}已解锁"
     },
     "result": {
       "congratulations": "恭喜！",
@@ -1587,6 +1604,24 @@
       "nextRound": "下一轮",
       "ok": "确定",
       "useNow": "立即使用"
+    }
+  },
+  "ticketPage": {
+    "goldenEgg": {
+      "title": "您获得了砸金蛋",
+      "expiresIn": "砸金蛋过期倒计时"
+    },
+    "mysteryBox": {
+      "title": "您获得了开盲盒",
+      "expiresIn": "开盲盒过期倒计时"
+    },
+    "cashVoucher": {
+      "title": "您获得了现金券",
+      "expiresIn": "现金券过期倒计时"
+    },
+    "redPacket": {
+      "title": "您获得了红包",
+      "expiresIn": "红包过期倒计时"
     }
   },
   "checkIn": {
@@ -1608,6 +1643,9 @@
   },
   "vouchers": {
     "myVouchers": "我的票卷",
-    "voucherHistory": "票卷记录"
+    "voucherHistory": "票卷记录",
+    "validFrom": "过期时间",
+    "expiresIn": "剩余时间",
+    "useNow": "立即使用"
   }
 }

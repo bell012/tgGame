@@ -1,0 +1,43 @@
+// 票券子弹窗共用过渡动画（popup-fade / sheet / center-scale）
+
+.popup-fade-enter-active,
+.popup-fade-leave-active {
+  transition: opacity 0.24s ease;
+}
+
+.popup-fade-enter-from,
+.popup-fade-leave-to {
+  opacity: 0;
+}
+
+.sheet-transition-enter-active,
+.sheet-transition-leave-active {
+  transition: transform 0.28s ease;
+}
+
+.sheet-transition-enter-from,
+.sheet-transition-leave-to {
+  transform: translateY(100%);
+}
+
+.result-popup-transition-enter-active,
+.result-popup-transition-leave-active {
+  transition: opacity 0.24s ease;
+}
+
+.result-popup-transition-enter-from,
+.result-popup-transition-leave-to {
+  opacity: 0;
+}
+
+.result-popup-transition-enter-active :deep(.modal-container),
+.result-popup-transition-leave-active :deep(.modal-container) {
+  transition:
+    transform 0.24s ease,
+    opacity 0.24s ease;
+}
+
+.result-popup-transition-enter-from :deep(.modal-container),
+.result-popup-transition-leave-to :deep(.modal-container) {
+  transform: translateY(18px) scale(0.96);
+}

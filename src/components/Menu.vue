@@ -457,6 +457,7 @@ import { useThemeStore } from '@/stores/theme'
 import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { openLuckySpin } from '@/utils/openLuckySpin'
+import { openTicketActivity } from '@/utils/openTicketActivity'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
 import LanguagePopup from '@/views/settings/preferences/language-popup.vue'
 
@@ -788,22 +789,26 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
           {
             id: 'cash-voucher',
             name: t('menu.cash-voucher'),
-            icon: newSideIcons.cashVoucherIcon
+            icon: newSideIcons.cashVoucherIcon,
+            handler: () => openTicketActivity('cash_voucher')
           },
           {
             id: 'lucky-red-envelope',
             name: t('menu.lucky-red-envelope'),
-            icon: newSideIcons.luckyRedEnvelopeIcon
+            icon: newSideIcons.luckyRedEnvelopeIcon,
+            handler: () => openTicketActivity('lucky_red_envelope')
           },
           {
             id: 'smash-golden-egg',
             name: t('menu.smash-golden-egg'),
-            icon: newSideIcons.smashGoldenEggIcon
+            icon: newSideIcons.smashGoldenEggIcon,
+            handler: () => openTicketActivity('golden_egg')
           },
           {
             id: 'mystery-box',
             name: t('menu.mystery-box'),
-            icon: newSideIcons.mysteryBoxIcon
+            icon: newSideIcons.mysteryBoxIcon,
+            handler: () => openTicketActivity('mystery_box')
           },
           {
             id: 'lucky-spin',
@@ -851,7 +856,8 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
       {
         id: 'lucky-wheel',
         name: t('menu.lucky-wheel'),
-        icon: newSideIcons.luckyWheelIcon
+        icon: newSideIcons.luckyWheelIcon,
+        handler: () => openLuckySpin()
       },
       {
         id: 'promo-code',

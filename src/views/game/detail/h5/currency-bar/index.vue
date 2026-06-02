@@ -74,6 +74,10 @@ const shareVisibleClick = () => {
   border-top: 0.33px solid var(--color-opacity-10);
 }
 
+:global(:root:not(.light)) .currency-toolbar {
+  background: #282c2d;
+}
+
 .icon-trigger {
   border: 0;
   background: transparent;

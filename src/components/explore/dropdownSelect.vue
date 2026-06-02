@@ -63,7 +63,7 @@
               v-model="keyword"
               type="text"
               :placeholder="t('home.search')"
-              class="h-[42px] w-full rounded-lg border border-opacity-10 bg-input-1 py-0 pl-9 pr-11 text-sm font-medium text-text-1 outline-none placeholder:text-text-2 focus:border-theme-primary"
+              class="explore-select-search-input h-[42px] w-full rounded-lg border border-opacity-10 bg-input-1 py-0 pl-9 pr-11 text-sm font-medium text-text-1 outline-none placeholder:text-text-2 focus:border-theme-primary"
             />
           </div>
 
@@ -311,4 +311,13 @@ onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
 
 <style scoped lang="scss">
 @use './explore-select-icons.scss';
+</style>
+
+<style lang="scss">
+/* H5 深色：未选中 checkbox 描边色（不受 scoped data-v 影响） */
+@media (max-width: 640px) {
+  html.dark .explore-select-checkbox.explore-select-checkbox--unchecked {
+    color: #7b7d7d !important;
+  }
+}
 </style>

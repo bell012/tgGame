@@ -2,8 +2,8 @@ import type {
   LuckySpinInfoResult,
   LuckySpinPrize,
   LuckySpinResult
-} from '@/components/common/lucky-spin/types'
-import { getGameIcon } from '@/components/common/lucky-spin/constants'
+} from '@/views/activity/ticket/types'
+import { getGameIcon } from '@/views/activity/ticket/constants'
 
 import prizeCash1 from '@/static/img/lucky-spin/prizes/prize-cash-1.png'
 import prizeCash2 from '@/static/img/lucky-spin/prizes/prize-cash-2.png'

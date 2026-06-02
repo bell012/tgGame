@@ -95,7 +95,16 @@
                         ? CubeUnchecedIcon
                         : RadioUncheckedIcon
                   "
-                  :class="Multi ? 'h-5 w-5 shrink-0 text-icon-3' : 'h-5 w-5 shrink-0'"
+                  :class="
+                    Multi
+                      ? [
+                          'explore-select-checkbox',
+                          isSelected(item)
+                            ? 'explore-select-checkbox--checked'
+                            : 'explore-select-checkbox--unchecked'
+                        ]
+                      : 'h-5 w-5 shrink-0'
+                  "
                 />
                 <div v-if="Multi" class="ml-2.5 h-[22px] min-w-0 flex items-center justify-start">
                   <gameRemoteImg
@@ -294,3 +303,16 @@ watch(popupShow, val => {
 
 onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
 </script>
+
+<style scoped lang="scss">
+@use '@/components/explore/explore-select-icons.scss';
+</style>
+
+<style lang="scss">
+/* H5 深色：未选中 checkbox 描边色（不受 scoped data-v 影响） */
+@media (max-width: 640px) {
+  html.dark .explore-select-checkbox.explore-select-checkbox--unchecked {
+    color: #7b7d7d !important;
+  }
+}
+</style>

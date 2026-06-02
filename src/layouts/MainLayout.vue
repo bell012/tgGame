@@ -101,7 +101,6 @@
     <!-- 底部Tab栏 -->
     <BottomTabBar class="sm:hidden" v-if="!hideBottomBar" />
 
-    <LuckySpinModal />
     <CheckInPopup v-model="checkInVisible" />
   </div>
 </template>
@@ -127,7 +126,6 @@ import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
 import TopNav from './TopNav.vue'
 import { CheckInPopup, useCheckInAutoPopup } from '@/views/activity/check-in'
-import { LuckySpinModal } from '@/views/activity/lucky-spin'
 
 const layoutStore = useLayoutStore()
 const userStore = useUserStore()

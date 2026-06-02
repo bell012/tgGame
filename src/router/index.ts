@@ -470,6 +470,7 @@ const baseRoutes: RouteRecordRaw[] = [
       title: 'Rebate',
       description: 'Rebate',
       requiresAuth: true,
+      slideTransition: true, // 启用滑动动画
       mobile: {
         hideBottomBar: true,
         hideTopNav: true

@@ -94,3 +94,13 @@ $explore-select-icon-size-desktop: 16px;
   flex-direction: column;
   gap: 0;
 }
+
+// H5 深色：厂商选择弹窗搜索框
+@media (max-width: 640px) {
+  :global(html.dark) {
+    .explore-select-search-input {
+      background-color: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
