@@ -1,5 +1,5 @@
 <template>
-  <div class="ticket-game-stub min-h-[200px]" data-game-id="lucky_red_envelope" />
+  <div class="ticket-game-stub min-h-[200px]" data-game-id="lucky_red_envelope">红包打开界面</div>
 </template>
 
 <script setup lang="ts">
