@@ -1660,6 +1660,14 @@
     "voucherHistory": "票卷记录",
     "validFrom": "过期时间",
     "expiresIn": "剩余时间",
-    "useNow": "立即使用"
+    "useNow": "立即使用",
+    "totalBonusWon": "累计获得奖金",
+    "usedAt": "使用时间",
+    "type": "类型",
+    "cashVoucher": "现金票券",
+    "redPacketVoucher": "红包票券",
+    "goldenEggVoucher": "砸金蛋票券",
+    "luckySpinVoucher": "转盘票券",
+    "mysteryBoxVoucher": "盲盒票券"
   }
 }

@@ -36,7 +36,7 @@
           />
         </div>
 
-        <div v-else class="flex flex-col pb-[10px]">
+        <div v-else class="flex flex-col gap-[10px] pb-[10px]">
           <div
             v-for="item in dataList"
             :key="item.id"
