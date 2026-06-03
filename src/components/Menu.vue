@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="sidebar-menu px-3.5 sm:px-0" :style="mobileMenuStyle">
     <!-- BC代币 / 顶部提示 -->
     <div
@@ -456,12 +456,16 @@ import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import { openLuckySpin } from '@/utils/openLuckySpin'
 import { openTicketActivity } from '@/utils/openTicketActivity'
+import { PROMOTIONS_MENU_GROUP_LIMIT, usePromotionsStore } from '@/stores/promotions'
+import { getLanguageName as getPromotionGroupName } from '@/views/activity/promotions/shared'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
 import LanguagePopup from '@/views/settings/preferences/language-popup.vue'
 
 import type { Component } from 'vue'
 import { computed, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 interface Props {
   isCollapsed?: boolean
@@ -494,7 +498,37 @@ const mobileMenuStyle = computed(() => {
 
 const { t } = useI18n()
 const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
+const promotionsStore = usePromotionsStore()
+const { groups: promotionGroups } = storeToRefs(promotionsStore)
 const { tabButtons: casinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
+
+const buildPromotionsMenuChildren = (
+  groups: typeof promotionGroups.value
+): SidebarSubmenuItem[] => {
+  const children: SidebarSubmenuItem[] = []
+  const menuGroups = groups.slice(0, PROMOTIONS_MENU_GROUP_LIMIT)
+
+  for (let i = 0; i < menuGroups.length; i++) {
+    const group = menuGroups[i]
+    const groupCode = group.groupCode || ''
+    if (!groupCode) {
+      continue
+    }
+
+    const groupName = getPromotionGroupName(group.groupName) || groupCode
+    children.push({
+      id: `promotions_${groupCode}`,
+      name: groupName,
+      icon: group.defaultIcon || newSideIcons.promotionCenterIcon,
+      handler: () => {
+        navigateTo(`/promotions/${groupCode}`)
+      }
+    })
+  }
+
+  return children
+}
+
 const { side } = sideIcons
 type SidebarSubmenuItem = {
   id: string
@@ -741,231 +775,242 @@ const buildCasinoMenuChildren = (): SidebarSubmenuItem[] => {
       }
     }))
 }
-const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
-  {
-    id: 'crypto-account',
-    name: t('menu.crypto-account'),
-    icon: newSideIcons.cryptoAccountIcon,
-    handler: () => console.log('点击 Crypto Account'),
-    groupKey: 'crypto-account'
-  },
-  {
-    id: 'game-categories',
-    name: t('menu.game-categories'),
-    icon: newSideIcons.gameCategoriesIcon,
-    handler: () => navigateTo('/casino'),
-    groupKey: 'game-categories',
-    children: buildCasinoMenuChildren()
-  },
-  {
-    id: 'recent-favorites-group',
-    name: 'Recent And Favorites',
-    icon: newSideIcons.recentlyPlayedIcon,
-    groupKey: 'recent-favorites-group',
-    renderAsGroup: true,
-    children: [
-      {
-        id: 'recently-played',
-        name: t('menu.recently-played'),
-        icon: newSideIcons.recentlyPlayedIcon,
-        handler: () => navigateTo('/recently-played-games')
-      },
-      {
-        id: 'favorites',
-        name: t('menu.favorites'),
-        icon: newSideIcons.favoritesIcon,
-        handler: () => navigateTo('/favorites-games')
-      }
-    ]
-  },
-  {
-    id: 'vouchers',
-    name: t('menu.vouchers'),
-    icon: newSideIcons.vouchersIcon,
-    groupKey: 'vouchers',
-    children: isLoggedIn.value
-      ? [
-          {
-            id: 'cash-voucher',
-            name: t('menu.cash-voucher'),
-            icon: newSideIcons.cashVoucherIcon
-          },
-          {
-            id: 'lucky-red-envelope',
-            name: t('menu.lucky-red-envelope'),
-            icon: newSideIcons.luckyRedEnvelopeIcon
-          },
-          {
-            id: 'smash-golden-egg',
-            name: t('menu.smash-golden-egg'),
-            icon: newSideIcons.smashGoldenEggIcon
-          },
-          {
-            id: 'mystery-box',
-            name: t('menu.mystery-box'),
-            icon: newSideIcons.mysteryBoxIcon
-          },
-          {
-            id: 'lucky-spin',
-            name: t('menu.lucky-spin'),
-            icon: newSideIcons.luckySpinIcon
-          }
-        ]
-      : []
-  },
-  {
-    id: 'task-center',
-    name: t('menu.task-center'),
-    icon: newSideIcons.taskCenterIcon,
-    groupKey: 'task-center'
-  },
-  {
-    id: 'promotion-center',
-    name: t('menu.promotion-center'),
-    icon: newSideIcons.promotionCenterIcon,
-    groupKey: 'promotion-center'
-  },
-  {
-    id: 'combination1',
-    name: 'combination1',
-    icon: newSideIcons.redEnvelopeEventIcon,
-    groupKey: 'combination1',
-    renderAsGroup: true,
-    children: [
-      {
-        id: 'red-envelope-event',
-        name: t('menu.red-envelope-event'),
-        icon: newSideIcons.redEnvelopeEventIcon
-      },
-      {
-        id: 'credit-loan',
-        name: t('menu.credit-loan'),
-        icon: newSideIcons.creditLoanIcon
-      },
-      {
-        id: 'lottery-event',
-        name: t('menu.lottery-event'),
-        icon: newSideIcons.lotteryEventIcon
-      },
-      {
-        id: 'lucky-wheel',
-        name: t('menu.lucky-wheel'),
-        icon: newSideIcons.luckyWheelIcon,
-        handler: () => openTicketActivity('lucky_spin')
-      },
-      {
-        id: 'promo-code',
-        name: t('menu.promo-code'),
-        icon: newSideIcons.promoCodeIcon
-      }
-    ]
-  },
+const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
+  const promotionsChildren = buildPromotionsMenuChildren(promotionGroups.value)
 
-  {
-    id: 'vip-center',
-    name: t('menu.vip-center'),
-    icon: newSideIcons.vipCenterIcon,
-    groupKey: 'vip-center',
-    handler: () => navigateTo('/vip')
-  },
-  {
-    id: 'referral',
-    name: t('menu.referral'),
-    icon: newSideIcons.referralIcon,
-    groupKey: 'referral',
-    handler: () => navigateTo('/referral')
-  },
-  {
-    id: 'rebate',
-    name: t('menu.rebate'),
-    icon: newSideIcons.rebateIcon,
-    groupKey: 'rebate',
-    handler: () => navigateTo('/personal-center/rebate')
-  },
-  {
-    id: 'combination2',
-    name: 'combination2',
-    icon: newSideIcons.myOrdersIcon,
-    groupKey: 'combination2',
-    renderAsGroup: true,
-    children: [
-      {
-        id: 'my-orders',
-        name: t('menu.my-orders'),
-        icon: newSideIcons.myOrdersIcon,
-        handler: () => navigateTo('my-orders')
-      },
-      {
-        id: 'bet-history',
-        name: t('menu.bet-history'),
-        icon: newSideIcons.betHistoryIcon,
-        handler: () => navigateTo('bet-history')
-      },
-      {
-        id: 'transaction',
-        name: t('menu.transaction'),
-        icon: newSideIcons.transactionIcon,
-        handler: () => navigateTo('transaction')
-      },
-      {
-        id: 'rewards',
-        name: t('menu.rewards'),
-        icon: newSideIcons.rewardsIcon
-      },
-      {
-        id: 'rollover',
-        name: t('menu.rollover'),
-        icon: newSideIcons.rolloverIcon,
-        handler: () => navigateTo('rollover')
-      }
-    ]
-  },
+  return [
+    {
+      id: 'crypto-account',
+      name: t('menu.crypto-account'),
+      icon: newSideIcons.cryptoAccountIcon,
+      handler: () => console.log('点击 Crypto Account'),
+      groupKey: 'crypto-account'
+    },
+    {
+      id: 'game-categories',
+      name: t('menu.game-categories'),
+      icon: newSideIcons.gameCategoriesIcon,
+      handler: () => navigateTo('/casino'),
+      groupKey: 'game-categories',
+      children: buildCasinoMenuChildren()
+    },
+    {
+      id: 'recent-favorites-group',
+      name: 'Recent And Favorites',
+      icon: newSideIcons.recentlyPlayedIcon,
+      groupKey: 'recent-favorites-group',
+      renderAsGroup: true,
+      children: [
+        {
+          id: 'recently-played',
+          name: t('menu.recently-played'),
+          icon: newSideIcons.recentlyPlayedIcon,
+          handler: () => navigateTo('/recently-played-games')
+        },
+        {
+          id: 'favorites',
+          name: t('menu.favorites'),
+          icon: newSideIcons.favoritesIcon,
+          handler: () => navigateTo('/favorites-games')
+        }
+      ]
+    },
+    {
+      id: 'vouchers',
+      name: t('menu.vouchers'),
+      icon: newSideIcons.vouchersIcon,
+      groupKey: 'vouchers',
+      children: isLoggedIn.value
+        ? [
+            {
+              id: 'cash-voucher',
+              name: t('menu.cash-voucher'),
+              icon: newSideIcons.cashVoucherIcon,
+              handler: () => openTicketActivity('cash_voucher')
+            },
+            {
+              id: 'lucky-red-envelope',
+              name: t('menu.lucky-red-envelope'),
+              icon: newSideIcons.luckyRedEnvelopeIcon,
+              handler: () => openTicketActivity('lucky_red_envelope')
+            },
+            {
+              id: 'smash-golden-egg',
+              name: t('menu.smash-golden-egg'),
+              icon: newSideIcons.smashGoldenEggIcon,
+              handler: () => openTicketActivity('golden_egg')
+            },
+            {
+              id: 'mystery-box',
+              name: t('menu.mystery-box'),
+              icon: newSideIcons.mysteryBoxIcon,
+              handler: () => openTicketActivity('mystery_box')
+            },
+            {
+              id: 'lucky-spin',
+              name: t('menu.lucky-spin'),
+              icon: newSideIcons.luckySpinIcon,
+              handler: () => openLuckySpin()
+            }
+          ]
+        : []
+    },
+    {
+      id: 'task-center',
+      name: t('menu.task-center'),
+      icon: newSideIcons.taskCenterIcon,
+      groupKey: 'task-center'
+    },
+    {
+      id: 'promotions',
+      name: t('menu.promotions'),
+      icon: newSideIcons.promotionCenterIcon,
+      groupKey: 'promotions',
+      handler: () => navigateTo('/promotions'),
+      children: promotionsChildren
+    },
+    {
+      id: 'combination1',
+      name: 'combination1',
+      icon: newSideIcons.redEnvelopeEventIcon,
+      groupKey: 'combination1',
+      renderAsGroup: true,
+      children: [
+        {
+          id: 'red-envelope-event',
+          name: t('menu.red-envelope-event'),
+          icon: newSideIcons.redEnvelopeEventIcon
+        },
+        {
+          id: 'credit-loan',
+          name: t('menu.credit-loan'),
+          icon: newSideIcons.creditLoanIcon
+        },
+        {
+          id: 'lottery-event',
+          name: t('menu.lottery-event'),
+          icon: newSideIcons.lotteryEventIcon
+        },
+        {
+          id: 'lucky-wheel',
+          name: t('menu.lucky-wheel'),
+          icon: newSideIcons.luckyWheelIcon,
+          handler: () => openLuckySpin()
+        },
+        {
+          id: 'promo-code',
+          name: t('menu.promo-code'),
+          icon: newSideIcons.promoCodeIcon
+        }
+      ]
+    },
 
-  {
-    id: 'payment-methods',
-    name: t('menu.payment-methods'),
-    icon: newSideIcons.paymentMethodsIcon,
-    groupKey: 'payment-methods',
-    handler: () => navigateTo('payment-methods')
-  },
-  {
-    id: 'security',
-    name: t('menu.security'),
-    icon: newSideIcons.securityIcon,
-    groupKey: 'security',
-    handler: () => navigateTo('security')
-  },
-  {
-    id: 'combination3',
-    name: 'combination3',
-    icon: newSideIcons.sponsorshipsIcon,
-    groupKey: 'combination3',
-    renderAsGroup: true,
-    children: [
-      {
-        id: 'sponsorships',
-        name: t('menu.sponsorships'),
-        icon: newSideIcons.sponsorshipsIcon
-      },
-      {
-        id: 'leave-feedback',
-        name: t('menu.leave-feedback'),
-        icon: newSideIcons.leaveFeedbackIcon,
-        handler: handleLeaveFeedbackClick
-      },
-      {
-        id: 'legal',
-        name: t('menu.legal'),
-        icon: newSideIcons.legalIcon
-      },
-      {
-        id: 'about',
-        name: t('menu.about'),
-        icon: newSideIcons.aboutIcon
-      }
-    ]
-  }
-])
+    {
+      id: 'vip-center',
+      name: t('menu.vip-center'),
+      icon: newSideIcons.vipCenterIcon,
+      groupKey: 'vip-center',
+      handler: () => navigateTo('/vip')
+    },
+    {
+      id: 'referral',
+      name: t('menu.referral'),
+      icon: newSideIcons.referralIcon,
+      groupKey: 'referral',
+      handler: () => navigateTo('/referral')
+    },
+    {
+      id: 'rebate',
+      name: t('menu.rebate'),
+      icon: newSideIcons.rebateIcon,
+      groupKey: 'rebate',
+      handler: () => navigateTo('/personal-center/rebate')
+    },
+    {
+      id: 'combination2',
+      name: 'combination2',
+      icon: newSideIcons.myOrdersIcon,
+      groupKey: 'combination2',
+      renderAsGroup: true,
+      children: [
+        {
+          id: 'my-orders',
+          name: t('menu.my-orders'),
+          icon: newSideIcons.myOrdersIcon,
+          handler: () => navigateTo('my-orders')
+        },
+        {
+          id: 'bet-history',
+          name: t('menu.bet-history'),
+          icon: newSideIcons.betHistoryIcon,
+          handler: () => navigateTo('bet-history')
+        },
+        {
+          id: 'transaction',
+          name: t('menu.transaction'),
+          icon: newSideIcons.transactionIcon,
+          handler: () => navigateTo('transaction')
+        },
+        {
+          id: 'rewards',
+          name: t('menu.rewards'),
+          icon: newSideIcons.rewardsIcon
+        },
+        {
+          id: 'rollover',
+          name: t('menu.rollover'),
+          icon: newSideIcons.rolloverIcon,
+          handler: () => navigateTo('rollover')
+        }
+      ]
+    },
+
+    {
+      id: 'payment-methods',
+      name: t('menu.payment-methods'),
+      icon: newSideIcons.paymentMethodsIcon,
+      groupKey: 'payment-methods',
+      handler: () => navigateTo('payment-methods')
+    },
+    {
+      id: 'security',
+      name: t('menu.security'),
+      icon: newSideIcons.securityIcon,
+      groupKey: 'security',
+      handler: () => navigateTo('security')
+    },
+    {
+      id: 'combination3',
+      name: 'combination3',
+      icon: newSideIcons.sponsorshipsIcon,
+      groupKey: 'combination3',
+      renderAsGroup: true,
+      children: [
+        {
+          id: 'sponsorships',
+          name: t('menu.sponsorships'),
+          icon: newSideIcons.sponsorshipsIcon
+        },
+        {
+          id: 'leave-feedback',
+          name: t('menu.leave-feedback'),
+          icon: newSideIcons.leaveFeedbackIcon,
+          handler: handleLeaveFeedbackClick
+        },
+        {
+          id: 'legal',
+          name: t('menu.legal'),
+          icon: newSideIcons.legalIcon
+        },
+        {
+          id: 'about',
+          name: t('menu.about'),
+          icon: newSideIcons.aboutIcon
+        }
+      ]
+    }
+  ]
+})
 
 const sidebarMenuGroups = computed<SidebarMenuGroup[][]>(() => {
   const groups = new Map<string, SidebarMenuGroup[]>()

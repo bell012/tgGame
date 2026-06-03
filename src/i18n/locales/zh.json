@@ -1539,6 +1539,12 @@
       "reminderTitle": "温馨提示"
     }
   },
+  "activityPromotions": {
+    "title": "活动中心",
+    "detailTitle": "活动详情",
+    "empty": "当前暂无数据",
+    "notFound": "未找到该活动"
+  },
   "menu": {
     "crypto-account": "加密账户",
     "game-categories": "娱乐城",
@@ -1551,7 +1557,7 @@
     "mystery-box": "开盲盒",
     "lucky-spin": "大转盘",
     "task-center": "任务中心",
-    "promotion-center": "优惠中心",
+    "promotions": "活动中心",
     "red-envelope-event": "红包活动",
     "credit-loan": "借呗",
     "lottery-event": "彩票活动",

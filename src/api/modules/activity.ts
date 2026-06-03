@@ -1,4 +1,6 @@
 import type {
+  QueryActivityGroupPageForm,
+  QueryActivityGroupPageResponse,
   QueryActivityListForm,
   QueryActivityListResponse,
   QueryCheckInStatusForm,
@@ -23,7 +25,21 @@ const USE_MOCK = true
 
 const mockDelay = (ms = 300) => new Promise(resolve => setTimeout(resolve, ms))
 
-// 查询活动列表，用于筛选签到活动。
+// 活动分组分页查询（新版活动 API §1）
+export const queryActivityGroupPage = (
+  data: QueryActivityGroupPageForm = {},
+  options?: ApiResponseToastOptions
+): Promise<QueryActivityGroupPageResponse> => {
+  return request({
+    url: '/admin/activity/group/page',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? false
+  })
+}
+
+// 活动列表分页查询（新版活动 API §2）；不传 status 时默认查 1-未开始、2-进行中
 export const queryActivityList = (
   data: QueryActivityListForm,
   options?: ApiResponseToastOptions
