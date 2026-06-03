@@ -89,9 +89,7 @@
     </div>
 
     <WalletLayout v-else-if="isReady" current-tab="voucherHistory">
-      <div class="bg-bg-2 rounded-xl overflow-hidden">
-        <PcLayout />
-      </div>
+      <PcLayout />
     </WalletLayout>
   </div>
 </template>
@@ -140,7 +138,8 @@ const filterGroups = computed<FilterGroup[]>(() => [
   {
     key: 'type',
     title: t('vouchers.type'),
-    options: createVoucherHistoryTypeOptions(t)
+    options: createVoucherHistoryTypeOptions(t),
+    columns: 2
   }
 ])
 

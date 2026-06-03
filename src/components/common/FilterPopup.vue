@@ -22,7 +22,7 @@
               <h3 class="text-text-1 text-xs font-normal mb-2.5">
                 {{ group.title }}
               </h3>
-              <div class="grid grid-cols-3 gap-[7px]">
+              <div :class="['grid gap-[7px]', getColumnsClass(group.columns)]">
                 <button
                   v-for="option in group.options"
                   :key="option.value"
@@ -58,7 +58,22 @@ export interface FilterGroup {
   title: string
   options: FilterOption[]
   multiple?: boolean
+  /** 每行展示的按钮数量，不传默认 3 */
+  columns?: number
 }
+
+// 把 columns 数值映射到固定的 Tailwind 类，保证 JIT 能识别
+const COLUMNS_CLASS_MAP: Record<number, string> = {
+  1: 'grid-cols-1',
+  2: 'grid-cols-2',
+  3: 'grid-cols-3',
+  4: 'grid-cols-4',
+  5: 'grid-cols-5',
+  6: 'grid-cols-6'
+}
+
+const getColumnsClass = (columns?: number) =>
+  COLUMNS_CLASS_MAP[columns ?? 3] ?? COLUMNS_CLASS_MAP[3]
 
 interface Props {
   visible: boolean
