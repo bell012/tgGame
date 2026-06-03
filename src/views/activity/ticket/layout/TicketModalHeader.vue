@@ -14,33 +14,30 @@
     </p>
 
     <div
-      v-if="endTime"
-      class="mt-4 flex items-center gap-1"
+      v-if="showCountdown"
+      class="mt-4 flex items-center gap-0.5"
       :class="align === 'start' ? 'justify-start' : 'justify-center'"
     >
-      <template v-for="(segment, segmentIndex) in countdownSegments" :key="segmentIndex">
+      <template v-for="(char, idx) in countdownChars" :key="idx">
         <span
-          v-if="segmentIndex > 0"
+          v-if="char === ':'"
           class="px-0.5 text-[18px] font-[700]"
           :style="{ color: themeTokens.countdownColon }"
         >
           :
         </span>
-        <div class="flex gap-1">
-          <span
-            v-for="(digit, digitIndex) in segment"
-            :key="`${segmentIndex}-${digitIndex}`"
-            class="flex items-center justify-center rounded-[6px] border text-[18px] font-[700] text-common-100"
-            :style="countdownBoxStyle"
-          >
-            {{ digit }}
-          </span>
-        </div>
+        <span
+          v-else
+          class="flex items-center justify-center rounded-[6px] border text-[18px] font-[700] text-common-100"
+          :style="countdownBoxStyle"
+        >
+          {{ char }}
+        </span>
       </template>
     </div>
 
     <div
-      v-if="endTime"
+      v-if="showCountdown"
       class="mt-2 flex items-center gap-1 text-[12px] font-[400]"
       :style="{ color: themeTokens.expiresLabel }"
     >
@@ -54,9 +51,10 @@
 </template>
 
 <script setup lang="ts">
+import { formatTicketActivityCountdown } from '../shared/ticketActivityCountdown'
 import type { TicketModalHeaderData } from '../shared/types'
 import { getTicketModalTheme, LUCKY_SPIN_TOKENS } from '../shared/design-tokens'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 
 const props = withDefaults(
   defineProps<
@@ -81,31 +79,23 @@ const countdownBoxStyle = {
   backgroundColor: LUCKY_SPIN_TOKENS.countdownBox.bg
 }
 
-const remainingSeconds = ref(0)
+const showCountdown = computed(() => Boolean(props.expiresLabel))
+
+const nowTimestamp = ref(Date.now())
 let timer: number | null = null
 
-const pad2 = (value: number) => String(Math.max(0, value)).padStart(2, '0')
+const countdownChars = computed(() =>
+  formatTicketActivityCountdown(props.endTime, nowTimestamp.value).split('')
+)
 
-const countdownSegments = computed(() => {
-  const total = remainingSeconds.value
-  const hours = Math.floor(total / 3600)
-  const minutes = Math.floor((total % 3600) / 60)
-  const seconds = total % 60
-  return [pad2(hours), pad2(minutes), pad2(seconds)].map(part => part.split(''))
-})
-
-const syncRemaining = () => {
-  if (!props.endTime) {
-    remainingSeconds.value = 0
-    return
-  }
-  remainingSeconds.value = Math.max(0, Math.floor((props.endTime - Date.now()) / 1000))
+const tickCountdown = () => {
+  nowTimestamp.value = Date.now()
 }
 
 const startTimer = () => {
   stopTimer()
-  syncRemaining()
-  timer = window.setInterval(syncRemaining, 1000)
+  tickCountdown()
+  timer = window.setInterval(tickCountdown, 1000)
 }
 
 const stopTimer = () => {
@@ -116,11 +106,16 @@ const stopTimer = () => {
 }
 
 watch(
-  () => props.endTime,
-  () => startTimer(),
+  [showCountdown, () => props.endTime],
+  ([visible]) => {
+    if (visible) {
+      startTimer()
+      return
+    }
+    stopTimer()
+  },
   { immediate: true }
 )
 
-onMounted(startTimer)
 onUnmounted(stopTimer)
 </script>

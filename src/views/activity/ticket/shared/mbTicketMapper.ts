@@ -107,12 +107,58 @@ export const resolveLanguageInfo = (
   )
 }
 
+/** 当前语言下的票券文案（与我的票券卡片 title / description 一致） */
+export const getMbTicketLanguageCopy = (
+  record: MbTicketRecord | null | undefined,
+  languageCode: string
+) => {
+  if (!record) {
+    return { name: '', description: '' }
+  }
+
+  const languageInfo = resolveLanguageInfo(record.languageInfo, normalizeLanguageCode(languageCode))
+
+  return {
+    name: normalizeText(languageInfo?.name),
+    description: normalizeText(languageInfo?.description)
+  }
+}
+
 /** 按玩法筛选票券（保留 result 数组顺序） */
 export const findMbTicketsByGameId = (
   records: MbTicketRecord[],
   gameId: TicketGameId
 ): MbTicketRecord[] =>
   records.filter(record => TICKET_TYPE_TO_GAME_ID[Number(record.type)] === gameId)
+
+export const isSameMbTicketRecord = (a: MbTicketRecord, b: MbTicketRecord) =>
+  a.rowId === b.rowId && a.ticketId === b.ticketId
+
+/** 打开活动弹窗：解析当前票与会话列表（我的票券可指定 preferredRecord） */
+export const resolveTicketActivitySession = (
+  records: MbTicketRecord[],
+  gameId: TicketGameId,
+  preferredRecord?: MbTicketRecord
+): { activeRecord: MbTicketRecord; sessionRecords: MbTicketRecord[] } | null => {
+  const matches = findMbTicketsByGameId(records, gameId)
+  if (matches.length === 0) {
+    return null
+  }
+
+  if (!preferredRecord || TICKET_TYPE_TO_GAME_ID[Number(preferredRecord.type)] !== gameId) {
+    return { activeRecord: matches[0]!, sessionRecords: records }
+  }
+
+  const matchedInList = records.find(record => isSameMbTicketRecord(record, preferredRecord))
+  if (matchedInList) {
+    return { activeRecord: matchedInList, sessionRecords: records }
+  }
+
+  return {
+    activeRecord: preferredRecord,
+    sessionRecords: [preferredRecord, ...records]
+  }
+}
 
 /** 拉取我的票券列表；失败或 success=false 时抛出 */
 export const fetchMbTicketListRecords = async (languageCode: string): Promise<MbTicketRecord[]> => {

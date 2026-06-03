@@ -75,7 +75,7 @@
             @select="emit('select', $event)"
             @prev="emit('prev')"
             @next="emit('next')"
-            @open-voucher-list="emit('open-reminder')"
+            @open-voucher-list="emit('open-voucher-list')"
           />
         </template>
       </template>
@@ -145,7 +145,7 @@
                   @select="emit('select', $event)"
                   @prev="emit('prev')"
                   @next="emit('next')"
-                  @open-voucher-list="emit('open-reminder')"
+                  @open-voucher-list="emit('open-voucher-list')"
                 />
               </aside>
 
@@ -209,6 +209,7 @@ const emit = defineEmits<{
   select: [index: number]
   prev: []
   next: []
+  'open-voucher-list': []
 }>()
 
 const { t } = useI18n()

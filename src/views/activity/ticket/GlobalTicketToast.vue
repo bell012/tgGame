@@ -19,6 +19,7 @@
       @select="handleGameSelect"
       @prev="handleFooterPrev"
       @next="handleFooterNext"
+      @open-voucher-list="handleOpenMyVouchers"
     />
     <!-- 帮助中心弹窗 -->
     <TicketReminderPopup />
@@ -36,6 +37,10 @@ import TicketResultHeroPopup from './layout/dialogs/result/TicketResultHeroPopup
 import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
 import TicketReminderPopup from './layout/dialogs/TicketReminderPopup.vue'
 import TicketActivityPage from './layout/TicketActivityPage.vue'
+import { getLanguageCode } from '@/utils/locale'
+import { navigateTo } from '@/utils/router'
+import { getMbTicketLanguageCopy } from './shared/mbTicketMapper'
+import { getTicketActivityEndUseTime } from './shared/ticketActivityCountdown'
 import { buildGameHeader, findTicketIndex } from './shared/gameHeaderConfig'
 import { openTicketReminderDialog } from './shell/ticketDialog'
 import {
@@ -75,15 +80,33 @@ const {
 } = useLuckySpinGame(wheelRef, visible)
 
 const headerData = computed(() => {
+  const record = globalTicketToastState.activeTicketRecord
+  const { description: voucherDescription } = getMbTicketLanguageCopy(record, getLanguageCode())
+  const voucherEndTime = getTicketActivityEndUseTime(record)
+
   if (!spinInfo.value) {
     return {
       title: '',
-      subtitle: '',
-      theme: toastState.gameId
+      subtitle: voucherDescription,
+      theme: toastState.gameId,
+      endTime: voucherEndTime > 0 ? voucherEndTime : undefined
     }
   }
-  return buildGameHeader(toastState.gameId, spinInfo.value, t)
+
+  const baseHeader = buildGameHeader(toastState.gameId, spinInfo.value, t)
+
+  return {
+    ...baseHeader,
+    subtitle: voucherDescription || baseHeader.subtitle,
+    endTime: voucherEndTime > 0 ? voucherEndTime : undefined
+  }
 })
+
+const handleOpenMyVouchers = () => {
+  if (isSpinning.value) return
+  handleClosePage()
+  navigateTo('/myVouchers')
+}
 
 const handleOpenReminder = () => {
   if (!spinInfo.value) return

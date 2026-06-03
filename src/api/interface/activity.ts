@@ -274,7 +274,8 @@ export interface MbTicketListForm {
   rowId?: number // 票券记录ID
   name?: string // 票券名称
   languageCode?: string // 语言编码
-  type?: number // 票券类型：1现金兑换卷 2幸运红包卷 3砸金蛋票券 4大转盘票券 5拼多多票券(预留) 6盲盒票券
+  type?: number // 票券类型：1现金票券 Cash Voucher 2红包票券 Red Packet Voucher 3砸金蛋票券 Golden Egg Voucher
+  // 4转盘票券 Lucky Spin Voucher 6盲盒票券  Mystery Box Voucher
   distributionType?: number // 派发方式  0直接派发  1联动派发
   unusedTicketPopWay?: number // 未使用票券弹窗方式  0不弹窗 1每日一次 2每次登录 3只弹一次 4高频弹窗
   status?: number // 票券记录状态列表  0草稿  1发行中  2已停发  3过期
@@ -304,7 +305,8 @@ export interface RecordForm {
   rowId?: number // 票券记录ID
   name?: string // 票券名称
   languageCode?: string // 语言编码
-  type?: number // 票券类型：1现金兑换卷 2幸运红包卷 3砸金蛋票券 4大转盘票券 5拼多多票券(预留) 6盲盒票券
+  type?: number // 票券类型：1现金票券 Cash Voucher 2红包票券 Red Packet Voucher 3砸金蛋票券 Golden Egg Voucher
+  // 4转盘票券 Lucky Spin Voucher 6盲盒票券  Mystery Box Voucher
   distributionType?: number // 派发方式  0直接派发  1联动派发
   unusedTicketPopWay?: number // 未使用票券弹窗方式  0不弹窗 1每日一次 2每次登录 3只弹一次 4高频弹窗
   status?: number // 票券记录状态列表  0草稿  1发行中  2已停发  3过期
@@ -333,6 +335,7 @@ export interface RecordResult {
       createTime: number
       distributionType: number
       expireTime: number
+      languageInfo: [{ description: string; imageUrl: string; languageCode: string; name: string }]
       memberId: string
       memberRowId: number
       operateTime: number
@@ -344,6 +347,7 @@ export interface RecordResult {
       ticketId: number
       ticketName: string
       ticketType: number
+      useTime: number
     }
   ]
   size: number

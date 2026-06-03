@@ -146,6 +146,24 @@ const pickFirstNumber = (record: Record<string, unknown>, keys: string[]) => {
   return null
 }
 
+export const normalizeFeedbackCurrencyCode = (value: unknown) => {
+  return String(value ?? '')
+    .trim()
+    .toUpperCase()
+}
+
+const isFeedbackMemberCurrencyMatch = (
+  record: Record<string, unknown>,
+  userCurrencyCode: string
+) => {
+  const normalizedUserCurrency = normalizeFeedbackCurrencyCode(userCurrencyCode)
+  if (!normalizedUserCurrency) {
+    return false
+  }
+
+  return normalizeFeedbackCurrencyCode(record.memberCurrency) === normalizedUserCurrency
+}
+
 const isFeedbackRewardReceived = (record: Record<string, unknown>) => {
   const receiveCandidates = [
     record.receiveStatus,
@@ -167,15 +185,19 @@ const isFeedbackRewardReceived = (record: Record<string, unknown>) => {
   return false
 }
 
-const getFeedbackItemClaimableReward = (item: unknown) => {
+const getFeedbackItemClaimableReward = (item: unknown, userCurrencyCode: string) => {
   if (!item || typeof item !== 'object') {
     return 0
   }
 
   const record = item as Record<string, unknown>
-  const reward = pickFirstNumber(record, FEEDBACK_REWARD_AMOUNT_KEYS)
 
-  if (reward === null || reward <= 0) {
+  if (!isFeedbackMemberCurrencyMatch(record, userCurrencyCode)) {
+    return 0
+  }
+
+  const balance = pickFiniteNumber(record.balance)
+  if (balance === null || balance <= 0) {
     return 0
   }
 
@@ -187,11 +209,14 @@ const getFeedbackItemClaimableReward = (item: unknown) => {
     return 0
   }
 
-  return reward
+  return balance
 }
 
-const sumFeedbackListClaimableReward = (items: FeedbackApiRecord[]) => {
-  return items.reduce<number>((total, item) => total + getFeedbackItemClaimableReward(item), 0)
+const sumFeedbackListClaimableReward = (items: FeedbackApiRecord[], userCurrencyCode: string) => {
+  return items.reduce<number>(
+    (total, item) => total + getFeedbackItemClaimableReward(item, userCurrencyCode),
+    0
+  )
 }
 
 export const extractFeedbackList = (result: unknown): FeedbackApiRecord[] => {
@@ -238,23 +263,15 @@ export const sortFeedbackItemsByNewest = <T extends object>(items: T[]) => {
   })
 }
 
-export const extractFeedbackClaimRewardAmount = (result: unknown): number => {
-  if (Array.isArray(result)) {
-    return sumFeedbackListClaimableReward(result as FeedbackApiRecord[])
-  }
+export const extractFeedbackClaimRewardAmount = (
+  result: unknown,
+  userCurrencyCode: string
+): number => {
+  const items = Array.isArray(result)
+    ? (result as FeedbackApiRecord[])
+    : extractFeedbackList(result)
 
-  if (!result || typeof result !== 'object') {
-    return 0
-  }
-
-  const record = result as FeedbackApiRecord
-  const summaryAmount = pickFirstNumber(record, FEEDBACK_REWARD_AMOUNT_KEYS)
-
-  if (summaryAmount !== null) {
-    return summaryAmount
-  }
-
-  return sumFeedbackListClaimableReward(extractFeedbackList(result))
+  return sumFeedbackListClaimableReward(items, userCurrencyCode)
 }
 
 export const extractClaimedFeedbackAmount = (result: unknown): number => {
