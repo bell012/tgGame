@@ -4,7 +4,6 @@ import Api from '@/api'
 import type { MbTicketRecord } from '@/api/interface/activity'
 import { formatTimestamp } from '@/utils/date'
 import { getStorageLanguageCode } from '@/utils/locale'
-import { openLuckySpin } from '@/utils/openLuckySpin'
 import { openTicketActivity } from '@/utils/openTicketActivity'
 import {
   normalizeLanguageCode,
@@ -148,12 +147,7 @@ export const useMyVouchersPage = () => {
       return
     }
 
-    if (gameId === 'lucky_spin') {
-      openLuckySpin()
-      return
-    }
-
-    openTicketActivity(gameId)
+    openTicketActivity(gameId, { record: item.rawData })
   }
 
   /** 倒计时 */

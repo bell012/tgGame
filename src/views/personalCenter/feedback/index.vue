@@ -103,6 +103,7 @@ import type { FeedbackListItem, FeedbackTab } from './types'
 import { navigateToName } from '@/utils/router'
 import { prepareUploadImage } from '@/utils/compress-upload-image'
 import { resolveUploadErrorMessage } from '@/utils/upload-error'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 
 const props = withDefaults(
   defineProps<{
@@ -118,6 +119,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { currentCurrencyCode } = useDisplayCurrency()
 
 // 页面基础状态
 const activeTab = ref<FeedbackTab>('create')
@@ -334,7 +336,10 @@ const fetchMyFeedbackList = async () => {
       )
     }
 
-    feedbackClaimRewardAmount.value = extractFeedbackClaimRewardAmount(response.result)
+    feedbackClaimRewardAmount.value = extractFeedbackClaimRewardAmount(
+      response.result,
+      currentCurrencyCode.value
+    )
     const responseList = sortFeedbackItemsByNewest(
       extractFeedbackList(response.result) as QueryFeedbackItem[]
     )

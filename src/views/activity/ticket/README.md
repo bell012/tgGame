@@ -736,7 +736,9 @@ interface LuckySpinVoucherCardData {
 
 1. 登录校验通过后请求 `mbTicketList({ languageCode })`
 2. 按 `type` → `TicketGameId` 筛选目标玩法；**无匹配** → Toast `ticketPage.noVoucherForActivity`，不打开弹窗
-3. **有 1 条或多条** → 取 `result` 数组**第一条**写入 `globalTicketToastState.activeTicketRecord`，整表写入 `mbTicketRecords`，再 `openTicketToast`
+3. **有票券** → `resolveTicketActivitySession` 写入会话：
+   - 菜单/首页：`openTicketActivity(gameId)` → 该玩法**第一条**
+   - 我的票券「立即使用」：`openTicketActivity(gameId, { record })` → **当前点击的那张票**（全量列表中按 `rowId`/`ticketId` 匹配，不在列表则 prepend）
 4. 列表请求失败 → Toast `ticketPage.mbTicketListFailed`，不打开
 
 弹窗内 `queryLuckySpinInfo` / `doLuckySpin` 通过 `getActiveTicketParams()` 携带当前票的 `ticketId`、`rowId`。券种条点击第 i 格时 `switchTicketGame(gameId, mbTicketRecords[i])` 精确切换当前票。
