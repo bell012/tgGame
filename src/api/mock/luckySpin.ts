@@ -55,11 +55,36 @@ export const createMockLuckySpinInfo = (): LuckySpinInfoResult => ({
     { id: 'w4', avatar: '', username: 'mike***1', prizeText: '₱28' }
   ],
   voucherGames: [
-    { id: 'golden_egg', label: 'Golden Egg', icon: getGameIcon('golden_egg') },
-    { id: 'mystery_box', label: 'Mystery Box', icon: getGameIcon('mystery_box') },
-    { id: 'lucky_spin', label: 'Lucky Spin', icon: getGameIcon('lucky_spin') },
-    { id: 'lucky_red_envelope', label: 'Red Envelope', icon: getGameIcon('lucky_red_envelope') },
-    { id: 'cash_voucher', label: 'Cash Voucher', icon: getGameIcon('cash_voucher') }
+    {
+      id: 'mock-golden-egg',
+      gameId: 'golden_egg',
+      label: 'Golden Egg',
+      icon: getGameIcon('golden_egg')
+    },
+    {
+      id: 'mock-mystery-box',
+      gameId: 'mystery_box',
+      label: 'Mystery Box',
+      icon: getGameIcon('mystery_box')
+    },
+    {
+      id: 'mock-lucky-spin',
+      gameId: 'lucky_spin',
+      label: 'Lucky Spin',
+      icon: getGameIcon('lucky_spin')
+    },
+    {
+      id: 'mock-lucky-red-envelope',
+      gameId: 'lucky_red_envelope',
+      label: 'Red Envelope',
+      icon: getGameIcon('lucky_red_envelope')
+    },
+    {
+      id: 'mock-cash-voucher',
+      gameId: 'cash_voucher',
+      label: 'Cash Voucher',
+      icon: getGameIcon('cash_voucher')
+    }
   ],
   rules: [
     'Promotion period and cash prize limits apply as stated on the platform.',

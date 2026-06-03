@@ -26,7 +26,12 @@ export interface WinnerTickerItem {
 }
 
 export interface VoucherGameItem {
+  /** 列表唯一键，如 ticket-{rowId} */
   id: string
+  /** 票券 type 映射的玩法；type 5 预留可为空 */
+  gameId?: TicketGameId
+  rowId?: number
+  ticketId?: number
   icon?: string
   label?: string
   route?: string

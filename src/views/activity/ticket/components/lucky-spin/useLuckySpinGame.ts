@@ -5,7 +5,8 @@ import {
   findMbTicketsByGameId,
   mapMbTicketListToFooter
 } from '../../shared/mbTicketMapper'
-import type { LuckySpinInfoResult, LuckySpinResult } from '../../shared/types'
+import { findTicketIndex } from '../../shared/gameHeaderConfig'
+import type { LuckySpinInfoResult, LuckySpinResult, TicketGameId } from '../../shared/types'
 import {
   closeTicketDialog,
   openTicketReminderDialog,
@@ -49,6 +50,18 @@ const refreshTicketSessionAfterList = (
   records: Awaited<ReturnType<typeof fetchMbTicketListRecords>>
 ) => {
   globalTicketToastState.mbTicketRecords = records
+  const active = globalTicketToastState.activeTicketRecord
+
+  if (active) {
+    const sameRecord = records.find(
+      record => record.rowId === active.rowId && record.ticketId === active.ticketId
+    )
+    if (sameRecord) {
+      globalTicketToastState.activeTicketRecord = sameRecord
+      return
+    }
+  }
+
   const matches = findMbTicketsByGameId(records, globalTicketToastState.gameId)
 
   if (matches.length > 0) {
@@ -75,9 +88,10 @@ export const useLuckySpinGame = (
   const pendingResult = ref<LuckySpinResult | null>(null)
 
   const syncActiveGameIndex = (info: LuckySpinInfoResult, gameId?: string) => {
-    const targetId = gameId ?? 'lucky_spin'
-    const index = info.voucherGames.findIndex(item => item.id === targetId)
-    activeGameIndex.value = index >= 0 ? index : 0
+    activeGameIndex.value = findTicketIndex(info.voucherGames, {
+      gameId: (gameId ?? 'lucky_spin') as TicketGameId,
+      record: globalTicketToastState.activeTicketRecord
+    })
   }
 
   const resetModalState = () => {

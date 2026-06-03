@@ -31,13 +31,14 @@ export const buildVoucherGridSlots = (games: VoucherGameItem[]): VoucherGridSlot
 }
 
 export function useTicketVoucherSwitcher(props: TicketVoucherFooterData) {
-  const resolveIcon = (item: { id: string; icon?: string }) => item.icon ?? getGameIcon(item.id)
+  const resolveIcon = (item: { icon?: string; gameId?: TicketGameId }) =>
+    item.icon ?? getGameIcon(item.gameId ?? 'lucky_spin')
 
   const gridSlots = computed(() => buildVoucherGridSlots(props.games))
 
   const activeItemStyle = computed(() => {
     const gameId = (props.activeGameId ??
-      props.games[props.activeIndex]?.id ??
+      props.games[props.activeIndex]?.gameId ??
       'lucky_spin') as TicketGameId
     const theme = getTicketModalTheme(gameId)
     return {

@@ -36,10 +36,13 @@ import TicketResultHeroPopup from './layout/dialogs/result/TicketResultHeroPopup
 import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
 import TicketReminderPopup from './layout/dialogs/TicketReminderPopup.vue'
 import TicketActivityPage from './layout/TicketActivityPage.vue'
-import { buildGameHeader, findGameIndex } from './shared/gameHeaderConfig'
+import { buildGameHeader, findTicketIndex } from './shared/gameHeaderConfig'
 import { openTicketReminderDialog } from './shell/ticketDialog'
-import { globalTicketToastState, switchTicketGame } from './shell/ticketToast'
-import type { TicketGameId } from './shared/types'
+import {
+  globalTicketToastState,
+  setActiveTicketRecord,
+  switchTicketGame
+} from './shell/ticketToast'
 import type { LuckySpinWheelExpose } from './components/lucky-spin/useLuckySpinGame'
 import { useLuckySpinGame } from './components/lucky-spin/useLuckySpinGame'
 import { computed, onUnmounted, ref, watch } from 'vue'
@@ -92,31 +95,43 @@ const handleOpenReminder = () => {
   })
 }
 
-const handleGameSelect = (index: number) => {
-  const game = spinInfo.value?.voucherGames[index]
-  if (!game) return
+const applyVoucherSelection = (index: number) => {
+  const item = spinInfo.value?.voucherGames[index]
+  const record = globalTicketToastState.mbTicketRecords[index]
+  if (!item || !record) return
 
   activeGameIndex.value = index
-  switchTicketGame(game.id as TicketGameId)
+
+  if (item.gameId) {
+    switchTicketGame(item.gameId, record)
+    return
+  }
+
+  setActiveTicketRecord(record)
+}
+
+const handleGameSelect = (index: number) => {
+  applyVoucherSelection(index)
 }
 
 const handleFooterPrev = () => {
   handleGamePrev()
-  const game = spinInfo.value?.voucherGames[activeGameIndex.value]
-  if (game) switchTicketGame(game.id as TicketGameId)
+  applyVoucherSelection(activeGameIndex.value)
 }
 
 const handleFooterNext = () => {
   handleGameNext()
-  const game = spinInfo.value?.voucherGames[activeGameIndex.value]
-  if (game) switchTicketGame(game.id as TicketGameId)
+  applyVoucherSelection(activeGameIndex.value)
 }
 
 watch(
   () => toastState.gameId,
   gameId => {
     if (!spinInfo.value) return
-    activeGameIndex.value = findGameIndex(spinInfo.value.voucherGames, gameId)
+    activeGameIndex.value = findTicketIndex(spinInfo.value.voucherGames, {
+      gameId,
+      record: globalTicketToastState.activeTicketRecord
+    })
   }
 )
 

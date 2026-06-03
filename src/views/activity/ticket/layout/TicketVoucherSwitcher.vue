@@ -3,7 +3,10 @@
     <div
       v-if="gridSlots.length"
       class="grid w-full grid-cols-5 gap-2"
-      :class="variant === 'grid' ? 'max-w-[332px]' : 'mx-auto max-w-[340px]'"
+      :class="[
+        variant === 'grid' ? 'max-w-[332px]' : 'mx-auto max-w-[340px]',
+        gridSlots.length > 5 ? 'max-h-[188px] overflow-y-auto overscroll-contain pr-0.5' : ''
+      ]"
     >
       <template v-for="slot in gridSlots" :key="slot.id">
         <button

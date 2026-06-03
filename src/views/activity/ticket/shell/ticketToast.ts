@@ -49,12 +49,20 @@ export function closeTicketToast() {
   closeTicketDialog()
 }
 
-export function switchTicketGame(gameId: TicketGameId) {
-  const matches = findMbTicketsByGameId(globalTicketToastState.mbTicketRecords, gameId)
+export function switchTicketGame(gameId: TicketGameId, record?: MbTicketRecord | null) {
+  if (record) {
+    globalTicketToastState.activeTicketRecord = record
+  } else {
+    const matches = findMbTicketsByGameId(globalTicketToastState.mbTicketRecords, gameId)
 
-  if (matches.length > 0) {
-    globalTicketToastState.activeTicketRecord = matches[0]!
+    if (matches.length > 0) {
+      globalTicketToastState.activeTicketRecord = matches[0]!
+    }
   }
 
   globalTicketToastState.gameId = gameId
+}
+
+export const setActiveTicketRecord = (record: MbTicketRecord | null) => {
+  globalTicketToastState.activeTicketRecord = record
 }

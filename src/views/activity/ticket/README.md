@@ -52,9 +52,9 @@ PC 尺寸 token 定义在 `shared/design-tokens.ts` → `TICKET_PC_TOKENS`。
   ├─ 业务入口（含登录校验）→ openTicketActivity(gameId) / openLuckySpin()
   └─ 底层（无登录校验）    → openTicketToast({ gameId })
 
-活动页内切换玩法（券种切换器：移动端轮播 / PC 网格）
-  ├─ 点击图标 → GlobalTicketToast.handleGameSelect → switchTicketGame(gameId)
-  └─ 或直接 switchTicketGame(gameId)
+活动页内切换玩法（券种切换器：5 列网格，多条可滚动）
+  ├─ 点击第 i 格 → applyVoucherSelection → switchTicketGame(gameId, mbTicketRecords[i])
+  └─ 或直接 switchTicketGame(gameId, record?)
 
 关闭
   ├─ 只关子弹窗           → closeTicketDialog()
@@ -186,16 +186,16 @@ openTicketToast({
 
 底部/侧栏的玩法图标由 **`TicketVoucherSwitcher`** 统一渲染（逻辑在 `layout/composables/useTicketVoucherSwitcher.ts`）：
 
-| 使用位置   | 包装组件                        | `variant`  | 交互                                  |
-| ---------- | ------------------------------- | ---------- | ------------------------------------- |
-| 移动端底部 | `TicketVoucherFooter`           | `carousel` | 最多可见 5 个图标，‹ › 翻页；点击选中 |
-| PC 左侧栏  | `TicketActivityPage` 内直接引用 | `grid`     | 5 列网格一次展示全部                  |
+| 使用位置   | 包装组件                        | `variant`  | 交互                                        |
+| ---------- | ------------------------------- | ---------- | ------------------------------------------- |
+| 移动端底部 | `TicketVoucherFooter`           | `carousel` | 5 列网格；超过 5 格可纵向滚动；‹ › 翻页选中 |
+| PC 左侧栏  | `TicketActivityPage` 内直接引用 | `grid`     | 5 列网格，接口几条展示几个（末行占位）      |
 
-用户点击图标 → `GlobalTicketToast.handleGameSelect` → `switchTicketGame(gameId)`：
+用户点击第 i 个图标 → `GlobalTicketToast.applyVoucherSelection` → `switchTicketGame(gameId, record)`（`record` 与 `mbTicketRecords[i]` 对齐）：
 
 ```ts
 // shell/ticketToast.ts
-switchTicketGame('golden_egg') // 只改 globalTicketToastState.gameId，不重新 mount
+switchTicketGame('golden_egg', record) // 更新 gameId + activeTicketRecord，不重新 mount
 ```
 
 `useTicketVoucherSwitcher` 负责：图标 fallback（`getGameIcon`）、选中项主题边框/光晕（`getTicketModalTheme`）、轮播窗口 `startIndex` 与 `activeIndex` 联动。
@@ -655,7 +655,7 @@ interface OpenTicketToastOptions {
 
 openTicketToast(options: OpenTicketToastOptions): void
 closeTicketToast(): void          // 同时 closeTicketDialog()
-switchTicketGame(gameId: TicketGameId): void
+switchTicketGame(gameId: TicketGameId, record?: MbTicketRecord | null): void
 ```
 
 ### 券种切换 `layout/TicketVoucherSwitcher.vue`
@@ -739,7 +739,7 @@ interface LuckySpinVoucherCardData {
 3. **有 1 条或多条** → 取 `result` 数组**第一条**写入 `globalTicketToastState.activeTicketRecord`，整表写入 `mbTicketRecords`，再 `openTicketToast`
 4. 列表请求失败 → Toast `ticketPage.mbTicketListFailed`，不打开
 
-弹窗内 `queryLuckySpinInfo` / `doLuckySpin` 通过 `getActiveTicketParams()` 携带当前票的 `ticketId`、`rowId`。券种条切换玩法时 `switchTicketGame` 会更新为该玩法的第一条票券。
+弹窗内 `queryLuckySpinInfo` / `doLuckySpin` 通过 `getActiveTicketParams()` 携带当前票的 `ticketId`、`rowId`。券种条点击第 i 格时 `switchTicketGame(gameId, mbTicketRecords[i])` 精确切换当前票。
 
 ### 后端接口 `Api.activity`
 
@@ -749,18 +749,18 @@ interface LuckySpinVoucherCardData {
 | `mbTicketList({ languageCode })`            | 打开前校验 + 券种条数据（仅传 `languageCode`） |
 | `doLuckySpin({ ticketId?, rowId? })`        | 执行一次抽奖                                   |
 
-券种条映射见 `shared/mbTicketMapper.ts`：按 `result[]` 中票券 `type` 去重后动态生成图标列表，顺序遵循 `TICKET_GAME_DISPLAY_ORDER`。
+券种条映射见 `shared/mbTicketMapper.ts`：`mapMbTicketListToFooter` 对 `result[]` **逐条**生成格子（不去重），顺序与接口一致；`VoucherGameItem.id` 为 `ticket-{rowId}`，`gameId` 来自下表。
 
-| type | 含义       | 活动 `TicketGameId`                    |
-| ---- | ---------- | -------------------------------------- |
-| 1    | 现金兑换卷 | `cash_voucher`                         |
-| 2    | 幸运红包卷 | `lucky_red_envelope`                   |
-| 3    | 砸金蛋票券 | `golden_egg`                           |
-| 4    | 大转盘票券 | `lucky_spin`                           |
-| 5    | 拼多多票券 | 预留，不映射；计入张数，不出现在券种条 |
-| 6    | 盲盒票券   | `mystery_box`                          |
+| type | 含义       | 活动 `TicketGameId`                           |
+| ---- | ---------- | --------------------------------------------- |
+| 1    | 现金兑换卷 | `cash_voucher`                                |
+| 2    | 幸运红包卷 | `lucky_red_envelope`                          |
+| 3    | 砸金蛋票券 | `golden_egg`                                  |
+| 4    | 大转盘票券 | `lucky_spin`                                  |
+| 5    | 拼多多票券 | 预留，无 `gameId`；仍展示图标（接口图或兜底） |
+| 6    | 盲盒票券   | `mystery_box`                                 |
 
-`totalVouchers` 为 `result` 数组长度（含 type 5）；仅 type 1–4、6 会按 `languageInfo` 更新对应玩法图标。
+`totalVouchers` 与券种条图标数均为 `result.length`；超过 5 个时 5 列网格纵向滚动，末行用占位格补齐。
 
 Mock：`src/api/mock/luckySpin.ts`
 

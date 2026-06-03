@@ -1,5 +1,11 @@
+import type { MbTicketRecord } from '@/api/interface/activity'
 import type { ComposerTranslation } from 'vue-i18n'
-import type { LuckySpinInfoResult, TicketGameId, TicketModalHeaderData } from './types'
+import type {
+  LuckySpinInfoResult,
+  TicketGameId,
+  TicketModalHeaderData,
+  VoucherGameItem
+} from './types'
 
 const GAME_HEADER_COPY: Record<
   TicketGameId,
@@ -40,7 +46,35 @@ export const buildGameHeader = (
   }
 }
 
-export const findGameIndex = (games: { id: string }[], gameId: TicketGameId) => {
-  const index = games.findIndex(item => item.id === gameId)
-  return index >= 0 ? index : 0
+export const findTicketIndex = (
+  games: VoucherGameItem[],
+  options: { gameId?: TicketGameId; record?: MbTicketRecord | null }
+) => {
+  const { gameId, record } = options
+
+  if (record?.rowId != null) {
+    const byRowId = games.findIndex(item => item.rowId === record.rowId)
+    if (byRowId >= 0) return byRowId
+  }
+
+  if (record?.ticketId != null) {
+    const byTicketId = games.findIndex(item => {
+      if (item.ticketId !== record.ticketId) return false
+      if (record.rowId != null && item.rowId != null) {
+        return item.rowId === record.rowId
+      }
+      return true
+    })
+    if (byTicketId >= 0) return byTicketId
+  }
+
+  if (gameId) {
+    const byGameId = games.findIndex(item => item.gameId === gameId)
+    if (byGameId >= 0) return byGameId
+  }
+
+  return 0
 }
+
+export const findGameIndex = (games: VoucherGameItem[], gameId: TicketGameId) =>
+  findTicketIndex(games, { gameId })

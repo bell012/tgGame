@@ -125,53 +125,35 @@ export const fetchMbTicketListRecords = async (languageCode: string): Promise<Mb
   return normalizeMbTicketRecords(response.result)
 }
 
-const getRecordReceiveTime = (record: MbTicketRecord) => {
-  const receiveTime = Number(record.receiveTime)
-  return Number.isFinite(receiveTime) ? receiveTime : 0
+/** 单条票券 → 券种条格子（不去重，顺序与接口 result 一致） */
+export const mapMbTicketRecordToVoucherItem = (
+  record: MbTicketRecord,
+  index: number,
+  languageCode: string
+): VoucherGameItem => {
+  const gameId = TICKET_TYPE_TO_GAME_ID[Number(record.type)]
+  const languageInfo = resolveLanguageInfo(record.languageInfo, normalizeLanguageCode(languageCode))
+  const iconFromApi = normalizeText(languageInfo?.imageUrl)
+
+  return {
+    id: `ticket-${record.rowId ?? record.ticketId ?? index}`,
+    gameId,
+    rowId: record.rowId,
+    ticketId: record.ticketId,
+    icon: iconFromApi || (gameId ? getGameIcon(gameId) : getGameIcon('mystery_box')),
+    label: normalizeText(languageInfo?.name) || undefined
+  }
 }
 
-/** 票券列表 → 活动弹窗券种条数据 */
+/** 票券列表 → 活动弹窗券种条数据（接口几条展示几个） */
 export const mapMbTicketListToFooter = (
   result: unknown,
   languageCode: string
 ): { games: VoucherGameItem[]; totalVouchers: number } => {
   const records = normalizeMbTicketRecords(result)
-  const normalizedLanguageCode = normalizeLanguageCode(languageCode)
-  const gameMeta = new Map<TicketGameId, MbTicketLanguageInfoItem>()
-  const gameReceiveTime = new Map<TicketGameId, number>()
-
-  for (const record of records) {
-    const gameId = TICKET_TYPE_TO_GAME_ID[Number(record.type)]
-    if (!gameId) continue
-
-    const receiveTime = getRecordReceiveTime(record)
-    const previousReceiveTime = gameReceiveTime.get(gameId) ?? -1
-
-    if (receiveTime < previousReceiveTime) continue
-
-    gameReceiveTime.set(gameId, receiveTime)
-    const languageInfo = resolveLanguageInfo(record.languageInfo, normalizedLanguageCode)
-
-    if (languageInfo) {
-      gameMeta.set(gameId, languageInfo)
-    } else if (!gameMeta.has(gameId)) {
-      gameMeta.set(gameId, {})
-    }
-  }
-
-  const games: VoucherGameItem[] = TICKET_GAME_DISPLAY_ORDER.filter(gameId =>
-    gameMeta.has(gameId)
-  ).map(gameId => {
-    const meta = gameMeta.get(gameId)
-    const icon = normalizeText(meta?.imageUrl) || getGameIcon(gameId)
-    const label = normalizeText(meta?.name) || undefined
-
-    return {
-      id: gameId,
-      icon,
-      label
-    }
-  })
+  const games = records.map((record, index) =>
+    mapMbTicketRecordToVoucherItem(record, index, languageCode)
+  )
 
   return {
     games,
