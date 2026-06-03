@@ -20,6 +20,18 @@
           @success="handleLuckyReady"
           @end="handleEnd"
         />
+
+        <img
+          v-show="showSectorHighlight"
+          :src="LUCKY_SPIN_ASSETS.wheel.sectorHighlight"
+          alt=""
+          class="wheel-sector-highlight pointer-events-none absolute left-1/2 z-[26] select-none"
+          :class="{
+            'wheel-sector-highlight--active': showSectorHighlight && !sectorHighlightLocked,
+            'wheel-sector-highlight--locked': sectorHighlightLocked
+          }"
+          draggable="false"
+        />
       </div>
 
       <img
@@ -29,13 +41,18 @@
         draggable="false"
       />
 
-      <img
-        :src="LUCKY_SPIN_ASSETS.wheel.pointerGo"
-        alt=""
-        class="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2 select-none object-contain"
+      <div
+        class="pointer-wrap pointer-events-none absolute left-1/2 top-1/2 z-30"
+        :class="{ 'pointer-wrap--pressed': isGoPressed }"
         :style="{ width: pointerSize, height: pointerSize }"
-        draggable="false"
-      />
+      >
+        <img
+          :src="LUCKY_SPIN_ASSETS.wheel.pointerGo"
+          alt=""
+          class="h-full w-full select-none object-contain"
+          draggable="false"
+        />
+      </div>
 
       <button
         type="button"
@@ -63,7 +80,11 @@ import { LUCKY_SPIN_ASSETS } from '../../shared/assets'
 import { LUCKY_SPIN_TOKENS, TICKET_PC_TOKENS } from '../../shared/design-tokens'
 import { LuckyWheel } from '@lucky-canvas/vue'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useLuckyWheelConfig } from './useLuckyWheelConfig'
+import {
+  LUCKY_WHEEL_GO_PRESS_MS,
+  LUCKY_WHEEL_HIGHLIGHT_DURATION_MS,
+  useLuckyWheelConfig
+} from './useLuckyWheelConfig'
 
 interface Props {
   prizes: LuckySpinPrize[]
@@ -89,6 +110,9 @@ const luckyRef = ref<LuckyWheelInstance | null>(null)
 const containerRef = ref<HTMLElement | null>(null)
 const discRef = ref<HTMLElement | null>(null)
 const discSize = ref(0)
+const isGoPressed = ref(false)
+const showSectorHighlight = ref(false)
+const sectorHighlightLocked = ref(false)
 
 const isMobile = useIsMobile()
 
@@ -118,6 +142,9 @@ const updateDiscSize = () => {
 }
 
 let relayoutTimer: ReturnType<typeof setTimeout> | undefined
+let goPressTimer: ReturnType<typeof setTimeout> | undefined
+let highlightTimer: ReturnType<typeof setTimeout> | undefined
+let isHighlightPlaying = false
 
 const relayoutWheel = () => {
   clearTimeout(relayoutTimer)
@@ -153,6 +180,8 @@ onMounted(async () => {
 
 onUnmounted(() => {
   clearTimeout(relayoutTimer)
+  clearTimeout(goPressTimer)
+  clearTimeout(highlightTimer)
   resizeObserver?.disconnect()
   window.removeEventListener('resize', relayoutWheel)
 })
@@ -165,13 +194,42 @@ watch(
   { deep: true }
 )
 
+const triggerGoPress = () => {
+  isGoPressed.value = true
+  clearTimeout(goPressTimer)
+  goPressTimer = setTimeout(() => {
+    isGoPressed.value = false
+  }, LUCKY_WHEEL_GO_PRESS_MS)
+}
+
+const waitHighlightDuration = () =>
+  new Promise<void>(resolve => {
+    clearTimeout(highlightTimer)
+    highlightTimer = setTimeout(resolve, LUCKY_WHEEL_HIGHLIGHT_DURATION_MS)
+  })
+
+const clearSectorHighlight = () => {
+  showSectorHighlight.value = false
+  sectorHighlightLocked.value = false
+  isHighlightPlaying = false
+}
+
 const handleGoClick = () => {
   if (props.disabled) return
+  clearSectorHighlight()
+  triggerGoPress()
   luckyRef.value?.play()
   emit('go')
 }
 
-const handleEnd = () => {
+const handleEnd = async () => {
+  if (isHighlightPlaying) return
+  isHighlightPlaying = true
+  sectorHighlightLocked.value = false
+  showSectorHighlight.value = true
+  await waitHighlightDuration()
+  sectorHighlightLocked.value = true
+  isHighlightPlaying = false
   emit('spinEnd')
 }
 
@@ -180,17 +238,66 @@ const stopAt = (index: number) => {
 }
 
 const initWheel = () => {
+  clearSectorHighlight()
   luckyRef.value?.init()
 }
 
 defineExpose({
   stopAt,
-  init: initWheel
+  init: initWheel,
+  clearSectorHighlight
 })
 </script>
 
 <style scoped lang="scss">
 .lucky-wheel-host :deep(div[package]) {
   margin: 0 auto;
+}
+
+.pointer-wrap {
+  transform: translate(-50%, -50%);
+  transition:
+    transform 180ms ease-out,
+    filter 180ms ease-out;
+}
+
+.pointer-wrap--pressed {
+  transform: translate(-50%, -50%) scale(0.9);
+  filter: brightness(1.15);
+}
+
+.wheel-sector-highlight {
+  bottom: 50%;
+  width: 52%;
+  height: 52%;
+  transform: translateX(-50%);
+  transform-origin: center bottom;
+  object-fit: contain;
+  object-position: center bottom;
+  opacity: 0;
+}
+
+.wheel-sector-highlight--active {
+  animation: wheel-sector-blink 0.4s ease-in-out 3;
+  animation-fill-mode: forwards;
+}
+
+.wheel-sector-highlight--locked {
+  opacity: 1;
+  filter: brightness(1.2);
+  animation: none;
+}
+
+@keyframes wheel-sector-blink {
+  0%,
+  100% {
+    opacity: 0.35;
+    filter: brightness(1);
+  }
+
+  50% {
+    opacity: 1;
+    filter: brightness(1.2);
+  }
 }
 </style>

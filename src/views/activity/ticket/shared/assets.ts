@@ -9,6 +9,7 @@ import wheelPointerGo from '@/static/img/lucky-spin/wheel/wheel-pointer-go.png'
 import wheelSegmentDark from '@/static/img/lucky-spin/wheel/wheel-segment-dark.png'
 import wheelSegmentLight from '@/static/img/lucky-spin/wheel/wheel-segment-light.png'
 import wheelShadow from '@/static/img/lucky-spin/wheel/wheel-shadow.png'
+import wheelSectorHighlight from '@/static/img/lucky-spin/wheel/wheel-sector-highlight.png'
 import gameCashVoucher from '@/static/img/lucky-spin/vouchers/game-cash-voucher.png'
 import gameGoldenEgg from '@/static/img/lucky-spin/vouchers/game-golden-egg.png'
 import gameLuckyRedEnvelope from '@/static/img/lucky-spin/vouchers/game-lucky-red-envelope.png'
@@ -21,7 +22,8 @@ export const LUCKY_SPIN_ASSETS = {
     pointerGo: wheelPointerGo,
     segmentLight: wheelSegmentLight,
     segmentDark: wheelSegmentDark,
-    shadow: wheelShadow
+    shadow: wheelShadow,
+    sectorHighlight: wheelSectorHighlight
   },
   modals: {
     heroCash,
