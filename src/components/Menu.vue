@@ -866,7 +866,12 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       name: t('menu.promotions'),
       icon: newSideIcons.promotionCenterIcon,
       groupKey: 'promotions',
-      handler: () => navigateTo('/promotions'),
+      handler: () => {
+        if (promotionsChildren.length > 0) {
+          return navigateTo('/promotions')
+        }
+        return
+      },
       children: promotionsChildren
     },
     {
