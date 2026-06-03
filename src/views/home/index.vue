@@ -297,11 +297,10 @@ import type { GameBrandItem, GameDataItem } from '@/api/interface/game'
 import type { CasinoLobbyButtonItem } from '@/composables/useCasinoTabButtons'
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import router from '@/router'
 import { useCasinoTabsStore } from '@/stores/casinoTabs'
 import { useGameStore, type HomeCollectionDisplayItem } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
-import { getStorageLanguageCode, stripLocalePrefix } from '@/utils/locale'
+import { getStorageLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { storeToRefs } from 'pinia'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
@@ -369,10 +368,7 @@ const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 
 const showH5HomePop = ref(true)
-const isActiveHomeRoute = computed(() => stripLocalePrefix(router.currentRoute.value.path) === '/')
-const shouldShowH5HomePop = computed(
-  () => isMobile.value && isActiveHomeRoute.value && showH5HomePop.value
-)
+const shouldShowH5HomePop = computed(() => isMobile.value && showH5HomePop.value)
 const gameData = ref<HomeGameSection[]>([])
 const rawGameData = ref<GameDataItem[]>([])
 const querySlideshowList = ref<QuerySlideshowItem[]>([])
