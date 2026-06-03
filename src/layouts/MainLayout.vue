@@ -109,6 +109,7 @@
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useCheckInModalStore } from '@/stores/checkInModal'
 import { useLayoutStore } from '@/stores/layout'
+import { usePromotionsStore } from '@/stores/promotions'
 import { useUserStore } from '@/stores/user'
 import {
   DEFAULT_LOCALE,
@@ -129,6 +130,7 @@ import { CheckInPopup, useCheckInAutoPopup } from '@/views/activity/check-in'
 
 const layoutStore = useLayoutStore()
 const userStore = useUserStore()
+const promotionsStore = usePromotionsStore()
 const checkInModalStore = useCheckInModalStore()
 const { visible: checkInVisible } = storeToRefs(checkInModalStore)
 const topNavRef = ref<InstanceType<typeof TopNav> | null>(null)
@@ -456,6 +458,8 @@ const isFullscreenRoute = computed(() => route.meta?.fullScreen === true)
 onMounted(() => {
   lastResolvedDeviceMode.value = isMobile.value
   hasViewportModeInitialized.value = true
+  // 进站即拉分组，侧栏 Promotions 子菜单
+  void promotionsStore.loadGroups()
 })
 
 const hideBottomBar = computed(() => {

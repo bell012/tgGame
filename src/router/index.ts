@@ -767,6 +767,34 @@ const baseRoutes: RouteRecordRaw[] = [
         hideTopNav: true
       }
     }
+  },
+  {
+    path: 'promotions/:groupCode/:activityId',
+    name: 'promotionsDetail',
+    component: () => import('@/views/activity/promotions/detail/index.vue'),
+    meta: {
+      title: '活动详情',
+      description: '活动详情',
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'promotions/:groupCode?',
+    name: 'promotionsList',
+    component: () => import('@/views/activity/promotions/list/index.vue'),
+    meta: {
+      title: '活动中心',
+      description: '活动中心',
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
   }
 ]
 

@@ -14,7 +14,70 @@ export interface ActivityApiResponse<TResult = unknown> {
 export interface QueryActivityListForm {
   size: number
   current: number
+  groupCode?: string
+  activityId?: number
+  activityName?: string
+  type?: number
+  status?: number[]
+  timeStart?: number
+  timeEnd?: number
 }
+
+/**
+ * 活动分组分页查询（新版活动 API §1）
+ */
+export interface QueryActivityGroupPageForm {
+  current?: number
+  size?: number
+  timeStart?: number
+  timeEnd?: number
+  activityGroupId?: number
+  activityGroupCode?: string
+}
+
+/**
+ * 活动分组项
+ */
+export interface ActivityGroupItem {
+  rowId?: number
+  groupCode?: string
+  groupName?: ActivityLanguageTextItem[]
+  sortNo?: number
+  defaultIcon?: string
+  activeIcon?: string
+  /** 0-禁用，1-启用 */
+  enable?: number
+  site?: string
+  updateTime?: number
+  modifyBy?: string
+  activityCount?: number
+  /** false-新版分组，true-旧版分组 */
+  legacyGroup?: boolean
+}
+
+/**
+ * 活动跳转配置
+ * type: 1-外部跳转，2-内部跳转
+ * method: 1-弹窗式，2-二级详情页
+ */
+export interface ActivityJumpConfig {
+  type?: number
+  method?: number
+  url?: string
+}
+
+/**
+ * 活动分组分页结果
+ */
+export interface QueryActivityGroupPageResult {
+  current?: number
+  pages?: number
+  records?: ActivityGroupItem[]
+  size?: number
+  total?: number
+}
+
+export interface QueryActivityGroupPageResponse extends ActivityApiResponse<QueryActivityGroupPageResult> {}
 
 /**
  * 活动多语言名称项
@@ -58,26 +121,44 @@ export interface CheckInActivityCurrencyConfig {
 }
 
 /**
- * 活动列表项
+ * 活动列表项（新版活动 API §2）
  */
 export interface ActivityListItem {
+  rowId?: number
+  type?: number
+  groupCode?: string
   activiName?: string
   activityDesc?: ActivityLanguageTextItem[]
   activityName?: ActivityLanguageTextItem[]
-  channel?: string
-  config?: Record<string, CheckInActivityCurrencyConfig | undefined>
   currencyList?: string[]
-  endDate?: number
-  ended?: boolean
-  homeDisplay?: number
-  loginAfterPopWay?: number
-  loginBeforePopWay?: number
-  rowId?: number
-  sortNo?: number
   startDate?: number
+  endDate?: number
+  channel?: string
+  level?: number[]
+  memberIds?: string[]
+  vipLevel?: number[]
+  limit?: number[]
+  /** 1-内部详情页，2-URL跳转 */
+  jumpType?: number
+  jumpConfig?: ActivityJumpConfig
+  homeDisplay?: number
+  loginBeforePopWay?: number
+  loginAfterPopWay?: number
+  homePopUpUrl?: string
+  homeLogo?: string
+  homeLogoType?: number
+  preImage?: string
+  /** "0"-关闭，"1"-开启 */
+  applySwitch?: string
+  config?: Record<string, CheckInActivityCurrencyConfig | undefined>
+  sortNo?: number
+  isTop?: number
   status?: number
-  type?: number
+  site?: string
+  createTime?: number
   updateTime?: number
+  modifyBy?: string
+  ended?: boolean
   [key: string]: unknown
 }
 
@@ -193,7 +274,8 @@ export interface MbTicketListForm {
   rowId?: number // 票券记录ID
   name?: string // 票券名称
   languageCode?: string // 语言编码
-  type?: number // 票券类型：1现金兑换卷 2幸运红包卷 3砸金蛋票券 4大转盘票券 5拼多多票券(预留) 6盲盒票券
+  type?: number // 票券类型：1现金票券 Cash Voucher 2红包票券 Red Packet Voucher 3砸金蛋票券 Golden Egg Voucher
+  // 4转盘票券 Lucky Spin Voucher 6盲盒票券  Mystery Box Voucher
   distributionType?: number // 派发方式  0直接派发  1联动派发
   unusedTicketPopWay?: number // 未使用票券弹窗方式  0不弹窗 1每日一次 2每次登录 3只弹一次 4高频弹窗
   status?: number // 票券记录状态列表  0草稿  1发行中  2已停发  3过期
@@ -223,7 +305,8 @@ export interface RecordForm {
   rowId?: number // 票券记录ID
   name?: string // 票券名称
   languageCode?: string // 语言编码
-  type?: number // 票券类型：1现金兑换卷 2幸运红包卷 3砸金蛋票券 4大转盘票券 5拼多多票券(预留) 6盲盒票券
+  type?: number // 票券类型：1现金票券 Cash Voucher 2红包票券 Red Packet Voucher 3砸金蛋票券 Golden Egg Voucher
+  // 4转盘票券 Lucky Spin Voucher 6盲盒票券  Mystery Box Voucher
   distributionType?: number // 派发方式  0直接派发  1联动派发
   unusedTicketPopWay?: number // 未使用票券弹窗方式  0不弹窗 1每日一次 2每次登录 3只弹一次 4高频弹窗
   status?: number // 票券记录状态列表  0草稿  1发行中  2已停发  3过期
@@ -252,6 +335,7 @@ export interface RecordResult {
       createTime: number
       distributionType: number
       expireTime: number
+      languageInfo: [{ description: string; imageUrl: string; languageCode: string; name: string }]
       memberId: string
       memberRowId: number
       operateTime: number
@@ -263,6 +347,7 @@ export interface RecordResult {
       ticketId: number
       ticketName: string
       ticketType: number
+      useTime: number
     }
   ]
   size: number

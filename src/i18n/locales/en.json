@@ -1546,6 +1546,12 @@
       "reminderTitle": "Kind Reminder"
     }
   },
+  "activityPromotions": {
+    "title": "Promotions",
+    "detailTitle": "Promotion Details",
+    "empty": "No data available at the moment.",
+    "notFound": "Promotion not found"
+  },
   "menu": {
     "crypto-account": "Crypto Account",
     "game-categories": "Casino",
@@ -1558,7 +1564,7 @@
     "mystery-box": "Mystery Box",
     "lucky-spin": "Lucky Spin",
     "task-center": "Task Center",
-    "promotion-center": "Promotions Center",
+    "promotions": "Promotions",
     "red-envelope-event": "Red Envelope Event",
     "credit-loan": "Credit Loan",
     "lottery-event": "Lottery Event",
@@ -1662,6 +1668,14 @@
     "voucherHistory": "Voucher History",
     "validFrom": "Valid From",
     "expiresIn": "Expires In",
-    "useNow": "Use Now"
+    "useNow": "Use Now",
+    "totalBonusWon": "Total Bonus Won",
+    "usedAt": "Used At",
+    "type": "Type",
+    "cashVoucher": "Cash Voucher",
+    "redPacketVoucher": "Red Packet Voucher",
+    "goldenEggVoucher": "Golden Egg Voucher",
+    "luckySpinVoucher": "Lucky Spin Voucher",
+    "mysteryBoxVoucher": "Mystery Box Voucher"
   }
 }
