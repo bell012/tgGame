@@ -1,14 +1,39 @@
-import type { TicketGameId, TicketVoucherFooterData } from '../../shared/types'
+import type { TicketGameId, TicketVoucherFooterData, VoucherGameItem } from '../../shared/types'
 import { getGameIcon } from '../../shared/constants'
 import { getTicketModalTheme } from '../../shared/design-tokens'
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 
-const VISIBLE_COUNT = 5
+export const VOUCHER_GRID_COLUMNS = 5
+
+export interface VoucherGridSlot extends VoucherGameItem {
+  isPlaceholder?: boolean
+  gameIndex?: number
+}
+
+export const buildVoucherGridSlots = (games: VoucherGameItem[]): VoucherGridSlot[] => {
+  const slots: VoucherGridSlot[] = games.map((item, gameIndex) => ({
+    ...item,
+    gameIndex,
+    isPlaceholder: false
+  }))
+
+  const remainder = slots.length % VOUCHER_GRID_COLUMNS
+  if (remainder > 0) {
+    for (let i = 0; i < VOUCHER_GRID_COLUMNS - remainder; i++) {
+      slots.push({
+        id: `voucher-grid-placeholder-${slots.length}`,
+        isPlaceholder: true
+      })
+    }
+  }
+
+  return slots
+}
 
 export function useTicketVoucherSwitcher(props: TicketVoucherFooterData) {
-  const startIndex = ref(0)
-
   const resolveIcon = (item: { id: string; icon?: string }) => item.icon ?? getGameIcon(item.id)
+
+  const gridSlots = computed(() => buildVoucherGridSlots(props.games))
 
   const activeItemStyle = computed(() => {
     const gameId = (props.activeGameId ??
@@ -21,29 +46,13 @@ export function useTicketVoucherSwitcher(props: TicketVoucherFooterData) {
     }
   })
 
-  const visibleItems = computed(() => {
-    const end = Math.min(startIndex.value + VISIBLE_COUNT, props.games.length)
-    return props.games.slice(startIndex.value, end)
-  })
-
-  watch(
-    () => props.activeIndex,
-    index => {
-      if (index < startIndex.value) {
-        startIndex.value = Math.max(0, index)
-      } else if (index >= startIndex.value + VISIBLE_COUNT) {
-        startIndex.value = Math.max(0, index - VISIBLE_COUNT + 1)
-      }
-    }
-  )
-
-  const isActive = (index: number) => index === props.activeIndex
+  const isSlotActive = (slot: VoucherGridSlot) =>
+    !slot.isPlaceholder && slot.gameIndex === props.activeIndex
 
   return {
-    startIndex,
+    gridSlots,
     resolveIcon,
     activeItemStyle,
-    visibleItems,
-    isActive
+    isSlotActive
   }
 }

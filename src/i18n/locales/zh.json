@@ -1613,6 +1613,8 @@
     }
   },
   "ticketPage": {
+    "noVoucherForActivity": "您暂无该活动的可用票券",
+    "mbTicketListFailed": "票券列表加载失败，请稍后重试",
     "goldenEgg": {
       "title": "您获得了砸金蛋",
       "expiresIn": "砸金蛋过期倒计时"

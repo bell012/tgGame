@@ -1,67 +1,32 @@
 <template>
   <div :class="variant === 'grid' ? 'mt-4' : ''">
-    <!-- Carousel (mobile) -->
-    <div v-if="variant === 'carousel'" class="flex items-center justify-center gap-1">
-      <button
-        type="button"
-        class="flex h-8 w-6 shrink-0 items-center justify-center text-[20px] text-common-40"
-        :aria-label="t('luckySpinPage.prev')"
-        @click="emit('prev')"
-      >
-        ‹
-      </button>
-
-      <div class="flex flex-1 items-end justify-center gap-[6px]">
+    <div
+      v-if="gridSlots.length"
+      class="grid w-full grid-cols-5 gap-2"
+      :class="variant === 'grid' ? 'max-w-[332px]' : 'mx-auto max-w-[340px]'"
+    >
+      <template v-for="slot in gridSlots" :key="slot.id">
         <button
-          v-for="(item, index) in visibleItems"
-          :key="item.id"
+          v-if="!slot.isPlaceholder"
           type="button"
-          class="flex shrink-0 items-center justify-center rounded-[8px] transition-all"
-          :class="
-            index + startIndex === activeIndex
-              ? 'h-[68px] w-[60px] border-2'
-              : 'h-[57px] w-[50px] border-2 border-transparent opacity-75'
-          "
-          :style="index + startIndex === activeIndex ? activeItemStyle : undefined"
-          :aria-label="item.label"
-          @click="emit('select', index + startIndex)"
+          class="flex h-[60px] w-full items-center justify-center rounded-[10px] border-2 transition-all"
+          :class="isSlotActive(slot) ? 'opacity-100' : 'border-transparent opacity-75'"
+          :style="isSlotActive(slot) ? activeItemStyle : undefined"
+          :aria-label="slot.label"
+          @click="slot.gameIndex != null && emit('select', slot.gameIndex)"
         >
           <img
-            :src="resolveIcon(item)"
-            :alt="item.label ?? item.id"
-            class="h-full w-full object-contain"
+            :src="resolveIcon(slot)"
+            :alt="slot.label ?? slot.id"
+            class="h-[80%] w-[80%] max-h-[48px] max-w-[48px] object-contain"
           />
         </button>
-      </div>
-
-      <button
-        type="button"
-        class="flex h-8 w-6 shrink-0 items-center justify-center text-[20px] text-common-40"
-        :aria-label="t('luckySpinPage.next')"
-        @click="emit('next')"
-      >
-        ›
-      </button>
-    </div>
-
-    <!-- Grid (PC) -->
-    <div v-else class="grid grid-cols-5 gap-2">
-      <button
-        v-for="(item, index) in games"
-        :key="item.id"
-        type="button"
-        class="flex aspect-square items-center justify-center rounded-[10px] border-2 transition-all"
-        :class="isActive(index) ? 'opacity-100' : 'border-transparent opacity-75'"
-        :style="isActive(index) ? activeItemStyle : undefined"
-        :aria-label="item.label"
-        @click="emit('select', index)"
-      >
-        <img
-          :src="resolveIcon(item)"
-          :alt="item.label ?? item.id"
-          class="h-[80%] w-[80%] object-contain"
+        <div
+          v-else
+          class="h-[60px] w-full rounded-[10px] border-2 border-transparent"
+          aria-hidden="true"
         />
-      </button>
+      </template>
     </div>
 
     <button
@@ -101,6 +66,5 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { startIndex, resolveIcon, activeItemStyle, visibleItems, isActive } =
-  useTicketVoucherSwitcher(props)
+const { gridSlots, resolveIcon, activeItemStyle, isSlotActive } = useTicketVoucherSwitcher(props)
 </script>

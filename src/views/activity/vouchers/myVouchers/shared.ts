@@ -1,12 +1,17 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
-import type { MbTicketListResult } from '@/api/interface/activity'
+import type { MbTicketRecord } from '@/api/interface/activity'
 import { formatTimestamp } from '@/utils/date'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { openLuckySpin } from '@/utils/openLuckySpin'
 import { openTicketActivity } from '@/utils/openTicketActivity'
-import type { TicketGameId } from '@/views/activity/ticket/types'
+import {
+  normalizeLanguageCode,
+  normalizeMbTicketRecords,
+  resolveLanguageInfo,
+  TICKET_TYPE_TO_GAME_ID
+} from '@/views/activity/ticket/shared/mbTicketMapper'
 import voucherIcon1 from '@/static/img/vouchers/icon1.png'
 import voucherIcon2 from '@/static/img/vouchers/icon2.png'
 import voucherIcon3 from '@/static/img/vouchers/icon3.png'
@@ -15,18 +20,7 @@ import voucherIcon6 from '@/static/img/vouchers/icon6.png'
 
 export const MY_VOUCHERS_PAGE_SIZE = 10
 
-interface VoucherLanguageInfoItem {
-  description?: string
-  imageUrl?: string
-  languageCode?: string
-  name?: string
-}
-
-export type VoucherRecord = Partial<MbTicketListResult> & {
-  endUseTime?: number
-  expireTime?: number
-  languageInfo?: VoucherLanguageInfoItem[]
-}
+export type VoucherRecord = MbTicketRecord
 
 export interface VoucherItem {
   id: string
@@ -48,71 +42,8 @@ const VOUCHER_ICON_MAP: Record<number, string> = {
   6: voucherIcon6
 }
 
-const VOUCHER_GAME_ID_MAP: Partial<Record<number, TicketGameId>> = {
-  1: 'cash_voucher',
-  2: 'lucky_red_envelope',
-  3: 'golden_egg',
-  4: 'lucky_spin',
-  5: 'mystery_box',
-  6: 'mystery_box'
-}
-
 const normalizeText = (value: unknown) => String(value ?? '').trim()
-const normalizeLanguageCode = (value: unknown) => normalizeText(value).toLowerCase()
 const padTimeUnit = (value: number) => String(Math.max(0, Math.floor(value))).padStart(2, '0')
-
-const isSameLanguageCode = (sourceLanguageCode: unknown, currentLanguageCode: string) => {
-  const normalizedSourceLanguageCode = normalizeLanguageCode(sourceLanguageCode)
-
-  if (!normalizedSourceLanguageCode) {
-    return false
-  }
-
-  if (normalizedSourceLanguageCode === currentLanguageCode) {
-    return true
-  }
-
-  if (currentLanguageCode === 'eng') {
-    return normalizedSourceLanguageCode === 'en'
-  }
-
-  if (currentLanguageCode === 'zh') {
-    return normalizedSourceLanguageCode === 'zh-cn' || normalizedSourceLanguageCode === 'zh_cn'
-  }
-
-  return normalizedSourceLanguageCode.startsWith(currentLanguageCode)
-}
-
-/** 兼records 数组或数组本身，统一转成列表。 */
-const normalizeVoucherRecords = (result: unknown): VoucherRecord[] => {
-  if (Array.isArray(result)) {
-    return result as VoucherRecord[]
-  }
-
-  if (!result || typeof result !== 'object') {
-    return []
-  }
-
-  const container = result as {
-    records?: unknown
-    list?: unknown
-    data?: unknown
-  }
-
-  if (Array.isArray(container.records)) {
-    return container.records as VoucherRecord[]
-  }
-
-  if (Array.isArray(container.list)) {
-    return container.list as VoucherRecord[]
-  }
-
-  if (Array.isArray(container.data)) {
-    return container.data as VoucherRecord[]
-  }
-
-  return [result as VoucherRecord]
-}
 
 /** 票券结束时间，优先使用 endUseTime，没有时回退到 expireTime。 */
 const getVoucherEndUseTime = (record: VoucherRecord): number => {
@@ -123,21 +54,6 @@ const getVoucherEndUseTime = (record: VoucherRecord): number => {
 
   const expireTime = Number(record.expireTime)
   return Number.isFinite(expireTime) && expireTime > 0 ? expireTime : 0
-}
-
-/** 根据当前站点语言，从 languageInfo 中优先挑选匹配项。 */
-const resolveLanguageInfo = (
-  languageInfo: VoucherLanguageInfoItem[] | undefined,
-  currentLanguageCode: string
-) => {
-  if (!Array.isArray(languageInfo) || languageInfo.length === 0) {
-    return undefined
-  }
-
-  return (
-    languageInfo.find(item => isSameLanguageCode(item.languageCode, currentLanguageCode)) ??
-    languageInfo[0]
-  )
 }
 
 /** 将结束时间转成倒计时；如果已过期或时间非法，按需求显示 99:99:99。 */
@@ -212,7 +128,7 @@ export const useMyVouchersPage = () => {
         throw new Error(response.message || t('common.requestError'))
       }
 
-      voucherRecords.value = normalizeVoucherRecords(response.result)
+      voucherRecords.value = normalizeMbTicketRecords(response.result)
     } catch (requestError) {
       error.value = requestError
     } finally {
@@ -220,9 +136,13 @@ export const useMyVouchersPage = () => {
     }
   }
 
-  /** 根据票券类型打开票卷 */
+  /** 根据票券类型打开票卷（type 5 拼多多为预留，无玩法入口） */
   const handleUseNow = (item: VoucherItem) => {
-    const gameId = VOUCHER_GAME_ID_MAP[item.type]
+    if (item.type === 5) {
+      return
+    }
+
+    const gameId = TICKET_TYPE_TO_GAME_ID[item.type]
 
     if (!gameId) {
       return

@@ -1621,6 +1621,8 @@
     }
   },
   "ticketPage": {
+    "noVoucherForActivity": "You don't have a voucher for this activity",
+    "mbTicketListFailed": "Failed to load vouchers. Please try again.",
     "goldenEgg": {
       "title": "You got Golden Egg",
       "expiresIn": "Golden Egg expires in"

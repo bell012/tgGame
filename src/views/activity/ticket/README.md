@@ -730,12 +730,37 @@ interface LuckySpinVoucherCardData {
 }
 ```
 
+### 打开活动前校验（`openTicketActivity`）
+
+业务入口应使用 [`openTicketActivity`](../../../utils/openTicketActivity.ts)，不要直接 `openTicketToast`（调试除外）。
+
+1. 登录校验通过后请求 `mbTicketList({ languageCode })`
+2. 按 `type` → `TicketGameId` 筛选目标玩法；**无匹配** → Toast `ticketPage.noVoucherForActivity`，不打开弹窗
+3. **有 1 条或多条** → 取 `result` 数组**第一条**写入 `globalTicketToastState.activeTicketRecord`，整表写入 `mbTicketRecords`，再 `openTicketToast`
+4. 列表请求失败 → Toast `ticketPage.mbTicketListFailed`，不打开
+
+弹窗内 `queryLuckySpinInfo` / `doLuckySpin` 通过 `getActiveTicketParams()` 携带当前票的 `ticketId`、`rowId`。券种条切换玩法时 `switchTicketGame` 会更新为该玩法的第一条票券。
+
 ### 后端接口 `Api.activity`
 
-| 方法                   | 说明                                                     |
-| ---------------------- | -------------------------------------------------------- |
-| `queryLuckySpinInfo()` | 活动信息：奖品、任务、剩余次数、Footer 游戏列表          |
-| `doLuckySpin()`        | 执行一次抽奖，返回 `prizeIndex` + `prize` (+ `vouchers`) |
+| 方法                                        | 说明                                           |
+| ------------------------------------------- | ---------------------------------------------- |
+| `queryLuckySpinInfo({ ticketId?, rowId? })` | 活动主体（使用 `activeTicketRecord`）          |
+| `mbTicketList({ languageCode })`            | 打开前校验 + 券种条数据（仅传 `languageCode`） |
+| `doLuckySpin({ ticketId?, rowId? })`        | 执行一次抽奖                                   |
+
+券种条映射见 `shared/mbTicketMapper.ts`：按 `result[]` 中票券 `type` 去重后动态生成图标列表，顺序遵循 `TICKET_GAME_DISPLAY_ORDER`。
+
+| type | 含义       | 活动 `TicketGameId`                    |
+| ---- | ---------- | -------------------------------------- |
+| 1    | 现金兑换卷 | `cash_voucher`                         |
+| 2    | 幸运红包卷 | `lucky_red_envelope`                   |
+| 3    | 砸金蛋票券 | `golden_egg`                           |
+| 4    | 大转盘票券 | `lucky_spin`                           |
+| 5    | 拼多多票券 | 预留，不映射；计入张数，不出现在券种条 |
+| 6    | 盲盒票券   | `mystery_box`                          |
+
+`totalVouchers` 为 `result` 数组长度（含 type 5）；仅 type 1–4、6 会按 `languageInfo` 更新对应玩法图标。
 
 Mock：`src/api/mock/luckySpin.ts`
 
@@ -805,9 +830,12 @@ import { openTicketResultDialog } from '@/views/activity/ticket'
 
 ## 变更记录
 
-| 日期       | 说明                                                                          |
-| ---------- | ----------------------------------------------------------------------------- |
-| 2026-06-01 | 初版：GlobalTicketToast + 大转盘 + 4 活动空壳                                 |
-| 2026-06-02 | 目录四层拆分；子弹窗全局 state 化；结果弹窗拆 Hero / Cards                    |
-| 2026-06-02 | 重写文档：补充 5 种活动打开方式 + 全部子弹窗示例代码                          |
-| 2026-06-02 | PC 双栏活动页、`TicketVoucherSwitcher`、任务提醒引导文案与 `TICKET_PC_TOKENS` |
+| 日期       | 说明                                                                             |
+| ---------- | -------------------------------------------------------------------------------- |
+| 2026-06-01 | 初版：GlobalTicketToast + 大转盘 + 4 活动空壳                                    |
+| 2026-06-02 | 目录四层拆分；子弹窗全局 state 化；结果弹窗拆 Hero / Cards                       |
+| 2026-06-02 | 重写文档：补充 5 种活动打开方式 + 全部子弹窗示例代码                             |
+| 2026-06-02 | PC 双栏活动页、`TicketVoucherSwitcher`、任务提醒引导文案与 `TICKET_PC_TOKENS`    |
+| 2026-06-03 | 券种条接入 `mbTicketList({ languageCode })`，与 `queryLuckySpinInfo` 并行加载    |
+| 2026-06-03 | 修正票券 type 映射：6→盲盒，5 拼多多预留不参与券种条                             |
+| 2026-06-03 | `openTicketActivity` 打开前 mbTicketList 校验；`activeTicketRecord` 传参玩法接口 |

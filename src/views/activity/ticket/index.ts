@@ -3,7 +3,10 @@ export {
   openTicketToast,
   closeTicketToast,
   switchTicketGame,
-  globalTicketToastState
+  globalTicketToastState,
+  setTicketSession,
+  clearTicketSession,
+  getActiveTicketParams
 } from './ticketToast'
 export {
   openTicketReminderDialog,

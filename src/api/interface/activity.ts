@@ -156,16 +156,44 @@ export interface QueryCheckInStatusForm {
  */
 export interface QueryCheckInStatusResponse extends ActivityApiResponse<QueryCheckInStatusResult> {}
 
+/** 票券多语言信息 */
+export interface MbTicketLanguageInfo {
+  description?: string
+  imageUrl?: string
+  languageCode?: string
+  name?: string
+}
+
+/** 我的票券单条记录（mbTicketList 数组元素） */
+export interface MbTicketRecord {
+  rowId?: number
+  ticketId?: number
+  type?: number
+  languageCodes?: string[]
+  languageInfo?: MbTicketLanguageInfo[]
+  receiveTime?: number
+  effectTime?: number
+  expireTime?: number
+  endUseTime?: number
+  status?: number
+  createTime?: number
+  enableTrigger?: number
+  homeDisplay?: number
+  unusedTicketPopWay?: number
+  site?: string
+  goldenEggConfig?: Array<{ amount: number; probability: number; type: number }>
+  platformGameCodes?: string[]
+}
+
 // 我的票卷 携带参数
 export interface MbTicketListForm {
-  current: number // 当前页，默认 `1`
-  size: number // 每页条数，默认 `10`
+  current?: number // 当前页，默认 `1`
+  size?: number // 每页条数，默认 `10`
   ticketId?: number // 票券模板ID
   rowId?: number // 票券记录ID
   name?: string // 票券名称
   languageCode?: string // 语言编码
-  type?: number // 票券类型  1现金票券 Cash Voucher  2红包票券 Red Packet Voucher  3砸金蛋票券  Golden Egg Voucher
-  // 4转盘票券  Lucky Spin Voucher   6盲盒票券 Mystery Box Voucher
+  type?: number // 票券类型：1现金兑换卷 2幸运红包卷 3砸金蛋票券 4大转盘票券 5拼多多票券(预留) 6盲盒票券
   distributionType?: number // 派发方式  0直接派发  1联动派发
   unusedTicketPopWay?: number // 未使用票券弹窗方式  0不弹窗 1每日一次 2每次登录 3只弹一次 4高频弹窗
   status?: number // 票券记录状态列表  0草稿  1发行中  2已停发  3过期
@@ -181,35 +209,11 @@ export interface MbTicketListResponse {
   code: string
   message: string
   success: boolean
-  result?: MbTicketListResult
+  result?: MbTicketListResult | MbTicketRecord[]
 }
 
-// 我的票卷 响应结果
-export interface MbTicketListResult {
-  createTime: number
-  effectTime: number
-  enableTrigger: number
-  expireTime: number
-  goldenEggConfig: [{ amount: number; probability: number; type: number }]
-  homeDisplay: number
-  languageCodes: [string]
-  languageInfo: [
-    {
-      description: string
-      imageUrl: string
-      languageCode: string
-      name: string
-    }
-  ]
-  platformGameCodes: [string]
-  receiveTime: number
-  rowId: number
-  site: string
-  status: number
-  ticketId: number
-  type: number
-  unusedTicketPopWay: number
-}
+/** @deprecated 使用 MbTicketRecord；保留别名兼容旧引用 */
+export type MbTicketListResult = MbTicketRecord
 
 // 票卷记录 携带参数
 export interface RecordForm {
@@ -219,8 +223,7 @@ export interface RecordForm {
   rowId?: number // 票券记录ID
   name?: string // 票券名称
   languageCode?: string // 语言编码
-  type?: number // 票券类型  1现金票券 Cash Voucher  2红包票券 Red Packet Voucher  3砸金蛋票券  Golden Egg Voucher
-  // 4转盘票券  Lucky Spin Voucher   6盲盒票券 Mystery Box Voucher
+  type?: number // 票券类型：1现金兑换卷 2幸运红包卷 3砸金蛋票券 4大转盘票券 5拼多多票券(预留) 6盲盒票券
   distributionType?: number // 派发方式  0直接派发  1联动派发
   unusedTicketPopWay?: number // 未使用票券弹窗方式  0不弹窗 1每日一次 2每次登录 3只弹一次 4高频弹窗
   status?: number // 票券记录状态列表  0草稿  1发行中  2已停发  3过期

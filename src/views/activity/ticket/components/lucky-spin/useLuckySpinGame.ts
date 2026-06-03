@@ -1,15 +1,60 @@
 import Api from '@/api'
+import { getLanguageCode } from '@/utils/locale'
+import {
+  fetchMbTicketListRecords,
+  findMbTicketsByGameId,
+  mapMbTicketListToFooter
+} from '../../shared/mbTicketMapper'
 import type { LuckySpinInfoResult, LuckySpinResult } from '../../shared/types'
 import {
   closeTicketDialog,
   openTicketReminderDialog,
   openTicketResultDialog
 } from '../../shell/ticketDialog'
-import { closeTicketToast } from '../../shell/ticketToast'
-import { showToast } from 'vant'
+import {
+  closeTicketToast,
+  getActiveTicketParams,
+  globalTicketToastState
+} from '../../shell/ticketToast'
+import { globalShowToast } from '@/utils/toast'
 import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+
+const buildFallbackFooter = () => ({
+  games: [] as LuckySpinInfoResult['voucherGames'],
+  totalVouchers: 0
+})
+
+const fetchVoucherFooter = async () => {
+  const languageCode = getLanguageCode()
+  const cachedRecords = globalTicketToastState.mbTicketRecords
+
+  if (cachedRecords.length > 0) {
+    return mapMbTicketListToFooter(cachedRecords, languageCode)
+  }
+
+  try {
+    const records = await fetchMbTicketListRecords(languageCode)
+    globalTicketToastState.mbTicketRecords = records
+    return mapMbTicketListToFooter(records, languageCode)
+  } catch {
+    // mbTicketList 失败不阻断活动页
+  }
+
+  return buildFallbackFooter()
+}
+
+const refreshTicketSessionAfterList = (
+  records: Awaited<ReturnType<typeof fetchMbTicketListRecords>>
+) => {
+  globalTicketToastState.mbTicketRecords = records
+  const matches = findMbTicketsByGameId(records, globalTicketToastState.gameId)
+
+  if (matches.length > 0) {
+    globalTicketToastState.activeTicketRecord = matches[0]!
+  }
+}
 
 export interface LuckySpinWheelExpose {
   stopAt: (index: number) => void
@@ -49,10 +94,18 @@ export const useLuckySpinGame = (
     loadError.value = false
 
     try {
-      const response = await Api.activity.queryLuckySpinInfo()
-      if (response.success && response.result) {
-        spinInfo.value = response.result
-        syncActiveGameIndex(response.result)
+      const [spinResponse, footer] = await Promise.all([
+        Api.activity.queryLuckySpinInfo(getActiveTicketParams()),
+        fetchVoucherFooter()
+      ])
+
+      if (spinResponse.success && spinResponse.result) {
+        spinInfo.value = {
+          ...spinResponse.result,
+          voucherGames: footer.games,
+          totalVouchers: footer.totalVouchers
+        }
+        syncActiveGameIndex(spinInfo.value, globalTicketToastState.gameId)
         return
       }
 
@@ -118,13 +171,12 @@ export const useLuckySpinGame = (
     isSpinning.value = true
 
     try {
-      const response = await Api.activity.doLuckySpin()
+      const response = await Api.activity.doLuckySpin(getActiveTicketParams())
       if (!response.success || !response.result) {
         isSpinning.value = false
         wheelRef.value?.init()
-        showToast({
+        globalShowToast({
           message: t('luckySpinPage.loadFailed'),
-          position: 'middle',
           type: 'fail'
         })
         return
@@ -135,9 +187,8 @@ export const useLuckySpinGame = (
     } catch {
       isSpinning.value = false
       wheelRef.value?.init()
-      showToast({
+      globalShowToast({
         message: t('luckySpinPage.loadFailed'),
-        position: 'middle',
         type: 'fail'
       })
     }
@@ -151,10 +202,28 @@ export const useLuckySpinGame = (
     }
 
     try {
-      const response = await Api.activity.queryLuckySpinInfo()
-      if (response.success && response.result && spinInfo.value) {
-        spinInfo.value.remainingSpins = response.result.remainingSpins
-        spinInfo.value.totalVouchers = response.result.totalVouchers
+      const languageCode = getLanguageCode()
+      const [spinResponse, records] = await Promise.all([
+        Api.activity.queryLuckySpinInfo(getActiveTicketParams()),
+        fetchMbTicketListRecords(languageCode).catch(() => null)
+      ])
+
+      if (records) {
+        refreshTicketSessionAfterList(records)
+      }
+
+      const footer =
+        records != null
+          ? mapMbTicketListToFooter(records, languageCode)
+          : await fetchVoucherFooter()
+
+      if (spinInfo.value) {
+        spinInfo.value.voucherGames = footer.games
+        spinInfo.value.totalVouchers = footer.totalVouchers
+      }
+
+      if (spinResponse.success && spinResponse.result && spinInfo.value) {
+        spinInfo.value.remainingSpins = spinResponse.result.remainingSpins
       }
     } catch {
       // ignore refresh failure

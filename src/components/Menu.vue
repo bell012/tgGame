@@ -456,7 +456,6 @@ import { useLocaleStore } from '@/stores/locale'
 import { useThemeStore } from '@/stores/theme'
 import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
-import { openLuckySpin } from '@/utils/openLuckySpin'
 import { openTicketActivity } from '@/utils/openTicketActivity'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
 import LanguagePopup from '@/views/settings/preferences/language-popup.vue'
@@ -789,32 +788,27 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
           {
             id: 'cash-voucher',
             name: t('menu.cash-voucher'),
-            icon: newSideIcons.cashVoucherIcon,
-            handler: () => openTicketActivity('cash_voucher')
+            icon: newSideIcons.cashVoucherIcon
           },
           {
             id: 'lucky-red-envelope',
             name: t('menu.lucky-red-envelope'),
-            icon: newSideIcons.luckyRedEnvelopeIcon,
-            handler: () => openTicketActivity('lucky_red_envelope')
+            icon: newSideIcons.luckyRedEnvelopeIcon
           },
           {
             id: 'smash-golden-egg',
             name: t('menu.smash-golden-egg'),
-            icon: newSideIcons.smashGoldenEggIcon,
-            handler: () => openTicketActivity('golden_egg')
+            icon: newSideIcons.smashGoldenEggIcon
           },
           {
             id: 'mystery-box',
             name: t('menu.mystery-box'),
-            icon: newSideIcons.mysteryBoxIcon,
-            handler: () => openTicketActivity('mystery_box')
+            icon: newSideIcons.mysteryBoxIcon
           },
           {
             id: 'lucky-spin',
             name: t('menu.lucky-spin'),
-            icon: newSideIcons.luckySpinIcon,
-            handler: () => openLuckySpin()
+            icon: newSideIcons.luckySpinIcon
           }
         ]
       : []
@@ -857,7 +851,7 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => [
         id: 'lucky-wheel',
         name: t('menu.lucky-wheel'),
         icon: newSideIcons.luckyWheelIcon,
-        handler: () => openLuckySpin()
+        handler: () => openTicketActivity('lucky_spin')
       },
       {
         id: 'promo-code',
