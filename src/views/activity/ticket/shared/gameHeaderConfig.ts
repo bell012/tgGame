@@ -32,7 +32,7 @@ const GAME_HEADER_COPY: Record<
 
 export const buildGameHeader = (
   gameId: TicketGameId,
-  info: Pick<LuckySpinInfoResult, 'maxPrizeText' | 'endTime'>,
+  info: Pick<LuckySpinInfoResult, 'maxPrizeText'>,
   t: ComposerTranslation
 ): TicketModalHeaderData => {
   const copy = GAME_HEADER_COPY[gameId]
@@ -40,7 +40,6 @@ export const buildGameHeader = (
   return {
     title: copy.titleKey ? t(copy.titleKey) : (copy.title ?? ''),
     subtitle: t('luckySpinPage.subtitle', { amount: info.maxPrizeText }),
-    endTime: info.endTime,
     expiresLabel: copy.expiresKey ? t(copy.expiresKey) : copy.expires,
     theme: gameId
   }

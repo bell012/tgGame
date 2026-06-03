@@ -107,6 +107,23 @@ export const resolveLanguageInfo = (
   )
 }
 
+/** 当前语言下的票券文案（与我的票券卡片 title / description 一致） */
+export const getMbTicketLanguageCopy = (
+  record: MbTicketRecord | null | undefined,
+  languageCode: string
+) => {
+  if (!record) {
+    return { name: '', description: '' }
+  }
+
+  const languageInfo = resolveLanguageInfo(record.languageInfo, normalizeLanguageCode(languageCode))
+
+  return {
+    name: normalizeText(languageInfo?.name),
+    description: normalizeText(languageInfo?.description)
+  }
+}
+
 /** 按玩法筛选票券（保留 result 数组顺序） */
 export const findMbTicketsByGameId = (
   records: MbTicketRecord[],

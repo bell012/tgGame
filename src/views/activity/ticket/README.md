@@ -673,7 +673,7 @@ interface TicketVoucherSwitcherProps {
 // Emits
 select(index: number)
 prev() / next()              // 仅 carousel
-openVoucherList()
+openVoucherList()  // 关闭活动弹窗并跳转 /myVouchers
 ```
 
 ### 子弹窗 `shell/ticketDialog.ts`
@@ -740,6 +740,10 @@ interface LuckySpinVoucherCardData {
 4. 列表请求失败 → Toast `ticketPage.mbTicketListFailed`，不打开
 
 弹窗内 `queryLuckySpinInfo` / `doLuckySpin` 通过 `getActiveTicketParams()` 携带当前票的 `ticketId`、`rowId`。券种条点击第 i 格时 `switchTicketGame(gameId, mbTicketRecords[i])` 精确切换当前票。
+
+头部倒计时：仅 `ticket/shared/ticketActivityCountdown.ts`（与 `vouchers/myVouchers` 无引用关系）。`GlobalTicketToast` 取 `activeTicketRecord` 结束时间 → `TicketModalHeader` 格式化展示。
+
+副标题：`getMbTicketLanguageCopy` → `languageInfo.description`；无描述时回退 `luckySpinPage.subtitle` + `maxPrizeText`。
 
 ### 后端接口 `Api.activity`
 
