@@ -1643,6 +1643,7 @@
   "checkIn": {
     "title": "每日签到奖励",
     "subtitle": "每天签到即可领取奖励",
+    "promoStartsAt": "活动开始时间：{date}",
     "promoEndsAt": "活动截止时间：{date}",
     "action": "立即签到",
     "rewardSectionTitle": "签到奖励预览",

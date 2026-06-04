@@ -7,11 +7,17 @@ import type {
   QueryCheckInStatusResult
 } from '@/api/interface/activity'
 import { formatUsDateTime12h } from '@/utils/date'
+import { getCurrencySymbol } from '@/utils/locale'
 import cashIcon from '@/static/img/check-in/cash.png'
 import giftBoxClosed from '@/static/img/check-in/gift-box-closed.png'
 import giftBoxOpened from '@/static/img/check-in/gift-box-open.png'
 import giftBoxIcon from '@/static/img/check-in/gift-box.png'
 import goldenEggIcon from '@/static/img/check-in/golden-egg.png'
+import gameCashVoucherIcon from '@/static/img/lucky-spin/vouchers/game-cash-voucher.png'
+import gameGoldenEggIcon from '@/static/img/lucky-spin/vouchers/game-golden-egg.png'
+import gameLuckyRedEnvelopeIcon from '@/static/img/lucky-spin/vouchers/game-lucky-red-envelope.png'
+import gameLuckySpinIcon from '@/static/img/lucky-spin/vouchers/game-lucky-spin.png'
+import gameMysteryBoxIcon from '@/static/img/lucky-spin/vouchers/game-mystery-box.png'
 import checkInCloseButton from '@/static/img/check-in/popup-close.png'
 import checkInRulesButton from '@/static/img/check-in/popup-rules.png'
 import redPacketIcon from '@/static/img/check-in/red-packet.png'
@@ -24,6 +30,7 @@ export interface CheckInRewardItem {
   day: number
   amount: string
   icon: string
+  currencySymbol: string
   claimed?: boolean
   spanFull?: boolean
   cardStyle: CSSProperties
@@ -50,7 +57,10 @@ export type CheckInHeroReward = CheckInHeroAmountReward | CheckInHeroActionRewar
 
 export interface CheckInViewData {
   activityId?: number
+  title: string
+  subtitle: string
   promoEndsAt: string
+  promoDateTextKey: 'checkIn.promoStartsAt' | 'checkIn.promoEndsAt'
   rewards: CheckInRewardItem[]
   canClaim: boolean
   heroRewards: CheckInHeroReward[]
@@ -100,6 +110,22 @@ export const CHECK_IN_CLOSE_BUTTON = checkInCloseButton
 export const CHECK_IN_RULES_BUTTON = checkInRulesButton
 export const CHECK_IN_HERO_CLOSED = giftBoxClosed
 export const CHECK_IN_HERO_OPENED = giftBoxOpened
+
+export const normalizeCheckInLanguageCode = (languageCode?: string) => {
+  const normalizedLanguageCode = String(languageCode ?? '')
+    .trim()
+    .toLowerCase()
+
+  if (normalizedLanguageCode.startsWith('zh')) {
+    return 'zh'
+  }
+
+  if (normalizedLanguageCode === 'eng' || normalizedLanguageCode.startsWith('en')) {
+    return 'eng'
+  }
+
+  return normalizedLanguageCode
+}
 
 const CHECK_IN_REWARD_PRESETS: CheckInRewardPreset[] = [
   {
@@ -175,12 +201,12 @@ const CHECK_IN_REWARD_PRESETS: CheckInRewardPreset[] = [
 ]
 
 const CHECK_IN_TICKET_TYPE_ICON_MAP: Record<number, string> = {
-  1: cashIcon,
-  2: giftBoxIcon,
-  3: turntableIcon,
-  4: redPacketIcon,
-  5: giftBoxIcon,
-  6: goldenEggIcon
+  1: gameCashVoucherIcon,
+  2: gameLuckyRedEnvelopeIcon,
+  3: gameGoldenEggIcon,
+  4: gameLuckySpinIcon,
+  5: gameMysteryBoxIcon,
+  6: gameMysteryBoxIcon
 }
 
 const DEFAULT_REWARDS: CheckInRewardItem[] = [
@@ -198,21 +224,13 @@ const DEFAULT_REWARDS: CheckInRewardItem[] = [
     day: index + 1,
     amount,
     icon: preset.icon,
+    currencySymbol: getCurrencySymbol(),
     claimed: false,
     cardStyle: preset.cardStyle,
     iconShellStyle: preset.iconShellStyle,
     amountStyle: preset.amountStyle
   }
 })
-
-const normalizeLanguageCode = (languageCode?: string) => {
-  return String(languageCode ?? '')
-    .trim()
-    .toLowerCase()
-    .startsWith('zh')
-    ? 'zh'
-    : 'eng'
-}
 
 const toNumber = (value: unknown) => {
   const normalizedValue =
@@ -243,14 +261,14 @@ const resolveRewardIcon = (ticketType?: unknown, fallbackIndex = 0) => {
   return mappedIcon || CHECK_IN_REWARD_PRESETS[fallbackIndex % CHECK_IN_REWARD_PRESETS.length].icon
 }
 
-const resolveActivityCurrencyConfig = (
+const resolveActivityCurrencyContext = (
   activity?: ActivityListItem,
   currencyCode?: string
-): CheckInActivityCurrencyConfig | undefined => {
+): { config?: CheckInActivityCurrencyConfig; currencyCode?: string } => {
   const configMap = activity?.config
 
   if (!configMap) {
-    return undefined
+    return {}
   }
 
   const normalizedCurrencyCode = String(currencyCode ?? '')
@@ -258,32 +276,83 @@ const resolveActivityCurrencyConfig = (
     .toUpperCase()
 
   if (normalizedCurrencyCode && configMap[normalizedCurrencyCode]) {
-    return configMap[normalizedCurrencyCode]
+    return {
+      config: configMap[normalizedCurrencyCode],
+      currencyCode: normalizedCurrencyCode
+    }
   }
 
   const firstConfigCurrency = activity?.currencyList?.[0]
 
   if (firstConfigCurrency && configMap[firstConfigCurrency]) {
-    return configMap[firstConfigCurrency]
+    return {
+      config: configMap[firstConfigCurrency],
+      currencyCode: firstConfigCurrency
+    }
   }
 
-  return Object.values(configMap).find(Boolean)
+  const firstConfigEntry = Object.entries(configMap).find(([, config]) => Boolean(config))
+
+  return {
+    config: firstConfigEntry?.[1],
+    currencyCode: firstConfigEntry?.[0]
+  }
 }
 
 const resolveTicketLanguageName = (ticket?: CheckInTicketInfo, languageCode?: string) => {
-  const normalizedLanguageCode = normalizeLanguageCode(languageCode)
+  const normalizedLanguageCode = normalizeCheckInLanguageCode(languageCode)
 
   const matchedLanguageInfo = ticket?.languageInfo?.find(item => {
-    return normalizeLanguageCode(item.languageCode) === normalizedLanguageCode
+    return normalizeCheckInLanguageCode(item.languageCode) === normalizedLanguageCode
   })
 
   return matchedLanguageInfo?.name || ticket?.languageInfo?.[0]?.name || ''
 }
 
+export const resolveCheckInActivityDesc = (activity?: ActivityListItem, languageCode?: string) => {
+  const normalizedLanguageCode = normalizeCheckInLanguageCode(languageCode)
+
+  return activity?.activityDesc?.find(item => {
+    return normalizeCheckInLanguageCode(item.languageCode) === normalizedLanguageCode
+  })
+}
+
+const resolveCheckInActivityName = (activity?: ActivityListItem, languageCode?: string) => {
+  const normalizedLanguageCode = normalizeCheckInLanguageCode(languageCode)
+  const matchedActivityName = activity?.activityName?.find(item => {
+    return normalizeCheckInLanguageCode(item.languageCode) === normalizedLanguageCode
+  })
+
+  return activity?.activiName || matchedActivityName?.name || ''
+}
+
+const resolvePromoDateMeta = (activity: ActivityListItem, status: QueryCheckInStatusResult) => {
+  const startDate = status.startDate ?? activity.startDate
+  const endDate = status.endDate ?? activity.endDate
+  const normalizedStartDate = toNumber(startDate)
+  const isNotStarted = normalizedStartDate !== null && Date.now() < normalizedStartDate
+
+  return {
+    date: formatUsDateTime12h(isNotStarted ? startDate : endDate),
+    textKey: isNotStarted ? ('checkIn.promoStartsAt' as const) : ('checkIn.promoEndsAt' as const)
+  }
+}
+
+const isCheckInActivityClaimableNow = (
+  activity: ActivityListItem,
+  status: QueryCheckInStatusResult
+) => {
+  const startDate = toNumber(status.startDate ?? activity.startDate)
+  const isStarted = startDate === null || Date.now() >= startDate
+
+  return Number(activity.status) === 2 && isStarted && !status.todayIsSign
+}
+
 const createRewardItemFromConfig = (
   rewardConfig: CheckInActivitySignConfigItem,
   index: number,
-  claimed: boolean
+  claimed: boolean,
+  currencyCode?: string
 ): CheckInRewardItem => {
   const preset = CHECK_IN_REWARD_PRESETS[index % CHECK_IN_REWARD_PRESETS.length]
 
@@ -291,6 +360,7 @@ const createRewardItemFromConfig = (
     day: toNumber(rewardConfig.day) ?? index + 1,
     amount: formatRewardAmount(rewardConfig.rewardAmount),
     icon: resolveRewardIcon(rewardConfig.ticketType, index),
+    currencySymbol: getCurrencySymbol(currencyCode),
     claimed,
     cardStyle: preset.cardStyle,
     iconShellStyle: preset.iconShellStyle,
@@ -301,6 +371,18 @@ const createRewardItemFromConfig = (
 const resolveTodayHistoryRewards = (status?: QueryCheckInStatusResult) => {
   const historySign = status?.historySign ?? []
   const todayRewards = historySign.filter(item => item.todayIsSign)
+  const topLevelTodayReward: CheckInHistorySignItem | null = status?.todayIsSign
+    ? {
+        signDays: status.signDays,
+        ticket: status.ticket,
+        todayIsSign: true,
+        todaySignAmount: status.todaySignAmount
+      }
+    : null
+
+  if (topLevelTodayReward) {
+    return [topLevelTodayReward, ...todayRewards].slice(0, 2)
+  }
 
   if (todayRewards.length > 0) {
     return todayRewards.slice(0, 2)
@@ -352,7 +434,10 @@ const createSecondaryHeroReward = (
  */
 export const createDefaultCheckInViewData = (): CheckInViewData => {
   return {
+    title: 'Daily Check-in Rewards',
+    subtitle: 'Check in daily to claim rewards',
     promoEndsAt: '12/18/2026 11:14:15 AM',
+    promoDateTextKey: 'checkIn.promoEndsAt',
     rewards: DEFAULT_REWARDS,
     canClaim: false,
     heroRewards: [],
@@ -375,7 +460,10 @@ export const createCheckInViewData = (
     return createDefaultCheckInViewData()
   }
 
-  const resolvedConfig = resolveActivityCurrencyConfig(activity, options?.currencyCode)
+  const resolvedCurrencyContext = resolveActivityCurrencyContext(activity, options?.currencyCode)
+  const resolvedConfig = resolvedCurrencyContext.config
+  const activityDesc = resolveCheckInActivityDesc(activity, options?.languageCode)
+  const promoDateMeta = resolvePromoDateMeta(activity, status)
   const signConfigs = resolvedConfig?.sign ?? []
   const historySign = status.historySign ?? []
   const claimedDays = new Set(
@@ -399,18 +487,22 @@ export const createCheckInViewData = (
 
   return {
     activityId: activity.rowId,
-    promoEndsAt: formatUsDateTime12h(status.endDate ?? activity.endDate),
+    title: resolveCheckInActivityName(activity, options?.languageCode) || 'Daily Check-in Rewards',
+    subtitle: activityDesc?.name || 'Check in daily to claim rewards',
+    promoEndsAt: promoDateMeta.date,
+    promoDateTextKey: promoDateMeta.textKey,
     rewards:
       signConfigs.length > 0
         ? signConfigs.map((item, index) =>
             createRewardItemFromConfig(
               item,
               index,
-              claimedDays.has(toNumber(item.day) ?? index + 1)
+              claimedDays.has(toNumber(item.day) ?? index + 1),
+              resolvedCurrencyContext.currencyCode
             )
           )
         : DEFAULT_REWARDS,
-    canClaim: !status.todayIsSign,
+    canClaim: isCheckInActivityClaimableNow(activity, status),
     heroRewards,
     todayIsSign: Boolean(status.todayIsSign)
   }

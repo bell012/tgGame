@@ -15,6 +15,7 @@
       <CheckInMobileLayout
         v-if="isMobile"
         :view-data="viewData"
+        :loading="isContentLoading"
         @close="handleClose"
         @rules="$emit('rules')"
         @action="$emit('action')"
@@ -23,6 +24,7 @@
       <CheckInPcLayout
         v-else
         :view-data="viewData"
+        :loading="isContentLoading"
         @close="handleClose"
         @rules="$emit('rules')"
         @action="$emit('action')"
@@ -32,6 +34,7 @@
 </template>
 
 <script setup lang="ts">
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useUserStore } from '@/stores/user'
 import { getCurrentCurrency } from '@/utils/locale'
@@ -61,6 +64,9 @@ const { acctInfo, userInfo } = storeToRefs(userStore)
 const { locale } = useI18n()
 const viewData = ref<CheckInViewData>(createDefaultCheckInViewData())
 const isLoading = ref(false)
+const hasLoaded = ref(false)
+
+usePageScrollLock(() => props.modelValue)
 
 const isLoggedIn = computed(() => {
   return Boolean(userInfo.value?.tradeToken || acctInfo.value?.memberId)
@@ -68,6 +74,10 @@ const isLoggedIn = computed(() => {
 
 const currentChannelId = computed(() => {
   return isMobile.value ? '4' : '3'
+})
+
+const isContentLoading = computed(() => {
+  return props.modelValue && isLoggedIn.value && !hasLoaded.value
 })
 
 const loadCheckInData = async () => {
@@ -88,6 +98,7 @@ const loadCheckInData = async () => {
   } catch (error) {
     console.error(error)
   } finally {
+    hasLoaded.value = true
     isLoading.value = false
   }
 }
@@ -100,9 +111,18 @@ const handleClose = () => {
 watch(
   [() => props.modelValue, isLoggedIn, () => locale.value, currentChannelId],
   ([visible, loggedIn]) => {
-    if (visible && loggedIn) {
-      void loadCheckInData()
+    if (!visible) {
+      hasLoaded.value = false
+      return
     }
+
+    if (visible && loggedIn) {
+      hasLoaded.value = false
+      void loadCheckInData()
+      return
+    }
+
+    hasLoaded.value = true
   },
   { immediate: true }
 )

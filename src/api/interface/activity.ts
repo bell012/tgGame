@@ -222,7 +222,9 @@ export interface QueryCheckInStatusResult {
   rechargeAmount?: number
   signDays?: number
   startDate?: number
+  ticket?: CheckInTicketInfo
   todayIsSign?: boolean
+  todaySignAmount?: number
 }
 
 /**
