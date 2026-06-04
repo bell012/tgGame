@@ -1651,6 +1651,7 @@
   "checkIn": {
     "title": "Daily Check-in Rewards",
     "subtitle": "Check in daily to claim rewards",
+    "promoStartsAt": "Promo start date: {date}",
     "promoEndsAt": "Promo ends on: {date}",
     "action": "Check In Now",
     "rewardSectionTitle": "Check in for bonus prizes",
