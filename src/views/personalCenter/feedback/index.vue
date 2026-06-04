@@ -430,7 +430,9 @@ const handleReceiveAllFeedback = async () => {
 
   isReceivingAllFeedback.value = true
   try {
-    const response = await Api.user.receiveAllFeedback({})
+    const response = await Api.user.receiveAllFeedback({
+      languageCode: currentCurrencyCode.value
+    })
     if (!response?.success) {
       throw new Error(response?.message || t('personalCenter.feedback.toast.claimFailed'))
     }

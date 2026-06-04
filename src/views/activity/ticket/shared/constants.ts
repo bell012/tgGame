@@ -1,6 +1,12 @@
 import type { VoucherCardType } from './types'
 
-export { getGameIcon, getPrizeIcon, LUCKY_SPIN_ASSETS, RESULT_HERO_IMAGES } from './assets'
+export {
+  getGameIcon,
+  getPrizeIcon,
+  LUCKY_SPIN_ASSETS,
+  LUCKY_SPIN_CASH_RESULT_LOTTIE,
+  RESULT_HERO_IMAGES
+} from './assets'
 
 /** 票券子弹窗 z-index（Reminder 低于 Result，避免叠层错乱） */
 export const TICKET_DIALOG_Z = {

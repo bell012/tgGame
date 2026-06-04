@@ -12,7 +12,9 @@ import type {
   QueryLuckySpinInfoForm,
   QueryLuckySpinInfoResponse,
   DoLuckySpinForm,
-  DoLuckySpinResponse
+  DoLuckySpinResponse,
+  TicketMarqueeForm,
+  QueryTicketMarqueeResponse
 } from '@/api/interface/activity'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
 import {
@@ -137,3 +139,16 @@ export const doLuckySpin = async (
     showErrorToast: _options?.showErrorToast ?? false
   })
 }
+
+/** 查询票券跑马灯（始终走真实接口，不走 USE_MOCK） */
+export const queryTicketMarquee = (
+  data: TicketMarqueeForm,
+  options?: ApiResponseToastOptions
+): Promise<QueryTicketMarqueeResponse> =>
+  request({
+    url: '/ticket/api/marquee',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? false
+  })
