@@ -284,7 +284,10 @@ export interface QueryFeedbacksResponse {
 }
 
 // 一键领取反馈奖励 请求参数
-export interface ReceiveAllFeedbackForm {}
+export interface ReceiveAllFeedbackForm {
+  /** 当前用户币种（与 memberCurrency 对齐） */
+  languageCode?: string
+}
 
 // 一键领取反馈奖励 响应
 export interface ReceiveAllFeedbackResponse {

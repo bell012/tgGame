@@ -165,23 +165,9 @@ const isFeedbackMemberCurrencyMatch = (
 }
 
 const isFeedbackRewardReceived = (record: Record<string, unknown>) => {
-  const receiveCandidates = [
-    record.receiveStatus,
-    record.isReceive,
-    record.received,
-    record.claimStatus
-  ]
-
-  for (const value of receiveCandidates) {
-    const normalized = String(value ?? '')
-      .trim()
-      .toLowerCase()
-
-    if (['1', 'true', 'received', 'claimed', 'yes'].includes(normalized)) {
-      return true
-    }
+  if (record.isReceive === 1) {
+    return true
   }
-
   return false
 }
 
