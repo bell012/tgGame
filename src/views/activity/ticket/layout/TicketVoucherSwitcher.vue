@@ -99,13 +99,14 @@
       class="flex w-full items-center justify-center gap-1 text-common-80"
       :class="variant === 'grid' ? 'mt-4 justify-start' : ''"
       :style="voucherFooterTextStyle"
-      @click="emit('openVoucherList')"
     >
-      <span>{{ t('luckySpinPage.youHave') }}</span>
-      <span class="font-[700]" :style="{ color: voucherLayout.countHighlight }">{{
-        totalVouchers
-      }}</span>
-      <span>{{ t('luckySpinPage.vouchers') }} ›</span>
+      <span @click="emit('openVoucherList')">
+        <span>{{ t('luckySpinPage.youHave') }}</span>
+        <span class="font-[700]" :style="{ color: voucherLayout.countHighlight }">{{
+          totalVouchers
+        }}</span>
+        <span>{{ t('luckySpinPage.vouchers') }} ›</span>
+      </span>
     </button>
   </div>
 </template>

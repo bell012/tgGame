@@ -31,11 +31,24 @@
               </p>
 
               <div
-                v-if="resolvedHeroImage"
+                v-if="showHeroArea"
                 class="my-4 flex items-center justify-center"
                 :class="isMobile ? 'h-[160px] w-[160px]' : 'h-[200px] w-[200px]'"
               >
-                <img :src="resolvedHeroImage" alt="" class="h-full w-full object-contain" />
+                <LottiePlayer
+                  v-if="isCashVariant"
+                  :path="LUCKY_SPIN_CASH_RESULT_LOTTIE"
+                  :fallback-src="cashHeroFallback"
+                  :autoplay="visible"
+                  loop
+                  class="h-full w-full"
+                />
+                <img
+                  v-else-if="resolvedHeroImage"
+                  :src="resolvedHeroImage"
+                  alt=""
+                  class="h-full w-full object-contain"
+                />
               </div>
 
               <button
@@ -63,17 +76,27 @@
 </template>
 
 <script setup lang="ts">
+import LottiePlayer from '@/components/LottiePlayer.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import {
+  LUCKY_SPIN_CASH_RESULT_LOTTIE,
+  RESULT_HERO_IMAGES,
+  TICKET_DIALOG_Z
+} from '@/views/activity/ticket/shared/constants'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTicketResultHeroCopy } from './composables/useTicketResultHeroCopy'
 import { useTicketResultHeroDialog } from './composables/useTicketResultHeroDialog'
-import { TICKET_DIALOG_Z } from '@/views/activity/ticket/shared/constants'
-import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
 const { visible, result, close } = useTicketResultHeroDialog()
 const { resolvedTitle, resolvedHighlight, resolvedHeroImage, resolvedSubtext, resolvedButtonText } =
   useTicketResultHeroCopy(result, t)
+
+const isCashVariant = computed(() => result.value.variant === 'cash')
+const cashHeroFallback = RESULT_HERO_IMAGES.cash
+const showHeroArea = computed(() => isCashVariant.value || Boolean(resolvedHeroImage.value))
 </script>
 
 <style scoped lang="scss">

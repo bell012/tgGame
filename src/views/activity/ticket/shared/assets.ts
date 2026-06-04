@@ -16,6 +16,9 @@ import gameLuckyRedEnvelope from '@/static/img/lucky-spin/vouchers/game-lucky-re
 import gameLuckySpin from '@/static/img/lucky-spin/vouchers/game-lucky-spin.png'
 import gameMysteryBox from '@/static/img/lucky-spin/vouchers/game-mystery-box.png'
 
+/** 大转盘现金中奖弹窗 Lottie（public 静态资源，含 images/ 相对路径） */
+export const LUCKY_SPIN_CASH_RESULT_LOTTIE = '/lottie/lucky-spin/cash-result/cash-popup.json'
+
 export const LUCKY_SPIN_ASSETS = {
   wheel: {
     frame: wheelFrame,
