@@ -379,3 +379,22 @@ export interface DoLuckySpinForm {
 }
 
 export interface DoLuckySpinResponse extends ActivityApiResponse<LuckySpinResult> {}
+
+/** 票券跑马灯请求 */
+export interface TicketMarqueeForm {
+  ticketType: number
+}
+
+export interface TicketMarqueeRecord {
+  memberAccount: string
+  avatar: string
+  amountDisplay: string
+  winTime: number
+}
+
+export interface TicketMarqueeResult {
+  enabled: boolean
+  records: TicketMarqueeRecord[]
+}
+
+export interface QueryTicketMarqueeResponse extends ActivityApiResponse<TicketMarqueeResult> {}

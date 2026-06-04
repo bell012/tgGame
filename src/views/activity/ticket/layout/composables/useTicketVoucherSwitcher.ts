@@ -36,11 +36,15 @@ export function useTicketVoucherSwitcher(props: TicketVoucherFooterData) {
 
   const gridSlots = computed(() => buildVoucherGridSlots(props.games))
 
-  const activeItemStyle = computed(() => {
+  const resolveActiveTheme = () => {
     const gameId = (props.activeGameId ??
       props.games[props.activeIndex]?.gameId ??
       'lucky_spin') as TicketGameId
-    const theme = getTicketModalTheme(gameId)
+    return getTicketModalTheme(gameId)
+  }
+
+  const activeItemStyle = computed(() => {
+    const theme = resolveActiveTheme()
     return {
       borderColor: theme.activeBorder,
       boxShadow: theme.activeGlow
@@ -50,10 +54,13 @@ export function useTicketVoucherSwitcher(props: TicketVoucherFooterData) {
   const isSlotActive = (slot: VoucherGridSlot) =>
     !slot.isPlaceholder && slot.gameIndex === props.activeIndex
 
+  const isGameActive = (gameIndex: number) => gameIndex === props.activeIndex
+
   return {
     gridSlots,
     resolveIcon,
     activeItemStyle,
-    isSlotActive
+    isSlotActive,
+    isGameActive
   }
 }

@@ -48,12 +48,7 @@ export const createMockLuckySpinInfo = (): LuckySpinInfoResult => ({
     }
   ],
   recentVouchers: [],
-  winnerRecords: [
-    { id: 'w1', avatar: '', username: 'yuyt***9', prizeText: '₱188' },
-    { id: 'w2', avatar: '', username: 'jack***2', prizeText: '₱88' },
-    { id: 'w3', avatar: '', username: 'lisa***7', prizeText: '₱288' },
-    { id: 'w4', avatar: '', username: 'mike***1', prizeText: '₱28' }
-  ],
+  winnerRecords: [],
   voucherGames: [
     {
       id: 'mock-golden-egg',

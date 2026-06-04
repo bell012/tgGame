@@ -2,18 +2,20 @@
   <transition name="ticket-toast-fade">
     <div
       v-show="visible"
-      class="ticket-toast-modal fixed inset-0 z-[60] overscroll-contain"
+      class="ticket-toast-modal fixed inset-0 z-[70] overscroll-contain"
       :class="[
         LUCKY_SPIN_TOKENS.modalMaskClass,
         isMobile
-          ? 'flex min-h-0 flex-col overflow-y-auto pb-[env(safe-area-inset-bottom)]'
+          ? 'flex h-[100dvh] min-h-0 flex-col overflow-hidden'
           : 'flex items-center justify-center overflow-y-auto p-6'
       ]"
       :style="modalBackdropStyle"
     >
       <!-- Mobile layout -->
       <template v-if="isMobile">
-        <div class="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+8px)]">
+        <div
+          class="flex shrink-0 items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+8px)]"
+        >
           <button
             type="button"
             class="flex h-9 w-9 items-center justify-center text-[18px] text-common-100 disabled:opacity-40"
@@ -34,13 +36,16 @@
           </button>
         </div>
 
-        <div v-if="isLoading" class="flex min-h-[60vh] items-center justify-center text-common-60">
+        <div
+          v-if="isLoading"
+          class="flex min-h-0 flex-1 items-center justify-center text-common-60"
+        >
           {{ t('common.loading') }}
         </div>
 
         <div
           v-else-if="loadError"
-          class="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center"
+          class="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6 text-center"
         >
           <p class="text-[14px] text-common-60">{{ t('luckySpinPage.loadFailed') }}</p>
           <button
@@ -52,32 +57,42 @@
           </button>
         </div>
 
-        <template v-else-if="spinInfo">
-          <TicketModalHeader v-bind="headerData" align="center" />
+        <div
+          v-else-if="spinInfo"
+          class="ticket-mobile-content flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]"
+        >
+          <div
+            class="ticket-mobile-content__center flex w-full min-h-full flex-col items-center justify-center"
+          >
+            <TicketModalHeader v-bind="headerData" align="center" />
 
-          <div class="mt-1">
-            <component
-              :is="gameComponent"
-              :key="gameId"
-              :ref="setGameRef"
-              v-bind="gameComponentProps"
-              v-on="gameComponentListeners"
+            <div :class="ticketMobileSectionClass.headerToWheel">
+              <component
+                :is="gameComponent"
+                :key="gameId"
+                :ref="setGameRef"
+                v-bind="gameComponentProps"
+                v-on="gameComponentListeners"
+              />
+            </div>
+
+            <TicketWinnerTicker
+              :class="ticketMobileSectionClass.wheelToTicker"
+              :items="winnerRecords"
+            />
+
+            <TicketVoucherFooter
+              :games="spinInfo.voucherGames"
+              :active-index="activeGameIndex"
+              :total-vouchers="spinInfo.totalVouchers"
+              :active-game-id="gameId"
+              @select="emit('select', $event)"
+              @prev="emit('prev')"
+              @next="emit('next')"
+              @open-voucher-list="emit('open-voucher-list')"
             />
           </div>
-
-          <TicketWinnerTicker :items="spinInfo.winnerRecords" />
-
-          <TicketVoucherFooter
-            :games="spinInfo.voucherGames"
-            :active-index="activeGameIndex"
-            :total-vouchers="spinInfo.totalVouchers"
-            :active-game-id="gameId"
-            @select="emit('select', $event)"
-            @prev="emit('prev')"
-            @next="emit('next')"
-            @open-voucher-list="emit('open-voucher-list')"
-          />
-        </template>
+        </div>
       </template>
 
       <!-- Desktop layout -->
@@ -164,7 +179,7 @@
           <TicketWinnerTicker
             v-if="spinInfo && !isLoading && !loadError"
             class="mt-3 w-full"
-            :items="spinInfo.winnerRecords"
+            :items="winnerRecords"
             compact
           />
         </div>
@@ -177,7 +192,13 @@
 import type { LuckySpinWheelExpose } from '../components/lucky-spin/useLuckySpinGame'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { LUCKY_SPIN_TOKENS, TICKET_PC_TOKENS } from '../shared/design-tokens'
-import type { LuckySpinInfoResult, TicketGameId, TicketModalHeaderData } from '../shared/types'
+import { ticketMobileSectionClass } from '../shared/ticketMobileLayout'
+import type {
+  LuckySpinInfoResult,
+  TicketGameId,
+  TicketModalHeaderData,
+  WinnerTickerItem
+} from '../shared/types'
 import { getTicketGameComponent } from '../shell/registry'
 import TicketModalHeader from './TicketModalHeader.vue'
 import TicketVoucherFooter from './TicketVoucherFooter.vue'
@@ -192,13 +213,16 @@ interface Props {
   loadError: boolean
   isSpinning: boolean
   spinInfo: LuckySpinInfoResult | null
+  winnerRecords?: WinnerTickerItem[]
   gameId: TicketGameId
   headerData: TicketModalHeaderData
   activeGameIndex: number
   registerWheelRef: (el: LuckySpinWheelExpose | null) => void
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  winnerRecords: () => []
+})
 
 const emit = defineEmits<{
   close: []
@@ -261,7 +285,15 @@ const setGameRef = (el: unknown) => {
 
 <style scoped lang="scss">
 .ticket-toast-modal {
+  z-index: 99;
+}
+
+.ticket-mobile-content {
   -webkit-overflow-scrolling: touch;
+}
+
+.ticket-mobile-content__center {
+  box-sizing: border-box;
 }
 
 .ticket-toast-fade-enter-active,

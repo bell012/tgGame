@@ -127,6 +127,7 @@ import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
 import TopNav from './TopNav.vue'
 import { CheckInPopup, useCheckInAutoPopup } from '@/views/activity/check-in'
+import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
 
 const layoutStore = useLayoutStore()
 const userStore = useUserStore()
@@ -463,6 +464,10 @@ onMounted(() => {
 })
 
 const hideBottomBar = computed(() => {
+  if (globalTicketToastState.visible && isMobile.value) {
+    return true
+  }
+
   return (route.meta?.mobile as MobileRouteMeta | undefined)?.hideBottomBar && isMobile.value
 })
 
