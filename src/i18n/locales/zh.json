@@ -186,6 +186,8 @@
   "gameDetail": {
     "playWithSelectedCurrency": "使用所选币种游玩",
     "selectedCurrency": "所选币种",
+    "selectCurrencyTitle": "选择币种",
+    "currencySectionCash": "现金",
     "settingTooltip": "设置",
     "favoriteTooltip": "收藏",
     "playNowHint": "点击“立即开始”进入。祝你好运，玩得开心！",

@@ -12,7 +12,9 @@
         <div class="tp-panel rounded-t-xl bg-bg-1 px-3 pb-2.5 pt-2.5">
           <div class="tp-header flex items-center justify-between mb-5" v-if="!desktop">
             <div></div>
-            <div class="text-base font-bold text-text-1">Select Currency</div>
+            <div class="text-base font-bold text-text-1">
+              {{ t('gameDetail.selectCurrencyTitle') }}
+            </div>
             <button
               @click="close"
               class="flex h-7 w-7 items-center justify-center rounded-md bg-opacity-10"
@@ -25,7 +27,7 @@
             :options="listOptions"
             :selected-value="selectedId"
             mode="balance"
-            section-label="Cash"
+            :section-label="t('gameDetail.currencySectionCash')"
             list-class="max-h-[55vh] overflow-y-auto overscroll-contain pr-0.5"
             item-class="tp-item mb-2.5 flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left"
             selected-item-class="bg-opacity-10 tp-item-selected"
@@ -41,8 +43,11 @@
 
 <script setup lang="ts">
 import { computed, inject, Ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import CurrencySelectorList from '@/components/common/currency-selector/index.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
+
+const { t } = useI18n()
 
 type OptionItem = { value: string; label: string; icon: string }
 type BalanceOptionItem = { code: string; icon: string; balanceText: string }

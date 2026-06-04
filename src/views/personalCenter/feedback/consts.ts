@@ -152,6 +152,12 @@ export const normalizeFeedbackCurrencyCode = (value: unknown) => {
     .toUpperCase()
 }
 
+/** 反馈接口请求体：languageCode 为当前用户币种（与 memberCurrency 对齐） */
+export const buildFeedbackCurrencyRequest = (currencyCode: unknown) => {
+  const languageCode = normalizeFeedbackCurrencyCode(currencyCode)
+  return { languageCode } as const
+}
+
 const isFeedbackMemberCurrencyMatch = (
   record: Record<string, unknown>,
   userCurrencyCode: string

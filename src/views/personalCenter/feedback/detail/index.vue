@@ -126,10 +126,13 @@ import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import Api from '@/api'
 import type { QueryFeedbackItem } from '@/api/interface/user'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import {
   type FeedbackRecord,
   type FeedbackStatus,
+  buildFeedbackCurrencyRequest,
   extractFeedbackList,
+  normalizeFeedbackCurrencyCode,
   getFeedbackDetailTemplates,
   getFeedbackStatusTextMap,
   getFeedbackTypeLabel,
@@ -161,6 +164,10 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const { t } = useI18n()
+const { currentCurrencyCode } = useDisplayCurrency()
+const feedbackCurrencyRequest = computed(() =>
+  buildFeedbackCurrencyRequest(normalizeFeedbackCurrencyCode(currentCurrencyCode.value))
+)
 const isEmbeddedMode = computed(() => Boolean(props.embedded))
 const feedbackDetailPageContainerClass = computed(() => {
   return isEmbeddedMode.value
@@ -273,7 +280,7 @@ const fetchFeedbackDetail = async (recordId: string) => {
 
   isLoadingFeedbackDetail.value = true
   try {
-    const response = await Api.user.queryFeedbacks({})
+    const response = await Api.user.queryFeedbacks(feedbackCurrencyRequest.value)
     if (!response?.success) {
       throw new Error(
         response?.message || t('personalCenter.feedback.toast.fetchFeedbackDetailFailed')

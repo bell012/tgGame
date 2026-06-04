@@ -22,7 +22,7 @@
             :options="listOptions"
             :selected-value="props.selectedCurrency"
             mode="balance"
-            section-label="Cash"
+            :section-label="t('preferencesSettings.currencyPopupSectionLabel')"
             list-class="mt-5 max-h-[55vh] overflow-y-auto overscroll-contain pr-0.5"
             item-class="flex h-[42px] w-full items-center justify-between rounded-lg px-2.5 text-left"
             selected-item-class="bg-opacity-10"

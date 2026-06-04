@@ -62,6 +62,8 @@ export const LUCKY_SPIN_TOKENS = {
   countdownColon: TICKET_MODAL_THEMES.lucky_spin.countdownColon,
   expiresLabel: TICKET_MODAL_THEMES.lucky_spin.expiresLabel,
   voucherCountGreen: '#2AEE88',
+  /** H5 转盘距屏幕左右边距（Figma） */
+  wheelSideMargin: 36,
   wheelSize: 301,
   wheelDiscInset: '6.1%',
   wheelPointerSize: '34%',

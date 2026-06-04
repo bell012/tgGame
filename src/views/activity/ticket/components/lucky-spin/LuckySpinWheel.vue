@@ -116,11 +116,14 @@ const sectorHighlightLocked = ref(false)
 
 const isMobile = useIsMobile()
 
-const WHEEL_WIDTH = computed(() =>
-  isMobile.value
-    ? `min(${LUCKY_SPIN_TOKENS.wheelSize}px, 80.27vw)`
-    : `${TICKET_PC_TOKENS.wheelSizePc}px`
-)
+const WHEEL_WIDTH = computed(() => {
+  if (!isMobile.value) {
+    return `${TICKET_PC_TOKENS.wheelSizePc}px`
+  }
+
+  const sideMargin = LUCKY_SPIN_TOKENS.wheelSideMargin * 2
+  return `calc(100vw - ${sideMargin}px)`
+})
 const pointerSize = LUCKY_SPIN_TOKENS.wheelPointerSize
 const goHitSize = '23%'
 
