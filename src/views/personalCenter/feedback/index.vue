@@ -80,8 +80,10 @@ import {
   FEEDBACK_CLAIM_AMOUNT_ANIMATION_DURATION,
   FEEDBACK_UPLOAD_MAX_COUNT,
   extractClaimedFeedbackAmount,
+  buildFeedbackCurrencyRequest,
   extractFeedbackClaimRewardAmount,
   extractFeedbackList,
+  normalizeFeedbackCurrencyCode,
   sortFeedbackItemsByNewest,
   feedbackStatusClassMap,
   formatFeedbackRewardAmount,
@@ -120,6 +122,14 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { currentCurrencyCode } = useDisplayCurrency()
+
+/** 与列表汇总、接口 languageCode 使用同一套币种规范化 */
+const feedbackMemberCurrencyCode = computed(() =>
+  normalizeFeedbackCurrencyCode(currentCurrencyCode.value)
+)
+const feedbackCurrencyRequest = computed(() =>
+  buildFeedbackCurrencyRequest(feedbackMemberCurrencyCode.value)
+)
 
 // 页面基础状态
 const activeTab = ref<FeedbackTab>('create')
@@ -329,7 +339,7 @@ const fetchMyFeedbackList = async () => {
   feedbackClaimRewardAmount.value = 0
 
   try {
-    const response = await Api.user.queryFeedbacks({})
+    const response = await Api.user.queryFeedbacks(feedbackCurrencyRequest.value)
     if (!response?.success) {
       throw new Error(
         response?.message || t('personalCenter.feedback.toast.fetchFeedbackListFailed')
@@ -338,7 +348,7 @@ const fetchMyFeedbackList = async () => {
 
     feedbackClaimRewardAmount.value = extractFeedbackClaimRewardAmount(
       response.result,
-      currentCurrencyCode.value
+      feedbackMemberCurrencyCode.value
     )
     const responseList = sortFeedbackItemsByNewest(
       extractFeedbackList(response.result) as QueryFeedbackItem[]
@@ -428,11 +438,18 @@ const handleReceiveAllFeedback = async () => {
     return
   }
 
+  if (!feedbackMemberCurrencyCode.value) {
+    showToast({
+      message: t('personalCenter.feedback.toast.claimFailed'),
+      position: 'middle',
+      type: 'fail'
+    })
+    return
+  }
+
   isReceivingAllFeedback.value = true
   try {
-    const response = await Api.user.receiveAllFeedback({
-      languageCode: currentCurrencyCode.value
-    })
+    const response = await Api.user.receiveAllFeedback(feedbackCurrencyRequest.value)
     if (!response?.success) {
       throw new Error(response?.message || t('personalCenter.feedback.toast.claimFailed'))
     }
