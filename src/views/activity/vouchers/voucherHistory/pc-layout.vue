@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 pb-0 w-[1032px]">
+  <div class="w-[1032px]">
     <!-- 筛选区 -->
     <div class="mb-5 flex items-center gap-3 flex-wrap">
       <CustomSelect
@@ -52,7 +52,7 @@
           <div
             v-for="item in dataList"
             :key="item.id"
-            class="flex items-center rounded-[16px] bg-bg-3 px-5 py-4"
+            class="flex items-center rounded-[16px] bg-bg-2 px-5 py-4"
           >
             <div class="min-w-0 flex-1">
               <p class="truncate text-xl font-[700] text-text-1">{{ item.name }}</p>
