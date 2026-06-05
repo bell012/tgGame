@@ -1660,11 +1660,18 @@
     "youGotAReward": "You got a reward",
     "luckySpinReward": "Lucky Spin x1",
     "useNow": "Use Now",
+    "reminderTitle": "Kind Reminder",
+    "reminderPromptAll": "Complete the 2 requirements below to check in.",
+    "reminderPromptAny": "Complete any 1 requirement to check in.",
+    "reminderPromptSingle": "Complete requirement to check in.",
+    "deposit": "Deposit",
+    "validBet": "Valid Bet",
     "rewardCount": "{count} Days",
     "dayLabel": "DAY {day}",
     "claimed": "Claimed",
     "rulesAriaLabel": "Open check-in rules",
-    "closeAriaLabel": "Close check-in popup"
+    "closeAriaLabel": "Close check-in popup",
+    "reminderCloseAriaLabel": "Close check-in reminder popup"
   },
   "vouchers": {
     "myVouchers": "My Vouchers",

@@ -2,6 +2,7 @@ import Api from '@/api'
 import type { ActivityListItem, QueryCheckInStatusResult } from '@/api/interface/activity'
 import { createCheckInViewData, resolveCheckInActivityDesc, type CheckInViewData } from './shared'
 
+// 加载签到活动时的筛选上下文。
 export interface LoadActiveCheckInOptions {
   channelId?: string
   currencyCode?: string
@@ -10,11 +11,21 @@ export interface LoadActiveCheckInOptions {
   isLoggedIn?: boolean
 }
 
+// 当前命中的签到活动、签到状态和页面视图数据。
 export interface ActiveCheckInData {
   activity: ActivityListItem
   status: QueryCheckInStatusResult
   viewData: CheckInViewData
 }
+
+// 活动类型枚举：5 表示签到活动。
+const CHECK_IN_ACTIVITY_TYPE = 5
+
+// 活动状态枚举：1 未开始，2 进行中；这两种状态都允许展示弹窗内容。
+const CHECK_IN_VISIBLE_ACTIVITY_STATUSES = [1, 2]
+
+// 首页展示开关枚举：1 表示允许首页展示/弹出。
+const HOME_DISPLAY_ENABLED = 1
 
 // 将后端的字符串数组字段解析成可比较的数组。
 const parseStringArrayField = (value: unknown) => {
@@ -64,13 +75,14 @@ const getCheckInPopWay = (activity: ActivityListItem, isLoggedIn?: boolean) => {
 
 // 自动弹窗只关心是否允许弹，关闭弹窗不写入本地禁用状态。
 const canAutoPopupActivity = (activity: ActivityListItem, isLoggedIn?: boolean) => {
-  if (Number(activity.homeDisplay) !== 1) {
+  if (Number(activity.homeDisplay) !== HOME_DISPLAY_ENABLED) {
     return false
   }
 
   return getCheckInPopWay(activity, isLoggedIn) > 0
 }
 
+// 判断活动是否存在当前语言的活动简介。
 const isActivityLanguageMatched = (activity: ActivityListItem, languageCode?: string) => {
   if (!languageCode) {
     return true
@@ -86,8 +98,8 @@ export const selectActiveCheckInActivity = (
 ) => {
   return records
     .filter(activity => {
-      if (Number(activity.type) !== 5) return false
-      if (![1, 2].includes(Number(activity.status))) return false
+      if (Number(activity.type) !== CHECK_IN_ACTIVITY_TYPE) return false
+      if (!CHECK_IN_VISIBLE_ACTIVITY_STATUSES.includes(Number(activity.status))) return false
       if (activity.ended === true) return false
       if (!activity.rowId) return false
       if (!isActivityInRange(activity)) return false

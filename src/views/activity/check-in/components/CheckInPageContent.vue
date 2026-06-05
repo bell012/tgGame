@@ -77,7 +77,9 @@
               v-for="reward in rewards"
               :key="reward.day"
               class="relative isolate flex h-[64px] items-center gap-[8px] overflow-hidden rounded-[12px] border px-[12px] py-[8px]"
+              :class="{ 'cursor-pointer active:scale-[0.99]': !reward.claimed }"
               :style="getPcRewardCardStyle(reward)"
+              @click="handleRewardClick(reward)"
             >
               <!-- PC 奖励图标 -->
               <img :src="reward.icon" alt="" class="h-[46px] w-[40px] shrink-0 object-contain" />
@@ -517,7 +519,9 @@
             v-for="reward in rewardRow"
             :key="reward.day"
             class="relative isolate flex h-[47px] w-[164px] items-center gap-[5px] overflow-hidden rounded-[8px] border px-[7px] py-[6px]"
+            :class="{ 'cursor-pointer active:scale-[0.99]': !reward.claimed }"
             :style="getMobileRewardCardStyle(reward)"
+            @click="handleRewardClick(reward)"
           >
             <!-- H5 奖励图标 -->
             <img :src="reward.icon" alt="" class="h-[35px] w-[31px] shrink-0 object-contain" />
@@ -593,15 +597,19 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   close: []
   rules: []
   action: []
+  'reward-click': [reward: CheckInRewardItem]
 }>()
 
 const { t } = useI18n()
 
+// PC 奖励卡片骨架数量，对齐 PC 两列布局。
 const pcSkeletonRewards = Array.from({ length: 8 }, (_, index) => index + 1)
+
+// H5 奖励卡片骨架行数据，对齐 H5 每行两个卡片的设计稿。
 const mobileSkeletonRewardRows = computed(() => {
   const skeletonItems = Array.from({ length: 8 }, (_, index) => index + 1)
   const rows: number[][] = []
@@ -684,6 +692,15 @@ const getPcRewardCardStyle = (reward: CheckInRewardItem) => {
 // 根据领取状态获取 H5 奖励卡片样式。
 const getMobileRewardCardStyle = (reward: CheckInRewardItem) => {
   return reward.claimed ? claimedMobileRewardCardStyle : reward.cardStyle
+}
+
+// 点击未领取奖励卡片时通知外层，由外层根据设备和后端条件决定是否弹出提醒。
+const handleRewardClick = (reward: CheckInRewardItem) => {
+  if (props.loading || reward.claimed) {
+    return
+  }
+
+  emit('reward-click', reward)
 }
 
 // 按照 H5 稿的两列结构拆分奖励卡片，每行最多两个。

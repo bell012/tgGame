@@ -7,12 +7,13 @@
     @close="$emit('close')"
     @rules="$emit('rules')"
     @action="$emit('action')"
+    @reward-click="$emit('reward-click', $event)"
   />
 </template>
 
 <script setup lang="ts">
 import CheckInPageContent from './components/CheckInPageContent.vue'
-import type { CheckInViewData } from './shared'
+import type { CheckInRewardItem, CheckInViewData } from './shared'
 
 interface Props {
   viewData: CheckInViewData
@@ -25,5 +26,6 @@ defineEmits<{
   close: []
   rules: []
   action: []
+  'reward-click': [reward: CheckInRewardItem]
 }>()
 </script>

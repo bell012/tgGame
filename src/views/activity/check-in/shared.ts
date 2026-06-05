@@ -24,13 +24,19 @@ import redPacketIcon from '@/static/img/check-in/red-packet.png'
 import turntableIcon from '@/static/img/check-in/roulette.png'
 import type { CSSProperties } from 'vue'
 
+// 签到页面布局模式：mobile 对应 H5 设计稿，pc 对应 PC 弹窗设计稿。
 export type CheckInPageMode = 'mobile' | 'pc'
 
+// 单个签到奖励卡片的页面展示数据。
 export interface CheckInRewardItem {
   day: number
   amount: string
   icon: string
   currencySymbol: string
+  betAmount?: number
+  rechargeAmount?: number
+  rewardTiggerType?: number[]
+  conditionRelation?: number | string | null
   claimed?: boolean
   spanFull?: boolean
   cardStyle: CSSProperties
@@ -38,12 +44,38 @@ export interface CheckInRewardItem {
   amountStyle: CSSProperties
 }
 
+// 签到条件提醒弹窗展示模式：all/any 展示两项条件，depositOnly/betOnly 展示单项条件。
+export type CheckInRequirementReminderMode = 'all' | 'any' | 'depositOnly' | 'betOnly'
+
+// 签到条件提醒条件标签 key，供数据层和组件层共用，避免散落魔法字符串。
+export const CHECK_IN_REQUIREMENT_LABEL_DEPOSIT = 'deposit'
+export const CHECK_IN_REQUIREMENT_LABEL_VALID_BET = 'validBet'
+
+// 签到条件提醒条件标签类型。
+export type CheckInRequirementReminderLabel =
+  | typeof CHECK_IN_REQUIREMENT_LABEL_DEPOSIT
+  | typeof CHECK_IN_REQUIREMENT_LABEL_VALID_BET
+
+// 签到条件提醒弹窗单行数据。
+export interface CheckInRequirementReminderItem {
+  label: CheckInRequirementReminderLabel
+  value: string
+}
+
+// 签到条件提醒弹窗完整数据。
+export interface CheckInRequirementReminderData {
+  mode: CheckInRequirementReminderMode
+  items: CheckInRequirementReminderItem[]
+}
+
+// 主视觉金额奖励，用于签到后展示现金类奖励。
 export interface CheckInHeroAmountReward {
   type: 'amount'
   amount: string
   icon: string
 }
 
+// 主视觉功能奖励，用于签到后展示票券/玩法入口类奖励。
 export interface CheckInHeroActionReward {
   type: 'action'
   title?: string
@@ -53,8 +85,10 @@ export interface CheckInHeroActionReward {
   actionKey?: string
 }
 
+// 主视觉奖励联合类型，页面根据 type 区分金额奖励和功能奖励。
 export type CheckInHeroReward = CheckInHeroAmountReward | CheckInHeroActionReward
 
+// 签到弹窗页面所需的完整视图数据。
 export interface CheckInViewData {
   activityId?: number
   title: string
@@ -67,6 +101,7 @@ export interface CheckInViewData {
   todayIsSign: boolean
 }
 
+// 奖励卡片设计预设，承载 Figma 中不同卡片的颜色和图标样式。
 interface CheckInRewardPreset {
   icon: string
   cardStyle: CSSProperties
@@ -111,6 +146,23 @@ export const CHECK_IN_RULES_BUTTON = checkInRulesButton
 export const CHECK_IN_HERO_CLOSED = giftBoxClosed
 export const CHECK_IN_HERO_OPENED = giftBoxOpened
 
+// 后端 rewardType 枚举：0 固定金额，1 随机金额。
+const CHECK_IN_REWARD_TYPE_FIXED = 0
+const CHECK_IN_REWARD_TYPE_RANDOM = 1
+
+// 后端 rewardTiggerType 枚举：0 充值要求，1 流水要求。
+const CHECK_IN_REQUIREMENT_TYPE_DEPOSIT = 0
+const CHECK_IN_REQUIREMENT_TYPE_BET = 1
+
+// 后端 conditionRelation 枚举：空或 0 全部满足，1 任意满足。
+const CHECK_IN_CONDITION_RELATION_ANY = 1
+
+// 后端活动状态枚举：2 表示活动进行中。
+const CHECK_IN_ACTIVITY_STATUS_ACTIVE = 2
+
+/**
+ * 统一后端和前端语言编码，避免 zh-CN/en 这类值匹配不到后端配置。
+ */
 export const normalizeCheckInLanguageCode = (languageCode?: string) => {
   const normalizedLanguageCode = String(languageCode ?? '')
     .trim()
@@ -127,6 +179,7 @@ export const normalizeCheckInLanguageCode = (languageCode?: string) => {
   return normalizedLanguageCode
 }
 
+// 签到奖励卡片设计预设，按天数顺序循环使用。
 const CHECK_IN_REWARD_PRESETS: CheckInRewardPreset[] = [
   {
     icon: giftBoxIcon,
@@ -200,6 +253,7 @@ const CHECK_IN_REWARD_PRESETS: CheckInRewardPreset[] = [
   }
 ]
 
+// 后端 ticketType 到奖励图片的映射：1 现金、2 红包、3 金蛋、4 转盘、5/6 盲盒。
 const CHECK_IN_TICKET_TYPE_ICON_MAP: Record<number, string> = {
   1: gameCashVoucherIcon,
   2: gameLuckyRedEnvelopeIcon,
@@ -209,6 +263,7 @@ const CHECK_IN_TICKET_TYPE_ICON_MAP: Record<number, string> = {
   6: gameMysteryBoxIcon
 }
 
+// 接口未返回前的默认奖励列表，仅用于开发兜底和骨架外的异常降级。
 const DEFAULT_REWARDS: CheckInRewardItem[] = [
   '100',
   '0',
@@ -232,6 +287,7 @@ const DEFAULT_REWARDS: CheckInRewardItem[] = [
   }
 })
 
+// 将后端可能返回的字符串/数字安全转换为 number。
 const toNumber = (value: unknown) => {
   const normalizedValue =
     typeof value === 'string' && value.trim().length === 0 ? Number.NaN : Number(value)
@@ -239,6 +295,7 @@ const toNumber = (value: unknown) => {
   return Number.isFinite(normalizedValue) ? normalizedValue : null
 }
 
+// 格式化普通金额；fixedDigits 用于主视觉领取结果的两位小数展示。
 const formatRewardAmount = (value: unknown, fixedDigits?: number) => {
   const numericValue = toNumber(value)
 
@@ -253,6 +310,105 @@ const formatRewardAmount = (value: unknown, fixedDigits?: number) => {
   return Number.isInteger(numericValue) ? String(numericValue) : numericValue.toFixed(2)
 }
 
+// 格式化奖励卡片金额，超过千位时使用 K 单位。
+const formatRewardDisplayNumber = (value: unknown) => {
+  const numericValue = toNumber(value)
+
+  if (numericValue === null) {
+    return '0'
+  }
+
+  if (Math.abs(numericValue) >= 1000) {
+    const kiloValue = numericValue / 1000
+    const formattedKiloValue = Number.isInteger(kiloValue)
+      ? String(kiloValue)
+      : kiloValue.toFixed(1).replace(/\.0$/, '')
+
+    return `${formattedKiloValue}K`
+  }
+
+  return Number.isInteger(numericValue) ? String(numericValue) : numericValue.toFixed(2)
+}
+
+// 格式化随机金额区间，相同上下限只展示一个值。
+const formatRewardRangeAmount = (amountRange?: number[]) => {
+  const minAmount = toNumber(amountRange?.[0])
+  const maxAmount = toNumber(amountRange?.[1])
+
+  if (minAmount === null && maxAmount === null) {
+    return '0'
+  }
+
+  if (minAmount === null) {
+    return formatRewardDisplayNumber(maxAmount)
+  }
+
+  if (maxAmount === null || minAmount === maxAmount) {
+    return formatRewardDisplayNumber(minAmount)
+  }
+
+  return `${formatRewardDisplayNumber(minAmount)}~${formatRewardDisplayNumber(maxAmount)}`
+}
+
+// 根据单个奖励卡片配置解析 H5 未签到条件提醒弹窗数据。
+export const createCheckInRequirementReminderData = (
+  reward: CheckInRewardItem
+): CheckInRequirementReminderData | null => {
+  const rewardTiggerType = reward.rewardTiggerType ?? []
+  const hasDepositRequirement = rewardTiggerType.includes(CHECK_IN_REQUIREMENT_TYPE_DEPOSIT)
+  const hasBetRequirement = rewardTiggerType.includes(CHECK_IN_REQUIREMENT_TYPE_BET)
+
+  if (!hasDepositRequirement && !hasBetRequirement) {
+    return null
+  }
+
+  const mode: CheckInRequirementReminderMode =
+    hasDepositRequirement && hasBetRequirement
+      ? toNumber(reward.conditionRelation) === CHECK_IN_CONDITION_RELATION_ANY
+        ? 'any'
+        : 'all'
+      : hasDepositRequirement
+        ? 'depositOnly'
+        : 'betOnly'
+
+  const items: CheckInRequirementReminderItem[] = []
+
+  if (hasDepositRequirement) {
+    items.push({
+      label: CHECK_IN_REQUIREMENT_LABEL_DEPOSIT,
+      value: formatRewardDisplayNumber(reward.betAmount)
+    })
+  }
+
+  if (hasBetRequirement) {
+    items.push({
+      label: CHECK_IN_REQUIREMENT_LABEL_VALID_BET,
+      value: formatRewardDisplayNumber(reward.rechargeAmount)
+    })
+  }
+
+  return {
+    mode,
+    items
+  }
+}
+
+// 根据 rewardType 决定奖励卡片金额来源：固定金额取 rewardAmount，随机金额取 amountRange。
+const resolveRewardConfigAmount = (
+  rewardConfig: CheckInActivitySignConfigItem,
+  rewardType?: unknown
+) => {
+  const resolvedRewardType =
+    toNumber(rewardConfig.rewardType ?? rewardType) ?? CHECK_IN_REWARD_TYPE_FIXED
+
+  if (resolvedRewardType === CHECK_IN_REWARD_TYPE_RANDOM) {
+    return formatRewardRangeAmount(rewardConfig.amountRange)
+  }
+
+  return formatRewardDisplayNumber(rewardConfig.rewardAmount)
+}
+
+// 根据后端 ticketType 解析奖励卡片和主视觉使用的票券图标。
 const resolveRewardIcon = (ticketType?: unknown, fallbackIndex = 0) => {
   const resolvedTicketType = toNumber(ticketType)
   const mappedIcon =
@@ -261,6 +417,7 @@ const resolveRewardIcon = (ticketType?: unknown, fallbackIndex = 0) => {
   return mappedIcon || CHECK_IN_REWARD_PRESETS[fallbackIndex % CHECK_IN_REWARD_PRESETS.length].icon
 }
 
+// 解析活动实际命中的币种配置，优先当前币种，其次活动币种列表，再兜底第一个 config key。
 const resolveActivityCurrencyContext = (
   activity?: ActivityListItem,
   currencyCode?: string
@@ -299,6 +456,7 @@ const resolveActivityCurrencyContext = (
   }
 }
 
+// 从票券多语言信息中解析当前语言的票券名称。
 const resolveTicketLanguageName = (ticket?: CheckInTicketInfo, languageCode?: string) => {
   const normalizedLanguageCode = normalizeCheckInLanguageCode(languageCode)
 
@@ -309,6 +467,7 @@ const resolveTicketLanguageName = (ticket?: CheckInTicketInfo, languageCode?: st
   return matchedLanguageInfo?.name || ticket?.languageInfo?.[0]?.name || ''
 }
 
+// 匹配当前语言的活动简介，活动没有对应语言时不进入展示。
 export const resolveCheckInActivityDesc = (activity?: ActivityListItem, languageCode?: string) => {
   const normalizedLanguageCode = normalizeCheckInLanguageCode(languageCode)
 
@@ -317,6 +476,7 @@ export const resolveCheckInActivityDesc = (activity?: ActivityListItem, language
   })
 }
 
+// 解析活动标题，优先使用后端 activiName，兜底 activityName 多语言配置。
 const resolveCheckInActivityName = (activity?: ActivityListItem, languageCode?: string) => {
   const normalizedLanguageCode = normalizeCheckInLanguageCode(languageCode)
   const matchedActivityName = activity?.activityName?.find(item => {
@@ -326,6 +486,7 @@ const resolveCheckInActivityName = (activity?: ActivityListItem, languageCode?: 
   return activity?.activiName || matchedActivityName?.name || ''
 }
 
+// 根据活动是否开始决定展示开始时间文案还是结束时间文案。
 const resolvePromoDateMeta = (activity: ActivityListItem, status: QueryCheckInStatusResult) => {
   const startDate = status.startDate ?? activity.startDate
   const endDate = status.endDate ?? activity.endDate
@@ -338,6 +499,7 @@ const resolvePromoDateMeta = (activity: ActivityListItem, status: QueryCheckInSt
   }
 }
 
+// 判断当前是否可点击签到：活动进行中、已到开始时间且今日未签到。
 const isCheckInActivityClaimableNow = (
   activity: ActivityListItem,
   status: QueryCheckInStatusResult
@@ -345,22 +507,32 @@ const isCheckInActivityClaimableNow = (
   const startDate = toNumber(status.startDate ?? activity.startDate)
   const isStarted = startDate === null || Date.now() >= startDate
 
-  return Number(activity.status) === 2 && isStarted && !status.todayIsSign
+  return (
+    Number(activity.status) === CHECK_IN_ACTIVITY_STATUS_ACTIVE && isStarted && !status.todayIsSign
+  )
 }
 
+// 将后端单天签到奖励配置转换为奖励卡片视图数据。
 const createRewardItemFromConfig = (
   rewardConfig: CheckInActivitySignConfigItem,
   index: number,
   claimed: boolean,
-  currencyCode?: string
+  currencyCode?: string,
+  rewardType?: unknown,
+  rewardTiggerType?: number[],
+  conditionRelation?: number | string | null
 ): CheckInRewardItem => {
   const preset = CHECK_IN_REWARD_PRESETS[index % CHECK_IN_REWARD_PRESETS.length]
 
   return {
     day: toNumber(rewardConfig.day) ?? index + 1,
-    amount: formatRewardAmount(rewardConfig.rewardAmount),
+    amount: resolveRewardConfigAmount(rewardConfig, rewardType),
     icon: resolveRewardIcon(rewardConfig.ticketType, index),
     currencySymbol: getCurrencySymbol(currencyCode),
+    betAmount: toNumber(rewardConfig.betAmount) ?? 0,
+    rechargeAmount: toNumber(rewardConfig.rechargeAmount) ?? 0,
+    rewardTiggerType,
+    conditionRelation,
     claimed,
     cardStyle: preset.cardStyle,
     iconShellStyle: preset.iconShellStyle,
@@ -368,6 +540,7 @@ const createRewardItemFromConfig = (
   }
 }
 
+// 解析今日已领取奖励，优先使用 mbSign 顶层今日奖励，再回退 historySign。
 const resolveTodayHistoryRewards = (status?: QueryCheckInStatusResult) => {
   const historySign = status?.historySign ?? []
   const todayRewards = historySign.filter(item => item.todayIsSign)
@@ -395,6 +568,7 @@ const resolveTodayHistoryRewards = (status?: QueryCheckInStatusResult) => {
   return []
 }
 
+// 创建主视觉左侧金额奖励数据。
 const createPrimaryHeroReward = (
   historyItem: CheckInHistorySignItem,
   signConfigMap: Map<number, CheckInActivitySignConfigItem>
@@ -411,6 +585,7 @@ const createPrimaryHeroReward = (
   }
 }
 
+// 创建主视觉右侧功能奖励数据。
 const createSecondaryHeroReward = (
   historyItem: CheckInHistorySignItem,
   signConfigMap: Map<number, CheckInActivitySignConfigItem>,
@@ -498,7 +673,10 @@ export const createCheckInViewData = (
               item,
               index,
               claimedDays.has(toNumber(item.day) ?? index + 1),
-              resolvedCurrencyContext.currencyCode
+              resolvedCurrencyContext.currencyCode,
+              resolvedConfig?.rewardType,
+              resolvedConfig?.rewardTiggerType,
+              resolvedConfig?.conditionRelation
             )
           )
         : DEFAULT_REWARDS,

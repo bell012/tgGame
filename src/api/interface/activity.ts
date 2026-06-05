@@ -97,6 +97,7 @@ export interface CheckInActivitySignConfigItem {
   betAmount?: number
   ticketType?: number
   amountRange?: number[]
+  rewardType?: number
   rewardAmount?: number
   rechargeAmount?: number
 }
@@ -116,6 +117,7 @@ export interface CheckInActivityCurrencyConfig {
   signCycle?: number
   styleType?: number
   rewardType?: number
+  conditionRelation?: number | string | null
   rewardTiggerType?: number[]
   [key: string]: unknown
 }
@@ -364,8 +366,8 @@ export type {
   LuckySpinResult,
   LuckySpinTask,
   LuckySpinVoucherCardData,
-  WinnerTickerItem,
-  VoucherGameItem
+  VoucherGameItem,
+  WinnerTickerItem
 } from '@/views/activity/ticket/types'
 
 export interface QueryLuckySpinInfoForm {
