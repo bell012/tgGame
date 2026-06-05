@@ -502,6 +502,7 @@ const baseRoutes: RouteRecordRaw[] = [
       description: '意见反馈',
       mobileOnly: true,
       slideTransition: true,
+      keepAlive: true,
       mobile: {
         hideBottomBar: true,
         hideTopNav: true
