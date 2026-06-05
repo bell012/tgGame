@@ -1,49 +1,53 @@
 <template>
   <div :class="feedbackPageContainerClass">
-    <H5Header
-      :title="t('personalCenter.feedback.pageTitle')"
-      :show-back="!isEmbeddedMode"
-      :disable-default-back="isEmbeddedMode"
-      :fixed-top="!isEmbeddedMode"
-      @back="handleFeedbackPageBack"
-    />
-
-    <div class="px-3.5 pb-8 pt-[16px]">
-      <FeedbackTabs
-        :active-tab="activeTab"
-        :is-pc-mode="isEmbeddedMode"
-        @change="handleTabChange"
+    <div class="flex h-full flex-col bg-bg-1">
+      <H5Header
+        :title="t('personalCenter.feedback.pageTitle')"
+        :show-back="!isEmbeddedMode"
+        :disable-default-back="isEmbeddedMode"
+        :fixed-top="!isEmbeddedMode"
+        @back="handleFeedbackPageBack"
       />
 
-      <FeedbackCreateTab
-        v-if="activeTab === 'create'"
-        v-model:selected-type="selectedType"
-        v-model:feedback-content="feedbackContent"
-        v-model:feedback-file-list="feedbackFileList"
-        :feedback-type-options="feedbackTypeOptions"
-        :placeholder-text="placeholderText"
-        :feedback-upload-count="feedbackUploadCount"
-        :feedback-upload-max-count="feedbackUploadMaxCount"
-        :is-submitting-feedback="isSubmittingFeedback"
-        :delete-icon="deleteIcon"
-        :after-read="feedbackImageAfterRead"
-        :before-delete="feedbackImageDelete"
-        :on-submit="handleSubmitFeedback"
-      />
+      <main
+        class="feedback-page-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 pb-8 pt-[16px]"
+      >
+        <FeedbackTabs
+          :active-tab="activeTab"
+          :is-pc-mode="isEmbeddedMode"
+          @change="handleTabChange"
+        />
 
-      <FeedbackMyTab
-        v-else
-        :feedback-reward-icon="feedbackRewardIcon"
-        :is-loading="isLoadingMyFeedbackList"
-        :feedback-list="myFeedbackList"
-        :reward-amount="feedbackRewardAmountText"
-        :can-claim-reward="canClaimFeedbackReward"
-        :is-claiming-reward="isReceivingAllFeedback"
-        :status-text-map="statusTextMap"
-        :status-class-map="statusClassMap"
-        @claim="handleReceiveAllFeedback"
-        @open-detail="goToFeedbackDetail"
-      />
+        <FeedbackCreateTab
+          v-if="activeTab === 'create'"
+          v-model:selected-type="selectedType"
+          v-model:feedback-content="feedbackContent"
+          v-model:feedback-file-list="feedbackFileList"
+          :feedback-type-options="feedbackTypeOptions"
+          :placeholder-text="placeholderText"
+          :feedback-upload-count="feedbackUploadCount"
+          :feedback-upload-max-count="feedbackUploadMaxCount"
+          :is-submitting-feedback="isSubmittingFeedback"
+          :delete-icon="deleteIcon"
+          :after-read="feedbackImageAfterRead"
+          :before-delete="feedbackImageDelete"
+          :on-submit="handleSubmitFeedback"
+        />
+
+        <FeedbackMyTab
+          v-else
+          :feedback-reward-icon="feedbackRewardIcon"
+          :is-loading="isLoadingMyFeedbackList"
+          :feedback-list="myFeedbackList"
+          :reward-amount="feedbackRewardAmountText"
+          :can-claim-reward="canClaimFeedbackReward"
+          :is-claiming-reward="isReceivingAllFeedback"
+          :status-text-map="statusTextMap"
+          :status-class-map="statusClassMap"
+          @claim="handleReceiveAllFeedback"
+          @open-detail="goToFeedbackDetail"
+        />
+      </main>
     </div>
 
     <FeedbackClaimSuccessPopup
@@ -136,12 +140,10 @@ const activeTab = ref<FeedbackTab>('create')
 const isEmbeddedMode = computed(() => Boolean(props.embedded))
 const feedbackPageContainerClass = computed(() => {
   if (isEmbeddedMode.value) {
-    return showFeedbackDetailPopup.value
-      ? 'relative h-full overflow-hidden bg-bg-1'
-      : 'relative h-full overflow-y-auto bg-bg-1'
+    return 'relative h-full overflow-hidden bg-bg-1'
   }
 
-  return 'fixed inset-0 overflow-y-auto bg-bg-1'
+  return 'fixed inset-0 overflow-hidden bg-bg-1'
 })
 
 // 创建反馈表单状态
@@ -537,3 +539,16 @@ onBeforeUnmount(() => {
 const statusClassMap = feedbackStatusClassMap
 const statusTextMap = computed(() => getFeedbackStatusTextMap(t))
 </script>
+
+<style scoped lang="scss">
+.feedback-page-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}
+</style>
