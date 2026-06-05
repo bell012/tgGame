@@ -1,5 +1,6 @@
 import { normalizeDisplayCurrencyCode } from '@/composables/useDisplayCurrency'
 import { formatTimestamp } from '@/utils/date'
+import { getLanguageCode } from '@/utils/locale'
 
 export type FeedbackStatus = 'accepted' | 'pending' | 'rejected'
 
@@ -147,10 +148,13 @@ export const normalizeFeedbackCurrencyCode = (value: unknown) => {
   return FEEDBACK_CURRENCY_ALIASES[normalized] ?? normalized
 }
 
-/** 反馈接口请求体：languageCode 为当前用户币种（与 memberCurrency 对齐） */
+/** 反馈接口请求体：currency 为当前展示币种，languageCode 为当前语言 */
 export const buildFeedbackCurrencyRequest = (currencyCode: unknown) => {
-  const languageCode = normalizeFeedbackCurrencyCode(currencyCode)
-  return { languageCode } as const
+  const currency = normalizeFeedbackCurrencyCode(currencyCode)
+  return {
+    currency,
+    languageCode: getLanguageCode()
+  } as const
 }
 
 const isFeedbackMemberCurrencyMatch = (
@@ -165,40 +169,8 @@ const isFeedbackMemberCurrencyMatch = (
   return normalizeFeedbackCurrencyCode(record.currency) === normalizedUserCurrency
 }
 
-const isTruthyReceiveFlag = (value: unknown) => {
-  if (value === true || value === 1 || value === '1') {
-    return true
-  }
-
-  const normalizedText = String(value ?? '')
-    .trim()
-    .toLowerCase()
-
-  return normalizedText === 'true' || normalizedText === 'yes'
-}
-
-const isReceivedStatusValue = (value: unknown) => {
-  if (isTruthyReceiveFlag(value)) {
-    return true
-  }
-
-  const normalizedText = String(value ?? '')
-    .trim()
-    .toLowerCase()
-
-  return normalizedText === 'received' || normalizedText === 'claimed' || normalizedText === 'done'
-}
-
 const isFeedbackRewardReceived = (record: Record<string, unknown>) => {
-  if (isTruthyReceiveFlag(record.isReceive) || isTruthyReceiveFlag(record.received)) {
-    return true
-  }
-
-  if (isReceivedStatusValue(record.receiveStatus) || isReceivedStatusValue(record.claimStatus)) {
-    return true
-  }
-
-  return false
+  return record.isReceive == 1
 }
 
 const getFeedbackItemClaimableReward = (item: unknown, userCurrencyCode: string) => {
