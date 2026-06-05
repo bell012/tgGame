@@ -4,7 +4,7 @@ import { useLocaleStore } from '@/stores/locale'
 import { SITE_CONFIG_STORAGE_KEY, useSiteConfigStore, type SiteConfig } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
 import { getCurrentCurrency, getFormattedBalance, formatBalance } from '@/utils/locale'
-import { getBalanceByCurrency } from '@/utils/balance'
+import { getBalanceByCurrency, type BalanceCarrier } from '@/utils/balance'
 import {
   getCurrencyIconByCode,
   getCurrencySelectOptionsFromCache,
@@ -115,21 +115,30 @@ export const useDisplayCurrency = () => {
     )
   })
 
-  const currentBalance = computed(() => {
-    if (acctInfo.value) {
-      return getBalanceByCurrency(acctInfo.value, currentCurrencyCode.value, {
-        fallbackToCurrentBalance: true
-      })
+  /** 合并多币种余额：acctInfo 优先，userInfo 补全缺失字段 */
+  const balanceCarrier = computed<BalanceCarrier | null>(() => {
+    if (!acctInfo.value && !userInfo.value) {
+      return null
     }
 
-    if (userInfo.value) {
-      return getBalanceByCurrency(userInfo.value, currentCurrencyCode.value, {
-        fallbackToCurrentBalance: true
-      })
+    return {
+      ...(userInfo.value ?? {}),
+      ...(acctInfo.value ?? {})
     }
-
-    return 0
   })
+
+  const getDisplayBalanceByCode = (code: string) => {
+    const normalizedCode = normalizeDisplayCurrencyCode(code)
+    if (!normalizedCode) {
+      return 0
+    }
+
+    return getBalanceByCurrency(balanceCarrier.value, normalizedCode, {
+      fallbackToCurrentBalance: false
+    })
+  }
+
+  const currentBalance = computed(() => getDisplayBalanceByCode(currentCurrencyCode.value))
 
   const currentBalanceAmountText = computed(() => formatBalance(currentBalance.value, 2))
   const currentBalanceText = computed(() =>
@@ -148,10 +157,9 @@ export const useDisplayCurrency = () => {
     }
 
     const codes = mergedCodes.length ? mergedCodes : [fallbackCode]
-    const listBalanceOptions = { fallbackToCurrentBalance: false } as const
 
     return codes.map(code => {
-      const balance = getBalanceByCurrency(userInfo.value, code, listBalanceOptions)
+      const balance = getDisplayBalanceByCode(code)
 
       return {
         code,

@@ -7,6 +7,7 @@
       :load-error="loadError"
       :is-spinning="isSpinning"
       :spin-info="spinInfo"
+      :winner-records="winnerRecords"
       :game-id="toastState.gameId"
       :header-data="headerData"
       :active-game-index="activeGameIndex"
@@ -50,6 +51,7 @@ import {
 } from './shell/ticketToast'
 import type { LuckySpinWheelExpose } from './components/lucky-spin/useLuckySpinGame'
 import { useLuckySpinGame } from './components/lucky-spin/useLuckySpinGame'
+import { useTicketMarquee } from './composables/useTicketMarquee'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -58,6 +60,8 @@ const toastState = globalTicketToastState
 
 const visible = computed(() => toastState.visible)
 useLockBodyScroll(visible)
+
+const { winnerRecords } = useTicketMarquee(visible)
 
 const wheelRef = ref<LuckySpinWheelExpose | null>(null)
 
@@ -127,10 +131,10 @@ const applyVoucherSelection = (index: number) => {
 
   if (item.gameId) {
     switchTicketGame(item.gameId, record)
-    return
+  } else {
+    setActiveTicketRecord(record)
   }
-
-  setActiveTicketRecord(record)
+  // 跑马灯由 useTicketMarquee 监听 activeTicketRecord.type 拉取，勿再手动 loadMarquee（会重复请求）
 }
 
 const handleGameSelect = (index: number) => {

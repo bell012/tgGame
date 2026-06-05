@@ -9,6 +9,7 @@ import { findTicketIndex } from '../../shared/gameHeaderConfig'
 import type { LuckySpinInfoResult, LuckySpinResult, TicketGameId } from '../../shared/types'
 import {
   closeTicketDialog,
+  globalTicketDialogState,
   openTicketReminderDialog,
   openTicketResultDialog
 } from '../../shell/ticketDialog'
@@ -72,6 +73,7 @@ const refreshTicketSessionAfterList = (
 export interface LuckySpinWheelExpose {
   stopAt: (index: number) => void
   init: () => void
+  clearSectorHighlight: () => void
 }
 
 export const useLuckySpinGame = (
@@ -260,6 +262,15 @@ export const useLuckySpinGame = (
     if (isSpinning.value) return
     closeTicketToast()
   }
+
+  watch(
+    () => globalTicketDialogState.kind,
+    (kind, prevKind) => {
+      if (prevKind === 'result' && kind === 'none') {
+        wheelRef.value?.clearSectorHighlight()
+      }
+    }
+  )
 
   watch(
     visible,

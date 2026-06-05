@@ -3,6 +3,7 @@
   <CheckInPageContent
     mode="pc"
     :view-data="props.viewData"
+    :loading="props.loading"
     @close="$emit('close')"
     @rules="$emit('rules')"
     @action="$emit('action')"
@@ -15,6 +16,7 @@ import type { CheckInViewData } from './shared'
 
 interface Props {
   viewData: CheckInViewData
+  loading?: boolean
 }
 
 const props = defineProps<Props>()

@@ -1,5 +1,8 @@
 <template>
-  <section class="mx-4 mt-3 pb-4">
+  <section
+    class="mx-auto w-full max-w-[340px] overflow-visible px-[14px] pb-4"
+    :class="ticketMobileSectionClass.tickerToFooter"
+  >
     <TicketVoucherSwitcher
       :games="games"
       :active-index="activeIndex"
@@ -16,6 +19,7 @@
 
 <script setup lang="ts">
 import type { TicketVoucherFooterData } from '../shared/types'
+import { ticketMobileSectionClass } from '../shared/ticketMobileLayout'
 import TicketVoucherSwitcher from './TicketVoucherSwitcher.vue'
 
 defineProps<TicketVoucherFooterData>()

@@ -23,6 +23,14 @@ export const TICKET_TYPE_TO_GAME_ID: Partial<Record<number, TicketGameId>> = {
   6: 'mystery_box'
 }
 
+/** 跑马灯接口支持的票券 type：2 红包 3 砸金蛋 4 大转盘 6 盲盒 */
+export const MARQUEE_SUPPORTED_TICKET_TYPES = [2, 3, 4, 6] as const
+
+export const isMarqueeSupportedTicketType = (
+  type?: number
+): type is (typeof MARQUEE_SUPPORTED_TICKET_TYPES)[number] =>
+  type != null && (MARQUEE_SUPPORTED_TICKET_TYPES as readonly number[]).includes(type)
+
 /** @deprecated 使用 TICKET_TYPE_TO_GAME_ID */
 export const VOUCHER_GAME_ID_MAP = TICKET_TYPE_TO_GAME_ID
 
@@ -124,6 +132,13 @@ export const getMbTicketLanguageCopy = (
   }
 }
 
+/** 活动弹窗 / openTicketActivity 拉票券列表：与「我的票券」一致只取发行中，并扩大条数避免分页漏券 */
+export const MB_TICKET_ACTIVITY_LIST_QUERY = {
+  current: 1,
+  size: 100,
+  status: 1 as const
+}
+
 /** 按玩法筛选票券（保留 result 数组顺序） */
 export const findMbTicketsByGameId = (
   records: MbTicketRecord[],
@@ -142,6 +157,13 @@ export const resolveTicketActivitySession = (
 ): { activeRecord: MbTicketRecord; sessionRecords: MbTicketRecord[] } | null => {
   const matches = findMbTicketsByGameId(records, gameId)
   if (matches.length === 0) {
+    if (preferredRecord && TICKET_TYPE_TO_GAME_ID[Number(preferredRecord.type)] === gameId) {
+      return {
+        activeRecord: preferredRecord,
+        sessionRecords: [preferredRecord, ...records]
+      }
+    }
+
     return null
   }
 
@@ -162,7 +184,10 @@ export const resolveTicketActivitySession = (
 
 /** 拉取我的票券列表；失败或 success=false 时抛出 */
 export const fetchMbTicketListRecords = async (languageCode: string): Promise<MbTicketRecord[]> => {
-  const response = await Api.activity.mbTicketList({ languageCode })
+  const response = await Api.activity.mbTicketList({
+    ...MB_TICKET_ACTIVITY_LIST_QUERY,
+    languageCode
+  })
 
   if (!response.success) {
     throw new Error(response.message || 'mbTicketList failed')

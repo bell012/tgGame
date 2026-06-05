@@ -91,7 +91,7 @@
           <SmartImage :src="balanceIcon" alt="Balance" class="w-5 h-5" />
           <span class="text-text-2 text-sm">{{ t('personalCenter.totalBalance') }}</span>
         </div>
-        <span class="text-text-1 text-lg font-bold">{{ totalBalance }}</span>
+        <span class="text-text-1 text-lg font-bold">{{ currentBalanceText }}</span>
       </div>
     </div>
 
@@ -304,7 +304,7 @@
     <Teleport to="body">
       <CurrencyPopup
         v-model:visible="showCurrencyPopup"
-        :selected-currency="currentCurrency"
+        :selected-currency="currentCurrencyCode"
         :options="currencyOptions"
         @select="handleCurrencySelect"
       />
@@ -313,7 +313,6 @@
 </template>
 
 <script setup lang="ts">
-import { getCurrencyIconByCode } from '@/components/common/currency-selector/currency-select-options'
 import SignOutPopup from '@/components/common/SignOutPopup.vue'
 import balanceIcon from '@/static/img/personalCenter/balance.png'
 import vipIcon from '@/static/img/personalCenter/vip.png'
@@ -328,17 +327,15 @@ import SignOut from '@/static/svg/personalCenter/icon18.svg?component'
 import WithdrawIcon from '@/static/svg/personalCenter/icon2.svg?component'
 import MoonIcon from '@/static/svg/personalCenter/icon32.svg?component'
 import SunIcon from '@/static/svg/personalCenter/icon33.svg?component'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useLocaleStore } from '@/stores/locale'
 import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
-import { SITE_CONFIG_STORAGE_KEY } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
 import { useTradeMessageSyncStore } from '@/stores/tradeMessageSync'
 import { useUserStore } from '@/stores/user'
 import { useVipStore } from '@/stores/vip'
 import {
-  getCurrentCurrency,
   formatBalance,
-  getFormattedBalance,
   getLocaleLabel,
   getLocaleOptions,
   type Locale,
@@ -346,7 +343,6 @@ import {
 } from '@/utils/locale'
 import { resolveProfileAvatarUrl } from '@/utils/profile-customization'
 import { navigateTo } from '@/utils/router'
-import { getBalanceByCurrency } from '@/utils/balance'
 import { globalShowToast } from '@/utils/toast.ts'
 import CurrencyPopup from '@/views/personalCenter/components/CurrencyPopup.vue'
 import LanguagePopup from '@/views/personalCenter/components/LanguagePopup.vue'
@@ -364,17 +360,11 @@ const themeStore = useThemeStore()
 const tradeMessageSyncStore = useTradeMessageSyncStore()
 const userStore = useUserStore()
 const vipStore = useVipStore()
-const { userInfo, acctInfo } = storeToRefs(userStore)
+const { userInfo } = storeToRefs(userStore)
+const { currentCurrencyCode, currentBalanceText, currencyOptions, setDisplayCurrency } =
+  useDisplayCurrency()
 const { totalUnreadCount } = storeToRefs(notificationIndicatorStore)
 const { myVipInfo, vipList } = storeToRefs(vipStore)
-
-type CachedSiteConfig = {
-  currency?: unknown
-  baseSiteConfig?: {
-    supportCurrency?: unknown
-    [key: string]: unknown
-  }
-}
 
 const originalColorIconNumbers = new Set([16, 31])
 
@@ -399,46 +389,6 @@ const showSignOutPopup = ref(false)
 const referralRewardText = ref('US$1,000.00')
 const referralRewardText2 = ref('15%')
 const referralLink = ref('https://www.baidu.com/jh/ocja...')
-
-const normalizeCurrencyCode = (value: unknown) => {
-  return String(value ?? '')
-    .trim()
-    .toUpperCase()
-}
-
-const parseCurrencyCodes = (rawCurrency: unknown) => {
-  if (Array.isArray(rawCurrency)) {
-    return Array.from(new Set(rawCurrency.map(normalizeCurrencyCode).filter(Boolean)))
-  }
-
-  if (typeof rawCurrency === 'string') {
-    return Array.from(
-      new Set(
-        rawCurrency
-          .split(',')
-          .map(item => normalizeCurrencyCode(item))
-          .filter(Boolean)
-      )
-    )
-  }
-
-  return []
-}
-
-const readCachedConfigCurrencyCodes = () => {
-  const rawConfig = localStorage.getItem(SITE_CONFIG_STORAGE_KEY)
-  if (!rawConfig) {
-    return []
-  }
-
-  try {
-    const parsed = JSON.parse(rawConfig) as CachedSiteConfig
-    return parseCurrencyCodes(parsed?.baseSiteConfig?.supportCurrency)
-  } catch (error) {
-    console.error(error)
-    return []
-  }
-}
 
 // 头像 URL
 const avatarUrl = computed(() => {
@@ -540,27 +490,6 @@ const nextVipLevel = computed(() => {
   return Math.min(vipLevel.value + 1, maxVipLevel.value)
 })
 
-// 总余额
-const currentBalance = computed(() => {
-  if (acctInfo.value) {
-    return getBalanceByCurrency(acctInfo.value, currentCurrency.value, {
-      fallbackToCurrentBalance: true
-    })
-  }
-
-  if (userInfo.value) {
-    return getBalanceByCurrency(userInfo.value, currentCurrency.value, {
-      fallbackToCurrentBalance: true
-    })
-  }
-
-  return 0
-})
-
-const totalBalance = computed(() => {
-  return getFormattedBalance(currentBalance.value, currentCurrency.value, 2)
-})
-
 const notificationUnreadBadge = computed(() => {
   if (totalUnreadCount.value <= 0) {
     return ''
@@ -574,45 +503,7 @@ const currentLanguage = computed(() => {
   return getLocaleLabel(localeStore.currentLanguage)
 })
 
-// 当前货币
-const currentCurrency = computed(() => {
-  const selectedCurrency = normalizeCurrencyCode(localeStore.currentCurrency)
-
-  if (selectedCurrency && selectedCurrency !== 'NONE') {
-    return selectedCurrency
-  }
-
-  return normalizeCurrencyCode(
-    acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
-  )
-})
-
 const languageOptions = computed<LocaleOption[]>(() => getLocaleOptions())
-
-const currencyOptions = computed(() => {
-  const codesFromConfig = readCachedConfigCurrencyCodes()
-  const fallbackCode = currentCurrency.value || normalizeCurrencyCode(getCurrentCurrency()) || 'PHP'
-  const mergedCodes = [...codesFromConfig]
-
-  if (!mergedCodes.includes(currentCurrency.value)) {
-    mergedCodes.unshift(currentCurrency.value)
-  }
-
-  const codes = mergedCodes.length ? mergedCodes : [fallbackCode]
-  const listBalanceOptions = { fallbackToCurrentBalance: false } as const
-
-  return codes.map(code => {
-    const balance = acctInfo.value
-      ? getBalanceByCurrency(acctInfo.value, code, listBalanceOptions)
-      : getBalanceByCurrency(userInfo.value, code, listBalanceOptions)
-
-    return {
-      code,
-      icon: getCurrencyIconByCode(code),
-      balanceText: getFormattedBalance(balance, code, 2)
-    }
-  })
-})
 
 // 返回
 const handleBack = () => {
@@ -760,7 +651,7 @@ const globalSettings = computed(() => [
     id: 'currency',
     name: t('personalCenter.currency'),
     icon: getIcon(14),
-    value: currentCurrency.value,
+    value: currentCurrencyCode.value,
     handler: () => openCurrencyPopup()
   },
   {
@@ -858,12 +749,7 @@ const handleLanguageSelect = (code: Locale) => {
 }
 
 const handleCurrencySelect = (code: string) => {
-  const selectedCode = normalizeCurrencyCode(code)
-  if (!selectedCode) {
-    return
-  }
-
-  localeStore.setCurrency(selectedCode)
+  setDisplayCurrency(code)
 }
 
 const initializePersonalCenter = async () => {

@@ -228,8 +228,14 @@ export interface SendFeedbackResponse {
   result?: unknown
 }
 
+/** 反馈相关接口公共参数 */
+export interface FeedbackCurrencyForm {
+  currency: string
+  languageCode: string
+}
+
 // 查询我的反馈列表 请求参数
-export interface QueryFeedbacksForm {}
+export interface QueryFeedbacksForm extends Partial<FeedbackCurrencyForm> {}
 
 // 查询我的反馈列表 响应结果
 export interface QueryFeedbackItem {
@@ -284,7 +290,7 @@ export interface QueryFeedbacksResponse {
 }
 
 // 一键领取反馈奖励 请求参数
-export interface ReceiveAllFeedbackForm {}
+export interface ReceiveAllFeedbackForm extends FeedbackCurrencyForm {}
 
 // 一键领取反馈奖励 响应
 export interface ReceiveAllFeedbackResponse {

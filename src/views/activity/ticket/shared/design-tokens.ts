@@ -53,15 +53,17 @@ export const LUCKY_SPIN_TOKENS = {
   modalBlur: '8px',
   titleGradient: TICKET_MODAL_THEMES.lucky_spin.titleGradient,
   countdownBox: {
-    w: 26,
-    h: 26,
+    w: 24,
+    h: 24,
     radius: 6,
     border: 'rgba(255,255,255,0.2)',
-    bg: '#1A1A2E'
+    bg: 'transparent'
   },
   countdownColon: TICKET_MODAL_THEMES.lucky_spin.countdownColon,
   expiresLabel: TICKET_MODAL_THEMES.lucky_spin.expiresLabel,
   voucherCountGreen: '#2AEE88',
+  /** H5 转盘距屏幕左右边距（Figma） */
+  wheelSideMargin: 36,
   wheelSize: 301,
   wheelDiscInset: '6.1%',
   wheelPointerSize: '34%',

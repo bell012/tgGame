@@ -71,7 +71,7 @@ import feedbackBowIcon from '@/static/svg/feedback/hdj.svg?url'
 import feedbackStarIcon from '@/static/svg/feedback/star.svg?url'
 import feedbackEllipseIcon from '@/static/svg/feedback/ellipse.svg?url'
 import deleteIcon from '@/static/img/payment/upload_delete.png'
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { showToast, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
@@ -80,8 +80,10 @@ import {
   FEEDBACK_CLAIM_AMOUNT_ANIMATION_DURATION,
   FEEDBACK_UPLOAD_MAX_COUNT,
   extractClaimedFeedbackAmount,
+  buildFeedbackCurrencyRequest,
   extractFeedbackClaimRewardAmount,
   extractFeedbackList,
+  normalizeFeedbackCurrencyCode,
   sortFeedbackItemsByNewest,
   feedbackStatusClassMap,
   formatFeedbackRewardAmount,
@@ -121,6 +123,14 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const { currentCurrencyCode } = useDisplayCurrency()
 
+/** 与列表汇总、接口 languageCode 使用同一套币种规范化 */
+const feedbackMemberCurrencyCode = computed(() =>
+  normalizeFeedbackCurrencyCode(currentCurrencyCode.value)
+)
+const feedbackCurrencyRequest = computed(() =>
+  buildFeedbackCurrencyRequest(feedbackMemberCurrencyCode.value)
+)
+
 // 页面基础状态
 const activeTab = ref<FeedbackTab>('create')
 const isEmbeddedMode = computed(() => Boolean(props.embedded))
@@ -153,15 +163,17 @@ const isReceivingAllFeedback = ref(false)
 
 // 领取奖励弹窗状态
 const showClaimSuccessPopup = ref(false)
-const claimAmountCurrencySymbol = getCurrencySymbol()
+const claimAmountCurrencySymbol = computed(() =>
+  getCurrencySymbol(feedbackMemberCurrencyCode.value || undefined)
+)
+const formatClaimAmount = (amount: number) =>
+  `${claimAmountCurrencySymbol.value}${formatFeedbackRewardAmount(amount)}`
 const claimAmountAnimationDuration = FEEDBACK_CLAIM_AMOUNT_ANIMATION_DURATION
-const claimSuccessAmount = ref(`${claimAmountCurrencySymbol}0.00`)
+const claimSuccessAmount = ref(formatClaimAmount(0))
 let claimAmountAnimationFrame: number | null = null
 let claimSuccessTargetAmount = 0
 
-const feedbackRewardAmountText = computed(() =>
-  formatFeedbackRewardAmount(feedbackClaimRewardAmount.value)
-)
+const feedbackRewardAmountText = computed(() => formatClaimAmount(feedbackClaimRewardAmount.value))
 const canClaimFeedbackReward = computed(() => feedbackClaimRewardAmount.value > 0)
 
 const feedbackTypeOptions = computed(() => getFeedbackTypeOptions(t))
@@ -307,6 +319,10 @@ const handleSubmitFeedback = async () => {
 const closeFeedbackDetailPopup = () => {
   showFeedbackDetailPopup.value = false
   selectedFeedbackDetailRecordId.value = ''
+
+  if (activeTab.value === 'mine') {
+    void refreshMyFeedbackList({ force: true })
+  }
 }
 
 const handleTabChange = (tab: FeedbackTab) => {
@@ -316,12 +332,16 @@ const handleTabChange = (tab: FeedbackTab) => {
 
   activeTab.value = tab
   if (tab === 'mine') {
-    void fetchMyFeedbackList()
+    void refreshMyFeedbackList()
   }
 }
 
-const fetchMyFeedbackList = async () => {
-  if (isLoadingMyFeedbackList.value) {
+type RefreshMyFeedbackListOptions = {
+  force?: boolean
+}
+
+const refreshMyFeedbackList = async (options: RefreshMyFeedbackListOptions = {}) => {
+  if (isLoadingMyFeedbackList.value && !options.force) {
     return
   }
 
@@ -329,7 +349,7 @@ const fetchMyFeedbackList = async () => {
   feedbackClaimRewardAmount.value = 0
 
   try {
-    const response = await Api.user.queryFeedbacks({})
+    const response = await Api.user.queryFeedbacks(feedbackCurrencyRequest.value)
     if (!response?.success) {
       throw new Error(
         response?.message || t('personalCenter.feedback.toast.fetchFeedbackListFailed')
@@ -338,7 +358,7 @@ const fetchMyFeedbackList = async () => {
 
     feedbackClaimRewardAmount.value = extractFeedbackClaimRewardAmount(
       response.result,
-      currentCurrencyCode.value
+      feedbackMemberCurrencyCode.value
     )
     const responseList = sortFeedbackItemsByNewest(
       extractFeedbackList(response.result) as QueryFeedbackItem[]
@@ -376,8 +396,6 @@ const fetchMyFeedbackList = async () => {
     isLoadingMyFeedbackList.value = false
   }
 }
-
-const formatClaimAmount = (amount: number) => `${claimAmountCurrencySymbol}${amount.toFixed(2)}`
 
 const stopClaimAmountAnimation = () => {
   if (claimAmountAnimationFrame !== null) {
@@ -428,19 +446,42 @@ const handleReceiveAllFeedback = async () => {
     return
   }
 
+  if (!feedbackMemberCurrencyCode.value) {
+    showToast({
+      message: t('personalCenter.feedback.toast.claimFailed'),
+      position: 'middle',
+      type: 'fail'
+    })
+    return
+  }
+
   isReceivingAllFeedback.value = true
+  let claimSucceeded = false
+  let claimedAmount = 0
+
   try {
-    const response = await Api.user.receiveAllFeedback({})
+    const response = await Api.user.receiveAllFeedback(feedbackCurrencyRequest.value)
     if (!response?.success) {
       throw new Error(response?.message || t('personalCenter.feedback.toast.claimFailed'))
     }
 
-    const claimedAmount =
-      extractClaimedFeedbackAmount(response.result) || feedbackClaimRewardAmount.value
+    claimSucceeded = true
+    claimedAmount = extractClaimedFeedbackAmount(response.result) || feedbackClaimRewardAmount.value
 
+    feedbackClaimRewardAmount.value = 0
+    await refreshMyFeedbackList({ force: true })
     openClaimSuccessPopup(claimedAmount)
-    void fetchMyFeedbackList()
   } catch (error) {
+    if (claimSucceeded) {
+      try {
+        await refreshMyFeedbackList({ force: true })
+      } catch {
+        // 领取已成功，二次刷新失败时保持当前列表状态
+      }
+      openClaimSuccessPopup(claimedAmount)
+      return
+    }
+
     showToast({
       message:
         error instanceof Error ? error.message : t('personalCenter.feedback.toast.claimFailed'),
@@ -455,7 +496,14 @@ const handleReceiveAllFeedback = async () => {
 const closeClaimSuccessPopup = () => {
   showClaimSuccessPopup.value = false
   stopClaimAmountAnimation()
+  void refreshMyFeedbackList({ force: true })
 }
+
+watch(feedbackMemberCurrencyCode, () => {
+  if (activeTab.value === 'mine') {
+    void refreshMyFeedbackList({ force: true })
+  }
+})
 
 const goToFeedbackDetail = (recordId: string) => {
   if (isEmbeddedMode.value) {
