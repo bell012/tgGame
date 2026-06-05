@@ -221,9 +221,9 @@ const getFeedbackItemClaimableReward = (item: unknown, userCurrencyCode: string)
     return 0
   }
 
-  if (normalizeFeedbackStatus(record.status) !== 'accepted') {
-    return 0
-  }
+  // if (normalizeFeedbackStatus(record.status) !== 'accepted') {
+  //   return 0
+  // }
 
   return balance
 }
