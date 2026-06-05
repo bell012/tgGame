@@ -1,3 +1,4 @@
+import { normalizeDisplayCurrencyCode } from '@/composables/useDisplayCurrency'
 import { formatTimestamp } from '@/utils/date'
 
 export type FeedbackStatus = 'accepted' | 'pending' | 'rejected'
@@ -61,16 +62,6 @@ export const normalizeFeedbackStatus = (value: unknown): FeedbackStatus => {
   const normalizedText = String(value ?? '')
     .trim()
     .toLowerCase()
-  if (normalizedText === 'accepted') {
-    return 'accepted'
-  }
-  if (normalizedText === 'pending') {
-    return 'pending'
-  }
-  if (normalizedText === 'rejected') {
-    return 'pending'
-  }
-
   const normalizedNumber = Number(normalizedText)
   if (normalizedNumber === 1) {
     return 'accepted'
@@ -146,10 +137,14 @@ const pickFirstNumber = (record: Record<string, unknown>, keys: string[]) => {
   return null
 }
 
+/** 已知前后端币种编码不一致时追加映射，不枚举站点支持币种 */
+const FEEDBACK_CURRENCY_ALIASES: Record<string, string> = {
+  RMB: 'CNY'
+}
+
 export const normalizeFeedbackCurrencyCode = (value: unknown) => {
-  return String(value ?? '')
-    .trim()
-    .toUpperCase()
+  const normalized = normalizeDisplayCurrencyCode(value)
+  return FEEDBACK_CURRENCY_ALIASES[normalized] ?? normalized
 }
 
 /** 反馈接口请求体：languageCode 为当前用户币种（与 memberCurrency 对齐） */
@@ -167,13 +162,42 @@ const isFeedbackMemberCurrencyMatch = (
     return false
   }
 
-  return normalizeFeedbackCurrencyCode(record.memberCurrency) === normalizedUserCurrency
+  return normalizeFeedbackCurrencyCode(record.currency) === normalizedUserCurrency
+}
+
+const isTruthyReceiveFlag = (value: unknown) => {
+  if (value === true || value === 1 || value === '1') {
+    return true
+  }
+
+  const normalizedText = String(value ?? '')
+    .trim()
+    .toLowerCase()
+
+  return normalizedText === 'true' || normalizedText === 'yes'
+}
+
+const isReceivedStatusValue = (value: unknown) => {
+  if (isTruthyReceiveFlag(value)) {
+    return true
+  }
+
+  const normalizedText = String(value ?? '')
+    .trim()
+    .toLowerCase()
+
+  return normalizedText === 'received' || normalizedText === 'claimed' || normalizedText === 'done'
 }
 
 const isFeedbackRewardReceived = (record: Record<string, unknown>) => {
-  if (record.isReceive === 1) {
+  if (isTruthyReceiveFlag(record.isReceive) || isTruthyReceiveFlag(record.received)) {
     return true
   }
+
+  if (isReceivedStatusValue(record.receiveStatus) || isReceivedStatusValue(record.claimStatus)) {
+    return true
+  }
+
   return false
 }
 
