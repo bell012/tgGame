@@ -95,7 +95,7 @@
     <!-- 底部Tab栏 -->
     <BottomTabBar class="sm:hidden" v-if="!hideBottomBar" />
 
-    <CheckInPopup v-model="checkInVisible" />
+    <CheckInPopup v-model="checkInVisible" auto-popup-only />
   </div>
 </template>
 
