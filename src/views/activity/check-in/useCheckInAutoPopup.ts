@@ -6,7 +6,7 @@ import { storeToRefs } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import { loadActiveCheckInData } from './checkInData'
+import { loadActiveCheckInDataList } from './checkInData'
 
 // 后端 channel 枚举：3 表示 PC，4 表示 H5。
 const CHECK_IN_PC_CHANNEL_ID = '3'
@@ -75,15 +75,16 @@ export const useCheckInAutoPopup = () => {
     isChecking.value = true
 
     try {
-      const checkInData = await loadActiveCheckInData({
+      const checkInDataQueue = await loadActiveCheckInDataList({
         channelId: activeChannelId.value,
         currencyCode: activeCurrency.value,
         languageCode: locale.value,
         isLoggedIn: true,
-        requireAutoPopup: true
+        requireAutoPopup: true,
+        excludeTodaySigned: true
       })
 
-      if (checkInData && !checkInData.status.todayIsSign) {
+      if (checkInDataQueue.length > 0) {
         checkInModalStore.openModal()
       }
     } catch (error) {

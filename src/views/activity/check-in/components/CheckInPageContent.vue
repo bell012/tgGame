@@ -185,11 +185,12 @@
 
           <div class="absolute inset-x-0 bottom-[28px] flex flex-col items-center gap-[8px]">
             <div class="flex h-[48px] items-center justify-center">
-              <img
-                :src="primaryAmountHeroReward.icon"
-                alt=""
-                class="h-[32px] w-[32px] object-contain"
-              />
+              <span
+                class="text-[40px] font-[700] leading-[48px]"
+                :style="{ color: primaryAmountHeroReward.amountColor }"
+              >
+                {{ primaryAmountHeroReward.currencySymbol }}
+              </span>
               <span
                 class="text-[40px] font-[700] leading-[48px]"
                 :style="{ color: primaryAmountHeroReward.amountColor }"
@@ -259,11 +260,12 @@
 
             <div class="absolute inset-x-0 bottom-[32px] flex flex-col items-center gap-[8px]">
               <div class="flex h-[48px] items-center justify-center">
-                <img
-                  :src="primaryAmountHeroReward.icon"
-                  alt=""
-                  class="h-[32px] w-[32px] object-contain"
-                />
+                <span
+                  class="text-[40px] font-[700] leading-[48px]"
+                  :style="{ color: primaryAmountHeroReward.amountColor }"
+                >
+                  {{ primaryAmountHeroReward.currencySymbol }}
+                </span>
                 <span
                   class="text-[40px] font-[700] leading-[48px]"
                   :style="{ color: primaryAmountHeroReward.amountColor }"
@@ -421,11 +423,12 @@
 
         <div class="absolute inset-x-0 bottom-[20px] flex flex-col items-center gap-[5px]">
           <div class="flex h-[31px] items-center justify-center gap-[1px]">
-            <img
-              :src="primaryAmountHeroReward.icon"
-              alt=""
-              class="h-[22px] w-[22px] object-contain"
-            />
+            <span
+              class="text-[26px] font-[700] leading-[31px]"
+              :style="{ color: primaryAmountHeroReward.amountColor }"
+            >
+              {{ primaryAmountHeroReward.currencySymbol }}
+            </span>
             <span
               class="text-[26px] font-[700] leading-[31px]"
               :style="{ color: primaryAmountHeroReward.amountColor }"
@@ -495,11 +498,12 @@
 
           <div class="absolute inset-x-0 bottom-[20px] flex flex-col items-center gap-[5px]">
             <div class="flex h-[31px] items-center justify-center gap-[1px]">
-              <img
-                :src="primaryAmountHeroReward.icon"
-                alt=""
-                class="h-[22px] w-[22px] object-contain"
-              />
+              <span
+                class="text-[26px] font-[700] leading-[31px]"
+                :style="{ color: primaryAmountHeroReward.amountColor }"
+              >
+                {{ primaryAmountHeroReward.currencySymbol }}
+              </span>
               <span
                 class="text-[26px] font-[700] leading-[31px]"
                 :style="{ color: primaryAmountHeroReward.amountColor }"

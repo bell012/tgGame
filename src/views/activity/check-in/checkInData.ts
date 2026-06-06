@@ -9,6 +9,7 @@ export interface LoadActiveCheckInOptions {
   currencyCode?: string
   languageCode?: string
   requireAutoPopup?: boolean
+  excludeTodaySigned?: boolean
   isLoggedIn?: boolean
 }
 
@@ -92,8 +93,8 @@ const isActivityLanguageMatched = (activity: ActivityListItem, languageCode?: st
   return Boolean(resolveCheckInActivityDesc(activity, languageCode))
 }
 
-// 筛选当前可用的签到活动。
-export const selectActiveCheckInActivity = (
+// 筛选当前可用的签到活动，并按照 sortNo 从小到大排序。
+export const selectActiveCheckInActivities = (
   records: ActivityListItem[],
   options: LoadActiveCheckInOptions = {}
 ) => {
@@ -117,23 +118,22 @@ export const selectActiveCheckInActivity = (
       const secondSortNo = Number(second.sortNo ?? Number.MAX_SAFE_INTEGER)
 
       return firstSortNo - secondSortNo
-    })[0]
+    })
 }
 
-// 拉取当前可用签到活动，并转换成页面视图数据。
-export const loadActiveCheckInData = async (
+// 筛选排序后的第一个可用签到活动，保留给单活动调用场景。
+export const selectActiveCheckInActivity = (
+  records: ActivityListItem[],
+  options: LoadActiveCheckInOptions = {}
+) => {
+  return selectActiveCheckInActivities(records, options)[0]
+}
+
+// 查询指定签到活动的会员签到状态，并转换成页面视图数据。
+export const loadCheckInActivityData = async (
+  activity: ActivityListItem,
   options: LoadActiveCheckInOptions = {}
 ): Promise<ActiveCheckInData | null> => {
-  const activityListResponse = ensureApiBusinessSuccess(
-    await Api.activity.queryActivityList({
-      size: 100,
-      current: 1,
-      type: 5
-    })
-  )
-  const records = activityListResponse.result?.records ?? []
-  const activity = selectActiveCheckInActivity(records, options)
-
   if (!activity?.rowId) {
     return null
   }
@@ -145,7 +145,7 @@ export const loadActiveCheckInData = async (
   )
   const status = checkInStatusResponse.result
 
-  if (!status) {
+  if (!status || (options.excludeTodaySigned && status.todayIsSign)) {
     return null
   }
 
@@ -157,4 +157,31 @@ export const loadActiveCheckInData = async (
       languageCode: options.languageCode
     })
   }
+}
+
+// 拉取所有当前可用签到活动，并按 sortNo 顺序转换成签到页面队列。
+export const loadActiveCheckInDataList = async (
+  options: LoadActiveCheckInOptions = {}
+): Promise<ActiveCheckInData[]> => {
+  const activityListResponse = ensureApiBusinessSuccess(
+    await Api.activity.queryActivityList({
+      size: 100,
+      current: 1,
+      type: 5
+    })
+  )
+  const records = activityListResponse.result?.records ?? []
+  const activities = selectActiveCheckInActivities(records, options)
+  const activityDataList = await Promise.all(
+    activities.map(activity => loadCheckInActivityData(activity, options))
+  )
+
+  return activityDataList.filter((item): item is ActiveCheckInData => Boolean(item))
+}
+
+// 拉取排序后的第一个当前可用签到活动，保留给单活动调用场景。
+export const loadActiveCheckInData = async (
+  options: LoadActiveCheckInOptions = {}
+): Promise<ActiveCheckInData | null> => {
+  return (await loadActiveCheckInDataList(options))[0] ?? null
 }

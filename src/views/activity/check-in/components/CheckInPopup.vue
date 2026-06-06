@@ -62,7 +62,11 @@ import {
   type CheckInRewardItem,
   type CheckInViewData
 } from '../shared'
-import { loadActiveCheckInData } from '../checkInData'
+import {
+  loadActiveCheckInDataList,
+  loadCheckInActivityData,
+  type ActiveCheckInData
+} from '../checkInData'
 import CheckInMobileLayout from '../mobile-layout.vue'
 import CheckInPcLayout from '../pc-layout.vue'
 import CheckInRequirementReminderPopup from './CheckInRequirementReminderPopup.vue'
@@ -73,6 +77,7 @@ const CHECK_IN_H5_CHANNEL_ID = '4'
 
 interface Props {
   modelValue: boolean
+  autoPopupOnly?: boolean
 }
 
 const props = defineProps<Props>()
@@ -88,6 +93,8 @@ const userStore = useUserStore()
 const { acctInfo, userInfo } = storeToRefs(userStore)
 const { locale } = useI18n()
 const viewData = ref<CheckInViewData>(createDefaultCheckInViewData())
+const checkInDataQueue = ref<ActiveCheckInData[]>([])
+const activeQueueIndex = ref(0)
 const isLoading = ref(false)
 const isClaiming = ref(false)
 const hasLoaded = ref(false)
@@ -117,7 +124,24 @@ const activeCurrencyCode = computed(() => {
   return acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
 })
 
-// 加载签到活动和会员签到状态，并转换为页面视图数据。
+// 当前正在展示的签到活动队列项。
+const activeCheckInData = computed(() => checkInDataQueue.value[activeQueueIndex.value] ?? null)
+
+// 将队列指定项同步到页面，切换活动时清理上一个活动的条件提醒。
+const showCheckInDataAt = (index: number) => {
+  const targetData = checkInDataQueue.value[index]
+
+  if (!targetData) {
+    return false
+  }
+
+  activeQueueIndex.value = index
+  viewData.value = targetData.viewData
+  closeRequirementReminder()
+  return true
+}
+
+// 加载签到活动队列和会员签到状态，并展示 sortNo 最小的第一个活动。
 const loadCheckInData = async () => {
   if (!props.modelValue || !isLoggedIn.value || isLoading.value) {
     return
@@ -126,13 +150,24 @@ const loadCheckInData = async () => {
   isLoading.value = true
 
   try {
-    const checkInData = await loadActiveCheckInData({
+    const nextQueue = await loadActiveCheckInDataList({
       channelId: currentChannelId.value,
       currencyCode: activeCurrencyCode.value,
-      languageCode: locale.value
+      languageCode: locale.value,
+      isLoggedIn: true,
+      requireAutoPopup: props.autoPopupOnly,
+      excludeTodaySigned: props.autoPopupOnly
     })
 
-    viewData.value = checkInData?.viewData ?? createDefaultCheckInViewData()
+    checkInDataQueue.value = nextQueue
+
+    if (!showCheckInDataAt(0)) {
+      viewData.value = createDefaultCheckInViewData()
+
+      if (props.autoPopupOnly) {
+        emit('update:modelValue', false)
+      }
+    }
   } catch (error) {
     console.error(error)
   } finally {
@@ -165,19 +200,30 @@ const handleAction = async () => {
       return
     }
 
-    const claimHeroRewards = createCheckInHeroRewardsFromClaimResult(receiveRewardResponse.result)
-    const refreshedCheckInData = await loadActiveCheckInData({
-      channelId: currentChannelId.value,
-      currencyCode: activeCurrencyCode.value,
-      languageCode: locale.value
-    })
+    const claimHeroRewards = createCheckInHeroRewardsFromClaimResult(
+      receiveRewardResponse.result,
+      activeCurrencyCode.value
+    )
+    const currentCheckInData = activeCheckInData.value
+    const refreshedCheckInData = currentCheckInData
+      ? await loadCheckInActivityData(currentCheckInData.activity, {
+          currencyCode: activeCurrencyCode.value,
+          languageCode: locale.value
+        })
+      : null
 
     if (refreshedCheckInData?.viewData) {
-      viewData.value = {
+      const refreshedViewData = {
         ...refreshedCheckInData.viewData,
         heroRewards:
           claimHeroRewards.length > 0 ? claimHeroRewards : refreshedCheckInData.viewData.heroRewards
       }
+
+      checkInDataQueue.value[activeQueueIndex.value] = {
+        ...refreshedCheckInData,
+        viewData: refreshedViewData
+      }
+      viewData.value = refreshedViewData
     } else {
       viewData.value = {
         ...viewData.value,
@@ -195,9 +241,14 @@ const handleAction = async () => {
   }
 }
 
-// 关闭签到弹窗并同步外层显示状态。
+// 关闭当前签到活动；队列中还有活动时切换下一项，最后一项关闭后才关闭全局弹窗。
 const handleClose = () => {
   closeRequirementReminder()
+
+  if (showCheckInDataAt(activeQueueIndex.value + 1)) {
+    return
+  }
+
   emit('update:modelValue', false)
 }
 
@@ -228,6 +279,8 @@ watch(
   ([visible, loggedIn]) => {
     if (!visible) {
       hasLoaded.value = false
+      activeQueueIndex.value = 0
+      checkInDataQueue.value = []
       closeRequirementReminder()
       return
     }
