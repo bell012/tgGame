@@ -1,49 +1,53 @@
 <template>
   <div :class="feedbackPageContainerClass">
-    <H5Header
-      :title="t('personalCenter.feedback.pageTitle')"
-      :show-back="!isEmbeddedMode"
-      :disable-default-back="isEmbeddedMode"
-      :fixed-top="!isEmbeddedMode"
-      @back="handleFeedbackPageBack"
-    />
-
-    <div class="px-3.5 pb-8 pt-[16px]">
-      <FeedbackTabs
-        :active-tab="activeTab"
-        :is-pc-mode="isEmbeddedMode"
-        @change="handleTabChange"
+    <div class="flex h-full flex-col bg-bg-1">
+      <H5Header
+        :title="t('personalCenter.feedback.pageTitle')"
+        :show-back="!isEmbeddedMode"
+        :disable-default-back="isEmbeddedMode"
+        :fixed-top="!isEmbeddedMode"
+        @back="handleFeedbackPageBack"
       />
 
-      <FeedbackCreateTab
-        v-if="activeTab === 'create'"
-        v-model:selected-type="selectedType"
-        v-model:feedback-content="feedbackContent"
-        v-model:feedback-file-list="feedbackFileList"
-        :feedback-type-options="feedbackTypeOptions"
-        :placeholder-text="placeholderText"
-        :feedback-upload-count="feedbackUploadCount"
-        :feedback-upload-max-count="feedbackUploadMaxCount"
-        :is-submitting-feedback="isSubmittingFeedback"
-        :delete-icon="deleteIcon"
-        :after-read="feedbackImageAfterRead"
-        :before-delete="feedbackImageDelete"
-        :on-submit="handleSubmitFeedback"
-      />
+      <main
+        class="feedback-page-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 pb-8 pt-[16px]"
+      >
+        <FeedbackTabs
+          :active-tab="activeTab"
+          :is-pc-mode="isEmbeddedMode"
+          @change="handleTabChange"
+        />
 
-      <FeedbackMyTab
-        v-else
-        :feedback-reward-icon="feedbackRewardIcon"
-        :is-loading="isLoadingMyFeedbackList"
-        :feedback-list="myFeedbackList"
-        :reward-amount="feedbackRewardAmountText"
-        :can-claim-reward="canClaimFeedbackReward"
-        :is-claiming-reward="isReceivingAllFeedback"
-        :status-text-map="statusTextMap"
-        :status-class-map="statusClassMap"
-        @claim="handleReceiveAllFeedback"
-        @open-detail="goToFeedbackDetail"
-      />
+        <FeedbackCreateTab
+          v-if="activeTab === 'create'"
+          v-model:selected-type="selectedType"
+          v-model:feedback-content="feedbackContent"
+          v-model:feedback-file-list="feedbackFileList"
+          :feedback-type-options="feedbackTypeOptions"
+          :placeholder-text="placeholderText"
+          :feedback-upload-count="feedbackUploadCount"
+          :feedback-upload-max-count="feedbackUploadMaxCount"
+          :is-submitting-feedback="isSubmittingFeedback"
+          :delete-icon="deleteIcon"
+          :after-read="feedbackImageAfterRead"
+          :before-delete="feedbackImageDelete"
+          :on-submit="handleSubmitFeedback"
+        />
+
+        <FeedbackMyTab
+          v-else
+          :feedback-reward-icon="feedbackRewardIcon"
+          :is-loading="isLoadingMyFeedbackList"
+          :feedback-list="myFeedbackList"
+          :reward-amount="feedbackRewardAmountText"
+          :can-claim-reward="canClaimFeedbackReward"
+          :is-claiming-reward="isReceivingAllFeedback"
+          :status-text-map="statusTextMap"
+          :status-class-map="statusClassMap"
+          @claim="handleReceiveAllFeedback"
+          @open-detail="goToFeedbackDetail"
+        />
+      </main>
     </div>
 
     <FeedbackClaimSuccessPopup
@@ -71,7 +75,7 @@ import feedbackBowIcon from '@/static/svg/feedback/hdj.svg?url'
 import feedbackStarIcon from '@/static/svg/feedback/star.svg?url'
 import feedbackEllipseIcon from '@/static/svg/feedback/ellipse.svg?url'
 import deleteIcon from '@/static/img/payment/upload_delete.png'
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { showToast, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
@@ -136,12 +140,10 @@ const activeTab = ref<FeedbackTab>('create')
 const isEmbeddedMode = computed(() => Boolean(props.embedded))
 const feedbackPageContainerClass = computed(() => {
   if (isEmbeddedMode.value) {
-    return showFeedbackDetailPopup.value
-      ? 'relative h-full overflow-hidden bg-bg-1'
-      : 'relative h-full overflow-y-auto bg-bg-1'
+    return 'relative h-full overflow-hidden bg-bg-1'
   }
 
-  return 'fixed inset-0 overflow-y-auto bg-bg-1'
+  return 'fixed inset-0 overflow-hidden bg-bg-1'
 })
 
 // 创建反馈表单状态
@@ -163,15 +165,17 @@ const isReceivingAllFeedback = ref(false)
 
 // 领取奖励弹窗状态
 const showClaimSuccessPopup = ref(false)
-const claimAmountCurrencySymbol = getCurrencySymbol()
+const claimAmountCurrencySymbol = computed(() =>
+  getCurrencySymbol(feedbackMemberCurrencyCode.value || undefined)
+)
+const formatClaimAmount = (amount: number) =>
+  `${claimAmountCurrencySymbol.value}${formatFeedbackRewardAmount(amount)}`
 const claimAmountAnimationDuration = FEEDBACK_CLAIM_AMOUNT_ANIMATION_DURATION
-const claimSuccessAmount = ref(`${claimAmountCurrencySymbol}0.00`)
+const claimSuccessAmount = ref(formatClaimAmount(0))
 let claimAmountAnimationFrame: number | null = null
 let claimSuccessTargetAmount = 0
 
-const feedbackRewardAmountText = computed(() =>
-  formatFeedbackRewardAmount(feedbackClaimRewardAmount.value)
-)
+const feedbackRewardAmountText = computed(() => formatClaimAmount(feedbackClaimRewardAmount.value))
 const canClaimFeedbackReward = computed(() => feedbackClaimRewardAmount.value > 0)
 
 const feedbackTypeOptions = computed(() => getFeedbackTypeOptions(t))
@@ -317,6 +321,10 @@ const handleSubmitFeedback = async () => {
 const closeFeedbackDetailPopup = () => {
   showFeedbackDetailPopup.value = false
   selectedFeedbackDetailRecordId.value = ''
+
+  if (activeTab.value === 'mine') {
+    void refreshMyFeedbackList({ force: true })
+  }
 }
 
 const handleTabChange = (tab: FeedbackTab) => {
@@ -326,12 +334,16 @@ const handleTabChange = (tab: FeedbackTab) => {
 
   activeTab.value = tab
   if (tab === 'mine') {
-    void fetchMyFeedbackList()
+    void refreshMyFeedbackList()
   }
 }
 
-const fetchMyFeedbackList = async () => {
-  if (isLoadingMyFeedbackList.value) {
+type RefreshMyFeedbackListOptions = {
+  force?: boolean
+}
+
+const refreshMyFeedbackList = async (options: RefreshMyFeedbackListOptions = {}) => {
+  if (isLoadingMyFeedbackList.value && !options.force) {
     return
   }
 
@@ -386,8 +398,6 @@ const fetchMyFeedbackList = async () => {
     isLoadingMyFeedbackList.value = false
   }
 }
-
-const formatClaimAmount = (amount: number) => `${claimAmountCurrencySymbol}${amount.toFixed(2)}`
 
 const stopClaimAmountAnimation = () => {
   if (claimAmountAnimationFrame !== null) {
@@ -448,18 +458,32 @@ const handleReceiveAllFeedback = async () => {
   }
 
   isReceivingAllFeedback.value = true
+  let claimSucceeded = false
+  let claimedAmount = 0
+
   try {
     const response = await Api.user.receiveAllFeedback(feedbackCurrencyRequest.value)
     if (!response?.success) {
       throw new Error(response?.message || t('personalCenter.feedback.toast.claimFailed'))
     }
 
-    const claimedAmount =
-      extractClaimedFeedbackAmount(response.result) || feedbackClaimRewardAmount.value
+    claimSucceeded = true
+    claimedAmount = extractClaimedFeedbackAmount(response.result) || feedbackClaimRewardAmount.value
 
+    feedbackClaimRewardAmount.value = 0
+    await refreshMyFeedbackList({ force: true })
     openClaimSuccessPopup(claimedAmount)
-    void fetchMyFeedbackList()
   } catch (error) {
+    if (claimSucceeded) {
+      try {
+        await refreshMyFeedbackList({ force: true })
+      } catch {
+        // 领取已成功，二次刷新失败时保持当前列表状态
+      }
+      openClaimSuccessPopup(claimedAmount)
+      return
+    }
+
     showToast({
       message:
         error instanceof Error ? error.message : t('personalCenter.feedback.toast.claimFailed'),
@@ -474,7 +498,14 @@ const handleReceiveAllFeedback = async () => {
 const closeClaimSuccessPopup = () => {
   showClaimSuccessPopup.value = false
   stopClaimAmountAnimation()
+  void refreshMyFeedbackList({ force: true })
 }
+
+watch(feedbackMemberCurrencyCode, () => {
+  if (activeTab.value === 'mine') {
+    void refreshMyFeedbackList({ force: true })
+  }
+})
 
 const goToFeedbackDetail = (recordId: string) => {
   if (isEmbeddedMode.value) {
@@ -508,3 +539,16 @@ onBeforeUnmount(() => {
 const statusClassMap = feedbackStatusClassMap
 const statusTextMap = computed(() => getFeedbackStatusTextMap(t))
 </script>
+
+<style scoped lang="scss">
+.feedback-page-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}
+</style>
