@@ -12,9 +12,10 @@
         v-if="isMobile"
         :view-data="viewData"
         :loading="isContentLoading"
+        :action-loading="isClaiming"
         @close="handleClose"
         @rules="$emit('rules')"
-        @action="$emit('action')"
+        @action="handleAction"
         @reward-click="handleRewardClick"
       />
       <!-- PC 签到弹窗布局 -->
@@ -22,9 +23,10 @@
         v-else
         :view-data="viewData"
         :loading="isContentLoading"
+        :action-loading="isClaiming"
         @close="handleClose"
         @rules="$emit('rules')"
-        @action="$emit('action')"
+        @action="handleAction"
         @reward-click="handleRewardClick"
       />
 
@@ -42,15 +44,18 @@
 </template>
 
 <script setup lang="ts">
+import Api from '@/api'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useUserStore } from '@/stores/user'
+import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { getCurrentCurrency } from '@/utils/locale'
 import { storeToRefs } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   createCheckInRequirementReminderData,
+  createCheckInHeroRewardsFromClaimResult,
   createDefaultCheckInViewData,
   type CheckInRequirementReminderItem,
   type CheckInRequirementReminderMode,
@@ -84,6 +89,7 @@ const { acctInfo, userInfo } = storeToRefs(userStore)
 const { locale } = useI18n()
 const viewData = ref<CheckInViewData>(createDefaultCheckInViewData())
 const isLoading = ref(false)
+const isClaiming = ref(false)
 const hasLoaded = ref(false)
 const requirementReminderVisible = ref(false)
 const requirementReminderMode = ref<CheckInRequirementReminderMode>('all')
@@ -106,6 +112,11 @@ const isContentLoading = computed(() => {
   return props.modelValue && isLoggedIn.value && !hasLoaded.value
 })
 
+// 当前签到请求使用的币种上下文。
+const activeCurrencyCode = computed(() => {
+  return acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
+})
+
 // 加载签到活动和会员签到状态，并转换为页面视图数据。
 const loadCheckInData = async () => {
   if (!props.modelValue || !isLoggedIn.value || isLoading.value) {
@@ -117,7 +128,7 @@ const loadCheckInData = async () => {
   try {
     const checkInData = await loadActiveCheckInData({
       channelId: currentChannelId.value,
-      currencyCode: acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency(),
+      currencyCode: activeCurrencyCode.value,
       languageCode: locale.value
     })
 
@@ -127,6 +138,60 @@ const loadCheckInData = async () => {
   } finally {
     hasLoaded.value = true
     isLoading.value = false
+  }
+}
+
+// 点击签到按钮后领取奖励，成功后刷新奖励卡领取态，并用 receiveReward 结果更新主视觉。
+const handleAction = async () => {
+  if (
+    isContentLoading.value ||
+    isClaiming.value ||
+    !viewData.value.canClaim ||
+    !viewData.value.activityId
+  ) {
+    return
+  }
+
+  isClaiming.value = true
+
+  try {
+    const receiveRewardResponse = ensureApiBusinessSuccess(
+      await Api.activity.receiveCheckInReward({
+        activityId: viewData.value.activityId
+      })
+    )
+
+    if (receiveRewardResponse.result?.success === false) {
+      return
+    }
+
+    const claimHeroRewards = createCheckInHeroRewardsFromClaimResult(receiveRewardResponse.result)
+    const refreshedCheckInData = await loadActiveCheckInData({
+      channelId: currentChannelId.value,
+      currencyCode: activeCurrencyCode.value,
+      languageCode: locale.value
+    })
+
+    if (refreshedCheckInData?.viewData) {
+      viewData.value = {
+        ...refreshedCheckInData.viewData,
+        heroRewards:
+          claimHeroRewards.length > 0 ? claimHeroRewards : refreshedCheckInData.viewData.heroRewards
+      }
+    } else {
+      viewData.value = {
+        ...viewData.value,
+        canClaim: false,
+        todayIsSign: true,
+        heroRewards: claimHeroRewards.length > 0 ? claimHeroRewards : viewData.value.heroRewards
+      }
+    }
+
+    emit('action')
+  } catch (error) {
+    console.error(error)
+  } finally {
+    isClaiming.value = false
   }
 }
 

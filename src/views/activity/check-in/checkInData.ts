@@ -1,4 +1,5 @@
 import Api from '@/api'
+import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import type { ActivityListItem, QueryCheckInStatusResult } from '@/api/interface/activity'
 import { createCheckInViewData, resolveCheckInActivityDesc, type CheckInViewData } from './shared'
 
@@ -123,11 +124,13 @@ export const selectActiveCheckInActivity = (
 export const loadActiveCheckInData = async (
   options: LoadActiveCheckInOptions = {}
 ): Promise<ActiveCheckInData | null> => {
-  const activityListResponse = await Api.activity.queryActivityList({
-    size: 100,
-    current: 1,
-    type: 5
-  })
+  const activityListResponse = ensureApiBusinessSuccess(
+    await Api.activity.queryActivityList({
+      size: 100,
+      current: 1,
+      type: 5
+    })
+  )
   const records = activityListResponse.result?.records ?? []
   const activity = selectActiveCheckInActivity(records, options)
 
@@ -135,9 +138,11 @@ export const loadActiveCheckInData = async (
     return null
   }
 
-  const checkInStatusResponse = await Api.activity.queryCheckInStatus({
-    activityId: activity.rowId
-  })
+  const checkInStatusResponse = ensureApiBusinessSuccess(
+    await Api.activity.queryCheckInStatus({
+      activityId: activity.rowId
+    })
+  )
   const status = checkInStatusResponse.result
 
   if (!status) {

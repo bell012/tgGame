@@ -4,7 +4,8 @@ import type {
   CheckInActivitySignConfigItem,
   CheckInHistorySignItem,
   CheckInTicketInfo,
-  QueryCheckInStatusResult
+  QueryCheckInStatusResult,
+  ReceiveCheckInRewardResult
 } from '@/api/interface/activity'
 import { formatUsDateTime12h } from '@/utils/date'
 import { getCurrencySymbol } from '@/utils/locale'
@@ -73,6 +74,8 @@ export interface CheckInHeroAmountReward {
   type: 'amount'
   amount: string
   icon: string
+  background: string
+  amountColor: string
 }
 
 // 主视觉功能奖励，用于签到后展示票券/玩法入口类奖励。
@@ -81,6 +84,7 @@ export interface CheckInHeroActionReward {
   title?: string
   titleKey?: string
   icon: string
+  background: string
   actionLabel?: string
   actionKey?: string
 }
@@ -261,6 +265,61 @@ const CHECK_IN_TICKET_TYPE_ICON_MAP: Record<number, string> = {
   4: gameLuckySpinIcon,
   5: gameMysteryBoxIcon,
   6: gameMysteryBoxIcon
+}
+
+// 主视觉现金奖励卡固定使用绿色渐变背景。
+const CHECK_IN_HERO_AMOUNT_BACKGROUND = 'linear-gradient(180deg, #2BBB76 0%, #41882C 100%)'
+
+// 主视觉现金奖励金额固定使用亮黄色字体。
+const CHECK_IN_HERO_AMOUNT_COLOR = '#F7FF4B'
+
+// 主视觉票券奖励标题 key 类型。
+type CheckInHeroTicketTitleKey =
+  | 'checkIn.luckySpinReward'
+  | 'checkIn.redPacketReward'
+  | 'checkIn.goldenEggReward'
+  | 'checkIn.cashVoucherReward'
+  | 'checkIn.mysteryBoxReward'
+
+// 主视觉票券奖励卡设计预设。
+interface CheckInHeroTicketPreset {
+  titleKey: CheckInHeroTicketTitleKey
+  icon: string
+  background: string
+}
+
+// 主视觉票券奖励卡按 ticketType 映射对应文案、图标和背景。
+const CHECK_IN_HERO_TICKET_PRESET_MAP: Record<number, CheckInHeroTicketPreset> = {
+  1: {
+    titleKey: 'checkIn.cashVoucherReward',
+    icon: cashIcon,
+    background: 'linear-gradient(180deg, #61D3AF 0%, #009267 103.66%)'
+  },
+  2: {
+    titleKey: 'checkIn.redPacketReward',
+    icon: redPacketIcon,
+    background: 'linear-gradient(180deg, #FF717C 0%, #DF1215 103.66%)'
+  },
+  3: {
+    titleKey: 'checkIn.goldenEggReward',
+    icon: goldenEggIcon,
+    background: 'linear-gradient(180deg, #E7C952 0%, #C17E00 103.66%)'
+  },
+  4: {
+    titleKey: 'checkIn.luckySpinReward',
+    icon: turntableIcon,
+    background: 'linear-gradient(180deg, #D14DF6 0%, #9B12DF 103.66%)'
+  },
+  5: {
+    titleKey: 'checkIn.mysteryBoxReward',
+    icon: giftBoxOpened,
+    background: 'linear-gradient(180deg, #61A4D3 0%, #006B92 103.66%)'
+  },
+  6: {
+    titleKey: 'checkIn.mysteryBoxReward',
+    icon: giftBoxOpened,
+    background: 'linear-gradient(180deg, #61A4D3 0%, #006B92 103.66%)'
+  }
 }
 
 // 接口未返回前的默认奖励列表，仅用于开发兜底和骨架外的异常降级。
@@ -456,17 +515,6 @@ const resolveActivityCurrencyContext = (
   }
 }
 
-// 从票券多语言信息中解析当前语言的票券名称。
-const resolveTicketLanguageName = (ticket?: CheckInTicketInfo, languageCode?: string) => {
-  const normalizedLanguageCode = normalizeCheckInLanguageCode(languageCode)
-
-  const matchedLanguageInfo = ticket?.languageInfo?.find(item => {
-    return normalizeCheckInLanguageCode(item.languageCode) === normalizedLanguageCode
-  })
-
-  return matchedLanguageInfo?.name || ticket?.languageInfo?.[0]?.name || ''
-}
-
 // 匹配当前语言的活动简介，活动没有对应语言时不进入展示。
 export const resolveCheckInActivityDesc = (activity?: ActivityListItem, languageCode?: string) => {
   const normalizedLanguageCode = normalizeCheckInLanguageCode(languageCode)
@@ -568,40 +616,91 @@ const resolveTodayHistoryRewards = (status?: QueryCheckInStatusResult) => {
   return []
 }
 
-// 创建主视觉左侧金额奖励数据。
-const createPrimaryHeroReward = (
-  historyItem: CheckInHistorySignItem,
-  signConfigMap: Map<number, CheckInActivitySignConfigItem>
-): CheckInHeroAmountReward => {
-  const signDay = toNumber(historyItem.signDays) ?? 0
-  const matchedConfig = signConfigMap.get(signDay)
-  const resolvedAmount =
-    historyItem.todaySignAmount ?? matchedConfig?.rewardAmount ?? historyItem.ticket?.amount ?? 0
+// 创建主视觉现金奖励卡数据。
+const createAmountHeroReward = (amount: unknown): CheckInHeroAmountReward | null => {
+  const resolvedAmount = toNumber(amount)
+
+  if (resolvedAmount === null) {
+    return null
+  }
 
   return {
     type: 'amount',
     amount: formatRewardAmount(resolvedAmount, 2),
-    icon: resolveRewardIcon(historyItem.ticket?.type ?? matchedConfig?.ticketType)
+    icon: cashIcon,
+    background: CHECK_IN_HERO_AMOUNT_BACKGROUND,
+    amountColor: CHECK_IN_HERO_AMOUNT_COLOR
   }
 }
 
-// 创建主视觉右侧功能奖励数据。
-const createSecondaryHeroReward = (
-  historyItem: CheckInHistorySignItem,
-  signConfigMap: Map<number, CheckInActivitySignConfigItem>,
-  languageCode?: string
-): CheckInHeroActionReward => {
-  const signDay = toNumber(historyItem.signDays) ?? 0
-  const matchedConfig = signConfigMap.get(signDay)
-  const localizedTitle = resolveTicketLanguageName(historyItem.ticket, languageCode)
+// 根据 ticketType 匹配主视觉票券奖励卡设计预设。
+const resolveHeroTicketPreset = (ticketType?: unknown) => {
+  const resolvedTicketType = toNumber(ticketType)
+
+  return resolvedTicketType !== null
+    ? CHECK_IN_HERO_TICKET_PRESET_MAP[resolvedTicketType]
+    : undefined
+}
+
+// 创建主视觉票券奖励卡数据。
+const createActionHeroReward = (
+  ticket?: CheckInTicketInfo,
+  fallbackTicketType?: unknown
+): CheckInHeroActionReward | null => {
+  const preset = resolveHeroTicketPreset(ticket?.type ?? fallbackTicketType)
+
+  if (!preset) {
+    return null
+  }
 
   return {
     type: 'action',
-    title: localizedTitle || undefined,
-    titleKey: localizedTitle ? undefined : 'checkIn.luckySpinReward',
-    icon: resolveRewardIcon(historyItem.ticket?.type ?? matchedConfig?.ticketType),
+    titleKey: preset.titleKey,
+    icon: preset.icon,
+    background: preset.background,
     actionKey: 'checkIn.useNow'
   }
+}
+
+// 根据 mbSign 历史记录创建主视觉奖励卡，优先解析金额奖励，缺少金额时回退票券奖励。
+const createHeroRewardFromHistoryItem = (
+  historyItem: CheckInHistorySignItem,
+  signConfigMap: Map<number, CheckInActivitySignConfigItem>
+): CheckInHeroReward | null => {
+  const signDay = toNumber(historyItem.signDays) ?? 0
+  const matchedConfig = signConfigMap.get(signDay)
+  const amountReward = createAmountHeroReward(
+    historyItem.todaySignAmount ?? matchedConfig?.rewardAmount ?? historyItem.ticket?.amount
+  )
+
+  if (amountReward) {
+    return amountReward
+  }
+
+  return createActionHeroReward(historyItem.ticket, matchedConfig?.ticketType)
+}
+
+// 根据 receiveReward 返回值生成领取后的主视觉卡片：只金额、只票券、金额+票券三种情况都在这里收口。
+export const createCheckInHeroRewardsFromClaimResult = (
+  claimResult?: ReceiveCheckInRewardResult
+): CheckInHeroReward[] => {
+  if (!claimResult) {
+    return []
+  }
+
+  const heroRewards: CheckInHeroReward[] = []
+  const amountReward = createAmountHeroReward(claimResult.amount)
+  const actionReward = createActionHeroReward(claimResult.ticket)
+
+  if (amountReward) {
+    heroRewards.push(amountReward)
+  }
+
+  if (actionReward) {
+    heroRewards.push(actionReward)
+  }
+
+  return heroRewards.slice(0, 2)
 }
 
 /**
@@ -641,6 +740,8 @@ export const createCheckInViewData = (
   const promoDateMeta = resolvePromoDateMeta(activity, status)
   const signConfigs = resolvedConfig?.sign ?? []
   const historySign = status.historySign ?? []
+  // mbSign.historySign[].signDays 与签到配置 sign[].day 一一对应；
+  // 只要某一天出现在 historySign 里，就把对应奖励卡标记为已领取。
   const claimedDays = new Set(
     historySign.map(item => toNumber(item.signDays)).filter((day): day is number => day !== null)
   )
@@ -648,17 +749,10 @@ export const createCheckInViewData = (
     signConfigs.map(item => [toNumber(item.day) ?? 0, item] as const).filter(item => item[0] > 0)
   )
   const todayHistoryRewards = resolveTodayHistoryRewards(status)
-  const heroRewards: CheckInHeroReward[] = []
-
-  if (todayHistoryRewards[0]) {
-    heroRewards.push(createPrimaryHeroReward(todayHistoryRewards[0], signConfigMap))
-  }
-
-  if (todayHistoryRewards[1]) {
-    heroRewards.push(
-      createSecondaryHeroReward(todayHistoryRewards[1], signConfigMap, options?.languageCode)
-    )
-  }
+  const heroRewards = todayHistoryRewards
+    .map(historyItem => createHeroRewardFromHistoryItem(historyItem, signConfigMap))
+    .filter((item): item is CheckInHeroReward => Boolean(item))
+    .slice(0, 2)
 
   return {
     activityId: activity.rowId,

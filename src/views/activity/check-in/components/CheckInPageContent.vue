@@ -77,7 +77,10 @@
               v-for="reward in rewards"
               :key="reward.day"
               class="relative isolate flex h-[64px] items-center gap-[8px] overflow-hidden rounded-[12px] border px-[12px] py-[8px]"
-              :class="{ 'cursor-pointer active:scale-[0.99]': !reward.claimed }"
+              :class="{
+                'cursor-pointer active:scale-[0.99]': !reward.claimed,
+                'pointer-events-none': reward.claimed
+              }"
               :style="getPcRewardCardStyle(reward)"
               @click="handleRewardClick(reward)"
             >
@@ -171,7 +174,8 @@
         <!-- PC 单奖励主视觉卡片 -->
         <div
           v-else-if="isHeroSingle && primaryAmountHeroReward"
-          class="absolute left-1/2 top-[84px] h-[316px] w-[344px] -translate-x-1/2 rounded-[28px] bg-[linear-gradient(180deg,#2BBB76_0%,#41882C_100%)]"
+          class="absolute left-1/2 top-[84px] h-[316px] w-[344px] -translate-x-1/2 rounded-[28px]"
+          :style="{ background: primaryAmountHeroReward.background }"
         >
           <img
             :src="CHECK_IN_HERO_OPENED"
@@ -186,7 +190,10 @@
                 alt=""
                 class="h-[32px] w-[32px] object-contain"
               />
-              <span class="text-[40px] font-[700] leading-[48px] text-[#F7FF4B]">
+              <span
+                class="text-[40px] font-[700] leading-[48px]"
+                :style="{ color: primaryAmountHeroReward.amountColor }"
+              >
                 {{ primaryAmountHeroReward.amount }}
               </span>
             </div>
@@ -199,6 +206,41 @@
           </div>
         </div>
 
+        <!-- PC 单票券主视觉卡片 -->
+        <div
+          v-else-if="isHeroSingle && primaryActionHeroReward"
+          class="absolute left-1/2 top-[84px] h-[316px] w-[344px] -translate-x-1/2 rounded-[32px]"
+          :style="{ background: primaryActionHeroReward.background }"
+        >
+          <img
+            :src="primaryActionHeroReward.icon"
+            alt=""
+            class="absolute left-1/2 top-[23px] h-[180px] w-[180px] -translate-x-1/2 object-contain"
+          />
+
+          <div class="absolute inset-x-0 bottom-[78px] flex flex-col items-center gap-[8px]">
+            <p class="text-center text-[24px] font-[700] leading-[29px] text-[#F7FF4B]">
+              {{
+                primaryActionHeroReward.title ||
+                t(primaryActionHeroReward.titleKey || 'checkIn.luckySpinReward')
+              }}
+            </p>
+            <p class="text-center text-[16px] font-[400] leading-[19px] text-common-100">
+              {{ t('checkIn.youGotAReward') }}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="absolute left-1/2 top-[254px] flex h-[42px] w-[136px] -translate-x-1/2 items-center justify-center rounded-[12px] border border-white/25 bg-white/25 text-[18px] font-[700] leading-[22px] text-common-100"
+          >
+            {{
+              primaryActionHeroReward.actionLabel ||
+              t(primaryActionHeroReward.actionKey || 'checkIn.useNow')
+            }}
+          </button>
+        </div>
+
         <!-- PC 双奖励主视觉卡片 -->
         <div
           v-else-if="isHeroDouble"
@@ -206,7 +248,8 @@
         >
           <div
             v-if="primaryAmountHeroReward"
-            class="relative h-[316px] w-[216px] rounded-[32px] bg-[linear-gradient(180deg,#2BBB76_0%,#41882C_100%)]"
+            class="relative h-[316px] w-[216px] rounded-[32px]"
+            :style="{ background: primaryAmountHeroReward.background }"
           >
             <img
               :src="CHECK_IN_HERO_OPENED"
@@ -221,7 +264,10 @@
                   alt=""
                   class="h-[32px] w-[32px] object-contain"
                 />
-                <span class="text-[40px] font-[700] leading-[48px] text-[#F7FF4B]">
+                <span
+                  class="text-[40px] font-[700] leading-[48px]"
+                  :style="{ color: primaryAmountHeroReward.amountColor }"
+                >
                   {{ primaryAmountHeroReward.amount }}
                 </span>
               </div>
@@ -236,7 +282,8 @@
 
           <div
             v-if="secondaryActionHeroReward"
-            class="relative h-[316px] w-[216px] rounded-[32px] bg-[linear-gradient(180deg,#D14DF6_0%,#9B12DF_103.66%)]"
+            class="relative h-[316px] w-[216px] rounded-[32px]"
+            :style="{ background: secondaryActionHeroReward.background }"
           >
             <img
               :src="secondaryActionHeroReward.icon"
@@ -363,7 +410,8 @@
       <!-- H5 单奖励主视觉卡片 -->
       <div
         v-else-if="isHeroSingle && primaryAmountHeroReward"
-        class="absolute left-1/2 top-[190px] h-[210.67px] w-[230.67px] -translate-x-1/2 rounded-[20px] bg-[linear-gradient(180deg,#2BBB76_0%,#41882C_100%)]"
+        class="absolute left-1/2 top-[190px] h-[210.67px] w-[230.67px] -translate-x-1/2 rounded-[20px]"
+        :style="{ background: primaryAmountHeroReward.background }"
       >
         <img
           :src="CHECK_IN_HERO_OPENED"
@@ -378,7 +426,10 @@
               alt=""
               class="h-[22px] w-[22px] object-contain"
             />
-            <span class="text-[26px] font-[700] leading-[31px] text-[#F7FF4B]">
+            <span
+              class="text-[26px] font-[700] leading-[31px]"
+              :style="{ color: primaryAmountHeroReward.amountColor }"
+            >
               {{ primaryAmountHeroReward.amount }}
             </span>
           </div>
@@ -391,6 +442,41 @@
         </div>
       </div>
 
+      <!-- H5 单票券主视觉卡片 -->
+      <div
+        v-else-if="isHeroSingle && primaryActionHeroReward"
+        class="absolute left-1/2 top-[190px] h-[210.67px] w-[230.67px] -translate-x-1/2 rounded-[20px]"
+        :style="{ background: primaryActionHeroReward.background }"
+      >
+        <img
+          :src="primaryActionHeroReward.icon"
+          alt=""
+          class="absolute left-1/2 top-[30px] h-[120px] w-[120px] -translate-x-1/2 object-contain"
+        />
+
+        <div class="absolute inset-x-0 bottom-[52px] flex flex-col items-center gap-[5px]">
+          <p class="text-center text-[16px] font-[700] leading-[19px] text-[#F7FF4B]">
+            {{
+              primaryActionHeroReward.title ||
+              t(primaryActionHeroReward.titleKey || 'checkIn.luckySpinReward')
+            }}
+          </p>
+          <p class="text-center text-[12px] font-[400] leading-[14.67px] text-common-100">
+            {{ t('checkIn.youGotAReward') }}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="absolute left-1/2 top-[169px] flex h-[28px] w-[90px] -translate-x-1/2 items-center justify-center rounded-[8px] border border-white/25 bg-white/25 text-[12px] font-[700] leading-[14.67px] text-common-100"
+        >
+          {{
+            primaryActionHeroReward.actionLabel ||
+            t(primaryActionHeroReward.actionKey || 'checkIn.useNow')
+          }}
+        </button>
+      </div>
+
       <!-- H5 双奖励主视觉卡片 -->
       <div
         v-else-if="isHeroDouble"
@@ -398,7 +484,8 @@
       >
         <div
           v-if="primaryAmountHeroReward"
-          class="relative h-[210.67px] w-[162.33px] rounded-[20px] bg-[linear-gradient(180deg,#2BBB76_0%,#41882C_100%)]"
+          class="relative h-[210.67px] w-[162.33px] rounded-[20px]"
+          :style="{ background: primaryAmountHeroReward.background }"
         >
           <img
             :src="CHECK_IN_HERO_OPENED"
@@ -413,7 +500,10 @@
                 alt=""
                 class="h-[22px] w-[22px] object-contain"
               />
-              <span class="text-[26px] font-[700] leading-[31px] text-[#F7FF4B]">
+              <span
+                class="text-[26px] font-[700] leading-[31px]"
+                :style="{ color: primaryAmountHeroReward.amountColor }"
+              >
                 {{ primaryAmountHeroReward.amount }}
               </span>
             </div>
@@ -428,7 +518,8 @@
 
         <div
           v-if="secondaryActionHeroReward"
-          class="relative h-[210.67px] w-[162.33px] rounded-[20px] bg-[linear-gradient(180deg,#D14DF6_0%,#9B12DF_103.66%)]"
+          class="relative h-[210.67px] w-[162.33px] rounded-[20px]"
+          :style="{ background: secondaryActionHeroReward.background }"
         >
           <img
             :src="secondaryActionHeroReward.icon"
@@ -519,7 +610,10 @@
             v-for="reward in rewardRow"
             :key="reward.day"
             class="relative isolate flex h-[47px] w-[164px] items-center gap-[5px] overflow-hidden rounded-[8px] border px-[7px] py-[6px]"
-            :class="{ 'cursor-pointer active:scale-[0.99]': !reward.claimed }"
+            :class="{
+              'cursor-pointer active:scale-[0.99]': !reward.claimed,
+              'pointer-events-none': reward.claimed
+            }"
             :style="getMobileRewardCardStyle(reward)"
             @click="handleRewardClick(reward)"
           >
@@ -593,6 +687,7 @@ interface Props {
   mode: CheckInPageMode
   viewData: CheckInViewData
   loading?: boolean
+  actionLoading?: boolean
 }
 
 const props = defineProps<Props>()
@@ -630,7 +725,7 @@ const promoEndsText = computed(() =>
 )
 
 // 签到按钮是否处于不可领取状态，后续由接口返回值驱动。
-const isActionDisabled = computed(() => !props.viewData.canClaim)
+const isActionDisabled = computed(() => Boolean(props.actionLoading) || !props.viewData.canClaim)
 
 // 主视觉区奖励结果占位数据，后续由签到接口返回值替换。
 const heroRewards = computed(() => props.viewData.heroRewards)
@@ -661,6 +756,11 @@ const isActionHeroReward = (reward?: CheckInHeroReward): reward is CheckInHeroAc
 // 单奖励和双奖励左卡统一使用金额奖励。
 const primaryAmountHeroReward = computed(() => {
   return isAmountHeroReward(primaryHeroReward.value) ? primaryHeroReward.value : null
+})
+
+// 单奖励场景下允许直接展示票券奖励卡。
+const primaryActionHeroReward = computed(() => {
+  return isActionHeroReward(primaryHeroReward.value) ? primaryHeroReward.value : null
 })
 
 // 双奖励右卡使用功能型奖励。

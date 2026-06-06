@@ -1,27 +1,29 @@
 import type {
+  DoLuckySpinForm,
+  DoLuckySpinResponse,
+  MbTicketListForm,
+  MbTicketListResponse,
   QueryActivityGroupPageForm,
   QueryActivityGroupPageResponse,
   QueryActivityListForm,
   QueryActivityListResponse,
   QueryCheckInStatusForm,
   QueryCheckInStatusResponse,
-  MbTicketListForm,
-  MbTicketListResponse,
-  RecordForm,
-  RecordResponse,
   QueryLuckySpinInfoForm,
   QueryLuckySpinInfoResponse,
-  DoLuckySpinForm,
-  DoLuckySpinResponse,
-  TicketMarqueeForm,
-  QueryTicketMarqueeResponse
+  QueryTicketMarqueeResponse,
+  ReceiveCheckInRewardForm,
+  ReceiveCheckInRewardResponse,
+  RecordForm,
+  RecordResponse,
+  TicketMarqueeForm
 } from '@/api/interface/activity'
-import request, { type ApiResponseToastOptions } from '@/utils/request'
 import {
   createMockLuckySpinInfo,
   getMockRemainingSpins,
   mockDoLuckySpin
 } from '@/api/mock/luckySpin'
+import request, { type ApiResponseToastOptions } from '@/utils/request'
 
 const USE_MOCK = true
 
@@ -43,29 +45,40 @@ export const queryActivityGroupPage = (
 
 // 活动列表分页查询（新版活动 API §2）；不传 status 时默认查 1-未开始、2-进行中
 export const queryActivityList = (
-  data: QueryActivityListForm,
-  options?: ApiResponseToastOptions
+  data: QueryActivityListForm
 ): Promise<QueryActivityListResponse> => {
   return request({
     url: '/activity/api/list',
     method: 'post',
     data,
     showSuccessToast: false,
-    showErrorToast: options?.showErrorToast ?? false
+    showErrorToast: true
   })
 }
 
 // 查询当前签到状态。
 export const queryCheckInStatus = (
-  data: QueryCheckInStatusForm,
-  options?: ApiResponseToastOptions
+  data: QueryCheckInStatusForm
 ): Promise<QueryCheckInStatusResponse> => {
   return request({
     url: '/activity/checkin/mbSign',
     method: 'post',
     data,
     showSuccessToast: false,
-    showErrorToast: options?.showErrorToast ?? false
+    showErrorToast: true
+  })
+}
+
+// 领取签到奖励。
+export const receiveCheckInReward = (
+  data: ReceiveCheckInRewardForm
+): Promise<ReceiveCheckInRewardResponse> => {
+  return request({
+    url: '/activity/checkin/receiveReward',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true
   })
 }
 

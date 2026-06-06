@@ -4,6 +4,7 @@
     mode="pc"
     :view-data="props.viewData"
     :loading="props.loading"
+    :action-loading="props.actionLoading"
     @close="$emit('close')"
     @rules="$emit('rules')"
     @action="$emit('action')"
@@ -18,6 +19,7 @@ import type { CheckInRewardItem, CheckInViewData } from './shared'
 interface Props {
   viewData: CheckInViewData
   loading?: boolean
+  actionLoading?: boolean
 }
 
 const props = defineProps<Props>()
