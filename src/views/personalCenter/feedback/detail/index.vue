@@ -1,86 +1,92 @@
 <template>
-  <div :class="feedbackDetailPageContainerClass">
-    <H5Header
-      :title="t('personalCenter.feedback.detailTitle')"
-      :disable-default-back="isEmbeddedMode"
-      :fixed-top="!isEmbeddedMode"
-      show-sort
-      :right-icon="CustomerServiceIcon"
-      @back="handleDetailBack"
-      @sort="handleCustomerServiceClick"
-    />
+  <section :class="feedbackDetailPageContainerClass">
+    <div class="flex h-full flex-col bg-bg-1">
+      <H5Header
+        :title="t('personalCenter.feedback.detailTitle')"
+        :disable-default-back="isEmbeddedMode"
+        :fixed-top="!isEmbeddedMode"
+        show-sort
+        :right-icon="CustomerServiceIcon"
+        @back="handleDetailBack"
+        @sort="handleCustomerServiceClick"
+      />
 
-    <div class="px-3.5 pb-6 pt-3">
-      <section class="rounded-[12px] bg-bg-2 p-3.5">
-        <div class="feedback-detail-row">
-          <span>{{ t('personalCenter.feedback.detail.feedbackNo') }}</span>
-          <span class="text-text-1">{{ feedbackDetail.ticketNo }}</span>
-        </div>
-
-        <div class="feedback-detail-row mt-2.5">
-          <span>{{ t('personalCenter.feedback.detail.processingStatus') }}</span>
-          <span class="font-[700]" :class="statusClassMap[feedbackDetail.status]">
-            {{ statusTextMap[feedbackDetail.status] }}
-          </span>
-        </div>
-
-        <div class="feedback-detail-row mt-2.5">
-          <span>{{ t('personalCenter.feedback.detail.submitTime') }}</span>
-          <span class="text-text-1">{{ feedbackDetail.submitTime }}</span>
-        </div>
-
-        <div class="feedback-detail-row mt-2.5">
-          <span>{{ t('personalCenter.feedback.detail.feedbackType') }}</span>
-          <span class="text-text-1">{{ feedbackDetail.feedbackType }}</span>
-        </div>
-
-        <div class="mt-2.5 text-[15px] text-text-2">
-          {{ t('personalCenter.feedback.detail.feedbackContent') }}
-        </div>
-        <div class="mt-2 rounded-[8px] bg-bg-3 px-3 py-2.5 text-[15px] leading-[20px] text-text-2">
-          {{ feedbackDetail.detailContent }}
-        </div>
-
-        <div v-if="feedbackDetail.screenshotImages.length" class="mt-2.5 grid grid-cols-4 gap-2">
-          <button
-            v-for="(image, index) in feedbackDetail.screenshotImages"
-            :key="`${feedbackDetail.recordId}-screenshot-${index}`"
-            type="button"
-            class="feedback-screenshot-item overflow-hidden rounded-[8px] bg-bg-3"
-            @click="openScreenshotPreview(index)"
-          >
-            <img
-              :src="image"
-              :alt="t('personalCenter.feedback.detail.screenshotAlt', { index: index + 1 })"
-              class="h-full w-full object-cover"
-            />
-          </button>
-        </div>
-
-        <p class="mt-3 text-[15px] leading-[20px] text-text-2">{{ feedbackDetail.resultHint }}</p>
-      </section>
-
-      <section
-        v-if="feedbackDetail.status !== 'pending'"
-        class="mt-3.5 rounded-[12px] bg-bg-2 p-3.5"
+      <main
+        class="feedback-detail-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 pb-6 pt-3"
       >
-        <div class="flex items-center justify-between gap-3">
-          <span class="text-[16px] font-[700] text-theme-primary">{{
-            feedbackDetail.replyTeam
-          }}</span>
-          <span class="shrink-0 text-[12px] text-text-3">{{ feedbackDetail.replyTime }}</span>
-        </div>
+        <section class="rounded-[12px] bg-bg-2 p-3.5">
+          <div class="feedback-detail-row">
+            <span>{{ t('personalCenter.feedback.detail.feedbackNo') }}</span>
+            <span class="text-text-1">{{ feedbackDetail.ticketNo }}</span>
+          </div>
 
-        <p
-          v-for="(paragraph, index) in feedbackDetail.replyContent"
-          :key="`${feedbackDetail.recordId}-${index}`"
-          class="mt-3 text-[15px] leading-[22px] text-text-1"
+          <div class="feedback-detail-row mt-2.5">
+            <span>{{ t('personalCenter.feedback.detail.processingStatus') }}</span>
+            <span class="font-[700]" :class="statusClassMap[feedbackDetail.status]">
+              {{ statusTextMap[feedbackDetail.status] }}
+            </span>
+          </div>
+
+          <div class="feedback-detail-row mt-2.5">
+            <span>{{ t('personalCenter.feedback.detail.submitTime') }}</span>
+            <span class="text-text-1">{{ feedbackDetail.submitTime }}</span>
+          </div>
+
+          <div class="feedback-detail-row mt-2.5">
+            <span>{{ t('personalCenter.feedback.detail.feedbackType') }}</span>
+            <span class="text-text-1">{{ feedbackDetail.feedbackType }}</span>
+          </div>
+
+          <div class="mt-2.5 text-[15px] text-text-2">
+            {{ t('personalCenter.feedback.detail.feedbackContent') }}
+          </div>
+          <div
+            class="mt-2 rounded-[8px] bg-bg-3 px-3 py-2.5 text-[15px] leading-[20px] text-text-2"
+          >
+            {{ feedbackDetail.detailContent }}
+          </div>
+
+          <div v-if="feedbackDetail.screenshotImages.length" class="mt-2.5 grid grid-cols-4 gap-2">
+            <button
+              v-for="(image, index) in feedbackDetail.screenshotImages"
+              :key="`${feedbackDetail.recordId}-screenshot-${index}`"
+              type="button"
+              class="feedback-screenshot-item overflow-hidden rounded-[8px] bg-bg-3"
+              @click="openScreenshotPreview(index)"
+            >
+              <img
+                :src="image"
+                :alt="t('personalCenter.feedback.detail.screenshotAlt', { index: index + 1 })"
+                class="h-full w-full object-cover"
+              />
+            </button>
+          </div>
+
+          <p class="mt-3 text-[15px] leading-[20px] text-text-2">{{ feedbackDetail.resultHint }}</p>
+        </section>
+
+        <section
+          v-if="feedbackDetail.status !== 'pending'"
+          class="mt-3.5 rounded-[12px] bg-bg-2 p-3.5"
         >
-          {{ paragraph }}
-        </p>
-      </section>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-[16px] font-[700] text-theme-primary">{{
+              feedbackDetail.replyTeam
+            }}</span>
+            <span class="shrink-0 text-[12px] text-text-3">{{ feedbackDetail.replyTime }}</span>
+          </div>
+
+          <p
+            v-for="(paragraph, index) in feedbackDetail.replyContent"
+            :key="`${feedbackDetail.recordId}-${index}`"
+            class="mt-3 text-[15px] leading-[22px] text-text-1"
+          >
+            {{ paragraph }}
+          </p>
+        </section>
+      </main>
     </div>
-  </div>
+  </section>
 
   <teleport to="body">
     <transition name="feedback-desktop-preview">
@@ -171,8 +177,8 @@ const feedbackCurrencyRequest = computed(() =>
 const isEmbeddedMode = computed(() => Boolean(props.embedded))
 const feedbackDetailPageContainerClass = computed(() => {
   return isEmbeddedMode.value
-    ? 'relative h-full overflow-y-auto bg-bg-1'
-    : 'fixed inset-0 overflow-y-auto bg-bg-1'
+    ? 'relative h-full overflow-hidden bg-bg-1'
+    : 'fixed inset-0 overflow-hidden bg-bg-1'
 })
 
 const feedbackApiItem = ref<QueryFeedbackItem | null>(null)
@@ -396,7 +402,18 @@ watch(
 )
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.feedback-detail-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}
+
 .feedback-detail-row {
   display: flex;
   align-items: center;

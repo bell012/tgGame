@@ -115,6 +115,7 @@ export interface QueryAcctHisPageResult {
 export interface QueryInspectPageForm {
   startTime: number | null
   endTime: number | null
+  currency: string
   page: {
     current: number
     size: number
