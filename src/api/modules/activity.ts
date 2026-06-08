@@ -1,16 +1,18 @@
 import type {
+  MbTicketListForm,
+  MbTicketListResponse,
   QueryActivityGroupPageForm,
   QueryActivityGroupPageResponse,
   QueryActivityListForm,
   QueryActivityListResponse,
   QueryCheckInStatusForm,
   QueryCheckInStatusResponse,
-  MbTicketListForm,
-  MbTicketListResponse,
+  QueryTicketMarqueeResponse,
+  ReceiveCheckInRewardForm,
+  ReceiveCheckInRewardResponse,
   RecordForm,
   RecordResponse,
   TicketMarqueeForm,
-  QueryTicketMarqueeResponse,
   UseTicketForm,
   UseTicketResponse
 } from '@/api/interface/activity'
@@ -51,6 +53,20 @@ export const queryCheckInStatus = (
 ): Promise<QueryCheckInStatusResponse> => {
   return request({
     url: '/activity/checkin/mbSign',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? false
+  })
+}
+
+// 领取签到奖励。
+export const receiveCheckInReward = (
+  data: ReceiveCheckInRewardForm,
+  options?: ApiResponseToastOptions
+): Promise<ReceiveCheckInRewardResponse> => {
+  return request({
+    url: '/activity/checkin/receiveReward',
     method: 'post',
     data,
     showSuccessToast: false,

@@ -97,6 +97,7 @@ export interface CheckInActivitySignConfigItem {
   betAmount?: number
   ticketType?: number
   amountRange?: number[]
+  rewardType?: number
   rewardAmount?: number
   rechargeAmount?: number
 }
@@ -116,6 +117,7 @@ export interface CheckInActivityCurrencyConfig {
   signCycle?: number
   styleType?: number
   rewardType?: number
+  conditionRelation?: number | string | null
   rewardTiggerType?: number[]
   [key: string]: unknown
 }
@@ -193,6 +195,10 @@ export interface CheckInTicketLanguageInfoItem {
  */
 export interface CheckInTicketInfo {
   amount?: number
+  currency?: string
+  expireTime?: number
+  maxAmount?: number
+  minAmount?: number
   rewardType?: number
   ticketId?: number
   type?: number
@@ -202,6 +208,7 @@ export interface CheckInTicketInfo {
 
 /**
  * 签到历史记录项
+ * signDays 对应签到配置里的 day，用来判断哪一天的奖励卡已经领取。
  */
 export interface CheckInHistorySignItem {
   betAmount?: number
@@ -232,12 +239,40 @@ export interface QueryCheckInStatusResult {
  */
 export interface QueryCheckInStatusForm {
   activityId: number | string
+  verifyCode?: string
 }
 
 /**
  * 查询签到情况响应
  */
 export interface QueryCheckInStatusResponse extends ActivityApiResponse<QueryCheckInStatusResult> {}
+
+/**
+ * 领取签到奖励请求参数
+ */
+export interface ReceiveCheckInRewardForm {
+  activityId: number | string
+  verifyCode?: string
+}
+
+/**
+ * 领取签到奖励结果
+ */
+export interface ReceiveCheckInRewardResult {
+  success?: boolean
+  resultCode?: string | Record<string, unknown>
+  activityId?: number
+  memberRowId?: number
+  ticketId?: number
+  ticket?: CheckInTicketInfo
+  amount?: number
+  ext?: Record<string, unknown>
+}
+
+/**
+ * 领取签到奖励响应
+ */
+export interface ReceiveCheckInRewardResponse extends ActivityApiResponse<ReceiveCheckInRewardResult> {}
 
 /** 票券多语言信息 */
 export interface MbTicketLanguageInfo {

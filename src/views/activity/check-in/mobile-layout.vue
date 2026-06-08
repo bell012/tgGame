@@ -8,9 +8,11 @@
         mode="mobile"
         :view-data="props.viewData"
         :loading="props.loading"
+        :action-loading="props.actionLoading"
         @close="$emit('close')"
         @rules="$emit('rules')"
         @action="$emit('action')"
+        @reward-click="$emit('reward-click', $event)"
       />
     </div>
   </div>
@@ -19,11 +21,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, type CSSProperties } from 'vue'
 import CheckInPageContent from './components/CheckInPageContent.vue'
-import type { CheckInViewData } from './shared'
+import type { CheckInRewardItem, CheckInViewData } from './shared'
 
 interface Props {
   viewData: CheckInViewData
   loading?: boolean
+  actionLoading?: boolean
 }
 
 const props = defineProps<Props>()
@@ -32,9 +35,13 @@ defineEmits<{
   close: []
   rules: []
   action: []
+  'reward-click': [reward: CheckInRewardItem]
 }>()
 
+// H5 设计稿基准宽度，所有坐标以 1 倍图 375px 为准。
 const DESIGN_WIDTH = 375
+
+// H5 设计稿基准高度，弹窗内容按该高度等比缩放。
 const DESIGN_HEIGHT = 812
 
 const viewportWidth = ref(DESIGN_WIDTH)
