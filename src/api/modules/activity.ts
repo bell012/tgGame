@@ -14,7 +14,9 @@ import type {
   DoLuckySpinForm,
   DoLuckySpinResponse,
   TicketMarqueeForm,
-  QueryTicketMarqueeResponse
+  QueryTicketMarqueeResponse,
+  UseTicketForm,
+  UseTicketResponse
 } from '@/api/interface/activity'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
 import {
@@ -139,6 +141,19 @@ export const doLuckySpin = async (
     showErrorToast: _options?.showErrorToast ?? false
   })
 }
+
+/** 使用票券（大转盘 GO 等，始终走真实接口，不走 USE_MOCK） */
+export const useTicket = (
+  data: UseTicketForm,
+  options?: ApiResponseToastOptions
+): Promise<UseTicketResponse> =>
+  request({
+    url: '/ticket/api/use',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? true
+  })
 
 /** 查询票券跑马灯（始终走真实接口，不走 USE_MOCK） */
 export const queryTicketMarquee = (

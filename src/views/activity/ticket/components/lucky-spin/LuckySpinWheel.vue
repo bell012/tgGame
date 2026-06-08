@@ -221,7 +221,6 @@ const handleGoClick = () => {
   if (props.disabled) return
   clearSectorHighlight()
   triggerGoPress()
-  luckyRef.value?.play()
   emit('go')
 }
 
@@ -236,7 +235,8 @@ const handleEnd = async () => {
   emit('spinEnd')
 }
 
-const stopAt = (index: number) => {
+const spinTo = (index: number) => {
+  luckyRef.value?.play()
   luckyRef.value?.stop(index)
 }
 
@@ -246,7 +246,7 @@ const initWheel = () => {
 }
 
 defineExpose({
-  stopAt,
+  spinTo,
   init: initWheel,
   clearSectorHighlight
 })

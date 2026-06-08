@@ -215,6 +215,7 @@ interface Props {
   isSpinning: boolean
   spinInfo: LuckySpinInfoResult | null
   wheelPrizes?: LuckySpinPrize[]
+  canSpin?: boolean
   winnerRecords?: WinnerTickerItem[]
   gameId: TicketGameId
   headerData: TicketModalHeaderData
@@ -224,6 +225,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   wheelPrizes: () => [],
+  canSpin: false,
   winnerRecords: () => []
 })
 
@@ -263,7 +265,7 @@ const gameComponentProps = computed(() => {
   if (props.gameId !== 'lucky_spin' || !props.spinInfo) return {}
   return {
     prizes: props.wheelPrizes,
-    disabled: props.spinInfo.remainingSpins <= 0 || props.isSpinning
+    disabled: !props.canSpin || props.isSpinning
   }
 })
 

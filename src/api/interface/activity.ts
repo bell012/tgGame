@@ -411,3 +411,17 @@ export interface TicketMarqueeResult {
 }
 
 export interface QueryTicketMarqueeResponse extends ActivityApiResponse<TicketMarqueeResult> {}
+
+/** 使用票券请求（大转盘 GO 等） */
+export interface UseTicketForm {
+  rowId: number
+  ticketId?: number
+}
+
+/** 使用票券结果 */
+export interface UseTicketResult {
+  rewardAmount?: number
+  rewardType?: number
+}
+
+export interface UseTicketResponse extends ActivityApiResponse<UseTicketResult> {}

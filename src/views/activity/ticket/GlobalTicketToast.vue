@@ -8,6 +8,7 @@
       :is-spinning="isSpinning"
       :spin-info="spinInfo"
       :wheel-prizes="wheelPrizes"
+      :can-spin="canSpin"
       :winner-records="winnerRecords"
       :game-id="toastState.gameId"
       :header-data="headerData"
@@ -76,6 +77,7 @@ const {
   isSpinning,
   spinInfo,
   wheelPrizes,
+  canSpin,
   activeGameIndex,
   loadSpinInfo,
   handleWheelGo,
