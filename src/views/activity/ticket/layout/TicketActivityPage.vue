@@ -195,6 +195,7 @@ import { LUCKY_SPIN_TOKENS, TICKET_PC_TOKENS } from '../shared/design-tokens'
 import { ticketMobileSectionClass } from '../shared/ticketMobileLayout'
 import type {
   LuckySpinInfoResult,
+  LuckySpinPrize,
   TicketGameId,
   TicketModalHeaderData,
   WinnerTickerItem
@@ -213,6 +214,7 @@ interface Props {
   loadError: boolean
   isSpinning: boolean
   spinInfo: LuckySpinInfoResult | null
+  wheelPrizes?: LuckySpinPrize[]
   winnerRecords?: WinnerTickerItem[]
   gameId: TicketGameId
   headerData: TicketModalHeaderData
@@ -221,6 +223,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  wheelPrizes: () => [],
   winnerRecords: () => []
 })
 
@@ -259,7 +262,7 @@ const gameComponent = computed(() => getTicketGameComponent(props.gameId))
 const gameComponentProps = computed(() => {
   if (props.gameId !== 'lucky_spin' || !props.spinInfo) return {}
   return {
-    prizes: props.spinInfo.prizes,
+    prizes: props.wheelPrizes,
     disabled: props.spinInfo.remainingSpins <= 0 || props.isSpinning
   }
 })

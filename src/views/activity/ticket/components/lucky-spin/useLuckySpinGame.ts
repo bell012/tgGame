@@ -18,9 +18,10 @@ import {
   getActiveTicketParams,
   globalTicketToastState
 } from '../../shell/ticketToast'
+import { mapWheelConfigToPrizes } from '../../shared/mapWheelConfig'
 import { globalShowToast } from '@/utils/toast'
 import type { Ref } from 'vue'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const buildFallbackFooter = () => ({
@@ -88,6 +89,14 @@ export const useLuckySpinGame = (
   const spinInfo = ref<LuckySpinInfoResult | null>(null)
   const activeGameIndex = ref(0)
   const pendingResult = ref<LuckySpinResult | null>(null)
+
+  const wheelPrizes = computed(() => {
+    const fromRecord = mapWheelConfigToPrizes(
+      globalTicketToastState.activeTicketRecord?.wheelConfig
+    )
+    if (fromRecord.length > 0) return fromRecord
+    return spinInfo.value?.prizes ?? []
+  })
 
   const syncActiveGameIndex = (info: LuckySpinInfoResult, gameId?: string) => {
     activeGameIndex.value = findTicketIndex(info.voucherGames, {
@@ -289,6 +298,7 @@ export const useLuckySpinGame = (
     loadError,
     isSpinning,
     spinInfo,
+    wheelPrizes,
     activeGameIndex,
     loadSpinInfo,
     syncActiveGameIndex,

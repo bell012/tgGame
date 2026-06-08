@@ -7,6 +7,7 @@
       :load-error="loadError"
       :is-spinning="isSpinning"
       :spin-info="spinInfo"
+      :wheel-prizes="wheelPrizes"
       :winner-records="winnerRecords"
       :game-id="toastState.gameId"
       :header-data="headerData"
@@ -74,6 +75,7 @@ const {
   loadError,
   isSpinning,
   spinInfo,
+  wheelPrizes,
   activeGameIndex,
   loadSpinInfo,
   handleWheelGo,

@@ -247,6 +247,16 @@ export interface MbTicketLanguageInfo {
   name?: string
 }
 
+/** 大转盘单格配置（mbTicketList.wheelConfig 元素） */
+export interface WheelConfigItem {
+  rewardType?: number
+  amount?: number
+  imageUrl?: string
+  limitType?: number
+  limitQuantity?: number
+  probability?: number
+}
+
 /** 我的票券单条记录（mbTicketList 数组元素） */
 export interface MbTicketRecord {
   rowId?: number
@@ -265,6 +275,7 @@ export interface MbTicketRecord {
   unusedTicketPopWay?: number
   site?: string
   goldenEggConfig?: Array<{ amount: number; probability: number; type: number }>
+  wheelConfig?: WheelConfigItem[]
   platformGameCodes?: string[]
 }
 
