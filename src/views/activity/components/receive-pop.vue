@@ -108,9 +108,10 @@ import redEnvelopeImg from '@/static/img/activity/receive-pop/red-envelope.png'
 import titleBackImg from '@/static/img/activity/receive-pop/title-back.png'
 import turntableImg from '@/static/img/activity/receive-pop/turntable.png'
 import cashVoucherImg from '@/static/img/lucky-spin/vouchers/game-cash-voucher.png'
+// import { globalTicketToastState } from '../ticket/shell/ticketToast'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-
+// const ticketId = computed(() => globalTicketToastState.activeTicketRecord?.ticketId)
 export interface ReceiveVoucherItem {
   id: string
   type: VoucherCardType

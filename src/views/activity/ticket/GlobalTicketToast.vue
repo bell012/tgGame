@@ -22,6 +22,11 @@
       @next="handleFooterNext"
       @open-voucher-list="handleOpenMyVouchers"
     />
+    <TaskPop
+      v-model:visible="taskPopVisible"
+      :ticket-id="toastState.activeTicketRecord?.ticketId"
+      :row-id="toastState.activeTicketRecord?.rowId"
+    />
     <!-- 帮助中心弹窗 -->
     <TicketReminderPopup />
     <!-- 活动抽奖结果弹窗1 -->
@@ -36,6 +41,7 @@
 import TicketResultCardsPopup from './layout/dialogs/result/TicketResultCardsPopup.vue'
 import TicketResultHeroPopup from './layout/dialogs/result/TicketResultHeroPopup.vue'
 import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
+import TaskPop from '../components/task-pop.vue'
 import TicketReminderPopup from './layout/dialogs/TicketReminderPopup.vue'
 import TicketActivityPage from './layout/TicketActivityPage.vue'
 import { getLanguageCode } from '@/utils/locale'
@@ -43,7 +49,6 @@ import { navigateTo } from '@/utils/router'
 import { getMbTicketLanguageCopy } from './shared/mbTicketMapper'
 import { getTicketActivityEndUseTime } from './shared/ticketActivityCountdown'
 import { buildGameHeader, findTicketIndex } from './shared/gameHeaderConfig'
-import { openTicketReminderDialog } from './shell/ticketDialog'
 import {
   globalTicketToastState,
   setActiveTicketRecord,
@@ -64,6 +69,7 @@ useLockBodyScroll(visible)
 const { winnerRecords } = useTicketMarquee(visible)
 
 const wheelRef = ref<LuckySpinWheelExpose | null>(null)
+const taskPopVisible = ref(false)
 
 const registerWheelRef = (el: LuckySpinWheelExpose | null) => {
   wheelRef.value = el
@@ -113,13 +119,7 @@ const handleOpenMyVouchers = () => {
 }
 
 const handleOpenReminder = () => {
-  if (!spinInfo.value) return
-  openTicketReminderDialog({
-    tasks: spinInfo.value.tasks,
-    rules: spinInfo.value.rules,
-    voucherName: headerData.value.title,
-    maxPrizeText: spinInfo.value.maxPrizeText
-  })
+  taskPopVisible.value = true
 }
 
 const applyVoucherSelection = (index: number) => {
@@ -154,6 +154,7 @@ const handleFooterNext = () => {
 watch(
   () => toastState.gameId,
   gameId => {
+    console.log('spinInfo', spinInfo.value)
     if (!spinInfo.value) return
     activeGameIndex.value = findTicketIndex(spinInfo.value.voucherGames, {
       gameId,

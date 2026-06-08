@@ -7,6 +7,8 @@ import type {
   QueryCheckInStatusResponse,
   MbTicketListForm,
   MbTicketListResponse,
+  TicketProgressForm,
+  TicketProgressResponse,
   RecordForm,
   RecordResponse,
   QueryLuckySpinInfoForm,
@@ -73,6 +75,17 @@ export const queryCheckInStatus = (
 export function mbTicketList(data: MbTicketListForm): Promise<MbTicketListResponse> {
   return request({
     url: '/ticket/api/mbTicketList',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: true
+  })
+}
+
+// 票券完成进度
+export function ticketProgress(data: TicketProgressForm): Promise<TicketProgressResponse> {
+  return request({
+    url: '/ticket/api/progress',
     method: 'post',
     data,
     showSuccessToast: false,

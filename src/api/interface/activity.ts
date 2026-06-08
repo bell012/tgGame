@@ -266,6 +266,64 @@ export interface MbTicketRecord {
   platformGameCodes?: string[]
 }
 
+/** 票券完成进度请求 */
+export interface TicketProgressForm {
+  /** 票券记录ID，当前后端实现建议必填 */
+  rowId?: number
+  /** 票券模板ID */
+  ticketId?: number
+  verifyCode?: string
+}
+
+export interface TicketProgressBindData {
+  bindWithdrawalAccount?: boolean
+  bindWithdrawalName?: boolean
+}
+
+export interface TicketProgressCompleteInfo {
+  completeWhatsapp?: boolean
+  completeFacebook?: boolean
+  completeTelegram?: boolean
+}
+
+export interface TicketProgressCompleteVerification {
+  verifyPhone?: boolean
+}
+
+export interface TicketProgressExt {
+  ticketRecordId?: number
+  memberRowId?: number
+  currency?: string
+  ticketType?: number
+  claimRechargeAmount?: number
+  claimRechargeNum?: number
+  claimBetAmount?: number
+  claimLossAmount?: number
+  invitationNum?: number
+  rewardType?: number
+  amount?: number
+  minAmount?: number
+  maxAmount?: number
+  rechargeAmount?: number
+  rechargeNum?: number
+  betAmount?: number
+  totalRechargeAmount?: number
+  fristRechargeAmount?: number
+  totalRechargeNum?: number
+  totalBetAmount?: number
+  totalLossAmount?: number
+}
+
+export interface TicketProgressResult {
+  available?: boolean
+  bindData?: TicketProgressBindData
+  completeInfo?: TicketProgressCompleteInfo
+  completeVerification?: TicketProgressCompleteVerification
+  ext?: TicketProgressExt
+}
+
+export interface TicketProgressResponse extends ActivityApiResponse<TicketProgressResult> {}
+
 // 我的票卷 携带参数
 export interface MbTicketListForm {
   current?: number // 当前页，默认 `1`

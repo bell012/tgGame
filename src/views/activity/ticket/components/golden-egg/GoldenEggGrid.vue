@@ -30,10 +30,6 @@
       </div>
     </div>
 
-    <p class="mt-2 text-center text-[13px] font-[700] text-[#FFE68A]">
-      {{ activeStage === 'standby' ? '点击金蛋砸开惊喜' : '好运揭晓中...' }}
-    </p>
-
     <GoldenEggPop :visible="showPopup" @close="closePopup" @replay="resetGame" />
   </div>
 </template>
