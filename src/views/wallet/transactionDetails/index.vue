@@ -1,6 +1,11 @@
 <template>
   <div class="fixed inset-0 flex min-h-0 flex-col overflow-hidden bg-bg-1">
-    <H5Header :title="$t('personalCenter.transactionDetails')" />
+    <H5Header
+      :title="$t('personalCenter.transactionDetails')"
+      :show-sort="true"
+      :right-icon="KefuIcon"
+      @sort="openKefuPopup"
+    />
 
     <div class="transaction-details-mobile-scroll flex-1 min-h-0 overflow-y-auto bg-bg-1">
       <div class="py-3.5 px-3.5">
@@ -65,6 +70,7 @@ import CopyIcon from '@/static/svg/copy.svg?component'
 import { globalShowToast } from '@/utils/toast'
 import { useI18n } from 'vue-i18n'
 import { createEmptyTransactionItem, type Item } from '../transaction/shared'
+import KefuIcon from '@/static/svg/vip/kefu.svg?component'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -90,6 +96,11 @@ const copyOrderNo = () => {
   if (!detail.value.orderNo) return
   navigator.clipboard.writeText(detail.value.orderNo)
   globalShowToast(t('betDetails.copy'))
+}
+
+// 点击客服
+const openKefuPopup = () => {
+  console.log('点击客服')
 }
 </script>
 

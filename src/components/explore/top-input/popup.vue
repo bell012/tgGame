@@ -51,7 +51,6 @@
                 {{ item.name }}
               </div>
               <component
-                v-if="desktop"
                 :is="isSelected(item) ? RadioCheckedIcon : RadioUncheckedIcon"
                 :class="[
                   'explore-select-radio',
@@ -60,18 +59,6 @@
                     : 'explore-select-radio--unchecked'
                 ]"
               />
-              <span
-                v-else
-                class="tp-checkbox box-border inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] border"
-                :class="isSelected(item) ? 'tp-checkbox--checked' : 'tp-checkbox--unchecked'"
-              >
-                <span
-                  v-if="isSelected(item)"
-                  class="tp-checkbox-mark text-[12px] font-bold leading-none"
-                >
-                  ✓
-                </span>
-              </span>
             </div>
           </div>
         </div>
@@ -117,20 +104,6 @@ const confirm = (item: OptionItem) => {
   padding-bottom: env(safe-area-inset-bottom);
   overflow: hidden;
   border-radius: 10px;
-}
-
-.tp-checkbox--unchecked {
-  border-color: var(--color-icon-level-3);
-  background: transparent;
-}
-
-.tp-checkbox--checked {
-  border-color: var(--color-theme-level-1);
-  background-color: var(--color-theme-level-1);
-}
-
-.tp-checkbox-mark {
-  color: #ffffff;
 }
 
 @media (max-width: 767px) {

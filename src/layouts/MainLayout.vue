@@ -24,16 +24,10 @@
       <div :class="isFullscreenRoute ? 'min-h-full' : 'flex min-h-full items-start gap-4'">
         <!-- 路由内容区域 -->
         <section class="min-w-0 flex-1">
-          <!-- 主内容背景页 -->
+          <!-- 主内容区：滑动路由场景下优先渲染背景页，避免 keep-alive 在双 router-view 间切换失效 -->
           <router-view
-            v-if="shouldRenderBackgroundRouteInMain(route) && backgroundRouteSnapshot"
-            :route="backgroundRouteSnapshot"
-            :key="backgroundRouteSnapshot.fullPath"
-          />
-
-          <!-- 主内容当前页 -->
-          <router-view
-            v-if="shouldRenderCurrentRouteInMain(route)"
+            v-if="mainAreaRoute"
+            :route="mainAreaRoute"
             v-slot="{ Component, route: viewRoute }"
           >
             <KeepAlive>
@@ -101,7 +95,7 @@
     <!-- 底部Tab栏 -->
     <BottomTabBar class="sm:hidden" v-if="!hideBottomBar" />
 
-    <CheckInPopup v-model="checkInVisible" />
+    <CheckInPopup v-model="checkInVisible" auto-popup-only />
   </div>
 </template>
 
@@ -205,6 +199,24 @@ const shouldRenderCurrentRouteInMain = (currentRoute: RouteLocationNormalizedLoa
 const shouldRenderBackgroundRouteInMain = (currentRoute: RouteLocationNormalizedLoaded) => {
   return isMobile.value && shouldUseSlideTransition(currentRoute) && !!backgroundRouteSnapshot.value
 }
+
+const mainAreaRoute = computed(() => {
+  const currentRoute = route
+
+  if (
+    shouldRenderBackgroundRouteInMain(currentRoute) &&
+    backgroundRouteSnapshot.value &&
+    !shouldRenderCurrentRouteInMain(currentRoute)
+  ) {
+    return backgroundRouteSnapshot.value
+  }
+
+  if (shouldRenderCurrentRouteInMain(currentRoute)) {
+    return currentRoute
+  }
+
+  return null
+})
 
 const getMainRouteViewKey = (currentRoute: RouteLocationNormalizedLoaded) => {
   const routeName = String(currentRoute.name || '')

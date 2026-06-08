@@ -230,6 +230,7 @@ export const buildRolloverQueryForm = (params: {
   return {
     startTime,
     endTime,
+    currency: getCurrentCurrency(),
     page: { current: params.page, size: params.pageSize },
     state: normalized.status === 'all' ? null : Number(normalized.status),
     changeTypes: normalized.type === 'all' ? [...ROLLOVER_CHANGE_TYPE_VALUES] : [normalized.type]

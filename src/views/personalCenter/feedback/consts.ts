@@ -1,4 +1,6 @@
+import { normalizeDisplayCurrencyCode } from '@/composables/useDisplayCurrency'
 import { formatTimestamp } from '@/utils/date'
+import { getLanguageCode } from '@/utils/locale'
 
 export type FeedbackStatus = 'accepted' | 'pending' | 'rejected'
 
@@ -61,16 +63,6 @@ export const normalizeFeedbackStatus = (value: unknown): FeedbackStatus => {
   const normalizedText = String(value ?? '')
     .trim()
     .toLowerCase()
-  if (normalizedText === 'accepted') {
-    return 'accepted'
-  }
-  if (normalizedText === 'pending') {
-    return 'pending'
-  }
-  if (normalizedText === 'rejected') {
-    return 'pending'
-  }
-
   const normalizedNumber = Number(normalizedText)
   if (normalizedNumber === 1) {
     return 'accepted'
@@ -146,16 +138,23 @@ const pickFirstNumber = (record: Record<string, unknown>, keys: string[]) => {
   return null
 }
 
-export const normalizeFeedbackCurrencyCode = (value: unknown) => {
-  return String(value ?? '')
-    .trim()
-    .toUpperCase()
+/** 已知前后端币种编码不一致时追加映射，不枚举站点支持币种 */
+const FEEDBACK_CURRENCY_ALIASES: Record<string, string> = {
+  RMB: 'CNY'
 }
 
-/** 反馈接口请求体：languageCode 为当前用户币种（与 memberCurrency 对齐） */
+export const normalizeFeedbackCurrencyCode = (value: unknown) => {
+  const normalized = normalizeDisplayCurrencyCode(value)
+  return FEEDBACK_CURRENCY_ALIASES[normalized] ?? normalized
+}
+
+/** 反馈接口请求体：currency 为当前展示币种，languageCode 为当前语言 */
 export const buildFeedbackCurrencyRequest = (currencyCode: unknown) => {
-  const languageCode = normalizeFeedbackCurrencyCode(currencyCode)
-  return { languageCode } as const
+  const currency = normalizeFeedbackCurrencyCode(currencyCode)
+  return {
+    currency,
+    languageCode: getLanguageCode()
+  } as const
 }
 
 const isFeedbackMemberCurrencyMatch = (
@@ -167,14 +166,11 @@ const isFeedbackMemberCurrencyMatch = (
     return false
   }
 
-  return normalizeFeedbackCurrencyCode(record.memberCurrency) === normalizedUserCurrency
+  return normalizeFeedbackCurrencyCode(record.currency) === normalizedUserCurrency
 }
 
 const isFeedbackRewardReceived = (record: Record<string, unknown>) => {
-  if (record.isReceive === 1) {
-    return true
-  }
-  return false
+  return record.isReceive == 1
 }
 
 const getFeedbackItemClaimableReward = (item: unknown, userCurrencyCode: string) => {
@@ -197,9 +193,9 @@ const getFeedbackItemClaimableReward = (item: unknown, userCurrencyCode: string)
     return 0
   }
 
-  if (normalizeFeedbackStatus(record.status) !== 'accepted') {
-    return 0
-  }
+  // if (normalizeFeedbackStatus(record.status) !== 'accepted') {
+  //   return 0
+  // }
 
   return balance
 }

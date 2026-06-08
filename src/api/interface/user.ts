@@ -228,8 +228,9 @@ export interface SendFeedbackResponse {
   result?: unknown
 }
 
-/** 反馈相关接口公共参数：languageCode 传当前用户币种 */
+/** 反馈相关接口公共参数 */
 export interface FeedbackCurrencyForm {
+  currency: string
   languageCode: string
 }
 
