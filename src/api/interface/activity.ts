@@ -247,6 +247,19 @@ export interface MbTicketLanguageInfo {
   name?: string
 }
 
+/** 票券触发条件（mbTicketList.triggerList 元素） */
+export interface MbTicketTriggerItem {
+  rowId?: number
+  /** 1 充值 2 投注 */
+  triggerType?: number
+  triggerValue?: number
+  currentValue?: number
+  /** 1 已完成 */
+  finishStatus?: number
+  title?: string
+  name?: string
+}
+
 /** 大转盘单格配置（mbTicketList.wheelConfig 元素） */
 export interface WheelConfigItem {
   rewardType?: number
@@ -274,6 +287,9 @@ export interface MbTicketRecord {
   homeDisplay?: number
   unusedTicketPopWay?: number
   site?: string
+  ruleDesc?: string
+  ruleList?: string[]
+  triggerList?: MbTicketTriggerItem[]
   goldenEggConfig?: Array<{ amount: number; probability: number; type: number }>
   wheelConfig?: WheelConfigItem[]
   platformGameCodes?: string[]
@@ -367,31 +383,15 @@ export interface RecordResult {
   total: number
 }
 
-import type { LuckySpinInfoResult, LuckySpinResult } from '@/views/activity/ticket/types'
-
 export type {
-  LuckySpinInfoResult,
   LuckySpinPrize,
   LuckySpinResult,
   LuckySpinTask,
   LuckySpinVoucherCardData,
+  TicketActivitySession,
   WinnerTickerItem,
   VoucherGameItem
 } from '@/views/activity/ticket/types'
-
-export interface QueryLuckySpinInfoForm {
-  ticketId?: number
-  rowId?: number
-}
-
-export interface QueryLuckySpinInfoResponse extends ActivityApiResponse<LuckySpinInfoResult> {}
-
-export interface DoLuckySpinForm {
-  ticketId?: number
-  rowId?: number
-}
-
-export interface DoLuckySpinResponse extends ActivityApiResponse<LuckySpinResult> {}
 
 /** 票券跑马灯请求 */
 export interface TicketMarqueeForm {

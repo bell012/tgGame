@@ -107,7 +107,10 @@ import {
 switchTicketGame('cash_voucher', globalTicketToastState.mbTicketRecords[i])
 
 // 调接口带当前票
-await Api.activity.doLuckySpin(getActiveTicketParams())
+await Api.activity.useTicket({
+  rowId: getActiveTicketParams().rowId!,
+  ticketId: getActiveTicketParams().ticketId
+})
 
 // 只关子弹窗 / 关整个活动页
 closeTicketDialog()

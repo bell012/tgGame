@@ -9,25 +9,12 @@ import type {
   MbTicketListResponse,
   RecordForm,
   RecordResponse,
-  QueryLuckySpinInfoForm,
-  QueryLuckySpinInfoResponse,
-  DoLuckySpinForm,
-  DoLuckySpinResponse,
   TicketMarqueeForm,
   QueryTicketMarqueeResponse,
   UseTicketForm,
   UseTicketResponse
 } from '@/api/interface/activity'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
-import {
-  createMockLuckySpinInfo,
-  getMockRemainingSpins,
-  mockDoLuckySpin
-} from '@/api/mock/luckySpin'
-
-const USE_MOCK = true
-
-const mockDelay = (ms = 300) => new Promise(resolve => setTimeout(resolve, ms))
 
 // 活动分组分页查询（新版活动 API §1）
 export const queryActivityGroupPage = (
@@ -93,56 +80,7 @@ export function recordList(data: RecordForm): Promise<RecordResponse> {
   })
 }
 
-/** 查询大转盘活动信息 */
-export const queryLuckySpinInfo = async (
-  _data?: QueryLuckySpinInfoForm,
-  _options?: ApiResponseToastOptions
-): Promise<QueryLuckySpinInfoResponse> => {
-  if (USE_MOCK) {
-    await mockDelay()
-    const info = createMockLuckySpinInfo()
-    return {
-      code: '0',
-      message: 'success',
-      success: true,
-      result: { ...info, remainingSpins: getMockRemainingSpins() }
-    }
-  }
-
-  return request({
-    url: '/ticket/api/luckySpinInfo',
-    method: 'post',
-    data: _data,
-    showSuccessToast: false,
-    showErrorToast: _options?.showErrorToast ?? false
-  })
-}
-
-/** 执行一次大转盘抽奖 */
-export const doLuckySpin = async (
-  _data?: DoLuckySpinForm,
-  _options?: ApiResponseToastOptions
-): Promise<DoLuckySpinResponse> => {
-  if (USE_MOCK) {
-    await mockDelay(500)
-    return {
-      code: '0',
-      message: 'success',
-      success: true,
-      result: mockDoLuckySpin()
-    }
-  }
-
-  return request({
-    url: '/ticket/api/luckySpin',
-    method: 'post',
-    data: _data,
-    showSuccessToast: false,
-    showErrorToast: _options?.showErrorToast ?? false
-  })
-}
-
-/** 使用票券（大转盘 GO 等，始终走真实接口，不走 USE_MOCK） */
+/** 使用票券（大转盘 GO 等） */
 export const useTicket = (
   data: UseTicketForm,
   options?: ApiResponseToastOptions
@@ -155,7 +93,7 @@ export const useTicket = (
     showErrorToast: options?.showErrorToast ?? true
   })
 
-/** 查询票券跑马灯（始终走真实接口，不走 USE_MOCK） */
+/** 查询票券跑马灯 */
 export const queryTicketMarquee = (
   data: TicketMarqueeForm,
   options?: ApiResponseToastOptions

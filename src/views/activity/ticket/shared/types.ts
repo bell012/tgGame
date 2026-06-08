@@ -64,16 +64,12 @@ export interface LuckySpinTask {
   actionType?: 'deposit' | 'bet'
 }
 
-export interface LuckySpinInfoResult {
-  endTime: number
-  maxPrizeText: string
-  remainingSpins: number
-  totalVouchers: number
-  prizes: LuckySpinPrize[]
-  tasks: LuckySpinTask[]
-  recentVouchers: LuckySpinVoucherCardData[]
-  winnerRecords: WinnerTickerItem[]
+/** 活动弹窗会话数据（券种条 + 提醒弹窗，来自 mbTicketList） */
+export interface TicketActivitySession {
   voucherGames: VoucherGameItem[]
+  totalVouchers: number
+  maxPrizeText: string
+  tasks: LuckySpinTask[]
   rules: string[]
 }
 
