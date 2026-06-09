@@ -6,7 +6,9 @@
       :is-loading="isLoading"
       :load-error="loadError"
       :is-spinning="isSpinning"
-      :spin-info="spinInfo"
+      :activity-session="activitySession"
+      :wheel-prizes="wheelPrizes"
+      :can-spin="canSpin"
       :winner-records="winnerRecords"
       :game-id="toastState.gameId"
       :header-data="headerData"
@@ -14,7 +16,7 @@
       :register-wheel-ref="registerWheelRef"
       @close="handleClosePage"
       @open-reminder="handleOpenReminder"
-      @retry="loadSpinInfo"
+      @retry="loadActivitySession"
       @go="handleWheelGo"
       @spin-end="handleSpinEnd"
       @select="handleGameSelect"
@@ -73,9 +75,11 @@ const {
   isLoading,
   loadError,
   isSpinning,
-  spinInfo,
+  activitySession,
+  wheelPrizes,
+  canSpin,
   activeGameIndex,
-  loadSpinInfo,
+  loadActivitySession,
   handleWheelGo,
   handleSpinEnd,
   handleGamePrev,
@@ -88,7 +92,7 @@ const headerData = computed(() => {
   const { description: voucherDescription } = getMbTicketLanguageCopy(record, getLanguageCode())
   const voucherEndTime = getTicketActivityEndUseTime(record)
 
-  if (!spinInfo.value) {
+  if (!activitySession.value) {
     return {
       title: '',
       subtitle: voucherDescription,
@@ -97,7 +101,7 @@ const headerData = computed(() => {
     }
   }
 
-  const baseHeader = buildGameHeader(toastState.gameId, spinInfo.value, t)
+  const baseHeader = buildGameHeader(toastState.gameId, activitySession.value, t)
 
   return {
     ...baseHeader,
@@ -113,17 +117,17 @@ const handleOpenMyVouchers = () => {
 }
 
 const handleOpenReminder = () => {
-  if (!spinInfo.value) return
+  if (!activitySession.value) return
   openTicketReminderDialog({
-    tasks: spinInfo.value.tasks,
-    rules: spinInfo.value.rules,
+    tasks: activitySession.value.tasks,
+    rules: activitySession.value.rules,
     voucherName: headerData.value.title,
-    maxPrizeText: spinInfo.value.maxPrizeText
+    maxPrizeText: activitySession.value.maxPrizeText
   })
 }
 
 const applyVoucherSelection = (index: number) => {
-  const item = spinInfo.value?.voucherGames[index]
+  const item = activitySession.value?.voucherGames[index]
   const record = globalTicketToastState.mbTicketRecords[index]
   if (!item || !record) return
 
@@ -154,8 +158,8 @@ const handleFooterNext = () => {
 watch(
   () => toastState.gameId,
   gameId => {
-    if (!spinInfo.value) return
-    activeGameIndex.value = findTicketIndex(spinInfo.value.voucherGames, {
+    if (!activitySession.value) return
+    activeGameIndex.value = findTicketIndex(activitySession.value.voucherGames, {
       gameId,
       record: globalTicketToastState.activeTicketRecord
     })

@@ -1,11 +1,6 @@
 import type { MbTicketRecord } from '@/api/interface/activity'
 import type { ComposerTranslation } from 'vue-i18n'
-import type {
-  LuckySpinInfoResult,
-  TicketGameId,
-  TicketModalHeaderData,
-  VoucherGameItem
-} from './types'
+import type { TicketGameId, TicketModalHeaderData, VoucherGameItem } from './types'
 
 const GAME_HEADER_COPY: Record<
   TicketGameId,
@@ -32,7 +27,7 @@ const GAME_HEADER_COPY: Record<
 
 export const buildGameHeader = (
   gameId: TicketGameId,
-  info: Pick<LuckySpinInfoResult, 'maxPrizeText'>,
+  info: { maxPrizeText: string },
   t: ComposerTranslation
 ): TicketModalHeaderData => {
   const copy = GAME_HEADER_COPY[gameId]

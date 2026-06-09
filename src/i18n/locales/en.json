@@ -1675,7 +1675,12 @@
     "claimed": "Claimed",
     "rulesAriaLabel": "Open check-in rules",
     "closeAriaLabel": "Close check-in popup",
-    "reminderCloseAriaLabel": "Close check-in reminder popup"
+    "reminderCloseAriaLabel": "Close check-in reminder popup",
+    "bindPhonePromptTitle": "Kind Reminder",
+    "bindPhonePromptHeadline": "Link your mobile number first",
+    "bindPhonePromptDescription": "Please link your mobile number to continue.",
+    "bindPhonePromptAction": "Link Now",
+    "bindPhonePromptCloseAriaLabel": "Close bind phone prompt"
   },
   "vouchers": {
     "myVouchers": "My Vouchers",

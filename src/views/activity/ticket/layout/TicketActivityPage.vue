@@ -58,7 +58,7 @@
         </div>
 
         <div
-          v-else-if="spinInfo"
+          v-else-if="activitySession"
           class="ticket-mobile-content flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]"
         >
           <div
@@ -82,9 +82,9 @@
             />
 
             <TicketVoucherFooter
-              :games="spinInfo.voucherGames"
+              :games="activitySession.voucherGames"
               :active-index="activeGameIndex"
-              :total-vouchers="spinInfo.totalVouchers"
+              :total-vouchers="activitySession.totalVouchers"
               :active-game-id="gameId"
               @select="emit('select', $event)"
               @prev="emit('prev')"
@@ -145,16 +145,16 @@
             </div>
 
             <div
-              v-else-if="spinInfo"
+              v-else-if="activitySession"
               class="grid items-center gap-6 p-7 pt-14"
               :style="pcGridStyle"
             >
               <aside class="min-w-0">
                 <TicketModalHeader v-bind="headerData" align="start" />
                 <TicketVoucherSwitcher
-                  :games="spinInfo.voucherGames"
+                  :games="activitySession.voucherGames"
                   :active-index="activeGameIndex"
-                  :total-vouchers="spinInfo.totalVouchers"
+                  :total-vouchers="activitySession.totalVouchers"
                   :active-game-id="gameId"
                   variant="grid"
                   @select="emit('select', $event)"
@@ -177,7 +177,7 @@
           </div>
 
           <TicketWinnerTicker
-            v-if="spinInfo && !isLoading && !loadError"
+            v-if="activitySession && !isLoading && !loadError"
             class="mt-3 w-full"
             :items="winnerRecords"
             compact
@@ -194,7 +194,8 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { LUCKY_SPIN_TOKENS, TICKET_PC_TOKENS } from '../shared/design-tokens'
 import { ticketMobileSectionClass } from '../shared/ticketMobileLayout'
 import type {
-  LuckySpinInfoResult,
+  LuckySpinPrize,
+  TicketActivitySession,
   TicketGameId,
   TicketModalHeaderData,
   WinnerTickerItem
@@ -212,7 +213,9 @@ interface Props {
   isLoading: boolean
   loadError: boolean
   isSpinning: boolean
-  spinInfo: LuckySpinInfoResult | null
+  activitySession: TicketActivitySession | null
+  wheelPrizes?: LuckySpinPrize[]
+  canSpin?: boolean
   winnerRecords?: WinnerTickerItem[]
   gameId: TicketGameId
   headerData: TicketModalHeaderData
@@ -221,6 +224,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  wheelPrizes: () => [],
+  canSpin: false,
   winnerRecords: () => []
 })
 
@@ -257,10 +262,10 @@ const pcGridStyle = computed(() => ({
 const gameComponent = computed(() => getTicketGameComponent(props.gameId))
 
 const gameComponentProps = computed(() => {
-  if (props.gameId !== 'lucky_spin' || !props.spinInfo) return {}
+  if (props.gameId !== 'lucky_spin' || !props.activitySession) return {}
   return {
-    prizes: props.spinInfo.prizes,
-    disabled: props.spinInfo.remainingSpins <= 0 || props.isSpinning
+    prizes: props.wheelPrizes,
+    disabled: !props.canSpin || props.isSpinning
   }
 })
 
