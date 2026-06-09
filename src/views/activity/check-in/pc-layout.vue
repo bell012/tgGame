@@ -9,12 +9,13 @@
     @rules="$emit('rules')"
     @action="$emit('action')"
     @reward-click="$emit('reward-click', $event)"
+    @hero-use-now="$emit('hero-use-now', $event)"
   />
 </template>
 
 <script setup lang="ts">
 import CheckInPageContent from './components/CheckInPageContent.vue'
-import type { CheckInRewardItem, CheckInViewData } from './shared'
+import type { CheckInHeroActionReward, CheckInRewardItem, CheckInViewData } from './shared'
 
 interface Props {
   viewData: CheckInViewData
@@ -29,5 +30,6 @@ defineEmits<{
   rules: []
   action: []
   'reward-click': [reward: CheckInRewardItem]
+  'hero-use-now': [reward: CheckInHeroActionReward]
 }>()
 </script>

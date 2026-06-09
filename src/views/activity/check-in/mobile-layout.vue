@@ -13,6 +13,7 @@
         @rules="$emit('rules')"
         @action="$emit('action')"
         @reward-click="$emit('reward-click', $event)"
+        @hero-use-now="$emit('hero-use-now', $event)"
       />
     </div>
   </div>
@@ -21,7 +22,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, type CSSProperties } from 'vue'
 import CheckInPageContent from './components/CheckInPageContent.vue'
-import type { CheckInRewardItem, CheckInViewData } from './shared'
+import type { CheckInHeroActionReward, CheckInRewardItem, CheckInViewData } from './shared'
 
 interface Props {
   viewData: CheckInViewData
@@ -36,6 +37,7 @@ defineEmits<{
   rules: []
   action: []
   'reward-click': [reward: CheckInRewardItem]
+  'hero-use-now': [reward: CheckInHeroActionReward]
 }>()
 
 // H5 设计稿基准宽度，所有坐标以 1 倍图 375px 为准。
