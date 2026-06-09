@@ -33,6 +33,7 @@
 <script setup lang="ts">
 import type { TicketWinnerTickerData, WinnerTickerItem } from '../shared/types'
 import { getMarqueeFallbackAvatar } from '../shared/mapTicketMarquee'
+import { TICKET_PC_LAYOUT } from '../shared/ticketPcLayout'
 import { TICKET_MOBILE_LAYOUT } from '../shared/ticketMobileLayout'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -47,21 +48,25 @@ const props = withDefaults(
 
 const { t } = useI18n()
 
+const marqueeLayout = computed(() =>
+  props.compact ? TICKET_PC_LAYOUT.marquee : TICKET_MOBILE_LAYOUT.marquee
+)
+
 const pillStyle = computed(() => ({
-  gap: `${TICKET_MOBILE_LAYOUT.marquee.pillGap}px`,
-  padding: `${TICKET_MOBILE_LAYOUT.marquee.pillPaddingY}px ${TICKET_MOBILE_LAYOUT.marquee.pillPaddingX}px`,
-  borderRadius: `${TICKET_MOBILE_LAYOUT.marquee.pillRadius}px`,
-  backgroundColor: TICKET_MOBILE_LAYOUT.marquee.pillBg,
-  marginRight: `${TICKET_MOBILE_LAYOUT.marquee.pillGap}px`
+  gap: `${marqueeLayout.value.pillGap}px`,
+  padding: `${marqueeLayout.value.pillPaddingY}px ${marqueeLayout.value.pillPaddingX}px`,
+  borderRadius: `${marqueeLayout.value.pillRadius}px`,
+  backgroundColor: marqueeLayout.value.pillBg,
+  marginRight: `${marqueeLayout.value.pillGap}px`
 }))
 
-const avatarStyle = {
-  width: `${TICKET_MOBILE_LAYOUT.marquee.avatarSize}px`,
-  height: `${TICKET_MOBILE_LAYOUT.marquee.avatarSize}px`
-}
+const avatarStyle = computed(() => ({
+  width: `${marqueeLayout.value.avatarSize}px`,
+  height: `${marqueeLayout.value.avatarSize}px`
+}))
 
 const textStyle = computed(() => ({
-  fontSize: `${props.compact ? 13 : TICKET_MOBILE_LAYOUT.marquee.fontSize}px`
+  fontSize: `${marqueeLayout.value.fontSize}px`
 }))
 
 const failedAvatarIds = ref(new Set<string>())
@@ -98,7 +103,7 @@ const displayItems = computed(() => {
 
 const trackStyle = computed(() => ({
   animationDuration: `${Math.max(props.items.length * 4, 12)}s`,
-  gap: `${TICKET_MOBILE_LAYOUT.marquee.pillGap}px`
+  gap: `${marqueeLayout.value.pillGap}px`
 }))
 </script>
 
