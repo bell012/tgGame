@@ -1667,7 +1667,12 @@
     "claimed": "已领取",
     "rulesAriaLabel": "打开签到规则",
     "closeAriaLabel": "关闭签到弹窗",
-    "reminderCloseAriaLabel": "关闭签到提醒弹窗"
+    "reminderCloseAriaLabel": "关闭签到提醒弹窗",
+    "bindPhonePromptTitle": "温馨提示",
+    "bindPhonePromptHeadline": "请先绑定手机号",
+    "bindPhonePromptDescription": "请先绑定手机号后再继续。",
+    "bindPhonePromptAction": "立即绑定",
+    "bindPhonePromptCloseAriaLabel": "关闭绑定手机号提示弹窗"
   },
   "vouchers": {
     "myVouchers": "我的票卷",

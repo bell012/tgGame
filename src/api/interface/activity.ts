@@ -196,6 +196,9 @@ export interface CheckInTicketLanguageInfoItem {
 export interface CheckInTicketInfo {
   amount?: number
   currency?: string
+  completeVerification?: {
+    verifyPhone?: number
+  }
   expireTime?: number
   maxAmount?: number
   minAmount?: number
