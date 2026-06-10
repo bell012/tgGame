@@ -1,6 +1,78 @@
-import type { ActivityLanguageTextItem, ActivityListItem } from '@/api/interface/activity'
+import type {
+  ActivityGroupItem,
+  ActivityLanguageTextItem,
+  ActivityListItem
+} from '@/api/interface/activity'
 import i18n from '@/i18n'
-import { getStorageLanguageCode } from '@/utils/locale'
+import { getCurrentLocale } from '@/utils/router'
+import { getStorageLanguageCode, withLocalePrefix } from '@/utils/locale'
+
+/** 活动分组图标转图片 URL（支持绝对地址或相对路径拼接 CDN 基址） */
+export const toPromotionGroupIconUrl = (value?: string) => {
+  const normalizedValue = String(value ?? '').trim()
+
+  if (!normalizedValue) {
+    return ''
+  }
+
+  if (/^https?:\/\//i.test(normalizedValue)) {
+    return normalizedValue
+  }
+
+  const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
+  const imagePath = normalizedValue.replace(/^\/+/, '')
+
+  return baseUrl ? `${baseUrl}/${imagePath}` : normalizedValue
+}
+
+/** H5 切换分组时只改地址栏，不触发 vue-router，避免 MainLayout 滑动叠层 */
+export const replacePromotionsListUrl = (groupCode: string) => {
+  const normalizedGroupCode = String(groupCode || '').trim()
+  if (!normalizedGroupCode) {
+    return
+  }
+
+  const fullPath = withLocalePrefix(`/promotions/${normalizedGroupCode}`, getCurrentLocale())
+  window.history.replaceState(window.history.state, '', fullPath)
+}
+
+/** H5 横向分组 Tab（Figma：高 36、圆角 18、选中绿边 + 15% 绿底） */
+export const getPromotionGroupMobileTabClass = (isActive: boolean) => {
+  const base =
+    'box-border flex h-9 shrink-0 items-center gap-1.5 rounded-[18px] px-4 py-2 transition-colors'
+
+  if (isActive) {
+    return `${base} border border-solid border-theme-primary bg-theme-3`
+  }
+
+  return `${base} border border-transparent bg-bg-2`
+}
+
+export const getPromotionGroupMobileTabTextClass = (isActive: boolean) => {
+  return isActive ? 'text-xs font-[700] text-text-1' : 'text-xs font-[500] text-text-2'
+}
+
+/** PC 左侧分组 Tab（Figma：高 48、圆角 8、选中实心绿底黑字） */
+export const getPromotionGroupDesktopTabClass = (isActive: boolean) => {
+  const base = 'flex h-12 items-center gap-4 rounded-lg px-4 cursor-pointer transition-colors'
+
+  if (isActive) {
+    return `${base} bg-theme-primary font-bold text-text-4`
+  }
+
+  return `${base} font-normal text-text-2`
+}
+
+/** 分组侧栏/菜单图标：选中态优先 activeIcon，否则 defaultIcon */
+export const getPromotionGroupIcon = (group: ActivityGroupItem, activeGroupCode?: string) => {
+  const isActive = Boolean(activeGroupCode && activeGroupCode === group.groupCode)
+
+  if (isActive && group.activeIcon) {
+    return toPromotionGroupIconUrl(group.activeIcon)
+  }
+
+  return toPromotionGroupIconUrl(group.defaultIcon)
+}
 
 /** 从多语言数组里取当前语言文案 */
 export const getLanguageName = (items?: ActivityLanguageTextItem[]) => {

@@ -459,7 +459,10 @@ import { navigateTo } from '@/utils/router'
 import { openLuckySpin } from '@/utils/openLuckySpin'
 import { openTicketActivity } from '@/utils/openTicketActivity'
 import { PROMOTIONS_MENU_GROUP_LIMIT, usePromotionsStore } from '@/stores/promotions'
-import { getLanguageName as getPromotionGroupName } from '@/views/activity/promotions/shared'
+import {
+  getLanguageName as getPromotionGroupName,
+  getPromotionGroupIcon
+} from '@/views/activity/promotions/shared'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
 import LanguagePopup from '@/views/settings/preferences/language-popup.vue'
 
@@ -519,7 +522,7 @@ const buildPromotionsMenuChildren = (
     children.push({
       id: `promotions_${groupCode}`,
       name: groupName,
-      icon: group.defaultIcon || newSideIcons.promotionCenterIcon,
+      icon: getPromotionGroupIcon(group),
       handler: () => {
         navigateTo(`/promotions/${groupCode}`)
       }
