@@ -83,10 +83,10 @@
     <button
       type="button"
       class="absolute z-10 border-0 bg-transparent p-0 disabled:opacity-80"
-      :class="{ 'cursor-default': opened || isOpening }"
+      :class="{ 'cursor-default': opened || isPending }"
       :style="buttonStyle"
       :aria-label="opened ? undefined : 'OPEN'"
-      :disabled="opened || isOpening"
+      :disabled="opened || isPending"
       @click="handleOpen"
     >
       <!-- <span
@@ -111,19 +111,17 @@
 </template>
 
 <script setup lang="ts">
-import Api from '@/api'
-import type { MbTicketRecord, UseTicketResponse, UseTicketResult } from '@/api/interface/activity'
+import type { MbTicketRecord, UseTicketResult } from '@/api/interface/activity'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import buttonImage from '@/static/img/lucky-spin/lucky-red-envelope/red-packet-button.png'
 import closedPacketImage from '@/static/img/lucky-spin/lucky-red-envelope/red-packet-closed.png'
 import openedBottomImage from '@/static/img/lucky-spin/lucky-red-envelope/red-packet-opened-bottom.png'
 import standImage from '@/static/img/lucky-spin/lucky-red-envelope/stand.png'
 import { getCurrencySymbol } from '@/utils/locale'
-import { normalizeApiResponseMessage, translateApiMessageByCode } from '@/utils/request'
-import { globalShowToast } from '@/utils/toast'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getActiveTicketParams, globalTicketToastState } from '../../shell/ticketToast'
+import { useTicketUseAction } from '../../shared'
+import { globalTicketToastState } from '../../shell/ticketToast'
 
 interface RedPacketTicketRecord extends MbTicketRecord {
   amount?: number | string
@@ -137,8 +135,8 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const isMobile = useIsMobile()
 const opened = ref(false)
-const isOpening = ref(false)
 const openedRewardAmount = ref<number | string | null>(null)
+const { runUseTicket, isPending } = useTicketUseAction()
 
 /** H5 为三倍稿缩放到 1 倍，PC 为原稿的一半。 */
 const scale = computed(() => (isMobile.value ? 1 / 3 : 1 / 2))
@@ -284,66 +282,22 @@ const buttonTextStyle = computed(() => {
   }
 })
 
-const isUseTicketSuccess = (response: UseTicketResponse) =>
-  response.code === 'C2' && response.result != null
-
-const resolveUseTicketErrorMessage = (
-  response: Pick<UseTicketResponse, 'code' | 'message'>,
-  fallback: string
-) => {
-  const normalized = normalizeApiResponseMessage(response)
-  const translated = translateApiMessageByCode(normalized.code, normalized.message || '')
-
-  return translated || normalized.message || fallback
-}
-
 const resolveRewardAmount = (result: UseTicketResult | null | undefined) => {
   return result?.amount ?? result?.rewardAmount ?? null
 }
 
 const handleOpen = async () => {
-  if (opened.value || isOpening.value) return
+  if (opened.value || isPending.value) return
 
-  const params = getActiveTicketParams()
-
-  if (!params.rowId) {
-    globalShowToast({
-      message: t('luckySpinPage.loadFailed'),
-      type: 'fail'
-    })
-    return
-  }
-
-  isOpening.value = true
-
-  try {
-    const response = await Api.activity.useTicket(
-      {
-        rowId: params.rowId,
-        ticketId: params.ticketId
-      },
-      { showErrorToast: false }
-    )
-
-    if (!isUseTicketSuccess(response)) {
-      globalShowToast({
-        message: resolveUseTicketErrorMessage(response, t('luckySpinPage.loadFailed')),
-        type: 'fail'
-      })
-      return
+  await runUseTicket({
+    voucherName: t('ticketPage.redPacket.title'),
+    fallbackErrorMessage: t('luckySpinPage.loadFailed'),
+    onSuccess: result => {
+      openedRewardAmount.value = resolveRewardAmount(result)
+      opened.value = true
+      emit('open')
     }
-
-    openedRewardAmount.value = resolveRewardAmount(response.result)
-    opened.value = true
-    emit('open')
-  } catch {
-    globalShowToast({
-      message: t('luckySpinPage.loadFailed'),
-      type: 'fail'
-    })
-  } finally {
-    isOpening.value = false
-  }
+  })
 }
 
 /** 切换到另一张红包票券时恢复未打开状态。 */
@@ -351,7 +305,6 @@ watch(
   () => [activeTicket.value?.rowId, activeTicket.value?.ticketId],
   () => {
     opened.value = false
-    isOpening.value = false
     openedRewardAmount.value = null
   }
 )
