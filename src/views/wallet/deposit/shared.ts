@@ -116,6 +116,7 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
   const { t, locale } = useI18n()
   const defaultPresetAmounts: number[] = []
 
+  const isInitialLoading = ref(true)
   const payMethods = ref<QueryPayColumnItem[]>([])
   const selectedMethod = ref<QueryPayColumnItem | null>(null)
   const paySubColumns = ref<QueryPaySubColumnItem[]>([])
@@ -340,6 +341,8 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
       selectedSubColumn.value = null
       selectedDiscountItem.value = null
       presetAmounts.value = [...defaultPresetAmounts]
+    } finally {
+      isInitialLoading.value = false
     }
   }
 
@@ -417,6 +420,7 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
   })
 
   return {
+    isInitialLoading,
     payMethods,
     selectedMethod,
     paySubColumns,
@@ -454,6 +458,7 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
   const { t } = useI18n()
   const defaultPresetAmounts: number[] = []
 
+  const isInitialLoading = ref(true)
   const presetAmounts = ref<number[]>([...defaultPresetAmounts])
   const paySubColumns = ref<QueryPaySubColumnItem[]>([])
   const payMethods = ref<QueryPayColumnItem[]>([])
@@ -659,6 +664,7 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
       presetAmounts.value = [...defaultPresetAmounts]
     } finally {
       payColumnLoaded.value = true
+      isInitialLoading.value = false
     }
   }
 
@@ -751,6 +757,7 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
   })
 
   return {
+    isInitialLoading,
     presetAmounts,
     paySubColumns,
     payMethods,
