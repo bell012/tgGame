@@ -44,7 +44,7 @@
           >
             <span
               class="min-w-0 w-full truncate text-center"
-              :class="[getDetailAmountClass(nextColumn.key), row.placeholder ? 'invisible' : '']"
+              :class="getDetailAmountClass(nextColumn.key)"
               >{{ row.amount }}</span
             >
           </div>
@@ -59,12 +59,12 @@
       >
         <div class="flex w-full items-center">
           <span
-            class="min-w-0 w-3/5 truncate text-sm font-[400] text-text-1 sm:text-base sm:font-[700] sm:text-center"
+            class="min-w-0 w-1/2 truncate text-sm font-[400] text-text-1 sm:text-base sm:font-[700] sm:text-center"
           >
             {{ currentTotalRow.label }}
           </span>
           <span
-            class="min-w-0 w-2/5 truncate text-right text-sm font-[700] text-secondary-7 sm:text-base sm:font-[700] sm:text-center"
+            class="min-w-0 w-1/2 truncate text-right text-sm font-[700] text-secondary-7 sm:text-base sm:font-[700] sm:text-center"
           >
             {{ currentTotalRow.amount }}
           </span>

@@ -58,7 +58,7 @@
                         <span
                           class="text-[20px] font-[700] leading-none"
                           :style="{ color: viewedVipCardTheme.progressTextColor }"
-                          >{{ item.current }}/{{ item.target }}</span
+                          >{{ item.displayText ?? `${item.current}/${item.target}` }}</span
                         >
                       </div>
                     </div>

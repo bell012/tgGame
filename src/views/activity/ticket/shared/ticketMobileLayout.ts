@@ -85,5 +85,5 @@ export const VOUCHER_CAROUSEL_TRACK_WIDTH = TICKET_MOBILE_LAYOUT.voucherCarousel
 export const ticketMobileSectionClass = {
   headerToWheel: 'mt-5',
   wheelToTicker: 'mt-3',
-  tickerToFooter: 'mt-3'
+  tickerToFooter: 'mt-10'
 } as const
