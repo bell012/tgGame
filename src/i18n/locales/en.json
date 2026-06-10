@@ -1315,6 +1315,7 @@
     "ongoing": "Ongoing",
     "claimed": "Claimed",
     "locked": "Locked",
+    "completed": "Completed",
     "exclusiveBenefitsTitle": "VIP {vipId} Exclusive Benefits",
     "tabs": {
       "benefitsComparison": "Benefits Comparison",
@@ -1323,12 +1324,12 @@
     "benefitsComparison": {
       "currentLevel": "Current Level: V{vipId}",
       "unlockLevel": "Unlock V{vipId}",
-      "totalRewards": "Total Rewards"
+      "totalRewards": "Annual Benefits"
     },
     "goalHint": {
       "unlocked": "Upgrade successful. Benefits unlocked",
       "keepGoing": "Keep going to reach your VIP goal",
-      "achieved": "Max level reached"
+      "achieved": "Max Level Reached. All benefits unlocked"
     },
     "benefitExplainPopup": {
       "title": "VIP Exclusive Benefits",
@@ -1362,40 +1363,40 @@
     "rule": "Rules",
     "rules": {
       "rule1": {
-        "title": "1. Promotion Criteria",
-        "description": "Members will be upgraded upon meeting the required deposit or valid turnover for VIP advancement and will receive the corresponding level bonus. If multiple VIP level requirements are met at the same time, bonuses for all achieved levels will be granted. Bonuses can be claimed immediately upon upgrade and remain valid permanently."
+        "title": "1.Promotion Criteria",
+        "description": "Members will be automatically upgraded to the corresponding VIP level after meeting the required deposit or valid turnover conditions, and can claim the matching upgrade bonus. If multiple VIP level requirements are met at the same time, bonuses for all achieved levels will be granted. Upgrade bonuses can be claimed immediately after the level upgrade and remain valid permanently."
       },
       "rule2": {
         "title": "2. Weekly Bonus",
-        "description": "Meet the weekly deposit and valid turnover requirements to receive your Weekly Bonus. Only the current level bonus is granted for multiple upgrades. Claim after 00:00:00 every Monday — unclaimed rewards expire at week’s end."
+        "description": "After reaching the corresponding VIP level, members can claim the Weekly Bonus for their current VIP level. If multiple levels are upgraded at once, only the Weekly Bonus for the current VIP level will be granted. Weekly Bonuses are available every Monday at 00:00, and unclaimed rewards will expire after the claim period."
       },
       "rule3": {
         "title": "3. Monthly Bonus",
-        "description": "Meet the monthly deposit and valid turnover requirements to receive your Monthly Bonus. Only the current level bonus is granted for multiple upgrades. Claim after 00:00:00 on the 1st — unclaimed rewards expire at month’s end."
+        "description": "After reaching the corresponding VIP level, members can claim the Monthly Bonus for their current VIP level. If multiple levels are upgraded at once, only the Monthly Bonus for the current VIP level will be granted. Monthly Bonuses are available on the 1st of each month at 00:00, and unclaimed rewards will expire after the claim period."
       },
       "rule4": {
         "title": "4. Retention Requirements",
-        "description": "After a VIP level change, complete the required turnover within 30 days to maintain your level. If upgraded during this time, requirements reset according to the new level."
+        "description": "After a VIP level change, members must complete the required valid turnover for the corresponding level within 31 days to maintain their current VIP level. If another upgrade occurs during this period, the retention cycle and requirements will be recalculated based on the new VIP level."
       },
       "rule5": {
         "title": "5. Demotion Criteria",
-        "description": "If the required retention criteria are not met by the 30th of each month, the VIP level will be downgraded automatically, and benefits will adjust to the new level."
+        "description": "If a member fails to complete the required retention turnover within the 31-day assessment period after the upgrade, the system will automatically adjust the VIP level after the assessment period ends. Future benefits will be based on the adjusted VIP level."
       },
       "rule6": {
         "title": "6. Reward Expiration Policy",
-        "description": "Rewards expire and become invalid after the deadline. Please claim them in time."
+        "description": "All rewards must be claimed within the specified validity period. Unclaimed rewards will automatically expire after the deadline."
       },
       "rule7": {
         "title": "7. Audit Policy",
-        "description": "VIP bonuses require 1x turnover before withdrawal, and wagering applies to all game platforms."
+        "description": "VIP rewards require 1x valid turnover before withdrawal, and valid bets from all game platforms will be counted toward the turnover requirement."
       },
       "rule8": {
         "title": "8. Promotion Disclaimer",
-        "description": "This feature is for normal use by the account holder only. Any use of bots, scripts, exploits, or risk-free betting will result in account suspension and forfeiture of bonuses without notice."
+        "description": "This promotion is only available for normal participation by the account holder. If any bot usage, scripts, exploits, arbitrage, or other abnormal activity is detected, the platform reserves the right to freeze the account and cancel related rewards without prior notice."
       },
       "rule9": {
         "title": "9. Right of Interpretation",
-        "description": "By claiming VIP rewards, you agree to the related terms. The platform reserves the final right of interpretation."
+        "description": "By claiming VIP rewards, members are deemed to have agreed to the terms of this promotion. The platform reserves the final right of interpretation."
       }
     }
   },
