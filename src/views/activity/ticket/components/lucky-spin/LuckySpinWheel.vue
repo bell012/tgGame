@@ -1,6 +1,15 @@
 <template>
-  <div class="relative mx-auto flex flex-col items-center" :style="{ width: WHEEL_WIDTH }">
-    <div ref="containerRef" class="relative aspect-square w-full">
+  <div
+    class="relative shrink-0"
+    :class="isMobile ? 'mx-auto flex flex-col items-center' : ''"
+    :style="wheelRootStyle"
+  >
+    <div
+      ref="containerRef"
+      class="relative shrink-0"
+      :class="isMobile ? 'aspect-square w-full' : ''"
+      :style="wheelContainerStyle"
+    >
       <div
         ref="discRef"
         class="absolute z-[25] overflow-hidden rounded-full"
@@ -62,9 +71,18 @@
         aria-label="GO"
         @click="handleGoClick"
       />
+
+      <img
+        v-if="!isMobile"
+        :src="LUCKY_SPIN_ASSETS.wheel.shadow"
+        alt=""
+        class="pointer-events-none absolute left-1/2 top-[98%] z-10 w-[72%] -translate-x-1/2 select-none object-contain"
+        draggable="false"
+      />
     </div>
 
     <img
+      v-if="isMobile"
       :src="LUCKY_SPIN_ASSETS.wheel.shadow"
       alt=""
       class="pointer-events-none -mt-[2%] w-[72%] select-none object-contain"
@@ -117,12 +135,36 @@ const sectorHighlightLocked = ref(false)
 const isMobile = useIsMobile()
 
 const WHEEL_WIDTH = computed(() => {
-  if (!isMobile.value) {
-    return `${TICKET_PC_TOKENS.wheelSizePc}px`
-  }
-
   const sideMargin = LUCKY_SPIN_TOKENS.wheelSideMargin * 2
   return `calc(100vw - ${sideMargin}px)`
+})
+
+const wheelRootStyle = computed(() => {
+  if (!isMobile.value) {
+    const size = TICKET_PC_TOKENS.wheelSizePc
+    return {
+      width: `${size}px`,
+      height: `${size}px`,
+      minWidth: `${size}px`,
+      minHeight: `${size}px`
+    }
+  }
+
+  return { width: WHEEL_WIDTH.value }
+})
+
+const wheelContainerStyle = computed(() => {
+  if (!isMobile.value) {
+    const size = TICKET_PC_TOKENS.wheelSizePc
+    return {
+      width: `${size}px`,
+      height: `${size}px`,
+      minWidth: `${size}px`,
+      minHeight: `${size}px`
+    }
+  }
+
+  return undefined
 })
 const pointerSize = LUCKY_SPIN_TOKENS.wheelPointerSize
 const goHitSize = '23%'
@@ -221,7 +263,6 @@ const handleGoClick = () => {
   if (props.disabled) return
   clearSectorHighlight()
   triggerGoPress()
-  luckyRef.value?.play()
   emit('go')
 }
 
@@ -236,7 +277,8 @@ const handleEnd = async () => {
   emit('spinEnd')
 }
 
-const stopAt = (index: number) => {
+const spinTo = (index: number) => {
+  luckyRef.value?.play()
   luckyRef.value?.stop(index)
 }
 
@@ -246,7 +288,7 @@ const initWheel = () => {
 }
 
 defineExpose({
-  stopAt,
+  spinTo,
   init: initWheel,
   clearSectorHighlight
 })

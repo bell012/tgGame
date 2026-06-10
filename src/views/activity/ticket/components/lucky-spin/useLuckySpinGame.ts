@@ -1,12 +1,18 @@
 import Api from '@/api'
+import type { UseTicketResponse, UseTicketResult } from '@/api/interface/activity'
 import { getLanguageCode } from '@/utils/locale'
+import { normalizeApiResponseMessage, translateApiMessageByCode } from '@/utils/request'
 import {
   fetchMbTicketListRecords,
   findMbTicketsByGameId,
   mapMbTicketListToFooter
 } from '../../shared/mbTicketMapper'
+import {
+  buildTicketActivitySession,
+  mapMbTicketToReminderContext
+} from '../../shared/mapTicketActivityContext'
 import { findTicketIndex } from '../../shared/gameHeaderConfig'
-import type { LuckySpinInfoResult, LuckySpinResult, TicketGameId } from '../../shared/types'
+import type { TicketActivitySession, TicketGameId } from '../../shared/types'
 import {
   closeTicketDialog,
   globalTicketDialogState,
@@ -18,13 +24,18 @@ import {
   getActiveTicketParams,
   globalTicketToastState
 } from '../../shell/ticketToast'
+import {
+  buildResultDialogFromUse,
+  findPrizeIndexInWheelConfig,
+  mapWheelConfigToPrizes
+} from '../../shared/mapWheelConfig'
 import { globalShowToast } from '@/utils/toast'
 import type { Ref } from 'vue'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const buildFallbackFooter = () => ({
-  games: [] as LuckySpinInfoResult['voucherGames'],
+  games: [] as TicketActivitySession['voucherGames'],
   totalVouchers: 0
 })
 
@@ -70,8 +81,32 @@ const refreshTicketSessionAfterList = (
   }
 }
 
+const syncReminderContext = (session: TicketActivitySession) => {
+  const reminder = mapMbTicketToReminderContext(globalTicketToastState.activeTicketRecord)
+  session.maxPrizeText = reminder.maxPrizeText
+  session.tasks = reminder.tasks
+  session.rules = reminder.rules
+}
+
+const clearPendingSpin = (pendingUseResult: Ref<UseTicketResult | null>) => {
+  pendingUseResult.value = null
+}
+
+const isUseTicketSuccess = (response: UseTicketResponse) =>
+  response.code === 'C2' && response.result != null
+
+const resolveUseTicketErrorMessage = (
+  response: Pick<UseTicketResponse, 'code' | 'message'>,
+  fallback: string
+) => {
+  const normalized = normalizeApiResponseMessage(response)
+  const translated = translateApiMessageByCode(normalized.code, normalized.message || '')
+
+  return translated || normalized.message || fallback
+}
+
 export interface LuckySpinWheelExpose {
-  stopAt: (index: number) => void
+  spinTo: (index: number) => void
   init: () => void
   clearSectorHighlight: () => void
 }
@@ -85,12 +120,18 @@ export const useLuckySpinGame = (
   const isLoading = ref(false)
   const loadError = ref(false)
   const isSpinning = ref(false)
-  const spinInfo = ref<LuckySpinInfoResult | null>(null)
+  const activitySession = ref<TicketActivitySession | null>(null)
   const activeGameIndex = ref(0)
-  const pendingResult = ref<LuckySpinResult | null>(null)
+  const pendingUseResult = ref<UseTicketResult | null>(null)
 
-  const syncActiveGameIndex = (info: LuckySpinInfoResult, gameId?: string) => {
-    activeGameIndex.value = findTicketIndex(info.voucherGames, {
+  const wheelPrizes = computed(() =>
+    mapWheelConfigToPrizes(globalTicketToastState.activeTicketRecord?.wheelConfig)
+  )
+
+  const canSpin = computed(() => Boolean(getActiveTicketParams().rowId))
+
+  const syncActiveGameIndex = (session: TicketActivitySession, gameId?: string) => {
+    activeGameIndex.value = findTicketIndex(session.voucherGames, {
       gameId: (gameId ?? 'lucky_spin') as TicketGameId,
       record: globalTicketToastState.activeTicketRecord
     })
@@ -98,99 +139,103 @@ export const useLuckySpinGame = (
 
   const resetModalState = () => {
     isSpinning.value = false
-    pendingResult.value = null
+    clearPendingSpin(pendingUseResult)
     loadError.value = false
-    spinInfo.value = null
+    activitySession.value = null
     closeTicketDialog()
     wheelRef.value?.init()
   }
 
-  const loadSpinInfo = async () => {
+  const loadActivitySession = async () => {
     isLoading.value = true
     loadError.value = false
 
     try {
-      const [spinResponse, footer] = await Promise.all([
-        Api.activity.queryLuckySpinInfo(getActiveTicketParams()),
-        fetchVoucherFooter()
-      ])
+      const footer = await fetchVoucherFooter()
 
-      if (spinResponse.success && spinResponse.result) {
-        spinInfo.value = {
-          ...spinResponse.result,
-          voucherGames: footer.games,
-          totalVouchers: footer.totalVouchers
-        }
-        syncActiveGameIndex(spinInfo.value, globalTicketToastState.gameId)
+      if (footer.games.length === 0 && globalTicketToastState.mbTicketRecords.length === 0) {
+        loadError.value = true
+        activitySession.value = null
         return
       }
 
-      spinInfo.value = null
-      loadError.value = true
+      activitySession.value = buildTicketActivitySession(
+        footer,
+        globalTicketToastState.activeTicketRecord
+      )
+      syncActiveGameIndex(activitySession.value, globalTicketToastState.gameId)
     } catch {
-      spinInfo.value = null
+      activitySession.value = null
       loadError.value = true
     } finally {
       isLoading.value = false
     }
   }
 
-  const openResult = (result: LuckySpinResult) => {
-    const { prize } = result
+  const openResultFromUse = (result: UseTicketResult) => {
+    openTicketResultDialog(buildResultDialogFromUse(result))
+  }
 
-    if (prize.type === 'cash') {
-      openTicketResultDialog({
-        variant: 'cash',
-        highlightText: prize.label
-      })
-      return
-    }
+  const failSpin = () => {
+    isSpinning.value = false
+    clearPendingSpin(pendingUseResult)
+    wheelRef.value?.clearSectorHighlight()
+  }
 
-    if (prize.type === 'spin_again') {
-      openTicketResultDialog({
-        variant: 'spin_again',
-        highlightText: t('luckySpinPage.result.spinAgain')
-      })
-      return
-    }
+  const openReminderDialog = () => {
+    const reminder =
+      activitySession.value ??
+      mapMbTicketToReminderContext(globalTicketToastState.activeTicketRecord)
 
-    if (prize.type === 'no_prize') {
-      openTicketResultDialog({
-        variant: 'no_prize',
-        highlightText: t('luckySpinPage.result.noPrize')
-      })
-      return
-    }
-
-    if (prize.type === 'voucher') {
-      const vouchers = result.vouchers ?? []
-      openTicketResultDialog({
-        variant: vouchers.length > 1 ? 'voucher_multi' : 'voucher_single',
-        vouchers
-      })
-    }
+    openTicketReminderDialog({
+      tasks: reminder.tasks ?? [],
+      rules: reminder.rules ?? [],
+      voucherName: t('luckySpinPage.title'),
+      maxPrizeText: reminder.maxPrizeText ?? ''
+    })
   }
 
   const handleWheelGo = async () => {
     if (isSpinning.value) return
 
-    if (!spinInfo.value?.remainingSpins) {
-      openTicketReminderDialog({
-        tasks: spinInfo.value?.tasks ?? [],
-        rules: spinInfo.value?.rules ?? [],
-        voucherName: t('luckySpinPage.title'),
-        maxPrizeText: spinInfo.value?.maxPrizeText ?? ''
-      })
+    const params = getActiveTicketParams()
+
+    if (!params.rowId) {
+      openReminderDialog()
       return
     }
 
     isSpinning.value = true
+    clearPendingSpin(pendingUseResult)
 
     try {
-      const response = await Api.activity.doLuckySpin(getActiveTicketParams())
-      if (!response.success || !response.result) {
-        isSpinning.value = false
-        wheelRef.value?.init()
+      const response = await Api.activity.useTicket(
+        {
+          rowId: params.rowId,
+          ticketId: params.ticketId
+        },
+        { showErrorToast: false }
+      )
+
+      if (!isUseTicketSuccess(response)) {
+        failSpin()
+        globalShowToast({
+          message: resolveUseTicketErrorMessage(response, t('luckySpinPage.loadFailed')),
+          type: 'fail'
+        })
+        return
+      }
+
+      const useResult = response.result!
+      const wheelConfig = globalTicketToastState.activeTicketRecord?.wheelConfig
+      const prizeIndex = findPrizeIndexInWheelConfig(
+        wheelConfig,
+        Number(useResult.rewardType ?? 2),
+        useResult.rewardAmount
+      )
+
+      if (prizeIndex < 0) {
+        failSpin()
         globalShowToast({
           message: t('luckySpinPage.loadFailed'),
           type: 'fail'
@@ -198,11 +243,10 @@ export const useLuckySpinGame = (
         return
       }
 
-      pendingResult.value = response.result
-      wheelRef.value?.stopAt(response.result.prizeIndex)
+      pendingUseResult.value = useResult
+      wheelRef.value?.spinTo(prizeIndex)
     } catch {
-      isSpinning.value = false
-      wheelRef.value?.init()
+      failSpin()
       globalShowToast({
         message: t('luckySpinPage.loadFailed'),
         type: 'fail'
@@ -212,17 +256,14 @@ export const useLuckySpinGame = (
 
   const handleSpinEnd = async () => {
     isSpinning.value = false
-    if (pendingResult.value) {
-      openResult(pendingResult.value)
-      pendingResult.value = null
+    if (pendingUseResult.value) {
+      openResultFromUse(pendingUseResult.value)
+      clearPendingSpin(pendingUseResult)
     }
 
     try {
       const languageCode = getLanguageCode()
-      const [spinResponse, records] = await Promise.all([
-        Api.activity.queryLuckySpinInfo(getActiveTicketParams()),
-        fetchMbTicketListRecords(languageCode).catch(() => null)
-      ])
+      const records = await fetchMbTicketListRecords(languageCode).catch(() => null)
 
       if (records) {
         refreshTicketSessionAfterList(records)
@@ -233,13 +274,10 @@ export const useLuckySpinGame = (
           ? mapMbTicketListToFooter(records, languageCode)
           : await fetchVoucherFooter()
 
-      if (spinInfo.value) {
-        spinInfo.value.voucherGames = footer.games
-        spinInfo.value.totalVouchers = footer.totalVouchers
-      }
-
-      if (spinResponse.success && spinResponse.result && spinInfo.value) {
-        spinInfo.value.remainingSpins = spinResponse.result.remainingSpins
+      if (activitySession.value) {
+        activitySession.value.voucherGames = footer.games
+        activitySession.value.totalVouchers = footer.totalVouchers
+        syncReminderContext(activitySession.value)
       }
     } catch {
       // ignore refresh failure
@@ -247,15 +285,15 @@ export const useLuckySpinGame = (
   }
 
   const handleGamePrev = () => {
-    if (!spinInfo.value?.voucherGames.length) return
+    if (!activitySession.value?.voucherGames.length) return
     activeGameIndex.value =
-      (activeGameIndex.value - 1 + spinInfo.value.voucherGames.length) %
-      spinInfo.value.voucherGames.length
+      (activeGameIndex.value - 1 + activitySession.value.voucherGames.length) %
+      activitySession.value.voucherGames.length
   }
 
   const handleGameNext = () => {
-    if (!spinInfo.value?.voucherGames.length) return
-    activeGameIndex.value = (activeGameIndex.value + 1) % spinInfo.value.voucherGames.length
+    if (!activitySession.value?.voucherGames.length) return
+    activeGameIndex.value = (activeGameIndex.value + 1) % activitySession.value.voucherGames.length
   }
 
   const handleClosePage = () => {
@@ -273,10 +311,18 @@ export const useLuckySpinGame = (
   )
 
   watch(
+    () => globalTicketToastState.activeTicketRecord,
+    () => {
+      if (!activitySession.value) return
+      syncReminderContext(activitySession.value)
+    }
+  )
+
+  watch(
     visible,
     nextVisible => {
       if (nextVisible) {
-        void loadSpinInfo()
+        void loadActivitySession()
         return
       }
       resetModalState()
@@ -288,9 +334,11 @@ export const useLuckySpinGame = (
     isLoading,
     loadError,
     isSpinning,
-    spinInfo,
+    activitySession,
+    wheelPrizes,
+    canSpin,
     activeGameIndex,
-    loadSpinInfo,
+    loadActivitySession,
     syncActiveGameIndex,
     handleWheelGo,
     handleSpinEnd,

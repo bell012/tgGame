@@ -17,6 +17,7 @@
         @rules="$emit('rules')"
         @action="handleAction"
         @reward-click="handleRewardClick"
+        @hero-use-now="handleHeroUseNow"
       />
       <!-- PC 签到弹窗布局 -->
       <CheckInPcLayout
@@ -28,6 +29,15 @@
         @rules="$emit('rules')"
         @action="handleAction"
         @reward-click="handleRewardClick"
+        @hero-use-now="handleHeroUseNow"
+      />
+
+      <!-- 绑定手机号提示弹窗 -->
+      <CheckInBindPhonePromptPopup
+        v-model="bindPhonePromptVisible"
+        :page-mode="isMobile ? 'mobile' : 'pc'"
+        @close="closeBindPhonePrompt"
+        @confirm="handleBindPhonePromptConfirm"
       />
 
       <!-- 签到条件提醒弹窗 -->
@@ -45,23 +55,15 @@
 
 <script setup lang="ts">
 import Api from '@/api'
-import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useUserStore } from '@/stores/user'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { getCurrentCurrency } from '@/utils/locale'
+import { navigateToName } from '@/utils/router'
 import { storeToRefs } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-  createCheckInRequirementReminderData,
-  createCheckInHeroRewardsFromClaimResult,
-  createDefaultCheckInViewData,
-  type CheckInRequirementReminderItem,
-  type CheckInRequirementReminderMode,
-  type CheckInRewardItem,
-  type CheckInViewData
-} from '../shared'
 import {
   loadActiveCheckInDataList,
   loadCheckInActivityData,
@@ -69,6 +71,17 @@ import {
 } from '../checkInData'
 import CheckInMobileLayout from '../mobile-layout.vue'
 import CheckInPcLayout from '../pc-layout.vue'
+import {
+  createCheckInHeroRewardsFromClaimResult,
+  createCheckInRequirementReminderData,
+  createDefaultCheckInViewData,
+  type CheckInHeroActionReward,
+  type CheckInRequirementReminderItem,
+  type CheckInRequirementReminderMode,
+  type CheckInRewardItem,
+  type CheckInViewData
+} from '../shared'
+import CheckInBindPhonePromptPopup from './CheckInBindPhonePromptPopup.vue'
 import CheckInRequirementReminderPopup from './CheckInRequirementReminderPopup.vue'
 
 // 后端 channel 枚举：3 表示 PC，4 表示 H5。
@@ -101,6 +114,7 @@ const hasLoaded = ref(false)
 const requirementReminderVisible = ref(false)
 const requirementReminderMode = ref<CheckInRequirementReminderMode>('all')
 const requirementReminderItems = ref<CheckInRequirementReminderItem[]>([])
+const bindPhonePromptVisible = ref(false)
 
 usePageScrollLock(() => props.modelValue)
 
@@ -124,6 +138,9 @@ const activeCurrencyCode = computed(() => {
   return acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
 })
 
+// 当前登录用户是否已经绑定手机号。
+const hasBoundTelephone = computed(() => Boolean(String(userInfo.value?.telephone ?? '').trim()))
+
 // 当前正在展示的签到活动队列项。
 const activeCheckInData = computed(() => checkInDataQueue.value[activeQueueIndex.value] ?? null)
 
@@ -138,6 +155,7 @@ const showCheckInDataAt = (index: number) => {
   activeQueueIndex.value = index
   viewData.value = targetData.viewData
   closeRequirementReminder()
+  closeBindPhonePrompt()
   return true
 }
 
@@ -244,6 +262,7 @@ const handleAction = async () => {
 // 关闭当前签到活动；队列中还有活动时切换下一项，最后一项关闭后才关闭全局弹窗。
 const handleClose = () => {
   closeRequirementReminder()
+  closeBindPhonePrompt()
 
   if (showCheckInDataAt(activeQueueIndex.value + 1)) {
     return
@@ -255,6 +274,30 @@ const handleClose = () => {
 // 关闭签到条件提醒弹窗。
 const closeRequirementReminder = () => {
   requirementReminderVisible.value = false
+}
+
+// 关闭绑定手机号提示弹窗。
+const closeBindPhonePrompt = () => {
+  bindPhonePromptVisible.value = false
+}
+
+// 点击主视觉票券的 Use Now：若票券要求验证手机号且用户未绑定，则先提示绑定手机号。
+const handleHeroUseNow = (reward: CheckInHeroActionReward) => {
+  if (isContentLoading.value) {
+    return
+  }
+
+  if (reward.requiresPhoneVerification && !hasBoundTelephone.value) {
+    bindPhonePromptVisible.value = true
+    return
+  }
+}
+
+// 用户确认去绑定手机号：关闭签到弹窗后跳转到绑定手机号页。
+const handleBindPhonePromptConfirm = () => {
+  closeBindPhonePrompt()
+  emit('update:modelValue', false)
+  void navigateToName('changeMobileNumber')
 }
 
 // 点击未领取奖励卡片时，根据后端条件配置打开条件提醒弹窗。
@@ -282,6 +325,7 @@ watch(
       activeQueueIndex.value = 0
       checkInDataQueue.value = []
       closeRequirementReminder()
+      closeBindPhonePrompt()
       return
     }
 

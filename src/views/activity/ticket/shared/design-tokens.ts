@@ -4,6 +4,8 @@ export const TICKET_MODAL_THEMES: Record<
   TicketModalTheme,
   {
     titleGradient: string
+    /** PC 标题横向渐变 */
+    titleGradientPc: string
     countdownColon: string
     expiresLabel: string
     activeBorder: string
@@ -12,6 +14,7 @@ export const TICKET_MODAL_THEMES: Record<
 > = {
   lucky_spin: {
     titleGradient: 'linear-gradient(180deg, #FFF8FF 0%, #E87BF9 100%)',
+    titleGradientPc: 'linear-gradient(90deg, #FCE2FF 0%, #FA9CFF 100%)',
     countdownColon: '#E08CFF',
     expiresLabel: '#E08CFF',
     activeBorder: '#B06CFF',
@@ -19,6 +22,7 @@ export const TICKET_MODAL_THEMES: Record<
   },
   golden_egg: {
     titleGradient: 'linear-gradient(180deg, #FFF9E2 0%, #FFD700 100%)',
+    titleGradientPc: 'linear-gradient(90deg, #FFF9E2 0%, #FFD700 100%)',
     countdownColon: '#FFD700',
     expiresLabel: '#FFD700',
     activeBorder: '#FFD700',
@@ -26,6 +30,7 @@ export const TICKET_MODAL_THEMES: Record<
   },
   mystery_box: {
     titleGradient: 'linear-gradient(180deg, #E8F8FF 0%, #5BC0EB 100%)',
+    titleGradientPc: 'linear-gradient(90deg, #E8F8FF 0%, #5BC0EB 100%)',
     countdownColon: '#5BC0EB',
     expiresLabel: '#5BC0EB',
     activeBorder: '#5BC0EB',
@@ -33,6 +38,7 @@ export const TICKET_MODAL_THEMES: Record<
   },
   cash_voucher: {
     titleGradient: 'linear-gradient(180deg, #E8FFEF 0%, #2AEE88 100%)',
+    titleGradientPc: 'linear-gradient(90deg, #E8FFEF 0%, #2AEE88 100%)',
     countdownColon: '#2AEE88',
     expiresLabel: '#2AEE88',
     activeBorder: '#2AEE88',
@@ -40,6 +46,7 @@ export const TICKET_MODAL_THEMES: Record<
   },
   lucky_red_envelope: {
     titleGradient: 'linear-gradient(180deg, #FFF8E8 0%, #FFD700 100%)',
+    titleGradientPc: 'linear-gradient(90deg, #FFF8E8 0%, #FFD700 100%)',
     countdownColon: '#FFD700',
     expiresLabel: '#FFD700',
     activeBorder: '#FFD700',
@@ -82,13 +89,19 @@ export const getTicketModalTheme = (theme: TicketModalTheme = 'lucky_spin') =>
 
 /** PC 端票券活动弹窗尺寸 token */
 export const TICKET_PC_TOKENS = {
-  activityModalWidth: 960,
+  activityModalWidth: 1000,
   activityModalRadius: 24,
   activityModalPadding: 28,
-  activityModalBg: 'rgba(26, 26, 46, 0.85)',
-  leftColumnRatio: '42%',
-  rightColumnRatio: '58%',
-  wheelSizePc: 380,
+  /** @deprecated 使用 TICKET_PC_MASKS.leftPanel / rightPanel 分层遮罩 */
+  activityModalBg: 'rgba(255, 255, 255, 0.10)',
+  leftColumnRatio: '1fr',
+  rightColumnRatio: '1fr',
+  wheelSizePc: 450,
+  /** PC 转盘扇区文案 / 图标（相对 H5 约按 450/301 放大） */
+  wheelPrizeFontSize: 19,
+  wheelPrizeIconSize: 58,
+  wheelPrizeTextTop: '12%',
+  wheelPrizeIconTop: '26%',
   reminderModalWidth: 480,
   resultHeroMaxWidth: 360,
   resultCardsMaxWidth: 440,

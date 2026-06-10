@@ -1,6 +1,4 @@
 import type {
-  DoLuckySpinForm,
-  DoLuckySpinResponse,
   MbTicketListForm,
   MbTicketListResponse,
   QueryActivityGroupPageForm,
@@ -11,25 +9,16 @@ import type {
   QueryCheckInStatusResponse,
   TicketProgressForm,
   TicketProgressResponse,
-  QueryLuckySpinInfoForm,
-  QueryLuckySpinInfoResponse,
   QueryTicketMarqueeResponse,
   ReceiveCheckInRewardForm,
   ReceiveCheckInRewardResponse,
   RecordForm,
   RecordResponse,
-  TicketMarqueeForm
+  TicketMarqueeForm,
+  UseTicketForm,
+  UseTicketResponse
 } from '@/api/interface/activity'
-import {
-  createMockLuckySpinInfo,
-  getMockRemainingSpins,
-  mockDoLuckySpin
-} from '@/api/mock/luckySpin'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
-
-const USE_MOCK = true
-
-const mockDelay = (ms = 300) => new Promise(resolve => setTimeout(resolve, ms))
 
 // 活动分组分页查询（新版活动 API §1）
 export const queryActivityGroupPage = (
@@ -47,40 +36,43 @@ export const queryActivityGroupPage = (
 
 // 活动列表分页查询（新版活动 API §2）；不传 status 时默认查 1-未开始、2-进行中
 export const queryActivityList = (
-  data: QueryActivityListForm
+  data: QueryActivityListForm,
+  options?: ApiResponseToastOptions
 ): Promise<QueryActivityListResponse> => {
   return request({
     url: '/activity/api/list',
     method: 'post',
     data,
     showSuccessToast: false,
-    showErrorToast: true
+    showErrorToast: options?.showErrorToast ?? false
   })
 }
 
 // 查询当前签到状态。
 export const queryCheckInStatus = (
-  data: QueryCheckInStatusForm
+  data: QueryCheckInStatusForm,
+  options?: ApiResponseToastOptions
 ): Promise<QueryCheckInStatusResponse> => {
   return request({
     url: '/activity/checkin/mbSign',
     method: 'post',
     data,
     showSuccessToast: false,
-    showErrorToast: true
+    showErrorToast: options?.showErrorToast ?? false
   })
 }
 
 // 领取签到奖励。
 export const receiveCheckInReward = (
-  data: ReceiveCheckInRewardForm
+  data: ReceiveCheckInRewardForm,
+  options?: ApiResponseToastOptions
 ): Promise<ReceiveCheckInRewardResponse> => {
   return request({
     url: '/activity/checkin/receiveReward',
     method: 'post',
     data,
     showSuccessToast: false,
-    showErrorToast: true
+    showErrorToast: options?.showErrorToast ?? false
   })
 }
 
@@ -117,56 +109,20 @@ export function recordList(data: RecordForm): Promise<RecordResponse> {
   })
 }
 
-/** 查询大转盘活动信息 */
-export const queryLuckySpinInfo = async (
-  _data?: QueryLuckySpinInfoForm,
-  _options?: ApiResponseToastOptions
-): Promise<QueryLuckySpinInfoResponse> => {
-  if (USE_MOCK) {
-    await mockDelay()
-    const info = createMockLuckySpinInfo()
-    return {
-      code: '0',
-      message: 'success',
-      success: true,
-      result: { ...info, remainingSpins: getMockRemainingSpins() }
-    }
-  }
-
-  return request({
-    url: '/ticket/api/luckySpinInfo',
+/** 使用票券（大转盘 GO 等） */
+export const useTicket = (
+  data: UseTicketForm,
+  options?: ApiResponseToastOptions
+): Promise<UseTicketResponse> =>
+  request({
+    url: '/ticket/api/use',
     method: 'post',
-    data: _data,
+    data,
     showSuccessToast: false,
-    showErrorToast: _options?.showErrorToast ?? false
+    showErrorToast: options?.showErrorToast ?? true
   })
-}
 
-/** 执行一次大转盘抽奖 */
-export const doLuckySpin = async (
-  _data?: DoLuckySpinForm,
-  _options?: ApiResponseToastOptions
-): Promise<DoLuckySpinResponse> => {
-  if (USE_MOCK) {
-    await mockDelay(500)
-    return {
-      code: '0',
-      message: 'success',
-      success: true,
-      result: mockDoLuckySpin()
-    }
-  }
-
-  return request({
-    url: '/ticket/api/luckySpin',
-    method: 'post',
-    data: _data,
-    showSuccessToast: false,
-    showErrorToast: _options?.showErrorToast ?? false
-  })
-}
-
-/** 查询票券跑马灯（始终走真实接口，不走 USE_MOCK） */
+/** 查询票券跑马灯 */
 export const queryTicketMarquee = (
   data: TicketMarqueeForm,
   options?: ApiResponseToastOptions

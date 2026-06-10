@@ -234,6 +234,7 @@
           <button
             type="button"
             class="absolute left-1/2 top-[254px] flex h-[42px] w-[136px] -translate-x-1/2 items-center justify-center rounded-[12px] border border-white/25 bg-white/25 text-[18px] font-[700] leading-[22px] text-common-100"
+            @click="handleHeroUseNow(primaryActionHeroReward)"
           >
             {{
               primaryActionHeroReward.actionLabel ||
@@ -308,6 +309,7 @@
             <button
               type="button"
               class="absolute left-1/2 top-[254px] flex h-[42px] w-[136px] -translate-x-1/2 items-center justify-center rounded-[12px] border border-white/25 bg-white/25 text-[18px] font-[700] leading-[22px] text-common-100"
+              @click="handleHeroUseNow(secondaryActionHeroReward)"
             >
               {{
                 secondaryActionHeroReward.actionLabel ||
@@ -472,6 +474,7 @@
         <button
           type="button"
           class="absolute left-1/2 top-[169px] flex h-[28px] w-[90px] -translate-x-1/2 items-center justify-center rounded-[8px] border border-white/25 bg-white/25 text-[12px] font-[700] leading-[14.67px] text-common-100"
+          @click="handleHeroUseNow(primaryActionHeroReward)"
         >
           {{
             primaryActionHeroReward.actionLabel ||
@@ -546,6 +549,7 @@
           <button
             type="button"
             class="absolute left-1/2 top-[169px] flex h-[28px] w-[90px] -translate-x-1/2 items-center justify-center rounded-[8px] border border-white/25 bg-white/25 text-[12px] font-[700] leading-[14.67px] text-common-100"
+            @click="handleHeroUseNow(secondaryActionHeroReward)"
           >
             {{
               secondaryActionHeroReward.actionLabel ||
@@ -701,6 +705,7 @@ const emit = defineEmits<{
   rules: []
   action: []
   'reward-click': [reward: CheckInRewardItem]
+  'hero-use-now': [reward: CheckInHeroActionReward]
 }>()
 
 const { t } = useI18n()
@@ -805,6 +810,15 @@ const handleRewardClick = (reward: CheckInRewardItem) => {
   }
 
   emit('reward-click', reward)
+}
+
+// 点击主视觉票券的 Use Now，由外层决定是否需要先验证手机号。
+const handleHeroUseNow = (reward: CheckInHeroActionReward | null) => {
+  if (props.loading || !reward) {
+    return
+  }
+
+  emit('hero-use-now', reward)
 }
 
 // 按照 H5 稿的两列结构拆分奖励卡片，每行最多两个。

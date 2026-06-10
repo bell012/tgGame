@@ -85,6 +85,7 @@ export interface CheckInHeroActionReward {
   titleKey?: string
   icon: string
   background: string
+  requiresPhoneVerification?: boolean
   actionLabel?: string
   actionKey?: string
 }
@@ -322,19 +323,33 @@ const toNumber = (value: unknown) => {
   return Number.isFinite(normalizedValue) ? normalizedValue : null
 }
 
-// 格式化普通金额；fixedDigits 用于主视觉领取结果的两位小数展示。
-const formatRewardAmount = (value: unknown, fixedDigits?: number) => {
+// 格式化主视觉金额：保留后端原始精度，小数位不足两位时补 0。
+const formatRewardAmount = (value: unknown) => {
   const numericValue = toNumber(value)
 
   if (numericValue === null) {
     return '0'
   }
 
-  if (typeof fixedDigits === 'number') {
-    return numericValue.toFixed(fixedDigits)
+  if (typeof value === 'string') {
+    const trimmedValue = value.trim()
+
+    if (trimmedValue.length > 0) {
+      const [, decimalPart = ''] = trimmedValue.split('.')
+
+      if (decimalPart.length === 0) {
+        return `${trimmedValue}.00`
+      }
+
+      if (decimalPart.length === 1) {
+        return `${trimmedValue}0`
+      }
+
+      return trimmedValue
+    }
   }
 
-  return Number.isInteger(numericValue) ? String(numericValue) : numericValue.toFixed(2)
+  return Number.isInteger(numericValue) ? `${numericValue}.00` : String(numericValue)
 }
 
 // 格式化奖励卡片金额，超过千位时使用 K 单位。
@@ -606,7 +621,7 @@ const createAmountHeroReward = (
 
   return {
     type: 'amount',
-    amount: formatRewardAmount(resolvedAmount, 2),
+    amount: formatRewardAmount(amount),
     icon: cashIcon,
     currencySymbol: getCurrencySymbol(currencyCode),
     background: CHECK_IN_HERO_AMOUNT_BACKGROUND,
@@ -639,6 +654,7 @@ const createActionHeroReward = (
     titleKey: preset.titleKey,
     icon: preset.icon,
     background: preset.background,
+    requiresPhoneVerification: toNumber(ticket?.completeVerification?.verifyPhone) === 1,
     actionKey: 'checkIn.useNow'
   }
 }

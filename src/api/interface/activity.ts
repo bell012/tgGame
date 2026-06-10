@@ -196,6 +196,9 @@ export interface CheckInTicketLanguageInfoItem {
 export interface CheckInTicketInfo {
   amount?: number
   currency?: string
+  completeVerification?: {
+    verifyPhone?: number
+  }
   expireTime?: number
   maxAmount?: number
   minAmount?: number
@@ -312,6 +315,28 @@ export interface MbTicketLossCondition {
 export interface MbTicketInviteCondition {
   inviteFriendCount?: number
 }
+/** 票券触发条件（mbTicketList.triggerList 元素） */
+export interface MbTicketTriggerItem {
+  rowId?: number
+  /** 1 充值 2 投注 */
+  triggerType?: number
+  triggerValue?: number
+  currentValue?: number
+  /** 1 已完成 */
+  finishStatus?: number
+  title?: string
+  name?: string
+}
+
+/** 大转盘单格配置（mbTicketList.wheelConfig 元素） */
+export interface WheelConfigItem {
+  rewardType?: number
+  amount?: number
+  imageUrl?: string
+  limitType?: number
+  limitQuantity?: number
+  probability?: number
+}
 
 /** 我的票券单条记录（mbTicketList 数组元素） */
 export interface MbTicketRecord {
@@ -331,7 +356,11 @@ export interface MbTicketRecord {
   unusedTicketPopWay?: number
   site?: string
   currency?: string
+  ruleDesc?: string
+  ruleList?: string[]
+  triggerList?: MbTicketTriggerItem[]
   goldenEggConfig?: Array<{ amount: number; probability: number; type: number }>
+  wheelConfig?: WheelConfigItem[]
   platformGameCodes?: string[]
   conditionType?: number[]
   bindData?: TicketProgressBindData
@@ -492,31 +521,15 @@ export interface RecordResult {
   total: number
 }
 
-import type { LuckySpinInfoResult, LuckySpinResult } from '@/views/activity/ticket/types'
-
 export type {
-  LuckySpinInfoResult,
   LuckySpinPrize,
   LuckySpinResult,
   LuckySpinTask,
   LuckySpinVoucherCardData,
-  VoucherGameItem,
-  WinnerTickerItem
+  TicketActivitySession,
+  WinnerTickerItem,
+  VoucherGameItem
 } from '@/views/activity/ticket/types'
-
-export interface QueryLuckySpinInfoForm {
-  ticketId?: number
-  rowId?: number
-}
-
-export interface QueryLuckySpinInfoResponse extends ActivityApiResponse<LuckySpinInfoResult> {}
-
-export interface DoLuckySpinForm {
-  ticketId?: number
-  rowId?: number
-}
-
-export interface DoLuckySpinResponse extends ActivityApiResponse<LuckySpinResult> {}
 
 /** 票券跑马灯请求 */
 export interface TicketMarqueeForm {
@@ -536,3 +549,17 @@ export interface TicketMarqueeResult {
 }
 
 export interface QueryTicketMarqueeResponse extends ActivityApiResponse<TicketMarqueeResult> {}
+
+/** 使用票券请求（大转盘 GO 等） */
+export interface UseTicketForm {
+  rowId: number
+  ticketId?: number
+}
+
+/** 使用票券结果 */
+export interface UseTicketResult {
+  rewardAmount?: number
+  rewardType?: number
+}
+
+export interface UseTicketResponse extends ActivityApiResponse<UseTicketResult> {}
