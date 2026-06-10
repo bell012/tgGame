@@ -40,25 +40,25 @@
                   class="rounded-[12px] bg-bg-1 px-3 py-3"
                 >
                   <div class="flex items-center justify-between gap-2">
-                    <div class="flex min-w-0 items-center gap-1">
-                      <span class="truncate text-[14px] font-[500] leading-[17px] text-text-1">
+                    <div class="min-w-0 w-[70%] text-[14px] font-[500] leading-[17px] text-text-1">
+                      <span>
                         {{ task.title }}
                       </span>
                       <button
-                        v-if="task.description"
+                        v-if="task.description || task.helpSections?.length"
                         type="button"
-                        class="shrink-0"
+                        class="ml-1 inline-flex align-[-2px]"
                         :aria-label="task.title"
                         @click="openTaskRule(task)"
                       >
-                        <InfoIcon class="h-3.5 w-3.5 text-icon-2" />
+                        <ModalHelpIcon class="h-3.5 w-3.5 text-icon-2" />
                       </button>
                     </div>
 
                     <button
                       v-if="task.status === 'action'"
                       type="button"
-                      class="shrink-0 rounded-[8px] bg-theme-primary px-3 py-1.5 text-[12px] font-[700] leading-[14px] text-text-4"
+                      class="shrink-0 rounded-[8px] bg-theme-primary px-3 py-2 text-[12px] font-[700] leading-[14px] text-text-4"
                       @click="handleTaskAction(task)"
                     >
                       {{ task.actionLabel }}
@@ -101,41 +101,12 @@
       </div>
     </transition>
 
-    <transition name="popup-fade">
-      <div
-        v-show="ruleVisible"
-        class="fixed inset-0 z-[10011] flex items-end justify-center bg-mask-60-1 px-4 sm:items-center"
-        @click.self="ruleVisible = false"
-      >
-        <section
-          class="mb-4 w-full max-w-[320px] rounded-[8px] bg-bg-1 p-3 sm:mb-0"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div class="flex items-center justify-between gap-3">
-            <h4 class="text-[13px] font-[700] text-theme-primary">{{ activeRuleTitle }}</h4>
-            <button
-              type="button"
-              class="flex h-6 w-6 items-center justify-center rounded-[6px]"
-              aria-label="Close"
-              @click="ruleVisible = false"
-            >
-              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
-            </button>
-          </div>
-          <p class="mt-2 whitespace-pre-line text-[12px] leading-[18px] text-text-2">
-            {{ activeRuleText }}
-          </p>
-          <button
-            type="button"
-            class="mt-4 flex h-9 w-full items-center justify-center rounded-[8px] bg-theme-primary text-[13px] font-[700] text-text-4"
-            @click="ruleVisible = false"
-          >
-            Get It
-          </button>
-        </section>
-      </div>
-    </transition>
+    <HelpPop
+      v-model:visible="ruleVisible"
+      :title="activeHelp.title"
+      :content="activeHelp.content"
+      :sections="activeHelp.sections"
+    />
   </Teleport>
 </template>
 
@@ -146,27 +117,63 @@ import type {
   TicketProgressExt,
   TicketThresholdCondition
 } from '@/api/interface/activity'
+import { PAY_CHANNEL_TAB_LIST } from '@/constants/payChannelTabs'
 import CloseIcon from '@/static/svg/close.svg?component'
-import InfoIcon from '@/static/svg/info.svg?component'
-import { formatBalance, getLanguageCode } from '@/utils/locale'
+import ModalHelpIcon from '@/static/img/lucky-spin/modal-help-icon.svg?component'
+import { formatBalance, getCurrencySymbol, getLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { globalTicketToastState } from '../ticket/shell/ticketToast'
 import { Progress } from 'vant'
 import { computed, ref, watch } from 'vue'
+import HelpPop from './help-pop.vue'
 
 const CONDITION_RECHARGE = 1
 const CONDITION_WAGERING = 2
 const CONDITION_LOSS = 3
 const CONDITION_INVITE = 4
 
+interface HelpSection {
+  title: string
+  content: string
+}
+
+type TaskStatus = 'action' | 'completed'
+type TaskActionType = 'deposit' | 'invite' | 'withdraw' | 'complete' | 'wagering' | 'loss'
+
 interface TaskItem {
   id: string
   title: string
   progress: number
-  status: 'action' | 'completed'
+  status: TaskStatus
   actionLabel: string
-  actionType?: 'deposit' | 'invite' | 'withdraw' | 'complete' | 'wagering' | 'loss'
+  actionType?: TaskActionType
   description?: string
+  descriptionTitle?: string
+  helpSections?: HelpSection[]
+}
+
+interface ProgressTaskOptions {
+  id: string
+  title: string
+  current?: number
+  target?: number
+  operator?: string
+  actionType: TaskActionType
+  pendingLabel: string
+  description?: string
+  descriptionTitle?: string
+  helpSections?: HelpSection[]
+}
+
+interface StatusTaskOptions {
+  id: string
+  title: string
+  satisfied: boolean | undefined
+  actionType: TaskActionType
+  pendingLabel?: string
+  description?: string
+  descriptionTitle?: string
+  helpSections?: HelpSection[]
 }
 
 interface Props {
@@ -183,8 +190,11 @@ const resolvedTicketId = computed(() => props.ticketId ?? ticketId.value)
 const resolvedRowId = computed(() => props.rowId ?? rowId.value)
 
 const ruleVisible = ref(false)
-const activeRuleTitle = ref('')
-const activeRuleText = ref('')
+const activeHelp = ref({
+  title: '',
+  content: '',
+  sections: [] as HelpSection[]
+})
 
 const currentLanguageCode = computed(() => getLanguageCode())
 const voucherName = 'Voucher Name'
@@ -214,8 +224,124 @@ const calcProgress = (current: number, target: number) => {
 
 const formatThresholdAmount = (amount: number, currency?: string) => {
   const formatted = formatBalance(amount, 2)
-  return currency ? `${currency} ${formatted}` : formatted
+  return `${getCurrencySymbol(currency)}${formatted}`
 }
+
+const normalizeTimestamp = (value?: number) => {
+  if (!value) return null
+  return value < 1_000_000_000_000 ? value * 1000 : value
+}
+
+const formatAccumulationStartDate = (value?: number) => {
+  const timestamp = normalizeTimestamp(value)
+  if (!timestamp) return ''
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  }).format(new Date(timestamp))
+}
+
+const getAccumulationDescriptionPrefix = (condition: TicketThresholdCondition) => {
+  switch (condition.accumulateType) {
+    case 2: {
+      const formattedDate = formatAccumulationStartDate(condition.startDate)
+      return formattedDate ? `Starting from ${formattedDate},` : 'Starting from the specified date,'
+    }
+    case 3:
+      return 'After creating your account,'
+    default:
+      return 'After receiving the voucher,'
+  }
+}
+
+const formatDisplayList = (values: Array<number | string> | undefined, fallback: string) => {
+  if (!values?.length) return fallback
+  return values.join(', ')
+}
+
+const formatPayChannelList = (methods: number[] | undefined, fallback: string) => {
+  if (!methods?.length) return fallback
+
+  return methods
+    .map(method => {
+      const methodKey = String(method)
+      return PAY_CHANNEL_TAB_LIST.find(item => item.key === methodKey)?.value ?? methodKey
+    })
+    .join(', ')
+}
+
+const createSimpleHelpSections = (title: string, content: string): HelpSection[] => [
+  { title, content }
+]
+
+const createDepositAmountHelpSections = (
+  condition: TicketThresholdCondition,
+  rechargeMethods?: number[]
+): HelpSection[] => [
+  {
+    title: 'Total Deposit Amount',
+    content: `${getAccumulationDescriptionPrefix(condition)} your total deposit amount must reach the required amount for this task to be completed.`
+  },
+  {
+    title: 'Valid Deposit Amount',
+    content:
+      'Only deposits made through the platform’s specified channels will count toward this voucher requirement. Deposits made through non-specified channels or abnormal deposit activities will not be counted.'
+  },
+  {
+    title: 'Valid Deposit Channels',
+    content: formatPayChannelList(rechargeMethods, 'Specified deposit channels.')
+  }
+]
+
+const createDepositCountHelpSections = (
+  condition: TicketThresholdCondition,
+  rechargeMethods?: number[]
+): HelpSection[] => [
+  {
+    title: 'Total Deposit Count',
+    content: `${getAccumulationDescriptionPrefix(condition)} your total deposit count must reach the required count for this task to be completed.`
+  },
+  {
+    title: 'Valid Deposit Count',
+    content:
+      'Only deposits made through the platform’s specified channels will count toward this voucher requirement. Deposits made through non-specified channels or abnormal deposit activities will not be counted.'
+  },
+  {
+    title: 'Valid Deposit Channels',
+    content: formatPayChannelList(rechargeMethods, 'Specified deposit channels.')
+  }
+]
+
+const createTurnoverHelpSections = (
+  condition: TicketThresholdCondition,
+  validPlatforms?: string[],
+  platformGameCodes?: string[]
+): HelpSection[] => [
+  {
+    title: 'Total Turnover',
+    content: `${getAccumulationDescriptionPrefix(condition)} your total turnover must reach the required amount for this task to be completed.`
+  },
+  {
+    title: 'Valid Turnover',
+    content:
+      'Only turnover generated from the platform’s specified games will count toward this activity requirement. Turnover from non-specified games or abnormal betting activities will not be counted.'
+  },
+  {
+    title: 'Valid Turnover Scope',
+    content: formatDisplayList(
+      validPlatforms?.length ? validPlatforms : platformGameCodes,
+      'Specified games.'
+    )
+  }
+]
+
+const createGameLossHelpSections = (condition: TicketThresholdCondition): HelpSection[] =>
+  createSimpleHelpSections(
+    'Loss Amount',
+    `${getAccumulationDescriptionPrefix(condition)} your total game loss must reach the required amount to complete this task.`
+  )
 
 const getRechargeExtValue = (
   ext: TicketProgressExt | undefined,
@@ -268,16 +394,18 @@ const getLossExtValue = (
   }
 }
 
-const createProgressTask = (
-  id: string,
-  title: string,
+const createProgressTask = ({
+  id,
+  title,
   current = 0,
   target = 0,
   operator = '>=',
-  actionType: TaskItem['actionType'],
-  pendingLabel: string,
-  description?: string
-): TaskItem => {
+  actionType,
+  pendingLabel,
+  description,
+  descriptionTitle,
+  helpSections
+}: ProgressTaskOptions): TaskItem => {
   const satisfied = isTargetMet(current, target, operator)
   const progress = satisfied ? 100 : calcProgress(current, target)
 
@@ -288,17 +416,22 @@ const createProgressTask = (
     status: satisfied ? 'completed' : 'action',
     actionLabel: satisfied ? 'Completed' : pendingLabel,
     actionType,
-    description
+    description,
+    descriptionTitle,
+    helpSections
   }
 }
 
-const createStatusTask = (
-  id: string,
-  title: string,
-  satisfied: boolean | undefined,
-  actionType: TaskItem['actionType'],
-  pendingLabel = 'Add'
-): TaskItem | null => {
+const createStatusTask = ({
+  id,
+  title,
+  satisfied,
+  actionType,
+  pendingLabel = 'Add',
+  description,
+  descriptionTitle,
+  helpSections
+}: StatusTaskOptions): TaskItem | null => {
   if (satisfied === undefined) return null
 
   return {
@@ -307,7 +440,10 @@ const createStatusTask = (
     progress: satisfied ? 100 : 0,
     status: satisfied ? 'completed' : 'action',
     actionLabel: satisfied ? 'Completed' : pendingLabel,
-    actionType
+    actionType,
+    description,
+    descriptionTitle,
+    helpSections
   }
 }
 
@@ -330,16 +466,19 @@ const appendConditionTasks = (
       const operator = condition.operator ?? operatorFallback
 
       items.push(
-        createProgressTask(
-          'recharge-deposit-amount',
-          `Total Deposit Amount ${operator} ${formatThresholdAmount(target, currency)}`,
+        createProgressTask({
+          id: 'recharge-deposit-amount',
+          title: `Total Deposit Amount ${operator} ${formatThresholdAmount(target, currency)}`,
           current,
           target,
           operator,
-          'deposit',
-          'Deposit',
-          'After receiving the voucher, your total deposit amount must reach the required amount for this task to be completed.'
-        )
+          actionType: 'deposit',
+          pendingLabel: 'Deposit',
+          helpSections: createDepositAmountHelpSections(
+            condition,
+            rechargeCondition?.rechargeMethods
+          )
+        })
       )
     }
 
@@ -350,15 +489,19 @@ const appendConditionTasks = (
       const operator = condition.operator ?? operatorFallback
 
       items.push(
-        createProgressTask(
-          'recharge-deposit-count',
-          `Deposit Count ${operator} ${target}`,
+        createProgressTask({
+          id: 'recharge-deposit-count',
+          title: `Total Deposit Count ${operator} ${target}`,
           current,
           target,
           operator,
-          'deposit',
-          'Deposit'
-        )
+          actionType: 'deposit',
+          pendingLabel: 'Deposit',
+          helpSections: createDepositCountHelpSections(
+            condition,
+            rechargeCondition?.rechargeMethods
+          )
+        })
       )
     }
   }
@@ -371,15 +514,20 @@ const appendConditionTasks = (
       const operator = validBet!.operator ?? operatorFallback
 
       items.push(
-        createProgressTask(
-          'wagering-valid-bet',
-          `Valid Bet ${operator} ${formatThresholdAmount(target, currency)}`,
+        createProgressTask({
+          id: 'wagering-valid-bet',
+          title: `Valid Bet Amount ${operator} ${formatThresholdAmount(target, currency)}`,
           current,
           target,
           operator,
-          'wagering',
-          'Bet'
-        )
+          actionType: 'wagering',
+          pendingLabel: 'Bet Now',
+          helpSections: createTurnoverHelpSections(
+            validBet!,
+            ticketData?.wageringCondition?.validPlatforms,
+            ticketData?.platformGameCodes
+          )
+        })
       )
     }
   }
@@ -392,15 +540,16 @@ const appendConditionTasks = (
       const operator = gameLossAmount!.operator ?? operatorFallback
 
       items.push(
-        createProgressTask(
-          'loss-game-amount',
-          `Game Loss Amount  ${operator} ${formatThresholdAmount(target, currency)}`,
+        createProgressTask({
+          id: 'loss-game-amount',
+          title: `Game Loss Amount  ${operator} ${formatThresholdAmount(target, currency)}`,
           current,
           target,
           operator,
-          'loss',
-          'Play'
-        )
+          actionType: 'loss',
+          pendingLabel: 'Bet Now',
+          helpSections: createGameLossHelpSections(gameLossAmount!)
+        })
       )
     }
   }
@@ -411,15 +560,19 @@ const appendConditionTasks = (
       const current = ext?.invitationNum ?? 0
 
       items.push(
-        createProgressTask(
-          'invite-friend-count',
-          `Valid Invited Friends ${operatorFallback} ${inviteFriendCount}`,
+        createProgressTask({
+          id: 'invite-friend-count',
+          title: `Valid Invited Friends ${operatorFallback} ${inviteFriendCount}`,
           current,
-          inviteFriendCount,
-          operatorFallback,
-          'invite',
-          'Invite'
-        )
+          target: inviteFriendCount,
+          operator: operatorFallback,
+          actionType: 'invite',
+          pendingLabel: 'Invite',
+          helpSections: createSimpleHelpSections(
+            'Invite Registration',
+            'After receiving the voucher, invite the required number of valid friends to complete the task.'
+          )
+        })
       )
     }
   }
@@ -438,29 +591,43 @@ const buildTaskItems = (
 
   appendConditionTasks(items, ticketData, ext)
 
-  const withdrawalAccountTask = createStatusTask(
-    'bind-withdrawal-account',
-    'Add Withdrawal Method',
-    bindData?.bindWithdrawalAccount,
-    'withdraw'
-  )
+  const withdrawalAccountTask = createStatusTask({
+    id: 'bind-withdrawal-account',
+    title: 'Add Withdrawal Method',
+    satisfied: bindData?.bindWithdrawalAccount,
+    actionType: 'withdraw',
+    pendingLabel: 'Add',
+    helpSections: createSimpleHelpSections(
+      'Withdrawal Account',
+      'Your reward is ready. Link your withdrawal account to claim it now!'
+    )
+  })
   if (withdrawalAccountTask) items.push(withdrawalAccountTask)
 
-  const withdrawalNameTask = createStatusTask(
-    'bind-withdrawal-name',
-    'Add Account Name',
-    bindData?.bindWithdrawalName,
-    'withdraw'
-  )
+  const withdrawalNameTask = createStatusTask({
+    id: 'bind-withdrawal-name',
+    title: 'Add Account Name',
+    satisfied: bindData?.bindWithdrawalName,
+    actionType: 'withdraw',
+    pendingLabel: 'Add',
+    helpSections: createSimpleHelpSections(
+      'Withdrawal Name',
+      'Your reward is ready. Add your withdrawal name to claim it now!'
+    )
+  })
   if (withdrawalNameTask) items.push(withdrawalNameTask)
 
-  const verifyPhoneTask = createStatusTask(
-    'verify-phone',
-    'Link Mobile Number',
-    completeVerification?.verifyPhone,
-    'complete',
-    'Verify'
-  )
+  const verifyPhoneTask = createStatusTask({
+    id: 'verify-phone',
+    title: 'Link Mobile Number',
+    satisfied: completeVerification?.verifyPhone,
+    actionType: 'complete',
+    pendingLabel: 'Verify',
+    helpSections: createSimpleHelpSections(
+      'Phone Number',
+      'Your reward is ready. Link your phone number to claim it now!'
+    )
+  })
   if (verifyPhoneTask) items.push(verifyPhoneTask)
 
   return items
@@ -540,8 +707,11 @@ const handleTaskAction = (task: TaskItem) => {
 }
 
 const openTaskRule = (task: TaskItem) => {
-  activeRuleTitle.value = task.title
-  activeRuleText.value = task.description ?? ''
+  activeHelp.value = {
+    title: task.descriptionTitle ?? task.helpSections?.[0]?.title ?? task.title,
+    content: task.description ?? '',
+    sections: task.helpSections ?? []
+  }
   ruleVisible.value = true
 }
 
