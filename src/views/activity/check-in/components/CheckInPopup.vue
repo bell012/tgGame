@@ -72,9 +72,11 @@ import {
 import CheckInMobileLayout from '../mobile-layout.vue'
 import CheckInPcLayout from '../pc-layout.vue'
 import {
+  areCheckInRewardRequirementsMet,
   createCheckInHeroRewardsFromClaimResult,
   createCheckInRequirementReminderData,
   createDefaultCheckInViewData,
+  resolveCurrentCheckInReward,
   type CheckInHeroActionReward,
   type CheckInRequirementReminderItem,
   type CheckInRequirementReminderMode,
@@ -194,6 +196,65 @@ const loadCheckInData = async () => {
   }
 }
 
+// 将最新 mbSign 数据同步到当前活动队列和页面。
+const applyActiveCheckInData = (checkInData: ActiveCheckInData) => {
+  checkInDataQueue.value[activeQueueIndex.value] = checkInData
+  viewData.value = checkInData.viewData
+}
+
+// 根据奖励条件打开签到条件提醒弹窗。
+const openRequirementReminder = (reward: CheckInRewardItem) => {
+  const requirementReminderData = createCheckInRequirementReminderData(reward)
+
+  if (!requirementReminderData) {
+    return false
+  }
+
+  requirementReminderMode.value = requirementReminderData.mode
+  requirementReminderItems.value = requirementReminderData.items
+  requirementReminderVisible.value = true
+  return true
+}
+
+// 点击主操作按钮时重新查询 mbSign，并对比当天签到条件。
+const validateCurrentCheckInRequirements = async () => {
+  const currentCheckInData = activeCheckInData.value
+
+  if (!currentCheckInData) {
+    return true
+  }
+
+  const refreshedCheckInData = await loadCheckInActivityData(currentCheckInData.activity, {
+    currencyCode: activeCurrencyCode.value,
+    languageCode: locale.value
+  })
+
+  if (!refreshedCheckInData) {
+    return true
+  }
+
+  applyActiveCheckInData(refreshedCheckInData)
+
+  if (refreshedCheckInData.status.todayIsSign || !refreshedCheckInData.viewData.canClaim) {
+    return false
+  }
+
+  const currentReward = resolveCurrentCheckInReward(
+    refreshedCheckInData.viewData.rewards,
+    refreshedCheckInData.status
+  )
+
+  if (
+    !currentReward ||
+    areCheckInRewardRequirementsMet(currentReward, refreshedCheckInData.status)
+  ) {
+    return true
+  }
+
+  openRequirementReminder(currentReward)
+  return false
+}
+
 // 点击签到按钮后领取奖励，成功后刷新奖励卡领取态，并用 receiveReward 结果更新主视觉。
 const handleAction = async () => {
   if (
@@ -208,6 +269,10 @@ const handleAction = async () => {
   isClaiming.value = true
 
   try {
+    if (!(await validateCurrentCheckInRequirements())) {
+      return
+    }
+
     const receiveRewardResponse = ensureApiBusinessSuccess(
       await Api.activity.receiveCheckInReward({
         activityId: viewData.value.activityId
@@ -306,15 +371,7 @@ const handleRewardClick = (reward: CheckInRewardItem) => {
     return
   }
 
-  const requirementReminderData = createCheckInRequirementReminderData(reward)
-
-  if (!requirementReminderData) {
-    return
-  }
-
-  requirementReminderMode.value = requirementReminderData.mode
-  requirementReminderItems.value = requirementReminderData.items
-  requirementReminderVisible.value = true
+  openRequirementReminder(reward)
 }
 
 watch(

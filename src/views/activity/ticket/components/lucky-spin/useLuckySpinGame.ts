@@ -1,7 +1,5 @@
-import Api from '@/api'
-import type { UseTicketResponse, UseTicketResult } from '@/api/interface/activity'
+import type { UseTicketResult } from '@/api/interface/activity'
 import { getLanguageCode } from '@/utils/locale'
-import { normalizeApiResponseMessage, translateApiMessageByCode } from '@/utils/request'
 import {
   fetchMbTicketListRecords,
   findMbTicketsByGameId,
@@ -29,6 +27,7 @@ import {
   findPrizeIndexInWheelConfig,
   mapWheelConfigToPrizes
 } from '../../shared/mapWheelConfig'
+import { useTicketUseAction } from '../../shared'
 import { globalShowToast } from '@/utils/toast'
 import type { Ref } from 'vue'
 import { computed, ref, watch } from 'vue'
@@ -92,19 +91,6 @@ const clearPendingSpin = (pendingUseResult: Ref<UseTicketResult | null>) => {
   pendingUseResult.value = null
 }
 
-const isUseTicketSuccess = (response: UseTicketResponse) =>
-  response.code === 'C2' && response.result != null
-
-const resolveUseTicketErrorMessage = (
-  response: Pick<UseTicketResponse, 'code' | 'message'>,
-  fallback: string
-) => {
-  const normalized = normalizeApiResponseMessage(response)
-  const translated = translateApiMessageByCode(normalized.code, normalized.message || '')
-
-  return translated || normalized.message || fallback
-}
-
 export interface LuckySpinWheelExpose {
   spinTo: (index: number) => void
   init: () => void
@@ -123,6 +109,8 @@ export const useLuckySpinGame = (
   const activitySession = ref<TicketActivitySession | null>(null)
   const activeGameIndex = ref(0)
   const pendingUseResult = ref<UseTicketResult | null>(null)
+
+  const { runUseTicket } = useTicketUseAction()
 
   const wheelPrizes = computed(() =>
     mapWheelConfigToPrizes(globalTicketToastState.activeTicketRecord?.wheelConfig)
@@ -208,50 +196,32 @@ export const useLuckySpinGame = (
     isSpinning.value = true
     clearPendingSpin(pendingUseResult)
 
-    try {
-      const response = await Api.activity.useTicket(
-        {
-          rowId: params.rowId,
-          ticketId: params.ticketId
-        },
-        { showErrorToast: false }
-      )
+    await runUseTicket({
+      voucherName: t('luckySpinPage.title'),
+      fallbackErrorMessage: t('luckySpinPage.loadFailed'),
+      openReminderOnMissingRow: false,
+      onSuccess: useResult => {
+        const wheelConfig = globalTicketToastState.activeTicketRecord?.wheelConfig
+        const prizeIndex = findPrizeIndexInWheelConfig(
+          wheelConfig,
+          Number(useResult.rewardType ?? 2),
+          useResult.rewardAmount
+        )
 
-      if (!isUseTicketSuccess(response)) {
-        failSpin()
-        globalShowToast({
-          message: resolveUseTicketErrorMessage(response, t('luckySpinPage.loadFailed')),
-          type: 'fail'
-        })
-        return
-      }
+        if (prizeIndex < 0) {
+          failSpin()
+          globalShowToast({
+            message: t('luckySpinPage.loadFailed'),
+            type: 'fail'
+          })
+          return
+        }
 
-      const useResult = response.result!
-      const wheelConfig = globalTicketToastState.activeTicketRecord?.wheelConfig
-      const prizeIndex = findPrizeIndexInWheelConfig(
-        wheelConfig,
-        Number(useResult.rewardType ?? 2),
-        useResult.rewardAmount
-      )
-
-      if (prizeIndex < 0) {
-        failSpin()
-        globalShowToast({
-          message: t('luckySpinPage.loadFailed'),
-          type: 'fail'
-        })
-        return
-      }
-
-      pendingUseResult.value = useResult
-      wheelRef.value?.spinTo(prizeIndex)
-    } catch {
-      failSpin()
-      globalShowToast({
-        message: t('luckySpinPage.loadFailed'),
-        type: 'fail'
-      })
-    }
+        pendingUseResult.value = useResult
+        wheelRef.value?.spinTo(prizeIndex)
+      },
+      onError: failSpin
+    })
   }
 
   const handleSpinEnd = async () => {

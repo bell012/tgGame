@@ -63,6 +63,8 @@ export interface VipProgressItem {
   current: string
   target: string
   progress: number
+  /** 已达成最高等级时使用的单段展示文案，存在时优先于 current/target 渲染 */
+  displayText?: string
 }
 
 export interface VipBenefitCard {
@@ -536,7 +538,16 @@ const getAvailableVipBenefitKeys = (
 }
 
 /**
- * 计算单个 VIP 等级的三项奖励总额。
+ * 各权益项在年度权益价值中的倍数：晋级礼金 1、周礼金 52、月礼金 12。
+ */
+const vipBenefitAnnualMultiplierMap: Record<VipBenefitCardKey, number> = {
+  levelUp: 1,
+  weekly: 52,
+  monthly: 12
+}
+
+/**
+ * 计算单个 VIP 等级的年度权益价值：晋级礼金 + 周礼金 * 52 + 月礼金 * 12。
  */
 const getVipBenefitTotalRewards = (
   targetConfig: VipListItem | null,
@@ -545,7 +556,10 @@ const getVipBenefitTotalRewards = (
   const targetVipId = targetConfig?.vipId
 
   return getAvailableVipBenefitKeys(targetVipId, highestVipId).reduce((totalAmount, key) => {
-    return totalAmount + resolveVipListRewardAmount(targetConfig, key)
+    return (
+      totalAmount +
+      resolveVipListRewardAmount(targetConfig, key) * vipBenefitAnnualMultiplierMap[key]
+    )
   }, 0)
 }
 
@@ -573,7 +587,7 @@ const createBenefitComparisonColumn = (
     detailRows.unshift({
       key: 'levelUpPlaceholder',
       label: '',
-      amount: '0.00',
+      amount: '-',
       placeholder: true
     })
   }
@@ -659,12 +673,13 @@ const createProgressItem = (
   progress: getClampedProgress(currentValue, targetValue)
 })
 
-const createMaxVipProgressItem = (key: string, label: string): VipProgressItem => ({
+const createMaxVipProgressItem = (t: Translate, key: string, label: string): VipProgressItem => ({
   key,
   label,
   current: '-',
   target: '-',
-  progress: 100
+  progress: 100,
+  displayText: t('vipPage.completed')
 })
 
 /**
@@ -847,8 +862,8 @@ export const useVipPageData = (t: Translate, options?: UseVipPageDataOptions) =>
       resolvedViewedVipId === highestVipLevel.value
     ) {
       return [
-        createMaxVipProgressItem('validBet', t('personalCenter.validBet')),
-        createMaxVipProgressItem('deposit', t('personalCenter.deposit'))
+        createMaxVipProgressItem(t, 'validBet', t('personalCenter.validBet')),
+        createMaxVipProgressItem(t, 'deposit', t('personalCenter.deposit'))
       ]
     }
 

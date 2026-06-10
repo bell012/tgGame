@@ -8,6 +8,11 @@ export {
   RESULT_HERO_IMAGES
 } from './assets'
 
+/** 票券活动页全屏遮罩 z-index（须高于 Sidebar z-index: 100） */
+export const TICKET_ACTIVITY_Z = {
+  modal: 10000
+} as const
+
 /** 票券子弹窗 z-index（Reminder 低于 Result，避免叠层错乱） */
 export const TICKET_DIALOG_Z = {
   reminderMask: 10010,

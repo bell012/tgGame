@@ -1,7 +1,8 @@
 import type { LuckySpinPrize } from '../../shared/types'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { LUCKY_SPIN_ASSETS } from '../../shared/assets'
 import { WHEEL_SEGMENT_COUNT } from '../../shared/constants'
-import { LUCKY_SPIN_TOKENS } from '../../shared/design-tokens'
+import { LUCKY_SPIN_TOKENS, TICKET_PC_TOKENS } from '../../shared/design-tokens'
 import { computed, type MaybeRefOrGetter, toValue } from 'vue'
 
 /** 8 格转盘：第 0 格对齐 12 点方向（半格偏移） */
@@ -35,8 +36,32 @@ export const LUCKY_WHEEL_BUTTONS = [{ radius: '1px', background: 'transparent' }
 const sortPrizes = (prizes: LuckySpinPrize[]) =>
   [...prizes].sort((a, b) => a.index - b.index).slice(0, WHEEL_SEGMENT_COUNT)
 
+const MOBILE_WHEEL_PRIZE_STYLE = {
+  fontSize: LUCKY_WHEEL_DEFAULT_STYLE.fontSize,
+  iconSize: 40,
+  textTop: '14%',
+  iconTop: '28%'
+} as const
+
 export const useLuckyWheelConfig = (prizesSource: MaybeRefOrGetter<LuckySpinPrize[]>) => {
+  const isMobile = useIsMobile()
   const sortedPrizes = computed(() => sortPrizes(toValue(prizesSource)))
+
+  const wheelPrizeStyle = computed(() =>
+    isMobile.value
+      ? MOBILE_WHEEL_PRIZE_STYLE
+      : {
+          fontSize: TICKET_PC_TOKENS.wheelPrizeFontSize,
+          iconSize: TICKET_PC_TOKENS.wheelPrizeIconSize,
+          textTop: TICKET_PC_TOKENS.wheelPrizeTextTop,
+          iconTop: TICKET_PC_TOKENS.wheelPrizeIconTop
+        }
+  )
+
+  const defaultStyle = computed(() => ({
+    ...LUCKY_WHEEL_DEFAULT_STYLE,
+    fontSize: wheelPrizeStyle.value.fontSize
+  }))
 
   /** padding 仅由外层 disc inset 控制，避免与 blocks 双重收缩导致格位不绘制 */
   const blocks = computed(() => [
@@ -67,12 +92,14 @@ export const useLuckyWheelConfig = (prizesSource: MaybeRefOrGetter<LuckySpinPriz
         }
       ]
 
+      const { iconSize, iconTop, textTop, fontSize } = wheelPrizeStyle.value
+
       if (prize.icon) {
         imgs.push({
           src: prize.icon,
-          top: '28%',
-          width: '40px',
-          height: '40px'
+          top: iconTop,
+          width: `${iconSize}px`,
+          height: `${iconSize}px`
         })
       }
 
@@ -81,9 +108,9 @@ export const useLuckyWheelConfig = (prizesSource: MaybeRefOrGetter<LuckySpinPriz
         fonts: [
           {
             text: prize.label,
-            top: '14%',
+            top: textTop,
             fontColor: '#FFFFFF',
-            fontSize: 13,
+            fontSize,
             fontWeight: '700',
             wordWrap: false
           }
@@ -97,7 +124,7 @@ export const useLuckyWheelConfig = (prizesSource: MaybeRefOrGetter<LuckySpinPriz
     blocks,
     wheelPrizes,
     defaultConfig: LUCKY_WHEEL_DEFAULT_CONFIG,
-    defaultStyle: LUCKY_WHEEL_DEFAULT_STYLE,
+    defaultStyle,
     buttons: LUCKY_WHEEL_BUTTONS
   }
 }

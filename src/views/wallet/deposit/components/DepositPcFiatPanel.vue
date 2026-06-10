@@ -1,6 +1,8 @@
 <template>
+  <DepositPcFiatSkeleton v-if="isInitialLoading" />
+
   <!-- 法币充值面板容器 -->
-  <div v-if="payMethods.length > 0" class="w-full bg-bg-2 p-6 rounded-lg font-['Inter']">
+  <div v-else-if="payMethods.length > 0" class="w-full bg-bg-2 p-6 rounded-lg font-['Inter']">
     <!-- 支付方式标题 -->
     <p class="text-sm font-bold leading-normal text-text-1">{{ t('deposit.methods') }}</p>
     <!-- 支付方式列表外层容器 -->
@@ -217,6 +219,7 @@ import DepositTokenIcon from '@/static/svg/deposit/fiat-order-amount.svg?compone
 import { nextTick, ref, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDepositFiatFlow } from '../shared'
+import DepositPcFiatSkeleton from './DepositPcFiatSkeleton.vue'
 import depositFiatOrderPop from './order/fiat/depositFiatOrderPop.vue'
 import { usePresetGrid } from './shared/usePresetGrid'
 
@@ -227,6 +230,7 @@ const emit = defineEmits<{
 }>()
 
 const {
+  isInitialLoading,
   presetAmounts,
   payMethods,
   selectedMethod,

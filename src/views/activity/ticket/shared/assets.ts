@@ -10,6 +10,7 @@ import wheelSegmentDark from '@/static/img/lucky-spin/wheel/wheel-segment-dark.p
 import wheelSegmentLight from '@/static/img/lucky-spin/wheel/wheel-segment-light.png'
 import wheelShadow from '@/static/img/lucky-spin/wheel/wheel-shadow.png'
 import wheelSectorHighlight from '@/static/img/lucky-spin/wheel/wheel-sector-highlight.png'
+import modalHelpIcon from '@/static/img/lucky-spin/modal-help-icon.svg?url'
 import gameCashVoucher from '@/static/img/lucky-spin/vouchers/game-cash-voucher.png'
 import gameGoldenEgg from '@/static/img/lucky-spin/vouchers/game-golden-egg.png'
 import gameLuckyRedEnvelope from '@/static/img/lucky-spin/vouchers/game-lucky-red-envelope.png'
@@ -20,6 +21,9 @@ import gameMysteryBox from '@/static/img/lucky-spin/vouchers/game-mystery-box.pn
 export const LUCKY_SPIN_CASH_RESULT_LOTTIE = '/lottie/lucky-spin/cash-result/cash-popup.json'
 
 export const LUCKY_SPIN_ASSETS = {
+  controls: {
+    modalHelpIcon
+  },
   wheel: {
     frame: wheelFrame,
     pointerGo: wheelPointerGo,

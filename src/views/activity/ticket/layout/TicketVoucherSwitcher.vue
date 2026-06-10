@@ -1,33 +1,43 @@
 <template>
-  <div :class="variant === 'grid' ? 'mt-4' : ''">
-    <!-- PC：网格 -->
-    <div
-      v-if="variant === 'grid' && gridSlots.length"
-      class="grid w-full max-w-[332px] grid-cols-5 gap-2"
-    >
-      <template v-for="slot in gridSlots" :key="slot.id">
-        <button
-          v-if="!slot.isPlaceholder"
-          type="button"
-          class="flex h-[60px] w-full items-center justify-center rounded-[10px] border-2 transition-all"
-          :class="isSlotActive(slot) ? 'opacity-100' : 'border-transparent opacity-75'"
-          :style="isSlotActive(slot) ? activeItemStyle : undefined"
-          :aria-label="slot.label"
-          @click="slot.gameIndex != null && emit('select', slot.gameIndex)"
-        >
-          <img
-            :src="resolveIcon(slot)"
-            :alt="slot.label ?? slot.id"
-            class="h-[80%] w-[80%] max-h-[48px] max-w-[48px] object-contain"
-          />
-        </button>
-        <div
-          v-else
-          class="h-[60px] w-full rounded-[10px] border-2 border-transparent"
-          aria-hidden="true"
-        />
-      </template>
-    </div>
+  <div>
+    <!-- PC：票券数 + 网格（无底板背景） -->
+    <template v-if="variant === 'grid'">
+      <button
+        v-if="showPcVoucherFooter"
+        type="button"
+        class="flex w-full items-center justify-center gap-1 text-common-80"
+        :style="pcVoucherFooterTextStyle"
+        @click="emit('openVoucherList')"
+      >
+        <span>{{ t('luckySpinPage.youHave') }}</span>
+        <span class="font-[700]" :style="{ color: pcVoucherLayout.countHighlight }">{{
+          totalVouchers
+        }}</span>
+        <span>{{ t('luckySpinPage.vouchers') }} ›</span>
+      </button>
+
+      <div v-if="showPcVoucherGrid && gridSlots.length" class="w-full" :style="pcGridPanelStyle">
+        <div class="mx-auto grid w-max overflow-visible" :style="pcGridStyle">
+          <template v-for="slot in gridSlots" :key="slot.id">
+            <button
+              v-if="!slot.isPlaceholder"
+              type="button"
+              class="pc-grid-item flex min-h-0 min-w-0 items-center justify-center border-0 bg-transparent p-0 transition-all"
+              :style="getPcGridItemStyle(slot)"
+              :aria-label="slot.label"
+              @click="slot.gameIndex != null && emit('select', slot.gameIndex)"
+            >
+              <img
+                :src="resolveIcon(slot)"
+                :alt="slot.label ?? slot.id"
+                class="block h-full w-full shrink-0 object-contain"
+              />
+            </button>
+            <div v-else :style="pcGridPlaceholderStyle" aria-hidden="true" />
+          </template>
+        </div>
+      </div>
+    </template>
 
     <!-- H5：横向 scroll-snap -->
     <div
@@ -95,18 +105,17 @@
     </div>
 
     <button
+      v-if="variant !== 'grid'"
       type="button"
       class="flex w-full items-center justify-center gap-1 text-common-80"
-      :class="variant === 'grid' ? 'mt-4 justify-start' : ''"
       :style="voucherFooterTextStyle"
+      @click="emit('openVoucherList')"
     >
-      <span @click="emit('openVoucherList')">
-        <span>{{ t('luckySpinPage.youHave') }}</span>
-        <span class="font-[700]" :style="{ color: voucherLayout.countHighlight }">{{
-          totalVouchers
-        }}</span>
-        <span>{{ t('luckySpinPage.vouchers') }} ›</span>
-      </span>
+      <span>{{ t('luckySpinPage.youHave') }}</span>
+      <span class="font-[700]" :style="{ color: voucherLayout.countHighlight }">{{
+        totalVouchers
+      }}</span>
+      <span>{{ t('luckySpinPage.vouchers') }} ›</span>
     </button>
   </div>
 </template>
@@ -118,9 +127,14 @@ import {
   useTicketVoucherCarousel,
   VOUCHER_CAROUSEL_TRACK_WIDTH
 } from './composables/useTicketVoucherCarousel'
-import { useTicketVoucherSwitcher } from './composables/useTicketVoucherSwitcher'
+import {
+  useTicketVoucherSwitcher,
+  VOUCHER_GRID_COLUMNS,
+  type VoucherGridSlot
+} from './composables/useTicketVoucherSwitcher'
 import ArrowLeft2Icon from '@/static/svg/arrow_left2.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import { TICKET_PC_LAYOUT } from '../shared/ticketPcLayout'
 import { TICKET_MOBILE_LAYOUT, VOUCHER_CAROUSEL_ROW_MIN_HEIGHT } from '../shared/ticketMobileLayout'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -129,10 +143,16 @@ const props = withDefaults(
   defineProps<
     TicketVoucherFooterData & {
       variant?: 'carousel' | 'grid'
+      /** PC grid：是否渲染「您有 N 张票券」 */
+      showPcVoucherFooter?: boolean
+      /** PC grid：是否渲染券种网格 */
+      showPcVoucherGrid?: boolean
     }
   >(),
   {
-    variant: 'carousel'
+    variant: 'carousel',
+    showPcVoucherFooter: true,
+    showPcVoucherGrid: true
   }
 )
 
@@ -144,11 +164,50 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { gridSlots, resolveIcon, activeItemStyle, isSlotActive, isGameActive } =
-  useTicketVoucherSwitcher(props)
+const { gridSlots, resolveIcon, isSlotActive, isGameActive } = useTicketVoucherSwitcher(props)
 
 const voucherLayout = TICKET_MOBILE_LAYOUT.voucher
+const pcVoucherLayout = TICKET_PC_LAYOUT.voucher
 const carouselLayout = TICKET_MOBILE_LAYOUT.voucherCarousel
+
+const pcVoucherFooterTextStyle = {
+  fontSize: `${pcVoucherLayout.footerTextSize}px`
+}
+
+const pcGridPanelStyle = computed(() => ({
+  marginTop: props.showPcVoucherGrid ? `${pcVoucherLayout.footerToGridGap}px` : '0'
+}))
+
+const pcGridStyle = {
+  columnGap: `${pcVoucherLayout.itemColumnGap}px`,
+  rowGap: `${pcVoucherLayout.itemRowGap}px`,
+  gridTemplateColumns: `repeat(${VOUCHER_GRID_COLUMNS}, minmax(0, ${pcVoucherLayout.itemWidth}px))`,
+  gridAutoRows: `minmax(0, ${pcVoucherLayout.itemHeight}px)`
+}
+
+const pcGridPlaceholderStyle = {
+  width: `${pcVoucherLayout.itemWidth}px`,
+  height: `${pcVoucherLayout.itemHeight}px`
+}
+
+const pcActiveItemScale = pcVoucherLayout.activeItemWidth / pcVoucherLayout.itemWidth
+
+const getPcGridItemStyle = (slot: VoucherGridSlot) => {
+  const active = isSlotActive(slot)
+
+  return {
+    width: `${pcVoucherLayout.itemWidth}px`,
+    height: `${pcVoucherLayout.itemHeight}px`,
+    minWidth: 0,
+    minHeight: 0,
+    borderRadius: `${pcVoucherLayout.itemRadius}px`,
+    opacity: active ? 1 : 0.75,
+    transform: active ? `scale(${pcActiveItemScale})` : 'none',
+    transformOrigin: 'center center',
+    position: active ? 'relative' : 'static',
+    zIndex: active ? 1 : 0
+  }
+}
 
 /** H5 券种条仅用本地 Figma 对齐图，避免接口 imageUrl 带入多余描边/光晕 */
 const resolveCarouselIcon = (game: VoucherGameItem) => getGameIcon(game.gameId ?? 'lucky_spin')

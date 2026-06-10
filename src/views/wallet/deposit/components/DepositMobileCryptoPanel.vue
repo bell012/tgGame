@@ -1,6 +1,8 @@
 <template>
+  <DepositMobileCryptoSkeleton v-if="isInitialLoading" />
+
   <!-- 最外层充值面板容器 -->
-  <div class="w-full min-h-full font-['Inter']">
+  <div v-else class="w-full min-h-full font-['Inter']">
     <!-- 充值主卡片区域 -->
     <div class="w-full shrink-0 bg-bg-2 p-3 rounded-lg relative">
       <!-- 币种选择与更多入口区域 -->
@@ -255,6 +257,7 @@ import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?compon
 import { computed, nextTick, ref, type ComponentPublicInstance, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDepositCryptoFlow } from '../shared'
+import DepositMobileCryptoSkeleton from './DepositMobileCryptoSkeleton.vue'
 import depositCryptoOrderPop from './order/crypto/depositCryptoOrderPop.vue'
 import { usePresetGrid } from './shared/usePresetGrid'
 
@@ -289,6 +292,7 @@ const coins = [
 const visibleCoins = computed(() => (isMobile.value ? coins.slice(0, 3) : coins))
 
 const {
+  isInitialLoading,
   selectedSubColumn,
   selectedDiscountItem,
   amount,

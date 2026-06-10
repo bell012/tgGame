@@ -1,6 +1,8 @@
 <template>
+  <DepositPcCryptoSkeleton v-if="isInitialLoading" />
+
   <!-- 数字币充值面板外层容器 -->
-  <div class="w-full rounded-xl bg-bg-2 p-6 font-['Inter']">
+  <div v-else class="w-full rounded-xl bg-bg-2 p-6 font-['Inter']">
     <!-- 数字币充值面板主体内容 -->
     <div class="flex flex-col gap-6">
       <!-- 币种展示区域 -->
@@ -269,6 +271,7 @@ import ExpandUpDoubleIcon from '@/static/svg/deposit/expand-up-double.svg?compon
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDepositCryptoFlow } from '../shared'
+import DepositPcCryptoSkeleton from './DepositPcCryptoSkeleton.vue'
 import depositCryptoOrderPop from './order/crypto/depositCryptoOrderPop.vue'
 import { usePresetGrid } from './shared/usePresetGrid'
 
@@ -302,6 +305,7 @@ const visibleCoins = [
 ] as const
 
 const {
+  isInitialLoading,
   selectedSubColumn,
   selectedDiscountItem,
   amount,

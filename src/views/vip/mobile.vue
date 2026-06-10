@@ -62,7 +62,7 @@
                           <span
                             class="text-xs"
                             :style="{ color: getVipCardTheme(vip.vipId).progressTextColor }"
-                            >{{ item.current }}/{{ item.target }}</span
+                            >{{ item.displayText ?? `${item.current}/${item.target}` }}</span
                           >
                         </div>
                       </div>
