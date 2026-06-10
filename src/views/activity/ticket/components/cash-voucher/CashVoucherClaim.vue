@@ -7,7 +7,7 @@
       <button
         type="button"
         class="mt-[40px] h-[48px] w-[300px] rounded-[8px] bg-theme-primary text-sm font-[700] text-text-4"
-        :disabled="!ticketId || loading"
+        :disabled="isPending"
         @click="handleClaim"
       >
         {{ $t('vouchers.claimNow') }}
@@ -20,7 +20,7 @@
       <button
         type="button"
         class="mt-[30px] h-[40px] w-[220px] rounded-[8px] bg-theme-primary text-sm font-[700] text-text-4"
-        :disabled="!ticketId || loading"
+        :disabled="isPending"
         @click="handleClaim"
       >
         {{ $t('vouchers.claimNow') }}
@@ -30,13 +30,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import lottie, { type AnimationItem } from 'lottie-web'
-import Api from '@/api'
 import zhusucaiImg from '@/lottie/xianjin/zhusucai.png'
 import xianjianImg from '@/lottie/xianjin/xianjian.jpg'
 import daijiSource from '@/lottie/xianjin/daiji.json'
-import { globalTicketToastState } from '../../shell/ticketToast'
+import { buildResultDialogFromUse } from '../../shared/mapWheelConfig'
+import { useTicketUseAction } from '../../shared'
+import { openTicketResultDialog } from '../../shell/ticketDialog'
 
 /** 避免 lottie-web 解析失败 */
 const daijiAnimationData = {
@@ -50,10 +52,9 @@ const daijiAnimationData = {
   })
 }
 
-/** 当前选中票券 */
-const ticketId = computed(() => globalTicketToastState.activeTicketRecord?.ticketId)
+const { t } = useI18n()
+const { runUseTicket, isPending } = useTicketUseAction()
 
-const loading = ref(false)
 const pcContainerRef = ref<HTMLElement | null>(null)
 const h5ContainerRef = ref<HTMLElement | null>(null)
 const animations: AnimationItem[] = []
@@ -84,14 +85,14 @@ onBeforeUnmount(() => {
   animations.length = 0
 })
 
-/** 立即领取：调用 /ticket/api/use，rowId 取当前 ticketId */
-const handleClaim = async () => {
-  if (!ticketId.value || loading.value) return
-  loading.value = true
-  try {
-    await Api.activity.useTicket({ rowId: ticketId.value })
-  } finally {
-    loading.value = false
-  }
+/** 立即领取 */
+const handleClaim = () => {
+  void runUseTicket({
+    voucherName: t('ticketPage.cashVoucher.title'),
+    fallbackErrorMessage: t('luckySpinPage.loadFailed'),
+    onSuccess: result => {
+      openTicketResultDialog(buildResultDialogFromUse(result))
+    }
+  })
 }
 </script>
