@@ -64,15 +64,14 @@ export const queryCheckInStatus = (
 
 // 领取签到奖励。
 export const receiveCheckInReward = (
-  data: ReceiveCheckInRewardForm,
-  options?: ApiResponseToastOptions
+  data: ReceiveCheckInRewardForm
 ): Promise<ReceiveCheckInRewardResponse> => {
   return request({
     url: '/activity/checkin/receiveReward',
     method: 'post',
     data,
     showSuccessToast: false,
-    showErrorToast: options?.showErrorToast ?? false
+    showErrorToast: true
   })
 }
 

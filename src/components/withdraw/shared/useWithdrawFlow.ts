@@ -333,6 +333,7 @@ export const useWithdrawFlow = () => {
 
   const handleClickWithdrawTab = async (tab: WithdrawTab) => {
     if (!tab) return
+    selectWithdrawTab.value = tab
     if (tab.value === 'Crypto') {
       await cryptoInitialization()
       return
@@ -854,9 +855,9 @@ export const useWithdrawFlow = () => {
 
   const cryptoInitialization = async () => {
     try {
+      selectWithdrawTab.value = withdrawTabs.value[0]
       hasLoadedWithdraw.value = false
       await initialization()
-      selectWithdrawTab.value = withdrawTabs.value[0]
       await cryptoTabClick()
     } catch (error) {
       console.log(error)
@@ -868,9 +869,9 @@ export const useWithdrawFlow = () => {
 
   const fiatInitialization = async () => {
     try {
+      selectWithdrawTab.value = withdrawTabs.value[1]
       hasLoadedWithdraw.value = false
       await initialization()
-      selectWithdrawTab.value = withdrawTabs.value[1]
       await fiatTabClick()
     } catch (error) {
       console.log(error)

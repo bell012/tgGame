@@ -21,33 +21,8 @@
       </div>
     </div>
     <div class="w-full flex-1 min-h-0 overflow-y-auto overscroll-contain bg-bg-1 p-3.5">
-      <div v-if="isWithdrawPanelLoading" class="w-full space-y-2.5">
-        <div class="rounded-lg bg-bg-2 p-3.5">
-          <div class="h-4 w-24 rounded bg-bg-4 animate-pulse" />
-          <div class="mt-2.5 flex gap-1 overflow-hidden">
-            <div
-              v-for="index in 3"
-              :key="index"
-              class="h-[58px] flex-1 rounded-lg bg-bg-4 animate-pulse"
-            />
-          </div>
-        </div>
-        <div class="rounded-lg bg-bg-2 p-3.5">
-          <div class="h-4 w-28 rounded bg-bg-4 animate-pulse" />
-          <div class="mt-2 h-[45px] rounded-lg bg-bg-4 animate-pulse" />
-        </div>
-        <div class="rounded-lg bg-bg-2 p-3.5">
-          <div class="flex items-center justify-between">
-            <div class="h-4 w-20 rounded bg-bg-4 animate-pulse" />
-            <div class="h-4 w-32 rounded bg-bg-4 animate-pulse" />
-          </div>
-          <div class="mt-2.5 h-[50px] rounded-lg bg-bg-4 animate-pulse" />
-          <div class="mt-4 grid grid-cols-3 gap-2">
-            <div v-for="index in 6" :key="index" class="h-9 rounded-lg bg-bg-4 animate-pulse" />
-          </div>
-          <div class="mt-6 h-10 rounded-lg bg-theme-2 opacity-40 animate-pulse" />
-        </div>
-      </div>
+      <WithdrawMobileCryptoSkeleton v-if="isWithdrawPanelLoading && isCryptoWithdrawTab" />
+      <WithdrawMobileFiatSkeleton v-else-if="isWithdrawPanelLoading" />
       <MobileCryptoPanel
         v-else-if="selectWithdrawTab?.value === 'Crypto'"
         :methodsOptions="cryptoWithdrawMethodsOptions"
@@ -178,6 +153,8 @@ import AccountPaymentPasswordPop from '@/components/paymentMethods/paymentPasswo
 import orderPop from '@/components/withdraw/orderPop.vue'
 import withdrawSmsVerificationPop from '@/components/withdraw/withdrawSmsVerificationPop.vue'
 import withdrawPaymentPasswordPop from '@/components/withdraw/withdrawPaymentPasswordPop.vue'
+import WithdrawMobileCryptoSkeleton from './components/WithdrawMobileCryptoSkeleton.vue'
+import WithdrawMobileFiatSkeleton from './components/WithdrawMobileFiatSkeleton.vue'
 
 import { computed, onMounted } from 'vue'
 
@@ -250,6 +227,8 @@ const {
 } = useWithdrawFlow()
 
 const isWithdrawPanelLoading = computed(() => !hasLoadedWithdraw.value)
+
+const isCryptoWithdrawTab = computed(() => selectWithdrawTab.value?.value !== 'Fiat')
 
 onMounted(async () => {
   await cryptoInitialization()

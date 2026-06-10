@@ -435,6 +435,44 @@ export const createCheckInRequirementReminderData = (
   }
 }
 
+// 根据 mbSign.signDays 定位本次应签到的奖励；异常情况下回退到第一张未领取卡片。
+export const resolveCurrentCheckInReward = (
+  rewards: CheckInRewardItem[],
+  status?: QueryCheckInStatusResult
+) => {
+  const currentSignDay = toNumber(status?.signDays)
+  const currentReward =
+    currentSignDay !== null ? rewards.find(reward => reward.day === currentSignDay) : undefined
+
+  return currentReward ?? rewards.find(reward => !reward.claimed) ?? null
+}
+
+// 对比 mbSign 当前充值/流水与当天奖励条件，按 conditionRelation 判断是否允许签到。
+export const areCheckInRewardRequirementsMet = (
+  reward: CheckInRewardItem,
+  status?: QueryCheckInStatusResult
+) => {
+  const rewardTiggerType = reward.rewardTiggerType ?? []
+  const hasDepositRequirement = rewardTiggerType.includes(CHECK_IN_REQUIREMENT_TYPE_DEPOSIT)
+  const hasBetRequirement = rewardTiggerType.includes(CHECK_IN_REQUIREMENT_TYPE_BET)
+
+  if (!hasDepositRequirement && !hasBetRequirement) {
+    return true
+  }
+
+  const depositRequirementMet =
+    (toNumber(status?.rechargeAmount) ?? 0) >= (toNumber(reward.rechargeAmount) ?? 0)
+  const betRequirementMet = (toNumber(status?.betAmount) ?? 0) >= (toNumber(reward.betAmount) ?? 0)
+
+  if (hasDepositRequirement && hasBetRequirement) {
+    return toNumber(reward.conditionRelation) === CHECK_IN_CONDITION_RELATION_ANY
+      ? depositRequirementMet || betRequirementMet
+      : depositRequirementMet && betRequirementMet
+  }
+
+  return hasDepositRequirement ? depositRequirementMet : betRequirementMet
+}
+
 // 根据 rewardType 决定奖励卡片金额来源：固定金额取 rewardAmount，随机金额取 amountRange。
 const resolveRewardConfigAmount = (
   rewardConfig: CheckInActivitySignConfigItem,

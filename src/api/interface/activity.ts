@@ -558,6 +558,7 @@ export interface UseTicketForm {
 
 /** 使用票券结果 */
 export interface UseTicketResult {
+  amount?: number | string
   rewardAmount?: number
   rewardType?: number
 }
