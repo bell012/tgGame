@@ -282,6 +282,37 @@ export interface MbTicketLanguageInfo {
   name?: string
 }
 
+/** 票券金额/次数条件对象 */
+export interface TicketThresholdCondition {
+  /** 是否启用，0-否，1-是 */
+  enabled?: number
+  /** 累计类型，1-自领取后累计，2-指定日期后累计，3-历史累计，4-首存 */
+  accumulateType?: number
+  operator?: string
+  amount?: number
+  count?: number
+  startDate?: number
+}
+
+export interface MbTicketRechargeCondition {
+  rechargeMethods?: number[]
+  depositAmount?: TicketThresholdCondition
+  depositCount?: TicketThresholdCondition
+}
+
+export interface MbTicketWageringCondition {
+  validPlatforms?: string[]
+  validBet?: TicketThresholdCondition
+}
+
+export interface MbTicketLossCondition {
+  gameLossAmount?: TicketThresholdCondition
+}
+
+export interface MbTicketInviteCondition {
+  inviteFriendCount?: number
+}
+
 /** 我的票券单条记录（mbTicketList 数组元素） */
 export interface MbTicketRecord {
   rowId?: number
@@ -299,8 +330,15 @@ export interface MbTicketRecord {
   homeDisplay?: number
   unusedTicketPopWay?: number
   site?: string
+  currency?: string
   goldenEggConfig?: Array<{ amount: number; probability: number; type: number }>
   platformGameCodes?: string[]
+  conditionType?: number[]
+  bindData?: TicketProgressBindData
+  rechargeCondition?: MbTicketRechargeCondition
+  wageringCondition?: MbTicketWageringCondition
+  lossCondition?: MbTicketLossCondition
+  inviteCondition?: MbTicketInviteCondition
 }
 
 /** 票券完成进度请求 */
@@ -313,7 +351,9 @@ export interface TicketProgressForm {
 }
 
 export interface TicketProgressBindData {
+  /** true 已满足，false 未满足 */
   bindWithdrawalAccount?: boolean
+  /** true 已满足，false 未满足 */
   bindWithdrawalName?: boolean
 }
 
@@ -324,6 +364,7 @@ export interface TicketProgressCompleteInfo {
 }
 
 export interface TicketProgressCompleteVerification {
+  /** true 已完成，false 未完成 */
   verifyPhone?: boolean
 }
 
@@ -359,7 +400,9 @@ export interface TicketProgressResult {
   ext?: TicketProgressExt
 }
 
-export interface TicketProgressResponse extends ActivityApiResponse<TicketProgressResult> {}
+export interface TicketProgressResponse extends ActivityApiResponse<
+  TicketProgressResult | TicketProgressResult[]
+> {}
 
 // 我的票卷 携带参数
 export interface MbTicketListForm {
