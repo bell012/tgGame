@@ -1695,6 +1695,7 @@
     "redPacketVoucher": "Red Packet Voucher",
     "goldenEggVoucher": "Golden Egg Voucher",
     "luckySpinVoucher": "Lucky Spin Voucher",
-    "mysteryBoxVoucher": "Mystery Box Voucher"
+    "mysteryBoxVoucher": "Mystery Box Voucher",
+    "claimNow": "Claim Now"
   }
 }

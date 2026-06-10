@@ -1687,6 +1687,7 @@
     "redPacketVoucher": "红包票券",
     "goldenEggVoucher": "砸金蛋票券",
     "luckySpinVoucher": "转盘票券",
-    "mysteryBoxVoucher": "盲盒票券"
+    "mysteryBoxVoucher": "盲盒票券",
+    "claimNow": "立即领取"
   }
 }

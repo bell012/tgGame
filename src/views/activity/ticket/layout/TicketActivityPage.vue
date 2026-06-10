@@ -229,8 +229,9 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { TICKET_ACTIVITY_Z } from '../shared/constants'
 import { LUCKY_SPIN_ASSETS } from '../shared/assets'
 import { LUCKY_SPIN_TOKENS } from '../shared/design-tokens'
-import { getTicketPcRightPanelPaddingX, TICKET_PC_LAYOUT } from '../shared/ticketPcLayout'
-import { TICKET_PC_TOKENS } from '../shared/design-tokens'
+// getTicketPcRightPanelPaddingX
+import { TICKET_PC_LAYOUT } from '../shared/ticketPcLayout'
+// import { TICKET_PC_TOKENS } from '../shared/design-tokens'
 import { ticketMobileSectionClass } from '../shared/ticketMobileLayout'
 import type {
   LuckySpinPrize,
@@ -376,16 +377,20 @@ const pcLeftPanelSyncedStyle = computed(() => ({
   height: '100%'
 }))
 
-const pcRightPanelPaddingX = getTicketPcRightPanelPaddingX(TICKET_PC_TOKENS.wheelSizePc)
+// const pcRightPanelPaddingX = getTicketPcRightPanelPaddingX(TICKET_PC_TOKENS.wheelSizePc)
 
 const pcRightPanelStyle = computed(() => ({
   backgroundColor: TICKET_PC_LAYOUT.rightPanelMask.bg,
   borderTopRightRadius: `${TICKET_PC_LAYOUT.modalRadius}px`,
   borderBottomRightRadius: `${TICKET_PC_LAYOUT.modalRadius}px`,
-  paddingTop: `${TICKET_PC_LAYOUT.rightPanelMask.paddingTop}px`,
-  paddingBottom: `${TICKET_PC_LAYOUT.rightPanelMask.paddingBottom}px`,
-  paddingLeft: `${pcRightPanelPaddingX}px`,
-  paddingRight: `${pcRightPanelPaddingX}px`
+  paddingTop: `16px`,
+  paddingBottom: `0px`,
+  paddingLeft: `4px`,
+  paddingRight: `4px`
+  // paddingTop: `${TICKET_PC_LAYOUT.rightPanelMask.paddingTop}px`,
+  // paddingBottom: `${TICKET_PC_LAYOUT.rightPanelMask.paddingBottom}px`,
+  // paddingLeft: `${pcRightPanelPaddingX}px`,
+  // paddingRight: `${pcRightPanelPaddingX}px`
 }))
 
 const pcFallbackPanelStyle = computed(() => ({
