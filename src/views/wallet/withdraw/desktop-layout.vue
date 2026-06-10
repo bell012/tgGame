@@ -15,51 +15,8 @@
       </button>
     </div>
     <div class="mt-4 w-full bg-bg-1 rounded-lg">
-      <div v-if="isWithdrawPanelLoading" class="w-full bg-bg-2 p-6 rounded-lg font-['Inter']">
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex flex-1 gap-4 overflow-hidden">
-            <div
-              v-for="index in 4"
-              :key="`method-${index}`"
-              class="h-[58px] flex-1 rounded-xl bg-bg-4 animate-pulse"
-            />
-          </div>
-          <div class="h-9 w-36 shrink-0 rounded-full bg-bg-4 animate-pulse" />
-        </div>
-
-        <div class="mt-6">
-          <div class="flex items-center justify-between">
-            <div class="h-4 w-32 rounded bg-bg-4 animate-pulse" />
-            <div class="h-4 w-56 rounded bg-bg-4 animate-pulse" />
-          </div>
-          <div class="mt-2 flex gap-2 overflow-hidden">
-            <div
-              v-for="index in 3"
-              :key="`account-${index}`"
-              class="h-[154px] w-[280px] shrink-0 rounded-xl bg-bg-4 animate-pulse"
-            />
-            <div class="h-[154px] w-[280px] shrink-0 rounded-xl bg-bg-4 animate-pulse" />
-          </div>
-        </div>
-
-        <div class="mt-6">
-          <div class="flex items-center justify-between">
-            <div class="h-4 w-20 rounded bg-bg-4 animate-pulse" />
-            <div class="h-4 w-44 rounded bg-bg-4 animate-pulse" />
-          </div>
-          <div class="mt-2 h-[50px] rounded-lg bg-bg-4 animate-pulse" />
-        </div>
-
-        <div class="mt-4 grid grid-cols-6 gap-2 rounded-lg bg-bg-4 p-2">
-          <div
-            v-for="index in 6"
-            :key="`quick-${index}`"
-            class="h-10 rounded-lg bg-bg-2 animate-pulse"
-          />
-        </div>
-
-        <div class="mt-6 h-12 rounded-lg bg-theme-2 opacity-40 animate-pulse" />
-      </div>
+      <WithdrawPcCryptoSkeleton v-if="isWithdrawPanelLoading && isCryptoWithdrawTab" />
+      <WithdrawPcFiatSkeleton v-else-if="isWithdrawPanelLoading" />
       <DesktopCryptoPanel
         v-else-if="selectWithdrawTab?.value === 'Crypto'"
         :methodsOptions="cryptoWithdrawMethodsOptions"
@@ -171,6 +128,8 @@
 import { useWithdrawFlow } from '@/components/withdraw/shared/useWithdrawFlow'
 import DesktopCryptoPanel from '@/components/withdraw/desktopCryptoPanel.vue'
 import DesktopFiatPanel from '@/components/withdraw/desktopFiatPanel.vue'
+import WithdrawPcCryptoSkeleton from './components/WithdrawPcCryptoSkeleton.vue'
+import WithdrawPcFiatSkeleton from './components/WithdrawPcFiatSkeleton.vue'
 import KindReminderPop from '@/components/paymentMethods/kindReminderPop.vue'
 import AddAccountPop from '@/components/paymentMethods/addAccountPop.vue'
 import AccountSmsVerificationPop from '@/components/paymentMethods/smsVerificationPop.vue'
@@ -247,6 +206,8 @@ const {
 } = useWithdrawFlow()
 
 const isWithdrawPanelLoading = computed(() => !hasLoadedWithdraw.value)
+
+const isCryptoWithdrawTab = computed(() => selectWithdrawTab.value?.value !== 'Fiat')
 
 const handleDesktopClickWithdrawTab = (tab: WithdrawTab) => {
   handleClickWithdrawTab(tab)
