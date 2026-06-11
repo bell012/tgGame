@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import Api from '@/api'
 import type { ActivityGroupItem, ActivityListItem } from '@/api/interface/activity'
+import { toPromotionGroupIconUrl } from '@/views/activity/promotions/shared'
 
 /** 侧栏菜单只展示前 3 个分组 */
 export const PROMOTIONS_MENU_GROUP_LIMIT = 3
@@ -23,6 +24,17 @@ const sortActivityGroups = (list: ActivityGroupItem[]) => {
 
   enabled.sort((a, b) => Number(a.sortNo ?? 0) - Number(b.sortNo ?? 0))
   return enabled
+}
+
+const normalizeActivityGroup = (group: ActivityGroupItem): ActivityGroupItem => {
+  const defaultIcon = toPromotionGroupIconUrl(group.defaultIcon)
+  const activeIcon = toPromotionGroupIconUrl(group.activeIcon)
+
+  return {
+    ...group,
+    ...(defaultIcon ? { defaultIcon } : {}),
+    ...(activeIcon ? { activeIcon } : {})
+  }
 }
 
 export const usePromotionsStore = defineStore('promotions', () => {
@@ -48,7 +60,7 @@ export const usePromotionsStore = defineStore('promotions', () => {
         current: 1,
         size: 100
       })
-      groups.value = sortActivityGroups(response.result?.records ?? [])
+      groups.value = sortActivityGroups(response.result?.records ?? []).map(normalizeActivityGroup)
       groupsLoaded.value = true
     } catch {
       groups.value = []
