@@ -19,5 +19,5 @@ export function getTicketGameComponent(gameId: TicketGameId): Component {
 }
 
 export function isTicketGameImplemented(gameId: TicketGameId): boolean {
-  return gameId === 'lucky_spin' || gameId === 'lucky_red_envelope'
+  return gameId === 'lucky_spin' || gameId === 'golden_egg' || gameId === 'lucky_red_envelope'
 }

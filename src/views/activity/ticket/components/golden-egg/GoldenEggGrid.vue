@@ -11,7 +11,7 @@
           :key="columnIndex"
           type="button"
           class="golden-egg-slot"
-          :disabled="activeStage !== 'standby'"
+          :disabled="activeStage !== 'standby' || isPending"
           :aria-label="`砸开第 ${getEggIndex(rowIndex, columnIndex) + 1} 个金蛋`"
           @click="handleSmash(getEggIndex(rowIndex, columnIndex))"
         >
@@ -29,12 +29,11 @@
         <img class="golden-egg-shelf" :src="baseImage" alt="" draggable="false" />
       </div>
     </div>
-
-    <GoldenEggPop :visible="showPopup" @close="closePopup" @replay="resetGame" />
   </div>
 </template>
 
 <script setup lang="ts">
+import type { UseTicketResult } from '@/api/interface/activity'
 import lottie, { type AnimationItem } from 'lottie-web'
 import {
   computed,
@@ -45,13 +44,16 @@ import {
   watch,
   type ComponentPublicInstance
 } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { globalTicketToastState } from '../../shell/ticketToast'
-import GoldenEggPop from './golden-egg-pop.vue'
+import { buildResultDialogFromUse } from '../../shared/mapWheelConfig'
+import { openTicketResultDialog } from '../../shell/ticketDialog'
+import { useTicketUseAction } from '../../shared'
 import baseImage from './base.png'
 import standbyAnimation from './standby/standby.json'
 import openAnimation from './smaso-open/smaso-open.json'
 
-type GoldenEggStage = 'standby' | 'opening'
+type GoldenEggStage = 'standby' | 'opening' | 'opened'
 type TemplateRefValue = Element | ComponentPublicInstance | null
 type LottieAsset = {
   p?: string
@@ -68,13 +70,15 @@ const EGG_COUNT = EGG_ROW_COUNT * EGG_COLUMN_COUNT
 
 /** 当前选中票券（券种条切换时随 activeTicketRecord 更新） */
 const ticketId = computed(() => globalTicketToastState.activeTicketRecord?.ticketId)
+const { t } = useI18n()
+const { runUseTicket, isPending } = useTicketUseAction()
 
 const standbyRefs = ref<(HTMLElement | null)[]>([])
 const openRefs = ref<(HTMLElement | null)[]>([])
 
 const activeStage = ref<GoldenEggStage>('standby')
 const activeOpeningIndex = ref<number | null>(null)
-const showPopup = ref(false)
+const pendingUseResult = ref<UseTicketResult | null>(null)
 
 let standbyPlayers: Array<AnimationItem | null> = []
 let openPlayers: Array<AnimationItem | null> = []
@@ -188,30 +192,51 @@ const createAllPlayers = async () => {
   }
 }
 
-const handleSmash = (index: number) => {
-  if (activeStage.value !== 'standby') return
+const resetGame = () => {
+  activeStage.value = 'standby'
+  activeOpeningIndex.value = null
+  pendingUseResult.value = null
+  openPlayers.forEach(player => player?.goToAndStop(0, true))
+  standbyPlayers.forEach(player => player?.goToAndPlay(0, true))
+}
+
+const startOpenAnimation = (index: number, result: UseTicketResult) => {
+  pendingUseResult.value = result
 
   activeStage.value = 'opening'
   activeOpeningIndex.value = index
   standbyPlayers.forEach(player => player?.pause())
-  openPlayers[index]?.goToAndPlay(0, true)
+
+  const openPlayer = openPlayers[index]
+  if (openPlayer) {
+    openPlayer.goToAndPlay(0, true)
+    return
+  }
+
+  handleOpenComplete(index)
+}
+
+const handleSmash = (index: number) => {
+  if (activeStage.value !== 'standby' || isPending.value) return
+
+  void runUseTicket({
+    voucherName: t('ticketPage.goldenEgg.title'),
+    fallbackErrorMessage: t('luckySpinPage.loadFailed'),
+    onSuccess: result => {
+      startOpenAnimation(index, result)
+    },
+    onError: resetGame
+  })
 }
 
 const handleOpenComplete = (index: number) => {
   if (activeOpeningIndex.value !== index) return
-  showPopup.value = true
-}
+  activeStage.value = 'opened'
 
-const closePopup = () => {
-  showPopup.value = false
-}
-
-const resetGame = () => {
-  closePopup()
-  activeStage.value = 'standby'
-  activeOpeningIndex.value = null
-  openPlayers.forEach(player => player?.goToAndStop(0, true))
-  standbyPlayers.forEach(player => player?.goToAndPlay(0, true))
+  if (pendingUseResult.value) {
+    openTicketResultDialog(buildResultDialogFromUse(pendingUseResult.value))
+    pendingUseResult.value = null
+  }
 }
 
 const destroyAllPlayers = () => {
@@ -229,9 +254,9 @@ const destroyAllPlayers = () => {
 }
 
 const refreshAnimations = async () => {
-  closePopup()
   activeStage.value = 'standby'
   activeOpeningIndex.value = null
+  pendingUseResult.value = null
   destroyAllPlayers()
   await createAllPlayers()
 }
