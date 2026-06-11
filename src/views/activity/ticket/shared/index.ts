@@ -83,6 +83,11 @@ export const useTicketUseAction = () => {
         return
       }
 
+      const activeRecord = globalTicketToastState.activeTicketRecord
+      if (activeRecord) {
+        globalTicketToastState.lastConsumedTicketRecord = { ...activeRecord }
+      }
+
       await options.onSuccess(response.result!)
     } catch {
       globalShowToast({

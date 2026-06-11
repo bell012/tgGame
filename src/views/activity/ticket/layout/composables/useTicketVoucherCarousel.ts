@@ -20,6 +20,8 @@ type UseTicketVoucherCarouselOptions = {
   activeIndex: Ref<number> | ComputedRef<number>
 }
 
+const SCROLL_RETRY_FRAMES = 2
+
 export function useTicketVoucherCarousel(options: UseTicketVoucherCarouselOptions) {
   const viewportRef = ref<HTMLElement | null>(null)
   const itemRefs = ref<(HTMLElement | null)[]>([])
@@ -41,20 +43,9 @@ export function useTicketVoucherCarousel(options: UseTicketVoucherCarouselOption
     itemRefs.value[index] = (element as HTMLElement | null) ?? null
   }
 
-  const scrollToActiveIndex = (index: number, behavior: ScrollBehavior = 'smooth') => {
-    if (!isScrollable.value) {
-      return
-    }
-
+  const scrollToActiveIndexFallback = (index: number, behavior: ScrollBehavior = 'smooth') => {
     const viewport = viewportRef.value
-    const target = itemRefs.value[index]
-
-    if (target) {
-      target.scrollIntoView({ behavior, block: 'nearest', inline: 'center' })
-      return
-    }
-
-    if (!viewport) {
+    if (!viewport || !isScrollable.value) {
       return
     }
 
@@ -68,9 +59,47 @@ export function useTicketVoucherCarousel(options: UseTicketVoucherCarouselOption
     })
   }
 
+  const scrollToActiveIndex = (index: number, behavior: ScrollBehavior = 'smooth') => {
+    if (!isScrollable.value) {
+      return true
+    }
+
+    const target = itemRefs.value[index]
+
+    if (target) {
+      target.scrollIntoView({ behavior, block: 'nearest', inline: 'center' })
+      return true
+    }
+
+    return false
+  }
+
+  const scrollToActiveIndexWithRetry = (
+    index: number,
+    behavior: ScrollBehavior = 'smooth',
+    retriesLeft = SCROLL_RETRY_FRAMES
+  ) => {
+    if (scrollToActiveIndex(index, behavior)) {
+      return
+    }
+
+    if (retriesLeft <= 0) {
+      scrollToActiveIndexFallback(index, behavior)
+      return
+    }
+
+    requestAnimationFrame(() => {
+      scrollToActiveIndexWithRetry(index, behavior, retriesLeft - 1)
+    })
+  }
+
   const syncScrollToActive = (behavior: ScrollBehavior = 'smooth') => {
+    const index = toValue(options.activeIndex)
+
     void nextTick(() => {
-      scrollToActiveIndex(toValue(options.activeIndex), behavior)
+      requestAnimationFrame(() => {
+        scrollToActiveIndexWithRetry(index, behavior)
+      })
     })
   }
 
@@ -95,13 +124,20 @@ export function useTicketVoucherCarousel(options: UseTicketVoucherCarouselOption
   })
 
   watch(
-    () => toValue(options.activeIndex),
-    () => syncScrollToActive('smooth')
+    () => toValue(options.gamesCount),
+    () => {
+      itemRefs.value = []
+    },
+    { flush: 'pre' }
   )
 
   watch(
-    () => toValue(options.gamesCount),
-    () => syncScrollToActive('auto')
+    () => [toValue(options.gamesCount), toValue(options.activeIndex)] as const,
+    ([gamesCount], [prevGamesCount]) => {
+      const behavior = gamesCount !== prevGamesCount ? 'auto' : 'smooth'
+      syncScrollToActive(behavior)
+    },
+    { flush: 'post' }
   )
 
   return {

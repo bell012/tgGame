@@ -1,10 +1,6 @@
 import type { UseTicketResult } from '@/api/interface/activity'
 import { getLanguageCode } from '@/utils/locale'
-import {
-  fetchMbTicketListRecords,
-  findMbTicketsByGameId,
-  mapMbTicketListToFooter
-} from '../../shared/mbTicketMapper'
+import { fetchMbTicketListRecords, mapMbTicketListToFooter } from '../../shared/mbTicketMapper'
 import {
   buildTicketActivitySession,
   mapMbTicketToReminderContext
@@ -20,7 +16,9 @@ import {
 import {
   closeTicketToast,
   getActiveTicketParams,
-  globalTicketToastState
+  globalTicketToastState,
+  setActiveTicketRecord,
+  switchTicketGame
 } from '../../shell/ticketToast'
 import {
   buildResultDialogFromUse,
@@ -30,7 +28,7 @@ import {
 import { useTicketUseAction } from '../../shared'
 import { globalShowToast } from '@/utils/toast'
 import type { Ref } from 'vue'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const buildFallbackFooter = () => ({
@@ -55,29 +53,6 @@ const fetchVoucherFooter = async () => {
   }
 
   return buildFallbackFooter()
-}
-
-const refreshTicketSessionAfterList = (
-  records: Awaited<ReturnType<typeof fetchMbTicketListRecords>>
-) => {
-  globalTicketToastState.mbTicketRecords = records
-  const active = globalTicketToastState.activeTicketRecord
-
-  if (active) {
-    const sameRecord = records.find(
-      record => record.rowId === active.rowId && record.ticketId === active.ticketId
-    )
-    if (sameRecord) {
-      globalTicketToastState.activeTicketRecord = sameRecord
-      return
-    }
-  }
-
-  const matches = findMbTicketsByGameId(records, globalTicketToastState.gameId)
-
-  if (matches.length > 0) {
-    globalTicketToastState.activeTicketRecord = matches[0]!
-  }
 }
 
 const syncReminderContext = (session: TicketActivitySession) => {
@@ -224,33 +199,60 @@ export const useLuckySpinGame = (
     })
   }
 
-  const handleSpinEnd = async () => {
+  const handleSpinEnd = () => {
     isSpinning.value = false
     if (pendingUseResult.value) {
       openResultFromUse(pendingUseResult.value)
       clearPendingSpin(pendingUseResult)
     }
+  }
+
+  const refreshSessionAfterResultDismiss = async () => {
+    const consumedRecord = globalTicketToastState.lastConsumedTicketRecord
+    if (!consumedRecord) return
+
+    const session = activitySession.value
+    const consumedIndex = session
+      ? findTicketIndex(session.voucherGames, { record: consumedRecord })
+      : 0
 
     try {
       const languageCode = getLanguageCode()
-      const records = await fetchMbTicketListRecords(languageCode).catch(() => null)
+      const records = await fetchMbTicketListRecords(languageCode)
+      globalTicketToastState.mbTicketRecords = records
+      const footer = mapMbTicketListToFooter(records, languageCode)
 
-      if (records) {
-        refreshTicketSessionAfterList(records)
+      globalTicketToastState.lastConsumedTicketRecord = null
+
+      if (footer.games.length === 0) {
+        closeTicketToast()
+        return
       }
 
-      const footer =
-        records != null
-          ? mapMbTicketListToFooter(records, languageCode)
-          : await fetchVoucherFooter()
+      if (session) {
+        session.voucherGames = footer.games
+        session.totalVouchers = footer.totalVouchers
+      }
 
-      if (activitySession.value) {
-        activitySession.value.voucherGames = footer.games
-        activitySession.value.totalVouchers = footer.totalVouchers
-        syncReminderContext(activitySession.value)
+      const nextIndex = Math.min(Math.max(consumedIndex, 0), footer.games.length - 1)
+      const nextItem = footer.games[nextIndex]
+      const nextRecord = records[nextIndex]
+
+      if (nextItem && nextRecord) {
+        await nextTick()
+
+        activeGameIndex.value = nextIndex
+        if (nextItem.gameId) {
+          switchTicketGame(nextItem.gameId, nextRecord)
+        } else {
+          setActiveTicketRecord(nextRecord)
+        }
+        if (session) {
+          syncReminderContext(session)
+        }
       }
     } catch {
-      // ignore refresh failure
+      globalTicketToastState.lastConsumedTicketRecord = null
     }
   }
 
@@ -276,6 +278,7 @@ export const useLuckySpinGame = (
     (kind, prevKind) => {
       if (prevKind === 'result' && kind === 'none') {
         wheelRef.value?.clearSectorHighlight()
+        void refreshSessionAfterResultDismiss()
       }
     }
   )

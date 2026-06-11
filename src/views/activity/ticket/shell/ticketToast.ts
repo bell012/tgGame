@@ -9,13 +9,16 @@ interface GlobalTicketToastState {
   gameId: TicketGameId
   activeTicketRecord: MbTicketRecord | null
   mbTicketRecords: MbTicketRecord[]
+  /** 最近一次 useTicket 消耗的票券，结果弹窗关闭后用于刷新列表并选中下一项 */
+  lastConsumedTicketRecord: MbTicketRecord | null
 }
 
 export const globalTicketToastState = reactive<GlobalTicketToastState>({
   visible: false,
   gameId: 'lucky_spin',
   activeTicketRecord: null,
-  mbTicketRecords: []
+  mbTicketRecords: [],
+  lastConsumedTicketRecord: null
 })
 
 export const setTicketSession = (record: MbTicketRecord, records: MbTicketRecord[]) => {
@@ -26,6 +29,7 @@ export const setTicketSession = (record: MbTicketRecord, records: MbTicketRecord
 export const clearTicketSession = () => {
   globalTicketToastState.activeTicketRecord = null
   globalTicketToastState.mbTicketRecords = []
+  globalTicketToastState.lastConsumedTicketRecord = null
 }
 
 export const getActiveTicketParams = () => {
