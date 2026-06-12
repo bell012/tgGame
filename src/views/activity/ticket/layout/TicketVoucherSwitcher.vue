@@ -136,7 +136,7 @@ import ArrowLeft2Icon from '@/static/svg/arrow_left2.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import { TICKET_PC_LAYOUT } from '../shared/ticketPcLayout'
 import { TICKET_MOBILE_LAYOUT, VOUCHER_CAROUSEL_ROW_MIN_HEIGHT } from '../shared/ticketMobileLayout'
-import { computed } from 'vue'
+import { computed, type CSSProperties } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const props = withDefaults(
@@ -192,7 +192,7 @@ const pcGridPlaceholderStyle = {
 
 const pcActiveItemScale = pcVoucherLayout.activeItemWidth / pcVoucherLayout.itemWidth
 
-const getPcGridItemStyle = (slot: VoucherGridSlot) => {
+const getPcGridItemStyle = (slot: VoucherGridSlot): CSSProperties => {
   const active = isSlotActive(slot)
 
   return {
