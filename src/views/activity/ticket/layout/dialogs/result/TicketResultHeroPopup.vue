@@ -15,13 +15,16 @@
         {{ resolvedSubtext }}
       </p>
 
-      <div
-        v-if="showHeroArea"
-        class="my-4 flex items-center justify-center"
-        :class="isMobile ? 'h-[160px] w-[160px]' : 'h-[200px] w-[200px]'"
-      >
+      <div v-if="showHeroArea" class="my-4 flex items-center justify-center" :class="heroAreaClass">
         <LottiePlayer
-          v-if="isCashVariant"
+          v-if="isMysteryBoxOpenLottie"
+          :path="MYSTERY_BOX_OPEN_LOTTIE"
+          :autoplay="visible"
+          :loop="false"
+          class="h-full w-full"
+        />
+        <LottiePlayer
+          v-else-if="isCashVariant"
           :path="LUCKY_SPIN_CASH_RESULT_LOTTIE"
           :fallback-src="cashHeroFallback"
           :autoplay="visible"
@@ -52,6 +55,7 @@ import LottiePlayer from '@/components/LottiePlayer.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import {
   LUCKY_SPIN_CASH_RESULT_LOTTIE,
+  MYSTERY_BOX_OPEN_LOTTIE,
   RESULT_HERO_IMAGES,
   TICKET_DIALOG_Z
 } from '@/views/activity/ticket/shared/constants'
@@ -67,7 +71,22 @@ const { visible, result, close } = useTicketResultDialog('hero')
 const { resolvedTitle, resolvedHighlight, resolvedHeroImage, resolvedSubtext, resolvedButtonText } =
   useTicketResultHeroCopy(result, t)
 
+const isMysteryBoxOpenLottie = computed(() => result.value.heroLottie === 'mystery_box_open')
 const isCashVariant = computed(() => result.value.variant === 'cash')
 const cashHeroFallback = RESULT_HERO_IMAGES.cash
-const showHeroArea = computed(() => isCashVariant.value || Boolean(resolvedHeroImage.value))
+
+/** 盲盒开箱 Lottie 按 Figma 弹窗素材尺寸略放大 hero 区 */
+const heroAreaClass = computed(() =>
+  isMysteryBoxOpenLottie.value
+    ? isMobile.value
+      ? 'h-[231px] w-[231px]'
+      : 'h-[280px] w-[280px]'
+    : isMobile.value
+      ? 'h-[160px] w-[160px]'
+      : 'h-[200px] w-[200px]'
+)
+
+const showHeroArea = computed(
+  () => isMysteryBoxOpenLottie.value || isCashVariant.value || Boolean(resolvedHeroImage.value)
+)
 </script>

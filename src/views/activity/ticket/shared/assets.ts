@@ -20,6 +20,9 @@ import gameMysteryBox from '@/static/img/lucky-spin/vouchers/game-mystery-box.pn
 /** 大转盘现金中奖弹窗 Lottie（public 静态资源，含 images/ 相对路径） */
 export const LUCKY_SPIN_CASH_RESULT_LOTTIE = '/lottie/lucky-spin/cash-result/cash-popup.json'
 
+/** 盲盒开箱庆祝 Lottie（结果弹窗 hero 区播放，按 open.json 全长） */
+export const MYSTERY_BOX_OPEN_LOTTIE = '/lottie/mystery-box/open/open.json'
+
 export const LUCKY_SPIN_ASSETS = {
   controls: {
     modalHelpIcon
