@@ -52,7 +52,9 @@ import { getMbTicketLanguageCopy } from './shared/mbTicketMapper'
 import { getTicketActivityEndUseTime } from './shared/ticketActivityCountdown'
 import { buildGameHeader, findTicketIndex } from './shared/gameHeaderConfig'
 import {
+  closeTicketTaskPop,
   globalTicketToastState,
+  openTicketTaskPop,
   setActiveTicketRecord,
   switchTicketGame
 } from './shell/ticketToast'
@@ -71,7 +73,16 @@ useLockBodyScroll(visible)
 const { winnerRecords } = useTicketMarquee(visible)
 
 const wheelRef = ref<LuckySpinWheelExpose | null>(null)
-const taskPopVisible = ref(false)
+const taskPopVisible = computed({
+  get: () => toastState.taskPopVisible,
+  set: value => {
+    if (value) {
+      openTicketTaskPop()
+      return
+    }
+    closeTicketTaskPop()
+  }
+})
 
 const registerWheelRef = (el: LuckySpinWheelExpose | null) => {
   wheelRef.value = el
@@ -123,7 +134,7 @@ const handleOpenMyVouchers = () => {
 }
 
 const handleOpenReminder = () => {
-  taskPopVisible.value = true
+  openTicketTaskPop()
 }
 
 const applyVoucherSelection = (index: number) => {

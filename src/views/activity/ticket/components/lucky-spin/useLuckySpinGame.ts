@@ -10,13 +10,13 @@ import type { TicketActivitySession, TicketGameId } from '../../shared/types'
 import {
   closeTicketDialog,
   globalTicketDialogState,
-  openTicketReminderDialog,
   openTicketResultDialog
 } from '../../shell/ticketDialog'
 import {
   closeTicketToast,
   getActiveTicketParams,
   globalTicketToastState,
+  openTicketTaskPop,
   setActiveTicketRecord,
   switchTicketGame
 } from '../../shell/ticketToast'
@@ -145,26 +145,13 @@ export const useLuckySpinGame = (
     wheelRef.value?.clearSectorHighlight()
   }
 
-  const openReminderDialog = () => {
-    const reminder =
-      activitySession.value ??
-      mapMbTicketToReminderContext(globalTicketToastState.activeTicketRecord)
-
-    openTicketReminderDialog({
-      tasks: reminder.tasks ?? [],
-      rules: reminder.rules ?? [],
-      voucherName: t('luckySpinPage.title'),
-      maxPrizeText: reminder.maxPrizeText ?? ''
-    })
-  }
-
   const handleWheelGo = async () => {
     if (isSpinning.value) return
 
     const params = getActiveTicketParams()
 
     if (!params.rowId) {
-      openReminderDialog()
+      openTicketTaskPop()
       return
     }
 

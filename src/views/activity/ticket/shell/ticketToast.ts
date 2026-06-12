@@ -9,6 +9,7 @@ interface GlobalTicketToastState {
   gameId: TicketGameId
   activeTicketRecord: MbTicketRecord | null
   mbTicketRecords: MbTicketRecord[]
+  taskPopVisible: boolean
   /** 最近一次 useTicket 消耗的票券，结果弹窗关闭后用于刷新列表并选中下一项 */
   lastConsumedTicketRecord: MbTicketRecord | null
 }
@@ -18,6 +19,7 @@ export const globalTicketToastState = reactive<GlobalTicketToastState>({
   gameId: 'lucky_spin',
   activeTicketRecord: null,
   mbTicketRecords: [],
+  taskPopVisible: false,
   lastConsumedTicketRecord: null
 })
 
@@ -29,6 +31,7 @@ export const setTicketSession = (record: MbTicketRecord, records: MbTicketRecord
 export const clearTicketSession = () => {
   globalTicketToastState.activeTicketRecord = null
   globalTicketToastState.mbTicketRecords = []
+  globalTicketToastState.taskPopVisible = false
   globalTicketToastState.lastConsumedTicketRecord = null
 }
 
@@ -69,4 +72,12 @@ export function switchTicketGame(gameId: TicketGameId, record?: MbTicketRecord |
 
 export const setActiveTicketRecord = (record: MbTicketRecord | null) => {
   globalTicketToastState.activeTicketRecord = record
+}
+
+export const openTicketTaskPop = () => {
+  globalTicketToastState.taskPopVisible = true
+}
+
+export const closeTicketTaskPop = () => {
+  globalTicketToastState.taskPopVisible = false
 }

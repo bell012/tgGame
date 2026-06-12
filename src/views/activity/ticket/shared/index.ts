@@ -4,9 +4,11 @@ import type { UseTicketResponse, UseTicketResult } from '@/api/interface/activit
 import { normalizeApiResponseMessage, translateApiMessageByCode } from '@/utils/request'
 import { globalShowToast } from '@/utils/toast'
 import { ref } from 'vue'
-import { openTicketReminderDialog } from '../shell/ticketDialog'
-import { getActiveTicketParams, globalTicketToastState } from '../shell/ticketToast'
-import { mapMbTicketToReminderContext } from './mapTicketActivityContext'
+import {
+  getActiveTicketParams,
+  globalTicketToastState,
+  openTicketTaskPop
+} from '../shell/ticketToast'
 
 export const isUseTicketSuccess = (response: UseTicketResponse) =>
   response.code === 'C2' && response.result != null
@@ -28,31 +30,24 @@ export interface RunUseTicketOptions {
   onSuccess: (result: UseTicketResult) => void | Promise<void>
   /** 失败 / 异常时的清理回调（可选，例如转盘需要 clearSectorHighlight） */
   onError?: () => void
-  /** 缺 rowId 时是否打开 reminder 弹窗，默认 true */
+  /** 缺 rowId 时是否打开任务弹窗，默认 true */
   openReminderOnMissingRow?: boolean
-  /** Reminder 弹窗标题（券种名）当 rowId 缺失时使用 */
+  /** use 接口返回业务失败时是否打开任务弹窗，默认 true */
+  openTaskPopOnFailure?: boolean
+  /** 兼容旧调用，task-pop 会基于当前票券自行加载任务数据 */
   voucherName?: string
 }
 
 /**
  * 票据使用（5 种票券共享）：
- * - 校验 rowId，缺失 → 弹 reminder
+ * - 校验 rowId，缺失 → 弹 task-pop
  * - 调 /ticket/api/use，统一关掉 request.ts 自带的错误 toast，由本文件做错误提示
- * - 业务码非 C2 / 异常 → globalShowToast + onError
+ * - 业务码非 C2 → 弹 task-pop + onError
+ * - 异常 → globalShowToast + onError
  * - 业务成功 → 透传 UseTicketResult 给 onSuccess，由调用方决定弹窗 / 动画时序
  */
 export const useTicketUseAction = () => {
   const isPending = ref(false)
-
-  const openReminderForMissingRow = (voucherName?: string) => {
-    const reminder = mapMbTicketToReminderContext(globalTicketToastState.activeTicketRecord)
-    openTicketReminderDialog({
-      tasks: reminder.tasks ?? [],
-      rules: reminder.rules ?? [],
-      voucherName: voucherName ?? '',
-      maxPrizeText: reminder.maxPrizeText ?? ''
-    })
-  }
 
   const runUseTicket = async (options: RunUseTicketOptions) => {
     if (isPending.value) return
@@ -61,7 +56,7 @@ export const useTicketUseAction = () => {
 
     if (!params.rowId) {
       if (options.openReminderOnMissingRow !== false) {
-        openReminderForMissingRow(options.voucherName)
+        openTicketTaskPop()
       }
       return
     }
@@ -75,10 +70,14 @@ export const useTicketUseAction = () => {
       )
 
       if (!isUseTicketSuccess(response)) {
-        globalShowToast({
-          message: resolveUseTicketErrorMessage(response, options.fallbackErrorMessage),
-          type: 'fail'
-        })
+        if (options.openTaskPopOnFailure !== false) {
+          openTicketTaskPop()
+        } else {
+          globalShowToast({
+            message: resolveUseTicketErrorMessage(response, options.fallbackErrorMessage),
+            type: 'fail'
+          })
+        }
         options.onError?.()
         return
       }
