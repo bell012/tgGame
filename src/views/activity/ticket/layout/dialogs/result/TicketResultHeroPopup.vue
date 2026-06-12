@@ -20,8 +20,9 @@
         class="my-4 flex items-center justify-center"
         :class="isMobile ? 'h-[160px] w-[160px]' : 'h-[200px] w-[200px]'"
       >
+        <GoldenEggPop v-if="isGoldenEggCashVariant" class="h-full w-full" />
         <LottiePlayer
-          v-if="isCashVariant"
+          v-else-if="isCashVariant"
           :path="LUCKY_SPIN_CASH_RESULT_LOTTIE"
           :fallback-src="cashHeroFallback"
           :autoplay="visible"
@@ -50,11 +51,14 @@
 <script setup lang="ts">
 import LottiePlayer from '@/components/LottiePlayer.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import GoldenEggPop from '@/views/activity/ticket/components/golden-egg/golden-egg-pop.vue'
+import { TICKET_TYPE_TO_GAME_ID } from '@/views/activity/ticket/shared/mbTicketMapper'
 import {
   LUCKY_SPIN_CASH_RESULT_LOTTIE,
   RESULT_HERO_IMAGES,
   TICKET_DIALOG_Z
 } from '@/views/activity/ticket/shared/constants'
+import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
 import TicketDialogOverlay from '../shared/TicketDialogOverlay.vue'
 import { useTicketResultHeroCopy } from './useTicketResultCopy'
 import { useTicketResultDialog } from './useTicketResultDialog'
@@ -68,6 +72,14 @@ const { resolvedTitle, resolvedHighlight, resolvedHeroImage, resolvedSubtext, re
   useTicketResultHeroCopy(result, t)
 
 const isCashVariant = computed(() => result.value.variant === 'cash')
+const resultTicketRecord = computed(
+  () => globalTicketToastState.lastConsumedTicketRecord ?? globalTicketToastState.activeTicketRecord
+)
+const isGoldenEggCashVariant = computed(
+  () =>
+    isCashVariant.value &&
+    TICKET_TYPE_TO_GAME_ID[Number(resultTicketRecord.value?.type)] === TICKET_TYPE_TO_GAME_ID[3]
+)
 const cashHeroFallback = RESULT_HERO_IMAGES.cash
 const showHeroArea = computed(() => isCashVariant.value || Boolean(resolvedHeroImage.value))
 </script>

@@ -1,5 +1,4 @@
 <template>
-  <div>ticketId: {{ ticketId ?? '—' }}</div>
   <div
     class="golden-egg-game relative mx-auto flex flex-col items-center"
     data-game-id="golden_egg"
