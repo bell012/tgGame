@@ -73,7 +73,7 @@ import type { LuckySpinRuntimeExpose } from '../components/lucky-spin/useLuckySp
 import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
 import { getLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
-import { useTicketMarquee } from '../composables/useTicketMarquee'
+import { useTicketMarquee } from './composables/useTicketMarquee'
 // --- 票券模块 shared / shell ---
 import { buildGameHeader } from '../shared/gameHeaderConfig'
 import { getMbTicketLanguageCopy } from '../shared/mbTicketMapper'

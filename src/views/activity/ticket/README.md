@@ -155,6 +155,7 @@ ticket/
 │   ├── useTicketActivityShell.ts   # session 加载 / 券种切换 / 结果关闭刷新
 │   └── ticketActivityContext.ts    # provide/inject 上下文
 ├── layout/                         # 活动页 UI 壳
+│   ├── composables/                # layout 编排 composable（跑马灯、PC 布局、券种条）
 │   ├── TicketActivityPage.vue      # Mobile / Desktop 分支 + adapter 驱动
 │   ├── TicketActivityMobileLayout.vue
 │   ├── TicketActivityDesktopLayout.vue
