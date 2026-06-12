@@ -6,9 +6,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { globalTicketToastState } from '../../shell/ticketToast'
+import { TICKET_ACTIVITY_CONTEXT_KEY } from '../../shell/ticketActivityContext'
+import { computed, inject } from 'vue'
+
+const ticketContext = inject(TICKET_ACTIVITY_CONTEXT_KEY)
 
 /** 当前选中票券（券种条切换时随 activeTicketRecord 更新） */
-const ticketId = computed(() => globalTicketToastState.activeTicketRecord?.ticketId)
+const ticketId = computed(() => ticketContext?.activeTicketRecord.value?.ticketId)
 </script>

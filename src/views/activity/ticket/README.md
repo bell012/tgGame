@@ -144,12 +144,33 @@ closeTicketToast() // 含清 session
 | `lucky_spin` | `LuckySpinWheel`   | ✅                             |
 | 其余四种     | `GoldenEggGrid` 等 | ⏳ 空壳（Header + 券种条已有） |
 
-| 用途            | 文件                                                     |
-| --------------- | -------------------------------------------------------- |
-| 业务入口        | `src/utils/openTicketActivity.ts`、`openLuckySpin.ts`    |
-| 会话 / 开关弹窗 | `shell/ticketToast.ts`                                   |
-| 票映射          | `shared/mbTicketMapper.ts`                               |
-| 页面            | `GlobalTicketToast.vue`、`layout/TicketActivityPage.vue` |
+### 模块分层
+
+```
+ticket/
+├── shell/                          # 全局 state + 编排
+│   ├── ticketToast.ts              # 活动页 visible / session
+│   ├── ticketDialog.ts             # 子弹窗 state
+│   ├── gameRegistry.ts             # 玩法 adapter 注册
+│   ├── useTicketActivityShell.ts   # session 加载 / 券种切换 / 结果关闭刷新
+│   └── ticketActivityContext.ts    # provide/inject 上下文
+├── layout/                         # 活动页 UI 壳
+│   ├── TicketActivityPage.vue      # Mobile / Desktop 分支 + adapter 驱动
+│   ├── TicketActivityMobileLayout.vue
+│   ├── TicketActivityDesktopLayout.vue
+│   └── TicketActivityStatePanel.vue
+├── components/<gameId>/            # 各玩法 UI + adapter
+└── shared/                         # 映射、常量、useTicketUseAction
+```
+
+| 用途            | 文件                                                  |
+| --------------- | ----------------------------------------------------- |
+| 业务入口        | `src/utils/openTicketActivity.ts`、`openLuckySpin.ts` |
+| 会话 / 开关弹窗 | `shell/ticketToast.ts`                                |
+| 活动编排        | `shell/useTicketActivityShell.ts`                     |
+| 玩法注册        | `shell/gameRegistry.ts`                               |
+| 票映射          | `shared/mbTicketMapper.ts`                            |
+| 页面入口        | `GlobalTicketToast.vue`                               |
 
 ---
 
@@ -159,4 +180,4 @@ closeTicketToast() // 含清 session
 2. 我的票券必须 `openTicketActivity(gameId, { record })`。
 3. 仅大转盘有完整逻辑；其它玩法用 `getActiveTicketParams()` 接 API。
 4. 倒计时在 `ticket/shared/ticketActivityCountdown.ts`，与「我的票券」分开维护。
-5. 新增玩法：`TicketGameId` → `registry.ts` → `components/` → `TICKET_TYPE_TO_GAME_ID` → 入口调 `openTicketActivity`。
+5. 新增玩法：`TicketGameId` → `shell/gameRegistry.ts` 注册 adapter → `components/` 实现 UI → `TICKET_TYPE_TO_GAME_ID` → 入口调 `openTicketActivity`。
