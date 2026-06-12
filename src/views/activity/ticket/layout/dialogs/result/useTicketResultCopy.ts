@@ -1,14 +1,14 @@
 import type { TicketResultDialogState } from '@/views/activity/ticket/shell/ticketDialog'
 import { RESULT_HERO_IMAGES } from '@/views/activity/ticket/shared/constants'
-import type { LuckySpinResultVariant } from '@/views/activity/ticket/shared/types'
+import type { TicketResultVariant } from '@/views/activity/ticket/shared/types'
 import type { ComputedRef } from 'vue'
 import { computed } from 'vue'
 import type { ComposerTranslation } from 'vue-i18n'
 
 type ResultState = ComputedRef<TicketResultDialogState>
-type HeroVariant = Extract<LuckySpinResultVariant, 'cash' | 'spin_again' | 'no_prize'>
+type HeroVariant = Extract<TicketResultVariant, 'cash' | 'spin_again' | 'no_prize'>
 
-const isHeroVariant = (variant: LuckySpinResultVariant): variant is HeroVariant =>
+const isHeroVariant = (variant: TicketResultVariant): variant is HeroVariant =>
   variant === 'cash' || variant === 'spin_again' || variant === 'no_prize'
 
 export function useTicketResultHeroCopy(result: ResultState, t: ComposerTranslation) {
@@ -46,6 +46,31 @@ export function useTicketResultHeroCopy(result: ResultState, t: ComposerTranslat
     resolvedTitle,
     resolvedHighlight,
     resolvedHeroImage,
+    resolvedSubtext,
+    resolvedButtonText
+  }
+}
+
+export function useTicketResultCardsCopy(result: ResultState, t: ComposerTranslation) {
+  const vouchers = computed(() => result.value.vouchers)
+
+  const resolvedTitle = computed(
+    () => result.value.title ?? t('luckySpinPage.result.congratulations')
+  )
+
+  const resolvedSubtext = computed(() => {
+    if (result.value.subtext) return result.value.subtext
+    const count = result.value.voucherCount || vouchers.value.length
+    return t('luckySpinPage.result.receivedVouchers', { count })
+  })
+
+  const resolvedButtonText = computed(
+    () => result.value.buttonText ?? t('luckySpinPage.result.useNow')
+  )
+
+  return {
+    vouchers,
+    resolvedTitle,
     resolvedSubtext,
     resolvedButtonText
   }

@@ -50,8 +50,8 @@
 </template>
 
 <script setup lang="ts">
-import { goTicketDeposit } from './composables/goTicketDeposit'
-import { globalTicketDialogState } from '../../shell/ticketDialog'
+import { globalTicketDialogState } from '../../../shell/ticketDialog'
+import { goTicketDeposit } from './goTicketDeposit'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 

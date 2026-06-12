@@ -1,9 +1,12 @@
-export type LuckySpinResultVariant =
+export type TicketResultVariant =
   | 'cash'
   | 'spin_again'
   | 'no_prize'
   | 'voucher_single'
   | 'voucher_multi'
+
+/** @deprecated use TicketResultVariant */
+export type LuckySpinResultVariant = TicketResultVariant
 
 export type PrizeType = 'cash' | 'spin_again' | 'no_prize' | 'voucher'
 
@@ -37,7 +40,7 @@ export interface VoucherGameItem {
   route?: string
 }
 
-export interface LuckySpinVoucherCardData {
+export interface TicketVoucherCardData {
   id: string
   type: VoucherCardType
   title: string
@@ -47,7 +50,10 @@ export interface LuckySpinVoucherCardData {
   icon?: string
 }
 
-export interface LuckySpinPrize {
+/** @deprecated use TicketVoucherCardData */
+export type LuckySpinVoucherCardData = TicketVoucherCardData
+
+export interface TicketPrize {
   index: number
   type: PrizeType
   label: string
@@ -56,7 +62,10 @@ export interface LuckySpinPrize {
   voucherType?: VoucherCardType
 }
 
-export interface LuckySpinTask {
+/** @deprecated use TicketPrize */
+export type LuckySpinPrize = TicketPrize
+
+export interface TicketTask {
   id: string
   title: string
   progress: number
@@ -64,20 +73,26 @@ export interface LuckySpinTask {
   actionType?: 'deposit' | 'bet'
 }
 
+/** @deprecated use TicketTask */
+export type LuckySpinTask = TicketTask
+
 /** 活动弹窗会话数据（券种条 + 提醒弹窗，来自 mbTicketList） */
 export interface TicketActivitySession {
   voucherGames: VoucherGameItem[]
   totalVouchers: number
   maxPrizeText: string
-  tasks: LuckySpinTask[]
+  tasks: TicketTask[]
   rules: string[]
 }
 
-export interface LuckySpinResult {
+export interface TicketSpinResult {
   prizeIndex: number
-  prize: LuckySpinPrize
-  vouchers?: LuckySpinVoucherCardData[]
+  prize: TicketPrize
+  vouchers?: TicketVoucherCardData[]
 }
+
+/** @deprecated use TicketSpinResult */
+export type LuckySpinResult = TicketSpinResult
 
 export interface TicketModalHeaderData {
   title: string

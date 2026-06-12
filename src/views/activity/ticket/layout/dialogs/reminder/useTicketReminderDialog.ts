@@ -1,6 +1,6 @@
 import { closeTicketDialog, globalTicketDialogState } from '../../../shell/ticketDialog'
-import TicketReminderTasksContent from '../TicketReminderTasksContent.vue'
-import TicketTaskSuccessContent from '../TicketTaskSuccessContent.vue'
+import TicketReminderTasksContent from './TicketReminderTasksContent.vue'
+import TicketTaskSuccessContent from './TicketTaskSuccessContent.vue'
 import type { Component } from 'vue'
 import { computed } from 'vue'
 
