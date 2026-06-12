@@ -5,6 +5,7 @@ export {
   getPrizeIcon,
   LUCKY_SPIN_ASSETS,
   LUCKY_SPIN_CASH_RESULT_LOTTIE,
+  MYSTERY_BOX_OPEN_LOTTIE,
   RESULT_HERO_IMAGES
 } from './assets'
 

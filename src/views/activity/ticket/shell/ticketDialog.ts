@@ -19,6 +19,8 @@ export interface OpenTicketTaskSuccessDialogOptions {
   rules?: string[]
 }
 
+export type TicketResultHeroLottie = 'mystery_box_open'
+
 export interface OpenTicketResultDialogOptions {
   variant: LuckySpinResultVariant
   highlightText?: string
@@ -27,6 +29,7 @@ export interface OpenTicketResultDialogOptions {
   title?: string
   subtext?: string
   heroImage?: string
+  heroLottie?: TicketResultHeroLottie
   buttonText?: string
 }
 
@@ -38,6 +41,7 @@ export interface TicketResultDialogState {
   title?: string
   subtext?: string
   heroImage?: string
+  heroLottie?: TicketResultHeroLottie
   buttonText?: string
 }
 
