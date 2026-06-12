@@ -8,8 +8,8 @@ import {
   resolveTicketActivitySession
 } from '@/views/activity/ticket/shared/mbTicketMapper'
 import { globalShowToast } from '@/utils/toast'
-import { openTicketToast, setTicketSession } from '@/views/activity/ticket/ticketToast'
-import type { TicketGameId } from '@/views/activity/ticket/types'
+import { openTicketToast, setTicketSession } from '@/views/activity/ticket/shell/ticketToast'
+import type { TicketGameId } from '@/views/activity/ticket/shared/types'
 
 export type OpenTicketActivityOptions = {
   /** 我的票券等入口：指定要打开的票券记录 */

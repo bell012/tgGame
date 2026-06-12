@@ -160,7 +160,8 @@ ticket/
 │   ├── TicketActivityDesktopLayout.vue
 │   └── TicketActivityStatePanel.vue
 ├── components/<gameId>/            # 各玩法 UI + adapter
-└── shared/                         # 映射、常量、useTicketUseAction
+└── shared/                         # 类型、映射、常量、useTicketUseAction
+    └── types.ts                    # 模块公共类型
 ```
 
 | 用途            | 文件                                                  |

@@ -7,20 +7,20 @@ export {
   setTicketSession,
   clearTicketSession,
   getActiveTicketParams
-} from './ticketToast'
+} from './shell/ticketToast'
 export {
   openTicketReminderDialog,
   openTicketTaskSuccessDialog,
   openTicketResultDialog,
   closeTicketDialog,
   globalTicketDialogState
-} from './ticketDialog'
+} from './shell/ticketDialog'
 export type {
   OpenTicketReminderDialogOptions,
   OpenTicketTaskSuccessDialogOptions,
   OpenTicketResultDialogOptions,
   TicketDialogKind
-} from './ticketDialog'
+} from './shell/ticketDialog'
 export { useLuckySpinGame } from './components/lucky-spin/useLuckySpinGame'
 export type { LuckySpinWheelExpose } from './components/lucky-spin/useLuckySpinGame'
-export type { TicketGameId, OpenTicketToastOptions } from './types'
+export type { TicketGameId, OpenTicketToastOptions } from './shared/types'

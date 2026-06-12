@@ -429,7 +429,7 @@ export type {
   TicketActivitySession,
   WinnerTickerItem,
   VoucherGameItem
-} from '@/views/activity/ticket/types'
+} from '@/views/activity/ticket/shared/types'
 
 /** 票券跑马灯请求 */
 export interface TicketMarqueeForm {
