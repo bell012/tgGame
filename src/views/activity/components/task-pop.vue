@@ -138,7 +138,7 @@ interface HelpSection {
 }
 
 type TaskStatus = 'action' | 'completed'
-type TaskActionType = 'deposit' | 'invite' | 'withdraw' | 'complete' | 'wagering' | 'loss'
+type TaskActionType = 'deposit' | 'invite' | 'add' | 'complete' | 'link' | 'wagering' | 'loss'
 
 interface TaskItem {
   id: string
@@ -595,7 +595,7 @@ const buildTaskItems = (
     id: 'bind-withdrawal-account',
     title: 'Add Withdrawal Method',
     satisfied: bindData?.bindWithdrawalAccount,
-    actionType: 'withdraw',
+    actionType: 'add',
     pendingLabel: 'Add',
     helpSections: createSimpleHelpSections(
       'Withdrawal Account',
@@ -608,7 +608,7 @@ const buildTaskItems = (
     id: 'bind-withdrawal-name',
     title: 'Add Account Name',
     satisfied: bindData?.bindWithdrawalName,
-    actionType: 'withdraw',
+    actionType: 'add',
     pendingLabel: 'Add',
     helpSections: createSimpleHelpSections(
       'Withdrawal Name',
@@ -621,8 +621,8 @@ const buildTaskItems = (
     id: 'verify-phone',
     title: 'Link Mobile Number',
     satisfied: completeVerification?.verifyPhone,
-    actionType: 'complete',
-    pendingLabel: 'Verify',
+    actionType: 'link',
+    pendingLabel: 'Link',
     helpSections: createSimpleHelpSections(
       'Phone Number',
       'Your reward is ready. Link your phone number to claim it now!'
@@ -682,28 +682,23 @@ watch(
   { immediate: true }
 )
 
-const handleTaskAction = (task: TaskItem) => {
+const handleTaskAction = async (task: TaskItem) => {
+  let targetPath = '/deposit'
+
   if (task.actionType === 'invite') {
-    void navigateTo('/referral')
-    return
+    targetPath = '/referral'
+  } else if (task.actionType === 'add') {
+    targetPath = '/payment-methods'
+  } else if (task.actionType === 'link') {
+    targetPath = '/security'
+  } else if (task.actionType === 'complete') {
+    targetPath = '/security'
+  } else if (task.actionType === 'wagering' || task.actionType === 'loss') {
+    targetPath = '/casino'
   }
 
-  if (task.actionType === 'withdraw') {
-    void navigateTo('/withdraw')
-    return
-  }
-
-  if (task.actionType === 'complete') {
-    void navigateTo('/security')
-    return
-  }
-
-  if (task.actionType === 'wagering' || task.actionType === 'loss') {
-    void navigateTo('/')
-    return
-  }
-
-  void navigateTo('/deposit')
+  await navigateTo(targetPath)
+  visible.value = false
 }
 
 const openTaskRule = (task: TaskItem) => {
