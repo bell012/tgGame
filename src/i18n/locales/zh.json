@@ -1626,7 +1626,8 @@
     "mbTicketListFailed": "票券列表加载失败，请稍后重试",
     "goldenEgg": {
       "title": "您获得了砸金蛋",
-      "expiresIn": "砸金蛋过期倒计时"
+      "expiresIn": "砸金蛋过期倒计时",
+      "smashEggAriaLabel": "砸开第 {index} 个金蛋"
     },
     "mysteryBox": {
       "title": "您获得了开盲盒",
@@ -1639,6 +1640,104 @@
     "redPacket": {
       "title": "您获得了红包",
       "expiresIn": "红包过期倒计时"
+    },
+    "taskPop": {
+      "title": "温馨提示",
+      "closeAriaLabel": "关闭任务提示",
+      "voucherName": "票券名称",
+      "introUnlockPrefix": "完成以下任务以解锁",
+      "introReward": "赢取现金奖励",
+      "gotIt": "我知道了",
+      "actions": {
+        "completed": "已完成",
+        "deposit": "充值",
+        "betNow": "立即投注",
+        "invite": "邀请",
+        "add": "添加",
+        "link": "绑定"
+      },
+      "rules": {
+        "title": "活动规则",
+        "items": {
+          "completeRequirements": "活动期间，完成票券要求即可获得 {voucherName} 并赢取现金奖励。",
+          "completeRequirementsPrefix": "活动期间，完成票券要求即可获得 ",
+          "completeRequirementsSuffix": " 并赢取现金奖励。",
+          "cashCredited": "现金奖励将直接发放至您的账户余额，可在我的余额中查看。",
+          "onceOnly": "每位用户在活动期间仅可参与一次，次数不可叠加，请及时使用。",
+          "irregularActivity": "如果检测到任何违规行为，包括但不限于作弊、虚假交易、刷单或恶意滥用，平台有权取消用户的资格并扣留奖励。",
+          "finalInterpretation": "平台保留对本次活动的最终解释权。如有任何疑问，请联系在线客服。。"
+        }
+      },
+      "accumulation": {
+        "startingFromDate": "自 {date} 起，",
+        "startingFromSpecifiedDate": "自指定日期起，",
+        "afterAccountCreated": "创建账户后，",
+        "afterReceivingVoucher": "领取票券后，"
+      },
+      "tasks": {
+        "totalDepositAmount": "累计充值金额 {operator} {amount}",
+        "totalDepositCount": "累计充值次数 {operator} {count}",
+        "validBetAmount": "有效投注金额 {operator} {amount}",
+        "gameLossAmount": "游戏亏损金额 {operator} {amount}",
+        "validInvitedFriends": "有效邀请好友 {operator} {count}",
+        "addWithdrawalMethod": "添加提现方式",
+        "addAccountName": "添加账户姓名",
+        "linkMobileNumber": "绑定手机号"
+      },
+      "help": {
+        "totalDepositAmount": {
+          "title": "累计充值金额",
+          "content": "{prefix}您的累计充值金额需达到要求金额后才可完成该任务。"
+        },
+        "validDepositAmount": {
+          "title": "有效充值金额",
+          "content": "仅通过平台指定渠道完成的充值才会计入本票券要求，非指定渠道或异常充值行为不计入。"
+        },
+        "validDepositChannels": {
+          "title": "有效充值渠道",
+          "fallback": "指定充值渠道。"
+        },
+        "totalDepositCount": {
+          "title": "累计充值次数",
+          "content": "{prefix}您的累计充值次数需达到要求次数后才可完成该任务。"
+        },
+        "validDepositCount": {
+          "title": "有效充值次数",
+          "content": "仅通过平台指定渠道完成的充值才会计入本票券要求，非指定渠道或异常充值行为不计入。"
+        },
+        "totalTurnover": {
+          "title": "累计流水",
+          "content": "{prefix}您的累计流水需达到要求金额后才可完成该任务。"
+        },
+        "validTurnover": {
+          "title": "有效流水",
+          "content": "仅平台指定游戏产生的流水会计入本活动要求，非指定游戏或异常投注行为不计入。"
+        },
+        "validTurnoverScope": {
+          "title": "有效流水范围",
+          "fallback": "指定游戏。"
+        },
+        "lossAmount": {
+          "title": "亏损金额",
+          "content": "{prefix}您的累计游戏亏损需达到要求金额后才可完成该任务。"
+        },
+        "inviteRegistration": {
+          "title": "邀请注册",
+          "content": "领取票券后，邀请指定数量的有效好友即可完成该任务。"
+        },
+        "withdrawalAccount": {
+          "title": "提现账户",
+          "content": "您的奖励已准备好，请绑定提现账户后领取！"
+        },
+        "withdrawalName": {
+          "title": "提现姓名",
+          "content": "您的奖励已准备好，请添加提现姓名后领取！"
+        },
+        "phoneNumber": {
+          "title": "手机号",
+          "content": "您的奖励已准备好，请绑定手机号后领取！"
+        }
+      }
     }
   },
   "checkIn": {

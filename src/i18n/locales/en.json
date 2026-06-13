@@ -1634,7 +1634,8 @@
     "mbTicketListFailed": "Failed to load vouchers. Please try again.",
     "goldenEgg": {
       "title": "You got Golden Egg",
-      "expiresIn": "Golden Egg expires in"
+      "expiresIn": "Golden Egg expires in",
+      "smashEggAriaLabel": "Smash golden egg #{index}"
     },
     "mysteryBox": {
       "title": "You got Mystery Box",
@@ -1647,6 +1648,104 @@
     "redPacket": {
       "title": "You got Red Packet",
       "expiresIn": "Red Packet expires in"
+    },
+    "taskPop": {
+      "title": "Kind Reminder",
+      "closeAriaLabel": "Close task reminder",
+      "voucherName": "Voucher Name",
+      "introUnlockPrefix": "Complete the tasks below to unlock",
+      "introReward": "Win cash rewards",
+      "gotIt": "Got It",
+      "actions": {
+        "completed": "Completed",
+        "deposit": "Deposit",
+        "betNow": "Bet Now",
+        "invite": "Invite",
+        "add": "Add",
+        "link": "Link"
+      },
+      "rules": {
+        "title": "Rules",
+        "items": {
+          "completeRequirements": "During the promo period, complete the voucher requirements to get {voucherName} and win cash rewards.",
+          "completeRequirementsPrefix": "During the promo period, complete the voucher requirements to get ",
+          "completeRequirementsSuffix": " and win cash rewards.",
+          "cashCredited": "Cash rewards will be credited directly to your account balance. You may check it under My Balance.",
+          "onceOnly": "Each user can join this promo only once during the promo period. Chances cannot be stacked, so please use it in time.",
+          "irregularActivity": "If any irregular activity is detected, including but not limited to cheating, fake transactions, order brushing, or malicious abuse, the platform reserves the right to cancel the user’s eligibility and withhold the reward.",
+          "finalInterpretation": "The platform reserves the final interpretation rights for this activity. For any questions, please contact online customer service."
+        }
+      },
+      "accumulation": {
+        "startingFromDate": "Starting from {date},",
+        "startingFromSpecifiedDate": "Starting from the specified date,",
+        "afterAccountCreated": "After creating your account,",
+        "afterReceivingVoucher": "After receiving the voucher,"
+      },
+      "tasks": {
+        "totalDepositAmount": "Total Deposit Amount {operator} {amount}",
+        "totalDepositCount": "Total Deposit Count {operator} {count}",
+        "validBetAmount": "Valid Bet Amount {operator} {amount}",
+        "gameLossAmount": "Game Loss Amount {operator} {amount}",
+        "validInvitedFriends": "Valid Invited Friends {operator} {count}",
+        "addWithdrawalMethod": "Add Withdrawal Method",
+        "addAccountName": "Add Account Name",
+        "linkMobileNumber": "Link Mobile Number"
+      },
+      "help": {
+        "totalDepositAmount": {
+          "title": "Total Deposit Amount",
+          "content": "{prefix} your total deposit amount must reach the required amount for this task to be completed."
+        },
+        "validDepositAmount": {
+          "title": "Valid Deposit Amount",
+          "content": "Only deposits made through the platform’s specified channels will count toward this voucher requirement. Deposits made through non-specified channels or abnormal deposit activities will not be counted."
+        },
+        "validDepositChannels": {
+          "title": "Valid Deposit Channels",
+          "fallback": "Specified deposit channels."
+        },
+        "totalDepositCount": {
+          "title": "Total Deposit Count",
+          "content": "{prefix} your total deposit count must reach the required count for this task to be completed."
+        },
+        "validDepositCount": {
+          "title": "Valid Deposit Count",
+          "content": "Only deposits made through the platform’s specified channels will count toward this voucher requirement. Deposits made through non-specified channels or abnormal deposit activities will not be counted."
+        },
+        "totalTurnover": {
+          "title": "Total Turnover",
+          "content": "{prefix} your total turnover must reach the required amount for this task to be completed."
+        },
+        "validTurnover": {
+          "title": "Valid Turnover",
+          "content": "Only turnover generated from the platform’s specified games will count toward this activity requirement. Turnover from non-specified games or abnormal betting activities will not be counted."
+        },
+        "validTurnoverScope": {
+          "title": "Valid Turnover Scope",
+          "fallback": "Specified games."
+        },
+        "lossAmount": {
+          "title": "Loss Amount",
+          "content": "{prefix} your total game loss must reach the required amount to complete this task."
+        },
+        "inviteRegistration": {
+          "title": "Invite Registration",
+          "content": "After receiving the voucher, invite the required number of valid friends to complete the task."
+        },
+        "withdrawalAccount": {
+          "title": "Withdrawal Account",
+          "content": "Your reward is ready. Link your withdrawal account to claim it now!"
+        },
+        "withdrawalName": {
+          "title": "Withdrawal Name",
+          "content": "Your reward is ready. Add your withdrawal name to claim it now!"
+        },
+        "phoneNumber": {
+          "title": "Phone Number",
+          "content": "Your reward is ready. Link your phone number to claim it now!"
+        }
+      }
     }
   },
   "checkIn": {

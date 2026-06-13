@@ -8,6 +8,8 @@ import type {
 import { PAY_CHANNEL_TAB_LIST } from '@/constants/payChannelTabs'
 import { formatBalance, getCurrencySymbol } from '@/utils/locale'
 
+export type TicketTaskTranslate = (key: string, params?: Record<string, unknown>) => string
+
 const CONDITION_RECHARGE = 1
 const CONDITION_WAGERING = 2
 const CONDITION_LOSS = 3
@@ -48,6 +50,7 @@ interface ProgressTaskOptions {
   operator?: string
   actionType: TaskActionType
   pendingLabel: string
+  completedLabel: string
   description?: string
   descriptionTitle?: string
   helpSections?: HelpSection[]
@@ -59,17 +62,29 @@ interface StatusTaskOptions {
   satisfied: boolean | undefined
   actionType: TaskActionType
   pendingLabel?: string
+  completedLabel: string
   description?: string
   descriptionTitle?: string
   helpSections?: HelpSection[]
 }
 
-export const TICKET_TASK_RULE_ITEMS = [
-  'During the promo period, complete the voucher requirements to get rewards.',
-  'Cash rewards will be credited directly to your account balance. You may check it under My Balance.',
-  'Each user can join this promo only once during the promo period. Chances cannot be stacked, so please use it in time.',
-  'If any irregular activity is detected, the platform reserves the right to cancel eligibility and withhold the reward.',
-  'The platform reserves the final interpretation rights for this activity.'
+interface BuildTaskItemsOptions {
+  t: TicketTaskTranslate
+  locale?: string
+}
+
+const TASK_I18N_PREFIX = 'ticketPage.taskPop'
+
+export const getTicketTaskCompleteRequirementsRule = (t: TicketTaskTranslate) => ({
+  prefix: t(`${TASK_I18N_PREFIX}.rules.items.completeRequirementsPrefix`),
+  suffix: t(`${TASK_I18N_PREFIX}.rules.items.completeRequirementsSuffix`)
+})
+
+export const getTicketTaskRuleItems = (t: TicketTaskTranslate) => [
+  t(`${TASK_I18N_PREFIX}.rules.items.cashCredited`),
+  t(`${TASK_I18N_PREFIX}.rules.items.onceOnly`),
+  t(`${TASK_I18N_PREFIX}.rules.items.irregularActivity`),
+  t(`${TASK_I18N_PREFIX}.rules.items.finalInterpretation`)
 ]
 
 const isConditionEnabled = (condition?: TicketThresholdCondition) => condition?.enabled === 1
@@ -103,27 +118,35 @@ const normalizeTimestamp = (value?: number) => {
   return value < 1_000_000_000_000 ? value * 1000 : value
 }
 
-const formatAccumulationStartDate = (value?: number) => {
+const normalizeTaskLocale = (locale?: string) => (locale === 'zh' ? 'zh-CN' : 'en-US')
+
+const formatAccumulationStartDate = (value?: number, locale?: string) => {
   const timestamp = normalizeTimestamp(value)
   if (!timestamp) return ''
 
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(normalizeTaskLocale(locale), {
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   }).format(new Date(timestamp))
 }
 
-const getAccumulationDescriptionPrefix = (condition: TicketThresholdCondition) => {
+const getAccumulationDescriptionPrefix = (
+  condition: TicketThresholdCondition,
+  t: TicketTaskTranslate,
+  locale?: string
+) => {
   switch (condition.accumulateType) {
     case 2: {
-      const formattedDate = formatAccumulationStartDate(condition.startDate)
-      return formattedDate ? `Starting from ${formattedDate},` : 'Starting from the specified date,'
+      const formattedDate = formatAccumulationStartDate(condition.startDate, locale)
+      return formattedDate
+        ? t(`${TASK_I18N_PREFIX}.accumulation.startingFromDate`, { date: formattedDate })
+        : t(`${TASK_I18N_PREFIX}.accumulation.startingFromSpecifiedDate`)
     }
     case 3:
-      return 'After creating your account,'
+      return t(`${TASK_I18N_PREFIX}.accumulation.afterAccountCreated`)
     default:
-      return 'After receiving the voucher,'
+      return t(`${TASK_I18N_PREFIX}.accumulation.afterReceivingVoucher`)
   }
 }
 
@@ -149,69 +172,90 @@ const createSimpleHelpSections = (title: string, content: string): HelpSection[]
 
 const createDepositAmountHelpSections = (
   condition: TicketThresholdCondition,
-  rechargeMethods?: number[]
+  rechargeMethods: number[] | undefined,
+  t: TicketTaskTranslate,
+  locale?: string
 ): HelpSection[] => [
   {
-    title: 'Total Deposit Amount',
-    content: `${getAccumulationDescriptionPrefix(condition)} your total deposit amount must reach the required amount for this task to be completed.`
+    title: t(`${TASK_I18N_PREFIX}.help.totalDepositAmount.title`),
+    content: t(`${TASK_I18N_PREFIX}.help.totalDepositAmount.content`, {
+      prefix: getAccumulationDescriptionPrefix(condition, t, locale)
+    })
   },
   {
-    title: 'Valid Deposit Amount',
-    content:
-      'Only deposits made through the platform’s specified channels will count toward this voucher requirement. Deposits made through non-specified channels or abnormal deposit activities will not be counted.'
+    title: t(`${TASK_I18N_PREFIX}.help.validDepositAmount.title`),
+    content: t(`${TASK_I18N_PREFIX}.help.validDepositAmount.content`)
   },
   {
-    title: 'Valid Deposit Channels',
-    content: formatPayChannelList(rechargeMethods, 'Specified deposit channels.')
+    title: t(`${TASK_I18N_PREFIX}.help.validDepositChannels.title`),
+    content: formatPayChannelList(
+      rechargeMethods,
+      t(`${TASK_I18N_PREFIX}.help.validDepositChannels.fallback`)
+    )
   }
 ]
 
 const createDepositCountHelpSections = (
   condition: TicketThresholdCondition,
-  rechargeMethods?: number[]
+  rechargeMethods: number[] | undefined,
+  t: TicketTaskTranslate,
+  locale?: string
 ): HelpSection[] => [
   {
-    title: 'Total Deposit Count',
-    content: `${getAccumulationDescriptionPrefix(condition)} your total deposit count must reach the required count for this task to be completed.`
+    title: t(`${TASK_I18N_PREFIX}.help.totalDepositCount.title`),
+    content: t(`${TASK_I18N_PREFIX}.help.totalDepositCount.content`, {
+      prefix: getAccumulationDescriptionPrefix(condition, t, locale)
+    })
   },
   {
-    title: 'Valid Deposit Count',
-    content:
-      'Only deposits made through the platform’s specified channels will count toward this voucher requirement. Deposits made through non-specified channels or abnormal deposit activities will not be counted.'
+    title: t(`${TASK_I18N_PREFIX}.help.validDepositCount.title`),
+    content: t(`${TASK_I18N_PREFIX}.help.validDepositCount.content`)
   },
   {
-    title: 'Valid Deposit Channels',
-    content: formatPayChannelList(rechargeMethods, 'Specified deposit channels.')
+    title: t(`${TASK_I18N_PREFIX}.help.validDepositChannels.title`),
+    content: formatPayChannelList(
+      rechargeMethods,
+      t(`${TASK_I18N_PREFIX}.help.validDepositChannels.fallback`)
+    )
   }
 ]
 
 const createTurnoverHelpSections = (
   condition: TicketThresholdCondition,
+  t: TicketTaskTranslate,
+  locale?: string,
   validPlatforms?: string[],
   platformGameCodes?: string[]
 ): HelpSection[] => [
   {
-    title: 'Total Turnover',
-    content: `${getAccumulationDescriptionPrefix(condition)} your total turnover must reach the required amount for this task to be completed.`
+    title: t(`${TASK_I18N_PREFIX}.help.totalTurnover.title`),
+    content: t(`${TASK_I18N_PREFIX}.help.totalTurnover.content`, {
+      prefix: getAccumulationDescriptionPrefix(condition, t, locale)
+    })
   },
   {
-    title: 'Valid Turnover',
-    content:
-      'Only turnover generated from the platform’s specified games will count toward this activity requirement. Turnover from non-specified games or abnormal betting activities will not be counted.'
+    title: t(`${TASK_I18N_PREFIX}.help.validTurnover.title`),
+    content: t(`${TASK_I18N_PREFIX}.help.validTurnover.content`)
   },
   {
-    title: 'Valid Turnover Scope',
+    title: t(`${TASK_I18N_PREFIX}.help.validTurnoverScope.title`),
     content: formatDisplayList(
       validPlatforms?.length ? validPlatforms : platformGameCodes,
-      'Specified games.'
+      t(`${TASK_I18N_PREFIX}.help.validTurnoverScope.fallback`)
     )
   }
 ]
 
-const createGameLossHelpSections = (condition: TicketThresholdCondition): HelpSection[] =>
+const createGameLossHelpSections = (
+  condition: TicketThresholdCondition,
+  t: TicketTaskTranslate,
+  locale?: string
+): HelpSection[] =>
   createSimpleHelpSections(
-    'Loss Amount',
-    `${getAccumulationDescriptionPrefix(condition)} your total game loss must reach the required amount to complete this task.`
+    t(`${TASK_I18N_PREFIX}.help.lossAmount.title`),
+    t(`${TASK_I18N_PREFIX}.help.lossAmount.content`, {
+      prefix: getAccumulationDescriptionPrefix(condition, t, locale)
+    })
   )
 
 const getRechargeExtValue = (
@@ -273,6 +317,7 @@ const createProgressTask = ({
   operator = '>=',
   actionType,
   pendingLabel,
+  completedLabel,
   description,
   descriptionTitle,
   helpSections
@@ -285,7 +330,7 @@ const createProgressTask = ({
     title,
     progress,
     status: satisfied ? 'completed' : 'action',
-    actionLabel: satisfied ? 'Completed' : pendingLabel,
+    actionLabel: satisfied ? completedLabel : pendingLabel,
     actionType,
     description,
     descriptionTitle,
@@ -299,6 +344,7 @@ const createStatusTask = ({
   satisfied,
   actionType,
   pendingLabel = 'Add',
+  completedLabel,
   description,
   descriptionTitle,
   helpSections
@@ -310,7 +356,7 @@ const createStatusTask = ({
     title,
     progress: satisfied ? 100 : 0,
     status: satisfied ? 'completed' : 'action',
-    actionLabel: satisfied ? 'Completed' : pendingLabel,
+    actionLabel: satisfied ? completedLabel : pendingLabel,
     actionType,
     description,
     descriptionTitle,
@@ -321,11 +367,15 @@ const createStatusTask = ({
 const appendConditionTasks = (
   items: TaskItem[],
   ticketData?: MbTicketRecord,
-  ext?: TicketProgressExt
+  ext?: TicketProgressExt,
+  options?: BuildTaskItemsOptions
 ) => {
+  if (!options) return
+  const { t, locale } = options
   const conditionTypes = ticketData?.conditionType ?? []
   const currency = ticketData?.currency ?? ext?.currency
   const operatorFallback = '>='
+  const completedLabel = t(`${TASK_I18N_PREFIX}.actions.completed`)
 
   if (conditionTypes.includes(CONDITION_RECHARGE)) {
     const rechargeCondition = ticketData?.rechargeCondition
@@ -339,15 +389,21 @@ const appendConditionTasks = (
       items.push(
         createProgressTask({
           id: 'recharge-deposit-amount',
-          title: `Total Deposit Amount ${operator} ${formatThresholdAmount(target, currency)}`,
+          title: t(`${TASK_I18N_PREFIX}.tasks.totalDepositAmount`, {
+            operator,
+            amount: formatThresholdAmount(target, currency)
+          }),
           current,
           target,
           operator,
           actionType: 'deposit',
-          pendingLabel: 'Deposit',
+          pendingLabel: t(`${TASK_I18N_PREFIX}.actions.deposit`),
+          completedLabel,
           helpSections: createDepositAmountHelpSections(
             condition,
-            rechargeCondition?.rechargeMethods
+            rechargeCondition?.rechargeMethods,
+            t,
+            locale
           )
         })
       )
@@ -362,15 +418,18 @@ const appendConditionTasks = (
       items.push(
         createProgressTask({
           id: 'recharge-deposit-count',
-          title: `Total Deposit Count ${operator} ${target}`,
+          title: t(`${TASK_I18N_PREFIX}.tasks.totalDepositCount`, { operator, count: target }),
           current,
           target,
           operator,
           actionType: 'deposit',
-          pendingLabel: 'Deposit',
+          pendingLabel: t(`${TASK_I18N_PREFIX}.actions.deposit`),
+          completedLabel,
           helpSections: createDepositCountHelpSections(
             condition,
-            rechargeCondition?.rechargeMethods
+            rechargeCondition?.rechargeMethods,
+            t,
+            locale
           )
         })
       )
@@ -387,14 +446,20 @@ const appendConditionTasks = (
       items.push(
         createProgressTask({
           id: 'wagering-valid-bet',
-          title: `Valid Bet Amount ${operator} ${formatThresholdAmount(target, currency)}`,
+          title: t(`${TASK_I18N_PREFIX}.tasks.validBetAmount`, {
+            operator,
+            amount: formatThresholdAmount(target, currency)
+          }),
           current,
           target,
           operator,
           actionType: 'wagering',
-          pendingLabel: 'Bet Now',
+          pendingLabel: t(`${TASK_I18N_PREFIX}.actions.betNow`),
+          completedLabel,
           helpSections: createTurnoverHelpSections(
             validBet!,
+            t,
+            locale,
             ticketData?.wageringCondition?.validPlatforms,
             ticketData?.platformGameCodes
           )
@@ -413,13 +478,17 @@ const appendConditionTasks = (
       items.push(
         createProgressTask({
           id: 'loss-game-amount',
-          title: `Game Loss Amount  ${operator} ${formatThresholdAmount(target, currency)}`,
+          title: t(`${TASK_I18N_PREFIX}.tasks.gameLossAmount`, {
+            operator,
+            amount: formatThresholdAmount(target, currency)
+          }),
           current,
           target,
           operator,
           actionType: 'loss',
-          pendingLabel: 'Bet Now',
-          helpSections: createGameLossHelpSections(gameLossAmount!)
+          pendingLabel: t(`${TASK_I18N_PREFIX}.actions.betNow`),
+          completedLabel,
+          helpSections: createGameLossHelpSections(gameLossAmount!, t, locale)
         })
       )
     }
@@ -433,15 +502,19 @@ const appendConditionTasks = (
       items.push(
         createProgressTask({
           id: 'invite-friend-count',
-          title: `Valid Invited Friends ${operatorFallback} ${inviteFriendCount}`,
+          title: t(`${TASK_I18N_PREFIX}.tasks.validInvitedFriends`, {
+            operator: operatorFallback,
+            count: inviteFriendCount
+          }),
           current,
           target: inviteFriendCount,
           operator: operatorFallback,
           actionType: 'invite',
-          pendingLabel: 'Invite',
+          pendingLabel: t(`${TASK_I18N_PREFIX}.actions.invite`),
+          completedLabel,
           helpSections: createSimpleHelpSections(
-            'Invite Registration',
-            'After receiving the voucher, invite the required number of valid friends to complete the task.'
+            t(`${TASK_I18N_PREFIX}.help.inviteRegistration.title`),
+            t(`${TASK_I18N_PREFIX}.help.inviteRegistration.content`)
           )
         })
       )
@@ -451,48 +524,55 @@ const appendConditionTasks = (
 
 export const buildTaskItems = (
   ticketData?: MbTicketRecord,
-  progressData?: TicketProgressResult
+  progressData?: TicketProgressResult,
+  options?: BuildTaskItemsOptions
 ) => {
+  if (!options) return []
+  const { t } = options
+  const completedLabel = t(`${TASK_I18N_PREFIX}.actions.completed`)
   const items: TaskItem[] = []
   const { bindData, completeVerification, ext } = progressData ?? {}
 
-  appendConditionTasks(items, ticketData, ext)
+  appendConditionTasks(items, ticketData, ext, options)
 
   const withdrawalAccountTask = createStatusTask({
     id: 'bind-withdrawal-account',
-    title: 'Add Withdrawal Method',
+    title: t(`${TASK_I18N_PREFIX}.tasks.addWithdrawalMethod`),
     satisfied: bindData?.bindWithdrawalAccount,
     actionType: 'add',
-    pendingLabel: 'Add',
+    pendingLabel: t(`${TASK_I18N_PREFIX}.actions.add`),
+    completedLabel,
     helpSections: createSimpleHelpSections(
-      'Withdrawal Account',
-      'Your reward is ready. Link your withdrawal account to claim it now!'
+      t(`${TASK_I18N_PREFIX}.help.withdrawalAccount.title`),
+      t(`${TASK_I18N_PREFIX}.help.withdrawalAccount.content`)
     )
   })
   if (withdrawalAccountTask) items.push(withdrawalAccountTask)
 
   const withdrawalNameTask = createStatusTask({
     id: 'bind-withdrawal-name',
-    title: 'Add Account Name',
+    title: t(`${TASK_I18N_PREFIX}.tasks.addAccountName`),
     satisfied: bindData?.bindWithdrawalName,
     actionType: 'add',
-    pendingLabel: 'Add',
+    pendingLabel: t(`${TASK_I18N_PREFIX}.actions.add`),
+    completedLabel,
     helpSections: createSimpleHelpSections(
-      'Withdrawal Name',
-      'Your reward is ready. Add your withdrawal name to claim it now!'
+      t(`${TASK_I18N_PREFIX}.help.withdrawalName.title`),
+      t(`${TASK_I18N_PREFIX}.help.withdrawalName.content`)
     )
   })
   if (withdrawalNameTask) items.push(withdrawalNameTask)
 
   const verifyPhoneTask = createStatusTask({
     id: 'verify-phone',
-    title: 'Link Mobile Number',
+    title: t(`${TASK_I18N_PREFIX}.tasks.linkMobileNumber`),
     satisfied: completeVerification?.verifyPhone,
     actionType: 'link',
-    pendingLabel: 'Link',
+    pendingLabel: t(`${TASK_I18N_PREFIX}.actions.link`),
+    completedLabel,
     helpSections: createSimpleHelpSections(
-      'Phone Number',
-      'Your reward is ready. Link your phone number to claim it now!'
+      t(`${TASK_I18N_PREFIX}.help.phoneNumber.title`),
+      t(`${TASK_I18N_PREFIX}.help.phoneNumber.content`)
     )
   })
   if (verifyPhoneTask) items.push(verifyPhoneTask)

@@ -11,7 +11,11 @@
           type="button"
           class="golden-egg-slot"
           :disabled="activeStage !== 'standby' || isPending"
-          :aria-label="`砸开第 ${getEggIndex(rowIndex, columnIndex) + 1} 个金蛋`"
+          :aria-label="
+            t('ticketPage.goldenEgg.smashEggAriaLabel', {
+              index: getEggIndex(rowIndex, columnIndex) + 1
+            })
+          "
           @click="handleSmash(getEggIndex(rowIndex, columnIndex))"
         >
           <div
@@ -34,6 +38,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { globalTicketToastState } from '../../shell/ticketToast'
+import { useI18n } from 'vue-i18n'
 import baseImage from './base.png'
 import standbyAnimation from './standby/standby.json'
 import openAnimation from './smaso-open/smaso-open.json'
@@ -43,6 +48,7 @@ import { useGoldenEggLottieGrid } from './useGoldenEggLottieGrid'
 const EGG_ROW_COUNT = 3
 const EGG_COLUMN_COUNT = 3
 const EGG_COUNT = EGG_ROW_COUNT * EGG_COLUMN_COUNT
+const { t } = useI18n()
 
 /** 当前选中票券（券种条切换时随 activeTicketRecord 更新） */
 const ticketId = computed(() => globalTicketToastState.activeTicketRecord?.ticketId)

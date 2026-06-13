@@ -11,11 +11,13 @@
         aria-modal="true"
       >
         <div class="flex items-start justify-between gap-4">
-          <h3 class="text-[20px] font-[700] leading-[24px] text-text-1">Kind Reminder</h3>
+          <h3 class="text-[20px] font-[700] leading-[24px] text-text-1">
+            {{ t('ticketPage.taskPop.title') }}
+          </h3>
           <button
             type="button"
             class="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-white/10"
-            aria-label="Close"
+            :aria-label="t('ticketPage.taskPop.closeAriaLabel')"
             @click="handleClose"
           >
             <CloseIcon class="h-2.5 w-2.5 text-text-1" />
@@ -38,7 +40,7 @@
           class="mt-8 flex h-[46px] w-full items-center justify-center rounded-[8px] bg-theme-primary text-[15px] font-[700] text-text-4"
           @click="handleClose"
         >
-          Got It
+          {{ t('ticketPage.taskPop.gotIt') }}
         </button>
       </section>
     </div>
@@ -48,6 +50,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import CloseIcon from '@/static/svg/close.svg?component'
+import { useI18n } from 'vue-i18n'
 
 interface HelpPopSection {
   title: string
@@ -67,6 +70,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const visible = defineModel<boolean>('visible', { default: false })
+const { t } = useI18n()
 
 const displaySections = computed<HelpPopSection[]>(() => {
   return props.sections.length > 0

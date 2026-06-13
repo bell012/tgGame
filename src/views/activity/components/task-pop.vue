@@ -13,13 +13,13 @@
           >
             <div class="relative shrink-0 px-4 pb-3 pt-5">
               <h3 class="text-center text-[18px] font-[700] leading-[22px] text-text-1">
-                Kind Reminder
+                {{ t('ticketPage.taskPop.title') }}
               </h3>
 
               <button
                 type="button"
                 class="absolute right-4 top-5 flex h-6 w-6 items-center justify-center rounded-[6px] bg-opacity-10"
-                aria-label="Close"
+                :aria-label="t('ticketPage.taskPop.closeAriaLabel')"
                 @click="handleClose"
               >
                 <CloseIcon class="h-2.5 w-2.5 text-text-1" />
@@ -28,10 +28,12 @@
 
             <div class="task-pop__body min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-5">
               <p class="text-sm leading-[20px] text-text-1">
-                Complete the tasks below to unlock
+                {{ t('ticketPage.taskPop.introUnlockPrefix') }}
                 <span class="text-theme-primary">{{ voucherName }}</span>
               </p>
-              <p class="mt-2.5 text-[14px] leading-[20px] text-text-1">Win cash rewards</p>
+              <p class="mt-2.5 text-[14px] leading-[20px] text-text-1">
+                {{ t('ticketPage.taskPop.introReward') }}
+              </p>
 
               <ul class="mt-4 flex flex-col gap-3">
                 <li
@@ -88,8 +90,15 @@
               </ul>
 
               <div class="mt-4">
-                <h4 class="text-[14px] font-[700] leading-[17px] text-text-1">Rules: :</h4>
+                <h4 class="text-[14px] font-[700] leading-[17px] text-text-1">
+                  {{ t('ticketPage.taskPop.rules.title') }}:
+                </h4>
                 <ol class="mt-2 list-decimal space-y-2 pl-4 text-sm leading-[18px] text-text-2">
+                  <li>
+                    <span>{{ completeRequirementsRule.prefix }}</span>
+                    <span class="text-theme-primary">{{ voucherName }}</span>
+                    <span>{{ completeRequirementsRule.suffix }}</span>
+                  </li>
                   <li v-for="(rule, index) in ruleItems" :key="index">
                     {{ rule }}
                   </li>
@@ -114,12 +123,16 @@
 import CloseIcon from '@/static/svg/close.svg?component'
 import ModalHelpIcon from '@/static/img/lucky-spin/modal-help-icon.svg?component'
 import { globalTicketToastState } from '../ticket/shell/ticketToast'
-import { TICKET_TASK_RULE_ITEMS } from '../ticket/shared/ticketTaskMapper'
+import {
+  getTicketTaskCompleteRequirementsRule,
+  getTicketTaskRuleItems
+} from '../ticket/shared/ticketTaskMapper'
 import { useTaskHelpPop } from '../ticket/shared/useTaskHelpPop'
 import { useTicketTaskActions } from '../ticket/shared/useTicketTaskActions'
 import { useTicketTaskData } from '../ticket/shared/useTicketTaskData'
 import { Progress } from 'vant'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import HelpPop from './help-pop.vue'
 
 interface Props {
@@ -129,23 +142,28 @@ interface Props {
 
 const props = defineProps<Props>()
 const visible = defineModel<boolean>('visible', { default: false })
+const { t } = useI18n()
 
 const ticketId = computed(() => globalTicketToastState.activeTicketRecord?.ticketId)
 const rowId = computed(() => globalTicketToastState.activeTicketRecord?.rowId)
 const resolvedTicketId = computed(() => props.ticketId ?? ticketId.value)
 const resolvedRowId = computed(() => props.rowId ?? rowId.value)
-const voucherName = 'Voucher Name'
-const ruleItems = TICKET_TASK_RULE_ITEMS
 
 const handleClose = () => {
   visible.value = false
 }
 
-const { taskItems } = useTicketTaskData({
+const { taskItems, voucherName: fetchedVoucherName } = useTicketTaskData({
   visible,
   ticketId: resolvedTicketId,
   rowId: resolvedRowId
 })
+const voucherName = computed(() => fetchedVoucherName.value || t('ticketPage.taskPop.voucherName'))
+const translateTask = (key: string, params?: Record<string, unknown>) => t(key, params ?? {})
+const completeRequirementsRule = computed(() =>
+  getTicketTaskCompleteRequirementsRule(translateTask)
+)
+const ruleItems = computed(() => getTicketTaskRuleItems(translateTask))
 const { ruleVisible, activeHelp, openTaskRule } = useTaskHelpPop()
 const { handleTaskAction } = useTicketTaskActions(handleClose)
 </script>
