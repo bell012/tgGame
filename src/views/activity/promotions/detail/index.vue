@@ -1,164 +1,140 @@
 <template>
-  <div>
-    <!-- H5 详情 -->
-    <section
-      v-if="isReady && isMobile"
-      class="fixed inset-0 z-[60] flex flex-col overflow-hidden bg-bg-1 sm:hidden"
-    >
-      <H5Header :title="$t('activityPromotions.detailTitle')" @back="goBack" />
-      <div class="flex-1 min-h-0 overflow-y-auto">
-        <div v-if="activity?.preImage" class="w-full">
-          <img
-            :src="activity.preImage"
-            :alt="pageTitle"
-            class="w-full object-cover aspect-[375/180]"
-          />
-        </div>
+  <section
+    v-if="isReady && isMobile"
+    class="fixed inset-0 z-[60] flex flex-col overflow-hidden bg-bg-1 sm:hidden"
+  >
+    <H5Header
+      :title="$t('activityPromotions.detailTitle')"
+      :show-sort="true"
+      :right-icon="CustomerServiceIcon"
+      @sort="handleCustomerServiceClick"
+    />
+    <PromotionDetailContent :activity="activeActivity" variant="mobile" />
+  </section>
 
-        <main class="px-[14px] py-[14px]">
-          <article v-if="activity" class="flex flex-col gap-3">
-            <h1 class="text-base font-[700] text-text-1">{{ pageTitle }}</h1>
-            <div
-              v-if="descriptionHtml"
-              class="promotion-detail-html text-sm text-text-1 leading-relaxed"
-              v-html="descriptionHtml"
-            />
-            <p
-              v-else-if="descriptionText"
-              class="text-sm text-text-1 leading-relaxed whitespace-pre-wrap"
-            >
-              {{ descriptionText }}
-            </p>
-          </article>
-          <p v-else class="py-10 text-center text-sm text-text-2">
-            {{ $t('activityPromotions.notFound') }}
-          </p>
-        </main>
-      </div>
-    </section>
-
-    <!-- PC 详情 -->
-    <PromotionsLayout v-else-if="isReady" :groups="groups" :active-group-code="activeGroupCode">
-      <div class="bg-bg-2 rounded-xl overflow-hidden">
-        <div v-if="activity?.preImage" class="w-full">
-          <img
-            :src="activity.preImage"
-            :alt="pageTitle"
-            class="w-full max-h-[280px] object-cover"
-          />
-        </div>
-        <div class="p-6">
-          <article v-if="activity" class="flex flex-col gap-4">
-            <h1 class="text-xl font-[700] text-text-1">{{ pageTitle }}</h1>
-            <div
-              v-if="descriptionHtml"
-              class="promotion-detail-html text-sm text-text-1 leading-relaxed"
-              v-html="descriptionHtml"
-            />
-            <p
-              v-else-if="descriptionText"
-              class="text-sm text-text-1 leading-relaxed whitespace-pre-wrap"
-            >
-              {{ descriptionText }}
-            </p>
-          </article>
-          <p v-else class="py-16 text-center text-sm text-text-2">
-            {{ $t('activityPromotions.notFound') }}
-          </p>
-        </div>
-      </div>
-    </PromotionsLayout>
-  </div>
+  <PromotionsLayout v-else-if="isReady" :groups="groups" :active-group-code="groupCode">
+    <div class="bg-bg-2 rounded-xl overflow-hidden min-h-[520px]">
+      <PromotionDetailContent :activity="activeActivity" variant="desktop" />
+    </div>
+  </PromotionsLayout>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import Api from '@/api'
 import type { ActivityListItem } from '@/api/interface/activity'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
+import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { usePromotionsStore } from '@/stores/promotions'
 import { navigateTo } from '@/utils/router'
+import { globalShowToast } from '@/utils/toast'
+import PromotionDetailContent from '../components/PromotionDetailContent.vue'
 import PromotionsLayout from '../layout.vue'
-import { getActivityDescription, getActivityTitle } from '../shared'
+import { resolveActivityById, resolveActivityListGroupCode, sortActivityList } from '../shared'
+
+const ACTIVITY_LIST_PAGE_SIZE = 15
+const MAX_ACTIVITY_LOOKUP_PAGES = 20
 
 const route = useRoute()
-const router = useRouter()
+const { t } = useI18n()
 const isMobile = useIsMobile()
-const isReady = ref(false)
 const promotionsStore = usePromotionsStore()
 
-const activity = ref<ActivityListItem | null>(null)
+const handleCustomerServiceClick = () => {
+  globalShowToast({
+    message: t('sidebar_menu.customer_service'),
+    type: 'success'
+  })
+}
+
 const groups = computed(() => promotionsStore.groups)
-const activeGroupCode = computed(() => String(route.params.groupCode || ''))
+const groupCode = computed(() => String(route.params.groupCode || ''))
 const activityId = computed(() => String(route.params.activityId || ''))
-
-const pageTitle = computed(() => {
-  if (!activity.value) {
-    return ''
-  }
-  return getActivityTitle(activity.value)
-})
-
-// 描述原文，可能是纯文本，也可能是后台配的富文本
-const descriptionRaw = computed(() => {
-  if (!activity.value) {
-    return ''
-  }
-  return getActivityDescription(activity.value) || ''
-})
-
-// 含尖括号标签的当作富文本处理
-const isHtmlDescription = computed(() => {
-  const text = descriptionRaw.value
-  return text.includes('<') && text.includes('>')
-})
-
-const descriptionHtml = computed(() => (isHtmlDescription.value ? descriptionRaw.value : ''))
-const descriptionText = computed(() => (isHtmlDescription.value ? '' : descriptionRaw.value))
+const activeActivity = ref<ActivityListItem | null>(null)
+const isReady = ref(false)
 
 usePageScrollLock(() => isMobile.value)
 
-const readActivityFromRoute = () => {
-  const state = window.history.state as { activity?: ActivityListItem }
-  if (state?.activity?.rowId) {
-    return state.activity
-  }
-
-  const cached = promotionsStore.getActivityItem(activityId.value)
-  if (cached) {
-    return cached
-  }
-
-  return null
-}
-
-const goBack = () => {
-  const groupCode = activeGroupCode.value
-  if (groupCode) {
-    navigateTo(`/promotions/${groupCode}`)
+const loadActivity = async () => {
+  const id = activityId.value
+  if (!id) {
+    activeActivity.value = null
     return
   }
-  router.back()
+
+  const cached = promotionsStore.getActivityItem(id)
+  if (cached) {
+    activeActivity.value = cached
+    return
+  }
+
+  const listGroupCode = resolveActivityListGroupCode(groups.value, groupCode.value)
+  if (!listGroupCode) {
+    activeActivity.value = null
+    return
+  }
+
+  try {
+    let page = 1
+    let totalPages = 1
+
+    while (page <= totalPages && page <= MAX_ACTIVITY_LOOKUP_PAGES) {
+      const response = await Api.activity.queryActivityList({
+        current: page,
+        size: ACTIVITY_LIST_PAGE_SIZE,
+        groupCode: listGroupCode
+      })
+
+      totalPages = Math.max(1, Number(response.result?.pages ?? 1))
+      const records = sortActivityList(response.result?.records ?? [])
+      const matched = resolveActivityById(
+        id,
+        records,
+        promotionsStore.getActivityItem,
+        promotionsStore.saveActivityItem
+      )
+
+      if (matched) {
+        activeActivity.value = matched
+        return
+      }
+
+      page += 1
+    }
+
+    activeActivity.value = null
+  } catch {
+    activeActivity.value = null
+  }
 }
+
+watch(activityId, () => {
+  void loadActivity()
+})
 
 onMounted(async () => {
   await promotionsStore.loadGroups()
-  activity.value = readActivityFromRoute()
 
-  if (!activity.value && activeGroupCode.value) {
-    navigateTo(`/promotions/${activeGroupCode.value}`, { replace: true })
+  const codeFromRoute = groupCode.value
+  const defaultCode = promotionsStore.getDefaultGroupCode()
+
+  if (!codeFromRoute && defaultCode) {
+    navigateTo(`/promotions/${defaultCode}`, { replace: true })
     return
   }
 
+  if (!codeFromRoute || !activityId.value) {
+    if (codeFromRoute) {
+      navigateTo(`/promotions/${codeFromRoute}`, { replace: true })
+    }
+    return
+  }
+
+  await loadActivity()
   isReady.value = true
 })
 </script>
-
-<style scoped>
-.promotion-detail-html :deep(img) {
-  max-width: 100%;
-  height: auto;
-}
-</style>

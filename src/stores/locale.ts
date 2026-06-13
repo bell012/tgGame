@@ -13,6 +13,7 @@ import {
 import { switchLanguage } from '@/utils/router'
 import { initGlobalDicCache } from '@/utils/global-dic'
 import { useGameStore } from '@/stores/game'
+import { usePromotionsStore } from '@/stores/promotions'
 
 export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
@@ -74,8 +75,13 @@ export const useLocaleStore = defineStore('locale', () => {
 
     // 切换语言时同步刷新全局多语言字典缓存与游戏列表缓存。
     const gameStore = useGameStore()
+    const promotionsStore = usePromotionsStore()
 
-    await Promise.all([initGlobalDicCache(), gameStore.refreshGameData(true)])
+    await Promise.all([
+      initGlobalDicCache(),
+      gameStore.refreshGameData(true),
+      Promise.resolve(promotionsStore.syncGroupsLanguage())
+    ])
 
     switchLanguage(code)
   }

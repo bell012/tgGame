@@ -1,23 +1,27 @@
 <template>
   <div>
-    <!-- H5 -->
     <div
       v-if="isReady && isMobile"
       class="fixed inset-0 z-[60] flex flex-col overflow-hidden bg-bg-1 sm:hidden"
     >
-      <H5Header :title="$t('activityPromotions.title')" />
+      <H5Header
+        :title="$t('activityPromotions.title')"
+        :show-sort="true"
+        :right-icon="PromotionRecordIcon"
+        @sort="handlePromotionRecordClick"
+      />
       <div
         v-if="groups.length > 0"
         ref="mobileTabScrollRef"
-        class="flex gap-2 overflow-x-auto px-[14px] py-2.5 no-scrollbar"
+        class="flex gap-2 overflow-x-auto px-[14px] py-3.5 no-scrollbar"
       >
         <button
           v-for="group in groups"
-          :key="group.groupCode"
+          :key="group.rowId"
           type="button"
-          :data-group-code="group.groupCode"
-          :class="getPromotionGroupMobileTabClass(activeGroupCode === group.groupCode)"
-          @click="switchGroup(group.groupCode)"
+          :data-group-code="getPromotionGroupRouteKey(group)"
+          :class="getPromotionGroupMobileTabClass(isPromotionGroupActive(group, activeGroupCode))"
+          @click="switchGroup(getPromotionGroupRouteKey(group))"
         >
           <img
             v-if="getPromotionGroupIcon(group, activeGroupCode)"
@@ -25,7 +29,11 @@
             alt=""
             class="h-5 w-5 shrink-0 object-contain"
           />
-          <span :class="getPromotionGroupMobileTabTextClass(activeGroupCode === group.groupCode)">
+          <span
+            :class="
+              getPromotionGroupMobileTabTextClass(isPromotionGroupActive(group, activeGroupCode))
+            "
+          >
             {{ getLanguageName(group.groupName) }}
           </span>
         </button>
@@ -48,15 +56,12 @@
           >
             <div class="aspect-[347/150] w-full overflow-hidden bg-bg-3">
               <img
-                v-if="item.preImage"
-                :src="item.preImage"
+                v-if="toPromotionImageUrl(item.preImage)"
+                :src="toPromotionImageUrl(item.preImage)"
                 :alt="getActivityTitle(item)"
                 class="h-full w-full object-cover"
               />
             </div>
-            <p class="px-3 py-3 text-sm font-[700] text-text-1 line-clamp-2">
-              {{ getActivityTitle(item) }}
-            </p>
           </button>
           <p v-if="loadingMore" class="py-3 text-center text-xs text-text-2">
             {{ $t('common.loading') }}
@@ -75,8 +80,11 @@
       </div>
     </div>
 
-    <!-- PC -->
-    <PromotionsLayout v-else-if="isReady" :groups="groups" :active-group-code="activeGroupCode">
+    <PromotionsLayout
+      v-if="isReady && !isMobile"
+      :groups="groups"
+      :active-group-code="activeGroupCode"
+    >
       <div class="bg-bg-2 rounded-xl p-4 min-h-[520px]">
         <PromotionsListSkeleton v-if="loading && list.length === 0" variant="desktop" />
 
@@ -91,15 +99,12 @@
             >
               <div class="aspect-[333/140] w-full overflow-hidden">
                 <img
-                  v-if="item.preImage"
-                  :src="item.preImage"
+                  v-if="toPromotionImageUrl(item.preImage)"
+                  :src="toPromotionImageUrl(item.preImage)"
                   :alt="getActivityTitle(item)"
                   class="h-full w-full object-cover"
                 />
               </div>
-              <p class="px-3 py-3 text-sm font-[700] text-text-1 line-clamp-2 min-h-[52px]">
-                {{ getActivityTitle(item) }}
-              </p>
             </button>
           </div>
 
@@ -128,6 +133,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import Api from '@/api'
 import type { ActivityListItem } from '@/api/interface/activity'
@@ -139,7 +145,9 @@ import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { usePromotionsStore } from '@/stores/promotions'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
+import PromotionRecordIcon from '@/static/svg/deposit/record.svg?component'
 import { navigateTo } from '@/utils/router'
+import { globalShowToast } from '@/utils/toast'
 import PromotionsLayout from '../layout.vue'
 import PromotionsListSkeleton from './PromotionsListSkeleton.vue'
 import {
@@ -148,26 +156,35 @@ import {
   getPromotionGroupIcon,
   getPromotionGroupMobileTabClass,
   getPromotionGroupMobileTabTextClass,
-  replacePromotionsListUrl,
+  getPromotionGroupRouteKey,
+  isPromotionGroupActive,
   openActivityExternalJump,
+  parsePromotionsPath,
+  replacePromotionsListUrl,
+  resolveActivityListGroupCode,
   shouldOpenDetailPage,
-  sortActivityList
+  sortActivityList,
+  toPromotionImageUrl
 } from '../shared'
 
-const PC_PAGE_SIZE = 12
-const H5_PAGE_SIZE = 10
+const ACTIVITY_LIST_PAGE_SIZE = 15
 
 const route = useRoute()
+const { locale, t } = useI18n()
 const isMobile = useIsMobile()
+
+const handlePromotionRecordClick = () => {
+  globalShowToast({
+    message: t('search.stayTunedComingSoon')
+  })
+}
 const isReady = ref(false)
 const promotionsStore = usePromotionsStore()
 
 const groups = computed(() => promotionsStore.groups)
-/** H5 tab 切换走组件内状态，避免 router 导航触发整页滑入 */
-const mobileActiveGroupCode = ref('')
 const activeGroupCode = computed(() => {
-  if (isMobile.value && mobileActiveGroupCode.value) {
-    return mobileActiveGroupCode.value
+  if (isMobile.value && promotionsStore.h5ListGroupCode) {
+    return promotionsStore.h5ListGroupCode
   }
   return String(route.params.groupCode || '')
 })
@@ -179,15 +196,47 @@ const currentPage = ref(1)
 const totalPages = ref(1)
 const mobileScrollRef = ref<HTMLElement | null>(null)
 const mobileTabScrollRef = ref<HTMLElement | null>(null)
+const wasOnPromotionsDetail = ref(false)
+const justRestoredFromDetail = ref(false)
 
-// 每次请求自增，回包时只认最后一次，避免快速切换分组时旧数据覆盖新数据
 let requestId = 0
 
 usePageScrollLock(() => isMobile.value)
 
+const isPromotionsListRoute = () => {
+  const routeName = String(route.name || '').replace(/^Locale/, '')
+  return routeName === 'promotionsList'
+}
+
+/** 菜单等真实路由进入时，params 与地址栏一致 */
+const isSyncedListNavigation = () => {
+  const paramCode = String(route.params.groupCode || '')
+  const urlCode = parsePromotionsPath().groupCode
+  return Boolean(paramCode && urlCode && paramCode === urlCode)
+}
+
+const restoreMobileListGroupFromStore = () => {
+  if (!isMobile.value || !isPromotionsListRoute()) {
+    return
+  }
+
+  const storeCode = promotionsStore.h5ListGroupCode
+  if (!storeCode) {
+    return
+  }
+
+  justRestoredFromDetail.value = true
+  replacePromotionsListUrl(storeCode)
+
+  void nextTick(() => {
+    scrollActiveTabIntoView(storeCode)
+    justRestoredFromDetail.value = false
+  })
+}
+
 const loadList = async (page: number, append: boolean) => {
-  const groupCode = activeGroupCode.value
-  if (!groupCode) {
+  const listGroupCode = resolveActivityListGroupCode(groups.value, activeGroupCode.value)
+  if (!listGroupCode) {
     list.value = []
     return
   }
@@ -202,14 +251,12 @@ const loadList = async (page: number, append: boolean) => {
   }
 
   try {
-    const pageSize = isMobile.value ? H5_PAGE_SIZE : PC_PAGE_SIZE
     const response = await Api.activity.queryActivityList({
       current: page,
-      size: pageSize,
-      groupCode
+      size: ACTIVITY_LIST_PAGE_SIZE,
+      groupCode: listGroupCode
     })
 
-    // 已有更新的请求发出，本次结果作废
     if (currentRequestId !== requestId) {
       return
     }
@@ -260,10 +307,11 @@ const switchGroup = (groupCode?: string) => {
   scrollActiveTabIntoView(groupCode)
 
   if (isMobile.value) {
-    mobileActiveGroupCode.value = groupCode
+    promotionsStore.setH5ListGroupCode(groupCode)
     replacePromotionsListUrl(groupCode)
     mobileScrollRef.value?.scrollTo({ top: 0 })
-    reloadList()
+    currentPage.value = 1
+    loadList(1, false)
     return
   }
 
@@ -294,7 +342,7 @@ const onMobileScroll = () => {
   }
 }
 
-const openActivity = (item: ActivityListItem) => {
+const openActivity = async (item: ActivityListItem) => {
   if (!item.rowId) {
     return
   }
@@ -306,18 +354,72 @@ const openActivity = (item: ActivityListItem) => {
     return
   }
 
-  const groupCode = activeGroupCode.value || item.groupCode || ''
-  navigateTo(`/promotions/${groupCode}/${item.rowId}`, {
-    state: { activity: item }
+  const groupCode =
+    activeGroupCode.value ||
+    resolveActivityListGroupCode(groups.value, String(item.groupCode || ''))
+  if (!groupCode) {
+    return
+  }
+
+  if (isMobile.value) {
+    promotionsStore.setH5ListGroupCode(groupCode)
+    // 先把列表历史记录同步到当前 tab，避免详情返回时 router 回到初次进入的分组
+    await navigateTo(`/promotions/${groupCode}`, { replace: true })
+    navigateTo(`/promotions/${groupCode}/${item.rowId}`)
+    return
+  }
+
+  navigateTo(`/promotions/${groupCode}/${item.rowId}`)
+}
+
+const handleMobileListRouteChange = () => {
+  if (!isMobile.value || !isPromotionsListRoute()) {
+    return
+  }
+
+  if (!isReady.value) {
+    isReady.value = true
+  }
+
+  if (!isSyncedListNavigation()) {
+    return
+  }
+
+  const code = String(route.params.groupCode || '')
+  const previousCode = promotionsStore.h5ListGroupCode
+  promotionsStore.setH5ListGroupCode(code)
+
+  if (previousCode !== code) {
+    mobileScrollRef.value?.scrollTo({ top: 0 })
+    reloadList()
+  }
+
+  void nextTick(() => {
+    scrollActiveTabIntoView(code)
   })
 }
 
-const syncMobileGroupFromRoute = (groupCode: string) => {
-  if (!isMobile.value || !groupCode) {
-    return
+const getNormalizedRouteName = () => String(route.name || '').replace(/^Locale/, '')
+
+watch(
+  () => getNormalizedRouteName(),
+  routeName => {
+    if (routeName === 'promotionsDetail') {
+      wasOnPromotionsDetail.value = true
+      return
+    }
+
+    if (routeName === 'promotionsList' && wasOnPromotionsDetail.value && isMobile.value) {
+      wasOnPromotionsDetail.value = false
+      restoreMobileListGroupFromStore()
+      return
+    }
+
+    if (routeName !== 'promotionsDetail') {
+      wasOnPromotionsDetail.value = false
+    }
   }
-  mobileActiveGroupCode.value = groupCode
-}
+)
 
 watch(
   () => route.params.groupCode,
@@ -327,34 +429,28 @@ watch(
       return
     }
 
-    syncMobileGroupFromRoute(code)
-
     if (!isReady.value) {
       isReady.value = true
     }
 
     if (isMobile.value) {
-      void nextTick(() => {
-        scrollActiveTabIntoView(code)
-      })
+      if (justRestoredFromDetail.value || wasOnPromotionsDetail.value) {
+        return
+      }
+      handleMobileListRouteChange()
+      return
     }
 
     reloadList()
   }
 )
 
-watch(
-  () => activeGroupCode.value,
-  (groupCode, previousGroupCode) => {
-    if (!groupCode || !isMobile.value) {
-      return
-    }
-
-    if (previousGroupCode && previousGroupCode !== groupCode) {
-      mobileScrollRef.value?.scrollTo({ top: 0 })
-    }
+watch(locale, () => {
+  promotionsStore.syncGroupsLanguage()
+  if (isReady.value) {
+    reloadList()
   }
-)
+})
 
 onMounted(async () => {
   await promotionsStore.loadGroups()
@@ -371,7 +467,10 @@ onMounted(async () => {
     return
   }
 
-  syncMobileGroupFromRoute(codeFromRoute)
+  if (isMobile.value) {
+    promotionsStore.setH5ListGroupCode(codeFromRoute)
+  }
+
   isReady.value = true
   reloadList()
 

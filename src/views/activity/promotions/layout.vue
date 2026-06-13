@@ -7,9 +7,11 @@
           <nav class="space-y-2">
             <div
               v-for="group in groups"
-              :key="group.groupCode"
-              :class="getPromotionGroupDesktopTabClass(activeGroupCode === group.groupCode)"
-              @click="goGroup(group.groupCode)"
+              :key="group.rowId"
+              :class="
+                getPromotionGroupDesktopTabClass(isPromotionGroupActive(group, activeGroupCode))
+              "
+              @click="goGroup(getPromotionGroupRouteKey(group))"
             >
               <img
                 v-if="getGroupIcon(group)"
@@ -35,26 +37,44 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import type { ActivityGroupItem } from '@/api/interface/activity'
 import CommonFooter from '@/components/commonFooter.vue'
 import { navigateTo } from '@/utils/router'
-import { getLanguageName, getPromotionGroupDesktopTabClass, getPromotionGroupIcon } from './shared'
+import {
+  getLanguageName,
+  getPromotionGroupDesktopTabClass,
+  getPromotionGroupIcon,
+  getPromotionGroupRouteKey,
+  isPromotionGroupActive
+} from './shared'
 
 const props = defineProps<{
   groups: ActivityGroupItem[]
   activeGroupCode: string
 }>()
 
+const route = useRoute()
 const groups = computed(() => props.groups)
+
+const isPromotionsDetailRoute = () => {
+  const routeName = String(route.name || '').replace(/^Locale/, '')
+  return routeName === 'promotionsDetail'
+}
 
 const getGroupIcon = (group: ActivityGroupItem) => {
   return getPromotionGroupIcon(group, props.activeGroupCode)
 }
 
 const goGroup = (groupCode?: string) => {
-  if (!groupCode || groupCode === props.activeGroupCode) {
+  if (!groupCode) {
     return
   }
+
+  if (!isPromotionsDetailRoute() && groupCode === props.activeGroupCode) {
+    return
+  }
+
   navigateTo(`/promotions/${groupCode}`)
 }
 </script>
