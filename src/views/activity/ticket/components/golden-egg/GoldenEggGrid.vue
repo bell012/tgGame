@@ -32,36 +32,13 @@
 </template>
 
 <script setup lang="ts">
-import type { UseTicketResult } from '@/api/interface/activity'
-import lottie, { type AnimationItem } from 'lottie-web'
-import {
-  computed,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  ref,
-  watch,
-  type ComponentPublicInstance
-} from 'vue'
-import { useI18n } from 'vue-i18n'
+import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { globalTicketToastState } from '../../shell/ticketToast'
-import { buildResultDialogFromUse } from '../../shared/mapWheelConfig'
-import { openTicketResultDialog } from '../../shell/ticketDialog'
-import { useTicketUseAction } from '../../shared'
 import baseImage from './base.png'
 import standbyAnimation from './standby/standby.json'
 import openAnimation from './smaso-open/smaso-open.json'
-
-type GoldenEggStage = 'standby' | 'opening' | 'opened'
-type TemplateRefValue = Element | ComponentPublicInstance | null
-type LottieAsset = {
-  p?: string
-  u?: string
-  [key: string]: unknown
-}
-type LottieJson = Record<string, unknown> & {
-  assets?: LottieAsset[]
-}
+import { useGoldenEggGame } from './useGoldenEggGame'
+import { useGoldenEggLottieGrid } from './useGoldenEggLottieGrid'
 
 const EGG_ROW_COUNT = 3
 const EGG_COLUMN_COUNT = 3
@@ -69,19 +46,6 @@ const EGG_COUNT = EGG_ROW_COUNT * EGG_COLUMN_COUNT
 
 /** 当前选中票券（券种条切换时随 activeTicketRecord 更新） */
 const ticketId = computed(() => globalTicketToastState.activeTicketRecord?.ticketId)
-const { t } = useI18n()
-const { runUseTicket, isPending } = useTicketUseAction()
-
-const standbyRefs = ref<(HTMLElement | null)[]>([])
-const openRefs = ref<(HTMLElement | null)[]>([])
-
-const activeStage = ref<GoldenEggStage>('standby')
-const activeOpeningIndex = ref<number | null>(null)
-const pendingUseResult = ref<UseTicketResult | null>(null)
-
-let standbyPlayers: Array<AnimationItem | null> = []
-let openPlayers: Array<AnimationItem | null> = []
-let openCompleteHandlers: Array<(() => void) | null> = []
 
 const standbyImages = import.meta.glob('./standby/images/*.png', {
   eager: true,
@@ -92,183 +56,43 @@ const openImages = import.meta.glob('./smaso-open/images/*.png', {
   import: 'default'
 }) as Record<string, string>
 
-const cloneAnimationData = (data: LottieJson) => {
-  if (typeof structuredClone === 'function') {
-    return structuredClone(data)
-  }
-  return JSON.parse(JSON.stringify(data)) as LottieJson
-}
-
-const getImageUrlByFileName = (images: Record<string, string>) =>
-  new Map(Object.entries(images).map(([path, url]) => [path.split('/').pop(), url]))
-
-const buildAnimationData = (data: LottieJson, images: Record<string, string>) => {
-  const cloned = cloneAnimationData(data)
-  const imageUrlByFileName = getImageUrlByFileName(images)
-
-  cloned.assets?.forEach(asset => {
-    if (!asset.p) return
-    const imageUrl = imageUrlByFileName.get(asset.p)
-    if (!imageUrl) return
-    asset.u = ''
-    asset.p = imageUrl
-  })
-
-  return cloned
-}
-
-const loadLottie = (
-  container: HTMLElement,
-  animationData: LottieJson,
-  images: Record<string, string>,
-  loop: boolean,
-  autoplay: boolean
-) =>
-  lottie.loadAnimation({
-    container,
-    renderer: 'svg',
-    loop,
-    autoplay,
-    animationData: buildAnimationData(animationData, images),
-    rendererSettings: {
-      preserveAspectRatio: 'xMidYMid meet'
-    }
-  })
-
-const destroyPlayer = (player: AnimationItem | null) => {
-  player?.destroy()
-}
-
 const getEggIndex = (rowIndex: number, columnIndex: number) =>
   (rowIndex - 1) * EGG_COLUMN_COUNT + columnIndex - 1
 
-const getHTMLElement = (el: TemplateRefValue) => (el instanceof HTMLElement ? el : null)
+let completeOpenAnimation: (index: number) => void = () => {}
 
-const setStandbyRef = (index: number, el: TemplateRefValue) => {
-  standbyRefs.value[index] = getHTMLElement(el)
-}
+const lottieGrid = useGoldenEggLottieGrid({
+  eggCount: EGG_COUNT,
+  standbyAnimation,
+  standbyImages,
+  openAnimation,
+  openImages,
+  onOpenComplete: index => completeOpenAnimation(index)
+})
 
-const setOpenRef = (index: number, el: TemplateRefValue) => {
-  openRefs.value[index] = getHTMLElement(el)
-}
+const goldenEggGame = useGoldenEggGame({
+  onOpenAnimationStart: index => {
+    lottieGrid.pauseStandbyPlayers()
+    return lottieGrid.playOpenPlayer(index)
+  },
+  onResetAnimations: lottieGrid.resetPlayers
+})
 
-const createStandbyPlayer = (index: number, container: HTMLElement) => {
-  destroyPlayer(standbyPlayers[index] ?? null)
-  standbyPlayers[index] = loadLottie(container, standbyAnimation, standbyImages, true, true)
-}
+completeOpenAnimation = goldenEggGame.handleOpenComplete
 
-const createOpenPlayer = (index: number, container: HTMLElement) => {
-  const previousPlayer = openPlayers[index] ?? null
-  const previousHandler = openCompleteHandlers[index]
-
-  if (previousPlayer && previousHandler) {
-    previousPlayer.removeEventListener('complete', previousHandler)
-  }
-
-  destroyPlayer(previousPlayer)
-
-  const player = loadLottie(container, openAnimation, openImages, false, false)
-  const handleComplete = () => handleOpenComplete(index)
-  player.addEventListener('complete', handleComplete)
-  openPlayers[index] = player
-  openCompleteHandlers[index] = handleComplete
-}
-
-const createAllPlayers = async () => {
-  await nextTick()
-
-  for (let index = 0; index < EGG_COUNT; index += 1) {
-    const standbyContainer = standbyRefs.value[index]
-    const openContainer = openRefs.value[index]
-
-    if (standbyContainer) {
-      createStandbyPlayer(index, standbyContainer)
-    }
-
-    if (openContainer) {
-      createOpenPlayer(index, openContainer)
-    }
-  }
-}
-
-const resetGame = () => {
-  activeStage.value = 'standby'
-  activeOpeningIndex.value = null
-  pendingUseResult.value = null
-  openPlayers.forEach(player => player?.goToAndStop(0, true))
-  standbyPlayers.forEach(player => player?.goToAndPlay(0, true))
-}
-
-const startOpenAnimation = (index: number, result: UseTicketResult) => {
-  pendingUseResult.value = result
-
-  activeStage.value = 'opening'
-  activeOpeningIndex.value = index
-  standbyPlayers.forEach(player => player?.pause())
-
-  const openPlayer = openPlayers[index]
-  if (openPlayer) {
-    openPlayer.goToAndPlay(0, true)
-    return
-  }
-
-  handleOpenComplete(index)
-}
-
-const handleSmash = (index: number) => {
-  if (activeStage.value !== 'standby' || isPending.value) return
-
-  void runUseTicket({
-    voucherName: t('ticketPage.goldenEgg.title'),
-    fallbackErrorMessage: t('luckySpinPage.loadFailed'),
-    onSuccess: result => {
-      startOpenAnimation(index, result)
-    },
-    onError: resetGame
-  })
-}
-
-const handleOpenComplete = (index: number) => {
-  if (activeOpeningIndex.value !== index) return
-  activeStage.value = 'opened'
-
-  if (pendingUseResult.value) {
-    openTicketResultDialog(buildResultDialogFromUse(pendingUseResult.value))
-    pendingUseResult.value = null
-  }
-}
-
-const destroyAllPlayers = () => {
-  openPlayers.forEach((player, index) => {
-    const handler = openCompleteHandlers[index]
-    if (player && handler) {
-      player.removeEventListener('complete', handler)
-    }
-    destroyPlayer(player)
-  })
-  standbyPlayers.forEach(destroyPlayer)
-  openPlayers = []
-  standbyPlayers = []
-  openCompleteHandlers = []
-}
-
-const refreshAnimations = async () => {
-  activeStage.value = 'standby'
-  activeOpeningIndex.value = null
-  pendingUseResult.value = null
-  destroyAllPlayers()
-  await createAllPlayers()
-}
+const { activeStage, activeOpeningIndex, isPending, handleSmash } = goldenEggGame
+const { setStandbyRef, setOpenRef } = lottieGrid
 
 onMounted(() => {
-  void createAllPlayers()
+  void lottieGrid.createAllPlayers()
 })
 
 watch(ticketId, () => {
-  void refreshAnimations()
+  goldenEggGame.resetGame()
+  void lottieGrid.refreshAnimations()
 })
 
-onUnmounted(destroyAllPlayers)
+onUnmounted(lottieGrid.destroyAllPlayers)
 </script>
 
 <style scoped lang="scss">
