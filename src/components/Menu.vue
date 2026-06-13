@@ -460,8 +460,9 @@ import { openLuckySpin } from '@/utils/openLuckySpin'
 import { openTicketActivity } from '@/utils/openTicketActivity'
 import { PROMOTIONS_MENU_GROUP_LIMIT, usePromotionsStore } from '@/stores/promotions'
 import {
-  getLanguageName as getPromotionGroupName,
-  getPromotionGroupIcon
+  getLanguageName,
+  getPromotionGroupIcon,
+  getPromotionGroupRouteKey
 } from '@/views/activity/promotions/shared'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
 import LanguagePopup from '@/views/settings/preferences/language-popup.vue'
@@ -513,18 +514,18 @@ const buildPromotionsMenuChildren = (
 
   for (let i = 0; i < menuGroups.length; i++) {
     const group = menuGroups[i]
-    const groupCode = group.groupCode || ''
-    if (!groupCode) {
+    const routeKey = getPromotionGroupRouteKey(group)
+    if (!routeKey) {
       continue
     }
 
-    const groupName = getPromotionGroupName(group.groupName) || groupCode
+    const groupName = getLanguageName(group.groupName) || routeKey
     children.push({
-      id: `promotions_${groupCode}`,
+      id: `promotions_${routeKey}`,
       name: groupName,
       icon: getPromotionGroupIcon(group),
       handler: () => {
-        navigateTo(`/promotions/${groupCode}`)
+        navigateTo(`/promotions/${routeKey}`)
       }
     })
   }
@@ -870,10 +871,12 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       icon: newSideIcons.promotionCenterIcon,
       groupKey: 'promotions',
       handler: () => {
-        if (promotionsChildren.length > 0) {
-          return navigateTo('/promotions')
+        const defaultGroupCode =
+          getPromotionGroupRouteKey(promotionGroups.value[0] ?? {}) ||
+          promotionsStore.getDefaultGroupCode()
+        if (defaultGroupCode) {
+          return navigateTo(`/promotions/${defaultGroupCode}`)
         }
-        return
       },
       children: promotionsChildren
     },

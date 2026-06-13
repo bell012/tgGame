@@ -11,10 +11,10 @@
           type="button"
           class="shrink-0 appearance-none py-2 px-2.5 rounded-full bg-bg-2 text-xs text-text-2 flex items-center justify-center border"
           :style="{
-            border: `1px solid ${selectMethodsOption?.label === coin.label ? 'var(--color-theme-level-1)' : 'transparent'}`
+            border: `1px solid transparent`
           }"
           :class="{
-            'text-text-1 bg-theme-3': selectMethodsOption?.label === coin.label
+            'bg-theme-primary font-[700] text-text-4': selectMethodsOption?.label === coin.label
           }"
           @click.stop="selectCoinCode(coin)"
         >

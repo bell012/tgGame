@@ -229,7 +229,8 @@ onMounted(async () => {
   background: var(--color-background-level-4);
 }
 .payment-method-tab.is-active {
-  border: 1px solid var(--color-theme-level-1);
-  background: var(--color-theme-level-3);
+  color: var(--color-text-level-4);
+  border-color: transparent;
+  background: var(--color-theme-level-1);
 }
 </style>
