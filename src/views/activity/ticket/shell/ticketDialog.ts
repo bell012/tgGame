@@ -1,14 +1,14 @@
 import { reactive } from 'vue'
 import type {
-  LuckySpinResultVariant,
-  LuckySpinTask,
-  LuckySpinVoucherCardData
+  TicketReminderTask,
+  TicketResultVariant,
+  TicketVoucherCardData
 } from '../shared/types'
 
 export type TicketDialogKind = 'none' | 'reminder' | 'task_success' | 'result'
 
 export interface OpenTicketReminderDialogOptions {
-  tasks?: LuckySpinTask[]
+  tasks?: TicketReminderTask[]
   rules?: string[]
   voucherName?: string
   maxPrizeText?: string
@@ -22,9 +22,9 @@ export interface OpenTicketTaskSuccessDialogOptions {
 export type TicketResultHeroLottie = 'mystery_box_open'
 
 export interface OpenTicketResultDialogOptions {
-  variant: LuckySpinResultVariant
+  variant: TicketResultVariant
   highlightText?: string
-  vouchers?: LuckySpinVoucherCardData[]
+  vouchers?: TicketVoucherCardData[]
   voucherCount?: number
   title?: string
   subtext?: string
@@ -34,9 +34,9 @@ export interface OpenTicketResultDialogOptions {
 }
 
 export interface TicketResultDialogState {
-  variant: LuckySpinResultVariant
+  variant: TicketResultVariant
   highlightText: string
-  vouchers: LuckySpinVoucherCardData[]
+  vouchers: TicketVoucherCardData[]
   voucherCount: number
   title?: string
   subtext?: string
@@ -48,7 +48,7 @@ export interface TicketResultDialogState {
 interface GlobalTicketDialogState {
   kind: TicketDialogKind
   reminder: {
-    tasks: LuckySpinTask[]
+    tasks: TicketReminderTask[]
     rules: string[]
     voucherName: string
     maxPrizeText: string

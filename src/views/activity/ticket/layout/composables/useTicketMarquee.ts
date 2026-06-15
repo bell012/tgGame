@@ -1,6 +1,6 @@
 import Api from '@/api'
-import { isMarqueeSupportedTicketType } from '../../shared/mbTicketMapper'
-import { mapMarqueeRecords } from '../../shared/mapTicketMarquee'
+import { isMarqueeSupportedTicketType } from '../../shared/mappers/mbTicketMapper'
+import { mapMarqueeRecords } from '../../shared/mappers/mapTicketMarquee'
 import { globalTicketToastState } from '../../shell/ticketToast'
 import type { WinnerTickerItem } from '../../shared/types'
 import type { Ref } from 'vue'

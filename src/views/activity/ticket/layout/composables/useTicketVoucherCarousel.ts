@@ -3,7 +3,7 @@ import {
   VOUCHER_CAROUSEL_GAP,
   VOUCHER_CAROUSEL_ITEM_SIZE,
   VOUCHER_CAROUSEL_VISIBLE_SLOTS
-} from '../../shared/ticketMobileLayout'
+} from '../../shared/layout-tokens/ticketMobileLayout'
 import type { ComputedRef, Ref } from 'vue'
 import { computed, nextTick, onMounted, onUnmounted, ref, toValue, watch } from 'vue'
 
@@ -11,7 +11,7 @@ export {
   VOUCHER_CAROUSEL_GAP,
   VOUCHER_CAROUSEL_ITEM_SIZE,
   VOUCHER_CAROUSEL_VISIBLE_SLOTS
-} from '../../shared/ticketMobileLayout'
+} from '../../shared/layout-tokens/ticketMobileLayout'
 
 export const VOUCHER_CAROUSEL_TRACK_WIDTH = TICKET_MOBILE_LAYOUT.voucherCarousel.trackWidth
 

@@ -1,6 +1,6 @@
 import type { MbTicketRecord } from '@/api/interface/activity'
 import type { ComposerTranslation } from 'vue-i18n'
-import type { TicketGameId, TicketModalHeaderData, VoucherGameItem } from './types'
+import type { TicketGameId, TicketModalHeaderData, VoucherGameItem } from '../types'
 
 const GAME_HEADER_COPY: Record<
   TicketGameId,

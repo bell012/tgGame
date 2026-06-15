@@ -1,27 +1,22 @@
 /** H5 票券活动弹窗布局常量（Figma 9773:69941 大转盘有中奖轮播对齐） */
 
+import {
+  TICKET_LAYOUT_HEADER_COMMON,
+  TICKET_LAYOUT_MARQUEE_COMMON,
+  TICKET_LAYOUT_VOUCHER_COMMON
+} from './ticketLayoutCommon'
+
 export const TICKET_MOBILE_LAYOUT = {
   contentMaxWidth: 340,
   horizontalPadding: 14,
   modalZIndex: 70,
 
   header: {
-    titleFontSize: 24,
-    titleLineHeight: 30,
-    subtitleFontSize: 14,
-    subtitleMarginTop: 4,
+    ...TICKET_LAYOUT_HEADER_COMMON,
     /** 副标题 → 倒计时数字行（Figma 11201:100806 gap 42 @1125） */
     subtitleToCountdownGap: 14,
     /** 数字行 → 过期文案行（Figma gap 21 @1125） */
-    countdownDigitsToLabelGap: 7,
-    countdownDigitGap: 4,
-    countdownBoxSize: 24,
-    countdownBoxRadius: 6,
-    countdownBoxBorder: 'rgba(255, 255, 255, 0.2)',
-    countdownDigitFontSize: 18,
-    expiresLabelFontSize: 12,
-    countdownLabelIconSize: 14,
-    countdownLabelGap: 5
+    countdownDigitsToLabelGap: 7
   },
 
   sectionGap: {
@@ -32,26 +27,19 @@ export const TICKET_MOBILE_LAYOUT = {
   },
 
   marquee: {
-    pillRadius: 15.5,
-    pillBg: 'rgba(255, 255, 255, 0.15)',
-    pillPaddingX: 12,
-    pillPaddingY: 6,
-    pillGap: 8,
-    avatarSize: 24,
+    ...TICKET_LAYOUT_MARQUEE_COMMON,
     fontSize: 12
   },
 
   voucher: {
+    ...TICKET_LAYOUT_VOUCHER_COMMON,
     itemSize: 60,
     itemGap: 8,
-    itemRadius: 10,
     inactiveOpacity: 0.6,
     navBtnSize: 32,
     navBtnBg: 'rgba(255, 255, 255, 0.08)',
     navIconSize: 16,
-    footerTextSize: 13,
-    footerMarginTop: 12,
-    countHighlight: '#2AEE88'
+    footerMarginTop: 12
   },
 
   /** H5 券种条横向轮播（Figma 9773:70079；选中/未选中 180/150 ≈ 1.2） */

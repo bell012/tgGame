@@ -67,7 +67,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { getTicketGameAdapter } from '../shell/gameRegistry'
 import { TICKET_GAME_RUNTIME_CONTEXT_KEY } from '../shell/ticketActivityContext'
 import { LUCKY_SPIN_TOKENS } from '../shared/design-tokens'
-import { TICKET_PC_LAYOUT } from '../shared/ticketPcLayout'
+import { TICKET_PC_LAYOUT } from '../shared/layout-tokens/ticketPcLayout'
 import type {
   TicketActivitySession,
   TicketGameId,
@@ -77,7 +77,7 @@ import type {
 import { useTicketActivityPcLayout } from './composables/useTicketActivityPcLayout'
 import TicketActivityDesktopLayout from './TicketActivityDesktopLayout.vue'
 import TicketActivityMobileLayout from './TicketActivityMobileLayout.vue'
-import { computed, inject, toRef } from 'vue'
+import { computed, inject } from 'vue'
 
 interface Props {
   visible: boolean
@@ -108,12 +108,7 @@ const emit = defineEmits<{
 const isMobile = useIsMobile()
 const gameRuntimeContext = inject(TICKET_GAME_RUNTIME_CONTEXT_KEY)
 
-const { modalOverlayStyleMobile, modalOverlayStylePc } = useTicketActivityPcLayout({
-  visible: toRef(props, 'visible'),
-  activitySession: computed(() => props.activitySession),
-  gameId: toRef(props, 'gameId'),
-  isMobile
-})
+const { modalOverlayStyleMobile, modalOverlayStylePc } = useTicketActivityPcLayout()
 
 const modalOverlayStyle = computed(() =>
   isMobile.value ? modalOverlayStyleMobile.value : modalOverlayStylePc.value

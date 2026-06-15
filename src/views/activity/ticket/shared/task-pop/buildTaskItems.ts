@@ -4,259 +4,28 @@ import type {
   TicketProgressResult,
   TicketThresholdCondition
 } from '@/api/interface/activity'
-
-import { PAY_CHANNEL_TAB_LIST } from '@/constants/payChannelTabs'
-import { formatBalance, getCurrencySymbol } from '@/utils/locale'
-
-export type TicketTaskTranslate = (key: string, params?: Record<string, unknown>) => string
+import {
+  createDepositAmountHelpSections,
+  createDepositCountHelpSections,
+  createGameLossHelpSections,
+  createSimpleHelpSections,
+  createTurnoverHelpSections
+} from './helpSections'
+import { calcProgress, formatThresholdAmount, isTargetMet } from './helpers'
+import type {
+  BuildTaskItemsOptions,
+  ProgressTaskOptions,
+  StatusTaskOptions,
+  TaskItem
+} from './types'
+import { TASK_I18N_PREFIX } from './types'
 
 const CONDITION_RECHARGE = 1
 const CONDITION_WAGERING = 2
 const CONDITION_LOSS = 3
 const CONDITION_INVITE = 4
 
-export interface HelpSection {
-  title: string
-  content: string
-}
-
-export type TaskStatus = 'action' | 'completed'
-export type TaskActionType =
-  | 'deposit'
-  | 'invite'
-  | 'add'
-  | 'complete'
-  | 'link'
-  | 'wagering'
-  | 'loss'
-
-export interface TaskItem {
-  id: string
-  title: string
-  progress: number
-  status: TaskStatus
-  actionLabel: string
-  actionType?: TaskActionType
-  description?: string
-  descriptionTitle?: string
-  helpSections?: HelpSection[]
-}
-
-interface ProgressTaskOptions {
-  id: string
-  title: string
-  current?: number
-  target?: number
-  operator?: string
-  actionType: TaskActionType
-  pendingLabel: string
-  completedLabel: string
-  description?: string
-  descriptionTitle?: string
-  helpSections?: HelpSection[]
-}
-
-interface StatusTaskOptions {
-  id: string
-  title: string
-  satisfied: boolean | undefined
-  actionType: TaskActionType
-  pendingLabel?: string
-  completedLabel: string
-  description?: string
-  descriptionTitle?: string
-  helpSections?: HelpSection[]
-}
-
-interface BuildTaskItemsOptions {
-  t: TicketTaskTranslate
-  locale?: string
-}
-
-const TASK_I18N_PREFIX = 'ticketPage.taskPop'
-
-export const getTicketTaskCompleteRequirementsRule = (t: TicketTaskTranslate) => ({
-  prefix: t(`${TASK_I18N_PREFIX}.rules.items.completeRequirementsPrefix`),
-  suffix: t(`${TASK_I18N_PREFIX}.rules.items.completeRequirementsSuffix`)
-})
-
-export const getTicketTaskRuleItems = (t: TicketTaskTranslate) => [
-  t(`${TASK_I18N_PREFIX}.rules.items.cashCredited`),
-  t(`${TASK_I18N_PREFIX}.rules.items.onceOnly`),
-  t(`${TASK_I18N_PREFIX}.rules.items.irregularActivity`),
-  t(`${TASK_I18N_PREFIX}.rules.items.finalInterpretation`)
-]
-
 const isConditionEnabled = (condition?: TicketThresholdCondition) => condition?.enabled === 1
-
-export const isTargetMet = (current: number, target: number, operator = '>=') => {
-  switch (operator) {
-    case '>':
-      return current > target
-    case '<=':
-      return current <= target
-    case '=':
-    case '==':
-      return current === target
-    default:
-      return current >= target
-  }
-}
-
-export const calcProgress = (current: number, target: number) => {
-  if (target <= 0) return 0
-  return Math.min(100, Math.floor((current / target) * 100))
-}
-
-const formatThresholdAmount = (amount: number, currency?: string) => {
-  const formatted = formatBalance(amount, 2)
-  return `${getCurrencySymbol(currency)}${formatted}`
-}
-
-const normalizeTimestamp = (value?: number) => {
-  if (!value) return null
-  return value < 1_000_000_000_000 ? value * 1000 : value
-}
-
-const normalizeTaskLocale = (locale?: string) => (locale === 'zh' ? 'zh-CN' : 'en-US')
-
-const formatAccumulationStartDate = (value?: number, locale?: string) => {
-  const timestamp = normalizeTimestamp(value)
-  if (!timestamp) return ''
-
-  return new Intl.DateTimeFormat(normalizeTaskLocale(locale), {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  }).format(new Date(timestamp))
-}
-
-const getAccumulationDescriptionPrefix = (
-  condition: TicketThresholdCondition,
-  t: TicketTaskTranslate,
-  locale?: string
-) => {
-  switch (condition.accumulateType) {
-    case 2: {
-      const formattedDate = formatAccumulationStartDate(condition.startDate, locale)
-      return formattedDate
-        ? t(`${TASK_I18N_PREFIX}.accumulation.startingFromDate`, { date: formattedDate })
-        : t(`${TASK_I18N_PREFIX}.accumulation.startingFromSpecifiedDate`)
-    }
-    case 3:
-      return t(`${TASK_I18N_PREFIX}.accumulation.afterAccountCreated`)
-    default:
-      return t(`${TASK_I18N_PREFIX}.accumulation.afterReceivingVoucher`)
-  }
-}
-
-const formatDisplayList = (values: Array<number | string> | undefined, fallback: string) => {
-  if (!values?.length) return fallback
-  return values.join(', ')
-}
-
-const formatPayChannelList = (methods: number[] | undefined, fallback: string) => {
-  if (!methods?.length) return fallback
-
-  return methods
-    .map(method => {
-      const methodKey = String(method)
-      return PAY_CHANNEL_TAB_LIST.find(item => item.key === methodKey)?.value ?? methodKey
-    })
-    .join(', ')
-}
-
-const createSimpleHelpSections = (title: string, content: string): HelpSection[] => [
-  { title, content }
-]
-
-const createDepositAmountHelpSections = (
-  condition: TicketThresholdCondition,
-  rechargeMethods: number[] | undefined,
-  t: TicketTaskTranslate,
-  locale?: string
-): HelpSection[] => [
-  {
-    title: t(`${TASK_I18N_PREFIX}.help.totalDepositAmount.title`),
-    content: t(`${TASK_I18N_PREFIX}.help.totalDepositAmount.content`, {
-      prefix: getAccumulationDescriptionPrefix(condition, t, locale)
-    })
-  },
-  {
-    title: t(`${TASK_I18N_PREFIX}.help.validDepositAmount.title`),
-    content: t(`${TASK_I18N_PREFIX}.help.validDepositAmount.content`)
-  },
-  {
-    title: t(`${TASK_I18N_PREFIX}.help.validDepositChannels.title`),
-    content: formatPayChannelList(
-      rechargeMethods,
-      t(`${TASK_I18N_PREFIX}.help.validDepositChannels.fallback`)
-    )
-  }
-]
-
-const createDepositCountHelpSections = (
-  condition: TicketThresholdCondition,
-  rechargeMethods: number[] | undefined,
-  t: TicketTaskTranslate,
-  locale?: string
-): HelpSection[] => [
-  {
-    title: t(`${TASK_I18N_PREFIX}.help.totalDepositCount.title`),
-    content: t(`${TASK_I18N_PREFIX}.help.totalDepositCount.content`, {
-      prefix: getAccumulationDescriptionPrefix(condition, t, locale)
-    })
-  },
-  {
-    title: t(`${TASK_I18N_PREFIX}.help.validDepositCount.title`),
-    content: t(`${TASK_I18N_PREFIX}.help.validDepositCount.content`)
-  },
-  {
-    title: t(`${TASK_I18N_PREFIX}.help.validDepositChannels.title`),
-    content: formatPayChannelList(
-      rechargeMethods,
-      t(`${TASK_I18N_PREFIX}.help.validDepositChannels.fallback`)
-    )
-  }
-]
-
-const createTurnoverHelpSections = (
-  condition: TicketThresholdCondition,
-  t: TicketTaskTranslate,
-  locale?: string,
-  validPlatforms?: string[],
-  platformGameCodes?: string[]
-): HelpSection[] => [
-  {
-    title: t(`${TASK_I18N_PREFIX}.help.totalTurnover.title`),
-    content: t(`${TASK_I18N_PREFIX}.help.totalTurnover.content`, {
-      prefix: getAccumulationDescriptionPrefix(condition, t, locale)
-    })
-  },
-  {
-    title: t(`${TASK_I18N_PREFIX}.help.validTurnover.title`),
-    content: t(`${TASK_I18N_PREFIX}.help.validTurnover.content`)
-  },
-  {
-    title: t(`${TASK_I18N_PREFIX}.help.validTurnoverScope.title`),
-    content: formatDisplayList(
-      validPlatforms?.length ? validPlatforms : platformGameCodes,
-      t(`${TASK_I18N_PREFIX}.help.validTurnoverScope.fallback`)
-    )
-  }
-]
-
-const createGameLossHelpSections = (
-  condition: TicketThresholdCondition,
-  t: TicketTaskTranslate,
-  locale?: string
-): HelpSection[] =>
-  createSimpleHelpSections(
-    t(`${TASK_I18N_PREFIX}.help.lossAmount.title`),
-    t(`${TASK_I18N_PREFIX}.help.lossAmount.content`, {
-      prefix: getAccumulationDescriptionPrefix(condition, t, locale)
-    })
-  )
 
 const getRechargeExtValue = (
   ext: TicketProgressExt | undefined,

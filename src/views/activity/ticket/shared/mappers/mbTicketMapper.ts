@@ -1,7 +1,7 @@
 import Api from '@/api'
 import type { MbTicketRecord } from '@/api/interface/activity'
-import { getGameIcon } from './assets'
-import type { TicketGameId, VoucherGameItem } from './types'
+import { getGameIcon } from '../assets'
+import type { TicketGameId, VoucherGameItem } from '../types'
 
 export interface MbTicketLanguageInfoItem {
   description?: string

@@ -2,9 +2,10 @@ import Api from '@/api'
 import type { MbTicketRecord, TicketProgressResult } from '@/api/interface/activity'
 import { getLanguageCode } from '@/utils/locale'
 import { computed, ref, unref, watch, type MaybeRef } from 'vue'
-import { buildTaskItems, type TaskItem } from './ticketTaskMapper'
-import { getMbTicketLanguageCopy } from './mbTicketMapper'
 import { useI18n } from 'vue-i18n'
+import { getMbTicketLanguageCopy } from '../mappers/mbTicketMapper'
+import { buildTaskItems } from './buildTaskItems'
+import type { TaskItem } from './types'
 
 interface UseTicketTaskDataOptions {
   visible: MaybeRef<boolean>

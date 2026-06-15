@@ -1,8 +1,8 @@
 import type { UseTicketResult, WheelConfigItem } from '@/api/interface/activity'
 import i18n from '@/i18n'
 import { getCurrencySymbol } from '@/utils/locale'
-import { WHEEL_SEGMENT_COUNT } from './constants'
-import type { LuckySpinPrize, LuckySpinResult, LuckySpinResultVariant, PrizeType } from './types'
+import { WHEEL_SEGMENT_COUNT } from '../constants'
+import type { TicketPrize, TicketSpinResult, TicketResultVariant, PrizeType } from '../types'
 
 const ABSOLUTE_IMAGE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
 
@@ -43,7 +43,7 @@ const buildPrizeLabel = (rewardType: number, amount?: number): string => {
   return i18n.global.t('luckySpinPage.result.noPrize')
 }
 
-const mapWheelConfigItem = (item: WheelConfigItem, index: number): LuckySpinPrize => {
+const mapWheelConfigItem = (item: WheelConfigItem, index: number): TicketPrize => {
   const rewardType = Number(item.rewardType ?? 2)
   const type = mapRewardTypeToPrizeType(rewardType)
 
@@ -57,9 +57,7 @@ const mapWheelConfigItem = (item: WheelConfigItem, index: number): LuckySpinPriz
 }
 
 /** mbTicketList.wheelConfig → 转盘 8 格奖品（保持接口数组顺序） */
-export const mapWheelConfigToPrizes = (
-  wheelConfig?: WheelConfigItem[] | null
-): LuckySpinPrize[] => {
+export const mapWheelConfigToPrizes = (wheelConfig?: WheelConfigItem[] | null): TicketPrize[] => {
   if (!Array.isArray(wheelConfig) || wheelConfig.length === 0) {
     return []
   }
@@ -89,12 +87,12 @@ export const findPrizeIndexInWheelConfig = (
   return slice.findIndex(item => Number(item.rewardType) === rewardType)
 }
 
-/** use 接口结果 + wheelConfig → LuckySpinResult */
-export const buildLuckySpinResultFromUse = (
+/** use 接口结果 + wheelConfig → TicketSpinResult */
+export const buildTicketSpinResultFromUse = (
   wheelConfig: WheelConfigItem[] | null | undefined,
   rewardType?: number,
   rewardAmount?: number
-): LuckySpinResult | null => {
+): TicketSpinResult | null => {
   const type = Number(rewardType ?? 2)
   const prizeIndex = findPrizeIndexInWheelConfig(wheelConfig, type, rewardAmount)
 
@@ -127,7 +125,7 @@ export const buildLuckySpinResultFromUse = (
 /** use 接口结果 → 结果弹窗参数（不依赖 wheelConfig / mock） */
 export const buildResultDialogFromUse = (
   result: UseTicketResult
-): { variant: LuckySpinResultVariant; highlightText: string } => {
+): { variant: TicketResultVariant; highlightText: string } => {
   const rewardType = Number(result.rewardType ?? 2)
 
   if (rewardType === 0) {

@@ -1,47 +1,10 @@
 import { TICKET_ACTIVITY_Z } from '../../shared/constants'
 import { LUCKY_SPIN_TOKENS } from '../../shared/design-tokens'
-import { TICKET_PC_LAYOUT } from '../../shared/ticketPcLayout'
-import type { Ref } from 'vue'
-import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
+import { TICKET_PC_LAYOUT } from '../../shared/layout-tokens/ticketPcLayout'
+import { computed, ref } from 'vue'
 
-export function useTicketActivityPcLayout(options: {
-  visible: Ref<boolean>
-  activitySession: Ref<unknown>
-  gameId: Ref<string>
-  isMobile: Ref<boolean>
-}) {
+export function useTicketActivityPcLayout() {
   const rightPanelRef = ref<HTMLElement | null>(null)
-  let rightPanelResizeObserver: ResizeObserver | null = null
-
-  const observeRightPanelHeight = () => {
-    rightPanelResizeObserver?.disconnect()
-    rightPanelResizeObserver = null
-
-    if (!rightPanelRef.value) return
-
-    rightPanelResizeObserver = new ResizeObserver(() => {})
-    rightPanelResizeObserver.observe(rightPanelRef.value)
-  }
-
-  watch(
-    [options.visible, options.activitySession, options.gameId, options.isMobile],
-    async ([visible]) => {
-      if (!visible || options.isMobile.value) {
-        rightPanelResizeObserver?.disconnect()
-        rightPanelResizeObserver = null
-        return
-      }
-
-      await nextTick()
-      observeRightPanelHeight()
-    },
-    { immediate: true }
-  )
-
-  onUnmounted(() => {
-    rightPanelResizeObserver?.disconnect()
-    rightPanelResizeObserver = null
-  })
 
   const modalOverlayStylePc = computed(() => ({
     zIndex: TICKET_ACTIVITY_Z.modal,

@@ -1,5 +1,5 @@
 import type { MbTicketRecord } from '@/api/interface/activity'
-import { findMbTicketsByGameId } from '../shared/mbTicketMapper'
+import { findMbTicketsByGameId } from '../shared/mappers/mbTicketMapper'
 import { reactive } from 'vue'
 import { closeTicketDialog } from './ticketDialog'
 import type { OpenTicketToastOptions, TicketGameId } from '../shared/types'

@@ -12,15 +12,17 @@
 dialogs/
 ├── README.md
 ├── index.ts                         # 对外唯一出口
+├── composables/
+│   └── useTicketDialogVisible.ts
 ├── shared/
 │   ├── TicketDialogOverlay.vue      # Teleport + 遮罩 + transition
-│   └── dialog-transitions.scss
+│   ├── dialog-transitions.scss
+│   └── goTicketDeposit.ts           # 关活动页并跳转充值
 ├── reminder/                        # 任务提醒 #2 / 券解锁 #3
 │   ├── TicketReminderPopup.vue
 │   ├── TicketReminderTasksContent.vue
 │   ├── TicketTaskSuccessContent.vue
-│   ├── useTicketReminderDialog.ts
-│   └── goTicketDeposit.ts
+│   └── useTicketReminderDialog.ts
 └── result/                          # 中奖结果 #4~6 + 票券卡片
     ├── TicketResultHeroPopup.vue
     ├── TicketResultCardsPopup.vue
@@ -90,4 +92,4 @@ import {
 - **不在** `TicketVoucherCard` 读全局 state
 - **不** 引入 wallet/payment 的 `popShell`
 
-Z-index：`shared/constants.ts` → `TICKET_DIALOG_Z`。
+Z-index：[`shared/constants.ts`](../../shared/constants.ts) → `TICKET_DIALOG_Z`。

@@ -36,7 +36,7 @@ import lottie, { type AnimationItem } from 'lottie-web'
 import zhusucaiImg from '@/lottie/xianjin/zhusucai.png'
 import xianjianImg from '@/lottie/xianjin/xianjian.jpg'
 import daijiSource from '@/lottie/xianjin/daiji.json'
-import { buildResultDialogFromUse } from '../../shared/mapWheelConfig'
+import { buildResultDialogFromUse } from '../../shared/mappers/mapWheelConfig'
 import { useTicketUseAction } from '../../shared'
 import { openTicketResultDialog } from '../../shell/ticketDialog'
 

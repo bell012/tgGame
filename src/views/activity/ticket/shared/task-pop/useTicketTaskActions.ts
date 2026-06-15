@@ -1,5 +1,5 @@
 import { navigateTo } from '@/utils/router'
-import type { TaskItem } from './ticketTaskMapper'
+import type { TaskItem } from './types'
 
 const getTicketTaskActionPath = (task: TaskItem) => {
   if (task.actionType === 'invite') return '/referral'

@@ -6,7 +6,7 @@ import { getLanguageCode } from '@/utils/locale'
 import {
   fetchMbTicketListRecords,
   resolveTicketActivitySession
-} from '@/views/activity/ticket/shared/mbTicketMapper'
+} from '@/views/activity/ticket/shared/mappers/mbTicketMapper'
 import { globalShowToast } from '@/utils/toast'
 import { openTicketToast, setTicketSession } from '@/views/activity/ticket/shell/ticketToast'
 import type { TicketGameId } from '@/views/activity/ticket/shared/types'

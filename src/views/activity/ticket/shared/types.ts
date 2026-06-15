@@ -1,3 +1,7 @@
+import type { TicketReminderTask } from './reminder/types'
+
+export type { TicketReminderTask } from './reminder/types'
+
 export type TicketResultVariant =
   | 'cash'
   | 'spin_again'
@@ -65,16 +69,10 @@ export interface TicketPrize {
 /** @deprecated use TicketPrize */
 export type LuckySpinPrize = TicketPrize
 
-export interface TicketTask {
-  id: string
-  title: string
-  progress: number
-  finished: boolean
-  actionType?: 'deposit' | 'bet'
-}
+export type TicketTask = TicketReminderTask
 
-/** @deprecated use TicketTask */
-export type LuckySpinTask = TicketTask
+/** @deprecated use TicketReminderTask */
+export type LuckySpinTask = TicketReminderTask
 
 /** 活动弹窗会话数据（券种条 + 提醒弹窗，来自 mbTicketList） */
 export interface TicketActivitySession {

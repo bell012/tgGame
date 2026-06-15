@@ -1,10 +1,10 @@
 import { getLanguageCode } from '@/utils/locale'
-import { fetchMbTicketListRecords, mapMbTicketListToFooter } from '../shared/mbTicketMapper'
+import { fetchMbTicketListRecords, mapMbTicketListToFooter } from '../shared/mappers/mbTicketMapper'
 import {
   buildTicketActivitySession,
   mapMbTicketToReminderContext
-} from '../shared/mapTicketActivityContext'
-import { findTicketIndex } from '../shared/gameHeaderConfig'
+} from '../shared/mappers/mapTicketActivityContext'
+import { findTicketIndex } from '../shared/mappers/gameHeaderConfig'
 import type { TicketActivitySession, TicketGameId } from '../shared/types'
 import { closeTicketDialog, globalTicketDialogState } from './ticketDialog'
 import {

@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import type { TicketVoucherFooterData } from '../shared/types'
-import { ticketMobileSectionClass } from '../shared/ticketMobileLayout'
+import { ticketMobileSectionClass } from '../shared/layout-tokens/ticketMobileLayout'
 import TicketVoucherSwitcher from './TicketVoucherSwitcher.vue'
 
 defineProps<TicketVoucherFooterData>()

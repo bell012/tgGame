@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { globalTicketDialogState } from '../../../shell/ticketDialog'
-import { goTicketDeposit } from './goTicketDeposit'
+import { goTicketDeposit } from '../shared/goTicketDeposit'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 

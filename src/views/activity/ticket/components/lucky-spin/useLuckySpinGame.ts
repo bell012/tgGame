@@ -9,7 +9,7 @@ import {
   buildResultDialogFromUse,
   findPrizeIndexInWheelConfig,
   mapWheelConfigToPrizes
-} from '../../shared/mapWheelConfig'
+} from '../../shared/mappers/mapWheelConfig'
 import { useTicketUseAction } from '../../shared'
 import { globalShowToast } from '@/utils/toast'
 import type { Ref } from 'vue'

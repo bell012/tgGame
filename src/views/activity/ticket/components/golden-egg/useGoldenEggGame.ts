@@ -1,6 +1,6 @@
 import type { UseTicketResult } from '@/api/interface/activity'
 
-import { buildResultDialogFromUse } from '../../shared/mapWheelConfig'
+import { buildResultDialogFromUse } from '../../shared/mappers/mapWheelConfig'
 import { useTicketUseAction } from '../../shared'
 import { openTicketResultDialog } from '../../shell/ticketDialog'
 import { ref } from 'vue'

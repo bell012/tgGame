@@ -10,7 +10,7 @@ import {
   normalizeMbTicketRecords,
   resolveLanguageInfo,
   TICKET_TYPE_TO_GAME_ID
-} from '@/views/activity/ticket/shared/mbTicketMapper'
+} from '@/views/activity/ticket/shared/mappers/mbTicketMapper'
 import voucherIcon1 from '@/static/img/vouchers/icon1.png'
 import voucherIcon2 from '@/static/img/vouchers/icon2.png'
 import voucherIcon3 from '@/static/img/vouchers/icon3.png'

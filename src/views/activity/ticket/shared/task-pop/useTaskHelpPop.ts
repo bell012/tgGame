@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { HelpSection, TaskItem } from './ticketTaskMapper'
+import type { HelpSection, TaskItem } from './types'
 
 export const useTaskHelpPop = () => {
   const ruleVisible = ref(false)

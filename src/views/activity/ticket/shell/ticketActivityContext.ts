@@ -1,6 +1,6 @@
 import type { MbTicketRecord } from '@/api/interface/activity'
 import type { InjectionKey, Ref } from 'vue'
-import type { LuckySpinPrize, TicketActivitySession } from '../shared/types'
+import type { TicketPrize, TicketActivitySession } from '../shared/types'
 import { getActiveTicketParams } from './ticketToast'
 
 export interface TicketActivityContext {
@@ -17,7 +17,7 @@ export interface TicketGameRuntimeContext {
   isInteractionLocked: Ref<boolean>
   /** 大转盘专用运行时（其它玩法为 undefined） */
   spin?: {
-    wheelPrizes: Ref<LuckySpinPrize[]>
+    wheelPrizes: Ref<TicketPrize[]>
     canSpin: Ref<boolean>
     registerWheelRef: (el: unknown) => void
     onGo: () => void

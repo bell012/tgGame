@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import type { LuckySpinVoucherCardData } from '@/views/activity/ticket/shared/types'
+import type { TicketVoucherCardData } from '@/views/activity/ticket/shared/types'
 import {
   getGameIcon,
   getVoucherCardBg,
@@ -29,7 +29,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 interface Props {
-  data: LuckySpinVoucherCardData
+  data: TicketVoucherCardData
 }
 
 const props = defineProps<Props>()

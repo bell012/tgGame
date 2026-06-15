@@ -126,10 +126,10 @@ import { globalTicketToastState } from '../ticket/shell/ticketToast'
 import {
   getTicketTaskCompleteRequirementsRule,
   getTicketTaskRuleItems
-} from '../ticket/shared/ticketTaskMapper'
-import { useTaskHelpPop } from '../ticket/shared/useTaskHelpPop'
-import { useTicketTaskActions } from '../ticket/shared/useTicketTaskActions'
-import { useTicketTaskData } from '../ticket/shared/useTicketTaskData'
+} from '../ticket/shared/task-pop/helpers'
+import { useTaskHelpPop } from '../ticket/shared/task-pop/useTaskHelpPop'
+import { useTicketTaskActions } from '../ticket/shared/task-pop/useTicketTaskActions'
+import { useTicketTaskData } from '../ticket/shared/task-pop/useTicketTaskData'
 import { Progress } from 'vant'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

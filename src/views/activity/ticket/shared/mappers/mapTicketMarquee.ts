@@ -4,7 +4,7 @@ import RatingAvatarP2 from '@/static/svg/game/detail/comment/p2.webp?url'
 import RatingAvatarP3 from '@/static/svg/game/detail/comment/p3.svg?url'
 import RatingAvatarP4 from '@/static/svg/game/detail/comment/p4.svg?url'
 import RatingAvatarP5 from '@/static/svg/game/detail/comment/p5.svg?url'
-import type { WinnerTickerItem } from './types'
+import type { WinnerTickerItem } from '../types'
 
 const MARQUEE_FALLBACK_AVATARS = [
   RatingAvatarP1,

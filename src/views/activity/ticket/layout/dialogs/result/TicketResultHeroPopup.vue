@@ -55,7 +55,7 @@
 import LottiePlayer from '@/components/LottiePlayer.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import GoldenEggPop from '@/views/activity/ticket/components/golden-egg/golden-egg-pop.vue'
-import { TICKET_TYPE_TO_GAME_ID } from '@/views/activity/ticket/shared/mbTicketMapper'
+import { TICKET_TYPE_TO_GAME_ID } from '@/views/activity/ticket/shared/mappers/mbTicketMapper'
 import {
   LUCKY_SPIN_CASH_RESULT_LOTTIE,
   MYSTERY_BOX_OPEN_LOTTIE,

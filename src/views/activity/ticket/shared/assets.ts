@@ -1,4 +1,4 @@
-import type { LuckySpinPrize, LuckySpinResultVariant } from './types'
+import type { TicketPrize, TicketResultVariant } from './types'
 
 import heroCash from '@/static/img/lucky-spin/modals/hero-cash.png'
 import heroNoPrize from '@/static/img/lucky-spin/modals/hero-no-prize.png'
@@ -53,7 +53,7 @@ export const LUCKY_SPIN_ASSETS = {
 } as const
 
 export const RESULT_HERO_IMAGES: Record<
-  Extract<LuckySpinResultVariant, 'cash' | 'spin_again' | 'no_prize'>,
+  Extract<TicketResultVariant, 'cash' | 'spin_again' | 'no_prize'>,
   string
 > = {
   cash: heroCash,
@@ -65,4 +65,4 @@ export const getGameIcon = (id: string) =>
   LUCKY_SPIN_ASSETS.vouchers.games[id as keyof typeof LUCKY_SPIN_ASSETS.vouchers.games] ??
   gameLuckySpin
 
-export const getPrizeIcon = (prize: Pick<LuckySpinPrize, 'icon'>) => prize.icon ?? ''
+export const getPrizeIcon = (prize: Pick<TicketPrize, 'icon'>) => prize.icon ?? ''

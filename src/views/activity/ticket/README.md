@@ -31,7 +31,7 @@
 | 现金券 | `cash_voucher`       | `openTicketActivity('cash_voucher')`       |
 | 红包   | `lucky_red_envelope` | `openTicketActivity('lucky_red_envelope')` |
 
-票券 `type` → `gameId`（`shared/mbTicketMapper.ts` → `TICKET_TYPE_TO_GAME_ID`）：1 现金、2 红包、3 砸金蛋、4 大转盘、5 拼多多（无入口）、6 盲盒。
+票券 `type` → `gameId`（[`shared/mappers/mbTicketMapper.ts`](shared/mappers/mbTicketMapper.ts) → `TICKET_TYPE_TO_GAME_ID`）：1 现金、2 红包、3 砸金蛋、4 大转盘、5 拼多多（无入口）、6 盲盒。
 
 ### 2.2 从任意页面打开（不指定票）
 
@@ -74,7 +74,7 @@ const openGoldenEgg = () => openTicketActivity('golden_egg')
 
 ```ts
 import { openTicketActivity } from '@/utils/openTicketActivity'
-import { TICKET_TYPE_TO_GAME_ID } from '@/views/activity/ticket/shared/mbTicketMapper'
+import { TICKET_TYPE_TO_GAME_ID } from '@/views/activity/ticket/shared/mappers/mbTicketMapper'
 import type { MbTicketRecord } from '@/api/interface/activity'
 
 function useVoucherNow(record: MbTicketRecord) {
@@ -152,17 +152,23 @@ ticket/
 │   ├── ticketToast.ts              # 活动页 visible / session
 │   ├── ticketDialog.ts             # 子弹窗 state
 │   ├── gameRegistry.ts             # 玩法 adapter 注册
+│   ├── composables/                # Provider 挂载、Header、Esc 关闭
 │   ├── useTicketActivityShell.ts   # session 加载 / 券种切换 / 结果关闭刷新
 │   └── ticketActivityContext.ts    # provide/inject 上下文
 ├── layout/                         # 活动页 UI 壳
-│   ├── composables/                # layout 编排 composable（跑马灯、PC 布局、券种条）
+│   ├── TicketActivityOrchestrator.vue
 │   ├── TicketActivityPage.vue      # Mobile / Desktop 分支 + adapter 驱动
-│   ├── TicketActivityMobileLayout.vue
-│   ├── TicketActivityDesktopLayout.vue
-│   └── TicketActivityStatePanel.vue
-├── components/<gameId>/            # 各玩法 UI + adapter
-└── shared/                         # 类型、映射、常量、useTicketUseAction
-    └── types.ts                    # 模块公共类型
+│   ├── TicketActivityContent.vue   # loading/error 与主内容 slot
+│   ├── composables/                # 跑马灯、PC 布局、券种条
+│   └── dialogs/                    # 二级 overlay 弹窗
+├── components/<gameId>/            # 各玩法 UI + adapter（本优化不涉及）
+└── shared/
+    ├── actions/useTicketUseAction.ts
+    ├── mappers/                    # mbTicket、wheel、marquee、session
+    ├── layout-tokens/              # Mobile / PC 布局常量
+    ├── reminder/                   # Reminder 任务（triggerList）
+    ├── task-pop/                   # TaskPop 任务（threshold API）
+    └── types.ts
 ```
 
 | 用途            | 文件                                                  |
@@ -171,7 +177,7 @@ ticket/
 | 会话 / 开关弹窗 | `shell/ticketToast.ts`                                |
 | 活动编排        | `shell/useTicketActivityShell.ts`                     |
 | 玩法注册        | `shell/gameRegistry.ts`                               |
-| 票映射          | `shared/mbTicketMapper.ts`                            |
+| 票映射          | `shared/mappers/mbTicketMapper.ts`                    |
 | 页面入口        | `GlobalTicketToast.vue`                               |
 
 ---
@@ -181,5 +187,5 @@ ticket/
 1. 入口只用 `openTicketActivity` / `openLuckySpin`，调试才用 `openTicketToast`。
 2. 我的票券必须 `openTicketActivity(gameId, { record })`。
 3. 仅大转盘有完整逻辑；其它玩法用 `getActiveTicketParams()` 接 API。
-4. 倒计时在 `ticket/shared/ticketActivityCountdown.ts`，与「我的票券」分开维护。
+4. 倒计时在 `ticket/shared/utils/ticketActivityCountdown.ts`，与「我的票券」分开维护。
 5. 新增玩法：`TicketGameId` → `shell/gameRegistry.ts` 注册 adapter → `components/` 实现 UI → `TICKET_TYPE_TO_GAME_ID` → 入口调 `openTicketActivity`。
