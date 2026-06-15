@@ -1,15 +1,31 @@
-# layout/dialogs — 票券活动子弹窗
+# layout/popups — 票券活动二级弹窗
 
 5 玩法共用的二级 overlay 弹窗，由 [`GlobalTicketToast.vue`](../../GlobalTicketToast.vue) 零 props 挂载。
 
-详细模块说明见 [`../../README.md`](../../README.md)。**`layout/` 根目录**下的 `TicketActivityPage`、`TicketVoucher*` 等属于活动页布局，不属于本目录。
+详细模块说明见 [`../../README.md`](../../README.md)。
+
+## 与 layout 其他目录的关系
+
+```mermaid
+flowchart LR
+  GTT[GlobalTicketToast]
+  layout[layout]
+  popups[layout/popups]
+
+  GTT --> layout
+  GTT --> popups
+  layout --> widgets[widgets]
+```
+
+- **`layout/`** — 主活动全屏层（Orchestrator、page、widgets、composables）
+- **`popups/`**（本目录）— 二级 overlay，叠在活动页之上，自读 `globalTicketDialogState`
 
 ---
 
 ## 目录结构
 
 ```
-dialogs/
+popups/
 ├── README.md
 ├── index.ts                         # 对外唯一出口
 ├── composables/
@@ -80,7 +96,7 @@ import {
   TicketReminderPopup,
   TicketResultHeroPopup,
   TicketResultCardsPopup
-} from '@/views/activity/ticket/layout/dialogs'
+} from '@/views/activity/ticket/layout/popups'
 ```
 
 ---

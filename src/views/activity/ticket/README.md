@@ -133,7 +133,7 @@ closeTicketToast() // 含清 session
 | 券解锁   | `openTicketTaskSuccessDialog({ voucherName, rules })`                     |
 | 中奖结果 | `openTicketResultDialog({ variant, highlightText?, vouchers? })`          |
 
-`variant`：`cash` | `spin_again` | `no_prize` | `voucher_single` | `voucher_multi`。详情见 [`layout/dialogs/README.md`](layout/dialogs/README.md)。
+`variant`：`cash` | `spin_again` | `no_prize` | `voucher_single` | `voucher_multi`。详情见 [`layout/popups/README.md`](layout/popups/README.md)。
 
 ---
 
@@ -148,19 +148,17 @@ closeTicketToast() // 含清 session
 
 ```
 ticket/
-├── shell/                          # 全局 state + 编排
-│   ├── ticketToast.ts              # 活动页 visible / session
-│   ├── ticketDialog.ts             # 子弹窗 state
-│   ├── gameRegistry.ts             # 玩法 adapter 注册
-│   ├── composables/                # Provider 挂载、Header、Esc 关闭
-│   ├── useTicketActivityShell.ts   # session 加载 / 券种切换 / 结果关闭刷新
-│   └── ticketActivityContext.ts    # provide/inject 上下文
-├── layout/                         # 活动页 UI 壳
+├── shell/                          # 纯 TS 运行时（见 shell/README.md）
+│   ├── ticketToast.ts
+│   ├── ticketDialog.ts
+│   ├── gameRegistry.ts
+│   └── useTicketActivityShell.ts
+├── layout/                         # 活动页 UI
 │   ├── TicketActivityOrchestrator.vue
-│   ├── TicketActivityPage.vue      # Mobile / Desktop 分支 + adapter 驱动
-│   ├── TicketActivityContent.vue   # loading/error 与主内容 slot
-│   ├── composables/                # 跑马灯、PC 布局、券种条
-│   └── dialogs/                    # 二级 overlay 弹窗
+│   ├── page/                       # 页面壳（H5/PC、loading/error）
+│   ├── widgets/                    # Header、Ticker、券种条
+│   ├── composables/                # 活动页 hook
+│   └── popups/                     # 二级 overlay 弹窗
 ├── components/<gameId>/            # 各玩法 UI + adapter（本优化不涉及）
 └── shared/
     ├── actions/useTicketUseAction.ts
@@ -171,14 +169,14 @@ ticket/
     └── types.ts
 ```
 
-| 用途            | 文件                                                  |
-| --------------- | ----------------------------------------------------- |
-| 业务入口        | `src/utils/openTicketActivity.ts`、`openLuckySpin.ts` |
-| 会话 / 开关弹窗 | `shell/ticketToast.ts`                                |
-| 活动编排        | `shell/useTicketActivityShell.ts`                     |
-| 玩法注册        | `shell/gameRegistry.ts`                               |
-| 票映射          | `shared/mappers/mbTicketMapper.ts`                    |
-| 页面入口        | `GlobalTicketToast.vue`                               |
+| 用途            | 文件                                                                        |
+| --------------- | --------------------------------------------------------------------------- |
+| 业务入口        | `src/utils/openTicketActivity.ts`、`openLuckySpin.ts`                       |
+| 会话 / 开关弹窗 | `shell/ticketToast.ts`                                                      |
+| 活动编排        | `layout/TicketActivityOrchestrator.vue` + `shell/useTicketActivityShell.ts` |
+| 玩法注册        | `shell/gameRegistry.ts`                                                     |
+| 票映射          | `shared/mappers/mbTicketMapper.ts`                                          |
+| 页面入口        | `GlobalTicketToast.vue`                                                     |
 
 ---
 

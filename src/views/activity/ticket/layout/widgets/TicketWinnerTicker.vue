@@ -31,10 +31,10 @@
 </template>
 
 <script setup lang="ts">
-import type { TicketWinnerTickerData, WinnerTickerItem } from '../shared/types'
-import { getMarqueeFallbackAvatar } from '../shared/mappers/mapTicketMarquee'
-import { TICKET_PC_LAYOUT } from '../shared/layout-tokens/ticketPcLayout'
-import { TICKET_MOBILE_LAYOUT } from '../shared/layout-tokens/ticketMobileLayout'
+import type { TicketWinnerTickerData, WinnerTickerItem } from '../../shared/types'
+import { getMarqueeFallbackAvatar } from '../../shared/mappers/mapTicketMarquee'
+import { TICKET_PC_LAYOUT } from '../../shared/layout-tokens/ticketPcLayout'
+import { TICKET_MOBILE_LAYOUT } from '../../shared/layout-tokens/ticketMobileLayout'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 

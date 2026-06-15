@@ -3,8 +3,8 @@
 
   职责边界：
   - 本文件：Teleport + 挂载子树，不含业务编排
-  - TicketActivityOrchestrator：活动页 session / 券种切换 / provide 上下文
-  - layout/dialogs/*：子弹窗，自读 globalTicketDialogState，零 props
+  - TicketActivityOrchestrator：活动页 session / 券种切换 / provide 上下文（layout/）
+  - layout/popups/*：二级弹窗，自读 globalTicketDialogState，零 props
 -->
 <template>
   <Teleport to="body">
@@ -24,11 +24,7 @@
 
 <script setup lang="ts">
 import TaskPop from '../components/task-pop.vue'
-import {
-  TicketReminderPopup,
-  TicketResultCardsPopup,
-  TicketResultHeroPopup
-} from './layout/dialogs'
+import { TicketReminderPopup, TicketResultCardsPopup, TicketResultHeroPopup } from './layout/popups'
 import TicketActivityOrchestrator from './layout/TicketActivityOrchestrator.vue'
 import { closeTicketTaskPop, globalTicketToastState, openTicketTaskPop } from './shell/ticketToast'
 import { computed } from 'vue'

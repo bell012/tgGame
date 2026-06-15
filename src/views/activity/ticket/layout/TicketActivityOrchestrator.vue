@@ -25,10 +25,13 @@ import LuckySpinRuntimeProvider from '../components/lucky-spin/LuckySpinRuntimeP
 import type { LuckySpinRuntimeExpose } from '../components/lucky-spin/useLuckySpinRuntime'
 import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
 import { navigateTo } from '@/utils/router'
+import TicketActivityPage from './page/TicketActivityPage.vue'
+import { computed, provide, shallowRef, toRef } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useLuckySpinProviderMount } from './composables/useLuckySpinProviderMount'
+import { useTicketActivityHeader } from './composables/useTicketActivityHeader'
+import { useTicketEscapeClose } from './composables/useTicketEscapeClose'
 import { useTicketMarquee } from './composables/useTicketMarquee'
-import { useLuckySpinProviderMount } from '../shell/composables/useLuckySpinProviderMount'
-import { useTicketActivityHeader } from '../shell/composables/useTicketActivityHeader'
-import { useTicketEscapeClose } from '../shell/composables/useTicketEscapeClose'
 import { openTicketReminderDialog } from '../shell/ticketDialog'
 import {
   TICKET_ACTIVITY_CONTEXT_KEY,
@@ -38,9 +41,6 @@ import {
 import { REGISTER_LUCKY_SPIN_RUNTIME_KEY } from '../shell/registerLuckySpinRuntime'
 import { getActiveTicketParams, globalTicketToastState } from '../shell/ticketToast'
 import { useTicketActivityShell } from '../shell/useTicketActivityShell'
-import TicketActivityPage from './TicketActivityPage.vue'
-import { computed, provide, shallowRef, toRef } from 'vue'
-import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const toastState = globalTicketToastState

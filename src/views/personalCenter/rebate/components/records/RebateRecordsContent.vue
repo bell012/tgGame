@@ -11,11 +11,11 @@
         :key="tab.key"
         :ref="element => setTabButtonRef(tab.key, element)"
         type="button"
-        class="shrink-0 rounded-full px-4 font-[600] transition-colors duration-200"
+        class="shrink-0 rounded-full border px-4 font-[600] transition-colors duration-200"
         :class="
           activePeriod === tab.key
-            ? 'border border-solid border-theme-primary bg-theme-3 text-text-1'
-            : 'border border-transparent bg-bg-3 text-text-2 hover:text-text-1'
+            ? 'border-[3px] border-theme-primary bg-theme-primary text-text-4'
+            : 'border-[3px] border-transparent bg-bg-3 text-text-2 hover:text-text-1'
         "
         @click="handleTabClick(tab.key)"
       >
