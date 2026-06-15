@@ -23,6 +23,13 @@ export const LUCKY_SPIN_CASH_RESULT_LOTTIE = '/lottie/lucky-spin/cash-result/cas
 /** 盲盒开箱庆祝 Lottie（结果弹窗 hero 区播放，按 open.json 全长） */
 export const MYSTERY_BOX_OPEN_LOTTIE = '/lottie/mystery-box/open/open.json'
 
+/** 幸运红包三段动画：入场、待机循环、打开。 */
+export const LUCKY_RED_ENVELOPE_LOTTIE = {
+  intro: '/lottie/lucky-red-envelope/intro/intro.json',
+  idle: '/lottie/lucky-red-envelope/idle/idle.json',
+  open: '/lottie/lucky-red-envelope/open/open.json'
+} as const
+
 export const LUCKY_SPIN_ASSETS = {
   controls: {
     modalHelpIcon

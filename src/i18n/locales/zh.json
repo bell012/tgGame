@@ -1612,6 +1612,7 @@
       "sorry": "很遗憾！",
       "spinAgain": "再转一次",
       "noPrize": "未中奖",
+      "wonReward": "您赢得了一份奖励",
       "creditedToWallet": "已发放至您的钱包",
       "extraSpin": "您获得了一次额外旋转！",
       "betterLuck": "下次好运！",
@@ -1639,7 +1640,9 @@
     },
     "redPacket": {
       "title": "您获得了红包",
-      "expiresIn": "红包过期倒计时"
+      "expiresIn": "红包过期倒计时",
+      "openAction": "打开",
+      "resultCongrats": "恭喜！"
     },
     "taskPop": {
       "title": "温馨提示",

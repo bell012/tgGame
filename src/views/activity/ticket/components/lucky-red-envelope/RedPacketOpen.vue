@@ -1,110 +1,108 @@
 <template>
   <div
-    class="relative shrink-0 overflow-hidden"
+    class="relative h-[314px] w-[328.333px] shrink-0 overflow-hidden sm:h-[471px] sm:w-[492.5px]"
     data-game-id="lucky_red_envelope"
-    :style="areaStyle"
   >
     <!-- 展台及阴影 -->
-    <div class="absolute bottom-0 left-1/2 -translate-x-1/2" :style="stageStyle">
+    <div
+      class="absolute bottom-0 left-1/2 h-[67px] w-[286px] -translate-x-1/2 sm:h-[100.5px] sm:w-[429px]"
+    >
       <img
         :src="standImage"
         alt=""
         class="pointer-events-none absolute inset-0 h-full w-full select-none object-contain"
         draggable="false"
       />
-      <span class="red-packet-shadow red-packet-shadow--large" :style="largeShadowStyle" />
-      <span class="red-packet-shadow red-packet-shadow--small" :style="smallShadowStyle" />
     </div>
 
-    <!-- 未打开红包 -->
-    <img
-      v-if="!opened"
-      :src="closedPacketImage"
-      alt=""
-      class="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 select-none object-contain"
-      :style="packetStyle"
-      draggable="false"
+    <!-- 红包入场动画：结束后保持最后一帧，作为待机状态的红包主体 -->
+    <div
+      v-show="phase === 'intro' || phase === 'idle'"
+      ref="introContainer"
+      class="pointer-events-none absolute left-[58.333px] top-0 h-[266.667px] w-[211.667px] sm:left-[87.5px] sm:h-[400px] sm:w-[317.5px] [&_svg]:!h-full [&_svg]:!w-full"
     />
 
-    <!-- 已打开红包 -->
-    <div v-else class="absolute top-0" :style="openedPacketStyle">
-      <div class="absolute bg-[#FF0533]" :style="openedOuterStyle" />
-      <div class="absolute bg-[#FFF1CF]" :style="openedInnerStyle" />
+    <!-- 红包待机动画：叠加按钮扫光和扩散效果 -->
+    <div
+      v-show="phase === 'idle'"
+      ref="idleContainer"
+      class="pointer-events-none absolute left-[94.167px] top-[98.667px] h-[140px] w-[140px] sm:left-[141.25px] sm:top-[148px] sm:h-[210px] sm:w-[210px] [&_svg]:!h-full [&_svg]:!w-full"
+    />
 
-      <img
-        :src="openedBottomImage"
-        alt=""
-        class="pointer-events-none absolute left-0 w-full select-none object-cover object-bottom"
-        :style="openedBottomStyle"
-        draggable="false"
-      />
+    <!-- 打开红包动画：接口领取成功后播放，并保持最后一帧 -->
+    <div
+      v-show="phase === 'opening' || phase === 'opened'"
+      ref="openContainer"
+      class="pointer-events-none absolute left-[58.333px] top-0 h-[266.667px] w-[211.667px] sm:left-[87.5px] sm:h-[400px] sm:w-[317.5px] [&_svg]:!h-full [&_svg]:!w-full"
+    />
 
-      <p
-        class="absolute left-1/2 m-0 -translate-x-1/2 whitespace-nowrap text-center font-bold text-[#F1160E]"
-        :style="congratsStyle"
+    <!-- 打开后的红包中心符号 -->
+    <div
+      v-if="phase === 'opened'"
+      class="pointer-events-none absolute left-[125.333px] top-[130px] flex h-[77.667px] w-[77.667px] items-center justify-center sm:left-[188px] sm:top-[195px] sm:h-[116.5px] sm:w-[116.5px]"
+    >
+      <span
+        class="font-inter h-[54.333px] w-[29.667px] text-center text-[45px] font-[700] leading-[54.333px] text-[#FF2321] [text-shadow:0_1px_0.333px_#FCF5EA] sm:h-[81.5px] sm:w-[44.5px] sm:text-[67.5px] sm:leading-[81.5px] sm:[text-shadow:0_1.5px_0.5px_#FCF5EA]"
       >
-        {{ t('luckySpinPage.result.congratulations') }}
+        $
+      </span>
+    </div>
+
+    <!-- 打开后的动态奖励文案 -->
+    <div
+      v-if="phase === 'opened'"
+      class="pointer-events-none absolute left-[58.333px] top-0 h-[266.667px] w-[211.667px] sm:left-[87.5px] sm:h-[400px] sm:w-[317.5px]"
+    >
+      <p
+        class="font-inter absolute left-1/2 top-[10px] m-0 h-[24.333px] w-[97.333px] -translate-x-1/2 whitespace-nowrap text-center text-[20px] font-[700] leading-[24.333px] text-[#F1160E] sm:top-[15px] sm:h-[36.5px] sm:w-[146px] sm:text-[30px] sm:leading-[36.5px]"
+      >
+        {{ t('ticketPage.redPacket.resultCongrats') }}
       </p>
       <p
-        class="absolute left-1/2 m-0 -translate-x-1/2 whitespace-nowrap text-center font-normal text-[#4D2900]"
-        :style="rewardSubtitleStyle"
+        class="font-inter absolute left-1/2 top-[37.333px] m-0 h-[17px] w-[118.333px] -translate-x-1/2 whitespace-nowrap text-center text-[14px] font-[400] leading-[17px] text-[#4D2900] sm:top-[56px] sm:h-[25.5px] sm:w-[177.5px] sm:text-[21px] sm:leading-[25.5px]"
       >
-        You won a reward
+        {{ t('luckySpinPage.result.wonReward') }}
       </p>
 
       <div
-        class="absolute left-1/2 flex -translate-x-1/2 flex-col items-center"
-        :style="rewardContentStyle"
+        class="absolute left-1/2 top-[64.333px] flex h-[57px] w-[171.667px] -translate-x-1/2 flex-col items-center gap-[5px] sm:top-[96.5px] sm:h-[85.5px] sm:w-[257.5px] sm:gap-[7.5px]"
       >
-        <div class="flex items-center justify-center" :style="amountRowStyle">
+        <div
+          class="flex h-[40px] w-[170px] items-center justify-center gap-[0.667px] sm:h-[60px] sm:w-[255px] sm:gap-[1px]"
+        >
           <span
-            class="flex shrink-0 items-center justify-center font-bold text-[#F1160E]"
-            :style="currencyStyle"
+            class="font-inter flex h-[27.333px] w-[27.333px] shrink-0 items-center justify-center text-center text-[23.333px] font-[700] leading-[27.333px] text-[#F1160E] sm:h-[41px] sm:w-[41px] sm:text-[35px] sm:leading-[41px]"
           >
             {{ currencySymbol }}
           </span>
           <span
-            class="flex min-w-0 items-center justify-center text-center font-bold text-[#F1160E]"
-            :style="amountStyle"
+            class="font-inter flex h-[40px] max-w-[115px] min-w-0 items-center justify-center text-center text-[33px] font-[700] leading-[40px] text-[#F1160E] sm:h-[60px] sm:max-w-[172.5px] sm:text-[49.5px] sm:leading-[60px]"
           >
             {{ amountText }}
           </span>
         </div>
         <p
-          class="m-0 whitespace-nowrap text-center font-normal text-[#A1782B]"
-          :style="creditStyle"
+          class="font-inter m-0 h-[12px] w-[170px] whitespace-nowrap text-center text-[10px] font-[400] leading-[12px] text-[#A1782B] sm:h-[18px] sm:w-[255px] sm:text-[15px] sm:leading-[18px]"
         >
           {{ t('luckySpinPage.result.creditedToWallet') }}
         </p>
       </div>
     </div>
 
-    <!-- 打开按钮 -->
+    <!-- 红包点击热区 -->
     <button
+      v-if="phase === 'idle'"
       type="button"
-      class="absolute z-10 border-0 bg-transparent p-0 disabled:opacity-80"
-      :class="{ 'cursor-default': opened || isPending }"
-      :style="buttonStyle"
-      :aria-label="opened ? undefined : 'OPEN'"
-      :disabled="opened || isPending"
+      class="absolute left-[125.333px] top-[130px] z-10 flex h-[77.667px] w-[77.667px] items-center justify-center border-0 bg-transparent p-0 sm:left-[188px] sm:top-[195px] sm:h-[116.5px] sm:w-[116.5px]"
+      :class="{ 'cursor-default': isPending }"
+      :aria-label="t('ticketPage.redPacket.openAction')"
+      :disabled="isPending"
       @click="handleOpen"
     >
-      <!-- <span
-        v-if="!opened"
-        class="red-packet-ripple pointer-events-none absolute left-1/2 rounded-full"
-        :style="rippleStyle"
-      /> -->
-      <img
-        :src="buttonImage"
-        alt=""
-        class="pointer-events-none absolute inset-0 h-full w-full select-none object-contain"
-        draggable="false"
-      />
       <span
-        class="pointer-events-none absolute left-1/2 text-center font-bold text-[#FF2321]"
-        :style="buttonTextStyle"
+        class="font-inter pointer-events-none h-[36px] w-[60px] text-center text-[18.333px] font-[700] leading-[36px] tracking-[0.667px] text-[#FF2321] [text-shadow:0_1px_0.333px_#FCF5EA] sm:h-[54px] sm:w-[90px] sm:text-[27.5px] sm:leading-[54px] sm:tracking-[1px] sm:[text-shadow:0_1.5px_0.5px_#FCF5EA]"
       >
-        {{ opened ? currencySymbol : 'OPEN' }}
+        {{ t('ticketPage.redPacket.openAction') }}
       </span>
     </button>
   </div>
@@ -112,16 +110,14 @@
 
 <script setup lang="ts">
 import type { MbTicketRecord, UseTicketResult } from '@/api/interface/activity'
-import { useIsMobile } from '@/composables/useMediaQuery'
-import buttonImage from '@/static/img/lucky-spin/lucky-red-envelope/red-packet-button.png'
-import closedPacketImage from '@/static/img/lucky-spin/lucky-red-envelope/red-packet-closed.png'
-import openedBottomImage from '@/static/img/lucky-spin/lucky-red-envelope/red-packet-opened-bottom.png'
 import standImage from '@/static/img/lucky-spin/lucky-red-envelope/stand.png'
 import { getCurrencySymbol } from '@/utils/locale'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTicketUseAction } from '../../shared'
+import { LUCKY_RED_ENVELOPE_LOTTIE } from '../../shared/assets'
 import { globalTicketToastState } from '../../shell/ticketToast'
+import { useRedEnvelopeLottie } from './useRedEnvelopeLottie'
 
 interface RedPacketTicketRecord extends MbTicketRecord {
   amount?: number | string
@@ -133,14 +129,19 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const isMobile = useIsMobile()
-const opened = ref(false)
 const openedRewardAmount = ref<number | string | null>(null)
 const { runUseTicket, isPending } = useTicketUseAction()
-
-/** H5 为三倍稿缩放到 1 倍，PC 为原稿的一半。 */
-const scale = computed(() => (isMobile.value ? 1 / 3 : 1 / 2))
-const px = (value: number) => `${value * scale.value}px`
+const introContainer = ref<HTMLElement | null>(null)
+const idleContainer = ref<HTMLElement | null>(null)
+const openContainer = ref<HTMLElement | null>(null)
+const { phase, createPlayers, reset, playOpen } = useRedEnvelopeLottie({
+  introContainer,
+  idleContainer,
+  openContainer,
+  introPath: LUCKY_RED_ENVELOPE_LOTTIE.intro,
+  idlePath: LUCKY_RED_ENVELOPE_LOTTIE.idle,
+  openPath: LUCKY_RED_ENVELOPE_LOTTIE.open
+})
 
 const activeTicket = computed(
   () => globalTicketToastState.activeTicketRecord as RedPacketTicketRecord | null
@@ -154,191 +155,34 @@ const amountText = computed(() => {
 
 const currencySymbol = computed(() => getCurrencySymbol(activeTicket.value?.currency))
 
-const areaStyle = computed(() => ({
-  width: px(985),
-  height: px(942)
-}))
-
-const stageStyle = computed(() => ({
-  width: px(858),
-  height: px(201)
-}))
-
-const largeShadowStyle = computed(() => ({
-  width: px(540),
-  height: px(61),
-  top: '24.38%',
-  filter: `blur(${px(10)})`
-}))
-
-const smallShadowStyle = computed(() => ({
-  width: px(540),
-  height: px(37),
-  top: '25.87%',
-  filter: `blur(${px(6)})`
-}))
-
-const packetStyle = computed(() => ({
-  width: px(635),
-  height: px(800)
-}))
-
-const openedPacketStyle = computed(() => ({
-  width: px(635),
-  height: px(800),
-  left: px(175)
-}))
-
-const openedOuterStyle = computed(() => ({
-  left: '0.87%',
-  right: '0.87%',
-  top: '11.25%',
-  bottom: '25.88%',
-  border: `${px(5)} solid #FFF2C3`,
-  borderRadius: px(30)
-}))
-
-const openedInnerStyle = computed(() => ({
-  left: '5.12%',
-  right: '5.12%',
-  top: 0,
-  bottom: '22.12%',
-  borderRadius: px(42)
-}))
-
-const openedBottomStyle = computed(() => ({
-  top: px(351),
-  height: px(449)
-}))
-
-const congratsStyle = computed(() => ({
-  width: px(292),
-  height: px(73),
-  top: px(30),
-  fontSize: px(60),
-  lineHeight: px(73)
-}))
-
-const rewardSubtitleStyle = computed(() => ({
-  width: px(355),
-  height: px(51),
-  top: px(112),
-  fontSize: px(42),
-  lineHeight: px(51)
-}))
-
-const rewardContentStyle = computed(() => ({
-  width: px(515),
-  height: px(171),
-  top: px(193),
-  gap: px(15)
-}))
-
-const amountRowStyle = computed(() => ({
-  width: px(510),
-  height: px(120),
-  gap: px(2)
-}))
-
-const currencyStyle = computed(() => ({
-  width: px(82),
-  height: px(82),
-  fontSize: px(70),
-  lineHeight: px(82)
-}))
-
-const amountStyle = computed(() => ({
-  maxWidth: px(420),
-  height: px(120),
-  fontSize: px(99),
-  lineHeight: px(120)
-}))
-
-const creditStyle = computed(() => ({
-  width: px(510),
-  height: px(36),
-  fontSize: px(30),
-  lineHeight: px(36)
-}))
-
-const buttonStyle = computed(() => ({
-  width: px(233),
-  height: px(233),
-  left: px(376),
-  top: px(390),
-  filter: `drop-shadow(0 ${px(12)} ${px(12)} rgba(212, 1, 1, 0.25))`
-}))
-
-const buttonTextStyle = computed(() => {
-  const isOpened = opened.value
-  return {
-    width: px(isOpened ? 89 : 167),
-    height: px(isOpened ? 163 : 73),
-    top: '50%',
-    transform: 'translate(-50%, -50%)',
-    fontSize: px(isOpened ? 135 : 60),
-    lineHeight: px(isOpened ? 163 : 73),
-    textShadow: `0 ${px(3)} ${px(1)} #FCF5EA`
-  }
-})
-
 const resolveRewardAmount = (result: UseTicketResult | null | undefined) => {
   return result?.amount ?? result?.rewardAmount ?? null
 }
 
 const handleOpen = async () => {
-  if (opened.value || isPending.value) return
+  if (phase.value !== 'idle' || isPending.value) return
 
   await runUseTicket({
     voucherName: t('ticketPage.redPacket.title'),
     fallbackErrorMessage: t('luckySpinPage.loadFailed'),
     onSuccess: result => {
       openedRewardAmount.value = resolveRewardAmount(result)
-      opened.value = true
+      playOpen()
       emit('open')
     }
   })
 }
 
+onMounted(() => {
+  void createPlayers()
+})
+
 /** 切换到另一张红包票券时恢复未打开状态。 */
 watch(
   () => [activeTicket.value?.rowId, activeTicket.value?.ticketId],
   () => {
-    opened.value = false
     openedRewardAmount.value = null
+    reset()
   }
 )
 </script>
-
-<style scoped>
-.red-packet-shadow {
-  position: absolute;
-  left: 50%;
-  display: block;
-  border-radius: 9999px;
-  background: #7a0006;
-  transform: translateX(-50%);
-}
-
-.red-packet-ripple {
-  animation: red-packet-ripple 1.4s ease-out infinite;
-}
-
-@keyframes red-packet-ripple {
-  0% {
-    opacity: 0.9;
-    transform: translate(-50%, -50%) scale(0.82);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(1.18);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .red-packet-ripple {
-    animation: none;
-  }
-}
-</style>

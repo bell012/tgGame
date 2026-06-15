@@ -890,7 +890,8 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
         {
           id: 'red-envelope-event',
           name: t('menu.red-envelope-event'),
-          icon: newSideIcons.redEnvelopeEventIcon
+          icon: newSideIcons.redEnvelopeEventIcon,
+          handler: () => openTicketActivity('lucky_red_envelope')
         },
         {
           id: 'credit-loan',

@@ -1620,6 +1620,7 @@
       "sorry": "Sorry!",
       "spinAgain": "Spin Again",
       "noPrize": "No Prize",
+      "wonReward": "You won a reward",
       "creditedToWallet": "Credited to your wallet",
       "extraSpin": "You earned one extra spin!",
       "betterLuck": "Better luck next time!",
@@ -1647,7 +1648,9 @@
     },
     "redPacket": {
       "title": "You got Red Packet",
-      "expiresIn": "Red Packet expires in"
+      "expiresIn": "Red Packet expires in",
+      "openAction": "OPEN",
+      "resultCongrats": "Congrats!"
     },
     "taskPop": {
       "title": "Kind Reminder",
