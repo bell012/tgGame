@@ -631,7 +631,7 @@
     "common": {
       "filter": "筛选",
       "apply": "应用",
-      "noData": "暂无数据"
+      "noData": "目前没有可用数据"
     },
     "invitePoster": {
       "saveImage": "保存海报",

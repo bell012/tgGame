@@ -61,6 +61,9 @@
               ? 'border border-theme-primary bg-theme-3 text-text-1'
               : 'bg-bg-2 text-text-2'
           "
+          :style="{
+            border: `1px solid ${props.activeDateValue === option.value ? 'var(--color-theme-level-1)' : 'var(--color-opacity-10)'}`
+          }"
           @click="$emit('change-date', option.value)"
         >
           {{ option.label }}

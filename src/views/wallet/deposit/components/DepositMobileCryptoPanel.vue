@@ -15,9 +15,11 @@
             :key="coin.code"
             type="button"
             class="appearance-none p-1.5 sm:p-2 rounded-full bg-bg-3 lg:hover:bg-theme-3 text-xs flex items-center border"
-            :style="{
-              border: `1px solid ${coin.code === coinCode ? 'var(--color-theme-level-1)' : 'transparent'}`
-            }"
+            :class="
+              coin.code === coinCode
+                ? 'border-[3px] border-theme-primary bg-theme-primary text-text-4'
+                : 'border-transparent text-text-1 lg:hover:bg-theme-3'
+            "
             @click.stop="selectCoinCode(coin.code)"
           >
             <img class="w-5 aspect-square mr-1" :src="coin.icon" />

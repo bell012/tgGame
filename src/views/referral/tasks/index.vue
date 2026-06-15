@@ -119,7 +119,7 @@ import { ApiBusinessError, ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { formatBalance, getCurrencySymbol } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { buildReferralTaskPeriodRanges } from '../shared'
 import ReferralTaskPageContent from './components/ReferralTaskPageContent.vue'
@@ -328,8 +328,20 @@ const handleTabClick = (tabKey: ReferralTaskTabKey) => {
 /**
  * 处理打开规则页。
  */
-const handleOpenRules = () => {
-  navigateTo('/referral/rules')
+const handleOpenRules = async () => {
+  await navigateTo('/referral/rules')
+
+  if (isMobile.value) {
+    return
+  }
+
+  await nextTick()
+
+  if (typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }
 }
 
 /**
