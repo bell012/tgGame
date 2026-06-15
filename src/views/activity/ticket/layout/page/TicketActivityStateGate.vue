@@ -16,15 +16,17 @@
 </template>
 
 <script setup lang="ts">
-import type { TicketActivityContentProps, TicketActivityCoreEmits } from './types/layout-props'
+import type { TicketActivitySession } from '../../shared/types'
+import type { TicketActivityCoreEmits } from './activity-props'
 import TicketActivityStatePanel from './TicketActivityStatePanel.vue'
+import type { CSSProperties } from 'vue'
 
 defineProps<{
   isLoading: boolean
   loadError: boolean
-  activitySession: TicketActivityContentProps['activitySession']
+  activitySession: TicketActivitySession | null
   stateLayout: 'mobile' | 'desktop'
-  panelStyle?: Record<string, string>
+  panelStyle?: CSSProperties
 }>()
 
 const emit = defineEmits<Pick<TicketActivityCoreEmits, 'retry'>>()

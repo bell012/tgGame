@@ -25,7 +25,9 @@ export interface TicketActivityCoreProps {
 
 export type TicketActivityLayoutProps = TicketActivityCoreProps
 
-export type TicketActivityContentProps = TicketActivityCoreProps & {
+export interface TicketActivityStateGateProps {
+  isLoading: boolean
+  loadError: boolean
   stateLayout: 'mobile' | 'desktop'
   panelStyle?: Record<string, string>
 }
@@ -48,4 +50,16 @@ export type TicketActivityCoreEmits = {
   prev: []
   next: []
   'open-voucher-list': []
+}
+
+export type TicketActivityLayoutBindings = TicketActivityLayoutProps
+
+export type TicketActivityLayoutListeners = {
+  close: () => void
+  'open-reminder': () => void
+  retry: () => void
+  select: (index: number) => void
+  prev: () => void
+  next: () => void
+  'open-voucher-list': () => void
 }

@@ -1,28 +1,12 @@
 <template>
-  <div
-    class="flex shrink-0 items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+8px)]"
-  >
-    <button
-      type="button"
-      class="flex h-9 w-9 items-center justify-center text-[18px] text-common-100 disabled:opacity-40"
-      :disabled="isInteractionLocked"
-      :aria-label="t('common.cancel')"
-      @click="emit('close')"
-    >
-      ✕
-    </button>
-    <button
-      type="button"
-      class="flex h-9 w-9 items-center justify-center text-[18px] text-common-80 disabled:opacity-40"
-      :disabled="isInteractionLocked"
-      :aria-label="t('luckySpinPage.reminder.title')"
-      @click="emit('open-reminder')"
-    >
-      ?
-    </button>
-  </div>
+  <TicketLayoutControls
+    variant="mobile-bar"
+    :is-interaction-locked="isInteractionLocked"
+    @close="emit('close')"
+    @open-reminder="emit('open-reminder')"
+  />
 
-  <TicketActivityContent
+  <TicketActivityStateGate
     :is-loading="isLoading"
     :load-error="loadError"
     :activity-session="activitySession"
@@ -61,23 +45,21 @@
         />
       </div>
     </div>
-  </TicketActivityContent>
+  </TicketActivityStateGate>
 </template>
 
 <script setup lang="ts">
-import { ticketMobileSectionClass } from '../shared/layout-tokens/ticketMobileLayout'
-import type { TicketActivityLayoutProps, TicketActivityCoreEmits } from './types/layout-props'
-import TicketActivityContent from './TicketActivityContent.vue'
-import TicketModalHeader from './TicketModalHeader.vue'
-import TicketVoucherFooter from './TicketVoucherFooter.vue'
-import TicketWinnerTicker from './TicketWinnerTicker.vue'
-import { useI18n } from 'vue-i18n'
+import { ticketMobileSectionClass } from '../../shared/layout-tokens/ticketMobileLayout'
+import TicketLayoutControls from '../widgets/TicketLayoutControls.vue'
+import TicketModalHeader from '../widgets/TicketModalHeader.vue'
+import TicketWinnerTicker from '../widgets/TicketWinnerTicker.vue'
+import TicketVoucherFooter from '../widgets/TicketVoucherFooter.vue'
+import type { TicketActivityCoreEmits, TicketActivityLayoutProps } from './activity-props'
+import TicketActivityStateGate from './TicketActivityStateGate.vue'
 
 defineProps<TicketActivityLayoutProps>()
 
 const emit = defineEmits<TicketActivityCoreEmits>()
-
-const { t } = useI18n()
 </script>
 
 <style scoped lang="scss">

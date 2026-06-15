@@ -89,11 +89,11 @@
 </template>
 
 <script setup lang="ts">
-import { formatTicketActivityCountdown } from '../shared/utils/ticketActivityCountdown'
-import type { TicketModalHeaderData } from '../shared/types'
-import { getTicketModalTheme } from '../shared/design-tokens'
-import { TICKET_PC_LAYOUT } from '../shared/layout-tokens/ticketPcLayout'
-import { TICKET_MOBILE_LAYOUT } from '../shared/layout-tokens/ticketMobileLayout'
+import { formatTicketActivityCountdown } from '../../shared/utils/ticketActivityCountdown'
+import type { TicketModalHeaderData } from '../../shared/types'
+import { getTicketModalTheme } from '../../shared/design-tokens'
+import { TICKET_PC_LAYOUT } from '../../shared/layout-tokens/ticketPcLayout'
+import { TICKET_MOBILE_LAYOUT } from '../../shared/layout-tokens/ticketMobileLayout'
 import { computed, onUnmounted, ref, watch } from 'vue'
 
 const props = withDefaults(

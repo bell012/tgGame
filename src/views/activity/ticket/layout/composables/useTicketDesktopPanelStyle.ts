@@ -1,22 +1,8 @@
-import { TICKET_ACTIVITY_Z } from '../../shared/constants'
-import { LUCKY_SPIN_TOKENS } from '../../shared/design-tokens'
 import { TICKET_PC_LAYOUT } from '../../shared/layout-tokens/ticketPcLayout'
 import { computed, ref } from 'vue'
 
-export function useTicketActivityPcLayout() {
+export function useTicketDesktopPanelStyle() {
   const rightPanelRef = ref<HTMLElement | null>(null)
-
-  const modalOverlayStylePc = computed(() => ({
-    zIndex: TICKET_ACTIVITY_Z.modal,
-    backdropFilter: `blur(${TICKET_PC_LAYOUT.overlayBlur})`,
-    WebkitBackdropFilter: `blur(${TICKET_PC_LAYOUT.overlayBlur})`
-  }))
-
-  const modalOverlayStyleMobile = computed(() => ({
-    zIndex: TICKET_ACTIVITY_Z.modal,
-    backdropFilter: `blur(${LUCKY_SPIN_TOKENS.modalBlur})`,
-    WebkitBackdropFilter: `blur(${LUCKY_SPIN_TOKENS.modalBlur})`
-  }))
 
   const pcStackStyle = computed(() => ({
     width: `${TICKET_PC_LAYOUT.modalMaxWidth}px`,
@@ -34,18 +20,14 @@ export function useTicketActivityPcLayout() {
     boxShadow: TICKET_PC_LAYOUT.modalShadow
   }))
 
-  const pcLeftPanelStyle = computed(() => ({
+  const pcLeftPanelSyncedStyle = computed(() => ({
     background: TICKET_PC_LAYOUT.shellMask.bg,
     borderTopLeftRadius: `${TICKET_PC_LAYOUT.modalRadius}px`,
     borderBottomLeftRadius: `${TICKET_PC_LAYOUT.modalRadius}px`,
     paddingTop: `${TICKET_PC_LAYOUT.leftPanel.paddingTop}px`,
     paddingRight: `${TICKET_PC_LAYOUT.leftPanel.paddingRight}px`,
     paddingBottom: `${TICKET_PC_LAYOUT.leftPanel.paddingBottom}px`,
-    paddingLeft: `${TICKET_PC_LAYOUT.leftPanel.paddingLeft}px`
-  }))
-
-  const pcLeftPanelSyncedStyle = computed(() => ({
-    ...pcLeftPanelStyle.value,
+    paddingLeft: `${TICKET_PC_LAYOUT.leftPanel.paddingLeft}px`,
     height: '100%'
   }))
 
@@ -89,8 +71,6 @@ export function useTicketActivityPcLayout() {
 
   return {
     rightPanelRef,
-    modalOverlayStylePc,
-    modalOverlayStyleMobile,
     pcStackStyle,
     pcModalBodyStyle,
     pcModalShellStyle,

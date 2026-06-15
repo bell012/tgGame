@@ -3,7 +3,7 @@ import { buildGameHeader } from '../../shared/mappers/gameHeaderConfig'
 import { getMbTicketLanguageCopy } from '../../shared/mappers/mbTicketMapper'
 import { getTicketActivityEndUseTime } from '../../shared/utils/ticketActivityCountdown'
 import type { TicketActivitySession } from '../../shared/types'
-import { globalTicketToastState } from '../ticketToast'
+import { globalTicketToastState } from '../../shell/ticketToast'
 import type { Ref } from 'vue'
 import { computed } from 'vue'
 
