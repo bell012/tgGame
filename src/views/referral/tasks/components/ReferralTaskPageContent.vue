@@ -147,11 +147,11 @@
               :key="item.key"
               type="button"
               class="box-border flex h-[30.67px] shrink-0 flex-col items-start justify-center gap-[3.33px] rounded-[18px] px-5 py-2 transition-colors"
-              :class="[
+              :class="
                 props.activeTab === item.key
-                  ? 'border border-solid border-theme-primary bg-theme-primary/15'
-                  : 'border border-transparent bg-bg-2'
-              ]"
+                  ? 'border-[3px] border-theme-primary bg-theme-primary text-text-4'
+                  : 'border-transparent text-text-1 lg:hover:bg-theme-3 bg-bg-3'
+              "
               @click="$emit('tab-click', item.key)"
             >
               <!-- H5 任务标签文字 -->
@@ -159,8 +159,8 @@
                 class="flex items-center text-xs"
                 :class="
                   props.activeTab === item.key
-                    ? 'font-[700] leading-[14.67px] text-text-1'
-                    : 'font-[500] leading-[18px] text-text-2'
+                    ? 'font-[700] leading-[14.67px]  '
+                    : 'font-[500] leading-[18px]  '
                 "
               >
                 {{ item.label }}

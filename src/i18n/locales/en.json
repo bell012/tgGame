@@ -342,7 +342,7 @@
     "common": {
       "filter": "Filter",
       "apply": "Apply",
-      "noData": "No data"
+      "noData": "No data available at the moment."
     },
     "invitePoster": {
       "saveImage": "Save Poster",

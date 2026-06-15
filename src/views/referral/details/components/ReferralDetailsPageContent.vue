@@ -22,7 +22,7 @@
             :class="
               props.isMobile
                 ? props.activeTab === item.value
-                  ? 'h-[31px] shrink-0 rounded-full border border-theme-primary bg-theme-3 px-[20px] text-[12px] font-[700] leading-[15px] text-common-100'
+                  ? 'h-[31px] shrink-0 rounded-full border border-theme-primary bg-theme-primary px-[20px] text-[12px] font-[700] leading-[15px] text-text-4'
                   : 'h-[31px] shrink-0 rounded-full bg-bg-2 px-[20px] text-[12px] font-[500] leading-[15px] text-text-2'
                 : props.activeTab === item.value
                   ? 'h-[40px] flex-1 rounded-[8px] bg-bg-3 text-[14px] font-[700] leading-[17px] text-text-1'

@@ -17,13 +17,13 @@
             class="flex h-9 items-center rounded-full border bg-bg-3 px-6 text-sm leading-[17px] transition-colors"
             :class="
               coin.code === coinCode
-                ? 'border-[3px] border-theme-primary bg-theme-3 text-common-100'
-                : 'border-transparent text-text-2 lg:hover:bg-theme-3'
+                ? 'border-[3px] border-theme-primary bg-theme-primary text-text-4'
+                : 'border-transparent text-text-1 lg:hover:bg-theme-3'
             "
             @click.stop="selectCoinCode(coin.code)"
           >
             <img class="mr-2 h-5 w-5 shrink-0" :src="coin.icon" :alt="coin.name" />
-            <span class="font-bold text-text-1">{{ coin.name }}</span>
+            <span class="font-bold">{{ coin.name }}</span>
           </button>
         </div>
 
