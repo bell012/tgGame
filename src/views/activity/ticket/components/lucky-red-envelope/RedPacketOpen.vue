@@ -51,7 +51,7 @@
     <!-- 打开后的动态奖励文案 -->
     <div
       v-if="phase === 'opened'"
-      class="pointer-events-none absolute left-[58.333px] top-0 h-[266.667px] w-[211.667px] sm:left-[87.5px] sm:h-[400px] sm:w-[317.5px]"
+      class="red-envelope-reward-enter pointer-events-none absolute left-[58.333px] top-0 h-[266.667px] w-[211.667px] sm:left-[87.5px] sm:h-[400px] sm:w-[317.5px]"
     >
       <p
         class="font-inter absolute left-1/2 top-[10px] m-0 h-[24.333px] w-[97.333px] -translate-x-1/2 whitespace-nowrap text-center text-[20px] font-[700] leading-[24.333px] text-[#F1160E] sm:top-[15px] sm:h-[36.5px] sm:w-[146px] sm:text-[30px] sm:leading-[36.5px]"
@@ -78,7 +78,7 @@
           <span
             class="font-inter flex h-[40px] max-w-[115px] min-w-0 items-center justify-center text-center text-[33px] font-[700] leading-[40px] text-[#F1160E] sm:h-[60px] sm:max-w-[172.5px] sm:text-[49.5px] sm:leading-[60px]"
           >
-            {{ amountText }}
+            {{ displayAmountText }}
           </span>
         </div>
         <p
@@ -112,7 +112,7 @@
 import type { MbTicketRecord, UseTicketResult } from '@/api/interface/activity'
 import standImage from '@/static/img/lucky-spin/lucky-red-envelope/stand.png'
 import { getCurrencySymbol } from '@/utils/locale'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTicketUseAction } from '../../shared'
 import { LUCKY_RED_ENVELOPE_LOTTIE } from '../../shared/assets'
@@ -130,6 +130,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const openedRewardAmount = ref<number | string | null>(null)
+const displayAmountText = ref('0.00')
 const { runUseTicket, isPending } = useTicketUseAction()
 const introContainer = ref<HTMLElement | null>(null)
 const idleContainer = ref<HTMLElement | null>(null)
@@ -155,6 +156,55 @@ const amountText = computed(() => {
 
 const currencySymbol = computed(() => getCurrencySymbol(activeTicket.value?.currency))
 
+const AMOUNT_ANIMATION_DURATION_MS = 720
+let amountAnimationFrame: number | null = null
+
+const stopAmountAnimation = () => {
+  if (amountAnimationFrame === null) return
+  window.cancelAnimationFrame(amountAnimationFrame)
+  amountAnimationFrame = null
+}
+
+const getAmountFractionDigits = (value: string) => {
+  const decimalPart = value.trim().match(/\.(\d+)/)?.[1]
+  return decimalPart ? Math.min(decimalPart.length, 8) : 2
+}
+
+const parseAmountText = (value: string) => {
+  const parsed = Number(value.replace(/,/g, '').trim())
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+const animateAmountText = (targetText: string) => {
+  stopAmountAnimation()
+
+  const targetAmount = parseAmountText(targetText)
+  if (targetAmount === null) {
+    displayAmountText.value = targetText
+    return
+  }
+
+  const fractionDigits = getAmountFractionDigits(targetText)
+  const startTime = window.performance.now()
+  displayAmountText.value = (0).toFixed(fractionDigits)
+
+  const runFrame = (now: number) => {
+    const progress = Math.min((now - startTime) / AMOUNT_ANIMATION_DURATION_MS, 1)
+    const easedProgress = 1 - Math.pow(1 - progress, 3)
+
+    if (progress >= 1) {
+      displayAmountText.value = targetText
+      amountAnimationFrame = null
+      return
+    }
+
+    displayAmountText.value = (targetAmount * easedProgress).toFixed(fractionDigits)
+    amountAnimationFrame = window.requestAnimationFrame(runFrame)
+  }
+
+  amountAnimationFrame = window.requestAnimationFrame(runFrame)
+}
+
 const resolveRewardAmount = (result: UseTicketResult | null | undefined) => {
   return result?.amount ?? result?.rewardAmount ?? null
 }
@@ -177,12 +227,44 @@ onMounted(() => {
   void createPlayers()
 })
 
+onBeforeUnmount(stopAmountAnimation)
+
+watch([phase, amountText], ([nextPhase, nextAmountText]) => {
+  if (nextPhase === 'opened') {
+    animateAmountText(nextAmountText)
+    return
+  }
+
+  stopAmountAnimation()
+  displayAmountText.value = '0.00'
+})
+
 /** 切换到另一张红包票券时恢复未打开状态。 */
 watch(
   () => [activeTicket.value?.rowId, activeTicket.value?.ticketId],
   () => {
     openedRewardAmount.value = null
+    displayAmountText.value = '0.00'
     reset()
   }
 )
 </script>
+
+<style scoped>
+.red-envelope-reward-enter {
+  will-change: transform, opacity;
+  animation: red-envelope-reward-enter 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes red-envelope-reward-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
