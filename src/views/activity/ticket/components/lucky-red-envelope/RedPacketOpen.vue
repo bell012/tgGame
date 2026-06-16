@@ -116,6 +116,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTicketUseAction } from '../../shared'
 import { LUCKY_RED_ENVELOPE_LOTTIE } from '../../shared/assets'
+import { openTicketReceivePopFromUseResult } from '../../shared/mappers/mapReceiveTickets'
 import { globalTicketToastState } from '../../shell/ticketToast'
 import { useRedEnvelopeLottie } from './useRedEnvelopeLottie'
 
@@ -216,6 +217,7 @@ const handleOpen = async () => {
     voucherName: t('ticketPage.redPacket.title'),
     fallbackErrorMessage: t('luckySpinPage.loadFailed'),
     onSuccess: result => {
+      if (openTicketReceivePopFromUseResult(result)) return
       openedRewardAmount.value = resolveRewardAmount(result)
       playOpen()
       emit('open')

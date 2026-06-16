@@ -1,6 +1,7 @@
 import type { UseTicketResult } from '@/api/interface/activity'
 
 import { buildResultDialogFromUse } from '../../shared/mappers/mapWheelConfig'
+import { openTicketReceivePopFromUseResult } from '../../shared/mappers/mapReceiveTickets'
 import { useTicketUseAction } from '../../shared'
 import { openTicketResultDialog } from '../../shell/ticketDialog'
 import { ref } from 'vue'
@@ -36,7 +37,9 @@ export const useGoldenEggGame = ({
     activeStage.value = 'opened'
 
     if (pendingUseResult.value) {
-      openTicketResultDialog(buildResultDialogFromUse(pendingUseResult.value))
+      if (!openTicketReceivePopFromUseResult(pendingUseResult.value)) {
+        openTicketResultDialog(buildResultDialogFromUse(pendingUseResult.value))
+      }
       pendingUseResult.value = null
     }
   }

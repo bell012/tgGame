@@ -10,6 +10,7 @@ import {
   findPrizeIndexInWheelConfig,
   mapWheelConfigToPrizes
 } from '../../shared/mappers/mapWheelConfig'
+import { openTicketReceivePopFromUseResult } from '../../shared/mappers/mapReceiveTickets'
 import { useTicketUseAction } from '../../shared'
 import { globalShowToast } from '@/utils/toast'
 import type { Ref } from 'vue'
@@ -47,6 +48,7 @@ export const useLuckySpinGame = (wheelRef: Ref<LuckySpinWheelExpose | null>) => 
   }
 
   const openResultFromUse = (result: UseTicketResult) => {
+    if (openTicketReceivePopFromUseResult(result)) return
     openTicketResultDialog(buildResultDialogFromUse(result))
   }
 

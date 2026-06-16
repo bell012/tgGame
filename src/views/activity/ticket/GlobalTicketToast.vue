@@ -19,17 +19,24 @@
     <TicketReminderPopup />
     <TicketResultHeroPopup />
     <TicketResultCardsPopup />
+    <ReceivePop
+      v-model:visible="receivePopVisible"
+      :next-tickets="dialogState.receive.nextTickets"
+    />
   </Teleport>
 </template>
 
 <script setup lang="ts">
+import ReceivePop from '../components/receive-pop.vue'
 import TaskPop from '../components/task-pop.vue'
 import { TicketReminderPopup, TicketResultCardsPopup, TicketResultHeroPopup } from './layout/popups'
 import TicketActivityOrchestrator from './layout/TicketActivityOrchestrator.vue'
+import { closeTicketDialog, globalTicketDialogState } from './shell/ticketDialog'
 import { closeTicketTaskPop, globalTicketToastState, openTicketTaskPop } from './shell/ticketToast'
 import { computed } from 'vue'
 
 const toastState = globalTicketToastState
+const dialogState = globalTicketDialogState
 
 const taskPopVisible = computed({
   get: () => toastState.taskPopVisible,
@@ -39,6 +46,13 @@ const taskPopVisible = computed({
       return
     }
     closeTicketTaskPop()
+  }
+})
+
+const receivePopVisible = computed({
+  get: () => dialogState.kind === 'receive',
+  set: value => {
+    if (!value) closeTicketDialog()
   }
 })
 </script>

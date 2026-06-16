@@ -37,6 +37,7 @@ import zhusucaiImg from '@/lottie/xianjin/zhusucai.png'
 import xianjianImg from '@/lottie/xianjin/xianjian.jpg'
 import daijiSource from '@/lottie/xianjin/daiji.json'
 import { buildResultDialogFromUse } from '../../shared/mappers/mapWheelConfig'
+import { openTicketReceivePopFromUseResult } from '../../shared/mappers/mapReceiveTickets'
 import { useTicketUseAction } from '../../shared'
 import { openTicketResultDialog } from '../../shell/ticketDialog'
 
@@ -91,7 +92,9 @@ const handleClaim = () => {
     voucherName: t('ticketPage.cashVoucher.title'),
     fallbackErrorMessage: t('luckySpinPage.loadFailed'),
     onSuccess: result => {
-      openTicketResultDialog(buildResultDialogFromUse(result))
+      if (!openTicketReceivePopFromUseResult(result)) {
+        openTicketResultDialog(buildResultDialogFromUse(result))
+      }
     }
   })
 }

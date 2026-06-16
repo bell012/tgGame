@@ -561,6 +561,7 @@ export interface UseTicketResult {
   amount?: number | string
   rewardAmount?: number
   rewardType?: number
+  nextTickets?: MbTicketRecord[]
 }
 
 export interface UseTicketResponse extends ActivityApiResponse<UseTicketResult> {}

@@ -33,6 +33,7 @@ import lottie, { type AnimationItem } from 'lottie-web'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { buildResultDialogFromUse } from '../../shared/mappers/mapWheelConfig'
+import { openTicketReceivePopFromUseResult } from '../../shared/mappers/mapReceiveTickets'
 import { useTicketUseAction } from '../../shared'
 import { openTicketResultDialog } from '../../shell/ticketDialog'
 import { globalTicketToastState } from '../../shell/ticketToast'
@@ -107,10 +108,12 @@ const handleCellClick = async (index: number) => {
     voucherName: t('ticketPage.mysteryBox.title'),
     fallbackErrorMessage: t('luckySpinPage.loadFailed'),
     onSuccess: result => {
-      openTicketResultDialog({
-        ...buildResultDialogFromUse(result),
-        heroLottie: 'mystery_box_open'
-      })
+      if (!openTicketReceivePopFromUseResult(result)) {
+        openTicketResultDialog({
+          ...buildResultDialogFromUse(result),
+          heroLottie: 'mystery_box_open'
+        })
+      }
       openedCellIndexes.value = new Set([...openedCellIndexes.value, index])
     }
   })
