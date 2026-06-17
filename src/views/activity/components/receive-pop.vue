@@ -154,10 +154,19 @@ const RECEIVE_POP_ICONS: Record<string, string> = {
   mystery_box: blindBoxImg
 }
 
+const hasTicketIdentity = (record: MbTicketRecord) =>
+  record.rowId != null ||
+  record.ticketId != null ||
+  record.type != null ||
+  Array.isArray(record.languageInfo)
+
+const normalizeReceiveTickets = (value: unknown) =>
+  normalizeMbTicketRecords(value).filter(hasTicketIdentity)
+
 const displayVouchers = computed<ReceiveVoucherItem[]>(() => {
   const languageCode = getLanguageCode()
 
-  return normalizeMbTicketRecords(props.nextTickets).map((record, index) => {
+  return normalizeReceiveTickets(props.nextTickets).map((record, index) => {
     const type = TICKET_TYPE_TO_GAME_ID[Number(record.type)] ?? 'golden_egg'
     const copy = getMbTicketLanguageCopy(record, languageCode)
 

@@ -116,8 +116,18 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTicketUseAction } from '../../shared'
 import { LUCKY_RED_ENVELOPE_LOTTIE } from '../../shared/assets'
+import {
+  isSameMbTicketRecord,
+  normalizeMbTicketRecords,
+  TICKET_TYPE_TO_GAME_ID
+} from '../../shared/mappers/mbTicketMapper'
 import { openTicketReceivePopFromUseResult } from '../../shared/mappers/mapReceiveTickets'
-import { globalTicketToastState } from '../../shell/ticketToast'
+import { openTicketReceiveDialog } from '../../shell/ticketDialog'
+import {
+  globalTicketToastState,
+  setActiveTicketRecord,
+  switchTicketGame
+} from '../../shell/ticketToast'
 import { useRedEnvelopeLottie } from './useRedEnvelopeLottie'
 
 interface RedPacketTicketRecord extends MbTicketRecord {
@@ -158,12 +168,20 @@ const amountText = computed(() => {
 const currencySymbol = computed(() => getCurrencySymbol(activeTicket.value?.currency))
 
 const AMOUNT_ANIMATION_DURATION_MS = 720
+const POST_OPEN_TRIGGER_DELAY_MS = 3000
 let amountAnimationFrame: number | null = null
+let postOpenTriggerTimer: number | null = null
 
 const stopAmountAnimation = () => {
   if (amountAnimationFrame === null) return
   window.cancelAnimationFrame(amountAnimationFrame)
   amountAnimationFrame = null
+}
+
+const clearPostOpenTriggerTimer = () => {
+  if (postOpenTriggerTimer === null) return
+  window.clearTimeout(postOpenTriggerTimer)
+  postOpenTriggerTimer = null
 }
 
 const getAmountFractionDigits = (value: string) => {
@@ -210,6 +228,65 @@ const resolveRewardAmount = (result: UseTicketResult | null | undefined) => {
   return result?.amount ?? result?.rewardAmount ?? null
 }
 
+const hasTicketIdentity = (record: MbTicketRecord) =>
+  record.rowId != null ||
+  record.ticketId != null ||
+  record.type != null ||
+  Array.isArray(record.languageInfo)
+
+const normalizeTriggerConfigTickets = (value: unknown) =>
+  normalizeMbTicketRecords(value).filter(hasTicketIdentity)
+
+const isActiveTicketUnchanged = (record: MbTicketRecord) => {
+  const currentRecord = globalTicketToastState.activeTicketRecord
+  return Boolean(currentRecord && isSameMbTicketRecord(currentRecord, record))
+}
+
+const switchToNextTicket = (consumedRecord: MbTicketRecord) => {
+  const records = globalTicketToastState.mbTicketRecords
+  const consumedIndex = records.findIndex(record => isSameMbTicketRecord(record, consumedRecord))
+  if (consumedIndex < 0) return
+
+  const nextRecord = records[consumedIndex + 1]
+  if (!nextRecord) return
+
+  const nextGameId = TICKET_TYPE_TO_GAME_ID[Number(nextRecord.type)]
+  if (nextGameId) {
+    switchTicketGame(nextGameId, nextRecord)
+    return
+  }
+
+  setActiveTicketRecord(nextRecord)
+}
+
+const openTriggerReceivePop = (record: MbTicketRecord) => {
+  const triggerTickets = normalizeTriggerConfigTickets(record.triggerConfig)
+  if (triggerTickets.length === 0) return
+
+  openTicketReceiveDialog({
+    nextTickets: triggerTickets
+  })
+}
+
+const schedulePostOpenTrigger = (record: MbTicketRecord) => {
+  clearPostOpenTriggerTimer()
+
+  const enableTrigger = Number(record.enableTrigger)
+  if (enableTrigger !== 0 && enableTrigger !== 1) return
+
+  postOpenTriggerTimer = window.setTimeout(() => {
+    postOpenTriggerTimer = null
+    if (!isActiveTicketUnchanged(record)) return
+
+    if (enableTrigger === 1) {
+      openTriggerReceivePop(record)
+      return
+    }
+
+    switchToNextTicket(record)
+  }, POST_OPEN_TRIGGER_DELAY_MS)
+}
+
 const handleOpen = async () => {
   if (phase.value !== 'idle' || isPending.value) return
 
@@ -217,10 +294,19 @@ const handleOpen = async () => {
     voucherName: t('ticketPage.redPacket.title'),
     fallbackErrorMessage: t('luckySpinPage.loadFailed'),
     onSuccess: result => {
-      if (openTicketReceivePopFromUseResult(result)) return
+      const consumedRecord = activeTicket.value ? { ...activeTicket.value } : null
+      const enableTrigger = Number(consumedRecord?.enableTrigger)
+      const hasPostOpenTrigger = enableTrigger === 0 || enableTrigger === 1
+
+      if (!hasPostOpenTrigger && openTicketReceivePopFromUseResult(result)) return
+
       openedRewardAmount.value = resolveRewardAmount(result)
       playOpen()
       emit('open')
+
+      if (consumedRecord) {
+        schedulePostOpenTrigger(consumedRecord)
+      }
     }
   })
 }
@@ -229,7 +315,10 @@ onMounted(() => {
   void createPlayers()
 })
 
-onBeforeUnmount(stopAmountAnimation)
+onBeforeUnmount(() => {
+  stopAmountAnimation()
+  clearPostOpenTriggerTimer()
+})
 
 watch([phase, amountText], ([nextPhase, nextAmountText]) => {
   if (nextPhase === 'opened') {
@@ -245,6 +334,7 @@ watch([phase, amountText], ([nextPhase, nextAmountText]) => {
 watch(
   () => [activeTicket.value?.rowId, activeTicket.value?.ticketId],
   () => {
+    clearPostOpenTriggerTimer()
     openedRewardAmount.value = null
     displayAmountText.value = '0.00'
     reset()

@@ -352,6 +352,7 @@ export interface MbTicketRecord {
   status?: number
   createTime?: number
   enableTrigger?: number
+  triggerConfig?: unknown
   homeDisplay?: number
   unusedTicketPopWay?: number
   site?: string
