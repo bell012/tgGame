@@ -1,11 +1,12 @@
 import { reactive } from 'vue'
+import type { MbTicketRecord } from '@/api/interface/activity'
 import type {
   TicketReminderTask,
   TicketResultVariant,
   TicketVoucherCardData
 } from '../shared/types'
 
-export type TicketDialogKind = 'none' | 'reminder' | 'task_success' | 'result'
+export type TicketDialogKind = 'none' | 'reminder' | 'task_success' | 'result' | 'receive'
 
 export interface OpenTicketReminderDialogOptions {
   tasks?: TicketReminderTask[]
@@ -31,6 +32,11 @@ export interface OpenTicketResultDialogOptions {
   heroImage?: string
   heroLottie?: TicketResultHeroLottie
   buttonText?: string
+  nextTickets?: MbTicketRecord[]
+}
+
+export interface OpenTicketReceiveDialogOptions {
+  nextTickets: MbTicketRecord[]
 }
 
 export interface TicketResultDialogState {
@@ -43,6 +49,7 @@ export interface TicketResultDialogState {
   heroImage?: string
   heroLottie?: TicketResultHeroLottie
   buttonText?: string
+  nextTickets: MbTicketRecord[]
 }
 
 interface GlobalTicketDialogState {
@@ -58,20 +65,25 @@ interface GlobalTicketDialogState {
     rules: string[]
   }
   result: TicketResultDialogState
+  receive: {
+    nextTickets: MbTicketRecord[]
+  }
 }
 
 const createDefaultResult = (): TicketResultDialogState => ({
   variant: 'cash',
   highlightText: '',
   vouchers: [],
-  voucherCount: 0
+  voucherCount: 0,
+  nextTickets: []
 })
 
 export const globalTicketDialogState = reactive<GlobalTicketDialogState>({
   kind: 'none',
   reminder: { tasks: [], rules: [], voucherName: '', maxPrizeText: '' },
   taskSuccess: { voucherName: '', rules: [] },
-  result: createDefaultResult()
+  result: createDefaultResult(),
+  receive: { nextTickets: [] }
 })
 
 export function openTicketReminderDialog(options: OpenTicketReminderDialogOptions = {}) {
@@ -90,13 +102,23 @@ export function openTicketTaskSuccessDialog(options: OpenTicketTaskSuccessDialog
 
 export function openTicketResultDialog(options: OpenTicketResultDialogOptions) {
   const vouchers = options.vouchers ?? []
+  const nextTickets = options.nextTickets ?? []
   globalTicketDialogState.result = {
     ...createDefaultResult(),
     ...options,
     vouchers,
-    voucherCount: options.voucherCount ?? vouchers.length
+    voucherCount: options.voucherCount ?? vouchers.length,
+    nextTickets
   }
   globalTicketDialogState.kind = 'result'
+}
+
+export function openTicketReceiveDialog(options: OpenTicketReceiveDialogOptions) {
+  const nextTickets = options.nextTickets ?? []
+  globalTicketDialogState.receive = {
+    nextTickets
+  }
+  globalTicketDialogState.kind = 'receive'
 }
 
 export function closeTicketDialog() {
@@ -104,4 +126,5 @@ export function closeTicketDialog() {
   globalTicketDialogState.reminder = { tasks: [], rules: [], voucherName: '', maxPrizeText: '' }
   globalTicketDialogState.taskSuccess = { voucherName: '', rules: [] }
   globalTicketDialogState.result = createDefaultResult()
+  globalTicketDialogState.receive = { nextTickets: [] }
 }

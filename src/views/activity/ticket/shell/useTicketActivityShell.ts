@@ -182,9 +182,23 @@ export const useTicketActivityShell = (
     }
   }
 
+  let pendingRefreshAfterReceive = false
+
   watch(
     () => globalTicketDialogState.kind,
     async (kind, prevKind) => {
+      if (prevKind === 'result' && kind === 'receive') {
+        pendingRefreshAfterReceive = true
+        await options.onResultDismiss?.()
+        return
+      }
+
+      if (prevKind === 'receive' && kind === 'none' && pendingRefreshAfterReceive) {
+        pendingRefreshAfterReceive = false
+        await refreshSessionAfterResultDismiss()
+        return
+      }
+
       if (prevKind === 'result' && kind === 'none') {
         await options.onResultDismiss?.()
         await refreshSessionAfterResultDismiss()

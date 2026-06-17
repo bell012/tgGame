@@ -352,6 +352,7 @@ export interface MbTicketRecord {
   status?: number
   createTime?: number
   enableTrigger?: number
+  triggerConfig?: unknown
   homeDisplay?: number
   unusedTicketPopWay?: number
   site?: string
@@ -561,6 +562,7 @@ export interface UseTicketResult {
   amount?: number | string
   rewardAmount?: number
   rewardType?: number
+  nextTickets?: MbTicketRecord[]
 }
 
 export interface UseTicketResponse extends ActivityApiResponse<UseTicketResult> {}

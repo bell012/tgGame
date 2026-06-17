@@ -21,10 +21,10 @@
             class="receive-pop__dialog w-full max-w-[320px] sm:max-w-[350px]"
           >
             <h2 class="receive-pop__title text-center text-[32px] font-[700] sm:text-[42px]">
-              {{ resolvedTitle }}
+              {{ t('luckySpinPage.result.congratulations') }}
             </h2>
             <p class="text-center text-[16px] leading-[18px] text-common-100 sm:text-[21px]">
-              {{ resolvedSubtext }}
+              {{ t('luckySpinPage.result.receivedVouchers', { count: resolvedCount }) }}
             </p>
 
             <div
@@ -77,7 +77,7 @@
                 class="mt-4 flex h-[44px] w-full items-center justify-center rounded-[10px] bg-[#00E676] text-[15px] font-[700] text-[#1A1A1A]"
                 @click="handleUseNow"
               >
-                {{ resolvedButtonText }}
+                {{ t('luckySpinPage.result.useNow') }}
               </button>
             </div>
           </section>
@@ -101,49 +101,39 @@ import {
   getVoucherCardBg,
   getVoucherCardTextColors
 } from '@/views/activity/ticket/shared/constants'
+import type { MbTicketRecord } from '@/api/interface/activity'
 import type { VoucherCardType } from '@/views/activity/ticket/shared/types'
+import {
+  getMbTicketLanguageCopy,
+  normalizeMbTicketRecords,
+  TICKET_TYPE_TO_GAME_ID
+} from '@/views/activity/ticket/shared/mappers/mbTicketMapper'
 import blindBoxImg from '@/static/img/activity/receive-pop/blind-box.png'
 import eggImg from '@/static/img/activity/receive-pop/egg.png'
 import redEnvelopeImg from '@/static/img/activity/receive-pop/red-envelope.png'
 import titleBackImg from '@/static/img/activity/receive-pop/title-back.png'
 import turntableImg from '@/static/img/activity/receive-pop/turntable.png'
 import cashVoucherImg from '@/static/img/lucky-spin/vouchers/game-cash-voucher.png'
-// import { globalTicketToastState } from '../ticket/shell/ticketToast'
+import { formatUsDateTime12h } from '@/utils/date'
+import { getLanguageCode } from '@/utils/locale'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-// const ticketId = computed(() => globalTicketToastState.activeTicketRecord?.ticketId)
-export interface ReceiveVoucherItem {
+
+interface ReceiveVoucherItem {
   id: string
   type: VoucherCardType
   title: string
   rewardText: string
   expiresAt: string
-  icon?: string
-  bgColor?: string
 }
 
 interface Props {
-  title?: string
-  subtext?: string
-  buttonText?: string
-  /** 传入列表时优先使用；单条时可只传 vouchers 或沿用下方单券字段 */
-  vouchers?: ReceiveVoucherItem[]
-  voucherCount?: number
-  voucherTitle?: string
-  rewardText?: string
-  expiresAt?: string
+  nextTickets?: MbTicketRecord[]
   closeOnOverlay?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: undefined,
-  subtext: undefined,
-  buttonText: undefined,
-  vouchers: () => [],
-  voucherCount: undefined,
-  voucherTitle: 'Golden Egg Voucher',
-  rewardText: 'Win up to ₱888',
-  expiresAt: '12/18/2026 11:14 AM',
+  nextTickets: () => [],
   closeOnOverlay: true
 })
 
@@ -164,38 +154,39 @@ const RECEIVE_POP_ICONS: Record<string, string> = {
   mystery_box: blindBoxImg
 }
 
-const displayVouchers = computed<ReceiveVoucherItem[]>(() => {
-  if (props.vouchers.length > 0) {
-    return props.vouchers
-  }
+const hasTicketIdentity = (record: MbTicketRecord) =>
+  record.rowId != null ||
+  record.ticketId != null ||
+  record.type != null ||
+  Array.isArray(record.languageInfo)
 
-  return [
-    {
-      id: 'default',
-      type: 'golden_egg',
-      title: props.voucherTitle,
-      rewardText: props.rewardText,
-      expiresAt: props.expiresAt
+const normalizeReceiveTickets = (value: unknown) =>
+  normalizeMbTicketRecords(value).filter(hasTicketIdentity)
+
+const displayVouchers = computed<ReceiveVoucherItem[]>(() => {
+  const languageCode = getLanguageCode()
+
+  return normalizeReceiveTickets(props.nextTickets).map((record, index) => {
+    const type = TICKET_TYPE_TO_GAME_ID[Number(record.type)] ?? 'golden_egg'
+    const copy = getMbTicketLanguageCopy(record, languageCode)
+
+    return {
+      id: `next-ticket-${record.rowId ?? record.ticketId ?? index}`,
+      type,
+      title: copy.name || '',
+      rewardText: copy.description || '',
+      expiresAt: formatUsDateTime12h(record.expireTime)
     }
-  ]
+  })
 })
 
-const resolvedCount = computed(() => props.voucherCount ?? displayVouchers.value.length)
+const resolvedCount = computed(() => displayVouchers.value.length)
 
-const resolvedTitle = computed(() => props.title ?? t('luckySpinPage.result.congratulations'))
-
-const resolvedSubtext = computed(
-  () => props.subtext ?? t('luckySpinPage.result.receivedVouchers', { count: resolvedCount.value })
-)
-
-const resolvedButtonText = computed(() => props.buttonText ?? t('luckySpinPage.result.useNow'))
-
-const resolveCardBg = (item: ReceiveVoucherItem) => item.bgColor ?? getVoucherCardBg(item.type)
+const resolveCardBg = (item: ReceiveVoucherItem) => getVoucherCardBg(item.type)
 
 const resolveTextColors = (item: ReceiveVoucherItem) => getVoucherCardTextColors(item.type)
 
-const resolveCardIcon = (item: ReceiveVoucherItem) =>
-  item.icon ?? RECEIVE_POP_ICONS[item.type] ?? eggImg
+const resolveCardIcon = (item: ReceiveVoucherItem) => RECEIVE_POP_ICONS[item.type] ?? eggImg
 
 const handleClose = () => {
   visible.value = false

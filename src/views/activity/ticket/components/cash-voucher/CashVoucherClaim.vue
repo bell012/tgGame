@@ -36,9 +36,8 @@ import lottie, { type AnimationItem } from 'lottie-web'
 import zhusucaiImg from '@/lottie/xianjin/zhusucai.png'
 import xianjianImg from '@/lottie/xianjin/xianjian.jpg'
 import daijiSource from '@/lottie/xianjin/daiji.json'
-import { buildResultDialogFromAmount } from '../../shared/mappers/mapWheelConfig'
+import { openTicketResultDialogFromAmount } from '../../shared/mappers/mapReceiveTickets'
 import { useTicketUseAction } from '../../shared'
-import { openTicketResultDialog } from '../../shell/ticketDialog'
 
 /** 避免 lottie-web 解析失败 */
 const daijiAnimationData = {
@@ -91,7 +90,7 @@ const handleClaim = () => {
     voucherName: t('ticketPage.cashVoucher.title'),
     fallbackErrorMessage: t('luckySpinPage.loadFailed'),
     onSuccess: result => {
-      openTicketResultDialog(buildResultDialogFromAmount(result))
+      openTicketResultDialogFromAmount(result)
     }
   })
 }
