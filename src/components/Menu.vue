@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="sidebar-menu px-3.5 sm:px-0" :style="mobileMenuStyle">
     <!-- BC代币 / 顶部提示 -->
     <div
@@ -798,27 +798,31 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       groupKey: 'game-categories',
       children: buildCasinoMenuChildren()
     },
-    {
-      id: 'recent-favorites-group',
-      name: 'Recent And Favorites',
-      icon: newSideIcons.recentlyPlayedIcon,
-      groupKey: 'recent-favorites-group',
-      renderAsGroup: true,
-      children: [
-        {
-          id: 'recently-played',
-          name: t('menu.recently-played'),
-          icon: newSideIcons.recentlyPlayedIcon,
-          handler: () => navigateTo('/recently-played-games')
-        },
-        {
-          id: 'favorites',
-          name: t('menu.favorites'),
-          icon: newSideIcons.favoritesIcon,
-          handler: () => navigateTo('/favorites-games')
-        }
-      ]
-    },
+    ...(isLoggedIn.value
+      ? [
+          {
+            id: 'recent-favorites-group',
+            name: 'Recent And Favorites',
+            icon: newSideIcons.recentlyPlayedIcon,
+            groupKey: 'recent-favorites-group',
+            renderAsGroup: true,
+            children: [
+              {
+                id: 'recently-played',
+                name: t('menu.recently-played'),
+                icon: newSideIcons.recentlyPlayedIcon,
+                handler: () => navigateTo('/recently-played-games')
+              },
+              {
+                id: 'favorites',
+                name: t('menu.favorites'),
+                icon: newSideIcons.favoritesIcon,
+                handler: () => navigateTo('/favorites-games')
+              }
+            ]
+          } satisfies SidebarMenuGroup
+        ]
+      : []),
     {
       id: 'vouchers',
       name: t('menu.vouchers'),
