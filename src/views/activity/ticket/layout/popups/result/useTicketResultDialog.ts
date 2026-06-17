@@ -1,6 +1,7 @@
 import {
   closeTicketDialog,
-  globalTicketDialogState
+  globalTicketDialogState,
+  openTicketReceiveDialog
 } from '@/views/activity/ticket/shell/ticketDialog'
 import { TICKET_RESULT_CARDS_VARIANTS, TICKET_RESULT_HERO_VARIANTS } from './constants'
 import { computed } from 'vue'
@@ -19,6 +20,18 @@ export function useTicketResultDialog(group: TicketResultDialogGroup) {
   const result = computed(() => dialogState.result)
 
   const close = () => {
+    const { variant, nextTickets } = dialogState.result
+    console.log('[useTicketResultDialog.close]', {
+      group,
+      variant,
+      nextTickets,
+      nextTicketsLength: nextTickets.length,
+      result: dialogState.result
+    })
+    if (variant === 'cash' && nextTickets.length > 0) {
+      openTicketReceiveDialog({ nextTickets })
+      return
+    }
     closeTicketDialog()
   }
 

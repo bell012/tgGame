@@ -1,16 +1,14 @@
 import type { UseTicketResult } from '@/api/interface/activity'
-import { openTicketResultDialog } from '../../shell/ticketDialog'
 import {
   getActiveTicketParams,
   globalTicketToastState,
   openTicketTaskPop
 } from '../../shell/ticketToast'
 import {
-  buildResultDialogFromUse,
   findPrizeIndexInWheelConfig,
   mapWheelConfigToPrizes
 } from '../../shared/mappers/mapWheelConfig'
-import { openTicketReceivePopFromUseResult } from '../../shared/mappers/mapReceiveTickets'
+import { openTicketResultDialogFromUse } from '../../shared/mappers/mapReceiveTickets'
 import { useTicketUseAction } from '../../shared'
 import { globalShowToast } from '@/utils/toast'
 import type { Ref } from 'vue'
@@ -48,8 +46,7 @@ export const useLuckySpinGame = (wheelRef: Ref<LuckySpinWheelExpose | null>) => 
   }
 
   const openResultFromUse = (result: UseTicketResult) => {
-    if (openTicketReceivePopFromUseResult(result)) return
-    openTicketResultDialog(buildResultDialogFromUse(result))
+    openTicketResultDialogFromUse(result)
   }
 
   const failSpin = () => {

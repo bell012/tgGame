@@ -32,6 +32,7 @@ export interface OpenTicketResultDialogOptions {
   heroImage?: string
   heroLottie?: TicketResultHeroLottie
   buttonText?: string
+  nextTickets?: MbTicketRecord[]
 }
 
 export interface OpenTicketReceiveDialogOptions {
@@ -48,6 +49,7 @@ export interface TicketResultDialogState {
   heroImage?: string
   heroLottie?: TicketResultHeroLottie
   buttonText?: string
+  nextTickets: MbTicketRecord[]
 }
 
 interface GlobalTicketDialogState {
@@ -72,7 +74,8 @@ const createDefaultResult = (): TicketResultDialogState => ({
   variant: 'cash',
   highlightText: '',
   vouchers: [],
-  voucherCount: 0
+  voucherCount: 0,
+  nextTickets: []
 })
 
 export const globalTicketDialogState = reactive<GlobalTicketDialogState>({
@@ -99,11 +102,13 @@ export function openTicketTaskSuccessDialog(options: OpenTicketTaskSuccessDialog
 
 export function openTicketResultDialog(options: OpenTicketResultDialogOptions) {
   const vouchers = options.vouchers ?? []
+  const nextTickets = options.nextTickets ?? []
   globalTicketDialogState.result = {
     ...createDefaultResult(),
     ...options,
     vouchers,
-    voucherCount: options.voucherCount ?? vouchers.length
+    voucherCount: options.voucherCount ?? vouchers.length,
+    nextTickets
   }
   globalTicketDialogState.kind = 'result'
 }
