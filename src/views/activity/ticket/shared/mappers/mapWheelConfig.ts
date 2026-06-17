@@ -147,3 +147,22 @@ export const buildResultDialogFromUse = (
     highlightText: i18n.global.t('luckySpinPage.result.noPrize')
   }
 }
+
+/** 非大转盘玩法（无 rewardType）：仅依据 rewardAmount 判断中奖 → 结果弹窗参数 */
+export const buildResultDialogFromAmount = (
+  result: UseTicketResult
+): { variant: TicketResultVariant; highlightText: string } => {
+  const amount = Number(result.rewardAmount ?? result.amount ?? 0)
+
+  if (amount > 0) {
+    return {
+      variant: 'cash',
+      highlightText: `${getCurrencySymbol()}${amount}`
+    }
+  }
+
+  return {
+    variant: 'no_prize',
+    highlightText: i18n.global.t('luckySpinPage.result.noPrize')
+  }
+}
