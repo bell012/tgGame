@@ -7,6 +7,7 @@ import {
   fetchMbTicketListRecords,
   resolveTicketActivitySession
 } from '@/views/activity/ticket/shared/mappers/mbTicketMapper'
+import { setUserTicketInventoryRecords } from '@/views/activity/ticket/shared/userTicketInventory'
 import { globalShowToast } from '@/utils/toast'
 import { openTicketToast, setTicketSession } from '@/views/activity/ticket/shell/ticketToast'
 import type { TicketGameId } from '@/views/activity/ticket/shared/types'
@@ -37,6 +38,7 @@ export const openTicketActivity = async (
 
   try {
     const records = await fetchMbTicketListRecords(languageCode)
+    setUserTicketInventoryRecords(records)
     const session = resolveTicketActivitySession(records, gameId, options?.record)
 
     if (!session) {
