@@ -5,7 +5,7 @@ import {
   openTicketResultDialog,
   type OpenTicketResultDialogOptions
 } from '../../shell/ticketDialog'
-import { buildResultDialogFromUse } from './mapWheelConfig'
+import { buildResultDialogFromAmount, buildResultDialogFromUse } from './mapWheelConfig'
 
 export const openTicketReceivePopFromUseResult = (result: UseTicketResult) => {
   const nextTickets = result.nextTickets ?? []
@@ -31,6 +31,27 @@ export const openTicketResultDialogFromUse = (
   extras: ResultDialogExtras = {}
 ) => {
   const base = buildResultDialogFromUse(result)
+  const nextTickets = result.nextTickets ?? []
+
+  if (base.variant === 'cash') {
+    openTicketResultDialog({ ...base, ...extras, nextTickets })
+    return
+  }
+
+  if (nextTickets.length > 0) {
+    openTicketReceiveDialog({ nextTickets })
+    return
+  }
+
+  openTicketResultDialog({ ...base, ...extras })
+}
+
+/** 非大转盘玩法：按 rewardAmount 判断结果，并复用 nextTickets 跳转逻辑 */
+export const openTicketResultDialogFromAmount = (
+  result: UseTicketResult,
+  extras: ResultDialogExtras = {}
+) => {
+  const base = buildResultDialogFromAmount(result)
   const nextTickets = result.nextTickets ?? []
 
   if (base.variant === 'cash') {

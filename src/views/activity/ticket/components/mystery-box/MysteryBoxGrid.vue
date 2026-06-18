@@ -32,7 +32,7 @@ import saoguang1Img from '@/lottie/mystery-box/idle/images/saoguang1.png'
 import lottie, { type AnimationItem } from 'lottie-web'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { openTicketResultDialogFromUse } from '../../shared/mappers/mapReceiveTickets'
+import { openTicketResultDialogFromAmount } from '../../shared/mappers/mapReceiveTickets'
 import { useTicketUseAction } from '../../shared'
 import { globalTicketToastState } from '../../shell/ticketToast'
 
@@ -106,7 +106,7 @@ const handleCellClick = async (index: number) => {
     voucherName: t('ticketPage.mysteryBox.title'),
     fallbackErrorMessage: t('luckySpinPage.loadFailed'),
     onSuccess: result => {
-      openTicketResultDialogFromUse(result, { heroLottie: 'mystery_box_open' })
+      openTicketResultDialogFromAmount(result, { heroLottie: 'mystery_box_open' })
       openedCellIndexes.value = new Set([...openedCellIndexes.value, index])
     }
   })
