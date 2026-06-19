@@ -17,7 +17,7 @@
       class="flex h-9 w-9 items-center justify-center text-[18px] text-common-80 disabled:opacity-40"
       :disabled="isInteractionLocked"
       :aria-label="t('luckySpinPage.reminder.title')"
-      @click="emit('open-reminder')"
+      @click="emit('open-help')"
     >
       ?
     </button>
