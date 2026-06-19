@@ -116,10 +116,8 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTicketUseAction } from '../../shared'
 import { LUCKY_RED_ENVELOPE_LOTTIE } from '../../shared/assets'
-import { getTriggerReceiveTickets } from '../../shared/ticketPostTrigger'
 import { isSameMbTicketRecord, TICKET_TYPE_TO_GAME_ID } from '../../shared/mappers/mbTicketMapper'
 import { openTicketReceivePopFromUseResult } from '../../shared/mappers/mapReceiveTickets'
-import { openTicketReceiveDialog } from '../../shell/ticketDialog'
 import {
   globalTicketToastState,
   setActiveTicketRecord,
@@ -247,16 +245,7 @@ const switchToNextTicket = (consumedRecord: MbTicketRecord) => {
   setActiveTicketRecord(nextRecord)
 }
 
-const openTriggerReceivePop = (record: MbTicketRecord) => {
-  const triggerTickets = getTriggerReceiveTickets(record)
-  if (triggerTickets.length === 0) return
-
-  openTicketReceiveDialog({
-    nextTickets: triggerTickets
-  })
-}
-
-const schedulePostOpenTrigger = (record: MbTicketRecord) => {
+const schedulePostOpenTrigger = (record: MbTicketRecord, result: UseTicketResult) => {
   clearPostOpenTriggerTimer()
 
   const enableTrigger = Number(record.enableTrigger)
@@ -267,7 +256,7 @@ const schedulePostOpenTrigger = (record: MbTicketRecord) => {
     if (!isActiveTicketUnchanged(record)) return
 
     if (enableTrigger === 1) {
-      openTriggerReceivePop(record)
+      openTicketReceivePopFromUseResult(result)
       return
     }
 
@@ -293,7 +282,7 @@ const handleOpen = async () => {
       emit('open')
 
       if (consumedRecord) {
-        schedulePostOpenTrigger(consumedRecord)
+        schedulePostOpenTrigger(consumedRecord, result)
       }
     }
   })
