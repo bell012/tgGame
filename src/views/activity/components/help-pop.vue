@@ -2,11 +2,11 @@
   <transition name="popup-fade">
     <div
       v-show="visible"
-      class="fixed inset-0 z-[10011] flex items-end justify-center bg-mask-60-1 px-4 sm:items-center"
+      class="fixed inset-0 z-[10011] flex items-center justify-center bg-mask-60-1 px-4"
       @click.self="handleClose"
     >
       <section
-        class="mb-4 w-full max-w-[340px] rounded-[18px] bg-bg-1 px-6 pb-6 pt-6 sm:mb-0"
+        class="my-4 w-full max-w-[340px] rounded-[18px] bg-bg-1 px-6 pb-6 pt-6 sm:my-0"
         role="dialog"
         aria-modal="true"
       >
