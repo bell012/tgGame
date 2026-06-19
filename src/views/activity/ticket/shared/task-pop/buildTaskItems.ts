@@ -27,6 +27,9 @@ const CONDITION_INVITE = 4
 
 const isConditionEnabled = (condition?: TicketThresholdCondition) => condition?.enabled === 1
 
+const isVerificationEnabled = (value: unknown) =>
+  value === true || value === 1 || value === '1' || value === 'true'
+
 const getRechargeExtValue = (
   ext: TicketProgressExt | undefined,
   condition: TicketThresholdCondition,
@@ -301,50 +304,84 @@ export const buildTaskItems = (
   const completedLabel = t(`${TASK_I18N_PREFIX}.actions.completed`)
   const items: TaskItem[] = []
   const { bindData, completeVerification, ext } = progressData ?? {}
+  const enabledBindData = ticketData?.bindData
+  const enabledCompleteInfo = ticketData?.completeInfo
+  const enabledCompleteVerification = ticketData?.completeVerification
 
   appendConditionTasks(items, ticketData, ext, options)
 
-  const withdrawalAccountTask = createStatusTask({
-    id: 'bind-withdrawal-account',
-    title: t(`${TASK_I18N_PREFIX}.tasks.addWithdrawalMethod`),
-    satisfied: bindData?.bindWithdrawalAccount,
-    actionType: 'add',
-    pendingLabel: t(`${TASK_I18N_PREFIX}.actions.add`),
-    completedLabel,
-    helpSections: createSimpleHelpSections(
-      t(`${TASK_I18N_PREFIX}.help.withdrawalAccount.title`),
-      t(`${TASK_I18N_PREFIX}.help.withdrawalAccount.content`)
-    )
-  })
-  if (withdrawalAccountTask) items.push(withdrawalAccountTask)
+  if (isVerificationEnabled(enabledBindData?.bindWithdrawalAccount)) {
+    const withdrawalAccountTask = createStatusTask({
+      id: 'bind-withdrawal-account',
+      title: t(`${TASK_I18N_PREFIX}.tasks.addWithdrawalMethod`),
+      satisfied: bindData?.bindWithdrawalAccount ?? false,
+      actionType: 'add',
+      pendingLabel: t(`${TASK_I18N_PREFIX}.actions.add`),
+      completedLabel,
+      helpSections: createSimpleHelpSections(
+        t(`${TASK_I18N_PREFIX}.help.withdrawalAccount.title`),
+        t(`${TASK_I18N_PREFIX}.help.withdrawalAccount.content`)
+      )
+    })
+    if (withdrawalAccountTask) items.push(withdrawalAccountTask)
+  }
 
-  const withdrawalNameTask = createStatusTask({
-    id: 'bind-withdrawal-name',
-    title: t(`${TASK_I18N_PREFIX}.tasks.addAccountName`),
-    satisfied: bindData?.bindWithdrawalName,
-    actionType: 'add',
-    pendingLabel: t(`${TASK_I18N_PREFIX}.actions.add`),
-    completedLabel,
-    helpSections: createSimpleHelpSections(
-      t(`${TASK_I18N_PREFIX}.help.withdrawalName.title`),
-      t(`${TASK_I18N_PREFIX}.help.withdrawalName.content`)
-    )
-  })
-  if (withdrawalNameTask) items.push(withdrawalNameTask)
+  if (isVerificationEnabled(enabledBindData?.bindWithdrawalName)) {
+    const withdrawalNameTask = createStatusTask({
+      id: 'bind-withdrawal-name',
+      title: t(`${TASK_I18N_PREFIX}.tasks.addAccountName`),
+      satisfied: bindData?.bindWithdrawalName ?? false,
+      actionType: 'add',
+      pendingLabel: t(`${TASK_I18N_PREFIX}.actions.add`),
+      completedLabel,
+      helpSections: createSimpleHelpSections(
+        t(`${TASK_I18N_PREFIX}.help.withdrawalName.title`),
+        t(`${TASK_I18N_PREFIX}.help.withdrawalName.content`)
+      )
+    })
+    if (withdrawalNameTask) items.push(withdrawalNameTask)
+  }
 
-  const verifyPhoneTask = createStatusTask({
-    id: 'verify-phone',
-    title: t(`${TASK_I18N_PREFIX}.tasks.linkMobileNumber`),
-    satisfied: completeVerification?.verifyPhone,
-    actionType: 'link',
-    pendingLabel: t(`${TASK_I18N_PREFIX}.actions.link`),
-    completedLabel,
-    helpSections: createSimpleHelpSections(
-      t(`${TASK_I18N_PREFIX}.help.phoneNumber.title`),
-      t(`${TASK_I18N_PREFIX}.help.phoneNumber.content`)
-    )
+  if (isVerificationEnabled(enabledCompleteVerification?.verifyPhone)) {
+    const verifyPhoneTask = createStatusTask({
+      id: 'verify-phone',
+      title: t(`${TASK_I18N_PREFIX}.tasks.linkMobileNumber`),
+      satisfied: completeVerification?.verifyPhone ?? false,
+      actionType: 'link',
+      pendingLabel: t(`${TASK_I18N_PREFIX}.actions.link`),
+      completedLabel,
+      helpSections: createSimpleHelpSections(
+        t(`${TASK_I18N_PREFIX}.help.phoneNumber.title`),
+        t(`${TASK_I18N_PREFIX}.help.phoneNumber.content`)
+      )
+    })
+    if (verifyPhoneTask) items.push(verifyPhoneTask)
+  }
+
+  const completeInfo = progressData?.completeInfo
+  const socialTasks = [
+    ['complete-whatsapp', 'completeWhatsapp', 'completeWhatsapp', 'whatsapp'] as const,
+    ['complete-facebook', 'completeFacebook', 'completeFacebook', 'facebook'] as const,
+    ['complete-telegram', 'completeTelegram', 'completeTelegram', 'telegram'] as const
+  ]
+
+  socialTasks.forEach(([id, enabledKey, progressKey, i18nKey]) => {
+    if (!isVerificationEnabled(enabledCompleteInfo?.[enabledKey])) return
+
+    const task = createStatusTask({
+      id,
+      title: t(`${TASK_I18N_PREFIX}.tasks.${i18nKey}`),
+      satisfied: completeInfo?.[progressKey] ?? false,
+      actionType: 'complete',
+      pendingLabel: t(`${TASK_I18N_PREFIX}.actions.link`),
+      completedLabel,
+      helpSections: createSimpleHelpSections(
+        t(`${TASK_I18N_PREFIX}.help.${i18nKey}.title`),
+        t(`${TASK_I18N_PREFIX}.help.${i18nKey}.content`)
+      )
+    })
+    if (task) items.push(task)
   })
-  if (verifyPhoneTask) items.push(verifyPhoneTask)
 
   return items
 }

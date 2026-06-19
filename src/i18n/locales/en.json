@@ -1694,7 +1694,10 @@
         "validInvitedFriends": "Valid Invited Friends {operator} {count}",
         "addWithdrawalMethod": "Add Withdrawal Method",
         "addAccountName": "Add Account Name",
-        "linkMobileNumber": "Link Mobile Number"
+        "linkMobileNumber": "Link Mobile Number",
+        "whatsapp": "WhatsApp",
+        "facebook": "Facebook",
+        "telegram": "Telegram"
       },
       "help": {
         "totalDepositAmount": {
@@ -1748,6 +1751,18 @@
         "phoneNumber": {
           "title": "Phone Number",
           "content": "Your reward is ready. Link your phone number to claim it now!"
+        },
+        "whatsapp": {
+          "title": "WhatsApp",
+          "content": "Complete the WhatsApp requirement to unlock this voucher."
+        },
+        "facebook": {
+          "title": "Facebook",
+          "content": "Complete the Facebook requirement to unlock this voucher."
+        },
+        "telegram": {
+          "title": "Telegram",
+          "content": "Complete the Telegram requirement to unlock this voucher."
         }
       }
     }
