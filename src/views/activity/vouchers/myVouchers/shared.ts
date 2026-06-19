@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
 import type { MbTicketRecord } from '@/api/interface/activity'
@@ -11,6 +11,7 @@ import {
   resolveLanguageInfo,
   TICKET_TYPE_TO_GAME_ID
 } from '@/views/activity/ticket/shared/mappers/mbTicketMapper'
+import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
 import voucherIcon1 from '@/static/img/vouchers/icon1.png'
 import voucherIcon2 from '@/static/img/vouchers/icon2.png'
 import voucherIcon3 from '@/static/img/vouchers/icon3.png'
@@ -120,7 +121,7 @@ export const useMyVouchersPage = () => {
       const response = await Api.activity.mbTicketList({
         current: 1,
         size: MY_VOUCHERS_PAGE_SIZE,
-        status: 1
+        status: [1]
       })
 
       if (!response.success) {
@@ -172,6 +173,16 @@ export const useMyVouchersPage = () => {
     clearInterval(countdownTimer)
     countdownTimer = null
   }
+
+  // 活动弹窗关闭（true→false）后刷新我的票券列表，反映已使用/领取的票券变化
+  watch(
+    () => globalTicketToastState.visible,
+    (visible, prevVisible) => {
+      if (prevVisible && !visible) {
+        void fetchData()
+      }
+    }
+  )
 
   onMounted(() => {
     startCountdown()

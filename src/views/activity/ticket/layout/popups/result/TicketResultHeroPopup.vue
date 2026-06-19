@@ -15,30 +15,7 @@
         {{ resolvedSubtext }}
       </p>
 
-      <div v-if="showHeroArea" class="my-4 flex items-center justify-center" :class="heroAreaClass">
-        <GoldenEggPop v-if="isGoldenEggCashVariant" class="h-full w-full" />
-        <LottiePlayer
-          v-else-if="isMysteryBoxOpenLottie"
-          :path="MYSTERY_BOX_OPEN_LOTTIE"
-          :autoplay="visible"
-          :loop="false"
-          class="h-full w-full"
-        />
-        <LottiePlayer
-          v-else-if="isCashVariant"
-          :path="LUCKY_SPIN_CASH_RESULT_LOTTIE"
-          :fallback-src="cashHeroFallback"
-          :autoplay="visible"
-          loop
-          class="h-full w-full"
-        />
-        <img
-          v-else-if="resolvedHeroImage"
-          :src="resolvedHeroImage"
-          alt=""
-          class="h-full w-full object-contain"
-        />
-      </div>
+      <TicketResultHeroMedia :media="heroMedia" :playing="visible" />
 
       <button
         type="button"
@@ -52,18 +29,12 @@
 </template>
 
 <script setup lang="ts">
-import LottiePlayer from '@/components/LottiePlayer.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import GoldenEggPop from '@/views/activity/ticket/components/golden-egg/golden-egg-pop.vue'
-import { TICKET_TYPE_TO_GAME_ID } from '@/views/activity/ticket/shared/mappers/mbTicketMapper'
-import {
-  LUCKY_SPIN_CASH_RESULT_LOTTIE,
-  MYSTERY_BOX_OPEN_LOTTIE,
-  RESULT_HERO_IMAGES,
-  TICKET_DIALOG_Z
-} from '@/views/activity/ticket/shared/constants'
+import { TICKET_DIALOG_Z } from '@/views/activity/ticket/shared/constants'
 import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
 import TicketDialogOverlay from '../shared/TicketDialogOverlay.vue'
+import { resolveHeroMedia } from './heroMedia'
+import TicketResultHeroMedia from './TicketResultHeroMedia.vue'
 import { useTicketResultHeroCopy } from './useTicketResultCopy'
 import { useTicketResultDialog } from './useTicketResultDialog'
 import { computed } from 'vue'
@@ -75,30 +46,11 @@ const { visible, result, close } = useTicketResultDialog('hero')
 const { resolvedTitle, resolvedHighlight, resolvedHeroImage, resolvedSubtext, resolvedButtonText } =
   useTicketResultHeroCopy(result, t)
 
-const isMysteryBoxOpenLottie = computed(() => result.value.heroLottie === 'mystery_box_open')
-const isCashVariant = computed(() => result.value.variant === 'cash')
 const resultTicketRecord = computed(
   () => globalTicketToastState.lastConsumedTicketRecord ?? globalTicketToastState.activeTicketRecord
 )
-const isGoldenEggCashVariant = computed(
-  () =>
-    isCashVariant.value &&
-    TICKET_TYPE_TO_GAME_ID[Number(resultTicketRecord.value?.type)] === TICKET_TYPE_TO_GAME_ID[3]
-)
-const cashHeroFallback = RESULT_HERO_IMAGES.cash
 
-/** 盲盒开箱 Lottie 按 Figma 弹窗素材尺寸略放大 hero 区 */
-const heroAreaClass = computed(() =>
-  isMysteryBoxOpenLottie.value
-    ? isMobile.value
-      ? 'h-[231px] w-[231px]'
-      : 'h-[280px] w-[280px]'
-    : isMobile.value
-      ? 'h-[160px] w-[160px]'
-      : 'h-[200px] w-[200px]'
-)
-
-const showHeroArea = computed(
-  () => isMysteryBoxOpenLottie.value || isCashVariant.value || Boolean(resolvedHeroImage.value)
+const heroMedia = computed(() =>
+  resolveHeroMedia(result.value, resultTicketRecord.value, resolvedHeroImage.value)
 )
 </script>

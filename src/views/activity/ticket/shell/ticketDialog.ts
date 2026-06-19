@@ -20,7 +20,7 @@ export interface OpenTicketTaskSuccessDialogOptions {
   rules?: string[]
 }
 
-export type TicketResultHeroLottie = 'mystery_box_open'
+export type TicketResultHeroLottie = 'mystery_box_open' | 'cash_voucher_result'
 
 export interface OpenTicketResultDialogOptions {
   variant: TicketResultVariant

@@ -3,6 +3,7 @@ import type { VoucherCardType } from './types'
 export {
   getGameIcon,
   getPrizeIcon,
+  CASH_VOUCHER_RESULT_LOTTIE,
   LUCKY_SPIN_ASSETS,
   LUCKY_SPIN_CASH_RESULT_LOTTIE,
   MYSTERY_BOX_OPEN_LOTTIE,

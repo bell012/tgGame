@@ -90,7 +90,7 @@ const handleClaim = () => {
     voucherName: t('ticketPage.cashVoucher.title'),
     fallbackErrorMessage: t('luckySpinPage.loadFailed'),
     onSuccess: result => {
-      openTicketResultDialogFromAmount(result)
+      openTicketResultDialogFromAmount(result, { heroLottie: 'cash_voucher_result' })
     }
   })
 }
