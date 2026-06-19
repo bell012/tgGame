@@ -9,7 +9,7 @@
         <transition name="popup-scale">
           <div
             v-show="visible"
-            class="task-pop__dialog relative flex w-full max-h-[70dvh] flex-col overflow-hidden rounded-t-xl bg-bg-1 sm:mx-auto sm:max-h-[560px] sm:max-w-[400px] sm:rounded-xl"
+            class="task-pop__dialog relative flex w-full max-h-[90dvh] flex-col overflow-hidden rounded-t-xl bg-bg-1 sm:mx-auto sm:max-h-[560px] sm:max-w-[400px] sm:rounded-xl"
           >
             <div class="relative shrink-0 px-4 pb-3 pt-5">
               <h3 class="text-center text-[18px] font-[700] leading-[22px] text-text-1">
