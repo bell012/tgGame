@@ -21,13 +21,6 @@ export function useTicketResultDialog(group: TicketResultDialogGroup) {
 
   const close = () => {
     const { variant, nextTickets } = dialogState.result
-    console.log('[useTicketResultDialog.close]', {
-      group,
-      variant,
-      nextTickets,
-      nextTicketsLength: nextTickets.length,
-      result: dialogState.result
-    })
     if (variant === 'cash' && nextTickets.length > 0) {
       openTicketReceiveDialog({ nextTickets })
       return
