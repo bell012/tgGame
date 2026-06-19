@@ -136,7 +136,7 @@ export const getMbTicketLanguageCopy = (
 export const MB_TICKET_ACTIVITY_LIST_QUERY = {
   current: 1,
   size: 999,
-  status: 1 as const
+  status: [1] as const
 }
 
 /** 按玩法筛选票券（保留 result 数组顺序） */

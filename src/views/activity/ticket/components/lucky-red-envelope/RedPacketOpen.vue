@@ -116,11 +116,8 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTicketUseAction } from '../../shared'
 import { LUCKY_RED_ENVELOPE_LOTTIE } from '../../shared/assets'
-import {
-  isSameMbTicketRecord,
-  normalizeMbTicketRecords,
-  TICKET_TYPE_TO_GAME_ID
-} from '../../shared/mappers/mbTicketMapper'
+import { getTriggerReceiveTickets } from '../../shared/ticketPostTrigger'
+import { isSameMbTicketRecord, TICKET_TYPE_TO_GAME_ID } from '../../shared/mappers/mbTicketMapper'
 import { openTicketReceivePopFromUseResult } from '../../shared/mappers/mapReceiveTickets'
 import { openTicketReceiveDialog } from '../../shell/ticketDialog'
 import {
@@ -228,15 +225,6 @@ const resolveRewardAmount = (result: UseTicketResult | null | undefined) => {
   return result?.amount ?? result?.rewardAmount ?? null
 }
 
-const hasTicketIdentity = (record: MbTicketRecord) =>
-  record.rowId != null ||
-  record.ticketId != null ||
-  record.type != null ||
-  Array.isArray(record.languageInfo)
-
-const normalizeTriggerConfigTickets = (value: unknown) =>
-  normalizeMbTicketRecords(value).filter(hasTicketIdentity)
-
 const isActiveTicketUnchanged = (record: MbTicketRecord) => {
   const currentRecord = globalTicketToastState.activeTicketRecord
   return Boolean(currentRecord && isSameMbTicketRecord(currentRecord, record))
@@ -260,7 +248,7 @@ const switchToNextTicket = (consumedRecord: MbTicketRecord) => {
 }
 
 const openTriggerReceivePop = (record: MbTicketRecord) => {
-  const triggerTickets = normalizeTriggerConfigTickets(record.triggerConfig)
+  const triggerTickets = getTriggerReceiveTickets(record)
   if (triggerTickets.length === 0) return
 
   openTicketReceiveDialog({

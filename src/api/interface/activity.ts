@@ -315,6 +315,14 @@ export interface MbTicketLossCondition {
 export interface MbTicketInviteCondition {
   inviteFriendCount?: number
 }
+/** 下一轮触发票券配置（mbTicketList.triggerConfig 元素） */
+export interface MbTicketTriggerConfigItem {
+  ticketType?: number
+  ticketId?: number
+  ticketName?: string
+  quantity?: number
+}
+
 /** 票券触发条件（mbTicketList.triggerList 元素） */
 export interface MbTicketTriggerItem {
   rowId?: number
@@ -352,7 +360,7 @@ export interface MbTicketRecord {
   status?: number
   createTime?: number
   enableTrigger?: number
-  triggerConfig?: unknown
+  triggerConfig?: MbTicketTriggerConfigItem[] | unknown
   homeDisplay?: number
   unusedTicketPopWay?: number
   site?: string
@@ -446,7 +454,7 @@ export interface MbTicketListForm {
   // 4转盘票券 Lucky Spin Voucher 6盲盒票券  Mystery Box Voucher
   distributionType?: number // 派发方式  0直接派发  1联动派发
   unusedTicketPopWay?: number // 未使用票券弹窗方式  0不弹窗 1每日一次 2每次登录 3只弹一次 4高频弹窗
-  status?: number // 票券记录状态列表  0草稿  1发行中  2已停发  3过期
+  status?: any // 票券记录状态列表  0草稿  1发行中  2已停发  3过期
   startReceiveTime?: number // 领取开始时间
   endReceiveTime?: number // 领取结束时间
   startUseTime?: number // 使用开始时间

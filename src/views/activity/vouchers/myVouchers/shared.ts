@@ -120,7 +120,7 @@ export const useMyVouchersPage = () => {
       const response = await Api.activity.mbTicketList({
         current: 1,
         size: MY_VOUCHERS_PAGE_SIZE,
-        status: 1
+        status: [1]
       })
 
       if (!response.success) {
