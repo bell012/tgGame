@@ -37,6 +37,7 @@ import vipCenterIcon from '@/static/svg/side/newIcon/vip-center.svg?component'
 import vouchersIcon from '@/static/svg/side/newIcon/vouchers.svg?component'
 import aboutIcon from '@/static/svg/side/newIcon/about.svg?component'
 import leaveFeedbackIcon from '@/static/svg/side/newIcon/leave-feedback.svg?component'
+import myVouchersIcon from '@/static/svg/side/newIcon/my-vouchers.svg?component'
 const newSideIcons: Record<string, Component> = {
   betHistoryIcon,
   cashVoucherIcon,
@@ -74,6 +75,7 @@ const newSideIcons: Record<string, Component> = {
   vipCenterIcon,
   vouchersIcon,
   aboutIcon,
-  leaveFeedbackIcon
+  leaveFeedbackIcon,
+  myVouchersIcon
 }
 export default newSideIcons

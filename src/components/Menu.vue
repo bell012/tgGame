@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="sidebar-menu px-3.5 sm:px-0" :style="mobileMenuStyle">
     <!-- BC代币 / 顶部提示 -->
     <div
@@ -458,17 +458,20 @@ import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from
 import { navigateTo } from '@/utils/router'
 import { openLuckySpin } from '@/utils/openLuckySpin'
 import { openTicketActivity } from '@/utils/openTicketActivity'
-import { PROMOTIONS_MENU_GROUP_LIMIT, usePromotionsStore } from '@/stores/promotions'
+import { usePromotionsStore } from '@/stores/promotions'
+import { getPromotionGroupRouteKey } from '@/views/activity/promotions/shared'
 import {
-  getLanguageName,
-  getPromotionGroupIcon,
-  getPromotionGroupRouteKey
-} from '@/views/activity/promotions/shared'
+  clearUserTicketInventory,
+  hasUserTicketForGame,
+  refreshUserTicketInventory,
+  userTicketInventoryState
+} from '@/views/activity/ticket/shared/userTicketInventory'
+import type { TicketGameId } from '@/views/activity/ticket/shared/types'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
 import LanguagePopup from '@/views/settings/preferences/language-popup.vue'
 
 import type { Component } from 'vue'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 interface Props {
@@ -505,33 +508,6 @@ const isLoggedIn = computed(() => Boolean(localStorage.getItem('userInfo')))
 const promotionsStore = usePromotionsStore()
 const { groups: promotionGroups } = storeToRefs(promotionsStore)
 const { tabButtons: casinoTabButtons } = useCasinoTabButtons({ isLoggedIn })
-
-const buildPromotionsMenuChildren = (
-  groups: typeof promotionGroups.value
-): SidebarSubmenuItem[] => {
-  const children: SidebarSubmenuItem[] = []
-  const menuGroups = groups.slice(0, PROMOTIONS_MENU_GROUP_LIMIT)
-
-  for (let i = 0; i < menuGroups.length; i++) {
-    const group = menuGroups[i]
-    const routeKey = getPromotionGroupRouteKey(group)
-    if (!routeKey) {
-      continue
-    }
-
-    const groupName = getLanguageName(group.groupName) || routeKey
-    children.push({
-      id: `promotions_${routeKey}`,
-      name: groupName,
-      icon: getPromotionGroupIcon(group),
-      handler: () => {
-        navigateTo(`/promotions/${routeKey}`)
-      }
-    })
-  }
-
-  return children
-}
 
 const { side } = sideIcons
 type SidebarSubmenuItem = {
@@ -779,9 +755,80 @@ const buildCasinoMenuChildren = (): SidebarSubmenuItem[] => {
       }
     }))
 }
-const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
-  const promotionsChildren = buildPromotionsMenuChildren(promotionGroups.value)
 
+const voucherSubmenuChildren = computed<SidebarSubmenuItem[]>(() => {
+  // 依赖票券库存以保持响应式刷新；filter 内通过 hasUserTicketForGame 判定
+  void userTicketInventoryState.records.length
+  void userTicketInventoryState.loaded
+
+  const items: SidebarSubmenuItem[] = [
+    {
+      id: 'cash-voucher',
+      name: t('menu.cash-voucher'),
+      icon: newSideIcons.cashVoucherIcon,
+      handler: () => openTicketActivity('cash_voucher')
+    },
+    {
+      id: 'lucky-red-envelope',
+      name: t('menu.lucky-red-envelope'),
+      icon: newSideIcons.luckyRedEnvelopeIcon,
+      handler: () => openTicketActivity('lucky_red_envelope')
+    },
+    {
+      id: 'smash-golden-egg',
+      name: t('menu.smash-golden-egg'),
+      icon: newSideIcons.smashGoldenEggIcon,
+      handler: () => openTicketActivity('golden_egg')
+    },
+    {
+      id: 'mystery-box',
+      name: t('menu.mystery-box'),
+      icon: newSideIcons.mysteryBoxIcon,
+      handler: () => openTicketActivity('mystery_box')
+    },
+    {
+      id: 'lucky-spin',
+      name: t('menu.lucky-spin'),
+      icon: newSideIcons.luckySpinIcon,
+      handler: () => openLuckySpin()
+    }
+  ]
+
+  const VOUCHER_ITEM_TO_GAME_ID: Record<string, TicketGameId> = {
+    'cash-voucher': 'cash_voucher',
+    'lucky-red-envelope': 'lucky_red_envelope',
+    'smash-golden-egg': 'golden_egg',
+    'mystery-box': 'mystery_box',
+    'lucky-spin': 'lucky_spin'
+  }
+
+  const filtered = items.filter(item => hasUserTicketForGame(VOUCHER_ITEM_TO_GAME_ID[item.id]!))
+
+  filtered.push({
+    id: 'my-vouchers',
+    name: t('menu.my-vouchers'),
+    icon: newSideIcons.myVouchersIcon,
+    handler: () => navigateTo('/myVouchers')
+  })
+
+  return filtered
+})
+
+onMounted(() => {
+  if (isLoggedIn.value) {
+    void refreshUserTicketInventory()
+  }
+})
+
+watch(isLoggedIn, loggedIn => {
+  if (loggedIn) {
+    void refreshUserTicketInventory()
+  } else {
+    clearUserTicketInventory()
+  }
+})
+
+const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
   return [
     {
       id: 'crypto-account',
@@ -798,66 +845,37 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       groupKey: 'game-categories',
       children: buildCasinoMenuChildren()
     },
-    {
-      id: 'recent-favorites-group',
-      name: 'Recent And Favorites',
-      icon: newSideIcons.recentlyPlayedIcon,
-      groupKey: 'recent-favorites-group',
-      renderAsGroup: true,
-      children: [
-        {
-          id: 'recently-played',
-          name: t('menu.recently-played'),
-          icon: newSideIcons.recentlyPlayedIcon,
-          handler: () => navigateTo('/recently-played-games')
-        },
-        {
-          id: 'favorites',
-          name: t('menu.favorites'),
-          icon: newSideIcons.favoritesIcon,
-          handler: () => navigateTo('/favorites-games')
-        }
-      ]
-    },
+    ...(isLoggedIn.value
+      ? [
+          {
+            id: 'recent-favorites-group',
+            name: 'Recent And Favorites',
+            icon: newSideIcons.recentlyPlayedIcon,
+            groupKey: 'recent-favorites-group',
+            renderAsGroup: true,
+            children: [
+              {
+                id: 'recently-played',
+                name: t('menu.recently-played'),
+                icon: newSideIcons.recentlyPlayedIcon,
+                handler: () => navigateTo('/recently-played-games')
+              },
+              {
+                id: 'favorites',
+                name: t('menu.favorites'),
+                icon: newSideIcons.favoritesIcon,
+                handler: () => navigateTo('/favorites-games')
+              }
+            ]
+          } satisfies SidebarMenuGroup
+        ]
+      : []),
     {
       id: 'vouchers',
       name: t('menu.vouchers'),
       icon: newSideIcons.vouchersIcon,
       groupKey: 'vouchers',
-      children: isLoggedIn.value
-        ? [
-            {
-              id: 'cash-voucher',
-              name: t('menu.cash-voucher'),
-              icon: newSideIcons.cashVoucherIcon,
-              handler: () => openTicketActivity('cash_voucher')
-            },
-            {
-              id: 'lucky-red-envelope',
-              name: t('menu.lucky-red-envelope'),
-              icon: newSideIcons.luckyRedEnvelopeIcon,
-              handler: () => openTicketActivity('lucky_red_envelope')
-            },
-            {
-              id: 'smash-golden-egg',
-              name: t('menu.smash-golden-egg'),
-              icon: newSideIcons.smashGoldenEggIcon,
-              handler: () => openTicketActivity('golden_egg')
-            },
-            {
-              id: 'mystery-box',
-              name: t('menu.mystery-box'),
-              icon: newSideIcons.mysteryBoxIcon,
-              handler: () => openTicketActivity('mystery_box')
-            },
-            {
-              id: 'lucky-spin',
-              name: t('menu.lucky-spin'),
-              icon: newSideIcons.luckySpinIcon,
-              handler: () => openLuckySpin()
-            }
-          ]
-        : []
+      children: isLoggedIn.value ? voucherSubmenuChildren.value : []
     },
     {
       id: 'task-center',
@@ -877,46 +895,8 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
         if (defaultGroupCode) {
           return navigateTo(`/promotions/${defaultGroupCode}`)
         }
-      },
-      children: promotionsChildren
+      }
     },
-    {
-      id: 'combination1',
-      name: 'combination1',
-      icon: newSideIcons.redEnvelopeEventIcon,
-      groupKey: 'combination1',
-      renderAsGroup: true,
-      children: [
-        {
-          id: 'red-envelope-event',
-          name: t('menu.red-envelope-event'),
-          icon: newSideIcons.redEnvelopeEventIcon,
-          handler: () => openTicketActivity('lucky_red_envelope')
-        },
-        {
-          id: 'credit-loan',
-          name: t('menu.credit-loan'),
-          icon: newSideIcons.creditLoanIcon
-        },
-        {
-          id: 'lottery-event',
-          name: t('menu.lottery-event'),
-          icon: newSideIcons.lotteryEventIcon
-        },
-        {
-          id: 'lucky-wheel',
-          name: t('menu.lucky-wheel'),
-          icon: newSideIcons.luckyWheelIcon,
-          handler: () => openLuckySpin()
-        },
-        {
-          id: 'promo-code',
-          name: t('menu.promo-code'),
-          icon: newSideIcons.promoCodeIcon
-        }
-      ]
-    },
-
     {
       id: 'vip-center',
       name: t('menu.vip-center'),

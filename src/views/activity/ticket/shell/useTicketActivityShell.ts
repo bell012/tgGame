@@ -1,5 +1,6 @@
 import { getLanguageCode } from '@/utils/locale'
 import { fetchMbTicketListRecords, mapMbTicketListToFooter } from '../shared/mappers/mbTicketMapper'
+import { setUserTicketInventoryRecords } from '../shared/userTicketInventory'
 import {
   buildTicketActivitySession,
   mapMbTicketToReminderContext
@@ -32,6 +33,7 @@ const fetchVoucherFooter = async () => {
   try {
     const records = await fetchMbTicketListRecords(languageCode)
     globalTicketToastState.mbTicketRecords = records
+    setUserTicketInventoryRecords(records)
     return mapMbTicketListToFooter(records, languageCode)
   } catch {
     // mbTicketList 失败不阻断活动页
@@ -115,6 +117,7 @@ export const useTicketActivityShell = (
       const languageCode = getLanguageCode()
       const records = await fetchMbTicketListRecords(languageCode)
       globalTicketToastState.mbTicketRecords = records
+      setUserTicketInventoryRecords(records)
       const footer = mapMbTicketListToFooter(records, languageCode)
 
       globalTicketToastState.lastConsumedTicketRecord = null
