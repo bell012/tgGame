@@ -536,8 +536,8 @@ export type {
   LuckySpinTask,
   LuckySpinVoucherCardData,
   TicketActivitySession,
-  WinnerTickerItem,
-  VoucherGameItem
+  VoucherGameItem,
+  WinnerTickerItem
 } from '@/views/activity/ticket/shared/types'
 
 /** 票券跑马灯请求 */
