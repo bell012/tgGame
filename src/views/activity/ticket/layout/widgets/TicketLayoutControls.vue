@@ -42,7 +42,7 @@
     :style="controlBtnStyle"
     :disabled="isInteractionLocked"
     :aria-label="t('luckySpinPage.reminder.title')"
-    @click="emit('open-reminder')"
+    @click="emit('open-help')"
   >
     <img
       :src="LUCKY_SPIN_ASSETS.controls.modalHelpIcon"
@@ -69,6 +69,7 @@ defineProps<{
 const emit = defineEmits<{
   close: []
   'open-reminder': []
+  'open-help': []
 }>()
 
 const { t } = useI18n()
