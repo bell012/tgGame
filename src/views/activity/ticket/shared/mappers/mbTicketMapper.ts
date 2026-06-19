@@ -135,8 +135,8 @@ export const getMbTicketLanguageCopy = (
 /** 活动弹窗 / openTicketActivity 拉票券列表：与「我的票券」一致只取发行中，并扩大条数避免分页漏券 */
 export const MB_TICKET_ACTIVITY_LIST_QUERY = {
   current: 1,
-  size: 100,
-  status: 1 as const
+  size: 999,
+  status: 0 as const
 }
 
 /** 按玩法筛选票券（保留 result 数组顺序） */
