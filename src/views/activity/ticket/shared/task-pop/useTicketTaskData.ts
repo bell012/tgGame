@@ -16,20 +16,22 @@ interface UseTicketTaskDataOptions {
 const firstResult = <T>(result: T | T[] | undefined) => (Array.isArray(result) ? result[0] : result)
 
 export const useTicketTaskData = ({ visible, ticketId, rowId }: UseTicketTaskDataOptions) => {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const taskItems = ref<TaskItem[]>([])
   const voucherName = ref('')
-  const currentLanguageCode = computed(() => getLanguageCode())
+  const currentLanguageCode = computed(() => getLanguageCode(String(locale.value)))
 
   const loadTaskData = async () => {
     const resolvedTicketId = unref(ticketId)
     if (!resolvedTicketId) return
 
+    const languageCode = currentLanguageCode.value
+
     try {
       const [ticketResponse, progressResponse] = await Promise.all([
         Api.activity.mbTicketList({
           ticketId: resolvedTicketId,
-          languageCode: currentLanguageCode.value
+          languageCode
         }),
         Api.activity.ticketProgress({
           rowId: unref(rowId),
@@ -40,10 +42,10 @@ export const useTicketTaskData = ({ visible, ticketId, rowId }: UseTicketTaskDat
       const ticketData = firstResult(ticketResponse.result) as MbTicketRecord | undefined
       const progressData = firstResult(progressResponse.result) as TicketProgressResult | undefined
 
-      voucherName.value = getMbTicketLanguageCopy(ticketData, currentLanguageCode.value).name
+      voucherName.value = getMbTicketLanguageCopy(ticketData, languageCode).name
       taskItems.value = buildTaskItems(ticketData, progressData, {
         t: (key, params) => t(key, params ?? {}),
-        locale: currentLanguageCode.value
+        locale: languageCode
       })
     } catch (error) {
       console.error('task-pop load failed:', error)
@@ -51,7 +53,12 @@ export const useTicketTaskData = ({ visible, ticketId, rowId }: UseTicketTaskDat
   }
 
   watch(
-    [() => unref(visible), () => unref(ticketId), () => unref(rowId)],
+    [
+      () => unref(visible),
+      () => unref(ticketId),
+      () => unref(rowId),
+      () => currentLanguageCode.value
+    ],
     ([nextVisible]) => {
       if (!nextVisible) return
       void loadTaskData()
