@@ -305,7 +305,6 @@ export const buildTaskItems = (
   const items: TaskItem[] = []
   const { bindData, completeVerification, ext } = progressData ?? {}
   const enabledBindData = ticketData?.bindData
-  const enabledCompleteInfo = ticketData?.completeInfo
   const enabledCompleteVerification = ticketData?.completeVerification
 
   appendConditionTasks(items, ticketData, ext, options)
@@ -357,31 +356,6 @@ export const buildTaskItems = (
     })
     if (verifyPhoneTask) items.push(verifyPhoneTask)
   }
-
-  const completeInfo = progressData?.completeInfo
-  const socialTasks = [
-    ['complete-whatsapp', 'completeWhatsapp', 'completeWhatsapp', 'whatsapp'] as const,
-    ['complete-facebook', 'completeFacebook', 'completeFacebook', 'facebook'] as const,
-    ['complete-telegram', 'completeTelegram', 'completeTelegram', 'telegram'] as const
-  ]
-
-  socialTasks.forEach(([id, enabledKey, progressKey, i18nKey]) => {
-    if (!isVerificationEnabled(enabledCompleteInfo?.[enabledKey])) return
-
-    const task = createStatusTask({
-      id,
-      title: t(`${TASK_I18N_PREFIX}.tasks.${i18nKey}`),
-      satisfied: completeInfo?.[progressKey] ?? false,
-      actionType: 'complete',
-      pendingLabel: t(`${TASK_I18N_PREFIX}.actions.link`),
-      completedLabel,
-      helpSections: createSimpleHelpSections(
-        t(`${TASK_I18N_PREFIX}.help.${i18nKey}.title`),
-        t(`${TASK_I18N_PREFIX}.help.${i18nKey}.content`)
-      )
-    })
-    if (task) items.push(task)
-  })
 
   return items
 }
