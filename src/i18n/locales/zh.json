@@ -1605,7 +1605,7 @@
       "introRewardPrefix": "最高赢取",
       "introRewardSuffix": "现金",
       "rulesTitle": "活动规则",
-      "unlocked": "恭喜！您的{voucherName}已解锁"
+      "unlocked": "恭喜！您的{voucherName}现已解锁"
     },
     "result": {
       "congratulations": "恭喜！",

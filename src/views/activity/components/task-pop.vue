@@ -27,7 +27,10 @@
             </div>
 
             <div class="task-pop__body min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-5">
-              <p class="text-sm leading-[20px] text-text-1">
+              <p v-if="allTasksCompleted" class="text-sm leading-[20px] text-text-1">
+                {{ t('luckySpinPage.reminder.unlocked', { voucherName }) }}
+              </p>
+              <p v-else class="text-sm leading-[20px] text-text-1">
                 {{ t('ticketPage.taskPop.introUnlockPrefix') }}
                 <span class="text-theme-primary">{{ voucherName }}</span>
               </p>
@@ -159,6 +162,7 @@ const { taskItems, voucherName: fetchedVoucherName } = useTicketTaskData({
   rowId: resolvedRowId
 })
 const voucherName = computed(() => fetchedVoucherName.value || t('ticketPage.taskPop.voucherName'))
+const allTasksCompleted = computed(() => taskItems.value.length === 0)
 const translateTask = (key: string, params?: Record<string, unknown>) => t(key, params ?? {})
 const completeRequirementsRule = computed(() =>
   getTicketTaskCompleteRequirementsRule(translateTask)
