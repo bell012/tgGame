@@ -103,7 +103,7 @@ import {
   closeTicketDialog
 } from '@/views/activity/ticket'
 
-// 券种条第 i 格（record 与 mbTicketRecords[i] 一致）
+// 券种条第 i 格（record 与 mbTicketRecords[i] 一致）切换
 switchTicketGame('cash_voucher', globalTicketToastState.mbTicketRecords[i])
 
 // 调接口带当前票
