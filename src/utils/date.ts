@@ -35,6 +35,15 @@ const getDateTimeLocale = () => {
   }
 }
 
+/** 本地日期键 YYYY-MM-DD：用于「每日一次」类弹窗的去重 */
+export const getTodayKey = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 const isChineseLanguage = (languageCode: string) => languageCode === 'zh'
 
 const isSameDay = (left: Date, right: Date) =>

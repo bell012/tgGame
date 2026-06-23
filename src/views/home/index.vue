@@ -302,6 +302,7 @@ import { useGameStore, type HomeCollectionDisplayItem } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
+import { maybeAutoOpenTicketActivity } from '@/utils/autoOpenTicketActivity'
 import { storeToRefs } from 'pinia'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -533,6 +534,7 @@ const getQuerySlideshow = async () => {
 
 onMounted(async () => {
   await Promise.all([fetchGameData(), getQuerySlideshow(), fetchHomeFavoritesModule()])
+  void maybeAutoOpenTicketActivity()
 })
 
 watch(
@@ -542,6 +544,7 @@ watch(
       return
     }
     void fetchHomeFavoritesModule()
+    void maybeAutoOpenTicketActivity()
   }
 )
 </script>
