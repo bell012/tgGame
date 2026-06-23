@@ -1,12 +1,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useLayoutStore } from '@/stores/layout'
 
-export const getDefaultMobileMediaQuery = () => {
-  const layoutStore = useLayoutStore()
-  return `(max-width: ${layoutStore.MOBILE_BREAKPOINT}px)`
-}
-
-export function isMediaQueryMatched(query: string) {
+function isMediaQueryMatched(query: string) {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
     return false
   }
@@ -14,8 +9,19 @@ export function isMediaQueryMatched(query: string) {
   return window.matchMedia(query).matches
 }
 
-export function isMobileViewport() {
-  return isMediaQueryMatched(getDefaultMobileMediaQuery())
+// 检测是否是 PWA / 添加到桌面
+export function isPwaAppViewport() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const isStandaloneDisplay = isMediaQueryMatched('(display-mode: standalone)')
+  const isFullscreenDisplay = isMediaQueryMatched('(display-mode: fullscreen)')
+  const isIosStandalone =
+    typeof navigator !== 'undefined' &&
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+
+  return isStandaloneDisplay || isFullscreenDisplay || isIosStandalone
 }
 
 /**
