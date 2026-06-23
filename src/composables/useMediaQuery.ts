@@ -1,6 +1,23 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useLayoutStore } from '@/stores/layout'
 
+export const getDefaultMobileMediaQuery = () => {
+  const layoutStore = useLayoutStore()
+  return `(max-width: ${layoutStore.MOBILE_BREAKPOINT}px)`
+}
+
+export function isMediaQueryMatched(query: string) {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false
+  }
+
+  return window.matchMedia(query).matches
+}
+
+export function isMobileViewport() {
+  return isMediaQueryMatched(getDefaultMobileMediaQuery())
+}
+
 /**
  * 响应式媒体查询 Hook
  * @param query - CSS 媒体查询字符串
