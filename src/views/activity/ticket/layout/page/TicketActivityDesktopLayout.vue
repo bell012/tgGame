@@ -44,7 +44,7 @@
               :is-interaction-locked="isInteractionLocked"
               :control-btn-style="pcControlBtnStyle"
               :help-icon-style="pcHelpIconStyle"
-              @open-reminder="emit('open-reminder')"
+              @open-help="openTicketTaskPop()"
             />
             <component
               :is="gameComponent"
@@ -69,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+import { openTicketTaskPop } from '../../shell/ticketToast'
 import TicketLayoutControls from '../widgets/TicketLayoutControls.vue'
 import TicketModalHeader from '../widgets/TicketModalHeader.vue'
 import TicketWinnerTicker from '../widgets/TicketWinnerTicker.vue'
@@ -94,4 +95,6 @@ const {
   pcHelpIconStyle,
   pcTickerStyle
 } = useTicketDesktopPanelStyle()
+
+void rightPanelRef
 </script>

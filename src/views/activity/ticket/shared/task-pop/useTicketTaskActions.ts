@@ -1,4 +1,5 @@
 import { navigateTo } from '@/utils/router'
+import { closeTicketToast } from '../../shell/ticketToast'
 import type { TaskItem } from './types'
 
 const getTicketTaskActionPath = (task: TaskItem) => {
@@ -14,6 +15,7 @@ export const useTicketTaskActions = (close: () => void) => {
   const handleTaskAction = async (task: TaskItem) => {
     await navigateTo(getTicketTaskActionPath(task))
     close()
+    closeTicketToast()
   }
 
   return {

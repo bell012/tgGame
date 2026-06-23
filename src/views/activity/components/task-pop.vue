@@ -9,7 +9,7 @@
         <transition name="popup-scale">
           <div
             v-show="visible"
-            class="task-pop__dialog relative flex w-full max-h-[70dvh] flex-col overflow-hidden rounded-t-xl bg-bg-1 sm:mx-auto sm:max-h-[560px] sm:max-w-[400px] sm:rounded-xl"
+            class="task-pop__dialog relative flex w-full max-h-[90dvh] flex-col overflow-hidden rounded-t-xl bg-bg-1 sm:mx-auto sm:max-h-[560px] sm:max-w-[400px] sm:rounded-xl"
           >
             <div class="relative shrink-0 px-4 pb-3 pt-5">
               <h3 class="text-center text-[18px] font-[700] leading-[22px] text-text-1">
@@ -27,7 +27,10 @@
             </div>
 
             <div class="task-pop__body min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-5">
-              <p class="text-sm leading-[20px] text-text-1">
+              <p v-if="allTasksCompleted" class="text-sm leading-[20px] text-text-1">
+                {{ t('luckySpinPage.reminder.unlocked', { voucherName }) }}
+              </p>
+              <p v-else class="text-sm leading-[20px] text-text-1">
                 {{ t('ticketPage.taskPop.introUnlockPrefix') }}
                 <span class="text-theme-primary">{{ voucherName }}</span>
               </p>
@@ -159,6 +162,7 @@ const { taskItems, voucherName: fetchedVoucherName } = useTicketTaskData({
   rowId: resolvedRowId
 })
 const voucherName = computed(() => fetchedVoucherName.value || t('ticketPage.taskPop.voucherName'))
+const allTasksCompleted = computed(() => taskItems.value.length === 0)
 const translateTask = (key: string, params?: Record<string, unknown>) => t(key, params ?? {})
 const completeRequirementsRule = computed(() =>
   getTicketTaskCompleteRequirementsRule(translateTask)

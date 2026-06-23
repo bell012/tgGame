@@ -372,7 +372,9 @@ export interface MbTicketRecord {
   wheelConfig?: WheelConfigItem[]
   platformGameCodes?: string[]
   conditionType?: number[]
-  bindData?: TicketProgressBindData
+  bindData?: MbTicketVerificationBindData
+  completeInfo?: MbTicketVerificationCompleteInfo
+  completeVerification?: MbTicketVerificationCompleteVerification
   rechargeCondition?: MbTicketRechargeCondition
   wageringCondition?: MbTicketWageringCondition
   lossCondition?: MbTicketLossCondition
@@ -395,15 +397,33 @@ export interface TicketProgressBindData {
   bindWithdrawalName?: boolean
 }
 
+export interface MbTicketVerificationBindData {
+  /** 是否开启提现账户验证 */
+  bindWithdrawalAccount?: boolean | number | string
+  /** 是否开启提现姓名验证 */
+  bindWithdrawalName?: boolean | number | string
+}
+
 export interface TicketProgressCompleteInfo {
   completeWhatsapp?: boolean
   completeFacebook?: boolean
   completeTelegram?: boolean
 }
 
+export interface MbTicketVerificationCompleteInfo {
+  completeWhatsapp?: boolean | number | string
+  completeFacebook?: boolean | number | string
+  completeTelegram?: boolean | number | string
+}
+
 export interface TicketProgressCompleteVerification {
   /** true 已完成，false 未完成 */
   verifyPhone?: boolean
+}
+
+export interface MbTicketVerificationCompleteVerification {
+  /** 是否开启手机号验证 */
+  verifyPhone?: boolean | number | string
 }
 
 export interface TicketProgressExt {
@@ -467,7 +487,7 @@ export interface MbTicketListResponse {
   code: string
   message: string
   success: boolean
-  result?: MbTicketListResult | MbTicketRecord[]
+  result?: MbTicketRecord | MbTicketRecord[]
 }
 
 /** @deprecated 使用 MbTicketRecord；保留别名兼容旧引用 */

@@ -3,7 +3,7 @@
     variant="mobile-bar"
     :is-interaction-locked="isInteractionLocked"
     @close="emit('close')"
-    @open-reminder="emit('open-reminder')"
+    @open-help="openTicketTaskPop()"
   />
 
   <TicketActivityStateGate
@@ -49,6 +49,7 @@
 </template>
 
 <script setup lang="ts">
+import { openTicketTaskPop } from '../../shell/ticketToast'
 import { ticketMobileSectionClass } from '../../shared/layout-tokens/ticketMobileLayout'
 import TicketLayoutControls from '../widgets/TicketLayoutControls.vue'
 import TicketModalHeader from '../widgets/TicketModalHeader.vue'
