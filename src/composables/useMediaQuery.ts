@@ -1,6 +1,29 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useLayoutStore } from '@/stores/layout'
 
+function isMediaQueryMatched(query: string) {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false
+  }
+
+  return window.matchMedia(query).matches
+}
+
+// 检测是否是 PWA / 添加到桌面
+export function isPwaAppViewport() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const isStandaloneDisplay = isMediaQueryMatched('(display-mode: standalone)')
+  const isFullscreenDisplay = isMediaQueryMatched('(display-mode: fullscreen)')
+  const isIosStandalone =
+    typeof navigator !== 'undefined' &&
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+
+  return isStandaloneDisplay || isFullscreenDisplay || isIosStandalone
+}
+
 /**
  * 响应式媒体查询 Hook
  * @param query - CSS 媒体查询字符串
