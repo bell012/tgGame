@@ -33,37 +33,12 @@ export interface RunUseTicketOptions {
   openReminderOnMissingRow?: boolean
   /** use 接口返回业务失败时是否打开任务弹窗，默认 true */
   openTaskPopOnFailure?: boolean
-  /** 点击使用票券时是否先打开 task-pop，默认 true */
-  openTaskPopBeforeUse?: boolean
   /** 兼容旧调用，task-pop 会基于当前票券自行加载任务数据 */
   voucherName?: string
 }
 
-type ActiveTicketParams = ReturnType<typeof getActiveTicketParams>
-
-const taskPopShownBeforeUseKeys = new Set<string>()
-
-const getTaskPopBeforeUseKey = (params: ActiveTicketParams) => {
-  const record = globalTicketToastState.activeTicketRecord
-  const rowId = params.rowId ?? record?.rowId
-  const ticketId = params.ticketId ?? record?.ticketId
-
-  if (rowId != null) return `row:${rowId}`
-  if (ticketId != null) return `ticket:${ticketId}`
-  return ''
-}
-
-const shouldOpenTaskPopBeforeUse = (params: ActiveTicketParams) => {
-  const key = getTaskPopBeforeUseKey(params)
-  if (!key || taskPopShownBeforeUseKeys.has(key)) return false
-
-  taskPopShownBeforeUseKeys.add(key)
-  return true
-}
-
 /**
  * 票据使用（5 种票券共享）：
- * - 第一次点击当前票券 → 先弹 task-pop，不立即调用 use
  * - 校验 rowId，缺失 → 弹 task-pop
  * - 调 /ticket/api/use，统一关掉 request.ts 自带的错误 toast，由本文件做错误提示
  * - 业务码非 C2 → 弹 task-pop + onError
@@ -77,12 +52,6 @@ export const useTicketUseAction = () => {
     if (isPending.value) return
 
     const params = getActiveTicketParams()
-
-    if (options.openTaskPopBeforeUse !== false && shouldOpenTaskPopBeforeUse(params)) {
-      openTicketTaskPop()
-      options.onError?.()
-      return
-    }
 
     if (!params.rowId) {
       if (options.openReminderOnMissingRow !== false) {
