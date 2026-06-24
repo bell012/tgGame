@@ -533,8 +533,8 @@ const getQuerySlideshow = async () => {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchGameData(), getQuerySlideshow(), fetchHomeFavoritesModule()])
   void maybeAutoOpenTicketActivity()
+  await Promise.allSettled([fetchGameData(), getQuerySlideshow(), fetchHomeFavoritesModule()])
 })
 
 watch(

@@ -4,7 +4,8 @@
       <transition name="popup-fade">
         <div
           v-show="visible"
-          class="fixed inset-0 bg-mask-60-1"
+          class="fixed inset-0"
+          :class="layout === 'result' ? 'bg-black/80 backdrop-blur-sm' : 'bg-mask-60-1'"
           :style="{ zIndex: maskZIndex }"
           @click.self="emit('close')"
         />
@@ -61,7 +62,7 @@
           <button
             v-if="showCloseButton"
             type="button"
-            class="mt-6 flex h-10 w-10 items-center justify-center rounded-full border border-common-30 text-common-80"
+            class="dialog-close-btn mt-6 flex h-10 w-10 items-center justify-center rounded-full text-common-100"
             :aria-label="closeAriaLabel"
             @click="emit('close')"
           >
@@ -101,4 +102,8 @@ const isMobile = useIsMobile()
 
 <style scoped lang="scss">
 @use './dialog-transitions.scss';
+
+.dialog-close-btn {
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
 </style>

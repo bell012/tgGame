@@ -9,7 +9,7 @@
     @close="close"
   >
     <div class="flex flex-col items-center">
-      <h2 class="text-[18px] font-[700] text-common-100">{{ resolvedTitle }}</h2>
+      <h2 class="result-hero-title text-[18px] font-[700]">{{ resolvedTitle }}</h2>
       <p class="mt-1 text-[28px] font-[700] text-[#F7D060]">{{ resolvedHighlight }}</p>
       <p v-if="resolvedSubtext" class="mt-1 text-[13px] text-common-60">
         {{ resolvedSubtext }}
@@ -54,3 +54,12 @@ const heroMedia = computed(() =>
   resolveHeroMedia(result.value, resultTicketRecord.value, resolvedHeroImage.value)
 )
 </script>
+
+<style scoped>
+.result-hero-title {
+  background: linear-gradient(180deg, #fffdf8 0%, #7bf983 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+</style>
