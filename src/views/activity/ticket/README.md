@@ -112,7 +112,7 @@ await Api.activity.useTicket({
   ticketId: getActiveTicketParams().ticketId
 })
 
-// 只关子弹窗 / 关整个活动页
+// 只关子弹窗 / 关整个活动页 测试一下
 closeTicketDialog()
 closeTicketToast() // 含清 session
 ```
