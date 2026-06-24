@@ -10,7 +10,7 @@
   >
     <div class="flex flex-col items-center">
       <h2 class="result-hero-title text-[18px] font-[700]">{{ resolvedTitle }}</h2>
-      <p class="mt-1 text-[28px] font-[700] text-[#F7D060]">{{ resolvedHighlight }}</p>
+      <p class="mt-1 text-[28px] font-[700] text-secondary-6">{{ resolvedHighlight }}</p>
       <p v-if="resolvedSubtext" class="mt-1 text-[13px] text-common-60">
         {{ resolvedSubtext }}
       </p>

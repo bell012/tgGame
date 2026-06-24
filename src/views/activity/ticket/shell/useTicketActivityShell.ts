@@ -6,7 +6,6 @@ import {
   mapMbTicketToReminderContext
 } from '../shared/mappers/mapTicketActivityContext'
 import { findTicketIndex } from '../shared/mappers/gameHeaderConfig'
-import { shouldOpenTriggerReceiveOnClose } from '../shared/ticketPostTrigger'
 import type { TicketActivitySession, TicketGameId } from '../shared/types'
 import { closeTicketDialog, globalTicketDialogState } from './ticketDialog'
 import {
@@ -109,12 +108,8 @@ export const useTicketActivityShell = (
     const consumedRecord = globalTicketToastState.lastConsumedTicketRecord
     if (!consumedRecord) return
 
-    // enableTrigger=0：不触发下一轮，也不重新拉取 mbTicketList
-    if (!shouldOpenTriggerReceiveOnClose(consumedRecord)) {
-      globalTicketToastState.lastConsumedTicketRecord = null
-      return
-    }
-
+    // 结果弹窗关闭（点「确定」或下一轮领取完）后：重新拉取 mbTicketList 刷新列表，
+    // 并自动选中已消耗票券位置上的下一张票券。
     const session = activitySession.value
     const consumedIndex = session
       ? findTicketIndex(session.voucherGames, { record: consumedRecord })

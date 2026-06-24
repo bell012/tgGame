@@ -19,3 +19,21 @@ export const shouldOpenTriggerReceiveOnClose = (record: MbTicketRecord | null | 
 /** 读取 triggerConfig 中的下一轮指定票券 */
 export const getTriggerReceiveTickets = (record: MbTicketRecord | null | undefined) =>
   record ? normalizeTriggerConfigTickets(record.triggerConfig) : []
+
+/**
+ * 结果弹窗关闭时应展示的下一轮票券：
+ * - 仅当已消耗票券 enableTrigger=1 时才有下一轮；
+ * - 内容优先取 use 接口返回的完整 nextTickets（含 languageInfo / 过期时间），
+ *   缺失时回退到 triggerConfig 中的指定票券。
+ */
+export const resolveNextRoundTickets = (
+  nextTickets: MbTicketRecord[] | null | undefined,
+  consumedRecord: MbTicketRecord | null | undefined
+): MbTicketRecord[] => {
+  if (!shouldOpenTriggerReceiveOnClose(consumedRecord)) return []
+
+  const fromUse = normalizeMbTicketRecords(nextTickets).filter(hasTicketIdentity)
+  if (fromUse.length > 0) return fromUse
+
+  return getTriggerReceiveTickets(consumedRecord)
+}

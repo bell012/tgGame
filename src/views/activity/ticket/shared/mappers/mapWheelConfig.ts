@@ -131,7 +131,7 @@ export const buildResultDialogFromUse = (
   if (rewardType === 0) {
     return {
       variant: 'cash',
-      highlightText: `${getCurrencySymbol()}${Number(result.rewardAmount ?? 0)}`
+      highlightText: `${getCurrencySymbol()}${Number(result.rewardAmount ?? result.amount ?? 0)}`
     }
   }
 

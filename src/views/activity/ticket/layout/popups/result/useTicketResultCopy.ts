@@ -1,6 +1,8 @@
 import type { TicketResultDialogState } from '@/views/activity/ticket/shell/ticketDialog'
 import { RESULT_HERO_IMAGES } from '@/views/activity/ticket/shared/constants'
+import { resolveNextRoundTickets } from '@/views/activity/ticket/shared/ticketPostTrigger'
 import type { TicketResultVariant } from '@/views/activity/ticket/shared/types'
+import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
 import type { ComputedRef } from 'vue'
 import { computed } from 'vue'
 import type { ComposerTranslation } from 'vue-i18n'
@@ -36,9 +38,18 @@ export function useTicketResultHeroCopy(result: ResultState, t: ComposerTranslat
     return ''
   })
 
+  // 是否进入下一轮的判定与结果弹窗关闭逻辑一致（见 useTicketResultDialog.close）：
+  // enableTrigger=1 且存在下一轮票券（use 返回的 nextTickets 或 triggerConfig）时才有下一轮。
+  const hasNextRound = computed(() => {
+    const consumed = globalTicketToastState.lastConsumedTicketRecord
+    return resolveNextRoundTickets(result.value.nextTickets, consumed).length > 0
+  })
+
   const resolvedButtonText = computed(() => {
     if (result.value.buttonText) return result.value.buttonText
-    if (variant.value === 'cash') return t('luckySpinPage.result.nextRound')
+    if (variant.value === 'cash') {
+      return hasNextRound.value ? t('luckySpinPage.result.nextRound') : t('luckySpinPage.result.ok')
+    }
     return t('luckySpinPage.result.ok')
   })
 

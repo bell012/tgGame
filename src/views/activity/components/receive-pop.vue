@@ -114,7 +114,8 @@ import redEnvelopeImg from '@/static/img/activity/receive-pop/red-envelope.png'
 import titleBackImg from '@/static/img/activity/receive-pop/title-back.png'
 import turntableImg from '@/static/img/activity/receive-pop/turntable.png'
 import cashVoucherImg from '@/static/img/lucky-spin/vouchers/game-cash-voucher.png'
-import { formatUsDateTime12h } from '@/utils/date'
+import { formatTimestamp } from '@/utils/date'
+import { getTicketActivityEndUseTime } from '@/views/activity/ticket/shared/utils/ticketActivityCountdown'
 import { getLanguageCode } from '@/utils/locale'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -169,13 +170,14 @@ const displayVouchers = computed<ReceiveVoucherItem[]>(() => {
   return normalizeReceiveTickets(props.nextTickets).map((record, index) => {
     const type = TICKET_TYPE_TO_GAME_ID[Number(record.type)] ?? 'golden_egg'
     const copy = getMbTicketLanguageCopy(record, languageCode)
+    const ticketName = String((record as { ticketName?: unknown }).ticketName ?? '').trim()
 
     return {
       id: `next-ticket-${record.rowId ?? record.ticketId ?? index}`,
       type,
-      title: copy.name || '',
+      title: copy.name || ticketName,
       rewardText: copy.description || '',
-      expiresAt: formatUsDateTime12h(record.expireTime)
+      expiresAt: formatTimestamp(getTicketActivityEndUseTime(record))
     }
   })
 })

@@ -23,16 +23,17 @@ type ResultDialogExtras = Partial<
 >
 
 /**
- * 弹结果浮窗：是否触发下一轮票券统一由结果弹窗关闭时按已消耗票券的
- * enableTrigger/triggerConfig 决定（见 useTicketResultDialog.close），
- * 不再依赖 use 接口返回的 nextTickets，避免 enableTrigger=0 时误触发。
+ * 弹结果浮窗：是否触发下一轮仍由已消耗票券的 enableTrigger 决定（见
+ * useTicketResultDialog.close / resolveNextRoundTickets，避免 enableTrigger=0 时误触发）；
+ * 这里把 use 接口返回的完整 nextTickets 透传进弹窗状态，供下一轮领取浮窗
+ * 展示票券名称 / 说明 / 过期时间。
  */
 export const openTicketResultDialogFromUse = (
   result: UseTicketResult,
   extras: ResultDialogExtras = {}
 ) => {
   const base = buildResultDialogFromUse(result)
-  openTicketResultDialog({ ...base, ...extras })
+  openTicketResultDialog({ nextTickets: result.nextTickets ?? [], ...base, ...extras })
 }
 
 /** 非大转盘玩法：按 rewardAmount 判断结果 */
@@ -41,5 +42,5 @@ export const openTicketResultDialogFromAmount = (
   extras: ResultDialogExtras = {}
 ) => {
   const base = buildResultDialogFromAmount(result)
-  openTicketResultDialog({ ...base, ...extras })
+  openTicketResultDialog({ nextTickets: result.nextTickets ?? [], ...base, ...extras })
 }
