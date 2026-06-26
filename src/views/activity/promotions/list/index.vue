@@ -147,7 +147,6 @@ import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import PromotionRecordIcon from '@/static/svg/deposit/record.svg?component'
 import { navigateTo } from '@/utils/router'
-import { globalShowToast } from '@/utils/toast'
 import PromotionsLayout from '../layout.vue'
 import PromotionsListSkeleton from './PromotionsListSkeleton.vue'
 import {
@@ -170,13 +169,11 @@ import {
 const ACTIVITY_LIST_PAGE_SIZE = 15
 
 const route = useRoute()
-const { locale, t } = useI18n()
+const { locale } = useI18n()
 const isMobile = useIsMobile()
 
 const handlePromotionRecordClick = () => {
-  globalShowToast({
-    message: t('search.stayTunedComingSoon')
-  })
+  navigateTo('/reward-center')
 }
 const isReady = ref(false)
 const promotionsStore = usePromotionsStore()

@@ -770,6 +770,21 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'reward-center',
+    name: 'rewardCenter',
+    component: () => import('@/views/reward-center/index.vue'),
+    meta: {
+      title: '奖励中心',
+      description: '奖励中心',
+      requiresAuth: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'promotions/:groupCode/:activityId',
     name: 'promotionsDetail',
     component: () => import('@/views/activity/promotions/detail/index.vue'),

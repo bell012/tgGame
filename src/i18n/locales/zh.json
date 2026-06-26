@@ -1548,6 +1548,36 @@
     "empty": "当前暂无数据",
     "notFound": "未找到该活动"
   },
+  "rewardCenter": {
+    "title": "奖励中心",
+    "claim": "领取",
+    "claimAll": "全部领取",
+    "ok": "确定",
+    "empty": "当前暂无数据",
+    "noClaimable": "暂无可领取奖励",
+    "randomAmount": "随机金额",
+    "upTo": "最高 {amount}",
+    "claimSuccessTitle": "领取成功",
+    "claimSuccessDesc": "奖金已发放至您的钱包",
+    "popup": {
+      "title": "奖励中心",
+      "pendingTotalLabel": "待领取总奖金：",
+      "claimableTotalLabel": "可领取总奖金：",
+      "enterCenter": "奖励中心",
+      "empty": "当前暂无可领取奖励",
+      "promoTitle": "充值解锁奖金",
+      "promoDesc": "充值即可领取奖励",
+      "newUserOnly": "新用户专享",
+      "summaryTitle": "待领取总奖金"
+    },
+    "tabs": {
+      "pending": "待领取",
+      "claimed": "已领取"
+    },
+    "summary": {
+      "claimedTotal": "已领取总奖金："
+    }
+  },
   "menu": {
     "crypto-account": "加密账户",
     "game-categories": "娱乐城",
