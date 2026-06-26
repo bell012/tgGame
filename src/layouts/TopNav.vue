@@ -184,7 +184,9 @@
           <div class="flex sm:hidden items-center">
             <!-- 礼物图标 -->
             <div
+              ref="mobileGiftMenuRef"
               class="cursor-pointer search w-[33px] h-[33px] flex items-center justify-center rounded-lg mr-2"
+              @click.stop="openRewardClaimPopup"
             >
               <GiftIcon class="w-4 h-4 fill-none" />
             </div>
@@ -211,10 +213,19 @@
           </div>
 
           <!-- 礼物图标 -->
-          <div
-            class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
-          >
-            <GiftIcon class="w-6 h-6 fill-none" />
+          <div ref="desktopGiftMenuRef" class="relative hidden sm:block">
+            <div
+              class="flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-lg search mr-3"
+              @click.stop="openRewardClaimPopup"
+            >
+              <GiftIcon class="h-6 w-6 fill-none" />
+            </div>
+
+            <RewardClaimPopup
+              v-if="!isMobile"
+              v-model:visible="showRewardClaimPopup"
+              @deposit="openDeposit"
+            />
           </div>
 
           <!-- 聊天和通知容器 (带边框和分隔线) -->
@@ -296,6 +307,14 @@
       @select-currency="handleCurrencyChange"
     />
 
+    <RewardClaimPopup
+      v-if="isMobile"
+      ref="mobileRewardClaimPopupRef"
+      v-model:visible="showRewardClaimPopup"
+      inline
+      @deposit="openDeposit"
+    />
+
     <Teleport to="body">
       <CurrencyPopup
         v-model:visible="showCurrencyPopup"
@@ -341,8 +360,9 @@ import { navigateTo } from '@/utils/router'
 import UserMenuDropdown from '@/views/personalCenter/components/UserMenuDropdown.vue'
 import CurrencyPopup from '@/views/settings/preferences/currency-popup.vue'
 import DepositPop from '@/views/wallet/deposit/components/DepositPop.vue'
+import RewardClaimPopup from '@/views/reward-center/components/RewardClaimPopup.vue'
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch, type ComponentPublicInstance } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -381,6 +401,10 @@ const currencyPopupAnchor = ref<PopupAnchorRect | null>(null)
 
 const showExplorehModal = ref(false)
 const showDepositPop = ref(false)
+const showRewardClaimPopup = ref(false)
+const mobileGiftMenuRef = ref<HTMLElement | null>(null)
+const mobileRewardClaimPopupRef = ref<ComponentPublicInstance<RewardClaimPopupExpose> | null>(null)
+const desktopGiftMenuRef = ref<HTMLElement | null>(null)
 
 // 用户菜单下拉框
 const showUserMenu = ref(false)
@@ -393,6 +417,10 @@ type PopupAnchorRect = {
   left: number
   width: number
   height: number
+}
+
+type RewardClaimPopupExpose = {
+  getPanelEl: () => HTMLElement | null
 }
 
 // 是否已登录
@@ -487,15 +515,32 @@ const handleVisibilityChange = () => {
   void refreshVisibleNotificationIndicator()
 }
 
-const handleUserMenuClickOutside = (event: MouseEvent) => {
-  if (!showUserMenu.value || !userMenuRef.value) {
+const handleDocumentClick = (event: MouseEvent) => {
+  const target = event.target as Node | null
+  if (!target) {
     return
   }
 
-  const target = event.target as Node | null
-
-  if (target && !userMenuRef.value.contains(target)) {
+  if (showUserMenu.value && userMenuRef.value && !userMenuRef.value.contains(target)) {
     showUserMenu.value = false
+  }
+
+  if (!showRewardClaimPopup.value) {
+    return
+  }
+
+  if (isMobile.value) {
+    const inGift = mobileGiftMenuRef.value?.contains(target)
+    const panel = mobileRewardClaimPopupRef.value?.getPanelEl()
+    const inPanel = panel?.contains(target)
+    if (!inGift && !inPanel) {
+      showRewardClaimPopup.value = false
+    }
+    return
+  }
+
+  if (desktopGiftMenuRef.value && !desktopGiftMenuRef.value.contains(target)) {
+    showRewardClaimPopup.value = false
   }
 }
 
@@ -504,7 +549,7 @@ onMounted(() => {
   userStore.syncStoredUserData()
   siteConfigStore.syncStoredConfig()
   window.addEventListener('storage', handleStorageChange)
-  document.addEventListener('click', handleUserMenuClickOutside)
+  document.addEventListener('click', handleDocumentClick)
   document.addEventListener('visibilitychange', handleVisibilityChange)
 
   void refreshVisibleNotificationIndicator()
@@ -512,7 +557,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('storage', handleStorageChange)
-  document.removeEventListener('click', handleUserMenuClickOutside)
+  document.removeEventListener('click', handleDocumentClick)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
   if (h5FoldPulseTimer) {
     clearTimeout(h5FoldPulseTimer)
@@ -604,7 +649,19 @@ const handleLoggedInCurrencySelect = (code: string) => {
 const openDeposit = () => {
   showCurrencyPopup.value = false
   showUserMenu.value = false
+  showRewardClaimPopup.value = false
   showDepositPop.value = true
+}
+
+const openRewardClaimPopup = () => {
+  if (!isLoggedIn.value) {
+    openLoginModal()
+    return
+  }
+
+  showCurrencyPopup.value = false
+  showUserMenu.value = false
+  showRewardClaimPopup.value = true
 }
 
 const toggleH5Menu = () => {
@@ -625,6 +682,7 @@ const handleNotificationClick = () => {
 
 // 切换用户菜单
 const toggleUserMenu = () => {
+  showRewardClaimPopup.value = false
   showUserMenu.value = !showUserMenu.value
 }
 
@@ -647,6 +705,7 @@ defineExpose({
   height: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
   background-color: var(--color-background-level-1);
   z-index: 50;
+  overflow: visible;
 }
 .search {
   background-color: var(--color-background-level-3);

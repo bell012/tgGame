@@ -173,7 +173,7 @@ export const normalizeTransactionFilterValues = (values: FilterInput): Transacti
   type: getSingleFilterValue(values.type)
 })
 
-const getTimeRange = (value: string) => {
+export const getTimeRange = (value: string) => {
   const now = new Date()
   const endOfDay = (date: Date) => new Date(date.setHours(23, 59, 59, 999)).getTime()
   const startOfDay = (date: Date) => new Date(date.setHours(0, 0, 0, 0)).getTime()
