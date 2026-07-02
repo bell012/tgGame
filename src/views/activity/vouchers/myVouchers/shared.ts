@@ -1,7 +1,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
-import type { MbTicketRecord } from '@/api/interface/activity'
+import type { MbTicketRecord, TicketProgressResult } from '@/api/interface/activity'
 import { formatTimestamp } from '@/utils/date'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { openTicketActivity } from '@/utils/openTicketActivity'
@@ -11,7 +11,10 @@ import {
   resolveLanguageInfo,
   TICKET_TYPE_TO_GAME_ID
 } from '@/views/activity/ticket/shared/mappers/mbTicketMapper'
-import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
+import {
+  globalTicketToastState,
+  openTicketTaskPop
+} from '@/views/activity/ticket/shell/ticketToast'
 import voucherIcon1 from '@/static/img/vouchers/icon1.png'
 import voucherIcon2 from '@/static/img/vouchers/icon2.png'
 import voucherIcon3 from '@/static/img/vouchers/icon3.png'
@@ -44,6 +47,7 @@ const VOUCHER_ICON_MAP: Record<number, string> = {
 
 const normalizeText = (value: unknown) => String(value ?? '').trim()
 const padTimeUnit = (value: number) => String(Math.max(0, Math.floor(value))).padStart(2, '0')
+const firstResult = <T>(result: T | T[] | undefined) => (Array.isArray(result) ? result[0] : result)
 
 /** 票券结束时间，优先使用 endUseTime，没有时回退到 expireTime。 */
 const getVoucherEndUseTime = (record: VoucherRecord): number => {
@@ -86,6 +90,7 @@ export const useMyVouchersPage = () => {
   const { t, locale } = useI18n()
   const loading = ref(false)
   const error = ref<unknown | null>(null)
+  const useNowPending = ref(false)
   const nowTimestamp = ref(Date.now())
   const voucherRecords = ref<VoucherRecord[]>([])
   let countdownTimer: ReturnType<typeof setInterval> | null = null
@@ -136,19 +141,38 @@ export const useMyVouchersPage = () => {
     }
   }
 
-  /** 根据票券类型打开票卷（type 5 拼多多为预留，无玩法入口） */
-  const handleUseNow = (item: VoucherItem) => {
+  /** 根据票券类型打开票卷（type 5 拼多多为预留，无玩法入口）；打开前查询进度，任务未完成时自动弹任务进度弹窗 */
+  const handleUseNow = async (item: VoucherItem) => {
     if (item.type === 5) {
       return
     }
 
     const gameId = TICKET_TYPE_TO_GAME_ID[item.type]
 
-    if (!gameId) {
+    if (!gameId || useNowPending.value) {
       return
     }
 
-    openTicketActivity(gameId, { record: item.rawData })
+    useNowPending.value = true
+    let available = true
+
+    try {
+      const response = await Api.activity.ticketProgress({ rowId: item.rawData.rowId })
+      const progressData = firstResult(response.result) as TicketProgressResult | undefined
+      available = progressData?.available !== false
+    } catch {
+      // 进度查询失败时降级为原逻辑，直接打开活动弹窗
+    }
+
+    try {
+      await openTicketActivity(gameId, { record: item.rawData })
+
+      if (!available && globalTicketToastState.visible) {
+        openTicketTaskPop()
+      }
+    } finally {
+      useNowPending.value = false
+    }
   }
 
   /** 倒计时 */
