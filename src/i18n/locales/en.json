@@ -1555,6 +1555,36 @@
     "empty": "No data available at the moment.",
     "notFound": "Promotion not found"
   },
+  "rewardCenter": {
+    "title": "Reward Center",
+    "claim": "Claim",
+    "claimAll": "Claim All",
+    "ok": "OK",
+    "empty": "No data available at the moment.",
+    "noClaimable": "No claimable rewards",
+    "randomAmount": "Random Amount",
+    "upTo": "Up to {amount}",
+    "claimSuccessTitle": "Claim Successful",
+    "claimSuccessDesc": "The bonus has been credited to your wallet.",
+    "popup": {
+      "title": "Reward Center",
+      "pendingTotalLabel": "Total Pending Bonus:",
+      "claimableTotalLabel": "Total Claimable Bonus:",
+      "enterCenter": "Reward Center",
+      "empty": "No claimable rewards at the moment.",
+      "promoTitle": "Deposit to Unlock Bonus",
+      "promoDesc": "Deposit to claim rewards",
+      "newUserOnly": "NEW USER ONLY",
+      "summaryTitle": "Total Pending Bonus"
+    },
+    "tabs": {
+      "pending": "Pending",
+      "claimed": "Claimed"
+    },
+    "summary": {
+      "claimedTotal": "Total Claimed Bonus:"
+    }
+  },
   "menu": {
     "crypto-account": "Crypto Account",
     "game-categories": "Casino",
