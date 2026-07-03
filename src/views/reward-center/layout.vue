@@ -24,7 +24,7 @@
     </div>
   </div>
 
-  <CommonFooter />
+  <CommonFooter class="mt-[40px]" />
 </template>
 
 <script setup lang="ts">

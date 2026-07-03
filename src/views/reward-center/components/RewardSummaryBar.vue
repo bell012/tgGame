@@ -1,10 +1,18 @@
 <template>
-  <div class="px-5 py-4" :class="props.compact ? 'py-3.5' : 'rounded-2xl bg-bg-2'">
+  <div class="py-4" :class="props.compact ? 'px-3.5 py-3.5' : 'rounded-2xl bg-bg-2 px-5'">
     <div class="flex items-center justify-between gap-3">
-      <p class="min-w-0 text-sm font-[700] text-text-1">
-        <span>{{ props.label }}</span>
-        <span class="ml-1 text-xl font-[700]">{{ props.amountText }}</span>
-      </p>
+      <div class="flex min-w-0 flex-1 items-center gap-2">
+        <SummaryIcon
+          v-if="!props.compact"
+          class="h-5 w-5 shrink-0 text-text-1"
+          aria-hidden="true"
+        />
+
+        <p class="min-w-0 text-sm font-[700] text-text-1">
+          <span>{{ props.label }}</span>
+          <span class="ml-1 text-xl font-[700]">{{ props.amountText }}</span>
+        </p>
+      </div>
 
       <button
         v-if="props.showClaim"
@@ -21,6 +29,8 @@
 </template>
 
 <script setup lang="ts">
+import SummaryIcon from '@/static/svg/reward-center/summary-icon.svg?component'
+
 const props = withDefaults(
   defineProps<{
     label: string

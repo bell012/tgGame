@@ -24,6 +24,7 @@
   <ClaimSuccessPopup
     v-model:visible="showClaimSuccess"
     :amount="claimSuccessAmount"
+    :currency-symbol="claimSuccessCurrency"
     :title="t('rewardCenter.claimSuccessTitle')"
     :desc="t('rewardCenter.claimSuccessDesc')"
     :button-text="t('rewardCenter.ok')"
@@ -33,11 +34,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { storeToRefs } from 'pinia'
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useRewardCenterClaim } from '@/composables/useRewardCenterClaim'
+import { useLocaleStore } from '@/stores/locale'
 import { useRewardCenterStore } from '@/stores/rewardCenter'
-import { formatRewardCenterTotal } from '@/views/reward-center/shared'
+import { getCurrentCurrency } from '@/utils/locale'
+import { formatRewardCenterSummaryTotal } from '@/views/reward-center/shared'
 import { navigateTo } from '@/utils/router'
 import RewardClaimPopupContent from './RewardClaimPopupContent.vue'
 
@@ -58,14 +62,17 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const rewardCenterStore = useRewardCenterStore()
+const localeStore = useLocaleStore()
+const { currentCurrency } = storeToRefs(localeStore)
 
 const panelRef = ref<HTMLElement | null>(null)
 const showClaimSuccess = ref(false)
 const claimSuccessAmount = ref('0.00')
+const claimSuccessCurrency = ref(getCurrentCurrency())
 
 const pendingItems = computed(() => rewardCenterStore.getPendingListItems(t))
 const pendingTotalText = computed(() =>
-  formatRewardCenterTotal(rewardCenterStore.pendingTotalAmount)
+  formatRewardCenterSummaryTotal(rewardCenterStore.pendingTotalAmount)
 )
 
 const panelClass = computed(() =>
@@ -89,11 +96,20 @@ watch(
   }
 )
 
+watch(currentCurrency, () => {
+  if (!props.visible) {
+    return
+  }
+
+  void rewardCenterStore.fetchPendingRewards()
+})
+
 defineExpose({
   getPanelEl: () => panelRef.value
 })
 
 const openClaimSuccess = (amountText: string) => {
+  claimSuccessCurrency.value = getCurrentCurrency()
   claimSuccessAmount.value = amountText
   showClaimSuccess.value = true
 }

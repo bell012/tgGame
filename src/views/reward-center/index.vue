@@ -37,10 +37,12 @@
         </button>
       </div>
 
-      <div class="min-h-0 flex-1 overflow-y-auto px-[14px] pb-4">
+      <div ref="mobileScrollRoot" class="min-h-0 flex-1 overflow-y-auto px-[14px] pb-4">
         <RewardCenterTabContent
           :active-tab="activeTab"
           :is-mobile="true"
+          :loading="tabLoading"
+          :scroll-root="mobileScrollRoot"
           @claim-success="handleClaimSuccess"
         />
       </div>
@@ -57,13 +59,16 @@
       <RewardCenterTabContent
         :active-tab="activeTab"
         :is-mobile="false"
+        :loading="tabLoading"
         @claim-success="handleClaimSuccess"
+        @time-filter-change="handleClaimedTimeFilterChange"
       />
     </RewardCenterLayout>
 
     <ClaimSuccessPopup
       v-model:visible="showClaimSuccess"
       :amount="claimSuccessAmount"
+      :currency-symbol="claimSuccessCurrency"
       :title="t('rewardCenter.claimSuccessTitle')"
       :desc="t('rewardCenter.claimSuccessDesc')"
       :button-text="t('rewardCenter.ok')"
@@ -75,13 +80,16 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+import { useLocaleStore } from '@/stores/locale'
 import { useRewardCenterStore } from '@/stores/rewardCenter'
+import { getCurrentCurrency } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
 import RewardCenterLayout from './layout.vue'
 import RewardCenterTabContent from './components/RewardCenterTabContent.vue'
@@ -102,12 +110,18 @@ const route = useRoute()
 const isMobile = useIsMobile()
 const isReady = ref(false)
 const rewardCenterStore = useRewardCenterStore()
+const localeStore = useLocaleStore()
+const { currentCurrency } = storeToRefs(localeStore)
 
 const tabs = REWARD_CENTER_TABS
 const activeTab = ref<RewardCenterTab>('pending')
+const tabLoading = ref(false)
+let tabLoadGeneration = 0
+const mobileScrollRoot = ref<HTMLElement | null>(null)
 const showFilterPopup = ref(false)
 const showClaimSuccess = ref(false)
 const claimSuccessAmount = ref('0.00')
+const claimSuccessCurrency = ref(getCurrentCurrency())
 
 const filterValues = ref<Record<string, string | string[]>>({
   ...createDefaultRewardCenterFilterValues()
@@ -139,13 +153,30 @@ const resolveTabFromRoute = () => {
   return 'pending'
 }
 
+const runWithTabLoading = async (task: () => Promise<void>) => {
+  const generation = ++tabLoadGeneration
+  tabLoading.value = true
+
+  try {
+    await task()
+  } finally {
+    if (generation === tabLoadGeneration) {
+      tabLoading.value = false
+    }
+  }
+}
+
+const loadPageTabData = async (tab: RewardCenterTab) => {
+  await runWithTabLoading(() => rewardCenterStore.loadTabData(tab))
+}
+
 const switchTab = async (tab: RewardCenterTab) => {
   if (activeTab.value === tab) {
     return
   }
 
   activeTab.value = tab
-  await rewardCenterStore.loadTabData(tab)
+  await loadPageTabData(tab)
 }
 
 const handleOpenFilter = () => {
@@ -160,7 +191,11 @@ const handleFilterApply = async (values: Record<string, string | string[]>) => {
   const normalized = normalizeRewardCenterFilterValues(values)
   filterValues.value = { ...normalized }
 
-  await rewardCenterStore.setClaimedFilterValues(normalized)
+  await runWithTabLoading(() => rewardCenterStore.setClaimedFilterValues(normalized))
+}
+
+const handleClaimedTimeFilterChange = async (time: string) => {
+  await runWithTabLoading(() => rewardCenterStore.setClaimedFilterValues({ time }))
 }
 
 const handleCustomerServiceClick = () => {
@@ -171,6 +206,7 @@ const handleCustomerServiceClick = () => {
 }
 
 const handleClaimSuccess = (amount: string) => {
+  claimSuccessCurrency.value = getCurrentCurrency()
   claimSuccessAmount.value = amount
   showClaimSuccess.value = true
 }
@@ -178,7 +214,7 @@ const handleClaimSuccess = (amount: string) => {
 onMounted(async () => {
   activeTab.value = resolveTabFromRoute()
   isReady.value = true
-  await rewardCenterStore.loadTabData(activeTab.value)
+  await loadPageTabData(activeTab.value)
 })
 
 watch(
@@ -190,4 +226,12 @@ watch(
     }
   }
 )
+
+watch(currentCurrency, () => {
+  if (!isReady.value) {
+    return
+  }
+
+  void loadPageTabData(activeTab.value)
+})
 </script>

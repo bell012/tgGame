@@ -19,6 +19,7 @@ import * as vip from './modules/vip'
 import * as wallet from './modules/wallet'
 import * as activity from './modules/activity'
 import * as rewardCenter from './modules/reward-center'
+import * as task from './modules/task'
 
 const Api = {
   agent, // 一级代理
@@ -33,7 +34,8 @@ const Api = {
   wallet, // 钱包
   record, // 记录页数据 如：投注记录 资金明显 流水稽查
   activity, // 活动：签到、票券列表、票券活动弹窗（Lucky Spin 等）
-  rewardCenter // 奖励中心
+  rewardCenter, // 奖励中心
+  task // 任务：新人福利等
 }
 
 export default Api

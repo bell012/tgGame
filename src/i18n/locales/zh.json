@@ -1576,6 +1576,22 @@
     },
     "summary": {
       "claimedTotal": "已领取总奖金："
+    },
+    "claimNotSupported": "该奖励暂不支持单独领取",
+    "activityTypes": {
+      "rebate": "返利活动",
+      "recharge": "充值活动",
+      "checkIn": "签到活动",
+      "rescue": "救援金活动",
+      "agentCommission": "代理返佣活动",
+      "rebateCashback": "反水奖励",
+      "vipDay": "VIP日礼金",
+      "vipWeek": "VIP周礼金",
+      "vipMonth": "VIP月礼金",
+      "vipUpgrade": "VIP晋级彩金",
+      "match": "赛事活动",
+      "task": "任务奖励",
+      "entrantTask": "新人福利任务"
     }
   },
   "menu": {

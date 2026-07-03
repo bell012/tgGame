@@ -92,9 +92,10 @@ export interface QueryAcctHisPageResult {
   pages: number
   records: Array<{
     accountChangeId: number // 记录id
-    backNote: string
+    backNote?: string
+    balanceType?: number
     busiAmount: number // 交易金额
-    changeNote: string // 备注说明
+    changeNote?: string // 备注说明
     changeType: number
     createBy: string
     createDate: number
@@ -109,6 +110,27 @@ export interface QueryAcctHisPageResult {
   }>
   size: number
   total: number
+}
+
+// 已领取奖金历史 携带参数
+export interface QueryAcctHisBonusPageForm {
+  startTime: number | null
+  endTime: number | null
+  page: {
+    current: number
+    size: number
+  }
+  param: {
+    currency: string | null
+  }
+}
+
+// 已领取奖金历史 响应
+export interface QueryAcctHisBonusPageResponse {
+  code: string
+  message: string
+  success: boolean
+  result?: QueryAcctHisPageResult
 }
 
 // 流水记录 携带参数
