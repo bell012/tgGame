@@ -78,12 +78,14 @@
 
   <article v-else class="overflow-hidden rounded-2xl bg-bg-2">
     <div
-      class="flex items-center justify-between gap-3 border-b border-opacity-5 px-5 py-4"
-      :class="props.compact ? 'px-3.5 py-3' : 'sm:px-7 sm:py-4'"
+      class="flex items-center justify-between gap-3 border-b border-opacity-5"
+      :class="props.compact ? 'px-3.5 py-3' : 'px-7 py-4'"
     >
       <div class="min-w-0">
         <p class="text-xl font-[700] text-text-1">{{ props.item.amountText }}</p>
-        <p class="mt-1 text-base text-text-2">{{ props.item.activityName }}</p>
+        <p class="text-base text-text-2" :class="props.compact ? 'mt-1' : 'mt-4'">
+          {{ props.item.activityName }}
+        </p>
       </div>
 
       <button
@@ -100,8 +102,8 @@
 
     <div
       v-if="!props.hideTime"
-      class="px-5 py-[15px] text-base text-text-2"
-      :class="props.compact ? 'px-3.5' : 'sm:px-7'"
+      class="py-[15px] text-base text-text-2"
+      :class="props.compact ? 'px-3.5' : 'px-7'"
     >
       {{ props.item.timeText }}
     </div>

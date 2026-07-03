@@ -9,6 +9,8 @@ export interface RewardCenterApiResponse<TResult = unknown> {
 /** 奖励中心单条记录 */
 export interface RewardCenterRecord {
   rowId?: string | number
+  /** 待领取奖励类型，见 REWARD_CENTER_ACTIVITY_CODE */
+  activityCode?: number
   activityName?: string
   /** 0 固定金额，1 随机金额 */
   rewardType?: number
@@ -17,52 +19,47 @@ export interface RewardCenterRecord {
   claimTime?: number
   /** 创建/发放时间 */
   createTime?: number
+  /** 已领取奖金 changeType，用于无 changeNote 时展示类型文案 */
+  changeType?: number
+}
+
+/** /ac/queryBonusAppMultipleCurrencies 单条 bonus */
+export interface RewardCenterBonusItem {
+  activityCode: number
+  activityName?: string
+  rewardType?: number
+  rewardAmount?: number
+  amount?: number
+  busiAmount?: number
+  createTime?: number
+  modifyTime?: number
+  rowId?: string | number
 }
 
 export interface QueryRewardCenterPendingForm {
-  page?: {
-    current?: number
-    size?: number
-  }
+  currency: string
 }
 
+export type ClaimRewardCenterAllForm = QueryRewardCenterPendingForm
+
 export interface QueryRewardCenterPendingResult {
-  totalAmount?: number
-  records?: RewardCenterRecord[]
-  total?: number
+  bonus?: RewardCenterBonusItem[]
+  sumAmount?: number
 }
 
 export interface QueryRewardCenterPendingResponse extends RewardCenterApiResponse<QueryRewardCenterPendingResult> {}
 
 export interface QueryRewardCenterClaimedForm {
-  startTime?: number | null
-  endTime?: number | null
-  page?: {
-    current?: number
-    size?: number
+  startTime: number | null
+  endTime: number | null
+  param: {
+    currency: string | null
+  }
+  page: {
+    current: number
+    size: number
   }
 }
-
-export interface QueryRewardCenterClaimedResult {
-  totalAmount?: number
-  records?: RewardCenterRecord[]
-  total?: number
-}
-
-export interface QueryRewardCenterClaimedResponse extends RewardCenterApiResponse<QueryRewardCenterClaimedResult> {}
-
-export interface ClaimRewardCenterItemForm {
-  rowId: string | number
-}
-
-export interface ClaimRewardCenterItemResult {
-  rewardAmount?: number
-  success?: boolean
-}
-
-export interface ClaimRewardCenterItemResponse extends RewardCenterApiResponse<ClaimRewardCenterItemResult> {}
-
-export interface ClaimRewardCenterAllForm {}
 
 export interface ClaimRewardCenterAllResult {
   rewardAmount?: number

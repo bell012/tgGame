@@ -4,6 +4,8 @@ import type {
   QueryOrderInfoPageResponse,
   QueryAcctHisPageForm,
   QueryAcctHisPageResponse,
+  QueryAcctHisBonusPageForm,
+  QueryAcctHisBonusPageResponse,
   QueryInspectPageForm,
   QueryInspectPageResponse
 } from '@/api/interface/record.interface'
@@ -29,6 +31,19 @@ export function queryAcctHisPage(data: QueryAcctHisPageForm): Promise<QueryAcctH
     data,
     showSuccessToast: false,
     showErrorToast: true
+  })
+}
+
+// 已领取奖金历史
+export function queryAcctHisBonusPage(
+  data: QueryAcctHisBonusPageForm
+): Promise<QueryAcctHisBonusPageResponse> {
+  return request({
+    url: '/acct/queryAcctHisBonusPage',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: false
   })
 }
 
