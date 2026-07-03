@@ -18,7 +18,7 @@
           <section
             role="dialog"
             aria-modal="true"
-            class="receive-pop__dialog w-full max-w-[320px] sm:max-w-[350px]"
+            class="receive-pop__dialog w-full max-w-[320px] sm:max-w-[450px]"
           >
             <h2 class="receive-pop__title text-center text-[32px] font-[700] sm:text-[42px]">
               {{ t('luckySpinPage.result.congratulations') }}
