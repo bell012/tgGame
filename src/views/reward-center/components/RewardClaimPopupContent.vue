@@ -30,7 +30,7 @@
             :key="item.id"
             :item="item"
             :claim-label="t('rewardCenter.claim')"
-            :claim-disabled="claiming"
+            :claim-disabled="claiming || !isPendingRewardClaimable(item.raw)"
             :variant="mobile ? 'popup' : 'desktop-popup'"
             compact
             hide-time
@@ -62,7 +62,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import ChevronRightSmallIcon from '@/static/svg/deposit/chevron-right-small.svg?component'
-import type { RewardCenterListItem } from '../shared'
+import { isPendingRewardClaimable, type RewardCenterListItem } from '../shared'
 import RewardClaimPromoCard from './RewardClaimPromoCard.vue'
 import RewardClaimSummaryCard from './RewardClaimSummaryCard.vue'
 import RewardRecordCard from './RewardRecordCard.vue'

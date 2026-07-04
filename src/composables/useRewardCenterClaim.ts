@@ -1,19 +1,28 @@
 import { useI18n } from 'vue-i18n'
 import { useRewardCenterStore } from '@/stores/rewardCenter'
-import { formatRewardCenterTotal } from '@/views/reward-center/shared'
+import { formatRewardCenterClaimAmount } from '@/views/reward-center/shared'
+import { RewardCenterClaimNotSupportedError } from '@/views/reward-center/pendingClaim'
 import { globalShowToast } from '@/utils/toast'
 
 export const useRewardCenterClaim = (options?: { onSuccess?: (amountText: string) => void }) => {
   const { t } = useI18n()
   const rewardCenterStore = useRewardCenterStore()
 
-  const claimItem = async (rowId: string) => {
+  const claimItem = async (itemId: string) => {
     try {
-      const amount = await rewardCenterStore.claimRewardItem(rowId)
+      const amount = await rewardCenterStore.claimRewardItem(itemId)
       if (amount != null) {
-        options?.onSuccess?.(formatRewardCenterTotal(amount))
+        options?.onSuccess?.(formatRewardCenterClaimAmount(amount))
       }
     } catch (error) {
+      if (error instanceof RewardCenterClaimNotSupportedError) {
+        globalShowToast({
+          message: t('rewardCenter.claimNotSupported'),
+          type: 'fail'
+        })
+        return
+      }
+
       console.error('[reward-center] claim item failed:', error)
     }
   }
@@ -30,7 +39,7 @@ export const useRewardCenterClaim = (options?: { onSuccess?: (amountText: string
     try {
       const amount = await rewardCenterStore.claimAllRewards()
       if (amount != null) {
-        options?.onSuccess?.(formatRewardCenterTotal(amount))
+        options?.onSuccess?.(formatRewardCenterClaimAmount(amount))
       }
     } catch (error) {
       console.error('[reward-center] claim all failed:', error)

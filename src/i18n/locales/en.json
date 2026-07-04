@@ -1583,6 +1583,22 @@
     },
     "summary": {
       "claimedTotal": "Total Claimed Bonus:"
+    },
+    "claimNotSupported": "This reward cannot be claimed individually yet.",
+    "activityTypes": {
+      "rebate": "Rebate Event",
+      "recharge": "Deposit Event",
+      "checkIn": "Check-in Event",
+      "rescue": "Rescue Bonus",
+      "agentCommission": "Agent Commission",
+      "rebateCashback": "Rebate Reward",
+      "vipDay": "VIP Daily Bonus",
+      "vipWeek": "VIP Weekly Bonus",
+      "vipMonth": "VIP Monthly Bonus",
+      "vipUpgrade": "VIP Upgrade Bonus",
+      "match": "Match Event",
+      "task": "Task Reward",
+      "entrantTask": "New User Welfare Task"
     }
   },
   "menu": {

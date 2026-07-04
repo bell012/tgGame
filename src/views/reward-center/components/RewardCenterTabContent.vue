@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-3">
+  <div class="flex flex-col" :class="props.isMobile ? 'gap-3' : 'gap-5'">
     <CustomSelect
       v-if="props.activeTab === 'claimed' && !props.isMobile"
       class="w-[336px]"
@@ -46,7 +46,7 @@
       :compact="props.isMobile"
     />
 
-    <div v-if="isLoading" class="py-12 text-center text-xs text-text-2">
+    <div v-if="showInitialLoading" class="py-12 text-center text-xs text-text-2">
       {{ t('common.loading') }}
     </div>
 
@@ -60,35 +60,53 @@
       text-class="text-text-1 text-sm font-[700]"
     />
 
-    <div v-else :class="props.isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-2 gap-4'">
+    <div v-else class="flex flex-col" :class="props.isMobile ? 'gap-2' : 'gap-4'">
       <RewardRecordCard
         v-for="item in listItems"
         :key="item.id"
         :item="item"
         :claim-label="t('rewardCenter.claim')"
-        :claim-disabled="rewardCenterStore.claiming || props.activeTab === 'claimed'"
+        :claim-disabled="
+          rewardCenterStore.claiming ||
+          props.activeTab === 'claimed' ||
+          !isPendingRewardClaimable(item.raw)
+        "
         :claimed="props.activeTab === 'claimed'"
-        :show-claim="props.isMobile || props.activeTab === 'pending'"
         :variant="props.isMobile ? 'page' : 'default'"
         :compact="props.isMobile"
         @claim="claimItem(item.id)"
       />
+
+      <template v-if="props.activeTab === 'claimed'">
+        <p v-if="rewardCenterStore.claimedLoadingMore" class="py-3 text-center text-xs text-text-2">
+          {{ t('common.loadingMore') }}
+        </p>
+        <p
+          v-else-if="!rewardCenterStore.claimedHasMore"
+          class="py-3 text-center text-xs text-text-2"
+        >
+          {{ t('betHistory.noMore') }}
+        </p>
+        <div ref="loadMoreSentinel" class="h-px w-full" />
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import { useIntersectionObserver } from '@/composables/useIntersectionObserver'
 import { useRewardCenterClaim } from '@/composables/useRewardCenterClaim'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import { useRewardCenterStore } from '@/stores/rewardCenter'
 import {
   createRewardCenterTimeOptions,
-  formatRewardCenterTotal,
+  formatRewardCenterSummaryTotal,
+  isPendingRewardClaimable,
   type RewardCenterTab
 } from '../shared'
 import RewardClaimSummaryCard from './RewardClaimSummaryCard.vue'
@@ -98,13 +116,17 @@ import RewardSummaryBar from './RewardSummaryBar.vue'
 const props = defineProps<{
   activeTab: RewardCenterTab
   isMobile: boolean
+  loading?: boolean
+  scrollRoot?: HTMLElement | null
 }>()
 
 const { t } = useI18n()
 const rewardCenterStore = useRewardCenterStore()
+const loadMoreSentinel = ref<HTMLElement | null>(null)
 
 const emit = defineEmits<{
   'claim-success': [amount: string]
+  'time-filter-change': [time: string]
 }>()
 
 const { claimItem, claimAll } = useRewardCenterClaim({
@@ -114,10 +136,10 @@ const { claimItem, claimAll } = useRewardCenterClaim({
 const timeOptions = computed(() => createRewardCenterTimeOptions(t))
 
 const pendingTotalText = computed(() =>
-  formatRewardCenterTotal(rewardCenterStore.pendingTotalAmount)
+  formatRewardCenterSummaryTotal(rewardCenterStore.pendingTotalAmount)
 )
 const claimedTotalText = computed(() =>
-  formatRewardCenterTotal(rewardCenterStore.claimedTotalAmount)
+  formatRewardCenterSummaryTotal(rewardCenterStore.claimedTotalAmount)
 )
 
 const listItems = computed(() =>
@@ -126,13 +148,35 @@ const listItems = computed(() =>
     : rewardCenterStore.getClaimedListItems(t)
 )
 
-const isLoading = computed(() =>
-  props.activeTab === 'pending'
-    ? rewardCenterStore.pendingLoading
-    : rewardCenterStore.claimedLoading && listItems.value.length === 0
-)
+const showInitialLoading = computed(() => {
+  if (props.activeTab === 'claimed') {
+    return Boolean(props.loading) && listItems.value.length === 0
+  }
 
-const handleDesktopTimeChange = async (value: string) => {
-  await rewardCenterStore.setClaimedFilterValues({ time: value })
+  return Boolean(props.loading)
+})
+
+useIntersectionObserver({
+  target: loadMoreSentinel,
+  root: () => props.scrollRoot ?? null,
+  rootMargin: '0px 0px 200px 0px',
+  enabled: () =>
+    props.activeTab === 'claimed' &&
+    !props.loading &&
+    listItems.value.length > 0 &&
+    rewardCenterStore.claimedHasMore &&
+    !rewardCenterStore.claimedLoadingMore &&
+    !rewardCenterStore.claimedLoading,
+  onChange: ({ isIntersecting }) => {
+    if (!isIntersecting) {
+      return
+    }
+
+    void rewardCenterStore.loadMoreClaimedRewards()
+  }
+})
+
+const handleDesktopTimeChange = (value: string) => {
+  emit('time-filter-change', value)
 }
 </script>
