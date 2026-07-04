@@ -1,7 +1,7 @@
 <template>
   <popShell v-model="visible" transition-type="modal">
     <section
-      class="bg-bg-2 text-text-1"
+      class="bg-bg-1 text-text-1"
       :class="
         isMobile
           ? 'mx-auto w-[328px] rounded-[18px] px-5 pb-5 pt-4 shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
@@ -17,7 +17,7 @@
           class="absolute right-0 top-0 flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-bg-3 text-text-1"
           @click="visible = false"
         >
-          <CloseIcon class="h-2.5 w-2.5" />
+          <CloseIcon class="h-3.5 w-3.5" />
         </button>
       </div>
 

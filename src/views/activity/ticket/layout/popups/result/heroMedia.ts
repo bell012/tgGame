@@ -78,7 +78,7 @@ export const resolveHeroMedia = (
   }
 
   if (heroImage) {
-    return { kind: 'image', src: heroImage, size: 'sm' }
+    return { kind: 'image', src: heroImage, size: 'lg' }
   }
 
   return { kind: 'none' }

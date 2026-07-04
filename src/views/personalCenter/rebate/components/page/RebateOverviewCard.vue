@@ -86,8 +86,6 @@ defineEmits<{
 
 <style scoped lang="scss">
 .rebate-overview-mobile {
-  border: 1px solid var(--color-opacity-5);
-  box-shadow: inset 0 1px 0 var(--color-opacity-5);
 }
 
 .rebate-overview-divider {

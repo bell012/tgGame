@@ -56,7 +56,7 @@ export const TICKET_MODAL_THEMES: Record<
 
 /** @deprecated 兼容转盘 canvas，逐步迁移引用至 TICKET_MODAL_THEMES */
 export const LUCKY_SPIN_TOKENS = {
-  modalMaskClass: 'bg-mask-40',
+  modalMaskClass: 'bg-mask-20',
   modalBlur: '8px',
   titleGradient: TICKET_MODAL_THEMES.lucky_spin.titleGradient,
   countdownBox: {
@@ -74,6 +74,8 @@ export const LUCKY_SPIN_TOKENS = {
   wheelSize: 301,
   wheelDiscInset: '6.1%',
   wheelPointerSize: '34%',
+  /** H5 指针（GO 按钮图）尺寸：设计稿 378px @1125 → 126px，占转盘宽(100vw-72px, 375 屏≈303px)约 41.6% */
+  wheelPointerSizeMobile: '41.6%',
   wheelShadowWidth: '72%',
   segmentLight: 'linear-gradient(183deg, #260F2A 0%, #66126A 15%, #903080 100%)',
   segmentDark: 'linear-gradient(183deg, #1B1B1B 0%, #331330 15%, #680157 100%)',

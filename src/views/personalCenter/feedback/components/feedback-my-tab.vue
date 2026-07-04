@@ -69,7 +69,7 @@
             {{ statusTextMap[item.status] }}
           </span>
           <div class="flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-bg-3">
-            <ArrowRightIcon class="h-3 w-3 text-text-2" />
+            <ArrowRightIcon class="h-4 w-4 text-text-2" />
           </div>
         </div>
       </section>

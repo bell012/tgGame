@@ -10,7 +10,7 @@
         </span>
       </div>
 
-      <div class="mt-3 rounded-[10px] bg-bg-3 p-2.5">
+      <div class="mt-3 rounded-[10px] bg-bg-4 p-2.5">
         <button
           v-for="item in feedbackTypeOptions"
           :key="item.value"
@@ -18,7 +18,7 @@
           class="mb-2 flex h-[42px] w-full items-center justify-between rounded-[8px] px-3 text-left text-[16px] last:mb-0"
           :class="
             selectedTypeModel === item.value
-              ? 'bg-[rgba(43,177,112,0.28)] text-text-1'
+              ? 'bg-theme-3 text-text-1'
               : 'bg-transparent text-text-1'
           "
           @click="selectedTypeModel = item.value"
@@ -35,7 +35,7 @@
         v-model.trim="feedbackContentModel"
         maxlength="500"
         :placeholder="placeholderText"
-        class="mt-3 h-[112px] w-full resize-none rounded-[10px] bg-bg-3 px-3 py-2.5 text-[16px] leading-[22px] text-text-1 outline-none placeholder:text-text-3"
+        class="mt-3 h-[112px] w-full resize-none rounded-[10px] bg-bg-4 px-3 py-2.5 text-[16px] leading-[22px] text-text-1 outline-none placeholder:text-text-3"
       ></textarea>
 
       <div class="mt-3">
@@ -79,7 +79,7 @@
         :class="
           canSubmitFeedback && !isSubmittingFeedback
             ? 'bg-theme-primary'
-            : 'cursor-not-allowed bg-theme-2 opacity-40'
+            : 'cursor-not-allowed bg-theme-2'
         "
         :disabled="!canSubmitFeedback || isSubmittingFeedback"
         @click="onSubmit"
@@ -146,19 +146,8 @@ const canSubmitFeedback = computed(() => {
 }
 
 .feedback-radio-circle-active {
-  border-color: var(--color-theme-level-1);
-}
-
-.feedback-radio-circle-active::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  height: 11px;
-  width: 11px;
-  border-radius: 9999px;
-  background: var(--color-theme-level-1);
-  transform: translate(-50%, -50%);
+  border: 7px solid var(--color-theme-level-1);
+  background: var(--color-background-level-1);
 }
 
 .feedback-upload-trigger {

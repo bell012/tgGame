@@ -85,7 +85,7 @@
       v-if="isMobile"
       :src="LUCKY_SPIN_ASSETS.wheel.shadow"
       alt=""
-      class="pointer-events-none -mt-[2%] w-[72%] select-none object-contain"
+      class="pointer-events-none mt-[calc(-2%-7px)] w-[72%] select-none object-contain"
       draggable="false"
     />
   </div>
@@ -166,7 +166,9 @@ const wheelContainerStyle = computed(() => {
 
   return undefined
 })
-const pointerSize = LUCKY_SPIN_TOKENS.wheelPointerSize
+const pointerSize = computed(() =>
+  isMobile.value ? LUCKY_SPIN_TOKENS.wheelPointerSizeMobile : LUCKY_SPIN_TOKENS.wheelPointerSize
+)
 const goHitSize = '23%'
 
 const discInsetStyle = computed(() => ({

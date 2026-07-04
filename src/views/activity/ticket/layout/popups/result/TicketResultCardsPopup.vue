@@ -10,10 +10,10 @@
   >
     <div class="flex flex-col items-center">
       <h2 class="text-[20px] font-[700] text-[#F7D060]">{{ resolvedTitle }}</h2>
-      <p class="mt-1 text-center text-[13px] text-common-80">{{ resolvedSubtext }}</p>
+      <p class="mt-1 text-center text-[13px] font-[700] text-common-80">{{ resolvedSubtext }}</p>
 
       <div
-        class="relative mt-4 w-full rounded-[16px] bg-[linear-gradient(123deg,#18884E_0%,#062917_100%)] px-4 pb-4 pt-8"
+        class="relative mt-6 w-full rounded-[16px] bg-[linear-gradient(123deg,#18884E_0%,#062917_100%)] px-6 pb-4 pt-8"
       >
         <div
           class="absolute left-1/2 top-[-28px] flex -translate-x-1/2 items-center justify-center"
@@ -38,7 +38,7 @@
         </div>
         <button
           type="button"
-          class="mt-4 flex h-[44px] w-full items-center justify-center rounded-[10px] bg-theme-primary text-[15px] font-[700] text-text-4"
+          class="mx-auto mt-[22.67px] flex h-[44px] w-[240px] max-w-full items-center justify-center rounded-[10px] bg-theme-primary text-[15px] font-[700] text-text-4"
           @click="close"
         >
           {{ resolvedButtonText }}

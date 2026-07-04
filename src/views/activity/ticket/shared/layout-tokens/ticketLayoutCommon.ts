@@ -16,11 +16,16 @@ export const TICKET_LAYOUT_HEADER_COMMON = {
 } as const
 
 export const TICKET_LAYOUT_MARQUEE_COMMON = {
-  pillRadius: 15.5,
-  pillBg: 'rgba(255, 255, 255, 0.15)',
+  /** 全圆角胶囊（Figma 设计稿：背景框圆角全角） */
+  pillRadius: 9999,
+  /** 浅色磨砂灰底（对齐设计稿） */
+  pillBg: 'rgba(255, 255, 255, 0.2)',
   pillPaddingX: 12,
   pillPaddingY: 6,
+  /** 胶囊之间的横向间距 */
   pillGap: 8,
+  /** 头像与用户名之间的间距（Figma 设计稿） */
+  avatarTextGap: 6,
   avatarSize: 24
 } as const
 

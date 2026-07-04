@@ -11,17 +11,19 @@
       ]"
       @click="handleCategoryClick(category.id, $event)"
     >
-      <template v-if="hasRenderableIcon(getIcon(category, category.id === activeCategory))">
+      <template v-if="hasRenderableIcon(category.icon)">
         <img
-          v-if="isImageIcon(getIcon(category, category.id === activeCategory))"
-          :src="getIcon(category, category.id === activeCategory) as string"
-          :class="isMobile ? 'h-[18px] w-[18px] object-contain' : 'h-4 w-4 object-contain'"
+          v-if="isImageIcon(category.icon)"
+          :src="category.icon as string"
+          class="rebate-category-tab-icon"
+          :class="isMobile ? 'h-6 w-6 object-contain' : 'h-4 w-4 object-contain'"
           alt=""
         />
         <component
           v-else
-          :is="getIcon(category, category.id === activeCategory)"
-          :class="isMobile ? 'h-[18px] w-[18px]' : 'h-4 w-4'"
+          :is="category.icon"
+          class="rebate-category-tab-icon"
+          :class="isMobile ? 'h-6 w-6' : 'h-4 w-4'"
         />
       </template>
       <span :class="isMobile ? 'mt-1 text-[12px] font-[500] leading-none' : ''">
@@ -51,18 +53,10 @@ const buttonClass = (isActive: boolean) => {
     : 'inline-flex h-[40px] min-w-[96px] shrink-0 items-center justify-center gap-1 rounded-full px-4 text-sm font-[600] outline-none focus:outline-none focus-visible:outline-none'
 
   const stateClass = isActive
-    ? 'border bg-theme-3 text-text-1'
+    ? 'bg-theme-primary text-text-4'
     : 'border border-transparent bg-bg-2 text-text-2'
 
   return `${baseClass} ${stateClass}`
-}
-
-const getIcon = (category: RebateCategory, isActive: boolean) => {
-  if (isActive && category.activeIcon) {
-    return category.activeIcon
-  }
-
-  return category.icon
 }
 
 const isImageIcon = (icon: RebateCategory['icon']) => {
@@ -94,19 +88,13 @@ const handleCategoryClick = async (categoryId: string, event: MouseEvent) => {
 .rebate-category-tab {
 }
 
-.rebate-category-tab.is-active {
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--color-theme-level-1) !important;
+/* 选中态为亮绿实心底，统一用普通图标压成深色，避免 API 下发的选中图标与背景同色而“消失” */
+.rebate-category-tab.is-active .rebate-category-tab-icon {
+  filter: brightness(0);
 }
 
 :global(:root.light) .rebate-category-tab.bg-bg-2 {
   background: var(--color-background-level-3);
   color: var(--color-text-level-2);
-}
-
-:global(:root.light) .rebate-category-tab.is-active {
-  background: var(--color-theme-level-3);
-  border-color: var(--color-theme-level-1);
 }
 </style>

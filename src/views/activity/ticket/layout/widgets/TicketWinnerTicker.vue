@@ -53,7 +53,7 @@ const marqueeLayout = computed(() =>
 )
 
 const pillStyle = computed(() => ({
-  gap: `${marqueeLayout.value.pillGap}px`,
+  gap: `${marqueeLayout.value.avatarTextGap}px`,
   padding: `${marqueeLayout.value.pillPaddingY}px ${marqueeLayout.value.pillPaddingX}px`,
   borderRadius: `${marqueeLayout.value.pillRadius}px`,
   backgroundColor: marqueeLayout.value.pillBg,

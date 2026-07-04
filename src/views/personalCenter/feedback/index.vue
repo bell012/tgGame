@@ -76,8 +76,9 @@ import feedbackStarIcon from '@/static/svg/feedback/star.svg?url'
 import feedbackEllipseIcon from '@/static/svg/feedback/ellipse.svg?url'
 import deleteIcon from '@/static/img/payment/upload_delete.png'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { showToast, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
+import { type UploaderAfterRead, type UploaderFileListItem } from 'vant'
 import { useI18n } from 'vue-i18n'
+import { globalShowToast } from '@/utils/toast'
 import H5Header from '@/components/common/H5Header.vue'
 import { getCurrencySymbol } from '@/utils/locale'
 import {
@@ -221,13 +222,12 @@ const feedbackImageAfterRead: UploaderAfterRead = async (items, detail) => {
     } catch (error) {
       file.status = 'failed'
       file.message = t('personalCenter.feedback.uploadStatus.failed')
-      showToast({
+      globalShowToast({
         message: resolveUploadErrorMessage(
           error,
           t,
           t('personalCenter.feedback.toast.uploadFailed')
         ),
-        position: 'middle',
         type: 'fail'
       })
     }
@@ -259,9 +259,8 @@ const handleSubmitFeedback = async () => {
 
   const feedbackType = String(selectedType.value ?? '').trim()
   if (!feedbackType) {
-    showToast({
+    globalShowToast({
       message: t('personalCenter.feedback.toast.selectFeedbackType'),
-      position: 'middle',
       type: 'fail'
     })
     return
@@ -269,9 +268,8 @@ const handleSubmitFeedback = async () => {
 
   const content = String(feedbackContent.value ?? '').trim()
   if (!content) {
-    showToast({
+    globalShowToast({
       message: t('personalCenter.feedback.toast.enterFeedbackContent'),
-      position: 'middle',
       type: 'fail'
     })
     return
@@ -279,9 +277,8 @@ const handleSubmitFeedback = async () => {
 
   const hasUploadingFile = feedbackFileList.value.some(file => file.status === 'uploading')
   if (hasUploadingFile) {
-    showToast({
+    globalShowToast({
       message: t('personalCenter.feedback.toast.imageUploading'),
-      position: 'middle',
       type: 'fail'
     })
     return
@@ -299,18 +296,15 @@ const handleSubmitFeedback = async () => {
       throw new Error(response?.message || t('personalCenter.feedback.toast.submitFailed'))
     }
 
-    showToast({
+    globalShowToast({
       message: t('personalCenter.feedback.toast.submitSuccess'),
-      position: 'middle',
-      type: 'success',
-      zIndex: 100100
+      type: 'success'
     })
     resetCreateFeedbackForm()
   } catch (error) {
-    showToast({
+    globalShowToast({
       message:
         error instanceof Error ? error.message : t('personalCenter.feedback.toast.submitFailed'),
-      position: 'middle',
       type: 'fail'
     })
   } finally {
@@ -386,12 +380,11 @@ const refreshMyFeedbackList = async (options: RefreshMyFeedbackListOptions = {})
     closeFeedbackDetailPopup()
     myFeedbackList.value = []
     feedbackClaimRewardAmount.value = 0
-    showToast({
+    globalShowToast({
       message:
         error instanceof Error
           ? error.message
           : t('personalCenter.feedback.toast.fetchFeedbackListFailed'),
-      position: 'middle',
       type: 'fail'
     })
   } finally {
@@ -440,18 +433,16 @@ const handleReceiveAllFeedback = async () => {
   }
 
   if (!canClaimFeedbackReward.value) {
-    showToast({
+    globalShowToast({
       message: t('personalCenter.feedback.toast.noClaimableReward'),
-      position: 'middle',
       type: 'fail'
     })
     return
   }
 
   if (!feedbackMemberCurrencyCode.value) {
-    showToast({
+    globalShowToast({
       message: t('personalCenter.feedback.toast.claimFailed'),
-      position: 'middle',
       type: 'fail'
     })
     return
@@ -484,10 +475,9 @@ const handleReceiveAllFeedback = async () => {
       return
     }
 
-    showToast({
+    globalShowToast({
       message:
         error instanceof Error ? error.message : t('personalCenter.feedback.toast.claimFailed'),
-      position: 'middle',
       type: 'fail'
     })
   } finally {

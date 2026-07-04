@@ -1,9 +1,9 @@
 <template>
   <div
-    class="flex items-center gap-3 rounded-[13px] px-3 py-2.5"
+    class="flex h-[76.67px] items-center gap-3 rounded-[13px] px-3"
     :style="{ background: resolvedBg }"
   >
-    <div class="flex h-[50px] w-[44px] shrink-0 items-center justify-center">
+    <div class="flex h-[56px] w-[50px] shrink-0 items-center justify-center">
       <img :src="resolvedIcon" alt="" class="h-full w-full object-contain" />
     </div>
     <div class="min-w-0 flex-1 border-l border-dashed border-black/10 pl-3">

@@ -4,7 +4,7 @@
     :class="isMobile ? 'rebate-rate-table-mobile' : ''"
   >
     <div
-      class="grid items-center bg-bg-3"
+      class="grid items-center bg-bg-2"
       :class="
         isMobile
           ? 'grid-cols-[40px_1fr_1fr] px-3 h-[38px]'
@@ -28,7 +28,7 @@
         isMobile
           ? 'grid-cols-[40px_1fr_1fr] px-3 h-[38px]'
           : 'grid-cols-[52px_1fr_1fr] px-4 h-[38px]',
-        index % 2 === 0 ? 'bg-bg-4' : 'bg-bg-3'
+        index % 2 === 0 ? 'bg-bg-3' : 'bg-bg-2'
       ]"
     >
       <div
@@ -67,6 +67,5 @@ defineProps<{
 
 <style scoped lang="scss">
 .rebate-rate-table-mobile {
-  border: 1px solid var(--color-opacity-5);
 }
 </style>

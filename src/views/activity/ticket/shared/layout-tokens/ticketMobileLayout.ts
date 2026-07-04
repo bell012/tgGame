@@ -16,7 +16,9 @@ export const TICKET_MOBILE_LAYOUT = {
     /** 副标题 → 倒计时数字行（Figma 11201:100806 gap 42 @1125） */
     subtitleToCountdownGap: 14,
     /** 数字行 → 过期文案行（Figma gap 21 @1125） */
-    countdownDigitsToLabelGap: 7
+    countdownDigitsToLabelGap: 7,
+    /** Spin Expires In 文案字号（设计稿 42px @1125 → 14px） */
+    expiresLabelFontSize: 14
   },
 
   sectionGap: {
@@ -45,11 +47,13 @@ export const TICKET_MOBILE_LAYOUT = {
   /** H5 券种条横向轮播（Figma 9773:70079；选中/未选中 180/150 ≈ 1.2） */
   voucherCarousel: {
     visibleSlots: 5,
+    /** slotSize 与 iconSize 对齐，使券间视觉间距恒等于 slotGap（设计稿 24px @1125 → 8px） */
     slotSize: 52,
     slotGap: 8,
     trackWidth: 52 * 5 + 8 * 4,
     activeScale: 1.2,
-    iconSize: 48,
+    /** 券图标尺寸（设计稿偏小已调大，与 slotSize 对齐） */
+    iconSize: 52,
     itemRadius: 10,
     inactiveOpacity: 0.6,
     navBtnSize: 24,
@@ -73,5 +77,6 @@ export const VOUCHER_CAROUSEL_TRACK_WIDTH = TICKET_MOBILE_LAYOUT.voucherCarousel
 export const ticketMobileSectionClass = {
   headerToWheel: 'mt-5',
   wheelToTicker: 'mt-3',
-  tickerToFooter: 'mt-10'
+  /** 跑马灯 → 票券条：对齐 sectionGap.tickerToFooter(12px)，避免过大空白 */
+  tickerToFooter: 'mt-3'
 } as const

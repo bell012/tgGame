@@ -37,10 +37,12 @@ const sortPrizes = (prizes: LuckySpinPrize[]) =>
   [...prizes].sort((a, b) => a.index - b.index).slice(0, WHEEL_SEGMENT_COUNT)
 
 const MOBILE_WHEEL_PRIZE_STYLE = {
-  fontSize: LUCKY_WHEEL_DEFAULT_STYLE.fontSize,
+  /** 扇区金额文字（设计稿 54px @1125 → 18px） */
+  fontSize: 18,
   iconSize: 40,
-  textTop: '14%',
-  iconTop: '28%'
+  /** 文字更靠轮辋、图标略往内，拉开文字与图标间距（top 越小越靠轮辋） */
+  textTop: '10%',
+  iconTop: '26%'
 } as const
 
 export const useLuckyWheelConfig = (prizesSource: MaybeRefOrGetter<LuckySpinPrize[]>) => {

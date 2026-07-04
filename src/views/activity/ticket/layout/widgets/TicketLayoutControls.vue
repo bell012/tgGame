@@ -5,21 +5,31 @@
   >
     <button
       type="button"
-      class="flex h-9 w-9 items-center justify-center text-[18px] text-common-100 disabled:opacity-40"
+      class="flex h-9 w-9 items-center justify-center disabled:opacity-40"
       :disabled="isInteractionLocked"
       :aria-label="t('common.cancel')"
       @click="emit('close')"
     >
-      ✕
+      <img
+        :src="LUCKY_SPIN_ASSETS.controls.modalCloseIcon"
+        alt=""
+        class="h-[22px] w-[22px] shrink-0 select-none"
+        draggable="false"
+      />
     </button>
     <button
       type="button"
-      class="flex h-9 w-9 items-center justify-center text-[18px] text-common-80 disabled:opacity-40"
+      class="flex h-9 w-9 items-center justify-center disabled:opacity-40"
       :disabled="isInteractionLocked"
       :aria-label="t('luckySpinPage.reminder.title')"
       @click="emit('open-help')"
     >
-      ?
+      <img
+        :src="LUCKY_SPIN_ASSETS.controls.modalHelpIcon"
+        alt=""
+        class="h-[22px] w-[22px] shrink-0 select-none"
+        draggable="false"
+      />
     </button>
   </div>
 

@@ -37,11 +37,11 @@
             <span class="text-text-1">{{ feedbackDetail.feedbackType }}</span>
           </div>
 
-          <div class="mt-2.5 text-[15px] text-text-2">
+          <div class="mt-2.5 text-[15px] text-text-3">
             {{ t('personalCenter.feedback.detail.feedbackContent') }}
           </div>
           <div
-            class="mt-2 rounded-[8px] bg-bg-3 px-3 py-2.5 text-[15px] leading-[20px] text-text-2"
+            class="mt-2 rounded-[8px] bg-bg-4 px-3 py-2.5 text-[15px] leading-[20px] text-text-1"
           >
             {{ feedbackDetail.detailContent }}
           </div>
@@ -151,7 +151,8 @@ import {
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { showImagePreview, showToast } from 'vant'
+import { showImagePreview } from 'vant'
+import { globalShowToast } from '@/utils/toast'
 
 const props = withDefaults(
   defineProps<{
@@ -273,9 +274,8 @@ const handleDetailBack = () => {
 }
 
 const handleCustomerServiceClick = () => {
-  showToast({
-    message: t('sidebar_menu.customer_service'),
-    position: 'middle'
+  globalShowToast({
+    message: t('sidebar_menu.customer_service')
   })
 }
 
@@ -298,12 +298,11 @@ const fetchFeedbackDetail = async (recordId: string) => {
       feedbackList.find(item => String(item?.rowId ?? '').trim() === recordId) ?? null
   } catch (error) {
     feedbackApiItem.value = null
-    showToast({
+    globalShowToast({
       message:
         error instanceof Error
           ? error.message
           : t('personalCenter.feedback.toast.fetchFeedbackDetailFailed'),
-      position: 'middle',
       type: 'fail'
     })
   } finally {

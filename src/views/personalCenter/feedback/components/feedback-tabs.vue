@@ -23,10 +23,10 @@
   <div v-else class="mb-3.5 grid grid-cols-2 gap-0.5 rounded-[10px] bg-bg-2 p-0.5">
     <button
       type="button"
-      class="h-[40px] rounded-[8px] text-[14px] font-[700] transition-all"
+      class="h-[40px] rounded-[8px] border border-transparent text-[14px] font-[700] transition-all"
       :class="
         activeTab === 'create'
-          ? 'bg-bg-3 text-text-1'
+          ? 'border-opacity-10 bg-bg-3 text-text-1'
           : 'bg-transparent text-text-2 hover:text-text-1'
       "
       @click="emit('change', 'create')"
@@ -35,10 +35,10 @@
     </button>
     <button
       type="button"
-      class="h-[40px] rounded-[8px] text-[14px] font-[700] transition-all"
+      class="h-[40px] rounded-[8px] border border-transparent text-[14px] font-[700] transition-all"
       :class="
         activeTab === 'mine'
-          ? 'bg-bg-3 text-text-1'
+          ? 'border-opacity-10 bg-bg-3 text-text-1'
           : 'bg-transparent text-text-2 hover:text-text-1'
       "
       @click="emit('change', 'mine')"

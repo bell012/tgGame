@@ -9,9 +9,9 @@
     @close="close"
   >
     <div class="flex flex-col items-center">
-      <h2 class="result-hero-title text-[18px] font-[700]">{{ resolvedTitle }}</h2>
-      <p class="mt-1 text-[28px] font-[700] text-secondary-6">{{ resolvedHighlight }}</p>
-      <p v-if="resolvedSubtext" class="mt-1 text-[13px] text-common-60">
+      <h2 class="result-hero-title text-[28px] font-[700]">{{ resolvedTitle }}</h2>
+      <p class="mt-1 text-[40px] font-[700] text-secondary-6">{{ resolvedHighlight }}</p>
+      <p v-if="resolvedSubtext" class="mt-1 text-[13px] text-common-100">
         {{ resolvedSubtext }}
       </p>
 
@@ -19,7 +19,7 @@
 
       <button
         type="button"
-        class="flex h-[44px] w-full max-w-[280px] items-center justify-center rounded-[10px] bg-theme-primary text-[15px] font-[700] text-text-4"
+        class="flex h-[44px] w-full max-w-[200px] items-center justify-center rounded-[10px] bg-theme-primary text-[15px] font-[700] text-text-4"
         @click="close"
       >
         {{ resolvedButtonText }}
@@ -57,7 +57,7 @@ const heroMedia = computed(() =>
 
 <style scoped>
 .result-hero-title {
-  background: linear-gradient(180deg, #fffdf8 0%, #7bf983 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #ffd700 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
