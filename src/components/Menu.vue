@@ -913,7 +913,7 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
     },
     {
       id: 'rebate',
-      name: t('menu.rebate'),
+      name: t('rebatePage.title'),
       icon: newSideIcons.rebateIcon,
       groupKey: 'rebate',
       handler: () => navigateTo('/personal-center/rebate')
