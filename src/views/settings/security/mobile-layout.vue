@@ -43,7 +43,7 @@
 
           <div
             v-if="card.cardKey === 'mobile'"
-            class="mb-4 rounded-lg bg-bg-2 px-3 py-2.5 text-sm font-medium text-text-2 border border-input-2 bg-input-level-3"
+            class="mb-4 rounded-lg bg-input-3 px-3 py-2.5 text-sm font-medium text-text-2 border border-input-2"
           >
             {{ displayMobile }}
           </div>
