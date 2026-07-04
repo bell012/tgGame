@@ -96,8 +96,9 @@
 
 <script setup lang="ts">
 import claimPopupHero from '@/static/img/referral/claim_popup_hero.png'
+import { useThemeColorOnOverlay } from '@/composables/useThemeColorOnOverlay'
 import { getCurrencySymbol, getCurrentCurrency } from '@/utils/locale'
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 interface Props {
@@ -124,6 +125,8 @@ const emit = defineEmits<{
   'update:visible': [value: boolean]
   confirm: []
 }>()
+
+useThemeColorOnOverlay(toRef(props, 'visible'))
 
 const { t } = useI18n()
 

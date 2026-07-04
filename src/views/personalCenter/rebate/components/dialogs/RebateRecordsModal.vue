@@ -25,6 +25,7 @@
 
 <script setup lang="ts">
 import popShell from '@/components/withdraw/popShell.vue'
+import { useThemeColorOnOverlay } from '@/composables/useThemeColorOnOverlay'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -44,6 +45,8 @@ const visible = computed({
   get: () => props.modelValue,
   set: value => emit('update:modelValue', value)
 })
+
+useThemeColorOnOverlay(visible)
 </script>
 
 <style scoped lang="scss">

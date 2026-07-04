@@ -1,7 +1,9 @@
 <template>
   <section
-    class="mt-3 rounded-[14px] bg-bg-2"
-    :class="isMobile ? 'rebate-progress-mobile px-3.5 py-3.5' : 'px-4 py-4'"
+    class="mt-3 bg-bg-2"
+    :class="
+      isMobile ? 'rebate-progress-mobile rounded-[14px] px-3.5 py-3.5' : 'rounded-[16px] px-10 py-5'
+    "
   >
     <div class="flex items-start justify-between">
       <div>
@@ -32,11 +34,11 @@
       class="rebate-progress-track"
       :style="{
         '--progress-percent-number': progressPercent,
-        '--progress-pill-width': isMobile ? '34px' : '44px'
+        '--progress-pill-width': isMobile ? '34px' : '62px'
       }"
     >
       <div class="rebate-progress-fill" :style="{ width: `${progressPercent}%` }"></div>
-      <span class="rebate-progress-percent-pill" :class="isMobile ? 'text-[10px]' : 'text-xs'">
+      <span class="rebate-progress-percent-pill" :class="isMobile ? 'text-[10px]' : 'text-[18px]'">
         {{ progressPercentText }}
       </span>
     </div>
@@ -78,6 +80,12 @@ defineProps<{
   background: var(--color-theme-level-3);
 }
 
+@media (min-width: 641px) {
+  .rebate-progress-track {
+    height: 20px;
+  }
+}
+
 .rebate-progress-fill {
   height: 100%;
   border-radius: 9999px;
@@ -105,5 +113,11 @@ defineProps<{
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
+}
+
+@media (min-width: 641px) {
+  .rebate-progress-percent-pill {
+    height: 24px;
+  }
 }
 </style>

@@ -11,11 +11,11 @@
         :key="tab.key"
         :ref="element => setTabButtonRef(tab.key, element)"
         type="button"
-        class="shrink-0 rounded-full border px-4 font-[600] transition-colors duration-200"
+        class="shrink-0 rounded-full border px-4 transition-colors duration-200"
         :class="
           activePeriod === tab.key
-            ? 'border-[3px] border-theme-primary bg-theme-primary text-text-4'
-            : 'border-[3px] border-transparent bg-bg-3 text-text-2 hover:text-text-1'
+            ? 'border-[3px] border-theme-primary bg-theme-primary font-[700] text-text-4'
+            : 'border-[3px] border-transparent bg-bg-3 font-[500] text-text-2 hover:text-text-1'
         "
         @click="handleTabClick(tab.key)"
       >
@@ -30,14 +30,14 @@
       :class="panelMode ? 'shadow-none' : ''"
     >
       <div class="grid grid-cols-2">
-        <div class="border-b border-r border-white/5 px-4 py-5 text-center">
+        <div class="border-b border-r border-opacity-5 px-4 py-5 text-center">
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.validBets) }}</p>
           <p :class="labelClass">{{ t('rebatePage.records.summary.validBets') }}</p>
         </div>
 
         <button
           type="button"
-          class="border-0 border-b border-solid border-white/5 px-4 py-5 text-center"
+          class="border-0 border-b border-solid border-opacity-5 px-4 py-5 text-center"
           @click="openTurnoverDeductionPopup"
         >
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.turnoverDeduction) }}</p>
@@ -47,7 +47,7 @@
           </div>
         </button>
 
-        <div class="border-r border-white/5 px-4 py-5 text-center">
+        <div class="border-r border-opacity-5 px-4 py-5 text-center">
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.eligibleTurnover) }}</p>
           <p :class="labelClass">{{ t('rebatePage.records.summary.eligibleTurnover') }}</p>
         </div>
