@@ -91,7 +91,6 @@
 <script setup lang="ts">
 import popShell from '@/components/withdraw/popShell.vue'
 import { useLockBodyScroll } from '@/composables/useLockBodyScroll'
-import { useThemeColorOnOverlay } from '@/composables/useThemeColorOnOverlay'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -120,7 +119,6 @@ const valueClass = computed(() => {
 })
 
 useLockBodyScroll(visible)
-useThemeColorOnOverlay(visible)
 </script>
 
 <style scoped lang="scss"></style>
