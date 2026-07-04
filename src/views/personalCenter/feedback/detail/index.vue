@@ -22,7 +22,12 @@
 
           <div class="feedback-detail-row mt-2.5">
             <span>{{ t('personalCenter.feedback.detail.processingStatus') }}</span>
-            <span class="font-[700]" :class="statusClassMap[feedbackDetail.status]">
+            <span
+              :class="[
+                isEmbeddedMode ? 'text-[14px] font-[400] leading-[20px]' : 'font-[700]',
+                statusClassMap[feedbackDetail.status]
+              ]"
+            >
               {{ statusTextMap[feedbackDetail.status] }}
             </span>
           </div>
@@ -37,11 +42,18 @@
             <span class="text-text-1">{{ feedbackDetail.feedbackType }}</span>
           </div>
 
-          <div class="mt-2.5 text-[15px] text-text-3">
+          <div
+            class="mt-2.5"
+            :class="
+              isEmbeddedMode
+                ? 'text-[16px] font-[400] leading-[20px] text-text-3'
+                : 'feedback-detail-row'
+            "
+          >
             {{ t('personalCenter.feedback.detail.feedbackContent') }}
           </div>
           <div
-            class="mt-2 rounded-[8px] bg-bg-4 px-3 py-2.5 text-[15px] leading-[20px] text-text-1"
+            class="mt-2 whitespace-pre-wrap break-words rounded-[8px] bg-bg-4 px-3 py-2.5 text-[15px] leading-[20px] text-text-1"
           >
             {{ feedbackDetail.detailContent }}
           </div>
@@ -62,7 +74,12 @@
             </button>
           </div>
 
-          <p class="mt-3 text-[15px] leading-[20px] text-text-2">{{ feedbackDetail.resultHint }}</p>
+          <p
+            class="mt-3 leading-[20px]"
+            :class="isEmbeddedMode ? 'text-[16px] text-text-3' : 'text-[15px] text-text-2'"
+          >
+            {{ feedbackDetail.resultHint }}
+          </p>
         </section>
 
         <section
@@ -118,7 +135,7 @@
           class="feedback-desktop-preview-nav feedback-desktop-preview-nav-right"
           @click.stop="showNextDesktopPreview"
         >
-          <ArrowRightIcon class="h-5 w-5 text-text-1" />
+          <ArrowLeftIcon class="h-5 w-5 rotate-180 text-text-1" />
         </button>
       </div>
     </transition>
@@ -126,33 +143,32 @@
 </template>
 
 <script setup lang="ts">
-import H5Header from '@/components/common/H5Header.vue'
-import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
-import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
-import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import Api from '@/api'
 import type { QueryFeedbackItem } from '@/api/interface/user'
+import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
+import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+import { globalShowToast } from '@/utils/toast'
 import {
   type FeedbackRecord,
   type FeedbackStatus,
   buildFeedbackCurrencyRequest,
   extractFeedbackList,
-  normalizeFeedbackCurrencyCode,
-  getFeedbackDetailTemplates,
-  getFeedbackStatusTextMap,
-  getFeedbackTypeLabel,
   feedbackStatusClassMap,
-  normalizeFeedbackStatus,
   formatFeedbackSubmitTime,
   getFeedbackAcceptedReplyContent,
-  getFeedbackItemRewardAmount
+  getFeedbackDetailTemplates,
+  getFeedbackItemRewardAmount,
+  getFeedbackStatusTextMap,
+  getFeedbackTypeLabel,
+  normalizeFeedbackCurrencyCode,
+  normalizeFeedbackStatus
 } from '@/views/personalCenter/feedback/consts'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { showImagePreview } from 'vant'
-import { globalShowToast } from '@/utils/toast'
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 
 const props = withDefaults(
   defineProps<{

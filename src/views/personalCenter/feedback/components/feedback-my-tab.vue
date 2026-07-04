@@ -79,9 +79,9 @@
 
 <script setup lang="ts">
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
+import { useI18n } from 'vue-i18n'
 import type { FeedbackStatus } from '../consts'
 import type { FeedbackListItem } from '../types'
-import { useI18n } from 'vue-i18n'
 
 // 我的反馈模块：只负责列表渲染与点击事件派发。
 defineProps<{
