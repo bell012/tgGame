@@ -1,74 +1,34 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/mask-icon.svg" />
-    <!-- h5中禁止双击放大 -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
 
-    <!-- Inter 字体（含 italic 斜体） -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap"
-      rel="stylesheet"
-    />
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/mask-icon.svg" />
+  <!-- h5中禁止双击放大 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#242626" />
-    <meta name="color-scheme" content="dark light" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="TG Game" />
+  <!-- Inter 字体（含 italic 斜体） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap"
+    rel="stylesheet" />
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#323738" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="TG Game" />
 
-    <!-- Apple Touch Icons -->
-    <link rel="mask-icon" href="/mask-icon.svg" color="#242626" />
+  <!-- Apple Touch Icons -->
+  <link rel="mask-icon" href="/mask-icon.svg" color="#323738" />
 
-    <script>
-      ;(() => {
-        const DARK_BACKGROUND = '#242626'
-        const LIGHT_BACKGROUND = '#f4f4f4'
+  <title>TG Game</title>
+</head>
 
-        try {
-          const savedTheme = localStorage.getItem('theme')
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-          const resolvedTheme =
-            savedTheme === 'dark' || savedTheme === 'light'
-              ? savedTheme
-              : prefersDark
-                ? 'dark'
-                : 'light'
-          const resolvedBackground =
-            resolvedTheme === 'dark' ? DARK_BACKGROUND : LIGHT_BACKGROUND
-          const html = document.documentElement
-          const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
 
-          html.classList.remove('light', 'dark')
-          html.classList.add(resolvedTheme)
-          html.style.backgroundColor = resolvedBackground
-          themeColorMeta?.setAttribute('content', resolvedBackground)
-
-          document.addEventListener(
-            'DOMContentLoaded',
-            () => {
-              document.body.style.backgroundColor = resolvedBackground
-            },
-            { once: true }
-          )
-        } catch (error) {
-          console.error('[theme-color:init]', error)
-        }
-      })()
-    </script>
-
-    <title>TG Game</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
 </html>
