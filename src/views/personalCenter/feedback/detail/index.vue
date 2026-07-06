@@ -138,11 +138,7 @@
           class="feedback-desktop-preview-nav feedback-desktop-preview-nav-right"
           @click.stop="showNextDesktopPreview"
         >
-<<<<<<< HEAD
           <ArrowLeftIcon class="h-5 w-5 rotate-180 text-text-1" />
-=======
-          <ArrowLeftIcon class="h-4 w-4 rotate-180 text-text-1" />
->>>>>>> ae4bf283 (fix : 意见反馈 pc端ui调整)
         </button>
       </div>
     </transition>

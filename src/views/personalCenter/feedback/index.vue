@@ -16,39 +16,6 @@
           @change="handleTabChange"
         />
 
-<<<<<<< HEAD
-        <FeedbackCreateTab
-          v-if="activeTab === 'create'"
-          v-model:selected-type="selectedType"
-          v-model:feedback-content="feedbackContent"
-          v-model:feedback-file-list="feedbackFileList"
-          :is-pc-mode="isEmbeddedMode"
-          :feedback-type-options="feedbackTypeOptions"
-          :placeholder-text="placeholderText"
-          :feedback-upload-count="feedbackUploadCount"
-          :feedback-upload-max-count="feedbackUploadMaxCount"
-          :is-submitting-feedback="isSubmittingFeedback"
-          :delete-icon="deleteIcon"
-          :after-read="feedbackImageAfterRead"
-          :before-delete="feedbackImageDelete"
-          :on-submit="handleSubmitFeedback"
-        />
-
-        <FeedbackMyTab
-          v-else
-          :is-pc-mode="isEmbeddedMode"
-          :feedback-reward-icon="feedbackRewardIcon"
-          :is-loading="isLoadingMyFeedbackList"
-          :feedback-list="myFeedbackList"
-          :reward-amount="feedbackRewardAmountText"
-          :can-claim-reward="canClaimFeedbackReward"
-          :is-claiming-reward="isReceivingAllFeedback"
-          :status-text-map="statusTextMap"
-          :status-class-map="statusClassMap"
-          @claim="handleReceiveAllFeedback"
-          @open-detail="goToFeedbackDetail"
-        />
-=======
         <div class="px-3.5">
           <FeedbackCreateTab
             v-if="activeTab === 'create'"
@@ -82,7 +49,6 @@
             @open-detail="goToFeedbackDetail"
           />
         </div>
->>>>>>> ae4bf283 (fix : 意见反馈 pc端ui调整)
       </main>
     </div>
 
