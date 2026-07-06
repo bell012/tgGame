@@ -3,8 +3,6 @@ import { ref, watch } from 'vue'
 
 export type Theme = 'light' | 'dark'
 
-const SYSTEM_UI_THEME_COLOR = '#323738'
-
 export const useThemeStore = defineStore('theme', () => {
   const theme = ref<Theme>('light')
   const systemPreference = ref<Theme>('light')
@@ -12,15 +10,17 @@ export const useThemeStore = defineStore('theme', () => {
   const syncSystemThemeColor = () => {
     const html = document.documentElement
     const computedStyle = getComputedStyle(html)
-    const themeColor = computedStyle.getPropertyValue('--color-background-level-2').trim()
+    const systemUiThemeColor = computedStyle.getPropertyValue('--color-background-level-2').trim()
+    const pageBackgroundColor = computedStyle.getPropertyValue('--color-background-level-1').trim()
     const bodyBackgroundColor = document.body
       ? getComputedStyle(document.body).backgroundColor.trim()
       : ''
-    const resolvedBackgroundColor = themeColor || bodyBackgroundColor
+    const resolvedSystemUiThemeColor = systemUiThemeColor || bodyBackgroundColor
+    const resolvedBackgroundColor = pageBackgroundColor || bodyBackgroundColor
 
     const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', SYSTEM_UI_THEME_COLOR)
+    if (themeColorMeta && resolvedSystemUiThemeColor) {
+      themeColorMeta.setAttribute('content', resolvedSystemUiThemeColor)
     }
 
     if (resolvedBackgroundColor) {
