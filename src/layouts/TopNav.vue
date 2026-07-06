@@ -61,7 +61,7 @@
       <!-- 右侧 -->
       <div class="flex items-center justify-end">
         <div
-          class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
+          class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3 sm:mr-4"
           @click="openExploreModal"
         >
           <SearchIcon class="w-6 h-6 text-icon-2" />
@@ -71,14 +71,14 @@
         <template v-if="!isLoggedIn">
           <!-- 登入 -->
           <div
-            class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-opacity-10 border-0 sm:border-2 border-[#e4eaf019] mr-1"
+            class="cursor-pointer w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[16px] font-bold sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center bg-opacity-10 mr-1 sm:mr-2"
             @click="openLoginModal"
           >
             {{ t('home.sign_In') }}
           </div>
           <!-- 注册 -->
           <div
-            class="cursor-pointer font-bold w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary"
+            class="cursor-pointer font-bold w-[84px] h-[35px] sm:w-[100px] sm:h-[40px] text-[14px] sm:text-[16px] px-3 sm:px-4 rounded-lg flex items-center justify-center btn-primary sm:mr-4"
             @click="openRegisterModal"
           >
             {{ t('home.sign_Up') }}
@@ -270,7 +270,7 @@
         <!-- 未登录时显示的聊天图标 -->
         <div
           v-if="!isLoggedIn"
-          class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3"
+          class="hidden sm:flex items-center justify-center cursor-pointer search w-[40px] h-[40px] rounded-lg mr-3 sm:mr-4"
         >
           <ChatIcon class="w-5 h-5 fill-none translate-y-[2px] translate-x-[2px]" />
         </div>
