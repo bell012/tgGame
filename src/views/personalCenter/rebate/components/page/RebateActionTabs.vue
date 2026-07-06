@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-3 grid grid-cols-2" :class="isMobile ? 'gap-2.5' : 'gap-3'">
+  <div class="grid grid-cols-2" :class="isMobile ? 'mt-3 gap-2.5' : 'mt-4 gap-5'">
     <button
       type="button"
       :class="buttonClass(activeTab === 'records')"

@@ -46,7 +46,7 @@
                 <div
                   v-for="item in displayVouchers"
                   :key="item.id"
-                  class="flex items-center gap-3 rounded-[13px] px-3 py-2.5"
+                  class="flex items-center gap-3 rounded-[13px] px-3 py-2.5 sm:mx-auto sm:h-[108px] sm:w-[404px] sm:shrink-0"
                   :style="{ background: resolveCardBg(item) }"
                 >
                   <div class="flex w-[44px] shrink-0 items-center justify-center sm:w-[75px]">
@@ -84,7 +84,7 @@
 
           <button
             type="button"
-            class="mt-6 flex h-10 w-10 items-center justify-center rounded-full border border-common-30 text-[18px] leading-none text-common-80"
+            class="receive-pop__close mt-6 flex h-10 w-10 items-center justify-center rounded-full text-[18px] leading-none text-common-100"
             :aria-label="t('common.cancel')"
             @click="handleClose"
           >
@@ -210,6 +210,10 @@ const handleUseNow = () => {
 .receive-pop__mask {
   background: var(--color-mask-60-1, rgb(0 0 0 / 60%));
   backdrop-filter: blur(5px);
+}
+
+.receive-pop__close {
+  border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
 .receive-pop__title {

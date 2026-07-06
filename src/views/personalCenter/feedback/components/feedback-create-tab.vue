@@ -166,8 +166,8 @@ const canSubmitFeedback = computed(() => {
 
 <style scoped>
 .feedback-upload-photo-icon {
-  width: 30px;
-  height: 29px;
+  width: 28px;
+  height: 28px;
   color: var(--color-text-level-3);
 }
 

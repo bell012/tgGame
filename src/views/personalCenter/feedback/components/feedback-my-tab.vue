@@ -9,10 +9,10 @@
             class="h-[48px] w-[48px]"
           />
           <div class="ml-2.5">
-            <div class="text-sm text-text-1">
+            <div class="text-[14px] font-[400] text-text-1">
               {{ t('personalCenter.feedback.myTab.rewardAmount') }}
             </div>
-            <div class="text-[18px] font-[700] leading-[20px] text-text-1">{{ rewardAmount }}</div>
+            <div class="text-[20px] font-[700] leading-[24px] text-text-1">{{ rewardAmount }}</div>
           </div>
         </div>
         <button

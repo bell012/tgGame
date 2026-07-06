@@ -1192,8 +1192,8 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 
 .leave-feedback-modal-card {
   position: relative;
-  width: min(100%, 480px);
-  height: min(88vh, 704px);
+  width: min(100%, 520px);
+  height: min(90vh, 704px);
   overflow: hidden;
   border-radius: 12px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);

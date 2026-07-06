@@ -2,6 +2,7 @@
   <section :class="feedbackDetailPageContainerClass">
     <div class="flex h-full flex-col bg-bg-1">
       <H5Header
+        class="feedback-detail-header"
         :title="t('personalCenter.feedback.detailTitle')"
         :disable-default-back="isEmbeddedMode"
         :fixed-top="!isEmbeddedMode"
@@ -121,7 +122,8 @@
           class="feedback-desktop-preview-nav feedback-desktop-preview-nav-left"
           @click.stop="showPrevDesktopPreview"
         >
-          <ArrowLeftIcon class="h-4 w-4 text-text-1" />
+<!-- 与右侧共用同一图标并旋转，保证两侧箭头大小一致（arrow_left.svg 视觉尺寸偏大） -->
+          <ArrowRightIcon class="h-5 w-5 rotate-180 text-text-1" />
         </button>
 
         <div class="feedback-desktop-preview-image-wrap">
@@ -146,6 +148,7 @@
 </template>
 
 <script setup lang="ts">
+import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import Api from '@/api'
 import type { QueryFeedbackItem } from '@/api/interface/user'
 import H5Header from '@/components/common/H5Header.vue'
@@ -437,8 +440,15 @@ watch(
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 400;
   color: var(--color-text-level-3);
+}
+
+/* 返回箭头与右侧客服小图标尺寸对齐（16px，以右边小图标为准） */
+.feedback-detail-header :deep(button svg) {
+  width: 16px;
+  height: 16px;
 }
 
 .feedback-screenshot-item {
@@ -485,21 +495,26 @@ watch(
   top: 50%;
   z-index: 2;
   display: flex;
-  height: 56px;
-  width: 56px;
+  height: 40px;
+  width: 40px;
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 12px;
-  background: rgba(72, 82, 90, 0.9);
+  border-radius: 10px;
+  background: var(--color-opacity-30);
   transform: translateY(-50%);
+
+  /* arrow_right.svg 自带 #B3BEC1 填充，设计稿箭头为白色 */
+  :deep(path) {
+    fill: var(--color-text-level-1);
+  }
 }
 
 .feedback-desktop-preview-nav-left {
-  left: max(20px, calc(50% - min(35vw, 490px) - 76px));
+  left: max(20px, calc(50% - min(35vw, 490px) - 60px));
 }
 
 .feedback-desktop-preview-nav-right {
-  right: max(20px, calc(50% - min(35vw, 490px) - 76px));
+  right: max(20px, calc(50% - min(35vw, 490px) - 60px));
 }
 </style>
