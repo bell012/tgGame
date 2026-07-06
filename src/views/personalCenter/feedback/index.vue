@@ -9,44 +9,46 @@
         @back="handleFeedbackPageBack"
       />
 
-      <main
-        class="feedback-page-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 pb-8 pt-[16px]"
-      >
+      <main class="feedback-page-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pb-8">
         <FeedbackTabs
           :active-tab="activeTab"
           :is-pc-mode="isEmbeddedMode"
           @change="handleTabChange"
         />
 
-        <FeedbackCreateTab
-          v-if="activeTab === 'create'"
-          v-model:selected-type="selectedType"
-          v-model:feedback-content="feedbackContent"
-          v-model:feedback-file-list="feedbackFileList"
-          :feedback-type-options="feedbackTypeOptions"
-          :placeholder-text="placeholderText"
-          :feedback-upload-count="feedbackUploadCount"
-          :feedback-upload-max-count="feedbackUploadMaxCount"
-          :is-submitting-feedback="isSubmittingFeedback"
-          :delete-icon="deleteIcon"
-          :after-read="feedbackImageAfterRead"
-          :before-delete="feedbackImageDelete"
-          :on-submit="handleSubmitFeedback"
-        />
+        <div class="px-3.5">
+          <FeedbackCreateTab
+            v-if="activeTab === 'create'"
+            v-model:selected-type="selectedType"
+            v-model:feedback-content="feedbackContent"
+            :is-pc-mode="isEmbeddedMode"
+            v-model:feedback-file-list="feedbackFileList"
+            :feedback-type-options="feedbackTypeOptions"
+            :placeholder-text="placeholderText"
+            :feedback-upload-count="feedbackUploadCount"
+            :feedback-upload-max-count="feedbackUploadMaxCount"
+            :is-submitting-feedback="isSubmittingFeedback"
+            :delete-icon="deleteIcon"
+            :after-read="feedbackImageAfterRead"
+            :before-delete="feedbackImageDelete"
+            :on-submit="handleSubmitFeedback"
+          />
 
-        <FeedbackMyTab
-          v-else
-          :feedback-reward-icon="feedbackRewardIcon"
-          :is-loading="isLoadingMyFeedbackList"
-          :feedback-list="myFeedbackList"
-          :reward-amount="feedbackRewardAmountText"
-          :can-claim-reward="canClaimFeedbackReward"
-          :is-claiming-reward="isReceivingAllFeedback"
-          :status-text-map="statusTextMap"
-          :status-class-map="statusClassMap"
-          @claim="handleReceiveAllFeedback"
-          @open-detail="goToFeedbackDetail"
-        />
+          <FeedbackMyTab
+            v-else
+            :is-pc-mode="isEmbeddedMode"
+            :feedback-reward-icon="feedbackRewardIcon"
+            :is-loading="isLoadingMyFeedbackList"
+            :feedback-list="myFeedbackList"
+            :reward-amount="feedbackRewardAmountText"
+            :can-claim-reward="canClaimFeedbackReward"
+            :is-claiming-reward="isReceivingAllFeedback"
+            :status-text-map="statusTextMap"
+            :status-class-map="statusClassMap"
+            @claim="handleReceiveAllFeedback"
+            @open-detail="goToFeedbackDetail"
+          />
+        </div>
       </main>
     </div>
 
@@ -70,47 +72,47 @@
 <script setup lang="ts">
 import Api from '@/api'
 import type { QueryFeedbackItem } from '@/api/interface/user'
+import H5Header from '@/components/common/H5Header.vue'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import deleteIcon from '@/static/img/payment/upload_delete.png'
 import feedbackRewardIcon from '@/static/svg/feedback/dl.svg?url'
+import feedbackEllipseIcon from '@/static/svg/feedback/ellipse.svg?url'
 import feedbackBowIcon from '@/static/svg/feedback/hdj.svg?url'
 import feedbackStarIcon from '@/static/svg/feedback/star.svg?url'
-import feedbackEllipseIcon from '@/static/svg/feedback/ellipse.svg?url'
-import deleteIcon from '@/static/img/payment/upload_delete.png'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { type UploaderAfterRead, type UploaderFileListItem } from 'vant'
-import { useI18n } from 'vue-i18n'
-import { globalShowToast } from '@/utils/toast'
-import H5Header from '@/components/common/H5Header.vue'
+import { prepareUploadImage } from '@/utils/compress-upload-image'
 import { getCurrencySymbol } from '@/utils/locale'
+import { navigateToName } from '@/utils/router'
+import { globalShowToast } from '@/utils/toast.ts'
+import { resolveUploadErrorMessage } from '@/utils/upload-error'
+import { type UploaderAfterRead, type UploaderFileListItem } from 'vant'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import FeedbackClaimSuccessPopup from './components/feedback-claim-success-popup.vue'
+import FeedbackCreateTab from './components/feedback-create-tab.vue'
+import FeedbackDetailPopup from './components/feedback-detail-popup.vue'
+import FeedbackMyTab from './components/feedback-my-tab.vue'
+import FeedbackTabs from './components/feedback-tabs.vue'
 import {
   FEEDBACK_CLAIM_AMOUNT_ANIMATION_DURATION,
   FEEDBACK_UPLOAD_MAX_COUNT,
-  extractClaimedFeedbackAmount,
   buildFeedbackCurrencyRequest,
+  extractClaimedFeedbackAmount,
   extractFeedbackClaimRewardAmount,
   extractFeedbackList,
-  normalizeFeedbackCurrencyCode,
-  sortFeedbackItemsByNewest,
   feedbackStatusClassMap,
   formatFeedbackRewardAmount,
   formatFeedbackSubmitTime,
+  getFeedbackPlaceholderText,
   getFeedbackStatusTextMap,
   getFeedbackTypeLabel,
   getFeedbackTypeOptions,
-  getFeedbackPlaceholderText,
   getFeedbackUploadFileName,
   getUploadedFeedbackPath,
-  normalizeFeedbackStatus
+  normalizeFeedbackCurrencyCode,
+  normalizeFeedbackStatus,
+  sortFeedbackItemsByNewest
 } from './consts'
-import FeedbackTabs from './components/feedback-tabs.vue'
-import FeedbackCreateTab from './components/feedback-create-tab.vue'
-import FeedbackMyTab from './components/feedback-my-tab.vue'
-import FeedbackClaimSuccessPopup from './components/feedback-claim-success-popup.vue'
-import FeedbackDetailPopup from './components/feedback-detail-popup.vue'
 import type { FeedbackListItem, FeedbackTab } from './types'
-import { navigateToName } from '@/utils/router'
-import { prepareUploadImage } from '@/utils/compress-upload-image'
-import { resolveUploadErrorMessage } from '@/utils/upload-error'
-import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 
 const props = withDefaults(
   defineProps<{

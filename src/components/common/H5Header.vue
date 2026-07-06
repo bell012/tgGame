@@ -16,7 +16,7 @@
           class="size-[33px] bg-opacity-5 rounded-md flex items-center justify-center cursor-pointer"
           @click="handleBack"
         >
-          <ArrowLeftIcon class="w-3.5 h-3.5 text-text-1" />
+          <ArrowLeftIcon :class="props.leftIconClass || 'h-3.5 w-3.5 text-text-1'" />
         </button>
       </div>
 
@@ -32,7 +32,10 @@
           class="size-[33px] bg-opacity-5 rounded-md flex items-center justify-center cursor-pointer"
           @click="handleSort"
         >
-          <component :is="props.rightIcon || SiftIcon" class="w-3.5 h-3.5 text-text-1" />
+          <component
+            :is="props.rightIcon || SiftIcon"
+            :class="props.rightIconClass || 'h-3.5 w-3.5 text-text-1'"
+          />
         </div>
       </div>
     </div>
@@ -49,7 +52,9 @@ interface Props {
   title?: string
   showSort?: boolean
   showBack?: boolean
+  leftIconClass?: string
   rightIcon?: Component
+  rightIconClass?: string
   fixedTop?: boolean
   disableDefaultBack?: boolean
 }
@@ -58,6 +63,8 @@ const props = withDefaults(defineProps<Props>(), {
   title: '',
   showSort: false,
   showBack: true,
+  leftIconClass: '',
+  rightIconClass: '',
   fixedTop: true,
   disableDefaultBack: false
 })

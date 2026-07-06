@@ -457,26 +457,26 @@ import { sideIcons } from '@/static/svg/side'
 import newSideIcons from '@/static/svg/side/newIcon'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
+import { usePromotionsStore } from '@/stores/promotions'
 import { useThemeStore } from '@/stores/theme'
 import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from '@/utils/locale'
-import { navigateTo } from '@/utils/router'
 import { openLuckySpin } from '@/utils/openLuckySpin'
 import { openTicketActivity } from '@/utils/openTicketActivity'
-import { usePromotionsStore } from '@/stores/promotions'
+import { navigateTo } from '@/utils/router'
 import { getPromotionGroupRouteKey } from '@/views/activity/promotions/shared'
+import type { TicketGameId } from '@/views/activity/ticket/shared/types'
 import {
   clearUserTicketInventory,
   hasUserTicketForGame,
   refreshUserTicketInventory,
   userTicketInventoryState
 } from '@/views/activity/ticket/shared/userTicketInventory'
-import type { TicketGameId } from '@/views/activity/ticket/shared/types'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
 import LanguagePopup from '@/views/settings/preferences/language-popup.vue'
 
+import { storeToRefs } from 'pinia'
 import type { Component } from 'vue'
 import { computed, onMounted, ref, watch } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 interface Props {
   isCollapsed?: boolean
@@ -1192,8 +1192,8 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 
 .leave-feedback-modal-card {
   position: relative;
-  width: min(100%, 520px);
-  height: min(88vh, 760px);
+  width: min(100%, 480px);
+  height: min(88vh, 704px);
   overflow: hidden;
   border-radius: 12px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);

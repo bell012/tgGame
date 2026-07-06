@@ -147,8 +147,8 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'TG Game',
           short_name: 'TGGame',
-          theme_color: '#242626',
-          background_color: '#242626',
+          theme_color: '#323738',
+          background_color: '#323738',
           display: 'standalone',
           orientation: 'portrait',
           scope: '/',
