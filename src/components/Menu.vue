@@ -28,7 +28,11 @@
         :key="`group-${groupIndex}`"
         class="flex flex-col mt-3"
       >
-        <div v-for="(menu, menuIndex) in menuGroup" :key="menu.id" class="flex flex-col bg-bg-2">
+        <div
+          v-for="(menu, menuIndex) in menuGroup"
+          :key="menu.id"
+          class="flex flex-col bg-bg-2 sm:rounded-lg"
+        >
           <div v-if="hasGroupedChildren(menu)" class="bg-bg-2 rounded-lg overflow-visible">
             <div
               v-for="(item, index) in menu.children"
@@ -65,7 +69,7 @@
                   />
                   <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
                 </div>
-                <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">{{
+                <span v-if="!isCollapsed" class="text-[13px] font-[600] text-text-1">{{
                   item.name
                 }}</span>
               </div>
@@ -306,7 +310,7 @@
         </div>
         <div
           v-if="!isCollapsed"
-          class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5"
+          class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5 p-1"
         >
           <Arrow_right class="w-4 h-4 fill-none" />
         </div>
@@ -320,7 +324,7 @@
       >
         <button
           :class="[
-            'flex-1 w-[50%] h-9 rounded-lg border-none cursor-pointer transition-all',
+            'flex-1 w-[50%] h-8 rounded-lg border-none cursor-pointer transition-all',
             themeStore.theme === 'dark' ? 'bg-[#4B5354]' : 'bg-transparent'
           ]"
           @click="themeStore.setTheme('dark')"
@@ -453,26 +457,26 @@ import { sideIcons } from '@/static/svg/side'
 import newSideIcons from '@/static/svg/side/newIcon'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
+import { usePromotionsStore } from '@/stores/promotions'
 import { useThemeStore } from '@/stores/theme'
 import { getLocaleLabel, getLocaleOptions, type Locale, type LocaleOption } from '@/utils/locale'
-import { navigateTo } from '@/utils/router'
 import { openLuckySpin } from '@/utils/openLuckySpin'
 import { openTicketActivity } from '@/utils/openTicketActivity'
-import { usePromotionsStore } from '@/stores/promotions'
+import { navigateTo } from '@/utils/router'
 import { getPromotionGroupRouteKey } from '@/views/activity/promotions/shared'
+import type { TicketGameId } from '@/views/activity/ticket/shared/types'
 import {
   clearUserTicketInventory,
   hasUserTicketForGame,
   refreshUserTicketInventory,
   userTicketInventoryState
 } from '@/views/activity/ticket/shared/userTicketInventory'
-import type { TicketGameId } from '@/views/activity/ticket/shared/types'
 import FeedbackPage from '@/views/personalCenter/feedback/index.vue'
 import LanguagePopup from '@/views/settings/preferences/language-popup.vue'
 
+import { storeToRefs } from 'pinia'
 import type { Component } from 'vue'
 import { computed, onMounted, ref, watch } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 interface Props {
   isCollapsed?: boolean
@@ -1189,7 +1193,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 .leave-feedback-modal-card {
   position: relative;
   width: min(100%, 520px);
-  height: min(88vh, 760px);
+  height: min(90vh, 704px);
   overflow: hidden;
   border-radius: 12px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);

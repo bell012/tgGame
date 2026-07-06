@@ -10,21 +10,23 @@ export const useThemeStore = defineStore('theme', () => {
   const syncSystemThemeColor = () => {
     const html = document.documentElement
     const computedStyle = getComputedStyle(html)
-    const themeColor = computedStyle.getPropertyValue('--color-background-level-1').trim()
+    const systemUiThemeColor = computedStyle.getPropertyValue('--color-background-level-2').trim()
+    const pageBackgroundColor = computedStyle.getPropertyValue('--color-background-level-1').trim()
     const bodyBackgroundColor = document.body
       ? getComputedStyle(document.body).backgroundColor.trim()
       : ''
-    const resolvedThemeColor = themeColor || bodyBackgroundColor
+    const resolvedSystemUiThemeColor = systemUiThemeColor || bodyBackgroundColor
+    const resolvedBackgroundColor = pageBackgroundColor || bodyBackgroundColor
 
     const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-    if (themeColorMeta && resolvedThemeColor) {
-      themeColorMeta.setAttribute('content', resolvedThemeColor)
+    if (themeColorMeta && resolvedSystemUiThemeColor) {
+      themeColorMeta.setAttribute('content', resolvedSystemUiThemeColor)
     }
 
-    if (resolvedThemeColor) {
-      html.style.backgroundColor = resolvedThemeColor
+    if (resolvedBackgroundColor) {
+      html.style.backgroundColor = resolvedBackgroundColor
       if (document.body) {
-        document.body.style.backgroundColor = resolvedThemeColor
+        document.body.style.backgroundColor = resolvedBackgroundColor
       }
     }
   }

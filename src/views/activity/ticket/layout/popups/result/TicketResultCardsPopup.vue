@@ -4,7 +4,7 @@
     :mask-z-index="TICKET_DIALOG_Z.resultMask"
     :panel-z-index="TICKET_DIALOG_Z.resultPanel"
     layout="result"
-    :panel-class="isMobile ? 'max-w-[320px]' : 'max-w-[440px]'"
+    :panel-class="isMobile ? 'max-w-[320px]' : 'max-w-[450px]'"
     :close-aria-label="t('common.cancel')"
     @close="close"
   >
@@ -30,11 +30,16 @@
             vouchers.length > 1
               ? isMobile
                 ? 'max-h-[220px] overflow-y-auto pr-1'
-                : 'max-h-[280px] overflow-y-auto pr-1'
+                : 'max-h-[368px] overflow-y-auto pr-1'
               : ''
           "
         >
-          <TicketVoucherCard v-for="item in vouchers" :key="item.id" :data="item" />
+          <TicketVoucherCard
+            v-for="item in vouchers"
+            :key="item.id"
+            :data="item"
+            :class="isMobile ? '' : 'mx-auto h-[108px] w-[404px] shrink-0'"
+          />
         </div>
         <button
           type="button"

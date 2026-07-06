@@ -4,7 +4,7 @@
       class="bg-bg-1 text-text-1"
       :class="
         isMobile
-          ? 'mx-auto w-[328px] rounded-[18px] px-5 pb-5 pt-4 shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
+          ? 'mx-auto w-[328px] rounded-[14px] px-5 pb-5 pt-4 shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
           : 'mx-auto flex h-[225px] w-[492px] flex-col rounded-[18px] px-[32px] pb-[28px] pt-[24px] shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
       "
     >

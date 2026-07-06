@@ -17,8 +17,8 @@
         </h3>
         <button
           type="button"
-          class="absolute right-0 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-[10px] bg-bg-3 text-text-1"
-          :class="isMobile ? 'h-[28px] w-[28px]' : 'h-[28px] w-[28px]'"
+          class="absolute right-0 top-1/2 flex -translate-y-1/2 items-center justify-center bg-bg-3 text-text-1"
+          :class="isMobile ? 'h-[28px] w-[28px] rounded-[6px]' : 'h-[28px] w-[28px] rounded-[10px]'"
           @click="visible = false"
         >
           <CloseIcon :class="'h-2.5 w-2.5 text-text-1'" />
@@ -26,8 +26,8 @@
       </div>
 
       <div
-        class="mt-5 rounded-[12px]"
-        :class="isMobile ? 'bg-bg-4 px-4 py-5' : 'bg-bg-3 px-4 py-4'"
+        class="mt-5"
+        :class="isMobile ? 'rounded-[8px] bg-bg-4 px-3.5 py-5' : 'rounded-[12px] bg-bg-3 px-4 py-4'"
       >
         <div class="flex items-center justify-between gap-3 text-text-2">
           <span :class="isMobile ? 'text-[14px] leading-[20px]' : 'text-[14px] leading-[20px]'">

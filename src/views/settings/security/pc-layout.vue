@@ -1,6 +1,8 @@
 <template>
-  <div class="security-settings p-6">
-    <h1 class="text-sm font-bold text-text-1 pb-6 mb-2.5 border-b border-opacity-5 required">
+  <div class="security-settings px-6 pb-6 pt-0">
+    <h1
+      class="text-sm font-bold text-text-1 mb-3 flex items-center gap-0.5 h-14 py-1 border-b border-opacity-6 required"
+    >
       {{ t('securitySettings.pageTitle') }}
     </h1>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
@@ -10,17 +12,17 @@
         class="rounded-xl bg-bg-3 p-5 sm:p-6 flex flex-col min-h-[200px] border border-transparent hover:border-opacity-10 hover:border-[var(--color-opacity-15)] transition-colors"
       >
         <div class="flex items-start justify-between gap-3 mb-4">
-          <component :is="card.icon" class="w-9 h-9 shrink-0 text-icon-2" />
+          <component :is="card.icon" class="w-6 h-6 shrink-0 text-icon-2" />
           <div
             v-if="card.active"
-            class="flex h-7 w-7 items-center justify-center rounded-full"
+            class="flex h-6 w-6 items-center justify-center rounded-full"
             aria-hidden="true"
           >
             <SuccessIcon class="w-4 h-4" />
           </div>
           <div
             v-else
-            class="flex h-7 w-7 items-center justify-center rounded-full"
+            class="flex h-6 w-6 items-center justify-center rounded-full"
             aria-hidden="true"
           >
             <WarningIcon class="w-4 h-4" />
@@ -35,7 +37,7 @@
         <button
           type="button"
           :class="[
-            'w-full h-10 rounded-lg text-sm font-bold shrink-0',
+            'w-full h-12 rounded-lg text-sm font-bold shrink-0',
             card.active ? 'security-btn-secondary' : 'bg-theme-primary text-text-4'
           ]"
           @click="handleOpenChangeLoginPassword(card.cardKey)"
@@ -97,8 +99,7 @@ const handleOpenChangeLoginPassword = (_key: SecurityCardKey) => {
 .security-btn-secondary {
   color: var(--color-text-level-2);
   font-weight: 700;
-  background-color: var(--color-background-level-2);
-  border: 1px solid var(--color-opacity-15);
+  background-color: var(--color-opacity-10);
   cursor: pointer;
   box-shadow: none;
 }

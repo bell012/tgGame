@@ -2,10 +2,12 @@
   <section :class="feedbackDetailPageContainerClass">
     <div class="flex h-full flex-col bg-bg-1">
       <H5Header
+        class="feedback-detail-header"
         :title="t('personalCenter.feedback.detailTitle')"
         :disable-default-back="isEmbeddedMode"
         :fixed-top="!isEmbeddedMode"
         show-sort
+        left-icon-class="h-2.5 w-2.5 text-text-1"
         :right-icon="CustomerServiceIcon"
         @back="handleDetailBack"
         @sort="handleCustomerServiceClick"
@@ -22,7 +24,12 @@
 
           <div class="feedback-detail-row mt-2.5">
             <span>{{ t('personalCenter.feedback.detail.processingStatus') }}</span>
-            <span class="font-[700]" :class="statusClassMap[feedbackDetail.status]">
+            <span
+              :class="[
+                isEmbeddedMode ? 'text-[14px] font-[400] leading-[20px]' : 'font-[700]',
+                statusClassMap[feedbackDetail.status]
+              ]"
+            >
               {{ statusTextMap[feedbackDetail.status] }}
             </span>
           </div>
@@ -37,11 +44,18 @@
             <span class="text-text-1">{{ feedbackDetail.feedbackType }}</span>
           </div>
 
-          <div class="mt-2.5 text-[15px] text-text-3">
+          <div
+            class="mt-2.5"
+            :class="
+              isEmbeddedMode
+                ? 'text-[16px] font-[400] leading-[20px] text-text-3'
+                : 'feedback-detail-row'
+            "
+          >
             {{ t('personalCenter.feedback.detail.feedbackContent') }}
           </div>
           <div
-            class="mt-2 rounded-[8px] bg-bg-4 px-3 py-2.5 text-[15px] leading-[20px] text-text-1"
+            class="mt-2 whitespace-pre-wrap break-words rounded-[8px] bg-bg-4 px-3 py-2.5 text-[15px] leading-[20px] text-text-1"
           >
             {{ feedbackDetail.detailContent }}
           </div>
@@ -61,8 +75,15 @@
               />
             </button>
           </div>
+          <!-- 内容与状态的分割线 -->
+          <div class="mt-3 h-px w-full bg-opacity-10"></div>
 
-          <p class="mt-3 text-[15px] leading-[20px] text-text-2">{{ feedbackDetail.resultHint }}</p>
+          <p
+            class="mt-3 leading-[20px]"
+            :class="isEmbeddedMode ? 'text-[16px] text-text-3' : 'text-[15px] text-text-2'"
+          >
+            {{ feedbackDetail.resultHint }}
+          </p>
         </section>
 
         <section
@@ -101,7 +122,8 @@
           class="feedback-desktop-preview-nav feedback-desktop-preview-nav-left"
           @click.stop="showPrevDesktopPreview"
         >
-          <ArrowLeftIcon class="h-5 w-5 text-text-1" />
+<!-- 与右侧共用同一图标并旋转，保证两侧箭头大小一致（arrow_left.svg 视觉尺寸偏大） -->
+          <ArrowRightIcon class="h-5 w-5 rotate-180 text-text-1" />
         </button>
 
         <div class="feedback-desktop-preview-image-wrap">
@@ -118,7 +140,7 @@
           class="feedback-desktop-preview-nav feedback-desktop-preview-nav-right"
           @click.stop="showNextDesktopPreview"
         >
-          <ArrowRightIcon class="h-5 w-5 text-text-1" />
+          <ArrowLeftIcon class="h-5 w-5 rotate-180 text-text-1" />
         </button>
       </div>
     </transition>
@@ -126,33 +148,33 @@
 </template>
 
 <script setup lang="ts">
-import H5Header from '@/components/common/H5Header.vue'
-import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
-import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import Api from '@/api'
 import type { QueryFeedbackItem } from '@/api/interface/user'
+import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
+import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+import { globalShowToast } from '@/utils/toast'
 import {
   type FeedbackRecord,
   type FeedbackStatus,
   buildFeedbackCurrencyRequest,
   extractFeedbackList,
-  normalizeFeedbackCurrencyCode,
-  getFeedbackDetailTemplates,
-  getFeedbackStatusTextMap,
-  getFeedbackTypeLabel,
   feedbackStatusClassMap,
-  normalizeFeedbackStatus,
   formatFeedbackSubmitTime,
   getFeedbackAcceptedReplyContent,
-  getFeedbackItemRewardAmount
+  getFeedbackDetailTemplates,
+  getFeedbackItemRewardAmount,
+  getFeedbackStatusTextMap,
+  getFeedbackTypeLabel,
+  normalizeFeedbackCurrencyCode,
+  normalizeFeedbackStatus
 } from '@/views/personalCenter/feedback/consts'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { showImagePreview } from 'vant'
-import { globalShowToast } from '@/utils/toast'
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 
 const props = withDefaults(
   defineProps<{
@@ -418,8 +440,15 @@ watch(
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 400;
   color: var(--color-text-level-3);
+}
+
+/* 返回箭头与右侧客服小图标尺寸对齐（16px，以右边小图标为准） */
+.feedback-detail-header :deep(button svg) {
+  width: 16px;
+  height: 16px;
 }
 
 .feedback-screenshot-item {
@@ -466,21 +495,26 @@ watch(
   top: 50%;
   z-index: 2;
   display: flex;
-  height: 56px;
-  width: 56px;
+  height: 40px;
+  width: 40px;
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 12px;
-  background: rgba(72, 82, 90, 0.9);
+  border-radius: 10px;
+  background: var(--color-opacity-30);
   transform: translateY(-50%);
+
+  /* arrow_right.svg 自带 #B3BEC1 填充，设计稿箭头为白色 */
+  :deep(path) {
+    fill: var(--color-text-level-1);
+  }
 }
 
 .feedback-desktop-preview-nav-left {
-  left: max(20px, calc(50% - min(35vw, 490px) - 76px));
+  left: max(20px, calc(50% - min(35vw, 490px) - 60px));
 }
 
 .feedback-desktop-preview-nav-right {
-  right: max(20px, calc(50% - min(35vw, 490px) - 76px));
+  right: max(20px, calc(50% - min(35vw, 490px) - 60px));
 }
 </style>

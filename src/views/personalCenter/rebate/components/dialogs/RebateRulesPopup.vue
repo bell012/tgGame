@@ -1,11 +1,11 @@
 <template>
   <popShell v-model="visible" :transition-type="isMobile ? 'bottom-sheet' : 'modal'">
     <section
-      class="flex flex-col overflow-hidden bg-bg-2 text-text-1"
+      class="flex flex-col overflow-hidden text-text-1"
       :class="
         isMobile
-          ? 'w-full max-h-[calc(100dvh-120px)] rounded-t-[18px] px-4 pt-4'
-          : 'mx-auto max-h-[70vh] w-[420px] max-w-[calc(100vw-40px)] rounded-[12px] px-4 pt-3 shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
+          ? 'w-full max-h-[calc(100dvh-120px)] rounded-t-[18px] bg-bg-1 px-4 pt-4'
+          : 'mx-auto max-h-[70vh] w-[420px] max-w-[calc(100vw-40px)] rounded-[12px] bg-bg-2 px-4 pt-3 shadow-[0_18px_54px_rgba(0,0,0,0.32)]'
       "
     >
       <div class="relative flex items-center justify-center">
@@ -17,8 +17,8 @@
         </h3>
         <button
           type="button"
-          class="absolute right-0 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-[10px] bg-bg-3 text-text-1"
-          :class="isMobile ? 'h-[40px] w-[40px]' : 'h-[28px] w-[28px]'"
+          class="absolute right-0 top-1/2 flex -translate-y-1/2 items-center justify-center bg-bg-3 text-text-1"
+          :class="isMobile ? 'h-[28px] w-[28px] rounded-[6px]' : 'h-[28px] w-[28px] rounded-[10px]'"
           @click="visible = false"
         >
           <CloseIcon :class="'h-2.5 w-2.5 text-text-1'" />

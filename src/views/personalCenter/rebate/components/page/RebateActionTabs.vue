@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-3 grid grid-cols-2" :class="isMobile ? 'gap-2.5' : 'gap-3'">
+  <div class="grid grid-cols-2" :class="isMobile ? 'mt-3 gap-2.5' : 'mt-4 gap-5'">
     <button
       type="button"
       :class="buttonClass(activeTab === 'records')"
@@ -42,8 +42,8 @@ const buttonClass = (_isActive: boolean, withIcon = false) => {
       ? 'inline-flex h-[44px] items-center justify-center gap-1 rounded-[12px] text-[16px] font-[500]'
       : 'h-[44px] rounded-[12px] text-[16px] font-[500]'
     : withIcon
-      ? 'inline-flex h-[44px] items-center justify-center gap-1 rounded-[10px] text-sm font-[600]'
-      : 'h-[44px] rounded-[10px] text-sm font-[600]'
+      ? 'inline-flex h-[56px] items-center justify-center gap-1 rounded-[16px] text-sm font-[700]'
+      : 'h-[56px] rounded-[16px] text-sm font-[700]'
 
   const stateClass = 'bg-bg-2 text-text-2 border border-transparent'
 

@@ -1,27 +1,31 @@
 <template>
   <section
-    class="mt-3 rounded-[14px] bg-bg-2"
-    :class="isMobile ? 'rebate-progress-mobile px-3.5 py-3.5' : 'px-4 py-4'"
+    class="bg-bg-2"
+    :class="
+      isMobile
+        ? 'rebate-progress-mobile mt-3 rounded-[14px] px-3.5 py-3.5'
+        : 'mt-4 rounded-[16px] px-10 py-5'
+    "
   >
     <div class="flex items-start justify-between">
       <div>
-        <p class="text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">
+        <p class="text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm font-[700]'">
           {{ t('rebatePage.progress.currentRebate') }}
         </p>
         <p
-          class="mt-1 font-[700] leading-none text-text-1"
-          :class="isMobile ? 'text-[14px]' : 'text-[14px]'"
+          class="font-[700] leading-none text-text-1"
+          :class="isMobile ? 'mt-1 text-[14px]' : 'mt-3 text-[14px]'"
         >
           {{ currentRebateText }}
         </p>
       </div>
       <div class="text-right">
-        <p class="text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">
+        <p class="text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm font-[700]'">
           {{ t('rebatePage.progress.nextRebate') }}
         </p>
         <p
-          class="mt-1 font-[700] leading-none text-text-1"
-          :class="isMobile ? 'text-[14px]' : 'text-[14px]'"
+          class="font-[700] leading-none text-text-1"
+          :class="isMobile ? 'mt-1 text-[14px]' : 'mt-3 text-[14px]'"
         >
           {{ nextRebateText }}
         </p>
@@ -30,21 +34,26 @@
 
     <div
       class="rebate-progress-track"
+      :class="isMobile ? 'rebate-progress-track-mobile' : 'rebate-progress-track-pc'"
       :style="{
         '--progress-percent-number': progressPercent,
-        '--progress-pill-width': isMobile ? '34px' : '44px'
+        '--progress-pill-width': isMobile ? '34px' : '62px'
       }"
     >
       <div class="rebate-progress-fill" :style="{ width: `${progressPercent}%` }"></div>
-      <span class="rebate-progress-percent-pill" :class="isMobile ? 'text-[10px]' : 'text-xs'">
+      <span class="rebate-progress-percent-pill" :class="isMobile ? 'text-[10px]' : 'text-[18px]'">
         {{ progressPercentText }}
       </span>
     </div>
 
-    <p class="mt-2 text-text-2" :class="isMobile ? 'text-[12px]' : 'text-sm'">
+    <p class="text-text-2" :class="isMobile ? 'mt-2 text-[12px]' : 'mt-3 text-sm'">
       {{ t('rebatePage.progress.currentValidBets') }}:
-      <span class="text-theme-primary">{{ currentValidBetsPlainText }}</span
-      >/<span class="text-text-1">{{ targetValidBetsText }}</span>
+      <span class="text-theme-primary" :class="isMobile ? '' : 'font-[700]'">{{
+        currentValidBetsPlainText
+      }}</span
+      >/<span class="text-text-1" :class="isMobile ? '' : 'font-[700]'">{{
+        targetValidBetsText
+      }}</span>
     </p>
   </section>
 </template>
@@ -72,10 +81,22 @@ defineProps<{
 
 .rebate-progress-track {
   position: relative;
-  margin-top: 10px;
-  height: 10px;
   border-radius: 9999px;
   background: var(--color-theme-level-3);
+}
+
+.rebate-progress-track-mobile {
+  margin-top: 10px;
+  height: 10px;
+}
+
+.rebate-progress-track-pc {
+  margin-top: 12px;
+  height: 20px;
+
+  .rebate-progress-percent-pill {
+    height: 24px;
+  }
 }
 
 .rebate-progress-fill {
@@ -105,5 +126,11 @@ defineProps<{
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
+}
+
+@media (min-width: 641px) {
+  .rebate-progress-percent-pill {
+    height: 24px;
+  }
 }
 </style>
