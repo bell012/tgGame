@@ -24,10 +24,15 @@
           @click="selectedTypeModel = item.value"
         >
           <span>{{ item.label }}</span>
-          <span
-            class="feedback-radio-circle"
-            :class="{ 'feedback-radio-circle-active': selectedTypeModel === item.value }"
-          ></span>
+          <img
+            :src="
+              selectedTypeModel === item.value
+                ? feedbackRadioCheckedIcon
+                : feedbackRadioUncheckedIcon
+            "
+            alt=""
+            class="h-6 w-6 shrink-0"
+          />
         </button>
       </div>
 
@@ -56,7 +61,11 @@
           :preview-size="88"
           :after-read="afterRead"
           :before-delete="beforeDelete"
-          :preview-options="{ closeable: true }"
+          :preview-options="{
+            closeable: true,
+            className: 'feedback-upload-image-preview',
+            overlayClass: 'feedback-upload-image-preview-overlay'
+          }"
         >
           <template #preview-delete>
             <div
@@ -66,8 +75,24 @@
             </div>
           </template>
           <div
-            class="feedback-upload-trigger flex h-[88px] w-[88px] items-center justify-center rounded-[10px] border border-dashed bg-bg-3"
+            class="feedback-upload-trigger relative flex h-[88px] w-[88px] items-center justify-center rounded-[10px] bg-bg-2"
           >
+            <svg
+              class="pointer-events-none absolute inset-0 h-full w-full text-text-2"
+              viewBox="0 0 88 88"
+              aria-hidden="true"
+            >
+              <rect
+                x="0.5"
+                y="0.5"
+                width="87"
+                height="87"
+                rx="10"
+                fill="none"
+                stroke="currentColor"
+                stroke-dasharray="4 4"
+              />
+            </svg>
             <UploadPhotoIcon class="feedback-upload-photo-icon" aria-hidden="true" />
           </div>
         </Uploader>
@@ -100,11 +125,13 @@
 </template>
 
 <script setup lang="ts">
-import type { FeedbackTypeOption } from '../types'
+import feedbackRadioCheckedIcon from '@/static/img/feedback/radio-checked.png'
+import feedbackRadioUncheckedIcon from '@/static/img/feedback/radio-unchecked.png'
 import UploadPhotoIcon from '@/static/svg/feedback/upload-photo.svg?component'
 import { Uploader, type UploaderAfterRead, type UploaderFileListItem } from 'vant'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { FeedbackTypeOption } from '../types'
 
 // 创建反馈模块：只负责表单 UI 渲染，接口请求由父组件处理。
 const selectedTypeModel = defineModel<string>('selectedType', { required: true })
@@ -136,24 +163,6 @@ const canSubmitFeedback = computed(() => {
 </script>
 
 <style scoped>
-.feedback-radio-circle {
-  position: relative;
-  box-sizing: border-box;
-  height: 24px;
-  width: 24px;
-  border-radius: 9999px;
-  border: 2px solid var(--color-text-level-3);
-}
-
-.feedback-radio-circle-active {
-  border: 7px solid var(--color-theme-level-1);
-  background: var(--color-background-level-1);
-}
-
-.feedback-upload-trigger {
-  border-color: var(--color-text-level-2);
-}
-
 .feedback-upload-photo-icon {
   width: 30px;
   height: 29px;
@@ -162,5 +171,10 @@ const canSubmitFeedback = computed(() => {
 
 .feedback-upload-photo-icon :deep(path) {
   fill: currentColor;
+}
+
+:global(.feedback-upload-image-preview),
+:global(.feedback-upload-image-preview-overlay) {
+  z-index: 100100 !important;
 }
 </style>
