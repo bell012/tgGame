@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isPcMode" class="mb-3.5 border-b border-[rgba(255,255,255,0.08)]">
+  <div v-if="isPcMode" class="mb-3.5 bg-bg-2 border-b border-[rgba(255,255,255,0.08)]">
     <div class="grid grid-cols-2">
       <button
         type="button"

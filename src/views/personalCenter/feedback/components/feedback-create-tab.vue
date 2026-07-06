@@ -15,12 +15,13 @@
           v-for="item in feedbackTypeOptions"
           :key="item.value"
           type="button"
-          class="mb-2 flex h-[42px] w-full items-center justify-between rounded-[8px] px-3 text-left text-[16px] last:mb-0"
-          :class="
+          class="mb-2 flex h-[42px] w-full items-center justify-between rounded-[8px] px-3 text-left last:mb-0"
+          :class="[
+            isPcMode ? 'text-sm font-bold' : 'text-[16px]',
             selectedTypeModel === item.value
               ? 'bg-theme-3 text-text-1'
               : 'bg-transparent text-text-1'
-          "
+          ]"
           @click="selectedTypeModel = item.value"
         >
           <span>{{ item.label }}</span>
@@ -141,6 +142,7 @@ const feedbackFileListModel = defineModel<UploaderFileListItem[]>('feedbackFileL
 })
 
 defineProps<{
+  isPcMode?: boolean
   feedbackTypeOptions: FeedbackTypeOption[]
   placeholderText: string
   feedbackUploadCount: number

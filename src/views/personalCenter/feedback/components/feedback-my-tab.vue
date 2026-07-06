@@ -18,12 +18,13 @@
         <button
           type="button"
           :disabled="!canClaimReward || isClaimingReward"
-          class="h-[36px] min-w-[114px] rounded-[12px] px-4 text-[16px] font-[700] text-text-4"
-          :class="
+          class="rounded-[12px] px-4 font-[700] text-text-4"
+          :class="[
+            isPcMode ? 'h-[48px] w-[120px] text-[20px]' : 'h-[36px] min-w-[114px] text-[16px]',
             canClaimReward && !isClaimingReward
               ? 'bg-theme-primary'
               : 'cursor-not-allowed bg-theme-2 opacity-40'
-          "
+          ]"
           @click="emit('claim')"
         >
           {{ t('personalCenter.feedback.myTab.claim') }}
@@ -57,15 +58,37 @@
           class="absolute right-4 top-4 block h-[10px] w-[10px] rounded-full bg-theme-primary"
         ></span>
 
-        <div class="text-[18px] font-[400] text-text-1">
-          {{ t('personalCenter.feedback.myTab.ticketNoPrefix') }}{{ item.ticketNo }}
+        <div
+          class="text-text-1"
+          :class="isPcMode ? 'text-[14px] leading-[20px]' : 'text-[18px] font-[400]'"
+        >
+          <span :class="isPcMode ? 'font-[400]' : ''">
+            {{ t('personalCenter.feedback.myTab.ticketNoPrefix') }}
+          </span>
+          <span :class="isPcMode ? 'font-[700]' : ''">{{ item.ticketNo }}</span>
         </div>
-        <div class="mt-2 line-clamp-2 text-[15px] leading-[22px] text-text-2">
+        <div
+          class="mt-2"
+          :class="
+            isPcMode
+              ? 'whitespace-pre-wrap break-words text-[14px] font-[400] leading-[20px] text-text-3'
+              : 'whitespace-pre-wrap break-words   text-[15px] leading-[22px] text-text-2'
+          "
+        >
           {{ item.content }}
         </div>
 
+        <!-- 内容与状态的分割线 -->
+        <div class="mt-3 h-px w-full bg-opacity-10"></div>
+
         <div class="mt-3 flex items-center justify-between">
-          <span class="text-[36rpx] font-[400]" :class="statusClassMap[item.status]">
+          <span
+            class="font-[400]"
+            :class="[
+              isPcMode ? 'text-[14px] leading-[20px]' : 'text-[36rpx]',
+              statusClassMap[item.status]
+            ]"
+          >
             {{ statusTextMap[item.status] }}
           </span>
           <div class="flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-bg-3">
@@ -85,6 +108,7 @@ import type { FeedbackListItem } from '../types'
 
 // 我的反馈模块：只负责列表渲染与点击事件派发。
 defineProps<{
+  isPcMode?: boolean
   feedbackRewardIcon: string
   isLoading: boolean
   feedbackList: FeedbackListItem[]

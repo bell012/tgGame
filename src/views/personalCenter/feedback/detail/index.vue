@@ -6,6 +6,7 @@
         :disable-default-back="isEmbeddedMode"
         :fixed-top="!isEmbeddedMode"
         show-sort
+        left-icon-class="h-2.5 w-2.5 text-text-1"
         :right-icon="CustomerServiceIcon"
         @back="handleDetailBack"
         @sort="handleCustomerServiceClick"
@@ -73,6 +74,8 @@
               />
             </button>
           </div>
+          <!-- 内容与状态的分割线 -->
+          <div class="mt-3 h-px w-full bg-opacity-10"></div>
 
           <p
             class="mt-3 leading-[20px]"
@@ -118,7 +121,7 @@
           class="feedback-desktop-preview-nav feedback-desktop-preview-nav-left"
           @click.stop="showPrevDesktopPreview"
         >
-          <ArrowLeftIcon class="h-5 w-5 text-text-1" />
+          <ArrowLeftIcon class="h-4 w-4 text-text-1" />
         </button>
 
         <div class="feedback-desktop-preview-image-wrap">
@@ -135,7 +138,11 @@
           class="feedback-desktop-preview-nav feedback-desktop-preview-nav-right"
           @click.stop="showNextDesktopPreview"
         >
+<<<<<<< HEAD
           <ArrowLeftIcon class="h-5 w-5 rotate-180 text-text-1" />
+=======
+          <ArrowLeftIcon class="h-4 w-4 rotate-180 text-text-1" />
+>>>>>>> ae4bf283 (fix : 意见反馈 pc端ui调整)
         </button>
       </div>
     </transition>
