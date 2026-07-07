@@ -3,7 +3,7 @@
     <div
       ref="tabsScrollerRef"
       class="flex cursor-grab gap-2 overflow-x-auto pb-1 scrollbar-none active:cursor-grabbing"
-      :class="{ 'select-none': isMouseDragging }"
+      :class="[{ 'select-none': isMouseDragging }, panelMode ? '' : '-mx-[14px] px-[14px]']"
       @mousedown="handleTabsMouseDown"
     >
       <button
@@ -29,34 +29,48 @@
       class="mt-3 overflow-hidden rounded-[14px] bg-bg-2"
       :class="panelMode ? 'shadow-none' : ''"
     >
-      <div class="grid grid-cols-2">
-        <div class="border-b border-r border-opacity-5 px-4 py-5 text-center">
+      <div class="grid grid-cols-2 border-b border-opacity-5 py-5">
+        <div class="relative flex flex-col justify-center px-4 text-center">
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.validBets) }}</p>
           <p :class="labelClass">{{ t('rebatePage.records.summary.validBets') }}</p>
+          <span class="absolute right-0 top-0 h-full w-px bg-opacity-5" />
         </div>
 
         <button
           type="button"
-          class="border-0 border-b border-solid border-opacity-5 px-4 py-5 text-center"
+          class="flex flex-col justify-center px-4 text-center"
           @click="openTurnoverDeductionPopup"
         >
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.turnoverDeduction) }}</p>
-          <div class="mt-1.5 inline-flex items-center justify-center gap-1 text-text-2">
+          <div
+            class="inline-flex items-center justify-center gap-1 text-text-2"
+            :class="panelMode ? 'mt-1.5' : 'mt-[5px]'"
+          >
             <span :class="textClass">{{ t('rebatePage.records.summary.turnoverDeduction') }}</span>
             <ExplainIcon class="h-3.5 w-3.5 opacity-80" />
           </div>
         </button>
+      </div>
 
-        <div class="border-r border-opacity-5 px-4 py-5 text-center">
+      <div class="grid grid-cols-2 py-5">
+        <div class="relative flex flex-col justify-center px-4 text-center">
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.eligibleTurnover) }}</p>
           <p :class="labelClass">{{ t('rebatePage.records.summary.eligibleTurnover') }}</p>
+          <span class="absolute right-0 top-0 h-full w-px bg-opacity-5" />
         </div>
 
-        <button type="button" class="px-4 py-5 text-center" @click="openRebateAmountPopup">
+        <button
+          type="button"
+          class="flex flex-col justify-center px-4 text-center"
+          @click="openRebateAmountPopup"
+        >
           <p :class="themeNumberClass">
             {{ formatAmount(activeSummary.rebateAmount) }}
           </p>
-          <div class="mt-1.5 inline-flex items-center justify-center gap-1 text-text-2">
+          <div
+            class="inline-flex items-center justify-center gap-1 text-text-2"
+            :class="panelMode ? 'mt-1.5' : 'mt-[5px]'"
+          >
             <span :class="textClass">{{ t('rebatePage.records.summary.rebateAmount') }}</span>
             <ExplainIcon class="h-3.5 w-3.5 opacity-80" />
           </div>
@@ -301,23 +315,23 @@ onBeforeUnmount(() => {
 })
 
 const textClass = computed(() => {
-  return props.panelMode ? 'text-[12px] leading-[16px]' : 'text-[13px] leading-[16px]'
+  return props.panelMode ? 'text-[12px] leading-[16px]' : 'text-[12px] leading-[15px]'
 })
 
 const labelClass = computed(() => {
-  return `mt-1.5 text-text-2 ${textClass.value}`
+  return `${props.panelMode ? 'mt-1.5' : 'mt-[5px]'} text-text-2 ${textClass.value}`
 })
 
 const defaultNumberClass = computed(() => {
   return props.panelMode
     ? 'text-[15px] font-[700] leading-none text-text-1'
-    : 'text-[18px] font-[700] leading-none text-text-1'
+    : 'text-[16px] font-[700] leading-[19px] text-text-1'
 })
 
 const themeNumberClass = computed(() => {
   return props.panelMode
     ? 'text-[15px] font-[700] leading-none text-theme-primary'
-    : 'text-[18px] font-[700] leading-none text-theme-primary'
+    : 'text-[16px] font-[700] leading-[19px] text-theme-primary'
 })
 
 const turnoverDeductionReminderMessage = computed(() =>
