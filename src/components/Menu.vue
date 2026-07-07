@@ -31,7 +31,7 @@
         <div
           v-for="(menu, menuIndex) in menuGroup"
           :key="menu.id"
-          class="flex flex-col bg-bg-2 sm:rounded-lg"
+          class="flex flex-col bg-bg-2 rounded-lg"
         >
           <div v-if="hasGroupedChildren(menu)" class="bg-bg-2 rounded-lg overflow-visible">
             <div
@@ -248,7 +248,7 @@
       <!-- 线上客服 -->
       <div
         :class="[
-          'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-1',
+          'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-2.5 sm:mt-3',
           { 'relative menu-item-collapsed justify-center': isCollapsed },
           { 'launch-card-active': activeMenuId === 'customer-service' }
         ]"
@@ -319,13 +319,13 @@
       <!-- 主题切换 -->
       <div
         v-if="!isCollapsed"
-        class="flex items-center justify-between h-10 bg-bg-2 rounded-lg cursor-pointer mt-2 p-0.5 sm:mb-4"
+        class="flex items-center justify-between h-10 bg-bg-2 rounded-lg cursor-pointer mt-3 p-0.5 sm:mb-4"
         :class="themeStore.theme === 'light' ? 'bg-bg-3' : 'bg-bg-2'"
       >
         <button
           :class="[
             'flex-1 w-[50%] h-8 rounded-lg border-none cursor-pointer transition-all',
-            themeStore.theme === 'dark' ? 'bg-[#4B5354]' : 'bg-transparent'
+            themeStore.theme === 'dark' ? 'bg-bg-7' : 'bg-transparent'
           ]"
           @click="themeStore.setTheme('dark')"
         >
@@ -1052,6 +1052,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 
 .launch-card-active {
   background: var(--color-opacity-10);
+  border-radius: 8px;
 }
 
 .expand-enter-active,
