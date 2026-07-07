@@ -122,7 +122,7 @@
           class="feedback-desktop-preview-nav feedback-desktop-preview-nav-left"
           @click.stop="showPrevDesktopPreview"
         >
-<!-- 与右侧共用同一图标并旋转，保证两侧箭头大小一致（arrow_left.svg 视觉尺寸偏大） -->
+          <!-- 与右侧共用同一图标并旋转，保证两侧箭头大小一致（arrow_left.svg 视觉尺寸偏大） -->
           <ArrowRightIcon class="h-5 w-5 rotate-180 text-text-1" />
         </button>
 
@@ -445,8 +445,9 @@ watch(
   color: var(--color-text-level-3);
 }
 
-/* 返回箭头与右侧客服小图标尺寸对齐（16px，以右边小图标为准） */
-.feedback-detail-header :deep(button svg) {
+/* 返回箭头与右侧客服小图标尺寸对齐（16px，以右边小图标为准）；
+   右侧图标在 H5Header 中包在 div 里，不能只选 button svg */
+.feedback-detail-header :deep(svg) {
   width: 16px;
   height: 16px;
 }
