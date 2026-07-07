@@ -31,7 +31,7 @@
         <div
           v-for="(menu, menuIndex) in menuGroup"
           :key="menu.id"
-          class="flex flex-col bg-bg-2 sm:rounded-lg"
+          class="flex flex-col bg-bg-2 rounded-lg"
         >
           <div v-if="hasGroupedChildren(menu)" class="bg-bg-2 rounded-lg overflow-visible">
             <div
@@ -248,7 +248,7 @@
       <!-- 线上客服 -->
       <div
         :class="[
-          'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-3',
+          'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-2.5 sm:mt-3',
           { 'relative menu-item-collapsed justify-center': isCollapsed },
           { 'launch-card-active': activeMenuId === 'customer-service' }
         ]"
