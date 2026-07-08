@@ -15,9 +15,9 @@
           v-for="item in feedbackTypeOptions"
           :key="item.value"
           type="button"
-          class="mb-2 flex h-[42px] w-full items-center justify-between rounded-[8px] px-3 text-left last:mb-0"
+          class="flex h-[42px] w-full items-center justify-between rounded-[8px] px-3 text-left last:mb-0"
           :class="[
-            isPcMode ? 'text-sm font-bold' : 'text-[16px]',
+            isPcMode ? 'mb-0 text-sm font-normal' : 'mb-2 text-[16px]',
             selectedTypeModel === item.value
               ? 'bg-theme-3 text-text-1'
               : 'bg-transparent text-text-1'
@@ -32,7 +32,7 @@
                 : feedbackRadioUncheckedIcon
             "
             alt=""
-            class="h-6 w-6 shrink-0"
+            :class="isPcMode ? 'h-4 w-4 shrink-0' : 'h-6 w-6 shrink-0'"
           />
         </button>
       </div>
@@ -41,7 +41,8 @@
         v-model.trim="feedbackContentModel"
         maxlength="500"
         :placeholder="placeholderText"
-        class="mt-3 h-[112px] w-full resize-none rounded-[10px] bg-bg-4 px-3 py-2.5 text-[16px] leading-[22px] text-text-1 outline-none placeholder:text-text-3"
+        class="mt-3 h-[112px] w-full resize-none rounded-[10px] bg-bg-4 px-3 py-2.5 leading-[22px] text-text-1 outline-none placeholder:text-text-3"
+        :class="isPcMode ? 'text-[12px]' : 'text-[16px]'"
       ></textarea>
 
       <div class="mt-3">
@@ -54,12 +55,12 @@
 
         <Uploader
           v-model="feedbackFileListModel"
-          class="mt-2.5"
+          :class="isPcMode ? 'mt-4' : 'mt-2.5'"
           :max-count="feedbackUploadMaxCount"
           :multiple="true"
           accept="image/jpeg,image/png,image/webp"
           :preview-full-image="true"
-          :preview-size="88"
+          :preview-size="uploadBoxSize"
           :after-read="afterRead"
           :before-delete="beforeDelete"
           :preview-options="{
@@ -76,18 +77,19 @@
             </div>
           </template>
           <div
-            class="feedback-upload-trigger relative flex h-[88px] w-[88px] items-center justify-center rounded-[10px] bg-bg-2"
+            class="feedback-upload-trigger relative flex items-center justify-center rounded-[10px] bg-bg-2"
+            :class="isPcMode ? 'h-[100px] w-[100px]' : 'h-[88px] w-[88px]'"
           >
             <svg
               class="pointer-events-none absolute inset-0 h-full w-full text-text-2"
-              viewBox="0 0 88 88"
+              :viewBox="`0 0 ${uploadBoxSize} ${uploadBoxSize}`"
               aria-hidden="true"
             >
               <rect
                 x="0.5"
                 y="0.5"
-                width="87"
-                height="87"
+                :width="uploadBoxSize - 1"
+                :height="uploadBoxSize - 1"
                 rx="10"
                 fill="none"
                 stroke="currentColor"
@@ -141,7 +143,7 @@ const feedbackFileListModel = defineModel<UploaderFileListItem[]>('feedbackFileL
   required: true
 })
 
-defineProps<{
+const props = defineProps<{
   isPcMode?: boolean
   feedbackTypeOptions: FeedbackTypeOption[]
   placeholderText: string
@@ -155,6 +157,8 @@ defineProps<{
 }>()
 
 const { t } = useI18n()
+
+const uploadBoxSize = computed(() => (props.isPcMode ? 100 : 88))
 
 const canSubmitFeedback = computed(() => {
   return (

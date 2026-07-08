@@ -73,7 +73,8 @@ export const resolveHeroMedia = (
       path: LUCKY_SPIN_CASH_RESULT_LOTTIE,
       loop: true,
       fallbackSrc: RESULT_HERO_IMAGES.cash,
-      size: 'sm'
+      // Lottie 源文件 692×692，对应 H5 显示 231×231（÷3）
+      size: 'lg'
     }
   }
 

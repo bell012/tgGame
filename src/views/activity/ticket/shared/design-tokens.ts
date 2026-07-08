@@ -15,7 +15,7 @@ export const TICKET_MODAL_THEMES: Record<
   lucky_spin: {
     titleGradient: 'linear-gradient(180deg, #FFF8FF 0%, #E87BF9 100%)',
     titleGradientPc: 'linear-gradient(90deg, #FCE2FF 0%, #FA9CFF 100%)',
-    countdownColon: '#E08CFF',
+    countdownColon: '#98E0FF',
     expiresLabel: '#E08CFF',
     activeBorder: '#B06CFF',
     activeGlow: '0 0 12px rgba(176,108,255,0.5)'

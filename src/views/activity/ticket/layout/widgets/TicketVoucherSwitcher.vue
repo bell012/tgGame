@@ -240,7 +240,7 @@ const voucherFooterTextStyle = computed(() =>
 const carouselIconSizePx = carouselLayout.iconSize
 
 const getCarouselItemStyle = (active: boolean) => ({
-  width: `${carouselLayout.slotSize}px`,
+  width: `${active ? carouselLayout.activeSlotSize : carouselLayout.slotSize}px`,
   height: `${VOUCHER_CAROUSEL_ROW_MIN_HEIGHT}px`,
   borderRadius: `${carouselLayout.itemRadius}px`,
   opacity: active ? 1 : carouselLayout.inactiveOpacity,

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="sidebar-menu px-3.5 sm:px-0" :style="mobileMenuStyle">
     <!-- BC代币 / 顶部提示 -->
     <div
@@ -385,7 +385,7 @@
               class="leave-feedback-modal-close"
               @click="handleCloseLeaveFeedbackModal"
             >
-              <CloseIcon class="h-2.5 w-2.5 text-text-1" />
+              <CloseIcon class="leave-feedback-modal-close-icon h-3 w-3 text-text-1" />
             </button>
             <FeedbackPage embedded @close="handleCloseLeaveFeedbackModal" />
           </div>
@@ -1193,10 +1193,10 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 
 .leave-feedback-modal-card {
   position: relative;
-  width: min(100%, 520px);
+  width: min(100%, 480px);
   height: min(90vh, 704px);
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);
 }
 
@@ -1206,14 +1206,20 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   top: 10px;
   z-index: 2;
   display: flex;
-  height: 26px;
-  width: 26px;
+  height: 32px;
+  width: 32px;
   align-items: center;
   justify-content: center;
   border: none;
   border-radius: 6px;
   background: var(--color-opacity-10);
   cursor: pointer;
+}
+
+.leave-feedback-modal-close-icon :deep(path) {
+  stroke: currentColor;
+  stroke-width: 1.2;
+  paint-order: stroke fill;
 }
 
 .leave-feedback-modal-enter-active,

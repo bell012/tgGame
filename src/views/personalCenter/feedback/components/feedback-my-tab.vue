@@ -9,7 +9,7 @@
             class="h-[48px] w-[48px]"
           />
           <div class="ml-2.5">
-            <div class="text-[14px] font-[400] text-text-1">
+            <div class="text-[14px] font-[400]" :class="isPcMode ? 'text-text-2' : 'text-text-1'">
               {{ t('personalCenter.feedback.myTab.rewardAmount') }}
             </div>
             <div class="text-[20px] font-[700] leading-[24px] text-text-1">{{ rewardAmount }}</div>
@@ -20,7 +20,7 @@
           :disabled="!canClaimReward || isClaimingReward"
           class="rounded-[12px] px-4 font-[700] text-text-4"
           :class="[
-            isPcMode ? 'h-[48px] w-[120px] text-[20px]' : 'h-[36px] min-w-[114px] text-[16px]',
+            isPcMode ? 'h-[48px] w-[120px] text-[14px]' : 'h-[36px] min-w-[114px] text-[16px]',
             canClaimReward && !isClaimingReward
               ? 'bg-theme-primary'
               : 'cursor-not-allowed bg-theme-2 opacity-40'
@@ -62,10 +62,10 @@
           class="text-text-1"
           :class="isPcMode ? 'text-[14px] leading-[20px]' : 'text-[18px] font-[400]'"
         >
-          <span :class="isPcMode ? 'font-[400]' : ''">
+          <span :class="isPcMode ? 'font-[400] text-text-2' : ''">
             {{ t('personalCenter.feedback.myTab.ticketNoPrefix') }}
           </span>
-          <span :class="isPcMode ? 'font-[700]' : ''">{{ item.ticketNo }}</span>
+          <span :class="isPcMode ? 'font-[400]' : ''">{{ item.ticketNo }}</span>
         </div>
         <div
           class="mt-2"
@@ -91,7 +91,14 @@
           >
             {{ statusTextMap[item.status] }}
           </span>
-          <div class="flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-bg-3">
+          <div
+            class="flex items-center justify-center"
+            :class="
+              isPcMode
+                ? 'h-6 w-6 rounded-[6px] bg-opacity-10'
+                : 'h-[28px] w-[28px] rounded-[8px] bg-bg-3'
+            "
+          >
             <ArrowRightIcon class="h-4 w-4 text-text-2" />
           </div>
         </div>

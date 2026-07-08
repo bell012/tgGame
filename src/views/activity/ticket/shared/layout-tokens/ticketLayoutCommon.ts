@@ -20,8 +20,11 @@ export const TICKET_LAYOUT_MARQUEE_COMMON = {
   pillRadius: 9999,
   /** 浅色磨砂灰底（对齐设计稿） */
   pillBg: 'rgba(255, 255, 255, 0.2)',
+  /** 右侧内边距（文字尾部留白） */
   pillPaddingX: 12,
-  pillPaddingY: 6,
+  /** 左侧内边距：头像贴合胶囊左侧圆弧（设计走查） */
+  pillPaddingLeft: 3,
+  pillPaddingY: 3,
   /** 胶囊之间的横向间距 */
   pillGap: 8,
   /** 头像与用户名之间的间距（Figma 设计稿） */

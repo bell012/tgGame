@@ -2,7 +2,7 @@
   <div
     v-if="items.length && displayItems.length"
     class="ticket-winner-ticker overflow-hidden"
-    :class="compact ? 'mt-0' : 'mx-auto w-full max-w-[340px] px-[14px]'"
+    :class="compact ? 'mt-0' : 'w-full'"
   >
     <div class="ticker-track flex w-max items-center py-1" :style="trackStyle">
       <div
@@ -54,7 +54,7 @@ const marqueeLayout = computed(() =>
 
 const pillStyle = computed(() => ({
   gap: `${marqueeLayout.value.avatarTextGap}px`,
-  padding: `${marqueeLayout.value.pillPaddingY}px ${marqueeLayout.value.pillPaddingX}px`,
+  padding: `${marqueeLayout.value.pillPaddingY}px ${marqueeLayout.value.pillPaddingX}px ${marqueeLayout.value.pillPaddingY}px ${marqueeLayout.value.pillPaddingLeft}px`,
   borderRadius: `${marqueeLayout.value.pillRadius}px`,
   backgroundColor: marqueeLayout.value.pillBg,
   marginRight: `${marqueeLayout.value.pillGap}px`

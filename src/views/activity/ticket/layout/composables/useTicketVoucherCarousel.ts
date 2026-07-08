@@ -35,7 +35,7 @@ export function useTicketVoucherCarousel(options: UseTicketVoucherCarouselOption
     }
 
     return {
-      paddingInline: `calc(50% - ${VOUCHER_CAROUSEL_ITEM_SIZE / 2}px)`
+      paddingInline: `calc(50% - ${TICKET_MOBILE_LAYOUT.voucherCarousel.activeSlotSize / 2}px)`
     }
   })
 
@@ -49,8 +49,9 @@ export function useTicketVoucherCarousel(options: UseTicketVoucherCarouselOption
       return
     }
 
+    // 轨道 paddingInline = 50% - activeSlotSize/2，选中项居中时 scrollLeft 恰为 index * stride
     const itemStride = VOUCHER_CAROUSEL_ITEM_SIZE + VOUCHER_CAROUSEL_GAP
-    const scrollLeft = index * itemStride - (viewport.clientWidth - VOUCHER_CAROUSEL_ITEM_SIZE) / 2
+    const scrollLeft = index * itemStride
     const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth)
 
     viewport.scrollTo({

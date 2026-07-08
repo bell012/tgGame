@@ -7,7 +7,7 @@
         :disable-default-back="isEmbeddedMode"
         :fixed-top="!isEmbeddedMode"
         show-sort
-        left-icon-class="h-2.5 w-2.5 text-text-1"
+        :left-icon-class="isEmbeddedMode ? 'text-icon-2' : 'text-text-1'"
         :right-icon="CustomerServiceIcon"
         @back="handleDetailBack"
         @sort="handleCustomerServiceClick"
@@ -119,7 +119,7 @@
         <button
           v-if="hasMultiplePreviewImages"
           type="button"
-          class="feedback-desktop-preview-nav feedback-desktop-preview-nav-left"
+          class="feedback-desktop-preview-nav feedback-desktop-preview-nav-left bg-opacity-30"
           @click.stop="showPrevDesktopPreview"
         >
           <!-- 与右侧共用同一图标并旋转，保证两侧箭头大小一致（arrow_left.svg 视觉尺寸偏大） -->
@@ -137,10 +137,10 @@
         <button
           v-if="hasMultiplePreviewImages"
           type="button"
-          class="feedback-desktop-preview-nav feedback-desktop-preview-nav-right"
+          class="feedback-desktop-preview-nav feedback-desktop-preview-nav-right bg-opacity-30"
           @click.stop="showNextDesktopPreview"
         >
-          <ArrowLeftIcon class="h-5 w-5 rotate-180 text-text-1" />
+          <ArrowRightIcon class="h-5 w-5 text-text-1" />
         </button>
       </div>
     </transition>
@@ -153,7 +153,6 @@ import Api from '@/api'
 import type { QueryFeedbackItem } from '@/api/interface/user'
 import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
-import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { globalShowToast } from '@/utils/toast'
 import {
@@ -502,7 +501,7 @@ watch(
   justify-content: center;
   border: none;
   border-radius: 10px;
-  background: var(--color-opacity-30);
+  background-color: var(--color-opacity-30);
   transform: translateY(-50%);
 
   /* arrow_right.svg 自带 #B3BEC1 填充，设计稿箭头为白色 */

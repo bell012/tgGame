@@ -13,7 +13,7 @@
       <img
         :src="LUCKY_SPIN_ASSETS.controls.modalCloseIcon"
         alt=""
-        class="h-[22px] w-[22px] shrink-0 select-none"
+        class="h-[25px] w-[25px] shrink-0 select-none"
         draggable="false"
       />
     </button>
@@ -27,7 +27,7 @@
       <img
         :src="LUCKY_SPIN_ASSETS.controls.modalHelpIcon"
         alt=""
-        class="h-[22px] w-[22px] shrink-0 select-none"
+        class="h-[25px] w-[25px] shrink-0 select-none"
         draggable="false"
       />
     </button>
