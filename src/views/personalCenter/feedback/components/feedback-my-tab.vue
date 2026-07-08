@@ -1,18 +1,29 @@
 <template>
-  <div>
-    <section class="rounded-[12px] bg-bg-2 p-3.5">
-      <div class="flex items-center justify-between gap-2.5">
-        <div class="flex items-center">
+  <div :class="isPcMode ? 'flex w-[449px] flex-col items-end gap-3' : ''">
+    <section class="rounded-[12px] bg-bg-2" :class="isPcMode ? 'h-[76px] w-[449px] p-3' : 'p-3.5'">
+      <div
+        class="flex items-center justify-between"
+        :class="isPcMode ? 'h-[52px] w-[425px] gap-[74px]' : 'gap-2.5'"
+      >
+        <div class="flex items-center" :class="isPcMode ? 'mx-auto h-[52px] w-[174px] gap-3' : ''">
           <img
             :src="feedbackRewardIcon"
             :alt="t('personalCenter.feedback.myTab.rewardIconAlt')"
-            class="h-[48px] w-[48px]"
+            :class="isPcMode ? 'h-[52px] w-[52px]' : 'h-[48px] w-[48px]'"
           />
-          <div class="ml-2.5">
-            <div class="text-sm text-text-1">
+          <div :class="isPcMode ? 'flex w-[110px] flex-col gap-[5px]' : 'ml-2.5'">
+            <div
+              class="font-[700] text-text-1"
+              :class="isPcMode ? 'text-[14px] leading-[17px]' : 'text-sm'"
+            >
               {{ t('personalCenter.feedback.myTab.rewardAmount') }}
             </div>
-            <div class="text-[18px] font-[700] leading-[20px] text-text-1">{{ rewardAmount }}</div>
+            <div
+              class="font-[700] text-text-1"
+              :class="isPcMode ? 'text-[20px] leading-[24px]' : 'text-[18px] leading-[20px]'"
+            >
+              {{ rewardAmount }}
+            </div>
           </div>
         </div>
         <button
@@ -20,7 +31,9 @@
           :disabled="!canClaimReward || isClaimingReward"
           class="rounded-[12px] px-4 font-[700] text-text-4"
           :class="[
-            isPcMode ? 'h-[48px] w-[120px] text-[20px]' : 'h-[36px] min-w-[114px] text-[16px]',
+            isPcMode
+              ? 'mx-auto h-[48px] w-[120px] text-[14px] leading-[17px]'
+              : 'h-[36px] min-w-[114px] text-[16px]',
             canClaimReward && !isClaimingReward
               ? 'bg-theme-primary'
               : 'cursor-not-allowed bg-theme-2 opacity-40'
@@ -34,14 +47,16 @@
 
     <div
       v-if="isLoading"
-      class="mt-3.5 rounded-[12px] bg-bg-2 p-3.5 text-center text-[14px] text-text-3"
+      class="rounded-[12px] bg-bg-2 p-3.5 text-center text-[14px] text-text-3"
+      :class="isPcMode ? 'w-[449px]' : 'mt-3.5'"
     >
       {{ t('personalCenter.feedback.myTab.loading') }}
     </div>
 
     <div
       v-else-if="!feedbackList.length"
-      class="mt-3.5 rounded-[12px] bg-bg-2 p-3.5 text-center text-[14px] text-text-3"
+      class="rounded-[12px] bg-bg-2 p-3.5 text-center text-[14px] text-text-3"
+      :class="isPcMode ? 'w-[449px]' : 'mt-3.5'"
     >
       {{ t('personalCenter.feedback.myTab.empty') }}
     </div>
@@ -50,7 +65,8 @@
       <section
         v-for="item in feedbackList"
         :key="item.recordId"
-        class="relative mt-3.5 cursor-pointer rounded-[12px] bg-bg-2 p-3.5"
+        class="relative cursor-pointer rounded-[12px] bg-bg-2"
+        :class="isPcMode ? 'h-[144px] w-[449px] p-3 pb-0' : 'mt-3.5 p-3.5'"
         @click="emit('open-detail', item.recordId)"
       >
         <span
@@ -60,7 +76,7 @@
 
         <div
           class="text-text-1"
-          :class="isPcMode ? 'text-[14px] leading-[20px]' : 'text-[18px] font-[400]'"
+          :class="isPcMode ? 'h-[20px] text-[14px] leading-[20px]' : 'text-[18px] font-[400]'"
         >
           <span :class="isPcMode ? 'font-[400]' : ''">
             {{ t('personalCenter.feedback.myTab.ticketNoPrefix') }}
@@ -68,20 +84,20 @@
           <span :class="isPcMode ? 'font-[700]' : ''">{{ item.ticketNo }}</span>
         </div>
         <div
-          class="mt-2"
+          class="mt-3"
           :class="
             isPcMode
-              ? 'whitespace-pre-wrap break-words text-[14px] font-[400] leading-[20px] text-text-3'
-              : 'whitespace-pre-wrap break-words   text-[15px] leading-[22px] text-text-2'
+              ? 'line-clamp-2 h-[40px] w-[424px] break-words text-[14px] font-[400] leading-[20px] text-text-3'
+              : 'line-clamp-2 break-words text-[15px] leading-[22px] text-text-2'
           "
         >
           {{ item.content }}
         </div>
 
         <!-- 内容与状态的分割线 -->
-        <div class="mt-3 h-px w-full bg-opacity-10"></div>
+        <div class="mt-3 h-px w-full bg-opacity-6"></div>
 
-        <div class="mt-3 flex items-center justify-between">
+        <div class="flex items-center justify-between" :class="isPcMode ? 'h-[47px] py-3' : 'mt-3'">
           <span
             class="font-[400]"
             :class="[
@@ -91,7 +107,10 @@
           >
             {{ statusTextMap[item.status] }}
           </span>
-          <div class="flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-bg-3">
+          <div
+            class="flex items-center justify-center rounded-[8px] bg-bg-3"
+            :class="isPcMode ? 'h-[24px] w-[24px]' : 'h-[28px] w-[28px]'"
+          >
             <ArrowRightIcon class="h-4 w-4 text-text-2" />
           </div>
         </div>
