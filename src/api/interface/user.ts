@@ -382,8 +382,10 @@ export interface QueryRebateDetailPageResponse {
   result?: QueryRebateDetailPageResult | null
 }
 
-// 领取洗码 请求参数（无参数）
-export interface ObtainRebateForm {}
+// 领取洗码 请求参数（奖励中心可传 rowId，洗码页可不传）
+export interface ObtainRebateForm {
+  rowId?: string | number
+}
 
 // 领取洗码 响应
 export interface ObtainRebateResponse {

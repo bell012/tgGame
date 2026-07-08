@@ -10,7 +10,11 @@ import {
 } from '@/views/wallet/transaction/shared'
 import { formatBalance, getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
 import { formatDisplayTime } from '@/utils/date'
-import { REWARD_CENTER_ACTIVITY_CODE, isSupportedPendingClaimActivityCode } from './pendingClaim'
+import {
+  REWARD_CENTER_ACTIVITY_CODE,
+  ROW_ID_REQUIRED_ACTIVITY_CODES,
+  isSupportedPendingClaimActivityCode
+} from './pendingClaim'
 
 export type RewardCenterTab = 'pending' | 'claimed'
 
@@ -41,7 +45,6 @@ const REWARD_CENTER_ACTIVITY_TYPE_KEY_MAP: Record<number, string> = {
   [REWARD_CENTER_ACTIVITY_CODE.VIP_WEEK]: 'vipWeek',
   [REWARD_CENTER_ACTIVITY_CODE.VIP_MONTH]: 'vipMonth',
   [REWARD_CENTER_ACTIVITY_CODE.VIP_UPGRADE]: 'vipUpgrade',
-  [REWARD_CENTER_ACTIVITY_CODE.MATCH]: 'match',
   [REWARD_CENTER_ACTIVITY_CODE.TASK]: 'task',
   [REWARD_CENTER_ACTIVITY_CODE.ENTRANT_TASK]: 'entrantTask'
 }
@@ -51,7 +54,24 @@ export const getRewardCenterActivityTypeLabel = (activityCode: number, t: Transl
   return key ? t(`rewardCenter.activityTypes.${key}`) : String(activityCode || '--')
 }
 
+const buildPendingBonusListId = (item: RewardCenterBonusItem, index: number) => {
+  if (item.rowId != null && item.rowId !== '') {
+    return String(item.rowId)
+  }
+
+  const createTime = item.createTime ?? item.modifyTime
+  if (createTime != null) {
+    return `${item.activityCode}-${createTime}-${index}`
+  }
+
+  return `${item.activityCode}-${index}`
+}
+
 export const getRewardCenterRecordId = (record: RewardCenterRecord) => {
+  if (record.listId) {
+    return record.listId
+  }
+
   if (record.rowId != null && record.rowId !== '') {
     return String(record.rowId)
   }
@@ -59,69 +79,25 @@ export const getRewardCenterRecordId = (record: RewardCenterRecord) => {
   return ''
 }
 
-export const buildPendingBonusRecordId = (item: RewardCenterBonusItem, index: number) => {
-  if (item.rowId != null && item.rowId !== '') {
-    return item.rowId
-  }
-
-  const createTime = item.createTime ?? item.modifyTime
-  if (createTime != null) {
-    return `${item.activityCode}-${createTime}`
-  }
-
-  return `${item.activityCode}-${index}`
-}
-
 export const mapBonusToRewardRecord = (
   item: RewardCenterBonusItem,
   index: number
 ): RewardCenterRecord => ({
-  rowId: buildPendingBonusRecordId(item, index),
+  listId: buildPendingBonusListId(item, index),
+  rowId: item.rowId,
   activityCode: item.activityCode,
+  taskType: item.taskType,
+  tierNo: item.tierNo,
   activityName: String(item.activityName?.trim() || ''),
   rewardType: Number(item.rewardType ?? 0),
   rewardAmount: Math.abs(Number(item.rewardAmount ?? item.amount ?? item.busiAmount ?? 0)),
   createTime: item.createTime ?? item.modifyTime
 })
 
-/** 单条领取按 activityCode 路由，合并同类型待领取项避免重复 Claim */
-export const consolidatePendingRecordsByActivityCode = (
-  records: RewardCenterRecord[]
-): RewardCenterRecord[] => {
-  const byCode = new Map<number, RewardCenterRecord>()
-  const withoutCode: RewardCenterRecord[] = []
-
-  for (const record of records) {
-    const code = record.activityCode
-    if (code == null) {
-      withoutCode.push(record)
-      continue
-    }
-
-    const existing = byCode.get(code)
-    if (!existing) {
-      byCode.set(code, { ...record })
-      continue
-    }
-
-    existing.rewardAmount = Number(existing.rewardAmount ?? 0) + Number(record.rewardAmount ?? 0)
-
-    if (!String(existing.activityName || '').trim() && String(record.activityName || '').trim()) {
-      existing.activityName = record.activityName
-    }
-
-    if (existing.createTime == null && record.createTime != null) {
-      existing.createTime = record.createTime
-    }
-  }
-
-  return [...byCode.values(), ...withoutCode]
-}
-
+/** 每条 bonus 单独展示，同 activityCode 多条保留各自 rowId */
 export const mapBonusItemsToPendingRecords = (
   items: RewardCenterBonusItem[]
-): RewardCenterRecord[] =>
-  consolidatePendingRecordsByActivityCode(items.map(mapBonusToRewardRecord))
+): RewardCenterRecord[] => items.map(mapBonusToRewardRecord)
 
 export const resolvePendingBonusActivityName = (record: RewardCenterRecord, t: TranslateFn) => {
   const activityName = String(record.activityName || '').trim()
@@ -138,7 +114,16 @@ export const resolvePendingBonusActivityName = (record: RewardCenterRecord, t: T
 
 export const isPendingRewardClaimable = (record: RewardCenterRecord) => {
   const activityCode = record.activityCode
-  return activityCode != null && isSupportedPendingClaimActivityCode(activityCode)
+
+  if (activityCode == null || !isSupportedPendingClaimActivityCode(activityCode)) {
+    return false
+  }
+
+  if (ROW_ID_REQUIRED_ACTIVITY_CODES.has(activityCode)) {
+    return record.rowId != null && record.rowId !== ''
+  }
+
+  return true
 }
 
 export const REWARD_CENTER_FETCH_SIZE = 100

@@ -3,7 +3,9 @@ import type {
   ClaimRewardCenterAllResponse,
   QueryRewardCenterClaimedForm,
   QueryRewardCenterPendingForm,
-  QueryRewardCenterPendingResponse
+  QueryRewardCenterPendingResponse,
+  RewardCenterClaimResponse,
+  RewardCenterRowClaimForm
 } from '@/api/interface/reward-center'
 import type { QueryAcctHisBonusPageResponse } from '@/api/interface/record.interface'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
@@ -33,6 +35,47 @@ export const queryRewardCenterClaimed = (
     showSuccessToast: false,
     showErrorToast: options?.showErrorToast ?? false
   })
+
+const postRewardCenterRowClaim = (
+  url: string,
+  data: RewardCenterRowClaimForm,
+  options?: ApiResponseToastOptions
+): Promise<RewardCenterClaimResponse> =>
+  request({
+    url,
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? true
+  })
+
+/** 领取活动奖励（activityCode 4） */
+export const obtainActivityReward = (
+  data: RewardCenterRowClaimForm,
+  options?: ApiResponseToastOptions
+) => postRewardCenterRowClaim('/act/obtainActivityReward', data, options)
+
+/** 领取充值活动奖励（activityCode 5） */
+export const obtainRechargeActivityReward = (
+  data: RewardCenterRowClaimForm,
+  options?: ApiResponseToastOptions
+) => postRewardCenterRowClaim('/act/obtainRechargeActivityReward', data, options)
+
+/** 领取签到活动奖励（activityCode 6） */
+export const signActivity = (data: RewardCenterRowClaimForm, options?: ApiResponseToastOptions) =>
+  postRewardCenterRowClaim('/act/signActivity', data, options)
+
+/** 领取救援金（activityCode 8） */
+export const receiveReliefFunds = (
+  data: RewardCenterRowClaimForm,
+  options?: ApiResponseToastOptions
+) => postRewardCenterRowClaim('/relief/receiveReliefFunds', data, options)
+
+/** 领取代理返佣活动奖励（activityCode 9） */
+export const obtainAgentRebateActivityReward = (
+  data: RewardCenterRowClaimForm,
+  options?: ApiResponseToastOptions
+) => postRewardCenterRowClaim('/ac/obtainAgentRebateActivityReward', data, options)
 
 /** 一键领取全部待领取奖励 */
 export const claimRewardCenterAll = (

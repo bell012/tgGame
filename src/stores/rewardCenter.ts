@@ -19,7 +19,7 @@ import {
   REWARD_CENTER_CLAIMED_PAGE_SIZE
 } from '@/views/reward-center/shared'
 import {
-  claimPendingBonusByActivityCode,
+  claimPendingBonus,
   parsePendingClaimRewardAmount
 } from '@/views/reward-center/pendingClaim'
 
@@ -203,16 +203,15 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
     }
 
     const record = findPendingRecord(itemId)
-    const activityCode = record?.activityCode
 
-    if (!record || activityCode == null) {
+    if (!record || record.activityCode == null) {
       return null
     }
 
     claiming.value = true
 
     try {
-      const response = ensureApiBusinessSuccess(await claimPendingBonusByActivityCode(activityCode))
+      const response = ensureApiBusinessSuccess(await claimPendingBonus(record))
 
       await fetchPendingRewards()
       return parsePendingClaimRewardAmount(response, Number(record.rewardAmount ?? 0))

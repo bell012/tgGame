@@ -6,7 +6,8 @@ import type {
   VipListResponse,
   GetVipInfoForm,
   GetVipInfoResponse,
-  CommonResponse
+  CommonResponse,
+  VipPointsClaimForm
 } from '@/api/interface/vip'
 
 // 所有VIP等级信息
@@ -43,7 +44,7 @@ export function getVipInfo(data: GetVipInfoForm): Promise<GetVipInfoResponse> {
 }
 
 // 会员福利 升级奖励领取
-export function upgradedPoints(data: {}): Promise<CommonResponse> {
+export function upgradedPoints(data: VipPointsClaimForm = {}): Promise<CommonResponse> {
   return request({
     url: '/vp/upgradedPoints',
     method: 'post',
@@ -54,7 +55,7 @@ export function upgradedPoints(data: {}): Promise<CommonResponse> {
 }
 
 // 会员福利 每日奖励领取
-export function dayPoints(data: {}): Promise<CommonResponse> {
+export function dayPoints(data: VipPointsClaimForm = {}): Promise<CommonResponse> {
   return request({
     url: '/vp/dayPoints',
     method: 'post',
@@ -65,7 +66,7 @@ export function dayPoints(data: {}): Promise<CommonResponse> {
 }
 
 // 会员福利 每周奖励领取
-export function weekPoints(data: {}): Promise<CommonResponse> {
+export function weekPoints(data: VipPointsClaimForm = {}): Promise<CommonResponse> {
   return request({
     url: '/vp/weekPoints',
     method: 'post',
@@ -75,7 +76,7 @@ export function weekPoints(data: {}): Promise<CommonResponse> {
   })
 }
 // 会员福利 每月奖励领取
-export function monthPoints(data: {}): Promise<CommonResponse> {
+export function monthPoints(data: VipPointsClaimForm = {}): Promise<CommonResponse> {
   return request({
     url: '/vp/monthPoints',
     method: 'post',

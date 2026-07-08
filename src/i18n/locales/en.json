@@ -1585,6 +1585,7 @@
       "claimedTotal": "Total Claimed Bonus:"
     },
     "claimNotSupported": "This reward cannot be claimed individually yet.",
+    "claimMissingRowId": "Claim failed: missing reward record.",
     "activityTypes": {
       "rebate": "Rebate Event",
       "recharge": "Deposit Event",
@@ -1596,7 +1597,6 @@
       "vipWeek": "VIP Weekly Bonus",
       "vipMonth": "VIP Monthly Bonus",
       "vipUpgrade": "VIP Upgrade Bonus",
-      "match": "Match Event",
       "task": "Task Reward",
       "entrantTask": "New User Welfare Task"
     }
