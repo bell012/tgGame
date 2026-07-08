@@ -4,18 +4,18 @@
 
 ## 技术栈
 
-- ⚡️ **Vue 3** 
-- 🔥 **Vite** 
-- 🎨 **Tailwind CSS** 
-- 📦 **Pinia** 
-- 🛣️ **Vue Router** 
-- 🌍 **Vue I18n** 
-- 📡 **Axios** 
-- 📱 **PWA** 
-- 🐶 **Husky** 
-- 💪 **TypeScript** 
-- 🎯 **ESLint** 
-- 💅 **Prettier** 
+- ⚡️ **Vue 3**
+- 🔥 **Vite**
+- 🎨 **Tailwind CSS**
+- 📦 **Pinia**
+- 🛣️ **Vue Router**
+- 🌍 **Vue I18n**
+- 📡 **Axios**
+- 📱 **PWA**
+- 🐶 **Husky**
+- 💪 **TypeScript**
+- 🎯 **ESLint**
+- 💅 **Prettier**
 
 ## 项目结构
 
@@ -24,23 +24,32 @@ tgGame/
 ├── .husky/              # Husky Git hooks 配置
 ├── src/
 │   ├── api/            # API 接口
-│   ├── assets/         # 静态资源
-│   ├── components/     # 公共组件
-│   ├── i18n/           # 国际化配置
-│   │   └── locales/    # 语言文件
-│   ├── router/         # 路由配置
-│   ├── stores/         # Pinia 状态管理
-│   ├── utils/          # 工具函数
-│   ├── views/          # 页面组件
+│   │   └── interface   # 接口说明
+│   │   └── modules     # 接口定义
+│   ├── components      # 可复用的组件（如：公共头部，公共底部，公共弹窗等）
+│   ├── composables     # 可复用的业务逻辑（如：分页，搜索，倒计时，上传等）
+│   ├── i18n            # 国际化配置
+│   │   └── locales     # 语言文件
+│   ├── layouts         # 页面布局
+│   ├── lottie          # 动画资源
+│   ├── router          # 路由配置
+│   ├── static          # 静态资源（公共资源放根目录下）
+│   ├── stores          # 全局状态管理
+│   ├── styles          # 全局样式
+│   ├── utils           # 工具函数（如：校验输入框，时间戳，大小写转换等）
+│   ├── views           # 页面组件
+│   │   └── home        # 当前路由文件
+│   │    └── components # 当前路由组件
+│   │    └── index.vue  # 当前路由主组件
+│   │    └── index.ts   # 当前路由逻辑
 │   ├── App.vue         # 根组件
 │   ├── main.ts         # 入口文件
-│   └── style.css       # 全局样式
 ├── .env                # 环境变量
 ├── .env.development    # 开发环境变量
 ├── .env.production     # 生产环境变量
 ├── .eslintrc.cjs       # ESLint 配置
 ├── .prettierrc.json    # Prettier 配置
-├── index.html          # HTML 模板
+├── index.html          # HTML
 ├── package.json        # 项目依赖
 ├── postcss.config.js   # PostCSS 配置
 ├── tailwind.config.js  # Tailwind CSS 配置
@@ -124,6 +133,7 @@ PWA 配置位于 `vite.config.ts` 中，包括：
 ### 🧪 测试 PWA
 
 1. **本地测试**
+
    ```bash
    npm run build
    npm run preview
@@ -149,23 +159,30 @@ PWA 配置位于 `vite.config.ts` 中，包括：
 ## 功能特性
 
 ### 🎨 Tailwind CSS
+
 已配置 Tailwind CSS，可以直接使用实用类进行样式开发。
 
 ### 📦 Pinia 状态管理
+
 在 `src/stores/` 目录下创建你的 store：
+
 - `counter.ts` - 计数器示例
 - `user.ts` - 用户信息示例
 
 ### 🌍 国际化 (i18n)
+
 支持中英文切换，语言文件位于 `src/i18n/locales/`。
 
 ### 📡 Axios 请求封装
+
 已配置请求和响应拦截器，支持：
+
 - 自动添加 token
 - 统一错误处理
 - 请求/响应拦截
 
 ### 🐶 Git Hooks
+
 使用 Husky 在提交前自动运行 ESLint 检查。
 
 ## 环境变量
@@ -179,4 +196,3 @@ VITE_API_BASE_URL=/api
 ## License
 
 ISC
-
