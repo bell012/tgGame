@@ -3,9 +3,11 @@
     <div class="flex h-full flex-col bg-bg-1">
       <H5Header
         v-if="!isEmbeddedMode"
+        class="feedback-detail-header"
         :title="t('personalCenter.feedback.detailTitle')"
         :fixed-top="true"
         show-sort
+        :left-icon-class="isEmbeddedMode ? 'text-icon-2' : 'text-text-1'"
         :right-icon="CustomerServiceIcon"
         @back="handleDetailBack"
         @sort="handleCustomerServiceClick"
@@ -180,7 +182,7 @@
         <button
           v-if="hasMultiplePreviewImages"
           type="button"
-          class="feedback-desktop-preview-nav feedback-desktop-preview-nav-left"
+          class="feedback-desktop-preview-nav feedback-desktop-preview-nav-left bg-opacity-30"
           @click.stop="showPrevDesktopPreview"
         >
           <ArrowRightIcon class="h-5 w-5 rotate-180 text-text-1" />
@@ -197,7 +199,7 @@
         <button
           v-if="hasMultiplePreviewImages"
           type="button"
-          class="feedback-desktop-preview-nav feedback-desktop-preview-nav-right"
+          class="feedback-desktop-preview-nav feedback-desktop-preview-nav-right bg-opacity-30"
           @click.stop="showNextDesktopPreview"
         >
           <ArrowRightIcon class="h-5 w-5 text-text-1" />
@@ -499,7 +501,8 @@ watch(
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 400;
   color: var(--color-text-level-3);
 }
 
@@ -508,6 +511,13 @@ watch(
   font-size: 16px;
   font-weight: 400;
   line-height: 19px;
+}
+
+/* 返回箭头与右侧客服小图标尺寸对齐（16px，以右边小图标为准）；
+   右侧图标在 H5Header 中包在 div 里，不能只选 button svg */
+.feedback-detail-header :deep(svg) {
+  width: 16px;
+  height: 16px;
 }
 
 .feedback-screenshot-item {
@@ -554,21 +564,26 @@ watch(
   top: 50%;
   z-index: 2;
   display: flex;
-  height: 56px;
-  width: 56px;
+  height: 40px;
+  width: 40px;
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 12px;
-  background: rgba(72, 82, 90, 0.9);
+  border-radius: 10px;
+  background-color: var(--color-opacity-30);
   transform: translateY(-50%);
+
+  /* arrow_right.svg 自带 #B3BEC1 填充，设计稿箭头为白色 */
+  :deep(path) {
+    fill: var(--color-text-level-1);
+  }
 }
 
 .feedback-desktop-preview-nav-left {
-  left: max(20px, calc(50% - min(35vw, 490px) - 76px));
+  left: max(20px, calc(50% - min(35vw, 490px) - 60px));
 }
 
 .feedback-desktop-preview-nav-right {
-  right: max(20px, calc(50% - min(35vw, 490px) - 76px));
+  right: max(20px, calc(50% - min(35vw, 490px) - 60px));
 }
 </style>

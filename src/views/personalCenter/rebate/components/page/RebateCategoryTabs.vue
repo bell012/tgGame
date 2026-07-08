@@ -1,5 +1,8 @@
 <template>
-  <div class="mt-3 flex gap-2.5 overflow-x-auto pb-0.5 scrollbar-none">
+  <div
+    class="flex overflow-x-auto pb-0.5 scrollbar-none"
+    :class="isMobile ? 'mt-3 gap-2.5' : 'mt-7 gap-2'"
+  >
     <button
       v-for="category in categories"
       :key="category.id"
@@ -16,14 +19,14 @@
           v-if="isImageIcon(category.icon)"
           :src="category.icon as string"
           class="rebate-category-tab-icon"
-          :class="isMobile ? 'h-5 w-5 object-contain' : 'h-4 w-4 object-contain'"
+          :class="isMobile ? 'h-5 w-5 object-contain' : 'h-8 w-8 object-contain'"
           alt=""
         />
         <component
           v-else
           :is="category.icon"
           class="rebate-category-tab-icon"
-          :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'"
+          :class="isMobile ? 'h-5 w-5' : 'h-8 w-8'"
         />
       </template>
       <span :class="isMobile ? 'mt-1 text-[12px] font-[400] leading-none' : ''">
@@ -50,7 +53,7 @@ const emit = defineEmits<{
 const buttonClass = (isActive: boolean) => {
   const baseClass = props.isMobile
     ? 'group flex h-[60px] min-w-[60px] shrink-0 flex-col items-center justify-center rounded-[10px] px-2 outline-none focus:outline-none focus-visible:outline-none'
-    : 'inline-flex h-[48px] min-w-[96px] shrink-0 items-center justify-center gap-1 rounded-full px-6 text-sm font-[700] outline-none focus:outline-none focus-visible:outline-none'
+    : 'inline-flex h-[48px] min-w-[96px] shrink-0 items-center justify-center gap-2 rounded-full px-6 text-sm font-[700] outline-none focus:outline-none focus-visible:outline-none'
 
   const inactiveBg = props.isMobile ? 'bg-bg-2' : 'bg-bg-3'
   const stateClass = isActive

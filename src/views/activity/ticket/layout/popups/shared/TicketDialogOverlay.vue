@@ -62,7 +62,7 @@
           <button
             v-if="showCloseButton"
             type="button"
-            class="mt-[30.67px] flex h-10 w-10 items-center justify-center"
+            class="mt-[30.67px] flex h-[25px] w-[25px] items-center justify-center"
             :aria-label="closeAriaLabel"
             @click="emit('close')"
           >

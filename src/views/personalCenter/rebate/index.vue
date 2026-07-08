@@ -54,8 +54,8 @@
     </section>
 
     <div v-else>
-      <div class="mx-auto max-w-[1336px] px-3.5 pb-6 pt-5">
-        <h2 class="text-[30px] font-[700] text-text-1">{{ t('rebatePage.title') }}</h2>
+      <div class="mx-auto max-w-[1336px] px-3.5 pb-6 pt-4">
+        <h2 class="mb-4 text-[20px] font-[700] text-text-1">{{ t('rebatePage.title') }}</h2>
 
         <RebateOverviewCard
           :claimable-amount-text="claimableAmountText"
@@ -67,7 +67,7 @@
           <template #desktop-action>
             <button
               type="button"
-              class="h-[45px] min-w-[220px] rounded-[8px] bg-theme-primary px-5 text-sm font-[700] text-text-4"
+              class="h-[40px] w-[300px] rounded-[8px] bg-theme-primary px-5 text-sm font-[700] text-text-4"
               @click="handleClaimRebate"
             >
               {{ claimButtonText }}

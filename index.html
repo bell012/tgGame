@@ -23,6 +23,45 @@
   <!-- Apple Touch Icons -->
   <link rel="mask-icon" href="/mask-icon.svg" color="#323738" />
 
+  <script>
+    ;(() => {
+      const DARK_THEME_COLOR = '#323738'
+      const LIGHT_THEME_COLOR = '#ffffff'
+      const DARK_PAGE_BACKGROUND = '#242626'
+      const LIGHT_PAGE_BACKGROUND = '#f4f4f4'
+
+      try {
+        const savedTheme = localStorage.getItem('theme')
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        const resolvedTheme =
+          savedTheme === 'dark' || savedTheme === 'light'
+            ? savedTheme
+            : prefersDark
+              ? 'dark'
+              : 'light'
+        const themeColor = resolvedTheme === 'dark' ? DARK_THEME_COLOR : LIGHT_THEME_COLOR
+        const pageBackground = resolvedTheme === 'dark' ? DARK_PAGE_BACKGROUND : LIGHT_PAGE_BACKGROUND
+        const html = document.documentElement
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+
+        html.classList.remove('light', 'dark')
+        html.classList.add(resolvedTheme)
+        html.style.backgroundColor = pageBackground
+        themeColorMeta?.setAttribute('content', themeColor)
+
+        document.addEventListener(
+          'DOMContentLoaded',
+          () => {
+            document.body.style.backgroundColor = pageBackground
+          },
+          { once: true }
+        )
+      } catch (error) {
+        console.error('[theme-color:init]', error)
+      }
+    })()
+  </script>
+
   <title>TG Game</title>
 </head>
 

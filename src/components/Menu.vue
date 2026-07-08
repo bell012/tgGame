@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="sidebar-menu px-3.5 sm:px-0" :style="mobileMenuStyle">
     <!-- BC代币 / 顶部提示 -->
     <div
@@ -28,7 +28,11 @@
         :key="`group-${groupIndex}`"
         class="flex flex-col mt-3"
       >
-        <div v-for="(menu, menuIndex) in menuGroup" :key="menu.id" class="flex flex-col bg-bg-2">
+        <div
+          v-for="(menu, menuIndex) in menuGroup"
+          :key="menu.id"
+          class="flex flex-col bg-bg-2 rounded-lg"
+        >
           <div v-if="hasGroupedChildren(menu)" class="bg-bg-2 rounded-lg overflow-visible">
             <div
               v-for="(item, index) in menu.children"
@@ -65,7 +69,7 @@
                   />
                   <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
                 </div>
-                <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">{{
+                <span v-if="!isCollapsed" class="text-[13px] font-[600] text-text-1">{{
                   item.name
                 }}</span>
               </div>
@@ -244,7 +248,7 @@
       <!-- 线上客服 -->
       <div
         :class="[
-          'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-1',
+          'flex items-center justify-between launch-card h-10 bg-bg-2 rounded-lg cursor-pointer mt-2.5 sm:mt-3',
           { 'relative menu-item-collapsed justify-center': isCollapsed },
           { 'launch-card-active': activeMenuId === 'customer-service' }
         ]"
@@ -306,7 +310,7 @@
         </div>
         <div
           v-if="!isCollapsed"
-          class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5"
+          class="w-6 h-6 bg-bg-3 rounded-md flex items-center justify-center mr-1.5 p-1"
         >
           <Arrow_right class="w-4 h-4 fill-none" />
         </div>
@@ -315,13 +319,13 @@
       <!-- 主题切换 -->
       <div
         v-if="!isCollapsed"
-        class="flex items-center justify-between h-10 bg-bg-2 rounded-lg cursor-pointer mt-2 p-0.5 sm:mb-4"
+        class="flex items-center justify-between h-10 bg-bg-2 rounded-lg cursor-pointer mt-3 p-0.5 sm:mb-4"
         :class="themeStore.theme === 'light' ? 'bg-bg-3' : 'bg-bg-2'"
       >
         <button
           :class="[
-            'flex-1 w-[50%] h-9 rounded-lg border-none cursor-pointer transition-all',
-            themeStore.theme === 'dark' ? 'bg-[#4B5354]' : 'bg-transparent'
+            'flex-1 w-[50%] h-8 rounded-lg border-none cursor-pointer transition-all',
+            themeStore.theme === 'dark' ? 'bg-bg-7' : 'bg-transparent'
           ]"
           @click="themeStore.setTheme('dark')"
         >
@@ -381,7 +385,7 @@
               class="leave-feedback-modal-close"
               @click="handleCloseLeaveFeedbackModal"
             >
-              <CloseIcon class="h-3 w-3 text-text-1" />
+              <CloseIcon class="leave-feedback-modal-close-icon h-3 w-3 text-text-1" />
             </button>
             <FeedbackPage embedded @close="handleCloseLeaveFeedbackModal" />
           </div>
@@ -1048,6 +1052,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 
 .launch-card-active {
   background: var(--color-opacity-10);
+  border-radius: 8px;
 }
 
 .expand-enter-active,
@@ -1210,6 +1215,12 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
   border-radius: 4px;
   background: var(--color-opacity-10);
   cursor: pointer;
+}
+
+.leave-feedback-modal-close-icon :deep(path) {
+  stroke: currentColor;
+  stroke-width: 1.2;
+  paint-order: stroke fill;
 }
 
 .leave-feedback-modal-enter-active,

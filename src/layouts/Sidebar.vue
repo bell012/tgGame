@@ -7,7 +7,7 @@
         : `${layoutStore.SIDEBAR_WIDTH_EXPANDED}px`
     }"
   >
-    <nav class="flex flex-col px-3 py-2 pb-3">
+    <nav class="flex flex-col px-3 py-2 pb-3 sm:px-4">
       <Menu :is-collapsed="isCollapsed" @open-language-modal="emit('open-language-modal')" />
     </nav>
   </aside>

@@ -29,8 +29,8 @@ const popupCardStyle = ref<Record<string, string>>({})
 const getFallbackRect = () => {
   const viewportWidth = window.innerWidth
   const viewportHeight = window.innerHeight
-  const width = Math.min(Math.max(viewportWidth - 40, 0), 520)
-  const height = Math.min(viewportHeight * 0.88, 760)
+  const width = Math.min(Math.max(viewportWidth - 40, 0), 480)
+  const height = Math.min(viewportHeight * 0.9, 704)
   const left = Math.max((viewportWidth - width) / 2, 0)
   const top = Math.max((viewportHeight - height) / 2, 0)
 
@@ -111,7 +111,7 @@ onBeforeUnmount(() => {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--color-background-level-1);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.36);
 }

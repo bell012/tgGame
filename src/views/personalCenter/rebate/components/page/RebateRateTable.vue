@@ -1,14 +1,14 @@
 <template>
   <section
-    class="mt-3 overflow-hidden bg-bg-2"
-    :class="isMobile ? 'rebate-rate-table-mobile rounded-[10px]' : 'rounded-[16px]'"
+    class="overflow-hidden bg-bg-2"
+    :class="isMobile ? 'rebate-rate-table-mobile mt-3 rounded-[10px]' : 'mt-4 rounded-[16px]'"
   >
     <div
-      class="grid items-center bg-bg-2"
+      class="grid items-center"
       :class="
         isMobile
-          ? 'grid-cols-[40px_1fr_1fr] px-3 h-[35px]'
-          : 'grid-cols-[52px_1fr_1fr] px-4 h-[48px]'
+          ? 'grid-cols-[40px_1fr_1fr] px-3 h-[35px] bg-bg-2'
+          : 'grid-cols-[52px_1fr_1fr] px-6 h-[48px]'
       "
     >
       <div></div>
@@ -27,13 +27,13 @@
       :class="[
         isMobile
           ? 'grid-cols-[40px_1fr_1fr] px-3 h-[37px]'
-          : 'grid-cols-[52px_1fr_1fr] px-4 h-[48px]',
-        index % 2 === 0 ? 'bg-opacity-5' : 'bg-bg-2'
+          : 'grid-cols-[52px_1fr_1fr] px-6 h-[48px]',
+        isMobile ? (index % 2 === 0 ? 'bg-opacity-5' : 'bg-bg-2') : index % 2 === 0 ? 'bg-bg-3' : ''
       ]"
     >
       <div
         class="flex items-center justify-center font-[700] text-theme-primary"
-        :class="isMobile ? 'text-lg' : 'text-xl'"
+        :class="isMobile ? 'text-lg' : 'text-2xl'"
       >
         {{ row.isCurrent ? '✓' : '' }}
       </div>
@@ -44,8 +44,10 @@
         {{ row.validBets }}
       </div>
       <div
-        class="flex items-center justify-center text-center text-text-1"
-        :class="isMobile ? 'text-[14px] leading-none' : 'text-sm font-[700]'"
+        class="flex items-center justify-center text-center"
+        :class="
+          isMobile ? 'text-[14px] leading-none text-text-1' : 'text-sm font-[700] text-text-2'
+        "
       >
         {{ row.rebateRate }}
       </div>

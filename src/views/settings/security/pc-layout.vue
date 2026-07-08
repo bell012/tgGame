@@ -1,7 +1,7 @@
 <template>
   <div class="security-settings px-6 pb-6 pt-0">
     <h1
-      class="text-sm font-bold text-text-1 mb-3 flex items-center gap-0.5 h-14 py-1 border-b border-opacity-6 required"
+      class="text-sm font-bold text-text-1 mb-3 flex items-center gap-0.5 h-14 border-b border-opacity-6 required"
     >
       {{ t('securitySettings.pageTitle') }}
     </h1>

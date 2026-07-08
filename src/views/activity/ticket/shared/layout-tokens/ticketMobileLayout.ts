@@ -25,7 +25,8 @@ export const TICKET_MOBILE_LAYOUT = {
     /** 倒计时数字格底部 → 转盘顶部 */
     headerToWheel: 20,
     wheelToTicker: 12,
-    tickerToFooter: 12
+    /** 设计走查：原 12px 偏小，增加 15px @1125 → +5px */
+    tickerToFooter: 17
   },
 
   marquee: {
@@ -49,8 +50,10 @@ export const TICKET_MOBILE_LAYOUT = {
     visibleSlots: 5,
     /** slotSize 与 iconSize 对齐，使券间视觉间距恒等于 slotGap（设计稿 24px @1125 → 8px） */
     slotSize: 52,
+    /** 选中项 slot 加宽到放大后图标宽度（ceil(52×1.2)），避免溢出压缩相邻间距 */
+    activeSlotSize: 63,
     slotGap: 8,
-    trackWidth: 52 * 5 + 8 * 4,
+    trackWidth: 52 * 4 + 63 + 8 * 4,
     activeScale: 1.2,
     /** 券图标尺寸（设计稿偏小已调大，与 slotSize 对齐） */
     iconSize: 52,
@@ -77,6 +80,6 @@ export const VOUCHER_CAROUSEL_TRACK_WIDTH = TICKET_MOBILE_LAYOUT.voucherCarousel
 export const ticketMobileSectionClass = {
   headerToWheel: 'mt-5',
   wheelToTicker: 'mt-3',
-  /** 跑马灯 → 票券条：对齐 sectionGap.tickerToFooter(12px)，避免过大空白 */
-  tickerToFooter: 'mt-3'
+  /** 跑马灯 → 票券条：对齐 sectionGap.tickerToFooter(17px) */
+  tickerToFooter: 'mt-[17px]'
 } as const

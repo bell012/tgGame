@@ -72,7 +72,9 @@ const { t } = useI18n()
   border: none;
   background: transparent;
   color: var(--color-text-level-2);
+
   font-size: 16px;
+
   font-weight: 700;
   line-height: 19px;
   transition: color 0.2s ease;

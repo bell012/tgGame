@@ -78,10 +78,10 @@
           class="text-text-1"
           :class="isPcMode ? 'h-[20px] text-[14px] leading-[20px]' : 'text-[18px] font-[400]'"
         >
-          <span :class="isPcMode ? 'font-[400]' : ''">
+          <span :class="isPcMode ? 'font-[400] text-text-2' : ''">
             {{ t('personalCenter.feedback.myTab.ticketNoPrefix') }}
           </span>
-          <span :class="isPcMode ? 'font-[700]' : ''">{{ item.ticketNo }}</span>
+          <span :class="isPcMode ? 'font-[400]' : ''">{{ item.ticketNo }}</span>
         </div>
         <div
           class="mt-3"
@@ -108,8 +108,12 @@
             {{ statusTextMap[item.status] }}
           </span>
           <div
-            class="flex items-center justify-center rounded-[8px] bg-bg-3"
-            :class="isPcMode ? 'h-[24px] w-[24px]' : 'h-[28px] w-[28px]'"
+            class="flex items-center justify-center"
+            :class="
+              isPcMode
+                ? 'h-6 w-6 rounded-[6px] bg-opacity-10'
+                : 'h-[28px] w-[28px] rounded-[8px] bg-bg-3'
+            "
           >
             <ArrowRightIcon class="h-4 w-4 text-text-2" />
           </div>

@@ -3,7 +3,7 @@
     <div
       ref="tabsScrollerRef"
       class="flex cursor-grab gap-2 overflow-x-auto pb-1 scrollbar-none active:cursor-grabbing"
-      :class="{ 'select-none': isMouseDragging }"
+      :class="[{ 'select-none': isMouseDragging }, panelMode ? '' : '-mx-[14px] px-[14px]']"
       @mousedown="handleTabsMouseDown"
     >
       <button
@@ -30,7 +30,7 @@
       :class="panelMode ? 'shadow-none' : ''"
     >
       <div class="grid grid-cols-2">
-        <div class="border-b border-r border-opacity-5 px-4 py-5 text-center">
+        <div class="border-b border-opacity-5" :class="summaryDividerCellClass">
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.validBets) }}</p>
           <p :class="labelClass">{{ t('rebatePage.records.summary.validBets') }}</p>
         </div>
@@ -47,7 +47,7 @@
           </div>
         </button>
 
-        <div class="border-r border-opacity-5 px-4 py-5 text-center">
+        <div :class="summaryDividerCellClass">
           <p :class="defaultNumberClass">{{ formatAmount(activeSummary.eligibleTurnover) }}</p>
           <p :class="labelClass">{{ t('rebatePage.records.summary.eligibleTurnover') }}</p>
         </div>
@@ -299,6 +299,10 @@ onBeforeUnmount(() => {
   window.removeEventListener('mousemove', handleWindowMouseMove)
   window.removeEventListener('mouseup', stopMouseDragging)
 })
+
+/** 左列格子：右侧与文案块等高(数字18 + 间距6 + 文案16 = 40px)的居中短竖线，替代原田字形全长边框 */
+const summaryDividerCellClass =
+  'relative px-4 py-5 text-center after:absolute after:right-0 after:top-1/2 after:h-10 after:w-px after:-translate-y-1/2 after:bg-opacity-5'
 
 const textClass = computed(() => {
   return props.panelMode ? 'text-[12px] leading-[16px]' : 'text-[13px] leading-[16px]'

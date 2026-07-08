@@ -75,7 +75,7 @@
           :multiple="true"
           accept="image/jpeg,image/png,image/webp"
           :preview-full-image="true"
-          :preview-size="isPcMode ? 100 : 88"
+          :preview-size="uploadBoxSize"
           :after-read="afterRead"
           :before-delete="beforeDelete"
           :preview-options="{
@@ -99,14 +99,14 @@
           >
             <svg
               class="pointer-events-none absolute inset-0 h-full w-full text-text-2"
-              :viewBox="isPcMode ? '0 0 100 100' : '0 0 88 88'"
+              :viewBox="`0 0 ${uploadBoxSize} ${uploadBoxSize}`"
               aria-hidden="true"
             >
               <rect
                 x="0.5"
                 y="0.5"
-                :width="isPcMode ? 99 : 87"
-                :height="isPcMode ? 99 : 87"
+                :width="uploadBoxSize - 1"
+                :height="uploadBoxSize - 1"
                 :rx="isPcMode ? 8 : 10"
                 fill="none"
                 stroke="currentColor"
@@ -172,7 +172,7 @@ const feedbackFileListModel = defineModel<UploaderFileListItem[]>('feedbackFileL
   required: true
 })
 
-defineProps<{
+const props = defineProps<{
   isPcMode?: boolean
   feedbackTypeOptions: FeedbackTypeOption[]
   placeholderText: string
@@ -187,6 +187,8 @@ defineProps<{
 
 const { t } = useI18n()
 
+const uploadBoxSize = computed(() => (props.isPcMode ? 100 : 88))
+
 const canSubmitFeedback = computed(() => {
   return (
     Boolean(String(selectedTypeModel.value ?? '').trim()) &&
@@ -197,8 +199,8 @@ const canSubmitFeedback = computed(() => {
 
 <style scoped>
 .feedback-upload-photo-icon {
-  width: 30px;
-  height: 29px;
+  width: 28px;
+  height: 28px;
   color: var(--color-text-level-3);
 }
 
