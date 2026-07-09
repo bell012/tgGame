@@ -1578,6 +1578,7 @@
       "claimedTotal": "已领取总奖金："
     },
     "claimNotSupported": "该奖励暂不支持单独领取",
+    "claimMissingRowId": "领取失败，缺少奖励记录信息",
     "activityTypes": {
       "rebate": "返利活动",
       "recharge": "充值活动",
@@ -1589,7 +1590,6 @@
       "vipWeek": "VIP周礼金",
       "vipMonth": "VIP月礼金",
       "vipUpgrade": "VIP晋级彩金",
-      "match": "赛事活动",
       "task": "任务奖励",
       "entrantTask": "新人福利任务"
     }

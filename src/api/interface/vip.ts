@@ -95,3 +95,8 @@ export interface CommonResponse {
   message: string
   success: boolean
 }
+
+/** VIP 积分/礼金领取（奖励中心可传 rowId，VIP 页可不传） */
+export interface VipPointsClaimForm {
+  rowId?: string | number
+}
