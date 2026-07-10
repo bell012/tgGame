@@ -84,11 +84,16 @@
 
           <button
             type="button"
-            class="receive-pop__close mt-6 flex h-10 w-10 items-center justify-center rounded-full text-[18px] leading-none text-common-100"
+            class="mt-[30.67px] flex h-[25px] w-[25px] items-center justify-center"
             :aria-label="t('common.cancel')"
             @click="handleClose"
           >
-            ✕
+            <img
+              :src="LUCKY_SPIN_ASSETS.controls.modalCloseIcon"
+              alt=""
+              class="h-full w-full select-none"
+              draggable="false"
+            />
           </button>
         </div>
       </transition>
@@ -99,7 +104,8 @@
 <script setup lang="ts">
 import {
   getVoucherCardBg,
-  getVoucherCardTextColors
+  getVoucherCardTextColors,
+  LUCKY_SPIN_ASSETS
 } from '@/views/activity/ticket/shared/constants'
 import type { MbTicketRecord } from '@/api/interface/activity'
 import type { VoucherCardType } from '@/views/activity/ticket/shared/types'
@@ -210,10 +216,6 @@ const handleUseNow = () => {
 .receive-pop__mask {
   background: var(--color-mask-60-1, rgb(0 0 0 / 60%));
   backdrop-filter: blur(5px);
-}
-
-.receive-pop__close {
-  border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
 .receive-pop__title {

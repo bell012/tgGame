@@ -65,7 +65,6 @@ export const TICKET_MODAL_THEMES: Record<
     countdownDigit: '#FFE2A7',
     countdownColon: '#FFE2A7',
     expiresLabel: '#FFE2A7',
-    countdownBoxBg: 'rgba(0, 0, 0, 0.35)',
     countdownBoxBorder: 'rgba(255, 215, 0, 0.4)',
     activeBorder: '#FF6B6B',
     activeGlow: '0 0 12px rgba(255,107,107,0.5)'
