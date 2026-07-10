@@ -10,9 +10,11 @@
         @click="emit('openVoucherList')"
       >
         <span>{{ t('luckySpinPage.youHave') }}</span>
-        <span class="font-[700]" :style="{ color: pcVoucherLayout.countHighlight }">{{
-          totalVouchers
-        }}</span>
+        <span
+          class="font-[700]"
+          :style="{ color: countHighlightColor ?? pcVoucherLayout.countHighlight }"
+          >{{ totalVouchers }}</span
+        >
         <span>{{ t('luckySpinPage.vouchers') }} ›</span>
       </button>
 
@@ -42,7 +44,7 @@
     <!-- H5：横向 scroll-snap -->
     <div
       v-else-if="variant === 'carousel' && games.length"
-      class="ticket-voucher-carousel-row mx-auto flex w-full max-w-[340px] items-center justify-center overflow-visible leading-none"
+      class="ticket-voucher-carousel-row mx-auto flex w-full items-center justify-center overflow-visible leading-none"
       :style="carouselRowStyle"
     >
       <button
@@ -112,9 +114,11 @@
       @click="emit('openVoucherList')"
     >
       <span>{{ t('luckySpinPage.youHave') }}</span>
-      <span class="font-[700]" :style="{ color: voucherLayout.countHighlight }">{{
-        totalVouchers
-      }}</span>
+      <span
+        class="font-[700]"
+        :style="{ color: countHighlightColor ?? voucherLayout.countHighlight }"
+        >{{ totalVouchers }}</span
+      >
       <span>{{ t('luckySpinPage.vouchers') }} ›</span>
     </button>
   </div>
@@ -167,7 +171,8 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { gridSlots, resolveIcon, isSlotActive, isGameActive } = useTicketVoucherSwitcher(props)
+const { gridSlots, resolveIcon, countHighlightColor, isSlotActive, isGameActive } =
+  useTicketVoucherSwitcher(props)
 
 const voucherLayout = TICKET_MOBILE_LAYOUT.voucher
 const pcVoucherLayout = TICKET_PC_LAYOUT.voucher
@@ -237,11 +242,9 @@ const voucherFooterTextStyle = computed(() =>
     : { fontSize: `${voucherLayout.footerTextSize}px` }
 )
 
-const carouselIconSizePx = carouselLayout.iconSize
-
-const getCarouselItemStyle = (active: boolean) => ({
+const getCarouselItemStyle = (active: boolean): CSSProperties => ({
   width: `${active ? carouselLayout.activeSlotSize : carouselLayout.slotSize}px`,
-  height: `${VOUCHER_CAROUSEL_ROW_MIN_HEIGHT}px`,
+  height: `${active ? carouselLayout.activeSlotHeight : carouselLayout.slotHeight}px`,
   borderRadius: `${carouselLayout.itemRadius}px`,
   opacity: active ? 1 : carouselLayout.inactiveOpacity,
   border: 'none',
@@ -249,16 +252,12 @@ const getCarouselItemStyle = (active: boolean) => ({
   outline: 'none'
 })
 
-const getCarouselIconImgStyle = (active: boolean) => {
-  const scale = active ? carouselLayout.activeScale : 1
-
-  return {
-    width: `${carouselIconSizePx}px`,
-    height: `${carouselIconSizePx}px`,
-    transform: `scale(${scale})`,
-    transformOrigin: 'center'
-  }
-}
+const getCarouselIconImgStyle = (active: boolean) => ({
+  width: `${active ? carouselLayout.activeIconWidth : carouselLayout.iconWidth}px`,
+  height: `${active ? carouselLayout.activeIconHeight : carouselLayout.iconHeight}px`,
+  transform: 'none',
+  transformOrigin: 'center'
+})
 
 const activeIndex = computed(() => props.activeIndex)
 const gamesCount = computed(() => props.games.length)
@@ -282,7 +281,9 @@ const carouselTrackStyle = computed(() => ({
 
 const carouselRowStyle = computed(() => ({
   gap: `${carouselLayout.navGap}px`,
-  height: `${VOUCHER_CAROUSEL_ROW_MIN_HEIGHT}px`
+  height: `${VOUCHER_CAROUSEL_ROW_MIN_HEIGHT}px`,
+  width: 'min(100%, 356px)',
+  maxWidth: '356px'
 }))
 
 const viewportStyle = computed(() => ({

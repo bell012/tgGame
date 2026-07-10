@@ -6,8 +6,18 @@ export const TICKET_MODAL_THEMES: Record<
     titleGradient: string
     /** PC 标题横向渐变 */
     titleGradientPc: string
+    /** 副标题字色；缺省走 text-common-100 */
+    subtitleColor?: string
+    /** 倒计时数字格文字色；缺省时与 countdownColon 相同 */
+    countdownDigit?: string
     countdownColon: string
     expiresLabel: string
+    /** 倒计时数字格背景；缺省 H5 为 transparent */
+    countdownBoxBg?: string
+    /** 倒计时数字格描边；缺省走 layout token */
+    countdownBoxBorder?: string
+    /** 「您有 N 张票券」数字高亮；缺省走 layout token */
+    countHighlight?: string
     activeBorder: string
     activeGlow: string
   }
@@ -15,16 +25,18 @@ export const TICKET_MODAL_THEMES: Record<
   lucky_spin: {
     titleGradient: 'linear-gradient(180deg, #FFF8FF 0%, #E87BF9 100%)',
     titleGradientPc: 'linear-gradient(90deg, #FCE2FF 0%, #FA9CFF 100%)',
-    countdownColon: '#98E0FF',
+    countdownDigit: '#E08CFF',
+    countdownColon: '#E08CFF',
     expiresLabel: '#E08CFF',
     activeBorder: '#B06CFF',
     activeGlow: '0 0 12px rgba(176,108,255,0.5)'
   },
   golden_egg: {
-    titleGradient: 'linear-gradient(180deg, #FFF9E2 0%, #FFD700 100%)',
-    titleGradientPc: 'linear-gradient(90deg, #FFF9E2 0%, #FFD700 100%)',
-    countdownColon: '#FFD700',
-    expiresLabel: '#FFD700',
+    titleGradient: 'linear-gradient(180deg, #FFF9E2 0%, #FFEE8C 100%)',
+    titleGradientPc: 'linear-gradient(90deg, #FFF9E2 0%, #FFEE8C 100%)',
+    countdownDigit: '#FFE2A7',
+    countdownColon: '#FFE2A7',
+    expiresLabel: '#FFEE8C',
     activeBorder: '#FFD700',
     activeGlow: '0 0 12px rgba(255,215,0,0.5)'
   },
@@ -38,19 +50,25 @@ export const TICKET_MODAL_THEMES: Record<
   },
   cash_voucher: {
     titleGradient: 'linear-gradient(180deg, #E8FFEF 0%, #2AEE88 100%)',
-    titleGradientPc: 'linear-gradient(90deg, #E8FFEF 0%, #2AEE88 100%)',
-    countdownColon: '#2AEE88',
-    expiresLabel: '#2AEE88',
+    titleGradientPc: 'linear-gradient(180deg, #FFFDF8 0%, #7BF983 100%)',
+    countdownDigit: '#25F1A0',
+    countdownColon: '#25F1A0',
+    expiresLabel: '#25F1A0',
+    countHighlight: '#25F1A0',
     activeBorder: '#2AEE88',
     activeGlow: '0 0 12px rgba(42,238,136,0.5)'
   },
   lucky_red_envelope: {
-    titleGradient: 'linear-gradient(180deg, #FFF8E8 0%, #FFD700 100%)',
-    titleGradientPc: 'linear-gradient(90deg, #FFF8E8 0%, #FFD700 100%)',
-    countdownColon: '#FFD700',
-    expiresLabel: '#FFD700',
-    activeBorder: '#FFD700',
-    activeGlow: '0 0 12px rgba(255,215,0,0.5)'
+    titleGradient: 'linear-gradient(180deg, #FFFDF8 0%, #F9CF7B 100%)',
+    titleGradientPc: 'linear-gradient(90deg, #FFFDF8 0%, #F9CF7B 100%)',
+    subtitleColor: '#FFFFFF',
+    countdownDigit: '#FFE2A7',
+    countdownColon: '#FFE2A7',
+    expiresLabel: '#FFE2A7',
+    countdownBoxBg: 'rgba(0, 0, 0, 0.35)',
+    countdownBoxBorder: 'rgba(255, 215, 0, 0.4)',
+    activeBorder: '#FF6B6B',
+    activeGlow: '0 0 12px rgba(255,107,107,0.5)'
   }
 }
 

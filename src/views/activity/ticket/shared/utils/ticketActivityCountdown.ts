@@ -1,6 +1,16 @@
 import type { MbTicketRecord } from '@/api/interface/activity'
 
-const padTimeUnit = (value: number) => String(Math.max(0, Math.floor(value))).padStart(2, '0')
+const padTimeUnit = (value: number) =>
+  String(Math.min(99, Math.max(0, Math.floor(value)))).padStart(2, '0')
+
+/** 秒级 Unix 时间戳归一为毫秒，避免接口/mock 混用单位 */
+const normalizeActivityEndTime = (endUseTime: number): number => {
+  if (!Number.isFinite(endUseTime) || endUseTime <= 0) {
+    return 0
+  }
+
+  return endUseTime < 1e12 ? endUseTime * 1000 : endUseTime
+}
 
 /** 活动弹窗：当前票结束时间，优先 endUseTime，否则 expireTime */
 export const getTicketActivityEndUseTime = (record: MbTicketRecord | null | undefined): number => {
@@ -20,7 +30,7 @@ export const formatTicketActivityCountdown = (
   endUseTime: number | undefined,
   nowTimestamp: number
 ): string => {
-  const targetTime = Number(endUseTime)
+  const targetTime = normalizeActivityEndTime(Number(endUseTime))
 
   if (!Number.isFinite(targetTime) || targetTime <= 0) {
     return '99:99:99'

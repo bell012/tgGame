@@ -9,7 +9,12 @@
     @close="close"
   >
     <div class="flex flex-col items-center">
-      <h2 class="result-hero-title text-[28px] font-[700] leading-[28px]">{{ resolvedTitle }}</h2>
+      <h2
+        class="result-hero-title text-[28px] font-[700] leading-[28px]"
+        :style="{ backgroundImage: resultHeroTitleGradient }"
+      >
+        {{ resolvedTitle }}
+      </h2>
       <p class="mt-0 text-[40px] font-[700] text-secondary-6">{{ resolvedHighlight }}</p>
       <p v-if="resolvedSubtext" class="mt-1 text-[13px] text-common-100">
         {{ resolvedSubtext }}
@@ -31,6 +36,7 @@
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { TICKET_DIALOG_Z } from '@/views/activity/ticket/shared/constants'
+import { getTicketModalTheme } from '@/views/activity/ticket/shared/design-tokens'
 import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
 import TicketDialogOverlay from '../shared/TicketDialogOverlay.vue'
 import { resolveHeroMedia } from './heroMedia'
@@ -53,11 +59,26 @@ const resultTicketRecord = computed(
 const heroMedia = computed(() =>
   resolveHeroMedia(result.value, resultTicketRecord.value, resolvedHeroImage.value)
 )
+
+const DEFAULT_RESULT_HERO_TITLE_GRADIENT = 'linear-gradient(180deg, #fffdf8 0%, #f9cf7b 100%)'
+
+const HERO_LOTTIE_TITLE_THEME = {
+  cash_voucher_result: 'cash_voucher',
+  mystery_box_open: 'mystery_box'
+} as const
+
+const resultHeroTitleGradient = computed(() => {
+  const heroLottie = result.value.heroLottie
+  if (heroLottie && heroLottie in HERO_LOTTIE_TITLE_THEME) {
+    return getTicketModalTheme(HERO_LOTTIE_TITLE_THEME[heroLottie]).titleGradient
+  }
+
+  return DEFAULT_RESULT_HERO_TITLE_GRADIENT
+})
 </script>
 
 <style scoped>
 .result-hero-title {
-  background: linear-gradient(180deg, #fffdf8 0%, #f9cf7b 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

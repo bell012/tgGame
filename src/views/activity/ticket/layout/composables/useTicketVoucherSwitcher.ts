@@ -51,6 +51,8 @@ export function useTicketVoucherSwitcher(props: TicketVoucherFooterData) {
     }
   })
 
+  const countHighlightColor = computed(() => resolveActiveTheme().countHighlight)
+
   const isSlotActive = (slot: VoucherGridSlot) =>
     !slot.isPlaceholder && slot.gameIndex === props.activeIndex
 
@@ -60,6 +62,7 @@ export function useTicketVoucherSwitcher(props: TicketVoucherFooterData) {
     gridSlots,
     resolveIcon,
     activeItemStyle,
+    countHighlightColor,
     isSlotActive,
     isGameActive
   }

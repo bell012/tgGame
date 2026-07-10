@@ -1,5 +1,6 @@
 /** H5 票券活动弹窗布局常量（Figma 9773:69941 大转盘有中奖轮播对齐） */
 
+import type { TicketGameId } from '../types'
 import {
   TICKET_LAYOUT_HEADER_COMMON,
   TICKET_LAYOUT_MARQUEE_COMMON,
@@ -21,12 +22,40 @@ export const TICKET_MOBILE_LAYOUT = {
     expiresLabelFontSize: 14
   },
 
+  /** 玩法专属 header 间距覆盖 */
+  headerByGame: {
+    lucky_red_envelope: {
+      /** 倒计时数字格间距（设计稿 18px @1125 → 6px） */
+      countdownDigitGap: 6
+    }
+  },
+
   sectionGap: {
     /** 倒计时数字格底部 → 转盘顶部 */
     headerToWheel: 20,
     wheelToTicker: 12,
     /** 设计走查：原 12px 偏小，增加 15px @1125 → +5px */
     tickerToFooter: 17
+  },
+
+  /** 玩法专属 sectionGap 覆盖（仅列差异项） */
+  sectionGapByGame: {
+    golden_egg: {
+      /** 砸金蛋走查：货架→券条间距 +70px @1125 → +23px */
+      tickerToFooter: 40
+    },
+    lucky_red_envelope: {
+      /** 红包走查：展台→券条间距 +70px @1125 → +23px（与砸金蛋一致） */
+      tickerToFooter: 40
+    },
+    cash_voucher: {
+      /** 现金券走查：Claim Now→券条间距 +70px @1125 → +23px */
+      tickerToFooter: 40
+    },
+    mystery_box: {
+      /** 盲盒走查：盲盒区→券条间距 +70px @1125 → +23px */
+      tickerToFooter: 40
+    }
   },
 
   marquee: {
@@ -45,18 +74,24 @@ export const TICKET_MOBILE_LAYOUT = {
     footerMarginTop: 12
   },
 
-  /** H5 券种条横向轮播（Figma 9773:70079；选中/未选中 180/150 ≈ 1.2） */
+  /** H5 券种条横向轮播（Figma 9773:70079；选中 180×204 / 未选中 150×170 @1125） */
   voucherCarousel: {
     visibleSlots: 5,
-    /** slotSize 与 iconSize 对齐，使券间视觉间距恒等于 slotGap（设计稿 24px @1125 → 8px） */
-    slotSize: 52,
-    /** 选中项 slot 加宽到放大后图标宽度（ceil(52×1.2)），避免溢出压缩相邻间距 */
-    activeSlotSize: 63,
+    /** 未选中券卡（150÷3） */
+    slotSize: 50,
+    slotHeight: 57,
+    /** 选中券卡（180÷3 × 204÷3） */
+    activeSlotSize: 60,
+    activeSlotHeight: 68,
     slotGap: 8,
-    trackWidth: 52 * 4 + 63 + 8 * 4,
-    activeScale: 1.2,
-    /** 券图标尺寸（设计稿偏小已调大，与 slotSize 对齐） */
-    iconSize: 52,
+    trackWidth: 50 * 4 + 60 + 8 * 4,
+    activeScale: 1,
+    iconWidth: 50,
+    iconHeight: 57,
+    activeIconWidth: 60,
+    activeIconHeight: 68,
+    /** 选中描边宽度（设计稿 6px @1125 → 2px） */
+    activeBorderWidth: 2,
     itemRadius: 10,
     inactiveOpacity: 0.6,
     navBtnSize: 24,
@@ -68,9 +103,7 @@ export const TICKET_MOBILE_LAYOUT = {
   }
 } as const
 
-export const VOUCHER_CAROUSEL_ROW_MIN_HEIGHT = Math.ceil(
-  TICKET_MOBILE_LAYOUT.voucherCarousel.iconSize * TICKET_MOBILE_LAYOUT.voucherCarousel.activeScale
-)
+export const VOUCHER_CAROUSEL_ROW_MIN_HEIGHT = TICKET_MOBILE_LAYOUT.voucherCarousel.activeSlotHeight
 
 export const VOUCHER_CAROUSEL_ITEM_SIZE = TICKET_MOBILE_LAYOUT.voucherCarousel.slotSize
 export const VOUCHER_CAROUSEL_GAP = TICKET_MOBILE_LAYOUT.voucherCarousel.slotGap
@@ -83,3 +116,45 @@ export const ticketMobileSectionClass = {
   /** 跑马灯 → 票券条：对齐 sectionGap.tickerToFooter(17px) */
   tickerToFooter: 'mt-[17px]'
 } as const
+
+const resolveSectionGap = (gameId?: TicketGameId) => {
+  const defaults = TICKET_MOBILE_LAYOUT.sectionGap
+  const overrides =
+    gameId && gameId in TICKET_MOBILE_LAYOUT.sectionGapByGame
+      ? TICKET_MOBILE_LAYOUT.sectionGapByGame[
+          gameId as keyof typeof TICKET_MOBILE_LAYOUT.sectionGapByGame
+        ]
+      : undefined
+
+  return {
+    ...defaults,
+    ...overrides
+  }
+}
+
+const resolveHeaderLayout = (gameId?: TicketGameId) => {
+  const defaults = TICKET_MOBILE_LAYOUT.header
+  const overrides =
+    gameId && gameId in TICKET_MOBILE_LAYOUT.headerByGame
+      ? TICKET_MOBILE_LAYOUT.headerByGame[gameId as keyof typeof TICKET_MOBILE_LAYOUT.headerByGame]
+      : undefined
+
+  return {
+    ...defaults,
+    ...overrides
+  }
+}
+
+/** 按玩法合并 header 间距 token */
+export const getTicketMobileHeaderLayout = (gameId?: TicketGameId) => resolveHeaderLayout(gameId)
+
+/** 按玩法合并 sectionGap，生成 Tailwind margin class */
+export const getTicketMobileSectionClass = (gameId?: TicketGameId) => {
+  const gap = resolveSectionGap(gameId)
+
+  return {
+    headerToWheel: gap.headerToWheel === 20 ? 'mt-5' : `mt-[${gap.headerToWheel}px]`,
+    wheelToTicker: gap.wheelToTicker === 12 ? 'mt-3' : `mt-[${gap.wheelToTicker}px]`,
+    tickerToFooter: `mt-[${gap.tickerToFooter}px]`
+  }
+}

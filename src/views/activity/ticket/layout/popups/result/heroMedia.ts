@@ -57,7 +57,8 @@ export const resolveHeroMedia = (
   heroImage: string
 ): HeroMedia => {
   if (isGoldenEggCashResult(result.variant, ticketRecord)) {
-    return { kind: 'component', component: GoldenEggPop, size: 'sm' }
+    // Lottie 源文件 692×692，对应 H5 显示 231×231（÷3）
+    return { kind: 'component', component: GoldenEggPop, size: 'lg' }
   }
 
   if (result.heroLottie) {

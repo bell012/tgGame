@@ -124,6 +124,18 @@ onUnmounted(lottieGrid.destroyAllPlayers)
   margin-top: 3.2%;
 }
 
+.golden-egg-row:nth-child(1) .golden-egg-slot {
+  transform: translateY(7px);
+}
+
+.golden-egg-row:nth-child(2) .golden-egg-slot {
+  transform: translateY(6px);
+}
+
+.golden-egg-row:nth-child(3) .golden-egg-slot {
+  transform: translateY(5px);
+}
+
 .golden-egg-slot {
   position: relative;
   z-index: 2;

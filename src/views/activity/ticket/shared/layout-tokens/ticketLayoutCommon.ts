@@ -11,8 +11,9 @@ export const TICKET_LAYOUT_HEADER_COMMON = {
   countdownBoxBorder: 'rgba(255, 255, 255, 0.2)',
   countdownDigitFontSize: 18,
   expiresLabelFontSize: 12,
-  countdownLabelIconSize: 14,
-  countdownLabelGap: 5
+  /** 过期文案旁闹钟图标（设计稿 54px @1125 → 18px） */
+  countdownLabelIconSize: 18,
+  countdownLabelGap: 2
 } as const
 
 export const TICKET_LAYOUT_MARQUEE_COMMON = {

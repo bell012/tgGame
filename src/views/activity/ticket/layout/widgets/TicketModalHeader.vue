@@ -17,10 +17,12 @@
       {{ title }}
     </h1>
     <p
-      class="font-[400] text-common-100"
+      class="font-[400]"
+      :class="themeTokens.subtitleColor ? '' : 'text-common-100'"
       :style="{
         marginTop: `${headerLayout.subtitleMarginTop}px`,
-        fontSize: `${headerLayout.subtitleFontSize}px`
+        fontSize: `${headerLayout.subtitleFontSize}px`,
+        ...(themeTokens.subtitleColor ? { color: themeTokens.subtitleColor } : {})
       }"
     >
       {{ subtitle }}
@@ -32,7 +34,8 @@
         :class="align === 'start' ? 'justify-start' : 'justify-center'"
         :style="{
           marginTop: `${headerLayout.subtitleToCountdownGap}px`,
-          gap: `${headerLayout.countdownDigitGap}px`
+          gap: `${headerLayout.countdownDigitGap}px`,
+          color: themeTokens.countdownDigit ?? themeTokens.countdownColon
         }"
       >
         <template v-for="(char, idx) in countdownChars" :key="idx">
@@ -42,7 +45,7 @@
             :style="{
               padding: '0 2px',
               fontSize: `${headerLayout.countdownDigitFontSize}px`,
-              color: themeTokens.countdownColon
+              color: themeTokens.countdownDigit ?? themeTokens.countdownColon
             }"
           >
             :
@@ -64,36 +67,33 @@
           marginTop: `${headerLayout.countdownDigitsToLabelGap}px`,
           gap: `${headerLayout.countdownLabelGap}px`,
           fontSize: `${headerLayout.expiresLabelFontSize}px`,
+          lineHeight: `${headerLayout.expiresLabelFontSize}px`,
           color: themeTokens.expiresLabel
         }"
       >
-        <svg
-          class="shrink-0"
-          :style="countdownLabelIconStyle"
-          viewBox="0 0 14 14"
-          fill="none"
-          aria-hidden="true"
-        >
-          <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2" />
-          <path
-            d="M7 4v3.5l2 1.2"
-            stroke="currentColor"
-            stroke-width="1.2"
-            stroke-linecap="round"
+        <span class="inline-flex items-center justify-center" :style="countdownLabelIconWrapStyle">
+          <CountdownAlarmIcon
+            class="countdown-label-icon shrink-0"
+            :style="countdownLabelIconStyle"
+            aria-hidden="true"
           />
-        </svg>
-        <span>{{ expiresLabel }}</span>
+        </span>
+        <span class="leading-none">{{ expiresLabel }}</span>
       </div>
     </template>
   </header>
 </template>
 
 <script setup lang="ts">
+import CountdownAlarmIcon from '@/static/img/lucky-spin/countdown-alarm-icon.svg?component'
 import { formatTicketActivityCountdown } from '../../shared/utils/ticketActivityCountdown'
 import type { TicketModalHeaderData } from '../../shared/types'
 import { getTicketModalTheme } from '../../shared/design-tokens'
 import { TICKET_PC_LAYOUT } from '../../shared/layout-tokens/ticketPcLayout'
-import { TICKET_MOBILE_LAYOUT } from '../../shared/layout-tokens/ticketMobileLayout'
+import {
+  getTicketMobileHeaderLayout,
+  TICKET_MOBILE_LAYOUT
+} from '../../shared/layout-tokens/ticketMobileLayout'
 import { computed, onUnmounted, ref, watch } from 'vue'
 
 const props = withDefaults(
@@ -113,7 +113,7 @@ const props = withDefaults(
 )
 
 const headerLayout = computed(() =>
-  props.layout === 'pc' ? TICKET_PC_LAYOUT.header : TICKET_MOBILE_LAYOUT.header
+  props.layout === 'pc' ? TICKET_PC_LAYOUT.header : getTicketMobileHeaderLayout(props.theme)
 )
 const themeTokens = computed(() => getTicketModalTheme(props.theme))
 
@@ -123,12 +123,15 @@ const titleGradient = computed(() =>
 
 const countdownDigitBoxStyle = computed(() => {
   const layout = headerLayout.value
+  const theme = themeTokens.value
   const boxBg =
-    props.layout === 'pc' && 'countdownBoxBg' in layout ? layout.countdownBoxBg : 'transparent'
+    theme.countdownBoxBg ??
+    (props.layout === 'pc' && 'countdownBoxBg' in layout ? layout.countdownBoxBg : 'transparent')
   const boxBorder =
-    props.layout === 'pc' && 'countdownBoxBorder' in layout
+    theme.countdownBoxBorder ??
+    (props.layout === 'pc' && 'countdownBoxBorder' in layout
       ? layout.countdownBoxBorder
-      : 'rgba(255, 255, 255, 0.2)'
+      : TICKET_MOBILE_LAYOUT.header.countdownBoxBorder)
 
   return {
     width: `${layout.countdownBoxSize}px`,
@@ -137,14 +140,24 @@ const countdownDigitBoxStyle = computed(() => {
     borderColor: boxBorder,
     backgroundColor: boxBg,
     fontSize: `${layout.countdownDigitFontSize}px`,
-    color: themeTokens.value.countdownColon
+    color: theme.countdownDigit ?? theme.countdownColon
   }
 })
 
-const countdownLabelIconStyle = computed(() => ({
+const countdownLabelIconWrapStyle = computed(() => ({
   width: `${headerLayout.value.countdownLabelIconSize}px`,
-  height: `${headerLayout.value.countdownLabelIconSize}px`
+  height: `${headerLayout.value.expiresLabelFontSize}px`,
+  marginLeft: '2px'
 }))
+
+const countdownLabelIconStyle = computed(() => {
+  const iconSize = headerLayout.value.countdownLabelIconSize
+
+  return {
+    width: `${iconSize}px`,
+    height: `${iconSize}px`
+  }
+})
 
 const showCountdown = computed(() => Boolean(props.expiresLabel))
 
@@ -186,3 +199,15 @@ watch(
 
 onUnmounted(stopTimer)
 </script>
+
+<style scoped lang="scss">
+.countdown-label-icon {
+  display: block;
+
+  :deep(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+</style>

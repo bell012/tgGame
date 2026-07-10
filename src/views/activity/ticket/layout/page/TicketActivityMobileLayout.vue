@@ -21,7 +21,7 @@
       >
         <TicketModalHeader v-bind="headerData" align="center" />
 
-        <div :class="ticketMobileSectionClass.headerToWheel">
+        <div :class="sectionClass.headerToWheel">
           <component
             :is="gameComponent"
             :key="gameId"
@@ -31,13 +31,11 @@
           />
         </div>
 
-        <TicketWinnerTicker
-          :class="ticketMobileSectionClass.wheelToTicker"
-          :items="winnerRecords"
-        />
+        <TicketWinnerTicker :class="sectionClass.wheelToTicker" :items="winnerRecords" />
 
         <TicketVoucherFooter
           v-bind="voucherSwitcherProps"
+          :game-id="gameId"
           @select="emit('select', $event)"
           @prev="emit('prev')"
           @next="emit('next')"
@@ -49,8 +47,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { openTicketTaskPop } from '../../shell/ticketToast'
-import { ticketMobileSectionClass } from '../../shared/layout-tokens/ticketMobileLayout'
+import { getTicketMobileSectionClass } from '../../shared/layout-tokens/ticketMobileLayout'
 import TicketLayoutControls from '../widgets/TicketLayoutControls.vue'
 import TicketModalHeader from '../widgets/TicketModalHeader.vue'
 import TicketWinnerTicker from '../widgets/TicketWinnerTicker.vue'
@@ -58,7 +57,9 @@ import TicketVoucherFooter from '../widgets/TicketVoucherFooter.vue'
 import type { TicketActivityCoreEmits, TicketActivityLayoutProps } from './activity-props'
 import TicketActivityStateGate from './TicketActivityStateGate.vue'
 
-defineProps<TicketActivityLayoutProps>()
+const props = defineProps<TicketActivityLayoutProps>()
+
+const sectionClass = computed(() => getTicketMobileSectionClass(props.gameId))
 
 const emit = defineEmits<TicketActivityCoreEmits>()
 </script>

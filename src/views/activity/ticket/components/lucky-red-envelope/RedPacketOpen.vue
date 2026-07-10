@@ -48,9 +48,9 @@
       </span>
     </div>
 
-    <!-- 打开后的动态奖励文案 -->
+    <!-- 打开后的动态奖励文案：与 open Lottie 底盘同步上移 -->
     <div
-      v-if="phase === 'opened'"
+      v-if="phase === 'opening' || phase === 'opened'"
       class="red-envelope-reward-enter pointer-events-none absolute left-[58.333px] top-0 h-[266.667px] w-[211.667px] sm:left-[87.5px] sm:h-[400px] sm:w-[317.5px]"
     >
       <p
@@ -298,7 +298,7 @@ onBeforeUnmount(() => {
 })
 
 watch([phase, amountText], ([nextPhase, nextAmountText]) => {
-  if (nextPhase === 'opened') {
+  if (nextPhase === 'opening' || nextPhase === 'opened') {
     animateAmountText(nextAmountText)
     return
   }
@@ -322,7 +322,8 @@ watch(
 <style scoped>
 .red-envelope-reward-enter {
   will-change: transform, opacity;
-  animation: red-envelope-reward-enter 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* 对齐 open Lottie wenzidi frame 0–10（约 417ms @24fps） */
+  animation: red-envelope-reward-enter 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes red-envelope-reward-enter {
