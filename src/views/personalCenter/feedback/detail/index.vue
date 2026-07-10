@@ -2,10 +2,10 @@
   <section :class="feedbackDetailPageContainerClass">
     <div class="flex h-full flex-col bg-bg-1">
       <H5Header
+        v-if="!isEmbeddedMode"
         class="feedback-detail-header"
         :title="t('personalCenter.feedback.detailTitle')"
-        :disable-default-back="isEmbeddedMode"
-        :fixed-top="!isEmbeddedMode"
+        :fixed-top="true"
         show-sort
         :left-icon-class="isEmbeddedMode ? 'text-icon-2' : 'text-text-1'"
         :right-icon="CustomerServiceIcon"
@@ -13,77 +13,140 @@
         @sort="handleCustomerServiceClick"
       />
 
+      <div v-else class="flex h-[56px] w-[480px] items-center bg-bg-2 p-4">
+        <div class="flex h-[24px] w-[448px] items-center gap-2">
+          <button
+            type="button"
+            class="flex h-[24px] w-[24px] items-center justify-center rounded-[4px] bg-opacity-10"
+            @click="handleDetailBack"
+          >
+            <ArrowRightIcon class="h-4 w-4 rotate-180 text-text-2" />
+          </button>
+
+          <div
+            class="flex h-[24px] flex-1 items-center justify-center text-center text-[18px] font-[700] leading-[22px] text-text-1 capitalize"
+          >
+            {{ t('personalCenter.feedback.detailTitle') }}
+          </div>
+
+          <button
+            type="button"
+            class="flex h-[24px] w-[24px] items-center justify-center rounded-[4px] bg-opacity-10"
+            @click="handleCustomerServiceClick"
+          >
+            <CustomerServiceIcon class="h-3 w-3 text-text-1" />
+          </button>
+        </div>
+      </div>
+
       <main
-        class="feedback-detail-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5 pb-6 pt-3"
+        class="feedback-detail-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        :class="
+          isEmbeddedMode ? 'flex items-start justify-center px-0 pb-0 pt-4' : 'px-3.5 pb-6 pt-3'
+        "
       >
-        <section class="rounded-[12px] bg-bg-2 p-3.5">
-          <div class="feedback-detail-row">
-            <span>{{ t('personalCenter.feedback.detail.feedbackNo') }}</span>
-            <span class="text-text-1">{{ feedbackDetail.ticketNo }}</span>
-          </div>
-
-          <div class="feedback-detail-row mt-2.5">
-            <span>{{ t('personalCenter.feedback.detail.processingStatus') }}</span>
-            <span
-              :class="[
-                isEmbeddedMode ? 'text-[14px] font-[400] leading-[20px]' : 'font-[700]',
-                statusClassMap[feedbackDetail.status]
-              ]"
+        <section
+          class="rounded-[12px] bg-bg-2"
+          :class="isEmbeddedMode ? 'flex w-[449px] items-center justify-center p-3' : 'p-3.5'"
+        >
+          <div :class="isEmbeddedMode ? 'flex w-[424px] flex-col gap-5' : ''">
+            <div
+              class="feedback-detail-row"
+              :class="isEmbeddedMode ? 'feedback-detail-row-pc' : ''"
             >
-              {{ statusTextMap[feedbackDetail.status] }}
-            </span>
-          </div>
+              <span>{{ t('personalCenter.feedback.detail.feedbackNo') }}</span>
+              <span class="text-text-1">{{ feedbackDetail.ticketNo }}</span>
+            </div>
 
-          <div class="feedback-detail-row mt-2.5">
-            <span>{{ t('personalCenter.feedback.detail.submitTime') }}</span>
-            <span class="text-text-1">{{ feedbackDetail.submitTime }}</span>
-          </div>
-
-          <div class="feedback-detail-row mt-2.5">
-            <span>{{ t('personalCenter.feedback.detail.feedbackType') }}</span>
-            <span class="text-text-1">{{ feedbackDetail.feedbackType }}</span>
-          </div>
-
-          <div
-            class="mt-2.5"
-            :class="
-              isEmbeddedMode
-                ? 'text-[16px] font-[400] leading-[20px] text-text-3'
-                : 'feedback-detail-row'
-            "
-          >
-            {{ t('personalCenter.feedback.detail.feedbackContent') }}
-          </div>
-          <div
-            class="mt-2 whitespace-pre-wrap break-words rounded-[8px] bg-bg-4 px-3 py-2.5 text-[15px] leading-[20px] text-text-1"
-          >
-            {{ feedbackDetail.detailContent }}
-          </div>
-
-          <div v-if="feedbackDetail.screenshotImages.length" class="mt-2.5 grid grid-cols-4 gap-2">
-            <button
-              v-for="(image, index) in feedbackDetail.screenshotImages"
-              :key="`${feedbackDetail.recordId}-screenshot-${index}`"
-              type="button"
-              class="feedback-screenshot-item overflow-hidden rounded-[8px] bg-bg-3"
-              @click="openScreenshotPreview(index)"
+            <div
+              class="feedback-detail-row"
+              :class="isEmbeddedMode ? 'feedback-detail-row-pc' : 'mt-2.5'"
             >
-              <img
-                :src="image"
-                :alt="t('personalCenter.feedback.detail.screenshotAlt', { index: index + 1 })"
-                class="h-full w-full object-cover"
-              />
-            </button>
-          </div>
-          <!-- 内容与状态的分割线 -->
-          <div class="mt-3 h-px w-full bg-opacity-10"></div>
+              <span>{{ t('personalCenter.feedback.detail.processingStatus') }}</span>
+              <span
+                :class="[
+                  isEmbeddedMode ? 'text-[14px] font-[400] leading-[20px]' : 'font-[700]',
+                  statusClassMap[feedbackDetail.status]
+                ]"
+              >
+                {{ statusTextMap[feedbackDetail.status] }}
+              </span>
+            </div>
 
-          <p
-            class="mt-3 leading-[20px]"
-            :class="isEmbeddedMode ? 'text-[16px] text-text-3' : 'text-[15px] text-text-2'"
-          >
-            {{ feedbackDetail.resultHint }}
-          </p>
+            <div
+              class="feedback-detail-row"
+              :class="isEmbeddedMode ? 'feedback-detail-row-pc' : 'mt-2.5'"
+            >
+              <span>{{ t('personalCenter.feedback.detail.submitTime') }}</span>
+              <span class="text-text-1">{{ feedbackDetail.submitTime }}</span>
+            </div>
+
+            <div
+              class="feedback-detail-row"
+              :class="isEmbeddedMode ? 'feedback-detail-row-pc' : 'mt-2.5'"
+            >
+              <span>{{ t('personalCenter.feedback.detail.feedbackType') }}</span>
+              <span class="text-text-1">{{ feedbackDetail.feedbackType }}</span>
+            </div>
+
+            <div :class="isEmbeddedMode ? 'flex w-[424px] flex-col gap-3' : ''">
+              <div
+                :class="
+                  isEmbeddedMode
+                    ? 'text-[16px] font-[400] leading-[19px] text-text-3'
+                    : 'feedback-detail-row mt-2.5'
+                "
+              >
+                {{ t('personalCenter.feedback.detail.feedbackContent') }}
+              </div>
+              <div
+                class="whitespace-pre-wrap break-words rounded-[8px] bg-bg-4 text-text-1"
+                :class="
+                  isEmbeddedMode
+                    ? 'w-[424px] p-3 text-[14px] font-[400] leading-[20px]'
+                    : 'mt-2 px-3 py-2.5 text-[15px] leading-[20px]'
+                "
+              >
+                {{ feedbackDetail.detailContent }}
+              </div>
+            </div>
+
+            <div
+              v-if="feedbackDetail.screenshotImages.length"
+              class="grid grid-cols-4 gap-2"
+              :class="isEmbeddedMode ? '' : 'mt-2.5'"
+            >
+              <button
+                v-for="(image, index) in feedbackDetail.screenshotImages"
+                :key="`${feedbackDetail.recordId}-screenshot-${index}`"
+                type="button"
+                class="feedback-screenshot-item overflow-hidden rounded-[8px] bg-bg-3"
+                @click="openScreenshotPreview(index)"
+              >
+                <img
+                  :src="image"
+                  :alt="t('personalCenter.feedback.detail.screenshotAlt', { index: index + 1 })"
+                  class="h-full w-full object-cover"
+                />
+              </button>
+            </div>
+
+            <template v-if="isEmbeddedMode">
+              <div class="box-border flex w-[424px] items-start border-t border-opacity-10 pt-5">
+                <p class="w-[377px] text-[16px] font-[400] leading-[19px] text-text-3">
+                  {{ feedbackDetail.resultHint }}
+                </p>
+              </div>
+            </template>
+            <template v-else>
+              <!-- 内容与状态的分割线 -->
+              <div class="mt-3 h-px w-full bg-opacity-10"></div>
+
+              <p class="mt-3 text-[15px] leading-[20px] text-text-2">
+                {{ feedbackDetail.resultHint }}
+              </p>
+            </template>
+          </div>
         </section>
 
         <section
@@ -122,7 +185,6 @@
           class="feedback-desktop-preview-nav feedback-desktop-preview-nav-left bg-opacity-30"
           @click.stop="showPrevDesktopPreview"
         >
-          <!-- 与右侧共用同一图标并旋转，保证两侧箭头大小一致（arrow_left.svg 视觉尺寸偏大） -->
           <ArrowRightIcon class="h-5 w-5 rotate-180 text-text-1" />
         </button>
 
@@ -148,11 +210,11 @@
 </template>
 
 <script setup lang="ts">
-import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import Api from '@/api'
 import type { QueryFeedbackItem } from '@/api/interface/user'
 import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
 import { globalShowToast } from '@/utils/toast'
 import {
@@ -170,8 +232,8 @@ import {
   normalizeFeedbackCurrencyCode,
   normalizeFeedbackStatus
 } from '@/views/personalCenter/feedback/consts'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { showImagePreview } from 'vant'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
@@ -442,6 +504,13 @@ watch(
   font-size: 14px;
   font-weight: 400;
   color: var(--color-text-level-3);
+}
+
+.feedback-detail-row-pc {
+  width: 424px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 19px;
 }
 
 /* 返回箭头与右侧客服小图标尺寸对齐（16px，以右边小图标为准）；

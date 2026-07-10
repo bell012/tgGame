@@ -1,6 +1,6 @@
 <template>
-  <div v-if="isPcMode" class="mb-3.5 bg-bg-2">
-    <div class="grid grid-cols-2">
+  <div v-if="isPcMode" class="mb-4 h-[40px] w-full bg-bg-2">
+    <div class="grid h-[40px] grid-cols-2">
       <button
         type="button"
         class="feedback-tab-pc-button"
@@ -20,7 +20,7 @@
     </div>
   </div>
 
-  <div v-else class="mb-3.5 grid grid-cols-2 rounded-[10px] bg-bg-2 m-[12px]">
+  <div v-else class="mx-3.5 my-3.5 grid grid-cols-2 rounded-[10px] bg-bg-2">
     <button
       type="button"
       class="h-[40px] rounded-[8px] border border-transparent text-[14px] font-[700] transition-all"
@@ -68,12 +68,15 @@ const { t } = useI18n()
 <style scoped>
 .feedback-tab-pc-button {
   position: relative;
-  height: 52px;
+  height: 40px;
   border: none;
   background: transparent;
   color: var(--color-text-level-2);
-  font-size: 15px;
+
+  font-size: 16px;
+
   font-weight: 700;
+  line-height: 19px;
   transition: color 0.2s ease;
 }
 
@@ -86,7 +89,7 @@ const { t } = useI18n()
   position: absolute;
   left: 50%;
   bottom: 0;
-  height: 3px;
+  height: 2px;
   width: 100%;
   border-radius: 9999px;
   background: var(--color-theme-level-1);

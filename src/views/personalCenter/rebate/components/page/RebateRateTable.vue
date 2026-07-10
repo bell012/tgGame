@@ -28,13 +28,7 @@
         isMobile
           ? 'grid-cols-[40px_1fr_1fr] px-3 h-[37px]'
           : 'grid-cols-[52px_1fr_1fr] px-6 h-[48px]',
-        isMobile
-          ? index % 2 === 0
-            ? 'bg-opacity-5'
-            : 'bg-bg-2'
-          : index % 2 === 0
-            ? 'bg-bg-3'
-            : ''
+        isMobile ? (index % 2 === 0 ? 'bg-opacity-5' : 'bg-bg-2') : index % 2 === 0 ? 'bg-bg-3' : ''
       ]"
     >
       <div

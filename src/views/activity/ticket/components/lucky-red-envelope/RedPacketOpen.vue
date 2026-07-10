@@ -48,9 +48,9 @@
       </span>
     </div>
 
-    <!-- 打开后的动态奖励文案：与 open Lottie 底盘同步上移 -->
+    <!-- 打开后的动态奖励文案 -->
     <div
-      v-if="phase === 'opening' || phase === 'opened'"
+      v-if="showRewardContent"
       class="red-envelope-reward-enter pointer-events-none absolute left-[58.333px] top-0 h-[266.667px] w-[211.667px] sm:left-[87.5px] sm:h-[400px] sm:w-[317.5px]"
     >
       <p
@@ -137,6 +137,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const openedRewardAmount = ref<number | string | null>(null)
 const displayAmountText = ref('0.00')
+const showRewardContent = ref(false)
 const { runUseTicket, isPending } = useTicketUseAction()
 const introContainer = ref<HTMLElement | null>(null)
 const idleContainer = ref<HTMLElement | null>(null)
@@ -163,8 +164,10 @@ const amountText = computed(() => {
 const currencySymbol = computed(() => getCurrencySymbol(activeTicket.value?.currency))
 
 const AMOUNT_ANIMATION_DURATION_MS = 720
+const REWARD_CONTENT_DELAY_MS = 300
 const POST_OPEN_TRIGGER_DELAY_MS = 3000
 let amountAnimationFrame: number | null = null
+let rewardContentTimer: number | null = null
 let postOpenTriggerTimer: number | null = null
 
 const stopAmountAnimation = () => {
@@ -177,6 +180,23 @@ const clearPostOpenTriggerTimer = () => {
   if (postOpenTriggerTimer === null) return
   window.clearTimeout(postOpenTriggerTimer)
   postOpenTriggerTimer = null
+}
+
+const clearRewardContentTimer = () => {
+  if (rewardContentTimer === null) return
+  window.clearTimeout(rewardContentTimer)
+  rewardContentTimer = null
+}
+
+const scheduleRewardContent = () => {
+  clearRewardContentTimer()
+  showRewardContent.value = false
+
+  rewardContentTimer = window.setTimeout(() => {
+    rewardContentTimer = null
+    if (phase.value !== 'opening' && phase.value !== 'opened') return
+    showRewardContent.value = true
+  }, REWARD_CONTENT_DELAY_MS)
 }
 
 const getAmountFractionDigits = (value: string) => {
@@ -278,7 +298,9 @@ const handleOpen = async () => {
       if (!hasPostOpenTrigger && openTicketReceivePopFromUseResult(result)) return
 
       openedRewardAmount.value = resolveRewardAmount(result)
-      playOpen()
+      if (playOpen()) {
+        scheduleRewardContent()
+      }
       emit('open')
 
       if (consumedRecord) {
@@ -294,11 +316,12 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stopAmountAnimation()
+  clearRewardContentTimer()
   clearPostOpenTriggerTimer()
 })
 
-watch([phase, amountText], ([nextPhase, nextAmountText]) => {
-  if (nextPhase === 'opening' || nextPhase === 'opened') {
+watch([showRewardContent, amountText], ([nextShowRewardContent, nextAmountText]) => {
+  if (nextShowRewardContent) {
     animateAmountText(nextAmountText)
     return
   }
@@ -311,8 +334,10 @@ watch([phase, amountText], ([nextPhase, nextAmountText]) => {
 watch(
   () => [activeTicket.value?.rowId, activeTicket.value?.ticketId],
   () => {
+    clearRewardContentTimer()
     clearPostOpenTriggerTimer()
     openedRewardAmount.value = null
+    showRewardContent.value = false
     displayAmountText.value = '0.00'
     reset()
   }

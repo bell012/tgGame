@@ -1,7 +1,10 @@
 import { useI18n } from 'vue-i18n'
 import { useRewardCenterStore } from '@/stores/rewardCenter'
 import { formatRewardCenterClaimAmount } from '@/views/reward-center/shared'
-import { RewardCenterClaimNotSupportedError } from '@/views/reward-center/pendingClaim'
+import {
+  RewardCenterClaimMissingRowIdError,
+  RewardCenterClaimNotSupportedError
+} from '@/views/reward-center/pendingClaim'
 import { globalShowToast } from '@/utils/toast'
 
 export const useRewardCenterClaim = (options?: { onSuccess?: (amountText: string) => void }) => {
@@ -18,6 +21,14 @@ export const useRewardCenterClaim = (options?: { onSuccess?: (amountText: string
       if (error instanceof RewardCenterClaimNotSupportedError) {
         globalShowToast({
           message: t('rewardCenter.claimNotSupported'),
+          type: 'fail'
+        })
+        return
+      }
+
+      if (error instanceof RewardCenterClaimMissingRowIdError) {
+        globalShowToast({
+          message: t('rewardCenter.claimMissingRowId'),
           type: 'fail'
         })
         return

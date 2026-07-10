@@ -9,14 +9,17 @@
         @back="handleFeedbackPageBack"
       />
 
-      <main class="feedback-page-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pb-8">
+      <main
+        class="feedback-page-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        :class="isEmbeddedMode ? 'pb-0' : 'pb-8'"
+      >
         <FeedbackTabs
           :active-tab="activeTab"
           :is-pc-mode="isEmbeddedMode"
           @change="handleTabChange"
         />
 
-        <div class="px-3.5">
+        <div :class="isEmbeddedMode ? 'mx-auto flex w-[448px] flex-col gap-4' : 'px-3.5'">
           <FeedbackCreateTab
             v-if="activeTab === 'create'"
             v-model:selected-type="selectedType"
