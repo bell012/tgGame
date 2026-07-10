@@ -126,14 +126,17 @@ onUnmounted(lottieGrid.destroyAllPlayers)
 
 .golden-egg-row:nth-child(1) .golden-egg-slot {
   transform: translateY(7px);
+  margin-top: 7px;
 }
 
 .golden-egg-row:nth-child(2) .golden-egg-slot {
   transform: translateY(6px);
+  margin-top: 6px;
 }
 
 .golden-egg-row:nth-child(3) .golden-egg-slot {
   transform: translateY(5px);
+  margin-top: 5px;
 }
 
 .golden-egg-slot {
