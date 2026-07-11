@@ -23,6 +23,8 @@ type LottieHeroMedia = {
   size: HeroMediaSize
 }
 
+type LottieHeroMediaConfig = Omit<LottieHeroMedia, 'kind'> & { dimension?: number }
+
 export type HeroMedia =
   | { kind: 'component'; component: Component; size: HeroMediaSize; dimension?: number }
   | (LottieHeroMedia & { dimension?: number })
@@ -30,7 +32,7 @@ export type HeroMedia =
   | { kind: 'none' }
 
 /** 新增玩法 hero 动画只需在此加一行 */
-const HERO_LOTTIE_REGISTRY: Record<TicketResultHeroLottie, Omit<LottieHeroMedia, 'kind'>> = {
+const HERO_LOTTIE_REGISTRY: Record<TicketResultHeroLottie, LottieHeroMediaConfig> = {
   mystery_box_open: {
     path: MYSTERY_BOX_OPEN_LOTTIE,
     loop: false,
