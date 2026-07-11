@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="sidebar-menu px-3.5 sm:px-0" :style="mobileMenuStyle">
     <!-- BC代币 / 顶部提示 -->
     <div
@@ -1048,6 +1048,7 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 
 .launch-card:hover {
   background: var(--color-opacity-10);
+  border-radius: 8px;
 }
 
 .launch-card-active {

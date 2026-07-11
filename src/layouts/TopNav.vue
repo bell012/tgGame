@@ -703,7 +703,7 @@ defineExpose({
   left: 0;
   right: 0;
   height: v-bind('layoutStore.TOPNAV_HEIGHT + "px"');
-  background-color: var(--color-background-level-1);
+  background-color: var(--color-background-level-5);
   z-index: 50;
   overflow: visible;
 }
