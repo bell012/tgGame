@@ -24,9 +24,9 @@ type LottieHeroMedia = {
 }
 
 export type HeroMedia =
-  | { kind: 'component'; component: Component; size: HeroMediaSize }
-  | LottieHeroMedia
-  | { kind: 'image'; src: string; size: HeroMediaSize }
+  | { kind: 'component'; component: Component; size: HeroMediaSize; dimension?: number }
+  | (LottieHeroMedia & { dimension?: number })
+  | { kind: 'image'; src: string; size: HeroMediaSize; dimension?: number }
   | { kind: 'none' }
 
 /** 新增玩法 hero 动画只需在此加一行 */
@@ -40,7 +40,8 @@ const HERO_LOTTIE_REGISTRY: Record<TicketResultHeroLottie, Omit<LottieHeroMedia,
     path: CASH_VOUCHER_RESULT_LOTTIE,
     loop: false,
     fallbackSrc: RESULT_HERO_IMAGES.cash,
-    size: 'lg'
+    size: 'lg',
+    dimension: 346
   }
 }
 
@@ -74,8 +75,8 @@ export const resolveHeroMedia = (
       path: LUCKY_SPIN_CASH_RESULT_LOTTIE,
       loop: true,
       fallbackSrc: RESULT_HERO_IMAGES.cash,
-      // Lottie 源文件 692×692，对应 H5 显示 231×231（÷3）
-      size: 'lg'
+      size: 'lg',
+      dimension: 346
     }
   }
 

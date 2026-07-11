@@ -183,7 +183,8 @@ const pcVoucherFooterTextStyle = {
 }
 
 const pcGridPanelStyle = computed(() => ({
-  marginTop: props.showPcVoucherGrid ? `${pcVoucherLayout.footerToGridGap}px` : '0'
+  marginTop: props.showPcVoucherGrid ? `${pcVoucherLayout.footerToGridGap}px` : '0',
+  marginBottom: props.showPcVoucherGrid ? `${pcVoucherLayout.gridToPanelBottomGap}px` : '0'
 }))
 
 const pcGridStyle = {

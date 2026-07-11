@@ -10,13 +10,15 @@
   >
     <div class="flex flex-col items-center">
       <h2
-        class="result-hero-title text-[28px] font-[700] leading-[28px]"
+        class="result-hero-title text-[42px] font-[700] leading-[42px]"
         :style="{ backgroundImage: resultHeroTitleGradient }"
       >
         {{ resolvedTitle }}
       </h2>
-      <p class="mt-0 text-[40px] font-[700] text-secondary-6">{{ resolvedHighlight }}</p>
-      <p v-if="resolvedSubtext" class="mt-1 text-[13px] text-common-100">
+      <p class="mt-[16px] text-[60px] font-[700] leading-[60px] text-secondary-6">
+        {{ resolvedHighlight }}
+      </p>
+      <p v-if="resolvedSubtext" class="mt-[16px] text-[18px] leading-[18px] text-common-100">
         {{ resolvedSubtext }}
       </p>
 

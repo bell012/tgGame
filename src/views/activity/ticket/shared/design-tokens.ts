@@ -124,5 +124,5 @@ export const TICKET_PC_TOKENS = {
   reminderModalWidth: 480,
   resultHeroMaxWidth: 360,
   resultCardsMaxWidth: 440,
-  resultHeroImageSize: 200
+  resultHeroImageSize: 346
 } as const

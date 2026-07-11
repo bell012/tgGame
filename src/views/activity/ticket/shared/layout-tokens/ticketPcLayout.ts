@@ -39,9 +39,9 @@ export const TICKET_PC_LAYOUT = {
   modalPadding: 24,
   modalShadow: '0 24px 64px rgba(0, 0, 0, 0.45)',
 
-  /** 左栏内边距（Figma：上 24 / 左右 12 / 下 0） */
+  /** 左栏内边距（Figma：上 20 / 左右 12 / 下 0） */
   leftPanel: {
-    paddingTop: 24,
+    paddingTop: 20,
     paddingRight: 12,
     paddingBottom: 0,
     paddingLeft: 12
@@ -53,8 +53,8 @@ export const TICKET_PC_LAYOUT = {
   columnGap: 0,
 
   sectionDivider: '1px solid var(--color-opacity-10)',
-  /** 过期文案 → 票券数文案 */
-  headerToVoucherGap: 12,
+  /** 过期文案 → 分隔线 → 票券数文案（上下各 24px） */
+  headerToVoucherGap: 24,
 
   controlBtnSize: 32,
   controlBtnRadius: 8,
@@ -64,14 +64,20 @@ export const TICKET_PC_LAYOUT = {
 
   header: {
     ...TICKET_LAYOUT_HEADER_COMMON,
+    subtitleMarginTop: 8,
     subtitleToCountdownGap: 16,
-    countdownDigitsToLabelGap: 8,
+    countdownDigitsToLabelGap: 12,
     countdownBoxBg: 'transparent'
   },
 
   voucher: {
     ...TICKET_LAYOUT_VOUCHER_COMMON,
+    /** 票券数文案 → 网格（滚动前初始间距） */
     footerToGridGap: 12,
+    /** 网格滚动后，票券数文案与可见网格顶部的缓冲间距 */
+    gridScrollTopGap: 12,
+    /** 网格底部与滚动区底边的间距 */
+    gridToPanelBottomGap: 24,
     itemWidth: 75,
     itemHeight: 85,
     activeItemWidth: 90,
