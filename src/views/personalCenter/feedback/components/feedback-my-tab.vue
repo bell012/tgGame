@@ -33,7 +33,7 @@
               : 'h-[36px] min-w-[114px] text-[16px]',
             canClaimReward && !isClaimingReward
               ? 'bg-theme-primary'
-              : 'cursor-not-allowed bg-theme-2  '
+              : 'cursor-not-allowed bg-theme-2 opacity-40'
           ]"
           @click="emit('claim')"
         >
