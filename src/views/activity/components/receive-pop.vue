@@ -33,12 +33,12 @@
               class="relative mt-12 w-full rounded-[24px] bg-[linear-gradient(123deg,#18884E_0%,#062917_100%)] px-4 pb-4 pt-8 sm:pt-[40px]"
             >
               <div
-                class="absolute left-1/2 flex -translate-x-1/2 items-center justify-center top-[-43px] sm:top-[-44px] sm:h-[68px] sm:w-[368px]"
+                class="absolute left-1/2 top-[-43px] flex -translate-x-1/2 items-center justify-center sm:top-[-44px]"
               >
                 <img
                   :src="titleBackImg"
                   alt=""
-                  class="object-contain h-[64px] w-auto max-w-[280px] sm:h-full sm:w-full sm:max-w-none"
+                  class="h-[64px] w-auto max-w-[280px] object-contain sm:h-[68px] sm:w-[368px] sm:max-w-none sm:object-fill"
                 />
               </div>
 
