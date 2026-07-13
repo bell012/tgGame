@@ -80,19 +80,9 @@ export const isSupportedPendingClaimActivityCode = (
 
 const buildRowClaimPayload = (rowId: string | number) => ({ rowId })
 
-const buildObtainTaskAmountPayload = (record: RewardCenterRecord): ObtainTaskAmountForm => {
-  const payload: ObtainTaskAmountForm = { rowId: record.rowId! }
-
-  if (record.taskType != null) {
-    payload.taskType = record.taskType
-  }
-
-  if (record.tierNo != null) {
-    payload.tierNo = record.tierNo
-  }
-
-  return payload
-}
+const buildObtainTaskAmountPayload = (record: RewardCenterRecord): ObtainTaskAmountForm => ({
+  rowId: record.rowId!
+})
 
 export const claimPendingBonus = async (
   record: RewardCenterRecord
