@@ -73,7 +73,7 @@
 
         <div
           class="text-text-1"
-          :class="isPcMode ? 'h-[20px] text-[14px] leading-[20px]' : 'text-[18px] font-[400]'"
+          :class="isPcMode ? 'h-[20px] text-[14px] leading-[20px] ' : 'text-[18px] font-[400]'"
         >
           <span :class="isPcMode ? 'font-[400] text-text-2' : ''">
             {{ t('personalCenter.feedback.myTab.ticketNoPrefix') }}
@@ -81,7 +81,7 @@
           <span
             :class="
               isPcMode
-                ? 'inline-flex items-center font-inter text-[14px] font-[700] leading-[17px] text-[#FFFFFF]'
+                ? 'ml-1 inline-flex items-center font-inter text-[14px] font-[700] leading-[17px] text-[#FFFFFF]'
                 : ''
             "
           >
