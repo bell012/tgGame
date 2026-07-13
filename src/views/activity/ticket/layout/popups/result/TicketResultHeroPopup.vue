@@ -11,6 +11,7 @@
     <div class="flex flex-col items-center">
       <h2
         class="result-hero-title w-full whitespace-nowrap text-center text-[42px] font-[700] leading-[42px]"
+        :class="{ 'result-hero-title--pc': !isMobile }"
         :style="{ backgroundImage: resultHeroTitleGradient }"
       >
         {{ resolvedTitle }}
@@ -26,7 +27,8 @@
 
       <button
         type="button"
-        class="flex h-[44px] w-full max-w-[200px] items-center justify-center rounded-[10px] bg-theme-primary text-[15px] font-[700] text-text-4"
+        class="flex items-center justify-center rounded-[10px] bg-theme-primary text-[15px] font-[700] text-text-4"
+        :class="isMobile ? 'h-[44px] w-full max-w-[200px]' : 'h-[48px] w-[300px]'"
         @click="close"
       >
         {{ resolvedButtonText }}
@@ -36,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { TICKET_DIALOG_Z } from '@/views/activity/ticket/shared/constants'
 import { getTicketModalTheme } from '@/views/activity/ticket/shared/design-tokens'
 import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
@@ -48,6 +51,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const isMobile = useIsMobile()
 const { visible, result, close } = useTicketResultDialog('hero')
 const { resolvedTitle, resolvedHighlight, resolvedHeroImage, resolvedSubtext, resolvedButtonText } =
   useTicketResultHeroCopy(result, t)
@@ -82,5 +86,11 @@ const resultHeroTitleGradient = computed(() => {
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.result-hero-title--pc {
+  overflow: visible;
+  padding-block: 2px;
+  line-height: 50px;
 }
 </style>

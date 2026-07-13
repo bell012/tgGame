@@ -64,9 +64,13 @@ export const TICKET_PC_LAYOUT = {
 
   header: {
     ...TICKET_LAYOUT_HEADER_COMMON,
+    titleFontSize: 28,
+    titleLineHeight: 34,
     subtitleMarginTop: 8,
     subtitleToCountdownGap: 16,
     countdownDigitsToLabelGap: 12,
+    countdownBoxSize: 40,
+    countdownDigitFontSize: 24,
     countdownBoxBg: 'transparent'
   },
 

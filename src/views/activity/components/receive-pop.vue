@@ -23,20 +23,22 @@
             <h2 class="receive-pop__title text-center text-[32px] font-[700] sm:text-[42px]">
               {{ t('luckySpinPage.result.congratulations') }}
             </h2>
-            <p class="text-center text-[16px] leading-[18px] text-common-100 sm:text-[21px]">
+            <p
+              class="text-center text-[16px] font-[700] leading-[18px] text-common-100 sm:text-[21px]"
+            >
               {{ t('luckySpinPage.result.receivedVouchers', { count: resolvedCount }) }}
             </p>
 
             <div
-              class="relative mt-12 w-full rounded-[24px] bg-[linear-gradient(123deg,#18884E_0%,#062917_100%)] px-4 pb-4 pt-8"
+              class="relative mt-12 w-full rounded-[24px] bg-[linear-gradient(123deg,#18884E_0%,#062917_100%)] px-4 pb-4 pt-8 sm:pt-[40px]"
             >
               <div
-                class="absolute left-1/2 top-[-43px] flex -translate-x-1/2 items-center justify-center"
+                class="absolute left-1/2 flex -translate-x-1/2 items-center justify-center top-[-43px] sm:top-[-44px] sm:h-[68px] sm:w-[368px]"
               >
                 <img
                   :src="titleBackImg"
                   alt=""
-                  class="h-[64px] w-auto max-w-[280px] object-contain"
+                  class="object-contain h-[64px] w-auto max-w-[280px] sm:h-full sm:w-full sm:max-w-none"
                 />
               </div>
 

@@ -3,8 +3,11 @@
     class="flex h-[76.67px] items-center gap-3 rounded-[13px] px-3"
     :style="{ background: resolvedBg }"
   >
-    <div class="flex h-[56px] w-[50px] shrink-0 items-center justify-center">
-      <img :src="resolvedIcon" alt="" class="h-full w-full object-contain" />
+    <div
+      class="flex shrink-0 items-center justify-center"
+      :class="isMobile ? 'h-[56px] w-[50px]' : 'h-[72px] w-[64px]'"
+    >
+      <img :src="resolvedIcon" alt="" class="max-h-full max-w-full object-contain" />
     </div>
     <div class="min-w-0 flex-1 border-l border-dashed border-black/10 pl-3">
       <p class="truncate text-[13px] font-[700] text-[#1A1A1A]">{{ data.title }}</p>
@@ -19,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import { useIsMobile } from '@/composables/useMediaQuery'
 import type { TicketVoucherCardData } from '@/views/activity/ticket/shared/types'
 import {
   getGameIcon,
@@ -34,6 +38,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const { t } = useI18n()
+const isMobile = useIsMobile()
 
 const resolvedBg = computed(() => props.data.bgColor ?? getVoucherCardBg(props.data.type))
 
