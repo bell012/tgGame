@@ -385,7 +385,7 @@
               class="leave-feedback-modal-close"
               @click="handleCloseLeaveFeedbackModal"
             >
-              <CloseIcon class="leave-feedback-modal-close-icon h-3 w-3 text-text-1" />
+              <CloseIcon class="leave-feedback-modal-close-icon h-[7px] w-[7px] text-text-1" />
             </button>
             <FeedbackPage embedded @close="handleCloseLeaveFeedbackModal" />
           </div>
