@@ -81,7 +81,7 @@
           <span
             :class="
               isPcMode
-                ? 'flex items-center font-inter text-[14px] font-[700] leading-[17px] text-[#FFFFFF]'
+                ? 'inline-flex items-center font-inter text-[14px] font-[700] leading-[17px] text-[#FFFFFF]'
                 : ''
             "
           >
