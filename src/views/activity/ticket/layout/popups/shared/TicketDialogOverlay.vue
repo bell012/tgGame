@@ -5,7 +5,7 @@
         <div
           v-show="visible"
           class="fixed inset-0"
-          :class="layout === 'result' ? 'bg-black/50 backdrop-blur-sm' : 'bg-mask-60-1'"
+          :class="layout === 'result' ? 'bg-black/30 backdrop-blur-[8px]' : 'bg-mask-60-1'"
           :style="{ zIndex: maskZIndex }"
           @click.self="emit('close')"
         />

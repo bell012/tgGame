@@ -9,19 +9,24 @@
     @close="close"
   >
     <div class="flex flex-col items-center">
-      <h2 class="text-[20px] font-[700] text-[#F7D060]">{{ resolvedTitle }}</h2>
+      <h2 class="font-[700] text-[#F7D060]" :class="isMobile ? 'text-[20px]' : 'text-[21px]'">
+        {{ resolvedTitle }}
+      </h2>
       <p class="mt-1 text-center text-[13px] font-[700] text-common-80">{{ resolvedSubtext }}</p>
 
       <div
-        class="relative mt-6 w-full rounded-[16px] bg-[linear-gradient(123deg,#18884E_0%,#062917_100%)] px-6 pb-4 pt-8"
+        class="relative mt-6 w-full rounded-[16px] bg-[linear-gradient(123deg,#18884E_0%,#062917_100%)] px-6 pb-4"
+        :class="isMobile ? 'pt-8' : 'pt-[40px]'"
       >
         <div
-          class="absolute left-1/2 top-[-28px] flex -translate-x-1/2 items-center justify-center"
+          class="absolute left-1/2 flex -translate-x-1/2 items-center justify-center"
+          :class="isMobile ? 'top-[-28px]' : 'top-[-44px] h-[68px] w-[368px]'"
         >
           <img
             :src="LUCKY_SPIN_ASSETS.modals.ribbonGift"
             alt=""
-            class="h-[56px] w-auto object-contain"
+            class="object-contain"
+            :class="isMobile ? 'h-[56px] w-auto' : 'h-full w-full'"
           />
         </div>
         <div
