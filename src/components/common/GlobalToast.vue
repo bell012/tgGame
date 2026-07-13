@@ -12,7 +12,7 @@
             {{ toastState.message }}
           </div>
 
-          <div class="relative h-[16px] w-[16px] shrink-0">
+          <div class="relative size-[16px] shrink-0">
             <svg
               class="h-full w-full"
               style="transform: rotate(-135deg)"
@@ -63,9 +63,9 @@ const toastState = globalToastState
 /**
  * 圆环进度条的几何参数。
  */
-const radius = 11
-const circumference = 2 * Math.PI * radius
-const progressOffset = ref(-circumference)
+const radius = computed(() => (isMobile.value ? 11 : 12.5))
+const circumference = computed(() => 2 * Math.PI * radius.value)
+const progressOffset = ref(-circumference.value)
 
 let frameId: number | null = null
 
@@ -76,12 +76,18 @@ const containerClassName = computed(() => {
   return isMobile.value ? 'left-0 right-0 top-[49px] flex justify-center' : 'right-[0px] top-[64px]'
 })
 
+const isSingleLineMessage = computed(() => !/[\r\n]/.test(toastState.message))
+
 /**
  * 根据设备类型切换 PC / H5 的内边距和宽度。
  */
 const toastClassName = computed(() => {
-  return isMobile.value
-    ? 'w-[347px] px-[14px] py-[16px] rounded-[8px]'
+  if (isMobile.value) {
+    return 'w-[347px] px-[14px] py-[16px] rounded-[8px]'
+  }
+
+  return isSingleLineMessage.value
+    ? 'h-[51px] w-[400px] px-[12px] rounded-[8px]'
     : 'w-[400px] px-[12px] py-[16px] rounded-[8px]'
 })
 
@@ -120,7 +126,7 @@ async function restartProgressAnimation() {
   }
 
   cancelProgressAnimation()
-  progressOffset.value = -circumference
+  progressOffset.value = -circumference.value
   await nextTick()
 
   frameId = window.requestAnimationFrame(() => {
@@ -137,7 +143,7 @@ watch(
   ([visible]) => {
     if (!visible) {
       cancelProgressAnimation()
-      progressOffset.value = -circumference
+      progressOffset.value = -circumference.value
       return
     }
 

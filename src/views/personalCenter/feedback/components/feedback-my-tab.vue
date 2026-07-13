@@ -1,11 +1,8 @@
 <template>
   <div :class="isPcMode ? 'flex w-[449px] flex-col items-end gap-3' : ''">
     <section class="rounded-[12px] bg-bg-2" :class="isPcMode ? 'h-[76px] w-[449px] p-3' : 'p-3.5'">
-      <div
-        class="flex items-center justify-between"
-        :class="isPcMode ? 'h-[52px] w-[425px] gap-[74px]' : 'gap-2.5'"
-      >
-        <div class="flex items-center" :class="isPcMode ? 'mx-auto h-[52px] w-[174px] gap-3' : ''">
+      <div class="flex items-center justify-between" :class="isPcMode ? 'h-[52px]' : 'gap-2.5'">
+        <div class="flex items-center" :class="isPcMode ? 'h-[52px] w-[174px] gap-3' : ''">
           <img
             :src="feedbackRewardIcon"
             :alt="t('personalCenter.feedback.myTab.rewardIconAlt')"
@@ -32,11 +29,11 @@
           class="rounded-[12px] px-4 font-[700] text-text-4"
           :class="[
             isPcMode
-              ? 'mx-auto h-[48px] w-[120px] text-[14px] leading-[17px]'
+              ? 'h-[48px] w-[120px] text-[14px] leading-[17px]'
               : 'h-[36px] min-w-[114px] text-[16px]',
             canClaimReward && !isClaimingReward
               ? 'bg-theme-primary'
-              : 'cursor-not-allowed bg-theme-2 opacity-40'
+              : 'cursor-not-allowed bg-theme-2  '
           ]"
           @click="emit('claim')"
         >
@@ -81,7 +78,15 @@
           <span :class="isPcMode ? 'font-[400] text-text-2' : ''">
             {{ t('personalCenter.feedback.myTab.ticketNoPrefix') }}
           </span>
-          <span :class="isPcMode ? 'font-[400]' : ''">{{ item.ticketNo }}</span>
+          <span
+            :class="
+              isPcMode
+                ? 'flex items-center font-inter text-[14px] font-[700] leading-[17px] text-[#FFFFFF]'
+                : ''
+            "
+          >
+            {{ item.ticketNo }}
+          </span>
         </div>
         <div
           class="mt-3"
@@ -111,7 +116,7 @@
             class="flex items-center justify-center"
             :class="
               isPcMode
-                ? 'h-6 w-6 rounded-[6px] bg-opacity-10'
+                ? 'h-6 w-6 rounded-[8px] bg-opacity-10'
                 : 'h-[28px] w-[28px] rounded-[8px] bg-bg-3'
             "
           >

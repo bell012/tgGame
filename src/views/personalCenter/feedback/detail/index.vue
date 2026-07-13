@@ -185,7 +185,7 @@
           class="feedback-desktop-preview-nav feedback-desktop-preview-nav-left bg-opacity-30"
           @click.stop="showPrevDesktopPreview"
         >
-          <ArrowRightIcon class="h-5 w-5 rotate-180 text-text-1" />
+          <ArrowRightIcon class="h-12 w-12 rotate-180 text-text-1" />
         </button>
 
         <div class="feedback-desktop-preview-image-wrap">
@@ -202,7 +202,7 @@
           class="feedback-desktop-preview-nav feedback-desktop-preview-nav-right bg-opacity-30"
           @click.stop="showNextDesktopPreview"
         >
-          <ArrowRightIcon class="h-5 w-5 text-text-1" />
+          <ArrowRightIcon class="h-12 w-12 text-text-1" />
         </button>
       </div>
     </transition>
@@ -564,12 +564,12 @@ watch(
   top: 50%;
   z-index: 2;
   display: flex;
-  height: 40px;
-  width: 40px;
+  height: 80px;
+  width: 80px;
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 10px;
+  border-radius: 16px;
   background-color: var(--color-opacity-30);
   transform: translateY(-50%);
 
