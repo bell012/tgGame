@@ -9,7 +9,7 @@
       <div
         v-for="card in cards"
         :key="card.cardKey"
-        class="rounded-xl bg-bg-3 p-5 sm:p-6 flex flex-col min-h-[200px] border border-transparent hover:border-opacity-10 hover:border-[var(--color-opacity-15)] transition-colors"
+        class="rounded-xl bg-bg-3 p-5 sm:p-6 flex flex-col min-h-[200px] border border-transparent transition-colors"
       >
         <div class="flex items-start justify-between gap-3 mb-4">
           <component :is="card.icon" class="w-6 h-6 shrink-0 text-icon-2" />
@@ -18,14 +18,14 @@
             class="flex h-6 w-6 items-center justify-center rounded-full"
             aria-hidden="true"
           >
-            <SuccessIcon class="w-4 h-4" />
+            <SuccessIcon class="w-6 h-6" />
           </div>
           <div
             v-else
             class="flex h-6 w-6 items-center justify-center rounded-full"
             aria-hidden="true"
           >
-            <WarningIcon class="w-4 h-4" />
+            <WarningIcon class="w-6 h-6" />
           </div>
         </div>
         <h2 class="text-base font-bold text-text-1 mb-2">
