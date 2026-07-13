@@ -4,13 +4,13 @@
     :mask-z-index="TICKET_DIALOG_Z.resultMask"
     :panel-z-index="TICKET_DIALOG_Z.resultPanel"
     layout="result"
-    :panel-class="isMobile ? 'max-w-[320px]' : 'max-w-[360px]'"
+    :panel-class="'max-w-[450px]'"
     :close-aria-label="t('common.cancel')"
     @close="close"
   >
     <div class="flex flex-col items-center">
       <h2
-        class="result-hero-title text-[42px] font-[700] leading-[42px]"
+        class="result-hero-title w-full whitespace-nowrap text-center text-[42px] font-[700] leading-[42px]"
         :style="{ backgroundImage: resultHeroTitleGradient }"
       >
         {{ resolvedTitle }}
@@ -36,7 +36,6 @@
 </template>
 
 <script setup lang="ts">
-import { useIsMobile } from '@/composables/useMediaQuery'
 import { TICKET_DIALOG_Z } from '@/views/activity/ticket/shared/constants'
 import { getTicketModalTheme } from '@/views/activity/ticket/shared/design-tokens'
 import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
@@ -49,7 +48,6 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const isMobile = useIsMobile()
 const { visible, result, close } = useTicketResultDialog('hero')
 const { resolvedTitle, resolvedHighlight, resolvedHeroImage, resolvedSubtext, resolvedButtonText } =
   useTicketResultHeroCopy(result, t)

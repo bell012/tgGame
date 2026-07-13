@@ -39,7 +39,7 @@ export function useTicketResultHeroCopy(result: ResultState, t: ComposerTranslat
   })
 
   // 是否进入下一轮的判定与结果弹窗关闭逻辑一致（见 useTicketResultDialog.close）：
-  // enableTrigger=1 且存在下一轮票券（use 返回的 nextTickets 或 triggerConfig）时才有下一轮。
+  // enableTrigger=1 且存在下一轮票券时才有下一轮；nextTickets 为空数组时不回退 triggerConfig。
   const hasNextRound = computed(() => {
     const consumed = globalTicketToastState.lastConsumedTicketRecord
     return resolveNextRoundTickets(result.value.nextTickets, consumed).length > 0

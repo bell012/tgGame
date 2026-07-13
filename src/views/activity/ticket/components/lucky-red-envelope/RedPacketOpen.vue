@@ -290,12 +290,12 @@ const handleOpen = async () => {
   await runUseTicket({
     voucherName: t('ticketPage.redPacket.title'),
     fallbackErrorMessage: t('luckySpinPage.loadFailed'),
-    onSuccess: result => {
+    onSuccess: async result => {
       const consumedRecord = activeTicket.value ? { ...activeTicket.value } : null
       const enableTrigger = Number(consumedRecord?.enableTrigger)
       const hasPostOpenTrigger = enableTrigger === 0 || enableTrigger === 1
 
-      if (!hasPostOpenTrigger && openTicketReceivePopFromUseResult(result)) return
+      if (!hasPostOpenTrigger && (await openTicketReceivePopFromUseResult(result))) return
 
       openedRewardAmount.value = resolveRewardAmount(result)
       if (playOpen()) {

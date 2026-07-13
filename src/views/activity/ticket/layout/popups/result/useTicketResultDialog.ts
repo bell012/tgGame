@@ -1,4 +1,7 @@
-import { resolveNextRoundTickets } from '@/views/activity/ticket/shared/ticketPostTrigger'
+import {
+  prepareReceiveTickets,
+  resolveNextRoundTickets
+} from '@/views/activity/ticket/shared/ticketPostTrigger'
 import {
   closeTicketDialog,
   globalTicketDialogState,
@@ -21,14 +24,15 @@ export function useTicketResultDialog(group: TicketResultDialogGroup) {
   )
   const result = computed(() => dialogState.result)
 
-  const close = () => {
+  const close = async () => {
     // 结果弹窗关闭时，是否触发下一轮票券由已消耗票券的 enableTrigger 决定（避免
-    // enableTrigger=0 误触发）；领取浮窗内容优先取 use 接口返回的完整 nextTickets，
-    // 缺失时回退 triggerConfig（见 resolveNextRoundTickets）。
+    // enableTrigger=0 误触发）；领取浮窗内容取 use 返回的 nextTickets（空数组时不显示），
+    // 仅 nextTickets 未返回时回退 triggerConfig（见 resolveNextRoundTickets）。
     if (group === 'hero') {
       const consumedRecord = globalTicketToastState.lastConsumedTicketRecord
-      const nextRoundTickets = resolveNextRoundTickets(result.value.nextTickets, consumedRecord)
-      if (nextRoundTickets.length > 0) {
+      const rawNextRoundTickets = resolveNextRoundTickets(result.value.nextTickets, consumedRecord)
+      if (rawNextRoundTickets.length > 0) {
+        const nextRoundTickets = await prepareReceiveTickets(rawNextRoundTickets)
         openTicketReceiveDialog({ nextTickets: nextRoundTickets })
         return
       }

@@ -2,6 +2,7 @@ import Api from '@/api'
 import type { MbTicketRecord } from '@/api/interface/activity'
 import { getGameIcon } from '../assets'
 import type { TicketGameId, VoucherGameItem } from '../types'
+import { getTicketActivityEndUseTime } from '../utils/ticketActivityCountdown'
 
 export interface MbTicketLanguageInfoItem {
   description?: string
@@ -148,6 +149,76 @@ export const findMbTicketsByGameId = (
 
 export const isSameMbTicketRecord = (a: MbTicketRecord, b: MbTicketRecord) =>
   a.rowId === b.rowId && a.ticketId === b.ticketId
+
+type PartialMbTicketRecord = MbTicketRecord & {
+  ticketType?: number
+  ticketName?: string
+}
+
+/** triggerConfig / use.nextTickets 等精简结构 → 标准 MbTicketRecord 字段 */
+export const normalizePartialMbTicketRecord = (record: MbTicketRecord): MbTicketRecord => {
+  const partial = record as PartialMbTicketRecord
+  const type = record.type ?? partial.ticketType
+  const languageInfo =
+    Array.isArray(record.languageInfo) && record.languageInfo.length > 0
+      ? record.languageInfo
+      : partial.ticketName
+        ? [{ name: partial.ticketName }]
+        : record.languageInfo
+
+  return {
+    ...record,
+    ...(type != null ? { type } : {}),
+    ...(languageInfo ? { languageInfo } : {})
+  }
+}
+
+const findMbTicketRecordMatch = (
+  partial: MbTicketRecord,
+  sourceRecords: MbTicketRecord[]
+): MbTicketRecord | undefined => {
+  if (partial.rowId != null) {
+    const byRowId = sourceRecords.find(record => record.rowId === partial.rowId)
+    if (byRowId) return byRowId
+  }
+
+  if (partial.ticketId == null) return undefined
+
+  return (
+    sourceRecords.find(
+      record => record.ticketId === partial.ticketId && getTicketActivityEndUseTime(record) > 0
+    ) ?? sourceRecords.find(record => record.ticketId === partial.ticketId)
+  )
+}
+
+/** 用 mbTicketList 缓存补全 nextTickets / triggerConfig 缺失的过期时间、文案等字段 */
+export const enrichMbTicketRecord = (
+  partial: MbTicketRecord,
+  sourceRecords: MbTicketRecord[]
+): MbTicketRecord => {
+  const normalized = normalizePartialMbTicketRecord(partial)
+  const matched = findMbTicketRecordMatch(normalized, sourceRecords)
+  if (!matched) return normalized
+
+  const hasExpire = getTicketActivityEndUseTime(normalized) > 0
+
+  return {
+    ...matched,
+    ...normalized,
+    endUseTime: hasExpire ? normalized.endUseTime : matched.endUseTime,
+    expireTime: normalized.expireTime ?? matched.expireTime,
+    languageInfo:
+      Array.isArray(normalized.languageInfo) && normalized.languageInfo.length > 0
+        ? normalized.languageInfo
+        : matched.languageInfo,
+    type: normalized.type ?? matched.type
+  }
+}
+
+export const enrichMbTicketRecords = (
+  records: MbTicketRecord[],
+  sourceRecords: MbTicketRecord[]
+): MbTicketRecord[] => records.map(record => enrichMbTicketRecord(record, sourceRecords))
 
 /** 打开活动弹窗：解析当前票与会话列表（我的票券可指定 preferredRecord） */
 export const resolveTicketActivitySession = (

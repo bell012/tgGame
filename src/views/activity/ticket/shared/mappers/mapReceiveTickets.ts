@@ -5,10 +5,14 @@ import {
   openTicketResultDialog,
   type OpenTicketResultDialogOptions
 } from '../../shell/ticketDialog'
+import { hasTicketIdentity, prepareReceiveTickets } from '../ticketPostTrigger'
 import { buildResultDialogFromAmount, buildResultDialogFromUse } from './mapWheelConfig'
+import { normalizeMbTicketRecords } from './mbTicketMapper'
 
-export const openTicketReceivePopFromUseResult = (result: UseTicketResult) => {
-  const nextTickets = result.nextTickets ?? []
+export const openTicketReceivePopFromUseResult = async (result: UseTicketResult) => {
+  const nextTickets = await prepareReceiveTickets(
+    normalizeMbTicketRecords(result.nextTickets ?? []).filter(hasTicketIdentity)
+  )
   if (nextTickets.length === 0) return false
 
   openTicketReceiveDialog({
@@ -25,8 +29,8 @@ type ResultDialogExtras = Partial<
 /**
  * 弹结果浮窗：是否触发下一轮仍由已消耗票券的 enableTrigger 决定（见
  * useTicketResultDialog.close / resolveNextRoundTickets，避免 enableTrigger=0 时误触发）；
- * 这里把 use 接口返回的完整 nextTickets 透传进弹窗状态，供下一轮领取浮窗
- * 展示票券名称 / 说明 / 过期时间。
+ * nextTickets 为空数组时不显示下一步；仅 nextTickets 未返回时才回退 triggerConfig。
+ * 这里把 use 接口返回的 nextTickets 透传进弹窗状态，供下一轮领取浮窗展示。
  */
 export const openTicketResultDialogFromUse = (
   result: UseTicketResult,
