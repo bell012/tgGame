@@ -7,7 +7,7 @@ import { globalShowToast } from './toast.ts'
 import i18n from '@/i18n'
 import CryptoJS from 'crypto-js'
 import { API_ERROR_CODE_MESSAGES } from '@/constants/api-error-code-messages'
-import { isPwaAppViewport } from '@/composables/useMediaQuery'
+import { isMobileViewport, isPwaAppViewport } from '@/composables/useMediaQuery'
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
@@ -106,8 +106,12 @@ export function getLanguageCode(): string {
   return getLocaleLanguageCode()
 }
 
-export function getRequestChannelId(): '4' | '5' {
-  return isPwaAppViewport() ? '5' : '4'
+export function getRequestChannelId(): '3' | '4' | '5' {
+  if (isPwaAppViewport()) {
+    return '5'
+  }
+
+  return isMobileViewport() ? '4' : '3'
 }
 
 /**
@@ -142,7 +146,7 @@ export function buildCommonRequestHeaders(url = ''): Record<string, string> {
     sitetime: Date.now().toString(),
     bundleId: '1.0.0',
     languageCode: getLanguageCode(),
-    channelId: getRequestChannelId() // 注册终端：PC/H5 传 4，PWA/添加到桌面传 5
+    channelId: getRequestChannelId() // 注册终端：PC 传 3，H5 传 4，PWA/添加到桌面传 5
   }
 
   if (!url.includes('/bd/getLoginAndRegisterSetting')) {
