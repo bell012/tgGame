@@ -73,7 +73,7 @@ let frameId: number | null = null
  * PC 固定在右上角，H5 固定在顶部居中位置。
  */
 const containerClassName = computed(() => {
-  return isMobile.value ? 'left-0 right-0 top-[49px] flex justify-center' : 'right-[0px] top-[64px]'
+  return isMobile.value ? 'left-3 right-3 top-[49px]' : 'right-[0px] top-[64px]'
 })
 
 const isSingleLineMessage = computed(() => !/[\r\n]/.test(toastState.message))
@@ -83,7 +83,7 @@ const isSingleLineMessage = computed(() => !/[\r\n]/.test(toastState.message))
  */
 const toastClassName = computed(() => {
   if (isMobile.value) {
-    return 'w-[347px] px-[14px] py-[16px] rounded-[8px]'
+    return 'w-full px-[14px] py-[16px] rounded-[8px]'
   }
 
   return isSingleLineMessage.value
