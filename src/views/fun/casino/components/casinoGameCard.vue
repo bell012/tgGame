@@ -12,9 +12,13 @@
     <gameRemoteImg class="h-full w-full" :img="gameImage" :alt="game.itemName" />
     <div
       v-if="gameCovernameShow"
-      class="absolute inset-x-0 bottom-2 flex w-full min-w-0 flex-col items-center justify-center px-2 text-center text-sm sm:text-base font-bold leading-4 text-common-100 sm:font-extrabold"
+      class="absolute inset-x-0 bottom-2 flex w-full min-w-0 flex-col items-center justify-center px-2 text-center font-impact-infoma-ultra"
     >
-      <span class="w-full min-w-0 truncate">{{ game.itemName }}</span>
+      <span
+        class="w-full min-w-0 line-clamp-2 break-words text-[24px] font-bold leading-[23.33px] text-common-100 sm:text-[32px] sm:font-extrabold sm:leading-[32px]"
+      >
+        {{ game.itemName }}
+      </span>
       <div v-if="platformLogoImg.src" class="mt-1 h-[14px] w-auto max-w-[70%] bg-transparent">
         <gameRemoteImg
           :img="platformLogoImg"
@@ -50,9 +54,13 @@
     >
       <div
         v-if="gameCovernameShow"
-        class="absolute inset-x-0 top-0 flex h-2/5 w-full items-center justify-center px-2 text-center text-base font-bold leading-4 text-common-100 sm:font-extrabold"
+        class="absolute inset-x-0 top-0 flex w-full items-start justify-center px-2 pt-2 text-center font-impact-infoma-ultra"
       >
-        {{ game.itemName }}
+        <span
+          class="w-full min-w-0 line-clamp-2 break-words text-[24px] font-bold leading-[23.33px] text-common-100 sm:text-[32px] sm:font-extrabold sm:leading-[32px]"
+        >
+          {{ game.itemName }}
+        </span>
       </div>
       <div
         class="flex h-9 w-9 items-center justify-center rounded-full bg-mask-20 transition-all duration-300 sm:group-hover:scale-150"
