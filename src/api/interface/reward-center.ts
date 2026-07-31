@@ -14,38 +14,42 @@ export interface RewardCenterRowClaimForm {
 
 /** 奖励中心单条记录 */
 export interface RewardCenterRecord {
-  /** 列表项唯一 key（优先 rowId，无 rowId 时 fallback） */
+  /** 列表项唯一 key（优先 activityId，无 activityId 时 fallback） */
   listId?: string
+  /** 待领取接口 activityId，领取时作为 rowId 传给领取接口 */
   rowId?: string | number
   /** 待领取奖励类型，见 REWARD_CENTER_ACTIVITY_CODE */
   activityCode?: number
-  taskType?: number
-  tierNo?: number
   activityName?: string
-  /** 0 固定金额，1 随机金额 */
-  rewardType?: number
+  fallbackActivityName?: string
+  /** 0 积分，1 现金 */
+  moneyType?: number
   rewardAmount?: number
   /** 领取时间（已领取） */
   claimTime?: number
   /** 创建/发放时间 */
   createTime?: number
-  /** 已领取奖金 changeType，用于无 changeNote 时展示类型文案 */
+  /** 已领取奖金类型 */
   changeType?: number
+  /** 已领取奖金前台显示说明 */
+  changeNote?: string
+}
+
+export interface RewardCenterLanguageName {
+  languageCode: string
+  name: string
 }
 
 /** /ac/queryBonusAppMultipleCurrencies 单条 bonus */
 export interface RewardCenterBonusItem {
+  /** 正式数据返回；测试数据可能缺失 */
+  activityId?: number
+  /** 0 积分，1 现金 */
+  moneyType?: number
   activityCode: number
-  activityName?: string
-  rewardType?: number
-  rewardAmount?: number
   amount?: number
-  busiAmount?: number
-  createTime?: number
-  modifyTime?: number
-  rowId?: string | number
-  taskType?: number
-  tierNo?: number
+  startDate?: number
+  activityName?: RewardCenterLanguageName[]
 }
 
 export interface RewardCenterClaimResult {

@@ -130,7 +130,7 @@ const filterValues = ref<Record<string, string | string[]>>({
 const filterGroups = computed<FilterGroup[]>(() => [
   {
     key: 'time',
-    title: t('betHistory.filterGroups.date'),
+    title: t('rewardCenter.filters.date'),
     options: createRewardCenterTimeOptions(t),
     columns: 2
   }

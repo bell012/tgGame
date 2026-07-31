@@ -9,6 +9,12 @@ function isMediaQueryMatched(query: string) {
   return window.matchMedia(query).matches
 }
 
+// 获取项目统一的移动端媒体查询条件
+function getMobileMediaQuery() {
+  const layoutStore = useLayoutStore()
+  return `(max-width: ${layoutStore.MOBILE_BREAKPOINT}px)`
+}
+
 // 检测是否是 PWA / 添加到桌面
 export function isPwaAppViewport() {
   if (typeof window === 'undefined') {
@@ -22,6 +28,11 @@ export function isPwaAppViewport() {
     (navigator as Navigator & { standalone?: boolean }).standalone === true
 
   return isStandaloneDisplay || isFullscreenDisplay || isIosStandalone
+}
+
+// 同步检测当前视口是否为移动端/H5
+export function isMobileViewport() {
+  return isMediaQueryMatched(getMobileMediaQuery())
 }
 
 /**
@@ -71,6 +82,5 @@ export function useMediaQuery(query: string) {
  * 检测是否为移动端
  */
 export function useIsMobile() {
-  const layoutStore = useLayoutStore()
-  return useMediaQuery(`(max-width: ${layoutStore.MOBILE_BREAKPOINT}px)`)
+  return useMediaQuery(getMobileMediaQuery())
 }

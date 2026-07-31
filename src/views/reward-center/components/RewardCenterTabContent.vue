@@ -5,7 +5,7 @@
       class="w-[336px]"
       :model-value="rewardCenterStore.claimedFilterValues.time"
       :options="timeOptions"
-      :placeholder="t('betHistory.filterGroups.date')"
+      :placeholder="t('rewardCenter.filters.date')"
       use-placeholder-when-all
       @update:model-value="handleDesktopTimeChange"
     />
@@ -79,13 +79,13 @@
 
       <template v-if="props.activeTab === 'claimed'">
         <p v-if="rewardCenterStore.claimedLoadingMore" class="py-3 text-center text-xs text-text-2">
-          {{ t('common.loadingMore') }}
+          {{ t('rewardCenter.loadingMore') }}
         </p>
         <p
           v-else-if="!rewardCenterStore.claimedHasMore"
           class="py-3 text-center text-xs text-text-2"
         >
-          {{ t('betHistory.noMore') }}
+          {{ t('rewardCenter.noMore') }}
         </p>
         <div ref="loadMoreSentinel" class="h-px w-full" />
       </template>

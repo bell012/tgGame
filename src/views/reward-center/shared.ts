@@ -1,14 +1,12 @@
 import type { RewardCenterBonusItem, RewardCenterRecord } from '@/api/interface/reward-center'
 import type { QueryAcctHisPageResult } from '@/api/interface/record.interface'
+import { getSingleFilterValue, getTimeRange } from '@/views/wallet/transaction/shared'
 import {
-  createDefaultTransactionFilterValues,
-  createTransactionTimeOptions,
-  getSingleFilterValue,
-  getTimeRange,
-  getTransactionTypeLabel,
-  type SelectOption
-} from '@/views/wallet/transaction/shared'
-import { formatBalance, getCurrentCurrency, getFormattedBalance } from '@/utils/locale'
+  formatBalance,
+  getCurrentCurrency,
+  getFormattedBalance,
+  getLanguageCode
+} from '@/utils/locale'
 import { formatDisplayTime } from '@/utils/date'
 import {
   REWARD_CENTER_ACTIVITY_CODE,
@@ -27,7 +25,6 @@ export interface RewardCenterListItem {
   activityName: string
   amountText: string
   upToAmountText: string
-  isRandomAmount: boolean
   timeText: string
   raw: RewardCenterRecord
 }
@@ -49,22 +46,113 @@ const REWARD_CENTER_ACTIVITY_TYPE_KEY_MAP: Record<number, string> = {
   [REWARD_CENTER_ACTIVITY_CODE.ENTRANT_TASK]: 'entrantTask'
 }
 
-export const getRewardCenterActivityTypeLabel = (activityCode: number, t: TranslateFn) => {
-  const key = REWARD_CENTER_ACTIVITY_TYPE_KEY_MAP[activityCode]
-  return key ? t(`rewardCenter.activityTypes.${key}`) : String(activityCode || '--')
+const REWARD_CENTER_CHANGE_TYPE_KEY_MAP: Record<number, string> = {
+  1: 'game',
+  2: 'deposit',
+  3: 'withdraw',
+  4: 'refund',
+  5: 'manualDeposit',
+  6: 'systemDeduction',
+  7: 'bonusCredit',
+  8: 'rebate',
+  9: 'currencyTransfer',
+  10: 'weeklyBonus',
+  11: 'monthlyBonus',
+  13: 'vipUpgradeBonus',
+  14: 'depositBonus',
+  15: 'taskReward',
+  16: 'bet',
+  17: 'win',
+  18: 'pointsExchange',
+  19: 'activityPoints',
+  20: 'commission',
+  21: 'referralBonus',
+  22: 'newcomerBenefit',
+  23: 'reliefFundEvent',
+  24: 'redPacketReward',
+  25: 'checkInEvent',
+  26: 'rebateEvent',
+  27: 'rechargeEvent',
+  28: 'redemptionCodeEvent',
+  29: 'agentEvent',
+  30: 'promotionSubmissionEvent',
+  31: 'agentRebateEvent',
+  32: 'luckyBonus',
+  33: 'feedbackReward',
+  35: 'referralSpin',
+  38: 'dailyBonus',
+  39: 'thirdPartyBet',
+  40: 'cancelThirdPartyBet',
+  41: 'vaultChange',
+  42: 'liveBattleBet',
+  43: 'liveBattleWin',
+  44: 'liveBattleTournamentReward',
+  45: 'manualPointsCredit',
+  46: 'manualPointsDeduction',
+  47: 'withdrawalBonus',
+  48: 'treasureBoxBonus',
+  50: 'memberTransfer',
+  51: 'lotteryWin',
+  52: 'registrationFee',
+  54: 'tournamentBonus',
+  55: 'handlingFee',
+  56: 'ticketRegistrationFee',
+  57: 'tournamentTicket',
+  58: 'tournamentEventReward',
+  59: 'loanTransferOut',
+  60: 'redPacketEvent',
+  62: 'memberCredit',
+  63: 'memberDeduction',
+  64: 'agentCommission',
+  65: 'doubleOrNothing',
+  66: 'checkInReward',
+  67: 'rechargeBonusReward',
+  68: 'jackpotEvent',
+  69: 'starTurnoverReward',
+  70: 'loginReward',
+  71: 'downloadReward',
+  72: 'signUpReward',
+  73: 'cashVoucher',
+  74: 'redPacketVoucher',
+  75: 'goldenEggVoucher',
+  76: 'luckySpinVoucher',
+  77: 'groupBuyReward',
+  78: 'gameToContractAccount',
+  79: 'contractToGameAccount',
+  80: 'bonusEventReward',
+  81: 'redPacketEventReward',
+  82: 'mysteryBoxVoucher',
+  83: 'platformToMainAccount',
+  84: 'designatedAccountWin',
+  85: 'designatedAccountReset'
 }
 
 const buildPendingBonusListId = (item: RewardCenterBonusItem, index: number) => {
-  if (item.rowId != null && item.rowId !== '') {
-    return String(item.rowId)
+  if (item.activityId != null) {
+    return String(item.activityId)
   }
 
-  const createTime = item.createTime ?? item.modifyTime
-  if (createTime != null) {
-    return `${item.activityCode}-${createTime}-${index}`
+  if (item.startDate != null) {
+    return `${item.activityCode}-${item.startDate}-${index}`
   }
 
   return `${item.activityCode}-${index}`
+}
+
+const resolveRewardCenterLanguageNames = (items?: RewardCenterBonusItem['activityName']) => {
+  if (!items?.length) {
+    return {
+      activityName: '',
+      fallbackActivityName: ''
+    }
+  }
+
+  const languageCode = getLanguageCode()
+  const matched = items.find(item => item.languageCode === languageCode && item.name)
+  return {
+    activityName: String(matched?.name || '').trim(),
+    fallbackActivityName: String(items[0]?.name || '').trim()
+  }
 }
 
 export const getRewardCenterRecordId = (record: RewardCenterRecord) => {
@@ -82,17 +170,20 @@ export const getRewardCenterRecordId = (record: RewardCenterRecord) => {
 export const mapBonusToRewardRecord = (
   item: RewardCenterBonusItem,
   index: number
-): RewardCenterRecord => ({
-  listId: buildPendingBonusListId(item, index),
-  rowId: item.rowId,
-  activityCode: item.activityCode,
-  taskType: item.taskType,
-  tierNo: item.tierNo,
-  activityName: String(item.activityName?.trim() || ''),
-  rewardType: Number(item.rewardType ?? 0),
-  rewardAmount: Math.abs(Number(item.rewardAmount ?? item.amount ?? item.busiAmount ?? 0)),
-  createTime: item.createTime ?? item.modifyTime
-})
+): RewardCenterRecord => {
+  const { activityName, fallbackActivityName } = resolveRewardCenterLanguageNames(item.activityName)
+
+  return {
+    listId: buildPendingBonusListId(item, index),
+    rowId: item.activityId,
+    activityCode: item.activityCode,
+    activityName,
+    fallbackActivityName,
+    moneyType: item.moneyType,
+    rewardAmount: Math.abs(Number(item.amount ?? 0)),
+    createTime: item.startDate
+  }
+}
 
 /** 每条 bonus 单独展示，同 activityCode 多条保留各自 rowId */
 export const mapBonusItemsToPendingRecords = (
@@ -106,10 +197,13 @@ export const resolvePendingBonusActivityName = (record: RewardCenterRecord, t: T
   }
 
   if (record.activityCode != null) {
-    return getRewardCenterActivityTypeLabel(record.activityCode, t)
+    const key = REWARD_CENTER_ACTIVITY_TYPE_KEY_MAP[record.activityCode]
+    if (key) {
+      return t(`rewardCenter.activityTypes.${key}`)
+    }
   }
 
-  return '--'
+  return String(record.fallbackActivityName || '').trim() || '--'
 }
 
 export const isPendingRewardClaimable = (record: RewardCenterRecord) => {
@@ -139,23 +233,27 @@ export const buildRewardCenterClaimAllQuery = buildRewardCenterPendingQuery
 
 export const REWARD_CENTER_TABS: RewardCenterTab[] = ['pending', 'claimed']
 
-export const REWARD_TYPE_RANDOM = 1
-
 export const createDefaultRewardCenterFilterValues = (): RewardCenterFilterValues => ({
-  time: createDefaultTransactionFilterValues().time
+  time: 'all'
 })
 
-export const createRewardCenterTimeOptions = (t: TranslateFn): SelectOption[] =>
-  createTransactionTimeOptions(t)
+export const createRewardCenterTimeOptions = (t: TranslateFn) => [
+  { label: t('rewardCenter.filterOptions.all'), value: 'all' },
+  { label: t('rewardCenter.filterOptions.today'), value: 'today' },
+  { label: t('rewardCenter.filterOptions.yesterday'), value: 'yesterday' },
+  { label: t('rewardCenter.filterOptions.last3Days'), value: 'last3days' },
+  { label: t('rewardCenter.filterOptions.last15Days'), value: 'last15days' },
+  { label: t('rewardCenter.filterOptions.last30Days'), value: 'last30days' }
+]
 
 export const getRewardCenterTimeLabel = (t: TranslateFn, value: string) => {
   const normalized = getSingleFilterValue(value)
   if (!normalized || normalized === 'all') {
-    return t('betHistory.filterOptions.all')
+    return t('rewardCenter.filterOptions.all')
   }
 
   const option = createRewardCenterTimeOptions(t).find(item => item.value === normalized)
-  return option?.label ?? t('betHistory.filterOptions.all')
+  return option?.label ?? t('rewardCenter.filterOptions.all')
 }
 
 export const normalizeRewardCenterFilterValues = (
@@ -187,25 +285,22 @@ export const buildRewardCenterClaimedQuery = (params: {
 
 export const mapAcctHisBonusToRewardRecord = (record: AcctHisBonusRecord): RewardCenterRecord => ({
   rowId: record.accountChangeId,
-  activityName: String(record.changeNote?.trim() || ''),
-  rewardType: 0,
   rewardAmount: Math.abs(Number(record.busiAmount ?? 0)),
   claimTime: record.createTime,
   createTime: record.createTime,
-  changeType: record.changeType
+  changeType: record.changeType,
+  changeNote: String(record.changeNote?.trim() || '')
 })
 
 export const resolveClaimedBonusActivityName = (record: RewardCenterRecord, t: TranslateFn) => {
-  const changeNote = String(record.activityName || '').trim()
-  if (changeNote) {
-    return changeNote
-  }
-
   if (record.changeType != null) {
-    return getTransactionTypeLabel(record.changeType, t)
+    const key = REWARD_CENTER_CHANGE_TYPE_KEY_MAP[record.changeType]
+    if (key) {
+      return t(`rewardCenter.changeTypes.${key}`)
+    }
   }
 
-  return '--'
+  return String(record.changeNote || '').trim() || '--'
 }
 
 export const sumClaimedBonusAmount = (records: RewardCenterRecord[]) =>
@@ -241,8 +336,6 @@ export const mapRewardCenterRecord = (
   t: TranslateFn,
   mode: RewardCenterTab
 ): RewardCenterListItem => {
-  const rewardType = Number(record.rewardType ?? 0)
-  const isRandomAmount = rewardType === REWARD_TYPE_RANDOM
   const amount = Number(record.rewardAmount ?? 0)
   const timestamp = mode === 'claimed' ? (record.claimTime ?? record.createTime) : record.createTime
 
@@ -252,11 +345,10 @@ export const mapRewardCenterRecord = (
       mode === 'claimed'
         ? resolveClaimedBonusActivityName(record, t)
         : resolvePendingBonusActivityName(record, t),
-    amountText: isRandomAmount ? t('rewardCenter.randomAmount') : formatBalance(amount, 2),
+    amountText: formatBalance(amount, 2),
     upToAmountText: t('rewardCenter.upTo', {
       amount: formatBalance(amount, 2)
     }),
-    isRandomAmount,
     timeText: timestamp ? formatDisplayTime(timestamp) : '--',
     raw: record
   }
