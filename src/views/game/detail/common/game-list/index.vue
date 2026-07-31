@@ -60,9 +60,14 @@
       <div
         v-for="(value, index) in normalizedList"
         :key="`${value.rowId ?? 'game'}-${index}`"
-        class="game-list-card aspect-[330/438] snap-start"
+        class="game-list-card aspect-[330/438] snap-start overflow-hidden rounded-lg transition-transform duration-200 ease-out transform-gpu sm:hover:-translate-y-2 active:translate-y-0 inactive"
       >
-        <casinoGameCard class="size-full" :game="value" @click="handleGameClick(value)" />
+        <casinoGameCard
+          class="size-full"
+          :game="value"
+          :hover-lift="false"
+          @click="handleGameClick(value)"
+        />
       </div>
       <button
         type="button"

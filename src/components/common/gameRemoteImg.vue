@@ -87,6 +87,11 @@ watch(
   max-height: 100%;
 }
 
+.game-remote-img.object-cover {
+  width: 100%;
+  height: 100%;
+}
+
 .game-remote-img.error {
   width: 31px;
   object-fit: contain;

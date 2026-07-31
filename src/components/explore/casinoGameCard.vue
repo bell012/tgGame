@@ -1,13 +1,18 @@
 <template>
   <a
     href="javascript:void(0);"
-    class="game-item group relative flex h-full w-full flex-col items-center overflow-hidden rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
+    class="game-item group relative block h-full w-full overflow-hidden rounded-lg transition-transform duration-200 ease-out transform-gpu active:translate-y-0 inactive"
+    :class="{ 'sm:hover:-translate-y-2': hoverLift }"
     @click="doClick"
   >
-    <gameRemoteImg class="h-full w-full" :img="gameImage" :alt="game.itemName" />
+    <gameRemoteImg
+      class="absolute inset-0 size-full !rounded-none !bg-transparent [&_.game-remote-img]:size-full [&_.game-remote-img]:scale-[1.02]"
+      :img="gameImage"
+      :alt="game.itemName"
+    />
     <div
       v-if="gameCovernameShow"
-      class="absolute inset-x-0 bottom-2 flex w-full flex-col items-center justify-center px-2 text-center font-impact-infoma-ultra"
+      class="absolute inset-x-0 bottom-2 flex w-full flex-col items-center justify-center px-2 text-center font-impact-infoma-ultra transition-opacity sm:group-hover:opacity-0"
     >
       <span
         class="w-full min-w-0 line-clamp-2 break-words text-[24px] font-[700] leading-[24px] text-common-100 sm:text-[32px] sm:leading-[32px]"
@@ -43,11 +48,11 @@
     </div>
     <div
       v-if="game.serviceStatus === 0"
-      class="absolute left-0 top-0 flex h-full w-full cursor-pointer items-center justify-center bg-mask-60-1 opacity-0 sm:group-hover:opacity-100"
+      class="absolute inset-0 z-[2] flex cursor-pointer items-center justify-center rounded-lg bg-mask-60-1 opacity-0 sm:group-hover:opacity-100"
     >
       <div
         v-if="gameCovernameShow"
-        class="absolute inset-x-0 top-0 flex h-2/5 w-full items-center justify-center px-2 text-center font-impact-infoma-ultra"
+        class="absolute inset-x-0 top-0 flex w-full items-start justify-center px-2 pt-2 text-center font-impact-infoma-ultra"
       >
         <span
           class="w-full min-w-0 line-clamp-2 break-words text-[32px] font-[700] leading-[32px] text-common-100"
@@ -68,7 +73,7 @@
     </div>
     <div
       v-if="game.serviceStatus === 1"
-      class="absolute left-0 top-0 flex h-full w-full cursor-pointer items-center justify-center bg-mask-60-1"
+      class="absolute inset-0 z-[2] flex cursor-pointer items-center justify-center rounded-lg bg-mask-60-1"
     >
       <underMaintenanceIcon class="h-9 w-9 text-common-100" />
     </div>
@@ -85,9 +90,15 @@ import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useGameStore } from '@/stores/game'
 import underMaintenanceIcon from '@/static/svg/game/under_maintenance.svg'
 
-const props = defineProps<{
-  game: GameDataItem
-}>()
+const props = withDefaults(
+  defineProps<{
+    game: GameDataItem
+    hoverLift?: boolean
+  }>(),
+  {
+    hoverLift: true
+  }
+)
 
 const emit = defineEmits<{
   click: []
