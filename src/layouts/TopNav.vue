@@ -36,7 +36,7 @@
         <!-- PC端 Logo -->
         <div
           class="hidden sm:flex w-[150px] h-[48px] ml-0 sm:ml-5 items-center cursor-pointer"
-          @click="navigateTo('/')"
+          @click="handleHomeClick"
         >
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
@@ -52,7 +52,7 @@
         <div
           v-else
           class="flex sm:hidden w-[150px] h-[48px] items-center cursor-pointer"
-          @click="navigateTo('/')"
+          @click="handleHomeClick"
         >
           <MainLogoIcon class="w-full h-full text-text-1" />
         </div>
@@ -632,6 +632,13 @@ const openRegisterModal = () => {
 
 const openExploreModal = () => {
   showExplorehModal.value = true
+}
+
+const handleHomeClick = () => {
+  if (showExplorehModal.value) {
+    showExplorehModal.value = false
+  }
+  navigateTo('/')
 }
 
 const handleLanguageChange = (code: Locale) => {
