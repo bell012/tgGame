@@ -103,7 +103,7 @@ import { computed, nextTick, onActivated, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import type { GameDataItem as CasinoCardGameDataItem } from '@/api/interface/game'
-import casinoGameCard from '@/views/fun/casino/components/casinoGameCard.vue'
+import casinoGameCard from '@/components/explore/casinoGameCard.vue'
 import {
   normalizeGameDetailValue,
   queryGameDetailRecommendedItems,
