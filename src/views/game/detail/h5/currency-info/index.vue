@@ -10,9 +10,26 @@
           :class="
             isFallbackImage
               ? 'w-[31px] h-[31px] object-contain opacity-85'
-              : 'w-full h-full object-contain'
+              : 'h-full w-full object-cover'
           "
         />
+        <div
+          v-if="gameCovernameShow && !isFallbackImage"
+          class="absolute inset-x-0 bottom-2 z-[2] flex w-full flex-col items-center justify-center px-2 text-center font-impact-infoma-ultra"
+        >
+          <span
+            class="w-full min-w-0 line-clamp-2 break-words text-[24px] font-[400] leading-[24px] text-common-100"
+          >
+            {{ displayGameName }}
+          </span>
+          <div v-if="platformLogoImg.src" class="mt-1 h-[14px] w-auto max-w-[70%] bg-transparent">
+            <gameRemoteImg
+              :img="platformLogoImg"
+              :alt="displayProviderName"
+              class="h-full w-full bg-transparent"
+            />
+          </div>
+        </div>
       </div>
       <div class="flex-1 flex flex-col">
         <template v-if="isLogin">
@@ -67,17 +84,22 @@
 import errorImg from '@/static/img/home/errImg.png'
 import errorImg1 from '@/static/img/home/errImg1.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import CurrencySelect from '../currency-select/index.vue'
 import CurrencyBar from '../currency-bar/index.vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
+import { useGameStore } from '@/stores/game'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { useAuthModalStore } from '@/stores/authModal'
 import { storeToRefs } from 'pinia'
 
 const { gamePlay, currentGameDetail } = useGamePlatformPlay()
+const gameStore = useGameStore()
+const siteConfigStore = useSiteConfigStore()
 const { t } = useI18n()
 const themeStore = useThemeStore()
 const userStore = useUserStore()
@@ -125,6 +147,44 @@ const displayProviderName = computed(() => {
   const providerName = String(currentGameDetail.value?.platformName ?? '').trim()
   return providerName || displayGameType.value
 })
+
+const platformLogoImg = reactive<{
+  maintain: boolean
+  src: string
+  fit: 'contain'
+}>({
+  maintain: false,
+  src: '',
+  fit: 'contain'
+})
+
+const resolvePlatformLogo = async () => {
+  const platformCode = String(currentGameDetail.value?.platformCode ?? '').trim()
+  if (!platformCode) {
+    platformLogoImg.src = ''
+    return
+  }
+
+  platformLogoImg.src = await gameStore.getPlatformLogoByPlatformCode(platformCode)
+}
+
+const gameCovernameShow = computed(() => {
+  const value = Number(
+    (
+      siteConfigStore.config as
+        | {
+            baseSiteConfig?: {
+              game_covername_show?: string | number
+            }
+          }
+        | null
+        | undefined
+    )?.baseSiteConfig?.game_covername_show ?? 0
+  )
+
+  return Number.isFinite(value) && value > 0
+})
+
 const playButtonText = computed(() => (isLogin.value ? t('gameDetail.playNow') : t('home.sign_In')))
 
 const handlePlayAction = () => {
@@ -138,7 +198,15 @@ const handlePlayAction = () => {
 
 onMounted(() => {
   userStore.syncStoredUserData()
+  void resolvePlatformLogo()
 })
+
+watch(
+  () => currentGameDetail.value?.platformCode,
+  () => {
+    void resolvePlatformLogo()
+  }
+)
 </script>
 <style scoped lang="scss">
 .currency-info-panel {

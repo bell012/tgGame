@@ -67,10 +67,6 @@ const handleSignIn = () => {
   authModalStore.openLoginModal()
 }
 
-onMounted(() => {
-  userStore.syncStoredUserData()
-})
-
 type CurrentGameDetail = {
   itemName?: string
   platformName?: string
@@ -111,6 +107,10 @@ const displayGameName = computed(() => {
       currentGameDetail.value?.itemName ?? currentGameDetail.value?.platformName ?? ''
     ).trim() || '--'
   )
+})
+
+onMounted(() => {
+  userStore.syncStoredUserData()
 })
 </script>
 <style scoped lang="scss">
