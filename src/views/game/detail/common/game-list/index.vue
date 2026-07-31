@@ -93,7 +93,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { navigateToName } from '@/utils/router'
 import viewAllDarkIcon from '@/static/img/casino/all_view_dark.png'
 import viewAllLightIcon from '@/static/img/casino/all_view_light.png'
-import casinoGameCard from '@/views/fun/casino/components/casinoGameCard.vue'
+import casinoGameCard from '@/components/explore/casinoGameCard.vue'
 import type { GameDataItem } from '@/api/interface/game'
 
 interface RawGameItem {
