@@ -47,15 +47,31 @@
           class="marquee-item inactive flex h-28 w-14 flex-none cursor-pointer flex-col items-center border-0 bg-transparent p-0 text-xs text-inherit hover:opacity-80 sm:h-[106px] sm:w-13"
           @click.stop="onRecentBigWinItemClick(idx)"
         >
-          <div class="relative mb-1 w-full rounded-lg pt-[133%]">
+          <div class="relative mb-1 w-full overflow-hidden rounded-lg pt-[133%]">
             <img
               :src="item.src"
-              class="absolute left-0 top-0 w-full rounded-lg"
+              class="absolute left-0 top-0 h-full w-full rounded-lg object-cover"
               :alt="item.nickName"
               loading="lazy"
               decoding="async"
               fetchpriority="low"
             />
+            <div
+              class="absolute inset-x-0 bottom-1 flex w-full min-w-0 flex-col items-center justify-center px-1 text-center font-impact-infoma-ultra"
+            >
+              <span
+                class="w-full min-w-0 line-clamp-2 break-words text-[11px] font-normal leading-[10px] text-common-100 font-impact-infoma-ultra"
+              >
+                {{ item.gameName }}
+              </span>
+              <div v-if="getPlatformLogo(item)" class="mt-0.5 w-[9px] bg-transparent">
+                <gameRemoteImg
+                  :img="{ maintain: false, src: getPlatformLogo(item), fit: 'contain' }"
+                  :alt="String(item.gameName ?? '')"
+                  class="h-full w-full bg-transparent"
+                />
+              </div>
+            </div>
           </div>
           <div class="w-[100%]">
             <div class="flex items-center justify-center font-bold text-secondary">
@@ -90,7 +106,9 @@ import { getCurrentCurrency } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
+import { useGameStore } from '@/stores/game'
 import { deriveBetAmountFromWinAndMultiplier } from '@/stores/deriveBetAmount'
+import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import RewardDetailsModal from '@/views/home/rewardDetails/RewardDetailsModal.vue'
 import type { RewardDetailsRawItem } from '@/views/home/rewardDetails/types'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
@@ -110,6 +128,7 @@ const currentCurrency = computed(() => getCurrentCurrency())
 const isMobile = useIsMobile()
 const userStore = useUserStore()
 const authModalStore = useAuthModalStore()
+const gameStore = useGameStore()
 
 const isLoggedIn = () => {
   const { userInfo, acctInfo } = userStore.syncStoredUserData()
@@ -122,6 +141,38 @@ const MARQUEE_REPEAT = 4
 const duplicatedList = computed(() =>
   Array.from({ length: MARQUEE_REPEAT }, () => list.value).flat()
 )
+
+const platformLogoByGameId = ref<Record<string, string>>({})
+
+const getPlatformLogo = (item: RecentBigWin) =>
+  platformLogoByGameId.value[String(item.gameId ?? '').trim()] ?? ''
+
+/** 大奖数据只带 gameId，需按游戏节点回查 platformCode 才能拿到厂商 logo */
+const resolvePlatformLogos = async (items: RecentBigWin[]) => {
+  const gameIds = [...new Set(items.map(item => String(item.gameId ?? '').trim()).filter(Boolean))]
+  if (gameIds.length === 0) {
+    platformLogoByGameId.value = {}
+    return
+  }
+
+  const records = await gameStore.queryGameData()
+  const platformCodeByGameId = new Map(
+    records.map(
+      record =>
+        [String(record.rowId ?? '').trim(), String(record.platformCode ?? '').trim()] as const
+    )
+  )
+
+  const logoEntries = await Promise.all(
+    gameIds.map(async gameId => {
+      const platformCode = platformCodeByGameId.get(gameId)
+      const logo = platformCode ? await gameStore.getPlatformLogoByPlatformCode(platformCode) : ''
+      return [gameId, logo] as const
+    })
+  )
+
+  platformLogoByGameId.value = Object.fromEntries(logoEntries.filter(([, logo]) => Boolean(logo)))
+}
 
 const toGameImageUrl = (value: string) => {
   if (!value) {
@@ -204,6 +255,7 @@ const getRecentBigWinsData = async () => {
           betAmount: derivedBet ?? item.betAmount ?? item.gameAmount
         }
       }) || []
+    console.log(list.value, 'list.value')
   } catch (error) {
     list.value = []
     console.error('getRecentBigWins failed', error)
@@ -353,6 +405,18 @@ watch(
     void getRecentBigWinsData()
   },
   { immediate: true }
+)
+
+watch(
+  () => list.value,
+  items => {
+    if (items.length === 0) {
+      return
+    }
+    void resolvePlatformLogos(items).catch(error => {
+      console.error('resolve recent big wins platform logo failed', error)
+    })
+  }
 )
 
 /**
