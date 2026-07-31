@@ -1,7 +1,7 @@
 <template>
   <a
     href="javascript:void(0);"
-    class="game-item group relative flex h-full w-full flex-col items-center overflow-hidden rounded-lg transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
+    class="game-item group relative flex h-full w-full flex-col items-center overflow-hidden rounded-[12px] transition-transform duration-200 ease-out sm:hover:-translate-y-2 active:translate-y-0 inactive"
     @click="doClick"
   >
     <FavoritesGamesIcon
@@ -15,7 +15,7 @@
       class="absolute inset-x-0 bottom-2 flex w-full min-w-0 flex-col items-center justify-center px-2 text-center font-impact-infoma-ultra"
     >
       <span
-        class="w-full min-w-0 line-clamp-2 break-words text-[24px] font-bold leading-[23.33px] text-common-100 sm:text-[32px] sm:font-extrabold sm:leading-[32px]"
+        class="w-full min-w-0 line-clamp-2 break-words text-[24px] font-bold leading-[24px] text-common-100 sm:text-[32px] sm:leading-[32px]"
       >
         {{ game.itemName }}
       </span>
@@ -57,7 +57,7 @@
         class="absolute inset-x-0 top-0 flex w-full items-start justify-center px-2 pt-2 text-center font-impact-infoma-ultra"
       >
         <span
-          class="w-full min-w-0 line-clamp-2 break-words text-[24px] font-bold leading-[23.33px] text-common-100 sm:text-[32px] sm:font-extrabold sm:leading-[32px]"
+          class="w-full min-w-0 line-clamp-2 break-words text-[24px] font-bold leading-[24px] text-common-100 sm:text-[32px] sm:leading-[32px]"
         >
           {{ game.itemName }}
         </span>
