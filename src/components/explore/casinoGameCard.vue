@@ -10,7 +10,7 @@
       class="absolute inset-x-0 bottom-2 flex w-full flex-col items-center justify-center px-2 text-center font-impact-infoma-ultra"
     >
       <span
-        class="w-full min-w-0 line-clamp-2 break-words text-[24px] leading-[28px] text-common-100 sm:text-[32px] sm:leading-[36px]"
+        class="w-full min-w-0 line-clamp-2 break-words text-[24px] font-[700] leading-[24px] text-common-100 sm:text-[32px] sm:leading-[32px]"
       >
         {{ game.itemName }}
       </span>
@@ -50,7 +50,7 @@
         class="absolute inset-x-0 top-0 flex h-2/5 w-full items-center justify-center px-2 text-center font-impact-infoma-ultra"
       >
         <span
-          class="w-full min-w-0 line-clamp-2 break-words text-[32px] leading-[36px] text-common-100"
+          class="w-full min-w-0 line-clamp-2 break-words text-[32px] font-[700] leading-[32px] text-common-100"
         >
           {{ game.itemName }}
         </span>
