@@ -5,7 +5,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        inter: ['Inter', 'sans-serif']
+        inter: ['Inter', 'sans-serif'],
+        impact: ['Impact', 'sans-serif'],
+        'infoma-ultra': ['Infoma Ultra', 'sans-serif'],
+        'impact-infoma-ultra': ['Impact', 'Infoma Ultra', 'sans-serif']
       },
       colors: {
         // ========== 主题色 (Theme) ==========
