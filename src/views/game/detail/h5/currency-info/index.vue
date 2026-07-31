@@ -13,19 +13,6 @@
               : 'w-full h-full object-contain'
           "
         />
-        <div
-          v-if="gameCovernameShow && !isFallbackImage"
-          class="absolute inset-x-0 bottom-2 flex w-full min-w-0 flex-col items-center justify-center px-1 text-center text-[10px] font-bold leading-3 text-common-100"
-        >
-          <span class="w-full min-w-0 truncate">{{ displayGameName }}</span>
-          <div v-if="platformLogoImg.src" class="mt-1 h-[12px] w-auto max-w-[70%] bg-transparent">
-            <gameRemoteImg
-              :img="platformLogoImg"
-              :alt="displayProviderName"
-              class="h-full w-full bg-transparent"
-            />
-          </div>
-        </div>
       </div>
       <div class="flex-1 flex flex-col">
         <template v-if="isLogin">
@@ -77,17 +64,14 @@
   <currency-bar></currency-bar>
 </template>
 <script setup lang="ts">
-import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import errorImg from '@/static/img/home/errImg.png'
 import errorImg1 from '@/static/img/home/errImg1.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import CurrencySelect from '../currency-select/index.vue'
 import CurrencyBar from '../currency-bar/index.vue'
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useGamePlatformPlay } from '@/composables/useGamePlatformPlay'
-import { useGameStore } from '@/stores/game'
-import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { useAuthModalStore } from '@/stores/authModal'
@@ -95,51 +79,12 @@ import { storeToRefs } from 'pinia'
 
 const { gamePlay, currentGameDetail } = useGamePlatformPlay()
 const { t } = useI18n()
-const gameStore = useGameStore()
-const siteConfigStore = useSiteConfigStore()
 const themeStore = useThemeStore()
 const userStore = useUserStore()
 const authModalStore = useAuthModalStore()
 const { theme } = storeToRefs(themeStore)
 const { userInfo } = storeToRefs(userStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
-
-const platformLogoImg = reactive<{
-  maintain: boolean
-  src: string
-  fit: 'contain'
-}>({
-  maintain: false,
-  src: '',
-  fit: 'contain'
-})
-
-const gameCovernameShow = computed(() => {
-  const value = Number(
-    (
-      siteConfigStore.config as
-        | {
-            baseSiteConfig?: {
-              game_covername_show?: string | number
-            }
-          }
-        | null
-        | undefined
-    )?.baseSiteConfig?.game_covername_show ?? 0
-  )
-
-  return Number.isFinite(value) && value > 0
-})
-
-const resolvePlatformLogo = async () => {
-  const platformCode = String(currentGameDetail.value?.platformCode ?? '').trim()
-  if (!platformCode) {
-    platformLogoImg.src = ''
-    return
-  }
-
-  platformLogoImg.src = await gameStore.getPlatformLogoByPlatformCode(platformCode)
-}
 
 const selectedData = ref<{ value: string; label: string; icon: string } | undefined>(undefined)
 const handleCurrencyChange = (
@@ -190,14 +135,6 @@ const handlePlayAction = () => {
 
   void gamePlay()
 }
-
-watch(
-  () => currentGameDetail.value?.platformCode,
-  () => {
-    void resolvePlatformLogo()
-  },
-  { immediate: true }
-)
 
 onMounted(() => {
   userStore.syncStoredUserData()

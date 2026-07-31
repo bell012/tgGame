@@ -7,19 +7,6 @@
           alt=""
           :src="displayGameImg"
         />
-        <div
-          v-if="gameCovernameShow"
-          class="absolute inset-x-0 bottom-6 z-[2] flex w-full min-w-0 flex-col items-center justify-center px-4 text-center text-base font-extrabold leading-5 text-common-100"
-        >
-          <span class="w-full min-w-0 truncate">{{ displayGameName }}</span>
-          <div v-if="platformLogoImg.src" class="mt-2 h-[18px] w-auto max-w-[40%] bg-transparent">
-            <gameRemoteImg
-              :img="platformLogoImg"
-              :alt="displayProviderName"
-              class="h-full w-full bg-transparent"
-            />
-          </div>
-        </div>
       </template>
       <div
         v-else
@@ -57,11 +44,8 @@
 import errorImg from '@/static/img/home/errImg.png'
 import errorImg1 from '@/static/img/home/errImg1.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
-import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import SmartImage from '@/components/common/SmartImage.vue'
 import { useAuthModalStore } from '@/stores/authModal'
-import { useGameStore } from '@/stores/game'
-import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
 import CurrencyBar from '../currency-bar/index.vue'
 import PlayForm from './play-form.vue'
@@ -69,44 +53,15 @@ import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 
-import { computed, ComputedRef, inject, onMounted, reactive, watch } from 'vue'
+import { computed, ComputedRef, inject, onMounted } from 'vue'
 
 const userStore = useUserStore()
-const gameStore = useGameStore()
-const siteConfigStore = useSiteConfigStore()
 const themeStore = useThemeStore()
 const authModalStore = useAuthModalStore()
 const { t } = useI18n()
 const { userInfo } = storeToRefs(userStore)
 const { theme } = storeToRefs(themeStore)
 const isLogin = computed(() => Boolean(userInfo.value?.tradeToken))
-
-const platformLogoImg = reactive<{
-  maintain: boolean
-  src: string
-  fit: 'contain'
-}>({
-  maintain: false,
-  src: '',
-  fit: 'contain'
-})
-
-const gameCovernameShow = computed(() => {
-  const value = Number(
-    (
-      siteConfigStore.config as
-        | {
-            baseSiteConfig?: {
-              game_covername_show?: string | number
-            }
-          }
-        | null
-        | undefined
-    )?.baseSiteConfig?.game_covername_show ?? 0
-  )
-
-  return Number.isFinite(value) && value > 0
-})
 
 const handleSignIn = () => {
   authModalStore.openLoginModal()
@@ -157,27 +112,6 @@ const displayGameName = computed(() => {
     ).trim() || '--'
   )
 })
-const displayProviderName = computed(() => {
-  return String(currentGameDetail.value?.platformName ?? '').trim() || '--'
-})
-
-const resolvePlatformLogo = async () => {
-  const platformCode = String(currentGameDetail.value?.platformCode ?? '').trim()
-  if (!platformCode) {
-    platformLogoImg.src = ''
-    return
-  }
-
-  platformLogoImg.src = await gameStore.getPlatformLogoByPlatformCode(platformCode)
-}
-
-watch(
-  () => currentGameDetail.value?.platformCode,
-  () => {
-    void resolvePlatformLogo()
-  },
-  { immediate: true }
-)
 </script>
 <style scoped lang="scss">
 .image-main {
