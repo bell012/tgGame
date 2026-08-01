@@ -17,11 +17,7 @@
           v-if="gameCovernameShow && !isFallbackImage"
           class="absolute inset-x-0 bottom-2 z-[2] flex w-full flex-col items-center justify-center px-2 text-center font-impact-infoma-ultra"
         >
-          <span
-            class="w-full min-w-0 line-clamp-2 break-words text-[24px] font-[400] leading-[24px] text-common-100"
-          >
-            {{ displayGameName }}
-          </span>
+          <GameCoverNameText :name="displayGameName" />
           <div v-if="platformLogoImg.src" class="mt-1 h-[14px] w-auto max-w-[70%] bg-transparent">
             <gameRemoteImg
               :img="platformLogoImg"
@@ -85,6 +81,7 @@ import errorImg from '@/static/img/home/errImg.png'
 import errorImg1 from '@/static/img/home/errImg1.png'
 import PlayIcon from '@/static/svg/game/detail/play.svg'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
+import GameCoverNameText from '@/components/common/GameCoverNameText.vue'
 import CurrencySelect from '../currency-select/index.vue'
 import CurrencyBar from '../currency-bar/index.vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
