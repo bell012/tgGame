@@ -13,7 +13,7 @@ import {
   resolveGameCoverNameTypography,
   type ResolvedGameCoverNameTypography
 } from '@/utils/gameCoverNameTypography'
-import { computed, onBeforeUnmount, onMounted, ref, watch, withDefaults } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = withDefaults(
   defineProps<{
