@@ -60,7 +60,8 @@
               class="absolute inset-x-0 bottom-1 flex w-full min-w-0 flex-col items-center justify-center px-1 text-center font-impact-infoma-ultra"
             >
               <span
-                class="w-full min-w-0 line-clamp-2 break-words text-[11px] font-normal leading-[10px] text-common-100 font-impact-infoma-ultra"
+                class="recent-big-win-name w-full min-w-0 break-words text-common-100"
+                :style="getGameNameStyle(item.gameName)"
               >
                 {{ item.gameName }}
               </span>
@@ -174,6 +175,131 @@ const resolvePlatformLogos = async (items: RecentBigWin[]) => {
   platformLogoByGameId.value = Object.fromEntries(logoEntries.filter(([, logo]) => Boolean(logo)))
 }
 
+/** 游戏名最多占用的行数，超出即省略 */
+const NAME_MAX_LINES = 2
+
+interface NameFontPreset {
+  maxSize: number
+  minSize: number
+  maxLineHeight: number
+  minLineHeight: number
+  weight: number
+}
+
+/** 中英文各自的字号区间：优先用最大字号，放不下逐级缩到最小字号；H5 与 PC 分别取值 */
+const NAME_FONT_PRESETS: Record<'mobile' | 'desktop', Record<'cjk' | 'latin', NameFontPreset>> = {
+  mobile: {
+    cjk: { maxSize: 9, minSize: 7, maxLineHeight: 10, minLineHeight: 10, weight: 900 },
+    latin: { maxSize: 11, minSize: 7, maxLineHeight: 11, minLineHeight: 8, weight: 400 }
+  },
+  desktop: {
+    cjk: { maxSize: 10, minSize: 8, maxLineHeight: 11, minLineHeight: 11, weight: 900 },
+    latin: { maxSize: 12, minSize: 8, maxLineHeight: 12, minLineHeight: 9, weight: 400 }
+  }
+}
+
+interface NameFontStyle {
+  fontSize: string
+  lineHeight: string
+  fontWeight: string
+  [cssVariable: `--${string}`]: string
+}
+
+const CJK_PATTERN = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/
+
+const resolveNameFontPreset = (name: string): NameFontPreset => {
+  const presets = NAME_FONT_PRESETS[isMobile.value ? 'mobile' : 'desktop']
+  return CJK_PATTERN.test(name) ? presets.cjk : presets.latin
+}
+
+/** 行高在字号区间内线性过渡，端点严格取设计给定值 */
+const resolveNameLineHeight = (preset: NameFontPreset, fontSize: number) => {
+  if (preset.maxSize === preset.minSize) {
+    return preset.maxLineHeight
+  }
+  const ratio = (fontSize - preset.minSize) / (preset.maxSize - preset.minSize)
+  return preset.minLineHeight + (preset.maxLineHeight - preset.minLineHeight) * ratio
+}
+
+const toNameFontStyle = (preset: NameFontPreset, fontSize: number): NameFontStyle => ({
+  fontSize: `${fontSize}px`,
+  lineHeight: `${resolveNameLineHeight(preset, fontSize)}px`,
+  fontWeight: String(preset.weight),
+  '--name-max-lines': String(NAME_MAX_LINES)
+})
+
+const nameFontStyleByName = ref<Record<string, NameFontStyle>>({})
+
+const getGameNameStyle = (rawName: unknown): NameFontStyle => {
+  const name = String(rawName ?? '').trim()
+  const preset = resolveNameFontPreset(name)
+  return nameFontStyleByName.value[name] ?? toNameFontStyle(preset, preset.maxSize)
+}
+
+let nameMeasurerEl: HTMLElement | null = null
+
+/** 离屏节点，用真实渲染宽度与字体试排，避免逐个卡片反复读写布局 */
+const ensureNameMeasurer = () => {
+  if (nameMeasurerEl) {
+    return nameMeasurerEl
+  }
+  const el = document.createElement('span')
+  el.setAttribute('aria-hidden', 'true')
+  el.style.cssText =
+    'position:fixed;left:-9999px;top:0;display:block;visibility:hidden;pointer-events:none;text-align:center;overflow-wrap:break-word;'
+  document.body.appendChild(el)
+  nameMeasurerEl = el
+  return el
+}
+
+const computeNameFontStyles = () => {
+  const sample = marqueeInnerRef.value?.querySelector<HTMLElement>('.recent-big-win-name')
+  const availableWidth = sample?.clientWidth ?? 0
+  if (!sample || availableWidth <= 0) {
+    return
+  }
+
+  const names = [
+    ...new Set(list.value.map(item => String(item.gameName ?? '').trim()).filter(Boolean))
+  ]
+  if (names.length === 0) {
+    nameFontStyleByName.value = {}
+    return
+  }
+
+  const sampleStyle = window.getComputedStyle(sample)
+  const measurer = ensureNameMeasurer()
+  measurer.style.width = `${availableWidth}px`
+  measurer.style.fontFamily = sampleStyle.fontFamily
+  measurer.style.letterSpacing = sampleStyle.letterSpacing
+  measurer.style.wordBreak = sampleStyle.wordBreak
+
+  const nextStyles: Record<string, NameFontStyle> = {}
+
+  names.forEach(name => {
+    const preset = resolveNameFontPreset(name)
+    measurer.textContent = name
+
+    let fitted = toNameFontStyle(preset, preset.minSize)
+    for (let fontSize = preset.maxSize; fontSize >= preset.minSize; fontSize -= 1) {
+      const candidate = toNameFontStyle(preset, fontSize)
+      measurer.style.fontSize = candidate.fontSize
+      measurer.style.lineHeight = candidate.lineHeight
+      measurer.style.fontWeight = candidate.fontWeight
+
+      const maxHeight = resolveNameLineHeight(preset, fontSize) * NAME_MAX_LINES
+      if (measurer.scrollHeight <= maxHeight + 1) {
+        fitted = candidate
+        break
+      }
+    }
+
+    nextStyles[name] = fitted
+  })
+
+  nameFontStyleByName.value = nextStyles
+}
+
 const toGameImageUrl = (value: string) => {
   if (!value) {
     return placeholderImg
@@ -255,7 +381,6 @@ const getRecentBigWinsData = async () => {
           betAmount: derivedBet ?? item.betAmount ?? item.gameAmount
         }
       }) || []
-    console.log(list.value, 'list.value')
   } catch (error) {
     list.value = []
     console.error('getRecentBigWins failed', error)
@@ -389,9 +514,10 @@ const startMarqueeRaf = () => {
 }
 
 watch(
-  () => duplicatedList.value.length,
+  () => duplicatedList.value,
   () => {
     void nextTick(() => {
+      computeNameFontStyles()
       measureMarqueeSegment()
       startMarqueeRaf()
     })
@@ -405,6 +531,14 @@ watch(
     void getRecentBigWinsData()
   },
   { immediate: true }
+)
+
+/** H5 与 PC 字号区间不同，断点切换后需重新试排 */
+watch(
+  () => isMobile.value,
+  () => {
+    void nextTick(() => computeNameFontStyles())
+  }
 )
 
 watch(
@@ -435,6 +569,7 @@ const attachMarqueeResizeObserver = () => {
     }
     marqueeResizeDebounceTimer = window.setTimeout(() => {
       marqueeResizeDebounceTimer = 0
+      computeNameFontStyles()
       measureMarqueeSegment()
       startMarqueeRaf()
     }, 120)
@@ -474,6 +609,9 @@ onMounted(() => {
   }
   marqueeReducedMotionMql.addEventListener('change', marqueeReducedMotionHandler)
 
+  // Impact / Infoma Ultra 加载完成前后字形宽度不同，需按最终字体重排
+  void document.fonts?.ready.then(() => computeNameFontStyles())
+
   void nextTick(() => attachMarqueeResizeObserver())
 })
 
@@ -493,6 +631,8 @@ onUnmounted(() => {
   }
   marqueeResizeObserver?.disconnect()
   marqueeResizeObserver = null
+  nameMeasurerEl?.remove()
+  nameMeasurerEl = null
   stopMarqueeRaf()
 })
 </script>
@@ -510,6 +650,14 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.recent-big-win-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--name-max-lines, 2);
+  line-clamp: var(--name-max-lines, 2);
+  overflow: hidden;
 }
 
 .text-xxs {
