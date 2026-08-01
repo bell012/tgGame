@@ -14,11 +14,7 @@
       v-if="gameCovernameShow"
       class="absolute inset-x-0 bottom-2 flex w-full flex-col items-center justify-center px-2 text-center font-impact-infoma-ultra transition-opacity sm:group-hover:opacity-0"
     >
-      <span
-        class="w-full min-w-0 line-clamp-2 break-words text-[24px] font-[400] leading-[24px] text-common-100 sm:text-[32px] sm:leading-[32px]"
-      >
-        {{ game.itemName }}
-      </span>
+      <GameCoverNameText :name="game.itemName ?? ''" />
       <div v-if="platformLogoImg.src" class="mt-1 h-[14px] w-auto max-w-[70%] bg-transparent">
         <gameRemoteImg
           :img="platformLogoImg"
@@ -54,11 +50,7 @@
         v-if="gameCovernameShow"
         class="absolute inset-x-0 top-0 flex w-full items-start justify-center px-2 pt-2 text-center font-impact-infoma-ultra"
       >
-        <span
-          class="w-full min-w-0 line-clamp-2 break-words text-[32px] font-[400] leading-[32px] text-common-100"
-        >
-          {{ game.itemName }}
-        </span>
+        <GameCoverNameText :name="game.itemName ?? ''" />
       </div>
       <div
         class="flex h-9 w-9 items-center justify-center rounded-full bg-mask-20 transition-all duration-300 sm:group-hover:scale-150"
@@ -86,6 +78,7 @@ import { casinoIcons } from '@/static/svg/casino'
 import { StringExtension } from '@/utils/string-extension'
 import type { GameDataItem } from '@/api/interface/game'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
+import GameCoverNameText from '@/components/common/GameCoverNameText.vue'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useGameStore } from '@/stores/game'
 import underMaintenanceIcon from '@/static/svg/game/under_maintenance.svg'
