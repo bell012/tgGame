@@ -1,7 +1,8 @@
 <template>
   <span
     ref="textRef"
-    class="w-full min-w-0 line-clamp-2 break-words text-center font-impact-infoma-ultra text-common-100"
+    class="w-full min-w-0 break-words text-center uppercase text-common-100 transition-opacity duration-100 motion-reduce:transition-none"
+    :class="isFontReady ? 'opacity-100' : 'opacity-0'"
     :style="textStyle"
   >
     {{ name ?? '' }}
@@ -10,77 +11,80 @@
 
 <script setup lang="ts">
 import {
-  resolveGameCoverNameTypography,
-  type ResolvedGameCoverNameTypography
-} from '@/utils/gameCoverNameTypography'
-import { computed, onBeforeUnmount, onMounted, ref, watch, withDefaults } from 'vue'
+  useAdaptiveTextTypography,
+  type AdaptiveTypographyDisplayMode,
+  type AdaptiveTypographyPreset,
+  type AdaptiveTypographyPresets
+} from '@/composables/useAdaptiveTextTypography'
+import { ref } from 'vue'
 
-const props = withDefaults(
-  defineProps<{
-    name?: string | null
-  }>(),
-  {
-    name: ''
+interface Props {
+  name?: string | null
+  mode?: AdaptiveTypographyDisplayMode
+  maxLines?: number
+  typography?: Partial<AdaptiveTypographyPreset>
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  name: '',
+  mode: 'auto',
+  maxLines: 2,
+  typography: undefined
+})
+
+/** 游戏封面使用 H5 三倍设计稿换算值和 PC 最新设计稿字体值。 */
+const GAME_COVER_NAME_PRESETS: AdaptiveTypographyPresets = {
+  mobile: {
+    zh: {
+      fontFamily: '"Infoma Ultra", sans-serif',
+      maxFontSize: 20,
+      minFontSize: 16,
+      maxLineHeight: 22,
+      minLineHeight: 18,
+      fontWeight: 900,
+      letterSpacing: 0
+    },
+    eng: {
+      fontFamily: 'Impact, sans-serif',
+      maxFontSize: 24,
+      minFontSize: 17,
+      maxLineHeight: 70 / 3,
+      minLineHeight: 18,
+      fontWeight: 400,
+      letterSpacing: 0
+    }
+  },
+  pc: {
+    zh: {
+      fontFamily: '"Infoma Ultra", sans-serif',
+      maxFontSize: 29,
+      minFontSize: 23,
+      maxLineHeight: 32,
+      minLineHeight: 32,
+      fontWeight: 900,
+      letterSpacing: 0
+    },
+    eng: {
+      fontFamily: 'Impact, sans-serif',
+      maxFontSize: 35,
+      minFontSize: 25,
+      maxLineHeight: 34,
+      minLineHeight: 26,
+      fontWeight: 400,
+      letterSpacing: 0
+    }
   }
-)
+}
 
 const textRef = ref<HTMLElement | null>(null)
-const containerWidth = ref(0)
 
-const DEFAULT_TYPOGRAPHY: ResolvedGameCoverNameTypography = {
-  tier: 'max',
-  fontSize: 24,
-  lineHeight: 24,
-  fontWeight: 400
-}
-
-const typography = ref<ResolvedGameCoverNameTypography>(DEFAULT_TYPOGRAPHY)
-
-let resizeObserver: ResizeObserver | null = null
-
-const updateContainerWidth = () => {
-  containerWidth.value = textRef.value?.clientWidth ?? 0
-}
-
-const updateTypography = () => {
-  if (!containerWidth.value) {
-    typography.value = DEFAULT_TYPOGRAPHY
-    return
-  }
-
-  typography.value = resolveGameCoverNameTypography(props.name ?? '', containerWidth.value)
-}
-
-const textStyle = computed(() => ({
-  fontSize: `${typography.value.fontSize}px`,
-  lineHeight: `${typography.value.lineHeight}px`,
-  fontWeight: typography.value.fontWeight
-}))
-
-watch([() => props.name, containerWidth], () => {
-  updateTypography()
-})
-
-onMounted(async () => {
-  if (typeof document !== 'undefined' && document.fonts?.ready) {
-    await document.fonts.ready
-  }
-
-  updateContainerWidth()
-  updateTypography()
-
-  if (typeof ResizeObserver === 'undefined' || !textRef.value) {
-    return
-  }
-
-  resizeObserver = new ResizeObserver(() => {
-    updateContainerWidth()
-  })
-  resizeObserver.observe(textRef.value)
-})
-
-onBeforeUnmount(() => {
-  resizeObserver?.disconnect()
-  resizeObserver = null
+/** 使用公共自适应排版逻辑生成当前游戏名称的最终样式。 */
+const { textStyle, isFontReady } = useAdaptiveTextTypography({
+  text: () => props.name,
+  targetRef: textRef,
+  presets: GAME_COVER_NAME_PRESETS,
+  mode: () => props.mode,
+  maxLines: () => props.maxLines,
+  overrides: () => props.typography
 })
 </script>
