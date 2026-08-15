@@ -950,7 +950,8 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
         {
           id: 'rewards',
           name: t('menu.rewards'),
-          icon: newSideIcons.rewardsIcon
+          icon: newSideIcons.rewardsIcon,
+          handler: () => navigateTo('reward-center')
         },
         {
           id: 'rollover',
