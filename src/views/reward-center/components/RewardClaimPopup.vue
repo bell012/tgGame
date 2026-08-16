@@ -41,7 +41,10 @@ import { useRewardCenterClaim } from '@/composables/useRewardCenterClaim'
 import { useLocaleStore } from '@/stores/locale'
 import { useRewardCenterStore } from '@/stores/rewardCenter'
 import { getCurrentCurrency } from '@/utils/locale'
-import { formatRewardCenterSummaryTotal } from '@/views/reward-center/shared'
+import {
+  formatRewardCenterPopupAmount,
+  type RewardCenterListItem
+} from '@/views/reward-center/shared'
 import { navigateTo } from '@/utils/router'
 import RewardClaimPopupContent from './RewardClaimPopupContent.vue'
 
@@ -70,9 +73,16 @@ const showClaimSuccess = ref(false)
 const claimSuccessAmount = ref('0.00')
 const claimSuccessCurrency = ref(getCurrentCurrency())
 
-const pendingItems = computed(() => rewardCenterStore.getPendingListItems(t))
+const pendingItems = computed((): RewardCenterListItem[] =>
+  rewardCenterStore.getPendingListItems(t).map(item => ({
+    ...item,
+    upToAmountText: t('rewardCenter.upTo', {
+      amount: formatRewardCenterPopupAmount(item.raw.rewardAmount)
+    })
+  }))
+)
 const pendingTotalText = computed(() =>
-  formatRewardCenterSummaryTotal(rewardCenterStore.pendingTotalAmount)
+  formatRewardCenterPopupAmount(rewardCenterStore.pendingTotalAmount)
 )
 
 const panelClass = computed(() =>

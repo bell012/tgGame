@@ -18,18 +18,13 @@ export const REWARD_CENTER_ACTIVITY_CODE = {
   ENTRANT_TASK: 17
 } as const
 
-/** 单条领取必须带 rowId 的 activityCode */
+/** 单条领取必须带 rowId 的 activityCode（VIP / 洗码接口 rowId 可选） */
 export const ROW_ID_REQUIRED_ACTIVITY_CODES = new Set<number>([
   REWARD_CENTER_ACTIVITY_CODE.REBATE,
   REWARD_CENTER_ACTIVITY_CODE.RECHARGE,
   REWARD_CENTER_ACTIVITY_CODE.CHECK_IN,
   REWARD_CENTER_ACTIVITY_CODE.RESCUE,
   REWARD_CENTER_ACTIVITY_CODE.AGENT_COMMISSION,
-  REWARD_CENTER_ACTIVITY_CODE.REBATE_CASHBACK,
-  REWARD_CENTER_ACTIVITY_CODE.VIP_DAY,
-  REWARD_CENTER_ACTIVITY_CODE.VIP_WEEK,
-  REWARD_CENTER_ACTIVITY_CODE.VIP_MONTH,
-  REWARD_CENTER_ACTIVITY_CODE.VIP_UPGRADE,
   REWARD_CENTER_ACTIVITY_CODE.TASK,
   REWARD_CENTER_ACTIVITY_CODE.ENTRANT_TASK
 ])
@@ -80,6 +75,9 @@ export const isSupportedPendingClaimActivityCode = (
 
 const buildRowClaimPayload = (rowId: string | number) => ({ rowId })
 
+const buildOptionalRowClaimPayload = (rowId?: string | number) =>
+  rowId != null && rowId !== '' ? buildRowClaimPayload(rowId) : {}
+
 const buildObtainTaskAmountPayload = (record: RewardCenterRecord): ObtainTaskAmountForm => ({
   rowId: record.rowId!
 })
@@ -111,15 +109,15 @@ export const claimPendingBonus = async (
     case REWARD_CENTER_ACTIVITY_CODE.AGENT_COMMISSION:
       return Api.rewardCenter.obtainAgentRebateActivityReward(buildRowClaimPayload(record.rowId!))
     case REWARD_CENTER_ACTIVITY_CODE.REBATE_CASHBACK:
-      return Api.user.obtainRebate(buildRowClaimPayload(record.rowId!))
+      return Api.user.obtainRebate(buildOptionalRowClaimPayload(record.rowId))
     case REWARD_CENTER_ACTIVITY_CODE.VIP_DAY:
-      return Api.vip.dayPoints(buildRowClaimPayload(record.rowId!))
+      return Api.vip.dayPoints(buildOptionalRowClaimPayload(record.rowId))
     case REWARD_CENTER_ACTIVITY_CODE.VIP_WEEK:
-      return Api.vip.weekPoints(buildRowClaimPayload(record.rowId!))
+      return Api.vip.weekPoints(buildOptionalRowClaimPayload(record.rowId))
     case REWARD_CENTER_ACTIVITY_CODE.VIP_MONTH:
-      return Api.vip.monthPoints(buildRowClaimPayload(record.rowId!))
+      return Api.vip.monthPoints(buildOptionalRowClaimPayload(record.rowId))
     case REWARD_CENTER_ACTIVITY_CODE.VIP_UPGRADE:
-      return Api.vip.upgradedPoints(buildRowClaimPayload(record.rowId!))
+      return Api.vip.upgradedPoints(buildOptionalRowClaimPayload(record.rowId))
     case REWARD_CENTER_ACTIVITY_CODE.TASK:
       return Api.task.obtainTaskAmount(buildObtainTaskAmountPayload(record))
     case REWARD_CENTER_ACTIVITY_CODE.ENTRANT_TASK:

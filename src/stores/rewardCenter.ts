@@ -66,7 +66,7 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
   let claimedFetchGeneration = 0
 
   const hasPendingRewards = computed(() => pendingRecords.value.length > 0)
-  const isClaimAllDisabled = computed(() => pendingTotalAmount.value <= 0 || claiming.value)
+  const isClaimAllDisabled = computed(() => !hasPendingRewards.value || claiming.value)
 
   const syncClaimedTotalAmount = () => {
     claimedTotalAmount.value = sumClaimedBonusAmount(claimedRecords.value)
@@ -99,7 +99,9 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
       }
 
       pendingRecords.value = mapBonusItemsToPendingRecords(response.result?.bonus ?? [])
-      pendingTotalAmount.value = Number(response.result?.sumAmount ?? 0)
+      const apiSum = Number(response.result?.sumAmount ?? Number.NaN)
+      const listSum = sumClaimedBonusAmount(pendingRecords.value)
+      pendingTotalAmount.value = Number.isFinite(apiSum) && apiSum > 0 ? apiSum : listSum
     } catch (error) {
       if (generation !== pendingFetchGeneration) {
         return
@@ -221,11 +223,14 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
   }
 
   const claimAllRewards = async () => {
-    if (claiming.value || pendingTotalAmount.value <= 0) {
+    if (claiming.value || !hasPendingRewards.value) {
       return null
     }
 
-    const totalBeforeClaim = pendingTotalAmount.value
+    const totalBeforeClaim =
+      pendingTotalAmount.value > 0
+        ? pendingTotalAmount.value
+        : sumClaimedBonusAmount(pendingRecords.value)
     claiming.value = true
 
     try {

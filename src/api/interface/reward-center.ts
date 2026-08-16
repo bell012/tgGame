@@ -44,6 +44,9 @@ export interface RewardCenterLanguageName {
 export interface RewardCenterBonusItem {
   /** 正式数据返回；测试数据可能缺失 */
   activityId?: number
+  /** 部分环境用 rowId / id 作为领取主键 */
+  rowId?: string | number
+  id?: string | number
   /** 0 积分，1 现金 */
   moneyType?: number
   activityCode: number

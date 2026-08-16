@@ -8,11 +8,7 @@ import {
   getLanguageCode
 } from '@/utils/locale'
 import { formatDisplayTime } from '@/utils/date'
-import {
-  REWARD_CENTER_ACTIVITY_CODE,
-  ROW_ID_REQUIRED_ACTIVITY_CODES,
-  isSupportedPendingClaimActivityCode
-} from './pendingClaim'
+import { REWARD_CENTER_ACTIVITY_CODE, isSupportedPendingClaimActivityCode } from './pendingClaim'
 
 export type RewardCenterTab = 'pending' | 'claimed'
 
@@ -127,9 +123,22 @@ const REWARD_CENTER_CHANGE_TYPE_KEY_MAP: Record<number, string> = {
   85: 'designatedAccountReset'
 }
 
+const pickPendingBonusRowId = (item: RewardCenterBonusItem) => {
+  const candidates = [item.activityId, item.rowId, item.id]
+
+  for (const candidate of candidates) {
+    if (candidate != null && candidate !== '') {
+      return candidate
+    }
+  }
+
+  return undefined
+}
+
 const buildPendingBonusListId = (item: RewardCenterBonusItem, index: number) => {
-  if (item.activityId != null) {
-    return String(item.activityId)
+  const rowId = pickPendingBonusRowId(item)
+  if (rowId != null) {
+    return String(rowId)
   }
 
   if (item.startDate != null) {
@@ -175,7 +184,7 @@ export const mapBonusToRewardRecord = (
 
   return {
     listId: buildPendingBonusListId(item, index),
-    rowId: item.activityId,
+    rowId: pickPendingBonusRowId(item),
     activityCode: item.activityCode,
     activityName,
     fallbackActivityName,
@@ -211,10 +220,6 @@ export const isPendingRewardClaimable = (record: RewardCenterRecord) => {
 
   if (activityCode == null || !isSupportedPendingClaimActivityCode(activityCode)) {
     return false
-  }
-
-  if (ROW_ID_REQUIRED_ACTIVITY_CODES.has(activityCode)) {
-    return record.rowId != null && record.rowId !== ''
   }
 
   return true
@@ -354,8 +359,12 @@ export const mapRewardCenterRecord = (
   }
 }
 
-/** 汇总栏展示：币种符号 + 金额 */
+/** 奖励中心页面汇总：仅数字，不带货币符号 */
 export const formatRewardCenterSummaryTotal = (value: number | string | undefined) =>
+  formatBalance(Number(value ?? 0), 2)
+
+/** 顶部领取弹窗金额：币种符号 + 金额 */
+export const formatRewardCenterPopupAmount = (value: number | string | undefined) =>
   getFormattedBalance(Number(value ?? 0), getCurrentCurrency(), 2)
 
 /** 领取成功弹窗 amount：仅数字文本，符号由 ClaimSuccessPopup 处理 */
