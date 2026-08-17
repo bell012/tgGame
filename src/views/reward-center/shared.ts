@@ -228,6 +228,22 @@ export const isPendingRewardClaimable = (record: RewardCenterRecord) => {
 export const REWARD_CENTER_FETCH_SIZE = 100
 export const REWARD_CENTER_CLAIMED_PAGE_SIZE = 20
 
+/** 已领取列表 /acct/queryAcctHisBonusPage 固定筛选的账变类型 */
+export const REWARD_CENTER_CLAIMED_CHANGE_TYPES = [
+  26, // 返利活动
+  27, // 充值活动
+  25, // 签到活动
+  23, // 救援金活动
+  31, // 代理返佣活动
+  8, // 返水
+  38, // 日礼金
+  10, // 周礼金
+  11, // 月礼金
+  13, // VIP晋级彩金
+  15, // 任务奖金
+  22 // 新人福利
+] as const
+
 export type AcctHisBonusRecord = QueryAcctHisPageResult['records'][number]
 
 export const buildRewardCenterPendingQuery = () => ({
@@ -278,6 +294,7 @@ export const buildRewardCenterClaimedQuery = (params: {
   return {
     startTime,
     endTime,
+    changeTypes: [...REWARD_CENTER_CLAIMED_CHANGE_TYPES],
     param: {
       currency: getCurrentCurrency()
     },
@@ -313,7 +330,7 @@ export const sumClaimedBonusAmount = (records: RewardCenterRecord[]) =>
 
 export const getRewardCenterDesktopTabClass = (isActive: boolean) => {
   const base =
-    'flex h-12 w-full items-center justify-center rounded-lg px-4 cursor-pointer transition-colors'
+    'flex h-12 w-full items-center justify-start rounded-lg px-4 text-left cursor-pointer transition-colors'
 
   if (isActive) {
     return `${base} bg-theme-primary font-bold text-text-4`

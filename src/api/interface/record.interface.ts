@@ -132,6 +132,7 @@ export interface QueryAcctHisPageResult {
 export interface QueryAcctHisBonusPageForm {
   startTime: number | null
   endTime: number | null
+  changeTypes: number[]
   page: {
     current: number
     size: number

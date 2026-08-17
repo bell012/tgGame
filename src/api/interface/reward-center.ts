@@ -79,6 +79,7 @@ export interface QueryRewardCenterPendingResponse extends RewardCenterApiRespons
 export interface QueryRewardCenterClaimedForm {
   startTime: number | null
   endTime: number | null
+  changeTypes: number[]
   param: {
     currency: string | null
   }
