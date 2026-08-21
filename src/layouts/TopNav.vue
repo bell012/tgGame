@@ -185,10 +185,17 @@
             <!-- 礼物图标 -->
             <div
               ref="mobileGiftMenuRef"
-              class="cursor-pointer search w-[33px] h-[33px] flex items-center justify-center rounded-lg mr-2"
+              class="relative mr-2 flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-lg search"
               @click.stop="openRewardClaimPopup"
             >
-              <GiftIcon class="w-4 h-4 fill-none" />
+              <GiftIcon class="h-4 w-4 fill-none" />
+              <!-- H5 稿 1125÷3：角标 18×12，圆角 4，字号 8，绿底黑字 -->
+              <span
+                v-if="pendingClaimBadgeText"
+                class="absolute -right-[2px] -top-[6px] z-[1] flex h-3 min-w-[18px] items-center justify-center rounded bg-theme-primary px-1 text-[8px] font-[700] leading-none text-black"
+              >
+                {{ pendingClaimBadgeText }}
+              </span>
             </div>
             <!-- 通知图标 -->
             <div
@@ -215,10 +222,17 @@
           <!-- 礼物图标 -->
           <div ref="desktopGiftMenuRef" class="relative hidden sm:block">
             <div
-              class="flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-lg search mr-3"
+              class="relative mr-3 flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-lg search"
               @click.stop="openRewardClaimPopup"
             >
               <GiftIcon class="h-6 w-6 fill-none" />
+              <!-- PC 暂无独立稿：按 H5 角标比例略放大 -->
+              <span
+                v-if="pendingClaimBadgeText"
+                class="absolute -right-0.5 -top-1 z-[1] flex h-[14px] min-w-[20px] items-center justify-center rounded bg-theme-primary px-1 text-[10px] font-[700] leading-none text-black"
+              >
+                {{ pendingClaimBadgeText }}
+              </span>
             </div>
 
             <RewardClaimPopup
@@ -352,6 +366,7 @@ import { useAuthModalStore } from '@/stores/authModal'
 import { useLayoutStore } from '@/stores/layout'
 import { useLocaleStore } from '@/stores/locale'
 import { useNotificationIndicatorStore } from '@/stores/notificationIndicator'
+import { useRewardCenterStore } from '@/stores/rewardCenter'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
 import { stripLocalePrefix, type Locale } from '@/utils/locale'
@@ -371,6 +386,7 @@ const authModalStore = useAuthModalStore()
 const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
 const notificationIndicatorStore = useNotificationIndicatorStore()
+const rewardCenterStore = useRewardCenterStore()
 const siteConfigStore = useSiteConfigStore()
 const route = useRoute()
 const router = useRouter()
@@ -379,6 +395,8 @@ const isMobile = useIsMobile()
 const { acctInfo, userInfo } = storeToRefs(userStore)
 const { visible: showLoginModal } = storeToRefs(authModalStore)
 const { hasUnread } = storeToRefs(notificationIndicatorStore)
+const { pendingClaimCount } = storeToRefs(rewardCenterStore)
+const { currentCurrency } = storeToRefs(localeStore)
 
 const props = withDefaults(
   defineProps<{
@@ -427,6 +445,74 @@ type RewardClaimPopupExpose = {
 const isLoggedIn = computed(() => {
   return Boolean(userInfo.value?.tradeToken || acctInfo.value?.memberId)
 })
+
+const HOME_PENDING_POLL_MS = 60_000
+let homePendingPollTimer: ReturnType<typeof setInterval> | null = null
+
+const isHomeRoute = computed(() => {
+  const name = String(route.name || '')
+  return name === 'Home' || name === 'LocaleHome'
+})
+
+const pendingClaimBadgeText = computed(() => {
+  const count = pendingClaimCount.value
+  if (count <= 0) {
+    return ''
+  }
+  return count > 99 ? '99+' : String(count)
+})
+
+const refreshPendingClaimCount = (silent = true) => {
+  if (!isLoggedIn.value) {
+    return
+  }
+
+  void rewardCenterStore.fetchPendingRewards({ silent })
+}
+
+const stopHomePendingPoll = () => {
+  if (homePendingPollTimer == null) {
+    return
+  }
+
+  clearInterval(homePendingPollTimer)
+  homePendingPollTimer = null
+}
+
+const startHomePendingPoll = () => {
+  stopHomePendingPoll()
+
+  if (!isLoggedIn.value || !isHomeRoute.value) {
+    return
+  }
+
+  homePendingPollTimer = setInterval(() => {
+    if (!isLoggedIn.value || !isHomeRoute.value) {
+      stopHomePendingPoll()
+      return
+    }
+
+    // 60s 轮询：静默刷新，不打断弹窗列表
+    refreshPendingClaimCount(true)
+  }, HOME_PENDING_POLL_MS)
+}
+
+/** 已登录：任意页静默拉一次角标；仅首页开启 60s 轮询；离开首页只停轮询 */
+const syncPendingClaimCount = () => {
+  if (!isLoggedIn.value) {
+    stopHomePendingPoll()
+    return
+  }
+
+  refreshPendingClaimCount(true)
+
+  if (isHomeRoute.value) {
+    startHomePendingPoll()
+    return
+  }
+
+  stopHomePendingPoll()
+}
 
 // 顶部导航显示通知图标时，PC/H5 均按同一未读规则切换铃铛图片。
 const shouldShowUnreadBell = computed(() => {
@@ -490,11 +576,23 @@ const refreshVisibleNotificationIndicator = async () => {
 
 // 登录成功后主动刷新普通通知未读态，便于首页首次展示正确铃铛状态。
 const handleLoginStateChange = (loggedIn: boolean, previousLoggedIn?: boolean) => {
-  if (!loggedIn || previousLoggedIn) {
+  if (!loggedIn) {
+    stopHomePendingPoll()
+    rewardCenterStore.resetPendingRewards()
     return
   }
 
+  if (previousLoggedIn) {
+    return
+  }
+
+  // 1. 登录成功：请求一次待领取数量
   void notificationIndicatorStore.refreshStaticUnread()
+  refreshPendingClaimCount(true)
+  // 若登录后落在首页，同时开启 60s 轮询
+  if (isHomeRoute.value) {
+    startHomePendingPoll()
+  }
 }
 
 // TopNav 仍显示时路由切换后主动刷新普通通知未读态，保证 PC/H5 铃铛图片同步。
@@ -553,12 +651,15 @@ onMounted(() => {
   document.addEventListener('visibilitychange', handleVisibilityChange)
 
   void refreshVisibleNotificationIndicator()
+  // 已登录：任意页拉一次角标；首页再开 60s 轮询
+  syncPendingClaimCount()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('storage', handleStorageChange)
   document.removeEventListener('click', handleDocumentClick)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
+  stopHomePendingPoll()
   if (h5FoldPulseTimer) {
     clearTimeout(h5FoldPulseTimer)
   }
@@ -586,6 +687,27 @@ watch(
     handleTopNavRouteChange(path, previousPath)
   }
 )
+
+// 进入首页：再拉一次并开轮询；离开首页只停轮询，保留角标数据
+watch(isHomeRoute, (onHome, wasOnHome) => {
+  if (onHome && !wasOnHome) {
+    syncPendingClaimCount()
+    return
+  }
+
+  if (!onHome) {
+    stopHomePendingPoll()
+  }
+})
+
+// 切币种：已登录立刻刷新角标（不依赖弹窗 / 60s）
+watch(currentCurrency, (nextCurrency, previousCurrency) => {
+  if (!isLoggedIn.value || nextCurrency === previousCurrency) {
+    return
+  }
+
+  refreshPendingClaimCount(true)
+})
 
 const handleToggleSidebar = () => {
   runFoldIconScalePulse('sidebar')
@@ -668,7 +790,16 @@ const openRewardClaimPopup = () => {
 
   showCurrencyPopup.value = false
   showUserMenu.value = false
-  showRewardClaimPopup.value = !showRewardClaimPopup.value
+
+  const willOpen = !showRewardClaimPopup.value
+  showRewardClaimPopup.value = willOpen
+
+  // 礼物入口全局可用：关→开时必须拉待领取（有数据则静默，避免卸列表）
+  if (willOpen) {
+    void rewardCenterStore.fetchPendingRewards({
+      silent: rewardCenterStore.pendingClaimCount > 0
+    })
+  }
 }
 
 const toggleH5Menu = () => {

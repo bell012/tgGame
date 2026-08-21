@@ -1,6 +1,12 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
-    <template v-if="showPromoCard">
+    <template v-if="isInitialLoading">
+      <div class="py-8 text-center text-xs text-text-2">
+        {{ t('common.loading') }}
+      </div>
+    </template>
+
+    <template v-else-if="showPromoCard">
       <RewardClaimPromoCard
         class="shrink-0"
         :variant="mobile ? 'mobile' : 'desktop'"
@@ -20,11 +26,7 @@
       />
 
       <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <div v-if="pendingLoading" class="py-8 text-center text-xs text-text-2">
-          {{ t('common.loading') }}
-        </div>
-
-        <div v-else-if="pendingItems.length > 0" class="flex flex-col gap-2">
+        <div v-if="pendingItems.length > 0" class="flex flex-col gap-2">
           <RewardRecordCard
             v-for="item in pendingItems"
             :key="item.id"
@@ -90,5 +92,7 @@ defineEmits<{
 
 const { t } = useI18n()
 
-const showPromoCard = computed(() => props.pendingLoading || props.pendingItems.length === 0)
+/** 无缓存首次打开：只显示 loading，不闪空汇总 */
+const isInitialLoading = computed(() => props.pendingLoading && props.pendingItems.length === 0)
+const showPromoCard = computed(() => !props.pendingLoading && props.pendingItems.length === 0)
 </script>

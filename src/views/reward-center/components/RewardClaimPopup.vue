@@ -32,13 +32,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { storeToRefs } from 'pinia'
 import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useRewardCenterClaim } from '@/composables/useRewardCenterClaim'
-import { useLocaleStore } from '@/stores/locale'
 import { useRewardCenterStore } from '@/stores/rewardCenter'
 import { getCurrentCurrency } from '@/utils/locale'
 import {
@@ -65,8 +63,6 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const rewardCenterStore = useRewardCenterStore()
-const localeStore = useLocaleStore()
-const { currentCurrency } = storeToRefs(localeStore)
 
 const panelRef = ref<HTMLElement | null>(null)
 const showClaimSuccess = ref(false)
@@ -95,24 +91,7 @@ const close = () => emit('update:visible', false)
 
 usePageScrollLock(() => props.inline && props.visible)
 
-watch(
-  () => props.visible,
-  visible => {
-    if (!visible) {
-      return
-    }
-
-    void rewardCenterStore.fetchPendingRewards()
-  }
-)
-
-watch(currentCurrency, () => {
-  if (!props.visible) {
-    return
-  }
-
-  void rewardCenterStore.fetchPendingRewards()
-})
+// 弹窗列表与角标共用 store；币种切换由 TopNav 统一刷新，此处不再重复请求
 
 defineExpose({
   getPanelEl: () => panelRef.value

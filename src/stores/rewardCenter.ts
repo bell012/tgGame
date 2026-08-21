@@ -25,6 +25,11 @@ import {
 
 type TranslateFn = (key: string, named?: Record<string, unknown>) => string
 
+type FetchPendingRewardsOptions = {
+  /** 静默刷新：不打 pendingLoading，避免卸掉现有列表 */
+  silent?: boolean
+}
+
 const appendClaimedRecords = (
   current: RewardCenterRecord[],
   incoming: RewardCenterRecord[]
@@ -63,13 +68,40 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
   const claimedFilterValues = ref<RewardCenterFilterValues>(createDefaultRewardCenterFilterValues())
 
   let pendingFetchGeneration = 0
+  let pendingLoadingGeneration = 0
   let claimedFetchGeneration = 0
 
   const hasPendingRewards = computed(() => pendingRecords.value.length > 0)
+  /** 首页礼物角标：待领取 bonus 条数 */
+  const pendingClaimCount = computed(() => pendingRecords.value.length)
   const isClaimAllDisabled = computed(() => !hasPendingRewards.value || claiming.value)
 
   const syncClaimedTotalAmount = () => {
     claimedTotalAmount.value = sumClaimedBonusAmount(claimedRecords.value)
+  }
+
+  const syncPendingTotalAmount = () => {
+    pendingTotalAmount.value = sumClaimedBonusAmount(pendingRecords.value)
+  }
+
+  const removePendingRecordById = (itemId: string) => {
+    pendingRecords.value = pendingRecords.value.filter(
+      record => getRewardCenterRecordId(record) !== itemId
+    )
+    syncPendingTotalAmount()
+  }
+
+  const clearPendingRecordsLocally = () => {
+    pendingRecords.value = []
+    pendingTotalAmount.value = 0
+  }
+
+  const resetPendingRewards = () => {
+    pendingFetchGeneration += 1
+    pendingLoadingGeneration = 0
+    pendingRecords.value = []
+    pendingTotalAmount.value = 0
+    pendingLoading.value = false
   }
 
   const resetClaimedList = () => {
@@ -85,9 +117,14 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
   const getClaimedListItems = (t: TranslateFn): RewardCenterListItem[] =>
     claimedRecords.value.map(record => mapRewardCenterRecord(record, t, 'claimed'))
 
-  const fetchPendingRewards = async () => {
+  const fetchPendingRewards = async (options?: FetchPendingRewardsOptions) => {
+    const silent = options?.silent === true
     const generation = ++pendingFetchGeneration
-    pendingLoading.value = true
+
+    if (!silent) {
+      pendingLoadingGeneration = generation
+      pendingLoading.value = true
+    }
 
     try {
       const response = ensureApiBusinessSuccess(
@@ -107,11 +144,10 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
         return
       }
 
+      // 失败保留当前列表，避免角标/弹窗被清空
       console.error('[reward-center] fetch pending failed:', error)
-      pendingRecords.value = []
-      pendingTotalAmount.value = 0
     } finally {
-      if (generation === pendingFetchGeneration) {
+      if (!silent && pendingLoadingGeneration === generation) {
         pendingLoading.value = false
       }
     }
@@ -215,7 +251,9 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
     try {
       const response = ensureApiBusinessSuccess(await claimPendingBonus(record))
 
-      await fetchPendingRewards()
+      // 领取已成功：先本地移除；随后 silent 刷新会抬 generation，避免在途轮询写回已领项
+      removePendingRecordById(itemId)
+      await fetchPendingRewards({ silent: true })
       return parsePendingClaimRewardAmount(response, Number(record.rewardAmount ?? 0))
     } finally {
       claiming.value = false
@@ -241,7 +279,9 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
       const responseAmount = Number(response.result?.rewardAmount ?? Number.NaN)
       const claimedAmount = Number.isFinite(responseAmount) ? responseAmount : totalBeforeClaim
 
-      await fetchPendingRewards()
+      // 一键领取已成功：先本地清空；silent 刷新抬 generation 防在途轮询写回
+      clearPendingRecordsLocally()
+      await fetchPendingRewards({ silent: true })
 
       return claimedAmount > 0 ? claimedAmount : null
     } finally {
@@ -276,6 +316,7 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
     claiming,
     claimedFilterValues,
     hasPendingRewards,
+    pendingClaimCount,
     isClaimAllDisabled,
     getPendingListItems,
     getClaimedListItems,
@@ -285,6 +326,7 @@ export const useRewardCenterStore = defineStore('rewardCenter', () => {
     claimRewardItem,
     claimAllRewards,
     setClaimedFilterValues,
-    loadTabData
+    loadTabData,
+    resetPendingRewards
   }
 })
