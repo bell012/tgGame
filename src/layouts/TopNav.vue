@@ -668,7 +668,7 @@ const openRewardClaimPopup = () => {
 
   showCurrencyPopup.value = false
   showUserMenu.value = false
-  showRewardClaimPopup.value = true
+  showRewardClaimPopup.value = !showRewardClaimPopup.value
 }
 
 const toggleH5Menu = () => {
