@@ -10,18 +10,32 @@ import type {
 import type { QueryAcctHisBonusPageResponse } from '@/api/interface/record.interface'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
 
-/** 查询待领取奖励列表 */
-export const queryRewardCenterPending = (
+const queryRewardCenterPendingByUrl = (
+  url: string,
   data: QueryRewardCenterPendingForm,
   options?: ApiResponseToastOptions
 ): Promise<QueryRewardCenterPendingResponse> =>
   request({
-    url: '/ac/queryBonusAppMultipleCurrencies',
+    url,
     method: 'post',
     data,
     showSuccessToast: false,
     showErrorToast: options?.showErrorToast ?? false
   })
+
+/** 查询待领取奖励列表 */
+export const queryRewardCenterPending = (
+  data: QueryRewardCenterPendingForm,
+  options?: ApiResponseToastOptions
+): Promise<QueryRewardCenterPendingResponse> =>
+  queryRewardCenterPendingByUrl('/ac/queryBonusApp', data, options)
+
+/** 查询待领取奖励列表（多币种接口，保留备用） */
+export const queryRewardCenterPendingMultipleCurrencies = (
+  data: QueryRewardCenterPendingForm,
+  options?: ApiResponseToastOptions
+): Promise<QueryRewardCenterPendingResponse> =>
+  queryRewardCenterPendingByUrl('/ac/queryBonusAppMultipleCurrencies', data, options)
 
 /** 查询已领取奖励列表 */
 export const queryRewardCenterClaimed = (

@@ -40,7 +40,7 @@ export interface RewardCenterLanguageName {
   name: string
 }
 
-/** /ac/queryBonusAppMultipleCurrencies 单条 bonus */
+/** /ac/queryBonusApp、/ac/queryBonusAppMultipleCurrencies 单条 bonus */
 export interface RewardCenterBonusItem {
   /** 正式数据返回；测试数据可能缺失 */
   activityId?: number
