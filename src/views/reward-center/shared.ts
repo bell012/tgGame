@@ -42,6 +42,22 @@ const REWARD_CENTER_ACTIVITY_TYPE_KEY_MAP: Record<number, string> = {
   [REWARD_CENTER_ACTIVITY_CODE.ENTRANT_TASK]: 'entrantTask'
 }
 
+/** 已领取账变类型统一回奖励类型文案，避免 Pending / Claimed 展示不一致 */
+const REWARD_CENTER_CLAIMED_ACTIVITY_TYPE_KEY_MAP: Record<number, string> = {
+  26: 'rebate',
+  27: 'recharge',
+  25: 'checkIn',
+  23: 'rescue',
+  31: 'agentCommission',
+  8: 'rebateCashback',
+  38: 'vipDay',
+  10: 'vipWeek',
+  11: 'vipMonth',
+  13: 'vipUpgrade',
+  15: 'task',
+  22: 'entrantTask'
+}
+
 const REWARD_CENTER_CHANGE_TYPE_KEY_MAP: Record<number, string> = {
   1: 'game',
   2: 'deposit',
@@ -316,6 +332,11 @@ export const mapAcctHisBonusToRewardRecord = (record: AcctHisBonusRecord): Rewar
 
 export const resolveClaimedBonusActivityName = (record: RewardCenterRecord, t: TranslateFn) => {
   if (record.changeType != null) {
+    const activityTypeKey = REWARD_CENTER_CLAIMED_ACTIVITY_TYPE_KEY_MAP[record.changeType]
+    if (activityTypeKey) {
+      return t(`rewardCenter.activityTypes.${activityTypeKey}`)
+    }
+
     const key = REWARD_CENTER_CHANGE_TYPE_KEY_MAP[record.changeType]
     if (key) {
       return t(`rewardCenter.changeTypes.${key}`)
