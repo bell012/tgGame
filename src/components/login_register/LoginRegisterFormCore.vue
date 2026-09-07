@@ -430,7 +430,7 @@ const handleRegister = async () => {
     const invitationCode = getInvitationCode()
 
     const registerData = {
-      memberId: `${defaultAreaCode}${formData.value.signup.account}`,
+      memberId: `${formData.value.signup.account}`,
       channelId: '1',
       languageCode: languageCode,
       requestMethod: 1,
