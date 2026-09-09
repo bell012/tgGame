@@ -3,6 +3,7 @@ import { ref } from 'vue'
 
 const DEFAULT_GAME_SELECTION_PATH = '/casino'
 const GAME_CATEGORIES_MENU_ID = 'game-categories'
+const EXPLORE_CASINO_TAB_QUERY_KEY = 'casinoTab'
 
 /** 最近一次选游列表路径（无语言前缀），供关闭游戏后返回 */
 const lastGameSelectionPath = ref('')
@@ -81,14 +82,30 @@ const syncSidebarForSelectionPath = (path: string) => {
   ensureExpanded(GAME_CATEGORIES_MENU_ID)
 }
 
+const splitPathAndQuery = (path: string) => {
+  const [rawPathname, rawSearch = ''] = path.split('?')
+  const pathname = normalizePathname(rawPathname ?? '')
+  const params = new URLSearchParams((rawSearch.split('#')[0] ?? '').trim())
+  return { pathname, params }
+}
+
+const buildExploreReturnPath = (params: URLSearchParams) => {
+  const casinoTab = (params.get(EXPLORE_CASINO_TAB_QUERY_KEY) ?? '').trim()
+  if (!casinoTab) {
+    return '/explore'
+  }
+
+  return `/explore?${EXPLORE_CASINO_TAB_QUERY_KEY}=${encodeURIComponent(casinoTab)}`
+}
+
 export const recordGameSelectionPath = (path: string) => {
-  const normalized = normalizePathname(path)
-  if (!isGameReturnPath(normalized)) {
+  const { pathname, params } = splitPathAndQuery(path)
+  if (!isGameReturnPath(pathname)) {
     return
   }
 
-  lastGameSelectionPath.value = normalized
-  syncSidebarForSelectionPath(normalized)
+  lastGameSelectionPath.value = pathname === '/explore' ? buildExploreReturnPath(params) : pathname
+  syncSidebarForSelectionPath(pathname)
 }
 
 export const resolveGameSelectionPath = () => {

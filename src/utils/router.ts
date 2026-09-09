@@ -23,6 +23,19 @@ export const getCurrentLocale = (): string => {
   return getStorageLanguageCode(String(i18n.global.locale.value))
 }
 
+const splitFullPath = (fullPath: string) => {
+  const [pathnameWithHash, rawSearch = ''] = fullPath.split('?')
+  const pathname = (pathnameWithHash ?? '/').split('#')[0] || '/'
+  const queryFromPath: Record<string, string> = {}
+  const params = new URLSearchParams(rawSearch.split('#')[0] ?? '')
+
+  params.forEach((value, key) => {
+    queryFromPath[key] = value
+  })
+
+  return { pathname, queryFromPath }
+}
+
 /**
  * 导航到指定路径（自动处理语言前缀）
  * @param path - 目标路径
@@ -35,11 +48,11 @@ export const navigateTo = (
 ) => {
   const locale = getCurrentLocale()
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
-  const fullPath = withLocalePrefix(normalizedPath, locale)
+  const { pathname, queryFromPath } = splitFullPath(withLocalePrefix(normalizedPath, locale))
 
   const routeOptions: any = {
-    path: fullPath,
-    query: options?.query
+    path: pathname,
+    query: { ...queryFromPath, ...options?.query }
   }
 
   if (options?.state) {

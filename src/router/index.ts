@@ -940,11 +940,12 @@ router.beforeEach((to, _from, next) => {
 })
 
 router.afterEach(to => {
-  const path = stripLocalePrefix(to.path)
-  if (path === '/') {
+  const fullPath = stripLocalePrefix(to.fullPath)
+  const pathname = fullPath.split('?')[0]?.split('#')[0] ?? fullPath
+  if (pathname === '/') {
     collapseSidebarMenus()
   }
-  recordGameSelectionPath(path)
+  recordGameSelectionPath(fullPath)
 })
 
 export default router
