@@ -27,8 +27,14 @@ const firstSegmentAfter = (path: string, prefix: string): string => {
   return rest
 }
 
-const isGameSelectionPath = (path: string): boolean => {
-  if (path === '/casino' || path === '/favorites-games' || path === '/recently-played-games') {
+const isGameReturnPath = (path: string): boolean => {
+  if (
+    path === '/' ||
+    path === '/explore' ||
+    path === '/casino' ||
+    path === '/favorites-games' ||
+    path === '/recently-played-games'
+  ) {
     return true
   }
   return Boolean(firstSegmentAfter(path, '/casino/') || firstSegmentAfter(path, '/gamelist/'))
@@ -42,6 +48,10 @@ const ensureExpanded = (menuId: string) => {
 }
 
 const syncSidebarForSelectionPath = (path: string) => {
+  if (path === '/' || path === '/explore') {
+    return
+  }
+
   const { activeMenuId } = useSidebarMenuState()
 
   if (path === '/casino') {
@@ -73,7 +83,7 @@ const syncSidebarForSelectionPath = (path: string) => {
 
 export const recordGameSelectionPath = (path: string) => {
   const normalized = normalizePathname(path)
-  if (!isGameSelectionPath(normalized)) {
+  if (!isGameReturnPath(normalized)) {
     return
   }
 

@@ -5,10 +5,17 @@ const expandedMenus = ref<string[]>([])
 const activeMenuId = ref('')
 const activeThirdLevelMenuId = ref('')
 
+export const collapseSidebarMenus = () => {
+  expandedMenus.value = []
+  activeMenuId.value = ''
+  activeThirdLevelMenuId.value = ''
+}
+
 export function useSidebarMenuState() {
   return {
     expandedMenus,
     activeMenuId,
-    activeThirdLevelMenuId
+    activeThirdLevelMenuId,
+    collapseSidebarMenus
   }
 }
