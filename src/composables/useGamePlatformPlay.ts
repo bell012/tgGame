@@ -1,5 +1,6 @@
 import Api from '@/api'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { resolveGameSelectionPath } from '@/composables/useGameSelectionReturn'
 import { savePlayedGameRowId } from '@/utils/played-games-cache'
 import { navigateTo } from '@/utils/router'
 import { computed, inject, type ComputedRef } from 'vue'
@@ -62,7 +63,8 @@ export function useGamePlatformPlay() {
                 isHorizontal: res.result?.isHorizontal,
                 gameCode,
                 companyCode,
-                rowId
+                rowId,
+                returnPath: resolveGameSelectionPath()
               }
             }
           })

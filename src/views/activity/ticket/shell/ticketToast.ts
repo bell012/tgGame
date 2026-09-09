@@ -12,6 +12,8 @@ interface GlobalTicketToastState {
   taskPopVisible: boolean
   /** 最近一次 useTicket 消耗的票券，结果弹窗关闭后用于刷新列表并选中下一项 */
   lastConsumedTicketRecord: MbTicketRecord | null
+  /** 红包等无结果弹窗的玩法：递增后由 Shell 复用 refreshSessionAfterResultDismiss */
+  sessionRefreshSeq: number
 }
 
 export const globalTicketToastState = reactive<GlobalTicketToastState>({
@@ -20,7 +22,8 @@ export const globalTicketToastState = reactive<GlobalTicketToastState>({
   activeTicketRecord: null,
   mbTicketRecords: [],
   taskPopVisible: false,
-  lastConsumedTicketRecord: null
+  lastConsumedTicketRecord: null,
+  sessionRefreshSeq: 0
 })
 
 export const setTicketSession = (record: MbTicketRecord, records: MbTicketRecord[]) => {
@@ -80,4 +83,9 @@ export const openTicketTaskPop = () => {
 
 export const closeTicketTaskPop = () => {
   globalTicketToastState.taskPopVisible = false
+}
+
+/** 红包等原地开奖玩法：请求与结果弹窗关闭相同的列表刷新 */
+export const requestTicketSessionRefresh = () => {
+  globalTicketToastState.sessionRefreshSeq += 1
 }

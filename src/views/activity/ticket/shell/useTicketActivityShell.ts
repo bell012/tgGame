@@ -187,20 +187,18 @@ export const useTicketActivityShell = (
     }
   }
 
-  let pendingRefreshAfterReceive = false
-
   watch(
     () => globalTicketDialogState.kind,
     async (kind, prevKind) => {
       if (prevKind === 'result' && kind === 'receive') {
-        pendingRefreshAfterReceive = true
         await options.onResultDismiss?.()
         return
       }
 
-      if (prevKind === 'receive' && kind === 'none' && pendingRefreshAfterReceive) {
-        pendingRefreshAfterReceive = false
-        await refreshSessionAfterResultDismiss()
+      if (prevKind === 'receive' && kind === 'none') {
+        if (globalTicketToastState.lastConsumedTicketRecord) {
+          await refreshSessionAfterResultDismiss()
+        }
         return
       }
 
@@ -208,6 +206,15 @@ export const useTicketActivityShell = (
         await options.onResultDismiss?.()
         await refreshSessionAfterResultDismiss()
       }
+    }
+  )
+
+  watch(
+    () => globalTicketToastState.sessionRefreshSeq,
+    async (seq, prevSeq) => {
+      if (prevSeq == null || seq <= prevSeq) return
+      if (!globalTicketToastState.lastConsumedTicketRecord) return
+      await refreshSessionAfterResultDismiss()
     }
   )
 

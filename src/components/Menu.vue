@@ -448,6 +448,7 @@
 <script setup lang="ts">
 import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useSidebarMenuState } from '@/composables/useSidebarMenuState'
 import Arrow_down from '@/static/svg/arrow_down.svg?component'
 import Arrow_right from '@/static/svg/arrow_right.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
@@ -538,14 +539,7 @@ type SidebarMenuGroup = {
   groupKey?: string
 }
 
-// 展开的菜单 ID 列表
-const expandedMenus = ref<string[]>([])
-
-// 当前选中的菜单
-const activeMenuId = ref<string>('')
-
-// 当前选中的三级菜单
-const activeThirdLevelMenuId = ref<string>('')
+const { expandedMenus, activeMenuId, activeThirdLevelMenuId } = useSidebarMenuState()
 const showLeaveFeedbackModal = ref(false)
 const showLanguagePopup = ref(false)
 

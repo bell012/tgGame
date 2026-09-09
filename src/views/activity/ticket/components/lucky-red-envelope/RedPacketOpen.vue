@@ -116,13 +116,9 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTicketUseAction } from '../../shared'
 import { LUCKY_RED_ENVELOPE_LOTTIE } from '../../shared/assets'
-import { isSameMbTicketRecord, TICKET_TYPE_TO_GAME_ID } from '../../shared/mappers/mbTicketMapper'
+import { isSameMbTicketRecord } from '../../shared/mappers/mbTicketMapper'
 import { openTicketReceivePopFromUseResult } from '../../shared/mappers/mapReceiveTickets'
-import {
-  globalTicketToastState,
-  setActiveTicketRecord,
-  switchTicketGame
-} from '../../shell/ticketToast'
+import { globalTicketToastState, requestTicketSessionRefresh } from '../../shell/ticketToast'
 import { useRedEnvelopeLottie } from './useRedEnvelopeLottie'
 
 interface RedPacketTicketRecord extends MbTicketRecord {
@@ -248,39 +244,25 @@ const isActiveTicketUnchanged = (record: MbTicketRecord) => {
   return Boolean(currentRecord && isSameMbTicketRecord(currentRecord, record))
 }
 
-const switchToNextTicket = (consumedRecord: MbTicketRecord) => {
-  const records = globalTicketToastState.mbTicketRecords
-  const consumedIndex = records.findIndex(record => isSameMbTicketRecord(record, consumedRecord))
-  if (consumedIndex < 0) return
-
-  const nextRecord = records[consumedIndex + 1]
-  if (!nextRecord) return
-
-  const nextGameId = TICKET_TYPE_TO_GAME_ID[Number(nextRecord.type)]
-  if (nextGameId) {
-    switchTicketGame(nextGameId, nextRecord)
-    return
-  }
-
-  setActiveTicketRecord(nextRecord)
-}
-
 const schedulePostOpenTrigger = (record: MbTicketRecord, result: UseTicketResult) => {
   clearPostOpenTriggerTimer()
 
   const enableTrigger = Number(record.enableTrigger)
-  if (enableTrigger !== 0 && enableTrigger !== 1) return
 
   postOpenTriggerTimer = window.setTimeout(() => {
     postOpenTriggerTimer = null
     if (!isActiveTicketUnchanged(record)) return
 
     if (enableTrigger === 1) {
-      openTicketReceivePopFromUseResult(result)
+      void openTicketReceivePopFromUseResult(result).then(opened => {
+        if (!opened && isActiveTicketUnchanged(record)) {
+          requestTicketSessionRefresh()
+        }
+      })
       return
     }
 
-    switchToNextTicket(record)
+    requestTicketSessionRefresh()
   }, POST_OPEN_TRIGGER_DELAY_MS)
 }
 

@@ -1,3 +1,4 @@
+import { recordGameSelectionPath } from '@/composables/useGameSelectionReturn'
 import i18n from '@/i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
 import { useAuthModalStore } from '@/stores/authModal'
@@ -7,6 +8,7 @@ import {
   getLocaleFromRouteParam,
   getPersistedLocale,
   getStorageLanguageCode,
+  stripLocalePrefix,
   withLocalePrefix
 } from '@/utils/locale'
 import { resolveInvitationCodeFromQuery, saveInvitationCode } from '@/utils/invitationAttribution'
@@ -934,6 +936,10 @@ router.beforeEach((to, _from, next) => {
   }
 
   next()
+})
+
+router.afterEach(to => {
+  recordGameSelectionPath(stripLocalePrefix(to.path))
 })
 
 export default router

@@ -60,13 +60,12 @@
 import Api from '@/api'
 import type { LogoutAllPlatformResponse } from '@/api/interface/game'
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { resolveGameSelectionPath } from '@/composables/useGameSelectionReturn'
 import { navigateTo } from '@/utils/router'
 import closeIcon from '@/static/svg/game/detail/close.svg?url'
 import CloseIcon from '@/static/svg/close.svg?component'
 
-const router = useRouter()
 const { t } = useI18n()
 const showExitDialog = ref(false)
 const isConfirmLoading = ref(false)
@@ -91,8 +90,8 @@ const gameCode = computed(() => {
 const companyCode = computed(() => {
   return String(launchState.value?.companyCode ?? '').trim()
 })
-const detailRowId = computed(() => {
-  return String(launchState.value?.rowId ?? '').trim()
+const returnPath = computed(() => {
+  return String(launchState.value?.returnPath ?? '').trim()
 })
 
 const isHorizontal = computed(() => {
@@ -161,19 +160,8 @@ const confirmExit = async () => {
 
   showExitDialog.value = false
 
-  if (detailRowId.value) {
-    await navigateTo(`/game/${detailRowId.value}`, { replace: true })
-    isConfirmLoading.value = false
-    return
-  }
-
-  if (typeof window !== 'undefined' && window.history.length > 1) {
-    router.back()
-    isConfirmLoading.value = false
-    return
-  }
-
-  await navigateTo('/', { replace: true })
+  const target = returnPath.value || resolveGameSelectionPath()
+  await navigateTo(target, { replace: true })
   isConfirmLoading.value = false
 }
 </script>
