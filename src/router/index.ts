@@ -158,6 +158,19 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'tasks',
+    name: 'tasks',
+    component: () => import('@/views/tasks/index.vue'),
+    meta: {
+      title: '任务中心',
+      requiresAuth: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'referral',
     name: 'referral',
     component: () => import('@/views/referral/index.vue'),

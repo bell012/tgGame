@@ -1,8 +1,11 @@
 import type {
+  GetGameTaskConfigResponse,
   ObtainEntrantTaskAmountForm,
   ObtainEntrantTaskAmountResponse,
   ObtainTaskAmountForm,
-  ObtainTaskAmountResponse
+  ObtainTaskAmountResponse,
+  QueryMemberTasksForm,
+  QueryMemberTasksResponse
 } from '@/api/interface/task'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
 
@@ -26,6 +29,31 @@ export const obtainEntrantTaskAmount = (
 ): Promise<ObtainEntrantTaskAmountResponse> =>
   request({
     url: '/task/obtainEntrantTaskAmount',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? true
+  })
+
+/** 获取任务中心的游戏任务栏目配置。 */
+export const getGameTaskConfig = (
+  options?: ApiResponseToastOptions
+): Promise<GetGameTaskConfigResponse> =>
+  request({
+    url: '/task/getGameTaskConfig',
+    method: 'post',
+    data: {},
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? true
+  })
+
+/** 按当前币种查询会员可参与的任务列表。 */
+export const queryMemberTasks = (
+  data: QueryMemberTasksForm,
+  options?: ApiResponseToastOptions
+): Promise<QueryMemberTasksResponse> =>
+  request({
+    url: '/task/queryMemberTasks',
     method: 'post',
     data,
     showSuccessToast: false,

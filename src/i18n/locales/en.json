@@ -293,6 +293,21 @@
       "confirmLoading": "Deleting..."
     }
   },
+  "taskCenter": {
+    "title": "Task Center",
+    "general": "General",
+    "reward": "Reward",
+    "todayDeposit": "Today's Deposit",
+    "todayValidBets": "Today's Valid Bets",
+    "currentActivity": "Current Activity:",
+    "open": "Open",
+    "reset": "Reset:",
+    "activityHint": "Claim the activity chest by 1 AM the next day, or it will expire.",
+    "goToTask": "Go to Task",
+    "empty": "No tasks available",
+    "loadFailed": "Failed to load tasks. Please try again later.",
+    "unsupportedTask": "This task is not currently supported."
+  },
   "referral": {
     "title": "Referral",
     "pcTabs": {
