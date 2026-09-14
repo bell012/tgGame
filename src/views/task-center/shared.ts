@@ -1,0 +1,211 @@
+import type { GameTaskConfigItem } from '@/api/interface/task-center'
+
+/** 任务栏目键由后台 columnCode 动态生成。 */
+export type TaskTabKey = string
+
+/** Figma 静态栏目展示数据。 */
+export interface TaskTabItem {
+  key: TaskTabKey
+  columnCode?: string
+  label: string
+  iconKey: string
+  mobileWidth: number
+}
+
+/** Figma 静态统计数据。 */
+export interface TaskOverviewData {
+  deposit: string
+  validBets: string
+}
+
+/** 计算浏览器本地时区当天的起止时间戳。 */
+export const createTaskTodayTimeRange = (date = new Date()) => {
+  const startDate = new Date(date)
+  const endDate = new Date(date)
+
+  startDate.setHours(0, 0, 0, 0)
+  endDate.setHours(23, 59, 59, 999)
+
+  return {
+    startTime: startDate.getTime(),
+    endTime: endDate.getTime()
+  }
+}
+
+/** Figma 静态活动度奖励节点。 */
+export interface TaskActivityNode {
+  action: 'Claimed' | 'Claim' | 'Open'
+  activity: string
+  state: 'claimed' | 'claimable' | 'locked'
+}
+
+/** Figma 静态活动度区域数据。 */
+export interface TaskActivityData {
+  currentActivity: string
+  nodes: TaskActivityNode[]
+  reset: {
+    days: string
+    hours: string
+    minutes: string
+    seconds: string
+  }
+}
+
+/** Figma 静态任务卡片数据。 */
+export interface TaskViewItem {
+  id: string
+  title: string
+  activity: string
+  reward: string
+  progress: number
+  action: 'Go to Task' | 'Claim' | 'Completed'
+}
+
+/** 固定显示在首位的 General 栏目。 */
+const GENERAL_TASK_TAB: TaskTabItem = {
+  key: 'general',
+  label: 'General',
+  iconKey: 'gameCategoriesIcon',
+  mobileWidth: 103
+}
+
+/** 新人福利的多语言名称，用于将该栏目固定排在第二位。 */
+const NEW_USER_TASK_TAB_NAMES = new Set(['新人福利', 'new user benefit', 'new user benefits'])
+
+/** 按栏目文字的显示宽度计算 H5 胶囊按钮宽度。 */
+const getTaskTabMobileWidth = (label: string) => {
+  const displayLength = Array.from(label).reduce(
+    (total, character) => total + (character.charCodeAt(0) > 127 ? 2 : 1),
+    0
+  )
+
+  return Math.min(160, Math.max(86, displayLength * 7 + 52))
+}
+
+/** 将本地语言代码转换为可匹配后台多语言字段的候选值。 */
+const getTaskTabLanguageCodes = (languageCode: string) => {
+  const normalizedLanguageCode = String(languageCode ?? '')
+    .trim()
+    .toLowerCase()
+
+  return normalizedLanguageCode === 'zh' ? ['zh', 'zh-cn'] : ['eng', 'en', 'en-us']
+}
+
+/** 根据当前界面语言获取任务栏目名称，缺少翻译时退回后台默认名称。 */
+const getTaskTabLabel = (item: GameTaskConfigItem, languageCode: string) => {
+  const languageCodes = getTaskTabLanguageCodes(languageCode)
+  const localizedName = item.languageCode?.find(languageItem => {
+    const itemLanguageCode = String(languageItem.languageCode ?? '')
+      .trim()
+      .toLowerCase()
+
+    return languageCodes.includes(itemLanguageCode) && String(languageItem.name ?? '').trim()
+  })?.name
+
+  return String(localizedName ?? item.name ?? item.columnCode ?? '').trim()
+}
+
+/** 判断后台栏目是否为新人福利，满足时固定排在 General 后。 */
+const isNewUserTaskTab = (item: GameTaskConfigItem) => {
+  return [item.name, ...(item.languageCode?.map(languageItem => languageItem.name) ?? [])].some(
+    name =>
+      NEW_USER_TASK_TAB_NAMES.has(
+        String(name ?? '')
+          .trim()
+          .toLowerCase()
+      )
+  )
+}
+
+/** 将后台栏目配置转换为 H5 与 PC 共用的导航数据。 */
+export const createTaskTabs = (
+  taskConfigs: GameTaskConfigItem[] | undefined,
+  languageCode: string
+): TaskTabItem[] => {
+  const enabledConfigs = (taskConfigs ?? []).filter(item => Number(item.enable) === 1)
+  const newUserConfigs = enabledConfigs.filter(isNewUserTaskTab)
+  const otherConfigs = enabledConfigs.filter(item => !isNewUserTaskTab(item))
+  const seenColumnCodes = new Set<string>()
+
+  const createConfigTab = (item: GameTaskConfigItem): TaskTabItem | null => {
+    const columnCode = String(item.columnCode ?? '').trim()
+    const label = getTaskTabLabel(item, languageCode)
+
+    if (!columnCode || !label || seenColumnCodes.has(columnCode)) {
+      return null
+    }
+
+    seenColumnCodes.add(columnCode)
+
+    return {
+      key: `column-${columnCode}`,
+      columnCode,
+      label,
+      // 后台未提供栏目图标，暂统一复用通用任务图标。
+      iconKey: 'gameCategoriesIcon',
+      mobileWidth: getTaskTabMobileWidth(label)
+    }
+  }
+
+  const configTabs = [...newUserConfigs, ...otherConfigs]
+    .map(createConfigTab)
+    .filter((item): item is TaskTabItem => Boolean(item))
+
+  return [GENERAL_TASK_TAB, ...configTabs]
+}
+
+/** 按 Figma 示例生成固定的活动度奖励节点。 */
+export const taskFigmaActivity: TaskActivityData = {
+  currentActivity: '30',
+  nodes: [
+    { action: 'Claimed', activity: '30', state: 'claimed' },
+    { action: 'Claim', activity: '50', state: 'claimable' },
+    { action: 'Open', activity: '100', state: 'locked' },
+    { action: 'Open', activity: '150', state: 'locked' },
+    { action: 'Open', activity: '250', state: 'locked' },
+    { action: 'Open', activity: '300', state: 'locked' },
+    { action: 'Open', activity: '350', state: 'locked' }
+  ],
+  reset: {
+    days: '03',
+    hours: '23',
+    minutes: '59',
+    seconds: '59'
+  }
+}
+
+/** 按 Figma 示例生成固定的任务卡片。 */
+export const taskFigmaItems: TaskViewItem[] = [
+  {
+    id: 'download-login',
+    title: 'Download & Log In',
+    activity: '+0',
+    reward: '18~188',
+    progress: 0,
+    action: 'Go to Task'
+  },
+  {
+    id: 'slots-bet-500',
+    title: 'Slots - Bet 500',
+    activity: '+5',
+    reward: '18',
+    progress: 100,
+    action: 'Completed'
+  },
+  {
+    id: 'slots-bet-5000',
+    title: 'Slots - Bet 5,000',
+    activity: '+10',
+    reward: '5%',
+    progress: 100,
+    action: 'Claim'
+  },
+  {
+    id: 'game-bet-5000',
+    title: 'Slots - Bet 5,000',
+    activity: '+10',
+    reward: '5%',
+    progress: 100,
+    action: 'Go to Task'
+  }
+]
