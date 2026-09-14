@@ -34,6 +34,24 @@ export interface MemberDataOverviewResult {
   betAmount?: number | string
 }
 
+/** 单档活动度宝箱奖励配置。 */
+export interface MemberActiveValueRewardConfigItem {
+  activityValue?: number | string
+  betMultiple?: number | string
+  bonusAmount?: number | string
+}
+
+/** 会员当前活动度及宝箱领取状态。 */
+export interface MemberActiveValueResult {
+  rewardConfig?: string | MemberActiveValueRewardConfigItem[]
+  claimedRewardConfig?: unknown[]
+  activeValue?: number | string
+  claimedActivityValue?: number | string
+  resetType?: number
+  periodKey?: string
+  claimedActivityValues?: Array<number | string>
+}
+
 /** 查询会员任务列表请求参数。 */
 export interface QueryMemberTasksForm {
   page: {

@@ -1,5 +1,6 @@
 import type {
   GameTaskConfigItem,
+  MemberActiveValueResult,
   MemberDataOverviewResult,
   MemberTaskItem,
   QueryMemberDataOverviewForm,
@@ -42,6 +43,20 @@ export const queryMemberDataOverview = (
       url: '/rp/queryMemberDataOverview',
       method: 'post',
       data,
+      showSuccessToast: false,
+      showErrorToast: options?.showErrorToast ?? true
+    })
+  )
+
+/** 查询会员当前活动度和活动度宝箱配置。 */
+export const queryMemberActiveValue = (
+  options?: ApiResponseToastOptions
+): Promise<MemberActiveValueResult> =>
+  resolveTaskCenterApiResult(
+    request({
+      url: '/activityGiftBox/queryMemberActiveValue',
+      method: 'post',
+      data: {},
       showSuccessToast: false,
       showErrorToast: options?.showErrorToast ?? true
     })

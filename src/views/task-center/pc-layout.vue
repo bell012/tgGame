@@ -1,6 +1,6 @@
 <template>
   <!-- PC 任务页：严格对应 Figma 的 1336px 双栏主体。 -->
-  <main class="min-h-screen bg-bg-1 pb-10 pt-20">
+  <main class="min-h-screen bg-bg-1 pb-10 mt-[16px]">
     <div class="mx-auto flex w-full max-w-[1336px] flex-col gap-4">
       <!-- Figma 页面标题 -->
       <h1 class="h-6 text-xl font-[700] leading-6 text-text-1">{{ props.title }}</h1>
@@ -32,7 +32,7 @@
         <!-- Figma 右侧 1032px 内容区 -->
         <TaskPageContent
           mode="pc"
-          class="w-[1032px] shrink-0"
+          class="min-w-0 flex-1 shrink-0"
           :tabs="props.tabs"
           :active-tab-key="props.activeTabKey"
           :overview="props.overview"
@@ -60,7 +60,7 @@ interface Props {
   tabs: TaskTabItem[]
   activeTabKey: TaskTabKey
   overview: TaskOverviewData
-  activity: TaskActivityData
+  activity: TaskActivityData | null
   tasks: TaskViewItem[]
 }
 

@@ -1,4 +1,8 @@
-import type { GameTaskConfigItem } from '@/api/interface/task-center'
+import type {
+  GameTaskConfigItem,
+  MemberActiveValueResult,
+  MemberActiveValueRewardConfigItem
+} from '@/api/interface/task-center'
 
 /** 任务栏目键由后台 columnCode 动态生成。 */
 export type TaskTabKey = string
@@ -32,14 +36,16 @@ export const createTaskTodayTimeRange = (date = new Date()) => {
   }
 }
 
-/** Figma 静态活动度奖励节点。 */
+/** 活动度奖励节点展示数据。 */
 export interface TaskActivityNode {
   action: 'Claimed' | 'Claim' | 'Open'
   activity: string
   state: 'claimed' | 'claimable' | 'locked'
+  bonusAmount?: string
+  betMultiple?: string
 }
 
-/** Figma 静态活动度区域数据。 */
+/** 活动度奖励区域展示数据。 */
 export interface TaskActivityData {
   currentActivity: string
   nodes: TaskActivityNode[]
@@ -48,6 +54,155 @@ export interface TaskActivityData {
     hours: string
     minutes: string
     seconds: string
+  }
+}
+
+/** 活动度接口未返回有效重置类型时，保持倒计时为空。 */
+const EMPTY_TASK_ACTIVITY_RESET = {
+  days: '',
+  hours: '',
+  minutes: '',
+  seconds: ''
+}
+
+/** 将倒计时数值补齐为两位文本。 */
+const padTaskActivityResetUnit = (value: number) => String(value).padStart(2, '0')
+
+/** 根据重置类型计算下一个活动度周期的结束时间。 */
+const createTaskActivityResetDeadline = (resetType: unknown, date: Date) => {
+  const normalizedResetType = Number(resetType)
+  const resetDate = new Date(date)
+
+  if (normalizedResetType === 1) {
+    // 日结：当天 24:00，即次日 00:00。
+    resetDate.setDate(resetDate.getDate() + 1)
+    resetDate.setHours(0, 0, 0, 0)
+
+    return resetDate
+  }
+
+  if (normalizedResetType === 2) {
+    // 周结：本周日 24:00，即下周一 00:00。
+    const daysUntilNextMonday = resetDate.getDay() === 0 ? 1 : 8 - resetDate.getDay()
+
+    resetDate.setDate(resetDate.getDate() + daysUntilNextMonday)
+    resetDate.setHours(0, 0, 0, 0)
+
+    return resetDate
+  }
+
+  if (normalizedResetType === 3) {
+    // 月结：当月最后一天 24:00，即下月 1 日 00:00。
+    resetDate.setMonth(resetDate.getMonth() + 1, 1)
+    resetDate.setHours(0, 0, 0, 0)
+
+    return resetDate
+  }
+
+  return null
+}
+
+/** 根据活动度重置类型生成当前时刻对应的剩余倒计时。 */
+export const createTaskActivityReset = (resetType: unknown, date = new Date()) => {
+  const deadline = createTaskActivityResetDeadline(resetType, date)
+
+  if (!deadline) {
+    return EMPTY_TASK_ACTIVITY_RESET
+  }
+
+  const remainingMilliseconds = Math.max(0, deadline.getTime() - date.getTime())
+  const remainingSeconds = Math.floor(remainingMilliseconds / 1000)
+  const days = Math.floor(remainingSeconds / 86_400)
+  const hours = Math.floor((remainingSeconds % 86_400) / 3_600)
+  const minutes = Math.floor((remainingSeconds % 3_600) / 60)
+  const seconds = remainingSeconds % 60
+
+  return {
+    days: padTaskActivityResetUnit(days),
+    hours: padTaskActivityResetUnit(hours),
+    minutes: padTaskActivityResetUnit(minutes),
+    seconds: padTaskActivityResetUnit(seconds)
+  }
+}
+
+/** 将后台可能为数字或文本的活动度数值规范为数值。 */
+const toTaskActivityNumber = (value: unknown) => {
+  const parsedValue = Number(value)
+
+  return Number.isFinite(parsedValue) ? parsedValue : null
+}
+
+/** 保留后台活动度和奖励的原始展示精度。 */
+const formatTaskActivityValue = (value: unknown) => {
+  const valueText = String(value ?? '').trim()
+
+  return valueText || '0'
+}
+
+/** 解析后台以 JSON 字符串返回的活动度奖励列表。 */
+const parseTaskActivityRewardConfigs = (rewardConfig: unknown) => {
+  let parsedRewardConfig = rewardConfig
+
+  if (typeof rewardConfig === 'string') {
+    try {
+      parsedRewardConfig = JSON.parse(rewardConfig)
+    } catch {
+      return [] as MemberActiveValueRewardConfigItem[]
+    }
+  }
+
+  return Array.isArray(parsedRewardConfig)
+    ? (parsedRewardConfig as MemberActiveValueRewardConfigItem[])
+    : []
+}
+
+/** 创建活动度节点时，提取后端已领取的活动度档位。 */
+const createClaimedActivityValueSet = (activity: MemberActiveValueResult) => {
+  const claimedActivityValues = new Set<number>()
+
+  for (const activityValue of activity.claimedActivityValues ?? []) {
+    const normalizedActivityValue = toTaskActivityNumber(activityValue)
+
+    if (normalizedActivityValue !== null) {
+      claimedActivityValues.add(normalizedActivityValue)
+    }
+  }
+
+  return claimedActivityValues
+}
+
+/** 根据当前活动度和已领取档位，生成活动度宝箱展示数据。 */
+export const createTaskActivityData = (activity: MemberActiveValueResult): TaskActivityData => {
+  const currentActivity = toTaskActivityNumber(activity.activeValue) ?? 0
+  const claimedActivityValue = toTaskActivityNumber(activity.claimedActivityValue) ?? 0
+  const claimedActivityValues = createClaimedActivityValueSet(activity)
+  const rewardConfigs = parseTaskActivityRewardConfigs(activity.rewardConfig)
+
+  return {
+    currentActivity: formatTaskActivityValue(activity.activeValue),
+    nodes: rewardConfigs
+      .filter(rewardConfig => toTaskActivityNumber(rewardConfig.activityValue) !== null)
+      .map(rewardConfig => {
+        const activityValue = toTaskActivityNumber(rewardConfig.activityValue)!
+        const isClaimed =
+          claimedActivityValues.has(activityValue) ||
+          (claimedActivityValues.size === 0 && claimedActivityValue >= activityValue)
+        const state = isClaimed
+          ? 'claimed'
+          : currentActivity >= activityValue
+            ? 'claimable'
+            : 'locked'
+
+        return {
+          action: state === 'claimed' ? 'Claimed' : state === 'claimable' ? 'Claim' : 'Open',
+          activity: formatTaskActivityValue(rewardConfig.activityValue),
+          state,
+          bonusAmount: formatTaskActivityValue(rewardConfig.bonusAmount),
+          betMultiple: formatTaskActivityValue(rewardConfig.betMultiple)
+        }
+      }),
+    // 使用后台 resetType 计算倒计时，不展示 Figma 静态时间。
+    reset: createTaskActivityReset(activity.resetType)
   }
 }
 
@@ -152,26 +307,6 @@ export const createTaskTabs = (
     .filter((item): item is TaskTabItem => Boolean(item))
 
   return [GENERAL_TASK_TAB, ...configTabs]
-}
-
-/** 按 Figma 示例生成固定的活动度奖励节点。 */
-export const taskFigmaActivity: TaskActivityData = {
-  currentActivity: '30',
-  nodes: [
-    { action: 'Claimed', activity: '30', state: 'claimed' },
-    { action: 'Claim', activity: '50', state: 'claimable' },
-    { action: 'Open', activity: '100', state: 'locked' },
-    { action: 'Open', activity: '150', state: 'locked' },
-    { action: 'Open', activity: '250', state: 'locked' },
-    { action: 'Open', activity: '300', state: 'locked' },
-    { action: 'Open', activity: '350', state: 'locked' }
-  ],
-  reset: {
-    days: '03',
-    hours: '23',
-    minutes: '59',
-    seconds: '59'
-  }
 }
 
 /** 按 Figma 示例生成固定的任务卡片。 */
