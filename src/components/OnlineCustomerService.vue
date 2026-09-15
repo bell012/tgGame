@@ -33,9 +33,9 @@
         </header>
         <div class="online-customer-content" :aria-busy="loading || frameLoading">
           <iframe
-            v-if="url && !frameError"
-            :key="url"
-            :src="url"
+            v-if="iframeUrl && !frameError"
+            :key="iframeUrl"
+            :src="iframeUrl"
             :title="t('onlineCustomer.title')"
             allow="clipboard-write"
             @load="frameLoading = false"
@@ -88,9 +88,24 @@ const panelStyle = computed(() =>
         maxHeight: 'calc(100dvh - 48px)'
       }
 )
+
+const iframeUrl = computed(() => {
+  if (!url.value || isMobile.value) {
+    return url.value
+  }
+
+  try {
+    const address = new URL(url.value)
+    address.searchParams.set('pf', 'mobile')
+    return address.href
+  } catch {
+    return url.value
+  }
+})
+
 usePageScrollLock(() => isMobile.value && (visible.value || leaving.value))
 
-watch(url, value => {
+watch(iframeUrl, value => {
   frameLoading.value = Boolean(value)
   frameError.value = false
 })
