@@ -883,7 +883,8 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       id: 'task-center',
       name: t('menu.task-center'),
       icon: newSideIcons.taskCenterIcon,
-      groupKey: 'task-center'
+      groupKey: 'task-center',
+      handler: () => navigateTo('/tasks')
     },
     {
       id: 'promotions',
