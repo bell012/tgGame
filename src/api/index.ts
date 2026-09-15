@@ -6,6 +6,7 @@
  *   - Api.user.queryAcctInfo(data)
  */
 
+import * as onlineCustomer from './modules/online-customer'
 import * as auth from './modules/auth'
 import * as agent from './modules/agent'
 import * as game from './modules/game'
@@ -22,6 +23,7 @@ import * as rewardCenter from './modules/reward-center'
 import * as task from './modules/task'
 
 const Api = {
+  onlineCustomer,
   agent, // 一级代理
   notifications, // 模块
   auth, // 登录、注册、短信验证码

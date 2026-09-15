@@ -1,4 +1,15 @@
 {
+  "onlineCustomer": {
+    "title": "线上客服",
+    "close": "关闭客服",
+    "loading": "客服加载中…",
+    "retry": "重试",
+    "requestFailed": "客服加载失败，请重试",
+    "unavailable": "暂无可用客服",
+    "unsupported": "暂不支持此客服类型",
+    "invalidUrl": "客服地址无效，请稍后重试",
+    "frameFailed": "客服页面加载失败，请重试"
+  },
   "home": {
     "title": "欢迎来到 TG 游戏",
     "home": "首页",

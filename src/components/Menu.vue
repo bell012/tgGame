@@ -446,6 +446,8 @@
 </template>
 
 <script setup lang="ts">
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
+
 import { useCasinoTabButtons, type CasinoTabButtonItem } from '@/composables/useCasinoTabButtons'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useSidebarMenuState } from '@/composables/useSidebarMenuState'
@@ -479,6 +481,8 @@ import { storeToRefs } from 'pinia'
 import type { Component } from 'vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 interface Props {
   isCollapsed?: boolean
 }
@@ -665,7 +669,7 @@ const updateTooltipPosition = (event: MouseEvent) => {
 // 处理客服点击
 const handleCustomerServiceClick = () => {
   activeMenuId.value = 'customer-service'
-  console.log('打开线上客服')
+  openOnlineCustomer()
 }
 
 const handleLeaveFeedbackClick = () => {
