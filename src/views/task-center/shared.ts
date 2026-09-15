@@ -1,7 +1,9 @@
 import type {
+  EntrantTaskItem,
   GameTaskConfigItem,
   MemberActiveValueResult,
-  MemberActiveValueRewardConfigItem
+  MemberActiveValueRewardConfigItem,
+  MemberTaskItem
 } from '@/api/interface/task-center'
 
 /** 任务栏目键由后台 columnCode 动态生成。 */
@@ -11,6 +13,7 @@ export type TaskTabKey = string
 export interface TaskTabItem {
   key: TaskTabKey
   columnCode?: string
+  isEntrant?: boolean
   label: string
   iconKey: string
   mobileWidth: number
@@ -206,14 +209,18 @@ export const createTaskActivityData = (activity: MemberActiveValueResult): TaskA
   }
 }
 
-/** Figma 静态任务卡片数据。 */
+/** 任务卡片统一展示数据。 */
 export interface TaskViewItem {
   id: string
+  source: 'entrant' | 'member'
   title: string
-  activity: string
-  reward: string
-  progress: number
-  action: 'Go to Task' | 'Claim' | 'Completed'
+  description: string
+  activity?: string
+  reward?: string
+  rewardUsesCurrency: boolean
+  columnCodes: string[]
+  progress?: number
+  action?: 'Go to Task' | 'Claim' | 'Completed'
 }
 
 /** 固定显示在首位的 General 栏目。 */
@@ -237,22 +244,35 @@ const getTaskTabMobileWidth = (label: string) => {
   return Math.min(160, Math.max(86, displayLength * 7 + 52))
 }
 
-/** 将本地语言代码转换为可匹配后台多语言字段的候选值。 */
-const getTaskTabLanguageCodes = (languageCode: string) => {
-  const normalizedLanguageCode = String(languageCode ?? '')
+/** 规范本地或后台语言代码，统一连字符与下划线差异。 */
+const normalizeTaskLanguageCode = (languageCode: unknown) =>
+  String(languageCode ?? '')
     .trim()
     .toLowerCase()
+    .replace(/_/g, '-')
 
-  return normalizedLanguageCode === 'zh' ? ['zh', 'zh-cn'] : ['eng', 'en', 'en-us']
+/** 将本地语言代码转换为可匹配后台多语言字段的候选值。 */
+const getTaskTabLanguageCodes = (languageCode: string) => {
+  const normalizedLanguageCode = normalizeTaskLanguageCode(languageCode)
+  const baseLanguageCode = normalizedLanguageCode.split('-')[0]
+  const languageCodes = [normalizedLanguageCode, baseLanguageCode]
+
+  if (baseLanguageCode === 'zh') {
+    languageCodes.push('zh-cn')
+  }
+
+  if (baseLanguageCode === 'en' || normalizedLanguageCode === 'eng') {
+    languageCodes.push('eng', 'en', 'en-us')
+  }
+
+  return [...new Set(languageCodes.filter(Boolean))]
 }
 
 /** 根据当前界面语言获取任务栏目名称，缺少翻译时退回后台默认名称。 */
 const getTaskTabLabel = (item: GameTaskConfigItem, languageCode: string) => {
   const languageCodes = getTaskTabLanguageCodes(languageCode)
   const localizedName = item.languageCode?.find(languageItem => {
-    const itemLanguageCode = String(languageItem.languageCode ?? '')
-      .trim()
-      .toLowerCase()
+    const itemLanguageCode = normalizeTaskLanguageCode(languageItem.languageCode)
 
     return languageCodes.includes(itemLanguageCode) && String(languageItem.name ?? '').trim()
   })?.name
@@ -275,10 +295,11 @@ const isNewUserTaskTab = (item: GameTaskConfigItem) => {
 /** 将后台栏目配置转换为 H5 与 PC 共用的导航数据。 */
 export const createTaskTabs = (
   taskConfigs: GameTaskConfigItem[] | undefined,
-  languageCode: string
+  languageCode: string,
+  showEntrantTab: boolean
 ): TaskTabItem[] => {
   const enabledConfigs = (taskConfigs ?? []).filter(item => Number(item.enable) === 1)
-  const newUserConfigs = enabledConfigs.filter(isNewUserTaskTab)
+  const newUserConfigs = showEntrantTab ? enabledConfigs.filter(isNewUserTaskTab) : []
   const otherConfigs = enabledConfigs.filter(item => !isNewUserTaskTab(item))
   const seenColumnCodes = new Set<string>()
 
@@ -295,6 +316,7 @@ export const createTaskTabs = (
     return {
       key: `column-${columnCode}`,
       columnCode,
+      isEntrant: isNewUserTaskTab(item),
       label,
       // 后台未提供栏目图标，暂统一复用通用任务图标。
       iconKey: 'gameCategoriesIcon',
@@ -309,38 +331,144 @@ export const createTaskTabs = (
   return [GENERAL_TASK_TAB, ...configTabs]
 }
 
-/** 按 Figma 示例生成固定的任务卡片。 */
-export const taskFigmaItems: TaskViewItem[] = [
-  {
-    id: 'download-login',
-    title: 'Download & Log In',
-    activity: '+0',
-    reward: '18~188',
-    progress: 0,
-    action: 'Go to Task'
-  },
-  {
-    id: 'slots-bet-500',
-    title: 'Slots - Bet 500',
-    activity: '+5',
-    reward: '18',
-    progress: 100,
-    action: 'Completed'
-  },
-  {
-    id: 'slots-bet-5000',
-    title: 'Slots - Bet 5,000',
-    activity: '+10',
-    reward: '5%',
-    progress: 100,
-    action: 'Claim'
-  },
-  {
-    id: 'game-bet-5000',
-    title: 'Slots - Bet 5,000',
-    activity: '+10',
-    reward: '5%',
-    progress: 100,
-    action: 'Go to Task'
+/** 解析后台 JSON 格式的多语言任务名称或描述。 */
+const parseTaskLocalizedText = (value: unknown) => {
+  if (typeof value !== 'string') {
+    return {}
   }
-]
+
+  try {
+    const parsedValue = JSON.parse(value)
+
+    return parsedValue && typeof parsedValue === 'object'
+      ? (parsedValue as Record<string, unknown>)
+      : {}
+  } catch {
+    return {}
+  }
+}
+
+/** 根据当前界面语言获取任务多语言文本，缺失时回退英文、中文或任意有效文本。 */
+const getTaskLocalizedText = (value: unknown, languageCode: string) => {
+  const localizedTexts = parseTaskLocalizedText(value)
+  const languageCodes = getTaskTabLanguageCodes(languageCode)
+  const textEntries = Object.entries(localizedTexts).map(([key, text]) => [
+    normalizeTaskLanguageCode(key),
+    String(text ?? '').trim()
+  ])
+
+  const matchedText = languageCodes
+    .map(code => textEntries.find(([key, text]) => key === code && text)?.[1])
+    .find(Boolean)
+
+  return (
+    matchedText ??
+    textEntries.find(([key, text]) => ['eng', 'en', 'zh', 'zh-cn'].includes(key) && text)?.[1] ??
+    textEntries.find(([, text]) => text)?.[1] ??
+    ''
+  )
+}
+
+/** 将后台金额或活动度原值转为可展示文本，不补零、不四舍五入。 */
+const getTaskDisplayValue = (value: unknown) => {
+  const valueText = String(value ?? '').trim()
+
+  return valueText || undefined
+}
+
+/** 将逗号分隔的后台栏目编码转为可筛选的数组。 */
+const createTaskColumnCodes = (columnCode: unknown) => {
+  return String(columnCode ?? '')
+    .split(',')
+    .map(code => code.trim())
+    .filter(Boolean)
+}
+
+/** 根据会员任务奖励展示类型生成奖励文案及币种符号显示规则。 */
+const createMemberTaskReward = (task: MemberTaskItem) => {
+  const rewardDisplayType = String(task.rewardDisplayType ?? '')
+    .trim()
+    .toLowerCase()
+
+  // random：随机金额奖励，展示最小金额至最大金额并显示当前币种符号。
+  if (rewardDisplayType === 'random') {
+    const rewardMinAmount = getTaskDisplayValue(task.rewardMinAmount)
+    const rewardMaxAmount = getTaskDisplayValue(task.rewardMaxAmount)
+
+    return {
+      reward:
+        rewardMinAmount && rewardMaxAmount
+          ? `${rewardMinAmount}~${rewardMaxAmount}`
+          : (rewardMinAmount ?? rewardMaxAmount),
+      rewardUsesCurrency: true
+    }
+  }
+
+  // ratio：固定比例奖励，展示比例百分比，不显示当前币种符号。
+  if (rewardDisplayType === 'ratio') {
+    const rewardRatio = getTaskDisplayValue(task.rewardRatio)
+
+    return {
+      reward: rewardRatio === undefined ? undefined : `${rewardRatio}%`,
+      rewardUsesCurrency: false
+    }
+  }
+
+  // fixed：固定金额奖励，展示 rewardAmount 并显示当前币种符号。
+  if (rewardDisplayType === 'fixed') {
+    return {
+      reward: getTaskDisplayValue(task.rewardAmount ?? task.amount),
+      rewardUsesCurrency: true
+    }
+  }
+
+  // 兼容未返回奖励类型的旧数据，默认按固定金额奖励展示。
+  return {
+    reward: getTaskDisplayValue(task.rewardAmount ?? task.amount),
+    rewardUsesCurrency: true
+  }
+}
+
+/** 将新人固定任务或会员任务转换为任务卡片统一模型。 */
+const createTaskViewItem = (
+  item: EntrantTaskItem | MemberTaskItem,
+  source: TaskViewItem['source'],
+  languageCode: string
+): TaskViewItem => {
+  const activeNumber = getTaskDisplayValue(item.activeNumber)
+  const rewardInfo =
+    source === 'entrant'
+      ? {
+          reward: getTaskDisplayValue(item.amount),
+          rewardUsesCurrency: true
+        }
+      : createMemberTaskReward(item as MemberTaskItem)
+
+  return {
+    id: `${source}-${item.rowId}`,
+    source,
+    title: getTaskLocalizedText(item.taskName, languageCode) || String(item.taskType ?? item.rowId),
+    description: getTaskLocalizedText(item.taskDesc, languageCode),
+    activity: activeNumber === undefined ? undefined : `+${activeNumber}`,
+    ...rewardInfo,
+    columnCodes: 'columnCode' in item ? createTaskColumnCodes(item.columnCode) : []
+  }
+}
+
+/** 创建新人固定任务的卡片列表，保持接口返回顺序。 */
+export const createEntrantTaskViewItems = (
+  tasks: EntrantTaskItem[] | undefined,
+  languageCode: string
+) => (tasks ?? []).map(item => createTaskViewItem(item, 'entrant', languageCode))
+
+/** 创建会员任务的卡片列表，保持接口返回顺序。 */
+export const createMemberTaskViewItems = (
+  tasks: MemberTaskItem[] | undefined,
+  languageCode: string
+) => (tasks ?? []).map(item => createTaskViewItem(item, 'member', languageCode))
+
+/** 合并 General 栏目的任务，保证新人任务始终排在会员任务前。 */
+export const createGeneralTaskViewItems = (
+  entrantTasks: TaskViewItem[],
+  memberTasks: TaskViewItem[]
+) => [...entrantTasks, ...memberTasks]

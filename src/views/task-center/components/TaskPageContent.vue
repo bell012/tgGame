@@ -7,14 +7,16 @@
     <!-- H5 横向栏目栏：设计稿为固定宽度的胶囊按钮。 -->
     <section v-if="props.mode === 'mobile'" class="-mx-3.5 overflow-x-auto px-3.5">
       <div class="flex items-center gap-2">
-        <div
+        <button
           v-for="tab in props.tabs"
           :key="tab.key"
+          type="button"
           class="flex h-9 shrink-0 items-center gap-[5px] rounded-[18px] px-4"
           :class="
             tab.key === props.activeTabKey ? 'bg-theme-primary text-text-4' : 'bg-bg-2 text-text-2'
           "
           :style="{ width: `${tab.mobileWidth}px` }"
+          @click="$emit('tab-click', tab.key)"
         >
           <!-- Figma 栏目图标。 -->
           <component
@@ -32,7 +34,7 @@
           >
             {{ tab.label }}
           </span>
-        </div>
+        </button>
       </div>
     </section>
 
@@ -155,12 +157,19 @@
                 :class="props.mode === 'pc' ? 'w-[76px] gap-3' : 'h-[73px] w-[50px] gap-[7px]'"
               >
                 <!-- 宝箱图标：可领取/已领取使用开启图，待开启使用关闭图。 -->
-                <img
-                  :src="node.state === 'locked' ? taskChestCloseImage : taskChestOpenImage"
-                  alt=""
-                  class="object-contain"
+                <button
+                  type="button"
+                  class="flex shrink-0 items-center justify-center"
                   :class="props.mode === 'pc' ? 'h-10 w-10' : 'h-[26px] w-[26px]'"
-                />
+                  :aria-label="`Activity ${node.activity} reward details`"
+                  @click="handleOpenActivityChestTip(node)"
+                >
+                  <img
+                    :src="node.state === 'locked' ? taskChestCloseImage : taskChestOpenImage"
+                    alt=""
+                    class="h-full w-full object-contain"
+                  />
+                </button>
                 <span
                   class="flex items-center justify-center rounded-full font-[400]"
                   :class="[
@@ -253,7 +262,7 @@
               <span class="text-base font-[400] leading-[19px] text-text-1">
                 {{
                   `${props.activity.reset.days} Days ${props.activity.reset.hours} Hours ${props.activity.reset.minutes}
-              Minutes ${props.activity.reset.seconds} Seconds`
+                Minutes ${props.activity.reset.seconds} Seconds`
                 }}
               </span>
             </p>
@@ -337,106 +346,160 @@
     <!-- H5 活动卡和任务区的 10px 间距。 -->
     <div v-if="props.mode === 'mobile'" class="h-2.5"></div>
 
-    <!-- 固定任务卡片列表：PC 两列，H5 单列。 -->
+    <!-- 任务卡片列表：PC 两列，H5 单列。 -->
     <section
       class="grid"
       :class="props.mode === 'pc' ? 'grid-cols-2 gap-4' : 'grid-cols-1 gap-3.5'"
     >
-      <article
-        v-for="task in props.tasks"
-        :key="task.id"
-        class="flex items-center justify-between rounded-[10px] bg-bg-2"
-        :class="
-          props.mode === 'pc'
-            ? 'h-[116px] gap-[76px] rounded-[16px] px-7 py-4'
-            : 'h-[83px] gap-3 px-3.5 py-3'
-        "
-      >
-        <!-- 任务名称、奖励和进度。 -->
-        <div
-          class="flex min-w-0 flex-1 flex-col"
-          :class="props.mode === 'pc' ? 'gap-3' : 'gap-1.5'"
-        >
-          <div class="flex items-center gap-2">
-            <span
-              :class="props.mode === 'pc' ? 'text-base leading-[19px]' : 'text-xs leading-[15px]'"
-              class="line-clamp-1 font-[400] text-text-1"
-            >
-              {{ task.title }}
-            </span>
-            <span
-              class="flex shrink-0 items-center justify-center rounded-full border border-text-2 font-[500] text-text-2"
-              :class="props.mode === 'pc' ? 'h-5 w-5 text-xs' : 'h-3.5 w-3.5 text-[8px]'"
-              >?</span
-            >
-          </div>
-          <div
-            :class="props.mode === 'pc' ? 'text-base leading-[19px]' : 'text-[10px] leading-3'"
-            class="flex items-center gap-4 font-[400] text-text-1"
-          >
-            <span class="flex items-center gap-1"
-              ><i
-                class="inline-block rounded-full bg-text-2"
-                :class="props.mode === 'pc' ? 'h-5 w-[17px]' : 'h-3.5 w-3'"
-              ></i
-              >{{ task.activity }}</span
-            >
-            <span class="flex items-center gap-1"
-              ><i
-                class="inline-block rounded-[3px] bg-text-2"
-                :class="props.mode === 'pc' ? 'h-5 w-5' : 'h-3.5 w-3.5'"
-              ></i
-              >{{ task.reward }}</span
-            >
-          </div>
-          <div class="flex items-center" :class="props.mode === 'pc' ? 'gap-4' : 'gap-2'">
-            <span
-              class="relative flex-1 overflow-hidden rounded-full bg-[rgba(42,238,136,0.15)]"
-              :class="props.mode === 'pc' ? 'h-2' : 'h-[5px]'"
-            >
-              <i
-                class="absolute inset-y-0 left-0 rounded-full bg-theme-primary"
-                :style="{ width: `${task.progress}%` }"
-              ></i>
-            </span>
-            <span
-              :class="props.mode === 'pc' ? 'text-sm leading-5' : 'text-[10px] leading-3'"
-              class="font-[400] text-text-2"
-              >{{ `${task.progress}%` }}</span
-            >
-          </div>
-        </div>
-
-        <!-- Figma 任务动作按钮，仅做静态展示。 -->
-        <span
-          class="flex shrink-0 items-center justify-center font-[400]"
-          :class="[
+      <!-- 任务数据请求期间只显示骨架，不使用 Figma 示例任务。 -->
+      <template v-if="props.tasksLoading">
+        <article
+          v-for="index in props.mode === 'pc' ? 4 : 3"
+          :key="index"
+          class="flex animate-pulse items-center justify-between rounded-[10px] bg-bg-2"
+          :class="
             props.mode === 'pc'
-              ? 'h-[43px] w-28 rounded-[12px] text-base leading-[19px]'
-              : 'h-[30px] w-20 rounded-[8px] text-[11px] leading-[14px]',
-            task.action === 'Claim'
-              ? 'bg-theme-primary text-text-4'
-              : task.action === 'Completed'
-                ? 'bg-common-100/[0.06] text-text-3'
-                : 'border border-theme-primary text-theme-primary'
-          ]"
+              ? 'h-[116px] gap-[76px] rounded-[16px] px-7 py-4'
+              : 'h-[83px] gap-3 px-3.5 py-3'
+          "
         >
-          {{ task.action }}
-        </span>
-      </article>
+          <div class="flex flex-1 flex-col" :class="props.mode === 'pc' ? 'gap-3' : 'gap-2'">
+            <span class="h-4 w-2/3 rounded-full bg-common-100/10"></span>
+            <span class="h-3 w-1/2 rounded-full bg-common-100/10"></span>
+          </div>
+          <span class="h-8 w-20 shrink-0 rounded-[8px] bg-common-100/10"></span>
+        </article>
+      </template>
+
+      <!-- 接口成功但当前栏目没有任务时展示空状态。 -->
+      <ThemedEmptyState
+        v-else-if="props.tasks.length === 0"
+        :dark-image="defaultImgDark"
+        :light-image="defaultImgLight"
+        :image-alt="t('taskCenter.title')"
+        :message="t('taskCenter.empty')"
+        container-class="col-span-full mt-8 justify-center"
+        image-class="h-[160px] w-auto object-contain"
+        text-class="mt-[28px] w-[193px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
+      />
+
+      <!-- 任务接口已返回的字段才会参与展示。 -->
+      <template v-else>
+        <article
+          v-for="task in props.tasks"
+          :key="task.id"
+          class="flex items-center justify-between rounded-[10px] bg-bg-2"
+          :class="
+            props.mode === 'pc'
+              ? 'h-[116px] gap-[76px] rounded-[16px] px-7 py-4'
+              : 'h-[83px] gap-3 px-3.5 py-3'
+          "
+        >
+          <!-- 任务名称、活动度奖励和实际进度。 -->
+          <div
+            class="flex min-w-0 flex-1 flex-col"
+            :class="props.mode === 'pc' ? 'gap-3' : 'gap-1.5'"
+          >
+            <div class="flex items-center gap-2">
+              <span
+                :class="props.mode === 'pc' ? 'text-base leading-[19px]' : 'text-xs leading-[15px]'"
+                class="line-clamp-1 font-[400] text-text-1"
+              >
+                {{ task.title }}
+              </span>
+              <span
+                class="flex shrink-0 items-center justify-center rounded-full border border-text-2 font-[500] text-text-2"
+                :class="props.mode === 'pc' ? 'h-5 w-5 text-xs' : 'h-3.5 w-3.5 text-[8px]'"
+                >?</span
+              >
+            </div>
+            <div
+              v-if="task.activity || task.reward"
+              :class="props.mode === 'pc' ? 'text-base leading-[19px]' : 'text-[10px] leading-3'"
+              class="flex items-center gap-4 font-[400] text-text-1"
+            >
+              <span v-if="task.activity" class="flex items-center gap-1">
+                <img
+                  :src="taskActivityLockedImage"
+                  alt=""
+                  class="inline-block rounded-full"
+                  :class="props.mode === 'pc' ? 'h-5 w-[17px]' : 'h-3.5 w-3'"
+                />
+                {{ task.activity }}</span
+              >
+              <span v-if="task.reward" class="flex items-center gap-1">
+                <img
+                  :src="taskActivityrewardImage"
+                  alt=""
+                  class="inline-block rounded-full"
+                  :class="props.mode === 'pc' ? 'h-5 w-[17px]' : 'h-3.5 w-3'"
+                />
+                {{ `${task.rewardUsesCurrency ? currentCurrencySymbol : ''}${task.reward}` }}</span
+              >
+            </div>
+            <div
+              v-if="task.progress !== undefined"
+              class="flex items-center"
+              :class="props.mode === 'pc' ? 'gap-4' : 'gap-2'"
+            >
+              <span
+                class="relative flex-1 overflow-hidden rounded-full bg-[rgba(42,238,136,0.15)]"
+                :class="props.mode === 'pc' ? 'h-2' : 'h-[5px]'"
+              >
+                <i
+                  class="absolute inset-y-0 left-0 rounded-full bg-theme-primary"
+                  :style="{ width: `${task.progress}%` }"
+                ></i>
+              </span>
+              <span
+                :class="props.mode === 'pc' ? 'text-sm leading-5' : 'text-[10px] leading-3'"
+                class="font-[400] text-text-2"
+                >{{ `${task.progress}%` }}</span
+              >
+            </div>
+          </div>
+
+          <!-- 领取与跳转状态接口尚未提供时，不渲染操作按钮。 -->
+          <span
+            v-if="task.action"
+            class="flex shrink-0 items-center justify-center font-[400]"
+            :class="[
+              props.mode === 'pc'
+                ? 'h-[43px] w-28 rounded-[12px] text-base leading-[19px]'
+                : 'h-[30px] w-20 rounded-[8px] text-[11px] leading-[14px]',
+              task.action === 'Claim'
+                ? 'bg-theme-primary text-text-4'
+                : task.action === 'Completed'
+                  ? 'bg-common-100/[0.06] text-text-3'
+                  : 'border border-theme-primary text-theme-primary'
+            ]"
+          >
+            {{ task.action }}
+          </span>
+        </article>
+      </template>
     </section>
   </section>
 </template>
 
 <script setup lang="ts">
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import defaultImgDark from '@/static/img/explore/default.png'
+import defaultImgLight from '@/static/img/explore/default_white.png'
 import taskChestCloseImage from '@/static/img/task/activity-chest-locked.png'
 import taskChestOpenImage from '@/static/img/task/activity-chest-open.png'
 import taskActivityActiveImage from '@/static/img/task/activity-icon-active.png'
 import taskActivityLockedImage from '@/static/img/task/activity-icon-locked.png'
+import taskActivityrewardImage from '@/static/img/task/activity-icon-reward.png'
 import newSideIcons from '@/static/svg/side/newIcon'
+import { getCurrencySymbol } from '@/utils/locale'
+import { globalShowToast } from '@/utils/toast'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type {
   TaskActivityData,
+  TaskActivityNode,
   TaskOverviewData,
   TaskTabItem,
   TaskTabKey,
@@ -450,9 +513,26 @@ interface Props {
   overview: TaskOverviewData
   activity: TaskActivityData | null
   tasks: TaskViewItem[]
+  tasksLoading: boolean
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n()
+const { currentCurrencyCode } = useDisplayCurrency()
+
+/** 根据当前账户币种获取项目统一的货币符号。 */
+const currentCurrencySymbol = computed(() => getCurrencySymbol(currentCurrencyCode.value))
+
+defineEmits<{
+  'tab-click': [value: TaskTabKey]
+}>()
+
+/** 展示当前宝箱对应的奖金金额与提款流水要求。 */
+const handleOpenActivityChestTip = (node: TaskActivityNode) => {
+  globalShowToast({
+    message: `Open to get an ${node.bonusAmount ?? '0'} bonus. ${node.betMultiple ?? '0'}x wagering required to withdraw`
+  })
+}
 
 /** PC 一屏最多展示七档，第八档开始以横向滑动形式显示。 */
 const isPcActivityNodeScrollable = computed(

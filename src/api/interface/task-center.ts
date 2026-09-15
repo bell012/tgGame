@@ -61,6 +61,28 @@ export interface QueryMemberTasksForm {
   currency: string
 }
 
+/** 查询新人固定任务请求参数。 */
+export interface QueryEntrantTasksForm {
+  page: {
+    current: number
+    size: number
+  }
+  currency: string
+}
+
+/** 查询新人固定任务中的任务项。 */
+export interface EntrantTaskItem {
+  rowId: string | number
+  taskType?: string
+  taskName?: string
+  taskDesc?: string
+  currency?: string
+  enable?: number
+  activeNumber?: number | string
+  amount?: number | string
+  rewardsType?: number
+}
+
 /** 查询会员任务列表中的任务项。 */
 export interface MemberTaskItem {
   rowId: string | number
@@ -73,8 +95,12 @@ export interface MemberTaskItem {
   columnCode?: string
   startDate?: number
   endDate?: number
-  amount?: number
-  rewardAmount?: number
+  activeNumber?: number | string
+  amount?: number | string
+  rewardAmount?: number | string
+  rewardMinAmount?: number | string
+  rewardMaxAmount?: number | string
+  rewardRatio?: number | string
   rechargeAmount?: number
   rechargeNum?: number
   betAmount?: number

@@ -8,11 +8,13 @@
       <div class="flex items-start gap-6">
         <!-- Figma 左侧 280px 栏目导航 -->
         <aside class="flex h-[584px] w-[280px] shrink-0 flex-col gap-2 rounded-[12px] bg-bg-2 p-4">
-          <div
+          <button
             v-for="tab in props.tabs"
             :key="tab.key"
+            type="button"
             class="flex h-12 w-full items-center gap-4 rounded-[8px] px-4"
             :class="tab.key === props.activeTabKey ? 'bg-theme-primary text-text-4' : 'text-text-2'"
+            @click="$emit('tab-click', tab.key)"
           >
             <!-- 复用项目现有栏目图标。 -->
             <component
@@ -26,7 +28,7 @@
             >
               {{ tab.label }}
             </span>
-          </div>
+          </button>
         </aside>
 
         <!-- Figma 右侧 1032px 内容区 -->
@@ -38,6 +40,8 @@
           :overview="props.overview"
           :activity="props.activity"
           :tasks="props.tasks"
+          :tasks-loading="props.tasksLoading"
+          @tab-click="$emit('tab-click', $event)"
         />
       </div>
     </div>
@@ -62,7 +66,12 @@ interface Props {
   overview: TaskOverviewData
   activity: TaskActivityData | null
   tasks: TaskViewItem[]
+  tasksLoading: boolean
 }
 
 const props = defineProps<Props>()
+
+defineEmits<{
+  'tab-click': [value: TaskTabKey]
+}>()
 </script>

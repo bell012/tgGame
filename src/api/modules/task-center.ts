@@ -1,8 +1,10 @@
 import type {
+  EntrantTaskItem,
   GameTaskConfigItem,
   MemberActiveValueResult,
   MemberDataOverviewResult,
   MemberTaskItem,
+  QueryEntrantTasksForm,
   QueryMemberDataOverviewForm,
   QueryMemberTasksForm,
   TaskCenterApiResponse
@@ -57,6 +59,21 @@ export const queryMemberActiveValue = (
       url: '/activityGiftBox/queryMemberActiveValue',
       method: 'post',
       data: {},
+      showSuccessToast: false,
+      showErrorToast: options?.showErrorToast ?? true
+    })
+  )
+
+/** 按当前币种查询会员可参与的新人固定任务列表。 */
+export const queryEntrantTasks = (
+  data: QueryEntrantTasksForm,
+  options?: ApiResponseToastOptions
+): Promise<EntrantTaskItem[]> =>
+  resolveTaskCenterApiResult(
+    request({
+      url: '/task/queryEntrantTasks',
+      method: 'post',
+      data,
       showSuccessToast: false,
       showErrorToast: options?.showErrorToast ?? true
     })
