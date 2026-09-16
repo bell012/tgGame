@@ -160,7 +160,7 @@ const baseRoutes: RouteRecordRaw[] = [
   {
     path: 'tasks',
     name: 'tasks',
-    component: () => import('@/views/tasks/index.vue'),
+    component: () => import('@/views/task-center/index.vue'),
     meta: {
       title: '任务中心',
       requiresAuth: true,
