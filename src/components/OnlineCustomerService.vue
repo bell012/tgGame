@@ -8,14 +8,15 @@
         :style="panelStyle"
         role="dialog"
         :aria-modal="isMobile || undefined"
-        aria-labelledby="online-customer-title"
+        :aria-label="t('onlineCustomer.title')"
         @keydown.esc="close"
       >
-        <header class="online-customer-header">
-          <h2 id="online-customer-title">{{ t('onlineCustomer.title') }}</h2>
+        <div class="online-customer-content" :aria-busy="loading || frameLoading">
           <button
             ref="closeButton"
             class="online-customer-close"
+            :class="{ 'is-neutral': loading || frameLoading || errorKey || frameError }"
+            :style="closeButtonStyle"
             type="button"
             :aria-label="t('onlineCustomer.close')"
             @click="close"
@@ -30,8 +31,6 @@
               />
             </svg>
           </button>
-        </header>
-        <div class="online-customer-content" :aria-busy="loading || frameLoading">
           <iframe
             v-if="iframeUrl && !frameError"
             :key="iframeUrl"
@@ -74,6 +73,14 @@ const frameError = ref(false)
 const leaving = ref(false)
 const closeButton = ref<HTMLButtonElement | null>(null)
 let previousFocus: HTMLElement | null = null
+
+const closeButtonStyle = {
+  '--close-hit-size': '44px',
+  '--close-size': '32px',
+  '--close-radius': '8px',
+  '--close-icon-size': '20px',
+  '--close-offset': '6px'
+}
 
 // Inline pixel sizes stay fixed even when the application's rem scale changes.
 const panelStyle = computed(() =>
@@ -136,6 +143,7 @@ const handleAfterLeave = () => {
 <style scoped>
 .online-customer-panel {
   position: fixed;
+  box-sizing: border-box;
   z-index: 100010;
   display: flex;
   flex-direction: column;
@@ -154,54 +162,71 @@ const handleAfterLeave = () => {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
     env(safe-area-inset-left);
 }
-.online-customer-header {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  gap: 8px;
-  padding: 8px 12px;
-}
-.online-customer-header h2 {
-  flex: 1;
-  font-size: 16px;
-  font-weight: 600;
-}
-.online-customer-header .online-customer-close {
-  position: relative;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--color-text-level-2);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+.online-customer-close {
+  --close-background: #3185ff;
+  --close-hover-background: #5299ff;
+  --close-active-background: #2675e8;
+  position: absolute;
+  z-index: 1;
+  top: var(--close-offset);
+  right: var(--close-offset);
   display: grid;
   place-items: center;
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+  width: var(--close-hit-size);
+  height: var(--close-hit-size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.online-customer-close.is-neutral {
+  --close-background: rgba(255, 255, 255, 0.12);
+  --close-hover-background: rgba(255, 255, 255, 0.18);
+  --close-active-background: rgba(255, 255, 255, 0.24);
+}
+.online-customer-close::before {
+  content: '';
+  position: absolute;
+  width: var(--close-size);
+  height: var(--close-size);
+  border-radius: var(--close-radius);
+  background: var(--close-background);
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
 }
 .online-customer-panel button:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: -2px;
 }
 .online-customer-close svg {
-  transition:
-    color 160ms ease,
-    transform 160ms ease;
+  position: relative;
+  width: var(--close-icon-size);
+  height: var(--close-icon-size);
+  transition: transform 160ms ease;
 }
-.online-customer-header .online-customer-close:focus-visible {
+.online-customer-panel .online-customer-close:focus-visible {
   outline: none;
-  color: var(--color-text-level-1);
+}
+.online-customer-close:focus-visible::before {
+  background: var(--close-hover-background);
 }
 @media (hover: hover) {
-  .online-customer-close:hover {
-    color: var(--color-text-level-1);
+  .online-customer-close:hover::before {
+    background: var(--close-hover-background);
   }
+}
+.online-customer-close:active::before {
+  background: var(--close-active-background);
+  transform: scale(0.92);
 }
 .online-customer-close:active svg {
   transform: scale(0.92);
 }
 @media (prefers-reduced-motion: reduce) {
+  .online-customer-close::before,
   .online-customer-close svg {
     transition: none;
   }
