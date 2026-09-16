@@ -1,5 +1,6 @@
 import type {
   EntrantTaskItem,
+  EntrantTaskScheduleItem,
   GameTaskConfigItem,
   MemberActiveValueResult,
   MemberDataOverviewResult,
@@ -7,6 +8,7 @@ import type {
   QueryEntrantTasksForm,
   QueryMemberDataOverviewForm,
   QueryMemberTasksForm,
+  TaskScheduleItem,
   TaskCenterApiResponse
 } from '@/api/interface/task-center'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
@@ -79,6 +81,20 @@ export const queryEntrantTasks = (
     })
   )
 
+/** 查询当前会员新人固定任务的完成状态。 */
+export const queryEntrantTaskSchedule = (
+  options?: ApiResponseToastOptions
+): Promise<EntrantTaskScheduleItem[]> =>
+  resolveTaskCenterApiResult(
+    request({
+      url: '/task/queryEntrantTaskSchedule',
+      method: 'post',
+      data: {},
+      showSuccessToast: false,
+      showErrorToast: options?.showErrorToast ?? true
+    })
+  )
+
 /** 按当前币种查询会员可参与的任务列表。 */
 export const queryMemberTasks = (
   data: QueryMemberTasksForm,
@@ -89,6 +105,18 @@ export const queryMemberTasks = (
       url: '/task/queryMemberTasks',
       method: 'post',
       data,
+      showSuccessToast: false,
+      showErrorToast: options?.showErrorToast ?? true
+    })
+  )
+
+/** 查询当前会员普通任务的条件完成进度。 */
+export const queryTaskSchedule = (options?: ApiResponseToastOptions): Promise<TaskScheduleItem[]> =>
+  resolveTaskCenterApiResult(
+    request({
+      url: '/task/queryTaskSchedule',
+      method: 'post',
+      data: {},
       showSuccessToast: false,
       showErrorToast: options?.showErrorToast ?? true
     })

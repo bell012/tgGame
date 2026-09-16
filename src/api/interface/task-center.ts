@@ -83,6 +83,29 @@ export interface EntrantTaskItem {
   rewardsType?: number
 }
 
+/** 新人固定任务进度项。 */
+export interface EntrantTaskScheduleItem {
+  taskId: string | number
+  status?: number | string | boolean
+}
+
+/** 普通游戏任务的单项条件进度。 */
+export interface TaskConditionProgressItem {
+  code?: string
+  completed?: boolean
+  currentValue?: number | string
+  name?: string
+  show?: boolean
+  targetValue?: number | string
+}
+
+/** 普通任务进度项。 */
+export interface TaskScheduleItem {
+  taskId: string | number
+  conditionProgressList?: TaskConditionProgressItem[]
+  rechargeAmount?: number | string
+}
+
 /** 查询会员任务列表中的任务项。 */
 export interface MemberTaskItem {
   rowId: string | number

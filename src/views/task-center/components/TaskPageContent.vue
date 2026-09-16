@@ -407,11 +407,13 @@
               >
                 {{ task.title }}
               </span>
-              <span
-                class="flex shrink-0 items-center justify-center rounded-full border border-text-2 font-[500] text-text-2"
-                :class="props.mode === 'pc' ? 'h-5 w-5 text-xs' : 'h-3.5 w-3.5 text-[8px]'"
-                >?</span
-              >
+              <!-- 任务说明图标。 -->
+              <img
+                :src="taskInfoImage"
+                alt=""
+                class="shrink-0 object-contain"
+                :class="props.mode === 'pc' ? 'h-5 w-5' : 'h-3.5 w-3.5'"
+              />
             </div>
             <div
               v-if="task.activity || task.reward"
@@ -443,8 +445,10 @@
               :class="props.mode === 'pc' ? 'gap-4' : 'gap-2'"
             >
               <span
-                class="relative flex-1 overflow-hidden rounded-full bg-[rgba(42,238,136,0.15)]"
-                :class="props.mode === 'pc' ? 'h-2' : 'h-[5px]'"
+                class="relative overflow-hidden rounded-full bg-[rgba(42,238,136,0.15)]"
+                :class="
+                  props.mode === 'pc' ? 'h-2 w-full max-w-[212px]' : 'h-[5px] w-[150px] shrink-0'
+                "
               >
                 <i
                   class="absolute inset-y-0 left-0 rounded-full bg-theme-primary"
@@ -461,7 +465,6 @@
 
           <!-- 领取与跳转状态接口尚未提供时，不渲染操作按钮。 -->
           <span
-            v-if="task.action"
             class="flex shrink-0 items-center justify-center font-[400]"
             :class="[
               props.mode === 'pc'
@@ -492,6 +495,7 @@ import taskChestOpenImage from '@/static/img/task/activity-chest-open.png'
 import taskActivityActiveImage from '@/static/img/task/activity-icon-active.png'
 import taskActivityLockedImage from '@/static/img/task/activity-icon-locked.png'
 import taskActivityrewardImage from '@/static/img/task/activity-icon-reward.png'
+import taskInfoImage from '@/static/img/task/task-info.png'
 import newSideIcons from '@/static/svg/side/newIcon'
 import { getCurrencySymbol } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'

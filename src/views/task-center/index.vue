@@ -40,9 +40,11 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Api from '@/api'
 import type {
   EntrantTaskItem,
+  EntrantTaskScheduleItem,
   GameTaskConfigItem,
   MemberActiveValueResult,
-  MemberTaskItem
+  MemberTaskItem,
+  TaskScheduleItem
 } from '@/api/interface/task-center'
 import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
@@ -86,6 +88,12 @@ const entrantTasks = ref<EntrantTaskItem[]>([])
 /** 保存会员任务原始数据，供 General 与动态栏目共用。 */
 const memberTasks = ref<MemberTaskItem[]>([])
 
+/** 保存新人固定任务完成状态，独立用于新人福利进度计算。 */
+const entrantTaskSchedules = ref<EntrantTaskScheduleItem[]>([])
+
+/** 保存普通任务条件进度，独立用于普通任务进度计算。 */
+const memberTaskSchedules = ref<TaskScheduleItem[]>([])
+
 /** 任务列表首次请求期间展示骨架屏，避免使用 Figma 示例卡片。 */
 const taskListLoading = ref(true)
 
@@ -108,12 +116,20 @@ const taskTabs = computed(() =>
 
 /** 将新人固定任务转换为卡片数据。 */
 const entrantTaskItems = computed(() =>
-  createEntrantTaskViewItems(entrantTasks.value, currentTaskLanguageCode.value)
+  createEntrantTaskViewItems(
+    entrantTasks.value,
+    currentTaskLanguageCode.value,
+    entrantTaskSchedules.value
+  )
 )
 
 /** 将会员任务转换为卡片数据。 */
 const memberTaskItems = computed(() =>
-  createMemberTaskViewItems(memberTasks.value, currentTaskLanguageCode.value)
+  createMemberTaskViewItems(
+    memberTasks.value,
+    currentTaskLanguageCode.value,
+    memberTaskSchedules.value
+  )
 )
 
 /** 根据当前栏目筛选任务：General 合并、新人福利仅 entrant、其他栏目仅 member。 */
@@ -156,7 +172,7 @@ const fetchTaskConfigs = async () => {
   }
 }
 
-/** 查询新人固定任务与会员任务，任一接口失败不影响另一类任务展示。 */
+/** 查询任务列表及各自进度，任一接口失败不影响其他数据展示。 */
 const fetchTaskLists = async () => {
   taskListLoading.value = true
 
@@ -167,13 +183,20 @@ const fetchTaskLists = async () => {
     },
     currency: currentCurrencyCode.value
   }
-  const [entrantResult, memberResult] = await Promise.allSettled([
-    Api.taskCenter.queryEntrantTasks(queryForm, { showErrorToast: false }),
-    Api.taskCenter.queryMemberTasks(queryForm, { showErrorToast: false })
-  ])
+  const [entrantResult, memberResult, entrantScheduleResult, memberScheduleResult] =
+    await Promise.allSettled([
+      Api.taskCenter.queryEntrantTasks(queryForm, { showErrorToast: false }),
+      Api.taskCenter.queryMemberTasks(queryForm, { showErrorToast: false }),
+      Api.taskCenter.queryEntrantTaskSchedule({ showErrorToast: false }),
+      Api.taskCenter.queryTaskSchedule({ showErrorToast: false })
+    ])
 
   entrantTasks.value = entrantResult.status === 'fulfilled' ? entrantResult.value : []
   memberTasks.value = memberResult.status === 'fulfilled' ? memberResult.value : []
+  entrantTaskSchedules.value =
+    entrantScheduleResult.status === 'fulfilled' ? entrantScheduleResult.value : []
+  memberTaskSchedules.value =
+    memberScheduleResult.status === 'fulfilled' ? memberScheduleResult.value : []
   taskListLoading.value = false
 }
 

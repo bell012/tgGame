@@ -1,9 +1,12 @@
 import type {
   EntrantTaskItem,
+  EntrantTaskScheduleItem,
   GameTaskConfigItem,
   MemberActiveValueResult,
   MemberActiveValueRewardConfigItem,
-  MemberTaskItem
+  MemberTaskItem,
+  TaskConditionProgressItem,
+  TaskScheduleItem
 } from '@/api/interface/task-center'
 
 /** 任务栏目键由后台 columnCode 动态生成。 */
@@ -429,11 +432,112 @@ const createMemberTaskReward = (task: MemberTaskItem) => {
   }
 }
 
-/** 将新人固定任务或会员任务转换为任务卡片统一模型。 */
+/** 将任务 ID 转为统一键值，用于关联任务列表与进度列表。 */
+const createTaskScheduleKey = (taskId: string | number) => String(taskId).trim()
+
+/** 将任务进度列表转换为按 taskId 查询的映射。 */
+const createTaskScheduleMap = <TSchedule extends { taskId: string | number }>(
+  schedules: TSchedule[] | undefined
+) => new Map((schedules ?? []).map(schedule => [createTaskScheduleKey(schedule.taskId), schedule]))
+
+/** 将当前值与目标值转换为 0 至 100 的进度百分比。 */
+const createTaskProgressPercentage = (currentValue: unknown, targetValue: unknown) => {
+  const current = Math.abs(Number(currentValue))
+  const target = Number(targetValue)
+
+  if (!Number.isFinite(current) || !Number.isFinite(target) || target <= 0) {
+    return 0
+  }
+
+  return Math.min(current / target, 1) * 100
+}
+
+/** 判断新人固定任务状态是否已完成，已完成与已领取均展示 100%。 */
+const isEntrantTaskCompleted = (status: EntrantTaskScheduleItem['status']) => {
+  // boolean：后台直接返回完成布尔值时，使用其原始值。
+  if (typeof status === 'boolean') {
+    return status
+  }
+
+  // number：0 表示未完成，正数状态表示已完成或已领取。
+  if (typeof status === 'number') {
+    return status > 0
+  }
+
+  // string：兼容字符串状态值，明确识别完成或已领取状态。
+  return ['1', 'true', 'completed', 'claimed', 'done', 'finished'].includes(
+    String(status ?? '')
+      .trim()
+      .toLowerCase()
+  )
+}
+
+/** 计算新人固定任务进度：只根据 queryEntrantTaskSchedule 的完成状态显示 0% 或 100%。 */
+const createEntrantTaskProgress = (schedule: EntrantTaskScheduleItem | undefined) =>
+  isEntrantTaskCompleted(schedule?.status) ? 100 : 0
+
+/** 计算 GAME 游戏任务进度：多个条件的当前完成比例取平均值。 */
+const createGameTaskProgress = (conditionProgressList: TaskConditionProgressItem[] | undefined) => {
+  const conditionProgresses = (conditionProgressList ?? []).map(condition =>
+    createTaskProgressPercentage(condition.currentValue, condition.targetValue)
+  )
+
+  if (conditionProgresses.length === 0) {
+    return 0
+  }
+
+  const averageProgress =
+    conditionProgresses.reduce((total, progress) => total + progress, 0) /
+    conditionProgresses.length
+
+  // 游戏任务平均进度最多保留两位小数，避免展示浮点计算误差。
+  return Number(averageProgress.toFixed(2))
+}
+
+/** 计算 CZ 充值任务进度：当前累计充值金额除以任务目标累计充值金额。 */
+const createRechargeTaskProgress = (task: MemberTaskItem, schedule: TaskScheduleItem) =>
+  createTaskProgressPercentage(schedule.rechargeAmount, task.rechargeAmount)
+
+/** 计算普通任务进度；无法匹配 taskId 或暂未支持的类型统一展示 0%。 */
+const createMemberTaskProgress = (task: MemberTaskItem, schedule: TaskScheduleItem | undefined) => {
+  if (!schedule) {
+    return 0
+  }
+
+  const taskType = String(task.taskType ?? '')
+    .trim()
+    .toUpperCase()
+
+  // GAME：游戏任务，多个 conditionProgressList 条件进度取平均值。
+  if (taskType === 'GAME') {
+    return createGameTaskProgress(schedule.conditionProgressList)
+  }
+
+  // CZ：充值任务，使用当前累计充值金额与目标累计充值金额计算进度。
+  if (taskType === 'CZ') {
+    return createRechargeTaskProgress(task, schedule)
+  }
+
+  // XYZ：幸运抽奖任务，等待后续接口规则，当前展示 0%。
+  if (taskType === 'XYZ') {
+    return 0
+  }
+
+  // TG：代理赚钱任务，等待后续接口规则，当前展示 0%。
+  if (taskType === 'TG') {
+    return 0
+  }
+
+  // 未知类型：没有计算规则时不推断进度，统一展示 0%。
+  return 0
+}
+
+/** 将新人固定任务或会员任务的基础字段转换为任务卡片统一模型。 */
 const createTaskViewItem = (
   item: EntrantTaskItem | MemberTaskItem,
   source: TaskViewItem['source'],
-  languageCode: string
+  languageCode: string,
+  progress: number
 ): TaskViewItem => {
   const activeNumber = getTaskDisplayValue(item.activeNumber)
   const rewardInfo =
@@ -451,21 +555,45 @@ const createTaskViewItem = (
     description: getTaskLocalizedText(item.taskDesc, languageCode),
     activity: activeNumber === undefined ? undefined : `+${activeNumber}`,
     ...rewardInfo,
-    columnCodes: 'columnCode' in item ? createTaskColumnCodes(item.columnCode) : []
+    columnCodes: 'columnCode' in item ? createTaskColumnCodes(item.columnCode) : [],
+    progress
   }
 }
 
-/** 创建新人固定任务的卡片列表，保持接口返回顺序。 */
+/** 创建新人固定任务卡片：rowId 与 taskId 匹配后仅展示 0% 或 100%。 */
 export const createEntrantTaskViewItems = (
   tasks: EntrantTaskItem[] | undefined,
-  languageCode: string
-) => (tasks ?? []).map(item => createTaskViewItem(item, 'entrant', languageCode))
+  languageCode: string,
+  schedules: EntrantTaskScheduleItem[] | undefined
+) => {
+  const scheduleMap = createTaskScheduleMap(schedules)
 
-/** 创建会员任务的卡片列表，保持接口返回顺序。 */
+  return (tasks ?? []).map(item => {
+    const schedule = scheduleMap.get(createTaskScheduleKey(item.rowId))
+
+    return createTaskViewItem(item, 'entrant', languageCode, createEntrantTaskProgress(schedule))
+  })
+}
+
+/** 创建会员任务卡片：rowId 与 taskId 匹配后，根据任务类型计算进度。 */
 export const createMemberTaskViewItems = (
   tasks: MemberTaskItem[] | undefined,
-  languageCode: string
-) => (tasks ?? []).map(item => createTaskViewItem(item, 'member', languageCode))
+  languageCode: string,
+  schedules: TaskScheduleItem[] | undefined
+) => {
+  const scheduleMap = createTaskScheduleMap(schedules)
+
+  return (tasks ?? []).map(item => {
+    const schedule = scheduleMap.get(createTaskScheduleKey(item.rowId))
+
+    return createTaskViewItem(
+      item,
+      'member',
+      languageCode,
+      createMemberTaskProgress(item, schedule)
+    )
+  })
+}
 
 /** 合并 General 栏目的任务，保证新人任务始终排在会员任务前。 */
 export const createGeneralTaskViewItems = (
