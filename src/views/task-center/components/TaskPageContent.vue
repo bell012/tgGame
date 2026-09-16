@@ -408,12 +408,15 @@
                 {{ task.title }}
               </span>
               <!-- 任务说明图标。 -->
-              <img
-                :src="taskInfoImage"
-                alt=""
-                class="shrink-0 object-contain"
+              <button
+                type="button"
+                aria-label="Task information"
+                class="shrink-0"
                 :class="props.mode === 'pc' ? 'h-5 w-5' : 'h-3.5 w-3.5'"
-              />
+                @click="$emit('open-task-info')"
+              >
+                <img :src="taskInfoImage" alt="" class="h-full w-full object-contain" />
+              </button>
             </div>
             <div
               v-if="task.activity || task.reward"
@@ -529,6 +532,7 @@ const currentCurrencySymbol = computed(() => getCurrencySymbol(currentCurrencyCo
 
 defineEmits<{
   'tab-click': [value: TaskTabKey]
+  'open-task-info': []
 }>()
 
 /** 展示当前宝箱对应的奖金金额与提款流水要求。 */

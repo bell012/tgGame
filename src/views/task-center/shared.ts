@@ -234,9 +234,6 @@ const GENERAL_TASK_TAB: TaskTabItem = {
   mobileWidth: 103
 }
 
-/** 新人福利的多语言名称，用于将该栏目固定排在第二位。 */
-const NEW_USER_TASK_TAB_NAMES = new Set(['新人福利', 'new user benefit', 'new user benefits'])
-
 /** 按栏目文字的显示宽度计算 H5 胶囊按钮宽度。 */
 const getTaskTabMobileWidth = (label: string) => {
   const displayLength = Array.from(label).reduce(
@@ -283,17 +280,14 @@ const getTaskTabLabel = (item: GameTaskConfigItem, languageCode: string) => {
   return String(localizedName ?? item.name ?? item.columnCode ?? '').trim()
 }
 
-/** 判断后台栏目是否为新人福利，满足时固定排在 General 后。 */
-const isNewUserTaskTab = (item: GameTaskConfigItem) => {
-  return [item.name, ...(item.languageCode?.map(languageItem => languageItem.name) ?? [])].some(
-    name =>
-      NEW_USER_TASK_TAB_NAMES.has(
-        String(name ?? '')
-          .trim()
-          .toLowerCase()
-      )
-  )
-}
+/** 创建本地固定的新人福利栏目，只在新人任务接口返回数据时显示。 */
+const createEntrantTaskTab = (): TaskTabItem => ({
+  key: 'entrant',
+  isEntrant: true,
+  label: '新人福利',
+  iconKey: 'gameCategoriesIcon',
+  mobileWidth: getTaskTabMobileWidth('新人福利')
+})
 
 /** 将后台栏目配置转换为 H5 与 PC 共用的导航数据。 */
 export const createTaskTabs = (
@@ -302,8 +296,6 @@ export const createTaskTabs = (
   showEntrantTab: boolean
 ): TaskTabItem[] => {
   const enabledConfigs = (taskConfigs ?? []).filter(item => Number(item.enable) === 1)
-  const newUserConfigs = showEntrantTab ? enabledConfigs.filter(isNewUserTaskTab) : []
-  const otherConfigs = enabledConfigs.filter(item => !isNewUserTaskTab(item))
   const seenColumnCodes = new Set<string>()
 
   const createConfigTab = (item: GameTaskConfigItem): TaskTabItem | null => {
@@ -319,7 +311,6 @@ export const createTaskTabs = (
     return {
       key: `column-${columnCode}`,
       columnCode,
-      isEntrant: isNewUserTaskTab(item),
       label,
       // 后台未提供栏目图标，暂统一复用通用任务图标。
       iconKey: 'gameCategoriesIcon',
@@ -327,11 +318,11 @@ export const createTaskTabs = (
     }
   }
 
-  const configTabs = [...newUserConfigs, ...otherConfigs]
+  const configTabs = enabledConfigs
     .map(createConfigTab)
     .filter((item): item is TaskTabItem => Boolean(item))
 
-  return [GENERAL_TASK_TAB, ...configTabs]
+  return [GENERAL_TASK_TAB, ...(showEntrantTab ? [createEntrantTaskTab()] : []), ...configTabs]
 }
 
 /** 解析后台 JSON 格式的多语言任务名称或描述。 */

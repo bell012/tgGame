@@ -16,6 +16,7 @@
           :tasks="visibleTaskItems"
           :tasks-loading="taskListLoading"
           @tab-click="handleTaskTabClick"
+          @open-task-info="handleOpenTaskInfo"
         />
       </div>
     </div>
@@ -31,7 +32,11 @@
       :tasks="visibleTaskItems"
       :tasks-loading="taskListLoading"
       @tab-click="handleTaskTabClick"
+      @open-task-info="handleOpenTaskInfo"
     />
+
+    <!-- 任务说明静态弹窗。 -->
+    <TaskInfoPopup v-model:visible="showTaskInfoPopup" :mode="isMobile ? 'mobile' : 'pc'" />
   </div>
 </template>
 
@@ -52,6 +57,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
 import { getLanguageCode } from '@/utils/locale'
 import TaskPageContent from './components/TaskPageContent.vue'
+import TaskInfoPopup from './components/TaskInfoPopup.vue'
 import PcLayout from './pc-layout.vue'
 import {
   createTaskActivityData,
@@ -99,6 +105,9 @@ const taskListLoading = ref(true)
 
 /** 当前选中栏目默认固定为 General。 */
 const activeTaskTabKey = ref<TaskTabKey>('general')
+
+/** 控制任务说明静态弹窗显示状态。 */
+const showTaskInfoPopup = ref(false)
 
 /** 保存活动度接口原始结果，供倒计时每秒刷新时复用。 */
 const memberActiveValue = ref<MemberActiveValueResult | null>(null)
@@ -203,6 +212,11 @@ const fetchTaskLists = async () => {
 /** 切换当前任务栏目。 */
 const handleTaskTabClick = (tabKey: TaskTabKey) => {
   activeTaskTabKey.value = tabKey
+}
+
+/** 打开任务说明静态弹窗。 */
+const handleOpenTaskInfo = () => {
+  showTaskInfoPopup.value = true
 }
 
 /** 保留后台金额原始精度，避免截断或四舍五入。 */
