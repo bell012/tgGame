@@ -466,22 +466,24 @@
             </div>
           </div>
 
-          <!-- 领取与跳转状态接口尚未提供时，不渲染操作按钮。 -->
-          <span
-            class="flex shrink-0 items-center justify-center font-[400]"
+          <!-- 根据任务状态展示前往任务、领取或已完成按钮；领取与跳转逻辑后续接入。 -->
+          <button
+            type="button"
+            class="flex shrink-0 items-center justify-center font-[500]"
             :class="[
               props.mode === 'pc'
                 ? 'h-[43px] w-28 rounded-[12px] text-base leading-[19px]'
-                : 'h-[30px] w-20 rounded-[8px] text-[11px] leading-[14px]',
-              task.action === 'Claim'
+                : 'h-[30px] w-20 rounded-lg text-xs leading-[15px]',
+              task.action === 'claim'
                 ? 'bg-theme-primary text-text-4'
-                : task.action === 'Completed'
-                  ? 'bg-common-100/[0.06] text-text-3'
-                  : 'border border-theme-primary text-theme-primary'
+                : task.action === 'completed'
+                  ? 'cursor-not-allowed bg-opacity-6  text-text-3'
+                  : '!border-[0.67px] !border-solid !border-theme-primary bg-transparent text-theme-primary'
             ]"
+            :disabled="task.action === 'completed'"
           >
-            {{ task.action }}
-          </span>
+            {{ taskActionText[task.action] }}
+          </button>
         </article>
       </template>
     </section>
@@ -505,6 +507,7 @@ import { globalShowToast } from '@/utils/toast'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type {
+  TaskActionState,
   TaskActivityData,
   TaskActivityNode,
   TaskOverviewData,
@@ -529,6 +532,13 @@ const { currentCurrencyCode } = useDisplayCurrency()
 
 /** 根据当前账户币种获取项目统一的货币符号。 */
 const currentCurrencySymbol = computed(() => getCurrencySymbol(currentCurrencyCode.value))
+
+/** 根据内部状态取得当前语言对应的任务按钮文案。 */
+const taskActionText = computed<Record<TaskActionState, string>>(() => ({
+  'go-to-task': t('taskCenter.goToTask'),
+  claim: t('taskCenter.claimNow'),
+  completed: t('taskCenter.completed')
+}))
 
 defineEmits<{
   'tab-click': [value: TaskTabKey]

@@ -315,6 +315,8 @@
     "reset": "Reset:",
     "activityHint": "Claim the activity chest by 1 AM the next day, or it will expire.",
     "goToTask": "Go to Task",
+    "claimNow": "Claim Now",
+    "completed": "Completed",
     "empty": "No tasks available",
     "loadFailed": "Failed to load tasks. Please try again later.",
     "unsupportedTask": "This task is not currently supported."

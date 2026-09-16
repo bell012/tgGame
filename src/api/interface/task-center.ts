@@ -104,6 +104,8 @@ export interface TaskScheduleItem {
   taskId: string | number
   conditionProgressList?: TaskConditionProgressItem[]
   rechargeAmount?: number | string
+  rewardModel?: number | string
+  claimStatus?: string
 }
 
 /** 查询会员任务列表中的任务项。 */

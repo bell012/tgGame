@@ -256,14 +256,14 @@
                 </article>
 
                 <!-- PC 说明区保持 Figma 654px 最小高度。 -->
-                <section class="flex min-h-[654px] w-full flex-col items-start gap-2">
+                <section class="flex min-h-[0px] w-full flex-col items-start gap-2">
                   <h3
                     class="m-0 h-[22px] text-[18px] font-[700] capitalize leading-[22px] text-white"
                   >
                     Activity Details
                   </h3>
                   <p
-                    class="m-0 min-h-[624px] w-full text-[16px] font-[400] leading-[25.6px] text-[#B3BEC1]"
+                    class="m-0 min-h-[0px] w-full text-[16px] font-[400] leading-[25.6px] text-[#B3BEC1]"
                   >
                     This activity is a humanitarian rescue and emergency relief activity.
                   </p>
