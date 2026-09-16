@@ -1,4 +1,15 @@
 {
+  "onlineCustomer": {
+    "title": "Live support",
+    "close": "Close support",
+    "loading": "Loading support…",
+    "retry": "Retry",
+    "requestFailed": "Unable to load support. Please try again.",
+    "unavailable": "Support is currently unavailable.",
+    "unsupported": "This support type is not supported yet.",
+    "invalidUrl": "Invalid support address. Please try again later.",
+    "frameFailed": "Unable to load the support page. Please try again."
+  },
   "home": {
     "title": "Welcome to TG Game",
     "home": "Home",

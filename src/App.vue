@@ -2,6 +2,7 @@
   <div>
     <router-view />
     <LoginModal v-model="showLoginModal" :default-tab="loginModalTab" />
+    <OnlineCustomerService />
     <!-- 全局弹窗提示 -->
     <GlobalToast />
     <!-- 全局活动 tikect弹窗提示 -->
@@ -11,6 +12,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import OnlineCustomerService from '@/components/OnlineCustomerService.vue'
 import { storeToRefs } from 'pinia'
 import GlobalToast from '@/components/common/GlobalToast.vue'
 import GlobalTicketToast from '@/views/activity/ticket/GlobalTicketToast.vue'

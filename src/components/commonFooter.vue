@@ -309,8 +309,11 @@
 </template>
 
 <script setup lang="ts">
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
+
 import { computed, onMounted, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
+
 import { navigateTo } from '@/utils/router'
 import { useCasinoTabButtons } from '@/composables/useCasinoTabButtons'
 import ExternalIcon from '@/static/svg/external.svg?component'
@@ -324,6 +327,8 @@ import FooterGlobalCommunity06 from '@/static/svg/commonFooter/social/footer_glo
 import FooterGlobalCommunity07 from '@/static/svg/commonFooter/social/footer_global_community_07.svg?component'
 import FooterGlobalCommunity08 from '@/static/svg/commonFooter/social/footer_global_community_08.svg?component'
 import FooterLocalCommunity01 from '@/static/svg/commonFooter/social/footer_local_community_01.svg?component'
+
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 
 const GLOBAL_COMMUNITY_ICONS: Component[] = [
   FooterGlobalCommunity01,
@@ -769,7 +774,7 @@ const legalLinks = computed(() => [
     name: t('common_footer.links.live_support'),
     hasExternalIcon: false,
     handler: () => {
-      console.log('线上客服')
+      openOnlineCustomer()
     }
   },
   {
