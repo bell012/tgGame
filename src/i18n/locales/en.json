@@ -317,6 +317,8 @@
     "goToTask": "Go to Task",
     "claimNow": "Claim Now",
     "completed": "Completed",
+    "waitSettle": "Pending Settlement",
+    "expired": "Expired",
     "empty": "No tasks available",
     "loadFailed": "Failed to load tasks. Please try again later.",
     "unsupportedTask": "This task is not currently supported."

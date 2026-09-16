@@ -466,7 +466,7 @@
             </div>
           </div>
 
-          <!-- 根据任务状态展示前往任务、领取或已完成按钮；领取与跳转逻辑后续接入。 -->
+          <!-- 根据任务状态展示前往任务、领取、已完成、待结算或已过期按钮；领取与跳转逻辑后续接入。 -->
           <button
             type="button"
             class="flex shrink-0 items-center justify-center font-[500]"
@@ -476,11 +476,11 @@
                 : 'h-[30px] w-20 rounded-lg text-xs leading-[15px]',
               task.action === 'claim'
                 ? 'bg-theme-primary text-text-4'
-                : task.action === 'completed'
-                  ? 'cursor-not-allowed bg-opacity-6  text-text-3'
+                : ['completed', 'wait-settle', 'expired'].includes(task.action)
+                  ? 'cursor-not-allowed bg-opacity-6 text-text-3'
                   : '!border-[0.67px] !border-solid !border-theme-primary bg-transparent text-theme-primary'
             ]"
-            :disabled="task.action === 'completed'"
+            :disabled="['completed', 'wait-settle', 'expired'].includes(task.action)"
           >
             {{ taskActionText[task.action] }}
           </button>
@@ -537,7 +537,9 @@ const currentCurrencySymbol = computed(() => getCurrencySymbol(currentCurrencyCo
 const taskActionText = computed<Record<TaskActionState, string>>(() => ({
   'go-to-task': t('taskCenter.goToTask'),
   claim: t('taskCenter.claimNow'),
-  completed: t('taskCenter.completed')
+  completed: t('taskCenter.completed'),
+  'wait-settle': t('taskCenter.waitSettle'),
+  expired: t('taskCenter.expired')
 }))
 
 defineEmits<{

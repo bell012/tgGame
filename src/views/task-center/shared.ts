@@ -6,7 +6,8 @@ import type {
   MemberActiveValueRewardConfigItem,
   MemberTaskItem,
   TaskConditionProgressItem,
-  TaskScheduleItem
+  TaskScheduleItem,
+  TaskTierProgressItem
 } from '@/api/interface/task-center'
 
 /** 任务栏目键由后台 columnCode 动态生成。 */
@@ -213,7 +214,7 @@ export const createTaskActivityData = (activity: MemberActiveValueResult): TaskA
 }
 
 /** 任务卡片操作按钮状态。 */
-export type TaskActionState = 'go-to-task' | 'claim' | 'completed'
+export type TaskActionState = 'go-to-task' | 'claim' | 'completed' | 'wait-settle' | 'expired'
 
 /** 任务卡片统一展示数据。 */
 export interface TaskViewItem {
@@ -434,16 +435,31 @@ const createTaskScheduleMap = <TSchedule extends { taskId: string | number }>(
   schedules: TSchedule[] | undefined
 ) => new Map((schedules ?? []).map(schedule => [createTaskScheduleKey(schedule.taskId), schedule]))
 
-/** 将当前值与目标值转换为 0 至 100 的进度百分比。 */
-const createTaskProgressPercentage = (currentValue: unknown, targetValue: unknown) => {
-  const current = Math.abs(Number(currentValue))
-  const target = Number(targetValue)
+/** 将数值限制在 0 至 100 的有效进度范围内。 */
+const clampTaskProgress = (progress: number) => Math.min(Math.max(progress, 0), 100)
 
-  if (!Number.isFinite(current) || !Number.isFinite(target) || target <= 0) {
+/** 将任务领取状态统一为大写文本，兼容后台空值。 */
+const normalizeTaskClaimStatus = (claimStatus: unknown) =>
+  String(claimStatus ?? '')
+    .trim()
+    .toUpperCase()
+
+/** 将单个条件的当前值与目标值转换为 0 至 100 的进度百分比。 */
+const createTaskProgressPercentage = (condition: TaskConditionProgressItem) => {
+  const target = Number(condition.targetValue)
+
+  // 目标值无效时不能除以零，改由后台 completed 标识确定完成状态。
+  if (!Number.isFinite(target) || target <= 0) {
+    return condition.completed ? 100 : 0
+  }
+
+  const current = Math.abs(Number(condition.currentValue))
+
+  if (!Number.isFinite(current)) {
     return 0
   }
 
-  return Math.min(current / target, 1) * 100
+  return clampTaskProgress((current / target) * 100)
 }
 
 /** 根据新人任务 status 精确映射操作按钮状态。 */
@@ -466,11 +482,11 @@ const createEntrantTaskActionState = (
 /** 根据操作按钮状态计算新人固定任务进度，仅展示 0% 或 100%。 */
 const createEntrantTaskProgress = (action: TaskActionState) => (action === 'go-to-task' ? 0 : 100)
 
-/** 计算 GAME 游戏任务进度：多个条件的当前完成比例取平均值。 */
-const createGameTaskProgress = (conditionProgressList: TaskConditionProgressItem[] | undefined) => {
-  const conditionProgresses = (conditionProgressList ?? []).map(condition =>
-    createTaskProgressPercentage(condition.currentValue, condition.targetValue)
-  )
+/** 计算条件型任务进度：多个条件的当前完成比例取平均值。 */
+const createConditionTaskProgress = (
+  conditionProgressList: TaskConditionProgressItem[] | undefined
+) => {
+  const conditionProgresses = (conditionProgressList ?? []).map(createTaskProgressPercentage)
 
   if (conditionProgresses.length === 0) {
     return 0
@@ -480,21 +496,104 @@ const createGameTaskProgress = (conditionProgressList: TaskConditionProgressItem
     conditionProgresses.reduce((total, progress) => total + progress, 0) /
     conditionProgresses.length
 
-  // 游戏任务平均进度最多保留两位小数，避免展示浮点计算误差。
-  return Number(averageProgress.toFixed(2))
+  // 条件型任务平均进度最多保留两位小数，避免展示浮点计算误差。
+  return Number(clampTaskProgress(averageProgress).toFixed(2))
 }
 
-/** 判断任务进度记录是否包含 rewardModel，有该字段即按游戏任务规则计算。 */
-const isGameTaskSchedule = (schedule: TaskScheduleItem) =>
-  Object.prototype.hasOwnProperty.call(schedule, 'rewardModel')
+/** 判断普通会员任务是否属于累计充值金额型任务。 */
+const isRechargeAmountTask = (taskType: MemberTaskItem['taskType']) =>
+  new Set(['CZ', 'CZ2', 'CZ3', 'CZ4', 'CZ5']).has(
+    String(taskType ?? '')
+      .trim()
+      .toUpperCase()
+  )
+
+/** 判断给定时间戳是否与当前浏览器本地日期属于同一天。 */
+const isTaskSameLocalDay = (timestamp: unknown, currentDate: Date) => {
+  const date = new Date(Number(timestamp))
+
+  return (
+    !Number.isNaN(date.getTime()) &&
+    date.getFullYear() === currentDate.getFullYear() &&
+    date.getMonth() === currentDate.getMonth() &&
+    date.getDate() === currentDate.getDate()
+  )
+}
+
+/** 计算累计充值金额型任务进度，并处理不允许跨天累计的旧进度。 */
+const createRechargeAmountTaskProgress = (
+  task: MemberTaskItem,
+  schedule: TaskScheduleItem,
+  currentDate: Date
+) => {
+  // acrossDay 为 0 时，只能使用今天写入的累计充值进度。
+  if (Number(task.acrossDay) === 0 && !isTaskSameLocalDay(schedule.modifyTime, currentDate)) {
+    return 0
+  }
+
+  const targetRechargeAmount = Number(task.rechargeAmount)
+  const currentRechargeAmount = Number(schedule.rechargeAmount)
+
+  if (
+    !Number.isFinite(targetRechargeAmount) ||
+    targetRechargeAmount <= 0 ||
+    !Number.isFinite(currentRechargeAmount)
+  ) {
+    return 0
+  }
+
+  return Number(clampTaskProgress((currentRechargeAmount / targetRechargeAmount) * 100).toFixed(2))
+}
+
+/** 按档位编号升序获取阶梯任务的首档进度，避免依赖接口数组顺序。 */
+const getFirstTierProgress = (tierProgressList: TaskTierProgressItem[] | undefined) => {
+  const tiers = tierProgressList ?? []
+
+  return [...tiers].sort((firstTier, secondTier) => {
+    const firstTierNo = Number(firstTier.tierNo)
+    const secondTierNo = Number(secondTier.tierNo)
+
+    if (!Number.isFinite(firstTierNo) || !Number.isFinite(secondTierNo)) {
+      return 0
+    }
+
+    return firstTierNo - secondTierNo
+  })[0]
+}
+
+/** 判断任务记录是否应按阶梯任务结构处理。 */
+const isTierTaskSchedule = (schedule: TaskScheduleItem) =>
+  Number(schedule.rewardModel) === 2 || (schedule.tierProgressList?.length ?? 0) > 0
+
+/** 根据纯状态型任务的领取状态生成 0% 或 100% 进度。 */
+const createStatusTaskProgress = (claimStatus: unknown) => {
+  switch (normalizeTaskClaimStatus(claimStatus)) {
+    // CLAIMABLE：任务条件已达成，奖励待领取。
+    case 'CLAIMABLE':
+      return 100
+    // CLAIMED：奖励已领取。
+    case 'CLAIMED':
+      return 100
+    // WAIT_SETTLE：条件已达成，等待后台结算。
+    case 'WAIT_SETTLE':
+      return 100
+    // UN_FINISHED、未知或空状态统一视为未完成。
+    default:
+      return 0
+  }
+}
 
 /** 根据普通任务 claimStatus 精确映射操作按钮状态。 */
 const createMemberTaskActionState = (
-  claimStatus: TaskScheduleItem['claimStatus']
+  claimStatus: TaskScheduleItem['claimStatus'],
+  isExpired: boolean
 ): TaskActionState => {
-  const normalizedClaimStatus = String(claimStatus ?? '')
-    .trim()
-    .toUpperCase()
+  // 已过期优先展示已过期状态，但进度仍保留前面模型计算的结果。
+  if (isExpired) {
+    return 'expired'
+  }
+
+  const normalizedClaimStatus = normalizeTaskClaimStatus(claimStatus)
 
   switch (normalizedClaimStatus) {
     // CLAIMABLE：任务已达到领取条件，奖励待领取。
@@ -503,25 +602,62 @@ const createMemberTaskActionState = (
     // CLAIMED：奖励已领取，任务已结束。
     case 'CLAIMED':
       return 'completed'
+    // WAIT_SETTLE：条件已完成，但暂未到结算或领取时间。
+    case 'WAIT_SETTLE':
+      return 'wait-settle'
     // UN_FINISHED 或未知状态：任务尚未完成。
     default:
       return 'go-to-task'
   }
 }
 
-/** 计算普通任务进度；无法匹配 taskId 时统一展示 0%。 */
-const createMemberTaskProgress = (schedule: TaskScheduleItem | undefined) => {
+/** 判断任务结束时间是否已超过当前浏览器本地时间。 */
+const isMemberTaskExpired = (task: MemberTaskItem, currentDate: Date) => {
+  const endDate = Number(task.endDate)
+
+  return Number.isFinite(endDate) && endDate > 0 && currentDate.getTime() > endDate
+}
+
+/** 计算普通会员任务进度；无法匹配 taskId 时统一展示 0%。 */
+const createMemberTaskProgress = (
+  task: MemberTaskItem,
+  schedule: TaskScheduleItem | undefined,
+  currentDate: Date
+) => {
   if (!schedule) {
     return 0
   }
 
-  // rewardModel：进度记录包含奖励模型字段时，按游戏任务多条件平均规则计算。
-  if (isGameTaskSchedule(schedule)) {
-    return createGameTaskProgress(schedule.conditionProgressList)
+  const claimStatus = normalizeTaskClaimStatus(schedule.claimStatus)
+
+  // WAIT_SETTLE：等待结算的任务无需继续计算条件，固定展示 100%。
+  if (claimStatus === 'WAIT_SETTLE') {
+    return 100
   }
 
-  // 无 rewardModel：普通任务仅由 claimStatus 决定 0% 或 100%。
-  return createEntrantTaskProgress(createMemberTaskActionState(schedule.claimStatus))
+  // CZ、CZ2 至 CZ5：按累计充值金额计算任务进度。
+  if (isRechargeAmountTask(task.taskType)) {
+    return createRechargeAmountTaskProgress(task, schedule, currentDate)
+  }
+
+  // 阶梯任务：已领取或可领取时固定 100%，未完成时展示最小 tierNo 档位的条件进度。
+  if (isTierTaskSchedule(schedule)) {
+    if (claimStatus === 'CLAIMABLE' || claimStatus === 'CLAIMED') {
+      return 100
+    }
+
+    return createConditionTaskProgress(
+      getFirstTierProgress(schedule.tierProgressList)?.conditionProgressList
+    )
+  }
+
+  // 普通条件型任务：只要存在条件列表即可计算，不限制 taskType。
+  if ((schedule.conditionProgressList?.length ?? 0) > 0) {
+    return createConditionTaskProgress(schedule.conditionProgressList)
+  }
+
+  // 其余任务没有可计算条件，按领取状态作为最终兜底。
+  return createStatusTaskProgress(claimStatus)
 }
 
 /** 将新人固定任务或会员任务的基础字段转换为任务卡片统一模型。 */
@@ -583,16 +719,21 @@ export const createMemberTaskViewItems = (
   schedules: TaskScheduleItem[] | undefined
 ) => {
   const scheduleMap = createTaskScheduleMap(schedules)
+  // 同一批任务使用同一时刻计算跨天和过期状态，避免临界秒出现显示不一致。
+  const currentDate = new Date()
 
   return (tasks ?? []).map(item => {
     const schedule = scheduleMap.get(createTaskScheduleKey(item.rowId))
-    const action = createMemberTaskActionState(schedule?.claimStatus)
+    const action = createMemberTaskActionState(
+      schedule?.claimStatus,
+      isMemberTaskExpired(item, currentDate)
+    )
 
     return createTaskViewItem(
       item,
       'member',
       languageCode,
-      createMemberTaskProgress(schedule),
+      createMemberTaskProgress(item, schedule, currentDate),
       action
     )
   })

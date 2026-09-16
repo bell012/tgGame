@@ -606,6 +606,8 @@
     "goToTask": "去完成",
     "claimNow": "立即领取",
     "completed": "已完成",
+    "waitSettle": "待结算",
+    "expired": "已过期",
     "empty": "暂无任务",
     "loadFailed": "任务加载失败，请稍后重试",
     "unsupportedTask": "该任务暂不支持跳转"

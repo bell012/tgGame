@@ -99,6 +99,15 @@ export interface TaskConditionProgressItem {
   targetValue?: number | string
 }
 
+/** 阶梯奖励任务中单个档位的进度项。 */
+export interface TaskTierProgressItem {
+  claimStatus?: string
+  conditionProgressList?: TaskConditionProgressItem[]
+  hasHigherUnfinishedTier?: boolean
+  rewardText?: string
+  tierNo?: number | string
+}
+
 /** 普通任务进度项。 */
 export interface TaskScheduleItem {
   taskId: string | number
@@ -106,6 +115,8 @@ export interface TaskScheduleItem {
   rechargeAmount?: number | string
   rewardModel?: number | string
   claimStatus?: string
+  modifyTime?: number | string
+  tierProgressList?: TaskTierProgressItem[]
 }
 
 /** 查询会员任务列表中的任务项。 */
@@ -128,6 +139,7 @@ export interface MemberTaskItem {
   rewardRatio?: number | string
   rechargeAmount?: number
   rechargeNum?: number
+  acrossDay?: number | string
   betAmount?: number
   winAmount?: number
   lostAmount?: number
