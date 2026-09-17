@@ -413,7 +413,7 @@
                 aria-label="Task information"
                 class="shrink-0"
                 :class="props.mode === 'pc' ? 'h-5 w-5' : 'h-3.5 w-3.5'"
-                @click="$emit('open-task-info')"
+                @click="$emit('open-task-info', task)"
               >
                 <img :src="taskInfoImage" alt="" class="h-full w-full object-contain" />
               </button>
@@ -544,7 +544,7 @@ const taskActionText = computed<Record<TaskActionState, string>>(() => ({
 
 defineEmits<{
   'tab-click': [value: TaskTabKey]
-  'open-task-info': []
+  'open-task-info': [task: TaskViewItem]
 }>()
 
 /** 展示当前宝箱对应的奖金金额与提款流水要求。 */

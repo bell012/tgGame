@@ -35,8 +35,12 @@
       @open-task-info="handleOpenTaskInfo"
     />
 
-    <!-- 任务说明静态弹窗。 -->
-    <TaskInfoPopup v-model:visible="showTaskInfoPopup" :mode="isMobile ? 'mobile' : 'pc'" />
+    <!-- 当前点击任务对应的说明弹窗。 -->
+    <TaskInfoPopup
+      v-model:visible="showTaskInfoPopup"
+      :mode="isMobile ? 'mobile' : 'pc'"
+      :task="selectedTaskInfo"
+    />
   </div>
 </template>
 
@@ -68,8 +72,10 @@ import {
   createTaskTabs,
   createTaskTodayTimeRange,
   type TaskActivityData,
+  type TaskInfoPopupData,
   type TaskOverviewData,
-  type TaskTabKey
+  type TaskTabKey,
+  type TaskViewItem
 } from './shared'
 
 const isMobile = useIsMobile()
@@ -106,8 +112,11 @@ const taskListLoading = ref(true)
 /** 当前选中栏目默认固定为 General。 */
 const activeTaskTabKey = ref<TaskTabKey>('general')
 
-/** 控制任务说明静态弹窗显示状态。 */
+/** 控制当前任务的说明弹窗显示状态。 */
 const showTaskInfoPopup = ref(false)
+
+/** 保存用户点击的任务说明数据，供 H5 与 PC 弹窗共用。 */
+const selectedTaskInfo = ref<TaskInfoPopupData | null>(null)
 
 /** 保存活动度接口原始结果，供倒计时每秒刷新时复用。 */
 const memberActiveValue = ref<MemberActiveValueResult | null>(null)
@@ -214,8 +223,9 @@ const handleTaskTabClick = (tabKey: TaskTabKey) => {
   activeTaskTabKey.value = tabKey
 }
 
-/** 打开任务说明静态弹窗。 */
-const handleOpenTaskInfo = () => {
+/** 打开用户当前点击任务的说明弹窗。 */
+const handleOpenTaskInfo = (task: TaskViewItem) => {
+  selectedTaskInfo.value = task.popup
   showTaskInfoPopup.value = true
 }
 

@@ -216,6 +216,43 @@ export const createTaskActivityData = (activity: MemberActiveValueResult): TaskA
 /** 任务卡片操作按钮状态。 */
 export type TaskActionState = 'go-to-task' | 'claim' | 'completed' | 'wait-settle' | 'expired'
 
+/** 任务说明弹窗的进度卡展示类型。 */
+export type TaskInfoPopupVariant = 'compact' | 'detailed'
+
+/** 任务说明弹窗中充值金额型任务的当前值与目标值。 */
+export interface TaskInfoPopupRechargeProgress {
+  currentAmount: string
+  targetAmount: string
+}
+
+/** 任务说明弹窗中单张条件进度卡的数据。 */
+export interface TaskInfoPopupDetailCard {
+  action: TaskActionState
+  conditions: TaskConditionProgressItem[]
+  id: string
+  progress: number
+  /** 阶梯任务当前档位的后台奖励文案，仅由 tierProgressList 提供。 */
+  rewardText?: string
+}
+
+/** 任务说明弹窗所需的完整展示数据。 */
+export interface TaskInfoPopupData {
+  action: TaskActionState
+  description: string
+  detailCards: TaskInfoPopupDetailCard[]
+  progress: number
+  rechargeProgress?: TaskInfoPopupRechargeProgress
+  title: string
+  variant: TaskInfoPopupVariant
+}
+
+/** 创建任务说明弹窗时需要补充的进度模型数据。 */
+interface TaskInfoPopupContent {
+  detailCards: TaskInfoPopupDetailCard[]
+  rechargeProgress?: TaskInfoPopupRechargeProgress
+  variant: TaskInfoPopupVariant
+}
+
 /** 任务卡片统一展示数据。 */
 export interface TaskViewItem {
   id: string
@@ -226,6 +263,7 @@ export interface TaskViewItem {
   reward?: string
   rewardUsesCurrency: boolean
   columnCodes: string[]
+  popup: TaskInfoPopupData
   progress?: number
   action: TaskActionState
 }
@@ -545,11 +583,9 @@ const createRechargeAmountTaskProgress = (
   return Number(clampTaskProgress((currentRechargeAmount / targetRechargeAmount) * 100).toFixed(2))
 }
 
-/** 按档位编号升序获取阶梯任务的首档进度，避免依赖接口数组顺序。 */
-const getFirstTierProgress = (tierProgressList: TaskTierProgressItem[] | undefined) => {
-  const tiers = tierProgressList ?? []
-
-  return [...tiers].sort((firstTier, secondTier) => {
+/** 按档位编号升序整理阶梯任务进度，避免依赖接口数组顺序。 */
+const createSortedTierProgresses = (tierProgressList: TaskTierProgressItem[] | undefined) => {
+  return [...(tierProgressList ?? [])].sort((firstTier, secondTier) => {
     const firstTierNo = Number(firstTier.tierNo)
     const secondTierNo = Number(secondTier.tierNo)
 
@@ -558,8 +594,12 @@ const getFirstTierProgress = (tierProgressList: TaskTierProgressItem[] | undefin
     }
 
     return firstTierNo - secondTierNo
-  })[0]
+  })
 }
+
+/** 获取阶梯任务的首档进度，用于外层任务卡进度计算。 */
+const getFirstTierProgress = (tierProgressList: TaskTierProgressItem[] | undefined) =>
+  createSortedTierProgresses(tierProgressList)[0]
 
 /** 判断任务记录是否应按阶梯任务结构处理。 */
 const isTierTaskSchedule = (schedule: TaskScheduleItem) =>
@@ -660,13 +700,110 @@ const createMemberTaskProgress = (
   return createStatusTaskProgress(claimStatus)
 }
 
+/** 将接口原始金额保留为弹窗展示文本，缺省时展示 0。 */
+const formatTaskInfoProgressValue = (value: unknown) => getTaskDisplayValue(value) ?? '0'
+
+/** 计算弹窗单张详细进度卡的进度，待结算状态固定显示 100%。 */
+const createTaskInfoDetailProgress = (
+  claimStatus: unknown,
+  conditionProgressList: TaskConditionProgressItem[] | undefined
+) => {
+  if (normalizeTaskClaimStatus(claimStatus) === 'WAIT_SETTLE') {
+    return 100
+  }
+
+  if ((conditionProgressList?.length ?? 0) > 0) {
+    return createConditionTaskProgress(conditionProgressList)
+  }
+
+  return createStatusTaskProgress(claimStatus)
+}
+
+/** 创建阶梯任务的全部详细进度卡，每一档独立使用自身状态和条件列表。 */
+const createTierTaskInfoDetailCards = (
+  tierProgressList: TaskTierProgressItem[] | undefined
+): TaskInfoPopupDetailCard[] =>
+  createSortedTierProgresses(tierProgressList).map((tier, index) => {
+    const tierNo = formatTaskInfoProgressValue(tier.tierNo ?? index + 1)
+
+    return {
+      action: createMemberTaskActionState(tier.claimStatus, false),
+      conditions: tier.conditionProgressList ?? [],
+      id: `tier-${tierNo}-${index}`,
+      progress: createTaskInfoDetailProgress(tier.claimStatus, tier.conditionProgressList),
+      rewardText: tier.rewardText
+    }
+  })
+
+/** 创建普通会员条件型任务的单张详细进度卡。 */
+const createMemberTaskInfoDetailCard = (
+  task: MemberTaskItem,
+  schedule: TaskScheduleItem,
+  action: TaskActionState,
+  progress: number
+): TaskInfoPopupDetailCard => ({
+  action,
+  conditions: schedule.conditionProgressList ?? [],
+  id: `task-${task.rowId}`,
+  progress
+})
+
+/** 创建新人福利任务的精简说明弹窗数据。 */
+const createEntrantTaskInfoPopupContent = (): TaskInfoPopupContent => ({
+  detailCards: [],
+  variant: 'compact'
+})
+
+/** 创建普通会员任务的说明弹窗进度模型数据。 */
+const createMemberTaskInfoPopupContent = (
+  task: MemberTaskItem,
+  schedule: TaskScheduleItem | undefined,
+  action: TaskActionState,
+  progress: number
+): TaskInfoPopupContent => {
+  // 充值金额型任务使用精简卡，展示当前充值金额与目标充值金额。
+  if (isRechargeAmountTask(task.taskType)) {
+    return {
+      detailCards: [],
+      rechargeProgress: {
+        currentAmount: formatTaskInfoProgressValue(schedule?.rechargeAmount),
+        targetAmount: formatTaskInfoProgressValue(task.rechargeAmount)
+      },
+      variant: 'compact'
+    }
+  }
+
+  // 阶梯任务必须将全部档位传入弹窗，每档分别展示自身状态与进度。
+  if (schedule && isTierTaskSchedule(schedule) && (schedule.tierProgressList?.length ?? 0) > 0) {
+    return {
+      detailCards: createTierTaskInfoDetailCards(schedule.tierProgressList),
+      variant: 'detailed'
+    }
+  }
+
+  // 普通任务只要有条件列表，即使用单张详细进度卡展示。
+  if (schedule && (schedule.conditionProgressList?.length ?? 0) > 0) {
+    return {
+      detailCards: [createMemberTaskInfoDetailCard(task, schedule, action, progress)],
+      variant: 'detailed'
+    }
+  }
+
+  // 无条件明细的普通任务回退到精简说明卡。
+  return {
+    detailCards: [],
+    variant: 'compact'
+  }
+}
+
 /** 将新人固定任务或会员任务的基础字段转换为任务卡片统一模型。 */
 const createTaskViewItem = (
   item: EntrantTaskItem | MemberTaskItem,
   source: TaskViewItem['source'],
   languageCode: string,
   progress: number,
-  action: TaskActionState
+  action: TaskActionState,
+  popupContent: TaskInfoPopupContent
 ): TaskViewItem => {
   const activeNumber = getTaskDisplayValue(item.activeNumber)
   const rewardInfo =
@@ -677,14 +814,25 @@ const createTaskViewItem = (
         }
       : createMemberTaskReward(item as MemberTaskItem)
 
+  const title =
+    getTaskLocalizedText(item.taskName, languageCode) || String(item.taskType ?? item.rowId)
+  const description = getTaskLocalizedText(item.taskDesc, languageCode)
+
   return {
     id: `${source}-${item.rowId}`,
     source,
-    title: getTaskLocalizedText(item.taskName, languageCode) || String(item.taskType ?? item.rowId),
-    description: getTaskLocalizedText(item.taskDesc, languageCode),
+    title,
+    description,
     activity: activeNumber === undefined ? undefined : `+${activeNumber}`,
     ...rewardInfo,
     columnCodes: 'columnCode' in item ? createTaskColumnCodes(item.columnCode) : [],
+    popup: {
+      action,
+      description,
+      progress,
+      title,
+      ...popupContent
+    },
     progress,
     action
   }
@@ -707,7 +855,8 @@ export const createEntrantTaskViewItems = (
       'entrant',
       languageCode,
       createEntrantTaskProgress(action),
-      action
+      action,
+      createEntrantTaskInfoPopupContent()
     )
   })
 }
@@ -728,13 +877,15 @@ export const createMemberTaskViewItems = (
       schedule?.claimStatus,
       isMemberTaskExpired(item, currentDate)
     )
+    const progress = createMemberTaskProgress(item, schedule, currentDate)
 
     return createTaskViewItem(
       item,
       'member',
       languageCode,
-      createMemberTaskProgress(item, schedule, currentDate),
-      action
+      progress,
+      action,
+      createMemberTaskInfoPopupContent(item, schedule, action, progress)
     )
   })
 }
