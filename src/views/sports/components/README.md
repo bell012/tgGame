@@ -1,3 +1,5 @@
+本地预览（仅 DEV）：[http://localhost:4000/zh/sports/demo](http://localhost:4000/zh/sports/demo)
+
 1. MatchVersus（对阵条）
    纯展示：主队 / 比分 / 客队。数据全部用 props 传入。
    路径：`src/views/sports/components/match-versus/`
