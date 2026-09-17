@@ -2,7 +2,7 @@ import { computed, onMounted, onScopeDispose, ref, watch } from 'vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import teamBadge from '@/static/img/explore/sports-team.png'
-import type { OddsMarket, OddsSelectPayload } from './components/match-odds/types'
+import type { OddsMarket, OddsSelectPayload, OddsTrend } from './components/match-odds/types'
 
 export type SportsBetMode = 'single' | 'parlay'
 export type SportsMatch = {
@@ -16,16 +16,25 @@ export type SportsMatch = {
   halfTimeScore: string
   home: { name: string; badge: string; redCards: number; yellowCards: number }
   away: { name: string; badge: string; redCards: number; yellowCards: number }
+  markets?: OddsMarket[]
+  live?: boolean
+  mockBetStatus?: 'open' | 'closed' | 'fail'
 }
 export type SportsBetSelection = {
   id: string
   matchId: string
   selection: string
   market: string
+  marketTitle: string
   fixture: string
+  homeTeam: string
+  awayTeam: string
   league: string
   odds: number
   stake: string
+  trend?: OddsTrend
+  live?: boolean
+  mockBetStatus?: 'open' | 'closed' | 'fail'
 }
 export type SportsParlay = {
   id: string
@@ -99,7 +108,7 @@ export const getSportsCombinations = (odds: readonly number[], size: number): nu
   return products
 }
 
-export const useSportsPage = () => {
+export const useSportsPage = (options: { additionalMatches?: readonly SportsMatch[] } = {}) => {
   const { currentCurrencyCode } = useDisplayCurrency()
   const currentPage = ref(1)
   const expandedMatchId = ref<string | null>(null)
@@ -143,6 +152,8 @@ export const useSportsPage = () => {
     })
   )
   const liveMatches = computed(() => matches.value.slice(0, 4))
+  // 两端共用投注数据源，移动端扩展赛事不改变 PC 的列表与分页。
+  const allMatches = computed(() => [...matches.value, ...(options.additionalMatches ?? [])])
   const totalPages = computed(() => Math.max(1, Math.ceil(matches.value.length / MATCH_PAGE_SIZE)))
   const pagedMatches = computed(() =>
     matches.value.slice(
@@ -161,9 +172,10 @@ export const useSportsPage = () => {
 
   // 页面与投注单共用盘口定义，模拟文案统一使用设计稿英文。
   const createMarkets = (matchId: string): OddsMarket[] => {
-    if (!matches.value.some(match => match.id === matchId)) return []
+    const match = allMatches.value.find(item => item.id === matchId)
+    if (!match) return []
     const selected = outcomes.value.find(outcome => outcome.matchId === matchId)
-    const markets: OddsMarket[] = [
+    const markets: OddsMarket[] = match.markets ?? [
       {
         id: '1x2',
         title: '1X2',
@@ -212,7 +224,7 @@ export const useSportsPage = () => {
     createMarkets(matchId).filter(market => market.id === 'ou' || market.id === 'total-half')
   const selections = computed<SportsBetSelection[]>(() =>
     outcomes.value.flatMap(outcome => {
-      const match = matches.value.find(item => item.id === outcome.matchId)
+      const match = allMatches.value.find(item => item.id === outcome.matchId)
       const market = createMarkets(outcome.matchId).find(item => item.id === outcome.marketId)
       const option = market?.options.find(item => item.id === outcome.optionId)
       if (!match || !market || !option) return []
@@ -222,10 +234,16 @@ export const useSportsPage = () => {
           matchId: outcome.matchId,
           odds: outcome.odds,
           stake: outcome.stake,
+          trend: option.trend,
           selection: [option.label, option.line].filter(Boolean).join(' '),
           market: `${market.title} · Decimal`,
+          marketTitle: market.title,
           fixture: `${match.home.name} — ${match.away.name}`,
-          league: match.league
+          homeTeam: match.home.name,
+          awayTeam: match.away.name,
+          league: match.league,
+          live: match.live,
+          mockBetStatus: match.mockBetStatus
         }
       ]
     })
@@ -285,7 +303,7 @@ export const useSportsPage = () => {
   })
 
   const toggleFavorite = (id: string) => {
-    if (!matches.value.some(match => match.id === id)) return
+    if (!allMatches.value.some(match => match.id === id)) return
     favorites.value = favorites.value.includes(id)
       ? favorites.value.filter(value => value !== id)
       : [...favorites.value, id]
@@ -305,8 +323,8 @@ export const useSportsPage = () => {
     mode.value = 'single'
     noticeKey.value = ''
   }
-  const setMode = (value: SportsBetMode) => {
-    if (value === 'parlay' && outcomes.value.length < 2) {
+  const setMode = (value: SportsBetMode, allowIncomplete = false) => {
+    if (value === 'parlay' && outcomes.value.length < 2 && !allowIncomplete) {
       noticeKey.value = 'needTwoSelections'
       return
     }
@@ -448,6 +466,9 @@ export const useSportsPage = () => {
     selections,
     parlays,
     balanceText,
+    balance: MOCK_BALANCE,
+    totalStake,
+    potentialReturn,
     currencySymbol,
     totalStakeText,
     potentialReturnText,
@@ -473,3 +494,5 @@ export const useSportsPage = () => {
     showUnsupported
   }
 }
+
+export type SportsPageState = ReturnType<typeof useSportsPage>

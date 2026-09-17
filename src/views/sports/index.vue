@@ -1,10 +1,9 @@
 <template>
-  <!-- 移动端沿用现有入口，本次仅组织 PC 页面。 -->
-  <div v-if="isMobile" class="sports-page mt-[60px]">
-    Sports
-    <LeagueTabs />
-    <FilterSearch class="mt-4" />
-  </div>
+  <!-- 两端共享投注状态，移动端独立组织分组赛事与底部投注单。 -->
+  <template v-if="isMobile">
+    <SportsH5Page :page="page" />
+    <SportsBetSlipH5 :page="page" />
+  </template>
 
   <div v-else class="w-full min-w-0 bg-bg-1 font-inter text-text-1" data-testid="sports-page">
     <!-- 导航入口自带页面间距，不重复添加外层内边距。 -->
@@ -134,10 +133,14 @@ import LeagueTabs from './components/liansai_tabs.vue'
 import FilterSearch from './components/filter_search.vue'
 import SportsMatchCard from './components/SportsMatchCard.vue'
 import SportsBetSlip from './components/SportsBetSlip.vue'
+import SportsH5Page from './components/SportsH5Page.vue'
+import SportsBetSlipH5 from './components/SportsBetSlipH5.vue'
+import { H5_MATCHES } from './h5-data'
 import { useSportsPage } from './index'
 
 const isMobile = useIsMobile()
 const matchList = ref<HTMLElement | null>(null)
+const page = useSportsPage({ additionalMatches: H5_MATCHES })
 const {
   matches,
   currentPage,
@@ -175,7 +178,7 @@ const {
   submitMockBet,
   refreshBalance,
   showUnsupported
-} = useSportsPage()
+} = page
 
 async function changePage(page: number) {
   if (page === currentPage.value) return
