@@ -314,7 +314,15 @@
     "open": "Open",
     "reset": "Reset:",
     "activityHint": "Claim the activity chest by 1 AM the next day, or it will expire.",
+    "activityProgress": "Activity Progress:",
+    "activityDetails": "Activity Details",
+    "rechargeProgress": "Recharge:",
+    "inProgress": "In Progress",
     "goToTask": "Go to Task",
+    "claimNow": "Claim Now",
+    "completed": "Completed",
+    "waitSettle": "Pending Settlement",
+    "expired": "Expired",
     "empty": "No tasks available",
     "loadFailed": "Failed to load tasks. Please try again later.",
     "unsupportedTask": "This task is not currently supported."
@@ -1723,6 +1731,7 @@
   "menu": {
     "crypto-account": "Crypto Account",
     "game-categories": "Casino",
+    "sports": "Sports",
     "recently-played": "Recently Played",
     "favorites": "Favorites",
     "vouchers": "Vouchers",

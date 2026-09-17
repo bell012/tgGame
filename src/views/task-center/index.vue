@@ -16,6 +16,7 @@
           :tasks="visibleTaskItems"
           :tasks-loading="taskListLoading"
           @tab-click="handleTaskTabClick"
+          @open-task-info="handleOpenTaskInfo"
         />
       </div>
     </div>
@@ -31,6 +32,14 @@
       :tasks="visibleTaskItems"
       :tasks-loading="taskListLoading"
       @tab-click="handleTaskTabClick"
+      @open-task-info="handleOpenTaskInfo"
+    />
+
+    <!-- 当前点击任务对应的说明弹窗。 -->
+    <TaskInfoPopup
+      v-model:visible="showTaskInfoPopup"
+      :mode="isMobile ? 'mobile' : 'pc'"
+      :task="selectedTaskInfo"
     />
   </div>
 </template>
@@ -52,6 +61,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
 import { getLanguageCode } from '@/utils/locale'
 import TaskPageContent from './components/TaskPageContent.vue'
+import TaskInfoPopup from './components/TaskInfoPopup.vue'
 import PcLayout from './pc-layout.vue'
 import {
   createTaskActivityData,
@@ -62,8 +72,10 @@ import {
   createTaskTabs,
   createTaskTodayTimeRange,
   type TaskActivityData,
+  type TaskInfoPopupData,
   type TaskOverviewData,
-  type TaskTabKey
+  type TaskTabKey,
+  type TaskViewItem
 } from './shared'
 
 const isMobile = useIsMobile()
@@ -99,6 +111,12 @@ const taskListLoading = ref(true)
 
 /** 当前选中栏目默认固定为 General。 */
 const activeTaskTabKey = ref<TaskTabKey>('general')
+
+/** 控制当前任务的说明弹窗显示状态。 */
+const showTaskInfoPopup = ref(false)
+
+/** 保存用户点击的任务说明数据，供 H5 与 PC 弹窗共用。 */
+const selectedTaskInfo = ref<TaskInfoPopupData | null>(null)
 
 /** 保存活动度接口原始结果，供倒计时每秒刷新时复用。 */
 const memberActiveValue = ref<MemberActiveValueResult | null>(null)
@@ -203,6 +221,12 @@ const fetchTaskLists = async () => {
 /** 切换当前任务栏目。 */
 const handleTaskTabClick = (tabKey: TaskTabKey) => {
   activeTaskTabKey.value = tabKey
+}
+
+/** 打开用户当前点击任务的说明弹窗。 */
+const handleOpenTaskInfo = (task: TaskViewItem) => {
+  selectedTaskInfo.value = task.popup
+  showTaskInfoPopup.value = true
 }
 
 /** 保留后台金额原始精度，避免截断或四舍五入。 */

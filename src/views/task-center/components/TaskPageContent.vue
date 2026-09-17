@@ -408,12 +408,15 @@
                 {{ task.title }}
               </span>
               <!-- 任务说明图标。 -->
-              <img
-                :src="taskInfoImage"
-                alt=""
-                class="shrink-0 object-contain"
+              <button
+                type="button"
+                aria-label="Task information"
+                class="shrink-0"
                 :class="props.mode === 'pc' ? 'h-5 w-5' : 'h-3.5 w-3.5'"
-              />
+                @click="$emit('open-task-info', task)"
+              >
+                <img :src="taskInfoImage" alt="" class="h-full w-full object-contain" />
+              </button>
             </div>
             <div
               v-if="task.activity || task.reward"
@@ -463,22 +466,24 @@
             </div>
           </div>
 
-          <!-- 领取与跳转状态接口尚未提供时，不渲染操作按钮。 -->
-          <span
-            class="flex shrink-0 items-center justify-center font-[400]"
+          <!-- 根据任务状态展示前往任务、领取、已完成、待结算或已过期按钮；领取与跳转逻辑后续接入。 -->
+          <button
+            type="button"
+            class="flex shrink-0 items-center justify-center font-[500]"
             :class="[
               props.mode === 'pc'
                 ? 'h-[43px] w-28 rounded-[12px] text-base leading-[19px]'
-                : 'h-[30px] w-20 rounded-[8px] text-[11px] leading-[14px]',
-              task.action === 'Claim'
+                : 'h-[30px] w-20 rounded-lg text-xs leading-[15px]',
+              task.action === 'claim'
                 ? 'bg-theme-primary text-text-4'
-                : task.action === 'Completed'
-                  ? 'bg-common-100/[0.06] text-text-3'
-                  : 'border border-theme-primary text-theme-primary'
+                : ['completed', 'wait-settle', 'expired'].includes(task.action)
+                  ? 'cursor-not-allowed bg-opacity-6 text-text-3'
+                  : '!border-[0.67px] !border-solid !border-theme-primary bg-transparent text-theme-primary'
             ]"
+            :disabled="['completed', 'wait-settle', 'expired'].includes(task.action)"
           >
-            {{ task.action }}
-          </span>
+            {{ taskActionText[task.action] }}
+          </button>
         </article>
       </template>
     </section>
@@ -502,6 +507,7 @@ import { globalShowToast } from '@/utils/toast'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type {
+  TaskActionState,
   TaskActivityData,
   TaskActivityNode,
   TaskOverviewData,
@@ -527,8 +533,18 @@ const { currentCurrencyCode } = useDisplayCurrency()
 /** 根据当前账户币种获取项目统一的货币符号。 */
 const currentCurrencySymbol = computed(() => getCurrencySymbol(currentCurrencyCode.value))
 
+/** 根据内部状态取得当前语言对应的任务按钮文案。 */
+const taskActionText = computed<Record<TaskActionState, string>>(() => ({
+  'go-to-task': t('taskCenter.goToTask'),
+  claim: t('taskCenter.claimNow'),
+  completed: t('taskCenter.completed'),
+  'wait-settle': t('taskCenter.waitSettle'),
+  expired: t('taskCenter.expired')
+}))
+
 defineEmits<{
   'tab-click': [value: TaskTabKey]
+  'open-task-info': [task: TaskViewItem]
 }>()
 
 /** 展示当前宝箱对应的奖金金额与提款流水要求。 */

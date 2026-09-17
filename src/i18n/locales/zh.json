@@ -603,7 +603,15 @@
     "open": "开启",
     "reset": "重置：",
     "activityHint": "活动宝箱请于次日凌晨 1 点前领取，逾期失效。",
+    "activityProgress": "活动进度：",
+    "activityDetails": "活动详情",
+    "rechargeProgress": "充值金额：",
+    "inProgress": "进行中",
     "goToTask": "去完成",
+    "claimNow": "立即领取",
+    "completed": "已完成",
+    "waitSettle": "待结算",
+    "expired": "已过期",
     "empty": "暂无任务",
     "loadFailed": "任务加载失败，请稍后重试",
     "unsupportedTask": "该任务暂不支持跳转"
@@ -1716,6 +1724,7 @@
   "menu": {
     "crypto-account": "加密账户",
     "game-categories": "娱乐城",
+    "sports": "体育",
     "recently-played": "最近常玩",
     "favorites": "收藏中心",
     "vouchers": "票劵",
