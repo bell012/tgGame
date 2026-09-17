@@ -325,7 +325,12 @@
     "expired": "Expired",
     "empty": "No data available at the moment.",
     "loadFailed": "Failed to load tasks. Please try again later.",
-    "unsupportedTask": "This task is not currently supported."
+    "unsupportedTask": "This task is not currently supported.",
+    "tierClaimReminder": {
+      "title": "Kind Reminder",
+      "description": "You can still reach a higher tier for more rewards. Claim now?",
+      "notNow": "Not Now"
+    }
   },
   "referral": {
     "title": "Referral",

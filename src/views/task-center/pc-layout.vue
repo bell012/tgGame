@@ -31,20 +31,34 @@
           </button>
         </aside>
 
-        <!-- Figma 右侧 1032px 内容区 -->
-        <TaskPageContent
-          mode="pc"
-          class="min-w-0 flex-1 shrink-0"
-          :tabs="props.tabs"
-          :active-tab-key="props.activeTabKey"
-          :overview="props.overview"
-          :activity="props.activity"
-          :tasks="props.tasks"
-          :tasks-loading="props.tasksLoading"
-          @tab-click="$emit('tab-click', $event)"
-          @open-task-info="$emit('open-task-info', $event)"
-          @go-task="$emit('go-task', $event)"
-        />
+        <!-- Figma 右侧 1032px 内容区与底部操作按钮共用同一宽度。 -->
+        <div class="flex min-w-0 flex-1 shrink-0 flex-col gap-4">
+          <TaskPageContent
+            mode="pc"
+            :tabs="props.tabs"
+            :active-tab-key="props.activeTabKey"
+            :overview="props.overview"
+            :activity="props.activity"
+            :tasks="props.tasks"
+            :tasks-loading="props.tasksLoading"
+            @tab-click="$emit('tab-click', $event)"
+            @open-task-info="$emit('open-task-info', $event)"
+            @go-task="$emit('go-task', $event)"
+            @claim="$emit('claim', $event)"
+          />
+
+          <!-- PC 底部操作按钮位于右侧任务内容区下方。 -->
+          <button
+            type="button"
+            class="box-border flex h-10 w-full shrink-0 items-center justify-center gap-2.5 rounded-lg bg-theme-primary p-2 font-inter"
+          >
+            <span
+              class="flex h-4 min-w-0 flex-1 items-center justify-center text-center text-[14px] font-[700] leading-[17px] text-text-4"
+            >
+              Claim All
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   </main>
@@ -77,5 +91,6 @@ defineEmits<{
   'tab-click': [value: TaskTabKey]
   'open-task-info': [task: TaskViewItem]
   'go-task': [task: TaskViewItem]
+  claim: [task: TaskViewItem]
 }>()
 </script>

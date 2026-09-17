@@ -614,7 +614,12 @@
     "expired": "已过期",
     "empty": "目前没有可用数据。",
     "loadFailed": "任务加载失败，请稍后重试",
-    "unsupportedTask": "该任务暂不支持跳转"
+    "unsupportedTask": "该任务暂不支持跳转",
+    "tierClaimReminder": {
+      "title": "温馨提示",
+      "description": "您仍可挑战更高档位以获得更多奖励，确定现在领取吗？",
+      "notNow": "暂不领取"
+    }
   },
   "referral": {
     "title": "代理",

@@ -2,7 +2,7 @@
   <!-- 任务主体：由入口页提供栏目、概览与活动度数据。 -->
   <section
     class="w-full"
-    :class="props.mode === 'pc' ? 'flex flex-col gap-5' : 'px-3.5 pb-8 pt-3.5'"
+    :class="props.mode === 'pc' ? 'flex flex-col gap-5' : 'px-3.5 pb-[110px] pt-3.5'"
   >
     <!-- H5 横向栏目栏：设计稿为固定宽度的胶囊按钮。 -->
     <section v-if="props.mode === 'mobile'" class="-mx-3.5 overflow-x-auto px-3.5">
@@ -489,6 +489,23 @@
       </template>
     </section>
   </section>
+
+  <!-- H5 固定底部操作区域，内容区预留 110px 防止任务列表被遮挡。 -->
+  <footer
+    v-if="props.mode === 'mobile'"
+    class="fixed bottom-0 left-1/2 z-50 box-border flex h-[90px] w-full -translate-x-1/2 flex-col items-center gap-[13px] bg-bg-1 px-3.5 pb-[30px] pt-5 font-inter"
+  >
+    <button
+      type="button"
+      class="flex h-10 w-full shrink-0 items-center justify-center rounded-lg bg-theme-primary"
+    >
+      <span
+        class="flex h-[17px] min-w-[61px] items-center justify-center text-center text-[14px] font-[700] leading-[17px] text-text-4"
+      >
+        Claim All
+      </span>
+    </button>
+  </footer>
 </template>
 
 <script setup lang="ts">
@@ -547,15 +564,19 @@ const emit = defineEmits<{
   'tab-click': [value: TaskTabKey]
   'open-task-info': [task: TaskViewItem]
   'go-task': [task: TaskViewItem]
+  claim: [task: TaskViewItem]
 }>()
 
-/** 仅将未完成任务的操作交给任务中心专用跳转模块处理。 */
+/** 按当前任务操作状态分别上抛跳转或领取事件。 */
 const handleTaskAction = (task: TaskViewItem) => {
-  if (task.action !== 'go-to-task') {
+  if (task.action === 'go-to-task') {
+    emit('go-task', task)
     return
   }
 
-  emit('go-task', task)
+  if (task.action === 'claim') {
+    emit('claim', task)
+  }
 }
 
 /** 展示当前宝箱对应的奖金金额与提款流水要求。 */

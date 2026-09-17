@@ -18,6 +18,7 @@
           @tab-click="handleTaskTabClick"
           @open-task-info="handleOpenTaskInfo"
           @go-task="handleGoToTask"
+          @claim="handleTaskClaim"
         />
       </div>
     </div>
@@ -35,6 +36,7 @@
       @tab-click="handleTaskTabClick"
       @open-task-info="handleOpenTaskInfo"
       @go-task="handleGoToTask"
+      @claim="handleTaskClaim"
     />
 
     <!-- 当前点击任务对应的说明弹窗。 -->
@@ -43,12 +45,18 @@
       :mode="isMobile ? 'mobile' : 'pc'"
       :task="selectedTaskInfo"
       @go-task="handleGoToTask"
+      @claim="handleTaskClaim"
+    />
+
+    <!-- 阶梯任务存在更高未完成档位时的领取二次确认。 -->
+    <TaskTierClaimReminderPopup
+      v-model:visible="showTierClaimReminder"
+      :mode="isMobile ? 'mobile' : 'pc'"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Api from '@/api'
 import type {
   EntrantTaskItem,
@@ -63,16 +71,17 @@ import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
 import { getLanguageCode } from '@/utils/locale'
-import TaskPageContent from './components/TaskPageContent.vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import TaskInfoPopup from './components/TaskInfoPopup.vue'
+import TaskPageContent from './components/TaskPageContent.vue'
+import TaskTierClaimReminderPopup from './components/TaskTierClaimReminderPopup.vue'
 import PcLayout from './pc-layout.vue'
-import { executeTaskCenterGoToTask } from './taskCenterNavigation'
 import {
-  createTaskActivityData,
-  createTaskActivityReset,
   createEntrantTaskViewItems,
   createGeneralTaskViewItems,
   createMemberTaskViewItems,
+  createTaskActivityData,
+  createTaskActivityReset,
   createTaskTabs,
   createTaskTodayTimeRange,
   type TaskActivityData,
@@ -81,6 +90,7 @@ import {
   type TaskTabKey,
   type TaskViewItem
 } from './shared'
+import { executeTaskCenterGoToTask } from './taskCenterNavigation'
 
 const isMobile = useIsMobile()
 const localeStore = useLocaleStore()
@@ -118,6 +128,9 @@ const activeTaskTabKey = ref<TaskTabKey>('general')
 
 /** 控制当前任务的说明弹窗显示状态。 */
 const showTaskInfoPopup = ref(false)
+
+/** 控制阶梯任务领取前的二次确认弹窗。 */
+const showTierClaimReminder = ref(false)
 
 /** 保存用户点击的任务说明数据，供 H5 与 PC 弹窗共用。 */
 const selectedTaskInfo = ref<TaskInfoPopupData | null>(null)
@@ -235,7 +248,20 @@ const handleOpenTaskInfo = (task: TaskViewItem) => {
 
 /** 根据当前设备形态执行任务中心“去完成”的专用跳转。 */
 const handleGoToTask = (task: TaskViewItem | TaskInfoPopupData) => {
+  // 任务说明弹窗与注册弹窗共用遮罩层时，必须先关闭前者避免覆盖目标页面。
+  showTaskInfoPopup.value = false
   void executeTaskCenterGoToTask(task, { isMobile: isMobile.value })
+}
+
+/** 阶梯任务仍有更高未完成档位时，领取前显示奖励提升提醒。 */
+const handleTaskClaim = (task: TaskViewItem | TaskInfoPopupData) => {
+  if (!task.requiresTierClaimReminder) {
+    return
+  }
+
+  // 从说明弹窗触发时先关闭该弹窗，避免两个 Dialog 同时展示。
+  showTaskInfoPopup.value = false
+  showTierClaimReminder.value = true
 }
 
 /** 保留后台金额原始精度，避免截断或四舍五入。 */

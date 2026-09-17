@@ -22,6 +22,24 @@ interface TaskGameNavigationTarget {
   itemCode?: string
 }
 
+/** PC 任务中心跳转到新页面后，将浏览器文档滚动位置复位到页面顶部。 */
+const resetTaskCenterPageScroll = (isMobile: boolean) => {
+  if (isMobile || typeof window === 'undefined') {
+    return
+  }
+
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  document.documentElement.scrollTop = 0
+  document.body.scrollTop = 0
+}
+
+/** 执行任务中心页面跳转，并在 PC 端统一复位目标页面滚动位置。 */
+const navigateFromTaskCenter = async (navigation: Promise<unknown>, isMobile: boolean) => {
+  await navigation
+  resetTaskCenterPageScroll(isMobile)
+  return true
+}
+
 /** 规范后台任务类型，避免空格或大小写差异影响映射。 */
 const normalizeTaskType = (value: unknown) =>
   String(value ?? '')
@@ -69,7 +87,7 @@ const isTaskGameCodeMatched = (source: unknown, target: string) =>
     .includes(target)
 
 /** 按后台首个游戏编码的层级，跳转分类、平台筛选页或具体游戏详情。 */
-const navigateToTaskGame = async (task: TaskCenterNavigationTask) => {
+const navigateToTaskGame = async (task: TaskCenterNavigationTask, isMobile: boolean) => {
   const sourceCode = getFirstPlatformGameCode(task)
   const target = parseTaskGameNavigationTarget(sourceCode)
 
@@ -91,8 +109,10 @@ const navigateToTaskGame = async (task: TaskCenterNavigationTask) => {
     }
 
     if (!target.platformCode) {
-      await navigateTo(`/gamelist/${encodeURIComponent(target.gameTypeCode)}`)
-      return true
+      return navigateFromTaskCenter(
+        navigateTo(`/gamelist/${encodeURIComponent(target.gameTypeCode)}`),
+        isMobile
+      )
     }
 
     const platformItems = gameTypeItems.filter(item =>
@@ -105,12 +125,14 @@ const navigateToTaskGame = async (task: TaskCenterNavigationTask) => {
     }
 
     if (!target.itemCode) {
-      await navigateTo(`/gamelist/${encodeURIComponent(target.gameTypeCode)}`, {
-        query: {
-          providerCode: target.platformCode
-        }
-      })
-      return true
+      return navigateFromTaskCenter(
+        navigateTo(`/gamelist/${encodeURIComponent(target.gameTypeCode)}`, {
+          query: {
+            providerCode: target.platformCode
+          }
+        }),
+        isMobile
+      )
     }
 
     const matchedGame = platformItems.find(item =>
@@ -123,8 +145,7 @@ const navigateToTaskGame = async (task: TaskCenterNavigationTask) => {
       return false
     }
 
-    await navigateTo(`/game/${gameRowId}`)
-    return true
+    return navigateFromTaskCenter(navigateTo(`/game/${gameRowId}`), isMobile)
   } catch (error) {
     console.warn('task center game navigation failed', { error, target, task })
     return false
@@ -132,29 +153,33 @@ const navigateToTaskGame = async (task: TaskCenterNavigationTask) => {
 }
 
 /** 按后台固定支付方式编码规则跳转并预选本项目充值方式。 */
-const navigateToTaskDeposit = async (task: TaskCenterNavigationTask) => {
+const navigateToTaskDeposit = async (task: TaskCenterNavigationTask, isMobile: boolean) => {
   const methodCode = getFirstPlatformGameCode(task)
   // 后台旧逻辑在未配置方式编码时默认跳法币充值。
   const tab =
     TASK_CENTER_FIAT_DEPOSIT_METHOD_CODES.has(methodCode) || !methodCode ? 'Fiat' : 'Crypto'
 
-  await navigateTo('/deposit', {
-    query: {
-      taskCenterTab: tab,
-      ...(methodCode ? { taskCenterMethodCode: methodCode } : {})
-    }
-  })
-  return true
+  return navigateFromTaskCenter(
+    navigateTo('/deposit', {
+      query: {
+        taskCenterTab: tab,
+        ...(methodCode ? { taskCenterMethodCode: methodCode } : {})
+      }
+    }),
+    isMobile
+  )
 }
 
 /** 跳转本项目收款管理，并保留后台账户任务类型供页面预选。 */
-const navigateToTaskPaymentMethods = async (taskType: string) => {
-  await navigateTo('/payment-methods', {
-    query: {
-      taskCenterAccountType: taskType
-    }
-  })
-  return true
+const navigateToTaskPaymentMethods = async (taskType: string, isMobile: boolean) => {
+  return navigateFromTaskCenter(
+    navigateTo('/payment-methods', {
+      query: {
+        taskCenterAccountType: taskType
+      }
+    }),
+    isMobile
+  )
 }
 
 /** 跳转安全设置中的指定操作；PC 使用现有安全页弹窗，H5 使用已有独立页面。 */
@@ -163,18 +188,22 @@ const navigateToTaskSecurityAction = async (
   isMobile: boolean
 ) => {
   if (isMobile) {
-    await navigateToName(
-      action === 'transaction-password' ? 'transactionPassword' : 'changeMobileNumber'
+    return navigateFromTaskCenter(
+      navigateToName(
+        action === 'transaction-password' ? 'transactionPassword' : 'changeMobileNumber'
+      ),
+      isMobile
     )
-    return true
   }
 
-  await navigateTo('/security', {
-    query: {
-      taskCenterSecurityAction: action
-    }
-  })
-  return true
+  return navigateFromTaskCenter(
+    navigateTo('/security', {
+      query: {
+        taskCenterSecurityAction: action
+      }
+    }),
+    isMobile
+  )
 }
 
 /**
@@ -196,21 +225,20 @@ export const executeTaskCenterGoToTask = async (
     case 'CZ3':
     case 'CZ4':
     case 'CZ5':
-      return navigateToTaskDeposit(task)
+      return navigateToTaskDeposit(task, options.isMobile)
     case 'YHK':
     case 'SZHB':
     case 'TXZH':
-      return navigateToTaskPaymentMethods(taskType)
+      return navigateToTaskPaymentMethods(taskType, options.isMobile)
     case 'JYMM':
       return navigateToTaskSecurityAction('transaction-password', options.isMobile)
     case 'BDSJ':
       return navigateToTaskSecurityAction('mobile-number', options.isMobile)
     case 'DAPP':
-      await navigateTo('/app-download')
-      return true
+      return navigateFromTaskCenter(navigateTo('/app-download'), options.isMobile)
     case 'GAME':
     case 'FIRSTBET':
-      return navigateToTaskGame(task)
+      return navigateToTaskGame(task, options.isMobile)
     case 'XYZ':
     case 'TG':
       console.warn('task center taskType navigation is not configured', { taskType, task })

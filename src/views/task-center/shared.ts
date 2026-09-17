@@ -243,6 +243,8 @@ export interface TaskInfoPopupData {
   platformGameCodes: string[]
   progress: number
   rechargeProgress?: TaskInfoPopupRechargeProgress
+  /** 阶梯任务存在可领取档位且更高档未完成时，领取前需要二次确认。 */
+  requiresTierClaimReminder: boolean
   taskType: string
   title: string
   variant: TaskInfoPopupVariant
@@ -252,6 +254,7 @@ export interface TaskInfoPopupData {
 interface TaskInfoPopupContent {
   detailCards: TaskInfoPopupDetailCard[]
   rechargeProgress?: TaskInfoPopupRechargeProgress
+  requiresTierClaimReminder: boolean
   variant: TaskInfoPopupVariant
 }
 
@@ -267,6 +270,8 @@ export interface TaskViewItem {
   reward?: string
   rewardUsesCurrency: boolean
   columnCodes: string[]
+  /** 阶梯任务存在更高未完成档位时，卡片领取按钮需要先显示提醒弹窗。 */
+  requiresTierClaimReminder: boolean
   popup: TaskInfoPopupData
   progress?: number
   action: TaskActionState
@@ -608,6 +613,39 @@ const getFirstTierProgress = (tierProgressList: TaskTierProgressItem[] | undefin
 /** 仅 rewardModel = 2 的普通会员任务按阶梯任务结构处理。 */
 const isTierTaskSchedule = (schedule: TaskScheduleItem) => Number(schedule.rewardModel) === 2
 
+/** 兼容后端可能以布尔值或文本下发的“存在更高未完成档位”标识。 */
+const hasHigherUnfinishedTier = (value: unknown) =>
+  value === true ||
+  String(value ?? '')
+    .trim()
+    .toLowerCase() === 'true'
+
+/** 判断阶梯任务领取时是否仍有更高档位可继续挑战。 */
+const shouldShowTierClaimReminder = (
+  schedule: TaskScheduleItem | undefined,
+  action: TaskActionState
+) => {
+  if (!schedule || action !== 'claim' || !isTierTaskSchedule(schedule)) {
+    return false
+  }
+
+  const tierProgresses = createSortedTierProgresses(schedule.tierProgressList)
+
+  return tierProgresses.some((tier, index) => {
+    if (normalizeTaskClaimStatus(tier.claimStatus) !== 'CLAIMABLE') {
+      return false
+    }
+
+    // 优先使用后端明确标识；缺失时按后续档位是否未完成进行兼容判断。
+    return (
+      hasHigherUnfinishedTier(tier.hasHigherUnfinishedTier) ||
+      tierProgresses
+        .slice(index + 1)
+        .some(higherTier => normalizeTaskClaimStatus(higherTier.claimStatus) === 'UN_FINISHED')
+    )
+  })
+}
+
 /** 根据纯状态型任务的领取状态生成 0% 或 100% 进度。 */
 const createStatusTaskProgress = (claimStatus: unknown) => {
   switch (normalizeTaskClaimStatus(claimStatus)) {
@@ -807,6 +845,7 @@ const createMemberTaskInfoDetailCard = (
 /** 创建新人福利任务的精简说明弹窗数据。 */
 const createEntrantTaskInfoPopupContent = (): TaskInfoPopupContent => ({
   detailCards: [],
+  requiresTierClaimReminder: false,
   variant: 'compact'
 })
 
@@ -817,6 +856,8 @@ const createMemberTaskInfoPopupContent = (
   action: TaskActionState,
   progress: number
 ): TaskInfoPopupContent => {
+  const requiresTierClaimReminder = shouldShowTierClaimReminder(schedule, action)
+
   // 充值金额型任务使用精简卡，展示当前充值金额与目标充值金额。
   if (isRechargeAmountTask(task.taskType)) {
     return {
@@ -825,6 +866,7 @@ const createMemberTaskInfoPopupContent = (
         currentAmount: formatTaskInfoProgressValue(schedule?.rechargeAmount),
         targetAmount: formatTaskInfoProgressValue(task.rechargeAmount)
       },
+      requiresTierClaimReminder,
       variant: 'compact'
     }
   }
@@ -833,6 +875,7 @@ const createMemberTaskInfoPopupContent = (
   if (schedule && isTierTaskSchedule(schedule) && (schedule.tierProgressList?.length ?? 0) > 0) {
     return {
       detailCards: createTierTaskInfoDetailCards(schedule.tierProgressList),
+      requiresTierClaimReminder,
       variant: 'detailed'
     }
   }
@@ -841,6 +884,7 @@ const createMemberTaskInfoPopupContent = (
   if (schedule && (schedule.conditionProgressList?.length ?? 0) > 0) {
     return {
       detailCards: [createMemberTaskInfoDetailCard(task, schedule, action, progress)],
+      requiresTierClaimReminder,
       variant: 'detailed'
     }
   }
@@ -848,6 +892,7 @@ const createMemberTaskInfoPopupContent = (
   // 无条件明细的普通任务回退到精简说明卡。
   return {
     detailCards: [],
+    requiresTierClaimReminder,
     variant: 'compact'
   }
 }
@@ -886,6 +931,7 @@ const createTaskViewItem = (
     activity: activeNumber === undefined ? undefined : `+${activeNumber}`,
     ...rewardInfo,
     columnCodes: 'columnCode' in item ? createTaskColumnCodes(item.columnCode) : [],
+    requiresTierClaimReminder: popupContent.requiresTierClaimReminder,
     popup: {
       action,
       description,

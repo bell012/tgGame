@@ -406,6 +406,7 @@ const { t } = useI18n()
 const emit = defineEmits<{
   'update:visible': [value: boolean]
   'go-task': [task: TaskInfoPopupData]
+  claim: [task: TaskInfoPopupData]
 }>()
 
 /** 将当前弹窗任务包装为计算属性，避免弹层关闭后继续访问空数据。 */
@@ -431,13 +432,16 @@ const getDetailCardActionText = (action: TaskActionState) =>
 const isDisabledAction = (action: TaskActionState) =>
   ['completed', 'wait-settle', 'expired'].includes(action)
 
-/** 仅将弹窗中未完成任务的操作交给任务中心专用跳转模块处理。 */
+/** 按当前任务操作状态分别上抛跳转或领取事件。 */
 const handleTaskAction = (task: TaskInfoPopupData) => {
-  if (task.action !== 'go-to-task') {
+  if (task.action === 'go-to-task') {
+    emit('go-task', task)
     return
   }
 
-  emit('go-task', task)
+  if (task.action === 'claim') {
+    emit('claim', task)
+  }
 }
 
 /** 根据任务操作状态生成与任务卡一致的按钮视觉样式。 */
