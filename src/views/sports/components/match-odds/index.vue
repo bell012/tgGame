@@ -12,8 +12,8 @@
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { computed } from 'vue'
-import H5MatchOdds from './H5MatchOdds.vue'
-import PcMatchOdds from './PcMatchOdds.vue'
+import H5MatchOdds from './h5.vue'
+import PcMatchOdds from './pc.vue'
 import type { OddsMarket, OddsSelectPayload } from './types'
 
 const props = withDefaults(

@@ -149,6 +149,7 @@ const handleAfterLeave = () => {
   flex-direction: column;
   overflow: hidden;
   border-radius: 16px;
+  clip-path: inset(0 round 16px);
   background: var(--color-background-level-2);
   color: var(--color-text-level-1);
   box-shadow: 0 8px 32px #0005;
@@ -159,6 +160,7 @@ const handleAfterLeave = () => {
   height: 100vh;
   height: 100dvh;
   border-radius: 0;
+  clip-path: none;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
     env(safe-area-inset-left);
 }
@@ -235,13 +237,15 @@ const handleAfterLeave = () => {
   position: relative;
   flex: 1;
   min-height: 0;
+  border-radius: inherit;
 }
 .online-customer-content iframe {
   display: block;
   width: 100%;
   height: 100%;
   border: 0;
-  background: #fff;
+  border-radius: inherit;
+  background: var(--color-background-level-2);
 }
 .online-customer-status {
   position: absolute;
@@ -253,6 +257,7 @@ const handleAfterLeave = () => {
   gap: 16px;
   padding: 24px;
   text-align: center;
+  border-radius: inherit;
   background: var(--color-background-level-2);
 }
 .online-customer-status.loading {
