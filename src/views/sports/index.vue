@@ -60,9 +60,9 @@
       <FilterSearch />
     </section>
 
-    <!-- 宽屏四列、较窄 PC 三列；展开面板覆盖后续卡片，不改变网格占位。 -->
+    <!-- PC 统一四列；展开面板覆盖后续卡片，不改变网格占位。 -->
     <section ref="matchList" class="mx-5 mb-10 mt-4 scroll-mt-20" aria-label="Upcoming matches">
-      <div class="grid min-w-0 grid-cols-3 gap-3 2xl:grid-cols-4" data-testid="sports-match-grid">
+      <div class="grid min-w-0 grid-cols-4 gap-3" data-testid="sports-match-grid">
         <SportsMatchCard
           v-for="match in pagedMatches"
           :key="match.id"
