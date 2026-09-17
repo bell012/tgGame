@@ -344,7 +344,9 @@
         "darts": "飞镖",
         "american_football": "美式足球",
         "table_tennis": "乒乓球",
-        "volleyball": "排球"
+        "volleyball": "排球",
+        "auto_racing": "赛车",
+        "baseball": "棒球"
       }
     },
     "anniversary": {
