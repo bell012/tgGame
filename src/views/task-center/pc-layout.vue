@@ -42,6 +42,7 @@
           :tasks="props.tasks"
           :tasks-loading="props.tasksLoading"
           @tab-click="$emit('tab-click', $event)"
+          @open-task-info="$emit('open-task-info', $event)"
         />
       </div>
     </div>
@@ -73,5 +74,6 @@ const props = defineProps<Props>()
 
 defineEmits<{
   'tab-click': [value: TaskTabKey]
+  'open-task-info': [task: TaskViewItem]
 }>()
 </script>
