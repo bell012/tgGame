@@ -323,7 +323,7 @@
     "completed": "Completed",
     "waitSettle": "Pending Settlement",
     "expired": "Expired",
-    "empty": "No tasks available",
+    "empty": "No data available at the moment.",
     "loadFailed": "Failed to load tasks. Please try again later.",
     "unsupportedTask": "This task is not currently supported."
   },

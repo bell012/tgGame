@@ -200,6 +200,7 @@
               class="mt-[30px] flex h-10 w-full items-center justify-center rounded-lg text-[14px] font-[700] leading-[17px]"
               :class="getActionButtonClass(taskData.action)"
               :disabled="isDisabledAction(taskData.action)"
+              @click="handleTaskAction(taskData)"
             >
               {{ getTaskActionText(taskData.action) }}
             </button>
@@ -377,6 +378,7 @@
               class="box-border flex h-12 w-full shrink-0 items-center justify-center rounded-lg p-2 text-center text-[14px] font-[700] leading-[17px]"
               :class="getActionButtonClass(taskData.action)"
               :disabled="isDisabledAction(taskData.action)"
+              @click="handleTaskAction(taskData)"
             >
               {{ getTaskActionText(taskData.action) }}
             </button>
@@ -403,6 +405,7 @@ const { t } = useI18n()
 
 const emit = defineEmits<{
   'update:visible': [value: boolean]
+  'go-task': [task: TaskInfoPopupData]
 }>()
 
 /** 将当前弹窗任务包装为计算属性，避免弹层关闭后继续访问空数据。 */
@@ -427,6 +430,15 @@ const getDetailCardActionText = (action: TaskActionState) =>
 /** 判断任务操作状态是否需要禁用弹窗底部按钮。 */
 const isDisabledAction = (action: TaskActionState) =>
   ['completed', 'wait-settle', 'expired'].includes(action)
+
+/** 仅将弹窗中未完成任务的操作交给任务中心专用跳转模块处理。 */
+const handleTaskAction = (task: TaskInfoPopupData) => {
+  if (task.action !== 'go-to-task') {
+    return
+  }
+
+  emit('go-task', task)
+}
 
 /** 根据任务操作状态生成与任务卡一致的按钮视觉样式。 */
 const getActionButtonClass = (action: TaskActionState) => {

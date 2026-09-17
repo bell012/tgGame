@@ -4,6 +4,7 @@
       <DepositPageContent
         mode="pc"
         :model-value="props.modelValue"
+        :initial-method-code="props.initialMethodCode"
         @update:model-value="$emit('update:modelValue', $event)"
       />
     </div>
@@ -17,6 +18,7 @@ import type { DepositTabType } from './shared'
 
 interface Props {
   modelValue: DepositTabType
+  initialMethodCode?: string
 }
 
 const props = defineProps<Props>()

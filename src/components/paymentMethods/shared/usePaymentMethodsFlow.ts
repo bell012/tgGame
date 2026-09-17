@@ -16,6 +16,14 @@ import { globalShowToast } from '@/utils/toast'
 import { storeToRefs } from 'pinia'
 import { useMemberCardVerificationFlow } from '@/composables/useMemberCardVerificationFlow'
 
+/** 任务中心可传入的收款账户任务类型。 */
+type TaskCenterAccountType = 'YHK' | 'SZHB' | 'TXZH'
+
+/** 收款管理 Flow 的可选初始化参数。 */
+interface PaymentMethodsFlowOptions {
+  taskCenterAccountType?: TaskCenterAccountType
+}
+
 const {
   paymentMethodsOptions,
   cryptoPaymentMethodsOptions,
@@ -30,7 +38,7 @@ const {
   deleteAccount
 } = usePaymentMethodsService()
 
-export function usePaymentMethodsFlow() {
+export function usePaymentMethodsFlow(options: PaymentMethodsFlowOptions = {}) {
   const { t } = useI18n()
   const selectPaymentMethodsOption = ref<PaymentMethodsOption>()
   const accountCardOption = ref<AccountCardOption>()
@@ -104,6 +112,19 @@ export function usePaymentMethodsFlow() {
 
     return accountOptions.value && accountOptions.value.length < limit
   })
+
+  /** 根据后台任务账户类型，选择当前项目对应的收款方式分类。 */
+  const resolveTaskCenterPreferredKind = () => {
+    if (options.taskCenterAccountType === 'SZHB') {
+      return 'crypto'
+    }
+
+    if (options.taskCenterAccountType === 'YHK') {
+      return 'fiat'
+    }
+
+    return ''
+  }
 
   const isMethodTabActive = (option: PaymentMethodsOption) => {
     return (
@@ -304,7 +325,12 @@ export function usePaymentMethodsFlow() {
       paymentMethodsOptions.value &&
       paymentMethodsOptions.value.length > 0
     ) {
-      await handleMethodTabClick(paymentMethodsOptions.value[0])
+      const preferredKind = resolveTaskCenterPreferredKind()
+      const preferredOption = preferredKind
+        ? paymentMethodsOptions.value.find(option => option.kind === preferredKind)
+        : undefined
+
+      await handleMethodTabClick(preferredOption ?? paymentMethodsOptions.value[0])
     }
   }
 

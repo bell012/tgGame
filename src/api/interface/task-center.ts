@@ -81,6 +81,7 @@ export interface EntrantTaskItem {
   activeNumber?: number | string
   amount?: number | string
   rewardsType?: number
+  platformGameCodes?: string[]
 }
 
 /** 新人固定任务进度项。 */
@@ -112,6 +113,7 @@ export interface TaskTierProgressItem {
 export interface TaskScheduleItem {
   taskId: string | number
   conditionProgressList?: TaskConditionProgressItem[]
+  hasDeferredReward?: boolean
   rechargeAmount?: number | string
   rewardModel?: number | string
   claimStatus?: string

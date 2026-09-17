@@ -612,7 +612,7 @@
     "completed": "已完成",
     "waitSettle": "待结算",
     "expired": "已过期",
-    "empty": "暂无任务",
+    "empty": "目前没有可用数据。",
     "loadFailed": "任务加载失败，请稍后重试",
     "unsupportedTask": "该任务暂不支持跳转"
   },

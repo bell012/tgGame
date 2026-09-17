@@ -277,6 +277,10 @@ import { usePresetGrid } from './shared/usePresetGrid'
 
 const { t } = useI18n()
 
+const props = defineProps<{
+  initialMethodCode?: string
+}>()
+
 const emit = defineEmits<{
   hidden: [value: boolean]
 }>()
@@ -334,6 +338,7 @@ const {
   handleHidden
 } = useDepositCryptoFlow({
   isMobile: false,
+  initialMethodCode: props.initialMethodCode,
   emitHidden: value => emit('hidden', value),
   emitHiddenOnOrderOpen: false,
   emitHiddenOnOrderHidden: false

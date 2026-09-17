@@ -55,9 +55,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import ChangeLoginPasswordPcLayout from '../changeLoginPassword/pc-layout.vue'
 import ChangeMobileNumberPcLayout from '../changeMobileNumber/pc-layout.vue'
@@ -67,6 +68,7 @@ import WarningIcon from '@/static/svg/security/warning.svg?component'
 import { useSecurityCards, type SecurityCardKey } from '@/composables/useSecurityCards'
 
 const { t } = useI18n()
+const route = useRoute()
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
 const { cards } = useSecurityCards(userInfo)
@@ -77,6 +79,23 @@ const showChangeLoginPasswordPopup = ref(false)
 const showChangeMobileNumberPopup = ref(false)
 // 交易密码弹窗
 const showTransactionPasswordPopup = ref(false)
+
+/** 根据任务中心携带的安全操作参数，打开 PC 已有的对应弹窗。 */
+const openTaskCenterSecurityAction = (value: unknown) => {
+  const action = String(Array.isArray(value) ? value[0] : (value ?? '')).trim()
+
+  if (action === 'transaction-password') {
+    showTransactionPasswordPopup.value = true
+    return
+  }
+
+  if (action === 'mobile-number') {
+    showChangeMobileNumberPopup.value = true
+  }
+}
+
+/** 在进入或复用安全页面时响应任务中心跳转意图。 */
+watch(() => route.query.taskCenterSecurityAction, openTaskCenterSecurityAction, { immediate: true })
 /**
  * 打开 PC 修改登录密码弹窗。
  */

@@ -104,6 +104,7 @@ export const createDepositChannelOptions = (
 
 interface DepositFlowOptions {
   isMobile: Ref<boolean> | boolean
+  initialMethodCode?: string
   emitHidden?: (value: boolean) => void
   emitHiddenOnOrderOpen?: boolean
   emitHiddenOnOrderHidden?: boolean
@@ -321,7 +322,12 @@ export const useDepositCryptoFlow = (options: DepositFlowOptions) => {
       const result = Array.isArray(response.result) ? response.result : []
       payMethods.value = result.filter(item => item.columnName === DEPOSIT_CRYPTO_COLUMN_NAME)
 
-      const defaultMethod = payMethods.value[0] ?? null
+      // 任务中心传入方式编码时优先精确选中，未匹配则保留充值页原有默认方式。
+      const initialMethodCode = String(options.initialMethodCode ?? '').trim()
+      const defaultMethod =
+        payMethods.value.find(item => String(item.columnCode) === initialMethodCode) ??
+        payMethods.value[0] ??
+        null
       if (!defaultMethod) {
         selectedMethod.value = null
         paySubColumns.value = []
@@ -642,7 +648,11 @@ export const useDepositFiatFlow = (options: DepositFlowOptions) => {
         })
         .map(({ item }) => item)
 
-      const defaultMethod = payMethods.value[0]
+      // 任务中心传入方式编码时优先精确选中，未匹配则保留充值页原有默认方式。
+      const initialMethodCode = String(options.initialMethodCode ?? '').trim()
+      const defaultMethod =
+        payMethods.value.find(item => String(item.columnCode) === initialMethodCode) ??
+        payMethods.value[0]
       if (!defaultMethod) {
         selectedMethod.value = null
         paySubColumns.value = []

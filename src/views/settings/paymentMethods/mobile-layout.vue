@@ -108,8 +108,9 @@
 </template>
 
 <script setup lang="ts">
-import { type ComponentPublicInstance, nextTick, onMounted, ref } from 'vue'
+import { type ComponentPublicInstance, computed, nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { usePaymentMethodsFlow } from '@/components/paymentMethods/shared/usePaymentMethodsFlow'
 import AddPlusIcon from '@/static/svg/withdraw/add-plus.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
@@ -122,6 +123,19 @@ import SmsVerificationPop from '@/components/paymentMethods/smsVerificationPop.v
 import PaymentPasswordPop from '@/components/paymentMethods/paymentPasswordPop.vue'
 import AccountDetailsPop from '@/components/paymentMethods/accountDetailsPop.vue'
 import KindReminderPop from '@/components/paymentMethods/kindReminderPop.vue'
+
+const route = useRoute()
+
+/** 读取任务中心传入的账户类型，仅接受后台已约定的三个枚举。 */
+const taskCenterAccountType = computed(() => {
+  const value = String(
+    Array.isArray(route.query.taskCenterAccountType)
+      ? route.query.taskCenterAccountType[0]
+      : (route.query.taskCenterAccountType ?? '')
+  ).trim()
+
+  return value === 'YHK' || value === 'SZHB' || value === 'TXZH' ? value : undefined
+})
 
 const {
   kindReminderVisible,
@@ -161,7 +175,7 @@ const {
   openAccountDetailsPop,
   closeAccountDetailsPop,
   initialization
-} = usePaymentMethodsFlow()
+} = usePaymentMethodsFlow({ taskCenterAccountType: taskCenterAccountType.value })
 const { t } = useI18n()
 
 const methodTabsRef = ref<HTMLElement | null>(null)

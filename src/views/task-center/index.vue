@@ -17,6 +17,7 @@
           :tasks-loading="taskListLoading"
           @tab-click="handleTaskTabClick"
           @open-task-info="handleOpenTaskInfo"
+          @go-task="handleGoToTask"
         />
       </div>
     </div>
@@ -33,6 +34,7 @@
       :tasks-loading="taskListLoading"
       @tab-click="handleTaskTabClick"
       @open-task-info="handleOpenTaskInfo"
+      @go-task="handleGoToTask"
     />
 
     <!-- 当前点击任务对应的说明弹窗。 -->
@@ -40,6 +42,7 @@
       v-model:visible="showTaskInfoPopup"
       :mode="isMobile ? 'mobile' : 'pc'"
       :task="selectedTaskInfo"
+      @go-task="handleGoToTask"
     />
   </div>
 </template>
@@ -63,6 +66,7 @@ import { getLanguageCode } from '@/utils/locale'
 import TaskPageContent from './components/TaskPageContent.vue'
 import TaskInfoPopup from './components/TaskInfoPopup.vue'
 import PcLayout from './pc-layout.vue'
+import { executeTaskCenterGoToTask } from './taskCenterNavigation'
 import {
   createTaskActivityData,
   createTaskActivityReset,
@@ -227,6 +231,11 @@ const handleTaskTabClick = (tabKey: TaskTabKey) => {
 const handleOpenTaskInfo = (task: TaskViewItem) => {
   selectedTaskInfo.value = task.popup
   showTaskInfoPopup.value = true
+}
+
+/** 根据当前设备形态执行任务中心“去完成”的专用跳转。 */
+const handleGoToTask = (task: TaskViewItem | TaskInfoPopupData) => {
+  void executeTaskCenterGoToTask(task, { isMobile: isMobile.value })
 }
 
 /** 保留后台金额原始精度，避免截断或四舍五入。 */

@@ -24,13 +24,29 @@
       :class="contentClass"
     >
       <template v-if="props.mode === 'pc'">
-        <DepositPcCryptoPanel v-if="props.modelValue === 'Crypto'" @hidden="handleHidden" />
-        <DepositPcFiatPanel v-else-if="props.modelValue === 'Fiat'" @hidden="handleHidden" />
+        <DepositPcCryptoPanel
+          v-if="props.modelValue === 'Crypto'"
+          :initial-method-code="props.initialMethodCode"
+          @hidden="handleHidden"
+        />
+        <DepositPcFiatPanel
+          v-else-if="props.modelValue === 'Fiat'"
+          :initial-method-code="props.initialMethodCode"
+          @hidden="handleHidden"
+        />
       </template>
 
       <template v-else>
-        <DepositMobileCryptoPanel v-if="props.modelValue === 'Crypto'" @hidden="handleHidden" />
-        <DepositMobileFiatPanel v-else-if="props.modelValue === 'Fiat'" @hidden="handleHidden" />
+        <DepositMobileCryptoPanel
+          v-if="props.modelValue === 'Crypto'"
+          :initial-method-code="props.initialMethodCode"
+          @hidden="handleHidden"
+        />
+        <DepositMobileFiatPanel
+          v-else-if="props.modelValue === 'Fiat'"
+          :initial-method-code="props.initialMethodCode"
+          @hidden="handleHidden"
+        />
       </template>
     </div>
   </div>
@@ -53,6 +69,7 @@ import DepositPcFiatPanel from './DepositPcFiatPanel.vue'
 interface Props {
   mode: DepositPageMode
   modelValue: DepositTabType
+  initialMethodCode?: string
 }
 
 const props = defineProps<Props>()

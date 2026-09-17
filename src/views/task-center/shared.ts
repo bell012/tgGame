@@ -240,8 +240,10 @@ export interface TaskInfoPopupData {
   action: TaskActionState
   description: string
   detailCards: TaskInfoPopupDetailCard[]
+  platformGameCodes: string[]
   progress: number
   rechargeProgress?: TaskInfoPopupRechargeProgress
+  taskType: string
   title: string
   variant: TaskInfoPopupVariant
 }
@@ -257,6 +259,8 @@ interface TaskInfoPopupContent {
 export interface TaskViewItem {
   id: string
   source: 'entrant' | 'member'
+  taskType: string
+  platformGameCodes: string[]
   title: string
   description: string
   activity?: string
@@ -601,9 +605,8 @@ const createSortedTierProgresses = (tierProgressList: TaskTierProgressItem[] | u
 const getFirstTierProgress = (tierProgressList: TaskTierProgressItem[] | undefined) =>
   createSortedTierProgresses(tierProgressList)[0]
 
-/** 判断任务记录是否应按阶梯任务结构处理。 */
-const isTierTaskSchedule = (schedule: TaskScheduleItem) =>
-  Number(schedule.rewardModel) === 2 || (schedule.tierProgressList?.length ?? 0) > 0
+/** 仅 rewardModel = 2 的普通会员任务按阶梯任务结构处理。 */
+const isTierTaskSchedule = (schedule: TaskScheduleItem) => Number(schedule.rewardModel) === 2
 
 /** 根据纯状态型任务的领取状态生成 0% 或 100% 进度。 */
 const createStatusTaskProgress = (claimStatus: unknown) => {
@@ -698,6 +701,59 @@ const createMemberTaskProgress = (
 
   // 其余任务没有可计算条件，按领取状态作为最终兜底。
   return createStatusTaskProgress(claimStatus)
+}
+
+/** 判断普通任务是否应直接展示 100% 的已完成或延迟奖励状态。 */
+const shouldForceMemberTaskProgressComplete = (schedule: TaskScheduleItem) => {
+  const claimStatus = normalizeTaskClaimStatus(schedule.claimStatus)
+
+  // CLAIMED：奖励已领取，页面进度固定展示完成。
+  if (claimStatus === 'CLAIMED') {
+    return true
+  }
+
+  // 延迟奖励在可领取或待结算时，条件已满足，页面固定展示完成。
+  return (
+    schedule.hasDeferredReward === true &&
+    (claimStatus === 'WAIT_SETTLE' || claimStatus === 'CLAIMABLE')
+  )
+}
+
+/** 按 rewardModel 计算普通会员任务在页面中的最终展示进度。 */
+const createMemberTaskDisplayProgress = (
+  task: MemberTaskItem,
+  processInfo: TaskScheduleItem | undefined,
+  currentDate: Date
+) => {
+  // 无匹配进度项时，普通会员任务统一展示 0%。
+  if (!processInfo) {
+    return 0
+  }
+
+  // rewardModel = 2：阶梯任务没有进度明细时无法确定当前档位，展示 0%。
+  if (Number(processInfo.rewardModel) === 2) {
+    if (shouldForceMemberTaskProgressComplete(processInfo)) {
+      return 100
+    }
+
+    // 阶梯未强制完成时，按 tierNo 升序使用第一档条件计算进度。
+    return createConditionTaskProgress(
+      getFirstTierProgress(processInfo.tierProgressList)?.conditionProgressList
+    )
+  }
+
+  // 非阶梯任务：已领取或延迟奖励已满足时固定展示 100%。
+  if (shouldForceMemberTaskProgressComplete(processInfo)) {
+    return 100
+  }
+
+  // 普通条件型任务优先按条件平均值展示，避免仅依赖领取状态。
+  if ((processInfo.conditionProgressList?.length ?? 0) > 0) {
+    return createConditionTaskProgress(processInfo.conditionProgressList)
+  }
+
+  // 充值金额型、纯状态型等没有条件列表的任务，沿用既有 task.progress 计算。
+  return createMemberTaskProgress(task, processInfo, currentDate)
 }
 
 /** 将接口原始金额保留为弹窗展示文本，缺省时展示 0。 */
@@ -821,6 +877,10 @@ const createTaskViewItem = (
   return {
     id: `${source}-${item.rowId}`,
     source,
+    taskType: String(item.taskType ?? '').trim(),
+    platformGameCodes: Array.isArray(item.platformGameCodes)
+      ? item.platformGameCodes.map(code => String(code ?? '').trim()).filter(Boolean)
+      : [],
     title,
     description,
     activity: activeNumber === undefined ? undefined : `+${activeNumber}`,
@@ -830,6 +890,10 @@ const createTaskViewItem = (
       action,
       description,
       progress,
+      taskType: String(item.taskType ?? '').trim(),
+      platformGameCodes: Array.isArray(item.platformGameCodes)
+        ? item.platformGameCodes.map(code => String(code ?? '').trim()).filter(Boolean)
+        : [],
       title,
       ...popupContent
     },
@@ -877,7 +941,7 @@ export const createMemberTaskViewItems = (
       schedule?.claimStatus,
       isMemberTaskExpired(item, currentDate)
     )
-    const progress = createMemberTaskProgress(item, schedule, currentDate)
+    const progress = createMemberTaskDisplayProgress(item, schedule, currentDate)
 
     return createTaskViewItem(
       item,

@@ -481,6 +481,7 @@
                   : '!border-[0.67px] !border-solid !border-theme-primary bg-transparent text-theme-primary'
             ]"
             :disabled="['completed', 'wait-settle', 'expired'].includes(task.action)"
+            @click="handleTaskAction(task)"
           >
             {{ taskActionText[task.action] }}
           </button>
@@ -542,10 +543,20 @@ const taskActionText = computed<Record<TaskActionState, string>>(() => ({
   expired: t('taskCenter.expired')
 }))
 
-defineEmits<{
+const emit = defineEmits<{
   'tab-click': [value: TaskTabKey]
   'open-task-info': [task: TaskViewItem]
+  'go-task': [task: TaskViewItem]
 }>()
+
+/** 仅将未完成任务的操作交给任务中心专用跳转模块处理。 */
+const handleTaskAction = (task: TaskViewItem) => {
+  if (task.action !== 'go-to-task') {
+    return
+  }
+
+  emit('go-task', task)
+}
 
 /** 展示当前宝箱对应的奖金金额与提款流水要求。 */
 const handleOpenActivityChestTip = (node: TaskActivityNode) => {
