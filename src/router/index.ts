@@ -149,18 +149,6 @@ const baseRoutes: RouteRecordRaw[] = [
       title: '体育'
     }
   },
-  ...(import.meta.env.DEV
-    ? [
-        {
-          path: 'sports/demo',
-          name: 'sportsDemo',
-          component: () => import('@/views/sports/components/demo.vue'),
-          meta: {
-            title: '体育组件 Demo'
-          }
-        }
-      ]
-    : []),
   {
     path: 'menu',
     name: 'menu',
