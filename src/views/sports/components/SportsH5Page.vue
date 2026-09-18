@@ -59,13 +59,9 @@
       </section>
 
       <section class="mx-[14px] mt-3" :aria-label="`${activeSportLabel} matches by league`">
-        <div class="mb-3 flex h-[30px] items-center gap-2">
-          <!-- 搜索、收藏筛选及排序区域由筛选组件提供，暂保留接入槽位。 -->
-          <div
-            class="min-w-0 flex-1"
-            aria-hidden="true"
-            data-testid="sports-h5-search-filter-slot"
-          ></div>
+        <div class="mb-3 flex h-[30px] items-center gap-[7px]">
+          <!-- 搜索、收藏筛选及排序区域 -->
+          <LeagueTabs_H5 />
           <button
             type="button"
             class="flex h-[30px] w-[30px] shrink-0 flex-col items-center justify-center rounded-lg bg-bg-2 text-text-2 focus-visible:outline focus-visible:outline-theme-primary"
@@ -169,6 +165,7 @@ import { H5_MATCHES, H5_SPORTS } from '../h5-data'
 import type { H5SportsMatch } from '../h5-data'
 import type { SportsPageState } from '../index'
 import type { OddsMarket, OddsSelectPayload } from './match-odds/types'
+import LeagueTabs_H5 from './liansai_tabs/H5.vue'
 
 const props = defineProps<{ page: SportsPageState }>()
 const idPrefix = useId()
