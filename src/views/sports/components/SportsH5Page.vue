@@ -11,11 +11,7 @@
       data-testid="sports-h5-sticky-navigation"
     >
       <SportsNavigation @change="changeSport" />
-      <div
-        class="absolute inset-x-[14px] bottom-4 h-[38px]"
-        aria-hidden="true"
-        data-testid="sports-h5-date-filter-slot"
-      ></div>
+      <FilterSearch_H5 class="mb-[12px] h-[38px] px-[14px]" />
     </header>
     <div :style="{ height: `${navigationHeight}px` }" aria-hidden="true"></div>
 
@@ -166,6 +162,7 @@ import awayShirt from '@/static/svg/sports/away-shirt.svg?url'
 import emptyImage from '@/static/img/explore/default.png'
 import emptyImageLight from '@/static/img/explore/default_white.png'
 import SportsNavigation from './sports-navigation/index.vue'
+import FilterSearch_H5 from './filter_search/H5.vue'
 import MatchVersus from './match-versus/index.vue'
 import SportsMatchCardH5 from './SportsMatchCardH5.vue'
 import { H5_MATCHES, H5_SPORTS } from '../h5-data'

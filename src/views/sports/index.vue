@@ -56,8 +56,8 @@
     </section>
 
     <section class="mx-5 mt-4 space-y-4" data-testid="sports-filters">
-      <LeagueTabs />
-      <FilterSearch />
+      <LeagueTabs_PC v-if="!isMobile" />
+      <FilterSearch_PC v-if="!isMobile" />
     </section>
 
     <!-- PC 统一四列；展开面板覆盖后续卡片，不改变网格占位。 -->
@@ -129,8 +129,8 @@ import awayShirt from '@/static/svg/sports/away-shirt.svg?url'
 import SportsNavigation from './components/sports-navigation/index.vue'
 import MatchVersus from './components/match-versus/index.vue'
 import MatchOdds from './components/match-odds/index.vue'
-import LeagueTabs from './components/liansai_tabs.vue'
-import FilterSearch from './components/filter_search.vue'
+import LeagueTabs_PC from './components/liansai_tabs/pc.vue'
+import FilterSearch_PC from './components/filter_search/pc.vue'
 import SportsMatchCard from './components/SportsMatchCard.vue'
 import SportsBetSlip from './components/SportsBetSlip.vue'
 import SportsH5Page from './components/SportsH5Page.vue'
