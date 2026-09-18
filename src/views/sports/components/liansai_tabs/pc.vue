@@ -1,7 +1,6 @@
-<!-- 联赛tabs -->
+<!-- pc联赛tabs -->
 <template>
-  <!-- pc -->
-  <section v-if="!isMobile" class="relative flex h-[40px] w-full items-center overflow-visible">
+  <section class="relative flex h-[40px] w-full items-center overflow-visible">
     <div class="flex h-10 flex-none items-center rounded-[18px] bg-bg-9">
       <button
         v-for="item in filterTabs"
@@ -92,14 +91,10 @@
       </button>
     </div>
   </section>
-
-  <!-- H5 -->
-  <section v-else class="flex h-[52px] w-full bg-bg-1">H5 联赛tabs</section>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useIsMobile } from '@/composables/useMediaQuery'
 import leagueIcon from '@/static/svg/sports/liansai_tabs/icon1.svg?url'
 import triangleIcon from '@/static/svg/sports/liansai_tabs/sanjiao.svg?url'
 
@@ -149,7 +144,6 @@ const activeFilterKey = ref('league')
 const activeLeagueKey = ref('all')
 const scrollRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
-const isMobile = useIsMobile()
 const isLeaguePopupOpen = ref(false)
 
 let dragStartX = 0
