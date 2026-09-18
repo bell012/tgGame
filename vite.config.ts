@@ -2,8 +2,7 @@ import vue from '@vitejs/plugin-vue'
 import imagemin from 'imagemin'
 import imageminWebp from 'imagemin-webp'
 import { resolve } from 'path'
-import { defineConfig, loadEnv, type Plugin, type ProxyOptions } from 'vite'
-import CryptoJS from 'crypto-js'
+import { defineConfig, type Plugin, type ProxyOptions } from 'vite'
 import viteImagemin from 'vite-plugin-imagemin'
 import { VitePWA } from 'vite-plugin-pwa'
 import svgLoader from 'vite-svg-loader'
@@ -49,51 +48,12 @@ const createWebpAssetsPlugin = (): Plugin => ({
 })
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-  const debugApi = env.VITE_DEBUG_API === 'true'
-  const gameImageBaseUrl = String(
-    env.VITE_GAME_IMAGE_BASE_URL || 'https://pic.txtvv9.top/'
-  ).replace(/\/+$/, '')
+export default defineConfig(() => {
   const apiProxy: ProxyOptions = {
     target: 'https://web.txtvv9.top/v1',
     changeOrigin: true,
-    rewrite: path => path.replace(/^\/api/, ''),
-    ...(debugApi && {
-      selfHandleResponse: true,
-      configure: proxy => {
-        proxy.on('proxyRes', (proxyRes, req, res) => {
-          const chunks: Buffer[] = []
-          proxyRes.on('data', c => chunks.push(Buffer.from(c)))
-          proxyRes.on('end', () => {
-            const raw = Buffer.concat(chunks).toString('utf8')
-            res.statusCode = proxyRes.statusCode || 200
-            try {
-              let cipher = raw.trim()
-              try {
-                const p = JSON.parse(cipher)
-                cipher = typeof p === 'string' ? p : String(p.data)
-              } catch {
-                /* raw cipher */
-              }
-              const key = CryptoJS.enc.Utf8.parse(
-                `${req.headers.site || 'gifphcb9'}${String(req.headers.sitetime).slice(-8)}`
-              )
-              const plain = CryptoJS.AES.decrypt(cipher, key, {
-                mode: CryptoJS.mode.ECB,
-                padding: CryptoJS.pad.Pkcs7
-              }).toString(CryptoJS.enc.Utf8)
-              res.setHeader('content-type', 'application/json')
-              return res.end(plain)
-            } catch {
-              res.end(raw)
-            }
-          })
-        })
-      }
-    })
+    rewrite: path => path.replace(/^\/api/, '')
   }
-
   return {
     plugins: [
       vue(),
@@ -260,12 +220,7 @@ export default defineConfig(({ mode }) => {
       open: true,
       cors: true,
       proxy: {
-        '/api': apiProxy,
-        '/pic-cdn': {
-          target: gameImageBaseUrl,
-          changeOrigin: true,
-          rewrite: path => path.replace(/^\/pic-cdn/, '')
-        }
+        '/api': apiProxy
       }
     }
   }

@@ -22,18 +22,6 @@ export const resolveOnlineCustomerLoadingLottieUrl = (config: unknown): string =
   if (!raw) return ''
   const toDevProxyUrl = (absoluteUrl: string) => {
     const encodedAbsolute = encodeURI(absoluteUrl)
-    if (!import.meta.env.DEV) return encodedAbsolute
-    try {
-      const parsed = new URL(encodedAbsolute)
-      const imageBase = new URL(
-        String(import.meta.env.VITE_GAME_IMAGE_BASE_URL || 'https://pic.txtvv9.top/')
-      )
-      if (parsed.origin === imageBase.origin) {
-        return `/pic-cdn${parsed.pathname}${parsed.search}`
-      }
-    } catch {
-      /* keep the absolute CDN URL */
-    }
     return encodedAbsolute
   }
 
