@@ -67,7 +67,8 @@ export function useLottieAnimation(options: UseLottieAnimationOptions) {
     () => options.container.value,
     el => {
       if (el && !failed.value) load()
-    }
+    },
+    { immediate: true }
   )
 
   watch(
@@ -75,7 +76,8 @@ export function useLottieAnimation(options: UseLottieAnimationOptions) {
     () => {
       failed.value = false
       if (options.container.value) load()
-    }
+    },
+    { immediate: true }
   )
 
   watch(

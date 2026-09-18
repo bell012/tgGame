@@ -4,18 +4,18 @@
       <section
         v-if="visible"
         class="online-customer-panel"
-        :class="{ 'is-mobile': isMobile }"
+        :class="{ 'is-mobile': isMobile, 'is-pending': isPending }"
         :style="panelStyle"
         role="dialog"
         :aria-modal="isMobile || undefined"
         :aria-label="t('onlineCustomer.title')"
         @keydown.esc="close"
       >
-        <div class="online-customer-content" :aria-busy="loading || frameLoading">
+        <div class="online-customer-content" :aria-busy="isPending">
           <button
             ref="closeButton"
             class="online-customer-close"
-            :class="{ 'is-neutral': loading || frameLoading || errorKey || frameError }"
+            :class="{ 'is-neutral': isPending || errorKey || frameError }"
             :style="closeButtonStyle"
             type="button"
             :aria-label="t('onlineCustomer.close')"
@@ -40,17 +40,23 @@
             @load="frameLoading = false"
             @error="handleFrameError"
           />
+          <div
+            v-if="isPending"
+            class="online-customer-loader"
+            role="status"
+            :aria-label="t('onlineCustomer.loading')"
+          >
+            <LottiePlayer
+              v-if="loadingLottieUrl"
+              :path="loadingLottieUrl"
+              :fallback-src="loadingSpadeSrc"
+              :respect-reduced-motion="false"
+            />
+            <img v-else :src="loadingSpadeSrc" alt="" />
+          </div>
           <div v-if="errorKey || frameError" class="online-customer-status" role="alert">
             <p>{{ t(errorKey || 'onlineCustomer.frameFailed') }}</p>
             <button type="button" @click="retry">{{ t('onlineCustomer.retry') }}</button>
-          </div>
-          <div
-            v-else-if="loading || frameLoading"
-            class="online-customer-status loading"
-            role="status"
-          >
-            <span class="online-customer-spinner" aria-hidden="true" />
-            <p>{{ t('onlineCustomer.loading') }}</p>
           </div>
         </div>
       </section>
@@ -61,18 +67,26 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import LottiePlayer from '@/components/LottiePlayer.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
+import loadingSpadeSrc from '@/static/img/online-customer/loading-spade.png'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
-const { visible, loading, url, errorKey, close, retry, afterLeave } = useOnlineCustomerService()
+const { visible, loading, url, errorKey, loadingLottieUrl, close, retry, afterLeave } =
+  useOnlineCustomerService()
 const frameLoading = ref(false)
 const frameError = ref(false)
 const leaving = ref(false)
 const closeButton = ref<HTMLButtonElement | null>(null)
 let previousFocus: HTMLElement | null = null
+
+const isPending = computed(
+  () =>
+    visible.value && (loading.value || frameLoading.value) && !errorKey.value && !frameError.value
+)
 
 const closeButtonStyle = {
   '--close-hit-size': '44px',
@@ -112,10 +126,14 @@ const iframeUrl = computed(() => {
 
 usePageScrollLock(() => isMobile.value && (visible.value || leaving.value))
 
-watch(iframeUrl, value => {
-  frameLoading.value = Boolean(value)
-  frameError.value = false
-})
+watch(
+  iframeUrl,
+  value => {
+    frameLoading.value = Boolean(value)
+    frameError.value = false
+  },
+  { flush: 'sync' }
+)
 watch(visible, async value => {
   if (value) {
     leaving.value = false
@@ -154,6 +172,10 @@ const handleAfterLeave = () => {
   color: var(--color-text-level-1);
   box-shadow: 0 8px 32px #0005;
 }
+.online-customer-panel.is-pending {
+  background: transparent;
+  box-shadow: none;
+}
 .online-customer-panel.is-mobile {
   inset: 0;
   width: 100%;
@@ -169,7 +191,7 @@ const handleAfterLeave = () => {
   --close-hover-background: #5299ff;
   --close-active-background: #2675e8;
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: var(--close-offset);
   right: var(--close-offset);
   display: grid;
@@ -240,12 +262,25 @@ const handleAfterLeave = () => {
   border-radius: inherit;
 }
 .online-customer-content iframe {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   border: 0;
   border-radius: inherit;
   background: var(--color-background-level-2);
+}
+.online-customer-loader {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.online-customer-loader > * {
+  width: 96px;
+  height: 96px;
 }
 .online-customer-status {
   position: absolute;
@@ -260,21 +295,10 @@ const handleAfterLeave = () => {
   border-radius: inherit;
   background: var(--color-background-level-2);
 }
-.online-customer-status.loading {
-  pointer-events: none;
-}
 .online-customer-status button {
   padding: 10px 24px;
   border: 1px solid currentColor;
   border-radius: 8px;
-}
-.online-customer-spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: online-customer-spin 0.8s linear infinite;
 }
 .online-customer-enter-active,
 .online-customer-leave-active {
@@ -283,10 +307,5 @@ const handleAfterLeave = () => {
 .online-customer-enter-from,
 .online-customer-leave-to {
   opacity: 0;
-}
-@keyframes online-customer-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 </style>

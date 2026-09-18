@@ -50,7 +50,11 @@ const createWebpAssetsPlugin = (): Plugin => ({
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const debugApi = loadEnv(mode, process.cwd(), '').VITE_DEBUG_API === 'true'
+  const env = loadEnv(mode, process.cwd(), '')
+  const debugApi = env.VITE_DEBUG_API === 'true'
+  const gameImageBaseUrl = String(
+    env.VITE_GAME_IMAGE_BASE_URL || 'https://pic.txtvv9.top/'
+  ).replace(/\/+$/, '')
   const apiProxy: ProxyOptions = {
     target: 'https://web.txtvv9.top/v1',
     changeOrigin: true,
@@ -255,7 +259,14 @@ export default defineConfig(({ mode }) => {
       port: 4000,
       open: true,
       cors: true,
-      proxy: { '/api': apiProxy }
+      proxy: {
+        '/api': apiProxy,
+        '/pic-cdn': {
+          target: gameImageBaseUrl,
+          changeOrigin: true,
+          rewrite: path => path.replace(/^\/pic-cdn/, '')
+        }
+      }
     }
   }
 })

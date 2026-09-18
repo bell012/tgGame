@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import { useLottieAnimation } from '@/composables/useLottieAnimation'
-import { computed, onMounted, ref, toRef, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, toRef, watch } from 'vue'
 
 interface Props {
   path: string
@@ -71,11 +71,12 @@ watch(
   }
 )
 
-onMounted(() => {
+onMounted(async () => {
   if (props.respectReducedMotion && typeof window !== 'undefined') {
     prefersReducedMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }
 
+  await nextTick()
   if (!useFallback.value && containerRef.value) load()
 })
 </script>
