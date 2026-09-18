@@ -30,3 +30,4 @@ dev-dist
 .cursor/
 openspec/
 .codegraph/
+.agents/

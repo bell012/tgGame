@@ -890,7 +890,9 @@
         "darts": "Darts",
         "american_football": "American Football",
         "table_tennis": "Table Tennis",
-        "volleyball": "Volleyball"
+        "volleyball": "Volleyball",
+        "auto_racing": "Racing",
+        "baseball": "Baseball"
       }
     },
     "anniversary": {
@@ -1768,6 +1770,7 @@
   "menu": {
     "crypto-account": "Crypto Account",
     "game-categories": "Casino",
+    "sports": "Sports",
     "recently-played": "Recently Played",
     "favorites": "Favorites",
     "vouchers": "Vouchers",

@@ -344,7 +344,9 @@
         "darts": "飞镖",
         "american_football": "美式足球",
         "table_tennis": "乒乓球",
-        "volleyball": "排球"
+        "volleyball": "排球",
+        "auto_racing": "赛车",
+        "baseball": "棒球"
       }
     },
     "anniversary": {
@@ -1761,6 +1763,7 @@
   "menu": {
     "crypto-account": "加密账户",
     "game-categories": "娱乐城",
+    "sports": "体育",
     "recently-played": "最近常玩",
     "favorites": "收藏中心",
     "vouchers": "票劵",

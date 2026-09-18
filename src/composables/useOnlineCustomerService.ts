@@ -1,5 +1,37 @@
-import { readonly, ref } from 'vue'
+import { computed, readonly, ref, shallowRef, watch } from 'vue'
 import Api from '@/api'
+import { useSiteConfigStore } from '@/stores/siteConfig'
+import { getCachedLottieData, prefetchLottieData, type LottieData } from '@/utils/lottie-data-cache'
+
+type SiteConfigWithLoadingImage = {
+  baseSiteConfig?: {
+    loading?: {
+      image?: unknown
+    }
+    'loading.image'?: unknown
+  }
+}
+
+export const resolveOnlineCustomerLoadingLottieUrl = (config: unknown): string => {
+  const baseSiteConfig = (config as SiteConfigWithLoadingImage | null | undefined)?.baseSiteConfig
+  if (!baseSiteConfig) return ''
+
+  const nestedImage = baseSiteConfig.loading?.image
+  const dottedImage = baseSiteConfig['loading.image']
+  const raw = String(nestedImage ?? dottedImage ?? '').trim()
+  if (!raw) return ''
+  const toDevProxyUrl = (absoluteUrl: string) => {
+    const encodedAbsolute = encodeURI(absoluteUrl)
+    return encodedAbsolute
+  }
+
+  if (/^https?:\/\//i.test(raw)) return toDevProxyUrl(raw)
+
+  const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
+  const imagePath = raw.replace(/^\/+/, '')
+  const absoluteUrl = baseUrl ? `${baseUrl}/${imagePath}` : imagePath
+  return toDevProxyUrl(absoluteUrl)
+}
 
 const visible = ref(false)
 const loading = ref(false)
@@ -8,25 +40,24 @@ const errorKey = ref('')
 let requestVersion = 0
 
 const load = async () => {
-  if (loading.value || !visible.value) return
+  if (loading.value) return
   const version = ++requestVersion
   loading.value = true
-  url.value = ''
   errorKey.value = ''
 
   try {
     const response = await Api.onlineCustomer.queryOnLineByType()
-    if (version !== requestVersion || !visible.value) return
+    if (version !== requestVersion) return
     if (!response?.success) {
-      errorKey.value = 'onlineCustomer.requestFailed'
+      if (visible.value && !url.value) errorKey.value = 'onlineCustomer.requestFailed'
       return
     }
     if (!response.result) {
-      errorKey.value = 'onlineCustomer.unavailable'
+      if (visible.value && !url.value) errorKey.value = 'onlineCustomer.unavailable'
       return
     }
     if (response.result.subType !== 2) {
-      errorKey.value = 'onlineCustomer.unsupported'
+      if (visible.value && !url.value) errorKey.value = 'onlineCustomer.unsupported'
       return
     }
     try {
@@ -34,10 +65,10 @@ const load = async () => {
       if (!['http:', 'https:'].includes(address.protocol)) throw new Error('Invalid protocol')
       url.value = address.href
     } catch {
-      errorKey.value = 'onlineCustomer.invalidUrl'
+      if (visible.value && !url.value) errorKey.value = 'onlineCustomer.invalidUrl'
     }
   } catch {
-    if (version === requestVersion && visible.value) {
+    if (version === requestVersion && visible.value && !url.value) {
       errorKey.value = 'onlineCustomer.requestFailed'
     }
   } finally {
@@ -45,9 +76,41 @@ const load = async () => {
   }
 }
 
+const lottieData = shallowRef<LottieData | null>(null)
+let lottieDataUrl = ''
+
+// 空闲时把加载动画的 JSON 拉到内存，之后每次打开客服都能直接用缓存渲染。
+const syncLoadingLottieData = (url: string) => {
+  lottieDataUrl = url
+  if (!url) {
+    lottieData.value = null
+    return
+  }
+
+  const cached = getCachedLottieData(url)
+  if (cached) {
+    lottieData.value = cached
+    return
+  }
+
+  lottieData.value = null
+  void prefetchLottieData(url).then(data => {
+    if (data && lottieDataUrl === url) lottieData.value = data
+  })
+}
+
+let prefetchStarted = false
+
+const prefetch = () => {
+  if (prefetchStarted || url.value) return
+  prefetchStarted = true
+  void load()
+}
+
 const open = () => {
   if (visible.value) return
   visible.value = true
+  errorKey.value = ''
   void load()
 }
 
@@ -57,20 +120,30 @@ const close = () => {
   loading.value = false
 }
 
-// Keep the iframe alive during the leave transition, without clearing a newly opened session.
+// Keep the last iframe URL so the next open can paint immediately.
 const afterLeave = () => {
   if (visible.value) return
-  url.value = ''
   errorKey.value = ''
 }
 
-export const useOnlineCustomerService = () => ({
-  visible: readonly(visible),
-  loading: readonly(loading),
-  url: readonly(url),
-  errorKey: readonly(errorKey),
-  open,
-  close,
-  retry: load,
-  afterLeave
-})
+export const useOnlineCustomerService = () => {
+  const siteConfigStore = useSiteConfigStore()
+  const loadingLottieUrl = computed(() =>
+    resolveOnlineCustomerLoadingLottieUrl(siteConfigStore.config)
+  )
+  prefetch()
+  watch(loadingLottieUrl, syncLoadingLottieData, { immediate: true })
+
+  return {
+    visible: readonly(visible),
+    loading: readonly(loading),
+    url: readonly(url),
+    errorKey: readonly(errorKey),
+    loadingLottieUrl,
+    loadingLottieData: computed(() => lottieData.value),
+    open,
+    close,
+    retry: load,
+    afterLeave
+  }
+}

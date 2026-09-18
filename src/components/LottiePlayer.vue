@@ -6,21 +6,28 @@
       class="h-full w-full [&_svg]:h-full [&_svg]:w-full"
       aria-hidden="true"
     />
-    <img
-      v-if="useFallback && fallbackSrc"
-      :src="fallbackSrc"
-      alt=""
-      class="h-full w-full object-contain"
-    />
+    <Transition
+      leave-active-class="transition-opacity duration-150 ease-out motion-reduce:transition-none"
+      leave-to-class="opacity-0"
+    >
+      <img
+        v-if="showPoster"
+        :src="fallbackSrc"
+        alt=""
+        class="absolute inset-0 h-full w-full object-contain"
+      />
+    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useLottieAnimation } from '@/composables/useLottieAnimation'
-import { computed, onMounted, ref, toRef, watch } from 'vue'
+import type { LottieData } from '@/utils/lottie-data-cache'
+import { computed, nextTick, onMounted, ref, toRef, watch } from 'vue'
 
 interface Props {
   path: string
+  animationData?: LottieData | null
   loop?: boolean
   autoplay?: boolean
   fallbackSrc?: string
@@ -28,6 +35,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  animationData: null,
   loop: true,
   autoplay: true,
   fallbackSrc: undefined,
@@ -49,9 +57,10 @@ const useFallback = computed(
 
 const autoplayEnabled = computed(() => props.autoplay && !useFallback.value)
 
-const { load, failed } = useLottieAnimation({
+const { load, failed, ready } = useLottieAnimation({
   container: containerRef,
   path: toRef(props, 'path'),
+  animationData: toRef(props, 'animationData'),
   loop: toRef(props, 'loop'),
   autoplay: autoplayEnabled,
   onFailed: () => {
@@ -59,6 +68,9 @@ const { load, failed } = useLottieAnimation({
     emit('failed')
   }
 })
+
+// 动画首帧上屏前用兜底图占位，避免出现空白。
+const showPoster = computed(() => Boolean(props.fallbackSrc) && (useFallback.value || !ready.value))
 
 watch(failed, value => {
   if (value) loadFailed.value = true
@@ -71,11 +83,12 @@ watch(
   }
 )
 
-onMounted(() => {
+onMounted(async () => {
   if (props.respectReducedMotion && typeof window !== 'undefined') {
     prefersReducedMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }
 
+  await nextTick()
   if (!useFallback.value && containerRef.value) load()
 })
 </script>

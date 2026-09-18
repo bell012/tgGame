@@ -847,6 +847,13 @@ const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
       groupKey: 'game-categories',
       children: buildCasinoMenuChildren()
     },
+    {
+      id: 'sports',
+      name: t('menu.sports'),
+      icon: newSideIcons.sportsIcon,
+      handler: () => navigateTo('/sports'),
+      groupKey: 'sports'
+    },
     ...(isLoggedIn.value
       ? [
           {
