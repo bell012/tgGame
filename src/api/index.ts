@@ -22,6 +22,7 @@ import * as activity from './modules/activity'
 import * as rewardCenter from './modules/reward-center'
 import * as task from './modules/task'
 import * as taskCenter from './modules/task-center'
+import * as sport from './modules/sport'
 
 const Api = {
   onlineCustomer,
@@ -39,7 +40,8 @@ const Api = {
   activity, // 活动：签到、票券列表、票券活动弹窗（Lucky Spin 等）
   rewardCenter, // 奖励中心
   task, // 奖励中心任务领取
-  taskCenter // 任务中心：新人福利、普通任务、游戏任务等
+  taskCenter, // 任务中心：新人福利、普通任务、游戏任务等
+  sport // 体育数据
 }
 
 export default Api

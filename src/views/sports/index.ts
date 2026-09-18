@@ -1,5 +1,9 @@
 import { computed, onMounted, onScopeDispose, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useLocaleStore } from '@/stores/locale'
+import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useSportsStore } from '@/stores/sports'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import teamBadge from '@/static/img/explore/sports-team.png'
 import type { OddsMarket, OddsSelectPayload, OddsTrend } from './components/match-odds/types'
@@ -110,6 +114,12 @@ export const getSportsCombinations = (odds: readonly number[], size: number): nu
 
 export const useSportsPage = (options: { additionalMatches?: readonly SportsMatch[] } = {}) => {
   const { currentCurrencyCode } = useDisplayCurrency()
+  const sportsStore = useSportsStore()
+  const siteConfigStore = useSiteConfigStore()
+  const localeStore = useLocaleStore()
+  const { sportCounts, sportCountsLoading, sportCountsError } = storeToRefs(sportsStore)
+  let sportsPageDisposed = false
+  let stopSportsRefresh: (() => void) | undefined
   const currentPage = ref(1)
   const expandedMatchId = ref<string | null>(null)
   const favorites = ref<string[]>([])
@@ -446,13 +456,35 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
     document.addEventListener('pointerdown', closeOnOutside)
     document.addEventListener('keydown', closeOnEscape)
   })
+  onMounted(async () => {
+    // 全局配置就绪后再订阅，避免初次加载因域名变化重复请求。
+    try {
+      await siteConfigStore.initSiteConfig()
+    } catch {
+      if (!sportsPageDisposed) void sportsStore.loadHomepage()
+      return
+    }
+    if (sportsPageDisposed) return
+    stopSportsRefresh = watch(
+      [() => siteConfigStore.getConfigString('IM.im_app_url'), () => localeStore.currentLanguage],
+      () => void sportsStore.loadHomepage(),
+      { immediate: true }
+    )
+  })
   onScopeDispose(() => {
+    sportsPageDisposed = true
+    stopSportsRefresh?.()
+    sportsStore.cancelRequests()
     clearTimeout(refreshTimer)
     document.removeEventListener('pointerdown', closeOnOutside)
     document.removeEventListener('keydown', closeOnEscape)
   })
 
   return {
+    sportCounts,
+    sportCountsLoading,
+    sportCountsError,
+    refreshSportCounts: sportsStore.fetchSportCounts,
     matches,
     liveMatches,
     currentPage,
