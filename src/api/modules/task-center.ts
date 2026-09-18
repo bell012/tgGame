@@ -10,6 +10,7 @@ import type {
   QueryEntrantTasksForm,
   QueryMemberDataOverviewForm,
   QueryMemberTasksForm,
+  ReceiveGiftBoxForm,
   TaskClaimAmount,
   TaskScheduleItem,
   TaskCenterApiResponse
@@ -159,6 +160,19 @@ export const obtainAllBonus = (
     url: '/task/obtainAllBonus',
     method: 'post',
     data: {},
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? true
+  })
+
+/** 领取指定活动度宝箱，调用方必须根据 code === C2 判断业务成功。 */
+export const receiveGiftBox = (
+  data: ReceiveGiftBoxForm,
+  options?: ApiResponseToastOptions
+): Promise<TaskCenterApiResponse<unknown>> =>
+  request({
+    url: '/activityGiftBox/receiveGiftBox',
+    method: 'post',
+    data,
     showSuccessToast: false,
     showErrorToast: options?.showErrorToast ?? true
   })

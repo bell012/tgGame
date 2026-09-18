@@ -168,3 +168,8 @@ export interface ObtainTaskAmountForm {
 
 /** 三种任务中心领取接口返回的奖励金额。 */
 export type TaskClaimAmount = number | string | null
+
+/** 领取指定活动度宝箱请求参数。 */
+export interface ReceiveGiftBoxForm {
+  activityValue: number | string
+}

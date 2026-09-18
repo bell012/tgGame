@@ -35,7 +35,7 @@
             <!-- 关闭领取提醒。 -->
             <button
               type="button"
-              aria-label="Close"
+              :aria-label="t('taskCenter.close')"
               class="flex size-6 shrink-0 items-center justify-center rounded bg-opacity-10 p-1.5"
               @click="handleClose"
             >
@@ -86,7 +86,7 @@
           <!-- H5 关闭领取提醒。 -->
           <button
             type="button"
-            aria-label="Close"
+            :aria-label="t('taskCenter.close')"
             class="absolute right-3.5 top-3.5 z-10 flex size-7 items-center justify-center rounded-md bg-opacity-10"
             @click="handleClose"
           >

@@ -45,8 +45,11 @@ export const createTaskTodayTimeRange = (date = new Date()) => {
 
 /** 活动度奖励节点展示数据。 */
 export interface TaskActivityNode {
-  action: 'Claimed' | 'Claim' | 'Open'
+  /** 宝箱操作的语义键，展示文案由页面层按当前语言转换。 */
+  action: 'claimed' | 'claim' | 'open'
   activity: string
+  /** 后端奖励配置的原始活动度档位，领取宝箱时必须传此值。 */
+  activityValue: number | string
   state: 'claimed' | 'claimable' | 'locked'
   bonusAmount?: string
   betMultiple?: string
@@ -181,7 +184,6 @@ const createClaimedActivityValueSet = (activity: MemberActiveValueResult) => {
 /** 根据当前活动度和已领取档位，生成活动度宝箱展示数据。 */
 export const createTaskActivityData = (activity: MemberActiveValueResult): TaskActivityData => {
   const currentActivity = toTaskActivityNumber(activity.activeValue) ?? 0
-  const claimedActivityValue = toTaskActivityNumber(activity.claimedActivityValue) ?? 0
   const claimedActivityValues = createClaimedActivityValueSet(activity)
   const rewardConfigs = parseTaskActivityRewardConfigs(activity.rewardConfig)
 
@@ -191,9 +193,8 @@ export const createTaskActivityData = (activity: MemberActiveValueResult): TaskA
       .filter(rewardConfig => toTaskActivityNumber(rewardConfig.activityValue) !== null)
       .map(rewardConfig => {
         const activityValue = toTaskActivityNumber(rewardConfig.activityValue)!
-        const isClaimed =
-          claimedActivityValues.has(activityValue) ||
-          (claimedActivityValues.size === 0 && claimedActivityValue >= activityValue)
+        // 仅以 claimedActivityValues 判断已领取状态，避免前端推测后端领取结果。
+        const isClaimed = claimedActivityValues.has(activityValue)
         const state = isClaimed
           ? 'claimed'
           : currentActivity >= activityValue
@@ -201,8 +202,9 @@ export const createTaskActivityData = (activity: MemberActiveValueResult): TaskA
             : 'locked'
 
         return {
-          action: state === 'claimed' ? 'Claimed' : state === 'claimable' ? 'Claim' : 'Open',
+          action: state === 'claimed' ? 'claimed' : state === 'claimable' ? 'claim' : 'open',
           activity: formatTaskActivityValue(rewardConfig.activityValue),
+          activityValue: rewardConfig.activityValue ?? activityValue,
           state,
           bonusAmount: formatTaskActivityValue(rewardConfig.bonusAmount),
           betMultiple: formatTaskActivityValue(rewardConfig.betMultiple)
@@ -245,6 +247,8 @@ export interface TaskInfoPopupData {
   claimRowId?: string | number
   /** 领取成功提示可展示的活动度；后台未下发时不展示该行。 */
   activityPoints?: string
+  /** 与任务卡 task.reward 保持一致，用于详细进度卡末尾的奖励金额展示。 */
+  reward?: string
   action: TaskActionState
   description: string
   detailCards: TaskInfoPopupDetailCard[]
@@ -289,13 +293,19 @@ export interface TaskViewItem {
   action: TaskActionState
 }
 
-/** 固定显示在首位的 General 栏目。 */
-const GENERAL_TASK_TAB: TaskTabItem = {
+/** 任务中心固定栏目所需的已国际化文案。 */
+export interface TaskCenterTabLabels {
+  general: string
+  entrant: string
+}
+
+/** 创建固定显示在首位的 General 栏目。 */
+const createGeneralTaskTab = (label: string): TaskTabItem => ({
   key: 'general',
-  label: 'General',
+  label,
   iconKey: 'gameCategoriesIcon',
   mobileWidth: 103
-}
+})
 
 /** 按栏目文字的显示宽度计算 H5 胶囊按钮宽度。 */
 const getTaskTabMobileWidth = (label: string) => {
@@ -344,19 +354,20 @@ const getTaskTabLabel = (item: GameTaskConfigItem, languageCode: string) => {
 }
 
 /** 创建本地固定的新人福利栏目，只在新人任务接口返回数据时显示。 */
-const createEntrantTaskTab = (): TaskTabItem => ({
+const createEntrantTaskTab = (label: string): TaskTabItem => ({
   key: 'entrant',
   isEntrant: true,
-  label: '新人福利',
+  label,
   iconKey: 'gameCategoriesIcon',
-  mobileWidth: getTaskTabMobileWidth('新人福利')
+  mobileWidth: getTaskTabMobileWidth(label)
 })
 
 /** 将后台栏目配置转换为 H5 与 PC 共用的导航数据。 */
 export const createTaskTabs = (
   taskConfigs: GameTaskConfigItem[] | undefined,
   languageCode: string,
-  showEntrantTab: boolean
+  showEntrantTab: boolean,
+  labels: TaskCenterTabLabels
 ): TaskTabItem[] => {
   const enabledConfigs = (taskConfigs ?? []).filter(item => Number(item.enable) === 1)
   const seenColumnCodes = new Set<string>()
@@ -385,7 +396,11 @@ export const createTaskTabs = (
     .map(createConfigTab)
     .filter((item): item is TaskTabItem => Boolean(item))
 
-  return [GENERAL_TASK_TAB, ...(showEntrantTab ? [createEntrantTaskTab()] : []), ...configTabs]
+  return [
+    createGeneralTaskTab(labels.general),
+    ...(showEntrantTab ? [createEntrantTaskTab(labels.entrant)] : []),
+    ...configTabs
+  ]
 }
 
 /** 解析后台 JSON 格式的多语言任务名称或描述。 */
@@ -967,6 +982,7 @@ const createTaskViewItem = (
       source,
       claimRowId,
       activityPoints: activeNumber,
+      reward: rewardInfo.reward,
       action,
       description,
       progress,

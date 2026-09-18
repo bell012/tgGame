@@ -38,7 +38,7 @@
             <!-- H5 关闭按钮：28px × 28px。 -->
             <button
               type="button"
-              aria-label="Close"
+              :aria-label="t('taskCenter.close')"
               class="absolute right-3.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md bg-white/10"
               @click="handleClose"
             >
@@ -145,15 +145,25 @@
                   <!-- H5 指标区：两列布局，条件数量可由后台动态扩展。 -->
                   <div class="grid grid-cols-2 gap-x-2.5 gap-y-5">
                     <div
-                      v-for="(condition, index) in card.conditions"
+                      v-for="(condition, index) in getDetailCardConditions(
+                        card.conditions,
+                        taskData.reward
+                      )"
                       :key="`${condition.code ?? condition.name ?? 'condition'}-${index}`"
                       class="flex min-w-0 flex-col gap-[5px]"
                     >
                       <!-- item块  -->
                       <span class="truncate text-[13px] font-[400] leading-[16px] text-[#B3BEC1]">
-                        {{ condition.name || condition.code }}
+                        {{ getTaskConditionLabel(condition) }}
                       </span>
                       <span
+                        v-if="isRewardAmountCondition(condition)"
+                        class="truncate text-[14px] font-[400] leading-[17px] text-text-1"
+                      >
+                        {{ formatProgressValue(condition.targetValue) }}
+                      </span>
+                      <span
+                        v-else
                         class="flex min-w-0 items-center whitespace-nowrap text-[14px] font-[400] leading-[17px]"
                       >
                         <span :class="condition.completed ? 'text-theme-primary' : 'text-text-1'">
@@ -207,7 +217,7 @@
               <span
                 v-if="taskData.action === 'claim' && props.claimLoading"
                 class="size-4 animate-spin rounded-full border-2 border-text-4/30 border-t-text-4"
-                aria-label="Loading"
+                :aria-label="t('taskCenter.loading')"
               ></span>
               <template v-else>{{ getTaskActionText(taskData.action) }}</template>
             </button>
@@ -237,7 +247,7 @@
                 <!-- PC 关闭按钮：24px × 24px。 -->
                 <button
                   type="button"
-                  aria-label="Close"
+                  :aria-label="t('taskCenter.close')"
                   class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white/10"
                   @click="handleClose"
                 >
@@ -327,14 +337,24 @@
                     <!-- PC 指标区：两列布局，条件数量可由后台动态扩展。 -->
                     <div class="grid grid-cols-2 gap-x-5 gap-y-5">
                       <div
-                        v-for="(condition, index) in card.conditions"
+                        v-for="(condition, index) in getDetailCardConditions(
+                          card.conditions,
+                          taskData.reward
+                        )"
                         :key="`${condition.code ?? condition.name ?? 'condition'}-${index}`"
                         class="flex min-w-0 flex-col justify-center gap-1"
                       >
                         <span class="truncate text-[16px] font-[400] leading-[19px] text-[#B3BEC1]">
-                          {{ condition.name || condition.code }}
+                          {{ getTaskConditionLabel(condition) }}
                         </span>
                         <span
+                          v-if="isRewardAmountCondition(condition)"
+                          class="truncate text-[16px] font-[400] leading-[19px] text-text-1"
+                        >
+                          {{ formatProgressValue(condition.targetValue) }}
+                        </span>
+                        <span
+                          v-else
                           class="flex min-w-0 items-center whitespace-nowrap text-[16px] font-[400] leading-[19px]"
                         >
                           <span :class="condition.completed ? 'text-theme-primary' : 'text-text-1'">
@@ -391,7 +411,7 @@
               <span
                 v-if="taskData.action === 'claim' && props.claimLoading"
                 class="size-4 animate-spin rounded-full border-2 border-text-4/30 border-t-text-4"
-                aria-label="Loading"
+                :aria-label="t('taskCenter.loading')"
               ></span>
               <template v-else>{{ getTaskActionText(taskData.action) }}</template>
             </button>
@@ -439,6 +459,44 @@ const taskActionText = computed<Record<TaskActionState, string>>(() => ({
   'wait-settle': t('taskCenter.waitSettle'),
   expired: t('taskCenter.expired')
 }))
+
+/** 任务条件代码与任务中心国际化文案键的固定映射。 */
+const taskConditionLabelKeys = {
+  betAmount: 'taskCenter.conditionLabels.betAmount',
+  winAmount: 'taskCenter.conditionLabels.winAmount',
+  lostAmount: 'taskCenter.conditionLabels.lostAmount',
+  rewardAmount: 'taskCenter.conditionLabels.rewardAmount'
+} as const
+
+/** 根据条件代码获取国际化名称，未知代码保留原代码便于排查后台新增类型。 */
+const getTaskConditionLabel = (condition: TaskConditionProgressItem) => {
+  const code = String(condition.code ?? '').trim()
+  const labelKey = taskConditionLabelKeys[code as keyof typeof taskConditionLabelKeys]
+
+  return labelKey ? t(labelKey) : code
+}
+
+/** 在详情条件末尾附加任务卡的奖励金额；该展示项不参与进度计算。 */
+const getDetailCardConditions = (
+  conditions: TaskConditionProgressItem[],
+  reward: string | undefined
+) => {
+  if (!reward) {
+    return conditions
+  }
+
+  return [
+    ...conditions,
+    {
+      code: 'rewardAmount',
+      targetValue: reward
+    }
+  ]
+}
+
+/** 判断当前详情项是否为仅展示奖励金额的附加条件。 */
+const isRewardAmountCondition = (condition: TaskConditionProgressItem) =>
+  condition.code === 'rewardAmount'
 
 /** 获取指定任务操作状态的国际化文案。 */
 const getTaskActionText = (action: TaskActionState) => taskActionText.value[action]

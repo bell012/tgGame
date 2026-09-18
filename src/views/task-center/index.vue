@@ -3,7 +3,7 @@
     <!-- H5 任务页 -->
     <div v-if="isMobile" class="fixed inset-0 flex flex-col overflow-hidden bg-bg-1 sm:hidden">
       <!-- Figma 顶部导航栏 -->
-      <H5Header title="Task" />
+      <H5Header :title="t('taskCenter.pageTitle')" />
 
       <!-- H5 页面滚动内容 -->
       <div class="flex-1 overflow-y-auto">
@@ -18,11 +18,13 @@
           :claiming-task-ids="claimingTaskIdList"
           :claim-actions-disabled="isClaimProcessing"
           :claim-all-loading="isClaimAllLoading"
+          :activity-claiming-value="activityClaimingValue"
           @tab-click="handleTaskTabClick"
           @open-task-info="handleOpenTaskInfo"
           @go-task="handleGoToTask"
           @claim="handleTaskClaim"
           @claim-all="handleClaimAll"
+          @claim-activity-chest="handleActivityChestClaim"
         />
       </div>
     </div>
@@ -30,7 +32,7 @@
     <!-- PC 任务页 -->
     <PcLayout
       v-else
-      title="Task"
+      :title="t('taskCenter.pageTitle')"
       :tabs="taskTabs"
       :active-tab-key="activeTaskTabKey"
       :overview="taskOverview"
@@ -40,11 +42,13 @@
       :claiming-task-ids="claimingTaskIdList"
       :claim-actions-disabled="isClaimProcessing"
       :claim-all-loading="isClaimAllLoading"
+      :activity-claiming-value="activityClaimingValue"
       @tab-click="handleTaskTabClick"
       @open-task-info="handleOpenTaskInfo"
       @go-task="handleGoToTask"
       @claim="handleTaskClaim"
       @claim-all="handleClaimAll"
+      @claim-activity-chest="handleActivityChestClaim"
     />
 
     <!-- 当前点击任务对应的说明弹窗。 -->
@@ -74,6 +78,16 @@
       :activity-points="taskClaimSuccessToast.activityPoints"
       @update:visible="handleTaskClaimSuccessToastVisibilityChange"
     />
+
+    <!-- 活动度宝箱领取成功后复用意见反馈的成功弹窗视觉。 -->
+    <FeedbackClaimSuccessPopup
+      :show="showActivityClaimSuccessPopup"
+      :claim-success-amount="activityClaimSuccessAmount"
+      :feedback-star-icon="feedbackStarIcon"
+      :feedback-ellipse-icon="feedbackEllipseIcon"
+      :feedback-bow-icon="feedbackBowIcon"
+      @close="handleCloseActivityClaimSuccessPopup"
+    />
   </div>
 </template>
 
@@ -90,11 +104,15 @@ import type {
 import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import feedbackBowIcon from '@/static/svg/feedback/hdj.svg?url'
+import feedbackEllipseIcon from '@/static/svg/feedback/ellipse.svg?url'
+import feedbackStarIcon from '@/static/svg/feedback/star.svg?url'
 import { useLocaleStore } from '@/stores/locale'
-import { getLanguageCode } from '@/utils/locale'
+import { getCurrencySymbol, getLanguageCode } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import FeedbackClaimSuccessPopup from '../personalCenter/feedback/components/feedback-claim-success-popup.vue'
 import TaskClaimSuccessToast from './components/TaskClaimSuccessToast.vue'
 import TaskInfoPopup from './components/TaskInfoPopup.vue'
 import TaskPageContent from './components/TaskPageContent.vue'
@@ -109,6 +127,7 @@ import {
   createTaskTabs,
   createTaskTodayTimeRange,
   type TaskActivityData,
+  type TaskActivityNode,
   type TaskInfoPopupData,
   type TaskOverviewData,
   type TaskTabKey,
@@ -175,6 +194,15 @@ const claimingTaskIds = ref<Set<string>>(new Set())
 /** 控制一键领取接口 loading，避免和单个领取并发提交。 */
 const isClaimAllLoading = ref(false)
 
+/** 保存当前正在领取的活动度档位，用于节点 action 区域 loading。 */
+const activityClaimingValue = ref<string | null>(null)
+
+/** 控制活动度宝箱领取成功弹窗。 */
+const showActivityClaimSuccessPopup = ref(false)
+
+/** 传入成功弹窗的宝箱奖励金额，包含当前账户币种符号。 */
+const activityClaimSuccessAmount = ref('')
+
 /** 保存活动度接口原始结果，供倒计时每秒刷新时复用。 */
 const memberActiveValue = ref<MemberActiveValueResult | null>(null)
 
@@ -184,15 +212,29 @@ let taskActivityResetTimer: ReturnType<typeof setInterval> | undefined
 /** 获取当前页面语言对应的后台任务语言代码。 */
 const currentTaskLanguageCode = computed(() => getLanguageCode(localeStore.currentLanguage))
 
+/** 获取当前账户币种对应的项目统一符号。 */
+const currentCurrencySymbol = computed(() => getCurrencySymbol(currentCurrencyCode.value))
+
 /** 将 Set 转为数组后传给子组件，使任务卡可响应领取 loading 的变化。 */
 const claimingTaskIdList = computed(() => [...claimingTaskIds.value])
 
 /** 任一领取请求进行中时，禁用其他领取入口以避免重复提交。 */
 const isClaimProcessing = computed(() => isClaimAllLoading.value || claimingTaskIds.value.size > 0)
 
+/** 为共享栏目数据提供当前语言下的固定栏目文案。 */
+const taskCenterTabLabels = computed(() => ({
+  general: t('taskCenter.general'),
+  entrant: t('taskCenter.entrant')
+}))
+
 /** H5 与 PC 共用同一份已排序、已本地化的栏目数据。 */
 const taskTabs = computed(() =>
-  createTaskTabs(taskConfigs.value, currentTaskLanguageCode.value, entrantTasks.value.length > 0)
+  createTaskTabs(
+    taskConfigs.value,
+    currentTaskLanguageCode.value,
+    entrantTasks.value.length > 0,
+    taskCenterTabLabels.value
+  )
 )
 
 /** 将新人固定任务转换为卡片数据。 */
@@ -476,6 +518,44 @@ const handleClaimAll = async () => {
   } finally {
     isClaimAllLoading.value = false
   }
+}
+
+/** 格式化活动度宝箱奖励金额，保留后台原始金额精度并拼接当前币种符号。 */
+const formatActivityGiftBoxBonusAmount = (node: TaskActivityNode) =>
+  `${currentCurrencySymbol.value}${String(node.bonusAmount ?? '0').trim() || '0'}`
+
+/** 领取当前可领取的活动度宝箱，并在成功后重新查询后端领取状态。 */
+const handleActivityChestClaim = async (node: TaskActivityNode) => {
+  if (node.state !== 'claimable' || activityClaimingValue.value) {
+    return
+  }
+
+  activityClaimingValue.value = String(node.activityValue)
+
+  try {
+    const response = await Api.taskCenter.receiveGiftBox(
+      { activityValue: node.activityValue },
+      { showErrorToast: false }
+    )
+
+    if (response.code !== 'C2') {
+      showTaskClaimError(response.message)
+      return
+    }
+
+    activityClaimSuccessAmount.value = formatActivityGiftBoxBonusAmount(node)
+    showActivityClaimSuccessPopup.value = true
+    await fetchMemberActiveValue()
+  } catch (error) {
+    showTaskClaimError(getTaskClaimRequestErrorMessage(error))
+  } finally {
+    activityClaimingValue.value = null
+  }
+}
+
+/** 关闭活动度宝箱领取成功弹窗。 */
+const handleCloseActivityClaimSuccessPopup = () => {
+  showActivityClaimSuccessPopup.value = false
 }
 
 /** Toast 自动消失后清空任务中心领取成功提示数据。 */

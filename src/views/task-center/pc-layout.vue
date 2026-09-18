@@ -44,11 +44,13 @@
             :claiming-task-ids="props.claimingTaskIds"
             :claim-actions-disabled="props.claimActionsDisabled"
             :claim-all-loading="props.claimAllLoading"
+            :activity-claiming-value="props.activityClaimingValue"
             @tab-click="$emit('tab-click', $event)"
             @open-task-info="$emit('open-task-info', $event)"
             @go-task="$emit('go-task', $event)"
             @claim="$emit('claim', $event)"
             @claim-all="$emit('claim-all')"
+            @claim-activity-chest="$emit('claim-activity-chest', $event)"
           />
 
           <!-- PC 底部操作按钮位于右侧任务内容区下方。 -->
@@ -64,9 +66,9 @@
               <span
                 v-if="props.claimAllLoading"
                 class="size-4 animate-spin rounded-full border-2 border-text-4/30 border-t-text-4"
-                aria-label="Loading"
+                :aria-label="t('taskCenter.loading')"
               ></span>
-              <template v-else>Claim All</template>
+              <template v-else>{{ t('taskCenter.claimAll') }}</template>
             </span>
           </button>
         </div>
@@ -77,9 +79,11 @@
 
 <script setup lang="ts">
 import newSideIcons from '@/static/svg/side/newIcon'
+import { useI18n } from 'vue-i18n'
 import TaskPageContent from './components/TaskPageContent.vue'
 import type {
   TaskActivityData,
+  TaskActivityNode,
   TaskOverviewData,
   TaskTabItem,
   TaskTabKey,
@@ -97,13 +101,16 @@ interface Props {
   claimingTaskIds?: string[]
   claimActionsDisabled?: boolean
   claimAllLoading?: boolean
+  activityClaimingValue?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   claimingTaskIds: () => [],
   claimActionsDisabled: false,
-  claimAllLoading: false
+  claimAllLoading: false,
+  activityClaimingValue: null
 })
+const { t } = useI18n()
 
 defineEmits<{
   'tab-click': [value: TaskTabKey]
@@ -111,5 +118,6 @@ defineEmits<{
   'go-task': [task: TaskViewItem]
   claim: [task: TaskViewItem]
   'claim-all': []
+  'claim-activity-chest': [node: TaskActivityNode]
 }>()
 </script>

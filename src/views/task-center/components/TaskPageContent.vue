@@ -47,7 +47,7 @@
       :class="props.mode === 'pc' ? 'h-[95px] py-5' : 'h-[84px] py-5'"
     >
       <div
-        class="flex flex-1 flex-col items-center justify-center border-r border-common-100/10"
+        class="flex flex-1 flex-col items-center justify-center border-r-[0.333px] border-common-100/10"
         :class="props.mode === 'pc' ? 'gap-3' : 'gap-2'"
       >
         <strong
@@ -60,7 +60,7 @@
           :class="props.mode === 'pc' ? 'text-base leading-[19px]' : 'text-xs leading-[15px]'"
           class="font-[400] text-text-2"
         >
-          Today's Deposit
+          {{ t('taskCenter.todayDeposit') }}
         </span>
       </div>
       <div
@@ -77,7 +77,7 @@
           :class="props.mode === 'pc' ? 'text-base leading-[19px]' : 'text-xs leading-[15px]'"
           class="font-[400] text-text-2"
         >
-          Today's Valid Bets
+          {{ t('taskCenter.todayValidBets') }}
         </span>
       </div>
     </section>
@@ -98,13 +98,15 @@
           class="flex items-center"
           :class="
             props.mode === 'pc'
-              ? 'h-[54px] gap-3 border-b border-common-100/[0.06] px-7'
-              : 'box-border h-[35px] w-[calc(100%-28px)] shrink-0 border-b-[0.5px] border-common-100/[0.06] py-[10px]'
+              ? 'h-[54px] gap-3 border-b  border-common-100/[0.06] px-7'
+              : 'box-border h-[35px] w-[calc(100%-28px)] shrink-0 border-b-[0.333px] border-common-100/[0.06] py-[10px]'
           "
         >
           <template v-if="props.mode === 'mobile'">
             <!-- H5 标题使用 Figma 的 12px 图标与活动度组合。 -->
-            <span class="text-[12px] font-[400] leading-[15px] text-text-1">Activity :</span>
+            <span class="text-[12px] font-[400] leading-[15px] text-text-1">
+              {{ t('taskCenter.activity') }}
+            </span>
             <span class="flex h-[15px] items-center gap-0.5">
               <img :src="taskActivityActiveImage" alt="" class="h-3 w-3 shrink-0 object-contain" />
               <span class="text-[12px] font-[400] leading-[15px] text-theme-primary">
@@ -114,7 +116,9 @@
           </template>
 
           <template v-else>
-            <span class="text-[18px] font-[400] leading-[22px] text-text-1">Current Activity:</span>
+            <span class="text-[18px] font-[400] leading-[22px] text-text-1">
+              {{ t('taskCenter.currentActivity') }}
+            </span>
             <!-- PC 活动度图标槽位。 -->
             <img
               :src="taskActivityActiveImage"
@@ -161,7 +165,7 @@
                   type="button"
                   class="flex shrink-0 items-center justify-center"
                   :class="props.mode === 'pc' ? 'h-10 w-10' : 'h-[26px] w-[26px]'"
-                  :aria-label="`Activity ${node.activity} reward details`"
+                  :aria-label="t('taskCenter.activityChestDetails', { activity: node.activity })"
                   @click="handleOpenActivityChestTip(node)"
                 >
                   <img
@@ -170,7 +174,28 @@
                     class="h-full w-full object-contain"
                   />
                 </button>
+                <!-- 可领取节点的 action 区域作为领取按钮，其余状态保持静态展示。 -->
+                <button
+                  v-if="node.state === 'claimable'"
+                  type="button"
+                  class="flex items-center justify-center rounded-full bg-theme-primary font-[400] text-text-4"
+                  :class="
+                    props.mode === 'pc'
+                      ? 'h-7 w-[76px] text-base leading-[19px]'
+                      : 'h-[18px] w-[50px] text-[10px] leading-3'
+                  "
+                  :disabled="isActivityChestClaimDisabled"
+                  @click="$emit('claim-activity-chest', node)"
+                >
+                  <span
+                    v-if="isActivityChestClaimLoading(node)"
+                    class="size-3 animate-spin rounded-full border border-text-4/30 border-t-text-4"
+                    :aria-label="t('taskCenter.loading')"
+                  ></span>
+                  <template v-else>{{ activityChestActionText[node.action] }}</template>
+                </button>
                 <span
+                  v-else
                   class="flex items-center justify-center rounded-full font-[400]"
                   :class="[
                     props.mode === 'pc'
@@ -178,12 +203,10 @@
                       : 'h-[18px] w-[50px] text-[10px] leading-3',
                     node.state === 'claimed'
                       ? 'border border-common-100/[0.15] text-text-3'
-                      : node.state === 'claimable'
-                        ? 'bg-theme-primary text-text-4'
-                        : 'bg-common-100/[0.06] text-text-2'
+                      : 'bg-common-100/[0.06] text-text-2'
                   ]"
                 >
-                  {{ node.action }}
+                  {{ activityChestActionText[node.action] }}
                 </span>
                 <span
                   class="flex items-center gap-1 font-[400]"
@@ -214,7 +237,7 @@
               v-if="props.mode === 'mobile'"
               class="absolute left-3.5 top-[101px] m-0 h-3 w-[289px] whitespace-nowrap text-[10px] font-[400] leading-3 text-text-3"
             >
-              Claim the activity chest by 1 AM the next day, or it will expire.
+              {{ t('taskCenter.activityHint') }}
             </p>
           </span>
         </div>
@@ -224,50 +247,66 @@
           class="flex items-center"
           :class="
             props.mode === 'pc'
-              ? 'h-[52px] justify-between gap-2 border-t border-common-100/[0.06] px-7'
-              : 'box-border h-[35px] w-[calc(100%-28px)] shrink-0 gap-[5px] border-t-[0.5px] border-common-100/[0.06] py-[10px]'
+              ? 'h-[52px] justify-between gap-2 border-t  border-common-100/[0.06] px-7'
+              : 'box-border h-[35px] w-[calc(100%-28px)] shrink-0 gap-[5px] border-t-[0.333px] border-common-100/[0.06] py-[10px]'
           "
         >
           <template v-if="props.mode === 'mobile'">
-            <span class="shrink-0 text-[10px] font-[400] leading-3 text-text-2">Reset:</span>
+            <span class="shrink-0 text-[10px] font-[400] leading-3 text-text-2">
+              {{ t('taskCenter.reset') }}
+            </span>
             <span class="flex shrink-0 items-center gap-[3px]">
               <strong class="text-[12px] font-[500] leading-[15px] text-text-1">
                 {{ props.activity.reset.days }}
               </strong>
-              <span class="text-[10px] font-[400] leading-3 text-text-2">Days</span>
+              <span class="text-[10px] font-[400] leading-3 text-text-2">
+                {{ t('taskCenter.days') }}
+              </span>
             </span>
             <span class="flex shrink-0 items-center gap-[3px]">
               <strong class="text-[12px] font-[500] leading-[15px] text-text-1">
                 {{ props.activity.reset.hours }}
               </strong>
-              <span class="text-[10px] font-[400] leading-3 text-text-2">Hours</span>
+              <span class="text-[10px] font-[400] leading-3 text-text-2">
+                {{ t('taskCenter.hours') }}
+              </span>
             </span>
             <span class="flex shrink-0 items-center gap-[3px]">
               <strong class="text-[12px] font-[500] leading-[15px] text-text-1">
                 {{ props.activity.reset.minutes }}
               </strong>
-              <span class="text-[10px] font-[400] leading-3 text-text-2">Minutes</span>
+              <span class="text-[10px] font-[400] leading-3 text-text-2">
+                {{ t('taskCenter.minutes') }}
+              </span>
             </span>
             <span class="flex shrink-0 items-center gap-[3px]">
               <strong class="text-[12px] font-[500] leading-[15px] text-text-1">
                 {{ props.activity.reset.seconds }}
               </strong>
-              <span class="text-[10px] font-[400] leading-3 text-text-2">Seconds</span>
+              <span class="text-[10px] font-[400] leading-3 text-text-2">
+                {{ t('taskCenter.seconds') }}
+              </span>
             </span>
           </template>
 
           <template v-else>
             <p class="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-              <span class="text-sm font-[400] leading-5 text-text-2">Reset:</span>
+              <span class="text-sm font-[400] leading-5 text-text-2">
+                {{ t('taskCenter.reset') }}
+              </span>
               <span class="text-base font-[400] leading-[19px] text-text-1">
                 {{
-                  `${props.activity.reset.days} Days ${props.activity.reset.hours} Hours ${props.activity.reset.minutes}
-                Minutes ${props.activity.reset.seconds} Seconds`
+                  t('taskCenter.resetCountdown', {
+                    days: props.activity.reset.days,
+                    hours: props.activity.reset.hours,
+                    minutes: props.activity.reset.minutes,
+                    seconds: props.activity.reset.seconds
+                  })
                 }}
               </span>
             </p>
             <p class="line-clamp-1 text-right text-sm font-[400] leading-5 text-text-3">
-              Claim the activity chest by 1 AM the next day, or it will expire.
+              {{ t('taskCenter.activityHint') }}
             </p>
           </template>
         </footer>
@@ -410,7 +449,7 @@
               <!-- 任务说明图标。 -->
               <button
                 type="button"
-                aria-label="Task information"
+                :aria-label="t('taskCenter.taskInformation')"
                 class="shrink-0"
                 :class="props.mode === 'pc' ? 'h-5 w-5' : 'h-3.5 w-3.5'"
                 @click="$emit('open-task-info', task)"
@@ -469,7 +508,7 @@
           <!-- 根据任务状态展示前往任务、领取、已完成、待结算或已过期按钮；领取与跳转逻辑后续接入。 -->
           <button
             type="button"
-            class="flex shrink-0 items-center justify-center font-[500]"
+            class="relative flex shrink-0 items-center justify-center overflow-visible font-[500]"
             :class="[
               props.mode === 'pc'
                 ? 'h-[43px] w-28 rounded-[12px] text-base leading-[19px]'
@@ -486,9 +525,21 @@
             <span
               v-if="isTaskClaimLoading(task)"
               class="size-4 animate-spin rounded-full border-2 border-text-4/30 border-t-text-4"
-              aria-label="Loading"
+              :aria-label="t('taskCenter.loading')"
             ></span>
-            <template v-else>{{ taskActionText[task.action] }}</template>
+            <span v-else class="whitespace-nowrap">{{ taskActionText[task.action] }}</span>
+
+            <!-- 前往任务状态在按钮右上角显示待完成提示。 -->
+            <span
+              v-if="task.action === 'go-to-task'"
+              aria-hidden="true"
+              class="absolute rounded-full bg-[#FC3C3C]"
+              :class="
+                props.mode === 'pc'
+                  ? '-right-0.5 -top-[2.5px] z-[1] size-3'
+                  : '-right-0.5 -top-0.5 z-[2] size-2'
+              "
+            ></span>
           </button>
         </article>
       </template>
@@ -512,9 +563,9 @@
         <span
           v-if="props.claimAllLoading"
           class="size-4 animate-spin rounded-full border-2 border-text-4/30 border-t-text-4"
-          aria-label="Loading"
+          :aria-label="t('taskCenter.loading')"
         ></span>
-        <template v-else>Claim All</template>
+        <template v-else>{{ t('taskCenter.claimAll') }}</template>
       </span>
     </button>
   </footer>
@@ -557,12 +608,14 @@ interface Props {
   claimingTaskIds?: string[]
   claimActionsDisabled?: boolean
   claimAllLoading?: boolean
+  activityClaimingValue?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   claimingTaskIds: () => [],
   claimActionsDisabled: false,
-  claimAllLoading: false
+  claimAllLoading: false,
+  activityClaimingValue: null
 })
 const { t } = useI18n()
 const { currentCurrencyCode } = useDisplayCurrency()
@@ -579,12 +632,20 @@ const taskActionText = computed<Record<TaskActionState, string>>(() => ({
   expired: t('taskCenter.expired')
 }))
 
+/** 根据宝箱操作语义键取得当前语言的展示文案。 */
+const activityChestActionText = computed<Record<TaskActivityNode['action'], string>>(() => ({
+  claimed: t('taskCenter.activityChestActions.claimed'),
+  claim: t('taskCenter.activityChestActions.claim'),
+  open: t('taskCenter.activityChestActions.open')
+}))
+
 const emit = defineEmits<{
   'tab-click': [value: TaskTabKey]
   'open-task-info': [task: TaskViewItem]
   'go-task': [task: TaskViewItem]
   claim: [task: TaskViewItem]
   'claim-all': []
+  'claim-activity-chest': [node: TaskActivityNode]
 }>()
 
 /** 判断指定任务是否正在请求领取接口。 */
@@ -594,6 +655,13 @@ const isTaskClaimLoading = (task: TaskViewItem) => props.claimingTaskIds.include
 const isTaskActionDisabled = (task: TaskViewItem) =>
   ['completed', 'wait-settle', 'expired'].includes(task.action) ||
   (task.action === 'claim' && props.claimActionsDisabled)
+
+/** 判断指定活动度宝箱是否正在调用领取接口。 */
+const isActivityChestClaimLoading = (node: TaskActivityNode) =>
+  props.activityClaimingValue === String(node.activityValue)
+
+/** 活动度宝箱领取期间禁用全部可领取节点，避免并发重复领取。 */
+const isActivityChestClaimDisabled = computed(() => Boolean(props.activityClaimingValue))
 
 /** 按当前任务操作状态分别上抛跳转或领取事件。 */
 const handleTaskAction = (task: TaskViewItem) => {
@@ -610,7 +678,10 @@ const handleTaskAction = (task: TaskViewItem) => {
 /** 展示当前宝箱对应的奖金金额与提款流水要求。 */
 const handleOpenActivityChestTip = (node: TaskActivityNode) => {
   globalShowToast({
-    message: `Open to get an ${node.bonusAmount ?? '0'} bonus. ${node.betMultiple ?? '0'}x wagering required to withdraw`
+    message: t('taskCenter.activityChestTip', {
+      bonus: node.bonusAmount ?? '0',
+      multiple: node.betMultiple ?? '0'
+    })
   })
 }
 
