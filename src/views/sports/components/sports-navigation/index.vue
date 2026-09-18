@@ -28,7 +28,7 @@ const pageStyle = computed(() => {
 
   return {
     paddingTop: `${layoutStore.TOPNAV_HEIGHT + 10}px`,
-    paddingBottom: `${layoutStore.BOTTOM_TAB_HEIGHT + 10}px`
+    paddingBottom: `12px`
   }
 })
 </script>

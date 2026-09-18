@@ -1,7 +1,6 @@
-<!-- 赛事筛选和搜索 -->
+<!-- pc赛事筛选和搜索 -->
 <template>
-  <!-- pc -->
-  <section v-if="!isMobile" class="flex w-full items-center justify-between">
+  <section class="flex w-full items-center justify-between">
     <div class="flex items-center gap-[10px]">
       <button
         v-for="item in filterTabs"
@@ -47,14 +46,10 @@
       </button>
     </div>
   </section>
-
-  <!-- H5 -->
-  <section v-else class="flex h-[52px] w-full bg-bg-1">H5 赛事筛选和搜索</section>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useIsMobile } from '@/composables/useMediaQuery'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
 
@@ -71,7 +66,6 @@ const filterTabs: FilterTabItem[] = [
   { key: 'parlay', label: '串关', count: 125 }
 ]
 
-const isMobile = useIsMobile()
 const activeFilterKey = ref('today')
 const searchKeyword = ref('')
 const collectOnly = ref(false)
