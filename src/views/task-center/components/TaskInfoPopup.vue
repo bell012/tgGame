@@ -149,17 +149,19 @@
                       :key="`${condition.code ?? condition.name ?? 'condition'}-${index}`"
                       class="flex min-w-0 flex-col gap-[5px]"
                     >
+                      <!-- item块  -->
                       <span class="truncate text-[13px] font-[400] leading-[16px] text-[#B3BEC1]">
                         {{ condition.name || condition.code }}
                       </span>
                       <span
-                        class="truncate text-[14px] font-[400] leading-[17px]"
-                        :class="condition.completed ? 'text-[#2AEE88]' : 'text-white'"
+                        class="flex min-w-0 items-center whitespace-nowrap text-[14px] font-[400] leading-[17px]"
                       >
-                        {{
-                          `${formatProgressValue(condition.currentValue)} /
-                        ${formatProgressValue(condition.targetValue)}`
-                        }}
+                        <span :class="condition.completed ? 'text-theme-primary' : 'text-text-1'">
+                          {{ formatCappedConditionCurrentValue(condition) }}
+                        </span>
+                        <span class="text-text-1">
+                          {{ ` / ${formatProgressValue(condition.targetValue)}` }}
+                        </span>
                       </span>
                     </div>
                   </div>
@@ -199,10 +201,15 @@
               type="button"
               class="mt-[30px] flex h-10 w-full items-center justify-center rounded-lg text-[14px] font-[700] leading-[17px]"
               :class="getActionButtonClass(taskData.action)"
-              :disabled="isDisabledAction(taskData.action)"
+              :disabled="isTaskActionDisabled(taskData.action)"
               @click="handleTaskAction(taskData)"
             >
-              {{ getTaskActionText(taskData.action) }}
+              <span
+                v-if="taskData.action === 'claim' && props.claimLoading"
+                class="size-4 animate-spin rounded-full border-2 border-text-4/30 border-t-text-4"
+                aria-label="Loading"
+              ></span>
+              <template v-else>{{ getTaskActionText(taskData.action) }}</template>
             </button>
           </div>
         </section>
@@ -328,13 +335,14 @@
                           {{ condition.name || condition.code }}
                         </span>
                         <span
-                          class="truncate text-[16px] font-[400] leading-[19px]"
-                          :class="condition.completed ? 'text-[#2AEE88]' : 'text-white'"
+                          class="flex min-w-0 items-center whitespace-nowrap text-[16px] font-[400] leading-[19px]"
                         >
-                          {{
-                            `${formatProgressValue(condition.currentValue)} /
-                          ${formatProgressValue(condition.targetValue)}`
-                          }}
+                          <span :class="condition.completed ? 'text-theme-primary' : 'text-text-1'">
+                            {{ formatCappedConditionCurrentValue(condition) }}
+                          </span>
+                          <span class="text-text-1">
+                            {{ ` / ${formatProgressValue(condition.targetValue)}` }}
+                          </span>
                         </span>
                       </div>
                     </div>
@@ -377,10 +385,15 @@
               type="button"
               class="box-border flex h-12 w-full shrink-0 items-center justify-center rounded-lg p-2 text-center text-[14px] font-[700] leading-[17px]"
               :class="getActionButtonClass(taskData.action)"
-              :disabled="isDisabledAction(taskData.action)"
+              :disabled="isTaskActionDisabled(taskData.action)"
               @click="handleTaskAction(taskData)"
             >
-              {{ getTaskActionText(taskData.action) }}
+              <span
+                v-if="taskData.action === 'claim' && props.claimLoading"
+                class="size-4 animate-spin rounded-full border-2 border-text-4/30 border-t-text-4"
+                aria-label="Loading"
+              ></span>
+              <template v-else>{{ getTaskActionText(taskData.action) }}</template>
             </button>
           </div>
         </section>
@@ -390,6 +403,7 @@
 </template>
 
 <script setup lang="ts">
+import type { TaskConditionProgressItem } from '@/api/interface/task-center'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { TaskActionState, TaskInfoPopupData } from '../shared'
@@ -398,9 +412,14 @@ interface Props {
   visible: boolean
   mode: 'mobile' | 'pc'
   task: TaskInfoPopupData | null
+  claimLoading?: boolean
+  claimActionsDisabled?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  claimLoading: false,
+  claimActionsDisabled: false
+})
 const { t } = useI18n()
 
 const emit = defineEmits<{
@@ -432,6 +451,10 @@ const getDetailCardActionText = (action: TaskActionState) =>
 const isDisabledAction = (action: TaskActionState) =>
   ['completed', 'wait-settle', 'expired'].includes(action)
 
+/** 已结束任务始终禁用；领取请求期间禁用所有可领取任务，防止重复提交。 */
+const isTaskActionDisabled = (action: TaskActionState) =>
+  isDisabledAction(action) || (action === 'claim' && props.claimActionsDisabled)
+
 /** 按当前任务操作状态分别上抛跳转或领取事件。 */
 const handleTaskAction = (task: TaskInfoPopupData) => {
   if (task.action === 'go-to-task') {
@@ -459,6 +482,18 @@ const getActionButtonClass = (action: TaskActionState) => {
 
 /** 保留后台条件数值原始精度，缺省时统一展示 0。 */
 const formatProgressValue = (value: unknown) => String(value ?? '').trim() || '0'
+
+/** 当前条件值超过目标时显示目标值，避免明细展示超过任务上限。 */
+const formatCappedConditionCurrentValue = (condition: TaskConditionProgressItem) => {
+  const currentValue = Number(condition.currentValue)
+  const targetValue = Number(condition.targetValue)
+
+  if (Number.isFinite(currentValue) && Number.isFinite(targetValue) && currentValue > targetValue) {
+    return formatProgressValue(condition.targetValue)
+  }
+
+  return formatProgressValue(condition.currentValue)
+}
 
 /** 关闭任务说明弹窗。 */
 const handleClose = () => {

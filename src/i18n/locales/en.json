@@ -323,6 +323,8 @@
     "completed": "Completed",
     "waitSettle": "Pending Settlement",
     "expired": "Expired",
+    "claimFailed": "Failed to claim reward. Please try again.",
+    "claimRecordMissing": "Unable to find the reward record. Please refresh and try again.",
     "empty": "No data available at the moment.",
     "loadFailed": "Failed to load tasks. Please try again later.",
     "unsupportedTask": "This task is not currently supported.",
@@ -330,6 +332,11 @@
       "title": "Kind Reminder",
       "description": "You can still reach a higher tier for more rewards. Claim now?",
       "notNow": "Not Now"
+    },
+    "claimSuccessToast": {
+      "title": "Claimed Successfully",
+      "bonusReceived": "Bonus Received：{amount}",
+      "activityPointsEarned": "Activity Points Earned：{points}"
     }
   },
   "referral": {

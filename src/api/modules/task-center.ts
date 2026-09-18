@@ -5,9 +5,12 @@ import type {
   MemberActiveValueResult,
   MemberDataOverviewResult,
   MemberTaskItem,
+  ObtainEntrantTaskAmountForm,
+  ObtainTaskAmountForm,
   QueryEntrantTasksForm,
   QueryMemberDataOverviewForm,
   QueryMemberTasksForm,
+  TaskClaimAmount,
   TaskScheduleItem,
   TaskCenterApiResponse
 } from '@/api/interface/task-center'
@@ -121,3 +124,41 @@ export const queryTaskSchedule = (options?: ApiResponseToastOptions): Promise<Ta
       showErrorToast: options?.showErrorToast ?? true
     })
   )
+
+/** 领取新人固定任务奖励，调用方必须根据 code === C2 判断业务成功。 */
+export const obtainEntrantTaskAmount = (
+  data: ObtainEntrantTaskAmountForm,
+  options?: ApiResponseToastOptions
+): Promise<TaskCenterApiResponse<TaskClaimAmount>> =>
+  request({
+    url: '/task/obtainEntrantTaskAmount',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? true
+  })
+
+/** 领取普通会员任务奖励，调用方必须根据 code === C2 判断业务成功。 */
+export const obtainTaskAmount = (
+  data: ObtainTaskAmountForm,
+  options?: ApiResponseToastOptions
+): Promise<TaskCenterApiResponse<TaskClaimAmount>> =>
+  request({
+    url: '/task/obtainTaskAmount',
+    method: 'post',
+    data,
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? true
+  })
+
+/** 一键领取当前会员全部可领取的任务奖励。 */
+export const obtainAllBonus = (
+  options?: ApiResponseToastOptions
+): Promise<TaskCenterApiResponse<TaskClaimAmount>> =>
+  request({
+    url: '/task/obtainAllBonus',
+    method: 'post',
+    data: {},
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? true
+  })

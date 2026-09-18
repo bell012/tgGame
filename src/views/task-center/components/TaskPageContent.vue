@@ -480,10 +480,15 @@
                   ? 'cursor-not-allowed bg-opacity-6 text-text-3'
                   : '!border-[0.67px] !border-solid !border-theme-primary bg-transparent text-theme-primary'
             ]"
-            :disabled="['completed', 'wait-settle', 'expired'].includes(task.action)"
+            :disabled="isTaskActionDisabled(task)"
             @click="handleTaskAction(task)"
           >
-            {{ taskActionText[task.action] }}
+            <span
+              v-if="isTaskClaimLoading(task)"
+              class="size-4 animate-spin rounded-full border-2 border-text-4/30 border-t-text-4"
+              aria-label="Loading"
+            ></span>
+            <template v-else>{{ taskActionText[task.action] }}</template>
           </button>
         </article>
       </template>
@@ -498,11 +503,18 @@
     <button
       type="button"
       class="flex h-10 w-full shrink-0 items-center justify-center rounded-lg bg-theme-primary"
+      :disabled="props.claimAllLoading || props.claimActionsDisabled"
+      @click="$emit('claim-all')"
     >
       <span
         class="flex h-[17px] min-w-[61px] items-center justify-center text-center text-[14px] font-[700] leading-[17px] text-text-4"
       >
-        Claim All
+        <span
+          v-if="props.claimAllLoading"
+          class="size-4 animate-spin rounded-full border-2 border-text-4/30 border-t-text-4"
+          aria-label="Loading"
+        ></span>
+        <template v-else>Claim All</template>
       </span>
     </button>
   </footer>
@@ -542,9 +554,16 @@ interface Props {
   activity: TaskActivityData | null
   tasks: TaskViewItem[]
   tasksLoading: boolean
+  claimingTaskIds?: string[]
+  claimActionsDisabled?: boolean
+  claimAllLoading?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  claimingTaskIds: () => [],
+  claimActionsDisabled: false,
+  claimAllLoading: false
+})
 const { t } = useI18n()
 const { currentCurrencyCode } = useDisplayCurrency()
 
@@ -565,7 +584,16 @@ const emit = defineEmits<{
   'open-task-info': [task: TaskViewItem]
   'go-task': [task: TaskViewItem]
   claim: [task: TaskViewItem]
+  'claim-all': []
 }>()
+
+/** 判断指定任务是否正在请求领取接口。 */
+const isTaskClaimLoading = (task: TaskViewItem) => props.claimingTaskIds.includes(task.id)
+
+/** 已结束任务始终禁用；领取请求期间禁用所有可领取任务，防止重复提交。 */
+const isTaskActionDisabled = (task: TaskViewItem) =>
+  ['completed', 'wait-settle', 'expired'].includes(task.action) ||
+  (task.action === 'claim' && props.claimActionsDisabled)
 
 /** 按当前任务操作状态分别上抛跳转或领取事件。 */
 const handleTaskAction = (task: TaskViewItem) => {

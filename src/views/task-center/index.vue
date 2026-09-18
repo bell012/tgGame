@@ -15,10 +15,14 @@
           :activity="taskActivity"
           :tasks="visibleTaskItems"
           :tasks-loading="taskListLoading"
+          :claiming-task-ids="claimingTaskIdList"
+          :claim-actions-disabled="isClaimProcessing"
+          :claim-all-loading="isClaimAllLoading"
           @tab-click="handleTaskTabClick"
           @open-task-info="handleOpenTaskInfo"
           @go-task="handleGoToTask"
           @claim="handleTaskClaim"
+          @claim-all="handleClaimAll"
         />
       </div>
     </div>
@@ -33,10 +37,14 @@
       :activity="taskActivity"
       :tasks="visibleTaskItems"
       :tasks-loading="taskListLoading"
+      :claiming-task-ids="claimingTaskIdList"
+      :claim-actions-disabled="isClaimProcessing"
+      :claim-all-loading="isClaimAllLoading"
       @tab-click="handleTaskTabClick"
       @open-task-info="handleOpenTaskInfo"
       @go-task="handleGoToTask"
       @claim="handleTaskClaim"
+      @claim-all="handleClaimAll"
     />
 
     <!-- 当前点击任务对应的说明弹窗。 -->
@@ -44,6 +52,8 @@
       v-model:visible="showTaskInfoPopup"
       :mode="isMobile ? 'mobile' : 'pc'"
       :task="selectedTaskInfo"
+      :claim-loading="selectedTaskInfo ? claimingTaskIds.has(selectedTaskInfo.id) : false"
+      :claim-actions-disabled="isClaimProcessing"
       @go-task="handleGoToTask"
       @claim="handleTaskClaim"
     />
@@ -52,6 +62,17 @@
     <TaskTierClaimReminderPopup
       v-model:visible="showTierClaimReminder"
       :mode="isMobile ? 'mobile' : 'pc'"
+      @confirm="handleTierClaimReminderConfirm"
+    />
+
+    <!-- 领取接口成功后展示的任务中心专用奖励提示。 -->
+    <TaskClaimSuccessToast
+      v-if="taskClaimSuccessToast"
+      :visible="true"
+      :mode="isMobile ? 'mobile' : 'pc'"
+      :bonus-amount="taskClaimSuccessToast.bonusAmount"
+      :activity-points="taskClaimSuccessToast.activityPoints"
+      @update:visible="handleTaskClaimSuccessToastVisibilityChange"
     />
   </div>
 </template>
@@ -71,7 +92,10 @@ import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
 import { getLanguageCode } from '@/utils/locale'
+import { globalShowToast } from '@/utils/toast'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import TaskClaimSuccessToast from './components/TaskClaimSuccessToast.vue'
 import TaskInfoPopup from './components/TaskInfoPopup.vue'
 import TaskPageContent from './components/TaskPageContent.vue'
 import TaskTierClaimReminderPopup from './components/TaskTierClaimReminderPopup.vue'
@@ -95,6 +119,7 @@ import { executeTaskCenterGoToTask } from './taskCenterNavigation'
 const isMobile = useIsMobile()
 const localeStore = useLocaleStore()
 const { currentCurrencyCode } = useDisplayCurrency()
+const { t } = useI18n()
 
 /** 保存后台任务栏目原始配置，语言变化时可重新计算名称。 */
 const taskConfigs = ref<GameTaskConfigItem[]>([])
@@ -132,8 +157,23 @@ const showTaskInfoPopup = ref(false)
 /** 控制阶梯任务领取前的二次确认弹窗。 */
 const showTierClaimReminder = ref(false)
 
+/** 任务中心领取成功提示所需的真实奖励数据。 */
+const taskClaimSuccessToast = ref<{
+  bonusAmount: string
+  activityPoints?: string
+} | null>(null)
+
 /** 保存用户点击的任务说明数据，供 H5 与 PC 弹窗共用。 */
 const selectedTaskInfo = ref<TaskInfoPopupData | null>(null)
+
+/** 暂存需要二次确认的阶梯任务，用户确认后才调用领取接口。 */
+const pendingTierClaimTask = ref<TaskViewItem | TaskInfoPopupData | null>(null)
+
+/** 保存正在单独领取的任务 ID，供卡片与说明弹窗展示 loading。 */
+const claimingTaskIds = ref<Set<string>>(new Set())
+
+/** 控制一键领取接口 loading，避免和单个领取并发提交。 */
+const isClaimAllLoading = ref(false)
 
 /** 保存活动度接口原始结果，供倒计时每秒刷新时复用。 */
 const memberActiveValue = ref<MemberActiveValueResult | null>(null)
@@ -143,6 +183,12 @@ let taskActivityResetTimer: ReturnType<typeof setInterval> | undefined
 
 /** 获取当前页面语言对应的后台任务语言代码。 */
 const currentTaskLanguageCode = computed(() => getLanguageCode(localeStore.currentLanguage))
+
+/** 将 Set 转为数组后传给子组件，使任务卡可响应领取 loading 的变化。 */
+const claimingTaskIdList = computed(() => [...claimingTaskIds.value])
+
+/** 任一领取请求进行中时，禁用其他领取入口以避免重复提交。 */
+const isClaimProcessing = computed(() => isClaimAllLoading.value || claimingTaskIds.value.size > 0)
 
 /** H5 与 PC 共用同一份已排序、已本地化的栏目数据。 */
 const taskTabs = computed(() =>
@@ -235,6 +281,26 @@ const fetchTaskLists = async () => {
   taskListLoading.value = false
 }
 
+/** 领取新人任务成功后仅刷新新人任务状态，最终展示以后端结果为准。 */
+const refreshEntrantTaskSchedules = async () => {
+  try {
+    entrantTaskSchedules.value = await Api.taskCenter.queryEntrantTaskSchedule({
+      showErrorToast: false
+    })
+  } catch {
+    // 刷新失败时保留当前展示状态，避免错误覆盖原有任务数据。
+  }
+}
+
+/** 领取普通任务成功后仅刷新普通任务进度，最终展示以后端结果为准。 */
+const refreshMemberTaskSchedules = async () => {
+  try {
+    memberTaskSchedules.value = await Api.taskCenter.queryTaskSchedule({ showErrorToast: false })
+  } catch {
+    // 刷新失败时保留当前展示状态，避免错误覆盖原有任务数据。
+  }
+}
+
 /** 切换当前任务栏目。 */
 const handleTaskTabClick = (tabKey: TaskTabKey) => {
   activeTaskTabKey.value = tabKey
@@ -253,15 +319,170 @@ const handleGoToTask = (task: TaskViewItem | TaskInfoPopupData) => {
   void executeTaskCenterGoToTask(task, { isMobile: isMobile.value })
 }
 
-/** 阶梯任务仍有更高未完成档位时，领取前显示奖励提升提醒。 */
-const handleTaskClaim = (task: TaskViewItem | TaskInfoPopupData) => {
-  if (!task.requiresTierClaimReminder) {
+/** 更新指定单领按钮的 loading 集合，确保 Vue 能追踪 Set 的替换。 */
+const setTaskClaimLoading = (taskId: string, loading: boolean) => {
+  const nextClaimingTaskIds = new Set(claimingTaskIds.value)
+
+  if (loading) {
+    nextClaimingTaskIds.add(taskId)
+  } else {
+    nextClaimingTaskIds.delete(taskId)
+  }
+
+  claimingTaskIds.value = nextClaimingTaskIds
+}
+
+/** 规范领取金额文本，保留后台金额的原始精度。 */
+const formatTaskClaimAmount = (amount: unknown) => String(amount ?? '').trim() || '0'
+
+/** 规范可选活动度文本；接口未提供有效值时不展示活动度奖励行。 */
+const formatOptionalActivityPoints = (activityPoints: unknown) => {
+  const pointsText = String(activityPoints ?? '').trim()
+
+  return pointsText || undefined
+}
+
+/** 展示任务中心专用领取成功提示，而不复用全局单行 Toast。 */
+const showTaskClaimSuccessToast = (bonusAmount: unknown, activityPoints?: unknown) => {
+  taskClaimSuccessToast.value = {
+    bonusAmount: formatTaskClaimAmount(bonusAmount),
+    activityPoints: formatOptionalActivityPoints(activityPoints)
+  }
+}
+
+/** 展示领取接口的后端失败原因，缺省时使用统一的本地化文案。 */
+const showTaskClaimError = (message: unknown) => {
+  const errorMessage = String(message ?? '').trim() || t('taskCenter.claimFailed')
+
+  globalShowToast({
+    message: errorMessage,
+    type: 'fail'
+  })
+}
+
+/** 从请求异常中提取可展示错误信息。 */
+const getTaskClaimRequestErrorMessage = (error: unknown) =>
+  error instanceof Error && error.message ? error.message : t('taskCenter.claimFailed')
+
+/** 判断当前任务是否具备有效的领取记录 ID。 */
+const hasTaskClaimRowId = (task: TaskViewItem | TaskInfoPopupData) => {
+  const rowId = task.claimRowId
+
+  return rowId !== undefined && rowId !== null && String(rowId).trim() !== ''
+}
+
+/** 执行单个任务的领取请求，并在成功后刷新对应任务进度。 */
+const claimSingleTask = async (task: TaskViewItem | TaskInfoPopupData) => {
+  if (isClaimProcessing.value || !hasTaskClaimRowId(task)) {
+    if (!hasTaskClaimRowId(task)) {
+      showTaskClaimError(t('taskCenter.claimRecordMissing'))
+    }
     return
   }
 
-  // 从说明弹窗触发时先关闭该弹窗，避免两个 Dialog 同时展示。
-  showTaskInfoPopup.value = false
-  showTierClaimReminder.value = true
+  setTaskClaimLoading(task.id, true)
+
+  try {
+    if (task.source === 'entrant') {
+      const response = await Api.taskCenter.obtainEntrantTaskAmount(
+        { rowId: task.claimRowId! },
+        { showErrorToast: false }
+      )
+
+      if (response.code !== 'C2') {
+        showTaskClaimError(response.message)
+        return
+      }
+
+      showTaskInfoPopup.value = false
+      // 当前新人领取接口只返回奖金金额，未返回活动度时不展示活动度奖励行。
+      showTaskClaimSuccessToast(response.result)
+      await refreshEntrantTaskSchedules()
+      return
+    }
+
+    const response = await Api.taskCenter.obtainTaskAmount(
+      {
+        rowId: task.claimRowId!,
+        taskType: task.taskType
+      },
+      { showErrorToast: false }
+    )
+
+    if (response.code !== 'C2') {
+      showTaskClaimError(response.message)
+      return
+    }
+
+    showTaskInfoPopup.value = false
+    // 普通任务领取接口只返回实际奖金金额，不能使用任务配置 activeNumber 伪造活动度奖励。
+    showTaskClaimSuccessToast(response.result)
+    await refreshMemberTaskSchedules()
+  } catch (error) {
+    showTaskClaimError(getTaskClaimRequestErrorMessage(error))
+  } finally {
+    setTaskClaimLoading(task.id, false)
+  }
+}
+
+/** 阶梯任务仍有更高未完成档位时先显示奖励提升提醒，其余任务直接领取。 */
+const handleTaskClaim = (task: TaskViewItem | TaskInfoPopupData) => {
+  if (isClaimProcessing.value) {
+    return
+  }
+
+  if (task.requiresTierClaimReminder) {
+    // 从说明弹窗触发时先关闭该弹窗，避免两个 Dialog 同时展示。
+    selectedTaskInfo.value = null
+    showTaskInfoPopup.value = false
+    pendingTierClaimTask.value = task
+    showTierClaimReminder.value = true
+    return
+  }
+
+  void claimSingleTask(task)
+}
+
+/** 用户确认阶梯任务领取后，使用此前暂存的外层任务数据发送单领请求。 */
+const handleTierClaimReminderConfirm = () => {
+  const task = pendingTierClaimTask.value
+  pendingTierClaimTask.value = null
+
+  if (task) {
+    void claimSingleTask(task)
+  }
+}
+
+/** 一键领取全部奖励，成功后刷新新人和普通任务的后端状态。 */
+const handleClaimAll = async () => {
+  if (isClaimProcessing.value) {
+    return
+  }
+
+  isClaimAllLoading.value = true
+
+  try {
+    const response = await Api.taskCenter.obtainAllBonus({ showErrorToast: false })
+
+    if (response.code !== 'C2') {
+      showTaskClaimError(response.message)
+      return
+    }
+
+    showTaskClaimSuccessToast(response.result)
+    await Promise.all([refreshEntrantTaskSchedules(), refreshMemberTaskSchedules()])
+  } catch (error) {
+    showTaskClaimError(getTaskClaimRequestErrorMessage(error))
+  } finally {
+    isClaimAllLoading.value = false
+  }
+}
+
+/** Toast 自动消失后清空任务中心领取成功提示数据。 */
+const handleTaskClaimSuccessToastVisibilityChange = (visible: boolean) => {
+  if (!visible) {
+    taskClaimSuccessToast.value = null
+  }
 }
 
 /** 保留后台金额原始精度，避免截断或四舍五入。 */

@@ -612,6 +612,8 @@
     "completed": "已完成",
     "waitSettle": "待结算",
     "expired": "已过期",
+    "claimFailed": "领取失败，请稍后重试",
+    "claimRecordMissing": "未找到可领取的任务记录，请刷新后重试",
     "empty": "目前没有可用数据。",
     "loadFailed": "任务加载失败，请稍后重试",
     "unsupportedTask": "该任务暂不支持跳转",
@@ -619,6 +621,11 @@
       "title": "温馨提示",
       "description": "您仍可挑战更高档位以获得更多奖励，确定现在领取吗？",
       "notNow": "暂不领取"
+    },
+    "claimSuccessToast": {
+      "title": "领取成功",
+      "bonusReceived": "已领取奖励：{amount}",
+      "activityPointsEarned": "已获得活动积分：{points}"
     }
   },
   "referral": {

@@ -86,6 +86,8 @@ export interface EntrantTaskItem {
 
 /** 新人固定任务进度项。 */
 export interface EntrantTaskScheduleItem {
+  /** 新人任务会员进度记录 ID，领取新人任务时必须传此值。 */
+  rowId?: string | number
   taskId: string | number
   status?: number | string | boolean
 }
@@ -152,3 +154,17 @@ export interface MemberTaskItem {
   bindGames?: string[]
   platformGameCodes?: string[]
 }
+
+/** 领取新人任务奖励请求参数。 */
+export interface ObtainEntrantTaskAmountForm {
+  rowId: string | number
+}
+
+/** 领取普通任务奖励请求参数。 */
+export interface ObtainTaskAmountForm {
+  rowId: string | number
+  taskType: string
+}
+
+/** 三种任务中心领取接口返回的奖励金额。 */
+export type TaskClaimAmount = number | string | null

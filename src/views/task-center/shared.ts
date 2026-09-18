@@ -237,6 +237,14 @@ export interface TaskInfoPopupDetailCard {
 
 /** 任务说明弹窗所需的完整展示数据。 */
 export interface TaskInfoPopupData {
+  /** 与任务卡一致的唯一标识，用于同步领取按钮 loading 状态。 */
+  id: string
+  /** 标识领取时应使用新人任务或普通任务接口。 */
+  source: 'entrant' | 'member'
+  /** 领取接口所需的任务记录 ID。 */
+  claimRowId?: string | number
+  /** 领取成功提示可展示的活动度；后台未下发时不展示该行。 */
+  activityPoints?: string
   action: TaskActionState
   description: string
   detailCards: TaskInfoPopupDetailCard[]
@@ -262,11 +270,15 @@ interface TaskInfoPopupContent {
 export interface TaskViewItem {
   id: string
   source: 'entrant' | 'member'
+  /** 领取接口所需的任务记录 ID。 */
+  claimRowId?: string | number
   taskType: string
   platformGameCodes: string[]
   title: string
   description: string
   activity?: string
+  /** 领取成功提示可展示的活动度；后台未下发时不展示该行。 */
+  activityPoints?: string
   reward?: string
   rewardUsesCurrency: boolean
   columnCodes: string[]
@@ -491,13 +503,25 @@ const normalizeTaskClaimStatus = (claimStatus: unknown) =>
     .trim()
     .toUpperCase()
 
+/** 判断条件是否具有可参与进度计算和明细展示的有效目标值。 */
+const hasValidTaskConditionTarget = (condition: TaskConditionProgressItem) => {
+  const target = Number(condition.targetValue)
+
+  return Number.isFinite(target) && target > 0
+}
+
+/** 过滤目标值为零或无效的条件，避免其展示或影响平均进度。 */
+const getValidTaskConditionProgressList = (
+  conditionProgressList: TaskConditionProgressItem[] | undefined
+) => (conditionProgressList ?? []).filter(hasValidTaskConditionTarget)
+
 /** 将单个条件的当前值与目标值转换为 0 至 100 的进度百分比。 */
 const createTaskProgressPercentage = (condition: TaskConditionProgressItem) => {
   const target = Number(condition.targetValue)
 
-  // 目标值无效时不能除以零，改由后台 completed 标识确定完成状态。
+  // 理论上已在列表过滤时排除；这里再次兜底，防止无效目标参与除法。
   if (!Number.isFinite(target) || target <= 0) {
-    return condition.completed ? 100 : 0
+    return 0
   }
 
   const current = Math.abs(Number(condition.currentValue))
@@ -533,7 +557,9 @@ const createEntrantTaskProgress = (action: TaskActionState) => (action === 'go-t
 const createConditionTaskProgress = (
   conditionProgressList: TaskConditionProgressItem[] | undefined
 ) => {
-  const conditionProgresses = (conditionProgressList ?? []).map(createTaskProgressPercentage)
+  const conditionProgresses = getValidTaskConditionProgressList(conditionProgressList).map(
+    createTaskProgressPercentage
+  )
 
   if (conditionProgresses.length === 0) {
     return 0
@@ -732,8 +758,8 @@ const createMemberTaskProgress = (
     )
   }
 
-  // 普通条件型任务：只要存在条件列表即可计算，不限制 taskType。
-  if ((schedule.conditionProgressList?.length ?? 0) > 0) {
+  // 普通条件型任务：仅有效目标值条件参与计算，不限制 taskType。
+  if (getValidTaskConditionProgressList(schedule.conditionProgressList).length > 0) {
     return createConditionTaskProgress(schedule.conditionProgressList)
   }
 
@@ -785,8 +811,8 @@ const createMemberTaskDisplayProgress = (
     return 100
   }
 
-  // 普通条件型任务优先按条件平均值展示，避免仅依赖领取状态。
-  if ((processInfo.conditionProgressList?.length ?? 0) > 0) {
+  // 普通条件型任务优先按有效条件平均值展示，避免仅依赖领取状态。
+  if (getValidTaskConditionProgressList(processInfo.conditionProgressList).length > 0) {
     return createConditionTaskProgress(processInfo.conditionProgressList)
   }
 
@@ -806,7 +832,7 @@ const createTaskInfoDetailProgress = (
     return 100
   }
 
-  if ((conditionProgressList?.length ?? 0) > 0) {
+  if (getValidTaskConditionProgressList(conditionProgressList).length > 0) {
     return createConditionTaskProgress(conditionProgressList)
   }
 
@@ -822,7 +848,7 @@ const createTierTaskInfoDetailCards = (
 
     return {
       action: createMemberTaskActionState(tier.claimStatus, false),
-      conditions: tier.conditionProgressList ?? [],
+      conditions: getValidTaskConditionProgressList(tier.conditionProgressList),
       id: `tier-${tierNo}-${index}`,
       progress: createTaskInfoDetailProgress(tier.claimStatus, tier.conditionProgressList),
       rewardText: tier.rewardText
@@ -837,7 +863,7 @@ const createMemberTaskInfoDetailCard = (
   progress: number
 ): TaskInfoPopupDetailCard => ({
   action,
-  conditions: schedule.conditionProgressList ?? [],
+  conditions: getValidTaskConditionProgressList(schedule.conditionProgressList),
   id: `task-${task.rowId}`,
   progress
 })
@@ -880,8 +906,8 @@ const createMemberTaskInfoPopupContent = (
     }
   }
 
-  // 普通任务只要有条件列表，即使用单张详细进度卡展示。
-  if (schedule && (schedule.conditionProgressList?.length ?? 0) > 0) {
+  // 普通任务仅在存在有效目标值条件时使用单张详细进度卡展示。
+  if (schedule && getValidTaskConditionProgressList(schedule.conditionProgressList).length > 0) {
     return {
       detailCards: [createMemberTaskInfoDetailCard(task, schedule, action, progress)],
       requiresTierClaimReminder,
@@ -901,12 +927,14 @@ const createMemberTaskInfoPopupContent = (
 const createTaskViewItem = (
   item: EntrantTaskItem | MemberTaskItem,
   source: TaskViewItem['source'],
+  claimRowId: string | number | undefined,
   languageCode: string,
   progress: number,
   action: TaskActionState,
   popupContent: TaskInfoPopupContent
 ): TaskViewItem => {
   const activeNumber = getTaskDisplayValue(item.activeNumber)
+  const taskId = `${source}-${item.rowId}`
   const rewardInfo =
     source === 'entrant'
       ? {
@@ -920,8 +948,9 @@ const createTaskViewItem = (
   const description = getTaskLocalizedText(item.taskDesc, languageCode)
 
   return {
-    id: `${source}-${item.rowId}`,
+    id: taskId,
     source,
+    claimRowId,
     taskType: String(item.taskType ?? '').trim(),
     platformGameCodes: Array.isArray(item.platformGameCodes)
       ? item.platformGameCodes.map(code => String(code ?? '').trim()).filter(Boolean)
@@ -929,10 +958,15 @@ const createTaskViewItem = (
     title,
     description,
     activity: activeNumber === undefined ? undefined : `+${activeNumber}`,
+    activityPoints: activeNumber,
     ...rewardInfo,
     columnCodes: 'columnCode' in item ? createTaskColumnCodes(item.columnCode) : [],
     requiresTierClaimReminder: popupContent.requiresTierClaimReminder,
     popup: {
+      id: taskId,
+      source,
+      claimRowId,
+      activityPoints: activeNumber,
       action,
       description,
       progress,
@@ -963,6 +997,7 @@ export const createEntrantTaskViewItems = (
     return createTaskViewItem(
       item,
       'entrant',
+      schedule?.rowId,
       languageCode,
       createEntrantTaskProgress(action),
       action,
@@ -992,6 +1027,7 @@ export const createMemberTaskViewItems = (
     return createTaskViewItem(
       item,
       'member',
+      item.rowId,
       languageCode,
       progress,
       action,

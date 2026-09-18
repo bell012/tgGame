@@ -41,21 +41,32 @@
             :activity="props.activity"
             :tasks="props.tasks"
             :tasks-loading="props.tasksLoading"
+            :claiming-task-ids="props.claimingTaskIds"
+            :claim-actions-disabled="props.claimActionsDisabled"
+            :claim-all-loading="props.claimAllLoading"
             @tab-click="$emit('tab-click', $event)"
             @open-task-info="$emit('open-task-info', $event)"
             @go-task="$emit('go-task', $event)"
             @claim="$emit('claim', $event)"
+            @claim-all="$emit('claim-all')"
           />
 
           <!-- PC 底部操作按钮位于右侧任务内容区下方。 -->
           <button
             type="button"
             class="box-border flex h-10 w-full shrink-0 items-center justify-center gap-2.5 rounded-lg bg-theme-primary p-2 font-inter"
+            :disabled="props.claimAllLoading || props.claimActionsDisabled"
+            @click="$emit('claim-all')"
           >
             <span
               class="flex h-4 min-w-0 flex-1 items-center justify-center text-center text-[14px] font-[700] leading-[17px] text-text-4"
             >
-              Claim All
+              <span
+                v-if="props.claimAllLoading"
+                class="size-4 animate-spin rounded-full border-2 border-text-4/30 border-t-text-4"
+                aria-label="Loading"
+              ></span>
+              <template v-else>Claim All</template>
             </span>
           </button>
         </div>
@@ -83,14 +94,22 @@ interface Props {
   activity: TaskActivityData | null
   tasks: TaskViewItem[]
   tasksLoading: boolean
+  claimingTaskIds?: string[]
+  claimActionsDisabled?: boolean
+  claimAllLoading?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  claimingTaskIds: () => [],
+  claimActionsDisabled: false,
+  claimAllLoading: false
+})
 
 defineEmits<{
   'tab-click': [value: TaskTabKey]
   'open-task-info': [task: TaskViewItem]
   'go-task': [task: TaskViewItem]
   claim: [task: TaskViewItem]
+  'claim-all': []
 }>()
 </script>
