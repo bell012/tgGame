@@ -47,8 +47,9 @@
             :aria-label="t('onlineCustomer.loading')"
           >
             <LottiePlayer
-              v-if="loadingLottieUrl"
+              v-if="loadingLottieUrl || loadingLottieData"
               :path="loadingLottieUrl"
+              :animation-data="loadingLottieData"
               :fallback-src="loadingSpadeSrc"
               :respect-reduced-motion="false"
             />
@@ -75,8 +76,17 @@ import loadingSpadeSrc from '@/static/img/online-customer/loading-spade.png'
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
-const { visible, loading, url, errorKey, loadingLottieUrl, close, retry, afterLeave } =
-  useOnlineCustomerService()
+const {
+  visible,
+  loading,
+  url,
+  errorKey,
+  loadingLottieUrl,
+  loadingLottieData,
+  close,
+  retry,
+  afterLeave
+} = useOnlineCustomerService()
 const frameLoading = ref(false)
 const frameError = ref(false)
 const leaving = ref(false)

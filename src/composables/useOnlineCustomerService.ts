@@ -1,6 +1,7 @@
-import { computed, readonly, ref } from 'vue'
+import { computed, readonly, ref, shallowRef, watch } from 'vue'
 import Api from '@/api'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { getCachedLottieData, prefetchLottieData, type LottieData } from '@/utils/lottie-data-cache'
 
 type SiteConfigWithLoadingImage = {
   baseSiteConfig?: {
@@ -87,6 +88,29 @@ const load = async () => {
   }
 }
 
+const lottieData = shallowRef<LottieData | null>(null)
+let lottieDataUrl = ''
+
+// 空闲时把加载动画的 JSON 拉到内存，之后每次打开客服都能直接用缓存渲染。
+const syncLoadingLottieData = (url: string) => {
+  lottieDataUrl = url
+  if (!url) {
+    lottieData.value = null
+    return
+  }
+
+  const cached = getCachedLottieData(url)
+  if (cached) {
+    lottieData.value = cached
+    return
+  }
+
+  lottieData.value = null
+  void prefetchLottieData(url).then(data => {
+    if (data && lottieDataUrl === url) lottieData.value = data
+  })
+}
+
 let prefetchStarted = false
 
 const prefetch = () => {
@@ -120,6 +144,7 @@ export const useOnlineCustomerService = () => {
     resolveOnlineCustomerLoadingLottieUrl(siteConfigStore.config)
   )
   prefetch()
+  watch(loadingLottieUrl, syncLoadingLottieData, { immediate: true })
 
   return {
     visible: readonly(visible),
@@ -127,6 +152,7 @@ export const useOnlineCustomerService = () => {
     url: readonly(url),
     errorKey: readonly(errorKey),
     loadingLottieUrl,
+    loadingLottieData: computed(() => lottieData.value),
     open,
     close,
     retry: load,
