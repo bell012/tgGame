@@ -81,6 +81,20 @@ const NOTICE_MESSAGES: Record<Exclude<NoticeKey, ''>, string> = {
   currencyChanged: 'Display currency changed. Mock bets have been reset.'
 }
 
+/** 拼接球队队标地址；配置或球队 ID 为空时返回空字符串。 */
+export const getTeamLogoUrl = (id: string | number | null | undefined): string => {
+  if (typeof id === 'number' && !Number.isFinite(id)) return ''
+
+  const teamId = String(id ?? '').trim()
+  if (!teamId) return ''
+
+  const siteConfigStore = useSiteConfigStore()
+  const baseUrl = siteConfigStore.getConfigString('IM.sport_team_logo').replace(/\/+$/, '')
+  if (!baseUrl) return ''
+
+  return `${baseUrl}/TeamImage/${encodeURIComponent(teamId)}.png`
+}
+
 /** 空输入按 0 处理，拒绝负数、指数和超过两位的小数。 */
 export const parseSportsStake = (raw: string): number | null => {
   const value = raw.trim()
