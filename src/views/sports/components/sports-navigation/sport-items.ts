@@ -92,7 +92,7 @@ export function findSportCountByItem(
 }
 
 export function getSportTodayCount(sportCounts: SportCountItem[], item: SportItem): number {
-  return findSportCountByItem(sportCounts, item)?.tfec ?? 0
+  return findSportCountByItem(sportCounts, item)?.cou ?? 0
 }
 
 export function buildSportTodayCountMap(
