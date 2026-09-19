@@ -52,7 +52,7 @@ function postSport<TParams, TResponse extends SportsResponse>(
     skipRequestEncryption: true,
     showSuccessToast: false,
     showErrorToast: false
-  })
+  }) as unknown as Promise<TResponse>
 }
 
 /**

@@ -1,4 +1,4 @@
-import { computed, onMounted, onScopeDispose, ref, watch } from 'vue'
+import { computed, onActivated, onMounted, onScopeDispose, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useLocaleStore } from '@/stores/locale'
@@ -120,6 +120,7 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
   const { sportCounts, sportCountsLoading, sportCountsError } = storeToRefs(sportsStore)
   let sportsPageDisposed = false
   let stopSportsRefresh: (() => void) | undefined
+  let skipInitialActivatedRefresh = true
   const currentPage = ref(1)
   const expandedMatchId = ref<string | null>(null)
   const favorites = ref<string[]>([])
@@ -433,6 +434,14 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
   const showUnsupported = () => {
     noticeKey.value = 'notImplemented'
   }
+  const refreshSportCountsForRouteEntry = async () => {
+    try {
+      await siteConfigStore.initSiteConfig()
+    } catch {
+      return
+    }
+    if (!sportsPageDisposed) void sportsStore.fetchSportCounts()
+  }
   const closeOnOutside = (event: PointerEvent) => {
     const target = event.target
     if (!(target instanceof Element)) return
@@ -470,6 +479,13 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
       () => void sportsStore.loadHomepage(),
       { immediate: true }
     )
+  })
+  onActivated(() => {
+    if (skipInitialActivatedRefresh) {
+      skipInitialActivatedRefresh = false
+      return
+    }
+    void refreshSportCountsForRouteEntry()
   })
   onScopeDispose(() => {
     sportsPageDisposed = true

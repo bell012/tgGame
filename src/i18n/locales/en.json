@@ -1767,6 +1767,14 @@
       "designatedAccountReset": "Designated Account Reset"
     }
   },
+  "sports": {
+    "filterTabs": {
+      "rolling": "Live",
+      "today": "Today",
+      "early": "Early",
+      "parlay": "Parlay"
+    }
+  },
   "menu": {
     "crypto-account": "Crypto Account",
     "game-categories": "Casino",

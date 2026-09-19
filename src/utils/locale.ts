@@ -39,6 +39,13 @@ export const SUPPORTED_LOCALES = Object.keys(LOCALE_CONFIG) as Locale[]
 export type Locale = keyof typeof LOCALE_CONFIG
 
 /**
+ * 系统支持的语言 code。
+ *
+ * 类型值来自 `LOCALE_CONFIG[*].code`，例如：`eng`、`zh`。
+ */
+export type LocaleCode = (typeof LOCALE_CONFIG)[Locale]['code']
+
+/**
  * 语言选项类型。
  *
  * 主要用于语言下拉、弹窗列表等 UI 组件。

@@ -4,10 +4,12 @@
  * `?` 表示字段可能缺失；未知结构使用 unknown，确认后再补充具体类型。
  */
 
-/** 请求语言：ENG 英语、CHS 简体中文、VN 越南语、HI 印地语、PT 葡萄牙语。 */
-export type SportsLanguageCode = 'ENG' | 'CHS' | 'VN' | 'HI' | 'PT'
+/** 请求语言：跟随全局语言配置 code，例如 zh、eng。 */
+export type SportsLanguageCode = LocaleCode
 
 /** 页面支持的盘型（Int）：1 马来盘、2 香港盘、3 欧洲盘、4 印尼盘。 */
+import type { LocaleCode } from '@/utils/locale'
+
 export type SportsOddsType = 1 | 2 | 3 | 4
 
 /** 响应盘型（Int）：1 马来盘、2 香港盘、3 欧洲盘、4 印尼盘、6 美式盘。 */
@@ -252,6 +254,7 @@ export interface SportCompetitionGroup extends SportCompetition {
 /** 查询所有球种赛事数量的请求参数。 */
 export interface GetAllSportCountParams {
   /** String，必填：ENG 英语、CHS 简体中文、VN 越南语、HI 印地语、PT 葡萄牙语。 */
+  /** 体育接口语言码，跟随全局语言配置 code，例如 zh、eng。 */
   LanguageCode: SportsLanguageCode
   /** Boolean，必填：true 串关统计、false 非串关统计；首页当前传 false。 */
   IsCombo: boolean
