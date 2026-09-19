@@ -40,7 +40,7 @@ const emit = defineEmits<{
 }>()
 
 function getSportCount(item: SportItem) {
-  return props.counts?.[item.key] ?? item.count ?? 0
+  return props.counts?.[item.key] ?? 0
 }
 
 function handleSelect(index: number) {
