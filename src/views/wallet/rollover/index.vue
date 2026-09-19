@@ -136,15 +136,14 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { storeToRefs } from 'pinia'
 import Api from '@/api'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { navigateTo } from '@/utils/router'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
-import { getCurrentCurrency } from '@/utils/locale'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
@@ -172,10 +171,7 @@ const { t } = useI18n()
 const isMobile = useIsMobile()
 const userStore = useUserStore()
 userStore.syncStoredUserData()
-const { acctInfo, userInfo } = storeToRefs(userStore)
-const activeCurrency = computed(
-  () => acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
-)
+const { currentCurrencyCode } = useDisplayCurrency()
 
 usePageScrollLock(() => isMobile.value)
 
@@ -211,7 +207,7 @@ const fetchRollover = async (page: number, pageSize: number) => {
       page,
       pageSize,
       filterValues: filterValues.value,
-      currency: activeCurrency.value
+      currency: currentCurrencyCode.value
     })
   )
 
@@ -269,7 +265,7 @@ const handleRetry = async () => {
   await refresh()
 }
 
-watch(activeCurrency, async () => {
+watch(currentCurrencyCode, async () => {
   if (!isMobile.value) return
   await refresh()
 })
