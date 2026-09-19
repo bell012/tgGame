@@ -4,11 +4,10 @@
  * `?` 表示字段可能缺失；未知结构使用 unknown，确认后再补充具体类型。
  */
 
-/** 请求语言：跟随全局语言配置 code，例如 zh、eng。 */
-export type SportsLanguageCode = LocaleCode
+/** 请求语言：体育接口独立语言码，例如 CHS（中文）、ENG（英文）。 */
+export type SportsLanguageCode = 'ENG' | 'CHS' | 'VN' | 'HI' | 'PT'
 
 /** 页面支持的盘型（Int）：1 马来盘、2 香港盘、3 欧洲盘、4 印尼盘。 */
-import type { LocaleCode } from '@/utils/locale'
 
 export type SportsOddsType = 1 | 2 | 3 | 4
 
