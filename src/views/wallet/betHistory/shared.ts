@@ -205,9 +205,11 @@ export const buildBetHistoryQueryForm = (params: {
   page: number
   pageSize: number
   filterValues: FilterInput
+  currency?: string | null
 }): QueryOrderInfoPageForm => {
   const normalized = normalizeBetHistoryFilterValues(params.filterValues)
   const { secondStartTime, secondEndTime } = getTimeRange(normalized.time)
+  const currency = params.currency || getCurrentCurrency()
 
   return {
     secondStartTime,
@@ -215,7 +217,7 @@ export const buildBetHistoryQueryForm = (params: {
     winlost: normalized.winlost === 'all' ? null : Number(normalized.winlost),
     page: { current: params.page, size: params.pageSize },
     param: {
-      currency: getCurrentCurrency(),
+      currency,
       sysGameTypeCode: normalized.gameType === 'all' ? null : normalized.gameType,
       platformCode: normalized.platform === 'all' ? null : normalized.platform,
       gameCode: null,

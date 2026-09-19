@@ -105,12 +105,14 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import Api from '@/api'
 import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
-import { getCurrencySymbol } from '@/utils/locale'
+import { getCurrencySymbol, getCurrentCurrency } from '@/utils/locale'
 import DetailsModal from '../transactionDetails/detailsModal.vue'
 import ArrowLeftIcon from '@/static/svg/arrow_left2.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
@@ -126,12 +128,18 @@ import {
 } from './shared'
 
 const { t } = useI18n()
+const userStore = useUserStore()
+userStore.syncStoredUserData()
+const { acctInfo, userInfo } = storeToRefs(userStore)
 const filterValues = ref(createDefaultTransactionFilterValues())
 const dataList = ref<Item[]>([])
 const loading = ref(false)
 const error = ref<unknown | null>(null)
 const currentPage = ref(1)
 const totalPages = ref(1)
+const activeCurrency = computed(
+  () => acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
+)
 
 const timeOptions = computed(() => createTransactionTimeOptions(t))
 const typeOptions = computed(() => createTransactionTypeOptions(t))
@@ -145,7 +153,8 @@ const fetchTransaction = async (page = 1) => {
       buildTransactionQueryForm({
         page,
         pageSize: TRANSACTION_PAGE_SIZE,
-        filterValues: filterValues.value
+        filterValues: filterValues.value,
+        currency: activeCurrency.value
       })
     )
 
@@ -184,6 +193,11 @@ watch(
   },
   { deep: true }
 )
+
+watch(activeCurrency, async () => {
+  currentPage.value = 1
+  await fetchTransaction(1)
+})
 
 onMounted(() => {
   void fetchTransaction(1)

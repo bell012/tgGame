@@ -122,8 +122,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import Api from '@/api'
 import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
+import { getCurrentCurrency } from '@/utils/locale'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
@@ -145,12 +148,18 @@ import {
 } from './shared'
 
 const { t } = useI18n()
+const userStore = useUserStore()
+userStore.syncStoredUserData()
+const { acctInfo, userInfo } = storeToRefs(userStore)
 const filterValues = ref(createDefaultBetHistoryFilterValues())
 const dataList = ref<Item[]>([])
 const loading = ref(false)
 const error = ref<unknown | null>(null)
 const currentPage = ref(1)
 const totalPages = ref(1)
+const activeCurrency = computed(
+  () => acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
+)
 
 const timeOptions = computed(() => createBetHistoryTimeOptions(t))
 const platformOptions = computed(() => createBetHistoryPlatformOptions(t))
@@ -167,7 +176,8 @@ const fetchBetHistory = async (page = 1) => {
       buildBetHistoryQueryForm({
         page,
         pageSize: BET_HISTORY_PAGE_SIZE,
-        filterValues: filterValues.value
+        filterValues: filterValues.value,
+        currency: activeCurrency.value
       })
     )
 
@@ -206,6 +216,11 @@ watch(
   },
   { deep: true }
 )
+
+watch(activeCurrency, async () => {
+  currentPage.value = 1
+  await fetchBetHistory(1)
+})
 
 onMounted(() => {
   void fetchBetHistory(1)

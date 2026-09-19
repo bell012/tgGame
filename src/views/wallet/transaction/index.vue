@@ -113,13 +113,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import Api from '@/api'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { navigateTo } from '@/utils/router'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
+import { getCurrentCurrency } from '@/utils/locale'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
@@ -144,6 +147,12 @@ import {
 const { t } = useI18n()
 const isMobile = useIsMobile()
 const isReady = ref(false)
+const userStore = useUserStore()
+userStore.syncStoredUserData()
+const { acctInfo, userInfo } = storeToRefs(userStore)
+const activeCurrency = computed(
+  () => acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
+)
 
 usePageScrollLock(() => isMobile.value)
 
@@ -172,7 +181,8 @@ const fetchTransaction = async (page: number, pageSize: number) => {
     buildTransactionQueryForm({
       page,
       pageSize,
-      filterValues: filterValues.value
+      filterValues: filterValues.value,
+      currency: activeCurrency.value
     })
   )
 
@@ -228,6 +238,11 @@ const handleFilterApply = async (values: Record<string, string | string[]>) => {
 const handleRetry = async () => {
   await refresh()
 }
+
+watch(activeCurrency, async () => {
+  if (!isReady.value || !isMobile.value) return
+  await refresh()
+})
 
 onMounted(() => {
   isReady.value = true
