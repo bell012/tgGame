@@ -1,4 +1,6 @@
-export type SportsLanguageCode = 'ENG' | 'CHS' | 'VN' | 'HI' | 'PT'
+import type { LocaleCode } from '@/utils/locale'
+
+export type SportsLanguageCode = LocaleCode
 export type SportsOddsType = 1 | 2 | 3 | 4
 export type SportsMarket = 1 | 2 | 3 | 4
 export type SportsSortType = 1 | 2
@@ -30,7 +32,7 @@ export interface SportCompetitionGroup {
 
 /** 查询所有球种赛事数量的请求参数。 */
 export interface GetAllSportCountParams {
-  /** 体育接口语言码，例如 CHS（中文）、ENG（英文）。 */
+  /** 体育接口语言码，跟随全局语言配置 code，例如 zh、eng。 */
   LanguageCode: SportsLanguageCode
   /** 串关统计标志；首页当前传 false。 */
   IsCombo: boolean

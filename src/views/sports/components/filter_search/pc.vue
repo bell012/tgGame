@@ -52,20 +52,9 @@
 import { ref } from 'vue'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
+import { useFilterTabs } from './index'
 
-type FilterTabItem = {
-  key: string
-  label: string
-  count: number
-}
-
-const filterTabs: FilterTabItem[] = [
-  { key: 'rolling', label: '滚球', count: 125 },
-  { key: 'today', label: '今日', count: 125 },
-  { key: 'early', label: '早盘', count: 125 },
-  { key: 'parlay', label: '串关', count: 125 }
-]
-
+const filterTabs = useFilterTabs()
 const activeFilterKey = ref('today')
 const searchKeyword = ref('')
 const collectOnly = ref(false)

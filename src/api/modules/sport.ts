@@ -41,7 +41,7 @@ function postSport<TParams, TResponse extends SportsResponse>(
     skipRequestEncryption: true,
     showSuccessToast: false,
     showErrorToast: false
-  })
+  }) as unknown as Promise<TResponse>
 }
 
 /** 查询所有球种的滚球、今日、早盘、串关等赛事数量。 */

@@ -1760,6 +1760,14 @@
       "designatedAccountReset": "指定账户重置"
     }
   },
+  "sports": {
+    "filterTabs": {
+      "rolling": "滚球",
+      "today": "今日",
+      "early": "早盘",
+      "parlay": "串关"
+    }
+  },
   "menu": {
     "crypto-account": "加密账户",
     "game-categories": "娱乐城",
