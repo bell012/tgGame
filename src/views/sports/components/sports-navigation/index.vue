@@ -4,8 +4,18 @@
     :class="isMobile ? 'min-h-full bg-bg-1 pl-[14px]' : 'px-[24px] pt-4'"
     :style="pageStyle"
   >
-    <SportsNavigationH5 v-if="isMobile" :counts="sportTodayCounts" @change="handleSportChange" />
-    <SportsNavigationPc v-else :counts="sportTodayCounts" @change="handleSportChange" />
+    <SportsNavigationH5
+      v-if="isMobile"
+      :selected-sport-id="selectedSportId"
+      :counts="sportTodayCounts"
+      @change="handleSportChange"
+    />
+    <SportsNavigationPc
+      v-else
+      :selected-sport-id="selectedSportId"
+      :counts="sportTodayCounts"
+      @change="handleSportChange"
+    />
   </div>
 </template>
 
@@ -28,7 +38,7 @@ const emit = defineEmits<{
 const isMobile = useIsMobile()
 const layoutStore = useLayoutStore()
 const sportsStore = useSportsStore()
-const { sportCounts } = storeToRefs(sportsStore)
+const { sportCounts, selectedSportId } = storeToRefs(sportsStore)
 
 const sportTodayCounts = computed(() => buildSportTodayCountMap(sportCounts.value))
 
