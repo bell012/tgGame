@@ -24,12 +24,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useSportsStore } from '@/stores/sports'
 import { useFilterTabs } from './index'
 import type { FilterTabKey } from './index'
 
 const filterTabs = useFilterTabs()
-const activeFilterKey = ref(filterTabs.value[0]?.key ?? '')
+const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
 
 // 根据当前选中的筛选项返回连体分段按钮样式。
 const getFilterTabClass = (key: FilterTabKey) =>

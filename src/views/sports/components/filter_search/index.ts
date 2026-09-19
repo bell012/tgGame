@@ -2,9 +2,9 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useSportsStore } from '@/stores/sports'
+import type { FilterTabKey } from '@/stores/sports'
 
-// 滚球  今日  早盘  串关
-export type FilterTabKey = 'rolling' | 'today' | 'early' | 'parlay'
+export type { FilterTabKey } from '@/stores/sports'
 
 export type FilterTabItem = {
   key: FilterTabKey
@@ -28,8 +28,8 @@ export const buildFilterTabs = (
 
 export const useFilterTabs = () => {
   const sportsStore = useSportsStore()
-  const { totalFilterCounts } = storeToRefs(sportsStore)
+  const { currentFilterCounts } = storeToRefs(sportsStore)
   const { t } = useI18n()
 
-  return computed(() => buildFilterTabs(totalFilterCounts.value, t))
+  return computed(() => buildFilterTabs(currentFilterCounts.value, t))
 }

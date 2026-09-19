@@ -15,6 +15,23 @@ import type { SportsRequestOptions } from '@/api/modules/sport'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 
+/** 当前选中的赛事筛选标签。 */
+export type FilterTabKey = 'rolling' | 'today' | 'early' | 'parlay'
+
+const FILTER_TAB_MARKETS: Readonly<Record<FilterTabKey, SportsMarket>> = {
+  rolling: 3,
+  today: 2,
+  early: 1,
+  parlay: 4
+}
+
+const MARKET_FILTER_TABS: Readonly<Record<SportsMarket, FilterTabKey>> = {
+  1: 'early',
+  2: 'today',
+  3: 'rolling',
+  4: 'parlay'
+}
+
 type SportsRequestError = {
   kind: 'config' | 'business' | 'response' | 'network'
   message: string
@@ -147,6 +164,13 @@ export const useSportsStore = defineStore('sports', () => {
   const getBaseUrl = () => siteConfigStore.getConfigString('IM.im_app_url')
   const selectedSportId = ref(1)
   const market = ref<SportsMarket>(3)
+  // 接口分类是唯一原始状态；筛选标签由它派生，点击标签时反向更新分类。
+  const selectedFilterKey = computed<FilterTabKey>({
+    get: () => MARKET_FILTER_TABS[market.value],
+    set: value => {
+      market.value = FILTER_TAB_MARKETS[value]
+    }
+  })
   const sortType = ref<SportsSortType>(1)
   const pageNumber = ref(1)
   const pageSize = ref(10)
@@ -330,6 +354,7 @@ export const useSportsStore = defineStore('sports', () => {
     getLanguage,
     languageCode,
     selectedSportId,
+    selectedFilterKey,
     market,
     sortType,
     pageNumber,

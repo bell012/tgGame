@@ -50,23 +50,26 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useSportsStore } from '@/stores/sports'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
 import { useFilterTabs } from './index'
+import type { FilterTabKey } from './index'
 
 const filterTabs = useFilterTabs()
-const activeFilterKey = ref('today')
+const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
 const searchKeyword = ref('')
 const collectOnly = ref(false)
 
 // 根据当前选中的筛选项返回按钮样式。
-const getFilterTabClass = (key: string) =>
+const getFilterTabClass = (key: FilterTabKey) =>
   activeFilterKey.value === key
     ? 'bg-bg-3 text-text-1 font-[700]'
     : 'bg-bg-9 text-text-3 lg:hover:bg-bg-2'
 
 // 点击筛选按钮切换选中项。
-const onFilterTabClick = (key: string) => {
+const onFilterTabClick = (key: FilterTabKey) => {
   activeFilterKey.value = key
 }
 
