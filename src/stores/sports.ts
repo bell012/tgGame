@@ -157,18 +157,30 @@ export const useSportsStore = defineStore('sports', () => {
   const homepageError = ref<SportsRequestError | null>(null)
   let homepageGeneration = 0
 
+  // 滚球 今日 早盘 串关数据
   const counts = createSportsRequest(getBaseUrl, Api.sport.getAllSportCount, response =>
     Array.isArray(response.spc)
   )
+  console.log('滚球 今日 早盘 串关数据', counts)
+
+  // 所有联赛数据
   const events = createSportsRequest(getBaseUrl, Api.sport.getSportsV2, response =>
     Array.isArray(response.e)
   )
+  console.log('所有联赛数据', events)
+
+  // 索引汇总
   const indexes = createSportsRequest(getBaseUrl, Api.sport.getSportEventIndexList, response =>
     Array.isArray(response.e)
   )
+  console.log('索引汇总', indexes)
+
+  // 联赛下的详细赛事
   const competition = createSportsRequest(getBaseUrl, Api.sport.getCompetitionPage, response =>
     Array.isArray(response.e)
   )
+  console.log('联赛下的详细赛事', competition)
+
   const popular = createSportsRequest(getBaseUrl, Api.sport.getPopularSports, response =>
     Array.isArray(response.e)
   )
