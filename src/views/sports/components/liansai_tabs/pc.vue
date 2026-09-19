@@ -18,7 +18,7 @@
 
     <div
       ref="scrollRef"
-      class="scrollbar-none flex min-w-0 flex-1 touch-pan-x items-center gap-[8px] overflow-x-auto overflow-y-hidden scroll-smooth py-0 pl-[8px]"
+      class="scrollbar-none flex min-w-0 flex-1 touch-pan-x items-center gap-[8px] overflow-x-auto overflow-y-hidden scroll-smooth py-0 ml-[8px]"
       :class="isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'"
       @pointerdown="onDragStart"
       @pointermove="onDragMove"
@@ -52,13 +52,7 @@
       class="ml-[8px] inline-flex h-10 w-10 flex-[0_0_42px] items-center justify-center rounded-lg border-0 bg-bg-2 transition-colors lg:hover:bg-bg-3"
       @click="toggleLeaguePopup"
     >
-      <img
-        class="h-3 w-3 object-contain transition-transform"
-        :class="{ 'rotate-180': isLeaguePopupOpen }"
-        :src="triangleIcon"
-        alt=""
-        draggable="false"
-      />
+      <triangleIcon class="h-3 w-3 text-icon-2" />
     </button>
 
     <!-- pc 赛事弹窗 -->
@@ -82,12 +76,7 @@
         >
           {{ item.count }}
         </span>
-        <img
-          class="ml-auto h-3 w-3 flex-none object-contain"
-          :src="triangleIcon"
-          alt=""
-          draggable="false"
-        />
+        <triangleIcon class="ml-auto h-3 w-3 text-icon-2" />
       </button>
     </div>
   </section>
@@ -96,7 +85,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import leagueIcon from '@/static/svg/sports/liansai_tabs/icon1.svg?url'
-import triangleIcon from '@/static/svg/sports/liansai_tabs/sanjiao.svg?url'
+import triangleIcon from '@/static/svg/sports/liansai_tabs/sanjiao.svg?component'
 
 type LeagueTabItem = {
   key: string
