@@ -154,7 +154,8 @@ const typeVisible = ref(false)
 const history = ref<string[]>([]) // 本地搜索历史
 const isOpen = ref(false)
 let downInPanel = false
-let timer: ReturnType<typeof setTimeout> | null = null
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+let historyTimer: ReturnType<typeof setTimeout> | null = null
 
 const onWrapDown = (e: MouseEvent) => {
   downInPanel = (e.target as HTMLElement).closest('.panel') != null
@@ -179,15 +180,17 @@ const onInput = () => {
   const str = keyword.value.trim()
   isOpen.value = shouldShowSearchPanel(str)
 
-  if (timer !== null) clearTimeout(timer)
-  timer = setTimeout(emitSearch, 300)
-  timer = setTimeout(() => {
+  if (searchTimer !== null) clearTimeout(searchTimer)
+  if (historyTimer !== null) clearTimeout(historyTimer)
+  searchTimer = setTimeout(emitSearch, 300)
+  historyTimer = setTimeout(() => {
     addHistory(keyword.value)
   }, 1000)
 }
 
 const onSearch = () => {
-  if (timer !== null) clearTimeout(timer)
+  if (searchTimer !== null) clearTimeout(searchTimer)
+  if (historyTimer !== null) clearTimeout(historyTimer)
   emitSearch()
   addHistory(keyword.value)
 }
@@ -272,7 +275,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  if (timer) clearTimeout(timer)
+  if (searchTimer) clearTimeout(searchTimer)
+  if (historyTimer) clearTimeout(historyTimer)
 })
 </script>
 

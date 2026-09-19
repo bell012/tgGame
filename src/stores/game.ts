@@ -984,6 +984,10 @@ export const useGameStore = defineStore('game', () => {
     }
 
     const sourceNodes = await ensureGameData()
+    if (platformLogoCache.value[normalizedPlatformCode]) {
+      return platformLogoCache.value[normalizedPlatformCode]
+    }
+
     const cache = buildPlatformLogoCache(sourceNodes)
     return cache[normalizedPlatformCode] ?? ''
   }
