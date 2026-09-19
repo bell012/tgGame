@@ -14,7 +14,6 @@ import type {
 import type { SportsRequestOptions } from '@/api/modules/sport'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
-import { getLocaleConfig } from '@/utils/locale'
 
 type SportsRequestError = {
   kind: 'config' | 'business' | 'response' | 'network'
@@ -129,8 +128,21 @@ export const useSportsStore = defineStore('sports', () => {
     3: '欧洲盘',
     4: '印尼盘'
   })
-  /** 体育接口语言跟随全站语言配置的 code。 */
-  const getLanguage = (): SportsLanguageCode => getLocaleConfig(localeStore.currentLanguage).code
+  const languageKeys: Readonly<Partial<Record<string, SportsLanguageCode>>> = Object.freeze({
+    eng: 'ENG',
+    zh: 'CHS',
+    vn: 'VN',
+    hi: 'HI',
+    pt_BR: 'PT',
+    fil: 'ENG'
+  })
+  /** 沿用体育语言映射；未知语言回退中文，不扩展全站语言配置。 */
+  const getLanguage = (): SportsLanguageCode => {
+    const lang = localeStore.currentLanguage
+    return Object.prototype.hasOwnProperty.call(languageKeys, lang)
+      ? (languageKeys[lang] ?? 'CHS')
+      : 'CHS'
+  }
   const languageCode = computed(getLanguage)
   const getBaseUrl = () => siteConfigStore.getConfigString('IM.im_app_url')
   const selectedSportId = ref(1)
