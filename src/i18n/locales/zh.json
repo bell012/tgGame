@@ -1766,6 +1766,18 @@
       "today": "今日",
       "early": "早盘",
       "parlay": "串关"
+    },
+    "leagueTabs": {
+      "filters": {
+        "league": "联赛",
+        "time": "时间"
+      },
+      "allLeagues": "所有联赛",
+      "selectLeague": "选择联赛",
+      "search": "搜索",
+      "searchLeagueOrTeam": "搜索联赛或球队",
+      "selectAll": "全选",
+      "filter": "筛选"
     }
   },
   "menu": {

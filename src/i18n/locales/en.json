@@ -1773,6 +1773,18 @@
       "today": "Today",
       "early": "Early",
       "parlay": "Parlay"
+    },
+    "leagueTabs": {
+      "filters": {
+        "league": "League",
+        "time": "Time"
+      },
+      "allLeagues": "All Leagues",
+      "selectLeague": "Select League",
+      "search": "Search",
+      "searchLeagueOrTeam": "Search League or Team",
+      "selectAll": "Select All",
+      "filter": "Filter"
     }
   },
   "menu": {
