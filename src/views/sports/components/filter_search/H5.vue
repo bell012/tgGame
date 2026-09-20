@@ -27,7 +27,11 @@
 import { storeToRefs } from 'pinia'
 import { useSportsStore } from '@/stores/sports'
 import { useFilterTabs } from './index'
-import type { FilterTabKey } from './index'
+import type { FilterTabChangePayload, FilterTabKey } from './index'
+
+const emit = defineEmits<{
+  'filter-change': [payload: FilterTabChangePayload]
+}>()
 
 const filterTabs = useFilterTabs()
 const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
@@ -39,5 +43,12 @@ const getFilterTabClass = (key: FilterTabKey) =>
 // 点击筛选按钮切换选中项。
 const onFilterTabClick = (key: FilterTabKey) => {
   activeFilterKey.value = key
+  // 暴露滚球/今日/早盘/串关当前点击项，方便父组件同步筛选条件。
+  const payload = {
+    key,
+    item: filterTabs.value.find(item => item.key === key)
+  }
+  emit('filter-change', payload)
+  console.log('点击滚球/今日/早盘/串关筛选项', payload)
 }
 </script>

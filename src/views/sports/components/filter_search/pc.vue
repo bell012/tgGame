@@ -41,7 +41,7 @@
       >
         <CollectIcon
           class="h-5 w-5 text-icon-2"
-          :class="collectOnly ? 'opacity-100' : 'opacity-80'"
+          :class="collectOnly ? 'text-theme-primary' : 'opacity-100'"
         />
       </button>
     </div>
@@ -55,7 +55,12 @@ import { useSportsStore } from '@/stores/sports'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
 import { useFilterTabs } from './index'
-import type { FilterTabKey } from './index'
+import type { CollectOnlyPayload, FilterTabChangePayload, FilterTabKey } from './index'
+
+const emit = defineEmits<{
+  'filter-change': [payload: FilterTabChangePayload]
+  'collect-change': [payload: CollectOnlyPayload]
+}>()
 
 const filterTabs = useFilterTabs()
 const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
@@ -71,10 +76,21 @@ const getFilterTabClass = (key: FilterTabKey) =>
 // 点击筛选按钮切换选中项。
 const onFilterTabClick = (key: FilterTabKey) => {
   activeFilterKey.value = key
+  // 暴露滚球/今日/早盘/串关当前点击项，方便父组件同步筛选条件。
+  const payload = {
+    key,
+    item: filterTabs.value.find(item => item.key === key)
+  }
+  emit('filter-change', payload)
+  console.log('点击滚球/今日/早盘/串关筛选项', payload)
 }
 
 // 切换收藏状态。
 const toggleCollectOnly = () => {
   collectOnly.value = !collectOnly.value
+  // 暴露收藏筛选状态，true 表示收藏，false 表示取消收藏。
+  const payload = { collectOnly: collectOnly.value }
+  emit('collect-change', payload)
+  console.log(collectOnly.value ? '点击收藏按钮：收藏' : '点击收藏按钮：取消收藏', payload)
 }
 </script>

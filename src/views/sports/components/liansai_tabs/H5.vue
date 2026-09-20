@@ -10,7 +10,7 @@
       >
         <CollectIcon
           class="h-3 w-3 text-icon-3"
-          :class="collectOnly ? 'opacity-100' : 'opacity-80'"
+          :class="collectOnly ? 'text-theme-primary' : 'opacity-100'"
         />
       </button>
 
@@ -234,9 +234,14 @@ type LeagueSection = {
   items: LeagueTabItem[]
 }
 
+type CollectOnlyPayload = {
+  collectOnly: boolean
+}
+
 const emit = defineEmits<{
   'filter-change': [payload: LiansaiFilterPayload]
   'league-filter': [payload: LeagueFilterPayload]
+  'collect-change': [payload: CollectOnlyPayload]
 }>()
 
 const { t } = useI18n()
@@ -302,6 +307,10 @@ const onFilterTabClick = (key: LiansaiFilterKey) => {
 // 切换收藏筛选状态。
 const toggleCollectOnly = () => {
   collectOnly.value = !collectOnly.value
+  // 暴露收藏筛选状态，true 表示收藏，false 表示取消收藏。
+  const payload = { collectOnly: collectOnly.value }
+  emit('collect-change', payload)
+  console.log(collectOnly.value ? '点击收藏按钮：收藏' : '点击收藏按钮：取消收藏', payload)
 }
 
 // 打开 H5 联赛筛选弹窗。
