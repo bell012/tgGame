@@ -30,7 +30,7 @@
           v-model="searchKeyword"
           class="ml-[4px] min-w-0 flex-1 border-0 bg-transparent text-[14px] font-[400] text-text-1 outline-none placeholder:text-text-3"
           type="text"
-          placeholder="搜索联赛或球队"
+          :placeholder="t('sports.leagueTabs.searchLeagueOrTeam')"
         />
       </label>
 
@@ -56,6 +56,7 @@ import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
 import { useFilterTabs } from './index'
 import type { CollectOnlyPayload, FilterTabChangePayload, FilterTabKey } from './index'
+import { useI18n } from 'vue-i18n'
 
 const emit = defineEmits<{
   'filter-change': [payload: FilterTabChangePayload]
@@ -66,6 +67,7 @@ const filterTabs = useFilterTabs()
 const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
 const searchKeyword = ref('')
 const collectOnly = ref(false)
+const { t } = useI18n()
 
 // 根据当前选中的筛选项返回按钮样式。
 const getFilterTabClass = (key: FilterTabKey) =>
