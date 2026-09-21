@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-[1336px] mx-auto pt-[14px]">
+  <div class="mx-auto w-full max-w-[1336px] px-[14px] pt-[14px]">
     <h2 class="text-xl font-[700] text-text-1 mb-4">{{ $t('menu.vouchers') }}</h2>
     <div class="flex justify-center gap-6">
       <!-- 左侧菜单 -->

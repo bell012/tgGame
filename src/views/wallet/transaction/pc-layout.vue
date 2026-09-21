@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 pb-0">
+  <div class="w-full min-w-0 p-6 pb-0">
     <div class="mb-4">
       <div class="flex items-center gap-2 flex-wrap">
         <CustomSelect

@@ -41,7 +41,7 @@
 
   <!-- pc布局 -->
   <div v-else>
-    <div class="mx-auto max-w-[1336px] pt-[14px]">
+    <div class="mx-auto w-full max-w-[1336px] px-[14px] pt-[14px]">
       <h2 class="mb-4 text-xl font-[700] text-text-1">{{ $t('common.globalSetting') }}</h2>
       <div class="flex justify-center gap-6">
         <aside class="w-[280px] flex-shrink-0">
