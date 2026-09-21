@@ -2,6 +2,7 @@ import { computed, onActivated, onDeactivated, onMounted, onScopeDispose, ref, w
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
@@ -173,8 +174,8 @@ export const mapSportsMatches = (
             : undefined,
         HomeTeam: event.HomeTeam,
         AwayTeam: event.AwayTeam,
-        HomeScore: event.HomeScore,
-        AwayScore: event.AwayScore,
+        HomeScore: getSportsText(event.HomeScore),
+        AwayScore: getSportsText(event.AwayScore),
         HomeTeamId: event.HomeTeamId,
         AwayTeamId: event.AwayTeamId,
         MarketLines: Array.isArray(event.MarketLines) ? event.MarketLines : []
@@ -216,6 +217,7 @@ export const getSportsCombinations = (odds: readonly number[], size: number): nu
 }
 
 export const useSportsPage = () => {
+  const isMobile = useIsMobile()
   const { currentCurrencyCode } = useDisplayCurrency()
   const sportsStore = useSportsStore()
   const siteConfigStore = useSiteConfigStore()
@@ -233,8 +235,14 @@ export const useSportsPage = () => {
     keyword,
     earlyTradingDate,
     homepageLoading,
-    homepageError,
+    homepageError: initializationError,
+    matchListContext: storeMatchListContext,
+    matchListLoading: matchesLoading,
+    matchListError: matchesError,
     eventsList,
+    hotEvents,
+    hotEventsLoading,
+    hotEventsError,
     pageNumber
   } = storeToRefs(sportsStore)
   // 页面球种与导航共用 Store 的业务 ID，不另存一份默认足球状态。
@@ -251,12 +259,91 @@ export const useSportsPage = () => {
   let stopSportsRefresh: (() => void) | undefined
   const sportsPageActive = ref(true)
   const initializing = ref(true)
-  const sportsPageLoading = computed(() => initializing.value || homepageLoading.value)
+  const searchInput = ref(keyword.value)
+  let searchTimer: ReturnType<typeof setTimeout> | undefined
+  const handleSearchChange = (value: string) => {
+    searchInput.value = value
+    clearTimeout(searchTimer)
+    // 输入搜索词立即暂停普通联赛补查，接口搜索等待防抖结束后发起。
+    if (value.trim()) sportsStore.syncLeagueRequests([])
+    const commit = () => {
+      if (!sportsPageDisposed && sportsPageActive.value) keyword.value = value.trim()
+    }
+    if (!value.trim()) commit()
+    else searchTimer = setTimeout(commit, 300)
+  }
+  watch(keyword, value => {
+    if (searchInput.value.trim() !== value) {
+      clearTimeout(searchTimer)
+      searchInput.value = value
+    }
+  })
+  const expandedLeagueIds = ref<number[]>([])
+  // H5 可多选，PC 只有单选；切回 PC 时与组件的“全部联赛”高亮保持一致。
+  watch(
+    [isMobile, () => competitionIds.value.length],
+    () => {
+      if (!isMobile.value && competitionIds.value.length > 1) competitionIds.value = []
+    },
+    { immediate: true, flush: 'sync' }
+  )
+  const syncExpandedLeagues = (ids: number[]) => {
+    expandedLeagueIds.value = ids
+  }
+  const getLeagueLoadState = (id: number) => sportsStore.getLeagueLoadState(id)
+  const retryLeague = (id: number) => sportsStore.retryLeague(id)
+  const leagueCounts = computed(
+    () =>
+      new Map(
+        eventsList.value.map(group => [
+          `${selectedSportId.value}:${group.CompetitionId}`,
+          group.competitionCount
+        ])
+      )
+  )
+  // PC 单选即加载；H5 只接收已渲染且展开的组，两个入口共用同一个调度器。
+  watch(
+    [
+      initializing,
+      sportsPageActive,
+      isMobile,
+      () => searchInput.value.trim(),
+      keyword,
+      () => competitionIds.value.join(','),
+      () => expandedLeagueIds.value.join(','),
+      selectedSportId,
+      market,
+      sortType,
+      () => siteConfigStore.getConfigString('IM.im_app_url'),
+      () => localeStore.currentLanguage
+    ],
+    () => {
+      const ids =
+        !initializing.value &&
+        sportsPageActive.value &&
+        !searchInput.value.trim() &&
+        !keyword.value.trim()
+          ? isMobile.value
+            ? expandedLeagueIds.value
+            : competitionIds.value
+          : []
+      sportsStore.syncLeagueRequests(ids)
+    },
+    { immediate: true, flush: 'post' }
+  )
+  const sportsPageLoading = computed(
+    () =>
+      initializing.value ||
+      ((homepageLoading.value || matchesLoading.value) && !eventsList.value.length)
+  )
+  const homepageError = computed(
+    () => initializationError.value ?? (!eventsList.value.length ? matchesError.value : null)
+  )
   const sportsLoadFailedText = computed(() => t('sports.loadFailed'))
   const sportsRetryText = computed(() => t('sports.retry'))
   const sportsEmptyText = computed(() => t('sports.noEvents'))
   const sportsLoadingText = computed(() => t('sports.loadingEvents'))
-  // 此处仅分页展示本次返回的赛事；服务端 PageNumber 与 Total 的分页口径另行对接。
+  // PC 对当前数据源本地分页；默认数据由 Store 按联赛页逐步累积。
   const currentPage = ref(1)
   const expandedMatchId = ref<string | null>(null)
   const favorites = ref<string[]>([])
@@ -268,13 +355,31 @@ export const useSportsPage = () => {
   const noticeKey = ref<NoticeKey>('')
   const refreshing = ref(false)
   const collectOnly = ref(false)
+  const matchListContext = computed(() =>
+    JSON.stringify([storeMatchListContext.value, collectOnly.value])
+  )
   let refreshTimer: ReturnType<typeof setTimeout> | undefined
 
   const matches = computed(() =>
     mapSportsMatches(eventsList.value, selectedSportId.value, getTeamLogoUrl)
   )
-  // 实时区只展示本次响应中的滚球赛事，不另造热门数据或触发额外接口。
-  const liveMatches = computed(() => matches.value.filter(match => match.live))
+  // 热门名单决定顺序，联赛预览和按 ID 补查提供信息与主盘口，不限制必须是滚球。
+  const liveMatches = computed(() => {
+    const currentMatches = new Map(matches.value.map(match => [match.id, match]))
+    return mapSportsMatches(
+      hotEvents.value.map(event => ({
+        ...event.Competition,
+        competitionCount: 1,
+        Sports: [event]
+      })),
+      selectedSportId.value,
+      getTeamLogoUrl
+    ).map(match => currentMatches.get(match.id) ?? match)
+  })
+  // 热门独有赛事也可被盘口选择和本地投注单找到，不混入下方列表的筛选和分页。
+  const matchById = computed(
+    () => new Map([...liveMatches.value, ...matches.value].map(match => [match.id, match]))
+  )
   const totalPages = computed(() => Math.max(1, Math.ceil(matches.value.length / MATCH_PAGE_SIZE)))
   const pagedMatches = computed(() =>
     matches.value.slice(
@@ -296,7 +401,7 @@ export const useSportsPage = () => {
 
   // 页面与投注单共用原盘口数组，不改造成展示 DTO。
   const getMatchMarkets = (matchId: string): SportMarketLine[] => {
-    const match = matches.value.find(item => item.id === matchId)
+    const match = matchById.value.get(matchId)
     return match?.MarketLines ?? []
   }
   const getLiveMarkets = getMatchMarkets
@@ -304,7 +409,7 @@ export const useSportsPage = () => {
     outcomes.value.find(outcome => outcome.matchId === matchId)?.WagerSelectionId
   const selections = computed<SportsBetSelection[]>(() =>
     outcomes.value.flatMap(outcome => {
-      const match = matches.value.find(item => item.id === outcome.matchId)
+      const match = matchById.value.get(outcome.matchId)
       const line = match?.MarketLines.find(item => item.MarketlineId === outcome.MarketlineId)
       const selection = line?.WagerSelections.find(
         item => item.WagerSelectionId === outcome.WagerSelectionId
@@ -568,8 +673,7 @@ export const useSportsPage = () => {
       market,
       () => siteConfigStore.getConfigString('IM.im_app_url'),
       () => localeStore.currentLanguage,
-      keyword,
-      () => (market.value === 1 ? earlyTradingDate.value : null)
+      keyword
     ],
     () => {
       if (competitionIds.value.length) competitionIds.value = []
@@ -582,7 +686,15 @@ export const useSportsPage = () => {
   })
   const retrySports = () => {
     if (!sportsPageDisposed && sportsPageActive.value && !sportsPageLoading.value) {
+      if (!keyword.value.trim()) {
+        competitionIds.value.forEach(id => sportsStore.retryLeague(id))
+      }
       void sportsStore.loadHomepage({ refreshCounts: false })
+    }
+  }
+  const retryHotEvents = () => {
+    if (!sportsPageDisposed && sportsPageActive.value && !hotEventsLoading.value) {
+      void Promise.all([sportsStore.fetchCompetitionList(), sportsStore.fetchAllSports()])
     }
   }
   const closeOnOutside = (event: PointerEvent) => {
@@ -626,14 +738,17 @@ export const useSportsPage = () => {
         sortType,
         () => competitionIds.value.join(','),
         keyword,
-        () => (market.value === 1 ? earlyTradingDate.value : null)
+        () => (keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null)
       ],
       (values, previous) => {
         if (!sportsPageActive.value || sportsPageDisposed) return
         const refreshCounts =
           previous[0] !== true || values[1] !== previous[1] || values[2] !== previous[2]
         if (refreshCounts) resetMatchListState()
-        void sportsStore.loadHomepage({ refreshCounts })
+        // 热门随进入页面、语言、球种或分类变化刷新；先等待数量接口成功。
+        const refreshCompetitionList =
+          refreshCounts || values[3] !== previous[3] || values[4] !== previous[4]
+        void sportsStore.loadHomepage({ refreshCounts, refreshCompetitionList })
       },
       { immediate: true }
     )
@@ -644,6 +759,8 @@ export const useSportsPage = () => {
   })
   onDeactivated(() => {
     sportsPageActive.value = false
+    clearTimeout(searchTimer)
+    searchInput.value = keyword.value
     sportsStore.cancelRequests()
   })
   onScopeDispose(() => {
@@ -651,6 +768,7 @@ export const useSportsPage = () => {
     stopSportsRefresh?.()
     sportsStore.cancelRequests()
     clearTimeout(refreshTimer)
+    clearTimeout(searchTimer)
     document.removeEventListener('pointerdown', closeOnOutside)
     document.removeEventListener('keydown', closeOnEscape)
   })
@@ -667,13 +785,27 @@ export const useSportsPage = () => {
     market,
     sortType,
     competitionIds,
+    keyword,
+    searchInput,
+    handleSearchChange,
+    displayLeagueGroups: eventsList,
+    leagueCounts,
+    syncExpandedLeagues,
+    getLeagueLoadState,
+    retryLeague,
     homepageLoading: sportsPageLoading,
     homepageError,
+    matchesLoading,
+    matchesError,
+    matchListContext,
+    hotEventsLoading,
+    hotEventsError,
     sportsLoadFailedText,
     sportsRetryText,
     sportsEmptyText,
     sportsLoadingText,
     retrySports,
+    retryHotEvents,
     refreshSportCounts: sportsStore.fetchSportCounts,
     matches,
     liveMatches,

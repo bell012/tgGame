@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSportsStore } from '@/stores/sports'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
@@ -61,20 +61,27 @@ import { useI18n } from 'vue-i18n'
 const emit = defineEmits<{
   'filter-change': [payload: FilterTabChangePayload]
   'collect-change': [payload: CollectOnlyPayload]
+  'search-change': [keyword: string]
 }>()
 
 const props = withDefaults(
   defineProps<{
     collectOnly?: boolean
+    searchKeyword?: string
   }>(),
   {
-    collectOnly: false
+    collectOnly: false,
+    searchKeyword: ''
   }
 )
 
 const filterTabs = useFilterTabs()
 const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
-const searchKeyword = ref('')
+// 搜索文本由页面统一管理；组件只回传输入，不自行请求接口。
+const searchKeyword = computed({
+  get: () => props.searchKeyword,
+  set: value => emit('search-change', value)
+})
 const { t } = useI18n()
 
 // 根据当前选中的筛选项返回按钮样式。

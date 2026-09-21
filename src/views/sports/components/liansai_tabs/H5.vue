@@ -242,14 +242,17 @@ const emit = defineEmits<{
   'filter-change': [payload: LiansaiFilterPayload]
   'league-filter': [payload: LeagueFilterPayload]
   'collect-change': [payload: CollectOnlyPayload]
+  'search-change': [keyword: string]
 }>()
 
 const props = withDefaults(
   defineProps<{
     collectOnly?: boolean
+    searchKeyword?: string
   }>(),
   {
-    collectOnly: false
+    collectOnly: false,
+    searchKeyword: ''
   }
 )
 
@@ -258,7 +261,11 @@ const { filterTabs, leagueFilterItems, activeFilterKey, selectFilterKey, applyLe
   useLiansaiTabs()
 
 const alphabetIndex = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')]
-const searchKeyword = ref('')
+// 首页赛事搜索交由页面处理，弹窗内的联赛名称过滤仍只作用于弹窗。
+const searchKeyword = computed({
+  get: () => props.searchKeyword,
+  set: value => emit('search-change', value)
+})
 const popupSearchKeyword = ref('')
 const isPopupOpen = ref(false)
 const selectedLeagueKeys = ref<string[]>([])

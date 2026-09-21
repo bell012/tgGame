@@ -34,9 +34,29 @@
       </button>
     </div>
 
+    <!-- 热门加载与失败独立展示，成功但无热门数据时不占用列表空间。 -->
+    <p v-if="page.hotEventsLoading.value" class="mx-[14px] mb-3 text-xs text-text-2" role="status">
+      {{ page.sportsLoadingText.value }}
+    </p>
+    <div
+      v-else-if="page.hotEventsError.value"
+      class="mx-[14px] mb-3 flex items-center gap-3 text-xs text-text-2"
+      role="status"
+    >
+      <span>{{ page.sportsLoadFailedText.value }}</span>
+      <button
+        type="button"
+        class="shrink-0 text-theme-primary disabled:opacity-50"
+        :disabled="page.hotEventsLoading.value"
+        @click="page.retryHotEvents"
+      >
+        {{ page.sportsRetryText.value }}
+      </button>
+    </div>
+
     <section
       v-if="liveMatches.length"
-      aria-label="Live matches"
+      aria-label="Popular matches"
       class="min-w-0"
       data-testid="sports-h5-live-section"
     >
@@ -44,7 +64,7 @@
         ref="liveStrip"
         class="flex min-w-0 snap-x snap-mandatory gap-2 overflow-x-auto px-[14px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         tabindex="0"
-        aria-label="Live matches"
+        aria-label="Popular matches"
         data-testid="sports-h5-live-strip"
       >
         <article
@@ -54,7 +74,7 @@
           :data-sports-live-match="match.id"
         >
           <div class="flex h-4 min-w-0 items-center gap-3 text-[10px] leading-4">
-            <span class="shrink-0 text-text-2">{{ match.phase }}</span>
+            <span class="shrink-0 text-text-2">{{ match.phase || match.kickoff }}</span>
             <span class="min-w-0 flex-1 truncate" :title="match.league">{{ match.league }}</span>
             <span
               v-if="match.totalMarkets !== undefined"
@@ -101,9 +121,11 @@
         <!-- 搜索、收藏筛选及排序区域 -->
         <LeagueTabs_H5
           :collect-only="page.collectOnly.value"
+          :search-keyword="page.searchInput.value"
           @filter-change="page.handleLeagueSortChange"
           @league-filter="page.handleLeagueFilter"
           @collect-change="page.handleCollectChange"
+          @search-change="page.handleSearchChange"
         />
         <button
           v-if="groups.length"
@@ -128,7 +150,7 @@
       </div>
 
       <div v-if="groups.length" class="space-y-1.5" data-testid="sports-h5-league-list">
-        <section v-for="group in groups" :key="group.id" :data-league-id="group.id">
+        <section v-for="group in visibleGroups" :key="group.id" :data-league-id="group.id">
           <h2>
             <button
               :id="`${idPrefix}-${group.id}-heading`"
@@ -143,9 +165,9 @@
               <span class="min-w-0 flex-1 break-words">{{ group.name }}</span>
               <span
                 class="min-w-4 shrink-0 rounded bg-theme-primary px-1 text-center text-[10px] font-bold leading-[14px] text-text-4"
-                :aria-label="`${group.matches.length} matches`"
+                :aria-label="`${getGroupMatchCount(group)} matches`"
               >
-                {{ group.matches.length }}
+                {{ getGroupMatchCount(group) }}
               </span>
               <ChevronIcon
                 class="h-2.5 w-2.5 shrink-0 transition-transform"
@@ -172,9 +194,62 @@
               @select="selectOdds(match.id, $event)"
               @media="showMediaPlaceholder"
             />
+            <p
+              v-if="getGroupLoadState(group.id)?.loading"
+              class="py-3 text-center text-xs text-text-2"
+              role="status"
+            >
+              {{ $t('common.loadingMore') }}
+            </p>
+            <div
+              v-else-if="getGroupLoadState(group.id)?.error"
+              class="flex items-center justify-center gap-3 py-3 text-xs text-text-2"
+              role="status"
+            >
+              <span>{{ page.sportsLoadFailedText.value }}</span>
+              <button
+                type="button"
+                class="shrink-0 text-theme-primary"
+                @click="retryGroup(group.id)"
+              >
+                {{ page.sportsRetryText.value }}
+              </button>
+            </div>
           </div>
         </section>
       </div>
+      <!-- 联赛标题按缓存分批展示，新展示且展开的分组再补查联赛赛事。 -->
+      <div
+        v-if="hasMoreCachedGroups"
+        ref="loadMoreSentinel"
+        class="h-px w-full"
+        aria-hidden="true"
+        data-testid="sports-h5-load-more"
+      ></div>
+      <template v-if="groups.length && !hasMoreCachedGroups && !page.homepageLoading.value">
+        <p
+          v-if="page.matchesLoading.value"
+          class="py-4 text-center text-xs text-text-2"
+          role="status"
+        >
+          {{ $t('common.loadingMore') }}
+        </p>
+        <div
+          v-else-if="page.matchesError.value && !page.homepageError.value"
+          class="flex items-center justify-center gap-3 py-4 text-xs text-text-2"
+          role="status"
+        >
+          <span>{{ page.sportsLoadFailedText.value }}</span>
+          <button
+            type="button"
+            class="shrink-0 text-theme-primary disabled:opacity-50"
+            :disabled="page.matchesLoading.value"
+            @click="page.retrySports"
+          >
+            {{ page.sportsRetryText.value }}
+          </button>
+        </div>
+      </template>
     </section>
     <p
       v-if="page.homepageLoading.value"
@@ -197,8 +272,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onScopeDispose, ref, useId, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onActivated,
+  onDeactivated,
+  onMounted,
+  onScopeDispose,
+  ref,
+  useId,
+  watch
+} from 'vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import { useIntersectionObserver } from '@/composables/useIntersectionObserver'
 import { useLayoutStore } from '@/stores/layout'
 import { globalShowToast } from '@/utils/toast'
 import ChevronIcon from '@/static/svg/casino/dropdown_chevron.svg?component'
@@ -223,6 +309,12 @@ const navigationHeight = ref(layoutStore.TOPNAV_HEIGHT + layoutStore.BOTTOM_TAB_
 const activeSport = computed(() => props.page.selectedSportKey.value)
 const liveStrip = ref<HTMLElement | null>(null)
 const expandedGroups = ref<Record<string, boolean>>({})
+const expandNewGroups = ref(false)
+const LEAGUE_BATCH_SIZE = 10
+const visibleGroupCount = ref(LEAGUE_BATCH_SIZE)
+const loadMoreSentinel = ref<HTMLElement | null>(null)
+const pageActive = ref(true)
+let pageDisposed = false
 
 // 页面外层不是实际滚动容器，局部固定导航并同步等高占位，不改动全局布局。
 let navigationObserver: ResizeObserver | undefined
@@ -249,6 +341,11 @@ const liveStripCaption = (match: SportsMatch) => {
 const favorites = computed(() => new Set(props.page.favorites.value))
 const groups = computed(() => {
   const result = new Map<string, { id: string; name: string; matches: SportsMatch[] }>()
+  // 保留空预览联赛的标题入口，展开后仍可从联赛分页接口补回赛事。
+  for (const league of props.page.displayLeagueGroups.value) {
+    const id = `${props.page.selectedSportId.value}:${league.CompetitionId}`
+    result.set(id, { id, name: league.CompetitionName, matches: [] })
+  }
   for (const match of matches.value) {
     const group = result.get(match.leagueId)
     if (group) group.matches.push(match)
@@ -256,23 +353,118 @@ const groups = computed(() => {
   }
   return [...result.values()]
 })
+const visibleGroups = computed(() => groups.value.slice(0, visibleGroupCount.value))
+const hasMoreCachedGroups = computed(() => visibleGroupCount.value < groups.value.length)
+
+// 联赛内赛事完整保留；后台逐页追加缓存时，已展示的联赛数量不回退。
+const loadMoreCachedGroups = () => {
+  if (!pageActive.value || !hasMoreCachedGroups.value) return
+  visibleGroupCount.value = Math.min(
+    visibleGroupCount.value + LEAGUE_BATCH_SIZE,
+    groups.value.length
+  )
+}
+const loadMoreObserver = useIntersectionObserver({
+  target: loadMoreSentinel,
+  rootMargin: '0px 0px 200px 0px',
+  enabled: () => pageActive.value && hasMoreCachedGroups.value,
+  onChange: ({ isIntersecting }) => {
+    if (isIntersecting) loadMoreCachedGroups()
+  }
+})
+
+// 只有查询范围切换才恢复首批，缓存追加与同条件重试不重置本地分页。
+watch(
+  () => props.page.matchListContext.value,
+  () => {
+    visibleGroupCount.value = LEAGUE_BATCH_SIZE
+    expandNewGroups.value = false
+  },
+  { flush: 'sync' }
+)
+// 新缓存到达或本地批次渲染后，重新检测底部位置，兼容折叠列表未铺满一屏。
+watch([() => groups.value.length, visibleGroupCount], () => loadMoreObserver.reconnect(), {
+  flush: 'post'
+})
+onActivated(() => {
+  pageActive.value = true
+  syncExpandedLeagues()
+  loadMoreObserver.reconnect()
+})
+onDeactivated(() => {
+  pageActive.value = false
+  props.page.syncExpandedLeagues([])
+  loadMoreObserver.disconnect()
+})
+onScopeDispose(() => {
+  pageDisposed = true
+  pageActive.value = false
+  props.page.syncExpandedLeagues([])
+  loadMoreObserver.disconnect()
+})
 
 // 未操作时仅首组展开；各球种使用稳定联赛 ID，切换后保留用户的展开状态。
-const isGroupExpanded = (id: string) => expandedGroups.value[id] ?? groups.value[0]?.id === id
+const isGroupExpanded = (id: string) =>
+  expandedGroups.value[id] ?? (expandNewGroups.value || groups.value[0]?.id === id)
 const allGroupsCollapsed = computed(() => groups.value.every(group => !isGroupExpanded(group.id)))
 const toggleGroup = (id: string) => {
   expandedGroups.value = { ...expandedGroups.value, [id]: !isGroupExpanded(id) }
 }
 const toggleAllGroups = () => {
   const expand = allGroupsCollapsed.value
+  expandNewGroups.value = expand
   expandedGroups.value = {
     ...expandedGroups.value,
     ...Object.fromEntries(groups.value.map(group => [group.id, expand]))
   }
 }
+
+const getCompetitionId = (groupId: string): number | null => {
+  const parts = groupId.split(':')
+  const id = Number(parts[1])
+  return parts.length === 2 && Number.isSafeInteger(id) && id > 0 ? id : null
+}
+const getGroupMatchCount = (group: { id: string; matches: SportsMatch[] }) =>
+  props.page.leagueCounts.value.get(group.id) ?? group.matches.length
+const getGroupLoadState = (groupId: string) => {
+  if (props.page.keyword.value.trim()) return undefined
+  const id = getCompetitionId(groupId)
+  return id === null ? undefined : props.page.getLeagueLoadState(id)
+}
+const retryGroup = (groupId: string) => {
+  if (pageDisposed || !pageActive.value || props.page.keyword.value.trim()) return
+  const id = getCompetitionId(groupId)
+  if (id !== null) props.page.retryLeague(id)
+}
+
+// 只补查当前展示且展开的联赛；搜索结果仅本地展开，收起与停用取消后续翻页。
+const expandedCompetitionIds = computed(() =>
+  visibleGroups.value
+    .filter(group => isGroupExpanded(group.id))
+    .map(group => getCompetitionId(group.id))
+    .filter((id): id is number => id !== null)
+)
+const syncExpandedLeagues = () => {
+  props.page.syncExpandedLeagues(
+    !pageDisposed && pageActive.value && !props.page.keyword.value.trim()
+      ? expandedCompetitionIds.value
+      : []
+  )
+}
+watch(
+  [
+    () => props.page.matchListContext.value,
+    () => props.page.keyword.value,
+    () => expandedCompetitionIds.value.join(','),
+    pageActive
+  ],
+  syncExpandedLeagues,
+  { immediate: true, flush: 'post' }
+)
 // 球种变化只复位实时区滚动位置，业务筛选联动统一由页面主逻辑处理。
 watch(activeSport, async () => {
   await nextTick()
+  if (pageDisposed || !pageActive.value) return
   liveStrip.value?.scrollTo({ left: 0, behavior: 'instant' })
 })
 

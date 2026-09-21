@@ -9,11 +9,31 @@
     <!-- 导航入口自带页面间距，不重复添加外层内边距。 -->
     <SportsNavigation @change="handleSportChange" />
 
-    <section v-if="liveMatches.length" class="mt-4" aria-label="Live matches">
+    <!-- 热门加载与失败独立展示，不影响主赛事列表的筛选和加载状态。 -->
+    <p v-if="page.hotEventsLoading.value" class="mx-5 mt-4 text-sm text-text-2" role="status">
+      {{ page.sportsLoadingText.value }}
+    </p>
+    <div
+      v-else-if="page.hotEventsError.value"
+      class="mx-5 mt-4 flex items-center gap-3 text-sm text-text-2"
+      role="status"
+    >
+      <span>{{ page.sportsLoadFailedText.value }}</span>
+      <button
+        type="button"
+        class="shrink-0 text-theme-primary disabled:opacity-50"
+        :disabled="page.hotEventsLoading.value"
+        @click="page.retryHotEvents"
+      >
+        {{ page.sportsRetryText.value }}
+      </button>
+    </div>
+
+    <section v-if="liveMatches.length" class="mt-4" aria-label="Popular matches">
       <div
         class="relative flex items-start gap-3 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         tabindex="0"
-        aria-label="Live matches"
+        aria-label="Popular matches"
         data-testid="sports-live-strip"
       >
         <article
@@ -36,7 +56,7 @@
               </template>
               <span class="truncate">{{ match.league }}</span>
             </div>
-            <span class="shrink-0 text-text-1">{{ match.phase }}</span>
+            <span class="shrink-0 text-text-1">{{ match.phase || match.kickoff }}</span>
           </div>
 
           <MatchVersus
@@ -67,7 +87,7 @@
 
     <section class="mx-5 mt-4 space-y-4" data-testid="sports-filters">
       <div
-        v-if="page.homepageError.value"
+        v-if="page.homepageError.value || page.matchesError.value"
         class="flex items-center gap-3 text-sm text-text-2"
         role="status"
       >
@@ -75,7 +95,7 @@
         <button
           type="button"
           class="shrink-0 text-theme-primary disabled:opacity-50"
-          :disabled="page.homepageLoading.value"
+          :disabled="page.homepageLoading.value || page.matchesLoading.value"
           @click="page.retrySports"
         >
           {{ page.sportsRetryText.value }}
@@ -89,6 +109,8 @@
       <FilterSearch_PC
         v-if="!isMobile"
         :collect-only="collectOnly"
+        :search-keyword="page.searchInput.value"
+        @search-change="page.handleSearchChange"
         @filter-change="handleMatchFilterChange"
         @collect-change="handleCollectChange"
       />
@@ -126,6 +148,13 @@
           @media="showMediaPlaceholder"
         />
       </div>
+      <p
+        v-if="page.matchesLoading.value && !page.homepageLoading.value"
+        class="py-4 text-center text-sm text-text-2"
+        role="status"
+      >
+        {{ $t('common.loadingMore') }}
+      </p>
       <nav
         v-if="totalPages > 1"
         class="mt-8"
