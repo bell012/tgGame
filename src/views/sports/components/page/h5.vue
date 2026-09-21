@@ -75,11 +75,12 @@
             :AwayScore="match.AwayScore"
             :HomeTeamId="match.HomeTeamId"
             :AwayTeamId="match.AwayTeamId"
+            :center-caption="liveStripCaption(match)"
           />
 
           <MatchOdds
             v-if="match.MarketLines.length"
-            class="mt-3"
+            class="mt-2"
             :MarketLines="match.MarketLines"
             :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
             picker="liveStrip"
@@ -208,6 +209,7 @@ import SportsNavigation from '../sports-navigation/index.vue'
 import FilterSearch_H5 from '../filter_search/H5.vue'
 import MatchVersus from '../match-versus/index.vue'
 import MatchOdds from '../match-odds/index.vue'
+import { pickOverUnderOrFirstMarketLine } from '../match-odds/display'
 import MatchCardH5 from '../match-card/h5.vue'
 import type { SportsMatch, SportsPageState } from '../../index'
 import type { OddsSelectPayload } from '../match-odds/types'
@@ -238,6 +240,12 @@ onScopeDispose(() => navigationObserver?.disconnect())
 const activeSportLabel = computed(() => props.page.selectedSportLabel.value)
 const matches = computed(() => props.page.matches.value)
 const liveMatches = computed(() => props.page.liveMatches.value)
+const liveStripCaption = (match: SportsMatch) => {
+  const line = pickOverUnderOrFirstMarketLine(match.MarketLines)[0]
+  if (!line) return ''
+  if (line.PeriodId !== 1 && line.PeriodName) return `${line.BetTypeName} ${line.PeriodName}`
+  return line.BetTypeName
+}
 const favorites = computed(() => new Set(props.page.favorites.value))
 const groups = computed(() => {
   const result = new Map<string, { id: string; name: string; matches: SportsMatch[] }>()

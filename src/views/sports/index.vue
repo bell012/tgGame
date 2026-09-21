@@ -19,7 +19,7 @@
         <article
           v-for="match in liveMatches"
           :key="match.id"
-          class="relative flex min-h-[262px] w-[444px] shrink-0 flex-col rounded-xl bg-bg-5 p-3"
+          class="relative flex w-[444px] shrink-0 flex-col rounded-xl bg-bg-5 p-3"
           :data-sports-match="`live:${match.id}`"
         >
           <div class="flex h-6 items-center justify-between gap-3 text-sm text-text-2">
@@ -51,7 +51,7 @@
             :AwayTeamId="match.AwayTeamId"
           />
 
-          <div class="mt-auto pt-4">
+          <div class="mt-4">
             <MatchOdds
               v-if="match.MarketLines.length"
               :MarketLines="match.MarketLines"

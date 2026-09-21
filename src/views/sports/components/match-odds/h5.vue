@@ -1,5 +1,24 @@
 <template>
-  <div class="flex flex-col gap-3">
+  <div v-if="isStrip && stripLine" class="flex items-stretch gap-1">
+    <button
+      v-for="selection in visibleSelections(stripLine)"
+      :key="selection.WagerSelectionId"
+      type="button"
+      class="flex h-9 min-w-0 flex-1 items-center justify-between rounded-lg px-3"
+      :class="isSelected(selection) ? 'bg-theme-primary text-text-4' : 'bg-bg-3 text-text-1'"
+      @click="emit('select', { market: stripLine, option: selection })"
+    >
+      <span class="flex min-w-0 items-center gap-1 truncate text-[12px] font-normal">
+        <span class="truncate">{{ selection.SelectionName }}</span>
+        <span v-if="shouldShowHandicap(stripLine, selection)" class="shrink-0">{{
+          selection.Handicap
+        }}</span>
+      </span>
+      <span class="shrink-0 text-[12px] font-bold">{{ selection.Odds }}</span>
+    </button>
+  </div>
+
+  <div v-else class="flex flex-col gap-3">
     <div class="grid gap-x-1" :class="columnClass">
       <p
         v-for="line in MarketLines"
@@ -44,14 +63,25 @@ import { computed } from 'vue'
 import { hasFiniteOdds, isWagerSelected, shouldShowHandicap } from './display'
 import type { OddsSelectPayload, SportMarketLine, SportWagerSelection } from './types'
 
-const props = defineProps<{
-  MarketLines: SportMarketLine[]
-  selectedWagerSelectionId?: number | string
-}>()
+const props = withDefaults(
+  defineProps<{
+    MarketLines: SportMarketLine[]
+    selectedWagerSelectionId?: number | string
+    layout?: 'list' | 'strip'
+    HomeTeam?: string
+    AwayTeam?: string
+  }>(),
+  {
+    layout: 'list'
+  }
+)
 
 const emit = defineEmits<{
   select: [payload: OddsSelectPayload]
 }>()
+
+const isStrip = computed(() => props.layout === 'strip')
+const stripLine = computed(() => props.MarketLines[0])
 
 const columnClass = computed(() => {
   if (props.MarketLines.length <= 1) return 'grid-cols-1'

@@ -5,7 +5,10 @@
       :key="line.MarketlineId"
       class="flex flex-col gap-3"
     >
-      <p class="flex items-center gap-2 text-[14px] font-normal leading-none text-text-2">
+      <p
+        v-if="showTitle"
+        class="flex items-center gap-2 text-[14px] font-normal leading-none text-text-2"
+      >
         <span>{{ line.BetTypeName }}</span>
         <span v-if="line.PeriodId !== 1 && line.PeriodName">{{ line.PeriodName }}</span>
       </p>
@@ -61,10 +64,12 @@ const props = withDefaults(
     selectedWagerSelectionId?: number | string
     expanded?: boolean
     showExpand?: boolean
+    showTitle?: boolean
   }>(),
   {
     expanded: true,
-    showExpand: true
+    showExpand: true,
+    showTitle: true
   }
 )
 

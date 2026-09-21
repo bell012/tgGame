@@ -35,12 +35,13 @@
     />
 
     <p
-      class="col-start-1 row-start-2 min-w-0 break-words text-center text-text-1 line-clamp-2"
+      class="col-start-1 row-start-2 min-w-0 text-text-1"
       :class="
         isMobile
-          ? 'text-[12px] font-normal leading-[12px]'
-          : 'text-left text-[16px] font-normal leading-5'
+          ? 'break-words text-center text-[12px] font-normal leading-[12px] line-clamp-2'
+          : 'truncate text-left text-[16px] font-normal leading-5'
       "
+      :title="HomeTeam"
     >
       {{ HomeTeam }}
     </p>
@@ -53,12 +54,13 @@
     </p>
 
     <p
-      class="col-start-3 row-start-2 min-w-0 break-words text-text-1 line-clamp-2"
+      class="col-start-3 row-start-2 min-w-0 text-text-1"
       :class="
         isMobile
-          ? 'text-center text-[12px] font-normal leading-[12px]'
-          : 'text-right text-[16px] font-bold leading-5'
+          ? 'break-words text-center text-[12px] font-normal leading-[12px] line-clamp-2'
+          : 'truncate text-right text-[16px] font-bold leading-5'
       "
+      :title="AwayTeam"
     >
       {{ AwayTeam }}
     </p>

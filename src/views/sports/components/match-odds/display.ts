@@ -1,7 +1,9 @@
 import type { SportMarketLine, SportWagerSelection } from '@/api/interface/sport'
 
-/** 首页卡片展示顺序：独赢 → 让球 → 大小，不改盘口对象本身。 */
+/** 首页 PC 卡片展示顺序：独赢 → 让球 → 大小，不改盘口对象本身。 */
 const HOME_BET_TYPE_ORDER = [3, 1, 2] as const
+/** H5 联赛列表展示顺序：让球 → 大小 → 1X2。 */
+const H5_LIST_BET_TYPE_ORDER = [1, 2, 3] as const
 /** 热门条优先展示的大小盘。 */
 const OVER_UNDER_BET_TYPE_ID = 2
 
@@ -39,12 +41,14 @@ export const isWagerSelected = (
   selectedWagerSelectionId !== '' &&
   Number(selectedWagerSelectionId) === selection.WagerSelectionId
 
-/** 只挑出卡片要展示的原盘口引用，不生成新 DTO、不改字段名。 */
-export const pickHomepageMarketLines = (lines: readonly SportMarketLine[]): SportMarketLine[] => {
+const pickMarketLinesByOrder = (
+  lines: readonly SportMarketLine[],
+  betTypeIds: readonly number[]
+): SportMarketLine[] => {
   if (!Array.isArray(lines) || !lines.length) return []
 
   const picked: SportMarketLine[] = []
-  for (const betTypeId of HOME_BET_TYPE_ORDER) {
+  for (const betTypeId of betTypeIds) {
     const candidates = lines.filter(line => line.BetTypeId === betTypeId && isDisplayableLine(line))
     if (!candidates.length) continue
 
@@ -53,6 +57,14 @@ export const pickHomepageMarketLines = (lines: readonly SportMarketLine[]): Spor
   }
   return picked
 }
+
+/** 只挑出卡片要展示的原盘口引用，不生成新 DTO、不改字段名。 */
+export const pickHomepageMarketLines = (lines: readonly SportMarketLine[]): SportMarketLine[] =>
+  pickMarketLinesByOrder(lines, HOME_BET_TYPE_ORDER)
+
+/** H5 列表三列：让球 → 大小 → 1X2，缺玩法不补空列。 */
+export const pickH5ListMarketLines = (lines: readonly SportMarketLine[]): SportMarketLine[] =>
+  pickMarketLinesByOrder(lines, H5_LIST_BET_TYPE_ORDER)
 
 /** 热门条只展示一条：优先大小，没有则退回列表第一条可展示盘口。 */
 export const pickOverUnderOrFirstMarketLine = (
