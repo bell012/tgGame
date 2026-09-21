@@ -116,11 +116,11 @@ export const buildLeagueTabs = (
 // 汇总联赛 tabs 相关状态与操作，供 PC/H5 组件复用。
 export const useLiansaiTabs = () => {
   const sportsStore = useSportsStore()
-  const { eventsList, sortType, competitionIds } = storeToRefs(sportsStore)
+  const { leagueGroups, sortType, competitionIds } = storeToRefs(sportsStore)
   const { t } = useI18n()
 
   const filterTabs = computed(() => buildLiansaiFilterTabs(t))
-  const leagueTabs = computed(() => buildLeagueTabs(eventsList.value, t))
+  const leagueTabs = computed(() => buildLeagueTabs(leagueGroups.value, t))
   const leagueFilterItems = computed(() =>
     leagueTabs.value.filter(item => item.key !== ALL_LEAGUES_KEY)
   )

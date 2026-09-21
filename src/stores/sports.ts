@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
-import { computed, ref, shallowReactive } from 'vue'
+import { computed, ref, shallowReactive, shallowRef } from 'vue'
 import Api from '@/api'
 import type {
   FavouriteEventParams,
   GetCompetitionPageParams,
   GetSportsV2Params,
+  SportCompetitionGroup,
   SportsLanguageCode,
   SportsMarket,
   SportsOddsType,
@@ -180,30 +181,30 @@ export const useSportsStore = defineStore('sports', () => {
   const homepageLoading = ref(false)
   const homepageError = ref<SportsRequestError | null>(null)
   let homepageGeneration = 0
+  let loadedCountsContext = ''
+  const leagueSnapshot = shallowRef<SportCompetitionGroup[]>([])
+  const leagueSnapshotContext = ref('')
+  const eventsDataContext = ref('')
 
   // 滚球 今日 早盘 串关数据
   const counts = createSportsRequest(getBaseUrl, Api.sport.getAllSportCount, response =>
     Array.isArray(response.spc)
   )
-  console.log('滚球 今日 早盘 串关数据', counts)
 
   // 所有联赛数据
   const events = createSportsRequest(getBaseUrl, Api.sport.getSportsV2, response =>
     Array.isArray(response.e)
   )
-  console.log('所有联赛数据', events)
 
   // 索引汇总
   const indexes = createSportsRequest(getBaseUrl, Api.sport.getSportEventIndexList, response =>
     Array.isArray(response.e)
   )
-  console.log('索引汇总', indexes)
 
   // 联赛下的详细赛事
   const competition = createSportsRequest(getBaseUrl, Api.sport.getCompetitionPage, response =>
     Array.isArray(response.e)
   )
-  console.log('联赛下的详细赛事', competition)
 
   const popular = createSportsRequest(getBaseUrl, Api.sport.getPopularSports, response =>
     Array.isArray(response.e)
@@ -211,7 +212,7 @@ export const useSportsStore = defineStore('sports', () => {
   const favourite = createSportsRequest(getBaseUrl, Api.sport.favouriteEvent, () => true)
   const resources = [counts, events, indexes, competition, popular, favourite]
 
-  // 保留服务端字段与嵌套结构；此阶段不转换成页面卡片、不裁剪盘口。
+  // 保留服务端字段与嵌套结构，页面负责展示转换，Store 不裁剪盘口。
   const requests = shallowReactive({
     GetAllSportCount: counts.state,
     getSportsV2: events.state,
@@ -248,7 +249,31 @@ export const useSportsStore = defineStore('sports', () => {
     early: currentSportCount.value?.efec ?? 0,
     parlay: currentSportCount.value?.comboCount ?? 0
   }))
-  const eventsList = computed(() => events.state.data?.e ?? [])
+  const getLeagueContext = () =>
+    JSON.stringify([
+      getBaseUrl(),
+      languageCode.value,
+      selectedSportId.value,
+      market.value,
+      keyword.value,
+      market.value === 1 ? earlyTradingDate.value : null
+    ])
+  // 只保存当前范围已返回的联赛，不把分页结果宣称为全量联赛；切换范围立即隐藏旧候选。
+  const leagueGroups = computed(() =>
+    leagueSnapshotContext.value === getLeagueContext() ? leagueSnapshot.value : []
+  )
+  const getEventsContext = () =>
+    JSON.stringify([
+      getLeagueContext(),
+      sortType.value,
+      competitionIds.value,
+      pageNumber.value,
+      pageSize.value
+    ])
+  // 筛选刚变化、尚未发起新请求时，也不能把旧赛事按新球种展示。
+  const eventsList = computed(() =>
+    eventsDataContext.value === getEventsContext() ? (events.state.data?.e ?? []) : []
+  )
   // Total 的计数口径保留接口原值，不当作赛事总数参与页面分页。
   const eventsTotal = computed(() => events.state.data?.Total ?? 0)
   const eventsIndexList = computed(() => indexes.state.data?.e ?? [])
@@ -261,10 +286,11 @@ export const useSportsStore = defineStore('sports', () => {
   })
 
   const fetchSportCounts = () => counts.load({ LanguageCode: languageCode.value, IsCombo: false })
-  const fetchSports = (overrides: Partial<GetSportsV2Params> = {}) =>
-    events.load({
+  const fetchSports = async (overrides: Partial<GetSportsV2Params> = {}) => {
+    const params: GetSportsV2Params = {
       ...commonParams(),
-      competitionCondType: 1,
+      // 参考接口组装约定：1 为默认列表，指定联赛时使用 2（筛选）。
+      competitionCondType: (overrides.CompetitionIds ?? competitionIds.value).length ? 2 : 1,
       PageNumber: pageNumber.value,
       PageSize: pageSize.value,
       SortType: sortType.value,
@@ -275,7 +301,39 @@ export const useSportsStore = defineStore('sports', () => {
       // 游客查询不触发体育登录，也不使用本站会员 ID 代替平台账号。
       MemberCode: null,
       ...overrides
-    })
+    }
+    const context = JSON.stringify([
+      getBaseUrl(),
+      params.LanguageCode,
+      params.SportId,
+      params.Market,
+      params.Keyword,
+      params.Market === 1 ? params.earlyTradingDate : null
+    ])
+    const response = await events.load(params)
+    if (response && events.state.data === response) {
+      eventsDataContext.value = JSON.stringify([
+        context,
+        params.SortType,
+        params.CompetitionIds,
+        params.PageNumber,
+        params.PageSize
+      ])
+    }
+    if (
+      response &&
+      events.state.data === response &&
+      context === getLeagueContext() &&
+      Array.isArray(response.e) &&
+      ((!params.CompetitionIds.length && params.PageNumber === 1) ||
+        leagueSnapshotContext.value !== context)
+    ) {
+      // 同范围按联赛筛选时保留候选，避免列表只剩选中的联赛。
+      leagueSnapshotContext.value = context
+      leagueSnapshot.value = response.e
+    }
+    return response
+  }
   const fetchSportEventIndexList = () => indexes.load({ ...commonParams(), Keyword: '' })
   const fetchPopularSports = () =>
     popular.load({ ...commonParams(), Market: 3, SortType: sortType.value })
@@ -309,13 +367,19 @@ export const useSportsStore = defineStore('sports', () => {
   const reset = () => {
     cancelRequests()
     resources.forEach(resource => resource.reset())
+    loadedCountsContext = ''
+    leagueSnapshot.value = []
+    leagueSnapshotContext.value = ''
+    eventsDataContext.value = ''
     homepageError.value = null
   }
 
-  /** 首屏只读验证流程：先取列表，再使用真实联赛 ID 查询一页；不轮询、不下注。 */
-  const loadHomepage = async () => {
-    cancelRequests()
-    const generation = homepageGeneration
+  /** 首屏先取数量，再按最新筛选取赛事；同环境切换筛选只刷新赛事。 */
+  const loadHomepage = async ({ refreshCounts = true }: { refreshCounts?: boolean } = {}) => {
+    const generation = ++homepageGeneration
+    // 保留同条件的在途数量请求供后一次操作复用，仅取消旧赛事，防止旧条件回写。
+    events.cancel()
+    if (refreshCounts) loadedCountsContext = ''
     homepageLoading.value = true
     homepageError.value = null
     try {
@@ -323,23 +387,30 @@ export const useSportsStore = defineStore('sports', () => {
       if (generation !== homepageGeneration) return
       if (!getBaseUrl()) {
         resources.forEach(resource => resource.reset())
+        loadedCountsContext = ''
+        leagueSnapshot.value = []
+        leagueSnapshotContext.value = ''
+        eventsDataContext.value = ''
         homepageError.value = { kind: 'config', message: 'Missing IM.im_app_url' }
         return
       }
-      const [, eventsResponse] = await Promise.all([
-        fetchSportCounts(),
-        fetchSports(),
-        fetchSportEventIndexList(),
-        fetchPopularSports()
-      ])
-      if (generation !== homepageGeneration) return
-      const firstCompetition =
-        eventsResponse && isSportsSuccess(eventsResponse) ? eventsResponse.e?.[0] : undefined
-      if (firstCompetition && typeof firstCompetition.CompetitionId === 'number') {
-        await fetchCompetitionPage(firstCompetition.CompetitionId)
-      } else {
-        competition.reset()
+      const countsContext = JSON.stringify([getBaseUrl(), languageCode.value])
+      if (loadedCountsContext !== countsContext) {
+        const response = await fetchSportCounts()
+        if (generation !== homepageGeneration) return
+        if (!response || !isSportsSuccess(response) || !Array.isArray(response.spc)) {
+          homepageError.value = counts.state.error ?? {
+            kind: 'response',
+            message: 'Sports counts are unavailable'
+          }
+          return
+        }
+        loadedCountsContext = countsContext
       }
+      // 数量等待期间可能更换球种；此处读取 Store 当前值，不使用请求前的筛选快照。
+      await fetchSports()
+      if (generation !== homepageGeneration) return
+      homepageError.value = events.state.error
     } catch {
       if (generation === homepageGeneration) {
         homepageError.value = { kind: 'config', message: 'Sports initialization failed' }
@@ -372,6 +443,7 @@ export const useSportsStore = defineStore('sports', () => {
     totalFilterCounts,
     currentFilterCounts,
     eventsList,
+    leagueGroups,
     eventsTotal,
     eventsIndexList,
     competitionEvents,

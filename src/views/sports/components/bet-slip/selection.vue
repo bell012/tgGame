@@ -54,7 +54,7 @@
     >
       This market is closed. Remove it to continue.
     </p>
-    <SportsH5StakeField
+    <StakeField
       v-if="props.single"
       class="mt-2.5"
       :value="props.selection.stake"
@@ -70,9 +70,9 @@
 
 <script setup lang="ts">
 import ClearIcon from '@/static/svg/sports/clear-bets.svg'
-import SportsH5StakeField from './SportsH5StakeField.vue'
-import { getH5StakeError } from '../h5-bet'
-import type { SportsBetSelection } from '../index'
+import StakeField from './stake-field.vue'
+import { getH5StakeError } from './h5'
+import type { SportsBetSelection } from '../../index'
 
 const props = defineProps<{
   selection: SportsBetSelection

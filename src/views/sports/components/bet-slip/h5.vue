@@ -69,7 +69,7 @@
           </div>
           <template v-else>
             <ul class="flex flex-col gap-1.5">
-              <SportsH5BetSelection
+              <BetSelection
                 v-for="selection in selections"
                 :key="selection.id"
                 :selection="selection"
@@ -94,7 +94,7 @@
                 <span class="ml-auto flex h-[38px] shrink-0 items-center text-xs text-text-2"
                   >{{ parlay.combinationCount }}x</span
                 >
-                <SportsH5StakeField
+                <StakeField
                   class="min-w-0 flex-1"
                   :value="parlay.stake"
                   :currency-symbol="currencySymbol"
@@ -117,7 +117,7 @@
           </template>
         </div>
 
-        <SportsBetKeyboard
+        <BetKeyboard
           v-if="keyboardOpen && selections.length"
           class="mx-[6.667px] shrink-0"
           :amounts="quickAmounts.map(String)"
@@ -249,7 +249,7 @@
       </div>
     </section>
   </PopShell>
-  <SportsQuickAmountsH5
+  <QuickAmounts
     :model-value="editingAmounts"
     :amounts="amountDrafts"
     :currency-symbol="currencySymbol"
@@ -274,12 +274,12 @@ import BetIcon from '@/static/svg/sports/betslip-empty.svg'
 import ClearIcon from '@/static/svg/sports/clear-bets.svg'
 import CloseIcon from '@/static/svg/close.svg'
 import RefreshIcon from '@/static/svg/refresh.svg'
-import SportsBetKeyboard from './SportsBetKeyboard.vue'
-import SportsH5BetSelection from './SportsH5BetSelection.vue'
-import SportsH5StakeField from './SportsH5StakeField.vue'
-import SportsQuickAmountsH5 from './SportsQuickAmountsH5.vue'
-import { getH5StakeError, useSportsH5Bet } from '../h5-bet'
-import type { SportsPageState } from '../index'
+import BetKeyboard from './keyboard.vue'
+import BetSelection from './selection.vue'
+import StakeField from './stake-field.vue'
+import QuickAmounts from './quick-amounts.vue'
+import { getH5StakeError, useSportsH5Bet } from './h5'
+import type { SportsPageState } from '../../index'
 
 const props = defineProps<{ page: SportsPageState }>()
 const panel = ref<HTMLElement | null>(null)

@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { useIsMobile } from '@/composables/useMediaQuery'
@@ -60,10 +60,4 @@ function handleSportChange(index: number, key: string) {
   }
   emit('change', index, key)
 }
-
-onMounted(() => {
-  if (!sportCounts.value.length) {
-    void sportsStore.fetchSportCounts()
-  }
-})
 </script>

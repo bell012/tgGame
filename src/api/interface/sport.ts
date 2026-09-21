@@ -253,7 +253,6 @@ export interface SportCompetitionGroup extends SportCompetition {
 /** 查询所有球种赛事数量的请求参数。 */
 export interface GetAllSportCountParams {
   /** String，必填：ENG 英语、CHS 简体中文、VN 越南语、HI 印地语、PT 葡萄牙语。 */
-  /** 体育接口语言码，跟随全局语言配置 code，例如 zh、eng。 */
   LanguageCode: SportsLanguageCode
   /** Boolean，必填：true 串关统计、false 非串关统计；首页当前传 false。 */
   IsCombo: boolean
