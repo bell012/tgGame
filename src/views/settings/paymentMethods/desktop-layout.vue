@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-bg-2 p-6">
+  <div class="w-full min-w-0 bg-bg-2 p-6">
     <div class="overflow-hidden">
       <div
         ref="methodTabsRef"

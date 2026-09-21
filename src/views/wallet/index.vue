@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-[1336px] mx-auto pt-[14px]">
+  <div class="mx-auto w-full max-w-[1336px] px-[14px] pt-[14px]">
     <h2 class="text-xl font-[700] text-text-1 mb-4">{{ $t('wallet.title') }}</h2>
     <div class="flex justify-center gap-6">
       <!-- 左侧菜单 -->
@@ -10,7 +10,7 @@
               v-for="item in menuItems"
               :key="item.tab"
               :class="[
-                'flex items-center gap-4 px-4 py-2 rounded-lg cursor-pointer transition-all text-base',
+                'flex items-center gap-4 rounded-lg px-4 py-2 text-base cursor-pointer transition-all',
                 currentTab === item.tab ? 'bg-theme-primary text-text-4 font-bold' : 'text-text-2'
               ]"
               @click="handleMenuClick(item.path)"

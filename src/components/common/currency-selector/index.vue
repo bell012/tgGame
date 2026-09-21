@@ -36,6 +36,7 @@
 import Api from '@/api'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
 import SearchIcon from '@/static/svg/search-icon.svg?component'
 import ChecedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import UnchecedIcon from '@/static/svg/radio-unchecked.svg?component'
@@ -94,6 +95,7 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
+const userStore = useUserStore()
 
 const emit = defineEmits<{
   select: [value: string]
@@ -136,8 +138,9 @@ const chageCurrency = async (value: string) => {
   }
   isChangingCurrency.value = true
   try {
-    emit('select', value)
     await Api.user.changeWallet({ currency: value })
+    emit('select', value)
+    void userStore.refreshAcctInfo()
   } catch (error) {
     console.error('changeWallet failed', error)
     return

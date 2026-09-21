@@ -30,7 +30,7 @@
           v-model="searchKeyword"
           class="ml-[4px] min-w-0 flex-1 border-0 bg-transparent text-[14px] font-[400] text-text-1 outline-none placeholder:text-text-3"
           type="text"
-          placeholder="搜索联赛或球队"
+          :placeholder="t('sports.leagueTabs.searchLeagueOrTeam')"
         />
       </label>
 
@@ -41,7 +41,7 @@
       >
         <CollectIcon
           class="h-5 w-5 text-icon-2"
-          :class="collectOnly ? 'opacity-100' : 'opacity-80'"
+          :class="props.collectOnly ? 'text-theme-primary' : 'opacity-100'"
         />
       </button>
     </div>
@@ -50,28 +50,54 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useSportsStore } from '@/stores/sports'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
 import { useFilterTabs } from './index'
+import type { CollectOnlyPayload, FilterTabChangePayload, FilterTabKey } from './index'
+import { useI18n } from 'vue-i18n'
+
+const emit = defineEmits<{
+  'filter-change': [payload: FilterTabChangePayload]
+  'collect-change': [payload: CollectOnlyPayload]
+}>()
+
+const props = withDefaults(
+  defineProps<{
+    collectOnly?: boolean
+  }>(),
+  {
+    collectOnly: false
+  }
+)
 
 const filterTabs = useFilterTabs()
-const activeFilterKey = ref('today')
+const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
 const searchKeyword = ref('')
-const collectOnly = ref(false)
+const { t } = useI18n()
 
 // 根据当前选中的筛选项返回按钮样式。
-const getFilterTabClass = (key: string) =>
+const getFilterTabClass = (key: FilterTabKey) =>
   activeFilterKey.value === key
     ? 'bg-bg-3 text-text-1 font-[700]'
     : 'bg-bg-9 text-text-3 lg:hover:bg-bg-2'
 
 // 点击筛选按钮切换选中项。
-const onFilterTabClick = (key: string) => {
+const onFilterTabClick = (key: FilterTabKey) => {
   activeFilterKey.value = key
+  // 暴露滚球/今日/早盘/串关当前点击项，方便父组件同步筛选条件。
+  const payload = {
+    key,
+    item: filterTabs.value.find(item => item.key === key)
+  }
+  emit('filter-change', payload)
 }
 
 // 切换收藏状态。
 const toggleCollectOnly = () => {
-  collectOnly.value = !collectOnly.value
+  // 暴露收藏筛选状态，true 表示收藏，false 表示取消收藏。
+  const payload = { collectOnly: !props.collectOnly }
+  emit('collect-change', payload)
 }
 </script>

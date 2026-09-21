@@ -1,6 +1,6 @@
 import { computed, onScopeDispose, ref, watch } from 'vue'
-import { parseSportsStake } from './index'
-import type { SportsBetMode, SportsPageState } from './index'
+import { parseSportsStake } from '../../index'
+import type { SportsBetMode, SportsPageState } from '../../index'
 
 export type SportsKeyboardKey = string | 'delete'
 export type SportsBetResult = 'idle' | 'confirming' | 'success' | 'failed'

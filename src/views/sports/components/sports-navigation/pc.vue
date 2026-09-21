@@ -6,7 +6,7 @@
         :key="item.key"
         type="button"
         class="flex shrink-0 cursor-pointer border-none bg-transparent p-0 transition-colors duration-200"
-        :class="activeIndex === index ? 'text-theme-primary' : 'text-icon-2'"
+        :class="props.selectedSportId === item.sportId ? 'text-theme-primary' : 'text-icon-2'"
         @click="handleSelect(index)"
       >
         <span class="inline-block pr-3">
@@ -39,16 +39,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
 import BettingHistoryIcon from './icon/betting-history.svg?component'
 import { sportItems, type SportItem } from './sport-items'
 
 const props = defineProps<{
+  selectedSportId: number
   counts?: Partial<Record<string, number>>
 }>()
-
-const activeIndex = ref(0)
 
 const emit = defineEmits<{
   change: [index: number, key: string]
@@ -63,7 +60,6 @@ function handleBettingHistory() {
 }
 
 function handleSelect(index: number) {
-  activeIndex.value = index
   emit('change', index, sportItems[index].key)
 }
 </script>

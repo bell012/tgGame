@@ -135,13 +135,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import Api from '@/api'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { navigateTo } from '@/utils/router'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
 import H5Header from '@/components/common/H5Header.vue'
 import FilterPopup, { type FilterGroup } from '@/components/common/FilterPopup.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
@@ -167,6 +169,9 @@ import {
 
 const { t } = useI18n()
 const isMobile = useIsMobile()
+const userStore = useUserStore()
+userStore.syncStoredUserData()
+const { currentCurrencyCode } = useDisplayCurrency()
 
 usePageScrollLock(() => isMobile.value)
 
@@ -201,7 +206,8 @@ const fetchRollover = async (page: number, pageSize: number) => {
     buildRolloverQueryForm({
       page,
       pageSize,
-      filterValues: filterValues.value
+      filterValues: filterValues.value,
+      currency: currentCurrencyCode.value
     })
   )
 
@@ -258,6 +264,11 @@ const handleFilterApply = async (values: Record<string, string | string[]>) => {
 const handleRetry = async () => {
   await refresh()
 }
+
+watch(currentCurrencyCode, async () => {
+  if (!isMobile.value) return
+  await refresh()
+})
 </script>
 
 <style scoped>

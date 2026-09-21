@@ -258,16 +258,18 @@ export const buildTransactionQueryForm = (params: {
   page: number
   pageSize: number
   filterValues: FilterInput
+  currency?: string | null
 }): QueryAcctHisPageForm => {
   const normalized = normalizeTransactionFilterValues(params.filterValues)
   const { startTime, endTime } = getTimeRange(normalized.time)
+  const currency = params.currency || getCurrentCurrency()
 
   return {
     startTime,
     endTime,
     page: { current: params.page, size: params.pageSize },
     param: {
-      currency: getCurrentCurrency()
+      currency
     },
     changeTypes: normalized.type === 'all' ? [...TRANSACTION_CHANGE_TYPE_VALUES] : [normalized.type]
   }

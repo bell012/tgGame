@@ -100,7 +100,7 @@
               <p class="mt-[9px] break-words text-sm leading-5 text-text-2">
                 {{ selection.league }}
               </p>
-              <SportsStakeInput
+              <StakeInput
                 v-if="props.mode === 'single'"
                 class="mt-3"
                 :value="selection.stake"
@@ -124,7 +124,7 @@
                 <span class="tabular-nums">@{{ parlay.odds.toFixed(2) }}</span>
               </span>
               <span class="shrink-0 text-base">{{ parlay.combinationCount }}x</span>
-              <SportsStakeInput
+              <StakeInput
                 class="flex-1"
                 :value="parlay.stake"
                 :currency-symbol="props.currencySymbol"
@@ -243,8 +243,8 @@ import ClearIcon from '@/static/svg/sports/clear-bets.svg'
 import CloseIcon from '@/static/svg/close.svg'
 import RefreshIcon from '@/static/svg/refresh.svg'
 import SettingsIcon from '@/static/svg/sports/odds-settings.svg'
-import SportsStakeInput from './SportsStakeInput.vue'
-import type { SportsBetMode, SportsBetSelection, SportsParlay } from '../index'
+import StakeInput from './stake-input.vue'
+import type { SportsBetMode, SportsBetSelection, SportsParlay } from '../../index'
 
 const props = defineProps<{
   open: boolean

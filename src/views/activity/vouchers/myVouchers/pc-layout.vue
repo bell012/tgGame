@@ -1,5 +1,5 @@
 <template>
-  <div class="w-[1032px]">
+  <div class="w-full min-w-0">
     <div v-if="error && dataList.length === 0" class="flex h-[520px] items-center justify-center">
       <p class="cursor-pointer text-sm font-[700] text-secondary-4" @click="fetchData">
         {{ $t('common.requestError') }}

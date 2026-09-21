@@ -1,28 +1,45 @@
-import { computed, onActivated, onMounted, onScopeDispose, ref, watch } from 'vue'
+import { computed, onActivated, onDeactivated, onMounted, onScopeDispose, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
-import teamBadge from '@/static/img/explore/sports-team.png'
+import { formatTimestamp } from '@/utils/date'
+import type { SportCompetitionGroup } from '@/api/interface/sport'
 import type { OddsMarket, OddsSelectPayload, OddsTrend } from './components/match-odds/types'
+import type { CollectOnlyPayload, FilterTabChangePayload } from './components/filter_search'
+import type {
+  LeagueFilterPayload,
+  LeagueSelectionPayload,
+  LiansaiFilterPayload
+} from './components/liansai_tabs'
+import { sportItems } from './components/sports-navigation/sport-items'
 
 export type SportsBetMode = 'single' | 'parlay'
 export type SportsMatch = {
   id: string
-  country: string
+  sportId: number
+  sportKey: string
+  leagueId: string
+  country?: string
   league: string
   kickoff: string
-  homeScore: number
-  awayScore: number
-  cornerScore: string
-  halfTimeScore: string
-  home: { name: string; badge: string; redCards: number; yellowCards: number }
-  away: { name: string; badge: string; redCards: number; yellowCards: number }
-  markets?: OddsMarket[]
-  live?: boolean
-  mockBetStatus?: 'open' | 'closed' | 'fail'
+  homeScore: string
+  awayScore: string
+  cornerScore?: string
+  halfTimeScore?: string
+  periodScores?: string[]
+  totalScore?: string
+  home: { name: string; badge: string; redCards?: string; yellowCards?: string }
+  away: { name: string; badge: string; redCards?: string; yellowCards?: string }
+  live: boolean
+  phase: string
+  hasVideo: boolean
+  hasAnimation: boolean
+  totalMarkets?: number
+  markets: OddsMarket[]
 }
 export type SportsBetSelection = {
   id: string
@@ -67,11 +84,6 @@ type NoticeKey =
 const MOCK_BALANCE = 1000
 const MAX_SELECTIONS = 8
 const MATCH_PAGE_SIZE = 12
-const MOCK_TEAMS = [
-  { home: 'Manchester United United', away: 'Bayern Munich' },
-  { home: 'Chelsea', away: 'Man City' },
-  { home: 'Real Madrid', away: 'Real Betis' }
-]
 const NOTICE_MESSAGES: Record<Exclude<NoticeKey, ''>, string> = {
   needTwoSelections: 'Add selections from at least two different matches to place a parlay.',
   selectionLimit: 'You can select up to eight different matches.',
@@ -79,6 +91,86 @@ const NOTICE_MESSAGES: Record<Exclude<NoticeKey, ''>, string> = {
   balanceRefreshed: 'Mock balance refreshed. No real account was requested.',
   notImplemented: 'The design for this dialog is not available yet.',
   currencyChanged: 'Display currency changed. Mock bets have been reset.'
+}
+
+/** 拼接球队队标地址；配置或球队 ID 为空时返回空字符串。 */
+export const getTeamLogoUrl = (id: string | number | null | undefined): string => {
+  if (typeof id === 'number' && !Number.isFinite(id)) return ''
+
+  const teamId = String(id ?? '').trim()
+  if (!teamId) return ''
+
+  const siteConfigStore = useSiteConfigStore()
+  const baseUrl = siteConfigStore.getConfigString('IM.sport_team_logo').replace(/\/+$/, '')
+  if (!baseUrl) return ''
+
+  return `${baseUrl}/TeamImage/${encodeURIComponent(teamId)}.png`
+}
+
+const getSportsText = (value: unknown): string =>
+  typeof value === 'string'
+    ? value.trim()
+    : typeof value === 'number' && Number.isFinite(value)
+      ? String(value)
+      : ''
+
+const getCardCount = (value: unknown): string | undefined => {
+  const text = getSportsText(value)
+  return /^\d+$/.test(text) ? text : undefined
+}
+
+/** 将本次返回的联赛赛事转换为两端共用的基础展示信息；不推定扩展比分与赔率规则。 */
+export const mapSportsMatches = (
+  groups: readonly SportCompetitionGroup[],
+  sportId: number,
+  teamLogoUrl: (id: number) => string,
+  formatKickoff: (value: string) => string = formatTimestamp
+): SportsMatch[] => {
+  const sportKey = sportItems.find(item => item.sportId === sportId)?.key ?? ''
+  const matches = new Map<string, SportsMatch>()
+  for (const group of groups) {
+    if (!group || !Array.isArray(group.Sports)) continue
+    for (const event of group.Sports) {
+      if (!event || !Number.isSafeInteger(event.EventId) || event.EventId <= 0) continue
+      const id = `${sportId}:${event.EventId}`
+      if (matches.has(id)) continue
+      const competitionId = event.Competition?.CompetitionId ?? group.CompetitionId
+      if (!Number.isSafeInteger(competitionId)) continue
+      matches.set(id, {
+        id,
+        sportId,
+        sportKey,
+        leagueId: `${sportId}:${competitionId}`,
+        league:
+          getSportsText(event.Competition?.CompetitionName) || getSportsText(group.CompetitionName),
+        kickoff: formatKickoff(event.EventDate),
+        // IsLive 仅表示支持滚球，赛事当前是否滚球以 Market 为准。
+        live: event.Market === 3,
+        phase: getSportsText(event.RBTime),
+        homeScore: getSportsText(event.HomeScore) || '—',
+        awayScore: getSportsText(event.AwayScore) || '—',
+        home: {
+          name: getSportsText(event.HomeTeam),
+          badge: event.HomeTeamId > 0 ? teamLogoUrl(event.HomeTeamId) : '',
+          redCards: getCardCount(event.HomeRedCard)
+        },
+        away: {
+          name: getSportsText(event.AwayTeam),
+          badge: event.AwayTeamId > 0 ? teamLogoUrl(event.AwayTeamId) : '',
+          redCards: getCardCount(event.AwayRedCard)
+        },
+        hasVideo: event.LiveStreaming === 1,
+        hasAnimation: event.HasVisualization === true,
+        totalMarkets:
+          Number.isInteger(event.TotalMarketLineCount) && event.TotalMarketLineCount >= 0
+            ? event.TotalMarketLineCount
+            : undefined,
+        // 基础信息阶段不接盘口转换，禁止回退到设计稿中的模拟赔率。
+        markets: []
+      })
+    }
+  }
+  return [...matches.values()]
 }
 
 /** 空输入按 0 处理，拒绝负数、指数和超过两位的小数。 */
@@ -112,15 +204,48 @@ export const getSportsCombinations = (odds: readonly number[], size: number): nu
   return products
 }
 
-export const useSportsPage = (options: { additionalMatches?: readonly SportsMatch[] } = {}) => {
+export const useSportsPage = () => {
   const { currentCurrencyCode } = useDisplayCurrency()
   const sportsStore = useSportsStore()
   const siteConfigStore = useSiteConfigStore()
   const localeStore = useLocaleStore()
-  const { sportCounts, sportCountsLoading, sportCountsError } = storeToRefs(sportsStore)
+  const { t } = useI18n()
+  const {
+    sportCounts,
+    sportCountsLoading,
+    sportCountsError,
+    selectedSportId,
+    selectedFilterKey,
+    market,
+    sortType,
+    competitionIds,
+    keyword,
+    earlyTradingDate,
+    homepageLoading,
+    homepageError,
+    eventsList,
+    pageNumber
+  } = storeToRefs(sportsStore)
+  // 页面球种与导航共用 Store 的业务 ID，不另存一份默认足球状态。
+  const selectedSportKey = computed(
+    () => sportItems.find(item => item.sportId === selectedSportId.value)?.key ?? ''
+  )
+  const selectedSportIcon = computed(
+    () => sportItems.find(item => item.sportId === selectedSportId.value)?.icon
+  )
+  const selectedSportLabel = computed(
+    () => sportCounts.value.find(item => item.sid === selectedSportId.value)?.sn ?? ''
+  )
   let sportsPageDisposed = false
   let stopSportsRefresh: (() => void) | undefined
-  let skipInitialActivatedRefresh = true
+  const sportsPageActive = ref(true)
+  const initializing = ref(true)
+  const sportsPageLoading = computed(() => initializing.value || homepageLoading.value)
+  const sportsLoadFailedText = computed(() => t('sports.loadFailed'))
+  const sportsRetryText = computed(() => t('sports.retry'))
+  const sportsEmptyText = computed(() => t('sports.noEvents'))
+  const sportsLoadingText = computed(() => t('sports.loadingEvents'))
+  // 此处仅分页展示本次返回的赛事；服务端 PageNumber 与 Total 的分页口径另行对接。
   const currentPage = ref(1)
   const expandedMatchId = ref<string | null>(null)
   const favorites = ref<string[]>([])
@@ -131,40 +256,14 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
   const focusedStakeId = ref('')
   const noticeKey = ref<NoticeKey>('')
   const refreshing = ref(false)
+  const collectOnly = ref(false)
   let refreshTimer: ReturnType<typeof setTimeout> | undefined
 
-  const matches = computed<SportsMatch[]>(() =>
-    Array.from({ length: 72 }, (_, index) => {
-      const kickoffMinutes = 180 + index * 15
-      const hour = String(Math.floor(kickoffMinutes / 60)).padStart(2, '0')
-      const minute = String(kickoffMinutes % 60).padStart(2, '0')
-      return {
-        id: `mock-match-${index + 1}`,
-        country: 'England',
-        league: 'FA Cup (2×6min)',
-        kickoff: `Tomorrow, ${hour}:${minute}`,
-        homeScore: index % 3 === 0 ? 2 : 1,
-        awayScore: index % 3 === 0 ? 1 : 0,
-        cornerScore: '3-1',
-        halfTimeScore: '0-0',
-        home: {
-          name: MOCK_TEAMS[index % MOCK_TEAMS.length].home,
-          badge: teamBadge,
-          redCards: 1,
-          yellowCards: 3
-        },
-        away: {
-          name: MOCK_TEAMS[index % MOCK_TEAMS.length].away,
-          badge: teamBadge,
-          redCards: 0,
-          yellowCards: 0
-        }
-      }
-    })
+  const matches = computed(() =>
+    mapSportsMatches(eventsList.value, selectedSportId.value, getTeamLogoUrl)
   )
-  const liveMatches = computed(() => matches.value.slice(0, 4))
-  // 两端共用投注数据源，移动端扩展赛事不改变 PC 的列表与分页。
-  const allMatches = computed(() => [...matches.value, ...(options.additionalMatches ?? [])])
+  // 实时区只展示本次响应中的滚球赛事，不另造热门数据或触发额外接口。
+  const liveMatches = computed(() => matches.value.filter(match => match.live))
   const totalPages = computed(() => Math.max(1, Math.ceil(matches.value.length / MATCH_PAGE_SIZE)))
   const pagedMatches = computed(() =>
     matches.value.slice(
@@ -172,6 +271,9 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
       currentPage.value * MATCH_PAGE_SIZE
     )
   )
+  watch(totalPages, pages => {
+    if (currentPage.value > pages) currentPage.value = pages
+  })
   // 换页只更新赛事窗口并关闭展开层，投注选择、金额和收藏继续保留。
   const setPage = (page: number) => {
     if (!Number.isFinite(page) || !Number.isInteger(page)) return
@@ -181,47 +283,12 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
     expandedMatchId.value = null
   }
 
-  // 页面与投注单共用盘口定义，模拟文案统一使用设计稿英文。
+  // 页面与投注单共用盘口数据；没有接入的盘口保持为空，不生成模拟选项。
   const createMarkets = (matchId: string): OddsMarket[] => {
-    const match = allMatches.value.find(item => item.id === matchId)
+    const match = matches.value.find(item => item.id === matchId)
     if (!match) return []
     const selected = outcomes.value.find(outcome => outcome.matchId === matchId)
-    const markets: OddsMarket[] = match.markets ?? [
-      {
-        id: '1x2',
-        title: '1X2',
-        options: [
-          { id: 'home', label: 'H', odds: '11.0' },
-          { id: 'away', label: 'A', odds: '7.0' },
-          { id: 'draw', label: 'D', odds: '1.21' }
-        ]
-      },
-      {
-        id: 'handicap',
-        title: 'Handicap',
-        options: [
-          { id: 'home', label: 'H', line: '-0/0.5', odds: '2.15' },
-          { id: 'away', label: 'A', line: '+0/0.5', odds: '1.72' }
-        ]
-      },
-      {
-        id: 'ou',
-        title: 'Over/Under',
-        options: [
-          { id: 'over', label: 'Over', line: '3.5', odds: '2.15' },
-          { id: 'under', label: 'Under', line: '3.5', odds: '2.15' }
-        ]
-      },
-      {
-        id: 'total-half',
-        title: 'First-half Over/Under',
-        options: [
-          { id: 'over', label: 'Over', line: '1.5', odds: '1.85' },
-          { id: 'under', label: 'Under', line: '1.5', odds: '1.95' }
-        ]
-      }
-    ]
-    return markets.map(market => ({
+    return match.markets.map(market => ({
       ...market,
       options: market.options.map(option => ({
         ...option,
@@ -229,13 +296,11 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
       }))
     }))
   }
-  const getMatchMarkets = (matchId: string) =>
-    createMarkets(matchId).filter(market => market.id !== 'total-half')
-  const getLiveMarkets = (matchId: string) =>
-    createMarkets(matchId).filter(market => market.id === 'ou' || market.id === 'total-half')
+  const getMatchMarkets = createMarkets
+  const getLiveMarkets = createMarkets
   const selections = computed<SportsBetSelection[]>(() =>
     outcomes.value.flatMap(outcome => {
-      const match = allMatches.value.find(item => item.id === outcome.matchId)
+      const match = matches.value.find(item => item.id === outcome.matchId)
       const market = createMarkets(outcome.matchId).find(item => item.id === outcome.marketId)
       const option = market?.options.find(item => item.id === outcome.optionId)
       if (!match || !market || !option) return []
@@ -253,8 +318,7 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
           homeTeam: match.home.name,
           awayTeam: match.away.name,
           league: match.league,
-          live: match.live,
-          mockBetStatus: match.mockBetStatus
+          live: match.live
         }
       ]
     })
@@ -314,7 +378,7 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
   })
 
   const toggleFavorite = (id: string) => {
-    if (!allMatches.value.some(match => match.id === id)) return
+    if (!matches.value.some(match => match.id === id)) return
     favorites.value = favorites.value.includes(id)
       ? favorites.value.filter(value => value !== id)
       : [...favorites.value, id]
@@ -434,13 +498,69 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
   const showUnsupported = () => {
     noticeKey.value = 'notImplemented'
   }
-  const refreshSportCountsForRouteEntry = async () => {
-    try {
-      await siteConfigStore.initSiteConfig()
-    } catch {
+  // 先同步筛选与分页，再由下方单一请求监听批量刷新。
+  const resetMatchListState = () => {
+    currentPage.value = 1
+    pageNumber.value = 1
+    expandedMatchId.value = null
+  }
+  // 组件已写入 Store 时不重复赋值；保留统一业务入口供两端调用。
+  const handleSportChange = (_index: number, key: string) => {
+    const sport = sportItems.find(item => item.key === key)
+    if (sport && selectedSportId.value !== sport.sportId) {
+      selectedSportId.value = sport.sportId
+    }
+  }
+  const handleMatchFilterChange = (payload: FilterTabChangePayload) => {
+    if (selectedFilterKey.value !== payload.key) selectedFilterKey.value = payload.key
+  }
+  const handleLeagueSortChange = (payload: LiansaiFilterPayload) => {
+    if (sortType.value !== payload.sortType) sortType.value = payload.sortType
+  }
+  // 全部联赛统一使用空数组；避免 H5 全选的全部 ID 覆盖组件已归一化的值。
+  const syncCompetitionIds = (ids: number[], isAllSelected: boolean) => {
+    const nextIds = isAllSelected ? [] : ids
+    if (
+      nextIds.length === competitionIds.value.length &&
+      nextIds.every((id, index) => id === competitionIds.value[index])
+    ) {
       return
     }
-    if (!sportsPageDisposed) void sportsStore.fetchSportCounts()
+    competitionIds.value = [...nextIds]
+  }
+  const handleLeagueChange = (payload: LeagueSelectionPayload) => {
+    syncCompetitionIds(payload.ids, payload.isAllSelected)
+  }
+  const handleLeagueFilter = (payload: LeagueFilterPayload) => {
+    syncCompetitionIds(payload.ids, payload.isAllSelected)
+  }
+  // 收藏筛选开关共用页面状态，不调用收藏写接口，也不推定 IsFavourite 的查询语义。
+  const handleCollectChange = (payload: CollectOnlyPayload) => {
+    collectOnly.value = payload.collectOnly
+  }
+  // 候选范围变化时清理旧联赛，兼容组件先写 Store 再 emit，以及其他入口直接更新 Store。
+  watch(
+    [
+      selectedSportId,
+      market,
+      () => siteConfigStore.getConfigString('IM.im_app_url'),
+      () => localeStore.currentLanguage,
+      keyword,
+      () => (market.value === 1 ? earlyTradingDate.value : null)
+    ],
+    () => {
+      if (competitionIds.value.length) competitionIds.value = []
+      resetMatchListState()
+    },
+    { flush: 'sync' }
+  )
+  watch([sortType, () => competitionIds.value.join(','), collectOnly], resetMatchListState, {
+    flush: 'sync'
+  })
+  const retrySports = () => {
+    if (!sportsPageDisposed && sportsPageActive.value && !sportsPageLoading.value) {
+      void sportsStore.loadHomepage({ refreshCounts: false })
+    }
   }
   const closeOnOutside = (event: PointerEvent) => {
     const target = event.target
@@ -470,22 +590,38 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
     try {
       await siteConfigStore.initSiteConfig()
     } catch {
-      if (!sportsPageDisposed) void sportsStore.loadHomepage()
-      return
+      // 交由统一流程重试初始化并向页面提供失败状态。
     }
     if (sportsPageDisposed) return
     stopSportsRefresh = watch(
-      [() => siteConfigStore.getConfigString('IM.im_app_url'), () => localeStore.currentLanguage],
-      () => void sportsStore.loadHomepage(),
+      [
+        sportsPageActive,
+        () => siteConfigStore.getConfigString('IM.im_app_url'),
+        () => localeStore.currentLanguage,
+        selectedSportId,
+        market,
+        sortType,
+        () => competitionIds.value.join(','),
+        keyword,
+        () => (market.value === 1 ? earlyTradingDate.value : null)
+      ],
+      (values, previous) => {
+        if (!sportsPageActive.value || sportsPageDisposed) return
+        const refreshCounts =
+          previous[0] !== true || values[1] !== previous[1] || values[2] !== previous[2]
+        if (refreshCounts) resetMatchListState()
+        void sportsStore.loadHomepage({ refreshCounts })
+      },
       { immediate: true }
     )
+    initializing.value = false
   })
   onActivated(() => {
-    if (skipInitialActivatedRefresh) {
-      skipInitialActivatedRefresh = false
-      return
-    }
-    void refreshSportCountsForRouteEntry()
+    sportsPageActive.value = true
+  })
+  onDeactivated(() => {
+    sportsPageActive.value = false
+    sportsStore.cancelRequests()
   })
   onScopeDispose(() => {
     sportsPageDisposed = true
@@ -500,6 +636,21 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
     sportCounts,
     sportCountsLoading,
     sportCountsError,
+    selectedSportId,
+    selectedSportKey,
+    selectedSportIcon,
+    selectedSportLabel,
+    selectedFilterKey,
+    market,
+    sortType,
+    competitionIds,
+    homepageLoading: sportsPageLoading,
+    homepageError,
+    sportsLoadFailedText,
+    sportsRetryText,
+    sportsEmptyText,
+    sportsLoadingText,
+    retrySports,
     refreshSportCounts: sportsStore.fetchSportCounts,
     matches,
     liveMatches,
@@ -524,6 +675,7 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
     notice,
     refreshing,
     focusedStakeId,
+    collectOnly,
     toggleFavorite,
     setMatchExpanded,
     getMatchMarkets,
@@ -539,7 +691,13 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
     clearBets,
     submitMockBet,
     refreshBalance,
-    showUnsupported
+    showUnsupported,
+    handleSportChange,
+    handleMatchFilterChange,
+    handleLeagueSortChange,
+    handleLeagueChange,
+    handleLeagueFilter,
+    handleCollectChange
   }
 }
 

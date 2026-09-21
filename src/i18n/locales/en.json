@@ -276,9 +276,9 @@
     "deleteAria": "Delete notification",
     "closeDeleteDialogAria": "Close delete confirmation",
     "tabs": {
-      "promotions": "Promotions",
+      "promotions": "News",
       "transactions": "Transactions",
-      "system": "System"
+      "system": "Inbox"
     },
     "showUnread": "Show Unread",
     "markAllAsRead": "Mark all as read",
@@ -1768,11 +1768,27 @@
     }
   },
   "sports": {
+    "loadFailed": "Unable to load sports. Please try again.",
+    "retry": "Retry",
+    "noEvents": "No events available for the current filters.",
+    "loadingEvents": "Loading events...",
     "filterTabs": {
       "rolling": "Live",
       "today": "Today",
       "early": "Early",
       "parlay": "Parlay"
+    },
+    "leagueTabs": {
+      "filters": {
+        "league": "League",
+        "time": "Time"
+      },
+      "allLeagues": "All Leagues",
+      "selectLeague": "Select League",
+      "search": "Search",
+      "searchLeagueOrTeam": "Search League or Team",
+      "selectAll": "Select All",
+      "filter": "Filter"
     }
   },
   "menu": {
