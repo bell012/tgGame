@@ -276,9 +276,9 @@
     "deleteAria": "Delete notification",
     "closeDeleteDialogAria": "Close delete confirmation",
     "tabs": {
-      "promotions": "Promotions",
+      "promotions": "News",
       "transactions": "Transactions",
-      "system": "System"
+      "system": "Inbox"
     },
     "showUnread": "Show Unread",
     "markAllAsRead": "Mark all as read",
