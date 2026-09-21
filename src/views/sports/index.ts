@@ -99,7 +99,7 @@ const NOTICE_MESSAGES: Record<Exclude<NoticeKey, ''>, string> = {
   currencyChanged: 'Display currency changed. Mock bets have been reset.'
 }
 
-/** 拼接球队队标地址；配置或球队 ID 为空时返回空字符串。 */
+/** 配置已包含队标目录，仅追加球队图片文件名；配置或球队 ID 为空时返回空字符串。 */
 export const getTeamLogoUrl = (id: string | number | null | undefined): string => {
   if (typeof id === 'number' && !Number.isFinite(id)) return ''
 
@@ -110,7 +110,7 @@ export const getTeamLogoUrl = (id: string | number | null | undefined): string =
   const baseUrl = siteConfigStore.getConfigString('IM.sport_team_logo').replace(/\/+$/, '')
   if (!baseUrl) return ''
 
-  return `${baseUrl}/TeamImage/${encodeURIComponent(teamId)}.png`
+  return `${baseUrl}/${encodeURIComponent(teamId)}.png`
 }
 
 const getSportsText = (value: unknown): string =>
