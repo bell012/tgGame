@@ -1,8 +1,14 @@
 <template>
-  <H5MatchOdds v-if="isMobile" :markets="markets" @select="onSelect" />
+  <H5MatchOdds
+    v-if="isMobile"
+    :MarketLines="visibleMarketLines"
+    :selected-wager-selection-id="selectedWagerSelectionId"
+    @select="onSelect"
+  />
   <PcMatchOdds
     v-else
-    :markets="markets"
+    :MarketLines="visibleMarketLines"
+    :selected-wager-selection-id="selectedWagerSelectionId"
     :expanded="expanded"
     @update:expanded="onExpanded"
     @select="onSelect"
@@ -12,13 +18,15 @@
 <script setup lang="ts">
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { computed } from 'vue'
+import { pickHomepageMarketLines } from './display'
 import H5MatchOdds from './h5.vue'
 import PcMatchOdds from './pc.vue'
-import type { OddsMarket, OddsSelectPayload } from './types'
+import type { OddsSelectPayload, SportMarketLine } from './types'
 
 const props = withDefaults(
   defineProps<{
-    markets: OddsMarket[]
+    MarketLines: SportMarketLine[]
+    selectedWagerSelectionId?: number | string
     expanded?: boolean
   }>(),
   {
@@ -32,8 +40,8 @@ const emit = defineEmits<{
 }>()
 
 const isMobile = useIsMobile()
-
 const expanded = computed(() => props.expanded)
+const visibleMarketLines = computed(() => pickHomepageMarketLines(props.MarketLines))
 
 const onExpanded = (value: boolean) => {
   emit('update:expanded', value)

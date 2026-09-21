@@ -98,8 +98,9 @@
       <!-- 只衔接公开事件，不另造展开按钮或重复渲染盘口。 -->
       <div class="mt-2 min-w-0" data-testid="sports-card-odds">
         <MatchOdds
-          v-if="markets.length"
-          :markets="markets"
+          v-if="MarketLines.length"
+          :MarketLines="MarketLines"
+          :selected-wager-selection-id="selectedWagerSelectionId"
           :expanded="expanded"
           @update:expanded="emit('update:expanded', $event)"
           @select="emit('select', $event)"
@@ -118,13 +119,14 @@ import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import MatchOdds from '../match-odds/index.vue'
-import type { OddsMarket, OddsSelectPayload } from '../match-odds/types'
+import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
 import type { SportsMatch } from '../../index'
 import { sportItems } from '../sports-navigation/sport-items'
 
 const props = defineProps<{
   match: SportsMatch
-  markets: OddsMarket[]
+  MarketLines: SportMarketLine[]
+  selectedWagerSelectionId?: number
   expanded: boolean
   favorite: boolean
 }>()

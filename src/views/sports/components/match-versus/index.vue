@@ -20,9 +20,9 @@
       class="col-start-2 row-start-1 flex items-center justify-center font-bold"
       :class="isMobile ? 'gap-2 text-[24px] leading-none text-theme-primary' : 'gap-2'"
     >
-      <span :class="scoreValueClass">{{ homeScore }}</span>
+      <span :class="scoreValueClass">{{ homeScoreText }}</span>
       <span v-if="isMobile">:</span>
-      <span :class="scoreValueClass">{{ awayScore }}</span>
+      <span :class="scoreValueClass">{{ awayScoreText }}</span>
     </div>
 
     <SmartImage
@@ -42,7 +42,7 @@
           : 'text-left text-[16px] font-normal leading-5'
       "
     >
-      {{ homeName }}
+      {{ HomeTeam }}
     </p>
 
     <p
@@ -60,7 +60,7 @@
           : 'text-right text-[16px] font-bold leading-5'
       "
     >
-      {{ awayName }}
+      {{ AwayTeam }}
     </p>
   </div>
 </template>
@@ -72,17 +72,21 @@ import { computed } from 'vue'
 
 interface Props {
   homeSrc: string
-  homeName: string
-  homeAlt?: string
   awaySrc: string
-  awayName: string
+  HomeTeam: string
+  AwayTeam: string
+  HomeScore?: string | number
+  AwayScore?: string | number
+  HomeTeamId?: number
+  AwayTeamId?: number
+  homeAlt?: string
   awayAlt?: string
-  homeScore: string | number
-  awayScore: string | number
   centerCaption?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  HomeScore: '',
+  AwayScore: '',
   homeAlt: '',
   awayAlt: '',
   centerCaption: ''
@@ -90,12 +94,20 @@ const props = withDefaults(defineProps<Props>(), {
 
 const isMobile = useIsMobile()
 
+const displayScore = (value: string | number | undefined) => {
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value)
+  if (typeof value === 'string' && value.trim()) return value.trim()
+  return '—'
+}
+
 const scoreValueClass = computed(() =>
   isMobile.value
     ? ''
     : 'flex items-center justify-center rounded-[8px] bg-opacity-15 px-4 py-3 text-[16px] font-bold leading-none text-text-1'
 )
 
-const homeAltText = computed(() => props.homeAlt || props.homeName)
-const awayAltText = computed(() => props.awayAlt || props.awayName)
+const homeScoreText = computed(() => displayScore(props.HomeScore))
+const awayScoreText = computed(() => displayScore(props.AwayScore))
+const homeAltText = computed(() => props.homeAlt || props.HomeTeam)
+const awayAltText = computed(() => props.awayAlt || props.AwayTeam)
 </script>

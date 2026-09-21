@@ -76,7 +76,12 @@
 
       <!-- 盘口标题、赔率及选中效果统一使用公开组件，页面仅衔接选择事件。 -->
       <div class="min-w-0" data-testid="sports-h5-match-odds">
-        <MatchOdds v-if="markets.length" :markets="markets" @select="emit('select', $event)" />
+        <MatchOdds
+          v-if="MarketLines.length"
+          :MarketLines="MarketLines"
+          :selected-wager-selection-id="selectedWagerSelectionId"
+          @select="emit('select', $event)"
+        />
       </div>
     </div>
 
@@ -131,12 +136,13 @@ import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import MatchOdds from '../match-odds/index.vue'
-import type { OddsMarket, OddsSelectPayload } from '../match-odds/types'
+import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
 import type { SportsMatch } from '../../index'
 
 const props = defineProps<{
   match: SportsMatch
-  markets: OddsMarket[]
+  MarketLines: SportMarketLine[]
+  selectedWagerSelectionId?: number
   favorite: boolean
 }>()
 

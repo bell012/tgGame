@@ -68,15 +68,28 @@
           <MatchVersus
             class="mt-3"
             :home-src="match.home.badge"
-            :home-name="match.home.name"
             :away-src="match.away.badge"
-            :away-name="match.away.name"
-            :home-score="match.homeScore"
-            :away-score="match.awayScore"
+            :HomeTeam="match.HomeTeam"
+            :AwayTeam="match.AwayTeam"
+            :HomeScore="match.HomeScore"
+            :AwayScore="match.AwayScore"
+            :HomeTeamId="match.HomeTeamId"
+            :AwayTeamId="match.AwayTeamId"
           />
 
-          <!-- 实时盘口转换尚未接入，保留对应高度，不使用模拟赔率填充。 -->
-          <div class="mt-3 h-9" aria-hidden="true" data-testid="sports-h5-live-odds-slot"></div>
+          <MatchOdds
+            v-if="match.MarketLines.length"
+            class="mt-3"
+            :MarketLines="match.MarketLines"
+            :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
+            @select="selectOdds(match.id, $event)"
+          />
+          <div
+            v-else
+            class="mt-3 h-9"
+            aria-hidden="true"
+            data-testid="sports-h5-live-odds-slot"
+          ></div>
         </article>
       </div>
     </section>
@@ -150,7 +163,8 @@
               v-for="match in group.matches"
               :key="match.id"
               :match="match"
-              :markets="getMarkets(match.id)"
+              :MarketLines="match.MarketLines"
+              :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
               :favorite="favorites.has(match.id)"
               @favorite="page.toggleFavorite(match.id)"
               @select="selectOdds(match.id, $event)"
@@ -192,9 +206,10 @@ import emptyImageLight from '@/static/img/explore/default_white.png'
 import SportsNavigation from '../sports-navigation/index.vue'
 import FilterSearch_H5 from '../filter_search/H5.vue'
 import MatchVersus from '../match-versus/index.vue'
+import MatchOdds from '../match-odds/index.vue'
 import MatchCardH5 from '../match-card/h5.vue'
 import type { SportsMatch, SportsPageState } from '../../index'
-import type { OddsMarket, OddsSelectPayload } from '../match-odds/types'
+import type { OddsSelectPayload } from '../match-odds/types'
 import LeagueTabs_H5 from '../liansai_tabs/H5.vue'
 
 const props = defineProps<{ page: SportsPageState }>()
@@ -259,9 +274,6 @@ const selectOdds = (matchId: string, payload: OddsSelectPayload) => {
   if (wasParlay && props.page.selections.value.length) props.page.setMode('parlay', true)
   props.page.betSlipOpen.value = true
 }
-
-// 盘口尚未转换时保持空槽位，不按模拟盘口 ID 拼造赔率。
-const getMarkets = (matchId: string): OddsMarket[] => props.page.getMatchMarkets(matchId)
 
 const showMediaPlaceholder = (kind: 'video' | 'animation') => {
   globalShowToast(

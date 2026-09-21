@@ -42,18 +42,20 @@
           <MatchVersus
             class="mt-8"
             :home-src="match.home.badge"
-            :home-name="match.home.name"
             :away-src="match.away.badge"
-            :away-name="match.away.name"
-            :home-score="match.homeScore"
-            :away-score="match.awayScore"
+            :HomeTeam="match.HomeTeam"
+            :AwayTeam="match.AwayTeam"
+            :HomeScore="match.HomeScore"
+            :AwayScore="match.AwayScore"
+            :HomeTeamId="match.HomeTeamId"
+            :AwayTeamId="match.AwayTeamId"
           />
 
-          <!-- 完整盘口按公开协议接入，标题、排序和展开按钮交由组件渲染。 -->
           <div class="mt-auto pt-4">
             <MatchOdds
-              v-if="getLiveMarkets(match.id).length"
-              :markets="getLiveMarkets(match.id)"
+              v-if="match.MarketLines.length"
+              :MarketLines="match.MarketLines"
+              :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
               :expanded="expandedMatchId === `live:${match.id}`"
               @update:expanded="setMatchExpanded(`live:${match.id}`, $event)"
               @select="selectOdds(match.id, $event)"
@@ -114,7 +116,8 @@
           v-for="match in pagedMatches"
           :key="match.id"
           :match="match"
-          :markets="getMatchMarkets(match.id)"
+          :MarketLines="match.MarketLines"
+          :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
           :expanded="expandedMatchId === match.id"
           :favorite="favorites.includes(match.id)"
           @update:expanded="setMatchExpanded(match.id, $event)"
@@ -215,8 +218,7 @@ const {
   collectOnly,
   toggleFavorite,
   setMatchExpanded,
-  getMatchMarkets,
-  getLiveMarkets,
+  getSelectedWagerSelectionId,
   selectOdds,
   removeSelection,
   updateStake,

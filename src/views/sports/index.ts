@@ -7,8 +7,8 @@ import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import { formatTimestamp } from '@/utils/date'
-import type { SportCompetitionGroup } from '@/api/interface/sport'
-import type { OddsMarket, OddsSelectPayload, OddsTrend } from './components/match-odds/types'
+import type { SportCompetitionGroup, SportMarketLine } from '@/api/interface/sport'
+import type { OddsSelectPayload, OddsTrend } from './components/match-odds/types'
 import type { CollectOnlyPayload, FilterTabChangePayload } from './components/filter_search'
 import type {
   LeagueFilterPayload,
@@ -39,7 +39,13 @@ export type SportsMatch = {
   hasVideo: boolean
   hasAnimation: boolean
   totalMarkets?: number
-  markets: OddsMarket[]
+  HomeTeam: string
+  AwayTeam: string
+  HomeScore: string
+  AwayScore: string
+  HomeTeamId: number
+  AwayTeamId: number
+  MarketLines: SportMarketLine[]
 }
 export type SportsBetSelection = {
   id: string
@@ -68,8 +74,8 @@ export type SportsParlay = {
 type SelectedOutcome = {
   id: string
   matchId: string
-  marketId: string
-  optionId: string
+  MarketlineId: number
+  WagerSelectionId: number
   odds: number
   stake: string
 }
@@ -165,8 +171,13 @@ export const mapSportsMatches = (
           Number.isInteger(event.TotalMarketLineCount) && event.TotalMarketLineCount >= 0
             ? event.TotalMarketLineCount
             : undefined,
-        // 基础信息阶段不接盘口转换，禁止回退到设计稿中的模拟赔率。
-        markets: []
+        HomeTeam: event.HomeTeam,
+        AwayTeam: event.AwayTeam,
+        HomeScore: event.HomeScore,
+        AwayScore: event.AwayScore,
+        HomeTeamId: event.HomeTeamId,
+        AwayTeamId: event.AwayTeamId,
+        MarketLines: Array.isArray(event.MarketLines) ? event.MarketLines : []
       })
     }
   }
@@ -283,40 +294,41 @@ export const useSportsPage = () => {
     expandedMatchId.value = null
   }
 
-  // 页面与投注单共用盘口数据；没有接入的盘口保持为空，不生成模拟选项。
-  const createMarkets = (matchId: string): OddsMarket[] => {
+  // 页面与投注单共用原盘口数组，不改造成展示 DTO。
+  const getMatchMarkets = (matchId: string): SportMarketLine[] => {
     const match = matches.value.find(item => item.id === matchId)
-    if (!match) return []
-    const selected = outcomes.value.find(outcome => outcome.matchId === matchId)
-    return match.markets.map(market => ({
-      ...market,
-      options: market.options.map(option => ({
-        ...option,
-        selected: selected?.marketId === market.id && selected?.optionId === option.id
-      }))
-    }))
+    return match?.MarketLines ?? []
   }
-  const getMatchMarkets = createMarkets
-  const getLiveMarkets = createMarkets
+  const getLiveMarkets = getMatchMarkets
+  const getSelectedWagerSelectionId = (matchId: string) =>
+    outcomes.value.find(outcome => outcome.matchId === matchId)?.WagerSelectionId
   const selections = computed<SportsBetSelection[]>(() =>
     outcomes.value.flatMap(outcome => {
       const match = matches.value.find(item => item.id === outcome.matchId)
-      const market = createMarkets(outcome.matchId).find(item => item.id === outcome.marketId)
-      const option = market?.options.find(item => item.id === outcome.optionId)
-      if (!match || !market || !option) return []
+      const line = match?.MarketLines.find(item => item.MarketlineId === outcome.MarketlineId)
+      const selection = line?.WagerSelections.find(
+        item => item.WagerSelectionId === outcome.WagerSelectionId
+      )
+      if (!match || !line || !selection) return []
       return [
         {
           id: outcome.id,
           matchId: outcome.matchId,
           odds: outcome.odds,
           stake: outcome.stake,
-          trend: option.trend,
-          selection: [option.label, option.line].filter(Boolean).join(' '),
-          market: `${market.title} · Decimal`,
-          marketTitle: market.title,
-          fixture: `${match.home.name} — ${match.away.name}`,
-          homeTeam: match.home.name,
-          awayTeam: match.away.name,
+          selection: [
+            selection.SelectionName,
+            line.BetTypeId !== 3 && Number.isFinite(selection.Handicap)
+              ? String(selection.Handicap)
+              : ''
+          ]
+            .filter(Boolean)
+            .join(' '),
+          market: line.BetTypeName,
+          marketTitle: line.BetTypeName,
+          fixture: `${match.HomeTeam} — ${match.AwayTeam}`,
+          homeTeam: match.HomeTeam,
+          awayTeam: match.AwayTeam,
           league: match.league,
           live: match.live
         }
@@ -416,14 +428,18 @@ export const useSportsPage = () => {
       mode.value === 'single' ? (outcomes.value[0]?.id ?? '') : (parlays.value[0]?.id ?? '')
     noticeKey.value = ''
   }
-  // 严格消费盘口组件的 select 事件；同赛事只保留一个选项，不触发真实下注。
+  // 严格消费盘口组件回传的原始盘口/选项；同赛事只保留一个选项，不触发真实下注。
   const selectOdds = (matchId: string, payload: OddsSelectPayload) => {
-    const market = createMarkets(matchId).find(item => item.id === payload.market.id)
-    const option = market?.options.find(item => item.id === payload.option.id)
-    if (!market || !option) return
-    const odds = Number(option.odds)
-    if (!Number.isFinite(odds) || odds <= 1) return
-    const id = `${matchId}:${market.id}:${option.id}`
+    const line = getMatchMarkets(matchId).find(
+      item => item.MarketlineId === payload.market.MarketlineId
+    )
+    const selection = line?.WagerSelections.find(
+      item => item.WagerSelectionId === payload.option.WagerSelectionId
+    )
+    if (!line || !selection) return
+    const odds = Number(selection.Odds)
+    if (!Number.isFinite(odds)) return
+    const id = `${matchId}:${line.MarketlineId}:${selection.WagerSelectionId}`
     const previous = outcomes.value.find(item => item.matchId === matchId)
     if (previous?.id === id) {
       removeSelection(id)
@@ -434,7 +450,14 @@ export const useSportsPage = () => {
       betSlipOpen.value = true
       return
     }
-    const next = { id, matchId, marketId: market.id, optionId: option.id, odds, stake: '' }
+    const next = {
+      id,
+      matchId,
+      MarketlineId: line.MarketlineId,
+      WagerSelectionId: selection.WagerSelectionId,
+      odds,
+      stake: ''
+    }
     outcomes.value = previous
       ? outcomes.value.map(item => (item.matchId === matchId ? next : item))
       : [...outcomes.value, next]
@@ -680,6 +703,7 @@ export const useSportsPage = () => {
     setMatchExpanded,
     getMatchMarkets,
     getLiveMarkets,
+    getSelectedWagerSelectionId,
     selectOdds,
     removeSelection,
     updateStake,
