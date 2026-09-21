@@ -80,7 +80,7 @@
             <div
               class="text-xxs whitespace-nowrap text-nowrap text-center font-bold text-brand text-theme-primary"
             >
-              {{ formatRecentBigWinAmount(item.winAmount) }} {{ item.currency }}
+              {{ formatRecentBigWinAmount(item.winAmount) }} {{ resolveRecentBigWinCurrency(item) }}
             </div>
           </div>
         </button>
@@ -101,7 +101,7 @@ import vip5Vip6Icon from '@/static/img/vip/vip5-vip6.png'
 import vip7Vip8Icon from '@/static/img/vip/vip7-vip8.png'
 import vip9Vip10Icon from '@/static/img/vip/vip9-vip10.png'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { getCurrentCurrency } from '@/utils/locale'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { navigateTo } from '@/utils/router'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
@@ -125,7 +125,7 @@ watch(showRewardDetailsModal, open => {
   }
 })
 
-const currentCurrency = computed(() => getCurrentCurrency())
+const { currentCurrencyCode } = useDisplayCurrency()
 const isMobile = useIsMobile()
 const userStore = useUserStore()
 const authModalStore = useAuthModalStore()
@@ -144,6 +144,13 @@ const duplicatedList = computed(() =>
 )
 
 const platformLogoByGameId = ref<Record<string, string>>({})
+/** 防止切换币种时旧请求晚返回，覆盖当前币种的数据。 */
+let recentBigWinsRequestId = 0
+
+/** 判断当前返回的数据是否仍属于最新一次大奖列表请求。 */
+const isLatestRecentBigWinsRequest = (requestId: number) => {
+  return requestId === recentBigWinsRequestId
+}
 
 const getPlatformLogo = (item: RecentBigWin) =>
   platformLogoByGameId.value[String(item.gameId ?? '').trim()] ?? ''
@@ -244,6 +251,11 @@ const formatRecentBigWinAmount = (raw: string | number | undefined) => {
   return n.toLocaleString('en-US', opts)
 }
 
+/** 展示接口返回的币种；接口未返回时兜底当前选择的展示币种。 */
+const resolveRecentBigWinCurrency = (item: RecentBigWin) => {
+  return String(item.currency ?? currentCurrencyCode.value ?? '').trim()
+}
+
 const onRecentBigWinItemClick = (duplicatedIndex: number) => {
   const len = list.value.length
   if (len === 0) {
@@ -264,27 +276,37 @@ const onRecentBigWinItemClick = (duplicatedIndex: number) => {
   showRewardDetailsModal.value = true
 }
 
+/** 根据当前展示币种重新拉取大奖列表，切换币种后金额与币种会同步刷新。 */
 const getRecentBigWinsData = async () => {
+  const requestId = ++recentBigWinsRequestId
+  const requestCurrency = currentCurrencyCode.value
   loading.value = true
   try {
-    const res = await Api.home.getRecentBigWins({ currency: currentCurrency.value, type: 1 })
-    list.value =
-      res.result?.map((item: RecentBigWinsItem) => {
-        const derivedBet = deriveBetAmountFromWinAndMultiplier(item.winAmount, item.multiple)
-        return {
-          ...item,
-          src: toGameImageUrl(String(item.coverImg ?? '')),
-          icon: getVipIconByVipId(item.vipId),
-          avatar: toGameImageUrl(String(item.avatar ?? '')),
-          betAmount: derivedBet ?? item.betAmount ?? item.gameAmount
-        }
-      }) || []
+    const res = await Api.home.getRecentBigWins({ currency: requestCurrency, type: 1 })
+    if (isLatestRecentBigWinsRequest(requestId)) {
+      list.value =
+        res.result?.map((item: RecentBigWinsItem) => {
+          const derivedBet = deriveBetAmountFromWinAndMultiplier(item.winAmount, item.multiple)
+          return {
+            ...item,
+            currency: requestCurrency,
+            src: toGameImageUrl(String(item.coverImg ?? '')),
+            icon: getVipIconByVipId(item.vipId),
+            avatar: toGameImageUrl(String(item.avatar ?? '')),
+            betAmount: derivedBet ?? item.betAmount ?? item.gameAmount
+          }
+        }) || []
+    }
   } catch (error) {
-    list.value = []
-    console.error('getRecentBigWins failed', error)
+    if (isLatestRecentBigWinsRequest(requestId)) {
+      list.value = []
+      console.error('getRecentBigWins failed', error)
+    }
   } finally {
-    loading.value = false
-    void nextTick(() => startMarqueeRaf())
+    if (isLatestRecentBigWinsRequest(requestId)) {
+      loading.value = false
+      void nextTick(() => startMarqueeRaf())
+    }
   }
 }
 
@@ -423,7 +445,7 @@ watch(
 )
 
 watch(
-  () => currentCurrency.value,
+  () => currentCurrencyCode.value,
   () => {
     void getRecentBigWinsData()
   },
