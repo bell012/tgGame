@@ -10,7 +10,7 @@
       >
         <CollectIcon
           class="h-3 w-3 text-icon-3"
-          :class="collectOnly ? 'text-theme-primary' : 'opacity-100'"
+          :class="props.collectOnly ? 'text-theme-primary' : 'opacity-100'"
         />
       </button>
 
@@ -244,6 +244,15 @@ const emit = defineEmits<{
   'collect-change': [payload: CollectOnlyPayload]
 }>()
 
+const props = withDefaults(
+  defineProps<{
+    collectOnly?: boolean
+  }>(),
+  {
+    collectOnly: false
+  }
+)
+
 const { t } = useI18n()
 const { filterTabs, leagueFilterItems, activeFilterKey, selectFilterKey, applyLeagueFilter } =
   useLiansaiTabs()
@@ -251,7 +260,6 @@ const { filterTabs, leagueFilterItems, activeFilterKey, selectFilterKey, applyLe
 const alphabetIndex = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')]
 const searchKeyword = ref('')
 const popupSearchKeyword = ref('')
-const collectOnly = ref(false)
 const isPopupOpen = ref(false)
 const selectedLeagueKeys = ref<string[]>([])
 const hasTouchedLeagueSelection = ref(false)
@@ -301,16 +309,13 @@ const getFilterButtonClass = (key: LiansaiFilterKey) =>
 // 点击联赛/时间切换选中项。 emit已经暴露出去，别的组件可以接受当前选中哪个值
 const onFilterTabClick = (key: LiansaiFilterKey) => {
   emit('filter-change', selectFilterKey(key))
-  console.log('点击联赛/时间切换选中项', key)
 }
 
 // 切换收藏筛选状态。
 const toggleCollectOnly = () => {
-  collectOnly.value = !collectOnly.value
   // 暴露收藏筛选状态，true 表示收藏，false 表示取消收藏。
-  const payload = { collectOnly: collectOnly.value }
+  const payload = { collectOnly: !props.collectOnly }
   emit('collect-change', payload)
-  console.log(collectOnly.value ? '点击收藏按钮：收藏' : '点击收藏按钮：取消收藏', payload)
 }
 
 // 打开 H5 联赛筛选弹窗。
@@ -414,9 +419,9 @@ const toggleAllSelection = () => {
 
 // 点击弹窗全部联赛过滤按钮 emit已经暴露出去，别的组件可以接受当前选中哪个值
 const applyPopupFilter = () => {
-  emit('league-filter', applyLeagueFilter(selectedLeagueKeys.value))
+  const payload = applyLeagueFilter(selectedLeagueKeys.value)
+  emit('league-filter', payload)
   closePopup()
-  console.log('点击联赛/点击弹窗全部联赛过滤按钮', applyLeagueFilter(selectedLeagueKeys.value))
 }
 
 // 接口联赛列表变化时，初始化或修正弹窗里的已选联赛。

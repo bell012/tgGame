@@ -7,6 +7,12 @@ import { useSportsStore } from '@/stores/sports'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import teamBadge from '@/static/img/explore/sports-team.png'
 import type { OddsMarket, OddsSelectPayload, OddsTrend } from './components/match-odds/types'
+import type { CollectOnlyPayload, FilterTabChangePayload } from './components/filter_search'
+import type {
+  LeagueFilterPayload,
+  LeagueSelectionPayload,
+  LiansaiFilterPayload
+} from './components/liansai_tabs'
 
 export type SportsBetMode = 'single' | 'parlay'
 export type SportsMatch = {
@@ -145,6 +151,11 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
   const focusedStakeId = ref('')
   const noticeKey = ref<NoticeKey>('')
   const refreshing = ref(false)
+  const collectOnly = ref(false)
+  const activeMatchFilterPayload = ref<FilterTabChangePayload | null>(null)
+  const activeLeagueSortPayload = ref<LiansaiFilterPayload | null>(null)
+  const activeLeaguePayload = ref<LeagueSelectionPayload | null>(null)
+  const activeLeagueFilterPayload = ref<LeagueFilterPayload | null>(null)
   let refreshTimer: ReturnType<typeof setTimeout> | undefined
 
   const matches = computed<SportsMatch[]>(() =>
@@ -448,6 +459,31 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
   const showUnsupported = () => {
     noticeKey.value = 'notImplemented'
   }
+  // 集中处理滚球/今日/早盘/串关筛选变化，组件只负责 emit 当前点击结果。
+  const handleMatchFilterChange = (payload: FilterTabChangePayload) => {
+    activeMatchFilterPayload.value = payload
+    console.log('体育主逻辑：滚球/今日/早盘/串关筛选变化', payload)
+  }
+  // 集中处理联赛/时间排序切换，PC/H5 联赛 tabs 共用这一份主逻辑。
+  const handleLeagueSortChange = (payload: LiansaiFilterPayload) => {
+    activeLeagueSortPayload.value = payload
+    console.log('体育主逻辑：联赛/时间排序变化', payload)
+  }
+  // 集中处理 PC 单个联赛 tab 或弹窗联赛项点击结果。
+  const handleLeagueChange = (payload: LeagueSelectionPayload) => {
+    activeLeaguePayload.value = payload
+    console.log('体育主逻辑：PC 联赛选择变化', payload)
+  }
+  // 集中处理 H5 弹窗多选联赛筛选结果。
+  const handleLeagueFilter = (payload: LeagueFilterPayload) => {
+    activeLeagueFilterPayload.value = payload
+    console.log('体育主逻辑：H5 联赛筛选变化', payload)
+  }
+  // 集中处理收藏筛选状态，true 表示收藏，false 表示取消收藏。
+  const handleCollectChange = (payload: CollectOnlyPayload) => {
+    collectOnly.value = payload.collectOnly
+    console.log(payload.collectOnly ? '体育主逻辑：收藏' : '体育主逻辑：取消收藏', payload)
+  }
   const refreshSportCountsForRouteEntry = async () => {
     try {
       await siteConfigStore.initSiteConfig()
@@ -538,6 +574,11 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
     notice,
     refreshing,
     focusedStakeId,
+    collectOnly,
+    activeMatchFilterPayload,
+    activeLeagueSortPayload,
+    activeLeaguePayload,
+    activeLeagueFilterPayload,
     toggleFavorite,
     setMatchExpanded,
     getMatchMarkets,
@@ -553,7 +594,12 @@ export const useSportsPage = (options: { additionalMatches?: readonly SportsMatc
     clearBets,
     submitMockBet,
     refreshBalance,
-    showUnsupported
+    showUnsupported,
+    handleMatchFilterChange,
+    handleLeagueSortChange,
+    handleLeagueChange,
+    handleLeagueFilter,
+    handleCollectChange
   }
 }
 

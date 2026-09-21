@@ -41,7 +41,7 @@
       >
         <CollectIcon
           class="h-5 w-5 text-icon-2"
-          :class="collectOnly ? 'text-theme-primary' : 'opacity-100'"
+          :class="props.collectOnly ? 'text-theme-primary' : 'opacity-100'"
         />
       </button>
     </div>
@@ -63,10 +63,18 @@ const emit = defineEmits<{
   'collect-change': [payload: CollectOnlyPayload]
 }>()
 
+const props = withDefaults(
+  defineProps<{
+    collectOnly?: boolean
+  }>(),
+  {
+    collectOnly: false
+  }
+)
+
 const filterTabs = useFilterTabs()
 const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
 const searchKeyword = ref('')
-const collectOnly = ref(false)
 const { t } = useI18n()
 
 // 根据当前选中的筛选项返回按钮样式。
@@ -84,15 +92,12 @@ const onFilterTabClick = (key: FilterTabKey) => {
     item: filterTabs.value.find(item => item.key === key)
   }
   emit('filter-change', payload)
-  console.log('点击滚球/今日/早盘/串关筛选项', payload)
 }
 
 // 切换收藏状态。
 const toggleCollectOnly = () => {
-  collectOnly.value = !collectOnly.value
   // 暴露收藏筛选状态，true 表示收藏，false 表示取消收藏。
-  const payload = { collectOnly: collectOnly.value }
+  const payload = { collectOnly: !props.collectOnly }
   emit('collect-change', payload)
-  console.log(collectOnly.value ? '点击收藏按钮：收藏' : '点击收藏按钮：取消收藏', payload)
 }
 </script>

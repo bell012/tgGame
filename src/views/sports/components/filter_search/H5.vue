@@ -49,6 +49,5 @@ const onFilterTabClick = (key: FilterTabKey) => {
     item: filterTabs.value.find(item => item.key === key)
   }
   emit('filter-change', payload)
-  console.log('点击滚球/今日/早盘/串关筛选项', payload)
 }
 </script>

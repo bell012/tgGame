@@ -11,7 +11,10 @@
       data-testid="sports-h5-sticky-navigation"
     >
       <SportsNavigation @change="changeSport" />
-      <FilterSearch_H5 class="mb-[12px] h-[38px] px-[14px]" />
+      <FilterSearch_H5
+        class="mb-[12px] h-[38px] px-[14px]"
+        @filter-change="page.handleMatchFilterChange"
+      />
     </header>
     <div :style="{ height: `${navigationHeight}px` }" aria-hidden="true"></div>
 
@@ -61,7 +64,12 @@
       <section class="mx-[14px] mt-3" :aria-label="`${activeSportLabel} matches by league`">
         <div class="mb-3 flex h-[30px] items-center gap-[7px]">
           <!-- 搜索、收藏筛选及排序区域 -->
-          <LeagueTabs_H5 />
+          <LeagueTabs_H5
+            :collect-only="page.collectOnly.value"
+            @filter-change="page.handleLeagueSortChange"
+            @league-filter="page.handleLeagueFilter"
+            @collect-change="page.handleCollectChange"
+          />
           <button
             type="button"
             class="flex h-[30px] w-[30px] shrink-0 flex-col items-center justify-center rounded-lg bg-bg-2 text-text-2 focus-visible:outline focus-visible:outline-theme-primary"

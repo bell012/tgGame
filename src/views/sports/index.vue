@@ -56,8 +56,17 @@
     </section>
 
     <section class="mx-5 mt-4 space-y-4" data-testid="sports-filters">
-      <LeagueTabs_PC v-if="!isMobile" />
-      <FilterSearch_PC v-if="!isMobile" />
+      <LeagueTabs_PC
+        v-if="!isMobile"
+        @filter-change="handleLeagueSortChange"
+        @league-change="handleLeagueChange"
+      />
+      <FilterSearch_PC
+        v-if="!isMobile"
+        :collect-only="collectOnly"
+        @filter-change="handleMatchFilterChange"
+        @collect-change="handleCollectChange"
+      />
     </section>
 
     <!-- PC 统一四列；展开面板覆盖后续卡片，不改变网格占位。 -->
@@ -162,6 +171,7 @@ const {
   notice,
   refreshing,
   focusedStakeId,
+  collectOnly,
   toggleFavorite,
   setMatchExpanded,
   getMatchMarkets,
@@ -177,7 +187,11 @@ const {
   clearBets,
   submitMockBet,
   refreshBalance,
-  showUnsupported
+  showUnsupported,
+  handleMatchFilterChange,
+  handleLeagueSortChange,
+  handleLeagueChange,
+  handleCollectChange
 } = page
 
 async function changePage(page: number) {

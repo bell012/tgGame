@@ -126,13 +126,11 @@ const getLeagueButtonClass = (item: LeagueTabItem) => {
 // 点击“联赛/时间”时切换分段选中态  emit已经暴露出去，别的组件可以接受当前选中哪个值
 const onFilterTabClick = (key: LiansaiFilterKey) => {
   emit('filter-change', selectFilterKey(key))
-  console.log('点击“联赛/时间”时切换分段选中态', key)
 }
 
 // 点击联赛 tab 时切换选中项。emit已经暴露出去，别的组件可以接受当前选中哪个值
 const onLeagueTabClick = (key: string) => {
   emit('league-change', selectLeagueKey(key))
-  console.log('点击联赛 tab 时切换选中项', key)
 }
 
 // 点击更多按钮切换联赛弹窗，同时驱动按钮里的三角图标旋转方向。
@@ -144,7 +142,6 @@ const toggleLeaguePopup = () => {
 const onLeaguePopupItemClick = (key: string) => {
   emit('league-change', selectLeagueKey(key))
   isLeaguePopupOpen.value = false
-  console.log('点击弹窗中的全部联赛项', key)
 }
 
 // 记录鼠标按下时的位置和滚动距离，后续用于计算横向拖动偏移。
