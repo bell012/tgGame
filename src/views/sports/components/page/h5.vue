@@ -82,6 +82,7 @@
             class="mt-3"
             :MarketLines="match.MarketLines"
             :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
+            picker="liveStrip"
             @select="selectOdds(match.id, $event)"
           />
           <div

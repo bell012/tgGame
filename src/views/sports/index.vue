@@ -56,8 +56,8 @@
               v-if="match.MarketLines.length"
               :MarketLines="match.MarketLines"
               :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
-              :expanded="expandedMatchId === `live:${match.id}`"
-              @update:expanded="setMatchExpanded(`live:${match.id}`, $event)"
+              picker="liveStrip"
+              :show-expand="false"
               @select="selectOdds(match.id, $event)"
             />
           </div>

@@ -36,7 +36,7 @@
           <span class="shrink-0 text-[14px] font-bold">{{ selection.Odds }}</span>
         </button>
         <button
-          v-if="marketIndex === 0"
+          v-if="showExpand && marketIndex === 0"
           type="button"
           class="flex h-11 shrink-0 items-center justify-center rounded-lg bg-bg-3 p-4"
           :aria-expanded="expanded"
@@ -60,9 +60,11 @@ const props = withDefaults(
     MarketLines: SportMarketLine[]
     selectedWagerSelectionId?: number | string
     expanded?: boolean
+    showExpand?: boolean
   }>(),
   {
-    expanded: true
+    expanded: true,
+    showExpand: true
   }
 )
 
