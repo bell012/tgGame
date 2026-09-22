@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto max-w-[1336px] px-4 pb-[40px] xl:px-0">
+  <div class="mx-auto w-full max-w-[1336px] px-[14px] pb-[40px]">
     <div class="mt-[16px]">
       <h1 class="text-xl font-[700] text-text-1">{{ $t('userMenu.vipClub') }}</h1>
 

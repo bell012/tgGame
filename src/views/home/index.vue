@@ -321,7 +321,6 @@ import icon4 from './img/Image3.svg?url'
 import icon5 from './img/Image5.svg?url'
 import icon6 from './img/Image6.svg?url'
 import icon7 from './img/Image7.svg?url'
-import pokerIcon from './img/pokerIcon.svg?url'
 
 import ADA from '@/static/svg/coin/ADA.black.svg?url'
 import BNB from '@/static/svg/coin/BNB.black.svg?url'
@@ -342,7 +341,6 @@ import VISA from '@/static/svg/coin/VISA.svg?url'
 import XRP from '@/static/svg/coin/XRP.black.svg?url'
 
 import combination from '@/static/img/home/combination.png'
-import contract from '@/static/img/home/contract.png'
 import placeholderImg from '@/static/img/home/errImg1.png'
 import fishing from '@/static/img/home/fishing.png'
 import live from '@/static/img/home/live.png'
@@ -386,12 +384,6 @@ const closeH5HomePop = () => {
 
 const listImg = computed(() => [
   {
-    name: t('home.Poker'),
-    img: contract,
-    icon: pokerIcon,
-    sysGameTypeCode: ''
-  },
-  {
     name: t('home.slots'),
     img: slots,
     icon: icon1,
@@ -413,7 +405,7 @@ const listImg = computed(() => [
     name: t('home.lottery'),
     img: combination,
     icon: icon4,
-    sysGameTypeCode: ''
+    sysGameTypeCode: 'CP'
   },
   {
     name: t('home.table'),

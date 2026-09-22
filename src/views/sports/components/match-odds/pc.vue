@@ -1,29 +1,45 @@
 <template>
   <div class="flex flex-col gap-3">
     <section
-      v-for="(market, marketIndex) in visibleMarkets"
-      :key="market.id"
+      v-for="(line, marketIndex) in visibleMarketLines"
+      :key="line.MarketlineId"
       class="flex flex-col gap-3"
     >
-      <p class="text-[14px] font-normal leading-none text-text-2">{{ market.title }}</p>
+      <p
+        v-if="showTitle"
+        class="flex items-center gap-2 text-[14px] font-normal leading-none text-text-2"
+      >
+        <span>{{ line.BetTypeName }}</span>
+        <span v-if="line.PeriodId !== 1 && line.PeriodName">{{ line.PeriodName }}</span>
+      </p>
       <div class="flex items-stretch gap-2">
         <button
-          v-for="option in market.options"
-          :key="option.id"
+          v-for="selection in visibleSelections(line)"
+          :key="selection.WagerSelectionId"
           type="button"
-          class="flex h-11 min-w-0 flex-1 items-center justify-between rounded-lg bg-bg-3 px-4 py-3"
-          @click="emit('select', { market, option })"
+          class="flex h-11 min-w-0 flex-1 items-center justify-between rounded-lg px-4 py-3"
+          :class="
+            isWagerSelected(selection, selectedWagerSelectionId)
+              ? 'bg-theme-primary text-text-4'
+              : 'bg-bg-3 text-text-1'
+          "
+          @click="emit('select', { market: line, option: selection })"
         >
           <span
-            class="flex min-w-0 items-center gap-2 truncate text-[14px] font-normal text-text-1"
+            class="flex min-w-0 items-center gap-2 truncate text-[14px] font-normal"
+            :class="
+              isWagerSelected(selection, selectedWagerSelectionId) ? 'text-text-4' : 'text-text-1'
+            "
           >
-            <span class="truncate">{{ option.label }}</span>
-            <span v-if="option.line" class="shrink-0">{{ option.line }}</span>
+            <span class="truncate">{{ selection.SelectionName }}</span>
+            <span v-if="shouldShowHandicap(line, selection)" class="shrink-0">{{
+              selection.Handicap
+            }}</span>
           </span>
-          <span class="shrink-0 text-[14px] font-bold text-text-1">{{ option.odds }}</span>
+          <span class="shrink-0 text-[14px] font-bold">{{ selection.Odds }}</span>
         </button>
         <button
-          v-if="marketIndex === 0"
+          v-if="showExpand && marketIndex === 0"
           type="button"
           class="flex h-11 shrink-0 items-center justify-center rounded-lg bg-bg-3 p-4"
           :aria-expanded="expanded"
@@ -39,15 +55,21 @@
 <script setup lang="ts">
 import CaretUp from '@/static/svg/sports/caret-up.svg?component'
 import { computed } from 'vue'
-import type { OddsMarket, OddsSelectPayload } from './types'
+import { hasFiniteOdds, isWagerSelected, shouldShowHandicap } from './display'
+import type { OddsSelectPayload, SportMarketLine } from './types'
 
 const props = withDefaults(
   defineProps<{
-    markets: OddsMarket[]
+    MarketLines: SportMarketLine[]
+    selectedWagerSelectionId?: number | string
     expanded?: boolean
+    showExpand?: boolean
+    showTitle?: boolean
   }>(),
   {
-    expanded: true
+    expanded: true,
+    showExpand: true,
+    showTitle: true
   }
 )
 
@@ -58,30 +80,15 @@ const emit = defineEmits<{
 
 const expanded = computed(() => props.expanded)
 
-/** 与参考稿一致：独赢(1X2) → 让球 → 大小；未知盘口保持原相对顺序排在后面 */
-const PC_MARKET_ORDER = ['1x2', 'handicap', 'ou'] as const
-
-const orderedMarkets = computed(() => {
-  const markets = props.markets
-  const rank = (id: string) => {
-    const index = (PC_MARKET_ORDER as readonly string[]).indexOf(id)
-    return index === -1 ? PC_MARKET_ORDER.length : index
+const visibleMarketLines = computed(() => {
+  if (expanded.value || props.MarketLines.length === 0) {
+    return props.MarketLines
   }
-  return [...markets].sort((a, b) => {
-    const byType = rank(a.id) - rank(b.id)
-    if (byType !== 0) {
-      return byType
-    }
-    return markets.indexOf(a) - markets.indexOf(b)
-  })
+  return props.MarketLines.slice(0, 1)
 })
 
-const visibleMarkets = computed(() => {
-  if (expanded.value || orderedMarkets.value.length === 0) {
-    return orderedMarkets.value
-  }
-  return orderedMarkets.value.slice(0, 1)
-})
+const visibleSelections = (line: SportMarketLine) =>
+  (line.WagerSelections ?? []).filter(hasFiniteOdds)
 
 const toggleExpanded = () => {
   emit('update:expanded', !expanded.value)

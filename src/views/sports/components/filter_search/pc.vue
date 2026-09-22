@@ -22,26 +22,14 @@
     </div>
 
     <div class="flex flex-none items-center">
-      <label
-        class="flex h-[40px] w-[264px] items-center rounded-[32px] bg-bg-2 px-[16px] transition-colors"
-      >
-        <SearchIcon class="h-5 w-5 text-icon-3" />
-        <input
-          v-model="searchKeyword"
-          class="ml-[4px] min-w-0 flex-1 border-0 bg-transparent text-[14px] font-[400] text-text-1 outline-none placeholder:text-text-3"
-          type="text"
-          placeholder="搜索联赛或球队"
-        />
-      </label>
-
       <button
         type="button"
-        class="inline-flex ml-[12px] h-[41px] w-[41px] flex-none items-center justify-center rounded-full border-0 bg-bg-2 transition-colors"
+        class="inline-flex h-[41px] w-[41px] flex-none items-center justify-center rounded-full border-0 bg-bg-2 transition-colors"
         @click="toggleCollectOnly"
       >
         <CollectIcon
           class="h-5 w-5 text-icon-2"
-          :class="collectOnly ? 'opacity-100' : 'opacity-80'"
+          :class="props.collectOnly ? 'text-theme-primary' : 'opacity-100'"
         />
       </button>
     </div>
@@ -49,40 +37,50 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
+import { storeToRefs } from 'pinia'
+import { useSportsStore } from '@/stores/sports'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
+import { useFilterTabs } from './index'
+import type { CollectOnlyPayload, FilterTabChangePayload, FilterTabKey } from './index'
 
-type FilterTabItem = {
-  key: string
-  label: string
-  count: number
-}
+const emit = defineEmits<{
+  'filter-change': [payload: FilterTabChangePayload]
+  'collect-change': [payload: CollectOnlyPayload]
+}>()
 
-const filterTabs: FilterTabItem[] = [
-  { key: 'rolling', label: '滚球', count: 125 },
-  { key: 'today', label: '今日', count: 125 },
-  { key: 'early', label: '早盘', count: 125 },
-  { key: 'parlay', label: '串关', count: 125 }
-]
+const props = withDefaults(
+  defineProps<{
+    collectOnly?: boolean
+  }>(),
+  {
+    collectOnly: false
+  }
+)
 
-const activeFilterKey = ref('today')
-const searchKeyword = ref('')
-const collectOnly = ref(false)
+const filterTabs = useFilterTabs()
+const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
 
 // 根据当前选中的筛选项返回按钮样式。
-const getFilterTabClass = (key: string) =>
+const getFilterTabClass = (key: FilterTabKey) =>
   activeFilterKey.value === key
     ? 'bg-bg-3 text-text-1 font-[700]'
     : 'bg-bg-9 text-text-3 lg:hover:bg-bg-2'
 
 // 点击筛选按钮切换选中项。
-const onFilterTabClick = (key: string) => {
+const onFilterTabClick = (key: FilterTabKey) => {
   activeFilterKey.value = key
+  // 暴露滚球/今日/早盘/串关当前点击项，方便父组件同步筛选条件。
+  const payload = {
+    key,
+    item: filterTabs.value.find(item => item.key === key)
+  }
+  emit('filter-change', payload)
 }
 
 // 切换收藏状态。
 const toggleCollectOnly = () => {
-  collectOnly.value = !collectOnly.value
+  // 暴露收藏筛选状态，true 表示收藏，false 表示取消收藏。
+  const payload = { collectOnly: !props.collectOnly }
+  emit('collect-change', payload)
 }
 </script>

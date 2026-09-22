@@ -24,29 +24,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useSportsStore } from '@/stores/sports'
+import { useFilterTabs } from './index'
+import type { FilterTabChangePayload, FilterTabKey } from './index'
 
-type FilterTabItem = {
-  key: string
-  label: string
-  count: number
-}
+const emit = defineEmits<{
+  'filter-change': [payload: FilterTabChangePayload]
+}>()
 
-const filterTabs: FilterTabItem[] = [
-  { key: 'rolling', label: '滚球', count: 125 },
-  { key: 'today', label: '今日', count: 125 },
-  { key: 'early', label: '早盘', count: 125 },
-  { key: 'parlay', label: '串关', count: 125 }
-]
-
-const activeFilterKey = ref(filterTabs[0]?.key ?? '')
+const filterTabs = useFilterTabs()
+const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
 
 // 根据当前选中的筛选项返回连体分段按钮样式。
-const getFilterTabClass = (key: string) =>
+const getFilterTabClass = (key: FilterTabKey) =>
   activeFilterKey.value === key ? 'text-text-1 font-[700]' : 'text-text-2 font-[400]'
 
 // 点击筛选按钮切换选中项。
-const onFilterTabClick = (key: string) => {
+const onFilterTabClick = (key: FilterTabKey) => {
   activeFilterKey.value = key
+  // 暴露滚球/今日/早盘/串关当前点击项，方便父组件同步筛选条件。
+  const payload = {
+    key,
+    item: filterTabs.value.find(item => item.key === key)
+  }
+  emit('filter-change', payload)
 }
 </script>

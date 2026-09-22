@@ -169,14 +169,16 @@ const getBrandData = async () => {
 
   try {
     if (isMobile.value) {
-      const list = await gameStore.queryGameBrandData({
-        keyword: resolvedQueryOptions.value.keyword
+      const result = await gameStore.queryGameBrandDataPage({
+        keyword: resolvedQueryOptions.value.keyword,
+        page: 1,
+        pageSize: resolvedPageSize.value
       })
 
       page.value = 1
-      total.value = list.length
-      totalPages.value = 1
-      brandList.value = list
+      total.value = result.total
+      totalPages.value = result.totalPages
+      brandList.value = result.list
       return
     }
 

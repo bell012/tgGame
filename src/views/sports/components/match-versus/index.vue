@@ -20,9 +20,9 @@
       class="col-start-2 row-start-1 flex items-center justify-center font-bold"
       :class="isMobile ? 'gap-2 text-[24px] leading-none text-theme-primary' : 'gap-2'"
     >
-      <span :class="scoreValueClass">{{ homeScore }}</span>
+      <span :class="scoreValueClass">{{ homeScoreText }}</span>
       <span v-if="isMobile">:</span>
-      <span :class="scoreValueClass">{{ awayScore }}</span>
+      <span :class="scoreValueClass">{{ awayScoreText }}</span>
     </div>
 
     <SmartImage
@@ -35,14 +35,15 @@
     />
 
     <p
-      class="col-start-1 row-start-2 min-w-0 break-words text-center text-text-1 line-clamp-2"
+      class="col-start-1 row-start-2 min-w-0 text-text-1"
       :class="
         isMobile
-          ? 'text-[12px] font-normal leading-[12px]'
-          : 'text-left text-[16px] font-normal leading-5'
+          ? 'break-words text-center text-[12px] font-normal leading-[12px] line-clamp-2'
+          : 'truncate text-left text-[16px] font-normal leading-5'
       "
+      :title="HomeTeam"
     >
-      {{ homeName }}
+      {{ HomeTeam }}
     </p>
 
     <p
@@ -53,14 +54,15 @@
     </p>
 
     <p
-      class="col-start-3 row-start-2 min-w-0 break-words text-text-1 line-clamp-2"
+      class="col-start-3 row-start-2 min-w-0 text-text-1"
       :class="
         isMobile
-          ? 'text-center text-[12px] font-normal leading-[12px]'
-          : 'text-right text-[16px] font-bold leading-5'
+          ? 'break-words text-center text-[12px] font-normal leading-[12px] line-clamp-2'
+          : 'truncate text-right text-[16px] font-bold leading-5'
       "
+      :title="AwayTeam"
     >
-      {{ awayName }}
+      {{ AwayTeam }}
     </p>
   </div>
 </template>
@@ -72,17 +74,21 @@ import { computed } from 'vue'
 
 interface Props {
   homeSrc: string
-  homeName: string
-  homeAlt?: string
   awaySrc: string
-  awayName: string
+  HomeTeam: string
+  AwayTeam: string
+  HomeScore?: string | number
+  AwayScore?: string | number
+  HomeTeamId?: number
+  AwayTeamId?: number
+  homeAlt?: string
   awayAlt?: string
-  homeScore: string | number
-  awayScore: string | number
   centerCaption?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  HomeScore: '',
+  AwayScore: '',
   homeAlt: '',
   awayAlt: '',
   centerCaption: ''
@@ -90,12 +96,20 @@ const props = withDefaults(defineProps<Props>(), {
 
 const isMobile = useIsMobile()
 
+const displayScore = (value: string | number | undefined) => {
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value)
+  if (typeof value === 'string' && value.trim()) return value.trim()
+  return '—'
+}
+
 const scoreValueClass = computed(() =>
   isMobile.value
     ? ''
     : 'flex items-center justify-center rounded-[8px] bg-opacity-15 px-4 py-3 text-[16px] font-bold leading-none text-text-1'
 )
 
-const homeAltText = computed(() => props.homeAlt || props.homeName)
-const awayAltText = computed(() => props.awayAlt || props.awayName)
+const homeScoreText = computed(() => displayScore(props.HomeScore))
+const awayScoreText = computed(() => displayScore(props.AwayScore))
+const homeAltText = computed(() => props.homeAlt || props.HomeTeam)
+const awayAltText = computed(() => props.awayAlt || props.AwayTeam)
 </script>

@@ -115,7 +115,6 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useCheckInModalStore } from '@/stores/checkInModal'
 import { useLayoutStore } from '@/stores/layout'
 import { usePromotionsStore } from '@/stores/promotions'
-import { useUserStore } from '@/stores/user'
 import {
   DEFAULT_LOCALE,
   getLocaleFromRouteParam,
@@ -144,7 +143,6 @@ import { CheckInPopup, useCheckInAutoPopup } from '@/views/activity/check-in'
 import { globalTicketToastState } from '@/views/activity/ticket/shell/ticketToast'
 
 const layoutStore = useLayoutStore()
-const userStore = useUserStore()
 const promotionsStore = usePromotionsStore()
 const checkInModalStore = useCheckInModalStore()
 const { visible: checkInVisible } = storeToRefs(checkInModalStore)
@@ -276,7 +274,6 @@ const getMainRouteViewKey = (currentRoute: RouteLocationNormalizedLoaded) => {
 const resolveRouteSnapshot = (fullPath: string) => {
   return markRaw(router.resolve(fullPath) as RouteLocationNormalizedLoaded)
 }
-
 /** 预加载左侧背景页，避免首次直达客服页时将异步组件错误渲染为 Promise。 */
 const preloadRouteComponents = async (targetRoute: RouteLocationNormalizedLoaded) => {
   await Promise.all(
@@ -293,6 +290,21 @@ const preloadRouteComponents = async (targetRoute: RouteLocationNormalizedLoaded
       }
     })
   )
+}
+
+// PC/H5 视口模式切换时回到首页，并清理只属于当前布局的临时状态；登录态保持不变。
+const redirectViewportModeChangeToHome = (localeParam?: string) => {
+  const targetLocale = getLocaleFromRouteParam(localeParam)
+  const targetHomePath = withLocalePrefix('/', targetLocale)
+
+  showNotificationPanel.value = false
+  activeNotificationDetail.value = null
+  slideRouteStack.value = []
+  backgroundRouteSnapshot.value = resolveRouteSnapshot(targetHomePath)
+
+  if (route.fullPath !== targetHomePath) {
+    void router.replace(targetHomePath)
+  }
 }
 
 const isLocaleOnlyRouteChange = (
@@ -580,7 +592,7 @@ watch(
     }
 
     lastResolvedDeviceMode.value = mobile
-    userStore.logout()
+    redirectViewportModeChangeToHome(route.params.locale as string | undefined)
   }
 )
 </script>

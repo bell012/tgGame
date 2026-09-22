@@ -150,6 +150,14 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'sports/event-details',
+    name: 'sportsEventDetails',
+    component: () => import('@/views/sports/event-details/index.vue'),
+    meta: {
+      title: '赛事详情'
+    }
+  },
+  {
     path: 'menu',
     name: 'menu',
     component: () => import('@/components/Menu.vue'),

@@ -313,12 +313,16 @@ const getGameData = async () => {
 
   try {
     if (isMobile.value) {
-      const list = await gameStore.queryGameData(resolvedQueryOptions.value)
+      const result = await gameStore.queryGameDataPage({
+        ...resolvedQueryOptions.value,
+        page: 1,
+        pageSize: resolvedPageSize.value
+      })
 
       page.value = 1
-      total.value = list.length
-      totalPages.value = 1
-      pageData.value = list
+      total.value = result.total
+      totalPages.value = result.totalPages
+      pageData.value = result.list
       return
     }
 

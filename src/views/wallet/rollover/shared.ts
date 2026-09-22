@@ -223,14 +223,16 @@ export const buildRolloverQueryForm = (params: {
   page: number
   pageSize: number
   filterValues: FilterInput
+  currency?: string | null
 }): QueryInspectPageForm => {
   const normalized = normalizeRolloverFilterValues(params.filterValues)
   const { startTime, endTime } = getTimeRange(normalized.time)
+  const currency = params.currency || getCurrentCurrency()
 
   return {
     startTime,
     endTime,
-    currency: getCurrentCurrency(),
+    currency,
     page: { current: params.page, size: params.pageSize },
     state: normalized.status === 'all' ? null : Number(normalized.status),
     changeTypes: normalized.type === 'all' ? [...ROLLOVER_CHANGE_TYPE_VALUES] : [normalized.type]

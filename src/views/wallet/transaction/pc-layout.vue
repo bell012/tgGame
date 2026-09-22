@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 pb-0">
+  <div class="w-full min-w-0 p-6 pb-0">
     <div class="mb-4">
       <div class="flex items-center gap-2 flex-wrap">
         <CustomSelect
@@ -107,6 +107,8 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import Api from '@/api'
 import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import CustomSelect from '@/components/common/CustomSelect.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
@@ -126,13 +128,15 @@ import {
 } from './shared'
 
 const { t } = useI18n()
+const userStore = useUserStore()
+userStore.syncStoredUserData()
+const { currentCurrencyCode } = useDisplayCurrency()
 const filterValues = ref(createDefaultTransactionFilterValues())
 const dataList = ref<Item[]>([])
 const loading = ref(false)
 const error = ref<unknown | null>(null)
 const currentPage = ref(1)
 const totalPages = ref(1)
-
 const timeOptions = computed(() => createTransactionTimeOptions(t))
 const typeOptions = computed(() => createTransactionTypeOptions(t))
 
@@ -145,7 +149,8 @@ const fetchTransaction = async (page = 1) => {
       buildTransactionQueryForm({
         page,
         pageSize: TRANSACTION_PAGE_SIZE,
-        filterValues: filterValues.value
+        filterValues: filterValues.value,
+        currency: currentCurrencyCode.value
       })
     )
 
@@ -184,6 +189,11 @@ watch(
   },
   { deep: true }
 )
+
+watch(currentCurrencyCode, async () => {
+  currentPage.value = 1
+  await fetchTransaction(1)
+})
 
 onMounted(() => {
   void fetchTransaction(1)

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-[1032px]">
+  <div class="w-full min-w-0">
     <!-- 筛选区 -->
     <div class="mb-5 flex items-center gap-3 flex-wrap">
       <CustomSelect
