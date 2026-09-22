@@ -22,6 +22,7 @@ import type {
 import type { SportsRequestOptions } from '@/api/modules/sport'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useUserStore } from '@/stores/user'
 import { isApiBusinessSuccess } from '@/utils/apiBusiness'
 
 /** 当前选中的赛事筛选标签。 */
@@ -170,6 +171,11 @@ const createSportsRequest = <Params, Response extends SportsResponse>(
 export const useSportsStore = defineStore('sports', () => {
   const siteConfigStore = useSiteConfigStore()
   const localeStore = useLocaleStore()
+  const userStore = useUserStore()
+  // 与导航及路由守卫保持相同的本站登录态判断。
+  const isLoggedIn = computed(() =>
+    Boolean(userStore.userInfo?.tradeToken || userStore.acctInfo?.memberId)
+  )
   const oddsTypeEnum: Readonly<Record<SportsOddsType, string>> = Object.freeze({
     1: '马来盘',
     2: '香港盘',
@@ -203,6 +209,22 @@ export const useSportsStore = defineStore('sports', () => {
     }
   })
   const sortType = ref<SportsSortType>(1)
+  // 游客不能开启收藏置顶；组件及请求统一读取这一受登录态约束的值。
+  const favouriteSelected = ref(false)
+  const isFavourite = computed({
+    get: () => isLoggedIn.value && favouriteSelected.value,
+    set: (value: boolean) => {
+      favouriteSelected.value = isLoggedIn.value && value
+    }
+  })
+  watch(
+    [isLoggedIn, () => userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId ?? null],
+    () => {
+      // 退出或切换账号后不继承此前的收藏选择，重新登录也保持默认关闭。
+      favouriteSelected.value = false
+    },
+    { flush: 'sync' }
+  )
   const pageNumber = ref(1)
   const pageSize = ref(10)
   const competitionIds = ref<number[]>([])
@@ -241,7 +263,7 @@ export const useSportsStore = defineStore('sports', () => {
   const favourite = createSportsRequest(getBaseUrl, Api.sport.favouriteEvent, () => true)
   const resources = [counts, events, indexes, competition, popular, favourite]
 
-  // 全联赛缓存独立于下方列表条件，data 是分页汇总，response 仅保留最近一页原始响应。
+  // 全联赛缓存独立于搜索和联赛选择，按收藏置顶条件隔离；response 仅保留最近一页。
   const allSportsState = shallowReactive<{
     params: GetSportsV2Params | null
     response: GetSportsV2Response | null
@@ -261,11 +283,14 @@ export const useSportsStore = defineStore('sports', () => {
     error: null
   })
   const allSportsDataContext = ref('')
+  const allSportsDataScope = ref('')
   const getAllSportsContext = () =>
     JSON.stringify([getBaseUrl(), languageCode.value, selectedSportId.value, market.value])
+  const getAllSportsQueryContext = () => JSON.stringify([getAllSportsContext(), isFavourite.value])
   let allSportsController: AbortController | undefined
   let allSportsPending: Promise<SportCompetitionGroup[] | null> | null = null
   const allSportsRequestContext = ref('')
+  const allSportsRequestScope = ref('')
   let allSportsRefreshPending = false
   const cancelAllSports = () => {
     allSportsController?.abort()
@@ -273,8 +298,9 @@ export const useSportsStore = defineStore('sports', () => {
     allSportsPending = null
     allSportsState.loading = false
   }
+  // 收藏只改变排序；联赛候选及热门补全仍可使用同球种、分类下最近的预览。
   const allLeagueGroups = computed(() =>
-    allSportsDataContext.value === getAllSportsContext() ? allSportsState.data : []
+    allSportsDataScope.value === getAllSportsContext() ? allSportsState.data : []
   )
 
   // 每个联赛独立缓存与页码；搜索结果不读写这一份补查缓存。
@@ -443,14 +469,22 @@ export const useSportsStore = defineStore('sports', () => {
     { flush: 'sync' }
   )
   const fetchAllSports = (): Promise<SportCompetitionGroup[] | null> => {
-    const context = getAllSportsContext()
+    const scope = getAllSportsContext()
+    const context = getAllSportsQueryContext()
     if (allSportsPending && allSportsRequestContext.value === context) return allSportsPending
     cancelAllSports()
-    cancelHotDetails()
-    completedHotDetailsKey = ''
+    // 仅切换收藏排序不作热门详情刷新；补全接口本身没有收藏参数。
+    if (allSportsRequestScope.value !== scope || allSportsRequestContext.value === context) {
+      cancelHotDetails()
+      completedHotDetailsKey = ''
+    }
     allSportsRequestContext.value = context
-    if (allSportsDataContext.value !== context) {
+    allSportsRequestScope.value = scope
+    if (allSportsDataScope.value !== scope) {
       allSportsState.data = []
+      allSportsDataScope.value = ''
+    }
+    if (allSportsDataContext.value !== context) {
       allSportsState.complete = false
       allSportsState.total = 0
       allSportsDataContext.value = ''
@@ -468,7 +502,7 @@ export const useSportsStore = defineStore('sports', () => {
     const isCurrent = () =>
       allSportsController === controller &&
       !controller.signal.aborted &&
-      context === getAllSportsContext()
+      context === getAllSportsQueryContext()
     const params: GetSportsV2Params = {
       SportId: selectedSportId.value,
       Market: market.value,
@@ -479,7 +513,7 @@ export const useSportsStore = defineStore('sports', () => {
       SortType: 1,
       CompetitionIds: [],
       Keyword: '',
-      IsFavourite: false,
+      IsFavourite: isFavourite.value,
       earlyTradingDate: null,
       MemberCode: null
     }
@@ -491,6 +525,7 @@ export const useSportsStore = defineStore('sports', () => {
       // 每页成功即替换为本轮累积结果，组件不必等待所有联赛页完成。
       allSportsState.data = [...groups.values()]
       allSportsState.complete = false
+      allSportsDataScope.value = scope
       allSportsDataContext.value = context
     }
     const readPages = async (): Promise<SportCompetitionGroup[] | null> => {
@@ -585,6 +620,7 @@ export const useSportsStore = defineStore('sports', () => {
         // complete 仅表示联赛分页结束；各联赛保留接口预览，不按计数补齐全部赛事。
         allSportsState.data = data
         allSportsState.complete = true
+        allSportsDataScope.value = scope
         allSportsDataContext.value = context
         return data
       } catch {
@@ -716,7 +752,7 @@ export const useSportsStore = defineStore('sports', () => {
     // 等待两条数据链都到达，避免把尚未翻到的赛事当作缺失重复补查。
     if (
       !getBaseUrl() ||
-      allSportsRequestContext.value !== context ||
+      allSportsRequestScope.value !== context ||
       allSportsState.loading ||
       competitionListContext.value !== getCompetitionListContext() ||
       competitionListState.loading ||
@@ -869,7 +905,8 @@ export const useSportsStore = defineStore('sports', () => {
       selectedSportId.value,
       market.value,
       keyword.value.trim(),
-      keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null
+      keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null,
+      isFavourite.value
     ])
   // 联赛候选只来自默认列表的逐页缓存，不随搜索或指定联赛的查询结果缩减。
   const leagueGroups = computed(() => allLeagueGroups.value)
@@ -908,7 +945,7 @@ export const useSportsStore = defineStore('sports', () => {
     () =>
       (competitionListContext.value === getCompetitionListContext() &&
         competitionListState.loading) ||
-      (allSportsRequestContext.value === getAllSportsContext() && allSportsState.loading) ||
+      (allSportsRequestScope.value === getAllSportsContext() && allSportsState.loading) ||
       (hotDetailsContext.value === getAllSportsContext() && hotDetailsState.loading)
   )
   const hotEventsError = computed(
@@ -917,7 +954,7 @@ export const useSportsStore = defineStore('sports', () => {
         ? competitionListState.error
         : null) ??
       (hotDetailsContext.value === getAllSportsContext() ? hotDetailsState.error : null) ??
-      (allSportsRequestContext.value === getAllSportsContext() ? allSportsState.error : null)
+      (allSportsRequestScope.value === getAllSportsContext() ? allSportsState.error : null)
   )
   const unmatchedHotEventIds = computed(() =>
     [
@@ -945,7 +982,9 @@ export const useSportsStore = defineStore('sports', () => {
   // 筛选刚变化、尚未发起新请求时，也不能把旧赛事按新球种展示。
   const eventsList = computed(() => {
     const groups = useCachedEvents.value
-      ? allLeagueGroups.value
+      ? allSportsDataContext.value === getAllSportsQueryContext()
+        ? allLeagueGroups.value
+        : []
       : eventsDataContext.value === getEventsContext()
         ? (events.state.data?.e ?? [])
         : []
@@ -963,14 +1002,14 @@ export const useSportsStore = defineStore('sports', () => {
   const matchListLoading = computed(
     () =>
       (useCachedEvents.value
-        ? allSportsRequestContext.value === getAllSportsContext() && allSportsState.loading
+        ? allSportsRequestContext.value === getAllSportsQueryContext() && allSportsState.loading
         : eventsRequestContext.value === getEventsContext() && events.state.loading) ||
       (!keyword.value.trim() && competitionIds.value.some(id => getLeagueLoadState(id)?.loading))
   )
   const matchListError = computed(
     () =>
       (useCachedEvents.value
-        ? allSportsRequestContext.value === getAllSportsContext()
+        ? allSportsRequestContext.value === getAllSportsQueryContext()
           ? allSportsState.error
           : null
         : eventsRequestContext.value === getEventsContext()
@@ -983,7 +1022,7 @@ export const useSportsStore = defineStore('sports', () => {
   // 默认按联赛排序时为联赛总数，不当作赛事卡片数量参与本地分页。
   const eventsTotal = computed(() =>
     useCachedEvents.value
-      ? allSportsDataContext.value === getAllSportsContext()
+      ? allSportsDataContext.value === getAllSportsQueryContext()
         ? allSportsState.total
         : 0
       : eventsDataContext.value === getEventsContext()
@@ -1015,11 +1054,12 @@ export const useSportsStore = defineStore('sports', () => {
       SortType: sortType.value,
       CompetitionIds: [...selectedIds],
       Keyword: keyword.value.trim(),
-      IsFavourite: false,
       earlyTradingDate: keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null,
       // 游客查询不触发体育登录，也不使用本站会员 ID 代替平台账号。
       MemberCode: null,
-      ...overrides
+      ...overrides,
+      // 手动查询覆盖参数也不能绕过游客限制。
+      IsFavourite: isLoggedIn.value && (overrides.IsFavourite ?? isFavourite.value)
     }
     const context = JSON.stringify([
       getBaseUrl(),
@@ -1027,7 +1067,8 @@ export const useSportsStore = defineStore('sports', () => {
       params.SportId,
       params.Market,
       params.Keyword,
-      params.Market === 1 ? params.earlyTradingDate : null
+      params.Market === 1 ? params.earlyTradingDate : null,
+      params.IsFavourite
     ])
     const requestContext = JSON.stringify([
       context,
@@ -1037,6 +1078,8 @@ export const useSportsStore = defineStore('sports', () => {
       params.PageSize
     ])
     eventsRequestContext.value = requestContext
+    // 请求层切换条件会清空旧数据，同时失效其缓存标记，避免快速切回时误判已加载。
+    if (eventsDataContext.value !== requestContext) eventsDataContext.value = ''
     const response = await events.load(params)
     if (response && events.state.data === response) {
       eventsDataContext.value = requestContext
@@ -1081,6 +1124,7 @@ export const useSportsStore = defineStore('sports', () => {
   }
   const reset = () => {
     cancelRequests()
+    isFavourite.value = false
     resources.forEach(resource => resource.reset())
     allSportsState.params = null
     allSportsState.response = null
@@ -1089,7 +1133,9 @@ export const useSportsStore = defineStore('sports', () => {
     allSportsState.total = 0
     allSportsState.error = null
     allSportsDataContext.value = ''
+    allSportsDataScope.value = ''
     allSportsRequestContext.value = ''
+    allSportsRequestScope.value = ''
     competitionListContext.value = ''
     competitionListState.params = null
     competitionListState.response = null
@@ -1139,7 +1185,9 @@ export const useSportsStore = defineStore('sports', () => {
         allSportsState.complete = false
         allSportsState.total = 0
         allSportsDataContext.value = ''
+        allSportsDataScope.value = ''
         allSportsRequestContext.value = ''
+        allSportsRequestScope.value = ''
         allSportsState.error = null
         loadedCountsContext = ''
         eventsDataContext.value = ''
@@ -1170,7 +1218,7 @@ export const useSportsStore = defineStore('sports', () => {
       if (
         allSportsRefreshPending ||
         ((!keyword.value.trim() || useCachedEvents.value) &&
-          (allSportsDataContext.value !== getAllSportsContext() ||
+          (allSportsDataContext.value !== getAllSportsQueryContext() ||
             !allSportsState.complete ||
             allSportsState.error))
       ) {
@@ -1206,6 +1254,7 @@ export const useSportsStore = defineStore('sports', () => {
     selectedFilterKey,
     market,
     sortType,
+    isFavourite,
     pageNumber,
     pageSize,
     competitionIds,

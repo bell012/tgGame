@@ -231,6 +231,7 @@ export const useSportsPage = () => {
     selectedFilterKey,
     market,
     sortType,
+    isFavourite: collectOnly,
     competitionIds,
     keyword,
     earlyTradingDate,
@@ -354,7 +355,6 @@ export const useSportsPage = () => {
   const focusedStakeId = ref('')
   const noticeKey = ref<NoticeKey>('')
   const refreshing = ref(false)
-  const collectOnly = ref(false)
   const matchListContext = computed(() =>
     JSON.stringify([storeMatchListContext.value, collectOnly.value])
   )
@@ -662,7 +662,7 @@ export const useSportsPage = () => {
   const handleLeagueFilter = (payload: LeagueFilterPayload) => {
     syncCompetitionIds(payload.ids, payload.isAllSelected)
   }
-  // 收藏筛选开关共用页面状态，不调用收藏写接口，也不推定 IsFavourite 的查询语义。
+  // 沿用组件的 collectOnly 事件字段，统一写入 Store 收藏置顶状态，不发起收藏写操作。
   const handleCollectChange = (payload: CollectOnlyPayload) => {
     collectOnly.value = payload.collectOnly
   }
@@ -738,7 +738,8 @@ export const useSportsPage = () => {
         sortType,
         () => competitionIds.value.join(','),
         keyword,
-        () => (keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null)
+        () => (keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null),
+        collectOnly
       ],
       (values, previous) => {
         if (!sportsPageActive.value || sportsPageDisposed) return
