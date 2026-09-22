@@ -1,12 +1,13 @@
 <template>
-  <div class="chat-public-page">
-    <topBar />
-    公共频道聊天
-  </div>
+  <!-- 根据断点选择 H5 或 PC 客服布局。 -->
+  <H5Layout v-if="isMobile" />
+  <PcLayout v-else />
 </template>
 
 <script setup lang="ts">
-import topBar from '../components/topBar.vue'
-</script>
+import { useIsMobile } from '@/composables/useMediaQuery'
+import H5Layout from './h5-layout.vue'
+import PcLayout from './pc-layout.vue'
 
-<style scoped lang="scss"></style>
+const isMobile = useIsMobile()
+</script>
