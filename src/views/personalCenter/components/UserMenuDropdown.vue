@@ -37,8 +37,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useIsMobile } from '@/composables/useMediaQuery'
 import SignOutPopup from '@/components/common/SignOutPopup.vue'
 import MyProfilePcLayout from '../myProfile/pc-layout.vue'
 import EditProfilePcLayout from '../editProfile/pc-layout.vue'
@@ -47,6 +48,7 @@ import { useUserStore } from '@/stores/user'
 
 const { t } = useI18n()
 const userStore = useUserStore()
+const isMobile = useIsMobile()
 
 // 动态导入图标
 const getIcon = (iconNumber: number) => {
@@ -68,6 +70,16 @@ const emit = defineEmits<{
 const showSignOutPopup = ref(false)
 const showMyProfilePopup = ref(false)
 const showEditProfilePopup = ref(false)
+
+/**
+ * 关闭 PC 用户菜单下挂载的弹窗，避免切到 H5 后 PC 专属弹窗残留在 body 上。
+ */
+const closePcOnlyPopups = () => {
+  showSignOutPopup.value = false
+  showMyProfilePopup.value = false
+  showEditProfilePopup.value = false
+  emit('update:modelValue', false)
+}
 
 const confirmSignOut = () => {
   userStore.logout()
@@ -111,6 +123,13 @@ const handleEditProfileSaved = () => {
   showEditProfilePopup.value = false
   showMyProfilePopup.value = true
 }
+
+// PC 头像下拉组件在 H5 下仍可能被隐藏但未卸载，切到 H5 时需要主动关闭内部弹窗。
+watch(isMobile, mobile => {
+  if (mobile) {
+    closePcOnlyPopups()
+  }
+})
 
 const mainMenus = computed(() => [
   {
