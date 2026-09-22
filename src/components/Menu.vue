@@ -43,6 +43,7 @@
                 {
                   'border-opacity-6': index > 0 && menu.children && menu.children.length > 1
                 },
+                { 'mt-1': index > 0 },
                 {
                   'rounded-t-lg rounded-b-none':
                     index === 0 && menu.children && menu.children.length > 1
@@ -81,6 +82,7 @@
             class="bg-bg-2 rounded-lg overflow-visible"
           >
             <div
+              class="mt-[4px]"
               :class="[
                 'relative flex items-center justify-between launch-card h-10 rounded-lg cursor-pointer menu-item-collapsed',
                 { 'launch-card-active': isMenuGroupActive(menu) }
