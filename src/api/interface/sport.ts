@@ -330,7 +330,7 @@ export interface GetSportsV2Params {
 export interface GetSportsV2Response extends SportsResponse {
   /** List：联赛分组，组内 Sports 才是赛事；失败时可能省略。 */
   e?: SportCompetitionGroup[]
-  /** Int：按联赛排序实测为联赛总数，不是赛事总数；页数为 ceil(Total / PageSize)。 */
+  /** Int：联赛/时间排序实测均为联赛总数，不是赛事总数；页数为 ceil(Total / PageSize)。 */
   Total?: number
 }
 

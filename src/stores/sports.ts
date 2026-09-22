@@ -471,14 +471,14 @@ export const useSportsStore = defineStore('sports', () => {
   const favouriteJobs = shallowReactive(new Map<string, Promise<SportsFavouriteResult>>())
   const resources = [counts, events, indexes, competition, popular]
 
-  // 全联赛缓存独立于搜索和联赛选择，按收藏置顶条件隔离；response 仅保留最近一页。
+  // 全联赛缓存独立于搜索和联赛选择，按排序及收藏置顶条件隔离；response 仅保留最近一页。
   const allSportsState = shallowReactive<{
     params: GetSportsV2Params | null
     response: GetSportsV2Response | null
     data: SportCompetitionGroup[]
     loading: boolean
     complete: boolean
-    /** 默认列表最近一页返回的联赛总数；不是赛事总数。 */
+    /** 联赛/时间排序均返回联赛总数；不是赛事总数。 */
     total: number
     error: SportsRequestError | null
   }>({
@@ -500,7 +500,8 @@ export const useSportsStore = defineStore('sports', () => {
       market.value,
       sportsSessionVersion.value
     ])
-  const getAllSportsQueryContext = () => JSON.stringify([getAllSportsContext(), isFavourite.value])
+  const getAllSportsQueryContext = () =>
+    JSON.stringify([getAllSportsContext(), sortType.value, isFavourite.value])
   let allSportsController: AbortController | undefined
   let allSportsPending: Promise<SportCompetitionGroup[] | null> | null = null
   const allSportsRequestContext = ref('')
@@ -690,7 +691,7 @@ export const useSportsStore = defineStore('sports', () => {
     const context = getAllSportsQueryContext()
     if (allSportsPending && allSportsRequestContext.value === context) return allSportsPending
     cancelAllSports()
-    // 仅切换收藏排序不作热门详情刷新；补全接口本身没有收藏参数。
+    // 仅切换列表排序不刷新热门详情；补全接口不依赖排序或收藏置顶。
     if (
       !keepPrevious &&
       (allSportsRequestScope.value !== scope || allSportsRequestContext.value === context)
@@ -730,7 +731,7 @@ export const useSportsStore = defineStore('sports', () => {
       competitionCondType: 1,
       PageNumber: 1,
       PageSize: ALL_SPORTS_PAGE_SIZE,
-      SortType: 1,
+      SortType: sortType.value,
       CompetitionIds: [],
       Keyword: '',
       IsFavourite: isFavourite.value,
@@ -784,7 +785,7 @@ export const useSportsStore = defineStore('sports', () => {
           return fail('Invalid all-league Total')
         }
         expectedTotal = total
-        // SortType=1 时 Total 为联赛数；按每页 10 组计算页数，不额外请求空页。
+        // 两种排序的 Total 都是联赛数；按每页 10 组计算页数，不额外请求空页。
         totalPages = Math.ceil(total / ALL_SPORTS_PAGE_SIZE)
         if (totalPages > MAX_ALL_SPORTS_PAGES) {
           return fail('All-league pagination exceeded safety limit')
@@ -1200,9 +1201,8 @@ export const useSportsStore = defineStore('sports', () => {
       pageNumber.value,
       pageSize.value
     ])
-  const useCachedEvents = computed(
-    () => !keyword.value.trim() && (competitionIds.value.length > 0 || sortType.value === 1)
-  )
+  // 联赛/时间排序共用连续分页缓存；指定联赛仍从缓存筛选，搜索才走独立查询。
+  const useCachedEvents = computed(() => !keyword.value.trim())
   const matchListContext = computed(() =>
     JSON.stringify([getLeagueContext(), sortType.value, competitionIds.value])
   )
@@ -1246,7 +1246,7 @@ export const useSportsStore = defineStore('sports', () => {
         ? (competitionIds.value.map(id => getLeagueLoadState(id)?.error).find(Boolean) ?? null)
         : null)
   )
-  // 默认按联赛排序时为联赛总数，不当作赛事卡片数量参与本地分页。
+  // 两种排序均为联赛总数，不当作赛事卡片数量参与本地分页。
   const eventsTotal = computed(() =>
     useCachedEvents.value
       ? allSportsDataContext.value === getAllSportsQueryContext()
