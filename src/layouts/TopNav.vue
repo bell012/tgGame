@@ -642,6 +642,17 @@ const handleDocumentClick = (event: MouseEvent) => {
   }
 }
 
+// PC/H5 视口模式切换时关闭顶部导航的临时弹层，避免端专属弹窗跨布局残留。
+const closeTransientTopNavPopups = () => {
+  showModal.value = false
+  showCurrencyPopup.value = false
+  showExplorehModal.value = false
+  showDepositPop.value = false
+  showRewardClaimPopup.value = false
+  showUserMenu.value = false
+  currencyPopupAnchor.value = null
+}
+
 // 组件挂载时加载用户信息
 onMounted(() => {
   userStore.syncStoredUserData()
@@ -673,6 +684,11 @@ watch(showLoginModal, visible => {
   if (!visible) {
     userStore.syncStoredUserData()
   }
+})
+
+// 视口跨 PC/H5 断点时，先关闭当前端的顶部弹窗，再由 MainLayout 统一回首页。
+watch(isMobile, () => {
+  closeTransientTopNavPopups()
 })
 
 // 监听登录态变化，在登录成功后主动拉取普通通知未读状态。
