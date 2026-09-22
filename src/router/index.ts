@@ -4,6 +4,7 @@ import i18n from '@/i18n'
 import MainLayout from '@/layouts/MainLayout.vue'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
+import { resolveInvitationCodeFromQuery, saveInvitationCode } from '@/utils/invitationAttribution'
 import {
   DEFAULT_LOCALE,
   getLocaleFromRouteParam,
@@ -12,7 +13,6 @@ import {
   stripLocalePrefix,
   withLocalePrefix
 } from '@/utils/locale'
-import { resolveInvitationCodeFromQuery, saveInvitationCode } from '@/utils/invitationAttribution'
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
 const baseRoutes: RouteRecordRaw[] = [
@@ -379,6 +379,8 @@ const baseRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/chat/chat-public/index.vue'),
     meta: {
       title: '聊天',
+      // PC 端作为右侧聊天抽屉展示，保留进入聊天前的页面作为背景。
+      desktopOverlay: true,
       mobile: {
         hideTopNav: true
       }

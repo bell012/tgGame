@@ -5,6 +5,7 @@
       v-if="!hideTopNav && !isFullscreenRoute"
       ref="topNavRef"
       :sidebar-collapsed="isSidebarCollapsed"
+      :style="topNavStyle"
       @toggle-sidebar="toggleSidebar"
       @notification-click="handleNotificationClick"
     />
@@ -76,6 +77,16 @@
       </div>
     </main>
 
+    <!-- PC 客服独立占据页面最右侧，不参与主内容区的文档流。 -->
+    <transition name="notification-panel">
+      <aside
+        v-if="isDesktopOverlayRoute && !isFullscreenRoute"
+        class="fixed right-0 top-0 z-40 h-screen w-[380px] overflow-hidden"
+      >
+        <router-view :route="route" />
+      </aside>
+    </transition>
+
     <!-- 滑动路由层  -->
     <teleport to="body" v-if="isMobile && slideRouteStack.length > 0">
       <!-- 渲染所有滑动路由栈 -->
@@ -115,7 +126,16 @@ import { navigateTo } from '@/utils/router'
 import NotificationDetailPage from '@/views/menu/notifications/detail/index.vue'
 import NotificationListPage from '@/views/menu/notifications/index.vue'
 import { storeToRefs } from 'pinia'
-import { computed, markRaw, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
+import {
+  computed,
+  markRaw,
+  nextTick,
+  onMounted,
+  ref,
+  shallowRef,
+  watch,
+  type Component as VueComponent
+} from 'vue'
 import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router'
 import BottomTabBar from './BottomTabBar.vue'
 import Sidebar from './Sidebar.vue'
@@ -181,6 +201,10 @@ const shouldUseSlideTransition = (currentRoute: RouteLocationNormalizedLoaded) =
 }
 
 const shouldRenderCurrentRouteInMain = (currentRoute: RouteLocationNormalizedLoaded) => {
+  if (!isMobile.value && currentRoute.meta?.desktopOverlay === true) {
+    return false
+  }
+
   if (!shouldUseSlideTransition(currentRoute)) {
     return true
   }
@@ -197,6 +221,10 @@ const shouldRenderCurrentRouteInMain = (currentRoute: RouteLocationNormalizedLoa
 }
 
 const shouldRenderBackgroundRouteInMain = (currentRoute: RouteLocationNormalizedLoaded) => {
+  if (!isMobile.value && currentRoute.meta?.desktopOverlay === true) {
+    return !!backgroundRouteSnapshot.value
+  }
+
   return isMobile.value && shouldUseSlideTransition(currentRoute) && !!backgroundRouteSnapshot.value
 }
 
@@ -217,6 +245,9 @@ const mainAreaRoute = computed(() => {
 
   return null
 })
+
+/** 判断当前路由是否应在 PC 端作为右侧客服面板展示。 */
+const isDesktopOverlayRoute = computed(() => !isMobile.value && route.meta?.desktopOverlay === true)
 
 const getMainRouteViewKey = (currentRoute: RouteLocationNormalizedLoaded) => {
   const routeName = String(currentRoute.name || '')
@@ -244,6 +275,24 @@ const getMainRouteViewKey = (currentRoute: RouteLocationNormalizedLoaded) => {
 
 const resolveRouteSnapshot = (fullPath: string) => {
   return markRaw(router.resolve(fullPath) as RouteLocationNormalizedLoaded)
+}
+
+/** 预加载左侧背景页，避免首次直达客服页时将异步组件错误渲染为 Promise。 */
+const preloadRouteComponents = async (targetRoute: RouteLocationNormalizedLoaded) => {
+  await Promise.all(
+    targetRoute.matched.map(async record => {
+      const routeComponent = record.components?.default
+      if (typeof routeComponent !== 'function') {
+        return
+      }
+
+      const loader = routeComponent as () => Promise<{ default: VueComponent }>
+      const loadedModule = await loader()
+      if (record.components) {
+        record.components.default = loadedModule.default
+      }
+    })
+  )
 }
 
 const isLocaleOnlyRouteChange = (
@@ -290,6 +339,22 @@ watch(
       ? resolveRouteSnapshot(String(previousValue.fullPath))
       : null
     const shouldSlide = shouldUseSlideTransition(currentRouteSnapshot)
+
+    // PC 打开客服时保留进入前页面；直接访问客服页时在左侧显示首页。
+    if (!isMobileDevice && currentRouteSnapshot.meta?.desktopOverlay === true) {
+      if (
+        !backgroundRouteSnapshot.value ||
+        backgroundRouteSnapshot.value.fullPath === currentRouteSnapshot.fullPath
+      ) {
+        const locale = getLocaleFromRouteParam(
+          currentRouteSnapshot.params.locale as string | undefined
+        )
+        const fallbackRoute = resolveRouteSnapshot(withLocalePrefix('/', locale))
+        await preloadRouteComponents(fallbackRoute)
+        backgroundRouteSnapshot.value = fallbackRoute
+      }
+      return
+    }
 
     if (!shouldSlide || !isMobileDevice) {
       backgroundRouteSnapshot.value = currentRouteSnapshot
@@ -405,9 +470,15 @@ const mainStyle = computed(() => {
     marginTop: `${layoutStore.TOPNAV_HEIGHT}px`,
     marginLeft: isSidebarCollapsed.value
       ? `${layoutStore.SIDEBAR_WIDTH_COLLAPSED}px`
-      : `${layoutStore.SIDEBAR_WIDTH_EXPANDED}px`
+      : `${layoutStore.SIDEBAR_WIDTH_EXPANDED}px`,
+    marginRight: isDesktopOverlayRoute.value ? '380px' : undefined
   }
 })
+
+/** PC 打开客服时，顶部导航仅占据左侧页面区域。 */
+const topNavStyle = computed(() => ({
+  right: isDesktopOverlayRoute.value ? '380px' : undefined
+}))
 
 const notificationPanelStyle = computed(() => ({
   top: `${layoutStore.TOPNAV_HEIGHT}px`,
