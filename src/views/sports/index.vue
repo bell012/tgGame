@@ -109,8 +109,6 @@
       <FilterSearch_PC
         v-if="!isMobile"
         :collect-only="collectOnly"
-        :search-keyword="page.searchInput.value"
-        @search-change="page.handleSearchChange"
         @filter-change="handleMatchFilterChange"
         @collect-change="handleCollectChange"
       />

@@ -22,21 +22,9 @@
     </div>
 
     <div class="flex flex-none items-center">
-      <label
-        class="flex h-[40px] w-[264px] items-center rounded-[32px] bg-bg-2 px-[16px] transition-colors"
-      >
-        <SearchIcon class="h-5 w-5 text-icon-3" />
-        <input
-          v-model="searchKeyword"
-          class="ml-[4px] min-w-0 flex-1 border-0 bg-transparent text-[14px] font-[400] text-text-1 outline-none placeholder:text-text-3"
-          type="text"
-          :placeholder="t('sports.leagueTabs.searchLeagueOrTeam')"
-        />
-      </label>
-
       <button
         type="button"
-        class="inline-flex ml-[12px] h-[41px] w-[41px] flex-none items-center justify-center rounded-full border-0 bg-bg-2 transition-colors"
+        class="inline-flex h-[41px] w-[41px] flex-none items-center justify-center rounded-full border-0 bg-bg-2 transition-colors"
         @click="toggleCollectOnly"
       >
         <CollectIcon
@@ -49,40 +37,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSportsStore } from '@/stores/sports'
-import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
 import { useFilterTabs } from './index'
 import type { CollectOnlyPayload, FilterTabChangePayload, FilterTabKey } from './index'
-import { useI18n } from 'vue-i18n'
 
 const emit = defineEmits<{
   'filter-change': [payload: FilterTabChangePayload]
   'collect-change': [payload: CollectOnlyPayload]
-  'search-change': [keyword: string]
 }>()
 
 const props = withDefaults(
   defineProps<{
     collectOnly?: boolean
-    searchKeyword?: string
   }>(),
   {
-    collectOnly: false,
-    searchKeyword: ''
+    collectOnly: false
   }
 )
 
 const filterTabs = useFilterTabs()
 const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
-// 搜索文本由页面统一管理；组件只回传输入，不自行请求接口。
-const searchKeyword = computed({
-  get: () => props.searchKeyword,
-  set: value => emit('search-change', value)
-})
-const { t } = useI18n()
 
 // 根据当前选中的筛选项返回按钮样式。
 const getFilterTabClass = (key: FilterTabKey) =>

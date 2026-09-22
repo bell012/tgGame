@@ -51,31 +51,49 @@
     <!-- pc全部联赛弹窗 -->
     <div
       v-if="isLeaguePopupOpen"
-      class="absolute right-0 top-[48px] z-30 max-h-[360px] w-[368px] overflow-y-auto rounded-[12px] bg-bg-5 px-[24px] py-[16px] shadow-[0_6px_30px_rgba(0,0,0,0.4)] [scrollbar-color:var(--color-icon-level-3)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-[6px] [&::-webkit-scrollbar-thumb]:bg-icon-3"
+      class="absolute right-0 top-[48px] z-30 flex max-h-[360px] w-[368px] flex-col overflow-hidden rounded-[12px] bg-bg-5 px-[24px] py-[16px] shadow-[0_6px_30px_rgba(0,0,0,0.4)]"
     >
-      <button
-        v-for="item in leaguePopupList"
-        :key="item.key"
-        type="button"
-        class="flex w-full items-center border-0 bg-transparent py-[12px] text-left"
-        @click="onLeaguePopupItemClick(item.key)"
+      <label
+        class="mb-[12px] flex h-[40px] flex-none items-center rounded-[32px] bg-bg-2 px-[16px] transition-colors"
       >
-        <span class="mr-3 min-w-0 flex-1 truncate text-[14px] font-bold text-text-1">
-          {{ item.label }}
-        </span>
-        <span
-          class="inline-flex flex-none items-center justify-center rounded-[12px] bg-bg-3 px-[4px] py-[2px] text-[11px] font-bold text-text-1"
+        <SearchIcon class="h-5 w-5 text-icon-3" />
+        <input
+          v-model="popupSearchKeyword"
+          class="ml-[4px] min-w-0 flex-1 border-0 bg-transparent text-[14px] font-[400] text-text-1 outline-none placeholder:text-text-3"
+          type="text"
+          :placeholder="t('sports.leagueTabs.searchLeagueOrTeam')"
+        />
+      </label>
+
+      <div
+        class="min-h-0 flex-1 overflow-y-auto [scrollbar-color:var(--color-icon-level-3)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-[6px] [&::-webkit-scrollbar-thumb]:bg-icon-3"
+      >
+        <button
+          v-for="item in leaguePopupList"
+          :key="item.key"
+          type="button"
+          class="flex w-full items-center border-0 bg-transparent py-[12px] text-left"
+          @click="onLeaguePopupItemClick(item.key)"
         >
-          {{ item.count }}
-        </span>
-        <!-- <triangleIcon class="ml-3 h-3 w-3 text-icon-2" /> -->
-      </button>
+          <span class="mr-3 min-w-0 flex-1 truncate text-[14px] font-bold text-text-1">
+            {{ item.label }}
+          </span>
+          <span
+            class="inline-flex flex-none items-center justify-center rounded-[12px] bg-bg-3 px-[4px] py-[2px] text-[11px] font-bold text-text-1"
+          >
+            {{ item.count }}
+          </span>
+          <!-- <triangleIcon class="ml-3 h-3 w-3 text-icon-2" /> -->
+        </button>
+      </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import triangleIcon from '@/static/svg/sports/liansai_tabs/sanjiao.svg?component'
 import { useLiansaiTabs } from './index'
 import type {
@@ -90,6 +108,7 @@ const emit = defineEmits<{
   'league-change': [payload: LeagueSelectionPayload]
 }>()
 
+const { t } = useI18n()
 const {
   filterTabs,
   leagueTabs,
@@ -98,17 +117,24 @@ const {
   selectFilterKey,
   selectLeagueKey
 } = useLiansaiTabs()
-// PC 更多弹窗展示和横向 tab 一致的所有联赛项。
-const leaguePopupList = computed(() => leagueTabs.value)
 const scrollRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
 const isLeaguePopupOpen = ref(false)
+const popupSearchKeyword = ref('')
 
 let dragStartX = 0
 let dragStartScrollLeft = 0
 let pendingLeagueKey = ''
 
 const dragThreshold = 6
+
+// PC 更多弹窗展示和横向 tab 一致的所有联赛项，并按弹窗搜索词过滤。
+const leaguePopupList = computed(() => {
+  const keyword = popupSearchKeyword.value.trim().toLowerCase()
+  if (!keyword) return leagueTabs.value
+
+  return leagueTabs.value.filter(item => item.label.toLowerCase().includes(keyword))
+})
 
 // 根据当前选中项返回“联赛/时间”分段按钮样式。
 const getFilterButtonClass = (key: LiansaiFilterKey) =>
