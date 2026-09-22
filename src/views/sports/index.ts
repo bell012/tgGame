@@ -651,6 +651,13 @@ export const useSportsPage = () => {
   const showUnsupported = () => {
     noticeKey.value = 'notImplemented'
   }
+  const handleFloatingEntry = (entry: 'history' | 'bet-slip') => {
+    if (entry === 'bet-slip') {
+      betSlipOpen.value = true
+      return
+    }
+    globalShowToast('Betting history is not available yet.')
+  }
   // 先同步筛选与分页，再由下方单一请求监听批量刷新。
   const resetMatchListState = () => {
     currentPage.value = 1
@@ -872,6 +879,7 @@ export const useSportsPage = () => {
     submitMockBet,
     refreshBalance,
     showUnsupported,
+    handleFloatingEntry,
     handleSportChange,
     handleMatchFilterChange,
     handleLeagueSortChange,

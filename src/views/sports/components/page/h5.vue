@@ -266,6 +266,12 @@
       image-class="h-[180px] w-[198px] object-contain"
       text-class="mt-4 text-center text-xs text-text-2"
     />
+    <Floating
+      v-if="pageActive"
+      v-show="!page.betSlipOpen.value"
+      :bet-count="page.selections.value.length"
+      @select="page.handleFloatingEntry"
+    />
   </div>
 </template>
 
@@ -298,6 +304,7 @@ import MatchCardH5 from '../match-card/h5.vue'
 import type { SportsMatch, SportsPageState } from '../../index'
 import type { OddsSelectPayload } from '../match-odds/types'
 import LeagueTabs_H5 from '../liansai_tabs/H5.vue'
+import Floating from '../floating/index.vue'
 
 const props = defineProps<{ page: SportsPageState }>()
 const idPrefix = useId()
