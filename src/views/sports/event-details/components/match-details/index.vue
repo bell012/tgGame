@@ -32,7 +32,7 @@
     </div>
 
     <div
-      class="mt-4 grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-x-4 gap-y-3"
+      class="mt-4 grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-4 gap-y-3"
     >
       <div class="flex min-w-0 flex-col items-center gap-2">
         <img class="h-10 object-contain" :src="homeLogo" :alt="homeTeam.name" draggable="false" />
@@ -75,7 +75,7 @@
         </div>
       </div>
 
-      <div class="flex flex-col items-center gap-2 px-1">
+      <div class="flex flex-col items-center justify-start gap-2 self-start px-1">
         <div v-if="isLive" class="flex items-center justify-center gap-1.5">
           <img
             class="h-4 w-4 shrink-0 object-contain"
@@ -97,21 +97,17 @@
 
         <div class="flex items-center gap-2 text-[16px] font-bold leading-none text-text-1">
           <span
-            class="flex items-center justify-center rounded-lg bg-input-1 w-[26px] h-[35px] tabular-nums"
+            class="flex items-center justify-center rounded-lg border border-input-2 bg-input-1 w-[26px] h-[35px] tabular-nums"
           >
             {{ homeScore }}
           </span>
           <span class="text-text-2">:</span>
           <span
-            class="flex items-center justify-center rounded-lg bg-input-1 w-[26px] h-[35px] tabular-nums"
+            class="flex items-center justify-center rounded-lg border border-input-2 bg-input-1 w-[26px] h-[35px] tabular-nums"
           >
             {{ awayScore }}
           </span>
         </div>
-
-        <p v-if="periodScoreLabel" class="text-[11px] font-normal leading-none text-text-2">
-          {{ periodScoreLabel }}
-        </p>
       </div>
 
       <div class="flex min-w-0 flex-col items-center gap-2">
@@ -155,6 +151,9 @@
         </div>
       </div>
     </div>
+    <p v-if="periodScoreLabel" class="text-[11px] font-normal leading-none text-text-2 text-center">
+      {{ periodScoreLabel }}
+    </p>
   </section>
 </template>
 
