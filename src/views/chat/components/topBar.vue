@@ -1,7 +1,9 @@
 <template>
+  <!-- 旧版聊天室顶部工具栏。 -->
   <div
-    class="w-full h-[60px] px-4 flex justify-between items-center fixed left-0 top-0 bg-[var(--color-background-level-5)] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.05)]"
+    class="fixed left-0 top-0 flex h-[60px] w-full items-center justify-between bg-bg-5 px-4 shadow-[0px_4px_8px_0px_rgba(0,0,0,0.05)]"
   >
+    <!-- 聊天频道选择器。 -->
     <div>
       <button class="bg-bg-1 rounded-lg flex items-center justify-center">
         <span class="text-text-1">Global</span>
@@ -16,7 +18,8 @@
         </span>
       </button>
     </div>
-    <div class="flex justify-between items-center">
+    <!-- 顶部功能按钮组。 -->
+    <div class="flex items-center justify-between">
       <button class="bg-bg-1 rounded-lg flex items-center justify-center">
         <InformIcon class="w-[18px] h-[18px] fill-text-1" />
       </button>
