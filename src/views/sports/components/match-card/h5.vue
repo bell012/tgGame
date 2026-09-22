@@ -10,10 +10,12 @@
         <div class="flex h-4 min-w-0 items-center gap-1.5 text-[10px] leading-4">
           <button
             type="button"
-            class="flex h-5 w-4 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-theme-primary"
+            class="flex h-5 w-4 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-theme-primary disabled:cursor-wait disabled:opacity-50"
             :class="favorite ? 'text-theme-primary' : 'text-text-2'"
             :aria-label="favorite ? 'Remove match from favorites' : 'Add match to favorites'"
             :aria-pressed="favorite"
+            :aria-busy="favoritePending"
+            :disabled="favoritePending"
             data-testid="sports-h5-favorite"
             @click="emit('favorite')"
           >
@@ -144,6 +146,7 @@ const props = defineProps<{
   MarketLines: SportMarketLine[]
   selectedWagerSelectionId?: number
   favorite: boolean
+  favoritePending?: boolean
 }>()
 
 const emit = defineEmits<{

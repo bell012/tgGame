@@ -167,8 +167,8 @@ export function getCompetitionList(
 
 /**
  * 写操作：收藏或取消收藏赛事，仅由明确的用户操作调用，不能随首页初始化自动执行。
- * 除 MemberCode 外，赛事标识及动作参数待确认，不预设未知字段或枚举。
- * 调用方应先核实体育会员账号、动作参数及业务状态。
+ * 请求只传 MemberCode 和 EventId，不额外发送 IsFavourite 或动作字段。
+ * 调用方使用体育平台账号，并根据 stc 判断业务成功后同步赛事收藏状态。
  */
 export function favouriteEvent(
   baseUrl: string,

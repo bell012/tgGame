@@ -448,10 +448,18 @@ export interface LoginPlatformParams {
   gameCode?: string | number
   platformCode?: string
   currency?: string
+  /** 体育平台登录使用的目标币种。 */
+  targetCurrency?: string
+  /** 站内语言代码，与公共请求头 languageCode 一致（zh / eng），不是 CHS / ENG。 */
+  languageCode?: string
 }
 
 export interface LoginPlatformResult {
   platformLink?: string
+  /** 三方平台账号；体育接口使用此值作为 MemberCode。 */
+  platformAcct?: string
+  /** 三方平台登录凭证，与本次返回的 platformAcct 配套使用，不是本站登录 token。 */
+  token?: string
   isHorizontal?: boolean | number
   [key: string]: unknown
 }

@@ -206,13 +206,17 @@ export function refreshGameStatistics(
   })
 }
 
-export function getloginPlatform(data: LoginPlatformParams): Promise<LoginPlatformResponse> {
+export function getloginPlatform(
+  data: LoginPlatformParams,
+  options?: ApiResponseToastOptions
+): Promise<LoginPlatformResponse> {
   return request({
     url: '/gc/loginPlatform',
     method: 'post',
     data,
     showSuccessToast: false,
-    showErrorToast: true
+    showErrorToast: true,
+    ...options
   })
 }
 

@@ -37,10 +37,12 @@
         </button>
         <button
           type="button"
-          class="flex h-4 w-4 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+          class="flex h-4 w-4 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary disabled:cursor-wait disabled:opacity-50"
           :class="favorite ? 'text-theme-primary' : 'text-icon-2'"
           :aria-label="favorite ? 'Remove match from favorites' : 'Add match to favorites'"
           :aria-pressed="favorite"
+          :aria-busy="favoritePending"
+          :disabled="favoritePending"
           @click="emit('favorite')"
         >
           <StarIcon class="h-4 w-4" aria-hidden="true" />
@@ -129,6 +131,7 @@ const props = defineProps<{
   selectedWagerSelectionId?: number
   expanded: boolean
   favorite: boolean
+  favoritePending?: boolean
 }>()
 
 const sportIcon = computed(

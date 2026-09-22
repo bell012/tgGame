@@ -189,8 +189,9 @@
               :match="match"
               :MarketLines="match.MarketLines"
               :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
-              :favorite="favorites.has(match.id)"
-              @favorite="page.toggleFavorite(match.id)"
+              :favorite="match.IsFavourite"
+              :favorite-pending="page.isMatchFavoritePending(match.id)"
+              @favorite="page.handleMatchFavorite(match.id)"
               @select="selectOdds(match.id, $event)"
               @media="showMediaPlaceholder"
             />
@@ -338,7 +339,6 @@ const liveStripCaption = (match: SportsMatch) => {
   if (line.PeriodId !== 1 && line.PeriodName) return `${line.BetTypeName} ${line.PeriodName}`
   return line.BetTypeName
 }
-const favorites = computed(() => new Set(props.page.favorites.value))
 const groups = computed(() => {
   const result = new Map<string, { id: string; name: string; matches: SportsMatch[] }>()
   // 保留空预览联赛的标题入口，展开后仍可从联赛分页接口补回赛事。

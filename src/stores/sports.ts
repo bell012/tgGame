@@ -3,6 +3,7 @@ import { computed, ref, shallowReactive, watch } from 'vue'
 import Api from '@/api'
 import type {
   FavouriteEventParams,
+  FavouriteEventResponse,
   GetCompetitionListParams,
   GetCompetitionListResponse,
   GetCompetitionPageParams,
@@ -23,7 +24,9 @@ import type { SportsRequestOptions } from '@/api/modules/sport'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
+import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { isApiBusinessSuccess } from '@/utils/apiBusiness'
+import { getLanguageCode as getRequestLanguageCode } from '@/utils/request'
 
 /** 当前选中的赛事筛选标签。 */
 export type FilterTabKey = 'rolling' | 'today' | 'early' | 'parlay'
@@ -48,6 +51,16 @@ type SportsRequestError = {
   code?: number | string
 }
 
+type SportsFavouriteResult =
+  | 'success'
+  | 'synced'
+  | 'failed'
+  | 'login-failed'
+  | 'auth-expired'
+  | 'stale'
+
+type SportsCredentials = Readonly<{ memberCode: string; token: string }>
+
 type SportsRequestState<Params, Response> = {
   params: Params | null
   /** 最近一次原始响应，业务失败时也保留，便于核对接口返回。 */
@@ -59,6 +72,8 @@ type SportsRequestState<Params, Response> = {
 }
 
 const isSportsSuccess = (response: SportsResponse) => response.stc === 100 || response.stc === '100'
+const isSportsAuthExpired = (response: SportsResponse) =>
+  response.stc === 102 || response.stc === '102' || response.stc === 202 || response.stc === '202'
 const ALL_SPORTS_PAGE_SIZE = 10
 const MAX_ALL_SPORTS_PAGES = 200
 const SELECTED_EVENT_BATCH_SIZE = 5
@@ -172,6 +187,7 @@ export const useSportsStore = defineStore('sports', () => {
   const siteConfigStore = useSiteConfigStore()
   const localeStore = useLocaleStore()
   const userStore = useUserStore()
+  const { currentCurrencyCode } = useDisplayCurrency()
   // 与导航及路由守卫保持相同的本站登录态判断。
   const isLoggedIn = computed(() =>
     Boolean(userStore.userInfo?.tradeToken || userStore.acctInfo?.memberId)
@@ -199,6 +215,194 @@ export const useSportsStore = defineStore('sports', () => {
   }
   const languageCode = computed(getLanguage)
   const getBaseUrl = () => siteConfigStore.getConfigString('IM.im_app_url')
+  // 账号与 token 只保留同一次登录响应，整组替换/清空，仅在本次页面停留期间复用。
+  const sportsSessionVersion = ref(0)
+  const sportsCredentials = ref<SportsCredentials | null>(null)
+  const sportsMemberCode = computed(() => sportsCredentials.value?.memberCode ?? null)
+  const sportsToken = computed(() => sportsCredentials.value?.token ?? null)
+  let memberCodePending: Promise<string | null> | null = null
+  let memberCodeGeneration = 0
+  let memberCodeAttempted = false
+  let memberCodeNeedsRefresh = false
+  let homepageActive = false
+  let lastAuthRecovery: { generation: number; credentials: SportsCredentials | null } | null = null
+  let favouriteRevision = 0
+  const memberFavourites = shallowReactive(new Map<number, { value: boolean; revision: number }>())
+  // 写结果尚未校准时，下次点击只读确认，不能再次切换服务端状态。
+  const unconfirmedFavourites = new Set<number>()
+  const retryJobs = shallowReactive(new Map<string, Promise<void>>())
+  const invalidateSportsMemberCode = () => {
+    memberCodeGeneration += 1
+    sportsCredentials.value = null
+    memberCodePending = null
+    memberCodeAttempted = false
+    memberCodeNeedsRefresh = false
+    lastAuthRecovery = null
+    retryJobs.clear()
+  }
+  watch(
+    [
+      () => userStore.userInfo?.tradeToken,
+      () => userStore.userInfo?.memberId,
+      () => userStore.acctInfo?.memberId,
+      currentCurrencyCode,
+      languageCode,
+      getBaseUrl
+    ],
+    () => {
+      sportsSessionVersion.value += 1
+      invalidateSportsMemberCode()
+      memberFavourites.clear()
+      unconfirmedFavourites.clear()
+      favouriteRevision = 0
+    },
+    { flush: 'sync' }
+  )
+  const ensureSportsMemberCode = (): Promise<string | null> => {
+    if (!isLoggedIn.value || !currentCurrencyCode.value) return Promise.resolve(null)
+    if (sportsMemberCode.value) return Promise.resolve(sportsMemberCode.value)
+    if (memberCodePending) return memberCodePending
+    const version = sportsSessionVersion.value
+    const generation = memberCodeGeneration
+    memberCodeAttempted = true
+    const pending = (async () => {
+      try {
+        const response = await Api.game.getloginPlatform(
+          {
+            pgType: 'TY',
+            platformCode: 'TG_TY',
+            targetCurrency: currentCurrencyCode.value,
+            // 站内接口与公共请求头同源，不使用第三方体育语言码。
+            languageCode: getRequestLanguageCode()
+          },
+          { showSuccessToast: false, showErrorToast: false }
+        )
+        if (
+          version !== sportsSessionVersion.value ||
+          generation !== memberCodeGeneration ||
+          !isLoggedIn.value
+        ) {
+          return null
+        }
+        const account = response.result?.platformAcct
+        const token = response.result?.token
+        if (
+          !isApiBusinessSuccess(response) ||
+          typeof account !== 'string' ||
+          !account.trim() ||
+          typeof token !== 'string' ||
+          !token.trim()
+        ) {
+          return null
+        }
+        sportsCredentials.value = { memberCode: account.trim(), token }
+        memberCodeNeedsRefresh = true
+        return sportsMemberCode.value
+      } catch {
+        return null
+      } finally {
+        if (generation === memberCodeGeneration) memberCodePending = null
+      }
+    })()
+    memberCodePending = pending
+    return pending
+  }
+  /** 网关鉴权失败统一更新体育凭据，原响应照常交给调用方；不自动重放任何请求。 */
+  const withSportsAuthRecovery =
+    <Params, Response extends SportsResponse>(
+      send: (baseUrl: string, params: Params, options?: SportsRequestOptions) => Promise<Response>
+    ) =>
+    async (baseUrl: string, params: Params, options?: SportsRequestOptions): Promise<Response> => {
+      const version = sportsSessionVersion.value
+      const generation = memberCodeGeneration
+      const credentials = sportsCredentials.value
+      const response = await send(baseUrl, params, options)
+      if (
+        !isSportsAuthExpired(response) ||
+        !isLoggedIn.value ||
+        !homepageActive ||
+        options?.signal?.aborted ||
+        version !== sportsSessionVersion.value ||
+        generation !== memberCodeGeneration ||
+        credentials !== sportsCredentials.value ||
+        (lastAuthRecovery?.generation === generation &&
+          lastAuthRecovery.credentials === credentials)
+      ) {
+        return response
+      }
+
+      // 复用正在获取的凭据；没有在途登录时才作废旧凭据并重新获取。
+      if (!memberCodePending) invalidateSportsMemberCode()
+      // 失败后也保留已处理标记，避免同批迟到错误再次触发登录。
+      lastAuthRecovery = {
+        generation: memberCodeGeneration,
+        credentials: sportsCredentials.value
+      }
+      await ensureSportsMemberCode()
+      return response
+    }
+  // 仅包装返回 stc 的体育网关接口；本站热门列表仍使用自己的 code/result 契约。
+  const sportsApi = {
+    getAllSportCount: withSportsAuthRecovery(Api.sport.getAllSportCount),
+    getSportsV2: withSportsAuthRecovery(Api.sport.getSportsV2),
+    getSportEventIndexList: withSportsAuthRecovery(Api.sport.getSportEventIndexList),
+    getCompetitionPage: withSportsAuthRecovery(Api.sport.getCompetitionPage),
+    getPopularSports: withSportsAuthRecovery(Api.sport.getPopularSports),
+    getSelectedEventInfo: withSportsAuthRecovery(Api.sport.getSelectedEventInfo),
+    favouriteEvent: withSportsAuthRecovery(Api.sport.favouriteEvent)
+  }
+  /** 显式重试先获取凭据；普通筛选不走这里，失败后也不自动循环。 */
+  const runSportsRetry = (
+    key: string,
+    action: (isCurrent: () => boolean) => void | Promise<unknown>
+  ): Promise<void> => {
+    if (!homepageActive) return Promise.resolve()
+    const existing = retryJobs.get(key)
+    if (existing) return existing
+    const version = sportsSessionVersion.value
+    const visit = memberCodeGeneration
+    const isCurrent = () =>
+      homepageActive && version === sportsSessionVersion.value && visit === memberCodeGeneration
+    const pending = Promise.resolve()
+      .then(async () => {
+        if (!isCurrent()) return
+        if (isLoggedIn.value && !(await ensureSportsMemberCode())) return
+        if (!isCurrent()) return
+        await action(isCurrent)
+      })
+      .finally(() => {
+        if (retryJobs.get(key) === pending) retryJobs.delete(key)
+      })
+    retryJobs.set(key, pending)
+    return pending
+  }
+  // 仅带会员账号的主列表可校准个人收藏，匿名补页不能反盖成功写入的结果。
+  const syncMemberFavourites = (
+    groups: readonly SportCompetitionGroup[],
+    readRevision: number,
+    memberCode: string | null | undefined
+  ) => {
+    if (!memberCode || memberCode !== sportsMemberCode.value) return
+    for (const group of groups) {
+      for (const event of group.Sports) {
+        if (typeof event.IsFavourite !== 'boolean' || isFavouritePending(event.EventId)) continue
+        const current = memberFavourites.get(event.EventId)
+        if (!current || current.revision <= readRevision) {
+          memberFavourites.set(event.EventId, {
+            value: event.IsFavourite,
+            revision: readRevision
+          })
+          unconfirmedFavourites.delete(event.EventId)
+        }
+      }
+    }
+  }
+  const withMemberFavourite = (event: SportEvent): SportEvent => ({
+    ...event,
+    IsFavourite: isLoggedIn.value
+      ? (memberFavourites.get(event.EventId)?.value ?? event.IsFavourite === true)
+      : false
+  })
   const selectedSportId = ref(1)
   const market = ref<SportsMarket>(3)
   // 接口分类是唯一原始状态；筛选标签由它派生，点击标签时反向更新分类。
@@ -238,30 +442,34 @@ export const useSportsStore = defineStore('sports', () => {
   const eventsRequestContext = ref('')
 
   // 滚球 今日 早盘 串关数据
-  const counts = createSportsRequest(getBaseUrl, Api.sport.getAllSportCount, response =>
+  const counts = createSportsRequest(getBaseUrl, sportsApi.getAllSportCount, response =>
     Array.isArray(response.spc)
   )
 
   // 所有联赛数据
-  const events = createSportsRequest(getBaseUrl, Api.sport.getSportsV2, response =>
+  const events = createSportsRequest(getBaseUrl, sportsApi.getSportsV2, response =>
     Array.isArray(response.e)
   )
 
   // 索引汇总
-  const indexes = createSportsRequest(getBaseUrl, Api.sport.getSportEventIndexList, response =>
+  const indexes = createSportsRequest(getBaseUrl, sportsApi.getSportEventIndexList, response =>
     Array.isArray(response.e)
   )
 
   // 联赛下的详细赛事
-  const competition = createSportsRequest(getBaseUrl, Api.sport.getCompetitionPage, response =>
+  const competition = createSportsRequest(getBaseUrl, sportsApi.getCompetitionPage, response =>
     Array.isArray(response.e)
   )
 
-  const popular = createSportsRequest(getBaseUrl, Api.sport.getPopularSports, response =>
+  const popular = createSportsRequest(getBaseUrl, sportsApi.getPopularSports, response =>
     Array.isArray(response.e)
   )
-  const favourite = createSportsRequest(getBaseUrl, Api.sport.favouriteEvent, () => true)
-  const resources = [counts, events, indexes, competition, popular, favourite]
+  // 写请求不进入可取消的查询资源，避免另一场点击或页面离开中断已发出的操作。
+  const favouriteState = shallowReactive<
+    SportsRequestState<FavouriteEventParams, FavouriteEventResponse>
+  >({ params: null, response: null, data: null, loading: false, error: null })
+  const favouriteJobs = shallowReactive(new Map<string, Promise<SportsFavouriteResult>>())
+  const resources = [counts, events, indexes, competition, popular]
 
   // 全联赛缓存独立于搜索和联赛选择，按收藏置顶条件隔离；response 仅保留最近一页。
   const allSportsState = shallowReactive<{
@@ -285,7 +493,13 @@ export const useSportsStore = defineStore('sports', () => {
   const allSportsDataContext = ref('')
   const allSportsDataScope = ref('')
   const getAllSportsContext = () =>
-    JSON.stringify([getBaseUrl(), languageCode.value, selectedSportId.value, market.value])
+    JSON.stringify([
+      getBaseUrl(),
+      languageCode.value,
+      selectedSportId.value,
+      market.value,
+      sportsSessionVersion.value
+    ])
   const getAllSportsQueryContext = () => JSON.stringify([getAllSportsContext(), isFavourite.value])
   let allSportsController: AbortController | undefined
   let allSportsPending: Promise<SportCompetitionGroup[] | null> | null = null
@@ -369,7 +583,7 @@ export const useSportsStore = defineStore('sports', () => {
             state.error = { kind: 'response', message: 'League page limit exceeded' }
             return null
           }
-          const response = await Api.sport.getCompetitionPage(
+          const response = await sportsApi.getCompetitionPage(
             baseUrl,
             { ...common, PageNumber: state.nextPage },
             { signal: controller.signal }
@@ -451,12 +665,13 @@ export const useSportsStore = defineStore('sports', () => {
     requestedLeagueIds = next
     pumpLeagueRequests()
   }
-  const retryLeague = (id: number) => {
+  const resumeLeague = (id: number) => {
     if (!requestedLeagueIds.has(id)) return
     const state = getLeagueLoadState(id)
     if (state) state.error = null
     pumpLeagueRequests()
   }
+  const retryLeague = (id: number) => runSportsRetry(`league:${id}`, () => resumeLeague(id))
   watch(
     [getLeagueDetailsContext, () => keyword.value.trim()],
     ([context]) => {
@@ -468,13 +683,18 @@ export const useSportsStore = defineStore('sports', () => {
     },
     { flush: 'sync' }
   )
-  const fetchAllSports = (): Promise<SportCompetitionGroup[] | null> => {
+  const fetchAllSports = ({ keepPrevious = false } = {}): Promise<
+    SportCompetitionGroup[] | null
+  > => {
     const scope = getAllSportsContext()
     const context = getAllSportsQueryContext()
     if (allSportsPending && allSportsRequestContext.value === context) return allSportsPending
     cancelAllSports()
     // 仅切换收藏排序不作热门详情刷新；补全接口本身没有收藏参数。
-    if (allSportsRequestScope.value !== scope || allSportsRequestContext.value === context) {
+    if (
+      !keepPrevious &&
+      (allSportsRequestScope.value !== scope || allSportsRequestContext.value === context)
+    ) {
       cancelHotDetails()
       completedHotDetailsKey = ''
     }
@@ -515,13 +735,17 @@ export const useSportsStore = defineStore('sports', () => {
       Keyword: '',
       IsFavourite: isFavourite.value,
       earlyTradingDate: null,
-      MemberCode: null
+      MemberCode: sportsMemberCode.value
     }
+    const retainPrevious =
+      keepPrevious && allSportsDataContext.value === context && allSportsState.data.length > 0
     const fail = (message: string) => {
       allSportsState.error = { kind: 'response', message }
       return null
     }
     const publish = (groups: Map<number, SportCompetitionGroup>) => {
+      // 收藏排序属于后台刷新，完整成功后再替换，避免中间页缩短列表及页码。
+      if (retainPrevious) return
       // 每页成功即替换为本轮累积结果，组件不必等待所有联赛页完成。
       allSportsState.data = [...groups.values()]
       allSportsState.complete = false
@@ -540,7 +764,8 @@ export const useSportsStore = defineStore('sports', () => {
           PageNumber: page
         }
         allSportsState.params = pageParams
-        const response = await Api.sport.getSportsV2(baseUrl, pageParams, {
+        const readRevision = favouriteRevision
+        const response = await sportsApi.getSportsV2(baseUrl, pageParams, {
           signal: controller.signal
         })
         if (!isCurrent()) return null
@@ -582,6 +807,7 @@ export const useSportsStore = defineStore('sports', () => {
         ) {
           return fail('Invalid all-league event data')
         }
+        syncMemberFavourites(response.e, readRevision, params.MemberCode)
         allSportsState.total = total
         if (!response.e.length) {
           if (!total) groups.clear()
@@ -816,7 +1042,7 @@ export const useSportsStore = defineStore('sports', () => {
             PeriodIds: [1]
           }
           hotDetailsState.params = params
-          const response = await Api.sport.getSelectedEventInfo(baseUrl, params, {
+          const response = await sportsApi.getSelectedEventInfo(baseUrl, params, {
             signal: controller.signal
           })
           if (!isCurrent()) return null
@@ -868,7 +1094,7 @@ export const useSportsStore = defineStore('sports', () => {
     getCompetitionPage: competition.state,
     getPopularSports: popular.state,
     getCompetitionList: competitionListState,
-    favouriteEvent: favourite.state
+    favouriteEvent: favouriteState
   })
   const sportCounts = computed(() => counts.state.data?.spc ?? [])
   const sportCountsLoading = computed(() => counts.state.loading)
@@ -906,7 +1132,8 @@ export const useSportsStore = defineStore('sports', () => {
       market.value,
       keyword.value.trim(),
       keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null,
-      isFavourite.value
+      isFavourite.value,
+      sportsSessionVersion.value
     ])
   // 联赛候选只来自默认列表的逐页缓存，不随搜索或指定联赛的查询结果缩减。
   const leagueGroups = computed(() => allLeagueGroups.value)
@@ -938,7 +1165,7 @@ export const useSportsStore = defineStore('sports', () => {
       seen.add(record.eventId)
       const event =
         allEventsById.value.get(record.eventId) ?? hotDetailsById.value.get(record.eventId)
-      return event ? [event] : []
+      return event ? [withMemberFavourite(event)] : []
     })
   })
   const hotEventsLoading = computed(
@@ -992,11 +1219,11 @@ export const useSportsStore = defineStore('sports', () => {
     return groups
       .filter(group => !selected.size || selected.has(group.CompetitionId))
       .map(group => {
-        if (keyword.value.trim()) return group
-        const detail = getLeagueLoadState(group.CompetitionId)
-        return detail?.data.length
-          ? { ...group, Sports: mergeSportEvents(group.Sports, detail.data) }
-          : group
+        const detail = keyword.value.trim() ? undefined : getLeagueLoadState(group.CompetitionId)
+        const sports = detail?.data.length
+          ? mergeSportEvents(group.Sports, detail.data)
+          : group.Sports
+        return { ...group, Sports: sports.map(withMemberFavourite) }
       })
   })
   const matchListLoading = computed(
@@ -1055,8 +1282,8 @@ export const useSportsStore = defineStore('sports', () => {
       CompetitionIds: [...selectedIds],
       Keyword: keyword.value.trim(),
       earlyTradingDate: keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null,
-      // 游客查询不触发体育登录，也不使用本站会员 ID 代替平台账号。
-      MemberCode: null,
+      // 使用当前体育平台账号，游客仍传空值，不用本站会员 ID 代替。
+      MemberCode: sportsMemberCode.value,
       ...overrides,
       // 手动查询覆盖参数也不能绕过游客限制。
       IsFavourite: isLoggedIn.value && (overrides.IsFavourite ?? isFavourite.value)
@@ -1068,7 +1295,8 @@ export const useSportsStore = defineStore('sports', () => {
       params.Market,
       params.Keyword,
       params.Market === 1 ? params.earlyTradingDate : null,
-      params.IsFavourite
+      params.IsFavourite,
+      sportsSessionVersion.value
     ])
     const requestContext = JSON.stringify([
       context,
@@ -1080,8 +1308,12 @@ export const useSportsStore = defineStore('sports', () => {
     eventsRequestContext.value = requestContext
     // 请求层切换条件会清空旧数据，同时失效其缓存标记，避免快速切回时误判已加载。
     if (eventsDataContext.value !== requestContext) eventsDataContext.value = ''
+    const version = sportsSessionVersion.value
+    const readRevision = favouriteRevision
     const response = await events.load(params)
+    if (version !== sportsSessionVersion.value) return null
     if (response && events.state.data === response) {
+      syncMemberFavourites(response.e ?? [], readRevision, params.MemberCode)
       eventsDataContext.value = requestContext
     }
     return response
@@ -1103,15 +1335,168 @@ export const useSportsStore = defineStore('sports', () => {
       ...overrides
     })
 
-  /** 收藏是写操作，只提供显式入口，不随首页初始化调用或绑定模拟收藏按钮。 */
-  const setFavouriteEvent = (params: FavouriteEventParams) => {
-    if (!params.MemberCode.trim()) {
-      return Promise.reject(new Error('A sports platform MemberCode is required'))
+  const isFavouritePending = (eventId: number) =>
+    favouriteJobs.has(`${sportsSessionVersion.value}:${eventId}`)
+
+  /** 单联赛筛选可覆盖预览外的赛事；只校准当前赛事，不替换列表或分页。 */
+  const refreshEventFavourite = async (
+    baseUrl: string,
+    params: GetSportsV2Params,
+    eventId: number,
+    isCurrent: () => boolean
+  ): Promise<boolean> => {
+    const generation = memberCodeGeneration
+    try {
+      const response = await sportsApi.getSportsV2(baseUrl, params)
+      if (
+        !isCurrent() ||
+        !homepageActive ||
+        generation !== memberCodeGeneration ||
+        params.MemberCode !== sportsMemberCode.value
+      ) {
+        return false
+      }
+      if (!isSportsSuccess(response)) {
+        favouriteState.error = { kind: 'business', code: response.stc, message: response.std }
+        return false
+      }
+      const group = Array.isArray(response.e)
+        ? response.e.find(group => group?.CompetitionId === params.CompetitionIds[0])
+        : undefined
+      const event = Array.isArray(group?.Sports)
+        ? group.Sports.find(event => event?.EventId === eventId)
+        : undefined
+      if (typeof event?.IsFavourite !== 'boolean') {
+        favouriteState.error = { kind: 'response', message: 'Favourite status is unavailable' }
+        return false
+      }
+      memberFavourites.set(eventId, { value: event.IsFavourite, revision: ++favouriteRevision })
+      unconfirmedFavourites.delete(eventId)
+      return true
+    } catch {
+      if (isCurrent() && homepageActive && generation === memberCodeGeneration) {
+        favouriteState.error = { kind: 'network', message: 'Favourite status refresh failed' }
+      }
+      return false
     }
-    return favourite.load(params)
+  }
+
+  // 仅收藏置顶需要重取排序；普通收藏只更新个人状态，不牵动首页初始化。
+  const refreshFavouriteOrder = () => {
+    if (useCachedEvents.value) {
+      cancelAllSports()
+      void fetchAllSports({ keepPrevious: true })
+    } else {
+      events.cancel()
+      void fetchSports()
+    }
+  }
+
+  /** 同场防重、不同场独立；服务端切换收藏状态，网络失败不自动重试。 */
+  const toggleFavouriteEvent = (eventId: number): Promise<SportsFavouriteResult> => {
+    if (!isLoggedIn.value) return Promise.resolve('login-failed')
+    const version = sportsSessionVersion.value
+    const key = `${version}:${eventId}`
+    const existing = favouriteJobs.get(key)
+    if (existing) return existing
+    const event =
+      eventsList.value.flatMap(group => group.Sports).find(item => item.EventId === eventId) ??
+      hotEvents.value.find(item => item.EventId === eventId)
+    if (
+      !Number.isSafeInteger(eventId) ||
+      eventId <= 0 ||
+      !event ||
+      !Number.isSafeInteger(event.Competition?.CompetitionId) ||
+      !getBaseUrl()
+    ) {
+      return Promise.resolve('failed')
+    }
+    const baseUrl = getBaseUrl()
+    const listContext = matchListContext.value
+    // 使用点击时的球种、分类、联赛；不能把后续搜索条件带入校准请求。
+    const query: GetSportsV2Params = {
+      ...commonParams(),
+      competitionCondType: 2,
+      CompetitionIds: [event.Competition.CompetitionId],
+      PageNumber: 1,
+      PageSize: 1,
+      SortType: 1,
+      Keyword: '',
+      IsFavourite: false,
+      earlyTradingDate: null
+    }
+    const isCurrent = () => version === sportsSessionVersion.value && isLoggedIn.value
+    const pending = (async (): Promise<SportsFavouriteResult> => {
+      const loginGeneration = memberCodeGeneration
+      const memberCode = await ensureSportsMemberCode()
+      if (!isCurrent() || loginGeneration !== memberCodeGeneration) return 'stale'
+      if (!memberCode) return 'login-failed'
+      const previous = memberFavourites.get(eventId)?.value ?? event.IsFavourite === true
+      const reconcileOnly = unconfirmedFavourites.has(eventId)
+      const params: FavouriteEventParams = { MemberCode: memberCode, EventId: eventId }
+      favouriteState.params = params
+      favouriteState.error = null
+      favouriteState.response = null
+      let result: SportsFavouriteResult = reconcileOnly ? 'synced' : 'success'
+      if (!reconcileOnly) {
+        unconfirmedFavourites.add(eventId)
+        try {
+          const response = await sportsApi.favouriteEvent(baseUrl, params)
+          if (!isCurrent()) return 'stale'
+          favouriteState.response = response
+          if (!isSportsSuccess(response)) {
+            favouriteState.error = { kind: 'business', code: response.stc, message: response.std }
+            if (isSportsAuthExpired(response)) {
+              unconfirmedFavourites.delete(eventId)
+              return 'auth-expired'
+            }
+            result = 'failed'
+          } else {
+            favouriteState.data = response
+          }
+        } catch {
+          if (!isCurrent()) return 'stale'
+          favouriteState.error = { kind: 'network', message: 'Favourite request failed' }
+          result = 'failed'
+        }
+      }
+      if (!homepageActive || loginGeneration !== memberCodeGeneration) return 'stale'
+      // 只建立旧读隔离点，不推测切换结果；超时也需读取服务端实际状态。
+      memberFavourites.set(eventId, { value: previous, revision: ++favouriteRevision })
+      const confirmed = await refreshEventFavourite(
+        baseUrl,
+        { ...query, MemberCode: memberCode },
+        eventId,
+        isCurrent
+      )
+      if (!isCurrent()) return 'stale'
+      return confirmed ? result : 'failed'
+    })()
+    // 等待账号期间也要立即进入防重状态。
+    favouriteJobs.set(key, pending)
+    favouriteState.loading = true
+    void pending.then(result => {
+      favouriteJobs.delete(key)
+      favouriteState.loading = favouriteJobs.size > 0
+      if (
+        isCurrent() &&
+        homepageActive &&
+        isFavourite.value &&
+        listContext === matchListContext.value &&
+        (result === 'success' ||
+          result === 'synced' ||
+          (result === 'failed' && !unconfirmedFavourites.has(eventId)))
+      ) {
+        refreshFavouriteOrder()
+      }
+    })
+    return pending
   }
 
   const cancelRequests = () => {
+    homepageActive = false
+    // 停用和销毁均结束本次停留；旧登录响应不能写回，也不能被下次进入复用。
+    invalidateSportsMemberCode()
     homepageGeneration += 1
     resources.forEach(resource => resource.cancel())
     cancelAllSports()
@@ -1124,6 +1509,14 @@ export const useSportsStore = defineStore('sports', () => {
   }
   const reset = () => {
     cancelRequests()
+    sportsSessionVersion.value += 1
+    memberFavourites.clear()
+    unconfirmedFavourites.clear()
+    favouriteRevision = 0
+    favouriteState.params = null
+    favouriteState.response = null
+    favouriteState.data = null
+    favouriteState.error = null
     isFavourite.value = false
     resources.forEach(resource => resource.reset())
     allSportsState.params = null
@@ -1154,12 +1547,17 @@ export const useSportsStore = defineStore('sports', () => {
     homepageError.value = null
   }
 
-  /** 首屏先取数量，再请求热门名单和默认联赛缓存；搜索、筛选使用独立请求结果。 */
+  /** 进入时获取体育账号并查询数量，列表等待两者就绪；筛选期间复用本次停留的账号。 */
   const loadHomepage = async ({
     refreshCounts = true,
     refreshCompetitionList = refreshCounts
-  }: { refreshCounts?: boolean; refreshCompetitionList?: boolean } = {}) => {
+  }: {
+    refreshCounts?: boolean
+    refreshCompetitionList?: boolean
+  } = {}) => {
+    homepageActive = true
     const generation = ++homepageGeneration
+    let refreshEvents = false
     if (refreshCompetitionList) {
       // 数量等待期间后续筛选可能接管请求，保留刷新意图，避免旧代次退出时漏发热门。
       competitionListRefreshPending = true
@@ -1178,6 +1576,11 @@ export const useSportsStore = defineStore('sports', () => {
     try {
       await siteConfigStore.initSiteConfig()
       if (generation !== homepageGeneration) return
+      // 仅登录后获取体育凭据，不依赖数量接口成功；同次停留共用在途或已有结果。
+      const memberCodeTask =
+        isLoggedIn.value && (!memberCodeAttempted || memberCodePending)
+          ? ensureSportsMemberCode()
+          : null
       if (!getBaseUrl()) {
         resources.forEach(resource => resource.reset())
         cancelAllSports()
@@ -1208,6 +1611,16 @@ export const useSportsStore = defineStore('sports', () => {
         }
         loadedCountsContext = countsContext
       }
+      await memberCodeTask
+      if (generation !== homepageGeneration) return
+      // 同一本站会话内账号首次就绪，保留原预览直到新数据发布，但不复用匿名查询缓存。
+      if (memberCodeNeedsRefresh) {
+        memberCodeNeedsRefresh = false
+        refreshEvents = true
+        events.cancel()
+        cancelAllSports()
+        allSportsState.complete = false
+      }
       pumpLeagueRequests()
       // 数量等待期间可能更换球种；此处读取 Store 当前值，不使用请求前的筛选快照。
       if (competitionListRefreshPending) {
@@ -1229,6 +1642,7 @@ export const useSportsStore = defineStore('sports', () => {
         // 默认列表直接共用分页缓存，避免额外发一次相同的第一页请求。
         await allSportsTask
       } else if (
+        refreshEvents ||
         !keyword.value.trim() ||
         refreshCounts ||
         eventsDataContext.value !== getEventsContext() ||
@@ -1246,6 +1660,19 @@ export const useSportsStore = defineStore('sports', () => {
     }
   }
 
+  const retryHomepage = () =>
+    runSportsRetry('homepage', async isCurrent => {
+      await loadHomepage({ refreshCounts: false })
+      if (isCurrent() && !keyword.value.trim()) {
+        for (const id of requestedLeagueIds) resumeLeague(id)
+      }
+    })
+  const retryHotEvents = () =>
+    runSportsRetry('hot', () =>
+      Promise.all([fetchCompetitionList(), fetchAllSports({ keepPrevious: true })])
+    )
+  const retryingSports = computed(() => retryJobs.size > 0)
+
   return {
     oddsTypeEnum,
     getLanguage,
@@ -1255,6 +1682,9 @@ export const useSportsStore = defineStore('sports', () => {
     market,
     sortType,
     isFavourite,
+    sportsSessionVersion,
+    sportsMemberCode,
+    sportsToken,
     pageNumber,
     pageSize,
     competitionIds,
@@ -1296,8 +1726,13 @@ export const useSportsStore = defineStore('sports', () => {
     retryLeague,
     fetchPopularSports,
     fetchCompetitionList,
-    setFavouriteEvent,
+    ensureSportsMemberCode,
+    toggleFavouriteEvent,
+    isFavouritePending,
     loadHomepage,
+    retryHomepage,
+    retryHotEvents,
+    retryingSports,
     cancelRequests,
     reset
   }

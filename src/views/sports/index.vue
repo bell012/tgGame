@@ -139,9 +139,10 @@
           :MarketLines="match.MarketLines"
           :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
           :expanded="expandedMatchId === match.id"
-          :favorite="favorites.includes(match.id)"
+          :favorite="match.IsFavourite"
+          :favorite-pending="isMatchFavoritePending(match.id)"
           @update:expanded="setMatchExpanded(match.id, $event)"
-          @favorite="toggleFavorite(match.id)"
+          @favorite="handleMatchFavorite(match.id)"
           @select="selectOdds(match.id, $event)"
           @media="showMediaPlaceholder"
         />
@@ -229,7 +230,6 @@ const {
   setPage,
   liveMatches,
   expandedMatchId,
-  favorites,
   betSlipOpen,
   mode,
   selections,
@@ -243,7 +243,8 @@ const {
   refreshing,
   focusedStakeId,
   collectOnly,
-  toggleFavorite,
+  handleMatchFavorite,
+  isMatchFavoritePending,
   setMatchExpanded,
   getSelectedWagerSelectionId,
   selectOdds,
