@@ -55,6 +55,38 @@ export interface SportsResponse {
   [key: string]: unknown
 }
 
+/** 体育投注历史接口共用会员凭据参数。 */
+export interface SportsBetHistoryAuthParams {
+  /** 体育接口语言码，使用 ENG / CHS 等体育网关语言。 */
+  LanguageCode: SportsLanguageCode
+  /** loginPlatform 返回的 token。 */
+  Token: string
+  /** loginPlatform 返回的 platformAcct。 */
+  MemberCode: string
+  /** 体育网关要求的请求时间戳签名，生成规则待接口返回确认。 */
+  TimeStamp: string
+}
+
+/** GetStatement 已结算请求参数；时间按体育网关跨天 12:00:00 至 11:59:59 传递。 */
+export interface GetStatementParams extends SportsBetHistoryAuthParams {
+  StartDate: string
+  EndDate: string
+  DateType: 2
+  StartTime: '12:00:00'
+  EndTime: '11:59:59'
+}
+
+/** GetBetList 未结算请求参数；状态固定查 1、2、3、4。 */
+export interface GetBetListParams extends SportsBetHistoryAuthParams {
+  BetConfirmationStatus: [1, 2, 3, 4]
+}
+
+/** 已结算响应结构 */
+export type GetStatementResponse = SportsResponse
+
+/** 未结算响应结构 */
+export type GetBetListResponse = SportsResponse
+
 /** RelatedScores（rs）：同一比赛不同组别的比分/红牌，不能与主体比分相加。 */
 export interface SportRelatedScore {
   /** egtid，Int：比分所属的赛事组别类型 ID，不是球种 ID。 */

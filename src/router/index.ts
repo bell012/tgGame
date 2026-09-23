@@ -150,6 +150,20 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'sports/bet-history',
+    name: 'sportsBetHistory',
+    component: () => import('@/views/sports/bet-history/index.vue'),
+    meta: {
+      title: '体育投注历史',
+      requiresAuth: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'sports/event-details',
     name: 'sportsEventDetails',
     component: () => import('@/views/sports/event-details/index.vue'),
