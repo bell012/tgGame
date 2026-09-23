@@ -69,6 +69,7 @@
         <article
           v-for="match in liveMatches"
           :key="match.id"
+          v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
           class="flex min-h-[150px] w-full min-w-0 shrink-0 snap-center flex-col rounded-lg bg-bg-2 px-2.5 py-3"
           :data-sports-live-match="match.id"
         >
@@ -184,6 +185,11 @@
             <MatchCardH5
               v-for="match in group.matches"
               :key="match.id"
+              v-match-visibility="{
+                sportId: match.sportId,
+                eventId: match.EventId,
+                enabled: isGroupExpanded(group.id)
+              }"
               :match="match"
               :MarketLines="match.MarketLines"
               :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
@@ -287,10 +293,12 @@ import {
   useId,
   watch
 } from 'vue'
+import { useRoute } from 'vue-router'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIntersectionObserver } from '@/composables/useIntersectionObserver'
 import { useLayoutStore } from '@/stores/layout'
 import { globalShowToast } from '@/utils/toast'
+import { stripLocalePrefix } from '@/utils/locale'
 import ChevronIcon from '@/static/svg/casino/dropdown_chevron.svg?component'
 import leagueIcon from '@/static/svg/sports/liansai_tabs/icon1.svg?url'
 import emptyImage from '@/static/img/explore/default.png'
@@ -302,6 +310,7 @@ import MatchOdds from '../match-odds/index.vue'
 import { pickOverUnderOrFirstMarketLine } from '../match-odds/display'
 import MatchCardH5 from '../match-card/h5.vue'
 import type { SportsMatch, SportsPageState } from '../../index'
+import { useMatchVisibility } from '../../composables/useMatchVisibility'
 import type { OddsSelectPayload } from '../match-odds/types'
 import LeagueTabs_H5 from '../liansai_tabs/H5.vue'
 import Floating from '../floating/index.vue'
@@ -309,6 +318,7 @@ import Floating from '../floating/index.vue'
 const props = defineProps<{ page: SportsPageState }>()
 const idPrefix = useId()
 const layoutStore = useLayoutStore()
+const route = useRoute()
 const navigationHeader = ref<HTMLElement | null>(null)
 const navigationHeight = ref(layoutStore.TOPNAV_HEIGHT + layoutStore.BOTTOM_TAB_HEIGHT + 56)
 const activeSport = computed(() => props.page.selectedSportKey.value)
@@ -320,6 +330,11 @@ const visibleGroupCount = ref(LEAGUE_BATCH_SIZE)
 const loadMoreSentinel = ref<HTMLElement | null>(null)
 const pageActive = ref(true)
 let pageDisposed = false
+const { vMatchVisibility } = useMatchVisibility({
+  enabled: () => !props.page.betSlipOpen.value && stripLocalePrefix(route.path) === '/sports',
+  topInset: () => navigationHeight.value,
+  onChange: targets => props.page.setVisibleMatches('h5', targets)
+})
 
 // 同步固定导航的高度，给正文留出位置。
 let navigationObserver: ResizeObserver | undefined

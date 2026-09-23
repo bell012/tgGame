@@ -1,13 +1,15 @@
 import { computed, onActivated, onDeactivated, onMounted, onScopeDispose, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
-import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
+import type { SportsRefreshTarget } from '@/stores/sports'
+import { getCurrencySymbol, getFormattedBalance, stripLocalePrefix } from '@/utils/locale'
 import { formatTimestamp } from '@/utils/date'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
@@ -20,6 +22,7 @@ import type {
   LiansaiFilterPayload
 } from './components/liansai_tabs'
 import { sportItems } from './components/sports-navigation/sport-items'
+import { createHomepageRefresh } from './composables/refreshScheduler'
 
 export type SportsBetMode = 'single' | 'parlay'
 export type SportsMatch = {
@@ -85,6 +88,9 @@ type SelectedOutcome = {
   WagerSelectionId: number
   odds: number
   stake: string
+  sportId: number
+  eventId: number
+  snapshot: SportsBetSelection
 }
 type NoticeKey =
   | ''
@@ -225,6 +231,8 @@ export const getSportsCombinations = (odds: readonly number[], size: number): nu
 }
 
 export const useSportsPage = () => {
+  const route = useRoute()
+  const isHomepageRoute = computed(() => stripLocalePrefix(route.path) === '/sports')
   const isMobile = useIsMobile()
   const { requireLogin } = useRequireLoginAction()
   const { currentCurrencyCode } = useDisplayCurrency()
@@ -363,6 +371,66 @@ export const useSportsPage = () => {
   const betSlipOpen = ref(false)
   const mode = ref<SportsBetMode>('single')
   const outcomes = ref<SelectedOutcome[]>([])
+  const visibleBySource = ref<Record<'pc' | 'h5', SportsRefreshTarget[]>>({ pc: [], h5: [] })
+  const visibleMatchTargets = computed(() => visibleBySource.value[isMobile.value ? 'h5' : 'pc'])
+  const setVisibleMatches = (source: 'pc' | 'h5', targets: readonly SportsRefreshTarget[]) => {
+    const unique = new Map<string, SportsRefreshTarget>()
+    for (const target of targets) {
+      if (!Number.isSafeInteger(target.sportId) || !Number.isSafeInteger(target.eventId)) continue
+      if (target.sportId <= 0 || target.eventId <= 0) continue
+      unique.set(`${target.sportId}:${target.eventId}`, { ...target })
+    }
+    visibleBySource.value[source] = [...unique.values()]
+  }
+  const refreshTargets = computed(() => {
+    const targets = new Map<string, SportsRefreshTarget>()
+    const expanded = expandedMatchId.value
+      ?.replace(/^live:/, '')
+      .split(':')
+      .map(Number)
+    for (const target of [
+      ...visibleMatchTargets.value,
+      ...outcomes.value.map(({ sportId, eventId }) => ({ sportId, eventId })),
+      ...(expanded?.length === 2 && expanded.every(id => Number.isSafeInteger(id) && id > 0)
+        ? [{ sportId: expanded[0], eventId: expanded[1] }]
+        : [])
+    ]) {
+      targets.set(`${target.sportId}:${target.eventId}`, target)
+    }
+    return [...targets.values()]
+  })
+  const homepageRefresh = createHomepageRefresh({
+    visible: () => sportsStore.refreshVisibleEvents(refreshTargets.value),
+    counts: () => sportsStore.refreshHomepageCounts(),
+    background: () => sportsStore.refreshHomepageBackground(),
+    cancel: () => sportsStore.cancelHomepageRefresh()
+  })
+  let homepageReady = false
+  let homepageLoadVersion = 0
+  const resumeHomepageRefresh = (immediate = false) => {
+    if (
+      homepageReady &&
+      isHomepageRoute.value &&
+      sportsPageActive.value &&
+      !sportsPageDisposed &&
+      !document.hidden
+    ) {
+      homepageRefresh.start(immediate)
+    }
+  }
+  const handlePageVisibility = () => {
+    if (document.hidden || !isHomepageRoute.value) homepageRefresh.stop()
+    else resumeHomepageRefresh(true)
+  }
+  watch(isHomepageRoute, handlePageVisibility)
+  watch(
+    () =>
+      refreshTargets.value
+        .map(target => `${target.sportId}:${target.eventId}`)
+        .sort()
+        .join(','),
+    () => homepageRefresh.targetsChanged()
+  )
   const parlayStakes = ref<Record<string, string>>({})
   const focusedStakeId = ref('')
   const noticeKey = ref<NoticeKey>('')
@@ -419,38 +487,70 @@ export const useSportsPage = () => {
   const getLiveMarkets = getMatchMarkets
   const getSelectedWagerSelectionId = (matchId: string) =>
     outcomes.value.find(outcome => outcome.matchId === matchId)?.WagerSelectionId
-  const selections = computed<SportsBetSelection[]>(() =>
-    outcomes.value.flatMap(outcome => {
-      const match = matchById.value.get(outcome.matchId)
-      const line = match?.MarketLines.find(item => item.MarketlineId === outcome.MarketlineId)
-      const selection = line?.WagerSelections.find(
-        item => item.WagerSelectionId === outcome.WagerSelectionId
-      )
-      if (!match || !line || !selection) return []
-      return [
-        {
-          id: outcome.id,
-          matchId: outcome.matchId,
-          odds: outcome.odds,
-          stake: outcome.stake,
-          selection: [
-            selection.SelectionName,
-            line.BetTypeId !== 3 && Number.isFinite(selection.Handicap)
-              ? String(selection.Handicap)
-              : ''
-          ]
-            .filter(Boolean)
-            .join(' '),
-          market: line.BetTypeName,
-          marketTitle: line.BetTypeName,
-          fixture: `${match.HomeTeam} — ${match.AwayTeam}`,
-          homeTeam: match.HomeTeam,
-          awayTeam: match.AwayTeam,
-          league: match.league,
-          live: match.live
-        }
+  const getOutcomeSnapshot = (outcome: SelectedOutcome): SportsBetSelection => {
+    const event = sportsStore.getRefreshEvent(outcome.sportId, outcome.eventId)
+    const refreshedMatch = event
+      ? mapSportsMatches(
+          [{ ...event.Competition, competitionCount: 1, Sports: [event] }],
+          outcome.sportId,
+          getTeamLogoUrl
+        )[0]
+      : undefined
+    const match = refreshedMatch ?? matchById.value.get(outcome.matchId)
+    const line = match?.MarketLines.find(item => item.MarketlineId === outcome.MarketlineId)
+    const selection = line?.WagerSelections.find(
+      item => item.WagerSelectionId === outcome.WagerSelectionId
+    )
+    if (!match || !line || !selection) return outcome.snapshot
+    const odds = Number.isFinite(selection.Odds) ? selection.Odds : outcome.snapshot.odds
+    return {
+      id: outcome.id,
+      matchId: outcome.matchId,
+      odds,
+      trend:
+        odds === outcome.snapshot.odds
+          ? outcome.snapshot.trend
+          : odds > outcome.snapshot.odds
+            ? 'up'
+            : 'down',
+      stake: outcome.stake,
+      selection: [
+        selection.SelectionName,
+        line.BetTypeId !== 3 && Number.isFinite(selection.Handicap)
+          ? String(selection.Handicap)
+          : ''
       ]
-    })
+        .filter(Boolean)
+        .join(' '),
+      market: line.BetTypeName,
+      marketTitle: line.BetTypeName,
+      fixture: `${match.HomeTeam} — ${match.AwayTeam}`,
+      homeTeam: match.HomeTeam,
+      awayTeam: match.AwayTeam,
+      league: match.league,
+      live: match.live,
+      mockBetStatus:
+        event?.EventStatusId === 2 || line.MarketlineStatusId === 2 || line.IsLocked === true
+          ? 'closed'
+          : line.MarketlineStatusId === 1 && line.IsLocked === false
+            ? 'open'
+            : outcome.snapshot.mockBetStatus
+    }
+  }
+  // 列表切换不删除投注项；新数据只更新展示信息，金额保留。
+  watch(
+    () => outcomes.value.map(outcome => getOutcomeSnapshot(outcome)),
+    snapshots => {
+      snapshots.forEach((snapshot, index) => {
+        const outcome = outcomes.value[index]
+        if (!outcome || JSON.stringify(outcome.snapshot) === JSON.stringify(snapshot)) return
+        outcome.snapshot = snapshot
+        outcome.odds = snapshot.odds
+      })
+    }
+  )
+  const selections = computed<SportsBetSelection[]>(() =>
+    outcomes.value.map(outcome => ({ ...outcome.snapshot, stake: outcome.stake }))
   )
   const parlays = computed<SportsParlay[]>(() => {
     const odds = outcomes.value.map(item => item.odds)
@@ -561,13 +661,14 @@ export const useSportsPage = () => {
   }
   // 严格消费盘口组件回传的原始盘口/选项；同赛事只保留一个选项，不触发真实下注。
   const selectOdds = (matchId: string, payload: OddsSelectPayload) => {
+    const match = matchById.value.get(matchId)
     const line = getMatchMarkets(matchId).find(
       item => item.MarketlineId === payload.market.MarketlineId
     )
     const selection = line?.WagerSelections.find(
       item => item.WagerSelectionId === payload.option.WagerSelectionId
     )
-    if (!line || !selection) return
+    if (!match || !line || !selection) return
     const odds = Number(selection.Odds)
     if (!Number.isFinite(odds)) return
     const id = `${matchId}:${line.MarketlineId}:${selection.WagerSelectionId}`
@@ -581,13 +682,37 @@ export const useSportsPage = () => {
       betSlipOpen.value = true
       return
     }
-    const next = {
+    const snapshot: SportsBetSelection = {
+      id,
+      matchId,
+      odds,
+      stake: '',
+      selection: [
+        selection.SelectionName,
+        line.BetTypeId !== 3 && Number.isFinite(selection.Handicap)
+          ? String(selection.Handicap)
+          : ''
+      ]
+        .filter(Boolean)
+        .join(' '),
+      market: line.BetTypeName,
+      marketTitle: line.BetTypeName,
+      fixture: `${match.HomeTeam} — ${match.AwayTeam}`,
+      homeTeam: match.HomeTeam,
+      awayTeam: match.AwayTeam,
+      league: match.league,
+      live: match.live
+    }
+    const next: SelectedOutcome = {
       id,
       matchId,
       MarketlineId: line.MarketlineId,
       WagerSelectionId: selection.WagerSelectionId,
       odds,
-      stake: ''
+      stake: '',
+      sportId: match.sportId,
+      eventId: match.EventId,
+      snapshot
     }
     outcomes.value = previous
       ? outcomes.value.map(item => (item.matchId === matchId ? next : item))
@@ -720,7 +845,14 @@ export const useSportsPage = () => {
   })
   const retrySports = () => {
     if (!sportsPageDisposed && sportsPageActive.value && !sportsPageLoading.value) {
-      void sportsStore.retryHomepage()
+      homepageRefresh.stop()
+      homepageReady = false
+      const version = ++homepageLoadVersion
+      void sportsStore.retryHomepage().finally(() => {
+        if (version !== homepageLoadVersion) return
+        homepageReady = true
+        resumeHomepageRefresh()
+      })
     }
   }
   const retryHotEvents = () => {
@@ -750,6 +882,7 @@ export const useSportsPage = () => {
   onMounted(() => {
     document.addEventListener('pointerdown', closeOnOutside)
     document.addEventListener('keydown', closeOnEscape)
+    document.addEventListener('visibilitychange', handlePageVisibility)
   })
   onMounted(async () => {
     // 全局配置就绪后再订阅，避免初次加载因域名变化重复请求。
@@ -775,13 +908,20 @@ export const useSportsPage = () => {
       ],
       (values, previous) => {
         if (!sportsPageActive.value || sportsPageDisposed) return
+        homepageRefresh.stop()
+        homepageReady = false
+        const version = ++homepageLoadVersion
         const refreshCounts =
           previous[0] !== true || values[1] !== previous[1] || values[2] !== previous[2]
         if (refreshCounts) resetMatchListState()
         // 热门随进入页面、语言、球种或分类变化刷新；先等待数量接口成功。
         const refreshCompetitionList =
           refreshCounts || values[3] !== previous[3] || values[4] !== previous[4]
-        void sportsStore.loadHomepage({ refreshCounts, refreshCompetitionList })
+        void sportsStore.loadHomepage({ refreshCounts, refreshCompetitionList }).finally(() => {
+          if (version !== homepageLoadVersion) return
+          homepageReady = true
+          resumeHomepageRefresh()
+        })
       },
       { immediate: true }
     )
@@ -789,21 +929,27 @@ export const useSportsPage = () => {
   })
   onActivated(() => {
     sportsPageActive.value = true
+    resumeHomepageRefresh(true)
   })
   onDeactivated(() => {
     sportsPageActive.value = false
+    homepageRefresh.stop()
+    homepageLoadVersion += 1
     clearTimeout(searchTimer)
     searchInput.value = keyword.value
     sportsStore.cancelRequests()
   })
   onScopeDispose(() => {
     sportsPageDisposed = true
+    homepageRefresh.stop()
+    homepageLoadVersion += 1
     stopSportsRefresh?.()
     sportsStore.cancelRequests()
     clearTimeout(refreshTimer)
     clearTimeout(searchTimer)
     document.removeEventListener('pointerdown', closeOnOutside)
     document.removeEventListener('keydown', closeOnEscape)
+    document.removeEventListener('visibilitychange', handlePageVisibility)
   })
 
   return {
@@ -842,6 +988,8 @@ export const useSportsPage = () => {
     refreshSportCounts: sportsStore.fetchSportCounts,
     matches,
     liveMatches,
+    visibleMatchTargets,
+    setVisibleMatches,
     currentPage,
     totalPages,
     pagedMatches,
