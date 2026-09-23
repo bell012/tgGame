@@ -6,7 +6,7 @@
   >
     <template v-if="isMobile">
       <MatchHeader @back="onBack" />
-      <SportsScoreDetails class="mt-4 px-5 pb-6" />
+      <SportsScoreDetails class="mt-4 pl-3.5 pb-6" />
     </template>
     <template v-else>
       <EventDetailsTabs v-model="activeMatchId" @change="onTabChange" />
