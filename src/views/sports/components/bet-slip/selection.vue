@@ -76,7 +76,7 @@
 import ClearIcon from '@/static/svg/sports/clear-bets.svg'
 import StakeField from './stake-field.vue'
 import { getH5StakeError } from './h5'
-import type { SportsBetSelection } from '../../index'
+import type { SportsBetSelection } from '../../shared/types'
 
 const props = defineProps<{
   selection: SportsBetSelection

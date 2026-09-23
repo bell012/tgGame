@@ -167,7 +167,7 @@ import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import MatchOdds from '../match-odds/index.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
-import type { SportsMatch } from '../../index'
+import type { SportsMatch } from '../../shared/types'
 import { sportItems } from '../sports-navigation/sport-items'
 
 const props = defineProps<{
