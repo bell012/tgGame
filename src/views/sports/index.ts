@@ -3,11 +3,13 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import { formatTimestamp } from '@/utils/date'
+import { globalShowToast } from '@/utils/toast'
 import type { SportCompetitionGroup, SportMarketLine } from '@/api/interface/sport'
 import type { OddsSelectPayload, OddsTrend } from './components/match-odds/types'
 import type { CollectOnlyPayload, FilterTabChangePayload } from './components/filter_search'
@@ -21,6 +23,7 @@ import { sportItems } from './components/sports-navigation/sport-items'
 export type SportsBetMode = 'single' | 'parlay'
 export type SportsMatch = {
   id: string
+  EventId: number
   sportId: number
   sportKey: string
   leagueId: string
@@ -40,6 +43,8 @@ export type SportsMatch = {
   hasVideo: boolean
   hasAnimation: boolean
   totalMarkets?: number
+  /** 赛事自身的收藏状态，独立于列表的收藏置顶查询条件。 */
+  IsFavourite: boolean
   HomeTeam: string
   AwayTeam: string
   HomeScore: string
@@ -145,6 +150,7 @@ export const mapSportsMatches = (
       if (!Number.isSafeInteger(competitionId)) continue
       matches.set(id, {
         id,
+        EventId: event.EventId,
         sportId,
         sportKey,
         leagueId: `${sportId}:${competitionId}`,
@@ -172,6 +178,7 @@ export const mapSportsMatches = (
           Number.isInteger(event.TotalMarketLineCount) && event.TotalMarketLineCount >= 0
             ? event.TotalMarketLineCount
             : undefined,
+        IsFavourite: event.IsFavourite === true,
         HomeTeam: event.HomeTeam,
         AwayTeam: event.AwayTeam,
         HomeScore: getSportsText(event.HomeScore),
@@ -218,6 +225,7 @@ export const getSportsCombinations = (odds: readonly number[], size: number): nu
 
 export const useSportsPage = () => {
   const isMobile = useIsMobile()
+  const { requireLogin } = useRequireLoginAction()
   const { currentCurrencyCode } = useDisplayCurrency()
   const sportsStore = useSportsStore()
   const siteConfigStore = useSiteConfigStore()
@@ -231,6 +239,7 @@ export const useSportsPage = () => {
     selectedFilterKey,
     market,
     sortType,
+    isFavourite: collectOnly,
     competitionIds,
     keyword,
     earlyTradingDate,
@@ -243,6 +252,8 @@ export const useSportsPage = () => {
     hotEvents,
     hotEventsLoading,
     hotEventsError,
+    sportsSessionVersion,
+    retryingSports,
     pageNumber
   } = storeToRefs(sportsStore)
   // 页面球种与导航共用 Store 的业务 ID，不另存一份默认足球状态。
@@ -315,7 +326,8 @@ export const useSportsPage = () => {
       market,
       sortType,
       () => siteConfigStore.getConfigString('IM.im_app_url'),
-      () => localeStore.currentLanguage
+      () => localeStore.currentLanguage,
+      sportsSessionVersion
     ],
     () => {
       const ids =
@@ -334,6 +346,7 @@ export const useSportsPage = () => {
   const sportsPageLoading = computed(
     () =>
       initializing.value ||
+      retryingSports.value ||
       ((homepageLoading.value || matchesLoading.value) && !eventsList.value.length)
   )
   const homepageError = computed(
@@ -346,7 +359,6 @@ export const useSportsPage = () => {
   // PC 对当前数据源本地分页；默认数据由 Store 按联赛页逐步累积。
   const currentPage = ref(1)
   const expandedMatchId = ref<string | null>(null)
-  const favorites = ref<string[]>([])
   const betSlipOpen = ref(false)
   const mode = ref<SportsBetMode>('single')
   const outcomes = ref<SelectedOutcome[]>([])
@@ -354,7 +366,6 @@ export const useSportsPage = () => {
   const focusedStakeId = ref('')
   const noticeKey = ref<NoticeKey>('')
   const refreshing = ref(false)
-  const collectOnly = ref(false)
   const matchListContext = computed(() =>
     JSON.stringify([storeMatchListContext.value, collectOnly.value])
   )
@@ -390,7 +401,7 @@ export const useSportsPage = () => {
   watch(totalPages, pages => {
     if (currentPage.value > pages) currentPage.value = pages
   })
-  // 换页只更新赛事窗口并关闭展开层，投注选择、金额和收藏继续保留。
+  // 换页只更新赛事窗口并关闭展开层，投注选择和金额继续保留。
   const setPage = (page: number) => {
     if (!Number.isFinite(page) || !Number.isInteger(page)) return
     const nextPage = Math.min(Math.max(1, page), totalPages.value)
@@ -494,11 +505,25 @@ export const useSportsPage = () => {
     return noticeKey.value ? NOTICE_MESSAGES[noticeKey.value] : ''
   })
 
-  const toggleFavorite = (id: string) => {
-    if (!matches.value.some(match => match.id === id)) return
-    favorites.value = favorites.value.includes(id)
-      ? favorites.value.filter(value => value !== id)
-      : [...favorites.value, id]
+  const isMatchFavoritePending = (id: string) => {
+    const match = matchById.value.get(id)
+    return match ? sportsStore.isFavouritePending(match.EventId) : false
+  }
+  // 收藏状态由 Store 在接口成功后同步，页面只处理登录拦截和失败反馈。
+  const handleMatchFavorite = async (id: string) => {
+    if (!requireLogin() || sportsPageDisposed || !sportsPageActive.value) return
+    const match = matchById.value.get(id)
+    if (!match || sportsStore.isFavouritePending(match.EventId)) return
+    const result = await sportsStore.toggleFavouriteEvent(match.EventId)
+    if (sportsPageDisposed || !sportsPageActive.value) return
+    if (result === 'login-failed' || result === 'failed' || result === 'auth-expired') {
+      globalShowToast({
+        type: 'fail',
+        message: t(
+          result === 'login-failed' ? 'sports.platformLoginFailed' : 'sports.favouriteFailed'
+        )
+      })
+    }
   }
   const setMatchExpanded = (matchId: string, expanded: boolean) => {
     const sourceId = matchId.startsWith('live:') ? matchId.slice(5) : matchId
@@ -626,6 +651,13 @@ export const useSportsPage = () => {
   const showUnsupported = () => {
     noticeKey.value = 'notImplemented'
   }
+  const handleFloatingEntry = (entry: 'history' | 'bet-slip') => {
+    if (entry === 'bet-slip') {
+      betSlipOpen.value = true
+      return
+    }
+    globalShowToast('Betting history is not available yet.')
+  }
   // 先同步筛选与分页，再由下方单一请求监听批量刷新。
   const resetMatchListState = () => {
     currentPage.value = 1
@@ -662,7 +694,7 @@ export const useSportsPage = () => {
   const handleLeagueFilter = (payload: LeagueFilterPayload) => {
     syncCompetitionIds(payload.ids, payload.isAllSelected)
   }
-  // 收藏筛选开关共用页面状态，不调用收藏写接口，也不推定 IsFavourite 的查询语义。
+  // 沿用组件的 collectOnly 事件字段，统一写入 Store 收藏置顶状态，不发起收藏写操作。
   const handleCollectChange = (payload: CollectOnlyPayload) => {
     collectOnly.value = payload.collectOnly
   }
@@ -686,15 +718,12 @@ export const useSportsPage = () => {
   })
   const retrySports = () => {
     if (!sportsPageDisposed && sportsPageActive.value && !sportsPageLoading.value) {
-      if (!keyword.value.trim()) {
-        competitionIds.value.forEach(id => sportsStore.retryLeague(id))
-      }
-      void sportsStore.loadHomepage({ refreshCounts: false })
+      void sportsStore.retryHomepage()
     }
   }
   const retryHotEvents = () => {
     if (!sportsPageDisposed && sportsPageActive.value && !hotEventsLoading.value) {
-      void Promise.all([sportsStore.fetchCompetitionList(), sportsStore.fetchAllSports()])
+      void sportsStore.retryHotEvents()
     }
   }
   const closeOnOutside = (event: PointerEvent) => {
@@ -738,7 +767,9 @@ export const useSportsPage = () => {
         sortType,
         () => competitionIds.value.join(','),
         keyword,
-        () => (keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null)
+        () => (keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null),
+        collectOnly,
+        sportsSessionVersion
       ],
       (values, previous) => {
         if (!sportsPageActive.value || sportsPageDisposed) return
@@ -814,7 +845,6 @@ export const useSportsPage = () => {
     pagedMatches,
     setPage,
     expandedMatchId,
-    favorites,
     betSlipOpen,
     mode,
     selections,
@@ -831,7 +861,8 @@ export const useSportsPage = () => {
     refreshing,
     focusedStakeId,
     collectOnly,
-    toggleFavorite,
+    handleMatchFavorite,
+    isMatchFavoritePending,
     setMatchExpanded,
     getMatchMarkets,
     getLiveMarkets,
@@ -848,6 +879,7 @@ export const useSportsPage = () => {
     submitMockBet,
     refreshBalance,
     showUnsupported,
+    handleFloatingEntry,
     handleSportChange,
     handleMatchFilterChange,
     handleLeagueSortChange,

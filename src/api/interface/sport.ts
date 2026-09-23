@@ -45,6 +45,7 @@ export type SportsLiveStreamingFlag = 0 | 1
 export interface SportsResponse {
   /**
    * StatusCode（number/String）：100 或 '100' 为成功标志，其他值为失败；E100 不等于 100。
+   * 102：无效令牌；202：无效用户名。需重新获取体育平台凭据，不代表原请求成功。
    * 部分网关异常也会返回 '100'，仍须校验对应业务数据结构，不能只依赖状态码。
    */
   stc: number | string
@@ -329,7 +330,7 @@ export interface GetSportsV2Params {
 export interface GetSportsV2Response extends SportsResponse {
   /** List：联赛分组，组内 Sports 才是赛事；失败时可能省略。 */
   e?: SportCompetitionGroup[]
-  /** Int：按联赛排序实测为联赛总数，不是赛事总数；页数为 ceil(Total / PageSize)。 */
+  /** Int：联赛/时间排序实测均为联赛总数，不是赛事总数；页数为 ceil(Total / PageSize)。 */
   Total?: number
 }
 
@@ -506,10 +507,12 @@ export interface GetCompetitionListResponse {
   success: boolean
 }
 
-/** 收藏/取消收藏参数；动作字段和赛事标识待确认，不预设未知字段。 */
-export interface FavouriteEventParams extends Record<string, unknown> {
+/** 收藏/取消收藏共用参数；仅传会员账号和赛事 ID，不额外发送动作或收藏状态字段。 */
+export interface FavouriteEventParams {
   /** String，必填：非空体育平台会员账号，不是本站 memberId。 */
   MemberCode: string
+  /** Long，必填：赛事接口返回的 EventId，不是页面的球种与赛事组合 ID。 */
+  EventId: number
 }
 
 /** 收藏响应暂使用公共外层，业务数据结构待确认。 */

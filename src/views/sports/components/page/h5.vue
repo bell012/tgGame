@@ -4,7 +4,6 @@
     :data-sport="activeSport"
     data-testid="sports-h5-page"
   >
-    <!-- 导航组件已包含顶部避让；日期分类在其底部留位，避免重复叠加页面间距。 -->
     <header
       ref="navigationHeader"
       class="fixed inset-x-0 top-0 z-40 bg-bg-1"
@@ -34,7 +33,7 @@
       </button>
     </div>
 
-    <!-- 热门加载与失败独立展示，成功但无热门数据时不占用列表空间。 -->
+    <!-- 热门区加载失败不影响下方赛事。 -->
     <p v-if="page.hotEventsLoading.value" class="mx-[14px] mb-3 text-xs text-text-2" role="status">
       {{ page.sportsLoadingText.value }}
     </p>
@@ -70,23 +69,26 @@
         <article
           v-for="match in liveMatches"
           :key="match.id"
-          class="w-full min-w-0 shrink-0 snap-center rounded-lg bg-bg-2 p-2.5"
+          class="flex min-h-[150px] w-full min-w-0 shrink-0 snap-center flex-col rounded-lg bg-bg-2 px-2.5 py-3"
           :data-sports-live-match="match.id"
         >
-          <div class="flex h-4 min-w-0 items-center gap-3 text-[10px] leading-4">
+          <div class="flex h-[14px] min-w-0 items-center gap-[14px] text-[10px] leading-3">
             <span class="shrink-0 text-text-2">{{ match.phase || match.kickoff }}</span>
-            <span class="min-w-0 flex-1 truncate" :title="match.league">{{ match.league }}</span>
+            <span class="min-w-0 flex-1 truncate text-[11px]" :title="match.league">{{
+              match.league
+            }}</span>
             <span
               v-if="match.totalMarkets !== undefined"
-              class="shrink-0 rounded bg-theme-primary px-1 text-text-4"
+              class="flex shrink-0 items-center gap-0.5 rounded bg-theme-primary py-px pl-[5px] pr-[3px] font-medium text-text-4"
               :aria-label="`${match.totalMarkets} markets`"
             >
               {{ match.totalMarkets }}
+              <ChevronIcon class="h-2 w-2 -rotate-90" aria-hidden="true" />
             </span>
           </div>
 
           <MatchVersus
-            class="mt-3"
+            class="mt-3 min-h-[52px]"
             :home-src="match.home.badge"
             :away-src="match.away.badge"
             :HomeTeam="match.HomeTeam"
@@ -98,27 +100,23 @@
             :center-caption="liveStripCaption(match)"
           />
 
-          <MatchOdds
-            v-if="match.MarketLines.length"
-            class="mt-2"
-            :MarketLines="match.MarketLines"
-            :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
-            picker="liveStrip"
-            @select="selectOdds(match.id, $event)"
-          />
-          <div
-            v-else
-            class="mt-3 h-9"
-            aria-hidden="true"
-            data-testid="sports-h5-live-odds-slot"
-          ></div>
+          <!-- 长队名允许换行，盘口靠底部对齐。 -->
+          <div class="mt-auto pt-3">
+            <MatchOdds
+              v-if="match.MarketLines.length"
+              :MarketLines="match.MarketLines"
+              :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
+              picker="liveStrip"
+              @select="selectOdds(match.id, $event)"
+            />
+            <div v-else class="h-9" aria-hidden="true" data-testid="sports-h5-live-odds-slot"></div>
+          </div>
         </article>
       </div>
     </section>
 
     <section class="mx-[14px] mt-3" :aria-label="`${activeSportLabel} matches by league`">
       <div class="mb-3 flex h-[30px] items-center gap-[7px]">
-        <!-- 搜索、收藏筛选及排序区域 -->
         <LeagueTabs_H5
           :collect-only="page.collectOnly.value"
           :search-keyword="page.searchInput.value"
@@ -149,28 +147,28 @@
         </button>
       </div>
 
-      <div v-if="groups.length" class="space-y-1.5" data-testid="sports-h5-league-list">
+      <div v-if="groups.length" class="space-y-[5px]" data-testid="sports-h5-league-list">
         <section v-for="group in visibleGroups" :key="group.id" :data-league-id="group.id">
           <h2>
             <button
               :id="`${idPrefix}-${group.id}-heading`"
               type="button"
-              class="flex min-h-[34px] w-full items-center gap-2 rounded-lg bg-bg-2 px-2.5 py-1.5 text-left text-xs text-text-2 focus-visible:outline focus-visible:outline-theme-primary"
+              class="flex min-h-[34px] w-full items-center gap-1.5 rounded-lg bg-bg-2 px-2.5 py-[7px] text-left text-xs font-medium text-text-2 focus-visible:outline focus-visible:outline-theme-primary"
               :aria-expanded="isGroupExpanded(group.id)"
               :aria-controls="`${idPrefix}-${group.id}-matches`"
               data-testid="sports-h5-league-toggle"
               @click="toggleGroup(group.id)"
             >
               <img :src="leagueIcon" alt="" class="h-5 w-5 shrink-0 object-contain" />
-              <span class="min-w-0 flex-1 break-words">{{ group.name }}</span>
+              <span class="min-w-0 flex-1 truncate" :title="group.name">{{ group.name }}</span>
               <span
-                class="min-w-4 shrink-0 rounded bg-theme-primary px-1 text-center text-[10px] font-bold leading-[14px] text-text-4"
+                class="min-w-4 shrink-0 rounded bg-theme-primary px-[5px] text-center text-[10px] font-medium leading-[15px] text-text-4"
                 :aria-label="`${getGroupMatchCount(group)} matches`"
               >
                 {{ getGroupMatchCount(group) }}
               </span>
               <ChevronIcon
-                class="h-2.5 w-2.5 shrink-0 transition-transform"
+                class="ml-1 h-3 w-3 shrink-0 text-icon-3 transition-transform"
                 :class="isGroupExpanded(group.id) ? 'rotate-180' : ''"
                 aria-hidden="true"
               />
@@ -179,7 +177,7 @@
           <div
             v-show="isGroupExpanded(group.id)"
             :id="`${idPrefix}-${group.id}-matches`"
-            class="mt-1.5 space-y-1.5"
+            class="mt-[5px] space-y-[5px]"
             role="region"
             :aria-labelledby="`${idPrefix}-${group.id}-heading`"
           >
@@ -189,8 +187,9 @@
               :match="match"
               :MarketLines="match.MarketLines"
               :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
-              :favorite="favorites.has(match.id)"
-              @favorite="page.toggleFavorite(match.id)"
+              :favorite="match.IsFavourite"
+              :favorite-pending="page.isMatchFavoritePending(match.id)"
+              @favorite="page.handleMatchFavorite(match.id)"
               @select="selectOdds(match.id, $event)"
               @media="showMediaPlaceholder"
             />
@@ -218,7 +217,7 @@
           </div>
         </section>
       </div>
-      <!-- 联赛标题按缓存分批展示，新展示且展开的分组再补查联赛赛事。 -->
+      <!-- 联赛分批显示，展开时再补查赛事。 -->
       <div
         v-if="hasMoreCachedGroups"
         ref="loadMoreSentinel"
@@ -258,7 +257,6 @@
     >
       {{ page.sportsLoadingText.value }}
     </p>
-    <!-- 空结果仍保留筛选入口，不回退到其他球种或模拟赛事。 -->
     <ThemedEmptyState
       v-else-if="!groups.length && !page.homepageError.value"
       :dark-image="emptyImage"
@@ -267,6 +265,12 @@
       container-class="mx-[14px] mt-10"
       image-class="h-[180px] w-[198px] object-contain"
       text-class="mt-4 text-center text-xs text-text-2"
+    />
+    <Floating
+      v-if="pageActive"
+      v-show="!page.betSlipOpen.value"
+      :bet-count="page.selections.value.length"
+      @select="page.handleFloatingEntry"
     />
   </div>
 </template>
@@ -300,6 +304,7 @@ import MatchCardH5 from '../match-card/h5.vue'
 import type { SportsMatch, SportsPageState } from '../../index'
 import type { OddsSelectPayload } from '../match-odds/types'
 import LeagueTabs_H5 from '../liansai_tabs/H5.vue'
+import Floating from '../floating/index.vue'
 
 const props = defineProps<{ page: SportsPageState }>()
 const idPrefix = useId()
@@ -316,7 +321,7 @@ const loadMoreSentinel = ref<HTMLElement | null>(null)
 const pageActive = ref(true)
 let pageDisposed = false
 
-// 页面外层不是实际滚动容器，局部固定导航并同步等高占位，不改动全局布局。
+// 同步固定导航的高度，给正文留出位置。
 let navigationObserver: ResizeObserver | undefined
 onMounted(() => {
   if (!navigationHeader.value) return
@@ -338,10 +343,9 @@ const liveStripCaption = (match: SportsMatch) => {
   if (line.PeriodId !== 1 && line.PeriodName) return `${line.BetTypeName} ${line.PeriodName}`
   return line.BetTypeName
 }
-const favorites = computed(() => new Set(props.page.favorites.value))
 const groups = computed(() => {
   const result = new Map<string, { id: string; name: string; matches: SportsMatch[] }>()
-  // 保留空预览联赛的标题入口，展开后仍可从联赛分页接口补回赛事。
+  // 预览没有赛事的联赛也保留标题，展开时补查。
   for (const league of props.page.displayLeagueGroups.value) {
     const id = `${props.page.selectedSportId.value}:${league.CompetitionId}`
     result.set(id, { id, name: league.CompetitionName, matches: [] })
@@ -356,7 +360,7 @@ const groups = computed(() => {
 const visibleGroups = computed(() => groups.value.slice(0, visibleGroupCount.value))
 const hasMoreCachedGroups = computed(() => visibleGroupCount.value < groups.value.length)
 
-// 联赛内赛事完整保留；后台逐页追加缓存时，已展示的联赛数量不回退。
+// 每次追加一批联赛，不拆分联赛内的赛事。
 const loadMoreCachedGroups = () => {
   if (!pageActive.value || !hasMoreCachedGroups.value) return
   visibleGroupCount.value = Math.min(
@@ -373,7 +377,7 @@ const loadMoreObserver = useIntersectionObserver({
   }
 })
 
-// 只有查询范围切换才恢复首批，缓存追加与同条件重试不重置本地分页。
+// 切换查询条件时重置展示数量，追加缓存不重置。
 watch(
   () => props.page.matchListContext.value,
   () => {
@@ -382,7 +386,7 @@ watch(
   },
   { flush: 'sync' }
 )
-// 新缓存到达或本地批次渲染后，重新检测底部位置，兼容折叠列表未铺满一屏。
+// 列表更新后重新检测底部，未铺满一屏时继续加载。
 watch([() => groups.value.length, visibleGroupCount], () => loadMoreObserver.reconnect(), {
   flush: 'post'
 })
@@ -403,7 +407,7 @@ onScopeDispose(() => {
   loadMoreObserver.disconnect()
 })
 
-// 未操作时仅首组展开；各球种使用稳定联赛 ID，切换后保留用户的展开状态。
+// 默认展开首组，按联赛 ID 记住展开状态。
 const isGroupExpanded = (id: string) =>
   expandedGroups.value[id] ?? (expandNewGroups.value || groups.value[0]?.id === id)
 const allGroupsCollapsed = computed(() => groups.value.every(group => !isGroupExpanded(group.id)))
@@ -437,7 +441,7 @@ const retryGroup = (groupId: string) => {
   if (id !== null) props.page.retryLeague(id)
 }
 
-// 只补查当前展示且展开的联赛；搜索结果仅本地展开，收起与停用取消后续翻页。
+// 只补查已显示且展开的联赛，搜索结果不补查。
 const expandedCompetitionIds = computed(() =>
   visibleGroups.value
     .filter(group => isGroupExpanded(group.id))
@@ -461,14 +465,14 @@ watch(
   syncExpandedLeagues,
   { immediate: true, flush: 'post' }
 )
-// 球种变化只复位实时区滚动位置，业务筛选联动统一由页面主逻辑处理。
+// 切换球种后，热门区滚动回起点。
 watch(activeSport, async () => {
   await nextTick()
   if (pageDisposed || !pageActive.value) return
   liveStrip.value?.scrollTo({ left: 0, behavior: 'instant' })
 })
 
-// 列表取消选项与弹层删除保持一致：保留待补全串关，并立即显示当前投注单。
+// 增删选项时保留串关模式，点击赔率后打开投注单。
 const selectOdds = (matchId: string, payload: OddsSelectPayload) => {
   const wasParlay = props.page.mode.value === 'parlay'
   props.page.selectOdds(matchId, payload)

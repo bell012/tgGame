@@ -35,11 +35,7 @@
         <p :id="helpId" class="sr-only">
           Use the arrow up and arrow down keys on a drag handle to reorder amounts.
         </p>
-        <!-- 保留全部快捷金额，默认展示四行，其余在列表内滚动。 -->
-        <ul
-          ref="list"
-          class="mt-2.5 flex max-h-[182px] flex-col gap-2.5 overflow-y-auto overscroll-contain"
-        >
+        <ul ref="list" class="mt-2.5 flex flex-col gap-2.5">
           <li
             v-for="(rowId, index) in rowIds"
             :key="rowId"
@@ -66,7 +62,7 @@
             </label>
             <button
               type="button"
-              class="flex h-full w-5 shrink-0 touch-none select-none items-center justify-center border border-solid border-transparent text-text-3 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+              class="flex h-[30px] w-[30px] shrink-0 touch-none select-none items-center justify-center rounded-md border border-solid border-transparent bg-bg-2 text-text-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
               :class="dragIndex === index ? 'cursor-grabbing' : 'cursor-grab'"
               :aria-label="`Reorder quick bet amount ${index + 1}`"
               :aria-describedby="helpId"
@@ -80,7 +76,7 @@
               @keydown.down.prevent="moveWithKeyboard(index, 1)"
               @contextmenu.prevent
             >
-              <svg viewBox="0 0 20 20" class="h-5 w-5" aria-hidden="true" fill="none">
+              <svg viewBox="0 0 20 20" class="h-[13px] w-[13px]" aria-hidden="true" fill="none">
                 <path
                   d="M4 5H16M4 10H16M4 15H16"
                   stroke="currentColor"

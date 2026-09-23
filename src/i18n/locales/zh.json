@@ -1794,6 +1794,8 @@
   },
   "sports": {
     "loadFailed": "体育数据加载失败，请重试。",
+    "platformLoginFailed": "体育平台登录失败，请重试。",
+    "favouriteFailed": "收藏操作未确认，请刷新赛事后重试。",
     "retry": "重试",
     "noEvents": "当前筛选条件下暂无赛事。",
     "loadingEvents": "赛事加载中…",

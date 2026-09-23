@@ -5,7 +5,7 @@
         v-for="(amount, index) in props.amounts"
         :key="index"
         type="button"
-        class="h-full min-w-0 shrink-0 basis-[calc((100%_-_20px)/6)] truncate rounded-lg border border-solid border-transparent bg-bg-3 px-0.5 text-[15px] tabular-nums text-theme-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+        class="h-full min-w-0 shrink-0 grow basis-[calc((100%_-_20px)/6)] truncate rounded-lg border border-solid border-transparent bg-bg-3 px-0.5 text-[15px] tabular-nums text-theme-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
         :aria-label="`Set stake to ${amount}`"
         :aria-pressed="props.value === amount"
         :disabled="props.disabled"
@@ -15,7 +15,7 @@
       </button>
       <button
         type="button"
-        class="h-full min-w-0 shrink-0 basis-[calc((100%_-_20px)/6)] rounded-lg border border-solid border-transparent bg-bg-3 px-2 text-[15px] text-theme-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+        class="h-full min-w-0 shrink-0 grow basis-[calc((100%_-_20px)/6)] rounded-lg border border-solid border-transparent bg-bg-3 px-2 text-[15px] text-theme-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
         :disabled="props.disabled"
         @click="emit('edit')"
       >
