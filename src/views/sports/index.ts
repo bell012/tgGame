@@ -9,6 +9,7 @@ import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import { formatTimestamp } from '@/utils/date'
+import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
 import type { SportCompetitionGroup, SportMarketLine } from '@/api/interface/sport'
 import type { OddsSelectPayload, OddsTrend } from './components/match-odds/types'
@@ -651,12 +652,13 @@ export const useSportsPage = () => {
   const showUnsupported = () => {
     noticeKey.value = 'notImplemented'
   }
+  // H5 悬浮入口统一处理：投注单打开弹窗，投注历史进入独立页面。
   const handleFloatingEntry = (entry: 'history' | 'bet-slip') => {
     if (entry === 'bet-slip') {
       betSlipOpen.value = true
       return
     }
-    globalShowToast('Betting history is not available yet.')
+    navigateTo('/sports/bet-history')
   }
   // 先同步筛选与分页，再由下方单一请求监听批量刷新。
   const resetMatchListState = () => {

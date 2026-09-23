@@ -29,9 +29,9 @@
       type="button"
       class="flex shrink-0 cursor-pointer items-center justify-center border-none bg-transparent p-0 text-icon-2 transition-colors duration-200 hover:text-text-1"
       aria-label="betting history"
+      @click="handleBettingHistory"
     >
       <BettingHistoryIcon
-        @click="handleBettingHistory"
         class="block h-[30px] w-[30px] fill-current [&_path]:fill-current [&_rect]:fill-current"
       />
     </button>
@@ -39,6 +39,7 @@
 </template>
 
 <script setup lang="ts">
+import { navigateTo } from '@/utils/router'
 import BettingHistoryIcon from './icon/betting-history.svg?component'
 import { sportItems, type SportItem } from './sport-items'
 
@@ -55,10 +56,12 @@ function getSportCount(item: SportItem) {
   return props.counts?.[item.key] ?? 0
 }
 
+// 点击 PC 投注历史图标进入体育投注历史页。
 function handleBettingHistory() {
-  console.log('[handleBettingHistory]')
+  navigateTo('/sports/bet-history')
 }
 
+// 点击球种后向父级暴露当前选择，由主体育逻辑统一处理。
 function handleSelect(index: number) {
   emit('change', index, sportItems[index].key)
 }
