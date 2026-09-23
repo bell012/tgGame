@@ -31,6 +31,7 @@
       v-model:visible="showMobileFilterPopup"
       v-model="filterValues"
       :filter-groups="filterGroups"
+      :live-update="true"
       @apply="handleMobileFilterApply"
     />
   </section>
