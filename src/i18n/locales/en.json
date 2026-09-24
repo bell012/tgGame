@@ -1805,6 +1805,7 @@
     }
   },
   "sports": {
+    "bet_history": "Bet History",
     "loadFailed": "Unable to load sports. Please try again.",
     "platformLoginFailed": "Unable to sign in to sports. Please try again.",
     "favouriteFailed": "The favorite update could not be confirmed. Refresh events before trying again.",
