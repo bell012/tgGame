@@ -11,6 +11,7 @@
         <article
           v-for="item in mobileHistoryList"
           :key="item.id"
+          @click="openSportsBetDetails(item)"
           class="relative overflow-hidden rounded-lg bg-bg-2 px-3.5 py-[10px]"
         >
           <span
@@ -482,6 +483,7 @@ const SPORTS_BET_HISTORY_MOCK_LIST: SportsBetHistoryWager[] = [
 type SportsBetHistoryDisplayItem = {
   id: string
   sportIcon?: SportItem['icon']
+  raw: SportsBetHistoryWager
   matchName: string
   statusLabel: string
   settled: boolean
@@ -526,6 +528,7 @@ const mapSportsBetHistoryItem = (item: SportsBetHistoryWager): SportsBetHistoryD
   return {
     id: String(item.wid),
     sportIcon: getSportsBetIcon(item),
+    raw: item,
     matchName: `${selection?.htn ?? '--'} VS ${selection?.atn ?? '--'}`,
     statusLabel: settled
       ? t('betHistory.filterOptions.settled')
@@ -651,6 +654,15 @@ const fetchSportsBetHistory = async () => {
 // PC/H5 共用返回体育投注首页，后续真实数据接入时也能复用这个入口。
 const handleStartPlaying = () => {
   navigateTo('/sports')
+}
+
+// H5 点击投注记录右箭头进入体育投注详情
+const openSportsBetDetails = (item: SportsBetHistoryDisplayItem) => {
+  navigateTo(`/sports/bet-details/${item.id}`, {
+    state: {
+      sportsBetData: JSON.stringify(item.raw)
+    }
+  })
 }
 
 // H5 点击右上角筛选图标时打开筛选弹窗。

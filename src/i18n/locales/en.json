@@ -288,6 +288,7 @@
     "winLoss": "Win/Loss",
     "orderNo": "Order No.",
     "createdAt": "Created At",
+    "confirm": "Confirm",
     "copy": "Copy succeeded."
   },
   "rewardDetails": {
