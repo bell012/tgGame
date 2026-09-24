@@ -81,11 +81,123 @@ export interface GetBetListParams extends SportsBetHistoryAuthParams {
   BetConfirmationStatus: [1, 2, 3, 4]
 }
 
-/** 已结算响应结构 */
-export type GetStatementResponse = SportsResponse
+/** 提前结算请求参数。 */
+export interface SubmitBuyBackParams extends Pick<
+  SportsBetHistoryAuthParams,
+  'LanguageCode' | 'Token' | 'MemberCode'
+> {
+  WagerId: number | string
+  BuyBackPricing: number
+  PricingId: number | string
+}
 
-/** 未结算响应结构 */
-export type GetBetListResponse = SportsResponse
+/** 体育投注历史注单内的单个投注项，字段保留体育网关原始简写。 */
+export interface SportsBetHistoryWagerSelection {
+  waics: number
+  wict: number
+  waict: number
+  waicr: number
+  m: number
+  eid: number
+  en: string
+  etid: number
+  edt: number | string
+  sid: number | string
+  rsid: number | string
+  cid: number
+  cn: string
+  egtid: number
+  rbt?: string | null
+  htid: number
+  htn: string
+  atid: number
+  atn: string
+  ft: string
+  btid: number
+  btn: string
+  peid: number
+  btsid: number
+  sen: string
+  eon?: string | null
+  otid: number
+  otn?: string | null
+  pbo?: number | null
+  o: number
+  ao?: number | null
+  h: number | null
+  dih: string | null
+  hthts?: number | null
+  athts?: number | null
+  htfts?: number | null
+  atfts?: number | null
+  wahts?: number | null
+  waats?: number | null
+  gtid: number
+  seo: number
+  md: number
+  mlid: number
+  sp: string
+  soid?: number | null
+  os?: string | null
+  dh: number
+  wtl?: number | null
+  ws?: number | null
+  pid: number
+  pn: string
+  ei?: Record<string, unknown> | string
+  rai?: number | null
+  wio?: number
+}
+
+/** 体育投注历史注单记录，wl 数组中的单条数据。 */
+export interface SportsBetHistoryWager {
+  wid: number | string
+  wcdt: number | string
+  mc: string
+  isa: number
+  mwla: number
+  ot: number
+  wat: number
+  bp: string
+  bcr: number
+  bcs: number
+  bss: number
+  br: number
+  bts: number
+  prid: number | null
+  bbp: number | null
+  btbba: number
+  noc: number
+  combs: number
+  coo?: number | null
+  pp: number
+  cas: boolean
+  pbo?: number | null
+  sdt?: string | null
+  btsdt?: string | null
+  ou?: number
+  wil: SportsBetHistoryWagerSelection[]
+  rs?: unknown[] | null
+  sw: number
+  bo?: number | null
+  bc?: number | null
+  ber: number
+}
+
+/** 体育投注历史响应结构；GetStatement 和 GetBetList 当前返回相同结构。 */
+export interface SportsBetHistoryResponse extends SportsResponse {
+  wl: SportsBetHistoryWager[]
+  sert: string
+}
+
+/** 已结算响应结构。 */
+export type GetStatementResponse = SportsBetHistoryResponse
+
+/** 未结算响应结构。 */
+export type GetBetListResponse = SportsBetHistoryResponse
+
+/** 提前结算响应结构，按 stc/std 判断业务结果。 */
+export type SubmitBuyBackResponse = SportsResponse
 
 /** RelatedScores（rs）：同一比赛不同组别的比分/红牌，不能与主体比分相加。 */
 export interface SportRelatedScore {
@@ -303,7 +415,7 @@ export interface SportCountItem {
    * SportId（Int）：球种 ID。1 足球、2 篮球、3 网球、7 羽毛球、36 乒乓球、
    * 40 排球、19 美式足球；不是完整枚举，不能使用组件数组下标替代。
    */
-  sid: number
+  sid: number | string
   /** SportName（String）：按 LanguageCode 返回的球种名称。 */
   sn: string
   /** OrderNumber（Short）：球种显示排序序号，不是球种 ID。 */

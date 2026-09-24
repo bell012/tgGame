@@ -19,6 +19,8 @@ import type {
   GetSportEventIndexListResponse,
   GetSportsV2Params,
   GetSportsV2Response,
+  SubmitBuyBackParams,
+  SubmitBuyBackResponse,
   SportsResponse
 } from '@/api/interface/sport'
 import request from '@/utils/request'
@@ -169,6 +171,17 @@ export function getBetList(
   options?: SportsRequestOptions
 ): Promise<GetBetListResponse> {
   return postSport(baseUrl, 'GetBetList', data, options)
+}
+
+/**
+ * 体育投注提前结算，提交当前注单的回购价格和价格 ID。
+ */
+export function submitBuyBack(
+  baseUrl: string,
+  data: SubmitBuyBackParams,
+  options?: SportsRequestOptions
+): Promise<SubmitBuyBackResponse> {
+  return postSport(baseUrl, 'SubmitBuyBack', data, options)
 }
 
 /**

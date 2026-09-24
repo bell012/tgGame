@@ -84,17 +84,34 @@ export const sportItems: SportItem[] = [
   }
 ]
 
+// 标准化体育接口返回的球种 ID，兼容 sid 可能是字符串或数字的情况。
+export function normalizeSportId(value: number | string | null | undefined): number | null {
+  const sportId = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(sportId) ? sportId : null
+}
+
+// 根据接口返回的球种 ID 查找本地球种配置，避免字符串 sid 和数字 sportId 匹配失败。
+export function findSportItemBySportId(
+  value: number | string | null | undefined
+): SportItem | undefined {
+  const sportId = normalizeSportId(value)
+  return sportId === null ? undefined : sportItems.find(item => item.sportId === sportId)
+}
+
+// 根据导航球种项匹配接口返回的今日数量。
 export function findSportCountByItem(
   sportCounts: SportCountItem[],
   item: SportItem
 ): SportCountItem | undefined {
-  return sportCounts.find(countItem => countItem.sid === item.sportId)
+  return sportCounts.find(countItem => normalizeSportId(countItem.sid) === item.sportId)
 }
 
+// 获取单个球种今日数量，没有返回时默认展示 0。
 export function getSportTodayCount(sportCounts: SportCountItem[], item: SportItem): number {
   return findSportCountByItem(sportCounts, item)?.cou ?? 0
 }
 
+// 构建按球种 key 读取的今日数量映射，供导航组件直接使用。
 export function buildSportTodayCountMap(
   sportCounts: SportCountItem[]
 ): Partial<Record<string, number>> {
