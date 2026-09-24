@@ -48,11 +48,11 @@
       </button>
     </div>
     <p
-      v-if="props.selection.mockBetStatus === 'closed'"
+      v-if="!props.single && props.selection.mockBetStatus === 'closed'"
       class="mt-1 text-xs text-secondary-2"
       role="alert"
     >
-      This market is closed. Remove it to continue.
+      Market Closed
     </p>
     <StakeField
       v-if="props.single"
@@ -61,7 +61,11 @@
       :currency-symbol="props.currencySymbol"
       :label="`Stake for ${props.selection.selection}`"
       :active="props.active"
-      :error="getH5StakeError(props.selection.stake)"
+      :error="
+        props.selection.mockBetStatus === 'closed'
+          ? 'Market Closed'
+          : getH5StakeError(props.selection.stake)
+      "
       :disabled="props.disabled || props.selection.mockBetStatus === 'closed'"
       @focus="emit('focus')"
     />
@@ -72,7 +76,7 @@
 import ClearIcon from '@/static/svg/sports/clear-bets.svg'
 import StakeField from './stake-field.vue'
 import { getH5StakeError } from './h5'
-import type { SportsBetSelection } from '../../index'
+import type { SportsBetSelection } from '../../shared/types'
 
 const props = defineProps<{
   selection: SportsBetSelection

@@ -1,15 +1,17 @@
-import { computed, onScopeDispose, ref, watch } from 'vue'
-import { parseSportsStake } from '../../index'
-import type { SportsBetMode, SportsPageState } from '../../index'
+import { computed, onDeactivated, onScopeDispose, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { parseSportsStake } from './shared'
+import type { SportsBetMode } from '../../shared/types'
+import type { SportsPageState } from '../../index'
 
 export type SportsKeyboardKey = string | 'delete'
 export type SportsBetResult = 'idle' | 'confirming' | 'success' | 'failed'
 
-// 金额上下限仅用于本地交互演示，不代表真实投注规则。
+// 本地演示限额，不代表实际投注限制。
 export const H5_MIN_STAKE = 5
 export const H5_MAX_STAKE = 311.11
 
-/** 自定义数字键盘沿用页面的两位小数金额约束。 */
+/** 键盘输入最多保留两位小数。 */
 export const applySportsKeyboardKey = (raw: string, key: string, replace = false): string => {
   if (key === 'delete') return raw.slice(0, -1)
   if (!/^(?:\d|00|\.)$/.test(key)) return raw
@@ -25,13 +27,13 @@ export const getH5StakeError = (raw: string): string => {
   if (!raw) return ''
   const amount = parseSportsStake(raw)
   if (amount === null) return 'Enter a valid amount.'
-  if (amount < H5_MIN_STAKE) return `Minimum stake is ${H5_MIN_STAKE.toFixed(2)}.`
-  if (amount > H5_MAX_STAKE) return `Maximum stake is ${H5_MAX_STAKE.toFixed(2)}.`
+  if (amount < H5_MIN_STAKE || amount > H5_MAX_STAKE)
+    return `Bet limit: ${H5_MIN_STAKE.toFixed(2)}–${H5_MAX_STAKE.toFixed(2)}`
   return ''
 }
 
-/** 这里只持有弹层交互状态，投注选项和金额始终写回页面的同一份数据。 */
 export const useSportsH5Bet = (page: SportsPageState) => {
+  const { t } = useI18n()
   const keyboardOpen = ref(false)
   const quickAmounts = ref([20, 50, 100, 200, 500, 1000])
   const editingAmounts = ref(false)
@@ -56,7 +58,8 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     if (hasClosedMarket.value) return 'This market is closed. Remove it to continue.'
     if (page.mode.value === 'parlay' && page.selections.value.length < 2)
       return 'Select at least two different events for a parlay.'
-    if (page.totalStake.value > page.balance) return 'Insufficient balance.'
+    if (page.balance.value === null) return t('sports.balanceUnavailable')
+    if (page.totalStake.value > page.balance.value) return t('sports.insufficientBalance')
     const invalidRow = rows.value.find(item => getH5StakeError(item.stake))
     if (invalidRow) return getH5StakeError(invalidRow.stake)
     if (attempted.value && page.totalStake.value <= 0) return 'Enter a stake to place your bet.'
@@ -105,7 +108,7 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   }
   const maxStake = () => {
     const target = activeRow.value
-    if (!target || busy.value || editingAmounts.value) return
+    if (!target || busy.value || editingAmounts.value || page.balance.value === null) return
     const otherStake = rows.value.reduce(
       (sum, row) =>
         row.id === target.id
@@ -113,7 +116,7 @@ export const useSportsH5Bet = (page: SportsPageState) => {
           : sum + (parseSportsStake(row.stake) ?? 0) * row.combinationCount,
       0
     )
-    const available = Math.max(0, page.balance - otherStake)
+    const available = Math.max(0, page.balance.value - otherStake)
     const max = Math.min(
       H5_MAX_STAKE,
       Math.floor((available * 100) / target.combinationCount) / 100
@@ -128,7 +131,8 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   }
   const startEdit = () => {
     if (busy.value) return
-    amountDrafts.value = quickAmounts.value.map(String)
+    // 编辑时只取前四项，保存后替换快捷金额。
+    amountDrafts.value = quickAmounts.value.slice(0, 4).map(String)
     editError.value = ''
     editingAmounts.value = true
   }
@@ -156,14 +160,19 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   }
   const saveEdit = () => {
     if (!editingAmounts.value || busy.value) return
+    const balance = page.balance.value
+    if (balance === null) {
+      editError.value = t('sports.balanceUnavailable')
+      return
+    }
     const amounts = amountDrafts.value.map(parseSportsStake)
-    if (amounts.some(value => value === null || value <= 0 || value > page.balance)) {
-      editError.value = 'Enter six positive amounts within your balance.'
+    if (amounts.some(value => value === null || value <= 0 || value > balance)) {
+      editError.value = 'Enter four positive amounts within your balance.'
       return
     }
     const validAmounts = amounts.filter((value): value is number => value !== null)
-    if (validAmounts.length !== 6 || new Set(validAmounts).size !== 6) {
-      editError.value = 'Enter six different quick amounts.'
+    if (validAmounts.length !== 4 || new Set(validAmounts).size !== 4) {
+      editError.value = 'Enter four different quick amounts.'
       return
     }
     quickAmounts.value = validAmounts
@@ -202,7 +211,7 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     if (submitError.value || !page.canSubmit.value) return
     keyboardOpen.value = false
     result.value = 'confirming'
-    // 提交结果由固定 mock 标记决定；不请求接口、不读取或扣减真实账户余额。
+    // 仅模拟结果，不请求投注接口或修改真实余额。
     const shouldFail = page.selections.value.some(item => item.mockBetStatus === 'fail')
     submitTimer = setTimeout(() => {
       result.value = shouldFail ? 'failed' : 'success'
@@ -228,14 +237,45 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     },
     { immediate: true }
   )
+  // 只比较实际值，赛事对象刷新时不重置编辑状态。
   watch(
-    () => [page.currencySymbol.value, page.selections.value.map(item => item.id).join('|')],
+    [
+      () => page.currencySymbol.value,
+      () => page.mode.value,
+      () => page.selections.value.map(item => item.id).join('|')
+    ],
     () => {
       clearTimers()
       result.value = 'idle'
       attempted.value = false
-    }
+      cancelEdit()
+    },
+    { flush: 'sync' }
   )
+  // 投注内容变化后取消本次模拟，避免旧计时器清空新选项。
+  watch(
+    () =>
+      JSON.stringify([
+        page.selections.value.map(({ id, odds, stake, mockBetStatus }) => [
+          id,
+          odds,
+          stake,
+          mockBetStatus
+        ]),
+        page.parlays.value.map(({ id, odds, stake, combinationCount }) => [
+          id,
+          odds,
+          stake,
+          combinationCount
+        ])
+      ]),
+    () => {
+      clearTimers()
+      result.value = 'idle'
+    },
+    { flush: 'sync' }
+  )
+  onDeactivated(close)
   onScopeDispose(clearTimers)
 
   return {

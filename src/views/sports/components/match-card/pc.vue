@@ -1,21 +1,37 @@
 <template>
   <article
-    class="relative h-[218px] min-w-0"
+    class="relative min-w-0"
+    :class="[
+      showPeriodScores ? 'min-h-[237px]' : 'min-h-[211px]',
+      expanded && (showPeriodScores ? 'h-[244px]' : 'h-[218px]')
+    ]"
     :data-sports-match="match.id"
     :data-expanded="expanded"
   >
+    <!-- 展开后仍保留卡片原高度，避免后面的卡片移位。 -->
     <div
       class="min-w-0 rounded-xl bg-bg-5 p-3"
-      :class="expanded ? 'absolute inset-x-0 top-0 z-20 shadow-xl' : 'h-full'"
+      :class="[
+        showPeriodScores ? 'min-h-[237px]' : 'min-h-[211px]',
+        expanded ? 'absolute inset-x-0 top-0 z-20 shadow-xl' : 'h-full'
+      ]"
     >
       <div class="flex h-6 items-center gap-2 text-xs text-text-2">
-        <component v-if="sportIcon" :is="sportIcon" class="h-6 w-6 shrink-0" aria-hidden="true" />
+        <component
+          v-if="sportIcon"
+          :is="sportIcon"
+          class="h-6 w-6 shrink-0 text-icon-2 [&_path]:fill-current"
+          aria-hidden="true"
+        />
         <div class="flex min-w-0 flex-1 items-center gap-1">
           <template v-if="match.country">
-            <span class="shrink-0" :title="match.country">{{ match.country }}</span>
-            <ArrowRightIcon class="h-1.5 w-1.5 shrink-0" aria-hidden="true" />
+            <span class="max-w-[35%] truncate" :title="match.country">{{ match.country }}</span>
+            <ArrowRightIcon
+              class="h-1.5 w-1.5 shrink-0 text-icon-2 [&_path]:fill-current"
+              aria-hidden="true"
+            />
           </template>
-          <span class="truncate" :title="match.league">{{ match.league }}</span>
+          <span class="min-w-0 flex-1 truncate" :title="match.league">{{ match.league }}</span>
         </div>
         <button
           v-if="match.hasVideo"
@@ -37,38 +53,70 @@
         </button>
         <button
           type="button"
-          class="flex h-4 w-4 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+          class="flex h-4 w-4 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary disabled:cursor-wait disabled:opacity-50"
           :class="favorite ? 'text-theme-primary' : 'text-icon-2'"
           :aria-label="favorite ? 'Remove match from favorites' : 'Add match to favorites'"
           :aria-pressed="favorite"
+          :aria-busy="favoritePending"
+          :disabled="favoritePending"
           @click="emit('favorite')"
         >
           <StarIcon class="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
-      <div class="mt-2 flex h-4 min-w-0 items-center gap-6 text-xs leading-4">
-        <span class="truncate text-text-2">{{ match.live ? match.phase : match.kickoff }}</span>
-        <span
-          v-if="match.live && match.cornerScore"
-          class="flex shrink-0 items-center gap-1"
-          :aria-label="`Corners ${match.cornerScore}`"
-        >
-          <CornerIcon class="h-4 w-4" aria-hidden="true" />
-          {{ match.cornerScore }}
+      <div class="mt-2 flex h-4 min-w-0 items-center gap-3 text-xs leading-4">
+        <span class="min-w-0 flex-1 truncate text-text-2">
+          {{ timeLabel }}
         </span>
-        <span
-          v-if="match.live && match.halfTimeScore"
-          class="shrink-0"
-          :aria-label="`Half-time ${match.halfTimeScore}`"
+        <div
+          v-if="match.live && (match.cornerScore || match.halfTimeScore)"
+          class="ml-auto flex shrink-0 items-center gap-3"
         >
-          HT {{ match.halfTimeScore }}
-        </span>
+          <span
+            v-if="match.cornerScore"
+            class="flex items-center gap-1"
+            :aria-label="`Corners ${match.cornerScore}`"
+          >
+            <CornerIcon class="h-4 w-4" aria-hidden="true" />
+            {{ match.cornerScore }}
+          </span>
+          <span v-if="match.halfTimeScore" :aria-label="`Half-time ${match.halfTimeScore}`">
+            HT {{ match.halfTimeScore }}
+          </span>
+        </div>
+      </div>
+      <div
+        v-if="showPeriodScores"
+        class="mt-2.5 flex h-4 min-w-0 items-center gap-3 text-xs leading-4"
+      >
+        <ol
+          v-if="periodScores.length"
+          class="flex min-w-0 items-center gap-2"
+          aria-label="Period scores"
+        >
+          <li
+            v-for="(score, index) in periodScores"
+            :key="`${match.id}-period-${index + 1}`"
+            class="min-w-0 truncate"
+            :class="index === periodScores.length - 1 ? 'text-theme-primary' : 'text-text-1'"
+            :aria-label="`Period ${index + 1}: ${score}`"
+            :title="score"
+          >
+            {{ score }}
+          </li>
+        </ol>
+        <p v-if="match.totalScore" class="ml-auto flex shrink-0 items-center gap-2 text-text-2">
+          Total score
+          <span class="border-l border-opacity-15 pl-2 text-theme-primary">{{
+            match.totalScore
+          }}</span>
+        </p>
       </div>
       <div class="mt-3 space-y-2">
         <div v-for="team in teams" :key="team.side" class="flex h-6 min-w-0 items-center gap-3">
           <SmartImage :src="team.badge" alt="" class="h-6 w-6 shrink-0 object-contain" />
-          <span class="truncate text-sm font-bold" :title="team.name">{{ team.name }}</span>
+          <span class="min-w-0 truncate text-sm font-bold" :title="team.name">{{ team.name }}</span>
           <span
             v-if="match.live && (team.redCards != null || team.yellowCards != null)"
             class="flex shrink-0 items-center gap-1 text-xs font-bold leading-4"
@@ -95,7 +143,6 @@
         </div>
       </div>
 
-      <!-- 只衔接公开事件，不另造展开按钮或重复渲染盘口。 -->
       <div class="mt-2 min-w-0" data-testid="sports-card-odds">
         <MatchOdds
           v-if="MarketLines.length"
@@ -120,15 +167,17 @@ import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import MatchOdds from '../match-odds/index.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
-import type { SportsMatch } from '../../index'
+import type { SportsMatch } from '../../shared/types'
 import { sportItems } from '../sports-navigation/sport-items'
 
 const props = defineProps<{
   match: SportsMatch
+  timeLabel: string
   MarketLines: SportMarketLine[]
   selectedWagerSelectionId?: number
   expanded: boolean
   favorite: boolean
+  favoritePending?: boolean
 }>()
 
 const sportIcon = computed(
@@ -138,6 +187,10 @@ const teams = computed(() => [
   { ...props.match.home, side: 'home', score: props.match.homeScore },
   { ...props.match.away, side: 'away', score: props.match.awayScore }
 ])
+const periodScores = computed(() => props.match.periodScores ?? [])
+const showPeriodScores = computed(
+  () => props.match.live && (periodScores.value.length > 0 || !!props.match.totalScore)
+)
 
 const emit = defineEmits<{
   'update:expanded': [value: boolean]

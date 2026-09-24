@@ -521,6 +521,8 @@
     "noBetHistoryYet": "暂无投注历史",
     "startPlaying": "开始游戏",
     "betAmount": "投注金额",
+    "winLoss": "输赢",
+    "earlySettlement": "提前结算",
     "win": "赢",
     "loss": "输",
     "type": "类型",
@@ -577,6 +579,9 @@
     "winLoss": "输赢",
     "orderNo": "订单号",
     "createdAt": "创建时间",
+    "confirm": "确认",
+    "buyBackSuccess": "提前结算提交成功",
+    "buyBackSubmitFailed": "提前结算提交失败，请稍后重试",
     "copy": "复制成功"
   },
   "rewardDetails": {
@@ -1793,7 +1798,13 @@
     }
   },
   "sports": {
+    "bet_history": "投注历史",
     "loadFailed": "体育数据加载失败，请重试。",
+    "platformLoginFailed": "体育平台登录失败，请重试。",
+    "balanceUnavailable": "体育余额暂不可用，请刷新后继续。",
+    "balanceRefreshFailed": "体育余额刷新失败，请重试。",
+    "insufficientBalance": "体育余额不足。",
+    "favouriteFailed": "收藏操作未确认，请刷新赛事后重试。",
     "retry": "重试",
     "noEvents": "当前筛选条件下暂无赛事。",
     "loadingEvents": "赛事加载中…",

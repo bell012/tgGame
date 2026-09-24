@@ -81,10 +81,12 @@ interface Props {
   modelValue?: Record<string, string | string[]>
   titleText?: string
   applyText?: string
+  liveUpdate?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: () => ({})
+  modelValue: () => ({}),
+  liveUpdate: false
 })
 
 const emit = defineEmits<{
@@ -96,6 +98,15 @@ const emit = defineEmits<{
 const selectedValues = ref<Record<string, string | string[]>>({})
 
 const getGroupKey = (group: FilterGroup, index: number) => group.key ?? String(index)
+
+// 复制当前选择值，避免父组件拿到内部引用后被后续点击直接改动。
+const cloneSelectedValues = () =>
+  Object.fromEntries(
+    Object.entries(selectedValues.value).map(([key, value]) => [
+      key,
+      Array.isArray(value) ? [...value] : value
+    ])
+  )
 
 // 初始化默认选中第一个选项
 const initDefaultValues = () => {
@@ -117,6 +128,15 @@ const getInitialValues = () => ({
   ...initDefaultValues(),
   ...props.modelValue
 })
+
+// 开启实时更新时，点击选项后立即同步给父级，用于动态展示后续筛选组。
+const emitLiveUpdate = () => {
+  if (!props.liveUpdate) {
+    return
+  }
+
+  emit('update:modelValue', cloneSelectedValues())
+}
 
 watch(
   [() => props.visible, () => props.modelValue, () => props.filterGroups],
@@ -158,6 +178,8 @@ const handleSelect = (groupIndex: number, value: string) => {
     // 单选模式
     selectedValues.value[key] = value
   }
+
+  emitLiveUpdate()
 }
 
 // 关闭弹窗
@@ -167,8 +189,9 @@ const close = () => {
 
 // 应用筛选
 const handleApply = () => {
-  emit('update:modelValue', selectedValues.value)
-  emit('apply', selectedValues.value)
+  const values = cloneSelectedValues()
+  emit('update:modelValue', values)
+  emit('apply', values)
   close()
 }
 </script>
