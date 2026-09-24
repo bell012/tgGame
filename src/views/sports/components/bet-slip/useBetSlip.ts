@@ -325,11 +325,11 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     const version = sportsStore.sportsSessionVersion
     noticeKey.value = ''
     const success = await sportsStore.fetchSportsBalance()
-    if (version !== sportsStore.sportsSessionVersion) return
+    if (success || version !== sportsStore.sportsSessionVersion) return
     if (!sportsBalanceError.value && balance.value === null) return
     globalShowToast({
-      type: success ? 'success' : 'fail',
-      message: t(success ? 'sports.balanceRefreshed' : 'sports.balanceRefreshFailed')
+      type: 'fail',
+      message: t('sports.balanceRefreshFailed')
     })
   }
   const showUnsupported = () => {

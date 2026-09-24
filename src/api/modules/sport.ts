@@ -150,7 +150,7 @@ export function getPopularSports(
   data: GetPopularSportsParams,
   options?: SportsRequestOptions
 ): Promise<GetPopularSportsResponse> {
-  return postSport(baseUrl, 'getPopularSports', data, options)
+  return postSport(baseUrl, 'getPopularSports', data, options, 'site')
 }
 
 /**
@@ -175,13 +175,13 @@ export function getBetList(
   return postSport(baseUrl, 'GetBetList', data, options)
 }
 
-/** 只读：查询体育可用余额，av 为可用金额。 */
+/** 只读：查询体育可用余额，av 为可用金额；请求参数走项目统一加密。 */
 export function getBalance(
   baseUrl: string,
   data: GetBalanceParams,
   options?: SportsRequestOptions
 ): Promise<GetBalanceResponse> {
-  return postSport(baseUrl, 'GetBalance', data, options)
+  return postSport(baseUrl, 'GetBalance', data, options, 'site')
 }
 
 /**
@@ -217,7 +217,7 @@ export function getCompetitionList(
 
 /**
  * 写操作：收藏或取消收藏赛事，仅由明确的用户操作调用，不能随首页初始化自动执行。
- * 请求只传 MemberCode 和 EventId，不额外发送 IsFavourite 或动作字段。
+ * 请求传 MemberCode、EventId 和 EventDate，不额外发送 IsFavourite 或动作字段。
  * 调用方使用体育平台账号，并根据 stc 判断业务成功后同步赛事收藏状态。
  */
 export function favouriteEvent(
@@ -225,5 +225,5 @@ export function favouriteEvent(
   data: FavouriteEventParams,
   options?: SportsRequestOptions
 ): Promise<FavouriteEventResponse> {
-  return postSport(baseUrl, 'favouriteEvent', data, options)
+  return postSport(baseUrl, 'favouriteEvent', data, options, 'site')
 }

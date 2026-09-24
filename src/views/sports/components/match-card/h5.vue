@@ -10,7 +10,8 @@
         <div class="flex h-[15px] min-w-0 items-center gap-2 text-[11px] leading-[15px]">
           <button
             type="button"
-            class="-mx-1 flex h-5 w-5 shrink-0 items-center justify-center rounded text-icon-1 focus-visible:outline focus-visible:outline-theme-primary disabled:cursor-wait disabled:opacity-50"
+            class="-mx-1 flex h-5 w-5 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-theme-primary disabled:cursor-wait disabled:opacity-50"
+            :class="favorite ? 'text-theme-primary' : 'text-icon-1'"
             :aria-label="favorite ? 'Remove match from favorites' : 'Add match to favorites'"
             :aria-pressed="favorite"
             :aria-busy="favoritePending"

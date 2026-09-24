@@ -666,13 +666,26 @@ export interface GetCompetitionListResponse {
   success: boolean
 }
 
-/** 收藏/取消收藏共用参数；仅传会员账号和赛事 ID，不额外发送动作或收藏状态字段。 */
+/** 收藏/取消收藏共用参数，不额外发送动作或收藏状态字段。 */
 export interface FavouriteEventParams {
   /** String，必填：非空体育平台会员账号，不是本站 memberId。 */
   MemberCode: string
   /** Long，必填：赛事接口返回的 EventId，不是页面的球种与赛事组合 ID。 */
   EventId: number
+  /** String，必填：赛事返回的 EventDate，原样传递毫秒时间戳字符串。 */
+  EventDate: string
 }
 
-/** 收藏响应暂使用公共外层，业务数据结构待确认。 */
-export type FavouriteEventResponse = SportsResponse
+/** 收藏/取消收藏响应；按 stc 判断成功，业务字段在失败时可能缺失。 */
+export interface FavouriteEventResponse extends SportsResponse {
+  /** String：完整状态码，成功示例为 '100'。 */
+  StatusCode?: string
+  /** String：完整状态描述，成功示例为 'Success'；不用于判断收藏状态。 */
+  StatusDesc?: string
+  /** Long：本次操作对应的赛事 ID。 */
+  EventId?: number
+  /** Boolean：操作后的收藏状态，true 已收藏、false 未收藏。 */
+  IsFavourite?: boolean
+  /** Long：服务端返回的毫秒时间戳。 */
+  timestamp?: number
+}

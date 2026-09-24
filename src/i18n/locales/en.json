@@ -1810,7 +1810,6 @@
     "platformLoginFailed": "Unable to sign in to sports. Please try again.",
     "balanceUnavailable": "Sports balance is unavailable. Please refresh it before continuing.",
     "balanceRefreshFailed": "Unable to refresh sports balance. Please try again.",
-    "balanceRefreshed": "Sports balance refreshed.",
     "insufficientBalance": "Insufficient sports balance.",
     "favouriteFailed": "The favorite update could not be confirmed. Refresh events before trying again.",
     "retry": "Retry",

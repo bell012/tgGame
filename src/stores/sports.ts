@@ -1920,6 +1920,7 @@ export const useSportsStore = defineStore('sports', () => {
       !Number.isSafeInteger(eventId) ||
       eventId <= 0 ||
       !event ||
+      !event.EventDate ||
       !Number.isSafeInteger(event.Competition?.CompetitionId) ||
       !getBaseUrl()
     ) {
@@ -1947,7 +1948,11 @@ export const useSportsStore = defineStore('sports', () => {
       if (!memberCode) return 'login-failed'
       const previous = memberFavourites.get(eventId)?.value ?? event.IsFavourite === true
       const reconcileOnly = unconfirmedFavourites.has(eventId)
-      const params: FavouriteEventParams = { MemberCode: memberCode, EventId: eventId }
+      const params: FavouriteEventParams = {
+        MemberCode: memberCode,
+        EventId: eventId,
+        EventDate: event.EventDate
+      }
       favouriteState.params = params
       favouriteState.error = null
       favouriteState.response = null
@@ -1967,6 +1972,16 @@ export const useSportsStore = defineStore('sports', () => {
             result = 'failed'
           } else {
             favouriteState.data = response
+            if (!homepageActive || loginGeneration !== memberCodeGeneration) return 'stale'
+            if (response.EventId === eventId && typeof response.IsFavourite === 'boolean') {
+              // 接口已返回最终状态，不再额外查询赛事来确认。
+              memberFavourites.set(eventId, {
+                value: response.IsFavourite,
+                revision: ++favouriteRevision
+              })
+              unconfirmedFavourites.delete(eventId)
+              return 'success'
+            }
           }
         } catch {
           if (!isCurrent()) return 'stale'
