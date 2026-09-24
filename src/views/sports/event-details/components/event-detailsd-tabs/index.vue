@@ -118,10 +118,9 @@ import logoWhiteIcon from './icon/logo-white.svg?url'
 import logoRedIcon from './icon/logo-red.svg?url'
 import playWhiteIcon from './icon/play-white.svg?url'
 import playRedIcon from './icon/play-red.svg?url'
-import { EVENT_DETAIL_TAB_MOCK_ITEMS } from './mock-items'
 import type { EventDetailTabItem } from './types'
 
-export type { EventDetailMatchStatus, EventDetailTabItem } from './types'
+export type { EventDetailTabItem } from './types'
 
 const props = withDefaults(
   defineProps<{
@@ -129,7 +128,7 @@ const props = withDefaults(
     modelValue?: string
   }>(),
   {
-    items: () => EVENT_DETAIL_TAB_MOCK_ITEMS,
+    items: () => [],
     modelValue: ''
   }
 )
@@ -159,22 +158,21 @@ watch(
   }
 )
 
-const formatStatus = (item: EventDetailTabItem) => {
-  const { status } = item
-  if (status.kind === 'live') {
-    return `${status.minute} ${status.period}`
-  }
-  if (status.kind === 'half_time') {
-    return 'Half Time'
-  }
-  if (status.kind === 'finished') {
-    return 'Finished'
-  }
-  if (status.secondary) {
-    return `${status.primary} ${status.secondary}`
-  }
-  return status.primary
-}
+watch(
+  () => props.items,
+  items => {
+    if (!items.length) {
+      activeId.value = ''
+      return
+    }
+    if (!items.some(item => item.id === activeId.value)) {
+      selectTab(items[0].id)
+    }
+  },
+  { immediate: true }
+)
+
+const formatStatus = (item: EventDetailTabItem) => item.rbTime || '—'
 
 const formatScore = (score: number | null) => (score === null ? '-' : String(score))
 

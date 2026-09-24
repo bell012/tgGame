@@ -3,6 +3,8 @@ import type {
   FavouriteEventResponse,
   GetAllSportCountParams,
   GetAllSportCountResponse,
+  GetBetListParams,
+  GetBetListResponse,
   GetCompetitionListParams,
   GetCompetitionListResponse,
   GetCompetitionPageParams,
@@ -11,10 +13,14 @@ import type {
   GetPopularSportsResponse,
   GetSelectedEventInfoParams,
   GetSelectedEventInfoResponse,
+  GetStatementParams,
+  GetStatementResponse,
   GetSportEventIndexListParams,
   GetSportEventIndexListResponse,
   GetSportsV2Params,
   GetSportsV2Response,
+  SubmitBuyBackParams,
+  SubmitBuyBackResponse,
   SportsResponse
 } from '@/api/interface/sport'
 import request from '@/utils/request'
@@ -143,6 +149,39 @@ export function getPopularSports(
   options?: SportsRequestOptions
 ): Promise<GetPopularSportsResponse> {
   return postSport(baseUrl, 'getPopularSports', data, options)
+}
+
+/**
+ * 查询体育投注已结算记录。
+ */
+export function getStatement(
+  baseUrl: string,
+  data: GetStatementParams,
+  options?: SportsRequestOptions
+): Promise<GetStatementResponse> {
+  return postSport(baseUrl, 'GetStatement', data, options)
+}
+
+/**
+ * 查询体育投注未结算记录
+ */
+export function getBetList(
+  baseUrl: string,
+  data: GetBetListParams,
+  options?: SportsRequestOptions
+): Promise<GetBetListResponse> {
+  return postSport(baseUrl, 'GetBetList', data, options)
+}
+
+/**
+ * 体育投注提前结算，提交当前注单的回购价格和价格 ID。
+ */
+export function submitBuyBack(
+  baseUrl: string,
+  data: SubmitBuyBackParams,
+  options?: SportsRequestOptions
+): Promise<SubmitBuyBackResponse> {
+  return postSport(baseUrl, 'SubmitBuyBack', data, options)
 }
 
 /**

@@ -150,6 +150,35 @@ const baseRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: 'sports/bet-history',
+    name: 'sportsBetHistory',
+    component: () => import('@/views/sports/bet-history/index.vue'),
+    meta: {
+      title: '体育投注历史',
+      requiresAuth: true,
+      slideTransition: true,
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
+    path: 'sports/bet-details/:id',
+    name: 'sportsBetDetails',
+    component: () => import('@/views/sports/bet-details/index.vue'),
+    meta: {
+      title: '体育投注详情',
+      requiresAuth: true,
+      mobileOnly: true, //pc中路由不可见 H5中路由可见
+      slideTransition: true, // 启用滑动动画
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
+    }
+  },
+  {
     path: 'sports/event-details',
     name: 'sportsEventDetails',
     component: () => import('@/views/sports/event-details/index.vue'),

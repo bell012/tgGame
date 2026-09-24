@@ -67,7 +67,7 @@
 
       <div class="mt-2 flex h-4 min-w-0 items-center gap-3 text-xs leading-4">
         <span class="min-w-0 flex-1 truncate text-text-2">
-          {{ match.live ? match.phase : match.kickoff }}
+          {{ timeLabel }}
         </span>
         <div
           v-if="match.live && (match.cornerScore || match.halfTimeScore)"
@@ -167,11 +167,12 @@ import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import MatchOdds from '../match-odds/index.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
-import type { SportsMatch } from '../../index'
+import type { SportsMatch } from '../../shared/types'
 import { sportItems } from '../sports-navigation/sport-items'
 
 const props = defineProps<{
   match: SportsMatch
+  timeLabel: string
   MarketLines: SportMarketLine[]
   selectedWagerSelectionId?: number
   expanded: boolean

@@ -28,8 +28,8 @@
               aria-hidden="true"
             />
           </button>
-          <span class="min-w-0 truncate" :title="match.live ? match.phase : match.kickoff">
-            {{ match.live ? match.phase : match.kickoff }}
+          <span class="min-w-0 truncate" :title="timeLabel">
+            {{ timeLabel }}
           </span>
           <button
             v-if="match.hasVideo"
@@ -147,10 +147,11 @@ import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import MatchOdds from '../match-odds/index.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
-import type { SportsMatch } from '../../index'
+import type { SportsMatch } from '../../shared/types'
 
 const props = defineProps<{
   match: SportsMatch
+  timeLabel: string
   MarketLines: SportMarketLine[]
   selectedWagerSelectionId?: number
   favorite: boolean

@@ -37,6 +37,7 @@
         <article
           v-for="match in liveMatches"
           :key="match.id"
+          v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
           class="relative flex min-h-[204px] w-[360px] shrink-0 flex-col rounded-xl bg-bg-5 p-3"
           :data-sports-match="`live:${match.id}`"
         >
@@ -54,7 +55,7 @@
               </template>
               <span class="truncate" :title="match.league">{{ match.league }}</span>
             </div>
-            <span class="shrink-0 text-text-1">{{ match.phase || match.kickoff }}</span>
+            <span class="shrink-0 text-text-1">{{ page.getMatchTime(match) }}</span>
           </div>
 
           <MatchVersus
@@ -133,7 +134,9 @@
         <MatchCardPc
           v-for="match in pagedMatches"
           :key="match.id"
+          v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
           :match="match"
+          :time-label="page.getMatchTime(match)"
           :MarketLines="match.MarketLines"
           :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
           :expanded="expandedMatchId === match.id"
@@ -202,11 +205,14 @@
 
 <script setup lang="ts">
 import { nextTick, onDeactivated, onScopeDispose, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { useLayoutStore } from '@/stores/layout'
 import CommonFooter from '@/components/commonFooter.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { globalShowToast } from '@/utils/toast'
+import { stripLocalePrefix } from '@/utils/locale'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import emptyImage from '@/static/img/explore/default.png'
 import emptyImageLight from '@/static/img/explore/default_white.png'
@@ -220,10 +226,18 @@ import BetSlipPc from './components/bet-slip/pc.vue'
 import H5Page from './components/page/h5.vue'
 import BetSlipH5 from './components/bet-slip/h5.vue'
 import { useSportsPage } from './index'
+import { useMatchVisibility } from './composables/useMatchVisibility'
 
 const isMobile = useIsMobile()
 const matchList = ref<HTMLElement | null>(null)
 const page = useSportsPage()
+const layoutStore = useLayoutStore()
+const route = useRoute()
+const { vMatchVisibility } = useMatchVisibility({
+  enabled: () => !isMobile.value && stripLocalePrefix(route.path) === '/sports',
+  topInset: () => layoutStore.TOPNAV_HEIGHT,
+  onChange: targets => page.setVisibleMatches('pc', targets)
+})
 const {
   currentPage,
   totalPages,
