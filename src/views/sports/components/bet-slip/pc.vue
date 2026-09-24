@@ -271,8 +271,8 @@ import SettingsIcon from '@/static/svg/sports/odds-settings.svg'
 import StakeInput from './stake-input.vue'
 import AmountsDialog from './amounts-dialog.vue'
 import PcResult from './pc-result.vue'
-import { parseSportsStake } from '../../index'
-import type { SportsBetMode, SportsBetSelection, SportsParlay } from '../../index'
+import { parseSportsStake } from './shared'
+import type { SportsBetMode, SportsBetSelection, SportsParlay } from '../../shared/types'
 
 const props = defineProps<{
   open: boolean

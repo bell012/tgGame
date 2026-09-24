@@ -88,7 +88,7 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, useId } from 'vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import CloseIcon from '@/static/svg/close.svg?component'
-import { parseSportsStake } from '../../index'
+import { parseSportsStake } from './shared'
 
 const props = defineProps<{ amounts: readonly number[]; currencySymbol: string }>()
 const emit = defineEmits<{ close: []; save: [amounts: number[]] }>()

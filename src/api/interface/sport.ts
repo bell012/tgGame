@@ -113,9 +113,9 @@ export interface SportEventExtraInfo {
   c15mhs: number
   /** Current15MinsAwayScore（Int）：当前 15 分钟区间的客队比分。 */
   c15mas: number
-  /** Int，可缺失：扩展字段，业务含义待确认。 */
+  /** Int，可缺失：主队角球数。 */
   htycs?: number
-  /** Int，可缺失：扩展字段，业务含义待确认。 */
+  /** Int，可缺失：客队角球数。 */
   atycs?: number
   /** Boolean：扩展标志，业务含义待确认，不与外层 IsLive 混同。 */
   il: boolean

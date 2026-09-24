@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref, shallowReactive, watch } from 'vue'
+import { computed, reactive, ref, shallowReactive, watch } from 'vue'
 import Api from '@/api'
 import type {
   FavouriteEventParams,
@@ -14,6 +14,7 @@ import type {
   GetSportsV2Response,
   SportCompetitionGroup,
   SportEvent,
+  SportMarketLine,
   SportsLanguageCode,
   SportsMarket,
   SportsOddsType,
@@ -30,6 +31,8 @@ import { getLanguageCode as getRequestLanguageCode } from '@/utils/request'
 
 /** 当前选中的赛事筛选标签。 */
 export type FilterTabKey = 'rolling' | 'today' | 'early' | 'parlay'
+
+export type SportsRefreshTarget = { sportId: number; eventId: number }
 
 const FILTER_TAB_MARKETS: Readonly<Record<FilterTabKey, SportsMarket>> = {
   rolling: 3,
@@ -78,6 +81,44 @@ const ALL_SPORTS_PAGE_SIZE = 10
 const MAX_ALL_SPORTS_PAGES = 200
 const SELECTED_EVENT_BATCH_SIZE = 5
 const MAX_CONCURRENT_LEAGUES = 3
+const EVENT_FRESH_TIME = 10_000
+
+const mergeDefined = <T extends object>(previous: T, incoming: T): T =>
+  Object.assign(
+    {},
+    previous,
+    Object.fromEntries(Object.entries(incoming).filter(([, value]) => value !== undefined))
+  )
+
+const mergeMarketLines = (previous: SportMarketLine[], incoming: SportMarketLine[]) => {
+  const lines = new Map(previous.map(line => [line.MarketlineId, line]))
+  for (const line of incoming) {
+    const old = lines.get(line.MarketlineId)
+    if (!old) {
+      lines.set(line.MarketlineId, line)
+      continue
+    }
+    const selections = new Map(old.WagerSelections.map(item => [item.WagerSelectionId, item]))
+    for (const item of line.WagerSelections ?? []) {
+      const existing = selections.get(item.WagerSelectionId)
+      selections.set(item.WagerSelectionId, existing ? mergeDefined(existing, item) : item)
+    }
+    lines.set(line.MarketlineId, {
+      ...mergeDefined(old, line),
+      WagerSelections: [...selections.values()]
+    })
+  }
+  return [...lines.values()]
+}
+
+const mergeEventFields = (previous: SportEvent, incoming: SportEvent): SportEvent => ({
+  ...mergeDefined(previous, incoming),
+  Competition:
+    previous.Competition && incoming.Competition
+      ? mergeDefined(previous.Competition, incoming.Competition)
+      : (incoming.Competition ?? previous.Competition),
+  MarketLines: mergeMarketLines(previous.MarketLines ?? [], incoming.MarketLines ?? [])
+})
 
 type LeagueEventsState = {
   data: SportEvent[]
@@ -441,6 +482,61 @@ export const useSportsStore = defineStore('sports', () => {
   const eventsDataContext = ref('')
   const eventsRequestContext = ref('')
 
+  // 同一赛事共用数据，迟到的列表响应不能覆盖较新的比分和赔率。
+  const refreshedEvents = shallowReactive(
+    new Map<
+      string,
+      { event: SportEvent; revision: number; updatedAt: number; clockUpdatedAt: number }
+    >()
+  )
+  let eventReadRevision = 0
+  const eventKey = (sportId: number, eventId: number) => `${sportId}:${eventId}`
+  const rememberEvent = (
+    sportId: number,
+    incoming: SportEvent,
+    revision: number,
+    receivedAt = Date.now()
+  ) => {
+    const key = eventKey(sportId, incoming.EventId)
+    const previous = refreshedEvents.get(key)
+    if (!previous) {
+      const event = reactive({ ...incoming })
+      refreshedEvents.set(
+        key,
+        shallowReactive({ event, revision, updatedAt: receivedAt, clockUpdatedAt: receivedAt })
+      )
+      return event
+    }
+    const newer = revision >= previous.revision
+    Object.assign(
+      previous.event,
+      newer
+        ? mergeEventFields(previous.event, incoming)
+        : mergeEventFields(incoming, previous.event)
+    )
+    if (newer) {
+      previous.revision = revision
+      previous.updatedAt = Date.now()
+      // 相同时间也要校准；只更新赔率的响应不能重置比赛计时。
+      if (incoming.RBTime !== undefined) previous.clockUpdatedAt = receivedAt
+    }
+    return previous.event
+  }
+  const rememberGroups = (
+    sportId: number,
+    groups: SportCompetitionGroup[],
+    revision: number,
+    receivedAt = Date.now()
+  ) =>
+    groups.map(group => ({
+      ...group,
+      Sports: group.Sports.map(event => rememberEvent(sportId, event, revision, receivedAt))
+    }))
+  const getRefreshEvent = (sportId: number, eventId: number) =>
+    refreshedEvents.get(eventKey(sportId, eventId))?.event
+  const getEventClockUpdatedAt = (sportId: number, eventId: number) =>
+    refreshedEvents.get(eventKey(sportId, eventId))?.clockUpdatedAt ?? Date.now()
+
   // 滚球 今日 早盘 串关数据
   const counts = createSportsRequest(getBaseUrl, sportsApi.getAllSportCount, response =>
     Array.isArray(response.spc)
@@ -584,6 +680,7 @@ export const useSportsStore = defineStore('sports', () => {
             state.error = { kind: 'response', message: 'League page limit exceeded' }
             return null
           }
+          const revision = ++eventReadRevision
           const response = await sportsApi.getCompetitionPage(
             baseUrl,
             { ...common, PageNumber: state.nextPage },
@@ -620,7 +717,10 @@ export const useSportsStore = defineStore('sports', () => {
             state.error = { kind: 'response', message: 'Repeated league page without progress' }
             return null
           }
-          state.data = mergeSportEvents(state.data, response.e)
+          state.data = mergeSportEvents(
+            state.data,
+            response.e.map(event => rememberEvent(common.SportId, event, revision))
+          )
           state.nextPage += 1
           state.complete = !response.hasNextPage
         }
@@ -766,6 +866,7 @@ export const useSportsStore = defineStore('sports', () => {
         }
         allSportsState.params = pageParams
         const readRevision = favouriteRevision
+        const revision = ++eventReadRevision
         const response = await sportsApi.getSportsV2(baseUrl, pageParams, {
           signal: controller.signal
         })
@@ -823,7 +924,7 @@ export const useSportsStore = defineStore('sports', () => {
         if (seenPages.has(signature)) return fail('Repeated all-league page')
         seenPages.add(signature)
         let progressed = false
-        for (const group of response.e) {
+        for (const group of rememberGroups(params.SportId, response.e, revision)) {
           const previous = groups.get(group.CompetitionId)
           const entries = new Map((previous?.Sports ?? []).map(event => [event.EventId, event]))
           if (!previous) progressed = true
@@ -1043,6 +1144,7 @@ export const useSportsStore = defineStore('sports', () => {
             PeriodIds: [1]
           }
           hotDetailsState.params = params
+          const revision = ++eventReadRevision
           const response = await sportsApi.getSelectedEventInfo(baseUrl, params, {
             signal: controller.signal
           })
@@ -1065,7 +1167,9 @@ export const useSportsStore = defineStore('sports', () => {
             return null
           }
           // e 可以为空，表示本批赛事已不可用；保留真实响应，不伪造盘口。
-          response.e.forEach(event => received.set(event.EventId, event))
+          response.e.forEach(event =>
+            received.set(event.EventId, rememberEvent(sportId, event, revision))
+          )
           hotDetailsState.data = [...received.values()]
         }
         completedHotDetailsKey = key
@@ -1165,7 +1269,9 @@ export const useSportsStore = defineStore('sports', () => {
       if (record.sportId !== selectedSportId.value || seen.has(record.eventId)) return []
       seen.add(record.eventId)
       const event =
-        allEventsById.value.get(record.eventId) ?? hotDetailsById.value.get(record.eventId)
+        allEventsById.value.get(record.eventId) ??
+        hotDetailsById.value.get(record.eventId) ??
+        getRefreshEvent(record.sportId, record.eventId)
       return event ? [withMemberFavourite(event)] : []
     })
   })
@@ -1310,15 +1416,312 @@ export const useSportsStore = defineStore('sports', () => {
     if (eventsDataContext.value !== requestContext) eventsDataContext.value = ''
     const version = sportsSessionVersion.value
     const readRevision = favouriteRevision
+    const revision = ++eventReadRevision
     const response = await events.load(params)
     if (version !== sportsSessionVersion.value) return null
     if (response && events.state.data === response) {
       syncMemberFavourites(response.e ?? [], readRevision, params.MemberCode)
+      events.state.data = {
+        ...response,
+        e: rememberGroups(params.SportId, response.e ?? [], revision)
+      }
       eventsDataContext.value = requestContext
     }
     return response
   }
   const fetchSportEventIndexList = () => indexes.load({ ...commonParams(), Keyword: '' })
+
+  const refreshJobs = new Map<string, { controller: AbortController; pending: Promise<unknown> }>()
+  const refreshingEvents = new Map<string, Promise<unknown>>()
+  let refreshGeneration = 0
+  let visibleQueue: Promise<unknown> = Promise.resolve()
+  const getRefreshContext = () =>
+    JSON.stringify([getEventsContext(), getAllSportsQueryContext(), memberCodeGeneration])
+  const cancelHomepageRefresh = () => {
+    refreshGeneration += 1
+    for (const job of refreshJobs.values()) job.controller.abort()
+    refreshJobs.clear()
+    refreshingEvents.clear()
+    visibleQueue = Promise.resolve()
+  }
+  const runHomepageRefresh = (
+    key: string,
+    action: (signal: AbortSignal, isCurrent: () => boolean) => Promise<unknown>
+  ): Promise<unknown> => {
+    if (!homepageActive || !getBaseUrl()) return Promise.resolve(null)
+    const existing = refreshJobs.get(key)
+    if (existing) return existing.pending
+    const context = getRefreshContext()
+    const generation = refreshGeneration
+    const controller = new AbortController()
+    const isCurrent = () =>
+      homepageActive &&
+      !controller.signal.aborted &&
+      generation === refreshGeneration &&
+      context === getRefreshContext()
+    const pending = Promise.resolve()
+      .then(() => (isCurrent() ? action(controller.signal, isCurrent) : null))
+      .catch(() => null)
+      .finally(() => {
+        if (refreshJobs.get(key)?.controller === controller) refreshJobs.delete(key)
+      })
+    refreshJobs.set(key, { controller, pending })
+    return pending
+  }
+  const refreshHomepageCounts = () =>
+    runHomepageRefresh('counts', async (signal, isCurrent) => {
+      // 首次数量查询由初始化流程处理，后台刷新不改变选中项和加载状态。
+      if (counts.state.loading) return null
+      const response = await sportsApi.getAllSportCount(
+        getBaseUrl(),
+        { LanguageCode: languageCode.value, IsCombo: false },
+        { signal }
+      )
+      if (isCurrent() && isSportsSuccess(response) && Array.isArray(response.spc)) {
+        counts.state.data = response
+        counts.state.response = response
+      }
+      return response
+    })
+
+  const refreshVisibleEvents = (targets: readonly SportsRefreshTarget[]): Promise<unknown> => {
+    const waiting = new Set<Promise<unknown>>()
+    const sports = new Map<number, Set<number>>()
+    for (const { sportId, eventId } of targets) {
+      if (!Number.isSafeInteger(sportId) || sportId <= 0) continue
+      if (!Number.isSafeInteger(eventId) || eventId <= 0) continue
+      const key = eventKey(sportId, eventId)
+      const pending = refreshingEvents.get(key)
+      if (pending) {
+        waiting.add(pending)
+        continue
+      }
+      const cached = refreshedEvents.get(key)
+      if (cached && Date.now() - cached.updatedAt < EVENT_FRESH_TIME) continue
+      const ids = sports.get(sportId) ?? new Set<number>()
+      ids.add(eventId)
+      sports.set(sportId, ids)
+    }
+    for (const [sportId, eventIds] of sports) {
+      const ids = [...eventIds]
+      for (let offset = 0; offset < ids.length; offset += SELECTED_EVENT_BATCH_SIZE) {
+        const batch = ids.slice(offset, offset + SELECTED_EVENT_BATCH_SIZE)
+        const previous = visibleQueue
+        const pending = runHomepageRefresh(
+          `events:${sportId}:${batch.join(',')}`,
+          async (signal, isCurrent) => {
+            await previous
+            if (!isCurrent()) return null
+            const knownLines = batch.flatMap(id => getRefreshEvent(sportId, id)?.MarketLines ?? [])
+            const knownOddsType = knownLines
+              .filter(line => line.BetTypeId === 1 || line.BetTypeId === 2)
+              .flatMap(line => line.WagerSelections ?? [])
+              .map(selection => selection.OddsType)
+              .find(type => type === 1 || type === 2 || type === 3 || type === 4)
+            const params: GetSelectedEventInfoParams = {
+              SportId: sportId,
+              EventIds: batch,
+              OddsType: knownOddsType ?? getHomepageOddsType(),
+              IsCombo: market.value === 4,
+              IncludeGroupEvents: false,
+              LanguageCode: languageCode.value,
+              BetTypeIds: [...new Set([1, 2, 3, ...knownLines.map(line => line.BetTypeId)])],
+              PeriodIds: [...new Set([1 as const, ...knownLines.map(line => line.PeriodId)])]
+            }
+            const revision = ++eventReadRevision
+            const response = await sportsApi.getSelectedEventInfo(getBaseUrl(), params, { signal })
+            if (
+              !isCurrent() ||
+              !isSportsSuccess(response) ||
+              !Array.isArray(response.e) ||
+              response.e.some(
+                event =>
+                  !event || !batch.includes(event.EventId) || !Array.isArray(event.MarketLines)
+              )
+            )
+              return null
+            for (const event of response.e) rememberEvent(sportId, event, revision)
+            return response
+          }
+        )
+        visibleQueue = pending
+        waiting.add(pending)
+        for (const id of batch) refreshingEvents.set(eventKey(sportId, id), pending)
+        void pending.finally(() => {
+          for (const id of batch) {
+            const key = eventKey(sportId, id)
+            if (refreshingEvents.get(key) === pending) refreshingEvents.delete(key)
+          }
+        })
+      }
+    }
+    return Promise.all(waiting)
+  }
+
+  const mergeRefreshGroups = (
+    previous: SportCompetitionGroup[],
+    incoming: SportCompetitionGroup[]
+  ) => {
+    const groups = new Map(previous.map(group => [group.CompetitionId, group]))
+    for (const group of incoming) {
+      const old = groups.get(group.CompetitionId)
+      groups.set(
+        group.CompetitionId,
+        old ? { ...old, ...group, Sports: mergeSportEvents(old.Sports, group.Sports) } : group
+      )
+    }
+    return [...groups.values()]
+  }
+  const refreshHomepageBackground = () =>
+    runHomepageRefresh('background', async (signal, isCurrent) => {
+      const sportId = selectedSportId.value
+      const search = keyword.value.trim()
+      const params: GetSportsV2Params = {
+        ...commonParams(),
+        competitionCondType: search ? 2 : 1,
+        PageNumber: search ? pageNumber.value : 1,
+        PageSize: search ? pageSize.value : ALL_SPORTS_PAGE_SIZE,
+        SortType: sortType.value,
+        CompetitionIds: [],
+        Keyword: search,
+        IsFavourite: isFavourite.value,
+        earlyTradingDate: search && market.value === 1 ? earlyTradingDate.value : null,
+        MemberCode: sportsMemberCode.value
+      }
+      const refreshList = async () => {
+        if (!search && allSportsPending) return allSportsPending
+        if (search && events.state.loading) return null
+        const pages: {
+          response: GetSportsV2Response
+          revision: number
+          favourite: number
+          receivedAt: number
+        }[] = []
+        const seen = new Set<string>()
+        let totalPages = 1
+        for (let page = 1; page <= totalPages; page += 1) {
+          if (!isCurrent()) return null
+          // 可见赛事先发，后台分页等待当前批次结束。
+          await visibleQueue
+          if (!isCurrent()) return null
+          const revision = ++eventReadRevision
+          const favourite = favouriteRevision
+          const response = await sportsApi.getSportsV2(
+            getBaseUrl(),
+            {
+              ...params,
+              PageNumber: search ? params.PageNumber : page
+            },
+            { signal }
+          )
+          if (!isCurrent() || !isSportsSuccess(response) || !Array.isArray(response.e)) return null
+          if (
+            response.e.some(
+              group =>
+                !group ||
+                !Number.isSafeInteger(group.CompetitionId) ||
+                !Number.isInteger(group.competitionCount) ||
+                group.competitionCount < 0 ||
+                !Array.isArray(group.Sports) ||
+                group.Sports.some(event => !event || !Number.isSafeInteger(event.EventId))
+            )
+          )
+            return null
+          if (!search) {
+            const total = response.Total
+            if (typeof total !== 'number' || !Number.isSafeInteger(total) || total < 0) return null
+            if (total === 0 && response.e.length) return null
+            totalPages = Math.ceil(total / ALL_SPORTS_PAGE_SIZE)
+            if (totalPages > MAX_ALL_SPORTS_PAGES || (!response.e.length && page <= totalPages))
+              return null
+            const signature = JSON.stringify(
+              response.e.map(group => [
+                group.CompetitionId,
+                group.Sports.map(event => event.EventId)
+              ])
+            )
+            if (seen.has(signature)) return null
+            seen.add(signature)
+          }
+          pages.push({ response, revision, favourite, receivedAt: Date.now() })
+        }
+        if (!isCurrent()) return null
+        const lastResponse = pages[pages.length - 1]?.response
+        if (!search) {
+          const leagueIds = new Set(
+            pages.flatMap(page => page.response.e?.map(group => group.CompetitionId) ?? [])
+          )
+          if (leagueIds.size < (lastResponse?.Total ?? 0)) return null
+        }
+        const groups = pages.flatMap(({ response, revision, favourite, receivedAt }) => {
+          syncMemberFavourites(response.e ?? [], favourite, params.MemberCode)
+          return rememberGroups(sportId, response.e ?? [], revision, receivedAt)
+        })
+        if (search) {
+          if (eventsDataContext.value !== getEventsContext() || !events.state.data) return null
+          events.state.data = {
+            ...events.state.data,
+            ...pages[0]?.response,
+            e: mergeRefreshGroups(events.state.data.e ?? [], groups)
+          }
+        } else if (allSportsDataContext.value === getAllSportsQueryContext()) {
+          allSportsState.data = mergeRefreshGroups(allSportsState.data, groups)
+          allSportsState.total = lastResponse?.Total ?? allSportsState.total
+          allSportsState.complete = true
+        }
+        return groups
+      }
+      const refreshHot = async () => {
+        if (competitionListState.loading) return null
+        const endTime = Date.now()
+        const response = await Api.sport.getCompetitionList(
+          {
+            param: {
+              page: 1,
+              sportId,
+              market: market.value,
+              startTime: endTime - 24 * 60 * 60 * 1000,
+              endTime
+            }
+          },
+          { signal }
+        )
+        if (!isCurrent() || !isApiBusinessSuccess(response) || !Array.isArray(response.result))
+          return null
+        const records = new Map(
+          (competitionListState.data?.result ?? []).map(record => [
+            eventKey(record.sportId, record.eventId),
+            record
+          ])
+        )
+        response.result.forEach(record =>
+          records.set(eventKey(record.sportId, record.eventId), record)
+        )
+        competitionListState.data = { ...response, result: [...records.values()] }
+        competitionListContext.value = getCompetitionListContext()
+        const missing = response.result.filter(
+          record => !getRefreshEvent(record.sportId, record.eventId)
+        )
+        for (let offset = 0; offset < missing.length; offset += SELECTED_EVENT_BATCH_SIZE) {
+          if (!isCurrent()) return null
+          await refreshVisibleEvents(
+            missing
+              .slice(offset, offset + SELECTED_EVENT_BATCH_SIZE)
+              .map(record => ({ sportId: record.sportId, eventId: record.eventId }))
+          )
+        }
+        return response
+      }
+      return Promise.allSettled([refreshList(), refreshHot()])
+    })
+
+  watch(getRefreshContext, cancelHomepageRefresh, { flush: 'sync' })
+  watch(
+    () =>
+      JSON.stringify([getBaseUrl(), languageCode.value, market.value, sportsSessionVersion.value]),
+    () => refreshedEvents.clear(),
+    { flush: 'sync' }
+  )
   const fetchPopularSports = () =>
     popular.load({ ...commonParams(), Market: 3, SortType: sortType.value })
   const fetchCompetitionPage = (
@@ -1495,6 +1898,7 @@ export const useSportsStore = defineStore('sports', () => {
 
   const cancelRequests = () => {
     homepageActive = false
+    cancelHomepageRefresh()
     // 停用和销毁均结束本次停留；旧登录响应不能写回，也不能被下次进入复用。
     invalidateSportsMemberCode()
     homepageGeneration += 1
@@ -1557,6 +1961,7 @@ export const useSportsStore = defineStore('sports', () => {
   } = {}) => {
     homepageActive = true
     const generation = ++homepageGeneration
+    cancelHomepageRefresh()
     let refreshEvents = false
     if (refreshCompetitionList) {
       // 数量等待期间后续筛选可能接管请求，保留刷新意图，避免旧代次退出时漏发热门。
@@ -1715,6 +2120,12 @@ export const useSportsStore = defineStore('sports', () => {
     competitionEvents,
     popularSports,
     fetchSportCounts,
+    refreshHomepageCounts,
+    refreshVisibleEvents,
+    refreshHomepageBackground,
+    cancelHomepageRefresh,
+    getRefreshEvent,
+    getEventClockUpdatedAt,
     fetchSports,
     fetchAllSports,
     fetchMissingHotEvents,
