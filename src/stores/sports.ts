@@ -90,34 +90,47 @@ const mergeDefined = <T extends object>(previous: T, incoming: T): T =>
     Object.fromEntries(Object.entries(incoming).filter(([, value]) => value !== undefined))
   )
 
-const mergeMarketLines = (previous: SportMarketLine[], incoming: SportMarketLine[]) => {
-  const lines = new Map(previous.map(line => [line.MarketlineId, line]))
+type MarketRefreshScope = Pick<GetSelectedEventInfoParams, 'BetTypeIds' | 'PeriodIds'>
+
+const marketSlot = (line: SportMarketLine) =>
+  `${line.BetTypeId}:${line.PeriodId}:${line.MarketLineLevel}`
+
+const mergeMarketLines = (
+  previous: SportMarketLine[],
+  incoming: SportMarketLine[] | undefined,
+  scope?: MarketRefreshScope
+) => {
+  if (!Array.isArray(incoming)) return previous
+  const previousById = new Map(previous.map(line => [line.MarketlineId, line]))
+  const incomingSlots = new Set(incoming.map(marketSlot))
+  // 详情替换查询范围；列表预览只替换返回的玩法、时段和级别。
+  const isReplaced = (line: SportMarketLine) =>
+    scope
+      ? (scope.BetTypeIds === undefined || scope.BetTypeIds.includes(line.BetTypeId)) &&
+        (scope.PeriodIds === undefined || scope.PeriodIds.includes(line.PeriodId))
+      : incomingSlots.has(marketSlot(line))
+  const lines = new Map(
+    previous.filter(line => !isReplaced(line)).map(line => [line.MarketlineId, line])
+  )
   for (const line of incoming) {
-    const old = lines.get(line.MarketlineId)
-    if (!old) {
-      lines.set(line.MarketlineId, line)
-      continue
-    }
-    const selections = new Map(old.WagerSelections.map(item => [item.WagerSelectionId, item]))
-    for (const item of line.WagerSelections ?? []) {
-      const existing = selections.get(item.WagerSelectionId)
-      selections.set(item.WagerSelectionId, existing ? mergeDefined(existing, item) : item)
-    }
-    lines.set(line.MarketlineId, {
-      ...mergeDefined(old, line),
-      WagerSelections: [...selections.values()]
-    })
+    const old = previousById.get(line.MarketlineId)
+    // WagerSelections 使用新列表，不保留本次已移除的投注项。
+    lines.set(line.MarketlineId, old ? mergeDefined(old, line) : line)
   }
   return [...lines.values()]
 }
 
-const mergeEventFields = (previous: SportEvent, incoming: SportEvent): SportEvent => ({
+const mergeEventFields = (
+  previous: SportEvent,
+  incoming: SportEvent,
+  scope?: MarketRefreshScope
+): SportEvent => ({
   ...mergeDefined(previous, incoming),
   Competition:
     previous.Competition && incoming.Competition
       ? mergeDefined(previous.Competition, incoming.Competition)
       : (incoming.Competition ?? previous.Competition),
-  MarketLines: mergeMarketLines(previous.MarketLines ?? [], incoming.MarketLines ?? [])
+  MarketLines: mergeMarketLines(previous.MarketLines ?? [], incoming.MarketLines, scope)
 })
 
 type LeagueEventsState = {
@@ -495,7 +508,10 @@ export const useSportsStore = defineStore('sports', () => {
     sportId: number,
     incoming: SportEvent,
     revision: number,
-    receivedAt = Date.now()
+    {
+      receivedAt = Date.now(),
+      marketScope
+    }: { receivedAt?: number; marketScope?: MarketRefreshScope } = {}
   ) => {
     const key = eventKey(sportId, incoming.EventId)
     const previous = refreshedEvents.get(key)
@@ -507,19 +523,16 @@ export const useSportsStore = defineStore('sports', () => {
       )
       return event
     }
-    const newer = revision >= previous.revision
-    Object.assign(
-      previous.event,
-      newer
-        ? mergeEventFields(previous.event, incoming)
-        : mergeEventFields(incoming, previous.event)
-    )
-    if (newer) {
-      previous.revision = revision
-      previous.updatedAt = Date.now()
-      // 相同时间也要校准；只更新赔率的响应不能重置比赛计时。
-      if (incoming.RBTime !== undefined) previous.clockUpdatedAt = receivedAt
-    }
+    // 迟到的响应不能补回已被移除的盘口或投注项。
+    if (revision < previous.revision) return previous.event
+    const timeChanged = incoming.RBTime !== undefined && incoming.RBTime !== previous.event.RBTime
+    const wasPaused = previous.event.RBTimeStatus === 3
+    const isPaused = (incoming.RBTimeStatus ?? previous.event.RBTimeStatus) === 3
+    Object.assign(previous.event, mergeEventFields(previous.event, incoming, marketScope))
+    previous.revision = revision
+    previous.updatedAt = Date.now()
+    // 重复时间不重置秒表；暂停、恢复或时间变化时重新校准。
+    if (timeChanged || wasPaused !== isPaused) previous.clockUpdatedAt = receivedAt
     return previous.event
   }
   const rememberGroups = (
@@ -530,7 +543,7 @@ export const useSportsStore = defineStore('sports', () => {
   ) =>
     groups.map(group => ({
       ...group,
-      Sports: group.Sports.map(event => rememberEvent(sportId, event, revision, receivedAt))
+      Sports: group.Sports.map(event => rememberEvent(sportId, event, revision, { receivedAt }))
     }))
   const getRefreshEvent = (sportId: number, eventId: number) =>
     refreshedEvents.get(eventKey(sportId, eventId))?.event
@@ -1168,7 +1181,10 @@ export const useSportsStore = defineStore('sports', () => {
           }
           // e 可以为空，表示本批赛事已不可用；保留真实响应，不伪造盘口。
           response.e.forEach(event =>
-            received.set(event.EventId, rememberEvent(sportId, event, revision))
+            received.set(
+              event.EventId,
+              rememberEvent(sportId, event, revision, { marketScope: params })
+            )
           )
           hotDetailsState.data = [...received.values()]
         }
@@ -1540,7 +1556,9 @@ export const useSportsStore = defineStore('sports', () => {
               )
             )
               return null
-            for (const event of response.e) rememberEvent(sportId, event, revision)
+            for (const event of response.e) {
+              rememberEvent(sportId, event, revision, { marketScope: params })
+            }
             return response
           }
         )

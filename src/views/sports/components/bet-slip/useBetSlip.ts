@@ -68,7 +68,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     const selection = line?.WagerSelections.find(
       item => item.WagerSelectionId === outcome.WagerSelectionId
     )
-    if (!match || !line || !selection) return outcome.snapshot
+    if (!match) return outcome.snapshot
+    if (!line || !selection) return { ...outcome.snapshot, mockBetStatus: 'closed' }
     const odds = Number.isFinite(selection.Odds) ? selection.Odds : outcome.snapshot.odds
     return {
       id: outcome.id,
@@ -159,7 +160,11 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     )
   )
   const canSubmit = computed(
-    () => !invalidStake.value && totalStake.value > 0 && totalStake.value <= MOCK_BALANCE
+    () =>
+      !invalidStake.value &&
+      totalStake.value > 0 &&
+      totalStake.value <= MOCK_BALANCE &&
+      !selections.value.some(item => item.mockBetStatus === 'closed')
   )
   const currencySymbol = computed(() => getCurrencySymbol(currentCurrencyCode.value))
   const formatMoney = (value: number) => getFormattedBalance(value, currentCurrencyCode.value, 2)
