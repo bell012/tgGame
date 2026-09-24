@@ -56,6 +56,7 @@ export const SCORE_DETAILS_MARKETS: ScoreDetailsMarketCard[] = [
     id: 'handicap',
     kind: 'dual-column',
     title: 'Handicap',
+    betTypeName: 'Handicap',
     leftHeader: SCORE_DETAILS_HANDICAP_TEAMS.home.name,
     rightHeader: SCORE_DETAILS_HANDICAP_TEAMS.away.name,
     rows: handicapRows(2),
@@ -65,6 +66,7 @@ export const SCORE_DETAILS_MARKETS: ScoreDetailsMarketCard[] = [
     id: 'over-under',
     kind: 'dual-column',
     title: 'Over/Under',
+    betTypeName: 'Over/Under',
     leftHeader: 'Over',
     rightHeader: 'Under',
     rows: overUnderRows(),
@@ -74,6 +76,7 @@ export const SCORE_DETAILS_MARKETS: ScoreDetailsMarketCard[] = [
     id: '1x2',
     kind: '1x2',
     title: '1X2',
+    betTypeName: '1X2',
     options: [
       { label: 'Home', odds: '1.96' },
       { label: 'Away', odds: '1.96' },
@@ -85,6 +88,7 @@ export const SCORE_DETAILS_MARKETS: ScoreDetailsMarketCard[] = [
     id: 'correct-score',
     kind: 'score-picker',
     title: 'Correct Score',
+    betTypeName: 'Correct Score',
     teams: [
       { teamId: 'home', name: 'West Ham United', logo: homeLogo },
       { teamId: 'away', name: 'Everton', logo: awayLogo }
@@ -97,6 +101,7 @@ export const SCORE_DETAILS_MARKETS: ScoreDetailsMarketCard[] = [
     id: 'odd-even',
     kind: 'dual-column',
     title: 'Odd/Even',
+    betTypeName: 'Odd/Even',
     leftHeader: 'Odd',
     rightHeader: 'Even',
     rows: dualRows(),
@@ -106,6 +111,7 @@ export const SCORE_DETAILS_MARKETS: ScoreDetailsMarketCard[] = [
     id: 'incorrect-score',
     kind: 'score-picker',
     title: 'Incorrect Score',
+    betTypeName: 'Incorrect Score',
     teams: [
       { teamId: 'home', name: 'West Ham United', logo: homeLogo },
       { teamId: 'away', name: 'Everton', logo: awayLogo }
@@ -118,6 +124,7 @@ export const SCORE_DETAILS_MARKETS: ScoreDetailsMarketCard[] = [
     id: 'west-ham-total',
     kind: 'dual-column',
     title: 'West Ham United Total',
+    betTypeName: 'West Ham United Total',
     leftHeader: 'Over',
     rightHeader: 'Under',
     rows: dualRows(),
@@ -127,6 +134,7 @@ export const SCORE_DETAILS_MARKETS: ScoreDetailsMarketCard[] = [
     id: 'everton-total',
     kind: 'dual-column',
     title: 'Everton Total',
+    betTypeName: 'Everton Total',
     leftHeader: 'Over',
     rightHeader: 'Under',
     rows: dualRows(),

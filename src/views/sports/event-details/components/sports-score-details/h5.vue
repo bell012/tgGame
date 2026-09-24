@@ -22,12 +22,12 @@
         aria-label="Market categories"
       >
         <button
-          v-for="tab in h5FilterTabs"
+          v-for="tab in filterTabs"
           :key="tab.key"
           type="button"
           role="tab"
           :aria-selected="activeFilter === tab.key"
-          class="inline-flex h-[33px] shrink-0 items-center rounded-lg border-0 py-2.5 px-5 text-[13px] transition-colors"
+          class="inline-flex h-[33px] shrink-0 items-center gap-1.5 rounded-lg border-0 py-2.5 pl-5 pr-3 text-[13px] transition-colors"
           :class="
             activeFilter === tab.key
               ? 'bg-theme-primary text-text-4 font-bold'
@@ -35,7 +35,14 @@
           "
           @click="activeFilter = tab.key"
         >
-          {{ h5TabLabel(tab.key, tab.label) }}
+          <span>{{ tab.label }}</span>
+          <span
+            v-if="tab.count > 0"
+            class="inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] leading-4 tabular-nums"
+            :class="activeFilter === tab.key ? 'bg-bg-3/30 text-text-4' : 'bg-bg-3 text-text-2'"
+          >
+            {{ tab.count }}
+          </span>
         </button>
       </div>
     </div>
@@ -82,33 +89,11 @@
         <div v-if="isSectionOpen(market.id)" class="px-3 pb-3">
           <template v-if="market.kind === 'dual-column'">
             <div
-              v-if="market.id === 'handicap'"
-              class="mb-3 grid grid-cols-2 gap-2 border-b border-bg-3 pb-3"
+              v-if="market.leftHeader || market.rightHeader"
+              class="mb-3 grid grid-cols-2 gap-2 text-center text-xs leading-4 text-text-2"
             >
-              <div class="flex min-w-0 items-center gap-1.5">
-                <img
-                  class="h-5 w-5 shrink-0 rounded-full object-cover"
-                  :src="handicapTeams.home.logo"
-                  alt=""
-                  draggable="false"
-                  aria-hidden="true"
-                />
-                <span class="truncate text-xs font-normal text-text-2">{{
-                  handicapTeams.home.name
-                }}</span>
-              </div>
-              <div class="flex min-w-0 items-center justify-end gap-1.5">
-                <span class="truncate text-xs font-normal text-text-2">{{
-                  handicapTeams.away.name
-                }}</span>
-                <img
-                  class="h-5 w-5 shrink-0 rounded-full object-cover"
-                  :src="handicapTeams.away.logo"
-                  alt=""
-                  draggable="false"
-                  aria-hidden="true"
-                />
-              </div>
+              <span class="truncate">{{ market.leftHeader }}</span>
+              <span class="truncate">{{ market.rightHeader }}</span>
             </div>
 
             <div class="flex flex-col gap-2">
@@ -137,72 +122,38 @@
                 </button>
               </div>
             </div>
+
+            <button
+              v-if="shouldShowExpand(market)"
+              type="button"
+              class="mt-2 inline-flex w-full items-center justify-center gap-1 border-0 bg-transparent py-1 text-xs font-normal text-text-2"
+              :aria-expanded="isMarketExpanded(market.id)"
+              @click="toggleMarketExpanded(market.id)"
+            >
+              {{ isMarketExpanded(market.id) ? 'Show Less' : 'Show All' }}
+              <img
+                class="h-3 w-3 object-contain transition-transform"
+                :class="isMarketExpanded(market.id) ? '' : 'rotate-180'"
+                :src="upIcon"
+                alt=""
+                draggable="false"
+                aria-hidden="true"
+              />
+            </button>
           </template>
 
           <template v-else-if="market.kind === '1x2'">
-            <div class="grid grid-cols-3 gap-2">
+            <div class="flex flex-col gap-2">
               <button
-                v-for="option in h5OneXTwoOptions(market.options)"
-                :key="option.key"
+                v-for="option in market.options"
+                :key="option.label"
                 type="button"
-                class="flex h-[33px] min-w-0 flex-col items-center justify-center rounded-lg p-2 transition-colors"
-                :class="oddsButtonClass(selectionKey(market.id, 0, option.key))"
-                @click="selectOdds(selectionKey(market.id, 0, option.key))"
+                class="flex h-[33px] min-w-0 items-center justify-between rounded-lg p-2 text-left transition-colors"
+                :class="oddsButtonClass(selectionKey(market.id, 0, option.label))"
+                @click="selectOdds(selectionKey(market.id, 0, option.label))"
               >
-                <span class="text-xs font-normal leading-none">{{ option.shortLabel }}</span>
-                <span class="mt-0.5 text-sm font-bold tabular-nums leading-none">{{
-                  option.odds
-                }}</span>
-              </button>
-            </div>
-          </template>
-
-          <template v-else-if="market.kind === 'score-picker'">
-            <div class="flex flex-col gap-3">
-              <div
-                v-for="team in market.teams"
-                :key="team.teamId"
-                class="flex min-w-0 items-center gap-2"
-              >
-                <img
-                  class="h-6 w-6 shrink-0 object-contain"
-                  :src="team.logo"
-                  :alt="team.name"
-                  draggable="false"
-                />
-                <span class="min-w-0 flex-1 truncate text-sm font-normal text-text-1">
-                  {{ team.name }}
-                </span>
-                <div class="inline-flex h-8 shrink-0 items-center rounded-lg bg-bg-2 p-0.5">
-                  <button
-                    type="button"
-                    class="flex h-7 w-7 items-center justify-center rounded-md text-text-2"
-                    @click="adjustScore(market.id, team.teamId, -1)"
-                  >
-                    −
-                  </button>
-                  <span
-                    class="flex h-7 min-w-[28px] items-center justify-center text-sm font-bold tabular-nums text-text-1"
-                  >
-                    {{ getScore(market.id, team.teamId) }}
-                  </span>
-                  <button
-                    type="button"
-                    class="flex h-7 w-7 items-center justify-center rounded-md text-text-2"
-                    @click="adjustScore(market.id, team.teamId, 1)"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              <button
-                type="button"
-                class="flex h-[33px] w-full items-center justify-between rounded-lg p-2 text-left transition-colors"
-                :class="oddsButtonClass(`${market.id}-line`)"
-                @click="selectOdds(`${market.id}-line`)"
-              >
-                <span class="truncate text-sm font-normal">{{ market.line }}</span>
-                <span class="shrink-0 text-sm font-bold tabular-nums">{{ market.odds }}</span>
+                <span class="truncate text-sm font-normal">{{ option.label }}</span>
+                <span class="shrink-0 text-sm font-bold tabular-nums">{{ option.odds }}</span>
               </button>
             </div>
           </template>
@@ -213,43 +164,36 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import type { SportMarketLine } from '@/api/interface/sport'
+import { computed, ref, watch } from 'vue'
 import doubleIcon from './img/double.svg?url'
 import downIcon from './img/down.svg?url'
 import pinIcon from './img/top.svg?url'
 import upIcon from './img/up.svg?url'
-import {
-  SCORE_DETAILS_FILTER_TABS,
-  SCORE_DETAILS_HANDICAP_TEAMS,
-  SCORE_DETAILS_MARKETS
-} from './mock-data'
-import type { DualColumnMarketCard, OneXTwoOption, ScoreDetailsFilterKey } from './types'
+import { buildScoreDetailsFilterTabs, mapMarketLinesToCards } from './map-market-lines'
+import type { DualColumnMarketCard, ScoreDetailsFilterKey, ScoreDetailsMarketCard } from './types'
 
-const DEFAULT_COLLAPSED_SECTIONS = new Set(['odd-even', 'correct-score'])
+const props = defineProps<{
+  marketLines?: SportMarketLine[]
+}>()
 
-const h5FilterTabKeys: ScoreDetailsFilterKey[] = ['all', 'popular', 'handicap-totals', 'corners']
-
-const h5FilterTabs = SCORE_DETAILS_FILTER_TABS.filter(tab => h5FilterTabKeys.includes(tab.key))
-
-const handicapTeams = SCORE_DETAILS_HANDICAP_TEAMS
+const COLLAPSED_ROW_LIMIT = 3
 
 const activeFilter = ref<ScoreDetailsFilterKey>('all')
-const selectedOddsKey = ref('handicap-0-left')
+const selectedOddsKey = ref('')
 const pinnedMarketIds = ref<Set<string>>(new Set())
-const openSectionIds = ref<Set<string>>(
-  new Set(
-    SCORE_DETAILS_MARKETS.map(market => market.id).filter(id => !DEFAULT_COLLAPSED_SECTIONS.has(id))
-  )
-)
-type TeamSide = 'home' | 'away'
+const openSectionIds = ref<Set<string>>(new Set())
+const expandedMarketIds = ref<Set<string>>(new Set())
 
-const scoreByMarket = ref<Record<string, Record<TeamSide, number>>>({})
+const allMarkets = computed(() => mapMarketLinesToCards(props.marketLines ?? []))
+
+const filterTabs = computed(() => buildScoreDetailsFilterTabs(props.marketLines ?? []))
 
 const visibleMarkets = computed(() => {
   const list =
     activeFilter.value === 'all'
-      ? SCORE_DETAILS_MARKETS
-      : SCORE_DETAILS_MARKETS.filter(market => market.filters.includes(activeFilter.value))
+      ? allMarkets.value
+      : allMarkets.value.filter(market => market.betTypeName === activeFilter.value)
   return [...list].sort((a, b) => {
     const aPinned = pinnedMarketIds.value.has(a.id) ? 0 : 1
     const bPinned = pinnedMarketIds.value.has(b.id) ? 0 : 1
@@ -257,14 +201,20 @@ const visibleMarkets = computed(() => {
   })
 })
 
+watch(
+  () => props.marketLines,
+  () => {
+    activeFilter.value = 'all'
+    expandedMarketIds.value = new Set()
+    openSectionIds.value = new Set(allMarkets.value.map(market => market.id))
+    selectedOddsKey.value = ''
+  },
+  { immediate: true }
+)
+
 const allSectionsExpanded = computed(() =>
   visibleMarkets.value.every(market => openSectionIds.value.has(market.id))
 )
-
-const h5TabLabel = (key: ScoreDetailsFilterKey, label: string) => {
-  if (key === 'handicap-totals') return 'Spread & Totals'
-  return label
-}
 
 const isSectionOpen = (marketId: string) => openSectionIds.value.has(marketId)
 
@@ -298,6 +248,28 @@ const togglePin = (marketId: string) => {
   pinnedMarketIds.value = next
 }
 
+const isMarketExpanded = (marketId: string) => expandedMarketIds.value.has(marketId)
+
+const toggleMarketExpanded = (marketId: string) => {
+  const next = new Set(expandedMarketIds.value)
+  if (next.has(marketId)) {
+    next.delete(marketId)
+  } else {
+    next.add(marketId)
+  }
+  expandedMarketIds.value = next
+}
+
+const shouldShowExpand = (market: ScoreDetailsMarketCard) =>
+  market.kind === 'dual-column' && market.rows.length > COLLAPSED_ROW_LIMIT
+
+const getDualColumnRows = (market: DualColumnMarketCard) => {
+  if (!shouldShowExpand(market) || isMarketExpanded(market.id)) {
+    return market.rows
+  }
+  return market.rows.slice(0, COLLAPSED_ROW_LIMIT)
+}
+
 const selectionKey = (marketId: string, rowIndex: number, side: string) =>
   `${marketId}-${rowIndex}-${side}`
 
@@ -309,37 +281,4 @@ const oddsButtonClass = (key: string) =>
   selectedOddsKey.value === key
     ? 'bg-theme-primary text-text-4'
     : 'bg-bg-3 text-text-1 [&_span:first-child]:text-text-2'
-
-const getDualColumnRows = (market: DualColumnMarketCard) => market.rows
-
-const h5OneXTwoOptions = (options: OneXTwoOption[]) => {
-  const order = ['Home', 'Away', 'Draw'] as const
-  const shortByLabel: Record<string, string> = {
-    Home: 'H',
-    Away: 'A',
-    Draw: 'D'
-  }
-  return order
-    .map(label => options.find(option => option.label === label))
-    .filter((option): option is OneXTwoOption => Boolean(option))
-    .map(option => ({
-      key: shortByLabel[option.label] ?? option.label,
-      shortLabel: shortByLabel[option.label] ?? option.label,
-      odds: option.odds
-    }))
-}
-
-const getScore = (marketId: string, teamId: TeamSide) =>
-  scoreByMarket.value[marketId]?.[teamId] ?? 0
-
-const adjustScore = (marketId: string, teamId: TeamSide, delta: number) => {
-  const current = scoreByMarket.value[marketId] ?? { home: 0, away: 0 }
-  scoreByMarket.value = {
-    ...scoreByMarket.value,
-    [marketId]: {
-      ...current,
-      [teamId]: Math.max(0, current[teamId] + delta)
-    }
-  }
-}
 </script>
