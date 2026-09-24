@@ -1,4 +1,4 @@
-import type { SportCompetitionGroup } from '@/api/interface/sport'
+import type { SportCompetitionGroup, SportEventExtraInfo } from '@/api/interface/sport'
 import { formatSportsKickoff } from '@/utils/date'
 import { sportItems } from '../components/sports-navigation/sport-items'
 import type { SportsMatch } from './types'
@@ -13,6 +13,24 @@ const getSportsText = (value: unknown): string =>
 const getCardCount = (value: unknown): string | undefined => {
   const text = getSportsText(value)
   return /^\d+$/.test(text) ? text : undefined
+}
+
+const getExtraCount = (value: unknown): number | undefined =>
+  typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined
+
+/** 扩展信息可能缺失或格式异常，不影响赛事主体展示。 */
+const getExtraCounts = (value: string): Pick<SportEventExtraInfo, 'htycs' | 'atycs'> => {
+  if (!value) return {}
+  try {
+    const extra: unknown = JSON.parse(value)
+    if (!extra || typeof extra !== 'object' || Array.isArray(extra)) return {}
+    return {
+      htycs: 'htycs' in extra ? getExtraCount(extra.htycs) : undefined,
+      atycs: 'atycs' in extra ? getExtraCount(extra.atycs) : undefined
+    }
+  } catch {
+    return {}
+  }
 }
 
 /** 金融投注只显示开赛时间，其余球种保留接口阶段。 */
@@ -61,6 +79,7 @@ export const mapSportsMatches = (
       const competitionId = event.Competition?.CompetitionId ?? group.CompetitionId
       if (!Number.isSafeInteger(competitionId)) continue
       const phase = getGamePlayingName(sportId, event.RBTime)
+      const extra = getExtraCounts(event.ExtraInfo)
       matches.set(id, {
         id,
         EventId: event.EventId,
@@ -83,12 +102,14 @@ export const mapSportsMatches = (
         home: {
           name: getSportsText(event.HomeTeam),
           badge: event.HomeTeamId > 0 ? teamLogoUrl(event.HomeTeamId) : '',
-          redCards: getCardCount(event.HomeRedCard)
+          redCards: getCardCount(event.HomeRedCard),
+          yellowCards: getCardCount(extra.htycs)
         },
         away: {
           name: getSportsText(event.AwayTeam),
           badge: event.AwayTeamId > 0 ? teamLogoUrl(event.AwayTeamId) : '',
-          redCards: getCardCount(event.AwayRedCard)
+          redCards: getCardCount(event.AwayRedCard),
+          yellowCards: getCardCount(extra.atycs)
         },
         hasVideo: event.LiveStreaming === 1,
         hasAnimation: event.HasVisualization === true,
