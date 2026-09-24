@@ -81,6 +81,16 @@ export interface GetBetListParams extends SportsBetHistoryAuthParams {
   BetConfirmationStatus: [1, 2, 3, 4]
 }
 
+/** 提前结算请求参数。 */
+export interface SubmitBuyBackParams extends Pick<
+  SportsBetHistoryAuthParams,
+  'LanguageCode' | 'Token' | 'MemberCode'
+> {
+  WagerId: number | string
+  BuyBackPricing: number
+  PricingId: number | string
+}
+
 /** 体育投注历史注单内的单个投注项，字段保留体育网关原始简写。 */
 export interface SportsBetHistoryWagerSelection {
   waics: number
@@ -185,6 +195,9 @@ export type GetStatementResponse = SportsBetHistoryResponse
 
 /** 未结算响应结构。 */
 export type GetBetListResponse = SportsBetHistoryResponse
+
+/** 提前结算响应结构，按 stc/std 判断业务结果。 */
+export type SubmitBuyBackResponse = SportsResponse
 
 /** RelatedScores（rs）：同一比赛不同组别的比分/红牌，不能与主体比分相加。 */
 export interface SportRelatedScore {

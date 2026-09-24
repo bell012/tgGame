@@ -580,6 +580,8 @@
     "orderNo": "订单号",
     "createdAt": "创建时间",
     "confirm": "确认",
+    "buyBackSuccess": "提前结算提交成功",
+    "buyBackSubmitFailed": "提前结算提交失败，请稍后重试",
     "copy": "复制成功"
   },
   "rewardDetails": {

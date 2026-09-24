@@ -289,6 +289,8 @@
     "orderNo": "Order No.",
     "createdAt": "Created At",
     "confirm": "Confirm",
+    "buyBackSuccess": "Early settlement submitted.",
+    "buyBackSubmitFailed": "Unable to submit early settlement. Please try again later.",
     "copy": "Copy succeeded."
   },
   "rewardDetails": {
