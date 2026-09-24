@@ -1,11 +1,5 @@
-export type ScoreDetailsFilterKey =
-  | 'all'
-  | 'popular'
-  | 'handicap-totals'
-  | 'correct-score'
-  | 'goals'
-  | 'corners'
-  | 'first-half'
+/** `all` 表示全部玩法；其余 key 为接口 BetTypeName。 */
+export type ScoreDetailsFilterKey = 'all' | (string & {})
 
 export interface ScoreDetailsFilterTab {
   key: ScoreDetailsFilterKey
@@ -13,19 +7,24 @@ export interface ScoreDetailsFilterTab {
   count: number
 }
 
+export interface ScoreDetailsMarketBase {
+  betTypeName: string
+}
+
 export interface DualOddsCell {
   line: string
   odds: string
 }
 
-export interface DualColumnMarketCard {
+export interface DualColumnMarketCard extends ScoreDetailsMarketBase {
   id: string
   kind: 'dual-column'
   title: string
   leftHeader: string
   rightHeader: string
   rows: Array<{ left: DualOddsCell; right: DualOddsCell }>
-  filters: ScoreDetailsFilterKey[]
+  /** mock 数据筛选用，真实接口数据用 betTypeName。 */
+  filters?: ScoreDetailsFilterKey[]
 }
 
 export interface OneXTwoOption {
@@ -33,12 +32,12 @@ export interface OneXTwoOption {
   odds: string
 }
 
-export interface OneXTwoMarketCard {
+export interface OneXTwoMarketCard extends ScoreDetailsMarketBase {
   id: string
   kind: '1x2'
   title: string
   options: OneXTwoOption[]
-  filters: ScoreDetailsFilterKey[]
+  filters?: ScoreDetailsFilterKey[]
 }
 
 export interface ScoreTeamRow {
@@ -47,14 +46,14 @@ export interface ScoreTeamRow {
   logo: string
 }
 
-export interface ScorePickerMarketCard {
+export interface ScorePickerMarketCard extends ScoreDetailsMarketBase {
   id: string
   kind: 'score-picker'
   title: string
   teams: ScoreTeamRow[]
   line: string
   odds: string
-  filters: ScoreDetailsFilterKey[]
+  filters?: ScoreDetailsFilterKey[]
 }
 
 export type ScoreDetailsMarketCard =

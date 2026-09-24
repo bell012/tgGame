@@ -213,8 +213,10 @@
 </template>
 
 <script setup lang="ts">
+import type { SportMarketLine } from '@/api/interface/sport'
 import { computed, ref } from 'vue'
 import doubleIcon from './img/double.svg?url'
+import { mapMarketLinesToCards } from './map-market-lines'
 import downIcon from './img/down.svg?url'
 import pinIcon from './img/top.svg?url'
 import upIcon from './img/up.svg?url'
@@ -245,11 +247,25 @@ type TeamSide = 'home' | 'away'
 
 const scoreByMarket = ref<Record<string, Record<TeamSide, number>>>({})
 
+const props = defineProps<{
+  marketLines?: SportMarketLine[]
+}>()
+
+const apiMarkets = computed(() =>
+  props.marketLines?.length ? mapMarketLinesToCards(props.marketLines) : null
+)
+
+const sourceMarkets = computed(() => apiMarkets.value ?? SCORE_DETAILS_MARKETS)
+
 const visibleMarkets = computed(() => {
   const list =
     activeFilter.value === 'all'
-      ? SCORE_DETAILS_MARKETS
-      : SCORE_DETAILS_MARKETS.filter(market => market.filters.includes(activeFilter.value))
+      ? sourceMarkets.value
+      : sourceMarkets.value.filter(market =>
+          apiMarkets.value
+            ? market.betTypeName === activeFilter.value
+            : (market.filters?.includes(activeFilter.value) ?? false)
+        )
   return [...list].sort((a, b) => {
     const aPinned = pinnedMarketIds.value.has(a.id) ? 0 : 1
     const bPinned = pinnedMarketIds.value.has(b.id) ? 0 : 1

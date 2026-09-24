@@ -158,21 +158,37 @@
 
 <script setup lang="ts">
 import CaretUp from '@/static/svg/sports/caret-up.svg?component'
-import { computed, ref } from 'vue'
-import { SCORE_DETAILS_FILTER_TABS, SCORE_DETAILS_MARKETS } from './mock-data'
+import type { SportMarketLine } from '@/api/interface/sport'
+import { computed, ref, watch } from 'vue'
+import { buildScoreDetailsFilterTabs, mapMarketLinesToCards } from './map-market-lines'
 import type { DualColumnMarketCard, ScoreDetailsFilterKey, ScoreDetailsMarketCard } from './types'
+
+const props = defineProps<{
+  marketLines?: SportMarketLine[]
+}>()
 
 const COLLAPSED_ROW_LIMIT = 3
 
-const filterTabs = SCORE_DETAILS_FILTER_TABS
 const activeFilter = ref<ScoreDetailsFilterKey>('all')
+
+const allMarkets = computed(() => mapMarketLinesToCards(props.marketLines ?? []))
+
+const filterTabs = computed(() => buildScoreDetailsFilterTabs(props.marketLines ?? []))
 
 const visibleMarkets = computed(() => {
   if (activeFilter.value === 'all') {
-    return SCORE_DETAILS_MARKETS
+    return allMarkets.value
   }
-  return SCORE_DETAILS_MARKETS.filter(market => market.filters.includes(activeFilter.value))
+  return allMarkets.value.filter(market => market.betTypeName === activeFilter.value)
 })
+
+watch(
+  () => props.marketLines,
+  () => {
+    activeFilter.value = 'all'
+    expandedMarketIds.value = new Set()
+  }
+)
 
 type TeamSide = 'home' | 'away'
 
