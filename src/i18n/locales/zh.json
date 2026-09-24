@@ -521,6 +521,8 @@
     "noBetHistoryYet": "暂无投注历史",
     "startPlaying": "开始游戏",
     "betAmount": "投注金额",
+    "winLoss": "输赢",
+    "earlySettlement": "提前结算",
     "win": "赢",
     "loss": "输",
     "type": "类型",

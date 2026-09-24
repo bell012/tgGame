@@ -227,6 +227,8 @@
     "noBetHistoryYet": "No bet history yet",
     "startPlaying": "Start Playing",
     "betAmount": "Bet Amount",
+    "winLoss": "Win/Loss",
+    "earlySettlement": "Early Settlement",
     "win": "Win",
     "loss": "Loss",
     "type": "Type",

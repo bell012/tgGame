@@ -6,8 +6,79 @@
   >
     <H5Header :title="t('betHistory.title')" :show-sort="true" @sort="openMobileFilter" />
 
-    <main class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3.5">
-      <div class="flex min-h-[calc(100vh-96px)] flex-col items-center justify-center pb-[120px]">
+    <main class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3.5">
+      <div v-if="mobileHistoryList.length > 0" class="flex flex-col gap-[7px]">
+        <article
+          v-for="item in mobileHistoryList"
+          :key="item.id"
+          class="relative overflow-hidden rounded-lg bg-bg-2 px-3.5 py-[10px]"
+        >
+          <span
+            :class="[
+              'absolute right-0 top-0 rounded-bl-[10px] px-[6px] py-[3px] text-[11px] font-[400]',
+              item.statusBadgeClass
+            ]"
+          >
+            {{ item.statusLabel }}
+          </span>
+
+          <div class="flex items-center gap-2.5">
+            <div
+              class="flex h-[65px] w-[49px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[7px] bg-bg-3 text-text-1"
+            >
+              <div class="flex h-[30px] w-[30px] items-center justify-center">
+                <component
+                  :is="item.sportIcon"
+                  class="h-[30px] w-[30px] fill-current text-icon-2 [&_circle]:fill-current [&_path]:fill-current [&_rect]:fill-current"
+                />
+              </div>
+              <span class="text-[12px] font-[400] text-text-1">
+                {{ t('betHistory.filterOptions.sports') }}
+              </span>
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <h2 class="min-w-0 truncate text-[14px] font-[700] text-text-1">
+                {{ item.matchName }}
+              </h2>
+              <div class="mt-2.5 flex items-center justify-between gap-3">
+                <p class="min-w-0 flex-1 text-[14px] font-[400] text-text-1">
+                  {{ t('betHistory.betAmount') }} : {{ item.betAmount }}
+                </p>
+                <p :class="['shrink-0 text-[14px] font-[700]', item.amountClass]">
+                  {{ item.resultLabel }} : {{ item.resultAmount }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-2.5 flex items-center justify-between gap-2.5 pt-2.5">
+            <p class="min-w-0 flex-1 text-[12px] font-[400] text-text-2">
+              {{ item.createdAt }}
+            </p>
+            <div class="flex shrink-0 items-center gap-[8px]">
+              <button
+                v-if="!item.settled"
+                type="button"
+                class="rounded-[6px] bg-theme-primary px-[8px] py-[3px] text-[12px] font-[400] text-text-4"
+              >
+                {{ t('betHistory.earlySettlement') }}
+              </button>
+              <button
+                type="button"
+                class="flex h-5 w-5 items-center justify-center rounded-[6px] bg-opacity-10"
+              >
+                <ArrowRightIcon class="h-[12px] w-[12px] text-icon-2" />
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div
+        v-else
+        class="flex min-h-[calc(100vh-96px)] flex-col items-center justify-center pb-[120px]"
+      >
         <ThemedEmptyState
           :dark-image="defaultImgDark"
           :light-image="defaultImgLight"
@@ -112,10 +183,18 @@ import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
 import { navigateTo } from '@/utils/router'
+import { formatUsDateTime12h } from '@/utils/date'
+import type { SportsBetHistoryWager } from '@/api/interface/sport'
+import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import SportsNavigationPc from '../components/sports-navigation/pc.vue'
-import { buildSportTodayCountMap, sportItems } from '../components/sports-navigation/sport-items'
+import {
+  buildSportTodayCountMap,
+  findSportItemBySportId,
+  sportItems,
+  type SportItem
+} from '../components/sports-navigation/sport-items'
 
 type SportsBetHistoryStatus = 'settled' | 'unsettled'
 type SportsBetHistoryTime =
@@ -175,6 +254,297 @@ const filterGroups = computed<FilterGroup[]>(() => {
 })
 
 const sportTodayCounts = computed(() => buildSportTodayCountMap(sportCounts.value))
+
+// 临时体育投注历史假数据；接口有真实 wl 数据后删除这一段并替换数据源。
+const SPORTS_BET_HISTORY_MOCK_LIST: SportsBetHistoryWager[] = [
+  {
+    wid: '2609240037339871',
+    wcdt: 1790224653805,
+    mc: 'test_1000019885_cny',
+    isa: 5,
+    mwla: 0,
+    ot: 3,
+    wat: 1,
+    bp: 'App',
+    bcr: 0,
+    bcs: 2,
+    bss: 0,
+    br: 0,
+    bts: 0,
+    prid: 2609240038208724,
+    bbp: 4.7,
+    btbba: 0,
+    noc: 0,
+    combs: 0,
+    pp: 4.15,
+    cas: true,
+    wil: [
+      {
+        waics: 2,
+        wict: 1,
+        waict: 1,
+        waicr: 0,
+        m: 2,
+        eid: 113955661,
+        en: '',
+        etid: 1,
+        edt: 1790244300000,
+        sid: 1,
+        rsid: 1,
+        cid: 1653,
+        cn: '麒麟挑战杯(在日本)',
+        egtid: 1,
+        htid: 76849,
+        htn: '日本',
+        atid: 18201,
+        atn: '乌拉圭',
+        ft: 'H',
+        btid: 2,
+        btn: '大/小',
+        peid: 1,
+        btsid: 3,
+        sen: '大',
+        otid: 0,
+        o: 1.83,
+        h: 2.25,
+        dih: '2/2.5',
+        gtid: 1,
+        seo: 0,
+        md: 0,
+        mlid: 2535880797,
+        sp: '',
+        dh: 0,
+        pid: 10,
+        pn: '日本',
+        ei: { crs: false }
+      }
+    ],
+    sw: 1,
+    ber: 1
+  },
+  {
+    wid: '2609230320203578',
+    wcdt: '2026-09-23T03:20:20.6031239-04:00',
+    mc: 'test_1000020467_cny',
+    isa: 8.5,
+    mwla: -8.5,
+    ot: 3,
+    wat: 1,
+    bp: 'App',
+    bcr: 0,
+    bcs: 2,
+    bss: 1,
+    br: 0,
+    bts: 0,
+    prid: null,
+    bbp: null,
+    btbba: 0,
+    noc: 0,
+    combs: 0,
+    coo: null,
+    pp: 28.98,
+    cas: false,
+    pbo: null,
+    sdt: '2026-09-24T00:22:04.1745151-04:00',
+    btsdt: null,
+    ou: 2,
+    wil: [
+      {
+        waics: 2,
+        wict: 1,
+        waict: 1,
+        waicr: 0,
+        m: 2,
+        eid: 113957396,
+        en: '',
+        etid: 1,
+        edt: '2026-09-23T22:00:00-04:00',
+        sid: 11,
+        rsid: 2,
+        cid: 1103,
+        cn: 'WNBA美国女子职业篮球联赛',
+        egtid: 1,
+        rbt: null,
+        htid: 9581,
+        htn: '西雅图暴风',
+        atid: 5467,
+        atn: '达拉斯飞翼',
+        ft: 'H',
+        btid: 4,
+        btn: '独赢',
+        peid: 1,
+        btsid: 8,
+        sen: '主',
+        eon: null,
+        otid: 0,
+        otn: null,
+        pbo: null,
+        o: 4.41,
+        ao: null,
+        h: null,
+        dih: null,
+        hthts: 42,
+        athts: 49,
+        htfts: 91,
+        atfts: 103,
+        wahts: null,
+        waats: null,
+        gtid: 1,
+        seo: 0,
+        md: 0,
+        mlid: 2535922576,
+        sp: '',
+        soid: null,
+        os: null,
+        dh: 0,
+        wtl: null,
+        ws: null,
+        pid: 140,
+        pn: 'WNBA',
+        ei: '',
+        rai: null,
+        wio: 2
+      }
+    ],
+    rs: null,
+    sw: 1,
+    bo: null,
+    bc: null,
+    ber: 0
+  },
+  {
+    wid: 'mock-settled-basketball-1',
+    wcdt: '2026-12-18T11:14:15',
+    mc: 'mock_member_cny',
+    isa: 1000,
+    mwla: -1000,
+    ot: 3,
+    wat: 1,
+    bp: 'App',
+    bcr: 0,
+    bcs: 2,
+    bss: 1,
+    br: 0,
+    bts: 0,
+    prid: null,
+    bbp: null,
+    btbba: 0,
+    noc: 0,
+    combs: 0,
+    pp: 1000,
+    cas: false,
+    wil: [
+      {
+        waics: 2,
+        wict: 1,
+        waict: 1,
+        waicr: 0,
+        m: 2,
+        eid: 900000001,
+        en: '',
+        etid: 1,
+        edt: '2026-12-18T11:14:15',
+        sid: 36,
+        rsid: 2,
+        cid: 9001,
+        cn: 'Mock Basketball League',
+        egtid: 1,
+        htid: 90001,
+        htn: '格兰维尔',
+        atid: 90002,
+        atn: '费雷泽公园',
+        ft: 'H',
+        btid: 4,
+        btn: '独赢',
+        peid: 1,
+        btsid: 8,
+        sen: '主',
+        otid: 0,
+        o: 1.88,
+        h: null,
+        dih: null,
+        gtid: 1,
+        seo: 0,
+        md: 0,
+        mlid: 900000001,
+        sp: '',
+        dh: 0,
+        pid: 140,
+        pn: 'Basketball',
+        ei: ''
+      }
+    ],
+    sw: 1,
+    ber: 0
+  }
+]
+
+type SportsBetHistoryDisplayItem = {
+  id: string
+  sportIcon?: SportItem['icon']
+  matchName: string
+  statusLabel: string
+  settled: boolean
+  betAmount: string
+  resultLabel: string
+  resultAmount: string
+  amountClass: string
+  statusBadgeClass: string
+  createdAt: string
+}
+
+// 转成数字，兼容接口后续可能返回字符串或 null。
+const toSportsBetNumber = (value: number | string | null | undefined) => {
+  const numericValue = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(numericValue) ? numericValue : 0
+}
+
+// 金额展示统一保留两位小数。
+const formatSportsBetAmount = (value: number | string | null | undefined) =>
+  toSportsBetNumber(value).toFixed(2)
+
+// 根据接口金额字段判断注单是否已结算。
+const isSportsBetSettled = (item: SportsBetHistoryWager) =>
+  toSportsBetNumber(item.btbba) > 0 || toSportsBetNumber(item.mwla) !== 0
+
+// 未结算取 pp，已结算取 btbba；btbba 为 0 时回退 mwla。
+const getSportsBetResultAmount = (item: SportsBetHistoryWager) =>
+  isSportsBetSettled(item) ? (toSportsBetNumber(item.btbba) > 0 ? item.btbba : item.mwla) : item.pp
+
+// 通过体育投注项 sid 找到 sportItems 中对应的图标。
+const getSportsBetIcon = (item: SportsBetHistoryWager) => {
+  return findSportItemBySportId(item.wil[0]?.sid)?.icon ?? sportItems[0]?.icon
+}
+
+// 将接口原始 wl 记录转换成 H5 卡片展示数据。
+const mapSportsBetHistoryItem = (item: SportsBetHistoryWager): SportsBetHistoryDisplayItem => {
+  const selection = item.wil[0]
+  const settled = isSportsBetSettled(item)
+  const resultAmount = getSportsBetResultAmount(item)
+  const resultNumber = toSportsBetNumber(resultAmount)
+
+  return {
+    id: String(item.wid),
+    sportIcon: getSportsBetIcon(item),
+    matchName: `${selection?.htn ?? '--'} VS ${selection?.atn ?? '--'}`,
+    statusLabel: settled
+      ? t('betHistory.filterOptions.settled')
+      : t('betHistory.filterOptions.unsettled'),
+    settled,
+    betAmount: formatSportsBetAmount(item.isa),
+    resultLabel: resultNumber < 0 ? t('betHistory.loss') : t('betHistory.win'),
+    resultAmount: formatSportsBetAmount(Math.abs(resultNumber)),
+    amountClass: resultNumber < 0 ? 'text-secondary-4' : 'text-secondary-2',
+    statusBadgeClass: settled ? 'bg-secondary-3 text-secondary-4' : 'bg-bg-3 text-text-2',
+    createdAt: formatUsDateTime12h(item.wcdt)
+  }
+}
+
+const mobileHistoryList = computed(() =>
+  SPORTS_BET_HISTORY_MOCK_LIST.filter(item =>
+    filterValues.value.status === 'settled' ? isSportsBetSettled(item) : !isSportsBetSettled(item)
+  ).map(mapSportsBetHistoryItem)
+)
 
 // 生成体育网关 TimeStamp
 const createSportsGatewayTimeStamp = () =>
