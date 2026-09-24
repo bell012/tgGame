@@ -21,11 +21,14 @@
       :class="props.displayMode === 'pc' ? 'ml-[12px]' : 'ml-[14px]'"
     >
       <div
-        class="relative shrink-0 overflow-hidden rounded-full"
+        class="relative shrink-0"
         :class="props.displayMode === 'pc' ? 'size-[40px]' : 'size-[34px]'"
       >
-        <img :src="avatarUrl" alt="" class="size-full object-cover" />
-        <OnlineIcon class="absolute bottom-0 right-0 size-[7px]" />
+        <!-- 头像图片独立裁剪，避免覆盖层图标被截断。 -->
+        <div class="size-full overflow-hidden rounded-full">
+          <img :src="avatarUrl" alt="" class="size-full object-cover" />
+        </div>
+        <OnlineIcon class="absolute -bottom-[2px] -right-[2px] z-[1] size-[7px]" />
       </div>
       <div class="min-w-0" :class="props.displayMode === 'pc' ? 'flex items-center gap-[6px]' : ''">
         <h1

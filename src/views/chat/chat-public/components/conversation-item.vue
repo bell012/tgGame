@@ -12,13 +12,19 @@
   >
     <!-- 客服头像与在线标记。 -->
     <div
-      class="relative shrink-0 overflow-hidden"
+      class="relative shrink-0"
       :class="props.displayMode === 'pc' ? 'size-[40px] rounded-full' : 'size-[55px] rounded-[9px]'"
     >
-      <img :src="avatarUrl" alt="" class="size-full object-cover" />
+      <!-- 头像图片独立裁剪，避免覆盖层图标被截断。 -->
+      <div
+        class="size-full overflow-hidden"
+        :class="props.displayMode === 'pc' ? 'rounded-full' : 'rounded-[9px]'"
+      >
+        <img :src="avatarUrl" alt="" class="size-full object-cover" />
+      </div>
       <OnlineIcon
         v-if="conversationStatus !== 'offline'"
-        class="absolute bottom-[1px] right-[1px] size-[8px]"
+        class="absolute -bottom-[2px] -right-[2px] z-[1] size-[8px]"
       />
     </div>
 
@@ -58,8 +64,8 @@
 </template>
 
 <script setup lang="ts">
-import OnlineIcon from '@/static/svg/chat/public/online.svg?component'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
+import OnlineIcon from '@/static/svg/chat/public/online.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {

@@ -145,8 +145,8 @@ const handleConversationSelect = async (conversation: ConversationItem) => {
 }
 
 /** 退出当前会话，清理仅属于会话页的临时交互状态。 */
-const handleConversationBack = () => {
-  leaveConversation()
+const handleConversationBack = async () => {
+  await leaveConversation()
   quickIssueVisible.value = false
   activeIssue.value = null
   resetAfterSend()

@@ -115,8 +115,8 @@ const handleConversationSelect = async (conversation: ConversationItem) => {
 }
 
 /** 从对话返回客服会话列表，并清理会话内的临时状态。 */
-const handleConversationBack = () => {
-  leaveConversation()
+const handleConversationBack = async () => {
+  await leaveConversation()
   quickIssueVisible.value = false
   activeIssue.value = null
   resetAfterSend()

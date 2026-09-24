@@ -31,6 +31,7 @@ export interface ChatMessage {
   text?: string
   image?: string
   time: string
+  period?: string
   read?: boolean
   reply?: ChatReplyTarget
   status?: ChatMessageStatus

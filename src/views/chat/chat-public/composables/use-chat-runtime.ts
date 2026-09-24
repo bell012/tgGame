@@ -1,13 +1,20 @@
 import Api from '@/api'
 import type { AutoReplyItem, AutoReplyType, OnlineChatCustomer } from '@/api/interface/chat'
 import type { UploadPictureResult } from '@/api/interface/picture'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
-import { getDeviceTraceId } from '@/utils/deviceId'
 import { prepareUploadImage } from '@/utils/compress-upload-image'
+import { getDeviceTraceId } from '@/utils/deviceId'
 import { globalShowToast } from '@/utils/toast'
 import { storeToRefs } from 'pinia'
 import { computed, onBeforeUnmount, ref } from 'vue'
-import { createMessageId, formatChatTime, getChatPlainText, resolveChatMediaUrl } from '../shared'
+import {
+  createMessageId,
+  formatChatMessageTime,
+  getChatPlainText,
+  getChatTimePeriod,
+  resolveChatMediaUrl
+} from '../shared'
 import type {
   ChatImageItem,
   ChatMessage,
@@ -20,7 +27,6 @@ import { loadCachedChatMessages, saveCachedChatMessages } from './chat-message-c
 import { useChatConnection } from './use-chat-connection'
 
 const CHAT_VISITOR_STORAGE_KEY = 'chat_visitor_id'
-const TEST_CHAT_SOCKET_URL = 'wss://test-h.d1dkf.com/1'
 
 /** 将未知接口返回值转换为可安全遍历的数组。 */
 const toArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : [])
@@ -56,9 +62,12 @@ const mapChatImage = (image: Partial<ChatImageItem>): ChatImageItem => ({
   imageHeight: Number(image.imageHeight) || 0
 })
 
-/** 将当前用户与当前客服拼成 IndexedDB 会话缓存键。 */
-const getConversationCacheKey = (memberId: string, conversation: ConversationItem) =>
-  `${memberId}:${conversation.dealerCode}:${conversation.id}`
+/** 将当前用户、站点商户编码与当前客服拼成 IndexedDB 会话缓存键。 */
+const getConversationCacheKey = (
+  memberId: string,
+  dealerCode: string,
+  conversation: ConversationItem
+) => `${memberId}:${dealerCode}:${conversation.id}`
 
 /** 读取原始图片的尺寸，无法读取时以零值降级。 */
 const getImageDimensions = (file: Blob) =>
@@ -80,16 +89,27 @@ const getImageDimensions = (file: Blob) =>
 /** 管理客服列表、Socket 消息、本地缓存、自动回复和图片发送的运行时状态。 */
 export function useChatRuntime() {
   const userStore = useUserStore()
+  const siteConfigStore = useSiteConfigStore()
+  siteConfigStore.syncStoredConfig()
   const { acctInfo, userInfo } = storeToRefs(userStore)
   const { state: connectionState, errorMessage, connect, send, disconnect } = useChatConnection()
   const conversations = ref<ConversationItem[]>([])
   const messages = ref<ChatMessage[]>([])
   const quickIssues = ref<QuickIssue[]>([])
   const autoReplyItems = ref<AutoReplyItem[]>([])
+  const autoReplyItemsByIssue = new Map<string, AutoReplyItem[]>()
   const activeConversation = ref<ConversationItem | null>(null)
   const loadingConversations = ref(false)
   const loadingAutoReplies = ref(false)
   const uploadingImage = ref(false)
+  let pendingMessageCacheWrite = Promise.resolve()
+  let autoReplyRequestId = 0
+
+  /** 直接读取本地 config 中由 /sy/dlicgh 缓存的 customer_service_dealer。 */
+  const dealerCode = computed(() => siteConfigStore.getConfigString('customer_service_dealer'))
+
+  /** 直接读取本地 config 中由 /sy/dlicgh 缓存的客服 Socket 主机地址。 */
+  const customerServiceUrl = computed(() => siteConfigStore.getConfigString('customer_service_url'))
 
   /** 当前会员或游客用于查询客服列表和隔离本地缓存的身份 ID。 */
   const currentChatUserId = computed(() => {
@@ -97,39 +117,33 @@ export function useChatRuntime() {
     return memberRowId ? String(memberRowId) : getChatVisitorId()
   })
 
-  /** 判断当前会话是否已经获得服务端所需的客服账号与商户编码。 */
-  const canConnectActiveConversation = computed(() =>
-    Boolean(activeConversation.value?.account && activeConversation.value.dealerCode)
-  )
-
   /** 构建当前会员或游客写入 Socket 消息的 mine 节点。 */
   const buildMemberParticipant = (): ChatParticipant => {
-    const account = String(acctInfo.value?.memberId ?? userInfo.value?.memberId ?? '').trim()
+    const account = String(acctInfo.value?.memberId ?? '').trim()
     const visitorId = getChatVisitorId()
     const isMember = Boolean(account)
     const memberUserId = String(acctInfo.value?.memberRowId ?? userInfo.value?.rowId ?? visitorId)
 
     return {
       avatar: resolveChatMediaUrl(userInfo.value?.headPortrait),
-      dealerCode: activeConversation.value?.dealerCode ?? '',
-      nickName: String(userInfo.value?.nickName ?? account ?? visitorId).trim() || visitorId,
+      dealerCode: dealerCode.value,
+      nickName: String(userInfo.value?.nickName || '').trim() || visitorId,
       type: 'member',
       account: account || visitorId,
       userId: isMember ? memberUserId : visitorId
     }
   }
 
-  /** 从当前客服会话生成 Socket 消息的 to 节点。 */
+  /** 从当前客服会话生成 Socket 消息的 to 节点，account 使用接口返回的 nickName。 */
   const buildCustomerParticipant = (): ChatParticipant | null => {
     const conversation = activeConversation.value
-    if (!conversation?.account || !conversation.dealerCode) return null
-
+    if (!conversation) return null
     return {
       avatar: resolveChatMediaUrl(conversation.avatar),
-      dealerCode: conversation.dealerCode,
-      nickName: conversation.nickName || conversation.account,
+      dealerCode: dealerCode.value,
+      nickName: conversation.nickName || '',
       type: 'customer',
-      account: conversation.account,
+      account: conversation.nickName || '',
       userId: conversation.id
     }
   }
@@ -138,13 +152,14 @@ export function useChatRuntime() {
   const buildSocketUrl = () => {
     const member = buildMemberParticipant()
     const customer = buildCustomerParticipant()
-    if (!customer) return ''
+    const host = customerServiceUrl.value.replace(/^wss?:\/\//i, '').replace(/\/+$/, '')
+    if (!customer || !host) return ''
 
-    const socketUrl = String(import.meta.env.VITE_CHAT_WS_URL || TEST_CHAT_SOCKET_URL).trim()
+    const socketUrl = `wss://${host}/1`
     const url = new URL(socketUrl)
     const token = String(localStorage.getItem('xAuthToken') ?? '').trim()
     const params = new URLSearchParams({
-      d: customer.dealerCode,
+      d: dealerCode.value,
       u: member.userId,
       t: getDeviceTraceId(),
       account: member.account,
@@ -161,13 +176,25 @@ export function useChatRuntime() {
     return url.toString()
   }
 
-  /** 将当前消息列表异步写入选中客服对应的 IndexedDB 缓存。 */
+  /** 将当前消息快照串行写入选中客服对应的 IndexedDB 缓存。 */
   const persistActiveConversationMessages = () => {
-    if (!activeConversation.value) return
-    void saveCachedChatMessages(
-      getConversationCacheKey(currentChatUserId.value, activeConversation.value),
-      messages.value
+    if (!activeConversation.value) return pendingMessageCacheWrite
+
+    const cacheKey = getConversationCacheKey(
+      currentChatUserId.value,
+      dealerCode.value,
+      activeConversation.value
     )
+    const messageSnapshot = messages.value.map(message => ({
+      ...message,
+      imageList: message.imageList ? [...message.imageList] : undefined
+    }))
+
+    pendingMessageCacheWrite = pendingMessageCacheWrite
+      .catch(() => undefined)
+      .then(() => saveCachedChatMessages(cacheKey, messageSnapshot))
+
+    return pendingMessageCacheWrite
   }
 
   /** 将新消息去重写入当前会话，并立即同步到本地缓存。 */
@@ -183,6 +210,7 @@ export function useChatRuntime() {
 
   /** 将服务端 Socket 业务消息转换为聊天页面数据模型。 */
   const mapSocketMessage = (payload: ChatSocketMessage): ChatMessage => {
+    const timestamp = Number(payload.timestamp) || Date.now()
     const isOutgoing = payload.mine?.type === 'member'
     const isImage = payload.contentType === 'image'
     const isAutoReply =
@@ -196,8 +224,9 @@ export function useChatRuntime() {
       text: getChatPlainText(payload.content),
       image: isImage ? resolveChatMediaUrl(imageList[0]?.imgUrl) : undefined,
       imageList,
-      time: formatChatTime(Number(payload.timestamp) || Date.now()),
-      timestamp: Number(payload.timestamp) || Date.now(),
+      time: formatChatMessageTime(timestamp),
+      period: getChatTimePeriod(timestamp),
+      timestamp,
       read: isOutgoing,
       status: isOutgoing ? 'sent' : undefined,
       contentType: payload.contentType
@@ -234,6 +263,7 @@ export function useChatRuntime() {
           image: image.imgUrl,
           imageList: [image],
           time: message.time,
+          period: message.period,
           timestamp: message.timestamp,
           read: message.read,
           status: message.status,
@@ -287,11 +317,24 @@ export function useChatRuntime() {
 
   /** 请求选中自动回复分类下可发送的问题。 */
   const loadAutoReplies = async (issue: QuickIssue) => {
+    const issueKey = String(issue.id)
+    const requestId = ++autoReplyRequestId
+    const cachedItems = autoReplyItemsByIssue.get(issueKey)
+
+    // 已请求过的分类直接复用内存数据，避免弹层重复出现加载状态。
+    if (cachedItems) {
+      autoReplyItems.value = cachedItems
+      loadingAutoReplies.value = false
+      return
+    }
+
+    // 切换至未缓存分类时先清空上一个分类的数据，仅展示加载中状态。
+    autoReplyItems.value = []
     loadingAutoReplies.value = true
 
     try {
       const response = await Api.chat.queryAutoReplies(
-        { questionType: issue.id },
+        { param: { questionType: issue.id } },
         { showErrorToast: false }
       )
 
@@ -299,44 +342,58 @@ export function useChatRuntime() {
         throw new Error(response.message || 'Failed to load auto replies')
       }
 
-      autoReplyItems.value = toArray<AutoReplyItem>(response.result)
+      const items = toArray<AutoReplyItem>(response.result)
+      autoReplyItemsByIssue.set(issueKey, items)
+
+      // 用户切换分类后，忽略上一次请求的迟到响应。
+      if (requestId === autoReplyRequestId) {
+        autoReplyItems.value = items
+      }
     } catch (error) {
-      autoReplyItems.value = []
-      globalShowToast({
-        message: error instanceof Error ? error.message : 'Failed to load auto replies',
-        type: 'fail'
-      })
+      if (requestId === autoReplyRequestId) {
+        autoReplyItems.value = []
+        globalShowToast({
+          message: error instanceof Error ? error.message : 'Failed to load auto replies',
+          type: 'fail'
+        })
+      }
     } finally {
-      loadingAutoReplies.value = false
+      if (requestId === autoReplyRequestId) {
+        loadingAutoReplies.value = false
+      }
     }
   }
 
   /** 建立选中客服的连接前读取对应 IndexedDB 消息缓存。 */
   const selectConversation = async (conversation: ConversationItem) => {
+    await persistActiveConversationMessages()
     disconnect()
     activeConversation.value = conversation
     messages.value = await loadCachedChatMessages(
-      getConversationCacheKey(currentChatUserId.value, conversation)
+      getConversationCacheKey(currentChatUserId.value, dealerCode.value, conversation)
     )
 
-    if (!canConnectActiveConversation.value) {
-      globalShowToast({ message: 'Customer service account is unavailable', type: 'fail' })
+    const socketUrl = buildSocketUrl()
+    if (!socketUrl) {
+      globalShowToast({ message: 'Customer service is unavailable', type: 'fail' })
       return
     }
 
     connect({
-      url: buildSocketUrl(),
+      url: socketUrl,
       onMessage: handleSocketPayload
     })
   }
 
   /** 退出当前客服会话并重置当前会话的临时数据。 */
-  const leaveConversation = () => {
-    persistActiveConversationMessages()
+  const leaveConversation = async () => {
+    await persistActiveConversationMessages()
+    autoReplyRequestId += 1
     disconnect()
     activeConversation.value = null
     messages.value = []
     autoReplyItems.value = []
+    loadingAutoReplies.value = false
   }
 
   /** 构建并发送文本或自动回复请求，同时先插入 sending 状态消息。 */
@@ -351,6 +408,7 @@ export function useChatRuntime() {
     if (!to || (!normalizedContent && !imageList?.length)) return false
 
     const messageId = createMessageId()
+    const timestamp = Date.now()
     const payload: ChatSocketMessage = {
       type: 'msg',
       messageId,
@@ -367,8 +425,9 @@ export function useChatRuntime() {
       text: getChatPlainText(normalizedContent),
       image: imageList?.[0]?.imgUrl,
       imageList,
-      time: formatChatTime(),
-      timestamp: Date.now(),
+      time: formatChatMessageTime(timestamp),
+      period: getChatTimePeriod(timestamp),
+      timestamp,
       read: false,
       status: 'sending',
       contentType
@@ -387,11 +446,19 @@ export function useChatRuntime() {
   /** 发送用户手动输入的普通文本消息。 */
   const sendTextMessage = (text: string) => sendMessage(text, 'text')
 
-  /** 发送自动回复问题请求，等待服务端推送 autoReplyResp 内容。 */
+  /** 发送自动回复问题和接口返回的系统答复，两条消息均立即写入当前会话。 */
   const sendAutoReplyMessage = (item: AutoReplyItem) => {
     const question = String(item.questionTitle ?? '').trim()
-    if (!question) return false
-    return sendMessage(`<div>【系统自动回复】</div>${question}`, 'autoReplyReq')
+    const answer = String(item.content ?? '').trim()
+    if (!question || !answer) return false
+
+    const requestSent = sendMessage(`<div>【系统自动回复】</div>${question}`, 'autoReplyReq')
+    if (!requestSent) return false
+
+    return sendMessage(
+      `<div id="h5SysMsg" style="display:none">${question}</div><div>${answer}</div>`,
+      'autoReplyResp'
+    )
   }
 
   /** 上传用户选中的图片，成功后将上传地址作为 image Socket 消息发送。 */
@@ -447,7 +514,10 @@ export function useChatRuntime() {
     await Promise.all([loadConversations(), loadQuickIssues()])
   }
 
-  onBeforeUnmount(disconnect)
+  onBeforeUnmount(() => {
+    void persistActiveConversationMessages()
+    disconnect()
+  })
 
   return {
     conversations,

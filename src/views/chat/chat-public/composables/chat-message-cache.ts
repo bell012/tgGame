@@ -54,13 +54,21 @@ export const saveCachedChatMessages = async (key: string, messages: ChatMessage[
   const database = await openChatCacheDatabase()
   if (!database) return
 
-  const transaction = database.transaction(CHAT_CACHE_STORE_NAME, 'readwrite')
-  transaction.objectStore(CHAT_CACHE_STORE_NAME).put({
-    key,
-    messages: messages.slice(-CHAT_CACHE_MAX_MESSAGES),
-    updatedAt: Date.now()
-  } satisfies ChatMessageCacheRecord)
+  return new Promise<void>(resolve => {
+    const transaction = database.transaction(CHAT_CACHE_STORE_NAME, 'readwrite')
+    transaction.objectStore(CHAT_CACHE_STORE_NAME).put({
+      key,
+      messages: messages.slice(-CHAT_CACHE_MAX_MESSAGES),
+      updatedAt: Date.now()
+    } satisfies ChatMessageCacheRecord)
 
-  transaction.oncomplete = () => database.close()
-  transaction.onerror = () => database.close()
+    const finish = () => {
+      database.close()
+      resolve()
+    }
+
+    transaction.oncomplete = finish
+    transaction.onerror = finish
+    transaction.onabort = finish
+  })
 }

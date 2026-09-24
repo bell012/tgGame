@@ -99,14 +99,16 @@ export const MOCK_MESSAGES: ChatMessage[] = [
     direction: 'incoming',
     type: 'text',
     text: 'Hello! How may I assist you today?',
-    time: '13:06 PM'
+    time: '13:06',
+    period: 'PM'
   },
   {
     id: 'm-2',
     direction: 'outgoing',
     type: 'text',
     text: 'May I ask how to register an account?',
-    time: '13:06 PM',
+    time: '13:06',
+    period: 'PM',
     read: true
   },
   {
@@ -114,14 +116,16 @@ export const MOCK_MESSAGES: ChatMessage[] = [
     direction: 'incoming',
     type: 'text',
     text: 'Hello! How may I assist you today?',
-    time: '13:06 PM'
+    time: '13:06',
+    period: 'PM'
   },
   {
     id: 'm-4',
     direction: 'outgoing',
     type: 'text',
     text: 'May I ask how to register an account?',
-    time: '13:06 PM',
+    time: '13:06',
+    period: 'PM',
     read: true
   },
   {
@@ -129,7 +133,8 @@ export const MOCK_MESSAGES: ChatMessage[] = [
     direction: 'outgoing',
     type: 'image',
     image: messageImageUrl,
-    time: '03:48 PM',
+    time: '03:48',
+    period: 'PM',
     read: true
   }
 ]

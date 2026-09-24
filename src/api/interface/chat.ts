@@ -33,7 +33,9 @@ export interface AutoReplyType {
 
 /** 自动回复问题查询参数。 */
 export interface QueryAutoReplyForm {
-  questionType: string | number
+  param: {
+    questionType: string | number
+  }
 }
 
 /** 自动回复附带图片信息。 */

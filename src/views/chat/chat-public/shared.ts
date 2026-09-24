@@ -1,3 +1,4 @@
+import { getStoredLocale } from '@/utils/locale'
 import type { ChatMessage, ConversationStatus } from './types'
 
 export const SEARCH_RESULTS = Array.from({ length: 6 }, (_, index) => ({
@@ -58,3 +59,23 @@ export const getChatPlainText = (value: unknown) => {
 /** 格式化消息列表和气泡中使用的本地时分。 */
 export const formatChatTime = (timestamp = Date.now()) =>
   new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+
+/** 格式化聊天气泡的时分，不包含上午或下午文案。 */
+export const formatChatMessageTime = (timestamp = Date.now()) => {
+  const date = new Date(timestamp)
+  const hour = String(date.getHours()).padStart(2, '0')
+  const minute = String(date.getMinutes()).padStart(2, '0')
+
+  return `${hour}:${minute}`
+}
+
+/** 根据当前站点语言返回聊天气泡的上午或下午文案。 */
+export const getChatTimePeriod = (timestamp = Date.now()) => {
+  const isMorning = new Date(timestamp).getHours() < 12
+
+  if (getStoredLocale() === 'zh') {
+    return isMorning ? '上午' : '下午'
+  }
+
+  return isMorning ? 'AM' : 'PM'
+}
