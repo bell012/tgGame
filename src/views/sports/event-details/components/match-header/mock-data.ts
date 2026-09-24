@@ -26,13 +26,5 @@ export const MATCH_HEADER_MOCK: MatchHeaderViewModel = {
   callout: {
     title: '球门球',
     detail: '特尼斯登后备队'
-  },
-  filters: [
-    { key: 'all', label: 'All' },
-    { key: 'popular', label: 'Popular' },
-    { key: 'spread-totals', label: 'Spread & Totals' },
-    { key: 'correct-score', label: 'Correct Score' },
-    { key: 'goals', label: '进球' },
-    { key: 'corners', label: '角球' }
-  ]
+  }
 }

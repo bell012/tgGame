@@ -388,44 +388,6 @@
         </button>
       </div>
     </div>
-
-    <div
-      class="scrollbar-none mt-3 flex touch-pan-x items-center gap-[7px] overflow-x-auto px-[14px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      role="tablist"
-      aria-label="Market categories"
-      data-testid="match-header-filters"
-    >
-      <button
-        type="button"
-        class="flex h-[35px] w-[35px] shrink-0 items-center justify-center rounded-lg bg-bg-2"
-        aria-label="Collapse"
-        @click="emit('collapse')"
-      >
-        <img
-          class="h-3 w-3 object-contain"
-          :src="chevronIcon"
-          alt=""
-          draggable="false"
-          aria-hidden="true"
-        />
-      </button>
-      <button
-        v-for="filter in match.filters"
-        :key="filter.key"
-        type="button"
-        role="tab"
-        class="inline-flex shrink-0 items-center rounded-lg px-5 py-2.5 text-xs leading-4"
-        :class="
-          activeFilter === filter.key
-            ? 'bg-theme-primary font-bold text-text-4'
-            : 'bg-bg-2 font-normal text-text-2'
-        "
-        :aria-selected="activeFilter === filter.key"
-        @click="selectFilter(filter.key)"
-      >
-        {{ filter.label }}
-      </button>
-    </div>
   </section>
 </template>
 
@@ -436,7 +398,6 @@ import backIcon from './icon/back.svg?url'
 import bgLayer1 from './icon/bg-layer-1.png?url'
 import bgLayer2 from './icon/bg-layer-2.png?url'
 import bgLayer3 from './icon/bg-layer-3-34b3a2.png?url'
-import chevronIcon from './icon/chevron-up.svg?url'
 import cornerIcon from './icon/corner.svg?url'
 import fullscreenIcon from './icon/fullscreen.svg?url'
 import htIcon from './icon/ht.svg?url'
@@ -453,8 +414,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   back: []
   fullscreen: []
-  collapse: []
-  filterChange: [key: string]
 }>()
 
 const match = computed(() => props.model ?? MATCH_HEADER_MOCK)
@@ -462,14 +421,8 @@ const isLive = computed(() => match.value.phase === 'live')
 const poster = computed(() => match.value.videoPoster || bgLayer2)
 
 const view = ref<MatchHeaderView>('info')
-const activeFilter = ref(match.value.filters[0]?.key ?? 'all')
 
 const returnToInfo = () => {
   view.value = 'info'
-}
-
-const selectFilter = (key: string) => {
-  activeFilter.value = key
-  emit('filterChange', key)
 }
 </script>
