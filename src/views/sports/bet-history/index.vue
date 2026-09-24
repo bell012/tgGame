@@ -311,6 +311,7 @@ usePageScrollLock(() => isMobile.value)
 const showMobileFilterPopup = ref(false)
 const showBuyBackSheet = ref(false)
 const selectedBuyBackWager = ref<SportsBetHistoryWager | null>(null)
+const sportsBetHistoryList = ref<SportsBetHistoryWager[]>([])
 const filterValues = ref<SportsBetHistoryFilterValues>({
   status: 'unsettled',
   time: 'today'
@@ -350,230 +351,6 @@ const filterGroups = computed<FilterGroup[]>(() => {
 
   return groups
 })
-
-// 临时体育投注历史假数据；接口有真实 wl 数据后删除这一段并替换数据源。
-const SPORTS_BET_HISTORY_MOCK_LIST: SportsBetHistoryWager[] = [
-  {
-    wid: '2609240037339871',
-    wcdt: 1790224653805,
-    mc: 'test_1000019885_cny',
-    isa: 5,
-    mwla: 0,
-    ot: 3,
-    wat: 1,
-    bp: 'App',
-    bcr: 0,
-    bcs: 2,
-    bss: 0,
-    br: 0,
-    bts: 0,
-    prid: 2609240038208724,
-    bbp: 4.7,
-    btbba: 0,
-    noc: 0,
-    combs: 0,
-    pp: 4.15,
-    cas: true,
-    wil: [
-      {
-        waics: 2,
-        wict: 1,
-        waict: 1,
-        waicr: 0,
-        m: 2,
-        eid: 113955661,
-        en: '',
-        etid: 1,
-        edt: 1790244300000,
-        sid: 1,
-        rsid: 1,
-        cid: 1653,
-        cn: '麒麟挑战杯(在日本)',
-        egtid: 1,
-        htid: 76849,
-        htn: '日本',
-        atid: 18201,
-        atn: '乌拉圭',
-        ft: 'H',
-        btid: 2,
-        btn: '大/小',
-        peid: 1,
-        btsid: 3,
-        sen: '大',
-        otid: 0,
-        o: 1.83,
-        h: 2.25,
-        dih: '2/2.5',
-        gtid: 1,
-        seo: 0,
-        md: 0,
-        mlid: 2535880797,
-        sp: '',
-        dh: 0,
-        pid: 10,
-        pn: '日本',
-        ei: { crs: false }
-      }
-    ],
-    sw: 1,
-    ber: 1
-  },
-  {
-    wid: '2609230320203578',
-    wcdt: '2026-09-23T03:20:20.6031239-04:00',
-    mc: 'test_1000020467_cny',
-    isa: 8.5,
-    mwla: -8.5,
-    ot: 3,
-    wat: 1,
-    bp: 'App',
-    bcr: 0,
-    bcs: 2,
-    bss: 1,
-    br: 0,
-    bts: 0,
-    prid: null,
-    bbp: null,
-    btbba: 0,
-    noc: 0,
-    combs: 0,
-    coo: null,
-    pp: 28.98,
-    cas: false,
-    pbo: null,
-    sdt: '2026-09-24T00:22:04.1745151-04:00',
-    btsdt: null,
-    ou: 2,
-    wil: [
-      {
-        waics: 2,
-        wict: 1,
-        waict: 1,
-        waicr: 0,
-        m: 2,
-        eid: 113957396,
-        en: '',
-        etid: 1,
-        edt: '2026-09-23T22:00:00-04:00',
-        sid: 11,
-        rsid: 2,
-        cid: 1103,
-        cn: 'WNBA美国女子职业篮球联赛',
-        egtid: 1,
-        rbt: null,
-        htid: 9581,
-        htn: '西雅图暴风',
-        atid: 5467,
-        atn: '达拉斯飞翼',
-        ft: 'H',
-        btid: 4,
-        btn: '独赢',
-        peid: 1,
-        btsid: 8,
-        sen: '主',
-        eon: null,
-        otid: 0,
-        otn: null,
-        pbo: null,
-        o: 4.41,
-        ao: null,
-        h: null,
-        dih: null,
-        hthts: 42,
-        athts: 49,
-        htfts: 91,
-        atfts: 103,
-        wahts: null,
-        waats: null,
-        gtid: 1,
-        seo: 0,
-        md: 0,
-        mlid: 2535922576,
-        sp: '',
-        soid: null,
-        os: null,
-        dh: 0,
-        wtl: null,
-        ws: null,
-        pid: 140,
-        pn: 'WNBA',
-        ei: '',
-        rai: null,
-        wio: 2
-      }
-    ],
-    rs: null,
-    sw: 1,
-    bo: null,
-    bc: null,
-    ber: 0
-  },
-  {
-    wid: 'mock-settled-basketball-1',
-    wcdt: '2026-12-18T11:14:15',
-    mc: 'mock_member_cny',
-    isa: 1000,
-    mwla: -1000,
-    ot: 3,
-    wat: 1,
-    bp: 'App',
-    bcr: 0,
-    bcs: 2,
-    bss: 1,
-    br: 0,
-    bts: 0,
-    prid: null,
-    bbp: null,
-    btbba: 0,
-    noc: 0,
-    combs: 0,
-    pp: 1000,
-    cas: false,
-    wil: [
-      {
-        waics: 2,
-        wict: 1,
-        waict: 1,
-        waicr: 0,
-        m: 2,
-        eid: 900000001,
-        en: '',
-        etid: 1,
-        edt: '2026-12-18T11:14:15',
-        sid: 36,
-        rsid: 2,
-        cid: 9001,
-        cn: 'Mock Basketball League',
-        egtid: 1,
-        htid: 90001,
-        htn: '格兰维尔',
-        atid: 90002,
-        atn: '费雷泽公园',
-        ft: 'H',
-        btid: 4,
-        btn: '独赢',
-        peid: 1,
-        btsid: 8,
-        sen: '主',
-        otid: 0,
-        o: 1.88,
-        h: null,
-        dih: null,
-        gtid: 1,
-        seo: 0,
-        md: 0,
-        mlid: 900000001,
-        sp: '',
-        dh: 0,
-        pid: 140,
-        pn: 'Basketball',
-        ei: ''
-      }
-    ],
-    sw: 1,
-    ber: 0
-  }
-]
 
 type SportsBetHistoryDisplayItem = {
   id: string
@@ -675,11 +452,7 @@ const mapSportsBetHistoryItem = (item: SportsBetHistoryWager): SportsBetHistoryD
   }
 }
 
-const mobileHistoryList = computed(() =>
-  SPORTS_BET_HISTORY_MOCK_LIST.filter(item =>
-    filterValues.value.status === 'settled' ? isSportsBetSettled(item) : !isSportsBetSettled(item)
-  ).map(mapSportsBetHistoryItem)
-)
+const mobileHistoryList = computed(() => sportsBetHistoryList.value.map(mapSportsBetHistoryItem))
 
 // 生成体育网关 TimeStamp
 const createSportsGatewayTimeStamp = () =>
@@ -740,6 +513,7 @@ const buildSportsHistoryAuthParams = async () => {
 // 根据当前筛选请求体育投注历史，并保留原始响应供确认字段结构。
 const fetchSportsBetHistory = async () => {
   const requestId = ++historyRequestId
+  sportsBetHistoryList.value = []
 
   try {
     await siteConfigStore.initSiteConfig()
@@ -764,6 +538,7 @@ const fetchSportsBetHistory = async () => {
       const response = await Api.sport.getStatement(baseUrl, params)
       if (requestId !== historyRequestId) return
       console.log('已结算响应数据', response)
+      sportsBetHistoryList.value = Array.isArray(response?.wl) ? response.wl : []
       return
     }
 
@@ -775,9 +550,11 @@ const fetchSportsBetHistory = async () => {
     const response = await Api.sport.getBetList(baseUrl, params)
     if (requestId !== historyRequestId) return
     console.log('未结算响应数据', response)
+    sportsBetHistoryList.value = Array.isArray(response?.wl) ? response.wl : []
     return
   } catch (error) {
     if (requestId === historyRequestId) {
+      sportsBetHistoryList.value = []
       console.error(error)
     }
   }

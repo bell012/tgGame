@@ -110,7 +110,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
@@ -146,80 +146,12 @@ type SportsBetDetailDisplay = {
 }
 
 const { t } = useI18n()
-const route = useRoute()
 const router = useRouter()
 const { currentCurrencyCode } = useDisplayCurrency()
 
 usePageScrollLock(() => true)
 
 const showBuyBackSheet = ref(false)
-
-// 详情页临时假数据；后续接入真实详情接口或列表缓存后删除这段。
-const SPORTS_BET_DETAIL_MOCK: SportsBetHistoryWager = {
-  wid: 'ts0768456746746746746',
-  wcdt: '2026-12-18T11:14:15',
-  mc: 'mock_member_cny',
-  isa: 1000,
-  mwla: 0,
-  ot: 3,
-  wat: 1,
-  bp: 'App',
-  bcr: 0,
-  bcs: 2,
-  bss: 0,
-  br: 0,
-  bts: 0,
-  prid: null,
-  bbp: null,
-  btbba: 0,
-  noc: 0,
-  combs: 0,
-  pp: 1000,
-  cas: true,
-  wil: [
-    {
-      waics: 2,
-      wict: 1,
-      waict: 1,
-      waicr: 0,
-      m: 2,
-      eid: 900000001,
-      en: '',
-      etid: 1,
-      edt: '2026-12-18T11:14:15',
-      sid: 1,
-      rsid: 1,
-      cid: 9001,
-      cn: '澳大利亚足球新南威尔士乙级联赛',
-      egtid: 1,
-      htid: 90001,
-      htn: '格兰维尔',
-      atid: 90002,
-      atn: '费雷泽公园',
-      ft: 'H',
-      btid: 4,
-      btn: '1x2',
-      peid: 1,
-      btsid: 8,
-      sen: '格兰维尔',
-      otid: 0,
-      o: 1.76,
-      h: null,
-      dih: '+1.5/2',
-      gtid: 1,
-      seo: 0,
-      md: 0,
-      mlid: 900000001,
-      sp: '',
-      dh: 0,
-      pid: 140,
-      pn: 'Sports',
-      ei: ''
-    }
-  ],
-  sw: 1,
-  ber: 1
-}
 
 // 转成数字，兼容接口返回字符串、空值或 null。
 const toSportsBetNumber = (value: number | string | null | undefined) => {
@@ -305,8 +237,28 @@ const mapSportsBetDetail = (item: SportsBetHistoryWager): SportsBetDetailDisplay
   }
 }
 
-const sourceBetDetail = computed(() => readSportsBetDetailFromState() ?? SPORTS_BET_DETAIL_MOCK)
-const betDetail = computed(() => mapSportsBetDetail(sourceBetDetail.value))
+const emptyBetDetail = computed<SportsBetDetailDisplay>(() => ({
+  sportIcon: sportItems[0]?.icon,
+  statusLabel: '',
+  statusBadgeClass: '',
+  settled: true,
+  matchName: '--',
+  leagueName: '--',
+  marketName: '--',
+  selectionName: '--',
+  handicapText: '',
+  oddsText: '@ --',
+  currency: currentCurrencyCode.value,
+  betAmount: '0',
+  winLossText: '0',
+  orderNo: '',
+  createdAt: '--'
+}))
+
+const sourceBetDetail = computed(() => readSportsBetDetailFromState())
+const betDetail = computed(() =>
+  sourceBetDetail.value ? mapSportsBetDetail(sourceBetDetail.value) : emptyBetDetail.value
+)
 
 // 点击客服图标，当前先按需求预留打印。
 const openKefuPopup = () => {
@@ -315,6 +267,10 @@ const openKefuPopup = () => {
 
 // 点击详情页确认按钮时打开提前结算底部弹窗。
 const handleConfirm = () => {
+  if (!sourceBetDetail.value) {
+    return
+  }
+
   showBuyBackSheet.value = true
 }
 
@@ -324,8 +280,8 @@ const copyOrderNo = () => {
   globalShowToast(t('betDetails.copy'))
 }
 
-// 无可用详情数据时回退投注历史页；当前有 mock 数据，保留入口方便后续去掉 mock。
-if (!route.params.id && !readSportsBetDetailFromState()) {
+// 无可用详情数据时回退投注历史页，详情数据由投注历史列表通过路由 state 传入。
+if (!readSportsBetDetailFromState()) {
   router.replace('/sports/bet-history')
 }
 </script>
