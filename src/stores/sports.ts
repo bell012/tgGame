@@ -484,16 +484,27 @@ export const useSportsStore = defineStore('sports', () => {
 
   // 同一赛事共用数据，迟到的列表响应不能覆盖较新的比分和赔率。
   const refreshedEvents = shallowReactive(
-    new Map<string, { event: SportEvent; revision: number; updatedAt: number }>()
+    new Map<
+      string,
+      { event: SportEvent; revision: number; updatedAt: number; clockUpdatedAt: number }
+    >()
   )
   let eventReadRevision = 0
   const eventKey = (sportId: number, eventId: number) => `${sportId}:${eventId}`
-  const rememberEvent = (sportId: number, incoming: SportEvent, revision: number) => {
+  const rememberEvent = (
+    sportId: number,
+    incoming: SportEvent,
+    revision: number,
+    receivedAt = Date.now()
+  ) => {
     const key = eventKey(sportId, incoming.EventId)
     const previous = refreshedEvents.get(key)
     if (!previous) {
       const event = reactive({ ...incoming })
-      refreshedEvents.set(key, { event, revision, updatedAt: Date.now() })
+      refreshedEvents.set(
+        key,
+        shallowReactive({ event, revision, updatedAt: receivedAt, clockUpdatedAt: receivedAt })
+      )
       return event
     }
     const newer = revision >= previous.revision
@@ -506,16 +517,25 @@ export const useSportsStore = defineStore('sports', () => {
     if (newer) {
       previous.revision = revision
       previous.updatedAt = Date.now()
+      // 相同时间也要校准；只更新赔率的响应不能重置比赛计时。
+      if (incoming.RBTime !== undefined) previous.clockUpdatedAt = receivedAt
     }
     return previous.event
   }
-  const rememberGroups = (sportId: number, groups: SportCompetitionGroup[], revision: number) =>
+  const rememberGroups = (
+    sportId: number,
+    groups: SportCompetitionGroup[],
+    revision: number,
+    receivedAt = Date.now()
+  ) =>
     groups.map(group => ({
       ...group,
-      Sports: group.Sports.map(event => rememberEvent(sportId, event, revision))
+      Sports: group.Sports.map(event => rememberEvent(sportId, event, revision, receivedAt))
     }))
   const getRefreshEvent = (sportId: number, eventId: number) =>
     refreshedEvents.get(eventKey(sportId, eventId))?.event
+  const getEventClockUpdatedAt = (sportId: number, eventId: number) =>
+    refreshedEvents.get(eventKey(sportId, eventId))?.clockUpdatedAt ?? Date.now()
 
   // 滚球 今日 早盘 串关数据
   const counts = createSportsRequest(getBaseUrl, sportsApi.getAllSportCount, response =>
@@ -1571,7 +1591,12 @@ export const useSportsStore = defineStore('sports', () => {
       const refreshList = async () => {
         if (!search && allSportsPending) return allSportsPending
         if (search && events.state.loading) return null
-        const pages: { response: GetSportsV2Response; revision: number; favourite: number }[] = []
+        const pages: {
+          response: GetSportsV2Response
+          revision: number
+          favourite: number
+          receivedAt: number
+        }[] = []
         const seen = new Set<string>()
         let totalPages = 1
         for (let page = 1; page <= totalPages; page += 1) {
@@ -1618,7 +1643,7 @@ export const useSportsStore = defineStore('sports', () => {
             if (seen.has(signature)) return null
             seen.add(signature)
           }
-          pages.push({ response, revision, favourite })
+          pages.push({ response, revision, favourite, receivedAt: Date.now() })
         }
         if (!isCurrent()) return null
         const lastResponse = pages[pages.length - 1]?.response
@@ -1628,9 +1653,9 @@ export const useSportsStore = defineStore('sports', () => {
           )
           if (leagueIds.size < (lastResponse?.Total ?? 0)) return null
         }
-        const groups = pages.flatMap(({ response, revision, favourite }) => {
+        const groups = pages.flatMap(({ response, revision, favourite, receivedAt }) => {
           syncMemberFavourites(response.e ?? [], favourite, params.MemberCode)
-          return rememberGroups(sportId, response.e ?? [], revision)
+          return rememberGroups(sportId, response.e ?? [], revision, receivedAt)
         })
         if (search) {
           if (eventsDataContext.value !== getEventsContext() || !events.state.data) return null
@@ -2100,6 +2125,7 @@ export const useSportsStore = defineStore('sports', () => {
     refreshHomepageBackground,
     cancelHomepageRefresh,
     getRefreshEvent,
+    getEventClockUpdatedAt,
     fetchSports,
     fetchAllSports,
     fetchMissingHotEvents,

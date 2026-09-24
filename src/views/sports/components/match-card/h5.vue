@@ -28,8 +28,8 @@
               aria-hidden="true"
             />
           </button>
-          <span class="min-w-0 truncate" :title="match.live ? match.phase : match.kickoff">
-            {{ match.live ? match.phase : match.kickoff }}
+          <span class="min-w-0 truncate" :title="timeLabel">
+            {{ timeLabel }}
           </span>
           <button
             v-if="match.hasVideo"
@@ -151,6 +151,7 @@ import type { SportsMatch } from '../../shared/types'
 
 const props = defineProps<{
   match: SportsMatch
+  timeLabel: string
   MarketLines: SportMarketLine[]
   selectedWagerSelectionId?: number
   favorite: boolean

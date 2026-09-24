@@ -21,6 +21,12 @@ export type SportsMatch = {
   away: { name: string; badge: string; redCards?: string; yellowCards?: string }
   live: boolean
   phase: string
+  phaseClock?: {
+    period: string
+    seconds: number
+    running: boolean
+    receivedAt: number
+  }
   hasVideo: boolean
   hasAnimation: boolean
   totalMarkets?: number

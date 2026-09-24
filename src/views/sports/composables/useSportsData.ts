@@ -12,6 +12,8 @@ import { stripLocalePrefix } from '@/utils/locale'
 import { sportItems } from '../components/sports-navigation/sport-items'
 import { mapSportsMatches } from '../shared/match'
 import { createHomepageRefresh } from './refreshScheduler'
+import { useMatchTime } from './useMatchTime'
+import type { SportsMatch } from '../shared/types'
 
 const MATCH_PAGE_SIZE = 12
 
@@ -220,7 +222,13 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     JSON.stringify([storeMatchListContext.value, collectOnly.value])
   )
   const matches = computed(() =>
-    mapSportsMatches(eventsList.value, selectedSportId.value, getTeamLogoUrl)
+    mapSportsMatches(
+      eventsList.value,
+      selectedSportId.value,
+      getTeamLogoUrl,
+      undefined,
+      sportsStore.getEventClockUpdatedAt
+    )
   )
   // 热门名单决定顺序，联赛预览和按 ID 补查提供信息与主盘口，不限制必须是滚球。
   const liveMatches = computed(() => {
@@ -232,13 +240,22 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
         Sports: [event]
       })),
       selectedSportId.value,
-      getTeamLogoUrl
+      getTeamLogoUrl,
+      undefined,
+      sportsStore.getEventClockUpdatedAt
     ).map(match => currentMatches.get(match.id) ?? match)
   })
   // 热门独有赛事也可被盘口选择和本地投注单找到，不混入下方列表的筛选和分页。
   const matchById = computed(
     () => new Map([...liveMatches.value, ...matches.value].map(match => [match.id, match]))
   )
+  const { getMatchTime } = useMatchTime({
+    enabled: () => isHomepageRoute.value && sportsPageActive.value,
+    matches: () =>
+      refreshTargets.value
+        .map(target => matchById.value.get(`${target.sportId}:${target.eventId}`))
+        .filter((match): match is SportsMatch => !!match)
+  })
   const totalPages = computed(() => Math.max(1, Math.ceil(matches.value.length / MATCH_PAGE_SIZE)))
   const pagedMatches = computed(() =>
     matches.value.slice(
@@ -419,6 +436,7 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     collectOnly,
     getMatchMarkets,
     getLiveMarkets,
+    getMatchTime,
     matchById,
     isPageActive
   }

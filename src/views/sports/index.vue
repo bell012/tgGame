@@ -55,7 +55,7 @@
               </template>
               <span class="truncate" :title="match.league">{{ match.league }}</span>
             </div>
-            <span class="shrink-0 text-text-1">{{ match.phase || match.kickoff }}</span>
+            <span class="shrink-0 text-text-1">{{ page.getMatchTime(match) }}</span>
           </div>
 
           <MatchVersus
@@ -136,6 +136,7 @@
           :key="match.id"
           v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
           :match="match"
+          :time-label="page.getMatchTime(match)"
           :MarketLines="match.MarketLines"
           :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
           :expanded="expandedMatchId === match.id"

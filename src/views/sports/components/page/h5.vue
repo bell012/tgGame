@@ -74,7 +74,7 @@
           :data-sports-live-match="match.id"
         >
           <div class="flex h-[14px] min-w-0 items-center gap-[14px] text-[10px] leading-3">
-            <span class="shrink-0 text-text-2">{{ match.phase || match.kickoff }}</span>
+            <span class="shrink-0 text-text-2">{{ page.getMatchTime(match) }}</span>
             <span class="min-w-0 flex-1 truncate text-[11px]" :title="match.league">{{
               match.league
             }}</span>
@@ -191,6 +191,7 @@
                 enabled: isGroupExpanded(group.id)
               }"
               :match="match"
+              :time-label="page.getMatchTime(match)"
               :MarketLines="match.MarketLines"
               :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
               :favorite="match.IsFavourite"

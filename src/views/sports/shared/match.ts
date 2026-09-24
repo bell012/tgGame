@@ -1,5 +1,5 @@
 import type { SportCompetitionGroup } from '@/api/interface/sport'
-import { formatTimestamp } from '@/utils/date'
+import { formatSportsKickoff } from '@/utils/date'
 import { sportItems } from '../components/sports-navigation/sport-items'
 import type { SportsMatch } from './types'
 
@@ -15,12 +15,40 @@ const getCardCount = (value: unknown): string | undefined => {
   return /^\d+$/.test(text) ? text : undefined
 }
 
+/** 金融投注只显示开赛时间，其余球种保留接口阶段。 */
+export const getGamePlayingName = (sportId: number, rbTime?: string): string =>
+  sportId === 51 ? '' : getSportsText(rbTime).split(/\s+/).join(' ')
+
+const getPhaseClock = (
+  phase: string,
+  status: number,
+  receivedAt: number
+): SportsMatch['phaseClock'] => {
+  const [period, time, extra] = phase.split(' ')
+  if (!time || extra) return undefined
+  const clock = /^(\d+)(?::([0-5]\d))?$/.exec(time)
+  if (!clock) return undefined
+  const seconds = Number(clock[1]) * 60 + Number(clock[2] ?? 0)
+  if (!Number.isSafeInteger(seconds)) return undefined
+  return { period, seconds, running: status !== 3, receivedAt }
+}
+
+/** 按实际经过时间累加，浏览器暂停回调不会造成计时漂移。 */
+export const getMatchDisplayTime = (match: SportsMatch, now: number): string => {
+  const clock = match.phaseClock
+  if (!clock?.running) return match.phase || match.kickoff
+  const elapsed = Math.max(0, Math.floor((now - clock.receivedAt) / 1000))
+  const seconds = clock.seconds + elapsed
+  return `${clock.period} ${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
+}
+
 /** 将本次返回的联赛赛事转换为两端共用的基础展示信息；不推定扩展比分与赔率规则。 */
 export const mapSportsMatches = (
   groups: readonly SportCompetitionGroup[],
   sportId: number,
   teamLogoUrl: (id: number) => string,
-  formatKickoff: (value: string) => string = formatTimestamp
+  formatKickoff: (value: string) => string = formatSportsKickoff,
+  getClockUpdatedAt: (sportId: number, eventId: number) => number = () => Date.now()
 ): SportsMatch[] => {
   const sportKey = sportItems.find(item => item.sportId === sportId)?.key ?? ''
   const matches = new Map<string, SportsMatch>()
@@ -32,6 +60,7 @@ export const mapSportsMatches = (
       if (matches.has(id)) continue
       const competitionId = event.Competition?.CompetitionId ?? group.CompetitionId
       if (!Number.isSafeInteger(competitionId)) continue
+      const phase = getGamePlayingName(sportId, event.RBTime)
       matches.set(id, {
         id,
         EventId: event.EventId,
@@ -43,7 +72,12 @@ export const mapSportsMatches = (
         kickoff: formatKickoff(event.EventDate),
         // IsLive 仅表示支持滚球，赛事当前是否滚球以 Market 为准。
         live: event.Market === 3,
-        phase: getSportsText(event.RBTime),
+        phase,
+        phaseClock: getPhaseClock(
+          phase,
+          event.RBTimeStatus,
+          getClockUpdatedAt(sportId, event.EventId)
+        ),
         homeScore: getSportsText(event.HomeScore) || '—',
         awayScore: getSportsText(event.AwayScore) || '—',
         home: {

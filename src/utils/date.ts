@@ -10,17 +10,20 @@ const DISPLAY_TIME_LABEL_MAP: Record<
   {
     justNow: string
     today: string
+    tomorrow: string
     yesterday: string
   }
 > = {
   zh: {
     justNow: '刚刚',
     today: '今天',
+    tomorrow: '明天',
     yesterday: '昨天'
   },
   eng: {
     justNow: 'Just now',
     today: 'Today',
+    tomorrow: 'Tomorrow',
     yesterday: 'Yesterday'
   }
 }
@@ -104,6 +107,28 @@ export const normalizeTimestamp = (value?: number | string | null): number | nul
   }
 
   return numericValue < 1_000_000_000_000 ? numericValue * 1000 : numericValue
+}
+
+/** 体育开赛时间：今天、明天或具体日期，不显示秒。 */
+export const formatSportsKickoff = (
+  value?: number | string | null,
+  now: Date = new Date()
+): string => {
+  const timestamp = normalizeTimestamp(value)
+  if (!timestamp) return '--'
+  const date = new Date(timestamp)
+  if (Number.isNaN(date.getTime())) return '--'
+
+  const { languageCode, locale, labels } = getDateTimeLocale()
+  const tomorrow = new Date(now)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const day = isSameDay(date, now)
+    ? labels.today
+    : isSameDay(date, tomorrow)
+      ? labels.tomorrow
+      : `${date.getFullYear() === now.getFullYear() ? '' : `${date.getFullYear()}-`}${getTwoDigitNumber(date.getMonth() + 1)}-${getTwoDigitNumber(date.getDate())}`
+  const separator = isChineseLanguage(languageCode) ? ' ' : ', '
+  return `${day}${separator}${formatDisplayClockTime(date, locale, languageCode)}`
 }
 
 // 13位时间戳转换  月/日/年 + 12小时制 + AM/PM 格式化函数
