@@ -1,11 +1,11 @@
 <template>
   <!-- 第三方表情选择面板。 -->
-  <section class="h-[284px] shrink-0 bg-bg-1 px-[12px] pb-[16px] pt-[12px]">
-    <p class="text-[13px] text-text-1">{{ t('chatPublic.allEmojis') }}</p>
+  <section class="flex h-[384px] shrink-0 flex-col bg-bg-1 px-[12px] pb-[16px] pt-[12px]">
+    <p class="shrink-0 text-[13px] leading-[16px] text-text-1">{{ t('chatPublic.allEmojis') }}</p>
     <!-- emoji-picker-element 自定义元素。 -->
     <emoji-picker ref="pickerRef" class="chat-emoji-picker mt-[8px]" />
     <!-- 删除与发送操作区。 -->
-    <div class="mt-[14px] flex justify-end gap-[10px]">
+    <div class="mt-[14px] flex shrink-0 justify-end gap-[10px]">
       <button type="button" @click="$emit('delete')">
         <DeleteKeyIcon class="h-[43px] w-[63px]" />
       </button>
@@ -50,8 +50,12 @@ onBeforeUnmount(unbindPickerEvent)
 
 <style scoped>
 .chat-emoji-picker {
-  height: 170px;
+  display: block;
+  min-height: 0;
+  flex: 1 1 auto;
   width: 100%;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
   --background: var(--color-background-level-1);
   --border-color: rgb(255 255 255 / 0.06);
   --border-radius: 8px;

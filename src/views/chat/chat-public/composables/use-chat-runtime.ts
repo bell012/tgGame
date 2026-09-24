@@ -1,5 +1,11 @@
 import Api from '@/api'
-import type { AutoReplyItem, AutoReplyType, OnlineChatCustomer } from '@/api/interface/chat'
+import type {
+  AutoReplyItem,
+  AutoReplyType,
+  ChatConfig,
+  ChatQaConfig,
+  OnlineChatCustomer
+} from '@/api/interface/chat'
 import type { UploadPictureResult } from '@/api/interface/picture'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
@@ -27,9 +33,36 @@ import { loadCachedChatMessages, saveCachedChatMessages } from './chat-message-c
 import { useChatConnection } from './use-chat-connection'
 
 const CHAT_VISITOR_STORAGE_KEY = 'chat_visitor_id'
+let hasRequestedWelcomeReminder = false
+let welcomeReminderConfigRequest: Promise<ChatConfig | null> | null = null
 
 /** 将未知接口返回值转换为可安全遍历的数组。 */
 const toArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : [])
+
+/** 复用首次欢迎语配置请求，避免布局重建时重复请求同一接口。 */
+const requestWelcomeReminderConfig = () => {
+  if (welcomeReminderConfigRequest) return welcomeReminderConfigRequest
+
+  welcomeReminderConfigRequest = Api.chat
+    .queryChatConfig({ t: Date.now() }, { showErrorToast: false })
+    .then(response => (response.code === 'C2' ? (response.result ?? null) : null))
+    .catch(() => null)
+
+  return welcomeReminderConfigRequest
+}
+
+/** 将后台字符串形式的 qaConfig 安全转换为欢迎语配置对象。 */
+const parseChatQaConfig = (value: ChatConfig['qaConfig']): ChatQaConfig | null => {
+  if (!value) return null
+  if (typeof value === 'object') return value
+
+  try {
+    const parsedValue = JSON.parse(value) as unknown
+    return parsedValue && typeof parsedValue === 'object' ? (parsedValue as ChatQaConfig) : null
+  } catch {
+    return null
+  }
+}
 
 /** 从上传响应中提取图片文件名或地址。 */
 const resolveUploadedImagePath = (result: unknown) => {
@@ -99,7 +132,7 @@ export function useChatRuntime() {
   const autoReplyItems = ref<AutoReplyItem[]>([])
   const autoReplyItemsByIssue = new Map<string, AutoReplyItem[]>()
   const activeConversation = ref<ConversationItem | null>(null)
-  const loadingConversations = ref(false)
+  const loadingConversations = ref(true)
   const loadingAutoReplies = ref(false)
   const uploadingImage = ref(false)
   let pendingMessageCacheWrite = Promise.resolve()
@@ -364,6 +397,41 @@ export function useChatRuntime() {
     }
   }
 
+  /** 首次进入会话时读取客服欢迎语，并在启用时写入当前会话消息列表。 */
+  const loadWelcomeReminder = async (conversation: ConversationItem) => {
+    if (hasRequestedWelcomeReminder) return
+    hasRequestedWelcomeReminder = true
+
+    try {
+      const config = await requestWelcomeReminderConfig()
+      const qaConfig = parseChatQaConfig(config?.qaConfig)
+      const reminderText = String(qaConfig?.reminderText ?? '').trim()
+
+      if (
+        qaConfig?.isEnabled !== true ||
+        !reminderText ||
+        activeConversation.value?.id !== conversation.id ||
+        messages.value.some(message => message.contentType === 'welcome-reminder')
+      ) {
+        return
+      }
+
+      const timestamp = Date.now()
+      upsertMessage({
+        id: `welcome-reminder:${conversation.id}:${timestamp}`,
+        direction: 'incoming',
+        type: 'text',
+        text: reminderText,
+        time: formatChatMessageTime(timestamp),
+        period: getChatTimePeriod(timestamp),
+        timestamp,
+        contentType: 'welcome-reminder'
+      })
+    } catch {
+      // 欢迎语请求失败不影响聊天连接与正常消息发送。
+    }
+  }
+
   /** 建立选中客服的连接前读取对应 IndexedDB 消息缓存。 */
   const selectConversation = async (conversation: ConversationItem) => {
     await persistActiveConversationMessages()
@@ -372,6 +440,7 @@ export function useChatRuntime() {
     messages.value = await loadCachedChatMessages(
       getConversationCacheKey(currentChatUserId.value, dealerCode.value, conversation)
     )
+    void loadWelcomeReminder(conversation)
 
     const socketUrl = buildSocketUrl()
     if (!socketUrl) {

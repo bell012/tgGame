@@ -21,6 +21,7 @@
       <ConversationList
         display-mode="pc"
         :conversations="conversations"
+        :loading="loadingConversations"
         @select="handleConversationSelect"
       />
     </section>
@@ -84,6 +85,7 @@ const {
   quickIssues,
   autoReplyItems,
   activeConversation,
+  loadingConversations,
   loadingAutoReplies,
   initialize,
   selectConversation,

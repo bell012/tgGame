@@ -2,8 +2,10 @@ import type {
   AutoReplyItem,
   AutoReplyType,
   ChatApiResponse,
+  ChatConfig,
   OnlineChatCustomer,
   QueryAutoReplyForm,
+  QueryChatConfigParams,
   QueryOnlineCustomerForm
 } from '@/api/interface/chat'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
@@ -42,6 +44,19 @@ export const queryAutoReplies = (
     url: '/autoReply/listAutoReply',
     method: 'post',
     data,
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? true
+  })
+
+/** 查询客服欢迎语及相关展示配置。 */
+export const queryChatConfig = (
+  params: QueryChatConfigParams,
+  options?: ApiResponseToastOptions
+): Promise<ChatApiResponse<ChatConfig>> =>
+  request({
+    url: '/queryConfig',
+    method: 'get',
+    params,
     showSuccessToast: false,
     showErrorToast: options?.showErrorToast ?? true
   })

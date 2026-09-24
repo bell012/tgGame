@@ -38,6 +38,27 @@ export interface QueryAutoReplyForm {
   }
 }
 
+/** 客服欢迎语配置查询参数。 */
+export interface QueryChatConfigParams {
+  t: number
+}
+
+/** 客服欢迎语配置。 */
+export interface ChatQaConfig {
+  reminderText?: string
+  reminderColor?: string
+  fontColor?: string
+  isEnabled?: boolean
+  autotime?: number
+  manualtime?: number
+}
+
+/** 客服配置接口返回内容。 */
+export interface ChatConfig {
+  qaConfig?: ChatQaConfig | string
+  styleConfig?: Record<string, unknown>
+}
+
 /** 自动回复附带图片信息。 */
 export interface AutoReplyImage {
   imgUrl?: string

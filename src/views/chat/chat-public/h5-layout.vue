@@ -20,7 +20,11 @@
         </h1>
         <span class="size-[33px] shrink-0" />
       </header>
-      <ConversationList :conversations="conversations" @select="handleConversationSelect" />
+      <ConversationList
+        :conversations="conversations"
+        :loading="loadingConversations"
+        @select="handleConversationSelect"
+      />
     </template>
 
     <!-- 已选择会话时的对话内容层。 -->
@@ -100,6 +104,7 @@ const {
   quickIssues,
   autoReplyItems,
   activeConversation,
+  loadingConversations,
   loadingAutoReplies,
   initialize,
   selectConversation,
