@@ -5,75 +5,91 @@ import type { ChatMessage, ConversationItem } from './types'
 export const MOCK_CONVERSATIONS: ConversationItem[] = [
   {
     id: 'luna-01',
-    name: 'Luna',
-    status: 'online',
+    account: 'luna-01',
+    dealerCode: 'mock',
+    nickName: 'Luna',
+    onlineStatus: 0,
     avatar: avatarUrl,
     lastMessage: 'Your order of RMB 1,000 has been received.',
-    time: '19:36',
-    unread: 99
+    lastMessageTime: Date.now(),
+    unreadCount: 99
   },
   {
     id: 'luna-02',
-    name: 'Luna',
-    status: 'online',
+    account: 'luna-02',
+    dealerCode: 'mock',
+    nickName: 'Luna',
+    onlineStatus: 0,
     avatar: avatarUrl,
     lastMessage: 'Your order of RMB 1,000 has been received.',
-    time: '19:36',
-    unread: 3
+    lastMessageTime: Date.now(),
+    unreadCount: 3
   },
   {
     id: 'luna-03',
-    name: 'Luna',
-    status: 'online',
+    account: 'luna-03',
+    dealerCode: 'mock',
+    nickName: 'Luna',
+    onlineStatus: 0,
     avatar: avatarUrl,
     lastMessage: 'Your order of RMB 1,000 has been received.',
-    time: '19:36',
-    unread: 3
+    lastMessageTime: Date.now(),
+    unreadCount: 3
   },
   {
     id: 'luna-04',
-    name: 'Luna',
-    status: 'online',
+    account: 'luna-04',
+    dealerCode: 'mock',
+    nickName: 'Luna',
+    onlineStatus: 0,
     avatar: avatarUrl,
     lastMessage: 'Your order of RMB 1,000 has been received.',
-    time: '19:36',
-    unread: 3
+    lastMessageTime: Date.now(),
+    unreadCount: 3
   },
   {
     id: 'luna-05',
-    name: 'Luna',
-    status: 'online',
+    account: 'luna-05',
+    dealerCode: 'mock',
+    nickName: 'Luna',
+    onlineStatus: 0,
     avatar: avatarUrl,
     lastMessage: 'Your order of RMB 1,000 has been received.',
-    time: '19:36',
-    unread: 3
+    lastMessageTime: Date.now(),
+    unreadCount: 3
   },
   {
     id: 'luna-06',
-    name: 'Luna',
-    status: 'online',
+    account: 'luna-06',
+    dealerCode: 'mock',
+    nickName: 'Luna',
+    onlineStatus: 0,
     avatar: avatarUrl,
     lastMessage: 'Your order of RMB 1,000 has been received.',
-    time: '19:36',
-    unread: 3
+    lastMessageTime: Date.now(),
+    unreadCount: 3
   },
   {
     id: 'luna-07',
-    name: 'Luna',
-    status: 'online',
+    account: 'luna-07',
+    dealerCode: 'mock',
+    nickName: 'Luna',
+    onlineStatus: 0,
     avatar: avatarUrl,
     lastMessage: 'Your order of RMB 1,000 has been received.',
-    time: '19:36',
-    unread: 3
+    lastMessageTime: Date.now(),
+    unreadCount: 3
   },
   {
     id: 'luna-08',
-    name: 'Luna',
-    status: 'online',
+    account: 'luna-08',
+    dealerCode: 'mock',
+    nickName: 'Luna',
+    onlineStatus: 0,
     avatar: avatarUrl,
     lastMessage: 'Your order of RMB 1,000 has been received.',
-    time: '19:36',
-    unread: 3
+    lastMessageTime: Date.now(),
+    unreadCount: 3
   }
 ]
 

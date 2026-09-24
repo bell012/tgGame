@@ -1,60 +1,4 @@
-import type { ChatMessage, ConversationStatus, QuickIssue } from './types'
-
-export const QUICK_ISSUES: QuickIssue[] = [
-  {
-    id: 'deposit',
-    labelKey: 'depositIssues',
-    questionKey: 'depositQuestion'
-  },
-  {
-    id: 'withdrawal',
-    labelKey: 'withdrawalIssues',
-    questionKey: 'withdrawalQuestion'
-  },
-  {
-    id: 'account',
-    labelKey: 'accountIssues',
-    questionKey: 'accountQuestion'
-  }
-]
-
-export const EMOJI_OPTIONS = [
-  '😀',
-  '🥺',
-  '😍',
-  '🙄',
-  '😎',
-  '😭',
-  '😡',
-  '😴',
-  '😤',
-  '🥵',
-  '😠',
-  '😜',
-  '😁',
-  '🥹',
-  '😆',
-  '🥳',
-  '🤔',
-  '😊',
-  '😮',
-  '😕',
-  '🥺',
-  '😁',
-  '🥲',
-  '🤭',
-  '🤩',
-  '😵',
-  '🥰',
-  '😳',
-  '🥸',
-  '😆',
-  '😲',
-  '🤫',
-  '😵',
-  '😵',
-  '😎'
-]
+import type { ChatMessage, ConversationStatus } from './types'
 
 export const SEARCH_RESULTS = Array.from({ length: 6 }, (_, index) => ({
   id: `search-${index}`,
@@ -70,9 +14,14 @@ export function getConversationStatusKey(status: ConversationStatus) {
   return 'chatPublic.online'
 }
 
-/** 为本地静态消息生成临时唯一标识，接口接入后以服务端消息 ID 为准。 */
+/** 将客服接口的在线状态值转换为页面展示状态，不修改原始接口对象。 */
+export function resolveConversationStatus(onlineStatus: unknown): ConversationStatus {
+  return Number(onlineStatus) === 0 ? 'online' : 'offline'
+}
+
+/** 为发送中的 Socket 消息生成时间戳加随机字符串的唯一标识。 */
 export function createMessageId() {
-  return `message-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  return `${Date.now()}${Math.random().toString(36).slice(2, 5).toUpperCase()}`
 }
 
 /** 根据消息类型返回引用回复中使用的简短预览文本。 */
@@ -80,3 +29,32 @@ export function getMessagePreview(message: ChatMessage) {
   if (message.type === 'image') return '1 Photo'
   return message.text || ''
 }
+
+/** 将服务端文件名或相对图片路径转换为项目当前图片域名下的完整地址。 */
+export const resolveChatMediaUrl = (value: unknown) => {
+  const source = String(value ?? '').trim()
+  if (!source || /^(data:|blob:|https?:\/\/|\/)/i.test(source)) {
+    return source
+  }
+
+  const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
+  return baseUrl ? `${baseUrl}/${source.replace(/^\/+/, '')}` : source
+}
+
+/** 将服务端富文本自动回复降级为安全纯文本，避免直接渲染未受信任 HTML。 */
+export const getChatPlainText = (value: unknown) => {
+  const source = String(value ?? '').trim()
+  if (!source) return ''
+
+  if (typeof DOMParser === 'undefined') {
+    return source.replace(/<[^>]+>/g, '').trim()
+  }
+
+  const documentNode = new DOMParser().parseFromString(source, 'text/html')
+  documentNode.querySelector('#h5SysMsg')?.remove()
+  return (documentNode.body.textContent || '').replace(/\n{3,}/g, '\n\n').trim()
+}
+
+/** 格式化消息列表和气泡中使用的本地时分。 */
+export const formatChatTime = (timestamp = Date.now()) =>
+  new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })

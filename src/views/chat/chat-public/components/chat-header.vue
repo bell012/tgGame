@@ -24,7 +24,7 @@
         class="relative shrink-0 overflow-hidden rounded-full"
         :class="props.displayMode === 'pc' ? 'size-[40px]' : 'size-[34px]'"
       >
-        <img :src="conversation.avatar" alt="" class="size-full object-cover" />
+        <img :src="avatarUrl" alt="" class="size-full object-cover" />
         <OnlineIcon class="absolute bottom-0 right-0 size-[7px]" />
       </div>
       <div class="min-w-0" :class="props.displayMode === 'pc' ? 'flex items-center gap-[6px]' : ''">
@@ -38,8 +38,8 @@
         >
           {{
             props.displayMode === 'pc'
-              ? conversation.name
-              : t('chatPublic.customerServiceName', { name: conversation.name })
+              ? displayName
+              : t('chatPublic.customerServiceName', { name: displayName })
           }}
         </h1>
         <p
@@ -75,7 +75,7 @@ import OnlineIcon from '@/static/svg/chat/public/online.svg?component'
 import SearchIcon from '@/static/svg/chat/public/search.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getConversationStatusKey } from '../shared'
+import { getConversationStatusKey, resolveChatMediaUrl, resolveConversationStatus } from '../shared'
 import type { ConversationItem } from '../types'
 
 const props = defineProps<{
@@ -88,8 +88,18 @@ defineEmits<{ back: []; search: [] }>()
 
 const { t } = useI18n()
 
+/** 根据后台原始 nickName 与 account 生成客服显示名称。 */
+const displayName = computed(() => props.conversation.nickName || props.conversation.account || '')
+
+/** 将后台头像文件名或绝对地址转换为可显示地址。 */
+const avatarUrl = computed(() => resolveChatMediaUrl(props.conversation.avatar))
+
 /** 优先显示正在输入状态，否则显示当前客服的在线状态。 */
 const statusText = computed(() =>
-  t(getConversationStatusKey(props.typing ? 'typing' : props.conversation.status))
+  t(
+    getConversationStatusKey(
+      props.typing ? 'typing' : resolveConversationStatus(props.conversation.onlineStatus)
+    )
+  )
 )
 </script>

@@ -32,6 +32,7 @@
       display-mode="pc"
       :conversation="activeConversation"
       :messages="messages"
+      :issues="quickIssues"
       :mode="mode"
       :draft="draft"
       :reply-target="replyTarget"
@@ -45,8 +46,8 @@
       @cancel-reply="cancelReply"
       @emoji-select="handleEmojiSelect"
       @emoji-delete="handleEmojiDelete"
-      @photo="handleMockPhoto"
-      @camera="handleMockPhoto"
+      @photo="handleImageUpload"
+      @camera="handleImageUpload"
     />
 
     <!-- PC 快捷问题弹层。 -->
@@ -54,6 +55,8 @@
       display-mode="pc"
       :visible="quickIssueVisible"
       :active-issue="activeIssue"
+      :items="autoReplyItems"
+      :loading="loadingAutoReplies"
       @close="quickIssueVisible = false"
       @send="handleQuickIssueSend"
     />
@@ -61,25 +64,35 @@
 </template>
 
 <script setup lang="ts">
-import mockImageUrl from '@/static/img/chat/public/chat-image-sample.jpg'
 import CloseIcon from '@/static/svg/close.svg?component'
-import { nextTick, ref } from 'vue'
+import type { AutoReplyItem } from '@/api/interface/chat'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ConversationList from './components/conversation-list.vue'
 import ConversationView from './components/conversation-view.vue'
 import QuickIssueSheet from './components/quick-issue-sheet.vue'
 import { useChatComposer } from './composables/use-chat-composer'
-import { useConversationList } from './composables/use-conversation-list'
-import { useMessageList } from './composables/use-message-list'
-import { useSendMessage } from './composables/use-send-message'
+import { useChatRuntime } from './composables/use-chat-runtime'
 import type { ConversationItem, QuickIssue } from './types'
 
 const { t } = useI18n()
 const router = useRouter()
-const { conversations } = useConversationList()
-const { messages } = useMessageList()
-const { sendText, sendImage } = useSendMessage(messages)
+const {
+  conversations,
+  messages,
+  quickIssues,
+  autoReplyItems,
+  activeConversation,
+  loadingAutoReplies,
+  initialize,
+  selectConversation,
+  leaveConversation,
+  loadAutoReplies,
+  sendTextMessage,
+  sendAutoReplyMessage,
+  sendImageFile
+} = useChatRuntime()
 const {
   draft,
   mode,
@@ -92,20 +105,18 @@ const {
   resetAfterSend
 } = useChatComposer()
 
-// PC 端首次进入客服路由时不预选会话，先展示客服会话列表。
-const activeConversation = ref<ConversationItem | null>(null)
 const quickIssueVisible = ref(false)
 const activeIssue = ref<QuickIssue | null>(null)
 
-/** 选择 PC 客服后显示对应的静态会话内容。 */
-const handleConversationSelect = (conversation: ConversationItem) => {
-  activeConversation.value = conversation
+/** 选择 PC 客服后读取缓存并建立当前客服的 Socket 连接。 */
+const handleConversationSelect = async (conversation: ConversationItem) => {
+  await selectConversation(conversation)
   nextTick(() => scrollToBottom())
 }
 
 /** 从对话返回客服会话列表，并清理会话内的临时状态。 */
 const handleConversationBack = () => {
-  activeConversation.value = null
+  leaveConversation()
   quickIssueVisible.value = false
   activeIssue.value = null
   resetAfterSend()
@@ -130,24 +141,26 @@ const scrollToBottom = () => {
   })
 }
 
-/** 打开 PC 端所选快捷问题的固定问答弹层。 */
-const handleIssueSelect = (issue: QuickIssue) => {
+/** 打开 PC 端所选自动回复分类并请求其问题列表。 */
+const handleIssueSelect = async (issue: QuickIssue) => {
   activeIssue.value = issue
   quickIssueVisible.value = true
+  await loadAutoReplies(issue)
 }
 
-/** 将快捷问题文案作为用户消息写入本地静态消息列表。 */
-const handleQuickIssueSend = (text: string) => {
-  if (text) sendText(text)
-  quickIssueVisible.value = false
-  activeIssue.value = null
+/** 发送 PC 自动回复请求，并等待服务端推送对应回答。 */
+const handleQuickIssueSend = (item: AutoReplyItem) => {
+  if (sendAutoReplyMessage(item)) {
+    quickIssueVisible.value = false
+    activeIssue.value = null
+  }
   scrollToBottom()
 }
 
 /** 发送当前输入草稿，并恢复编辑器初始状态。 */
 const handleSend = () => {
   if (!draft.value.trim()) return
-  sendText(draft.value, replyTarget.value)
+  sendTextMessage(draft.value)
   resetAfterSend()
   scrollToBottom()
 }
@@ -164,10 +177,23 @@ const handleEmojiDelete = () => {
   mode.value = 'emoji'
 }
 
-/** 使用本地示例图片模拟 PC 端图片发送，后续替换为真实上传流程。 */
-const handleMockPhoto = () => {
-  sendImage(mockImageUrl)
-  mode.value = 'idle'
+/** 上传 PC 端选择的图片，并使用上传结果发送 image Socket 消息。 */
+const handleImageUpload = async (file: File) => {
+  const sent = await sendImageFile(file)
+  if (sent) {
+    mode.value = 'idle'
+  }
   scrollToBottom()
 }
+
+/** PC 客服路由首次进入时加载在线客服与自动回复分类。 */
+onMounted(() => {
+  void initialize()
+})
+
+/** 在缓存加载、发送或服务端推送新增消息后保持最新消息可见。 */
+watch(
+  () => messages.value.length,
+  () => scrollToBottom()
+)
 </script>

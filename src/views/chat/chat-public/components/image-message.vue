@@ -1,6 +1,9 @@
 <template>
   <!-- 图片消息气泡。 -->
-  <div class="flex w-full justify-end">
+  <div
+    class="flex w-full"
+    :class="message.direction === 'outgoing' ? 'justify-end' : 'justify-start'"
+  >
     <button
       type="button"
       class="relative overflow-hidden"

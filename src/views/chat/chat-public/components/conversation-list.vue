@@ -18,7 +18,8 @@
         @select="$emit('select', $event)"
       />
     </div>
-    <EmptyState v-else />
+    <!-- 无可用客服时显示主题空状态。 -->
+    <EmptyState v-else :display-mode="props.displayMode" />
   </div>
 </template>
 

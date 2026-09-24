@@ -14,17 +14,14 @@
         :class="props.displayMode === 'pc' ? 'h-[32px]' : 'h-[34px]'"
         @click="$emit('select', issue)"
       >
-        {{ t(`chatPublic.${issue.labelKey}`) }}
+        {{ issue.typeName || issue.id }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { QuickIssue } from '../types'
-
-const { t } = useI18n()
 
 const props = withDefaults(defineProps<{ issues: QuickIssue[]; displayMode?: 'h5' | 'pc' }>(), {
   displayMode: 'h5'
