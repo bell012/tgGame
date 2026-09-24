@@ -3,6 +3,8 @@ import type {
   FavouriteEventResponse,
   GetAllSportCountParams,
   GetAllSportCountResponse,
+  GetBalanceParams,
+  GetBalanceResponse,
   GetBetListParams,
   GetBetListResponse,
   GetCompetitionListParams,
@@ -171,6 +173,15 @@ export function getBetList(
   options?: SportsRequestOptions
 ): Promise<GetBetListResponse> {
   return postSport(baseUrl, 'GetBetList', data, options)
+}
+
+/** 只读：查询体育可用余额，av 为可用金额。 */
+export function getBalance(
+  baseUrl: string,
+  data: GetBalanceParams,
+  options?: SportsRequestOptions
+): Promise<GetBalanceResponse> {
+  return postSport(baseUrl, 'GetBalance', data, options)
 }
 
 /**

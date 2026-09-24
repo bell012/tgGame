@@ -55,6 +55,21 @@ export interface SportsResponse {
   [key: string]: unknown
 }
 
+/** 体育可用余额查询，不使用本站登录 token。 */
+export interface GetBalanceParams {
+  /** 体育登录返回的 token。 */
+  Token: string
+  /** 体育登录返回的 platformAcct。 */
+  MemberCode: string
+  /** 当前毫秒时间戳。 */
+  TimeStamp: number
+}
+
+export interface GetBalanceResponse extends SportsResponse {
+  /** AvailableBalance：体育可用余额；失败响应可能不返回。 */
+  av?: number
+}
+
 /** 体育投注历史接口共用会员凭据参数。 */
 export interface SportsBetHistoryAuthParams {
   /** 体育接口语言码，使用 ENG / CHS 等体育网关语言。 */

@@ -274,6 +274,19 @@ export const useSportsStore = defineStore('sports', () => {
   const sportsCredentials = ref<SportsCredentials | null>(null)
   const sportsMemberCode = computed(() => sportsCredentials.value?.memberCode ?? null)
   const sportsToken = computed(() => sportsCredentials.value?.token ?? null)
+  const sportsBalance = ref<number | null>(null)
+  const sportsBalanceLoading = ref(false)
+  const sportsBalanceError = ref<SportsRequestError | null>(null)
+  let balancePending: Promise<boolean> | null = null
+  let balanceController: AbortController | null = null
+  const resetSportsBalance = () => {
+    balanceController?.abort()
+    balanceController = null
+    balancePending = null
+    sportsBalance.value = null
+    sportsBalanceLoading.value = false
+    sportsBalanceError.value = null
+  }
   let memberCodePending: Promise<string | null> | null = null
   let memberCodeGeneration = 0
   let memberCodeAttempted = false
@@ -305,6 +318,7 @@ export const useSportsStore = defineStore('sports', () => {
     ],
     () => {
       sportsSessionVersion.value += 1
+      resetSportsBalance()
       invalidateSportsMemberCode()
       memberFavourites.clear()
       unconfirmedFavourites.clear()
@@ -351,6 +365,7 @@ export const useSportsStore = defineStore('sports', () => {
         }
         sportsCredentials.value = { memberCode: account.trim(), token }
         memberCodeNeedsRefresh = true
+        if (homepageActive && !sportsBalanceLoading.value) void fetchSportsBalance()
         return sportsMemberCode.value
       } catch {
         return null
@@ -397,6 +412,7 @@ export const useSportsStore = defineStore('sports', () => {
     }
   // 仅包装返回 stc 的体育网关接口；本站热门列表仍使用自己的 code/result 契约。
   const sportsApi = {
+    getBalance: withSportsAuthRecovery(Api.sport.getBalance),
     getAllSportCount: withSportsAuthRecovery(Api.sport.getAllSportCount),
     getSportsV2: withSportsAuthRecovery(Api.sport.getSportsV2),
     getSportEventIndexList: withSportsAuthRecovery(Api.sport.getSportEventIndexList),
@@ -404,6 +420,83 @@ export const useSportsStore = defineStore('sports', () => {
     getPopularSports: withSportsAuthRecovery(Api.sport.getPopularSports),
     getSelectedEventInfo: withSportsAuthRecovery(Api.sport.getSelectedEventInfo),
     favouriteEvent: withSportsAuthRecovery(Api.sport.favouriteEvent)
+  }
+  /** 同账号、同币种刷新失败保留余额；离页或切换会话后丢弃旧响应。 */
+  const fetchSportsBalance = (): Promise<boolean> => {
+    if (balancePending) return balancePending
+    if (!homepageActive || !isLoggedIn.value) return Promise.resolve(false)
+    const version = sportsSessionVersion.value
+    const controller = new AbortController()
+    balanceController = controller
+    const isCurrent = () =>
+      !controller.signal.aborted && version === sportsSessionVersion.value && homepageActive
+    sportsBalanceLoading.value = true
+    sportsBalanceError.value = null
+    balancePending = Promise.resolve()
+      .then(async () => {
+        if (!isCurrent()) return false
+        const baseUrl = getBaseUrl()
+        if (!baseUrl) {
+          sportsBalanceError.value = { kind: 'config', message: 'Missing IM.im_app_url' }
+          return false
+        }
+        // 余额是只读查询，凭据更新后最多补查一次，不循环登录。
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          if (!isCurrent()) return false
+          await ensureSportsMemberCode()
+          if (!isCurrent()) return false
+          const credentials = sportsCredentials.value
+          if (!credentials) {
+            sportsBalanceError.value = { kind: 'business', message: 'Sports login unavailable' }
+            return false
+          }
+          const send = attempt === 0 ? sportsApi.getBalance : Api.sport.getBalance
+          const response = await send(
+            baseUrl,
+            {
+              Token: credentials.token,
+              MemberCode: credentials.memberCode,
+              TimeStamp: Date.now()
+            },
+            { signal: controller.signal }
+          )
+          if (!isCurrent()) return false
+          if (credentials !== sportsCredentials.value) {
+            if (attempt === 0 && sportsCredentials.value) continue
+            sportsBalanceError.value = { kind: 'business', message: 'Sports credentials changed' }
+            return false
+          }
+          if (!isSportsSuccess(response)) {
+            sportsBalanceError.value = {
+              kind: 'business',
+              code: response.stc,
+              message: response.std
+            }
+            return false
+          }
+          if (typeof response.av !== 'number' || !Number.isFinite(response.av)) {
+            sportsBalanceError.value = { kind: 'response', message: 'Invalid sports balance' }
+            return false
+          }
+          sportsBalance.value = response.av
+          return true
+        }
+        return false
+      })
+      .catch(() => {
+        if (isCurrent()) {
+          sportsBalanceError.value = { kind: 'network', message: 'Sports balance request failed' }
+        }
+        return false
+      })
+      .finally(() => {
+        if (isCurrent()) {
+          sportsBalanceLoading.value = false
+          balancePending = null
+          balanceController = null
+        }
+      })
+    return balancePending
   }
   /** 显式重试先获取凭据；普通筛选不走这里，失败后也不自动循环。 */
   const runSportsRetry = (
@@ -1916,6 +2009,7 @@ export const useSportsStore = defineStore('sports', () => {
 
   const cancelRequests = () => {
     homepageActive = false
+    resetSportsBalance()
     cancelHomepageRefresh()
     // 停用和销毁均结束本次停留；旧登录响应不能写回，也不能被下次进入复用。
     invalidateSportsMemberCode()
@@ -2108,6 +2202,10 @@ export const useSportsStore = defineStore('sports', () => {
     sportsSessionVersion,
     sportsMemberCode,
     sportsToken,
+    sportsBalance,
+    sportsBalanceLoading,
+    sportsBalanceError,
+    fetchSportsBalance,
     pageNumber,
     pageSize,
     competitionIds,
