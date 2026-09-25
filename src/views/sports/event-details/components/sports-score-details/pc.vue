@@ -55,7 +55,7 @@
               >
                 <span class="truncate text-sm font-normal text-text-2">{{ row.left.line }}</span>
                 <span class="shrink-0 text-sm font-bold tabular-nums text-text-1">{{
-                  row.left.odds
+                  displayOdds(row.left.selection)
                 }}</span>
               </button>
               <button
@@ -64,7 +64,7 @@
               >
                 <span class="truncate text-sm font-normal text-text-2">{{ row.right.line }}</span>
                 <span class="shrink-0 text-sm font-bold tabular-nums text-text-1">{{
-                  row.right.odds
+                  displayOdds(row.right.selection)
                 }}</span>
               </button>
             </div>
@@ -81,7 +81,7 @@
             >
               <span class="truncate text-sm font-normal text-text-2">{{ option.label }}</span>
               <span class="shrink-0 text-sm font-bold tabular-nums text-text-1">{{
-                option.odds
+                displayOdds(option.selection)
               }}</span>
             </button>
           </div>
@@ -158,22 +158,41 @@
 
 <script setup lang="ts">
 import CaretUp from '@/static/svg/sports/caret-up.svg?component'
-import type { SportMarketLine } from '@/api/interface/sport'
+import type { SportMarketLine, SportWagerSelection } from '@/api/interface/sport'
 import { computed, ref, watch } from 'vue'
-import { buildScoreDetailsFilterTabs, mapMarketLinesToCards } from './map-market-lines'
+import { useI18n } from 'vue-i18n'
+import {
+  buildScoreDetailsFilterTabs,
+  mapMarketLinesToCards,
+  resolveOddsForFormat,
+  type EventDetailsOddsFormat
+} from './map-market-lines'
 import type { DualColumnMarketCard, ScoreDetailsFilterKey, ScoreDetailsMarketCard } from './types'
 
-const props = defineProps<{
-  marketLines?: SportMarketLine[]
-}>()
+const { t } = useI18n()
+
+const props = withDefaults(
+  defineProps<{
+    marketLines?: SportMarketLine[]
+    oddsFormat?: EventDetailsOddsFormat
+  }>(),
+  {
+    oddsFormat: 1
+  }
+)
 
 const COLLAPSED_ROW_LIMIT = 3
 
 const activeFilter = ref<ScoreDetailsFilterKey>('all')
 
-const allMarkets = computed(() => mapMarketLinesToCards(props.marketLines ?? []))
+const allMarkets = computed(() => mapMarketLinesToCards(props.marketLines ?? [], props.oddsFormat))
 
-const filterTabs = computed(() => buildScoreDetailsFilterTabs(props.marketLines ?? []))
+const displayOdds = (selection?: SportWagerSelection) =>
+  selection ? resolveOddsForFormat(selection, props.oddsFormat) : ''
+
+const filterTabs = computed(() =>
+  buildScoreDetailsFilterTabs(props.marketLines ?? [], t('sports.eventDetails.filterAll'))
+)
 
 const visibleMarkets = computed(() => {
   if (activeFilter.value === 'all') {
