@@ -33,8 +33,14 @@
           <li
             v-for="(row, index) in drafts"
             :key="row.id"
-            class="flex h-11 items-center gap-1 rounded-lg border bg-input-3 px-2.5 focus-within:border-theme-primary"
-            :class="dragOverId === row.id ? 'border-theme-primary' : 'border-opacity-10'"
+            class="flex h-11 items-center gap-1 rounded-lg border border-solid bg-input-3 px-2.5"
+            :class="
+              error
+                ? 'border-secondary-2'
+                : dragOverId === row.id
+                  ? 'border-theme-primary'
+                  : 'border-opacity-10 focus-within:border-theme-primary'
+            "
             @dragover.prevent="dragOverId = row.id"
             @drop.prevent="dropAmount(index)"
           >

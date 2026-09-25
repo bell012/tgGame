@@ -151,14 +151,6 @@
             {{ submitError }}
           </p>
           <p v-else-if="notice" class="mb-2 text-[10px] text-text-2" role="status">{{ notice }}</p>
-          <button
-            v-if="props.page.betInfoChanged.value"
-            type="button"
-            class="mb-2 w-full rounded-lg border border-theme-primary p-2 text-xs text-theme-primary"
-            @click="props.page.acceptBetChanges"
-          >
-            {{ t('sports.betAcceptChanges') }}
-          </button>
           <div class="flex items-center justify-between gap-2 text-xs">
             <p class="min-w-0 text-text-2">
               To Win
@@ -166,29 +158,7 @@
                 potentialReturnText
               }}</span>
             </p>
-            <label class="flex shrink-0 cursor-pointer items-center gap-1 text-[11px] text-text-2">
-              <input
-                v-model="acceptBetterOdds"
-                type="checkbox"
-                class="peer sr-only"
-                :disabled="busy"
-              />
-              <span
-                class="flex h-3 w-3 items-center justify-center rounded-full border border-solid border-text-3 text-text-4 peer-checked:border-theme-primary peer-checked:bg-theme-primary peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-theme-primary peer-disabled:opacity-50"
-                aria-hidden="true"
-              >
-                <svg v-if="acceptBetterOdds" viewBox="0 0 12 12" class="h-2.5 w-2.5" fill="none">
-                  <path
-                    d="m2.5 6 2.2 2.2 4.8-4.8"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </span>
-              Auto-accept better odds
-            </label>
+            <span class="text-[11px] text-text-2">{{ t('sports.betOddsAutoUpdate') }}</span>
           </div>
           <div class="mt-[13.333px] flex items-center gap-2.5">
             <button
@@ -337,7 +307,6 @@ const {
   editingAmounts,
   amountDrafts,
   editError,
-  acceptBetterOdds,
   result,
   busy,
   activeRow,

@@ -1,80 +1,34 @@
-import type {
-  SportsBetInfoQuote,
-  SportsBetInfoSetting,
-  SportsBetInfoSelectionParams
-} from '@/api/interface/sport'
+import type { SportsBetInfoQuote, SportsBetInfoSelectionParams } from '@/api/interface/sport'
 
-const finite = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isFinite(value)
-const record = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null
-
-export const isBetInfoQuote = (value: unknown): value is SportsBetInfoQuote =>
-  record(value) &&
-  ['st', 'eid', 'mlid', 'mlsid', 'wsid', 'btsid', 'sid', 'ot', 'o'].every(key =>
-    finite(value[key])
-  ) &&
-  (value.rid === null || finite(value.rid)) &&
-  (value.h === null || finite(value.h)) &&
-  (value.sp === null || typeof value.sp === 'string')
-
-export const isBetInfoSetting = (value: unknown): value is SportsBetInfoSetting =>
-  record(value) &&
-  ['masa', 'misa', 'noc', 'combs', 'epa'].every(key => finite(value[key])) &&
-  (value.rid === null || finite(value.rid)) &&
-  Number(value.misa) >= 0 &&
-  Number(value.masa) >= Number(value.misa) &&
-  Number(value.epa) >= 0 &&
-  Number.isInteger(value.noc) &&
-  Number(value.noc) >= 0 &&
-  Number.isInteger(value.combs)
-
-// 单项缺失或格式异常只标记该项，不丢掉其他单关的有效报价。
+// 按选项 ID 关联报价；字段缺失不等于投注项失效。
 export const parseBetInfoItems = (
   selections: SportsBetInfoSelectionParams[],
-  rawQuotes: readonly unknown[],
-  rawSettings: readonly unknown[],
-  single: boolean
+  rawQuotes: readonly SportsBetInfoQuote[]
 ) => {
-  const quotes: (SportsBetInfoQuote & { rid: number })[] = []
-  const settings: SportsBetInfoSetting[] = []
-  const errors: Record<number, string> = {}
-  for (const input of selections) {
-    const candidates = rawQuotes.filter(
-      quote =>
-        record(quote) &&
-        (quote.rid === null || quote.rid === input.RefId) &&
-        quote.eid === input.EventId &&
-        quote.sid === input.SportId &&
-        quote.mlid === input.MarketlineId &&
-        quote.wsid === input.WagerSelectionId &&
-        quote.btsid === input.BetTypeSelectionId
+  const quotes = new Map<number, SportsBetInfoQuote & { rid: number }>()
+  const replacedIds = new Set<number>()
+  for (const quote of rawQuotes) {
+    if (!quote) continue
+    const input = selections.find(
+      item => item.WagerSelectionId === quote.wsid || item.RefId === quote.rid
     )
-    const quote = candidates[0]
-    if (candidates.length !== 1 || !isBetInfoQuote(quote)) {
-      let reason = 'sports.betInfoIncomplete'
-      if (candidates.length === 1 && record(quote)) {
-        if (quote.st === 380 && quote.mlsid === 2) reason = 'sports.betMarketClosed'
-        else if (finite(quote.st) && ![100, 381].includes(quote.st))
-          reason =
-            !single && quote.st === 439
-              ? 'sports.betParlayUnsupported'
-              : 'sports.betInfoSelectionUnavailable'
-      }
-      errors[input.RefId] = reason
+    if (!input) {
+      const original = selections.find(
+        item =>
+          item.EventId === quote.eid &&
+          item.MarketlineId === quote.mlid &&
+          item.BetTypeSelectionId === quote.btsid
+      )
+      if (original && quote.wsid != null) replacedIds.add(original.RefId)
       continue
     }
-    quotes.push({ ...quote, rid: input.RefId })
-    if (!single) continue
-    const matchingSettings = rawSettings.filter(
-      item => record(item) && item.rid === input.RefId && item.combs === 0
-    )
-    const setting = matchingSettings[0]
-    if (matchingSettings.length === 1 && isBetInfoSetting(setting)) settings.push(setting)
-    else if ([100, 381].includes(quote.st) && quote.mlsid === 1)
-      errors[input.RefId] = 'sports.betInfoIncomplete'
+    if (quote.wsid != null && quote.wsid !== input.WagerSelectionId) {
+      replacedIds.add(input.RefId)
+      continue
+    }
+    quotes.set(input.RefId, { ...quote, rid: input.RefId })
   }
-  return { quotes, settings, errors }
+  return { quotes: [...quotes.values()], replacedIds: [...replacedIds] }
 }
 
 export const comboLabel = (combo: number, count: number) => {
@@ -102,5 +56,3 @@ export const decimalOdds = (odds: number, type: number): number | null => {
   if (type === 6) return odds > 0 ? 1 + odds / 100 : odds < 0 ? 1 + 100 / Math.abs(odds) : null
   return null
 }
-
-export const sameHandicap = (a: number | null, b: number | null) => a === b

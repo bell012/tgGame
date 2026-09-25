@@ -58,15 +58,7 @@ export type SportsBetSelection = {
   trend?: OddsTrend
   live?: boolean
   mockBetStatus?: 'open' | 'closed' | 'fail'
-  betStatus?:
-    | 'idle'
-    | 'pending'
-    | 'open'
-    | 'closed'
-    | 'unavailable'
-    | 'incomplete'
-    | 'changed'
-    | 'error'
+  betStatus?: 'idle' | 'pending' | 'open' | 'closed' | 'unavailable' | 'error'
   oddsType?: number
   minStake?: number
   maxStake?: number

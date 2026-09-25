@@ -182,11 +182,6 @@
       :potential-return-text="potentialReturnText"
       :can-submit="canSubmit"
       :refreshing="refreshing"
-      :notice="notice"
-      :bet-info-changed="page.betInfoChanged.value"
-      :accept-better-odds="page.acceptBetterOdds.value"
-      @accept-changes="page.acceptBetChanges"
-      @accept-better="page.acceptBetterOdds.value = $event"
       :focused-stake-id="focusedStakeId"
       :submission-state="pcSubmissionState"
       @toggle="betSlipOpen = !betSlipOpen"
@@ -258,7 +253,6 @@ const {
   totalStakeText,
   potentialReturnText,
   canSubmit,
-  notice,
   refreshing,
   focusedStakeId,
   collectOnly,

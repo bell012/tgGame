@@ -1,11 +1,9 @@
 <template>
   <div class="min-w-0">
     <div
-      class="flex h-[42px] min-w-0 items-center gap-[3px] rounded-lg bg-input-3 p-1.5 text-sm"
+      class="flex h-[42px] min-w-0 items-center gap-[3px] rounded-lg border border-solid bg-input-3 p-1.5 text-sm"
       :class="
-        props.error
-          ? 'ring-1 ring-secondary-2'
-          : 'focus-within:ring-1 focus-within:ring-theme-primary'
+        props.error ? 'border-secondary-2' : 'border-transparent focus-within:border-theme-primary'
       "
     >
       <span

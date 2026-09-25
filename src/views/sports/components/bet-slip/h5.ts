@@ -26,7 +26,6 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   const editingAmounts = ref(false)
   const amountDrafts = ref<string[]>([])
   const editError = ref('')
-  const acceptBetterOdds = page.acceptBetterOdds
   const attempted = ref(false)
   const result = ref<SportsBetResult>('idle')
   const rows = computed(() =>
@@ -253,7 +252,6 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     editingAmounts,
     amountDrafts,
     editError,
-    acceptBetterOdds,
     result,
     busy,
     activeRow,

@@ -1,18 +1,4 @@
-export type NoticeKey =
-  | ''
-  | 'needTwoSelections'
-  | 'selectionLimit'
-  | 'submitted'
-  | 'notImplemented'
-  | 'currencyChanged'
 export const MAX_SELECTIONS = 8
-export const NOTICE_MESSAGES: Record<Exclude<NoticeKey, ''>, string> = {
-  needTwoSelections: 'Add selections from at least two different matches to place a parlay.',
-  selectionLimit: 'You can select up to eight different matches.',
-  submitted: 'Local simulation complete. No real bet was placed and no balance was deducted.',
-  notImplemented: 'The design for this dialog is not available yet.',
-  currencyChanged: 'Display currency changed. Mock bets have been reset.'
-}
 /** 空输入按 0 处理，拒绝负数、指数和超过两位的小数。 */
 export const parseSportsStake = (raw: string): number | null => {
   const value = raw.trim()

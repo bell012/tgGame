@@ -2,13 +2,13 @@
   <div class="min-w-0">
     <button
       type="button"
-      class="flex h-[38px] w-full min-w-0 scroll-my-2 items-center gap-1.5 rounded-lg border border-solid bg-input-3 px-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+      class="flex h-[38px] w-full min-w-0 scroll-my-2 items-center gap-1.5 rounded-lg border border-solid bg-input-3 px-2 text-left focus-visible:outline focus-visible:outline-2"
       :class="
         props.error
-          ? 'border-secondary-2'
+          ? 'border-secondary-2 focus-visible:outline-secondary-2'
           : props.active
-            ? 'border-theme-primary'
-            : 'border-opacity-10'
+            ? 'border-theme-primary focus-visible:outline-theme-primary'
+            : 'border-opacity-10 focus-visible:outline-theme-primary'
       "
       :aria-label="`${props.label}: ${props.value || 'empty'}`"
       :aria-invalid="Boolean(props.error)"

@@ -1776,6 +1776,46 @@ export const useSportsStore = defineStore('sports', () => {
     return Promise.all(waiting)
   }
 
+  // 单独补查选中盘口，不用首页缓存的新鲜度判断代替确认。
+  const confirmBetSelection = (selection: {
+    sportId: number
+    eventId: number
+    market: SportMarketLine
+    wagerSelectionId: number
+  }) =>
+    runHomepageRefresh(
+      `bet-selection:${selection.sportId}:${selection.eventId}:${selection.market.MarketlineId}:${selection.wagerSelectionId}`,
+      async (signal, isCurrent) => {
+        const params: GetSelectedEventInfoParams = {
+          SportId: selection.sportId,
+          EventIds: [selection.eventId],
+          OddsType: getHomepageOddsType(),
+          IsCombo: false,
+          IncludeGroupEvents: false,
+          LanguageCode: languageCode.value,
+          BetTypeIds: [selection.market.BetTypeId],
+          PeriodIds: [selection.market.PeriodId]
+        }
+        const revision = ++eventReadRevision
+        const response = await sportsApi.getSelectedEventInfo(getBaseUrl(), params, { signal })
+        if (!isCurrent() || !isSportsSuccess(response) || !Array.isArray(response.e)) return null
+        const event = response.e.find(item => item.EventId === selection.eventId)
+        // 缺少赛事或投注项列表，不能当作确认失效。
+        if (!event || !Array.isArray(event.MarketLines)) return null
+        const line = event.MarketLines.find(
+          item => item.MarketlineId === selection.market.MarketlineId
+        )
+        if (line && !Array.isArray(line.WagerSelections)) return null
+        const exists = line?.WagerSelections.some(
+          item => item.WagerSelectionId === selection.wagerSelectionId
+        )
+        const cached = refreshedEvents.get(eventKey(selection.sportId, selection.eventId))
+        if (cached && cached.revision > revision) return null
+        rememberEvent(selection.sportId, event, revision, { marketScope: params })
+        return exists ? 'present' : 'missing'
+      }
+    )
+
   const mergeRefreshGroups = (
     previous: SportCompetitionGroup[],
     incoming: SportCompetitionGroup[]
@@ -2363,6 +2403,7 @@ export const useSportsStore = defineStore('sports', () => {
     fetchSportCounts,
     refreshHomepageCounts,
     refreshVisibleEvents,
+    confirmBetSelection,
     refreshHomepageBackground,
     cancelHomepageRefresh,
     getRefreshEvent,

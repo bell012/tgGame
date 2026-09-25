@@ -204,14 +204,6 @@
         </div>
 
         <div v-if="props.selections.length" class="shrink-0 px-3 pb-[18px] pt-[17px]">
-          <button
-            v-if="props.betInfoChanged"
-            type="button"
-            class="mb-3 w-full rounded-lg border border-theme-primary p-2 text-sm text-theme-primary"
-            @click="emit('acceptChanges')"
-          >
-            {{ t('sports.betAcceptChanges') }}
-          </button>
           <div class="flex min-h-5 items-center justify-between gap-3 text-sm leading-5">
             <span class="text-text-2">Winnings</span>
             <span class="min-w-0 break-all text-right font-bold tabular-nums">
@@ -241,14 +233,6 @@
           </button>
         </div>
 
-        <p
-          v-if="props.notice"
-          class="px-[18px] pb-3 text-xs text-text-2"
-          role="status"
-          aria-live="polite"
-        >
-          {{ props.notice }}
-        </p>
         <footer class="flex shrink-0 gap-3 px-[18px] pb-[18px]">
           <button
             v-if="props.selections.length"
@@ -271,19 +255,13 @@
             Odds Settings
           </button>
         </footer>
-        <label
+        <p
           v-if="oddsSettingsOpen"
           :id="oddsSettingsId"
           class="flex shrink-0 items-center gap-2 px-[18px] pb-3 text-xs text-text-2"
         >
-          <input
-            type="checkbox"
-            class="accent-theme-primary"
-            :checked="props.acceptBetterOdds"
-            @change="emit('acceptBetter', ($event.target as HTMLInputElement).checked)"
-          />
-          {{ t('sports.betAcceptBetter') }}
-        </label>
+          {{ t('sports.betOddsAutoUpdate') }}
+        </p>
       </fieldset>
     </div>
   </aside>
@@ -321,17 +299,12 @@ const props = defineProps<{
   potentialReturnText: string
   canSubmit: boolean
   refreshing: boolean
-  notice: string
-  betInfoChanged: boolean
-  acceptBetterOdds: boolean
   focusedStakeId?: string
   submissionState?: 'idle' | 'confirming' | 'success' | 'failed'
 }>()
 
 const emit = defineEmits<{
   toggle: []
-  acceptChanges: []
-  acceptBetter: [value: boolean]
   remove: [id: string]
   stake: [id: string, value: string]
   parlayStake: [id: string, value: string]

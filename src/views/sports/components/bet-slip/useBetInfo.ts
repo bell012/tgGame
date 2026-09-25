@@ -20,7 +20,7 @@ import { useSportsStore } from '@/stores/sports'
 import { useUserStore } from '@/stores/user'
 import type { SportsBetMode } from '../../shared/types'
 import type { OddsTrend } from '../match-odds/types'
-import { decimalOdds, isBetInfoSetting, parseBetInfoItems, sameHandicap } from './bet-info'
+import { decimalOdds, parseBetInfoItems } from './bet-info'
 
 export type BetInfoSource = {
   sportId: number
@@ -74,16 +74,10 @@ export const useBetInfo = ({
   const loading = ref(false)
   const ready = ref(false)
   const state = ref<'idle' | 'queued' | 'loading' | 'success' | 'error'>('idle')
-  const itemErrors = ref<Record<number, string>>({})
   const quotes = ref<(SportsBetInfoQuote & { rid: number })[]>([])
   const trends = ref<Record<number, OddsTrend>>({})
   const settings = ref<SportsBetInfoSetting[]>([])
-  const changedIds = ref<number[]>([])
-  const acceptBetterOdds = ref(true)
-  const accepted = new Map<
-    number,
-    { odds: number; type: number; handicap: number | null; specifiers: string | null }
-  >()
+  const replacedIds = ref<number[]>([])
   const loggedIn = computed(() =>
     Boolean(userStore.userInfo?.tradeToken || userStore.acctInfo?.memberId)
   )
@@ -103,15 +97,16 @@ export const useBetInfo = ({
     ready.value = false
     state.value = 'idle'
   }
-  const query = async () => {
+  const query = async (preserveQuotes = false) => {
     if (!enabled()) return
     const current = generation
     const previousQuotes = quotes.value
-    quotes.value = []
+    if (!preserveQuotes) {
+      quotes.value = []
+      settings.value = []
+    }
     trends.value = {}
-    settings.value = []
-    itemErrors.value = {}
-    changedIds.value = []
+    replacedIds.value = []
     error.value = ''
     const sources = getSources()
     if (mode.value === 'parlay' && sources.length < 2) {
@@ -134,12 +129,7 @@ export const useBetInfo = ({
       }
       if (current !== generation) return
       ready.value = false
-      if (
-        !response ||
-        ![100, 350].includes(Number(response.stc)) ||
-        !Array.isArray(response.wsis) ||
-        !Array.isArray(response.bs)
-      ) {
+      if (!response || ![100, 350].includes(Number(response.stc))) {
         error.value = [439, 464].includes(
           Number(response?.stc ?? sportsStore.requests.GetBetInfo.error?.code)
         )
@@ -148,21 +138,9 @@ export const useBetInfo = ({
         return
       }
       const sent = sportsStore.requests.GetBetInfo.params?.WagerSelectionInfos ?? []
-      const parsed = parseBetInfoItems(sent, response.wsis, response.bs, mode.value === 'single')
+      const parsed = parseBetInfoItems(sent, Array.isArray(response.wsis) ? response.wsis : [])
       const next = parsed.quotes
-      itemErrors.value = parsed.errors
-      const validSettings =
-        mode.value === 'single' ? parsed.settings : response.bs.filter(isBetInfoSetting)
-      const settingKeys = validSettings.map(item => item.combs)
-      const allSelectionsOpen =
-        next.length === selections.length &&
-        !Object.keys(parsed.errors).length &&
-        next.every(quote => [100, 381].includes(quote.st) && quote.mlsid === 1)
-      const invalidComboSettings =
-        mode.value === 'parlay' &&
-        (validSettings.length !== response.bs.length ||
-          new Set(settingKeys).size !== settingKeys.length ||
-          (allSelectionsOpen && !validSettings.some(item => item.combs !== 0 && item.noc > 0)))
+      replacedIds.value = parsed.replacedIds
       for (const quote of next) {
         const previous = previousQuotes.find(item => item.rid === quote.rid)
         const before = previous ? decimalOdds(previous.o, previous.ot) : null
@@ -170,50 +148,19 @@ export const useBetInfo = ({
         if (before !== null && after !== null && Math.abs(before - after) > 0.000001) {
           trends.value[quote.rid] = after > before ? 'up' : 'down'
         }
-        const input = selections.find(item => item.RefId === quote.rid)
-        if (!input || ![100, 381].includes(quote.st)) continue
-        const baseline = accepted.get(quote.rid) ?? {
-          odds: input.Odds,
-          type: input.OddsType,
-          handicap: input.Handicap,
-          specifiers: input.Specifiers
-        }
-        accepted.set(quote.rid, baseline)
-        const previousOdds = decimalOdds(baseline.odds, baseline.type)
-        const nextOdds = decimalOdds(quote.o, quote.ot)
-        const oddsChanged =
-          previousOdds === null || nextOdds === null
-            ? baseline.odds !== quote.o || baseline.type !== quote.ot
-            : Math.abs(previousOdds - nextOdds) > 0.000001
-        const needsConfirmation =
-          !sameHandicap(baseline.handicap, quote.h) ||
-          baseline.specifiers !== quote.sp ||
-          (oddsChanged &&
-            (!acceptBetterOdds.value ||
-              previousOdds === null ||
-              nextOdds === null ||
-              nextOdds < previousOdds))
-        if (needsConfirmation) {
-          if (!changedIds.value.includes(quote.rid)) changedIds.value.push(quote.rid)
-        } else if (!changedIds.value.includes(quote.rid)) {
-          accepted.set(quote.rid, {
-            odds: quote.o,
-            type: quote.ot,
-            handicap: quote.h,
-            specifiers: quote.sp
-          })
-        }
       }
-      quotes.value = next
-      settings.value = invalidComboSettings ? [] : validSettings
-      error.value = invalidComboSettings ? 'sports.betInfoIncomplete' : ''
-      const hasSettings =
-        mode.value === 'single'
-          ? next.every(quote =>
-              validSettings.some(item => item.combs === 0 && item.rid === quote.rid)
-            )
-          : !invalidComboSettings
-      ready.value = hasSettings && allSelectionsOpen
+      // 局部返回没带到的选项沿用原报价，不把缺失当作恢复开盘。
+      const updated = new Map(next.map(quote => [quote.rid, quote]))
+      quotes.value = preserveQuotes
+        ? selections.flatMap(selection => {
+            const quote =
+              updated.get(selection.RefId) ??
+              previousQuotes.find(item => item.rid === selection.RefId)
+            return quote ? [quote] : []
+          })
+        : next
+      settings.value = Array.isArray(response.bs) ? response.bs.filter(Boolean) : []
+      ready.value = true
     } catch {
       if (current === generation) {
         ready.value = false
@@ -226,22 +173,14 @@ export const useBetInfo = ({
       }
     }
   }
-  const acceptChanges = () => {
-    if (!enabled() || loading.value || error.value) return
-    const acceptedQuotes = quotes.value.filter(
-      quote => [100, 381].includes(quote.st) && quote.mlsid === 1 && !itemErrors.value[quote.rid]
-    )
-    acceptedQuotes.forEach(quote =>
-      accepted.set(quote.rid, {
-        odds: quote.o,
-        type: quote.ot,
-        handicap: quote.h,
-        specifiers: quote.sp
-      })
-    )
-    changedIds.value = changedIds.value.filter(
-      id => !acceptedQuotes.some(quote => quote.rid === id)
-    )
+  const refreshBetInfo = () => {
+    if (!enabled()) return
+    cancel()
+    const current = generation
+    state.value = 'queued'
+    void nextTick(() => {
+      if (current === generation) void query(true)
+    })
   }
 
   // 只在投注单打开、选项或模式变化时查询，不定时轮询。
@@ -254,9 +193,8 @@ export const useBetInfo = ({
         active.value,
         visible.value
       ] as const,
-    (values, previous) => {
+    () => {
       cancel()
-      if (values[0] !== previous?.[0]) accepted.clear()
       if (!enabled()) return
       const current = generation
       state.value = 'queued'
@@ -287,17 +225,12 @@ export const useBetInfo = ({
     betInfoLoading: loading,
     betInfoError: error,
     betInfoState: state,
-    betInfoItemErrors: itemErrors,
-    betInfoChangedIds: changedIds,
+    betInfoReplacedIds: replacedIds,
     betInfoAvailable: computed(() => enabled() && state.value === 'success' && !error.value),
-    betInfoReady: computed(
-      () => ready.value && !error.value && !changedIds.value.length && enabled()
-    ),
+    betInfoReady: computed(() => ready.value && !error.value && enabled()),
     betInfoQuotes: quotes,
     betInfoTrends: trends,
     betInfoSettings: settings,
-    betInfoChanged: computed(() => changedIds.value.length > 0),
-    acceptBetterOdds,
-    acceptBetChanges: acceptChanges
+    refreshBetInfo
   }
 }
