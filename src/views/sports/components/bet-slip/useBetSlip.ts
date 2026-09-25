@@ -1,7 +1,11 @@
-import { computed, onScopeDispose, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
+import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { useSportsStore } from '@/stores/sports'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
+import { globalShowToast } from '@/utils/toast'
 import type { OddsSelectPayload } from '../match-odds/types'
 import type {
   SportsMatch,
@@ -11,7 +15,6 @@ import type {
 } from '../../shared/types'
 import { mapSportsMatches } from '../../shared/match'
 import {
-  MOCK_BALANCE,
   MAX_SELECTIONS,
   NOTICE_MESSAGES,
   parseSportsStake,
@@ -39,6 +42,13 @@ type BetSlipOptions = {
 
 export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
   const sportsStore = useSportsStore()
+  const {
+    sportsBalance: balance,
+    sportsBalanceLoading: refreshing,
+    sportsBalanceError
+  } = storeToRefs(sportsStore)
+  const { t } = useI18n()
+  const { requireLogin } = useRequireLoginAction()
   const { currentCurrencyCode } = useDisplayCurrency()
   const betSlipOpen = ref(false)
   const mode = ref<SportsBetMode>('single')
@@ -46,8 +56,6 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
   const parlayStakes = ref<Record<string, string>>({})
   const focusedStakeId = ref('')
   const noticeKey = ref<NoticeKey>('')
-  const refreshing = ref(false)
-  let refreshTimer: ReturnType<typeof setTimeout> | undefined
 
   const refreshTargets = computed(() =>
     outcomes.value.map(({ sportId, eventId }) => ({ sportId, eventId }))
@@ -68,7 +76,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     const selection = line?.WagerSelections.find(
       item => item.WagerSelectionId === outcome.WagerSelectionId
     )
-    if (!match || !line || !selection) return outcome.snapshot
+    if (!match) return outcome.snapshot
+    if (!line || !selection) return { ...outcome.snapshot, mockBetStatus: 'closed' }
     const odds = Number.isFinite(selection.Odds) ? selection.Odds : outcome.snapshot.odds
     return {
       id: outcome.id,
@@ -159,22 +168,28 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     )
   )
   const canSubmit = computed(
-    () => !invalidStake.value && totalStake.value > 0 && totalStake.value <= MOCK_BALANCE
+    () =>
+      !invalidStake.value &&
+      totalStake.value > 0 &&
+      balance.value !== null &&
+      totalStake.value <= balance.value &&
+      !selections.value.some(item => item.mockBetStatus === 'closed')
   )
   const currencySymbol = computed(() => getCurrencySymbol(currentCurrencyCode.value))
   const formatMoney = (value: number) => getFormattedBalance(value, currentCurrencyCode.value, 2)
-  const balanceText = computed(() => formatMoney(MOCK_BALANCE))
+  const balanceText = computed(() => (balance.value === null ? '--' : formatMoney(balance.value)))
   const totalStakeText = computed(() => formatMoney(totalStake.value))
   const potentialReturnText = computed(() => formatMoney(potentialReturn.value))
   const notice = computed(() => {
+    if (sportsBalanceError.value) return t('sports.balanceRefreshFailed')
+    if (balance.value === null && selections.value.length) return t('sports.balanceUnavailable')
     if (invalidStake.value)
       return 'Enter a valid non-negative amount with up to two decimal places.'
-    if (totalStake.value > MOCK_BALANCE) return 'Total stake exceeds the mock balance.'
+    if (balance.value !== null && totalStake.value > balance.value)
+      return t('sports.insufficientBalance')
     return noticeKey.value ? NOTICE_MESSAGES[noticeKey.value] : ''
   })
   const clearBets = () => {
-    clearTimeout(refreshTimer)
-    refreshing.value = false
     outcomes.value = []
     parlayStakes.value = {}
     focusedStakeId.value = ''
@@ -276,7 +291,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
       focusedStakeId.value = id
   }
   const maxStake = (id: string, kind: SportsBetMode) => {
-    if (kind !== mode.value) return
+    if (kind !== mode.value || balance.value === null) return
     const row = activeRows.value.find(item => item.id === id)
     if (!row) return
     const otherStake = activeRows.value.reduce(
@@ -284,7 +299,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
         item.id === id ? sum : sum + (parseSportsStake(item.stake) ?? 0) * item.combinationCount,
       0
     )
-    const availableCents = Math.max(0, Math.round((MOCK_BALANCE - otherStake) * 100))
+    const availableCents = Math.max(0, Math.round((balance.value - otherStake) * 100))
     const value = (Math.floor(availableCents / row.combinationCount) / 100).toFixed(2)
     if (kind === 'single') updateStake(id, value)
     else updateParlayStake(id, value)
@@ -305,14 +320,17 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     clearBets()
     noticeKey.value = 'submitted'
   }
-  const refreshBalance = () => {
-    if (refreshing.value) return
-    refreshing.value = true
+  const refreshBalance = async () => {
+    if (refreshing.value || !requireLogin()) return
+    const version = sportsStore.sportsSessionVersion
     noticeKey.value = ''
-    refreshTimer = setTimeout(() => {
-      refreshing.value = false
-      if (!noticeKey.value) noticeKey.value = 'balanceRefreshed'
-    }, 400)
+    const success = await sportsStore.fetchSportsBalance()
+    if (success || version !== sportsStore.sportsSessionVersion) return
+    if (!sportsBalanceError.value && balance.value === null) return
+    globalShowToast({
+      type: 'fail',
+      message: t('sports.balanceRefreshFailed')
+    })
   }
   const showUnsupported = () => {
     noticeKey.value = 'notImplemented'
@@ -322,15 +340,13 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     noticeKey.value = 'currencyChanged'
   })
 
-  onScopeDispose(() => clearTimeout(refreshTimer))
-
   return {
     betSlipOpen,
     mode,
     selections,
     parlays,
     balanceText,
-    balance: MOCK_BALANCE,
+    balance,
     totalStake,
     potentialReturn,
     currencySymbol,

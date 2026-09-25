@@ -1,6 +1,9 @@
 <template>
   <!-- 图片消息气泡。 -->
-  <div class="flex w-full justify-end">
+  <div
+    class="flex w-full"
+    :class="message.direction === 'outgoing' ? 'justify-end' : 'justify-start'"
+  >
     <button
       type="button"
       class="relative overflow-hidden"
@@ -23,14 +26,20 @@
         "
       >
         <span>{{ message.time }}</span>
-        <ReadIcon v-if="message.read" class="h-[10px] w-[15px]" />
+        <span v-if="message.period">{{ message.period }}</span>
+        <img
+          v-if="message.read"
+          :src="messageReadStatusImage"
+          alt=""
+          class="h-[10px] w-[15px] object-contain"
+        />
       </div>
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import ReadIcon from '@/static/svg/chat/public/read.svg?component'
+import messageReadStatusImage from '@/static/img/chat/public/message-read-status.png'
 import type { ChatMessage } from '../types'
 
 const props = withDefaults(defineProps<{ message: ChatMessage; displayMode?: 'h5' | 'pc' }>(), {

@@ -25,7 +25,7 @@
     <!-- 快捷问题入口。 -->
     <QuickIssueBar
       :display-mode="props.displayMode"
-      :issues="QUICK_ISSUES"
+      :issues="issues"
       @select="$emit('issue', $event)"
     />
 
@@ -51,15 +51,14 @@
     <!-- 图片选择面板。 -->
     <ImagePickerPanel
       v-else-if="mode === 'media'"
-      @photo="$emit('photo')"
-      @camera="$emit('camera')"
+      @photo="$emit('photo', $event)"
+      @camera="$emit('camera', $event)"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { QUICK_ISSUES } from '../shared'
 import type {
   ChatComposerMode,
   ChatMessage,
@@ -81,6 +80,7 @@ const props = withDefaults(
     mode: ChatComposerMode
     draft: string
     replyTarget: ChatReplyTarget | null
+    issues: QuickIssue[]
     typing?: boolean
     displayMode?: 'h5' | 'pc'
   }>(),
@@ -101,8 +101,8 @@ defineEmits<{
   'cancel-reply': []
   'emoji-select': [emoji: string]
   'emoji-delete': []
-  photo: []
-  camera: []
+  photo: [file: File]
+  camera: [file: File]
   'view-image': [message: ChatMessage]
 }>()
 

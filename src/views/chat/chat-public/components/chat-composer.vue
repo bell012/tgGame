@@ -26,12 +26,20 @@
           <EmojiIcon class="size-[24px]" />
         </button>
       </div>
+      <!-- PC 端按输入状态切换图片上传与发送操作。 -->
       <button
         type="button"
-        class="flex size-[44px] shrink-0 items-center justify-center rounded-[10px] bg-opacity-6"
-        @click="$emit('media')"
+        class="flex size-[44px] shrink-0 items-center justify-center rounded-[10px]"
+        :class="hasDraft ? 'bg-theme-primary' : ''"
+        @click="hasDraft ? $emit('send') : $emit('media')"
       >
-        <MoreIcon class="size-[16px]" />
+        <img
+          v-if="hasDraft"
+          :src="chatSendIconImage"
+          alt=""
+          class="h-[15px] w-[18px] object-contain"
+        />
+        <img v-else :src="chatMoreImage" alt="" class="size-[16px] object-contain" />
       </button>
     </div>
 
@@ -48,8 +56,14 @@
       <button type="button" class="shrink-0" @click="$emit('emoji')">
         <EmojiIcon class="size-[24px]" />
       </button>
-      <button type="button" class="shrink-0" @click="$emit('media')">
-        <MoreIcon class="size-[24px]" />
+      <!-- H5 端有内容时显示发送按钮，否则保留图片上传入口。 -->
+      <button
+        type="button"
+        class="flex size-[24px] shrink-0 items-center justify-center"
+        @click="hasDraft ? $emit('send') : $emit('media')"
+      >
+        <img v-if="hasDraft" :src="chatSendButtonImage" alt="" class="size-[24px] object-contain" />
+        <img v-else :src="chatMoreH5Image" alt="" class="size-[24px] object-contain" />
       </button>
     </div>
 
@@ -59,8 +73,12 @@
 </template>
 
 <script setup lang="ts">
+import chatMoreH5Image from '@/static/img/chat/public/chat-more-h5.png'
+import chatMoreImage from '@/static/img/chat/public/chat-more.png'
+import chatSendButtonImage from '@/static/img/chat/public/chat-send-button.png'
+import chatSendIconImage from '@/static/img/chat/public/chat-send-icon.png'
 import EmojiIcon from '@/static/svg/chat/public/emoji.svg?component'
-import MoreIcon from '@/static/svg/chat/public/more.svg?component'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChatReplyTarget } from '../types'
 import ReplyPreview from './reply-preview.vue'
@@ -83,6 +101,9 @@ const emit = defineEmits<{
   media: []
   'cancel-reply': []
 }>()
+
+/** 判断输入框是否存在可发送的非空内容。 */
+const hasDraft = computed(() => props.modelValue.trim().length > 0)
 
 /** 将原生输入事件转换为组件的双向绑定值。 */
 const handleInput = (event: Event) => {

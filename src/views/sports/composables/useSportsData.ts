@@ -13,7 +13,6 @@ import { sportItems } from '../components/sports-navigation/sport-items'
 import { mapSportsMatches } from '../shared/match'
 import { createHomepageRefresh } from './refreshScheduler'
 import { useMatchTime } from './useMatchTime'
-import type { SportsMatch } from '../shared/types'
 
 const MATCH_PAGE_SIZE = 12
 
@@ -250,11 +249,14 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     () => new Map([...liveMatches.value, ...matches.value].map(match => [match.id, match]))
   )
   const { getMatchTime } = useMatchTime({
-    enabled: () => isHomepageRoute.value && sportsPageActive.value,
-    matches: () =>
-      refreshTargets.value
-        .map(target => matchById.value.get(`${target.sportId}:${target.eventId}`))
-        .filter((match): match is SportsMatch => !!match)
+    enabled: () =>
+      isHomepageRoute.value &&
+      sportsPageActive.value &&
+      refreshTargets.value.some(
+        target => matchById.value.get(`${target.sportId}:${target.eventId}`)?.phaseClock?.running
+      ),
+    // 换页和滚动不丢失计时起点，只有需要显示时才启动秒表。
+    matches: () => [...matchById.value.values()]
   })
   const totalPages = computed(() => Math.max(1, Math.ceil(matches.value.length / MATCH_PAGE_SIZE)))
   const pagedMatches = computed(() =>

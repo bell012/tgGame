@@ -52,8 +52,11 @@ const getPhaseClock = (
 }
 
 /** 按实际经过时间累加，浏览器暂停回调不会造成计时漂移。 */
-export const getMatchDisplayTime = (match: SportsMatch, now: number): string => {
-  const clock = match.phaseClock
+export const getMatchDisplayTime = (
+  match: SportsMatch,
+  now: number,
+  clock = match.phaseClock
+): string => {
   if (!clock?.running) return match.phase || match.kickoff
   const elapsed = Math.max(0, Math.floor((now - clock.receivedAt) / 1000))
   const seconds = clock.seconds + elapsed

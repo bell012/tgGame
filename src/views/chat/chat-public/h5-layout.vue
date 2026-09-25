@@ -20,7 +20,11 @@
         </h1>
         <span class="size-[33px] shrink-0" />
       </header>
-      <ConversationList :conversations="conversations" @select="handleConversationSelect" />
+      <ConversationList
+        :conversations="conversations"
+        :loading="loadingConversations"
+        @select="handleConversationSelect"
+      />
     </template>
 
     <!-- 已选择会话时的对话内容层。 -->
@@ -30,6 +34,7 @@
         ref="conversationViewRef"
         :conversation="activeConversation"
         :messages="messages"
+        :issues="quickIssues"
         :mode="mode"
         :draft="draft"
         :reply-target="replyTarget"
@@ -44,8 +49,8 @@
         @cancel-reply="cancelReply"
         @emoji-select="handleEmojiSelect"
         @emoji-delete="handleEmojiDelete"
-        @photo="openImageComposer"
-        @camera="openImageComposer"
+        @photo="handleImageUpload"
+        @camera="handleImageUpload"
         @view-image="openImageViewer"
       />
 
@@ -53,6 +58,8 @@
       <QuickIssueSheet
         :visible="quickIssueVisible"
         :active-issue="activeIssue"
+        :items="autoReplyItems"
+        :loading="loadingAutoReplies"
         @close="quickIssueVisible = false"
         @send="handleQuickIssueSend"
       />
@@ -70,15 +77,14 @@
       :src="previewImage"
       :mode="previewMode"
       @close="closeImagePreview"
-      @send="handleImagePreviewSend"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import mockImageUrl from '@/static/img/chat/public/chat-image-sample.jpg'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
-import { nextTick, ref } from 'vue'
+import type { AutoReplyItem } from '@/api/interface/chat'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ChatImagePreview from './components/chat-image-preview.vue'
@@ -87,17 +93,27 @@ import ConversationList from './components/conversation-list.vue'
 import ConversationView from './components/conversation-view.vue'
 import QuickIssueSheet from './components/quick-issue-sheet.vue'
 import { useChatComposer } from './composables/use-chat-composer'
-import { useConversationList } from './composables/use-conversation-list'
-import { useMessageList } from './composables/use-message-list'
-import { useSendMessage } from './composables/use-send-message'
+import { useChatRuntime } from './composables/use-chat-runtime'
 import type { ChatMessage, ConversationItem, QuickIssue } from './types'
 
 const { t } = useI18n()
 const router = useRouter()
-
-const { conversations } = useConversationList()
-const { messages } = useMessageList()
-const { sendText, sendImage } = useSendMessage(messages)
+const {
+  conversations,
+  messages,
+  quickIssues,
+  autoReplyItems,
+  activeConversation,
+  loadingConversations,
+  loadingAutoReplies,
+  initialize,
+  selectConversation,
+  leaveConversation,
+  loadAutoReplies,
+  sendTextMessage,
+  sendAutoReplyMessage,
+  sendImageFile
+} = useChatRuntime()
 const {
   draft,
   mode,
@@ -110,12 +126,11 @@ const {
   resetAfterSend
 } = useChatComposer()
 
-const activeConversation = ref<ConversationItem | null>(null)
 const quickIssueVisible = ref(false)
 const activeIssue = ref<QuickIssue | null>(null)
 const searchVisible = ref(false)
 const previewImage = ref('')
-const previewMode = ref<'compose' | 'viewer'>('compose')
+const previewMode = ref<'compose' | 'viewer'>('viewer')
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
 
 /** 在消息新增或切换会话后，将消息区域滚动到最底部。 */
@@ -128,24 +143,18 @@ const handleListBack = () => {
   router.back()
 }
 
-/** 选择客服会话，并显示该客服的静态消息记录。 */
-const handleConversationSelect = (conversation: ConversationItem) => {
-  activeConversation.value = conversation
+/** 选择客服会话，读取本地消息缓存并建立当前客服的 Socket 连接。 */
+const handleConversationSelect = async (conversation: ConversationItem) => {
+  await selectConversation(conversation)
   scrollToBottom()
 }
 
 /** 退出当前会话，清理仅属于会话页的临时交互状态。 */
-const handleConversationBack = () => {
-  activeConversation.value = null
+const handleConversationBack = async () => {
+  await leaveConversation()
   quickIssueVisible.value = false
   activeIssue.value = null
   resetAfterSend()
-}
-
-/** 打开图片发送前的本地静态预览。 */
-const openImageComposer = () => {
-  previewMode.value = 'compose'
-  previewImage.value = mockImageUrl
 }
 
 /** 查看会话中的图片消息。 */
@@ -161,11 +170,12 @@ const closeImagePreview = () => {
   mode.value = 'idle'
 }
 
-/** 确认图片预览后，将本地示例图片追加到消息列表。 */
-const handleImagePreviewSend = () => {
-  if (!previewImage.value) return
-  sendImage(previewImage.value)
-  closeImagePreview()
+/** 上传图片并在服务端确认图片地址后发送 image Socket 消息。 */
+const handleImageUpload = async (file: File) => {
+  const sent = await sendImageFile(file)
+  if (sent) {
+    mode.value = 'idle'
+  }
   scrollToBottom()
 }
 
@@ -175,25 +185,26 @@ const handleSearchLocate = () => {
   scrollToBottom()
 }
 
-/** 打开所选快捷问题的固定问答弹层。 */
-const handleIssueSelect = (issue: QuickIssue) => {
+/** 打开所选自动回复分类，并请求其对应的后台问题列表。 */
+const handleIssueSelect = async (issue: QuickIssue) => {
   activeIssue.value = issue
   quickIssueVisible.value = true
+  await loadAutoReplies(issue)
 }
 
-/** 将快捷问题的静态文案追加为一条用户消息。 */
-const handleQuickIssueSend = (text: string) => {
-  if (!text) return
-  sendText(text)
-  quickIssueVisible.value = false
-  activeIssue.value = null
+/** 发送自动回复请求，并等待服务端推送 autoReplyResp 内容。 */
+const handleQuickIssueSend = (item: AutoReplyItem) => {
+  if (sendAutoReplyMessage(item)) {
+    quickIssueVisible.value = false
+    activeIssue.value = null
+  }
   scrollToBottom()
 }
 
 /** 发送输入框草稿，并在发送后重置编辑器状态。 */
 const handleSend = () => {
   if (!draft.value.trim()) return
-  sendText(draft.value, replyTarget.value)
+  sendTextMessage(draft.value)
   resetAfterSend()
   scrollToBottom()
 }
@@ -209,6 +220,17 @@ const handleEmojiDelete = () => {
   setDraft(Array.from(draft.value).slice(0, -1).join(''))
   mode.value = 'emoji'
 }
+
+/** 首次进入客服页时并行请求在线客服和自动回复分类。 */
+onMounted(() => {
+  void initialize()
+})
+
+/** 在缓存加载、发送或服务端推送新增消息后保持最新消息可见。 */
+watch(
+  () => messages.value.length,
+  () => scrollToBottom()
+)
 </script>
 
 <style scoped>

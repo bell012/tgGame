@@ -227,6 +227,8 @@
     "noBetHistoryYet": "No bet history yet",
     "startPlaying": "Start Playing",
     "betAmount": "Bet Amount",
+    "winLoss": "Win/Loss",
+    "earlySettlement": "Early Settlement",
     "win": "Win",
     "loss": "Loss",
     "type": "Type",
@@ -286,7 +288,16 @@
     "winLoss": "Win/Loss",
     "orderNo": "Order No.",
     "createdAt": "Created At",
-    "copy": "Copy succeeded."
+    "confirm": "Confirm",
+    "buyBackSuccess": "Early settlement submitted.",
+    "buyBackSubmitFailed": "Unable to submit early settlement. Please try again later.",
+    "copy": "Copy succeeded.",
+    "oddsTypes": {
+      "malay": "Malay Odds",
+      "hongKong": "Hong Kong Odds",
+      "europe": "European Odds",
+      "indonesia": "Indonesian Odds"
+    }
   },
   "rewardDetails": {
     "title": "Bet Slip",
@@ -1800,8 +1811,12 @@
     }
   },
   "sports": {
+    "bet_history": "Bet History",
     "loadFailed": "Unable to load sports. Please try again.",
     "platformLoginFailed": "Unable to sign in to sports. Please try again.",
+    "balanceUnavailable": "Sports balance is unavailable. Please refresh it before continuing.",
+    "balanceRefreshFailed": "Unable to refresh sports balance. Please try again.",
+    "insufficientBalance": "Insufficient sports balance.",
     "favouriteFailed": "The favorite update could not be confirmed. Refresh events before trying again.",
     "retry": "Retry",
     "noEvents": "No events available for the current filters.",

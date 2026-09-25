@@ -56,9 +56,12 @@
           "
         >
           <span>{{ message.time }}</span>
-          <ReadIcon
+          <span v-if="message.period">{{ message.period }}</span>
+          <img
             v-if="message.direction === 'outgoing' && message.read"
-            class="h-[10px] w-[15px]"
+            :src="messageReadStatusImage"
+            alt=""
+            class="h-[10px] w-[15px] object-contain"
           />
         </div>
       </div>
@@ -67,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import ReadIcon from '@/static/svg/chat/public/read.svg?component'
+import messageReadStatusImage from '@/static/img/chat/public/message-read-status.png'
 import type { ChatMessage } from '../types'
 
 const props = withDefaults(defineProps<{ message: ChatMessage; displayMode?: 'h5' | 'pc' }>(), {

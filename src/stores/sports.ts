@@ -90,34 +90,47 @@ const mergeDefined = <T extends object>(previous: T, incoming: T): T =>
     Object.fromEntries(Object.entries(incoming).filter(([, value]) => value !== undefined))
   )
 
-const mergeMarketLines = (previous: SportMarketLine[], incoming: SportMarketLine[]) => {
-  const lines = new Map(previous.map(line => [line.MarketlineId, line]))
+type MarketRefreshScope = Pick<GetSelectedEventInfoParams, 'BetTypeIds' | 'PeriodIds'>
+
+const marketSlot = (line: SportMarketLine) =>
+  `${line.BetTypeId}:${line.PeriodId}:${line.MarketLineLevel}`
+
+const mergeMarketLines = (
+  previous: SportMarketLine[],
+  incoming: SportMarketLine[] | undefined,
+  scope?: MarketRefreshScope
+) => {
+  if (!Array.isArray(incoming)) return previous
+  const previousById = new Map(previous.map(line => [line.MarketlineId, line]))
+  const incomingSlots = new Set(incoming.map(marketSlot))
+  // 详情替换查询范围；列表预览只替换返回的玩法、时段和级别。
+  const isReplaced = (line: SportMarketLine) =>
+    scope
+      ? (scope.BetTypeIds === undefined || scope.BetTypeIds.includes(line.BetTypeId)) &&
+        (scope.PeriodIds === undefined || scope.PeriodIds.includes(line.PeriodId))
+      : incomingSlots.has(marketSlot(line))
+  const lines = new Map(
+    previous.filter(line => !isReplaced(line)).map(line => [line.MarketlineId, line])
+  )
   for (const line of incoming) {
-    const old = lines.get(line.MarketlineId)
-    if (!old) {
-      lines.set(line.MarketlineId, line)
-      continue
-    }
-    const selections = new Map(old.WagerSelections.map(item => [item.WagerSelectionId, item]))
-    for (const item of line.WagerSelections ?? []) {
-      const existing = selections.get(item.WagerSelectionId)
-      selections.set(item.WagerSelectionId, existing ? mergeDefined(existing, item) : item)
-    }
-    lines.set(line.MarketlineId, {
-      ...mergeDefined(old, line),
-      WagerSelections: [...selections.values()]
-    })
+    const old = previousById.get(line.MarketlineId)
+    // WagerSelections 使用新列表，不保留本次已移除的投注项。
+    lines.set(line.MarketlineId, old ? mergeDefined(old, line) : line)
   }
   return [...lines.values()]
 }
 
-const mergeEventFields = (previous: SportEvent, incoming: SportEvent): SportEvent => ({
+const mergeEventFields = (
+  previous: SportEvent,
+  incoming: SportEvent,
+  scope?: MarketRefreshScope
+): SportEvent => ({
   ...mergeDefined(previous, incoming),
   Competition:
     previous.Competition && incoming.Competition
       ? mergeDefined(previous.Competition, incoming.Competition)
       : (incoming.Competition ?? previous.Competition),
-  MarketLines: mergeMarketLines(previous.MarketLines ?? [], incoming.MarketLines ?? [])
+  MarketLines: mergeMarketLines(previous.MarketLines ?? [], incoming.MarketLines, scope)
 })
 
 type LeagueEventsState = {
@@ -261,6 +274,19 @@ export const useSportsStore = defineStore('sports', () => {
   const sportsCredentials = ref<SportsCredentials | null>(null)
   const sportsMemberCode = computed(() => sportsCredentials.value?.memberCode ?? null)
   const sportsToken = computed(() => sportsCredentials.value?.token ?? null)
+  const sportsBalance = ref<number | null>(null)
+  const sportsBalanceLoading = ref(false)
+  const sportsBalanceError = ref<SportsRequestError | null>(null)
+  let balancePending: Promise<boolean> | null = null
+  let balanceController: AbortController | null = null
+  const resetSportsBalance = () => {
+    balanceController?.abort()
+    balanceController = null
+    balancePending = null
+    sportsBalance.value = null
+    sportsBalanceLoading.value = false
+    sportsBalanceError.value = null
+  }
   let memberCodePending: Promise<string | null> | null = null
   let memberCodeGeneration = 0
   let memberCodeAttempted = false
@@ -292,6 +318,7 @@ export const useSportsStore = defineStore('sports', () => {
     ],
     () => {
       sportsSessionVersion.value += 1
+      resetSportsBalance()
       invalidateSportsMemberCode()
       memberFavourites.clear()
       unconfirmedFavourites.clear()
@@ -338,6 +365,7 @@ export const useSportsStore = defineStore('sports', () => {
         }
         sportsCredentials.value = { memberCode: account.trim(), token }
         memberCodeNeedsRefresh = true
+        if (homepageActive && !sportsBalanceLoading.value) void fetchSportsBalance()
         return sportsMemberCode.value
       } catch {
         return null
@@ -384,6 +412,7 @@ export const useSportsStore = defineStore('sports', () => {
     }
   // 仅包装返回 stc 的体育网关接口；本站热门列表仍使用自己的 code/result 契约。
   const sportsApi = {
+    getBalance: withSportsAuthRecovery(Api.sport.getBalance),
     getAllSportCount: withSportsAuthRecovery(Api.sport.getAllSportCount),
     getSportsV2: withSportsAuthRecovery(Api.sport.getSportsV2),
     getSportEventIndexList: withSportsAuthRecovery(Api.sport.getSportEventIndexList),
@@ -391,6 +420,83 @@ export const useSportsStore = defineStore('sports', () => {
     getPopularSports: withSportsAuthRecovery(Api.sport.getPopularSports),
     getSelectedEventInfo: withSportsAuthRecovery(Api.sport.getSelectedEventInfo),
     favouriteEvent: withSportsAuthRecovery(Api.sport.favouriteEvent)
+  }
+  /** 同账号、同币种刷新失败保留余额；离页或切换会话后丢弃旧响应。 */
+  const fetchSportsBalance = (): Promise<boolean> => {
+    if (balancePending) return balancePending
+    if (!homepageActive || !isLoggedIn.value) return Promise.resolve(false)
+    const version = sportsSessionVersion.value
+    const controller = new AbortController()
+    balanceController = controller
+    const isCurrent = () =>
+      !controller.signal.aborted && version === sportsSessionVersion.value && homepageActive
+    sportsBalanceLoading.value = true
+    sportsBalanceError.value = null
+    balancePending = Promise.resolve()
+      .then(async () => {
+        if (!isCurrent()) return false
+        const baseUrl = getBaseUrl()
+        if (!baseUrl) {
+          sportsBalanceError.value = { kind: 'config', message: 'Missing IM.im_app_url' }
+          return false
+        }
+        // 余额是只读查询，凭据更新后最多补查一次，不循环登录。
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          if (!isCurrent()) return false
+          await ensureSportsMemberCode()
+          if (!isCurrent()) return false
+          const credentials = sportsCredentials.value
+          if (!credentials) {
+            sportsBalanceError.value = { kind: 'business', message: 'Sports login unavailable' }
+            return false
+          }
+          const send = attempt === 0 ? sportsApi.getBalance : Api.sport.getBalance
+          const response = await send(
+            baseUrl,
+            {
+              Token: credentials.token,
+              MemberCode: credentials.memberCode,
+              TimeStamp: Date.now()
+            },
+            { signal: controller.signal }
+          )
+          if (!isCurrent()) return false
+          if (credentials !== sportsCredentials.value) {
+            if (attempt === 0 && sportsCredentials.value) continue
+            sportsBalanceError.value = { kind: 'business', message: 'Sports credentials changed' }
+            return false
+          }
+          if (!isSportsSuccess(response)) {
+            sportsBalanceError.value = {
+              kind: 'business',
+              code: response.stc,
+              message: response.std
+            }
+            return false
+          }
+          if (typeof response.av !== 'number' || !Number.isFinite(response.av)) {
+            sportsBalanceError.value = { kind: 'response', message: 'Invalid sports balance' }
+            return false
+          }
+          sportsBalance.value = response.av
+          return true
+        }
+        return false
+      })
+      .catch(() => {
+        if (isCurrent()) {
+          sportsBalanceError.value = { kind: 'network', message: 'Sports balance request failed' }
+        }
+        return false
+      })
+      .finally(() => {
+        if (isCurrent()) {
+          sportsBalanceLoading.value = false
+          balancePending = null
+          balanceController = null
+        }
+      })
+    return balancePending
   }
   /** 显式重试先获取凭据；普通筛选不走这里，失败后也不自动循环。 */
   const runSportsRetry = (
@@ -495,7 +601,10 @@ export const useSportsStore = defineStore('sports', () => {
     sportId: number,
     incoming: SportEvent,
     revision: number,
-    receivedAt = Date.now()
+    {
+      receivedAt = Date.now(),
+      marketScope
+    }: { receivedAt?: number; marketScope?: MarketRefreshScope } = {}
   ) => {
     const key = eventKey(sportId, incoming.EventId)
     const previous = refreshedEvents.get(key)
@@ -507,19 +616,16 @@ export const useSportsStore = defineStore('sports', () => {
       )
       return event
     }
-    const newer = revision >= previous.revision
-    Object.assign(
-      previous.event,
-      newer
-        ? mergeEventFields(previous.event, incoming)
-        : mergeEventFields(incoming, previous.event)
-    )
-    if (newer) {
-      previous.revision = revision
-      previous.updatedAt = Date.now()
-      // 相同时间也要校准；只更新赔率的响应不能重置比赛计时。
-      if (incoming.RBTime !== undefined) previous.clockUpdatedAt = receivedAt
-    }
+    // 迟到的响应不能补回已被移除的盘口或投注项。
+    if (revision < previous.revision) return previous.event
+    const timeChanged = incoming.RBTime !== undefined && incoming.RBTime !== previous.event.RBTime
+    const wasPaused = previous.event.RBTimeStatus === 3
+    const isPaused = (incoming.RBTimeStatus ?? previous.event.RBTimeStatus) === 3
+    Object.assign(previous.event, mergeEventFields(previous.event, incoming, marketScope))
+    previous.revision = revision
+    previous.updatedAt = Date.now()
+    // 重复时间不重置秒表；暂停、恢复或时间变化时重新校准。
+    if (timeChanged || wasPaused !== isPaused) previous.clockUpdatedAt = receivedAt
     return previous.event
   }
   const rememberGroups = (
@@ -530,7 +636,7 @@ export const useSportsStore = defineStore('sports', () => {
   ) =>
     groups.map(group => ({
       ...group,
-      Sports: group.Sports.map(event => rememberEvent(sportId, event, revision, receivedAt))
+      Sports: group.Sports.map(event => rememberEvent(sportId, event, revision, { receivedAt }))
     }))
   const getRefreshEvent = (sportId: number, eventId: number) =>
     refreshedEvents.get(eventKey(sportId, eventId))?.event
@@ -1168,7 +1274,10 @@ export const useSportsStore = defineStore('sports', () => {
           }
           // e 可以为空，表示本批赛事已不可用；保留真实响应，不伪造盘口。
           response.e.forEach(event =>
-            received.set(event.EventId, rememberEvent(sportId, event, revision))
+            received.set(
+              event.EventId,
+              rememberEvent(sportId, event, revision, { marketScope: params })
+            )
           )
           hotDetailsState.data = [...received.values()]
         }
@@ -1540,7 +1649,9 @@ export const useSportsStore = defineStore('sports', () => {
               )
             )
               return null
-            for (const event of response.e) rememberEvent(sportId, event, revision)
+            for (const event of response.e) {
+              rememberEvent(sportId, event, revision, { marketScope: params })
+            }
             return response
           }
         )
@@ -1809,6 +1920,7 @@ export const useSportsStore = defineStore('sports', () => {
       !Number.isSafeInteger(eventId) ||
       eventId <= 0 ||
       !event ||
+      !event.EventDate ||
       !Number.isSafeInteger(event.Competition?.CompetitionId) ||
       !getBaseUrl()
     ) {
@@ -1836,7 +1948,11 @@ export const useSportsStore = defineStore('sports', () => {
       if (!memberCode) return 'login-failed'
       const previous = memberFavourites.get(eventId)?.value ?? event.IsFavourite === true
       const reconcileOnly = unconfirmedFavourites.has(eventId)
-      const params: FavouriteEventParams = { MemberCode: memberCode, EventId: eventId }
+      const params: FavouriteEventParams = {
+        MemberCode: memberCode,
+        EventId: eventId,
+        EventDate: event.EventDate
+      }
       favouriteState.params = params
       favouriteState.error = null
       favouriteState.response = null
@@ -1856,6 +1972,16 @@ export const useSportsStore = defineStore('sports', () => {
             result = 'failed'
           } else {
             favouriteState.data = response
+            if (!homepageActive || loginGeneration !== memberCodeGeneration) return 'stale'
+            if (response.EventId === eventId && typeof response.IsFavourite === 'boolean') {
+              // 接口已返回最终状态，不再额外查询赛事来确认。
+              memberFavourites.set(eventId, {
+                value: response.IsFavourite,
+                revision: ++favouriteRevision
+              })
+              unconfirmedFavourites.delete(eventId)
+              return 'success'
+            }
           }
         } catch {
           if (!isCurrent()) return 'stale'
@@ -1898,6 +2024,7 @@ export const useSportsStore = defineStore('sports', () => {
 
   const cancelRequests = () => {
     homepageActive = false
+    resetSportsBalance()
     cancelHomepageRefresh()
     // 停用和销毁均结束本次停留；旧登录响应不能写回，也不能被下次进入复用。
     invalidateSportsMemberCode()
@@ -2090,6 +2217,10 @@ export const useSportsStore = defineStore('sports', () => {
     sportsSessionVersion,
     sportsMemberCode,
     sportsToken,
+    sportsBalance,
+    sportsBalanceLoading,
+    sportsBalanceError,
+    fetchSportsBalance,
     pageNumber,
     pageSize,
     competitionIds,
