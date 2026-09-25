@@ -94,6 +94,8 @@ export const mapSportsMatches = (
         kickoff: formatKickoff(event.EventDate),
         // IsLive 仅表示支持滚球，赛事当前是否滚球以 Market 为准。
         live: event.Market === 3,
+        Market: event.Market,
+        OpenParlay: event.OpenParlay === true,
         phase,
         phaseClock: getPhaseClock(
           phase,

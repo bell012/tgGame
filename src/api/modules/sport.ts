@@ -5,6 +5,8 @@ import type {
   GetAllSportCountResponse,
   GetBalanceParams,
   GetBalanceResponse,
+  GetBetInfoParams,
+  GetBetInfoResponse,
   GetBetListParams,
   GetBetListResponse,
   GetCompetitionListParams,
@@ -173,6 +175,15 @@ export function getBetList(
   options?: SportsRequestOptions
 ): Promise<GetBetListResponse> {
   return postSport(baseUrl, 'GetBetList', data, options)
+}
+
+/** 只读：确认投注项、限额和可用组合；请求加密、响应解密均使用统一拦截器。 */
+export function getBetInfo(
+  baseUrl: string,
+  data: GetBetInfoParams,
+  options?: SportsRequestOptions
+): Promise<GetBetInfoResponse> {
+  return postSport(baseUrl, 'GetBetInfo', data, options, 'site')
 }
 
 /** 只读：查询体育可用余额，av 为可用金额；请求参数走项目统一加密。 */

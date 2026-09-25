@@ -22,7 +22,7 @@
         class="min-w-0 truncate text-[15px] font-bold tabular-nums text-text-1"
         >{{ props.value }}</span
       >
-      <span v-else class="min-w-0 truncate text-xs text-text-3">Limit 5.00–311.11</span>
+      <span v-else class="min-w-0 truncate text-xs text-text-3">{{ props.placeholder }}</span>
       <span v-if="props.active" class="h-4 w-px shrink-0 bg-theme-primary" aria-hidden="true" />
     </button>
     <p
@@ -40,6 +40,7 @@ const props = defineProps<{
   value: string
   currencySymbol: string
   label: string
+  placeholder?: string
   active: boolean
   error: string
   hideError?: boolean

@@ -89,8 +89,10 @@
               >
                 <div class="flex min-w-0 items-start gap-2.5">
                   <div class="flex h-[38px] shrink-0 items-center gap-2.5 text-[15px]">
-                    <span>{{ parlay.size }}-Fold</span>
-                    <span class="text-theme-primary">@{{ parlay.odds.toFixed(2) }}</span>
+                    <span>{{ parlay.label }}</span>
+                    <span v-if="parlay.odds !== undefined" class="text-theme-primary"
+                      >@{{ parlay.odds.toFixed(2) }}</span
+                    >
                   </div>
                   <span class="ml-auto flex h-[38px] shrink-0 items-center text-sm text-text-2"
                     >{{ parlay.combinationCount }}x</span
@@ -99,20 +101,21 @@
                     class="min-w-0 flex-1"
                     :value="parlay.stake"
                     :currency-symbol="currencySymbol"
-                    :label="`Stake for ${parlay.size}-Fold`"
+                    :label="`Stake for ${parlay.label}`"
                     :active="keyboardOpen && activeRow?.id === parlay.id"
-                    :error="getH5StakeError(parlay.stake)"
+                    :error="parlay.stakeError ?? ''"
+                    :placeholder="parlay.limitText"
                     :hide-error="true"
                     :disabled="busy"
                     @focus="focusStake(parlay.id, 'parlay')"
                   />
                 </div>
                 <p
-                  v-if="getH5StakeError(parlay.stake)"
+                  v-if="parlay.stakeError"
                   class="pb-[3.333px] pt-[6.667px] text-[11px] leading-[13.333px] text-secondary-2"
                   role="alert"
                 >
-                  {{ getH5StakeError(parlay.stake) }}
+                  {{ parlay.stakeError }}
                 </p>
               </div>
               <button
@@ -144,14 +147,18 @@
           v-if="selections.length"
           class="relative shrink-0 px-2.5 pb-[calc(23.333px+env(safe-area-inset-bottom))] pt-2.5"
         >
-          <p
-            v-if="submitError && !hasFieldError"
-            class="mb-2 text-xs text-secondary-2"
-            role="alert"
-          >
+          <p v-if="submitError" class="mb-2 text-xs text-secondary-2" role="alert">
             {{ submitError }}
           </p>
           <p v-else-if="notice" class="mb-2 text-[10px] text-text-2" role="status">{{ notice }}</p>
+          <button
+            v-if="props.page.betInfoChanged.value"
+            type="button"
+            class="mb-2 w-full rounded-lg border border-theme-primary p-2 text-xs text-theme-primary"
+            @click="props.page.acceptBetChanges"
+          >
+            {{ t('sports.betAcceptChanges') }}
+          </button>
           <div class="flex items-center justify-between gap-2 text-xs">
             <p class="min-w-0 text-text-2">
               To Win
@@ -195,8 +202,8 @@
             <button
               type="button"
               class="flex h-[44.667px] min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-theme-primary px-2 text-sm text-text-4 disabled:opacity-60"
-              :disabled="busy || editingAmounts"
-              :aria-label="`Simulate bet, total stake ${totalStakeText}`"
+              :disabled="!props.page.canSubmit.value || busy || editingAmounts"
+              :aria-label="t('sports.betSubmitUnavailable')"
               data-testid="sports-h5-submit"
               @click="submit"
             >
@@ -225,7 +232,7 @@
           <p
             class="absolute bottom-[calc(4px+env(safe-area-inset-bottom))] inset-x-2.5 text-center text-[10px] leading-3 text-text-3"
           >
-            Local simulation — no real bet is placed
+            {{ t('sports.betSubmitUnavailable') }}
           </p>
         </footer>
         <div v-else class="h-[env(safe-area-inset-bottom)] shrink-0" />
@@ -293,7 +300,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, useId, watch } from 'vue'
+import { nextTick, ref, useId, watch } from 'vue'
 import PopShell from '@/components/withdraw/popShell.vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import BetIcon from '@/static/svg/sports/betslip-empty.svg'
@@ -304,10 +311,12 @@ import BetKeyboard from './keyboard.vue'
 import BetSelection from './selection.vue'
 import StakeField from './stake-field.vue'
 import QuickAmounts from './quick-amounts.vue'
-import { getH5StakeError, useSportsH5Bet } from './h5'
+import { useSportsH5Bet } from './h5'
 import type { SportsPageState } from '../../index'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{ page: SportsPageState }>()
+const { t } = useI18n()
 const panel = ref<HTMLElement | null>(null)
 const titleId = useId()
 const {
@@ -349,13 +358,6 @@ const {
   clear,
   submit
 } = useSportsH5Bet(props.page)
-const hasFieldError = computed(
-  () =>
-    selections.value.some(item => item.mockBetStatus === 'closed') ||
-    (mode.value === 'single' ? selections.value : parlays.value).some(item =>
-      getH5StakeError(item.stake)
-    )
-)
 let previousFocus: HTMLElement | null = null
 
 usePageScrollLock(betSlipOpen)

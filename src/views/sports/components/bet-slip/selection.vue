@@ -29,7 +29,7 @@
       <span v-if="props.selection.live" class="h-3 w-px bg-opacity-10" aria-hidden="true" />
       <span>{{ props.selection.marketTitle }}</span>
       <span class="h-3 w-px bg-opacity-10" aria-hidden="true" />
-      <span>Decimal Odds</span>
+      <span>{{ oddsLabel }}</span>
     </p>
     <div class="mt-2 flex flex-col gap-1.5 break-words text-xs leading-[15px] text-text-2">
       <p>{{ props.selection.homeTeam }} <span class="ml-1">VS</span></p>
@@ -48,11 +48,11 @@
       </button>
     </div>
     <p
-      v-if="!props.single && props.selection.mockBetStatus === 'closed'"
+      v-if="!props.single && props.selection.stakeError && props.selection.betStatus !== 'open'"
       class="mt-1 text-xs text-secondary-2"
       role="alert"
     >
-      Market Closed
+      {{ props.selection.stakeError }}
     </p>
     <StakeField
       v-if="props.single"
@@ -61,12 +61,9 @@
       :currency-symbol="props.currencySymbol"
       :label="`Stake for ${props.selection.selection}`"
       :active="props.active"
-      :error="
-        props.selection.mockBetStatus === 'closed'
-          ? 'Market Closed'
-          : getH5StakeError(props.selection.stake)
-      "
-      :disabled="props.disabled || props.selection.mockBetStatus === 'closed'"
+      :placeholder="props.selection.limitText"
+      :error="props.selection.stakeError ?? ''"
+      :disabled="props.disabled"
       @focus="emit('focus')"
     />
   </li>
@@ -75,7 +72,8 @@
 <script setup lang="ts">
 import ClearIcon from '@/static/svg/sports/clear-bets.svg'
 import StakeField from './stake-field.vue'
-import { getH5StakeError } from './h5'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { SportsBetSelection } from '../../shared/types'
 
 const props = defineProps<{
@@ -86,4 +84,6 @@ const props = defineProps<{
   disabled: boolean
 }>()
 const emit = defineEmits<{ remove: []; focus: [] }>()
+const { t } = useI18n()
+const oddsLabel = computed(() => t(`sports.betOddsType${props.selection.oddsType ?? 3}`))
 </script>

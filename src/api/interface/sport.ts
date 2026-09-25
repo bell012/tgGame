@@ -70,6 +70,119 @@ export interface GetBalanceResponse extends SportsResponse {
   av?: number
 }
 
+/** 普通赛事的投注信息查询项，不是下单参数。 */
+export interface SportsBetInfoSelectionParams {
+  /** 参考 ID，使用选项 ID 关联响应；多个单关时必填。 */
+  RefId: number
+  SportId: number
+  EventId: number
+  BetTypeId: number
+  MarketlineId: number
+  WagerSelectionId: number
+  /** 来自投注项的 SelectionId。 */
+  BetTypeSelectionId: number
+  PeriodId: SportsPeriodId
+  /** 赛事实际分类，不使用页面筛选值。 */
+  Market: SportsEventMarket
+  MarketlineStatusId: SportsOpenStatus
+  /** 普通赛事固定为 0，不用于冠军投注。 */
+  OutrightTeamId: 0
+  /** 与 Odds 同源；串关使用欧洲盘 3。 */
+  OddsType: SportsResponseOddsType
+  Odds: number
+  Handicap: number | null
+  Specifiers: string | null
+  /** 当前未接赔率增值。 */
+  PreBoostOdds: null
+}
+
+/** 只读投注信息查询；Token、MemberCode 和毫秒时间戳由 Store 补齐。 */
+export interface GetBetInfoParams extends GetBalanceParams {
+  /** 1 单关，2 串关。 */
+  WagerType: 1 | 2
+  WagerSelectionInfos: SportsBetInfoSelectionParams[]
+  LanguageCode: SportsLanguageCode
+}
+
+/** 投注选项信息，字段来自参考 TS；状态含义按 V5。 */
+export interface SportsBetInfoQuote {
+  /** 100 可投，350 查询失败，380 无可选盘口，381 赔率或盘口变化，439 不支持串关。 */
+  st: number
+  /** 请求传入的 RefId；实测串关返回空值，需结合选项 ID 关联。 */
+  rid: number | null
+  /** 赛事 ID。 */
+  eid: number
+  /** 盘口 ID。 */
+  mlid: number
+  /** 1 开盘，2 关盘。 */
+  mlsid: number
+  /** 投注类型 ID。 */
+  btid?: number | null
+  /** 投注选项 ID。 */
+  wsid: number
+  /** 最新盘口值，不适用时为空。 */
+  h: number | null
+  /** 带符号的盘口展示值，不适用时为空。 */
+  dih?: string | null
+  /** 投注选项类型 ID。 */
+  btsid: number
+  /** 冠军队伍 ID，普通赛事为 0。 */
+  otid?: number
+  /** 主队、客队当前比分，非滚球可为空。 */
+  hs?: number | null
+  as?: number | null
+  /** 赔率类型；串关为 3 欧洲盘。 */
+  ot: SportsResponseOddsType
+  /** 最新赔率。 */
+  o: number
+  /** 增值前赔率，不适用时为空。 */
+  pbo?: number | null
+  /** 附加投注资料，不适用时为空。 */
+  sp: string | null
+  /** 球种 ID。 */
+  sid: number
+  /** 真实球种 ID。 */
+  rsid?: number
+  /** 接口扩展值，含义待确认。 */
+  tt?: number
+  /** 1 早盘，2 今日，3 滚球。 */
+  m?: number
+}
+
+/** 投注设置，字段来自参考 TS；单关按 rid 关联，串关按 combs 区分。 */
+export interface SportsBetInfoSetting {
+  /** 单关参考 ID；串关实测为空，按 combs 关联。 */
+  rid: number | null
+  /** 每注最高、最低投注金额。 */
+  masa: number
+  misa: number
+  /** 组合注数；单关固定按一注计算。 */
+  noc: number
+  /** 0 单关；1–8 系统串关；9–17 为 2–10 串 1；18 连串过关。 */
+  combs: number
+  /** 每 1 元输入金额对应的预计盈利；实测不含本金，不再额外乘组合注数。 */
+  epa: number
+  /** 实测返回的金额系数，业务含义待后端确认。 */
+  wea?: number
+  /** 支持的钱包：1 主账户，2 免费投注。 */
+  sws?: number[]
+  /** 赔率增值编码及增值前、后的赔率，不适用时为空。 */
+  bc?: string | null
+  pbo?: number | null
+  bo?: number | null
+  /** 实测返回的扩展值，当前样本为空。 */
+  ce?: unknown
+  pe?: unknown
+}
+
+/** 原始响应保留在 Store，使用前校验各列表字段。 */
+export interface GetBetInfoResponse extends SportsResponse {
+  /** 投注项状态、最新赔率及盘口，参考 TS 返回字段 wsis。 */
+  wsis?: SportsBetInfoQuote[]
+  /** 投注限额、可用串关组合及预计派彩，参考 TS 返回字段 bs。 */
+  bs?: SportsBetInfoSetting[]
+}
+
 /** 体育投注历史接口共用会员凭据参数。 */
 export interface SportsBetHistoryAuthParams {
   /** 体育接口语言码，使用 ENG / CHS 等体育网关语言。 */

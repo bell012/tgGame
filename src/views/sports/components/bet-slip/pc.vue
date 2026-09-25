@@ -72,7 +72,7 @@
 
         <div
           v-else
-          class="min-h-0 overflow-y-auto overscroll-contain pt-[18px] [scrollbar-width:thin]"
+          class="min-h-0 overflow-y-auto overscroll-contain pt-[18px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           <ul class="flex flex-col gap-[10px] px-[9px]">
             <li
@@ -128,14 +128,25 @@
                 <p class="mt-[9px] break-words text-sm leading-5 text-text-2">
                   {{ selection.league }}
                 </p>
+                <p
+                  v-if="
+                    props.mode === 'parlay' &&
+                    selection.stakeError &&
+                    selection.betStatus !== 'open'
+                  "
+                  class="mt-2 text-xs text-secondary-2"
+                  role="alert"
+                >
+                  {{ selection.stakeError }}
+                </p>
                 <StakeInput
                   v-if="props.mode === 'single'"
                   class="mt-3"
                   :value="selection.stake"
                   :currency-symbol="props.currencySymbol"
                   :label="`Stake for ${selection.selection}`"
-                  :error="selectionError(selection)"
-                  :disabled="selection.mockBetStatus === 'closed'"
+                  :error="selection.stakeError"
+                  :placeholder="selection.limitText"
                   @update="emit('stake', selection.id, $event)"
                   @focus="emit('focusStake', selection.id, 'single')"
                   @max="emit('max', selection.id, 'single')"
@@ -150,8 +161,10 @@
                 class="mx-[9px] flex min-h-[60px] items-center gap-3 rounded-xl bg-bg-4 py-[9px] pl-[9px] pr-1.5"
               >
                 <span class="flex shrink-0 items-center gap-3 text-base font-bold">
-                  {{ parlayLabel(parlay.size) }}
-                  <span class="tabular-nums text-theme-primary">@{{ parlay.odds.toFixed(2) }}</span>
+                  {{ parlay.label }}
+                  <span v-if="parlay.odds !== undefined" class="tabular-nums text-theme-primary"
+                    >@{{ parlay.odds.toFixed(2) }}</span
+                  >
                 </span>
                 <div class="flex min-w-0 flex-1 items-center gap-1.5">
                   <span class="shrink-0 text-base">{{ parlay.combinationCount }}x</span>
@@ -159,8 +172,9 @@
                     class="flex-1"
                     :value="parlay.stake"
                     :currency-symbol="props.currencySymbol"
-                    :label="`Stake for ${parlayLabel(parlay.size)}`"
-                    :error="stakeError(parlay.stake)"
+                    :label="`Stake for ${parlay.label}`"
+                    :error="parlay.stakeError"
+                    :placeholder="parlay.limitText"
                     @update="emit('parlayStake', parlay.id, $event)"
                     @focus="emit('focusStake', parlay.id, 'parlay')"
                     @max="emit('max', parlay.id, 'parlay')"
@@ -169,28 +183,35 @@
               </div>
             </div>
           </div>
+        </div>
 
-          <div
-            class="relative flex shrink-0 gap-2 overflow-x-auto px-3 py-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            :class="props.mode === 'parlay' ? 'mt-[9px]' : 'mt-[17px]'"
+        <div
+          v-if="props.selections.length"
+          class="relative flex shrink-0 gap-2 overflow-x-auto px-3 py-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          :class="props.mode === 'parlay' ? 'mt-[9px]' : 'mt-[17px]'"
+        >
+          <button
+            v-for="amount in quickAmounts"
+            :key="amount"
+            type="button"
+            :class="[quickAmountClass, amountClass(activeStake, amount)]"
+            :aria-pressed="Number(activeStake) === amount"
+            @click="setQuickAmount(amount)"
           >
-            <button
-              v-for="amount in quickAmounts"
-              :key="amount"
-              type="button"
-              :class="[quickAmountClass, amountClass(activeStake, amount)]"
-              :aria-pressed="Number(activeStake) === amount"
-              @click="setQuickAmount(amount)"
-            >
-              {{ amount }}
-            </button>
-            <button type="button" :class="quickEditClass" @click="editingAmounts = true">
-              Edit
-            </button>
-          </div>
+            {{ amount }}
+          </button>
+          <button type="button" :class="quickEditClass" @click="editingAmounts = true">Edit</button>
         </div>
 
         <div v-if="props.selections.length" class="shrink-0 px-3 pb-[18px] pt-[17px]">
+          <button
+            v-if="props.betInfoChanged"
+            type="button"
+            class="mb-3 w-full rounded-lg border border-theme-primary p-2 text-sm text-theme-primary"
+            @click="emit('acceptChanges')"
+          >
+            {{ t('sports.betAcceptChanges') }}
+          </button>
           <div class="flex min-h-5 items-center justify-between gap-3 text-sm leading-5">
             <span class="text-text-2">Winnings</span>
             <span class="min-w-0 break-all text-right font-bold tabular-nums">
@@ -200,7 +221,7 @@
           <button
             type="button"
             class="mt-[18px] flex min-h-[49px] w-full items-center justify-center gap-2.5 rounded-full bg-theme-primary px-4 py-3 text-sm font-bold text-text-4 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-1 disabled:cursor-not-allowed"
-            :disabled="!props.canSubmit || isSubmitting || hasClosedMarket"
+            :disabled="!props.canSubmit || isSubmitting"
             @click="emit('submit')"
           >
             <span v-if="isSubmitting" class="flex items-center gap-2" role="status">
@@ -242,12 +263,27 @@
             type="button"
             class="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl bg-bg-2 px-3 text-[13px] font-extrabold text-text-2 hover:bg-bg-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
             :class="props.selections.length ? 'h-[42px]' : 'h-10'"
-            @click="emit('unsupported', 'settings')"
+            :aria-expanded="oddsSettingsOpen"
+            :aria-controls="oddsSettingsId"
+            @click="oddsSettingsOpen = !oddsSettingsOpen"
           >
             <SettingsIcon class="h-6 w-6 shrink-0" aria-hidden="true" />
             Odds Settings
           </button>
         </footer>
+        <label
+          v-if="oddsSettingsOpen"
+          :id="oddsSettingsId"
+          class="flex shrink-0 items-center gap-2 px-[18px] pb-3 text-xs text-text-2"
+        >
+          <input
+            type="checkbox"
+            class="accent-theme-primary"
+            :checked="props.acceptBetterOdds"
+            @change="emit('acceptBetter', ($event.target as HTMLInputElement).checked)"
+          />
+          {{ t('sports.betAcceptBetter') }}
+        </label>
       </fieldset>
     </div>
   </aside>
@@ -271,7 +307,7 @@ import SettingsIcon from '@/static/svg/sports/odds-settings.svg'
 import StakeInput from './stake-input.vue'
 import AmountsDialog from './amounts-dialog.vue'
 import PcResult from './pc-result.vue'
-import { parseSportsStake } from './shared'
+import { useI18n } from 'vue-i18n'
 import type { SportsBetMode, SportsBetSelection, SportsParlay } from '../../shared/types'
 
 const props = defineProps<{
@@ -286,12 +322,16 @@ const props = defineProps<{
   canSubmit: boolean
   refreshing: boolean
   notice: string
+  betInfoChanged: boolean
+  acceptBetterOdds: boolean
   focusedStakeId?: string
   submissionState?: 'idle' | 'confirming' | 'success' | 'failed'
 }>()
 
 const emit = defineEmits<{
   toggle: []
+  acceptChanges: []
+  acceptBetter: [value: boolean]
   remove: [id: string]
   stake: [id: string, value: string]
   parlayStake: [id: string, value: string]
@@ -308,6 +348,9 @@ const emit = defineEmits<{
 }>()
 
 const panelId = useId()
+const oddsSettingsId = useId()
+const oddsSettingsOpen = ref(false)
+const { t } = useI18n()
 const singleQuickAmounts = ref([10, 20, 50, 100, 200])
 const parlayQuickAmounts = ref([20, 50, 100, 200])
 const quickAmounts = computed(() =>
@@ -325,9 +368,6 @@ const panelState = computed(() =>
     ? 'collapsed'
     : (resultState.value ??
       (isSubmitting.value ? 'confirming' : props.selections.length ? props.mode : 'empty'))
-)
-const hasClosedMarket = computed(() =>
-  props.selections.some(selection => selection.mockBetStatus === 'closed')
 )
 const quickAmountClass =
   'h-9 w-[66px] shrink-0 rounded-xl px-2 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary'
@@ -356,22 +396,10 @@ function saveQuickAmounts(amounts: number[]) {
   editingAmounts.value = false
 }
 
-function stakeError(stake: string) {
-  return parseSportsStake(stake) === null ? 'Enter a valid amount.' : ''
-}
-
-function selectionError(selection: SportsBetSelection) {
-  return selection.mockBetStatus === 'closed' ? 'Market Closed' : stakeError(selection.stake)
-}
-
 function amountClass(stake: string, amount: number) {
   return Number(stake) === amount
     ? 'bg-theme-primary text-text-4'
     : 'bg-bg-3 text-text-1 hover:bg-bg-2'
-}
-
-function parlayLabel(size: number) {
-  return `${size}-Fold`
 }
 
 function setQuickAmount(amount: number) {

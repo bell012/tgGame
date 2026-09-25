@@ -26,7 +26,7 @@
         :aria-invalid="Boolean(props.error)"
         :aria-describedby="props.error ? errorId : undefined"
         :disabled="props.disabled"
-        placeholder="Enter Amount"
+        :placeholder="props.placeholder ?? 'Enter Amount'"
         @input="handleInput"
         @focus="emit('focus')"
       />
@@ -57,6 +57,7 @@ const props = defineProps<{
   value: string
   currencySymbol: string
   label: string
+  placeholder?: string
   error?: string
   disabled?: boolean
 }>()
