@@ -1,9 +1,10 @@
 <template>
   <article
-    class="min-w-0 rounded-lg bg-bg-2 px-2.5 py-3 text-text-1"
+    class="min-w-0 cursor-pointer rounded-lg bg-bg-2 px-2.5 py-3 text-text-1"
     :data-sports-match="match.id"
     :data-live="match.live"
     data-testid="sports-h5-match-card"
+    @click="goToEventDetails"
   >
     <div class="grid min-w-0 grid-cols-[minmax(0,430fr)_minmax(0,522fr)] gap-2.5">
       <div class="flex min-w-0 flex-col">
@@ -17,7 +18,7 @@
             :aria-busy="favoritePending"
             :disabled="favoritePending"
             data-testid="sports-h5-favorite"
-            @click="emit('favorite')"
+            @click.stop="emit('favorite')"
           >
             <StarIcon
               class="h-3 w-3 overflow-visible"
@@ -37,7 +38,7 @@
             type="button"
             class="flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
             aria-label="Watch live video"
-            @click="emit('media', 'video')"
+            @click.stop="emit('media', 'video')"
           >
             <VideoIcon class="h-2 w-[7px]" aria-hidden="true" />
           </button>
@@ -46,7 +47,7 @@
             type="button"
             class="flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
             aria-label="Watch match animation"
-            @click="emit('media', 'animation')"
+            @click.stop="emit('media', 'animation')"
           >
             <AnimationIcon class="h-2.5 w-[15px]" aria-hidden="true" />
           </button>
@@ -84,7 +85,7 @@
         </div>
       </div>
 
-      <div class="min-w-0" data-testid="sports-h5-match-odds">
+      <div class="min-w-0" data-testid="sports-h5-match-odds" @click.stop>
         <MatchOdds
           v-if="MarketLines.length"
           :MarketLines="MarketLines"
@@ -146,6 +147,7 @@ import StarIcon from '@/static/svg/game/detail/star1.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
+import { navigateTo } from '@/utils/router'
 import MatchOdds from '../match-odds/index.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
 import type { SportsMatch } from '../../shared/types'
@@ -170,4 +172,16 @@ const teams = computed(() => [
   { ...props.match.away, side: 'away', score: props.match.awayScore }
 ])
 const periodScores = computed(() => props.match.periodScores ?? [])
+
+const goToEventDetails = () => {
+  navigateTo('/sports/event-details', {
+    query: {
+      sportId: props.match.sportId,
+      eventId: props.match.EventId
+    },
+    state: {
+      sportsMatch: props.match
+    }
+  })
+}
 </script>

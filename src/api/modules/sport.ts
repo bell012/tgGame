@@ -203,7 +203,7 @@ export function submitBuyBack(
   data: SubmitBuyBackParams,
   options?: SportsRequestOptions
 ): Promise<SubmitBuyBackResponse> {
-  return postSport(baseUrl, 'SubmitBuyBack', data, options)
+  return postSport(baseUrl, 'SubmitBuyBack', JSON.stringify(data), options)
 }
 
 /**

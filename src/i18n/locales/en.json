@@ -291,7 +291,13 @@
     "confirm": "Confirm",
     "buyBackSuccess": "Early settlement submitted.",
     "buyBackSubmitFailed": "Unable to submit early settlement. Please try again later.",
-    "copy": "Copy succeeded."
+    "copy": "Copy succeeded.",
+    "oddsTypes": {
+      "malay": "Malay Odds",
+      "hongKong": "Hong Kong Odds",
+      "europe": "European Odds",
+      "indonesia": "Indonesian Odds"
+    }
   },
   "rewardDetails": {
     "title": "Bet Slip",
@@ -1855,6 +1861,20 @@
       "searchLeagueOrTeam": "Search League or Team",
       "selectAll": "Select All",
       "filter": "Filter"
+    },
+    "eventDetails": {
+      "filterAll": "All",
+      "betSlipFab": "Bet slip",
+      "oddsFormatLabel": "Odds Format",
+      "oddsFormatOptionsAria": "Odds format options",
+      "oddsFormatDisclaimer": "While we make every effort to ensure the accuracy of the data displayed on this website, the information is provided for reference only and should be used as a guide. We accept no liability for any inaccuracies.",
+      "oddsFormatTypes": {
+        "1": "Malaysian",
+        "2": "Hong Kong",
+        "3": "European",
+        "4": "Indonesian",
+        "6": "American"
+      }
     }
   },
   "menu": {
