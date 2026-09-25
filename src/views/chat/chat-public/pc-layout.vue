@@ -162,7 +162,7 @@ const handleQuickIssueSend = (item: AutoReplyItem) => {
 /** 发送当前输入草稿，并恢复编辑器初始状态。 */
 const handleSend = () => {
   if (!draft.value.trim()) return
-  sendTextMessage(draft.value)
+  sendTextMessage(draft.value, replyTarget.value)
   resetAfterSend()
   scrollToBottom()
 }

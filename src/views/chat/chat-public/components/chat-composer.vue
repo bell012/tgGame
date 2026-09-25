@@ -9,7 +9,10 @@
       v-if="props.displayMode === 'pc'"
       class="flex h-[64px] items-center gap-[10px] border-t border-opacity-10 px-[10px] py-[10px]"
     >
-      <div class="flex h-[44px] min-w-0 flex-1 items-center rounded-[10px] bg-opacity-6 px-[12px]">
+      <div
+        class="flex h-[44px] min-w-0 flex-1 items-center rounded-[10px] border bg-opacity-6 px-[12px]"
+        :class="hasDraft ? 'border-theme-primary' : 'border-transparent'"
+      >
         <input
           :value="modelValue"
           type="text"
@@ -48,7 +51,8 @@
       <input
         :value="modelValue"
         type="text"
-        class="h-[36px] min-w-0 flex-1 rounded-[30px] border border-opacity-6 bg-bg-1 px-[12px] text-[14px] text-text-1 outline-none placeholder:text-text-3"
+        class="h-[36px] min-w-0 flex-1 rounded-[30px] border bg-bg-1 px-[12px] text-[14px] text-text-1 outline-none placeholder:text-text-3"
+        :class="hasDraft ? 'border-theme-primary' : 'border-common-100/6'"
         :placeholder="t('chatPublic.inputPlaceholder')"
         @input="handleInput"
         @keyup.enter="$emit('send')"

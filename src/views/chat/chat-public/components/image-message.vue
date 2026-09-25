@@ -6,9 +6,15 @@
   >
     <button
       type="button"
+      data-chat-message-bubble
       class="relative overflow-hidden"
       :class="props.displayMode === 'pc' ? 'rounded-[18px]' : 'rounded-[10px]'"
-      @click="$emit('view', message)"
+      @click="handleClick"
+      @contextmenu.prevent="handleReply"
+      @pointerdown="startLongPress"
+      @pointerleave="clearLongPress"
+      @pointerup="clearLongPress"
+      @pointercancel="clearLongPress"
     >
       <img
         :src="message.image"
@@ -40,10 +46,53 @@
 
 <script setup lang="ts">
 import messageReadStatusImage from '@/static/img/chat/public/message-read-status.png'
+import { onBeforeUnmount, ref } from 'vue'
 import type { ChatMessage } from '../types'
 
 const props = withDefaults(defineProps<{ message: ChatMessage; displayMode?: 'h5' | 'pc' }>(), {
   displayMode: 'h5'
 })
-defineEmits<{ view: [message: ChatMessage] }>()
+const emit = defineEmits<{
+  view: [message: ChatMessage]
+  focus: [message: ChatMessage, event: MouseEvent, target: HTMLElement | null]
+}>()
+
+const longPressTriggered = ref(false)
+let longPressTimer: ReturnType<typeof setTimeout> | undefined
+
+/** 清理图片长按计时器，防止短按也被识别为回复操作。 */
+const clearLongPress = () => {
+  if (!longPressTimer) return
+  clearTimeout(longPressTimer)
+  longPressTimer = undefined
+}
+
+/** 长按图片消息时打开引用回复操作，短按仍保持图片预览。 */
+const startLongPress = (event: PointerEvent) => {
+  longPressTriggered.value = false
+  clearLongPress()
+  const target = event.currentTarget as HTMLElement | null
+  longPressTimer = setTimeout(() => {
+    longPressTimer = undefined
+    longPressTriggered.value = true
+    emit('focus', props.message, event, target)
+  }, 450)
+}
+
+/** 处理图片短按预览，避免长按后额外打开图片查看器。 */
+const handleClick = () => {
+  if (longPressTriggered.value) {
+    longPressTriggered.value = false
+    return
+  }
+  emit('view', props.message)
+}
+
+/** 处理桌面端图片右键引用回复。 */
+const handleReply = (event: MouseEvent) => {
+  clearLongPress()
+  emit('focus', props.message, event, event.currentTarget as HTMLElement | null)
+}
+
+onBeforeUnmount(clearLongPress)
 </script>

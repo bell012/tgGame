@@ -6,30 +6,32 @@
   >
     <button
       type="button"
+      data-chat-message-bubble
       class="max-w-[82%] text-left"
       :class="message.direction === 'outgoing' ? 'items-end' : 'items-start'"
-      @click="$emit('focus', message)"
-      @contextmenu.prevent="$emit('focus', message)"
+      @click="handleFocus"
+      @contextmenu.prevent="handleFocus"
     >
-      <!-- 被引用消息的简要预览。 -->
-      <div
-        v-if="message.reply"
-        class="mb-[4px] min-w-[190px] rounded-[4px] border-l-[4px] border-theme-primary bg-bg-2 px-[10px] py-[6px]"
-      >
-        <p class="text-[11px] font-medium text-theme-primary">{{ message.reply.author }}</p>
-        <p class="mt-[2px] truncate text-[11px] text-text-2">{{ message.reply.preview }}</p>
-      </div>
-
-      <!-- 当前消息内容与发送时间。 -->
+      <!-- 当前消息气泡，内部同时承载引用摘要、回复内容与发送时间。 -->
       <div
         class="relative"
         :class="[
           props.displayMode === 'pc'
             ? 'rounded-[10px] px-[10px] py-[6px]'
             : 'rounded-[6px] px-[11px] py-[7px]',
-          message.direction === 'outgoing' ? 'bg-bg-2' : 'bg-bg-3'
+          'bg-bg-3'
         ]"
       >
+        <!-- 被引用消息的简要预览。 -->
+        <div
+          v-if="message.reply"
+          class="mb-[6px] min-w-[190px] rounded-[4px] border-l-[4px] border-theme-primary px-[8px] py-[2px] bg-bg-2"
+        >
+          <p class="text-[11px] font-medium text-theme-primary">{{ message.reply.author }}</p>
+          <p class="mt-[2px] truncate text-[11px] text-text-2">{{ message.reply.preview }}</p>
+        </div>
+
+        <!-- 当前回复消息内容。 -->
         <i
           aria-hidden="true"
           class="absolute top-[10px] size-0 border-y-[5px] border-y-transparent"
@@ -76,5 +78,12 @@ import type { ChatMessage } from '../types'
 const props = withDefaults(defineProps<{ message: ChatMessage; displayMode?: 'h5' | 'pc' }>(), {
   displayMode: 'h5'
 })
-defineEmits<{ focus: [message: ChatMessage] }>()
+const emit = defineEmits<{
+  focus: [message: ChatMessage, event: MouseEvent, target: HTMLElement | null]
+}>()
+
+/** 将当前消息气泡的原生交互事件上抛，用于定位回复操作浮层。 */
+const handleFocus = (event: MouseEvent) => {
+  emit('focus', props.message, event, event.currentTarget as HTMLElement | null)
+}
 </script>

@@ -25,6 +25,7 @@ import type {
   ChatImageItem,
   ChatMessage,
   ChatParticipant,
+  ChatReplyTarget,
   ChatSocketMessage,
   ConversationItem,
   QuickIssue
@@ -230,6 +231,37 @@ export function useChatRuntime() {
     return pendingMessageCacheWrite
   }
 
+  /** 从会话消息中找出时间最新的一条；没有消息时返回空值。 */
+  const getLatestConversationMessage = (conversationMessages: ChatMessage[]) =>
+    conversationMessages.reduce<ChatMessage | null>((latestMessage, message) => {
+      if (!latestMessage) return message
+
+      const latestTimestamp = Number(latestMessage.timestamp) || 0
+      const messageTimestamp = Number(message.timestamp) || 0
+      return messageTimestamp >= latestTimestamp ? message : latestMessage
+    }, null)
+
+  /** 用本地缓存历史覆盖会话预览，避免使用客服列表接口的非聊天消息字段。 */
+  const hydrateConversationPreview = async (conversation: ConversationItem) => {
+    const conversationMessages = await loadCachedChatMessages(
+      getConversationCacheKey(currentChatUserId.value, dealerCode.value, conversation)
+    )
+    const latestMessage = getLatestConversationMessage(conversationMessages)
+
+    return {
+      ...conversation,
+      lastMessage: latestMessage?.text ?? ''
+    }
+  }
+
+  /** 将当前已打开会话的消息预览同步到会话列表。 */
+  const syncActiveConversationPreview = () => {
+    if (!activeConversation.value) return
+
+    const latestMessage = getLatestConversationMessage(messages.value)
+    activeConversation.value.lastMessage = latestMessage?.text ?? ''
+  }
+
   /** 将新消息去重写入当前会话，并立即同步到本地缓存。 */
   const upsertMessage = (message: ChatMessage) => {
     const existingIndex = messages.value.findIndex(item => item.id === message.id)
@@ -238,6 +270,7 @@ export function useChatRuntime() {
     } else {
       messages.value[existingIndex] = { ...messages.value[existingIndex], ...message }
     }
+    syncActiveConversationPreview()
     persistActiveConversationMessages()
   }
 
@@ -248,12 +281,14 @@ export function useChatRuntime() {
     const isImage = payload.contentType === 'image'
     const isAutoReply =
       payload.contentType === 'autoReplyReq' || payload.contentType === 'autoReplyResp'
+    const isReply = payload.contentType === 'reply' || Boolean(payload.replyInfo)
     const imageList = toArray<Partial<ChatImageItem>>(payload.imageList).map(mapChatImage)
+    const replyInfo = payload.replyInfo
 
     return {
       id: String(payload.messageId),
       direction: isOutgoing ? 'outgoing' : 'incoming',
-      type: isImage ? 'image' : isAutoReply ? 'auto-reply' : 'text',
+      type: isImage ? 'image' : isAutoReply ? 'auto-reply' : isReply ? 'reply' : 'text',
       text: getChatPlainText(payload.content),
       image: isImage ? resolveChatMediaUrl(imageList[0]?.imgUrl) : undefined,
       imageList,
@@ -262,7 +297,20 @@ export function useChatRuntime() {
       timestamp,
       read: isOutgoing,
       status: isOutgoing ? 'sent' : undefined,
-      contentType: payload.contentType
+      contentType: payload.contentType,
+      authorId: String(payload.mine?.userId ?? ''),
+      authorName: String(payload.mine?.nickName ?? ''),
+      reply: replyInfo
+        ? {
+            id: String(replyInfo.replyToMsgId ?? ''),
+            author: String(replyInfo.replyToUserName ?? ''),
+            preview: String(replyInfo.quoteText || replyInfo.replyToContent || ''),
+            photoCount: replyInfo.replyToType === 'image' ? 1 : undefined,
+            replyToUserId: String(replyInfo.replyToUserId ?? ''),
+            replyToUserName: String(replyInfo.replyToUserName ?? ''),
+            replyToType: replyInfo.replyToType
+          }
+        : undefined
     }
   }
 
@@ -320,9 +368,10 @@ export function useChatRuntime() {
         throw new Error(response.message || 'Failed to load customer service list')
       }
 
-      conversations.value = toArray<OnlineChatCustomer>(response.result)
+      const customerConversations = toArray<OnlineChatCustomer>(response.result)
         .sort((left, right) => (Number(left.sort) || 0) - (Number(right.sort) || 0))
         .map(item => ({ ...item, id: String(item.id) }))
+      conversations.value = await Promise.all(customerConversations.map(hydrateConversationPreview))
     } catch (error) {
       conversations.value = []
       globalShowToast({
@@ -437,9 +486,19 @@ export function useChatRuntime() {
     await persistActiveConversationMessages()
     disconnect()
     activeConversation.value = conversation
-    messages.value = await loadCachedChatMessages(
+    const cachedMessages = await loadCachedChatMessages(
       getConversationCacheKey(currentChatUserId.value, dealerCode.value, conversation)
     )
+    const member = buildMemberParticipant()
+    // 兼容旧版缓存：补齐原消息作者，保证引用回复可携带正确的用户身份。
+    messages.value = cachedMessages.map(message => ({
+      ...message,
+      authorId:
+        message.authorId || (message.direction === 'outgoing' ? member.userId : conversation.id),
+      authorName:
+        message.authorName ||
+        (message.direction === 'outgoing' ? member.nickName : conversation.nickName || '')
+    }))
     void loadWelcomeReminder(conversation)
 
     const socketUrl = buildSocketUrl()
@@ -469,7 +528,8 @@ export function useChatRuntime() {
   const sendMessage = (
     content: string,
     contentType: ChatSocketMessage['contentType'] = 'text',
-    imageList?: ChatImageItem[]
+    imageList?: ChatImageItem[],
+    replyTarget?: ChatReplyTarget | null
   ) => {
     const mine = buildMemberParticipant()
     const to = buildCustomerParticipant()
@@ -478,6 +538,16 @@ export function useChatRuntime() {
 
     const messageId = createMessageId()
     const timestamp = Date.now()
+    const replyInfo = replyTarget
+      ? {
+          replyToMsgId: replyTarget.id,
+          replyToContent: replyTarget.preview,
+          replyToType: replyTarget.replyToType || (replyTarget.photoCount ? 'image' : 'text'),
+          replyToUserId: replyTarget.replyToUserId || '',
+          replyToUserName: replyTarget.replyToUserName || replyTarget.author,
+          quoteText: replyTarget.preview
+        }
+      : undefined
     const payload: ChatSocketMessage = {
       type: 'msg',
       messageId,
@@ -485,12 +555,20 @@ export function useChatRuntime() {
       contentType,
       mine,
       to,
-      imageList
+      imageList,
+      replyInfo
     }
     const message: ChatMessage = {
       id: messageId,
       direction: 'outgoing',
-      type: contentType === 'image' ? 'image' : contentType === 'text' ? 'text' : 'auto-reply',
+      type:
+        contentType === 'image'
+          ? 'image'
+          : replyTarget
+            ? 'reply'
+            : contentType === 'text'
+              ? 'text'
+              : 'auto-reply',
       text: getChatPlainText(normalizedContent),
       image: imageList?.[0]?.imgUrl,
       imageList,
@@ -499,7 +577,10 @@ export function useChatRuntime() {
       timestamp,
       read: false,
       status: 'sending',
-      contentType
+      contentType,
+      authorId: mine.userId,
+      authorName: mine.nickName,
+      reply: replyTarget || undefined
     }
 
     upsertMessage(message)
@@ -512,8 +593,9 @@ export function useChatRuntime() {
     return false
   }
 
-  /** 发送用户手动输入的普通文本消息。 */
-  const sendTextMessage = (text: string) => sendMessage(text, 'text')
+  /** 发送用户手动输入的普通文本或引用回复消息。 */
+  const sendTextMessage = (text: string, replyTarget?: ChatReplyTarget | null) =>
+    sendMessage(text, 'text', undefined, replyTarget)
 
   /** 发送自动回复问题和接口返回的系统答复，两条消息均立即写入当前会话。 */
   const sendAutoReplyMessage = (item: AutoReplyItem) => {

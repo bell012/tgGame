@@ -22,6 +22,9 @@ export interface ChatReplyTarget {
   author: string
   preview: string
   photoCount?: number
+  replyToUserId?: string
+  replyToUserName?: string
+  replyToType?: 'text' | 'image'
 }
 
 export interface ChatMessage {
@@ -38,6 +41,8 @@ export interface ChatMessage {
   timestamp?: number
   contentType?: string
   imageList?: ChatImageItem[]
+  authorId?: string
+  authorName?: string
 }
 
 export interface QuickIssue {
@@ -77,4 +82,15 @@ export interface ChatSocketMessage {
   imageList?: ChatImageItem[]
   conversationId?: string
   timestamp?: number
+  replyInfo?: ChatReplyInfo
+}
+
+/** Socket 引用回复携带的原始被回复消息信息。 */
+export interface ChatReplyInfo {
+  replyToMsgId: string
+  replyToContent: string
+  replyToType?: 'text' | 'image'
+  replyToUserId: string
+  replyToUserName: string
+  quoteText: string
 }
