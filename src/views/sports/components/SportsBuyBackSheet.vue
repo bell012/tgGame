@@ -107,6 +107,12 @@
                 {{ betDetail.createdAt }}
               </span>
             </div>
+
+            <div class="flex justify-end">
+              <span class="text-right text-[14px] font-[400] text-text-1">
+                {{ betDetail.oddsTypeLabel }}
+              </span>
+            </div>
           </section>
 
           <button
@@ -150,6 +156,7 @@ type SportsBuyBackDetail = {
   winLossText: string
   orderNo: string
   createdAt: string
+  oddsTypeLabel: string
 }
 
 const props = defineProps<{
@@ -170,6 +177,12 @@ const sportsStore = useSportsStore()
 const { languageCode, sportsToken } = storeToRefs(sportsStore)
 
 const isSubmittingBuyBack = ref(false)
+const sportsOddsTypeI18nKeys: Record<string, string> = {
+  '1': 'betDetails.oddsTypes.malay',
+  '2': 'betDetails.oddsTypes.hongKong',
+  '3': 'betDetails.oddsTypes.europe',
+  '4': 'betDetails.oddsTypes.indonesia'
+}
 
 // 转成数字，兼容接口返回字符串、空值或 null。
 const toSportsBetNumber = (value: number | string | null | undefined) => {
@@ -204,6 +217,12 @@ const formatWinLossText = (value: number | string | null | undefined) => {
   return `${prefix}${formatSportsBetAmount(Math.abs(amount))}`
 }
 
+// 按体育网关 ot 字段转换盘型展示文案。
+const getSportsOddsTypeLabel = (value: number | string | null | undefined) => {
+  const i18nKey = sportsOddsTypeI18nKeys[String(value ?? '')]
+  return i18nKey ? t(i18nKey) : '--'
+}
+
 // 将体育投注原始注单转换为提前结算弹窗展示字段。
 const mapSportsBuyBackDetail = (item?: SportsBetHistoryWager | null): SportsBuyBackDetail => {
   const selection = item?.wil[0]
@@ -220,7 +239,8 @@ const mapSportsBuyBackDetail = (item?: SportsBetHistoryWager | null): SportsBuyB
     betAmount: formatSportsBetAmount(item?.isa),
     winLossText: formatWinLossText(resultAmount),
     orderNo: String(item?.wid ?? ''),
-    createdAt: item ? formatUsDateTime12h(item.wcdt) : '--'
+    createdAt: item ? formatUsDateTime12h(item.wcdt) : '--',
+    oddsTypeLabel: getSportsOddsTypeLabel(item?.ot)
   }
 }
 
@@ -287,7 +307,7 @@ const submitBuyBack = async () => {
       return
     }
 
-    console.log('提前结算携带参数', params)
+    console.log('提前结算携带参数', JSON.stringify(params))
     const response = await Api.sport.submitBuyBack(baseUrl, params)
     console.log('提前结算响应结果', response)
     const responseCode = getSportsResponseCode(response)

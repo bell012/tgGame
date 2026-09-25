@@ -582,7 +582,13 @@
     "confirm": "确认",
     "buyBackSuccess": "提前结算提交成功",
     "buyBackSubmitFailed": "提前结算提交失败，请稍后重试",
-    "copy": "复制成功"
+    "copy": "复制成功",
+    "oddsTypes": {
+      "malay": "马来盘",
+      "hongKong": "香港盘",
+      "europe": "欧洲盘",
+      "indonesia": "印尼盘"
+    }
   },
   "rewardDetails": {
     "title": "投注单",

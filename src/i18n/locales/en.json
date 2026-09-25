@@ -291,7 +291,13 @@
     "confirm": "Confirm",
     "buyBackSuccess": "Early settlement submitted.",
     "buyBackSubmitFailed": "Unable to submit early settlement. Please try again later.",
-    "copy": "Copy succeeded."
+    "copy": "Copy succeeded.",
+    "oddsTypes": {
+      "malay": "Malay Odds",
+      "hongKong": "Hong Kong Odds",
+      "europe": "European Odds",
+      "indonesia": "Indonesian Odds"
+    }
   },
   "rewardDetails": {
     "title": "Bet Slip",
