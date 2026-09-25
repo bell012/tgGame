@@ -1841,6 +1841,7 @@
     },
     "eventDetails": {
       "filterAll": "All",
+      "betSlipFab": "Bet slip",
       "oddsFormatLabel": "Odds Format",
       "oddsFormatOptionsAria": "Odds format options",
       "oddsFormatDisclaimer": "While we make every effort to ensure the accuracy of the data displayed on this website, the information is provided for reference only and should be used as a guide. We accept no liability for any inaccuracies.",

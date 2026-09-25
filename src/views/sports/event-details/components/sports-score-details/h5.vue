@@ -104,21 +104,61 @@
               >
                 <button
                   type="button"
-                  class="flex h-[33px] min-w-0 items-center justify-between rounded-lg p-2 text-left transition-colors"
-                  :class="oddsButtonClass(selectionKey(market.id, rowIndex, 'left'))"
-                  @click="selectOdds(selectionKey(market.id, rowIndex, 'left'))"
+                  class="flex h-[33px] min-w-0 items-center rounded-lg p-2 text-left transition-colors"
+                  :class="[
+                    oddsButtonClass(row.left.selection, market.id),
+                    isOddsButtonUnavailable(market.id)
+                      ? 'justify-center items-center'
+                      : 'justify-between'
+                  ]"
+                  @click="pickSelection(market.id, row.left.selection)"
                 >
-                  <span class="truncate text-sm font-normal">{{ row.left.line }}</span>
-                  <span class="shrink-0 text-sm font-bold tabular-nums">{{ row.left.odds }}</span>
+                  <template v-if="isMarketLocked(market.id)">
+                    <img
+                      class="h-[18px] w-[18px] shrink-0 object-contain"
+                      :src="lockIcon"
+                      alt=""
+                      draggable="false"
+                      aria-hidden="true"
+                    />
+                  </template>
+                  <template v-else-if="isMarketClosed(market.id)">
+                    <span class="text-sm font-bold tabular-nums">--</span>
+                  </template>
+                  <template v-else>
+                    <span class="truncate text-sm font-normal">{{ row.left.line }}</span>
+                    <span class="shrink-0 text-sm font-bold tabular-nums">{{ row.left.odds }}</span>
+                  </template>
                 </button>
                 <button
                   type="button"
-                  class="flex h-[33px] min-w-0 items-center justify-between rounded-lg p-2 text-left transition-colors"
-                  :class="oddsButtonClass(selectionKey(market.id, rowIndex, 'right'))"
-                  @click="selectOdds(selectionKey(market.id, rowIndex, 'right'))"
+                  class="flex h-[33px] min-w-0 items-center rounded-lg p-2 text-left transition-colors"
+                  :class="[
+                    oddsButtonClass(row.right.selection, market.id),
+                    isOddsButtonUnavailable(market.id)
+                      ? 'justify-center items-center'
+                      : 'justify-between'
+                  ]"
+                  @click="pickSelection(market.id, row.right.selection)"
                 >
-                  <span class="truncate text-sm font-normal">{{ row.right.line }}</span>
-                  <span class="shrink-0 text-sm font-bold tabular-nums">{{ row.right.odds }}</span>
+                  <template v-if="isMarketLocked(market.id)">
+                    <img
+                      class="h-[18px] w-[18px] shrink-0 object-contain"
+                      :src="lockIcon"
+                      alt=""
+                      draggable="false"
+                      aria-hidden="true"
+                    />
+                  </template>
+                  <template v-else-if="isMarketClosed(market.id)">
+                    <span class="text-sm font-bold tabular-nums">--</span>
+                  </template>
+                  <template v-else>
+                    <span class="truncate text-sm font-normal">{{ row.right.line }}</span>
+                    <span class="shrink-0 text-sm font-bold tabular-nums">{{
+                      row.right.odds
+                    }}</span>
+                  </template>
                 </button>
               </div>
             </div>
@@ -148,12 +188,31 @@
                 v-for="option in market.options"
                 :key="option.label"
                 type="button"
-                class="flex h-[33px] min-w-0 items-center justify-between rounded-lg p-2 text-left transition-colors"
-                :class="oddsButtonClass(selectionKey(market.id, 0, option.label))"
-                @click="selectOdds(selectionKey(market.id, 0, option.label))"
+                class="flex h-[33px] min-w-0 items-center rounded-lg p-2 text-left transition-colors"
+                :class="[
+                  oddsButtonClass(option.selection, market.id),
+                  isOddsButtonUnavailable(market.id)
+                    ? 'justify-center items-center'
+                    : 'justify-between'
+                ]"
+                @click="pickSelection(market.id, option.selection)"
               >
-                <span class="truncate text-sm font-normal">{{ option.label }}</span>
-                <span class="shrink-0 text-sm font-bold tabular-nums">{{ option.odds }}</span>
+                <template v-if="isMarketLocked(market.id)">
+                  <img
+                    class="h-[18px] w-[18px] shrink-0 object-contain"
+                    :src="lockIcon"
+                    alt=""
+                    draggable="false"
+                    aria-hidden="true"
+                  />
+                </template>
+                <template v-else-if="isMarketClosed(market.id)">
+                  <span class="text-sm font-bold tabular-nums">--</span>
+                </template>
+                <template v-else>
+                  <span class="truncate text-sm font-normal">{{ option.label }}</span>
+                  <span class="shrink-0 text-sm font-bold tabular-nums">{{ option.odds }}</span>
+                </template>
               </button>
             </div>
           </template>
@@ -164,9 +223,12 @@
 </template>
 
 <script setup lang="ts">
-import type { SportMarketLine } from '@/api/interface/sport'
+import type { SportMarketLine, SportWagerSelection } from '@/api/interface/sport'
+import type { OddsSelectPayload } from '@/views/sports/components/match-odds/types'
+import { isWagerSelected } from '@/views/sports/components/match-odds/display'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import lockIcon from './img/bold.svg?url'
 import doubleIcon from './img/double.svg?url'
 import downIcon from './img/down.svg?url'
 import pinIcon from './img/top.svg?url'
@@ -178,12 +240,14 @@ const { t } = useI18n()
 
 const props = defineProps<{
   marketLines?: SportMarketLine[]
+  selectedWagerSelectionId?: number
 }>()
+
+const emit = defineEmits<{ pick: [payload: OddsSelectPayload] }>()
 
 const COLLAPSED_ROW_LIMIT = 3
 
 const activeFilter = ref<ScoreDetailsFilterKey>('all')
-const selectedOddsKey = ref('')
 const pinnedMarketIds = ref<Set<string>>(new Set())
 const openSectionIds = ref<Set<string>>(new Set())
 const expandedMarketIds = ref<Set<string>>(new Set())
@@ -212,7 +276,6 @@ watch(
     activeFilter.value = 'all'
     expandedMarketIds.value = new Set()
     openSectionIds.value = new Set(allMarkets.value.map(market => market.id))
-    selectedOddsKey.value = ''
   },
   { immediate: true }
 )
@@ -275,15 +338,36 @@ const getDualColumnRows = (market: DualColumnMarketCard) => {
   return market.rows.slice(0, COLLAPSED_ROW_LIMIT)
 }
 
-const selectionKey = (marketId: string, rowIndex: number, side: string) =>
-  `${marketId}-${rowIndex}-${side}`
+const findMarketLine = (marketLineId: string) =>
+  props.marketLines?.find(item => String(item.MarketlineId) === marketLineId)
 
-const selectOdds = (key: string) => {
-  selectedOddsKey.value = key
+/** isl：true 封盘，展示锁图标（优先于关盘 --） */
+const isMarketLocked = (marketLineId: string) => findMarketLine(marketLineId)?.IsLocked === true
+
+/** mlsid：1 开盘正常展示，2 关盘时赔率格统一显示 -- */
+const isMarketClosed = (marketLineId: string) =>
+  findMarketLine(marketLineId)?.MarketlineStatusId === 2
+
+const isOddsButtonUnavailable = (marketLineId: string) =>
+  isMarketLocked(marketLineId) || isMarketClosed(marketLineId)
+
+const pickSelection = (marketLineId: string, selection?: SportWagerSelection) => {
+  if (!selection || isOddsButtonUnavailable(marketLineId)) {
+    return
+  }
+  const line = findMarketLine(marketLineId)
+  if (!line) {
+    return
+  }
+  emit('pick', { market: line, option: selection })
 }
 
-const oddsButtonClass = (key: string) =>
-  selectedOddsKey.value === key
+const oddsButtonClass = (selection?: SportWagerSelection, marketLineId?: string) => {
+  if (marketLineId && isOddsButtonUnavailable(marketLineId)) {
+    return 'bg-bg-3 text-text-1'
+  }
+  return selection && isWagerSelected(selection, props.selectedWagerSelectionId)
     ? 'bg-theme-primary text-text-4'
     : 'bg-bg-3 text-text-1 [&_span:first-child]:text-text-2'
+}
 </script>

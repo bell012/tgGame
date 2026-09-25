@@ -11,8 +11,19 @@
     :style="isMobile ? { paddingTop: `${layoutStore.TOPNAV_HEIGHT}px` } : undefined"
   >
     <template v-if="isMobile">
-      <MatchHeader @back="onBack" />
-      <SportsScoreDetails class="mt-4 pl-3.5 pb-6" :market-lines="scoreDetailsMarketLines" />
+      <MatchHeader :model="matchHeaderModel" @back="onBack" />
+      <SportsScoreDetails
+        class="mt-4 pl-3.5 pb-24"
+        :market-lines="scoreDetailsMarketLines"
+        :selected-wager-selection-id="selectedWagerSelectionId"
+        @pick="pickOdds"
+      />
+      <ShoppingCartFab
+        :count="cartCount"
+        :aria-label="t('sports.eventDetails.betSlipFab')"
+        @click="openBetSlip"
+      />
+      <BetSlipH5 :page="betSlipPage" />
     </template>
     <template v-else>
       <EventDetailsTabs
@@ -87,9 +98,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import ChevronIcon from '@/static/svg/casino/dropdown_chevron.svg?component'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
@@ -100,22 +111,126 @@ import MatchHeader from './components/match-header/index.vue'
 import MatchMediaPanel from './components/match-media-panel/index.vue'
 import SportsNavigation from '../components/sports-navigation/index.vue'
 import { sportItems } from '../components/sports-navigation/sport-items'
+import BetSlipH5 from '../components/bet-slip/h5.vue'
+import ShoppingCartFab from './components/shopping-cart-fab/index.vue'
 import SportsScoreDetails from './components/sports-score-details/index.vue'
+import { useSportsStore } from '@/stores/sports'
+import type { SportsMatch } from '../shared/types'
+import { getTeamLogoUrl } from '../index'
+import { mapEventDetailTabToMatchHeader, mapSportsMatchToMatchHeader } from './map-match-header'
+import { eventToCompetitionGroup, sportsMatchToCompetitionGroups } from './map-seed-match'
+import { useEventDetailsBetSlip } from './use-event-details-betslip'
 import { useEventDetailsSports } from './use-event-details-sports'
 
 const router = useRouter()
+const route = useRoute()
+const sportsStore = useSportsStore()
 const { t } = useI18n()
 const isMobile = useIsMobile()
 const layoutStore = useLayoutStore()
 const activeMatchId = ref('')
+const targetEventId = ref('')
 const selectedSportId = ref(sportItems[0]?.sportId ?? 1)
 const selectedSportKey = ref(sportItems[0]?.key ?? 'football')
 
-const eventDetailsSports = useEventDetailsSports(selectedSportId)
+const readSportsMatchFromNavigation = (): SportsMatch | null => {
+  const state = history.state as { sportsMatch?: SportsMatch }
+  return state?.sportsMatch ?? null
+}
+
+const navigationMatch = readSportsMatchFromNavigation()
+
+const applyRouteEventContext = () => {
+  const sportId = Number(route.query.sportId)
+  const eventId = route.query.eventId
+  if (Number.isFinite(sportId) && sportId > 0) {
+    selectedSportId.value = sportId
+    const sport = sportItems.find(item => item.sportId === sportId)
+    if (sport) {
+      selectedSportKey.value = sport.key
+    }
+  }
+  if (eventId != null && String(eventId).trim() !== '') {
+    targetEventId.value = String(eventId)
+  }
+}
+
+applyRouteEventContext()
+
+const resolveInitialGroups = () => {
+  const eventId = Number(targetEventId.value)
+  if (
+    navigationMatch &&
+    (!targetEventId.value || String(navigationMatch.EventId) === targetEventId.value)
+  ) {
+    return sportsMatchToCompetitionGroups(navigationMatch)
+  }
+  if (Number.isFinite(eventId) && eventId > 0) {
+    const cached = sportsStore.getRefreshEvent(selectedSportId.value, eventId)
+    if (cached) {
+      return [eventToCompetitionGroup(cached)]
+    }
+  }
+  return []
+}
+
+const eventDetailsSports = useEventDetailsSports(selectedSportId, {
+  targetEventId,
+  initialGroups: resolveInitialGroups()
+})
 const eventDetailTabItems = computed(() => mapEventDetailTabItems(eventDetailsSports.groups.value))
+
+watch(
+  eventDetailTabItems,
+  items => {
+    if (!items.length) {
+      activeMatchId.value = ''
+      return
+    }
+    const pendingEventId = targetEventId.value
+    if (pendingEventId && items.some(item => item.id === pendingEventId)) {
+      activeMatchId.value = pendingEventId
+      return
+    }
+    if (!items.some(item => item.id === activeMatchId.value)) {
+      activeMatchId.value = items[0]?.id ?? ''
+    }
+  },
+  { immediate: true }
+)
+
+const {
+  page: betSlipPage,
+  cartCount,
+  pickOdds,
+  openBetSlip,
+  getSelectedWagerSelectionId,
+  currentMatchId
+} = useEventDetailsBetSlip({
+  groups: eventDetailsSports.groups,
+  selectedSportId,
+  activeMatchId
+})
+
+const selectedWagerSelectionId = computed(() =>
+  currentMatchId.value ? getSelectedWagerSelectionId(currentMatchId.value) : undefined
+)
 const selectedEvent = computed(() =>
   eventDetailTabItems.value.find(item => item.id === activeMatchId.value)
 )
+
+const matchHeaderModel = computed(() => {
+  if (selectedEvent.value) {
+    return mapEventDetailTabToMatchHeader(selectedEvent.value, getTeamLogoUrl)
+  }
+  if (
+    navigationMatch &&
+    (!targetEventId.value || String(navigationMatch.EventId) === targetEventId.value)
+  ) {
+    return mapSportsMatchToMatchHeader(navigationMatch, getTeamLogoUrl)
+  }
+  return undefined
+})
 
 const scoreDetailsMarketLines = computed(
   () => selectedEvent.value?.marketLines ?? eventDetailTabItems.value[0]?.marketLines ?? []
