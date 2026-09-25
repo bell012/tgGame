@@ -10,8 +10,20 @@
     <!-- 消息气泡列表。 -->
     <div class="flex flex-col gap-[10px] pb-2">
       <template v-for="message in messages" :key="message.id">
+        <RedPacketMessage
+          v-if="message.type === 'red-pack'"
+          :claimed="props.claimedRedPacketIds.includes(String(message.redPacket?.id ?? ''))"
+          :display-mode="props.displayMode"
+          :loading="props.redPacketClaimingMessageIds.includes(message.id)"
+          :message="message"
+          @claim="$emit('claim-red-packet', $event)"
+        />
+        <RedPacketSystemMessage
+          v-else-if="message.type === 'system' && message.system?.type === 'red-packet-claimed'"
+          :service-name="message.system.serviceName"
+        />
         <ImageMessage
-          v-if="message.type === 'image'"
+          v-else-if="message.type === 'image'"
           :display-mode="props.displayMode"
           :message="message"
           @focus="handleFocus"
@@ -47,13 +59,26 @@ import { getMessagePreview } from '../shared'
 import type { ChatMessage, ChatReplyTarget } from '../types'
 import ImageMessage from './image-message.vue'
 import MessageBubble from './message-bubble.vue'
+import RedPacketMessage from './red-packet-message.vue'
+import RedPacketSystemMessage from './red-packet-system-message.vue'
 
-const props = withDefaults(defineProps<{ messages: ChatMessage[]; displayMode?: 'h5' | 'pc' }>(), {
-  displayMode: 'h5'
-})
+const props = withDefaults(
+  defineProps<{
+    messages: ChatMessage[]
+    redPacketClaimingMessageIds?: string[]
+    claimedRedPacketIds?: string[]
+    displayMode?: 'h5' | 'pc'
+  }>(),
+  {
+    redPacketClaimingMessageIds: () => [],
+    claimedRedPacketIds: () => [],
+    displayMode: 'h5'
+  }
+)
 const emit = defineEmits<{
   reply: [target: ChatReplyTarget]
   'view-image': [message: ChatMessage]
+  'claim-red-packet': [message: ChatMessage]
 }>()
 
 const { t } = useI18n()

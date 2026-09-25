@@ -35,12 +35,15 @@
         :conversation="activeConversation"
         :messages="messages"
         :issues="quickIssues"
+        :claimed-red-packet-ids="claimedRedPacketIds"
+        :red-packet-claiming-message-ids="redPacketClaimingMessageIds"
         :mode="mode"
         :draft="draft"
         :reply-target="replyTarget"
         @back="handleConversationBack"
         @search="searchVisible = true"
         @reply="startReply"
+        @claim-red-packet="handleRedPacketClaim"
         @issue="handleIssueSelect"
         @update:draft="setDraft"
         @send="handleSend"
@@ -52,6 +55,13 @@
         @photo="handleImageUpload"
         @camera="handleImageUpload"
         @view-image="openImageViewer"
+      />
+
+      <!-- 红包领取成功提示。 -->
+      <RedPacketSuccessPopup
+        v-if="redPacketSuccessAmount !== null"
+        :amount="redPacketSuccessAmount"
+        @close="closeRedPacketSuccess"
       />
 
       <!-- 会话页内触发的快捷问题弹层。 -->
@@ -92,6 +102,7 @@ import ChatSearchOverlay from './components/chat-search-overlay.vue'
 import ConversationList from './components/conversation-list.vue'
 import ConversationView from './components/conversation-view.vue'
 import QuickIssueSheet from './components/quick-issue-sheet.vue'
+import RedPacketSuccessPopup from './components/red-packet-success-popup.vue'
 import { useChatComposer } from './composables/use-chat-composer'
 import { useChatRuntime } from './composables/use-chat-runtime'
 import type { ChatMessage, ConversationItem, QuickIssue } from './types'
@@ -106,11 +117,16 @@ const {
   activeConversation,
   loadingConversations,
   loadingAutoReplies,
+  redPacketClaimingMessageIds,
+  claimedRedPacketIds,
+  redPacketSuccessAmount,
   initialize,
   selectConversation,
   leaveConversation,
   loadAutoReplies,
   sendTextMessage,
+  claimRedPacket,
+  closeRedPacketSuccess,
   sendAutoReplyMessage,
   sendImageFile
 } = useChatRuntime()
@@ -155,6 +171,11 @@ const handleConversationBack = async () => {
   quickIssueVisible.value = false
   activeIssue.value = null
   resetAfterSend()
+}
+
+/** 领取当前点击的客服红包，并在接口成功后显示领取结果。 */
+const handleRedPacketClaim = (message: ChatMessage) => {
+  void claimRedPacket(message)
 }
 
 /** 查看会话中的图片消息。 */

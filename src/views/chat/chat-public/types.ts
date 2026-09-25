@@ -1,6 +1,6 @@
 export type ConversationStatus = 'online' | 'offline' | 'typing'
 export type MessageDirection = 'incoming' | 'outgoing'
-export type MessageType = 'text' | 'image' | 'reply' | 'auto-reply'
+export type MessageType = 'text' | 'image' | 'reply' | 'auto-reply' | 'red-pack' | 'system'
 export type ChatComposerMode = 'idle' | 'typing' | 'emoji' | 'media' | 'reply'
 export type ChatMessageStatus = 'sending' | 'sent' | 'failed'
 
@@ -43,6 +43,8 @@ export interface ChatMessage {
   imageList?: ChatImageItem[]
   authorId?: string
   authorName?: string
+  redPacket?: ChatRedPacket
+  system?: ChatSystemMessage
 }
 
 export interface QuickIssue {
@@ -93,4 +95,17 @@ export interface ChatReplyInfo {
   replyToUserId: string
   replyToUserName: string
   quoteText: string
+}
+
+/** WebSocket 红包消息 content 中的结构化数据。 */
+export interface ChatRedPacket {
+  id: string | number
+  status: 0 | 1
+  amount: string | number
+}
+
+/** 系统提示消息的页面展示信息。 */
+export interface ChatSystemMessage {
+  type: 'red-packet-claimed'
+  serviceName: string
 }

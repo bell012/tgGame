@@ -34,11 +34,14 @@
       :conversation="activeConversation"
       :messages="messages"
       :issues="quickIssues"
+      :claimed-red-packet-ids="claimedRedPacketIds"
+      :red-packet-claiming-message-ids="redPacketClaimingMessageIds"
       :mode="mode"
       :draft="draft"
       :reply-target="replyTarget"
       @back="handleConversationBack"
       @reply="startReply"
+      @claim-red-packet="handleRedPacketClaim"
       @issue="handleIssueSelect"
       @update:draft="setDraft"
       @send="handleSend"
@@ -49,6 +52,14 @@
       @emoji-delete="handleEmojiDelete"
       @photo="handleImageUpload"
       @camera="handleImageUpload"
+    />
+
+    <!-- PC 端红包领取成功提示。 -->
+    <RedPacketSuccessPopup
+      v-if="redPacketSuccessAmount !== null"
+      display-mode="pc"
+      :amount="redPacketSuccessAmount"
+      @close="closeRedPacketSuccess"
     />
 
     <!-- PC 快捷问题弹层。 -->
@@ -73,9 +84,10 @@ import { useRouter } from 'vue-router'
 import ConversationList from './components/conversation-list.vue'
 import ConversationView from './components/conversation-view.vue'
 import QuickIssueSheet from './components/quick-issue-sheet.vue'
+import RedPacketSuccessPopup from './components/red-packet-success-popup.vue'
 import { useChatComposer } from './composables/use-chat-composer'
 import { useChatRuntime } from './composables/use-chat-runtime'
-import type { ConversationItem, QuickIssue } from './types'
+import type { ChatMessage, ConversationItem, QuickIssue } from './types'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -87,11 +99,16 @@ const {
   activeConversation,
   loadingConversations,
   loadingAutoReplies,
+  redPacketClaimingMessageIds,
+  claimedRedPacketIds,
+  redPacketSuccessAmount,
   initialize,
   selectConversation,
   leaveConversation,
   loadAutoReplies,
   sendTextMessage,
+  claimRedPacket,
+  closeRedPacketSuccess,
   sendAutoReplyMessage,
   sendImageFile
 } = useChatRuntime()
@@ -122,6 +139,11 @@ const handleConversationBack = async () => {
   quickIssueVisible.value = false
   activeIssue.value = null
   resetAfterSend()
+}
+
+/** 领取当前点击的客服红包，并在接口成功后显示领取结果。 */
+const handleRedPacketClaim = (message: ChatMessage) => {
+  void claimRedPacket(message)
 }
 
 /** 关闭 PC 聊天侧边抽屉并返回进入聊天前的页面。 */

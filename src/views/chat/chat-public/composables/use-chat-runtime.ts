@@ -25,6 +25,7 @@ import type {
   ChatImageItem,
   ChatMessage,
   ChatParticipant,
+  ChatRedPacket,
   ChatReplyTarget,
   ChatSocketMessage,
   ConversationItem,
@@ -60,6 +61,26 @@ const parseChatQaConfig = (value: ChatConfig['qaConfig']): ChatQaConfig | null =
   try {
     const parsedValue = JSON.parse(value) as unknown
     return parsedValue && typeof parsedValue === 'object' ? (parsedValue as ChatQaConfig) : null
+  } catch {
+    return null
+  }
+}
+
+/** 解析 WebSocket 红包消息 content 中的 JSON 数据，异常数据按普通文本处理。 */
+const parseChatRedPacket = (value: unknown): ChatRedPacket | null => {
+  try {
+    const parsedValue = JSON.parse(String(value ?? '')) as Record<string, unknown>
+    const id = parsedValue.id
+    const status = Number(parsedValue.status)
+    const amount = parsedValue.amount
+
+    if ((typeof id !== 'string' && typeof id !== 'number') || (status !== 0 && status !== 1)) {
+      return null
+    }
+
+    if (typeof amount !== 'string' && typeof amount !== 'number') return null
+
+    return { id, status, amount }
   } catch {
     return null
   }
@@ -136,6 +157,9 @@ export function useChatRuntime() {
   const loadingConversations = ref(true)
   const loadingAutoReplies = ref(false)
   const uploadingImage = ref(false)
+  const redPacketClaimingMessageIds = ref<string[]>([])
+  const claimedRedPacketIds = ref<string[]>([])
+  const redPacketSuccessAmount = ref<string | number | null>(null)
   let pendingMessageCacheWrite = Promise.resolve()
   let autoReplyRequestId = 0
 
@@ -231,6 +255,18 @@ export function useChatRuntime() {
     return pendingMessageCacheWrite
   }
 
+  /** 扫描当前会话的已领取红包，用于禁用相同红包 ID 的待领取原消息。 */
+  const syncClaimedRedPacketIds = () => {
+    claimedRedPacketIds.value = [
+      ...new Set(
+        messages.value
+          .filter(message => message.redPacket?.status === 1)
+          .map(message => String(message.redPacket?.id ?? ''))
+          .filter(Boolean)
+      )
+    ]
+  }
+
   /** 从会话消息中找出时间最新的一条；没有消息时返回空值。 */
   const getLatestConversationMessage = (conversationMessages: ChatMessage[]) =>
     conversationMessages.reduce<ChatMessage | null>((latestMessage, message) => {
@@ -270,6 +306,7 @@ export function useChatRuntime() {
     } else {
       messages.value[existingIndex] = { ...messages.value[existingIndex], ...message }
     }
+    syncClaimedRedPacketIds()
     syncActiveConversationPreview()
     persistActiveConversationMessages()
   }
@@ -281,6 +318,8 @@ export function useChatRuntime() {
     const isImage = payload.contentType === 'image'
     const isAutoReply =
       payload.contentType === 'autoReplyReq' || payload.contentType === 'autoReplyResp'
+    const redPacket = payload.contentType === 'redPack' ? parseChatRedPacket(payload.content) : null
+    const isRedPacket = Boolean(redPacket)
     const isReply = payload.contentType === 'reply' || Boolean(payload.replyInfo)
     const imageList = toArray<Partial<ChatImageItem>>(payload.imageList).map(mapChatImage)
     const replyInfo = payload.replyInfo
@@ -288,8 +327,16 @@ export function useChatRuntime() {
     return {
       id: String(payload.messageId),
       direction: isOutgoing ? 'outgoing' : 'incoming',
-      type: isImage ? 'image' : isAutoReply ? 'auto-reply' : isReply ? 'reply' : 'text',
-      text: getChatPlainText(payload.content),
+      type: isImage
+        ? 'image'
+        : isAutoReply
+          ? 'auto-reply'
+          : isRedPacket
+            ? 'red-pack'
+            : isReply
+              ? 'reply'
+              : 'text',
+      text: isRedPacket ? '' : getChatPlainText(payload.content),
       image: isImage ? resolveChatMediaUrl(imageList[0]?.imgUrl) : undefined,
       imageList,
       time: formatChatMessageTime(timestamp),
@@ -298,6 +345,7 @@ export function useChatRuntime() {
       read: isOutgoing,
       status: isOutgoing ? 'sent' : undefined,
       contentType: payload.contentType,
+      redPacket: redPacket || undefined,
       authorId: String(payload.mine?.userId ?? ''),
       authorName: String(payload.mine?.nickName ?? ''),
       reply: replyInfo
@@ -312,6 +360,21 @@ export function useChatRuntime() {
           }
         : undefined
     }
+  }
+
+  /** 收到红包消息后按协议发送已读回执，通知客服端消息已被客户端接收。 */
+  const sendRedPacketReadReceipt = (messageId: string) => {
+    const to = buildCustomerParticipant()
+    if (!to) return false
+
+    return send({
+      type: 'readReceipt',
+      messageId: createMessageId(),
+      content: '',
+      contentType: 'text',
+      to,
+      msgIds: [messageId]
+    })
   }
 
   /** 处理连接配置、发送确认和客服消息推送。 */
@@ -333,6 +396,10 @@ export function useChatRuntime() {
 
     const message = mapSocketMessage(record as unknown as ChatSocketMessage)
     upsertMessage(message)
+
+    if (message.type === 'red-pack') {
+      sendRedPacketReadReceipt(message.id)
+    }
 
     // 图文自动回复可能在同一条响应中附带多张图片，按独立图片消息展示。
     if (message.type === 'auto-reply' && message.imageList?.length) {
@@ -499,6 +566,7 @@ export function useChatRuntime() {
         message.authorName ||
         (message.direction === 'outgoing' ? member.nickName : conversation.nickName || '')
     }))
+    syncClaimedRedPacketIds()
     void loadWelcomeReminder(conversation)
 
     const socketUrl = buildSocketUrl()
@@ -520,6 +588,8 @@ export function useChatRuntime() {
     disconnect()
     activeConversation.value = null
     messages.value = []
+    redPacketClaimingMessageIds.value = []
+    claimedRedPacketIds.value = []
     autoReplyItems.value = []
     loadingAutoReplies.value = false
   }
@@ -596,6 +666,84 @@ export function useChatRuntime() {
   /** 发送用户手动输入的普通文本或引用回复消息。 */
   const sendTextMessage = (text: string, replyTarget?: ChatReplyTarget | null) =>
     sendMessage(text, 'text', undefined, replyTarget)
+
+  /** 领取待领取红包；成功后保留原消息并追加已领取记录与系统提示。 */
+  const claimRedPacket = async (message: ChatMessage) => {
+    const redPacket = message.redPacket
+    if (!redPacket || redPacket.status !== 0) return false
+
+    const packetId = String(redPacket.id)
+    if (
+      claimedRedPacketIds.value.includes(packetId) ||
+      redPacketClaimingMessageIds.value.includes(message.id)
+    ) {
+      return false
+    }
+
+    redPacketClaimingMessageIds.value = [...redPacketClaimingMessageIds.value, message.id]
+
+    try {
+      const response = await Api.chat.receiveRedPackage(
+        { id: redPacket.id },
+        { showErrorToast: false }
+      )
+      if (response.code !== 'C2') {
+        throw new Error(response.message || 'Failed to claim red packet')
+      }
+
+      const timestamp = Date.now()
+      const mine = buildMemberParticipant()
+      const serviceName = activeConversation.value?.nickName || ''
+
+      // 领取成功后追加会员侧已领取红包，原客服侧待领取记录不替换。
+      upsertMessage({
+        id: `red-pack-claimed:${message.id}:${timestamp}`,
+        direction: 'outgoing',
+        type: 'red-pack',
+        text: '',
+        time: formatChatMessageTime(timestamp),
+        period: getChatTimePeriod(timestamp),
+        timestamp,
+        read: true,
+        status: 'sent',
+        contentType: 'redPack',
+        authorId: mine.userId,
+        authorName: mine.nickName,
+        redPacket: { ...redPacket, status: 1 }
+      })
+
+      // 领取完成后追加系统记录，便于会员在会话历史中确认领取来源。
+      upsertMessage({
+        id: `red-pack-system:${message.id}:${timestamp}`,
+        direction: 'incoming',
+        type: 'system',
+        text: '',
+        time: formatChatMessageTime(timestamp),
+        period: getChatTimePeriod(timestamp),
+        timestamp,
+        contentType: 'redPackClaimed',
+        system: { type: 'red-packet-claimed', serviceName }
+      })
+
+      redPacketSuccessAmount.value = redPacket.amount
+      return true
+    } catch (error) {
+      globalShowToast({
+        message: error instanceof Error ? error.message : 'Failed to claim red packet',
+        type: 'fail'
+      })
+      return false
+    } finally {
+      redPacketClaimingMessageIds.value = redPacketClaimingMessageIds.value.filter(
+        messageId => messageId !== message.id
+      )
+    }
+  }
+
+  /** 关闭领取成功弹窗，保留已写入本地会话缓存的领取记录。 */
+  const closeRedPacketSuccess = () => {
+    redPacketSuccessAmount.value = null
+  }
 
   /** 发送自动回复问题和接口返回的系统答复，两条消息均立即写入当前会话。 */
   const sendAutoReplyMessage = (item: AutoReplyItem) => {
@@ -679,6 +827,9 @@ export function useChatRuntime() {
     loadingConversations,
     loadingAutoReplies,
     uploadingImage,
+    redPacketClaimingMessageIds,
+    claimedRedPacketIds,
+    redPacketSuccessAmount,
     connectionState,
     errorMessage,
     initialize,
@@ -686,6 +837,8 @@ export function useChatRuntime() {
     leaveConversation,
     loadAutoReplies,
     sendTextMessage,
+    claimRedPacket,
+    closeRedPacketSuccess,
     sendAutoReplyMessage,
     sendImageFile
   }

@@ -18,6 +18,9 @@
       ref="messageListRef"
       :display-mode="props.displayMode"
       :messages="messages"
+      :claimed-red-packet-ids="claimedRedPacketIds"
+      :red-packet-claiming-message-ids="redPacketClaimingMessageIds"
+      @claim-red-packet="$emit('claim-red-packet', $event)"
       @reply="$emit('reply', $event)"
       @view-image="$emit('view-image', $event)"
     />
@@ -81,11 +84,15 @@ const props = withDefaults(
     draft: string
     replyTarget: ChatReplyTarget | null
     issues: QuickIssue[]
+    redPacketClaimingMessageIds?: string[]
+    claimedRedPacketIds?: string[]
     typing?: boolean
     displayMode?: 'h5' | 'pc'
   }>(),
   {
-    displayMode: 'h5'
+    displayMode: 'h5',
+    redPacketClaimingMessageIds: () => [],
+    claimedRedPacketIds: () => []
   }
 )
 
@@ -93,6 +100,7 @@ defineEmits<{
   back: []
   search: []
   reply: [target: ChatReplyTarget]
+  'claim-red-packet': [message: ChatMessage]
   issue: [issue: QuickIssue]
   'update:draft': [value: string]
   send: []
