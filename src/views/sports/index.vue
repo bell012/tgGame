@@ -7,26 +7,6 @@
   <div v-else class="w-full min-w-0 bg-bg-1 font-inter text-text-1" data-testid="sports-page">
     <SportsNavigation class="!px-5" @change="handleSportChange" />
 
-    <!-- 热门区加载失败不影响下方赛事。 -->
-    <p v-if="page.hotEventsLoading.value" class="mx-5 mt-4 text-sm text-text-2" role="status">
-      {{ page.sportsLoadingText.value }}
-    </p>
-    <div
-      v-else-if="page.hotEventsError.value"
-      class="mx-5 mt-4 flex items-center gap-3 text-sm text-text-2"
-      role="status"
-    >
-      <span>{{ page.sportsLoadFailedText.value }}</span>
-      <button
-        type="button"
-        class="shrink-0 text-theme-primary disabled:opacity-50"
-        :disabled="page.hotEventsLoading.value"
-        @click="page.retryHotEvents"
-      >
-        {{ page.sportsRetryText.value }}
-      </button>
-    </div>
-
     <section
       v-if="liveMatches.length"
       class="mt-4"
