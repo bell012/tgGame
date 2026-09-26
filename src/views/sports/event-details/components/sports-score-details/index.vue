@@ -3,6 +3,7 @@
     v-if="isMobile"
     :market-lines="marketLines"
     :selected-wager-selection-id="selectedWagerSelectionId"
+    :show-empty="showEmpty"
     @pick="emit('pick', $event)"
   />
   <SportsScoreDetailsPc v-else :market-lines="marketLines" :odds-format="oddsFormat" />
@@ -21,9 +22,11 @@ withDefaults(
     marketLines?: SportMarketLine[]
     oddsFormat?: EventDetailsOddsFormat
     selectedWagerSelectionId?: number
+    showEmpty?: boolean
   }>(),
   {
-    oddsFormat: 1
+    oddsFormat: 1,
+    showEmpty: false
   }
 )
 

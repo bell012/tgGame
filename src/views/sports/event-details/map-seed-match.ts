@@ -1,6 +1,35 @@
 import type { SportCompetitionGroup, SportEvent, SportsEventMarket } from '@/api/interface/sport'
 import type { SportsMatch } from '../shared/types'
 
+/** 将单场详情合并进 getSportsV2 联赛列表，按 EventId 更新盘口并保持 tabs 完整。 */
+export const mergeEventIntoGroups = (
+  groups: readonly SportCompetitionGroup[],
+  event: SportEvent
+): SportCompetitionGroup[] => {
+  const competitionId = event.Competition?.CompetitionId
+  if (!Number.isSafeInteger(competitionId)) {
+    return [...groups, eventToCompetitionGroup(event)]
+  }
+
+  let merged = false
+  const next = groups.map(group => {
+    if (group.CompetitionId !== competitionId) {
+      return group
+    }
+    merged = true
+    const hasEvent = group.Sports.some(item => item.EventId === event.EventId)
+    const sports = hasEvent
+      ? group.Sports.map(item => (item.EventId === event.EventId ? event : item))
+      : [...group.Sports, event]
+    return { ...group, Sports: sports }
+  })
+
+  if (!merged) {
+    next.push(eventToCompetitionGroup(event))
+  }
+  return next
+}
+
 export const eventToCompetitionGroup = (event: SportEvent): SportCompetitionGroup => ({
   CompetitionId: event.Competition.CompetitionId,
   CompetitionName: event.Competition.CompetitionName,
