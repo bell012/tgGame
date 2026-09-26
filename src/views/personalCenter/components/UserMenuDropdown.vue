@@ -204,15 +204,15 @@ const mainMenus = computed(() => [
       emit('update:modelValue', false)
     }
   },
-  {
-    id: 'vault-pro',
-    name: t('userMenu.vaultPro'),
-    icon: getIcon(67),
-    handler: () => {
-      console.log('Vault Pro clicked')
-      emit('update:modelValue', false)
-    }
-  },
+  // {
+  //   id: 'vault-pro',
+  //   name: t('userMenu.vaultPro'),
+  //   icon: getIcon(67),
+  //   handler: () => {
+  //     console.log('Vault Pro clicked')
+  //     emit('update:modelValue', false)
+  //   }
+  // },
   {
     id: 'referral',
     name: t('userMenu.referral'),

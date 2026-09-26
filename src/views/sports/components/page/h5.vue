@@ -326,7 +326,7 @@ const navigationHeight = ref(layoutStore.TOPNAV_HEIGHT + layoutStore.BOTTOM_TAB_
 const activeSport = computed(() => props.page.selectedSportKey.value)
 const liveStrip = ref<HTMLElement | null>(null)
 const expandedGroups = ref<Record<string, boolean>>({})
-const expandNewGroups = ref(false)
+const expandNewGroups = ref(true)
 const LEAGUE_BATCH_SIZE = 10
 const visibleGroupCount = ref(LEAGUE_BATCH_SIZE)
 const loadMoreSentinel = ref<HTMLElement | null>(null)
@@ -399,7 +399,7 @@ watch(
   () => props.page.matchListContext.value,
   () => {
     visibleGroupCount.value = LEAGUE_BATCH_SIZE
-    expandNewGroups.value = false
+    expandNewGroups.value = true
   },
   { flush: 'sync' }
 )
@@ -424,9 +424,8 @@ onScopeDispose(() => {
   loadMoreObserver.disconnect()
 })
 
-// 默认展开首组，按联赛 ID 记住展开状态。
-const isGroupExpanded = (id: string) =>
-  expandedGroups.value[id] ?? (expandNewGroups.value || groups.value[0]?.id === id)
+// 默认展开全部联赛，手动点击后按联赛 ID 记住展开状态。
+const isGroupExpanded = (id: string) => expandedGroups.value[id] ?? expandNewGroups.value
 const allGroupsCollapsed = computed(() => groups.value.every(group => !isGroupExpanded(group.id)))
 const toggleGroup = (id: string) => {
   expandedGroups.value = { ...expandedGroups.value, [id]: !isGroupExpanded(id) }
