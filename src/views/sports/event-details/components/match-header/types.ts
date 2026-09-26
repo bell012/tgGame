@@ -13,11 +13,6 @@ export type MatchHeaderPhase = 'prematch' | 'live'
 
 export type MatchHeaderView = 'info' | 'video' | 'animation'
 
-export interface MatchHeaderCallout {
-  title: string
-  detail: string
-}
-
 export interface MatchHeaderViewModel {
   league: string
   phase: MatchHeaderPhase
@@ -32,7 +27,4 @@ export interface MatchHeaderViewModel {
   clockText: string
   cornerScore: string
   halfTimeScore: string
-  callout?: MatchHeaderCallout
-  videoSrc?: string
-  videoPoster?: string
 }

@@ -25,16 +25,26 @@ import type {
   ChatImageItem,
   ChatMessage,
   ChatParticipant,
+  ChatRedPacket,
+  ChatReplyTarget,
   ChatSocketMessage,
   ConversationItem,
   QuickIssue
 } from '../types'
-import { loadCachedChatMessages, saveCachedChatMessages } from './chat-message-cache'
+import {
+  CHAT_CACHE_PAGE_SIZE,
+  loadAllCachedChatMessages,
+  loadCachedChatMessageById,
+  loadCachedChatMessages,
+  saveCachedChatMessage
+} from './chat-message-cache'
 import { useChatConnection } from './use-chat-connection'
 
 const CHAT_VISITOR_STORAGE_KEY = 'chat_visitor_id'
 let hasRequestedWelcomeReminder = false
 let welcomeReminderConfigRequest: Promise<ChatConfig | null> | null = null
+const CHAT_MAX_IMAGE_BYTES = 10 * 1024 * 1024
+const CHAT_MAX_VIDEO_BYTES = 100 * 1024 * 1024
 
 /** 将未知接口返回值转换为可安全遍历的数组。 */
 const toArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : [])
@@ -64,6 +74,26 @@ const parseChatQaConfig = (value: ChatConfig['qaConfig']): ChatQaConfig | null =
   }
 }
 
+/** 解析 WebSocket 红包消息 content 中的 JSON 数据，异常数据按普通文本处理。 */
+const parseChatRedPacket = (value: unknown): ChatRedPacket | null => {
+  try {
+    const parsedValue = JSON.parse(String(value ?? '')) as Record<string, unknown>
+    const id = parsedValue.id
+    const status = Number(parsedValue.status)
+    const amount = parsedValue.amount
+
+    if ((typeof id !== 'string' && typeof id !== 'number') || (status !== 0 && status !== 1)) {
+      return null
+    }
+
+    if (typeof amount !== 'string' && typeof amount !== 'number') return null
+
+    return { id, status, amount }
+  } catch {
+    return null
+  }
+}
+
 /** 从上传响应中提取图片文件名或地址。 */
 const resolveUploadedImagePath = (result: unknown) => {
   if (typeof result === 'string') return result.trim()
@@ -72,6 +102,13 @@ const resolveUploadedImagePath = (result: unknown) => {
   const record = result as UploadPictureResult
   return String(record.url || record.path || record.fileName || record.headPortrait || '').trim()
 }
+
+/** 判断用户选择的本地文件是否为可发送的视频格式。 */
+const isVideoFile = (file: File) =>
+  file.type.startsWith('video/') || /\.(mp4|mov|m4v|webm|avi|mkv)$/i.test(file.name)
+
+/** 判断图片文件是否为需要保留动画帧的 GIF。 */
+const isGifFile = (file: File) => file.type === 'image/gif' || /\.gif$/i.test(file.name)
 
 /** 读取或生成游客身份，确保同一浏览器会话可复用聊天缓存。 */
 const getChatVisitorId = () => {
@@ -135,6 +172,11 @@ export function useChatRuntime() {
   const loadingConversations = ref(true)
   const loadingAutoReplies = ref(false)
   const uploadingImage = ref(false)
+  const redPacketClaimingMessageIds = ref<string[]>([])
+  const claimedRedPacketIds = ref<string[]>([])
+  const redPacketSuccessAmount = ref<string | number | null>(null)
+  const hasMoreCachedMessages = ref(false)
+  const loadingOlderMessages = ref(false)
   let pendingMessageCacheWrite = Promise.resolve()
   let autoReplyRequestId = 0
 
@@ -181,6 +223,19 @@ export function useChatRuntime() {
     }
   }
 
+  /** 根据引用目标还原 Socket 所需的 replyInfo 字段。 */
+  const buildReplyInfo = (replyTarget?: ChatReplyTarget | null) =>
+    replyTarget
+      ? {
+          replyToMsgId: replyTarget.id,
+          replyToContent: replyTarget.preview,
+          replyToType: replyTarget.replyToType || (replyTarget.photoCount ? 'image' : 'text'),
+          replyToUserId: replyTarget.replyToUserId || '',
+          replyToUserName: replyTarget.replyToUserName || replyTarget.author,
+          quoteText: replyTarget.preview
+        }
+      : undefined
+
   /** 使用当前客服和会员身份构建 WebSocket 查询参数地址。 */
   const buildSocketUrl = () => {
     const member = buildMemberParticipant()
@@ -209,8 +264,8 @@ export function useChatRuntime() {
     return url.toString()
   }
 
-  /** 将当前消息快照串行写入选中客服对应的 IndexedDB 缓存。 */
-  const persistActiveConversationMessages = () => {
+  /** 将当前会话的一条消息串行增量写入 IndexedDB。 */
+  const persistActiveConversationMessage = (message: ChatMessage) => {
     if (!activeConversation.value) return pendingMessageCacheWrite
 
     const cacheKey = getConversationCacheKey(
@@ -218,16 +273,60 @@ export function useChatRuntime() {
       dealerCode.value,
       activeConversation.value
     )
-    const messageSnapshot = messages.value.map(message => ({
+    const messageSnapshot = {
       ...message,
       imageList: message.imageList ? [...message.imageList] : undefined
-    }))
+    }
 
     pendingMessageCacheWrite = pendingMessageCacheWrite
       .catch(() => undefined)
-      .then(() => saveCachedChatMessages(cacheKey, messageSnapshot))
+      .then(() => saveCachedChatMessage(cacheKey, messageSnapshot))
 
     return pendingMessageCacheWrite
+  }
+
+  /** 扫描当前会话的已领取红包，用于禁用相同红包 ID 的待领取原消息。 */
+  const syncClaimedRedPacketIds = () => {
+    claimedRedPacketIds.value = [
+      ...new Set(
+        messages.value
+          .filter(message => message.redPacket?.status === 1)
+          .map(message => String(message.redPacket?.id ?? ''))
+          .filter(Boolean)
+      )
+    ]
+  }
+
+  /** 从会话消息中找出时间最新的一条；没有消息时返回空值。 */
+  const getLatestConversationMessage = (conversationMessages: ChatMessage[]) =>
+    conversationMessages.reduce<ChatMessage | null>((latestMessage, message) => {
+      if (!latestMessage) return message
+
+      const latestTimestamp = Number(latestMessage.timestamp) || 0
+      const messageTimestamp = Number(message.timestamp) || 0
+      return messageTimestamp >= latestTimestamp ? message : latestMessage
+    }, null)
+
+  /** 用本地缓存历史覆盖会话预览，避免使用客服列表接口的非聊天消息字段。 */
+  const hydrateConversationPreview = async (conversation: ConversationItem) => {
+    const { messages: conversationMessages } = await loadCachedChatMessages(
+      getConversationCacheKey(currentChatUserId.value, dealerCode.value, conversation),
+      { limit: 1 }
+    )
+    const latestMessage = getLatestConversationMessage(conversationMessages)
+
+    return {
+      ...conversation,
+      lastMessage: latestMessage?.text ?? ''
+    }
+  }
+
+  /** 将当前已打开会话的消息预览同步到会话列表。 */
+  const syncActiveConversationPreview = () => {
+    if (!activeConversation.value) return
+
+    const latestMessage = getLatestConversationMessage(messages.value)
+    activeConversation.value.lastMessage = latestMessage?.text ?? ''
   }
 
   /** 将新消息去重写入当前会话，并立即同步到本地缓存。 */
@@ -238,7 +337,9 @@ export function useChatRuntime() {
     } else {
       messages.value[existingIndex] = { ...messages.value[existingIndex], ...message }
     }
-    persistActiveConversationMessages()
+    syncClaimedRedPacketIds()
+    syncActiveConversationPreview()
+    persistActiveConversationMessage(message)
   }
 
   /** 将服务端 Socket 业务消息转换为聊天页面数据模型。 */
@@ -246,24 +347,70 @@ export function useChatRuntime() {
     const timestamp = Number(payload.timestamp) || Date.now()
     const isOutgoing = payload.mine?.type === 'member'
     const isImage = payload.contentType === 'image'
+    const isVideo = payload.contentType === 'video'
     const isAutoReply =
       payload.contentType === 'autoReplyReq' || payload.contentType === 'autoReplyResp'
+    const redPacket = payload.contentType === 'redPack' ? parseChatRedPacket(payload.content) : null
+    const isRedPacket = Boolean(redPacket)
+    const isReply = payload.contentType === 'reply' || Boolean(payload.replyInfo)
     const imageList = toArray<Partial<ChatImageItem>>(payload.imageList).map(mapChatImage)
+    const replyInfo = payload.replyInfo
 
     return {
       id: String(payload.messageId),
       direction: isOutgoing ? 'outgoing' : 'incoming',
-      type: isImage ? 'image' : isAutoReply ? 'auto-reply' : 'text',
-      text: getChatPlainText(payload.content),
+      type: isImage
+        ? 'image'
+        : isVideo
+          ? 'video'
+          : isAutoReply
+            ? 'auto-reply'
+            : isRedPacket
+              ? 'red-pack'
+              : isReply
+                ? 'reply'
+                : 'text',
+      text: isRedPacket ? '' : getChatPlainText(payload.content),
       image: isImage ? resolveChatMediaUrl(imageList[0]?.imgUrl) : undefined,
+      video: isVideo ? resolveChatMediaUrl(payload.content) : undefined,
       imageList,
       time: formatChatMessageTime(timestamp),
       period: getChatTimePeriod(timestamp),
       timestamp,
       read: isOutgoing,
       status: isOutgoing ? 'sent' : undefined,
-      contentType: payload.contentType
+      contentType: payload.contentType,
+      socketContent: String(payload.content ?? ''),
+      redPacket: redPacket || undefined,
+      authorId: String(payload.mine?.userId ?? ''),
+      authorName: String(payload.mine?.nickName ?? ''),
+      reply: replyInfo
+        ? {
+            id: String(replyInfo.replyToMsgId ?? ''),
+            author: String(replyInfo.replyToUserName ?? ''),
+            preview: String(replyInfo.quoteText || replyInfo.replyToContent || ''),
+            photoCount: replyInfo.replyToType === 'image' ? 1 : undefined,
+            replyToUserId: String(replyInfo.replyToUserId ?? ''),
+            replyToUserName: String(replyInfo.replyToUserName ?? ''),
+            replyToType: replyInfo.replyToType
+          }
+        : undefined
     }
+  }
+
+  /** 收到红包消息后按协议发送已读回执，通知客服端消息已被客户端接收。 */
+  const sendRedPacketReadReceipt = (messageId: string) => {
+    const to = buildCustomerParticipant()
+    if (!to) return false
+
+    return send({
+      type: 'readReceipt',
+      messageId: createMessageId(),
+      content: '',
+      contentType: 'text',
+      to,
+      msgIds: [messageId]
+    })
   }
 
   /** 处理连接配置、发送确认和客服消息推送。 */
@@ -276,7 +423,7 @@ export function useChatRuntime() {
       if (message) {
         message.status = 'sent'
         message.read = true
-        persistActiveConversationMessages()
+        persistActiveConversationMessage(message)
       }
       return
     }
@@ -285,6 +432,10 @@ export function useChatRuntime() {
 
     const message = mapSocketMessage(record as unknown as ChatSocketMessage)
     upsertMessage(message)
+
+    if (message.type === 'red-pack') {
+      sendRedPacketReadReceipt(message.id)
+    }
 
     // 图文自动回复可能在同一条响应中附带多张图片，按独立图片消息展示。
     if (message.type === 'auto-reply' && message.imageList?.length) {
@@ -320,9 +471,10 @@ export function useChatRuntime() {
         throw new Error(response.message || 'Failed to load customer service list')
       }
 
-      conversations.value = toArray<OnlineChatCustomer>(response.result)
+      const customerConversations = toArray<OnlineChatCustomer>(response.result)
         .sort((left, right) => (Number(left.sort) || 0) - (Number(right.sort) || 0))
         .map(item => ({ ...item, id: String(item.id) }))
+      conversations.value = await Promise.all(customerConversations.map(hydrateConversationPreview))
     } catch (error) {
       conversations.value = []
       globalShowToast({
@@ -434,12 +586,41 @@ export function useChatRuntime() {
 
   /** 建立选中客服的连接前读取对应 IndexedDB 消息缓存。 */
   const selectConversation = async (conversation: ConversationItem) => {
-    await persistActiveConversationMessages()
     disconnect()
     activeConversation.value = conversation
-    messages.value = await loadCachedChatMessages(
-      getConversationCacheKey(currentChatUserId.value, dealerCode.value, conversation)
+    messages.value = []
+    hasMoreCachedMessages.value = false
+    const conversationCacheKey = getConversationCacheKey(
+      currentChatUserId.value,
+      dealerCode.value,
+      conversation
     )
+    const cachedPage = await loadCachedChatMessages(conversationCacheKey, {
+      limit: CHAT_CACHE_PAGE_SIZE
+    })
+    if (
+      !activeConversation.value ||
+      getConversationCacheKey(
+        currentChatUserId.value,
+        dealerCode.value,
+        activeConversation.value
+      ) !== conversationCacheKey
+    ) {
+      return
+    }
+
+    const member = buildMemberParticipant()
+    // 兼容旧版缓存：补齐原消息作者，保证引用回复可携带正确的用户身份。
+    messages.value = cachedPage.messages.map(message => ({
+      ...message,
+      authorId:
+        message.authorId || (message.direction === 'outgoing' ? member.userId : conversation.id),
+      authorName:
+        message.authorName ||
+        (message.direction === 'outgoing' ? member.nickName : conversation.nickName || '')
+    }))
+    hasMoreCachedMessages.value = cachedPage.hasMore
+    syncClaimedRedPacketIds()
     void loadWelcomeReminder(conversation)
 
     const socketUrl = buildSocketUrl()
@@ -454,13 +635,141 @@ export function useChatRuntime() {
     })
   }
 
+  /** 读取当前已加载消息之前的一页本地历史，并追加至消息列表顶部。 */
+  const loadOlderMessages = async () => {
+    if (!activeConversation.value || loadingOlderMessages.value || !hasMoreCachedMessages.value) {
+      return
+    }
+
+    const oldestMessage = messages.value[0]
+    if (!oldestMessage?.id) {
+      hasMoreCachedMessages.value = false
+      return
+    }
+
+    const conversation = activeConversation.value
+    const conversationCacheKey = getConversationCacheKey(
+      currentChatUserId.value,
+      dealerCode.value,
+      conversation
+    )
+    loadingOlderMessages.value = true
+
+    try {
+      const cachedPage = await loadCachedChatMessages(conversationCacheKey, {
+        before: {
+          timestamp: Number(oldestMessage.timestamp) || 0,
+          messageId: oldestMessage.id
+        },
+        limit: CHAT_CACHE_PAGE_SIZE
+      })
+      if (
+        !activeConversation.value ||
+        getConversationCacheKey(
+          currentChatUserId.value,
+          dealerCode.value,
+          activeConversation.value
+        ) !== conversationCacheKey
+      ) {
+        return
+      }
+
+      const currentMessageIds = new Set(messages.value.map(message => message.id))
+      const olderMessages = cachedPage.messages.filter(
+        message => !currentMessageIds.has(message.id)
+      )
+      messages.value = [...olderMessages, ...messages.value]
+      hasMoreCachedMessages.value = cachedPage.hasMore
+    } finally {
+      loadingOlderMessages.value = false
+    }
+  }
+
+  /** 补齐旧缓存缺失的作者字段，保证搜索定位后的引用回复仍可正常展示。 */
+  const hydrateCachedMessages = (cachedMessages: ChatMessage[], conversation: ConversationItem) => {
+    const member = buildMemberParticipant()
+
+    return cachedMessages.map(message => ({
+      ...message,
+      authorId:
+        message.authorId || (message.direction === 'outgoing' ? member.userId : conversation.id),
+      authorName:
+        message.authorName ||
+        (message.direction === 'outgoing' ? member.nickName : conversation.nickName || '')
+    }))
+  }
+
+  /** 搜索当前客服会话全部 IndexedDB 历史中的文本、自动回复和引用内容。 */
+  const searchCurrentConversationMessages = async (keyword: string) => {
+    const conversation = activeConversation.value
+    const normalizedKeyword = keyword.trim().toLowerCase()
+    if (!conversation || !normalizedKeyword) return []
+
+    const cacheKey = getConversationCacheKey(
+      currentChatUserId.value,
+      dealerCode.value,
+      conversation
+    )
+    const cachedMessages = await loadAllCachedChatMessages(cacheKey)
+
+    return hydrateCachedMessages(cachedMessages, conversation).filter(message => {
+      const searchableContent = [
+        getChatPlainText(message.text),
+        getChatPlainText(message.socketContent),
+        message.reply?.preview
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      return searchableContent.includes(normalizedKeyword)
+    })
+  }
+
+  /** 根据消息 ID 补齐当前会话本地缓存，并让界面可以滚动定位到搜索结果。 */
+  const locateCurrentConversationMessage = async (messageId: string) => {
+    const conversation = activeConversation.value
+    if (!conversation || !messageId) return false
+
+    const cacheKey = getConversationCacheKey(
+      currentChatUserId.value,
+      dealerCode.value,
+      conversation
+    )
+    const targetMessage = await loadCachedChatMessageById(cacheKey, messageId)
+    if (!targetMessage) return false
+
+    if (!messages.value.some(message => message.id === messageId)) {
+      const cachedMessages = await loadAllCachedChatMessages(cacheKey)
+      if (
+        !activeConversation.value ||
+        getConversationCacheKey(
+          currentChatUserId.value,
+          dealerCode.value,
+          activeConversation.value
+        ) !== cacheKey
+      ) {
+        return false
+      }
+
+      messages.value = hydrateCachedMessages(cachedMessages, conversation)
+      hasMoreCachedMessages.value = false
+      syncClaimedRedPacketIds()
+    }
+
+    return true
+  }
+
   /** 退出当前客服会话并重置当前会话的临时数据。 */
-  const leaveConversation = async () => {
-    await persistActiveConversationMessages()
+  const leaveConversation = () => {
     autoReplyRequestId += 1
     disconnect()
     activeConversation.value = null
     messages.value = []
+    hasMoreCachedMessages.value = false
+    loadingOlderMessages.value = false
+    redPacketClaimingMessageIds.value = []
+    claimedRedPacketIds.value = []
     autoReplyItems.value = []
     loadingAutoReplies.value = false
   }
@@ -469,7 +778,8 @@ export function useChatRuntime() {
   const sendMessage = (
     content: string,
     contentType: ChatSocketMessage['contentType'] = 'text',
-    imageList?: ChatImageItem[]
+    imageList?: ChatImageItem[],
+    replyTarget?: ChatReplyTarget | null
   ) => {
     const mine = buildMemberParticipant()
     const to = buildCustomerParticipant()
@@ -478,6 +788,7 @@ export function useChatRuntime() {
 
     const messageId = createMessageId()
     const timestamp = Date.now()
+    const replyInfo = buildReplyInfo(replyTarget)
     const payload: ChatSocketMessage = {
       type: 'msg',
       messageId,
@@ -485,21 +796,36 @@ export function useChatRuntime() {
       contentType,
       mine,
       to,
-      imageList
+      imageList,
+      replyInfo
     }
     const message: ChatMessage = {
       id: messageId,
       direction: 'outgoing',
-      type: contentType === 'image' ? 'image' : contentType === 'text' ? 'text' : 'auto-reply',
+      type:
+        contentType === 'image'
+          ? 'image'
+          : contentType === 'video'
+            ? 'video'
+            : replyTarget
+              ? 'reply'
+              : contentType === 'text'
+                ? 'text'
+                : 'auto-reply',
       text: getChatPlainText(normalizedContent),
       image: imageList?.[0]?.imgUrl,
+      video: contentType === 'video' ? resolveChatMediaUrl(normalizedContent) : undefined,
       imageList,
       time: formatChatMessageTime(timestamp),
       period: getChatTimePeriod(timestamp),
       timestamp,
       read: false,
       status: 'sending',
-      contentType
+      contentType,
+      socketContent: normalizedContent,
+      authorId: mine.userId,
+      authorName: mine.nickName,
+      reply: replyTarget || undefined
     }
 
     upsertMessage(message)
@@ -507,13 +833,123 @@ export function useChatRuntime() {
     if (send(payload)) return true
 
     message.status = 'failed'
-    persistActiveConversationMessages()
+    persistActiveConversationMessage(message)
     globalShowToast({ message: 'Customer service is reconnecting', type: 'fail' })
     return false
   }
 
-  /** 发送用户手动输入的普通文本消息。 */
-  const sendTextMessage = (text: string) => sendMessage(text, 'text')
+  /** 发送用户手动输入的普通文本或引用回复消息。 */
+  const sendTextMessage = (text: string, replyTarget?: ChatReplyTarget | null) =>
+    sendMessage(text, 'text', undefined, replyTarget)
+
+  /** 重新发送连接失败的会员消息，保留原始消息 ID、图片和引用信息。 */
+  const retryMessage = (message: ChatMessage) => {
+    if (message.direction !== 'outgoing' || message.status !== 'failed') return false
+
+    const mine = buildMemberParticipant()
+    const to = buildCustomerParticipant()
+    if (!to) return false
+
+    const payload: ChatSocketMessage = {
+      type: 'msg',
+      messageId: message.id,
+      content: message.socketContent ?? message.text ?? '',
+      contentType: message.contentType || (message.type === 'image' ? 'image' : 'text'),
+      mine,
+      to,
+      imageList: message.imageList,
+      replyInfo: buildReplyInfo(message.reply)
+    }
+
+    message.status = 'sending'
+    message.read = false
+    persistActiveConversationMessage(message)
+
+    if (send(payload)) return true
+
+    message.status = 'failed'
+    persistActiveConversationMessage(message)
+    globalShowToast({ message: 'Customer service is reconnecting', type: 'fail' })
+    return false
+  }
+
+  /** 领取待领取红包；成功后保留原消息并追加已领取记录与系统提示。 */
+  const claimRedPacket = async (message: ChatMessage) => {
+    const redPacket = message.redPacket
+    if (!redPacket || redPacket.status !== 0) return false
+
+    const packetId = String(redPacket.id)
+    if (
+      claimedRedPacketIds.value.includes(packetId) ||
+      redPacketClaimingMessageIds.value.includes(message.id)
+    ) {
+      return false
+    }
+
+    redPacketClaimingMessageIds.value = [...redPacketClaimingMessageIds.value, message.id]
+
+    try {
+      const response = await Api.chat.receiveRedPackage(
+        { id: redPacket.id },
+        { showErrorToast: false }
+      )
+      if (response.code !== 'C2') {
+        throw new Error(response.message || 'Failed to claim red packet')
+      }
+
+      const timestamp = Date.now()
+      const mine = buildMemberParticipant()
+      const serviceName = activeConversation.value?.nickName || ''
+
+      // 领取成功后追加会员侧已领取红包，原客服侧待领取记录不替换。
+      upsertMessage({
+        id: `red-pack-claimed:${message.id}:${timestamp}`,
+        direction: 'outgoing',
+        type: 'red-pack',
+        text: '',
+        time: formatChatMessageTime(timestamp),
+        period: getChatTimePeriod(timestamp),
+        timestamp,
+        read: true,
+        status: 'sent',
+        contentType: 'redPack',
+        authorId: mine.userId,
+        authorName: mine.nickName,
+        redPacket: { ...redPacket, status: 1 }
+      })
+
+      // 领取完成后追加系统记录，便于会员在会话历史中确认领取来源。
+      upsertMessage({
+        id: `red-pack-system:${message.id}:${timestamp}`,
+        direction: 'incoming',
+        type: 'system',
+        text: '',
+        time: formatChatMessageTime(timestamp),
+        period: getChatTimePeriod(timestamp),
+        timestamp,
+        contentType: 'redPackClaimed',
+        system: { type: 'red-packet-claimed', serviceName }
+      })
+
+      redPacketSuccessAmount.value = redPacket.amount
+      return true
+    } catch (error) {
+      globalShowToast({
+        message: error instanceof Error ? error.message : 'Failed to claim red packet',
+        type: 'fail'
+      })
+      return false
+    } finally {
+      redPacketClaimingMessageIds.value = redPacketClaimingMessageIds.value.filter(
+        messageId => messageId !== message.id
+      )
+    }
+  }
+
+  /** 关闭领取成功弹窗，保留已写入本地会话缓存的领取记录。 */
+  const closeRedPacketSuccess = () => {
+    redPacketSuccessAmount.value = null
+  }
 
   /** 发送自动回复问题和接口返回的系统答复，两条消息均立即写入当前会话。 */
   const sendAutoReplyMessage = (item: AutoReplyItem) => {
@@ -536,12 +972,19 @@ export function useChatRuntime() {
       globalShowToast({ message: 'Only image files are supported', type: 'fail' })
       return false
     }
+    if (file.size > CHAT_MAX_IMAGE_BYTES) {
+      globalShowToast({ message: 'Images and GIFs must be 10MB or smaller', type: 'fail' })
+      return false
+    }
 
     uploadingImage.value = true
     try {
       const [{ width, height }, uploadFile] = await Promise.all([
         getImageDimensions(file),
-        prepareUploadImage(file)
+        // GIF 必须保留动画帧，因此不经过 Canvas 转码；其他图片压缩到聊天模块 10MB 上限内。
+        isGifFile(file)
+          ? Promise.resolve(file)
+          : prepareUploadImage(file, { maxBytes: CHAT_MAX_IMAGE_BYTES })
       ])
       const extension =
         uploadFile.type === 'image/jpeg' ? 'jpg' : file.name.split('.').pop() || 'png'
@@ -578,13 +1021,59 @@ export function useChatRuntime() {
     }
   }
 
+  /** 上传用户选择的视频文件，并以视频地址发送对应的 Socket 消息。 */
+  const sendVideoFile = async (file: File) => {
+    if (!isVideoFile(file)) {
+      globalShowToast({ message: 'Only video files are supported', type: 'fail' })
+      return false
+    }
+    if (file.size > CHAT_MAX_VIDEO_BYTES) {
+      globalShowToast({ message: 'Videos must be 100MB or smaller', type: 'fail' })
+      return false
+    }
+
+    uploadingImage.value = true
+    try {
+      const extension = file.name.split('.').pop() || 'mp4'
+      const fileName = `chat-${Date.now()}.${extension}`
+      const response = await Api.picture.upload({ file, fileName })
+
+      if (response.code !== 'C2') {
+        throw new Error(response.message || 'Video upload failed')
+      }
+
+      const videoPath = resolveUploadedImagePath(response.result)
+      if (!videoPath) {
+        throw new Error(response.message || 'Video upload failed')
+      }
+
+      return sendMessage(resolveChatMediaUrl(videoPath), 'video')
+    } catch (error) {
+      globalShowToast({
+        message: error instanceof Error ? error.message : 'Video upload failed',
+        type: 'fail'
+      })
+      return false
+    } finally {
+      uploadingImage.value = false
+    }
+  }
+
+  /** 根据本地文件类型分发图片或视频上传流程。 */
+  const sendMediaFile = (file: File) => {
+    if (file.type.startsWith('image/')) return sendImageFile(file)
+    if (isVideoFile(file)) return sendVideoFile(file)
+
+    globalShowToast({ message: 'Only images and videos are supported', type: 'fail' })
+    return Promise.resolve(false)
+  }
+
   /** 并行刷新客服列表与自动回复分类，供客服页面首次进入使用。 */
   const initialize = async () => {
     await Promise.all([loadConversations(), loadQuickIssues()])
   }
 
   onBeforeUnmount(() => {
-    void persistActiveConversationMessages()
     disconnect()
   })
 
@@ -597,14 +1086,27 @@ export function useChatRuntime() {
     loadingConversations,
     loadingAutoReplies,
     uploadingImage,
+    redPacketClaimingMessageIds,
+    claimedRedPacketIds,
+    redPacketSuccessAmount,
+    hasMoreCachedMessages,
+    loadingOlderMessages,
     connectionState,
     errorMessage,
     initialize,
+    loadConversations,
     selectConversation,
     leaveConversation,
+    loadOlderMessages,
+    searchCurrentConversationMessages,
+    locateCurrentConversationMessage,
     loadAutoReplies,
     sendTextMessage,
+    retryMessage,
+    claimRedPacket,
+    closeRedPacketSuccess,
     sendAutoReplyMessage,
-    sendImageFile
+    sendImageFile,
+    sendMediaFile
   }
 }

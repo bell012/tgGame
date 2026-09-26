@@ -1,6 +1,7 @@
 export type ConversationStatus = 'online' | 'offline' | 'typing'
 export type MessageDirection = 'incoming' | 'outgoing'
-export type MessageType = 'text' | 'image' | 'reply' | 'auto-reply'
+export type MessageType =
+  'text' | 'image' | 'video' | 'reply' | 'auto-reply' | 'red-pack' | 'system'
 export type ChatComposerMode = 'idle' | 'typing' | 'emoji' | 'media' | 'reply'
 export type ChatMessageStatus = 'sending' | 'sent' | 'failed'
 
@@ -22,6 +23,9 @@ export interface ChatReplyTarget {
   author: string
   preview: string
   photoCount?: number
+  replyToUserId?: string
+  replyToUserName?: string
+  replyToType?: 'text' | 'image'
 }
 
 export interface ChatMessage {
@@ -30,6 +34,7 @@ export interface ChatMessage {
   type: MessageType
   text?: string
   image?: string
+  video?: string
   time: string
   period?: string
   read?: boolean
@@ -37,7 +42,12 @@ export interface ChatMessage {
   status?: ChatMessageStatus
   timestamp?: number
   contentType?: string
+  socketContent?: string
   imageList?: ChatImageItem[]
+  authorId?: string
+  authorName?: string
+  redPacket?: ChatRedPacket
+  system?: ChatSystemMessage
 }
 
 export interface QuickIssue {
@@ -77,4 +87,28 @@ export interface ChatSocketMessage {
   imageList?: ChatImageItem[]
   conversationId?: string
   timestamp?: number
+  replyInfo?: ChatReplyInfo
+}
+
+/** Socket 引用回复携带的原始被回复消息信息。 */
+export interface ChatReplyInfo {
+  replyToMsgId: string
+  replyToContent: string
+  replyToType?: 'text' | 'image'
+  replyToUserId: string
+  replyToUserName: string
+  quoteText: string
+}
+
+/** WebSocket 红包消息 content 中的结构化数据。 */
+export interface ChatRedPacket {
+  id: string | number
+  status: 0 | 1
+  amount: string | number
+}
+
+/** 系统提示消息的页面展示信息。 */
+export interface ChatSystemMessage {
+  type: 'red-packet-claimed'
+  serviceName: string
 }

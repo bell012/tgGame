@@ -6,7 +6,8 @@ import type {
   OnlineChatCustomer,
   QueryAutoReplyForm,
   QueryChatConfigParams,
-  QueryOnlineCustomerForm
+  QueryOnlineCustomerForm,
+  ReceiveRedPackageForm
 } from '@/api/interface/chat'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
 
@@ -57,6 +58,19 @@ export const queryChatConfig = (
     url: '/queryConfig',
     method: 'get',
     params,
+    showSuccessToast: false,
+    showErrorToast: options?.showErrorToast ?? true
+  })
+
+/** 领取客服通过 WebSocket 下发的红包。 */
+export const receiveRedPackage = (
+  data: ReceiveRedPackageForm,
+  options?: ApiResponseToastOptions
+): Promise<ChatApiResponse<unknown>> =>
+  request({
+    url: '/member/receiveRedPackage',
+    method: 'post',
+    data,
     showSuccessToast: false,
     showErrorToast: options?.showErrorToast ?? true
   })

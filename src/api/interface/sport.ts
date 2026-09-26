@@ -41,6 +41,15 @@ export type SportsPeriodId = 1 | 2 | 3
 /** 直播标志（Int）：0 无直播地址、1 有直播地址。 */
 export type SportsLiveStreamingFlag = 0 | 1
 
+/** LiveStreamingUrl 单项。 */
+export interface SportLiveStreamingUrl {
+  Priority: number
+  Referrer: string
+  /** 实测 3 对应 m3u8。 */
+  Type: number
+  Url: string
+}
+
 /** 体育业务响应外层；使用 stc 判断状态，不使用本站接口的 code/result。 */
 export interface SportsResponse {
   /**
@@ -564,8 +573,8 @@ export interface SportEvent {
   MatchDay: number
   /** ls，Int：0 没有直播地址、1 有直播地址。 */
   LiveStreaming: SportsLiveStreamingFlag
-  /** lsurl，List：直播地址列表，元素结构待确认，不预设字段。 */
-  LiveStreamingUrl: unknown[]
+  /** lsurl，List：直播地址列表，播放取第一项的 Url。 */
+  LiveStreamingUrl: SportLiveStreamingUrl[]
   /** htid，Int：主队或主方参赛者 ID。 */
   HomeTeamId: number
   /** ht，String：主队或主方参赛者名称。 */

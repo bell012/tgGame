@@ -18,8 +18,18 @@
       ref="messageListRef"
       :display-mode="props.displayMode"
       :messages="messages"
+      :claimed-red-packet-ids="claimedRedPacketIds"
+      :has-more-cached-messages="hasMoreCachedMessages"
+      :loading-older-messages="loadingOlderMessages"
+      :red-packet-claiming-message-ids="redPacketClaimingMessageIds"
+      :highlight-message-id="highlightMessageId"
+      :highlight-keyword="highlightKeyword"
+      @claim-red-packet="$emit('claim-red-packet', $event)"
+      @load-older="$emit('load-older')"
       @reply="$emit('reply', $event)"
+      @retry="$emit('retry', $event)"
       @view-image="$emit('view-image', $event)"
+      @view-video="$emit('view-video', $event)"
     />
 
     <!-- 快捷问题入口。 -->
@@ -54,6 +64,19 @@
       @photo="$emit('photo', $event)"
       @camera="$emit('camera', $event)"
     />
+
+    <!-- 图片或视频上传期间覆盖当前会话，并在屏幕中线展示 Loading。 -->
+    <div
+      v-if="props.uploadingMedia"
+      class="fixed inset-0 z-[90] flex items-center justify-center bg-mask-60-1"
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        aria-label="Loading"
+        class="size-[36px] animate-spin rounded-full border-[3px] border-common-100/25 border-t-theme-primary"
+      ></span>
+    </div>
   </div>
 </template>
 
@@ -81,11 +104,25 @@ const props = withDefaults(
     draft: string
     replyTarget: ChatReplyTarget | null
     issues: QuickIssue[]
+    redPacketClaimingMessageIds?: string[]
+    claimedRedPacketIds?: string[]
+    hasMoreCachedMessages?: boolean
+    loadingOlderMessages?: boolean
+    uploadingMedia?: boolean
     typing?: boolean
+    highlightMessageId?: string
+    highlightKeyword?: string
     displayMode?: 'h5' | 'pc'
   }>(),
   {
-    displayMode: 'h5'
+    displayMode: 'h5',
+    redPacketClaimingMessageIds: () => [],
+    claimedRedPacketIds: () => [],
+    hasMoreCachedMessages: false,
+    loadingOlderMessages: false,
+    uploadingMedia: false,
+    highlightMessageId: '',
+    highlightKeyword: ''
   }
 )
 
@@ -93,6 +130,9 @@ defineEmits<{
   back: []
   search: []
   reply: [target: ChatReplyTarget]
+  'claim-red-packet': [message: ChatMessage]
+  'load-older': []
+  retry: [message: ChatMessage]
   issue: [issue: QuickIssue]
   'update:draft': [value: string]
   send: []
@@ -101,15 +141,18 @@ defineEmits<{
   'cancel-reply': []
   'emoji-select': [emoji: string]
   'emoji-delete': []
-  photo: [file: File]
-  camera: [file: File]
+  photo: [files: File[]]
+  camera: [files: File[]]
   'view-image': [message: ChatMessage]
+  'view-video': [message: ChatMessage]
 }>()
 
 const messageListRef = ref<InstanceType<typeof MessageList> | null>(null)
 
 defineExpose({
   /** 向父级暴露消息区滚动能力，避免父级直接依赖内部 DOM。 */
-  scrollToBottom: () => messageListRef.value?.scrollToBottom()
+  scrollToBottom: () => messageListRef.value?.scrollToBottom(),
+  /** 向父级暴露指定消息滚动能力，供搜索定位结果使用。 */
+  scrollToMessage: (messageId: string) => messageListRef.value?.scrollToMessage(messageId)
 })
 </script>

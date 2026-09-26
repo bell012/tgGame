@@ -1,4 +1,5 @@
 import type { SportCompetitionGroup, SportEventExtraInfo } from '@/api/interface/sport'
+import { parseLiveStreamUrl } from '../match-media-panel/parse-live-stream'
 import type { EventDetailTabItem } from './types'
 
 const parseScore = (value: string | undefined): number | null => {
@@ -102,7 +103,8 @@ export function mapEventDetailTabItems(
         awayYellowCard,
         homeCorners,
         awayCorners,
-        isFavourite: event.IsFavourite === true
+        isFavourite: event.IsFavourite === true,
+        liveStreamUrl: parseLiveStreamUrl(event.LiveStreamingUrl)
       })
     }
   }

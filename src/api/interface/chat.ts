@@ -43,6 +43,11 @@ export interface QueryChatConfigParams {
   t: number
 }
 
+/** 领取客服消息红包的请求参数。 */
+export interface ReceiveRedPackageForm {
+  id: string | number
+}
+
 /** 客服欢迎语配置。 */
 export interface ChatQaConfig {
   reminderText?: string

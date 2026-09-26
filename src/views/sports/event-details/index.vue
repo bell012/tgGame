@@ -12,7 +12,7 @@
     :style="isMobile ? { paddingTop: `${layoutStore.TOPNAV_HEIGHT}px` } : undefined"
   >
     <template v-if="isMobile">
-      <MatchHeader :model="matchHeaderModel" @back="onBack" />
+      <MatchHeader :model="matchHeaderModel" :live-stream-url="liveStreamUrl" @back="onBack" />
       <SportsScoreDetails
         v-if="hasScoreDetailsMarkets || !isEventDetailsLoading"
         class="mt-4 pl-3.5 pb-24"
@@ -68,7 +68,7 @@
               :message="t('sports.eventDetails.noBettingMarkets')"
             />
           </div>
-          <MatchMediaPanel />
+          <MatchMediaPanel :live-stream-url="liveStreamUrl" />
         </div>
       </template>
       <footer
@@ -289,6 +289,8 @@ const navigationEventTabItem = computed(() => {
 })
 
 const displayEvent = computed(() => selectedEvent.value ?? navigationEventTabItem.value)
+
+const liveStreamUrl = computed(() => displayEvent.value?.liveStreamUrl ?? '')
 
 const matchHeaderModel = computed(() => {
   if (displayEvent.value) {

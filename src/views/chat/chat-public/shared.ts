@@ -1,4 +1,6 @@
 import { getStoredLocale } from '@/utils/locale'
+import { globalShowToast } from '@/utils/toast'
+import i18n from '@/i18n'
 import type { ChatMessage, ConversationStatus } from './types'
 
 export const SEARCH_RESULTS = Array.from({ length: 6 }, (_, index) => ({
@@ -28,7 +30,41 @@ export function createMessageId() {
 /** 根据消息类型返回引用回复中使用的简短预览文本。 */
 export function getMessagePreview(message: ChatMessage) {
   if (message.type === 'image') return '1 Photo'
+  if (message.type === 'video') return '1 Video'
   return message.text || ''
+}
+
+/** 将文本按搜索词拆分为安全的普通片段和高亮片段，避免使用 v-html 渲染用户消息。 */
+export const getChatTextHighlightParts = (value: unknown, keyword: unknown) => {
+  const text = String(value ?? '')
+  const normalizedKeyword = String(keyword ?? '').trim()
+  if (!text || !normalizedKeyword) {
+    return [{ text, matched: false }]
+  }
+
+  const normalizedText = text.toLocaleLowerCase()
+  const normalizedSearch = normalizedKeyword.toLocaleLowerCase()
+  const parts: Array<{ text: string; matched: boolean }> = []
+  let startIndex = 0
+  let matchIndex = normalizedText.indexOf(normalizedSearch, startIndex)
+
+  while (matchIndex !== -1) {
+    if (matchIndex > startIndex) {
+      parts.push({ text: text.slice(startIndex, matchIndex), matched: false })
+    }
+    parts.push({
+      text: text.slice(matchIndex, matchIndex + normalizedKeyword.length),
+      matched: true
+    })
+    startIndex = matchIndex + normalizedKeyword.length
+    matchIndex = normalizedText.indexOf(normalizedSearch, startIndex)
+  }
+
+  if (startIndex < text.length) {
+    parts.push({ text: text.slice(startIndex), matched: false })
+  }
+
+  return parts.length ? parts : [{ text, matched: false }]
 }
 
 /** 将服务端文件名或相对图片路径转换为项目当前图片域名下的完整地址。 */
@@ -40,6 +76,33 @@ export const resolveChatMediaUrl = (value: unknown) => {
 
   const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
   return baseUrl ? `${baseUrl}/${source.replace(/^\/+/, '')}` : source
+}
+
+/** 将客服图片或视频下载为本地文件，完成浏览器保存触发后返回。 */
+export const downloadChatMedia = async (source: string, fallbackFileName = 'chat-media') => {
+  const url = String(source ?? '').trim()
+  if (!url) {
+    throw new Error('Media URL is unavailable')
+  }
+
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error('Media download failed')
+  }
+
+  const blob = await response.blob()
+  const objectUrl = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  const sourceName = url.split('?')[0]?.split('/').pop() || ''
+
+  anchor.href = objectUrl
+  anchor.download = sourceName || fallbackFileName
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0)
+
+  globalShowToast({ message: i18n.global.t('chatPublic.SavedSuccessfully'), type: 'success' })
 }
 
 /** 将服务端富文本自动回复降级为安全纯文本，避免直接渲染未受信任 HTML。 */
