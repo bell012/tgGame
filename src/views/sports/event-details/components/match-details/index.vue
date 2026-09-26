@@ -12,11 +12,17 @@
           class="h-4 w-4 shrink-0 text-icon-2 [&_path]:fill-current"
           aria-hidden="true"
         />
-        <div class="flex min-w-0 items-center gap-1">
-          <!-- <span v-if="region" class="shrink-0">{{ region }}</span>
-          <span v-if="region" class="shrink-0 text-text-3" aria-hidden="true">&gt;</span> -->
-          <span class="truncate" :title="league">{{ league }}</span>
-        </div>
+        <nav class="flex min-w-0 items-center gap-1" aria-label="Sport and league">
+          <span class="max-w-[40%] shrink-0 truncate" :title="sportLabel">{{ sportLabel }}</span>
+          <img
+            class="h-1.5 w-1.5 shrink-0 object-contain"
+            :src="breadcrumbArrowIcon"
+            alt=""
+            draggable="false"
+            aria-hidden="true"
+          />
+          <span class="min-w-0 truncate" :title="league">{{ league }}</span>
+        </nav>
       </div>
 
       <button
@@ -166,10 +172,12 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SmartImage from '@/components/common/SmartImage.vue'
 import { getTeamLogoUrl } from '@/views/sports/index'
 import type { EventDetailTabItem } from '../event-detailsd-tabs/types'
 import { sportItems } from '@/views/sports/components/sports-navigation/sport-items'
+import breadcrumbArrowIcon from './icon/right.svg?url'
 import liveIcon from './icon/live.svg?url'
 import playIcon from './icon/play.svg?url'
 import redIcon from './icon/red.svg?url'
@@ -180,6 +188,8 @@ const props = defineProps<{
   event?: EventDetailTabItem | null
   sportId?: number
 }>()
+
+const { t } = useI18n()
 
 const favorite = ref(false)
 
@@ -221,7 +231,9 @@ const awayTeam = computed(() => ({
 const homeLogo = computed(() => getTeamLogoUrl(event.value?.home.teamId))
 const awayLogo = computed(() => getTeamLogoUrl(event.value?.away.teamId))
 
-const sportIcon = computed(() => sportItems.find(item => item.sportId === props.sportId)?.icon)
+const sportItem = computed(() => sportItems.find(item => item.sportId === props.sportId))
+const sportIcon = computed(() => sportItem.value?.icon)
+const sportLabel = computed(() => (sportItem.value ? t(sportItem.value.i18nKey) : '—'))
 
 const toggleFavorite = () => {
   favorite.value = !favorite.value

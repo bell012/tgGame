@@ -77,8 +77,10 @@ export function mapEventDetailTabItems(
       const { homeYellowCard, awayYellowCard, homeCorners, awayCorners } = parseExtraInfoStats(
         event.ExtraInfo
       )
+      const competitionId = event.Competition?.CompetitionId ?? group.CompetitionId
       items.push({
         id: String(event.EventId),
+        competitionId: Number.isSafeInteger(competitionId) ? competitionId : 0,
         marketLines: Array.isArray(event.MarketLines) ? event.MarketLines : [],
         league:
           getSportsText(event.Competition?.CompetitionName) || getSportsText(group.CompetitionName),

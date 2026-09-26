@@ -34,7 +34,7 @@
       @selectstart.prevent
     >
       <button
-        v-for="item in items"
+        v-for="item in visibleMatchItems"
         :key="item.id"
         type="button"
         role="tab"
@@ -89,31 +89,55 @@
 
     <div
       v-if="isPopupOpen"
-      class="absolute left-0 top-[calc(100%+8px)] z-30 max-h-[320px] w-[280px] overflow-y-auto rounded-xl bg-bg-5 px-4 py-3 shadow-[0_6px_30px_rgba(0,0,0,0.4)] [scrollbar-color:var(--color-icon-level-3)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-[6px] [&::-webkit-scrollbar-thumb]:bg-icon-3"
+      class="absolute left-0 top-[calc(100%+8px)] z-30 flex max-h-[360px] w-[368px] flex-col overflow-hidden rounded-[12px] bg-bg-5 px-[24px] py-[16px] shadow-[0_6px_30px_rgba(0,0,0,0.4)]"
       role="listbox"
-      aria-label="All related matches"
+      aria-label="All leagues"
     >
-      <button
-        v-for="item in items"
-        :key="`popup-${item.id}`"
-        type="button"
-        role="option"
-        :aria-selected="activeId === item.id"
-        class="flex w-full border-0 bg-transparent py-2.5 text-left"
-        @click="onPopupItemClick(item.id)"
+      <label
+        class="mb-[12px] flex h-[40px] flex-none items-center rounded-[32px] bg-bg-2 px-[16px] transition-colors"
       >
-        <span class="min-w-0 flex-1 truncate text-[12px] font-bold text-text-1">
-          {{ item.home.name }} vs {{ item.away.name }}
-        </span>
-        <span class="ml-2 shrink-0 text-[11px] text-text-2">{{ formatStatus(item) }}</span>
-      </button>
+        <SearchIcon class="h-5 w-5 text-icon-3" />
+        <input
+          v-model="popupSearchKeyword"
+          class="ml-[4px] min-w-0 flex-1 border-0 bg-transparent text-[14px] font-[400] text-text-1 outline-none placeholder:text-text-3"
+          type="text"
+          :placeholder="t('sports.leagueTabs.searchLeagueOrTeam')"
+        />
+      </label>
+
+      <div
+        class="min-h-0 flex-1 overflow-y-auto [scrollbar-color:var(--color-icon-level-3)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-[6px] [&::-webkit-scrollbar-thumb]:bg-icon-3"
+      >
+        <button
+          v-for="item in leaguePopupList"
+          :key="`popup-${item.key}`"
+          type="button"
+          role="option"
+          :aria-selected="activeLeagueKey === item.key"
+          class="flex w-full items-center border-0 bg-transparent py-[12px] text-left"
+          @click="onLeaguePopupItemClick(item.key)"
+        >
+          <span class="mr-3 min-w-0 flex-1 truncate text-[14px] font-bold text-text-1">
+            {{ item.label }}
+          </span>
+          <span
+            class="inline-flex flex-none items-center justify-center rounded-[12px] bg-bg-3 px-[4px] py-[2px] text-[11px] font-bold text-text-1"
+          >
+            {{ item.count }}
+          </span>
+        </button>
+      </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { SportCompetitionGroup } from '@/api/interface/sport'
+import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import triangleIcon from '@/static/svg/sports/liansai_tabs/sanjiao.svg?url'
+import { ALL_LEAGUES_KEY, buildLeagueTabs } from '@/views/sports/components/liansai_tabs/index'
 import logoWhiteIcon from './icon/logo-white.svg?url'
 import logoRedIcon from './icon/logo-red.svg?url'
 import playWhiteIcon from './icon/play-white.svg?url'
@@ -125,10 +149,12 @@ export type { EventDetailTabItem } from './types'
 const props = withDefaults(
   defineProps<{
     items?: EventDetailTabItem[]
+    groups?: SportCompetitionGroup[]
     modelValue?: string
   }>(),
   {
     items: () => [],
+    groups: () => [],
     modelValue: ''
   }
 )
@@ -138,10 +164,35 @@ const emit = defineEmits<{
   change: [id: string]
 }>()
 
+const { t } = useI18n()
+
 const activeId = ref(props.modelValue || props.items[0]?.id || '')
 const scrollRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
 const isPopupOpen = ref(false)
+const popupSearchKeyword = ref('')
+const activeLeagueKey = ref(ALL_LEAGUES_KEY)
+
+const leagueTabs = computed(() => buildLeagueTabs(props.groups, t))
+
+const leaguePopupList = computed(() => {
+  const keyword = popupSearchKeyword.value.trim().toLowerCase()
+  if (!keyword) {
+    return leagueTabs.value
+  }
+  return leagueTabs.value.filter(item => item.label.toLowerCase().includes(keyword))
+})
+
+const visibleMatchItems = computed(() => {
+  if (activeLeagueKey.value === ALL_LEAGUES_KEY) {
+    return props.items
+  }
+  const leagueId = Number(activeLeagueKey.value)
+  if (!Number.isFinite(leagueId)) {
+    return props.items
+  }
+  return props.items.filter(item => item.competitionId === leagueId)
+})
 
 let dragStartX = 0
 let dragStartScrollLeft = 0
@@ -165,12 +216,24 @@ watch(
       activeId.value = ''
       return
     }
-    if (!items.some(item => item.id === activeId.value)) {
-      selectTab(items[0].id)
+    if (!visibleMatchItems.value.some(item => item.id === activeId.value)) {
+      const next = visibleMatchItems.value[0] ?? items[0]
+      if (next) {
+        selectTab(next.id)
+      }
     }
   },
   { immediate: true }
 )
+
+watch(visibleMatchItems, matches => {
+  if (!matches.length) {
+    return
+  }
+  if (!matches.some(item => item.id === activeId.value)) {
+    selectTab(matches[0].id)
+  }
+})
 
 const formatStatus = (item: EventDetailTabItem) => item.rbTime || '—'
 
@@ -198,12 +261,20 @@ const selectTab = (id: string) => {
 
 const togglePopup = () => {
   isPopupOpen.value = !isPopupOpen.value
+  if (!isPopupOpen.value) {
+    popupSearchKeyword.value = ''
+  }
 }
 
-const onPopupItemClick = (id: string) => {
-  selectTab(id)
+const onLeaguePopupItemClick = (key: string) => {
+  activeLeagueKey.value = key
   isPopupOpen.value = false
-  scrollActiveTabIntoView(id)
+  popupSearchKeyword.value = ''
+  const next = visibleMatchItems.value[0]
+  if (next) {
+    selectTab(next.id)
+    scrollActiveTabIntoView(next.id)
+  }
 }
 
 const scrollActiveTabIntoView = (id: string) => {

@@ -30,6 +30,7 @@
         v-model="activeMatchId"
         class="mt-4"
         :items="eventDetailTabItems"
+        :groups="eventDetailGroups"
         @change="onTabChange"
       />
       <div class="mt-4 flex items-start gap-4">
@@ -178,7 +179,8 @@ const eventDetailsSports = useEventDetailsSports(selectedSportId, {
   targetEventId,
   initialGroups: resolveInitialGroups()
 })
-const eventDetailTabItems = computed(() => mapEventDetailTabItems(eventDetailsSports.groups.value))
+const eventDetailGroups = computed(() => eventDetailsSports.groups.value)
+const eventDetailTabItems = computed(() => mapEventDetailTabItems(eventDetailGroups.value))
 
 watch(
   eventDetailTabItems,
