@@ -4,6 +4,7 @@ import Api from '@/api'
 import type {
   FavouriteEventParams,
   FavouriteEventResponse,
+  GetBetInfoParams,
   GetCompetitionListParams,
   GetCompetitionListResponse,
   GetCompetitionPageParams,
@@ -55,12 +56,7 @@ type SportsRequestError = {
 }
 
 type SportsFavouriteResult =
-  | 'success'
-  | 'synced'
-  | 'failed'
-  | 'login-failed'
-  | 'auth-expired'
-  | 'stale'
+  'success' | 'synced' | 'failed' | 'login-failed' | 'auth-expired' | 'stale'
 
 type SportsCredentials = Readonly<{ memberCode: string; token: string }>
 
@@ -274,6 +270,19 @@ export const useSportsStore = defineStore('sports', () => {
   const sportsCredentials = ref<SportsCredentials | null>(null)
   const sportsMemberCode = computed(() => sportsCredentials.value?.memberCode ?? null)
   const sportsToken = computed(() => sportsCredentials.value?.token ?? null)
+  const sportsBalance = ref<number | null>(null)
+  const sportsBalanceLoading = ref(false)
+  const sportsBalanceError = ref<SportsRequestError | null>(null)
+  let balancePending: Promise<boolean> | null = null
+  let balanceController: AbortController | null = null
+  const resetSportsBalance = () => {
+    balanceController?.abort()
+    balanceController = null
+    balancePending = null
+    sportsBalance.value = null
+    sportsBalanceLoading.value = false
+    sportsBalanceError.value = null
+  }
   let memberCodePending: Promise<string | null> | null = null
   let memberCodeGeneration = 0
   let memberCodeAttempted = false
@@ -305,6 +314,8 @@ export const useSportsStore = defineStore('sports', () => {
     ],
     () => {
       sportsSessionVersion.value += 1
+      resetSportsBalance()
+      cancelBetInfo()
       invalidateSportsMemberCode()
       memberFavourites.clear()
       unconfirmedFavourites.clear()
@@ -351,6 +362,7 @@ export const useSportsStore = defineStore('sports', () => {
         }
         sportsCredentials.value = { memberCode: account.trim(), token }
         memberCodeNeedsRefresh = true
+        if (homepageActive && !sportsBalanceLoading.value) void fetchSportsBalance()
         return sportsMemberCode.value
       } catch {
         return null
@@ -397,6 +409,8 @@ export const useSportsStore = defineStore('sports', () => {
     }
   // 仅包装返回 stc 的体育网关接口；本站热门列表仍使用自己的 code/result 契约。
   const sportsApi = {
+    getBetInfo: withSportsAuthRecovery(Api.sport.getBetInfo),
+    getBalance: withSportsAuthRecovery(Api.sport.getBalance),
     getAllSportCount: withSportsAuthRecovery(Api.sport.getAllSportCount),
     getSportsV2: withSportsAuthRecovery(Api.sport.getSportsV2),
     getSportEventIndexList: withSportsAuthRecovery(Api.sport.getSportEventIndexList),
@@ -404,6 +418,83 @@ export const useSportsStore = defineStore('sports', () => {
     getPopularSports: withSportsAuthRecovery(Api.sport.getPopularSports),
     getSelectedEventInfo: withSportsAuthRecovery(Api.sport.getSelectedEventInfo),
     favouriteEvent: withSportsAuthRecovery(Api.sport.favouriteEvent)
+  }
+  /** 同账号、同币种刷新失败保留余额；离页或切换会话后丢弃旧响应。 */
+  const fetchSportsBalance = (): Promise<boolean> => {
+    if (balancePending) return balancePending
+    if (!homepageActive || !isLoggedIn.value) return Promise.resolve(false)
+    const version = sportsSessionVersion.value
+    const controller = new AbortController()
+    balanceController = controller
+    const isCurrent = () =>
+      !controller.signal.aborted && version === sportsSessionVersion.value && homepageActive
+    sportsBalanceLoading.value = true
+    sportsBalanceError.value = null
+    balancePending = Promise.resolve()
+      .then(async () => {
+        if (!isCurrent()) return false
+        const baseUrl = getBaseUrl()
+        if (!baseUrl) {
+          sportsBalanceError.value = { kind: 'config', message: 'Missing IM.im_app_url' }
+          return false
+        }
+        // 余额是只读查询，凭据更新后最多补查一次，不循环登录。
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          if (!isCurrent()) return false
+          await ensureSportsMemberCode()
+          if (!isCurrent()) return false
+          const credentials = sportsCredentials.value
+          if (!credentials) {
+            sportsBalanceError.value = { kind: 'business', message: 'Sports login unavailable' }
+            return false
+          }
+          const send = attempt === 0 ? sportsApi.getBalance : Api.sport.getBalance
+          const response = await send(
+            baseUrl,
+            {
+              Token: credentials.token,
+              MemberCode: credentials.memberCode,
+              TimeStamp: Date.now()
+            },
+            { signal: controller.signal }
+          )
+          if (!isCurrent()) return false
+          if (credentials !== sportsCredentials.value) {
+            if (attempt === 0 && sportsCredentials.value) continue
+            sportsBalanceError.value = { kind: 'business', message: 'Sports credentials changed' }
+            return false
+          }
+          if (!isSportsSuccess(response)) {
+            sportsBalanceError.value = {
+              kind: 'business',
+              code: response.stc,
+              message: response.std
+            }
+            return false
+          }
+          if (typeof response.av !== 'number' || !Number.isFinite(response.av)) {
+            sportsBalanceError.value = { kind: 'response', message: 'Invalid sports balance' }
+            return false
+          }
+          sportsBalance.value = response.av
+          return true
+        }
+        return false
+      })
+      .catch(() => {
+        if (isCurrent()) {
+          sportsBalanceError.value = { kind: 'network', message: 'Sports balance request failed' }
+        }
+        return false
+      })
+      .finally(() => {
+        if (isCurrent()) {
+          sportsBalanceLoading.value = false
+          balancePending = null
+          balanceController = null
+        }
+      })
+    return balancePending
   }
   /** 显式重试先获取凭据；普通筛选不走这里，失败后也不自动循环。 */
   const runSportsRetry = (
@@ -573,6 +664,109 @@ export const useSportsStore = defineStore('sports', () => {
   const popular = createSportsRequest(getBaseUrl, sportsApi.getPopularSports, response =>
     Array.isArray(response.e)
   )
+  const betInfo = createSportsRequest(
+    getBaseUrl,
+    sportsApi.getBetInfo,
+    response => Array.isArray(response.wsis) && Array.isArray(response.bs)
+  )
+  let betInfoGeneration = 0
+  let betInfoController: AbortController | undefined
+  const cancelBetInfo = () => {
+    betInfoGeneration += 1
+    betInfoController?.abort()
+    betInfoController = undefined
+    betInfo.reset()
+  }
+  const fetchBetInfo = async (
+    query: Pick<GetBetInfoParams, 'WagerType' | 'WagerSelectionInfos'>
+  ) => {
+    cancelBetInfo()
+    const generation = betInfoGeneration
+    const version = sportsSessionVersion.value
+    const controller = new AbortController()
+    betInfoController = controller
+    const isCurrent = () =>
+      homepageActive && version === sportsSessionVersion.value && generation === betInfoGeneration
+    if (!homepageActive || !isLoggedIn.value || !query.WagerSelectionInfos.length) return null
+    const checkParlay = () => {
+      if (query.WagerType !== 2) return true
+      const items = query.WagerSelectionInfos
+      const eligible =
+        items.length >= 2 && new Set(items.map(item => item.EventId)).size === items.length
+      if (!eligible) {
+        betInfo.state.error = { kind: 'business', code: 439, message: 'Parlay unavailable' }
+      }
+      return eligible
+    }
+    if (!checkParlay()) return null
+    const memberCode = await ensureSportsMemberCode()
+    if (
+      !homepageActive ||
+      version !== sportsSessionVersion.value ||
+      generation !== betInfoGeneration
+    )
+      return null
+    const token = sportsToken.value
+    if (!memberCode || !token) {
+      betInfo.state.error = { kind: 'business', message: 'Sports login unavailable' }
+      return null
+    }
+    const selections = query.WagerSelectionInfos.map(item => ({ ...item }))
+    // 串关单独取欧洲盘，不改首页的盘型，也不猜测 A–G 赔率分组。
+    if (query.WagerType === 2) {
+      const sportIds = [
+        ...new Set(selections.filter(item => item.OddsType !== 3).map(item => item.SportId))
+      ]
+      try {
+        for (const sportId of sportIds) {
+          const items = selections.filter(item => item.SportId === sportId && item.OddsType !== 3)
+          const eventIds = [...new Set(items.map(item => item.EventId))]
+          for (let offset = 0; offset < eventIds.length; offset += SELECTED_EVENT_BATCH_SIZE) {
+            const batch = eventIds.slice(offset, offset + SELECTED_EVENT_BATCH_SIZE)
+            const response = await sportsApi.getSelectedEventInfo(
+              getBaseUrl(),
+              {
+                SportId: sportId,
+                EventIds: batch,
+                OddsType: 3,
+                IsCombo: true,
+                IncludeGroupEvents: false,
+                LanguageCode: getLanguage()
+              },
+              { signal: controller.signal }
+            )
+            if (!isCurrent()) return null
+            if (!isSportsSuccess(response) || !Array.isArray(response.e))
+              throw new Error('European odds unavailable')
+            for (const item of items.filter(item => batch.includes(item.EventId))) {
+              const event = response.e.find(event => event.EventId === item.EventId)
+              const line = event?.MarketLines?.find(line => line.MarketlineId === item.MarketlineId)
+              const option = line?.WagerSelections.find(
+                option => option.WagerSelectionId === item.WagerSelectionId
+              )
+              if (!option || option.OddsType !== 3 || !Number.isFinite(option.Odds))
+                throw new Error('European odds unavailable')
+              item.OddsType = 3
+              item.Odds = option.Odds
+            }
+          }
+        }
+      } catch {
+        if (isCurrent())
+          betInfo.state.error = { kind: 'response', message: 'European odds unavailable' }
+        return null
+      }
+    }
+    if (!isCurrent()) return null
+    return betInfo.load({
+      ...query,
+      WagerSelectionInfos: selections,
+      Token: token,
+      MemberCode: memberCode,
+      LanguageCode: getLanguage(),
+      TimeStamp: Date.now()
+    })
+  }
   // 写请求不进入可取消的查询资源，避免另一场点击或页面离开中断已发出的操作。
   const favouriteState = shallowReactive<
     SportsRequestState<FavouriteEventParams, FavouriteEventResponse>
@@ -1215,7 +1409,8 @@ export const useSportsStore = defineStore('sports', () => {
     getCompetitionPage: competition.state,
     getPopularSports: popular.state,
     getCompetitionList: competitionListState,
-    favouriteEvent: favouriteState
+    favouriteEvent: favouriteState,
+    GetBetInfo: betInfo.state
   })
   const sportCounts = computed(() => counts.state.data?.spc ?? [])
   const sportCountsLoading = computed(() => counts.state.loading)
@@ -1576,6 +1771,46 @@ export const useSportsStore = defineStore('sports', () => {
     return Promise.all(waiting)
   }
 
+  // 单独补查选中盘口，不用首页缓存的新鲜度判断代替确认。
+  const confirmBetSelection = (selection: {
+    sportId: number
+    eventId: number
+    market: SportMarketLine
+    wagerSelectionId: number
+  }) =>
+    runHomepageRefresh(
+      `bet-selection:${selection.sportId}:${selection.eventId}:${selection.market.MarketlineId}:${selection.wagerSelectionId}`,
+      async (signal, isCurrent) => {
+        const params: GetSelectedEventInfoParams = {
+          SportId: selection.sportId,
+          EventIds: [selection.eventId],
+          OddsType: getHomepageOddsType(),
+          IsCombo: false,
+          IncludeGroupEvents: false,
+          LanguageCode: languageCode.value,
+          BetTypeIds: [selection.market.BetTypeId],
+          PeriodIds: [selection.market.PeriodId]
+        }
+        const revision = ++eventReadRevision
+        const response = await sportsApi.getSelectedEventInfo(getBaseUrl(), params, { signal })
+        if (!isCurrent() || !isSportsSuccess(response) || !Array.isArray(response.e)) return null
+        const event = response.e.find(item => item.EventId === selection.eventId)
+        // 缺少赛事或投注项列表，不能当作确认失效。
+        if (!event || !Array.isArray(event.MarketLines)) return null
+        const line = event.MarketLines.find(
+          item => item.MarketlineId === selection.market.MarketlineId
+        )
+        if (line && !Array.isArray(line.WagerSelections)) return null
+        const exists = line?.WagerSelections.some(
+          item => item.WagerSelectionId === selection.wagerSelectionId
+        )
+        const cached = refreshedEvents.get(eventKey(selection.sportId, selection.eventId))
+        if (cached && cached.revision > revision) return null
+        rememberEvent(selection.sportId, event, revision, { marketScope: params })
+        return exists ? 'present' : 'missing'
+      }
+    )
+
   const mergeRefreshGroups = (
     previous: SportCompetitionGroup[],
     incoming: SportCompetitionGroup[]
@@ -1827,6 +2062,7 @@ export const useSportsStore = defineStore('sports', () => {
       !Number.isSafeInteger(eventId) ||
       eventId <= 0 ||
       !event ||
+      !event.EventDate ||
       !Number.isSafeInteger(event.Competition?.CompetitionId) ||
       !getBaseUrl()
     ) {
@@ -1854,7 +2090,11 @@ export const useSportsStore = defineStore('sports', () => {
       if (!memberCode) return 'login-failed'
       const previous = memberFavourites.get(eventId)?.value ?? event.IsFavourite === true
       const reconcileOnly = unconfirmedFavourites.has(eventId)
-      const params: FavouriteEventParams = { MemberCode: memberCode, EventId: eventId }
+      const params: FavouriteEventParams = {
+        MemberCode: memberCode,
+        EventId: eventId,
+        EventDate: event.EventDate
+      }
       favouriteState.params = params
       favouriteState.error = null
       favouriteState.response = null
@@ -1874,6 +2114,16 @@ export const useSportsStore = defineStore('sports', () => {
             result = 'failed'
           } else {
             favouriteState.data = response
+            if (!homepageActive || loginGeneration !== memberCodeGeneration) return 'stale'
+            if (response.EventId === eventId && typeof response.IsFavourite === 'boolean') {
+              // 接口已返回最终状态，不再额外查询赛事来确认。
+              memberFavourites.set(eventId, {
+                value: response.IsFavourite,
+                revision: ++favouriteRevision
+              })
+              unconfirmedFavourites.delete(eventId)
+              return 'success'
+            }
           }
         } catch {
           if (!isCurrent()) return 'stale'
@@ -1916,6 +2166,8 @@ export const useSportsStore = defineStore('sports', () => {
 
   const cancelRequests = () => {
     homepageActive = false
+    cancelBetInfo()
+    resetSportsBalance()
     cancelHomepageRefresh()
     // 停用和销毁均结束本次停留；旧登录响应不能写回，也不能被下次进入复用。
     invalidateSportsMemberCode()
@@ -2108,6 +2360,12 @@ export const useSportsStore = defineStore('sports', () => {
     sportsSessionVersion,
     sportsMemberCode,
     sportsToken,
+    sportsBalance,
+    sportsBalanceLoading,
+    sportsBalanceError,
+    fetchSportsBalance,
+    fetchBetInfo,
+    cancelBetInfo,
     pageNumber,
     pageSize,
     competitionIds,
@@ -2140,6 +2398,7 @@ export const useSportsStore = defineStore('sports', () => {
     fetchSportCounts,
     refreshHomepageCounts,
     refreshVisibleEvents,
+    confirmBetSelection,
     refreshHomepageBackground,
     cancelHomepageRefresh,
     getRefreshEvent,

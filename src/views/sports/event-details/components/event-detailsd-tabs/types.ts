@@ -8,6 +8,8 @@ export type EventDetailTabTeam = {
 
 export type EventDetailTabItem = {
   id: string
+  /** 联赛 ID，与 PC 联赛 tabs 的 key 对应。 */
+  competitionId: number
   league: string
   marketLines: SportMarketLine[]
   home: EventDetailTabTeam

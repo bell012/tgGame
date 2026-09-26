@@ -490,9 +490,9 @@ watch(activeSport, async () => {
 })
 
 // 增删选项时保留串关模式，点击赔率后打开投注单。
-const selectOdds = (matchId: string, payload: OddsSelectPayload) => {
+const selectOdds = async (matchId: string, payload: OddsSelectPayload) => {
   const wasParlay = props.page.mode.value === 'parlay'
-  props.page.selectOdds(matchId, payload)
+  if (!(await props.page.selectOdds(matchId, payload))) return
   if (wasParlay && props.page.selections.value.length) props.page.setMode('parlay', true)
   props.page.betSlipOpen.value = true
 }

@@ -1,3 +1,5 @@
+import type { SportWagerSelection } from '@/api/interface/sport'
+
 /** `all` 表示全部玩法；其余 key 为接口 BetTypeName。 */
 export type ScoreDetailsFilterKey = 'all' | (string & {})
 
@@ -14,6 +16,7 @@ export interface ScoreDetailsMarketBase {
 export interface DualOddsCell {
   line: string
   odds: string
+  selection?: SportWagerSelection
 }
 
 export interface DualColumnMarketCard extends ScoreDetailsMarketBase {
@@ -30,6 +33,7 @@ export interface DualColumnMarketCard extends ScoreDetailsMarketBase {
 export interface OneXTwoOption {
   label: string
   odds: string
+  selection?: SportWagerSelection
 }
 
 export interface OneXTwoMarketCard extends ScoreDetailsMarketBase {
@@ -57,6 +61,4 @@ export interface ScorePickerMarketCard extends ScoreDetailsMarketBase {
 }
 
 export type ScoreDetailsMarketCard =
-  | DualColumnMarketCard
-  | OneXTwoMarketCard
-  | ScorePickerMarketCard
+  DualColumnMarketCard | OneXTwoMarketCard | ScorePickerMarketCard

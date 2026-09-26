@@ -291,7 +291,13 @@
     "confirm": "Confirm",
     "buyBackSuccess": "Early settlement submitted.",
     "buyBackSubmitFailed": "Unable to submit early settlement. Please try again later.",
-    "copy": "Copy succeeded."
+    "copy": "Copy succeeded.",
+    "oddsTypes": {
+      "malay": "Malay Odds",
+      "hongKong": "Hong Kong Odds",
+      "europe": "European Odds",
+      "indonesia": "Indonesian Odds"
+    }
   },
   "rewardDetails": {
     "title": "Bet Slip",
@@ -1808,6 +1814,35 @@
     "bet_history": "Bet History",
     "loadFailed": "Unable to load sports. Please try again.",
     "platformLoginFailed": "Unable to sign in to sports. Please try again.",
+    "balanceUnavailable": "Sports balance is unavailable. Please refresh it before continuing.",
+    "balanceRefreshFailed": "Unable to refresh sports balance. Please try again.",
+    "betInfoFailed": "Unable to check bet information. Close and reopen the bet slip to retry.",
+    "betLoginFailed": "Unable to connect to the sports platform. Please try again later.",
+    "betInfoSelectionUnavailable": "A selected market is unavailable. Please select again.",
+    "betInfoEuropeanOddsRequired": "European odds are required to check parlay information.",
+    "betInfoPending": "Checking bet information…",
+    "betInfoQueued": "Waiting to check bet information…",
+    "betInfoNotRequested": "Bet information has not been checked.",
+    "betParlayNeedTwo": "Select at least two different events for a parlay.",
+    "betSelectionLimit": "You can select up to {count} different matches.",
+    "betFeatureUnavailable": "This feature is not available yet.",
+    "betCurrencyChanged": "Currency changed. Bet selections have been cleared.",
+    "betSelectionError": "{selection}: {reason}",
+    "betEnterStake": "Enter a stake to continue.",
+    "betSelectionExpired": "This selection has expired. Please remove it.",
+    "betOddsAutoUpdate": "Odds update automatically",
+    "betSubmitUnavailable": "Bet placement is not connected yet.",
+    "betAmountInvalid": "Enter a valid amount with up to two decimal places.",
+    "betLimit": "Bet limit {min}–{max}",
+    "betMarketClosed": "Market Closed",
+    "betParlayUnsupported": "This selection does not support parlays.",
+    "betOddsType1": "Malay Odds",
+    "betOddsType2": "Hong Kong Odds",
+    "betOddsType3": "Decimal Odds",
+    "betOddsType4": "Indonesian Odds",
+    "betOddsType6": "American Odds",
+    "insufficientBalance": "Insufficient sports balance.",
+    "betBalanceAdjusted": "Insufficient balance. Converted to the maximum bet amount.",
     "favouriteFailed": "The favorite update could not be confirmed. Refresh events before trying again.",
     "retry": "Retry",
     "noEvents": "No events available for the current filters.",
@@ -1830,6 +1865,20 @@
       "searchLeagueOrTeam": "Search League or Team",
       "selectAll": "Select All",
       "filter": "Filter"
+    },
+    "eventDetails": {
+      "filterAll": "All",
+      "betSlipFab": "Bet slip",
+      "oddsFormatLabel": "Odds Format",
+      "oddsFormatOptionsAria": "Odds format options",
+      "oddsFormatDisclaimer": "While we make every effort to ensure the accuracy of the data displayed on this website, the information is provided for reference only and should be used as a guide. We accept no liability for any inaccuracies.",
+      "oddsFormatTypes": {
+        "1": "Malaysian",
+        "2": "Hong Kong",
+        "3": "European",
+        "4": "Indonesian",
+        "6": "American"
+      }
     }
   },
   "menu": {

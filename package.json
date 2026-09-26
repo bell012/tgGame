@@ -22,6 +22,7 @@
     "axios": "^1.13.2",
     "crypto-js": "^4.2.0",
     "echarts": "^6.0.0",
+    "emoji-picker-element": "^1.29.1",
     "hls.js": "^1.7.3",
     "html2canvas": "^1.4.1",
     "lottie-web": "^5.13.0",

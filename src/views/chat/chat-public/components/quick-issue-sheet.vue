@@ -28,7 +28,7 @@
           class="font-bold text-text-1"
           :class="props.displayMode === 'pc' ? 'text-[16px] leading-[19px]' : 'text-[16px]'"
         >
-          {{ issueTitle }}
+          {{ props.activeIssue?.typeName || t('chatPublic.customerServiceList') }}
         </h2>
         <button
           type="button"
@@ -40,7 +40,7 @@
         </button>
       </div>
 
-      <!-- 可发送的预设问题列表。 -->
+      <!-- 可发送的后台自动回复问题列表。 -->
       <div
         class="flex flex-col overflow-y-auto"
         :class="
@@ -49,10 +49,10 @@
             : 'mt-[16px] max-h-[360px] gap-[18px]'
         "
       >
-        <!-- 单条预设问题与发送操作。 -->
+        <!-- 单条自动回复问题与发送操作。 -->
         <div
-          v-for="index in 5"
-          :key="index"
+          v-for="item in props.items"
+          :key="item.id"
           class="flex items-center gap-[12px]"
           :class="props.displayMode === 'pc' ? 'min-h-[40px]' : 'min-h-[60px]'"
         >
@@ -60,47 +60,45 @@
             class="min-w-0 flex-1 text-[14px] leading-[17px] text-text-1"
             :class="props.displayMode === 'pc' ? 'max-w-[248px]' : ''"
           >
-            {{ issueQuestion }}
+            {{ item.questionTitle }}
           </p>
           <button
             type="button"
             class="shrink-0 rounded-[7px] bg-theme-primary text-[14px] font-bold text-text-4"
             :class="props.displayMode === 'pc' ? 'h-[30px] w-[60px]' : 'h-[40px] w-[101px]'"
-            @click="$emit('send', issueQuestion)"
+            @click="$emit('send', item)"
           >
             {{ t('chatPublic.send') }}
           </button>
         </div>
       </div>
+      <!-- 自动回复接口请求中的加载状态。 -->
+      <p v-if="props.loading" class="mt-4 text-center text-[13px] text-text-2">
+        {{ t('common.loading') }}
+      </p>
+      <!-- 自动回复接口没有返回问题时的空状态。 -->
+      <p v-else-if="!props.items.length" class="mt-4 text-center text-[13px] text-text-2">
+        {{ t('common.noData') }}
+      </p>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import CloseIcon from '@/static/svg/close.svg?component'
-import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { AutoReplyItem } from '@/api/interface/chat'
 import type { QuickIssue } from '../types'
 
 const props = defineProps<{
   visible: boolean
   activeIssue: QuickIssue | null
+  items: AutoReplyItem[]
+  loading?: boolean
   displayMode?: 'h5' | 'pc'
 }>()
 
-defineEmits<{ close: []; send: [text: string] }>()
+defineEmits<{ close: []; send: [item: AutoReplyItem] }>()
 
 const { t } = useI18n()
-
-/** 当前快捷问题的弹窗标题。 */
-const issueTitle = computed(() => {
-  if (!props.activeIssue) return t('chatPublic.depositIssue')
-  return t(`chatPublic.${props.activeIssue.id}Issue`)
-})
-
-/** 当前快捷问题发送的固定示例文案。 */
-const issueQuestion = computed(() => {
-  if (!props.activeIssue) return t('chatPublic.depositQuestion')
-  return t(`chatPublic.${props.activeIssue.questionKey}`)
-})
 </script>

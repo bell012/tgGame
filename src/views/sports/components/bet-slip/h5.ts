@@ -1,14 +1,11 @@
 import { computed, onDeactivated, onScopeDispose, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { parseSportsStake } from './shared'
 import type { SportsBetMode } from '../../shared/types'
 import type { SportsPageState } from '../../index'
 
 export type SportsKeyboardKey = string | 'delete'
 export type SportsBetResult = 'idle' | 'confirming' | 'success' | 'failed'
-
-// 本地演示限额，不代表实际投注限制。
-export const H5_MIN_STAKE = 5
-export const H5_MAX_STAKE = 311.11
 
 /** 键盘输入最多保留两位小数。 */
 export const applySportsKeyboardKey = (raw: string, key: string, replace = false): string => {
@@ -22,22 +19,13 @@ export const applySportsKeyboardKey = (raw: string, key: string, replace = false
   return parseSportsStake(next) === null ? raw : next
 }
 
-export const getH5StakeError = (raw: string): string => {
-  if (!raw) return ''
-  const amount = parseSportsStake(raw)
-  if (amount === null) return 'Enter a valid amount.'
-  if (amount < H5_MIN_STAKE || amount > H5_MAX_STAKE)
-    return `Bet limit: ${H5_MIN_STAKE.toFixed(2)}–${H5_MAX_STAKE.toFixed(2)}`
-  return ''
-}
-
 export const useSportsH5Bet = (page: SportsPageState) => {
+  const { t } = useI18n()
   const keyboardOpen = ref(false)
   const quickAmounts = ref([20, 50, 100, 200, 500, 1000])
   const editingAmounts = ref(false)
   const amountDrafts = ref<string[]>([])
   const editError = ref('')
-  const acceptBetterOdds = ref(true)
   const attempted = ref(false)
   const result = ref<SportsBetResult>('idle')
   const rows = computed(() =>
@@ -49,17 +37,9 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     () => rows.value.find(item => item.id === page.focusedStakeId.value) ?? rows.value[0]
   )
   const busy = computed(() => result.value === 'confirming' || result.value === 'success')
-  const hasClosedMarket = computed(() =>
-    page.selections.value.some(item => item.mockBetStatus === 'closed')
-  )
   const submitError = computed(() => {
-    if (hasClosedMarket.value) return 'This market is closed. Remove it to continue.'
-    if (page.mode.value === 'parlay' && page.selections.value.length < 2)
-      return 'Select at least two different events for a parlay.'
-    if (page.totalStake.value > page.balance) return 'Insufficient balance.'
-    const invalidRow = rows.value.find(item => getH5StakeError(item.stake))
-    if (invalidRow) return getH5StakeError(invalidRow.stake)
-    if (attempted.value && page.totalStake.value <= 0) return 'Enter a stake to place your bet.'
+    if (page.validationError.value) return page.validationError.value
+    if (attempted.value && page.totalStake.value <= 0) return t('sports.betEnterStake')
     return ''
   })
   let replaceNextKey = false
@@ -105,20 +85,8 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   }
   const maxStake = () => {
     const target = activeRow.value
-    if (!target || busy.value || editingAmounts.value) return
-    const otherStake = rows.value.reduce(
-      (sum, row) =>
-        row.id === target.id
-          ? sum
-          : sum + (parseSportsStake(row.stake) ?? 0) * row.combinationCount,
-      0
-    )
-    const available = Math.max(0, page.balance - otherStake)
-    const max = Math.min(
-      H5_MAX_STAKE,
-      Math.floor((available * 100) / target.combinationCount) / 100
-    )
-    writeStake(max.toFixed(2))
+    if (!target || busy.value || editingAmounts.value || page.balance.value === null) return
+    page.maxStake(target.id, page.mode.value)
     replaceNextKey = true
   }
   const chooseQuickAmount = (index: number) => {
@@ -157,8 +125,13 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   }
   const saveEdit = () => {
     if (!editingAmounts.value || busy.value) return
+    const balance = page.balance.value
+    if (balance === null) {
+      editError.value = t('sports.balanceUnavailable')
+      return
+    }
     const amounts = amountDrafts.value.map(parseSportsStake)
-    if (amounts.some(value => value === null || value <= 0 || value > page.balance)) {
+    if (amounts.some(value => value === null || value <= 0 || value > balance)) {
       editError.value = 'Enter four positive amounts within your balance.'
       return
     }
@@ -175,8 +148,11 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   const changeMode = () => {
     if (busy.value) return
     if (page.mode.value === 'single') {
-      page.setMode('parlay', true)
-      close()
+      if (
+        page.setMode('parlay', true) &&
+        !page.selections.value.some(item => item.betStatus === 'unavailable')
+      )
+        close()
     } else {
       page.setMode('single')
       attempted.value = false
@@ -276,7 +252,6 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     editingAmounts,
     amountDrafts,
     editError,
-    acceptBetterOdds,
     result,
     busy,
     activeRow,
