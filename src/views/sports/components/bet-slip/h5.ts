@@ -1,4 +1,4 @@
-import { computed, onDeactivated, ref, watch } from 'vue'
+import { computed, onDeactivated, onScopeDispose, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { parseSportsStake } from './shared'
 import type { SportsBetMode } from '../../shared/types'
@@ -25,6 +25,25 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   const editingAmounts = ref(false)
   const amountDrafts = ref<string[]>([])
   const editError = ref('')
+  const submittedView = shallowRef<{
+    selections: typeof page.selections.value
+    parlays: typeof page.parlays.value
+    mode: SportsBetMode
+    potentialReturnText: string
+    totalStakeText: string
+  } | null>(null)
+  // 结果提示期间保留提交时的内容，避免成功清单闪成空态。
+  const displayed = computed(
+    () =>
+      submittedView.value ?? {
+        selections: page.selections.value,
+        parlays: page.parlays.value,
+        mode: page.mode.value,
+        potentialReturnText: page.potentialReturnText.value,
+        totalStakeText: page.totalStakeText.value
+      }
+  )
+  const result = computed(() => (page.betSlipOpen.value ? (page.betResult?.value ?? null) : null))
   const rows = computed(() =>
     page.mode.value === 'single'
       ? page.selections.value.map(item => ({ ...item, combinationCount: 1 }))
@@ -33,7 +52,17 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   const activeRow = computed(
     () => rows.value.find(item => item.id === page.focusedStakeId.value) ?? rows.value[0]
   )
-  const busy = page.submitting
+  const busy = computed(() => page.submitting.value || Boolean(result.value))
+  let resultTimer: ReturnType<typeof setTimeout> | undefined
+  const clearResultTimer = () => {
+    clearTimeout(resultTimer)
+    resultTimer = undefined
+  }
+  const resetResult = () => {
+    clearResultTimer()
+    submittedView.value = null
+    page.dismissBetResult?.()
+  }
   let replaceNextKey = false
   const cancelEdit = () => {
     editingAmounts.value = false
@@ -41,6 +70,7 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     editError.value = ''
   }
   const close = () => {
+    resetResult()
     keyboardOpen.value = false
     cancelEdit()
     page.betSlipOpen.value = false
@@ -161,8 +191,40 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     if (busy.value || editingAmounts.value || !page.selections.value.length) return
     if (!page.canSubmit.value) return
     keyboardOpen.value = false
-    await page.submitBet()
+    const view = {
+      selections: page.selections.value.map(item => ({ ...item })),
+      parlays: page.parlays.value.map(item => ({ ...item })),
+      mode: page.mode.value,
+      potentialReturnText: page.potentialReturnText.value,
+      totalStakeText: page.totalStakeText.value
+    }
+    submittedView.value = view
+    try {
+      await page.submitBet()
+    } finally {
+      if (submittedView.value === view && !result.value) submittedView.value = null
+    }
   }
+
+  watch(
+    () => page.betResult?.value,
+    state => {
+      clearResultTimer()
+      if (!state) {
+        submittedView.value = null
+        return
+      }
+      if (!page.betSlipOpen.value) {
+        resetResult()
+        return
+      }
+      resultTimer = setTimeout(() => {
+        resetResult()
+        if (state === 'success' && !page.selections.value.length) close()
+      }, 2000)
+    },
+    { immediate: true }
+  )
 
   watch(
     page.betSlipOpen,
@@ -171,6 +233,7 @@ export const useSportsH5Bet = (page: SportsPageState) => {
         keyboardOpen.value = page.mode.value === 'single' && page.selections.value.length > 0
         replaceNextKey = true
       } else {
+        resetResult()
         keyboardOpen.value = false
         cancelEdit()
       }
@@ -190,6 +253,7 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     { flush: 'sync' }
   )
   onDeactivated(close)
+  onScopeDispose(resetResult)
 
   return {
     keyboardOpen,
@@ -198,6 +262,8 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     amountDrafts,
     editError,
     busy,
+    displayed,
+    result,
     activeRow,
     close,
     focusStake,

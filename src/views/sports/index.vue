@@ -175,6 +175,13 @@
       :refreshing="refreshing"
       :focused-stake-id="focusedStakeId"
       :submitting="submitting"
+      :accept-any-odds="acceptAnyOdds"
+      @accept-any-odds="setAcceptAnyOdds"
+      :result="betResult"
+      :reusing="reusing"
+      @reuse="reuseSelections"
+      @dismiss-result="dismissBetResult"
+      @history="handleFloatingEntry('history')"
       @toggle="betSlipOpen = !betSlipOpen"
       @remove="removeSelection"
       @stake="updateStake"
@@ -262,6 +269,13 @@ const {
   setMode,
   clearBets,
   submitting,
+  acceptAnyOdds,
+  setAcceptAnyOdds,
+  betResult,
+  reusing,
+  reuseSelections,
+  dismissBetResult,
+  handleFloatingEntry,
   submitBet,
   refreshBalance,
   showUnsupported,

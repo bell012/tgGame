@@ -81,15 +81,6 @@
       :disabled="props.disabled || Boolean(props.selection.submissionState)"
       @focus="emit('focus')"
     />
-    <p v-if="props.selection.submissionState" class="mt-2 text-xs text-text-2" role="status">
-      {{
-        t(
-          props.selection.submissionState === 'pending'
-            ? 'sports.betSubmitPending'
-            : 'sports.betSubmitUnknown'
-        )
-      }}
-    </p>
   </li>
 </template>
 

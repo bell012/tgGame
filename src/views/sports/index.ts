@@ -1,6 +1,7 @@
 import { onMounted, onScopeDispose } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
+import { isMobileViewport } from '@/composables/useMediaQuery'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
 import { navigateTo } from '@/utils/router'
@@ -40,7 +41,8 @@ export const useSportsPage = () => {
   const { t } = useI18n()
   const { refreshTargets, ...betSlip } = useBetSlip({
     getMatch: (id): SportsMatch | undefined => data.matchById.value.get(id),
-    getTeamLogoUrl
+    getTeamLogoUrl,
+    resultPresentation: () => (isMobileViewport() ? 'toast' : 'panel')
   })
   const data = useSportsData({
     getTeamLogoUrl,

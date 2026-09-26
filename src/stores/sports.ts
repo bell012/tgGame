@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, reactive, ref, shallowReactive, watch } from 'vue'
+import { computed, onScopeDispose, reactive, ref, shallowReactive, watch } from 'vue'
 import type { ComputedRef } from 'vue'
 import Api from '@/api'
 import type {
@@ -364,7 +364,36 @@ export const useSportsStore = defineStore('sports', () => {
   const sportsBalanceError = ref<SportsRequestError | null>(null)
   let balancePending: Promise<boolean> | null = null
   let balanceController: AbortController | null = null
+  const balanceRetryDelays = [1000, 3000] as const
+  let balanceRetryCount = 0
+  let balanceRetryTimer: ReturnType<typeof setTimeout> | undefined
+  const clearBalanceRetry = () => {
+    clearTimeout(balanceRetryTimer)
+    balanceRetryTimer = undefined
+  }
+  const scheduleBalanceRetry = () => {
+    if (
+      !homepageActive ||
+      !isLoggedIn.value ||
+      !currentCurrencyCode.value ||
+      balancePending ||
+      balanceRetryTimer !== undefined ||
+      balanceRetryCount >= balanceRetryDelays.length ||
+      sportsBalanceError.value?.kind === 'config'
+    )
+      return
+    const version = sportsSessionVersion.value
+    const delay = balanceRetryDelays[balanceRetryCount++]
+    balanceRetryTimer = setTimeout(() => {
+      balanceRetryTimer = undefined
+      if (version === sportsSessionVersion.value && homepageActive && isLoggedIn.value) {
+        void fetchSportsBalance({ retry: true })
+      }
+    }, delay)
+  }
   const resetSportsBalance = () => {
+    clearBalanceRetry()
+    balanceRetryCount = 0
     balanceController?.abort()
     balanceController = null
     balancePending = null
@@ -377,6 +406,10 @@ export const useSportsStore = defineStore('sports', () => {
   let memberCodeAttempted = false
   let memberCodeNeedsRefresh = false
   let homepageActive = false
+  onScopeDispose(() => {
+    homepageActive = false
+    resetSportsBalance()
+  })
   let lastAuthRecovery: { generation: number; credentials: SportsCredentials | null } | null = null
   let favouriteRevision = 0
   const memberFavourites = shallowReactive(new Map<number, { value: boolean; revision: number }>())
@@ -447,16 +480,34 @@ export const useSportsStore = defineStore('sports', () => {
           typeof token !== 'string' ||
           !token.trim()
         ) {
+          if (homepageActive) {
+            sportsBalanceError.value = {
+              kind: 'business',
+              code: response.code,
+              message: 'Sports login unavailable'
+            }
+          }
           return null
         }
         sportsCredentials.value = { memberCode: account.trim(), token }
         memberCodeNeedsRefresh = true
-        if (homepageActive && !sportsBalanceLoading.value) void fetchSportsBalance()
+        if (homepageActive && !sportsBalanceLoading.value) void fetchSportsBalance({ retry: true })
         return sportsMemberCode.value
       } catch {
+        if (
+          homepageActive &&
+          version === sportsSessionVersion.value &&
+          generation === memberCodeGeneration
+        ) {
+          sportsBalanceError.value = { kind: 'network', message: 'Sports login request failed' }
+        }
         return null
       } finally {
-        if (generation === memberCodeGeneration) memberCodePending = null
+        if (generation === memberCodeGeneration) {
+          memberCodePending = null
+          // 首次登录失败也要补查，不能只等手动刷新余额。
+          if (!sportsCredentials.value) scheduleBalanceRetry()
+        }
       }
     })()
     memberCodePending = pending
@@ -511,9 +562,11 @@ export const useSportsStore = defineStore('sports', () => {
     favouriteEvent: withSportsAuthRecovery(Api.sport.favouriteEvent)
   }
   /** 同账号、同币种刷新失败保留余额；离页或切换会话后丢弃旧响应。 */
-  const fetchSportsBalance = (): Promise<boolean> => {
+  const fetchSportsBalance = ({ retry = false }: { retry?: boolean } = {}): Promise<boolean> => {
     if (balancePending) return balancePending
     if (!homepageActive || !isLoggedIn.value) return Promise.resolve(false)
+    clearBalanceRetry()
+    if (!retry) balanceRetryCount = 0
     const version = sportsSessionVersion.value
     const controller = new AbortController()
     balanceController = controller
@@ -536,7 +589,7 @@ export const useSportsStore = defineStore('sports', () => {
           if (!isCurrent()) return false
           const credentials = sportsCredentials.value
           if (!credentials) {
-            sportsBalanceError.value = { kind: 'business', message: 'Sports login unavailable' }
+            sportsBalanceError.value ??= { kind: 'business', message: 'Sports login unavailable' }
             return false
           }
           const send = attempt === 0 ? sportsApi.getBalance : Api.sport.getBalance
@@ -568,6 +621,8 @@ export const useSportsStore = defineStore('sports', () => {
             return false
           }
           sportsBalance.value = response.av
+          sportsBalanceError.value = null
+          balanceRetryCount = 0
           return true
         }
         return false
@@ -583,6 +638,7 @@ export const useSportsStore = defineStore('sports', () => {
           sportsBalanceLoading.value = false
           balancePending = null
           balanceController = null
+          if (sportsBalanceError.value) scheduleBalanceRetry()
         }
       })
     return balancePending
@@ -943,7 +999,10 @@ export const useSportsStore = defineStore('sports', () => {
   }
   /** 写请求独立发送，不因另一笔单关或离页而取消；鉴权失败只刷新凭据。 */
   const placeBet = async (
-    query: Pick<PlaceBetParams, 'WagerType' | 'WagerSelectionInfos' | 'ComboSelections'>
+    query: Pick<
+      PlaceBetParams,
+      'WagerType' | 'WagerSelectionInfos' | 'ComboSelections' | 'IsComboAcceptAnyOdds'
+    >
   ): Promise<PlaceBetResponse> => {
     const version = sportsSessionVersion.value
     const baseUrl = getBaseUrl()
@@ -957,14 +1016,12 @@ export const useSportsStore = defineStore('sports', () => {
     if (!memberCode || !token) throw new SportsBetNotSentError('Sports login unavailable')
     const response = await sportsApi.placeBet(baseUrl, {
       ...query,
-      IsComboAcceptAnyOdds: true,
       MemberCode: memberCode,
       Token: token,
       LanguageCode: getLanguage(),
       TimeStamp: Date.now()
     })
-    if (version !== sportsSessionVersion.value || !isLoggedIn.value)
-      throw new Error('Sports session changed')
+    // 原请求的结果仍用于清理提交记录，当前页面是否更新由调用方判断。
     return response
   }
   // 写请求不进入可取消的查询资源，避免另一场点击或页面离开中断已发出的操作。
@@ -2591,6 +2648,10 @@ export const useSportsStore = defineStore('sports', () => {
         isLoggedIn.value && (!memberCodeAttempted || memberCodePending)
           ? ensureSportsMemberCode()
           : null
+      // 历史页可能已获取凭据，返回首页时仍需补查余额。
+      if (sportsCredentials.value && sportsBalance.value === null && !sportsBalanceError.value) {
+        void fetchSportsBalance({ retry: true })
+      }
       if (!getBaseUrl()) {
         resources.forEach(resource => resource.reset())
         cancelAllSports()

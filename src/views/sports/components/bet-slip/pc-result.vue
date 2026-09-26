@@ -1,5 +1,5 @@
 <template>
-  <section class="shrink-0" :aria-label="t('sports.betSlip.result.title')">
+  <section class="min-h-0" :aria-label="t('sports.betSlip.result.title')">
     <div class="relative mx-[18px] mt-[18px] h-[177px] text-center">
       <button
         type="button"
@@ -27,18 +27,21 @@
           )
         }}
       </p>
-      <p class="absolute inset-x-0 top-[156px] text-[11px] leading-[15px] text-text-2">
-        {{ t('sports.betSlip.result.simulation') }}
-      </p>
     </div>
     <div class="mt-[18px] flex flex-col gap-3 px-3 pb-[18px]">
       <button type="button" :class="buttonClass" @click="emit('history')">
         {{ t('sports.betSlip.result.history') }}
       </button>
-      <button type="button" :class="buttonClass" @click="emit('reuse')">
+      <button
+        type="button"
+        :class="buttonClass"
+        :disabled="props.reusing"
+        :aria-busy="props.reusing"
+        @click="emit('reuse')"
+      >
         {{ t('sports.betSlip.result.reuse') }}
       </button>
-      <button type="button" :class="buttonClass" @click="emit('share')">
+      <button type="button" :class="buttonClass" disabled>
         {{ t('sports.betSlip.result.share') }}
       </button>
     </div>
@@ -50,9 +53,9 @@ import { useI18n } from 'vue-i18n'
 import CloseIcon from '@/static/svg/close.svg?component'
 import SuccessIcon from '@/static/svg/mobile_success.svg?component'
 
-const props = defineProps<{ state: 'success' | 'failed' }>()
+const props = defineProps<{ state: 'success' | 'failed'; reusing?: boolean }>()
 const { t } = useI18n()
-const emit = defineEmits<{ dismiss: []; reuse: []; history: []; share: [] }>()
+const emit = defineEmits<{ dismiss: []; reuse: []; history: [] }>()
 const buttonClass =
-  'flex h-[49px] w-full items-center justify-center rounded-full bg-bg-2 px-4 text-sm font-bold text-text-1 hover:bg-bg-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary'
+  'flex h-[49px] w-full items-center justify-center rounded-full bg-bg-2 px-4 text-sm font-bold text-text-1 enabled:hover:bg-bg-3 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary'
 </script>

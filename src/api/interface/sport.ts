@@ -230,7 +230,8 @@ export interface PlaceBetParams extends GetBalanceParams {
   WagerType: 1 | 2
   WagerSelectionInfos: SportsPlaceBetSelectionParams[]
   ComboSelections: SportsPlaceBetComboParams[]
-  IsComboAcceptAnyOdds: true
+  /** 是否接受串关赔率变化，由用户勾选状态决定。 */
+  IsComboAcceptAnyOdds: boolean
   LanguageCode: SportsLanguageCode
 }
 

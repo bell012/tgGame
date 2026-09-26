@@ -11,10 +11,10 @@
       aria-modal="true"
       :aria-labelledby="titleId"
       :aria-busy="busy"
-      :inert="editingAmounts"
+      :inert="editingAmounts || Boolean(result)"
       tabindex="-1"
       data-testid="sports-betslip-h5"
-      :data-state="busy ? 'submitting' : mode"
+      :data-state="result ?? (busy ? 'submitting' : mode)"
       @keydown="onKeydown"
     >
       <header class="flex h-12 shrink-0 items-center gap-2 bg-bg-2 px-[13.333px]">
@@ -119,23 +119,15 @@
                   />
                 </div>
                 <p
-                  v-if="parlay.submissionState"
+                  v-if="parlay.submissionState === 'confirmed'"
                   class="pb-[3.333px] pt-[6.667px] text-[11px] leading-[13.333px] text-text-2"
                   role="status"
                 >
-                  {{
-                    t(
-                      parlay.submissionState === 'pending'
-                        ? 'sports.betSubmitPending'
-                        : parlay.submissionState === 'unknown'
-                          ? 'sports.betSubmitUnknown'
-                          : 'sports.betSubmitSuccess'
-                    )
-                  }}
+                  {{ t('sports.betSubmitSuccess') }}
                 </p>
                 <p
                   v-if="parlay.stakeError"
-                  class="pb-[3.333px] pt-[6.667px] text-[11px] leading-[13.333px] text-secondary-2"
+                  class="pb-[3.333px] pt-[6.667px] text-right text-[11px] leading-[13.333px] text-secondary-2"
                   role="alert"
                 >
                   {{ parlay.stakeError }}
@@ -178,7 +170,22 @@
                 potentialReturnText
               }}</span>
             </p>
-            <span class="text-[11px] text-text-2">{{ t('sports.betOddsAutoUpdate') }}</span>
+            <button
+              type="button"
+              role="checkbox"
+              :aria-checked="props.page.acceptAnyOdds.value"
+              :disabled="busy || editingAmounts"
+              class="flex items-center gap-0.5 text-[11px] text-text-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+              @click="props.page.setAcceptAnyOdds(!props.page.acceptAnyOdds.value)"
+            >
+              <component
+                :is="props.page.acceptAnyOdds.value ? CheckedIcon : UncheckedIcon"
+                class="h-[11px] w-[11px] shrink-0"
+                :class="props.page.acceptAnyOdds.value ? 'text-theme-primary' : 'text-text-2'"
+                aria-hidden="true"
+              />
+              {{ t('sports.betSlip.autoAcceptBetterOdds') }}
+            </button>
           </div>
           <div class="mt-[13.333px] flex items-center gap-2.5">
             <button
@@ -191,14 +198,23 @@
             </button>
             <button
               type="button"
-              class="flex h-[44.667px] min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-theme-primary px-2 text-sm text-text-4 disabled:opacity-60"
+              class="flex h-[44.667px] min-w-0 flex-1 items-center justify-center gap-[5px] rounded-full bg-theme-primary px-2 text-sm text-text-4"
               :disabled="!props.page.canSubmit.value || busy || editingAmounts"
+              :aria-busy="busy"
               :aria-label="t('sports.betSubmit')"
               data-testid="sports-h5-submit"
               @click="submit"
             >
-              <RefreshIcon v-if="busy" class="h-4 w-4 animate-spin" aria-hidden="true" />
-              <span v-if="busy" class="font-bold">{{ t('sports.betSubmitting') }}</span>
+              <Loading
+                v-if="busy"
+                type="spinner"
+                size="20"
+                color="currentColor"
+                aria-hidden="true"
+              />
+              <span v-if="busy" class="font-bold" role="status">{{
+                t('sports.betSlip.confirming')
+              }}</span>
               <span v-else class="min-w-0 text-center leading-4"
                 >{{ t('sports.betSlip.totalStake') }}
                 <strong class="whitespace-nowrap text-[15px]">{{ totalStakeText }}</strong></span
@@ -220,6 +236,36 @@
       </div>
     </section>
   </PopShell>
+  <Teleport to="body">
+    <div
+      v-if="result"
+      class="pointer-events-none fixed inset-0 z-[10001] flex items-center justify-center font-inter"
+      role="status"
+      aria-live="polite"
+      data-testid="sports-bet-result-h5"
+      :data-state="result"
+    >
+      <div
+        class="flex min-h-[138px] w-40 flex-col items-center justify-center gap-2.5 rounded-[20px] bg-mask-60-1 px-2.5 py-[30px] text-center backdrop-blur-sm"
+        :class="result === 'success' ? 'text-theme-primary' : 'text-secondary-2'"
+      >
+        <component
+          :is="result === 'success' ? SuccessIcon : FailedIcon"
+          class="h-[50px] w-[50px] shrink-0"
+          aria-hidden="true"
+        />
+        <p class="text-[15px] font-bold leading-[18px]">
+          {{
+            t(
+              result === 'success'
+                ? 'sports.betSlip.result.placed'
+                : 'sports.betSlip.result.rejected'
+            )
+          }}
+        </p>
+      </div>
+    </div>
+  </Teleport>
   <QuickAmounts
     :model-value="editingAmounts"
     :amounts="amountDrafts"
@@ -238,7 +284,12 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref, useId, watch } from 'vue'
+import { computed, nextTick, ref, useId, watch } from 'vue'
+import { Loading } from 'vant'
+import CheckedIcon from '@/static/svg/sports/bet-slip/checked.svg'
+import UncheckedIcon from '@/static/svg/sports/bet-slip/unchecked.svg'
+import SuccessIcon from '@/static/svg/sports/bet-slip/success.svg'
+import FailedIcon from '@/static/svg/sports/bet-slip/failed.svg'
 import PopShell from '@/components/withdraw/popShell.vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import BetIcon from '@/static/svg/sports/betslip-empty.svg'
@@ -257,17 +308,7 @@ const props = defineProps<{ page: SportsPageState }>()
 const { t } = useI18n()
 const panel = ref<HTMLElement | null>(null)
 const titleId = useId()
-const {
-  selections,
-  parlays,
-  mode,
-  betSlipOpen,
-  balanceText,
-  currencySymbol,
-  potentialReturnText,
-  totalStakeText,
-  refreshing
-} = props.page
+const { betSlipOpen, balanceText, currencySymbol, refreshing } = props.page
 const {
   keyboardOpen,
   quickAmounts,
@@ -275,6 +316,8 @@ const {
   amountDrafts,
   editError,
   busy,
+  displayed,
+  result,
   activeRow,
   close,
   focusStake,
@@ -292,6 +335,11 @@ const {
   clear,
   submit
 } = useSportsH5Bet(props.page)
+const selections = computed(() => displayed.value.selections)
+const parlays = computed(() => displayed.value.parlays)
+const mode = computed(() => displayed.value.mode)
+const potentialReturnText = computed(() => displayed.value.potentialReturnText)
+const totalStakeText = computed(() => displayed.value.totalStakeText)
 let previousFocus: HTMLElement | null = null
 
 usePageScrollLock(betSlipOpen)
