@@ -512,24 +512,24 @@ const handleBack = () => {
 
 // 快捷操作
 const quickActions = computed(() => [
-  {
-    id: 'buy',
-    name: t('personalCenter.buy'),
-    icon: getIcon(3),
-    handler: () => console.log('Buy clicked')
-  },
-  {
-    id: 'swap',
-    name: t('personalCenter.swap'),
-    icon: getIcon(4),
-    handler: () => console.log('Swap clicked')
-  },
-  {
-    id: 'vault-pro',
-    name: t('personalCenter.vaultPro'),
-    icon: getIcon(5),
-    handler: () => console.log('Vault Pro clicked')
-  },
+  // {
+  //   id: 'buy',
+  //   name: t('personalCenter.buy'),
+  //   icon: getIcon(3),
+  //   handler: () => console.log('Buy clicked')
+  // },
+  // {
+  //   id: 'swap',
+  //   name: t('personalCenter.swap'),
+  //   icon: getIcon(4),
+  //   handler: () => console.log('Swap clicked')
+  // },
+  // {
+  //   id: 'vault-pro',
+  //   name: t('personalCenter.vaultPro'),
+  //   icon: getIcon(5),
+  //   handler: () => console.log('Vault Pro clicked')
+  // },
   {
     id: 'transaction',
     name: t('personalCenter.transaction'),

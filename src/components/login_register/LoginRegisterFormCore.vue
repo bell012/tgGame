@@ -191,7 +191,7 @@ const formData = ref({
   signin: {
     account: savedSigninCredentials.account,
     password: savedSigninCredentials.password,
-    rememberMe: Boolean(savedSigninCredentials.account || savedSigninCredentials.password)
+    rememberMe: Boolean(savedSigninCredentials.password)
   },
   // 注册表单
   signup: {
@@ -229,9 +229,7 @@ const setActiveTab = (tab: 'signin' | 'signup') => {
     const savedCredentials = getSavedSigninCredentials()
     formData.value.signin.account = savedCredentials.account
     formData.value.signin.password = savedCredentials.password
-    formData.value.signin.rememberMe = Boolean(
-      savedCredentials.account || savedCredentials.password
-    )
+    formData.value.signin.rememberMe = Boolean(savedCredentials.password)
   } else {
     formData.value.signup.account = ''
     formData.value.signup.code = ''
@@ -386,7 +384,7 @@ const handleLogin = async () => {
         setRememberedStorageValue(REMEMBERED_ACCOUNT_STORAGE_KEY, formData.value.signin.account)
         setRememberedStorageValue(REMEMBERED_PASSWORD_STORAGE_KEY, formData.value.signin.password)
       } else {
-        localStorage.removeItem(REMEMBERED_ACCOUNT_STORAGE_KEY)
+        setRememberedStorageValue(REMEMBERED_ACCOUNT_STORAGE_KEY, formData.value.signin.account)
         localStorage.removeItem(REMEMBERED_PASSWORD_STORAGE_KEY)
       }
       try {
@@ -509,7 +507,7 @@ const resetForm = () => {
   // 重置登录表单
   formData.value.signin.account = savedCredentials.account
   formData.value.signin.password = savedCredentials.password
-  formData.value.signin.rememberMe = Boolean(savedCredentials.account || savedCredentials.password)
+  formData.value.signin.rememberMe = Boolean(savedCredentials.password)
 
   // 重置注册表单
   formData.value.signup.account = ''
