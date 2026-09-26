@@ -55,8 +55,21 @@
       @cancel-reply="cancelReply"
       @emoji-select="handleEmojiSelect"
       @emoji-delete="handleEmojiDelete"
-      @photo="handleMediaUpload"
-      @camera="handleMediaUpload"
+      @photo="openMediaPreview"
+      @camera="openMediaPreview"
+      @view-image="openImageViewer"
+    />
+
+    <!-- PC 端批量媒体发送预览。 -->
+    <ChatImagePreview
+      v-if="pcPreviewImage || pendingMediaFiles.length"
+      :src="pcPreviewImage"
+      :media-files="pendingMediaFiles"
+      :mode="pcPreviewImage ? 'viewer' : 'compose'"
+      display-mode="pc"
+      @close="closeMediaPreview"
+      @remove="removePendingMedia"
+      @send="sendPendingMedia"
     />
 
     <!-- PC 端红包领取成功提示。 -->
@@ -86,6 +99,7 @@ import type { AutoReplyItem } from '@/api/interface/chat'
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import ChatImagePreview from './components/chat-image-preview.vue'
 import ConversationList from './components/conversation-list.vue'
 import ConversationView from './components/conversation-view.vue'
 import QuickIssueSheet from './components/quick-issue-sheet.vue'
@@ -136,6 +150,8 @@ const {
 
 const quickIssueVisible = ref(false)
 const activeIssue = ref<QuickIssue | null>(null)
+const pendingMediaFiles = ref<File[]>([])
+const pcPreviewImage = ref('')
 
 /** 选择 PC 客服后读取缓存并建立当前客服的 Socket 连接。 */
 const handleConversationSelect = async (conversation: ConversationItem) => {
@@ -221,11 +237,38 @@ const handleEmojiDelete = () => {
   mode.value = 'emoji'
 }
 
-/** 上传 PC 端选择的图片或视频，并使用上传结果发送对应的 Socket 消息。 */
-const handleMediaUpload = async (file: File) => {
-  const sent = await sendMediaFile(file)
-  if (sent) {
-    mode.value = 'idle'
+/** 打开 PC 端多张图片或视频的发送预览，用户确认后再上传。 */
+const openMediaPreview = (files: File[]) => {
+  pendingMediaFiles.value = files.slice(0, 9)
+  pcPreviewImage.value = ''
+}
+
+/** 关闭 PC 媒体发送预览，并清空尚未发送的文件。 */
+const closeMediaPreview = () => {
+  pendingMediaFiles.value = []
+  pcPreviewImage.value = ''
+  mode.value = 'idle'
+}
+
+/** 打开 PC 会话历史中图片消息的预览弹窗。 */
+const openImageViewer = (message: ChatMessage) => {
+  if (!message.image) return
+  pendingMediaFiles.value = []
+  pcPreviewImage.value = message.image
+}
+
+/** 从 PC 待发送媒体列表中移除用户取消的文件。 */
+const removePendingMedia = (index: number) => {
+  pendingMediaFiles.value.splice(index, 1)
+  if (!pendingMediaFiles.value.length) closeMediaPreview()
+}
+
+/** 依次上传并发送 PC 端用户确认的媒体文件。 */
+const sendPendingMedia = async () => {
+  const files = [...pendingMediaFiles.value]
+  closeMediaPreview()
+  for (const file of files) {
+    await sendMediaFile(file)
   }
   scrollToBottom()
 }

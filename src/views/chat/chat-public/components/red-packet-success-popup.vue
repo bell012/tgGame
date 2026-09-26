@@ -64,7 +64,7 @@
           :class="props.displayMode === 'pc' ? '-bottom-[42px]' : '-bottom-[40px]'"
           @click="$emit('close')"
         >
-          <span aria-hidden="true">×</span>
+          <redPacketClose aria-hidden="true" />
         </button>
       </section>
     </div>
@@ -74,10 +74,10 @@
 <script setup lang="ts">
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import redPacketSuccessImage from '@/static/img/chat/public/red-packet-success.png'
+import redPacketClose from '@/static/svg/chat/public/red-packet-close.svg?component'
 import { getCurrencySymbol } from '@/utils/locale'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-
 const props = withDefaults(defineProps<{ amount: string | number; displayMode?: 'h5' | 'pc' }>(), {
   displayMode: 'h5'
 })

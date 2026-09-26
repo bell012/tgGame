@@ -193,6 +193,8 @@
     "noSearchResults": "未找到相关内容。",
     "noMore": "没有更多内容了",
     "imagePreview": "{current}/{total}",
+    "photoPreview": "图片预览",
+    "download": "下载",
     "sendImage": "{current} / {total}",
     "close": "关闭"
   },

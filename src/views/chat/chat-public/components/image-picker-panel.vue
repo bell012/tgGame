@@ -8,7 +8,13 @@
           <AlbumIcon class="size-[26px]" />
         </span>
         <span class="text-[12px] text-text-1">{{ t('chatPublic.photo') }}</span>
-        <input class="hidden" type="file" accept="image/*,video/*" @change="handlePhotoChange" />
+        <input
+          class="hidden"
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          @change="handlePhotoChange"
+        />
       </label>
       <label class="flex w-[60px] flex-col items-center gap-[10px]">
         <span class="flex size-[60px] items-center justify-center rounded-[10px] bg-bg-2">
@@ -20,6 +26,7 @@
           type="file"
           accept="image/*,video/*"
           capture="environment"
+          multiple
           @change="handleCameraChange"
         />
       </label>
@@ -34,25 +41,27 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
-const emit = defineEmits<{ photo: [file: File]; camera: [file: File] }>()
+const emit = defineEmits<{ photo: [files: File[]]; camera: [files: File[]] }>()
 
-/** 提取文件选择控件中的首个图片或视频文件并重置控件值。 */
+const MAX_MEDIA_COUNT = 9
+
+/** 提取最多九个图片或视频文件，并在读取后重置选择控件。 */
 const getSelectedMedia = (event: Event) => {
   const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
+  const files = Array.from(input.files ?? []).slice(0, MAX_MEDIA_COUNT)
   input.value = ''
-  return file
+  return files
 }
 
-/** 将本地相册选中的图片或视频向上交由运行时上传。 */
+/** 将本地相册选中的多张图片或视频向上交由预览页确认。 */
 const handlePhotoChange = (event: Event) => {
-  const file = getSelectedMedia(event)
-  if (file) emit('photo', file)
+  const files = getSelectedMedia(event)
+  if (files.length) emit('photo', files)
 }
 
-/** 将相机拍摄的图片或视频向上交由运行时上传。 */
+/** 将相机拍摄或选择的多张图片或视频向上交由预览页确认。 */
 const handleCameraChange = (event: Event) => {
-  const file = getSelectedMedia(event)
-  if (file) emit('camera', file)
+  const files = getSelectedMedia(event)
+  if (files.length) emit('camera', files)
 }
 </script>

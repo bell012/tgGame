@@ -57,8 +57,8 @@
         @cancel-reply="cancelReply"
         @emoji-select="handleEmojiSelect"
         @emoji-delete="handleEmojiDelete"
-        @photo="handleMediaUpload"
-        @camera="handleMediaUpload"
+        @photo="openMediaPreview"
+        @camera="openMediaPreview"
         @view-image="openImageViewer"
       />
 
@@ -88,10 +88,13 @@
     />
     <!-- 图片预览覆盖层。 -->
     <ChatImagePreview
-      v-if="previewImage"
+      v-if="previewImage || pendingMediaFiles.length"
       :src="previewImage"
+      :media-files="pendingMediaFiles"
       :mode="previewMode"
       @close="closeImagePreview"
+      @remove="removePendingMedia"
+      @send="sendPendingMedia"
     />
   </div>
 </template>
@@ -157,6 +160,7 @@ const activeIssue = ref<QuickIssue | null>(null)
 const searchVisible = ref(false)
 const previewImage = ref('')
 const previewMode = ref<'compose' | 'viewer'>('viewer')
+const pendingMediaFiles = ref<File[]>([])
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
 
 /** 在消息新增或切换会话后，将消息区域滚动到最底部。 */
@@ -201,6 +205,7 @@ const handleRetryMessage = (message: ChatMessage) => {
 /** 查看会话中的图片消息。 */
 const openImageViewer = (message: ChatMessage) => {
   if (!message.image) return
+  pendingMediaFiles.value = []
   previewMode.value = 'viewer'
   previewImage.value = message.image
 }
@@ -208,14 +213,29 @@ const openImageViewer = (message: ChatMessage) => {
 /** 关闭图片预览并恢复当前会话。 */
 const closeImagePreview = () => {
   previewImage.value = ''
+  pendingMediaFiles.value = []
   mode.value = 'idle'
 }
 
-/** 上传图片或视频并在服务端确认媒体地址后发送对应的 Socket 消息。 */
-const handleMediaUpload = async (file: File) => {
-  const sent = await sendMediaFile(file)
-  if (sent) {
-    mode.value = 'idle'
+/** 打开多张图片或视频的发送预览，并等待用户确认后再上传。 */
+const openMediaPreview = (files: File[]) => {
+  pendingMediaFiles.value = files.slice(0, 9)
+  previewImage.value = ''
+  previewMode.value = 'compose'
+}
+
+/** 从待发送媒体列表中移除用户取消的文件。 */
+const removePendingMedia = (index: number) => {
+  pendingMediaFiles.value.splice(index, 1)
+  if (!pendingMediaFiles.value.length) closeImagePreview()
+}
+
+/** 依次上传并发送用户确认的图片或视频，保证消息显示顺序与选择顺序一致。 */
+const sendPendingMedia = async () => {
+  const files = [...pendingMediaFiles.value]
+  closeImagePreview()
+  for (const file of files) {
+    await sendMediaFile(file)
   }
   scrollToBottom()
 }

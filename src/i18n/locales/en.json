@@ -193,6 +193,8 @@
     "noSearchResults": "No results found.",
     "noMore": "No more for now",
     "imagePreview": "{current}/{total}",
+    "photoPreview": "Photo Preview",
+    "download": "Download",
     "sendImage": "{current} / {total}",
     "close": "Close"
   },

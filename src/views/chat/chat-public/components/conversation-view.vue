@@ -134,8 +134,8 @@ defineEmits<{
   'cancel-reply': []
   'emoji-select': [emoji: string]
   'emoji-delete': []
-  photo: [file: File]
-  camera: [file: File]
+  photo: [files: File[]]
+  camera: [files: File[]]
   'view-image': [message: ChatMessage]
 }>()
 
