@@ -15,11 +15,13 @@
       @keydown.stop="onKeydown"
     >
       <header class="relative flex h-12 shrink-0 items-center justify-center bg-bg-2 px-12">
-        <h2 :id="titleId" class="text-center text-base font-bold">Edit Quick Bet Amounts</h2>
+        <h2 :id="titleId" class="text-center text-base font-bold">
+          {{ t('sports.betSlip.editQuickAmounts') }}
+        </h2>
         <button
           type="button"
           class="absolute right-3.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-md border border-solid border-transparent bg-opacity-10 text-text-1"
-          aria-label="Close quick bet amounts"
+          :aria-label="t('sports.betSlip.closeQuickAmounts')"
           @click="close"
         >
           <CloseIcon class="h-2.5 w-2.5" aria-hidden="true" />
@@ -29,11 +31,13 @@
         class="min-h-0 overflow-y-auto overscroll-contain px-3.5 pb-[calc(40px+env(safe-area-inset-bottom))] pt-5"
       >
         <div class="flex items-center justify-between gap-2 leading-[17px]">
-          <h3 class="text-sm font-normal leading-[17px]">Custom Order</h3>
-          <p class="text-[13px] leading-[17px] text-theme-primary">Press and hold to drag</p>
+          <h3 class="text-sm font-normal leading-[17px]">{{ t('sports.betSlip.customOrder') }}</h3>
+          <p class="text-[13px] leading-[17px] text-theme-primary">
+            {{ t('sports.betSlip.dragHint') }}
+          </p>
         </div>
         <p :id="helpId" class="sr-only">
-          Use the arrow up and arrow down keys on a drag handle to reorder amounts.
+          {{ t('sports.betSlip.keyboardReorderHint') }}
         </p>
         <ul ref="list" class="mt-2.5 flex flex-col gap-2.5">
           <li
@@ -59,8 +63,8 @@
                 maxlength="10"
                 autocomplete="off"
                 class="h-full min-w-0 flex-1 border-0 border-solid bg-transparent p-0 text-[15px] font-bold text-inherit caret-theme-primary outline-none placeholder:text-xs placeholder:font-normal placeholder:text-text-3"
-                placeholder="Enter a quick bet amount"
-                :aria-label="`Quick bet amount ${index + 1}`"
+                :placeholder="t('sports.betSlip.quickAmountPlaceholder')"
+                :aria-label="t('sports.betSlip.quickAmountLabel', { count: index + 1 })"
                 :aria-invalid="Boolean(props.error)"
                 :aria-describedby="props.error ? errorId : undefined"
                 :disabled="props.disabled"
@@ -71,7 +75,7 @@
               type="button"
               class="flex h-[30px] w-[30px] shrink-0 touch-none select-none items-center justify-center rounded-md border border-solid border-transparent bg-bg-2 text-text-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
               :class="dragIndex === index ? 'cursor-grabbing' : 'cursor-grab'"
-              :aria-label="`Reorder quick bet amount ${index + 1}`"
+              :aria-label="t('sports.betSlip.reorderQuickAmount', { count: index + 1 })"
               :aria-describedby="helpId"
               :data-handle-index="index"
               :disabled="props.disabled"
@@ -104,7 +108,7 @@
           :disabled="props.disabled"
           @click="emit('save')"
         >
-          Save
+          {{ t('sports.betSlip.save') }}
         </button>
       </div>
     </section>
@@ -113,6 +117,7 @@
 
 <script setup lang="ts">
 import { nextTick, onScopeDispose, ref, useId, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import PopShell from '@/components/withdraw/popShell.vue'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import CloseIcon from '@/static/svg/close.svg'
@@ -127,6 +132,7 @@ const props = withDefaults(
   }>(),
   { disabled: false }
 )
+const { t } = useI18n()
 const emit = defineEmits<{
   'update:modelValue': [opened: boolean]
   'update-amount': [index: number, value: string]
@@ -161,7 +167,7 @@ const reorder = (fromIndex: number, toIndex: number) => {
   next.splice(toIndex, 0, moved)
   rowIds.value = next
   emit('reorder', fromIndex, toIndex)
-  reorderNotice.value = `Quick bet amount moved to position ${toIndex + 1}.`
+  reorderNotice.value = t('sports.betSlip.quickAmountMoved', { count: toIndex + 1 })
 }
 
 const stopDrag = () => {

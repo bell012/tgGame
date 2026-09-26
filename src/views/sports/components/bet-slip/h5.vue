@@ -19,12 +19,20 @@
     >
       <header class="flex h-12 shrink-0 items-center gap-2 bg-bg-2 px-[13.333px]">
         <h2 :id="titleId" class="min-w-0 flex-1 truncate text-base font-bold">
-          {{ !selections.length ? 'Bet Slip' : mode === 'single' ? 'Single Bet' : 'Parlay Bet' }}
+          {{
+            t(
+              !selections.length
+                ? 'sports.betSlip.title'
+                : mode === 'single'
+                  ? 'sports.betSlip.singleBet'
+                  : 'sports.betSlip.parlayBet'
+            )
+          }}
         </h2>
         <button
           type="button"
           class="flex h-[30.333px] min-w-0 items-center gap-2 rounded-full bg-bg-5 px-2 text-[15px] font-bold"
-          :aria-label="`Refresh balance, ${balanceText}`"
+          :aria-label="t('sports.betSlip.refreshBalanceWithAmount', { amount: balanceText })"
           :disabled="refreshing || busy"
           @click="props.page.refreshBalance"
         >
@@ -38,7 +46,7 @@
         <button
           type="button"
           class="sr-only text-text-2 focus:not-sr-only focus:absolute focus:right-3 focus:rounded-lg focus:bg-bg-5 focus:p-2"
-          aria-label="Close Bet Slip"
+          :aria-label="t('sports.betSlip.close')"
           @click="close"
         >
           <CloseIcon class="h-3 w-3" aria-hidden="true" />
@@ -57,14 +65,14 @@
             class="flex min-h-[180px] flex-col items-center justify-center gap-3 px-4 text-center"
           >
             <BetIcon class="h-16 w-16 text-theme-primary" aria-hidden="true" />
-            <p class="text-sm font-bold">Place Your Bets</p>
-            <p class="text-xs text-text-2">Your selections will appear here.</p>
+            <p class="text-sm font-bold">{{ t('sports.betSlip.emptyTitle') }}</p>
+            <p class="text-xs text-text-2">{{ t('sports.betSlip.emptyDescription') }}</p>
             <button
               type="button"
               class="h-9 rounded-full bg-theme-3 px-5 text-sm text-theme-primary"
               @click="addEvent"
             >
-              Add Event
+              {{ t('sports.betSlip.addEvent') }}
             </button>
           </div>
           <template v-else>
@@ -101,7 +109,7 @@
                     class="min-w-0 flex-1"
                     :value="parlay.stake"
                     :currency-symbol="currencySymbol"
-                    :label="`Stake for ${parlay.label}`"
+                    :label="t('sports.betSlip.stakeFor', { selection: parlay.label })"
                     :active="keyboardOpen && activeRow?.id === parlay.id"
                     :error="parlay.stakeError ?? ''"
                     :placeholder="parlay.limitText"
@@ -139,7 +147,8 @@
                 :disabled="busy"
                 @click="addEvent"
               >
-                <span class="text-2xl leading-none" aria-hidden="true">+</span> Add Event
+                <span class="text-2xl leading-none" aria-hidden="true">+</span>
+                {{ t('sports.betSlip.addEvent') }}
               </button>
             </div>
           </template>
@@ -164,7 +173,7 @@
         >
           <div class="flex items-center justify-between gap-2 text-xs">
             <p class="min-w-0 text-text-2">
-              To Win
+              {{ t('sports.betSlip.toWin') }}
               <span class="ml-1 break-all font-bold tabular-nums text-theme-primary">{{
                 potentialReturnText
               }}</span>
@@ -178,7 +187,7 @@
               :disabled="busy || editingAmounts"
               @click="changeMode"
             >
-              {{ mode === 'single' ? 'Add to Parlay' : 'Single Bet' }}
+              {{ t(mode === 'single' ? 'sports.betSlip.addToParlay' : 'sports.betSlip.singleBet') }}
             </button>
             <button
               type="button"
@@ -191,7 +200,7 @@
               <RefreshIcon v-if="busy" class="h-4 w-4 animate-spin" aria-hidden="true" />
               <span v-if="busy" class="font-bold">{{ t('sports.betSubmitting') }}</span>
               <span v-else class="min-w-0 text-center leading-4"
-                >Total Stake :
+                >{{ t('sports.betSlip.totalStake') }}
                 <strong class="whitespace-nowrap text-[15px]">{{ totalStakeText }}</strong></span
               >
             </button>
@@ -199,7 +208,7 @@
               v-if="mode === 'parlay'"
               type="button"
               class="flex h-[44.667px] w-[44.667px] shrink-0 items-center justify-center rounded-full bg-theme-3 text-theme-primary disabled:opacity-50"
-              aria-label="Clear Bet Slip"
+              :aria-label="t('sports.betSlip.clear')"
               :disabled="busy"
               @click="clear"
             >

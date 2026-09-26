@@ -19,7 +19,6 @@ import { mapSportsMatches } from '../../shared/match'
 import { MAX_SELECTIONS, parseSportsStake, moneyRound } from './shared'
 import { useBetInfo } from './useBetInfo'
 import type { BetInfoSource } from './useBetInfo'
-import { comboLabel } from './bet-info'
 import { getPlaceBetFailure, getPlaceBetResult, toPlaceBetSelection } from './place-bet'
 import type { BetSubmissionState } from './place-bet'
 
@@ -50,6 +49,12 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     sportsBalanceError
   } = storeToRefs(sportsStore)
   const { t } = useI18n()
+  const comboLabel = (combo: number, count: number) => {
+    if (combo >= 9 && combo <= 17) return t('sports.betSlip.fold', { count: combo - 7 })
+    if (combo >= 1 && combo <= 8) return t(`sports.betSlip.systems.${combo}`)
+    if (combo === 18) return t('sports.betSlip.fold', { count })
+    return t('sports.betSlip.combo', { count: combo })
+  }
   const { requireLogin } = useRequireLoginAction()
   const { currentCurrencyCode } = useDisplayCurrency()
   const betSlipOpen = ref(false)

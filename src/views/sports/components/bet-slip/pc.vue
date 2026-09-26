@@ -3,7 +3,7 @@
     class="fixed bottom-0 right-6 z-30 flex max-h-[min(915px,calc(100dvh-84px))] w-[390px] max-w-[calc(100vw-48px)] flex-col overflow-hidden rounded-t-lg bg-bg-1 font-inter text-text-1 shadow-2xl 2xl:right-[120px]"
     data-testid="sports-betslip"
     :data-state="panelState"
-    aria-label="Bet Slip"
+    :aria-label="t('sports.betSlip.title')"
     @keydown.esc.stop="collapse"
   >
     <header
@@ -12,12 +12,12 @@
       <button
         type="button"
         class="flex h-full min-w-0 flex-1 items-center text-left text-lg font-bold leading-[22px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-4"
-        :aria-label="props.open ? 'Collapse Bet Slip' : 'Expand Bet Slip'"
+        :aria-label="t(props.open ? 'sports.betSlip.collapse' : 'sports.betSlip.expand')"
         :aria-expanded="props.open"
         :aria-controls="panelId"
         @click="emit('toggle')"
       >
-        <span class="truncate">Bet Slip</span>
+        <span class="truncate">{{ t('sports.betSlip.title') }}</span>
         <span class="flex h-[30px] w-[30px] shrink-0 items-center justify-center">
           <CaretIcon
             class="h-3 w-3 transition-transform"
@@ -35,7 +35,7 @@
       <button
         type="button"
         class="flex h-[30px] w-[18px] shrink-0 items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-4 disabled:cursor-wait"
-        aria-label="Refresh balance"
+        :aria-label="t('sports.betSlip.refreshBalance')"
         :disabled="props.refreshing"
         @click="emit('refresh')"
       >
@@ -55,9 +55,9 @@
         >
           <BetIcon class="h-[84px] w-[84px] shrink-0 text-theme-primary" aria-hidden="true" />
           <div class="w-[143px] min-w-0">
-            <p class="text-[13px] font-extrabold leading-4">Place Your Bets</p>
+            <p class="text-[13px] font-extrabold leading-4">{{ t('sports.betSlip.emptyTitle') }}</p>
             <p class="mt-1.5 text-xs leading-[15px] text-text-2">
-              Your selections will appear here
+              {{ t('sports.betSlip.emptyDescription') }}
             </p>
           </div>
         </div>
@@ -75,7 +75,9 @@
               <button
                 type="button"
                 class="flex w-9 shrink-0 items-center justify-center bg-bg-4 text-text-2 hover:text-text-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
-                :aria-label="`Remove ${selection.selection}`"
+                :aria-label="
+                  t('sports.betSlip.removeSelection', { selection: selection.selection })
+                "
                 @click="emit('remove', selection.id)"
               >
                 <CloseIcon class="h-[18px] w-[18px]" aria-hidden="true" />
@@ -115,7 +117,8 @@
                   :class="{ 'min-h-[46px]': props.mode === 'single' }"
                 >
                   <span>{{ selection.homeTeam }}</span
-                  ><span>VS</span><span>{{ selection.awayTeam }}</span>
+                  ><span>{{ t('sports.betSlip.versus') }}</span
+                  ><span>{{ selection.awayTeam }}</span>
                 </div>
                 <p class="mt-[9px] break-words text-sm leading-5 text-text-2">
                   {{ selection.league }}
@@ -136,7 +139,7 @@
                   class="mt-3"
                   :value="selection.stake"
                   :currency-symbol="props.currencySymbol"
-                  :label="`Stake for ${selection.selection}`"
+                  :label="t('sports.betSlip.stakeFor', { selection: selection.selection })"
                   :error="selection.stakeError"
                   :placeholder="selection.limitText"
                   :disabled="Boolean(selection.submissionState)"
@@ -174,7 +177,7 @@
                     class="flex-1"
                     :value="parlay.stake"
                     :currency-symbol="props.currencySymbol"
-                    :label="`Stake for ${parlay.label}`"
+                    :label="t('sports.betSlip.stakeFor', { selection: parlay.label })"
                     :error="parlay.stakeError"
                     :placeholder="parlay.limitText"
                     :disabled="Boolean(parlay.submissionState)"
@@ -218,12 +221,14 @@
           >
             {{ amount }}
           </button>
-          <button type="button" :class="quickEditClass" @click="editingAmounts = true">Edit</button>
+          <button type="button" :class="quickEditClass" @click="editingAmounts = true">
+            {{ t('sports.betSlip.edit') }}
+          </button>
         </div>
 
         <div v-if="props.selections.length" class="shrink-0 px-3 pb-[18px] pt-[17px]">
           <div class="flex min-h-5 items-center justify-between gap-3 text-sm leading-5">
-            <span class="text-text-2">Winnings</span>
+            <span class="text-text-2">{{ t('sports.betSlip.winnings') }}</span>
             <span class="min-w-0 break-all text-right font-bold tabular-nums">
               {{ props.potentialReturnText }}
             </span>
@@ -239,7 +244,8 @@
               {{ t('sports.betSubmitting') }}
             </span>
             <template v-else
-              ><span>Place Bet:</span><span>{{ props.totalStakeText }}</span></template
+              ><span>{{ t('sports.betSlip.placeBet') }}</span
+              ><span>{{ props.totalStakeText }}</span></template
             >
           </button>
           <button
@@ -247,7 +253,9 @@
             class="mt-3 min-h-[49px] w-full rounded-full bg-bg-2 px-4 py-3 text-sm font-bold text-text-2 hover:bg-bg-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
             @click="emit('mode', props.mode === 'single' ? 'parlay' : 'single')"
           >
-            {{ props.mode === 'single' ? 'Add to Acca' : 'Single Bets' }}
+            {{
+              t(props.mode === 'single' ? 'sports.betSlip.addToAcca' : 'sports.betSlip.singleBets')
+            }}
           </button>
         </div>
 
@@ -256,7 +264,7 @@
             v-if="props.selections.length"
             type="button"
             class="flex h-[42px] w-[60px] shrink-0 items-center justify-center rounded-xl bg-bg-2 text-text-2 hover:bg-bg-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
-            aria-label="Clear Bet Slip"
+            :aria-label="t('sports.betSlip.clear')"
             @click="emit('clear')"
           >
             <ClearIcon class="h-6 w-6" aria-hidden="true" />
@@ -270,7 +278,7 @@
             @click="oddsSettingsOpen = !oddsSettingsOpen"
           >
             <SettingsIcon class="h-6 w-6 shrink-0" aria-hidden="true" />
-            Odds Settings
+            {{ t('sports.betSlip.oddsSettings') }}
           </button>
         </footer>
         <p

@@ -17,7 +17,13 @@
         @{{ props.selection.odds.toFixed(2) }}
         <span
           v-if="!props.single && props.selection.trend"
-          :aria-label="props.selection.trend === 'up' ? 'Odds increased' : 'Odds decreased'"
+          :aria-label="
+            t(
+              props.selection.trend === 'up'
+                ? 'sports.betSlip.oddsIncreased'
+                : 'sports.betSlip.oddsDecreased'
+            )
+          "
           >{{ props.selection.trend === 'up' ? '↑' : '↓' }}</span
         >
       </span>
@@ -25,14 +31,18 @@
     <p
       class="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-xs font-medium leading-[15px] text-theme-primary"
     >
-      <span v-if="props.selection.live" class="text-secondary-7">Live</span>
+      <span v-if="props.selection.live" class="text-secondary-7">{{
+        t('sports.betSlip.live')
+      }}</span>
       <span v-if="props.selection.live" class="h-3 w-px bg-opacity-10" aria-hidden="true" />
       <span>{{ props.selection.marketTitle }}</span>
       <span class="h-3 w-px bg-opacity-10" aria-hidden="true" />
       <span>{{ oddsLabel }}</span>
     </p>
     <div class="mt-2 flex flex-col gap-1.5 break-words text-xs leading-[15px] text-text-2">
-      <p>{{ props.selection.homeTeam }} <span class="ml-1">VS</span></p>
+      <p>
+        {{ props.selection.homeTeam }} <span class="ml-1">{{ t('sports.betSlip.versus') }}</span>
+      </p>
       <p>{{ props.selection.awayTeam }}</p>
     </div>
     <div class="mt-2 flex items-center justify-between gap-2">
@@ -40,7 +50,12 @@
       <button
         type="button"
         class="-my-1 flex h-6 w-6 shrink-0 items-center justify-center text-text-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
-        :aria-label="`Remove ${props.selection.selection} from ${props.selection.fixture}`"
+        :aria-label="
+          t('sports.betSlip.removeSelectionFrom', {
+            selection: props.selection.selection,
+            fixture: props.selection.fixture
+          })
+        "
         :disabled="props.disabled"
         @click="emit('remove')"
       >
@@ -59,7 +74,7 @@
       class="mt-2.5"
       :value="props.selection.stake"
       :currency-symbol="props.currencySymbol"
-      :label="`Stake for ${props.selection.selection}`"
+      :label="t('sports.betSlip.stakeFor', { selection: props.selection.selection })"
       :active="props.active"
       :placeholder="props.selection.limitText"
       :error="props.selection.stakeError ?? ''"

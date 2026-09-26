@@ -119,12 +119,12 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     }
     const amounts = amountDrafts.value.map(parseSportsStake)
     if (amounts.some(value => value === null || value <= 0 || value > balance)) {
-      editError.value = 'Enter four positive amounts within your balance.'
+      editError.value = t('sports.betSlip.quickAmountsWithinBalance')
       return
     }
     const validAmounts = amounts.filter((value): value is number => value !== null)
     if (validAmounts.length !== 4 || new Set(validAmounts).size !== 4) {
-      editError.value = 'Enter four different quick amounts.'
+      editError.value = t('sports.betSlip.quickAmountsUnique')
       return
     }
     quickAmounts.value = validAmounts

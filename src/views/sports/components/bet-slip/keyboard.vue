@@ -6,7 +6,7 @@
         :key="index"
         type="button"
         class="h-full min-w-0 shrink-0 grow basis-[calc((100%_-_20px)/6)] truncate rounded-lg border border-solid border-transparent bg-bg-3 px-0.5 text-[15px] tabular-nums text-theme-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
-        :aria-label="`Set stake to ${amount}`"
+        :aria-label="t('sports.betSlip.setStake', { amount })"
         :aria-pressed="props.value === amount"
         :disabled="props.disabled"
         @click="emit('amount', index)"
@@ -19,7 +19,7 @@
         :disabled="props.disabled"
         @click="emit('edit')"
       >
-        Edit
+        {{ t('sports.betSlip.edit') }}
       </button>
     </div>
     <div class="mt-[5px] grid grid-cols-4 grid-rows-4 gap-1">
@@ -30,7 +30,7 @@
         class="h-[36.667px] min-w-0 rounded-lg border border-solid border-transparent bg-bg-3 text-lg font-semibold text-text-1 active:bg-bg-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
         :style="{ gridRow: key.row, gridColumn: key.column }"
         :disabled="props.disabled"
-        :aria-label="key.label === '.' ? 'Decimal point' : key.label"
+        :aria-label="key.label === '.' ? t('sports.betSlip.decimalPoint') : key.label"
         @click="emit('key', key.label)"
       >
         {{ key.label }}
@@ -41,12 +41,12 @@
         :disabled="props.disabled"
         @click="emit('max')"
       >
-        Max
+        {{ t('sports.betSlip.max') }}
       </button>
       <button
         type="button"
         class="col-start-4 row-span-2 row-start-2 flex items-center justify-center rounded-lg border border-solid border-transparent bg-bg-3 text-text-1"
-        aria-label="Delete last digit"
+        :aria-label="t('sports.betSlip.deleteDigit')"
         :disabled="props.disabled"
         @click="emit('key', 'delete')"
       >
@@ -63,7 +63,7 @@
       <button
         type="button"
         class="col-start-4 row-start-4 flex items-center justify-center rounded-lg border border-solid border-transparent bg-bg-3 text-text-1"
-        aria-label="Hide keyboard"
+        :aria-label="t('sports.betSlip.hideKeyboard')"
         :disabled="props.disabled"
         @click="emit('hide')"
       >
@@ -90,6 +90,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 const props = defineProps<{
   amounts: string[]
   value: string

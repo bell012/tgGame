@@ -2,7 +2,7 @@
   <div
     class="pointer-events-none fixed bottom-[calc(88.333px+env(safe-area-inset-bottom))] right-[calc(14px+env(safe-area-inset-right))] z-30 flex flex-col gap-2 font-inter"
     role="group"
-    aria-label="Betting shortcuts"
+    :aria-label="t('sports.betSlip.shortcuts')"
     data-testid="sports-floating"
   >
     <button
@@ -30,12 +30,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import HistoryIcon from '@/static/svg/sports/float-history.svg?component'
 import BetSlipIcon from '@/static/svg/sports/float-betslip.svg?component'
 
 const props = withDefaults(defineProps<{ betCount: number; historyCount?: number }>(), {
   historyCount: 0
 })
+const { t } = useI18n()
 const emit = defineEmits<{ select: [entry: 'history' | 'bet-slip'] }>()
 
 const entries = computed(() => [
@@ -44,13 +46,15 @@ const entries = computed(() => [
     icon: HistoryIcon,
     count: props.historyCount,
     label:
-      props.historyCount > 0 ? `Betting History, ${props.historyCount} records` : 'Betting History'
+      props.historyCount > 0
+        ? t('sports.betSlip.historyCount', { count: props.historyCount })
+        : t('sports.betSlip.history')
   },
   {
     key: 'bet-slip' as const,
     icon: BetSlipIcon,
     count: props.betCount,
-    label: `Bet Slip, ${props.betCount} selections`
+    label: t('sports.betSlip.selectionCount', { count: props.betCount })
   }
 ])
 </script>

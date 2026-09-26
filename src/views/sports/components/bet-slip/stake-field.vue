@@ -10,7 +10,7 @@
             ? 'border-theme-primary focus-visible:outline-theme-primary'
             : 'border-opacity-10 focus-visible:outline-theme-primary'
       "
-      :aria-label="`${props.label}: ${props.value || 'empty'}`"
+      :aria-label="`${props.label}: ${props.value || t('sports.betSlip.empty')}`"
       :aria-invalid="Boolean(props.error)"
       :data-stake-active="props.active"
       :disabled="props.disabled"
@@ -36,6 +36,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 const props = defineProps<{
   value: string
   currencySymbol: string

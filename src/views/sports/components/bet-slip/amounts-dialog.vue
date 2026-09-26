@@ -14,11 +14,13 @@
         :aria-labelledby="titleId"
       >
         <header class="flex h-6 items-center justify-between gap-3">
-          <h2 :id="titleId" class="text-xl font-bold leading-6">Edit Quick Bet Amounts</h2>
+          <h2 :id="titleId" class="text-xl font-bold leading-6">
+            {{ t('sports.betSlip.editQuickAmounts') }}
+          </h2>
           <button
             type="button"
             class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-opacity-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
-            aria-label="Close quick amount editor"
+            :aria-label="t('sports.betSlip.closeQuickAmounts')"
             @click="emit('close')"
           >
             <CloseIcon class="h-2.5 w-2.5" aria-hidden="true" />
@@ -26,8 +28,8 @@
         </header>
 
         <div class="mt-6 flex items-center justify-between gap-3 text-sm leading-5">
-          <span>Custom Order</span>
-          <span class="text-theme-primary">Press and hold to drag</span>
+          <span>{{ t('sports.betSlip.customOrder') }}</span>
+          <span class="text-theme-primary">{{ t('sports.betSlip.dragHint') }}</span>
         </div>
         <ol class="mt-4 flex flex-col gap-4">
           <li
@@ -54,8 +56,8 @@
               autocomplete="off"
               maxlength="10"
               class="min-w-0 flex-1 bg-transparent text-sm font-bold leading-5 outline-none placeholder:font-normal placeholder:text-text-3"
-              placeholder="Enter a quick bet amount"
-              :aria-label="`Quick bet amount ${index + 1}`"
+              :placeholder="t('sports.betSlip.quickAmountPlaceholder')"
+              :aria-label="t('sports.betSlip.quickAmountLabel', { count: index + 1 })"
               :aria-invalid="Boolean(error)"
               :aria-describedby="error ? errorId : undefined"
               @input="error = ''"
@@ -65,7 +67,7 @@
               type="button"
               draggable="true"
               class="flex h-8 w-5 shrink-0 cursor-grab flex-col justify-center gap-1.5 text-text-3 active:cursor-grabbing focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
-              :aria-label="`Reorder quick amount ${index + 1}. Use the up and down arrow keys.`"
+              :aria-label="t('sports.betSlip.reorderQuickAmountHint', { count: index + 1 })"
               @dragstart="startDrag($event, row.id)"
               @dragend="clearDrag"
               @keydown.up.prevent="moveAmount(index, index - 1)"
@@ -83,7 +85,7 @@
           class="mt-6 flex h-[49px] w-full items-center justify-center rounded-lg bg-theme-primary text-sm font-bold text-text-4 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-1"
           @click="save"
         >
-          Save
+          {{ t('sports.betSlip.save') }}
         </button>
       </section>
     </div>
@@ -92,11 +94,13 @@
 
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { parseSportsStake } from './shared'
 
 const props = defineProps<{ amounts: readonly number[]; currencySymbol: string }>()
+const { t } = useI18n()
 const emit = defineEmits<{ close: []; save: [amounts: number[]] }>()
 const titleId = useId()
 const errorId = useId()
@@ -148,12 +152,12 @@ function dropAmount(to: number) {
 function save() {
   const amounts = drafts.value.map(row => parseSportsStake(row.value))
   if (amounts.some(amount => amount === null || amount <= 0)) {
-    error.value = 'Enter four positive amounts with up to two decimal places.'
+    error.value = t('sports.betSlip.quickAmountsPositive')
     return
   }
   const values = amounts.filter((amount): amount is number => amount !== null)
   if (new Set(values).size !== values.length) {
-    error.value = 'Enter four different quick amounts.'
+    error.value = t('sports.betSlip.quickAmountsUnique')
     return
   }
   emit('save', values)

@@ -24,7 +24,7 @@
         :aria-invalid="Boolean(props.error)"
         :aria-describedby="props.error ? errorId : undefined"
         :disabled="props.disabled"
-        :placeholder="props.placeholder ?? 'Enter Amount'"
+        :placeholder="props.placeholder ?? t('sports.betSlip.enterAmount')"
         @input="handleInput"
         @focus="emit('focus')"
       />
@@ -34,7 +34,7 @@
         :disabled="props.disabled"
         @click="emit('max')"
       >
-        Max
+        {{ t('sports.betSlip.max') }}
       </button>
     </div>
     <p
@@ -50,6 +50,7 @@
 
 <script setup lang="ts">
 import { nextTick, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   value: string
@@ -60,6 +61,7 @@ const props = defineProps<{
   disabled?: boolean
 }>()
 const errorId = useId()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   update: [value: string]

@@ -18,8 +18,6 @@ export type SportsMatch = {
   awayScore: string
   cornerScore?: string
   halfTimeScore?: string
-  periodScores?: string[]
-  totalScore?: string
   home: { name: string; badge: string; redCards?: string; yellowCards?: string }
   away: { name: string; badge: string; redCards?: string; yellowCards?: string }
   live: boolean

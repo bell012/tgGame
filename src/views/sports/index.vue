@@ -27,11 +27,15 @@
       </button>
     </div>
 
-    <section v-if="liveMatches.length" class="mt-4" aria-label="Popular matches">
+    <section
+      v-if="liveMatches.length"
+      class="mt-4"
+      :aria-label="t('sports.homepage.popularMatches')"
+    >
       <div
         class="relative flex items-start gap-3 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         tabindex="0"
-        aria-label="Popular matches"
+        :aria-label="t('sports.homepage.popularMatches')"
         data-testid="sports-live-strip"
       >
         <article
@@ -114,7 +118,11 @@
     </section>
 
     <!-- 卡片展开时覆盖下方内容，保留原网格位置。 -->
-    <section ref="matchList" class="mx-5 mb-10 mt-4 scroll-mt-20" aria-label="Upcoming matches">
+    <section
+      ref="matchList"
+      class="mx-5 mb-10 mt-4 scroll-mt-20"
+      :aria-label="t('sports.homepage.upcomingMatches')"
+    >
       <p
         v-if="page.homepageLoading.value"
         class="py-4 text-center text-sm text-text-2"
@@ -158,7 +166,7 @@
       <nav
         v-if="totalPages > 1"
         class="mt-8"
-        aria-label="Match pagination"
+        :aria-label="t('sports.homepage.matchPagination')"
         data-testid="sports-pagination"
       >
         <DesktopPagination
@@ -203,6 +211,7 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
 import CommonFooter from '@/components/commonFooter.vue'
@@ -226,6 +235,7 @@ import { useSportsPage } from './index'
 import { useMatchVisibility } from './composables/useMatchVisibility'
 
 const isMobile = useIsMobile()
+const { t } = useI18n()
 const matchList = ref<HTMLElement | null>(null)
 const page = useSportsPage()
 const layoutStore = useLayoutStore()
@@ -288,8 +298,8 @@ async function changePage(page: number) {
 function showMediaPlaceholder(kind: 'video' | 'animation') {
   globalShowToast(
     kind === 'video'
-      ? 'Live video is not available in this local preview.'
-      : 'Match animation is not available in this local preview.'
+      ? t('sports.homepage.liveVideoUnavailable')
+      : t('sports.homepage.animationUnavailable')
   )
 }
 </script>

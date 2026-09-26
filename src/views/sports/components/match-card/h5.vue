@@ -13,7 +13,9 @@
             type="button"
             class="-mx-1 flex h-5 w-5 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-theme-primary disabled:cursor-wait disabled:opacity-50"
             :class="favorite ? 'text-theme-primary' : 'text-icon-1'"
-            :aria-label="favorite ? 'Remove match from favorites' : 'Add match to favorites'"
+            :aria-label="
+              favorite ? t('sports.matchCard.removeFavorite') : t('sports.matchCard.addFavorite')
+            "
             :aria-pressed="favorite"
             :aria-busy="favoritePending"
             :disabled="favoritePending"
@@ -37,7 +39,7 @@
             v-if="match.hasVideo"
             type="button"
             class="flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
-            aria-label="Watch live video"
+            :aria-label="t('sports.matchCard.watchLiveVideo')"
             @click.stop="emit('media', 'video')"
           >
             <VideoIcon class="h-2 w-[7px]" aria-hidden="true" />
@@ -46,7 +48,7 @@
             v-if="match.hasAnimation"
             type="button"
             class="flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
-            aria-label="Watch match animation"
+            :aria-label="t('sports.matchCard.watchAnimation')"
             @click.stop="emit('media', 'animation')"
           >
             <AnimationIcon class="h-2.5 w-[15px]" aria-hidden="true" />
@@ -56,7 +58,7 @@
         <div class="mt-3 grid min-h-[119px] flex-1 grid-rows-2 gap-1">
           <div v-for="team in teams" :key="team.side" class="flex min-w-0 items-center gap-2">
             <span
-              v-if="match.live && team.score !== ''"
+              v-if="totalScore"
               class="shrink-0 text-sm font-bold leading-[17px] text-theme-primary tabular-nums"
             >
               {{ team.score }}
@@ -70,13 +72,13 @@
                 <span
                   v-if="team.redCards != null"
                   class="min-w-3 rounded-sm bg-secondary-2 px-px text-center text-common-100"
-                  :aria-label="`${team.redCards} red cards`"
+                  :aria-label="t('sports.matchCard.redCards', { count: team.redCards })"
                   >{{ team.redCards }}</span
                 >
                 <span
                   v-if="team.yellowCards != null"
                   class="min-w-3 rounded-sm bg-secondary-7 px-px text-center text-common-100"
-                  :aria-label="`${team.yellowCards} yellow cards`"
+                  :aria-label="t('sports.matchCard.yellowCards', { count: team.yellowCards })"
                   >{{ team.yellowCards }}</span
                 >
               </span>
@@ -96,53 +98,36 @@
     </div>
 
     <div
-      v-if="match.live && (match.cornerScore || match.halfTimeScore)"
+      v-if="match.cornerScore || totalScore"
       class="mt-2.5 flex min-h-[15px] items-center gap-3.5 text-xs leading-[15px]"
     >
       <span
         v-if="match.cornerScore"
         class="flex items-center gap-1.5"
-        :aria-label="`Corners ${match.cornerScore}`"
+        :aria-label="t('sports.matchCard.corners', { score: match.cornerScore })"
       >
         <CornerIcon class="h-3.5 w-3.5" aria-hidden="true" />
         {{ match.cornerScore }}
       </span>
-      <span v-if="match.halfTimeScore" :aria-label="`Half-time ${match.halfTimeScore}`">
-        HT {{ match.halfTimeScore }}
-      </span>
-    </div>
-    <div
-      v-else-if="match.live && (periodScores.length || match.totalScore)"
-      class="mt-2.5 flex min-h-[15px] flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs leading-[15px]"
-    >
-      <ol
-        v-if="periodScores.length"
-        class="flex min-w-0 flex-wrap items-center gap-x-[7px] gap-y-1"
-        aria-label="Period scores"
+      <span
+        v-if="totalScore"
+        class="flex items-center gap-1 text-text-2"
+        :class="match.sportId === 1 ? '' : 'ml-auto'"
       >
-        <li
-          v-for="(score, index) in periodScores"
-          :key="`${match.id}-period-${index + 1}`"
-          class="flex items-center gap-[7px]"
-          :class="index === periodScores.length - 1 ? 'text-theme-primary' : 'text-text-1'"
-          :aria-label="`Period ${index + 1}: ${score}`"
+        <span>{{ scoreLabel }}</span>
+        <span
+          class="tabular-nums"
+          :class="match.sportId === 1 ? 'text-text-1' : 'text-theme-primary'"
+          >{{ totalScore }}</span
         >
-          <span v-if="index > 0" class="h-2.5 w-px bg-opacity-10" aria-hidden="true" />
-          {{ score }}
-        </li>
-      </ol>
-      <p v-if="match.totalScore" class="ml-auto flex shrink-0 items-center gap-[7px]">
-        Total score
-        <span class="border-l border-opacity-15 pl-[7px] text-theme-primary">{{
-          match.totalScore
-        }}</span>
-      </p>
+      </span>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
@@ -161,6 +146,7 @@ const props = defineProps<{
   favorite: boolean
   favoritePending?: boolean
 }>()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   select: [payload: OddsSelectPayload]
@@ -172,7 +158,15 @@ const teams = computed(() => [
   { ...props.match.home, side: 'home', score: props.match.homeScore },
   { ...props.match.away, side: 'away', score: props.match.awayScore }
 ])
-const periodScores = computed(() => props.match.periodScores ?? [])
+const totalScore = computed(() =>
+  /^\d+$/.test(props.match.HomeScore) && /^\d+$/.test(props.match.AwayScore)
+    ? `${props.match.HomeScore}-${props.match.AwayScore}`
+    : ''
+)
+const scoreLabel = computed(() => {
+  const phase = props.match.phase.split(/\s+/, 1)[0]
+  return props.match.sportId === 1 && phase ? phase : t('sports.matchCard.totalScore')
+})
 
 const goToEventDetails = () => {
   persistEventDetailsMatch(props.match)
