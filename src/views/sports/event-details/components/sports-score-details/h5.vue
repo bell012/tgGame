@@ -47,7 +47,18 @@
       </div>
     </div>
 
-    <div class="mt-3 flex flex-col gap-2 pr-3.5">
+    <ThemedEmptyState
+      v-if="showEmpty"
+      :dark-image="emptyImage"
+      :light-image="emptyImageLight"
+      :message="t('sports.eventDetails.noBettingMarkets')"
+      container-class="mt-6 min-h-[280px] justify-center pb-8"
+      image-class="h-[200px] w-[220px] object-contain"
+      text-class="mt-7 text-center text-[12px] font-medium leading-[18px] text-text-1"
+      data-testid="sports-score-details-h5-empty"
+    />
+
+    <div v-else class="mt-3 flex flex-col gap-2 pr-3.5">
       <article
         v-for="market in visibleMarkets"
         :key="market.id"
@@ -228,6 +239,9 @@ import type { OddsSelectPayload } from '@/views/sports/components/match-odds/typ
 import { isWagerSelected } from '@/views/sports/components/match-odds/display'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import emptyImage from '@/static/img/explore/default.png'
+import emptyImageLight from '@/static/img/explore/default_white.png'
 import lockIcon from './img/bold.svg?url'
 import doubleIcon from './img/double.svg?url'
 import downIcon from './img/down.svg?url'
@@ -238,10 +252,16 @@ import type { DualColumnMarketCard, ScoreDetailsFilterKey, ScoreDetailsMarketCar
 
 const { t } = useI18n()
 
-const props = defineProps<{
-  marketLines?: SportMarketLine[]
-  selectedWagerSelectionId?: number
-}>()
+const props = withDefaults(
+  defineProps<{
+    marketLines?: SportMarketLine[]
+    selectedWagerSelectionId?: number
+    showEmpty?: boolean
+  }>(),
+  {
+    showEmpty: false
+  }
+)
 
 const emit = defineEmits<{ pick: [payload: OddsSelectPayload] }>()
 

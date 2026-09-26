@@ -148,6 +148,7 @@ import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import { navigateTo } from '@/utils/router'
+import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
 import MatchOdds from '../match-odds/index.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
 import type { SportsMatch } from '../../shared/types'
@@ -174,13 +175,11 @@ const teams = computed(() => [
 const periodScores = computed(() => props.match.periodScores ?? [])
 
 const goToEventDetails = () => {
+  persistEventDetailsMatch(props.match)
   navigateTo('/sports/event-details', {
     query: {
       sportId: props.match.sportId,
       eventId: props.match.EventId
-    },
-    state: {
-      sportsMatch: props.match
     }
   })
 }
