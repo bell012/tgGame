@@ -126,7 +126,7 @@ export function getSportEventIndexList(
   data: GetSportEventIndexListParams,
   options?: SportsRequestOptions
 ): Promise<GetSportEventIndexListResponse> {
-  return postSport(baseUrl, 'getSportEventIndexList', data, options)
+  return postSport(baseUrl, 'getSportEventIndexList', data, options, 'site')
 }
 
 /**
@@ -165,7 +165,7 @@ export function getStatement(
   data: GetStatementParams,
   options?: SportsRequestOptions
 ): Promise<GetStatementResponse> {
-  return postSport(baseUrl, 'GetStatement', data, options)
+  return postSport(baseUrl, 'GetStatement', data, options, 'site')
 }
 
 /**
@@ -176,7 +176,7 @@ export function getBetList(
   data: GetBetListParams,
   options?: SportsRequestOptions
 ): Promise<GetBetListResponse> {
-  return postSport(baseUrl, 'GetBetList', data, options)
+  return postSport(baseUrl, 'GetBetList', data, options, 'site')
 }
 
 /** 只读：确认投注项、限额和可用组合；请求加密、响应解密均使用统一拦截器。 */
