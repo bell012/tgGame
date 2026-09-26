@@ -16,9 +16,7 @@
           <button
             type="button"
             class="flex h-8 w-[132px] items-center justify-center gap-2 rounded-lg text-xs"
-            :class="
-              mode === 'video' ? 'bg-[#3B4142] font-bold text-white' : 'font-normal text-text-2'
-            "
+            :class="mode === 'video' ? 'bg-bg-3 font-bold text-text-1' : 'font-normal text-text-2'"
             @click="mode = 'video'"
           >
             <img
@@ -34,7 +32,7 @@
             type="button"
             class="flex h-8 w-[132px] items-center justify-center gap-2 rounded-lg text-xs"
             :class="
-              mode === 'animation' ? 'bg-[#3B4142] font-bold text-white' : 'font-normal text-text-2'
+              mode === 'animation' ? 'bg-bg-3 font-bold text-text-1' : 'font-normal text-text-2'
             "
             @click="mode = 'animation'"
           >
@@ -89,7 +87,22 @@
             aria-hidden="true"
           />
         </template>
-        <img v-else class="h-full w-full object-fill" :src="videoPoster" alt="" draggable="false" />
+        <LivePlayer v-else-if="liveStreamUrl" :src="liveStreamUrl" />
+        <template v-else>
+          <img
+            class="absolute inset-0 h-full w-full object-cover"
+            :src="bgLayer1"
+            alt=""
+            draggable="false"
+            aria-hidden="true"
+          />
+          <div
+            class="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-normal text-white/70"
+            data-testid="no-video"
+          >
+            {{ t('sports.noVideo') }}
+          </div>
+        </template>
       </div>
     </section>
   </div>
@@ -97,6 +110,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useLayoutStore } from '@/stores/layout'
 import videoOnIcon from './icon/video-on.svg?url'
 import videoOffIcon from './icon/video-off.svg?url'
@@ -104,11 +118,16 @@ import animationOnIcon from './icon/animation-on.svg?url'
 import animationOffIcon from './icon/animation-off.svg?url'
 import pinOnIcon from './icon/pin-on.svg?url'
 import pinOffIcon from './icon/pin-off.svg?url'
-import videoPoster from './icon/video-poster-853dbb.png?url'
+import LivePlayer from './live-player.vue'
 import bgLayer1 from '../match-header/icon/bg-layer-1.png?url'
 import bgLayer2 from '../match-header/icon/bg-layer-2.png?url'
 import bgLayer3 from '../match-header/icon/bg-layer-3-34b3a2.png?url'
 
+defineProps<{
+  liveStreamUrl: string
+}>()
+
+const { t } = useI18n()
 const layoutStore = useLayoutStore()
 const mode = ref<'video' | 'animation'>('video')
 const pinned = ref(true)

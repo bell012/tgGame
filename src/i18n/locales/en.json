@@ -1812,6 +1812,7 @@
     "retry": "Retry",
     "noEvents": "No events available for the current filters.",
     "loadingEvents": "Loading events...",
+    "noVideo": "No video available",
     "filterTabs": {
       "rolling": "Live",
       "today": "Today",

@@ -26,7 +26,7 @@
           <MatchDetails :event="selectedEvent" :sport-id="selectedSportId" />
           <SportsScoreDetails class="mt-4" :market-lines="scoreDetailsMarketLines" />
         </div>
-        <MatchMediaPanel />
+        <MatchMediaPanel :live-stream-url="liveStreamUrl" />
       </div>
     </template>
   </div>
@@ -58,6 +58,10 @@ const eventDetailsSports = useEventDetailsSports(selectedSportId)
 const eventDetailTabItems = computed(() => mapEventDetailTabItems(eventDetailsSports.groups.value))
 const selectedEvent = computed(() =>
   eventDetailTabItems.value.find(item => item.id === activeMatchId.value)
+)
+
+const liveStreamUrl = computed(
+  () => selectedEvent.value?.liveStreamUrl ?? eventDetailTabItems.value[0]?.liveStreamUrl ?? ''
 )
 
 const scoreDetailsMarketLines = computed(

@@ -26,4 +26,6 @@ export type EventDetailTabItem = {
   /** ExtraInfo.c15mas */
   awayCorners: number
   isFavourite: boolean
+  /** LiveStreamingUrl 第一项的 m3u8 地址，没有则为空字符串。 */
+  liveStreamUrl: string
 }
