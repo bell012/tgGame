@@ -5,11 +5,13 @@
     :style="floating ? { height: `${placeholderHeight}px` } : undefined"
   >
     <section
-      class="flex w-[320px] flex-col gap-2 rounded-xl bg-bg-5 p-2 font-inter"
-      :class="floating ? 'fixed z-10' : ''"
+      ref="sectionRef"
+      class="flex w-[320px] flex-col rounded-xl bg-bg-5 font-inter"
+      :class="[floating ? 'fixed z-10' : '', isLoggedIn ? 'gap-2 p-2' : 'gap-6 px-2 pb-6 pt-2']"
       :style="floating ? { top: `${stickTop}px`, left: `${floatLeft}px` } : undefined"
       data-testid="match-media-panel"
       :data-pinned="pinned"
+      :data-logged-in="isLoggedIn"
     >
       <div class="flex items-center gap-2">
         <div class="flex h-8 w-[264px] rounded-lg bg-bg-2">
@@ -48,7 +50,7 @@
         </div>
         <button
           type="button"
-          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#3B4142]"
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-bg-3"
           :aria-pressed="pinned"
           aria-label="Pin"
           @click="pinned = !pinned"
@@ -63,7 +65,8 @@
         </button>
       </div>
 
-      <div class="relative h-[171px] overflow-hidden rounded-lg" :data-mode="mode">
+      <LiveLoginGate v-if="!isLoggedIn" />
+      <div v-else class="relative h-[171px] overflow-hidden rounded-lg" :data-mode="mode">
         <template v-if="mode === 'animation'">
           <img
             class="absolute inset-0 h-full w-full object-cover"
@@ -111,8 +114,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { useLayoutStore } from '@/stores/layout'
 import videoOnIcon from './icon/video-on.svg?url'
+import LiveLoginGate from './live-login-gate.vue'
 import videoOffIcon from './icon/video-off.svg?url'
 import animationOnIcon from './icon/animation-on.svg?url'
 import animationOffIcon from './icon/animation-off.svg?url'
@@ -128,6 +133,7 @@ defineProps<{
 }>()
 
 const { t } = useI18n()
+const { isLoggedIn } = useRequireLoginAction()
 const layoutStore = useLayoutStore()
 const mode = ref<'video' | 'animation'>('video')
 const pinned = ref(true)
@@ -135,6 +141,7 @@ const floating = ref(false)
 const floatLeft = ref(0)
 const placeholderHeight = ref(0)
 const anchorRef = ref<HTMLElement | null>(null)
+const sectionRef = ref<HTMLElement | null>(null)
 
 const stickTop = computed(() => layoutStore.TOPNAV_HEIGHT + 24)
 
@@ -159,6 +166,14 @@ const updatePin = () => {
 watch(pinned, () => {
   floating.value = false
   requestAnimationFrame(updatePin)
+})
+
+watch(isLoggedIn, () => {
+  if (!floating.value) return
+  requestAnimationFrame(() => {
+    const section = sectionRef.value
+    if (section) placeholderHeight.value = section.offsetHeight
+  })
 })
 
 onMounted(() => {

@@ -1841,6 +1841,11 @@
     "noEvents": "当前筛选条件下暂无赛事。",
     "loadingEvents": "赛事加载中…",
     "noVideo": "暂无视频",
+    "backToLive": "回到直播",
+    "loginToWatch": "登录后观看",
+    "logIn": "登录",
+    "noAccountYet": "还没有账号？",
+    "joinNow": "立即加入",
     "filterTabs": {
       "rolling": "滚球",
       "today": "今日",

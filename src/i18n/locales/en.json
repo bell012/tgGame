@@ -1848,6 +1848,11 @@
     "noEvents": "No events available for the current filters.",
     "loadingEvents": "Loading events...",
     "noVideo": "No video available",
+    "backToLive": "Back to live",
+    "loginToWatch": "Log in to Watch",
+    "logIn": "Log In",
+    "noAccountYet": "Don’t have an account yet?",
+    "joinNow": "Join Now",
     "filterTabs": {
       "rolling": "Live",
       "today": "Today",

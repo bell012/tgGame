@@ -12,7 +12,7 @@
     :style="isMobile ? { paddingTop: `${layoutStore.TOPNAV_HEIGHT}px` } : undefined"
   >
     <template v-if="isMobile">
-      <MatchHeader :model="matchHeaderModel" @back="onBack" />
+      <MatchHeader :model="matchHeaderModel" :live-stream-url="liveStreamUrl" @back="onBack" />
       <SportsScoreDetails
         v-if="hasScoreDetailsMarkets || !isEventDetailsLoading"
         class="mt-4 pl-3.5 pb-24"
