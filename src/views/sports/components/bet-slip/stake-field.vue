@@ -2,13 +2,13 @@
   <div class="min-w-0">
     <button
       type="button"
-      class="flex h-[38px] w-full min-w-0 scroll-my-2 items-center gap-1.5 rounded-lg border border-solid bg-input-3 px-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+      class="flex h-[38px] w-full min-w-0 scroll-my-2 items-center gap-1.5 rounded-lg border border-solid bg-input-3 px-2 text-left focus-visible:outline focus-visible:outline-2"
       :class="
         props.error
-          ? 'border-secondary-2'
+          ? 'border-secondary-2 focus-visible:outline-secondary-2'
           : props.active
-            ? 'border-theme-primary'
-            : 'border-opacity-10'
+            ? 'border-theme-primary focus-visible:outline-theme-primary'
+            : 'border-opacity-10 focus-visible:outline-theme-primary'
       "
       :aria-label="`${props.label}: ${props.value || 'empty'}`"
       :aria-invalid="Boolean(props.error)"
@@ -22,7 +22,7 @@
         class="min-w-0 truncate text-[15px] font-bold tabular-nums text-text-1"
         >{{ props.value }}</span
       >
-      <span v-else class="min-w-0 truncate text-xs text-text-3">Limit 5.00–311.11</span>
+      <span v-else class="min-w-0 truncate text-xs text-text-3">{{ props.placeholder }}</span>
       <span v-if="props.active" class="h-4 w-px shrink-0 bg-theme-primary" aria-hidden="true" />
     </button>
     <p
@@ -40,6 +40,7 @@ const props = defineProps<{
   value: string
   currencySymbol: string
   label: string
+  placeholder?: string
   active: boolean
   error: string
   hideError?: boolean

@@ -1,7 +1,11 @@
 ﻿<template>
-  <div class="sidebar-menu px-3.5 sm:px-0" :style="mobileMenuStyle">
+  <div
+    class="sidebar-menu px-3.5 pb-3.5 sm:px-0"
+    :class="{ 'sidebar-menu-pc-expanded': !isCollapsed }"
+    :style="mobileMenuStyle"
+  >
     <!-- BC代币 / 顶部提示 -->
-    <div
+    <!-- <div
       v-if="showBcToken"
       class="bc-card mt-4 flex h-14 shrink-0 cursor-pointer items-center justify-between rounded-xl bg-bg-2 px-3 sm:mt-0"
       @click="() => console.log('点击 BC代币')"
@@ -21,7 +25,7 @@
         <p class="m-0 text-sm font-semibold leading-tight text-text-1">1 BC</p>
         <p class="m-0 text-sm leading-tight text-text-1">$0.00783</p>
       </div>
-    </div>
+    </div> -->
     <div class="flex flex-col">
       <div
         v-for="(menuGroup, groupIndex) in sidebarMenuGroups"
@@ -268,7 +272,7 @@
         </div>
       </div>
       <!-- 应用程式 -->
-      <div v-if="!isCollapsed" class="mt-3 mb-2">
+      <!-- <div v-if="!isCollapsed" class="mt-3 mb-2">
         <div
           class="block app-download-card rounded-lg cursor-pointer"
           @click="handleAppDownloadClick"
@@ -293,7 +297,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- 语言切换 -->
       <div
@@ -489,6 +493,7 @@ interface Props {
   isCollapsed?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = withDefaults(defineProps<Props>(), {
   isCollapsed: false
 })
@@ -502,7 +507,7 @@ const localeStore = useLocaleStore()
 const layoutStore = useLayoutStore()
 const isMobile = useIsMobile()
 
-const showBcToken = computed(() => !props.isCollapsed || isMobile.value)
+// const showBcToken = computed(() => !props.isCollapsed || isMobile.value)
 
 const mobileMenuStyle = computed(() => {
   if (!isMobile.value) {
@@ -610,9 +615,9 @@ const openLanguagePopup = () => {
   emit('open-language-modal')
 }
 // 应用程式下载点击
-const handleAppDownloadClick = () => {
-  navigateTo('/app-download')
-}
+// const handleAppDownloadClick = () => {
+//   navigateTo('/app-download')
+// }
 
 // 切换菜单展开/折叠的通用方法
 const toggleMenu = (menuId: string) => {
@@ -625,22 +630,17 @@ const toggleMenu = (menuId: string) => {
 }
 
 // 菜单展开
-const handleMenuExpand = (menu: SidebarMenuGroup) => {
-  activeMenuId.value = menu.id
-  if (activeThirdLevelMenuId.value && !menuOwnsThirdLevel(menu, activeThirdLevelMenuId.value)) {
-    activeThirdLevelMenuId.value = ''
-  }
-  if (menu.handler) {
-    menu.handler()
-  }
-  if (!expandedMenus.value.includes(menu.id)) {
-    expandedMenus.value.push(menu.id)
-  }
-}
-
 const handleMenuClick = (menu: SidebarMenuGroup) => {
   if (hasChildren(menu)) {
-    handleMenuExpand(menu)
+    const willExpand = !expandedMenus.value.includes(menu.id)
+    activeMenuId.value = menu.id
+    if (activeThirdLevelMenuId.value && !menuOwnsThirdLevel(menu, activeThirdLevelMenuId.value)) {
+      activeThirdLevelMenuId.value = ''
+    }
+    if (willExpand && menu.handler) {
+      menu.handler()
+    }
+    toggleMenu(menu.id)
     return
   }
   handleMenuItemClick(menu)
@@ -834,13 +834,13 @@ watch(isLoggedIn, loggedIn => {
 
 const sidebarMenus = computed<SidebarMenuGroup[]>(() => {
   return [
-    {
-      id: 'crypto-account',
-      name: t('menu.crypto-account'),
-      icon: newSideIcons.cryptoAccountIcon,
-      handler: () => console.log('点击 Crypto Account'),
-      groupKey: 'crypto-account'
-    },
+    // {
+    //   id: 'crypto-account',
+    //   name: t('menu.crypto-account'),
+    //   icon: newSideIcons.cryptoAccountIcon,
+    //   handler: () => console.log('点击 Crypto Account'),
+    //   groupKey: 'crypto-account'
+    // },
     {
       id: 'game-categories',
       name: t('menu.game-categories'),
@@ -1063,6 +1063,14 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 .launch-card-active {
   background: var(--color-opacity-10);
   border-radius: 8px;
+}
+
+@media (min-width: 641px) {
+  .sidebar-menu-pc-expanded .launch-card {
+    width: 208px;
+    max-width: 208px;
+    flex-shrink: 0;
+  }
 }
 
 .expand-enter-active,

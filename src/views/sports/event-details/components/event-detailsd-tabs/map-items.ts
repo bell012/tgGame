@@ -1,4 +1,5 @@
 import type { SportCompetitionGroup, SportEventExtraInfo } from '@/api/interface/sport'
+import { parseLiveStreamUrl } from '../match-media-panel/parse-live-stream'
 import type { EventDetailTabItem } from './types'
 
 const parseScore = (value: string | undefined): number | null => {
@@ -77,8 +78,10 @@ export function mapEventDetailTabItems(
       const { homeYellowCard, awayYellowCard, homeCorners, awayCorners } = parseExtraInfoStats(
         event.ExtraInfo
       )
+      const competitionId = event.Competition?.CompetitionId ?? group.CompetitionId
       items.push({
         id: String(event.EventId),
+        competitionId: Number.isSafeInteger(competitionId) ? competitionId : 0,
         marketLines: Array.isArray(event.MarketLines) ? event.MarketLines : [],
         league:
           getSportsText(event.Competition?.CompetitionName) || getSportsText(group.CompetitionName),
@@ -100,7 +103,8 @@ export function mapEventDetailTabItems(
         awayYellowCard,
         homeCorners,
         awayCorners,
-        isFavourite: event.IsFavourite === true
+        isFavourite: event.IsFavourite === true,
+        liveStreamUrl: parseLiveStreamUrl(event.LiveStreamingUrl)
       })
     }
   }

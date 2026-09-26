@@ -182,7 +182,6 @@
       :potential-return-text="potentialReturnText"
       :can-submit="canSubmit"
       :refreshing="refreshing"
-      :notice="notice"
       :focused-stake-id="focusedStakeId"
       :submission-state="pcSubmissionState"
       @toggle="betSlipOpen = !betSlipOpen"
@@ -254,7 +253,6 @@ const {
   totalStakeText,
   potentialReturnText,
   canSubmit,
-  notice,
   refreshing,
   focusedStakeId,
   collectOnly,

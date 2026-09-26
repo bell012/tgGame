@@ -1,5 +1,5 @@
 <template>
-  <section class="w-full min-w-0 font-inter text-text-1" data-testid="match-header">
+  <section v-if="match" class="w-full min-w-0 font-inter text-text-1" data-testid="match-header">
     <div
       v-if="view === 'info'"
       class="relative h-[calc(782px/3+env(safe-area-inset-top))] overflow-hidden rounded-b-2xl text-white shadow-[0_1px_4px_rgba(24,64,106,0.06)]"
@@ -198,11 +198,22 @@
       data-testid="match-header-media"
     >
       <div
-        class="absolute inset-0 bg-[linear-gradient(180deg,#F97600_42%,#EE4700_91%)]"
+        class="absolute inset-0"
+        :class="
+          view === 'animation' && isLoggedIn
+            ? 'bg-[linear-gradient(180deg,#F97600_42%,#EE4700_91%)]'
+            : 'bg-bg-5'
+        "
         aria-hidden="true"
       ></div>
 
-      <template v-if="view === 'animation'">
+      <div
+        v-if="!isLoggedIn"
+        class="absolute inset-x-0 bottom-0 top-[calc(49px+env(safe-area-inset-top))] flex items-center justify-center"
+      >
+        <LiveLoginGate />
+      </div>
+      <template v-else-if="view === 'animation'">
         <img
           class="absolute inset-0 h-full w-full object-cover"
           :src="bgLayer1"
@@ -225,55 +236,24 @@
           aria-hidden="true"
         />
       </template>
-      <video
-        v-else-if="match.videoSrc"
-        class="absolute inset-0 h-full w-full object-cover"
-        :src="match.videoSrc"
-        :poster="poster"
-        playsinline
-        muted
-      ></video>
-      <img
-        v-else
-        class="absolute inset-0 h-full w-full object-cover"
-        :src="poster"
-        alt=""
-        draggable="false"
-      />
-
-      <div
-        v-if="match.callout"
-        class="pointer-events-none absolute left-[53px] top-[calc(157px+env(safe-area-inset-top))] h-[52px] w-[92px]"
-        data-testid="match-header-callout"
-      >
-        <span
-          class="absolute left-0 top-[13px] h-[6px] w-[11px] rounded-full border border-white bg-[#FEA81C]"
-        ></span>
+      <div v-else-if="liveStreamUrl" class="absolute inset-0">
+        <LivePlayer :src="liveStreamUrl" />
+      </div>
+      <template v-else>
         <img
-          class="absolute left-[8px] top-[8px] h-[8px] w-[55px] max-w-none"
-          :src="trajectoryIcon"
-          alt=""
-          draggable="false"
-          aria-hidden="true"
-        />
-        <img
-          class="absolute left-px top-0 h-[9px] w-[9px]"
-          :src="markerIcon"
+          class="absolute inset-0 h-full w-full object-cover"
+          :src="bgLayer1"
           alt=""
           draggable="false"
           aria-hidden="true"
         />
         <div
-          class="absolute left-[14px] top-[15px] rounded-[3px] bg-[linear-gradient(180deg,rgba(102,102,102,0.6)_0%,#111111_100%)] px-[5px] py-[5px] backdrop-blur-[10px]"
+          class="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-normal text-white/70"
+          data-testid="no-video"
         >
-          <p class="whitespace-nowrap text-xs font-semibold leading-none">
-            {{ match.callout.title }}
-          </p>
-          <p class="mt-1 whitespace-nowrap text-[10px] leading-none text-[#CCCCCC]">
-            {{ match.callout.detail }}
-          </p>
+          {{ t('sports.noVideo') }}
         </div>
-      </div>
+      </template>
 
       <div
         class="absolute inset-x-0 top-0 bg-[linear-gradient(180deg,#000000_24%,rgba(0,0,0,0)_100%)] pt-[env(safe-area-inset-top)]"
@@ -293,99 +273,7 @@
               aria-hidden="true"
             />
           </button>
-
-          <div class="flex h-full items-center justify-center gap-[13px] px-4">
-            <div class="flex w-[105px] min-w-0 flex-col items-end gap-0.5">
-              <p class="w-full truncate text-right text-xs leading-4" :title="match.home.name">
-                {{ match.home.name }}
-              </p>
-              <div class="flex items-center gap-[3px]">
-                <span
-                  class="inline-flex h-3 w-3 items-center justify-center rounded-[2px] bg-secondary-2 text-[10px] font-bold leading-none text-white"
-                >
-                  {{ match.home.cards.red }}
-                </span>
-                <span
-                  class="inline-flex h-3 w-3 items-center justify-center rounded-[2px] bg-assistOrange text-[10px] font-bold leading-none text-white"
-                >
-                  {{ match.home.cards.yellow }}
-                </span>
-              </div>
-            </div>
-
-            <div class="flex flex-col items-center gap-[3px]">
-              <span
-                class="rounded-[3px] bg-secondary-2 px-[5px] py-px text-[10px] font-medium leading-none text-white"
-              >
-                {{ match.clockText }}
-              </span>
-              <span class="text-sm font-bold leading-none">
-                {{ match.homeScore }}-{{ match.awayScore }}
-              </span>
-            </div>
-
-            <div class="flex w-[105px] min-w-0 flex-col items-start gap-0.5">
-              <p class="w-full truncate text-left text-xs leading-4" :title="match.away.name">
-                {{ match.away.name }}
-              </p>
-              <div class="flex items-center gap-[3px]">
-                <span
-                  class="inline-flex h-3 w-3 items-center justify-center rounded-[2px] bg-secondary-2 text-[10px] font-bold leading-none text-white"
-                >
-                  {{ match.away.cards.red }}
-                </span>
-                <span
-                  class="inline-flex h-3 w-3 items-center justify-center rounded-[2px] bg-assistOrange text-[10px] font-bold leading-none text-white"
-                >
-                  {{ match.away.cards.yellow }}
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-
-      <div
-        class="absolute inset-x-0 bottom-0 flex h-[39px] items-center bg-opacity-10 backdrop-blur-[20px]"
-      >
-        <div
-          class="absolute left-1/2 flex -translate-x-1/2 items-center gap-[14px] text-xs leading-4"
-        >
-          <span class="inline-flex items-center gap-1.5">
-            <img
-              class="h-[14px] w-[14px] shrink-0 object-contain"
-              :src="cornerIcon"
-              alt=""
-              draggable="false"
-              aria-hidden="true"
-            />
-            {{ match.cornerScore }}
-          </span>
-          <span class="inline-flex items-center gap-[3px]">
-            <img
-              class="h-[14px] w-[14px] shrink-0 object-contain"
-              :src="htIcon"
-              alt=""
-              draggable="false"
-              aria-hidden="true"
-            />
-            {{ match.halfTimeScore }}
-          </span>
-        </div>
-        <button
-          type="button"
-          class="absolute right-[14px] flex h-[19px] w-[19px] items-center justify-center"
-          aria-label="Fullscreen"
-          @click="emit('fullscreen')"
-        >
-          <img
-            class="h-[19px] w-[19px] object-contain"
-            :src="fullscreenIcon"
-            alt=""
-            draggable="false"
-            aria-hidden="true"
-          />
-        </button>
       </div>
     </div>
   </section>
@@ -393,32 +281,33 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
+import LiveLoginGate from '../match-media-panel/live-login-gate.vue'
+import LivePlayer from '../match-media-panel/live-player.vue'
 import animationIcon from './icon/animation.svg?url'
 import backIcon from './icon/back.svg?url'
 import bgLayer1 from './icon/bg-layer-1.png?url'
 import bgLayer2 from './icon/bg-layer-2.png?url'
 import bgLayer3 from './icon/bg-layer-3-34b3a2.png?url'
 import cornerIcon from './icon/corner.svg?url'
-import fullscreenIcon from './icon/fullscreen.svg?url'
 import htIcon from './icon/ht.svg?url'
-import markerIcon from './icon/marker.svg?url'
-import trajectoryIcon from './icon/trajectory.svg?url'
 import videoIcon from './icon/video.svg?url'
-import { MATCH_HEADER_MOCK } from './mock-data'
 import type { MatchHeaderView, MatchHeaderViewModel } from './types'
 
 const props = defineProps<{
   model?: MatchHeaderViewModel
+  liveStreamUrl?: string
 }>()
 
 const emit = defineEmits<{
   back: []
-  fullscreen: []
 }>()
 
-const match = computed(() => props.model ?? MATCH_HEADER_MOCK)
-const isLive = computed(() => match.value.phase === 'live')
-const poster = computed(() => match.value.videoPoster || bgLayer2)
+const { t } = useI18n()
+const { isLoggedIn } = useRequireLoginAction()
+const match = computed(() => props.model)
+const isLive = computed(() => match.value?.phase === 'live')
 
 const view = ref<MatchHeaderView>('info')
 

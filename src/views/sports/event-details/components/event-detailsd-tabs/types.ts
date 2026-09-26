@@ -8,6 +8,8 @@ export type EventDetailTabTeam = {
 
 export type EventDetailTabItem = {
   id: string
+  /** 联赛 ID，与 PC 联赛 tabs 的 key 对应。 */
+  competitionId: number
   league: string
   marketLines: SportMarketLine[]
   home: EventDetailTabTeam
@@ -26,4 +28,6 @@ export type EventDetailTabItem = {
   /** ExtraInfo.c15mas */
   awayCorners: number
   isFavourite: boolean
+  /** LiveStreamingUrl 第一项的 m3u8 地址，没有则为空字符串。 */
+  liveStreamUrl: string
 }

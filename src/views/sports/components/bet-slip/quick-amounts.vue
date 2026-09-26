@@ -44,7 +44,12 @@
             :data-row-index="index"
           >
             <label
-              class="group flex h-full min-w-0 flex-1 items-center gap-[6.667px] rounded-md border border-solid border-opacity-10 bg-input-3 px-2 text-[15px] font-bold text-text-1 focus-within:border-theme-primary focus-within:text-theme-primary"
+              class="group flex h-full min-w-0 flex-1 items-center gap-[6.667px] rounded-md border border-solid bg-input-3 px-2 text-[15px] font-bold text-text-1"
+              :class="
+                props.error
+                  ? 'border-secondary-2'
+                  : 'border-opacity-10 focus-within:border-theme-primary focus-within:text-theme-primary'
+              "
             >
               <span class="shrink-0">{{ props.currencySymbol }}</span>
               <input
@@ -56,6 +61,8 @@
                 class="h-full min-w-0 flex-1 border-0 border-solid bg-transparent p-0 text-[15px] font-bold text-inherit caret-theme-primary outline-none placeholder:text-xs placeholder:font-normal placeholder:text-text-3"
                 placeholder="Enter a quick bet amount"
                 :aria-label="`Quick bet amount ${index + 1}`"
+                :aria-invalid="Boolean(props.error)"
+                :aria-describedby="props.error ? errorId : undefined"
                 :disabled="props.disabled"
                 @input="onInput(index, $event)"
               />
@@ -88,7 +95,7 @@
           </li>
         </ul>
         <p class="sr-only" role="status" aria-live="polite">{{ reorderNotice }}</p>
-        <p v-if="props.error" class="mt-2 text-xs text-secondary-2" role="alert">
+        <p v-if="props.error" :id="errorId" class="mt-2 text-xs text-secondary-2" role="alert">
           {{ props.error }}
         </p>
         <button
@@ -128,6 +135,7 @@ const emit = defineEmits<{
 }>()
 const titleId = useId()
 const helpId = useId()
+const errorId = useId()
 const panel = ref<HTMLElement | null>(null)
 const list = ref<HTMLElement | null>(null)
 const rowIds = ref<string[]>([])

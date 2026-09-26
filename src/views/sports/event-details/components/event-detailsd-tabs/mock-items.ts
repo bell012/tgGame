@@ -3,6 +3,7 @@ import type { EventDetailTabItem } from './types'
 export const EVENT_DETAIL_TAB_MOCK_ITEMS: EventDetailTabItem[] = [
   {
     id: 'west-ham-everton',
+    competitionId: 0,
     league: 'Premier League',
     marketLines: [],
     home: { name: 'West Ham United', score: 2, teamId: 0 },
@@ -15,6 +16,7 @@ export const EVENT_DETAIL_TAB_MOCK_ITEMS: EventDetailTabItem[] = [
     awayYellowCard: 3,
     homeCorners: 1,
     awayCorners: 1,
-    isFavourite: false
+    isFavourite: false,
+    liveStreamUrl: ''
   }
 ]

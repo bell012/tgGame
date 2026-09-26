@@ -1,4 +1,4 @@
-import type { SportMarketLine } from '@/api/interface/sport'
+import type { SportMarketLine, SportsEventMarket } from '@/api/interface/sport'
 import type { OddsTrend } from '../components/match-odds/types'
 
 export type SportsBetMode = 'single' | 'parlay'
@@ -6,6 +6,9 @@ export type SportsMatch = {
   id: string
   EventId: number
   sportId: number
+  Market: SportsEventMarket
+  /** 接口明确允许时才可加入串关。 */
+  OpenParlay: boolean
   sportKey: string
   leagueId: string
   country?: string
@@ -55,11 +58,25 @@ export type SportsBetSelection = {
   trend?: OddsTrend
   live?: boolean
   mockBetStatus?: 'open' | 'closed' | 'fail'
+  betStatus?: 'idle' | 'pending' | 'open' | 'closed' | 'unavailable' | 'error'
+  oddsType?: number
+  minStake?: number
+  maxStake?: number
+  payoutPerUnit?: number
+  stakeError?: string
+  limitText?: string
 }
 export type SportsParlay = {
   id: string
   size: number
   combinationCount: number
-  odds: number
+  odds?: number
   stake: string
+  label?: string
+  comboSelection?: number
+  minStake?: number
+  maxStake?: number
+  payoutPerUnit?: number
+  stakeError?: string
+  limitText?: string
 }

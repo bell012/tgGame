@@ -4,6 +4,7 @@ import Api from '@/api'
 import type {
   FavouriteEventParams,
   FavouriteEventResponse,
+  GetBetInfoParams,
   GetCompetitionListParams,
   GetCompetitionListResponse,
   GetCompetitionPageParams,
@@ -55,12 +56,7 @@ type SportsRequestError = {
 }
 
 type SportsFavouriteResult =
-  | 'success'
-  | 'synced'
-  | 'failed'
-  | 'login-failed'
-  | 'auth-expired'
-  | 'stale'
+  'success' | 'synced' | 'failed' | 'login-failed' | 'auth-expired' | 'stale'
 
 type SportsCredentials = Readonly<{ memberCode: string; token: string }>
 
@@ -319,6 +315,7 @@ export const useSportsStore = defineStore('sports', () => {
     () => {
       sportsSessionVersion.value += 1
       resetSportsBalance()
+      cancelBetInfo()
       invalidateSportsMemberCode()
       memberFavourites.clear()
       unconfirmedFavourites.clear()
@@ -412,6 +409,7 @@ export const useSportsStore = defineStore('sports', () => {
     }
   // 仅包装返回 stc 的体育网关接口；本站热门列表仍使用自己的 code/result 契约。
   const sportsApi = {
+    getBetInfo: withSportsAuthRecovery(Api.sport.getBetInfo),
     getBalance: withSportsAuthRecovery(Api.sport.getBalance),
     getAllSportCount: withSportsAuthRecovery(Api.sport.getAllSportCount),
     getSportsV2: withSportsAuthRecovery(Api.sport.getSportsV2),
@@ -666,6 +664,109 @@ export const useSportsStore = defineStore('sports', () => {
   const popular = createSportsRequest(getBaseUrl, sportsApi.getPopularSports, response =>
     Array.isArray(response.e)
   )
+  const betInfo = createSportsRequest(
+    getBaseUrl,
+    sportsApi.getBetInfo,
+    response => Array.isArray(response.wsis) && Array.isArray(response.bs)
+  )
+  let betInfoGeneration = 0
+  let betInfoController: AbortController | undefined
+  const cancelBetInfo = () => {
+    betInfoGeneration += 1
+    betInfoController?.abort()
+    betInfoController = undefined
+    betInfo.reset()
+  }
+  const fetchBetInfo = async (
+    query: Pick<GetBetInfoParams, 'WagerType' | 'WagerSelectionInfos'>
+  ) => {
+    cancelBetInfo()
+    const generation = betInfoGeneration
+    const version = sportsSessionVersion.value
+    const controller = new AbortController()
+    betInfoController = controller
+    const isCurrent = () =>
+      homepageActive && version === sportsSessionVersion.value && generation === betInfoGeneration
+    if (!homepageActive || !isLoggedIn.value || !query.WagerSelectionInfos.length) return null
+    const checkParlay = () => {
+      if (query.WagerType !== 2) return true
+      const items = query.WagerSelectionInfos
+      const eligible =
+        items.length >= 2 && new Set(items.map(item => item.EventId)).size === items.length
+      if (!eligible) {
+        betInfo.state.error = { kind: 'business', code: 439, message: 'Parlay unavailable' }
+      }
+      return eligible
+    }
+    if (!checkParlay()) return null
+    const memberCode = await ensureSportsMemberCode()
+    if (
+      !homepageActive ||
+      version !== sportsSessionVersion.value ||
+      generation !== betInfoGeneration
+    )
+      return null
+    const token = sportsToken.value
+    if (!memberCode || !token) {
+      betInfo.state.error = { kind: 'business', message: 'Sports login unavailable' }
+      return null
+    }
+    const selections = query.WagerSelectionInfos.map(item => ({ ...item }))
+    // 串关单独取欧洲盘，不改首页的盘型，也不猜测 A–G 赔率分组。
+    if (query.WagerType === 2) {
+      const sportIds = [
+        ...new Set(selections.filter(item => item.OddsType !== 3).map(item => item.SportId))
+      ]
+      try {
+        for (const sportId of sportIds) {
+          const items = selections.filter(item => item.SportId === sportId && item.OddsType !== 3)
+          const eventIds = [...new Set(items.map(item => item.EventId))]
+          for (let offset = 0; offset < eventIds.length; offset += SELECTED_EVENT_BATCH_SIZE) {
+            const batch = eventIds.slice(offset, offset + SELECTED_EVENT_BATCH_SIZE)
+            const response = await sportsApi.getSelectedEventInfo(
+              getBaseUrl(),
+              {
+                SportId: sportId,
+                EventIds: batch,
+                OddsType: 3,
+                IsCombo: true,
+                IncludeGroupEvents: false,
+                LanguageCode: getLanguage()
+              },
+              { signal: controller.signal }
+            )
+            if (!isCurrent()) return null
+            if (!isSportsSuccess(response) || !Array.isArray(response.e))
+              throw new Error('European odds unavailable')
+            for (const item of items.filter(item => batch.includes(item.EventId))) {
+              const event = response.e.find(event => event.EventId === item.EventId)
+              const line = event?.MarketLines?.find(line => line.MarketlineId === item.MarketlineId)
+              const option = line?.WagerSelections.find(
+                option => option.WagerSelectionId === item.WagerSelectionId
+              )
+              if (!option || option.OddsType !== 3 || !Number.isFinite(option.Odds))
+                throw new Error('European odds unavailable')
+              item.OddsType = 3
+              item.Odds = option.Odds
+            }
+          }
+        }
+      } catch {
+        if (isCurrent())
+          betInfo.state.error = { kind: 'response', message: 'European odds unavailable' }
+        return null
+      }
+    }
+    if (!isCurrent()) return null
+    return betInfo.load({
+      ...query,
+      WagerSelectionInfos: selections,
+      Token: token,
+      MemberCode: memberCode,
+      LanguageCode: getLanguage(),
+      TimeStamp: Date.now()
+    })
+  }
   // 写请求不进入可取消的查询资源，避免另一场点击或页面离开中断已发出的操作。
   const favouriteState = shallowReactive<
     SportsRequestState<FavouriteEventParams, FavouriteEventResponse>
@@ -1308,7 +1409,8 @@ export const useSportsStore = defineStore('sports', () => {
     getCompetitionPage: competition.state,
     getPopularSports: popular.state,
     getCompetitionList: competitionListState,
-    favouriteEvent: favouriteState
+    favouriteEvent: favouriteState,
+    GetBetInfo: betInfo.state
   })
   const sportCounts = computed(() => counts.state.data?.spc ?? [])
   const sportCountsLoading = computed(() => counts.state.loading)
@@ -1669,6 +1771,46 @@ export const useSportsStore = defineStore('sports', () => {
     return Promise.all(waiting)
   }
 
+  // 单独补查选中盘口，不用首页缓存的新鲜度判断代替确认。
+  const confirmBetSelection = (selection: {
+    sportId: number
+    eventId: number
+    market: SportMarketLine
+    wagerSelectionId: number
+  }) =>
+    runHomepageRefresh(
+      `bet-selection:${selection.sportId}:${selection.eventId}:${selection.market.MarketlineId}:${selection.wagerSelectionId}`,
+      async (signal, isCurrent) => {
+        const params: GetSelectedEventInfoParams = {
+          SportId: selection.sportId,
+          EventIds: [selection.eventId],
+          OddsType: getHomepageOddsType(),
+          IsCombo: false,
+          IncludeGroupEvents: false,
+          LanguageCode: languageCode.value,
+          BetTypeIds: [selection.market.BetTypeId],
+          PeriodIds: [selection.market.PeriodId]
+        }
+        const revision = ++eventReadRevision
+        const response = await sportsApi.getSelectedEventInfo(getBaseUrl(), params, { signal })
+        if (!isCurrent() || !isSportsSuccess(response) || !Array.isArray(response.e)) return null
+        const event = response.e.find(item => item.EventId === selection.eventId)
+        // 缺少赛事或投注项列表，不能当作确认失效。
+        if (!event || !Array.isArray(event.MarketLines)) return null
+        const line = event.MarketLines.find(
+          item => item.MarketlineId === selection.market.MarketlineId
+        )
+        if (line && !Array.isArray(line.WagerSelections)) return null
+        const exists = line?.WagerSelections.some(
+          item => item.WagerSelectionId === selection.wagerSelectionId
+        )
+        const cached = refreshedEvents.get(eventKey(selection.sportId, selection.eventId))
+        if (cached && cached.revision > revision) return null
+        rememberEvent(selection.sportId, event, revision, { marketScope: params })
+        return exists ? 'present' : 'missing'
+      }
+    )
+
   const mergeRefreshGroups = (
     previous: SportCompetitionGroup[],
     incoming: SportCompetitionGroup[]
@@ -2024,6 +2166,7 @@ export const useSportsStore = defineStore('sports', () => {
 
   const cancelRequests = () => {
     homepageActive = false
+    cancelBetInfo()
     resetSportsBalance()
     cancelHomepageRefresh()
     // 停用和销毁均结束本次停留；旧登录响应不能写回，也不能被下次进入复用。
@@ -2221,6 +2364,8 @@ export const useSportsStore = defineStore('sports', () => {
     sportsBalanceLoading,
     sportsBalanceError,
     fetchSportsBalance,
+    fetchBetInfo,
+    cancelBetInfo,
     pageNumber,
     pageSize,
     competitionIds,
@@ -2253,6 +2398,7 @@ export const useSportsStore = defineStore('sports', () => {
     fetchSportCounts,
     refreshHomepageCounts,
     refreshVisibleEvents,
+    confirmBetSelection,
     refreshHomepageBackground,
     cancelHomepageRefresh,
     getRefreshEvent,
