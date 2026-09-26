@@ -27,6 +27,7 @@
       @reply="$emit('reply', $event)"
       @retry="$emit('retry', $event)"
       @view-image="$emit('view-image', $event)"
+      @view-video="$emit('view-video', $event)"
     />
 
     <!-- 快捷问题入口。 -->
@@ -137,12 +138,15 @@ defineEmits<{
   photo: [files: File[]]
   camera: [files: File[]]
   'view-image': [message: ChatMessage]
+  'view-video': [message: ChatMessage]
 }>()
 
 const messageListRef = ref<InstanceType<typeof MessageList> | null>(null)
 
 defineExpose({
   /** 向父级暴露消息区滚动能力，避免父级直接依赖内部 DOM。 */
-  scrollToBottom: () => messageListRef.value?.scrollToBottom()
+  scrollToBottom: () => messageListRef.value?.scrollToBottom(),
+  /** 向父级暴露指定消息滚动能力，供搜索定位结果使用。 */
+  scrollToMessage: (messageId: string) => messageListRef.value?.scrollToMessage(messageId)
 })
 </script>

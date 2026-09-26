@@ -57,6 +57,7 @@
           type="button"
           class="absolute left-1/2 top-[322px] flex size-[32px] -translate-x-1/2 items-center justify-center rounded-[8px] bg-black/40"
           :aria-label="t('chatPublic.download')"
+          @click="handleDownload"
         >
           <ChatMediaDownload class="size-[16px] text-text-1" />
         </button>
@@ -138,7 +139,8 @@
       v-if="mode === 'viewer'"
       type="button"
       class="absolute bottom-[14px] right-[14px] z-10 flex size-[27px] items-center justify-center rounded-[8px] bg-black/40 p-[3px]"
-      :aria-label="t('chatPublic.sendImage', { current: 1, total: 1 })"
+      :aria-label="t('chatPublic.download')"
+      @click="handleDownload"
     >
       <ChatMediaDownload class="size-[18px] text-text-1" />
     </button>
@@ -193,8 +195,10 @@
 <script setup lang="ts">
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import ChatMediaDownload from '@/static/svg/chat/public/download.svg?component'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { globalShowToast } from '@/utils/toast'
+import { computed, onBeforeUnmount, ref, toRefs, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { downloadChatMedia } from '../shared'
 const props = withDefaults(
   defineProps<{
     src?: string
@@ -211,6 +215,8 @@ const props = withDefaults(
 )
 const emit = defineEmits<{ close: []; send: []; remove: [index: number] }>()
 const { t } = useI18n()
+// 将模板使用的属性显式暴露，避免语言服务将其误判为不存在的 $props 字段。
+const { displayMode, mediaFiles, mode } = toRefs(props)
 const currentIndex = ref(0)
 const mediaUrls = ref<string[]>([])
 
@@ -232,6 +238,16 @@ const previewCount = computed(() => props.mediaFiles.length || (props.src ? 1 : 
 
 /** 删除当前缩略图中的媒体，并由父级同步更新待发送数组。 */
 const removeMedia = (index: number) => emit('remove', index)
+
+/** 下载当前正在预览的图片或视频，并在浏览器触发保存后给出提示。 */
+const handleDownload = async () => {
+  try {
+    await downloadChatMedia(currentMediaUrl.value)
+    // globalShowToast({ message: t('chatPublic.mediaDownloadHint'), type: 'success' })
+  } catch {
+    globalShowToast({ message: t('chatPublic.imageSaveHint'), type: 'success' })
+  }
+}
 
 watch(
   () => props.mediaFiles,

@@ -1,4 +1,6 @@
 import { getStoredLocale } from '@/utils/locale'
+import { globalShowToast } from '@/utils/toast'
+import i18n from '@/i18n'
 import type { ChatMessage, ConversationStatus } from './types'
 
 export const SEARCH_RESULTS = Array.from({ length: 6 }, (_, index) => ({
@@ -41,6 +43,33 @@ export const resolveChatMediaUrl = (value: unknown) => {
 
   const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
   return baseUrl ? `${baseUrl}/${source.replace(/^\/+/, '')}` : source
+}
+
+/** 将客服图片或视频下载为本地文件，完成浏览器保存触发后返回。 */
+export const downloadChatMedia = async (source: string, fallbackFileName = 'chat-media') => {
+  const url = String(source ?? '').trim()
+  if (!url) {
+    throw new Error('Media URL is unavailable')
+  }
+
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error('Media download failed')
+  }
+
+  const blob = await response.blob()
+  const objectUrl = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  const sourceName = url.split('?')[0]?.split('/').pop() || ''
+
+  anchor.href = objectUrl
+  anchor.download = sourceName || fallbackFileName
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0)
+
+  globalShowToast({ message: i18n.global.t('chatPublic.SavedSuccessfully'), type: 'success' })
 }
 
 /** 将服务端富文本自动回复降级为安全纯文本，避免直接渲染未受信任 HTML。 */

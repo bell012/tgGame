@@ -15,39 +15,42 @@
     <!-- 消息气泡列表。 -->
     <div class="flex flex-col gap-[10px] pb-2">
       <template v-for="message in messages" :key="message.id">
-        <RedPacketMessage
-          v-if="message.type === 'red-pack'"
-          :claimed="props.claimedRedPacketIds.includes(String(message.redPacket?.id ?? ''))"
-          :display-mode="props.displayMode"
-          :loading="props.redPacketClaimingMessageIds.includes(message.id)"
-          :message="message"
-          @claim="$emit('claim-red-packet', $event)"
-        />
-        <RedPacketSystemMessage
-          v-else-if="message.type === 'system' && message.system?.type === 'red-packet-claimed'"
-          :service-name="message.system.serviceName"
-        />
-        <ImageMessage
-          v-else-if="message.type === 'image'"
-          :display-mode="props.displayMode"
-          :message="message"
-          @focus="handleFocus"
-          @retry="$emit('retry', $event)"
-          @view="$emit('view-image', $event)"
-        />
-        <VideoMessage
-          v-else-if="message.type === 'video'"
-          :display-mode="props.displayMode"
-          :message="message"
-          @retry="$emit('retry', $event)"
-        />
-        <MessageBubble
-          v-else
-          :display-mode="props.displayMode"
-          :message="message"
-          @focus="handleFocus"
-          @retry="$emit('retry', $event)"
-        />
+        <div :data-chat-message-id="message.id">
+          <RedPacketMessage
+            v-if="message.type === 'red-pack'"
+            :claimed="props.claimedRedPacketIds.includes(String(message.redPacket?.id ?? ''))"
+            :display-mode="props.displayMode"
+            :loading="props.redPacketClaimingMessageIds.includes(message.id)"
+            :message="message"
+            @claim="$emit('claim-red-packet', $event)"
+          />
+          <RedPacketSystemMessage
+            v-else-if="message.type === 'system' && message.system?.type === 'red-packet-claimed'"
+            :service-name="message.system.serviceName"
+          />
+          <ImageMessage
+            v-else-if="message.type === 'image'"
+            :display-mode="props.displayMode"
+            :message="message"
+            @focus="handleFocus"
+            @retry="$emit('retry', $event)"
+            @view="$emit('view-image', $event)"
+          />
+          <VideoMessage
+            v-else-if="message.type === 'video'"
+            :display-mode="props.displayMode"
+            :message="message"
+            @retry="$emit('retry', $event)"
+            @view="$emit('view-video', $event)"
+          />
+          <MessageBubble
+            v-else
+            :display-mode="props.displayMode"
+            :message="message"
+            @focus="handleFocus"
+            @retry="$emit('retry', $event)"
+          />
+        </div>
       </template>
     </div>
 
@@ -96,6 +99,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   reply: [target: ChatReplyTarget]
   'view-image': [message: ChatMessage]
+  'view-video': [message: ChatMessage]
   'claim-red-packet': [message: ChatMessage]
   'load-older': []
   retry: [message: ChatMessage]
@@ -138,6 +142,15 @@ const handleScroll = () => {
   previousScrollHeight = container.scrollHeight
   previousScrollTop = container.scrollTop
   emit('load-older')
+}
+
+/** 将指定消息滚动到可视区域中央，供搜索结果点击后定位使用。 */
+const scrollToMessage = async (messageId: string) => {
+  await nextTick()
+  const target = Array.from(
+    scrollRef.value?.querySelectorAll<HTMLElement>('[data-chat-message-id]') ?? []
+  ).find(element => element.dataset.chatMessageId === messageId)
+  target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
 
 /** 点击当前浮层和所选消息以外的区域时，关闭回复操作浮层。 */
@@ -239,6 +252,8 @@ defineExpose({
     nextTick(() => {
       if (scrollRef.value) scrollRef.value.scrollTop = scrollRef.value.scrollHeight
     })
-  }
+  },
+  /** 供搜索结果点击后调用，滚动到对应的历史消息。 */
+  scrollToMessage
 })
 </script>

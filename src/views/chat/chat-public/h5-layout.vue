@@ -60,6 +60,7 @@
         @photo="openMediaPreview"
         @camera="openMediaPreview"
         @view-image="openImageViewer"
+        @view-video="openVideoViewer"
       />
 
       <!-- 红包领取成功提示。 -->
@@ -83,6 +84,8 @@
     <!-- 消息搜索覆盖层。 -->
     <ChatSearchOverlay
       v-if="searchVisible"
+      :conversation="activeConversation"
+      :search-messages="searchCurrentConversationMessages"
       @close="searchVisible = false"
       @locate="handleSearchLocate"
     />
@@ -96,6 +99,8 @@
       @remove="removePendingMedia"
       @send="sendPendingMedia"
     />
+    <!-- H5 视频预览覆盖层。 -->
+    <ChatVideoPreview v-if="previewVideo" :src="previewVideo" @close="previewVideo = ''" />
   </div>
 </template>
 
@@ -106,6 +111,7 @@ import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ChatImagePreview from './components/chat-image-preview.vue'
+import ChatVideoPreview from './components/chat-video-preview.vue'
 import ChatSearchOverlay from './components/chat-search-overlay.vue'
 import ConversationList from './components/conversation-list.vue'
 import ConversationView from './components/conversation-view.vue'
@@ -135,6 +141,9 @@ const {
   selectConversation,
   leaveConversation,
   loadOlderMessages,
+  loadConversations,
+  searchCurrentConversationMessages,
+  locateCurrentConversationMessage,
   loadAutoReplies,
   sendTextMessage,
   retryMessage,
@@ -161,6 +170,7 @@ const searchVisible = ref(false)
 const previewImage = ref('')
 const previewMode = ref<'compose' | 'viewer'>('viewer')
 const pendingMediaFiles = ref<File[]>([])
+const previewVideo = ref('')
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
 
 /** 在消息新增或切换会话后，将消息区域滚动到最底部。 */
@@ -182,6 +192,7 @@ const handleConversationSelect = async (conversation: ConversationItem) => {
 /** 退出当前会话，清理仅属于会话页的临时交互状态。 */
 const handleConversationBack = async () => {
   await leaveConversation()
+  await loadConversations()
   quickIssueVisible.value = false
   activeIssue.value = null
   resetAfterSend()
@@ -208,6 +219,12 @@ const openImageViewer = (message: ChatMessage) => {
   pendingMediaFiles.value = []
   previewMode.value = 'viewer'
   previewImage.value = message.image
+}
+
+/** 打开 H5 会话中的视频消息预览页。 */
+const openVideoViewer = (message: ChatMessage) => {
+  if (!message.video) return
+  previewVideo.value = message.video
 }
 
 /** 关闭图片预览并恢复当前会话。 */
@@ -241,9 +258,13 @@ const sendPendingMedia = async () => {
 }
 
 /** 从搜索结果返回会话并定位到当前消息区域。 */
-const handleSearchLocate = () => {
+const handleSearchLocate = async (messageId: string) => {
+  const located = await locateCurrentConversationMessage(messageId)
   searchVisible.value = false
-  scrollToBottom()
+  if (located) {
+    await nextTick()
+    conversationViewRef.value?.scrollToMessage(messageId)
+  }
 }
 
 /** 打开所选自动回复分类，并请求其对应的后台问题列表。 */

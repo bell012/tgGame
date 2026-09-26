@@ -160,6 +160,52 @@ export const loadCachedChatMessages = async (
   })
 }
 
+/** 读取指定会话的全部本地消息，供聊天历史搜索使用而不影响列表分页显示。 */
+export const loadAllCachedChatMessages = async (conversationKey: string) => {
+  const messages: ChatMessage[] = []
+  let before: ChatMessageCacheCursor | undefined
+
+  do {
+    const page = await loadCachedChatMessages(conversationKey, {
+      before,
+      limit: CHAT_CACHE_PAGE_SIZE
+    })
+    messages.unshift(...page.messages)
+    const oldestMessage = page.messages[0]
+    before =
+      page.hasMore && oldestMessage?.id
+        ? {
+            timestamp: Number(oldestMessage.timestamp) || 0,
+            messageId: oldestMessage.id
+          }
+        : undefined
+  } while (before)
+
+  return messages
+}
+
+/** 按会话缓存主键和消息 ID 读取单条历史消息，用于搜索结果定位。 */
+export const loadCachedChatMessageById = async (conversationKey: string, messageId: string) => {
+  const database = await openChatCacheDatabase()
+  if (!database) return null
+
+  return new Promise<ChatMessage | null>(resolve => {
+    const transaction = database.transaction(CHAT_CACHE_MESSAGE_STORE_NAME, 'readonly')
+    const request = transaction
+      .objectStore(CHAT_CACHE_MESSAGE_STORE_NAME)
+      .get(getMessageCacheKey(conversationKey, messageId))
+
+    request.onsuccess = () => {
+      const record = request.result as ChatMessageCacheRecord | undefined
+      resolve(record?.message ?? null)
+    }
+    request.onerror = () => resolve(null)
+    transaction.oncomplete = () => database.close()
+    transaction.onerror = () => database.close()
+    transaction.onabort = () => database.close()
+  })
+}
+
 /** 增量写入或更新单条会话消息，不再重写整段消息历史。 */
 export const saveCachedChatMessage = async (conversationKey: string, message: ChatMessage) => {
   const database = await openChatCacheDatabase()

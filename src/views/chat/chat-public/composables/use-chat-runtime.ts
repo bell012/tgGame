@@ -33,6 +33,8 @@ import type {
 } from '../types'
 import {
   CHAT_CACHE_PAGE_SIZE,
+  loadAllCachedChatMessages,
+  loadCachedChatMessageById,
   loadCachedChatMessages,
   saveCachedChatMessage
 } from './chat-message-cache'
@@ -41,6 +43,8 @@ import { useChatConnection } from './use-chat-connection'
 const CHAT_VISITOR_STORAGE_KEY = 'chat_visitor_id'
 let hasRequestedWelcomeReminder = false
 let welcomeReminderConfigRequest: Promise<ChatConfig | null> | null = null
+const CHAT_MAX_IMAGE_BYTES = 10 * 1024 * 1024
+const CHAT_MAX_VIDEO_BYTES = 100 * 1024 * 1024
 
 /** 将未知接口返回值转换为可安全遍历的数组。 */
 const toArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : [])
@@ -102,6 +106,9 @@ const resolveUploadedImagePath = (result: unknown) => {
 /** 判断用户选择的本地文件是否为可发送的视频格式。 */
 const isVideoFile = (file: File) =>
   file.type.startsWith('video/') || /\.(mp4|mov|m4v|webm|avi|mkv)$/i.test(file.name)
+
+/** 判断图片文件是否为需要保留动画帧的 GIF。 */
+const isGifFile = (file: File) => file.type === 'image/gif' || /\.gif$/i.test(file.name)
 
 /** 读取或生成游客身份，确保同一浏览器会话可复用聊天缓存。 */
 const getChatVisitorId = () => {
@@ -678,6 +685,81 @@ export function useChatRuntime() {
     }
   }
 
+  /** 补齐旧缓存缺失的作者字段，保证搜索定位后的引用回复仍可正常展示。 */
+  const hydrateCachedMessages = (cachedMessages: ChatMessage[], conversation: ConversationItem) => {
+    const member = buildMemberParticipant()
+
+    return cachedMessages.map(message => ({
+      ...message,
+      authorId:
+        message.authorId || (message.direction === 'outgoing' ? member.userId : conversation.id),
+      authorName:
+        message.authorName ||
+        (message.direction === 'outgoing' ? member.nickName : conversation.nickName || '')
+    }))
+  }
+
+  /** 搜索当前客服会话全部 IndexedDB 历史中的文本、自动回复和引用内容。 */
+  const searchCurrentConversationMessages = async (keyword: string) => {
+    const conversation = activeConversation.value
+    const normalizedKeyword = keyword.trim().toLowerCase()
+    if (!conversation || !normalizedKeyword) return []
+
+    const cacheKey = getConversationCacheKey(
+      currentChatUserId.value,
+      dealerCode.value,
+      conversation
+    )
+    const cachedMessages = await loadAllCachedChatMessages(cacheKey)
+
+    return hydrateCachedMessages(cachedMessages, conversation).filter(message => {
+      const searchableContent = [
+        getChatPlainText(message.text),
+        getChatPlainText(message.socketContent),
+        message.reply?.preview
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      return searchableContent.includes(normalizedKeyword)
+    })
+  }
+
+  /** 根据消息 ID 补齐当前会话本地缓存，并让界面可以滚动定位到搜索结果。 */
+  const locateCurrentConversationMessage = async (messageId: string) => {
+    const conversation = activeConversation.value
+    if (!conversation || !messageId) return false
+
+    const cacheKey = getConversationCacheKey(
+      currentChatUserId.value,
+      dealerCode.value,
+      conversation
+    )
+    const targetMessage = await loadCachedChatMessageById(cacheKey, messageId)
+    if (!targetMessage) return false
+
+    if (!messages.value.some(message => message.id === messageId)) {
+      const cachedMessages = await loadAllCachedChatMessages(cacheKey)
+      if (
+        !activeConversation.value ||
+        getConversationCacheKey(
+          currentChatUserId.value,
+          dealerCode.value,
+          activeConversation.value
+        ) !== cacheKey
+      ) {
+        return false
+      }
+
+      messages.value = hydrateCachedMessages(cachedMessages, conversation)
+      hasMoreCachedMessages.value = false
+      syncClaimedRedPacketIds()
+    }
+
+    return true
+  }
+
   /** 退出当前客服会话并重置当前会话的临时数据。 */
   const leaveConversation = () => {
     autoReplyRequestId += 1
@@ -890,12 +972,19 @@ export function useChatRuntime() {
       globalShowToast({ message: 'Only image files are supported', type: 'fail' })
       return false
     }
+    if (file.size > CHAT_MAX_IMAGE_BYTES) {
+      globalShowToast({ message: 'Images and GIFs must be 10MB or smaller', type: 'fail' })
+      return false
+    }
 
     uploadingImage.value = true
     try {
       const [{ width, height }, uploadFile] = await Promise.all([
         getImageDimensions(file),
-        prepareUploadImage(file)
+        // GIF 必须保留动画帧，因此不经过 Canvas 转码；其他图片压缩到聊天模块 10MB 上限内。
+        isGifFile(file)
+          ? Promise.resolve(file)
+          : prepareUploadImage(file, { maxBytes: CHAT_MAX_IMAGE_BYTES })
       ])
       const extension =
         uploadFile.type === 'image/jpeg' ? 'jpg' : file.name.split('.').pop() || 'png'
@@ -936,6 +1025,10 @@ export function useChatRuntime() {
   const sendVideoFile = async (file: File) => {
     if (!isVideoFile(file)) {
       globalShowToast({ message: 'Only video files are supported', type: 'fail' })
+      return false
+    }
+    if (file.size > CHAT_MAX_VIDEO_BYTES) {
+      globalShowToast({ message: 'Videos must be 100MB or smaller', type: 'fail' })
       return false
     }
 
@@ -1001,9 +1094,12 @@ export function useChatRuntime() {
     connectionState,
     errorMessage,
     initialize,
+    loadConversations,
     selectConversation,
     leaveConversation,
     loadOlderMessages,
+    searchCurrentConversationMessages,
+    locateCurrentConversationMessage,
     loadAutoReplies,
     sendTextMessage,
     retryMessage,

@@ -195,6 +195,10 @@
     "imagePreview": "{current}/{total}",
     "photoPreview": "Photo Preview",
     "download": "Download",
+    "mediaDownloadHint": "Please take a screenshot to save.",
+    "videoSaveHint": "Please screen record to save.",
+    "imageSaveHint": "Please take a screenshot to save.",
+    "SavedSuccessfully.": "Saved successfully.",
     "sendImage": "{current} / {total}",
     "close": "Close"
   },

@@ -58,6 +58,7 @@
       @photo="openMediaPreview"
       @camera="openMediaPreview"
       @view-image="openImageViewer"
+      @view-video="openVideoViewer"
     />
 
     <!-- PC 端批量媒体发送预览。 -->
@@ -70,6 +71,14 @@
       @close="closeMediaPreview"
       @remove="removePendingMedia"
       @send="sendPendingMedia"
+    />
+
+    <!-- PC 视频预览弹窗。 -->
+    <ChatVideoPreview
+      v-if="previewVideo"
+      :src="previewVideo"
+      display-mode="pc"
+      @close="previewVideo = ''"
     />
 
     <!-- PC 端红包领取成功提示。 -->
@@ -100,6 +109,7 @@ import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ChatImagePreview from './components/chat-image-preview.vue'
+import ChatVideoPreview from './components/chat-video-preview.vue'
 import ConversationList from './components/conversation-list.vue'
 import ConversationView from './components/conversation-view.vue'
 import QuickIssueSheet from './components/quick-issue-sheet.vue'
@@ -128,6 +138,7 @@ const {
   selectConversation,
   leaveConversation,
   loadOlderMessages,
+  loadConversations,
   loadAutoReplies,
   sendTextMessage,
   retryMessage,
@@ -152,6 +163,7 @@ const quickIssueVisible = ref(false)
 const activeIssue = ref<QuickIssue | null>(null)
 const pendingMediaFiles = ref<File[]>([])
 const pcPreviewImage = ref('')
+const previewVideo = ref('')
 
 /** 选择 PC 客服后读取缓存并建立当前客服的 Socket 连接。 */
 const handleConversationSelect = async (conversation: ConversationItem) => {
@@ -162,6 +174,7 @@ const handleConversationSelect = async (conversation: ConversationItem) => {
 /** 从对话返回客服会话列表，并清理会话内的临时状态。 */
 const handleConversationBack = async () => {
   await leaveConversation()
+  await loadConversations()
   quickIssueVisible.value = false
   activeIssue.value = null
   resetAfterSend()
@@ -255,6 +268,12 @@ const openImageViewer = (message: ChatMessage) => {
   if (!message.image) return
   pendingMediaFiles.value = []
   pcPreviewImage.value = message.image
+}
+
+/** 打开 PC 会话中的视频消息预览弹窗。 */
+const openVideoViewer = (message: ChatMessage) => {
+  if (!message.video) return
+  previewVideo.value = message.video
 }
 
 /** 从 PC 待发送媒体列表中移除用户取消的文件。 */
