@@ -13,6 +13,8 @@ import type {
   GetSelectedEventInfoResponse,
   GetSportsV2Params,
   GetSportsV2Response,
+  PlaceBetParams,
+  PlaceBetResponse,
   SportCompetitionGroup,
   SportEvent,
   SportMarketLine,
@@ -34,6 +36,14 @@ import { getLanguageCode as getRequestLanguageCode } from '@/utils/request'
 export type FilterTabKey = 'rolling' | 'today' | 'early' | 'parlay'
 
 export type SportsRefreshTarget = { sportId: number; eventId: number }
+
+/** 下单前拦截，尚未向体育网关发送请求。 */
+export class SportsBetNotSentError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'SportsBetNotSentError'
+  }
+}
 
 const FILTER_TAB_MARKETS: Readonly<Record<FilterTabKey, SportsMarket>> = {
   rolling: 3,
@@ -381,7 +391,8 @@ export const useSportsStore = defineStore('sports', () => {
   /** 网关鉴权失败统一更新体育凭据，原响应照常交给调用方；不自动重放任何请求。 */
   const withSportsAuthRecovery =
     <Params, Response extends SportsResponse>(
-      send: (baseUrl: string, params: Params, options?: SportsRequestOptions) => Promise<Response>
+      send: (baseUrl: string, params: Params, options?: SportsRequestOptions) => Promise<Response>,
+      allowOutsideHomepage = false
     ) =>
     async (baseUrl: string, params: Params, options?: SportsRequestOptions): Promise<Response> => {
       const version = sportsSessionVersion.value
@@ -391,7 +402,7 @@ export const useSportsStore = defineStore('sports', () => {
       if (
         !isSportsAuthExpired(response) ||
         !isLoggedIn.value ||
-        !homepageActive ||
+        (!homepageActive && !allowOutsideHomepage) ||
         options?.signal?.aborted ||
         version !== sportsSessionVersion.value ||
         generation !== memberCodeGeneration ||
@@ -414,6 +425,7 @@ export const useSportsStore = defineStore('sports', () => {
     }
   // 仅包装返回 stc 的体育网关接口；本站热门列表仍使用自己的 code/result 契约。
   const sportsApi = {
+    placeBet: withSportsAuthRecovery(Api.sport.placeBet, true),
     getBetInfo: withSportsAuthRecovery(Api.sport.getBetInfo),
     getBalance: withSportsAuthRecovery(Api.sport.getBalance),
     getAllSportCount: withSportsAuthRecovery(Api.sport.getAllSportCount),
@@ -771,6 +783,32 @@ export const useSportsStore = defineStore('sports', () => {
       LanguageCode: getLanguage(),
       TimeStamp: Date.now()
     })
+  }
+  /** 写请求独立发送，不因另一笔单关或离页而取消；鉴权失败只刷新凭据。 */
+  const placeBet = async (
+    query: Pick<PlaceBetParams, 'WagerType' | 'WagerSelectionInfos' | 'ComboSelections'>
+  ): Promise<PlaceBetResponse> => {
+    const version = sportsSessionVersion.value
+    const baseUrl = getBaseUrl()
+    if (!isLoggedIn.value || !baseUrl) throw new SportsBetNotSentError('Sports login unavailable')
+    if (!query.WagerSelectionInfos.length || !query.ComboSelections.length)
+      throw new SportsBetNotSentError('No bet selections')
+    const memberCode = await ensureSportsMemberCode()
+    const token = sportsToken.value
+    if (version !== sportsSessionVersion.value || !isLoggedIn.value)
+      throw new SportsBetNotSentError('Sports session changed')
+    if (!memberCode || !token) throw new SportsBetNotSentError('Sports login unavailable')
+    const response = await sportsApi.placeBet(baseUrl, {
+      ...query,
+      IsComboAcceptAnyOdds: true,
+      MemberCode: memberCode,
+      Token: token,
+      LanguageCode: getLanguage(),
+      TimeStamp: Date.now()
+    })
+    if (version !== sportsSessionVersion.value || !isLoggedIn.value)
+      throw new Error('Sports session changed')
+    return response
   }
   // 写请求不进入可取消的查询资源，避免另一场点击或页面离开中断已发出的操作。
   const favouriteState = shallowReactive<
@@ -2420,6 +2458,7 @@ export const useSportsStore = defineStore('sports', () => {
     fetchPopularSports,
     fetchCompetitionList,
     ensureSportsMemberCode,
+    placeBet,
     toggleFavouriteEvent,
     isFavouritePending,
     loadHomepage,

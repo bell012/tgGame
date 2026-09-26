@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { useSportsStore } from '@/stores/sports'
+import { useUserStore } from '@/stores/user'
+import type { PlaceBetParams } from '@/api/interface/sport'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
 import type { OddsSelectPayload } from '../match-odds/types'
@@ -18,6 +20,8 @@ import { MAX_SELECTIONS, parseSportsStake, moneyRound } from './shared'
 import { useBetInfo } from './useBetInfo'
 import type { BetInfoSource } from './useBetInfo'
 import { comboLabel } from './bet-info'
+import { getPlaceBetFailure, getPlaceBetResult, toPlaceBetSelection } from './place-bet'
+import type { BetSubmissionState } from './place-bet'
 
 type SelectedOutcome = {
   id: string
@@ -39,6 +43,7 @@ type BetSlipOptions = {
 
 export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
   const sportsStore = useSportsStore()
+  const userStore = useUserStore()
   const {
     sportsBalance: balance,
     sportsBalanceLoading: refreshing,
@@ -55,7 +60,26 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     availability.value[id] === 'checking' || availability.value[id] === 'expired'
   const parlayStakes = ref<Record<string, string>>({})
   const focusedStakeId = ref('')
-  // 使用加入投注单时的资格；后续以报价接口的状态为准。
+  const submitting = ref(false)
+  // 待处理或结果未知的投注，删除重加、切换模式后也不能重复提交。
+  const submittedSelections = ref<Record<string, 'pending' | 'unknown'>>({})
+  const submittedCombos = ref<Record<string, Exclude<BetSubmissionState, 'failed'>>>({})
+  const accountKey = computed(() =>
+    JSON.stringify([
+      userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId,
+      currentCurrencyCode.value
+    ])
+  )
+  const selectionSubmissionKey = (id: string) => `${accountKey.value}:${id}`
+  const parlaySubmissionKey = computed(
+    () =>
+      `${accountKey.value}:${outcomes.value
+        .map(item => item.id)
+        .sort()
+        .join('|')}`
+  )
+  const getSubmissionState = (id: string) => submittedSelections.value[selectionSubmissionKey(id)]
+  // 加入时检查串关资格，之后以报价状态为准。
   const parlayEligible = computed(() =>
     outcomes.value.every(outcome => outcome.source.openParlay && !selectionBlocked(outcome.id))
   )
@@ -67,7 +91,6 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     betInfoError,
     betInfoState,
     betInfoReplacedIds,
-    betInfoAvailable,
     betInfoReady,
     betInfoQuotes,
     betInfoTrends,
@@ -247,7 +270,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
       live: match.live
     }
   }
-  // 列表切换不删除投注项；新数据只更新展示信息，金额保留。
+  // 切换赛事列表时保留投注项，刷新时保留金额。
   watch(
     () => outcomes.value.map(outcome => getOutcomeSnapshot(outcome)),
     snapshots => {
@@ -262,9 +285,17 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
   const totalStake = computed(() =>
     moneyRound(
       mode.value === 'single'
-        ? outcomes.value.reduce((sum, item) => sum + (parseSportsStake(item.stake) ?? 0), 0)
+        ? outcomes.value.reduce(
+            (sum, item) => sum + (canUseSelection(item) ? (parseSportsStake(item.stake) ?? 0) : 0),
+            0
+          )
         : betInfoSettings.value
-            .filter(item => item.combs !== 0 && item.noc > 0)
+            .filter(
+              item =>
+                item.combs !== 0 &&
+                item.noc > 0 &&
+                !submittedCombos.value[`${parlaySubmissionKey.value}:${item.combs}`]
+            )
             .reduce(
               (sum, item) =>
                 sum +
@@ -312,7 +343,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
           if (['queued', 'loading'].includes(betInfoState.value)) return 'pending'
           return betInfoState.value === 'idle' ? 'idle' : 'open'
         }
-        // 没有明确拒绝时正常展示，是否受理由下单接口决定。
+        // 未明确拒绝时正常展示，能否下单由接口判断。
         return 'open'
       }
       const status = getStatus()
@@ -335,6 +366,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
         quote?.dih ?? (quote?.h === null || quote?.h === undefined ? '' : String(quote.h))
       return {
         ...outcome.snapshot,
+        submissionState: getSubmissionState(outcome.id),
         stake: outcome.stake,
         odds,
         trend: quote ? betInfoTrends.value[quote.rid] : outcome.snapshot.trend,
@@ -370,11 +402,12 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
         const stake = parlayStakes.value[id] ?? ''
         return {
           id,
+          submissionState: submittedCombos.value[`${parlaySubmissionKey.value}:${item.combs}`],
           size: item.combs >= 9 && item.combs <= 17 ? item.combs - 7 : outcomes.value.length,
           label: comboLabel(item.combs, outcomes.value.length),
           comboSelection: item.combs,
           combinationCount: item.noc,
-          // 多注组合没有单一赔率，不把预计盈利当赔率展示。
+          // 多注组合不展示单一赔率。
           odds: item.noc === 1 ? item.epa + 1 : undefined,
           stake,
           minStake: item.misa,
@@ -392,7 +425,14 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
   )
   // 空金额和零金额不参与单关汇总；格式错误的非空金额仍需提示。
   const hasStake = (stake: string) => stake.trim() !== '' && parseSportsStake(stake) !== 0
-  const fundedRows = computed(() => activeRows.value.filter(item => hasStake(item.stake)))
+  const fundedRows = computed(() =>
+    activeRows.value.filter(item => {
+      if (!hasStake(item.stake) || item.submissionState) return false
+      if (mode.value === 'parlay') return outcomes.value.every(canUseSelection)
+      const outcome = outcomes.value.find(outcome => outcome.id === item.id)
+      return outcome !== undefined && canUseSelection(outcome)
+    })
+  )
   const checkedSelections = computed(() =>
     mode.value === 'single'
       ? selections.value.filter(item => hasStake(item.stake))
@@ -407,21 +447,36 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
       )
     )
   )
-  const canPrepareBet = computed(
-    () =>
-      !invalidStake.value &&
-      (mode.value !== 'parlay' || parlayEligible.value) &&
-      betInfoAvailable.value &&
-      (mode.value === 'single' || betInfoReady.value) &&
-      !betInfoLoading.value &&
-      fundedRows.value.length > 0 &&
-      totalStake.value > 0 &&
-      balance.value !== null &&
-      totalStake.value <= balance.value &&
-      checkedSelections.value.every(item => item.betStatus === 'open')
+  const hasValidStake = (stake: string) => (parseSportsStake(stake) ?? 0) > 0
+  const canUseSelection = (outcome: SelectedOutcome) => {
+    const quote = betInfoQuotes.value.find(item => item.wsid === outcome.WagerSelectionId)
+    return (
+      !selectionBlocked(outcome.id) &&
+      !getSubmissionState(outcome.id) &&
+      quote !== undefined &&
+      Number(quote.st) !== 380 &&
+      Number(quote.mlsid) !== 2 &&
+      (mode.value !== 'parlay' || ![439, 464].includes(Number(quote.st)))
+    )
+  }
+  const submittableSingles = computed(() =>
+    outcomes.value.filter(item => hasValidStake(item.stake) && canUseSelection(item))
   )
-  // 下单接口尚未接入，不能用模拟成功代替真实结果。
-  const canSubmit = computed(() => false)
+  const submittableCombos = computed(() =>
+    parlays.value.filter(
+      (item): item is SportsParlay & { comboSelection: number } =>
+        item.comboSelection !== undefined && hasValidStake(item.stake) && !item.submissionState
+    )
+  )
+  const canPrepareBet = computed(() =>
+    mode.value === 'single'
+      ? submittableSingles.value.length > 0
+      : outcomes.value.length >= 2 &&
+        parlayEligible.value &&
+        outcomes.value.every(canUseSelection) &&
+        submittableCombos.value.length > 0
+  )
+  const canSubmit = computed(() => !submitting.value && canPrepareBet.value)
   const currencySymbol = computed(() => getCurrencySymbol(currentCurrencyCode.value))
   const formatMoney = (value: number) => getFormattedBalance(value, currentCurrencyCode.value, 2)
   const balanceText = computed(() => (balance.value === null ? '--' : formatMoney(balance.value)))
@@ -455,11 +510,10 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
   const notice = computed(() => {
     if (validationError.value) return validationError.value
     if (invalidStake.value) return ''
-    return selections.value.length
-      ? t(fundedRows.value.length ? 'sports.betSubmitUnavailable' : 'sports.betEnterStake')
-      : ''
+    return selections.value.length && !fundedRows.value.length ? t('sports.betEnterStake') : ''
   })
   const clearBets = () => {
+    if (submitting.value) return
     selectionVersion += 1
     outcomes.value = []
     availability.value = {}
@@ -469,6 +523,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     mode.value = 'single'
   }
   const setMode = (value: SportsBetMode, allowIncomplete = false) => {
+    if (submitting.value) return false
     if (value === 'parlay' && outcomes.value.length < 2 && !allowIncomplete) {
       globalShowToast({ type: 'fail', message: t('sports.betParlayNeedTwo') })
       return false
@@ -479,6 +534,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     return true
   }
   const removeSelection = (id: string) => {
+    if (submitting.value) return
     outcomes.value = outcomes.value.filter(item => item.id !== id)
     delete availability.value[id]
     checkedQuoteIds.delete(id)
@@ -487,8 +543,9 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     focusedStakeId.value =
       mode.value === 'single' ? (outcomes.value[0]?.id ?? '') : (parlays.value[0]?.id ?? '')
   }
-  // 严格消费盘口组件回传的原始盘口/选项；同赛事只保留一个选项，不触发真实下注。
+  // 使用组件返回的盘口和选项，同一赛事只保留一项。
   const selectOdds = async (matchId: string, payload: OddsSelectPayload): Promise<boolean> => {
+    if (submitting.value) return false
     const selectedId = `${matchId}:${payload.market.MarketlineId}:${payload.option.WagerSelectionId}`
     if (outcomes.value.some(item => item.id === selectedId)) {
       removeSelection(selectedId)
@@ -597,10 +654,12 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     return true
   }
   const updateStake = (id: string, value: string) => {
+    if (submitting.value || getSubmissionState(id)) return
     const outcome = outcomes.value.find(item => item.id === id)
     if (outcome) outcome.stake = value
   }
   const updateParlayStake = (id: string, value: string) => {
+    if (submitting.value || parlays.value.find(item => item.id === id)?.submissionState) return
     if (!parlays.value.some(item => item.id === id)) return
     parlayStakes.value = { ...parlayStakes.value, [id]: value }
   }
@@ -633,10 +692,134 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     else updateParlayStake(target.id, String(amount))
     focusedStakeId.value = target.id
   }
-  const submitMockBet = () => {
-    if (!canSubmit.value) return
-    // 本地提交仅清理选择，不扣余额、不创建订单、不请求下注接口。
-    clearBets()
+  const submitBet = async (): Promise<void> => {
+    if (submitting.value || !requireLogin()) return
+    if (!canPrepareBet.value) {
+      globalShowToast({ type: 'fail', message: t('sports.betSubmitEmpty') })
+      return
+    }
+    const version = sportsStore.sportsSessionVersion
+    const account = accountKey.value
+    const comboKey = parlaySubmissionKey.value
+    const isSingle = mode.value === 'single'
+    const targets = isSingle ? [...submittableSingles.value] : [...outcomes.value]
+    const combos = [...submittableCombos.value]
+    type BetQuery = Pick<PlaceBetParams, 'WagerType' | 'WagerSelectionInfos' | 'ComboSelections'>
+    const quoteFor = (outcome: SelectedOutcome) =>
+      betInfoQuotes.value.find(item => item.wsid === outcome.WagerSelectionId)
+    const jobs: { query: BetQuery; targets: SelectedOutcome[] }[] = []
+    if (isSingle) {
+      for (const outcome of targets) {
+        const quote = quoteFor(outcome)
+        const amount = parseSportsStake(outcome.stake)
+        if (!quote || amount === null || amount <= 0) continue
+        jobs.push({
+          targets: [outcome],
+          query: {
+            WagerType: 1,
+            WagerSelectionInfos: [toPlaceBetSelection(quote)],
+            ComboSelections: [{ ComboSelection: 0, StakeAmount: amount }]
+          }
+        })
+      }
+    } else {
+      const quotes = targets.map(quoteFor)
+      // 串关缺少报价时不提交，不能少选项下单。
+      if (quotes.some(item => !item)) return
+      jobs.push({
+        targets,
+        query: {
+          WagerType: 2,
+          WagerSelectionInfos: quotes.filter(item => item !== undefined).map(toPlaceBetSelection),
+          ComboSelections: combos.flatMap(item => {
+            const amount = parseSportsStake(item.stake)
+            return amount !== null && amount > 0
+              ? [{ ComboSelection: item.comboSelection, StakeAmount: amount }]
+              : []
+          })
+        }
+      })
+    }
+    if (!jobs.length || jobs.some(item => !item.query.ComboSelections.length)) return
+    submitting.value = true
+    const results: BetSubmissionState[] = []
+    let refreshQuote = false
+    const current = () =>
+      !disposed && accountKey.value === account && sportsStore.sportsSessionVersion === version
+    try {
+      const responses = await Promise.allSettled(jobs.map(job => sportsStore.placeBet(job.query)))
+      // 本投注单保留未知结果，防止删除重加后重复提交。
+      for (const [index, response] of responses.entries()) {
+        const job = jobs[index]
+        if (
+          response.status === 'fulfilled' &&
+          Array.isArray(response.value?.wsis) &&
+          response.value.wsis.some(item => item && [380, 1107].includes(Number(item.bsm)))
+        )
+          refreshQuote = true
+        const states = job.query.ComboSelections.map(combo => ({
+          combo: combo.ComboSelection,
+          state:
+            response.status === 'fulfilled'
+              ? getPlaceBetResult(response.value, combo.ComboSelection)
+              : getPlaceBetFailure(response.reason)
+        }))
+        results.push(...states.map(item => item.state))
+        for (const { combo, state } of states) {
+          if (!isSingle && state !== 'failed') submittedCombos.value[`${comboKey}:${combo}`] = state
+        }
+        const uncertain = states.some(item => item.state === 'unknown')
+          ? 'unknown'
+          : states.some(item => item.state === 'pending')
+            ? 'pending'
+            : undefined
+        if (uncertain) {
+          for (const target of job.targets)
+            submittedSelections.value[`${account}:${target.id}`] = uncertain
+        }
+        if (accountKey.value === account && states.every(item => item.state === 'confirmed')) {
+          if (isSingle) outcomes.value = outcomes.value.filter(item => item !== job.targets[0])
+        }
+      }
+      if (
+        accountKey.value === account &&
+        !isSingle &&
+        results.every(item => item === 'confirmed')
+      ) {
+        outcomes.value = outcomes.value.filter(item => !targets.includes(item))
+        parlayStakes.value = {}
+        for (const key of Object.keys(submittedCombos.value)) {
+          if (key.startsWith(`${comboKey}:`)) delete submittedCombos.value[key]
+        }
+      }
+      if (!current()) return
+      if (refreshQuote) refreshBetInfo()
+      if (!outcomes.value.length) {
+        availability.value = {}
+        checkedQuoteIds.clear()
+        focusedStakeId.value = ''
+        mode.value = 'single'
+      }
+      const result = results.includes('unknown')
+        ? 'Unknown'
+        : results.includes('pending')
+          ? 'Pending'
+          : results.includes('failed')
+            ? results.includes('confirmed')
+              ? 'Partial'
+              : 'Failed'
+            : 'Success'
+      globalShowToast({
+        type: result === 'Success' ? 'success' : 'fail',
+        message:
+          result === 'Failed' && (!sportsStore.sportsMemberCode || !sportsStore.sportsToken)
+            ? t('sports.betLoginFailed')
+            : t(`sports.betSubmit${result}`)
+      })
+    } finally {
+      submitting.value = false
+      if (current()) await sportsStore.fetchSportsBalance()
+    }
   }
   const refreshBalance = async () => {
     if (refreshing.value || !requireLogin()) return
@@ -652,10 +835,18 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
   const showUnsupported = () => {
     globalShowToast({ type: 'fail', message: t('sports.betFeatureUnavailable') })
   }
-  watch(currentCurrencyCode, () => {
+  watch([accountKey, currentCurrencyCode], ([, currency], [, previousCurrency]) => {
     const hadSelections = outcomes.value.length > 0
-    clearBets()
-    if (hadSelections) globalShowToast({ type: 'fail', message: t('sports.betCurrencyChanged') })
+    // 切换币种时清空投注项，包括提交期间。
+    outcomes.value = []
+    availability.value = {}
+    checkedQuoteIds.clear()
+    parlayStakes.value = {}
+    focusedStakeId.value = ''
+    mode.value = 'single'
+    selectionVersion += 1
+    if (hadSelections && currency !== previousCurrency)
+      globalShowToast({ type: 'fail', message: t('sports.betCurrencyChanged') })
   })
 
   return {
@@ -671,6 +862,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     totalStakeText,
     potentialReturnText,
     canSubmit,
+    submitting,
     notice,
     validationError,
     refreshing,
@@ -688,7 +880,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     quickAmount,
     setMode,
     clearBets,
-    submitMockBet,
+    submitBet,
     refreshBalance,
     showUnsupported,
     refreshTargets

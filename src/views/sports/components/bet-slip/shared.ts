@@ -9,23 +9,3 @@ export const parseSportsStake = (raw: string): number | null => {
 }
 
 export const moneyRound = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100
-
-/** 本地串关组合计算，不代表服务端的真实结算规则。 */
-export const getSportsCombinations = (odds: readonly number[], size: number): number[] => {
-  if (!Number.isInteger(size) || size < 2 || size > odds.length || odds.length > MAX_SELECTIONS)
-    return []
-  const products: number[] = []
-  const visit = (start: number, remaining: number, product: number) => {
-    if (remaining === 0) {
-      products.push(product)
-      return
-    }
-    for (let index = start; index <= odds.length - remaining; index += 1) {
-      const odd = odds[index]
-      if (!Number.isFinite(odd) || odd <= 1) continue
-      visit(index + 1, remaining - 1, product * odd)
-    }
-  }
-  visit(0, size, 1)
-  return products
-}

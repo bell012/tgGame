@@ -18,7 +18,7 @@ import type { SportsMatch } from './shared/types'
 
 export type { SportsMatch, SportsBetMode, SportsBetSelection, SportsParlay } from './shared/types'
 export { mapSportsMatches } from './shared/match'
-export { parseSportsStake, getSportsCombinations } from './components/bet-slip/shared'
+export { parseSportsStake } from './components/bet-slip/shared'
 
 /** 配置已包含队标目录，只追加图片文件名。 */
 export const getTeamLogoUrl = (id: string | number | null | undefined): string => {
@@ -62,7 +62,7 @@ export const useSportsPage = () => {
     const match = matchById.value.get(id)
     return match ? sportsStore.isFavouritePending(match.EventId) : false
   }
-  // 收藏状态由 Store 在接口成功后同步，页面只处理登录拦截和失败反馈。
+  // Store 更新收藏状态，页面处理登录和失败提示。
   const handleMatchFavorite = async (id: string) => {
     if (!requireLogin() || !isPageActive()) return
     const match = matchById.value.get(id)
@@ -84,7 +84,7 @@ export const useSportsPage = () => {
     if (expanded) expandedMatchId.value = matchId
     else if (expandedMatchId.value === matchId) expandedMatchId.value = null
   }
-  // H5 悬浮入口统一处理：投注单打开弹窗，投注历史进入独立页面。
+  // 投注单打开弹窗，投注历史跳转页面。
   const handleFloatingEntry = (entry: 'history' | 'bet-slip') => {
     if (entry === 'bet-slip') {
       betSlipOpen.value = true
@@ -92,7 +92,7 @@ export const useSportsPage = () => {
     }
     navigateTo('/sports/bet-history')
   }
-  // 组件已写入 Store 时不重复赋值；保留统一业务入口供两端调用。
+  // 组件已更新球种时，不重复赋值。
   const handleSportChange = (_index: number, key: string) => {
     const sport = sportItems.find(item => item.key === key)
     if (sport && selectedSportId.value !== sport.sportId) {

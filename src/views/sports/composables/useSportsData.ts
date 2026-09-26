@@ -244,7 +244,7 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
       sportsStore.getEventClockUpdatedAt
     ).map(match => currentMatches.get(match.id) ?? match)
   })
-  // 热门独有赛事也可被盘口选择和本地投注单找到，不混入下方列表的筛选和分页。
+  // 热门赛事可加入投注单，但不参与下方列表的筛选和分页。
   const matchById = computed(
     () => new Map([...liveMatches.value, ...matches.value].map(match => [match.id, match]))
   )

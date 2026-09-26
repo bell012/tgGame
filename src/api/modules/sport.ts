@@ -23,6 +23,8 @@ import type {
   GetSportEventIndexListResponse,
   GetSportsV2Params,
   GetSportsV2Response,
+  PlaceBetParams,
+  PlaceBetResponse,
   SubmitBuyBackParams,
   SubmitBuyBackResponse,
   SportsResponse
@@ -184,6 +186,15 @@ export function getBetInfo(
   options?: SportsRequestOptions
 ): Promise<GetBetInfoResponse> {
   return postSport(baseUrl, 'GetBetInfo', data, options, 'site')
+}
+
+/** 下单：使用统一加解密，不自动重试。 */
+export function placeBet(
+  baseUrl: string,
+  data: PlaceBetParams,
+  options?: SportsRequestOptions
+): Promise<PlaceBetResponse> {
+  return postSport(baseUrl, 'PlaceBet', data, options, 'site')
 }
 
 /** 只读：查询体育可用余额，av 为可用金额；请求参数走项目统一加密。 */

@@ -183,7 +183,7 @@
       :can-submit="canSubmit"
       :refreshing="refreshing"
       :focused-stake-id="focusedStakeId"
-      :submission-state="pcSubmissionState"
+      :submitting="submitting"
       @toggle="betSlipOpen = !betSlipOpen"
       @remove="removeSelection"
       @stake="updateStake"
@@ -193,17 +193,15 @@
       @quick-amount="quickAmount"
       @mode="setMode"
       @clear="clearBets"
-      @submit="submitPcMockBet"
-      @reuse="resetPcBetResult"
-      @dismiss-result="finishPcBetResult"
+      @submit="submitBet"
       @refresh="refreshBalance"
-      @unsupported="showPcUnsupported"
+      @unsupported="showUnsupported"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, onDeactivated, onScopeDispose, ref, watch } from 'vue'
+import { nextTick, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
@@ -269,7 +267,8 @@ const {
   quickAmount,
   setMode,
   clearBets,
-  submitMockBet,
+  submitting,
+  submitBet,
   refreshBalance,
   showUnsupported,
   handleSportChange,
@@ -278,59 +277,6 @@ const {
   handleLeagueChange,
   handleCollectChange
 } = page
-
-// 本地模拟投注，不创建订单。
-const pcSubmissionState = ref<'idle' | 'confirming' | 'success' | 'failed'>('idle')
-let pcSubmitTimer: ReturnType<typeof setTimeout> | undefined
-
-function resetPcBetResult() {
-  clearTimeout(pcSubmitTimer)
-  pcSubmitTimer = undefined
-  pcSubmissionState.value = 'idle'
-}
-
-function submitPcMockBet() {
-  if (!canSubmit.value || pcSubmissionState.value !== 'idle') return
-  pcSubmissionState.value = 'confirming'
-  pcSubmitTimer = setTimeout(() => {
-    pcSubmitTimer = undefined
-    pcSubmissionState.value = 'success'
-  }, 600)
-}
-
-function finishPcBetResult() {
-  if (pcSubmissionState.value === 'success') submitMockBet()
-  resetPcBetResult()
-}
-
-// 按投注内容判断是否变化，避免列表刷新重置投注单。
-watch(
-  () =>
-    JSON.stringify([
-      mode.value,
-      currencySymbol.value,
-      selections.value.map(item => [item.id, item.stake, item.odds]),
-      parlays.value.map(item => [item.id, item.stake, item.odds])
-    ]),
-  resetPcBetResult,
-  { flush: 'sync' }
-)
-watch(betSlipOpen, open => {
-  if (!open) finishPcBetResult()
-})
-watch(isMobile, mobile => {
-  if (mobile) resetPcBetResult()
-})
-onDeactivated(resetPcBetResult)
-onScopeDispose(resetPcBetResult)
-
-function showPcUnsupported(action: 'settings' | 'editAmounts' | 'history' | 'share') {
-  if (action === 'history' || action === 'share') {
-    globalShowToast('This is a local simulation. No real bet record was created.')
-    return
-  }
-  showUnsupported()
-}
 
 async function changePage(page: number) {
   if (page === currentPage.value) return

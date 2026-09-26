@@ -48,15 +48,7 @@
     </header>
 
     <div v-show="props.open" :id="panelId" class="flex min-h-0 flex-col" :aria-busy="isSubmitting">
-      <PcResult
-        v-if="resultState"
-        :state="resultState"
-        @dismiss="emit('dismissResult')"
-        @reuse="emit('reuse')"
-        @history="emit('unsupported', 'history')"
-        @share="emit('unsupported', 'share')"
-      />
-      <fieldset v-else class="contents" :disabled="isSubmitting">
+      <fieldset class="contents" :disabled="isSubmitting">
         <div
           v-if="!props.selections.length"
           class="flex h-[168px] items-center justify-center gap-[19px] px-5"
@@ -147,10 +139,20 @@
                   :label="`Stake for ${selection.selection}`"
                   :error="selection.stakeError"
                   :placeholder="selection.limitText"
+                  :disabled="Boolean(selection.submissionState)"
                   @update="emit('stake', selection.id, $event)"
                   @focus="emit('focusStake', selection.id, 'single')"
                   @max="emit('max', selection.id, 'single')"
                 />
+                <p v-if="selection.submissionState" class="mt-2 text-xs text-text-2" role="status">
+                  {{
+                    t(
+                      selection.submissionState === 'pending'
+                        ? 'sports.betSubmitPending'
+                        : 'sports.betSubmitUnknown'
+                    )
+                  }}
+                </p>
               </div>
             </li>
           </ul>
@@ -175,12 +177,28 @@
                     :label="`Stake for ${parlay.label}`"
                     :error="parlay.stakeError"
                     :placeholder="parlay.limitText"
+                    :disabled="Boolean(parlay.submissionState)"
                     @update="emit('parlayStake', parlay.id, $event)"
                     @focus="emit('focusStake', parlay.id, 'parlay')"
                     @max="emit('max', parlay.id, 'parlay')"
                   />
                 </div>
               </div>
+              <p
+                v-if="parlay.submissionState"
+                class="mx-[18px] mt-2 text-xs text-text-2"
+                role="status"
+              >
+                {{
+                  t(
+                    parlay.submissionState === 'pending'
+                      ? 'sports.betSubmitPending'
+                      : parlay.submissionState === 'unknown'
+                        ? 'sports.betSubmitUnknown'
+                        : 'sports.betSubmitSuccess'
+                  )
+                }}
+              </p>
             </div>
           </div>
         </div>
@@ -218,7 +236,7 @@
           >
             <span v-if="isSubmitting" class="flex items-center gap-2" role="status">
               <RefreshIcon class="h-4 w-4 animate-spin" aria-hidden="true" />
-              Confirming local simulation...
+              {{ t('sports.betSubmitting') }}
             </span>
             <template v-else
               ><span>Place Bet:</span><span>{{ props.totalStakeText }}</span></template
@@ -284,7 +302,6 @@ import RefreshIcon from '@/static/svg/refresh.svg'
 import SettingsIcon from '@/static/svg/sports/odds-settings.svg'
 import StakeInput from './stake-input.vue'
 import AmountsDialog from './amounts-dialog.vue'
-import PcResult from './pc-result.vue'
 import { useI18n } from 'vue-i18n'
 import type { SportsBetMode, SportsBetSelection, SportsParlay } from '../../shared/types'
 
@@ -300,7 +317,7 @@ const props = defineProps<{
   canSubmit: boolean
   refreshing: boolean
   focusedStakeId?: string
-  submissionState?: 'idle' | 'confirming' | 'success' | 'failed'
+  submitting: boolean
 }>()
 
 const emit = defineEmits<{
@@ -315,8 +332,6 @@ const emit = defineEmits<{
   clear: []
   submit: []
   refresh: []
-  reuse: []
-  dismissResult: []
   unsupported: [action: 'settings' | 'history' | 'share']
 }>()
 
@@ -330,17 +345,15 @@ const quickAmounts = computed(() =>
   props.mode === 'single' ? singleQuickAmounts.value : parlayQuickAmounts.value
 )
 const editingAmounts = ref(false)
-const isSubmitting = computed(() => props.submissionState === 'confirming')
-const resultState = computed(() =>
-  props.submissionState === 'success' || props.submissionState === 'failed'
-    ? props.submissionState
-    : null
-)
+const isSubmitting = computed(() => props.submitting)
 const panelState = computed(() =>
   !props.open
     ? 'collapsed'
-    : (resultState.value ??
-      (isSubmitting.value ? 'confirming' : props.selections.length ? props.mode : 'empty'))
+    : isSubmitting.value
+      ? 'submitting'
+      : props.selections.length
+        ? props.mode
+        : 'empty'
 )
 const quickAmountClass =
   'h-9 w-[66px] shrink-0 rounded-xl px-2 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary'
@@ -357,7 +370,7 @@ const activeStake = computed(
   () => (props.mode === 'single' ? focusedSingle.value?.stake : focusedParlay.value?.stake) ?? ''
 )
 watch(
-  [() => props.open, () => props.currencySymbol, () => props.submissionState, () => props.mode],
+  [() => props.open, () => props.currencySymbol, () => props.submitting, () => props.mode],
   () => {
     editingAmounts.value = false
   }
@@ -377,6 +390,7 @@ function amountClass(stake: string, amount: number) {
 
 function setQuickAmount(amount: number) {
   const target = props.mode === 'single' ? focusedSingle.value : focusedParlay.value
+  if (isSubmitting.value || target?.submissionState) return
   if (target) emit('focusStake', target.id, props.mode)
   emit('quickAmount', amount)
 }

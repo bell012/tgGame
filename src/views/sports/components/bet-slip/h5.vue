@@ -10,11 +10,11 @@
       role="dialog"
       aria-modal="true"
       :aria-labelledby="titleId"
-      :aria-busy="result === 'confirming'"
+      :aria-busy="busy"
       :inert="editingAmounts"
       tabindex="-1"
       data-testid="sports-betslip-h5"
-      :data-state="result === 'idle' ? mode : result"
+      :data-state="busy ? 'submitting' : mode"
       @keydown="onKeydown"
     >
       <header class="flex h-12 shrink-0 items-center gap-2 bg-bg-2 px-[13.333px]">
@@ -106,10 +106,25 @@
                     :error="parlay.stakeError ?? ''"
                     :placeholder="parlay.limitText"
                     :hide-error="true"
-                    :disabled="busy"
+                    :disabled="busy || Boolean(parlay.submissionState)"
                     @focus="focusStake(parlay.id, 'parlay')"
                   />
                 </div>
+                <p
+                  v-if="parlay.submissionState"
+                  class="pb-[3.333px] pt-[6.667px] text-[11px] leading-[13.333px] text-text-2"
+                  role="status"
+                >
+                  {{
+                    t(
+                      parlay.submissionState === 'pending'
+                        ? 'sports.betSubmitPending'
+                        : parlay.submissionState === 'unknown'
+                          ? 'sports.betSubmitUnknown'
+                          : 'sports.betSubmitSuccess'
+                    )
+                  }}
+                </p>
                 <p
                   v-if="parlay.stakeError"
                   class="pb-[3.333px] pt-[6.667px] text-[11px] leading-[13.333px] text-secondary-2"
@@ -147,10 +162,6 @@
           v-if="selections.length"
           class="relative shrink-0 px-2.5 pb-[calc(23.333px+env(safe-area-inset-bottom))] pt-2.5"
         >
-          <p v-if="submitError" class="mb-2 text-xs text-secondary-2" role="alert">
-            {{ submitError }}
-          </p>
-          <p v-else-if="notice" class="mb-2 text-[10px] text-text-2" role="status">{{ notice }}</p>
           <div class="flex items-center justify-between gap-2 text-xs">
             <p class="min-w-0 text-text-2">
               To Win
@@ -173,16 +184,12 @@
               type="button"
               class="flex h-[44.667px] min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-theme-primary px-2 text-sm text-text-4 disabled:opacity-60"
               :disabled="!props.page.canSubmit.value || busy || editingAmounts"
-              :aria-label="t('sports.betSubmitUnavailable')"
+              :aria-label="t('sports.betSubmit')"
               data-testid="sports-h5-submit"
               @click="submit"
             >
-              <RefreshIcon
-                v-if="result === 'confirming'"
-                class="h-4 w-4 animate-spin"
-                aria-hidden="true"
-              />
-              <span v-if="result === 'confirming'" class="font-bold">Confirming ...</span>
+              <RefreshIcon v-if="busy" class="h-4 w-4 animate-spin" aria-hidden="true" />
+              <span v-if="busy" class="font-bold">{{ t('sports.betSubmitting') }}</span>
               <span v-else class="min-w-0 text-center leading-4"
                 >Total Stake :
                 <strong class="whitespace-nowrap text-[15px]">{{ totalStakeText }}</strong></span
@@ -199,56 +206,8 @@
               <ClearIcon class="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
-          <p
-            class="absolute bottom-[calc(4px+env(safe-area-inset-bottom))] inset-x-2.5 text-center text-[10px] leading-3 text-text-3"
-          >
-            {{ t('sports.betSubmitUnavailable') }}
-          </p>
         </footer>
         <div v-else class="h-[env(safe-area-inset-bottom)] shrink-0" />
-      </div>
-
-      <div
-        v-if="result === 'success' || result === 'failed'"
-        class="pointer-events-none fixed inset-0 z-10 flex items-center justify-center px-8"
-        role="status"
-        aria-live="polite"
-      >
-        <button
-          type="button"
-          class="pointer-events-auto relative flex h-[138px] w-[160px] flex-col items-center rounded-[20px] bg-mask-60-1 pt-[30px] text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
-          :class="result === 'success' ? 'text-theme-primary' : 'text-secondary-2'"
-          :aria-label="
-            result === 'success'
-              ? 'Local simulation completed. Close result'
-              : 'Local simulation failed. Dismiss result and edit stake'
-          "
-          @click="result === 'success' ? close() : (result = 'idle')"
-        >
-          <svg
-            viewBox="0 0 50 50"
-            class="h-[50px] w-[50px] shrink-0"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <circle cx="25" cy="25" r="24" />
-            <path
-              v-if="result === 'success'"
-              d="m13 25 9 9 16-19"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path v-else d="m17 17 16 16m0-16L17 33" stroke-linecap="round" />
-          </svg>
-          <span class="mt-2.5 text-[15px] font-bold leading-[18px]">
-            {{ result === 'success' ? 'Bet placed' : 'Bet failed' }}
-          </span>
-          <span class="absolute inset-x-1 bottom-2 text-[9px] leading-3 text-text-2"
-            >Local simulation</span
-          >
-        </button>
       </div>
     </section>
   </PopShell>
@@ -298,8 +257,7 @@ const {
   currencySymbol,
   potentialReturnText,
   totalStakeText,
-  refreshing,
-  notice
+  refreshing
 } = props.page
 const {
   keyboardOpen,
@@ -307,10 +265,8 @@ const {
   editingAmounts,
   amountDrafts,
   editError,
-  result,
   busy,
   activeRow,
-  submitError,
   close,
   focusStake,
   keyPress,

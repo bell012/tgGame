@@ -183,6 +183,96 @@ export interface GetBetInfoResponse extends SportsResponse {
   bs?: SportsBetInfoSetting[]
 }
 
+/** 下单项取自 GetBetInfo.wsis，不使用赛事列表里的旧赔率。 */
+export interface SportsPlaceBetSelectionParams {
+  WagerSelectionId: number
+  MarketlineId: number
+  BetTypeId?: number | null
+  BetTypeSelectionId: number
+  OutrightTeamId?: number
+  OddsType: SportsResponseOddsType
+  Handicap: number | null
+  Odds: number
+  HomeScore?: number | null
+  AwayScore?: number | null
+  EventId: number
+  SportId: number
+  Market?: number
+  /** 单关为 0；串关组合另放在 ComboSelections。 */
+  ComboSelection: number
+  Specifiers: string | null
+  /** 报价返回的参考 ID。 */
+  RefId: number | null
+  /** 报价项状态，来自 wsis.st。 */
+  Status: number
+  /** 仅在报价确实返回 rsid 时传递。 */
+  RSportId?: number
+}
+
+export interface SportsPlaceBetComboParams {
+  /** GetBetInfo.bs[].combs；单关为 0。 */
+  ComboSelection: number
+  /** 用户输入的每注金额，不乘组合注数。 */
+  StakeAmount: number
+}
+
+/** 单关一笔一请求，串关一次提交选中的金额组合。 */
+export interface PlaceBetParams extends GetBalanceParams {
+  WagerType: 1 | 2
+  WagerSelectionInfos: SportsPlaceBetSelectionParams[]
+  ComboSelections: SportsPlaceBetComboParams[]
+  IsComboAcceptAnyOdds: true
+  LanguageCode: SportsLanguageCode
+}
+
+/** V5 PlaceBet 的单笔/组合结果；不能仅凭整体 stc 判定全部成功。 */
+export interface SportsPlaceBetResult {
+  /** WagerId：注单号。 */
+  wid: string
+  /**
+   * BetStatusMessage：100 成功；380 无可选盘口；411 无效货币；439/464 不支持串关；
+   * 1000 投注错误；1001 赔率更新中；1102 会员不活跃；1103 余额不足；
+   * 1105 超最高限额；1106 低于最低限额；1107 赔率变化；1108 赛事投注总额超限；
+   * 1126 赛事不支持串关；1132 无效金额；1135 比赛日期无效；1136 赛季无效；
+   * 1141 体育项目不存在；1200 投注被拒。
+   */
+  bsm: number | string
+  /** ComboSelectionId：对应提交的组合编号，单关为 0。 */
+  csid: number
+  /** BetConfirmationStatus：1 待处理，2 已确认，3 已拒绝（危险球取消）。 */
+  bcs: 1 | 2 | 3 | '1' | '2' | '3'
+}
+
+/** 已接受的投注资料；这些字段不适用时可为空。 */
+export interface SportsAcceptedWagerSelection {
+  /** StakeOdds：接受的赔率。 */
+  so?: number | null
+  /** Handicap / DisplayHandicap：接受的盘口值及其显示文字。 */
+  h?: number | null
+  dih?: string | null
+  /** BetTypeSelectionId / OutrightTeamId / EventId：选项类型、冠军队伍、赛事 ID。 */
+  btsid?: number | null
+  otid?: number | null
+  eid?: number | null
+  /** PreBoostOdds：增值前赔率，不适用时为空。 */
+  pbo?: number | null
+}
+
+/** 返回字段按 V5 PlaceBet 响应表；异常响应可能没有业务列表。 */
+export interface PlaceBetResponse extends SportsResponse {
+  /** stc=100 表示至少一笔成功，1000 表示没有成功投注；逐项还需检查 bsm、bcs。 */
+  stc: number | string
+  wsis?: SportsPlaceBetResult[]
+  /** AcceptedWagerSelectionList：已接受的赔率、盘口及赛事信息。 */
+  awsl?: SportsAcceptedWagerSelection[] | null
+  /** UpdatedWagerSelectionInfos：bsm=1107 时返回的新报价。 */
+  uwsis?: SportsBetInfoQuote[]
+  /** UpdatedBetSetting：bsm=1107 时返回的新投注设置。 */
+  ubs?: SportsBetInfoSetting[]
+  /** AvailableBalance：投注所用钱包的可用余额。 */
+  av?: number | null
+}
+
 /** 体育投注历史接口共用会员凭据参数。 */
 export interface SportsBetHistoryAuthParams {
   /** 体育接口语言码，使用 ENG / CHS 等体育网关语言。 */
