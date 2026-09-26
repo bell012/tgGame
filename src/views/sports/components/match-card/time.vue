@@ -1,5 +1,5 @@
 <template>
-  <span :title="label">{{ label }}</span>
+  <span class="tabular-nums" :title="label">{{ label }}</span>
 </template>
 
 <script setup lang="ts">
