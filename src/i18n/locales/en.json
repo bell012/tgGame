@@ -1884,7 +1884,9 @@
         "3": "European",
         "4": "Indonesian",
         "6": "American"
-      }
+      },
+      "noBettingMarkets": "No Betting Markets Available.",
+      "matchEnded": "Match Ended"
     }
   },
   "menu": {

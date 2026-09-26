@@ -1,12 +1,14 @@
 <template>
   <article
-    class="relative min-w-0"
+    class="relative min-w-0 cursor-pointer"
     :class="[
       showPeriodScores ? 'min-h-[237px]' : 'min-h-[211px]',
       expanded && (showPeriodScores ? 'h-[244px]' : 'h-[218px]')
     ]"
     :data-sports-match="match.id"
     :data-expanded="expanded"
+    data-testid="sports-pc-match-card"
+    @click="goToEventDetails"
   >
     <!-- 展开后仍保留卡片原高度，避免后面的卡片移位。 -->
     <div
@@ -38,7 +40,7 @@
           type="button"
           class="flex h-5 w-7 shrink-0 items-center justify-center rounded-[6px] bg-theme-primary text-text-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-1"
           aria-label="Watch live video"
-          @click="emit('media', 'video')"
+          @click.stop="emit('media', 'video')"
         >
           <VideoIcon class="h-3 w-2.5" aria-hidden="true" />
         </button>
@@ -47,7 +49,7 @@
           type="button"
           class="flex h-5 w-7 shrink-0 items-center justify-center rounded-[6px] bg-theme-primary text-text-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-1"
           aria-label="Watch match animation"
-          @click="emit('media', 'animation')"
+          @click.stop="emit('media', 'animation')"
         >
           <AnimationIcon class="h-3.5 w-5" aria-hidden="true" />
         </button>
@@ -59,7 +61,7 @@
           :aria-pressed="favorite"
           :aria-busy="favoritePending"
           :disabled="favoritePending"
-          @click="emit('favorite')"
+          @click.stop="emit('favorite')"
         >
           <StarIcon class="h-4 w-4" aria-hidden="true" />
         </button>
@@ -143,7 +145,7 @@
         </div>
       </div>
 
-      <div class="mt-2 min-w-0" data-testid="sports-card-odds">
+      <div class="mt-2 min-w-0" data-testid="sports-card-odds" @click.stop>
         <MatchOdds
           v-if="MarketLines.length"
           :MarketLines="MarketLines"
@@ -165,6 +167,8 @@ import StarIcon from '@/static/svg/game/detail/star1.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
+import { navigateTo } from '@/utils/router'
+import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
 import MatchOdds from '../match-odds/index.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
 import type { SportsMatch } from '../../shared/types'
@@ -198,4 +202,14 @@ const emit = defineEmits<{
   favorite: []
   media: [kind: 'video' | 'animation']
 }>()
+
+const goToEventDetails = () => {
+  persistEventDetailsMatch(props.match)
+  navigateTo('/sports/event-details', {
+    query: {
+      sportId: props.match.sportId,
+      eventId: props.match.EventId
+    }
+  })
+}
 </script>

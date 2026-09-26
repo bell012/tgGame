@@ -1,12 +1,12 @@
 <template>
   <section
-    class="relative flex min-w-0 items-stretch gap-2"
+    class="relative flex min-w-0 items-center gap-2"
     aria-label="Related matches"
     data-testid="event-details-tabs"
   >
     <button
       type="button"
-      class="inline-flex w-[28px] flex-none flex-col items-center justify-center self-stretch rounded-lg border-0 bg-bg-2 transition-colors lg:hover:bg-bg-3"
+      class="inline-flex h-[76px] w-[28px] flex-none flex-col items-center justify-center rounded-lg border-0 bg-bg-2 transition-colors lg:hover:bg-bg-3"
       :aria-expanded="isPopupOpen"
       aria-haspopup="listbox"
       aria-label="Show all related matches"
@@ -40,7 +40,7 @@
         role="tab"
         :data-event-tab="item.id"
         :aria-selected="activeId === item.id"
-        class="inline-flex w-[152px] flex-none flex-col rounded-lg border-0 p-2 text-left transition-colors"
+        class="inline-flex h-[76px] w-[152px] flex-none flex-col rounded-lg border-0 p-2 text-left transition-colors"
         :class="getTabClass(item.id)"
         @click="selectTab(item.id)"
       >
