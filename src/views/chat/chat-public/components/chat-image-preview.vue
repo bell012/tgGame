@@ -2,7 +2,7 @@
   <!-- PC 端图片与视频预览弹窗。 -->
   <div
     v-if="displayMode === 'pc'"
-    class="fixed inset-0 z-[120] flex items-center justify-center bg-common-0/60"
+    class="fixed inset-0 z-[120] flex items-center justify-center bg-mask-60-1"
   >
     <!-- PC 端 836 × 540 媒体预览主体。 -->
     <section
@@ -15,7 +15,7 @@
         </strong>
         <button
           type="button"
-          class="absolute right-4 top-4 flex size-6 items-center justify-center rounded-[4px] bg-common-100/10"
+          class="absolute right-4 top-4 flex size-6 items-center justify-center rounded-[4px] bg-opacity-10"
           :aria-label="t('chatPublic.close')"
           @click="$emit('close')"
         >
@@ -37,7 +37,7 @@
 
         <!-- 当前序号与总数量。 -->
         <span
-          class="absolute right-[14px] top-[14px] rounded-full bg-common-0/40 px-4 py-1 text-[12px] text-text-1"
+          class="absolute right-[14px] top-[14px] rounded-full bg-mask-40 px-4 py-1 text-[12px] text-text-1"
         >
           {{ currentIndex + 1 }} / {{ previewCount }}
         </span>
@@ -62,35 +62,57 @@
           <ChatMediaDownload class="size-[16px] text-text-1" />
         </button>
 
-        <!-- PC 端缩略图横向列表。 -->
+        <!-- PC 端缩略图横向列表与翻页控制。 -->
         <div
-          v-if="mediaFiles.length"
-          class="absolute inset-x-0 bottom-0 flex h-[82px] items-start justify-center gap-[10px] overflow-x-auto bg-common-0/60 px-4 pt-2"
+          v-if="previewSources.length"
+          class="absolute inset-x-0 bottom-0 flex h-[82px] items-start justify-center gap-[10px] overflow-hidden bg-mask-60-1 px-4 pt-2"
         >
           <button
-            v-for="(file, index) in mediaFiles"
-            :key="`${file.name}-${file.lastModified}-${index}`"
+            type="button"
+            class="flex size-[36px] shrink-0 items-center justify-center rounded-full bg-opacity-20"
+            :aria-label="t('chatPublic.previousImage')"
+            :disabled="currentIndex === 0"
+            @click="showPreviousPreview"
+          >
+            <span class="flex rotate-180">
+              <MediaPreviewArrowActive v-if="currentIndex > 0" />
+              <MediaPreviewArrowDisabled v-else />
+            </span>
+          </button>
+          <button
+            v-for="(source, index) in previewSources"
+            :key="`${source}-${index}`"
             type="button"
             class="relative size-[66px] shrink-0 overflow-hidden"
             :class="index === currentIndex ? 'border-2 border-theme-primary' : ''"
             @click="currentIndex = index"
           >
             <video
-              v-if="file.type.startsWith('video/')"
-              :src="mediaUrls[index]"
+              v-if="isPreviewVideo(index)"
+              :src="source"
               class="size-full object-cover"
               muted
               playsinline
               preload="metadata"
             ></video>
-            <img v-else :src="mediaUrls[index]" alt="" class="size-full object-cover" />
+            <img v-else :src="source" alt="" class="size-full object-cover" />
             <span
               v-if="mode === 'compose'"
-              class="absolute right-[2px] top-[2px] flex size-4 items-center justify-center rounded-full bg-common-0/70 text-[14px] leading-none text-text-1"
+              class="absolute right-[2px] top-[2px] flex size-4 items-center justify-center rounded-full bg-mask-70 text-[14px] leading-none text-text-1"
               @click.stop="removeMedia(index)"
             >
               ×
             </span>
+          </button>
+          <button
+            type="button"
+            class="flex size-[36px] shrink-0 items-center justify-center rounded-full bg-opacity-20"
+            :aria-label="t('chatPublic.nextImage')"
+            :disabled="currentIndex >= previewSources.length - 1"
+            @click="showNextPreview"
+          >
+            <MediaPreviewArrowActive v-if="currentIndex < previewSources.length - 1" />
+            <MediaPreviewArrowDisabled v-else />
           </button>
         </div>
       </div>
@@ -168,7 +190,7 @@
           ></video>
           <img v-else :src="mediaUrls[index]" alt="" class="size-full object-cover" />
           <span
-            class="absolute right-[2px] top-[2px] flex size-[16px] items-center justify-center rounded-full bg-common-0/70 text-[14px] leading-none text-common-100"
+            class="absolute right-[2px] top-[2px] flex size-[16px] items-center justify-center rounded-full bg-mask-70 text-[14px] leading-none text-common-100"
             @click.stop="removeMedia(index)"
             >×</span
           >
@@ -195,6 +217,8 @@
 <script setup lang="ts">
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import ChatMediaDownload from '@/static/svg/chat/public/download.svg?component'
+import MediaPreviewArrowActive from '@/static/svg/chat/public/media-preview-arrow-active.svg?component'
+import MediaPreviewArrowDisabled from '@/static/svg/chat/public/media-preview-arrow-disabled.svg?component'
 import { globalShowToast } from '@/utils/toast'
 import { computed, onBeforeUnmount, ref, toRefs, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -202,12 +226,14 @@ import { downloadChatMedia } from '../shared'
 const props = withDefaults(
   defineProps<{
     src?: string
+    previewUrls?: string[]
     mediaFiles?: File[]
     mode?: 'compose' | 'viewer'
     displayMode?: 'h5' | 'pc'
   }>(),
   {
     src: '',
+    previewUrls: () => [],
     mediaFiles: () => [],
     mode: 'viewer',
     displayMode: 'h5'
@@ -227,14 +253,35 @@ const syncMediaUrls = (files: File[]) => {
   currentIndex.value = Math.min(currentIndex.value, Math.max(files.length - 1, 0))
 }
 
-/** 返回当前正在查看的媒体文件；查看历史图片时为空。 */
+/** 返回当前正在查看的本地媒体文件；查看历史图片时为空。 */
 const currentMedia = computed(() => props.mediaFiles[currentIndex.value])
 
+/** 统一本地待发送媒体和历史图片的预览地址，保证 PC 缩略图使用真实数据。 */
+const previewSources = computed(() => {
+  if (mediaUrls.value.length) return mediaUrls.value
+  if (props.previewUrls.length) return props.previewUrls
+  return props.src ? [props.src] : []
+})
+
 /** 返回当前媒体的本地预览地址或历史消息图片地址。 */
-const currentMediaUrl = computed(() => mediaUrls.value[currentIndex.value] || props.src)
+const currentMediaUrl = computed(() => previewSources.value[currentIndex.value] || props.src)
 
 /** 返回预览内容总数，历史消息图片默认只有一张。 */
-const previewCount = computed(() => props.mediaFiles.length || (props.src ? 1 : 0))
+const previewCount = computed(() => previewSources.value.length)
+
+/** 判断指定缩略图是否为本地视频文件，历史预览地址目前仅用于图片消息。 */
+const isPreviewVideo = (index: number) =>
+  Boolean(props.mediaFiles[index]?.type.startsWith('video/'))
+
+/** 切换到前一张预览媒体。 */
+const showPreviousPreview = () => {
+  currentIndex.value = Math.max(currentIndex.value - 1, 0)
+}
+
+/** 切换到后一张预览媒体。 */
+const showNextPreview = () => {
+  currentIndex.value = Math.min(currentIndex.value + 1, previewSources.value.length - 1)
+}
 
 /** 删除当前缩略图中的媒体，并由父级同步更新待发送数组。 */
 const removeMedia = (index: number) => emit('remove', index)
@@ -253,6 +300,15 @@ watch(
   () => props.mediaFiles,
   files => syncMediaUrls(files),
   { immediate: true, deep: false }
+)
+
+/** 打开新的历史图片组时回到首张缩略图。 */
+watch(
+  () => props.previewUrls,
+  () => {
+    if (!props.mediaFiles.length) currentIndex.value = 0
+  },
+  { deep: false }
 )
 
 /** 组件销毁时释放 Blob URL，避免多次预览造成内存泄漏。 */

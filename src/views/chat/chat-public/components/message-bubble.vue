@@ -29,7 +29,11 @@
             class="mb-[6px] min-w-[190px] rounded-[4px] border-l-[4px] border-theme-primary px-[8px] py-[2px] bg-bg-2"
           >
             <p class="text-[11px] font-medium text-theme-primary">{{ message.reply.author }}</p>
-            <p class="mt-[2px] truncate text-[11px] text-text-2">{{ message.reply.preview }}</p>
+            <p class="mt-[2px] truncate text-[11px] text-text-2">
+              <template v-for="(part, index) in replyHighlightParts" :key="index">
+                <span :class="part.matched ? 'text-theme-primary' : ''">{{ part.text }}</span>
+              </template>
+            </p>
           </div>
 
           <!-- 当前回复消息内容。 -->
@@ -50,7 +54,9 @@
                 : 'text-[15px] leading-[20px]'
             "
           >
-            {{ message.text }}
+            <template v-for="(part, index) in messageHighlightParts" :key="index">
+              <span :class="part.matched ? 'text-theme-primary' : ''">{{ part.text }}</span>
+            </template>
           </p>
           <div
             class="flex items-center justify-end gap-[4px] text-text-3"
@@ -90,15 +96,31 @@
 import messageReadStatusImage from '@/static/img/chat/public/message-read-status.png'
 import messageRetryIcon from '@/static/img/chat/public/message-retry.png'
 import messageSendingStatusImage from '@/static/img/chat/public/message-sending-status.png'
+import { computed } from 'vue'
+import { getChatTextHighlightParts } from '../shared'
 import type { ChatMessage } from '../types'
 
-const props = withDefaults(defineProps<{ message: ChatMessage; displayMode?: 'h5' | 'pc' }>(), {
-  displayMode: 'h5'
-})
+const props = withDefaults(
+  defineProps<{ message: ChatMessage; displayMode?: 'h5' | 'pc'; highlightKeyword?: string }>(),
+  {
+    displayMode: 'h5',
+    highlightKeyword: ''
+  }
+)
 const emit = defineEmits<{
   focus: [message: ChatMessage, event: MouseEvent, target: HTMLElement | null]
   retry: [message: ChatMessage]
 }>()
+
+/** 生成当前消息正文的关键词高亮片段。 */
+const messageHighlightParts = computed(() =>
+  getChatTextHighlightParts(props.message.text, props.highlightKeyword)
+)
+
+/** 生成引用摘要的关键词高亮片段。 */
+const replyHighlightParts = computed(() =>
+  getChatTextHighlightParts(props.message.reply?.preview, props.highlightKeyword)
+)
 
 /** 将当前消息气泡的原生交互事件上抛，用于定位回复操作浮层。 */
 const handleFocus = (event: MouseEvent) => {

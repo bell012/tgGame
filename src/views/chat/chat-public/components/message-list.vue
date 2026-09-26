@@ -46,6 +46,9 @@
           <MessageBubble
             v-else
             :display-mode="props.displayMode"
+            :highlight-keyword="
+              message.id === props.highlightMessageId ? props.highlightKeyword : ''
+            "
             :message="message"
             @focus="handleFocus"
             @retry="$emit('retry', $event)"
@@ -87,13 +90,17 @@ const props = withDefaults(
     hasMoreCachedMessages?: boolean
     loadingOlderMessages?: boolean
     displayMode?: 'h5' | 'pc'
+    highlightMessageId?: string
+    highlightKeyword?: string
   }>(),
   {
     redPacketClaimingMessageIds: () => [],
     claimedRedPacketIds: () => [],
     hasMoreCachedMessages: false,
     loadingOlderMessages: false,
-    displayMode: 'h5'
+    displayMode: 'h5',
+    highlightMessageId: '',
+    highlightKeyword: ''
   }
 )
 const emit = defineEmits<{

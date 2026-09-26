@@ -195,6 +195,8 @@
     "imagePreview": "{current}/{total}",
     "photoPreview": "Photo Preview",
     "download": "Download",
+    "previousImage": "Previous image",
+    "nextImage": "Next image",
     "mediaDownloadHint": "Please take a screenshot to save.",
     "videoSaveHint": "Please screen record to save.",
     "imageSaveHint": "Please take a screenshot to save.",

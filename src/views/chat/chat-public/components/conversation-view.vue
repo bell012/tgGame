@@ -22,6 +22,8 @@
       :has-more-cached-messages="hasMoreCachedMessages"
       :loading-older-messages="loadingOlderMessages"
       :red-packet-claiming-message-ids="redPacketClaimingMessageIds"
+      :highlight-message-id="highlightMessageId"
+      :highlight-keyword="highlightKeyword"
       @claim-red-packet="$emit('claim-red-packet', $event)"
       @load-older="$emit('load-older')"
       @reply="$emit('reply', $event)"
@@ -108,6 +110,8 @@ const props = withDefaults(
     loadingOlderMessages?: boolean
     uploadingMedia?: boolean
     typing?: boolean
+    highlightMessageId?: string
+    highlightKeyword?: string
     displayMode?: 'h5' | 'pc'
   }>(),
   {
@@ -116,7 +120,9 @@ const props = withDefaults(
     claimedRedPacketIds: () => [],
     hasMoreCachedMessages: false,
     loadingOlderMessages: false,
-    uploadingMedia: false
+    uploadingMedia: false,
+    highlightMessageId: '',
+    highlightKeyword: ''
   }
 )
 

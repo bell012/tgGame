@@ -34,6 +34,39 @@ export function getMessagePreview(message: ChatMessage) {
   return message.text || ''
 }
 
+/** 将文本按搜索词拆分为安全的普通片段和高亮片段，避免使用 v-html 渲染用户消息。 */
+export const getChatTextHighlightParts = (value: unknown, keyword: unknown) => {
+  const text = String(value ?? '')
+  const normalizedKeyword = String(keyword ?? '').trim()
+  if (!text || !normalizedKeyword) {
+    return [{ text, matched: false }]
+  }
+
+  const normalizedText = text.toLocaleLowerCase()
+  const normalizedSearch = normalizedKeyword.toLocaleLowerCase()
+  const parts: Array<{ text: string; matched: boolean }> = []
+  let startIndex = 0
+  let matchIndex = normalizedText.indexOf(normalizedSearch, startIndex)
+
+  while (matchIndex !== -1) {
+    if (matchIndex > startIndex) {
+      parts.push({ text: text.slice(startIndex, matchIndex), matched: false })
+    }
+    parts.push({
+      text: text.slice(matchIndex, matchIndex + normalizedKeyword.length),
+      matched: true
+    })
+    startIndex = matchIndex + normalizedKeyword.length
+    matchIndex = normalizedText.indexOf(normalizedSearch, startIndex)
+  }
+
+  if (startIndex < text.length) {
+    parts.push({ text: text.slice(startIndex), matched: false })
+  }
+
+  return parts.length ? parts : [{ text, matched: false }]
+}
+
 /** 将服务端文件名或相对图片路径转换为项目当前图片域名下的完整地址。 */
 export const resolveChatMediaUrl = (value: unknown) => {
   const source = String(value ?? '').trim()

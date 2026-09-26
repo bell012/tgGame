@@ -40,6 +40,8 @@
         :loading-older-messages="loadingOlderMessages"
         :red-packet-claiming-message-ids="redPacketClaimingMessageIds"
         :uploading-media="uploadingImage"
+        :highlight-message-id="highlightMessageId"
+        :highlight-keyword="highlightKeyword"
         :mode="mode"
         :draft="draft"
         :reply-target="replyTarget"
@@ -167,6 +169,8 @@ const {
 const quickIssueVisible = ref(false)
 const activeIssue = ref<QuickIssue | null>(null)
 const searchVisible = ref(false)
+const highlightMessageId = ref('')
+const highlightKeyword = ref('')
 const previewImage = ref('')
 const previewMode = ref<'compose' | 'viewer'>('viewer')
 const pendingMediaFiles = ref<File[]>([])
@@ -185,6 +189,8 @@ const handleListBack = () => {
 
 /** 选择客服会话，读取本地消息缓存并建立当前客服的 Socket 连接。 */
 const handleConversationSelect = async (conversation: ConversationItem) => {
+  highlightMessageId.value = ''
+  highlightKeyword.value = ''
   await selectConversation(conversation)
   scrollToBottom()
 }
@@ -193,6 +199,8 @@ const handleConversationSelect = async (conversation: ConversationItem) => {
 const handleConversationBack = async () => {
   await leaveConversation()
   await loadConversations()
+  highlightMessageId.value = ''
+  highlightKeyword.value = ''
   quickIssueVisible.value = false
   activeIssue.value = null
   resetAfterSend()
@@ -258,10 +266,12 @@ const sendPendingMedia = async () => {
 }
 
 /** 从搜索结果返回会话并定位到当前消息区域。 */
-const handleSearchLocate = async (messageId: string) => {
+const handleSearchLocate = async (messageId: string, keyword: string) => {
   const located = await locateCurrentConversationMessage(messageId)
   searchVisible.value = false
   if (located) {
+    highlightMessageId.value = messageId
+    highlightKeyword.value = keyword
     await nextTick()
     conversationViewRef.value?.scrollToMessage(messageId)
   }

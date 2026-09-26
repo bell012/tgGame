@@ -18,19 +18,19 @@
         class="flex w-full items-center"
         :class="
           props.displayMode === 'pc'
-            ? 'h-[60px] gap-[10px] border-b border-common-100/[0.04] px-[10px] py-[10px]'
+            ? 'h-[60px] gap-[10px]    px-[10px] py-[10px]'
             : 'min-h-[75px] gap-[15px] rounded-[10px] bg-bg-2 px-[10px] py-[10px]'
         "
       >
         <span
-          class="shrink-0 rounded-full bg-common-100/[0.06]"
+          class="shrink-0 rounded-full bg-opacity-6"
           :class="props.displayMode === 'pc' ? 'size-[40px]' : 'size-[55px] rounded-[9px]'"
         />
         <span class="min-w-0 flex-1">
-          <i class="block h-[14px] w-[45%] rounded-[4px] bg-common-100/[0.06]" />
-          <i class="mt-[10px] block h-[12px] w-[75%] rounded-[4px] bg-common-100/[0.06]" />
+          <i class="block h-[14px] w-[45%] rounded-[4px] bg-opacity-6" />
+          <i class="mt-[10px] block h-[12px] w-[75%] rounded-[4px] bg-opacity-6" />
         </span>
-        <i class="h-[12px] w-[28px] rounded-[4px] bg-common-100/[0.06]" />
+        <i class="h-[12px] w-[28px] rounded-[4px] bg-opacity-6" />
       </div>
     </div>
 

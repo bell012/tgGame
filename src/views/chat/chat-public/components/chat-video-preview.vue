@@ -2,7 +2,7 @@
   <!-- PC 端视频预览弹窗。 -->
   <div
     v-if="props.displayMode === 'pc'"
-    class="fixed inset-0 z-[120] flex items-center justify-center bg-common-0/60"
+    class="fixed inset-0 z-[120] flex items-center justify-center bg-mask-60-1"
   >
     <!-- PC 端 836 × 540 视频预览主体。 -->
     <section class="h-[540px] w-[836px] overflow-hidden rounded-[8px] bg-bg-1">
@@ -13,7 +13,7 @@
         </strong>
         <button
           type="button"
-          class="absolute right-4 top-4 flex size-6 items-center justify-center rounded-[4px] bg-common-100/10 text-[20px] leading-none text-text-1"
+          class="absolute right-4 top-4 flex size-6 items-center justify-center rounded-[4px] bg-opacity-10 text-[20px] leading-none text-text-1"
           :aria-label="t('chatPublic.close')"
           @click="closePreview"
         >
@@ -39,7 +39,7 @@
         <!-- 点击中心按钮播放或暂停视频。 -->
         <button
           type="button"
-          class="absolute left-1/2 top-1/2 flex size-[60px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-common-0/40 text-[24px] text-text-1"
+          class="absolute left-1/2 top-1/2 flex size-[60px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-mask-40 text-[24px] text-text-1"
           :aria-label="isPlaying ? t('chatPublic.pauseVideo') : t('chatPublic.playVideo')"
           @click="togglePlay"
         >
@@ -108,7 +108,7 @@
     <!-- H5 端中央播放或暂停操作。 -->
     <button
       type="button"
-      class="absolute left-1/2 top-1/2 flex size-[46px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-common-0/40 text-[20px] text-text-1"
+      class="absolute left-1/2 top-1/2 flex size-[46px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-mask-40 text-[20px] text-text-1"
       :aria-label="isPlaying ? t('chatPublic.pauseVideo') : t('chatPublic.playVideo')"
       @click="togglePlay"
     >

@@ -1,6 +1,9 @@
 <template>
   <!-- 消息搜索全屏覆盖层。 -->
-  <section class="fixed inset-0 z-[110] flex flex-col bg-bg-1">
+  <section
+    class="z-[110] flex flex-col bg-bg-1"
+    :class="props.displayMode === 'pc' ? 'absolute inset-0' : 'fixed inset-0'"
+  >
     <!-- 搜索输入头部。 -->
     <header class="flex h-[49px] shrink-0 items-center gap-[12px] bg-bg-2 px-[14px]">
       <button
@@ -53,7 +56,7 @@
         :key="result.id"
         type="button"
         class="flex w-full items-center gap-[12px] border-b border-common-100/[0.04] py-[12px] text-left"
-        @click="$emit('locate', result.id)"
+        @click="$emit('locate', result.id, query.trim())"
       >
         <img
           :src="props.conversation?.avatar || avatarUrl"
@@ -70,9 +73,17 @@
               {{ getChatTimePeriod(result.timestamp) }}
             </time>
           </span>
-          <span class="mt-[7px] block truncate text-[14px] leading-[17px] text-text-2">
-            {{ getSearchResultText(result) }}
-          </span>
+          <!-- 搜索结果内容，并高亮当前匹配的关键字。 -->
+          <p
+            class="mt-[4px] line-clamp-2 whitespace-pre-wrap break-words text-[14px] leading-[17px] text-text-2"
+          >
+            <template
+              v-for="(part, index) in getChatTextHighlightParts(getSearchResultText(result), query)"
+              :key="index"
+            >
+              <span :class="part.matched ? 'text-theme-primary' : ''">{{ part.text }}</span>
+            </template>
+          </p>
         </span>
       </button>
       <p class="py-[18px] text-center text-[14px] text-text-3">{{ t('chatPublic.noMore') }}</p>
@@ -108,7 +119,12 @@ import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import SearchIcon from '@/static/svg/chat/public/search.svg?component'
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { formatChatMessageTime, getChatPlainText, getChatTimePeriod } from '../shared'
+import {
+  formatChatMessageTime,
+  getChatPlainText,
+  getChatTextHighlightParts,
+  getChatTimePeriod
+} from '../shared'
 import type { ChatMessage, ConversationItem } from '../types'
 
 import defaultImgDark from '@/static/img/explore/default.png'
@@ -125,7 +141,7 @@ const props = withDefaults(
   }
 )
 
-defineEmits<{ close: []; locate: [messageId: string] }>()
+defineEmits<{ close: []; locate: [messageId: string, keyword: string] }>()
 
 const { t } = useI18n()
 const query = ref('')
