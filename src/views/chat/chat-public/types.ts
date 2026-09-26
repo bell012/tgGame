@@ -40,6 +40,7 @@ export interface ChatMessage {
   status?: ChatMessageStatus
   timestamp?: number
   contentType?: string
+  socketContent?: string
   imageList?: ChatImageItem[]
   authorId?: string
   authorName?: string

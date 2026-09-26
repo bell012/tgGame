@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import redPacketIcon from '@/static/img/chat/public/red-packet-icon.svg'
+import redPacketIcon from '@/static/svg/chat/public/red-packet-icon.svg?url'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChatMessage } from '../types'

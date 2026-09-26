@@ -1,17 +1,58 @@
 import type { ChatMessage } from '../types'
 
 const CHAT_CACHE_DATABASE_NAME = 'tg-game-chat'
-const CHAT_CACHE_STORE_NAME = 'conversations'
-const CHAT_CACHE_VERSION = 1
-const CHAT_CACHE_MAX_MESSAGES = 200
+const CHAT_CACHE_CONVERSATION_STORE_NAME = 'conversations'
+const CHAT_CACHE_MESSAGE_STORE_NAME = 'messages'
+const CHAT_CACHE_VERSION = 2
+export const CHAT_CACHE_PAGE_SIZE = 30
 
-interface ChatMessageCacheRecord {
+interface LegacyChatMessageCacheRecord {
   key: string
-  messages: ChatMessage[]
+  messages?: ChatMessage[]
   updatedAt: number
 }
 
-/** 打开客服消息 IndexedDB；浏览器不支持时返回空值并降级为仅内存展示。 */
+interface ChatMessageCacheRecord {
+  key: string
+  conversationKey: string
+  messageId: string
+  timestamp: number
+  message: ChatMessage
+  updatedAt: number
+}
+
+export interface ChatMessageCacheCursor {
+  timestamp: number
+  messageId: string
+}
+
+interface CachedChatMessagePage {
+  messages: ChatMessage[]
+  hasMore: boolean
+}
+
+/** 为单条消息生成 IndexedDB 主键，避免不同客服会话的消息互相覆盖。 */
+const getMessageCacheKey = (conversationKey: string, messageId: string) =>
+  `${conversationKey}:${messageId}`
+
+/** 将 Vue 响应式消息递归转换为 IndexedDB 可结构化克隆的普通 JSON 对象。 */
+const cloneChatMessage = (message: ChatMessage): ChatMessage =>
+  JSON.parse(JSON.stringify(message)) as ChatMessage
+
+/** 将消息转换为可写入 IndexedDB 的独立快照，避免后续响应式修改影响缓存。 */
+const createMessageCacheRecord = (
+  conversationKey: string,
+  message: ChatMessage
+): ChatMessageCacheRecord => ({
+  key: getMessageCacheKey(conversationKey, message.id),
+  conversationKey,
+  messageId: message.id,
+  timestamp: Number(message.timestamp) || 0,
+  message: cloneChatMessage(message),
+  updatedAt: Date.now()
+})
+
+/** 打开客服消息 IndexedDB，并在升级时将旧数组缓存迁移到单消息表。 */
 const openChatCacheDatabase = () =>
   new Promise<IDBDatabase | null>(resolve => {
     if (typeof indexedDB === 'undefined') {
@@ -21,9 +62,44 @@ const openChatCacheDatabase = () =>
 
     const request = indexedDB.open(CHAT_CACHE_DATABASE_NAME, CHAT_CACHE_VERSION)
 
-    request.onupgradeneeded = () => {
-      if (!request.result.objectStoreNames.contains(CHAT_CACHE_STORE_NAME)) {
-        request.result.createObjectStore(CHAT_CACHE_STORE_NAME, { keyPath: 'key' })
+    request.onupgradeneeded = event => {
+      const database = request.result
+      const transaction = request.transaction
+      if (!transaction) return
+
+      const conversationStore = database.objectStoreNames.contains(
+        CHAT_CACHE_CONVERSATION_STORE_NAME
+      )
+        ? transaction.objectStore(CHAT_CACHE_CONVERSATION_STORE_NAME)
+        : database.createObjectStore(CHAT_CACHE_CONVERSATION_STORE_NAME, { keyPath: 'key' })
+      const messageStore = database.objectStoreNames.contains(CHAT_CACHE_MESSAGE_STORE_NAME)
+        ? transaction.objectStore(CHAT_CACHE_MESSAGE_STORE_NAME)
+        : database.createObjectStore(CHAT_CACHE_MESSAGE_STORE_NAME, { keyPath: 'key' })
+
+      if (!messageStore.indexNames.contains('byConversationTimestamp')) {
+        messageStore.createIndex(
+          'byConversationTimestamp',
+          ['conversationKey', 'timestamp', 'messageId'],
+          { unique: false }
+        )
+      }
+
+      // 旧版本按会话保存整个 messages 数组；升级时仅迁移一次为逐条消息记录。
+      if (event.oldVersion < 2) {
+        const cursorRequest = conversationStore.openCursor()
+        cursorRequest.onsuccess = () => {
+          const cursor = cursorRequest.result
+          if (!cursor) return
+
+          const legacyRecord = cursor.value as LegacyChatMessageCacheRecord
+          const conversationKey = String(legacyRecord.key ?? '')
+          legacyRecord.messages?.forEach(message => {
+            if (message?.id) {
+              messageStore.put(createMessageCacheRecord(conversationKey, message))
+            }
+          })
+          cursor.continue()
+        }
       }
     }
 
@@ -31,36 +107,69 @@ const openChatCacheDatabase = () =>
     request.onerror = () => resolve(null)
   })
 
-/** 从 IndexedDB 读取指定会员与客服会话的本地消息。 */
-export const loadCachedChatMessages = async (key: string): Promise<ChatMessage[]> => {
+/** 从 IndexedDB 读取指定会话的一页历史消息，默认返回最新消息。 */
+export const loadCachedChatMessages = async (
+  conversationKey: string,
+  options: { before?: ChatMessageCacheCursor; limit?: number } = {}
+): Promise<CachedChatMessagePage> => {
   const database = await openChatCacheDatabase()
-  if (!database) return []
+  if (!database) return { messages: [], hasMore: false }
 
+  const limit = options.limit ?? CHAT_CACHE_PAGE_SIZE
   return new Promise(resolve => {
-    const transaction = database.transaction(CHAT_CACHE_STORE_NAME, 'readonly')
-    const request = transaction.objectStore(CHAT_CACHE_STORE_NAME).get(key)
+    const transaction = database.transaction(CHAT_CACHE_MESSAGE_STORE_NAME, 'readonly')
+    const messageStore = transaction.objectStore(CHAT_CACHE_MESSAGE_STORE_NAME)
+    const messageIndex = messageStore.index('byConversationTimestamp')
+    const lowerBound: [string, number, string] = [conversationKey, 0, '']
+    const upperBound: [string, number, string] = options.before
+      ? [conversationKey, options.before.timestamp, options.before.messageId]
+      : [conversationKey, Number.MAX_SAFE_INTEGER, '\uffff']
+    const range = IDBKeyRange.bound(lowerBound, upperBound, false, Boolean(options.before))
+    const cachedMessages: ChatMessage[] = []
+    let hasMore = false
+    const request = messageIndex.openCursor(range, 'prev')
 
     request.onsuccess = () => {
-      const record = request.result as ChatMessageCacheRecord | undefined
-      resolve(Array.isArray(record?.messages) ? record.messages : [])
+      const cursor = request.result
+      if (!cursor) return
+
+      const record = cursor.value as ChatMessageCacheRecord
+      if (cachedMessages.length >= limit) {
+        hasMore = true
+        return
+      }
+
+      cachedMessages.push(record.message)
+      cursor.continue()
     }
-    request.onerror = () => resolve([])
-    transaction.oncomplete = () => database.close()
+    request.onerror = () => {
+      hasMore = false
+    }
+    transaction.oncomplete = () => {
+      database.close()
+      resolve({ messages: cachedMessages.reverse(), hasMore })
+    }
+    transaction.onerror = () => {
+      database.close()
+      resolve({ messages: [], hasMore: false })
+    }
+    transaction.onabort = () => {
+      database.close()
+      resolve({ messages: [], hasMore: false })
+    }
   })
 }
 
-/** 将会话消息限制数量后写入 IndexedDB，避免本地缓存无限增长。 */
-export const saveCachedChatMessages = async (key: string, messages: ChatMessage[]) => {
+/** 增量写入或更新单条会话消息，不再重写整段消息历史。 */
+export const saveCachedChatMessage = async (conversationKey: string, message: ChatMessage) => {
   const database = await openChatCacheDatabase()
   if (!database) return
 
   return new Promise<void>(resolve => {
-    const transaction = database.transaction(CHAT_CACHE_STORE_NAME, 'readwrite')
-    transaction.objectStore(CHAT_CACHE_STORE_NAME).put({
-      key,
-      messages: messages.slice(-CHAT_CACHE_MAX_MESSAGES),
-      updatedAt: Date.now()
-    } satisfies ChatMessageCacheRecord)
+    const transaction = database.transaction(CHAT_CACHE_MESSAGE_STORE_NAME, 'readwrite')
+    transaction
+      .objectStore(CHAT_CACHE_MESSAGE_STORE_NAME)
+      .put(createMessageCacheRecord(conversationKey, message))
 
     const finish = () => {
       database.close()

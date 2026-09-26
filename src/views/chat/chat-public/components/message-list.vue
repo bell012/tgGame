@@ -5,8 +5,13 @@
     data-chat-message-list
     class="min-h-0 flex-1 overflow-y-auto"
     :class="props.displayMode === 'pc' ? 'px-[12px] py-[12px]' : 'px-[14px] py-[14px]'"
-    @scroll="dismissReplyAction"
+    @scroll="handleScroll"
   >
+    <!-- 从本地缓存读取更早历史时显示的轻量加载提示。 -->
+    <p v-if="props.loadingOlderMessages" class="py-[6px] text-center text-[12px] text-text-3">
+      {{ t('common.loading') }}
+    </p>
+
     <!-- 消息气泡列表。 -->
     <div class="flex flex-col gap-[10px] pb-2">
       <template v-for="message in messages" :key="message.id">
@@ -27,6 +32,7 @@
           :display-mode="props.displayMode"
           :message="message"
           @focus="handleFocus"
+          @retry="$emit('retry', $event)"
           @view="$emit('view-image', $event)"
         />
         <MessageBubble
@@ -34,6 +40,7 @@
           :display-mode="props.displayMode"
           :message="message"
           @focus="handleFocus"
+          @retry="$emit('retry', $event)"
         />
       </template>
     </div>
@@ -53,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getMessagePreview } from '../shared'
 import type { ChatMessage, ChatReplyTarget } from '../types'
@@ -67,11 +74,15 @@ const props = withDefaults(
     messages: ChatMessage[]
     redPacketClaimingMessageIds?: string[]
     claimedRedPacketIds?: string[]
+    hasMoreCachedMessages?: boolean
+    loadingOlderMessages?: boolean
     displayMode?: 'h5' | 'pc'
   }>(),
   {
     redPacketClaimingMessageIds: () => [],
     claimedRedPacketIds: () => [],
+    hasMoreCachedMessages: false,
+    loadingOlderMessages: false,
     displayMode: 'h5'
   }
 )
@@ -79,6 +90,8 @@ const emit = defineEmits<{
   reply: [target: ChatReplyTarget]
   'view-image': [message: ChatMessage]
   'claim-red-packet': [message: ChatMessage]
+  'load-older': []
+  retry: [message: ChatMessage]
 }>()
 
 const { t } = useI18n()
@@ -89,11 +102,35 @@ const focusedMessage = ref<ChatMessage | null>(null)
 const focusedMessageElement = ref<HTMLElement | null>(null)
 const actionStyle = ref({ left: '50%', top: '36%' })
 let shouldIgnoreNextFocus = false
+let requestedOlderMessages = false
+let previousScrollHeight = 0
+let previousScrollTop = 0
 
 /** 关闭当前回复操作浮层，并清理选中消息的定位信息。 */
 const dismissReplyAction = () => {
   focusedMessage.value = null
   focusedMessageElement.value = null
+}
+
+/** 滚动到消息列表顶部时请求下一页本地历史，同时保存当前位置用于插入后的高度补偿。 */
+const handleScroll = () => {
+  dismissReplyAction()
+
+  const container = scrollRef.value
+  if (
+    !container ||
+    container.scrollTop > 24 ||
+    !props.hasMoreCachedMessages ||
+    props.loadingOlderMessages ||
+    requestedOlderMessages
+  ) {
+    return
+  }
+
+  requestedOlderMessages = true
+  previousScrollHeight = container.scrollHeight
+  previousScrollTop = container.scrollTop
+  emit('load-older')
 }
 
 /** 点击当前浮层和所选消息以外的区域时，关闭回复操作浮层。 */
@@ -167,6 +204,23 @@ const handleReplyClick = () => {
 onMounted(() => {
   document.addEventListener('pointerdown', handleDocumentPointerDown, true)
 })
+
+/** 本地旧记录插入顶部后补偿滚动高度，保持用户正在查看的消息位置不变。 */
+watch(
+  () => props.loadingOlderMessages,
+  async loading => {
+    if (loading || !requestedOlderMessages) return
+
+    await nextTick()
+    if (scrollRef.value) {
+      scrollRef.value.scrollTop =
+        previousScrollTop + scrollRef.value.scrollHeight - previousScrollHeight
+    }
+    requestedOlderMessages = false
+    previousScrollHeight = 0
+    previousScrollTop = 0
+  }
+)
 
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', handleDocumentPointerDown, true)

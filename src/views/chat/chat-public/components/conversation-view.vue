@@ -19,9 +19,13 @@
       :display-mode="props.displayMode"
       :messages="messages"
       :claimed-red-packet-ids="claimedRedPacketIds"
+      :has-more-cached-messages="hasMoreCachedMessages"
+      :loading-older-messages="loadingOlderMessages"
       :red-packet-claiming-message-ids="redPacketClaimingMessageIds"
       @claim-red-packet="$emit('claim-red-packet', $event)"
+      @load-older="$emit('load-older')"
       @reply="$emit('reply', $event)"
+      @retry="$emit('retry', $event)"
       @view-image="$emit('view-image', $event)"
     />
 
@@ -86,13 +90,17 @@ const props = withDefaults(
     issues: QuickIssue[]
     redPacketClaimingMessageIds?: string[]
     claimedRedPacketIds?: string[]
+    hasMoreCachedMessages?: boolean
+    loadingOlderMessages?: boolean
     typing?: boolean
     displayMode?: 'h5' | 'pc'
   }>(),
   {
     displayMode: 'h5',
     redPacketClaimingMessageIds: () => [],
-    claimedRedPacketIds: () => []
+    claimedRedPacketIds: () => [],
+    hasMoreCachedMessages: false,
+    loadingOlderMessages: false
   }
 )
 
@@ -101,6 +109,8 @@ defineEmits<{
   search: []
   reply: [target: ChatReplyTarget]
   'claim-red-packet': [message: ChatMessage]
+  'load-older': []
+  retry: [message: ChatMessage]
   issue: [issue: QuickIssue]
   'update:draft': [value: string]
   send: []

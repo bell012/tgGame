@@ -67,7 +67,7 @@
         @click="hasDraft ? $emit('send') : $emit('media')"
       >
         <img v-if="hasDraft" :src="chatSendButtonImage" alt="" class="size-[24px] object-contain" />
-        <img v-else :src="chatMoreH5Image" alt="" class="size-[24px] object-contain" />
+        <chatMoreH5Image v-else :src="chatMoreH5Image" alt="" class="size-[24px] object-contain" />
       </button>
     </div>
 
@@ -77,7 +77,8 @@
 </template>
 
 <script setup lang="ts">
-import chatMoreH5Image from '@/static/img/chat/public/chat-more-h5.png'
+import chatMoreH5Image from '@/static/svg/chat/public/more.svg?component'
+
 import chatMoreImage from '@/static/img/chat/public/chat-more.png'
 import chatSendButtonImage from '@/static/img/chat/public/chat-send-button.png'
 import chatSendIconImage from '@/static/img/chat/public/chat-send-icon.png'

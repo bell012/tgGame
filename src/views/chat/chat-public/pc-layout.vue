@@ -35,6 +35,8 @@
       :messages="messages"
       :issues="quickIssues"
       :claimed-red-packet-ids="claimedRedPacketIds"
+      :has-more-cached-messages="hasMoreCachedMessages"
+      :loading-older-messages="loadingOlderMessages"
       :red-packet-claiming-message-ids="redPacketClaimingMessageIds"
       :mode="mode"
       :draft="draft"
@@ -42,7 +44,9 @@
       @back="handleConversationBack"
       @reply="startReply"
       @claim-red-packet="handleRedPacketClaim"
+      @load-older="handleLoadOlderMessages"
       @issue="handleIssueSelect"
+      @retry="handleRetryMessage"
       @update:draft="setDraft"
       @send="handleSend"
       @emoji="toggleEmoji"
@@ -102,11 +106,15 @@ const {
   redPacketClaimingMessageIds,
   claimedRedPacketIds,
   redPacketSuccessAmount,
+  hasMoreCachedMessages,
+  loadingOlderMessages,
   initialize,
   selectConversation,
   leaveConversation,
+  loadOlderMessages,
   loadAutoReplies,
   sendTextMessage,
+  retryMessage,
   claimRedPacket,
   closeRedPacketSuccess,
   sendAutoReplyMessage,
@@ -141,9 +149,19 @@ const handleConversationBack = async () => {
   resetAfterSend()
 }
 
+/** 用户上滑至消息列表顶部时，读取当前会话更早的一页本地缓存记录。 */
+const handleLoadOlderMessages = () => {
+  void loadOlderMessages()
+}
+
 /** 领取当前点击的客服红包，并在接口成功后显示领取结果。 */
 const handleRedPacketClaim = (message: ChatMessage) => {
   void claimRedPacket(message)
+}
+
+/** 重新发送当前会话中连接失败的消息。 */
+const handleRetryMessage = (message: ChatMessage) => {
+  retryMessage(message)
 }
 
 /** 关闭 PC 聊天侧边抽屉并返回进入聊天前的页面。 */
@@ -217,7 +235,7 @@ onMounted(() => {
 
 /** 在缓存加载、发送或服务端推送新增消息后保持最新消息可见。 */
 watch(
-  () => messages.value.length,
+  () => messages.value[messages.value.length - 1]?.id,
   () => scrollToBottom()
 )
 </script>
