@@ -35,6 +35,12 @@
           @retry="$emit('retry', $event)"
           @view="$emit('view-image', $event)"
         />
+        <VideoMessage
+          v-else-if="message.type === 'video'"
+          :display-mode="props.displayMode"
+          :message="message"
+          @retry="$emit('retry', $event)"
+        />
         <MessageBubble
           v-else
           :display-mode="props.displayMode"
@@ -68,6 +74,7 @@ import ImageMessage from './image-message.vue'
 import MessageBubble from './message-bubble.vue'
 import RedPacketMessage from './red-packet-message.vue'
 import RedPacketSystemMessage from './red-packet-system-message.vue'
+import VideoMessage from './video-message.vue'
 
 const props = withDefaults(
   defineProps<{

@@ -39,6 +39,7 @@
         :has-more-cached-messages="hasMoreCachedMessages"
         :loading-older-messages="loadingOlderMessages"
         :red-packet-claiming-message-ids="redPacketClaimingMessageIds"
+        :uploading-media="uploadingImage"
         :mode="mode"
         :draft="draft"
         :reply-target="replyTarget"
@@ -56,8 +57,8 @@
         @cancel-reply="cancelReply"
         @emoji-select="handleEmojiSelect"
         @emoji-delete="handleEmojiDelete"
-        @photo="handleImageUpload"
-        @camera="handleImageUpload"
+        @photo="handleMediaUpload"
+        @camera="handleMediaUpload"
         @view-image="openImageViewer"
       />
 
@@ -121,6 +122,7 @@ const {
   activeConversation,
   loadingConversations,
   loadingAutoReplies,
+  uploadingImage,
   redPacketClaimingMessageIds,
   claimedRedPacketIds,
   redPacketSuccessAmount,
@@ -136,7 +138,7 @@ const {
   claimRedPacket,
   closeRedPacketSuccess,
   sendAutoReplyMessage,
-  sendImageFile
+  sendMediaFile
 } = useChatRuntime()
 const {
   draft,
@@ -209,9 +211,9 @@ const closeImagePreview = () => {
   mode.value = 'idle'
 }
 
-/** 上传图片并在服务端确认图片地址后发送 image Socket 消息。 */
-const handleImageUpload = async (file: File) => {
-  const sent = await sendImageFile(file)
+/** 上传图片或视频并在服务端确认媒体地址后发送对应的 Socket 消息。 */
+const handleMediaUpload = async (file: File) => {
+  const sent = await sendMediaFile(file)
   if (sent) {
     mode.value = 'idle'
   }

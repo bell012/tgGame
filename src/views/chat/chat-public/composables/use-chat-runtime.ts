@@ -99,6 +99,10 @@ const resolveUploadedImagePath = (result: unknown) => {
   return String(record.url || record.path || record.fileName || record.headPortrait || '').trim()
 }
 
+/** 判断用户选择的本地文件是否为可发送的视频格式。 */
+const isVideoFile = (file: File) =>
+  file.type.startsWith('video/') || /\.(mp4|mov|m4v|webm|avi|mkv)$/i.test(file.name)
+
 /** 读取或生成游客身份，确保同一浏览器会话可复用聊天缓存。 */
 const getChatVisitorId = () => {
   const existingValue = localStorage.getItem(CHAT_VISITOR_STORAGE_KEY)
@@ -336,6 +340,7 @@ export function useChatRuntime() {
     const timestamp = Number(payload.timestamp) || Date.now()
     const isOutgoing = payload.mine?.type === 'member'
     const isImage = payload.contentType === 'image'
+    const isVideo = payload.contentType === 'video'
     const isAutoReply =
       payload.contentType === 'autoReplyReq' || payload.contentType === 'autoReplyResp'
     const redPacket = payload.contentType === 'redPack' ? parseChatRedPacket(payload.content) : null
@@ -349,15 +354,18 @@ export function useChatRuntime() {
       direction: isOutgoing ? 'outgoing' : 'incoming',
       type: isImage
         ? 'image'
-        : isAutoReply
-          ? 'auto-reply'
-          : isRedPacket
-            ? 'red-pack'
-            : isReply
-              ? 'reply'
-              : 'text',
+        : isVideo
+          ? 'video'
+          : isAutoReply
+            ? 'auto-reply'
+            : isRedPacket
+              ? 'red-pack'
+              : isReply
+                ? 'reply'
+                : 'text',
       text: isRedPacket ? '' : getChatPlainText(payload.content),
       image: isImage ? resolveChatMediaUrl(imageList[0]?.imgUrl) : undefined,
+      video: isVideo ? resolveChatMediaUrl(payload.content) : undefined,
       imageList,
       time: formatChatMessageTime(timestamp),
       period: getChatTimePeriod(timestamp),
@@ -715,13 +723,16 @@ export function useChatRuntime() {
       type:
         contentType === 'image'
           ? 'image'
-          : replyTarget
-            ? 'reply'
-            : contentType === 'text'
-              ? 'text'
-              : 'auto-reply',
+          : contentType === 'video'
+            ? 'video'
+            : replyTarget
+              ? 'reply'
+              : contentType === 'text'
+                ? 'text'
+                : 'auto-reply',
       text: getChatPlainText(normalizedContent),
       image: imageList?.[0]?.imgUrl,
+      video: contentType === 'video' ? resolveChatMediaUrl(normalizedContent) : undefined,
       imageList,
       time: formatChatMessageTime(timestamp),
       period: getChatTimePeriod(timestamp),
@@ -921,6 +932,49 @@ export function useChatRuntime() {
     }
   }
 
+  /** 上传用户选择的视频文件，并以视频地址发送对应的 Socket 消息。 */
+  const sendVideoFile = async (file: File) => {
+    if (!isVideoFile(file)) {
+      globalShowToast({ message: 'Only video files are supported', type: 'fail' })
+      return false
+    }
+
+    uploadingImage.value = true
+    try {
+      const extension = file.name.split('.').pop() || 'mp4'
+      const fileName = `chat-${Date.now()}.${extension}`
+      const response = await Api.picture.upload({ file, fileName })
+
+      if (response.code !== 'C2') {
+        throw new Error(response.message || 'Video upload failed')
+      }
+
+      const videoPath = resolveUploadedImagePath(response.result)
+      if (!videoPath) {
+        throw new Error(response.message || 'Video upload failed')
+      }
+
+      return sendMessage(resolveChatMediaUrl(videoPath), 'video')
+    } catch (error) {
+      globalShowToast({
+        message: error instanceof Error ? error.message : 'Video upload failed',
+        type: 'fail'
+      })
+      return false
+    } finally {
+      uploadingImage.value = false
+    }
+  }
+
+  /** 根据本地文件类型分发图片或视频上传流程。 */
+  const sendMediaFile = (file: File) => {
+    if (file.type.startsWith('image/')) return sendImageFile(file)
+    if (isVideoFile(file)) return sendVideoFile(file)
+
+    globalShowToast({ message: 'Only images and videos are supported', type: 'fail' })
+    return Promise.resolve(false)
+  }
+
   /** 并行刷新客服列表与自动回复分类，供客服页面首次进入使用。 */
   const initialize = async () => {
     await Promise.all([loadConversations(), loadQuickIssues()])
@@ -956,6 +1010,7 @@ export function useChatRuntime() {
     claimRedPacket,
     closeRedPacketSuccess,
     sendAutoReplyMessage,
-    sendImageFile
+    sendImageFile,
+    sendMediaFile
   }
 }

@@ -1,6 +1,13 @@
 export type ConversationStatus = 'online' | 'offline' | 'typing'
 export type MessageDirection = 'incoming' | 'outgoing'
-export type MessageType = 'text' | 'image' | 'reply' | 'auto-reply' | 'red-pack' | 'system'
+export type MessageType =
+  | 'text'
+  | 'image'
+  | 'video'
+  | 'reply'
+  | 'auto-reply'
+  | 'red-pack'
+  | 'system'
 export type ChatComposerMode = 'idle' | 'typing' | 'emoji' | 'media' | 'reply'
 export type ChatMessageStatus = 'sending' | 'sent' | 'failed'
 
@@ -33,6 +40,7 @@ export interface ChatMessage {
   type: MessageType
   text?: string
   image?: string
+  video?: string
   time: string
   period?: string
   read?: boolean

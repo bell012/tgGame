@@ -35,8 +35,8 @@
           <span>{{ message.time }}</span>
           <span v-if="message.period">{{ message.period }}</span>
           <img
-            v-if="message.read"
-            :src="messageReadStatusImage"
+            v-if="message.direction === 'outgoing'"
+            :src="message.status === 'sent' ? messageReadStatusImage : messageSendingStatusImage"
             alt=""
             class="h-[10px] w-[15px] object-contain"
           />
@@ -60,6 +60,7 @@
 <script setup lang="ts">
 import messageReadStatusImage from '@/static/img/chat/public/message-read-status.png'
 import messageRetryIcon from '@/static/img/chat/public/message-retry.png'
+import messageSendingStatusImage from '@/static/img/chat/public/message-sending-status.png'
 import { onBeforeUnmount, ref } from 'vue'
 import type { ChatMessage } from '../types'
 

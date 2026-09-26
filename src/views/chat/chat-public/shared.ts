@@ -28,6 +28,7 @@ export function createMessageId() {
 /** 根据消息类型返回引用回复中使用的简短预览文本。 */
 export function getMessagePreview(message: ChatMessage) {
   if (message.type === 'image') return '1 Photo'
+  if (message.type === 'video') return '1 Video'
   return message.text || ''
 }
 

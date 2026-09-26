@@ -61,6 +61,19 @@
       @photo="$emit('photo', $event)"
       @camera="$emit('camera', $event)"
     />
+
+    <!-- 图片或视频上传期间覆盖当前会话，并在屏幕中线展示 Loading。 -->
+    <div
+      v-if="props.uploadingMedia"
+      class="fixed inset-0 z-[90] flex items-center justify-center bg-mask-60-1"
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        aria-label="Loading"
+        class="size-[36px] animate-spin rounded-full border-[3px] border-common-100/25 border-t-theme-primary"
+      ></span>
+    </div>
   </div>
 </template>
 
@@ -92,6 +105,7 @@ const props = withDefaults(
     claimedRedPacketIds?: string[]
     hasMoreCachedMessages?: boolean
     loadingOlderMessages?: boolean
+    uploadingMedia?: boolean
     typing?: boolean
     displayMode?: 'h5' | 'pc'
   }>(),
@@ -100,7 +114,8 @@ const props = withDefaults(
     redPacketClaimingMessageIds: () => [],
     claimedRedPacketIds: () => [],
     hasMoreCachedMessages: false,
-    loadingOlderMessages: false
+    loadingOlderMessages: false,
+    uploadingMedia: false
   }
 )
 
