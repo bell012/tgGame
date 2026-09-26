@@ -54,7 +54,7 @@
           :data-sports-live-match="match.id"
         >
           <div class="flex h-[14px] min-w-0 items-center gap-[14px] text-[10px] leading-3">
-            <span class="shrink-0 text-text-2">{{ page.getMatchTime(match) }}</span>
+            <MatchTime :match="match" class="shrink-0 text-text-2" />
             <span class="min-w-0 flex-1 truncate text-[11px]" :title="match.league">{{
               match.league
             }}</span>
@@ -169,7 +169,7 @@
             role="region"
             :aria-labelledby="`${idPrefix}-${group.id}-heading`"
           >
-            <MatchCardH5
+            <div
               v-for="match in group.matches"
               :key="match.id"
               v-match-visibility="{
@@ -177,16 +177,18 @@
                 eventId: match.EventId,
                 enabled: isGroupExpanded(group.id)
               }"
-              :match="match"
-              :time-label="page.getMatchTime(match)"
-              :MarketLines="match.MarketLines"
-              :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
-              :favorite="match.IsFavourite"
-              :favorite-pending="page.isMatchFavoritePending(match.id)"
-              @favorite="page.handleMatchFavorite(match.id)"
-              @select="selectOdds(match.id, $event)"
-              @media="showMediaPlaceholder"
-            />
+            >
+              <MatchCardH5
+                :match="match"
+                :MarketLines="match.MarketLines"
+                :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
+                :favorite="match.IsFavourite"
+                :favorite-pending="page.isMatchFavoritePending(match.id)"
+                @favorite="page.handleMatchFavorite(match.id)"
+                @select="selectOdds(match.id, $event)"
+                @media="showMediaPlaceholder"
+              />
+            </div>
             <p
               v-if="getGroupLoadState(group.id)?.loading"
               class="py-3 text-center text-xs text-text-2"
@@ -298,6 +300,7 @@ import MatchVersus from '../match-versus/index.vue'
 import MatchOdds from '../match-odds/index.vue'
 import { pickOverUnderOrFirstMarketLine } from '../match-odds/display'
 import MatchCardH5 from '../match-card/h5.vue'
+import MatchTime from '../match-card/time.vue'
 import type { SportsMatch } from '../../shared/types'
 import type { SportsPageState } from '../../index'
 import { useMatchVisibility } from '../../composables/useMatchVisibility'

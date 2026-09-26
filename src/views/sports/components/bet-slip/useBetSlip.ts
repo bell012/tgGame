@@ -61,8 +61,12 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
   const mode = ref<SportsBetMode>('single')
   const outcomes = ref<SelectedOutcome[]>([])
   const availability = ref<Record<string, 'checking' | 'unknown' | 'expired'>>({})
+  const isSelectionExpired = (outcome: SelectedOutcome) =>
+    availability.value[outcome.id] === 'expired' ||
+    sportsStore.isEventExpired(outcome.sportId, outcome.eventId)
   const selectionBlocked = (id: string) =>
-    availability.value[id] === 'checking' || availability.value[id] === 'expired'
+    availability.value[id] === 'checking' ||
+    outcomes.value.some(outcome => outcome.id === id && isSelectionExpired(outcome))
   const parlayStakes = ref<Record<string, string>>({})
   const focusedStakeId = ref('')
   const submitting = ref(false)
@@ -148,6 +152,10 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
     disposed = true
   })
   const confirmSelection = async (outcome: SelectedOutcome) => {
+    if (isSelectionExpired(outcome)) {
+      availability.value[outcome.id] = 'expired'
+      return
+    }
     if (['checking', 'expired'].includes(availability.value[outcome.id])) return
     const version = sportsStore.sportsSessionVersion
     checkedQuoteIds.add(outcome.id)
@@ -159,6 +167,10 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
       wagerSelectionId: outcome.WagerSelectionId
     })
     if (disposed || !outcomes.value.includes(outcome)) return
+    if (isSelectionExpired(outcome)) {
+      availability.value[outcome.id] = 'expired'
+      return
+    }
     if (version !== sportsStore.sportsSessionVersion || result === null) {
       availability.value[outcome.id] = 'unknown'
       return
@@ -183,6 +195,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
         )
         return {
           outcome,
+          expired: sportsStore.isEventExpired(outcome.sportId, outcome.eventId),
           missing: Boolean(event && !option),
           key: option
             ? JSON.stringify([
@@ -194,12 +207,16 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
                 option.Specifiers
               ])
             : '',
-          // 缺失时，下一次该赛事刷新可重试补查。
-          lines: event?.MarketLines
+          // 相同盘口沿用旧引用，缺失选项按赛事更新版本重试补查。
+          revision:
+            event && !option ? sportsStore.getEventRevision(outcome.sportId, outcome.eventId) : 0
         }
       })
     }),
     (current, previous) => {
+      for (const row of current.rows) {
+        if (row.expired) availability.value[row.outcome.id] = 'expired'
+      }
       if (!current.open) return
       if (!previous?.open || current.version !== previous.version) checkedQuoteIds.clear()
       let changed = false
@@ -230,7 +247,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
   const getSelectedWagerSelectionId = (matchId: string) =>
     outcomes.value.find(outcome => outcome.matchId === matchId)?.WagerSelectionId
   const getOutcomeSnapshot = (outcome: SelectedOutcome): SportsBetSelection => {
-    if (availability.value[outcome.id] === 'expired') return outcome.snapshot
+    if (isSelectionExpired(outcome)) return outcome.snapshot
     const event = sportsStore.getRefreshEvent(outcome.sportId, outcome.eventId)
     const refreshedMatch = event
       ? mapSportsMatches(
@@ -339,7 +356,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
         mode.value === 'parlay' &&
         (!outcome.source.openParlay || quote?.st === 439 || quote?.st === 464)
       const getStatus = (): NonNullable<SportsBetSelection['betStatus']> => {
-        if (availability.value[outcome.id] === 'expired') return 'unavailable'
+        if (isSelectionExpired(outcome)) return 'unavailable'
         if (availability.value[outcome.id] === 'checking') return 'pending'
         if (parlayUnsupported) return 'unavailable'
         if (quote?.st === 380 || quote?.mlsid === 2) return 'closed'
@@ -357,12 +374,11 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl }: BetSlipOptions) => {
         pending: '',
         open: '',
         closed: 'sports.betMarketClosed',
-        unavailable:
-          availability.value[outcome.id] === 'expired'
-            ? 'sports.betSelectionExpired'
-            : parlayUnsupported
-              ? 'sports.betParlayUnsupported'
-              : 'sports.betInfoSelectionUnavailable',
+        unavailable: isSelectionExpired(outcome)
+          ? 'sports.betSelectionExpired'
+          : parlayUnsupported
+            ? 'sports.betParlayUnsupported'
+            : 'sports.betInfoSelectionUnavailable',
         error: betInfoError.value || 'sports.betInfoFailed'
       }
       const statusMessage = statusMessages[status] ? t(statusMessages[status]) : ''

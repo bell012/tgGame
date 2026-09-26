@@ -32,9 +32,7 @@
               aria-hidden="true"
             />
           </button>
-          <span class="min-w-0 truncate" :title="timeLabel">
-            {{ timeLabel }}
-          </span>
+          <MatchTime :match="match" class="min-w-0 truncate" />
           <button
             v-if="match.hasVideo"
             type="button"
@@ -135,12 +133,12 @@ import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import { navigateTo } from '@/utils/router'
 import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
 import MatchOdds from '../match-odds/index.vue'
+import MatchTime from './time.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
 import type { SportsMatch } from '../../shared/types'
 
 const props = defineProps<{
   match: SportsMatch
-  timeLabel: string
   MarketLines: SportMarketLine[]
   selectedWagerSelectionId?: number
   favorite: boolean

@@ -10,7 +10,7 @@ import type { SportsRefreshTarget } from '@/stores/sports'
 import type { SportMarketLine } from '@/api/interface/sport'
 import { stripLocalePrefix } from '@/utils/locale'
 import { sportItems } from '../components/sports-navigation/sport-items'
-import { mapSportsMatches } from '../shared/match'
+import { useMatchDisplay } from './useMatchDisplay'
 import { createHomepageRefresh } from './refreshScheduler'
 import { useMatchTime } from './useMatchTime'
 
@@ -188,7 +188,10 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
   const homepageRefresh = createHomepageRefresh({
     visible: () => sportsStore.refreshVisibleEvents(refreshTargets.value),
     counts: () => sportsStore.refreshHomepageCounts(),
-    background: () => sportsStore.refreshHomepageBackground(),
+    background: async () => {
+      await sportsStore.refreshHomepageBackground()
+      sportsStore.pruneEventCache(getBetTargets())
+    },
     cancel: () => sportsStore.cancelHomepageRefresh()
   })
   let homepageReady = false
@@ -220,35 +223,21 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
   const matchListContext = computed(() =>
     JSON.stringify([storeMatchListContext.value, collectOnly.value])
   )
-  const matches = computed(() =>
-    mapSportsMatches(
-      eventsList.value,
-      selectedSportId.value,
-      getTeamLogoUrl,
-      undefined,
-      sportsStore.getEventClockUpdatedAt
-    )
-  )
-  // 热门名单决定顺序，联赛预览和按 ID 补查提供信息与主盘口，不限制必须是滚球。
-  const liveMatches = computed(() => {
-    const currentMatches = new Map(matches.value.map(match => [match.id, match]))
-    return mapSportsMatches(
-      hotEvents.value.map(event => ({
-        ...event.Competition,
-        competitionCount: 1,
-        Sports: [event]
-      })),
-      selectedSportId.value,
-      getTeamLogoUrl,
-      undefined,
-      sportsStore.getEventClockUpdatedAt
-    ).map(match => currentMatches.get(match.id) ?? match)
+  const { matches, liveMatches, matchById } = useMatchDisplay({
+    groups: () => eventsList.value,
+    hotEvents: () => hotEvents.value,
+    sportId: () => selectedSportId.value,
+    teamLogoUrl: getTeamLogoUrl,
+    clockUpdatedAt: sportsStore.getEventClockUpdatedAt
   })
-  // 热门赛事可加入投注单，但不参与下方列表的筛选和分页。
-  const matchById = computed(
-    () => new Map([...liveMatches.value, ...matches.value].map(match => [match.id, match]))
-  )
   const { getMatchTime } = useMatchTime({
+    retainClock: id => {
+      const [sportId, eventId] = id.split(':').map(Number)
+      return (
+        Boolean(sportsStore.getRefreshEvent(sportId, eventId)) ||
+        getBetTargets().some(target => target.sportId === sportId && target.eventId === eventId)
+      )
+    },
     enabled: () =>
       isHomepageRoute.value &&
       sportsPageActive.value &&

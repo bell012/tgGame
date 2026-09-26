@@ -64,9 +64,7 @@
       </div>
 
       <div class="mt-2 flex h-4 min-w-0 items-center gap-3 text-xs leading-4">
-        <span class="min-w-0 flex-1 truncate text-text-2">
-          {{ displayTime }}
-        </span>
+        <MatchTime :match="match" class="min-w-0 flex-1 truncate text-text-2" />
         <div
           v-if="match.cornerScore || totalScore"
           class="ml-auto flex shrink-0 items-center gap-3"
@@ -135,13 +133,13 @@ import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import { navigateTo } from '@/utils/router'
 import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
 import MatchOdds from '../match-odds/index.vue'
+import MatchTime from './time.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
 import type { SportsMatch } from '../../shared/types'
 import { sportItems } from '../sports-navigation/sport-items'
 
 const props = defineProps<{
   match: SportsMatch
-  timeLabel: string
   MarketLines: SportMarketLine[]
   selectedWagerSelectionId?: number
   expanded: boolean
@@ -168,13 +166,6 @@ const scoreLabel = computed(() =>
     ? phaseLabel.value
     : t('sports.matchCard.totalScore')
 )
-const displayTime = computed(() => {
-  if (props.match.sportId !== 1 || !phaseLabel.value) return props.timeLabel
-  const clock = props.timeLabel.slice(phaseLabel.value.length).trim()
-  return props.timeLabel.startsWith(phaseLabel.value)
-    ? clock || props.match.kickoff
-    : props.timeLabel
-})
 
 const emit = defineEmits<{
   'update:expanded': [value: boolean]

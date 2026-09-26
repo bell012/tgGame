@@ -39,7 +39,7 @@
               </template>
               <span class="truncate" :title="match.league">{{ match.league }}</span>
             </div>
-            <span class="shrink-0 text-text-1">{{ page.getMatchTime(match) }}</span>
+            <MatchTime :match="match" class="shrink-0 text-text-1" />
           </div>
 
           <MatchVersus
@@ -119,22 +119,25 @@
         text-class="mt-4 text-center text-sm text-text-2"
       />
       <div class="grid min-w-0 grid-cols-4 gap-3" data-testid="sports-match-grid">
-        <MatchCardPc
+        <div
           v-for="match in pagedMatches"
           :key="match.id"
           v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
-          :match="match"
-          :time-label="page.getMatchTime(match)"
-          :MarketLines="match.MarketLines"
-          :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
-          :expanded="expandedMatchId === match.id"
-          :favorite="match.IsFavourite"
-          :favorite-pending="isMatchFavoritePending(match.id)"
-          @update:expanded="setMatchExpanded(match.id, $event)"
-          @favorite="handleMatchFavorite(match.id)"
-          @select="selectOdds(match.id, $event)"
-          @media="showMediaPlaceholder"
-        />
+          class="min-w-0"
+        >
+          <MatchCardPc
+            :match="match"
+            :MarketLines="match.MarketLines"
+            :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
+            :expanded="expandedMatchId === match.id"
+            :favorite="match.IsFavourite"
+            :favorite-pending="isMatchFavoritePending(match.id)"
+            @update:expanded="setMatchExpanded(match.id, $event)"
+            @favorite="handleMatchFavorite(match.id)"
+            @select="selectOdds(match.id, $event)"
+            @media="showMediaPlaceholder"
+          />
+        </div>
       </div>
       <p
         v-if="page.matchesLoading.value && !page.homepageLoading.value"
@@ -208,6 +211,7 @@ import MatchOdds from './components/match-odds/index.vue'
 import LeagueTabs_PC from './components/liansai_tabs/pc.vue'
 import FilterSearch_PC from './components/filter_search/pc.vue'
 import MatchCardPc from './components/match-card/pc.vue'
+import MatchTime from './components/match-card/time.vue'
 import BetSlipPc from './components/bet-slip/pc.vue'
 import H5Page from './components/page/h5.vue'
 import BetSlipH5 from './components/bet-slip/h5.vue'

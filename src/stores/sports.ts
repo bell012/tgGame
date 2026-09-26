@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, ref, shallowReactive, watch } from 'vue'
+import type { ComputedRef } from 'vue'
 import Api from '@/api'
 import type {
   FavouriteEventParams,
@@ -66,12 +67,7 @@ type SportsRequestError = {
 }
 
 type SportsFavouriteResult =
-  | 'success'
-  | 'synced'
-  | 'failed'
-  | 'login-failed'
-  | 'auth-expired'
-  | 'stale'
+  'success' | 'synced' | 'failed' | 'login-failed' | 'auth-expired' | 'stale'
 
 type SportsCredentials = Readonly<{ memberCode: string; token: string }>
 
@@ -94,12 +90,76 @@ const SELECTED_EVENT_BATCH_SIZE = 5
 const MAX_CONCURRENT_LEAGUES = 3
 const EVENT_FRESH_TIME = 10_000
 
-const mergeDefined = <T extends object>(previous: T, incoming: T): T =>
-  Object.assign(
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
+
+/** 接口数据只含 JSON 值；内容相同时沿用旧引用。 */
+const sameData = (left: unknown, right: unknown): boolean => {
+  if (Object.is(left, right)) return true
+  if (Array.isArray(left) && Array.isArray(right))
+    return (
+      left.length === right.length && left.every((value, index) => sameData(value, right[index]))
+    )
+  if (!isRecord(left) || !isRecord(right)) return false
+  const keys = Object.keys(left)
+  return (
+    keys.length === Object.keys(right).length &&
+    keys.every(
+      key => Object.prototype.hasOwnProperty.call(right, key) && sameData(left[key], right[key])
+    )
+  )
+}
+
+export const reuseEqual = <T>(previous: T, incoming: T): T =>
+  sameData(previous, incoming) ? previous : incoming
+
+export const reuseList = <T>(previous: T[], incoming: T[]): T[] =>
+  previous.length === incoming.length && previous.every((item, index) => item === incoming[index])
+    ? previous
+    : incoming
+
+const mergeDefined = <T extends object>(previous: T, incoming: Partial<T>): T => {
+  const next = Object.assign(
     {},
     previous,
-    Object.fromEntries(Object.entries(incoming).filter(([, value]) => value !== undefined))
+    Object.fromEntries(
+      Object.entries(incoming)
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => [key, reuseEqual(Reflect.get(previous, key), value)])
+    )
   )
+  return reuseEqual(previous, next)
+}
+
+/** 大页拆成小批更新，批次之间允许浏览器处理点击和绘制。 */
+const mergeGroupBatches = async (
+  groups: readonly SportCompetitionGroup[],
+  apply: (groups: SportCompetitionGroup[]) => void,
+  isCurrent: () => boolean
+): Promise<boolean> => {
+  const size = 20
+  let batch: SportCompetitionGroup[] = []
+  let count = 0
+  for (const group of groups) {
+    for (let offset = 0; offset < Math.max(1, group.Sports.length);) {
+      if (!isCurrent()) return false
+      const sports = group.Sports.slice(offset, offset + size - count)
+      batch.push({ ...group, Sports: sports })
+      const length = Math.max(1, sports.length)
+      count += length
+      offset += length
+      if (count === size) {
+        apply(batch)
+        batch = []
+        count = 0
+        await new Promise<void>(resolve => setTimeout(resolve, 0))
+      }
+    }
+  }
+  if (!isCurrent()) return false
+  if (batch.length) apply(batch)
+  return true
+}
 
 type MarketRefreshScope = Pick<GetSelectedEventInfoParams, 'BetTypeIds' | 'PeriodIds'>
 
@@ -126,38 +186,52 @@ const mergeMarketLines = (
   for (const line of incoming) {
     const old = previousById.get(line.MarketlineId)
     // WagerSelections 使用新列表，不保留本次已移除的投注项。
-    lines.set(line.MarketlineId, old ? mergeDefined(old, line) : line)
+    const oldSelections = new Map(old?.WagerSelections?.map(item => [item.WagerSelectionId, item]))
+    const next =
+      old && Array.isArray(line.WagerSelections)
+        ? {
+            ...line,
+            WagerSelections: line.WagerSelections.map(item =>
+              reuseEqual(oldSelections.get(item.WagerSelectionId) ?? item, item)
+            )
+          }
+        : line
+    lines.set(line.MarketlineId, old ? mergeDefined(old, next) : next)
   }
-  return [...lines.values()]
+  return reuseList(previous, [...lines.values()])
 }
 
 const mergeEventFields = (
   previous: SportEvent,
   incoming: SportEvent,
   scope?: MarketRefreshScope
-): SportEvent => ({
-  ...mergeDefined(previous, incoming),
-  Competition:
-    previous.Competition && incoming.Competition
-      ? mergeDefined(previous.Competition, incoming.Competition)
-      : (incoming.Competition ?? previous.Competition),
-  MarketLines: mergeMarketLines(previous.MarketLines ?? [], incoming.MarketLines, scope)
-})
+): SportEvent => {
+  const { Competition, MarketLines, ...fields } = incoming
+  return {
+    ...mergeDefined(previous, fields),
+    Competition:
+      previous.Competition && Competition
+        ? mergeDefined(previous.Competition, Competition)
+        : (Competition ?? previous.Competition),
+    MarketLines: mergeMarketLines(previous.MarketLines ?? [], MarketLines, scope)
+  }
+}
 
 type LeagueEventsState = {
   data: SportEvent[]
   response: GetCompetitionPageResponse | null
   nextPage: number
+  receivedEventIds: Set<number>
   complete: boolean
   loading: boolean
   error: SportsRequestError | null
 }
 
 /** 同 ID 原位更新，新增赛事追加；预览与后续分页始终保留各自原有顺序。 */
-const mergeSportEvents = (previous: readonly SportEvent[], incoming: readonly SportEvent[]) => {
+const mergeSportEvents = (previous: SportEvent[], incoming: readonly SportEvent[]) => {
   const merged = new Map(previous.map(event => [event.EventId, event]))
   incoming.forEach(event => merged.set(event.EventId, event))
-  return [...merged.values()]
+  return reuseList(previous, [...merged.values()])
 }
 // 缺少主列表盘型参照时沿用当前网关已验证的马来盘默认值，不转换返回赔率。
 const DEFAULT_HOMEPAGE_ODDS_TYPE: SportsOddsType = 1
@@ -559,12 +633,23 @@ export const useSportsStore = defineStore('sports', () => {
       }
     }
   }
-  const withMemberFavourite = (event: SportEvent): SportEvent => ({
-    ...event,
-    IsFavourite: isLoggedIn.value
-      ? (memberFavourites.get(event.EventId)?.value ?? event.IsFavourite === true)
-      : false
-  })
+  const favouriteViews = new WeakMap<SportEvent, ComputedRef<SportEvent>>()
+  const withMemberFavourite = (event: SportEvent): SportEvent => {
+    let view = favouriteViews.get(event)
+    if (!view) {
+      view = computed<SportEvent>(previous => {
+        const next = {
+          ...event,
+          IsFavourite: isLoggedIn.value
+            ? (memberFavourites.get(event.EventId)?.value ?? event.IsFavourite === true)
+            : false
+        }
+        return previous ? reuseEqual(previous, next) : next
+      })
+      favouriteViews.set(event, view)
+    }
+    return view.value
+  }
   const selectedSportId = ref(1)
   const market = ref<SportsMarket>(3)
   // 接口分类是唯一原始状态；筛选标签由它派生，点击标签时反向更新分类。
@@ -612,6 +697,19 @@ export const useSportsStore = defineStore('sports', () => {
   )
   let eventReadRevision = 0
   const eventKey = (sportId: number, eventId: number) => `${sportId}:${eventId}`
+  const expiredEvents = shallowReactive(new Map<string, number>())
+  const isEventExpired = (sportId: number, eventId: number) =>
+    expiredEvents.has(eventKey(sportId, eventId))
+  const activeEvents = (sportId: number, items: readonly SportEvent[]) =>
+    items.filter(event => !isEventExpired(sportId, event.EventId))
+  const activeGroups = (sportId: number, groups: SportCompetitionGroup[]) =>
+    reuseList(
+      groups,
+      groups.map(group => {
+        const sports = activeEvents(sportId, group.Sports)
+        return sports.length === group.Sports.length ? group : { ...group, Sports: sports }
+      })
+    )
   const rememberEvent = (
     sportId: number,
     incoming: SportEvent,
@@ -623,6 +721,7 @@ export const useSportsStore = defineStore('sports', () => {
   ) => {
     const key = eventKey(sportId, incoming.EventId)
     const previous = refreshedEvents.get(key)
+    if (expiredEvents.has(key)) return incoming
     if (!previous) {
       const event = reactive({ ...incoming })
       refreshedEvents.set(
@@ -649,14 +748,72 @@ export const useSportsStore = defineStore('sports', () => {
     revision: number,
     receivedAt = Date.now()
   ) =>
-    groups.map(group => ({
+    activeGroups(sportId, groups).map(group => ({
       ...group,
       Sports: group.Sports.map(event => rememberEvent(sportId, event, revision, { receivedAt }))
     }))
   const getRefreshEvent = (sportId: number, eventId: number) =>
     refreshedEvents.get(eventKey(sportId, eventId))?.event
+  const getEventRevision = (sportId: number, eventId: number) =>
+    refreshedEvents.get(eventKey(sportId, eventId))?.revision ?? 0
   const getEventClockUpdatedAt = (sportId: number, eventId: number) =>
     refreshedEvents.get(eventKey(sportId, eventId))?.clockUpdatedAt ?? Date.now()
+
+  // 仅按成功补查的 ID 范围清理，保留较新请求确认过的赛事。
+  const updateSelectedEvents = (
+    sportId: number,
+    eventIds: readonly number[],
+    incoming: SportEvent[],
+    revision: number,
+    marketScope: MarketRefreshScope
+  ) => {
+    const returnedIds = new Set(incoming.map(event => event.EventId))
+    let removed = false
+    for (const id of eventIds) {
+      const key = eventKey(sportId, id)
+      const latestRevision = Math.max(
+        refreshedEvents.get(key)?.revision ?? 0,
+        expiredEvents.get(key) ?? 0
+      )
+      if (returnedIds.has(id) || revision < latestRevision) continue
+      expiredEvents.set(key, revision)
+      refreshedEvents.delete(key)
+      removed = true
+    }
+    for (const event of incoming) {
+      const key = eventKey(sportId, event.EventId)
+      const expiredRevision = expiredEvents.get(key)
+      if (expiredRevision !== undefined) {
+        if (revision <= expiredRevision) continue
+        expiredEvents.delete(key)
+      }
+      rememberEvent(sportId, event, revision, { marketScope })
+    }
+    if (!removed) return
+    if (selectedSportId.value === sportId) {
+      if (allSportsDataScope.value === getAllSportsContext())
+        allSportsState.data = activeGroups(sportId, allSportsState.data)
+      if (leagueDetailsContext === getLeagueDetailsContext()) {
+        for (const state of leagueDetails.values()) state.data = activeEvents(sportId, state.data)
+      }
+      if (hotDetailsContext.value === getAllSportsContext())
+        hotDetailsState.data = activeEvents(sportId, hotDetailsState.data)
+    }
+    if (events.state.params?.SportId === sportId && events.state.data) {
+      events.state.data = {
+        ...events.state.data,
+        e: activeGroups(sportId, events.state.data.e ?? [])
+      }
+    }
+    if (competitionListState.data) {
+      competitionListState.data = {
+        ...competitionListState.data,
+        result: competitionListState.data.result?.filter(
+          record => !isEventExpired(record.sportId, record.eventId)
+        )
+      }
+    }
+  }
 
   // 滚球 今日 早盘 串关数据
   const counts = createSportsRequest(getBaseUrl, sportsApi.getAllSportCount, response =>
@@ -861,7 +1018,9 @@ export const useSportsStore = defineStore('sports', () => {
   }
   // 收藏只改变排序；联赛候选及热门补全仍可使用同球种、分类下最近的预览。
   const allLeagueGroups = computed(() =>
-    allSportsDataScope.value === getAllSportsContext() ? allSportsState.data : []
+    allSportsDataScope.value === getAllSportsContext()
+      ? activeGroups(selectedSportId.value, allSportsState.data)
+      : []
   )
 
   // 每个联赛独立缓存与页码；搜索结果不读写这一份补查缓存。
@@ -898,6 +1057,7 @@ export const useSportsStore = defineStore('sports', () => {
         data: [],
         response: null,
         nextPage: 1,
+        receivedEventIds: new Set<number>(),
         complete: false,
         loading: false,
         error: null
@@ -958,8 +1118,8 @@ export const useSportsStore = defineStore('sports', () => {
             state.error = { kind: 'response', message: 'Unexpected league events response' }
             return null
           }
-          const previousIds = new Set(state.data.map(event => event.EventId))
-          const madeProgress = response.e.some(event => !previousIds.has(event.EventId))
+          // 只对比本轮已收到的赛事，旧缓存不参与重复页判断。
+          const madeProgress = response.e.some(event => !state.receivedEventIds.has(event.EventId))
           if (
             (response.hasNextPage && !response.e.length) ||
             (state.nextPage > 1 && response.e.length > 0 && !madeProgress)
@@ -969,8 +1129,11 @@ export const useSportsStore = defineStore('sports', () => {
           }
           state.data = mergeSportEvents(
             state.data,
-            response.e.map(event => rememberEvent(common.SportId, event, revision))
+            activeEvents(common.SportId, response.e).map(event =>
+              rememberEvent(common.SportId, event, revision)
+            )
           )
+          for (const event of response.e) state.receivedEventIds.add(event.EventId)
           state.nextPage += 1
           state.complete = !response.hasNextPage
         }
@@ -1007,10 +1170,15 @@ export const useSportsStore = defineStore('sports', () => {
     )
     for (const id of leagueJobs.keys()) if (!next.has(id)) cancelLeague(id)
     for (const id of next) {
-      // 同一次展示期间不自动重试失败页；重新展开时才允许继续。
+      // 重新展开从第一页刷新，保留旧赛事，避免列表闪空。
       if (!requestedLeagueIds.has(id)) {
         const state = getLeagueLoadState(id)
-        if (state) state.error = null
+        if (state) {
+          state.nextPage = 1
+          state.receivedEventIds.clear()
+          state.complete = false
+          state.error = null
+        }
       }
     }
     requestedLeagueIds = next
@@ -1098,7 +1266,7 @@ export const useSportsStore = defineStore('sports', () => {
       // 收藏排序属于后台刷新，完整成功后再替换，避免中间页缩短列表及页码。
       if (retainPrevious) return
       // 每页成功即替换为本轮累积结果，组件不必等待所有联赛页完成。
-      allSportsState.data = [...groups.values()]
+      allSportsState.data = activeGroups(params.SportId, [...groups.values()])
       allSportsState.complete = false
       allSportsDataScope.value = scope
       allSportsDataContext.value = context
@@ -1174,18 +1342,26 @@ export const useSportsStore = defineStore('sports', () => {
         if (seenPages.has(signature)) return fail('Repeated all-league page')
         seenPages.add(signature)
         let progressed = false
-        for (const group of rememberGroups(params.SportId, response.e, revision)) {
-          const previous = groups.get(group.CompetitionId)
-          const entries = new Map((previous?.Sports ?? []).map(event => [event.EventId, event]))
-          if (!previous) progressed = true
-          for (const event of group.Sports) {
-            if (!entries.has(event.EventId)) progressed = true
-            entries.set(event.EventId, event)
-          }
-          groups.set(group.CompetitionId, { ...group, Sports: [...entries.values()] })
-        }
+        const receivedAt = Date.now()
+        const applied = await mergeGroupBatches(
+          response.e,
+          batch => {
+            for (const group of rememberGroups(params.SportId, batch, revision, receivedAt)) {
+              const previous = groups.get(group.CompetitionId)
+              const entries = new Map((previous?.Sports ?? []).map(event => [event.EventId, event]))
+              if (!previous) progressed = true
+              for (const event of group.Sports) {
+                if (!entries.has(event.EventId)) progressed = true
+                entries.set(event.EventId, event)
+              }
+              groups.set(group.CompetitionId, { ...group, Sports: [...entries.values()] })
+            }
+            publish(groups)
+          },
+          isCurrent
+        )
+        if (!applied) return null
         if (!progressed) return fail('All-league pagination made no progress')
-        publish(groups)
       }
       if (groups.size < expectedTotal) return fail('Fewer leagues received than Total')
       return [...groups.values()]
@@ -1196,7 +1372,7 @@ export const useSportsStore = defineStore('sports', () => {
         const data = await readPages()
         if (!data || !isCurrent()) return null
         // complete 仅表示联赛分页结束；各联赛保留接口预览，不按计数补齐全部赛事。
-        allSportsState.data = data
+        allSportsState.data = activeGroups(params.SportId, data)
         allSportsState.complete = true
         allSportsDataScope.value = scope
         allSportsDataContext.value = context
@@ -1416,14 +1592,12 @@ export const useSportsStore = defineStore('sports', () => {
             }
             return null
           }
-          // e 可以为空，表示本批赛事已不可用；保留真实响应，不伪造盘口。
-          response.e.forEach(event =>
-            received.set(
-              event.EventId,
-              rememberEvent(sportId, event, revision, { marketScope: params })
-            )
-          )
-          hotDetailsState.data = [...received.values()]
+          updateSelectedEvents(sportId, batch, response.e, revision, params)
+          for (const event of activeEvents(sportId, response.e)) {
+            const cached = getRefreshEvent(sportId, event.EventId)
+            if (cached) received.set(event.EventId, cached)
+          }
+          hotDetailsState.data = activeEvents(sportId, [...received.values()])
         }
         completedHotDetailsKey = key
         return hotDetailsState.data
@@ -1498,7 +1672,9 @@ export const useSportsStore = defineStore('sports', () => {
   const leagueGroups = computed(() => allLeagueGroups.value)
   const hotEventRecords = computed(() =>
     competitionListContext.value === getCompetitionListContext()
-      ? (competitionListState.data?.result ?? [])
+      ? (competitionListState.data?.result ?? []).filter(
+          record => !isEventExpired(record.sportId, record.eventId)
+        )
       : []
   )
   const allEventsById = computed(
@@ -1567,7 +1743,7 @@ export const useSportsStore = defineStore('sports', () => {
     JSON.stringify([getLeagueContext(), sortType.value, competitionIds.value])
   )
   // 筛选刚变化、尚未发起新请求时，也不能把旧赛事按新球种展示。
-  const eventsList = computed(() => {
+  const eventsList = computed<SportCompetitionGroup[]>(previous => {
     const groups = useCachedEvents.value
       ? allSportsDataContext.value === getAllSportsQueryContext()
         ? allLeagueGroups.value
@@ -1576,15 +1752,21 @@ export const useSportsStore = defineStore('sports', () => {
         ? (events.state.data?.e ?? [])
         : []
     const selected = new Set(competitionIds.value)
-    return groups
+    const previousGroups = new Map(previous?.map(group => [group.CompetitionId, group]))
+    const next = groups
       .filter(group => !selected.size || selected.has(group.CompetitionId))
       .map(group => {
         const detail = keyword.value.trim() ? undefined : getLeagueLoadState(group.CompetitionId)
         const sports = detail?.data.length
           ? mergeSportEvents(group.Sports, detail.data)
           : group.Sports
-        return { ...group, Sports: sports.map(withMemberFavourite) }
+        const nextGroup = {
+          ...group,
+          Sports: activeEvents(selectedSportId.value, sports).map(withMemberFavourite)
+        }
+        return reuseEqual(previousGroups.get(group.CompetitionId) ?? nextGroup, nextGroup)
       })
+    return reuseList(previous ?? [], next)
   })
   const matchListLoading = computed(
     () =>
@@ -1689,6 +1871,7 @@ export const useSportsStore = defineStore('sports', () => {
   const refreshingEvents = new Map<string, Promise<unknown>>()
   let refreshGeneration = 0
   let visibleQueue: Promise<unknown> = Promise.resolve()
+  let backgroundEventQueue: Promise<unknown> = Promise.resolve()
   const getRefreshContext = () =>
     JSON.stringify([getEventsContext(), getAllSportsQueryContext(), memberCodeGeneration])
   const cancelHomepageRefresh = () => {
@@ -1697,6 +1880,7 @@ export const useSportsStore = defineStore('sports', () => {
     refreshJobs.clear()
     refreshingEvents.clear()
     visibleQueue = Promise.resolve()
+    backgroundEventQueue = Promise.resolve()
   }
   const runHomepageRefresh = (
     key: string,
@@ -1732,18 +1916,22 @@ export const useSportsStore = defineStore('sports', () => {
         { signal }
       )
       if (isCurrent() && isSportsSuccess(response) && Array.isArray(response.spc)) {
-        counts.state.data = response
+        counts.state.data = reuseEqual(counts.state.data, response)
         counts.state.response = response
       }
       return response
     })
 
-  const refreshVisibleEvents = (targets: readonly SportsRefreshTarget[]): Promise<unknown> => {
+  const refreshVisibleEvents = (
+    targets: readonly SportsRefreshTarget[],
+    { force = false, background = false }: { force?: boolean; background?: boolean } = {}
+  ): Promise<unknown> => {
     const waiting = new Set<Promise<unknown>>()
     const sports = new Map<number, Set<number>>()
     for (const { sportId, eventId } of targets) {
       if (!Number.isSafeInteger(sportId) || sportId <= 0) continue
       if (!Number.isSafeInteger(eventId) || eventId <= 0) continue
+      if (isEventExpired(sportId, eventId)) continue
       const key = eventKey(sportId, eventId)
       const pending = refreshingEvents.get(key)
       if (pending) {
@@ -1751,7 +1939,7 @@ export const useSportsStore = defineStore('sports', () => {
         continue
       }
       const cached = refreshedEvents.get(key)
-      if (cached && Date.now() - cached.updatedAt < EVENT_FRESH_TIME) continue
+      if (!force && cached && Date.now() - cached.updatedAt < EVENT_FRESH_TIME) continue
       const ids = sports.get(sportId) ?? new Set<number>()
       ids.add(eventId)
       sports.set(sportId, ids)
@@ -1760,11 +1948,12 @@ export const useSportsStore = defineStore('sports', () => {
       const ids = [...eventIds]
       for (let offset = 0; offset < ids.length; offset += SELECTED_EVENT_BATCH_SIZE) {
         const batch = ids.slice(offset, offset + SELECTED_EVENT_BATCH_SIZE)
-        const previous = visibleQueue
+        const previous = background ? backgroundEventQueue : visibleQueue
         const pending = runHomepageRefresh(
           `events:${sportId}:${batch.join(',')}`,
           async (signal, isCurrent) => {
             await previous
+            if (background) await visibleQueue
             if (!isCurrent()) return null
             const knownLines = batch.flatMap(id => getRefreshEvent(sportId, id)?.MarketLines ?? [])
             const knownOddsType = knownLines
@@ -1794,13 +1983,12 @@ export const useSportsStore = defineStore('sports', () => {
               )
             )
               return null
-            for (const event of response.e) {
-              rememberEvent(sportId, event, revision, { marketScope: params })
-            }
+            updateSelectedEvents(sportId, batch, response.e, revision, params)
             return response
           }
         )
-        visibleQueue = pending
+        if (background) backgroundEventQueue = pending
+        else visibleQueue = pending
         waiting.add(pending)
         for (const id of batch) refreshingEvents.set(eventKey(sportId, id), pending)
         void pending.finally(() => {
@@ -1824,6 +2012,7 @@ export const useSportsStore = defineStore('sports', () => {
     runHomepageRefresh(
       `bet-selection:${selection.sportId}:${selection.eventId}:${selection.market.MarketlineId}:${selection.wagerSelectionId}`,
       async (signal, isCurrent) => {
+        if (isEventExpired(selection.sportId, selection.eventId)) return 'missing'
         const params: GetSelectedEventInfoParams = {
           SportId: selection.sportId,
           EventIds: [selection.eventId],
@@ -1836,20 +2025,31 @@ export const useSportsStore = defineStore('sports', () => {
         }
         const revision = ++eventReadRevision
         const response = await sportsApi.getSelectedEventInfo(getBaseUrl(), params, { signal })
-        if (!isCurrent() || !isSportsSuccess(response) || !Array.isArray(response.e)) return null
+        if (
+          !isCurrent() ||
+          !isSportsSuccess(response) ||
+          !Array.isArray(response.e) ||
+          response.e.some(
+            event =>
+              !event || event.EventId !== selection.eventId || !Array.isArray(event.MarketLines)
+          )
+        )
+          return null
         const event = response.e.find(item => item.EventId === selection.eventId)
-        // 缺少赛事或投注项列表，不能当作确认失效。
-        if (!event || !Array.isArray(event.MarketLines)) return null
-        const line = event.MarketLines.find(
+        const key = eventKey(selection.sportId, selection.eventId)
+        if (
+          Math.max(refreshedEvents.get(key)?.revision ?? 0, expiredEvents.get(key) ?? 0) > revision
+        )
+          return null
+        const line = event?.MarketLines.find(
           item => item.MarketlineId === selection.market.MarketlineId
         )
         if (line && !Array.isArray(line.WagerSelections)) return null
+        updateSelectedEvents(selection.sportId, [selection.eventId], response.e, revision, params)
+        if (!event) return 'missing'
         const exists = line?.WagerSelections.some(
           item => item.WagerSelectionId === selection.wagerSelectionId
         )
-        const cached = refreshedEvents.get(eventKey(selection.sportId, selection.eventId))
-        if (cached && cached.revision > revision) return null
-        rememberEvent(selection.sportId, event, revision, { marketScope: params })
         return exists ? 'present' : 'missing'
       }
     )
@@ -1863,10 +2063,12 @@ export const useSportsStore = defineStore('sports', () => {
       const old = groups.get(group.CompetitionId)
       groups.set(
         group.CompetitionId,
-        old ? { ...old, ...group, Sports: mergeSportEvents(old.Sports, group.Sports) } : group
+        old
+          ? mergeDefined(old, { ...group, Sports: mergeSportEvents(old.Sports, group.Sports) })
+          : group
       )
     }
-    return [...groups.values()]
+    return reuseList(previous, [...groups.values()])
   }
   const refreshHomepageBackground = () =>
     runHomepageRefresh('background', async (signal, isCurrent) => {
@@ -1884,17 +2086,52 @@ export const useSportsStore = defineStore('sports', () => {
         earlyTradingDate: search && market.value === 1 ? earlyTradingDate.value : null,
         MemberCode: sportsMemberCode.value
       }
+      let verification: Promise<void> = Promise.resolve()
       const refreshList = async () => {
         if (!search && allSportsPending) return allSportsPending
         if (search && events.state.loading) return null
-        const pages: {
-          response: GetSportsV2Response
-          revision: number
-          favourite: number
-          receivedAt: number
-        }[] = []
+        const previousGroups = search
+          ? eventsDataContext.value === getEventsContext()
+            ? (events.state.data?.e ?? [])
+            : []
+          : allSportsDataContext.value === getAllSportsQueryContext()
+            ? allSportsState.data
+            : []
+        const previousByLeague = new Map(
+          previousGroups.map(group => [
+            group.CompetitionId,
+            new Set(group.Sports.map(event => event.EventId))
+          ])
+        )
+        if (!search && leagueDetailsContext === getLeagueDetailsContext()) {
+          for (const [id, state] of leagueDetails) {
+            const ids = previousByLeague.get(id) ?? new Set<number>()
+            for (const event of state.data) ids.add(event.EventId)
+            previousByLeague.set(id, ids)
+          }
+        }
+        const returnedLeagueIds = new Set<number>()
+        const returnedEventIds = new Set<number>()
+        const queuedIds = new Set<number>()
+        const verifyMissing = (ids: Iterable<number>) => {
+          const missing = [...ids].filter(id => !returnedEventIds.has(id) && !queuedIds.has(id))
+          if (!missing.length) return
+          missing.forEach(id => queuedIds.add(id))
+          // 补查单独排队，不阻塞 V2 下一页；每批仍让可见赛事先刷新。
+          verification = verification.then(async () => {
+            for (let offset = 0; offset < missing.length; offset += SELECTED_EVENT_BATCH_SIZE) {
+              if (!isCurrent()) return
+              const targets = missing
+                .slice(offset, offset + SELECTED_EVENT_BATCH_SIZE)
+                .filter(id => !returnedEventIds.has(id))
+                .map(eventId => ({ sportId, eventId }))
+              await refreshVisibleEvents(targets, { force: true, background: true })
+            }
+          })
+        }
         const seen = new Set<string>()
         let totalPages = 1
+        let total = 0
         for (let page = 1; page <= totalPages; page += 1) {
           if (!isCurrent()) return null
           // 可见赛事先发，后台分页等待当前批次结束。
@@ -1924,8 +2161,13 @@ export const useSportsStore = defineStore('sports', () => {
           )
             return null
           if (!search) {
-            const total = response.Total
-            if (typeof total !== 'number' || !Number.isSafeInteger(total) || total < 0) return null
+            if (
+              typeof response.Total !== 'number' ||
+              !Number.isSafeInteger(response.Total) ||
+              response.Total < 0
+            )
+              return null
+            total = response.Total
             if (total === 0 && response.e.length) return null
             totalPages = Math.ceil(total / ALL_SPORTS_PAGE_SIZE)
             if (totalPages > MAX_ALL_SPORTS_PAGES || (!response.e.length && page <= totalPages))
@@ -1939,33 +2181,47 @@ export const useSportsStore = defineStore('sports', () => {
             if (seen.has(signature)) return null
             seen.add(signature)
           }
-          pages.push({ response, revision, favourite, receivedAt: Date.now() })
-        }
-        if (!isCurrent()) return null
-        const lastResponse = pages[pages.length - 1]?.response
-        if (!search) {
-          const leagueIds = new Set(
-            pages.flatMap(page => page.response.e?.map(group => group.CompetitionId) ?? [])
+          if (
+            search
+              ? eventsDataContext.value !== getEventsContext() || !events.state.data
+              : allSportsDataContext.value !== getAllSportsQueryContext()
           )
-          if (leagueIds.size < (lastResponse?.Total ?? 0)) return null
-        }
-        const groups = pages.flatMap(({ response, revision, favourite, receivedAt }) => {
-          syncMemberFavourites(response.e ?? [], favourite, params.MemberCode)
-          return rememberGroups(sportId, response.e ?? [], revision, receivedAt)
-        })
-        if (search) {
-          if (eventsDataContext.value !== getEventsContext() || !events.state.data) return null
-          events.state.data = {
-            ...events.state.data,
-            ...pages[0]?.response,
-            e: mergeRefreshGroups(events.state.data.e ?? [], groups)
+            return null
+          syncMemberFavourites(response.e, favourite, params.MemberCode)
+          const receivedAt = Date.now()
+          const applied = await mergeGroupBatches(
+            response.e,
+            batch => {
+              const pageGroups = rememberGroups(sportId, batch, revision, receivedAt)
+              if (search && events.state.data) {
+                events.state.data = {
+                  ...events.state.data,
+                  e: mergeRefreshGroups(events.state.data.e ?? [], pageGroups)
+                }
+              } else {
+                allSportsState.data = mergeRefreshGroups(allSportsState.data, pageGroups)
+                allSportsState.total = total
+              }
+            },
+            isCurrent
+          )
+          if (!applied) return null
+          if (search && events.state.data)
+            events.state.data = { ...events.state.data, ...response, e: events.state.data.e }
+          else allSportsState.total = total
+          for (const group of response.e) {
+            returnedLeagueIds.add(group.CompetitionId)
+            for (const event of group.Sports) returnedEventIds.add(event.EventId)
           }
-        } else if (allSportsDataContext.value === getAllSportsQueryContext()) {
-          allSportsState.data = mergeRefreshGroups(allSportsState.data, groups)
-          allSportsState.total = lastResponse?.Total ?? allSportsState.total
-          allSportsState.complete = true
+          // 已返回的联赛立即复核，预览里没有不代表赛事已下架。
+          for (const group of response.e)
+            verifyMissing(previousByLeague.get(group.CompetitionId) ?? [])
         }
-        return groups
+        if (!isCurrent() || (!search && returnedLeagueIds.size < total)) return null
+        if (!search) allSportsState.complete = true
+        // 整轮成功后，才能确认哪些旧联赛没有出现。
+        for (const [id, ids] of previousByLeague) if (!returnedLeagueIds.has(id)) verifyMissing(ids)
+        return search ? events.state.data?.e : allSportsState.data
       }
       const refreshHot = async () => {
         if (competitionListState.loading) return null
@@ -1996,7 +2252,9 @@ export const useSportsStore = defineStore('sports', () => {
         competitionListState.data = { ...response, result: [...records.values()] }
         competitionListContext.value = getCompetitionListContext()
         const missing = response.result.filter(
-          record => !getRefreshEvent(record.sportId, record.eventId)
+          record =>
+            !isEventExpired(record.sportId, record.eventId) &&
+            !getRefreshEvent(record.sportId, record.eventId)
         )
         for (let offset = 0; offset < missing.length; offset += SELECTED_EVENT_BATCH_SIZE) {
           if (!isCurrent()) return null
@@ -2008,14 +2266,19 @@ export const useSportsStore = defineStore('sports', () => {
         }
         return response
       }
-      return Promise.allSettled([refreshList(), refreshHot()])
+      const results = await Promise.allSettled([refreshList(), refreshHot()])
+      await verification
+      return results
     })
 
   watch(getRefreshContext, cancelHomepageRefresh, { flush: 'sync' })
   watch(
     () =>
       JSON.stringify([getBaseUrl(), languageCode.value, market.value, sportsSessionVersion.value]),
-    () => refreshedEvents.clear(),
+    () => {
+      refreshedEvents.clear()
+      expiredEvents.clear()
+    },
     { flush: 'sync' }
   )
   const fetchPopularSports = () =>
@@ -2223,6 +2486,35 @@ export const useSportsStore = defineStore('sports', () => {
     cancelCompetitionList()
     competitionListRefreshPending = false
     homepageLoading.value = false
+  }
+  const pruneEventCache = (protectedTargets: readonly SportsRefreshTarget[]) => {
+    // 等在途查询结束再清理，投注单引用的赛事一直保留。
+    if (
+      refreshJobs.size ||
+      allSportsPending ||
+      hotDetailsPending ||
+      leagueJobs.size ||
+      events.state.loading
+    )
+      return
+    const retained = new Set(
+      protectedTargets.map(target => eventKey(target.sportId, target.eventId))
+    )
+    const retain = (sportId: number, items: readonly SportEvent[]) => {
+      for (const event of items) retained.add(eventKey(sportId, event.EventId))
+    }
+    const sportId = selectedSportId.value
+    if (allSportsDataScope.value === getAllSportsContext())
+      for (const group of allSportsState.data) retain(sportId, group.Sports)
+    if (eventsDataContext.value === getEventsContext())
+      for (const group of events.state.data?.e ?? []) retain(sportId, group.Sports)
+    if (leagueDetailsContext === getLeagueDetailsContext())
+      for (const state of leagueDetails.values()) retain(sportId, state.data)
+    if (hotDetailsContext.value === getAllSportsContext()) retain(sportId, hotDetailsState.data)
+    if (competitionListContext.value === getCompetitionListContext())
+      for (const record of competitionListState.data?.result ?? [])
+        retained.add(eventKey(record.sportId, record.eventId))
+    for (const key of refreshedEvents.keys()) if (!retained.has(key)) refreshedEvents.delete(key)
   }
   const reset = () => {
     cancelRequests()
@@ -2445,6 +2737,9 @@ export const useSportsStore = defineStore('sports', () => {
     refreshHomepageBackground,
     cancelHomepageRefresh,
     getRefreshEvent,
+    getEventRevision,
+    pruneEventCache,
+    isEventExpired,
     getEventClockUpdatedAt,
     fetchSports,
     fetchAllSports,
