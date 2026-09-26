@@ -625,22 +625,17 @@ const toggleMenu = (menuId: string) => {
 }
 
 // 菜单展开
-const handleMenuExpand = (menu: SidebarMenuGroup) => {
-  activeMenuId.value = menu.id
-  if (activeThirdLevelMenuId.value && !menuOwnsThirdLevel(menu, activeThirdLevelMenuId.value)) {
-    activeThirdLevelMenuId.value = ''
-  }
-  if (menu.handler) {
-    menu.handler()
-  }
-  if (!expandedMenus.value.includes(menu.id)) {
-    expandedMenus.value.push(menu.id)
-  }
-}
-
 const handleMenuClick = (menu: SidebarMenuGroup) => {
   if (hasChildren(menu)) {
-    handleMenuExpand(menu)
+    const willExpand = !expandedMenus.value.includes(menu.id)
+    activeMenuId.value = menu.id
+    if (activeThirdLevelMenuId.value && !menuOwnsThirdLevel(menu, activeThirdLevelMenuId.value)) {
+      activeThirdLevelMenuId.value = ''
+    }
+    if (willExpand && menu.handler) {
+      menu.handler()
+    }
+    toggleMenu(menu.id)
     return
   }
   handleMenuItemClick(menu)
