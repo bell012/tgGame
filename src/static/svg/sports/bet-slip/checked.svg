@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <circle cx="8" cy="8" r="7" fill="currentColor" stroke="currentColor" />
+  <path
+    d="m4 8 2.5 2.5L12 5"
+    fill="none"
+    stroke="var(--color-background-level-3)"
+    stroke-width="2"
+  />
+</svg>

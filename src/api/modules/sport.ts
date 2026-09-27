@@ -23,6 +23,8 @@ import type {
   GetSportEventIndexListResponse,
   GetSportsV2Params,
   GetSportsV2Response,
+  PlaceBetParams,
+  PlaceBetResponse,
   SubmitBuyBackParams,
   SubmitBuyBackResponse,
   SportsResponse
@@ -124,7 +126,7 @@ export function getSportEventIndexList(
   data: GetSportEventIndexListParams,
   options?: SportsRequestOptions
 ): Promise<GetSportEventIndexListResponse> {
-  return postSport(baseUrl, 'getSportEventIndexList', data, options)
+  return postSport(baseUrl, 'getSportEventIndexList', data, options, 'site')
 }
 
 /**
@@ -163,7 +165,7 @@ export function getStatement(
   data: GetStatementParams,
   options?: SportsRequestOptions
 ): Promise<GetStatementResponse> {
-  return postSport(baseUrl, 'GetStatement', data, options)
+  return postSport(baseUrl, 'GetStatement', data, options, 'site')
 }
 
 /**
@@ -174,7 +176,7 @@ export function getBetList(
   data: GetBetListParams,
   options?: SportsRequestOptions
 ): Promise<GetBetListResponse> {
-  return postSport(baseUrl, 'GetBetList', data, options)
+  return postSport(baseUrl, 'GetBetList', data, options, 'site')
 }
 
 /** 只读：确认投注项、限额和可用组合；请求加密、响应解密均使用统一拦截器。 */
@@ -184,6 +186,15 @@ export function getBetInfo(
   options?: SportsRequestOptions
 ): Promise<GetBetInfoResponse> {
   return postSport(baseUrl, 'GetBetInfo', data, options, 'site')
+}
+
+/** 下单：使用统一加解密，不自动重试。 */
+export function placeBet(
+  baseUrl: string,
+  data: PlaceBetParams,
+  options?: SportsRequestOptions
+): Promise<PlaceBetResponse> {
+  return postSport(baseUrl, 'PlaceBet', data, options, 'site')
 }
 
 /** 只读：查询体育可用余额，av 为可用金额；请求参数走项目统一加密。 */

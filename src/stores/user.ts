@@ -46,25 +46,18 @@ export const useUserStore = defineStore('user', () => {
    * @param keys - 需要保留的键数组
    */
   function clearStorageExcept(keys: string[], keyPrefixes: string[] = []) {
-    const keep: Record<string, string> = {}
+    const removableKeys: string[] = []
 
     for (let index = 0; index < localStorage.length; index += 1) {
       const key = localStorage.key(index)
-      if (!key || (!keys.includes(key) && !keyPrefixes.some(prefix => key.startsWith(prefix)))) {
+      if (!key || keys.includes(key) || keyPrefixes.some(prefix => key.startsWith(prefix))) {
         continue
       }
-
-      const value = localStorage.getItem(key)
-      if (value !== null) {
-        keep[key] = value
-      }
+      removableKeys.push(key)
     }
 
-    localStorage.clear()
-
-    Object.entries(keep).forEach(([key, value]) => {
-      localStorage.setItem(key, value)
-    })
+    // 保留项不先删除再写回，避免覆盖其他标签页刚更新的记录。
+    removableKeys.forEach(key => localStorage.removeItem(key))
   }
 
   const setAcctInfoState = (nextAcctInfo: QueryAcctInfoResult | null, persist = true) => {
@@ -167,7 +160,12 @@ export const useUserStore = defineStore('user', () => {
         REMEMBERED_PASSWORD_STORAGE_KEY,
         TRADE_MESSAGE_SYNC_STORAGE_KEY
       ],
-      [...NOTIFICATION_CACHE_STORAGE_PREFIXES, ...PLAYED_GAMES_CACHE_STORAGE_PREFIXES]
+      [
+        ...NOTIFICATION_CACHE_STORAGE_PREFIXES,
+        ...PLAYED_GAMES_CACHE_STORAGE_PREFIXES,
+        'sportsAcceptAnyOdds:',
+        'sportsUnconfirmedBets:'
+      ]
     )
     clearProfileAvatarPreviewState()
     syncProfileCustomizationState()

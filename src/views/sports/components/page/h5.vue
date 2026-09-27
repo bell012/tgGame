@@ -33,29 +33,9 @@
       </button>
     </div>
 
-    <!-- 热门区加载失败不影响下方赛事。 -->
-    <p v-if="page.hotEventsLoading.value" class="mx-[14px] mb-3 text-xs text-text-2" role="status">
-      {{ page.sportsLoadingText.value }}
-    </p>
-    <div
-      v-else-if="page.hotEventsError.value"
-      class="mx-[14px] mb-3 flex items-center gap-3 text-xs text-text-2"
-      role="status"
-    >
-      <span>{{ page.sportsLoadFailedText.value }}</span>
-      <button
-        type="button"
-        class="shrink-0 text-theme-primary disabled:opacity-50"
-        :disabled="page.hotEventsLoading.value"
-        @click="page.retryHotEvents"
-      >
-        {{ page.sportsRetryText.value }}
-      </button>
-    </div>
-
     <section
       v-if="liveMatches.length"
-      aria-label="Popular matches"
+      :aria-label="t('sports.homepage.popularMatches')"
       class="min-w-0"
       data-testid="sports-h5-live-section"
     >
@@ -63,7 +43,7 @@
         ref="liveStrip"
         class="flex min-w-0 snap-x snap-mandatory gap-2 overflow-x-auto px-[14px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         tabindex="0"
-        aria-label="Popular matches"
+        :aria-label="t('sports.homepage.popularMatches')"
         data-testid="sports-h5-live-strip"
       >
         <article
@@ -74,14 +54,14 @@
           :data-sports-live-match="match.id"
         >
           <div class="flex h-[14px] min-w-0 items-center gap-[14px] text-[10px] leading-3">
-            <span class="shrink-0 text-text-2">{{ page.getMatchTime(match) }}</span>
+            <MatchTime :match="match" class="shrink-0 text-text-2" />
             <span class="min-w-0 flex-1 truncate text-[11px]" :title="match.league">{{
               match.league
             }}</span>
             <span
               v-if="match.totalMarkets !== undefined"
               class="flex shrink-0 items-center gap-0.5 rounded bg-theme-primary py-px pl-[5px] pr-[3px] font-medium text-text-4"
-              :aria-label="`${match.totalMarkets} markets`"
+              :aria-label="t('sports.homepage.marketsCount', { count: match.totalMarkets })"
             >
               {{ match.totalMarkets }}
               <ChevronIcon class="h-2 w-2 -rotate-90" aria-hidden="true" />
@@ -116,7 +96,10 @@
       </div>
     </section>
 
-    <section class="mx-[14px] mt-3" :aria-label="`${activeSportLabel} matches by league`">
+    <section
+      class="mx-[14px] mt-3"
+      :aria-label="t('sports.homepage.matchesByLeague', { sport: activeSportLabel })"
+    >
       <div class="mb-3 flex h-[30px] items-center gap-[7px]">
         <LeagueTabs_H5
           :collect-only="page.collectOnly.value"
@@ -130,7 +113,11 @@
           v-if="groups.length"
           type="button"
           class="flex h-[30px] w-[30px] shrink-0 flex-col items-center justify-center rounded-lg bg-bg-2 text-text-2 focus-visible:outline focus-visible:outline-theme-primary"
-          :aria-label="allGroupsCollapsed ? 'Expand all leagues' : 'Collapse all leagues'"
+          :aria-label="
+            allGroupsCollapsed
+              ? t('sports.homepage.expandAllLeagues')
+              : t('sports.homepage.collapseAllLeagues')
+          "
           :aria-expanded="!allGroupsCollapsed"
           data-testid="sports-h5-toggle-all-leagues"
           @click="toggleAllGroups"
@@ -164,7 +151,7 @@
               <span class="min-w-0 flex-1 truncate" :title="group.name">{{ group.name }}</span>
               <span
                 class="min-w-4 shrink-0 rounded bg-theme-primary px-[5px] text-center text-[10px] font-medium leading-[15px] text-text-4"
-                :aria-label="`${getGroupMatchCount(group)} matches`"
+                :aria-label="t('sports.homepage.matchCount', { count: getGroupMatchCount(group) })"
               >
                 {{ getGroupMatchCount(group) }}
               </span>
@@ -182,7 +169,7 @@
             role="region"
             :aria-labelledby="`${idPrefix}-${group.id}-heading`"
           >
-            <MatchCardH5
+            <div
               v-for="match in group.matches"
               :key="match.id"
               v-match-visibility="{
@@ -190,16 +177,18 @@
                 eventId: match.EventId,
                 enabled: isGroupExpanded(group.id)
               }"
-              :match="match"
-              :time-label="page.getMatchTime(match)"
-              :MarketLines="match.MarketLines"
-              :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
-              :favorite="match.IsFavourite"
-              :favorite-pending="page.isMatchFavoritePending(match.id)"
-              @favorite="page.handleMatchFavorite(match.id)"
-              @select="selectOdds(match.id, $event)"
-              @media="showMediaPlaceholder"
-            />
+            >
+              <MatchCardH5
+                :match="match"
+                :MarketLines="match.MarketLines"
+                :selected-wager-selection-id="page.getSelectedWagerSelectionId(match.id)"
+                :favorite="match.IsFavourite"
+                :favorite-pending="page.isMatchFavoritePending(match.id)"
+                @favorite="page.handleMatchFavorite(match.id)"
+                @select="selectOdds(match.id, $event)"
+                @media="showMediaPlaceholder"
+              />
+            </div>
             <p
               v-if="getGroupLoadState(group.id)?.loading"
               class="py-3 text-center text-xs text-text-2"
@@ -295,6 +284,7 @@ import {
   watch
 } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIntersectionObserver } from '@/composables/useIntersectionObserver'
 import { useLayoutStore } from '@/stores/layout'
@@ -310,6 +300,7 @@ import MatchVersus from '../match-versus/index.vue'
 import MatchOdds from '../match-odds/index.vue'
 import { pickOverUnderOrFirstMarketLine } from '../match-odds/display'
 import MatchCardH5 from '../match-card/h5.vue'
+import MatchTime from '../match-card/time.vue'
 import type { SportsMatch } from '../../shared/types'
 import type { SportsPageState } from '../../index'
 import { useMatchVisibility } from '../../composables/useMatchVisibility'
@@ -318,6 +309,7 @@ import LeagueTabs_H5 from '../liansai_tabs/H5.vue'
 import Floating from '../floating/index.vue'
 
 const props = defineProps<{ page: SportsPageState }>()
+const { t } = useI18n()
 const idPrefix = useId()
 const layoutStore = useLayoutStore()
 const route = useRoute()
@@ -499,8 +491,8 @@ const selectOdds = async (matchId: string, payload: OddsSelectPayload) => {
 const showMediaPlaceholder = (kind: 'video' | 'animation') => {
   globalShowToast(
     kind === 'video'
-      ? 'Live video is not available in this local preview.'
-      : 'Match animation is not available in this local preview.'
+      ? t('sports.homepage.liveVideoUnavailable')
+      : t('sports.homepage.animationUnavailable')
   )
 }
 </script>
