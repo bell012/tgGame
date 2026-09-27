@@ -8,7 +8,7 @@ export interface ChatApiResponse<TResult> {
 
 /** 在线客服列表查询参数。 */
 export interface QueryOnlineCustomerForm {
-  userId: string
+  memberRowId: string
 }
 
 /** 在线客服记录。 */

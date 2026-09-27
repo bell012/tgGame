@@ -413,6 +413,28 @@ export function useChatRuntime() {
     })
   }
 
+  /** Socket 连通后将当前客服会话全部未读消息标记为已读，空数组表示当前会话全量已读。 */
+  const sendConversationReadReceipt = () => {
+    const customer = buildCustomerParticipant()
+    if (!customer) return false
+
+    const sent = send({
+      type: 'readReceipt',
+      messageId: `receipt-${createMessageId()}`,
+      to: {
+        userId: customer.userId,
+        type: 'customer'
+      },
+      msgIds: []
+    })
+
+    if (sent && activeConversation.value) {
+      activeConversation.value.unreadCount = 0
+    }
+
+    return sent
+  }
+
   /** 处理连接配置、发送确认和客服消息推送。 */
   const handleSocketPayload = (payload: unknown) => {
     if (!payload || typeof payload !== 'object') return
@@ -463,7 +485,7 @@ export function useChatRuntime() {
 
     try {
       const response = await Api.chat.queryOnlineCustomer(
-        { userId: currentChatUserId.value },
+        { memberRowId: currentChatUserId.value },
         { showErrorToast: false }
       )
 
@@ -631,7 +653,8 @@ export function useChatRuntime() {
 
     connect({
       url: socketUrl,
-      onMessage: handleSocketPayload
+      onMessage: handleSocketPayload,
+      onConnected: sendConversationReadReceipt
     })
   }
 

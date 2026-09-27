@@ -55,7 +55,7 @@
         <button
           v-else
           type="button"
-          class="absolute left-1/2 top-[322px] flex size-[32px] -translate-x-1/2 items-center justify-center rounded-[8px] bg-black/40"
+          class="absolute left-1/2 top-[322px] flex size-[32px] -translate-x-1/2 items-center justify-center rounded-[8px] bg-mask-40"
           :aria-label="t('chatPublic.download')"
           @click="handleDownload"
         >
@@ -122,7 +122,7 @@
   <!-- H5 图片与视频的全屏预览覆盖层。 -->
   <div v-else class="fixed inset-0 z-[120] flex flex-col bg-mask-100-4">
     <!-- 预览顶部操作栏。 -->
-    <header class="flex h-[49px] shrink-0 items-center justify-between bg-[#191717] px-[14px]">
+    <header class="flex h-[49px] shrink-0 items-center justify-between bg-bg-1 px-[14px]">
       <button
         type="button"
         class="flex size-[33px] items-center justify-center rounded-[8px] bg-opacity-6"
@@ -160,7 +160,7 @@
     <button
       v-if="mode === 'viewer'"
       type="button"
-      class="absolute bottom-[14px] right-[14px] z-10 flex size-[27px] items-center justify-center rounded-[8px] bg-black/40 p-[3px]"
+      class="absolute bottom-[14px] right-[14px] z-10 flex size-[27px] items-center justify-center rounded-[8px] bg-mask-40 p-[3px]"
       :aria-label="t('chatPublic.download')"
       @click="handleDownload"
     >
@@ -198,7 +198,7 @@
       </div>
       <!-- 批量发送图片或视频的底部操作栏。 -->
       <footer
-        class="flex h-[58px] shrink-0 items-center justify-end border-t border-opacity-10 bg-[#191717] px-[14px]"
+        class="flex h-[58px] shrink-0 items-center justify-end border-t border-opacity-10 bg-bg-1 px-[14px]"
       >
         <button
           type="button"

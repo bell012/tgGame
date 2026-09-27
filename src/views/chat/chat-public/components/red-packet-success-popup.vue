@@ -1,7 +1,7 @@
 <template>
   <!-- 红包领取成功的全屏提示弹窗。 -->
   <Teleport to="body">
-    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
+    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-mask-80 px-4">
       <!-- Figma 导出的红包插画作为弹窗主体背景。 -->
       <section
         role="dialog"
