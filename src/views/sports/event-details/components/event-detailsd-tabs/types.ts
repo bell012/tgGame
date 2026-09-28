@@ -30,4 +30,6 @@ export type EventDetailTabItem = {
   isFavourite: boolean
   /** LiveStreamingUrl 第一项的 m3u8 地址，没有则为空字符串。 */
   liveStreamUrl: string
+  /** 动画页 matchId，对应接口 BREventId；没有动画时为 0。 */
+  brEventId: number
 }

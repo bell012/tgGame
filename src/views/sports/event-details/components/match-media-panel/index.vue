@@ -67,29 +67,7 @@
 
       <LiveLoginGate v-if="!isLoggedIn" />
       <div v-else class="relative h-[171px] overflow-hidden rounded-lg" :data-mode="mode">
-        <template v-if="mode === 'animation'">
-          <img
-            class="absolute inset-0 h-full w-full object-cover"
-            :src="bgLayer1"
-            alt=""
-            draggable="false"
-            aria-hidden="true"
-          />
-          <img
-            class="absolute inset-0 h-full w-full object-cover"
-            :src="bgLayer2"
-            alt=""
-            draggable="false"
-            aria-hidden="true"
-          />
-          <img
-            class="absolute inset-0 h-full w-full object-cover"
-            :src="bgLayer3"
-            alt=""
-            draggable="false"
-            aria-hidden="true"
-          />
-        </template>
+        <LiveAnimation v-if="mode === 'animation'" :src="animationUrl" />
         <LivePlayer v-else-if="liveStreamUrl" :src="liveStreamUrl" />
         <template v-else>
           <img
@@ -123,13 +101,13 @@ import animationOnIcon from './icon/animation-on.svg?url'
 import animationOffIcon from './icon/animation-off.svg?url'
 import pinOnIcon from './icon/pin-on.svg?url'
 import pinOffIcon from './icon/pin-off.svg?url'
+import LiveAnimation from './live-animation.vue'
 import LivePlayer from './live-player.vue'
 import bgLayer1 from '../match-header/icon/bg-layer-1.png?url'
-import bgLayer2 from '../match-header/icon/bg-layer-2.png?url'
-import bgLayer3 from '../match-header/icon/bg-layer-3-34b3a2.png?url'
 
 defineProps<{
   liveStreamUrl: string
+  animationUrl: string
 }>()
 
 const { t } = useI18n()

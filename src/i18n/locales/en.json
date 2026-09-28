@@ -1980,6 +1980,7 @@
       "animationUnavailable": "Match animation is currently unavailable."
     },
     "noVideo": "No video available",
+    "noAnimation": "No animation available",
     "loadingLive": "Loading live stream",
     "backToLive": "Back to live",
     "loginToWatch": "Log in to Watch",

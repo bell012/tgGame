@@ -12,7 +12,12 @@
     :style="isMobile ? { paddingTop: `${layoutStore.TOPNAV_HEIGHT}px` } : undefined"
   >
     <template v-if="isMobile">
-      <MatchHeader :model="matchHeaderModel" :live-stream-url="liveStreamUrl" @back="onBack" />
+      <MatchHeader
+        :model="matchHeaderModel"
+        :live-stream-url="liveStreamUrl"
+        :animation-url="animationUrl"
+        @back="onBack"
+      />
       <SportsScoreDetails
         v-if="hasScoreDetailsMarkets || !isEventDetailsLoading"
         class="mt-4 pl-3.5 pb-24"
@@ -68,7 +73,7 @@
               :message="t('sports.eventDetails.noBettingMarkets')"
             />
           </div>
-          <MatchMediaPanel :live-stream-url="liveStreamUrl" />
+          <MatchMediaPanel :live-stream-url="liveStreamUrl" :animation-url="animationUrl" />
         </div>
       </template>
       <footer
@@ -140,11 +145,16 @@ import emptyImage from '@/static/img/explore/default.png'
 import emptyImageLight from '@/static/img/explore/default_white.png'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import EventDetailsTabs from './components/event-detailsd-tabs/index.vue'
 import { mapEventDetailTabItems } from './components/event-detailsd-tabs/map-items'
 import MatchDetails from './components/match-details/index.vue'
 import MatchHeader from './components/match-header/index.vue'
 import MatchMediaPanel from './components/match-media-panel/index.vue'
+import {
+  animationLanguageCode,
+  buildAnimationUrl
+} from './components/match-media-panel/animation-url'
 import SportsNavigation from '../components/sports-navigation/index.vue'
 import { buildSportTodayCountMap, sportItems } from '../components/sports-navigation/sport-items'
 import BetSlipH5 from '../components/bet-slip/h5.vue'
@@ -165,7 +175,7 @@ const route = useRoute()
 const sportsStore = useSportsStore()
 const { sportCounts } = storeToRefs(sportsStore)
 const sportNavigationCounts = computed(() => buildSportTodayCountMap(sportCounts.value))
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const isMobile = useIsMobile()
 const layoutStore = useLayoutStore()
 const activeMatchId = ref('')
@@ -291,6 +301,15 @@ const navigationEventTabItem = computed(() => {
 const displayEvent = computed(() => selectedEvent.value ?? navigationEventTabItem.value)
 
 const liveStreamUrl = computed(() => displayEvent.value?.liveStreamUrl ?? '')
+
+const siteConfigStore = useSiteConfigStore()
+const animationUrl = computed(() =>
+  buildAnimationUrl(
+    siteConfigStore.getConfigString('common.static.resource.url'),
+    displayEvent.value?.brEventId ?? 0,
+    animationLanguageCode(String(locale.value))
+  )
+)
 
 const matchHeaderModel = computed(() => {
   if (displayEvent.value) {

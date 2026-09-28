@@ -17,6 +17,7 @@ export const EVENT_DETAIL_TAB_MOCK_ITEMS: EventDetailTabItem[] = [
     homeCorners: 1,
     awayCorners: 1,
     isFavourite: false,
-    liveStreamUrl: ''
+    liveStreamUrl: '',
+    brEventId: 0
   }
 ]
