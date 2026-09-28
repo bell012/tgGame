@@ -186,7 +186,6 @@
                 :favorite-pending="page.isMatchFavoritePending(match.id)"
                 @favorite="page.handleMatchFavorite(match.id)"
                 @select="selectOdds(match.id, $event)"
-                @media="showMediaPlaceholder"
               />
             </div>
             <p
@@ -288,7 +287,6 @@ import { useI18n } from 'vue-i18n'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useIntersectionObserver } from '@/composables/useIntersectionObserver'
 import { useLayoutStore } from '@/stores/layout'
-import { globalShowToast } from '@/utils/toast'
 import { stripLocalePrefix } from '@/utils/locale'
 import ChevronIcon from '@/static/svg/casino/dropdown_chevron.svg?component'
 import leagueIcon from '@/static/svg/sports/liansai_tabs/icon1.svg?url'
@@ -486,13 +484,5 @@ const selectOdds = async (matchId: string, payload: OddsSelectPayload) => {
   if (!(await props.page.selectOdds(matchId, payload))) return
   if (wasParlay && props.page.selections.value.length) props.page.setMode('parlay', true)
   props.page.betSlipOpen.value = true
-}
-
-const showMediaPlaceholder = (kind: 'video' | 'animation') => {
-  globalShowToast(
-    kind === 'video'
-      ? t('sports.homepage.liveVideoUnavailable')
-      : t('sports.homepage.animationUnavailable')
-  )
 }
 </script>

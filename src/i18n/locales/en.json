@@ -1963,9 +1963,7 @@
       "redCards": "{count} red cards",
       "yellowCards": "{count} yellow cards",
       "addFavorite": "Add match to favorites",
-      "removeFavorite": "Remove match from favorites",
-      "watchLiveVideo": "Watch live video",
-      "watchAnimation": "Watch match animation"
+      "removeFavorite": "Remove match from favorites"
     },
     "homepage": {
       "popularMatches": "Popular matches",
@@ -1975,9 +1973,7 @@
       "matchCount": "{count} matches",
       "expandAllLeagues": "Expand all leagues",
       "collapseAllLeagues": "Collapse all leagues",
-      "matchPagination": "Match pagination",
-      "liveVideoUnavailable": "Live video is currently unavailable.",
-      "animationUnavailable": "Match animation is currently unavailable."
+      "matchPagination": "Match pagination"
     },
     "noVideo": "No video available",
     "backToLive": "Back to live",

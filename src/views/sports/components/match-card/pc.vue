@@ -29,24 +29,20 @@
           </template>
           <span class="min-w-0 flex-1 truncate" :title="match.league">{{ match.league }}</span>
         </div>
-        <button
+        <span
           v-if="match.hasVideo"
-          type="button"
-          class="flex h-5 w-7 shrink-0 items-center justify-center rounded-[6px] bg-theme-primary text-text-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-1"
-          :aria-label="t('sports.matchCard.watchLiveVideo')"
-          @click.stop="emit('media', 'video')"
+          class="flex h-5 w-7 shrink-0 items-center justify-center rounded-[6px] bg-theme-primary text-text-4"
+          aria-hidden="true"
         >
-          <VideoIcon class="h-3 w-2.5" aria-hidden="true" />
-        </button>
-        <button
+          <VideoIcon class="h-3 w-2.5" />
+        </span>
+        <span
           v-if="match.hasAnimation"
-          type="button"
-          class="flex h-5 w-7 shrink-0 items-center justify-center rounded-[6px] bg-theme-primary text-text-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-1"
-          :aria-label="t('sports.matchCard.watchAnimation')"
-          @click.stop="emit('media', 'animation')"
+          class="flex h-5 w-7 shrink-0 items-center justify-center rounded-[6px] bg-theme-primary text-text-4"
+          aria-hidden="true"
         >
-          <AnimationIcon class="h-3.5 w-5" aria-hidden="true" />
-        </button>
+          <AnimationIcon class="h-3.5 w-5" />
+        </span>
         <button
           type="button"
           class="flex h-4 w-4 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary disabled:cursor-wait disabled:opacity-50"
@@ -127,9 +123,9 @@ import { useI18n } from 'vue-i18n'
 import SmartImage from '@/components/common/SmartImage.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
+import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
-import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import { navigateTo } from '@/utils/router'
 import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
 import MatchOdds from '../match-odds/index.vue'
@@ -171,7 +167,6 @@ const emit = defineEmits<{
   'update:expanded': [value: boolean]
   select: [payload: OddsSelectPayload]
   favorite: []
-  media: [kind: 'video' | 'animation']
 }>()
 
 const goToEventDetails = () => {
