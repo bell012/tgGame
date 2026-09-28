@@ -80,6 +80,24 @@ export const resolveActivityById = (
   return null
 }
 
+/** 活动菜单不展示加密货币分组。 */
+export const getVisiblePromotionGroups = (groups: ActivityGroupItem[]) =>
+  groups.filter(group => {
+    const code = String(group.groupCode ?? '')
+      .trim()
+      .toLowerCase()
+    if (code.includes('crypto')) {
+      return false
+    }
+
+    return !(group.groupName ?? []).some(item => {
+      const name = String(item.name ?? '')
+        .trim()
+        .toLowerCase()
+      return name === '加密货币' || name === 'crypto' || name === 'cryptocurrency'
+    })
+  })
+
 /** H5 横向分组 Tab（Figma：高 36、圆角 18、px-4 py-2；选中实心绿底，未选中 bg-2） */
 export const getPromotionGroupMobileTabClass = (isActive: boolean) => {
   const base =

@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-[1336px] mx-auto pt-[14px]">
+  <div class="max-w-[1336px] mx-auto pt-[14px] px-[14px]">
     <h2 class="text-xl font-[700] text-text-1 mb-4">{{ $t('activityPromotions.title') }}</h2>
     <div class="flex justify-center gap-6">
       <aside class="w-[280px] flex-shrink-0">
@@ -13,11 +13,11 @@
               "
               @click="goGroup(getPromotionGroupRouteKey(group))"
             >
-              <img
+              <PromotionGroupIcon
                 v-if="getGroupIcon(group)"
                 :src="getGroupIcon(group)"
-                alt=""
-                class="h-6 w-6 shrink-0 object-contain"
+                :active="isPromotionGroupActive(group, activeGroupCode)"
+                class="h-6 w-6"
               />
               <span v-else class="h-6 w-6 shrink-0 rounded bg-bg-3" />
               <span class="text-base">{{ getLanguageName(group.groupName) }}</span>
@@ -36,10 +36,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import type { ActivityGroupItem } from '@/api/interface/activity'
 import CommonFooter from '@/components/commonFooter.vue'
+import PromotionGroupIcon from './components/PromotionGroupIcon.vue'
 import { navigateTo } from '@/utils/router'
 import {
   getLanguageName,
@@ -55,7 +55,6 @@ const props = defineProps<{
 }>()
 
 const route = useRoute()
-const groups = computed(() => props.groups)
 
 const isPromotionsDetailRoute = () => {
   const routeName = String(route.name || '').replace(/^Locale/, '')

@@ -1956,9 +1956,7 @@
       "redCards": "{count} 张红牌",
       "yellowCards": "{count} 张黄牌",
       "addFavorite": "收藏赛事",
-      "removeFavorite": "取消收藏赛事",
-      "watchLiveVideo": "观看赛事直播",
-      "watchAnimation": "观看赛事动画"
+      "removeFavorite": "取消收藏赛事"
     },
     "homepage": {
       "popularMatches": "热门赛事",
@@ -1968,9 +1966,7 @@
       "matchCount": "{count} 场赛事",
       "expandAllLeagues": "展开所有联赛",
       "collapseAllLeagues": "收起所有联赛",
-      "matchPagination": "赛事分页",
-      "liveVideoUnavailable": "赛事直播暂不可用。",
-      "animationUnavailable": "赛事动画暂不可用。"
+      "matchPagination": "赛事分页"
     },
     "noVideo": "暂无视频",
     "noAnimation": "暂无动画",

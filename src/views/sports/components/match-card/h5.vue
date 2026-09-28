@@ -33,24 +33,20 @@
             />
           </button>
           <MatchTime :match="match" class="min-w-0 truncate" />
-          <button
+          <span
             v-if="match.hasVideo"
-            type="button"
             class="flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
-            :aria-label="t('sports.matchCard.watchLiveVideo')"
-            @click.stop="emit('media', 'video')"
+            aria-hidden="true"
           >
-            <VideoIcon class="h-2 w-[7px]" aria-hidden="true" />
-          </button>
-          <button
+            <VideoIcon class="h-2 w-[7px]" />
+          </span>
+          <span
             v-if="match.hasAnimation"
-            type="button"
             class="flex h-[15px] w-5 shrink-0 items-center justify-center rounded bg-theme-primary text-text-4"
-            :aria-label="t('sports.matchCard.watchAnimation')"
-            @click.stop="emit('media', 'animation')"
+            aria-hidden="true"
           >
-            <AnimationIcon class="h-2.5 w-[15px]" aria-hidden="true" />
-          </button>
+            <AnimationIcon class="h-2.5 w-[15px]" />
+          </span>
         </div>
 
         <div class="mt-3 grid min-h-[119px] flex-1 grid-rows-2 gap-1">
@@ -127,9 +123,9 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
+import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
-import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import { navigateTo } from '@/utils/router'
 import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
 import MatchOdds from '../match-odds/index.vue'
@@ -149,7 +145,6 @@ const { t } = useI18n()
 const emit = defineEmits<{
   select: [payload: OddsSelectPayload]
   favorite: []
-  media: [kind: 'video' | 'animation']
 }>()
 
 const teams = computed(() => [

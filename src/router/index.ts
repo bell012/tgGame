@@ -846,6 +846,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '活动详情',
       description: '活动详情',
+      requiresAuth: true,
       slideTransition: true,
       mobile: {
         hideBottomBar: true,
@@ -860,6 +861,7 @@ const baseRoutes: RouteRecordRaw[] = [
     meta: {
       title: '活动中心',
       description: '活动中心',
+      requiresAuth: true,
       slideTransition: true,
       mobile: {
         hideBottomBar: true,
