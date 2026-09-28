@@ -52,7 +52,12 @@ const handleCustomerServiceClick = () => {
 }
 
 const groups = computed(() => promotionsStore.groups)
-const groupCode = computed(() => String(route.params.groupCode || ''))
+const routeGroupCode = computed(() => String(route.params.groupCode || ''))
+// 详情页桌面端也使用同一套侧边栏，语言切换后需要把旧 rowId 映射到当前语言分组。
+const groupCode = computed(() => {
+  const code = routeGroupCode.value
+  return promotionsStore.resolveCurrentGroupRouteKey(code) || code
+})
 const activityId = computed(() => String(route.params.activityId || ''))
 const activeActivity = ref<ActivityListItem | null>(null)
 const isReady = ref(false)

@@ -179,11 +179,17 @@ const isReady = ref(false)
 const promotionsStore = usePromotionsStore()
 
 const groups = computed(() => promotionsStore.groups)
-const activeGroupCode = computed(() => {
+const routeActiveGroupCode = computed(() => {
   if (isMobile.value && promotionsStore.h5ListGroupCode) {
     return promotionsStore.h5ListGroupCode
   }
   return String(route.params.groupCode || '')
+})
+
+// 切换语言后同一分组的 rowId 可能变化，选中态和列表请求都使用映射后的当前语言分组 key。
+const activeGroupCode = computed(() => {
+  const code = routeActiveGroupCode.value
+  return promotionsStore.resolveCurrentGroupRouteKey(code) || code
 })
 
 const list = ref<ActivityListItem[]>([])
@@ -465,7 +471,9 @@ onMounted(async () => {
   }
 
   if (isMobile.value) {
-    promotionsStore.setH5ListGroupCode(codeFromRoute)
+    promotionsStore.setH5ListGroupCode(
+      promotionsStore.resolveCurrentGroupRouteKey(codeFromRoute) || codeFromRoute
+    )
   }
 
   isReady.value = true
