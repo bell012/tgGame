@@ -3,21 +3,22 @@
     class="fixed bottom-0 right-6 z-30 flex max-h-[min(915px,calc(100dvh-84px))] w-[390px] max-w-[calc(100vw-48px)] flex-col overflow-hidden rounded-t-lg bg-bg-1 font-inter text-text-1 shadow-2xl 2xl:right-[120px]"
     data-testid="sports-betslip"
     :data-state="panelState"
-    aria-label="Bet Slip"
+    :aria-label="t('sports.betSlip.title')"
     @keydown.esc.stop="collapse"
   >
     <header
       class="btn-primary flex h-[66px] shrink-0 items-center gap-2 px-5 text-text-4 !shadow-none"
+      :inert="oddsSettingsOpen"
     >
       <button
         type="button"
         class="flex h-full min-w-0 flex-1 items-center text-left text-lg font-bold leading-[22px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-4"
-        :aria-label="props.open ? 'Collapse Bet Slip' : 'Expand Bet Slip'"
+        :aria-label="t(props.open ? 'sports.betSlip.collapse' : 'sports.betSlip.expand')"
         :aria-expanded="props.open"
         :aria-controls="panelId"
         @click="emit('toggle')"
       >
-        <span class="truncate">Bet Slip</span>
+        <span class="truncate">{{ t('sports.betSlip.title') }}</span>
         <span class="flex h-[30px] w-[30px] shrink-0 items-center justify-center">
           <CaretIcon
             class="h-3 w-3 transition-transform"
@@ -35,7 +36,7 @@
       <button
         type="button"
         class="flex h-[30px] w-[18px] shrink-0 items-center justify-center rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-4 disabled:cursor-wait"
-        aria-label="Refresh balance"
+        :aria-label="t('sports.betSlip.refreshBalance')"
         :disabled="props.refreshing"
         @click="emit('refresh')"
       >
@@ -47,14 +48,21 @@
       </button>
     </header>
 
-    <div v-show="props.open" :id="panelId" class="flex min-h-0 flex-col" :aria-busy="isSubmitting">
-      <PcResult
-        v-if="resultState"
-        :state="resultState"
+    <div
+      v-show="props.open"
+      :id="panelId"
+      class="flex min-h-0 flex-col"
+      :aria-busy="isSubmitting"
+      :inert="oddsSettingsOpen"
+    >
+      <BetResult
+        v-if="props.result"
+        :state="props.result"
+        :reusing="props.reusing"
+        class="min-h-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         @dismiss="emit('dismissResult')"
+        @history="emit('history')"
         @reuse="emit('reuse')"
-        @history="emit('unsupported', 'history')"
-        @share="emit('unsupported', 'share')"
       />
       <fieldset v-else class="contents" :disabled="isSubmitting">
         <div
@@ -63,9 +71,9 @@
         >
           <BetIcon class="h-[84px] w-[84px] shrink-0 text-theme-primary" aria-hidden="true" />
           <div class="w-[143px] min-w-0">
-            <p class="text-[13px] font-extrabold leading-4">Place Your Bets</p>
+            <p class="text-[13px] font-extrabold leading-4">{{ t('sports.betSlip.emptyTitle') }}</p>
             <p class="mt-1.5 text-xs leading-[15px] text-text-2">
-              Your selections will appear here
+              {{ t('sports.betSlip.emptyDescription') }}
             </p>
           </div>
         </div>
@@ -83,7 +91,9 @@
               <button
                 type="button"
                 class="flex w-9 shrink-0 items-center justify-center bg-bg-4 text-text-2 hover:text-text-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
-                :aria-label="`Remove ${selection.selection}`"
+                :aria-label="
+                  t('sports.betSlip.removeSelection', { selection: selection.selection })
+                "
                 @click="emit('remove', selection.id)"
               >
                 <CloseIcon class="h-[18px] w-[18px]" aria-hidden="true" />
@@ -123,7 +133,8 @@
                   :class="{ 'min-h-[46px]': props.mode === 'single' }"
                 >
                   <span>{{ selection.homeTeam }}</span
-                  ><span>VS</span><span>{{ selection.awayTeam }}</span>
+                  ><span>{{ t('sports.betSlip.versus') }}</span
+                  ><span>{{ selection.awayTeam }}</span>
                 </div>
                 <p class="mt-[9px] break-words text-sm leading-5 text-text-2">
                   {{ selection.league }}
@@ -144,9 +155,10 @@
                   class="mt-3"
                   :value="selection.stake"
                   :currency-symbol="props.currencySymbol"
-                  :label="`Stake for ${selection.selection}`"
+                  :label="t('sports.betSlip.stakeFor', { selection: selection.selection })"
                   :error="selection.stakeError"
                   :placeholder="selection.limitText"
+                  :disabled="Boolean(selection.submissionState)"
                   @update="emit('stake', selection.id, $event)"
                   @focus="emit('focusStake', selection.id, 'single')"
                   @max="emit('max', selection.id, 'single')"
@@ -172,15 +184,23 @@
                     class="flex-1"
                     :value="parlay.stake"
                     :currency-symbol="props.currencySymbol"
-                    :label="`Stake for ${parlay.label}`"
+                    :label="t('sports.betSlip.stakeFor', { selection: parlay.label })"
                     :error="parlay.stakeError"
                     :placeholder="parlay.limitText"
+                    :disabled="Boolean(parlay.submissionState)"
                     @update="emit('parlayStake', parlay.id, $event)"
                     @focus="emit('focusStake', parlay.id, 'parlay')"
                     @max="emit('max', parlay.id, 'parlay')"
                   />
                 </div>
               </div>
+              <p
+                v-if="parlay.submissionState === 'confirmed'"
+                class="mx-[18px] mt-2 text-xs text-text-2"
+                role="status"
+              >
+                {{ t('sports.betSubmitSuccess') }}
+              </p>
             </div>
           </div>
         </div>
@@ -200,36 +220,48 @@
           >
             {{ amount }}
           </button>
-          <button type="button" :class="quickEditClass" @click="editingAmounts = true">Edit</button>
+          <button type="button" :class="quickEditClass" @click="editingAmounts = true">
+            {{ t('sports.betSlip.edit') }}
+          </button>
         </div>
 
         <div v-if="props.selections.length" class="shrink-0 px-3 pb-[18px] pt-[17px]">
           <div class="flex min-h-5 items-center justify-between gap-3 text-sm leading-5">
-            <span class="text-text-2">Winnings</span>
+            <span class="text-text-2">{{ t('sports.betSlip.winnings') }}</span>
             <span class="min-w-0 break-all text-right font-bold tabular-nums">
               {{ props.potentialReturnText }}
             </span>
           </div>
           <button
             type="button"
-            class="mt-[18px] flex min-h-[49px] w-full items-center justify-center gap-2.5 rounded-full bg-theme-primary px-4 py-3 text-sm font-bold text-text-4 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-1 disabled:cursor-not-allowed"
+            class="mt-[18px] flex min-h-[49px] w-full items-center justify-center rounded-full bg-theme-primary px-4 py-3 text-sm font-bold text-text-4 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-1 disabled:cursor-not-allowed"
+            :class="isSubmitting ? 'gap-[5px]' : 'gap-2.5'"
             :disabled="!props.canSubmit || isSubmitting"
+            :aria-busy="isSubmitting"
+            data-testid="sports-pc-submit"
             @click="emit('submit')"
           >
-            <span v-if="isSubmitting" class="flex items-center gap-2" role="status">
-              <RefreshIcon class="h-4 w-4 animate-spin" aria-hidden="true" />
-              Confirming local simulation...
-            </span>
-            <template v-else
-              ><span>Place Bet:</span><span>{{ props.totalStakeText }}</span></template
-            >
+            <Loading
+              v-if="isSubmitting"
+              type="spinner"
+              size="20"
+              color="currentColor"
+              aria-hidden="true"
+            />
+            <span v-if="isSubmitting" role="status">{{ t('sports.betSlip.confirming') }}</span>
+            <template v-else>
+              <span>{{ t('sports.betSlip.placeBet') }}</span>
+              <span>{{ props.totalStakeText }}</span>
+            </template>
           </button>
           <button
             type="button"
             class="mt-3 min-h-[49px] w-full rounded-full bg-bg-2 px-4 py-3 text-sm font-bold text-text-2 hover:bg-bg-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
             @click="emit('mode', props.mode === 'single' ? 'parlay' : 'single')"
           >
-            {{ props.mode === 'single' ? 'Add to Acca' : 'Single Bets' }}
+            {{
+              t(props.mode === 'single' ? 'sports.betSlip.addToAcca' : 'sports.betSlip.singleBets')
+            }}
           </button>
         </div>
 
@@ -238,12 +270,13 @@
             v-if="props.selections.length"
             type="button"
             class="flex h-[42px] w-[60px] shrink-0 items-center justify-center rounded-xl bg-bg-2 text-text-2 hover:bg-bg-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
-            aria-label="Clear Bet Slip"
+            :aria-label="t('sports.betSlip.clear')"
             @click="emit('clear')"
           >
             <ClearIcon class="h-6 w-6" aria-hidden="true" />
           </button>
           <button
+            ref="oddsSettingsTrigger"
             type="button"
             class="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl bg-bg-2 px-3 text-[13px] font-extrabold text-text-2 hover:bg-bg-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
             :class="props.selections.length ? 'h-[42px]' : 'h-10'"
@@ -252,19 +285,104 @@
             @click="oddsSettingsOpen = !oddsSettingsOpen"
           >
             <SettingsIcon class="h-6 w-6 shrink-0" aria-hidden="true" />
-            Odds Settings
+            {{ t('sports.betSlip.oddsSettings') }}
           </button>
         </footer>
-        <p
-          v-if="oddsSettingsOpen"
-          :id="oddsSettingsId"
-          class="flex shrink-0 items-center gap-2 px-[18px] pb-3 text-xs text-text-2"
-        >
-          {{ t('sports.betOddsAutoUpdate') }}
-        </p>
       </fieldset>
     </div>
+    <Transition
+      enter-active-class="transition-opacity duration-200 ease-out [&>section]:transition-transform [&>section]:duration-200 [&>section]:ease-out"
+      enter-from-class="opacity-0 [&>section]:translate-y-full"
+      enter-to-class="opacity-100 [&>section]:translate-y-0"
+      leave-active-class="transition-opacity duration-150 ease-in [&>section]:transition-transform [&>section]:duration-150 [&>section]:ease-in"
+      leave-from-class="opacity-100 [&>section]:translate-y-0"
+      leave-to-class="opacity-0 [&>section]:translate-y-full"
+    >
+      <div
+        v-if="oddsSettingsOpen"
+        class="absolute inset-0 z-20 flex items-end bg-mask-60-1 p-2"
+        data-testid="sports-pc-odds-mask"
+        @click.self="closeOddsSettings"
+      >
+        <section
+          :id="oddsSettingsId"
+          ref="oddsSettingsPanel"
+          class="relative w-full rounded-xl bg-bg-2 p-4 shadow-xl outline-none"
+          role="dialog"
+          :aria-label="t('sports.betSlip.oddsSettings')"
+          tabindex="-1"
+          data-testid="sports-pc-odds-settings"
+          @keydown.esc.stop="closeOddsSettings"
+          @keydown.tab="trapOddsSettingsFocus"
+        >
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-1.5">
+              <h3 class="text-sm font-bold">{{ t('sports.betSlip.oddsSettings') }}</h3>
+              <button
+                type="button"
+                class="flex h-6 w-6 items-center justify-center rounded-full text-text-3 hover:text-text-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+                :aria-label="t('sports.betSlip.oddsSettingsHelp')"
+                :aria-describedby="oddsInfoOpen ? oddsInfoId : undefined"
+                @mouseenter="oddsInfoOpen = true"
+                @mouseleave="oddsInfoOpen = false"
+                @focus="oddsInfoOpen = true"
+                @blur="oddsInfoOpen = false"
+                @click="oddsInfoOpen = true"
+              >
+                <InfoIcon class="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+            <button
+              type="button"
+              class="flex h-6 w-6 items-center justify-center rounded text-text-3 hover:text-text-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+              :aria-label="t('sports.betSlip.closeOddsSettings')"
+              @click="closeOddsSettings"
+            >
+              <CloseIcon class="h-3 w-3" aria-hidden="true" />
+            </button>
+          </div>
+          <p
+            v-if="oddsInfoOpen"
+            :id="oddsInfoId"
+            role="tooltip"
+            class="pointer-events-none absolute inset-x-3 bottom-full mb-2 rounded-lg bg-bg-3 px-3 py-2 text-xs leading-5 text-text-2 shadow-lg"
+          >
+            {{ t('sports.betSlip.oddsSettingsDescription') }}
+          </p>
+          <button
+            type="button"
+            role="checkbox"
+            :aria-checked="props.acceptAnyOdds"
+            :disabled="isSubmitting"
+            class="mt-2 flex min-h-9 w-full items-center gap-2 text-left text-sm text-text-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+            @click="emit('acceptAnyOdds', !props.acceptAnyOdds)"
+          >
+            <component
+              :is="props.acceptAnyOdds ? CheckedIcon : UncheckedIcon"
+              class="h-4 w-4 shrink-0"
+              :class="props.acceptAnyOdds ? 'text-theme-primary' : 'text-text-2'"
+              aria-hidden="true"
+            />
+            {{ t('sports.betSlip.autoAcceptBetterOdds') }}
+          </button>
+        </section>
+      </div>
+    </Transition>
   </aside>
+  <Teleport to="body">
+    <div
+      v-if="isSubmitting"
+      class="pointer-events-none fixed right-0 top-16 z-[999999] flex min-h-12 w-[400px] max-w-full items-center gap-3 rounded-lg border border-opacity-10 bg-bg-6 px-3 py-4 text-base font-bold leading-4 text-text-1"
+      role="status"
+      aria-live="polite"
+    >
+      <span class="min-w-0 flex-1">{{ t('sports.betSlip.confirming') }}</span>
+      <span
+        class="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-theme-primary border-r-transparent"
+        aria-hidden="true"
+      />
+    </div>
+  </Teleport>
   <AmountsDialog
     v-if="editingAmounts"
     :amounts="quickAmounts"
@@ -275,16 +393,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useId, watch } from 'vue'
+import { computed, nextTick, onDeactivated, ref, useId, watch } from 'vue'
+import { Loading } from 'vant'
 import BetIcon from '@/static/svg/sports/betslip-empty.svg'
 import CaretIcon from '@/static/svg/sports/caret-up.svg'
 import ClearIcon from '@/static/svg/sports/clear-bets.svg'
 import CloseIcon from '@/static/svg/close.svg'
 import RefreshIcon from '@/static/svg/refresh.svg'
 import SettingsIcon from '@/static/svg/sports/odds-settings.svg'
+import InfoIcon from '@/static/svg/info.svg'
+import CheckedIcon from '@/static/svg/sports/bet-slip/checked.svg'
+import UncheckedIcon from '@/static/svg/sports/bet-slip/unchecked.svg'
 import StakeInput from './stake-input.vue'
 import AmountsDialog from './amounts-dialog.vue'
-import PcResult from './pc-result.vue'
+import BetResult from './pc-result.vue'
 import { useI18n } from 'vue-i18n'
 import type { SportsBetMode, SportsBetSelection, SportsParlay } from '../../shared/types'
 
@@ -300,7 +422,10 @@ const props = defineProps<{
   canSubmit: boolean
   refreshing: boolean
   focusedStakeId?: string
-  submissionState?: 'idle' | 'confirming' | 'success' | 'failed'
+  submitting: boolean
+  acceptAnyOdds: boolean
+  result?: 'success' | 'failed' | null
+  reusing?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -314,15 +439,31 @@ const emit = defineEmits<{
   mode: [mode: SportsBetMode]
   clear: []
   submit: []
+  acceptAnyOdds: [value: boolean]
   refresh: []
-  reuse: []
   dismissResult: []
+  history: []
+  reuse: []
   unsupported: [action: 'settings' | 'history' | 'share']
 }>()
 
 const panelId = useId()
 const oddsSettingsId = useId()
 const oddsSettingsOpen = ref(false)
+const oddsInfoOpen = ref(false)
+const oddsInfoId = useId()
+const oddsSettingsTrigger = ref<HTMLButtonElement | null>(null)
+const oddsSettingsPanel = ref<HTMLElement | null>(null)
+onDeactivated(() => {
+  oddsSettingsOpen.value = false
+})
+watch(oddsSettingsOpen, async opened => {
+  oddsInfoOpen.value = false
+  if (!opened) return
+  await nextTick()
+  // 滑入时只移动焦点，避免浏览器滚动投注单。
+  if (oddsSettingsOpen.value) oddsSettingsPanel.value?.focus({ preventScroll: true })
+})
 const { t } = useI18n()
 const singleQuickAmounts = ref([10, 20, 50, 100, 200])
 const parlayQuickAmounts = ref([20, 50, 100, 200])
@@ -330,17 +471,13 @@ const quickAmounts = computed(() =>
   props.mode === 'single' ? singleQuickAmounts.value : parlayQuickAmounts.value
 )
 const editingAmounts = ref(false)
-const isSubmitting = computed(() => props.submissionState === 'confirming')
-const resultState = computed(() =>
-  props.submissionState === 'success' || props.submissionState === 'failed'
-    ? props.submissionState
-    : null
-)
+const isSubmitting = computed(() => props.submitting)
 const panelState = computed(() =>
   !props.open
     ? 'collapsed'
-    : (resultState.value ??
-      (isSubmitting.value ? 'confirming' : props.selections.length ? props.mode : 'empty'))
+    : isSubmitting.value
+      ? 'submitting'
+      : (props.result ?? (props.selections.length ? props.mode : 'empty'))
 )
 const quickAmountClass =
   'h-9 w-[66px] shrink-0 rounded-xl px-2 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary'
@@ -357,9 +494,10 @@ const activeStake = computed(
   () => (props.mode === 'single' ? focusedSingle.value?.stake : focusedParlay.value?.stake) ?? ''
 )
 watch(
-  [() => props.open, () => props.currencySymbol, () => props.submissionState, () => props.mode],
+  [() => props.open, () => props.currencySymbol, () => props.submitting, () => props.mode],
   () => {
     editingAmounts.value = false
+    oddsSettingsOpen.value = false
   }
 )
 
@@ -377,11 +515,38 @@ function amountClass(stake: string, amount: number) {
 
 function setQuickAmount(amount: number) {
   const target = props.mode === 'single' ? focusedSingle.value : focusedParlay.value
+  if (isSubmitting.value || target?.submissionState) return
   if (target) emit('focusStake', target.id, props.mode)
   emit('quickAmount', amount)
 }
 
 function collapse() {
+  if (oddsSettingsOpen.value) {
+    closeOddsSettings()
+    return
+  }
   if (props.open) emit('toggle')
+}
+
+async function closeOddsSettings() {
+  oddsSettingsOpen.value = false
+  await nextTick()
+  oddsSettingsTrigger.value?.focus({ preventScroll: true })
+}
+
+function trapOddsSettingsFocus(event: KeyboardEvent) {
+  const buttons =
+    oddsSettingsPanel.value?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')
+  if (!buttons?.length) return
+  const first = buttons[0]
+  const last = buttons[buttons.length - 1]
+  const active = document.activeElement
+  if (event.shiftKey && (active === first || active === oddsSettingsPanel.value)) {
+    event.preventDefault()
+    last.focus({ preventScroll: true })
+  } else if (!event.shiftKey && active === last) {
+    event.preventDefault()
+    first.focus({ preventScroll: true })
+  }
 }
 </script>

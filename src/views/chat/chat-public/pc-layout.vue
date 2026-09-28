@@ -29,17 +29,29 @@
 
     <ConversationView
       v-if="activeConversation"
+      ref="conversationViewRef"
       class="w-full"
       display-mode="pc"
       :conversation="activeConversation"
       :messages="messages"
       :issues="quickIssues"
+      :claimed-red-packet-ids="claimedRedPacketIds"
+      :has-more-cached-messages="hasMoreCachedMessages"
+      :loading-older-messages="loadingOlderMessages"
+      :red-packet-claiming-message-ids="redPacketClaimingMessageIds"
+      :uploading-media="uploadingImage"
+      :highlight-message-id="highlightMessageId"
+      :highlight-keyword="highlightKeyword"
       :mode="mode"
       :draft="draft"
       :reply-target="replyTarget"
       @back="handleConversationBack"
+      @search="searchVisible = true"
       @reply="startReply"
+      @claim-red-packet="handleRedPacketClaim"
+      @load-older="handleLoadOlderMessages"
       @issue="handleIssueSelect"
+      @retry="handleRetryMessage"
       @update:draft="setDraft"
       @send="handleSend"
       @emoji="toggleEmoji"
@@ -47,8 +59,49 @@
       @cancel-reply="cancelReply"
       @emoji-select="handleEmojiSelect"
       @emoji-delete="handleEmojiDelete"
-      @photo="handleImageUpload"
-      @camera="handleImageUpload"
+      @photo="openMediaPreview"
+      @camera="openMediaPreview"
+      @view-image="openImageViewer"
+      @view-video="openVideoViewer"
+    />
+
+    <!-- PC 当前会话历史搜索覆盖层。 -->
+    <ChatSearchOverlay
+      v-if="searchVisible"
+      display-mode="pc"
+      :conversation="activeConversation"
+      :search-messages="searchCurrentConversationMessages"
+      @close="searchVisible = false"
+      @locate="handleSearchLocate"
+    />
+
+    <!-- PC 端批量媒体发送预览。 -->
+    <ChatImagePreview
+      v-if="pcPreviewImage || pendingMediaFiles.length"
+      :src="pcPreviewImage"
+      :preview-urls="pcPreviewUrls"
+      :media-files="pendingMediaFiles"
+      :mode="pcPreviewImage ? 'viewer' : 'compose'"
+      display-mode="pc"
+      @close="closeMediaPreview"
+      @remove="removePendingMedia"
+      @send="sendPendingMedia"
+    />
+
+    <!-- PC 视频预览弹窗。 -->
+    <ChatVideoPreview
+      v-if="previewVideo"
+      :src="previewVideo"
+      display-mode="pc"
+      @close="previewVideo = ''"
+    />
+
+    <!-- PC 端红包领取成功提示。 -->
+    <RedPacketSuccessPopup
+      v-if="redPacketSuccessAmount !== null"
+      display-mode="pc"
+      :amount="redPacketSuccessAmount"
+      @close="closeRedPacketSuccess"
     />
 
     <!-- PC 快捷问题弹层。 -->
@@ -70,12 +123,17 @@ import type { AutoReplyItem } from '@/api/interface/chat'
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import ChatImagePreview from './components/chat-image-preview.vue'
+import ChatSearchOverlay from './components/chat-search-overlay.vue'
+import ChatVideoPreview from './components/chat-video-preview.vue'
 import ConversationList from './components/conversation-list.vue'
 import ConversationView from './components/conversation-view.vue'
 import QuickIssueSheet from './components/quick-issue-sheet.vue'
+import RedPacketSuccessPopup from './components/red-packet-success-popup.vue'
 import { useChatComposer } from './composables/use-chat-composer'
 import { useChatRuntime } from './composables/use-chat-runtime'
-import type { ConversationItem, QuickIssue } from './types'
+import { resolveChatMediaUrl } from './shared'
+import type { ChatMessage, ConversationItem, QuickIssue } from './types'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -87,13 +145,26 @@ const {
   activeConversation,
   loadingConversations,
   loadingAutoReplies,
+  uploadingImage,
+  redPacketClaimingMessageIds,
+  claimedRedPacketIds,
+  redPacketSuccessAmount,
+  hasMoreCachedMessages,
+  loadingOlderMessages,
   initialize,
   selectConversation,
   leaveConversation,
+  loadOlderMessages,
+  loadConversations,
+  searchCurrentConversationMessages,
+  locateCurrentConversationMessage,
   loadAutoReplies,
   sendTextMessage,
+  retryMessage,
+  claimRedPacket,
+  closeRedPacketSuccess,
   sendAutoReplyMessage,
-  sendImageFile
+  sendMediaFile
 } = useChatRuntime()
 const {
   draft,
@@ -109,9 +180,19 @@ const {
 
 const quickIssueVisible = ref(false)
 const activeIssue = ref<QuickIssue | null>(null)
+const searchVisible = ref(false)
+const highlightMessageId = ref('')
+const highlightKeyword = ref('')
+const pendingMediaFiles = ref<File[]>([])
+const pcPreviewImage = ref('')
+const pcPreviewUrls = ref<string[]>([])
+const previewVideo = ref('')
+const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
 
 /** 选择 PC 客服后读取缓存并建立当前客服的 Socket 连接。 */
 const handleConversationSelect = async (conversation: ConversationItem) => {
+  highlightMessageId.value = ''
+  highlightKeyword.value = ''
   await selectConversation(conversation)
   nextTick(() => scrollToBottom())
 }
@@ -119,9 +200,39 @@ const handleConversationSelect = async (conversation: ConversationItem) => {
 /** 从对话返回客服会话列表，并清理会话内的临时状态。 */
 const handleConversationBack = async () => {
   await leaveConversation()
+  await loadConversations()
+  highlightMessageId.value = ''
+  highlightKeyword.value = ''
   quickIssueVisible.value = false
   activeIssue.value = null
   resetAfterSend()
+}
+
+/** 关闭搜索层后补齐历史消息，并滚动到命中的消息位置。 */
+const handleSearchLocate = async (messageId: string, keyword: string) => {
+  const located = await locateCurrentConversationMessage(messageId)
+  searchVisible.value = false
+  if (located) {
+    highlightMessageId.value = messageId
+    highlightKeyword.value = keyword
+    await nextTick()
+    conversationViewRef.value?.scrollToMessage(messageId)
+  }
+}
+
+/** 用户上滑至消息列表顶部时，读取当前会话更早的一页本地缓存记录。 */
+const handleLoadOlderMessages = () => {
+  void loadOlderMessages()
+}
+
+/** 领取当前点击的客服红包，并在接口成功后显示领取结果。 */
+const handleRedPacketClaim = (message: ChatMessage) => {
+  void claimRedPacket(message)
+}
+
+/** 重新发送当前会话中连接失败的消息。 */
+const handleRetryMessage = (message: ChatMessage) => {
+  retryMessage(message)
 }
 
 /** 关闭 PC 聊天侧边抽屉并返回进入聊天前的页面。 */
@@ -162,7 +273,7 @@ const handleQuickIssueSend = (item: AutoReplyItem) => {
 /** 发送当前输入草稿，并恢复编辑器初始状态。 */
 const handleSend = () => {
   if (!draft.value.trim()) return
-  sendTextMessage(draft.value)
+  sendTextMessage(draft.value, replyTarget.value)
   resetAfterSend()
   scrollToBottom()
 }
@@ -179,11 +290,54 @@ const handleEmojiDelete = () => {
   mode.value = 'emoji'
 }
 
-/** 上传 PC 端选择的图片，并使用上传结果发送 image Socket 消息。 */
-const handleImageUpload = async (file: File) => {
-  const sent = await sendImageFile(file)
-  if (sent) {
-    mode.value = 'idle'
+/** 打开 PC 端多张图片或视频的发送预览，用户确认后再上传。 */
+const openMediaPreview = (files: File[]) => {
+  pendingMediaFiles.value = files.slice(0, 9)
+  pcPreviewImage.value = ''
+  pcPreviewUrls.value = []
+}
+
+/** 关闭 PC 媒体发送预览，并清空尚未发送的文件。 */
+const closeMediaPreview = () => {
+  pendingMediaFiles.value = []
+  pcPreviewImage.value = ''
+  pcPreviewUrls.value = []
+  mode.value = 'idle'
+}
+
+/** 打开 PC 会话历史中图片消息的预览弹窗，并传入该消息包含的所有图片。 */
+const openImageViewer = (message: ChatMessage) => {
+  if (!message.image) return
+  pendingMediaFiles.value = []
+  pcPreviewImage.value = message.image
+  pcPreviewUrls.value = Array.from(
+    new Set(
+      [
+        message.image,
+        ...(message.imageList ?? []).map(image => resolveChatMediaUrl(image.imgUrl))
+      ].filter((url): url is string => Boolean(url))
+    )
+  )
+}
+
+/** 打开 PC 会话中的视频消息预览弹窗。 */
+const openVideoViewer = (message: ChatMessage) => {
+  if (!message.video) return
+  previewVideo.value = message.video
+}
+
+/** 从 PC 待发送媒体列表中移除用户取消的文件。 */
+const removePendingMedia = (index: number) => {
+  pendingMediaFiles.value.splice(index, 1)
+  if (!pendingMediaFiles.value.length) closeMediaPreview()
+}
+
+/** 依次上传并发送 PC 端用户确认的媒体文件。 */
+const sendPendingMedia = async () => {
+  const files = [...pendingMediaFiles.value]
+  closeMediaPreview()
+  for (const file of files) {
+    await sendMediaFile(file)
   }
   scrollToBottom()
 }
@@ -195,7 +349,7 @@ onMounted(() => {
 
 /** 在缓存加载、发送或服务端推送新增消息后保持最新消息可见。 */
 watch(
-  () => messages.value.length,
+  () => messages.value[messages.value.length - 1]?.id,
   () => scrollToBottom()
 )
 </script>

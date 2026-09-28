@@ -7,31 +7,15 @@
   <div v-else class="w-full min-w-0 bg-bg-1 font-inter text-text-1" data-testid="sports-page">
     <SportsNavigation class="!px-5" @change="handleSportChange" />
 
-    <!-- 热门区加载失败不影响下方赛事。 -->
-    <p v-if="page.hotEventsLoading.value" class="mx-5 mt-4 text-sm text-text-2" role="status">
-      {{ page.sportsLoadingText.value }}
-    </p>
-    <div
-      v-else-if="page.hotEventsError.value"
-      class="mx-5 mt-4 flex items-center gap-3 text-sm text-text-2"
-      role="status"
+    <section
+      v-if="liveMatches.length"
+      class="mt-4"
+      :aria-label="t('sports.homepage.popularMatches')"
     >
-      <span>{{ page.sportsLoadFailedText.value }}</span>
-      <button
-        type="button"
-        class="shrink-0 text-theme-primary disabled:opacity-50"
-        :disabled="page.hotEventsLoading.value"
-        @click="page.retryHotEvents"
-      >
-        {{ page.sportsRetryText.value }}
-      </button>
-    </div>
-
-    <section v-if="liveMatches.length" class="mt-4" aria-label="Popular matches">
       <div
         class="relative flex items-start gap-3 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         tabindex="0"
-        aria-label="Popular matches"
+        :aria-label="t('sports.homepage.popularMatches')"
         data-testid="sports-live-strip"
       >
         <article
@@ -55,7 +39,7 @@
               </template>
               <span class="truncate" :title="match.league">{{ match.league }}</span>
             </div>
-            <span class="shrink-0 text-text-1">{{ page.getMatchTime(match) }}</span>
+            <MatchTime :match="match" class="shrink-0 text-text-1" />
           </div>
 
           <MatchVersus
@@ -114,7 +98,11 @@
     </section>
 
     <!-- 卡片展开时覆盖下方内容，保留原网格位置。 -->
-    <section ref="matchList" class="mx-5 mb-10 mt-4 scroll-mt-20" aria-label="Upcoming matches">
+    <section
+      ref="matchList"
+      class="mx-5 mb-10 mt-4 scroll-mt-20"
+      :aria-label="t('sports.homepage.upcomingMatches')"
+    >
       <p
         v-if="page.homepageLoading.value"
         class="py-4 text-center text-sm text-text-2"
@@ -134,22 +122,25 @@
         class="grid min-w-0 grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-4"
         data-testid="sports-match-grid"
       >
-        <MatchCardPc
+        <div
           v-for="match in pagedMatches"
           :key="match.id"
           v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
-          :match="match"
-          :time-label="page.getMatchTime(match)"
-          :MarketLines="match.MarketLines"
-          :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
-          :expanded="expandedMatchId === match.id"
-          :favorite="match.IsFavourite"
-          :favorite-pending="isMatchFavoritePending(match.id)"
-          @update:expanded="setMatchExpanded(match.id, $event)"
-          @favorite="handleMatchFavorite(match.id)"
-          @select="selectOdds(match.id, $event)"
-          @media="showMediaPlaceholder"
-        />
+          class="min-w-0"
+        >
+          <MatchCardPc
+            :match="match"
+            :MarketLines="match.MarketLines"
+            :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
+            :expanded="expandedMatchId === match.id"
+            :favorite="match.IsFavourite"
+            :favorite-pending="isMatchFavoritePending(match.id)"
+            @update:expanded="setMatchExpanded(match.id, $event)"
+            @favorite="handleMatchFavorite(match.id)"
+            @select="selectOdds(match.id, $event)"
+            @media="showMediaPlaceholder"
+          />
+        </div>
       </div>
       <p
         v-if="page.matchesLoading.value && !page.homepageLoading.value"
@@ -161,7 +152,7 @@
       <nav
         v-if="totalPages > 1"
         class="mt-8"
-        aria-label="Match pagination"
+        :aria-label="t('sports.homepage.matchPagination')"
         data-testid="sports-pagination"
       >
         <DesktopPagination
@@ -186,7 +177,14 @@
       :can-submit="canSubmit"
       :refreshing="refreshing"
       :focused-stake-id="focusedStakeId"
-      :submission-state="pcSubmissionState"
+      :submitting="submitting"
+      :accept-any-odds="acceptAnyOdds"
+      @accept-any-odds="setAcceptAnyOdds"
+      :result="betResult"
+      :reusing="reusing"
+      @reuse="reuseSelections"
+      @dismiss-result="dismissBetResult"
+      @history="handleFloatingEntry('history')"
       @toggle="betSlipOpen = !betSlipOpen"
       @remove="removeSelection"
       @stake="updateStake"
@@ -196,18 +194,17 @@
       @quick-amount="quickAmount"
       @mode="setMode"
       @clear="clearBets"
-      @submit="submitPcMockBet"
-      @reuse="resetPcBetResult"
-      @dismiss-result="finishPcBetResult"
+      @submit="submitBet"
       @refresh="refreshBalance"
-      @unsupported="showPcUnsupported"
+      @unsupported="showUnsupported"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, onDeactivated, onScopeDispose, ref, watch } from 'vue'
+import { nextTick, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLayoutStore } from '@/stores/layout'
 import CommonFooter from '@/components/commonFooter.vue'
@@ -224,6 +221,7 @@ import MatchOdds from './components/match-odds/index.vue'
 import LeagueTabs_PC from './components/liansai_tabs/pc.vue'
 import FilterSearch_PC from './components/filter_search/pc.vue'
 import MatchCardPc from './components/match-card/pc.vue'
+import MatchTime from './components/match-card/time.vue'
 import BetSlipPc from './components/bet-slip/pc.vue'
 import H5Page from './components/page/h5.vue'
 import BetSlipH5 from './components/bet-slip/h5.vue'
@@ -231,6 +229,7 @@ import { useSportsPage } from './index'
 import { useMatchVisibility } from './composables/useMatchVisibility'
 
 const isMobile = useIsMobile()
+const { t } = useI18n()
 const matchList = ref<HTMLElement | null>(null)
 const page = useSportsPage()
 const layoutStore = useLayoutStore()
@@ -272,7 +271,15 @@ const {
   quickAmount,
   setMode,
   clearBets,
-  submitMockBet,
+  submitting,
+  acceptAnyOdds,
+  setAcceptAnyOdds,
+  betResult,
+  reusing,
+  reuseSelections,
+  dismissBetResult,
+  handleFloatingEntry,
+  submitBet,
   refreshBalance,
   showUnsupported,
   handleSportChange,
@@ -281,59 +288,6 @@ const {
   handleLeagueChange,
   handleCollectChange
 } = page
-
-// 本地模拟投注，不创建订单。
-const pcSubmissionState = ref<'idle' | 'confirming' | 'success' | 'failed'>('idle')
-let pcSubmitTimer: ReturnType<typeof setTimeout> | undefined
-
-function resetPcBetResult() {
-  clearTimeout(pcSubmitTimer)
-  pcSubmitTimer = undefined
-  pcSubmissionState.value = 'idle'
-}
-
-function submitPcMockBet() {
-  if (!canSubmit.value || pcSubmissionState.value !== 'idle') return
-  pcSubmissionState.value = 'confirming'
-  pcSubmitTimer = setTimeout(() => {
-    pcSubmitTimer = undefined
-    pcSubmissionState.value = 'success'
-  }, 600)
-}
-
-function finishPcBetResult() {
-  if (pcSubmissionState.value === 'success') submitMockBet()
-  resetPcBetResult()
-}
-
-// 按投注内容判断是否变化，避免列表刷新重置投注单。
-watch(
-  () =>
-    JSON.stringify([
-      mode.value,
-      currencySymbol.value,
-      selections.value.map(item => [item.id, item.stake, item.odds]),
-      parlays.value.map(item => [item.id, item.stake, item.odds])
-    ]),
-  resetPcBetResult,
-  { flush: 'sync' }
-)
-watch(betSlipOpen, open => {
-  if (!open) finishPcBetResult()
-})
-watch(isMobile, mobile => {
-  if (mobile) resetPcBetResult()
-})
-onDeactivated(resetPcBetResult)
-onScopeDispose(resetPcBetResult)
-
-function showPcUnsupported(action: 'settings' | 'editAmounts' | 'history' | 'share') {
-  if (action === 'history' || action === 'share') {
-    globalShowToast('This is a local simulation. No real bet record was created.')
-    return
-  }
-  showUnsupported()
-}
 
 async function changePage(page: number) {
   if (page === currentPage.value) return
@@ -345,8 +299,8 @@ async function changePage(page: number) {
 function showMediaPlaceholder(kind: 'video' | 'animation') {
   globalShowToast(
     kind === 'video'
-      ? 'Live video is not available in this local preview.'
-      : 'Match animation is not available in this local preview.'
+      ? t('sports.homepage.liveVideoUnavailable')
+      : t('sports.homepage.animationUnavailable')
   )
 }
 </script>

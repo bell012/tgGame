@@ -31,21 +31,6 @@ export const parseBetInfoItems = (
   return { quotes: [...quotes.values()], replacedIds: [...replacedIds] }
 }
 
-export const comboLabel = (combo: number, count: number) => {
-  if (combo >= 9 && combo <= 17) return `${combo - 7}-Fold`
-  const systems: Record<number, string> = {
-    1: 'Trixie',
-    2: 'Yankee',
-    3: 'Super Yankee',
-    4: 'Heinz',
-    5: 'Super Heinz',
-    6: 'Goliath',
-    7: '9-Fold System',
-    8: '10-Fold System'
-  }
-  return systems[combo] ?? (combo === 18 ? `${count}-Fold` : `Combo ${combo}`)
-}
-
 // 只用于比较赔率改善，不用于计算派彩；派彩读取接口 epa。
 export const decimalOdds = (odds: number, type: number): number | null => {
   if (!Number.isFinite(odds)) return null

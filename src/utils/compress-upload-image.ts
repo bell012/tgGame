@@ -2,7 +2,7 @@ export const UPLOAD_IMAGE_MAX_DIMENSION = 1920
 export const UPLOAD_IMAGE_JPEG_QUALITY = 0.8
 export const UPLOAD_IMAGE_MAX_BYTES = 2 * 1024 * 1024
 
-type CompressUploadImageOptions = {
+export type CompressUploadImageOptions = {
   maxDimension?: number
   jpegQuality?: number
   maxBytes?: number
@@ -87,15 +87,18 @@ export async function compressUploadImage(
   return blob
 }
 
-export async function prepareUploadImage(file: Blob | File): Promise<Blob> {
+export async function prepareUploadImage(
+  file: Blob | File,
+  options: CompressUploadImageOptions = {}
+): Promise<Blob> {
   if (!(file instanceof Blob)) {
     throw new Error('invalid file')
   }
 
   try {
-    return await compressUploadImage(file)
+    return await compressUploadImage(file, options)
   } catch {
-    if (file.size <= UPLOAD_IMAGE_MAX_BYTES) {
+    if (file.size <= (options.maxBytes ?? UPLOAD_IMAGE_MAX_BYTES)) {
       return file
     }
 

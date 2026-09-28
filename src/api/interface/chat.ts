@@ -8,7 +8,7 @@ export interface ChatApiResponse<TResult> {
 
 /** 在线客服列表查询参数。 */
 export interface QueryOnlineCustomerForm {
-  userId: string
+  memberRowId: string
 }
 
 /** 在线客服记录。 */
@@ -41,6 +41,11 @@ export interface QueryAutoReplyForm {
 /** 客服欢迎语配置查询参数。 */
 export interface QueryChatConfigParams {
   t: number
+}
+
+/** 领取客服消息红包的请求参数。 */
+export interface ReceiveRedPackageForm {
+  id: string | number
 }
 
 /** 客服欢迎语配置。 */

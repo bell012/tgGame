@@ -35,13 +35,23 @@
         :conversation="activeConversation"
         :messages="messages"
         :issues="quickIssues"
+        :claimed-red-packet-ids="claimedRedPacketIds"
+        :has-more-cached-messages="hasMoreCachedMessages"
+        :loading-older-messages="loadingOlderMessages"
+        :red-packet-claiming-message-ids="redPacketClaimingMessageIds"
+        :uploading-media="uploadingImage"
+        :highlight-message-id="highlightMessageId"
+        :highlight-keyword="highlightKeyword"
         :mode="mode"
         :draft="draft"
         :reply-target="replyTarget"
         @back="handleConversationBack"
         @search="searchVisible = true"
         @reply="startReply"
+        @claim-red-packet="handleRedPacketClaim"
+        @load-older="handleLoadOlderMessages"
         @issue="handleIssueSelect"
+        @retry="handleRetryMessage"
         @update:draft="setDraft"
         @send="handleSend"
         @emoji="toggleEmoji"
@@ -49,9 +59,17 @@
         @cancel-reply="cancelReply"
         @emoji-select="handleEmojiSelect"
         @emoji-delete="handleEmojiDelete"
-        @photo="handleImageUpload"
-        @camera="handleImageUpload"
+        @photo="openMediaPreview"
+        @camera="openMediaPreview"
         @view-image="openImageViewer"
+        @view-video="openVideoViewer"
+      />
+
+      <!-- 红包领取成功提示。 -->
+      <RedPacketSuccessPopup
+        v-if="redPacketSuccessAmount !== null"
+        :amount="redPacketSuccessAmount"
+        @close="closeRedPacketSuccess"
       />
 
       <!-- 会话页内触发的快捷问题弹层。 -->
@@ -68,16 +86,23 @@
     <!-- 消息搜索覆盖层。 -->
     <ChatSearchOverlay
       v-if="searchVisible"
+      :conversation="activeConversation"
+      :search-messages="searchCurrentConversationMessages"
       @close="searchVisible = false"
       @locate="handleSearchLocate"
     />
     <!-- 图片预览覆盖层。 -->
     <ChatImagePreview
-      v-if="previewImage"
+      v-if="previewImage || pendingMediaFiles.length"
       :src="previewImage"
+      :media-files="pendingMediaFiles"
       :mode="previewMode"
       @close="closeImagePreview"
+      @remove="removePendingMedia"
+      @send="sendPendingMedia"
     />
+    <!-- H5 视频预览覆盖层。 -->
+    <ChatVideoPreview v-if="previewVideo" :src="previewVideo" @close="previewVideo = ''" />
   </div>
 </template>
 
@@ -88,10 +113,12 @@ import { nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import ChatImagePreview from './components/chat-image-preview.vue'
+import ChatVideoPreview from './components/chat-video-preview.vue'
 import ChatSearchOverlay from './components/chat-search-overlay.vue'
 import ConversationList from './components/conversation-list.vue'
 import ConversationView from './components/conversation-view.vue'
 import QuickIssueSheet from './components/quick-issue-sheet.vue'
+import RedPacketSuccessPopup from './components/red-packet-success-popup.vue'
 import { useChatComposer } from './composables/use-chat-composer'
 import { useChatRuntime } from './composables/use-chat-runtime'
 import type { ChatMessage, ConversationItem, QuickIssue } from './types'
@@ -106,13 +133,26 @@ const {
   activeConversation,
   loadingConversations,
   loadingAutoReplies,
+  uploadingImage,
+  redPacketClaimingMessageIds,
+  claimedRedPacketIds,
+  redPacketSuccessAmount,
+  hasMoreCachedMessages,
+  loadingOlderMessages,
   initialize,
   selectConversation,
   leaveConversation,
+  loadOlderMessages,
+  loadConversations,
+  searchCurrentConversationMessages,
+  locateCurrentConversationMessage,
   loadAutoReplies,
   sendTextMessage,
+  retryMessage,
+  claimRedPacket,
+  closeRedPacketSuccess,
   sendAutoReplyMessage,
-  sendImageFile
+  sendMediaFile
 } = useChatRuntime()
 const {
   draft,
@@ -129,8 +169,12 @@ const {
 const quickIssueVisible = ref(false)
 const activeIssue = ref<QuickIssue | null>(null)
 const searchVisible = ref(false)
+const highlightMessageId = ref('')
+const highlightKeyword = ref('')
 const previewImage = ref('')
 const previewMode = ref<'compose' | 'viewer'>('viewer')
+const pendingMediaFiles = ref<File[]>([])
+const previewVideo = ref('')
 const conversationViewRef = ref<InstanceType<typeof ConversationView> | null>(null)
 
 /** 在消息新增或切换会话后，将消息区域滚动到最底部。 */
@@ -145,6 +189,8 @@ const handleListBack = () => {
 
 /** 选择客服会话，读取本地消息缓存并建立当前客服的 Socket 连接。 */
 const handleConversationSelect = async (conversation: ConversationItem) => {
+  highlightMessageId.value = ''
+  highlightKeyword.value = ''
   await selectConversation(conversation)
   scrollToBottom()
 }
@@ -152,37 +198,83 @@ const handleConversationSelect = async (conversation: ConversationItem) => {
 /** 退出当前会话，清理仅属于会话页的临时交互状态。 */
 const handleConversationBack = async () => {
   await leaveConversation()
+  await loadConversations()
+  highlightMessageId.value = ''
+  highlightKeyword.value = ''
   quickIssueVisible.value = false
   activeIssue.value = null
   resetAfterSend()
 }
 
+/** 用户上滑至消息列表顶部时，读取当前会话更早的一页本地缓存记录。 */
+const handleLoadOlderMessages = () => {
+  void loadOlderMessages()
+}
+
+/** 领取当前点击的客服红包，并在接口成功后显示领取结果。 */
+const handleRedPacketClaim = (message: ChatMessage) => {
+  void claimRedPacket(message)
+}
+
+/** 重新发送当前会话中连接失败的消息。 */
+const handleRetryMessage = (message: ChatMessage) => {
+  retryMessage(message)
+}
+
 /** 查看会话中的图片消息。 */
 const openImageViewer = (message: ChatMessage) => {
   if (!message.image) return
+  pendingMediaFiles.value = []
   previewMode.value = 'viewer'
   previewImage.value = message.image
+}
+
+/** 打开 H5 会话中的视频消息预览页。 */
+const openVideoViewer = (message: ChatMessage) => {
+  if (!message.video) return
+  previewVideo.value = message.video
 }
 
 /** 关闭图片预览并恢复当前会话。 */
 const closeImagePreview = () => {
   previewImage.value = ''
+  pendingMediaFiles.value = []
   mode.value = 'idle'
 }
 
-/** 上传图片并在服务端确认图片地址后发送 image Socket 消息。 */
-const handleImageUpload = async (file: File) => {
-  const sent = await sendImageFile(file)
-  if (sent) {
-    mode.value = 'idle'
+/** 打开多张图片或视频的发送预览，并等待用户确认后再上传。 */
+const openMediaPreview = (files: File[]) => {
+  pendingMediaFiles.value = files.slice(0, 9)
+  previewImage.value = ''
+  previewMode.value = 'compose'
+}
+
+/** 从待发送媒体列表中移除用户取消的文件。 */
+const removePendingMedia = (index: number) => {
+  pendingMediaFiles.value.splice(index, 1)
+  if (!pendingMediaFiles.value.length) closeImagePreview()
+}
+
+/** 依次上传并发送用户确认的图片或视频，保证消息显示顺序与选择顺序一致。 */
+const sendPendingMedia = async () => {
+  const files = [...pendingMediaFiles.value]
+  closeImagePreview()
+  for (const file of files) {
+    await sendMediaFile(file)
   }
   scrollToBottom()
 }
 
 /** 从搜索结果返回会话并定位到当前消息区域。 */
-const handleSearchLocate = () => {
+const handleSearchLocate = async (messageId: string, keyword: string) => {
+  const located = await locateCurrentConversationMessage(messageId)
   searchVisible.value = false
-  scrollToBottom()
+  if (located) {
+    highlightMessageId.value = messageId
+    highlightKeyword.value = keyword
+    await nextTick()
+    conversationViewRef.value?.scrollToMessage(messageId)
+  }
 }
 
 /** 打开所选自动回复分类，并请求其对应的后台问题列表。 */
@@ -204,7 +296,7 @@ const handleQuickIssueSend = (item: AutoReplyItem) => {
 /** 发送输入框草稿，并在发送后重置编辑器状态。 */
 const handleSend = () => {
   if (!draft.value.trim()) return
-  sendTextMessage(draft.value)
+  sendTextMessage(draft.value, replyTarget.value)
   resetAfterSend()
   scrollToBottom()
 }
@@ -228,7 +320,7 @@ onMounted(() => {
 
 /** 在缓存加载、发送或服务端推送新增消息后保持最新消息可见。 */
 watch(
-  () => messages.value.length,
+  () => messages.value[messages.value.length - 1]?.id,
   () => scrollToBottom()
 )
 </script>

@@ -9,6 +9,7 @@ const RECONNECT_MAX_ATTEMPTS = 5
 interface ChatConnectionOptions {
   url: string
   onMessage: (payload: unknown) => void
+  onConnected?: () => void
 }
 
 /** 管理单个客服会话的 WebSocket、心跳、断线重连与消息分发。 */
@@ -92,6 +93,7 @@ export function useChatConnection() {
       reconnectAttempts = 0
       state.value = 'connected'
       startHeartbeat()
+      options.onConnected?.()
     }
 
     nextSocket.onmessage = event => {

@@ -18,8 +18,8 @@ const getCardCount = (value: unknown): string | undefined => {
 const getExtraCount = (value: unknown): number | undefined =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined
 
-/** 扩展信息可能缺失或格式异常，不影响赛事主体展示。 */
-const getExtraCounts = (value: string): Pick<SportEventExtraInfo, 'htycs' | 'atycs'> => {
+/** 扩展信息缺失时，角球数按 0 显示。 */
+const getCornerCounts = (value: string): Pick<SportEventExtraInfo, 'htycs' | 'atycs'> => {
   if (!value) return {}
   try {
     const extra: unknown = JSON.parse(value)
@@ -82,7 +82,7 @@ export const mapSportsMatches = (
       const competitionId = event.Competition?.CompetitionId ?? group.CompetitionId
       if (!Number.isSafeInteger(competitionId)) continue
       const phase = getGamePlayingName(sportId, event.RBTime)
-      const extra = getExtraCounts(event.ExtraInfo)
+      const corners = sportId === 1 ? getCornerCounts(event.ExtraInfo) : undefined
       matches.set(id, {
         id,
         EventId: event.EventId,
@@ -104,17 +104,16 @@ export const mapSportsMatches = (
         ),
         homeScore: getSportsText(event.HomeScore) || '—',
         awayScore: getSportsText(event.AwayScore) || '—',
+        cornerScore: corners ? `${corners.htycs ?? 0}-${corners.atycs ?? 0}` : undefined,
         home: {
           name: getSportsText(event.HomeTeam),
           badge: event.HomeTeamId > 0 ? teamLogoUrl(event.HomeTeamId) : '',
-          redCards: getCardCount(event.HomeRedCard),
-          yellowCards: getCardCount(extra.htycs)
+          redCards: getCardCount(event.HomeRedCard)
         },
         away: {
           name: getSportsText(event.AwayTeam),
           badge: event.AwayTeamId > 0 ? teamLogoUrl(event.AwayTeamId) : '',
-          redCards: getCardCount(event.AwayRedCard),
-          yellowCards: getCardCount(extra.atycs)
+          redCards: getCardCount(event.AwayRedCard)
         },
         hasVideo: event.LiveStreaming === 1,
         hasAnimation: event.HasVisualization === true,

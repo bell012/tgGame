@@ -6,7 +6,7 @@
     :class="
       props.displayMode === 'pc'
         ? 'absolute inset-x-0 bottom-0 bg-bg-5'
-        : 'fixed inset-0 bg-black/70'
+        : 'fixed inset-0 bg-mask-70'
     "
     @click.self="$emit('close')"
   >
@@ -85,9 +85,9 @@
 </template>
 
 <script setup lang="ts">
+import type { AutoReplyItem } from '@/api/interface/chat'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { useI18n } from 'vue-i18n'
-import type { AutoReplyItem } from '@/api/interface/chat'
 import type { QuickIssue } from '../types'
 
 const props = defineProps<{

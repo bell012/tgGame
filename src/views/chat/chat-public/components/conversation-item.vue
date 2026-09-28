@@ -33,7 +33,7 @@
       <div class="flex items-center gap-[6px]">
         <span class="truncate text-[14px] font-medium text-text-1">{{ displayName }}</span>
         <span
-          class="rounded-[3px] bg-theme-primary/15 px-[6px] py-[2px] text-[10px] leading-[12px] text-theme-primary"
+          class="inline-flex min-w-[48px] justify-center rounded-[3px] bg-theme-primary/15 px-[6px] py-[2px] text-[10px] leading-[12px] text-theme-primary"
         >
           {{ t(getConversationStatusKey(conversationStatus)) }}
         </span>
