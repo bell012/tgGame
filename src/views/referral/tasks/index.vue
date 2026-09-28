@@ -378,8 +378,6 @@ const handleClaimClick = async () => {
     return
   }
 
-  // 保留领取前查询到的金额，避免刷新后的待领取金额影响成功弹窗展示。
-  claimedCommissionAmount.value = rewardsToClaimAmount.value
   userStore.syncStoredUserData()
   const memberRowId = Number(userStore.acctInfo?.memberRowId)
 
@@ -391,8 +389,8 @@ const handleClaimClick = async () => {
   claimingCommission.value = true
 
   try {
-    ensureApiBusinessSuccess(
-      await Api.agent.claimCommission(
+    const claimCommissionResponse = ensureApiBusinessSuccess(
+      await Api.agent.claimCommission85(
         {
           currency: getCurrentCurrency(),
           rowId: memberRowId
@@ -401,6 +399,8 @@ const handleClaimClick = async () => {
       )
     )
 
+    // 成功弹窗仅展示 agent85 本次实际返回的领取金额。
+    claimedCommissionAmount.value = String(claimCommissionResponse.result ?? 0)
     showClaimConfirmPopup.value = true
     await fetchTaskPageData()
   } catch (error) {

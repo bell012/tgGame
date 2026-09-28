@@ -61,11 +61,11 @@ export const queryReferralTaskRewardsToClaim = (
 ): Promise<QueryReferralTaskRewardsToClaimResponse> =>
   callAgentAction('agent103', undefined, options)
 
-// agent77：领取当前登录一级代理未领取佣金。
-export const claimCommission = (
+// agent85：领取当前登录任务页面 待领取领取佣金。
+export const claimCommission85 = (
   param: ClaimCommissionParam,
   options?: AgentRequestOptions
-): Promise<AgentApiResponse> =>
+): Promise<AgentApiResponse<number>> =>
   callAgentAction(
     'agent85',
     { ...param },
@@ -75,6 +75,19 @@ export const claimCommission = (
     }
   )
 
+// agent77：领取当前登录一级代理未领取佣金。
+export const claimCommission = (
+  param: ClaimCommissionParam,
+  options?: AgentRequestOptions
+): Promise<AgentApiResponse> =>
+  callAgentAction(
+    'agent77',
+    { ...param },
+    {
+      showErrorToast: true,
+      ...options
+    }
+  )
 // agent76：查询团队邀请统计。
 export const queryInvitationStats = (options?: AgentRequestOptions): Promise<AgentApiResponse> =>
   callAgentAction('agent76', undefined, options)
