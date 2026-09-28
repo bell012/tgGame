@@ -1974,6 +1974,7 @@
     },
     "noVideo": "暂无视频",
     "noAnimation": "暂无动画",
+    "loadingAnimation": "正在加载动画",
     "loadingLive": "正在加载直播",
     "backToLive": "回到直播",
     "loginToWatch": "登录后观看",

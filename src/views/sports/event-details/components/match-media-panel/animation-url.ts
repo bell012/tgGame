@@ -11,7 +11,7 @@ export const animationLanguageCode = (code: string) => ANIMATION_LANGUAGE_CODE[c
 /** 拼接动画页地址；缺域名或 BREventId 时返回空字符串。 */
 export function buildAnimationUrl(baseUrl: string, brEventId: number, language: string): string {
   const origin = baseUrl.trim().replace(/\/+$/, '')
-  if (!origin || !Number.isSafeInteger(brEventId) || brEventId < 0) {
+  if (!origin || !Number.isSafeInteger(brEventId) || brEventId <= 0) {
     return ''
   }
   const params = new URLSearchParams({ matchId: String(brEventId), language })

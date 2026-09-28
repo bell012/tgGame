@@ -1981,6 +1981,7 @@
     },
     "noVideo": "No video available",
     "noAnimation": "No animation available",
+    "loadingAnimation": "Loading animation",
     "loadingLive": "Loading live stream",
     "backToLive": "Back to live",
     "loginToWatch": "Log in to Watch",
