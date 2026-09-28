@@ -200,7 +200,7 @@
       <div
         class="absolute inset-0"
         :class="
-          view === 'animation' && isLoggedIn
+          view === 'animation' && isLoggedIn && !animationUrl
             ? 'bg-[linear-gradient(180deg,#F97600_42%,#EE4700_91%)]'
             : 'bg-bg-5'
         "
@@ -213,29 +213,13 @@
       >
         <LiveLoginGate />
       </div>
-      <template v-else-if="view === 'animation'">
-        <img
-          class="absolute inset-0 h-full w-full object-cover"
-          :src="bgLayer1"
-          alt=""
-          draggable="false"
-          aria-hidden="true"
-        />
-        <img
-          class="absolute inset-0 h-full w-full object-cover"
-          :src="bgLayer2"
-          alt=""
-          draggable="false"
-          aria-hidden="true"
-        />
-        <img
-          class="absolute inset-0 h-full w-full object-cover"
-          :src="bgLayer3"
-          alt=""
-          draggable="false"
-          aria-hidden="true"
-        />
-      </template>
+      <div
+        v-else-if="view === 'animation'"
+        class="absolute inset-x-0 bottom-0"
+        :class="animationUrl ? 'top-[calc(49px+env(safe-area-inset-top))]' : 'top-0'"
+      >
+        <LiveAnimation :src="animationUrl ?? ''" />
+      </div>
       <div v-else-if="liveStreamUrl" class="absolute inset-0">
         <LivePlayer :src="liveStreamUrl" />
       </div>
@@ -284,12 +268,11 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import LiveLoginGate from '../match-media-panel/live-login-gate.vue'
+import LiveAnimation from '../match-media-panel/live-animation.vue'
 import LivePlayer from '../match-media-panel/live-player.vue'
 import animationIcon from './icon/animation.svg?url'
 import backIcon from './icon/back.svg?url'
 import bgLayer1 from './icon/bg-layer-1.png?url'
-import bgLayer2 from './icon/bg-layer-2.png?url'
-import bgLayer3 from './icon/bg-layer-3-34b3a2.png?url'
 import cornerIcon from './icon/corner.svg?url'
 import htIcon from './icon/ht.svg?url'
 import videoIcon from './icon/video.svg?url'
@@ -298,6 +281,7 @@ import type { MatchHeaderView, MatchHeaderViewModel } from './types'
 const props = defineProps<{
   model?: MatchHeaderViewModel
   liveStreamUrl?: string
+  animationUrl?: string
 }>()
 
 const emit = defineEmits<{

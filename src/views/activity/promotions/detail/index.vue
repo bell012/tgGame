@@ -12,7 +12,7 @@
     <PromotionDetailContent :activity="activeActivity" variant="mobile" />
   </section>
 
-  <PromotionsLayout v-else-if="isReady" :groups="groups" :active-group-code="groupCode">
+  <PromotionsLayout v-else-if="isReady" :groups="menuGroups" :active-group-code="groupCode">
     <div class="bg-bg-2 rounded-xl overflow-hidden min-h-[520px]">
       <PromotionDetailContent :activity="activeActivity" variant="desktop" />
     </div>
@@ -34,7 +34,12 @@ import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
 import PromotionDetailContent from '../components/PromotionDetailContent.vue'
 import PromotionsLayout from '../layout.vue'
-import { resolveActivityById, resolveActivityListGroupCode, sortActivityList } from '../shared'
+import {
+  getVisiblePromotionGroups,
+  resolveActivityById,
+  resolveActivityListGroupCode,
+  sortActivityList
+} from '../shared'
 
 const ACTIVITY_LIST_PAGE_SIZE = 15
 const MAX_ACTIVITY_LOOKUP_PAGES = 20
@@ -52,7 +57,13 @@ const handleCustomerServiceClick = () => {
 }
 
 const groups = computed(() => promotionsStore.groups)
-const groupCode = computed(() => String(route.params.groupCode || ''))
+const menuGroups = computed(() => getVisiblePromotionGroups(groups.value))
+const routeGroupCode = computed(() => String(route.params.groupCode || ''))
+// 详情页桌面端也使用同一套侧边栏，语言切换后需要把旧 rowId 映射到当前语言分组。
+const groupCode = computed(() => {
+  const code = routeGroupCode.value
+  return promotionsStore.resolveCurrentGroupRouteKey(code) || code
+})
 const activityId = computed(() => String(route.params.activityId || ''))
 const activeActivity = ref<ActivityListItem | null>(null)
 const isReady = ref(false)

@@ -104,7 +104,9 @@ export function mapEventDetailTabItems(
         homeCorners,
         awayCorners,
         isFavourite: event.IsFavourite === true,
-        liveStreamUrl: parseLiveStreamUrl(event.LiveStreamingUrl)
+        liveStreamUrl: parseLiveStreamUrl(event.LiveStreamingUrl),
+        brEventId:
+          Number.isSafeInteger(event.BREventId) && event.BREventId > 0 ? event.BREventId : 0
       })
     }
   }

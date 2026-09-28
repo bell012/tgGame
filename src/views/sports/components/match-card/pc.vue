@@ -1,16 +1,21 @@
 <template>
   <article
     class="relative min-h-[211px] min-w-0 cursor-pointer"
-    :class="expanded && 'h-[218px]'"
+    :class="overlaying && 'h-[218px]'"
     :data-sports-match="match.id"
     :data-expanded="expanded"
     data-testid="sports-pc-match-card"
     @click="goToEventDetails"
+    @transitionend="onOddsTransitionEnd"
   >
     <!-- 展开后仍保留卡片原高度，避免后面的卡片移位。 -->
     <div
       class="min-h-[211px] min-w-0 rounded-xl bg-bg-5 p-3"
-      :class="expanded ? 'absolute inset-x-0 top-0 z-20 shadow-xl' : 'h-full'"
+      :class="
+        overlaying
+          ? 'absolute inset-x-0 top-0 z-20 shadow-[0_8px_28px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_28px_rgba(0,0,0,0.5)]'
+          : 'h-full'
+      "
     >
       <div class="flex h-6 items-center gap-2 text-xs text-text-2">
         <component
@@ -29,24 +34,20 @@
           </template>
           <span class="min-w-0 flex-1 truncate" :title="match.league">{{ match.league }}</span>
         </div>
-        <button
+        <span
           v-if="match.hasVideo"
-          type="button"
-          class="flex h-5 w-7 shrink-0 items-center justify-center rounded-[6px] bg-theme-primary text-text-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-1"
-          :aria-label="t('sports.matchCard.watchLiveVideo')"
-          @click.stop="emit('media', 'video')"
+          class="flex h-5 w-7 shrink-0 items-center justify-center rounded-[6px] bg-theme-primary text-text-4"
+          aria-hidden="true"
         >
-          <VideoIcon class="h-3 w-2.5" aria-hidden="true" />
-        </button>
-        <button
+          <VideoIcon class="h-3 w-2.5" />
+        </span>
+        <span
           v-if="match.hasAnimation"
-          type="button"
-          class="flex h-5 w-7 shrink-0 items-center justify-center rounded-[6px] bg-theme-primary text-text-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-text-1"
-          :aria-label="t('sports.matchCard.watchAnimation')"
-          @click.stop="emit('media', 'animation')"
+          class="flex h-5 w-7 shrink-0 items-center justify-center rounded-[6px] bg-theme-primary text-text-4"
+          aria-hidden="true"
         >
-          <AnimationIcon class="h-3.5 w-5" aria-hidden="true" />
-        </button>
+          <AnimationIcon class="h-3.5 w-5" />
+        </span>
         <button
           type="button"
           class="flex h-4 w-4 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary disabled:cursor-wait disabled:opacity-50"
@@ -122,16 +123,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SmartImage from '@/components/common/SmartImage.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
+import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
-import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import { navigateTo } from '@/utils/router'
 import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
+import { pickHomepageMarketLines } from '../match-odds/display'
 import MatchOdds from '../match-odds/index.vue'
 import MatchTime from './time.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
@@ -166,12 +168,32 @@ const scoreLabel = computed(() =>
     ? phaseLabel.value
     : t('sports.matchCard.totalScore')
 )
+const hasExtraMarkets = computed(() => pickHomepageMarketLines(props.MarketLines).length > 1)
+const overlaying = ref(props.expanded)
+
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+watch(
+  () => props.expanded,
+  expanded => {
+    if (expanded) {
+      overlaying.value = true
+      return
+    }
+    if (!hasExtraMarkets.value || prefersReducedMotion()) overlaying.value = false
+  }
+)
+
+const onOddsTransitionEnd = (event: TransitionEvent) => {
+  if (event.propertyName !== 'grid-template-rows' || props.expanded) return
+  overlaying.value = false
+}
 
 const emit = defineEmits<{
   'update:expanded': [value: boolean]
   select: [payload: OddsSelectPayload]
   favorite: []
-  media: [kind: 'video' | 'animation']
 }>()
 
 const goToEventDetails = () => {

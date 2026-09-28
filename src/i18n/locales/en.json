@@ -1963,9 +1963,7 @@
       "redCards": "{count} red cards",
       "yellowCards": "{count} yellow cards",
       "addFavorite": "Add match to favorites",
-      "removeFavorite": "Remove match from favorites",
-      "watchLiveVideo": "Watch live video",
-      "watchAnimation": "Watch match animation"
+      "removeFavorite": "Remove match from favorites"
     },
     "homepage": {
       "popularMatches": "Popular matches",
@@ -1975,16 +1973,22 @@
       "matchCount": "{count} matches",
       "expandAllLeagues": "Expand all leagues",
       "collapseAllLeagues": "Collapse all leagues",
-      "matchPagination": "Match pagination",
-      "liveVideoUnavailable": "Live video is currently unavailable.",
-      "animationUnavailable": "Match animation is currently unavailable."
+      "matchPagination": "Match pagination"
     },
     "noVideo": "No video available",
+    "noAnimation": "No animation available",
+    "loadingAnimation": "Loading animation",
+    "loadingLive": "Loading live stream",
     "backToLive": "Back to live",
     "loginToWatch": "Log in to Watch",
     "logIn": "Log In",
     "noAccountYet": "Don’t have an account yet?",
     "joinNow": "Join Now",
+    "oddsHome": "H",
+    "oddsAway": "A",
+    "oddsDraw": "D",
+    "oddsOver": "O",
+    "oddsUnder": "U",
     "filterTabs": {
       "rolling": "Live",
       "today": "Today",

@@ -118,7 +118,10 @@
         image-class="h-[180px] w-[198px] object-contain"
         text-class="mt-4 text-center text-sm text-text-2"
       />
-      <div class="grid min-w-0 grid-cols-4 gap-3" data-testid="sports-match-grid">
+      <div
+        class="grid min-w-0 grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-4"
+        data-testid="sports-match-grid"
+      >
         <div
           v-for="match in pagedMatches"
           :key="match.id"
@@ -135,7 +138,6 @@
             @update:expanded="setMatchExpanded(match.id, $event)"
             @favorite="handleMatchFavorite(match.id)"
             @select="selectOdds(match.id, $event)"
-            @media="showMediaPlaceholder"
           />
         </div>
       </div>
@@ -207,7 +209,6 @@ import { useLayoutStore } from '@/stores/layout'
 import CommonFooter from '@/components/commonFooter.vue'
 import DesktopPagination from '@/components/common/DesktopPagination.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
-import { globalShowToast } from '@/utils/toast'
 import { stripLocalePrefix } from '@/utils/locale'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import emptyImage from '@/static/img/explore/default.png'
@@ -291,13 +292,5 @@ async function changePage(page: number) {
   setPage(page)
   await nextTick()
   matchList.value?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-}
-
-function showMediaPlaceholder(kind: 'video' | 'animation') {
-  globalShowToast(
-    kind === 'video'
-      ? t('sports.homepage.liveVideoUnavailable')
-      : t('sports.homepage.animationUnavailable')
-  )
 }
 </script>

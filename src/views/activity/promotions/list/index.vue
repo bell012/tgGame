@@ -23,11 +23,11 @@
           :class="getPromotionGroupMobileTabClass(isPromotionGroupActive(group, activeGroupCode))"
           @click="switchGroup(getPromotionGroupRouteKey(group))"
         >
-          <img
+          <PromotionGroupIcon
             v-if="getPromotionGroupIcon(group, activeGroupCode)"
             :src="getPromotionGroupIcon(group, activeGroupCode)"
-            alt=""
-            class="h-5 w-5 shrink-0 object-contain"
+            :active="isPromotionGroupActive(group, activeGroupCode)"
+            class="h-5 w-5"
           />
           <span
             :class="
@@ -148,6 +148,7 @@ import defaultImgLight from '@/static/img/explore/default_white.png'
 import PromotionRecordIcon from '@/static/svg/deposit/record.svg?component'
 import { navigateTo } from '@/utils/router'
 import PromotionsLayout from '../layout.vue'
+import PromotionGroupIcon from '../components/PromotionGroupIcon.vue'
 import PromotionsListSkeleton from './PromotionsListSkeleton.vue'
 import {
   getActivityTitle,
@@ -156,6 +157,7 @@ import {
   getPromotionGroupMobileTabClass,
   getPromotionGroupMobileTabTextClass,
   getPromotionGroupRouteKey,
+  getVisiblePromotionGroups,
   isPromotionGroupActive,
   openActivityExternalJump,
   parsePromotionsPath,
@@ -178,12 +180,23 @@ const handlePromotionRecordClick = () => {
 const isReady = ref(false)
 const promotionsStore = usePromotionsStore()
 
-const groups = computed(() => promotionsStore.groups)
-const activeGroupCode = computed(() => {
+const groups = computed(() => getVisiblePromotionGroups(promotionsStore.groups))
+const routeActiveGroupCode = computed(() => {
   if (isMobile.value && promotionsStore.h5ListGroupCode) {
     return promotionsStore.h5ListGroupCode
   }
   return String(route.params.groupCode || '')
+})
+
+// 切换语言后同一分组的 rowId 可能变化，选中态和列表请求都使用映射后的当前语言分组 key。
+const activeGroupCode = computed(() => {
+  const code = routeActiveGroupCode.value
+  const currentCode = promotionsStore.resolveCurrentGroupRouteKey(code) || code
+  if (groups.value.some(group => getPromotionGroupRouteKey(group) === currentCode)) {
+    return currentCode
+  }
+  const firstGroup = groups.value[0]
+  return firstGroup ? getPromotionGroupRouteKey(firstGroup) : ''
 })
 
 const list = ref<ActivityListItem[]>([])
@@ -453,9 +466,14 @@ onMounted(async () => {
   await promotionsStore.loadGroups()
 
   const codeFromRoute = String(route.params.groupCode || '')
-  const defaultCode = promotionsStore.getDefaultGroupCode()
+  const firstGroup = groups.value[0]
+  const defaultCode = firstGroup ? getPromotionGroupRouteKey(firstGroup) : ''
+  const currentCode = promotionsStore.resolveCurrentGroupRouteKey(codeFromRoute) || codeFromRoute
+  const isVisibleGroup = groups.value.some(
+    group => getPromotionGroupRouteKey(group) === currentCode
+  )
 
-  if (!codeFromRoute && defaultCode) {
+  if (!isVisibleGroup && defaultCode) {
     navigateTo(`/promotions/${defaultCode}`, { replace: true })
     return
   }
@@ -465,7 +483,9 @@ onMounted(async () => {
   }
 
   if (isMobile.value) {
-    promotionsStore.setH5ListGroupCode(codeFromRoute)
+    promotionsStore.setH5ListGroupCode(
+      promotionsStore.resolveCurrentGroupRouteKey(codeFromRoute) || codeFromRoute
+    )
   }
 
   isReady.value = true

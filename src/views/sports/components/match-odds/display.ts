@@ -33,6 +33,20 @@ const pickPreferredLine = (candidates: readonly SportMarketLine[]) =>
 export const shouldShowHandicap = (line: SportMarketLine, selection: SportWagerSelection) =>
   line.BetTypeId !== 3 && Number.isFinite(selection.Handicap)
 
+/** 让球 1 主 / 2 客，大小 3 大 / 4 小，独赢 5 主 / 6 客 / 7 和。 */
+const SELECTION_LETTER_KEY: Record<number, string> = {
+  1: 'sports.oddsHome',
+  2: 'sports.oddsAway',
+  3: 'sports.oddsOver',
+  4: 'sports.oddsUnder',
+  5: 'sports.oddsHome',
+  6: 'sports.oddsAway',
+  7: 'sports.oddsDraw'
+}
+
+export const selectionLetterKey = (selection: SportWagerSelection) =>
+  SELECTION_LETTER_KEY[selection.SelectionId]
+
 export const isWagerSelected = (
   selection: SportWagerSelection,
   selectedWagerSelectionId?: number | string
