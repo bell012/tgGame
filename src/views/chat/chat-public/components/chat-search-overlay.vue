@@ -23,7 +23,7 @@
           ref="inputRef"
           v-model="query"
           type="search"
-          class="min-w-0 flex-1 bg-transparent text-[14px] text-text-1 outline-none placeholder:text-text-2"
+          class="min-w-0 flex-1 bg-transparent text-[14px] text-text-1 outline-none placeholder:text-text-2 [&::-webkit-search-cancel-button]:appearance-none"
           :placeholder="t('chatPublic.search')"
         />
         <button
@@ -114,6 +114,7 @@
 </template>
 
 <script setup lang="ts">
+import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import avatarUrl from '@/static/img/chat/public/customer-service-luna.jpg'
 import ArrowLeftIcon from '@/static/svg/arrow_left.svg?component'
 import SearchIcon from '@/static/svg/chat/public/search.svg?component'

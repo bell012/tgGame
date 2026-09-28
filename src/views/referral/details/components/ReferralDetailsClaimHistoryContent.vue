@@ -3,121 +3,184 @@
     class="flex flex-col"
     :class="props.isMobile ? 'gap-[10px]' : 'w-full max-w-[1032px] gap-[24px]'"
   >
-    <section v-if="props.isMobile" class="overflow-hidden rounded-[10px] bg-bg-2">
-      <div class="relative flex h-[40px] items-center justify-between px-[14px]">
-        <!-- 按钮块 -->
-        <button
-          type="button"
-          class="flex items-center gap-[7px]"
-          @click="$emit('open-date-picker')"
-        >
-          <span class="text-[16px] font-[700] leading-[19px] text-text-1">
-            {{ props.dateLabel }}
-          </span>
+    <template v-if="props.isMobile">
+      <!-- H5 日期筛选与领取奖励统计。 -->
+      <section class="overflow-hidden rounded-[10px] bg-bg-2">
+        <div class="relative flex h-[40px] items-center justify-between px-[14px]">
+          <button
+            type="button"
+            class="flex items-center gap-[7px]"
+            @click="$emit('open-date-picker')"
+          >
+            <span class="text-[16px] font-[700] leading-[19px] text-text-1">
+              {{ props.dateLabel }}
+            </span>
+
+            <span
+              class="flex h-[20px] w-[20px] items-center justify-center rounded-[6px] bg-opacity-10"
+            >
+              <ArrowDownIcon class="h-[10px] w-[10px] text-text-2" />
+            </span>
+          </button>
 
           <span
-            class="flex h-[20px] w-[20px] items-center justify-center rounded-[6px] bg-opacity-10"
-          >
-            <ArrowDownIcon class="h-[10px] w-[10px] text-text-2" />
-          </span>
-        </button>
+            class="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-bottom scale-y-100 bg-opacity-5"
+          ></span>
+        </div>
 
-        <span
-          class="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-bottom scale-y-100 bg-opacity-5"
-        ></span>
-      </div>
+        <div class="px-[14px] py-[14px]">
+          <div class="flex h-[19.33px] items-center justify-between">
+            <div class="w-[102.33px] text-[12px] font-[500] leading-[18px] text-text-2">
+              {{ props.totalCommissionLabel }}
+            </div>
 
-      <!-- 统计数据区域 -->
-      <div class="px-[14px] py-[14px]">
-        <div class="flex h-[19.33px] items-center justify-between">
-          <div class="w-[102.33px] text-[12px] font-[500] leading-[18px] text-text-2">
-            {{ props.totalCommissionLabel }}
-          </div>
-
-          <div class="flex h-[19.33px] w-[95px] items-center justify-end">
-            <span class="w-[79px] text-right text-[16px] font-[700] leading-[19.33px] text-text-1">
-              {{ formattedTotalCommission }}
-            </span>
+            <div class="flex h-[19.33px] w-[95px] items-center justify-end">
+              <span
+                class="w-[79px] text-right text-[16px] font-[700] leading-[19.33px] text-text-1"
+              >
+                {{ formattedTotalCommission }}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section v-else class="flex w-full flex-col gap-[12px]">
-      <div class="flex h-[48px] items-center">
+      <!-- H5 领取记录列表。 -->
+      <section
+        v-if="props.claimHistoryRows.length > 0"
+        class="overflow-hidden rounded-[10px] bg-bg-2"
+      >
+        <div class="grid h-[35px] grid-cols-[1fr_auto] items-center gap-[12px] px-[14px]">
+          <div
+            class="flex items-center justify-start px-[16px] text-center text-[12px] font-[400] leading-[15px] text-text-2"
+          >
+            {{ props.timeLabel }}
+          </div>
+
+          <div
+            class="flex items-center justify-center pr-[16px] text-[14px] font-[400] leading-[20px] text-text-2"
+          >
+            {{ props.rewardsLabel }}
+          </div>
+        </div>
+        <div>
+          <div
+            v-for="(row, index) in props.claimHistoryRows"
+            :key="row.id"
+            class="grid min-h-[48px] grid-cols-[1fr_auto] items-center gap-[12px] px-[14px] py-[10px]"
+            :class="index % 2 === 0 ? 'bg-opacity-6' : 'bg-transparent'"
+          >
+            <div
+              class="flex items-center justify-start px-[16px] text-center text-[13px] font-[400] leading-[20px] text-text-1"
+            >
+              {{ row.time }}
+            </div>
+
+            <div
+              class="flex items-center justify-center pr-[16px] text-[14px] font-[400] leading-[20px] text-text-1"
+            >
+              {{ row.reward }}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- H5 领取记录为空时的状态。 -->
+      <section v-else class="flex flex-col items-center pt-[84px]">
+        <ThemedEmptyState
+          :dark-image="props.emptyDarkImage"
+          :light-image="props.emptyLightImage"
+          :image-alt="props.emptyAlt"
+          :message="props.emptyText"
+          container-class="mt-0"
+          image-class="h-[200px] w-[220px] object-contain"
+          text-class="mt-[10px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
+        />
+      </section>
+    </template>
+
+    <template v-else>
+      <!-- PC 日期筛选与领取奖励统计。 -->
+      <section class="flex flex-col gap-[12px]">
         <CustomSelect
           class="w-[336px]"
           :model-value="props.activeDateValue"
           :options="pcSelectDateOptions"
           @update:model-value="$emit('change-date', $event as ReferralDetailsDateFilterValue)"
         />
-      </div>
 
-      <section class="flex h-[70px] items-center rounded-[12px] bg-bg-2 px-[24px]">
-        <div class="flex w-full items-start justify-between py-[24px]">
-          <span class="text-[14px] font-[400] leading-[20px] text-text-2">
-            {{ props.totalCommissionLabel }}
-          </span>
-
-          <div class="flex h-[22px] items-center gap-[8px]">
-            <span class="text-[18px] font-[700] leading-[22px] text-text-1">
-              {{ formattedTotalCommission }}
+        <section class="flex h-[70px] items-center rounded-[12px] bg-bg-2 px-[24px]">
+          <div class="flex w-full items-center justify-between py-[24px]">
+            <span class="text-[14px] font-[400] leading-[20px] text-text-2">
+              {{ props.totalCommissionLabel }}
             </span>
+
+            <div class="flex items-center gap-[8px]">
+              <span class="text-[18px] font-[700] leading-[22px] text-text-1">
+                {{ formattedTotalCommission }}
+              </span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- PC 领取记录列表。 -->
+      <section
+        v-if="props.claimHistoryRows.length > 0"
+        class="overflow-hidden rounded-[16px] bg-bg-3"
+      >
+        <div class="grid h-[48px] grid-cols-2 items-center">
+          <div
+            class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-2"
+          >
+            {{ props.timeLabel }}
+          </div>
+
+          <div
+            class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-2"
+          >
+            {{ props.rewardsLabel }}
+          </div>
+        </div>
+
+        <div>
+          <div
+            v-for="(row, index) in props.claimHistoryRows"
+            :key="row.id"
+            class="grid min-h-[48px] grid-cols-2 items-center"
+            :class="index % 2 === 0 ? 'h-[50px] bg-opacity-5' : 'h-[48px] bg-transparent'"
+          >
+            <div
+              class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-1"
+            >
+              {{ row.time }}
+            </div>
+
+            <div
+              class="flex items-center justify-center px-[24px] text-[14px] font-[400] leading-[20px] text-text-1"
+            >
+              {{ row.reward }}
+            </div>
           </div>
         </div>
       </section>
-    </section>
 
-    <section
-      v-if="props.claimHistoryRows.length > 0"
-      class="overflow-hidden rounded-[10px] bg-bg-2"
-    >
-      <div class="grid h-[35px] grid-cols-[1fr_auto] items-center gap-[12px] px-[14px]">
-        <div
-          class="flex items-center justify-start px-[16px] text-center text-[12px] font-[400] leading-[15px] text-text-2"
-        >
-          {{ props.timeLabel }}
-        </div>
-
-        <div
-          class="flex items-center justify-center pr-[16px] text-[14px] font-[400] leading-[20px] text-text-2"
-        >
-          {{ props.rewardsLabel }}
-        </div>
-      </div>
-      <div>
-        <div
-          v-for="(row, index) in props.claimHistoryRows"
-          :key="row.id"
-          class="grid min-h-[48px] grid-cols-[1fr_auto] items-center gap-[12px] px-[14px] py-[10px]"
-          :class="index % 2 === 0 ? 'bg-bg-3' : 'bg-transparent'"
-        >
-          <div
-            class="flex items-center justify-start px-[16px] text-center text-[13px] font-[400] leading-[20px] text-text-1"
-          >
-            {{ row.time }}
-          </div>
-
-          <div
-            class="flex items-center justify-center pr-[16px] text-[14px] font-[400] leading-[20px] text-text-1"
-          >
-            {{ row.reward }}
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section v-else class="flex flex-col items-center pt-[84px]">
-      <ThemedEmptyState
-        :dark-image="props.emptyDarkImage"
-        :light-image="props.emptyLightImage"
-        :image-alt="props.emptyAlt"
-        :message="props.emptyText"
-        container-class="mt-0"
-        image-class="h-[200px] w-[220px] object-contain"
-        text-class="mt-[10px] text-center text-[12px] font-[500] leading-[18px] text-text-1"
-      />
-    </section>
+      <!-- PC 领取记录为空时的状态。 -->
+      <section
+        v-else
+        class="flex min-h-[420px] flex-col items-center justify-center rounded-[16px] bg-bg-3"
+      >
+        <ThemedEmptyState
+          :dark-image="props.emptyDarkImage"
+          :light-image="props.emptyLightImage"
+          :image-alt="props.emptyAlt"
+          :message="props.emptyText"
+          container-class="mt-0"
+          image-class="h-[200px] w-[220px] object-contain"
+          text-class="mt-[12px] text-center text-[14px] font-[500] leading-[20px] text-text-1"
+        />
+      </section>
+    </template>
   </section>
 </template>
 
