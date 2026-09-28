@@ -3,19 +3,22 @@
     class="relative min-w-0 cursor-pointer"
     :class="[
       showPeriodScores ? 'min-h-[237px]' : 'min-h-[211px]',
-      expanded && (showPeriodScores ? 'h-[244px]' : 'h-[218px]')
+      overlaying && (showPeriodScores ? 'h-[244px]' : 'h-[218px]')
     ]"
     :data-sports-match="match.id"
     :data-expanded="expanded"
     data-testid="sports-pc-match-card"
     @click="goToEventDetails"
+    @transitionend="onOddsTransitionEnd"
   >
     <!-- 展开后仍保留卡片原高度，避免后面的卡片移位。 -->
     <div
       class="min-w-0 rounded-xl bg-bg-5 p-3"
       :class="[
         showPeriodScores ? 'min-h-[237px]' : 'min-h-[211px]',
-        expanded ? 'absolute inset-x-0 top-0 z-20 shadow-xl' : 'h-full'
+        overlaying
+          ? 'absolute inset-x-0 top-0 z-20 shadow-[0_8px_28px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_28px_rgba(0,0,0,0.5)]'
+          : 'h-full'
       ]"
     >
       <div class="flex h-6 items-center gap-2 text-xs text-text-2">
@@ -160,7 +163,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import SmartImage from '@/components/common/SmartImage.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
@@ -169,6 +172,7 @@ import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import { navigateTo } from '@/utils/router'
 import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
+import { pickHomepageMarketLines } from '../match-odds/display'
 import MatchOdds from '../match-odds/index.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
 import type { SportsMatch } from '../../shared/types'
@@ -195,6 +199,27 @@ const periodScores = computed(() => props.match.periodScores ?? [])
 const showPeriodScores = computed(
   () => props.match.live && (periodScores.value.length > 0 || !!props.match.totalScore)
 )
+const hasExtraMarkets = computed(() => pickHomepageMarketLines(props.MarketLines).length > 1)
+const overlaying = ref(props.expanded)
+
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+watch(
+  () => props.expanded,
+  expanded => {
+    if (expanded) {
+      overlaying.value = true
+      return
+    }
+    if (!hasExtraMarkets.value || prefersReducedMotion()) overlaying.value = false
+  }
+)
+
+const onOddsTransitionEnd = (event: TransitionEvent) => {
+  if (event.propertyName !== 'grid-template-rows' || props.expanded) return
+  overlaying.value = false
+}
 
 const emit = defineEmits<{
   'update:expanded': [value: boolean]

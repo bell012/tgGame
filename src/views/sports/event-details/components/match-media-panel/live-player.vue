@@ -13,9 +13,22 @@
       autoplay
       data-testid="live-player"
       @play="playing = true"
+      @playing="onPlaying"
       @pause="onPause"
       @timeupdate="syncBehind"
     />
+    <div
+      v-if="loading"
+      class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black text-white/80"
+      data-testid="live-loading"
+      role="status"
+    >
+      <span
+        class="size-6 animate-spin rounded-full border-2 border-white/30 border-t-white"
+        aria-hidden="true"
+      />
+      <span class="text-xs">{{ t('sports.loadingLive') }}</span>
+    </div>
     <div
       class="absolute inset-x-0 bottom-0 flex items-center gap-1 bg-black/50 px-2 py-1 text-white transition-opacity duration-200"
       :class="controlsVisible ? 'opacity-100' : 'pointer-events-none opacity-0'"
@@ -113,6 +126,7 @@ const { t } = useI18n()
 const rootRef = ref<HTMLElement | null>(null)
 const videoRef = ref<HTMLVideoElement | null>(null)
 const playing = ref(false)
+const loading = ref(true)
 const muted = ref(false)
 const controlsVisible = ref(false)
 const isLive = ref(false)
@@ -222,6 +236,7 @@ const joinLive = (live: boolean) => {
 const load = (src: string) => {
   destroy()
   userPaused = false
+  loading.value = Boolean(src)
   const video = videoRef.value
   if (!video || !src) return
   video.addEventListener('canplay', resumeIfPaused)
@@ -241,7 +256,10 @@ const load = (src: string) => {
         hls?.recoverMediaError()
         return
       }
-      if (data.type !== Hls.ErrorTypes.NETWORK_ERROR) destroy()
+      if (data.type !== Hls.ErrorTypes.NETWORK_ERROR) {
+        destroy()
+        loading.value = false
+      }
     })
     hls.loadSource(src)
     hls.attachMedia(video)
@@ -258,7 +276,10 @@ const load = (src: string) => {
       },
       { once: true }
     )
+    return
   }
+
+  loading.value = false
 }
 
 const togglePlay = () => {
@@ -271,6 +292,11 @@ const togglePlay = () => {
   }
   userPaused = true
   video.pause()
+}
+
+const onPlaying = () => {
+  playing.value = true
+  loading.value = false
 }
 
 const onPause = () => {

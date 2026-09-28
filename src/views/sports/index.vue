@@ -130,7 +130,10 @@
         image-class="h-[180px] w-[198px] object-contain"
         text-class="mt-4 text-center text-sm text-text-2"
       />
-      <div class="grid min-w-0 grid-cols-4 gap-3" data-testid="sports-match-grid">
+      <div
+        class="grid min-w-0 grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-4"
+        data-testid="sports-match-grid"
+      >
         <MatchCardPc
           v-for="match in pagedMatches"
           :key="match.id"
