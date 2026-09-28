@@ -8,6 +8,7 @@
       :reset-hint-suffix="props.resetHintSuffix"
       :rewards-to-claim-label="props.rewardsToClaimLabel"
       :rewards-to-claim-amount="props.rewardsToClaimAmount"
+      :claim-loading="props.claimLoading"
       :coin-image="props.coinImage"
       :claim-text="props.claimText"
       :tabs="props.tabs"
@@ -50,6 +51,7 @@ interface Props {
   resetHintSuffix: string
   rewardsToClaimLabel: string
   rewardsToClaimAmount: string
+  claimLoading: boolean
   coinImage: string
   claimText: string
   tabs: ReferralTaskTab[]

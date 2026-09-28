@@ -172,7 +172,7 @@ import { useUserStore } from '@/stores/user'
 import { ApiBusinessError, ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { copyTextWithFallback } from '@/utils/clipboard'
 import { executeConfiguredJump } from '@/utils/contentJump'
-import { formatBalance, getLanguageCode } from '@/utils/locale'
+import { formatBalance, getCurrentCurrency, getLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { formatLinkCode, globalShowToast } from '@/utils/toast'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -510,12 +510,24 @@ const handleConfirmClaimClick = async () => {
   }
 
   claimingCommission.value = true
+  userStore.syncStoredUserData()
+  const memberRowId = Number(userStore.acctInfo?.memberRowId)
+
+  if (!Number.isSafeInteger(memberRowId) || memberRowId <= 0) {
+    claimingCommission.value = false
+    globalShowToast({ message: t('common.requestError'), type: 'fail' })
+    return
+  }
 
   try {
     ensureApiBusinessSuccess(
-      await Api.agent.claimCommission({
-        channelId: currentAgentChannelId.value
-      })
+      await Api.agent.claimCommission(
+        {
+          currency: getCurrentCurrency(),
+          rowId: memberRowId
+        },
+        { channelId: currentAgentChannelId.value }
+      )
     )
 
     globalShowToast({

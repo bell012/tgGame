@@ -24,6 +24,7 @@ import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { bottomTabBarIcons } from '@/static/svg/bottom_tab_bar'
+import { useOnlineCustomerService } from '@/composables/useOnlineCustomerService'
 import { useLayoutStore } from '@/stores/layout'
 import { navigateTo } from '@/utils/router'
 import { stripLocalePrefix } from '@/utils/locale'
@@ -31,6 +32,7 @@ import { stripLocalePrefix } from '@/utils/locale'
 const { t } = useI18n()
 const route = useRoute()
 const layoutStore = useLayoutStore()
+const { open: openOnlineCustomer } = useOnlineCustomerService()
 
 const menus = computed(() => [
   {
@@ -70,10 +72,17 @@ const menus = computed(() => [
     name: t('bottom_tab_bar.chat'),
     icon: 'chat',
     route: '/chat-public',
-    handler: () => navigateTo('/chat-public'),
+    handler: handleChatClick,
     active: isActive('/chat-public', true)
   }
 ])
+
+/**
+ * 处理 H5 底部客服入口，根据后台客服模式打开第三方 iframe 或原生客服。
+ */
+function handleChatClick() {
+  openOnlineCustomer()
+}
 
 /**
  * 判断某个 path 是否激活
