@@ -22,7 +22,7 @@
           v-for="match in liveMatches"
           :key="match.id"
           v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
-          class="group/match-card relative flex min-h-[204px] w-[360px] shrink-0 flex-col rounded-xl bg-bg-5 p-3"
+          class="relative flex min-h-[204px] w-[360px] shrink-0 flex-col rounded-xl bg-bg-5 p-3 transition-colors hover:bg-opacity-6"
           :data-sports-match="`live:${match.id}`"
         >
           <div class="flex h-5 items-center justify-between gap-3 text-xs text-text-2">

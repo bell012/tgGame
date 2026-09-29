@@ -83,6 +83,56 @@ export interface RecentBigWinsResponse {
   result?: RecentBigWinsItem[]
 }
 
+export interface DlicghRequest {
+  channelId?: string | number
+  [key: string]: unknown
+}
+
+export interface DlicghSiteLanguage {
+  languageCode?: string
+  homeTopVersion?: string
+  login_logo?: string
+  recharge_doc_url?: string
+  infoBannerUrl?: string
+  homeLogoUrl?: string
+  homeIndexVersion?: string
+  siteName?: string
+  siteLogoUrl?: string
+  siteDesc?: string
+  signLogoUrl?: string
+  [key: string]: unknown
+}
+
+export interface DlicghSiteItem {
+  siteLayoutId?: string | number
+  siteLanguage?: DlicghSiteLanguage[]
+  [key: string]: unknown
+}
+
+export interface DlicghBaseSiteConfig {
+  supportLanguageCode?: string
+  defaultLanguageCode?: string
+  supportCurrency?: string
+  defaultCurrency?: string
+  ossDomain?: string
+  timeZoneId?: string
+  [key: string]: unknown
+}
+
+export interface DlicghResult {
+  site?: DlicghSiteItem[]
+  baseSiteConfig?: DlicghBaseSiteConfig
+  [key: string]: unknown
+}
+
+export interface DlicghResponse {
+  code: string | number
+  message?: string
+  success?: boolean
+  result?: DlicghResult | null
+  [key: string]: unknown
+}
+
 export interface QuerySlideshowPageRequest {
   current: number
   size: number

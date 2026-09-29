@@ -10,7 +10,7 @@
   >
     <!-- 展开后仍保留卡片原高度，避免后面的卡片移位。 -->
     <div
-      class="group/match-card min-h-[211px] min-w-0 rounded-xl bg-bg-5 p-3"
+      class="min-h-[211px] min-w-0 rounded-xl bg-bg-5 p-3 transition-colors hover:bg-opacity-6"
       :class="
         overlaying
           ? 'absolute inset-x-0 top-0 z-20 shadow-[0_8px_28px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_28px_rgba(0,0,0,0.5)]'
