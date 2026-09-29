@@ -55,7 +55,7 @@
         v-for="result in searchResults"
         :key="result.id"
         type="button"
-        class="flex w-full items-center gap-[12px] border-b border-common-100/[0.04] py-[12px] text-left"
+        class="flex w-full items-center gap-[12px] border-b border-opacity-4 py-[12px] text-left"
         @click="$emit('locate', result.id, query.trim())"
       >
         <img
@@ -93,7 +93,7 @@
     <div v-else class="flex flex-1 items-center justify-center">
       <span
         v-if="searching"
-        class="size-7 animate-spin rounded-full border-2 border-common-100/20 border-t-theme-primary"
+        class="size-7 animate-spin rounded-full border-2 border-opacity-15 border-t-theme-primary"
       ></span>
       <ThemedEmptyState
         v-else

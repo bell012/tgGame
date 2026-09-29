@@ -47,7 +47,7 @@
       :class="props.mode === 'pc' ? 'h-[95px] py-5' : 'h-[84px] py-5'"
     >
       <div
-        class="flex flex-1 flex-col items-center justify-center border-r-[0.333px] border-common-100/10"
+        class="flex flex-1 flex-col items-center justify-center border-r-[0.333px] border-opacity-10"
         :class="props.mode === 'pc' ? 'gap-3' : 'gap-2'"
       >
         <strong
@@ -98,8 +98,8 @@
           class="flex items-center"
           :class="
             props.mode === 'pc'
-              ? 'h-[54px] gap-3 border-b  border-common-100/[0.06] px-7'
-              : 'box-border h-[35px] w-[calc(100%-28px)] shrink-0 border-b-[0.333px] border-common-100/[0.06] py-[10px]'
+              ? 'h-[54px] gap-3 border-b  border-opacity-6 px-7'
+              : 'box-border h-[35px] w-[calc(100%-28px)] shrink-0 border-b-[0.333px] border-opacity-6 py-[10px]'
           "
         >
           <template v-if="props.mode === 'mobile'">
@@ -209,7 +209,7 @@
                       ? 'h-7 w-[76px] text-base leading-[19px]'
                       : 'h-[18px] w-[50px] text-[10px] leading-3',
                     node.state === 'claimed'
-                      ? 'border border-common-100/[0.15] text-text-3'
+                      ? 'border border-opacity-15 text-text-3'
                       : 'bg-common-100/[0.06] text-text-2'
                   ]"
                 >
@@ -254,8 +254,8 @@
           class="flex items-center"
           :class="
             props.mode === 'pc'
-              ? 'h-[52px] justify-between gap-2 border-t  border-common-100/[0.06] px-7'
-              : 'box-border h-[35px] w-[calc(100%-28px)] shrink-0 gap-[5px] border-t-[0.333px] border-common-100/[0.06] py-[10px]'
+              ? 'h-[52px] justify-between gap-2 border-t  border-opacity-6 px-7'
+              : 'box-border h-[35px] w-[calc(100%-28px)] shrink-0 gap-[5px] border-t-[0.333px] border-opacity-6 py-[10px]'
           "
         >
           <template v-if="props.mode === 'mobile'">
@@ -328,8 +328,8 @@
           <div
             :class="
               props.mode === 'pc'
-                ? 'flex h-[54px] w-full items-center border-b border-common-100/[0.06] px-7'
-                : 'box-border flex h-[35px] w-[calc(100%-28px)] shrink-0 items-center border-b-[0.5px] border-common-100/[0.06] py-[10px]'
+                ? 'flex h-[54px] w-full items-center border-b border-opacity-6 px-7'
+                : 'box-border flex h-[35px] w-[calc(100%-28px)] shrink-0 items-center border-b-[0.5px] border-opacity-6 py-[10px]'
             "
           >
             <span
@@ -378,8 +378,8 @@
           <div
             :class="
               props.mode === 'pc'
-                ? 'flex h-[52px] w-full items-center justify-between border-t border-common-100/[0.06] px-7'
-                : 'box-border flex h-[35px] w-[calc(100%-28px)] shrink-0 items-center gap-[5px] border-t-[0.5px] border-common-100/[0.06] py-[10px]'
+                ? 'flex h-[52px] w-full items-center justify-between border-t border-opacity-6 px-7'
+                : 'box-border flex h-[35px] w-[calc(100%-28px)] shrink-0 items-center gap-[5px] border-t-[0.5px] border-opacity-6 py-[10px]'
             "
           >
             <span class="h-3 w-28 rounded-full bg-common-100/10"></span>
