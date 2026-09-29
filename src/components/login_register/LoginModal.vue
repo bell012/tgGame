@@ -4,6 +4,7 @@
     v-if="isMobile"
     :visible="modelValue && !showResetPassword"
     :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
+    :logo-url="authLogoUrl"
     :background-image-url="mobileBackgroundImage"
     :background-loading="isAuthBannerLoading"
     @update:visible="handleClose"
@@ -14,6 +15,7 @@
   <ResetPasswordMobile
     v-if="isMobile"
     :visible="showResetPassword"
+    :logo-url="authLogoUrl"
     :background-image-url="mobileBackgroundImage"
     :background-loading="isAuthBannerLoading"
     @update:visible="handleResetPasswordClose"
@@ -46,7 +48,13 @@
             <!-- 左侧图片区域 -->
             <div class="w-1/2 p-6 flex flex-col bg-bg-2">
               <div class="z-10 w-full flex justify-center">
-                <MainLogoIcon class="h-12 w-auto text-text-1" />
+                <SmartImage
+                  v-if="authLogoUrl"
+                  :src="authLogoUrl"
+                  alt=""
+                  class="h-12 w-auto object-contain"
+                />
+                <MainLogoIcon v-else class="h-12 w-auto text-text-1" />
               </div>
 
               <div class="relative mt-6 h-[357px] w-full overflow-hidden">
@@ -107,7 +115,13 @@
             <!-- 左侧图片区域 -->
             <div class="w-1/2 p-6 flex flex-col bg-bg-2">
               <div class="z-10 w-full flex justify-center">
-                <MainLogoIcon class="h-12 w-auto text-text-1" />
+                <SmartImage
+                  v-if="authLogoUrl"
+                  :src="authLogoUrl"
+                  alt=""
+                  class="h-12 w-auto object-contain"
+                />
+                <MainLogoIcon v-else class="h-12 w-auto text-text-1" />
               </div>
 
               <div class="relative mt-6 h-[357px] w-full overflow-hidden">
@@ -164,13 +178,18 @@ import { useI18n } from 'vue-i18n'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import Api from '@/api'
 import { getLanguageCode } from '@/utils/locale'
+import { useLocaleStore } from '@/stores/locale'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
 import type { QuerySlideshowItem } from '@/api/interface/home.interface'
 
 // 是否为移动端
 const isMobile = useIsMobile()
 const themeStore = useThemeStore()
+const localeStore = useLocaleStore()
+const siteConfigStore = useSiteConfigStore()
 const { theme } = storeToRefs(themeStore)
+const { currentLanguage } = storeToRefs(localeStore)
 const { t } = useI18n()
 
 const ABSOLUTE_IMAGE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
@@ -178,6 +197,16 @@ const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').
 const authBannerRecords = ref<QuerySlideshowItem[]>([])
 const isAuthBannerLoading = ref(false)
 const isPcBackgroundLoaded = ref(false)
+
+const authLogoChannelId = computed(() => (isMobile.value ? 4 : 3))
+// sy/dlicgh 中 channelId 3 为 PC，4 为 H5；弹窗 logo 使用当前语言的 homeTopVersion。
+const authLogoUrl = computed(() =>
+  siteConfigStore.getHomeTopLogoUrl(authLogoChannelId.value, currentLanguage.value)
+)
+
+const ensureAuthLogoConfig = () => {
+  void siteConfigStore.initSiteConfig({ channelId: authLogoChannelId.value })
+}
 
 // 登录/注册弹窗图片地址。
 const resolveAuthBannerUrl = (value: unknown) => {
@@ -266,6 +295,7 @@ watch([() => props.modelValue, () => isMobile.value], async ([newVal]) => {
   if (newVal) {
     activeTab.value = props.defaultTab
     showResetPassword.value = false
+    ensureAuthLogoConfig()
     // 弹窗打开时请求登录注册配置
     await fetchLoginAndRegisterSetting()
     // 请求登录/注册弹窗图片
@@ -273,6 +303,12 @@ watch([() => props.modelValue, () => isMobile.value], async ([newVal]) => {
     if (!isMobile.value) {
       loginFormDesktopRef.value?.resetForm()
     }
+  }
+})
+
+watch(currentLanguage, () => {
+  if (props.modelValue) {
+    ensureAuthLogoConfig()
   }
 })
 

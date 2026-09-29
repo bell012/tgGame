@@ -1,14 +1,94 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import Api from '@/api'
+import type {
+  DlicghRequest,
+  DlicghResult,
+  DlicghSiteItem,
+  DlicghSiteLanguage
+} from '@/api/interface/home.interface'
+import { getLanguageCode } from '@/utils/locale'
 
 export const SITE_CONFIG_STORAGE_KEY = 'config'
 
-export type SiteConfig = Record<string, unknown>
+export type SiteConfig = DlicghResult
 export interface PushMessageMqttConfig {
   host: string
   username: string
   password: string
+}
+
+type PendingSiteConfigRequest = {
+  key: string
+  promise: Promise<SiteConfig | null>
+}
+
+const ABSOLUTE_IMAGE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
+const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
+
+const normalizeSiteChannelId = (channelId?: string | number) => {
+  return String(channelId ?? '').trim()
+}
+
+const normalizeSiteLanguageCode = (languageCode?: string) => {
+  const normalizedCode = String(languageCode || getLanguageCode())
+    .trim()
+    .toLowerCase()
+
+  if (normalizedCode === 'en') {
+    return 'eng'
+  }
+
+  if (normalizedCode.startsWith('zh')) {
+    return 'zh'
+  }
+
+  return normalizedCode || 'eng'
+}
+
+const resolveGameImageUrl = (value?: string) => {
+  const imagePath = String(value ?? '').trim()
+
+  if (!imagePath) {
+    return ''
+  }
+
+  if (ABSOLUTE_IMAGE_URL_PATTERN.test(imagePath)) {
+    return imagePath
+  }
+
+  if (!gameImageBaseUrl) {
+    return imagePath
+  }
+
+  return `${gameImageBaseUrl}/${imagePath.replace(/^\/+/, '')}`
+}
+
+const mergeSiteList = (
+  currentSiteList?: DlicghSiteItem[],
+  nextSiteList?: DlicghSiteItem[]
+): DlicghSiteItem[] | undefined => {
+  if (!Array.isArray(nextSiteList)) {
+    return currentSiteList
+  }
+
+  const mergedSiteMap = new Map<string, DlicghSiteItem>()
+
+  currentSiteList?.forEach(site => {
+    const siteLayoutId = normalizeSiteChannelId(site.siteLayoutId)
+    if (siteLayoutId) {
+      mergedSiteMap.set(siteLayoutId, site)
+    }
+  })
+
+  nextSiteList.forEach(site => {
+    const siteLayoutId = normalizeSiteChannelId(site.siteLayoutId)
+    if (siteLayoutId) {
+      mergedSiteMap.set(siteLayoutId, site)
+    }
+  })
+
+  return Array.from(mergedSiteMap.values())
 }
 
 const parseStoredSiteConfig = (): SiteConfig | null => {
@@ -37,7 +117,7 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
   const isLoading = ref(false)
   const isInitialized = ref(false)
 
-  let pendingRequest: Promise<SiteConfig | null> | null = null
+  let pendingRequest: PendingSiteConfigRequest | null = null
 
   const setConfigState = (nextConfig: SiteConfig | null, persist = true) => {
     config.value = nextConfig
@@ -55,6 +135,19 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
 
   const syncStoredConfig = () => {
     return setConfigState(parseStoredSiteConfig(), false)
+  }
+
+  const mergeSiteConfig = (nextConfig: SiteConfig) => {
+    if (!config.value) {
+      return nextConfig
+    }
+
+    // channelId 3/4 可能分开返回，合并 site 数组避免 PC/H5 logo 互相覆盖。
+    return {
+      ...config.value,
+      ...nextConfig,
+      site: mergeSiteList(config.value.site, nextConfig.site)
+    }
   }
 
   const getConfigValue = <T = unknown>(key: string): T | undefined => {
@@ -76,15 +169,60 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
     password: getConfigString('hsdkie')
   })
 
-  const refreshSiteConfig = async () => {
-    if (pendingRequest) {
-      return pendingRequest
+  const getSiteList = (): DlicghSiteItem[] => {
+    return Array.isArray(config.value?.site) ? config.value.site : []
+  }
+
+  const hasSiteLayoutConfig = (channelId?: string | number) => {
+    const normalizedChannelId = normalizeSiteChannelId(channelId)
+
+    if (!normalizedChannelId) {
+      return true
+    }
+
+    return getSiteList().some(
+      site => normalizeSiteChannelId(site.siteLayoutId) === normalizedChannelId
+    )
+  }
+
+  const getSiteLanguageConfig = (
+    channelId: string | number,
+    languageCode = getLanguageCode()
+  ): DlicghSiteLanguage | undefined => {
+    const normalizedChannelId = normalizeSiteChannelId(channelId)
+    const normalizedLanguageCode = normalizeSiteLanguageCode(languageCode)
+    const siteList = getSiteList()
+
+    // sy/dlicgh 按 channelId 区分 PC(3) / H5(4)，再按当前语言取对应站点图片配置。
+    const siteConfig =
+      siteList.find(site => normalizeSiteChannelId(site.siteLayoutId) === normalizedChannelId) ??
+      siteList[0]
+    const languageList = Array.isArray(siteConfig?.siteLanguage) ? siteConfig.siteLanguage : []
+
+    return (
+      languageList.find(
+        item => normalizeSiteLanguageCode(item.languageCode) === normalizedLanguageCode
+      ) ??
+      languageList.find(item => item.homeTopVersion) ??
+      languageList[0]
+    )
+  }
+
+  const getHomeTopLogoUrl = (channelId: string | number, languageCode = getLanguageCode()) => {
+    return resolveGameImageUrl(getSiteLanguageConfig(channelId, languageCode)?.homeTopVersion)
+  }
+
+  const refreshSiteConfig = async (data: DlicghRequest = {}) => {
+    const requestKey = normalizeSiteChannelId(data.channelId)
+
+    if (pendingRequest?.key === requestKey) {
+      return pendingRequest.promise
     }
 
     isLoading.value = true
 
-    pendingRequest = Api.home
-      .dlicgh({})
+    const requestPromise = Api.home
+      .dlicgh(data)
       .then(res => {
         const result = res?.result as unknown
 
@@ -92,7 +230,7 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
           return setConfigState(null)
         }
 
-        return setConfigState(result as SiteConfig)
+        return setConfigState(mergeSiteConfig(result as SiteConfig))
       })
       .catch(error => {
         console.error(error)
@@ -101,20 +239,28 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
       .finally(() => {
         isLoading.value = false
         isInitialized.value = true
-        pendingRequest = null
+        if (pendingRequest?.key === requestKey) {
+          pendingRequest = null
+        }
       })
 
-    return pendingRequest
+    pendingRequest = {
+      key: requestKey,
+      promise: requestPromise
+    }
+
+    return requestPromise
   }
 
-  const initSiteConfig = async () => {
+  const initSiteConfig = async (data: DlicghRequest = {}) => {
     syncStoredConfig()
+    const channelId = normalizeSiteChannelId(data.channelId)
 
-    if (isInitialized.value) {
+    if (isInitialized.value && hasSiteLayoutConfig(channelId)) {
       return config.value
     }
 
-    return refreshSiteConfig()
+    return refreshSiteConfig(data)
   }
 
   return {
@@ -126,6 +272,8 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
     getConfigValue,
     getConfigString,
     getPushMessageMqttConfig,
+    getSiteLanguageConfig,
+    getHomeTopLogoUrl,
     initSiteConfig,
     refreshSiteConfig
   }
