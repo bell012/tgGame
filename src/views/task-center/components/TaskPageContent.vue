@@ -135,10 +135,17 @@
         <!-- 活动度奖励节点：PC 超过七档、H5 超过五档时可横向滑动查看。 -->
         <div :class="props.mode === 'pc' ? 'h-[146px]' : 'relative h-[126px] w-full shrink-0'">
           <div
+            ref="activityNodesViewport"
             class="scrollbar-hide touch-pan-x overflow-x-auto"
-            :class="
-              props.mode === 'pc' ? 'h-full' : 'absolute left-3.5 right-[3px] top-3.5 h-[73px]'
-            "
+            :class="[
+              props.mode === 'pc' ? 'h-full' : 'absolute left-3.5 right-[3px] top-3.5 h-[73px]',
+              isActivityNodeScrollable ? 'cursor-grab select-none active:cursor-grabbing' : ''
+            ]"
+            @pointerdown="handleActivityNodesPointerDown"
+            @pointermove="handleActivityNodesPointerMove"
+            @pointerup="handleActivityNodesPointerUp"
+            @pointercancel="handleActivityNodesPointerUp"
+            @click.capture="handleActivityNodesClick"
           >
             <div
               class="flex items-center"
@@ -585,7 +592,7 @@ import taskInfoImage from '@/static/img/task/task-info.png'
 import newSideIcons from '@/static/svg/side/newIcon'
 import { getCurrencySymbol } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type {
   TaskActionState,
@@ -619,6 +626,15 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const { t } = useI18n()
 const { currentCurrencyCode } = useDisplayCurrency()
+
+/** 保存活动度节点横向滚动容器，用于支持桌面鼠标拖拽。 */
+const activityNodesViewport = ref<HTMLElement | null>(null)
+
+/** 保存当前鼠标拖拽起点，避免影响 H5 原生触摸横滑。 */
+let activityNodesPointerId: number | null = null
+let activityNodesStartX = 0
+let activityNodesStartScrollLeft = 0
+let shouldSuppressActivityNodeClick = false
 
 /** 根据当前账户币种获取项目统一的货币符号。 */
 const currentCurrencySymbol = computed(() => getCurrencySymbol(currentCurrencyCode.value))
@@ -683,6 +699,65 @@ const handleOpenActivityChestTip = (node: TaskActivityNode) => {
       multiple: node.betMultiple ?? '0'
     })
   })
+}
+
+/** 根据端类型和节点数量判断是否需要横向滚动。 */
+const isActivityNodeScrollable = computed(() => {
+  const nodeCount = props.activity?.nodes.length ?? 0
+  return props.mode === 'pc' ? nodeCount > 7 : nodeCount > 5
+})
+
+/** 鼠标按下时记录横向滚动起点；触摸设备继续交给浏览器原生手势处理。 */
+const handleActivityNodesPointerDown = (event: PointerEvent) => {
+  if (event.pointerType !== 'mouse' || !isActivityNodeScrollable.value) {
+    return
+  }
+
+  const viewport = event.currentTarget as HTMLElement
+  activityNodesPointerId = event.pointerId
+  activityNodesStartX = event.clientX
+  activityNodesStartScrollLeft = viewport.scrollLeft
+  shouldSuppressActivityNodeClick = false
+  viewport.setPointerCapture(event.pointerId)
+}
+
+/** 鼠标移动超过最小距离时同步更新横向滚动位置。 */
+const handleActivityNodesPointerMove = (event: PointerEvent) => {
+  if (activityNodesPointerId !== event.pointerId) {
+    return
+  }
+
+  const distance = event.clientX - activityNodesStartX
+  if (Math.abs(distance) > 3) {
+    shouldSuppressActivityNodeClick = true
+  }
+
+  const viewport = event.currentTarget as HTMLElement
+  viewport.scrollLeft = activityNodesStartScrollLeft - distance
+}
+
+/** 鼠标松开或取消时释放拖拽状态。 */
+const handleActivityNodesPointerUp = (event: PointerEvent) => {
+  if (activityNodesPointerId !== event.pointerId) {
+    return
+  }
+
+  const viewport = event.currentTarget as HTMLElement
+  if (viewport.hasPointerCapture(event.pointerId)) {
+    viewport.releasePointerCapture(event.pointerId)
+  }
+  activityNodesPointerId = null
+}
+
+/** 拖拽结束后阻止一次节点点击，避免误触发宝箱查看或领取。 */
+const handleActivityNodesClick = (event: MouseEvent) => {
+  if (!shouldSuppressActivityNodeClick) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+  shouldSuppressActivityNodeClick = false
 }
 
 /** PC 一屏最多展示七档，第八档开始以横向滑动形式显示。 */
