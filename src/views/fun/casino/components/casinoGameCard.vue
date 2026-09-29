@@ -88,6 +88,7 @@ import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useGameStore } from '@/stores/game'
 import underMaintenanceIcon from '@/static/svg/game/under_maintenance.svg'
 import FavoritesGamesIcon from '@/static/svg/game/favorites_games.svg?component'
+import { resolveGameImageUrl } from '@/utils/image'
 
 const props = withDefaults(
   defineProps<{
@@ -108,7 +109,7 @@ const siteConfigStore = useSiteConfigStore()
 const gameStore = useGameStore()
 const gameImage = computed(() => {
   const imagePath = props.game.icon2 || props.game.conUrl || props.game.icon1 || props.game.icon3
-  const src = imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
+  const src = resolveGameImageUrl(imagePath)
 
   return {
     maintain: false,

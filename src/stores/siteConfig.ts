@@ -7,6 +7,7 @@ import type {
   DlicghSiteItem,
   DlicghSiteLanguage
 } from '@/api/interface/home.interface'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getLanguageCode } from '@/utils/locale'
 
 export const SITE_CONFIG_STORAGE_KEY = 'config'
@@ -19,12 +20,8 @@ export interface PushMessageMqttConfig {
 }
 
 type PendingSiteConfigRequest = {
-  key: string
   promise: Promise<SiteConfig | null>
 }
-
-const ABSOLUTE_IMAGE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
-const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
 
 const normalizeSiteChannelId = (channelId?: string | number) => {
   return String(channelId ?? '').trim()
@@ -44,24 +41,6 @@ const normalizeSiteLanguageCode = (languageCode?: string) => {
   }
 
   return normalizedCode || 'eng'
-}
-
-const resolveGameImageUrl = (value?: string) => {
-  const imagePath = String(value ?? '').trim()
-
-  if (!imagePath) {
-    return ''
-  }
-
-  if (ABSOLUTE_IMAGE_URL_PATTERN.test(imagePath)) {
-    return imagePath
-  }
-
-  if (!gameImageBaseUrl) {
-    return imagePath
-  }
-
-  return `${gameImageBaseUrl}/${imagePath.replace(/^\/+/, '')}`
 }
 
 const mergeSiteList = (
@@ -173,18 +152,6 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
     return Array.isArray(config.value?.site) ? config.value.site : []
   }
 
-  const hasSiteLayoutConfig = (channelId?: string | number) => {
-    const normalizedChannelId = normalizeSiteChannelId(channelId)
-
-    if (!normalizedChannelId) {
-      return true
-    }
-
-    return getSiteList().some(
-      site => normalizeSiteChannelId(site.siteLayoutId) === normalizedChannelId
-    )
-  }
-
   const getSiteLanguageConfig = (
     channelId: string | number,
     languageCode = getLanguageCode()
@@ -213,9 +180,8 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
   }
 
   const refreshSiteConfig = async (data: DlicghRequest = {}) => {
-    const requestKey = normalizeSiteChannelId(data.channelId)
-
-    if (pendingRequest?.key === requestKey) {
+    // Deduplicate concurrent sy/dlicgh requests; all callers share the same pending promise.
+    if (pendingRequest) {
       return pendingRequest.promise
     }
 
@@ -239,13 +205,10 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
       .finally(() => {
         isLoading.value = false
         isInitialized.value = true
-        if (pendingRequest?.key === requestKey) {
-          pendingRequest = null
-        }
+        pendingRequest = null
       })
 
     pendingRequest = {
-      key: requestKey,
       promise: requestPromise
     }
 
@@ -254,9 +217,9 @@ export const useSiteConfigStore = defineStore('siteConfig', () => {
 
   const initSiteConfig = async (data: DlicghRequest = {}) => {
     syncStoredConfig()
-    const channelId = normalizeSiteChannelId(data.channelId)
 
-    if (isInitialized.value && hasSiteLayoutConfig(channelId)) {
+    // Once initialized, reuse the cached config and avoid requesting sy/dlicgh again.
+    if (isInitialized.value) {
       return config.value
     }
 

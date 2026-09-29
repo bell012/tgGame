@@ -3,6 +3,7 @@ import { AddMemberCardForm, MemberCardItem, WithdrawManagerItem } from '@/api/in
 import i18n from '@/i18n'
 import { Component, computed, ref } from 'vue'
 import { globalShowToast } from '@/utils/toast'
+import { resolveGameImageUrl } from '@/utils/image'
 import GCashCardIcon from '@/static/svg/withdraw/GCash_card.svg?component'
 import GrabPayCardIcon from '@/static/svg/withdraw/GrabPay_card.svg?component'
 import MAYACardIcon from '@/static/svg/withdraw/MAYA_card.svg?component'
@@ -73,7 +74,7 @@ const resolveCardBackground = (paymentCode?: string | number) => {
 
 const toImageUrl = (value: string) => {
   if (!value) return ''
-  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+  return resolveGameImageUrl(value)
 }
 
 const cryptoPaymentCodes = [5]

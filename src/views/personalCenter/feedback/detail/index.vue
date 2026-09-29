@@ -216,6 +216,7 @@ import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+import { resolveGameImageUrl } from '@/utils/image'
 import { globalShowToast } from '@/utils/toast'
 import {
   type FeedbackRecord,
@@ -284,14 +285,7 @@ const resolveFeedbackImageUrl = (value: unknown) => {
     return imagePath
   }
 
-  const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
-  if (!baseUrl) {
-    return imagePath
-  }
-
-  const normalizedBaseUrl = String(baseUrl).replace(/\/+$/, '')
-  const normalizedImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`
-  return `${normalizedBaseUrl}${normalizedImagePath}`
+  return resolveGameImageUrl(imagePath)
 }
 
 const feedbackDetailTemplates = computed(() => getFeedbackDetailTemplates(t))

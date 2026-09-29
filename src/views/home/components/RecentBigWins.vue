@@ -107,6 +107,7 @@ import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { useGameStore } from '@/stores/game'
 import { deriveBetAmountFromWinAndMultiplier } from '@/stores/deriveBetAmount'
+import { resolveGameImageUrl } from '@/utils/image'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import GameCoverNameText from '@/components/common/GameCoverNameText.vue'
 import type { AdaptiveTypographyPreset } from '@/composables/useAdaptiveTextTypography'
@@ -209,7 +210,7 @@ const toGameImageUrl = (value: string) => {
   if (!value) {
     return placeholderImg
   }
-  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+  return resolveGameImageUrl(value)
 }
 
 const getVipIconByVipId = (vipId: unknown) => {

@@ -4,6 +4,7 @@ import i18n from '@/i18n'
 import type { GameBrandItem, GameDataItem, GameTypeItem } from '@/api/interface/game'
 import { useGameStore, type HomeCollectionDisplayItem } from '@/stores/game'
 import { casinoIcons } from '@/static/svg/casino'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
 
 export interface CasinoTabButtonItem {
@@ -119,11 +120,9 @@ export const useCasinoTabsStore = defineStore('casinoTabs', () => {
       buttons.push({
         sysGameTypeCode,
         sysGameTypeName,
-        icon: `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.icon}`,
-        iconSelect: `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.iconSelect}`,
-        ...(item.logo?.trim()
-          ? { logo: `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${item.logo}` }
-          : {})
+        icon: resolveGameImageUrl(item.icon),
+        iconSelect: resolveGameImageUrl(item.iconSelect),
+        ...(item.logo?.trim() ? { logo: resolveGameImageUrl(item.logo) } : {})
       })
     })
 
