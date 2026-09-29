@@ -23,6 +23,7 @@
           :reset-hint-suffix="resetHintSegments.suffix"
           :rewards-to-claim-label="t('referral.taskPage.rewardsToClaim')"
           :rewards-to-claim-amount="rewardsToClaimAmount"
+          :claim-loading="claimingCommission"
           :coin-image="coinImage"
           :claim-text="t('referral.claim')"
           :tabs="taskTabs"
@@ -58,6 +59,7 @@
         :reset-hint-suffix="resetHintSegments.suffix"
         :rewards-to-claim-label="t('referral.taskPage.rewardsToClaim')"
         :rewards-to-claim-amount="rewardsToClaimAmount"
+        :claim-loading="claimingCommission"
         :coin-image="coinImage"
         :claim-text="t('referral.claim')"
         :tabs="taskTabs"
@@ -83,11 +85,7 @@
     </div>
 
     <!-- 任务页佣金领取确认弹窗 -->
-    <ClaimSuccessPopup
-      v-model:visible="showClaimConfirmPopup"
-      :amount="rewardsToClaimAmount"
-      @confirm="handleConfirmClaimClick"
-    />
+    <ClaimSuccessPopup v-model:visible="showClaimConfirmPopup" :amount="claimedCommissionAmount" />
 
     <!-- 任务页进度提醒弹窗 -->
     <ReferralTaskProgressReminderPopup
@@ -115,8 +113,9 @@ import ClaimSuccessPopup from '@/components/common/ClaimSuccessPopup.vue'
 import H5Header from '@/components/common/H5Header.vue'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+import { useUserStore } from '@/stores/user'
 import { ApiBusinessError, ensureApiBusinessSuccess } from '@/utils/apiBusiness'
-import { formatBalance, getCurrencySymbol } from '@/utils/locale'
+import { formatBalance, getCurrencySymbol, getCurrentCurrency } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
@@ -141,6 +140,7 @@ import {
 } from './shared'
 
 const { t, locale } = useI18n()
+const userStore = useUserStore()
 const isMobile = useIsMobile()
 const isReady = ref(false)
 const activeTab = ref<ReferralTaskTabKey>('invite-register')
@@ -151,6 +151,7 @@ const referralSettlementRule = ref<QueryReferralSettlementRuleResult | null>(nul
 const taskProgressResult = ref<QueryReferralTaskProgressResult | null>(null)
 const taskRuleContents = ref<QueryReferralTaskRuleContentItem[]>([])
 const rewardsToClaimAmount = ref('0.00')
+const claimedCommissionAmount = ref('0.00')
 const coinImage = getReferralTaskCoinImage()
 const showClaimConfirmPopup = ref(false)
 const showProgressReminderPopup = ref(false)
@@ -362,9 +363,9 @@ const handleProgressReminderPrimaryClick = () => {
 }
 
 /**
- * 处理领取按钮点击。
+ * 执行佣金领取，接口成功后才打开领取成功弹窗。
  */
-const handleClaimClick = () => {
+const handleClaimClick = async () => {
   if (claimingCommission.value) {
     return
   }
@@ -377,30 +378,30 @@ const handleClaimClick = () => {
     return
   }
 
-  showClaimConfirmPopup.value = true
-}
+  userStore.syncStoredUserData()
+  const memberRowId = Number(userStore.acctInfo?.memberRowId)
 
-/**
- * 处理领取确认点击。
- */
-const handleConfirmClaimClick = async () => {
-  if (claimingCommission.value) {
+  if (!Number.isSafeInteger(memberRowId) || memberRowId <= 0) {
+    globalShowToast({ message: t('common.requestError'), type: 'fail' })
     return
   }
 
   claimingCommission.value = true
 
   try {
-    ensureApiBusinessSuccess(
-      await Api.agent.claimCommission({
-        channelId: currentAgentChannelId.value
-      })
+    const claimCommissionResponse = ensureApiBusinessSuccess(
+      await Api.agent.claimCommission85(
+        {
+          currency: getCurrentCurrency(),
+          rowId: memberRowId
+        },
+        { channelId: currentAgentChannelId.value }
+      )
     )
 
-    globalShowToast({
-      message: t('referral.toast.claimSuccess'),
-      type: 'success'
-    })
+    // 成功弹窗仅展示 agent85 本次实际返回的领取金额。
+    claimedCommissionAmount.value = String(claimCommissionResponse.result ?? 0)
+    showClaimConfirmPopup.value = true
     await fetchTaskPageData()
   } catch (error) {
     console.error('[referral-task] claim commission failed:', error)

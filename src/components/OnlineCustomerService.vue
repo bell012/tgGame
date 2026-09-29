@@ -33,7 +33,7 @@
           </button>
           <iframe
             v-if="iframeUrl && !frameError"
-            :key="iframeUrl"
+            :key="`${iframeUrl}:${iframeReloadVersion}`"
             :src="iframeUrl"
             :title="t('onlineCustomer.title')"
             allow="clipboard-write"
@@ -81,6 +81,7 @@ const {
   loading,
   url,
   errorKey,
+  iframeReloadVersion,
   loadingLottieUrl,
   loadingLottieData,
   close,
@@ -137,8 +138,8 @@ const iframeUrl = computed(() => {
 usePageScrollLock(() => isMobile.value && (visible.value || leaving.value))
 
 watch(
-  iframeUrl,
-  value => {
+  [iframeUrl, iframeReloadVersion],
+  ([value]) => {
     frameLoading.value = Boolean(value)
     frameError.value = false
   },

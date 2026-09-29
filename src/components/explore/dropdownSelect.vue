@@ -146,9 +146,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIsMobile } from '@/composables/useMediaQuery'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import CloseIcon from '@/static/svg/close.svg?component'
 import RadioCheckedIcon from '@/static/svg/explore/radio-checked2.svg?component'
 import RadioUncheckedIcon from '@/static/svg/radio-unchecked.svg?component'
@@ -182,6 +183,8 @@ const emit = defineEmits<{
 const isMobile = useIsMobile()
 const popupShow = ref(false)
 const keyword = ref('')
+
+usePageScrollLock(() => popupShow.value && isMobile.value)
 
 const maskFadeTransition = {
   enterActiveClass: 'transition-opacity duration-[250ms] ease-out',
@@ -297,16 +300,10 @@ const updatePopupPlacement = () => {
 }
 
 watch(popupShow, val => {
-  if (val && isMobile.value) {
-    document.body.classList.add('overflow-hidden')
-  } else if (val && !isMobile.value) {
+  if (val && !isMobile.value) {
     requestAnimationFrame(() => updatePopupPlacement())
-  } else {
-    document.body.classList.remove('overflow-hidden')
   }
 })
-
-onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
 </script>
 
 <style scoped lang="scss">

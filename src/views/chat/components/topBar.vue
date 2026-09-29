@@ -6,7 +6,7 @@
     <!-- 聊天频道选择器。 -->
     <div>
       <button class="bg-bg-1 rounded-lg flex items-center justify-center">
-        <span class="text-text-1">Global</span>
+        <span class="text-text-1">{{ t('chatPublic.global') }}</span>
         <span class="fill-text-1 w-5 h-5 flex items-center justify-center">
           <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -38,7 +38,9 @@ import InformIcon from '@/static/svg/chat/inform.svg?component'
 import RankCloseIcon from '@/static/svg/chat/rank_close.webp'
 import RankIcon from '@/static/svg/chat/rank.webp'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const popupShow = ref(false)
 </script>
 <style scoped lang="scss">

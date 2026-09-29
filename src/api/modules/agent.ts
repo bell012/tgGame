@@ -8,9 +8,9 @@ import type {
   QueryReferralDetailsTopUpStatsResponse,
   QueryReferralSettlementRuleResponse,
   QueryReferralShareConfigResponse,
-  QueryReferralTaskRuleContentResponse,
   QueryReferralTaskProgressResponse,
   QueryReferralTaskRewardsToClaimResponse,
+  QueryReferralTaskRuleContentResponse,
   QueryTaskRewardConfigResponse
 } from '@/api/interface/agent'
 import request, { type ApiResponseToastOptions } from '@/utils/request'
@@ -21,6 +21,11 @@ export type AgentChannelId =
 
 export interface AgentRequestOptions extends ApiResponseToastOptions {
   channelId?: AgentChannelId
+}
+
+export interface ClaimCommissionParam {
+  currency: string
+  rowId: number
 }
 
 const callAgentAction = <TResult = unknown>(
@@ -56,13 +61,33 @@ export const queryReferralTaskRewardsToClaim = (
 ): Promise<QueryReferralTaskRewardsToClaimResponse> =>
   callAgentAction('agent103', undefined, options)
 
-// agent77：领取当前登录一级代理未领取佣金。
-export const claimCommission = (options?: AgentRequestOptions): Promise<AgentApiResponse> =>
-  callAgentAction('agent77', undefined, {
-    showErrorToast: true,
-    ...options
-  })
+// agent85：领取当前登录任务页面 待领取领取佣金。
+export const claimCommission85 = (
+  param: ClaimCommissionParam,
+  options?: AgentRequestOptions
+): Promise<AgentApiResponse<number>> =>
+  callAgentAction(
+    'agent85',
+    { ...param },
+    {
+      showErrorToast: true,
+      ...options
+    }
+  )
 
+// agent77：领取当前登录一级代理未领取佣金。
+export const claimCommission = (
+  param: ClaimCommissionParam,
+  options?: AgentRequestOptions
+): Promise<AgentApiResponse> =>
+  callAgentAction(
+    'agent77',
+    { ...param },
+    {
+      showErrorToast: true,
+      ...options
+    }
+  )
 // agent76：查询团队邀请统计。
 export const queryInvitationStats = (options?: AgentRequestOptions): Promise<AgentApiResponse> =>
   callAgentAction('agent76', undefined, options)

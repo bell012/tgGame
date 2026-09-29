@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
 import CloseIcon from '@/static/svg/close.svg?component'
-import { onBeforeUnmount, onMounted } from 'vue'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import ReferralFriendDetailPageContent from './components/ReferralFriendDetailPageContent.vue'
 import type {
   ReferralFriendDetailDateTabValue,
@@ -95,8 +95,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-let previousBodyOverflow = ''
-let previousHtmlOverflow = ''
+usePageScrollLock(() => true)
 
 defineEmits<{
   close: []
@@ -104,16 +103,4 @@ defineEmits<{
   'change-stats-tab': [value: ReferralFriendDetailStatsTabValue]
   'copy-account': []
 }>()
-
-onMounted(() => {
-  previousBodyOverflow = document.body.style.overflow
-  previousHtmlOverflow = document.documentElement.style.overflow
-  document.body.style.overflow = 'hidden'
-  document.documentElement.style.overflow = 'hidden'
-})
-
-onBeforeUnmount(() => {
-  document.body.style.overflow = previousBodyOverflow
-  document.documentElement.style.overflow = previousHtmlOverflow
-})
 </script>

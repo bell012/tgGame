@@ -17,10 +17,10 @@ import { computed, onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { defaultFiatOrder, type FiatOrderType } from './components/order/orderType'
 
-export type DepositTabType = 'Crypto' | 'Fiat'
+export type DepositTabType = 'Fiat' | 'Crypto'
 export type DepositPageMode = 'mobile' | 'pc'
 
-export const DEPOSIT_TABS: DepositTabType[] = ['Crypto', 'Fiat']
+export const DEPOSIT_TABS: DepositTabType[] = ['Fiat', 'Crypto']
 export const DEPOSIT_CRYPTO_COLUMN_NAME = 'USDT泰达币'
 
 export const getDepositTabI18nKey = (tab: DepositTabType) =>

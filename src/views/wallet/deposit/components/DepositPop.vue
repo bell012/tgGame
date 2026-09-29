@@ -28,7 +28,7 @@ const emit = defineEmits<{
   'update:modelValue': [val: boolean]
 }>()
 
-const activeTab = ref<DepositTabType>('Crypto')
+const activeTab = ref<DepositTabType>('Fiat')
 const hiddenPop = ref<boolean>(false)
 
 // 处理关闭事件

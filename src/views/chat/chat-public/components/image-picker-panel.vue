@@ -61,7 +61,7 @@ const filterSelectableMedia = (files: File[]) => {
 
   if (validFiles.length !== files.length) {
     globalShowToast({
-      message: 'Images and GIFs must be 10MB or smaller. Videos must be 100MB or smaller.',
+      message: t('chatPublic.mediaSizeLimit'),
       type: 'fail'
     })
   }

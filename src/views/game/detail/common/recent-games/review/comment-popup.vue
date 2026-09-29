@@ -213,6 +213,7 @@
 
 <script setup lang="ts">
 import { useThemeStore } from '@/stores/theme'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CloseIcon from '@/static/svg/close.svg?component'
@@ -601,7 +602,7 @@ const emojiGroups: Record<Exclude<EmojiCategory, 'recent'>, string[]> = {
 }
 
 const commentText = ref('')
-const bodyOverflowCache = ref('')
+usePageScrollLock(() => props.modelValue)
 const isEmojiPickerOpen = ref(false)
 const activeEmojiCategory = ref<EmojiCategory>('smileys')
 const recentEmojis = ref(['😀', '😅', '😍', '😡', '😗', '🤗', '😏', '😬'])
@@ -710,13 +711,10 @@ watch(
   isOpen => {
     if (isOpen) {
       commentText.value = ''
-      bodyOverflowCache.value = document.body.style.overflow
-      document.body.style.overflow = 'hidden'
       return
     }
     isEmojiPickerOpen.value = false
     isTextareaFocused.value = false
-    document.body.style.overflow = bodyOverflowCache.value
   }
 )
 
@@ -728,7 +726,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleEscapeClose)
   document.removeEventListener('pointerdown', handlePointerDown, true)
-  document.body.style.overflow = bodyOverflowCache.value
 })
 </script>
 

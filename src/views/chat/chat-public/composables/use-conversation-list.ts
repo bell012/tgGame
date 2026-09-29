@@ -1,10 +1,10 @@
 import { ref } from 'vue'
-import { MOCK_CONVERSATIONS } from '../mock'
+import { createMockConversations } from '../mock'
 import type { ConversationItem } from '../types'
 
 /** 管理客服会话列表的本地 mock 数据与后续分页刷新入口。 */
 export function useConversationList() {
-  const conversations = ref<ConversationItem[]>(MOCK_CONVERSATIONS.map(item => ({ ...item })))
+  const conversations = ref<ConversationItem[]>(createMockConversations())
   const loading = ref(false)
   const hasMore = ref(false)
 
@@ -13,7 +13,7 @@ export function useConversationList() {
     // 后续替换为真实客服会话列表接口。
     loading.value = true
     await Promise.resolve()
-    conversations.value = MOCK_CONVERSATIONS.map(item => ({ ...item }))
+    conversations.value = createMockConversations()
     loading.value = false
   }
 

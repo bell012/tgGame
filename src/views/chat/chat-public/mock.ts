@@ -1,104 +1,29 @@
 import avatarUrl from '@/static/img/chat/public/customer-service-luna.jpg'
+import i18n from '@/i18n'
 import messageImageUrl from '@/static/img/chat/public/chat-image-sample.jpg'
 import type { ChatMessage, ConversationItem } from './types'
 
-export const MOCK_CONVERSATIONS: ConversationItem[] = [
-  {
-    id: 'luna-01',
-    account: 'luna-01',
+/** 根据当前语言生成旧版会话列表的调试数据。 */
+export const createMockConversations = (): ConversationItem[] =>
+  Array.from({ length: 8 }, (_, index) => ({
+    id: `luna-${String(index + 1).padStart(2, '0')}`,
+    account: `luna-${String(index + 1).padStart(2, '0')}`,
     dealerCode: 'mock',
     nickName: 'Luna',
     onlineStatus: 0,
     avatar: avatarUrl,
-    lastMessage: 'Your order of RMB 1,000 has been received.',
+    lastMessage: i18n.global.t('chatPublic.mockLastMessage'),
     lastMessageTime: Date.now(),
-    unreadCount: 99
-  },
-  {
-    id: 'luna-02',
-    account: 'luna-02',
-    dealerCode: 'mock',
-    nickName: 'Luna',
-    onlineStatus: 0,
-    avatar: avatarUrl,
-    lastMessage: 'Your order of RMB 1,000 has been received.',
-    lastMessageTime: Date.now(),
-    unreadCount: 3
-  },
-  {
-    id: 'luna-03',
-    account: 'luna-03',
-    dealerCode: 'mock',
-    nickName: 'Luna',
-    onlineStatus: 0,
-    avatar: avatarUrl,
-    lastMessage: 'Your order of RMB 1,000 has been received.',
-    lastMessageTime: Date.now(),
-    unreadCount: 3
-  },
-  {
-    id: 'luna-04',
-    account: 'luna-04',
-    dealerCode: 'mock',
-    nickName: 'Luna',
-    onlineStatus: 0,
-    avatar: avatarUrl,
-    lastMessage: 'Your order of RMB 1,000 has been received.',
-    lastMessageTime: Date.now(),
-    unreadCount: 3
-  },
-  {
-    id: 'luna-05',
-    account: 'luna-05',
-    dealerCode: 'mock',
-    nickName: 'Luna',
-    onlineStatus: 0,
-    avatar: avatarUrl,
-    lastMessage: 'Your order of RMB 1,000 has been received.',
-    lastMessageTime: Date.now(),
-    unreadCount: 3
-  },
-  {
-    id: 'luna-06',
-    account: 'luna-06',
-    dealerCode: 'mock',
-    nickName: 'Luna',
-    onlineStatus: 0,
-    avatar: avatarUrl,
-    lastMessage: 'Your order of RMB 1,000 has been received.',
-    lastMessageTime: Date.now(),
-    unreadCount: 3
-  },
-  {
-    id: 'luna-07',
-    account: 'luna-07',
-    dealerCode: 'mock',
-    nickName: 'Luna',
-    onlineStatus: 0,
-    avatar: avatarUrl,
-    lastMessage: 'Your order of RMB 1,000 has been received.',
-    lastMessageTime: Date.now(),
-    unreadCount: 3
-  },
-  {
-    id: 'luna-08',
-    account: 'luna-08',
-    dealerCode: 'mock',
-    nickName: 'Luna',
-    onlineStatus: 0,
-    avatar: avatarUrl,
-    lastMessage: 'Your order of RMB 1,000 has been received.',
-    lastMessageTime: Date.now(),
-    unreadCount: 3
-  }
-]
+    unreadCount: index === 0 ? 99 : 3
+  }))
 
-export const MOCK_MESSAGES: ChatMessage[] = [
+/** 根据当前语言生成旧版会话消息的调试数据。 */
+export const createMockMessages = (): ChatMessage[] => [
   {
     id: 'm-1',
     direction: 'incoming',
     type: 'text',
-    text: 'Hello! How may I assist you today?',
+    text: i18n.global.t('chatPublic.mockServiceGreeting'),
     time: '13:06',
     period: 'PM'
   },
@@ -106,7 +31,7 @@ export const MOCK_MESSAGES: ChatMessage[] = [
     id: 'm-2',
     direction: 'outgoing',
     type: 'text',
-    text: 'May I ask how to register an account?',
+    text: i18n.global.t('chatPublic.mockUserQuestion'),
     time: '13:06',
     period: 'PM',
     read: true
@@ -115,7 +40,7 @@ export const MOCK_MESSAGES: ChatMessage[] = [
     id: 'm-3',
     direction: 'incoming',
     type: 'text',
-    text: 'Hello! How may I assist you today?',
+    text: i18n.global.t('chatPublic.mockServiceGreeting'),
     time: '13:06',
     period: 'PM'
   },
@@ -123,7 +48,7 @@ export const MOCK_MESSAGES: ChatMessage[] = [
     id: 'm-4',
     direction: 'outgoing',
     type: 'text',
-    text: 'May I ask how to register an account?',
+    text: i18n.global.t('chatPublic.mockUserQuestion'),
     time: '13:06',
     period: 'PM',
     read: true
