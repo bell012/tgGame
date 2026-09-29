@@ -118,9 +118,13 @@ import { useI18n } from 'vue-i18n'
 const LIVE_LAG_SECONDS = 15
 const CONTROLS_HIDE_MS = 3000
 
-const props = defineProps<{
-  src: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    src: string
+    active?: boolean
+  }>(),
+  { active: true }
+)
 
 const { t } = useI18n()
 const rootRef = ref<HTMLElement | null>(null)
@@ -132,7 +136,9 @@ const controlsVisible = ref(false)
 const isLive = ref(false)
 const behindLive = ref(false)
 let hls: Hls | null = null
+let loadedSrc = ''
 let joinedLive = false
+let pendingLiveSeek = false
 let userPaused = false
 let hideTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -177,7 +183,9 @@ const resumeIfPaused = () => {
 const destroy = () => {
   hls?.destroy()
   hls = null
+  loadedSrc = ''
   joinedLive = false
+  pendingLiveSeek = false
   isLive.value = false
   behindLive.value = false
   const video = videoRef.value
@@ -189,7 +197,7 @@ const destroy = () => {
 
 const play = () => {
   const video = videoRef.value
-  if (!video || userPaused) return
+  if (!video || userPaused || !props.active) return
   video.muted = muted.value
   video.play().catch((error: unknown) => {
     if (userPaused || muted.value) return
@@ -227,6 +235,11 @@ const syncBehind = () => {
 
 const joinLive = (live: boolean) => {
   isLive.value = live
+  if (live && pendingLiveSeek) {
+    pendingLiveSeek = false
+    seekToLiveEdge()
+    return
+  }
   if (!live || joinedLive) return
   seekToLiveEdge()
   joinedLive = true
@@ -239,6 +252,7 @@ const load = (src: string) => {
   loading.value = Boolean(src)
   const video = videoRef.value
   if (!video || !src) return
+  loadedSrc = src
   video.addEventListener('canplay', resumeIfPaused)
 
   if (Hls.isSupported()) {
@@ -325,12 +339,51 @@ const toggleFullscreen = () => {
   rootRef.value?.requestFullscreen().catch(() => {})
 }
 
+const suspend = () => {
+  hls?.stopLoad()
+  pendingLiveSeek = false
+  videoRef.value?.pause()
+}
+
+const resume = () => {
+  if (!props.src) {
+    destroy()
+    loading.value = false
+    return
+  }
+  if (loadedSrc !== props.src) {
+    load(props.src)
+    return
+  }
+  if (hls) {
+    pendingLiveSeek = isLive.value
+    hls.startLoad(-1)
+    play()
+    return
+  }
+  if (isLive.value) seekToLiveEdge()
+  play()
+}
+
 watch(
-  () => props.src,
-  src => load(src)
+  () => [props.src, props.active] as const,
+  ([src, active]) => {
+    if (active) {
+      resume()
+      return
+    }
+    if (loadedSrc && loadedSrc !== src) {
+      destroy()
+      loading.value = Boolean(src)
+      return
+    }
+    suspend()
+  }
 )
 
-onMounted(() => load(props.src))
+onMounted(() => {
+  if (props.active) load(props.src)
+})
 
 onBeforeUnmount(() => {
   clearHideTimer()

@@ -208,6 +208,13 @@
       ></div>
 
       <div
+        v-if="isLoggedIn && liveStreamUrl"
+        class="absolute inset-0"
+        :class="view === 'video' ? '' : 'invisible pointer-events-none'"
+      >
+        <LivePlayer :src="liveStreamUrl" :active="view === 'video'" />
+      </div>
+      <div
         v-if="!isLoggedIn"
         class="absolute inset-x-0 bottom-0 top-[calc(49px+env(safe-area-inset-top))] flex items-center justify-center"
       >
@@ -220,10 +227,7 @@
       >
         <LiveAnimation :src="animationUrl ?? ''" />
       </div>
-      <div v-else-if="liveStreamUrl" class="absolute inset-0">
-        <LivePlayer :src="liveStreamUrl" />
-      </div>
-      <template v-else>
+      <template v-else-if="!liveStreamUrl">
         <img
           class="absolute inset-0 h-full w-full object-cover"
           :src="bgLayer1"
