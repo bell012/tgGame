@@ -25,6 +25,7 @@
       <button
         type="button"
         class="inline-flex h-[41px] w-[41px] flex-none items-center justify-center rounded-full border-0 bg-bg-2 transition-colors"
+        :class="props.collectOnly ? '' : 'hover:bg-opacity-6'"
         @click="toggleCollectOnly"
       >
         <CollectIcon
@@ -64,7 +65,7 @@ const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
 const getFilterTabClass = (key: FilterTabKey) =>
   activeFilterKey.value === key
     ? 'bg-bg-3 text-text-1 font-[700]'
-    : 'bg-bg-9 text-text-3 lg:hover:bg-bg-2'
+    : 'bg-bg-9 text-text-3 hover:bg-opacity-6'
 
 // 点击筛选按钮切换选中项。
 const onFilterTabClick = (key: FilterTabKey) => {

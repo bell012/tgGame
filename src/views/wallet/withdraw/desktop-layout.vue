@@ -202,12 +202,12 @@ const {
   closeWithdrawSmsVerification,
   closeWithdrawPaymentPasswordVerification,
   beginSubmitWithdraw,
-  cryptoInitialization
+  fiatInitialization
 } = useWithdrawFlow()
 
 const isWithdrawPanelLoading = computed(() => !hasLoadedWithdraw.value)
 
-const isCryptoWithdrawTab = computed(() => selectWithdrawTab.value?.value !== 'Fiat')
+const isCryptoWithdrawTab = computed(() => selectWithdrawTab.value?.value === 'Crypto')
 
 const handleDesktopClickWithdrawTab = (tab: WithdrawTab) => {
   handleClickWithdrawTab(tab)
@@ -218,7 +218,7 @@ const handleDesktopWithdrawMethodTabClick = (option: PaymentMethodsOption) => {
 }
 
 onMounted(async () => {
-  await cryptoInitialization()
+  await fiatInitialization()
 })
 </script>
 
