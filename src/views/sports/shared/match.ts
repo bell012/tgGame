@@ -10,23 +10,27 @@ const getSportsText = (value: unknown): string =>
       ? String(value)
       : ''
 
-const getCardCount = (value: unknown): string | undefined => {
+const getCardCount = (value: unknown): string => {
   const text = getSportsText(value)
-  return /^\d+$/.test(text) ? text : undefined
+  return /^\d+$/.test(text) && Number.isSafeInteger(Number(text)) ? text : '0'
 }
 
 const getExtraCount = (value: unknown): number | undefined =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined
 
-/** 扩展信息缺失时，角球数按 0 显示。 */
-const getCornerCounts = (value: string): Pick<SportEventExtraInfo, 'htycs' | 'atycs'> => {
+/** 黄牌和角球共用扩展信息，缺失值由展示层按 0 处理。 */
+const getExtraCounts = (
+  value: string
+): Partial<Pick<SportEventExtraInfo, 'htycs' | 'atycs' | 'c15mhs' | 'c15mas'>> => {
   if (!value) return {}
   try {
     const extra: unknown = JSON.parse(value)
     if (!extra || typeof extra !== 'object' || Array.isArray(extra)) return {}
     return {
       htycs: 'htycs' in extra ? getExtraCount(extra.htycs) : undefined,
-      atycs: 'atycs' in extra ? getExtraCount(extra.atycs) : undefined
+      atycs: 'atycs' in extra ? getExtraCount(extra.atycs) : undefined,
+      c15mhs: 'c15mhs' in extra ? getExtraCount(extra.c15mhs) : undefined,
+      c15mas: 'c15mas' in extra ? getExtraCount(extra.c15mas) : undefined
     }
   } catch {
     return {}
@@ -82,7 +86,7 @@ export const mapSportsMatches = (
       const competitionId = event.Competition?.CompetitionId ?? group.CompetitionId
       if (!Number.isSafeInteger(competitionId)) continue
       const phase = getGamePlayingName(sportId, event.RBTime)
-      const corners = sportId === 1 ? getCornerCounts(event.ExtraInfo) : undefined
+      const extra = getExtraCounts(event.ExtraInfo)
       matches.set(id, {
         id,
         EventId: event.EventId,
@@ -104,16 +108,18 @@ export const mapSportsMatches = (
         ),
         homeScore: getSportsText(event.HomeScore) || '—',
         awayScore: getSportsText(event.AwayScore) || '—',
-        cornerScore: corners ? `${corners.htycs ?? 0}-${corners.atycs ?? 0}` : undefined,
+        cornerScore: sportId === 1 ? `${extra.c15mhs ?? 0}-${extra.c15mas ?? 0}` : undefined,
         home: {
           name: getSportsText(event.HomeTeam),
           badge: event.HomeTeamId > 0 ? teamLogoUrl(event.HomeTeamId) : '',
-          redCards: getCardCount(event.HomeRedCard)
+          redCards: getCardCount(event.HomeRedCard),
+          yellowCards: String(extra.htycs ?? 0)
         },
         away: {
           name: getSportsText(event.AwayTeam),
           badge: event.AwayTeamId > 0 ? teamLogoUrl(event.AwayTeamId) : '',
-          redCards: getCardCount(event.AwayRedCard)
+          redCards: getCardCount(event.AwayRedCard),
+          yellowCards: String(extra.atycs ?? 0)
         },
         hasVideo: event.LiveStreaming === 1,
         hasAnimation: event.HasVisualization === true,

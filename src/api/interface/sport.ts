@@ -449,13 +449,13 @@ export interface SportRelatedScore {
 export interface SportEventExtraInfo {
   /** HasCorner（Boolean）：是否具有角球投注类型。 */
   hc: boolean
-  /** Current15MinsHomeScore（Int）：当前 15 分钟区间的主队比分。 */
+  /** Current15MinsHomeScore（Int）：文档定义为 15 分钟主队比分；当前业务与详情页一致，用作主队角球数。 */
   c15mhs: number
-  /** Current15MinsAwayScore（Int）：当前 15 分钟区间的客队比分。 */
+  /** Current15MinsAwayScore（Int）：文档定义为 15 分钟客队比分；当前业务与详情页一致，用作客队角球数。 */
   c15mas: number
-  /** Int，可缺失：主队角球数。 */
+  /** Int，可缺失：主队黄牌数，缺失时按 0 显示。 */
   htycs?: number
-  /** Int，可缺失：客队角球数。 */
+  /** Int，可缺失：客队黄牌数，缺失时按 0 显示。 */
   atycs?: number
   /** Boolean：扩展标志，业务含义待确认，不与外层 IsLive 混同。 */
   il: boolean
