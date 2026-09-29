@@ -11,6 +11,7 @@ import quickRulesIcon from '@/static/img/referral/quick-action-rules.png'
 import quickTaskIcon from '@/static/img/referral/quick-action-task.png'
 import commissionCoinIcon from '@/static/img/referral/referral-coin.png'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { resolveGameImageUrl } from '@/utils/image'
 import { formatBalance, getLanguageCode } from '@/utils/locale'
 
 type TranslateFn = (key: string, named?: Record<string, unknown>) => string
@@ -107,10 +108,7 @@ export const toReferralAssetImageUrl = (value: unknown) => {
     return normalizedValue
   }
 
-  const imageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
-  const imagePath = normalizedValue.replace(/^\/+/, '')
-
-  return imageBaseUrl ? `${imageBaseUrl}/${imagePath}` : normalizedValue
+  return resolveGameImageUrl(normalizedValue)
 }
 
 /**

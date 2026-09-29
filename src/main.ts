@@ -30,9 +30,12 @@ themeStore.initTheme()
 app.mount('#app')
 
 // 初始化语言
-router.isReady().then(() => {
+router.isReady().then(async () => {
   const localeStore = useLocaleStore()
   localeStore.initLanguage()
+
+  const siteConfigStore = useSiteConfigStore()
+  await siteConfigStore.initSiteConfig()
 
   const gameStore = useGameStore()
 
@@ -41,9 +44,6 @@ router.isReady().then(() => {
 
   // 初始化全局多语言字典缓存。
   void initGlobalDicCache()
-
-  const siteConfigStore = useSiteConfigStore()
-  void siteConfigStore.initSiteConfig()
 
   const tradeMessageSyncStore = useTradeMessageSyncStore()
   tradeMessageSyncStore.init()

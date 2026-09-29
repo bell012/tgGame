@@ -1,6 +1,7 @@
 import Api from '@/api'
 import type { GlobalDicResponse } from '@/api/interface/game'
 import type { GameDataItem } from '@/api/interface/game'
+import { resolveGameImageUrl as resolveConfiguredGameImageUrl } from '@/utils/image'
 import { getLanguageCode } from '@/utils/locale'
 
 export const GLOBAL_DIC_STORAGE_KEY = 'globalDic'
@@ -49,7 +50,7 @@ const readGameDataCache = (): GameDataItem[] => {
  */
 const resolveGameImageUrl = (value: unknown) => {
   const normalizedValue = normalizeGlobalDicValue(value)
-  return normalizedValue ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${normalizedValue}` : ''
+  return normalizedValue ? resolveConfiguredGameImageUrl(normalizedValue) : ''
 }
 
 /**

@@ -11,6 +11,7 @@ import {
   stripLocalePrefix,
   withLocalePrefix
 } from '@/utils/locale'
+import { resolveGameImageUrl } from '@/utils/image'
 
 /** 活动分组图标转图片 URL（支持绝对地址或相对路径拼接 CDN 基址） */
 export const toPromotionGroupIconUrl = (value?: string) => {
@@ -20,14 +21,7 @@ export const toPromotionGroupIconUrl = (value?: string) => {
     return ''
   }
 
-  if (/^https?:\/\//i.test(normalizedValue)) {
-    return normalizedValue
-  }
-
-  const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
-  const imagePath = normalizedValue.replace(/^\/+/, '')
-
-  return baseUrl ? `${baseUrl}/${imagePath}` : normalizedValue
+  return resolveGameImageUrl(normalizedValue)
 }
 
 /** 活动列表/详情封面图，与分组 tab 图标同一套 CDN 前缀规则 */

@@ -470,7 +470,7 @@ const mobileHomeTopLogoUrl = computed(() =>
   siteConfigStore.getHomeTopLogoUrl(4, currentLanguage.value)
 )
 const ensureHomeTopLogoConfig = () => {
-  void siteConfigStore.initSiteConfig({ channelId: isMobile.value ? 4 : 3 })
+  void siteConfigStore.initSiteConfig()
 }
 
 const HOME_PENDING_POLL_MS = 60_000

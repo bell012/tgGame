@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import type { SelectMemberResult } from '@/api/interface/user'
+import { resolveGameImageUrl } from '@/utils/image'
 
 export const PROFILE_CUSTOMIZATION_STORAGE_KEY = 'profileCustomization'
 export const USER_INFO_STORAGE_KEY = 'userInfo'
@@ -108,8 +109,7 @@ export const resolveProfileAvatarUrl = (headPortrait?: string) => {
     return headPortrait
   }
 
-  const baseUrl = import.meta.env.VITE_GAME_IMAGE_BASE_URL
-  return baseUrl ? `${baseUrl}${headPortrait}` : DEFAULT_AVATAR_IMAGE
+  return resolveGameImageUrl(headPortrait) || DEFAULT_AVATAR_IMAGE
 }
 
 export const syncProfileCustomizationState = () => {

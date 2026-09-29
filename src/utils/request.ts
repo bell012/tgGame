@@ -9,7 +9,27 @@ import CryptoJS from 'crypto-js'
 import { API_ERROR_CODE_MESSAGES } from '@/constants/api-error-code-messages'
 import { isMobileViewport, isPwaAppViewport } from '@/composables/useMediaQuery'
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const normalizeApiBasePath = (value: string) => {
+  const normalizedValue = value.trim()
+  if (!normalizedValue) {
+    return ''
+  }
+
+  return normalizedValue.startsWith('/') ? normalizedValue : `/${normalizedValue}`
+}
+
+const resolveApiBaseUrl = () => {
+  if (import.meta.env.PROD) {
+    // Production API follows the current domain; only the /v1 path stays configurable.
+    const apiPath = normalizeApiBasePath(import.meta.env.VITE_API_BASE_URL || '/v1') || '/v1'
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    return `${origin}${apiPath}`.replace(/\/+$/, '')
+  }
+
+  return import.meta.env.VITE_API_BASE_URL || '/api'
+}
+
+export const API_BASE_URL = resolveApiBaseUrl()
 
 const AUTH_EXPIRED_RESPONSE_CODES = new Set(['C6', 'C10', 'C37'])
 const MANUAL_LOGOUT_SUPPRESSION_STORAGE_KEY = 'manualLogoutSuppressedUntil'

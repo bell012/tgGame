@@ -121,6 +121,7 @@ import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getCurrencyImageByCode, getCurrentCurrency } from '@/utils/locale'
 import { useLocaleStore } from '@/stores/locale'
 import { storeToRefs } from 'pinia'
@@ -195,7 +196,7 @@ const toGameImageUrl = (value?: string) => {
     return ''
   }
 
-  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+  return resolveGameImageUrl(value)
 }
 
 const syncInitialDisplayRows = () => {

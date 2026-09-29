@@ -126,7 +126,6 @@ const currentGameDetail = inject<ComputedRef<CurrentGameDetail>>(
 
 const route = useRoute()
 const currentGameId = computed(() => normalizeQueryValue(route.params.rowId))
-const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')
 const { t } = useI18n()
 const themeStore = useThemeStore()
 const userStore = useUserStore()
@@ -174,7 +173,6 @@ const {
   handleSortMenuOutsideClick
 } = useReviewComments({
   currentGameId,
-  gameImageBaseUrl,
   defaultCommentAvatarUrl: DEFAULT_COMMENT_AVATAR_URL,
   getCurrentUserAvatarUrl: () => currentUserAvatarUrl.value,
   getCurrentMemberIdentity,

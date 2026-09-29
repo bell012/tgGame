@@ -1,6 +1,7 @@
 import Api from '@/api'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import CustomerServiceIcon from '@/static/svg/customer-service.svg?component'
+import { resolveGameImageUrl } from '@/utils/image'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -190,10 +191,7 @@ const toImageUrl = (value: unknown) => {
     return normalizedValue
   }
 
-  const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
-  const imagePath = normalizedValue.replace(/^\/+/, '')
-
-  return baseUrl ? `${baseUrl}/${imagePath}` : normalizedValue
+  return resolveGameImageUrl(normalizedValue)
 }
 
 /**

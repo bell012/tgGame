@@ -11,6 +11,7 @@ import { isOrderTerminalStatus } from '@/constants/orderStatus'
 import { resolvePayChannelTabKey } from '@/constants/payChannelTabs'
 import { ensureApiBusinessSuccess } from '@/utils/apiBusiness'
 import { formatTimestamp } from '@/utils/date'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getCurrentCurrency, getLanguageCode } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
 import { computed, onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
@@ -30,7 +31,7 @@ export const getDepositChannelId = (isMobile: boolean) => (isMobile ? 4 : 3)
 
 export const toDepositPayImageUrl = (value: string) => {
   if (!value) return ''
-  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+  return resolveGameImageUrl(value)
 }
 
 export const normalizeDepositPresetAmounts = (

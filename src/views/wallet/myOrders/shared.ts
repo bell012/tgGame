@@ -11,6 +11,7 @@ import grabPayIcon from '@/static/img/payment/grabPay.png'
 import mayaIcon from '@/static/img/payment/maya.png'
 import shopeePayIcon from '@/static/svg/coin/shopeePay.svg?url'
 import { formatTimestamp } from '@/utils/date'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getCurrentCurrency, getFormattedBalance, getLanguageCode } from '@/utils/locale'
 
 type TranslateFn = (key: string) => string
@@ -23,12 +24,7 @@ export type OrderTypeIconMap = Record<string, OrderTypeMeta>
 export type OrderTab = 'deposits' | 'withdrawals'
 export type OrderStatus = string
 export type OrderTimeFilter =
-  | 'all'
-  | 'today'
-  | 'yesterday'
-  | 'last3days'
-  | 'last15days'
-  | 'last30days'
+  'all' | 'today' | 'yesterday' | 'last3days' | 'last15days' | 'last30days'
 export type OrderTypeFilter = 'all' | 'gcash' | 'maya' | 'grabpay' | 'shopeepay' | 'usdt'
 export type OrderStatusFilter = 'all' | 'success' | 'failed' | 'processing'
 
@@ -55,7 +51,7 @@ const TYPE_ICON_MAP: Record<Exclude<OrderTypeFilter, 'all'>, string> = {
 
 const toOrderTypeImageUrl = (value?: string) => {
   if (!value) return ''
-  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+  return resolveGameImageUrl(value)
 }
 
 /**

@@ -104,6 +104,7 @@ import ArrowLeft2Icon from '@/static/svg/arrow_left2.svg?component'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
+import { resolveGameImageUrl } from '@/utils/image'
 import { navigateTo, navigateToName } from '@/utils/router'
 import { openLuckySpin } from '@/utils/openLuckySpin'
 import { storeToRefs } from 'pinia'
@@ -153,7 +154,7 @@ const progressStyle = computed(() => ({
   animationDuration: `${AUTO_PLAY_INTERVAL_MS}ms`
 }))
 const getSlideImage = (slide: QuerySlideshowItem): string => {
-  return slide?.url ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${slide.url}` : ''
+  return resolveGameImageUrl(slide?.url)
 }
 const handleCarouselClick = (slide: QuerySlideshowItem) => {
   switch (slide.jumpType) {
