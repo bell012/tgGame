@@ -117,6 +117,9 @@ import { useI18n } from 'vue-i18n'
 
 const LIVE_LAG_SECONDS = 15
 const CONTROLS_HIDE_MS = 3000
+const STALL_CHECK_MS = 1000
+const STALL_SEEK_SECONDS = 5
+const STALL_RELOAD_SECONDS = 10
 
 const props = withDefaults(
   defineProps<{
@@ -138,9 +141,12 @@ const behindLive = ref(false)
 let hls: Hls | null = null
 let loadedSrc = ''
 let joinedLive = false
-let pendingLiveSeek = false
 let userPaused = false
+let hasPlayed = false
+let stallSeconds = 0
+let lastCurrentTime = -1
 let hideTimer: ReturnType<typeof setTimeout> | null = null
+let stallTimer: ReturnType<typeof setInterval> | null = null
 
 const hoverCapable = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches
 
@@ -185,7 +191,8 @@ const destroy = () => {
   hls = null
   loadedSrc = ''
   joinedLive = false
-  pendingLiveSeek = false
+  hasPlayed = false
+  stallSeconds = 0
   isLive.value = false
   behindLive.value = false
   const video = videoRef.value
@@ -235,11 +242,6 @@ const syncBehind = () => {
 
 const joinLive = (live: boolean) => {
   isLive.value = live
-  if (live && pendingLiveSeek) {
-    pendingLiveSeek = false
-    seekToLiveEdge()
-    return
-  }
   if (!live || joinedLive) return
   seekToLiveEdge()
   joinedLive = true
@@ -268,6 +270,7 @@ const load = (src: string) => {
       if (!data.fatal) return
       if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
         hls?.recoverMediaError()
+        play()
         return
       }
       if (data.type !== Hls.ErrorTypes.NETWORK_ERROR) {
@@ -311,11 +314,14 @@ const togglePlay = () => {
 const onPlaying = () => {
   playing.value = true
   loading.value = false
+  hasPlayed = true
 }
 
 const onPause = () => {
   playing.value = false
   syncBehind()
+  if (!props.active || userPaused) return
+  play()
 }
 
 const toggleMute = () => {
@@ -339,9 +345,30 @@ const toggleFullscreen = () => {
   rootRef.value?.requestFullscreen().catch(() => {})
 }
 
+const checkStall = () => {
+  const video = videoRef.value
+  if (!video || !hasPlayed || !loadedSrc || !props.active || userPaused) {
+    stallSeconds = 0
+    lastCurrentTime = video?.currentTime ?? -1
+    return
+  }
+  if (video.currentTime !== lastCurrentTime) {
+    lastCurrentTime = video.currentTime
+    stallSeconds = 0
+    return
+  }
+  stallSeconds += 1
+  if (stallSeconds === STALL_SEEK_SECONDS) {
+    seekToLiveEdge()
+    play()
+    return
+  }
+  if (stallSeconds >= STALL_RELOAD_SECONDS) load(loadedSrc)
+}
+
 const suspend = () => {
-  hls?.stopLoad()
-  pendingLiveSeek = false
+  hls?.pauseBuffering()
+  stallSeconds = 0
   videoRef.value?.pause()
 }
 
@@ -355,12 +382,7 @@ const resume = () => {
     load(props.src)
     return
   }
-  if (hls) {
-    pendingLiveSeek = isLive.value
-    hls.startLoad(-1)
-    play()
-    return
-  }
+  hls?.resumeBuffering()
   if (isLive.value) seekToLiveEdge()
   play()
 }
@@ -382,11 +404,14 @@ watch(
 )
 
 onMounted(() => {
+  stallTimer = setInterval(checkStall, STALL_CHECK_MS)
   if (props.active) load(props.src)
 })
 
 onBeforeUnmount(() => {
   clearHideTimer()
+  if (stallTimer != null) clearInterval(stallTimer)
+  stallTimer = null
   destroy()
 })
 </script>
