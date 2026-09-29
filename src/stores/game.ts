@@ -9,6 +9,7 @@ import type {
   GameTypeItem
 } from '@/api/interface/game'
 import { useLocaleStore } from '@/stores/locale'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
 
 const SEARCH_HISTORY_STORAGE_KEY = 'casino_search_history'
@@ -965,7 +966,7 @@ export const useGameStore = defineStore('game', () => {
         return
       }
 
-      nextCache[platformCode] = `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${icon1}`
+      nextCache[platformCode] = resolveGameImageUrl(icon1)
     })
 
     platformLogoCache.value = nextCache

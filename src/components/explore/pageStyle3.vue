@@ -59,6 +59,7 @@ import defaultImgLight from '@/static/img/explore/default_white.png'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import casinoGameCard from './casinoGameCard.vue'
 import filterSheet from './filterSheet.vue'
+import { resolveGameImageUrl } from '@/utils/image'
 
 interface Props {
   queryOptions?: GameQueryOptions
@@ -214,7 +215,7 @@ const getScrollParent = (element: HTMLElement | null) => {
 
 const getPlatformIcon = (item: GamePlatformOption) => {
   const imagePath = item.icon4
-  return imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
+  return resolveGameImageUrl(imagePath)
 }
 
 const syncSelectedProvidersFromNames = (providerNames: string[]) => {

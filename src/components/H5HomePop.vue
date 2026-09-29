@@ -133,6 +133,7 @@ import { openLuckySpin } from '@/utils/openLuckySpin'
 import CloseIcon from '@/static/svg/close.svg?component'
 import LeftIcon from '@/static/svg/left-icon.svg?component'
 import RightIcon from '@/static/svg/right-icon.svg?component'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
 
 const emit = defineEmits<{
@@ -199,7 +200,7 @@ const normalizeNoticeImage = (value: unknown) => {
     return text
   }
 
-  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${text}`
+  return resolveGameImageUrl(text)
 }
 
 const sanitizeNoticeHtml = (value: unknown) => {

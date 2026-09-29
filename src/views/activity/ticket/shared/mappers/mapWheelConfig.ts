@@ -1,5 +1,6 @@
 import type { UseTicketResult, WheelConfigItem } from '@/api/interface/activity'
 import i18n from '@/i18n'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getCurrencySymbol } from '@/utils/locale'
 import { WHEEL_SEGMENT_COUNT } from '../constants'
 import type { TicketPrize, TicketSpinResult, TicketResultVariant, PrizeType } from '../types'
@@ -20,8 +21,7 @@ export const resolveWheelImageUrl = (rawImageUrl: unknown): string => {
     return path
   }
 
-  const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
-  return baseUrl ? `${baseUrl}/${path.replace(/^\/+/, '')}` : path
+  return resolveGameImageUrl(path)
 }
 
 const mapRewardTypeToPrizeType = (rewardType: number): PrizeType => {

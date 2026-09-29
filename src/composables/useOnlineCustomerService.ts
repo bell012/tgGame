@@ -2,6 +2,7 @@ import { computed, readonly, ref, shallowRef, watch } from 'vue'
 import Api from '@/api'
 import i18n from '@/i18n'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getCachedLottieData, prefetchLottieData, type LottieData } from '@/utils/lottie-data-cache'
 import { navigateTo } from '@/utils/router'
 import { globalShowToast } from '@/utils/toast'
@@ -30,9 +31,7 @@ export const resolveOnlineCustomerLoadingLottieUrl = (config: unknown): string =
 
   if (/^https?:\/\//i.test(raw)) return toDevProxyUrl(raw)
 
-  const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
-  const imagePath = raw.replace(/^\/+/, '')
-  const absoluteUrl = baseUrl ? `${baseUrl}/${imagePath}` : imagePath
+  const absoluteUrl = resolveGameImageUrl(raw)
   return toDevProxyUrl(absoluteUrl)
 }
 

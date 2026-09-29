@@ -304,6 +304,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useCasinoTabsStore } from '@/stores/casinoTabs'
 import { useGameStore, type HomeCollectionDisplayItem } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { maybeAutoOpenTicketActivity } from '@/utils/autoOpenTicketActivity'
@@ -428,7 +429,7 @@ const toGameImageUrl = (value: string) => {
   if (!value) {
     return placeholderImg
   }
-  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+  return resolveGameImageUrl(value)
 }
 
 const HOME_LOBBY_EXCLUDED_CODES = new Set(['', 'hot_games', 'providers'])

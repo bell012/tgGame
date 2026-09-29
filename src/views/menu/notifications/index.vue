@@ -550,6 +550,7 @@ import {
   isConfiguredJumpItem
 } from '@/utils/contentJump'
 import { formatDisplayTime } from '@/utils/date'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getLanguageCode } from '@/utils/locale'
 import {
   getDeletedNotificationIds,
@@ -1001,7 +1002,7 @@ const toGameImageUrl = (value: string) => {
   if (!value) {
     return 'placeholderImg.png'
   }
-  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+  return resolveGameImageUrl(value)
 }
 // 获取通知标题，接口为空时回退到分类标题。
 const getNoticeTitle = (item: NotificationItem) => {

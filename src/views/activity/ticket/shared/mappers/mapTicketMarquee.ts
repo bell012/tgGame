@@ -4,6 +4,7 @@ import RatingAvatarP2 from '@/static/svg/game/detail/comment/p2.webp?url'
 import RatingAvatarP3 from '@/static/svg/game/detail/comment/p3.svg?url'
 import RatingAvatarP4 from '@/static/svg/game/detail/comment/p4.svg?url'
 import RatingAvatarP5 from '@/static/svg/game/detail/comment/p5.svg?url'
+import { resolveGameImageUrl } from '@/utils/image'
 import type { WinnerTickerItem } from '../types'
 
 const MARQUEE_FALLBACK_AVATARS = [
@@ -46,8 +47,7 @@ export const resolveMarqueeAvatarUrl = (rawAvatar: unknown, seed: string): strin
       return path
     }
 
-    const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
-    return baseUrl ? `${baseUrl}/${path.replace(/^\/+/, '')}` : path
+    return resolveGameImageUrl(path)
   }
 
   return getMarqueeFallbackAvatar(seed)
