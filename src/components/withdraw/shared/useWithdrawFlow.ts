@@ -270,8 +270,8 @@ export const useWithdrawFlow = () => {
     initialization
   } = usePaymentMethodsFlow()
   const withdrawTabs = computed<WithdrawTab[]>(() => [
-    { value: 'Crypto', label: t('withdraw.crypto') },
-    { value: 'Fiat', label: t('withdraw.fiat') }
+    { value: 'Fiat', label: t('withdraw.fiat') },
+    { value: 'Crypto', label: t('withdraw.crypto') }
   ])
   const selectWithdrawTab = ref<WithdrawTab>()
   const accountListPopVisible = ref(false)
@@ -855,7 +855,7 @@ export const useWithdrawFlow = () => {
 
   const cryptoInitialization = async () => {
     try {
-      selectWithdrawTab.value = withdrawTabs.value[0]
+      selectWithdrawTab.value = withdrawTabs.value[1]
       hasLoadedWithdraw.value = false
       await initialization()
       await cryptoTabClick()
@@ -869,7 +869,7 @@ export const useWithdrawFlow = () => {
 
   const fiatInitialization = async () => {
     try {
-      selectWithdrawTab.value = withdrawTabs.value[1]
+      selectWithdrawTab.value = withdrawTabs.value[0]
       hasLoadedWithdraw.value = false
       await initialization()
       await fiatTabClick()
