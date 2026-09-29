@@ -51,7 +51,7 @@
           class="absolute inset-x-0 bottom-0 h-[82px] bg-gradient-to-t from-common-0/80 to-transparent px-[30px] pt-[20px]"
         >
           <input
-            aria-label="Video progress"
+            :aria-label="t('chatPublic.videoProgress')"
             class="h-[6px] w-full accent-common-100"
             type="range"
             min="0"
@@ -76,7 +76,7 @@
               </button>
               <button
                 type="button"
-                aria-label="Fullscreen"
+                :aria-label="t('chatPublic.fullscreen')"
                 class="text-[20px] leading-none"
                 @click="openFullscreen"
               >
@@ -130,7 +130,7 @@
         </button>
         <span class="w-[40px] text-[11px]">{{ formatDuration(currentTime) }}</span>
         <input
-          aria-label="Video progress"
+          :aria-label="t('chatPublic.videoProgress')"
           class="h-[4px] min-w-0 flex-1 accent-common-100"
           type="range"
           min="0"

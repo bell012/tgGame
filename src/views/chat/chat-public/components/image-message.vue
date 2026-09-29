@@ -48,7 +48,7 @@
         v-if="message.direction === 'outgoing' && message.status === 'failed'"
         type="button"
         class="absolute -left-[40px] top-1/2 flex size-[26px] -translate-y-1/2 items-center justify-center"
-        aria-label="Retry"
+        :aria-label="t('chatPublic.retry')"
         @click.stop="$emit('retry', message)"
       >
         <img :src="messageRetryIcon" alt="" class="size-[26px] object-contain" />
@@ -62,11 +62,13 @@ import messageReadStatusImage from '@/static/img/chat/public/message-read-status
 import messageRetryIcon from '@/static/img/chat/public/message-retry.png'
 import messageSendingStatusImage from '@/static/img/chat/public/message-sending-status.png'
 import { onBeforeUnmount, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { ChatMessage } from '../types'
 
 const props = withDefaults(defineProps<{ message: ChatMessage; displayMode?: 'h5' | 'pc' }>(), {
   displayMode: 'h5'
 })
+const { t } = useI18n()
 const emit = defineEmits<{
   view: [message: ChatMessage]
   focus: [message: ChatMessage, event: MouseEvent, target: HTMLElement | null]

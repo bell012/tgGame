@@ -1,10 +1,10 @@
 import { ref } from 'vue'
-import { MOCK_MESSAGES } from '../mock'
+import { createMockMessages } from '../mock'
 import type { ChatMessage } from '../types'
 
 /** 管理当前会话的本地消息记录与后续历史消息加载入口。 */
 export function useMessageList() {
-  const messages = ref<ChatMessage[]>(MOCK_MESSAGES.map(item => ({ ...item })))
+  const messages = ref<ChatMessage[]>(createMockMessages())
   const loadingHistory = ref(false)
   const hasMoreHistory = ref(false)
 

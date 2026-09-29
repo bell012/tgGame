@@ -18,7 +18,7 @@
           :src="props.message.video"
           playsinline
           preload="metadata"
-          aria-label="Play video"
+          :aria-label="t('chatPublic.playVideo')"
           class="h-full w-full bg-common-0 object-contain"
           @click="$emit('view', props.message)"
         />
@@ -56,7 +56,7 @@
         v-if="props.message.direction === 'outgoing' && props.message.status === 'failed'"
         type="button"
         class="absolute -left-[20px] top-1/2 flex size-[12px] -translate-y-1/2 items-center justify-center"
-        aria-label="Retry"
+        :aria-label="t('chatPublic.retry')"
         @click="$emit('retry', props.message)"
       >
         <img :src="messageRetryIcon" alt="" class="size-[12px] object-contain" />
@@ -71,10 +71,12 @@ import messageRetryIcon from '@/static/img/chat/public/message-retry.png'
 import messageSendingStatusImage from '@/static/img/chat/public/message-sending-status.png'
 import VideoPlayPauseIcon from '@/static/svg/chat/public/video-play-pause.svg?component'
 import type { ChatMessage } from '../types'
+import { useI18n } from 'vue-i18n'
 
 const props = withDefaults(defineProps<{ message: ChatMessage; displayMode?: 'h5' | 'pc' }>(), {
   displayMode: 'h5'
 })
+const { t } = useI18n()
 
 defineEmits<{ retry: [message: ChatMessage]; view: [message: ChatMessage] }>()
 </script>
