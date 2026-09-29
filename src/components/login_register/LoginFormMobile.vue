@@ -53,7 +53,13 @@
                           class="h-5 w-5 text-text-1 mr-[7px] cursor-pointer"
                           @click="handleNavigateToMenu"
                         />
-                        <MainLogoIcon class="h-[49px] w-auto text-text-1" />
+                        <SmartImage
+                          v-if="logoUrl"
+                          :src="logoUrl"
+                          alt=""
+                          class="h-[49px] w-auto object-contain"
+                        />
+                        <MainLogoIcon v-else class="h-[49px] w-auto text-text-1" />
                       </div>
                       <button
                         class="w-7 h-7 bg-opacity-10 rounded-md flex items-center justify-center"
@@ -385,6 +391,7 @@ const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 interface Props {
   visible: boolean
   defaultTab?: 'signin' | 'signup'
+  logoUrl?: string
   backgroundImageUrl?: string
   backgroundLoading?: boolean
 }

@@ -1,5 +1,7 @@
 import request, { type ApiResponseToastOptions } from '@/utils/request'
 import type {
+  DlicghRequest,
+  DlicghResponse,
   GetRecentBigWinsParams,
   QueryNoticeMsgRequest,
   QueryNoticeMsgResponse,
@@ -54,7 +56,7 @@ export function getGameBrandList(options?: ApiResponseToastOptions): Promise<any
 }
 
 // 站点配置
-export function dlicgh(data: any): Promise<any> {
+export function dlicgh(data: DlicghRequest): Promise<DlicghResponse> {
   return request({
     url: '/sy/dlicgh',
     method: 'post',

@@ -38,23 +38,40 @@
           class="hidden sm:flex w-[150px] h-[48px] ml-0 sm:ml-5 items-center cursor-pointer"
           @click="handleHomeClick"
         >
-          <MainLogoIcon class="w-full h-full text-text-1" />
+          <SmartImage
+            v-if="desktopHomeTopLogoUrl"
+            :src="desktopHomeTopLogoUrl"
+            alt=""
+            class="w-full h-full object-contain"
+          />
+          <MainLogoIcon v-else class="w-full h-full text-text-1" />
         </div>
-        <!-- H5端 Logo (登录后小logo) -->
+        <!-- H5端 Logo-->
         <div
           v-if="isLoggedIn"
           class="flex sm:hidden w-[26px] h-[26px] items-center cursor-pointer mobileLogo"
-        >
-          <SmartImage :src="mobileLogoImage" alt="" class="w-full h-full" />
-          <MainLogoIcon class="w-full h-full text-text-1" />
-        </div>
-        <!-- H5端 Logo (未登录大logo) -->
-        <div
-          v-else
-          class="flex sm:hidden w-[150px] h-[48px] items-center cursor-pointer"
           @click="handleHomeClick"
         >
-          <MainLogoIcon class="w-full h-full text-text-1" />
+          <SmartImage
+            v-if="mobileHomeTopLogoUrl"
+            :src="mobileHomeTopLogoUrl"
+            alt=""
+            class="w-full h-full object-contain"
+          />
+          <MainLogoIcon v-else class="w-full h-full text-text-1" />
+        </div>
+        <div
+          v-else
+          class="flex sm:hidden w-[150px] h-[48px] items-center justify-start cursor-pointer"
+          @click="handleHomeClick"
+        >
+          <SmartImage
+            v-if="mobileHomeTopLogoUrl"
+            :src="mobileHomeTopLogoUrl"
+            alt=""
+            class="w-full h-full object-contain object-left"
+          />
+          <MainLogoIcon v-else class="w-full h-full text-text-1" />
         </div>
       </div>
 
@@ -354,7 +371,6 @@ import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import bellDefaultImage from '@/static/img/bell.png'
 import bellUnreadImage from '@/static/img/bell_n.png'
-import mobileLogoImage from '@/static/img/home/logo_h5.png'
 import ChatIcon from '@/static/svg/chat.svg?component'
 import FoldIconH5 from '@/static/svg/foldH5.svg?component'
 import LanguageIcon from '@/static/svg/language.svg?component'
@@ -396,7 +412,7 @@ const { acctInfo, userInfo } = storeToRefs(userStore)
 const { visible: showLoginModal } = storeToRefs(authModalStore)
 const { hasUnread } = storeToRefs(notificationIndicatorStore)
 const { pendingClaimCount } = storeToRefs(rewardCenterStore)
-const { currentCurrency } = storeToRefs(localeStore)
+const { currentCurrency, currentLanguage } = storeToRefs(localeStore)
 
 const props = withDefaults(
   defineProps<{
@@ -445,6 +461,17 @@ type RewardClaimPopupExpose = {
 const isLoggedIn = computed(() => {
   return Boolean(userInfo.value?.tradeToken || acctInfo.value?.memberId)
 })
+
+// sy/dlicgh: channelId 3 为 PC，4 为 H5；logo 需要跟随当前语言切换。
+const desktopHomeTopLogoUrl = computed(() =>
+  siteConfigStore.getHomeTopLogoUrl(3, currentLanguage.value)
+)
+const mobileHomeTopLogoUrl = computed(() =>
+  siteConfigStore.getHomeTopLogoUrl(4, currentLanguage.value)
+)
+const ensureHomeTopLogoConfig = () => {
+  void siteConfigStore.initSiteConfig({ channelId: isMobile.value ? 4 : 3 })
+}
 
 const HOME_PENDING_POLL_MS = 60_000
 let homePendingPollTimer: ReturnType<typeof setInterval> | null = null
@@ -657,6 +684,7 @@ const closeTransientTopNavPopups = () => {
 onMounted(() => {
   userStore.syncStoredUserData()
   siteConfigStore.syncStoredConfig()
+  ensureHomeTopLogoConfig()
   window.addEventListener('storage', handleStorageChange)
   document.addEventListener('click', handleDocumentClick)
   document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -689,6 +717,11 @@ watch(showLoginModal, visible => {
 // 视口跨 PC/H5 断点时，先关闭当前端的顶部弹窗，再由 MainLayout 统一回首页。
 watch(isMobile, () => {
   closeTransientTopNavPopups()
+  ensureHomeTopLogoConfig()
+})
+
+watch(currentLanguage, () => {
+  ensureHomeTopLogoConfig()
 })
 
 // 监听登录态变化，在登录成功后主动拉取普通通知未读状态。
