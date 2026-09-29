@@ -42,7 +42,7 @@
 
     <button
       type="button"
-      class="ml-[8px] inline-flex h-10 w-10 flex-[0_0_42px] items-center justify-center rounded-lg border-0 bg-bg-2 transition-colors lg:hover:bg-bg-3"
+      class="ml-[8px] inline-flex h-10 w-10 flex-[0_0_42px] items-center justify-center rounded-lg border-0 bg-bg-2 transition-colors hover:bg-opacity-6"
       @click="toggleLeaguePopup"
     >
       <triangleIcon class="h-3 w-3 text-icon-2" />
@@ -72,7 +72,8 @@
           v-for="item in leaguePopupList"
           :key="item.key"
           type="button"
-          class="flex w-full items-center border-0 bg-transparent py-[12px] text-left"
+          class="flex w-full items-center rounded-lg border-0 bg-transparent px-3 py-[12px] text-left transition-colors"
+          :class="activeLeagueKey === item.key ? '' : 'hover:bg-opacity-6'"
           @click="onLeaguePopupItemClick(item.key)"
         >
           <span class="mr-3 min-w-0 flex-1 truncate text-[14px] font-bold text-text-1">
@@ -138,7 +139,9 @@ const leaguePopupList = computed(() => {
 
 // 根据当前选中项返回“联赛/时间”分段按钮样式。
 const getFilterButtonClass = (key: LiansaiFilterKey) =>
-  activeFilterKey.value === key ? 'bg-bg-3 text-text-1' : 'bg-transparent text-text-2'
+  activeFilterKey.value === key
+    ? 'bg-bg-3 text-text-1'
+    : 'bg-transparent text-text-2 hover:bg-opacity-6'
 
 // 根据当前选中项返回联赛按钮样式，所有联赛项共用同一套选中态。
 const getLeagueButtonClass = (item: LeagueTabItem) => {
@@ -146,7 +149,7 @@ const getLeagueButtonClass = (item: LeagueTabItem) => {
     return 'bg-theme-primary text-text-4 font-[700]'
   }
 
-  return 'bg-bg-2 text-text-2 lg:hover:bg-bg-3'
+  return 'bg-bg-2 text-text-2 hover:bg-opacity-6'
 }
 
 // 点击“联赛/时间”时切换分段选中态  emit已经暴露出去，别的组件可以接受当前选中哪个值
