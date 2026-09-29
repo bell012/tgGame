@@ -1,14 +1,6 @@
-import { getStoredLocale } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
 import i18n from '@/i18n'
 import type { ChatMessage, ConversationStatus } from './types'
-
-export const SEARCH_RESULTS = Array.from({ length: 6 }, (_, index) => ({
-  id: `search-${index}`,
-  name: 'Customer Service Luna',
-  time: '20:20',
-  content: 'Is the image you sent me yesterday still there?'
-}))
 
 /** 根据客服在线状态返回对应的国际化键。 */
 export function getConversationStatusKey(status: ConversationStatus) {
@@ -29,8 +21,8 @@ export function createMessageId() {
 
 /** 根据消息类型返回引用回复中使用的简短预览文本。 */
 export function getMessagePreview(message: ChatMessage) {
-  if (message.type === 'image') return '1 Photo'
-  if (message.type === 'video') return '1 Video'
+  if (message.type === 'image') return i18n.global.t('chatPublic.onePhoto')
+  if (message.type === 'video') return i18n.global.t('chatPublic.oneVideo')
   return message.text || ''
 }
 
@@ -102,7 +94,7 @@ export const downloadChatMedia = async (source: string, fallbackFileName = 'chat
   anchor.remove()
   window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0)
 
-  globalShowToast({ message: i18n.global.t('chatPublic.SavedSuccessfully'), type: 'success' })
+  globalShowToast({ message: i18n.global.t('chatPublic.savedSuccessfully'), type: 'success' })
 }
 
 /** 将服务端富文本自动回复降级为安全纯文本，避免直接渲染未受信任 HTML。 */
@@ -136,9 +128,5 @@ export const formatChatMessageTime = (timestamp = Date.now()) => {
 export const getChatTimePeriod = (timestamp = Date.now()) => {
   const isMorning = new Date(timestamp).getHours() < 12
 
-  if (getStoredLocale() === 'zh') {
-    return isMorning ? '上午' : '下午'
-  }
-
-  return isMorning ? 'AM' : 'PM'
+  return i18n.global.t(isMorning ? 'chatPublic.morning' : 'chatPublic.afternoon')
 }

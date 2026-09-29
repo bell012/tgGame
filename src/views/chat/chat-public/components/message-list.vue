@@ -217,12 +217,15 @@ const handleReplyClick = () => {
   const message = focusedMessage.value
   emit('reply', {
     id: message.id,
-    author: message.authorName || (message.direction === 'outgoing' ? 'You' : 'Customer Service'),
-    preview: message.type === 'image' ? '图片' : getMessagePreview(message),
+    author:
+      message.authorName ||
+      (message.direction === 'outgoing' ? t('chatPublic.you') : t('chatPublic.customerService')),
+    preview: message.type === 'image' ? t('chatPublic.image') : getMessagePreview(message),
     photoCount: message.type === 'image' ? 1 : undefined,
     replyToUserId: message.authorId || '',
     replyToUserName:
-      message.authorName || (message.direction === 'outgoing' ? 'You' : 'Customer Service'),
+      message.authorName ||
+      (message.direction === 'outgoing' ? t('chatPublic.you') : t('chatPublic.customerService')),
     replyToType: message.type === 'image' ? 'image' : 'text'
   })
   dismissReplyAction()

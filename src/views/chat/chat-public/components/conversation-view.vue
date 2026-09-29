@@ -73,7 +73,7 @@
       aria-live="polite"
     >
       <span
-        aria-label="Loading"
+        :aria-label="t('common.loading')"
         class="size-[36px] animate-spin rounded-full border-[3px] border-common-100/25 border-t-theme-primary"
       ></span>
     </div>
@@ -82,6 +82,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type {
   ChatComposerMode,
   ChatMessage,
@@ -125,6 +126,7 @@ const props = withDefaults(
     highlightKeyword: ''
   }
 )
+const { t } = useI18n()
 
 defineEmits<{
   back: []

@@ -12,6 +12,7 @@ import { useUserStore } from '@/stores/user'
 import { prepareUploadImage } from '@/utils/compress-upload-image'
 import { getDeviceTraceId } from '@/utils/deviceId'
 import { globalShowToast } from '@/utils/toast'
+import i18n from '@/i18n'
 import { storeToRefs } from 'pinia'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import {
@@ -647,7 +648,10 @@ export function useChatRuntime() {
 
     const socketUrl = buildSocketUrl()
     if (!socketUrl) {
-      globalShowToast({ message: 'Customer service is unavailable', type: 'fail' })
+      globalShowToast({
+        message: i18n.global.t('chatPublic.customerServiceUnavailable'),
+        type: 'fail'
+      })
       return
     }
 
@@ -857,7 +861,10 @@ export function useChatRuntime() {
 
     message.status = 'failed'
     persistActiveConversationMessage(message)
-    globalShowToast({ message: 'Customer service is reconnecting', type: 'fail' })
+    globalShowToast({
+      message: i18n.global.t('chatPublic.customerServiceReconnecting'),
+      type: 'fail'
+    })
     return false
   }
 
@@ -892,7 +899,10 @@ export function useChatRuntime() {
 
     message.status = 'failed'
     persistActiveConversationMessage(message)
-    globalShowToast({ message: 'Customer service is reconnecting', type: 'fail' })
+    globalShowToast({
+      message: i18n.global.t('chatPublic.customerServiceReconnecting'),
+      type: 'fail'
+    })
     return false
   }
 
@@ -917,7 +927,7 @@ export function useChatRuntime() {
         { showErrorToast: false }
       )
       if (response.code !== 'C2') {
-        throw new Error(response.message || 'Failed to claim red packet')
+        throw new Error(response.message || i18n.global.t('chatPublic.redPacketClaimFailed'))
       }
 
       const timestamp = Date.now()
@@ -958,7 +968,8 @@ export function useChatRuntime() {
       return true
     } catch (error) {
       globalShowToast({
-        message: error instanceof Error ? error.message : 'Failed to claim red packet',
+        message:
+          error instanceof Error ? error.message : i18n.global.t('chatPublic.redPacketClaimFailed'),
         type: 'fail'
       })
       return false
@@ -992,11 +1003,11 @@ export function useChatRuntime() {
   /** 上传用户选中的图片，成功后将上传地址作为 image Socket 消息发送。 */
   const sendImageFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      globalShowToast({ message: 'Only image files are supported', type: 'fail' })
+      globalShowToast({ message: i18n.global.t('chatPublic.onlyImageFiles'), type: 'fail' })
       return false
     }
     if (file.size > CHAT_MAX_IMAGE_BYTES) {
-      globalShowToast({ message: 'Images and GIFs must be 10MB or smaller', type: 'fail' })
+      globalShowToast({ message: i18n.global.t('chatPublic.imageFileTooLarge'), type: 'fail' })
       return false
     }
 
@@ -1015,12 +1026,12 @@ export function useChatRuntime() {
       const response = await Api.picture.upload({ file: uploadFile, fileName })
 
       if (response.code !== 'C2') {
-        throw new Error(response.message || 'Image upload failed')
+        throw new Error(response.message || i18n.global.t('chatPublic.imageUploadFailed'))
       }
 
       const imagePath = resolveUploadedImagePath(response.result)
       if (!imagePath) {
-        throw new Error(response.message || 'Image upload failed')
+        throw new Error(response.message || i18n.global.t('chatPublic.imageUploadFailed'))
       }
 
       const image: ChatImageItem = {
@@ -1035,7 +1046,8 @@ export function useChatRuntime() {
       return sendMessage('', 'image', [image])
     } catch (error) {
       globalShowToast({
-        message: error instanceof Error ? error.message : 'Image upload failed',
+        message:
+          error instanceof Error ? error.message : i18n.global.t('chatPublic.imageUploadFailed'),
         type: 'fail'
       })
       return false
@@ -1047,11 +1059,11 @@ export function useChatRuntime() {
   /** 上传用户选择的视频文件，并以视频地址发送对应的 Socket 消息。 */
   const sendVideoFile = async (file: File) => {
     if (!isVideoFile(file)) {
-      globalShowToast({ message: 'Only video files are supported', type: 'fail' })
+      globalShowToast({ message: i18n.global.t('chatPublic.onlyVideoFiles'), type: 'fail' })
       return false
     }
     if (file.size > CHAT_MAX_VIDEO_BYTES) {
-      globalShowToast({ message: 'Videos must be 100MB or smaller', type: 'fail' })
+      globalShowToast({ message: i18n.global.t('chatPublic.videoFileTooLarge'), type: 'fail' })
       return false
     }
 
@@ -1062,18 +1074,19 @@ export function useChatRuntime() {
       const response = await Api.picture.upload({ file, fileName })
 
       if (response.code !== 'C2') {
-        throw new Error(response.message || 'Video upload failed')
+        throw new Error(response.message || i18n.global.t('chatPublic.videoUploadFailed'))
       }
 
       const videoPath = resolveUploadedImagePath(response.result)
       if (!videoPath) {
-        throw new Error(response.message || 'Video upload failed')
+        throw new Error(response.message || i18n.global.t('chatPublic.videoUploadFailed'))
       }
 
       return sendMessage(resolveChatMediaUrl(videoPath), 'video')
     } catch (error) {
       globalShowToast({
-        message: error instanceof Error ? error.message : 'Video upload failed',
+        message:
+          error instanceof Error ? error.message : i18n.global.t('chatPublic.videoUploadFailed'),
         type: 'fail'
       })
       return false
@@ -1087,7 +1100,7 @@ export function useChatRuntime() {
     if (file.type.startsWith('image/')) return sendImageFile(file)
     if (isVideoFile(file)) return sendVideoFile(file)
 
-    globalShowToast({ message: 'Only images and videos are supported', type: 'fail' })
+    globalShowToast({ message: i18n.global.t('chatPublic.onlyImageVideoFiles'), type: 'fail' })
     return Promise.resolve(false)
   }
 
