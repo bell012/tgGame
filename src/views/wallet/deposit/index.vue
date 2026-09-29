@@ -36,11 +36,11 @@ const { t } = useI18n()
 
 const isMobile = useIsMobile()
 const route = useRoute()
-const tabType = ref<DepositTabType>('Crypto')
+const tabType = ref<DepositTabType>('Fiat')
 
 /** 读取任务中心充值跳转指定的法币或数字币页签。 */
 const resolveTaskCenterDepositTab = (value: unknown): DepositTabType =>
-  String(Array.isArray(value) ? value[0] : (value ?? '')).trim() === 'Fiat' ? 'Fiat' : 'Crypto'
+  String(Array.isArray(value) ? value[0] : (value ?? '')).trim() === 'Crypto' ? 'Crypto' : 'Fiat'
 
 /** 读取任务中心指定的支付方式编码，交由充值 Flow 精确预选。 */
 const initialMethodCode = computed(() =>
