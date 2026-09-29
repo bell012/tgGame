@@ -22,7 +22,7 @@
           v-for="match in liveMatches"
           :key="match.id"
           v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
-          class="relative flex min-h-[204px] w-[360px] shrink-0 flex-col rounded-xl bg-bg-5 p-3"
+          class="group/match-card relative flex min-h-[204px] w-[360px] shrink-0 flex-col rounded-xl bg-bg-5 p-3"
           :data-sports-match="`live:${match.id}`"
         >
           <div class="flex h-5 items-center justify-between gap-3 text-xs text-text-2">
@@ -30,14 +30,22 @@
               <component
                 :is="page.selectedSportIcon.value"
                 v-if="page.selectedSportIcon.value"
-                class="h-5 w-5 shrink-0 fill-current text-icon-2 [&_path]:fill-current"
+                class="h-5 w-5 shrink-0 fill-current text-icon-2 transition-colors lg:group-hover/match-card:text-text-1 [&_path]:fill-current"
                 aria-hidden="true"
               />
               <template v-if="match.country">
-                <span class="max-w-[40%] truncate" :title="match.country">{{ match.country }}</span>
+                <span
+                  class="max-w-[40%] truncate transition-colors lg:group-hover/match-card:text-text-1"
+                  :title="match.country"
+                  >{{ match.country }}</span
+                >
                 <ArrowRightIcon class="h-1.5 w-1.5 shrink-0" aria-hidden="true" />
               </template>
-              <span class="truncate" :title="match.league">{{ match.league }}</span>
+              <span
+                class="truncate transition-colors lg:group-hover/match-card:text-text-1"
+                :title="match.league"
+                >{{ match.league }}</span
+              >
             </div>
             <MatchTime :match="match" class="shrink-0 text-text-1" />
           </div>
