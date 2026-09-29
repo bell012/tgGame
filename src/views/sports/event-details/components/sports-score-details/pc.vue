@@ -11,15 +11,16 @@
         type="button"
         role="tab"
         :aria-selected="activeFilter === tab.key"
-        class="inline-flex h-[33px] shrink-0 items-center gap-1.5 rounded-[32px] border-0 p-2 text-sm font-normal transition-colors"
-        :class="
-          activeFilter === tab.key
-            ? 'bg-bg-2 text-text-1'
-            : 'bg-transparent text-text-2 lg:hover:text-text-1'
-        "
+        class="group inline-flex h-[33px] shrink-0 items-center gap-1.5 rounded-[32px] border-0 p-2 text-sm font-bold transition-colors"
+        :class="activeFilter === tab.key ? 'bg-bg-2' : 'bg-transparent'"
         @click="activeFilter = tab.key"
       >
-        <span>{{ tab.label }}</span>
+        <span
+          class="transition-colors"
+          :class="activeFilter === tab.key ? 'text-text-1' : 'text-text-2 group-hover:text-text-1'"
+        >
+          {{ tab.label }}
+        </span>
         <span
           v-if="tab.count > 0"
           class="inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] leading-4 tabular-nums"
@@ -49,23 +50,13 @@
               :key="`${market.id}-row-${rowIndex}`"
               class="grid grid-cols-2 gap-2"
             >
-              <button
-                type="button"
-                class="flex h-11 min-w-0 items-center justify-between rounded-lg bg-bg-3 px-3 py-2 text-left transition-colors lg:hover:bg-bg-2"
-              >
-                <span class="truncate text-sm font-normal text-text-2">{{ row.left.line }}</span>
-                <span class="shrink-0 text-sm font-bold tabular-nums text-text-1">{{
-                  displayOdds(row.left.selection)
-                }}</span>
+              <button type="button" class="odds-option-btn">
+                <span class="odds-option-label">{{ row.left.line }}</span>
+                <span class="odds-option-value">{{ displayOdds(row.left.selection) }}</span>
               </button>
-              <button
-                type="button"
-                class="flex h-11 min-w-0 items-center justify-between rounded-lg bg-bg-3 px-3 py-2 text-left transition-colors lg:hover:bg-bg-2"
-              >
-                <span class="truncate text-sm font-normal text-text-2">{{ row.right.line }}</span>
-                <span class="shrink-0 text-sm font-bold tabular-nums text-text-1">{{
-                  displayOdds(row.right.selection)
-                }}</span>
+              <button type="button" class="odds-option-btn">
+                <span class="odds-option-label">{{ row.right.line }}</span>
+                <span class="odds-option-value">{{ displayOdds(row.right.selection) }}</span>
               </button>
             </div>
           </div>
@@ -77,12 +68,10 @@
               v-for="option in market.options"
               :key="option.label"
               type="button"
-              class="flex h-11 min-w-0 flex-1 items-center justify-between rounded-lg bg-bg-3 px-3 py-2 text-left transition-colors lg:hover:bg-bg-2"
+              class="odds-option-btn flex-1"
             >
-              <span class="truncate text-sm font-normal text-text-2">{{ option.label }}</span>
-              <span class="shrink-0 text-sm font-bold tabular-nums text-text-1">{{
-                displayOdds(option.selection)
-              }}</span>
+              <span class="odds-option-label">{{ option.label }}</span>
+              <span class="odds-option-value">{{ displayOdds(option.selection) }}</span>
             </button>
           </div>
         </template>
@@ -125,14 +114,9 @@
                 </button>
               </div>
             </div>
-            <button
-              type="button"
-              class="flex h-11 w-full items-center justify-between rounded-lg bg-bg-3 px-3 py-2 text-left transition-colors lg:hover:bg-bg-2"
-            >
-              <span class="truncate text-sm font-normal text-text-2">{{ market.line }}</span>
-              <span class="shrink-0 text-sm font-bold tabular-nums text-text-1">{{
-                market.odds
-              }}</span>
+            <button type="button" class="odds-option-btn w-full">
+              <span class="odds-option-label">{{ market.line }}</span>
+              <span class="odds-option-value">{{ market.odds }}</span>
             </button>
           </div>
         </template>
@@ -250,3 +234,57 @@ const adjustScore = (marketId: string, teamId: TeamSide, delta: number) => {
   }
 }
 </script>
+
+<style scoped>
+.odds-option-btn {
+  display: flex;
+  height: 2.75rem;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background-color: var(--color-background-level-3);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.odds-option-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-text-level-2);
+  transition: color 0.15s ease;
+}
+
+.odds-option-value {
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-level-1);
+  transition: color 0.15s ease;
+}
+
+.odds-option-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.05);
+  color: rgb(255, 255, 255);
+}
+
+.odds-option-btn:hover .odds-option-label,
+.odds-option-btn:hover .odds-option-value {
+  color: rgb(255, 255, 255);
+}
+
+:global(html.dark) .odds-option-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+</style>

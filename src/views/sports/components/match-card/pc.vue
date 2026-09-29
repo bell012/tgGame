@@ -10,7 +10,7 @@
   >
     <!-- 展开后仍保留卡片原高度，避免后面的卡片移位。 -->
     <div
-      class="min-h-[211px] min-w-0 rounded-xl bg-bg-5 p-3"
+      class="min-h-[211px] min-w-0 rounded-xl bg-bg-5 p-3 hover:bg-[linear-gradient(var(--color-opacity-6),var(--color-opacity-6))]"
       :class="
         overlaying
           ? 'absolute inset-x-0 top-0 z-20 shadow-[0_8px_28px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_28px_rgba(0,0,0,0.5)]'
@@ -21,18 +21,26 @@
         <component
           v-if="sportIcon"
           :is="sportIcon"
-          class="h-6 w-6 shrink-0 text-icon-2 [&_path]:fill-current"
+          class="h-6 w-6 shrink-0 text-icon-2 transition-colors lg:group-hover/match-card:text-text-1 [&_path]:fill-current"
           aria-hidden="true"
         />
         <div class="flex min-w-0 flex-1 items-center gap-1">
           <template v-if="match.country">
-            <span class="max-w-[35%] truncate" :title="match.country">{{ match.country }}</span>
+            <span
+              class="max-w-[35%] truncate transition-colors lg:group-hover/match-card:text-text-1"
+              :title="match.country"
+              >{{ match.country }}</span
+            >
             <ArrowRightIcon
               class="h-1.5 w-1.5 shrink-0 text-icon-2 [&_path]:fill-current"
               aria-hidden="true"
             />
           </template>
-          <span class="min-w-0 flex-1 truncate" :title="match.league">{{ match.league }}</span>
+          <span
+            class="min-w-0 flex-1 truncate transition-colors lg:group-hover/match-card:text-text-1"
+            :title="match.league"
+            >{{ match.league }}</span
+          >
         </div>
         <span
           v-if="match.hasVideo"

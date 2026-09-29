@@ -5,8 +5,8 @@
         v-for="(item, index) in sportItems"
         :key="item.key"
         type="button"
-        class="flex shrink-0 cursor-pointer border-none bg-transparent p-0 transition-colors duration-200"
-        :class="props.selectedSportId === item.sportId ? 'text-theme-primary' : 'text-icon-2'"
+        class="flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-transparent px-1 transition-colors duration-200"
+        :class="getSportButtonClass(item)"
         @click="handleSelect(index)"
       >
         <span class="inline-block pr-3">
@@ -27,7 +27,7 @@
     </div>
     <button
       type="button"
-      class="flex shrink-0 cursor-pointer items-center justify-center border-none bg-transparent p-0 text-icon-2 transition-colors duration-200 hover:text-text-1"
+      class="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-transparent p-0 text-icon-2 transition-colors duration-200 hover:text-theme-primary"
       aria-label="betting history"
       @click="handleBettingHistory"
     >
@@ -54,6 +54,12 @@ const emit = defineEmits<{
 
 function getSportCount(item: SportItem) {
   return props.counts?.[item.key] ?? 0
+}
+
+function getSportButtonClass(item: SportItem) {
+  return props.selectedSportId === item.sportId
+    ? 'text-theme-primary'
+    : 'text-icon-2 hover:text-theme-primary'
 }
 
 // 点击 PC 投注历史图标进入体育投注历史页。

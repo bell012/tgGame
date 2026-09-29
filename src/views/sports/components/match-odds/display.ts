@@ -1,8 +1,8 @@
 import type { SportMarketLine, SportWagerSelection } from '@/api/interface/sport'
 
-/** 首页 PC 卡片展示顺序：独赢 → 让球 → 大小，不改盘口对象本身。 */
+/** PC 优先独赢 → 让球 → 大小，其余玩法按接口顺序补齐。 */
 const HOME_BET_TYPE_ORDER = [3, 1, 2] as const
-/** H5 联赛列表展示顺序：让球 → 大小 → 1X2。 */
+/** H5 优先让球 → 大小 → 独赢，其余玩法按接口顺序补齐。 */
 const H5_LIST_BET_TYPE_ORDER = [1, 2, 3] as const
 /** 热门条优先展示的大小盘。 */
 const OVER_UNDER_BET_TYPE_ID = 2
@@ -61,13 +61,22 @@ const pickMarketLinesByOrder = (
 ): SportMarketLine[] => {
   if (!Array.isArray(lines) || !lines.length) return []
 
+  const candidatesByType = new Map<number, SportMarketLine[]>()
+  for (const line of lines) {
+    if (!isDisplayableLine(line)) continue
+    const candidates = candidatesByType.get(line.BetTypeId) ?? []
+    candidates.push(line)
+    candidatesByType.set(line.BetTypeId, candidates)
+  }
+  const orderedTypes = new Set([...betTypeIds, ...candidatesByType.keys()])
   const picked: SportMarketLine[] = []
-  for (const betTypeId of betTypeIds) {
-    const candidates = lines.filter(line => line.BetTypeId === betTypeId && isDisplayableLine(line))
-    if (!candidates.length) continue
+  for (const betTypeId of orderedTypes) {
+    const candidates = candidatesByType.get(betTypeId)
+    if (!candidates?.length) continue
 
     const preferred = pickPreferredLine(candidates)
     if (preferred) picked.push(preferred)
+    if (picked.length === 3) break
   }
   return picked
 }
@@ -76,7 +85,7 @@ const pickMarketLinesByOrder = (
 export const pickHomepageMarketLines = (lines: readonly SportMarketLine[]): SportMarketLine[] =>
   pickMarketLinesByOrder(lines, HOME_BET_TYPE_ORDER)
 
-/** H5 列表三列：让球 → 大小 → 1X2，缺玩法不补空列。 */
+/** H5 最多展示三种玩法，缺玩法不补空列。 */
 export const pickH5ListMarketLines = (lines: readonly SportMarketLine[]): SportMarketLine[] =>
   pickMarketLinesByOrder(lines, H5_LIST_BET_TYPE_ORDER)
 

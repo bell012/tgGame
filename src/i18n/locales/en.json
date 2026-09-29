@@ -2009,6 +2009,7 @@
     "noAnimation": "No animation available",
     "loadingAnimation": "Loading animation",
     "loadingLive": "Loading live stream",
+    "liveLoadFailed": "Live stream unavailable",
     "backToLive": "Back to live",
     "loginToWatch": "Log in to Watch",
     "logIn": "Log In",

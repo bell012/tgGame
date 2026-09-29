@@ -67,9 +67,16 @@
 
       <LiveLoginGate v-if="!isLoggedIn" />
       <div v-else class="relative h-[171px] overflow-hidden rounded-lg" :data-mode="mode">
+        <div
+          v-for="url in cachedStreamUrls"
+          :key="url"
+          class="absolute inset-0"
+          :class="isStreamVisible(url) ? '' : 'invisible pointer-events-none'"
+        >
+          <LivePlayer :src="url" :active="isStreamVisible(url)" />
+        </div>
         <LiveAnimation v-if="mode === 'animation'" :src="animationUrl" />
-        <LivePlayer v-else-if="liveStreamUrl" :src="liveStreamUrl" />
-        <template v-else>
+        <template v-else-if="!liveStreamUrl">
           <img
             class="absolute inset-0 h-full w-full object-cover"
             :src="bgLayer1"
@@ -105,7 +112,9 @@ import LiveAnimation from './live-animation.vue'
 import LivePlayer from './live-player.vue'
 import bgLayer1 from '../match-header/icon/bg-layer-1.png?url'
 
-defineProps<{
+const MAX_CACHED_STREAMS = 3
+
+const props = defineProps<{
   liveStreamUrl: string
   animationUrl: string
 }>()
@@ -120,6 +129,22 @@ const floatLeft = ref(0)
 const placeholderHeight = ref(0)
 const anchorRef = ref<HTMLElement | null>(null)
 const sectionRef = ref<HTMLElement | null>(null)
+
+const cachedStreamUrls = ref<string[]>([])
+
+const isStreamVisible = (url: string) => mode.value === 'video' && url === props.liveStreamUrl
+
+watch(
+  () => props.liveStreamUrl,
+  url => {
+    if (!url) return
+    cachedStreamUrls.value = [url, ...cachedStreamUrls.value.filter(item => item !== url)].slice(
+      0,
+      MAX_CACHED_STREAMS
+    )
+  },
+  { immediate: true }
+)
 
 const stickTop = computed(() => layoutStore.TOPNAV_HEIGHT + 24)
 

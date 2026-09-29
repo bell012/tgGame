@@ -70,13 +70,15 @@
                   <img
                     v-if="typeof item.icon === 'string'"
                     :src="item.icon"
-                    class="w-6 h-6 object-contain"
+                    class="pc-menu-icon w-6 h-6 object-contain"
                   />
-                  <component v-else :is="item.icon" class="w-6 h-6 fill-none" />
+                  <component v-else :is="item.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
                 </div>
-                <span v-if="!isCollapsed" class="text-[13px] font-[600] text-text-1">{{
-                  item.name
-                }}</span>
+                <span
+                  v-if="!isCollapsed"
+                  class="pc-menu-label text-[13px] font-[600] text-text-1"
+                  >{{ item.name }}</span
+                >
               </div>
             </div>
           </div>
@@ -100,9 +102,9 @@
                   <img
                     v-if="typeof menu.icon === 'string'"
                     :src="menu.icon"
-                    class="w-6 h-6 object-contain"
+                    class="pc-menu-icon w-6 h-6 object-contain"
                   />
-                  <component v-else :is="menu.icon" class="w-6 h-6 fill-none" />
+                  <component v-else :is="menu.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
                 </div>
               </div>
             </div>
@@ -122,9 +124,9 @@
                       <img
                         v-if="typeof item.icon === 'string'"
                         :src="item.icon"
-                        class="w-6 h-6 object-contain"
+                        class="pc-menu-icon w-6 h-6 object-contain"
                       />
-                      <component v-else :is="item.icon" class="w-6 h-6 fill-text-2" />
+                      <component v-else :is="item.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
                     </div>
                   </div>
                 </div>
@@ -154,9 +156,9 @@
                 <img
                   v-if="typeof menu.icon === 'string'"
                   :src="menu.icon"
-                  class="w-6 h-6 object-contain"
+                  class="pc-menu-icon w-6 h-6 object-contain"
                 />
-                <component v-else :is="menu.icon" class="w-6 h-6 fill-none" />
+                <component v-else :is="menu.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
               </div>
             </div>
           </div>
@@ -182,14 +184,14 @@
                   <img
                     v-if="typeof menu.icon === 'string'"
                     :src="menu.icon"
-                    class="w-6 h-6 object-contain"
+                    class="pc-menu-icon w-6 h-6 object-contain"
                   />
-                  <component v-else :is="menu.icon" class="w-6 h-6 fill-none" />
+                  <component v-else :is="menu.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
                 </div>
                 <span v-if="menu.name2" class="text-sm font-[600] text-theme-primary mr-1">{{
                   menu.name2
                 }}</span>
-                <span class="text-sm font-[600] text-text-1">{{ menu.name }}</span>
+                <span class="pc-menu-label text-sm font-[600] text-text-1">{{ menu.name }}</span>
               </div>
               <div
                 v-if="hasChildren(menu)"
@@ -197,13 +199,13 @@
                 :class="{ 'rotate-180': expandedMenus.includes(menu.id) }"
                 @click.stop="handleMenuCollapse(menu)"
               >
-                <Arrow_down class="w-4 h-4 fill-none" />
+                <Arrow_down class="w-4 h-4 text-icon-2" />
               </div>
               <div
                 v-else-if="menu.external"
                 class="w-4 h-4 flex items-center justify-center ml-1 mr-2"
               >
-                <External class="w-full h-full fill-none" />
+                <External class="w-full h-full text-icon-2" />
               </div>
             </div>
 
@@ -230,12 +232,12 @@
                       <img
                         v-if="typeof item.icon === 'string'"
                         :src="item.icon"
-                        class="w-6 h-6 object-contain"
+                        class="pc-menu-icon w-6 h-6 object-contain"
                       />
-                      <component v-else :is="item.icon" class="w-6 h-6 fill-text-2" />
+                      <component v-else :is="item.icon" class="pc-menu-icon w-6 h-6 text-icon-2" />
                     </div>
                     <span
-                      class="text-sm font-[600]"
+                      class="pc-menu-label text-sm font-[600]"
                       :class="isSubmenuBranchActive(item) ? 'text-theme-primary' : 'text-text-1'"
                     >
                       {{ item.name }}
@@ -264,9 +266,9 @@
       >
         <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
-            <component :is="side.helpIcon" class="w-6 h-6 fill-none text-text-2" />
+            <component :is="side.helpIcon" class="pc-menu-icon w-6 h-6 text-icon-2" />
           </div>
-          <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">
+          <span v-if="!isCollapsed" class="pc-menu-label text-sm font-[600] text-text-1">
             {{ t('sidebar_menu.customer_service') }}
           </span>
         </div>
@@ -308,9 +310,9 @@
       >
         <div class="flex items-center w-full" :class="{ 'justify-center': isCollapsed }">
           <div class="w-10 h-10 flex items-center justify-center">
-            <LanguageIcon class="w-6 h-6 text-text-2" />
+            <LanguageIcon class="pc-menu-icon w-6 h-6 text-icon-2" />
           </div>
-          <span v-if="!isCollapsed" class="text-sm font-[600] text-text-1">{{
+          <span v-if="!isCollapsed" class="pc-menu-label text-sm font-[600] text-text-1">{{
             currentLanguageName
           }}</span>
         </div>
@@ -1066,6 +1068,31 @@ const menusWithChildren = computed<SidebarMenuGroup[]>(() =>
 }
 
 @media (min-width: 641px) {
+  .launch-card:hover {
+    background: var(--color-opacity-6);
+  }
+
+  .launch-card:hover:not(.launch-card-active) .pc-menu-icon {
+    width: 28px;
+    height: 28px;
+    color: var(--color-icon-level-1);
+  }
+
+  .launch-card-active {
+    background: var(--color-opacity-6);
+    color: var(--color-theme-level-1);
+  }
+
+  .launch-card-active .pc-menu-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--color-theme-level-1);
+  }
+
+  .launch-card-active .pc-menu-label {
+    color: var(--color-theme-level-1);
+  }
+
   .sidebar-menu-pc-expanded .launch-card {
     width: 208px;
     max-width: 208px;

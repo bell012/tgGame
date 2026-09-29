@@ -1623,7 +1623,6 @@ export const useSportsStore = defineStore('sports', () => {
             IsCombo: isCombo,
             IncludeGroupEvents: false,
             LanguageCode: language,
-            BetTypeIds: [1, 2, 3],
             PeriodIds: [1]
           }
           hotDetailsState.params = params
@@ -2025,7 +2024,6 @@ export const useSportsStore = defineStore('sports', () => {
               IsCombo: market.value === 4,
               IncludeGroupEvents: false,
               LanguageCode: languageCode.value,
-              BetTypeIds: [...new Set([1, 2, 3, ...knownLines.map(line => line.BetTypeId)])],
               PeriodIds: [...new Set([1 as const, ...knownLines.map(line => line.PeriodId)])]
             }
             const revision = ++eventReadRevision

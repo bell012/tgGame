@@ -15,12 +15,42 @@
       @play="playing = true"
       @playing="onPlaying"
       @pause="onPause"
-      @timeupdate="syncBehind"
+      @waiting="startBuffering"
+      @stalled="startBuffering"
+      @seeking="startBuffering"
+      @timeupdate="onTimeUpdate"
     />
     <div
       v-if="loading"
       class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black text-white/80"
       data-testid="live-loading"
+      role="status"
+    >
+      <span
+        class="size-6 animate-spin rounded-full border-2 border-white/30 border-t-white"
+        aria-hidden="true"
+      />
+      <span class="text-xs">{{ t('sports.loadingLive') }}</span>
+    </div>
+    <div
+      v-else-if="failed"
+      class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black text-white/80"
+      data-testid="live-failed"
+      role="alert"
+    >
+      <span class="text-xs">{{ t('sports.liveLoadFailed') }}</span>
+      <button
+        type="button"
+        class="rounded bg-white px-3 py-1 text-xs font-bold text-black"
+        @click.stop="retryLoad"
+      >
+        {{ t('sports.retry') }}
+      </button>
+    </div>
+    <div
+      v-else-if="buffering"
+      class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black/40 text-white/80"
+      data-testid="live-buffering"
       role="status"
     >
       <span
@@ -117,24 +147,45 @@ import { useI18n } from 'vue-i18n'
 
 const LIVE_LAG_SECONDS = 15
 const CONTROLS_HIDE_MS = 3000
+const STALL_CHECK_MS = 1000
+const STALL_SEEK_SECONDS = 5
+const STALL_RELOAD_SECONDS = 10
+const NETWORK_RETRY_DELAYS_MS = [2000, 4000, 8000]
+const LOAD_TIMEOUT_MS = 20000
 
-const props = defineProps<{
-  src: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    src: string
+    active?: boolean
+  }>(),
+  { active: true }
+)
 
 const { t } = useI18n()
 const rootRef = ref<HTMLElement | null>(null)
 const videoRef = ref<HTMLVideoElement | null>(null)
 const playing = ref(false)
 const loading = ref(true)
+const failed = ref(false)
+const buffering = ref(false)
 const muted = ref(false)
 const controlsVisible = ref(false)
 const isLive = ref(false)
 const behindLive = ref(false)
 let hls: Hls | null = null
+let loadedSrc = ''
 let joinedLive = false
+let pendingLiveSeek = false
 let userPaused = false
+let hasPlayed = false
+let stallSeconds = 0
+let lastCurrentTime = -1
+let lastProgressTime = -1
+let failCount = 0
 let hideTimer: ReturnType<typeof setTimeout> | null = null
+let stallTimer: ReturnType<typeof setInterval> | null = null
+let retryTimer: ReturnType<typeof setTimeout> | null = null
+let loadTimer: ReturnType<typeof setTimeout> | null = null
 
 const hoverCapable = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches
 
@@ -174,10 +225,31 @@ const resumeIfPaused = () => {
   if (videoRef.value?.paused) play()
 }
 
+const clearRetryTimer = () => {
+  if (retryTimer == null) return
+  clearTimeout(retryTimer)
+  retryTimer = null
+}
+
+const clearLoadTimer = () => {
+  if (loadTimer == null) return
+  clearTimeout(loadTimer)
+  loadTimer = null
+}
+
 const destroy = () => {
+  clearRetryTimer()
+  clearLoadTimer()
+  failed.value = false
+  buffering.value = false
+  lastProgressTime = -1
   hls?.destroy()
   hls = null
+  loadedSrc = ''
   joinedLive = false
+  pendingLiveSeek = false
+  hasPlayed = false
+  stallSeconds = 0
   isLive.value = false
   behindLive.value = false
   const video = videoRef.value
@@ -189,7 +261,7 @@ const destroy = () => {
 
 const play = () => {
   const video = videoRef.value
-  if (!video || userPaused) return
+  if (!video || userPaused || !props.active) return
   video.muted = muted.value
   video.play().catch((error: unknown) => {
     if (userPaused || muted.value) return
@@ -233,12 +305,43 @@ const joinLive = (live: boolean) => {
   play()
 }
 
-const load = (src: string) => {
+const failLoad = () => {
   destroy()
+  loading.value = false
+  failed.value = true
+}
+
+const retryNetwork = () => {
+  const delay = NETWORK_RETRY_DELAYS_MS[failCount]
+  if (delay == null) {
+    failLoad()
+    return
+  }
+  failCount += 1
+  clearRetryTimer()
+  retryTimer = setTimeout(() => {
+    retryTimer = null
+    hls?.startLoad(-1)
+  }, delay)
+}
+
+const startLoadTimer = () => {
+  clearLoadTimer()
+  loadTimer = setTimeout(() => {
+    loadTimer = null
+    if (!hasPlayed && props.active) failLoad()
+  }, LOAD_TIMEOUT_MS)
+}
+
+const load = (src: string, keepFailures = false) => {
+  destroy()
+  if (!keepFailures) failCount = 0
   userPaused = false
   loading.value = Boolean(src)
   const video = videoRef.value
   if (!video || !src) return
+  loadedSrc = src
+  startLoadTimer()
   video.addEventListener('canplay', resumeIfPaused)
 
   if (Hls.isSupported()) {
@@ -250,16 +353,25 @@ const load = (src: string) => {
     hls.on(Hls.Events.LEVEL_LOADED, (_event, data) => {
       joinLive(data.details.live)
     })
+    hls.on(Hls.Events.LEVEL_UPDATED, (_event, data) => {
+      if (!pendingLiveSeek || !data.details.live) return
+      pendingLiveSeek = false
+      seekToLiveEdge()
+      play()
+    })
     hls.on(Hls.Events.ERROR, (_event, data) => {
       if (!data.fatal) return
       if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
         hls?.recoverMediaError()
+        play()
         return
       }
-      if (data.type !== Hls.ErrorTypes.NETWORK_ERROR) {
-        destroy()
-        loading.value = false
+      if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+        retryNetwork()
+        return
       }
+      destroy()
+      loading.value = false
     })
     hls.loadSource(src)
     hls.attachMedia(video)
@@ -291,17 +403,39 @@ const togglePlay = () => {
     return
   }
   userPaused = true
+  buffering.value = false
   video.pause()
+}
+
+const startBuffering = () => {
+  if (!props.active || userPaused || loading.value) return
+  buffering.value = true
+}
+
+const onTimeUpdate = () => {
+  syncBehind()
+  const video = videoRef.value
+  if (!video) return
+  if (!video.seeking && video.currentTime > lastProgressTime) buffering.value = false
+  lastProgressTime = video.currentTime
 }
 
 const onPlaying = () => {
   playing.value = true
   loading.value = false
+  buffering.value = false
+  hasPlayed = true
+  failCount = 0
+  clearLoadTimer()
 }
+
+const retryLoad = () => load(props.src)
 
 const onPause = () => {
   playing.value = false
   syncBehind()
+  if (!props.active || userPaused) return
+  play()
 }
 
 const toggleMute = () => {
@@ -325,15 +459,91 @@ const toggleFullscreen = () => {
   rootRef.value?.requestFullscreen().catch(() => {})
 }
 
+const checkStall = () => {
+  const video = videoRef.value
+  if (!video || !hasPlayed || !loadedSrc || !props.active || userPaused) {
+    stallSeconds = 0
+    lastCurrentTime = video?.currentTime ?? -1
+    return
+  }
+  if (video.currentTime !== lastCurrentTime) {
+    lastCurrentTime = video.currentTime
+    stallSeconds = 0
+    return
+  }
+  stallSeconds += 1
+  buffering.value = true
+  if (stallSeconds === STALL_SEEK_SECONDS) {
+    seekToLiveEdge()
+    play()
+    return
+  }
+  if (stallSeconds < STALL_RELOAD_SECONDS) return
+  if (failCount >= NETWORK_RETRY_DELAYS_MS.length) {
+    failLoad()
+    return
+  }
+  failCount += 1
+  load(loadedSrc, true)
+}
+
+const suspend = () => {
+  hls?.stopLoad()
+  clearRetryTimer()
+  clearLoadTimer()
+  pendingLiveSeek = false
+  stallSeconds = 0
+  buffering.value = false
+  videoRef.value?.pause()
+}
+
+const resume = () => {
+  if (!props.src) {
+    destroy()
+    loading.value = false
+    return
+  }
+  if (loadedSrc !== props.src) {
+    load(props.src)
+    return
+  }
+  if (hasPlayed) buffering.value = true
+  else startLoadTimer()
+  if (hls) {
+    pendingLiveSeek = isLive.value
+    hls.startLoad(-1)
+    play()
+    return
+  }
+  if (isLive.value) seekToLiveEdge()
+  play()
+}
+
 watch(
-  () => props.src,
-  src => load(src)
+  () => [props.src, props.active] as const,
+  ([src, active]) => {
+    if (active) {
+      resume()
+      return
+    }
+    if (loadedSrc && loadedSrc !== src) {
+      destroy()
+      loading.value = Boolean(src)
+      return
+    }
+    suspend()
+  }
 )
 
-onMounted(() => load(props.src))
+onMounted(() => {
+  stallTimer = setInterval(checkStall, STALL_CHECK_MS)
+  if (props.active) load(props.src)
+})
 
 onBeforeUnmount(() => {
   clearHideTimer()
+  if (stallTimer != null) clearInterval(stallTimer)
+  stallTimer = null
   destroy()
 })
 </script>

@@ -1,6 +1,6 @@
 <!-- pc联赛tabs -->
 <template>
-  <section class="relative flex h-[40px] w-full items-center overflow-visible">
+  <section ref="leagueTabsRef" class="relative flex h-[40px] w-full items-center overflow-visible">
     <div class="flex h-10 flex-none items-center rounded-[18px] bg-bg-9">
       <button
         v-for="item in filterTabs"
@@ -42,7 +42,7 @@
 
     <button
       type="button"
-      class="ml-[8px] inline-flex h-10 w-10 flex-[0_0_42px] items-center justify-center rounded-lg border-0 bg-bg-2 transition-colors lg:hover:bg-bg-3"
+      class="ml-[8px] inline-flex h-10 w-10 flex-[0_0_42px] items-center justify-center rounded-lg border-0 bg-bg-2 transition-colors hover:bg-opacity-6"
       @click="toggleLeaguePopup"
     >
       <triangleIcon class="h-3 w-3 text-icon-2" />
@@ -72,7 +72,8 @@
           v-for="item in leaguePopupList"
           :key="item.key"
           type="button"
-          class="flex w-full items-center border-0 bg-transparent py-[12px] text-left"
+          class="flex w-full items-center rounded-lg border-0 bg-transparent px-3 py-[12px] text-left transition-colors"
+          :class="activeLeagueKey === item.key ? '' : 'hover:bg-opacity-6'"
           @click="onLeaguePopupItemClick(item.key)"
         >
           <span class="mr-3 min-w-0 flex-1 truncate text-[14px] font-bold text-text-1">
@@ -91,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import triangleIcon from '@/static/svg/sports/liansai_tabs/sanjiao.svg?component'
@@ -117,6 +118,7 @@ const {
   selectFilterKey,
   selectLeagueKey
 } = useLiansaiTabs()
+const leagueTabsRef = ref<HTMLElement | null>(null)
 const scrollRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
 const isLeaguePopupOpen = ref(false)
@@ -138,7 +140,9 @@ const leaguePopupList = computed(() => {
 
 // 根据当前选中项返回“联赛/时间”分段按钮样式。
 const getFilterButtonClass = (key: LiansaiFilterKey) =>
-  activeFilterKey.value === key ? 'bg-bg-3 text-text-1' : 'bg-transparent text-text-2'
+  activeFilterKey.value === key
+    ? 'bg-bg-3 text-text-1'
+    : 'bg-transparent text-text-2 hover:bg-opacity-6'
 
 // 根据当前选中项返回联赛按钮样式，所有联赛项共用同一套选中态。
 const getLeagueButtonClass = (item: LeagueTabItem) => {
@@ -146,7 +150,7 @@ const getLeagueButtonClass = (item: LeagueTabItem) => {
     return 'bg-theme-primary text-text-4 font-[700]'
   }
 
-  return 'bg-bg-2 text-text-2 lg:hover:bg-bg-3'
+  return 'bg-bg-2 text-text-2 hover:bg-opacity-6'
 }
 
 // 点击“联赛/时间”时切换分段选中态  emit已经暴露出去，别的组件可以接受当前选中哪个值
@@ -162,6 +166,19 @@ const onLeagueTabClick = (key: string) => {
 // 点击更多按钮切换联赛弹窗，同时驱动按钮里的三角图标旋转方向。
 const toggleLeaguePopup = () => {
   isLeaguePopupOpen.value = !isLeaguePopupOpen.value
+}
+
+const handleDocumentClick = (event: MouseEvent) => {
+  if (!isLeaguePopupOpen.value) {
+    return
+  }
+
+  const target = event.target as Node | null
+  if (!target || leagueTabsRef.value?.contains(target)) {
+    return
+  }
+
+  isLeaguePopupOpen.value = false
 }
 
 // 点击弹窗中的全部联赛项。  emit已经暴露出去，别的组件可以接受当前选中哪个值
@@ -220,4 +237,12 @@ const onDragEnd = (event: PointerEvent) => {
   isDragging.value = false
   pendingLeagueKey = ''
 }
+
+onMounted(() => {
+  document.addEventListener('click', handleDocumentClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleDocumentClick)
+})
 </script>

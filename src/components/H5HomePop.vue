@@ -10,8 +10,9 @@
           type="button"
           class="absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center justify-center p-2 rounded-[6px] bg-black/10"
           aria-label="close"
+          @click="close"
         >
-          <CloseIcon class="h-2.5 w-2.5 text-icon-1" @click="close" />
+          <CloseIcon class="h-2.5 w-2.5 text-icon-1" />
         </button>
       </div>
 
@@ -122,7 +123,8 @@ import type { QueryNoticeMsgItem } from '@/api/interface/home.interface'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import { useI18n } from 'vue-i18n'
 import type { SwipeInstance } from 'vant'
 import { Swipe, SwipeItem } from 'vant'
@@ -182,13 +184,7 @@ const swipeRef = ref<SwipeInstance>()
 const currentIndex = ref(0)
 const progressKey = ref(0)
 const checked = ref(false)
-let lockedScrollY = 0
-let isPageScrollLocked = false
-let previousBodyOverflow = ''
-let previousBodyPosition = ''
-let previousBodyTop = ''
-let previousBodyWidth = ''
-let previousHtmlOverflow = ''
+usePageScrollLock(() => true)
 const progressStyle = computed(() => ({
   animationDuration: `${AUTO_PLAY_INTERVAL_MS}ms`
 }))
@@ -444,44 +440,6 @@ const closeWithoutSuppress = () => {
   emit('close')
 }
 
-const lockPageScroll = () => {
-  if (isPageScrollLocked) {
-    return
-  }
-
-  const body = document.body
-  const html = document.documentElement
-  lockedScrollY = window.scrollY
-  previousBodyOverflow = body.style.overflow
-  previousBodyPosition = body.style.position
-  previousBodyTop = body.style.top
-  previousBodyWidth = body.style.width
-  previousHtmlOverflow = html.style.overflow
-
-  html.style.overflow = 'hidden'
-  body.style.overflow = 'hidden'
-  body.style.position = 'fixed'
-  body.style.top = `-${lockedScrollY}px`
-  body.style.width = '100%'
-  isPageScrollLocked = true
-}
-
-const unlockPageScroll = () => {
-  if (!isPageScrollLocked) {
-    return
-  }
-
-  const body = document.body
-  const html = document.documentElement
-  html.style.overflow = previousHtmlOverflow
-  body.style.overflow = previousBodyOverflow
-  body.style.position = previousBodyPosition
-  body.style.top = previousBodyTop
-  body.style.width = previousBodyWidth
-  window.scrollTo(0, lockedScrollY)
-  isPageScrollLocked = false
-}
-
 const handleChange = (index: number) => {
   currentIndex.value = index
   progressKey.value += 1
@@ -504,16 +462,12 @@ const next = () => {
 }
 
 onMounted(() => {
-  lockPageScroll()
-
   if (isSuppressedNow()) {
     closeWithoutSuppress()
     return
   }
   void fetchNoticeList()
 })
-
-onBeforeUnmount(unlockPageScroll)
 </script>
 <style lang="scss" scoped>
 @keyframes slideshow-indicator-fill {
