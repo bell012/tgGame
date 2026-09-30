@@ -9,7 +9,6 @@
   <div
     class="min-h-[200px] w-full min-w-0 bg-bg-1 font-inter text-text-1"
     :class="isMobile ? '' : 'px-5 pb-6'"
-    :style="isMobile ? { paddingTop: `${layoutStore.TOPNAV_HEIGHT}px` } : undefined"
   >
     <template v-if="isMobile">
       <MatchHeader
@@ -146,7 +145,6 @@ import ChevronIcon from '@/static/svg/casino/dropdown_chevron.svg?component'
 import emptyImage from '@/static/img/explore/default.png'
 import emptyImageLight from '@/static/img/explore/default_white.png'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { useLayoutStore } from '@/stores/layout'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import EventDetailsTabs from './components/event-detailsd-tabs/index.vue'
 import { mapEventDetailTabItems } from './components/event-detailsd-tabs/map-items'
@@ -179,7 +177,6 @@ const { sportCounts } = storeToRefs(sportsStore)
 const sportNavigationCounts = computed(() => buildSportTodayCountMap(sportCounts.value))
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
-const layoutStore = useLayoutStore()
 const activeMatchId = ref('')
 const targetEventId = ref('')
 const selectedSportId = ref(sportItems[0]?.sportId ?? 1)
