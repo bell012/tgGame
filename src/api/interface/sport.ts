@@ -730,10 +730,11 @@ export interface GetSelectedEventInfoParams {
   PeriodIds?: SportsPeriodId[]
 }
 
-/** 按 ID 查询的原始响应；实测外层只有 stc、std、e，不返回联赛分组或 Total。 */
+/** 按 ID 查询的响应；外层为 stc、std、e，不返回联赛分组或 Total。 */
 export interface GetSelectedEventInfoResponse extends SportsResponse {
   /**
    * Events（List）：平铺赛事详情，直接读取 e[].EventId / MarketLines，不是 e[].Sports。
+   * 网关可能返回 JSON 字符串（如 "[]"），API 层解析为数组，格式异常则拒绝响应。
    * 返回顺序可能与 EventIds 不同，必须按 EventId 匹配，不能按数组位置对应。
    * 访问失败时可能仅返回 stc='100' 和错误 std、缺少 e；须同时校验 e 是数组。
    * 日期保留字符串；滚球时间、比分和红牌在赛前可缺失，详见 SportEventDetail。

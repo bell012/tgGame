@@ -87,8 +87,9 @@ const isSportsAuthExpired = (response: SportsResponse) =>
 const ALL_SPORTS_PAGE_SIZE = 10
 const MAX_ALL_SPORTS_PAGES = 200
 const SELECTED_EVENT_BATCH_SIZE = 5
+const MAX_PRIORITY_EVENT_BATCHES = 2
 const MAX_CONCURRENT_LEAGUES = 3
-const EVENT_FRESH_TIME = 10_000
+const EVENT_CHECK_INTERVAL = 10_000
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -748,7 +749,13 @@ export const useSportsStore = defineStore('sports', () => {
   const refreshedEvents = shallowReactive(
     new Map<
       string,
-      { event: SportEvent; revision: number; updatedAt: number; clockUpdatedAt: number }
+      {
+        event: SportEvent
+        revision: number
+        checkedRevision?: number
+        checkedAt?: number
+        clockUpdatedAt: number
+      }
     >()
   )
   let eventReadRevision = 0
@@ -780,10 +787,7 @@ export const useSportsStore = defineStore('sports', () => {
     if (expiredEvents.has(key)) return incoming
     if (!previous) {
       const event = reactive({ ...incoming })
-      refreshedEvents.set(
-        key,
-        shallowReactive({ event, revision, updatedAt: receivedAt, clockUpdatedAt: receivedAt })
-      )
+      refreshedEvents.set(key, shallowReactive({ event, revision, clockUpdatedAt: receivedAt }))
       return event
     }
     // 迟到的响应不能补回已被移除的盘口或投注项。
@@ -793,7 +797,6 @@ export const useSportsStore = defineStore('sports', () => {
     const isPaused = (incoming.RBTimeStatus ?? previous.event.RBTimeStatus) === 3
     Object.assign(previous.event, mergeEventFields(previous.event, incoming, marketScope))
     previous.revision = revision
-    previous.updatedAt = Date.now()
     // 重复时间不重置秒表；暂停、恢复或时间变化时重新校准。
     if (timeChanged || wasPaused !== isPaused) previous.clockUpdatedAt = receivedAt
     return previous.event
@@ -815,7 +818,7 @@ export const useSportsStore = defineStore('sports', () => {
   const getEventClockUpdatedAt = (sportId: number, eventId: number) =>
     refreshedEvents.get(eventKey(sportId, eventId))?.clockUpdatedAt ?? Date.now()
 
-  // 仅按成功补查的 ID 范围清理，保留较新请求确认过的赛事。
+  // 有效性只比较补查版本，V2 更新不能盖过下架结果。
   const updateSelectedEvents = (
     sportId: number,
     eventIds: readonly number[],
@@ -828,7 +831,7 @@ export const useSportsStore = defineStore('sports', () => {
     for (const id of eventIds) {
       const key = eventKey(sportId, id)
       const latestRevision = Math.max(
-        refreshedEvents.get(key)?.revision ?? 0,
+        refreshedEvents.get(key)?.checkedRevision ?? 0,
         expiredEvents.get(key) ?? 0
       )
       if (returnedIds.has(id) || revision < latestRevision) continue
@@ -838,12 +841,19 @@ export const useSportsStore = defineStore('sports', () => {
     }
     for (const event of incoming) {
       const key = eventKey(sportId, event.EventId)
+      if (revision < (refreshedEvents.get(key)?.checkedRevision ?? 0)) continue
       const expiredRevision = expiredEvents.get(key)
       if (expiredRevision !== undefined) {
         if (revision <= expiredRevision) continue
         expiredEvents.delete(key)
       }
       rememberEvent(sportId, event, revision, { marketScope })
+      const cached = refreshedEvents.get(key)
+      if (cached) {
+        cached.checkedRevision = revision
+        // 单盘口查询不延后完整复核。
+        if (!marketScope.BetTypeIds?.length) cached.checkedAt = Date.now()
+      }
     }
     if (!removed) return
     if (selectedSportId.value === sportId) {
@@ -1925,6 +1935,9 @@ export const useSportsStore = defineStore('sports', () => {
 
   const refreshJobs = new Map<string, { controller: AbortController; pending: Promise<unknown> }>()
   const refreshingEvents = new Map<string, Promise<unknown>>()
+  const pendingEventChecks = new Map<string, SportsRefreshTarget>()
+  const priorityEventChecks = new Map<string, SportsRefreshTarget>()
+  let pendingCacheCleanup: (() => void) | undefined
   let refreshGeneration = 0
   let visibleQueue: Promise<unknown> = Promise.resolve()
   let backgroundEventQueue: Promise<unknown> = Promise.resolve()
@@ -1935,6 +1948,9 @@ export const useSportsStore = defineStore('sports', () => {
     for (const job of refreshJobs.values()) job.controller.abort()
     refreshJobs.clear()
     refreshingEvents.clear()
+    pendingEventChecks.clear()
+    priorityEventChecks.clear()
+    pendingCacheCleanup = undefined
     visibleQueue = Promise.resolve()
     backgroundEventQueue = Promise.resolve()
   }
@@ -1958,6 +1974,7 @@ export const useSportsStore = defineStore('sports', () => {
       .catch(() => null)
       .finally(() => {
         if (refreshJobs.get(key)?.controller === controller) refreshJobs.delete(key)
+        if (isCurrent()) pendingCacheCleanup?.()
       })
     refreshJobs.set(key, { controller, pending })
     return pending
@@ -1995,7 +2012,12 @@ export const useSportsStore = defineStore('sports', () => {
         continue
       }
       const cached = refreshedEvents.get(key)
-      if (!force && cached && Date.now() - cached.updatedAt < EVENT_FRESH_TIME) continue
+      if (
+        !force &&
+        cached?.checkedAt !== undefined &&
+        Date.now() - cached.checkedAt < EVENT_CHECK_INTERVAL
+      )
+        continue
       const ids = sports.get(sportId) ?? new Set<number>()
       ids.add(eventId)
       sports.set(sportId, ids)
@@ -2055,6 +2077,58 @@ export const useSportsStore = defineStore('sports', () => {
       }
     }
     return Promise.all(waiting)
+  }
+
+  const queueEventChecks = (
+    targets: readonly SportsRefreshTarget[],
+    { priority = false }: { priority?: boolean } = {}
+  ) => {
+    if (!homepageActive || !getBaseUrl()) return
+    for (const target of targets) {
+      const { sportId, eventId } = target
+      if (!Number.isSafeInteger(sportId) || sportId <= 0) continue
+      if (!Number.isSafeInteger(eventId) || eventId <= 0) continue
+      if (isEventExpired(sportId, eventId)) continue
+      const key = eventKey(sportId, eventId)
+      const checkedAt = refreshedEvents.get(key)?.checkedAt
+      if (checkedAt !== undefined && Date.now() - checkedAt < EVENT_CHECK_INTERVAL) continue
+      if (priority) {
+        pendingEventChecks.delete(key)
+        priorityEventChecks.set(key, target)
+      } else if (!priorityEventChecks.has(key)) pendingEventChecks.set(key, target)
+    }
+    if (!pendingEventChecks.size && !priorityEventChecks.size) return
+    if (refreshJobs.has('event-checks')) return
+    const generation = refreshGeneration
+    const context = getRefreshContext()
+    // 补查独立排队，不拖住下一轮名单刷新。
+    void runHomepageRefresh('event-checks', async (_signal, isCurrent) => {
+      let priorityBatches = 0
+      while (isCurrent() && (priorityEventChecks.size || pendingEventChecks.size)) {
+        // 最多连续两批优先补查，之后让普通队列先取一批。
+        const priorityFirst =
+          priorityEventChecks.size > 0 &&
+          (priorityBatches < MAX_PRIORITY_EVENT_BATCHES || !pendingEventChecks.size)
+        const queues = priorityFirst
+          ? [priorityEventChecks, pendingEventChecks]
+          : [pendingEventChecks, priorityEventChecks]
+        priorityBatches = priorityFirst
+          ? Math.min(priorityBatches + 1, MAX_PRIORITY_EVENT_BATCHES)
+          : 0
+        const batch: SportsRefreshTarget[] = []
+        for (const queue of queues) {
+          for (const [key, target] of queue) {
+            if (batch.length === SELECTED_EVENT_BATCH_SIZE) break
+            queue.delete(key)
+            batch.push(target)
+          }
+        }
+        await refreshVisibleEvents(batch, { background: true })
+      }
+    }).then(() => {
+      // 收尾期间新增的任务交给下一批，旧会话不能启动新任务。
+      if (generation === refreshGeneration && context === getRefreshContext()) queueEventChecks([])
+    })
   }
 
   // 单独补查选中盘口，不用首页缓存的新鲜度判断代替确认。
@@ -2141,30 +2215,29 @@ export const useSportsStore = defineStore('sports', () => {
         earlyTradingDate: search && market.value === 1 ? earlyTradingDate.value : null,
         MemberCode: sportsMemberCode.value
       }
-      let verification: Promise<void> = Promise.resolve()
+      const previousGroups = search
+        ? eventsDataContext.value === getEventsContext()
+          ? (events.state.data?.e ?? [])
+          : []
+        : allSportsDataContext.value === getAllSportsQueryContext()
+          ? allSportsState.data
+          : []
+      const previousByLeague = new Map(
+        previousGroups.map(group => [
+          group.CompetitionId,
+          new Set(group.Sports.map(event => event.EventId))
+        ])
+      )
+      if (!search && leagueDetailsContext === getLeagueDetailsContext()) {
+        for (const [id, state] of leagueDetails) {
+          const ids = previousByLeague.get(id) ?? new Set<number>()
+          for (const event of state.data) ids.add(event.EventId)
+          previousByLeague.set(id, ids)
+        }
+      }
       const refreshList = async () => {
         if (!search && allSportsPending) return allSportsPending
         if (search && events.state.loading) return null
-        const previousGroups = search
-          ? eventsDataContext.value === getEventsContext()
-            ? (events.state.data?.e ?? [])
-            : []
-          : allSportsDataContext.value === getAllSportsQueryContext()
-            ? allSportsState.data
-            : []
-        const previousByLeague = new Map(
-          previousGroups.map(group => [
-            group.CompetitionId,
-            new Set(group.Sports.map(event => event.EventId))
-          ])
-        )
-        if (!search && leagueDetailsContext === getLeagueDetailsContext()) {
-          for (const [id, state] of leagueDetails) {
-            const ids = previousByLeague.get(id) ?? new Set<number>()
-            for (const event of state.data) ids.add(event.EventId)
-            previousByLeague.set(id, ids)
-          }
-        }
         const returnedLeagueIds = new Set<number>()
         const returnedEventIds = new Set<number>()
         const queuedIds = new Set<number>()
@@ -2172,25 +2245,15 @@ export const useSportsStore = defineStore('sports', () => {
           const missing = [...ids].filter(id => !returnedEventIds.has(id) && !queuedIds.has(id))
           if (!missing.length) return
           missing.forEach(id => queuedIds.add(id))
-          // 补查单独排队，不阻塞 V2 下一页；每批仍让可见赛事先刷新。
-          verification = verification.then(async () => {
-            for (let offset = 0; offset < missing.length; offset += SELECTED_EVENT_BATCH_SIZE) {
-              if (!isCurrent()) return
-              const targets = missing
-                .slice(offset, offset + SELECTED_EVENT_BATCH_SIZE)
-                .filter(id => !returnedEventIds.has(id))
-                .map(eventId => ({ sportId, eventId }))
-              await refreshVisibleEvents(targets, { force: true, background: true })
-            }
-          })
+          queueEventChecks(
+            missing.map(eventId => ({ sportId, eventId })),
+            { priority: true }
+          )
         }
         const seen = new Set<string>()
         let totalPages = 1
         let total = 0
         for (let page = 1; page <= totalPages; page += 1) {
-          if (!isCurrent()) return null
-          // 可见赛事先发，后台分页等待当前批次结束。
-          await visibleQueue
           if (!isCurrent()) return null
           const revision = ++eventReadRevision
           const favourite = favouriteRevision
@@ -2278,52 +2341,55 @@ export const useSportsStore = defineStore('sports', () => {
         for (const [id, ids] of previousByLeague) if (!returnedLeagueIds.has(id)) verifyMissing(ids)
         return search ? events.state.data?.e : allSportsState.data
       }
-      const refreshHot = async () => {
-        if (competitionListState.loading) return null
-        const endTime = Date.now()
-        const response = await Api.sport.getCompetitionList(
-          {
-            param: {
-              page: 1,
-              sportId,
-              market: market.value,
-              startTime: endTime - 24 * 60 * 60 * 1000,
-              endTime
-            }
-          },
-          { signal }
+      const refreshCached = () => {
+        const lastChecked = (id: number) =>
+          refreshedEvents.get(eventKey(sportId, id))?.checkedAt ?? 0
+        const ids = [...new Set([...previousByLeague.values()].flatMap(ids => [...ids]))].sort(
+          (left, right) => lastChecked(left) - lastChecked(right)
         )
-        if (!isCurrent() || !isApiBusinessSuccess(response) || !Array.isArray(response.result))
-          return null
-        const records = new Map(
-          (competitionListState.data?.result ?? []).map(record => [
-            eventKey(record.sportId, record.eventId),
-            record
-          ])
-        )
-        response.result.forEach(record =>
-          records.set(eventKey(record.sportId, record.eventId), record)
-        )
-        competitionListState.data = { ...response, result: [...records.values()] }
-        competitionListContext.value = getCompetitionListContext()
-        const missing = response.result.filter(
-          record =>
-            !isEventExpired(record.sportId, record.eventId) &&
-            !getRefreshEvent(record.sportId, record.eventId)
-        )
-        for (let offset = 0; offset < missing.length; offset += SELECTED_EVENT_BATCH_SIZE) {
-          if (!isCurrent()) return null
-          await refreshVisibleEvents(
-            missing
-              .slice(offset, offset + SELECTED_EVENT_BATCH_SIZE)
-              .map(record => ({ sportId: record.sportId, eventId: record.eventId }))
-          )
-        }
-        return response
+        // 普通缓存也轮流复核，不依赖 V2 是否仍返回该赛事。
+        queueEventChecks(ids.map(eventId => ({ sportId, eventId })))
       }
-      const results = await Promise.allSettled([refreshList(), refreshHot()])
-      await verification
-      return results
+      refreshCached()
+      return refreshList()
+    })
+
+  const refreshHomepageHot = () =>
+    runHomepageRefresh('hot', async (signal, isCurrent) => {
+      if (competitionListState.loading) return null
+      const endTime = Date.now()
+      const response = await Api.sport.getCompetitionList(
+        {
+          param: {
+            page: 1,
+            sportId: selectedSportId.value,
+            market: market.value,
+            startTime: endTime - 24 * 60 * 60 * 1000,
+            endTime
+          }
+        },
+        { signal }
+      )
+      if (!isCurrent() || !isApiBusinessSuccess(response) || !Array.isArray(response.result))
+        return null
+      const records = new Map(
+        (competitionListState.data?.result ?? []).map(record => [
+          eventKey(record.sportId, record.eventId),
+          record
+        ])
+      )
+      response.result.forEach(record =>
+        records.set(eventKey(record.sportId, record.eventId), record)
+      )
+      competitionListState.data = { ...response, result: [...records.values()] }
+      competitionListContext.value = getCompetitionListContext()
+      // 热门缓存也定期复核，与其他补查共用去重队列。
+      const targets = [...records.values()].map(record => ({
+        sportId: record.sportId,
+        eventId: record.eventId
+      }))
+      queueEventChecks(targets, { priority: true })
+      return response
     })
 
   watch(getRefreshContext, cancelHomepageRefresh, { flush: 'sync' })
@@ -2542,19 +2608,28 @@ export const useSportsStore = defineStore('sports', () => {
     competitionListRefreshPending = false
     homepageLoading.value = false
   }
-  const pruneEventCache = (protectedTargets: readonly SportsRefreshTarget[]) => {
-    // 等在途查询结束再清理，投注单引用的赛事一直保留。
+  const pruneEventCache = (getProtectedTargets: () => readonly SportsRefreshTarget[]) => {
+    if (!homepageActive) return
+    // 暂时不能清理时，在下一批请求结束后重试。
+    pendingCacheCleanup = () => pruneEventCache(getProtectedTargets)
+    // 名单和定向查询等待结束；批量补查按 ID 保留缓存。
     if (
-      refreshJobs.size ||
+      [...refreshJobs.keys()].some(
+        key => key !== 'counts' && key !== 'event-checks' && !key.startsWith('events:')
+      ) ||
       allSportsPending ||
       hotDetailsPending ||
       leagueJobs.size ||
       events.state.loading
     )
       return
-    const retained = new Set(
-      protectedTargets.map(target => eventKey(target.sportId, target.eventId))
-    )
+    pendingCacheCleanup = undefined
+    const retained = new Set([
+      ...getProtectedTargets().map(target => eventKey(target.sportId, target.eventId)),
+      ...pendingEventChecks.keys(),
+      ...priorityEventChecks.keys(),
+      ...refreshingEvents.keys()
+    ])
     const retain = (sportId: number, items: readonly SportEvent[]) => {
       for (const event of items) retained.add(eventKey(sportId, event.EventId))
     }
@@ -2794,6 +2869,7 @@ export const useSportsStore = defineStore('sports', () => {
     refreshVisibleEvents,
     confirmBetSelection,
     refreshHomepageBackground,
+    refreshHomepageHot,
     cancelHomepageRefresh,
     getRefreshEvent,
     getEventRevision,
