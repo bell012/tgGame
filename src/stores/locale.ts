@@ -14,6 +14,7 @@ import { switchLanguage } from '@/utils/router'
 import { initGlobalDicCache } from '@/utils/global-dic'
 import { useGameStore } from '@/stores/game'
 import { usePromotionsStore } from '@/stores/promotions'
+import type { SiteConfig } from '@/stores/siteConfig'
 
 export const useLocaleStore = defineStore('locale', () => {
   const router = useRouter()
@@ -66,6 +67,43 @@ export const useLocaleStore = defineStore('locale', () => {
     console.log('[LocaleStore] initLanguage - currentCurrency:', currentCurrency.value)
   }
 
+  // 将 /sy/dlicgh 返回的默认语言转换成项目内部使用的语言 code。
+  const normalizeSiteDefaultLanguage = (value: unknown): Locale | null => {
+    const normalizedValue = String(value ?? '').trim()
+    if (!normalizedValue) {
+      return null
+    }
+
+    const languageCode = getStorageLanguageCode(normalizedValue)
+    return languageCode ? (languageCode as Locale) : null
+  }
+
+  // 将 /sy/dlicgh 返回的默认货币统一转换成大写币种 code。
+  const normalizeSiteDefaultCurrency = (value: unknown) => {
+    return String(value ?? '')
+      .trim()
+      .toUpperCase()
+  }
+
+  // 页面刷新初始化时，以 /sy/dlicgh 的默认语言和默认货币覆盖本地旧选择。
+  const applySiteDefaults = (siteConfig?: SiteConfig | null) => {
+    const baseSiteConfig = siteConfig?.baseSiteConfig
+    const defaultLanguage = normalizeSiteDefaultLanguage(baseSiteConfig?.defaultLanguageCode)
+    const defaultCurrency = normalizeSiteDefaultCurrency(baseSiteConfig?.defaultCurrency)
+
+    // defaultLanguageCode 控制当前语言和路由语言前缀，例如 eng / zh。
+    if (defaultLanguage) {
+      currentLanguage.value = defaultLanguage
+      i18n.global.locale.value = getLanguageCode(defaultLanguage) as Locale
+      localStorage.setItem('language', defaultLanguage)
+      switchLanguage(defaultLanguage)
+    }
+
+    if (defaultCurrency) {
+      setCurrency(defaultCurrency)
+    }
+  }
+
   // 切换语言
   const setLanguage = async (code: Locale) => {
     currentLanguage.value = code
@@ -97,6 +135,7 @@ export const useLocaleStore = defineStore('locale', () => {
     currentCurrency,
     actualCurrency,
     initLanguage,
+    applySiteDefaults,
     setLanguage,
     setCurrency
   }
