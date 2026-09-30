@@ -15,7 +15,15 @@
       :data-testid="`sports-floating-${entry.key}`"
       @click="emit('select', entry.key)"
     >
-      <component :is="entry.icon" class="block h-full w-full text-common-100" aria-hidden="true" />
+      <img
+        :src="entry.icon"
+        class="block h-full w-full object-contain"
+        width="50"
+        height="50"
+        alt=""
+        :draggable="false"
+        aria-hidden="true"
+      />
       <span
         v-if="entry.count > 0"
         class="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-secondary-2 px-0.5 text-xs font-bold leading-4 text-common-100"
@@ -31,8 +39,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import HistoryIcon from '@/static/svg/sports/float-history.svg?component'
-import BetSlipIcon from '@/static/svg/sports/float-betslip.svg?component'
+import historyIcon from '@/static/img/sports/float-history.png'
+import betSlipIcon from '@/static/img/sports/float-betslip.png'
 
 const props = withDefaults(defineProps<{ betCount: number; historyCount?: number }>(), {
   historyCount: 0
@@ -43,7 +51,7 @@ const emit = defineEmits<{ select: [entry: 'history' | 'bet-slip'] }>()
 const entries = computed(() => [
   {
     key: 'history' as const,
-    icon: HistoryIcon,
+    icon: historyIcon,
     count: props.historyCount,
     label:
       props.historyCount > 0
@@ -52,7 +60,7 @@ const entries = computed(() => [
   },
   {
     key: 'bet-slip' as const,
-    icon: BetSlipIcon,
+    icon: betSlipIcon,
     count: props.betCount,
     label: t('sports.betSlip.selectionCount', { count: props.betCount })
   }
