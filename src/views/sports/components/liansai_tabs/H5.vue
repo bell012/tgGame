@@ -201,7 +201,7 @@
                 class="h-[44px] min-w-0 flex-1 rounded-full bg-theme-primary text-[14px] font-[700] text-text-4"
                 @click="applyPopupFilter"
               >
-                {{ t('sports.leagueTabs.filter') }} {{ selectedLeagueKeys.length }}
+                {{ t('sports.leagueTabs.filter') }} {{ selectedMatchCount }}
               </button>
             </footer>
           </section>
@@ -274,6 +274,14 @@ const collapsedSectionKeys = ref<string[]>([])
 const popupScrollRef = ref<HTMLElement | null>(null)
 const sectionRefs = ref<Record<string, HTMLElement>>({})
 const activeIndexKey = ref('#')
+
+const selectedMatchCount = computed(() => {
+  const selectedKeys = new Set(selectedLeagueKeys.value)
+  return leagueFilterItems.value.reduce(
+    (total, item) => total + (selectedKeys.has(item.key) ? item.count : 0),
+    0
+  )
+})
 
 // 根据弹窗搜索关键字过滤接口返回的联赛列表。
 const visibleLeagueTabs = computed(() => {
