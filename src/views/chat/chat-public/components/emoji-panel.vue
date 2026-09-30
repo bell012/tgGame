@@ -71,8 +71,6 @@ onMounted(async () => {
     
   `
 
-  console.log(pickerRef.value?.shadowRoot)
-  console.log(pickerRef.value?.shadowRoot?.innerHTML)
   shadowRoot.appendChild(style)
 })
 

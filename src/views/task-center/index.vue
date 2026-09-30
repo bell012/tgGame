@@ -413,7 +413,7 @@ const hasTaskClaimRowId = (task: TaskViewItem | TaskInfoPopupData) => {
   return rowId !== undefined && rowId !== null && String(rowId).trim() !== ''
 }
 
-/** 执行单个任务的领取请求，并在成功后刷新对应任务进度。 */
+/** 执行单个任务的领取请求，并在成功后刷新任务进度与当前活动度。 */
 const claimSingleTask = async (task: TaskViewItem | TaskInfoPopupData) => {
   if (isClaimProcessing.value || !hasTaskClaimRowId(task)) {
     if (!hasTaskClaimRowId(task)) {
@@ -439,7 +439,7 @@ const claimSingleTask = async (task: TaskViewItem | TaskInfoPopupData) => {
       showTaskInfoPopup.value = false
       // 当前新人领取接口只返回奖金金额，未返回活动度时不展示活动度奖励行。
       showTaskClaimSuccessToast(response.result)
-      await refreshEntrantTaskSchedules()
+      await Promise.all([refreshEntrantTaskSchedules(), fetchMemberActiveValue()])
       return
     }
 
@@ -459,7 +459,7 @@ const claimSingleTask = async (task: TaskViewItem | TaskInfoPopupData) => {
     showTaskInfoPopup.value = false
     // 普通任务领取接口只返回实际奖金金额，不能使用任务配置 activeNumber 伪造活动度奖励。
     showTaskClaimSuccessToast(response.result)
-    await refreshMemberTaskSchedules()
+    await Promise.all([refreshMemberTaskSchedules(), fetchMemberActiveValue()])
   } catch (error) {
     showTaskClaimError(getTaskClaimRequestErrorMessage(error))
   } finally {
@@ -495,7 +495,7 @@ const handleTierClaimReminderConfirm = () => {
   }
 }
 
-/** 一键领取全部奖励，成功后刷新新人和普通任务的后端状态。 */
+/** 一键领取全部奖励，成功后刷新任务状态与当前活动度。 */
 const handleClaimAll = async () => {
   if (isClaimProcessing.value) {
     return
@@ -512,7 +512,11 @@ const handleClaimAll = async () => {
     }
 
     showTaskClaimSuccessToast(response.result)
-    await Promise.all([refreshEntrantTaskSchedules(), refreshMemberTaskSchedules()])
+    await Promise.all([
+      refreshEntrantTaskSchedules(),
+      refreshMemberTaskSchedules(),
+      fetchMemberActiveValue()
+    ])
   } catch (error) {
     showTaskClaimError(getTaskClaimRequestErrorMessage(error))
   } finally {

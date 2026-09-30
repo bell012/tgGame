@@ -8,7 +8,10 @@
         :style="{ zIndex: String(toastState.zIndex) }"
       >
         <div class="flex items-center border border-opacity-10 bg-bg-6" :class="toastClassName">
-          <div class="min-w-0 flex-1 break-words mr-3.5" :class="toastMessageName">
+          <div
+            class="mr-3.5 min-w-0 flex-1 whitespace-pre-wrap break-words"
+            :class="toastMessageName"
+          >
             {{ toastState.message }}
           </div>
 
@@ -76,19 +79,15 @@ const containerClassName = computed(() => {
   return isMobile.value ? 'left-3 right-3 top-[49px]' : 'right-[0px] top-[64px]'
 })
 
-const isSingleLineMessage = computed(() => !/[\r\n]/.test(toastState.message))
-
 /**
- * 根据设备类型切换 PC / H5 的内边距和宽度。
+ * 根据设备类型切换 Toast 尺寸；使用最小高度，确保长消息可自动换行撑开。
  */
 const toastClassName = computed(() => {
   if (isMobile.value) {
     return 'w-full px-[14px] py-[16px] rounded-[8px]'
   }
 
-  return isSingleLineMessage.value
-    ? 'h-[51px] w-[400px] px-[12px] rounded-[8px]'
-    : 'w-[400px] px-[12px] py-[16px] rounded-[8px]'
+  return 'min-h-[51px] w-[400px] px-[12px] py-[16px] rounded-[8px]'
 })
 
 /**
