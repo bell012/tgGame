@@ -95,7 +95,7 @@
 
             <div
               ref="popupScrollRef"
-              class="min-h-0 flex-1 overflow-y-auto px-[14px] pb-[90px]"
+              class="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-[14px] pb-[90px]"
               @scroll="updateActiveIndexKey"
             >
               <section
@@ -214,6 +214,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
 import Filter from '@/static/svg/sports/liansai_tabs/filter.svg?component'
@@ -268,6 +269,8 @@ const searchKeyword = computed({
 })
 const popupSearchKeyword = ref('')
 const isPopupOpen = ref(false)
+usePageScrollLock(isPopupOpen, { preventTouchMove: true })
+
 const selectedLeagueKeys = ref<string[]>([])
 const hasTouchedLeagueSelection = ref(false)
 const collapsedSectionKeys = ref<string[]>([])
