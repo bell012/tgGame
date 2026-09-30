@@ -46,6 +46,7 @@
               <button
                 class="button button-m center relative col-start-1 h-32 flex-1 overflow-hidden rounded-xl bg-game-sports p-[10px] font-extrabold sm:h-[176px] sm:p-5"
                 type="button"
+                @click="navigateTo('/sports')"
               >
                 <img
                   class="absolute left-[34%] right-[1px] top-0 h-[100%] sm:left-auto"
