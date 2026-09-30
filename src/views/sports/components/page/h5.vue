@@ -11,7 +11,7 @@
     >
       <SportsNavigation @change="page.handleSportChange" />
       <FilterSearch_H5
-        class="mb-[12px] h-[38px] px-[14px]"
+        class="mb-3 h-[38px] px-[14px]"
         @filter-change="page.handleMatchFilterChange"
       />
     </header>
@@ -97,7 +97,7 @@
     </section>
 
     <section
-      class="mx-[14px] mt-3"
+      class="mx-[14px]"
       :aria-label="t('sports.homepage.matchesByLeague', { sport: activeSportLabel })"
     >
       <div class="mb-3 flex h-[30px] items-center gap-[7px]">
