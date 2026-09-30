@@ -90,6 +90,7 @@ const SELECTED_EVENT_BATCH_SIZE = 5
 const MAX_PRIORITY_EVENT_BATCHES = 2
 const MAX_CONCURRENT_LEAGUES = 3
 const EVENT_CHECK_INTERVAL = 10_000
+const SELECTED_LIVE_MAX_AGE = EVENT_CHECK_INTERVAL * 2
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -217,6 +218,24 @@ const mergeEventFields = (
     MarketLines: mergeMarketLines(previous.MarketLines ?? [], MarketLines, scope)
   }
 }
+
+const getEventLiveFields = (event: SportEvent) => ({
+  RBTime: event.RBTime,
+  RBTimeStatus: event.RBTimeStatus,
+  HomeScore: event.HomeScore,
+  AwayScore: event.AwayScore,
+  RelatedScores: event.RelatedScores
+})
+
+type EventLiveField = keyof ReturnType<typeof getEventLiveFields>
+type EventLiveVersions = Partial<Record<EventLiveField, { revision: number; selectedAt?: number }>>
+const EVENT_LIVE_FIELDS = [
+  'RBTime',
+  'RBTimeStatus',
+  'HomeScore',
+  'AwayScore',
+  'RelatedScores'
+] as const
 
 type LeagueEventsState = {
   data: SportEvent[]
@@ -754,6 +773,7 @@ export const useSportsStore = defineStore('sports', () => {
         revision: number
         checkedRevision?: number
         checkedAt?: number
+        liveVersions: EventLiveVersions
         clockUpdatedAt: number
       }
     >()
@@ -779,24 +799,74 @@ export const useSportsStore = defineStore('sports', () => {
     revision: number,
     {
       receivedAt = Date.now(),
-      marketScope
-    }: { receivedAt?: number; marketScope?: MarketRefreshScope } = {}
+      marketScope,
+      selected = false
+    }: { receivedAt?: number; marketScope?: MarketRefreshScope; selected?: boolean } = {}
   ) => {
     const key = eventKey(sportId, incoming.EventId)
     const previous = refreshedEvents.get(key)
     if (expiredEvents.has(key)) return incoming
+    const incomingLive = getEventLiveFields(incoming)
     if (!previous) {
       const event = reactive({ ...incoming })
-      refreshedEvents.set(key, shallowReactive({ event, revision, clockUpdatedAt: receivedAt }))
+      const liveVersions: EventLiveVersions = {}
+      if (selected)
+        for (const field of EVENT_LIVE_FIELDS)
+          if (incomingLive[field] !== undefined)
+            liveVersions[field] = { revision, selectedAt: receivedAt }
+      refreshedEvents.set(
+        key,
+        shallowReactive({
+          event,
+          revision,
+          liveVersions,
+          clockUpdatedAt: receivedAt
+        })
+      )
       return event
     }
-    // 迟到的响应不能补回已被移除的盘口或投注项。
-    if (revision < previous.revision) return previous.event
-    const timeChanged = incoming.RBTime !== undefined && incoming.RBTime !== previous.event.RBTime
+    const updateFields = revision >= previous.revision
+    const updateSelected =
+      selected &&
+      EVENT_LIVE_FIELDS.some(
+        field =>
+          incomingLive[field] !== undefined &&
+          revision >= (previous.liveVersions[field]?.revision ?? 0)
+      )
+    if (!updateFields && !updateSelected) return previous.event
+    // 迟到的补查只更新阶段和比分，不能补回已移除的盘口或投注项。
+    const next = updateFields
+      ? mergeEventFields(previous.event, incoming, marketScope)
+      : { ...previous.event }
+    const live = getEventLiveFields(previous.event)
+    const liveVersions = { ...previous.liveVersions }
+    const updateLiveField = <K extends EventLiveField>(field: K) => {
+      const value = incomingLive[field]
+      if (value === undefined) return
+      const version = liveVersions[field]
+      if (revision < (version?.revision ?? 0)) return
+      if (selected) {
+        // 只给本次返回的字段续期，缺失字段保留各自的过期时间。
+        liveVersions[field] = { revision, selectedAt: receivedAt }
+      } else {
+        if (!updateFields) return
+        if (
+          version?.selectedAt !== undefined &&
+          receivedAt - version.selectedAt < SELECTED_LIVE_MAX_AGE
+        )
+          return
+        // 列表接管后，该字段不能再被迟到的旧补查覆盖。
+        if (version) liveVersions[field] = { revision }
+      }
+      live[field] = reuseEqual(live[field], value)
+    }
+    for (const field of EVENT_LIVE_FIELDS) updateLiveField(field)
+    const timeChanged = live.RBTime !== previous.event.RBTime
     const wasPaused = previous.event.RBTimeStatus === 3
-    const isPaused = (incoming.RBTimeStatus ?? previous.event.RBTimeStatus) === 3
-    Object.assign(previous.event, mergeEventFields(previous.event, incoming, marketScope))
-    previous.revision = revision
+    const isPaused = live.RBTimeStatus === 3
+    Object.assign(previous.event, { ...next, ...live })
+    if (updateFields) previous.revision = revision
+    previous.liveVersions = liveVersions
     // 重复时间不重置秒表；暂停、恢复或时间变化时重新校准。
     if (timeChanged || wasPaused !== isPaused) previous.clockUpdatedAt = receivedAt
     return previous.event
@@ -847,7 +917,7 @@ export const useSportsStore = defineStore('sports', () => {
         if (revision <= expiredRevision) continue
         expiredEvents.delete(key)
       }
-      rememberEvent(sportId, event, revision, { marketScope })
+      rememberEvent(sportId, event, revision, { marketScope, selected: true })
       const cached = refreshedEvents.get(key)
       if (cached) {
         cached.checkedRevision = revision

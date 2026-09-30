@@ -429,7 +429,7 @@ export type SubmitBuyBackResponse = SportsResponse
 
 /** RelatedScores（rs）：同一比赛不同组别的比分/红牌，不能与主体比分相加。 */
 export interface SportRelatedScore {
-  /** egtid，Int：比分所属的赛事组别类型 ID，不是球种 ID。 */
+  /** egtid，Int：比分组别；足球 2 角球、22 上半场、23 下半场。 */
   EventGroupTypeId: number
   /** hs，Int：该组别的主队比分。 */
   HomeScore: number
@@ -449,9 +449,9 @@ export interface SportRelatedScore {
 export interface SportEventExtraInfo {
   /** HasCorner（Boolean）：是否具有角球投注类型。 */
   hc: boolean
-  /** Current15MinsHomeScore（Int）：文档定义为 15 分钟主队比分；当前业务与详情页一致，用作主队角球数。 */
+  /** Current15MinsHomeScore（Int）：15 分钟主队比分。 */
   c15mhs: number
-  /** Current15MinsAwayScore（Int）：文档定义为 15 分钟客队比分；当前业务与详情页一致，用作客队角球数。 */
+  /** Current15MinsAwayScore（Int）：15 分钟客队比分。 */
   c15mas: number
   /** Int，可缺失：主队黄牌数，缺失时按 0 显示。 */
   htycs?: number
