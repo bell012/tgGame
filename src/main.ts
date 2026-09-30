@@ -35,7 +35,9 @@ router.isReady().then(async () => {
   localeStore.initLanguage()
 
   const siteConfigStore = useSiteConfigStore()
-  await siteConfigStore.initSiteConfig()
+  const siteConfig = await siteConfigStore.initSiteConfig()
+  // 页面刷新时，当前语言和货币以 /sy/dlicgh 返回的默认配置为准。
+  localeStore.applySiteDefaults(siteConfig)
 
   const gameStore = useGameStore()
 
