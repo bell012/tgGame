@@ -50,13 +50,53 @@
               :key="`${market.id}-row-${rowIndex}`"
               class="grid grid-cols-2 gap-2"
             >
-              <button type="button" class="odds-option-btn">
-                <span class="odds-option-label">{{ row.left.line }}</span>
-                <span class="odds-option-value">{{ displayOdds(row.left.selection) }}</span>
+              <button
+                type="button"
+                class="odds-option-btn"
+                :class="oddsButtonClass(row.left.selection, market.id)"
+                :disabled="isOddsButtonUnavailable(market.id)"
+                @click="pickSelection(market.id, row.left.selection)"
+              >
+                <template v-if="isMarketLocked(market.id)">
+                  <img
+                    class="mx-auto h-[18px] w-[18px] object-contain"
+                    :src="lockIcon"
+                    alt=""
+                    draggable="false"
+                    aria-hidden="true"
+                  />
+                </template>
+                <template v-else-if="isMarketClosed(market.id)">
+                  <span class="odds-option-value mx-auto">--</span>
+                </template>
+                <template v-else>
+                  <span class="odds-option-label">{{ row.left.line }}</span>
+                  <span class="odds-option-value">{{ displayOdds(row.left.selection) }}</span>
+                </template>
               </button>
-              <button type="button" class="odds-option-btn">
-                <span class="odds-option-label">{{ row.right.line }}</span>
-                <span class="odds-option-value">{{ displayOdds(row.right.selection) }}</span>
+              <button
+                type="button"
+                class="odds-option-btn"
+                :class="oddsButtonClass(row.right.selection, market.id)"
+                :disabled="isOddsButtonUnavailable(market.id)"
+                @click="pickSelection(market.id, row.right.selection)"
+              >
+                <template v-if="isMarketLocked(market.id)">
+                  <img
+                    class="mx-auto h-[18px] w-[18px] object-contain"
+                    :src="lockIcon"
+                    alt=""
+                    draggable="false"
+                    aria-hidden="true"
+                  />
+                </template>
+                <template v-else-if="isMarketClosed(market.id)">
+                  <span class="odds-option-value mx-auto">--</span>
+                </template>
+                <template v-else>
+                  <span class="odds-option-label">{{ row.right.line }}</span>
+                  <span class="odds-option-value">{{ displayOdds(row.right.selection) }}</span>
+                </template>
               </button>
             </div>
           </div>
@@ -69,9 +109,26 @@
               :key="option.label"
               type="button"
               class="odds-option-btn flex-1"
+              :class="oddsButtonClass(option.selection, market.id)"
+              :disabled="isOddsButtonUnavailable(market.id)"
+              @click="pickSelection(market.id, option.selection)"
             >
-              <span class="odds-option-label">{{ option.label }}</span>
-              <span class="odds-option-value">{{ displayOdds(option.selection) }}</span>
+              <template v-if="isMarketLocked(market.id)">
+                <img
+                  class="mx-auto h-[18px] w-[18px] object-contain"
+                  :src="lockIcon"
+                  alt=""
+                  draggable="false"
+                  aria-hidden="true"
+                />
+              </template>
+              <template v-else-if="isMarketClosed(market.id)">
+                <span class="odds-option-value mx-auto">--</span>
+              </template>
+              <template v-else>
+                <span class="odds-option-label">{{ option.label }}</span>
+                <span class="odds-option-value">{{ displayOdds(option.selection) }}</span>
+              </template>
             </button>
           </div>
         </template>
@@ -137,6 +194,41 @@
         </button>
       </article>
     </div>
+
+    <BetSlipPc
+      v-if="betSlipPage"
+      :open="betSlipOpen"
+      :mode="mode"
+      :selections="selections"
+      :parlays="parlays"
+      :balance-text="balanceText"
+      :currency-symbol="currencySymbol"
+      :total-stake-text="totalStakeText"
+      :potential-return-text="potentialReturnText"
+      :can-submit="canSubmit"
+      :refreshing="refreshing"
+      :focused-stake-id="focusedStakeId"
+      :submitting="submitting"
+      :accept-any-odds="acceptAnyOdds"
+      :result="betResult"
+      :reusing="reusing"
+      @accept-any-odds="setAcceptAnyOdds"
+      @reuse="reuseSelections"
+      @dismiss-result="dismissBetResult"
+      @history="goBetHistory"
+      @toggle="toggleBetSlip"
+      @remove="removeSelection"
+      @stake="updateStake"
+      @parlay-stake="updateParlayStake"
+      @focus-stake="focusStake"
+      @max="maxStake"
+      @quick-amount="quickAmount"
+      @mode="setMode"
+      @clear="clearBets"
+      @submit="submitBet"
+      @refresh="refreshBalance"
+      @unsupported="showUnsupported"
+    />
   </section>
 </template>
 
@@ -145,6 +237,11 @@ import CaretUp from '@/static/svg/sports/caret-up.svg?component'
 import type { SportMarketLine, SportWagerSelection } from '@/api/interface/sport'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { navigateTo } from '@/utils/router'
+import BetSlipPc from '@/views/sports/components/bet-slip/pc.vue'
+import { isWagerSelected } from '@/views/sports/components/match-odds/display'
+import type { SportsPageState } from '@/views/sports/index'
+import lockIcon from './img/bold.svg?url'
 import {
   buildScoreDetailsFilterTabs,
   mapMarketLinesToCards,
@@ -159,11 +256,65 @@ const props = withDefaults(
   defineProps<{
     marketLines?: SportMarketLine[]
     oddsFormat?: EventDetailsOddsFormat
+    betSlipPage?: SportsPageState
+    matchId?: string
   }>(),
   {
     oddsFormat: 1
   }
 )
+
+const {
+  betSlipOpen,
+  mode,
+  selections,
+  parlays,
+  balanceText,
+  currencySymbol,
+  totalStakeText,
+  potentialReturnText,
+  canSubmit,
+  refreshing,
+  focusedStakeId,
+  submitting,
+  acceptAnyOdds,
+  betResult,
+  reusing,
+  setAcceptAnyOdds,
+  reuseSelections,
+  dismissBetResult,
+  removeSelection,
+  updateStake,
+  updateParlayStake,
+  focusStake,
+  maxStake,
+  quickAmount,
+  setMode,
+  clearBets,
+  submitBet,
+  refreshBalance,
+  showUnsupported
+} = props.betSlipPage ?? ({} as SportsPageState)
+
+const bettingEnabled = computed(() => Boolean(props.betSlipPage && props.matchId))
+
+const selectedWagerSelectionId = computed(() => {
+  if (!bettingEnabled.value || !props.betSlipPage || !props.matchId) {
+    return undefined
+  }
+  return props.betSlipPage.getSelectedWagerSelectionId(props.matchId)
+})
+
+const goBetHistory = () => {
+  navigateTo('/sports/bet-history')
+}
+
+const toggleBetSlip = () => {
+  if (!betSlipOpen) {
+    return
+  }
+  betSlipOpen.value = !betSlipOpen.value
+}
 
 const COLLAPSED_ROW_LIMIT = 3
 
@@ -233,6 +384,43 @@ const adjustScore = (marketId: string, teamId: TeamSide, delta: number) => {
     }
   }
 }
+
+const findMarketLine = (marketLineId: string) =>
+  props.marketLines?.find(item => String(item.MarketlineId) === marketLineId)
+
+const isMarketLocked = (marketLineId: string) => findMarketLine(marketLineId)?.IsLocked === true
+
+const isMarketClosed = (marketLineId: string) =>
+  findMarketLine(marketLineId)?.MarketlineStatusId === 2
+
+const isOddsButtonUnavailable = (marketLineId: string) =>
+  isMarketLocked(marketLineId) || isMarketClosed(marketLineId)
+
+const pickSelection = (marketLineId: string, selection?: SportWagerSelection) => {
+  if (!bettingEnabled.value || !props.betSlipPage || !props.matchId) {
+    return
+  }
+  if (!selection || isOddsButtonUnavailable(marketLineId)) {
+    return
+  }
+  const line = findMarketLine(marketLineId)
+  if (!line) {
+    return
+  }
+  void props.betSlipPage.selectOdds(props.matchId, { market: line, option: selection })
+}
+
+const oddsButtonClass = (selection?: SportWagerSelection, marketLineId?: string) => {
+  if (!bettingEnabled.value) {
+    return ''
+  }
+  if (marketLineId && isOddsButtonUnavailable(marketLineId)) {
+    return 'odds-option-btn--unavailable'
+  }
+  return selection && isWagerSelected(selection, selectedWagerSelectionId.value)
+    ? 'odds-option-btn--selected'
+    : ''
+}
 </script>
 
 <style scoped>
@@ -272,18 +460,42 @@ const adjustScore = (marketId: string, teamId: TeamSide, delta: number) => {
   transition: color 0.15s ease;
 }
 
-.odds-option-btn:hover {
+.odds-option-btn:hover:not(:disabled):not(.odds-option-btn--selected) {
   background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.05);
   color: rgb(255, 255, 255);
 }
 
-.odds-option-btn:hover .odds-option-label,
-.odds-option-btn:hover .odds-option-value {
+.odds-option-btn:hover:not(:disabled):not(.odds-option-btn--selected) .odds-option-label,
+.odds-option-btn:hover:not(:disabled):not(.odds-option-btn--selected) .odds-option-value {
   color: rgb(255, 255, 255);
 }
 
-:global(html.dark) .odds-option-btn:hover {
+.odds-option-btn--selected {
+  border-color: var(--color-theme-primary);
+  background-color: var(--color-theme-primary);
+}
+
+.odds-option-btn--selected .odds-option-label,
+.odds-option-btn--selected .odds-option-value {
+  color: var(--color-text-level-4);
+}
+
+.odds-option-btn--selected:hover {
+  background-color: var(--color-theme-primary);
+  border-color: var(--color-theme-primary);
+}
+
+.odds-option-btn--unavailable {
+  justify-content: center;
+  cursor: default;
+}
+
+.odds-option-btn:disabled {
+  cursor: default;
+}
+
+:global(html.dark) .odds-option-btn:hover:not(:disabled):not(.odds-option-btn--selected) {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.05);
 }

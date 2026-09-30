@@ -6,13 +6,20 @@
     :show-empty="showEmpty"
     @pick="emit('pick', $event)"
   />
-  <SportsScoreDetailsPc v-else :market-lines="marketLines" :odds-format="oddsFormat" />
+  <SportsScoreDetailsPc
+    v-else
+    :market-lines="marketLines"
+    :odds-format="oddsFormat"
+    :bet-slip-page="betSlipPage"
+    :match-id="matchId"
+  />
 </template>
 
 <script setup lang="ts">
 import type { SportMarketLine } from '@/api/interface/sport'
 import { useIsMobile } from '@/composables/useMediaQuery'
 import type { OddsSelectPayload } from '@/views/sports/components/match-odds/types'
+import type { SportsPageState } from '@/views/sports/index'
 import SportsScoreDetailsH5 from './h5.vue'
 import SportsScoreDetailsPc from './pc.vue'
 import type { EventDetailsOddsFormat } from './map-market-lines'
@@ -23,6 +30,8 @@ withDefaults(
     oddsFormat?: EventDetailsOddsFormat
     selectedWagerSelectionId?: number
     showEmpty?: boolean
+    betSlipPage?: SportsPageState
+    matchId?: string
   }>(),
   {
     oddsFormat: 1,

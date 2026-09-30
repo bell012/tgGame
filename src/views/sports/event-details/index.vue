@@ -64,6 +64,8 @@
               class="mt-4"
               :market-lines="scoreDetailsMarketLines"
               :odds-format="oddsFormat"
+              :bet-slip-page="betSlipPage"
+              :match-id="currentMatchId"
             />
             <ThemedEmptyState
               v-else-if="!isEventDetailsLoading"
