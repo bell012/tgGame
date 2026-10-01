@@ -58,8 +58,9 @@
         class="flex w-full items-center gap-[12px] border-b border-opacity-4 py-[12px] text-left"
         @click="$emit('locate', result.id, query.trim())"
       >
+        <!-- 客服头像统一补全 OSS 域名，接口未返回时使用本地默认头像。 -->
         <img
-          :src="props.conversation?.avatar || avatarUrl"
+          :src="resolveChatMediaUrl(props.conversation?.avatar) || avatarUrl"
           alt=""
           class="size-[50px] shrink-0 rounded-full object-cover"
         />
@@ -124,7 +125,8 @@ import {
   formatChatMessageTime,
   getChatPlainText,
   getChatTextHighlightParts,
-  getChatTimePeriod
+  getChatTimePeriod,
+  resolveChatMediaUrl
 } from '../shared'
 import type { ChatMessage, ConversationItem } from '../types'
 

@@ -104,14 +104,15 @@ import type {
 import H5Header from '@/components/common/H5Header.vue'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import feedbackBowIcon from '@/static/svg/feedback/hdj.svg?url'
 import feedbackEllipseIcon from '@/static/svg/feedback/ellipse.svg?url'
+import feedbackBowIcon from '@/static/svg/feedback/hdj.svg?url'
 import feedbackStarIcon from '@/static/svg/feedback/star.svg?url'
 import { useLocaleStore } from '@/stores/locale'
 import { getCurrencySymbol, getLanguageCode } from '@/utils/locale'
 import { globalShowToast } from '@/utils/toast'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onActivated, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import FeedbackClaimSuccessPopup from '../personalCenter/feedback/components/feedback-claim-success-popup.vue'
 import TaskClaimSuccessToast from './components/TaskClaimSuccessToast.vue'
 import TaskInfoPopup from './components/TaskInfoPopup.vue'
@@ -139,6 +140,7 @@ const isMobile = useIsMobile()
 const localeStore = useLocaleStore()
 const { currentCurrencyCode } = useDisplayCurrency()
 const { t } = useI18n()
+const route = useRoute()
 
 /** 保存后台任务栏目原始配置，语言变化时可重新计算名称。 */
 const taskConfigs = ref<GameTaskConfigItem[]>([])
@@ -208,6 +210,9 @@ const memberActiveValue = ref<MemberActiveValueResult | null>(null)
 
 /** 保存活动度倒计时定时器，离开页面时必须清理。 */
 let taskActivityResetTimer: ReturnType<typeof setInterval> | undefined
+
+/** 跳过 KeepAlive 首次激活，避免与 onMounted 的首次请求重复。 */
+let isInitialTaskPageActivation = true
 
 /** 获取当前页面语言对应的后台任务语言代码。 */
 const currentTaskLanguageCode = computed(() => getLanguageCode(localeStore.currentLanguage))
@@ -646,12 +651,43 @@ const fetchMemberActiveValue = async () => {
   }
 }
 
+/** 刷新任务中心全部页面数据，确保从任务跳转返回后展示最新状态。 */
+const refreshTaskCenterPageData = async () => {
+  await Promise.all([
+    fetchTaskConfigs(),
+    fetchTaskLists(),
+    fetchTaskOverview(),
+    fetchMemberActiveValue()
+  ])
+}
+
 onMounted(() => {
-  void fetchTaskConfigs()
-  void fetchTaskLists()
-  void fetchTaskOverview()
-  void fetchMemberActiveValue()
+  void refreshTaskCenterPageData()
 })
+
+/** 页面从 KeepAlive 恢复时重新请求数据，不能继续展示离开前的任务状态。 */
+onActivated(() => {
+  if (isInitialTaskPageActivation) {
+    isInitialTaskPageActivation = false
+    return
+  }
+
+  void refreshTaskCenterPageData()
+})
+
+/** H5 滑动路由会保留任务页实例；从任意目标页返回 tasks 时仍需刷新全部数据。 */
+watch(
+  () => String(route.name ?? ''),
+  (routeName, previousRouteName) => {
+    const isTaskCenterRoute = routeName === 'tasks' || routeName === 'Localetasks'
+    const returnedFromAnotherRoute =
+      previousRouteName !== 'tasks' && previousRouteName !== 'Localetasks'
+
+    if (isTaskCenterRoute && returnedFromAnotherRoute) {
+      void refreshTaskCenterPageData()
+    }
+  }
+)
 
 onBeforeUnmount(() => {
   clearTaskActivityResetTimer()

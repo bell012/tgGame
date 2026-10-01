@@ -11,7 +11,7 @@
         :class="
           props.mode === 'pc'
             ? 'right-0 top-16 flex h-[92px] w-[400px] flex-col items-start gap-2.5 rounded-lg px-3 py-4'
-            : 'left-1/2 top-[107px] h-[80px] w-[347px] -translate-x-1/2 rounded-lg border-[0.667px]'
+            : 'left-3 right-3 top-[49px] h-[80px] rounded-lg border-[0.667px]'
         "
       >
         <!-- PC 文字内容与倒计时圆环。 -->
