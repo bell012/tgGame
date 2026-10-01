@@ -57,11 +57,11 @@
             >
               {{ team.score }}
             </span>
-            <p class="min-w-0 break-words text-[13px] font-bold leading-4">
-              {{ team.name }}
+            <p class="flex min-w-0 items-center gap-[3px] text-[13px] font-bold leading-4">
+              <span class="min-w-0 break-words">{{ team.name }}</span>
               <span
                 v-if="match.live && (team.redCards != null || team.yellowCards != null)"
-                class="inline-flex items-center gap-[3px] align-baseline text-[10px] font-bold leading-3"
+                class="flex shrink-0 items-center gap-[3px] text-[10px] font-bold leading-3"
               >
                 <span
                   v-if="team.redCards != null"

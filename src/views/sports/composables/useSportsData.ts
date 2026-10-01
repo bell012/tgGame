@@ -297,6 +297,15 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
   watch([sortType, () => competitionIds.value.join(','), collectOnly], resetMatchListState, {
     flush: 'sync'
   })
+  // PC/H5 分类组件先更新 Store 再发事件；在列表渲染后重置页面滚动，不随轮询跳动。
+  watch(
+    selectedFilterKey,
+    () => {
+      if (sportsPageDisposed || !sportsPageActive.value || !isHomepageRoute.value) return
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    },
+    { flush: 'post' }
+  )
   const retrySports = () => {
     if (!sportsPageDisposed && sportsPageActive.value && !sportsPageLoading.value) {
       homepageRefresh.stop()

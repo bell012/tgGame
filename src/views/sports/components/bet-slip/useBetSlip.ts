@@ -16,8 +16,9 @@ import type {
   SportsParlay
 } from '../../shared/types'
 import { mapSportsMatches } from '../../shared/match'
-import { MAX_SELECTIONS, parseSportsStake, moneyRound } from './shared'
+import { MAX_SELECTIONS, parseSportsStake, moneyRound, adjustSportsStakeToBalance } from './shared'
 import { useBetInfo } from './useBetInfo'
+import { isBetInfoMarketClosed } from './bet-info'
 import { useBetSubmissionCache } from './useBetSubmissionCache'
 import type { BetInfoSource } from './useBetInfo'
 import { getPlaceBetFailure, getPlaceBetResult, toPlaceBetSelection } from './place-bet'
@@ -70,6 +71,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     availability.value[id] === 'checking' ||
     outcomes.value.some(outcome => outcome.id === id && isSelectionExpired(outcome))
   const parlayStakes = ref<Record<string, string>>({})
+  const balanceAdjusted = ref<Record<string, boolean>>({})
   const focusedStakeId = ref('')
   const submitting = ref(false)
   const reusing = ref(false)
@@ -137,6 +139,16 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         .map(item => item.id)
         .sort()
         .join('|')}`
+  )
+  watch(
+    parlaySubmissionKey,
+    () => {
+      const ids = new Set(outcomes.value.map(item => item.id))
+      balanceAdjusted.value = Object.fromEntries(
+        Object.entries(balanceAdjusted.value).filter(([id]) => ids.has(id))
+      )
+    },
+    { flush: 'sync' }
   )
   const getSubmissionState = (id: string) => submissionCache.selectionStates.value[id]
   // 加入时检查串关资格，之后以报价状态为准。
@@ -414,7 +426,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         if (isSelectionExpired(outcome)) return 'unavailable'
         if (availability.value[outcome.id] === 'checking') return 'pending'
         if (parlayUnsupported) return 'unavailable'
-        if (quote?.st === 380 || quote?.mlsid === 2) return 'closed'
+        if (isBetInfoMarketClosed(quote)) return 'closed'
         if (betInfoError.value) return 'error'
         if (!quote) {
           if (['queued', 'loading'].includes(betInfoState.value)) return 'pending'
@@ -464,7 +476,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         stakeError:
           statusMessage ||
           (mode.value === 'single'
-            ? getStakeError(outcome.stake, setting?.misa, setting?.masa)
+            ? getStakeError(outcome.stake, setting?.misa, setting?.masa) ||
+              (balanceAdjusted.value[outcome.id] ? t('sports.betBalanceAdjusted') : '')
             : '')
       }
     })
@@ -489,7 +502,9 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
           minStake: item.misa,
           maxStake: item.masa,
           payoutPerUnit: Number.isFinite(item.epa) ? item.epa : undefined,
-          stakeError: getStakeError(stake, item.misa, item.masa),
+          stakeError:
+            getStakeError(stake, item.misa, item.masa) ||
+            (balanceAdjusted.value[id] ? t('sports.betBalanceAdjusted') : ''),
           limitText: limitText(item.misa, item.masa)
         }
       })
@@ -514,7 +529,9 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       ? selections.value.filter(item => hasStake(item.stake))
       : selections.value
   )
-  const invalidStake = computed(() => fundedRows.value.some(item => Boolean(item.stakeError)))
+  const invalidStake = computed(() =>
+    fundedRows.value.some(item => Boolean(getStakeError(item.stake, item.minStake, item.maxStake)))
+  )
   const potentialReturn = computed(() =>
     moneyRound(
       fundedRows.value.reduce(
@@ -531,7 +548,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       !getSubmissionState(outcome.id) &&
       quote !== undefined &&
       Number(quote.st) !== 380 &&
-      Number(quote.mlsid) !== 2 &&
+      !isBetInfoMarketClosed(quote) &&
       (mode.value !== 'parlay' || ![439, 464].includes(Number(quote.st)))
     )
   }
@@ -595,6 +612,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     availability.value = {}
     checkedQuoteIds.clear()
     parlayStakes.value = {}
+    balanceAdjusted.value = {}
     focusedStakeId.value = ''
     mode.value = 'single'
   }
@@ -605,6 +623,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       return false
     }
     mode.value = value
+    balanceAdjusted.value = {}
     focusedStakeId.value =
       value === 'single' ? (outcomes.value[0]?.id ?? '') : (parlays.value[0]?.id ?? '')
     return true
@@ -613,6 +632,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     if (submitting.value) return
     outcomes.value = outcomes.value.filter(item => item.id !== id)
     delete availability.value[id]
+    delete balanceAdjusted.value[id]
     checkedQuoteIds.delete(id)
     parlayStakes.value = {}
     if (outcomes.value.length < 2) mode.value = 'single'
@@ -732,15 +752,51 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     betSlipOpen.value = true
     return true
   }
+  // 已确认关闭/失效的盘口不占余额；报价缺失或复核中的输入仍预留，防止恢复后超额。
+  const getOtherStake = (id: string, kind: SportsBetMode) =>
+    kind === 'single'
+      ? outcomes.value.reduce((sum, item) => {
+          const quote = betInfoQuotes.value.find(quote => quote.rid === item.WagerSelectionId)
+          return (
+            sum +
+            (item.id !== id &&
+            !getSubmissionState(item.id) &&
+            !isSelectionExpired(item) &&
+            !isBetInfoMarketClosed(quote)
+              ? (parseSportsStake(item.stake) ?? 0)
+              : 0)
+          )
+        }, 0)
+      : parlays.value.reduce(
+          (sum, item) =>
+            sum +
+            (item.id !== id && !item.submissionState
+              ? (parseSportsStake(item.stake) ?? 0) * item.combinationCount
+              : 0),
+          0
+        )
   const updateStake = (id: string, value: string) => {
     if (submitting.value || getSubmissionState(id)) return
     const outcome = outcomes.value.find(item => item.id === id)
-    if (outcome) outcome.stake = value
+    if (!outcome) return
+    const otherStake = getOtherStake(id, 'single')
+    const adjusted = adjustSportsStakeToBalance(value, balance.value, otherStake, 1)
+    outcome.stake = adjusted.value
+    balanceAdjusted.value[id] = adjusted.adjusted
   }
   const updateParlayStake = (id: string, value: string) => {
     if (submitting.value || parlays.value.find(item => item.id === id)?.submissionState) return
-    if (!parlays.value.some(item => item.id === id)) return
-    parlayStakes.value = { ...parlayStakes.value, [id]: value }
+    const row = parlays.value.find(item => item.id === id)
+    if (!row) return
+    const otherStake = getOtherStake(id, 'parlay')
+    const adjusted = adjustSportsStakeToBalance(
+      value,
+      balance.value,
+      otherStake,
+      row.combinationCount
+    )
+    parlayStakes.value = { ...parlayStakes.value, [id]: adjusted.value }
+    balanceAdjusted.value[id] = adjusted.adjusted
   }
   const focusStake = (id: string, kind: SportsBetMode) => {
     if (kind === mode.value && activeRows.value.some(row => row.id === id))
@@ -750,11 +806,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     if (kind !== mode.value || balance.value === null) return
     const row = activeRows.value.find(item => item.id === id)
     if (!row || row.maxStake === undefined || row.minStake === undefined) return
-    const otherStake = activeRows.value.reduce(
-      (sum, item) =>
-        item.id === id ? sum : sum + (parseSportsStake(item.stake) ?? 0) * item.combinationCount,
-      0
-    )
+    const otherStake = getOtherStake(id, kind)
     const availableCents = Math.max(0, Math.round((balance.value - otherStake) * 100))
     const maximum = Math.min(row.maxStake, Math.floor(availableCents / row.combinationCount) / 100)
     const value = maximum >= row.minStake ? maximum.toFixed(2) : ''
@@ -849,6 +901,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       outcomes.value = [...remaining, ...restored].slice(0, MAX_SELECTIONS)
       for (const item of receipt.selections) {
         delete availability.value[item.id]
+        delete balanceAdjusted.value[item.id]
         checkedQuoteIds.delete(item.id)
       }
       parlayStakes.value = {}
@@ -1071,6 +1124,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     const hadSelections = outcomes.value.length > 0
     // 切换币种时清空投注项，包括提交期间。
     outcomes.value = []
+    balanceAdjusted.value = {}
     availability.value = {}
     checkedQuoteIds.clear()
     parlayStakes.value = {}

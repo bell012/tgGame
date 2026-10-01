@@ -17,13 +17,17 @@
       @click="emit('focus')"
     >
       <span class="shrink-0 text-[15px] font-bold text-text-1">{{ props.currencySymbol }}</span>
-      <span
-        v-if="props.value"
-        class="min-w-0 truncate text-[15px] font-bold tabular-nums text-text-1"
-        >{{ props.value }}</span
-      >
-      <span v-else class="min-w-0 truncate text-xs text-text-3">{{ props.placeholder }}</span>
-      <span v-if="props.active" class="h-4 w-px shrink-0 bg-theme-primary" aria-hidden="true" />
+      <span class="flex min-w-0 items-center">
+        <span
+          v-if="props.value"
+          class="min-w-0 truncate text-[15px] font-bold tabular-nums text-text-1"
+          >{{ props.value }}</span
+        >
+        <span v-if="props.active" class="h-4 w-px shrink-0 bg-theme-primary" aria-hidden="true" />
+        <span v-if="!props.value" class="min-w-0 truncate text-xs text-text-3">{{
+          props.placeholder
+        }}</span>
+      </span>
     </button>
     <p
       v-if="props.error && !props.hideError"

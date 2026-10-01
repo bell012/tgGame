@@ -59,8 +59,8 @@ export interface LoginForm {
   validateCode?: string // 验证码(如果是三方Oauth2授权则传授权token)
   channelId: string // 注册终端  1:竖版  2:横版  3:PC 4:H5  5:其他
   requestMethod: string // 0:账号密码 1:手机号码 2:纸飞机 3:脸书 4:X公司 5:Line 6:谷歌 7:微信
-  captchaCode: string // 开启自研图片验证码  需要传   用户输入
-  captchaKey: string // 开启自研图片验证码  需要传   后端给的
+  captchaCode?: string // 开启自研图片验证码  需要传   用户输入
+  captchaKey?: string // 开启自研图片验证码  需要传   后端给的
 }
 
 // 登录响应

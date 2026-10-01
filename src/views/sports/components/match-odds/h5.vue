@@ -23,7 +23,7 @@
       <p
         v-for="line in MarketLines"
         :key="`${line.MarketlineId}-title`"
-        class="flex flex-col items-center gap-0.5 text-center text-[10px] font-normal leading-[10px] text-text-2"
+        class="flex flex-col items-center gap-0.5 text-center text-[10px] font-normal leading-[15px] text-text-2"
       >
         <span>{{ line.BetTypeName }}</span>
         <span v-if="line.PeriodId !== 1 && line.PeriodName">{{ line.PeriodName }}</span>
