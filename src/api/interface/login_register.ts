@@ -3,28 +3,43 @@
  */
 
 // 登陆注册设置响应 /bd/getLoginAndRegisterSetting
+export interface LoginSetFormField {
+  captcha: boolean
+  enable: boolean // ture 开启邀请码
+  required: boolean
+}
+
+export interface LoginSetAccountField {
+  enable: number
+  verifyMethod: number
+}
+
 export interface LoginSetResult {
+  deviceChangeVerifyEnabled: number
+  deviceChangeVerifyMethod: number
+  emailAccount: LoginSetAccountField
+  imageCaptchaEnabled: number // 是否开启自研图片验证码   0关闭 1开启
+  invitationCode: LoginSetFormField // 邀请码
+  loginAuthType: number[] // 登录验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信
+  loginIpLimit: number
+  loginMethod: number[] // 登陆方式1账号密码 2手机号码
+  loginWrongLimit: number
+  memberName: LoginSetFormField // 会员真实姓名
+  mobileAccount: LoginSetAccountField
+  normalAccount: LoginSetAccountField
+  phone: LoginSetFormField // 手机号码
+  registerAccountType: number[]
+  registerAuthType: number[] // 注册验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信
+  registerDeviceDayLimit: number
   registerEnable: number // 是否容许注册  0:关闭 1:开启
-  memberName: {
-    // 会员真实姓名
-    enable: boolean
-    required: boolean
-  }
-  phone: {
-    // 手机号码
-    enable: boolean
-    required: boolean
-  }
-  invitationCode: {
-    // 邀请码
-    enable: boolean
-    required: boolean
-  }
-  registerAuthType: [number] // 注册验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信
-  loginAuthType: [number] // 登录验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信
-  registerMethod: [number] // 注册方式1账号密码 2手机号码
-  loginMethod: [number] // 登陆方式1账号密码 2手机号码
+  registerFingerprintDayLimit: number
+  registerIpDayLimit: number
+  registerIpLimit: number
+  registerMethod: number[] // 注册方式1账号密码 2手机号码
+  simpleNewNumber: number
+  simpleNewNumberChannelId: string
   sysAuthType: number // 系统验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信
+  thirdPartyAuthType: number
 }
 
 // 登陆注册设置响应
@@ -37,13 +52,15 @@ export interface LoginSetResponse {
 
 // 会员登录 /mc/loginMember
 export interface LoginForm {
-  memberId: string // 会员账号(账号还是手机都要传。手机是区号+号码)
+  memberId: string // 会员账号(账号还是手机都要传)
   telephone: string // 手机号码
   memberPwd: string // 会员密码,
   areaCode: string // 区号
   validateCode?: string // 验证码(如果是三方Oauth2授权则传授权token)
   channelId: string // 注册终端  1:竖版  2:横版  3:PC 4:H5  5:其他
   requestMethod: string // 0:账号密码 1:手机号码 2:纸飞机 3:脸书 4:X公司 5:Line 6:谷歌 7:微信
+  captchaCode: string // 开启自研图片验证码  需要传   用户输入
+  captchaKey: string // 开启自研图片验证码  需要传   后端给的
 }
 
 // 登录响应
@@ -90,7 +107,7 @@ export interface LoginResponse {
 
 // 会员注册 /mc/newMember
 export interface RegisterForm {
-  memberId: string // 会员账号(账号还是手机都要传。手机是区号+号码)
+  memberId: string // 会员账号(账号还是手机都要传)
   channelId: string // 注册终端  1:竖版  2:横版  3:PC 4:H5  5:其他
   languageCode: string // 语言编码  zh中文  en英文
   requestMethod: number // 0:账号密码 1:手机号码
@@ -164,7 +181,7 @@ export interface ResetPasswordForm {
   smsCode: string //短信验证码
   telephone: string //手机号
   areaCode: string //区号
-  memberId: string // 会员账号(账号还是手机都要传。手机是区号+号码)
+  memberId: string // 会员账号(账号还是手机都要传)
 }
 
 // 重置密码 响应
