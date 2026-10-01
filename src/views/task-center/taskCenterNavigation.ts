@@ -90,10 +90,9 @@ const isTaskGameCodeMatched = (source: unknown, target: string) =>
 const navigateToTaskGame = async (task: TaskCenterNavigationTask, isMobile: boolean) => {
   const sourceCode = getFirstPlatformGameCode(task)
   const target = parseTaskGameNavigationTarget(sourceCode)
-
+  // 后台未下发有效游戏目标时，安全回退至娱乐城首页。
   if (!target) {
-    console.warn('task center game task payload is invalid', { sourceCode, task })
-    return false
+    return navigateFromTaskCenter(navigateTo('/casino'), isMobile)
   }
 
   try {

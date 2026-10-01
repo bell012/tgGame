@@ -786,8 +786,8 @@ const createMemberTaskProgress = (
 const shouldForceMemberTaskProgressComplete = (schedule: TaskScheduleItem) => {
   const claimStatus = normalizeTaskClaimStatus(schedule.claimStatus)
 
-  // CLAIMED：奖励已领取，页面进度固定展示完成。
-  if (claimStatus === 'CLAIMED') {
+  // CLAIMABLE / CLAIMED：后端已确认任务条件达成，页面进度固定展示完成。
+  if (claimStatus === 'CLAIMABLE' || claimStatus === 'CLAIMED') {
     return true
   }
 
