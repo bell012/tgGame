@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import Api from '@/api'
-import type { LoginSetResult } from '@/api/interface/login_register'
+import type { LoginForm, LoginSetResult } from '@/api/interface/login_register'
 import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
 import { AESUtils } from '@/utils/encrypt'
@@ -267,11 +267,7 @@ const showSigninSmsCode = computed(() => {
  * 当前登录方式是否需要图形验证码。
  */
 const showSigninCaptcha = computed(() => {
-  return (
-    activeTab.value === 'signin' &&
-    activeLoginMethod.value === 'username' &&
-    Number(props.loginSetting?.imageCaptchaEnabled) === 1
-  )
+  return activeTab.value === 'signin' && Number(props.loginSetting?.imageCaptchaEnabled) === 1
 })
 
 const captchaImageUrl = ref('')
@@ -312,7 +308,11 @@ const isSigninValid = computed(() => {
     return hasBaseFields
   }
 
-  return hasBaseFields && formData.value.signin.captchaCode.length > 0
+  return (
+    hasBaseFields &&
+    formData.value.signin.captchaCode.length > 0 &&
+    formData.value.signin.captchaKey.length > 0
+  )
 })
 
 const isSignupValid = computed(() => {
@@ -364,6 +364,10 @@ const setActiveLoginMethod = (method: string) => {
   formData.value.signin.captchaCode = ''
   formData.value.signin.captchaKey = ''
   syncSigninAccount()
+
+  if (showSigninCaptcha.value) {
+    void fetchSigninCaptcha()
+  }
 }
 
 /**
@@ -648,26 +652,23 @@ const handleLogin = async () => {
   }
 
   try {
-    const loginData = {
+    const loginData: LoginForm = {
       memberId: account,
-      telephone: account,
       memberPwd: showSigninPassword.value
         ? StringExtension.md5(formData.value.signin.password)
         : '',
       areaCode: formData.value.signin.areaCode,
       channelId: '1',
-      requestMethod: activeLoginMethod.value === 'username' ? '0' : '1',
-      ...(showSigninSmsCode.value
-        ? {
-            validateCode: formData.value.signin.smsCode
-          }
-        : {}),
-      ...(showSigninCaptcha.value
-        ? {
-            captchaCode: formData.value.signin.captchaCode,
-            captchaKey: formData.value.signin.captchaKey
-          }
-        : {})
+      requestMethod: activeLoginMethod.value === 'username' ? '0' : '1'
+    }
+
+    if (activeLoginMethod.value === 'phone' && showSigninSmsCode.value) {
+      loginData.validateCode = formData.value.signin.smsCode
+    }
+
+    if (showSigninCaptcha.value) {
+      loginData.captchaCode = formData.value.signin.captchaCode
+      loginData.captchaKey = formData.value.signin.captchaKey
     }
 
     const response = await Api.auth.login(loginData)

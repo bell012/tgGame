@@ -66,15 +66,15 @@ export interface CaptchaImageResponse {
 
 // 会员登录 /mc/loginMember
 export interface LoginForm {
-  memberId: string // 会员账号(账号还是手机都要传)
-  telephone: string // 手机号码
-  memberPwd: string // 会员密码,
+  memberId: string // 用户名登录传用户账号，手机号登录传手机号码
+  telephone?: string // 手机号码
   areaCode: string // 区号
-  validateCode?: string // 验证码(如果是三方Oauth2授权则传授权token)
+  memberPwd: string // 会员密码
+  validateCode?: string // 手机号登录验证码
   channelId: string // 注册终端  1:竖版  2:横版  3:PC 4:H5  5:其他
   requestMethod: string // 0:账号密码 1:手机号码 2:纸飞机 3:脸书 4:X公司 5:Line 6:谷歌 7:微信
-  captchaCode?: string // 开启自研图片验证码  需要传   用户输入
-  captchaKey?: string // 开启自研图片验证码  需要传   后端给的
+  captchaCode?: string // 开启自研图片验证码时传，用户输入的图形码
+  captchaKey?: string // 开启自研图片验证码时传，CaptchaImageResult 返回的 captchaKey
 }
 
 // 登录响应
