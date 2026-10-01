@@ -14,7 +14,8 @@ import type {
   ResetPasswordForm,
   ResetPasswordResponse,
   CheckSmsForm,
-  CheckSmsResponse
+  CheckSmsResponse,
+  CaptchaImageResponse
 } from '@/api/interface/login_register'
 
 /**
@@ -77,10 +78,19 @@ export function sendSms(data: SmsForm): Promise<SmsResponse> {
   })
 }
 /**
- * 短信验证码 验证
- * @param data 短信验证码 验证 数据
+ * 自研图片验证码
+ * @param data 自研图片验证码  数据
  * @returns Promise<CheckSmsResponse>
  */
+export function getCaptchaImage(): Promise<CaptchaImageResponse> {
+  return request({
+    url: '/sy/captcha/image',
+    method: 'post',
+    showSuccessToast: false,
+    showErrorToast: true
+  })
+}
+
 export function checkSms(data: CheckSmsForm): Promise<CheckSmsResponse> {
   return request({
     url: '/sy/checkSms',

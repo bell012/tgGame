@@ -1,6 +1,8 @@
 <template>
   <slot
     :active-tab="activeTab"
+    :active-login-method="activeLoginMethod"
+    :login-method-tabs="loginMethodTabs"
     :show-password="showPassword"
     :show-confirm-password="showConfirmPassword"
     :form-data="formData"
@@ -8,7 +10,11 @@
     :countdown="countdown"
     :is-signin-valid="isSigninValid"
     :is-signup-valid="isSignupValid"
+    :show-signin-captcha="showSigninCaptcha"
+    :captcha-image-url="captchaImageUrl"
+    :is-captcha-loading="isCaptchaLoading"
     :set-active-tab="setActiveTab"
+    :set-active-login-method="setActiveLoginMethod"
     :toggle-password="togglePassword"
     :toggle-confirm-password="toggleConfirmPassword"
     :handle-checkbox-click="handleCheckboxClick"
@@ -18,7 +24,11 @@
     :handle-social-login="handleSocialLogin"
     :open-reset-password="openResetPassword"
     :handle-signin-account-input="handleSigninAccountInput"
+    :handle-signin-username-input="handleSigninUsernameInput"
+    :handle-signin-phone-input="handleSigninPhoneInput"
     :handle-signin-password-input="handleSigninPasswordInput"
+    :handle-signin-captcha-input="handleSigninCaptchaInput"
+    :refresh-signin-captcha="fetchSigninCaptcha"
     :handle-signup-account-input="handleSignupAccountInput"
     :handle-signup-code-input="handleSignupCodeInput"
     :handle-signup-password-input="handleSignupPasswordInput"
@@ -28,6 +38,7 @@
 
 <script setup lang="ts">
 import Api from '@/api'
+import type { LoginSetResult } from '@/api/interface/login_register'
 import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
 import { AESUtils } from '@/utils/encrypt'
@@ -50,13 +61,19 @@ import { globalShowToast } from '@/utils/toast.ts'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+type AuthTab = 'signin' | 'signup'
+type SigninMethod = 'username' | 'phone'
+
 interface Props {
-  defaultTab?: 'signin' | 'signup'
+  defaultTab?: AuthTab
+  loginSetting?: LoginSetResult | null
 }
+
 const { t } = useI18n()
 
 const props = withDefaults(defineProps<Props>(), {
-  defaultTab: 'signin'
+  defaultTab: 'signin',
+  loginSetting: null
 })
 
 const emit = defineEmits<{
@@ -81,8 +98,8 @@ const {
   durationSeconds: 60
 })
 
-// 当前激活的标签页
-const activeTab = ref<'signin' | 'signup'>(props.defaultTab)
+const activeTab = ref<AuthTab>(props.defaultTab)
+const activeLoginMethod = ref<SigninMethod>('username')
 
 watch(
   () => props.defaultTab,
@@ -91,7 +108,6 @@ watch(
   }
 )
 
-// 密码显示状态
 const showPassword = ref({
   signin: false,
   signup: false,
@@ -100,17 +116,11 @@ const showPassword = ref({
 
 const showConfirmPassword = ref(false)
 
-/**
- * 获取记住我信息使用的本地 AES 密钥。
- */
 const getRememberedCredentialsAESKey = () => {
   const host = typeof window !== 'undefined' ? window.location.host : 'tgGame'
   return StringExtension.tail16(`${host}-${REMEMBERED_CREDENTIALS_KEY_SEED}`)
 }
 
-/**
- * 加密记住我的本地存储值。
- */
 const encryptRememberedValue = (value: string) => {
   if (!value) return ''
 
@@ -122,9 +132,6 @@ const encryptRememberedValue = (value: string) => {
   }
 }
 
-/**
- * 解密记住我的本地存储值
- */
 const decryptRememberedValue = (value: string) => {
   if (!value) return ''
 
@@ -136,9 +143,6 @@ const decryptRememberedValue = (value: string) => {
   }
 }
 
-/**
- * 读取并解密指定 key 对应的记住我存储值。
- */
 const getRememberedStorageValue = (key: string) => {
   try {
     const storedValue = localStorage.getItem(key) || ''
@@ -149,9 +153,6 @@ const getRememberedStorageValue = (key: string) => {
   }
 }
 
-/**
- * 写入加密后的记住我存储值；空值时直接删除。
- */
 const setRememberedStorageValue = (key: string, value: string) => {
   try {
     if (!value) {
@@ -165,9 +166,6 @@ const setRememberedStorageValue = (key: string, value: string) => {
   }
 }
 
-/**
- * 从 localStorage 读取保存的登录信息。
- */
 const getSavedSigninCredentials = () => {
   try {
     return {
@@ -184,16 +182,17 @@ const getSavedSigninCredentials = () => {
   }
 }
 
-// 表单数据
 const savedSigninCredentials = getSavedSigninCredentials()
 const formData = ref({
-  // 登录表单
   signin: {
     account: savedSigninCredentials.account,
+    usernameAccount: savedSigninCredentials.account,
+    phoneAccount: savedSigninCredentials.account,
     password: savedSigninCredentials.password,
+    captchaCode: '',
+    captchaKey: '',
     rememberMe: Boolean(savedSigninCredentials.password)
   },
-  // 注册表单
   signup: {
     account: '',
     code: '',
@@ -202,12 +201,54 @@ const formData = ref({
   }
 })
 
-// 登录表单验证
-const isSigninValid = computed(() => {
-  return formData.value.signin.account.length > 0 && formData.value.signin.password.length > 0
+const loginMethodTabs = computed(() => {
+  const configuredMethods = Array.isArray(props.loginSetting?.loginMethod)
+    ? props.loginSetting.loginMethod
+    : []
+  const methods = configuredMethods.length ? configuredMethods : [1, 2]
+  const tabs: Array<{ key: SigninMethod; label: string }> = []
+
+  if (methods.includes(1)) {
+    tabs.push({ key: 'username', label: t('common.username') })
+  }
+
+  if (methods.includes(2)) {
+    tabs.push({ key: 'phone', label: t('common.phone') })
+  }
+
+  return tabs.length ? tabs : [{ key: 'username', label: t('common.username') }]
 })
 
-// 注册表单验证
+const showSigninCaptcha = computed(() => {
+  return activeTab.value === 'signin' && Number(props.loginSetting?.imageCaptchaEnabled) === 1
+})
+
+const captchaImageUrl = ref('')
+const isCaptchaLoading = ref(false)
+
+const getActiveSigninAccount = () => {
+  if (activeLoginMethod.value === 'username') {
+    return formData.value.signin.usernameAccount
+  }
+
+  return formData.value.signin.phoneAccount
+}
+
+const syncSigninAccount = () => {
+  formData.value.signin.account = getActiveSigninAccount()
+}
+
+const isSigninValid = computed(() => {
+  const hasBaseFields =
+    getActiveSigninAccount().length > 0 && formData.value.signin.password.length > 0
+
+  if (!showSigninCaptcha.value) {
+    return hasBaseFields
+  }
+
+  return hasBaseFields && formData.value.signin.captchaCode.length > 0
+})
+
 const isSignupValid = computed(() => {
   return (
     formData.value.signup.account.length > 0 &&
@@ -217,17 +258,18 @@ const isSignupValid = computed(() => {
   )
 })
 
-// 复选框动画状态
 const checkboxAnimating = ref({
   rememberMe: false
 })
 
-// 设置激活的标签页
-const setActiveTab = (tab: 'signin' | 'signup') => {
+const setActiveTab = (tab: AuthTab) => {
   activeTab.value = tab
+
   if (tab === 'signin') {
     const savedCredentials = getSavedSigninCredentials()
     formData.value.signin.account = savedCredentials.account
+    formData.value.signin.usernameAccount = savedCredentials.account
+    formData.value.signin.phoneAccount = savedCredentials.account
     formData.value.signin.password = savedCredentials.password
     formData.value.signin.rememberMe = Boolean(savedCredentials.password)
   } else {
@@ -238,17 +280,23 @@ const setActiveTab = (tab: 'signin' | 'signup') => {
   }
 }
 
-// 切换密码显示/隐藏
+const setActiveLoginMethod = (method: string) => {
+  if (!loginMethodTabs.value.some(tab => tab.key === method)) {
+    return
+  }
+
+  activeLoginMethod.value = method as SigninMethod
+  syncSigninAccount()
+}
+
 const togglePassword = (tab: 'signin' | 'signup' | 'confirmPassword') => {
   showPassword.value[tab] = !showPassword.value[tab]
 }
 
-// 切换确认密码显示/隐藏
 const toggleConfirmPassword = () => {
   showConfirmPassword.value = !showConfirmPassword.value
 }
 
-// 复选框点击处理
 const handleCheckboxClick = (field: 'rememberMe') => {
   const willBeChecked = !formData.value.signin[field]
 
@@ -268,63 +316,65 @@ const handleCheckboxClick = (field: 'rememberMe') => {
   }
 }
 
-/**
- * 处理登录账号输入。
- */
 const handleSigninAccountInput = (event: Event) => {
   handleLoosePhoneInput(event, (value: string) => {
+    formData.value.signin.account = value
+    formData.value.signin.phoneAccount = value
+  })
+}
+
+const handleSigninUsernameInput = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const value = input.value.replace(/\s/g, '').slice(0, 30)
+  formData.value.signin.usernameAccount = value
+  formData.value.signin.account = value
+  input.value = value
+}
+
+const handleSigninPhoneInput = (event: Event) => {
+  handleLoosePhoneInput(event, (value: string) => {
+    formData.value.signin.phoneAccount = value
     formData.value.signin.account = value
   })
 }
 
-/**
- * 处理登录密码输入。
- */
 const handleSigninPasswordInput = (event: Event) => {
   handlePasswordInput(event, value => {
     formData.value.signin.password = value
   })
 }
 
-/**
- * 处理注册账号输入。
- */
+const handleSigninCaptchaInput = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const value = input.value.replace(/\s/g, '').slice(0, 8)
+  formData.value.signin.captchaCode = value
+  input.value = value
+}
+
 const handleSignupAccountInput = (event: Event) => {
   handleLoosePhoneInput(event, (value: string) => {
     formData.value.signup.account = value
   })
 }
 
-/**
- * 处理注册验证码输入。
- */
 const handleSignupCodeInput = (event: Event) => {
   handleVerificationCodeInput(event, (value: string) => {
     formData.value.signup.code = value
   })
 }
 
-/**
- * 处理注册密码输入。
- */
 const handleSignupPasswordInput = (event: Event) => {
   handlePasswordInput(event, value => {
     formData.value.signup.password = value
   })
 }
 
-/**
- * 处理注册确认密码输入。
- */
 const handleSignupConfirmPasswordInput = (event: Event) => {
   handlePasswordInput(event, value => {
     formData.value.signup.confirmPassword = value
   })
 }
 
-/**
- * 校验手机号是否符合登录/注册/忘记密码。
- */
 const validatePhoneNumber = (value: string) => {
   if (!isValidPhoneNumber(value)) {
     globalShowToast(t('common.pleaseEnterCorrectPhone'))
@@ -334,9 +384,6 @@ const validatePhoneNumber = (value: string) => {
   return true
 }
 
-/**
- * 校验密码是否满足 6-16 位字母和数字组合规则。
- */
 const validatePasswordRule = (value: string) => {
   if (!isValidPassword(value)) {
     globalShowToast(t('common.passwordRuleInvalid'))
@@ -346,9 +393,6 @@ const validatePasswordRule = (value: string) => {
   return true
 }
 
-/**
- * 校验两次输入的密码是否一致。
- */
 const validateConfirmPassword = (password: string, confirmPassword: string) => {
   if (password !== confirmPassword) {
     globalShowToast(t('common.passwordMismatch'))
@@ -358,50 +402,155 @@ const validateConfirmPassword = (password: string, confirmPassword: string) => {
   return true
 }
 
+const readObjectValue = (value: unknown, key: string) => {
+  if (!value || typeof value !== 'object' || !(key in value)) {
+    return ''
+  }
+
+  const record = value as Record<string, unknown>
+  return typeof record[key] === 'string' ? record[key] : ''
+}
+
+const normalizeCaptchaImageUrl = (value: string) => {
+  if (!value) return ''
+
+  if (/^(data:image\/|https?:\/\/|\/)/i.test(value)) {
+    return value
+  }
+
+  if (/^[A-Za-z0-9+/=]+$/.test(value) && value.length > 80) {
+    return `data:image/png;base64,${value}`
+  }
+
+  return value
+}
+
+const resolveCaptchaPayload = (payload: unknown): { imageUrl: string; key: string } => {
+  if (!payload || typeof payload !== 'object') {
+    return {
+      imageUrl: typeof payload === 'string' ? normalizeCaptchaImageUrl(payload) : '',
+      key: ''
+    }
+  }
+
+  const imageKeys = [
+    'image',
+    'imageUrl',
+    'img',
+    'imgUrl',
+    'captcha',
+    'captchaImage',
+    'captchaImg',
+    'captchaBase64',
+    'base64'
+  ]
+  const keyKeys = ['captchaKey', 'key', 'uuid', 'captchaId', 'captchaUuid']
+  const imageUrl = imageKeys.map(key => readObjectValue(payload, key)).find(Boolean) || ''
+  const captchaKey = keyKeys.map(key => readObjectValue(payload, key)).find(Boolean) || ''
+
+  if (imageUrl || captchaKey) {
+    return {
+      imageUrl: normalizeCaptchaImageUrl(imageUrl),
+      key: captchaKey
+    }
+  }
+
+  const record = payload as Record<string, unknown>
+  for (const nestedKey of ['result', 'data']) {
+    if (nestedKey in record) {
+      const resolved = resolveCaptchaPayload(record[nestedKey])
+      if (resolved.imageUrl || resolved.key) {
+        return resolved
+      }
+    }
+  }
+
+  return { imageUrl: '', key: '' }
+}
+
 /**
- * 处理登录。
+ * 拉取登录图形验证码，并同步图片地址、验证码 key 与输入框状态。
  */
+const fetchSigninCaptcha = async () => {
+  if (!showSigninCaptcha.value || isCaptchaLoading.value) {
+    return
+  }
+
+  isCaptchaLoading.value = true
+
+  try {
+    const response = await Api.auth.getCaptchaImage()
+    console.log('/sy/captcha/image response:', response)
+    const { imageUrl, key } = resolveCaptchaPayload(response)
+    captchaImageUrl.value = imageUrl
+    formData.value.signin.captchaKey = key
+    formData.value.signin.captchaCode = ''
+  } catch (error) {
+    console.error(error)
+    captchaImageUrl.value = ''
+    formData.value.signin.captchaKey = ''
+  } finally {
+    isCaptchaLoading.value = false
+  }
+}
+
 const handleLogin = async () => {
-  if (!validatePhoneNumber(formData.value.signin.account)) {
+  syncSigninAccount()
+
+  const account = getActiveSigninAccount()
+
+  if (activeLoginMethod.value === 'phone' && !validatePhoneNumber(account)) {
     return
   }
 
   try {
     const loginData = {
-      memberId: formData.value.signin.account,
-      telephone: formData.value.signin.account,
+      memberId: account,
+      telephone: account,
       memberPwd: StringExtension.md5(formData.value.signin.password),
       areaCode: defaultAreaCode,
       channelId: '1',
-      requestMethod: '0'
+      requestMethod: activeLoginMethod.value === 'username' ? '0' : '1',
+      ...(showSigninCaptcha.value
+        ? {
+            captchaCode: formData.value.signin.captchaCode,
+            captchaKey: formData.value.signin.captchaKey
+          }
+        : {})
     }
 
-    // 登录接口
     const response = await Api.auth.login(loginData)
     if (response.code == 'C2') {
-      // 根据"记住我"状态保存或清除登录信息
       if (formData.value.signin.rememberMe) {
-        setRememberedStorageValue(REMEMBERED_ACCOUNT_STORAGE_KEY, formData.value.signin.account)
+        setRememberedStorageValue(REMEMBERED_ACCOUNT_STORAGE_KEY, account)
         setRememberedStorageValue(REMEMBERED_PASSWORD_STORAGE_KEY, formData.value.signin.password)
       } else {
-        setRememberedStorageValue(REMEMBERED_ACCOUNT_STORAGE_KEY, formData.value.signin.account)
+        setRememberedStorageValue(REMEMBERED_ACCOUNT_STORAGE_KEY, account)
         localStorage.removeItem(REMEMBERED_PASSWORD_STORAGE_KEY)
       }
+
       try {
-        await userStore.refreshCurrentUserData(formData.value.signin.account)
+        await userStore.refreshCurrentUserData(account)
       } catch (error) {
         console.error(error)
       }
+
       emit('login-success')
+      return
+    }
+
+    if (showSigninCaptcha.value) {
+      await fetchSigninCaptcha()
     }
   } catch (error) {
     console.error(error)
+
+    if (showSigninCaptcha.value) {
+      await fetchSigninCaptcha()
+    }
   }
 }
 
-/**
- * 处理注册。
- */
 const handleRegister = async () => {
   if (!validatePhoneNumber(formData.value.signup.account)) {
     return
@@ -418,13 +567,9 @@ const handleRegister = async () => {
   }
 
   try {
-    // 获取当前语言
     const languageCode = getLanguageCode()
-    // 获取当前币种
     const currency = getCurrentCurrency()
-    // 生成14 位会员名称。
     const nickName = generateRegisterMemberName()
-    // 获取末次归因邀请码。
     const invitationCode = getInvitationCode()
 
     const registerData = {
@@ -441,7 +586,6 @@ const handleRegister = async () => {
       ...(invitationCode ? { invitationCode } : {})
     }
 
-    // 注册接口
     const response = await Api.auth.register(registerData)
     if (response.code == 'C2') {
       clearInvitationCode()
@@ -458,9 +602,6 @@ const handleRegister = async () => {
   }
 }
 
-/**
- * 处理发送验证码。
- */
 const handleSendCode = async () => {
   if (countdown.value > 0) {
     return
@@ -476,12 +617,12 @@ const handleSendCode = async () => {
     if (!validatePhoneNumber(telephone)) {
       return
     }
-    // 发送短信接口
+
     const response = await Api.auth.sendSms({
       telephone: telephone,
       areaCode: defaultAreaCode
     })
-    // 只有短信接口返回 C2 时，才开始60秒倒计时
+
     if (response?.code === 'C2') {
       startCountdown()
     }
@@ -490,54 +631,88 @@ const handleSendCode = async () => {
   }
 }
 
-// 第三方登录
 const handleSocialLogin = (provider: string) => {
-  console.log('第三方登录:', provider)
+  console.log('social login:', provider)
 }
 
-// 打开忘记密码
 const openResetPassword = () => {
   emit('open-reset-password')
 }
 
-// 重置表单数据
+/**
+ * 重置登录/注册表单；如果当前登录卡片需要图形验证码，则同步刷新验证码。
+ */
 const resetForm = () => {
   const savedCredentials = getSavedSigninCredentials()
 
-  // 重置登录表单
   formData.value.signin.account = savedCredentials.account
+  formData.value.signin.usernameAccount = savedCredentials.account
+  formData.value.signin.phoneAccount = savedCredentials.account
   formData.value.signin.password = savedCredentials.password
+  formData.value.signin.captchaCode = ''
+  formData.value.signin.captchaKey = ''
   formData.value.signin.rememberMe = Boolean(savedCredentials.password)
 
-  // 重置注册表单
   formData.value.signup.account = ''
   formData.value.signup.code = ''
   formData.value.signup.password = ''
   formData.value.signup.confirmPassword = ''
 
-  // 重置密码显示状态
   showPassword.value.signin = false
   showPassword.value.signup = false
   showPassword.value.confirmPassword = false
   showConfirmPassword.value = false
 
-  // 同步当前倒计时状态
   syncCountdown()
-
-  // 重置到默认标签页
   activeTab.value = props.defaultTab
+
+  if (showSigninCaptcha.value) {
+    void fetchSigninCaptcha()
+  }
 }
+
+watch(
+  loginMethodTabs,
+  tabs => {
+    if (!tabs.some(tab => tab.key === activeLoginMethod.value)) {
+      activeLoginMethod.value = (tabs[0]?.key || 'username') as SigninMethod
+    }
+    syncSigninAccount()
+  },
+  { immediate: true }
+)
+
+watch(
+  showSigninCaptcha,
+  enabled => {
+    if (enabled) {
+      void fetchSigninCaptcha()
+      return
+    }
+
+    captchaImageUrl.value = ''
+    formData.value.signin.captchaCode = ''
+    formData.value.signin.captchaKey = ''
+  },
+  { immediate: true }
+)
 
 defineExpose({
   formData,
   activeTab,
+  activeLoginMethod,
+  loginMethodTabs,
   showPassword,
   showConfirmPassword,
   checkboxAnimating,
   countdown,
   isSigninValid,
   isSignupValid,
+  showSigninCaptcha,
+  captchaImageUrl,
+  isCaptchaLoading,
   setActiveTab,
+  setActiveLoginMethod,
   togglePassword,
   toggleConfirmPassword,
   handleCheckboxClick,
@@ -548,7 +723,11 @@ defineExpose({
   openResetPassword,
   resetForm,
   handleSigninAccountInput,
+  handleSigninUsernameInput,
+  handleSigninPhoneInput,
   handleSigninPasswordInput,
+  handleSigninCaptchaInput,
+  fetchSigninCaptcha,
   handleSignupAccountInput,
   handleSignupCodeInput,
   handleSignupPasswordInput,

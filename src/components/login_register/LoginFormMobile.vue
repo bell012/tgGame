@@ -2,6 +2,7 @@
   <LoginRegisterFormCore
     ref="loginFormRef"
     :default-tab="defaultTab"
+    :login-setting="loginSetting"
     @register-success="handleRegisterSuccess"
     @login-success="handleLoginSuccess"
     @open-reset-password="emit('open-reset-password')"
@@ -16,6 +17,9 @@
         countdown,
         isSigninValid,
         isSignupValid,
+        showSigninCaptcha,
+        captchaImageUrl,
+        isCaptchaLoading,
         setActiveTab,
         togglePassword,
         toggleConfirmPassword,
@@ -28,6 +32,8 @@
         handleSignupAccountInput,
         handleSignupCodeInput,
         handleSigninPasswordInput,
+        handleSigninCaptchaInput,
+        refreshSigninCaptcha,
         handleSignupPasswordInput,
         handleSignupConfirmPasswordInput
       }"
@@ -173,6 +179,39 @@
                     </div>
 
                     <!-- 记住我 & 忘记密码 -->
+                    <template v-if="showSigninCaptcha">
+                      <div class="text-sm font-[700] text-text-1 mb-1.5">
+                        {{ t('common.captcha') }}
+                      </div>
+                      <div class="mb-3">
+                        <div class="relative">
+                          <SafeIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
+                          <input
+                            :value="formData.signin.captchaCode"
+                            type="text"
+                            :placeholder="t('common.enter_captcha')"
+                            class="auth-input-placeholder w-full h-[47px] pl-[44px] pr-[106px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                            @input="handleSigninCaptchaInput"
+                          />
+                          <button
+                            type="button"
+                            class="absolute right-1.5 top-1/2 -translate-y-1/2 w-[94px] h-[36px] rounded-md overflow-hidden bg-bg-2 border border-input-2 flex items-center justify-center text-xs text-text-2"
+                            @click="refreshSigninCaptcha"
+                          >
+                            <img
+                              v-if="captchaImageUrl"
+                              :src="captchaImageUrl"
+                              alt=""
+                              class="w-full h-full object-cover"
+                            />
+                            <span v-else>{{
+                              isCaptchaLoading ? t('common.loading') : t('common.captcha')
+                            }}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </template>
+
                     <div class="flex items-center justify-between mb-10">
                       <label
                         class="flex items-center cursor-pointer"
@@ -385,19 +424,22 @@ import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
 import { useI18n } from 'vue-i18n'
 import FoldIconH5 from '@/static/svg/foldH5.svg?component'
 import { navigateTo } from '@/utils/router'
+import type { LoginSetResult } from '@/api/interface/login_register'
 
 const { t } = useI18n()
 const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 interface Props {
   visible: boolean
   defaultTab?: 'signin' | 'signup'
+  loginSetting?: LoginSetResult | null
   logoUrl?: string
   backgroundImageUrl?: string
   backgroundLoading?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  defaultTab: 'signin'
+  defaultTab: 'signin',
+  loginSetting: null
 })
 
 const emit = defineEmits<{
