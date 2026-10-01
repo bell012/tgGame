@@ -3,9 +3,8 @@ import { computed, onScopeDispose, reactive, ref, shallowReactive, watch } from 
 import type { ComputedRef } from 'vue'
 import Api from '@/api'
 import type {
-  FavouriteEventParams,
-  FavouriteEventResponse,
   GetBetInfoParams,
+  GetBetInfoResponse,
   GetCompetitionListParams,
   GetCompetitionListResponse,
   GetCompetitionPageParams,
@@ -29,14 +28,23 @@ import type { SportsRequestOptions } from '@/api/modules/sport'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
+import { useSportsAuthStore } from '@/stores/sportsAuth'
+import type { EnsureSportsCredentialsOptions } from '@/stores/sportsAuth'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { isApiBusinessSuccess } from '@/utils/apiBusiness'
-import { getLanguageCode as getRequestLanguageCode } from '@/utils/request'
+import i18n from '@/i18n'
+import { globalShowToast } from '@/utils/toast'
 
 /** 当前选中的赛事筛选标签。 */
 export type FilterTabKey = 'rolling' | 'today' | 'early' | 'parlay'
 
 export type SportsRefreshTarget = { sportId: number; eventId: number }
+export type SportsFavouriteTarget = SportsRefreshTarget & {
+  eventDate: string
+  competitionId: number
+  market: SportEvent['Market']
+  homeTeam: string
+}
 
 /** 下单前拦截，尚未向体育网关发送请求。 */
 export class SportsBetNotSentError extends Error {
@@ -45,6 +53,14 @@ export class SportsBetNotSentError extends Error {
     this.name = 'SportsBetNotSentError'
   }
 }
+
+export class SportsCredentialsUnavailableError extends SportsBetNotSentError {}
+
+type SportsBetInfoQuery = Pick<GetBetInfoParams, 'WagerType' | 'WagerSelectionInfos'>
+type SportsPlaceBetQuery = Pick<
+  PlaceBetParams,
+  'WagerType' | 'WagerSelectionInfos' | 'ComboSelections' | 'IsComboAcceptAnyOdds'
+>
 
 const FILTER_TAB_MARKETS: Readonly<Record<FilterTabKey, SportsMarket>> = {
   rolling: 3,
@@ -61,15 +77,13 @@ const MARKET_FILTER_TABS: Readonly<Record<SportsMarket, FilterTabKey>> = {
 }
 
 type SportsRequestError = {
-  kind: 'config' | 'business' | 'response' | 'network'
+  kind: 'config' | 'business' | 'response' | 'network' | 'credentials'
   message: string
   code?: number | string
 }
 
 type SportsFavouriteResult =
   'success' | 'synced' | 'failed' | 'login-failed' | 'auth-expired' | 'stale'
-
-type SportsCredentials = Readonly<{ memberCode: string; token: string }>
 
 type SportsRequestState<Params, Response> = {
   params: Params | null
@@ -82,8 +96,6 @@ type SportsRequestState<Params, Response> = {
 }
 
 const isSportsSuccess = (response: SportsResponse) => response.stc === 100 || response.stc === '100'
-const isSportsAuthExpired = (response: SportsResponse) =>
-  response.stc === 102 || response.stc === '102' || response.stc === 202 || response.stc === '202'
 const ALL_SPORTS_PAGE_SIZE = 10
 const MAX_ALL_SPORTS_PAGES = 200
 const SELECTED_EVENT_BATCH_SIZE = 5
@@ -347,6 +359,7 @@ export const useSportsStore = defineStore('sports', () => {
   const siteConfigStore = useSiteConfigStore()
   const localeStore = useLocaleStore()
   const userStore = useUserStore()
+  const sportsAuth = useSportsAuthStore()
   const { currentCurrencyCode } = useDisplayCurrency()
   // 与导航及路由守卫保持相同的本站登录态判断。
   const isLoggedIn = computed(() =>
@@ -375,75 +388,32 @@ export const useSportsStore = defineStore('sports', () => {
   }
   const languageCode = computed(getLanguage)
   const getBaseUrl = () => siteConfigStore.getConfigString('IM.im_app_url')
-  // 账号与 token 只保留同一次登录响应，整组替换/清空，仅在本次页面停留期间复用。
   const sportsSessionVersion = ref(0)
-  const sportsCredentials = ref<SportsCredentials | null>(null)
-  const sportsMemberCode = computed(() => sportsCredentials.value?.memberCode ?? null)
-  const sportsToken = computed(() => sportsCredentials.value?.token ?? null)
   const sportsBalance = ref<number | null>(null)
   const sportsBalanceLoading = ref(false)
   const sportsBalanceError = ref<SportsRequestError | null>(null)
+  let balanceGeneration = 0
+  let balanceCredentialVersion = 0
   let balancePending: Promise<boolean> | null = null
-  let balanceController: AbortController | null = null
-  const balanceRetryDelays = [1000, 3000] as const
-  let balanceRetryCount = 0
-  let balanceRetryTimer: ReturnType<typeof setTimeout> | undefined
-  const clearBalanceRetry = () => {
-    clearTimeout(balanceRetryTimer)
-    balanceRetryTimer = undefined
-  }
-  const scheduleBalanceRetry = () => {
-    if (
-      !homepageActive ||
-      !isLoggedIn.value ||
-      !currentCurrencyCode.value ||
-      balancePending ||
-      balanceRetryTimer !== undefined ||
-      balanceRetryCount >= balanceRetryDelays.length ||
-      sportsBalanceError.value?.kind === 'config'
-    )
-      return
-    const version = sportsSessionVersion.value
-    const delay = balanceRetryDelays[balanceRetryCount++]
-    balanceRetryTimer = setTimeout(() => {
-      balanceRetryTimer = undefined
-      if (version === sportsSessionVersion.value && homepageActive && isLoggedIn.value) {
-        void fetchSportsBalance({ retry: true })
-      }
-    }, delay)
-  }
   const resetSportsBalance = () => {
-    clearBalanceRetry()
-    balanceRetryCount = 0
-    balanceController?.abort()
-    balanceController = null
+    balanceGeneration += 1
+    balanceCredentialVersion = 0
     balancePending = null
     sportsBalance.value = null
     sportsBalanceLoading.value = false
     sportsBalanceError.value = null
   }
-  let memberCodePending: Promise<string | null> | null = null
-  let memberCodeGeneration = 0
-  let memberCodeAttempted = false
-  let memberCodeNeedsRefresh = false
   let homepageActive = false
   onScopeDispose(() => {
     homepageActive = false
+    cancelFavouriteSync()
+    cancelBetInfo()
     resetSportsBalance()
   })
-  let lastAuthRecovery: { generation: number; credentials: SportsCredentials | null } | null = null
-  let favouriteRevision = 0
-  const memberFavourites = shallowReactive(new Map<number, { value: boolean; revision: number }>())
-  // 写结果尚未校准时，下次点击只读确认，不能再次切换服务端状态。
-  const unconfirmedFavourites = new Set<number>()
   const retryJobs = shallowReactive(new Map<string, Promise<void>>())
-  const invalidateSportsMemberCode = () => {
-    memberCodeGeneration += 1
-    sportsCredentials.value = null
-    memberCodePending = null
-    memberCodeAttempted = false
-    memberCodeNeedsRefresh = false
-    lastAuthRecovery = null
+  let sportsVisitGeneration = 0
+  const invalidateSportsVisit = () => {
+    sportsVisitGeneration += 1
     retryJobs.clear()
   }
   watch(
@@ -452,219 +422,183 @@ export const useSportsStore = defineStore('sports', () => {
       () => userStore.userInfo?.memberId,
       () => userStore.acctInfo?.memberId,
       currentCurrencyCode,
-      languageCode,
+      () => localeStore.currentLanguage,
       getBaseUrl
     ],
     () => {
       sportsSessionVersion.value += 1
       resetSportsBalance()
       cancelBetInfo()
-      invalidateSportsMemberCode()
-      memberFavourites.clear()
-      unconfirmedFavourites.clear()
-      favouriteRevision = 0
+      invalidateSportsVisit()
     },
     { flush: 'sync' }
   )
-  const ensureSportsMemberCode = (): Promise<string | null> => {
-    if (!isLoggedIn.value || !currentCurrencyCode.value) return Promise.resolve(null)
-    if (sportsMemberCode.value) return Promise.resolve(sportsMemberCode.value)
-    if (memberCodePending) return memberCodePending
-    const version = sportsSessionVersion.value
-    const generation = memberCodeGeneration
-    memberCodeAttempted = true
-    const pending = (async () => {
-      try {
-        const response = await Api.game.getloginPlatform(
-          {
-            pgType: 'TY',
-            platformCode: 'TG_TY',
-            targetCurrency: currentCurrencyCode.value,
-            // 站内接口与公共请求头同源，不使用第三方体育语言码。
-            languageCode: getRequestLanguageCode()
-          },
-          { showSuccessToast: false, showErrorToast: false }
-        )
-        if (
-          version !== sportsSessionVersion.value ||
-          generation !== memberCodeGeneration ||
-          !isLoggedIn.value
-        ) {
-          return null
-        }
-        const account = response.result?.platformAcct
-        const token = response.result?.token
-        if (
-          !isApiBusinessSuccess(response) ||
-          typeof account !== 'string' ||
-          !account.trim() ||
-          typeof token !== 'string' ||
-          !token.trim()
-        ) {
-          if (homepageActive) {
-            sportsBalanceError.value = {
-              kind: 'business',
-              code: response.code,
-              message: 'Sports login unavailable'
-            }
-          }
-          return null
-        }
-        sportsCredentials.value = { memberCode: account.trim(), token }
-        memberCodeNeedsRefresh = true
-        if (homepageActive && !sportsBalanceLoading.value) void fetchSportsBalance({ retry: true })
-        return sportsMemberCode.value
-      } catch {
-        if (
-          homepageActive &&
-          version === sportsSessionVersion.value &&
-          generation === memberCodeGeneration
-        ) {
-          sportsBalanceError.value = { kind: 'network', message: 'Sports login request failed' }
-        }
-        return null
-      } finally {
-        if (generation === memberCodeGeneration) {
-          memberCodePending = null
-          // 首次登录失败也要补查，不能只等手动刷新余额。
-          if (!sportsCredentials.value) scheduleBalanceRetry()
-        }
-      }
-    })()
-    memberCodePending = pending
-    return pending
-  }
-  /** 网关鉴权失败统一更新体育凭据，原响应照常交给调用方；不自动重放任何请求。 */
-  const withSportsAuthRecovery =
-    <Params, Response extends SportsResponse>(
-      send: (baseUrl: string, params: Params, options?: SportsRequestOptions) => Promise<Response>,
-      allowOutsideHomepage = false
-    ) =>
-    async (baseUrl: string, params: Params, options?: SportsRequestOptions): Promise<Response> => {
-      const version = sportsSessionVersion.value
-      const generation = memberCodeGeneration
-      const credentials = sportsCredentials.value
-      const response = await send(baseUrl, params, options)
-      if (
-        !isSportsAuthExpired(response) ||
-        !isLoggedIn.value ||
-        (!homepageActive && !allowOutsideHomepage) ||
-        options?.signal?.aborted ||
-        version !== sportsSessionVersion.value ||
-        generation !== memberCodeGeneration ||
-        credentials !== sportsCredentials.value ||
-        (lastAuthRecovery?.generation === generation &&
-          lastAuthRecovery.credentials === credentials)
-      ) {
-        return response
-      }
-
-      // 复用正在获取的凭据；没有在途登录时才作废旧凭据并重新获取。
-      if (!memberCodePending) invalidateSportsMemberCode()
-      // 失败后也保留已处理标记，避免同批迟到错误再次触发登录。
-      lastAuthRecovery = {
-        generation: memberCodeGeneration,
-        credentials: sportsCredentials.value
-      }
-      await ensureSportsMemberCode()
-      return response
-    }
-  // 仅包装返回 stc 的体育网关接口；本站热门列表仍使用自己的 code/result 契约。
-  const sportsApi = {
-    placeBet: withSportsAuthRecovery(Api.sport.placeBet, true),
-    getBetInfo: withSportsAuthRecovery(Api.sport.getBetInfo),
-    getBalance: withSportsAuthRecovery(Api.sport.getBalance),
-    getAllSportCount: withSportsAuthRecovery(Api.sport.getAllSportCount),
-    getSportsV2: withSportsAuthRecovery(Api.sport.getSportsV2),
-    getSportEventIndexList: withSportsAuthRecovery(Api.sport.getSportEventIndexList),
-    getCompetitionPage: withSportsAuthRecovery(Api.sport.getCompetitionPage),
-    getPopularSports: withSportsAuthRecovery(Api.sport.getPopularSports),
-    getSelectedEventInfo: withSportsAuthRecovery(Api.sport.getSelectedEventInfo),
-    favouriteEvent: withSportsAuthRecovery(Api.sport.favouriteEvent)
-  }
-  /** 同账号、同币种刷新失败保留余额；离页或切换会话后丢弃旧响应。 */
-  const fetchSportsBalance = ({ retry = false }: { retry?: boolean } = {}): Promise<boolean> => {
+  const sportsApi = Api.sport
+  const isAuthExpired = (response: SportsResponse) =>
+    response.stc === 102 || response.stc === '102' || response.stc === 202 || response.stc === '202'
+  const fetchSportsBalance = (options: EnsureSportsCredentialsOptions = {}): Promise<boolean> => {
+    if (!isLoggedIn.value || !getBaseUrl()) return Promise.resolve(false)
     if (balancePending) return balancePending
-    if (!homepageActive || !isLoggedIn.value) return Promise.resolve(false)
-    clearBalanceRetry()
-    if (!retry) balanceRetryCount = 0
-    const version = sportsSessionVersion.value
-    const controller = new AbortController()
-    balanceController = controller
+    const generation = balanceGeneration
+    const context = sportsAuth.contextVersion
     const isCurrent = () =>
-      !controller.signal.aborted && version === sportsSessionVersion.value && homepageActive
+      generation === balanceGeneration && context === sportsAuth.contextVersion
     sportsBalanceLoading.value = true
     sportsBalanceError.value = null
-    balancePending = Promise.resolve()
-      .then(async () => {
+    const pending = Promise.resolve().then(async () => {
+      try {
+        const credentials = await sportsAuth.ensureCredentials(options)
         if (!isCurrent()) return false
-        const baseUrl = getBaseUrl()
-        if (!baseUrl) {
-          sportsBalanceError.value = { kind: 'config', message: 'Missing IM.im_app_url' }
+        if (!credentials) {
+          sportsBalanceError.value = {
+            kind: 'credentials',
+            message: 'Sports credentials unavailable'
+          }
           return false
         }
-        // 余额是只读查询，凭据更新后最多补查一次，不循环登录。
-        for (let attempt = 0; attempt < 2; attempt += 1) {
-          if (!isCurrent()) return false
-          await ensureSportsMemberCode()
-          if (!isCurrent()) return false
-          const credentials = sportsCredentials.value
-          if (!credentials) {
-            sportsBalanceError.value ??= { kind: 'business', message: 'Sports login unavailable' }
-            return false
+        if (!sportsAuth.isCredentialsCurrent(credentials)) return false
+        balanceCredentialVersion = credentials.version
+        const response = await sportsApi.getBalance(getBaseUrl(), {
+          Token: credentials.token,
+          MemberCode: credentials.memberCode,
+          TimeStamp: Date.now()
+        })
+        if (!isCurrent() || !sportsAuth.isCredentialsCurrent(credentials)) return false
+        if (isAuthExpired(response)) {
+          sportsAuth.clearCredentials(credentials)
+          sportsBalanceError.value = {
+            kind: 'credentials',
+            code: response.stc,
+            message: response.std
           }
-          const send = attempt === 0 ? sportsApi.getBalance : Api.sport.getBalance
-          const response = await send(
-            baseUrl,
-            {
-              Token: credentials.token,
-              MemberCode: credentials.memberCode,
-              TimeStamp: Date.now()
-            },
-            { signal: controller.signal }
-          )
-          if (!isCurrent()) return false
-          if (credentials !== sportsCredentials.value) {
-            if (attempt === 0 && sportsCredentials.value) continue
-            sportsBalanceError.value = { kind: 'business', message: 'Sports credentials changed' }
-            return false
-          }
-          if (!isSportsSuccess(response)) {
-            sportsBalanceError.value = {
-              kind: 'business',
-              code: response.stc,
-              message: response.std
-            }
-            return false
-          }
-          if (typeof response.av !== 'number' || !Number.isFinite(response.av)) {
-            sportsBalanceError.value = { kind: 'response', message: 'Invalid sports balance' }
-            return false
-          }
-          sportsBalance.value = response.av
-          sportsBalanceError.value = null
-          balanceRetryCount = 0
-          return true
+          globalShowToast({ type: 'fail', message: i18n.global.t('sports.betLoginFailed') })
+          return false
         }
-        return false
-      })
-      .catch(() => {
-        if (isCurrent()) {
-          sportsBalanceError.value = { kind: 'network', message: 'Sports balance request failed' }
+        if (
+          !isSportsSuccess(response) ||
+          typeof response.av !== 'number' ||
+          !Number.isFinite(response.av)
+        ) {
+          sportsBalanceError.value = { kind: 'business', code: response.stc, message: response.std }
+          return false
         }
+        sportsBalance.value = response.av
+        return true
+      } catch (error) {
+        if (isCurrent())
+          sportsBalanceError.value = {
+            kind: 'network',
+            message: error instanceof Error ? error.message : 'Balance query failed'
+          }
         return false
-      })
-      .finally(() => {
-        if (isCurrent()) {
-          sportsBalanceLoading.value = false
+      } finally {
+        if (balancePending === pending) {
           balancePending = null
-          balanceController = null
-          if (sportsBalanceError.value) scheduleBalanceRetry()
+          sportsBalanceLoading.value = false
         }
-      })
-    return balancePending
+      }
+    })
+    balancePending = pending
+    return pending
   }
-  /** 显式重试先获取凭据；普通筛选不走这里，失败后也不自动循环。 */
+  // 首页、详情或报价重新取得凭据后补查余额；同组凭据已有查询时不重复请求。
+  watch(
+    () => sportsAuth.isReady,
+    async ready => {
+      if (!ready) return
+      const generation = balanceGeneration
+      const credentials = await sportsAuth.ensureCredentials({ fetchIfMissing: false })
+      await balancePending
+      if (
+        generation !== balanceGeneration ||
+        !credentials ||
+        !sportsAuth.isCredentialsCurrent(credentials) ||
+        balanceCredentialVersion === credentials.version
+      )
+        return
+      void fetchSportsBalance({ fetchIfMissing: false })
+    }
+  )
+
+  const memberFavourites = shallowReactive(new Map<number, boolean>())
+  const favouriteJobs = shallowReactive(new Map<number, symbol>())
+  const unconfirmedFavourites = new Set<number>()
+  const favouriteOwner = () =>
+    JSON.stringify([
+      isLoggedIn.value,
+      userStore.userInfo?.memberId ?? userStore.acctInfo?.memberId,
+      currentCurrencyCode.value
+    ])
+  let favouriteRevision = 0
+  let favouriteResetRevision = 0
+  const favouriteEventRevisions = new Map<number, number>()
+  watch(
+    [() => sportsAuth.contextVersion, favouriteOwner],
+    ([, owner], [, previousOwner]) => {
+      favouriteResetRevision = ++favouriteRevision
+      favouriteEventRevisions.clear()
+      memberFavourites.clear()
+      // 同账号切换语言时保留在途动作，避免再次点击将收藏切回去。
+      if (owner !== previousOwner) {
+        favouriteJobs.clear()
+        unconfirmedFavourites.clear()
+      }
+    },
+    { flush: 'sync' }
+  )
+  // 赛事查询只读取现成凭据，不等待登录；收藏列表不能降级成匿名查询。
+  const sendHomepageSports = async (
+    baseUrl: string,
+    params: GetSportsV2Params,
+    options?: SportsRequestOptions
+  ): Promise<GetSportsV2Response> => {
+    const context = sportsAuth.contextVersion
+    const revision = favouriteRevision
+    const credentials = sportsAuth.isReady
+      ? await sportsAuth.ensureCredentials({ fetchIfMissing: false })
+      : null
+    if (options?.signal?.aborted || context !== sportsAuth.contextVersion)
+      throw new Error('Stale sports request')
+    const current = credentials && sportsAuth.isCredentialsCurrent(credentials) ? credentials : null
+    if (params.IsFavourite && !current) throw new Error('Sports credentials unavailable')
+    const query = { ...params }
+    delete query.MemberCode
+    const response = await sportsApi.getSportsV2(
+      baseUrl,
+      {
+        ...query,
+        ...(current ? { MemberCode: current.memberCode } : {})
+      },
+      options
+    )
+    if (current && isAuthExpired(response)) sportsAuth.clearCredentials(current)
+    if (
+      !options?.signal?.aborted &&
+      current &&
+      sportsAuth.isCredentialsCurrent(current) &&
+      revision >= favouriteResetRevision &&
+      isSportsSuccess(response) &&
+      Array.isArray(response.e)
+    ) {
+      for (const group of response.e) {
+        if (!Array.isArray(group?.Sports)) continue
+        for (const event of group.Sports) {
+          if (
+            event &&
+            Number.isSafeInteger(event.EventId) &&
+            (favouriteEventRevisions.get(event.EventId) ?? 0) <= revision &&
+            !favouriteJobs.has(event.EventId) &&
+            typeof event.IsFavourite === 'boolean'
+          ) {
+            memberFavourites.set(event.EventId, event.IsFavourite)
+            unconfirmedFavourites.delete(event.EventId)
+          }
+        }
+      }
+    }
+    return response
+  }
+  /** 同次停留的重试任务去重，离页后不继续执行。 */
   const runSportsRetry = (
     key: string,
     action: (isCurrent: () => boolean) => void | Promise<unknown>
@@ -673,13 +607,11 @@ export const useSportsStore = defineStore('sports', () => {
     const existing = retryJobs.get(key)
     if (existing) return existing
     const version = sportsSessionVersion.value
-    const visit = memberCodeGeneration
+    const visit = sportsVisitGeneration
     const isCurrent = () =>
-      homepageActive && version === sportsSessionVersion.value && visit === memberCodeGeneration
+      homepageActive && version === sportsSessionVersion.value && visit === sportsVisitGeneration
     const pending = Promise.resolve()
       .then(async () => {
-        if (!isCurrent()) return
-        if (isLoggedIn.value && !(await ensureSportsMemberCode())) return
         if (!isCurrent()) return
         await action(isCurrent)
       })
@@ -689,27 +621,6 @@ export const useSportsStore = defineStore('sports', () => {
     retryJobs.set(key, pending)
     return pending
   }
-  // 仅带会员账号的主列表可校准个人收藏，匿名补页不能反盖成功写入的结果。
-  const syncMemberFavourites = (
-    groups: readonly SportCompetitionGroup[],
-    readRevision: number,
-    memberCode: string | null | undefined
-  ) => {
-    if (!memberCode || memberCode !== sportsMemberCode.value) return
-    for (const group of groups) {
-      for (const event of group.Sports) {
-        if (typeof event.IsFavourite !== 'boolean' || isFavouritePending(event.EventId)) continue
-        const current = memberFavourites.get(event.EventId)
-        if (!current || current.revision <= readRevision) {
-          memberFavourites.set(event.EventId, {
-            value: event.IsFavourite,
-            revision: readRevision
-          })
-          unconfirmedFavourites.delete(event.EventId)
-        }
-      }
-    }
-  }
   const favouriteViews = new WeakMap<SportEvent, ComputedRef<SportEvent>>()
   const withMemberFavourite = (event: SportEvent): SportEvent => {
     let view = favouriteViews.get(event)
@@ -717,9 +628,7 @@ export const useSportsStore = defineStore('sports', () => {
       view = computed<SportEvent>(previous => {
         const next = {
           ...event,
-          IsFavourite: isLoggedIn.value
-            ? (memberFavourites.get(event.EventId)?.value ?? event.IsFavourite === true)
-            : false
+          IsFavourite: isLoggedIn.value && (memberFavourites.get(event.EventId) ?? false)
         }
         return previous ? reuseEqual(previous, next) : next
       })
@@ -1038,7 +947,7 @@ export const useSportsStore = defineStore('sports', () => {
   )
 
   // 所有联赛数据
-  const events = createSportsRequest(getBaseUrl, sportsApi.getSportsV2, response =>
+  const events = createSportsRequest(getBaseUrl, sendHomepageSports, response =>
     Array.isArray(response.e)
   )
 
@@ -1055,64 +964,67 @@ export const useSportsStore = defineStore('sports', () => {
   const popular = createSportsRequest(getBaseUrl, sportsApi.getPopularSports, response =>
     Array.isArray(response.e)
   )
-  const betInfo = createSportsRequest(
-    getBaseUrl,
-    sportsApi.getBetInfo,
-    response => Array.isArray(response.wsis) && Array.isArray(response.bs)
-  )
+  const betInfoState = shallowReactive<SportsRequestState<SportsBetInfoQuery, GetBetInfoResponse>>({
+    params: null,
+    response: null,
+    data: null,
+    loading: false,
+    error: null
+  })
   let betInfoGeneration = 0
   let betInfoController: AbortController | undefined
   const cancelBetInfo = () => {
     betInfoGeneration += 1
     betInfoController?.abort()
     betInfoController = undefined
-    betInfo.reset()
+    betInfoState.params = null
+    betInfoState.response = null
+    betInfoState.data = null
+    betInfoState.loading = false
+    betInfoState.error = null
   }
-  const fetchBetInfo = async (
-    query: Pick<GetBetInfoParams, 'WagerType' | 'WagerSelectionInfos'>
-  ) => {
+  // 选项先加入；报价时才取凭据，获取失败不删除选项。
+  const fetchBetInfo = async (query: SportsBetInfoQuery): Promise<GetBetInfoResponse | null> => {
     cancelBetInfo()
+    if (!isLoggedIn.value || !query.WagerSelectionInfos.length) return null
+    if (!getBaseUrl()) {
+      betInfoState.error = { kind: 'config', message: 'Missing IM.im_app_url' }
+      return null
+    }
     const generation = betInfoGeneration
     const version = sportsSessionVersion.value
+    const context = sportsAuth.contextVersion
     const controller = new AbortController()
     betInfoController = controller
     const isCurrent = () =>
-      homepageActive && version === sportsSessionVersion.value && generation === betInfoGeneration
-    if (!homepageActive || !isLoggedIn.value || !query.WagerSelectionInfos.length) return null
-    const checkParlay = () => {
-      if (query.WagerType !== 2) return true
-      const items = query.WagerSelectionInfos
-      const eligible =
-        items.length >= 2 && new Set(items.map(item => item.EventId)).size === items.length
-      if (!eligible) {
-        betInfo.state.error = { kind: 'business', code: 439, message: 'Parlay unavailable' }
-      }
-      return eligible
-    }
-    if (!checkParlay()) return null
-    const memberCode = await ensureSportsMemberCode()
-    if (
-      !homepageActive ||
-      version !== sportsSessionVersion.value ||
-      generation !== betInfoGeneration
-    )
-      return null
-    const token = sportsToken.value
-    if (!memberCode || !token) {
-      betInfo.state.error = { kind: 'business', message: 'Sports login unavailable' }
-      return null
-    }
+      !controller.signal.aborted &&
+      generation === betInfoGeneration &&
+      version === sportsSessionVersion.value &&
+      context === sportsAuth.contextVersion
     const selections = query.WagerSelectionInfos.map(item => ({ ...item }))
-    // 串关单独取欧洲盘，不改首页的盘型，也不猜测 A–G 赔率分组。
-    if (query.WagerType === 2) {
-      const sportIds = [
-        ...new Set(selections.filter(item => item.OddsType !== 3).map(item => item.SportId))
-      ]
-      try {
+    betInfoState.loading = true
+    try {
+      const credentials = await sportsAuth.ensureCredentials()
+      if (!isCurrent()) return null
+      if (!credentials)
+        throw new SportsCredentialsUnavailableError('Sports credentials unavailable')
+      if (query.WagerType === 2) {
+        if (
+          selections.length < 2 ||
+          new Set(selections.map(item => item.EventId)).size !== selections.length
+        ) {
+          betInfoState.error = { kind: 'business', code: 439, message: 'Parlay unavailable' }
+          return null
+        }
+        // 串关取欧洲盘，不转换首页赔率，也不改原选项。
+        const sportIds = [
+          ...new Set(selections.filter(item => item.OddsType !== 3).map(item => item.SportId))
+        ]
         for (const sportId of sportIds) {
           const items = selections.filter(item => item.SportId === sportId && item.OddsType !== 3)
           const eventIds = [...new Set(items.map(item => item.EventId))]
           for (let offset = 0; offset < eventIds.length; offset += SELECTED_EVENT_BATCH_SIZE) {
+            if (!isCurrent()) return null
             const batch = eventIds.slice(offset, offset + SELECTED_EVENT_BATCH_SIZE)
             const response = await sportsApi.getSelectedEventInfo(
               getBaseUrl(),
@@ -1142,54 +1054,87 @@ export const useSportsStore = defineStore('sports', () => {
             }
           }
         }
-      } catch {
-        if (isCurrent())
-          betInfo.state.error = { kind: 'response', message: 'European odds unavailable' }
+      }
+      if (!isCurrent()) return null
+      if (!sportsAuth.isCredentialsCurrent(credentials))
+        throw new SportsCredentialsUnavailableError('Sports credentials changed')
+      // 查询状态不保存 Token / MemberCode；只在发送时补齐。
+      betInfoState.params = { ...query, WagerSelectionInfos: selections }
+      const response = await sportsApi.getBetInfo(
+        getBaseUrl(),
+        {
+          ...query,
+          WagerSelectionInfos: selections,
+          Token: credentials.token,
+          MemberCode: credentials.memberCode,
+          LanguageCode: getLanguage(),
+          TimeStamp: Date.now()
+        },
+        { signal: controller.signal }
+      )
+      if (!isCurrent()) return null
+      if (!sportsAuth.isCredentialsCurrent(credentials))
+        throw new SportsCredentialsUnavailableError('Sports credentials changed')
+      betInfoState.response = response
+      if (isAuthExpired(response)) {
+        sportsAuth.clearCredentials(credentials)
+        globalShowToast({ type: 'fail', message: i18n.global.t('sports.betLoginFailed') })
+        throw new SportsCredentialsUnavailableError('Sports credentials expired')
+      }
+      if (![100, 350].includes(Number(response.stc))) {
+        betInfoState.error = { kind: 'business', code: response.stc, message: response.std }
+      } else if (!Array.isArray(response.wsis) || !Array.isArray(response.bs)) {
+        betInfoState.error = { kind: 'response', message: 'Unexpected bet information response' }
         return null
+      } else betInfoState.data = response
+      return response
+    } catch (error) {
+      if (!isCurrent()) return null
+      if (!(error instanceof SportsCredentialsUnavailableError))
+        betInfoState.error = {
+          kind: 'network',
+          message: error instanceof Error ? error.message : 'Bet information query failed'
+        }
+      throw error
+    } finally {
+      if (generation === betInfoGeneration) {
+        betInfoController = undefined
+        betInfoState.loading = false
       }
     }
-    if (!isCurrent()) return null
-    return betInfo.load({
-      ...query,
-      WagerSelectionInfos: selections,
-      Token: token,
-      MemberCode: memberCode,
-      LanguageCode: getLanguage(),
-      TimeStamp: Date.now()
-    })
   }
-  /** 写请求独立发送，不因另一笔单关或离页而取消；鉴权失败只刷新凭据。 */
+  // 单关各自发送；已经发出的下单不取消、不重试。
   const placeBet = async (
-    query: Pick<
-      PlaceBetParams,
-      'WagerType' | 'WagerSelectionInfos' | 'ComboSelections' | 'IsComboAcceptAnyOdds'
-    >
+    query: SportsPlaceBetQuery,
+    canSend: () => boolean = () => true
   ): Promise<PlaceBetResponse> => {
     const version = sportsSessionVersion.value
-    const baseUrl = getBaseUrl()
-    if (!isLoggedIn.value || !baseUrl) throw new SportsBetNotSentError('Sports login unavailable')
+    const context = sportsAuth.contextVersion
+    if (!isLoggedIn.value || !getBaseUrl() || !canSend())
+      throw new SportsBetNotSentError('Sports session unavailable')
     if (!query.WagerSelectionInfos.length || !query.ComboSelections.length)
       throw new SportsBetNotSentError('No bet selections')
-    const memberCode = await ensureSportsMemberCode()
-    const token = sportsToken.value
-    if (version !== sportsSessionVersion.value || !isLoggedIn.value)
+    const credentials = await sportsAuth.ensureCredentials()
+    if (
+      version !== sportsSessionVersion.value ||
+      context !== sportsAuth.contextVersion ||
+      !canSend()
+    )
       throw new SportsBetNotSentError('Sports session changed')
-    if (!memberCode || !token) throw new SportsBetNotSentError('Sports login unavailable')
-    const response = await sportsApi.placeBet(baseUrl, {
+    if (!credentials) throw new SportsCredentialsUnavailableError('Sports credentials unavailable')
+    if (!sportsAuth.isCredentialsCurrent(credentials))
+      throw new SportsBetNotSentError('Sports credentials changed')
+    const response = await sportsApi.placeBet(getBaseUrl(), {
       ...query,
-      MemberCode: memberCode,
-      Token: token,
+      Token: credentials.token,
+      MemberCode: credentials.memberCode,
       LanguageCode: getLanguage(),
       TimeStamp: Date.now()
     })
-    // 原请求的结果仍用于清理提交记录，当前页面是否更新由调用方判断。
+    if (isAuthExpired(response)) sportsAuth.clearCredentials(credentials)
     return response
   }
-  // 写请求不进入可取消的查询资源，避免另一场点击或页面离开中断已发出的操作。
-  const favouriteState = shallowReactive<
-    SportsRequestState<FavouriteEventParams, FavouriteEventResponse>
-  >({ params: null, response: null, data: null, loading: false, error: null })
-  const favouriteJobs = shallowReactive(new Map<string, Promise<SportsFavouriteResult>>())
+
   const resources = [counts, events, indexes, competition, popular]
 
   // 全联赛缓存独立于搜索和联赛选择，按排序及收藏置顶条件隔离；response 仅保留最近一页。
@@ -1459,7 +1404,7 @@ export const useSportsStore = defineStore('sports', () => {
           state.readRevision = revision
           state.nextPage = 1
           state.receivedEventIds.clear()
-          const response = await sportsApi.getSportsV2(
+          const response = await sendHomepageSports(
             baseUrl,
             {
               ...common,
@@ -1467,8 +1412,7 @@ export const useSportsStore = defineStore('sports', () => {
               PageNumber: 1,
               Keyword: '',
               IsFavourite: isFavourite.value,
-              earlyTradingDate: null,
-              MemberCode: sportsMemberCode.value
+              earlyTradingDate: null
             },
             { signal: controller.signal }
           )
@@ -1697,8 +1641,7 @@ export const useSportsStore = defineStore('sports', () => {
       CompetitionIds: [],
       Keyword: '',
       IsFavourite: isFavourite.value,
-      earlyTradingDate: null,
-      MemberCode: sportsMemberCode.value
+      earlyTradingDate: null
     }
     const retainPrevious =
       keepPrevious && allSportsDataContext.value === context && allSportsState.data.length > 0
@@ -1727,9 +1670,8 @@ export const useSportsStore = defineStore('sports', () => {
           PageNumber: page
         }
         allSportsState.params = pageParams
-        const readRevision = favouriteRevision
         const revision = ++eventReadRevision
-        const response = await sportsApi.getSportsV2(baseUrl, pageParams, {
+        const response = await sendHomepageSports(baseUrl, pageParams, {
           signal: controller.signal
         })
         if (!isCurrent()) return null
@@ -1771,7 +1713,6 @@ export const useSportsStore = defineStore('sports', () => {
         ) {
           return fail('Invalid all-league event data')
         }
-        syncMemberFavourites(response.e, readRevision, params.MemberCode)
         allSportsState.total = total
         if (!response.e.length) {
           if (!total) groups.clear()
@@ -2073,8 +2014,7 @@ export const useSportsStore = defineStore('sports', () => {
     getCompetitionPage: competition.state,
     getPopularSports: popular.state,
     getCompetitionList: competitionListState,
-    favouriteEvent: favouriteState,
-    GetBetInfo: betInfo.state
+    GetBetInfo: betInfoState
   })
   const sportCounts = computed(() => counts.state.data?.spc ?? [])
   const sportCountsLoading = computed(() => counts.state.loading)
@@ -2269,7 +2209,7 @@ export const useSportsStore = defineStore('sports', () => {
   })
 
   const fetchSportCounts = () => counts.load({ LanguageCode: languageCode.value, IsCombo: false })
-  const fetchSports = async (overrides: Partial<GetSportsV2Params> = {}) => {
+  const fetchSports = async (overrides: Partial<Omit<GetSportsV2Params, 'MemberCode'>> = {}) => {
     const selectedIds = keyword.value.trim() ? [] : competitionIds.value
     const params: GetSportsV2Params = {
       ...commonParams(),
@@ -2285,8 +2225,6 @@ export const useSportsStore = defineStore('sports', () => {
       CompetitionIds: [...selectedIds],
       Keyword: keyword.value.trim(),
       earlyTradingDate: keyword.value.trim() && market.value === 1 ? earlyTradingDate.value : null,
-      // 使用当前体育平台账号，游客仍传空值，不用本站会员 ID 代替。
-      MemberCode: sportsMemberCode.value,
       ...overrides,
       // 手动查询覆盖参数也不能绕过游客限制。
       IsFavourite: isLoggedIn.value && (overrides.IsFavourite ?? isFavourite.value)
@@ -2312,12 +2250,10 @@ export const useSportsStore = defineStore('sports', () => {
     // 请求层切换条件会清空旧数据，同时失效其缓存标记，避免快速切回时误判已加载。
     if (eventsDataContext.value !== requestContext) eventsDataContext.value = ''
     const version = sportsSessionVersion.value
-    const readRevision = favouriteRevision
     const revision = ++eventReadRevision
     const response = await events.load(params)
     if (version !== sportsSessionVersion.value) return null
     if (response && events.state.data === response) {
-      syncMemberFavourites(response.e ?? [], readRevision, params.MemberCode)
       events.state.data = {
         ...response,
         e: rememberGroups(params.SportId, response.e ?? [], revision)
@@ -2337,7 +2273,7 @@ export const useSportsStore = defineStore('sports', () => {
   let visibleQueue: Promise<unknown> = Promise.resolve()
   let backgroundEventQueue: Promise<unknown> = Promise.resolve()
   const getRefreshContext = () =>
-    JSON.stringify([getEventsContext(), getAllSportsQueryContext(), memberCodeGeneration])
+    JSON.stringify([getEventsContext(), getAllSportsQueryContext(), sportsVisitGeneration])
   const cancelHomepageRefresh = () => {
     refreshGeneration += 1
     for (const job of refreshJobs.values()) job.controller.abort()
@@ -2618,8 +2554,7 @@ export const useSportsStore = defineStore('sports', () => {
         CompetitionIds: [],
         Keyword: search,
         IsFavourite: isFavourite.value,
-        earlyTradingDate: search && market.value === 1 ? earlyTradingDate.value : null,
-        MemberCode: sportsMemberCode.value
+        earlyTradingDate: search && market.value === 1 ? earlyTradingDate.value : null
       }
       const previousGroups = search
         ? eventsDataContext.value === getEventsContext()
@@ -2664,8 +2599,7 @@ export const useSportsStore = defineStore('sports', () => {
           if (!isCurrent()) return null
           const revision = ++eventReadRevision
           listRevision = revision
-          const favourite = favouriteRevision
-          const response = await sportsApi.getSportsV2(
+          const response = await sendHomepageSports(
             getBaseUrl(),
             {
               ...params,
@@ -2713,7 +2647,6 @@ export const useSportsStore = defineStore('sports', () => {
               : allSportsDataContext.value !== getAllSportsQueryContext()
           )
             return null
-          syncMemberFavourites(response.e, favourite, params.MemberCode)
           const receivedAt = Date.now()
           const applied = await mergeGroupBatches(
             response.e,
@@ -2832,186 +2765,265 @@ export const useSportsStore = defineStore('sports', () => {
       ...overrides
     })
 
-  const isFavouritePending = (eventId: number) =>
-    favouriteJobs.has(`${sportsSessionVersion.value}:${eventId}`)
-
-  /** 单联赛筛选可覆盖预览外的赛事；只校准当前赛事，不替换列表或分页。 */
-  const refreshEventFavourite = async (
-    baseUrl: string,
-    params: GetSportsV2Params,
-    eventId: number,
-    isCurrent: () => boolean
-  ): Promise<boolean> => {
-    const generation = memberCodeGeneration
+  const getFavouriteActionContext = () =>
+    JSON.stringify([
+      sportsVisitGeneration,
+      sportsAuth.contextVersion,
+      selectedSportId.value,
+      market.value,
+      sortType.value,
+      competitionIds.value,
+      keyword.value,
+      earlyTradingDate.value,
+      isFavourite.value
+    ])
+  const favouriteFilterPending = ref(false)
+  let favouriteFilterJob: symbol | null = null
+  watch(
+    () => sportsAuth.contextVersion,
+    () => {
+      favouriteFilterJob = null
+      favouriteFilterPending.value = false
+    },
+    { flush: 'sync' }
+  )
+  const setFavouriteFilter = async (enabled: boolean): Promise<SportsFavouriteResult> => {
+    if (!homepageActive || !isLoggedIn.value || favouriteFilterPending.value) return 'stale'
+    if (!enabled) {
+      isFavourite.value = false
+      return 'success'
+    }
+    const context = getFavouriteActionContext()
+    const job = Symbol()
+    favouriteFilterJob = job
+    favouriteFilterPending.value = true
     try {
-      const response = await sportsApi.getSportsV2(baseUrl, params)
-      if (
-        !isCurrent() ||
-        !homepageActive ||
-        generation !== memberCodeGeneration ||
-        params.MemberCode !== sportsMemberCode.value
-      ) {
-        return false
+      const credentials = await sportsAuth.ensureCredentials()
+      if (!homepageActive || context !== getFavouriteActionContext()) return 'stale'
+      if (!credentials) return 'login-failed'
+      if (!sportsAuth.isCredentialsCurrent(credentials)) return 'stale'
+      isFavourite.value = true
+      return 'success'
+    } finally {
+      if (favouriteFilterJob === job) {
+        favouriteFilterJob = null
+        favouriteFilterPending.value = false
       }
-      if (!isSportsSuccess(response)) {
-        favouriteState.error = { kind: 'business', code: response.stc, message: response.std }
-        return false
-      }
-      const group = Array.isArray(response.e)
-        ? response.e.find(group => group?.CompetitionId === params.CompetitionIds[0])
-        : undefined
-      const event = Array.isArray(group?.Sports)
-        ? group.Sports.find(event => event?.EventId === eventId)
-        : undefined
-      if (typeof event?.IsFavourite !== 'boolean') {
-        favouriteState.error = { kind: 'response', message: 'Favourite status is unavailable' }
-        return false
-      }
-      memberFavourites.set(eventId, { value: event.IsFavourite, revision: ++favouriteRevision })
-      unconfirmedFavourites.delete(eventId)
-      return true
-    } catch {
-      if (isCurrent() && homepageActive && generation === memberCodeGeneration) {
-        favouriteState.error = { kind: 'network', message: 'Favourite status refresh failed' }
-      }
-      return false
     }
   }
-
-  // 仅收藏置顶需要重取排序；普通收藏只更新个人状态，不牵动首页初始化。
-  const refreshFavouriteOrder = () => {
-    if (useCachedEvents.value) {
-      cancelAllSports()
-      void fetchAllSports({ keepPrevious: true })
-    } else {
-      events.cancel()
-      void fetchSports()
-    }
+  const isFavouritePending = (eventId: number) => favouriteJobs.has(eventId)
+  const favouriteQuery = (competitionId: number): GetSportsV2Params => ({
+    ...commonParams(),
+    competitionCondType: 2,
+    PageNumber: 1,
+    PageSize: ALL_SPORTS_PAGE_SIZE,
+    SortType: sortType.value,
+    CompetitionIds: [competitionId],
+    Keyword: '',
+    IsFavourite: false,
+    earlyTradingDate: null
+  })
+  let favouriteSync: { key: string; controller: AbortController; pending: Promise<void> } | null =
+    null
+  let favouriteSyncKey = ''
+  const cancelFavouriteSync = () => {
+    favouriteSync?.controller.abort()
+    favouriteSync = null
+    favouriteSyncKey = ''
   }
-
-  /** 同场防重、不同场独立；服务端切换收藏状态，网络失败不自动重试。 */
-  const toggleFavouriteEvent = (eventId: number): Promise<SportsFavouriteResult> => {
-    if (!isLoggedIn.value) return Promise.resolve('login-failed')
-    const version = sportsSessionVersion.value
-    const key = `${version}:${eventId}`
-    const existing = favouriteJobs.get(key)
-    if (existing) return existing
-    const event =
-      eventsList.value.flatMap(group => group.Sports).find(item => item.EventId === eventId) ??
-      hotEvents.value.find(item => item.EventId === eventId)
+  // 只校准当前展示赛事的星标，不合并比分、盘口或分页。
+  const refreshVisibleFavourites = async (targets: readonly SportsRefreshTarget[]) => {
+    if (!homepageActive || !sportsAuth.isReady) return
+    const credentials = await sportsAuth.ensureCredentials({ fetchIfMissing: false })
+    if (!credentials || !sportsAuth.isCredentialsCurrent(credentials) || !homepageActive) return
+    const competitions = new Set<number>()
+    const missingEvents: number[] = []
+    for (const target of targets) {
+      if (target.sportId !== selectedSportId.value || memberFavourites.has(target.eventId)) continue
+      if (isEventExpired(target.sportId, target.eventId)) continue
+      const event = getRefreshEvent(target.sportId, target.eventId)
+      const id = event?.Competition?.CompetitionId
+      if (id && Number.isSafeInteger(id)) {
+        competitions.add(id)
+        missingEvents.push(target.eventId)
+      }
+    }
+    if (!competitions.size) return
+    const context = getFavouriteActionContext()
+    const key = JSON.stringify([
+      context,
+      credentials.version,
+      [...competitions].sort((a, b) => a - b),
+      missingEvents.sort((a, b) => a - b)
+    ])
+    if (favouriteSync?.key === key) return favouriteSync.pending
+    if (favouriteSyncKey === key) return
+    cancelFavouriteSync()
+    const controller = new AbortController()
+    const isCurrent = () =>
+      homepageActive &&
+      !controller.signal.aborted &&
+      context === getFavouriteActionContext() &&
+      sportsAuth.isCredentialsCurrent(credentials)
+    const pending = Promise.resolve().then(async () => {
+      try {
+        for (const id of competitions) {
+          if (!isCurrent()) return
+          const response = await sendHomepageSports(getBaseUrl(), favouriteQuery(id), {
+            signal: controller.signal
+          })
+          if (!isCurrent() || !isSportsSuccess(response) || !Array.isArray(response.e)) return
+        }
+        // 联赛预览可能只有前五场，遗漏的可见赛事再按球队查询。
+        for (const eventId of missingEvents) {
+          if (!isCurrent()) return
+          if (memberFavourites.has(eventId) || favouriteJobs.has(eventId)) continue
+          const event = getRefreshEvent(selectedSportId.value, eventId)
+          if (!event?.HomeTeam || !event.Competition?.CompetitionId) continue
+          const response = await sendHomepageSports(
+            getBaseUrl(),
+            {
+              ...favouriteQuery(event.Competition.CompetitionId),
+              Market: event.Market,
+              Keyword: event.HomeTeam
+            },
+            { signal: controller.signal }
+          )
+          if (!isCurrent() || !isSportsSuccess(response) || !Array.isArray(response.e)) return
+        }
+        if (isCurrent()) favouriteSyncKey = key
+      } catch {
+        // 校准失败保留当前星标，下次独立刷新再查询，不自动重试登录。
+      } finally {
+        if (favouriteSync?.controller === controller) favouriteSync = null
+      }
+    })
+    favouriteSync = { key, controller, pending }
+    return pending
+  }
+  const getEventFavourite = (eventId: number): boolean | undefined =>
+    isLoggedIn.value ? memberFavourites.get(eventId) : false
+  const toggleFavouriteTarget = async (
+    target: SportsFavouriteTarget,
+    canUpdate: () => boolean
+  ): Promise<SportsFavouriteResult> => {
+    const { sportId, eventId, eventDate, competitionId } = target
+    if (!isLoggedIn.value || !canUpdate() || favouriteJobs.has(eventId)) return 'stale'
     if (
       !Number.isSafeInteger(eventId) ||
       eventId <= 0 ||
-      !event ||
-      !event.EventDate ||
-      !Number.isSafeInteger(event.Competition?.CompetitionId) ||
-      !getBaseUrl()
-    ) {
-      return Promise.resolve('failed')
-    }
+      !Number.isSafeInteger(competitionId) ||
+      competitionId <= 0 ||
+      !getBaseUrl() ||
+      !/^\d+$/.test(eventDate)
+    )
+      return 'failed'
+    const context = sportsAuth.contextVersion
+    const owner = favouriteOwner()
     const baseUrl = getBaseUrl()
-    const listContext = matchListContext.value
-    // 使用点击时的球种、分类、联赛；不能把后续搜索条件带入校准请求。
     const query: GetSportsV2Params = {
-      ...commonParams(),
+      SportId: sportId,
+      Market: target.market,
+      LanguageCode: getLanguage(),
       competitionCondType: 2,
-      CompetitionIds: [event.Competition.CompetitionId],
       PageNumber: 1,
-      PageSize: 1,
+      PageSize: ALL_SPORTS_PAGE_SIZE,
       SortType: 1,
-      Keyword: '',
+      CompetitionIds: [competitionId],
+      Keyword: target.homeTeam,
       IsFavourite: false,
       earlyTradingDate: null
     }
-    const isCurrent = () => version === sportsSessionVersion.value && isLoggedIn.value
-    const pending = (async (): Promise<SportsFavouriteResult> => {
-      const loginGeneration = memberCodeGeneration
-      const memberCode = await ensureSportsMemberCode()
-      if (!isCurrent() || loginGeneration !== memberCodeGeneration) return 'stale'
-      if (!memberCode) return 'login-failed'
-      const previous = memberFavourites.get(eventId)?.value ?? event.IsFavourite === true
-      const reconcileOnly = unconfirmedFavourites.has(eventId)
-      const params: FavouriteEventParams = {
-        MemberCode: memberCode,
-        EventId: eventId,
-        EventDate: event.EventDate
-      }
-      favouriteState.params = params
-      favouriteState.error = null
-      favouriteState.response = null
-      let result: SportsFavouriteResult = reconcileOnly ? 'synced' : 'success'
-      if (!reconcileOnly) {
-        unconfirmedFavourites.add(eventId)
-        try {
-          const response = await sportsApi.favouriteEvent(baseUrl, params)
-          if (!isCurrent()) return 'stale'
-          favouriteState.response = response
-          if (!isSportsSuccess(response)) {
-            favouriteState.error = { kind: 'business', code: response.stc, message: response.std }
-            if (isSportsAuthExpired(response)) {
-              unconfirmedFavourites.delete(eventId)
-              return 'auth-expired'
-            }
-            result = 'failed'
-          } else {
-            favouriteState.data = response
-            if (!homepageActive || loginGeneration !== memberCodeGeneration) return 'stale'
-            if (response.EventId === eventId && typeof response.IsFavourite === 'boolean') {
-              // 接口已返回最终状态，不再额外查询赛事来确认。
-              memberFavourites.set(eventId, {
-                value: response.IsFavourite,
-                revision: ++favouriteRevision
-              })
-              unconfirmedFavourites.delete(eventId)
-              return 'success'
-            }
-          }
-        } catch {
-          if (!isCurrent()) return 'stale'
-          favouriteState.error = { kind: 'network', message: 'Favourite request failed' }
-          result = 'failed'
-        }
-      }
-      if (!homepageActive || loginGeneration !== memberCodeGeneration) return 'stale'
-      // 只建立旧读隔离点，不推测切换结果；超时也需读取服务端实际状态。
-      memberFavourites.set(eventId, { value: previous, revision: ++favouriteRevision })
-      const confirmed = await refreshEventFavourite(
-        baseUrl,
-        { ...query, MemberCode: memberCode },
-        eventId,
-        isCurrent
-      )
+    const job = Symbol()
+    favouriteJobs.set(eventId, job)
+    favouriteEventRevisions.set(eventId, ++favouriteRevision)
+    const isCurrent = () =>
+      canUpdate() &&
+      context === sportsAuth.contextVersion &&
+      favouriteJobs.get(eventId) === job &&
+      !isEventExpired(sportId, eventId)
+    // 请求发出后以账号和网关归属校验结果，切换语言或卡片仍可同步服务端确认的状态。
+    const canApplyResult = () =>
+      owner === favouriteOwner() && baseUrl === getBaseUrl() && favouriteJobs.get(eventId) === job
+    try {
+      const credentials = await sportsAuth.ensureCredentials()
       if (!isCurrent()) return 'stale'
-      return confirmed ? result : 'failed'
-    })()
-    // 等待账号期间也要立即进入防重状态。
-    favouriteJobs.set(key, pending)
-    favouriteState.loading = true
-    void pending.then(result => {
-      favouriteJobs.delete(key)
-      favouriteState.loading = favouriteJobs.size > 0
-      if (
-        isCurrent() &&
-        homepageActive &&
-        isFavourite.value &&
-        listContext === matchListContext.value &&
-        (result === 'success' ||
-          result === 'synced' ||
-          (result === 'failed' && !unconfirmedFavourites.has(eventId)))
-      ) {
-        refreshFavouriteOrder()
+      if (!credentials) return 'login-failed'
+      if (!sportsAuth.isCredentialsCurrent(credentials)) return 'stale'
+      // 上次结果未确认时只查状态，不能再次切换收藏。
+      if (unconfirmedFavourites.has(eventId)) {
+        const response = await sendHomepageSports(baseUrl, query)
+        if (!canApplyResult()) return 'stale'
+        if (isAuthExpired(response)) return 'auth-expired'
+        const confirmed = response.e
+          ?.flatMap(group => group.Sports)
+          .find(item => item.EventId === eventId)
+        if (!isSportsSuccess(response) || typeof confirmed?.IsFavourite !== 'boolean')
+          return 'failed'
+        memberFavourites.set(eventId, confirmed.IsFavourite)
+        unconfirmedFavourites.delete(eventId)
+        return 'synced'
       }
-    })
-    return pending
+      unconfirmedFavourites.add(eventId)
+      const response = await sportsApi.favouriteEvent(baseUrl, {
+        MemberCode: credentials.memberCode,
+        EventId: eventId,
+        EventDate: eventDate
+      })
+      if (!canApplyResult()) return 'stale'
+      if (isAuthExpired(response)) {
+        unconfirmedFavourites.delete(eventId)
+        sportsAuth.clearCredentials(credentials)
+        return 'auth-expired'
+      }
+      if (!isSportsSuccess(response)) {
+        unconfirmedFavourites.delete(eventId)
+        return 'failed'
+      }
+      if (response.EventId !== eventId || typeof response.IsFavourite !== 'boolean') return 'failed'
+      memberFavourites.set(eventId, response.IsFavourite)
+      unconfirmedFavourites.delete(eventId)
+      return 'success'
+    } catch {
+      return isCurrent() ? 'failed' : 'stale'
+    } finally {
+      if (favouriteJobs.get(eventId) === job) {
+        favouriteJobs.delete(eventId)
+        favouriteEventRevisions.set(eventId, ++favouriteRevision)
+      }
+    }
+  }
+
+  const toggleFavouriteEvent = (eventId: number): Promise<SportsFavouriteResult> => {
+    const sportId = selectedSportId.value
+    const event =
+      getRefreshEvent(sportId, eventId) ??
+      allEventsById.value.get(eventId) ??
+      hotDetailsById.value.get(eventId)
+    if (!event || isEventExpired(sportId, eventId)) return Promise.resolve('stale')
+    const context = getFavouriteActionContext()
+    return toggleFavouriteTarget(
+      {
+        sportId,
+        eventId,
+        eventDate: event.EventDate,
+        competitionId: event.Competition.CompetitionId,
+        market: event.Market,
+        homeTeam: event.HomeTeam
+      },
+      () => homepageActive && context === getFavouriteActionContext()
+    )
   }
 
   const cancelRequests = () => {
     homepageActive = false
+    cancelFavouriteSync()
+    favouriteFilterJob = null
+    favouriteFilterPending.value = false
     cancelBetInfo()
     resetSportsBalance()
     cancelHomepageRefresh()
-    // 停用和销毁均结束本次停留；旧登录响应不能写回，也不能被下次进入复用。
-    invalidateSportsMemberCode()
+    invalidateSportsVisit()
     homepageGeneration += 1
     resources.forEach(resource => resource.cancel())
     cancelAllSports()
@@ -3062,14 +3074,11 @@ export const useSportsStore = defineStore('sports', () => {
   }
   const reset = () => {
     cancelRequests()
-    sportsSessionVersion.value += 1
+    favouriteResetRevision = ++favouriteRevision
+    favouriteEventRevisions.clear()
     memberFavourites.clear()
     unconfirmedFavourites.clear()
-    favouriteRevision = 0
-    favouriteState.params = null
-    favouriteState.response = null
-    favouriteState.data = null
-    favouriteState.error = null
+    sportsSessionVersion.value += 1
     isFavourite.value = false
     resources.forEach(resource => resource.reset())
     allSportsState.params = null
@@ -3100,7 +3109,7 @@ export const useSportsStore = defineStore('sports', () => {
     homepageError.value = null
   }
 
-  /** 进入时获取体育账号并查询数量，列表等待两者就绪；筛选期间复用本次停留的账号。 */
+  /** 配置和数量就绪后加载赛事，个人凭据不参与初始化。 */
   const loadHomepage = async ({
     refreshCounts = true,
     refreshCompetitionList = refreshCounts
@@ -3111,7 +3120,6 @@ export const useSportsStore = defineStore('sports', () => {
     homepageActive = true
     const generation = ++homepageGeneration
     cancelHomepageRefresh()
-    let refreshEvents = false
     if (refreshCompetitionList) {
       // 数量等待期间后续筛选可能接管请求，保留刷新意图，避免旧代次退出时漏发热门。
       competitionListRefreshPending = true
@@ -3130,15 +3138,6 @@ export const useSportsStore = defineStore('sports', () => {
     try {
       await siteConfigStore.initSiteConfig()
       if (generation !== homepageGeneration) return
-      // 仅登录后获取体育凭据，不依赖数量接口成功；同次停留共用在途或已有结果。
-      const memberCodeTask =
-        isLoggedIn.value && (!memberCodeAttempted || memberCodePending)
-          ? ensureSportsMemberCode()
-          : null
-      // 历史页可能已获取凭据，返回首页时仍需补查余额。
-      if (sportsCredentials.value && sportsBalance.value === null && !sportsBalanceError.value) {
-        void fetchSportsBalance({ retry: true })
-      }
       if (!getBaseUrl()) {
         resources.forEach(resource => resource.reset())
         cancelAllSports()
@@ -3169,16 +3168,7 @@ export const useSportsStore = defineStore('sports', () => {
         }
         loadedCountsContext = countsContext
       }
-      await memberCodeTask
       if (generation !== homepageGeneration) return
-      // 同一本站会话内账号首次就绪，保留原预览直到新数据发布，但不复用匿名查询缓存。
-      if (memberCodeNeedsRefresh) {
-        memberCodeNeedsRefresh = false
-        refreshEvents = true
-        events.cancel()
-        cancelAllSports()
-        allSportsState.complete = false
-      }
       pumpLeagueRequests()
       // 数量等待期间可能更换球种；此处读取 Store 当前值，不使用请求前的筛选快照。
       if (competitionListRefreshPending) {
@@ -3200,7 +3190,6 @@ export const useSportsStore = defineStore('sports', () => {
         // 默认列表直接共用分页缓存，避免额外发一次相同的第一页请求。
         await allSportsTask
       } else if (
-        refreshEvents ||
         !keyword.value.trim() ||
         refreshCounts ||
         eventsDataContext.value !== getEventsContext() ||
@@ -3241,8 +3230,6 @@ export const useSportsStore = defineStore('sports', () => {
     sortType,
     isFavourite,
     sportsSessionVersion,
-    sportsMemberCode,
-    sportsToken,
     sportsBalance,
     sportsBalanceLoading,
     sportsBalanceError,
@@ -3301,10 +3288,15 @@ export const useSportsStore = defineStore('sports', () => {
     retryLeague,
     fetchPopularSports,
     fetchCompetitionList,
-    ensureSportsMemberCode,
     placeBet,
     toggleFavouriteEvent,
+    toggleFavouriteTarget,
+    getEventFavourite,
+    querySportsList: sendHomepageSports,
     isFavouritePending,
+    favouriteFilterPending,
+    setFavouriteFilter,
+    refreshVisibleFavourites,
     loadHomepage,
     retryHomepage,
     retryHotEvents,

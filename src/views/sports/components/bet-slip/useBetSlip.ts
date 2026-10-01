@@ -3,7 +3,7 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
-import { useSportsStore } from '@/stores/sports'
+import { SportsCredentialsUnavailableError, useSportsStore } from '@/stores/sports'
 import { useUserStore } from '@/stores/user'
 import type { PlaceBetParams } from '@/api/interface/sport'
 import { getCurrencySymbol, getFormattedBalance } from '@/utils/locale'
@@ -205,7 +205,6 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   })
 
   let selectionVersion = 0
-  let preparingSelection = false
   const checkedQuoteIds = new Set<string>()
   onDeactivated(() => {
     selectionVersion += 1
@@ -544,6 +543,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   const canUseSelection = (outcome: SelectedOutcome) => {
     const quote = betInfoQuotes.value.find(item => item.wsid === outcome.WagerSelectionId)
     return (
+      betInfoReady.value &&
       !selectionBlocked(outcome.id) &&
       !getSubmissionState(outcome.id) &&
       quote !== undefined &&
@@ -577,6 +577,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   const potentialReturnText = computed(() =>
     fundedRows.value.length &&
     (invalidStake.value ||
+      !betInfoReady.value ||
       checkedSelections.value.some(item => item.betStatus !== 'open') ||
       fundedRows.value.some(item => item.payoutPerUnit === undefined))
       ? '--'
@@ -596,7 +597,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     // 金额提示由输入框展示，底部不重复显示。
     if (!fundedRows.value.length) return ''
     if (betInfoError.value) return t(betInfoError.value)
-    if (sportsBalanceError.value) return t('sports.balanceRefreshFailed')
+    if (sportsBalanceError.value && sportsBalanceError.value.kind !== 'credentials')
+      return t('sports.balanceRefreshFailed')
     if (balance.value === null) return t('sports.balanceUnavailable')
     return ''
   })
@@ -648,31 +650,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       removeSelection(selectedId)
       return true
     }
-    if (preparingSelection || !requireLogin()) return false
+    if (!requireLogin()) return false
     if (!submissionCache.canAdd(selectedId)) return false
-    // 先取得体育凭据，再加入投注单和查询报价。
-    if (!sportsStore.sportsMemberCode || !sportsStore.sportsToken) {
-      const sessionVersion = sportsStore.sportsSessionVersion
-      const version = selectionVersion
-      preparingSelection = true
-      try {
-        await sportsStore.ensureSportsMemberCode()
-      } finally {
-        preparingSelection = false
-      }
-      if (
-        disposed ||
-        version !== selectionVersion ||
-        sessionVersion !== sportsStore.sportsSessionVersion
-      ) {
-        return false
-      }
-      if (!sportsStore.sportsMemberCode || !sportsStore.sportsToken) {
-        globalShowToast({ type: 'fail', message: t('sports.betLoginFailed') })
-        return false
-      }
-    }
-    // 等待登录期间盘口可能已更新，使用当前数据。
     const match = getMatch(matchId)
     const line = (match?.MarketLines ?? []).find(
       item => item.MarketlineId === payload.market.MarketlineId
@@ -837,12 +816,6 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
       selectionVersion === selectionGeneration
     reusing.value = true
     try {
-      await sportsStore.ensureSportsMemberCode()
-      if (!current()) return
-      if (!sportsStore.sportsMemberCode || !sportsStore.sportsToken) {
-        globalShowToast({ type: 'fail', message: t('sports.betLoginFailed') })
-        return
-      }
       const restored: SelectedOutcome[] = []
       for (const item of receipt.selections) {
         if (isSelectionExpired(item) || getSubmissionState(item.id)) continue
@@ -1007,11 +980,11 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         submissionKeys.forEach(key => submissionCache.settle(key))
         return
       }
-      sent = true
       const responses = await Promise.allSettled(
         jobs.map(async (job, index) => {
           try {
-            const response = await sportsStore.placeBet(job.query)
+            const response = await sportsStore.placeBet(job.query, canSend)
+            sent = true
             const states = job.query.ComboSelections.map(combo =>
               getPlaceBetResult(response, combo.ComboSelection)
             )
@@ -1025,6 +998,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
             )
             return response
           } catch (error) {
+            if (getPlaceBetFailure(error) === 'unknown') sent = true
             submissionCache.settle(
               submissionKeys[index],
               getPlaceBetFailure(error) === 'unknown' ? 'unknown' : undefined
@@ -1033,6 +1007,16 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
           }
         })
       )
+      // 凭据获取失败时请求未发出，登录接口已提示，保留原投注单。
+      if (
+        !sent &&
+        responses.some(
+          response =>
+            response.status === 'rejected' &&
+            response.reason instanceof SportsCredentialsUnavailableError
+        )
+      )
+        return
       for (const [index, response] of responses.entries()) {
         const job = jobs[index]
         if (
@@ -1067,7 +1051,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
           if (key.startsWith(`${comboKey}:`)) delete submittedCombos.value[key]
         }
       }
-      if (!current()) return
+      if (!current() || selectionVersion !== submissionSelectionVersion) return
       if (refreshQuote) refreshBetInfo()
       if (!outcomes.value.length) {
         availability.value = {}
@@ -1084,9 +1068,8 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
               ? 'Partial'
               : 'Failed'
             : 'Success'
-      const hasCredentials = Boolean(sportsStore.sportsMemberCode && sportsStore.sportsToken)
       const presentation = resultPresentation?.()
-      if (presentation && (result === 'Success' || (result === 'Failed' && hasCredentials))) {
+      if (presentation && (result === 'Success' || result === 'Failed')) {
         lastSubmission.value = receipt
         betResult.value = result === 'Success' ? 'success' : 'failed'
         if (presentation === 'panel') betSlipOpen.value = true
@@ -1094,15 +1077,13 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         globalShowToast({
           type: result === 'Success' ? 'success' : 'fail',
           message:
-            result === 'Failed' && !hasCredentials
-              ? t('sports.betLoginFailed')
-              : result === 'Unknown' || result === 'Pending'
-                ? t('sports.betSubmitUnknown')
-                : t(`sports.betSubmit${result}`)
+            result === 'Unknown' || result === 'Pending'
+              ? t('sports.betSubmitUnknown')
+              : t(`sports.betSubmit${result}`)
         })
     } finally {
       submitting.value = false
-      if (sent && current()) await sportsStore.fetchSportsBalance()
+      if (sent && current()) await sportsStore.fetchSportsBalance({ fetchIfMissing: false })
     }
   }
   const refreshBalance = async () => {
@@ -1110,6 +1091,7 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     const version = sportsStore.sportsSessionVersion
     const success = await sportsStore.fetchSportsBalance()
     if (success || version !== sportsStore.sportsSessionVersion) return
+    if (sportsBalanceError.value?.kind === 'credentials') return
     if (!sportsBalanceError.value && balance.value === null) return
     globalShowToast({
       type: 'fail',

@@ -100,6 +100,7 @@
       <FilterSearch_PC
         v-if="!isMobile"
         :collect-only="collectOnly"
+        :collect-pending="collectPending"
         @filter-change="handleMatchFilterChange"
         @collect-change="handleCollectChange"
       />
@@ -268,6 +269,7 @@ const {
   refreshing,
   focusedStakeId,
   collectOnly,
+  collectPending,
   handleMatchFavorite,
   isMatchFavoritePending,
   setMatchExpanded,

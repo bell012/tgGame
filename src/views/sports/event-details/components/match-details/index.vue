@@ -29,11 +29,22 @@
         type="button"
         class="flex h-4 w-4 shrink-0 items-center justify-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
         :class="favorite ? 'text-theme-primary' : 'text-icon-2'"
-        :aria-label="favorite ? 'Remove match from favorites' : 'Add match to favorites'"
+        :aria-label="
+          favorite ? t('sports.matchCard.removeFavorite') : t('sports.matchCard.addFavorite')
+        "
         :aria-pressed="favorite"
-        @click="toggleFavorite"
+        :aria-busy="favoritePending"
+        :disabled="favoritePending"
+        @click="emit('favorite')"
       >
-        <span class="text-base leading-none" aria-hidden="true">★</span>
+        <Loading
+          v-if="favoritePending"
+          type="spinner"
+          size="16px"
+          color="currentColor"
+          aria-hidden="true"
+        />
+        <span v-else class="text-base leading-none" aria-hidden="true">★</span>
       </button>
     </div>
 
@@ -171,7 +182,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
+import { Loading } from 'vant'
 import { useI18n } from 'vue-i18n'
 import SmartImage from '@/components/common/SmartImage.vue'
 import { getTeamLogoUrl } from '@/views/sports/index'
@@ -187,19 +199,12 @@ import whiteIcon from './icon/white.svg?url'
 const props = defineProps<{
   event?: EventDetailTabItem | null
   sportId?: number
+  favorite: boolean
+  favoritePending: boolean
 }>()
+const emit = defineEmits<{ favorite: [] }>()
 
 const { t } = useI18n()
-
-const favorite = ref(false)
-
-watch(
-  () => props.event?.id,
-  () => {
-    favorite.value = props.event?.isFavourite ?? false
-  },
-  { immediate: true }
-)
 
 const event = computed(() => props.event ?? null)
 const league = computed(() => event.value?.league ?? '')
@@ -234,8 +239,4 @@ const awayLogo = computed(() => getTeamLogoUrl(event.value?.away.teamId))
 const sportItem = computed(() => sportItems.find(item => item.sportId === props.sportId))
 const sportIcon = computed(() => sportItem.value?.icon)
 const sportLabel = computed(() => (sportItem.value ? t(sportItem.value.i18nKey) : '—'))
-
-const toggleFavorite = () => {
-  favorite.value = !favorite.value
-}
 </script>

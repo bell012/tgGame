@@ -130,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onScopeDispose, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import Api from '@/api'
@@ -141,6 +141,8 @@ import { globalShowToast } from '@/utils/toast'
 import type { SportsBetHistoryWager } from '@/api/interface/sport'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
+import { useSportsAuthStore } from '@/stores/sportsAuth'
+import { useUserStore } from '@/stores/user'
 import CopyIcon from '@/static/svg/copy.svg?component'
 import CloseIcon from '@/static/svg/close.svg?component'
 
@@ -174,7 +176,28 @@ const isMobile = useIsMobile()
 const { currentCurrencyCode } = useDisplayCurrency()
 const siteConfigStore = useSiteConfigStore()
 const sportsStore = useSportsStore()
-const { languageCode, sportsToken } = storeToRefs(sportsStore)
+const { languageCode } = storeToRefs(sportsStore)
+const sportsAuth = useSportsAuthStore()
+const userStore = useUserStore()
+const getCredentialOwner = () =>
+  JSON.stringify([
+    userStore.userInfo?.tradeToken,
+    userStore.userInfo?.memberId,
+    userStore.acctInfo?.memberId,
+    currentCurrencyCode.value,
+    languageCode.value
+  ])
+let submissionGeneration = 0
+watch(
+  () => [props.visible, props.wager?.wid],
+  () => {
+    submissionGeneration += 1
+  },
+  { flush: 'sync' }
+)
+onScopeDispose(() => {
+  submissionGeneration += 1
+})
 
 const isSubmittingBuyBack = ref(false)
 const sportsOddsTypeI18nKeys: Record<string, string> = {
@@ -250,25 +273,6 @@ const betDetail = computed(() => mapSportsBuyBackDetail(props.wager))
 const getSportsResponseCode = (response: { stc?: number | string; code?: number | string }) =>
   response.stc ?? response.code ?? ''
 
-// 组装 SubmitBuyBack 请求参数，凭据沿用体育登录平台返回的账号与 token。
-const buildBuyBackParams = async () => {
-  const memberCode = await sportsStore.ensureSportsMemberCode()
-  const token = sportsToken.value
-
-  if (!props.wager || !memberCode || !token) {
-    return null
-  }
-
-  return {
-    WagerId: props.wager.wid ?? '',
-    BuyBackPricing: toSportsBetNumber(props.wager.bbp),
-    PricingId: props.wager.prid ?? '',
-    LanguageCode: languageCode.value,
-    MemberCode: memberCode,
-    Token: token
-  }
-}
-
 // 关闭提前结算弹窗，提交中不允许关闭。
 const closeBuyBackSheet = () => {
   if (isSubmittingBuyBack.value) {
@@ -292,24 +296,39 @@ const submitBuyBack = async () => {
     return
   }
 
+  const generation = submissionGeneration
+  const owner = getCredentialOwner()
+  let context: number | undefined
+  const isCurrent = () =>
+    generation === submissionGeneration &&
+    props.visible &&
+    props.wager === wager &&
+    owner === getCredentialOwner() &&
+    (context === undefined || context === sportsAuth.contextVersion)
   isSubmittingBuyBack.value = true
 
   try {
     await siteConfigStore.initSiteConfig()
+    if (!isCurrent()) return
     const baseUrl = siteConfigStore.getConfigString('IM.im_app_url')
-    const params = await buildBuyBackParams()
-
-    if (!baseUrl || !params) {
-      globalShowToast({
-        message: t('betDetails.buyBackSubmitFailed'),
-        type: 'fail'
-      })
+    if (!baseUrl) {
+      globalShowToast({ message: t('betDetails.buyBackSubmitFailed'), type: 'fail' })
       return
     }
-
-    console.log('提前结算携带参数', JSON.stringify(params))
-    const response = await Api.sport.submitBuyBack(baseUrl, params)
-    console.log('提前结算响应结果', response)
+    context = sportsAuth.contextVersion
+    const credentials = await sportsAuth.ensureCredentials()
+    if (!isCurrent() || !credentials || !sportsAuth.isCredentialsCurrent(credentials)) return
+    const response = await Api.sport.submitBuyBack(baseUrl, {
+      WagerId: wager.wid ?? '',
+      BuyBackPricing: toSportsBetNumber(wager.bbp),
+      PricingId: wager.prid ?? '',
+      LanguageCode: languageCode.value,
+      MemberCode: credentials.memberCode,
+      Token: credentials.token
+    })
+    if ([102, 202].includes(Number(getSportsResponseCode(response))))
+      sportsAuth.clearCredentials(credentials)
+    if (!isCurrent()) return
     const responseCode = getSportsResponseCode(response)
 
     if (String(responseCode) === '100') {
@@ -326,8 +345,8 @@ const submitBuyBack = async () => {
       message: response.std || t('betDetails.buyBackSubmitFailed'),
       type: 'fail'
     })
-  } catch (error) {
-    console.error(error)
+  } catch {
+    if (!isCurrent()) return
     globalShowToast({
       message: t('betDetails.buyBackSubmitFailed'),
       type: 'fail'

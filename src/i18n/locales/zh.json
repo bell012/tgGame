@@ -1854,6 +1854,8 @@
     "bet_history": "投注历史",
     "loadFailed": "体育数据加载失败，请重试。",
     "platformLoginFailed": "体育平台登录失败，请重试。",
+    "serviceUnavailable": "体育服务暂时不可用，请稍后重试。",
+    "collectOnly": "只看收藏",
     "balanceUnavailable": "体育余额暂不可用，请刷新后继续。",
     "balanceRefreshFailed": "体育余额刷新失败，请重试。",
     "betInfoFailed": "投注信息查询失败，请关闭投注单后重新打开重试。",

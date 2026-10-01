@@ -103,6 +103,7 @@
       <div class="mb-3 flex h-[30px] items-center gap-[7px]">
         <LeagueTabs_H5
           :collect-only="page.collectOnly.value"
+          :collect-pending="page.collectPending.value"
           :search-keyword="page.searchInput.value"
           @filter-change="page.handleLeagueSortChange"
           @league-filter="page.handleLeagueFilter"

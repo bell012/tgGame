@@ -16,8 +16,9 @@ import type {
   SportsBetInfoQuote,
   SportsBetInfoSetting
 } from '@/api/interface/sport'
-import { useSportsStore } from '@/stores/sports'
+import { SportsCredentialsUnavailableError, useSportsStore } from '@/stores/sports'
 import { useUserStore } from '@/stores/user'
+import { useSportsAuthStore } from '@/stores/sportsAuth'
 import type { SportsBetMode } from '../../shared/types'
 import type { OddsTrend } from '../match-odds/types'
 import { decimalOdds, isBetInfoRetryable, parseBetInfoItems } from './bet-info'
@@ -68,12 +69,15 @@ export const useBetInfo = ({
 }: BetInfoOptions) => {
   const sportsStore = useSportsStore()
   const userStore = useUserStore()
+  const sportsAuth = useSportsAuthStore()
   const active = ref(true)
   const visible = ref(typeof document === 'undefined' || !document.hidden)
   const error = ref('')
   const loading = ref(false)
   const ready = ref(false)
-  const state = ref<'idle' | 'queued' | 'loading' | 'success' | 'error'>('idle')
+  const state = ref<
+    'idle' | 'queued' | 'loading' | 'success' | 'error' | 'credentials-unavailable'
+  >('idle')
   const quotes = ref<(SportsBetInfoQuote & { rid: number })[]>([])
   const trends = ref<Record<number, OddsTrend>>({})
   const settings = ref<SportsBetInfoSetting[]>([])
@@ -122,17 +126,13 @@ export const useBetInfo = ({
     const selections = buildBetInfoSelections(sources)
     loading.value = true
     state.value = 'loading'
+    let credentialsUnavailable = false
     try {
       const params = {
         WagerType: mode.value === 'single' ? 1 : 2,
         WagerSelectionInfos: selections
       } as const
       let response = await sportsStore.fetchBetInfo(params)
-      if (current !== generation) return
-      // Store 已刷新失效凭据，报价查询用新凭据重试一次。
-      if ([102, 202].includes(Number(response?.stc)) && enabled()) {
-        response = await sportsStore.fetchBetInfo(params)
-      }
       if (current !== generation) return
       // 380 且仍开盘时，按接口规则间隔 5 秒重查一次。
       if (
@@ -189,15 +189,21 @@ export const useBetInfo = ({
       }
       settings.value = Array.isArray(response.bs) ? response.bs.filter(Boolean) : []
       ready.value = true
-    } catch {
+    } catch (failure) {
       if (current === generation) {
         ready.value = false
-        error.value = 'sports.betInfoFailed'
+        credentialsUnavailable = failure instanceof SportsCredentialsUnavailableError
+        // 登录接口已提示，投注项和金额保留，不再显示报价失败文案。
+        error.value = credentialsUnavailable ? '' : 'sports.betInfoFailed'
       }
     } finally {
       if (current === generation) {
         loading.value = false
-        state.value = error.value ? 'error' : 'success'
+        state.value = credentialsUnavailable
+          ? 'credentials-unavailable'
+          : error.value
+            ? 'error'
+            : 'success'
       }
     }
   }
@@ -210,6 +216,15 @@ export const useBetInfo = ({
       if (current === generation) void query(true)
     })
   }
+
+  // 其他主动操作取得凭据后，只恢复当前因凭据失败的报价。
+  watch(
+    [() => sportsAuth.isReady, state],
+    ([isReady, status]) => {
+      if (isReady && status === 'credentials-unavailable' && enabled()) refreshBetInfo()
+    },
+    { flush: 'post' }
+  )
 
   // 只在投注单打开、选项或模式变化时查询，不定时轮询。
   watch(

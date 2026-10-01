@@ -1861,6 +1861,8 @@
     "bet_history": "Bet History",
     "loadFailed": "Unable to load sports. Please try again.",
     "platformLoginFailed": "Unable to sign in to sports. Please try again.",
+    "serviceUnavailable": "Sports service is temporarily unavailable. Please try again later.",
+    "collectOnly": "Show favorites only",
     "balanceUnavailable": "Sports balance is unavailable. Please refresh it before continuing.",
     "balanceRefreshFailed": "Unable to refresh sports balance. Please try again.",
     "betInfoFailed": "Unable to check bet information. Close and reopen the bet slip to retry.",
