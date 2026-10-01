@@ -23,12 +23,12 @@
         :class="
           props.displayMode === 'pc'
             ? 'h-[60px] w-[356px] gap-[10px] rounded-[10px] bg-bg-2 px-[10px] py-[10px]'
-            : 'min-h-[75px] gap-[15px] rounded-[10px] bg-bg-2 px-[10px] py-[10px]'
+            : 'h-[65px] justify-between rounded-[10px] bg-bg-2 py-[10px] pl-[10px] pr-[14px]'
         "
       >
         <span
           class="shrink-0 rounded-full bg-opacity-6"
-          :class="props.displayMode === 'pc' ? 'size-[40px]' : 'size-[55px] rounded-[9px]'"
+          :class="props.displayMode === 'pc' ? 'size-[40px]' : 'size-[45px] rounded-[6px]'"
         />
         <span class="min-w-0 flex-1">
           <i class="block h-[14px] w-[45%] rounded-[4px] bg-opacity-6" />

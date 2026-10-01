@@ -318,7 +318,9 @@ export function useChatRuntime() {
 
     return {
       ...conversation,
-      lastMessage: latestMessage?.text ?? ''
+      lastMessage: latestMessage?.text ?? '',
+      // 会话列表时间以本地历史最新消息的展示时间为准。
+      lastMessageTime: latestMessage?.time ?? ''
     }
   }
 
@@ -328,6 +330,8 @@ export function useChatRuntime() {
 
     const latestMessage = getLatestConversationMessage(messages.value)
     activeConversation.value.lastMessage = latestMessage?.text ?? ''
+    // 当前会话新增消息后，同步更新会话列表使用的本地消息时间。
+    activeConversation.value.lastMessageTime = latestMessage?.time ?? ''
   }
 
   /** 将新消息去重写入当前会话，并立即同步到本地缓存。 */
@@ -790,6 +794,8 @@ export function useChatRuntime() {
   /** 退出当前客服会话并重置当前会话的临时数据。 */
   const leaveConversation = () => {
     autoReplyRequestId += 1
+    // 断开连接前提交当前会话的全量已读回执，避免客服端保留旧未读数。
+    sendConversationReadReceipt()
     disconnect()
     activeConversation.value = null
     messages.value = []
@@ -1110,6 +1116,8 @@ export function useChatRuntime() {
   }
 
   onBeforeUnmount(() => {
+    // 路由直接离开会话时不会经过返回按钮，仍需在断开前提交一次已读回执。
+    sendConversationReadReceipt()
     disconnect()
   })
 
