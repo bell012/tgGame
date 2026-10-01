@@ -790,6 +790,8 @@ export function useChatRuntime() {
   /** 退出当前客服会话并重置当前会话的临时数据。 */
   const leaveConversation = () => {
     autoReplyRequestId += 1
+    // 断开连接前提交当前会话的全量已读回执，避免客服端保留旧未读数。
+    sendConversationReadReceipt()
     disconnect()
     activeConversation.value = null
     messages.value = []
@@ -1110,6 +1112,8 @@ export function useChatRuntime() {
   }
 
   onBeforeUnmount(() => {
+    // 路由直接离开会话时不会经过返回按钮，仍需在断开前提交一次已读回执。
+    sendConversationReadReceipt()
     disconnect()
   })
 
