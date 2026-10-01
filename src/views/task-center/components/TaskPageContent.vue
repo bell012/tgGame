@@ -494,7 +494,7 @@
               :class="props.mode === 'pc' ? 'gap-4' : 'gap-2'"
             >
               <span
-                class="relative overflow-hidden rounded-full bg-[rgba(42,238,136,0.15)]"
+                class="relative overflow-hidden rounded-full bg-theme-3"
                 :class="
                   props.mode === 'pc' ? 'h-2 w-full max-w-[212px]' : 'h-[5px] w-[150px] shrink-0'
                 "
@@ -540,7 +540,7 @@
             <span
               v-if="task.action === 'go-to-task'"
               aria-hidden="true"
-              class="absolute rounded-full bg-[#FC3C3C]"
+              class="absolute rounded-full bg-secondary-2"
               :class="
                 props.mode === 'pc'
                   ? '-right-0.5 -top-[2.5px] z-[1] size-3'

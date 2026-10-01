@@ -12,7 +12,7 @@
       <!-- 弹窗遮罩层。 -->
       <div
         v-if="props.visible && taskData"
-        class="fixed inset-0 z-[10030] flex bg-black/60"
+        class="fixed inset-0 z-[10030] flex bg-mask-60-1"
         :class="
           props.mode === 'mobile' ? 'items-end justify-center' : 'items-center justify-center p-4'
         "
@@ -24,13 +24,13 @@
           role="dialog"
           aria-modal="true"
           :aria-label="taskData.title"
-          class="flex max-h-[637px] w-full min-w-[375px] flex-col overflow-hidden rounded-t-[12px] bg-[#242626] font-['Inter',sans-serif]"
+          class="flex max-h-[637px] w-full min-w-[375px] flex-col overflow-hidden rounded-t-[12px] bg-bg-1 font-['Inter',sans-serif]"
           @click.stop
         >
           <!-- H5 标题栏：375px × 48px。 -->
           <header class="relative h-12 w-full shrink-0">
             <h2
-              class="absolute inset-x-12 top-1/2 -translate-y-1/2 truncate text-center text-[16px] font-[700] leading-[19px] text-white"
+              class="absolute inset-x-12 top-1/2 -translate-y-1/2 truncate text-center text-[16px] font-[700] leading-[19px] text-text-1"
             >
               {{ taskData.title }}
             </h2>
@@ -39,15 +39,15 @@
             <button
               type="button"
               :aria-label="t('taskCenter.close')"
-              class="absolute right-3.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md bg-white/10"
+              class="absolute right-3.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md bg-opacity-10"
               @click="handleClose"
             >
               <span class="relative h-2.5 w-2.5">
                 <span
-                  class="absolute left-1/2 top-1/2 h-[1.4px] w-[11px] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-full bg-white"
+                  class="absolute left-1/2 top-1/2 h-[1.4px] w-[11px] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-full bg-text-1"
                 ></span>
                 <span
-                  class="absolute left-1/2 top-1/2 h-[1.4px] w-[11px] -translate-x-1/2 -translate-y-1/2 -rotate-45 rounded-full bg-white"
+                  class="absolute left-1/2 top-1/2 h-[1.4px] w-[11px] -translate-x-1/2 -translate-y-1/2 -rotate-45 rounded-full bg-text-1"
                 ></span>
               </span>
             </button>
@@ -61,14 +61,16 @@
             <template v-if="taskData.variant === 'compact'">
               <div class="flex flex-col gap-5">
                 <article
-                  class="flex w-full flex-col gap-2.5 rounded-lg bg-[#2D3131] p-3.5"
+                  class="flex w-full flex-col gap-2.5 rounded-lg bg-bg-4 p-3.5"
                   :class="taskData.rechargeProgress ? 'min-h-[96px]' : 'h-[72px]'"
                 >
                   <div class="flex h-[17px] items-center gap-[3px]">
-                    <span class="text-[14px] font-[400] leading-[17px] text-[#B3BEC1]">
+                    <span class="text-[14px] font-[400] leading-[17px] text-text-2">
                       {{ t('taskCenter.activityProgress') }}
                     </span>
-                    <span class="min-w-0 truncate text-[14px] font-[400] leading-[17px] text-white">
+                    <span
+                      class="min-w-0 truncate text-[14px] font-[400] leading-[17px] text-text-1"
+                    >
                       {{ getDetailCardActionText(taskData.action) }}
                     </span>
                   </div>
@@ -76,10 +78,10 @@
                   <!-- 充值任务展示当前充值金额与目标充值金额。 -->
                   <p
                     v-if="taskData.rechargeProgress"
-                    class="m-0 truncate text-[13px] font-[400] leading-4 text-[#B3BEC1]"
+                    class="m-0 truncate text-[13px] font-[400] leading-4 text-text-2"
                   >
                     {{ t('taskCenter.rechargeProgress') }}
-                    <span class="text-white">
+                    <span class="text-text-1">
                       {{
                         `${taskData.rechargeProgress.currentAmount} / ${taskData.rechargeProgress.targetAmount}`
                       }}
@@ -87,16 +89,14 @@
                   </p>
 
                   <div class="flex h-[17px] w-full items-center gap-[11px]">
-                    <span
-                      class="relative h-2 min-w-0 flex-1 overflow-hidden rounded bg-[rgba(42,238,136,0.15)]"
-                    >
+                    <span class="relative h-2 min-w-0 flex-1 overflow-hidden rounded bg-theme-3">
                       <i
-                        class="absolute inset-y-0 left-0 rounded bg-[#2AEE88]"
+                        class="absolute inset-y-0 left-0 rounded bg-theme-primary"
                         :style="{ width: `${taskData.progress}%` }"
                       ></i>
                     </span>
                     <span
-                      class="shrink-0 text-right text-[14px] font-[400] leading-[17px] text-[#B3BEC1]"
+                      class="shrink-0 text-right text-[14px] font-[400] leading-[17px] text-text-2"
                     >
                       {{ `${taskData.progress}%` }}
                     </span>
@@ -104,11 +104,11 @@
                 </article>
 
                 <section class="flex w-full flex-col gap-[7px]">
-                  <h3 class="m-0 text-[14px] font-[700] leading-[17px] text-white">
+                  <h3 class="m-0 text-[14px] font-[700] leading-[17px] text-text-1">
                     {{ t('taskCenter.activityDetails') }}
                   </h3>
                   <p
-                    class="m-0 whitespace-pre-wrap break-words text-[14px] font-[400] leading-[17px] text-[#B3BEC1]"
+                    class="m-0 whitespace-pre-wrap break-words text-[14px] font-[400] leading-[17px] text-text-2"
                   >
                     {{ taskData.description }}
                   </p>
@@ -122,13 +122,15 @@
                 <article
                   v-for="card in taskData.detailCards"
                   :key="card.id"
-                  class="flex min-h-[195px] w-full flex-col gap-5 rounded-lg bg-[#2D3131] p-3.5"
+                  class="flex min-h-[195px] w-full flex-col gap-5 rounded-lg bg-bg-4 p-3.5"
                 >
                   <div class="flex h-[17px] items-center gap-[3px]">
-                    <span class="text-[14px] font-[400] leading-[17px] text-[#B3BEC1]">
+                    <span class="text-[14px] font-[400] leading-[17px] text-text-2">
                       {{ t('taskCenter.activityProgress') }}
                     </span>
-                    <span class="min-w-0 truncate text-[14px] font-[400] leading-[17px] text-white">
+                    <span
+                      class="min-w-0 truncate text-[14px] font-[400] leading-[17px] text-text-1"
+                    >
                       {{ getDetailCardActionText(card.action) }}
                     </span>
                   </div>
@@ -136,10 +138,10 @@
                   <!-- 阶梯任务每档使用后台返回的 rewardText 展示奖励金额。 -->
                   <p
                     v-if="card.rewardText"
-                    class="-mt-2.5 m-0 truncate text-[13px] font-[400] leading-4 text-[#B3BEC1]"
+                    class="-mt-2.5 m-0 truncate text-[13px] font-[400] leading-4 text-text-2"
                   >
                     {{ t('taskCenter.reward') }}
-                    <span class="text-white">{{ card.rewardText }}</span>
+                    <span class="text-text-1">{{ card.rewardText }}</span>
                   </p>
 
                   <!-- H5 指标区：两列布局，条件数量可由后台动态扩展。 -->
@@ -147,13 +149,13 @@
                     <div
                       v-for="(condition, index) in getDetailCardConditions(
                         card.conditions,
-                        taskData.reward
+                        card.reward ?? taskData.reward
                       )"
                       :key="`${condition.code ?? condition.name ?? 'condition'}-${index}`"
                       class="flex min-w-0 flex-col gap-[5px]"
                     >
                       <!-- item块  -->
-                      <span class="truncate text-[13px] font-[400] leading-[16px] text-[#B3BEC1]">
+                      <span class="truncate text-[13px] font-[400] leading-[16px] text-text-2">
                         {{ getTaskConditionLabel(condition) }}
                       </span>
                       <span
@@ -177,16 +179,14 @@
                   </div>
 
                   <div class="flex h-[17px] w-full items-center gap-[11px]">
-                    <span
-                      class="relative h-2 min-w-0 flex-1 overflow-hidden rounded bg-[rgba(42,238,136,0.15)]"
-                    >
+                    <span class="relative h-2 min-w-0 flex-1 overflow-hidden rounded bg-theme-3">
                       <i
-                        class="absolute inset-y-0 left-0 rounded bg-[#2AEE88]"
+                        class="absolute inset-y-0 left-0 rounded bg-theme-primary"
                         :style="{ width: `${card.progress}%` }"
                       ></i>
                     </span>
                     <span
-                      class="shrink-0 text-right text-[14px] font-[400] leading-[17px] text-[#B3BEC1]"
+                      class="shrink-0 text-right text-[14px] font-[400] leading-[17px] text-text-2"
                     >
                       {{ `${card.progress}%` }}
                     </span>
@@ -194,11 +194,11 @@
                 </article>
 
                 <section class="flex w-full flex-col gap-[7px]">
-                  <h3 class="m-0 text-[14px] font-[700] leading-[17px] text-white">
+                  <h3 class="m-0 text-[14px] font-[700] leading-[17px] text-text-1">
                     {{ t('taskCenter.activityDetails') }}
                   </h3>
                   <p
-                    class="m-0 whitespace-pre-wrap break-words text-[14px] font-[400] leading-[17px] text-[#B3BEC1]"
+                    class="m-0 whitespace-pre-wrap break-words text-[14px] font-[400] leading-[17px] text-text-2"
                   >
                     {{ taskData.description }}
                   </p>
@@ -230,7 +230,7 @@
           role="dialog"
           aria-modal="true"
           aria-labelledby="task-info-popup-title"
-          class="box-border max-h-[704px] w-[464px] overflow-y-auto overscroll-contain rounded-[24px] bg-[#242626] p-8 font-['Inter',sans-serif] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          class="box-border max-h-[704px] w-[464px] overflow-y-auto overscroll-contain rounded-[24px] bg-bg-1 p-8 font-['Inter',sans-serif] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           @click.stop
         >
           <div class="flex w-[400px] flex-col gap-8">
@@ -239,7 +239,7 @@
               <header class="flex h-6 w-full items-start justify-between">
                 <h2
                   id="task-info-popup-title"
-                  class="m-0 min-w-0 truncate text-[20px] font-[700] capitalize leading-6 text-white"
+                  class="m-0 min-w-0 truncate text-[20px] font-[700] capitalize leading-6 text-text-1"
                 >
                   {{ taskData.title }}
                 </h2>
@@ -248,15 +248,15 @@
                 <button
                   type="button"
                   :aria-label="t('taskCenter.close')"
-                  class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white/10"
+                  class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-opacity-10"
                   @click="handleClose"
                 >
                   <span class="relative h-3 w-3">
                     <span
-                      class="absolute left-1/2 top-1/2 h-[1.4px] w-[13px] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-full bg-white"
+                      class="absolute left-1/2 top-1/2 h-[1.4px] w-[13px] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-full bg-text-1"
                     ></span>
                     <span
-                      class="absolute left-1/2 top-1/2 h-[1.4px] w-[13px] -translate-x-1/2 -translate-y-1/2 -rotate-45 rounded-full bg-white"
+                      class="absolute left-1/2 top-1/2 h-[1.4px] w-[13px] -translate-x-1/2 -translate-y-1/2 -rotate-45 rounded-full bg-text-1"
                     ></span>
                   </span>
                 </button>
@@ -266,24 +266,26 @@
                 <!-- PC 充值或无条件任务的精简进度卡。 -->
                 <article
                   v-if="taskData.variant === 'compact'"
-                  class="box-border flex w-full flex-col gap-4 rounded-2xl bg-[#2D3131] p-4"
+                  class="box-border flex w-full flex-col gap-4 rounded-2xl bg-bg-4 p-4"
                   :class="taskData.rechargeProgress ? 'min-h-[132px]' : 'min-h-[104px]'"
                 >
                   <div class="flex h-5 shrink-0 items-center gap-1">
-                    <span class="text-[16px] font-[400] leading-[19px] text-[#B3BEC1]">
+                    <span class="text-[16px] font-[400] leading-[19px] text-text-2">
                       {{ t('taskCenter.activityProgress') }}
                     </span>
-                    <span class="min-w-0 truncate text-[16px] font-[400] leading-[19px] text-white">
+                    <span
+                      class="min-w-0 truncate text-[16px] font-[400] leading-[19px] text-text-1"
+                    >
                       {{ getDetailCardActionText(taskData.action) }}
                     </span>
                   </div>
 
                   <p
                     v-if="taskData.rechargeProgress"
-                    class="m-0 truncate text-[14px] font-[400] leading-5 text-[#B3BEC1]"
+                    class="m-0 truncate text-[14px] font-[400] leading-5 text-text-2"
                   >
                     {{ t('taskCenter.rechargeProgress') }}
-                    <span class="text-white">
+                    <span class="text-text-1">
                       {{
                         `${taskData.rechargeProgress.currentAmount} / ${taskData.rechargeProgress.targetAmount}`
                       }}
@@ -291,16 +293,14 @@
                   </p>
 
                   <div class="flex h-5 w-full shrink-0 items-center gap-6">
-                    <span
-                      class="relative h-3 min-w-0 flex-1 overflow-hidden rounded-lg bg-[rgba(42,238,136,0.15)]"
-                    >
+                    <span class="relative h-3 min-w-0 flex-1 overflow-hidden rounded-lg bg-theme-3">
                       <i
-                        class="absolute -left-px inset-y-0 rounded-lg bg-[#2AEE88]"
+                        class="absolute -left-px inset-y-0 rounded-lg bg-theme-primary"
                         :style="{ width: `${taskData.progress}%` }"
                       ></i>
                     </span>
                     <span
-                      class="w-[44px] shrink-0 text-right text-[14px] font-[400] leading-5 text-[#B3BEC1]"
+                      class="w-[44px] shrink-0 text-right text-[14px] font-[400] leading-5 text-text-2"
                     >
                       {{ `${taskData.progress}%` }}
                     </span>
@@ -312,14 +312,14 @@
                   <article
                     v-for="card in taskData.detailCards"
                     :key="card.id"
-                    class="box-border flex min-h-[216px] w-full flex-col gap-5 rounded-2xl bg-[#2D3131] p-4"
+                    class="box-border flex min-h-[216px] w-full flex-col gap-5 rounded-2xl bg-bg-4 p-4"
                   >
                     <div class="flex h-5 shrink-0 items-center gap-1">
-                      <span class="text-[16px] font-[400] leading-[19px] text-[#B3BEC1]">
+                      <span class="text-[16px] font-[400] leading-[19px] text-text-2">
                         {{ t('taskCenter.activityProgress') }}
                       </span>
                       <span
-                        class="min-w-0 truncate text-[16px] font-[400] leading-[19px] text-white"
+                        class="min-w-0 truncate text-[16px] font-[400] leading-[19px] text-text-1"
                       >
                         {{ getDetailCardActionText(card.action) }}
                       </span>
@@ -328,10 +328,10 @@
                     <!-- 阶梯任务每档使用后台返回的 rewardText 展示奖励金额。 -->
                     <p
                       v-if="card.rewardText"
-                      class="-mt-2.5 m-0 truncate text-[14px] font-[400] leading-5 text-[#B3BEC1]"
+                      class="-mt-2.5 m-0 truncate text-[14px] font-[400] leading-5 text-text-2"
                     >
                       {{ t('taskCenter.reward') }}
-                      <span class="text-white">{{ card.rewardText }}</span>
+                      <span class="text-text-1">{{ card.rewardText }}</span>
                     </p>
 
                     <!-- PC 指标区：两列布局，条件数量可由后台动态扩展。 -->
@@ -339,12 +339,12 @@
                       <div
                         v-for="(condition, index) in getDetailCardConditions(
                           card.conditions,
-                          taskData.reward
+                          card.reward ?? taskData.reward
                         )"
                         :key="`${condition.code ?? condition.name ?? 'condition'}-${index}`"
                         class="flex min-w-0 flex-col justify-center gap-1"
                       >
-                        <span class="truncate text-[16px] font-[400] leading-[19px] text-[#B3BEC1]">
+                        <span class="truncate text-[16px] font-[400] leading-[19px] text-text-2">
                           {{ getTaskConditionLabel(condition) }}
                         </span>
                         <span
@@ -369,15 +369,15 @@
 
                     <div class="flex h-5 w-full shrink-0 items-center gap-6">
                       <span
-                        class="relative h-3 min-w-0 flex-1 overflow-hidden rounded-lg bg-[rgba(42,238,136,0.15)]"
+                        class="relative h-3 min-w-0 flex-1 overflow-hidden rounded-lg bg-theme-3"
                       >
                         <i
-                          class="absolute -left-px inset-y-0 rounded-lg bg-[#2AEE88]"
+                          class="absolute -left-px inset-y-0 rounded-lg bg-theme-primary"
                           :style="{ width: `${card.progress}%` }"
                         ></i>
                       </span>
                       <span
-                        class="w-[44px] shrink-0 text-right text-[14px] font-[400] leading-5 text-[#B3BEC1]"
+                        class="w-[44px] shrink-0 text-right text-[14px] font-[400] leading-5 text-text-2"
                       >
                         {{ `${card.progress}%` }}
                       </span>
@@ -387,12 +387,12 @@
 
                 <section class="flex min-h-[0px] w-full flex-col items-start gap-2">
                   <h3
-                    class="m-0 h-[22px] text-[18px] font-[700] capitalize leading-[22px] text-white"
+                    class="m-0 h-[22px] text-[18px] font-[700] capitalize leading-[22px] text-text-1"
                   >
                     {{ t('taskCenter.activityDetails') }}
                   </h3>
                   <p
-                    class="m-0 min-h-[0px] w-full whitespace-pre-wrap break-words text-[16px] font-[400] leading-[25.6px] text-[#B3BEC1]"
+                    class="m-0 min-h-[0px] w-full whitespace-pre-wrap break-words text-[16px] font-[400] leading-[25.6px] text-text-2"
                   >
                     {{ taskData.description }}
                   </p>
@@ -440,6 +440,7 @@ const props = withDefaults(defineProps<Props>(), {
   claimLoading: false,
   claimActionsDisabled: false
 })
+
 const { t } = useI18n()
 
 const emit = defineEmits<{
