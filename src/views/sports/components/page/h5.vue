@@ -367,6 +367,13 @@ const groups = computed(() => {
 const visibleGroups = computed(() => groups.value.slice(0, visibleGroupCount.value))
 const hasMoreCachedGroups = computed(() => visibleGroupCount.value < groups.value.length)
 
+watch(groups, current => {
+  const ids = new Set(current.map(group => group.id))
+  const entries = Object.entries(expandedGroups.value)
+  const retained = entries.filter(([id]) => ids.has(id))
+  if (retained.length !== entries.length) expandedGroups.value = Object.fromEntries(retained)
+})
+
 // 每次追加一批联赛，不拆分联赛内的赛事。
 const loadMoreCachedGroups = () => {
   if (!pageActive.value || !hasMoreCachedGroups.value) return
