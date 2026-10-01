@@ -467,19 +467,18 @@ const openRegister = () => {
 }
 
 /**
- * 从 PC 注册卡片切回登录卡片。
+ * 从 PC 注册卡片切回登录卡片，并保持与进入注册/忘记密码一致的滑入方向。
  */
 const backToLogin = () => {
   if (isAnimating.value) return
 
   isAnimating.value = true
-  isReturningToLogin.value = true
+  isSliding.value = true
+  activeTab.value = 'login'
 
   setTimeout(() => {
-    activeTab.value = 'login'
     isAnimating.value = false
     isSliding.value = false
-    isReturningToLogin.value = false
   }, 500)
 }
 
@@ -525,14 +524,11 @@ const handleResetPasswordSuccess = () => {
 
 const isAnimating = ref(false)
 const isSliding = ref(false)
-const isReturningToLogin = ref(false)
 
 // 登入/注册弹窗
 const getLoginClass = () => {
   if (activeTab.value === 'login') {
     return 'translate-x-0 z-20 opacity-100'
-  } else if (isReturningToLogin.value) {
-    return 'translate-x-0 z-10 opacity-100'
   } else if (isResetPasswordClosing.value) {
     return 'translate-x-0 z-10 opacity-100'
   } else if (isSliding.value) {
@@ -544,10 +540,6 @@ const getLoginClass = () => {
 
 // 注册弹窗
 const getRegisterClass = () => {
-  if (activeTab.value === 'register' && isReturningToLogin.value) {
-    return 'translate-x-full z-20 opacity-0'
-  }
-
   if (activeTab.value === 'register') {
     return 'translate-x-0 z-20 opacity-100'
   } else if (isSliding.value) {

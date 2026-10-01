@@ -51,12 +51,17 @@ export interface LoginSetResponse {
 }
 
 // 自研图片验证码 /sy/captcha/image
+export interface CaptchaImageResult {
+  captchaKey: string
+  expireSeconds: number
+  imageBase64: string
+}
+
 export interface CaptchaImageResponse {
-  code?: string
-  message?: string
+  code: string
+  message: string
   success?: boolean
-  result?: unknown
-  data?: unknown
+  result: CaptchaImageResult
 }
 
 // 会员登录 /mc/loginMember

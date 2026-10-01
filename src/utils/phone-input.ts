@@ -128,6 +128,37 @@ export const handlePasswordInput = (event: Event, callback: (value: string) => v
 }
 
 /**
+ * 格式化登录用户名：只保留字母和数字，最多16位
+ * @param value 输入的字符串
+ * @returns 格式化后的用户名
+ */
+export const formatSigninUsername = (value: string): string => {
+  const alphanumericOnly = value.replace(/[^a-zA-Z0-9]/g, '')
+  return alphanumericOnly.slice(0, 16)
+}
+
+/**
+ * 验证登录用户名是否符合要求：6-16位，可纯数字、纯英文、英文和数字组合
+ * @param value 用户名字符串
+ * @returns 是否符合要求
+ */
+export const isValidSigninUsername = (value: string): boolean => {
+  return /^[a-zA-Z0-9]{6,16}$/.test(value)
+}
+
+/**
+ * 处理登录用户名输入事件
+ * @param event 输入事件
+ * @param callback 回调函数，用于更新表单数据
+ */
+export const handleSigninUsernameInput = (event: Event, callback: (value: string) => void) => {
+  const input = event.target as HTMLInputElement
+  const formatted = formatSigninUsername(input.value)
+  callback(formatted)
+  input.value = formatted
+}
+
+/**
  * 格式化昵称：只保留字母和数字，最多20位
  * @param value 输入的字符串
  * @returns 格式化后的昵称

@@ -50,10 +50,13 @@ import {
   getLanguageCode
 } from '@/utils/locale'
 import {
+  formatSigninUsername,
   handlePasswordInput,
+  handleSigninUsernameInput as handleSigninUsernameInputValue,
   handleLoosePhoneInput,
   handleVerificationCodeInput,
   isValidPhoneNumber,
+  isValidSigninUsername,
   isValidPassword
 } from '@/utils/phone-input'
 import { StringExtension } from '@/utils/string-extension'
@@ -186,7 +189,7 @@ const savedSigninCredentials = getSavedSigninCredentials()
 const formData = ref({
   signin: {
     account: savedSigninCredentials.account,
-    usernameAccount: savedSigninCredentials.account,
+    usernameAccount: formatSigninUsername(savedSigninCredentials.account),
     phoneAccount: savedSigninCredentials.account,
     password: savedSigninCredentials.password,
     captchaCode: '',
@@ -239,8 +242,10 @@ const syncSigninAccount = () => {
 }
 
 const isSigninValid = computed(() => {
-  const hasBaseFields =
-    getActiveSigninAccount().length > 0 && formData.value.signin.password.length > 0
+  const account = getActiveSigninAccount()
+  const isAccountValid =
+    activeLoginMethod.value === 'username' ? isValidSigninUsername(account) : account.length > 0
+  const hasBaseFields = isAccountValid && formData.value.signin.password.length > 0
 
   if (!showSigninCaptcha.value) {
     return hasBaseFields
@@ -268,7 +273,7 @@ const setActiveTab = (tab: AuthTab) => {
   if (tab === 'signin') {
     const savedCredentials = getSavedSigninCredentials()
     formData.value.signin.account = savedCredentials.account
-    formData.value.signin.usernameAccount = savedCredentials.account
+    formData.value.signin.usernameAccount = formatSigninUsername(savedCredentials.account)
     formData.value.signin.phoneAccount = savedCredentials.account
     formData.value.signin.password = savedCredentials.password
     formData.value.signin.rememberMe = Boolean(savedCredentials.password)
@@ -324,11 +329,10 @@ const handleSigninAccountInput = (event: Event) => {
 }
 
 const handleSigninUsernameInput = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  const value = input.value.replace(/\s/g, '').slice(0, 30)
-  formData.value.signin.usernameAccount = value
-  formData.value.signin.account = value
-  input.value = value
+  handleSigninUsernameInputValue(event, (value: string) => {
+    formData.value.signin.usernameAccount = value
+    formData.value.signin.account = value
+  })
 }
 
 const handleSigninPhoneInput = (event: Event) => {
@@ -434,6 +438,7 @@ const resolveCaptchaPayload = (payload: unknown): { imageUrl: string; key: strin
   }
 
   const imageKeys = [
+    'imageBase64',
     'image',
     'imageUrl',
     'img',
@@ -481,7 +486,11 @@ const fetchSigninCaptcha = async () => {
   try {
     const response = await Api.auth.getCaptchaImage()
     console.log('/sy/captcha/image response:', response)
-    const { imageUrl, key } = resolveCaptchaPayload(response)
+    const captchaResult = response.result
+    const fallbackCaptcha = resolveCaptchaPayload(response)
+    const imageUrl =
+      normalizeCaptchaImageUrl(captchaResult?.imageBase64 || '') || fallbackCaptcha.imageUrl
+    const key = captchaResult?.captchaKey || fallbackCaptcha.key
     captchaImageUrl.value = imageUrl
     formData.value.signin.captchaKey = key
     formData.value.signin.captchaCode = ''
@@ -498,6 +507,10 @@ const handleLogin = async () => {
   syncSigninAccount()
 
   const account = getActiveSigninAccount()
+
+  if (activeLoginMethod.value === 'username' && !isValidSigninUsername(account)) {
+    return
+  }
 
   if (activeLoginMethod.value === 'phone' && !validatePhoneNumber(account)) {
     return
@@ -646,7 +659,7 @@ const resetForm = () => {
   const savedCredentials = getSavedSigninCredentials()
 
   formData.value.signin.account = savedCredentials.account
-  formData.value.signin.usernameAccount = savedCredentials.account
+  formData.value.signin.usernameAccount = formatSigninUsername(savedCredentials.account)
   formData.value.signin.phoneAccount = savedCredentials.account
   formData.value.signin.password = savedCredentials.password
   formData.value.signin.captchaCode = ''
