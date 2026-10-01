@@ -18,6 +18,8 @@
         countdown,
         isSigninValid,
         isSignupValid,
+        showSigninPassword,
+        showSigninSmsCode,
         showSigninCaptcha,
         captchaImageUrl,
         isCaptchaLoading,
@@ -32,6 +34,7 @@
         handleSigninUsernameInput,
         handleSigninPhoneInput,
         handleSigninPasswordInput,
+        handleSigninSmsCodeInput,
         handleSigninCaptchaInput,
         refreshSigninCaptcha,
         handleSignupAccountInput,
@@ -108,30 +111,64 @@
               </div>
             </div>
 
-            <div class="text-sm font-[700] text-text-1 mb-2">
-              {{ t('common.password') }}
-            </div>
-            <div class="mb-6">
-              <div class="relative">
-                <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
-                <input
-                  :value="formData.signin.password"
-                  :type="showPassword.signin ? 'text' : 'password'"
-                  :placeholder="t('common.enter_password')"
-                  class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
-                  :class="showPassword.signin ? '' : 'auth-password-mask'"
-                  @input="handleSigninPasswordInput"
-                />
-                <button
-                  type="button"
-                  class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                  @click="togglePassword('signin')"
-                >
-                  <EyeIcon v-if="showPassword.signin" class="w-5 h-5 text-text-2" />
-                  <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
-                </button>
+            <template v-if="showSigninPassword">
+              <div class="text-sm font-[700] text-text-1 mb-2">
+                {{ t('common.password') }}
               </div>
-            </div>
+              <div class="mb-6">
+                <div class="relative">
+                  <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                  <input
+                    :value="formData.signin.password"
+                    :type="showPassword.signin ? 'text' : 'password'"
+                    :placeholder="t('common.enter_password')"
+                    class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                    :class="showPassword.signin ? '' : 'auth-password-mask'"
+                    @input="handleSigninPasswordInput"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                    @click="togglePassword('signin')"
+                  >
+                    <EyeIcon v-if="showPassword.signin" class="w-5 h-5 text-text-2" />
+                    <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <template v-if="showSigninSmsCode">
+              <div class="text-sm font-[700] text-text-1 mb-2">
+                {{ t('common.verification') }}
+              </div>
+              <div class="mb-6">
+                <div class="relative">
+                  <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                  <input
+                    :value="formData.signin.smsCode"
+                    type="text"
+                    inputmode="numeric"
+                    :placeholder="t('common.enter_verification')"
+                    class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-[92px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                    @input="handleSigninSmsCodeInput"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 h-7 min-w-[70px] px-2 text-xs font-[500] rounded-lg transition-opacity"
+                    :class="
+                      countdown > 0
+                        ? 'bg-opacity-6 text-text-2 cursor-not-allowed'
+                        : 'bg-secondary-3 text-theme-primary'
+                    "
+                    :disabled="countdown > 0"
+                    @click="handleSendCode"
+                  >
+                    {{ countdown > 0 ? `${countdown}s` : t('common.get_code') }}
+                  </button>
+                </div>
+              </div>
+            </template>
 
             <template v-if="showSigninCaptcha">
               <div class="text-sm font-[700] text-text-1 mb-2">
@@ -166,7 +203,7 @@
               </div>
             </template>
 
-            <div class="flex items-center justify-between">
+            <div v-if="showSigninPassword" class="flex items-center justify-between">
               <label
                 class="flex items-center cursor-pointer"
                 @click="handleCheckboxClick('rememberMe')"

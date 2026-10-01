@@ -10,14 +10,14 @@ export interface LoginSetFormField {
 }
 
 export interface LoginSetAccountField {
-  enable: number
-  verifyMethod: number
+  enable: number // 是否开启 0关闭  1启用
+  verifyMethod: number //校验方式 0验证码 1密码 2验证码和密码
 }
 
 export interface LoginSetResult {
   deviceChangeVerifyEnabled: number
   deviceChangeVerifyMethod: number
-  emailAccount: LoginSetAccountField
+  emailAccount: LoginSetAccountField // 显示邮箱  tab
   imageCaptchaEnabled: number // 是否开启自研图片验证码   0关闭 1开启
   invitationCode: LoginSetFormField // 邀请码
   loginAuthType: number[] // 登录验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信
@@ -25,8 +25,8 @@ export interface LoginSetResult {
   loginMethod: number[] // 登陆方式1账号密码 2手机号码
   loginWrongLimit: number
   memberName: LoginSetFormField // 会员真实姓名
-  mobileAccount: LoginSetAccountField
-  normalAccount: LoginSetAccountField
+  mobileAccount: LoginSetAccountField // 显示手机 tab
+  normalAccount: LoginSetAccountField // 显示用户名 tab
   phone: LoginSetFormField // 手机号码
   registerAccountType: number[]
   registerAuthType: number[] // 注册验证方式 0不验证 1:蓝盾验证码,2:网易验证码 3:短信

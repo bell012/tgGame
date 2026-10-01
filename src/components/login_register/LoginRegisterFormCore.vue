@@ -10,6 +10,8 @@
     :countdown="countdown"
     :is-signin-valid="isSigninValid"
     :is-signup-valid="isSignupValid"
+    :show-signin-password="showSigninPassword"
+    :show-signin-sms-code="showSigninSmsCode"
     :show-signin-captcha="showSigninCaptcha"
     :captcha-image-url="captchaImageUrl"
     :is-captcha-loading="isCaptchaLoading"
@@ -27,6 +29,7 @@
     :handle-signin-username-input="handleSigninUsernameInput"
     :handle-signin-phone-input="handleSigninPhoneInput"
     :handle-signin-password-input="handleSigninPasswordInput"
+    :handle-signin-sms-code-input="handleSigninSmsCodeInput"
     :handle-signin-captcha-input="handleSigninCaptchaInput"
     :refresh-signin-captcha="fetchSigninCaptcha"
     :handle-signup-account-input="handleSignupAccountInput"
@@ -192,6 +195,7 @@ const formData = ref({
     usernameAccount: formatSigninUsername(savedSigninCredentials.account),
     phoneAccount: savedSigninCredentials.account,
     password: savedSigninCredentials.password,
+    smsCode: '',
     captchaCode: '',
     captchaKey: '',
     rememberMe: Boolean(savedSigninCredentials.password)
@@ -204,31 +208,73 @@ const formData = ref({
   }
 })
 
+/**
+ * 根据登录设置决定账号登录和手机号登录入口是否展示。
+ */
 const loginMethodTabs = computed(() => {
-  const configuredMethods = Array.isArray(props.loginSetting?.loginMethod)
-    ? props.loginSetting.loginMethod
-    : []
-  const methods = configuredMethods.length ? configuredMethods : [1, 2]
   const tabs: Array<{ key: SigninMethod; label: string }> = []
+  const loginSetting = props.loginSetting
 
-  if (methods.includes(1)) {
+  if (!loginSetting || Number(loginSetting.normalAccount?.enable) === 1) {
     tabs.push({ key: 'username', label: t('common.username') })
   }
 
-  if (methods.includes(2)) {
+  if (!loginSetting || Number(loginSetting.mobileAccount?.enable) === 1) {
     tabs.push({ key: 'phone', label: t('common.phone') })
   }
 
   return tabs.length ? tabs : [{ key: 'username', label: t('common.username') }]
 })
 
+/**
+ * 获取当前登录方式对应的后台配置。
+ */
+const activeSigninAccountSetting = computed(() => {
+  if (activeLoginMethod.value === 'username') {
+    return props.loginSetting?.normalAccount
+  }
+
+  return props.loginSetting?.mobileAccount
+})
+
+/**
+ * 获取当前登录方式的校验方式，未返回时默认使用密码登录。
+ */
+const activeSigninVerifyMethod = computed(() => {
+  return Number(activeSigninAccountSetting.value?.verifyMethod ?? 1)
+})
+
+/**
+ * 当前登录方式是否需要输入密码。
+ */
+const showSigninPassword = computed(() => {
+  return [1, 2].includes(activeSigninVerifyMethod.value)
+})
+
+/**
+ * 当前手机号登录方式是否需要短信验证码。
+ */
+const showSigninSmsCode = computed(() => {
+  return activeLoginMethod.value === 'phone' && [0, 2].includes(activeSigninVerifyMethod.value)
+})
+
+/**
+ * 当前登录方式是否需要图形验证码。
+ */
 const showSigninCaptcha = computed(() => {
-  return activeTab.value === 'signin' && Number(props.loginSetting?.imageCaptchaEnabled) === 1
+  return (
+    activeTab.value === 'signin' &&
+    activeLoginMethod.value === 'username' &&
+    Number(props.loginSetting?.imageCaptchaEnabled) === 1
+  )
 })
 
 const captchaImageUrl = ref('')
 const isCaptchaLoading = ref(false)
 
+/**
+ * 获取当前登录方式下实际提交的账号。
+ */
 const getActiveSigninAccount = () => {
   if (activeLoginMethod.value === 'username') {
     return formData.value.signin.usernameAccount
@@ -237,15 +283,23 @@ const getActiveSigninAccount = () => {
   return formData.value.signin.phoneAccount
 }
 
+/**
+ * 同步当前登录账号到通用 account 字段。
+ */
 const syncSigninAccount = () => {
   formData.value.signin.account = getActiveSigninAccount()
 }
 
+/**
+ * 判断当前登录表单是否满足提交条件。
+ */
 const isSigninValid = computed(() => {
   const account = getActiveSigninAccount()
   const isAccountValid =
     activeLoginMethod.value === 'username' ? isValidSigninUsername(account) : account.length > 0
-  const hasBaseFields = isAccountValid && formData.value.signin.password.length > 0
+  const hasPassword = !showSigninPassword.value || formData.value.signin.password.length > 0
+  const hasSmsCode = !showSigninSmsCode.value || formData.value.signin.smsCode.length > 0
+  const hasBaseFields = isAccountValid && hasPassword && hasSmsCode
 
   if (!showSigninCaptcha.value) {
     return hasBaseFields
@@ -267,6 +321,9 @@ const checkboxAnimating = ref({
   rememberMe: false
 })
 
+/**
+ * 切换登录/注册页签，并按当前页签重置对应表单数据。
+ */
 const setActiveTab = (tab: AuthTab) => {
   activeTab.value = tab
 
@@ -276,6 +333,7 @@ const setActiveTab = (tab: AuthTab) => {
     formData.value.signin.usernameAccount = formatSigninUsername(savedCredentials.account)
     formData.value.signin.phoneAccount = savedCredentials.account
     formData.value.signin.password = savedCredentials.password
+    formData.value.signin.smsCode = ''
     formData.value.signin.rememberMe = Boolean(savedCredentials.password)
   } else {
     formData.value.signup.account = ''
@@ -285,23 +343,38 @@ const setActiveTab = (tab: AuthTab) => {
   }
 }
 
+/**
+ * 切换当前登录方式，并同步要提交的账号字段。
+ */
 const setActiveLoginMethod = (method: string) => {
   if (!loginMethodTabs.value.some(tab => tab.key === method)) {
     return
   }
 
   activeLoginMethod.value = method as SigninMethod
+  formData.value.signin.smsCode = ''
+  formData.value.signin.captchaCode = ''
+  formData.value.signin.captchaKey = ''
   syncSigninAccount()
 }
 
+/**
+ * 切换密码输入框显示状态。
+ */
 const togglePassword = (tab: 'signin' | 'signup' | 'confirmPassword') => {
   showPassword.value[tab] = !showPassword.value[tab]
 }
 
+/**
+ * 切换确认密码输入框显示状态。
+ */
 const toggleConfirmPassword = () => {
   showConfirmPassword.value = !showConfirmPassword.value
 }
 
+/**
+ * 处理记住密码复选框点击。
+ */
 const handleCheckboxClick = (field: 'rememberMe') => {
   const willBeChecked = !formData.value.signin[field]
 
@@ -321,6 +394,9 @@ const handleCheckboxClick = (field: 'rememberMe') => {
   }
 }
 
+/**
+ * 处理旧账号登录输入，保留给移动端兼容入口。
+ */
 const handleSigninAccountInput = (event: Event) => {
   handleLoosePhoneInput(event, (value: string) => {
     formData.value.signin.account = value
@@ -328,6 +404,9 @@ const handleSigninAccountInput = (event: Event) => {
   })
 }
 
+/**
+ * 处理账号登录的用户名输入。
+ */
 const handleSigninUsernameInput = (event: Event) => {
   handleSigninUsernameInputValue(event, (value: string) => {
     formData.value.signin.usernameAccount = value
@@ -335,6 +414,9 @@ const handleSigninUsernameInput = (event: Event) => {
   })
 }
 
+/**
+ * 处理手机号登录的手机号输入。
+ */
 const handleSigninPhoneInput = (event: Event) => {
   handleLoosePhoneInput(event, (value: string) => {
     formData.value.signin.phoneAccount = value
@@ -342,12 +424,27 @@ const handleSigninPhoneInput = (event: Event) => {
   })
 }
 
+/**
+ * 处理登录密码输入。
+ */
 const handleSigninPasswordInput = (event: Event) => {
   handlePasswordInput(event, value => {
     formData.value.signin.password = value
   })
 }
 
+/**
+ * 处理手机号登录短信验证码输入。
+ */
+const handleSigninSmsCodeInput = (event: Event) => {
+  handleVerificationCodeInput(event, (value: string) => {
+    formData.value.signin.smsCode = value
+  })
+}
+
+/**
+ * 处理登录图形验证码输入。
+ */
 const handleSigninCaptchaInput = (event: Event) => {
   const input = event.target as HTMLInputElement
   const value = input.value.replace(/\s/g, '').slice(0, 8)
@@ -503,6 +600,9 @@ const fetchSigninCaptcha = async () => {
   }
 }
 
+/**
+ * 提交登录，根据当前登录方式和校验方式组装密码、短信验证码和图形验证码参数。
+ */
 const handleLogin = async () => {
   syncSigninAccount()
 
@@ -520,10 +620,17 @@ const handleLogin = async () => {
     const loginData = {
       memberId: account,
       telephone: account,
-      memberPwd: StringExtension.md5(formData.value.signin.password),
+      memberPwd: showSigninPassword.value
+        ? StringExtension.md5(formData.value.signin.password)
+        : '',
       areaCode: defaultAreaCode,
       channelId: '1',
       requestMethod: activeLoginMethod.value === 'username' ? '0' : '1',
+      ...(showSigninSmsCode.value
+        ? {
+            validateCode: formData.value.signin.smsCode
+          }
+        : {}),
       ...(showSigninCaptcha.value
         ? {
             captchaCode: formData.value.signin.captchaCode,
@@ -564,6 +671,9 @@ const handleLogin = async () => {
   }
 }
 
+/**
+ * 提交注册表单。
+ */
 const handleRegister = async () => {
   if (!validatePhoneNumber(formData.value.signup.account)) {
     return
@@ -615,13 +725,31 @@ const handleRegister = async () => {
   }
 }
 
+/**
+ * 获取当前场景需要发送短信验证码的手机号。
+ */
+const getSmsTargetPhone = () => {
+  if (
+    activeTab.value === 'signin' &&
+    activeLoginMethod.value === 'phone' &&
+    showSigninSmsCode.value
+  ) {
+    return formData.value.signin.phoneAccount
+  }
+
+  return formData.value.signup.account
+}
+
+/**
+ * 发送短信验证码，登录手机号验证码和注册验证码共用同一个发送入口。
+ */
 const handleSendCode = async () => {
   if (countdown.value > 0) {
     return
   }
 
   try {
-    const telephone = formData.value.signup.account
+    const telephone = getSmsTargetPhone()
     if (!telephone) {
       globalShowToast(t('common.pleaseEnterThePhoneNumber'))
       return
@@ -662,6 +790,7 @@ const resetForm = () => {
   formData.value.signin.usernameAccount = formatSigninUsername(savedCredentials.account)
   formData.value.signin.phoneAccount = savedCredentials.account
   formData.value.signin.password = savedCredentials.password
+  formData.value.signin.smsCode = ''
   formData.value.signin.captchaCode = ''
   formData.value.signin.captchaKey = ''
   formData.value.signin.rememberMe = Boolean(savedCredentials.password)
@@ -721,6 +850,8 @@ defineExpose({
   countdown,
   isSigninValid,
   isSignupValid,
+  showSigninPassword,
+  showSigninSmsCode,
   showSigninCaptcha,
   captchaImageUrl,
   isCaptchaLoading,
@@ -739,6 +870,7 @@ defineExpose({
   handleSigninUsernameInput,
   handleSigninPhoneInput,
   handleSigninPasswordInput,
+  handleSigninSmsCodeInput,
   handleSigninCaptchaInput,
   fetchSigninCaptcha,
   handleSignupAccountInput,
