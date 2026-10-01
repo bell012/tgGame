@@ -14,6 +14,7 @@
         :class="hasDraft ? 'border-theme-primary' : 'border-transparent'"
       >
         <input
+          ref="inputRef"
           :value="modelValue"
           type="text"
           class="min-w-0 flex-1 bg-transparent text-[14px] text-text-1 outline-none placeholder:text-text-3"
@@ -49,6 +50,7 @@
     <!-- H5 端紧凑输入与功能操作区。 -->
     <div v-else class="flex h-[48px] items-center gap-[11px] border-t border-opacity-10 px-[10px]">
       <input
+        ref="inputRef"
         :value="modelValue"
         type="text"
         class="h-[36px] min-w-0 flex-1 rounded-[30px] border bg-bg-1 px-[12px] text-[14px] text-text-1 outline-none placeholder:text-text-3"
@@ -83,7 +85,7 @@ import chatMoreImage from '@/static/img/chat/public/chat-more.png'
 import chatSendButtonImage from '@/static/img/chat/public/chat-send-button.png'
 import chatSendIconImage from '@/static/img/chat/public/chat-send-icon.png'
 import EmojiIcon from '@/static/svg/chat/public/emoji.svg?component'
-import { computed } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ChatReplyTarget } from '../types'
 import ReplyPreview from './reply-preview.vue'
@@ -107,6 +109,9 @@ const emit = defineEmits<{
   'cancel-reply': []
 }>()
 
+/** H5 与 PC 当前渲染的单行输入框，用于控制横向滚动位置。 */
+const inputRef = ref<HTMLInputElement | null>(null)
+
 /** 判断输入框是否存在可发送的非空内容。 */
 const hasDraft = computed(() => props.modelValue.trim().length > 0)
 
@@ -114,4 +119,23 @@ const hasDraft = computed(() => props.modelValue.trim().length > 0)
 const handleInput = (event: Event) => {
   emit('update:modelValue', (event.target as HTMLInputElement).value)
 }
+
+/** 草稿由表情面板程序化追加时，主动滚动到末尾以保证光标始终可见。 */
+const scrollInputToEnd = async () => {
+  await nextTick()
+
+  if (!inputRef.value) {
+    return
+  }
+
+  inputRef.value.scrollLeft = inputRef.value.scrollWidth
+}
+
+/** 监听草稿更新，统一处理键盘输入、表情插入和删除后的横向滚动。 */
+watch(
+  () => props.modelValue,
+  () => {
+    void scrollInputToEnd()
+  }
+)
 </script>

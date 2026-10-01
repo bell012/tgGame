@@ -38,56 +38,118 @@
       </label>
     </header>
 
-    <!-- 未输入关键字时的提示区域。 -->
-    <div
+    <!-- 未输入关键字时按端区分定位的提示文案。 -->
+    <p
       v-if="!query"
-      class="flex flex-1 items-center justify-center pb-[120px] px-[30px] text-center"
+      class="absolute left-1/2 text-center font-[400]"
+      :class="
+        props.displayMode === 'pc'
+          ? 'top-1/2 w-[186px] -translate-x-1/2 -translate-y-[362px] text-[14px] leading-[20px] text-common-100'
+          : 'top-[233.67px] w-[162px] -translate-x-1/2 text-[12px] leading-[14.67px] text-text-3'
+      "
     >
-      <p class="text-[14px] leading-[17px] text-text-3">{{ t('chatPublic.searchHint') }}</p>
-    </div>
+      {{ t('chatPublic.searchHint') }}
+    </p>
 
     <!-- 搜索命中后的当前会话历史结果列表。 -->
     <div
       v-else-if="searchResults.length"
-      class="min-h-0 flex-1 overflow-y-auto px-[14px] py-[14px]"
+      class="min-h-0 flex-1 overflow-y-auto px-[14px] py-[20px]"
     >
-      <button
-        v-for="result in searchResults"
-        :key="result.id"
-        type="button"
-        class="flex w-full items-center gap-[12px] border-b border-opacity-4 py-[12px] text-left"
-        @click="$emit('locate', result.id, query.trim())"
+      <section
+        class="mx-auto flex flex-col"
+        :class="props.displayMode === 'pc' ? 'w-[356px] gap-[10px]' : 'min-w-[0px] gap-[20px]'"
       >
-        <!-- 客服头像统一补全 OSS 域名，接口未返回时使用本地默认头像。 -->
-        <img
-          :src="resolveChatMediaUrl(props.conversation?.avatar) || avatarUrl"
-          alt=""
-          class="size-[50px] shrink-0 rounded-full object-cover"
-        />
-        <span class="min-w-0 flex-1">
-          <span class="flex items-center justify-between gap-[10px]">
-            <strong class="truncate text-[16px] font-medium leading-[19px] text-text-1">{{
-              props.conversation?.nickName || t('chatPublic.customerServiceList')
-            }}</strong>
-            <time class="shrink-0 text-[12px] text-text-3">
-              {{ formatChatMessageTime(result.timestamp) }}
-              {{ getChatTimePeriod(result.timestamp) }}
-            </time>
-          </span>
-          <!-- 搜索结果内容，并高亮当前匹配的关键字。 -->
-          <p
-            class="mt-[4px] line-clamp-2 whitespace-pre-wrap break-words text-[14px] leading-[17px] text-text-2"
+        <!-- 单条搜索结果：头像、昵称、消息预览、时间与分割线。 -->
+        <div
+          v-for="result in searchResults"
+          :key="result.id"
+          class="flex flex-col items-end"
+          :class="props.displayMode === 'pc' ? 'gap-[16px]' : 'gap-[17px]'"
+        >
+          <button
+            type="button"
+            class="flex w-full items-center text-left"
+            :class="props.displayMode === 'pc' ? 'h-[40px] gap-[10px]' : 'h-[42.67px] gap-[9px]'"
+            @click="$emit('locate', result.id, query.trim())"
           >
-            <template
-              v-for="(part, index) in getChatTextHighlightParts(getSearchResultText(result), query)"
-              :key="index"
+            <!-- 客服头像统一补全 OSS 域名，接口未返回时使用本地默认头像。 -->
+            <span class="size-[40px] shrink-0 overflow-hidden rounded-full">
+              <img
+                :src="resolveChatMediaUrl(props.conversation?.avatar) || avatarUrl"
+                alt=""
+                class="size-full object-cover"
+              />
+            </span>
+
+            <!-- 昵称、消息预览与时间。 -->
+            <span
+              class="flex min-w-0 flex-1 items-start"
+              :class="props.displayMode === 'pc' ? 'gap-[10px]' : 'gap-[2px]'"
             >
-              <span :class="part.matched ? 'text-theme-primary' : ''">{{ part.text }}</span>
-            </template>
-          </p>
-        </span>
-      </button>
-      <p class="py-[18px] text-center text-[14px] text-text-3">{{ t('chatPublic.noMore') }}</p>
+              <span
+                class="flex min-w-0 flex-1 flex-col items-start"
+                :class="props.displayMode === 'pc' ? 'gap-[4px]' : 'gap-[10px]'"
+              >
+                <strong
+                  class="max-w-full truncate text-text-1"
+                  :class="
+                    props.displayMode === 'pc'
+                      ? 'text-[14px] font-[700] leading-[17px]'
+                      : 'text-[15px] font-[500] leading-[18px]'
+                  "
+                >
+                  {{ props.conversation?.nickName || t('chatPublic.customerServiceList') }}
+                </strong>
+                <!-- 搜索结果内容，并高亮当前匹配的关键字。 -->
+                <span
+                  class="w-full truncate text-text-2"
+                  :class="
+                    props.displayMode === 'pc'
+                      ? 'text-[12px] font-[400] leading-[15px]'
+                      : 'text-[12px] font-[400] leading-[14.67px]'
+                  "
+                >
+                  <template
+                    v-for="(part, index) in getChatTextHighlightParts(
+                      getSearchResultText(result),
+                      query
+                    )"
+                    :key="index"
+                  >
+                    <span :class="part.matched ? 'text-theme-primary' : ''">{{ part.text }}</span>
+                  </template>
+                </span>
+              </span>
+              <time
+                class="shrink-0 whitespace-nowrap text-text-3"
+                :class="
+                  props.displayMode === 'pc'
+                    ? 'text-[12px] font-[400] leading-[15px]'
+                    : 'text-[12px] font-[400] leading-[14.67px]'
+                "
+              >
+                {{ formatChatMessageTime(result.timestamp) }}
+                {{ getChatTimePeriod(result.timestamp) }}
+              </time>
+            </span>
+          </button>
+
+          <!-- 搜索结果分割线。 -->
+          <span
+            class="h-px bg-opacity-6"
+            :class="props.displayMode === 'pc' ? 'w-[306px]' : 'w-[298px]'"
+          ></span>
+        </div>
+
+        <!-- PC 设计稿在结果列表末尾展示结束文案。 -->
+        <p
+          v-if="props.displayMode === 'pc'"
+          class="w-full text-center text-[12px] font-[400] leading-[15px] text-text-3"
+        >
+          {{ t('chatPublic.noMore') }}
+        </p>
+      </section>
     </div>
 
     <!-- 搜索请求结束后无结果时的主题空状态。 -->
