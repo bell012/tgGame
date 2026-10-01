@@ -318,7 +318,9 @@ export function useChatRuntime() {
 
     return {
       ...conversation,
-      lastMessage: latestMessage?.text ?? ''
+      lastMessage: latestMessage?.text ?? '',
+      // 会话列表时间以本地历史最新消息的展示时间为准。
+      lastMessageTime: latestMessage?.time ?? ''
     }
   }
 
@@ -328,6 +330,8 @@ export function useChatRuntime() {
 
     const latestMessage = getLatestConversationMessage(messages.value)
     activeConversation.value.lastMessage = latestMessage?.text ?? ''
+    // 当前会话新增消息后，同步更新会话列表使用的本地消息时间。
+    activeConversation.value.lastMessageTime = latestMessage?.time ?? ''
   }
 
   /** 将新消息去重写入当前会话，并立即同步到本地缓存。 */

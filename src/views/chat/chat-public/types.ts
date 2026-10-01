@@ -1,7 +1,13 @@
 export type ConversationStatus = 'online' | 'offline' | 'typing'
 export type MessageDirection = 'incoming' | 'outgoing'
 export type MessageType =
-  'text' | 'image' | 'video' | 'reply' | 'auto-reply' | 'red-pack' | 'system'
+  | 'text'
+  | 'image'
+  | 'video'
+  | 'reply'
+  | 'auto-reply'
+  | 'red-pack'
+  | 'system'
 export type ChatComposerMode = 'idle' | 'typing' | 'emoji' | 'media' | 'reply'
 export type ChatMessageStatus = 'sending' | 'sent' | 'failed'
 
@@ -13,7 +19,7 @@ export interface ConversationItem {
   nickName?: string
   onlineStatus?: number
   unreadCount?: number
-  lastMessageTime?: number
+  lastMessageTime?: string | number
   lastMessage?: string
   sort?: number
 }
