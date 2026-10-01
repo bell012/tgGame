@@ -1,3 +1,61 @@
+export type PhoneAreaCodeOption = {
+  country: string
+  code: string
+  display: string
+  searchText: string
+}
+
+export const DEFAULT_PHONE_AREA_CODE = '63'
+const PHONE_AREA_CODE_MAX_LENGTH: Record<string, number> = {
+  '63': 10,
+  '86': 11
+}
+
+const PHONE_AREA_CODE_PATTERN: Record<string, RegExp> = {
+  '63': /^9\d{9}$/,
+  '86': /^1\d{10}$/
+}
+
+export const PHONE_AREA_CODE_OPTIONS: PhoneAreaCodeOption[] = [
+  {
+    country: 'Philippines',
+    code: '63',
+    display: '+63',
+    searchText: 'philippines 63 +63'
+  },
+  {
+    country: 'China',
+    code: '86',
+    display: '+86',
+    searchText: 'china 86 +86'
+  }
+]
+
+/**
+ * 获取手机号区号选项。
+ */
+export const getPhoneAreaCodeOptions = (): PhoneAreaCodeOption[] => {
+  return PHONE_AREA_CODE_OPTIONS.map(item => ({ ...item }))
+}
+
+/**
+ * 根据区号获取手机号区号选项，找不到时返回默认区号。
+ */
+export const getPhoneAreaCodeOption = (code?: string): PhoneAreaCodeOption => {
+  return (
+    PHONE_AREA_CODE_OPTIONS.find(item => item.code === code) ||
+    PHONE_AREA_CODE_OPTIONS.find(item => item.code === DEFAULT_PHONE_AREA_CODE) ||
+    PHONE_AREA_CODE_OPTIONS[0]
+  )
+}
+
+/**
+ * 获取手机号区号对应的最大输入长度。
+ */
+export const getPhoneMaxLengthByAreaCode = (areaCode = DEFAULT_PHONE_AREA_CODE): number => {
+  return PHONE_AREA_CODE_MAX_LENGTH[areaCode] || PHONE_AREA_CODE_MAX_LENGTH[DEFAULT_PHONE_AREA_CODE]
+}
+
 /**
  * 手机号和密码输入相关工具函数
  */
@@ -29,7 +87,20 @@ export const formatPhoneNumber = (value: string): string => {
 /**
  * 验证菲律宾手机号是否符合 9 开头且共 10 位数字的规则。
  */
-export const isValidPhoneNumber = (value: string): boolean => /^9\d{9}$/.test(value)
+export const isValidPhoneNumber = (value: string): boolean =>
+  PHONE_AREA_CODE_PATTERN[DEFAULT_PHONE_AREA_CODE].test(value)
+
+/**
+ * 根据区号验证手机号。
+ */
+export const isValidPhoneNumberByAreaCode = (
+  value: string,
+  areaCode = DEFAULT_PHONE_AREA_CODE
+): boolean => {
+  const pattern =
+    PHONE_AREA_CODE_PATTERN[areaCode] || PHONE_AREA_CODE_PATTERN[DEFAULT_PHONE_AREA_CODE]
+  return pattern.test(value)
+}
 
 /**
  * 格式化宽松手机号：仅保留数字，最多 10 位。
@@ -37,8 +108,11 @@ export const isValidPhoneNumber = (value: string): boolean => /^9\d{9}$/.test(va
  * @param value 输入的字符串
  * @returns 格式化后的纯数字字符串（最多10位）
  */
-export const formatLoosePhoneNumber = (value: string): string => {
-  return value.replace(/\D/g, '').slice(0, 10)
+export const formatLoosePhoneNumber = (
+  value: string,
+  areaCode = DEFAULT_PHONE_AREA_CODE
+): string => {
+  return value.replace(/\D/g, '').slice(0, getPhoneMaxLengthByAreaCode(areaCode))
 }
 
 /**
@@ -58,9 +132,13 @@ export const handlePhoneInput = (event: Event, callback: (value: string) => void
  * @param event 输入事件
  * @param callback 回调函数，用于更新表单数据
  */
-export const handleLoosePhoneInput = (event: Event, callback: (value: string) => void) => {
+export const handleLoosePhoneInput = (
+  event: Event,
+  callback: (value: string) => void,
+  areaCode = DEFAULT_PHONE_AREA_CODE
+) => {
   const input = event.target as HTMLInputElement
-  const formatted = formatLoosePhoneNumber(input.value)
+  const formatted = formatLoosePhoneNumber(input.value, areaCode)
   callback(formatted)
   input.value = formatted
 }

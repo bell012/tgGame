@@ -3,6 +3,7 @@
     :active-tab="activeTab"
     :active-login-method="activeLoginMethod"
     :login-method-tabs="loginMethodTabs"
+    :signin-area-code="formData.signin.areaCode"
     :show-password="showPassword"
     :show-confirm-password="showConfirmPassword"
     :form-data="formData"
@@ -17,6 +18,7 @@
     :is-captcha-loading="isCaptchaLoading"
     :set-active-tab="setActiveTab"
     :set-active-login-method="setActiveLoginMethod"
+    :set-signin-area-code="setSigninAreaCode"
     :toggle-password="togglePassword"
     :toggle-confirm-password="toggleConfirmPassword"
     :handle-checkbox-click="handleCheckboxClick"
@@ -53,12 +55,14 @@ import {
   getLanguageCode
 } from '@/utils/locale'
 import {
+  DEFAULT_PHONE_AREA_CODE,
+  formatLoosePhoneNumber,
   formatSigninUsername,
   handlePasswordInput,
   handleSigninUsernameInput as handleSigninUsernameInputValue,
   handleLoosePhoneInput,
   handleVerificationCodeInput,
-  isValidPhoneNumber,
+  isValidPhoneNumberByAreaCode,
   isValidSigninUsername,
   isValidPassword
 } from '@/utils/phone-input'
@@ -194,6 +198,7 @@ const formData = ref({
     account: savedSigninCredentials.account,
     usernameAccount: formatSigninUsername(savedSigninCredentials.account),
     phoneAccount: savedSigninCredentials.account,
+    areaCode: DEFAULT_PHONE_AREA_CODE,
     password: savedSigninCredentials.password,
     smsCode: '',
     captchaCode: '',
@@ -296,7 +301,9 @@ const syncSigninAccount = () => {
 const isSigninValid = computed(() => {
   const account = getActiveSigninAccount()
   const isAccountValid =
-    activeLoginMethod.value === 'username' ? isValidSigninUsername(account) : account.length > 0
+    activeLoginMethod.value === 'username'
+      ? isValidSigninUsername(account)
+      : isValidPhoneNumberByAreaCode(account, formData.value.signin.areaCode)
   const hasPassword = !showSigninPassword.value || formData.value.signin.password.length > 0
   const hasSmsCode = !showSigninSmsCode.value || formData.value.signin.smsCode.length > 0
   const hasBaseFields = isAccountValid && hasPassword && hasSmsCode
@@ -310,7 +317,7 @@ const isSigninValid = computed(() => {
 
 const isSignupValid = computed(() => {
   return (
-    formData.value.signup.account.length > 0 &&
+    isValidPhoneNumberByAreaCode(formData.value.signup.account, defaultAreaCode) &&
     formData.value.signup.code.length > 0 &&
     formData.value.signup.password.length > 0 &&
     formData.value.signup.confirmPassword.length > 0
@@ -332,6 +339,7 @@ const setActiveTab = (tab: AuthTab) => {
     formData.value.signin.account = savedCredentials.account
     formData.value.signin.usernameAccount = formatSigninUsername(savedCredentials.account)
     formData.value.signin.phoneAccount = savedCredentials.account
+    formData.value.signin.areaCode = DEFAULT_PHONE_AREA_CODE
     formData.value.signin.password = savedCredentials.password
     formData.value.signin.smsCode = ''
     formData.value.signin.rememberMe = Boolean(savedCredentials.password)
@@ -355,6 +363,19 @@ const setActiveLoginMethod = (method: string) => {
   formData.value.signin.smsCode = ''
   formData.value.signin.captchaCode = ''
   formData.value.signin.captchaKey = ''
+  syncSigninAccount()
+}
+
+/**
+ * 设置登录手机号区号。
+ */
+const setSigninAreaCode = (areaCode: string) => {
+  const nextAreaCode = areaCode || DEFAULT_PHONE_AREA_CODE
+  formData.value.signin.areaCode = nextAreaCode
+  formData.value.signin.phoneAccount = formatLoosePhoneNumber(
+    formData.value.signin.phoneAccount,
+    nextAreaCode
+  )
   syncSigninAccount()
 }
 
@@ -418,10 +439,14 @@ const handleSigninUsernameInput = (event: Event) => {
  * 处理手机号登录的手机号输入。
  */
 const handleSigninPhoneInput = (event: Event) => {
-  handleLoosePhoneInput(event, (value: string) => {
-    formData.value.signin.phoneAccount = value
-    formData.value.signin.account = value
-  })
+  handleLoosePhoneInput(
+    event,
+    (value: string) => {
+      formData.value.signin.phoneAccount = value
+      formData.value.signin.account = value
+    },
+    formData.value.signin.areaCode
+  )
 }
 
 /**
@@ -476,8 +501,11 @@ const handleSignupConfirmPasswordInput = (event: Event) => {
   })
 }
 
-const validatePhoneNumber = (value: string) => {
-  if (!isValidPhoneNumber(value)) {
+/**
+ * 按区号校验手机号格式。
+ */
+const validatePhoneNumber = (value: string, areaCode = DEFAULT_PHONE_AREA_CODE) => {
+  if (!isValidPhoneNumberByAreaCode(value, areaCode)) {
     globalShowToast(t('common.pleaseEnterCorrectPhone'))
     return false
   }
@@ -612,7 +640,10 @@ const handleLogin = async () => {
     return
   }
 
-  if (activeLoginMethod.value === 'phone' && !validatePhoneNumber(account)) {
+  if (
+    activeLoginMethod.value === 'phone' &&
+    !validatePhoneNumber(account, formData.value.signin.areaCode)
+  ) {
     return
   }
 
@@ -623,7 +654,7 @@ const handleLogin = async () => {
       memberPwd: showSigninPassword.value
         ? StringExtension.md5(formData.value.signin.password)
         : '',
-      areaCode: defaultAreaCode,
+      areaCode: formData.value.signin.areaCode,
       channelId: '1',
       requestMethod: activeLoginMethod.value === 'username' ? '0' : '1',
       ...(showSigninSmsCode.value
@@ -741,6 +772,21 @@ const getSmsTargetPhone = () => {
 }
 
 /**
+ * 获取当前场景发送短信验证码使用的区号。
+ */
+const getSmsTargetAreaCode = () => {
+  if (
+    activeTab.value === 'signin' &&
+    activeLoginMethod.value === 'phone' &&
+    showSigninSmsCode.value
+  ) {
+    return formData.value.signin.areaCode
+  }
+
+  return defaultAreaCode
+}
+
+/**
  * 发送短信验证码，登录手机号验证码和注册验证码共用同一个发送入口。
  */
 const handleSendCode = async () => {
@@ -755,13 +801,13 @@ const handleSendCode = async () => {
       return
     }
 
-    if (!validatePhoneNumber(telephone)) {
+    if (!validatePhoneNumber(telephone, getSmsTargetAreaCode())) {
       return
     }
 
     const response = await Api.auth.sendSms({
       telephone: telephone,
-      areaCode: defaultAreaCode
+      areaCode: getSmsTargetAreaCode()
     })
 
     if (response?.code === 'C2') {
@@ -789,6 +835,7 @@ const resetForm = () => {
   formData.value.signin.account = savedCredentials.account
   formData.value.signin.usernameAccount = formatSigninUsername(savedCredentials.account)
   formData.value.signin.phoneAccount = savedCredentials.account
+  formData.value.signin.areaCode = DEFAULT_PHONE_AREA_CODE
   formData.value.signin.password = savedCredentials.password
   formData.value.signin.smsCode = ''
   formData.value.signin.captchaCode = ''
@@ -857,6 +904,7 @@ defineExpose({
   isCaptchaLoading,
   setActiveTab,
   setActiveLoginMethod,
+  setSigninAreaCode,
   togglePassword,
   toggleConfirmPassword,
   handleCheckboxClick,

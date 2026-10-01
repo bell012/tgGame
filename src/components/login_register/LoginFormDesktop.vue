@@ -12,6 +12,7 @@
         activeTab,
         activeLoginMethod,
         loginMethodTabs,
+        signinAreaCode,
         showPassword,
         formData,
         checkboxAnimating,
@@ -25,6 +26,7 @@
         isCaptchaLoading,
         setActiveTab,
         setActiveLoginMethod,
+        setSigninAreaCode,
         togglePassword,
         handleCheckboxClick,
         handleLogin,
@@ -50,7 +52,7 @@
             :key="method.key"
             class="relative min-w-16 pb-3 text-lg font-[700] font-inter transition-all duration-200 tab-button-new"
             :class="activeLoginMethod === method.key ? 'text-text-1' : 'text-text-2'"
-            @click="setActiveLoginMethod(method.key)"
+            @click="handleSigninMethodClick(method.key, setActiveLoginMethod)"
           >
             <span>{{ method.label }}</span>
             <div
@@ -76,17 +78,27 @@
           <template v-if="activeTab === 'signin'">
             <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
             <div class="mb-6">
-              <div class="relative">
+              <div ref="signinAreaCodeAnchorRef" class="relative">
                 <KeyIcon
                   v-if="activeLoginMethod === 'username'"
                   class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
                 />
-                <span
+                <div
                   v-if="activeLoginMethod === 'phone'"
-                  class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-theme-level-1)] text-base font-[500]"
+                  class="absolute left-4 top-[21px] z-10 -translate-y-1/2"
                 >
-                  {{ defaultAreaCodeDisplay }}
-                </span>
+                  <button
+                    type="button"
+                    class="flex items-center gap-1 text-[var(--color-theme-level-1)] text-base font-[700]"
+                    @click.stop="toggleSigninAreaCodeDropdown"
+                  >
+                    <span>{{ getSelectedPhoneAreaCode(signinAreaCode).display }}</span>
+                    <XiaIcon
+                      class="w-3 h-3 transition-transform duration-200"
+                      :class="isSigninAreaCodeDropdownOpen ? 'rotate-180' : ''"
+                    />
+                  </button>
+                </div>
                 <input
                   :value="
                     activeLoginMethod === 'username'
@@ -101,7 +113,7 @@
                       : t('common.enter_account')
                   "
                   class="auth-input-placeholder w-full h-[42px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
-                  :class="activeLoginMethod === 'phone' ? 'pl-[52px]' : 'pl-[44px]'"
+                  :class="activeLoginMethod === 'phone' ? 'pl-[78px]' : 'pl-[44px]'"
                   @input="
                     activeLoginMethod === 'username'
                       ? handleSigninUsernameInput($event)
@@ -387,13 +399,53 @@
             </div>
           </template>
         </div>
+        <!-- 手机区号弹窗 -->
+        <Teleport to="body">
+          <Transition name="fade-accordion">
+            <div
+              v-if="activeLoginMethod === 'phone' && isSigninAreaCodeDropdownOpen"
+              ref="signinAreaCodePopupRef"
+              class="fixed z-[10020] flex h-[320px] flex-col overflow-hidden rounded-lg bg-bg-5 p-3"
+              :style="signinAreaCodePopupStyle"
+            >
+              <div class="relative mb-[8px] shrink-0">
+                <SearchIcon class="absolute left-3 top-1/2 h-6 w-6 -translate-y-1/2 text-icon-3" />
+                <input
+                  v-model="signinAreaCodeSearchKeyword"
+                  type="text"
+                  placeholder="Search Country"
+                  class="auth-input-placeholder h-10 w-full rounded-[12px] border border-opacity-10 bg-opacity-6 pl-11 pr-3 text-sm font-[400] text-text-1 outline-none transition-colors focus:border-theme-primary placeholder:text-text-3"
+                  @click.stop
+                />
+              </div>
+              <div class="min-h-0 flex-1 space-y-2 overflow-y-auto">
+                <button
+                  v-for="option in filteredPhoneAreaCodeOptions"
+                  :key="option.code"
+                  type="button"
+                  class="flex h-10 w-full items-center justify-between rounded-[8px] px-3 text-left text-sm font-[400] text-text-1 transition-colors"
+                  :class="
+                    option.code === signinAreaCode ? 'bg-bg-3 font-[700]' : 'hover:bg-opacity-6'
+                  "
+                  @click.stop="handleSigninAreaCodeSelect(option.code, setSigninAreaCode)"
+                >
+                  <span>{{ option.country }} ({{ option.display }})</span>
+                  <SelectedIcon
+                    v-if="option.code === signinAreaCode"
+                    class="h-4 w-4 text-theme-primary"
+                  />
+                </button>
+              </div>
+            </div>
+          </Transition>
+        </Teleport>
       </div>
     </template>
   </LoginRegisterFormCore>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { LoginSetResult } from '@/api/interface/login_register'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
@@ -401,7 +453,11 @@ import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import CheckIcon from '@/static/svg/login/check.svg?skipsvgo'
 import KeyIcon from '@/static/svg/login/key.svg?skipsvgo'
+import XiaIcon from '@/static/svg/login/xia.svg?skipsvgo'
+import SearchIcon from '@/static/svg/login/sousuo.svg?skipsvgo'
+import SelectedIcon from '@/static/svg/login/selected.svg?skipsvgo'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
+import { getPhoneAreaCodeOption, getPhoneAreaCodeOptions } from '@/utils/phone-input'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
 import { useI18n } from 'vue-i18n'
 
@@ -427,23 +483,185 @@ const emit = defineEmits<{
 }>()
 
 const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
+const isSigninAreaCodeDropdownOpen = ref(false)
+const signinAreaCodeAnchorRef = ref<HTMLElement | null>(null)
+const signinAreaCodePopupRef = ref<HTMLElement | null>(null)
+const signinAreaCodePopupStyle = ref<Record<string, string>>({})
+const signinAreaCodeSearchKeyword = ref('')
+const phoneAreaCodeOptions = getPhoneAreaCodeOptions()
+const SIGNIN_AREA_CODE_POPUP_HEIGHT = 320
+const SIGNIN_AREA_CODE_POPUP_GAP = 4
+const SIGNIN_AREA_CODE_POPUP_VIEWPORT_PADDING = 12
+
+const filteredPhoneAreaCodeOptions = computed(() => {
+  const keyword = signinAreaCodeSearchKeyword.value.trim().toLowerCase()
+
+  if (!keyword) {
+    return phoneAreaCodeOptions
+  }
+
+  return phoneAreaCodeOptions.filter(option => option.searchText.includes(keyword))
+})
+
+/**
+ * 获取当前选中的手机号区号配置。
+ */
+const getSelectedPhoneAreaCode = (areaCode?: string) => {
+  return getPhoneAreaCodeOption(areaCode)
+}
+
+/**
+ * 展开或收起登录手机号区号下拉框。
+ */
+const toggleSigninAreaCodeDropdown = () => {
+  isSigninAreaCodeDropdownOpen.value = !isSigninAreaCodeDropdownOpen.value
+}
+
+/**
+ * 关闭登录手机号区号下拉框。
+ */
+const closeSigninAreaCodeDropdown = () => {
+  isSigninAreaCodeDropdownOpen.value = false
+}
+
+/**
+ * 根据输入框位置计算手机号区号下拉框位置和动画高度。
+ */
+const updateSigninAreaCodePopupPosition = () => {
+  const anchor = signinAreaCodeAnchorRef.value
+
+  if (!anchor) {
+    return
+  }
+
+  const rect = anchor.getBoundingClientRect()
+  const preferredTop = rect.bottom + SIGNIN_AREA_CODE_POPUP_GAP
+  const fallbackTop = rect.top - SIGNIN_AREA_CODE_POPUP_GAP - SIGNIN_AREA_CODE_POPUP_HEIGHT
+  const popupTop =
+    preferredTop + SIGNIN_AREA_CODE_POPUP_HEIGHT + SIGNIN_AREA_CODE_POPUP_VIEWPORT_PADDING >
+    window.innerHeight
+      ? Math.max(SIGNIN_AREA_CODE_POPUP_VIEWPORT_PADDING, fallbackTop)
+      : preferredTop
+
+  signinAreaCodePopupStyle.value = {
+    top: `${popupTop}px`,
+    left: `${rect.left}px`,
+    width: `${rect.width}px`,
+    height: `${SIGNIN_AREA_CODE_POPUP_HEIGHT}px`,
+    '--fade-accordion-max-height': `${SIGNIN_AREA_CODE_POPUP_HEIGHT}px`
+  }
+}
+
+/**
+ * 窗口尺寸或滚动变化时刷新手机号区号下拉框位置。
+ */
+const handleSigninAreaCodeWindowChange = () => {
+  if (!isSigninAreaCodeDropdownOpen.value) {
+    return
+  }
+
+  updateSigninAreaCodePopupPosition()
+}
+
+/**
+ * 点击下拉框外部时关闭手机号区号下拉框。
+ */
+const handleSigninAreaCodeOutsidePointerDown = (event: PointerEvent) => {
+  const target = event.target as Node | null
+
+  if (!target) {
+    return
+  }
+
+  if (
+    signinAreaCodeAnchorRef.value?.contains(target) ||
+    signinAreaCodePopupRef.value?.contains(target)
+  ) {
+    return
+  }
+
+  closeSigninAreaCodeDropdown()
+}
+
+/**
+ * 绑定手机号区号下拉框打开期间需要的全局监听。
+ */
+const attachSigninAreaCodePopupListeners = () => {
+  window.addEventListener('resize', handleSigninAreaCodeWindowChange)
+  window.addEventListener('scroll', handleSigninAreaCodeWindowChange, true)
+  document.addEventListener('pointerdown', handleSigninAreaCodeOutsidePointerDown, true)
+}
+
+/**
+ * 移除手机号区号下拉框的全局监听。
+ */
+const detachSigninAreaCodePopupListeners = () => {
+  window.removeEventListener('resize', handleSigninAreaCodeWindowChange)
+  window.removeEventListener('scroll', handleSigninAreaCodeWindowChange, true)
+  document.removeEventListener('pointerdown', handleSigninAreaCodeOutsidePointerDown, true)
+}
+
+/**
+ * 选择登录手机号区号，并收起下拉框。
+ */
+const handleSigninAreaCodeSelect = (
+  areaCode: string,
+  setSigninAreaCode: (areaCode: string) => void
+) => {
+  setSigninAreaCode(areaCode)
+  signinAreaCodeSearchKeyword.value = ''
+  closeSigninAreaCodeDropdown()
+}
+
+/**
+ * 切换登录方式，并收起手机号区号下拉框。
+ */
+const handleSigninMethodClick = (
+  method: string,
+  setActiveLoginMethod: (method: string) => void
+) => {
+  setActiveLoginMethod(method)
+  signinAreaCodeSearchKeyword.value = ''
+  closeSigninAreaCodeDropdown()
+}
+
+watch(isSigninAreaCodeDropdownOpen, async isOpen => {
+  if (!isOpen) {
+    detachSigninAreaCodePopupListeners()
+    return
+  }
+
+  await nextTick()
+  updateSigninAreaCodePopupPosition()
+  attachSigninAreaCodePopupListeners()
+})
 
 watch(
   () => props.defaultTab,
   () => {
+    closeSigninAreaCodeDropdown()
     loginFormRef.value?.resetForm()
   }
 )
 
+/**
+ * 注册成功后关闭登录注册弹窗。
+ */
 const handleRegisterSuccess = () => {
   emit('close')
 }
 
+/**
+ * 登录成功后关闭弹窗并刷新页面状态。
+ */
 const handleLoginSuccess = () => {
   emit('close')
   window.location.reload()
 }
 
+/**
+ * 游客继续访问时关闭登录注册弹窗。
+ */
 const handleGuestContinue = () => {
   emit('close')
 }
@@ -463,9 +681,17 @@ const handleAuthTabSwitch = (
   setActiveTab(tab)
 }
 
+/**
+ * 重置桌面端登录注册表单，并关闭手机号区号下拉框。
+ */
 const resetForm = () => {
+  closeSigninAreaCodeDropdown()
   loginFormRef.value?.resetForm()
 }
+
+onBeforeUnmount(() => {
+  detachSigninAreaCodePopupListeners()
+})
 
 defineExpose({
   resetForm
