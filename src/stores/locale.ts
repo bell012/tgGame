@@ -85,7 +85,8 @@ export const useLocaleStore = defineStore('locale', () => {
       .toUpperCase()
   }
 
-  // 页面刷新初始化时，以 /sy/dlicgh 的默认语言和默认货币覆盖本地旧选择。
+  // 页面刷新初始化时，以 /sy/dlicgh 的默认语言为准；默认货币只在本地没有选择时兜底。
+  // 登录用户的当前货币以后端 /acct/queryAcctInfo 返回的 currency 为准。
   const applySiteDefaults = (siteConfig?: SiteConfig | null) => {
     const baseSiteConfig = siteConfig?.baseSiteConfig
     const defaultLanguage = normalizeSiteDefaultLanguage(baseSiteConfig?.defaultLanguageCode)
@@ -99,7 +100,7 @@ export const useLocaleStore = defineStore('locale', () => {
       switchLanguage(defaultLanguage)
     }
 
-    if (defaultCurrency) {
+    if (defaultCurrency && currentCurrency.value === 'none') {
       setCurrency(defaultCurrency)
     }
   }
