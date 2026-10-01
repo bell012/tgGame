@@ -1989,6 +1989,20 @@
     "loadingEvents": "Loading events...",
     "matchCard": {
       "totalScore": "Total score",
+      "periodScore": "Period {number}: {score}",
+      "periods": {
+        "paused": "Break / Paused",
+        "finished": "Finished",
+        "notStarted": "Not started",
+        "firstHalf": "1st half",
+        "secondHalf": "2nd half",
+        "overtime": "Overtime",
+        "quarter": "Quarter {number}",
+        "set": "Set {number}",
+        "game": "Game {number}",
+        "frame": "Frame {number}",
+        "inning": "Inning {number}"
+      },
       "corners": "Corners {score}",
       "redCards": "{count} red cards",
       "yellowCards": "{count} yellow cards",

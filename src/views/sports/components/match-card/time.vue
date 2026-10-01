@@ -6,8 +6,9 @@
 import { computed, inject } from 'vue'
 import type { SportsMatch } from '../../shared/types'
 import { matchTimeKey } from '../../composables/useMatchTime'
+import { getMatchDisplayTime } from '../../shared/match'
 
 const props = defineProps<{ match: SportsMatch }>()
-const getTime = inject(matchTimeKey, match => match.phase || match.kickoff)
+const getTime = inject(matchTimeKey, match => getMatchDisplayTime(match, Date.now()))
 const label = computed(() => getTime(props.match))
 </script>

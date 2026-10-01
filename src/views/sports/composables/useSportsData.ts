@@ -190,8 +190,9 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     counts: () => sportsStore.refreshHomepageCounts(),
     background: async () => {
       await sportsStore.refreshHomepageBackground()
-      sportsStore.pruneEventCache(getBetTargets())
+      sportsStore.pruneEventCache(getBetTargets)
     },
+    hot: () => sportsStore.refreshHomepageHot(),
     cancel: () => sportsStore.cancelHomepageRefresh()
   })
   let homepageReady = false

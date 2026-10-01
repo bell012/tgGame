@@ -1982,6 +1982,20 @@
     "loadingEvents": "赛事加载中…",
     "matchCard": {
       "totalScore": "总比分",
+      "periodScore": "第 {number} 段比分：{score}",
+      "periods": {
+        "paused": "休息/暂停",
+        "finished": "已结束",
+        "notStarted": "未开赛",
+        "firstHalf": "上半场",
+        "secondHalf": "下半场",
+        "overtime": "加时",
+        "quarter": "第 {number} 节",
+        "set": "第 {number} 盘",
+        "game": "第 {number} 局",
+        "frame": "第 {number} 局",
+        "inning": "第 {number} 局"
+      },
       "corners": "角球 {score}",
       "redCards": "{count} 张红牌",
       "yellowCards": "{count} 张黄牌",

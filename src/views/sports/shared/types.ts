@@ -18,10 +18,12 @@ export type SportsMatch = {
   awayScore: string
   cornerScore?: string
   halfTimeScore?: string
+  relatedScores?: { key: string; score: string; label?: 'HT' | 'FT'; active: boolean }[]
   home: { name: string; badge: string; redCards?: string; yellowCards?: string }
   away: { name: string; badge: string; redCards?: string; yellowCards?: string }
   live: boolean
   phase: string
+  rbTimeStatus?: number
   phaseClock?: {
     period: string
     seconds: number

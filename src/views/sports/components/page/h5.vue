@@ -110,9 +110,9 @@
           @search-change="page.handleSearchChange"
         />
         <button
-          v-if="groups.length"
           type="button"
-          class="flex h-[30px] w-[30px] shrink-0 flex-col items-center justify-center rounded-lg bg-bg-2 text-text-2 focus-visible:outline focus-visible:outline-theme-primary"
+          class="flex h-[30px] w-[30px] shrink-0 flex-col items-center justify-center rounded-lg bg-bg-2 text-text-2 focus-visible:outline focus-visible:outline-theme-primary disabled:cursor-not-allowed disabled:opacity-50"
+          :disabled="toggleAllGroupsDisabled"
           :aria-label="
             allGroupsCollapsed
               ? t('sports.homepage.expandAllLeagues')
@@ -417,10 +417,14 @@ onScopeDispose(() => {
 // 默认展开全部联赛，手动点击后按联赛 ID 记住展开状态。
 const isGroupExpanded = (id: string) => expandedGroups.value[id] ?? expandNewGroups.value
 const allGroupsCollapsed = computed(() => groups.value.every(group => !isGroupExpanded(group.id)))
+const toggleAllGroupsDisabled = computed(
+  () => !groups.value.length || props.page.homepageLoading.value || props.page.matchesLoading.value
+)
 const toggleGroup = (id: string) => {
   expandedGroups.value = { ...expandedGroups.value, [id]: !isGroupExpanded(id) }
 }
 const toggleAllGroups = () => {
+  if (toggleAllGroupsDisabled.value) return
   const expand = allGroupsCollapsed.value
   expandNewGroups.value = expand
   expandedGroups.value = {
