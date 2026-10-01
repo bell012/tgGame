@@ -227,6 +227,8 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
       !sportsPageDisposed &&
       !document.hidden
     ) {
+      // 初始加载期间也可能切后台；就绪后恢复时统一续查，由 Store 复用在途请求和缓存。
+      void sportsStore.fetchMissingHotEvents()
       homepageRefresh.start(immediate)
     }
   }

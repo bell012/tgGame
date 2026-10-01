@@ -1597,14 +1597,7 @@ export const useSportsStore = defineStore('sports', () => {
     const context = getAllSportsQueryContext()
     if (allSportsPending && allSportsRequestContext.value === context) return allSportsPending
     cancelAllSports()
-    // 仅切换列表排序不刷新热门详情；补全接口不依赖排序或收藏置顶。
-    if (
-      !keepPrevious &&
-      (allSportsRequestScope.value !== scope || allSportsRequestContext.value === context)
-    ) {
-      cancelHotDetails()
-      completedHotDetailsKey = ''
-    }
+    // 热门详情独立加载，主列表翻页或重载不能取消它。
     allSportsRequestContext.value = context
     allSportsRequestScope.value = scope
     if (allSportsDataScope.value !== scope) {
@@ -1773,7 +1766,6 @@ export const useSportsStore = defineStore('sports', () => {
           allSportsState.loading = false
           allSportsController = undefined
           allSportsPending = null
-          void fetchMissingHotEvents()
         }
       }
     })()
@@ -1828,9 +1820,7 @@ export const useSportsStore = defineStore('sports', () => {
       competitionListState.response = response
       if (isApiBusinessSuccess(response)) {
         if (Array.isArray(response.result)) {
-          competitionListState.data = response
-          for (const record of response.result)
-            queueReappearedEvents(record.sportId, [record.eventId], revision)
+          applyHotEventList(response, revision)
         } else {
           competitionListState.error = { kind: 'response', message: 'Invalid hot events response' }
         }
@@ -1865,15 +1855,65 @@ export const useSportsStore = defineStore('sports', () => {
     error: SportsRequestError | null
   }>({ params: null, response: null, data: [], loading: false, error: null })
   const hotDetailsContext = ref('')
+  const publishedHotEvents = ref<{ context: string; ids: number[] }>({ context: '', ids: [] })
   let hotDetailsController: AbortController | undefined
   let hotDetailsPending: Promise<SportEvent[] | null> | null = null
-  let hotDetailsKey = ''
   let completedHotDetailsKey = ''
   const cancelHotDetails = () => {
     hotDetailsController?.abort()
     hotDetailsController = undefined
     hotDetailsPending = null
     hotDetailsState.loading = false
+  }
+  watch(
+    getAllSportsContext,
+    () => {
+      cancelHotDetails()
+      completedHotDetailsKey = ''
+      // 旧详情对象属于旧的共享缓存，快速切回原分类也不能复用已脱离缓存的引用。
+      hotDetailsState.data = []
+      hotDetailsState.error = null
+      hotDetailsContext.value = ''
+      publishedHotEvents.value = { context: '', ids: [] }
+    },
+    { flush: 'sync' }
+  )
+  const getHotEventIds = () => [
+    ...new Set(
+      (competitionListState.data?.result ?? [])
+        .filter(
+          record =>
+            record.sportId === selectedSportId.value &&
+            Number.isSafeInteger(record.eventId) &&
+            record.eventId > 0
+        )
+        .map(record => record.eventId)
+    )
+  ]
+  const publishHotEvents = () => {
+    publishedHotEvents.value = { context: getAllSportsContext(), ids: getHotEventIds() }
+  }
+  const applyHotEventList = (response: GetCompetitionListResponse, revision: number) => {
+    const previousIds = getHotEventIds()
+    competitionListState.data = response
+    competitionListContext.value = getCompetitionListContext()
+    const nextIds = new Set(getHotEventIds())
+    const membershipChanged =
+      previousIds.length !== nextIds.size || previousIds.some(id => !nextIds.has(id))
+    if (membershipChanged) {
+      // 防止上一轮详情迟到后重新发布已移出热门名单的赛事。
+      cancelHotDetails()
+      completedHotDetailsKey = ''
+    }
+    // 首次进入、重进和定时刷新共用删除规则，不等待新增赛事的详情。
+    if (publishedHotEvents.value.context === getAllSportsContext()) {
+      publishedHotEvents.value = {
+        context: getAllSportsContext(),
+        ids: publishedHotEvents.value.ids.filter(id => nextIds.has(id))
+      }
+    }
+    for (const record of response.result ?? [])
+      queueReappearedEvents(record.sportId, [record.eventId], revision)
   }
   const getHomepageOddsType = (): SportsOddsType => {
     // 独赢通常固定返回欧洲盘，不能用它推断让球/大小的显示盘型。
@@ -1892,16 +1932,22 @@ export const useSportsStore = defineStore('sports', () => {
   }
   const fetchMissingHotEvents = (): Promise<SportEvent[] | null> => {
     const context = getAllSportsContext()
-    // 等待两条数据链都到达，避免把尚未翻到的赛事当作缺失重复补查。
+    // 名单就绪即独立补查，不等待主列表分页，也不阻塞其他数据请求。
     if (
       !getBaseUrl() ||
-      allSportsRequestScope.value !== context ||
-      allSportsState.loading ||
       competitionListContext.value !== getCompetitionListContext() ||
       competitionListState.loading ||
       !competitionListState.data
     )
       return Promise.resolve(null)
+
+    // 主列表持续发布预览时，不能因缺失 ID 变化而取消正在进行的热门补查。
+    if (
+      hotDetailsPending &&
+      hotDetailsContext.value === context &&
+      !hotDetailsController?.signal.aborted
+    )
+      return hotDetailsPending
 
     const ids = [
       ...new Set(
@@ -1914,21 +1960,29 @@ export const useSportsStore = defineStore('sports', () => {
           )
           .map(record => record.eventId)
       )
-    ].filter(id => !allEventsById.value.has(id))
+    ].filter(
+      id =>
+        !(
+          allEventsById.value.has(id) ||
+          hotDetailsById.value.has(id) ||
+          getRefreshEvent(selectedSportId.value, id)
+        )
+    )
     const oddsType = getHomepageOddsType()
     const key = JSON.stringify([context, ids, oddsType])
-    if (hotDetailsPending && hotDetailsKey === key) return hotDetailsPending
-    if (completedHotDetailsKey === key) return Promise.resolve(hotDetailsState.data)
+    if (completedHotDetailsKey === key) {
+      publishHotEvents()
+      return Promise.resolve(hotDetailsState.data)
+    }
     cancelHotDetails()
-    hotDetailsKey = key
     if (hotDetailsContext.value !== context) hotDetailsState.data = []
     hotDetailsContext.value = context
     hotDetailsState.params = null
     hotDetailsState.response = null
     hotDetailsState.error = null
     if (!ids.length) {
-      hotDetailsState.data = []
       completedHotDetailsKey = key
+      publishHotEvents()
       return Promise.resolve([])
     }
     const controller = new AbortController()
@@ -1985,9 +2039,10 @@ export const useSportsStore = defineStore('sports', () => {
             const cached = getRefreshEvent(sportId, event.EventId)
             if (cached) received.set(event.EventId, cached)
           }
-          hotDetailsState.data = activeEvents(sportId, [...received.values()])
         }
+        hotDetailsState.data = activeEvents(sportId, [...received.values()])
         completedHotDetailsKey = key
+        publishHotEvents()
         return hotDetailsState.data
       } catch {
         if (isCurrent())
@@ -1995,6 +2050,8 @@ export const useSportsStore = defineStore('sports', () => {
         return null
       } finally {
         if (hotDetailsController === controller) {
+          // 首次补查失败仅展示已有数据；后台失败保留已发布的卡片。
+          if (isCurrent() && publishedHotEvents.value.context !== context) publishHotEvents()
           hotDetailsState.loading = false
           hotDetailsController = undefined
           hotDetailsPending = null
@@ -2081,14 +2138,12 @@ export const useSportsStore = defineStore('sports', () => {
       )
   )
   const hotEvents = computed<SportEvent[]>(() => {
-    const seen = new Set<number>()
-    return hotEventRecords.value.flatMap(record => {
-      if (record.sportId !== selectedSportId.value || seen.has(record.eventId)) return []
-      seen.add(record.eventId)
+    if (publishedHotEvents.value.context !== getAllSportsContext()) return []
+    const sportId = selectedSportId.value
+    return publishedHotEvents.value.ids.flatMap(id => {
+      if (isEventExpired(sportId, id)) return []
       const event =
-        allEventsById.value.get(record.eventId) ??
-        hotDetailsById.value.get(record.eventId) ??
-        getRefreshEvent(record.sportId, record.eventId)
+        allEventsById.value.get(id) ?? hotDetailsById.value.get(id) ?? getRefreshEvent(sportId, id)
       return event ? [withMemberFavourite(event)] : []
     })
   })
@@ -2096,7 +2151,6 @@ export const useSportsStore = defineStore('sports', () => {
     () =>
       (competitionListContext.value === getCompetitionListContext() &&
         competitionListState.loading) ||
-      (allSportsRequestScope.value === getAllSportsContext() && allSportsState.loading) ||
       (hotDetailsContext.value === getAllSportsContext() && hotDetailsState.loading)
   )
   const hotEventsError = computed(
@@ -2275,6 +2329,8 @@ export const useSportsStore = defineStore('sports', () => {
   const getRefreshContext = () =>
     JSON.stringify([getEventsContext(), getAllSportsQueryContext(), sportsVisitGeneration])
   const cancelHomepageRefresh = () => {
+    // 热门详情不占用名单轮询任务，但仍随页面停用或筛选变化取消。
+    cancelHotDetails()
     refreshGeneration += 1
     for (const job of refreshJobs.values()) job.controller.abort()
     refreshJobs.clear()
@@ -2543,6 +2599,11 @@ export const useSportsStore = defineStore('sports', () => {
   }
   const refreshHomepageBackground = () =>
     runHomepageRefresh('background', async (signal, isCurrent) => {
+      // 热门详情沿用普通赛事的 10 秒刷新与去重队列，不等待 60 秒的热门名单轮询。
+      queueEventChecks(
+        hotEvents.value.map(event => ({ sportId: selectedSportId.value, eventId: event.EventId })),
+        { priority: true }
+      )
       const sportId = selectedSportId.value
       const search = keyword.value.trim()
       const params: GetSportsV2Params = {
@@ -2717,25 +2778,9 @@ export const useSportsStore = defineStore('sports', () => {
       )
       if (!isCurrent() || !isApiBusinessSuccess(response) || !Array.isArray(response.result))
         return null
-      const records = new Map(
-        (competitionListState.data?.result ?? []).map(record => [
-          eventKey(record.sportId, record.eventId),
-          record
-        ])
-      )
-      response.result.forEach(record =>
-        records.set(eventKey(record.sportId, record.eventId), record)
-      )
-      competitionListState.data = { ...response, result: [...records.values()] }
-      competitionListContext.value = getCompetitionListContext()
-      for (const record of response.result)
-        queueReappearedEvents(record.sportId, [record.eventId], revision)
-      // 热门缓存也定期复核，与其他补查共用去重队列。
-      const targets = [...records.values()].map(record => ({
-        sportId: record.sportId,
-        eventId: record.eventId
-      }))
-      queueEventChecks(targets, { priority: true })
+      // 名单轮询不等待详情：删除立即生效，新增待详情补齐后统一发布。
+      applyHotEventList(response, revision)
+      void fetchMissingHotEvents()
       return response
     })
 
@@ -3070,6 +3115,8 @@ export const useSportsStore = defineStore('sports', () => {
     if (competitionListContext.value === getCompetitionListContext())
       for (const record of competitionListState.data?.result ?? [])
         retained.add(eventKey(record.sportId, record.eventId))
+    if (publishedHotEvents.value.context === getAllSportsContext())
+      for (const id of publishedHotEvents.value.ids) retained.add(eventKey(sportId, id))
     for (const key of refreshedEvents.keys()) if (!retained.has(key)) refreshedEvents.delete(key)
   }
   const reset = () => {
@@ -3186,6 +3233,8 @@ export const useSportsStore = defineStore('sports', () => {
         allSportsRefreshPending = false
         allSportsTask = fetchAllSports()
       }
+      // 会话变化或取消后重进时，名单可能仍可复用；详情恢复同样不等待列表分页。
+      void fetchMissingHotEvents()
       if (useCachedEvents.value) {
         // 默认列表直接共用分页缓存，避免额外发一次相同的第一页请求。
         await allSportsTask
