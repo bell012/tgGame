@@ -157,7 +157,7 @@
                   :label="t('sports.betSlip.stakeFor', { selection: selection.selection })"
                   :error="selection.stakeError"
                   :placeholder="selection.limitText"
-                  :disabled="Boolean(selection.submissionState)"
+                  :disabled="isSubmitting"
                   @update="emit('stake', selection.id, $event)"
                   @focus="emit('focusStake', selection.id, 'single')"
                   @max="emit('max', selection.id, 'single')"
@@ -186,20 +186,13 @@
                     :label="t('sports.betSlip.stakeFor', { selection: parlay.label })"
                     :error="parlay.stakeError"
                     :placeholder="parlay.limitText"
-                    :disabled="Boolean(parlay.submissionState)"
+                    :disabled="isSubmitting"
                     @update="emit('parlayStake', parlay.id, $event)"
                     @focus="emit('focusStake', parlay.id, 'parlay')"
                     @max="emit('max', parlay.id, 'parlay')"
                   />
                 </div>
               </div>
-              <p
-                v-if="parlay.submissionState === 'confirmed'"
-                class="mx-[18px] mt-2 text-xs text-text-2"
-                role="status"
-              >
-                {{ t('sports.betSubmitSuccess') }}
-              </p>
             </div>
           </div>
         </div>
@@ -516,7 +509,7 @@ function amountClass(stake: string, amount: number) {
 
 function setQuickAmount(amount: number) {
   const target = props.mode === 'single' ? focusedSingle.value : focusedParlay.value
-  if (isSubmitting.value || target?.submissionState) return
+  if (isSubmitting.value) return
   if (target) emit('focusStake', target.id, props.mode)
   emit('quickAmount', amount)
 }

@@ -197,8 +197,7 @@ export const useUserStore = defineStore('user', () => {
       [
         ...NOTIFICATION_CACHE_STORAGE_PREFIXES,
         ...PLAYED_GAMES_CACHE_STORAGE_PREFIXES,
-        'sportsAcceptAnyOdds:',
-        'sportsUnconfirmedBets:'
+        'sportsAcceptAnyOdds:'
       ]
     )
     clearProfileAvatarPreviewState()

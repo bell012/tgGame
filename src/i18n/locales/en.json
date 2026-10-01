@@ -1887,8 +1887,6 @@
     "betSubmitFailed": "Bet failed. Your selections and stakes have been kept.",
     "betSubmitPending": "Bet is pending. Do not submit it again.",
     "betSubmitUnknown": "Your bet result is not yet confirmed. Please check your bet history to avoid placing it twice.",
-    "betSubmissionStorageFailed": "Unable to save or read bet submission records. No new bets will be placed. Please check your browser storage settings.",
-    "betSubmissionLockFailed": "Unable to protect against duplicate bets. No bet was sent. Please use an up-to-date browser over HTTPS and try again.",
     "betSubmitEmpty": "No bets are ready to submit. Check your selections and stakes.",
     "betAmountInvalid": "Enter a valid amount with up to two decimal places.",
     "betLimit": "Bet limit {min}–{max}",
