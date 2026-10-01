@@ -124,8 +124,9 @@ export const useSportsPage = () => {
   const handleLeagueFilter = (payload: LeagueFilterPayload) => {
     syncCompetitionIds(payload.ids, payload.isAllSelected)
   }
-  // 沿用组件的 collectOnly 事件字段，统一写入 Store 收藏置顶状态，不发起收藏写操作。
+  // 沿用 collectOnly 字段，统一切换 Store 收藏列表，不发起收藏写操作。
   const handleCollectChange = (payload: CollectOnlyPayload) => {
+    if (!requireLogin() || !isPageActive()) return
     collectOnly.value = payload.collectOnly
   }
   const closeOnOutside = (event: PointerEvent) => {

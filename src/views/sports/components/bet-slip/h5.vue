@@ -6,7 +6,7 @@
   >
     <section
       ref="panel"
-      class="relative flex max-h-[min(670.667px,calc(100dvh-40px))] w-screen flex-col overflow-hidden rounded-t-[24px] bg-bg-2 font-inter text-text-1 outline-none [@media(max-height:560px)]:overflow-y-auto"
+      class="relative flex max-h-[78dvh] w-screen flex-col overflow-hidden overscroll-contain rounded-t-[24px] bg-bg-2 font-inter text-text-1 outline-none [@media(max-height:560px)]:overflow-y-auto"
       role="dialog"
       aria-modal="true"
       :aria-labelledby="titleId"

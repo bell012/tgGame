@@ -6,11 +6,14 @@ import type { SportsPageState } from '../../index'
 
 export type SportsKeyboardKey = string | 'delete'
 
+const blockedStartingKeys = new Set(['.', '0', '00'])
+
 /** 键盘输入最多保留两位小数。 */
 export const applySportsKeyboardKey = (raw: string, key: string, replace = false): string => {
   if (key === 'delete') return raw.slice(0, -1)
   if (!/^(?:\d|00|\.)$/.test(key)) return raw
   const current = replace ? '' : raw
+  if (!current && blockedStartingKeys.has(key)) return raw
   if (key === '.' && current.includes('.')) return current
   let next = `${current}${key}`
   if (next.startsWith('.')) next = `0${next}`
@@ -88,6 +91,7 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   }
   const keyPress = (key: SportsKeyboardKey) => {
     if (busy.value || editingAmounts.value) return
+    if (replaceNextKey && blockedStartingKeys.has(key)) return
     if (activeRow.value) {
       writeStake(applySportsKeyboardKey(activeRow.value.stake, key, replaceNextKey))
     }

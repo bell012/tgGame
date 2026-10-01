@@ -36,7 +36,7 @@
     <section
       v-if="liveMatches.length"
       :aria-label="t('sports.homepage.popularMatches')"
-      class="min-w-0"
+      class="mb-3 min-w-0"
       data-testid="sports-h5-live-section"
     >
       <div

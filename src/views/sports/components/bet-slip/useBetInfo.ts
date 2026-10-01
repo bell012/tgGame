@@ -20,7 +20,7 @@ import { useSportsStore } from '@/stores/sports'
 import { useUserStore } from '@/stores/user'
 import type { SportsBetMode } from '../../shared/types'
 import type { OddsTrend } from '../match-odds/types'
-import { decimalOdds, parseBetInfoItems } from './bet-info'
+import { decimalOdds, isBetInfoRetryable, parseBetInfoItems } from './bet-info'
 
 export type BetInfoSource = {
   sportId: number
@@ -82,6 +82,8 @@ export const useBetInfo = ({
     Boolean(userStore.userInfo?.tradeToken || userStore.acctInfo?.memberId)
   )
   let generation = 0
+  let retryTimer: ReturnType<typeof setTimeout> | undefined
+  let finishRetry: ((continueQuery: boolean) => void) | undefined
   const enabled = () =>
     open.value &&
     Boolean(selectionKey.value) &&
@@ -92,6 +94,10 @@ export const useBetInfo = ({
 
   const cancel = () => {
     generation += 1
+    clearTimeout(retryTimer)
+    retryTimer = undefined
+    finishRetry?.(false)
+    finishRetry = undefined
     sportsStore.cancelBetInfo()
     loading.value = false
     ready.value = false
@@ -128,6 +134,24 @@ export const useBetInfo = ({
         response = await sportsStore.fetchBetInfo(params)
       }
       if (current !== generation) return
+      // 380 且仍开盘时，按接口规则间隔 5 秒重查一次。
+      if (
+        [100, 350].includes(Number(response?.stc)) &&
+        Array.isArray(response?.wsis) &&
+        response.wsis.some(isBetInfoRetryable)
+      ) {
+        const continueQuery = await new Promise<boolean>(resolve => {
+          finishRetry = resolve
+          retryTimer = setTimeout(() => {
+            retryTimer = undefined
+            finishRetry = undefined
+            resolve(true)
+          }, 5000)
+        })
+        if (!continueQuery || current !== generation || !enabled()) return
+        response = await sportsStore.fetchBetInfo(params)
+      }
+      if (current !== generation) return
       ready.value = false
       if (!response || ![100, 350].includes(Number(response.stc))) {
         error.value = [439, 464].includes(
@@ -159,6 +183,10 @@ export const useBetInfo = ({
             return quote ? [quote] : []
           })
         : next
+      if (quotes.value.some(isBetInfoRetryable)) {
+        error.value = 'sports.betInfoFailed'
+        return
+      }
       settings.value = Array.isArray(response.bs) ? response.bs.filter(Boolean) : []
       ready.value = true
     } catch {

@@ -737,7 +737,7 @@ export const useSportsStore = defineStore('sports', () => {
     }
   })
   const sortType = ref<SportsSortType>(1)
-  // 游客不能开启收藏置顶；组件及请求统一读取这一受登录态约束的值。
+  // 游客不能开启收藏列表；请求仍用收藏置顶参数，展示出口再过滤未收藏赛事。
   const favouriteSelected = ref(false)
   const isFavourite = computed({
     get: () => isLoggedIn.value && favouriteSelected.value,
@@ -2213,7 +2213,21 @@ export const useSportsStore = defineStore('sports', () => {
         }
         return reuseEqual(previousGroups.get(group.CompetitionId) ?? nextGroup, nextGroup)
       })
-    return reuseList(previous ?? [], filterEmptyLeagueGroups(next, !keyword.value.trim()))
+    // 接口 IsFavourite 仅置顶，不能当作过滤；在明细合并、会员状态覆盖后统一筛选。
+    // 仅过滤展示数据，不改原缓存，也不把“没有收藏”当作联赛下架的证据。
+    const visible = filterEmptyLeagueGroups(next, !keyword.value.trim()).flatMap(group => {
+      if (!isFavourite.value) return [group]
+      const sports = group.Sports.filter(event => event.IsFavourite === true)
+      if (!sports.length) return []
+      return [
+        reuseEqual(previousGroups.get(group.CompetitionId) ?? group, {
+          ...group,
+          Sports: sports,
+          competitionCount: sports.length
+        })
+      ]
+    })
+    return reuseList(previous ?? [], visible)
   })
   const matchListLoading = computed(
     () =>
