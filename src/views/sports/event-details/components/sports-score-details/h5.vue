@@ -268,7 +268,8 @@ const emit = defineEmits<{ pick: [payload: OddsSelectPayload] }>()
 const COLLAPSED_ROW_LIMIT = 3
 
 const activeFilter = ref<ScoreDetailsFilterKey>('all')
-const pinnedMarketIds = ref<Set<string>>(new Set())
+/** 置顶顺序：数组靠前 = 列表越靠前 */
+const pinnedMarketOrder = ref<string[]>([])
 const openSectionIds = ref<Set<string>>(new Set())
 const expandedMarketIds = ref<Set<string>>(new Set())
 
@@ -283,10 +284,13 @@ const visibleMarkets = computed(() => {
     activeFilter.value === 'all'
       ? allMarkets.value
       : allMarkets.value.filter(market => market.betTypeName === activeFilter.value)
+  const pinIndex = new Map(pinnedMarketOrder.value.map((id, index) => [id, index]))
   return [...list].sort((a, b) => {
-    const aPinned = pinnedMarketIds.value.has(a.id) ? 0 : 1
-    const bPinned = pinnedMarketIds.value.has(b.id) ? 0 : 1
-    return aPinned - bPinned
+    const aPin = pinIndex.get(a.id)
+    const bPin = pinIndex.get(b.id)
+    const aRank = aPin === undefined ? Number.POSITIVE_INFINITY : aPin
+    const bRank = bPin === undefined ? Number.POSITIVE_INFINITY : bPin
+    return aRank - bRank
   })
 })
 
@@ -296,6 +300,8 @@ watch(
     activeFilter.value = 'all'
     expandedMarketIds.value = new Set()
     openSectionIds.value = new Set(allMarkets.value.map(market => market.id))
+    const validIds = new Set(allMarkets.value.map(market => market.id))
+    pinnedMarketOrder.value = pinnedMarketOrder.value.filter(id => validIds.has(id))
   },
   { immediate: true }
 )
@@ -324,16 +330,15 @@ const toggleAllSections = () => {
   openSectionIds.value = new Set(visibleMarkets.value.map(market => market.id))
 }
 
-const isPinned = (marketId: string) => pinnedMarketIds.value.has(marketId)
+const isPinned = (marketId: string) => pinnedMarketOrder.value.includes(marketId)
 
 const togglePin = (marketId: string) => {
-  const next = new Set(pinnedMarketIds.value)
-  if (next.has(marketId)) {
-    next.delete(marketId)
-  } else {
-    next.add(marketId)
+  const without = pinnedMarketOrder.value.filter(id => id !== marketId)
+  if (without.length === pinnedMarketOrder.value.length) {
+    pinnedMarketOrder.value = [marketId, ...without]
+    return
   }
-  pinnedMarketIds.value = next
+  pinnedMarketOrder.value = without
 }
 
 const isMarketExpanded = (marketId: string) => expandedMarketIds.value.has(marketId)
