@@ -2,6 +2,7 @@ import { computed, onMounted, onScopeDispose, type Ref } from 'vue'
 import type { SportCompetitionGroup } from '@/api/interface/sport'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useSportsStore } from '@/stores/sports'
 import { useBetSlip } from '../components/bet-slip/useBetSlip'
 import type { OddsSelectPayload } from '../components/match-odds/types'
 import { getTeamLogoUrl } from '../index'
@@ -40,6 +41,7 @@ export function useEventDetailsBetSlip(deps: {
 
   const { isLoggedIn } = useRequireLoginAction()
   const siteConfigStore = useSiteConfigStore()
+  const sportsStore = useSportsStore()
   const betSlip = useBetSlip({ getMatch, getTeamLogoUrl })
   let disposed = false
   onScopeDispose(() => {
@@ -50,7 +52,8 @@ export function useEventDetailsBetSlip(deps: {
     if (!isLoggedIn.value) {
       return
     }
-    void betSlip.refreshBalance()
+    // 页面进入和打开投注单只使用统一限频查询，不触发手动刷新动画。
+    void sportsStore.fetchSportsBalance()
   }
 
   const pickOdds = (payload: OddsSelectPayload) => {

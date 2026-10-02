@@ -47,9 +47,17 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   const userStore = useUserStore()
   const {
     sportsBalance: balance,
-    sportsBalanceLoading: refreshing,
+    sportsBalanceLoading,
     sportsBalanceError
   } = storeToRefs(sportsStore)
+  const manualBalanceRefreshing = ref(false)
+  const refreshing = computed(() => sportsBalanceLoading.value || manualBalanceRefreshing.value)
+  let balanceRefreshTimer: ReturnType<typeof setTimeout> | undefined
+  const clearBalanceRefreshAnimation = () => {
+    if (balanceRefreshTimer !== undefined) clearTimeout(balanceRefreshTimer)
+    balanceRefreshTimer = undefined
+    manualBalanceRefreshing.value = false
+  }
   const { t } = useI18n()
   const comboLabel = (combo: number, count: number) => {
     if (combo >= 9 && combo <= 17) return t('sports.betSlip.fold', { count: combo - 7 })
@@ -189,9 +197,11 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
   const checkedQuoteIds = new Set<string>()
   onDeactivated(() => {
     selectionVersion += 1
+    clearBalanceRefreshAnimation()
   })
   onScopeDispose(() => {
     disposed = true
+    clearBalanceRefreshAnimation()
   })
   const confirmSelection = async (outcome: SelectedOutcome) => {
     if (isSelectionExpired(outcome)) {
@@ -931,12 +941,17 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
     const current = () =>
       !disposed && accountKey.value === account && sportsStore.sportsSessionVersion === version
     const canSend = () => current() && selectionVersion === submissionSelectionVersion
+    // 多笔单关不采用各笔 av；全部请求结束后再由余额单例统一补查。
+    const multipleSingles = isSingle && jobs.length > 1
+    const finishBalanceBatch = multipleSingles ? sportsStore.beginSportsBalanceUpdate() : undefined
     try {
       if (!canSend()) return
       const responses = await Promise.allSettled(
         jobs.map(async job => {
           try {
-            const response = await sportsStore.placeBet(job.query, canSend)
+            const response = await sportsStore.placeBet(job.query, canSend, {
+              updateBalance: !multipleSingles
+            })
             sent = true
             return response
           } catch (error) {
@@ -1022,16 +1037,18 @@ export const useBetSlip = ({ getMatch, getTeamLogoUrl, resultPresentation }: Bet
         })
     } finally {
       submitting.value = false
-      if (sent && current()) await sportsStore.fetchSportsBalance({ fetchIfMissing: false })
+      finishBalanceBatch?.({ refresh: sent })
     }
   }
   const refreshBalance = async () => {
     if (refreshing.value || !requireLogin()) return
     const version = sportsStore.sportsSessionVersion
+    manualBalanceRefreshing.value = true
+    balanceRefreshTimer = setTimeout(clearBalanceRefreshAnimation, 500)
     const success = await sportsStore.fetchSportsBalance()
-    if (success || version !== sportsStore.sportsSessionVersion) return
+    if (success || disposed || version !== sportsStore.sportsSessionVersion) return
     if (sportsBalanceError.value?.kind === 'credentials') return
-    if (!sportsBalanceError.value && balance.value === null) return
+    if (!sportsBalanceError.value) return
     globalShowToast({
       type: 'fail',
       message: t('sports.balanceRefreshFailed')
