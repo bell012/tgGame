@@ -502,97 +502,27 @@
           </template>
         </div>
         <!-- 手机区号弹窗 -->
-        <Teleport to="body">
-          <Transition name="fade-accordion">
-            <div
-              v-if="
-                activeTab === 'signin' &&
-                activeLoginMethod === 'phone' &&
-                isSigninAreaCodeDropdownOpen
-              "
-              ref="signinAreaCodePopupRef"
-              class="fixed z-[10020] flex h-[320px] flex-col overflow-hidden rounded-lg bg-bg-5 p-3"
-              :style="signinAreaCodePopupStyle"
-            >
-              <div class="relative mb-[8px] shrink-0">
-                <SearchIcon class="absolute left-3 top-1/2 h-6 w-6 -translate-y-1/2 text-icon-3" />
-                <input
-                  v-model="signinAreaCodeSearchKeyword"
-                  type="text"
-                  placeholder="Search Country"
-                  class="auth-input-placeholder h-10 w-full rounded-[12px] border border-opacity-10 bg-opacity-6 pl-11 pr-3 text-sm font-[400] text-text-1 outline-none transition-colors focus:border-theme-primary placeholder:text-text-3"
-                  @click.stop
-                />
-              </div>
-              <div class="min-h-0 flex-1 space-y-2 overflow-y-auto">
-                <button
-                  v-for="option in filteredPhoneAreaCodeOptions"
-                  :key="option.code"
-                  type="button"
-                  class="flex h-10 w-full items-center justify-between rounded-[8px] px-3 text-left text-sm font-[400] text-text-1 transition-colors"
-                  :class="
-                    option.code === signinAreaCode ? 'bg-bg-3 font-[700]' : 'hover:bg-opacity-6'
-                  "
-                  @click.stop="handleSigninAreaCodeSelect(option.code, setSigninAreaCode)"
-                >
-                  <span>{{ option.country }} ({{ option.display }})</span>
-                  <SelectedIcon
-                    v-if="option.code === signinAreaCode"
-                    class="h-4 w-4 text-theme-primary"
-                  />
-                </button>
-              </div>
-            </div>
-          </Transition>
-          <Transition name="fade-accordion">
-            <div
-              v-if="
-                activeTab === 'signup' &&
-                activeSignupMethod === 'phone' &&
-                isSignupAreaCodeDropdownOpen
-              "
-              ref="signupAreaCodePopupRef"
-              class="fixed z-[10020] flex h-[320px] flex-col overflow-hidden rounded-lg bg-bg-5 p-3"
-              :style="signupAreaCodePopupStyle"
-            >
-              <div class="relative mb-[8px] shrink-0">
-                <SearchIcon class="absolute left-3 top-1/2 h-6 w-6 -translate-y-1/2 text-icon-3" />
-                <input
-                  v-model="signupAreaCodeSearchKeyword"
-                  type="text"
-                  placeholder="Search Country"
-                  class="auth-input-placeholder h-10 w-full rounded-[12px] border border-opacity-10 bg-opacity-6 pl-11 pr-3 text-sm font-[400] text-text-1 outline-none transition-colors focus:border-theme-primary placeholder:text-text-3"
-                  @click.stop
-                />
-              </div>
-              <div class="min-h-0 flex-1 space-y-2 overflow-y-auto">
-                <button
-                  v-for="option in filteredSignupPhoneAreaCodeOptions"
-                  :key="option.code"
-                  type="button"
-                  class="flex h-10 w-full items-center justify-between rounded-[8px] px-3 text-left text-sm font-[400] text-text-1 transition-colors"
-                  :class="
-                    option.code === signupAreaCode ? 'bg-bg-3 font-[700]' : 'hover:bg-opacity-6'
-                  "
-                  @click.stop="handleSignupAreaCodeSelect(option.code, setSignupAreaCode)"
-                >
-                  <span>{{ option.country }} ({{ option.display }})</span>
-                  <SelectedIcon
-                    v-if="option.code === signupAreaCode"
-                    class="h-4 w-4 text-theme-primary"
-                  />
-                </button>
-              </div>
-            </div>
-          </Transition>
-        </Teleport>
+        <PhoneAreaCodePopup
+          v-if="activeTab === 'signin' && activeLoginMethod === 'phone'"
+          v-model="isSigninAreaCodeDropdownOpen"
+          :anchor-el="signinAreaCodeAnchorRef"
+          :selected-code="signinAreaCode"
+          @select="areaCode => handleSigninAreaCodeSelect(areaCode, setSigninAreaCode)"
+        />
+        <PhoneAreaCodePopup
+          v-if="activeTab === 'signup' && activeSignupMethod === 'phone'"
+          v-model="isSignupAreaCodeDropdownOpen"
+          :anchor-el="signupAreaCodeAnchorRef"
+          :selected-code="signupAreaCode"
+          @select="areaCode => handleSignupAreaCodeSelect(areaCode, setSignupAreaCode)"
+        />
       </div>
     </template>
   </LoginRegisterFormCore>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import type { LoginSetResult } from '@/api/interface/login_register'
 import EyeIcon from '@/static/svg/login/eye.svg?component'
 import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
@@ -602,10 +532,9 @@ import CheckIcon from '@/static/svg/login/check.svg?skipsvgo'
 import KeyIcon from '@/static/svg/login/key.svg?skipsvgo'
 import InviteIcon from '@/static/svg/login/yaoqing.svg?skipsvgo'
 import XiaIcon from '@/static/svg/login/xia.svg?skipsvgo'
-import SearchIcon from '@/static/svg/login/sousuo.svg?skipsvgo'
-import SelectedIcon from '@/static/svg/login/selected.svg?skipsvgo'
-import { getPhoneAreaCodeOption, getPhoneAreaCodeOptions } from '@/utils/phone-input'
+import { getPhoneAreaCodeOption } from '@/utils/phone-input'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
+import PhoneAreaCodePopup from './PhoneAreaCodePopup.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -633,36 +562,6 @@ const isSigninAreaCodeDropdownOpen = ref(false)
 const isSignupAreaCodeDropdownOpen = ref(false)
 const signinAreaCodeAnchorRef = ref<HTMLElement | null>(null)
 const signupAreaCodeAnchorRef = ref<HTMLElement | null>(null)
-const signinAreaCodePopupRef = ref<HTMLElement | null>(null)
-const signupAreaCodePopupRef = ref<HTMLElement | null>(null)
-const signinAreaCodePopupStyle = ref<Record<string, string>>({})
-const signupAreaCodePopupStyle = ref<Record<string, string>>({})
-const signinAreaCodeSearchKeyword = ref('')
-const signupAreaCodeSearchKeyword = ref('')
-const phoneAreaCodeOptions = getPhoneAreaCodeOptions()
-const SIGNIN_AREA_CODE_POPUP_HEIGHT = 320
-const SIGNIN_AREA_CODE_POPUP_GAP = 4
-const SIGNIN_AREA_CODE_POPUP_VIEWPORT_PADDING = 12
-
-const filteredPhoneAreaCodeOptions = computed(() => {
-  const keyword = signinAreaCodeSearchKeyword.value.trim().toLowerCase()
-
-  if (!keyword) {
-    return phoneAreaCodeOptions
-  }
-
-  return phoneAreaCodeOptions.filter(option => option.searchText.includes(keyword))
-})
-
-const filteredSignupPhoneAreaCodeOptions = computed(() => {
-  const keyword = signupAreaCodeSearchKeyword.value.trim().toLowerCase()
-
-  if (!keyword) {
-    return phoneAreaCodeOptions
-  }
-
-  return phoneAreaCodeOptions.filter(option => option.searchText.includes(keyword))
-})
 
 /**
  * 获取当前选中的手机号区号配置。
@@ -700,160 +599,6 @@ const closeSignupAreaCodeDropdown = () => {
 }
 
 /**
- * 根据输入框位置计算手机号区号下拉框位置和动画高度。
- */
-const updateSigninAreaCodePopupPosition = () => {
-  const anchor = signinAreaCodeAnchorRef.value
-
-  if (!anchor) {
-    return
-  }
-
-  const rect = anchor.getBoundingClientRect()
-  const preferredTop = rect.bottom + SIGNIN_AREA_CODE_POPUP_GAP
-  const fallbackTop = rect.top - SIGNIN_AREA_CODE_POPUP_GAP - SIGNIN_AREA_CODE_POPUP_HEIGHT
-  const popupTop =
-    preferredTop + SIGNIN_AREA_CODE_POPUP_HEIGHT + SIGNIN_AREA_CODE_POPUP_VIEWPORT_PADDING >
-    window.innerHeight
-      ? Math.max(SIGNIN_AREA_CODE_POPUP_VIEWPORT_PADDING, fallbackTop)
-      : preferredTop
-
-  signinAreaCodePopupStyle.value = {
-    top: `${popupTop}px`,
-    left: `${rect.left}px`,
-    width: `${rect.width}px`,
-    height: `${SIGNIN_AREA_CODE_POPUP_HEIGHT}px`,
-    '--fade-accordion-max-height': `${SIGNIN_AREA_CODE_POPUP_HEIGHT}px`
-  }
-}
-
-/**
- * 根据注册输入框位置计算手机号区号下拉框位置和动画高度。
- */
-const updateSignupAreaCodePopupPosition = () => {
-  const anchor = signupAreaCodeAnchorRef.value
-
-  if (!anchor) {
-    return
-  }
-
-  const rect = anchor.getBoundingClientRect()
-  const preferredTop = rect.bottom + SIGNIN_AREA_CODE_POPUP_GAP
-  const fallbackTop = rect.top - SIGNIN_AREA_CODE_POPUP_GAP - SIGNIN_AREA_CODE_POPUP_HEIGHT
-  const popupTop =
-    preferredTop + SIGNIN_AREA_CODE_POPUP_HEIGHT + SIGNIN_AREA_CODE_POPUP_VIEWPORT_PADDING >
-    window.innerHeight
-      ? Math.max(SIGNIN_AREA_CODE_POPUP_VIEWPORT_PADDING, fallbackTop)
-      : preferredTop
-
-  signupAreaCodePopupStyle.value = {
-    top: `${popupTop}px`,
-    left: `${rect.left}px`,
-    width: `${rect.width}px`,
-    height: `${SIGNIN_AREA_CODE_POPUP_HEIGHT}px`,
-    '--fade-accordion-max-height': `${SIGNIN_AREA_CODE_POPUP_HEIGHT}px`
-  }
-}
-
-/**
- * 窗口尺寸或滚动变化时刷新手机号区号下拉框位置。
- */
-const handleSigninAreaCodeWindowChange = () => {
-  if (!isSigninAreaCodeDropdownOpen.value) {
-    return
-  }
-
-  updateSigninAreaCodePopupPosition()
-}
-
-/**
- * 窗口尺寸或滚动变化时刷新注册手机号区号下拉框位置。
- */
-const handleSignupAreaCodeWindowChange = () => {
-  if (!isSignupAreaCodeDropdownOpen.value) {
-    return
-  }
-
-  updateSignupAreaCodePopupPosition()
-}
-
-/**
- * 点击下拉框外部时关闭手机号区号下拉框。
- */
-const handleSigninAreaCodeOutsidePointerDown = (event: PointerEvent) => {
-  const target = event.target as Node | null
-
-  if (!target) {
-    return
-  }
-
-  if (
-    signinAreaCodeAnchorRef.value?.contains(target) ||
-    signinAreaCodePopupRef.value?.contains(target)
-  ) {
-    return
-  }
-
-  closeSigninAreaCodeDropdown()
-}
-
-/**
- * 点击注册下拉框外部时关闭手机号区号下拉框。
- */
-const handleSignupAreaCodeOutsidePointerDown = (event: PointerEvent) => {
-  const target = event.target as Node | null
-
-  if (!target) {
-    return
-  }
-
-  if (
-    signupAreaCodeAnchorRef.value?.contains(target) ||
-    signupAreaCodePopupRef.value?.contains(target)
-  ) {
-    return
-  }
-
-  closeSignupAreaCodeDropdown()
-}
-
-/**
- * 绑定手机号区号下拉框打开期间需要的全局监听。
- */
-const attachSigninAreaCodePopupListeners = () => {
-  window.addEventListener('resize', handleSigninAreaCodeWindowChange)
-  window.addEventListener('scroll', handleSigninAreaCodeWindowChange, true)
-  document.addEventListener('pointerdown', handleSigninAreaCodeOutsidePointerDown, true)
-}
-
-/**
- * 绑定注册手机号区号下拉框打开期间需要的全局监听。
- */
-const attachSignupAreaCodePopupListeners = () => {
-  window.addEventListener('resize', handleSignupAreaCodeWindowChange)
-  window.addEventListener('scroll', handleSignupAreaCodeWindowChange, true)
-  document.addEventListener('pointerdown', handleSignupAreaCodeOutsidePointerDown, true)
-}
-
-/**
- * 移除手机号区号下拉框的全局监听。
- */
-const detachSigninAreaCodePopupListeners = () => {
-  window.removeEventListener('resize', handleSigninAreaCodeWindowChange)
-  window.removeEventListener('scroll', handleSigninAreaCodeWindowChange, true)
-  document.removeEventListener('pointerdown', handleSigninAreaCodeOutsidePointerDown, true)
-}
-
-/**
- * 移除注册手机号区号下拉框的全局监听。
- */
-const detachSignupAreaCodePopupListeners = () => {
-  window.removeEventListener('resize', handleSignupAreaCodeWindowChange)
-  window.removeEventListener('scroll', handleSignupAreaCodeWindowChange, true)
-  document.removeEventListener('pointerdown', handleSignupAreaCodeOutsidePointerDown, true)
-}
-
-/**
  * 选择登录手机号区号，并收起下拉框。
  */
 const handleSigninAreaCodeSelect = (
@@ -861,7 +606,6 @@ const handleSigninAreaCodeSelect = (
   setSigninAreaCode: (areaCode: string) => void
 ) => {
   setSigninAreaCode(areaCode)
-  signinAreaCodeSearchKeyword.value = ''
   closeSigninAreaCodeDropdown()
 }
 
@@ -873,7 +617,6 @@ const handleSignupAreaCodeSelect = (
   setSignupAreaCode: (areaCode: string) => void
 ) => {
   setSignupAreaCode(areaCode)
-  signupAreaCodeSearchKeyword.value = ''
   closeSignupAreaCodeDropdown()
 }
 
@@ -885,7 +628,6 @@ const handleSigninMethodClick = (
   setActiveLoginMethod: (method: string) => void
 ) => {
   setActiveLoginMethod(method)
-  signinAreaCodeSearchKeyword.value = ''
   closeSigninAreaCodeDropdown()
 }
 
@@ -897,31 +639,8 @@ const handleSignupMethodClick = (
   setActiveSignupMethod: (method: string) => void
 ) => {
   setActiveSignupMethod(method)
-  signupAreaCodeSearchKeyword.value = ''
   closeSignupAreaCodeDropdown()
 }
-
-watch(isSigninAreaCodeDropdownOpen, async isOpen => {
-  if (!isOpen) {
-    detachSigninAreaCodePopupListeners()
-    return
-  }
-
-  await nextTick()
-  updateSigninAreaCodePopupPosition()
-  attachSigninAreaCodePopupListeners()
-})
-
-watch(isSignupAreaCodeDropdownOpen, async isOpen => {
-  if (!isOpen) {
-    detachSignupAreaCodePopupListeners()
-    return
-  }
-
-  await nextTick()
-  updateSignupAreaCodePopupPosition()
-  attachSignupAreaCodePopupListeners()
-})
 
 watch(
   () => props.defaultTab,
@@ -977,11 +696,6 @@ const resetForm = () => {
   closeSignupAreaCodeDropdown()
   loginFormRef.value?.resetForm()
 }
-
-onBeforeUnmount(() => {
-  detachSigninAreaCodePopupListeners()
-  detachSignupAreaCodePopupListeners()
-})
 
 defineExpose({
   resetForm

@@ -213,63 +213,13 @@
                   >
                     {{ t('common.confirm') }}
                   </button>
-                  <Teleport to="body">
-                    <transition name="area-code-mask">
-                      <div
-                        v-if="isResetAreaCodeDropdownOpen"
-                        class="fixed inset-0 z-[10020] bg-mask-60-1"
-                        @click="closeResetAreaCodeDropdown"
-                      />
-                    </transition>
-
-                    <transition name="area-code-sheet">
-                      <div
-                        v-if="isResetAreaCodeDropdownOpen"
-                        ref="resetAreaCodePopupRef"
-                        class="fixed bottom-0 left-0 z-[10021] w-full"
-                      >
-                        <div
-                          class="area-code-sheet-panel flex h-[60vh] flex-col rounded-t-xl bg-bg-5 p-3"
-                        >
-                          <div class="mb-2 text-center text-base font-[700] text-text-1">
-                            {{ t('common.select_country') }}
-                          </div>
-                          <div class="relative mb-2 shrink-0">
-                            <SearchIcon
-                              class="absolute left-3 top-1/2 h-6 w-6 -translate-y-1/2 text-icon-3"
-                            />
-                            <input
-                              v-model="resetAreaCodeSearchKeyword"
-                              type="text"
-                              :placeholder="t('common.search_country')"
-                              class="auth-input-placeholder h-10 w-full rounded-[12px] border border-opacity-10 bg-opacity-6 pl-11 pr-3 text-sm font-[400] text-text-1 outline-none transition-colors focus:border-theme-primary placeholder:text-text-3"
-                              @click.stop
-                            />
-                          </div>
-                          <div class="min-h-0 flex-1 space-y-2 overflow-y-auto">
-                            <button
-                              v-for="option in filteredResetPhoneAreaCodeOptions"
-                              :key="option.code"
-                              type="button"
-                              class="flex h-10 w-full items-center justify-between rounded-[8px] px-3 text-left text-sm font-[400] text-text-1 transition-colors"
-                              :class="
-                                option.code === resetAreaCode
-                                  ? 'bg-bg-3 font-[700]'
-                                  : 'hover:bg-opacity-6'
-                              "
-                              @click.stop="handleResetAreaCodeSelect(option.code, setResetAreaCode)"
-                            >
-                              <span>{{ option.country }} ({{ option.display }})</span>
-                              <SelectedIcon
-                                v-if="option.code === resetAreaCode"
-                                class="h-4 w-4 text-theme-primary"
-                              />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </transition>
-                  </Teleport>
+                  <!-- 手机区号弹窗 -->
+                  <PhoneAreaCodePopup
+                    v-model="isResetAreaCodeDropdownOpen"
+                    variant="mobile"
+                    :selected-code="resetAreaCode"
+                    @select="areaCode => handleResetAreaCodeSelect(areaCode, setResetAreaCode)"
+                  />
                 </div>
               </div>
             </transition>
@@ -290,10 +240,9 @@ import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import XiaIcon from '@/static/svg/login/xia.svg?skipsvgo'
-import SearchIcon from '@/static/svg/login/sousuo.svg?skipsvgo'
-import SelectedIcon from '@/static/svg/login/selected.svg?skipsvgo'
-import { getPhoneAreaCodeOption, getPhoneAreaCodeOptions } from '@/utils/phone-input'
+import { getPhoneAreaCodeOption } from '@/utils/phone-input'
 import ResetPasswordFormCore from './ResetPasswordFormCore.vue'
+import PhoneAreaCodePopup from './PhoneAreaCodePopup.vue'
 import { useI18n } from 'vue-i18n'
 import FoldIconH5 from '@/static/svg/foldH5.svg?component'
 import { navigateTo } from '@/utils/router'
@@ -318,19 +267,6 @@ const resetPasswordFormRef = ref<InstanceType<typeof ResetPasswordFormCore> | nu
 const isH5BackgroundLoaded = ref(false)
 const isResetAreaCodeDropdownOpen = ref(false)
 const resetAreaCodeAnchorRef = ref<HTMLElement | null>(null)
-const resetAreaCodePopupRef = ref<HTMLElement | null>(null)
-const resetAreaCodeSearchKeyword = ref('')
-const phoneAreaCodeOptions = getPhoneAreaCodeOptions()
-
-const filteredResetPhoneAreaCodeOptions = computed(() => {
-  const keyword = resetAreaCodeSearchKeyword.value.trim().toLowerCase()
-
-  if (!keyword) {
-    return phoneAreaCodeOptions
-  }
-
-  return phoneAreaCodeOptions.filter(option => option.searchText.includes(keyword))
-})
 
 usePageScrollLock(() => props.visible)
 
@@ -407,7 +343,6 @@ const handleResetAreaCodeSelect = (
   setResetAreaCode: (areaCode: string) => void
 ) => {
   setResetAreaCode(areaCode)
-  resetAreaCodeSearchKeyword.value = ''
   closeResetAreaCodeDropdown()
 }
 
@@ -515,40 +450,6 @@ const handleResetPasswordSuccess = () => {
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-}
-
-.area-code-sheet-panel {
-  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-}
-
-.area-code-mask-enter-active,
-.area-code-mask-leave-active {
-  transition: opacity 0.25s ease;
-}
-
-.area-code-mask-enter-from,
-.area-code-mask-leave-to {
-  opacity: 0;
-}
-
-.area-code-mask-enter-to,
-.area-code-mask-leave-from {
-  opacity: 1;
-}
-
-.area-code-sheet-enter-active,
-.area-code-sheet-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.area-code-sheet-enter-from,
-.area-code-sheet-leave-to {
-  transform: translateY(100%);
-}
-
-.area-code-sheet-enter-to,
-.area-code-sheet-leave-from {
-  transform: translateY(0);
 }
 
 .container_bg {
