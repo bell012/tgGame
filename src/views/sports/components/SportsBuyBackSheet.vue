@@ -299,6 +299,7 @@ const submitBuyBack = async () => {
   const generation = submissionGeneration
   const owner = getCredentialOwner()
   let context: number | undefined
+  let finishBalanceUpdate: ReturnType<typeof sportsStore.beginSportsBalanceUpdate> | undefined
   const isCurrent = () =>
     generation === submissionGeneration &&
     props.visible &&
@@ -318,6 +319,7 @@ const submitBuyBack = async () => {
     context = sportsAuth.contextVersion
     const credentials = await sportsAuth.ensureCredentials()
     if (!isCurrent() || !credentials || !sportsAuth.isCredentialsCurrent(credentials)) return
+    finishBalanceUpdate = sportsStore.beginSportsBalanceUpdate(credentials)
     const response = await Api.sport.submitBuyBack(baseUrl, {
       WagerId: wager.wid ?? '',
       BuyBackPricing: toSportsBetNumber(wager.bbp),
@@ -328,8 +330,10 @@ const submitBuyBack = async () => {
     })
     if ([102, 202].includes(Number(getSportsResponseCode(response))))
       sportsAuth.clearCredentials(credentials)
-    if (!isCurrent()) return
     const responseCode = getSportsResponseCode(response)
+    // 结算响应没有余额；关闭弹窗或离开页面后仍由钱包上下文完成一次补查。
+    if (String(responseCode) === '100') finishBalanceUpdate({ refresh: true })
+    if (!isCurrent()) return
 
     if (String(responseCode) === '100') {
       emit('update:visible', false)
@@ -352,6 +356,7 @@ const submitBuyBack = async () => {
       type: 'fail'
     })
   } finally {
+    finishBalanceUpdate?.()
     isSubmittingBuyBack.value = false
   }
 }

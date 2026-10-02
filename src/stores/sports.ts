@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { computed, onScopeDispose, reactive, ref, shallowReactive, watch } from 'vue'
 import type { ComputedRef } from 'vue'
 import Api from '@/api'
@@ -29,7 +29,7 @@ import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUserStore } from '@/stores/user'
 import { useSportsAuthStore } from '@/stores/sportsAuth'
-import type { EnsureSportsCredentialsOptions } from '@/stores/sportsAuth'
+import { useSportsBalanceStore } from '@/stores/sportsBalance'
 import { useDisplayCurrency } from '@/composables/useDisplayCurrency'
 import { isApiBusinessSuccess } from '@/utils/apiBusiness'
 import i18n from '@/i18n'
@@ -389,26 +389,16 @@ export const useSportsStore = defineStore('sports', () => {
   const languageCode = computed(getLanguage)
   const getBaseUrl = () => siteConfigStore.getConfigString('IM.im_app_url')
   const sportsSessionVersion = ref(0)
-  const sportsBalance = ref<number | null>(null)
-  const sportsBalanceLoading = ref(false)
-  const sportsBalanceError = ref<SportsRequestError | null>(null)
-  let balanceGeneration = 0
-  let balanceCredentialVersion = 0
-  let balancePending: Promise<boolean> | null = null
-  const resetSportsBalance = () => {
-    balanceGeneration += 1
-    balanceCredentialVersion = 0
-    balancePending = null
-    sportsBalance.value = null
-    sportsBalanceLoading.value = false
-    sportsBalanceError.value = null
-  }
+  const sportsBalanceStore = useSportsBalanceStore()
+  const { sportsBalance, sportsBalanceLoading, sportsBalanceError } =
+    storeToRefs(sportsBalanceStore)
+  const { fetchSportsBalance, beginSportsBalanceUpdate, scheduleSportsBalanceRefresh } =
+    sportsBalanceStore
   let homepageActive = false
   onScopeDispose(() => {
     homepageActive = false
     cancelFavouriteSync()
     cancelBetInfo()
-    resetSportsBalance()
   })
   const retryJobs = shallowReactive(new Map<string, Promise<void>>())
   let sportsVisitGeneration = 0
@@ -427,7 +417,6 @@ export const useSportsStore = defineStore('sports', () => {
     ],
     () => {
       sportsSessionVersion.value += 1
-      resetSportsBalance()
       cancelBetInfo()
       invalidateSportsVisit()
     },
@@ -436,89 +425,6 @@ export const useSportsStore = defineStore('sports', () => {
   const sportsApi = Api.sport
   const isAuthExpired = (response: SportsResponse) =>
     response.stc === 102 || response.stc === '102' || response.stc === 202 || response.stc === '202'
-  const fetchSportsBalance = (options: EnsureSportsCredentialsOptions = {}): Promise<boolean> => {
-    if (!isLoggedIn.value || !getBaseUrl()) return Promise.resolve(false)
-    if (balancePending) return balancePending
-    const generation = balanceGeneration
-    const context = sportsAuth.contextVersion
-    const isCurrent = () =>
-      generation === balanceGeneration && context === sportsAuth.contextVersion
-    sportsBalanceLoading.value = true
-    sportsBalanceError.value = null
-    const pending = Promise.resolve().then(async () => {
-      try {
-        const credentials = await sportsAuth.ensureCredentials(options)
-        if (!isCurrent()) return false
-        if (!credentials) {
-          sportsBalanceError.value = {
-            kind: 'credentials',
-            message: 'Sports credentials unavailable'
-          }
-          return false
-        }
-        if (!sportsAuth.isCredentialsCurrent(credentials)) return false
-        balanceCredentialVersion = credentials.version
-        const response = await sportsApi.getBalance(getBaseUrl(), {
-          Token: credentials.token,
-          MemberCode: credentials.memberCode,
-          TimeStamp: Date.now()
-        })
-        if (!isCurrent() || !sportsAuth.isCredentialsCurrent(credentials)) return false
-        if (isAuthExpired(response)) {
-          sportsAuth.clearCredentials(credentials)
-          sportsBalanceError.value = {
-            kind: 'credentials',
-            code: response.stc,
-            message: response.std
-          }
-          globalShowToast({ type: 'fail', message: i18n.global.t('sports.betLoginFailed') })
-          return false
-        }
-        if (
-          !isSportsSuccess(response) ||
-          typeof response.av !== 'number' ||
-          !Number.isFinite(response.av)
-        ) {
-          sportsBalanceError.value = { kind: 'business', code: response.stc, message: response.std }
-          return false
-        }
-        sportsBalance.value = response.av
-        return true
-      } catch (error) {
-        if (isCurrent())
-          sportsBalanceError.value = {
-            kind: 'network',
-            message: error instanceof Error ? error.message : 'Balance query failed'
-          }
-        return false
-      } finally {
-        if (balancePending === pending) {
-          balancePending = null
-          sportsBalanceLoading.value = false
-        }
-      }
-    })
-    balancePending = pending
-    return pending
-  }
-  // 首页、详情或报价重新取得凭据后补查余额；同组凭据已有查询时不重复请求。
-  watch(
-    () => sportsAuth.isReady,
-    async ready => {
-      if (!ready) return
-      const generation = balanceGeneration
-      const credentials = await sportsAuth.ensureCredentials({ fetchIfMissing: false })
-      await balancePending
-      if (
-        generation !== balanceGeneration ||
-        !credentials ||
-        !sportsAuth.isCredentialsCurrent(credentials) ||
-        balanceCredentialVersion === credentials.version
-      )
-        return
-      void fetchSportsBalance({ fetchIfMissing: false })
-    }
-  )
 
   const memberFavourites = shallowReactive(new Map<number, boolean>())
   const favouriteJobs = shallowReactive(new Map<number, symbol>())
@@ -1106,7 +1012,8 @@ export const useSportsStore = defineStore('sports', () => {
   // 单关各自发送；已经发出的下单不取消、不重试。
   const placeBet = async (
     query: SportsPlaceBetQuery,
-    canSend: () => boolean = () => true
+    canSend: () => boolean = () => true,
+    options: { updateBalance?: boolean } = {}
   ): Promise<PlaceBetResponse> => {
     const version = sportsSessionVersion.value
     const context = sportsAuth.contextVersion
@@ -1124,15 +1031,25 @@ export const useSportsStore = defineStore('sports', () => {
     if (!credentials) throw new SportsCredentialsUnavailableError('Sports credentials unavailable')
     if (!sportsAuth.isCredentialsCurrent(credentials))
       throw new SportsBetNotSentError('Sports credentials changed')
-    const response = await sportsApi.placeBet(getBaseUrl(), {
-      ...query,
-      Token: credentials.token,
-      MemberCode: credentials.memberCode,
-      LanguageCode: getLanguage(),
-      TimeStamp: Date.now()
-    })
-    if (isAuthExpired(response)) sportsAuth.clearCredentials(credentials)
-    return response
+    const finishBalanceUpdate = beginSportsBalanceUpdate(credentials)
+    try {
+      const response = await sportsApi.placeBet(getBaseUrl(), {
+        ...query,
+        Token: credentials.token,
+        MemberCode: credentials.memberCode,
+        LanguageCode: getLanguage(),
+        TimeStamp: Date.now()
+      })
+      if (isAuthExpired(response)) sportsAuth.clearCredentials(credentials)
+      if (options.updateBalance !== false && isSportsSuccess(response)) {
+        const validBalance = typeof response.av === 'number' && Number.isFinite(response.av)
+        finishBalanceUpdate({ amount: response.av, refresh: !validBalance })
+      }
+      return response
+    } finally {
+      // 已发送但失败或结果未知时仍补查；成功 av 已结束更新时此调用无效。
+      finishBalanceUpdate({ refresh: options.updateBalance !== false })
+    }
   }
 
   const resources = [counts, events, indexes, competition, popular]
@@ -3066,7 +2983,6 @@ export const useSportsStore = defineStore('sports', () => {
     favouriteFilterJob = null
     favouriteFilterPending.value = false
     cancelBetInfo()
-    resetSportsBalance()
     cancelHomepageRefresh()
     invalidateSportsVisit()
     homepageGeneration += 1
@@ -3283,6 +3199,8 @@ export const useSportsStore = defineStore('sports', () => {
     sportsBalanceLoading,
     sportsBalanceError,
     fetchSportsBalance,
+    beginSportsBalanceUpdate,
+    scheduleSportsBalanceRefresh,
     fetchBetInfo,
     cancelBetInfo,
     pageNumber,
