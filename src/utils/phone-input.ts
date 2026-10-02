@@ -1,3 +1,61 @@
+export type PhoneAreaCodeOption = {
+  country: string
+  code: string
+  display: string
+  searchText: string
+}
+
+export const DEFAULT_PHONE_AREA_CODE = '63'
+const PHONE_AREA_CODE_MAX_LENGTH: Record<string, number> = {
+  '63': 10,
+  '86': 11
+}
+
+const PHONE_AREA_CODE_PATTERN: Record<string, RegExp> = {
+  '63': /^9\d{9}$/,
+  '86': /^1\d{10}$/
+}
+
+export const PHONE_AREA_CODE_OPTIONS: PhoneAreaCodeOption[] = [
+  {
+    country: 'Philippines',
+    code: '63',
+    display: '+63',
+    searchText: 'philippines 63 +63'
+  },
+  {
+    country: 'China',
+    code: '86',
+    display: '+86',
+    searchText: 'china 86 +86'
+  }
+]
+
+/**
+ * 获取手机号区号选项。
+ */
+export const getPhoneAreaCodeOptions = (): PhoneAreaCodeOption[] => {
+  return PHONE_AREA_CODE_OPTIONS.map(item => ({ ...item }))
+}
+
+/**
+ * 根据区号获取手机号区号选项，找不到时返回默认区号。
+ */
+export const getPhoneAreaCodeOption = (code?: string): PhoneAreaCodeOption => {
+  return (
+    PHONE_AREA_CODE_OPTIONS.find(item => item.code === code) ||
+    PHONE_AREA_CODE_OPTIONS.find(item => item.code === DEFAULT_PHONE_AREA_CODE) ||
+    PHONE_AREA_CODE_OPTIONS[0]
+  )
+}
+
+/**
+ * 获取手机号区号对应的最大输入长度。
+ */
+export const getPhoneMaxLengthByAreaCode = (areaCode = DEFAULT_PHONE_AREA_CODE): number => {
+  return PHONE_AREA_CODE_MAX_LENGTH[areaCode] || PHONE_AREA_CODE_MAX_LENGTH[DEFAULT_PHONE_AREA_CODE]
+}
+
 /**
  * 手机号和密码输入相关工具函数
  */
@@ -29,7 +87,20 @@ export const formatPhoneNumber = (value: string): string => {
 /**
  * 验证菲律宾手机号是否符合 9 开头且共 10 位数字的规则。
  */
-export const isValidPhoneNumber = (value: string): boolean => /^9\d{9}$/.test(value)
+export const isValidPhoneNumber = (value: string): boolean =>
+  PHONE_AREA_CODE_PATTERN[DEFAULT_PHONE_AREA_CODE].test(value)
+
+/**
+ * 根据区号验证手机号。
+ */
+export const isValidPhoneNumberByAreaCode = (
+  value: string,
+  areaCode = DEFAULT_PHONE_AREA_CODE
+): boolean => {
+  const pattern =
+    PHONE_AREA_CODE_PATTERN[areaCode] || PHONE_AREA_CODE_PATTERN[DEFAULT_PHONE_AREA_CODE]
+  return pattern.test(value)
+}
 
 /**
  * 格式化宽松手机号：仅保留数字，最多 10 位。
@@ -37,8 +108,11 @@ export const isValidPhoneNumber = (value: string): boolean => /^9\d{9}$/.test(va
  * @param value 输入的字符串
  * @returns 格式化后的纯数字字符串（最多10位）
  */
-export const formatLoosePhoneNumber = (value: string): string => {
-  return value.replace(/\D/g, '').slice(0, 10)
+export const formatLoosePhoneNumber = (
+  value: string,
+  areaCode = DEFAULT_PHONE_AREA_CODE
+): string => {
+  return value.replace(/\D/g, '').slice(0, getPhoneMaxLengthByAreaCode(areaCode))
 }
 
 /**
@@ -58,9 +132,13 @@ export const handlePhoneInput = (event: Event, callback: (value: string) => void
  * @param event 输入事件
  * @param callback 回调函数，用于更新表单数据
  */
-export const handleLoosePhoneInput = (event: Event, callback: (value: string) => void) => {
+export const handleLoosePhoneInput = (
+  event: Event,
+  callback: (value: string) => void,
+  areaCode = DEFAULT_PHONE_AREA_CODE
+) => {
   const input = event.target as HTMLInputElement
-  const formatted = formatLoosePhoneNumber(input.value)
+  const formatted = formatLoosePhoneNumber(input.value, areaCode)
   callback(formatted)
   input.value = formatted
 }
@@ -116,6 +194,30 @@ export const handleVerificationCodeInput = (event: Event, callback: (value: stri
 }
 
 /**
+ * 格式化邀请码输入：只保留数字，最多 6 位。
+ */
+export const formatInvitationCode = (value: string): string => {
+  return value.replace(/\D/g, '').slice(0, 6)
+}
+
+/**
+ * 校验邀请码是否为 6 位数字。
+ */
+export const isValidInvitationCode = (value: string): boolean => {
+  return /^\d{6}$/.test(value)
+}
+
+/**
+ * 处理邀请码输入事件。
+ */
+export const handleInvitationCodeInput = (event: Event, callback: (value: string) => void) => {
+  const input = event.target as HTMLInputElement
+  const formatted = formatInvitationCode(input.value)
+  callback(formatted)
+  input.value = formatted
+}
+
+/**
  * 处理密码输入事件
  * @param event 输入事件
  * @param callback 回调函数，用于更新表单数据
@@ -123,6 +225,37 @@ export const handleVerificationCodeInput = (event: Event, callback: (value: stri
 export const handlePasswordInput = (event: Event, callback: (value: string) => void) => {
   const input = event.target as HTMLInputElement
   const formatted = formatPassword(input.value)
+  callback(formatted)
+  input.value = formatted
+}
+
+/**
+ * 格式化登录用户名：只保留字母和数字，最多16位
+ * @param value 输入的字符串
+ * @returns 格式化后的用户名
+ */
+export const formatSigninUsername = (value: string): string => {
+  const alphanumericOnly = value.replace(/[^a-zA-Z0-9]/g, '')
+  return alphanumericOnly.slice(0, 16)
+}
+
+/**
+ * 验证登录用户名是否符合要求：6-16位，可纯数字、纯英文、英文和数字组合
+ * @param value 用户名字符串
+ * @returns 是否符合要求
+ */
+export const isValidSigninUsername = (value: string): boolean => {
+  return /^[a-zA-Z0-9]{6,16}$/.test(value)
+}
+
+/**
+ * 处理登录用户名输入事件
+ * @param event 输入事件
+ * @param callback 回调函数，用于更新表单数据
+ */
+export const handleSigninUsernameInput = (event: Event, callback: (value: string) => void) => {
+  const input = event.target as HTMLInputElement
+  const formatted = formatSigninUsername(input.value)
   callback(formatted)
   input.value = formatted
 }

@@ -2,6 +2,7 @@
   <LoginRegisterFormCore
     ref="loginFormRef"
     :default-tab="defaultTab"
+    :login-setting="loginSetting"
     @register-success="handleRegisterSuccess"
     @login-success="handleLoginSuccess"
     @open-reset-password="emit('open-reset-password')"
@@ -9,6 +10,12 @@
     <template
       #default="{
         activeTab,
+        activeLoginMethod,
+        activeSignupMethod,
+        loginMethodTabs,
+        signupMethodTabs,
+        signinAreaCode,
+        signupAreaCode,
         showPassword,
         showConfirmPassword,
         formData,
@@ -16,7 +23,19 @@
         countdown,
         isSigninValid,
         isSignupValid,
-        setActiveTab,
+        showSigninPassword,
+        showSigninSmsCode,
+        showSigninCaptcha,
+        showSignupPassword,
+        showSignupSmsCode,
+        showSignupCaptcha,
+        showSignupInvitationCode,
+        captchaImageUrl,
+        isCaptchaLoading,
+        setActiveLoginMethod,
+        setActiveSignupMethod,
+        setSigninAreaCode,
+        setSignupAreaCode,
         togglePassword,
         toggleConfirmPassword,
         handleCheckboxClick,
@@ -24,12 +43,20 @@
         handleRegister,
         handleSendCode,
         openResetPassword,
-        handleSigninAccountInput,
-        handleSignupAccountInput,
+        handleSigninUsernameInput,
+        handleSigninPhoneInput,
+        handleSignupUsernameInput,
+        handleSignupPhoneInput,
         handleSignupCodeInput,
         handleSigninPasswordInput,
+        handleSigninSmsCodeInput,
+        handleSigninCaptchaInput,
+        refreshSigninCaptcha,
+        handleSignupCaptchaInput,
+        refreshSignupCaptcha,
         handleSignupPasswordInput,
-        handleSignupConfirmPasswordInput
+        handleSignupConfirmPasswordInput,
+        handleSignupInvitationCodeInput
       }"
     >
       <teleport to="body">
@@ -37,6 +64,7 @@
           <div
             v-if="visible"
             class="auth-mobile-overlay fixed inset-0 bg-mask-60-1 z-[10000] overflow-hidden"
+            :style="{ zIndex: props.overlayZIndex }"
             @click="handleClose"
           >
             <transition name="drawer-slide">
@@ -87,33 +115,6 @@
                 </div>
 
                 <div class="px-3.5 pb-6">
-                  <div class="flex gap-[80px] mb-3.5">
-                    <button
-                      class="relative min-w-20 pb-1.5 text-lg font-[700] font-inter transition-all duration-200 tab-button-new"
-                      :class="activeTab === 'signin' ? 'text-text-1' : 'text-text-2'"
-                      @click="setActiveTab('signin')"
-                    >
-                      <!-- 登录 -->
-                      <span>{{ t('home.sign_In') }}</span>
-                      <div
-                        v-if="activeTab === 'signin'"
-                        class="absolute bottom-0 left-0 right-0 h-[3px] bg-theme-primary rounded-[4px]"
-                      ></div>
-                    </button>
-                    <button
-                      class="relative min-w-20 pb-1.5 text-lg font-[700] font-inter transition-all duration-200 tab-button-new"
-                      :class="activeTab === 'signup' ? 'text-text-1' : 'text-text-2'"
-                      @click="setActiveTab('signup')"
-                    >
-                      <!-- 注册 -->
-                      <span>{{ t('home.sign_Up') }}</span>
-                      <div
-                        v-if="activeTab === 'signup'"
-                        class="absolute bottom-0 left-0 right-0 h-[3px] bg-theme-primary rounded-[4px]"
-                      ></div>
-                    </button>
-                  </div>
-
                   <!-- <div
                 class="flex items-center justify-end gap-2 text-[14px] mb-4 font-[800] text-text-2 cursor-pointer"
               >
@@ -122,64 +123,171 @@
               </div> -->
 
                   <template v-if="activeTab === 'signin'">
-                    <!-- 账号 -->
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">
-                      {{ t('common.account') }}
+                    <div v-if="loginMethodTabs.length > 0" class="flex gap-6 mb-[20px]">
+                      <button
+                        v-for="method in loginMethodTabs"
+                        :key="method.key"
+                        class="relative min-w-14 pb-1.5 text-base font-[700] font-inter transition-all duration-200 tab-button-new"
+                        :class="activeLoginMethod === method.key ? 'text-text-1' : 'text-text-2'"
+                        @click="handleSigninMethodClick(method.key, setActiveLoginMethod)"
+                      >
+                        <span>{{ method.label }}</span>
+                        <div
+                          v-if="activeLoginMethod === method.key"
+                          class="absolute bottom-0 left-0 right-0 h-[3px] bg-theme-primary rounded-[4px]"
+                        ></div>
+                      </button>
                     </div>
+                    <!-- 账号 -->
+                    <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
                     <div class="mb-3">
                       <!-- 请输入账号 -->
-                      <div class="relative">
-                        <span
-                          class="absolute left-3.5 top-1/2 -translate-y-1/2 text-theme-primary text-base font-[700]"
+                      <div ref="signinAreaCodeAnchorRef" class="relative">
+                        <KeyIcon
+                          v-if="activeLoginMethod === 'username'"
+                          class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
+                        />
+                        <div
+                          v-if="activeLoginMethod === 'phone'"
+                          class="absolute left-4 top-[21px] z-10 -translate-y-1/2"
                         >
-                          {{ defaultAreaCodeDisplay }}
-                        </span>
+                          <button
+                            type="button"
+                            class="flex items-center gap-1 text-[var(--color-theme-level-1)] text-base font-[700]"
+                            @click.stop="toggleSigninAreaCodeDropdown"
+                          >
+                            <span>{{ getSelectedPhoneAreaCode(signinAreaCode).display }}</span>
+                            <XiaIcon
+                              class="w-3 h-3 transition-transform duration-200"
+                              :class="isSigninAreaCodeDropdownOpen ? 'rotate-180' : ''"
+                            />
+                          </button>
+                        </div>
                         <input
-                          :value="formData.signin.account"
+                          :value="
+                            activeLoginMethod === 'username'
+                              ? formData.signin.usernameAccount
+                              : formData.signin.phoneAccount
+                          "
                           type="text"
-                          inputmode="numeric"
-                          :placeholder="t('common.enter_account')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[52px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
-                          @input="handleSigninAccountInput"
+                          :inputmode="activeLoginMethod === 'phone' ? 'numeric' : 'text'"
+                          :placeholder="
+                            activeLoginMethod === 'username'
+                              ? t('common.enter_username')
+                              : t('common.enter_account')
+                          "
+                          class="auth-input-placeholder w-full h-[42px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                          :class="activeLoginMethod === 'phone' ? 'pl-[78px]' : 'pl-[44px]'"
+                          @input="
+                            activeLoginMethod === 'username'
+                              ? handleSigninUsernameInput($event)
+                              : handleSigninPhoneInput($event)
+                          "
                         />
                       </div>
                     </div>
 
                     <!-- 密码 -->
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">
+                    <div v-if="showSigninPassword" class="text-sm font-[700] text-text-1 mb-2">
                       {{ t('common.password') }}
                     </div>
-                    <div class="mb-3">
+                    <div v-if="showSigninPassword" class="mb-3">
                       <div class="relative">
-                        <PasswordIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
+                        <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                         <!-- 请输入密码 -->
                         <input
+                          :key="`signin-password-${activeLoginMethod}`"
                           :value="formData.signin.password"
                           :type="showPassword.signin ? 'text' : 'password'"
                           :placeholder="t('common.enter_password')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                          class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
                           :class="showPassword.signin ? '' : 'auth-password-mask'"
                           @input="handleSigninPasswordInput"
                         />
                         <button
                           type="button"
-                          class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                          class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
                           @click="togglePassword('signin')"
                         >
-                          <EyeIcon v-if="showPassword.signin" class="w-4 h-4 text-text-2" />
-                          <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
+                          <EyeIcon v-if="showPassword.signin" class="w-5 h-5 text-text-2" />
+                          <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
                         </button>
                       </div>
                     </div>
 
                     <!-- 记住我 & 忘记密码 -->
-                    <div class="flex items-center justify-between mb-10">
+                    <template v-if="showSigninSmsCode">
+                      <div class="text-sm font-[700] text-text-1 mb-2">
+                        {{ t('common.verification') }}
+                      </div>
+                      <div class="mb-3">
+                        <div class="relative">
+                          <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                          <input
+                            :value="formData.signin.smsCode"
+                            type="text"
+                            inputmode="numeric"
+                            :placeholder="t('common.enter_verification')"
+                            class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-[92px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                            @input="handleSigninSmsCodeInput"
+                          />
+                          <button
+                            type="button"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 h-7 min-w-[70px] px-2 text-xs font-[500] rounded-lg transition-opacity"
+                            :class="
+                              countdown > 0
+                                ? 'bg-opacity-6 text-text-2 cursor-not-allowed'
+                                : 'bg-secondary-3 text-theme-primary'
+                            "
+                            :disabled="countdown > 0"
+                            @click="handleSendCode"
+                          >
+                            {{ countdown > 0 ? `${countdown}s` : t('common.get_code') }}
+                          </button>
+                        </div>
+                      </div>
+                    </template>
+
+                    <template v-if="showSigninCaptcha">
+                      <div class="text-sm font-[700] text-text-1 mb-2">
+                        {{ t('common.captcha') }}
+                      </div>
+                      <div class="mb-3">
+                        <div class="relative">
+                          <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                          <input
+                            :value="formData.signin.captchaCode"
+                            type="text"
+                            :placeholder="t('common.enter_captcha')"
+                            class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-[108px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                            @input="handleSigninCaptchaInput"
+                          />
+                          <button
+                            type="button"
+                            class="absolute right-1 top-1/2 -translate-y-1/2 w-[96px] h-[34px] rounded-md overflow-hidden bg-bg-2 border border-input-2 flex items-center justify-center text-xs text-text-2"
+                            @click="refreshSigninCaptcha"
+                          >
+                            <img
+                              v-if="captchaImageUrl"
+                              :src="captchaImageUrl"
+                              alt=""
+                              class="w-full h-full object-cover"
+                            />
+                            <span v-else>{{
+                              isCaptchaLoading ? t('common.loading') : t('common.captcha')
+                            }}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </template>
+
+                    <div v-if="showSigninPassword" class="flex items-center justify-between">
                       <label
                         class="flex items-center cursor-pointer"
                         @click="handleCheckboxClick('rememberMe')"
                       >
                         <div
-                          class="w-[14px] h-[14px] rounded border transition-all duration-200 flex items-center justify-center"
+                          class="w-4 h-4 rounded border transition-all duration-200 flex items-center justify-center"
                           :class="
                             formData.signin.rememberMe
                               ? 'bg-theme-primary border-theme-primary'
@@ -188,19 +296,19 @@
                         >
                           <CheckIcon
                             v-if="formData.signin.rememberMe"
-                            class="w-[14px] h-[14px]"
+                            class="w-4 h-4"
                             :class="checkboxAnimating.rememberMe ? 'animate-bounce-forward' : ''"
                           />
                         </div>
                         <!-- 记住我 -->
-                        <span class="ml-1.5 text-xs text-text-2 font-[500]">{{
+                        <span class="ml-2 text-sm font-[400] text-text-2">{{
                           t('common.remember_me')
                         }}</span>
                       </label>
                       <!-- 忘记密码 -->
                       <a
                         href="#"
-                        class="text-xs text-text-2 font-[500]"
+                        class="text-text-2 text-sm font-[400]"
                         @click.prevent="openResetPassword"
                         >{{ t('common.forget_password') }}?</a
                       >
@@ -208,7 +316,7 @@
 
                     <!-- 登录 -->
                     <button
-                      class="btn-primary w-full h-[47px] rounded-lg text-base font-[700] text-text-4 transition-all"
+                      class="btn-primary w-full h-[40px] mt-[40px] rounded-lg text-sm font-[700] text-text-4 transition-all"
                       :class="{ 'opacity-60 cursor-not-allowed': !isSigninValid }"
                       :disabled="!isSigninValid"
                       @click="handleLogin"
@@ -216,9 +324,20 @@
                       {{ t('home.sign_In') }}
                     </button>
 
+                    <div class="text-center text-sm font-[700] text-text-2 mt-[20px]">
+                      {{ t('common.no_account') }}
+                      <button
+                        type="button"
+                        class="text-theme-primary"
+                        @click="handleAuthTabSwitch('signup')"
+                      >
+                        {{ t('common.sign_up_now') }}
+                      </button>
+                    </div>
+
                     <!-- 以访客身份 -->
                     <div
-                      class="text-center text-sm font-[500] text-theme-primary mt-5 cursor-pointer"
+                      class="text-center text-sm font-[700] text-theme-primary mt-[20px] cursor-pointer"
                       @click="handleGuestContinue"
                     >
                       {{ t('common.continue') }}
@@ -226,119 +345,215 @@
                   </template>
 
                   <template v-else-if="activeTab === 'signup'">
-                    <!-- 账号 -->
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">
-                      {{ t('common.account') }}
+                    <div v-if="signupMethodTabs.length > 0" class="flex gap-6 mb-[20px]">
+                      <button
+                        v-for="method in signupMethodTabs"
+                        :key="method.key"
+                        class="relative min-w-14 pb-1.5 text-base font-[700] font-inter transition-all duration-200 tab-button-new"
+                        :class="activeSignupMethod === method.key ? 'text-text-1' : 'text-text-2'"
+                        @click="handleSignupMethodClick(method.key, setActiveSignupMethod)"
+                      >
+                        <span>{{ method.label }}</span>
+                        <div
+                          v-if="activeSignupMethod === method.key"
+                          class="absolute bottom-0 left-0 right-0 h-[3px] bg-theme-primary rounded-[4px]"
+                        ></div>
+                      </button>
                     </div>
+
+                    <!-- 账号 -->
+                    <!-- <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div> -->
                     <div class="mb-3">
                       <!-- 请输入账号 -->
-                      <div class="relative">
-                        <span
-                          class="absolute left-3.5 top-1/2 -translate-y-1/2 text-theme-primary text-base font-[700]"
+                      <div ref="signupAreaCodeAnchorRef" class="relative">
+                        <KeyIcon
+                          v-if="activeSignupMethod === 'username'"
+                          class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
+                        />
+                        <div
+                          v-if="activeSignupMethod === 'phone'"
+                          class="absolute left-4 top-[21px] z-10 -translate-y-1/2"
                         >
-                          {{ defaultAreaCodeDisplay }}
-                        </span>
+                          <button
+                            type="button"
+                            class="flex items-center gap-1 text-[var(--color-theme-level-1)] text-base font-[700]"
+                            @click.stop="toggleSignupAreaCodeDropdown"
+                          >
+                            <span>{{ getSelectedPhoneAreaCode(signupAreaCode).display }}</span>
+                            <XiaIcon
+                              class="w-3 h-3 transition-transform duration-200"
+                              :class="isSignupAreaCodeDropdownOpen ? 'rotate-180' : ''"
+                            />
+                          </button>
+                        </div>
                         <input
-                          :value="formData.signup.account"
-                          type="text"
-                          inputmode="numeric"
-                          :placeholder="t('common.enter_account')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[52px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
-                          @input="handleSignupAccountInput"
-                        />
-                      </div>
-                    </div>
-
-                    <!-- 验证码 -->
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">
-                      {{ t('common.verification') }}
-                    </div>
-                    <div class="mb-3">
-                      <div class="relative">
-                        <SafeIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
-                        <!-- 请输入验证码 -->
-                        <input
-                          :value="formData.signup.code"
-                          type="text"
-                          inputmode="numeric"
-                          :placeholder="t('common.enter_verification')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
-                          @input="handleSignupCodeInput"
-                        />
-                        <!-- 获取验证码 -->
-                        <button
-                          type="button"
-                          class="absolute right-3.5 top-1/2 -translate-y-1/2 h-7 min-w-[70px] px-2 text-xs font-[500] rounded-lg transition-opacity"
-                          :class="
-                            countdown > 0
-                              ? 'bg-opacity-6 text-text-2 cursor-not-allowed'
-                              : 'bg-secondary-3 text-theme-primary'
+                          :value="
+                            activeSignupMethod === 'username'
+                              ? formData.signup.usernameAccount
+                              : formData.signup.phoneAccount
                           "
-                          :disabled="countdown > 0"
-                          @click="handleSendCode"
-                        >
-                          {{ countdown > 0 ? `${countdown}s` : t('common.get_code') }}
-                        </button>
+                          type="text"
+                          :inputmode="activeSignupMethod === 'phone' ? 'numeric' : 'text'"
+                          :placeholder="
+                            activeSignupMethod === 'username'
+                              ? t('common.enter_username')
+                              : t('common.enter_account')
+                          "
+                          class="auth-input-placeholder w-full h-[42px] pr-[3px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                          :class="activeSignupMethod === 'phone' ? 'pl-[78px]' : 'pl-[44px]'"
+                          @input="
+                            activeSignupMethod === 'username'
+                              ? handleSignupUsernameInput($event)
+                              : handleSignupPhoneInput($event)
+                          "
+                        />
                       </div>
                     </div>
 
-                    <!-- 密码 -->
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">
-                      {{ t('common.password') }}
-                    </div>
-                    <div class="mb-3">
-                      <div class="relative">
-                        <PasswordIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
-                        <!-- 请输入密码 -->
-                        <input
-                          :value="formData.signup.password"
-                          :type="showPassword.signup ? 'text' : 'password'"
-                          :placeholder="t('common.enter_password')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
-                          :class="showPassword.signup ? '' : 'auth-password-mask'"
-                          @input="handleSignupPasswordInput"
-                        />
-                        <button
-                          type="button"
-                          class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                          @click="togglePassword('signup')"
-                        >
-                          <EyeIcon v-if="showPassword.signup" class="w-4 h-4 text-text-2" />
-                          <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
-                        </button>
+                    <template v-if="showSignupSmsCode">
+                      <!-- 验证码 -->
+                      <!-- <div class="text-sm font-[700] text-text-1 mb-2">
+                        {{ t('common.verification') }}
+                      </div> -->
+                      <div class="mb-3">
+                        <div class="relative">
+                          <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                          <!-- 请输入验证码 -->
+                          <input
+                            :value="formData.signup.code"
+                            type="text"
+                            inputmode="numeric"
+                            :placeholder="t('common.enter_verification')"
+                            class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-[92px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                            @input="handleSignupCodeInput"
+                          />
+                          <!-- 获取验证码 -->
+                          <button
+                            type="button"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 h-7 min-w-[70px] px-2 text-xs font-[500] rounded-lg transition-opacity"
+                            :class="
+                              countdown > 0
+                                ? 'bg-opacity-6 text-text-2 cursor-not-allowed'
+                                : 'bg-secondary-3 text-theme-primary'
+                            "
+                            :disabled="countdown > 0"
+                            @click="handleSendCode"
+                          >
+                            {{ countdown > 0 ? `${countdown}s` : t('common.get_code') }}
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </template>
 
-                    <!-- 确认密码 -->
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">
-                      {{ t('common.confirm_password') }}
-                    </div>
-                    <div class="mb-10">
+                    <template v-if="showSignupCaptcha">
+                      <!-- <div class="text-sm font-[700] text-text-1 mb-2">
+                        {{ t('common.captcha') }}
+                      </div> -->
+                      <div class="mb-3">
+                        <div class="relative">
+                          <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                          <input
+                            :value="formData.signup.captchaCode"
+                            type="text"
+                            :placeholder="t('common.enter_captcha')"
+                            class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-[108px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                            @input="handleSignupCaptchaInput"
+                          />
+                          <button
+                            type="button"
+                            class="absolute right-1 top-1/2 -translate-y-1/2 w-[96px] h-[34px] rounded-md overflow-hidden bg-bg-2 border border-input-2 flex items-center justify-center text-xs text-text-2"
+                            @click="refreshSignupCaptcha"
+                          >
+                            <img
+                              v-if="captchaImageUrl"
+                              :src="captchaImageUrl"
+                              alt=""
+                              class="w-full h-full object-cover"
+                            />
+                            <span v-else>{{
+                              isCaptchaLoading ? t('common.loading') : t('common.captcha')
+                            }}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </template>
+
+                    <template v-if="showSignupPassword">
+                      <!-- 密码 -->
+                      <!-- <div class="text-sm font-[700] text-text-1 mb-2">
+                        {{ t('common.password') }}
+                      </div> -->
+                      <div class="mb-3">
+                        <div class="relative">
+                          <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                          <!-- 请输入密码 -->
+                          <input
+                            :value="formData.signup.password"
+                            :type="showPassword.signup ? 'text' : 'password'"
+                            :placeholder="t('common.enter_password')"
+                            class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                            :class="showPassword.signup ? '' : 'auth-password-mask'"
+                            @input="handleSignupPasswordInput"
+                          />
+                          <button
+                            type="button"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                            @click="togglePassword('signup')"
+                          >
+                            <EyeIcon v-if="showPassword.signup" class="w-5 h-5 text-text-2" />
+                            <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- 确认密码 -->
+                      <!-- <div class="text-sm font-[700] text-text-1 mb-2">
+                        {{ t('common.confirm_password') }}
+                      </div> -->
+                      <div class="mb-3">
+                        <div class="relative">
+                          <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                          <!-- 请输入确认密码 -->
+                          <input
+                            :value="formData.signup.confirmPassword"
+                            :type="showConfirmPassword ? 'text' : 'password'"
+                            :placeholder="t('common.enter_confirm_password')"
+                            class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                            :class="showConfirmPassword ? '' : 'auth-password-mask'"
+                            @input="handleSignupConfirmPasswordInput"
+                          />
+                          <button
+                            type="button"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                            @click="toggleConfirmPassword"
+                          >
+                            <EyeIcon v-if="showConfirmPassword" class="w-5 h-5 text-text-2" />
+                            <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
+                          </button>
+                        </div>
+                      </div>
+                    </template>
+
+                    <div v-if="showSignupInvitationCode" class="mb-[40px]">
+                      <!-- <div class="text-sm font-[700] text-text-1 mb-2">
+                        {{ t('common.invitation_code') }}
+                      </div> -->
                       <div class="relative">
-                        <PasswordIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
-                        <!-- 请输入确认密码 -->
+                        <InviteIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                         <input
-                          :value="formData.signup.confirmPassword"
-                          :type="showConfirmPassword ? 'text' : 'password'"
-                          :placeholder="t('common.enter_confirm_password')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
-                          :class="showConfirmPassword ? '' : 'auth-password-mask'"
-                          @input="handleSignupConfirmPasswordInput"
+                          :value="formData.signup.invitationCode"
+                          type="text"
+                          inputmode="numeric"
+                          :placeholder="t('common.enter_invitation_code')"
+                          class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-[3px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                          @input="handleSignupInvitationCodeInput"
                         />
-                        <button
-                          type="button"
-                          class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                          @click="toggleConfirmPassword"
-                        >
-                          <EyeIcon v-if="showConfirmPassword" class="w-4 h-4 text-text-2" />
-                          <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
-                        </button>
                       </div>
                     </div>
 
                     <!-- 注册按钮 -->
                     <button
-                      class="btn-primary w-full h-[47px] rounded-lg text-base font-[700] text-text-4 transition-all"
+                      class="btn-primary w-full h-[40px] rounded-lg text-sm font-[700] text-text-4 transition-all"
                       :class="{ 'opacity-60 cursor-not-allowed': !isSignupValid }"
                       :disabled="!isSignupValid"
                       @click="handleRegister"
@@ -347,9 +562,20 @@
                       {{ t('home.sign_Up') }}
                     </button>
 
+                    <div class="text-center text-sm font-[700] text-text-2 mt-[20px]">
+                      {{ t('common.have_account') }}
+                      <button
+                        type="button"
+                        class="text-theme-primary"
+                        @click="handleAuthTabSwitch('signin')"
+                      >
+                        {{ t('common.log_in_now') }}
+                      </button>
+                    </div>
+
                     <!-- 以访客身份 -->
                     <div
-                      class="text-center text-sm font-[500] text-theme-primary mt-5 cursor-pointer"
+                      class="text-center text-sm font-[700] text-theme-primary mt-[20px] cursor-pointer"
                       @click="handleGuestContinue"
                     >
                       {{ t('common.continue') }}
@@ -361,6 +587,19 @@
                 <SocialLogin :show-key-login="true" />
               </div> -->
                 </div>
+                <!-- 手机区号弹窗 -->
+                <PhoneAreaCodePopup
+                  v-model="isSigninAreaCodeDropdownOpen"
+                  variant="mobile"
+                  :selected-code="signinAreaCode"
+                  @select="areaCode => handleSigninAreaCodeSelect(areaCode, setSigninAreaCode)"
+                />
+                <PhoneAreaCodePopup
+                  v-model="isSignupAreaCodeDropdownOpen"
+                  variant="mobile"
+                  :selected-code="signupAreaCode"
+                  @select="areaCode => handleSignupAreaCodeSelect(areaCode, setSignupAreaCode)"
+                />
               </div>
             </transition>
           </div>
@@ -379,35 +618,48 @@ import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
 import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import CheckIcon from '@/static/svg/login/check.svg?skipsvgo'
+import KeyIcon from '@/static/svg/login/key.svg?skipsvgo'
+import InviteIcon from '@/static/svg/login/yaoqing.svg?skipsvgo'
+import XiaIcon from '@/static/svg/login/xia.svg?skipsvgo'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
-import { getDefaultAreaCodeDisplay } from '@/utils/locale'
+import { getPhoneAreaCodeOption } from '@/utils/phone-input'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
+import PhoneAreaCodePopup from './PhoneAreaCodePopup.vue'
 import { useI18n } from 'vue-i18n'
 import FoldIconH5 from '@/static/svg/foldH5.svg?component'
 import { navigateTo } from '@/utils/router'
+import type { LoginSetResult } from '@/api/interface/login_register'
 
 const { t } = useI18n()
-const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 interface Props {
   visible: boolean
   defaultTab?: 'signin' | 'signup'
+  loginSetting?: LoginSetResult | null
   logoUrl?: string
   backgroundImageUrl?: string
   backgroundLoading?: boolean
+  overlayZIndex?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  defaultTab: 'signin'
+  defaultTab: 'signin',
+  loginSetting: null,
+  overlayZIndex: 10000
 })
 
 const emit = defineEmits<{
   'update:visible': [value: boolean]
   'open-reset-password': []
+  'switch-tab': [tab: 'signin' | 'signup']
 }>()
 
 const showDrawer = ref(false)
 const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
 const isH5BackgroundLoaded = ref(false)
+const isSigninAreaCodeDropdownOpen = ref(false)
+const isSignupAreaCodeDropdownOpen = ref(false)
+const signinAreaCodeAnchorRef = ref<HTMLElement | null>(null)
+const signupAreaCodeAnchorRef = ref<HTMLElement | null>(null)
 
 usePageScrollLock(() => props.visible)
 
@@ -456,16 +708,121 @@ const handleH5BackgroundError = () => {
   isH5BackgroundLoaded.value = true
 }
 
+/**
+ * 获取当前选中的手机号区号配置。
+ */
+const getSelectedPhoneAreaCode = (areaCode?: string) => {
+  return getPhoneAreaCodeOption(areaCode)
+}
+
+/**
+ * 展开或收起登录手机号区号底部弹窗。
+ */
+const toggleSigninAreaCodeDropdown = () => {
+  isSigninAreaCodeDropdownOpen.value = !isSigninAreaCodeDropdownOpen.value
+  isSignupAreaCodeDropdownOpen.value = false
+}
+
+/**
+ * 关闭登录手机号区号底部弹窗。
+ */
+const closeSigninAreaCodeDropdown = () => {
+  isSigninAreaCodeDropdownOpen.value = false
+}
+
+/**
+ * 展开或收起注册手机号区号底部弹窗。
+ */
+const toggleSignupAreaCodeDropdown = () => {
+  isSignupAreaCodeDropdownOpen.value = !isSignupAreaCodeDropdownOpen.value
+  isSigninAreaCodeDropdownOpen.value = false
+}
+
+/**
+ * 关闭注册手机号区号底部弹窗。
+ */
+const closeSignupAreaCodeDropdown = () => {
+  isSignupAreaCodeDropdownOpen.value = false
+}
+
+/**
+ * 关闭所有手机号区号底部弹窗。
+ */
+const closeAllAreaCodeSheets = () => {
+  closeSigninAreaCodeDropdown()
+  closeSignupAreaCodeDropdown()
+}
+
+/**
+ * 选择登录手机号区号，并收起底部弹窗。
+ */
+const handleSigninAreaCodeSelect = (
+  areaCode: string,
+  setSigninAreaCode: (areaCode: string) => void
+) => {
+  setSigninAreaCode(areaCode)
+  closeSigninAreaCodeDropdown()
+}
+
+/**
+ * 选择注册手机号区号，并收起底部弹窗。
+ */
+const handleSignupAreaCodeSelect = (
+  areaCode: string,
+  setSignupAreaCode: (areaCode: string) => void
+) => {
+  setSignupAreaCode(areaCode)
+  closeSignupAreaCodeDropdown()
+}
+
+/**
+ * 切换登录方式，并收起手机号区号底部弹窗。
+ */
+const handleSigninMethodClick = (
+  method: string,
+  setActiveLoginMethod: (method: string) => void
+) => {
+  setActiveLoginMethod(method)
+  closeSigninAreaCodeDropdown()
+}
+
+/**
+ * 切换注册方式，并收起手机号区号底部弹窗。
+ */
+const handleSignupMethodClick = (
+  method: string,
+  setActiveSignupMethod: (method: string) => void
+) => {
+  setActiveSignupMethod(method)
+  closeSignupAreaCodeDropdown()
+}
+
+/**
+ * H5 登录/注册互相切换时交给外层切换独立抽屉，保持和忘记密码一致的动画。
+ */
+const handleAuthTabSwitch = (tab: 'signin' | 'signup') => {
+  closeAllAreaCodeSheets()
+  emit('switch-tab', tab)
+}
+
+/**
+ * 关闭 H5 登录/注册页并重置表单状态。
+ */
 const handleClose = () => {
   showDrawer.value = false
+  closeAllAreaCodeSheets()
   setTimeout(() => {
     loginFormRef.value?.resetForm()
     emit('update:visible', false)
   }, 350)
 }
 
+/**
+ * 关闭 H5 登录/注册页并跳转到菜单页。
+ */
 const handleNavigateToMenu = () => {
   showDrawer.value = false
+  closeAllAreaCodeSheets()
   setTimeout(() => {
     loginFormRef.value?.resetForm()
     emit('update:visible', false)
@@ -477,16 +834,23 @@ const handleNavigateToMenu = () => {
  * 以访客身份继续时关闭当前弹窗。
  */
 const handleGuestContinue = () => {
+  closeAllAreaCodeSheets()
   handleClose()
 }
 
-// 处理注册成功
+/**
+ * 注册成功后关闭 H5 注册页。
+ */
 const handleRegisterSuccess = () => {
+  closeAllAreaCodeSheets()
   handleClose()
 }
 
-// 处理登录成功
+/**
+ * 登录成功后关闭 H5 登录页并刷新页面状态。
+ */
 const handleLoginSuccess = () => {
+  closeAllAreaCodeSheets()
   handleClose()
   window.location.reload()
 }

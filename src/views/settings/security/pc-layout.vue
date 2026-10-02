@@ -42,20 +42,26 @@
           ]"
           @click="handleOpenChangeLoginPassword(card.cardKey)"
         >
-          {{ t(`securitySettings.cards.${card.cardKey}.action`) }}
+          {{ getCardActionText(card.cardKey) }}
         </button>
       </div>
     </div>
-    <ChangeLoginPasswordPcLayout v-model="showChangeLoginPasswordPopup" />
+    <ChangeLoginPasswordPcLayout
+      v-model="showChangeLoginPasswordPopup"
+      @open-mobile-number="handleOpenMobileNumberFromLoginPassword"
+    />
     <!-- 修改手机号码弹窗 -->
     <ChangeMobileNumberPcLayout v-model="showChangeMobileNumberPopup" />
     <!-- 交易密码弹窗 -->
-    <TransactionPassword v-model="showTransactionPasswordPopup" />
+    <TransactionPassword
+      v-model="showTransactionPasswordPopup"
+      @open-mobile-number="handleOpenMobileNumberFromTransactionPassword"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
@@ -72,6 +78,17 @@ const route = useRoute()
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
 const { cards } = useSecurityCards(userInfo)
+
+const hasLoginMobile = computed(() => {
+  return (
+    String(userInfo.value?.areaCode ?? '').trim().length > 0 &&
+    String(userInfo.value?.telephone ?? '').trim().length > 0
+  )
+})
+
+const hasTransactionPassword = computed(() => {
+  return String(userInfo.value?.busiPwd ?? '').trim().length > 0
+})
 
 // 修改登录密码弹窗
 const showChangeLoginPasswordPopup = ref(false)
@@ -97,7 +114,23 @@ const openTaskCenterSecurityAction = (value: unknown) => {
 /** 在进入或复用安全页面时响应任务中心跳转意图。 */
 watch(() => route.query.taskCenterSecurityAction, openTaskCenterSecurityAction, { immediate: true })
 /**
- * 打开 PC 修改登录密码弹窗。
+ * 从修改登录密码弹窗切换到设置手机号码弹窗。
+ */
+const handleOpenMobileNumberFromLoginPassword = () => {
+  showChangeLoginPasswordPopup.value = false
+  showChangeMobileNumberPopup.value = true
+}
+
+/**
+ * 从交易密码弹窗切换到设置手机号码弹窗。
+ */
+const handleOpenMobileNumberFromTransactionPassword = () => {
+  showTransactionPasswordPopup.value = false
+  showChangeMobileNumberPopup.value = true
+}
+
+/**
+ * 打开对应的 PC 安全设置弹窗。
  */
 const handleOpenChangeLoginPassword = (_key: SecurityCardKey) => {
   switch (_key) {
@@ -111,6 +144,23 @@ const handleOpenChangeLoginPassword = (_key: SecurityCardKey) => {
       showTransactionPasswordPopup.value = true
       break
   }
+}
+
+/**
+ * 根据登录方式显示手机号操作文案。
+ */
+const getCardActionText = (cardKey: SecurityCardKey) => {
+  if (cardKey === 'mobile' && !hasLoginMobile.value) {
+    return t('common.setMobileNumber')
+  }
+
+  if (cardKey === 'transactionPassword') {
+    return hasTransactionPassword.value
+      ? t('common.changeTransactionPassword')
+      : t('common.setTransactionPassword')
+  }
+
+  return t(`securitySettings.cards.${cardKey}.action`)
 }
 </script>
 

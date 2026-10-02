@@ -5,8 +5,10 @@
         showPassword,
         showConfirmPassword,
         formData,
+        resetAreaCode,
         isResetValid,
         countdown,
+        setResetAreaCode,
         togglePassword,
         toggleConfirmPassword,
         handleSendCode,
@@ -72,7 +74,7 @@
                 </div>
 
                 <div class="px-3.5 pb-6">
-                  <div class="flex gap-[80px] mb-3.5">
+                  <div class="flex gap-[80px] mb-[20px]">
                     <button
                       class="relative min-w-20 pb-1.5 text-lg font-[700] font-inter transition-all duration-200 tab-button-new"
                     >
@@ -90,18 +92,26 @@
                   </div>
                   <div class="mb-3">
                     <!-- 请输入账号 -->
-                    <div class="relative">
-                      <span
-                        class="absolute left-3.5 top-1/2 -translate-y-1/2 text-theme-primary text-base font-[700]"
-                      >
-                        {{ defaultAreaCodeDisplay }}
-                      </span>
+                    <div ref="resetAreaCodeAnchorRef" class="relative">
+                      <div class="absolute left-4 top-[23.5px] z-10 -translate-y-1/2">
+                        <button
+                          type="button"
+                          class="flex items-center gap-1 text-[var(--color-theme-level-1)] text-base font-[700]"
+                          @click.stop="toggleResetAreaCodeDropdown"
+                        >
+                          <span>{{ getSelectedPhoneAreaCode(resetAreaCode).display }}</span>
+                          <XiaIcon
+                            class="w-3 h-3 transition-transform duration-200"
+                            :class="isResetAreaCodeDropdownOpen ? 'rotate-180' : ''"
+                          />
+                        </button>
+                      </div>
                       <input
                         :value="formData.account"
                         type="text"
                         inputmode="numeric"
                         :placeholder="t('common.enter_account')"
-                        class="auth-input-placeholder w-full h-[47px] pl-[52px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                        class="auth-input-placeholder w-full h-[47px] pl-[78px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
                         @input="handleAccountInput"
                       />
                     </div>
@@ -203,6 +213,13 @@
                   >
                     {{ t('common.confirm') }}
                   </button>
+                  <!-- 手机区号弹窗 -->
+                  <PhoneAreaCodePopup
+                    v-model="isResetAreaCodeDropdownOpen"
+                    variant="mobile"
+                    :selected-code="resetAreaCode"
+                    @select="areaCode => handleResetAreaCodeSelect(areaCode, setResetAreaCode)"
+                  />
                 </div>
               </div>
             </transition>
@@ -222,14 +239,15 @@ import EyeOffIcon from '@/static/svg/login/eye-off.svg?component'
 import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
-import { getDefaultAreaCodeDisplay } from '@/utils/locale'
+import XiaIcon from '@/static/svg/login/xia.svg?skipsvgo'
+import { getPhoneAreaCodeOption } from '@/utils/phone-input'
 import ResetPasswordFormCore from './ResetPasswordFormCore.vue'
+import PhoneAreaCodePopup from './PhoneAreaCodePopup.vue'
 import { useI18n } from 'vue-i18n'
 import FoldIconH5 from '@/static/svg/foldH5.svg?component'
 import { navigateTo } from '@/utils/router'
 
 const { t } = useI18n()
-const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 interface Props {
   visible: boolean
   logoUrl?: string
@@ -247,6 +265,8 @@ const emit = defineEmits<{
 const showDrawer = ref(false)
 const resetPasswordFormRef = ref<InstanceType<typeof ResetPasswordFormCore> | null>(null)
 const isH5BackgroundLoaded = ref(false)
+const isResetAreaCodeDropdownOpen = ref(false)
+const resetAreaCodeAnchorRef = ref<HTMLElement | null>(null)
 
 usePageScrollLock(() => props.visible)
 
@@ -294,16 +314,56 @@ const handleH5BackgroundError = () => {
   isH5BackgroundLoaded.value = true
 }
 
+/**
+ * 获取当前选中的手机号区号配置。
+ */
+const getSelectedPhoneAreaCode = (areaCode?: string) => {
+  return getPhoneAreaCodeOption(areaCode)
+}
+
+/**
+ * 展开或收起忘记密码手机号区号底部弹窗。
+ */
+const toggleResetAreaCodeDropdown = () => {
+  isResetAreaCodeDropdownOpen.value = !isResetAreaCodeDropdownOpen.value
+}
+
+/**
+ * 关闭忘记密码手机号区号底部弹窗。
+ */
+const closeResetAreaCodeDropdown = () => {
+  isResetAreaCodeDropdownOpen.value = false
+}
+
+/**
+ * 选择忘记密码手机号区号，并收起底部弹窗。
+ */
+const handleResetAreaCodeSelect = (
+  areaCode: string,
+  setResetAreaCode: (areaCode: string) => void
+) => {
+  setResetAreaCode(areaCode)
+  closeResetAreaCodeDropdown()
+}
+
+/**
+ * 关闭 H5 忘记密码页并重置表单状态。
+ */
 const handleClose = () => {
   showDrawer.value = false
+  closeResetAreaCodeDropdown()
   setTimeout(() => {
     resetPasswordFormRef.value?.resetForm()
     emit('update:visible', false)
   }, 350)
 }
 
+/**
+ * 关闭 H5 忘记密码页并跳转到菜单页。
+ */
 const handleNavigateToMenu = () => {
   showDrawer.value = false
+  closeResetAreaCodeDropdown()
   setTimeout(() => {
     resetPasswordFormRef.value?.resetForm()
     emit('update:visible', false)
@@ -316,6 +376,7 @@ const handleNavigateToMenu = () => {
  */
 const handleResetPasswordSuccess = () => {
   showDrawer.value = false
+  closeResetAreaCodeDropdown()
 
   setTimeout(() => {
     resetPasswordFormRef.value?.resetForm()

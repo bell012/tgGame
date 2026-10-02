@@ -1,14 +1,16 @@
 import Api from '@/api'
 import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
-import { getDefaultAreaCode, getDefaultAreaCodeDisplay } from '@/utils/locale'
 import {
+  DEFAULT_PHONE_AREA_CODE,
+  getPhoneAreaCodeOption,
   handlePasswordInput,
   handleVerificationCodeInput,
   isValidPassword
 } from '@/utils/phone-input'
 import { StringExtension } from '@/utils/string-extension'
 import { globalShowToast } from '@/utils/toast.ts'
+import { navigateToName } from '@/utils/router'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, ref, type ComputedRef } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -18,9 +20,8 @@ const SMS_COUNTDOWN_STORAGE_KEY = 'change-login-password-sms-countdown'
 export const useChangeLoginPassword = () => {
   const { t } = useI18n()
   const userStore = useUserStore()
+  userStore.syncStoredUserData()
   const { userInfo, acctInfo } = storeToRefs(userStore)
-  const defaultAreaCode = getDefaultAreaCode()
-  const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 
   const currentStep = ref<'verification' | 'password'>('verification')
   const verificationCode = ref('')
@@ -44,13 +45,18 @@ export const useChangeLoginPassword = () => {
 
   const isResendCountdownRunning: ComputedRef<boolean> = countdownState.isRunning
 
+  const resolvedAreaCode = computed(() => String(userInfo.value?.areaCode ?? '').trim())
   const resolvedTelephone = computed(() => String(userInfo.value?.telephone ?? '').trim())
-  const phoneNumberDisplay = computed(() =>
-    resolvedTelephone.value
-      ? `${defaultAreaCodeDisplay} ${resolvedTelephone.value}`
-      : `${defaultAreaCodeDisplay} --`
-  )
+  const hasLoginMobile = computed(() => {
+    return resolvedAreaCode.value.length > 0 && resolvedTelephone.value.length > 0
+  })
+  const currentAreaCode = computed(() => resolvedAreaCode.value || DEFAULT_PHONE_AREA_CODE)
+  const currentAreaCodeDisplay = computed(() => {
+    const areaCode = currentAreaCode.value
+    const option = getPhoneAreaCodeOption(areaCode)
 
+    return option.code === areaCode ? option.display : `+${areaCode}`
+  })
   const resendActionText = computed(() => {
     if (isResendCountdownRunning.value) {
       return t('common.resendInSeconds', { seconds: remainingSeconds.value })
@@ -101,6 +107,13 @@ export const useChangeLoginPassword = () => {
   const focusVerificationInput = async () => {
     await nextTick()
     verificationInputRef.value?.focus()
+  }
+
+  /**
+   * 跳转到设置手机号码页面。
+   */
+  const handleGoSetMobileNumber = () => {
+    void navigateToName('changeMobileNumber')
   }
 
   /**
@@ -190,7 +203,7 @@ export const useChangeLoginPassword = () => {
       return
     }
 
-    if (!resolvedTelephone.value) {
+    if (!hasLoginMobile.value) {
       globalShowToast(t('common.phoneNumberUnavailable'))
       return
     }
@@ -199,7 +212,7 @@ export const useChangeLoginPassword = () => {
       isSendingCode.value = true
       const response = await Api.auth.sendSms({
         telephone: resolvedTelephone.value,
-        areaCode: defaultAreaCode
+        areaCode: currentAreaCode.value
       })
 
       if (response?.code === 'C2') {
@@ -226,7 +239,7 @@ export const useChangeLoginPassword = () => {
       isConfirmingCode.value = true
       const response = await Api.auth.checkSms({
         telephone: resolvedTelephone.value,
-        areaCode: defaultAreaCode,
+        areaCode: currentAreaCode.value,
         smsCode: verificationCode.value
       })
 
@@ -299,12 +312,15 @@ export const useChangeLoginPassword = () => {
     showSmsCodeHelpPopup,
     verificationInputRef,
     isResendCountdownRunning,
-    phoneNumberDisplay,
+    hasLoginMobile,
+    currentAreaCodeDisplay,
+    resolvedTelephone,
     resendActionText,
     resendActionClass,
     isConfirmButtonDisabled,
     isUpdatePasswordButtonDisabled,
     focusVerificationInput,
+    handleGoSetMobileNumber,
     openSmsCodeHelpPopup,
     resetChangeLoginPasswordState,
     handleVerificationCodeChange,

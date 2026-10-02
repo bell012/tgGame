@@ -32,7 +32,7 @@ export const API_ERROR_CODE_MESSAGES = {
   C38: ['Suspicious account address.', '可疑账户地址'],
   C39: ['Please use the correct signature.', '请使用正确的签名'],
   C40: ['Please contact customer service.', '请联系客服'],
-  C41: ['Incorrect verification code.', '验证码错误'],
+  C41: ['Incorrect image captcha.', '图形验证码错误'],
   C43: ['The game is under maintenance.', '游戏维护中'],
   C42: ['Operation restricted. Please contact customer service.', '操作限制，联系客服'],
   C45: [

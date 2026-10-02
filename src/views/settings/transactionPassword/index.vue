@@ -31,11 +31,26 @@ const { userInfo } = storeToRefs(userStore)
 
 userStore.syncStoredUserData()
 
-const pageTitle = computed(() =>
-  userInfo.value?.busiPwd
+const hasLoginMobile = computed(() => {
+  return (
+    String(userInfo.value?.areaCode ?? '').trim().length > 0 &&
+    String(userInfo.value?.telephone ?? '').trim().length > 0
+  )
+})
+
+const hasTransactionPassword = computed(() => {
+  return String(userInfo.value?.busiPwd ?? '').trim().length > 0
+})
+
+const pageTitle = computed(() => {
+  if (!hasLoginMobile.value) {
+    return t('common.setTransactionPassword')
+  }
+
+  return hasTransactionPassword.value
     ? t('common.changeTransactionPassword')
     : t('common.setTransactionPassword')
-)
+})
 </script>
 
 <style scoped lang="scss"></style>

@@ -1,11 +1,13 @@
 import Api from '@/api'
 import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
-import { getDefaultAreaCode, getDefaultAreaCodeDisplay } from '@/utils/locale'
 import {
+  DEFAULT_PHONE_AREA_CODE,
+  formatLoosePhoneNumber,
   handleLoosePhoneInput,
   handleVerificationCodeInput,
-  isValidPhoneNumber
+  isValidPhoneNumberByAreaCode,
+  getPhoneAreaCodeOption
 } from '@/utils/phone-input'
 import { globalShowToast } from '@/utils/toast.ts'
 import { storeToRefs } from 'pinia'
@@ -19,13 +21,12 @@ export const useChangeMobileNumber = () => {
   const { t } = useI18n()
   const userStore = useUserStore()
   const { userInfo, acctInfo } = storeToRefs(userStore)
-  const defaultAreaCode = getDefaultAreaCode()
-  const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
-
-  const currentStep = ref<'currentVerification' | 'newNumber' | 'success'>('currentVerification')
+  const currentStep = ref<'currentVerification' | 'newNumber' | 'success'>('newNumber')
   const currentVerificationCode = ref('')
+  const newAreaCode = ref(DEFAULT_PHONE_AREA_CODE)
   const newTelephone = ref('')
   const newVerificationCode = ref('')
+  const updatedAreaCode = ref(DEFAULT_PHONE_AREA_CODE)
   const updatedTelephone = ref('')
   const isSendingCurrentCode = ref(false)
   const isConfirmingCurrentCode = ref(false)
@@ -67,23 +68,38 @@ export const useChangeMobileNumber = () => {
   const isNewResendCountdownRunning: ComputedRef<boolean> = newCountdownState.isRunning
 
   const resolvedTelephone = computed(() => String(userInfo.value?.telephone ?? '').trim())
+  const resolvedAreaCode = computed(() => String(userInfo.value?.areaCode ?? '').trim())
+  const isMobileLogin = computed(
+    () => resolvedAreaCode.value.length > 0 && resolvedTelephone.value.length > 0
+  )
+  const pageTitle = computed(() =>
+    isMobileLogin.value ? t('common.changeMobileNumber') : t('common.setMobileNumber')
+  )
+  const currentAreaCode = computed(() => resolvedAreaCode.value || DEFAULT_PHONE_AREA_CODE)
+  const currentAreaCodeDisplay = computed(
+    () => getPhoneAreaCodeOption(currentAreaCode.value).display
+  )
+  const newAreaCodeDisplay = computed(() => getPhoneAreaCodeOption(newAreaCode.value).display)
+  const updatedAreaCodeDisplay = computed(
+    () => getPhoneAreaCodeOption(updatedAreaCode.value).display
+  )
 
   const currentPhoneNumberDisplay = computed(() =>
     resolvedTelephone.value
-      ? `${defaultAreaCodeDisplay} ${resolvedTelephone.value}`
-      : `${defaultAreaCodeDisplay} --`
+      ? `${currentAreaCodeDisplay.value} ${resolvedTelephone.value}`
+      : `${currentAreaCodeDisplay.value} --`
   )
 
   const newPhoneNumberDisplay = computed(() =>
     newTelephone.value
-      ? `${defaultAreaCodeDisplay} ${newTelephone.value}`
-      : `${defaultAreaCodeDisplay} --`
+      ? `${newAreaCodeDisplay.value} ${newTelephone.value}`
+      : `${newAreaCodeDisplay.value} --`
   )
 
   const updatedPhoneNumberDisplay = computed(() =>
     updatedTelephone.value
-      ? `${defaultAreaCodeDisplay} ${updatedTelephone.value}`
-      : `${defaultAreaCodeDisplay} --`
+      ? `${updatedAreaCodeDisplay.value} ${updatedTelephone.value}`
+      : `${updatedAreaCodeDisplay.value} --`
   )
 
   const currentResendActionText = computed(() => {
@@ -140,8 +156,8 @@ export const useChangeMobileNumber = () => {
   /**
    * 校验手机号是否符合
    */
-  const validatePhoneNumber = (value: string) => {
-    if (!isValidPhoneNumber(value)) {
+  const validatePhoneNumber = (value: string, areaCode = newAreaCode.value) => {
+    if (!isValidPhoneNumberByAreaCode(value, areaCode)) {
       globalShowToast(t('common.pleaseEnterCorrectPhone'))
       return false
     }
@@ -183,6 +199,9 @@ export const useChangeMobileNumber = () => {
     syncNewCountdown()
     hasRequestedCurrentSmsCode.value = currentRemainingSeconds.value > 0
     hasRequestedNewSmsCode.value = newRemainingSeconds.value > 0
+    newAreaCode.value = currentAreaCode.value
+    updatedAreaCode.value = currentAreaCode.value
+    currentStep.value = 'newNumber'
   }
 
   /**
@@ -205,9 +224,22 @@ export const useChangeMobileNumber = () => {
    * 处理新手机号输入。
    */
   const handleNewTelephoneChange = (event: Event) => {
-    handleLoosePhoneInput(event, value => {
-      newTelephone.value = value
-    })
+    handleLoosePhoneInput(
+      event,
+      value => {
+        newTelephone.value = value
+      },
+      newAreaCode.value
+    )
+  }
+
+  /**
+   * 设置新手机号区号，并按新区号重新格式化手机号输入。
+   */
+  const setNewAreaCode = (areaCode: string) => {
+    const nextAreaCode = areaCode || DEFAULT_PHONE_AREA_CODE
+    newAreaCode.value = nextAreaCode
+    newTelephone.value = formatLoosePhoneNumber(newTelephone.value, nextAreaCode)
   }
 
   /**
@@ -223,8 +255,10 @@ export const useChangeMobileNumber = () => {
    * 重置新手机号相关的表单状态。
    */
   const resetNewMobileFlowState = () => {
+    newAreaCode.value = currentAreaCode.value
     newTelephone.value = ''
     newVerificationCode.value = ''
+    updatedAreaCode.value = currentAreaCode.value
     updatedTelephone.value = ''
     hasRequestedNewSmsCode.value = false
     clearNewCountdown()
@@ -236,10 +270,12 @@ export const useChangeMobileNumber = () => {
   const resetChangeMobileNumberState = (options?: { clearCountdowns?: boolean }) => {
     const shouldClearCountdowns = options?.clearCountdowns === true
 
-    currentStep.value = 'currentVerification'
+    currentStep.value = 'newNumber'
     currentVerificationCode.value = ''
+    newAreaCode.value = currentAreaCode.value
     newTelephone.value = ''
     newVerificationCode.value = ''
+    updatedAreaCode.value = currentAreaCode.value
     updatedTelephone.value = ''
     showSmsCodeHelpPopup.value = false
 
@@ -260,10 +296,10 @@ export const useChangeMobileNumber = () => {
   /**
    * 给指定手机号发送短信验证码。
    */
-  const sendSmsCode = async (telephone: string) => {
+  const sendSmsCode = async (telephone: string, areaCode: string) => {
     return Api.auth.sendSms({
       telephone,
-      areaCode: defaultAreaCode
+      areaCode
     })
   }
 
@@ -282,7 +318,7 @@ export const useChangeMobileNumber = () => {
 
     try {
       isSendingCurrentCode.value = true
-      const response = await sendSmsCode(resolvedTelephone.value)
+      const response = await sendSmsCode(resolvedTelephone.value, currentAreaCode.value)
 
       if (response?.code === 'C2') {
         hasRequestedCurrentSmsCode.value = true
@@ -308,7 +344,7 @@ export const useChangeMobileNumber = () => {
       isConfirmingCurrentCode.value = true
       const response = await Api.auth.checkSms({
         telephone: resolvedTelephone.value,
-        areaCode: defaultAreaCode,
+        areaCode: currentAreaCode.value,
         smsCode: currentVerificationCode.value
       })
 
@@ -343,13 +379,13 @@ export const useChangeMobileNumber = () => {
       return
     }
 
-    if (!validatePhoneNumber(newTelephone.value)) {
+    if (!validatePhoneNumber(newTelephone.value, newAreaCode.value)) {
       return
     }
 
     try {
       isSendingNewCode.value = true
-      const response = await sendSmsCode(newTelephone.value)
+      const response = await sendSmsCode(newTelephone.value, newAreaCode.value)
 
       if (response?.code === 'C2') {
         hasRequestedNewSmsCode.value = true
@@ -371,7 +407,7 @@ export const useChangeMobileNumber = () => {
       return
     }
 
-    if (!validatePhoneNumber(newTelephone.value)) {
+    if (!validatePhoneNumber(newTelephone.value, newAreaCode.value)) {
       return
     }
 
@@ -380,7 +416,7 @@ export const useChangeMobileNumber = () => {
       const response = await Api.user.modifyMemberTelePhone(
         {
           telephone: newTelephone.value,
-          areaCode: defaultAreaCode,
+          areaCode: newAreaCode.value,
           smsCode: newVerificationCode.value,
           phoneBindStatus: 0
         },
@@ -390,6 +426,7 @@ export const useChangeMobileNumber = () => {
       )
 
       if (response?.code === 'C2') {
+        updatedAreaCode.value = newAreaCode.value
         updatedTelephone.value = newTelephone.value
         newVerificationCode.value = ''
         hasRequestedNewSmsCode.value = false
@@ -430,8 +467,15 @@ export const useChangeMobileNumber = () => {
 
   return {
     t,
+    pageTitle,
     currentStep,
-    defaultAreaCodeDisplay,
+    isMobileLogin,
+    currentAreaCode,
+    currentAreaCodeDisplay,
+    newAreaCode,
+    newAreaCodeDisplay,
+    updatedAreaCode,
+    updatedAreaCodeDisplay,
     currentVerificationCode,
     newTelephone,
     newVerificationCode,
@@ -462,6 +506,7 @@ export const useChangeMobileNumber = () => {
     resetChangeMobileNumberState,
     handleCurrentVerificationCodeChange,
     handleNewTelephoneChange,
+    setNewAreaCode,
     handleNewVerificationCodeChange,
     handleSendOrResendCurrentCode,
     handleConfirmCurrentStep,

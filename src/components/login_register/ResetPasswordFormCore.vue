@@ -3,8 +3,10 @@
     :show-password="showPassword"
     :show-confirm-password="showConfirmPassword"
     :form-data="formData"
+    :reset-area-code="formData.areaCode"
     :is-reset-valid="isResetValid"
     :countdown="countdown"
+    :set-reset-area-code="setResetAreaCode"
     :toggle-password="togglePassword"
     :toggle-confirm-password="toggleConfirmPassword"
     :handle-send-code="handleSendCode"
@@ -23,18 +25,18 @@ import {
   handleLoosePhoneInput,
   handlePasswordInput,
   handleVerificationCodeInput,
-  isValidPhoneNumber,
+  isValidPhoneNumberByAreaCode,
+  DEFAULT_PHONE_AREA_CODE,
+  formatLoosePhoneNumber,
   isValidPassword
 } from '@/utils/phone-input'
 import Api from '@/api'
-import { getDefaultAreaCode } from '@/utils/locale'
 import { StringExtension } from '@/utils/string-extension'
 import { globalShowToast } from '@/utils/toast.ts'
 import { useI18n } from 'vue-i18n'
 import { useAuthModalStore } from '@/stores/authModal'
 
 const { t } = useI18n()
-const defaultAreaCode = getDefaultAreaCode()
 const RESET_PASSWORD_SMS_COUNTDOWN_STORAGE_KEY = 'reset-password-sms-countdown'
 const authModalStore = useAuthModalStore()
 
@@ -58,6 +60,7 @@ const showConfirmPassword = ref(false)
 // 表单数据
 const formData = ref({
   account: '',
+  areaCode: DEFAULT_PHONE_AREA_CODE,
   code: '',
   password: '',
   confirmPassword: ''
@@ -77,9 +80,22 @@ const isResetValid = computed(() => {
  * 处理账号输入。
  */
 const handleAccountInput = (event: Event) => {
-  handleLoosePhoneInput(event, (value: string) => {
-    formData.value.account = value
-  })
+  handleLoosePhoneInput(
+    event,
+    (value: string) => {
+      formData.value.account = value
+    },
+    formData.value.areaCode
+  )
+}
+
+/**
+ * 设置忘记密码手机号区号，并按新区号重新格式化手机号。
+ */
+const setResetAreaCode = (areaCode: string) => {
+  const nextAreaCode = areaCode || DEFAULT_PHONE_AREA_CODE
+  formData.value.areaCode = nextAreaCode
+  formData.value.account = formatLoosePhoneNumber(formData.value.account, nextAreaCode)
 }
 
 /**
@@ -109,12 +125,16 @@ const handleConfirmPasswordInput = (event: Event) => {
   })
 }
 
-// 切换密码显示/隐藏
+/**
+ * 切换密码显示/隐藏。
+ */
 const togglePassword = () => {
   showPassword.value = !showPassword.value
 }
 
-// 切换确认密码显示/隐藏
+/**
+ * 切换确认密码显示/隐藏。
+ */
 const toggleConfirmPassword = () => {
   showConfirmPassword.value = !showConfirmPassword.value
 }
@@ -122,8 +142,8 @@ const toggleConfirmPassword = () => {
 /**
  * 校验手机号是否符合登录/注册/忘记密码。
  */
-const validatePhoneNumber = (value: string) => {
-  if (!isValidPhoneNumber(value)) {
+const validatePhoneNumber = (value: string, areaCode = DEFAULT_PHONE_AREA_CODE) => {
+  if (!isValidPhoneNumberByAreaCode(value, areaCode)) {
     globalShowToast(t('common.pleaseEnterCorrectPhone'))
     return false
   }
@@ -170,14 +190,14 @@ const handleSendCode = async () => {
       return
     }
 
-    if (!validatePhoneNumber(telephone)) {
+    if (!validatePhoneNumber(telephone, formData.value.areaCode)) {
       return
     }
 
     // 发送短信接口
     const response = await Api.auth.sendSms({
       telephone: telephone,
-      areaCode: defaultAreaCode
+      areaCode: formData.value.areaCode
     })
     // 只有短信接口返回 C2 时，才开始60秒倒计时
     if (response?.code === 'C2') {
@@ -192,7 +212,7 @@ const handleSendCode = async () => {
  * 处理重置密码。
  */
 const handleResetPassword = async () => {
-  if (!validatePhoneNumber(formData.value.account)) {
+  if (!validatePhoneNumber(formData.value.account, formData.value.areaCode)) {
     return
   }
 
@@ -210,7 +230,7 @@ const handleResetPassword = async () => {
       memberPwd: StringExtension.md5(formData.value.password), // 新密码
       smsCode: formData.value.code, // 短信验证码
       telephone: formData.value.account, // 手机号
-      areaCode: defaultAreaCode, // 区号
+      areaCode: formData.value.areaCode, // 区号
       memberId: formData.value.account // 会员账号
     }
 
@@ -227,10 +247,13 @@ const handleResetPassword = async () => {
   }
 }
 
-// 重置表单数据
+/**
+ * 重置忘记密码表单数据。
+ */
 const resetForm = () => {
   // 重置表单字段
   formData.value.account = ''
+  formData.value.areaCode = DEFAULT_PHONE_AREA_CODE
   formData.value.code = ''
   formData.value.password = ''
   formData.value.confirmPassword = ''
@@ -249,6 +272,7 @@ defineExpose({
   showConfirmPassword,
   isResetValid,
   countdown,
+  setResetAreaCode,
   togglePassword,
   toggleConfirmPassword,
   handleSendCode,

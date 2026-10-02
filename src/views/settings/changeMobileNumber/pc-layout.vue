@@ -7,7 +7,7 @@
 
     <section class="w-full max-w-[465px] rounded-[24px] bg-bg-1 p-8" @click.stop>
       <div class="flex items-center justify-between">
-        <h2 class="text-xl font-[700] text-text-1">{{ t('common.changeMobileNumber') }}</h2>
+        <h2 class="text-xl font-[700] text-text-1">{{ pageTitle }}</h2>
 
         <button
           type="button"
@@ -105,11 +105,20 @@
         <div class="mt-8">
           <p class="mb-2 text-base font-[400] text-text-1">{{ t('common.newMobileNumber') }}</p>
           <div
+            ref="newAreaCodeAnchorRef"
             class="flex h-[48px] items-center rounded-[8px] border border-input-2 bg-input-3 px-3.5"
           >
-            <span class="mr-2 text-xl font-[700] text-theme-primary">{{
-              defaultAreaCodeDisplay
-            }}</span>
+            <button
+              type="button"
+              class="mr-2 flex items-center gap-1 text-xl font-[700] text-theme-primary"
+              @click.stop="toggleNewAreaCodePopup"
+            >
+              <span>{{ newAreaCodeDisplay }}</span>
+              <XiaIcon
+                class="h-3 w-3 transition-transform duration-200"
+                :class="isNewAreaCodePopupOpen ? 'rotate-180' : ''"
+              />
+            </button>
             <input
               :value="newTelephone"
               type="tel"
@@ -120,6 +129,12 @@
               @input="handleNewTelephoneChange"
             />
           </div>
+          <PhoneAreaCodePopup
+            v-model="isNewAreaCodePopupOpen"
+            :anchor-el="newAreaCodeAnchorRef"
+            :selected-code="newAreaCode"
+            @select="setNewAreaCode"
+          />
         </div>
 
         <div class="mt-8">
@@ -199,7 +214,7 @@
           <div
             class="flex h-[48px] w-full items-center justify-center rounded-[8px] border border-input-2 bg-input-3 px-3.5"
           >
-            <span class="mr-2 text-base font-[700] text-text-1">{{ defaultAreaCodeDisplay }}</span>
+            <span class="mr-2 text-base font-[700] text-text-1">{{ updatedAreaCodeDisplay }}</span>
             <span class="text-base font-[700] text-text-1">{{ updatedTelephone || '--' }}</span>
           </div>
         </div>
@@ -217,11 +232,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import ButtonLoadingSpinner from '@/components/common/ButtonLoadingSpinner.vue'
 import SmsCodeHelpPopup from '@/components/common/SmsCodeHelpPopup.vue'
+import PhoneAreaCodePopup from '@/components/login_register/PhoneAreaCodePopup.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import SetIcon from '@/static/svg/set.svg?component'
+import XiaIcon from '@/static/svg/login/xia.svg?skipsvgo'
 import Mobile_success from '@/static/svg/mobile_success.svg?skipsvgo'
 import { navigateToName } from '@/utils/router'
 import { useChangeMobileNumber } from './shared'
@@ -236,14 +253,20 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
+const isNewAreaCodePopupOpen = ref(false)
+const newAreaCodeAnchorRef = ref<HTMLElement | null>(null)
+
 const isVisible = computed(() => {
   return props.modelValue ?? true
 })
 
 const {
   t,
+  pageTitle,
   currentStep,
-  defaultAreaCodeDisplay,
+  newAreaCode,
+  newAreaCodeDisplay,
+  updatedAreaCodeDisplay,
   currentVerificationCode,
   newTelephone,
   newVerificationCode,
@@ -270,6 +293,7 @@ const {
   resetChangeMobileNumberState,
   handleCurrentVerificationCodeChange,
   handleNewTelephoneChange,
+  setNewAreaCode,
   handleNewVerificationCodeChange,
   handleSendOrResendCurrentCode,
   handleConfirmCurrentStep,
@@ -279,9 +303,17 @@ const {
 } = useChangeMobileNumber()
 
 /**
+ * 展开或收起新手机号区号下拉框。
+ */
+const toggleNewAreaCodePopup = () => {
+  isNewAreaCodePopupOpen.value = !isNewAreaCodePopupOpen.value
+}
+
+/**
  * 关闭 PC 修改手机号弹窗。
  */
 const handleClose = () => {
+  isNewAreaCodePopupOpen.value = false
   resetChangeMobileNumberState()
 
   if (props.modelValue !== undefined) {
