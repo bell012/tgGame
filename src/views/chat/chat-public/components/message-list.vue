@@ -40,9 +40,11 @@
             v-else-if="message.type === 'video'"
             :display-mode="props.displayMode"
             :message="message"
+            @focus="handleFocus"
             @retry="$emit('retry', $event)"
             @view="$emit('view-video', $event)"
           />
+          <!-- 回复消息 -->
           <MessageBubble
             v-else
             :display-mode="props.displayMode"
@@ -215,18 +217,31 @@ const handleReplyClick = () => {
   if (!focusedMessage.value) return
 
   const message = focusedMessage.value
+  const replyToType =
+    message.type === 'image' ? 'image' : message.type === 'video' ? 'video' : 'text'
   emit('reply', {
     id: message.id,
     author:
       message.authorName ||
       (message.direction === 'outgoing' ? t('chatPublic.you') : t('chatPublic.customerService')),
-    preview: message.type === 'image' ? t('chatPublic.image') : getMessagePreview(message),
+    preview:
+      replyToType === 'image'
+        ? t('chatPublic.image')
+        : replyToType === 'video'
+          ? t('chatPublic.video')
+          : getMessagePreview(message),
     photoCount: message.type === 'image' ? 1 : undefined,
+    mediaUrl:
+      message.type === 'image'
+        ? message.image || message.imageList?.[0]?.imgUrl
+        : message.type === 'video'
+          ? message.video
+          : undefined,
     replyToUserId: message.authorId || '',
     replyToUserName:
       message.authorName ||
       (message.direction === 'outgoing' ? t('chatPublic.you') : t('chatPublic.customerService')),
-    replyToType: message.type === 'image' ? 'image' : 'text'
+    replyToType
   })
   dismissReplyAction()
 }

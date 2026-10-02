@@ -73,10 +73,10 @@
             :class="props.displayMode === 'pc' ? 'h-[40px] gap-[10px]' : 'h-[42.67px] gap-[9px]'"
             @click="$emit('locate', result.id, query.trim())"
           >
-            <!-- 客服头像统一补全 OSS 域名，接口未返回时使用本地默认头像。 -->
+            <!-- 每条结果展示该消息发送者的头像，接口未返回时使用本地默认头像。 -->
             <span class="size-[40px] shrink-0 overflow-hidden rounded-full">
               <img
-                :src="resolveChatMediaUrl(props.conversation?.avatar) || avatarUrl"
+                :src="resolveChatMediaUrl(result.authorAvatar) || avatarUrl"
                 alt=""
                 class="size-full object-cover"
               />
@@ -99,7 +99,12 @@
                       : 'text-[15px] font-[500] leading-[18px]'
                   "
                 >
-                  {{ props.conversation?.nickName || t('chatPublic.customerServiceList') }}
+                  {{
+                    decodeAuthorName(result.authorName) ||
+                    (result.direction === 'outgoing'
+                      ? t('chatPublic.you')
+                      : t('chatPublic.customerServiceList'))
+                  }}
                 </strong>
                 <!-- 搜索结果内容，并高亮当前匹配的关键字。 -->
                 <span
@@ -241,7 +246,15 @@ watch(query, async value => {
     }
   }
 })
+const decodeAuthorName = (name?: string) => {
+  if (!name) return ''
 
+  try {
+    return decodeURIComponent(name)
+  } catch {
+    return name
+  }
+}
 /** 搜索层显示后自动聚焦输入框，减少一次额外点击。 */
 onMounted(() => {
   nextTick(() => inputRef.value?.focus())
