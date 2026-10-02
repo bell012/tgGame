@@ -1,4 +1,5 @@
 import { toRaw } from 'vue'
+import { navigateTo } from '@/utils/router'
 import type { SportsMatch } from './types'
 
 const STORAGE_KEY = 'tgGame:sportsEventDetailsMatch'
@@ -10,6 +11,17 @@ export const persistEventDetailsMatch = (match: SportsMatch) => {
   } catch {
     sessionStorage.removeItem(STORAGE_KEY)
   }
+}
+
+/** 普通及热门赛事卡片使用同一详情入口。 */
+export const goToEventDetails = (match: SportsMatch) => {
+  persistEventDetailsMatch(match)
+  navigateTo('/sports/event-details', {
+    query: {
+      sportId: match.sportId,
+      eventId: match.EventId
+    }
+  })
 }
 
 export const readEventDetailsMatch = (sportId: number, eventId: number): SportsMatch | null => {

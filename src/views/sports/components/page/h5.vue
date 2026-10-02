@@ -50,8 +50,9 @@
           v-for="match in liveMatches"
           :key="match.id"
           v-match-visibility="{ sportId: match.sportId, eventId: match.EventId }"
-          class="flex min-h-[150px] w-full min-w-0 shrink-0 snap-center flex-col rounded-lg bg-bg-2 px-2.5 py-3"
+          class="flex min-h-[150px] w-full min-w-0 shrink-0 cursor-pointer snap-center flex-col rounded-lg bg-bg-2 px-2.5 py-3"
           :data-sports-live-match="match.id"
+          @click="goToEventDetails(match)"
         >
           <div class="flex h-[14px] min-w-0 items-center gap-[14px] text-[10px] leading-3">
             <MatchTime :match="match" class="shrink-0 text-text-2" />
@@ -82,7 +83,7 @@
           />
 
           <!-- 长队名允许换行，盘口靠底部对齐。 -->
-          <div class="mt-auto pt-3">
+          <div class="mt-auto pt-3" @click.stop>
             <MatchOdds
               v-if="match.MarketLines.length"
               :MarketLines="match.MarketLines"
@@ -301,6 +302,7 @@ import { pickOverUnderOrFirstMarketLine } from '../match-odds/display'
 import MatchCardH5 from '../match-card/h5.vue'
 import MatchTime from '../match-card/time.vue'
 import type { SportsMatch } from '../../shared/types'
+import { goToEventDetails } from '../../shared/event-details-navigation'
 import type { SportsPageState } from '../../index'
 import { useMatchVisibility } from '../../composables/useMatchVisibility'
 import type { OddsSelectPayload } from '../match-odds/types'
