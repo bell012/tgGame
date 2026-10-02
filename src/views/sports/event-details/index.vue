@@ -7,6 +7,7 @@
     @change="onSportNavigationChange"
   />
   <div
+    ref="pageRootRef"
     class="min-h-[200px] w-full min-w-0 bg-bg-1 font-inter text-text-1"
     :class="isMobile ? '' : 'px-5 pb-6'"
   >
@@ -142,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -180,6 +181,23 @@ import { useEventDetailsSports } from './use-event-details-sports'
 
 const router = useRouter()
 const route = useRoute()
+const pageRootRef = ref<HTMLElement | null>(null)
+
+const scrollLayoutToTop = () => {
+  nextTick(() => {
+    let current: HTMLElement | null = pageRootRef.value
+    while (current) {
+      const { overflowY } = window.getComputedStyle(current)
+      const isScrollable = ['auto', 'scroll', 'overlay'].includes(overflowY)
+      if ((isScrollable && current.scrollHeight > current.clientHeight) || current.scrollTop > 0) {
+        current.scrollTo({ top: 0, behavior: 'instant' })
+      }
+      current = current.parentElement
+    }
+    document.scrollingElement?.scrollTo({ top: 0, behavior: 'instant' })
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  })
+}
 const sportsStore = useSportsStore()
 const { sportCounts } = storeToRefs(sportsStore)
 const sportNavigationCounts = computed(() => buildSportTodayCountMap(sportCounts.value))
@@ -417,6 +435,7 @@ const onDocumentClick = (event: MouseEvent) => {
 }
 
 onMounted(() => {
+  scrollLayoutToTop()
   document.addEventListener('click', onDocumentClick)
 })
 
