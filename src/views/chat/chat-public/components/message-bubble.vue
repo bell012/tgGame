@@ -26,14 +26,32 @@
           <!-- 被引用消息的简要预览。 -->
           <div
             v-if="message.reply"
-            class="mb-[6px] min-w-[190px] rounded-[4px] border-l-[4px] border-theme-primary px-[8px] py-[2px] bg-bg-2"
+            class="mb-[6px] flex min-w-[190px] items-center gap-[8px] rounded-[4px] border-l-[4px] border-theme-primary bg-bg-2 px-[8px] py-[2px]"
           >
-            <p class="text-[11px] font-medium text-theme-primary">{{ message.reply.author }}</p>
-            <p class="mt-[2px] truncate text-[11px] text-text-2">
-              <template v-for="(part, index) in replyHighlightParts" :key="index">
-                <span :class="part.matched ? 'text-theme-primary' : ''">{{ part.text }}</span>
-              </template>
-            </p>
+            <!-- 图片或视频引用在摘要右侧展示 35px 缩略图。 -->
+            <img
+              v-if="replyMediaType === 'image'"
+              :src="message.reply.mediaUrl"
+              alt=""
+              class="h-[35px] w-[35px] shrink-0 rounded-[3px] object-cover"
+            />
+            <video
+              v-else-if="replyMediaType === 'video'"
+              :src="message.reply.mediaUrl"
+              aria-hidden="true"
+              muted
+              playsinline
+              preload="auto"
+              class="h-[35px] w-[35px] shrink-0 rounded-[3px] bg-common-0 object-cover"
+            ></video>
+            <div class="min-w-0 flex-1">
+              <p class="text-[11px] font-medium text-theme-primary">{{ message.reply.author }}</p>
+              <p class="mt-[2px] truncate text-[11px] text-text-2">
+                <template v-for="(part, index) in replyHighlightParts" :key="index">
+                  <span :class="part.matched ? 'text-theme-primary' : ''">{{ part.text }}</span>
+                </template>
+              </p>
+            </div>
           </div>
 
           <!-- 当前回复消息内容。 -->
@@ -123,6 +141,14 @@ const messageHighlightParts = computed(() =>
 const replyHighlightParts = computed(() =>
   getChatTextHighlightParts(props.message.reply?.preview, props.highlightKeyword)
 )
+
+/** 只有媒体地址存在时才渲染缩略图，旧引用记录继续使用文字摘要。 */
+const replyMediaType = computed(() => {
+  const reply = props.message.reply
+  return reply?.mediaUrl && (reply.replyToType === 'image' || reply.replyToType === 'video')
+    ? reply.replyToType
+    : null
+})
 
 /** 将当前消息气泡的原生交互事件上抛，用于定位回复操作浮层。 */
 const handleFocus = (event: MouseEvent) => {

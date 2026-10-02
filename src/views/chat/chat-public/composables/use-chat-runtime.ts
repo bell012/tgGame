@@ -27,6 +27,8 @@ import type {
   ChatMessage,
   ChatParticipant,
   ChatRedPacket,
+  ChatReplyContentType,
+  ChatReplyInfo,
   ChatReplyTarget,
   ChatSocketMessage,
   ConversationItem,
@@ -133,6 +135,34 @@ const mapChatImage = (image: Partial<ChatImageItem>): ChatImageItem => ({
   imageHeight: Number(image.imageHeight) || 0
 })
 
+/** 将服务端可扩展的引用类型收敛为页面支持的内容类型。 */
+const getReplyContentType = (value: unknown): ChatReplyContentType => {
+  if (value === 'image' || value === 'video') return value
+  return 'text'
+}
+
+/** 旧引用记录可能只保存“图片”文案；仅接受可识别的媒体地址作为缩略图来源。 */
+const getReplyMediaUrl = (replyInfo: ChatReplyInfo, replyToType: ChatReplyContentType) => {
+  if (replyToType === 'text') return undefined
+
+  const source = String(replyInfo.replyToContent ?? '').trim()
+  const isMediaSource =
+    /^(?:data:|blob:|https?:\/\/|\/)|[\\/]|\.(?:avif|bmp|gif|jpe?g|m4v|mkv|mov|mp4|png|webm|webp)(?:[?#].*)?$/i.test(
+      source
+    )
+
+  return source && isMediaSource ? resolveChatMediaUrl(source) : undefined
+}
+
+/** 引用消息优先使用服务端展示文案；媒体缺少文案时使用内容类型的本地化名称。 */
+const getReplyPreview = (replyInfo: ChatReplyInfo, replyToType: ChatReplyContentType) => {
+  const quoteText = String(replyInfo.quoteText ?? '').trim()
+  if (quoteText) return quoteText
+  if (replyToType === 'image') return i18n.global.t('chatPublic.image')
+  if (replyToType === 'video') return i18n.global.t('chatPublic.video')
+  return String(replyInfo.replyToContent ?? '')
+}
+
 /** 将当前用户、站点商户编码与当前客服拼成 IndexedDB 会话缓存键。 */
 const getConversationCacheKey = (
   memberId: string,
@@ -225,17 +255,20 @@ export function useChatRuntime() {
   }
 
   /** 根据引用目标还原 Socket 所需的 replyInfo 字段。 */
-  const buildReplyInfo = (replyTarget?: ChatReplyTarget | null) =>
-    replyTarget
-      ? {
-          replyToMsgId: replyTarget.id,
-          replyToContent: replyTarget.preview,
-          replyToType: replyTarget.replyToType || (replyTarget.photoCount ? 'image' : 'text'),
-          replyToUserId: replyTarget.replyToUserId || '',
-          replyToUserName: replyTarget.replyToUserName || replyTarget.author,
-          quoteText: replyTarget.preview
-        }
-      : undefined
+  const buildReplyInfo = (replyTarget?: ChatReplyTarget | null) => {
+    if (!replyTarget) return undefined
+
+    const replyToType = replyTarget.replyToType || (replyTarget.photoCount ? 'image' : 'text')
+    return {
+      replyToMsgId: replyTarget.id,
+      // 媒体原地址随引用消息传递，接收方才能显示引用缩略图；文字仍使用预览文案。
+      replyToContent: replyTarget.mediaUrl || replyTarget.preview,
+      replyToType,
+      replyToUserId: replyTarget.replyToUserId || '',
+      replyToUserName: replyTarget.replyToUserName || replyTarget.author,
+      quoteText: replyTarget.preview
+    }
+  }
 
   /** 使用当前客服和会员身份构建 WebSocket 查询参数地址。 */
   const buildSocketUrl = () => {
@@ -360,6 +393,7 @@ export function useChatRuntime() {
     const isReply = payload.contentType === 'reply' || Boolean(payload.replyInfo)
     const imageList = toArray<Partial<ChatImageItem>>(payload.imageList).map(mapChatImage)
     const replyInfo = payload.replyInfo
+    const replyToType = replyInfo ? getReplyContentType(replyInfo.replyToType) : 'text'
 
     return {
       id: String(payload.messageId),
@@ -389,15 +423,17 @@ export function useChatRuntime() {
       redPacket: redPacket || undefined,
       authorId: String(payload.mine?.userId ?? ''),
       authorName: String(payload.mine?.nickName ?? ''),
+      authorAvatar: resolveChatMediaUrl(payload.mine?.avatar),
       reply: replyInfo
         ? {
             id: String(replyInfo.replyToMsgId ?? ''),
             author: String(replyInfo.replyToUserName ?? ''),
-            preview: String(replyInfo.quoteText || replyInfo.replyToContent || ''),
-            photoCount: replyInfo.replyToType === 'image' ? 1 : undefined,
+            preview: getReplyPreview(replyInfo, replyToType),
+            photoCount: replyToType === 'image' ? 1 : undefined,
+            mediaUrl: getReplyMediaUrl(replyInfo, replyToType),
             replyToUserId: String(replyInfo.replyToUserId ?? ''),
             replyToUserName: String(replyInfo.replyToUserName ?? ''),
-            replyToType: replyInfo.replyToType
+            replyToType
           }
         : undefined
     }
@@ -478,7 +514,10 @@ export function useChatRuntime() {
           timestamp: message.timestamp,
           read: message.read,
           status: message.status,
-          contentType: 'image'
+          contentType: 'image',
+          authorId: message.authorId,
+          authorName: message.authorName,
+          authorAvatar: message.authorAvatar
         })
       })
     }
@@ -604,7 +643,10 @@ export function useChatRuntime() {
         time: formatChatMessageTime(timestamp),
         period: getChatTimePeriod(timestamp),
         timestamp,
-        contentType: 'welcome-reminder'
+        contentType: 'welcome-reminder',
+        authorId: conversation.id,
+        authorName: conversation.nickName || '',
+        authorAvatar: resolveChatMediaUrl(conversation.avatar)
       })
     } catch {
       // 欢迎语请求失败不影响聊天连接与正常消息发送。
@@ -644,7 +686,12 @@ export function useChatRuntime() {
         message.authorId || (message.direction === 'outgoing' ? member.userId : conversation.id),
       authorName:
         message.authorName ||
-        (message.direction === 'outgoing' ? member.nickName : conversation.nickName || '')
+        (message.direction === 'outgoing' ? member.nickName : conversation.nickName || ''),
+      authorAvatar:
+        message.authorAvatar ||
+        (message.direction === 'outgoing'
+          ? member.avatar
+          : resolveChatMediaUrl(conversation.avatar))
     }))
     hasMoreCachedMessages.value = cachedPage.hasMore
     syncClaimedRedPacketIds()
@@ -726,7 +773,12 @@ export function useChatRuntime() {
         message.authorId || (message.direction === 'outgoing' ? member.userId : conversation.id),
       authorName:
         message.authorName ||
-        (message.direction === 'outgoing' ? member.nickName : conversation.nickName || '')
+        (message.direction === 'outgoing' ? member.nickName : conversation.nickName || ''),
+      authorAvatar:
+        message.authorAvatar ||
+        (message.direction === 'outgoing'
+          ? member.avatar
+          : resolveChatMediaUrl(conversation.avatar))
     }))
   }
 
@@ -858,6 +910,7 @@ export function useChatRuntime() {
       socketContent: normalizedContent,
       authorId: mine.userId,
       authorName: mine.nickName,
+      authorAvatar: mine.avatar,
       reply: replyTarget || undefined
     }
 
@@ -954,6 +1007,7 @@ export function useChatRuntime() {
         contentType: 'redPack',
         authorId: mine.userId,
         authorName: mine.nickName,
+        authorAvatar: mine.avatar,
         redPacket: { ...redPacket, status: 1 }
       })
 

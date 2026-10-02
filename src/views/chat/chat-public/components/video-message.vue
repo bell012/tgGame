@@ -5,13 +5,21 @@
     :class="props.message.direction === 'outgoing' ? 'justify-end' : 'justify-start'"
   >
     <div class="relative">
-      <div
-        class="relative overflow-hidden bg-common-0"
+      <button
+        type="button"
+        data-chat-message-bubble
+        class="relative block overflow-hidden border-0 bg-common-0 p-0 text-left"
         :class="
           props.displayMode === 'pc'
             ? 'h-[180px] w-[220px] rounded-[18px]'
             : 'h-[188px] w-[220px] rounded-[10px]'
         "
+        @click="handleClick"
+        @contextmenu.prevent="handleReply"
+        @pointerdown="startLongPress"
+        @pointerleave="clearLongPress"
+        @pointerup="clearLongPress"
+        @pointercancel="clearLongPress"
       >
         <!-- 点击视频区域后打开项目内的视频预览页。 -->
         <video
@@ -20,7 +28,6 @@
           preload="metadata"
           :aria-label="t('chatPublic.playVideo')"
           class="h-full w-full bg-common-0 object-contain"
-          @click="$emit('view', props.message)"
         />
 
         <!-- 视频消息中央的全屏播放提示图标，不拦截视频本身的点击事件。 -->
@@ -49,7 +56,7 @@
             class="h-[10px] w-[15px] object-contain"
           />
         </div>
-      </div>
+      </button>
 
       <!-- 视频发送失败时显示在消息左侧中部的重发按钮。 -->
       <button
@@ -70,13 +77,57 @@ import messageReadStatusImage from '@/static/img/chat/public/message-read-status
 import messageRetryIcon from '@/static/img/chat/public/message-retry.png'
 import messageSendingStatusImage from '@/static/img/chat/public/message-sending-status.png'
 import VideoPlayPauseIcon from '@/static/svg/chat/public/video-play-pause.svg?component'
-import type { ChatMessage } from '../types'
+import { onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import type { ChatMessage } from '../types'
 
 const props = withDefaults(defineProps<{ message: ChatMessage; displayMode?: 'h5' | 'pc' }>(), {
   displayMode: 'h5'
 })
 const { t } = useI18n()
 
-defineEmits<{ retry: [message: ChatMessage]; view: [message: ChatMessage] }>()
+const emit = defineEmits<{
+  focus: [message: ChatMessage, event: MouseEvent, target: HTMLElement | null]
+  retry: [message: ChatMessage]
+  view: [message: ChatMessage]
+}>()
+
+const longPressTriggered = ref(false)
+let longPressTimer: ReturnType<typeof setTimeout> | undefined
+
+/** 清理视频长按计时器，防止短按也被识别为回复操作。 */
+const clearLongPress = () => {
+  if (!longPressTimer) return
+  clearTimeout(longPressTimer)
+  longPressTimer = undefined
+}
+
+/** 长按视频消息时打开引用回复操作，短按仍保持视频预览。 */
+const startLongPress = (event: PointerEvent) => {
+  longPressTriggered.value = false
+  clearLongPress()
+  const target = event.currentTarget as HTMLElement | null
+  longPressTimer = setTimeout(() => {
+    longPressTimer = undefined
+    longPressTriggered.value = true
+    emit('focus', props.message, event, target)
+  }, 450)
+}
+
+/** 处理视频短按预览，避免长按后额外打开视频查看器。 */
+const handleClick = () => {
+  if (longPressTriggered.value) {
+    longPressTriggered.value = false
+    return
+  }
+  emit('view', props.message)
+}
+
+/** 处理桌面端视频右键引用回复。 */
+const handleReply = (event: MouseEvent) => {
+  clearLongPress()
+  emit('focus', props.message, event, event.currentTarget as HTMLElement | null)
+}
+
+onBeforeUnmount(clearLongPress)
 </script>
