@@ -95,7 +95,7 @@
           <!-- 登录/手机 -->
           <template v-if="activeTab === 'signin'">
             <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
-            <div class="mb-[12px]">
+            <div class="mb-[16px]">
               <div ref="signinAreaCodeAnchorRef" class="relative">
                 <KeyIcon
                   v-if="activeLoginMethod === 'username'"
@@ -145,7 +145,7 @@
               <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.password') }}
               </div>
-              <div class="mb-[12px]">
+              <div class="mb-[16px]">
                 <div class="relative">
                   <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
@@ -173,7 +173,7 @@
               <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.verification') }}
               </div>
-              <div class="mb-[12px]">
+              <div class="mb-[16px]">
                 <div class="relative">
                   <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
@@ -205,7 +205,7 @@
               <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.captcha') }}
               </div>
-              <div class="mb-[12px]">
+              <div class="mb-[16px]">
                 <div class="relative">
                   <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
@@ -263,7 +263,7 @@
             </div>
 
             <button
-              class="btn-primary w-full h-[40px] mt-[24px] rounded-lg text-sm font-[700] text-text-4 transition-all"
+              class="btn-primary w-full h-[40px] mt-[30px] rounded-lg text-sm font-[700] text-text-4 transition-all"
               :class="{ 'opacity-60 cursor-not-allowed': !isSigninValid }"
               :disabled="!isSigninValid"
               @click="handleLogin"
@@ -292,8 +292,8 @@
 
           <!-- 注册/手机 -->
           <template v-else-if="activeTab === 'signup'">
-            <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
-            <div class="mb-[12px]">
+            <!-- <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div> -->
+            <div class="mb-[16px]">
               <div ref="signupAreaCodeAnchorRef" class="relative">
                 <KeyIcon
                   v-if="activeSignupMethod === 'username'"
@@ -340,10 +340,10 @@
             </div>
 
             <template v-if="showSignupPassword">
-              <div class="text-sm font-[700] text-text-1 mb-2">
+              <!-- <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.password') }}
-              </div>
-              <div class="mb-[12px]">
+              </div> -->
+              <div class="mb-[16px]">
                 <div class="relative">
                   <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
@@ -365,10 +365,10 @@
                 </div>
               </div>
 
-              <div class="text-sm font-[700] text-text-1 mb-2">
+              <!-- <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.confirm_password') }}
-              </div>
-              <div class="mb-[12px]">
+              </div> -->
+              <div class="mb-[16px]">
                 <div class="relative">
                   <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
@@ -392,10 +392,10 @@
             </template>
 
             <template v-if="showSignupSmsCode">
-              <div class="text-sm font-[700] text-text-1 mb-2">
+              <!-- <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.verification') }}
-              </div>
-              <div class="mb-[12px]">
+              </div> -->
+              <div class="mb-[16px]">
                 <div class="relative">
                   <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
@@ -424,10 +424,10 @@
             </template>
 
             <template v-if="showSignupCaptcha">
-              <div class="text-sm font-[700] text-text-1 mb-2">
+              <!-- <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.captcha') }}
-              </div>
-              <div class="mb-[12px]">
+              </div> -->
+              <div class="mb-[16px]">
                 <div class="relative">
                   <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
@@ -456,10 +456,10 @@
               </div>
             </template>
 
-            <div v-if="showSignupInvitationCode" class="mb-[24px]">
-              <div class="text-sm font-[700] text-text-1 mb-2">
+            <div v-if="showSignupInvitationCode" class="mb-[30px]">
+              <!-- <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.invitation_code') }}
-              </div>
+              </div> -->
               <div class="relative">
                 <InviteIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                 <input

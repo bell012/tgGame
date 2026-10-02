@@ -35,7 +35,7 @@
         <div class="flex-1 flex flex-col relative">
           <!-- 账号 -->
           <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
-          <div class="mb-[12px]">
+          <div class="mb-[16px]">
             <!-- 请输入账号 -->
             <div ref="resetAreaCodeAnchorRef" class="relative">
               <div class="absolute left-4 top-[25px] z-10 -translate-y-1/2">
@@ -66,7 +66,7 @@
           <div class="text-sm font-[700] text-text-1 mb-2">
             {{ t('common.verification') }}
           </div>
-          <div class="mb-[12px]">
+          <div class="mb-[16px]">
             <div class="relative">
               <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
               <!-- 请输入验证码 -->
@@ -97,7 +97,7 @@
 
           <!-- 密码 -->
           <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.password') }}</div>
-          <div class="mb-[12px]">
+          <div class="mb-[16px]">
             <div class="relative">
               <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
               <!-- 请输入密码 -->
@@ -124,7 +124,7 @@
           <div class="text-sm font-[700] text-text-1 mb-2">
             {{ t('common.confirm_password') }}
           </div>
-          <div class="mb-[24px]">
+          <div class="mb-[30px]">
             <div class="relative">
               <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
               <!-- 请输入确认密码 -->

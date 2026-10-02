@@ -74,7 +74,7 @@
                 </div>
 
                 <div class="px-3.5 pb-6">
-                  <div class="flex gap-[80px] mb-3.5">
+                  <div class="flex gap-[80px] mb-[20px]">
                     <button
                       class="relative min-w-20 pb-1.5 text-lg font-[700] font-inter transition-all duration-200 tab-button-new"
                     >

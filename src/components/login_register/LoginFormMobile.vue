@@ -123,7 +123,7 @@
               </div> -->
 
                   <template v-if="activeTab === 'signin'">
-                    <div v-if="loginMethodTabs.length > 0" class="flex gap-6 mb-3.5">
+                    <div v-if="loginMethodTabs.length > 0" class="flex gap-6 mb-[20px]">
                       <button
                         v-for="method in loginMethodTabs"
                         :key="method.key"
@@ -316,7 +316,7 @@
 
                     <!-- 登录 -->
                     <button
-                      class="btn-primary w-full h-[40px] mt-8 rounded-lg text-sm font-[700] text-text-4 transition-all"
+                      class="btn-primary w-full h-[40px] mt-[40px] rounded-lg text-sm font-[700] text-text-4 transition-all"
                       :class="{ 'opacity-60 cursor-not-allowed': !isSigninValid }"
                       :disabled="!isSigninValid"
                       @click="handleLogin"
@@ -324,7 +324,7 @@
                       {{ t('home.sign_In') }}
                     </button>
 
-                    <div class="text-center text-sm font-[700] text-text-2 mt-6">
+                    <div class="text-center text-sm font-[700] text-text-2 mt-[20px]">
                       {{ t('common.no_account') }}
                       <button
                         type="button"
@@ -337,7 +337,7 @@
 
                     <!-- 以访客身份 -->
                     <div
-                      class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer"
+                      class="text-center text-sm font-[700] text-theme-primary mt-[20px] cursor-pointer"
                       @click="handleGuestContinue"
                     >
                       {{ t('common.continue') }}
@@ -345,7 +345,7 @@
                   </template>
 
                   <template v-else-if="activeTab === 'signup'">
-                    <div v-if="signupMethodTabs.length > 0" class="flex gap-6 mb-3.5">
+                    <div v-if="signupMethodTabs.length > 0" class="flex gap-6 mb-[20px]">
                       <button
                         v-for="method in signupMethodTabs"
                         :key="method.key"
@@ -362,7 +362,7 @@
                     </div>
 
                     <!-- 账号 -->
-                    <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
+                    <!-- <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div> -->
                     <div class="mb-3">
                       <!-- 请输入账号 -->
                       <div ref="signupAreaCodeAnchorRef" class="relative">
@@ -412,9 +412,9 @@
 
                     <template v-if="showSignupSmsCode">
                       <!-- 验证码 -->
-                      <div class="text-sm font-[700] text-text-1 mb-2">
+                      <!-- <div class="text-sm font-[700] text-text-1 mb-2">
                         {{ t('common.verification') }}
-                      </div>
+                      </div> -->
                       <div class="mb-3">
                         <div class="relative">
                           <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
@@ -446,9 +446,9 @@
                     </template>
 
                     <template v-if="showSignupCaptcha">
-                      <div class="text-sm font-[700] text-text-1 mb-2">
+                      <!-- <div class="text-sm font-[700] text-text-1 mb-2">
                         {{ t('common.captcha') }}
-                      </div>
+                      </div> -->
                       <div class="mb-3">
                         <div class="relative">
                           <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
@@ -480,9 +480,9 @@
 
                     <template v-if="showSignupPassword">
                       <!-- 密码 -->
-                      <div class="text-sm font-[700] text-text-1 mb-2">
+                      <!-- <div class="text-sm font-[700] text-text-1 mb-2">
                         {{ t('common.password') }}
-                      </div>
+                      </div> -->
                       <div class="mb-3">
                         <div class="relative">
                           <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
@@ -507,9 +507,9 @@
                       </div>
 
                       <!-- 确认密码 -->
-                      <div class="text-sm font-[700] text-text-1 mb-2">
+                      <!-- <div class="text-sm font-[700] text-text-1 mb-2">
                         {{ t('common.confirm_password') }}
-                      </div>
+                      </div> -->
                       <div class="mb-3">
                         <div class="relative">
                           <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
@@ -534,10 +534,10 @@
                       </div>
                     </template>
 
-                    <div v-if="showSignupInvitationCode" class="mb-8">
-                      <div class="text-sm font-[700] text-text-1 mb-2">
+                    <div v-if="showSignupInvitationCode" class="mb-[40px]">
+                      <!-- <div class="text-sm font-[700] text-text-1 mb-2">
                         {{ t('common.invitation_code') }}
-                      </div>
+                      </div> -->
                       <div class="relative">
                         <InviteIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                         <input
@@ -562,7 +562,7 @@
                       {{ t('home.sign_Up') }}
                     </button>
 
-                    <div class="text-center text-sm font-[700] text-text-2 mt-6">
+                    <div class="text-center text-sm font-[700] text-text-2 mt-[20px]">
                       {{ t('common.have_account') }}
                       <button
                         type="button"
@@ -575,7 +575,7 @@
 
                     <!-- 以访客身份 -->
                     <div
-                      class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer"
+                      class="text-center text-sm font-[700] text-theme-primary mt-[20px] cursor-pointer"
                       @click="handleGuestContinue"
                     >
                       {{ t('common.continue') }}
