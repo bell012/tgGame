@@ -14,7 +14,10 @@
           formatHandicap(selection.Handicap)
         }}</span>
       </span>
-      <span class="shrink-0 text-[12px] font-bold">{{ selection.Odds }}</span>
+      <span class="shrink-0 text-[12px] font-bold" :class="oddsNumberClass(selection)">
+        <span v-if="oddsArrow(selection)" aria-hidden="true">{{ oddsArrow(selection) }}</span
+        >{{ selection.Odds }}
+      </span>
     </button>
   </div>
 
@@ -59,8 +62,9 @@
             </span>
             <span
               class="flex items-center justify-center gap-0.5 text-[12px] font-bold leading-none"
-              :class="isSelected(selection) ? 'text-text-4' : 'text-text-1'"
+              :class="oddsNumberClass(selection)"
             >
+              <span v-if="oddsArrow(selection)" aria-hidden="true">{{ oddsArrow(selection) }}</span>
               {{ selection.Odds }}
             </span>
           </template>
@@ -71,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import lockIcon from '../../event-details/components/sports-score-details/img/bold.svg?url'
 import {
@@ -81,6 +85,7 @@ import {
   selectionLetterKey,
   shouldShowHandicap
 } from './display'
+import { noteMarketLines, trendOf } from './odds-trend'
 import type { OddsSelectPayload, SportMarketLine, SportWagerSelection } from './types'
 
 const props = withDefaults(
@@ -130,6 +135,22 @@ const listCells = (line: SportMarketLine): Array<SportWagerSelection | undefined
 
 const isSelected = (selection: SportWagerSelection) =>
   isWagerSelected(selection, props.selectedWagerSelectionId)
+
+const oddsNumberClass = (selection: SportWagerSelection) => {
+  if (isSelected(selection)) return 'text-text-4'
+  const trend = trendOf(selection.WagerSelectionId)
+  if (trend === 'up') return 'text-theme-primary'
+  if (trend === 'down') return 'text-secondary-2'
+  return 'text-text-1'
+}
+
+const oddsArrow = (selection: SportWagerSelection) => {
+  if (isSelected(selection)) return ''
+  const trend = trendOf(selection.WagerSelectionId)
+  return trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''
+}
+
+watch(() => props.MarketLines, noteMarketLines, { deep: true, immediate: true })
 
 const onListSelect = (line: SportMarketLine, selection?: SportWagerSelection) => {
   if (line.IsLocked || !selection) return

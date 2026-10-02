@@ -39,7 +39,10 @@
                 selection.Handicap
               }}</span>
             </span>
-            <span class="ml-auto shrink-0 text-xs font-bold">{{ selection.Odds }}</span>
+            <span class="ml-auto shrink-0 text-xs font-bold" :class="oddsNumberClass(selection)">
+              <span v-if="oddsArrow(selection)" aria-hidden="true">{{ oddsArrow(selection) }}</span
+              >{{ selection.Odds }}
+            </span>
           </template>
         </button>
         <button
@@ -102,7 +105,15 @@
                       formatHandicap(selection.Handicap)
                     }}</span>
                   </span>
-                  <span class="ml-auto shrink-0 text-xs font-bold">{{ selection.Odds }}</span>
+                  <span
+                    class="ml-auto shrink-0 text-xs font-bold"
+                    :class="oddsNumberClass(selection)"
+                  >
+                    <span v-if="oddsArrow(selection)" aria-hidden="true">{{
+                      oddsArrow(selection)
+                    }}</span
+                    >{{ selection.Odds }}
+                  </span>
                 </template>
               </button>
             </div>
@@ -115,7 +126,7 @@
 
 <script setup lang="ts">
 import CaretUp from '@/static/svg/sports/caret-up.svg?component'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import lockIcon from '../../event-details/components/sports-score-details/img/bold.svg?url'
 import {
@@ -125,6 +136,7 @@ import {
   selectionLetterKey,
   shouldShowHandicap
 } from './display'
+import { noteMarketLines, trendOf } from './odds-trend'
 import type { OddsSelectPayload, SportMarketLine, SportWagerSelection } from './types'
 
 const props = withDefaults(
@@ -181,6 +193,22 @@ const onSelect = (line: SportMarketLine, selection?: SportWagerSelection) => {
   if (line.IsLocked || !selection) return
   emit('select', { market: line, option: selection })
 }
+
+const oddsNumberClass = (selection: SportWagerSelection) => {
+  if (isWagerSelected(selection, props.selectedWagerSelectionId)) return ''
+  const trend = trendOf(selection.WagerSelectionId)
+  if (trend === 'up') return 'text-theme-primary'
+  if (trend === 'down') return 'text-secondary-2'
+  return ''
+}
+
+const oddsArrow = (selection: SportWagerSelection) => {
+  if (isWagerSelected(selection, props.selectedWagerSelectionId)) return ''
+  const trend = trendOf(selection.WagerSelectionId)
+  return trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''
+}
+
+watch(() => props.MarketLines, noteMarketLines, { deep: true, immediate: true })
 
 const toggleExpanded = () => {
   emit('update:expanded', !expanded.value)
