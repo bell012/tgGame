@@ -61,6 +61,7 @@
     <!-- 图片选择面板。 -->
     <ImagePickerPanel
       v-else-if="mode === 'media'"
+      :display-mode="props.displayMode"
       @photo="$emit('photo', $event)"
       @camera="$emit('camera', $event)"
     />

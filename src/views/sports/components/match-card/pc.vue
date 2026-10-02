@@ -11,7 +11,7 @@
     <!-- 展开后仍保留卡片原高度，避免后面的卡片移位。 -->
     <div
       ref="cardContent"
-      class="flex min-h-[211px] min-w-0 flex-col rounded-xl bg-bg-5 p-3 hover:bg-[linear-gradient(var(--color-opacity-6),var(--color-opacity-6))]"
+      class="flex min-h-[211px] min-w-0 flex-col rounded-xl bg-bg-5 p-3 transition-colors hover:bg-[image:linear-gradient(var(--color-opacity-6),var(--color-opacity-6))]"
       :class="
         overlaying
           ? 'absolute inset-x-0 top-0 z-20 min-h-full shadow-[0_8px_28px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_28px_rgba(0,0,0,0.5)]'

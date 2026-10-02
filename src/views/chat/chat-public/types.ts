@@ -1,9 +1,16 @@
 export type ConversationStatus = 'online' | 'offline' | 'typing'
 export type MessageDirection = 'incoming' | 'outgoing'
 export type MessageType =
-  'text' | 'image' | 'video' | 'reply' | 'auto-reply' | 'red-pack' | 'system'
+  | 'text'
+  | 'image'
+  | 'video'
+  | 'reply'
+  | 'auto-reply'
+  | 'red-pack'
+  | 'system'
 export type ChatComposerMode = 'idle' | 'typing' | 'emoji' | 'media' | 'reply'
 export type ChatMessageStatus = 'sending' | 'sent' | 'failed'
+export type ChatReplyContentType = 'text' | 'image' | 'video'
 
 export interface ConversationItem {
   id: string
@@ -23,9 +30,11 @@ export interface ChatReplyTarget {
   author: string
   preview: string
   photoCount?: number
+  /** 被引用图片或视频的原始地址，用于在引用摘要中展示缩略图。 */
+  mediaUrl?: string
   replyToUserId?: string
   replyToUserName?: string
-  replyToType?: 'text' | 'image'
+  replyToType?: ChatReplyContentType
 }
 
 export interface ChatMessage {
@@ -46,6 +55,8 @@ export interface ChatMessage {
   imageList?: ChatImageItem[]
   authorId?: string
   authorName?: string
+  /** 发送者头像，供历史搜索等脱离当前会话上下文的展示使用。 */
+  authorAvatar?: string
   redPacket?: ChatRedPacket
   system?: ChatSystemMessage
 }
@@ -94,7 +105,7 @@ export interface ChatSocketMessage {
 export interface ChatReplyInfo {
   replyToMsgId: string
   replyToContent: string
-  replyToType?: 'text' | 'image'
+  replyToType?: ChatReplyContentType
   replyToUserId: string
   replyToUserName: string
   quoteText: string
