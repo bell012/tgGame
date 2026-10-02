@@ -114,17 +114,10 @@
                     :error="parlay.stakeError ?? ''"
                     :placeholder="parlay.limitText"
                     :hide-error="true"
-                    :disabled="busy || Boolean(parlay.submissionState)"
+                    :disabled="busy"
                     @focus="focusStake(parlay.id, 'parlay')"
                   />
                 </div>
-                <p
-                  v-if="parlay.submissionState === 'confirmed'"
-                  class="pb-[3.333px] pt-[6.667px] text-[11px] leading-[13.333px] text-text-2"
-                  role="status"
-                >
-                  {{ t('sports.betSubmitSuccess') }}
-                </p>
                 <p
                   v-if="parlay.stakeError"
                   class="pb-[3.333px] pt-[6.667px] text-right text-[11px] leading-[13.333px] text-secondary-2"

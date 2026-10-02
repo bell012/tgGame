@@ -49,15 +49,8 @@ export const useSportsPage = () => {
     getBetTargets: () => refreshTargets.value
   })
   const { matchById, isPageActive, ...pageData } = data
-  const {
-    selectedSportId,
-    selectedFilterKey,
-    sortType,
-    competitionIds,
-    collectOnly,
-    matches,
-    expandedMatchId
-  } = data
+  const { selectedSportId, selectedFilterKey, sortType, competitionIds, matches, expandedMatchId } =
+    data
   const { betSlipOpen } = betSlip
 
   const isMatchFavoritePending = (id: string) => {
@@ -71,12 +64,10 @@ export const useSportsPage = () => {
     if (!match || sportsStore.isFavouritePending(match.EventId)) return
     const result = await sportsStore.toggleFavouriteEvent(match.EventId)
     if (!isPageActive()) return
-    if (result === 'login-failed' || result === 'failed' || result === 'auth-expired') {
+    if (result === 'failed' || result === 'auth-expired') {
       globalShowToast({
         type: 'fail',
-        message: t(
-          result === 'login-failed' ? 'sports.platformLoginFailed' : 'sports.favouriteFailed'
-        )
+        message: t('sports.favouriteFailed')
       })
     }
   }
@@ -125,9 +116,9 @@ export const useSportsPage = () => {
     syncCompetitionIds(payload.ids, payload.isAllSelected)
   }
   // 沿用 collectOnly 字段，统一切换 Store 收藏列表，不发起收藏写操作。
-  const handleCollectChange = (payload: CollectOnlyPayload) => {
+  const handleCollectChange = async (payload: CollectOnlyPayload) => {
     if (!requireLogin() || !isPageActive()) return
-    collectOnly.value = payload.collectOnly
+    await sportsStore.setFavouriteFilter(payload.collectOnly)
   }
   const closeOnOutside = (event: PointerEvent) => {
     const target = event.target

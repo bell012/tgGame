@@ -1,6 +1,7 @@
-import { computed, onMounted, type Ref } from 'vue'
+import { computed, onMounted, onScopeDispose, type Ref } from 'vue'
 import type { SportCompetitionGroup } from '@/api/interface/sport'
 import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useBetSlip } from '../components/bet-slip/useBetSlip'
 import type { OddsSelectPayload } from '../components/match-odds/types'
 import { getTeamLogoUrl } from '../index'
@@ -38,7 +39,12 @@ export function useEventDetailsBetSlip(deps: {
   const getMatch = (id: string) => matches.value.find(item => item.id === id)
 
   const { isLoggedIn } = useRequireLoginAction()
+  const siteConfigStore = useSiteConfigStore()
   const betSlip = useBetSlip({ getMatch, getTeamLogoUrl })
+  let disposed = false
+  onScopeDispose(() => {
+    disposed = true
+  })
 
   const refreshBalanceWhenLoggedIn = () => {
     if (!isLoggedIn.value) {
@@ -60,8 +66,9 @@ export function useEventDetailsBetSlip(deps: {
     refreshBalanceWhenLoggedIn()
   }
 
-  onMounted(() => {
-    refreshBalanceWhenLoggedIn()
+  onMounted(async () => {
+    await siteConfigStore.initSiteConfig()
+    if (!disposed) refreshBalanceWhenLoggedIn()
   })
 
   const page = betSlip as unknown as SportsPageState

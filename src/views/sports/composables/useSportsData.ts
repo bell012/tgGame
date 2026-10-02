@@ -6,6 +6,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
+import { useSportsAuthStore } from '@/stores/sportsAuth'
 import type { SportsRefreshTarget } from '@/stores/sports'
 import type { SportMarketLine } from '@/api/interface/sport'
 import { stripLocalePrefix } from '@/utils/locale'
@@ -26,6 +27,7 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
   const isHomepageRoute = computed(() => stripLocalePrefix(route.path) === '/sports')
   const isMobile = useIsMobile()
   const sportsStore = useSportsStore()
+  const sportsAuth = useSportsAuthStore()
   const siteConfigStore = useSiteConfigStore()
   const localeStore = useLocaleStore()
   const { t } = useI18n()
@@ -51,6 +53,7 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     hotEventsLoading,
     hotEventsError,
     sportsSessionVersion,
+    favouriteFilterPending: collectPending,
     retryingSports,
     pageNumber
   } = storeToRefs(sportsStore)
@@ -66,6 +69,7 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
   )
   let sportsPageDisposed = false
   let stopSportsRefresh: (() => void) | undefined
+  let stopBalanceRefresh: (() => void) | undefined
   const sportsPageActive = ref(true)
   const initializing = ref(true)
   const searchInput = ref(keyword.value)
@@ -185,6 +189,24 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     }
     return [...targets.values()]
   })
+  watch(
+    [
+      sportsPageActive,
+      isHomepageRoute,
+      () => sportsAuth.isReady,
+      () => sportsAuth.contextVersion,
+      () =>
+        refreshTargets.value
+          .map(target => `${target.sportId}:${target.eventId}`)
+          .sort()
+          .join(',')
+    ],
+    () => {
+      if (sportsPageActive.value && isHomepageRoute.value && !sportsPageDisposed) {
+        void sportsStore.refreshVisibleFavourites(refreshTargets.value)
+      }
+    }
+  )
   const homepageRefresh = createHomepageRefresh({
     visible: () => sportsStore.refreshVisibleEvents(refreshTargets.value),
     counts: () => sportsStore.refreshHomepageCounts(),
@@ -205,6 +227,8 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
       !sportsPageDisposed &&
       !document.hidden
     ) {
+      // 初始加载期间也可能切后台；就绪后恢复时统一续查，由 Store 复用在途请求和缓存。
+      void sportsStore.fetchMissingHotEvents()
       homepageRefresh.start(immediate)
     }
   }
@@ -366,6 +390,16 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
       { immediate: true }
     )
     initializing.value = false
+    // 余额单独取凭据，赛事加载不等待它；切换筛选不重复查余额。
+    stopBalanceRefresh = watch(
+      [sportsPageActive, isHomepageRoute, () => sportsAuth.contextVersion],
+      () => {
+        if (sportsPageActive.value && isHomepageRoute.value && !sportsPageDisposed) {
+          void sportsStore.fetchSportsBalance()
+        }
+      },
+      { immediate: true }
+    )
   })
   onActivated(() => {
     sportsPageActive.value = true
@@ -384,15 +418,17 @@ export const useSportsData = ({ getTeamLogoUrl, getBetTargets }: SportsDataOptio
     homepageRefresh.stop()
     homepageLoadVersion += 1
     stopSportsRefresh?.()
+    stopBalanceRefresh?.()
     sportsStore.cancelRequests()
     clearTimeout(searchTimer)
     document.removeEventListener('visibilitychange', handlePageVisibility)
   })
 
-  const isPageActive = () => sportsPageActive.value && !sportsPageDisposed
+  const isPageActive = () => isHomepageRoute.value && sportsPageActive.value && !sportsPageDisposed
 
   return {
     sportCounts,
+    collectPending,
     sportCountsLoading,
     sportCountsError,
     selectedSportId,

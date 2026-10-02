@@ -22,7 +22,15 @@
             data-testid="sports-h5-favorite"
             @click.stop="emit('favorite')"
           >
+            <Loading
+              v-if="favoritePending"
+              type="spinner"
+              size="12px"
+              color="currentColor"
+              aria-hidden="true"
+            />
             <StarIcon
+              v-else
               class="h-3 w-3 overflow-visible"
               :class="
                 favorite
@@ -98,6 +106,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Loading } from 'vant'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'

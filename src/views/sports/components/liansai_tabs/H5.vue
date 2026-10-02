@@ -5,10 +5,21 @@
       <button
         type="button"
         class="inline-flex h-[30px] w-[30px] flex-none items-center justify-center rounded-lg border-0 bg-bg-2 transition-colors"
-        aria-label="Collect only"
+        :aria-label="t('sports.collectOnly')"
+        :disabled="props.collectPending"
+        :aria-busy="props.collectPending"
         @click="toggleCollectOnly"
       >
+        <Loading
+          v-if="props.collectPending"
+          type="spinner"
+          size="12px"
+          color="currentColor"
+          class="text-icon-3"
+          aria-hidden="true"
+        />
         <CollectIcon
+          v-else
           class="h-3 w-3 text-icon-3"
           :class="props.collectOnly ? 'text-theme-primary' : 'opacity-100'"
         />
@@ -214,6 +225,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Loading } from 'vant'
 import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
@@ -249,10 +261,12 @@ const emit = defineEmits<{
 const props = withDefaults(
   defineProps<{
     collectOnly?: boolean
+    collectPending?: boolean
     searchKeyword?: string
   }>(),
   {
     collectOnly: false,
+    collectPending: false,
     searchKeyword: ''
   }
 )

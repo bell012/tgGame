@@ -10,6 +10,7 @@ type ListTask = 'counts' | 'background' | 'hot'
 
 const EVENT_INTERVAL = 10_000
 const LIST_INTERVAL = 10_000
+const HOT_INTERVAL = 60_000
 
 /** 数量、名单和可见赛事独立刷新，同类请求不重叠。 */
 export const createHomepageRefresh = (actions: RefreshActions) => {
@@ -19,6 +20,7 @@ export const createHomepageRefresh = (actions: RefreshActions) => {
   const runningLists = new Set<ListTask>()
   let visibleRequested = false
   let nextListRefresh = Date.now() + LIST_INTERVAL
+  let nextHotRefresh = Date.now() + HOT_INTERVAL
   let eventTimer: ReturnType<typeof setTimeout> | undefined
   let listTimer: ReturnType<typeof setTimeout> | undefined
   let targetsTimer: ReturnType<typeof setTimeout> | undefined
@@ -73,7 +75,10 @@ export const createHomepageRefresh = (actions: RefreshActions) => {
     // 数量先发出，名单不等待数量响应。
     void runListTask('counts')
     void runListTask('background')
-    void runListTask('hot')
+    if (Date.now() >= nextHotRefresh) {
+      void runListTask('hot')
+      nextHotRefresh = Date.now() + HOT_INTERVAL
+    }
     nextListRefresh = Date.now() + LIST_INTERVAL
     scheduleLists()
   }

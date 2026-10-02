@@ -79,13 +79,13 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     page.betSlipOpen.value = false
   }
   const focusStake = (id: string, kind: SportsBetMode) => {
-    if (busy.value || rows.value.find(item => item.id === id)?.submissionState) return
+    if (busy.value) return
     page.focusStake(id, kind)
     keyboardOpen.value = true
     replaceNextKey = true
   }
   const writeStake = (value: string) => {
-    if (!activeRow.value || activeRow.value.submissionState || busy.value) return
+    if (!activeRow.value || busy.value) return
     if (page.mode.value === 'single') page.updateStake(activeRow.value.id, value)
     else page.updateParlayStake(activeRow.value.id, value)
   }
@@ -99,14 +99,7 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   }
   const maxStake = () => {
     const target = activeRow.value
-    if (
-      !target ||
-      target.submissionState ||
-      busy.value ||
-      editingAmounts.value ||
-      page.balance.value === null
-    )
-      return
+    if (!target || busy.value || editingAmounts.value || page.balance.value === null) return
     page.maxStake(target.id, page.mode.value)
     replaceNextKey = true
   }
@@ -209,6 +202,11 @@ export const useSportsH5Bet = (page: SportsPageState) => {
       if (submittedView.value === view && !result.value) submittedView.value = null
     }
   }
+
+  // 余额刷新仍可能在途；提交结束且没有结果遮罩时，立即恢复可编辑的实时内容。
+  watch(page.submitting, submitting => {
+    if (!submitting && !result.value) submittedView.value = null
+  })
 
   watch(
     () => page.betResult?.value,

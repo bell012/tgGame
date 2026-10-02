@@ -69,7 +69,14 @@
           :disabled="favoritePending"
           @click.stop="emit('favorite')"
         >
-          <StarIcon class="h-4 w-4" aria-hidden="true" />
+          <Loading
+            v-if="favoritePending"
+            type="spinner"
+            size="16px"
+            color="currentColor"
+            aria-hidden="true"
+          />
+          <StarIcon v-else class="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
@@ -130,6 +137,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Loading } from 'vant'
 import SmartImage from '@/components/common/SmartImage.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'

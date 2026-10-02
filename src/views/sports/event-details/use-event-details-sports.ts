@@ -10,6 +10,7 @@ import type {
 } from '@/api/interface/sport'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
+import { useSportsAuthStore } from '@/stores/sportsAuth'
 import { eventToCompetitionGroup, mergeEventIntoGroups } from './map-seed-match'
 
 type EventDetailsSportsError = {
@@ -32,7 +33,8 @@ export function useEventDetailsSports(
 ) {
   const siteConfigStore = useSiteConfigStore()
   const sportsStore = useSportsStore()
-  const { languageCode, sportsMemberCode } = storeToRefs(sportsStore)
+  const sportsAuth = useSportsAuthStore()
+  const { languageCode } = storeToRefs(sportsStore)
 
   const loading = ref(false)
   const error = ref<EventDetailsSportsError | null>(null)
@@ -70,8 +72,7 @@ export function useEventDetailsSports(
     CompetitionIds: [],
     Keyword: '',
     IsFavourite: false,
-    earlyTradingDate: null,
-    MemberCode: sportsMemberCode.value
+    earlyTradingDate: null
   })
 
   const buildTargetParams = (id: number, eventId: number): GetSelectedEventInfoParams => ({
@@ -94,7 +95,7 @@ export function useEventDetailsSports(
       return null
     }
 
-    const response = await Api.sport.getSportsV2(baseUrl, buildListParams(id), { signal })
+    const response = await sportsStore.querySportsList(baseUrl, buildListParams(id), { signal })
     if (currentGeneration !== generation) {
       return null
     }
@@ -143,16 +144,30 @@ export function useEventDetailsSports(
       error.value = { kind: 'response', message: 'Unexpected selected event response' }
       return null
     }
-    return response.e[0] ?? null
+    const event = response.e.find(item => item.EventId === eventId) ?? null
+    // 目标赛事可能不在滚球首屏；单独读取收藏状态，不覆盖详情数据。
+    if (event && sportsAuth.isReady && sportsStore.getEventFavourite(eventId) === undefined) {
+      void sportsStore
+        .querySportsList(
+          baseUrl,
+          {
+            ...buildListParams(id),
+            Market: event.Market,
+            competitionCondType: 2,
+            CompetitionIds: [event.Competition.CompetitionId],
+            Keyword: event.HomeTeam
+          },
+          { signal }
+        )
+        .catch(() => {
+          // 读取失败保留当前星标，不重试登录或收藏操作。
+        })
+    }
+    return event
   }
 
   const fetchSportsV2 = async (id: number) => {
     const { currentGeneration, signal } = beginRequest()
-
-    await sportsStore.ensureSportsMemberCode()
-    if (currentGeneration !== generation || signal.aborted) {
-      return
-    }
 
     try {
       const list = await fetchListGroups(id, signal, currentGeneration)
@@ -174,11 +189,6 @@ export function useEventDetailsSports(
 
   const loadListWithTargetEvent = async (id: number, eventId: number) => {
     const { currentGeneration, signal } = beginRequest()
-
-    await sportsStore.ensureSportsMemberCode()
-    if (currentGeneration !== generation || signal.aborted) {
-      return
-    }
 
     try {
       const [list, detail] = await Promise.all([
@@ -224,16 +234,18 @@ export function useEventDetailsSports(
   }
 
   watch(
-    [sportId, () => options?.targetEventId?.value ?? ''],
+    [
+      sportId,
+      () => options?.targetEventId?.value ?? '',
+      languageCode,
+      () => sportsAuth.contextVersion,
+      () => sportsAuth.isReady
+    ],
     () => {
       loadSports()
     },
     { immediate: true }
   )
-
-  watch(languageCode, () => {
-    loadSports()
-  })
 
   const clearGroups = () => {
     groups.value = []
