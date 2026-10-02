@@ -80,6 +80,8 @@
     "account": "账号",
     "username": "用户",
     "phone": "手机",
+    "select_country": "选择国家",
+    "search_country": "搜索国家",
     "enter_account": "请输入您的电话号码",
     "enter_username": "请输入您的用户名",
     "invitation_code": "邀请码",

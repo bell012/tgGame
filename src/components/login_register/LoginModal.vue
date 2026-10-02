@@ -1,15 +1,32 @@
 ﻿<template>
-  <!-- H5 端登录/注册 -->
+  <!-- H5 端登录 -->
   <LoginFormMobile
     v-if="isMobile"
-    :visible="modelValue && !showResetPassword"
-    :default-tab="defaultTab === 'register' ? 'signup' : 'signin'"
+    :visible="modelValue && !showResetPassword && activeTab === 'login'"
+    default-tab="signin"
     :login-setting="loginRegisterSetting"
     :logo-url="authLogoUrl"
     :background-image-url="mobileBackgroundImage"
     :background-loading="isAuthBannerLoading"
+    :overlay-z-index="activeTab === 'login' ? 10001 : 10000"
     @update:visible="handleClose"
     @open-reset-password="openResetPassword"
+    @switch-tab="handleMobileAuthTabSwitch"
+  />
+
+  <!-- H5 端注册 -->
+  <LoginFormMobile
+    v-if="isMobile"
+    :visible="modelValue && !showResetPassword && activeTab === 'register'"
+    default-tab="signup"
+    :login-setting="loginRegisterSetting"
+    :logo-url="authLogoUrl"
+    :background-image-url="mobileBackgroundImage"
+    :background-loading="isAuthBannerLoading"
+    :overlay-z-index="activeTab === 'register' ? 10001 : 10000"
+    @update:visible="handleClose"
+    @open-reset-password="openResetPassword"
+    @switch-tab="handleMobileAuthTabSwitch"
   />
 
   <!-- H5 端忘记密码 -->
@@ -492,6 +509,14 @@ const handleAuthTabSwitch = (tab: 'signin' | 'signup') => {
   }
 
   backToLogin()
+}
+
+/**
+ * 接收 H5 表单内部的登录/注册切换请求，切换到对应独立页面。
+ */
+const handleMobileAuthTabSwitch = (tab: 'signin' | 'signup') => {
+  activeTab.value = tab === 'signup' ? 'register' : 'login'
+  showResetPassword.value = false
 }
 
 const handleResetPasswordClose = () => {

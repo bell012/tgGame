@@ -80,6 +80,8 @@
     "account": "Account",
     "username": "Username",
     "phone": "Phone",
+    "select_country": "Select Country",
+    "search_country": "Search Country",
     "enter_account": "Enter your phone number",
     "enter_username": "Enter your username",
     "invitation_code": "Invite Code",
