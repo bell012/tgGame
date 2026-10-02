@@ -87,6 +87,10 @@ const hasLoginMobile = computed(() => {
   )
 })
 
+const hasTransactionPassword = computed(() => {
+  return String(userInfo.value?.busiPwd ?? '').trim().length > 0
+})
+
 onMounted(() => {
   userStore.syncStoredUserData()
 })
@@ -111,6 +115,12 @@ const handleCardAction = (_key: SecurityCardKey) => {
 const getCardActionText = (cardKey: SecurityCardKey) => {
   if (cardKey === 'mobile' && !hasLoginMobile.value) {
     return t('common.setMobileNumber')
+  }
+
+  if (cardKey === 'transactionPassword') {
+    return hasTransactionPassword.value
+      ? t('common.changeTransactionPassword')
+      : t('common.setTransactionPassword')
   }
 
   return t(`securitySettings.cards.${cardKey}.action`)

@@ -53,7 +53,10 @@
     <!-- 修改手机号码弹窗 -->
     <ChangeMobileNumberPcLayout v-model="showChangeMobileNumberPopup" />
     <!-- 交易密码弹窗 -->
-    <TransactionPassword v-model="showTransactionPasswordPopup" />
+    <TransactionPassword
+      v-model="showTransactionPasswordPopup"
+      @open-mobile-number="handleOpenMobileNumberFromTransactionPassword"
+    />
   </div>
 </template>
 
@@ -81,6 +84,10 @@ const hasLoginMobile = computed(() => {
     String(userInfo.value?.areaCode ?? '').trim().length > 0 &&
     String(userInfo.value?.telephone ?? '').trim().length > 0
   )
+})
+
+const hasTransactionPassword = computed(() => {
+  return String(userInfo.value?.busiPwd ?? '').trim().length > 0
 })
 
 // 修改登录密码弹窗
@@ -115,7 +122,15 @@ const handleOpenMobileNumberFromLoginPassword = () => {
 }
 
 /**
- * 打开 PC 修改登录密码弹窗。
+ * 从交易密码弹窗切换到设置手机号码弹窗。
+ */
+const handleOpenMobileNumberFromTransactionPassword = () => {
+  showTransactionPasswordPopup.value = false
+  showChangeMobileNumberPopup.value = true
+}
+
+/**
+ * 打开对应的 PC 安全设置弹窗。
  */
 const handleOpenChangeLoginPassword = (_key: SecurityCardKey) => {
   switch (_key) {
@@ -137,6 +152,12 @@ const handleOpenChangeLoginPassword = (_key: SecurityCardKey) => {
 const getCardActionText = (cardKey: SecurityCardKey) => {
   if (cardKey === 'mobile' && !hasLoginMobile.value) {
     return t('common.setMobileNumber')
+  }
+
+  if (cardKey === 'transactionPassword') {
+    return hasTransactionPassword.value
+      ? t('common.changeTransactionPassword')
+      : t('common.setTransactionPassword')
   }
 
   return t(`securitySettings.cards.${cardKey}.action`)

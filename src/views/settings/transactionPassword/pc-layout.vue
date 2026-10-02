@@ -19,7 +19,17 @@
       </div>
 
       <!-- 第一步 -->
-      <template v-if="currentStep === 'verification'">
+      <template v-if="!hasLoginMobile">
+        <button
+          type="button"
+          class="relative mt-[60px] flex h-[49px] w-full items-center justify-center overflow-hidden rounded-lg bg-theme-primary text-sm font-[700] text-text-4"
+          @click="handleOpenSetMobileNumber"
+        >
+          <span>{{ t('common.setMobileNumber') }}</span>
+        </button>
+      </template>
+
+      <template v-else-if="currentStep === 'verification'">
         <div class="mt-12 flex flex-col items-center">
           <SetIcon class="h-[30px] w-[30px] text-text-2" />
           <h3 class="mt-[9px] text-center text-xl font-[700] text-text-1">
@@ -28,7 +38,23 @@
           <p class="mt-[24px] text-center text-xl font-[400] text-text-2">
             {{ t('common.verificationCodeSentTo') }}
           </p>
-          <p class="text-center text-xl font-[700] text-text-1">{{ phoneNumberDisplay }}</p>
+          <div
+            class="mt-4 flex h-[48px] w-full items-center rounded-[8px] border border-input-2 bg-input-3 px-3.5"
+          >
+            <button
+              type="button"
+              class="mr-2 flex cursor-default items-center gap-1 text-xl font-[700] text-theme-primary"
+            >
+              <span>{{ currentAreaCodeDisplay }}</span>
+              <XiaIcon class="h-3 w-3 opacity-40" />
+            </button>
+            <input
+              :value="resolvedTelephone"
+              type="tel"
+              readonly
+              class="h-full w-full cursor-default bg-transparent text-base font-[700] text-text-1 outline-none"
+            />
+          </div>
         </div>
 
         <div class="mt-8">
@@ -200,6 +226,7 @@ import ButtonLoadingSpinner from '@/components/common/ButtonLoadingSpinner.vue'
 import SmsCodeHelpPopup from '@/components/common/SmsCodeHelpPopup.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import SetIcon from '@/static/svg/set.svg?component'
+import XiaIcon from '@/static/svg/login/xia.svg?skipsvgo'
 import { navigateToName } from '@/utils/router'
 import { useTransactionPassword } from './shared'
 
@@ -211,6 +238,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
+  'open-mobile-number': []
 }>()
 
 const isVisible = computed(() => props.modelValue ?? true)
@@ -230,12 +258,15 @@ const {
   transactionPasswordInputRef,
   confirmTransactionPasswordInputRef,
   isResendCountdownRunning,
-  phoneNumberDisplay,
+  hasLoginMobile,
+  currentAreaCodeDisplay,
+  resolvedTelephone,
   resendActionText,
   resendActionClass,
   isConfirmButtonDisabled,
   isUpdatePasswordButtonDisabled,
   focusVerificationInput,
+  handleGoSetMobileNumber,
   focusTransactionPasswordInput,
   focusConfirmTransactionPasswordInput,
   openSmsCodeHelpPopup,
@@ -247,6 +278,21 @@ const {
   handleConfirmStep,
   handleUpdatePassword
 } = useTransactionPassword()
+
+/**
+ * 进入设置手机号码流程。
+ */
+const handleOpenSetMobileNumber = () => {
+  resetTransactionPasswordState()
+
+  if (props.modelValue !== undefined) {
+    emit('update:modelValue', false)
+    emit('open-mobile-number')
+    return
+  }
+
+  handleGoSetMobileNumber()
+}
 
 /**
  * 关闭 PC 交易密码弹窗。
