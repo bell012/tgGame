@@ -11,7 +11,9 @@
       #default="{
         activeTab,
         activeLoginMethod,
+        activeSignupMethod,
         loginMethodTabs,
+        signupMethodTabs,
         showPassword,
         showConfirmPassword,
         formData,
@@ -22,10 +24,14 @@
         showSigninPassword,
         showSigninSmsCode,
         showSigninCaptcha,
+        showSignupPassword,
+        showSignupSmsCode,
+        showSignupInvitationCode,
         captchaImageUrl,
         isCaptchaLoading,
         setActiveTab,
         setActiveLoginMethod,
+        setActiveSignupMethod,
         togglePassword,
         toggleConfirmPassword,
         handleCheckboxClick,
@@ -35,14 +41,16 @@
         openResetPassword,
         handleSigninUsernameInput,
         handleSigninPhoneInput,
-        handleSignupAccountInput,
+        handleSignupUsernameInput,
+        handleSignupPhoneInput,
         handleSignupCodeInput,
         handleSigninPasswordInput,
         handleSigninSmsCodeInput,
         handleSigninCaptchaInput,
         refreshSigninCaptcha,
         handleSignupPasswordInput,
-        handleSignupConfirmPasswordInput
+        handleSignupConfirmPasswordInput,
+        handleSignupInvitationCodeInput
       }"
     >
       <teleport to="body">
@@ -336,6 +344,22 @@
                   </template>
 
                   <template v-else-if="activeTab === 'signup'">
+                    <div v-if="signupMethodTabs.length > 0" class="flex gap-6 mb-3.5">
+                      <button
+                        v-for="method in signupMethodTabs"
+                        :key="method.key"
+                        class="relative min-w-14 pb-1.5 text-base font-[700] font-inter transition-all duration-200 tab-button-new"
+                        :class="activeSignupMethod === method.key ? 'text-text-1' : 'text-text-2'"
+                        @click="setActiveSignupMethod(method.key)"
+                      >
+                        <span>{{ method.label }}</span>
+                        <div
+                          v-if="activeSignupMethod === method.key"
+                          class="absolute bottom-0 left-0 right-0 h-[3px] bg-theme-primary rounded-[4px]"
+                        ></div>
+                      </button>
+                    </div>
+
                     <!-- 账号 -->
                     <div class="text-sm font-[700] text-text-1 mb-1.5">
                       {{ t('common.account') }}
@@ -344,105 +368,145 @@
                       <!-- 请输入账号 -->
                       <div class="relative">
                         <span
+                          v-if="activeSignupMethod === 'phone'"
                           class="absolute left-3.5 top-1/2 -translate-y-1/2 text-theme-primary text-base font-[700]"
                         >
                           {{ defaultAreaCodeDisplay }}
                         </span>
-                        <input
-                          :value="formData.signup.account"
-                          type="text"
-                          inputmode="numeric"
-                          :placeholder="t('common.enter_account')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[52px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
-                          @input="handleSignupAccountInput"
+                        <KeyIcon
+                          v-if="activeSignupMethod === 'username'"
+                          class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5"
                         />
-                      </div>
-                    </div>
-
-                    <!-- 验证码 -->
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">
-                      {{ t('common.verification') }}
-                    </div>
-                    <div class="mb-3">
-                      <div class="relative">
-                        <SafeIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
-                        <!-- 请输入验证码 -->
                         <input
-                          :value="formData.signup.code"
-                          type="text"
-                          inputmode="numeric"
-                          :placeholder="t('common.enter_verification')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
-                          @input="handleSignupCodeInput"
-                        />
-                        <!-- 获取验证码 -->
-                        <button
-                          type="button"
-                          class="absolute right-3.5 top-1/2 -translate-y-1/2 h-7 min-w-[70px] px-2 text-xs font-[500] rounded-lg transition-opacity"
-                          :class="
-                            countdown > 0
-                              ? 'bg-opacity-6 text-text-2 cursor-not-allowed'
-                              : 'bg-secondary-3 text-theme-primary'
+                          :value="
+                            activeSignupMethod === 'username'
+                              ? formData.signup.usernameAccount
+                              : formData.signup.phoneAccount
                           "
-                          :disabled="countdown > 0"
-                          @click="handleSendCode"
-                        >
-                          {{ countdown > 0 ? `${countdown}s` : t('common.get_code') }}
-                        </button>
+                          type="text"
+                          :inputmode="activeSignupMethod === 'phone' ? 'numeric' : 'text'"
+                          :placeholder="
+                            activeSignupMethod === 'username'
+                              ? t('common.enter_username')
+                              : t('common.enter_account')
+                          "
+                          class="auth-input-placeholder w-full h-[47px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                          :class="activeSignupMethod === 'phone' ? 'pl-[52px]' : 'pl-[44px]'"
+                          @input="
+                            activeSignupMethod === 'username'
+                              ? handleSignupUsernameInput($event)
+                              : handleSignupPhoneInput($event)
+                          "
+                        />
                       </div>
                     </div>
 
-                    <!-- 密码 -->
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">
-                      {{ t('common.password') }}
-                    </div>
-                    <div class="mb-3">
-                      <div class="relative">
-                        <PasswordIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
-                        <!-- 请输入密码 -->
-                        <input
-                          :value="formData.signup.password"
-                          :type="showPassword.signup ? 'text' : 'password'"
-                          :placeholder="t('common.enter_password')"
-                          class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
-                          :class="showPassword.signup ? '' : 'auth-password-mask'"
-                          @input="handleSignupPasswordInput"
-                        />
-                        <button
-                          type="button"
-                          class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                          @click="togglePassword('signup')"
-                        >
-                          <EyeIcon v-if="showPassword.signup" class="w-4 h-4 text-text-2" />
-                          <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
-                        </button>
+                    <template v-if="showSignupSmsCode">
+                      <!-- 验证码 -->
+                      <div class="text-sm font-[700] text-text-1 mb-1.5">
+                        {{ t('common.verification') }}
                       </div>
-                    </div>
+                      <div class="mb-3">
+                        <div class="relative">
+                          <SafeIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
+                          <!-- 请输入验证码 -->
+                          <input
+                            :value="formData.signup.code"
+                            type="text"
+                            inputmode="numeric"
+                            :placeholder="t('common.enter_verification')"
+                            class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                            @input="handleSignupCodeInput"
+                          />
+                          <!-- 获取验证码 -->
+                          <button
+                            type="button"
+                            class="absolute right-3.5 top-1/2 -translate-y-1/2 h-7 min-w-[70px] px-2 text-xs font-[500] rounded-lg transition-opacity"
+                            :class="
+                              countdown > 0
+                                ? 'bg-opacity-6 text-text-2 cursor-not-allowed'
+                                : 'bg-secondary-3 text-theme-primary'
+                            "
+                            :disabled="countdown > 0"
+                            @click="handleSendCode"
+                          >
+                            {{ countdown > 0 ? `${countdown}s` : t('common.get_code') }}
+                          </button>
+                        </div>
+                      </div>
+                    </template>
 
-                    <!-- 确认密码 -->
-                    <div class="text-sm font-[700] text-text-1 mb-1.5">
-                      {{ t('common.confirm_password') }}
-                    </div>
-                    <div class="mb-10">
+                    <template v-if="showSignupPassword">
+                      <!-- 密码 -->
+                      <div class="text-sm font-[700] text-text-1 mb-1.5">
+                        {{ t('common.password') }}
+                      </div>
+                      <div class="mb-3">
+                        <div class="relative">
+                          <PasswordIcon
+                            class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5"
+                          />
+                          <!-- 请输入密码 -->
+                          <input
+                            :value="formData.signup.password"
+                            :type="showPassword.signup ? 'text' : 'password'"
+                            :placeholder="t('common.enter_password')"
+                            class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                            :class="showPassword.signup ? '' : 'auth-password-mask'"
+                            @input="handleSignupPasswordInput"
+                          />
+                          <button
+                            type="button"
+                            class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                            @click="togglePassword('signup')"
+                          >
+                            <EyeIcon v-if="showPassword.signup" class="w-4 h-4 text-text-2" />
+                            <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- 确认密码 -->
+                      <div class="text-sm font-[700] text-text-1 mb-1.5">
+                        {{ t('common.confirm_password') }}
+                      </div>
+                      <div class="mb-3">
+                        <div class="relative">
+                          <PasswordIcon
+                            class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5"
+                          />
+                          <!-- 请输入确认密码 -->
+                          <input
+                            :value="formData.signup.confirmPassword"
+                            :type="showConfirmPassword ? 'text' : 'password'"
+                            :placeholder="t('common.enter_confirm_password')"
+                            class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                            :class="showConfirmPassword ? '' : 'auth-password-mask'"
+                            @input="handleSignupConfirmPasswordInput"
+                          />
+                          <button
+                            type="button"
+                            class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                            @click="toggleConfirmPassword"
+                          >
+                            <EyeIcon v-if="showConfirmPassword" class="w-4 h-4 text-text-2" />
+                            <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
+                          </button>
+                        </div>
+                      </div>
+                    </template>
+
+                    <div v-if="showSignupInvitationCode" class="mb-10">
                       <div class="relative">
-                        <PasswordIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
-                        <!-- 请输入确认密码 -->
+                        <InviteIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
                         <input
-                          :value="formData.signup.confirmPassword"
-                          :type="showConfirmPassword ? 'text' : 'password'"
-                          :placeholder="t('common.enter_confirm_password')"
+                          :value="formData.signup.invitationCode"
+                          type="text"
+                          inputmode="numeric"
+                          :placeholder="t('common.enter_invitation_code')"
                           class="auth-input-placeholder w-full h-[47px] pl-[44px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
-                          :class="showConfirmPassword ? '' : 'auth-password-mask'"
-                          @input="handleSignupConfirmPasswordInput"
+                          @input="handleSignupInvitationCodeInput"
                         />
-                        <button
-                          type="button"
-                          class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                          @click="toggleConfirmPassword"
-                        >
-                          <EyeIcon v-if="showConfirmPassword" class="w-4 h-4 text-text-2" />
-                          <EyeOffIcon v-else class="w-4 h-4 text-text-2" />
-                        </button>
                       </div>
                     </div>
 
@@ -490,6 +554,7 @@ import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import CheckIcon from '@/static/svg/login/check.svg?skipsvgo'
 import KeyIcon from '@/static/svg/login/key.svg?skipsvgo'
+import InviteIcon from '@/static/svg/login/yaoqing.svg?skipsvgo'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'

@@ -11,8 +11,11 @@
       #default="{
         activeTab,
         activeLoginMethod,
+        activeSignupMethod,
         loginMethodTabs,
+        signupMethodTabs,
         signinAreaCode,
+        signupAreaCode,
         showPassword,
         formData,
         checkboxAnimating,
@@ -22,11 +25,16 @@
         showSigninPassword,
         showSigninSmsCode,
         showSigninCaptcha,
+        showSignupPassword,
+        showSignupSmsCode,
+        showSignupInvitationCode,
         captchaImageUrl,
         isCaptchaLoading,
         setActiveTab,
         setActiveLoginMethod,
+        setActiveSignupMethod,
         setSigninAreaCode,
+        setSignupAreaCode,
         togglePassword,
         handleCheckboxClick,
         handleLogin,
@@ -39,10 +47,12 @@
         handleSigninSmsCodeInput,
         handleSigninCaptchaInput,
         refreshSigninCaptcha,
-        handleSignupAccountInput,
+        handleSignupUsernameInput,
+        handleSignupPhoneInput,
         handleSignupCodeInput,
         handleSignupPasswordInput,
-        handleSignupConfirmPasswordInput
+        handleSignupConfirmPasswordInput,
+        handleSignupInvitationCodeInput
       }"
     >
       <div class="w-full h-full flex flex-col">
@@ -62,13 +72,17 @@
           </button>
         </div>
 
-        <div v-else class="flex gap-[48px] mb-8">
+        <div v-else class="flex gap-8 mb-6">
           <button
-            class="relative min-w-20 pb-3 text-2xl font-[700] font-inter text-text-1 tab-button-new"
-            @click="setActiveTab('signup')"
+            v-for="method in signupMethodTabs"
+            :key="method.key"
+            class="relative min-w-16 pb-3 text-lg font-[700] font-inter transition-all duration-200 tab-button-new"
+            :class="activeSignupMethod === method.key ? 'text-text-1' : 'text-text-2'"
+            @click="handleSignupMethodClick(method.key, setActiveSignupMethod)"
           >
-            <span>{{ t('home.sign_Up') }}</span>
+            <span>{{ method.label }}</span>
             <div
+              v-if="activeSignupMethod === method.key"
               class="absolute bottom-0 left-0 right-0 h-[4px] bg-theme-primary rounded-[10px]"
             ></div>
           </button>
@@ -274,100 +288,146 @@
           <template v-else-if="activeTab === 'signup'">
             <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
             <div class="mb-6">
-              <div class="relative">
-                <span
-                  class="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-theme-level-1)] text-base font-[500]"
+              <div ref="signupAreaCodeAnchorRef" class="relative">
+                <KeyIcon
+                  v-if="activeSignupMethod === 'username'"
+                  class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5"
+                />
+                <div
+                  v-if="activeSignupMethod === 'phone'"
+                  class="absolute left-4 top-[21px] z-10 -translate-y-1/2"
                 >
-                  {{ defaultAreaCodeDisplay }}
-                </span>
+                  <button
+                    type="button"
+                    class="flex items-center gap-1 text-[var(--color-theme-level-1)] text-base font-[700]"
+                    @click.stop="toggleSignupAreaCodeDropdown"
+                  >
+                    <span>{{ getSelectedPhoneAreaCode(signupAreaCode).display }}</span>
+                    <XiaIcon
+                      class="w-3 h-3 transition-transform duration-200"
+                      :class="isSignupAreaCodeDropdownOpen ? 'rotate-180' : ''"
+                    />
+                  </button>
+                </div>
                 <input
-                  :value="formData.signup.account"
-                  type="text"
-                  inputmode="numeric"
-                  :placeholder="t('common.enter_account')"
-                  class="auth-input-placeholder w-full h-[42px] pl-[52px] pr-[3px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
-                  @input="handleSignupAccountInput"
-                />
-              </div>
-            </div>
-
-            <div class="text-sm font-[700] text-text-1 mb-2">
-              {{ t('common.verification') }}
-            </div>
-            <div class="mb-6">
-              <div class="relative">
-                <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
-                <input
-                  :value="formData.signup.code"
-                  type="text"
-                  inputmode="numeric"
-                  :placeholder="t('common.enter_verification')"
-                  class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-[92px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
-                  @input="handleSignupCodeInput"
-                />
-                <button
-                  type="button"
-                  class="absolute right-4 top-1/2 -translate-y-1/2 h-7 min-w-[70px] px-2 text-xs font-[500] rounded-lg transition-opacity"
-                  :class="
-                    countdown > 0
-                      ? 'bg-opacity-6 text-text-2 cursor-not-allowed'
-                      : 'bg-secondary-3 text-theme-primary'
+                  :value="
+                    activeSignupMethod === 'username'
+                      ? formData.signup.usernameAccount
+                      : formData.signup.phoneAccount
                   "
-                  :disabled="countdown > 0"
-                  @click="handleSendCode"
-                >
-                  {{ countdown > 0 ? `${countdown}s` : t('common.get_code') }}
-                </button>
+                  type="text"
+                  :inputmode="activeSignupMethod === 'phone' ? 'numeric' : 'text'"
+                  :placeholder="
+                    activeSignupMethod === 'username'
+                      ? t('common.enter_username')
+                      : t('common.enter_account')
+                  "
+                  class="auth-input-placeholder w-full h-[42px] pr-[3px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                  :class="activeSignupMethod === 'phone' ? 'pl-[78px]' : 'pl-[44px]'"
+                  @input="
+                    activeSignupMethod === 'username'
+                      ? handleSignupUsernameInput($event)
+                      : handleSignupPhoneInput($event)
+                  "
+                />
               </div>
             </div>
 
-            <div class="text-sm font-[700] text-text-1 mb-2">
-              {{ t('common.password') }}
-            </div>
-            <div class="mb-6">
-              <div class="relative">
-                <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
-                <input
-                  :value="formData.signup.password"
-                  :type="showPassword.signup ? 'text' : 'password'"
-                  :placeholder="t('common.enter_password')"
-                  class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
-                  :class="showPassword.signup ? '' : 'auth-password-mask'"
-                  @input="handleSignupPasswordInput"
-                />
-                <button
-                  type="button"
-                  class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                  @click="togglePassword('signup')"
-                >
-                  <EyeIcon v-if="showPassword.signup" class="w-5 h-5 text-text-2" />
-                  <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
-                </button>
+            <template v-if="showSignupSmsCode">
+              <div class="text-sm font-[700] text-text-1 mb-2">
+                {{ t('common.verification') }}
               </div>
-            </div>
+              <div class="mb-6">
+                <div class="relative">
+                  <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                  <input
+                    :value="formData.signup.code"
+                    type="text"
+                    inputmode="numeric"
+                    :placeholder="t('common.enter_verification')"
+                    class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-[92px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                    @input="handleSignupCodeInput"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 h-7 min-w-[70px] px-2 text-xs font-[500] rounded-lg transition-opacity"
+                    :class="
+                      countdown > 0
+                        ? 'bg-opacity-6 text-text-2 cursor-not-allowed'
+                        : 'bg-secondary-3 text-theme-primary'
+                    "
+                    :disabled="countdown > 0"
+                    @click="handleSendCode"
+                  >
+                    {{ countdown > 0 ? `${countdown}s` : t('common.get_code') }}
+                  </button>
+                </div>
+              </div>
+            </template>
 
-            <div class="text-sm font-[700] text-text-1 mb-2">
-              {{ t('common.confirm_password') }}
-            </div>
-            <div class="mb-8">
+            <template v-if="showSignupPassword">
+              <div class="text-sm font-[700] text-text-1 mb-2">
+                {{ t('common.password') }}
+              </div>
+              <div class="mb-6">
+                <div class="relative">
+                  <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                  <input
+                    :value="formData.signup.password"
+                    :type="showPassword.signup ? 'text' : 'password'"
+                    :placeholder="t('common.enter_password')"
+                    class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                    :class="showPassword.signup ? '' : 'auth-password-mask'"
+                    @input="handleSignupPasswordInput"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                    @click="togglePassword('signup')"
+                  >
+                    <EyeIcon v-if="showPassword.signup" class="w-5 h-5 text-text-2" />
+                    <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
+                  </button>
+                </div>
+              </div>
+
+              <div class="text-sm font-[700] text-text-1 mb-2">
+                {{ t('common.confirm_password') }}
+              </div>
+              <div class="mb-6">
+                <div class="relative">
+                  <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                  <input
+                    :value="formData.signup.confirmPassword"
+                    :type="showPassword.confirmPassword ? 'text' : 'password'"
+                    :placeholder="t('common.enter_confirm_password')"
+                    class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                    :class="showPassword.confirmPassword ? '' : 'auth-password-mask'"
+                    @input="handleSignupConfirmPasswordInput"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                    @click="togglePassword('confirmPassword')"
+                  >
+                    <EyeIcon v-if="showPassword.confirmPassword" class="w-5 h-5 text-text-2" />
+                    <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <div v-if="showSignupInvitationCode" class="mb-8">
               <div class="relative">
-                <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                <InviteIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                 <input
-                  :value="formData.signup.confirmPassword"
-                  :type="showPassword.confirmPassword ? 'text' : 'password'"
-                  :placeholder="t('common.enter_confirm_password')"
-                  class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
-                  :class="showPassword.confirmPassword ? '' : 'auth-password-mask'"
-                  @input="handleSignupConfirmPasswordInput"
+                  :value="formData.signup.invitationCode"
+                  type="text"
+                  inputmode="numeric"
+                  :placeholder="t('common.enter_invitation_code')"
+                  class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-[3px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                  @input="handleSignupInvitationCodeInput"
                 />
-                <button
-                  type="button"
-                  class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                  @click="togglePassword('confirmPassword')"
-                >
-                  <EyeIcon v-if="showPassword.confirmPassword" class="w-5 h-5 text-text-2" />
-                  <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
-                </button>
               </div>
             </div>
 
@@ -403,7 +463,11 @@
         <Teleport to="body">
           <Transition name="fade-accordion">
             <div
-              v-if="activeLoginMethod === 'phone' && isSigninAreaCodeDropdownOpen"
+              v-if="
+                activeTab === 'signin' &&
+                activeLoginMethod === 'phone' &&
+                isSigninAreaCodeDropdownOpen
+              "
               ref="signinAreaCodePopupRef"
               class="fixed z-[10020] flex h-[320px] flex-col overflow-hidden rounded-lg bg-bg-5 p-3"
               :style="signinAreaCodePopupStyle"
@@ -438,6 +502,47 @@
               </div>
             </div>
           </Transition>
+          <Transition name="fade-accordion">
+            <div
+              v-if="
+                activeTab === 'signup' &&
+                activeSignupMethod === 'phone' &&
+                isSignupAreaCodeDropdownOpen
+              "
+              ref="signupAreaCodePopupRef"
+              class="fixed z-[10020] flex h-[320px] flex-col overflow-hidden rounded-lg bg-bg-5 p-3"
+              :style="signupAreaCodePopupStyle"
+            >
+              <div class="relative mb-[8px] shrink-0">
+                <SearchIcon class="absolute left-3 top-1/2 h-6 w-6 -translate-y-1/2 text-icon-3" />
+                <input
+                  v-model="signupAreaCodeSearchKeyword"
+                  type="text"
+                  placeholder="Search Country"
+                  class="auth-input-placeholder h-10 w-full rounded-[12px] border border-opacity-10 bg-opacity-6 pl-11 pr-3 text-sm font-[400] text-text-1 outline-none transition-colors focus:border-theme-primary placeholder:text-text-3"
+                  @click.stop
+                />
+              </div>
+              <div class="min-h-0 flex-1 space-y-2 overflow-y-auto">
+                <button
+                  v-for="option in filteredSignupPhoneAreaCodeOptions"
+                  :key="option.code"
+                  type="button"
+                  class="flex h-10 w-full items-center justify-between rounded-[8px] px-3 text-left text-sm font-[400] text-text-1 transition-colors"
+                  :class="
+                    option.code === signupAreaCode ? 'bg-bg-3 font-[700]' : 'hover:bg-opacity-6'
+                  "
+                  @click.stop="handleSignupAreaCodeSelect(option.code, setSignupAreaCode)"
+                >
+                  <span>{{ option.country }} ({{ option.display }})</span>
+                  <SelectedIcon
+                    v-if="option.code === signupAreaCode"
+                    class="h-4 w-4 text-theme-primary"
+                  />
+                </button>
+              </div>
+            </div>
+          </Transition>
         </Teleport>
       </div>
     </template>
@@ -453,16 +558,15 @@ import SafeIcon from '@/static/svg/login/safe.svg?skipsvgo'
 import PasswordIcon from '@/static/svg/login/password.svg?skipsvgo'
 import CheckIcon from '@/static/svg/login/check.svg?skipsvgo'
 import KeyIcon from '@/static/svg/login/key.svg?skipsvgo'
+import InviteIcon from '@/static/svg/login/yaoqing.svg?skipsvgo'
 import XiaIcon from '@/static/svg/login/xia.svg?skipsvgo'
 import SearchIcon from '@/static/svg/login/sousuo.svg?skipsvgo'
 import SelectedIcon from '@/static/svg/login/selected.svg?skipsvgo'
-import { getDefaultAreaCodeDisplay } from '@/utils/locale'
 import { getPhoneAreaCodeOption, getPhoneAreaCodeOptions } from '@/utils/phone-input'
 import LoginRegisterFormCore from './LoginRegisterFormCore.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const defaultAreaCodeDisplay = getDefaultAreaCodeDisplay()
 
 interface Props {
   defaultTab?: 'signin' | 'signup'
@@ -484,10 +588,15 @@ const emit = defineEmits<{
 
 const loginFormRef = ref<InstanceType<typeof LoginRegisterFormCore> | null>(null)
 const isSigninAreaCodeDropdownOpen = ref(false)
+const isSignupAreaCodeDropdownOpen = ref(false)
 const signinAreaCodeAnchorRef = ref<HTMLElement | null>(null)
+const signupAreaCodeAnchorRef = ref<HTMLElement | null>(null)
 const signinAreaCodePopupRef = ref<HTMLElement | null>(null)
+const signupAreaCodePopupRef = ref<HTMLElement | null>(null)
 const signinAreaCodePopupStyle = ref<Record<string, string>>({})
+const signupAreaCodePopupStyle = ref<Record<string, string>>({})
 const signinAreaCodeSearchKeyword = ref('')
+const signupAreaCodeSearchKeyword = ref('')
 const phoneAreaCodeOptions = getPhoneAreaCodeOptions()
 const SIGNIN_AREA_CODE_POPUP_HEIGHT = 320
 const SIGNIN_AREA_CODE_POPUP_GAP = 4
@@ -495,6 +604,16 @@ const SIGNIN_AREA_CODE_POPUP_VIEWPORT_PADDING = 12
 
 const filteredPhoneAreaCodeOptions = computed(() => {
   const keyword = signinAreaCodeSearchKeyword.value.trim().toLowerCase()
+
+  if (!keyword) {
+    return phoneAreaCodeOptions
+  }
+
+  return phoneAreaCodeOptions.filter(option => option.searchText.includes(keyword))
+})
+
+const filteredSignupPhoneAreaCodeOptions = computed(() => {
+  const keyword = signupAreaCodeSearchKeyword.value.trim().toLowerCase()
 
   if (!keyword) {
     return phoneAreaCodeOptions
@@ -522,6 +641,20 @@ const toggleSigninAreaCodeDropdown = () => {
  */
 const closeSigninAreaCodeDropdown = () => {
   isSigninAreaCodeDropdownOpen.value = false
+}
+
+/**
+ * 展开或收起注册手机号区号下拉框。
+ */
+const toggleSignupAreaCodeDropdown = () => {
+  isSignupAreaCodeDropdownOpen.value = !isSignupAreaCodeDropdownOpen.value
+}
+
+/**
+ * 关闭注册手机号区号下拉框。
+ */
+const closeSignupAreaCodeDropdown = () => {
+  isSignupAreaCodeDropdownOpen.value = false
 }
 
 /**
@@ -553,6 +686,34 @@ const updateSigninAreaCodePopupPosition = () => {
 }
 
 /**
+ * 根据注册输入框位置计算手机号区号下拉框位置和动画高度。
+ */
+const updateSignupAreaCodePopupPosition = () => {
+  const anchor = signupAreaCodeAnchorRef.value
+
+  if (!anchor) {
+    return
+  }
+
+  const rect = anchor.getBoundingClientRect()
+  const preferredTop = rect.bottom + SIGNIN_AREA_CODE_POPUP_GAP
+  const fallbackTop = rect.top - SIGNIN_AREA_CODE_POPUP_GAP - SIGNIN_AREA_CODE_POPUP_HEIGHT
+  const popupTop =
+    preferredTop + SIGNIN_AREA_CODE_POPUP_HEIGHT + SIGNIN_AREA_CODE_POPUP_VIEWPORT_PADDING >
+    window.innerHeight
+      ? Math.max(SIGNIN_AREA_CODE_POPUP_VIEWPORT_PADDING, fallbackTop)
+      : preferredTop
+
+  signupAreaCodePopupStyle.value = {
+    top: `${popupTop}px`,
+    left: `${rect.left}px`,
+    width: `${rect.width}px`,
+    height: `${SIGNIN_AREA_CODE_POPUP_HEIGHT}px`,
+    '--fade-accordion-max-height': `${SIGNIN_AREA_CODE_POPUP_HEIGHT}px`
+  }
+}
+
+/**
  * 窗口尺寸或滚动变化时刷新手机号区号下拉框位置。
  */
 const handleSigninAreaCodeWindowChange = () => {
@@ -561,6 +722,17 @@ const handleSigninAreaCodeWindowChange = () => {
   }
 
   updateSigninAreaCodePopupPosition()
+}
+
+/**
+ * 窗口尺寸或滚动变化时刷新注册手机号区号下拉框位置。
+ */
+const handleSignupAreaCodeWindowChange = () => {
+  if (!isSignupAreaCodeDropdownOpen.value) {
+    return
+  }
+
+  updateSignupAreaCodePopupPosition()
 }
 
 /**
@@ -584,6 +756,26 @@ const handleSigninAreaCodeOutsidePointerDown = (event: PointerEvent) => {
 }
 
 /**
+ * 点击注册下拉框外部时关闭手机号区号下拉框。
+ */
+const handleSignupAreaCodeOutsidePointerDown = (event: PointerEvent) => {
+  const target = event.target as Node | null
+
+  if (!target) {
+    return
+  }
+
+  if (
+    signupAreaCodeAnchorRef.value?.contains(target) ||
+    signupAreaCodePopupRef.value?.contains(target)
+  ) {
+    return
+  }
+
+  closeSignupAreaCodeDropdown()
+}
+
+/**
  * 绑定手机号区号下拉框打开期间需要的全局监听。
  */
 const attachSigninAreaCodePopupListeners = () => {
@@ -593,12 +785,30 @@ const attachSigninAreaCodePopupListeners = () => {
 }
 
 /**
+ * 绑定注册手机号区号下拉框打开期间需要的全局监听。
+ */
+const attachSignupAreaCodePopupListeners = () => {
+  window.addEventListener('resize', handleSignupAreaCodeWindowChange)
+  window.addEventListener('scroll', handleSignupAreaCodeWindowChange, true)
+  document.addEventListener('pointerdown', handleSignupAreaCodeOutsidePointerDown, true)
+}
+
+/**
  * 移除手机号区号下拉框的全局监听。
  */
 const detachSigninAreaCodePopupListeners = () => {
   window.removeEventListener('resize', handleSigninAreaCodeWindowChange)
   window.removeEventListener('scroll', handleSigninAreaCodeWindowChange, true)
   document.removeEventListener('pointerdown', handleSigninAreaCodeOutsidePointerDown, true)
+}
+
+/**
+ * 移除注册手机号区号下拉框的全局监听。
+ */
+const detachSignupAreaCodePopupListeners = () => {
+  window.removeEventListener('resize', handleSignupAreaCodeWindowChange)
+  window.removeEventListener('scroll', handleSignupAreaCodeWindowChange, true)
+  document.removeEventListener('pointerdown', handleSignupAreaCodeOutsidePointerDown, true)
 }
 
 /**
@@ -614,6 +824,18 @@ const handleSigninAreaCodeSelect = (
 }
 
 /**
+ * 选择注册手机号区号，并收起下拉框。
+ */
+const handleSignupAreaCodeSelect = (
+  areaCode: string,
+  setSignupAreaCode: (areaCode: string) => void
+) => {
+  setSignupAreaCode(areaCode)
+  signupAreaCodeSearchKeyword.value = ''
+  closeSignupAreaCodeDropdown()
+}
+
+/**
  * 切换登录方式，并收起手机号区号下拉框。
  */
 const handleSigninMethodClick = (
@@ -623,6 +845,18 @@ const handleSigninMethodClick = (
   setActiveLoginMethod(method)
   signinAreaCodeSearchKeyword.value = ''
   closeSigninAreaCodeDropdown()
+}
+
+/**
+ * 切换注册方式，并收起手机号区号下拉框。
+ */
+const handleSignupMethodClick = (
+  method: string,
+  setActiveSignupMethod: (method: string) => void
+) => {
+  setActiveSignupMethod(method)
+  signupAreaCodeSearchKeyword.value = ''
+  closeSignupAreaCodeDropdown()
 }
 
 watch(isSigninAreaCodeDropdownOpen, async isOpen => {
@@ -636,10 +870,22 @@ watch(isSigninAreaCodeDropdownOpen, async isOpen => {
   attachSigninAreaCodePopupListeners()
 })
 
+watch(isSignupAreaCodeDropdownOpen, async isOpen => {
+  if (!isOpen) {
+    detachSignupAreaCodePopupListeners()
+    return
+  }
+
+  await nextTick()
+  updateSignupAreaCodePopupPosition()
+  attachSignupAreaCodePopupListeners()
+})
+
 watch(
   () => props.defaultTab,
   () => {
     closeSigninAreaCodeDropdown()
+    closeSignupAreaCodeDropdown()
     loginFormRef.value?.resetForm()
   }
 )
@@ -686,11 +932,13 @@ const handleAuthTabSwitch = (
  */
 const resetForm = () => {
   closeSigninAreaCodeDropdown()
+  closeSignupAreaCodeDropdown()
   loginFormRef.value?.resetForm()
 }
 
 onBeforeUnmount(() => {
   detachSigninAreaCodePopupListeners()
+  detachSignupAreaCodePopupListeners()
 })
 
 defineExpose({

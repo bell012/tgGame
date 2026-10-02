@@ -194,6 +194,30 @@ export const handleVerificationCodeInput = (event: Event, callback: (value: stri
 }
 
 /**
+ * 格式化邀请码输入：只保留数字，最多 6 位。
+ */
+export const formatInvitationCode = (value: string): string => {
+  return value.replace(/\D/g, '').slice(0, 6)
+}
+
+/**
+ * 校验邀请码是否为 6 位数字。
+ */
+export const isValidInvitationCode = (value: string): boolean => {
+  return /^\d{6}$/.test(value)
+}
+
+/**
+ * 处理邀请码输入事件。
+ */
+export const handleInvitationCodeInput = (event: Event, callback: (value: string) => void) => {
+  const input = event.target as HTMLInputElement
+  const formatted = formatInvitationCode(input.value)
+  callback(formatted)
+  input.value = formatted
+}
+
+/**
  * 处理密码输入事件
  * @param event 输入事件
  * @param callback 回调函数，用于更新表单数据

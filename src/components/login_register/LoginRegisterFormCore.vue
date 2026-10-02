@@ -2,8 +2,11 @@
   <slot
     :active-tab="activeTab"
     :active-login-method="activeLoginMethod"
+    :active-signup-method="activeSignupMethod"
     :login-method-tabs="loginMethodTabs"
+    :signup-method-tabs="signupMethodTabs"
     :signin-area-code="formData.signin.areaCode"
+    :signup-area-code="formData.signup.areaCode"
     :show-password="showPassword"
     :show-confirm-password="showConfirmPassword"
     :form-data="formData"
@@ -14,11 +17,16 @@
     :show-signin-password="showSigninPassword"
     :show-signin-sms-code="showSigninSmsCode"
     :show-signin-captcha="showSigninCaptcha"
+    :show-signup-password="showSignupPassword"
+    :show-signup-sms-code="showSignupSmsCode"
+    :show-signup-invitation-code="showSignupInvitationCode"
     :captcha-image-url="captchaImageUrl"
     :is-captcha-loading="isCaptchaLoading"
     :set-active-tab="setActiveTab"
     :set-active-login-method="setActiveLoginMethod"
+    :set-active-signup-method="setActiveSignupMethod"
     :set-signin-area-code="setSigninAreaCode"
+    :set-signup-area-code="setSignupAreaCode"
     :toggle-password="togglePassword"
     :toggle-confirm-password="toggleConfirmPassword"
     :handle-checkbox-click="handleCheckboxClick"
@@ -35,33 +43,33 @@
     :handle-signin-captcha-input="handleSigninCaptchaInput"
     :refresh-signin-captcha="fetchSigninCaptcha"
     :handle-signup-account-input="handleSignupAccountInput"
+    :handle-signup-username-input="handleSignupUsernameInput"
+    :handle-signup-phone-input="handleSignupPhoneInput"
     :handle-signup-code-input="handleSignupCodeInput"
     :handle-signup-password-input="handleSignupPasswordInput"
     :handle-signup-confirm-password-input="handleSignupConfirmPasswordInput"
+    :handle-signup-invitation-code-input="handleSignupInvitationCodeInput"
   />
 </template>
 
 <script setup lang="ts">
 import Api from '@/api'
-import type { LoginForm, LoginSetResult } from '@/api/interface/login_register'
+import type { LoginForm, LoginSetResult, RegisterForm } from '@/api/interface/login_register'
 import { usePersistentCountdown } from '@/composables/usePersistentCountdown'
 import { useUserStore } from '@/stores/user'
 import { AESUtils } from '@/utils/encrypt'
 import { clearInvitationCode, getInvitationCode } from '@/utils/invitationAttribution'
-import {
-  generateRegisterMemberName,
-  getCurrentCurrency,
-  getDefaultAreaCode,
-  getLanguageCode
-} from '@/utils/locale'
+import { generateRegisterMemberName, getCurrentCurrency, getLanguageCode } from '@/utils/locale'
 import {
   DEFAULT_PHONE_AREA_CODE,
   formatLoosePhoneNumber,
   formatSigninUsername,
+  handleInvitationCodeInput,
   handlePasswordInput,
   handleSigninUsernameInput as handleSigninUsernameInputValue,
   handleLoosePhoneInput,
   handleVerificationCodeInput,
+  isValidInvitationCode,
   isValidPhoneNumberByAreaCode,
   isValidSigninUsername,
   isValidPassword
@@ -73,6 +81,7 @@ import { useI18n } from 'vue-i18n'
 
 type AuthTab = 'signin' | 'signup'
 type SigninMethod = 'username' | 'phone'
+type SignupMethod = 'username' | 'phone'
 
 interface Props {
   defaultTab?: AuthTab
@@ -93,7 +102,6 @@ const emit = defineEmits<{
 }>()
 
 const userStore = useUserStore()
-const defaultAreaCode = getDefaultAreaCode()
 const REGISTER_SMS_COUNTDOWN_STORAGE_KEY = 'register-sms-countdown'
 const REMEMBERED_ACCOUNT_STORAGE_KEY = 'rememberedAccount'
 const REMEMBERED_PASSWORD_STORAGE_KEY = 'rememberedPassword'
@@ -110,6 +118,7 @@ const {
 
 const activeTab = ref<AuthTab>(props.defaultTab)
 const activeLoginMethod = ref<SigninMethod>('username')
+const activeSignupMethod = ref<SignupMethod>('username')
 
 watch(
   () => props.defaultTab,
@@ -207,9 +216,13 @@ const formData = ref({
   },
   signup: {
     account: '',
+    usernameAccount: '',
+    phoneAccount: '',
+    areaCode: DEFAULT_PHONE_AREA_CODE,
     code: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    invitationCode: getInvitationCode()
   }
 })
 
@@ -218,6 +231,24 @@ const formData = ref({
  */
 const loginMethodTabs = computed(() => {
   const tabs: Array<{ key: SigninMethod; label: string }> = []
+  const loginSetting = props.loginSetting
+
+  if (!loginSetting || Number(loginSetting.normalAccount?.enable) === 1) {
+    tabs.push({ key: 'username', label: t('common.username') })
+  }
+
+  if (!loginSetting || Number(loginSetting.mobileAccount?.enable) === 1) {
+    tabs.push({ key: 'phone', label: t('common.phone') })
+  }
+
+  return tabs.length ? tabs : [{ key: 'username', label: t('common.username') }]
+})
+
+/**
+ * 根据注册配置决定用户名注册和手机注册入口是否展示。
+ */
+const signupMethodTabs = computed(() => {
+  const tabs: Array<{ key: SignupMethod; label: string }> = []
   const loginSetting = props.loginSetting
 
   if (!loginSetting || Number(loginSetting.normalAccount?.enable) === 1) {
@@ -270,6 +301,48 @@ const showSigninCaptcha = computed(() => {
   return activeTab.value === 'signin' && Number(props.loginSetting?.imageCaptchaEnabled) === 1
 })
 
+/**
+ * 获取当前注册方式对应的后台配置。
+ */
+const activeSignupAccountSetting = computed(() => {
+  if (activeSignupMethod.value === 'username') {
+    return props.loginSetting?.normalAccount
+  }
+
+  return props.loginSetting?.mobileAccount
+})
+
+/**
+ * 获取当前注册方式的校验方式，用户名默认密码，手机默认验证码和密码。
+ */
+const activeSignupVerifyMethod = computed(() => {
+  return Number(
+    activeSignupAccountSetting.value?.verifyMethod ?? (activeSignupMethod.value === 'phone' ? 2 : 1)
+  )
+})
+
+/**
+ * 当前注册方式是否需要输入密码。
+ */
+const showSignupPassword = computed(() => {
+  return [1, 2].includes(activeSignupVerifyMethod.value)
+})
+
+/**
+ * 当前注册方式是否需要输入短信验证码。
+ */
+const showSignupSmsCode = computed(() => {
+  return activeSignupMethod.value === 'phone' && [0, 2].includes(activeSignupVerifyMethod.value)
+})
+
+/**
+ * 根据后台邀请码字段配置决定注册邀请码是否展示。
+ */
+const showSignupInvitationCode = computed(() => {
+  const invitationCodeSetting = props.loginSetting?.invitationCode
+  return invitationCodeSetting?.enable === true || Number(invitationCodeSetting?.enable) === 1
+})
+
 const captchaImageUrl = ref('')
 const isCaptchaLoading = ref(false)
 
@@ -289,6 +362,24 @@ const getActiveSigninAccount = () => {
  */
 const syncSigninAccount = () => {
   formData.value.signin.account = getActiveSigninAccount()
+}
+
+/**
+ * 获取当前注册方式下实际提交的会员账号。
+ */
+const getActiveSignupAccount = () => {
+  if (activeSignupMethod.value === 'username') {
+    return formData.value.signup.usernameAccount
+  }
+
+  return formData.value.signup.phoneAccount
+}
+
+/**
+ * 同步当前注册账号到通用 account 字段。
+ */
+const syncSignupAccount = () => {
+  formData.value.signup.account = getActiveSignupAccount()
 }
 
 /**
@@ -316,12 +407,22 @@ const isSigninValid = computed(() => {
 })
 
 const isSignupValid = computed(() => {
-  return (
-    isValidPhoneNumberByAreaCode(formData.value.signup.account, defaultAreaCode) &&
-    formData.value.signup.code.length > 0 &&
-    formData.value.signup.password.length > 0 &&
-    formData.value.signup.confirmPassword.length > 0
-  )
+  const account = getActiveSignupAccount()
+  const isAccountValid =
+    activeSignupMethod.value === 'username'
+      ? isValidSigninUsername(account)
+      : isValidPhoneNumberByAreaCode(account, formData.value.signup.areaCode)
+  const hasSmsCode = !showSignupSmsCode.value || formData.value.signup.code.length > 0
+  const hasPassword = !showSignupPassword.value || formData.value.signup.password.length > 0
+  const hasConfirmPassword =
+    !showSignupPassword.value || formData.value.signup.confirmPassword.length > 0
+  const invitationCode = formData.value.signup.invitationCode
+  const isInvitationCodeValid =
+    !showSignupInvitationCode.value ||
+    (!props.loginSetting?.invitationCode?.required && !invitationCode) ||
+    isValidInvitationCode(invitationCode)
+
+  return isAccountValid && hasSmsCode && hasPassword && hasConfirmPassword && isInvitationCodeValid
 })
 
 const checkboxAnimating = ref({
@@ -345,9 +446,13 @@ const setActiveTab = (tab: AuthTab) => {
     formData.value.signin.rememberMe = Boolean(savedCredentials.password)
   } else {
     formData.value.signup.account = ''
+    formData.value.signup.usernameAccount = ''
+    formData.value.signup.phoneAccount = ''
+    formData.value.signup.areaCode = DEFAULT_PHONE_AREA_CODE
     formData.value.signup.code = ''
     formData.value.signup.password = ''
     formData.value.signup.confirmPassword = ''
+    formData.value.signup.invitationCode = getInvitationCode()
   }
 }
 
@@ -381,6 +486,32 @@ const setSigninAreaCode = (areaCode: string) => {
     nextAreaCode
   )
   syncSigninAccount()
+}
+
+/**
+ * 切换当前注册方式，并同步要提交的会员账号字段。
+ */
+const setActiveSignupMethod = (method: string) => {
+  if (!signupMethodTabs.value.some(tab => tab.key === method)) {
+    return
+  }
+
+  activeSignupMethod.value = method as SignupMethod
+  formData.value.signup.code = ''
+  syncSignupAccount()
+}
+
+/**
+ * 设置注册手机号区号。
+ */
+const setSignupAreaCode = (areaCode: string) => {
+  const nextAreaCode = areaCode || DEFAULT_PHONE_AREA_CODE
+  formData.value.signup.areaCode = nextAreaCode
+  formData.value.signup.phoneAccount = formatLoosePhoneNumber(
+    formData.value.signup.phoneAccount,
+    nextAreaCode
+  )
+  syncSignupAccount()
 }
 
 /**
@@ -484,7 +615,32 @@ const handleSigninCaptchaInput = (event: Event) => {
 const handleSignupAccountInput = (event: Event) => {
   handleLoosePhoneInput(event, (value: string) => {
     formData.value.signup.account = value
+    formData.value.signup.phoneAccount = value
   })
+}
+
+/**
+ * 处理用户名注册的用户名输入。
+ */
+const handleSignupUsernameInput = (event: Event) => {
+  handleSigninUsernameInputValue(event, (value: string) => {
+    formData.value.signup.usernameAccount = value
+    formData.value.signup.account = value
+  })
+}
+
+/**
+ * 处理手机注册的手机号输入。
+ */
+const handleSignupPhoneInput = (event: Event) => {
+  handleLoosePhoneInput(
+    event,
+    (value: string) => {
+      formData.value.signup.phoneAccount = value
+      formData.value.signup.account = value
+    },
+    formData.value.signup.areaCode
+  )
 }
 
 const handleSignupCodeInput = (event: Event) => {
@@ -506,6 +662,15 @@ const handleSignupConfirmPasswordInput = (event: Event) => {
 }
 
 /**
+ * 处理注册邀请码输入。
+ */
+const handleSignupInvitationCodeInput = (event: Event) => {
+  handleInvitationCodeInput(event, value => {
+    formData.value.signup.invitationCode = value
+  })
+}
+
+/**
  * 按区号校验手机号格式。
  */
 const validatePhoneNumber = (value: string, areaCode = DEFAULT_PHONE_AREA_CODE) => {
@@ -517,6 +682,41 @@ const validatePhoneNumber = (value: string, areaCode = DEFAULT_PHONE_AREA_CODE) 
   return true
 }
 
+/**
+ * 校验用户名是否满足注册/登录规则。
+ */
+const validateUsername = (value: string) => {
+  if (!isValidSigninUsername(value)) {
+    globalShowToast(t('common.usernameRuleInvalid'))
+    return false
+  }
+
+  return true
+}
+
+/**
+ * 校验邀请码为空或 6 位数字。
+ */
+const validateInvitationCode = (value: string) => {
+  if (!showSignupInvitationCode.value) {
+    return true
+  }
+
+  if (!value && !props.loginSetting?.invitationCode?.required) {
+    return true
+  }
+
+  if (!isValidInvitationCode(value)) {
+    globalShowToast(t('common.invitationCodeRuleInvalid'))
+    return false
+  }
+
+  return true
+}
+
+/**
+ * 校验登录密码是否满足规则。
+ */
 const validatePasswordRule = (value: string) => {
   if (!isValidPassword(value)) {
     globalShowToast(t('common.passwordRuleInvalid'))
@@ -526,6 +726,9 @@ const validatePasswordRule = (value: string) => {
   return true
 }
 
+/**
+ * 校验两次输入的登录密码是否一致。
+ */
 const validateConfirmPassword = (password: string, confirmPassword: string) => {
   if (password !== confirmPassword) {
     globalShowToast(t('common.passwordMismatch'))
@@ -654,6 +857,7 @@ const handleLogin = async () => {
   try {
     const loginData: LoginForm = {
       memberId: account,
+      ...(activeLoginMethod.value === 'phone' ? { telephone: account } : {}),
       memberPwd: showSigninPassword.value
         ? StringExtension.md5(formData.value.signin.password)
         : '',
@@ -663,7 +867,7 @@ const handleLogin = async () => {
     }
 
     if (activeLoginMethod.value === 'phone' && showSigninSmsCode.value) {
-      loginData.validateCode = formData.value.signin.smsCode
+      loginData.smsCode = formData.value.signin.smsCode
     }
 
     if (showSigninCaptcha.value) {
@@ -707,17 +911,33 @@ const handleLogin = async () => {
  * 提交注册表单。
  */
 const handleRegister = async () => {
-  if (!validatePhoneNumber(formData.value.signup.account)) {
-    return
-  }
+  syncSignupAccount()
 
-  if (!validatePasswordRule(formData.value.signup.password)) {
+  const account = getActiveSignupAccount()
+
+  if (activeSignupMethod.value === 'username' && !validateUsername(account)) {
     return
   }
 
   if (
+    activeSignupMethod.value === 'phone' &&
+    !validatePhoneNumber(account, formData.value.signup.areaCode)
+  ) {
+    return
+  }
+
+  if (showSignupPassword.value && !validatePasswordRule(formData.value.signup.password)) {
+    return
+  }
+
+  if (
+    showSignupPassword.value &&
     !validateConfirmPassword(formData.value.signup.password, formData.value.signup.confirmPassword)
   ) {
+    return
+  }
+
+  if (!validateInvitationCode(formData.value.signup.invitationCode)) {
     return
   }
 
@@ -725,20 +945,25 @@ const handleRegister = async () => {
     const languageCode = getLanguageCode()
     const currency = getCurrentCurrency()
     const nickName = generateRegisterMemberName()
-    const invitationCode = getInvitationCode()
+    const invitationCode = formData.value.signup.invitationCode || getInvitationCode()
 
-    const registerData = {
-      memberId: `${formData.value.signup.account}`,
+    const registerData: RegisterForm = {
+      memberId: `${account}`,
       channelId: '1',
       languageCode: languageCode,
-      requestMethod: 1,
+      requestMethod: activeSignupMethod.value === 'username' ? 1 : 2,
       currency: currency.toUpperCase(),
-      smsCode: formData.value.signup.code,
-      memberPwd: StringExtension.md5(formData.value.signup.password),
-      areaCode: defaultAreaCode,
-      telephone: formData.value.signup.account,
       nickName,
+      ...(showSignupPassword.value
+        ? { memberPwd: StringExtension.md5(formData.value.signup.password) }
+        : {}),
       ...(invitationCode ? { invitationCode } : {})
+    }
+
+    if (activeSignupMethod.value === 'phone') {
+      registerData.smsCode = formData.value.signup.code
+      registerData.areaCode = formData.value.signup.areaCode
+      registerData.telephone = account
     }
 
     const response = await Api.auth.register(registerData)
@@ -746,7 +971,7 @@ const handleRegister = async () => {
       clearInvitationCode()
 
       try {
-        await userStore.refreshCurrentUserData(formData.value.signup.account)
+        await userStore.refreshCurrentUserData(account)
       } catch (error) {
         console.error(error)
       }
@@ -769,7 +994,15 @@ const getSmsTargetPhone = () => {
     return formData.value.signin.phoneAccount
   }
 
-  return formData.value.signup.account
+  if (
+    activeTab.value === 'signup' &&
+    activeSignupMethod.value === 'phone' &&
+    showSignupSmsCode.value
+  ) {
+    return formData.value.signup.phoneAccount
+  }
+
+  return ''
 }
 
 /**
@@ -784,7 +1017,15 @@ const getSmsTargetAreaCode = () => {
     return formData.value.signin.areaCode
   }
 
-  return defaultAreaCode
+  if (
+    activeTab.value === 'signup' &&
+    activeSignupMethod.value === 'phone' &&
+    showSignupSmsCode.value
+  ) {
+    return formData.value.signup.areaCode
+  }
+
+  return DEFAULT_PHONE_AREA_CODE
 }
 
 /**
@@ -844,9 +1085,13 @@ const resetForm = () => {
   formData.value.signin.rememberMe = Boolean(savedCredentials.password)
 
   formData.value.signup.account = ''
+  formData.value.signup.usernameAccount = ''
+  formData.value.signup.phoneAccount = ''
+  formData.value.signup.areaCode = DEFAULT_PHONE_AREA_CODE
   formData.value.signup.code = ''
   formData.value.signup.password = ''
   formData.value.signup.confirmPassword = ''
+  formData.value.signup.invitationCode = getInvitationCode()
 
   showPassword.value.signin = false
   showPassword.value.signup = false
@@ -873,6 +1118,17 @@ watch(
 )
 
 watch(
+  signupMethodTabs,
+  tabs => {
+    if (!tabs.some(tab => tab.key === activeSignupMethod.value)) {
+      activeSignupMethod.value = (tabs[0]?.key || 'username') as SignupMethod
+    }
+    syncSignupAccount()
+  },
+  { immediate: true }
+)
+
+watch(
   showSigninCaptcha,
   enabled => {
     if (enabled) {
@@ -891,7 +1147,9 @@ defineExpose({
   formData,
   activeTab,
   activeLoginMethod,
+  activeSignupMethod,
   loginMethodTabs,
+  signupMethodTabs,
   showPassword,
   showConfirmPassword,
   checkboxAnimating,
@@ -901,11 +1159,16 @@ defineExpose({
   showSigninPassword,
   showSigninSmsCode,
   showSigninCaptcha,
+  showSignupPassword,
+  showSignupSmsCode,
+  showSignupInvitationCode,
   captchaImageUrl,
   isCaptchaLoading,
   setActiveTab,
   setActiveLoginMethod,
+  setActiveSignupMethod,
   setSigninAreaCode,
+  setSignupAreaCode,
   togglePassword,
   toggleConfirmPassword,
   handleCheckboxClick,
@@ -923,8 +1186,11 @@ defineExpose({
   handleSigninCaptchaInput,
   fetchSigninCaptcha,
   handleSignupAccountInput,
+  handleSignupUsernameInput,
+  handleSignupPhoneInput,
   handleSignupCodeInput,
   handleSignupPasswordInput,
-  handleSignupConfirmPasswordInput
+  handleSignupConfirmPasswordInput,
+  handleSignupInvitationCodeInput
 })
 </script>
