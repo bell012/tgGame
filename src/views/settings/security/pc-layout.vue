@@ -42,7 +42,7 @@
           ]"
           @click="handleOpenChangeLoginPassword(card.cardKey)"
         >
-          {{ t(`securitySettings.cards.${card.cardKey}.action`) }}
+          {{ getCardActionText(card.cardKey) }}
         </button>
       </div>
     </div>
@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
@@ -72,6 +72,13 @@ const route = useRoute()
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
 const { cards } = useSecurityCards(userInfo)
+
+const hasLoginMobile = computed(() => {
+  return (
+    String(userInfo.value?.areaCode ?? '').trim().length > 0 &&
+    String(userInfo.value?.telephone ?? '').trim().length > 0
+  )
+})
 
 // 修改登录密码弹窗
 const showChangeLoginPasswordPopup = ref(false)
@@ -111,6 +118,17 @@ const handleOpenChangeLoginPassword = (_key: SecurityCardKey) => {
       showTransactionPasswordPopup.value = true
       break
   }
+}
+
+/**
+ * 根据登录方式显示手机号操作文案。
+ */
+const getCardActionText = (cardKey: SecurityCardKey) => {
+  if (cardKey === 'mobile' && !hasLoginMobile.value) {
+    return t('common.setMobileNumber')
+  }
+
+  return t(`securitySettings.cards.${cardKey}.action`)
 }
 </script>
 

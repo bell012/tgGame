@@ -7,10 +7,7 @@ import MobileIcon from '@/static/svg/security/mobile.svg?component'
 export type SecurityCardKey = 'loginPassword' | 'transactionPassword' | 'mobile'
 
 /**
- * 安全页卡片状态：与 userInfo 字段对应
- * - memberPwd：登录密码
- * - busiPwd：交易密码
- * - telephone：手机号码
+ * 根据 userInfo 生成安全设置卡片状态。
  */
 export function useSecurityCards(userInfo: Ref<StoredProfileUserInfo | null | undefined>) {
   const cards = computed(() => {
@@ -18,21 +15,28 @@ export function useSecurityCards(userInfo: Ref<StoredProfileUserInfo | null | un
     const memberPwd = String(u?.memberPwd ?? '').trim()
     const busiPwd = String(u?.busiPwd ?? '').trim()
     const telephone = String(u?.telephone ?? '').trim()
-    console.log(memberPwd, busiPwd, telephone, 'memberPwd, busiPwd, telephone')
+    const areaCode = String(u?.areaCode ?? '').trim()
+
     return [
       { cardKey: 'loginPassword' as const, icon: PasswordIcon, active: memberPwd.length > 0 },
       { cardKey: 'transactionPassword' as const, icon: PasswordIcon, active: busiPwd.length > 0 },
-      { cardKey: 'mobile' as const, icon: MobileIcon, active: telephone.length > 0 }
+      {
+        cardKey: 'mobile' as const,
+        icon: MobileIcon,
+        active: areaCode.length > 0 && telephone.length > 0
+      }
     ] as { cardKey: SecurityCardKey; icon: Component; active: boolean }[]
   })
 
   const displayMobile = computed(() => {
-    const tel = userInfo.value?.telephone
-    const areaCode = userInfo.value?.areaCode
-    if (tel && String(tel).trim()) {
+    const tel = String(userInfo.value?.telephone ?? '').trim()
+    const areaCode = String(userInfo.value?.areaCode ?? '').trim()
+
+    if (tel && areaCode) {
       return `+${areaCode} ${tel}`
     }
-    return '—'
+
+    return '--'
   })
 
   return { cards, displayMobile }

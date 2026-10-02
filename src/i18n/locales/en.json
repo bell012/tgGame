@@ -146,6 +146,7 @@
     "passwordMismatch": "The passwords do not match",
     "transactionPasswordRuleInvalid": "Transaction password must be 6 digits",
     "changeMobileNumber": "Change Mobile Number",
+    "setMobileNumber": "Set Mobile Number",
     "newMobileNumber": "New Mobile Number",
     "enterNewMobileNumber": "Enter your new mobile number",
     "successfully": "Your mobile number has been updated successfully.",

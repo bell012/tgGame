@@ -146,6 +146,7 @@
     "passwordMismatch": "两次输入的密码不一致",
     "transactionPasswordRuleInvalid": "交易密码需为6位数字",
     "changeMobileNumber": "更改手机号码",
+    "setMobileNumber": "设置手机号码",
     "newMobileNumber": "新手机号码",
     "enterNewMobileNumber": "请输入您的新手机号码",
     "successfully": "您的手机号码已成功更新。",

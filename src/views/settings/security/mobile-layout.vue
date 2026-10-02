@@ -56,7 +56,7 @@
             ]"
             @click="handleCardAction(card.cardKey)"
           >
-            {{ t(`securitySettings.cards.${card.cardKey}.action`) }}
+            {{ getCardActionText(card.cardKey) }}
           </button>
         </div>
       </div>
@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
@@ -79,6 +79,13 @@ const { t } = useI18n()
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
 const { cards, displayMobile } = useSecurityCards(userInfo)
+
+const hasLoginMobile = computed(() => {
+  return (
+    String(userInfo.value?.areaCode ?? '').trim().length > 0 &&
+    String(userInfo.value?.telephone ?? '').trim().length > 0
+  )
+})
 
 onMounted(() => {
   userStore.syncStoredUserData()
@@ -96,6 +103,17 @@ const handleCardAction = (_key: SecurityCardKey) => {
       navigateToName('transactionPassword')
       break
   }
+}
+
+/**
+ * 根据登录方式显示手机号操作文案。
+ */
+const getCardActionText = (cardKey: SecurityCardKey) => {
+  if (cardKey === 'mobile' && !hasLoginMobile.value) {
+    return t('common.setMobileNumber')
+  }
+
+  return t(`securitySettings.cards.${cardKey}.action`)
 }
 </script>
 
