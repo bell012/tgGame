@@ -46,7 +46,10 @@
         </button>
       </div>
     </div>
-    <ChangeLoginPasswordPcLayout v-model="showChangeLoginPasswordPopup" />
+    <ChangeLoginPasswordPcLayout
+      v-model="showChangeLoginPasswordPopup"
+      @open-mobile-number="handleOpenMobileNumberFromLoginPassword"
+    />
     <!-- 修改手机号码弹窗 -->
     <ChangeMobileNumberPcLayout v-model="showChangeMobileNumberPopup" />
     <!-- 交易密码弹窗 -->
@@ -103,6 +106,14 @@ const openTaskCenterSecurityAction = (value: unknown) => {
 
 /** 在进入或复用安全页面时响应任务中心跳转意图。 */
 watch(() => route.query.taskCenterSecurityAction, openTaskCenterSecurityAction, { immediate: true })
+/**
+ * 从修改登录密码弹窗切换到设置手机号码弹窗。
+ */
+const handleOpenMobileNumberFromLoginPassword = () => {
+  showChangeLoginPasswordPopup.value = false
+  showChangeMobileNumberPopup.value = true
+}
+
 /**
  * 打开 PC 修改登录密码弹窗。
  */
