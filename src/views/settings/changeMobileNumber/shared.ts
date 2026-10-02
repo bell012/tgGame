@@ -21,12 +21,7 @@ export const useChangeMobileNumber = () => {
   const { t } = useI18n()
   const userStore = useUserStore()
   const { userInfo, acctInfo } = storeToRefs(userStore)
-  const hasInitialMobile =
-    String(userInfo.value?.areaCode ?? '').trim().length > 0 &&
-    String(userInfo.value?.telephone ?? '').trim().length > 0
-  const currentStep = ref<'currentVerification' | 'newNumber' | 'success'>(
-    hasInitialMobile ? 'currentVerification' : 'newNumber'
-  )
+  const currentStep = ref<'currentVerification' | 'newNumber' | 'success'>('newNumber')
   const currentVerificationCode = ref('')
   const newAreaCode = ref(DEFAULT_PHONE_AREA_CODE)
   const newTelephone = ref('')
@@ -206,7 +201,7 @@ export const useChangeMobileNumber = () => {
     hasRequestedNewSmsCode.value = newRemainingSeconds.value > 0
     newAreaCode.value = currentAreaCode.value
     updatedAreaCode.value = currentAreaCode.value
-    currentStep.value = isMobileLogin.value ? 'currentVerification' : 'newNumber'
+    currentStep.value = 'newNumber'
   }
 
   /**
@@ -275,7 +270,7 @@ export const useChangeMobileNumber = () => {
   const resetChangeMobileNumberState = (options?: { clearCountdowns?: boolean }) => {
     const shouldClearCountdowns = options?.clearCountdowns === true
 
-    currentStep.value = isMobileLogin.value ? 'currentVerification' : 'newNumber'
+    currentStep.value = 'newNumber'
     currentVerificationCode.value = ''
     newAreaCode.value = currentAreaCode.value
     newTelephone.value = ''
