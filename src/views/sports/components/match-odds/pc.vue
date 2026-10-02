@@ -88,7 +88,7 @@
                 >
                   <span class="truncate">{{ selectionLabel(selection) }}</span>
                   <span v-if="shouldShowHandicap(line, selection)" class="shrink-0">{{
-                    selection.Handicap
+                    formatHandicap(selection.Handicap)
                   }}</span>
                 </span>
                 <span class="shrink-0 text-xs font-bold">{{ selection.Odds }}</span>
@@ -105,7 +105,13 @@
 import CaretUp from '@/static/svg/sports/caret-up.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { hasFiniteOdds, isWagerSelected, selectionLetterKey, shouldShowHandicap } from './display'
+import {
+  formatHandicap,
+  hasFiniteOdds,
+  isWagerSelected,
+  selectionLetterKey,
+  shouldShowHandicap
+} from './display'
 import type { OddsSelectPayload, SportMarketLine, SportWagerSelection } from './types'
 
 const props = withDefaults(

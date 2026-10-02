@@ -9,9 +9,9 @@
       @click="emit('select', { market: stripLine, option: selection })"
     >
       <span class="flex min-w-0 items-center gap-1 truncate text-[12px] font-normal">
-        <span class="truncate">{{ selection.SelectionName }}</span>
+        <span class="truncate">{{ selectionLabel(selection) }}</span>
         <span v-if="shouldShowHandicap(stripLine, selection)" class="shrink-0">{{
-          selection.Handicap
+          formatHandicap(selection.Handicap)
         }}</span>
       </span>
       <span class="shrink-0 text-[12px] font-bold">{{ selection.Odds }}</span>
@@ -43,8 +43,10 @@
             class="text-[12px] font-normal leading-none"
             :class="isSelected(selection) ? 'text-text-4' : 'text-text-2'"
           >
-            {{ selection.SelectionName }}
-            <span v-if="shouldShowHandicap(line, selection)">{{ selection.Handicap }}</span>
+            {{ selectionLabel(selection) }}
+            <span v-if="shouldShowHandicap(line, selection)">{{
+              formatHandicap(selection.Handicap)
+            }}</span>
           </span>
           <span
             class="flex items-center justify-center gap-0.5 text-[12px] font-bold leading-none"
@@ -60,7 +62,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { hasFiniteOdds, isWagerSelected, shouldShowHandicap } from './display'
+import { useI18n } from 'vue-i18n'
+import {
+  formatHandicap,
+  hasFiniteOdds,
+  isWagerSelected,
+  selectionLetterKey,
+  shouldShowHandicap
+} from './display'
 import type { OddsSelectPayload, SportMarketLine, SportWagerSelection } from './types'
 
 const props = withDefaults(
@@ -79,6 +88,13 @@ const props = withDefaults(
 const emit = defineEmits<{
   select: [payload: OddsSelectPayload]
 }>()
+
+const { t } = useI18n()
+
+const selectionLabel = (selection: SportWagerSelection) => {
+  const key = selectionLetterKey(selection)
+  return key ? t(key) : selection.SelectionName
+}
 
 const isStrip = computed(() => props.layout === 'strip')
 const stripLine = computed(() => props.MarketLines[0])

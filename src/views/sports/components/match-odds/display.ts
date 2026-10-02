@@ -33,6 +33,26 @@ const pickPreferredLine = (candidates: readonly SportMarketLine[]) =>
 export const shouldShowHandicap = (line: SportMarketLine, selection: SportWagerSelection) =>
   line.BetTypeId !== 3 && Number.isFinite(selection.Handicap)
 
+const formatHandicapPart = (abs: number, negative: boolean) => {
+  if (abs === 0) return '0'
+  const text = String(Math.round(abs * 100) / 100)
+  return negative ? `-${text}` : text
+}
+
+/** 四分盘拆成相邻两档，如 0.25 → 0/0.5、-0.75 → -0.5/-1。半球和整数保持原样。 */
+export const formatHandicap = (value: number) => {
+  if (!Number.isFinite(value)) return ''
+  const quarters = Math.round(value * 4)
+  const negative = quarters < 0
+  const absQuarters = Math.abs(quarters)
+  if (absQuarters % 2 === 1) {
+    const low = (absQuarters - 1) / 4
+    const high = (absQuarters + 1) / 4
+    return `${formatHandicapPart(low, negative)}/${formatHandicapPart(high, negative)}`
+  }
+  return formatHandicapPart(absQuarters / 4, negative)
+}
+
 /** 让球 1 主 / 2 客，大小 3 大 / 4 小，独赢 5 主 / 6 客 / 7 和。 */
 const SELECTION_LETTER_KEY: Record<number, string> = {
   1: 'sports.oddsHome',
