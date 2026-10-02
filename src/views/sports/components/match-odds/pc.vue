@@ -12,29 +12,35 @@
       </p>
       <div class="flex items-stretch gap-2">
         <button
-          v-for="selection in visibleSelections(primaryLine)"
-          :key="selection.WagerSelectionId"
+          v-for="(selection, index) in lineCells(primaryLine)"
+          :key="selection?.WagerSelectionId ?? `${primaryLine.MarketlineId}-locked-${index}`"
           type="button"
-          class="flex h-11 min-w-0 flex-1 items-center justify-between rounded-lg px-4 py-3"
-          :class="
-            isWagerSelected(selection, selectedWagerSelectionId)
-              ? 'bg-theme-primary text-text-4'
-              : 'bg-bg-3 text-text-1 transition-colors lg:hover:bg-[#d0d2d2] dark:lg:hover:bg-bg-2'
-          "
-          @click="emit('select', { market: primaryLine, option: selection })"
+          class="flex h-11 min-w-0 flex-1 items-center rounded-lg px-4 py-3"
+          :class="oddsButtonClass(primaryLine, selection)"
+          @click="onSelect(primaryLine, selection)"
         >
-          <span
-            class="flex min-w-0 items-center gap-2 truncate text-xs font-normal"
-            :class="
-              isWagerSelected(selection, selectedWagerSelectionId) ? 'text-text-4' : 'text-text-1'
-            "
-          >
-            <span class="truncate">{{ selectionLabel(selection) }}</span>
-            <span v-if="shouldShowHandicap(primaryLine, selection)" class="shrink-0">{{
-              selection.Handicap
-            }}</span>
-          </span>
-          <span class="shrink-0 text-xs font-bold">{{ selection.Odds }}</span>
+          <img
+            v-if="primaryLine.IsLocked"
+            class="mx-auto h-[18px] w-[18px] shrink-0 object-contain"
+            :src="lockIcon"
+            alt=""
+            draggable="false"
+            aria-hidden="true"
+          />
+          <template v-else-if="selection">
+            <span
+              class="flex min-w-0 items-center gap-2 truncate text-xs font-normal"
+              :class="
+                isWagerSelected(selection, selectedWagerSelectionId) ? 'text-text-4' : 'text-text-1'
+              "
+            >
+              <span class="truncate">{{ selectionLabel(selection) }}</span>
+              <span v-if="shouldShowHandicap(primaryLine, selection)" class="shrink-0">{{
+                selection.Handicap
+              }}</span>
+            </span>
+            <span class="ml-auto shrink-0 text-xs font-bold">{{ selection.Odds }}</span>
+          </template>
         </button>
         <button
           v-if="showExpand"
@@ -67,31 +73,37 @@
             </p>
             <div class="flex items-stretch gap-2">
               <button
-                v-for="selection in visibleSelections(line)"
-                :key="selection.WagerSelectionId"
+                v-for="(selection, index) in lineCells(line)"
+                :key="selection?.WagerSelectionId ?? `${line.MarketlineId}-locked-${index}`"
                 type="button"
-                class="flex h-11 min-w-0 flex-1 items-center justify-between rounded-lg px-4 py-3"
-                :class="
-                  isWagerSelected(selection, selectedWagerSelectionId)
-                    ? 'bg-theme-primary text-text-4'
-                    : 'bg-bg-3 text-text-1 transition-colors lg:hover:bg-[#d0d2d2] dark:lg:hover:bg-bg-2'
-                "
-                @click="emit('select', { market: line, option: selection })"
+                class="flex h-11 min-w-0 flex-1 items-center rounded-lg px-4 py-3"
+                :class="oddsButtonClass(line, selection)"
+                @click="onSelect(line, selection)"
               >
-                <span
-                  class="flex min-w-0 items-center gap-2 truncate text-xs font-normal"
-                  :class="
-                    isWagerSelected(selection, selectedWagerSelectionId)
-                      ? 'text-text-4'
-                      : 'text-text-1'
-                  "
-                >
-                  <span class="truncate">{{ selectionLabel(selection) }}</span>
-                  <span v-if="shouldShowHandicap(line, selection)" class="shrink-0">{{
-                    formatHandicap(selection.Handicap)
-                  }}</span>
-                </span>
-                <span class="shrink-0 text-xs font-bold">{{ selection.Odds }}</span>
+                <img
+                  v-if="line.IsLocked"
+                  class="mx-auto h-[18px] w-[18px] shrink-0 object-contain"
+                  :src="lockIcon"
+                  alt=""
+                  draggable="false"
+                  aria-hidden="true"
+                />
+                <template v-else-if="selection">
+                  <span
+                    class="flex min-w-0 items-center gap-2 truncate text-xs font-normal"
+                    :class="
+                      isWagerSelected(selection, selectedWagerSelectionId)
+                        ? 'text-text-4'
+                        : 'text-text-1'
+                    "
+                  >
+                    <span class="truncate">{{ selectionLabel(selection) }}</span>
+                    <span v-if="shouldShowHandicap(line, selection)" class="shrink-0">{{
+                      formatHandicap(selection.Handicap)
+                    }}</span>
+                  </span>
+                  <span class="ml-auto shrink-0 text-xs font-bold">{{ selection.Odds }}</span>
+                </template>
               </button>
             </div>
           </section>
@@ -105,6 +117,7 @@
 import CaretUp from '@/static/svg/sports/caret-up.svg?component'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import lockIcon from '../../event-details/components/sports-score-details/img/bold.svg?url'
 import {
   formatHandicap,
   hasFiniteOdds,
@@ -147,6 +160,27 @@ const extraLines = computed(() => props.MarketLines.slice(1))
 
 const visibleSelections = (line: SportMarketLine) =>
   (line.WagerSelections ?? []).filter(hasFiniteOdds)
+
+const lockedPlaceholderCount = (line: SportMarketLine) => (line.BetTypeId === 3 ? 3 : 2)
+
+const lineCells = (line: SportMarketLine): Array<SportWagerSelection | undefined> => {
+  if (!line.IsLocked) return visibleSelections(line)
+  const selections = line.WagerSelections ?? []
+  if (selections.length) return selections
+  return Array.from({ length: lockedPlaceholderCount(line) })
+}
+
+const oddsButtonClass = (line: SportMarketLine, selection?: SportWagerSelection) => {
+  if (line.IsLocked || !selection) return 'justify-center bg-bg-3'
+  return isWagerSelected(selection, props.selectedWagerSelectionId)
+    ? 'justify-between bg-theme-primary text-text-4'
+    : 'justify-between bg-bg-3 text-text-1 transition-colors lg:hover:bg-[#d0d2d2] dark:lg:hover:bg-bg-2'
+}
+
+const onSelect = (line: SportMarketLine, selection?: SportWagerSelection) => {
+  if (line.IsLocked || !selection) return
+  emit('select', { market: line, option: selection })
+}
 
 const toggleExpanded = () => {
   emit('update:expanded', !expanded.value)

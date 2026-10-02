@@ -14,6 +14,10 @@ const isDisplayableLine = (line: SportMarketLine) =>
   Array.isArray(line.WagerSelections) &&
   line.WagerSelections.some(hasFiniteOdds)
 
+/** 列表在没有有效赔率时仍保留锁盘盘口，用来画锁图标。 */
+const isOpenOrLockedLine = (line: SportMarketLine) =>
+  isDisplayableLine(line) || (line.IsLocked === true && Number.isSafeInteger(line.MarketlineId))
+
 const compareHomepageCandidates = (left: SportMarketLine, right: SportMarketLine) => {
   const leftFullTime = left.PeriodId === 1 ? 0 : 1
   const rightFullTime = right.PeriodId === 1 ? 0 : 1
@@ -77,13 +81,14 @@ export const isWagerSelected = (
 
 const pickMarketLinesByOrder = (
   lines: readonly SportMarketLine[],
-  betTypeIds: readonly number[]
+  betTypeIds: readonly number[],
+  acceptLine: (line: SportMarketLine) => boolean = isDisplayableLine
 ): SportMarketLine[] => {
   if (!Array.isArray(lines) || !lines.length) return []
 
   const candidatesByType = new Map<number, SportMarketLine[]>()
   for (const line of lines) {
-    if (!isDisplayableLine(line)) continue
+    if (!acceptLine(line)) continue
     const candidates = candidatesByType.get(line.BetTypeId) ?? []
     candidates.push(line)
     candidatesByType.set(line.BetTypeId, candidates)
@@ -101,13 +106,13 @@ const pickMarketLinesByOrder = (
   return picked
 }
 
-/** 只挑出卡片要展示的原盘口引用，不生成新 DTO、不改字段名。 */
+/** 只挑出卡片要展示的原盘口引用，不生成新 DTO、不改字段名。锁盘盘口即使没有赔率也保留。 */
 export const pickHomepageMarketLines = (lines: readonly SportMarketLine[]): SportMarketLine[] =>
-  pickMarketLinesByOrder(lines, HOME_BET_TYPE_ORDER)
+  pickMarketLinesByOrder(lines, HOME_BET_TYPE_ORDER, isOpenOrLockedLine)
 
-/** H5 最多展示三种玩法，缺玩法不补空列。 */
+/** H5 最多展示三种玩法，缺玩法不补空列。锁盘盘口即使没有赔率也保留。 */
 export const pickH5ListMarketLines = (lines: readonly SportMarketLine[]): SportMarketLine[] =>
-  pickMarketLinesByOrder(lines, H5_LIST_BET_TYPE_ORDER)
+  pickMarketLinesByOrder(lines, H5_LIST_BET_TYPE_ORDER, isOpenOrLockedLine)
 
 /** 热门条只展示一条：优先大小，没有则退回列表第一条可展示盘口。 */
 export const pickOverUnderOrFirstMarketLine = (
