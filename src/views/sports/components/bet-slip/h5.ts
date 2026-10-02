@@ -6,11 +6,14 @@ import type { SportsPageState } from '../../index'
 
 export type SportsKeyboardKey = string | 'delete'
 
+const blockedStartingKeys = new Set(['.', '0', '00'])
+
 /** 键盘输入最多保留两位小数。 */
 export const applySportsKeyboardKey = (raw: string, key: string, replace = false): string => {
   if (key === 'delete') return raw.slice(0, -1)
   if (!/^(?:\d|00|\.)$/.test(key)) return raw
   const current = replace ? '' : raw
+  if (!current && blockedStartingKeys.has(key)) return raw
   if (key === '.' && current.includes('.')) return current
   let next = `${current}${key}`
   if (next.startsWith('.')) next = `0${next}`
@@ -76,18 +79,19 @@ export const useSportsH5Bet = (page: SportsPageState) => {
     page.betSlipOpen.value = false
   }
   const focusStake = (id: string, kind: SportsBetMode) => {
-    if (busy.value || rows.value.find(item => item.id === id)?.submissionState) return
+    if (busy.value) return
     page.focusStake(id, kind)
     keyboardOpen.value = true
     replaceNextKey = true
   }
   const writeStake = (value: string) => {
-    if (!activeRow.value || activeRow.value.submissionState || busy.value) return
+    if (!activeRow.value || busy.value) return
     if (page.mode.value === 'single') page.updateStake(activeRow.value.id, value)
     else page.updateParlayStake(activeRow.value.id, value)
   }
   const keyPress = (key: SportsKeyboardKey) => {
     if (busy.value || editingAmounts.value) return
+    if (replaceNextKey && blockedStartingKeys.has(key)) return
     if (activeRow.value) {
       writeStake(applySportsKeyboardKey(activeRow.value.stake, key, replaceNextKey))
     }
@@ -95,14 +99,7 @@ export const useSportsH5Bet = (page: SportsPageState) => {
   }
   const maxStake = () => {
     const target = activeRow.value
-    if (
-      !target ||
-      target.submissionState ||
-      busy.value ||
-      editingAmounts.value ||
-      page.balance.value === null
-    )
-      return
+    if (!target || busy.value || editingAmounts.value || page.balance.value === null) return
     page.maxStake(target.id, page.mode.value)
     replaceNextKey = true
   }
@@ -205,6 +202,11 @@ export const useSportsH5Bet = (page: SportsPageState) => {
       if (submittedView.value === view && !result.value) submittedView.value = null
     }
   }
+
+  // 余额刷新仍可能在途；提交结束且没有结果遮罩时，立即恢复可编辑的实时内容。
+  watch(page.submitting, submitting => {
+    if (!submitting && !result.value) submittedView.value = null
+  })
 
   watch(
     () => page.betResult?.value,

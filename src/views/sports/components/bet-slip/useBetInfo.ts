@@ -16,11 +16,12 @@ import type {
   SportsBetInfoQuote,
   SportsBetInfoSetting
 } from '@/api/interface/sport'
-import { useSportsStore } from '@/stores/sports'
+import { SportsCredentialsUnavailableError, useSportsStore } from '@/stores/sports'
 import { useUserStore } from '@/stores/user'
+import { useSportsAuthStore } from '@/stores/sportsAuth'
 import type { SportsBetMode } from '../../shared/types'
 import type { OddsTrend } from '../match-odds/types'
-import { decimalOdds, parseBetInfoItems } from './bet-info'
+import { decimalOdds, isBetInfoRetryable, parseBetInfoItems } from './bet-info'
 
 export type BetInfoSource = {
   sportId: number
@@ -68,12 +69,15 @@ export const useBetInfo = ({
 }: BetInfoOptions) => {
   const sportsStore = useSportsStore()
   const userStore = useUserStore()
+  const sportsAuth = useSportsAuthStore()
   const active = ref(true)
   const visible = ref(typeof document === 'undefined' || !document.hidden)
   const error = ref('')
   const loading = ref(false)
   const ready = ref(false)
-  const state = ref<'idle' | 'queued' | 'loading' | 'success' | 'error'>('idle')
+  const state = ref<
+    'idle' | 'queued' | 'loading' | 'success' | 'error' | 'credentials-unavailable'
+  >('idle')
   const quotes = ref<(SportsBetInfoQuote & { rid: number })[]>([])
   const trends = ref<Record<number, OddsTrend>>({})
   const settings = ref<SportsBetInfoSetting[]>([])
@@ -82,6 +86,8 @@ export const useBetInfo = ({
     Boolean(userStore.userInfo?.tradeToken || userStore.acctInfo?.memberId)
   )
   let generation = 0
+  let retryTimer: ReturnType<typeof setTimeout> | undefined
+  let finishRetry: ((continueQuery: boolean) => void) | undefined
   const enabled = () =>
     open.value &&
     Boolean(selectionKey.value) &&
@@ -92,6 +98,10 @@ export const useBetInfo = ({
 
   const cancel = () => {
     generation += 1
+    clearTimeout(retryTimer)
+    retryTimer = undefined
+    finishRetry?.(false)
+    finishRetry = undefined
     sportsStore.cancelBetInfo()
     loading.value = false
     ready.value = false
@@ -116,6 +126,7 @@ export const useBetInfo = ({
     const selections = buildBetInfoSelections(sources)
     loading.value = true
     state.value = 'loading'
+    let credentialsUnavailable = false
     try {
       const params = {
         WagerType: mode.value === 'single' ? 1 : 2,
@@ -123,8 +134,21 @@ export const useBetInfo = ({
       } as const
       let response = await sportsStore.fetchBetInfo(params)
       if (current !== generation) return
-      // Store 已刷新失效凭据，报价查询用新凭据重试一次。
-      if ([102, 202].includes(Number(response?.stc)) && enabled()) {
+      // 380 且仍开盘时，按接口规则间隔 5 秒重查一次。
+      if (
+        [100, 350].includes(Number(response?.stc)) &&
+        Array.isArray(response?.wsis) &&
+        response.wsis.some(isBetInfoRetryable)
+      ) {
+        const continueQuery = await new Promise<boolean>(resolve => {
+          finishRetry = resolve
+          retryTimer = setTimeout(() => {
+            retryTimer = undefined
+            finishRetry = undefined
+            resolve(true)
+          }, 5000)
+        })
+        if (!continueQuery || current !== generation || !enabled()) return
         response = await sportsStore.fetchBetInfo(params)
       }
       if (current !== generation) return
@@ -159,17 +183,27 @@ export const useBetInfo = ({
             return quote ? [quote] : []
           })
         : next
+      if (quotes.value.some(isBetInfoRetryable)) {
+        error.value = 'sports.betInfoFailed'
+        return
+      }
       settings.value = Array.isArray(response.bs) ? response.bs.filter(Boolean) : []
       ready.value = true
-    } catch {
+    } catch (failure) {
       if (current === generation) {
         ready.value = false
-        error.value = 'sports.betInfoFailed'
+        credentialsUnavailable = failure instanceof SportsCredentialsUnavailableError
+        // 登录接口已提示，投注项和金额保留，不再显示报价失败文案。
+        error.value = credentialsUnavailable ? '' : 'sports.betInfoFailed'
       }
     } finally {
       if (current === generation) {
         loading.value = false
-        state.value = error.value ? 'error' : 'success'
+        state.value = credentialsUnavailable
+          ? 'credentials-unavailable'
+          : error.value
+            ? 'error'
+            : 'success'
       }
     }
   }
@@ -182,6 +216,15 @@ export const useBetInfo = ({
       if (current === generation) void query(true)
     })
   }
+
+  // 其他主动操作取得凭据后，只恢复当前因凭据失败的报价。
+  watch(
+    [() => sportsAuth.isReady, state],
+    ([isReady, status]) => {
+      if (isReady && status === 'credentials-unavailable' && enabled()) refreshBetInfo()
+    },
+    { flush: 'post' }
+  )
 
   // 只在投注单打开、选项或模式变化时查询，不定时轮询。
   watch(

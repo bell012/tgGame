@@ -79,15 +79,20 @@ export const useDisplayCurrency = () => {
   const { config } = storeToRefs(siteConfigStore)
 
   const currentCurrencyCode = computed(() => {
+    const accountCurrency = normalizeDisplayCurrencyCode(
+      acctInfo.value?.currency || userInfo.value?.currency
+    )
+    if (accountCurrency) {
+      return accountCurrency
+    }
+
     const selectedCurrency = normalizeDisplayCurrencyCode(localeStore.currentCurrency)
 
     if (selectedCurrency && selectedCurrency !== 'NONE') {
       return selectedCurrency
     }
 
-    return normalizeDisplayCurrencyCode(
-      acctInfo.value?.currency || userInfo.value?.currency || getCurrentCurrency()
-    )
+    return normalizeDisplayCurrencyCode(getCurrentCurrency())
   })
 
   const currencySelectOptions = computed<CurrencyOptionItem[]>(() => {

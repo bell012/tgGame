@@ -74,7 +74,7 @@
     >
       <span
         :aria-label="t('common.loading')"
-        class="size-[36px] animate-spin rounded-full border-[3px] border-common-100/25 border-t-theme-primary"
+        class="size-[36px] animate-spin rounded-full border-[3px] border-opacity-30 border-t-theme-primary"
       ></span>
     </div>
   </div>

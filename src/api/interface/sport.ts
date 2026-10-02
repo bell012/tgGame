@@ -429,7 +429,7 @@ export type SubmitBuyBackResponse = SportsResponse
 
 /** RelatedScores（rs）：同一比赛不同组别的比分/红牌，不能与主体比分相加。 */
 export interface SportRelatedScore {
-  /** egtid，Int：比分所属的赛事组别类型 ID，不是球种 ID。 */
+  /** egtid，Int：比分组别；足球 2 角球、22 上半场、23 下半场。 */
   EventGroupTypeId: number
   /** hs，Int：该组别的主队比分。 */
   HomeScore: number
@@ -449,13 +449,13 @@ export interface SportRelatedScore {
 export interface SportEventExtraInfo {
   /** HasCorner（Boolean）：是否具有角球投注类型。 */
   hc: boolean
-  /** Current15MinsHomeScore（Int）：当前 15 分钟区间的主队比分。 */
+  /** Current15MinsHomeScore（Int）：15 分钟主队比分。 */
   c15mhs: number
-  /** Current15MinsAwayScore（Int）：当前 15 分钟区间的客队比分。 */
+  /** Current15MinsAwayScore（Int）：15 分钟客队比分。 */
   c15mas: number
-  /** Int，可缺失：主队角球数。 */
+  /** Int，可缺失：主队黄牌数，缺失时按 0 显示。 */
   htycs?: number
-  /** Int，可缺失：客队角球数。 */
+  /** Int，可缺失：客队黄牌数，缺失时按 0 显示。 */
   atycs?: number
   /** Boolean：扩展标志，业务含义待确认，不与外层 IsLive 混同。 */
   il: boolean
@@ -730,10 +730,11 @@ export interface GetSelectedEventInfoParams {
   PeriodIds?: SportsPeriodId[]
 }
 
-/** 按 ID 查询的原始响应；实测外层只有 stc、std、e，不返回联赛分组或 Total。 */
+/** 按 ID 查询的响应；外层为 stc、std、e，不返回联赛分组或 Total。 */
 export interface GetSelectedEventInfoResponse extends SportsResponse {
   /**
    * Events（List）：平铺赛事详情，直接读取 e[].EventId / MarketLines，不是 e[].Sports。
+   * 网关可能返回 JSON 字符串（如 "[]"），API 层解析为数组，格式异常则拒绝响应。
    * 返回顺序可能与 EventIds 不同，必须按 EventId 匹配，不能按数组位置对应。
    * 访问失败时可能仅返回 stc='100' 和错误 std、缺少 e；须同时校验 e 是数组。
    * 日期保留字符串；滚球时间、比分和红牌在赛前可缺失，详见 SportEventDetail。

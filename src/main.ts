@@ -30,9 +30,14 @@ themeStore.initTheme()
 app.mount('#app')
 
 // 初始化语言
-router.isReady().then(() => {
+router.isReady().then(async () => {
   const localeStore = useLocaleStore()
   localeStore.initLanguage()
+
+  const siteConfigStore = useSiteConfigStore()
+  const siteConfig = await siteConfigStore.initSiteConfig()
+  // 页面刷新时，当前语言和货币以 /sy/dlicgh 返回的默认配置为准。
+  localeStore.applySiteDefaults(siteConfig)
 
   const gameStore = useGameStore()
 
@@ -41,9 +46,6 @@ router.isReady().then(() => {
 
   // 初始化全局多语言字典缓存。
   void initGlobalDicCache()
-
-  const siteConfigStore = useSiteConfigStore()
-  void siteConfigStore.initSiteConfig()
 
   const tradeMessageSyncStore = useTradeMessageSyncStore()
   tradeMessageSyncStore.init()

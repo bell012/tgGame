@@ -22,7 +22,15 @@
             data-testid="sports-h5-favorite"
             @click.stop="emit('favorite')"
           >
+            <Loading
+              v-if="favoritePending"
+              type="spinner"
+              size="12px"
+              color="currentColor"
+              aria-hidden="true"
+            />
             <StarIcon
+              v-else
               class="h-3 w-3 overflow-visible"
               :class="
                 favorite
@@ -57,11 +65,11 @@
             >
               {{ team.score }}
             </span>
-            <p class="min-w-0 break-words text-[13px] font-bold leading-4">
-              {{ team.name }}
+            <p class="flex min-w-0 items-center gap-[3px] text-[13px] font-bold leading-4">
+              <span class="min-w-0 break-words">{{ team.name }}</span>
               <span
                 v-if="match.live && (team.redCards != null || team.yellowCards != null)"
-                class="inline-flex items-center gap-[3px] align-baseline text-[10px] font-bold leading-3"
+                class="flex shrink-0 items-center gap-[3px] text-[10px] font-bold leading-3"
               >
                 <span
                   v-if="team.redCards != null"
@@ -91,45 +99,22 @@
       </div>
     </div>
 
-    <div
-      v-if="match.cornerScore || totalScore"
-      class="mt-2.5 flex min-h-[15px] items-center gap-3.5 text-xs leading-[15px]"
-    >
-      <span
-        v-if="match.cornerScore"
-        class="flex items-center gap-1.5"
-        :aria-label="t('sports.matchCard.corners', { score: match.cornerScore })"
-      >
-        <CornerIcon class="h-3.5 w-3.5" aria-hidden="true" />
-        {{ match.cornerScore }}
-      </span>
-      <span
-        v-if="totalScore"
-        class="flex items-center gap-1 text-text-2"
-        :class="match.sportId === 1 ? '' : 'ml-auto'"
-      >
-        <span>{{ scoreLabel }}</span>
-        <span
-          class="tabular-nums"
-          :class="match.sportId === 1 ? 'text-text-1' : 'text-theme-primary'"
-          >{{ totalScore }}</span
-        >
-      </span>
-    </div>
+    <MatchScores :match="match" class="mt-2.5" />
   </article>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Loading } from 'vant'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
-import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import { navigateTo } from '@/utils/router'
 import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
 import MatchOdds from '../match-odds/index.vue'
 import MatchTime from './time.vue'
+import MatchScores from './scores.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
 import type { SportsMatch } from '../../shared/types'
 
@@ -156,10 +141,6 @@ const totalScore = computed(() =>
     ? `${props.match.HomeScore}-${props.match.AwayScore}`
     : ''
 )
-const scoreLabel = computed(() => {
-  const phase = props.match.phase.split(/\s+/, 1)[0]
-  return props.match.sportId === 1 && phase ? phase : t('sports.matchCard.totalScore')
-})
 
 const goToEventDetails = () => {
   persistEventDetailsMatch(props.match)

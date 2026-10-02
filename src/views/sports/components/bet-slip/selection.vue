@@ -78,7 +78,7 @@
       :active="props.active"
       :placeholder="props.selection.limitText"
       :error="props.selection.stakeError ?? ''"
-      :disabled="props.disabled || Boolean(props.selection.submissionState)"
+      :disabled="props.disabled"
       @focus="emit('focus')"
     />
   </li>

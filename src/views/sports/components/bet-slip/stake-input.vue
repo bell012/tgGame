@@ -1,13 +1,15 @@
 <template>
   <div class="min-w-0">
     <div
-      class="flex h-[42px] min-w-0 items-center gap-[3px] rounded-lg border border-solid bg-input-3 p-1.5 text-sm"
+      class="flex min-w-0 items-center gap-[3px] rounded-lg bg-input-3 p-1.5 text-sm leading-5"
       :class="
-        props.error ? 'border-secondary-2' : 'border-transparent focus-within:border-theme-primary'
+        props.error
+          ? 'h-11 border border-solid border-secondary-2'
+          : 'h-[42px] focus-within:ring-1 focus-within:ring-inset focus-within:ring-theme-primary'
       "
     >
       <span
-        class="shrink-0 font-bold"
+        class="shrink-0 font-bold leading-[17px]"
         :class="props.value ? 'text-text-1' : 'text-text-3'"
         aria-hidden="true"
       >
@@ -18,7 +20,7 @@
         inputmode="decimal"
         autocomplete="off"
         maxlength="12"
-        class="w-0 min-w-0 flex-1 bg-transparent font-semibold text-text-1 outline-none placeholder:font-normal placeholder:text-text-3"
+        class="w-0 min-w-0 flex-1 bg-transparent font-bold text-text-1 outline-none placeholder:font-['PingFang_SC',sans-serif] placeholder:font-normal placeholder:text-text-3"
         :value="props.value"
         :aria-label="props.label"
         :aria-invalid="Boolean(props.error)"
@@ -30,7 +32,7 @@
       />
       <button
         type="button"
-        class="ml-1.5 h-[30px] w-[61px] shrink-0 rounded-md bg-bg-5 text-xs font-bold text-text-1 hover:bg-bg-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
+        class="ml-1.5 h-[30px] w-[61px] shrink-0 rounded-md bg-bg-5 text-xs font-bold leading-[15px] text-text-1 hover:bg-bg-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-theme-primary"
         :disabled="props.disabled"
         @click="emit('max')"
       >

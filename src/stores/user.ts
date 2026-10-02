@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import Api from '@/api'
-import { SITE_CONFIG_STORAGE_KEY } from '@/stores/siteConfig'
+import { SITE_CONFIG_STORAGE_KEY, useSiteConfigStore } from '@/stores/siteConfig'
+import { useLocaleStore } from '@/stores/locale'
 import type { QueryAcctInfoResult } from '@/api/interface/user'
 import { useAuthModalStore } from '@/stores/authModal'
 import { withLocalePrefix } from '@/utils/locale'
@@ -25,6 +26,12 @@ const TRADE_MESSAGE_SYNC_STORAGE_KEY = 'memberTradeMessageSync'
 export const useUserStore = defineStore('user', () => {
   const userInfo = profileUserInfoState
   const acctInfo = ref<QueryAcctInfoResult | null>(null)
+
+  const normalizeCurrencyCode = (value: unknown) => {
+    return String(value ?? '')
+      .trim()
+      .toUpperCase()
+  }
 
   const parseStoredItem = <T>(key: string): T | null => {
     const storedValue = localStorage.getItem(key)
@@ -74,10 +81,33 @@ export const useUserStore = defineStore('user', () => {
     return acctInfo.value
   }
 
+  const syncCurrentCurrencyFromAcctInfo = async (nextAcctInfo?: QueryAcctInfoResult | null) => {
+    const localeStore = useLocaleStore()
+    const accountCurrency = normalizeCurrencyCode(nextAcctInfo?.currency)
+
+    if (accountCurrency) {
+      localeStore.setCurrency(accountCurrency)
+      return
+    }
+
+    const siteConfigStore = useSiteConfigStore()
+    const siteConfig = siteConfigStore.config ?? (await siteConfigStore.initSiteConfig())
+    const defaultCurrency = normalizeCurrencyCode(siteConfig?.baseSiteConfig?.defaultCurrency)
+
+    if (defaultCurrency) {
+      localeStore.setCurrency(defaultCurrency)
+    }
+  }
+
   const syncStoredUserData = () => {
     syncProfileCustomizationState()
     syncProfileUserInfoState()
     acctInfo.value = parseStoredItem<QueryAcctInfoResult>(ACCT_INFO_STORAGE_KEY)
+    const storedCurrency = normalizeCurrencyCode(acctInfo.value?.currency)
+
+    if (storedCurrency) {
+      useLocaleStore().setCurrency(storedCurrency)
+    }
 
     return {
       userInfo: userInfo.value,
@@ -90,8 +120,12 @@ export const useUserStore = defineStore('user', () => {
       const response = await Api.user.queryAcctInfo({})
 
       if (response?.result) {
-        return setAcctInfoState(response.result)
+        const nextAcctInfo = setAcctInfoState(response.result)
+        await syncCurrentCurrencyFromAcctInfo(nextAcctInfo)
+        return nextAcctInfo
       }
+
+      await syncCurrentCurrencyFromAcctInfo(null)
 
       return acctInfo.value
     } catch (error) {
@@ -163,8 +197,7 @@ export const useUserStore = defineStore('user', () => {
       [
         ...NOTIFICATION_CACHE_STORAGE_PREFIXES,
         ...PLAYED_GAMES_CACHE_STORAGE_PREFIXES,
-        'sportsAcceptAnyOdds:',
-        'sportsUnconfirmedBets:'
+        'sportsAcceptAnyOdds:'
       ]
     )
     clearProfileAvatarPreviewState()

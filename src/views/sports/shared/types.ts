@@ -18,10 +18,12 @@ export type SportsMatch = {
   awayScore: string
   cornerScore?: string
   halfTimeScore?: string
+  relatedScores?: { key: string; score: string; label?: 'HT' | 'FT'; active: boolean }[]
   home: { name: string; badge: string; redCards?: string; yellowCards?: string }
   away: { name: string; badge: string; redCards?: string; yellowCards?: string }
   live: boolean
   phase: string
+  rbTimeStatus?: number
   phaseClock?: {
     period: string
     seconds: number
@@ -55,7 +57,6 @@ export type SportsBetSelection = {
   stake: string
   trend?: OddsTrend
   live?: boolean
-  submissionState?: 'pending' | 'unknown'
   betStatus?: 'idle' | 'pending' | 'open' | 'closed' | 'unavailable' | 'error'
   oddsType?: number
   minStake?: number
@@ -66,7 +67,6 @@ export type SportsBetSelection = {
 }
 export type SportsParlay = {
   id: string
-  submissionState?: 'pending' | 'unknown' | 'confirmed'
   size: number
   combinationCount: number
   odds?: number

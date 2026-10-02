@@ -1,5 +1,11 @@
 import type { SportsBetInfoQuote, SportsBetInfoSelectionParams } from '@/api/interface/sport'
 
+export const isBetInfoMarketClosed = (quote: SportsBetInfoQuote | null | undefined) =>
+  Number(quote?.mlsid) === 2
+
+export const isBetInfoRetryable = (quote: SportsBetInfoQuote | null | undefined) =>
+  Number(quote?.st) === 380 && Number(quote?.mlsid) === 1
+
 // 按选项 ID 关联报价；字段缺失不等于投注项失效。
 export const parseBetInfoItems = (
   selections: SportsBetInfoSelectionParams[],

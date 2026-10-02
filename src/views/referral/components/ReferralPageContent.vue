@@ -111,56 +111,107 @@
         </div>
       </section>
 
-      <!-- 社交分享区域 -->
+      <!-- PC 社交分享区域：标题栏和社交媒体列表严格按桌面设计稿展示。 -->
       <section
-        class="rounded-[10px] bg-bg-2"
-        :class="props.mode === 'pc' ? 'rounded-[16px] p-5' : 'p-3.5'"
+        v-if="props.mode === 'pc'"
+        class="relative h-[180px] w-full max-w-[1032px] self-center overflow-hidden rounded-[16px] bg-bg-2"
       >
+        <!-- PC 社交分享顶部标题栏。 -->
+        <div class="flex h-[52px] items-center justify-between border-b border-opacity-6 px-6">
+          <span class="text-base font-[700] leading-[19px] text-text-1">
+            {{ t('referral.socialShareTitle') }}
+          </span>
+
+          <!-- PC 分享说明和推荐文案入口。 -->
+          <div class="flex h-5 items-center gap-8">
+            <button
+              type="button"
+              class="flex items-center gap-2 text-sm font-[400] leading-5 text-text-1"
+              @click="$emit('share-guide')"
+            >
+              <HowToShareIcon class="size-4" />
+              <span>{{ props.howToShareText }}</span>
+            </button>
+
+            <button
+              type="button"
+              class="flex items-center gap-2 text-sm font-[400] leading-5 text-text-1"
+              @click="$emit('copy-message')"
+            >
+              <ReferralMessageIcon class="h-4 w-[15.36px]" />
+              <span>{{ props.referralMessageText }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PC 社交媒体横向列表。 -->
+        <div class="scrollbar-hide absolute left-6 right-6 top-[76px] overflow-x-auto">
+          <!-- PC 社交媒体加载骨架。 -->
+          <div v-if="props.socialChannelsLoading" class="flex h-20 w-max items-center gap-10">
+            <div
+              v-for="index in socialChannelSkeletonCount"
+              :key="`pc-social-channel-skeleton-${index}`"
+              class="flex h-20 w-20 shrink-0 flex-col items-center gap-2"
+            >
+              <span class="size-[52px] animate-pulse rounded-[13px] bg-bg-4"></span>
+              <span class="h-5 w-16 animate-pulse rounded-[4px] bg-bg-4"></span>
+            </div>
+          </div>
+
+          <!-- PC 社交媒体按钮。 -->
+          <div v-else class="flex h-20 w-max items-center gap-10">
+            <button
+              v-for="item in props.socialChannels"
+              :key="`${item.shareName}-${item.sort}`"
+              type="button"
+              class="flex h-20 w-20 shrink-0 flex-col items-center gap-2"
+              @click="$emit('share-channel', item)"
+            >
+              <img
+                :src="item.shareDomainImage"
+                :alt="item.shareName"
+                class="size-[52px] shrink-0 object-contain"
+              />
+              <span class="w-20 truncate text-center text-sm font-[400] leading-5 text-text-1">
+                {{ item.shareName }}
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- H5 社交分享区域保持原有布局。 -->
+      <section v-else class="rounded-[10px] bg-bg-2 p-3.5">
         <!-- 社交分享按钮滚动区 -->
         <div class="overflow-x-auto">
           <!-- 社交分享骨架列表 -->
-          <div
-            v-if="props.socialChannelsLoading"
-            class="flex min-w-max"
-            :class="props.mode === 'pc' ? 'gap-6' : 'gap-3.5'"
-          >
+          <div v-if="props.socialChannelsLoading" class="flex min-w-max gap-3.5">
             <!-- 社交分享骨架项 -->
             <div
               v-for="index in socialChannelSkeletonCount"
               :key="`social-channel-skeleton-${index}`"
-              class="flex flex-col items-center"
-              :class="props.mode === 'pc' ? 'w-[88px] gap-3' : 'w-[60px] gap-2'"
+              class="flex w-[60px] flex-col items-center gap-2"
             >
               <!-- 社交分享骨架图标 -->
-              <div
-                class="animate-pulse rounded-[15px] bg-bg-4"
-                :class="props.mode === 'pc' ? 'h-[72px] w-[72px]' : 'h-10 w-10'"
-              ></div>
+              <div class="h-10 w-10 animate-pulse rounded-[15px] bg-bg-4"></div>
 
               <!-- 社交分享骨架文案 -->
-              <div
-                class="animate-pulse rounded-full bg-bg-4"
-                :class="props.mode === 'pc' ? 'h-4 w-16' : 'h-3 w-12'"
-              ></div>
+              <div class="h-3 w-12 animate-pulse rounded-full bg-bg-4"></div>
             </div>
           </div>
 
           <!-- 社交分享按钮列表 -->
-          <div v-else class="flex min-w-max" :class="props.mode === 'pc' ? 'gap-6' : 'gap-3.5'">
+          <div v-else class="flex min-w-max gap-3.5">
             <!-- 社交分享按钮 -->
             <button
               v-for="item in props.socialChannels"
               :key="`${item.shareName}-${item.sort}`"
               type="button"
-              class="flex flex-col items-center"
-              :class="props.mode === 'pc' ? 'w-[88px] gap-3' : 'w-[60px] gap-2'"
+              class="flex w-[60px] flex-col items-center gap-2"
               @click="$emit('share-channel', item)"
             >
               <!-- 社交分享图标容器 -->
-              <div
-                class="flex items-center justify-center"
-                :class="props.mode === 'pc' ? 'h-[72px] w-[72px]' : 'h-10 w-10'"
-              >
+              <div class="flex h-10 w-10 items-center justify-center">
                 <!-- 社交分享图标 -->
                 <img
                   :src="item.shareDomainImage"
@@ -172,7 +223,7 @@
               <!-- 社交分享文案 -->
               <span
                 class="w-full text-center font-[400] text-text-1"
-                :class="props.mode === 'pc' ? 'text-sm leading-[20px]' : 'text-xs leading-[15px]'"
+                :class="'text-xs leading-[15px]'"
               >
                 {{ item.shareName }}
               </span>
@@ -181,12 +232,12 @@
         </div>
 
         <!-- 社交分享底部按钮区域 -->
-        <div class="flex" :class="props.mode === 'pc' ? 'mt-5 gap-4' : 'mt-3.5 gap-3.5'">
+        <div class="mt-3.5 flex gap-3.5">
           <!-- 分享说明按钮 -->
           <button
             type="button"
             class="flex flex-1 items-center justify-center rounded-[10px] bg-bg-4 font-[400] text-text-2"
-            :class="props.mode === 'pc' ? 'h-[52px] text-base' : 'h-10 text-sm'"
+            :class="'h-10 text-sm'"
             @click="$emit('share-guide')"
           >
             {{ props.howToShareText }}
@@ -196,7 +247,7 @@
           <button
             type="button"
             class="flex flex-1 items-center justify-center rounded-[10px] bg-bg-4 font-[400] text-text-2"
-            :class="props.mode === 'pc' ? 'h-[52px] text-base' : 'h-10 text-sm'"
+            :class="'h-10 text-sm'"
             @click="$emit('copy-message')"
           >
             {{ props.referralMessageText }}
@@ -1008,9 +1059,12 @@ import commissionBoostArrowImage from '@/static/img/referral/commission-boost-ar
 import inviteTaskDecorationH5Image from '@/static/img/referral/invite-task-banner-h5.png'
 import inviteTaskDecorationPcImage from '@/static/img/referral/invite-task-banner-pc.png'
 import inviteTaskRightImage from '@/static/img/referral/invite-task-right.png'
+import HowToShareIcon from '@/static/svg/referral/how-to-share.svg?component'
+import ReferralMessageIcon from '@/static/svg/referral/referral-message.svg?component'
 import CommissionOverviewPcIcon from '@/static/svg/referral/yongjin 1.svg?component'
 import { Swipe, SwipeItem } from 'vant'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type {
   ReferralBannerSlide,
   ReferralCommissionBoostLevelView,
@@ -1058,6 +1112,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n()
 
 defineEmits<{
   'quick-action': [value: ReferralQuickActionId]

@@ -100,6 +100,7 @@
       <FilterSearch_PC
         v-if="!isMobile"
         :collect-only="collectOnly"
+        :collect-pending="collectPending"
         @filter-change="handleMatchFilterChange"
         @collect-change="handleCollectChange"
       />
@@ -127,7 +128,7 @@
         text-class="mt-4 text-center text-sm text-text-2"
       />
       <div
-        class="grid min-w-0 grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-4"
+        class="grid min-w-0 auto-rows-fr grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-4"
         data-testid="sports-match-grid"
       >
         <div
@@ -138,6 +139,10 @@
         >
           <MatchCardPc
             :match="match"
+            :show-period-scores="
+              page.selectedFilterKey.value === 'rolling' ||
+              page.selectedFilterKey.value === 'parlay'
+            "
             :MarketLines="match.MarketLines"
             :selected-wager-selection-id="getSelectedWagerSelectionId(match.id)"
             :expanded="expandedMatchId === match.id"
@@ -264,6 +269,7 @@ const {
   refreshing,
   focusedStakeId,
   collectOnly,
+  collectPending,
   handleMatchFavorite,
   isMatchFavoritePending,
   setMatchExpanded,

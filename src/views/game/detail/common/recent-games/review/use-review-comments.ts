@@ -1,5 +1,6 @@
 import Api from '@/api'
 import { readIsCollections, type GameCommentListItem } from '@/api/interface/game'
+import { resolveGameImageUrl } from '@/utils/image'
 import { computed, inject, ref, watch, type Ref } from 'vue'
 import type { ReviewCommentViewItem } from './review-types'
 import {
@@ -31,7 +32,6 @@ type MemberIdentity = {
 
 type UseReviewCommentsOptions = {
   currentGameId: Ref<string>
-  gameImageBaseUrl: string
   defaultCommentAvatarUrl: string
   getCurrentUserAvatarUrl: () => string
   getCurrentMemberIdentity: () => MemberIdentity
@@ -49,7 +49,6 @@ const SORT_TYPE_MAP: Record<ReviewSortValue, 1 | 2 | 3> = {
 export const useReviewComments = (options: UseReviewCommentsOptions) => {
   const {
     currentGameId,
-    gameImageBaseUrl,
     defaultCommentAvatarUrl,
     getCurrentUserAvatarUrl,
     getCurrentMemberIdentity,
@@ -201,7 +200,7 @@ export const useReviewComments = (options: UseReviewCommentsOptions) => {
     if (/^(data:|blob:|https?:\/\/|\/)/i.test(avatarPath)) {
       return avatarPath
     }
-    return gameImageBaseUrl ? `${gameImageBaseUrl}${avatarPath}` : avatarPath
+    return resolveGameImageUrl(avatarPath)
   }
 
   const resolveCommentItemAvatar = (item: GameCommentListItem) => {

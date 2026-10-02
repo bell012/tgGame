@@ -26,9 +26,21 @@
         type="button"
         class="inline-flex h-[41px] w-[41px] flex-none items-center justify-center rounded-full border-0 bg-bg-2 transition-colors"
         :class="props.collectOnly ? '' : 'hover:bg-opacity-6'"
+        :disabled="props.collectPending"
+        :aria-busy="props.collectPending"
+        :aria-label="t('sports.collectOnly')"
         @click="toggleCollectOnly"
       >
+        <Loading
+          v-if="props.collectPending"
+          type="spinner"
+          size="18px"
+          color="currentColor"
+          class="text-icon-2"
+          aria-hidden="true"
+        />
         <CollectIcon
+          v-else
           class="h-5 w-5 text-icon-2"
           :class="props.collectOnly ? 'text-theme-primary' : 'opacity-100'"
         />
@@ -39,6 +51,8 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
+import { Loading } from 'vant'
+import { useI18n } from 'vue-i18n'
 import { useSportsStore } from '@/stores/sports'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
 import { useFilterTabs } from './index'
@@ -52,13 +66,16 @@ const emit = defineEmits<{
 const props = withDefaults(
   defineProps<{
     collectOnly?: boolean
+    collectPending?: boolean
   }>(),
   {
-    collectOnly: false
+    collectOnly: false,
+    collectPending: false
   }
 )
 
 const filterTabs = useFilterTabs()
+const { t } = useI18n()
 const { selectedFilterKey: activeFilterKey } = storeToRefs(useSportsStore())
 
 // 根据当前选中的筛选项返回按钮样式。

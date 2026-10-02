@@ -119,7 +119,7 @@
       :mode="isMobile ? 'mobile' : 'pc'"
       :title="t('referral.messagePopup.title')"
       :description="t('referral.messagePopup.description')"
-      :copy-text="t('referral.copy')"
+      :copy-text="t('referral.save')"
       :presets="referralMessagePresets"
       :initial-message="activeReferralMessage"
       @copy="handleConfirmReferralMessageCopy"

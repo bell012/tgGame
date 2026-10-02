@@ -95,6 +95,7 @@ import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
+import { resolveGameImageUrl } from '@/utils/image'
 
 interface Props {
   queryOptions?: GameQueryOptions & { keyword?: string }
@@ -149,7 +150,7 @@ const getScrollParent = (element: HTMLElement | null) => {
 
 const getBrandImg = (item: GameBrandItem) => {
   const imagePath = item.banner || item.icon
-  const src = imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
+  const src = resolveGameImageUrl(imagePath)
 
   return {
     maintain: false,

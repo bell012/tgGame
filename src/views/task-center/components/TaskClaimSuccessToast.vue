@@ -10,16 +10,16 @@
         class="pointer-events-none fixed z-[10050] box-border border border-opacity-10 bg-bg-6 font-inter"
         :class="
           props.mode === 'pc'
-            ? 'right-0 top-16 flex h-[109px] w-[400px] flex-col items-start gap-2.5 rounded-lg px-3 py-4'
-            : 'left-1/2 top-[107px] h-[94.333px] w-[347px] -translate-x-1/2 rounded-lg border-[0.667px]'
+            ? 'right-0 top-16 flex h-[92px] w-[400px] flex-col items-start gap-2.5 rounded-lg px-3 py-4'
+            : 'left-3 right-3 top-[49px] h-[80px] rounded-lg border-[0.667px]'
         "
       >
         <!-- PC 文字内容与倒计时圆环。 -->
         <div
           v-if="props.mode === 'pc'"
-          class="flex h-[77px] w-full shrink-0 items-center justify-between"
+          class="flex h-[60px] w-full shrink-0 items-center justify-between"
         >
-          <div class="flex h-[77px] w-[348px] shrink-0 flex-col items-start justify-center gap-3">
+          <div class="flex h-[60px] w-[348px] shrink-0 flex-col items-start justify-center gap-3">
             <p
               class="m-0 flex h-[19px] w-full shrink-0 items-center text-[16px] font-[700] leading-[19px] text-text-1"
             >
@@ -51,7 +51,7 @@
         <!-- H5 文字内容与倒计时圆环。 -->
         <template v-else>
           <div
-            class="absolute left-3.5 top-3.5 flex h-[66.333px] w-[289px] flex-col items-start gap-2.5"
+            class="absolute left-3.5 top-3.5 flex h-[52px] w-[289px] flex-col items-start gap-2.5"
           >
             <p
               class="m-0 flex h-[17px] w-[262px] shrink-0 items-center text-[14px] font-[500] leading-[17px] text-text-1"

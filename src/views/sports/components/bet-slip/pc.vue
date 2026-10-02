@@ -96,18 +96,15 @@
                 "
                 @click="emit('remove', selection.id)"
               >
-                <CloseIcon class="h-[18px] w-[18px]" aria-hidden="true" />
+                <RemoveIcon class="h-[18px] w-[18px]" aria-hidden="true" />
               </button>
-              <div
-                class="min-w-0 flex-1 p-2"
-                :class="props.mode === 'single' ? 'min-h-[207px]' : 'min-h-[127px]'"
-              >
+              <div class="min-w-0 flex-1 p-2">
                 <div
                   class="flex items-start justify-between gap-2 text-lg font-bold leading-[22px]"
                 >
                   <span class="min-w-0 break-words">{{ selection.selection }}</span>
                   <span
-                    class="flex shrink-0 items-center gap-1 tabular-nums"
+                    class="flex shrink-0 items-center gap-[3px] tabular-nums"
                     :class="
                       selection.trend === 'up'
                         ? 'text-theme-primary'
@@ -117,10 +114,10 @@
                     "
                   >
                     @{{ selection.odds.toFixed(2) }}
-                    <CaretIcon
+                    <OddsDownIcon
                       v-if="selection.trend"
-                      class="h-2 w-2"
-                      :class="{ 'rotate-180': selection.trend === 'down' }"
+                      class="h-5 w-5"
+                      :class="{ 'rotate-180': selection.trend === 'up' }"
                       aria-hidden="true"
                     />
                   </span>
@@ -129,14 +126,16 @@
                   {{ selection.market }}
                 </p>
                 <div
-                  class="mt-[9px] flex flex-wrap items-start gap-x-1.5 gap-y-1.5 break-words text-sm leading-5 text-text-2"
-                  :class="{ 'min-h-[46px]': props.mode === 'single' }"
+                  class="mt-[9px] flex flex-wrap items-start gap-x-1.5 gap-y-1.5 break-words font-['PingFang_SC',sans-serif] text-sm leading-5 text-text-2"
                 >
-                  <span>{{ selection.homeTeam }}</span
-                  ><span>{{ t('sports.betSlip.versus') }}</span
-                  ><span>{{ selection.awayTeam }}</span>
+                  <span class="min-w-0 max-w-full">{{ selection.homeTeam }}</span>
+                  <span>{{ t('sports.betSlip.versus') }}</span>
+                  <span class="min-w-0 max-w-full">{{ selection.awayTeam }}</span>
                 </div>
-                <p class="mt-[9px] break-words text-sm leading-5 text-text-2">
+                <p
+                  v-if="selection.league && !(props.mode === 'single' && selection.stakeError)"
+                  class="mt-[9px] break-words font-['PingFang_SC',sans-serif] text-sm leading-5 text-text-2"
+                >
                   {{ selection.league }}
                 </p>
                 <p
@@ -158,7 +157,7 @@
                   :label="t('sports.betSlip.stakeFor', { selection: selection.selection })"
                   :error="selection.stakeError"
                   :placeholder="selection.limitText"
-                  :disabled="Boolean(selection.submissionState)"
+                  :disabled="isSubmitting"
                   @update="emit('stake', selection.id, $event)"
                   @focus="emit('focusStake', selection.id, 'single')"
                   @max="emit('max', selection.id, 'single')"
@@ -187,20 +186,13 @@
                     :label="t('sports.betSlip.stakeFor', { selection: parlay.label })"
                     :error="parlay.stakeError"
                     :placeholder="parlay.limitText"
-                    :disabled="Boolean(parlay.submissionState)"
+                    :disabled="isSubmitting"
                     @update="emit('parlayStake', parlay.id, $event)"
                     @focus="emit('focusStake', parlay.id, 'parlay')"
                     @max="emit('max', parlay.id, 'parlay')"
                   />
                 </div>
               </div>
-              <p
-                v-if="parlay.submissionState === 'confirmed'"
-                class="mx-[18px] mt-2 text-xs text-text-2"
-                role="status"
-              >
-                {{ t('sports.betSubmitSuccess') }}
-              </p>
             </div>
           </div>
         </div>
@@ -399,6 +391,8 @@ import BetIcon from '@/static/svg/sports/betslip-empty.svg'
 import CaretIcon from '@/static/svg/sports/caret-up.svg'
 import ClearIcon from '@/static/svg/sports/clear-bets.svg'
 import CloseIcon from '@/static/svg/close.svg'
+import RemoveIcon from '@/static/svg/sports/bet-slip/remove.svg'
+import OddsDownIcon from '@/static/svg/sports/bet-slip/odds-down.svg'
 import RefreshIcon from '@/static/svg/refresh.svg'
 import SettingsIcon from '@/static/svg/sports/odds-settings.svg'
 import InfoIcon from '@/static/svg/info.svg'
@@ -515,7 +509,7 @@ function amountClass(stake: string, amount: number) {
 
 function setQuickAmount(amount: number) {
   const target = props.mode === 'single' ? focusedSingle.value : focusedParlay.value
-  if (isSubmitting.value || target?.submissionState) return
+  if (isSubmitting.value) return
   if (target) emit('focusStake', target.id, props.mode)
   emit('quickAmount', amount)
 }

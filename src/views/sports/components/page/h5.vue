@@ -11,7 +11,7 @@
     >
       <SportsNavigation @change="page.handleSportChange" />
       <FilterSearch_H5
-        class="mb-[12px] h-[38px] px-[14px]"
+        class="mb-3 h-[38px] px-[14px]"
         @filter-change="page.handleMatchFilterChange"
       />
     </header>
@@ -36,7 +36,7 @@
     <section
       v-if="liveMatches.length"
       :aria-label="t('sports.homepage.popularMatches')"
-      class="min-w-0"
+      class="mb-3 min-w-0"
       data-testid="sports-h5-live-section"
     >
       <div
@@ -97,12 +97,13 @@
     </section>
 
     <section
-      class="mx-[14px] mt-3"
+      class="mx-[14px]"
       :aria-label="t('sports.homepage.matchesByLeague', { sport: activeSportLabel })"
     >
       <div class="mb-3 flex h-[30px] items-center gap-[7px]">
         <LeagueTabs_H5
           :collect-only="page.collectOnly.value"
+          :collect-pending="page.collectPending.value"
           :search-keyword="page.searchInput.value"
           @filter-change="page.handleLeagueSortChange"
           @league-filter="page.handleLeagueFilter"
@@ -110,9 +111,9 @@
           @search-change="page.handleSearchChange"
         />
         <button
-          v-if="groups.length"
           type="button"
-          class="flex h-[30px] w-[30px] shrink-0 flex-col items-center justify-center rounded-lg bg-bg-2 text-text-2 focus-visible:outline focus-visible:outline-theme-primary"
+          class="flex h-[30px] w-[30px] shrink-0 flex-col items-center justify-center rounded-lg bg-bg-2 text-text-2 focus-visible:outline focus-visible:outline-theme-primary disabled:cursor-not-allowed disabled:opacity-50"
+          :disabled="toggleAllGroupsDisabled"
           :aria-label="
             allGroupsCollapsed
               ? t('sports.homepage.expandAllLeagues')
@@ -367,6 +368,13 @@ const groups = computed(() => {
 const visibleGroups = computed(() => groups.value.slice(0, visibleGroupCount.value))
 const hasMoreCachedGroups = computed(() => visibleGroupCount.value < groups.value.length)
 
+watch(groups, current => {
+  const ids = new Set(current.map(group => group.id))
+  const entries = Object.entries(expandedGroups.value)
+  const retained = entries.filter(([id]) => ids.has(id))
+  if (retained.length !== entries.length) expandedGroups.value = Object.fromEntries(retained)
+})
+
 // 每次追加一批联赛，不拆分联赛内的赛事。
 const loadMoreCachedGroups = () => {
   if (!pageActive.value || !hasMoreCachedGroups.value) return
@@ -417,10 +425,14 @@ onScopeDispose(() => {
 // 默认展开全部联赛，手动点击后按联赛 ID 记住展开状态。
 const isGroupExpanded = (id: string) => expandedGroups.value[id] ?? expandNewGroups.value
 const allGroupsCollapsed = computed(() => groups.value.every(group => !isGroupExpanded(group.id)))
+const toggleAllGroupsDisabled = computed(
+  () => !groups.value.length || props.page.homepageLoading.value || props.page.matchesLoading.value
+)
 const toggleGroup = (id: string) => {
   expandedGroups.value = { ...expandedGroups.value, [id]: !isGroupExpanded(id) }
 }
 const toggleAllGroups = () => {
+  if (toggleAllGroupsDisabled.value) return
   const expand = allGroupsCollapsed.value
   expandNewGroups.value = expand
   expandedGroups.value = {

@@ -92,6 +92,7 @@ import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { useAuthModalStore } from '@/stores/authModal'
+import { resolveGameImageUrl } from '@/utils/image'
 import { storeToRefs } from 'pinia'
 
 const { gamePlay, currentGameDetail } = useGamePlatformPlay()
@@ -118,7 +119,7 @@ const toImageUrl = (value: string) => {
   if (/^https?:\/\//i.test(imagePath)) {
     return imagePath
   }
-  return `${String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')}${imagePath}`
+  return resolveGameImageUrl(imagePath)
 }
 
 const rawGameImage = computed(() => {

@@ -1,7 +1,7 @@
 <template>
   <article
-    class="relative min-h-[211px] min-w-0 cursor-pointer"
-    :class="overlaying && 'h-[218px]'"
+    class="relative h-full min-h-[211px] min-w-0 cursor-pointer"
+    :style="overlaying ? { minHeight: `${collapsedHeight}px` } : undefined"
     :data-sports-match="match.id"
     :data-expanded="expanded"
     data-testid="sports-pc-match-card"
@@ -10,10 +10,11 @@
   >
     <!-- 展开后仍保留卡片原高度，避免后面的卡片移位。 -->
     <div
-      class="min-h-[211px] min-w-0 rounded-xl bg-bg-5 p-3 transition-colors hover:bg-[image:linear-gradient(var(--color-opacity-6),var(--color-opacity-6))]"
+      ref="cardContent"
+      class="flex min-h-[211px] min-w-0 flex-col rounded-xl bg-bg-5 p-3 transition-colors hover:bg-[image:linear-gradient(var(--color-opacity-6),var(--color-opacity-6))]"
       :class="
         overlaying
-          ? 'absolute inset-x-0 top-0 z-20 shadow-[0_8px_28px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_28px_rgba(0,0,0,0.5)]'
+          ? 'absolute inset-x-0 top-0 z-20 min-h-full shadow-[0_8px_28px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_28px_rgba(0,0,0,0.5)]'
           : 'h-full'
       "
     >
@@ -68,30 +69,33 @@
           :disabled="favoritePending"
           @click.stop="emit('favorite')"
         >
-          <StarIcon class="h-4 w-4" aria-hidden="true" />
+          <Loading
+            v-if="favoritePending"
+            type="spinner"
+            size="16px"
+            color="currentColor"
+            aria-hidden="true"
+          />
+          <StarIcon v-else class="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
-      <div class="mt-2 flex h-4 min-w-0 items-center gap-3 text-xs leading-4">
+      <div class="mt-2 flex min-h-[15px] min-w-0 items-start gap-3 text-xs leading-[15px]">
         <MatchTime :match="match" class="min-w-0 flex-1 truncate text-text-2" />
-        <div
-          v-if="match.cornerScore || totalScore"
-          class="ml-auto flex shrink-0 items-center gap-3"
-        >
-          <span
-            v-if="match.cornerScore"
-            class="flex items-center gap-1"
-            :aria-label="t('sports.matchCard.corners', { score: match.cornerScore })"
-          >
-            <CornerIcon class="h-4 w-4" aria-hidden="true" />
-            {{ match.cornerScore }}
-          </span>
-          <span v-if="totalScore" class="flex items-center gap-1 text-text-2">
-            <span>{{ scoreLabel }}</span>
-            <span class="font-bold text-theme-primary tabular-nums">{{ totalScore }}</span>
-          </span>
-        </div>
+        <MatchScores
+          v-if="match.sportId === 1 || !showPeriodScores"
+          :match="match"
+          layout="pc"
+          :show-periods="match.sportId === 1"
+          class="max-w-[70%] justify-end"
+        />
       </div>
+      <MatchScores
+        v-if="match.sportId !== 1 && showPeriodScores"
+        :match="match"
+        layout="pc"
+        class="mt-3"
+      />
       <div class="mt-3 space-y-2">
         <div v-for="team in teams" :key="team.side" class="flex h-6 min-w-0 items-center gap-3">
           <SmartImage :src="team.badge" alt="" class="h-6 w-6 shrink-0 object-contain" />
@@ -116,7 +120,7 @@
         </div>
       </div>
 
-      <div class="mt-2 min-w-0" data-testid="sports-card-odds" @click.stop>
+      <div class="mt-auto min-h-[76px] min-w-0 pt-2" data-testid="sports-card-odds" @click.stop>
         <MatchOdds
           v-if="MarketLines.length"
           :MarketLines="MarketLines"
@@ -133,10 +137,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Loading } from 'vant'
 import SmartImage from '@/components/common/SmartImage.vue'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import StarIcon from '@/static/svg/game/detail/star1.svg?component'
-import CornerIcon from '@/static/svg/sports/corner-kick.svg?component'
 import VideoIcon from '@/static/svg/sports/match-video.svg?component'
 import AnimationIcon from '@/static/svg/sports/match-animation.svg?component'
 import { navigateTo } from '@/utils/router'
@@ -144,6 +148,7 @@ import { persistEventDetailsMatch } from '../../shared/event-details-navigation'
 import { pickHomepageMarketLines } from '../match-odds/display'
 import MatchOdds from '../match-odds/index.vue'
 import MatchTime from './time.vue'
+import MatchScores from './scores.vue'
 import type { OddsSelectPayload, SportMarketLine } from '../match-odds/types'
 import type { SportsMatch } from '../../shared/types'
 import { sportItems } from '../sports-navigation/sport-items'
@@ -155,6 +160,7 @@ const props = defineProps<{
   expanded: boolean
   favorite: boolean
   favoritePending?: boolean
+  showPeriodScores: boolean
 }>()
 const { t } = useI18n()
 
@@ -165,33 +171,24 @@ const teams = computed(() => [
   { ...props.match.home, side: 'home' },
   { ...props.match.away, side: 'away' }
 ])
-const totalScore = computed(() =>
-  props.match.HomeScore !== '' && props.match.AwayScore !== ''
-    ? `${props.match.HomeScore}-${props.match.AwayScore}`
-    : ''
-)
-const phaseLabel = computed(() => props.match.phase.split(/\s+/, 1)[0] || '')
-const scoreLabel = computed(() =>
-  props.match.sportId === 1 && phaseLabel.value
-    ? phaseLabel.value
-    : t('sports.matchCard.totalScore')
-)
 const hasExtraMarkets = computed(() => pickHomepageMarketLines(props.MarketLines).length > 1)
+const cardContent = ref<HTMLElement>()
+const collapsedHeight = ref(218)
 const overlaying = ref(props.expanded)
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-watch(
-  () => props.expanded,
-  expanded => {
-    if (expanded) {
-      overlaying.value = true
-      return
-    }
-    if (!hasExtraMarkets.value || prefersReducedMotion()) overlaying.value = false
+watch([() => props.expanded, hasExtraMarkets], ([expanded, hasExtraMarkets]) => {
+  if (expanded) {
+    // 分段比分可能换行，展开时按实际高度保留占位。
+    if (!overlaying.value) collapsedHeight.value = cardContent.value?.offsetHeight ?? 218
+    overlaying.value = true
+    return
   }
-)
+  // 盘口被刷新移除后，不会再触发收起动画的结束事件。
+  if (!hasExtraMarkets || prefersReducedMotion()) overlaying.value = false
+})
 
 const onOddsTransitionEnd = (event: TransitionEvent) => {
   if (event.propertyName !== 'grid-template-rows' || props.expanded) return

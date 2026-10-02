@@ -46,6 +46,7 @@
               <button
                 class="button button-m center relative col-start-1 h-32 flex-1 overflow-hidden rounded-xl bg-game-sports p-[10px] font-extrabold sm:h-[176px] sm:p-5"
                 type="button"
+                @click="navigateTo('/sports')"
               >
                 <img
                   class="absolute left-[34%] right-[1px] top-0 h-[100%] sm:left-auto"
@@ -304,6 +305,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useCasinoTabsStore } from '@/stores/casinoTabs'
 import { useGameStore, type HomeCollectionDisplayItem } from '@/stores/game'
 import { useUserStore } from '@/stores/user'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getStorageLanguageCode } from '@/utils/locale'
 import { navigateTo } from '@/utils/router'
 import { maybeAutoOpenTicketActivity } from '@/utils/autoOpenTicketActivity'
@@ -428,7 +430,7 @@ const toGameImageUrl = (value: string) => {
   if (!value) {
     return placeholderImg
   }
-  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+  return resolveGameImageUrl(value)
 }
 
 const HOME_LOBBY_EXCLUDED_CODES = new Set(['', 'hot_games', 'providers'])

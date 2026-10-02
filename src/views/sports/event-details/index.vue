@@ -9,7 +9,6 @@
   <div
     class="min-h-[200px] w-full min-w-0 bg-bg-1 font-inter text-text-1"
     :class="isMobile ? '' : 'px-5 pb-6'"
-    :style="isMobile ? { paddingTop: `${layoutStore.TOPNAV_HEIGHT}px` } : undefined"
   >
     <template v-if="isMobile">
       <MatchHeader
@@ -58,12 +57,20 @@
         />
         <div class="mt-4 flex items-start gap-4">
           <div class="min-w-0 flex-1">
-            <MatchDetails :event="displayEvent" :sport-id="selectedSportId" />
+            <MatchDetails
+              :event="displayEvent"
+              :sport-id="selectedSportId"
+              :favorite="detailFavorite"
+              :favorite-pending="detailFavoritePending"
+              @favorite="toggleDetailFavorite"
+            />
             <SportsScoreDetails
               v-if="hasScoreDetailsMarkets"
               class="mt-4"
               :market-lines="scoreDetailsMarketLines"
               :odds-format="oddsFormat"
+              :bet-slip-page="betSlipPage"
+              :match-id="currentMatchId"
             />
             <ThemedEmptyState
               v-else-if="!isEventDetailsLoading"
@@ -144,7 +151,8 @@ import ChevronIcon from '@/static/svg/casino/dropdown_chevron.svg?component'
 import emptyImage from '@/static/img/explore/default.png'
 import emptyImageLight from '@/static/img/explore/default_white.png'
 import { useIsMobile } from '@/composables/useMediaQuery'
-import { useLayoutStore } from '@/stores/layout'
+import { useRequireLoginAction } from '@/composables/useRequireLoginAction'
+import { globalShowToast } from '@/utils/toast'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import EventDetailsTabs from './components/event-detailsd-tabs/index.vue'
 import { mapEventDetailTabItems } from './components/event-detailsd-tabs/map-items'
@@ -177,7 +185,6 @@ const { sportCounts } = storeToRefs(sportsStore)
 const sportNavigationCounts = computed(() => buildSportTodayCountMap(sportCounts.value))
 const { t, locale } = useI18n()
 const isMobile = useIsMobile()
-const layoutStore = useLayoutStore()
 const activeMatchId = ref('')
 const targetEventId = ref('')
 const selectedSportId = ref(sportItems[0]?.sportId ?? 1)
@@ -299,6 +306,39 @@ const navigationEventTabItem = computed(() => {
 })
 
 const displayEvent = computed(() => selectedEvent.value ?? navigationEventTabItem.value)
+const { requireLogin } = useRequireLoginAction()
+let detailsDisposed = false
+const detailEventId = computed(() => Number(displayEvent.value?.id))
+const detailFavorite = computed(() => sportsStore.getEventFavourite(detailEventId.value) ?? false)
+const detailFavoritePending = computed(() => sportsStore.isFavouritePending(detailEventId.value))
+const toggleDetailFavorite = async () => {
+  if (detailFavoritePending.value || !requireLogin()) return
+  const eventId = detailEventId.value
+  const sportId = selectedSportId.value
+  // 收藏使用真实赛事日期，不能使用首页带入的已格式化时间。
+  const raw = eventDetailGroups.value
+    .flatMap(group => group.Sports)
+    .find(event => event.EventId === eventId)
+  const canUpdate = () =>
+    !detailsDisposed && selectedSportId.value === sportId && detailEventId.value === eventId
+  if (!raw) {
+    globalShowToast({ type: 'fail', message: t('sports.favouriteFailed') })
+    return
+  }
+  const result = await sportsStore.toggleFavouriteTarget(
+    {
+      sportId,
+      eventId,
+      eventDate: raw.EventDate,
+      competitionId: raw.Competition.CompetitionId,
+      market: raw.Market,
+      homeTeam: raw.HomeTeam
+    },
+    canUpdate
+  )
+  if (canUpdate() && (result === 'failed' || result === 'auth-expired'))
+    globalShowToast({ type: 'fail', message: t('sports.favouriteFailed') })
+}
 
 const liveStreamUrl = computed(() => displayEvent.value?.liveStreamUrl ?? '')
 
@@ -381,6 +421,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  detailsDisposed = true
   document.removeEventListener('click', onDocumentClick)
   eventDetailsSports.cancel()
 })

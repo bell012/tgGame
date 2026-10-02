@@ -52,6 +52,7 @@ import PlayForm from './play-form.vue'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
+import { resolveGameImageUrl } from '@/utils/image'
 
 import { computed, ComputedRef, inject, onMounted } from 'vue'
 
@@ -89,7 +90,7 @@ const toImageUrl = (value: string) => {
   if (/^https?:\/\//i.test(imagePath)) {
     return imagePath
   }
-  return `${String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '')}${imagePath}`
+  return resolveGameImageUrl(imagePath)
 }
 
 const rawGameImage = computed(() => {

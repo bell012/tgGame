@@ -1,16 +1,19 @@
 <template>
   <!-- 红包领取成功的全屏提示弹窗。 -->
   <Teleport to="body">
-    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-mask-80 px-4">
+    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-mask-60-1 px-4">
       <!-- Figma 导出的红包插画作为弹窗主体背景。 -->
       <section
         role="dialog"
         aria-modal="true"
         :aria-label="t('chatPublic.congratulations')"
-        class="relative aspect-[264/373] font-inter"
-        :class="props.displayMode === 'pc' ? 'w-[400px]' : 'w-[305px]'"
+        class="relative aspect-[824/1132] font-inter"
+        :class="props.displayMode === 'pc' ? 'w-[400px]' : 'w-[274px]'"
       >
-        <img :src="redPacketSuccessImage" alt="" class="absolute inset-0 size-full" />
+        <!-- 仅裁剪红包插画，不能裁掉定位在卡片外的关闭按钮。 -->
+        <div class="absolute inset-0 overflow-hidden rounded-[18px] bg-[#E91D2A]">
+          <img :src="redPacketSuccessImage" alt="" class="size-full object-cover" />
+        </div>
 
         <!-- 领取成功标题和奖励金额。 -->
         <div class="absolute inset-x-0 top-[7.5%] text-center text-[#EF1D2B]">

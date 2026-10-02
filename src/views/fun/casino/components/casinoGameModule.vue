@@ -137,6 +137,7 @@ import { getGameListTabSlug } from '../casinoPageConfig'
 import casinoGameCard from './casinoGameCard.vue'
 import viewAllDarkIcon from '@/static/img/casino/all_view_dark.png'
 import viewAllLightIcon from '@/static/img/casino/all_view_light.png'
+import { resolveGameImageUrl } from '@/utils/image'
 
 const props = withDefaults(
   defineProps<{
@@ -230,7 +231,7 @@ const getDisplayBrandList = (list: GameBrandItem[]) => {
 
 const getBrandImg = (item: GameBrandItem) => {
   const imagePath = item.banner || item.icon || item.icon2
-  const src = imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
+  const src = resolveGameImageUrl(imagePath)
   return {
     maintain: false,
     src,

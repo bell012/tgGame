@@ -5,10 +5,21 @@
       <button
         type="button"
         class="inline-flex h-[30px] w-[30px] flex-none items-center justify-center rounded-lg border-0 bg-bg-2 transition-colors"
-        aria-label="Collect only"
+        :aria-label="t('sports.collectOnly')"
+        :disabled="props.collectPending"
+        :aria-busy="props.collectPending"
         @click="toggleCollectOnly"
       >
+        <Loading
+          v-if="props.collectPending"
+          type="spinner"
+          size="12px"
+          color="currentColor"
+          class="text-icon-3"
+          aria-hidden="true"
+        />
         <CollectIcon
+          v-else
           class="h-3 w-3 text-icon-3"
           :class="props.collectOnly ? 'text-theme-primary' : 'opacity-100'"
         />
@@ -95,7 +106,7 @@
 
             <div
               ref="popupScrollRef"
-              class="min-h-0 flex-1 overflow-y-auto px-[14px] pb-[90px]"
+              class="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-[14px] pb-[90px]"
               @scroll="updateActiveIndexKey"
             >
               <section
@@ -201,7 +212,7 @@
                 class="h-[44px] min-w-0 flex-1 rounded-full bg-theme-primary text-[14px] font-[700] text-text-4"
                 @click="applyPopupFilter"
               >
-                {{ t('sports.leagueTabs.filter') }} {{ selectedLeagueKeys.length }}
+                {{ t('sports.leagueTabs.filter') }} {{ selectedMatchCount }}
               </button>
             </footer>
           </section>
@@ -214,6 +225,8 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Loading } from 'vant'
+import { usePageScrollLock } from '@/composables/usePageScrollLock'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import CollectIcon from '@/static/svg/sports/liansai_tabs/collect.svg?component'
 import Filter from '@/static/svg/sports/liansai_tabs/filter.svg?component'
@@ -248,10 +261,12 @@ const emit = defineEmits<{
 const props = withDefaults(
   defineProps<{
     collectOnly?: boolean
+    collectPending?: boolean
     searchKeyword?: string
   }>(),
   {
     collectOnly: false,
+    collectPending: false,
     searchKeyword: ''
   }
 )
@@ -268,12 +283,22 @@ const searchKeyword = computed({
 })
 const popupSearchKeyword = ref('')
 const isPopupOpen = ref(false)
+usePageScrollLock(isPopupOpen, { preventTouchMove: true })
+
 const selectedLeagueKeys = ref<string[]>([])
 const hasTouchedLeagueSelection = ref(false)
 const collapsedSectionKeys = ref<string[]>([])
 const popupScrollRef = ref<HTMLElement | null>(null)
 const sectionRefs = ref<Record<string, HTMLElement>>({})
 const activeIndexKey = ref('#')
+
+const selectedMatchCount = computed(() => {
+  const selectedKeys = new Set(selectedLeagueKeys.value)
+  return leagueFilterItems.value.reduce(
+    (total, item) => total + (selectedKeys.has(item.key) ? item.count : 0),
+    0
+  )
+})
 
 // 根据弹窗搜索关键字过滤接口返回的联赛列表。
 const visibleLeagueTabs = computed(() => {

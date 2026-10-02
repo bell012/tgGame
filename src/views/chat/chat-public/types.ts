@@ -13,7 +13,7 @@ export interface ConversationItem {
   nickName?: string
   onlineStatus?: number
   unreadCount?: number
-  lastMessageTime?: number
+  lastMessageTime?: string | number
   lastMessage?: string
   sort?: number
 }

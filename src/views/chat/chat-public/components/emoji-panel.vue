@@ -23,8 +23,56 @@
 <script setup lang="ts">
 import DeleteKeyIcon from '@/static/svg/chat/public/delete-key.svg?component'
 import 'emoji-picker-element'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+
+onMounted(async () => {
+  await nextTick()
+
+  const picker = pickerRef.value
+  const shadowRoot = picker?.shadowRoot
+
+  if (!shadowRoot) return
+
+  const style = document.createElement('style')
+
+  style.textContent = `
+    /* 隐藏搜索框 */
+    .search-row {
+      display: none !important;
+    }
+
+       /* 隐藏搜索框 */
+    .pad-top {
+      display: none !important;
+    }
+    .indicator-wrapper {
+      display: none !important;
+    }
+
+    /* 隐藏顶部分类栏 */
+    .favorites {
+      display: none !important;
+    }
+
+ /* 隐藏顶部分类栏 */
+    .nav {
+      display: none !important;
+    }
+      /* 隐藏 Emoji 区域右侧滚动条，但仍然可以滚动 */
+  .tabpanel {
+    scrollbar-width: none;      /* Firefox */
+    -ms-overflow-style: none;   /* 旧 Edge / IE */
+  }
+
+  .tabpanel::-webkit-scrollbar {
+    display: none;              /* Chrome / Safari */
+  }
+    
+  `
+
+  shadowRoot.appendChild(style)
+})
 
 const { t } = useI18n()
 

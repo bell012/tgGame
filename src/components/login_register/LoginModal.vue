@@ -177,6 +177,7 @@ import { useIsMobile } from '@/composables/useMediaQuery'
 import { useI18n } from 'vue-i18n'
 import MainLogoIcon from '@/static/svg/main-logo.svg?component'
 import Api from '@/api'
+import { resolveGameImageUrl } from '@/utils/image'
 import { getLanguageCode } from '@/utils/locale'
 import { useLocaleStore } from '@/stores/locale'
 import { useSiteConfigStore } from '@/stores/siteConfig'
@@ -192,8 +193,6 @@ const { theme } = storeToRefs(themeStore)
 const { currentLanguage } = storeToRefs(localeStore)
 const { t } = useI18n()
 
-const ABSOLUTE_IMAGE_URL_PATTERN = /^(data:|blob:|https?:\/\/|\/)/i
-const gameImageBaseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
 const authBannerRecords = ref<QuerySlideshowItem[]>([])
 const isAuthBannerLoading = ref(false)
 const isPcBackgroundLoaded = ref(false)
@@ -205,27 +204,12 @@ const authLogoUrl = computed(() =>
 )
 
 const ensureAuthLogoConfig = () => {
-  void siteConfigStore.initSiteConfig({ channelId: authLogoChannelId.value })
+  void siteConfigStore.initSiteConfig()
 }
 
 // 登录/注册弹窗图片地址。
 const resolveAuthBannerUrl = (value: unknown) => {
-  const imagePath = String(value ?? '').trim()
-
-  if (!imagePath) {
-    return ''
-  }
-
-  if (ABSOLUTE_IMAGE_URL_PATTERN.test(imagePath)) {
-    return imagePath
-  }
-
-  if (!gameImageBaseUrl) {
-    return imagePath
-  }
-
-  const normalizedImagePath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`
-  return `${gameImageBaseUrl}${normalizedImagePath}`
+  return resolveGameImageUrl(value)
 }
 
 // 根据当前主题决定登录/注册弹窗实际使用的图片。

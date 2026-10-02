@@ -1,5 +1,6 @@
 import { globalShowToast } from '@/utils/toast'
 import i18n from '@/i18n'
+import { resolveGameImageUrl } from '@/utils/image'
 import type { ChatMessage, ConversationStatus } from './types'
 
 /** 根据客服在线状态返回对应的国际化键。 */
@@ -61,13 +62,7 @@ export const getChatTextHighlightParts = (value: unknown, keyword: unknown) => {
 
 /** 将服务端文件名或相对图片路径转换为项目当前图片域名下的完整地址。 */
 export const resolveChatMediaUrl = (value: unknown) => {
-  const source = String(value ?? '').trim()
-  if (!source || /^(data:|blob:|https?:\/\/|\/)/i.test(source)) {
-    return source
-  }
-
-  const baseUrl = String(import.meta.env.VITE_GAME_IMAGE_BASE_URL ?? '').replace(/\/+$/, '')
-  return baseUrl ? `${baseUrl}/${source.replace(/^\/+/, '')}` : source
+  return resolveGameImageUrl(value)
 }
 
 /** 将客服图片或视频下载为本地文件，完成浏览器保存触发后返回。 */

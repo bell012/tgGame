@@ -1,6 +1,6 @@
 <!-- pc联赛tabs -->
 <template>
-  <section class="relative flex h-[40px] w-full items-center overflow-visible">
+  <section ref="leagueTabsRef" class="relative flex h-[40px] w-full items-center overflow-visible">
     <div class="flex h-10 flex-none items-center rounded-[18px] bg-bg-9">
       <button
         v-for="item in filterTabs"
@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SearchIcon from '@/static/svg/sports/liansai_tabs/search.svg?component'
 import triangleIcon from '@/static/svg/sports/liansai_tabs/sanjiao.svg?component'
@@ -118,6 +118,7 @@ const {
   selectFilterKey,
   selectLeagueKey
 } = useLiansaiTabs()
+const leagueTabsRef = ref<HTMLElement | null>(null)
 const scrollRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
 const isLeaguePopupOpen = ref(false)
@@ -165,6 +166,19 @@ const onLeagueTabClick = (key: string) => {
 // 点击更多按钮切换联赛弹窗，同时驱动按钮里的三角图标旋转方向。
 const toggleLeaguePopup = () => {
   isLeaguePopupOpen.value = !isLeaguePopupOpen.value
+}
+
+const handleDocumentClick = (event: MouseEvent) => {
+  if (!isLeaguePopupOpen.value) {
+    return
+  }
+
+  const target = event.target as Node | null
+  if (!target || leagueTabsRef.value?.contains(target)) {
+    return
+  }
+
+  isLeaguePopupOpen.value = false
 }
 
 // 点击弹窗中的全部联赛项。  emit已经暴露出去，别的组件可以接受当前选中哪个值
@@ -223,4 +237,12 @@ const onDragEnd = (event: PointerEvent) => {
   isDragging.value = false
   pendingLeagueKey = ''
 }
+
+onMounted(() => {
+  document.addEventListener('click', handleDocumentClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleDocumentClick)
+})
 </script>

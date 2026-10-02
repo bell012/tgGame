@@ -74,6 +74,7 @@ import gameRemoteImg from '@/components/common/gameRemoteImg.vue'
 import { useAuthModalStore } from '@/stores/authModal'
 import { useGameStore } from '@/stores/game'
 import { useThemeStore } from '@/stores/theme'
+import { resolveGameImageUrl } from '@/utils/image'
 
 const AUTO_PLAY_INTERVAL = 3000
 
@@ -105,7 +106,7 @@ const progressStyle = computed(() => ({
 
 const getSlideImage = (slide: QuerySlideshowItem) => {
   const imagePath = theme.value === 'light' ? slide.skinUrl || slide.url : slide.url
-  const src = imagePath ? `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${imagePath}` : ''
+  const src = resolveGameImageUrl(imagePath)
 
   return {
     maintain: false,

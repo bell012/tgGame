@@ -77,6 +77,7 @@
 import H5Header from '@/components/common/H5Header.vue'
 import CloseIcon from '@/static/svg/close.svg?component'
 import { formatDisplayTime } from '@/utils/date'
+import { resolveGameImageUrl } from '@/utils/image'
 import { markNotificationAsRead } from '@/utils/notification-cache'
 import { navigateTo } from '@/utils/router'
 import { computed, onMounted, ref } from 'vue'
@@ -162,7 +163,7 @@ const toGameImageUrl = (value: string) => {
   if (!value) {
     return 'placeholderImg.png'
   }
-  return `${import.meta.env.VITE_GAME_IMAGE_BASE_URL}${value}`
+  return resolveGameImageUrl(value)
 }
 
 // 从 sessionStorage 解析详情数据，并校验是否与当前路由参数一致。

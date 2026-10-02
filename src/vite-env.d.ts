@@ -71,7 +71,6 @@ declare module '*.avif' {
 declare global {
   interface ImportMetaEnv {
     readonly VITE_API_BASE_URL: string
-    readonly VITE_GAME_IMAGE_BASE_URL: string
     readonly VITE_SITE_CODE: string
   }
 

@@ -49,7 +49,7 @@
           class="text-theme-primary"
           :class="
             props.displayMode === 'pc'
-              ? 'rounded-[4px] bg-theme-primary/15 px-[4px] py-[2px] text-[10px] leading-[12px]'
+              ? 'rounded-[4px] bg-theme-3 px-[4px] py-[2px] text-[10px] leading-[12px]'
               : 'mt-[2px] text-[11px] leading-[13px]'
           "
         >

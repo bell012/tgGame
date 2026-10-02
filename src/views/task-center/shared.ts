@@ -233,6 +233,8 @@ export interface TaskInfoPopupDetailCard {
   conditions: TaskConditionProgressItem[]
   id: string
   progress: number
+  /** 阶梯比例任务当前档位的奖励比例。 */
+  reward?: string
   /** 阶梯任务当前档位的后台奖励文案，仅由 tierProgressList 提供。 */
   rewardText?: string
 }
@@ -501,6 +503,72 @@ const createMemberTaskReward = (task: MemberTaskItem) => {
   }
 }
 
+/** 阶梯奖励配置中的单个档位，仅声明当前页面需要使用的字段。 */
+interface TaskTierRewardConfigItem {
+  ratio?: unknown
+  tierNo?: unknown
+}
+
+/** 解析普通任务中以 JSON 字符串返回的阶梯奖励配置。 */
+const parseTaskTierRewardConfigs = (rewardConfig: unknown): TaskTierRewardConfigItem[] => {
+  let parsedRewardConfig = rewardConfig
+
+  if (typeof rewardConfig === 'string') {
+    try {
+      parsedRewardConfig = JSON.parse(rewardConfig)
+    } catch {
+      return []
+    }
+  }
+
+  if (!parsedRewardConfig || typeof parsedRewardConfig !== 'object') {
+    return []
+  }
+
+  const tiers = (parsedRewardConfig as { tiers?: unknown }).tiers
+
+  return Array.isArray(tiers)
+    ? tiers.filter((tier): tier is TaskTierRewardConfigItem =>
+        Boolean(tier && typeof tier === 'object')
+      )
+    : []
+}
+
+/** 将后台比例值转换为带百分号的展示文本。 */
+const formatTaskRewardRatio = (ratio: unknown) => {
+  const ratioText = getTaskDisplayValue(ratio)
+
+  if (!ratioText) {
+    return undefined
+  }
+
+  return ratioText.endsWith('%') ? ratioText : `${ratioText}%`
+}
+
+/** 按 tierNo 建立阶梯任务各档奖励比例映射。 */
+const createTaskTierRewardRatioMap = (task: MemberTaskItem) => {
+  if (
+    String(task.rewardDisplayType ?? '')
+      .trim()
+      .toLowerCase() !== 'ratio'
+  ) {
+    return new Map<string, string>()
+  }
+
+  const rewardRatioMap = new Map<string, string>()
+
+  parseTaskTierRewardConfigs(task.rewardConfig).forEach((tier, index) => {
+    const tierNo = String(tier.tierNo ?? index + 1).trim()
+    const rewardRatio = formatTaskRewardRatio(tier.ratio)
+
+    if (tierNo && rewardRatio) {
+      rewardRatioMap.set(tierNo, rewardRatio)
+    }
+  })
+
+  return rewardRatioMap
+}
+
 /** 将任务 ID 转为统一键值，用于关联任务列表与进度列表。 */
 const createTaskScheduleKey = (taskId: string | number) => String(taskId).trim()
 
@@ -663,10 +731,16 @@ const hasHigherUnfinishedTier = (value: unknown) =>
 
 /** 判断阶梯任务领取时是否仍有更高档位可继续挑战。 */
 const shouldShowTierClaimReminder = (
+  task: MemberTaskItem,
   schedule: TaskScheduleItem | undefined,
   action: TaskActionState
 ) => {
   if (!schedule || action !== 'claim' || !isTierTaskSchedule(schedule)) {
+    return false
+  }
+
+  // 领取最高档任务直接调用领取接口，不显示继续挑战更高档位的确认弹窗。
+  if (Number(task.tierClaimType) === 2) {
     return false
   }
 
@@ -786,8 +860,8 @@ const createMemberTaskProgress = (
 const shouldForceMemberTaskProgressComplete = (schedule: TaskScheduleItem) => {
   const claimStatus = normalizeTaskClaimStatus(schedule.claimStatus)
 
-  // CLAIMED：奖励已领取，页面进度固定展示完成。
-  if (claimStatus === 'CLAIMED') {
+  // CLAIMABLE / CLAIMED：后端已确认任务条件达成，页面进度固定展示完成。
+  if (claimStatus === 'CLAIMABLE' || claimStatus === 'CLAIMED') {
     return true
   }
 
@@ -856,9 +930,12 @@ const createTaskInfoDetailProgress = (
 
 /** 创建阶梯任务的全部详细进度卡，每一档独立使用自身状态和条件列表。 */
 const createTierTaskInfoDetailCards = (
+  task: MemberTaskItem,
   tierProgressList: TaskTierProgressItem[] | undefined
-): TaskInfoPopupDetailCard[] =>
-  createSortedTierProgresses(tierProgressList).map((tier, index) => {
+): TaskInfoPopupDetailCard[] => {
+  const rewardRatioMap = createTaskTierRewardRatioMap(task)
+
+  return createSortedTierProgresses(tierProgressList).map((tier, index) => {
     const tierNo = formatTaskInfoProgressValue(tier.tierNo ?? index + 1)
 
     return {
@@ -866,9 +943,11 @@ const createTierTaskInfoDetailCards = (
       conditions: getValidTaskConditionProgressList(tier.conditionProgressList),
       id: `tier-${tierNo}-${index}`,
       progress: createTaskInfoDetailProgress(tier.claimStatus, tier.conditionProgressList),
+      reward: rewardRatioMap.get(tierNo),
       rewardText: tier.rewardText
     }
   })
+}
 
 /** 创建普通会员条件型任务的单张详细进度卡。 */
 const createMemberTaskInfoDetailCard = (
@@ -897,7 +976,7 @@ const createMemberTaskInfoPopupContent = (
   action: TaskActionState,
   progress: number
 ): TaskInfoPopupContent => {
-  const requiresTierClaimReminder = shouldShowTierClaimReminder(schedule, action)
+  const requiresTierClaimReminder = shouldShowTierClaimReminder(task, schedule, action)
 
   // 充值金额型任务使用精简卡，展示当前充值金额与目标充值金额。
   if (isRechargeAmountTask(task.taskType)) {
@@ -915,7 +994,7 @@ const createMemberTaskInfoPopupContent = (
   // 阶梯任务必须将全部档位传入弹窗，每档分别展示自身状态与进度。
   if (schedule && isTierTaskSchedule(schedule) && (schedule.tierProgressList?.length ?? 0) > 0) {
     return {
-      detailCards: createTierTaskInfoDetailCards(schedule.tierProgressList),
+      detailCards: createTierTaskInfoDetailCards(task, schedule.tierProgressList),
       requiresTierClaimReminder,
       variant: 'detailed'
     }

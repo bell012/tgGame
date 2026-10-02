@@ -6,7 +6,7 @@
     :class="
       props.displayMode === 'pc'
         ? 'absolute inset-x-0 bottom-0 bg-bg-5'
-        : 'fixed inset-0 bg-mask-70'
+        : 'fixed inset-0 bg-mask-60-1'
     "
     @click.self="$emit('close')"
   >

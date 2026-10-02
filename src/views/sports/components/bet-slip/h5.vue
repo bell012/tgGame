@@ -6,7 +6,7 @@
   >
     <section
       ref="panel"
-      class="relative flex max-h-[min(670.667px,calc(100dvh-40px))] w-screen flex-col overflow-hidden rounded-t-[24px] bg-bg-2 font-inter text-text-1 outline-none [@media(max-height:560px)]:overflow-y-auto"
+      class="relative flex max-h-[78dvh] w-screen flex-col overflow-hidden overscroll-contain rounded-t-[24px] bg-bg-2 font-inter text-text-1 outline-none [@media(max-height:560px)]:overflow-y-auto"
       role="dialog"
       aria-modal="true"
       :aria-labelledby="titleId"
@@ -114,17 +114,10 @@
                     :error="parlay.stakeError ?? ''"
                     :placeholder="parlay.limitText"
                     :hide-error="true"
-                    :disabled="busy || Boolean(parlay.submissionState)"
+                    :disabled="busy"
                     @focus="focusStake(parlay.id, 'parlay')"
                   />
                 </div>
-                <p
-                  v-if="parlay.submissionState === 'confirmed'"
-                  class="pb-[3.333px] pt-[6.667px] text-[11px] leading-[13.333px] text-text-2"
-                  role="status"
-                >
-                  {{ t('sports.betSubmitSuccess') }}
-                </p>
                 <p
                   v-if="parlay.stakeError"
                   class="pb-[3.333px] pt-[6.667px] text-right text-[11px] leading-[13.333px] text-secondary-2"

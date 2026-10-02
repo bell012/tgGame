@@ -105,16 +105,28 @@ export function getSportsV2(
 /**
  * 只读：按 EventIds 批量查询赛事基础信息、比分及盘口，不触发投注。
  * 使用 IM.im_app_url 网关地址，但与 getSportsV2 不同，必须启用请求加密。
- * e 为平铺赛事详情；原样保留盘口/赔率，不裁剪、不合并到主列表、不启动轮询。
+ * e 为平铺赛事详情，兼容网关返回的 JSON 字符串数组；盘口和赔率保持原值。
  * 实测未加密时 stc 也可能为 '100'，所以调用方还须校验 e 是数组。
  * V5 每次最多 5 场；滚球 10 秒、今日/早盘 20 秒，批次调度由调用方另行处理。
  */
-export function getSelectedEventInfo(
+export async function getSelectedEventInfo(
   baseUrl: string,
   data: GetSelectedEventInfoParams,
   options?: SportsRequestOptions
 ): Promise<GetSelectedEventInfoResponse> {
-  return postSport(baseUrl, 'GetSelectedEventInfo', data, options, 'site')
+  const { e, ...response } = await postSport<GetSelectedEventInfoParams, SportsResponse>(
+    baseUrl,
+    'GetSelectedEventInfo',
+    data,
+    options,
+    'site'
+  )
+  if (e === undefined || (response.stc !== 100 && response.stc !== '100')) return response
+
+  // 无赛事时可能返回 "[]"；解析失败不能当作赛事已下架。
+  const events: unknown = typeof e === 'string' ? JSON.parse(e) : e
+  if (!Array.isArray(events)) throw new Error('Invalid selected events response')
+  return { ...response, e: events }
 }
 
 /**

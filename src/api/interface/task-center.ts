@@ -150,6 +150,8 @@ export interface MemberTaskItem {
   betRate?: number
   rewardDisplayType?: string
   rewardConfig?: string
+  /** 阶梯领取方式：1-逐层领取，2-领取最高档。 */
+  tierClaimType?: number | string
   sortNum?: number
   bindGames?: string[]
   platformGameCodes?: string[]

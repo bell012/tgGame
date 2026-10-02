@@ -265,7 +265,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onScopeDispose, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import CryptoJS from 'crypto-js'
@@ -278,9 +278,12 @@ import H5Header from '@/components/common/H5Header.vue'
 import ThemedEmptyState from '@/components/common/ThemedEmptyState.vue'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useSportsStore } from '@/stores/sports'
+import { useSportsAuthStore } from '@/stores/sportsAuth'
+import { useUserStore } from '@/stores/user'
+import { globalShowToast } from '@/utils/toast'
 import { navigateTo } from '@/utils/router'
 import { formatUsDateTime12h } from '@/utils/date'
-import type { SportsBetHistoryWager } from '@/api/interface/sport'
+import type { SportsBetHistoryResponse, SportsBetHistoryWager } from '@/api/interface/sport'
 import ArrowRightIcon from '@/static/svg/arrow_right.svg?component'
 import defaultImgDark from '@/static/img/explore/default.png'
 import defaultImgLight from '@/static/img/explore/default_white.png'
@@ -304,7 +307,17 @@ const isMobile = useIsMobile()
 const { currentCurrencyCode } = useDisplayCurrency()
 const sportsStore = useSportsStore()
 const siteConfigStore = useSiteConfigStore()
-const { languageCode, sportsToken } = storeToRefs(sportsStore)
+const { languageCode } = storeToRefs(sportsStore)
+const sportsAuth = useSportsAuthStore()
+const userStore = useUserStore()
+const getCredentialOwner = () =>
+  JSON.stringify([
+    userStore.userInfo?.tradeToken,
+    userStore.userInfo?.memberId,
+    userStore.acctInfo?.memberId,
+    currentCurrencyCode.value,
+    languageCode.value
+  ])
 
 usePageScrollLock(() => isMobile.value)
 
@@ -493,67 +506,69 @@ const resolveStatementDateRange = (value: SportsBetHistoryTime) => {
   }
 }
 
-// 组装两个历史接口共用的体育会员凭据参数。
-const buildSportsHistoryAuthParams = async () => {
-  const memberCode = await sportsStore.ensureSportsMemberCode()
-  const token = sportsToken.value
-
-  if (!memberCode || !token) {
-    return null
-  }
-
-  return {
-    LanguageCode: languageCode.value,
-    MemberCode: memberCode,
-    Token: token,
-    TimeStamp: createSportsGatewayTimeStamp()
-  }
-}
-
-// 根据当前筛选请求体育投注历史，并保留原始响应供确认字段结构。
+// 查询前获取同一组体育凭据。
 const fetchSportsBetHistory = async () => {
   const requestId = ++historyRequestId
+  const owner = getCredentialOwner()
+  let context: number | undefined
+  const isCurrent = () =>
+    requestId === historyRequestId &&
+    owner === getCredentialOwner() &&
+    (context === undefined || context === sportsAuth.contextVersion)
   sportsBetHistoryList.value = []
 
   try {
     await siteConfigStore.initSiteConfig()
+    if (!isCurrent()) return
     const baseUrl = siteConfigStore.getConfigString('IM.im_app_url')
-    const authParams = await buildSportsHistoryAuthParams()
-
-    if (!baseUrl || !authParams) {
-      console.warn('[sportsBetHistoryMissingParams]', { baseUrl, authParams })
+    if (!baseUrl) {
+      console.warn('[sportsBetHistoryMissingParams]', { baseUrl, authParams: null })
       return
     }
-
-    if (filterValues.value.status === 'settled') {
-      const dateRange = resolveStatementDateRange(filterValues.value.time)
+    context = sportsAuth.contextVersion
+    const credentials = await sportsAuth.ensureCredentials()
+    if (!isCurrent()) return
+    if (!credentials) {
+      console.warn('[sportsBetHistoryMissingParams]', { baseUrl, authParams: null })
+      return
+    }
+    if (!sportsAuth.isCredentialsCurrent(credentials)) return
+    const authParams = {
+      LanguageCode: languageCode.value,
+      MemberCode: credentials.memberCode,
+      Token: credentials.token,
+      TimeStamp: createSportsGatewayTimeStamp()
+    }
+    const settled = filterValues.value.status === 'settled'
+    let response: SportsBetHistoryResponse
+    if (settled) {
       const params = {
-        ...dateRange,
+        ...resolveStatementDateRange(filterValues.value.time),
         DateType: 2 as const,
         StartTime: '12:00:00' as const,
         EndTime: '11:59:59' as const,
         ...authParams
       }
       console.log('已结算携带参数', params)
-      const response = await Api.sport.getStatement(baseUrl, params)
-      if (requestId !== historyRequestId) return
-      console.log('已结算响应数据', response)
-      sportsBetHistoryList.value = Array.isArray(response?.wl) ? response.wl : []
+      response = await Api.sport.getStatement(baseUrl, params)
+    } else {
+      const params = {
+        BetConfirmationStatus: [1, 2, 3, 4] as [1, 2, 3, 4],
+        ...authParams
+      }
+      console.log('未结算携带参数', params)
+      response = await Api.sport.getBetList(baseUrl, params)
+    }
+    if (!isCurrent() || !sportsAuth.isCredentialsCurrent(credentials)) return
+    console.log(settled ? '已结算响应数据' : '未结算响应数据', response)
+    if ([102, 202].includes(Number(response.stc))) {
+      sportsAuth.clearCredentials(credentials)
+      globalShowToast({ type: 'fail', message: t('sports.betLoginFailed') })
       return
     }
-
-    const params = {
-      BetConfirmationStatus: [1, 2, 3, 4] as [1, 2, 3, 4],
-      ...authParams
-    }
-    console.log('未结算携带参数', params)
-    const response = await Api.sport.getBetList(baseUrl, params)
-    if (requestId !== historyRequestId) return
-    console.log('未结算响应数据', response)
     sportsBetHistoryList.value = Array.isArray(response?.wl) ? response.wl : []
-    return
   } catch (error) {
-    if (requestId === historyRequestId) {
+    if (isCurrent()) {
       sportsBetHistoryList.value = []
       console.error(error)
     }
@@ -621,6 +636,9 @@ const getDesktopFilterButtonClass = (active: boolean) => [
 
 onMounted(() => {
   void fetchSportsBetHistory()
+})
+onScopeDispose(() => {
+  historyRequestId += 1
 })
 </script>
 

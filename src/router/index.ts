@@ -183,7 +183,11 @@ const baseRoutes: RouteRecordRaw[] = [
     name: 'sportsEventDetails',
     component: () => import('@/views/sports/event-details/index.vue'),
     meta: {
-      title: '赛事详情'
+      title: '赛事详情',
+      mobile: {
+        hideBottomBar: true,
+        hideTopNav: true
+      }
     }
   },
   {
