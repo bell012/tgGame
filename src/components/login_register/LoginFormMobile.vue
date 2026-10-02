@@ -26,6 +26,7 @@
         showSigninCaptcha,
         showSignupPassword,
         showSignupSmsCode,
+        showSignupCaptcha,
         showSignupInvitationCode,
         captchaImageUrl,
         isCaptchaLoading,
@@ -48,6 +49,8 @@
         handleSigninSmsCodeInput,
         handleSigninCaptchaInput,
         refreshSigninCaptcha,
+        handleSignupCaptchaInput,
+        refreshSignupCaptcha,
         handleSignupPasswordInput,
         handleSignupConfirmPasswordInput,
         handleSignupInvitationCodeInput
@@ -207,6 +210,7 @@
                         <PasswordIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
                         <!-- 请输入密码 -->
                         <input
+                          :key="`signin-password-${activeLoginMethod}`"
                           :value="formData.signin.password"
                           :type="showPassword.signin ? 'text' : 'password'"
                           :placeholder="t('common.enter_password')"
@@ -436,6 +440,39 @@
                       </div>
                     </template>
 
+                    <template v-if="showSignupCaptcha">
+                      <div class="text-sm font-[700] text-text-1 mb-1.5">
+                        {{ t('common.captcha') }}
+                      </div>
+                      <div class="mb-3">
+                        <div class="relative">
+                          <SafeIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
+                          <input
+                            :value="formData.signup.captchaCode"
+                            type="text"
+                            :placeholder="t('common.enter_captcha')"
+                            class="auth-input-placeholder w-full h-[47px] pl-[44px] pr-[106px] bg-input-3 border border-input-2 rounded-[10px] text-text-1 text-base font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-xs placeholder:font-[500]"
+                            @input="handleSignupCaptchaInput"
+                          />
+                          <button
+                            type="button"
+                            class="absolute right-1.5 top-1/2 -translate-y-1/2 w-[94px] h-[36px] rounded-md overflow-hidden bg-bg-2 border border-input-2 flex items-center justify-center text-xs text-text-2"
+                            @click="refreshSignupCaptcha"
+                          >
+                            <img
+                              v-if="captchaImageUrl"
+                              :src="captchaImageUrl"
+                              alt=""
+                              class="w-full h-full object-cover"
+                            />
+                            <span v-else>{{
+                              isCaptchaLoading ? t('common.loading') : t('common.captcha')
+                            }}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </template>
+
                     <template v-if="showSignupPassword">
                       <!-- 密码 -->
                       <div class="text-sm font-[700] text-text-1 mb-1.5">
@@ -497,6 +534,9 @@
                     </template>
 
                     <div v-if="showSignupInvitationCode" class="mb-10">
+                      <div class="text-sm font-[700] text-text-1 mb-1.5">
+                        {{ t('common.invitation_code') }}
+                      </div>
                       <div class="relative">
                         <InviteIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5" />
                         <input

@@ -18,7 +18,7 @@
       }"
     >
       <div class="w-full h-full flex flex-col">
-        <div class="flex gap-[48px] mb-10">
+        <div class="flex gap-[48px] mb-[24px]">
           <button
             class="relative min-w-20 pb-3 text-2xl font-[700] font-inter transition-all duration-200 tab-button-new"
           >
@@ -33,7 +33,7 @@
         <div class="flex-1 flex flex-col relative">
           <!-- 账号 -->
           <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
-          <div class="mb-6">
+          <div class="mb-[12px]">
             <!-- 请输入账号 -->
             <div class="relative">
               <span
@@ -56,7 +56,7 @@
           <div class="text-sm font-[700] text-text-1 mb-2">
             {{ t('common.verification') }}
           </div>
-          <div class="mb-6">
+          <div class="mb-[12px]">
             <div class="relative">
               <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
               <!-- 请输入验证码 -->
@@ -87,7 +87,7 @@
 
           <!-- 密码 -->
           <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.password') }}</div>
-          <div class="mb-6">
+          <div class="mb-[12px]">
             <div class="relative">
               <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
               <!-- 请输入密码 -->
@@ -114,7 +114,7 @@
           <div class="text-sm font-[700] text-text-1 mb-2">
             {{ t('common.confirm_password') }}
           </div>
-          <div class="mb-10">
+          <div class="mb-[24px]">
             <div class="relative">
               <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
               <!-- 请输入确认密码 -->

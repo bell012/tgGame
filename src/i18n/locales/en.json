@@ -82,6 +82,7 @@
     "phone": "Phone",
     "enter_account": "Enter your phone number",
     "enter_username": "Enter your username",
+    "invitation_code": "Invite Code",
     "enter_invitation_code": "Enter invite code",
     "password": "Password",
     "enter_password": "6–16 characters (letters and numbers)",

@@ -27,6 +27,7 @@
         showSigninCaptcha,
         showSignupPassword,
         showSignupSmsCode,
+        showSignupCaptcha,
         showSignupInvitationCode,
         captchaImageUrl,
         isCaptchaLoading,
@@ -50,13 +51,15 @@
         handleSignupUsernameInput,
         handleSignupPhoneInput,
         handleSignupCodeInput,
+        handleSignupCaptchaInput,
+        refreshSignupCaptcha,
         handleSignupPasswordInput,
         handleSignupConfirmPasswordInput,
         handleSignupInvitationCodeInput
       }"
     >
       <div class="w-full h-full flex flex-col">
-        <div v-if="activeTab === 'signin'" class="flex gap-8 mb-6">
+        <div v-if="activeTab === 'signin'" class="flex gap-8 mb-[24px]">
           <button
             v-for="method in loginMethodTabs"
             :key="method.key"
@@ -72,7 +75,7 @@
           </button>
         </div>
 
-        <div v-else class="flex gap-8 mb-6">
+        <div v-else class="flex gap-8 mb-[24px]">
           <button
             v-for="method in signupMethodTabs"
             :key="method.key"
@@ -89,9 +92,10 @@
         </div>
 
         <div class="flex-1 flex flex-col relative">
+          <!-- 登录/手机 -->
           <template v-if="activeTab === 'signin'">
             <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
-            <div class="mb-6">
+            <div class="mb-[12px]">
               <div ref="signinAreaCodeAnchorRef" class="relative">
                 <KeyIcon
                   v-if="activeLoginMethod === 'username'"
@@ -141,10 +145,11 @@
               <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.password') }}
               </div>
-              <div class="mb-6">
+              <div class="mb-[12px]">
                 <div class="relative">
                   <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
+                    :key="`signin-password-${activeLoginMethod}`"
                     :value="formData.signin.password"
                     :type="showPassword.signin ? 'text' : 'password'"
                     :placeholder="t('common.enter_password')"
@@ -168,7 +173,7 @@
               <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.verification') }}
               </div>
-              <div class="mb-6">
+              <div class="mb-[12px]">
                 <div class="relative">
                   <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
@@ -200,7 +205,7 @@
               <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.captcha') }}
               </div>
-              <div class="mb-4">
+              <div class="mb-[12px]">
                 <div class="relative">
                   <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
@@ -258,7 +263,7 @@
             </div>
 
             <button
-              class="btn-primary w-full h-[40px] mt-8 rounded-lg text-sm font-[700] text-text-4 transition-all"
+              class="btn-primary w-full h-[40px] mt-[24px] rounded-lg text-sm font-[700] text-text-4 transition-all"
               :class="{ 'opacity-60 cursor-not-allowed': !isSigninValid }"
               :disabled="!isSigninValid"
               @click="handleLogin"
@@ -266,7 +271,7 @@
               {{ t('home.sign_In') }}
             </button>
 
-            <div class="text-center text-sm font-[700] text-text-2 mt-6">
+            <div class="text-center text-sm font-[700] text-text-2 mt-[20px]">
               {{ t('common.no_account') }}
               <button
                 type="button"
@@ -278,16 +283,17 @@
             </div>
 
             <div
-              class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer"
+              class="text-center text-sm font-[700] text-theme-primary mt-[20px] cursor-pointer"
               @click="handleGuestContinue"
             >
               {{ t('common.continue') }}
             </div>
           </template>
 
+          <!-- 注册/手机 -->
           <template v-else-if="activeTab === 'signup'">
             <div class="text-sm font-[700] text-text-1 mb-2">{{ t('common.account') }}</div>
-            <div class="mb-6">
+            <div class="mb-[12px]">
               <div ref="signupAreaCodeAnchorRef" class="relative">
                 <KeyIcon
                   v-if="activeSignupMethod === 'username'"
@@ -333,11 +339,63 @@
               </div>
             </div>
 
+            <template v-if="showSignupPassword">
+              <div class="text-sm font-[700] text-text-1 mb-2">
+                {{ t('common.password') }}
+              </div>
+              <div class="mb-[12px]">
+                <div class="relative">
+                  <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                  <input
+                    :value="formData.signup.password"
+                    :type="showPassword.signup ? 'text' : 'password'"
+                    :placeholder="t('common.enter_password')"
+                    class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                    :class="showPassword.signup ? '' : 'auth-password-mask'"
+                    @input="handleSignupPasswordInput"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                    @click="togglePassword('signup')"
+                  >
+                    <EyeIcon v-if="showPassword.signup" class="w-5 h-5 text-text-2" />
+                    <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
+                  </button>
+                </div>
+              </div>
+
+              <div class="text-sm font-[700] text-text-1 mb-2">
+                {{ t('common.confirm_password') }}
+              </div>
+              <div class="mb-[12px]">
+                <div class="relative">
+                  <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                  <input
+                    :value="formData.signup.confirmPassword"
+                    :type="showPassword.confirmPassword ? 'text' : 'password'"
+                    :placeholder="t('common.enter_confirm_password')"
+                    class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                    :class="showPassword.confirmPassword ? '' : 'auth-password-mask'"
+                    @input="handleSignupConfirmPasswordInput"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
+                    @click="togglePassword('confirmPassword')"
+                  >
+                    <EyeIcon v-if="showPassword.confirmPassword" class="w-5 h-5 text-text-2" />
+                    <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
+                  </button>
+                </div>
+              </div>
+            </template>
+
             <template v-if="showSignupSmsCode">
               <div class="text-sm font-[700] text-text-1 mb-2">
                 {{ t('common.verification') }}
               </div>
-              <div class="mb-6">
+              <div class="mb-[12px]">
                 <div class="relative">
                   <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
@@ -365,59 +423,43 @@
               </div>
             </template>
 
-            <template v-if="showSignupPassword">
+            <template v-if="showSignupCaptcha">
               <div class="text-sm font-[700] text-text-1 mb-2">
-                {{ t('common.password') }}
+                {{ t('common.captcha') }}
               </div>
-              <div class="mb-6">
+              <div class="mb-[12px]">
                 <div class="relative">
-                  <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
+                  <SafeIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                   <input
-                    :value="formData.signup.password"
-                    :type="showPassword.signup ? 'text' : 'password'"
-                    :placeholder="t('common.enter_password')"
-                    class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
-                    :class="showPassword.signup ? '' : 'auth-password-mask'"
-                    @input="handleSignupPasswordInput"
+                    :value="formData.signup.captchaCode"
+                    type="text"
+                    :placeholder="t('common.enter_captcha')"
+                    class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-[108px] bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
+                    @input="handleSignupCaptchaInput"
                   />
                   <button
                     type="button"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                    @click="togglePassword('signup')"
+                    class="absolute right-1 top-1/2 -translate-y-1/2 w-[96px] h-[34px] rounded-md overflow-hidden bg-bg-2 border border-input-2 flex items-center justify-center text-xs text-text-2"
+                    @click="refreshSignupCaptcha"
                   >
-                    <EyeIcon v-if="showPassword.signup" class="w-5 h-5 text-text-2" />
-                    <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
-                  </button>
-                </div>
-              </div>
-
-              <div class="text-sm font-[700] text-text-1 mb-2">
-                {{ t('common.confirm_password') }}
-              </div>
-              <div class="mb-6">
-                <div class="relative">
-                  <PasswordIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
-                  <input
-                    :value="formData.signup.confirmPassword"
-                    :type="showPassword.confirmPassword ? 'text' : 'password'"
-                    :placeholder="t('common.enter_confirm_password')"
-                    class="auth-input-placeholder w-full h-[42px] pl-[44px] pr-11 bg-input-3 border border-input-2 rounded-lg text-text-1 text-sm font-[700] focus:outline-none focus:border-theme-primary placeholder:text-text-3 placeholder:text-sm placeholder:font-[400]"
-                    :class="showPassword.confirmPassword ? '' : 'auth-password-mask'"
-                    @input="handleSignupConfirmPasswordInput"
-                  />
-                  <button
-                    type="button"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
-                    @click="togglePassword('confirmPassword')"
-                  >
-                    <EyeIcon v-if="showPassword.confirmPassword" class="w-5 h-5 text-text-2" />
-                    <EyeOffIcon v-else class="w-5 h-5 text-text-2" />
+                    <img
+                      v-if="captchaImageUrl"
+                      :src="captchaImageUrl"
+                      alt=""
+                      class="w-full h-full object-cover"
+                    />
+                    <span v-else>{{
+                      isCaptchaLoading ? t('common.loading') : t('common.captcha')
+                    }}</span>
                   </button>
                 </div>
               </div>
             </template>
 
-            <div v-if="showSignupInvitationCode" class="mb-8">
+            <div v-if="showSignupInvitationCode" class="mb-[24px]">
+              <div class="text-sm font-[700] text-text-1 mb-2">
+                {{ t('common.invitation_code') }}
+              </div>
               <div class="relative">
                 <InviteIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" />
                 <input
@@ -440,7 +482,7 @@
               {{ t('home.sign_Up') }}
             </button>
 
-            <div class="text-center text-sm font-[700] text-text-2 mt-6">
+            <div class="text-center text-sm font-[700] text-text-2 mt-[20px]">
               {{ t('common.have_account') }}
               <button
                 type="button"
@@ -452,7 +494,7 @@
             </div>
 
             <div
-              class="text-center text-sm font-[700] text-theme-primary mt-6 cursor-pointer"
+              class="text-center text-sm font-[700] text-theme-primary mt-[20px] cursor-pointer"
               @click="handleGuestContinue"
             >
               {{ t('common.continue') }}

@@ -82,6 +82,7 @@
     "phone": "手机",
     "enter_account": "请输入您的电话号码",
     "enter_username": "请输入您的用户名",
+    "invitation_code": "邀请码",
     "enter_invitation_code": "请输入邀请码",
     "password": "密码",
     "enter_password": "请输入您的密码（6–16个字母和数字)",

@@ -132,6 +132,8 @@ export interface RegisterForm {
   telephone?: string // 手机号码 手机注册时要传值
   nickName: string // 会员姓名
   invitationCode?: string // 邀请码
+  captchaCode?: string // 开启自研图片验证码时传，用户输入的图形码
+  captchaKey?: string // 开启自研图片验证码时传，CaptchaImageResult 返回的 captchaKey
 }
 
 // 注册响应
